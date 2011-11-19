@@ -196,7 +196,7 @@ static struct machine_function *alpha_init_machine_status (void);
 static rtx alpha_emit_xfloating_compare (enum rtx_code *, rtx, rtx);
 
 #if TARGET_ABI_OPEN_VMS
-static void alpha_write_linkage (FILE *, const char *, tree);
+static void alpha_write_linkage (FILE *, const char *);
 static bool vms_valid_pointer_mode (enum machine_mode);
 #else
 #define vms_patch_builtins()  gcc_unreachable()
@@ -4196,6 +4196,47 @@ emit_store_conditional (enum machine_mode mode, rtx res, rtx mem, rtx val)
   emit_insn (fn (res, mem, val));
 }
 
+/* Subroutines of the atomic operation splitters.  Emit barriers
+   as needed for the memory MODEL.  */
+
+static void
+alpha_pre_atomic_barrier (enum memmodel model)
+{
+  switch (model)
+    {
+    case MEMMODEL_RELAXED:
+    case MEMMODEL_CONSUME:
+    case MEMMODEL_ACQUIRE:
+      break;
+    case MEMMODEL_RELEASE:
+    case MEMMODEL_ACQ_REL:
+    case MEMMODEL_SEQ_CST:
+      emit_insn (gen_memory_barrier ());
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static void
+alpha_post_atomic_barrier (enum memmodel model)
+{
+  switch (model)
+    {
+    case MEMMODEL_RELAXED:
+    case MEMMODEL_CONSUME:
+    case MEMMODEL_RELEASE:
+      break;
+    case MEMMODEL_ACQUIRE:
+    case MEMMODEL_ACQ_REL:
+    case MEMMODEL_SEQ_CST:
+      emit_insn (gen_memory_barrier ());
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* A subroutine of the atomic operation splitters.  Emit an insxl
    instruction in MODE.  */
 
@@ -4236,13 +4277,13 @@ emit_insxl (enum machine_mode mode, rtx op1, rtx op2)
    a scratch register.  */
 
 void
-alpha_split_atomic_op (enum rtx_code code, rtx mem, rtx val,
-		       rtx before, rtx after, rtx scratch)
+alpha_split_atomic_op (enum rtx_code code, rtx mem, rtx val, rtx before,
+		       rtx after, rtx scratch, enum memmodel model)
 {
   enum machine_mode mode = GET_MODE (mem);
   rtx label, x, cond = gen_rtx_REG (DImode, REGNO (scratch));
 
-  emit_insn (gen_memory_barrier ());
+  alpha_pre_atomic_barrier (model);
 
   label = gen_label_rtx ();
   emit_label (label);
@@ -4270,29 +4311,48 @@ alpha_split_atomic_op (enum rtx_code code, rtx mem, rtx val,
   x = gen_rtx_EQ (DImode, cond, const0_rtx);
   emit_unlikely_jump (x, label);
 
-  emit_insn (gen_memory_barrier ());
+  alpha_post_atomic_barrier (model);
 }
 
 /* Expand a compare and swap operation.  */
 
 void
-alpha_split_compare_and_swap (rtx retval, rtx mem, rtx oldval, rtx newval,
-			      rtx scratch)
+alpha_split_compare_and_swap (rtx operands[])
 {
-  enum machine_mode mode = GET_MODE (mem);
-  rtx label1, label2, x, cond = gen_lowpart (DImode, scratch);
+  rtx cond, retval, mem, oldval, newval;
+  bool is_weak;
+  enum memmodel mod_s, mod_f;
+  enum machine_mode mode;
+  rtx label1, label2, x;
 
-  emit_insn (gen_memory_barrier ());
+  cond = operands[0];
+  retval = operands[1];
+  mem = operands[2];
+  oldval = operands[3];
+  newval = operands[4];
+  is_weak = (operands[5] != const0_rtx);
+  mod_s = (enum memmodel) INTVAL (operands[6]);
+  mod_f = (enum memmodel) INTVAL (operands[7]);
+  mode = GET_MODE (mem);
 
-  label1 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
+  alpha_pre_atomic_barrier (mod_s);
+
+  label1 = NULL_RTX;
+  if (!is_weak)
+    {
+      label1 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
+      emit_label (XEXP (label1, 0));
+    }
   label2 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
-  emit_label (XEXP (label1, 0));
 
   emit_load_locked (mode, retval, mem);
 
   x = gen_lowpart (DImode, retval);
   if (oldval == const0_rtx)
-    x = gen_rtx_NE (DImode, x, const0_rtx);
+    {
+      emit_move_insn (cond, const0_rtx);
+      x = gen_rtx_NE (DImode, x, const0_rtx);
+    }
   else
     {
       x = gen_rtx_EQ (DImode, x, oldval);
@@ -4301,54 +4361,101 @@ alpha_split_compare_and_swap (rtx retval, rtx mem, rtx oldval, rtx newval,
     }
   emit_unlikely_jump (x, label2);
 
-  emit_move_insn (scratch, newval);
-  emit_store_conditional (mode, cond, mem, scratch);
+  emit_move_insn (cond, newval);
+  emit_store_conditional (mode, cond, mem, gen_lowpart (mode, cond));
 
-  x = gen_rtx_EQ (DImode, cond, const0_rtx);
-  emit_unlikely_jump (x, label1);
+  if (!is_weak)
+    {
+      x = gen_rtx_EQ (DImode, cond, const0_rtx);
+      emit_unlikely_jump (x, label1);
+    }
 
-  emit_insn (gen_memory_barrier ());
-  emit_label (XEXP (label2, 0));
+  if (mod_f != MEMMODEL_RELAXED)
+    emit_label (XEXP (label2, 0));
+
+  alpha_post_atomic_barrier (mod_s);
+
+  if (mod_f == MEMMODEL_RELAXED)
+    emit_label (XEXP (label2, 0));
 }
 
 void
-alpha_expand_compare_and_swap_12 (rtx dst, rtx mem, rtx oldval, rtx newval)
+alpha_expand_compare_and_swap_12 (rtx operands[])
 {
-  enum machine_mode mode = GET_MODE (mem);
+  rtx cond, dst, mem, oldval, newval, is_weak, mod_s, mod_f;
+  enum machine_mode mode;
   rtx addr, align, wdst;
-  rtx (*fn5) (rtx, rtx, rtx, rtx, rtx);
+  rtx (*gen) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
 
-  addr = force_reg (DImode, XEXP (mem, 0));
+  cond = operands[0];
+  dst = operands[1];
+  mem = operands[2];
+  oldval = operands[3];
+  newval = operands[4];
+  is_weak = operands[5];
+  mod_s = operands[6];
+  mod_f = operands[7];
+  mode = GET_MODE (mem);
+
+  /* We forced the address into a register via mem_noofs_operand.  */
+  addr = XEXP (mem, 0);
+  gcc_assert (register_operand (addr, DImode));
+
   align = expand_simple_binop (Pmode, AND, addr, GEN_INT (-8),
 			       NULL_RTX, 1, OPTAB_DIRECT);
 
   oldval = convert_modes (DImode, mode, oldval, 1);
-  newval = emit_insxl (mode, newval, addr);
+
+  if (newval != const0_rtx)
+    newval = emit_insxl (mode, newval, addr);
 
   wdst = gen_reg_rtx (DImode);
   if (mode == QImode)
-    fn5 = gen_sync_compare_and_swapqi_1;
+    gen = gen_atomic_compare_and_swapqi_1;
   else
-    fn5 = gen_sync_compare_and_swaphi_1;
-  emit_insn (fn5 (wdst, addr, oldval, newval, align));
+    gen = gen_atomic_compare_and_swaphi_1;
+  emit_insn (gen (cond, wdst, mem, oldval, newval, align,
+		  is_weak, mod_s, mod_f));
 
   emit_move_insn (dst, gen_lowpart (mode, wdst));
 }
 
 void
-alpha_split_compare_and_swap_12 (enum machine_mode mode, rtx dest, rtx addr,
-				 rtx oldval, rtx newval, rtx align,
-				 rtx scratch, rtx cond)
+alpha_split_compare_and_swap_12 (rtx operands[])
 {
-  rtx label1, label2, mem, width, mask, x;
+  rtx cond, dest, orig_mem, oldval, newval, align, scratch;
+  enum machine_mode mode;
+  bool is_weak;
+  enum memmodel mod_s, mod_f;
+  rtx label1, label2, mem, addr, width, mask, x;
+
+  cond = operands[0];
+  dest = operands[1];
+  orig_mem = operands[2];
+  oldval = operands[3];
+  newval = operands[4];
+  align = operands[5];
+  is_weak = (operands[6] != const0_rtx);
+  mod_s = (enum memmodel) INTVAL (operands[7]);
+  mod_f = (enum memmodel) INTVAL (operands[8]);
+  scratch = operands[9];
+  mode = GET_MODE (orig_mem);
+  addr = XEXP (orig_mem, 0);
 
   mem = gen_rtx_MEM (DImode, align);
-  MEM_VOLATILE_P (mem) = 1;
+  MEM_VOLATILE_P (mem) = MEM_VOLATILE_P (orig_mem);
+  if (MEM_ALIAS_SET (orig_mem) == ALIAS_SET_MEMORY_BARRIER)
+    set_mem_alias_set (mem, ALIAS_SET_MEMORY_BARRIER);
 
-  emit_insn (gen_memory_barrier ());
-  label1 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
+  alpha_pre_atomic_barrier (mod_s);
+
+  label1 = NULL_RTX;
+  if (!is_weak)
+    {
+      label1 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
+      emit_label (XEXP (label1, 0));
+    }
   label2 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
-  emit_label (XEXP (label1, 0));
 
   emit_load_locked (DImode, scratch, mem);
   
@@ -4357,7 +4464,10 @@ alpha_split_compare_and_swap_12 (enum machine_mode mode, rtx dest, rtx addr,
   emit_insn (gen_extxl (dest, scratch, width, addr));
 
   if (oldval == const0_rtx)
-    x = gen_rtx_NE (DImode, dest, const0_rtx);
+    {
+      emit_move_insn (cond, const0_rtx);
+      x = gen_rtx_NE (DImode, dest, const0_rtx);
+    }
   else
     {
       x = gen_rtx_EQ (DImode, dest, oldval);
@@ -4366,25 +4476,47 @@ alpha_split_compare_and_swap_12 (enum machine_mode mode, rtx dest, rtx addr,
     }
   emit_unlikely_jump (x, label2);
 
-  emit_insn (gen_mskxl (scratch, scratch, mask, addr));
-  emit_insn (gen_iordi3 (scratch, scratch, newval));
+  emit_insn (gen_mskxl (cond, scratch, mask, addr));
 
-  emit_store_conditional (DImode, scratch, mem, scratch);
+  if (newval != const0_rtx)
+    emit_insn (gen_iordi3 (cond, cond, newval));
 
-  x = gen_rtx_EQ (DImode, scratch, const0_rtx);
-  emit_unlikely_jump (x, label1);
+  emit_store_conditional (DImode, cond, mem, cond);
 
-  emit_insn (gen_memory_barrier ());
-  emit_label (XEXP (label2, 0));
+  if (!is_weak)
+    {
+      x = gen_rtx_EQ (DImode, cond, const0_rtx);
+      emit_unlikely_jump (x, label1);
+    }
+
+  if (mod_f != MEMMODEL_RELAXED)
+    emit_label (XEXP (label2, 0));
+
+  alpha_post_atomic_barrier (mod_s);
+
+  if (mod_f == MEMMODEL_RELAXED)
+    emit_label (XEXP (label2, 0));
 }
 
 /* Expand an atomic exchange operation.  */
 
 void
-alpha_split_lock_test_and_set (rtx retval, rtx mem, rtx val, rtx scratch)
+alpha_split_atomic_exchange (rtx operands[])
 {
-  enum machine_mode mode = GET_MODE (mem);
-  rtx label, x, cond = gen_lowpart (DImode, scratch);
+  rtx retval, mem, val, scratch;
+  enum memmodel model;
+  enum machine_mode mode;
+  rtx label, x, cond;
+
+  retval = operands[0];
+  mem = operands[1];
+  val = operands[2];
+  model = (enum memmodel) INTVAL (operands[3]);
+  scratch = operands[4];
+  mode = GET_MODE (mem);
+  cond = gen_lowpart (DImode, scratch);
+
+  alpha_pre_atomic_barrier (model);
 
   label = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
   emit_label (XEXP (label, 0));
@@ -4396,44 +4528,67 @@ alpha_split_lock_test_and_set (rtx retval, rtx mem, rtx val, rtx scratch)
   x = gen_rtx_EQ (DImode, cond, const0_rtx);
   emit_unlikely_jump (x, label);
 
-  emit_insn (gen_memory_barrier ());
+  alpha_post_atomic_barrier (model);
 }
 
 void
-alpha_expand_lock_test_and_set_12 (rtx dst, rtx mem, rtx val)
+alpha_expand_atomic_exchange_12 (rtx operands[])
 {
-  enum machine_mode mode = GET_MODE (mem);
+  rtx dst, mem, val, model;
+  enum machine_mode mode;
   rtx addr, align, wdst;
-  rtx (*fn4) (rtx, rtx, rtx, rtx);
+  rtx (*gen) (rtx, rtx, rtx, rtx, rtx);
 
-  /* Force the address into a register.  */
-  addr = force_reg (DImode, XEXP (mem, 0));
+  dst = operands[0];
+  mem = operands[1];
+  val = operands[2];
+  model = operands[3];
+  mode = GET_MODE (mem);
 
-  /* Align it to a multiple of 8.  */
+  /* We forced the address into a register via mem_noofs_operand.  */
+  addr = XEXP (mem, 0);
+  gcc_assert (register_operand (addr, DImode));
+
   align = expand_simple_binop (Pmode, AND, addr, GEN_INT (-8),
 			       NULL_RTX, 1, OPTAB_DIRECT);
 
   /* Insert val into the correct byte location within the word.  */
-  val = emit_insxl (mode, val, addr);
+  if (val != const0_rtx)
+    val = emit_insxl (mode, val, addr);
 
   wdst = gen_reg_rtx (DImode);
   if (mode == QImode)
-    fn4 = gen_sync_lock_test_and_setqi_1;
+    gen = gen_atomic_exchangeqi_1;
   else
-    fn4 = gen_sync_lock_test_and_sethi_1;
-  emit_insn (fn4 (wdst, addr, val, align));
+    gen = gen_atomic_exchangehi_1;
+  emit_insn (gen (wdst, mem, val, align, model));
 
   emit_move_insn (dst, gen_lowpart (mode, wdst));
 }
 
 void
-alpha_split_lock_test_and_set_12 (enum machine_mode mode, rtx dest, rtx addr,
-				  rtx val, rtx align, rtx scratch)
+alpha_split_atomic_exchange_12 (rtx operands[])
 {
+  rtx dest, orig_mem, addr, val, align, scratch;
   rtx label, mem, width, mask, x;
+  enum machine_mode mode;
+  enum memmodel model;
+
+  dest = operands[0];
+  orig_mem = operands[1];
+  val = operands[2];
+  align = operands[3];
+  model = (enum memmodel) INTVAL (operands[4]);
+  scratch = operands[5];
+  mode = GET_MODE (orig_mem);
+  addr = XEXP (orig_mem, 0);
 
   mem = gen_rtx_MEM (DImode, align);
-  MEM_VOLATILE_P (mem) = 1;
+  MEM_VOLATILE_P (mem) = MEM_VOLATILE_P (orig_mem);
+  if (MEM_ALIAS_SET (orig_mem) == ALIAS_SET_MEMORY_BARRIER)
+    set_mem_alias_set (mem, ALIAS_SET_MEMORY_BARRIER);
+
+  alpha_pre_atomic_barrier (model);
 
   label = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
   emit_label (XEXP (label, 0));
@@ -4444,14 +4599,15 @@ alpha_split_lock_test_and_set_12 (enum machine_mode mode, rtx dest, rtx addr,
   mask = GEN_INT (mode == QImode ? 0xff : 0xffff);
   emit_insn (gen_extxl (dest, scratch, width, addr));
   emit_insn (gen_mskxl (scratch, scratch, mask, addr));
-  emit_insn (gen_iordi3 (scratch, scratch, val));
+  if (val != const0_rtx)
+    emit_insn (gen_iordi3 (scratch, scratch, val));
 
   emit_store_conditional (DImode, scratch, mem, scratch);
 
   x = gen_rtx_EQ (DImode, scratch, const0_rtx);
   emit_unlikely_jump (x, label);
 
-  emit_insn (gen_memory_barrier ());
+  alpha_post_atomic_barrier (model);
 }
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
@@ -4509,6 +4665,8 @@ alpha_multipass_dfa_lookahead (void)
 
 /* Machine-specific function data.  */
 
+struct GTY(()) alpha_links;
+
 struct GTY(()) machine_function
 {
   /* For OSF.  */
@@ -4518,7 +4676,11 @@ struct GTY(()) machine_function
   rtx gp_save_rtx;
 
   /* For VMS condition handlers.  */
-  bool uses_condition_handler;  
+  bool uses_condition_handler;
+
+  /* Linkage entries.  */
+  splay_tree GTY ((param1_is (char *), param2_is (struct alpha_links *)))
+    links;
 };
 
 /* How to allocate a 'struct machine_function'.  */
@@ -7862,16 +8024,17 @@ alpha_start_function (FILE *file, const char *fnname,
       fprintf (file, "\t.handler_data %d\n", VMS_COND_HANDLER_FP_OFFSET);
     }
 
-  /* Ifdef'ed cause link_section are only available then.  */
+#ifdef TARGET_VMS_CRASH_DEBUG
+  /* Support of minimal traceback info.  */
   switch_to_section (readonly_data_section);
   fprintf (file, "\t.align 3\n");
   assemble_name (file, fnname); fputs ("..na:\n", file);
   fputs ("\t.ascii \"", file);
   assemble_name (file, fnname);
   fputs ("\\0\"\n", file);
-  alpha_need_linkage (fnname, 1);
   switch_to_section (text_section);
 #endif
+#endif /* TARGET_ABI_OPEN_VMS */
 }
 
 /* Emit the .prologue note at the scheduled end of the prologue.  */
@@ -8104,7 +8267,8 @@ alpha_end_function (FILE *file, const char *fnname, tree decl ATTRIBUTE_UNUSED)
     output_asm_insn (get_insn_template (CODE_FOR_nop, NULL), NULL);
 
 #if TARGET_ABI_OPEN_VMS
-  alpha_write_linkage (file, fnname, decl);
+  /* Write the linkage entries.  */
+  alpha_write_linkage (file, fnname);
 #endif
 
   /* End the function.  */
@@ -9299,31 +9463,18 @@ alpha_elf_section_type_flags (tree decl, const char *name, int reloc)
 /* Structure to collect function names for final output in link section.  */
 /* Note that items marked with GTY can't be ifdef'ed out.  */
 
-enum links_kind {KIND_UNUSED, KIND_LOCAL, KIND_EXTERN};
-enum reloc_kind {KIND_LINKAGE, KIND_CODEADDR};
+enum reloc_kind
+{
+  KIND_LINKAGE,
+  KIND_CODEADDR
+};
 
 struct GTY(()) alpha_links
 {
-  int num;
-  const char *target;
+  rtx func;
   rtx linkage;
-  enum links_kind lkind;
   enum reloc_kind rkind;
 };
-
-struct GTY(()) alpha_funcs
-{
-  int num;
-  splay_tree GTY ((param1_is (char *), param2_is (struct alpha_links *)))
-    links;
-};
-
-static GTY ((param1_is (char *), param2_is (struct alpha_links *)))
-  splay_tree alpha_links_tree;
-static GTY ((param1_is (tree), param2_is (struct alpha_funcs *)))
-  splay_tree alpha_funcs_tree;
-
-static GTY(()) int alpha_funcs_num;
 
 #if TARGET_ABI_OPEN_VMS
 
@@ -9358,95 +9509,6 @@ alpha_arg_info_reg_val (CUMULATIVE_ARGS cum)
   return GEN_INT (regval);
 }
 
-/* Register the need for a (fake) .linkage entry for calls to function NAME.
-   IS_LOCAL is 1 if this is for a definition, 0 if this is for a real call.
-   Return a SYMBOL_REF suited to the call instruction.  */
-
-rtx
-alpha_need_linkage (const char *name, int is_local)
-{
-  splay_tree_node node;
-  struct alpha_links *al;
-  const char *target;
-  tree id;
-
-  if (name[0] == '*')
-    name++;
-
-  if (is_local)
-    {
-      struct alpha_funcs *cfaf;
-
-      if (!alpha_funcs_tree)
-        alpha_funcs_tree = splay_tree_new_ggc
-	 (splay_tree_compare_pointers,
-	  ggc_alloc_splay_tree_tree_node_tree_node_splay_tree_s,
-	  ggc_alloc_splay_tree_tree_node_tree_node_splay_tree_node_s);
-
-
-      cfaf = ggc_alloc_alpha_funcs ();
-
-      cfaf->links = 0;
-      cfaf->num = ++alpha_funcs_num;
-
-      splay_tree_insert (alpha_funcs_tree,
-			 (splay_tree_key) current_function_decl,
-			 (splay_tree_value) cfaf);
-    }
-
-  if (alpha_links_tree)
-    {
-      /* Is this name already defined?  */
-
-      node = splay_tree_lookup (alpha_links_tree, (splay_tree_key) name);
-      if (node)
-	{
-	  al = (struct alpha_links *) node->value;
-	  if (is_local)
-	    {
-	      /* Defined here but external assumed.  */
-	      if (al->lkind == KIND_EXTERN)
-		al->lkind = KIND_LOCAL;
-	    }
-	  else
-	    {
-	      /* Used here but unused assumed.  */
-	      if (al->lkind == KIND_UNUSED)
-		al->lkind = KIND_LOCAL;
-	    }
-	  return al->linkage;
-	}
-    }
-  else
-    alpha_links_tree = splay_tree_new_ggc
-	 ((splay_tree_compare_fn) strcmp,
-	  ggc_alloc_splay_tree_str_alpha_links_splay_tree_s,
-	  ggc_alloc_splay_tree_str_alpha_links_splay_tree_node_s);
-
-  al = ggc_alloc_alpha_links ();
-  name = ggc_strdup (name);
-
-  /* Assume external if no definition.  */
-  al->lkind = (is_local ? KIND_UNUSED : KIND_EXTERN);
-
-  /* Ensure we have an IDENTIFIER so assemble_name can mark it used
-     and find the ultimate alias target like assemble_name.  */
-  id = get_identifier (name);
-  target = NULL;
-  while (IDENTIFIER_TRANSPARENT_ALIAS (id))
-    {
-      id = TREE_CHAIN (id);
-      target = IDENTIFIER_POINTER (id);
-    }
-
-  al->target = target ? target : name;
-  al->linkage = gen_rtx_SYMBOL_REF (Pmode, name);
-
-  splay_tree_insert (alpha_links_tree, (splay_tree_key) name,
-		     (splay_tree_value) al);
-
-  return al->linkage;
-}
 
 /* Return a SYMBOL_REF representing the reference to the .linkage entry
    of function FUNC built for calls made from CFUNDECL.  LFLAG is 1 if
@@ -9455,75 +9517,48 @@ alpha_need_linkage (const char *name, int is_local)
    reference (code address only), 0 if this is a full reference.  */
 
 rtx
-alpha_use_linkage (rtx func, tree cfundecl, int lflag, int rflag)
+alpha_use_linkage (rtx func, bool lflag, bool rflag)
 {
-  splay_tree_node cfunnode;
-  struct alpha_funcs *cfaf;
-  struct alpha_links *al;
+  struct alpha_links *al = NULL;
   const char *name = XSTR (func, 0);
 
-  cfaf = (struct alpha_funcs *) 0;
-  al = (struct alpha_links *) 0;
-
-  cfunnode = splay_tree_lookup (alpha_funcs_tree, (splay_tree_key) cfundecl);
-  cfaf = (struct alpha_funcs *) cfunnode->value;
-
-  if (cfaf->links)
+  if (cfun->machine->links)
     {
       splay_tree_node lnode;
 
       /* Is this name already defined?  */
-
-      lnode = splay_tree_lookup (cfaf->links, (splay_tree_key) name);
+      lnode = splay_tree_lookup (cfun->machine->links, (splay_tree_key) name);
       if (lnode)
 	al = (struct alpha_links *) lnode->value;
     }
   else
-    cfaf->links = splay_tree_new_ggc
+    cfun->machine->links = splay_tree_new_ggc
       ((splay_tree_compare_fn) strcmp,
        ggc_alloc_splay_tree_str_alpha_links_splay_tree_s,
        ggc_alloc_splay_tree_str_alpha_links_splay_tree_node_s);
 
-  if (!al)
+  if (al == NULL)
     {
-      size_t name_len;
-      size_t buflen;
+      size_t buf_len;
       char *linksym;
-      splay_tree_node node = 0;
-      struct alpha_links *anl;
 
       if (name[0] == '*')
 	name++;
 
-      name_len = strlen (name);
-      linksym = (char *) alloca (name_len + 50);
+      buf_len = strlen (name) + 8 + 9;
+      linksym = (char *) alloca (buf_len);
+      snprintf (linksym, buf_len, "$%d..%s..lk", cfun->funcdef_no, name);
 
       al = ggc_alloc_alpha_links ();
-      al->num = cfaf->num;
-      al->target = NULL;
+      al->func = func;
+      al->linkage = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (linksym));
 
-      node = splay_tree_lookup (alpha_links_tree, (splay_tree_key) name);
-      if (node)
-	{
-	  anl = (struct alpha_links *) node->value;
-	  al->lkind = anl->lkind;
-	  name = anl->target;
-	}
-
-      sprintf (linksym, "$%d..%s..lk", cfaf->num, name);
-      buflen = strlen (linksym);
-
-      al->linkage = gen_rtx_SYMBOL_REF
-	(Pmode, ggc_alloc_string (linksym, buflen + 1));
-
-      splay_tree_insert (cfaf->links, (splay_tree_key) name,
+      splay_tree_insert (cfun->machine->links,
+                         (splay_tree_key) ggc_strdup (name),
 			 (splay_tree_value) al);
     }
 
-  if (rflag)
-    al->rkind = KIND_CODEADDR;
-  else
-    al->rkind = KIND_LINKAGE;
+  al->rkind = rflag ? KIND_CODEADDR : KIND_LINKAGE;
 
   if (lflag)
     return gen_rtx_MEM (Pmode, plus_constant (al->linkage, 8));
@@ -9538,31 +9573,24 @@ alpha_write_one_linkage (splay_tree_node node, void *data)
   struct alpha_links *link = (struct alpha_links *) node->value;
   FILE *stream = (FILE *) data;
 
-  fprintf (stream, "$%d..%s..lk:\n", link->num, name);
+  ASM_OUTPUT_INTERNAL_LABEL (stream, XSTR (link->linkage, 0));
   if (link->rkind == KIND_CODEADDR)
     {
-      if (link->lkind == KIND_LOCAL)
-	{
-	  /* Local and used */
-	  fprintf (stream, "\t.quad %s..en\n", name);
-	}
-      else
-	{
-	  /* External and used, request code address.  */
-	  fprintf (stream, "\t.code_address %s\n", name);
-	}
+      /* External and used, request code address.  */
+      fprintf (stream, "\t.code_address %s\n", name);
     }
   else
     {
-      if (link->lkind == KIND_LOCAL)
+      if (!SYMBOL_REF_EXTERNAL_P (link->func)
+          && SYMBOL_REF_LOCAL_P (link->func))
 	{
-	  /* Local and used, build linkage pair.  */
+	  /* Locally defined, build linkage pair.  */
 	  fprintf (stream, "\t.quad %s..en\n", name);
 	  fprintf (stream, "\t.quad %s\n", name);
 	}
       else
 	{
-	  /* External and used, request linkage pair.  */
+	  /* External, request linkage pair.  */
 	  fprintf (stream, "\t.linkage %s\n", name);
 	}
     }
@@ -9571,21 +9599,18 @@ alpha_write_one_linkage (splay_tree_node node, void *data)
 }
 
 static void
-alpha_write_linkage (FILE *stream, const char *funname, tree fundecl)
+alpha_write_linkage (FILE *stream, const char *funname)
 {
-  splay_tree_node node;
-  struct alpha_funcs *func;
-
   fprintf (stream, "\t.link\n");
   fprintf (stream, "\t.align 3\n");
   in_section = NULL;
 
-  node = splay_tree_lookup (alpha_funcs_tree, (splay_tree_key) fundecl);
-  func = (struct alpha_funcs *) node->value;
-
+#ifdef TARGET_VMS_CRASH_DEBUG
   fputs ("\t.name ", stream);
   assemble_name (stream, funname);
   fputs ("..na\n", stream);
+#endif
+
   ASM_OUTPUT_LABEL (stream, funname);
   fprintf (stream, "\t.pdesc ");
   assemble_name (stream, funname);
@@ -9593,9 +9618,9 @@ alpha_write_linkage (FILE *stream, const char *funname, tree fundecl)
 	   alpha_procedure_type == PT_STACK ? "stack"
 	   : alpha_procedure_type == PT_REGISTER ? "reg" : "null");
 
-  if (func->links)
+  if (cfun->machine->links)
     {
-      splay_tree_foreach (func->links, alpha_write_one_linkage, stream);
+      splay_tree_foreach (cfun->machine->links, alpha_write_one_linkage, stream);
       /* splay_tree_delete (func->links); */
     }
 }
@@ -9641,19 +9666,10 @@ vms_asm_out_destructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
   assemble_integer (symbol, UNITS_PER_WORD, BITS_PER_WORD, 1);
 }
 #else
-
-rtx
-alpha_need_linkage (const char *name ATTRIBUTE_UNUSED,
-		    int is_local ATTRIBUTE_UNUSED)
-{
-  return NULL_RTX;
-}
-
 rtx
 alpha_use_linkage (rtx func ATTRIBUTE_UNUSED,
-		   tree cfundecl ATTRIBUTE_UNUSED,
-		   int lflag ATTRIBUTE_UNUSED,
-		   int rflag ATTRIBUTE_UNUSED)
+		   bool lflag ATTRIBUTE_UNUSED,
+		   bool rflag ATTRIBUTE_UNUSED)
 {
   return NULL_RTX;
 }
@@ -9782,6 +9798,14 @@ alpha_conditional_register_usage (void)
 #undef TARGET_STDARG_OPTIMIZE_HOOK
 #define TARGET_STDARG_OPTIMIZE_HOOK alpha_stdarg_optimize_hook
 #endif
+
+/* Use 16-bits anchor.  */
+#undef TARGET_MIN_ANCHOR_OFFSET
+#define TARGET_MIN_ANCHOR_OFFSET -0x7fff - 1
+#undef TARGET_MAX_ANCHOR_OFFSET
+#define TARGET_MAX_ANCHOR_OFFSET 0x7fff
+#undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
+#define TARGET_USE_BLOCKS_FOR_CONSTANT_P hook_bool_mode_const_rtx_true
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS alpha_rtx_costs

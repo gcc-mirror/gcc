@@ -102,6 +102,7 @@ INCLUDES = -I$(srcdir)/$(MULTISRCTOP)../gcc \
   -I$(srcdir)/$(MULTISRCTOP)../gcc/config \
   -I$(MULTIBUILDTOP)../../$(host_subdir)/gcc \
   -I$(srcdir)/$(MULTISRCTOP)../libgcc \
+  -I$(MULTIBUILDTOP)../libgcc \
   -I$(srcdir)/$(MULTISRCTOP)../include \
   $(OBJC_BOEHM_GC_INCLUDES)
 

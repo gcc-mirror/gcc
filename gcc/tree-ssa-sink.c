@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "langhooks.h"
 #include "cfgloop.h"
+#include "params.h"
 
 /* TODO:
    1. Sinking store only using scalar promotion (IE without moving the RHS):
@@ -258,6 +259,71 @@ nearest_common_dominator_of_uses (gimple stmt, bool *debug_stmts)
   return commondom;
 }
 
+/* Given EARLY_BB and LATE_BB, two blocks in a path through the dominator
+   tree, return the best basic block between them (inclusive) to place
+   statements.
+
+   We want the most control dependent block in the shallowest loop nest.
+
+   If the resulting block is in a shallower loop nest, then use it.  Else
+   only use the resulting block if it has significantly lower execution
+   frequency than EARLY_BB to avoid gratutious statement movement.  We
+   consider statements with VOPS more desirable to move.
+
+   This pass would obviously benefit from PDO as it utilizes block
+   frequencies.  It would also benefit from recomputing frequencies
+   if profile data is not available since frequencies often get out
+   of sync with reality.  */
+
+static basic_block
+select_best_block (basic_block early_bb,
+		   basic_block late_bb,
+		   gimple stmt)
+{
+  basic_block best_bb = late_bb;
+  basic_block temp_bb = late_bb;
+  int threshold;
+
+  while (temp_bb != early_bb)
+    {
+      /* If we've moved into a lower loop nest, then that becomes
+	 our best block.  */
+      if (temp_bb->loop_depth < best_bb->loop_depth)
+	best_bb = temp_bb;
+
+      /* Walk up the dominator tree, hopefully we'll find a shallower
+ 	 loop nest.  */
+      temp_bb = get_immediate_dominator (CDI_DOMINATORS, temp_bb);
+    }
+
+  /* If we found a shallower loop nest, then we always consider that
+     a win.  This will always give us the most control dependent block
+     within that loop nest.  */
+  if (best_bb->loop_depth < early_bb->loop_depth)
+    return best_bb;
+
+  /* Get the sinking threshold.  If the statement to be moved has memory
+     operands, then increase the threshold by 7% as those are even more
+     profitable to avoid, clamping at 100%.  */
+  threshold = PARAM_VALUE (PARAM_SINK_FREQUENCY_THRESHOLD);
+  if (gimple_vuse (stmt) || gimple_vdef (stmt))
+    {
+      threshold += 7;
+      if (threshold > 100)
+	threshold = 100;
+    }
+
+  /* If BEST_BB is at the same nesting level, then require it to have
+     significantly lower execution frequency to avoid gratutious movement.  */
+  if (best_bb->loop_depth == early_bb->loop_depth
+      && best_bb->frequency < (early_bb->frequency * threshold / 100.0))
+    return best_bb;
+
+  /* No better block found, so return EARLY_BB, which happens to be the
+     statement's original block.  */
+  return early_bb;
+}
+
 /* Given a statement (STMT) and the basic block it is currently in (FROMBB),
    determine the location to sink the statement to, if any.
    Returns true if there is such location; in that case, TOGSI points to the
@@ -379,24 +445,10 @@ statement_sink_location (gimple stmt, basic_block frombb,
       if (!dominated_by_p (CDI_DOMINATORS, commondom, frombb))
 	return false;
 
-      /* It doesn't make sense to move to a dominator that post-dominates
-	 frombb, because it means we've just moved it into a path that always
-	 executes if frombb executes, instead of reducing the number of
-	 executions .  */
-      if (dominated_by_p (CDI_POST_DOMINATORS, frombb, commondom))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Not moving store, common dominator post-dominates from block.\n");
-	  return false;
-	}
+      commondom = select_best_block (frombb, commondom, stmt);
 
-      if (commondom == frombb || commondom->loop_depth > frombb->loop_depth)
-	return false;
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "Common dominator of all uses is %d\n",
-		   commondom->index);
-	}
+      if (commondom == frombb)
+	return false;	
 
       *togsi = gsi_after_labels (commondom);
 
@@ -415,13 +467,9 @@ statement_sink_location (gimple stmt, basic_block frombb,
       if (gimple_code (use) != GIMPLE_PHI)
 	{
 	  sinkbb = gimple_bb (use);
-	  if (sinkbb == frombb || sinkbb->loop_depth > frombb->loop_depth
-	      || sinkbb->loop_father != frombb->loop_father)
-	    return false;
+	  sinkbb = select_best_block (frombb, gimple_bb (use), stmt);
 
-	  /* Move the expression to a post dominator can't reduce the number of
-	     executions.  */
-	  if (dominated_by_p (CDI_POST_DOMINATORS, frombb, sinkbb))
+	  if (sinkbb == frombb)
 	    return false;
 
 	  *togsi = gsi_for_stmt (use);
@@ -431,32 +479,19 @@ statement_sink_location (gimple stmt, basic_block frombb,
     }
 
   sinkbb = find_bb_for_arg (use, DEF_FROM_PTR (def_p));
+
+  /* This can happen if there are multiple uses in a PHI.  */
   if (!sinkbb)
     return false;
-
-  /* This will happen when you have
-     a_3 = PHI <a_13, a_26>
-
-     a_26 = VDEF <a_3>
-
-     If the use is a phi, and is in the same bb as the def,
-     we can't sink it.  */
-
-  if (gimple_bb (use) == frombb)
-    return false;
-  if (sinkbb == frombb || sinkbb->loop_depth > frombb->loop_depth
-      || sinkbb->loop_father != frombb->loop_father)
+  
+  sinkbb = select_best_block (frombb, sinkbb, stmt);
+  if (!sinkbb || sinkbb == frombb)
     return false;
 
   /* If the latch block is empty, don't make it non-empty by sinking
      something into it.  */
   if (sinkbb == frombb->loop_father->latch
       && empty_block_p (sinkbb))
-    return false;
-
-  /* Move the expression to a post dominator can't reduce the number of
-     executions.  */
-  if (dominated_by_p (CDI_POST_DOMINATORS, frombb, sinkbb))
     return false;
 
   *togsi = gsi_after_labels (sinkbb);

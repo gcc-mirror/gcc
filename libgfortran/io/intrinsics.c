@@ -27,12 +27,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "io.h"
 #include "fbuf.h"
 #include "unix.h"
-
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
-
 #include <string.h>
+
 
 static const int five = 5;
 static const int six = 6;
@@ -246,7 +243,7 @@ fseek_sub (int * unit, GFC_IO_INT * offset, int * whence, int * status)
   gfc_unit * u = find_unit (*unit);
   ssize_t result = -1;
 
-  if (u != NULL && is_seekable(u->s))
+  if (u != NULL)
     {
       result = sseek(u->s, *offset, *whence);
 

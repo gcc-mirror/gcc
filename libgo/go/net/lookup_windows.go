@@ -11,8 +11,22 @@ import (
 	"sync"
 )
 
-var hostentLock sync.Mutex
-var serventLock sync.Mutex
+var (
+	protoentLock sync.Mutex
+	hostentLock  sync.Mutex
+	serventLock  sync.Mutex
+)
+
+// lookupProtocol looks up IP protocol name and returns correspondent protocol number.
+func lookupProtocol(name string) (proto int, err os.Error) {
+	protoentLock.Lock()
+	defer protoentLock.Unlock()
+	p, e := syscall.GetProtoByName(name)
+	if e != 0 {
+		return 0, os.NewSyscallError("GetProtoByName", e)
+	}
+	return int(p.Proto), nil
+}
 
 func LookupHost(name string) (addrs []string, err os.Error) {
 	ips, err := LookupIP(name)
@@ -77,9 +91,23 @@ func LookupCNAME(name string) (cname string, err os.Error) {
 	return
 }
 
+// LookupSRV tries to resolve an SRV query of the given service,
+// protocol, and domain name.  The proto is "tcp" or "udp".
+// The returned records are sorted by priority and randomized
+// by weight within a priority.
+//
+// LookupSRV constructs the DNS name to look up following RFC 2782.
+// That is, it looks up _service._proto.name.  To accommodate services
+// publishing SRV records under non-standard names, if both service
+// and proto are empty strings, LookupSRV looks up name directly.
 func LookupSRV(service, proto, name string) (cname string, addrs []*SRV, err os.Error) {
+	var target string
+	if service == "" && proto == "" {
+		target = name
+	} else {
+		target = "_" + service + "._" + proto + "." + name
+	}
 	var r *syscall.DNSRecord
-	target := "_" + service + "._" + proto + "." + name
 	e := syscall.DnsQuery(target, syscall.DNS_TYPE_SRV, 0, nil, &r, nil)
 	if int(e) != 0 {
 		return "", nil, os.NewSyscallError("LookupSRV", int(e))
@@ -108,6 +136,10 @@ func LookupMX(name string) (mx []*MX, err os.Error) {
 	}
 	byPref(mx).sort()
 	return mx, nil
+}
+
+func LookupTXT(name string) (txt []string, err os.Error) {
+	return nil, os.NewError("net.LookupTXT is not implemented on Windows")
 }
 
 func LookupAddr(addr string) (name []string, err os.Error) {

@@ -693,7 +693,7 @@ ipa_value_from_known_type_jfunc (struct ipa_jump_func *jfunc)
    describes the caller node so that pass-through jump functions can be
    evaluated.  */
 
-static tree
+tree
 ipa_value_from_jfunc (struct ipa_node_params *info, struct ipa_jump_func *jfunc)
 {
   if (jfunc->type == IPA_JF_CONST)
@@ -751,21 +751,6 @@ ipa_value_from_jfunc (struct ipa_node_params *info, struct ipa_jump_func *jfunc)
     }
   else
     return NULL_TREE;
-}
-
-/* Determine whether JFUNC evaluates to a constant and if so, return it.
-   Otherwise return NULL. INFO describes the caller node so that pass-through
-   jump functions can be evaluated.  */
-
-tree
-ipa_cst_from_jfunc (struct ipa_node_params *info, struct ipa_jump_func *jfunc)
-{
-  tree res = ipa_value_from_jfunc (info, jfunc);
-
-  if (res && TREE_CODE (res) == TREE_BINFO)
-    return NULL_TREE;
-  else
-    return res;
 }
 
 
@@ -1112,10 +1097,10 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
    (which can contain both constants and binfos) or KNOWN_BINFOS (which can be
    NULL) return the destination.  */
 
-static tree
-get_indirect_edge_target (struct cgraph_edge *ie,
-			  VEC (tree, heap) *known_vals,
-			  VEC (tree, heap) *known_binfos)
+tree
+ipa_get_indirect_edge_target (struct cgraph_edge *ie,
+			      VEC (tree, heap) *known_vals,
+			      VEC (tree, heap) *known_binfos)
 {
   int param_index = ie->indirect_info->param_index;
   HOST_WIDE_INT token, anc_offset;
@@ -1185,7 +1170,7 @@ devirtualization_time_bonus (struct cgraph_node *node,
       struct inline_summary *isummary;
       tree target;
 
-      target = get_indirect_edge_target (ie, known_csts, known_binfos);
+      target = ipa_get_indirect_edge_target (ie, known_csts, known_binfos);
       if (!target)
 	continue;
 
@@ -1344,7 +1329,8 @@ estimate_local_effects (struct cgraph_node *node)
 
       init_caller_stats (&stats);
       cgraph_for_node_and_aliases (node, gather_caller_stats, &stats, false);
-      estimate_ipcp_clone_size_and_time (node, known_csts, &size, &time);
+      estimate_ipcp_clone_size_and_time (node, known_csts, known_binfos,
+					 &size, &time);
       time -= devirtualization_time_bonus (node, known_csts, known_binfos);
       time -= removable_params_cost;
       size -= stats.n_calls * removable_params_cost;
@@ -1415,7 +1401,8 @@ estimate_local_effects (struct cgraph_node *node)
 	  else
 	    continue;
 
-	  estimate_ipcp_clone_size_and_time (node, known_csts, &size, &time);
+	  estimate_ipcp_clone_size_and_time (node, known_csts, known_binfos,
+					     &size, &time);
 	  time_benefit = base_time - time
 	    + devirtualization_time_bonus (node, known_csts, known_binfos)
 	    + removable_params_cost + emc;
@@ -1673,7 +1660,7 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
       tree target;
 
       next_ie = ie->next_callee;
-      target = get_indirect_edge_target (ie, known_vals, NULL);
+      target = ipa_get_indirect_edge_target (ie, known_vals, NULL);
       if (target)
 	ipa_make_edge_direct_to_target (ie, target);
     }

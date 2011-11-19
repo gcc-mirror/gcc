@@ -3839,6 +3839,23 @@ Parse::return_stat()
   if (this->expression_may_start_here())
     vals = this->expression_list(NULL, false);
   this->gogo_->add_statement(Statement::make_return_statement(vals, location));
+
+  if (vals == NULL
+      && this->gogo_->current_function()->func_value()->results_are_named())
+    {
+      Named_object* function = this->gogo_->current_function();
+      Function::Results* results = function->func_value()->result_variables();
+      for (Function::Results::const_iterator p = results->begin();
+	   p != results->end();
+	   ++p)
+	{
+	  Named_object* no = this->gogo_->lookup((*p)->name(), NULL);
+	  go_assert(no != NULL);
+	  if (!no->is_result_variable())
+	    error_at(location, "%qs is shadowed during return",
+		     (*p)->message_name().c_str());
+	}
+    }
 }
 
 // IfStmt = "if" [ SimpleStmt ";" ] Expression Block

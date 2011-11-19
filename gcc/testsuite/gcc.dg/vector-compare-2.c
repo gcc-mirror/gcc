@@ -1,4 +1,5 @@
 /* { dg-do compile } */   
+/* { dg-options "-fno-common" { target hppa*-*-hpux* } } */
 
 /* Test if C_MAYBE_CONST are folded correctly when 
    creating VEC_COND_EXPR.  */

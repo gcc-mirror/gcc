@@ -55,7 +55,7 @@
 (define_constraint "K"
   "Integer constant that can be deposited with a zdepi instruction."
   (and (match_code "const_int")
-       (match_test "zdepi_cint_p (ival)")))
+       (match_test "pa_zdepi_cint_p (ival)")))
 
 (define_constraint "L"
   "Signed 5-bit integer constant."
@@ -70,7 +70,7 @@
 (define_constraint "N"
   "Integer constant that can be loaded with a ldil instruction."
   (and (match_code "const_int")
-       (match_test "ldil_cint_p (ival)")))
+       (match_test "pa_ldil_cint_p (ival)")))
 
 (define_constraint "O"
   "Integer constant such that ival+1 is a power of 2."
@@ -81,7 +81,7 @@
   "Integer constant that can be used as an and mask in depi and
    extru instructions."
   (and (match_code "const_int")
-       (match_test "and_mask_p (ival)")))
+       (match_test "pa_and_mask_p (ival)")))
 
 (define_constraint "S"
   "Integer constant 31."

@@ -1,0 +1,13 @@
+LIB1ASMSRC = m32c/lib1funcs.S
+
+LIB1ASMFUNCS = \
+	__m32c_memregs \
+	__m32c_eh_return \
+	__m32c_mulsi3 \
+	__m32c_cmpsi2 \
+	__m32c_ucmpsi2 \
+	__m32c_jsri16
+
+LIB2ADD = $(srcdir)/config/m32c/lib2funcs.c \
+	  $(srcdir)/config/m32c/trapv.c
+

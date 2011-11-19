@@ -1,0 +1,34 @@
+LIBGCCSTUB_OBJS = rfi-stub.o dfi-stub.o jvrc-stub.o cxaf-stub.o \
+	pthread_default_stacksize_np-stub.o \
+	pthread_mutex_lock-stub.o \
+	pthread_mutex_unlock-stub.o \
+	pthread_once-stub.o
+
+rfi-stub.o: $(srcdir)/config/pa/stublib.c
+	$(gcc_compile) -c -O2 -DL_register_frame_info $<
+
+dfi-stub.o: $(srcdir)/config/pa/stublib.c
+	$(gcc_compile) -c -O2 -DL_deregister_frame_info $<
+
+cxaf-stub.o: $(srcdir)/config/pa/stublib.c
+	$(gcc_compile) -c -O2 -DL_cxa_finalize $<
+
+jvrc-stub.o: $(srcdir)/config/pa/stublib.c
+	$(gcc_compile) -c -O2 -DL_Jv_RegisterClasses $<
+
+pthread_default_stacksize_np-stub.o: $(srcdir)/config/pa/stublib.c
+	$(gcc_compile) -c -O2 -DL_pthread_default_stacksize_np $<
+
+pthread_mutex_lock-stub.o: $(srcdir)/config/pa/stublib.c
+	$(gcc_compile) -c -O2 -DL_pthread_mutex_lock $<
+
+pthread_mutex_unlock-stub.o: $(srcdir)/config/pa/stublib.c
+	$(gcc_compile) -c -O2 -DL_pthread_mutex_unlock $<
+
+pthread_once-stub.o: $(srcdir)/config/pa/stublib.c
+	$(gcc_compile) -c -O2 -DL_pthread_once $<
+
+libgcc_stub.a: $(LIBGCCSTUB_OBJS)
+	-rm -rf $@
+	$(AR) rc $@ $(LIBGCCSTUB_OBJS)
+	$(RANLIB) $@

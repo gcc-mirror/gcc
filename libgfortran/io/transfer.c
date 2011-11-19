@@ -2627,7 +2627,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	 a partial record needs to exist.  */
 
       if (dtp->u.p.mode == READING && (dtp->rec - 1)
-	  * dtp->u.p.current_unit->recl >= file_length (dtp->u.p.current_unit->s))
+	  * dtp->u.p.current_unit->recl >= ssize (dtp->u.p.current_unit->s))
 	{
 	  generate_error (&dtp->common, LIBERROR_BAD_OPTION,
 			  "Non-existing record number");
@@ -2823,18 +2823,12 @@ skip_record (st_parameter_dt *dtp, ssize_t bytes)
   if (dtp->u.p.current_unit->bytes_left_subrecord == 0)
     return;
 
-  if (is_seekable (dtp->u.p.current_unit->s))
+  /* Direct access files do not generate END conditions,
+     only I/O errors.  */
+  if (sseek (dtp->u.p.current_unit->s, 
+	     dtp->u.p.current_unit->bytes_left_subrecord, SEEK_CUR) < 0)
     {
-      /* Direct access files do not generate END conditions,
-	 only I/O errors.  */
-      if (sseek (dtp->u.p.current_unit->s, 
-		 dtp->u.p.current_unit->bytes_left_subrecord, SEEK_CUR) < 0)
-	generate_error (&dtp->common, LIBERROR_OS, NULL);
-
-      dtp->u.p.current_unit->bytes_left_subrecord = 0;
-    }
-  else
-    {			/* Seek by reading data.  */
+      /* Seeking failed, fall back to seeking by reading data.  */
       while (dtp->u.p.current_unit->bytes_left_subrecord > 0)
 	{
 	  rlength = 
@@ -2850,8 +2844,9 @@ skip_record (st_parameter_dt *dtp, ssize_t bytes)
 
 	  dtp->u.p.current_unit->bytes_left_subrecord -= readb;
 	}
+      return;
     }
-
+  dtp->u.p.current_unit->bytes_left_subrecord = 0;
 }
 
 
@@ -2882,7 +2877,7 @@ next_record_r_unf (st_parameter_dt *dtp, int complete_record)
 }
 
 
-static inline gfc_offset
+static gfc_offset
 min_off (gfc_offset a, gfc_offset b)
 {
   return (a < b ? a : b);
@@ -2949,7 +2944,7 @@ next_record_r (st_parameter_dt *dtp, int done)
 	    {
 	      bytes_left = (int) dtp->u.p.current_unit->bytes_left;
 	      bytes_left = min_off (bytes_left, 
-		      file_length (dtp->u.p.current_unit->s)
+		      ssize (dtp->u.p.current_unit->s)
 		      - stell (dtp->u.p.current_unit->s));
 	      if (sseek (dtp->u.p.current_unit->s, 
 			 bytes_left, SEEK_CUR) < 0)
@@ -3141,13 +3136,6 @@ sset (stream * s, int c, ssize_t nbyte)
   return nbyte - bytes_left;
 }
 
-static inline void
-memset4 (gfc_char4_t *p, gfc_char4_t c, int k)
-{
-  int j;
-  for (j = 0; j < k; j++)
-    *p++ = c;
-}
 
 /* Position to the next record in write mode.  */
 
@@ -3314,7 +3302,7 @@ next_record_w (st_parameter_dt *dtp, int done)
 	    {
 	      dtp->u.p.current_unit->strm_pos += len;
 	      if (dtp->u.p.current_unit->strm_pos
-		  < file_length (dtp->u.p.current_unit->s))
+		  < ssize (dtp->u.p.current_unit->s))
 		unit_truncate (dtp->u.p.current_unit,
                                dtp->u.p.current_unit->strm_pos - 1,
                                &dtp->common);
@@ -3348,9 +3336,10 @@ next_record (st_parameter_dt *dtp, int done)
 
   if (!is_stream_io (dtp))
     {
-      /* Keep position up to date for INQUIRE */
+      /* Since we have changed the position, set it to unspecified so
+	 that INQUIRE(POSITION=) knows it needs to look into it.  */
       if (done)
-	update_position (dtp->u.p.current_unit);
+	dtp->u.p.current_unit->flags.position = POSITION_UNSPECIFIED;
 
       dtp->u.p.current_unit->current_record = 0;
       if (dtp->u.p.current_unit->flags.access == ACCESS_DIRECT)

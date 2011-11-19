@@ -14,5 +14,10 @@ namelist /s/ a,b,c    ! { dg-error "attribute conflicts" }
 end function
 
 function h() result(t)
-type t    ! { dg-error "attribute conflicts" }
+type t    ! { dg-error "GENERIC attribute conflicts with RESULT attribute" }
+end type t ! { dg-error "Expecting END FUNCTION statement" }
+end function
+
+function i() result(t)
+type t    ! { dg-error "GENERIC attribute conflicts with RESULT attribute" }
 end function

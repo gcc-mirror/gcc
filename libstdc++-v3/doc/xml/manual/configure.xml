@@ -172,7 +172,7 @@
  <listitem><para>Enables link-type checks for the availability of the
 	clock_gettime clocks, used in the implementation of [time.clock],
 	and of the nanosleep and sched_yield functions, used in the
-	implementation of [thread.thread.this] of the current C++0x draft.
+	implementation of [thread.thread.this] of the 2011 ISO C++ standard.
 	The choice OPTION=yes checks for the availability of the facilities
 	in libc and libposix4.  In case of need the latter is also linked
 	to libstdc++ as part of the build process.  OPTION=rt also searches
@@ -315,12 +315,15 @@
 
  </listitem></varlistentry>
 
- <varlistentry><term><code>--enable-visibility</code></term>
- <listitem><para> In 4.2 and later, enables or disables visibility attributes.
-	If enabled (as by default), and the compiler seems capable of
-	passing the simple sanity checks thrown at it, adjusts items
-	in namespace std, namespace std::tr1, and namespace __gnu_cxx
-	so that -fvisibility options work.
+ <varlistentry><term><code>--enable-libstdcxx-visibility</code></term>
+ <listitem><para> In 4.2 and later, enables or disables visibility 
+        attributes. If enabled (as by default), and the compiler seems
+        capable of passing the simple sanity checks thrown at it, adjusts
+        items in namespace std, namespace std::tr1, namespace std::tr2,
+        and namespace __gnu_cxx to have <code>visibility ("default")</code>
+        so that -fvisibility options can be used without affecting the
+        normal external-visibility of namespace std entities.
+        Prior to 4.7 this option was spelled <code>--enable-visibility</code>.
     </para>
  </listitem></varlistentry>
 

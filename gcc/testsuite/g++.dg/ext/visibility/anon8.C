@@ -26,10 +26,8 @@ int main ()
     static void fn2 () {}
   };
   call<&B1::fn1> ();
-  call<&B2::fn2> ();	// { dg-error "not external linkage|no matching" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 29 }
+  call<&B2::fn2> ();	// { dg-error "linkage|no matching" }
   call<&fn3> ();
   call<&B1::fn4> ();
-  call<&fn5> ();	// { dg-error "not external linkage|no matching" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 33 }
+  call<&fn5> ();	// { dg-error "linkage|no matching" "" { target c++98 } }
 }

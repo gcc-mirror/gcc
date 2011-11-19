@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "gimple-pretty-print.h"
 #include "params.h"
+#include "expr.h"
 
 /* A vector indexed by SSA_NAME_VERSION.  0 means unknown, positive value
    is an index into strinfo vector, negative value stands for
@@ -176,7 +177,7 @@ get_addr_stridx (tree exp)
 static int
 get_stridx (tree exp)
 {
-  tree l;
+  tree s, o;
 
   if (TREE_CODE (exp) == SSA_NAME)
     return VEC_index (int, ssa_ver_to_stridx, SSA_NAME_VERSION (exp));
@@ -188,14 +189,17 @@ get_stridx (tree exp)
 	return idx;
     }
 
-  l = c_strlen (exp, 0);
-  if (l != NULL_TREE
-      && host_integerp (l, 1))
+  s = string_constant (exp, &o);
+  if (s != NULL_TREE
+      && (o == NULL_TREE || host_integerp (o, 0))
+      && TREE_STRING_LENGTH (s) > 0)
     {
-      unsigned HOST_WIDE_INT len = tree_low_cst (l, 1);
-      if (len == (unsigned int) len
-	  && (int) len >= 0)
-	return ~(int) len;
+      HOST_WIDE_INT offset = o ? tree_low_cst (o, 0) : 0;
+      const char *p = TREE_STRING_POINTER (s);
+      int max = TREE_STRING_LENGTH (s) - 1;
+
+      if (p[max] == '\0' && offset >= 0 && offset <= max)
+	return ~(int) strlen (p + offset);
     }
   return 0;
 }
@@ -397,7 +401,7 @@ get_string_length (strinfo si)
       callee = gimple_call_fndecl (stmt);
       gcc_assert (callee && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL);
       lhs = gimple_call_lhs (stmt);
-      gcc_assert (builtin_decl_implicit_p (BUILT_IN_STRCPY));
+      gcc_assert (builtin_decl_implicit_p (BUILT_IN_STPCPY));
       /* unshare_strinfo is intentionally not called here.  The (delayed)
 	 transformation of strcpy or strcat into stpcpy is done at the place
 	 of the former strcpy/strcat call and so can affect all the strinfos
@@ -588,13 +592,13 @@ zero_length_string (tree ptr, strinfo chainsi)
 		  || si->prev != chainsi->idx)
 		break;
 	    }
-	  gcc_assert (chainsi->length);
+	  gcc_assert (chainsi->length || chainsi->stmt);
 	  if (chainsi->endptr == NULL_TREE)
 	    {
 	      chainsi = unshare_strinfo (chainsi);
 	      chainsi->endptr = ptr;
 	    }
-	  if (integer_zerop (chainsi->length))
+	  if (chainsi->length && integer_zerop (chainsi->length))
 	    {
 	      if (chainsi->next)
 		{
@@ -626,6 +630,8 @@ zero_length_string (tree ptr, strinfo chainsi)
       if (chainsi->first == 0)
 	chainsi->first = chainsi->idx;
       chainsi->next = idx;
+      if (chainsi->endptr == NULL_TREE)
+	chainsi->endptr = ptr;
       si->prev = chainsi->idx;
       si->first = chainsi->first;
       si->writable = chainsi->writable;
@@ -654,11 +660,19 @@ adjust_related_strinfos (location_t loc, strinfo origsi, tree adj)
 	  tree tem;
 
 	  si = unshare_strinfo (si);
-	  gcc_assert (si->length);
-	  tem = fold_convert_loc (loc, TREE_TYPE (si->length), adj);
-	  si->length = fold_build2_loc (loc, PLUS_EXPR,
-					TREE_TYPE (si->length), si->length,
-					tem);
+	  if (si->length)
+	    {
+	      tem = fold_convert_loc (loc, TREE_TYPE (si->length), adj);
+	      si->length = fold_build2_loc (loc, PLUS_EXPR,
+					    TREE_TYPE (si->length), si->length,
+					    tem);
+	    }
+	  else if (si->stmt != NULL)
+	    /* Delayed length computation is unaffected.  */
+	    ;
+	  else
+	    gcc_unreachable ();
+
 	  si->endptr = NULL_TREE;
 	  si->dont_invalidate = true;
 	}
@@ -1117,10 +1131,30 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 
   if (dsi->length == NULL_TREE)
     {
+      strinfo chainsi;
+
       /* If string length of src is unknown, use delayed length
 	 computation.  If string lenth of dst will be needed, it
 	 can be computed by transforming this strcpy call into
 	 stpcpy and subtracting dst from the return value.  */
+
+      /* Look for earlier strings whose length could be determined if
+	 this strcpy is turned into an stpcpy.  */
+
+      if (dsi->prev != 0 && (chainsi = verify_related_strinfos (dsi)) != NULL)
+	{
+	  for (; chainsi && chainsi != dsi; chainsi = get_strinfo (chainsi->next))
+	    {
+	      /* When setting a stmt for delayed length computation
+		 prevent all strinfos through dsi from being
+		 invalidated.  */
+	      chainsi = unshare_strinfo (chainsi);
+	      chainsi->stmt = stmt;
+	      chainsi->length = NULL_TREE;
+	      chainsi->endptr = NULL_TREE;
+	      chainsi->dont_invalidate = true;
+	    }
+	}
       dsi->stmt = stmt;
       return;
     }

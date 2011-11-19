@@ -9,7 +9,11 @@
 #include <stddef.h>
 #include <new>
 struct Foo {
+#if __cplusplus <= 199711L
   friend void* operator new(size_t) throw (std::bad_alloc);
+#else
+  friend void* operator new(size_t);
+#endif
   friend void operator delete(void*) throw ();
   Foo();
   ~Foo();

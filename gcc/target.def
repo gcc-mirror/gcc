@@ -985,12 +985,13 @@ DEFHOOK
  bool, (const_tree type, bool is_packed),
  default_builtin_vector_alignment_reachable)
 
-/* Return true if a vector created for vec_perm_const is valid.  */
+/* Return true if a vector created for vec_perm_const is valid.
+   A NULL indicates that all constants are valid permutations.  */
 DEFHOOK
 (vec_perm_const_ok,
  "",
- bool, (tree vec_type, tree mask),
- hook_bool_tree_tree_true)
+ bool, (enum machine_mode, const unsigned char *sel),
+ NULL)
 
 /* Return true if the target supports misaligned store/load of a
    specific factor denoted in the third parameter.  The last parameter
@@ -1001,6 +1002,24 @@ DEFHOOK
  bool,
  (enum machine_mode mode, const_tree type, int misalignment, bool is_packed),
  default_builtin_support_vector_misalignment)
+
+/* Return the builtin decl needed to load a vector of TYPE.  */
+DEFHOOK
+(builtin_tm_load,
+ "This hook should return the built-in decl needed to load a vector of the "
+ "given type within a transaction.",
+ tree,
+ (tree),
+ default_builtin_tm_load_store)
+
+/* Return the builtin decl needed to store a vector of TYPE.  */
+DEFHOOK
+(builtin_tm_store,
+ "This hook should return the built-in decl needed to store a vector of the "
+ "given type within a transaction.",
+ tree,
+ (tree),
+ default_builtin_tm_load_store)
 
 /* Returns the preferred mode for SIMD operations for the specified
    scalar mode.  */
@@ -1019,6 +1038,14 @@ DEFHOOK
  unsigned int,
  (void),
  default_autovectorize_vector_sizes)
+
+/* Target builtin that implements vector gather operation.  */
+DEFHOOK
+(builtin_gather,
+ "",
+ tree,
+ (const_tree mem_vectype, const_tree index_type, int scale),
+ NULL)
 
 HOOK_VECTOR_END (vectorize)
 

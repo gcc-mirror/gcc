@@ -559,6 +559,37 @@ powf (float x, float y)
 #endif
 
 
+#ifndef HAVE_ROUND
+#define HAVE_ROUND 1
+/* Round to nearest integral value.  If the argument is halfway between two
+   integral values then round away from zero.  */
+double round (double x);
+
+double
+round (double x)
+{
+   double t;
+   if (!isfinite (x))
+     return (x);
+
+   if (x >= 0.0) 
+    {
+      t = floor (x);
+      if (t - x <= -0.5)
+	t += 1.0;
+      return (t);
+    } 
+   else 
+    {
+      t = floor (-x);
+      if (t + x <= -0.5)
+	t += 1.0;
+      return (-t);
+    }
+}
+#endif
+
+
 /* Algorithm by Steven G. Kargl.  */
 
 #if !defined(HAVE_ROUNDL)
@@ -612,36 +643,6 @@ roundl (long double x)
 }
 
 #endif
-#endif
-
-#ifndef HAVE_ROUND
-#define HAVE_ROUND 1
-/* Round to nearest integral value.  If the argument is halfway between two
-   integral values then round away from zero.  */
-double round (double x);
-
-double
-round (double x)
-{
-   double t;
-   if (!isfinite (x))
-     return (x);
-
-   if (x >= 0.0) 
-    {
-      t = floor (x);
-      if (t - x <= -0.5)
-	t += 1.0;
-      return (t);
-    } 
-   else 
-    {
-      t = floor (-x);
-      if (t + x <= -0.5)
-	t += 1.0;
-      return (-t);
-    }
-}
 #endif
 
 #ifndef HAVE_ROUNDF

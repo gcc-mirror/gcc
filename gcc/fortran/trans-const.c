@@ -358,6 +358,8 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
 void
 gfc_conv_constant (gfc_se * se, gfc_expr * expr)
 {
+  gfc_ss *ss;
+
   /* We may be receiving an expression for C_NULL_PTR or C_NULL_FUNPTR.  If
      so, the expr_type will not yet be an EXPR_CONSTANT.  We need to make
      it so here.  */
@@ -380,14 +382,18 @@ gfc_conv_constant (gfc_se * se, gfc_expr * expr)
       return;
     }
 
-  if (se->ss != NULL)
+  ss = se->ss;
+  if (ss != NULL)
     {
-      gcc_assert (se->ss != gfc_ss_terminator);
-      gcc_assert (se->ss->type == GFC_SS_SCALAR);
-      gcc_assert (se->ss->expr == expr);
+      gfc_ss_info *ss_info;
 
-      se->expr = se->ss->data.scalar.expr;
-      se->string_length = se->ss->string_length;
+      ss_info = ss->info;
+      gcc_assert (ss != gfc_ss_terminator);
+      gcc_assert (ss_info->type == GFC_SS_SCALAR);
+      gcc_assert (ss_info->expr == expr);
+
+      se->expr = ss_info->data.scalar.value;
+      se->string_length = ss_info->string_length;
       gfc_advance_se_ss_chain (se);
       return;
     }

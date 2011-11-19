@@ -17,5 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* vms-c.c  */
+extern void vms_c_register_pragma (void);
+
 /* vms.c  */
 void vms_patch_builtins (void);

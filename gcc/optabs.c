@@ -1606,6 +1606,30 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	}
     }
 
+  /* Certain vector operations can be implemented with vector permutation.  */
+  if (VECTOR_MODE_P (mode))
+    {
+      enum tree_code tcode = ERROR_MARK;
+      rtx sel;
+
+      if (binoptab == vec_interleave_high_optab)
+	tcode = VEC_INTERLEAVE_HIGH_EXPR;
+      else if (binoptab == vec_interleave_low_optab)
+	tcode = VEC_INTERLEAVE_LOW_EXPR;
+      else if (binoptab == vec_extract_even_optab)
+	tcode = VEC_EXTRACT_EVEN_EXPR;
+      else if (binoptab == vec_extract_odd_optab)
+	tcode = VEC_EXTRACT_ODD_EXPR;
+
+      if (tcode != ERROR_MARK
+	  && can_vec_perm_for_code_p (tcode, mode, &sel))
+	{
+	  temp = expand_vec_perm (mode, op0, op1, sel, target);
+	  gcc_assert (temp != NULL);
+	  return temp;
+	}
+    }
+
   /* Look for a wider mode of the same class for which we think we
      can open-code the operation.  Check for a widening multiply at the
      wider mode as well.  */
@@ -4800,6 +4824,60 @@ can_float_p (enum machine_mode fltmode, enum machine_mode fixmode,
   tab = unsignedp ? ufloat_optab : sfloat_optab;
   return convert_optab_handler (tab, fltmode, fixmode);
 }
+
+/* Function supportable_convert_operation
+
+   Check whether an operation represented by the code CODE is a
+   convert operation that is supported by the target platform in
+   vector form (i.e., when operating on arguments of type VECTYPE_IN
+   producing a result of type VECTYPE_OUT).
+   
+   Convert operations we currently support directly are FIX_TRUNC and FLOAT.
+   This function checks if these operations are supported
+   by the target platform either directly (via vector tree-codes), or via
+   target builtins.
+   
+   Output:
+   - CODE1 is code of vector operation to be used when
+   vectorizing the operation, if available.
+   - DECL is decl of target builtin functions to be used
+   when vectorizing the operation, if available.  In this case,
+   CODE1 is CALL_EXPR.  */
+
+bool
+supportable_convert_operation (enum tree_code code,
+                                    tree vectype_out, tree vectype_in,
+                                    tree *decl, enum tree_code *code1)
+{
+  enum machine_mode m1,m2;
+  int truncp;
+
+  m1 = TYPE_MODE (vectype_out);
+  m2 = TYPE_MODE (vectype_in);
+
+  /* First check if we can done conversion directly.  */
+  if ((code == FIX_TRUNC_EXPR 
+       && can_fix_p (m1,m2,TYPE_UNSIGNED (vectype_out), &truncp) 
+          != CODE_FOR_nothing)
+      || (code == FLOAT_EXPR
+          && can_float_p (m1,m2,TYPE_UNSIGNED (vectype_in))
+	     != CODE_FOR_nothing))
+    {
+      *code1 = code;
+      return true;
+    }
+
+  /* Now check for builtin.  */
+  if (targetm.vectorize.builtin_conversion
+      && targetm.vectorize.builtin_conversion (code, vectype_out, vectype_in))
+    {
+      *code1 = CALL_EXPR;
+      *decl = targetm.vectorize.builtin_conversion (code, vectype_out, vectype_in);
+      return true;
+    }
+  return false;
+}
+
 
 /* Generate code to convert FROM to floating point
    and store in TO.  FROM must be fixed point and not VOIDmode.
@@ -6602,6 +6680,57 @@ init_optabs (void)
   targetm.init_libfuncs ();
 }
 
+/* A helper function for init_sync_libfuncs.  Using the basename BASE,
+   install libfuncs into TAB for BASE_N for 1 <= N <= MAX.  */
+
+static void
+init_sync_libfuncs_1 (optab tab, const char *base, int max)
+{
+  enum machine_mode mode;
+  char buf[64];
+  size_t len = strlen (base);
+  int i;
+
+  gcc_assert (max <= 8);
+  gcc_assert (len + 3 < sizeof (buf));
+
+  memcpy (buf, base, len);
+  buf[len] = '_';
+  buf[len + 1] = '0';
+  buf[len + 2] = '\0';
+
+  mode = QImode;
+  for (i = 1; i < max; i *= 2)
+    {
+      buf[len + 1] = '0' + i;
+      set_optab_libfunc (tab, mode, buf);
+      mode = GET_MODE_2XWIDER_MODE (mode);
+    }
+}
+
+void
+init_sync_libfuncs (int max)
+{
+  init_sync_libfuncs_1 (sync_compare_and_swap_optab,
+			"__sync_val_compare_and_swap", max);
+  init_sync_libfuncs_1 (sync_lock_test_and_set_optab,
+			"__sync_lock_test_and_set", max);
+
+  init_sync_libfuncs_1 (sync_old_add_optab, "__sync_fetch_and_add", max);
+  init_sync_libfuncs_1 (sync_old_sub_optab, "__sync_fetch_and_sub", max);
+  init_sync_libfuncs_1 (sync_old_ior_optab, "__sync_fetch_and_ior", max);
+  init_sync_libfuncs_1 (sync_old_and_optab, "__sync_fetch_and_and", max);
+  init_sync_libfuncs_1 (sync_old_xor_optab, "__sync_fetch_and_xor", max);
+  init_sync_libfuncs_1 (sync_old_nand_optab, "__sync_fetch_and_nand", max);
+
+  init_sync_libfuncs_1 (sync_new_add_optab, "__sync_add_and_fetch", max);
+  init_sync_libfuncs_1 (sync_new_sub_optab, "__sync_sub_and_fetch", max);
+  init_sync_libfuncs_1 (sync_new_ior_optab, "__sync_ior_and_fetch", max);
+  init_sync_libfuncs_1 (sync_new_and_optab, "__sync_and_and_fetch", max);
+  init_sync_libfuncs_1 (sync_new_xor_optab, "__sync_xor_and_fetch", max);
+  init_sync_libfuncs_1 (sync_new_nand_optab, "__sync_nand_and_fetch", max);
+}
+
 /* Print information about the current contents of the optabs on
    STDERR.  */
 
@@ -6795,20 +6924,22 @@ vector_compare_rtx (tree cond, bool unsignedp, enum insn_code icode)
    of the CPU.  SEL may be NULL, which stands for an unknown constant.  */
 
 bool
-can_vec_perm_expr_p (tree type, tree sel)
+can_vec_perm_p (enum machine_mode mode, bool variable,
+		const unsigned char *sel)
 {
-  enum machine_mode mode, qimode;
-  mode = TYPE_MODE (type);
+  enum machine_mode qimode;
 
   /* If the target doesn't implement a vector mode for the vector type,
      then no operations are supported.  */
   if (!VECTOR_MODE_P (mode))
     return false;
 
-  if (sel == NULL || TREE_CODE (sel) == VECTOR_CST)
+  if (!variable)
     {
       if (direct_optab_handler (vec_perm_const_optab, mode) != CODE_FOR_nothing
-	  && (sel == NULL || targetm.vectorize.vec_perm_const_ok (type, sel)))
+	  && (sel == NULL
+	      || targetm.vectorize.vec_perm_const_ok == NULL
+	      || targetm.vectorize.vec_perm_const_ok (mode, sel)))
 	return true;
     }
 
@@ -6816,6 +6947,8 @@ can_vec_perm_expr_p (tree type, tree sel)
     return true;
 
   /* We allow fallback to a QI vector mode, and adjust the mask.  */
+  if (GET_MODE_INNER (mode) == QImode)
+    return false;
   qimode = mode_for_vector (QImode, GET_MODE_SIZE (mode));
   if (!VECTOR_MODE_P (qimode))
     return false;
@@ -6826,9 +6959,9 @@ can_vec_perm_expr_p (tree type, tree sel)
   if (direct_optab_handler (vec_perm_optab, qimode) == CODE_FOR_nothing)
     return false;
 
-  /* In order to support the lowering of non-constant permutations,
+  /* In order to support the lowering of variable permutations,
      we need to support shifts and adds.  */
-  if (sel != NULL && TREE_CODE (sel) != VECTOR_CST)
+  if (variable)
     {
       if (GET_MODE_UNIT_SIZE (mode) > 2
 	  && optab_handler (ashl_optab, mode) == CODE_FOR_nothing
@@ -6841,11 +6974,103 @@ can_vec_perm_expr_p (tree type, tree sel)
   return true;
 }
 
-/* A subroutine of expand_vec_perm_expr for expanding one vec_perm insn.  */
+/* Return true if we can implement VEC_INTERLEAVE_{HIGH,LOW}_EXPR or
+   VEC_EXTRACT_{EVEN,ODD}_EXPR with VEC_PERM_EXPR for this target.
+   If PSEL is non-null, return the selector for the permutation.  */
+
+bool
+can_vec_perm_for_code_p (enum tree_code code, enum machine_mode mode,
+			 rtx *psel)
+{
+  bool need_sel_test = false;
+  enum insn_code icode;
+
+  /* If the target doesn't implement a vector mode for the vector type,
+     then no operations are supported.  */
+  if (!VECTOR_MODE_P (mode))
+    return false;
+
+  /* Do as many tests as possible without reqiring the selector.  */
+  icode = direct_optab_handler (vec_perm_optab, mode);
+  if (icode == CODE_FOR_nothing && GET_MODE_INNER (mode) != QImode)
+    {
+      enum machine_mode qimode
+	= mode_for_vector (QImode, GET_MODE_SIZE (mode));
+      if (VECTOR_MODE_P (qimode))
+	icode = direct_optab_handler (vec_perm_optab, qimode);
+    }
+  if (icode == CODE_FOR_nothing)
+    {
+      icode = direct_optab_handler (vec_perm_const_optab, mode);
+      if (icode != CODE_FOR_nothing
+	  && targetm.vectorize.vec_perm_const_ok != NULL)
+	need_sel_test = true;
+    }
+  if (icode == CODE_FOR_nothing)
+    return false;
+
+  /* If the selector is required, or if we need to test it, build it.  */
+  if (psel || need_sel_test)
+    {
+      int i, nelt = GET_MODE_NUNITS (mode), alt = 0;
+      unsigned char *data = XALLOCAVEC (unsigned char, nelt);
+
+      switch (code)
+	{
+	case VEC_EXTRACT_ODD_EXPR:
+	  alt = 1;
+	  /* FALLTHRU */
+	case VEC_EXTRACT_EVEN_EXPR:
+	  for (i = 0; i < nelt; ++i)
+	    data[i] = i * 2 + alt;
+	  break;
+
+	case VEC_INTERLEAVE_HIGH_EXPR:
+	  alt = nelt / 2;
+	  /* FALLTHRU */
+	case VEC_INTERLEAVE_LOW_EXPR:
+	  for (i = 0; i < nelt / 2; ++i)
+	    {
+	      data[i * 2] = i + alt;
+	      data[i * 2 + 1] = i + nelt + alt;
+	    }
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      if (need_sel_test
+	  && !targetm.vectorize.vec_perm_const_ok (mode, data))
+	return false;
+
+      if (psel)
+	{
+	  rtvec vec = rtvec_alloc (nelt);
+	  enum machine_mode imode = mode;
+
+	  for (i = 0; i < nelt; ++i)
+	    RTVEC_ELT (vec, i) = GEN_INT (data[i]);
+
+	  if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
+	    {
+	      imode = int_mode_for_mode (GET_MODE_INNER (mode));
+	      imode = mode_for_vector (imode, nelt);
+	      gcc_assert (GET_MODE_CLASS (imode) == MODE_VECTOR_INT);
+	    }
+
+	  *psel = gen_rtx_CONST_VECTOR (imode, vec);
+	}
+    }
+
+  return true;
+}
+
+/* A subroutine of expand_vec_perm for expanding one vec_perm insn.  */
 
 static rtx
-expand_vec_perm_expr_1 (enum insn_code icode, rtx target,
-			rtx v0, rtx v1, rtx sel)
+expand_vec_perm_1 (enum insn_code icode, rtx target,
+		   rtx v0, rtx v1, rtx sel)
 {
   enum machine_mode tmode = GET_MODE (target);
   enum machine_mode smode = GET_MODE (sel);
@@ -6877,121 +7102,138 @@ expand_vec_perm_expr_1 (enum insn_code icode, rtx target,
   return NULL_RTX;
 }
 
-/* Generate instructions for VEC_PERM_EXPR given its type and three
-   operands.  */
+/* Generate instructions for vec_perm optab given its mode
+   and three operands.  */
+
 rtx
-expand_vec_perm_expr (tree type, tree v0, tree v1, tree sel, rtx target)
+expand_vec_perm (enum machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
 {
   enum insn_code icode;
-  enum machine_mode mode = TYPE_MODE (type);
   enum machine_mode qimode;
-  rtx v0_rtx, v1_rtx, sel_rtx, *vec, vt, tmp;
   unsigned int i, w, e, u;
+  rtx tmp, sel_qi = NULL;
+  rtvec vec;
 
-  if (!target)
+  if (!target || GET_MODE (target) != mode)
     target = gen_reg_rtx (mode);
-  v0_rtx = expand_normal (v0);
-  if (operand_equal_p (v0, v1, 0))
-    v1_rtx = v0_rtx;
-  else
-    v1_rtx = expand_normal (v1);
-  sel_rtx = expand_normal (sel);
-
-  /* If the input is a constant, expand it specially.  */
-  if (CONSTANT_P (sel_rtx))
-    {
-      icode = direct_optab_handler (vec_perm_const_optab, mode);
-      if (icode != CODE_FOR_nothing
-	  && targetm.vectorize.vec_perm_const_ok (TREE_TYPE (v0), sel)
-	  && (tmp = expand_vec_perm_expr_1 (icode, target, v0_rtx,
-					    v1_rtx, sel_rtx)) != NULL)
-	return tmp;
-    }
-
-  /* Otherwise fall back to a fully variable permuation.  */
-  icode = direct_optab_handler (vec_perm_optab, mode);
-  if (icode != CODE_FOR_nothing
-      && (tmp = expand_vec_perm_expr_1 (icode, target, v0_rtx,
-					v1_rtx, sel_rtx)) != NULL)
-    return tmp;
-
-  /* As a special case to aid several targets, lower the element-based
-     permutation to a byte-based permutation and try again.  */
-  qimode = mode_for_vector (QImode, GET_MODE_SIZE (mode));
-  if (!VECTOR_MODE_P (qimode))
-    return NULL_RTX;
-
-  /* ??? For completeness, we ought to check the QImode version of
-     vec_perm_const_optab.  But all users of this implicit lowering
-     feature implement the variable vec_perm_optab.  */
-  icode = direct_optab_handler (vec_perm_optab, qimode);
-  if (icode == CODE_FOR_nothing)
-    return NULL_RTX;
 
   w = GET_MODE_SIZE (mode);
   e = GET_MODE_NUNITS (mode);
   u = GET_MODE_UNIT_SIZE (mode);
-  vec = XALLOCAVEC (rtx, w);
 
-  if (CONSTANT_P (sel_rtx))
+  /* Set QIMODE to a different vector mode with byte elements.
+     If no such mode, or if MODE already has byte elements, use VOIDmode.  */
+  qimode = VOIDmode;
+  if (GET_MODE_INNER (mode) != QImode)
     {
-      unsigned int j;
-      for (i = 0; i < e; ++i)
-	{
-	  unsigned int this_e = INTVAL (XVECEXP (sel_rtx, 0, i));
-	  this_e &= 2 * e - 1;
-          this_e *= u;
-
-	  for (j = 0; j < u; ++j)
-	    vec[i * u + j] = GEN_INT (this_e + j);
-	}
-      sel_rtx = gen_rtx_CONST_VECTOR (qimode, gen_rtvec_v (w, vec));
+      qimode = mode_for_vector (QImode, w);
+      if (!VECTOR_MODE_P (qimode))
+	qimode = VOIDmode;
     }
-  else
+
+  /* If the input is a constant, expand it specially.  */
+  if (CONSTANT_P (sel))
+    {
+      icode = direct_optab_handler (vec_perm_const_optab, mode);
+      if (icode != CODE_FOR_nothing)
+	{
+	  tmp = expand_vec_perm_1 (icode, target, v0, v1, sel);
+	  if (tmp)
+	    return tmp;
+	}
+
+      /* Fall back to a constant byte-based permutation.  */
+      if (qimode != VOIDmode)
+	{
+	  vec = rtvec_alloc (w);
+	  for (i = 0; i < e; ++i)
+	    {
+	      unsigned int j, this_e;
+
+	      this_e = INTVAL (XVECEXP (sel, 0, i));
+	      this_e &= 2 * e - 1;
+	      this_e *= u;
+
+	      for (j = 0; j < u; ++j)
+		RTVEC_ELT (vec, i * u + j) = GEN_INT (this_e + j);
+	    }
+	  sel_qi = gen_rtx_CONST_VECTOR (qimode, vec);
+
+	  icode = direct_optab_handler (vec_perm_const_optab, qimode);
+	  if (icode != CODE_FOR_nothing)
+	    {
+	      tmp = expand_vec_perm_1 (icode, gen_lowpart (qimode, target),
+				       gen_lowpart (qimode, v0),
+				       gen_lowpart (qimode, v1), sel_qi);
+	      if (tmp)
+		return gen_lowpart (mode, tmp);
+	    }
+	}
+    }
+
+  /* Otherwise expand as a fully variable permuation.  */
+  icode = direct_optab_handler (vec_perm_optab, mode);
+  if (icode != CODE_FOR_nothing)
+    {
+      tmp = expand_vec_perm_1 (icode, target, v0, v1, sel);
+      if (tmp)
+	return tmp;
+    }
+
+  /* As a special case to aid several targets, lower the element-based
+     permutation to a byte-based permutation and try again.  */
+  if (qimode == VOIDmode)
+    return NULL_RTX;
+  icode = direct_optab_handler (vec_perm_optab, qimode);
+  if (icode == CODE_FOR_nothing)
+    return NULL_RTX;
+
+  if (sel_qi == NULL)
     {
       /* Multiply each element by its byte size.  */
+      enum machine_mode selmode = GET_MODE (sel);
       if (u == 2)
-	sel_rtx = expand_simple_binop (mode, PLUS, sel_rtx, sel_rtx,
-				       sel_rtx, 0, OPTAB_DIRECT);
+	sel = expand_simple_binop (selmode, PLUS, sel, sel,
+				   sel, 0, OPTAB_DIRECT);
       else
-	sel_rtx = expand_simple_binop (mode, ASHIFT, sel_rtx,
-				       GEN_INT (exact_log2 (u)),
-				       sel_rtx, 0, OPTAB_DIRECT);
-      gcc_assert (sel_rtx);
+	sel = expand_simple_binop (selmode, ASHIFT, sel,
+				   GEN_INT (exact_log2 (u)),
+				   sel, 0, OPTAB_DIRECT);
+      gcc_assert (sel != NULL);
 
       /* Broadcast the low byte each element into each of its bytes.  */
+      vec = rtvec_alloc (w);
       for (i = 0; i < w; ++i)
 	{
 	  int this_e = i / u * u;
 	  if (BYTES_BIG_ENDIAN)
 	    this_e += u - 1;
-	  vec[i] = GEN_INT (this_e);
+	  RTVEC_ELT (vec, i) = GEN_INT (this_e);
 	}
-      vt = gen_rtx_CONST_VECTOR (qimode, gen_rtvec_v (w, vec));
-      sel_rtx = gen_lowpart (qimode, sel_rtx);
-      sel_rtx = expand_vec_perm_expr_1 (icode, gen_reg_rtx (qimode),
-					sel_rtx, sel_rtx, vt);
-      gcc_assert (sel_rtx != NULL);
+      tmp = gen_rtx_CONST_VECTOR (qimode, vec);
+      sel = gen_lowpart (qimode, sel);
+      sel = expand_vec_perm (qimode, sel, sel, tmp, NULL);
+      gcc_assert (sel != NULL);
 
       /* Add the byte offset to each byte element.  */
       /* Note that the definition of the indicies here is memory ordering,
 	 so there should be no difference between big and little endian.  */
+      vec = rtvec_alloc (w);
       for (i = 0; i < w; ++i)
-	vec[i] = GEN_INT (i % u);
-      vt = gen_rtx_CONST_VECTOR (qimode, gen_rtvec_v (w, vec));
-      sel_rtx = expand_simple_binop (qimode, PLUS, sel_rtx, vt,
-				     NULL_RTX, 0, OPTAB_DIRECT);
-      gcc_assert (sel_rtx);
+	RTVEC_ELT (vec, i) = GEN_INT (i % u);
+      tmp = gen_rtx_CONST_VECTOR (qimode, vec);
+      sel_qi = expand_simple_binop (qimode, PLUS, sel, tmp,
+				    sel, 0, OPTAB_DIRECT);
+      gcc_assert (sel_qi != NULL);
     }
 
-  tmp = expand_vec_perm_expr_1 (icode, gen_lowpart (qimode, target),
-			        gen_lowpart (qimode, v0_rtx),
-			        gen_lowpart (qimode, v1_rtx), sel_rtx);
-  gcc_assert (tmp != NULL);
-
-  return gen_lowpart (mode, tmp);
+  tmp = expand_vec_perm_1 (icode, gen_lowpart (qimode, target),
+			   gen_lowpart (qimode, v0),
+			   gen_lowpart (qimode, v1), sel_qi);
+  if (tmp)
+    tmp = gen_lowpart (mode, tmp);
+  return tmp;
 }
-
 
 /* Return insn code for a conditional operator with a comparison in
    mode CMODE, unsigned if UNS is true, resulting in a value of mode VMODE.  */
@@ -7065,44 +7307,48 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
 }
 
 
-/* This is an internal subroutine of the other compare_and_swap expanders.
-   MEM, OLD_VAL and NEW_VAL are as you'd expect for a compare-and-swap
-   operation.  TARGET is an optional place to store the value result of
-   the operation.  ICODE is the particular instruction to expand.  Return
-   the result of the operation.  */
+/* Return true if there is a compare_and_swap pattern.  */
 
-static rtx
-expand_val_compare_and_swap_1 (rtx mem, rtx old_val, rtx new_val,
-			       rtx target, enum insn_code icode)
+bool
+can_compare_and_swap_p (enum machine_mode mode, bool allow_libcall)
 {
-  struct expand_operand ops[4];
-  enum machine_mode mode = GET_MODE (mem);
+  enum insn_code icode;
 
-  create_output_operand (&ops[0], target, mode);
-  create_fixed_operand (&ops[1], mem);
-  /* OLD_VAL and NEW_VAL may have been promoted to a wider mode.
-     Shrink them if so.  */
-  create_convert_operand_to (&ops[2], old_val, mode, true);
-  create_convert_operand_to (&ops[3], new_val, mode, true);
-  if (maybe_expand_insn (icode, 4, ops))
-    return ops[0].value;
-  return NULL_RTX;
+  /* Check for __atomic_compare_and_swap.  */
+  icode = direct_optab_handler (atomic_compare_and_swap_optab, mode);
+  if (icode != CODE_FOR_nothing)
+    return true;
+
+  /* Check for __sync_compare_and_swap.  */
+  icode = optab_handler (sync_compare_and_swap_optab, mode);
+  if (icode != CODE_FOR_nothing)
+    return true;
+  if (allow_libcall && optab_libfunc (sync_compare_and_swap_optab, mode))
+    return true;
+
+  /* No inline compare and swap.  */
+  return false;
 }
 
-/* Expand a compare-and-swap operation and return its value.  */
+/* Return true if an atomic exchange can be performed.  */
 
-rtx
-expand_val_compare_and_swap (rtx mem, rtx old_val, rtx new_val, rtx target)
+bool
+can_atomic_exchange_p (enum machine_mode mode, bool allow_libcall)
 {
-  enum machine_mode mode = GET_MODE (mem);
-  enum insn_code icode
-    = direct_optab_handler (sync_compare_and_swap_optab, mode);
+  enum insn_code icode;
 
-  if (icode == CODE_FOR_nothing)
-    return NULL_RTX;
+  /* Check for __atomic_exchange.  */
+  icode = direct_optab_handler (atomic_exchange_optab, mode);
+  if (icode != CODE_FOR_nothing)
+    return true;
 
-  return expand_val_compare_and_swap_1 (mem, old_val, new_val, target, icode);
+  /* Don't check __sync_test_and_set, as on some platforms that
+     has reduced functionality.  Targets that really do support
+     a proper exchange should simply be updated to the __atomics.  */
+
+  return can_compare_and_swap_p (mode, allow_libcall);
 }
+
 
 /* Helper function to find the MODE_CC set in a sync_compare_and_swap
    pattern.  */
@@ -7119,58 +7365,6 @@ find_cc_set (rtx x, const_rtx pat, void *data)
     }
 }
 
-/* Expand a compare-and-swap operation and store true into the result if
-   the operation was successful and false otherwise.  Return the result.
-   Unlike other routines, TARGET is not optional.  */
-
-rtx
-expand_bool_compare_and_swap (rtx mem, rtx old_val, rtx new_val, rtx target)
-{
-  enum machine_mode mode = GET_MODE (mem);
-  enum insn_code icode;
-  rtx subtarget, seq, cc_reg;
-
-  /* If the target supports a compare-and-swap pattern that simultaneously
-     sets some flag for success, then use it.  Otherwise use the regular
-     compare-and-swap and follow that immediately with a compare insn.  */
-  icode = direct_optab_handler (sync_compare_and_swap_optab, mode);
-  if (icode == CODE_FOR_nothing)
-    return NULL_RTX;
-
-  do_pending_stack_adjust ();
-  do
-    {
-      start_sequence ();
-      subtarget = expand_val_compare_and_swap_1 (mem, old_val, new_val,
-					         NULL_RTX, icode);
-      cc_reg = NULL_RTX;
-      if (subtarget == NULL_RTX)
-	{
-	  end_sequence ();
-	  return NULL_RTX;
-	}
-
-      if (have_insn_for (COMPARE, CCmode))
-	note_stores (PATTERN (get_last_insn ()), find_cc_set, &cc_reg);
-      seq = get_insns ();
-      end_sequence ();
-
-      /* We might be comparing against an old value.  Try again. :-(  */
-      if (!cc_reg && MEM_P (old_val))
-	{
-	  seq = NULL_RTX;
-	  old_val = force_reg (mode, old_val);
-        }
-    }
-  while (!seq);
-
-  emit_insn (seq);
-  if (cc_reg)
-    return emit_store_flag_force (target, EQ, cc_reg, const0_rtx, VOIDmode, 0, 1);
-  else
-    return emit_store_flag_force (target, EQ, subtarget, old_val, VOIDmode, 1, 1);
-}
-
 /* This is a helper function for the other atomic operations.  This function
    emits a loop that contains SEQ that iterates until a compare-and-swap
    operation at the end succeeds.  MEM is the memory to be modified.  SEQ is
@@ -7184,8 +7378,7 @@ static bool
 expand_compare_and_swap_loop (rtx mem, rtx old_reg, rtx new_reg, rtx seq)
 {
   enum machine_mode mode = GET_MODE (mem);
-  enum insn_code icode;
-  rtx label, cmp_reg, subtarget, cc_reg;
+  rtx label, cmp_reg, success, oldval;
 
   /* The loop we want to generate looks like
 
@@ -7193,8 +7386,8 @@ expand_compare_and_swap_loop (rtx mem, rtx old_reg, rtx new_reg, rtx seq)
       label:
         old_reg = cmp_reg;
 	seq;
-	cmp_reg = compare-and-swap(mem, old_reg, new_reg)
-	if (cmp_reg != old_reg)
+	(success, cmp_reg) = compare-and-swap(mem, old_reg, new_reg)
+	if (success)
 	  goto label;
 
      Note that we only do the plain load from memory once.  Subsequent
@@ -7209,324 +7402,113 @@ expand_compare_and_swap_loop (rtx mem, rtx old_reg, rtx new_reg, rtx seq)
   if (seq)
     emit_insn (seq);
 
-  /* If the target supports a compare-and-swap pattern that simultaneously
-     sets some flag for success, then use it.  Otherwise use the regular
-     compare-and-swap and follow that immediately with a compare insn.  */
-  icode = direct_optab_handler (sync_compare_and_swap_optab, mode);
-  if (icode == CODE_FOR_nothing)
+  success = NULL_RTX;
+  oldval = cmp_reg;
+  if (!expand_atomic_compare_and_swap (&success, &oldval, mem, old_reg,
+				       new_reg, false, MEMMODEL_SEQ_CST,
+				       MEMMODEL_RELAXED))
     return false;
 
-  subtarget = expand_val_compare_and_swap_1 (mem, old_reg, new_reg,
-					     cmp_reg, icode);
-  if (subtarget == NULL_RTX)
-    return false;
-
-  cc_reg = NULL_RTX;
-  if (have_insn_for (COMPARE, CCmode))
-    note_stores (PATTERN (get_last_insn ()), find_cc_set, &cc_reg);
-  if (cc_reg)
-    {
-      cmp_reg = cc_reg;
-      old_reg = const0_rtx;
-    }
-  else
-    {
-      if (subtarget != cmp_reg)
-	emit_move_insn (cmp_reg, subtarget);
-    }
+  if (oldval != cmp_reg)
+    emit_move_insn (cmp_reg, oldval);
 
   /* ??? Mark this jump predicted not taken?  */
-  emit_cmp_and_jump_insns (cmp_reg, old_reg, NE, const0_rtx, GET_MODE (cmp_reg), 1,
-			   label);
+  emit_cmp_and_jump_insns (success, const0_rtx, EQ, const0_rtx,
+			   GET_MODE (success), 1, label);
   return true;
 }
 
-/* This function generates the atomic operation MEM CODE= VAL.  In this
-   case, we do not care about any resulting value.  Returns NULL if we
-   cannot generate the operation.  */
+
+/* This function expands the atomic exchange operation:
+   atomically store VAL in MEM and return the previous value in MEM.
+
+   MEMMODEL is the memory model variant to use.
+   TARGET is an optional place to stick the return value.  
+   USE_TEST_AND_SET indicates whether __sync_lock_test_and_set should be used
+   as a fall back if the atomic_exchange pattern does not exist.  */
 
 rtx
-expand_sync_operation (rtx mem, rtx val, enum rtx_code code)
+expand_atomic_exchange (rtx target, rtx mem, rtx val, enum memmodel model,
+			bool use_test_and_set)			
 {
   enum machine_mode mode = GET_MODE (mem);
   enum insn_code icode;
-  rtx insn;
 
-  /* Look to see if the target supports the operation directly.  */
-  switch (code)
-    {
-    case PLUS:
-      icode = direct_optab_handler (sync_add_optab, mode);
-      break;
-    case IOR:
-      icode = direct_optab_handler (sync_ior_optab, mode);
-      break;
-    case XOR:
-      icode = direct_optab_handler (sync_xor_optab, mode);
-      break;
-    case AND:
-      icode = direct_optab_handler (sync_and_optab, mode);
-      break;
-    case NOT:
-      icode = direct_optab_handler (sync_nand_optab, mode);
-      break;
-
-    case MINUS:
-      icode = direct_optab_handler (sync_sub_optab, mode);
-      if (icode == CODE_FOR_nothing || CONST_INT_P (val))
-	{
-	  icode = direct_optab_handler (sync_add_optab, mode);
-	  if (icode != CODE_FOR_nothing)
-	    {
-	      val = expand_simple_unop (mode, NEG, val, NULL_RTX, 1);
-	      code = PLUS;
-	    }
-	}
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  /* Generate the direct operation, if present.  */
+  /* If the target supports the exchange directly, great.  */
+  icode = direct_optab_handler (atomic_exchange_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand ops[2];
-
-      create_fixed_operand (&ops[0], mem);
-      /* VAL may have been promoted to a wider mode.  Shrink it if so.  */
-      create_convert_operand_to (&ops[1], val, mode, true);
-      if (maybe_expand_insn (icode, 2, ops))
-	return const0_rtx;
-    }
-
-  /* Failing that, generate a compare-and-swap loop in which we perform the
-     operation with normal arithmetic instructions.  */
-  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
-      != CODE_FOR_nothing)
-    {
-      rtx t0 = gen_reg_rtx (mode), t1;
-
-      start_sequence ();
-
-      t1 = t0;
-      if (code == NOT)
-	{
-	  t1 = expand_simple_binop (mode, AND, t1, val, NULL_RTX,
-				    true, OPTAB_LIB_WIDEN);
-	  t1 = expand_simple_unop (mode, code, t1, NULL_RTX, true);
-	}
-      else
-	t1 = expand_simple_binop (mode, code, t1, val, NULL_RTX,
-				  true, OPTAB_LIB_WIDEN);
-      insn = get_insns ();
-      end_sequence ();
-
-      if (t1 != NULL && expand_compare_and_swap_loop (mem, t0, t1, insn))
-	return const0_rtx;
-    }
-
-  return NULL_RTX;
-}
-
-/* This function generates the atomic operation MEM CODE= VAL.  In this
-   case, we do care about the resulting value: if AFTER is true then
-   return the value MEM holds after the operation, if AFTER is false
-   then return the value MEM holds before the operation.  TARGET is an
-   optional place for the result value to be stored.  */
-
-rtx
-expand_sync_fetch_operation (rtx mem, rtx val, enum rtx_code code,
-			     bool after, rtx target)
-{
-  enum machine_mode mode = GET_MODE (mem);
-  enum insn_code old_code, new_code, icode;
-  bool compensate;
-  rtx insn;
-
-  /* Look to see if the target supports the operation directly.  */
-  switch (code)
-    {
-    case PLUS:
-      old_code = direct_optab_handler (sync_old_add_optab, mode);
-      new_code = direct_optab_handler (sync_new_add_optab, mode);
-      break;
-    case IOR:
-      old_code = direct_optab_handler (sync_old_ior_optab, mode);
-      new_code = direct_optab_handler (sync_new_ior_optab, mode);
-      break;
-    case XOR:
-      old_code = direct_optab_handler (sync_old_xor_optab, mode);
-      new_code = direct_optab_handler (sync_new_xor_optab, mode);
-      break;
-    case AND:
-      old_code = direct_optab_handler (sync_old_and_optab, mode);
-      new_code = direct_optab_handler (sync_new_and_optab, mode);
-      break;
-    case NOT:
-      old_code = direct_optab_handler (sync_old_nand_optab, mode);
-      new_code = direct_optab_handler (sync_new_nand_optab, mode);
-      break;
-
-    case MINUS:
-      old_code = direct_optab_handler (sync_old_sub_optab, mode);
-      new_code = direct_optab_handler (sync_new_sub_optab, mode);
-      if ((old_code == CODE_FOR_nothing && new_code == CODE_FOR_nothing)
-          || CONST_INT_P (val))
-	{
-	  old_code = direct_optab_handler (sync_old_add_optab, mode);
-	  new_code = direct_optab_handler (sync_new_add_optab, mode);
-	  if (old_code != CODE_FOR_nothing || new_code != CODE_FOR_nothing)
-	    {
-	      val = expand_simple_unop (mode, NEG, val, NULL_RTX, 1);
-	      code = PLUS;
-	    }
-	}
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  /* If the target does supports the proper new/old operation, great.  But
-     if we only support the opposite old/new operation, check to see if we
-     can compensate.  In the case in which the old value is supported, then
-     we can always perform the operation again with normal arithmetic.  In
-     the case in which the new value is supported, then we can only handle
-     this in the case the operation is reversible.  */
-  compensate = false;
-  if (after)
-    {
-      icode = new_code;
-      if (icode == CODE_FOR_nothing)
-	{
-	  icode = old_code;
-	  if (icode != CODE_FOR_nothing)
-	    compensate = true;
-	}
-    }
-  else
-    {
-      icode = old_code;
-      if (icode == CODE_FOR_nothing
-	  && (code == PLUS || code == MINUS || code == XOR))
-	{
-	  icode = new_code;
-	  if (icode != CODE_FOR_nothing)
-	    compensate = true;
-	}
-    }
-
-  /* If we found something supported, great.  */
-  if (icode != CODE_FOR_nothing)
-    {
-      struct expand_operand ops[3];
+      struct expand_operand ops[4];
 
       create_output_operand (&ops[0], target, mode);
       create_fixed_operand (&ops[1], mem);
       /* VAL may have been promoted to a wider mode.  Shrink it if so.  */
       create_convert_operand_to (&ops[2], val, mode, true);
-      if (maybe_expand_insn (icode, 3, ops))
-	{
-	  target = ops[0].value;
-	  val = ops[2].value;
-	  /* If we need to compensate for using an operation with the
-	     wrong return value, do so now.  */
-	  if (compensate)
-	    {
-	      if (!after)
-		{
-		  if (code == PLUS)
-		    code = MINUS;
-		  else if (code == MINUS)
-		    code = PLUS;
-		}
-
-	      if (code == NOT)
-		{
-		  target = expand_simple_binop (mode, AND, target, val,
-						NULL_RTX, true,
-						OPTAB_LIB_WIDEN);
-		  target = expand_simple_unop (mode, code, target,
-					       NULL_RTX, true);
-		}
-	      else
-		target = expand_simple_binop (mode, code, target, val,
-					      NULL_RTX, true,
-					      OPTAB_LIB_WIDEN);
-	    }
-
-	  return target;
-	}
-    }
-
-  /* Failing that, generate a compare-and-swap loop in which we perform the
-     operation with normal arithmetic instructions.  */
-  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
-      != CODE_FOR_nothing)
-    {
-      rtx t0 = gen_reg_rtx (mode), t1;
-
-      if (!target || !register_operand (target, mode))
-	target = gen_reg_rtx (mode);
-
-      start_sequence ();
-
-      if (!after)
-	emit_move_insn (target, t0);
-      t1 = t0;
-      if (code == NOT)
-	{
-	  t1 = expand_simple_binop (mode, AND, t1, val, NULL_RTX,
-				    true, OPTAB_LIB_WIDEN);
-	  t1 = expand_simple_unop (mode, code, t1, NULL_RTX, true);
-	}
-      else
-	t1 = expand_simple_binop (mode, code, t1, val, NULL_RTX,
-				  true, OPTAB_LIB_WIDEN);
-      if (after)
-	emit_move_insn (target, t1);
-
-      insn = get_insns ();
-      end_sequence ();
-
-      if (t1 != NULL && expand_compare_and_swap_loop (mem, t0, t1, insn))
-	return target;
-    }
-
-  return NULL_RTX;
-}
-
-/* This function expands a test-and-set operation.  Ideally we atomically
-   store VAL in MEM and return the previous value in MEM.  Some targets
-   may not support this operation and only support VAL with the constant 1;
-   in this case while the return value will be 0/1, but the exact value
-   stored in MEM is target defined.  TARGET is an option place to stick
-   the return value.  */
-
-rtx
-expand_sync_lock_test_and_set (rtx mem, rtx val, rtx target)
-{
-  enum machine_mode mode = GET_MODE (mem);
-  enum insn_code icode;
-
-  /* If the target supports the test-and-set directly, great.  */
-  icode = direct_optab_handler (sync_lock_test_and_set_optab, mode);
-  if (icode != CODE_FOR_nothing)
-    {
-      struct expand_operand ops[3];
-
-      create_output_operand (&ops[0], target, mode);
-      create_fixed_operand (&ops[1], mem);
-      /* VAL may have been promoted to a wider mode.  Shrink it if so.  */
-      create_convert_operand_to (&ops[2], val, mode, true);
-      if (maybe_expand_insn (icode, 3, ops))
+      create_integer_operand (&ops[3], model);
+      if (maybe_expand_insn (icode, 4, ops))
 	return ops[0].value;
     }
 
+  /* Legacy sync_lock_test_and_set works the same, but is only defined as an 
+     acquire barrier.  If the pattern exists, and the memory model is stronger
+     than acquire, add a release barrier before the instruction.
+     The barrier is not needed if sync_lock_test_and_set doesn't exist since
+     it will expand into a compare-and-swap loop.
+
+     Some targets have non-compliant test_and_sets, so it would be incorrect
+     to emit a test_and_set in place of an __atomic_exchange.  The test_and_set
+     builtin shares this expander since exchange can always replace the
+     test_and_set.  */
+
+  if (use_test_and_set)
+    {
+      icode = optab_handler (sync_lock_test_and_set_optab, mode);
+
+      if (icode != CODE_FOR_nothing)
+	{
+	  struct expand_operand ops[3];
+	  rtx last_insn = get_last_insn ();
+
+	  if (model == MEMMODEL_SEQ_CST
+	      || model == MEMMODEL_RELEASE
+	      || model == MEMMODEL_ACQ_REL)
+	    expand_mem_thread_fence (model);
+
+	  create_output_operand (&ops[0], target, mode);
+	  create_fixed_operand (&ops[1], mem);
+	  /* VAL may have been promoted to a wider mode.  Shrink it if so.  */
+	  create_convert_operand_to (&ops[2], val, mode, true);
+	  if (maybe_expand_insn (icode, 3, ops))
+	    return ops[0].value;
+
+	  delete_insns_since (last_insn);
+	}
+
+      /* If an external test-and-set libcall is provided, use that instead of
+	 any external compare-and-swap that we might get from the compare-and-
+	 swap-loop expansion below.  */
+      if (!can_compare_and_swap_p (mode, false))
+	{
+	  rtx libfunc = optab_libfunc (sync_lock_test_and_set_optab, mode);
+	  if (libfunc != NULL)
+	    {
+	      rtx addr;
+
+	      if (model == MEMMODEL_SEQ_CST
+		  || model == MEMMODEL_RELEASE
+		  || model == MEMMODEL_ACQ_REL)
+		expand_mem_thread_fence (model);
+
+	      addr = convert_memory_address (ptr_mode, XEXP (mem, 0));
+	      return emit_library_call_value (libfunc, target, LCT_NORMAL,
+					      mode, 2, addr, ptr_mode,
+					      val, mode);
+	    }
+	}
+    }
+
   /* Otherwise, use a compare-and-swap loop for the exchange.  */
-  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
-      != CODE_FOR_nothing)
+  if (can_compare_and_swap_p (mode, true))
     {
       if (!target || !register_operand (target, mode))
 	target = gen_reg_rtx (mode);
@@ -7534,6 +7516,633 @@ expand_sync_lock_test_and_set (rtx mem, rtx val, rtx target)
 	val = convert_modes (mode, GET_MODE (val), val, 1);
       if (expand_compare_and_swap_loop (mem, target, val, NULL_RTX))
 	return target;
+    }
+
+  return NULL_RTX;
+}
+
+/* This function expands the atomic compare exchange operation:
+
+   *PTARGET_BOOL is an optional place to store the boolean success/failure.
+   *PTARGET_OVAL is an optional place to store the old value from memory.
+   Both target parameters may be NULL to indicate that we do not care about
+   that return value.  Both target parameters are updated on success to
+   the actual location of the corresponding result.
+
+   MEMMODEL is the memory model variant to use.
+
+   The return value of the function is true for success.  */
+
+bool
+expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
+				rtx mem, rtx expected, rtx desired,
+				bool is_weak, enum memmodel succ_model,
+				enum memmodel fail_model)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  struct expand_operand ops[8];
+  enum insn_code icode;
+  rtx target_oval, target_bool = NULL_RTX;
+  rtx libfunc;
+
+  /* Load expected into a register for the compare and swap.  */
+  if (MEM_P (expected))
+    expected = copy_to_reg (expected);
+
+  /* Make sure we always have some place to put the return oldval.
+     Further, make sure that place is distinct from the input expected,
+     just in case we need that path down below.  */
+  if (ptarget_oval == NULL
+      || (target_oval = *ptarget_oval) == NULL
+      || reg_overlap_mentioned_p (expected, target_oval))
+    target_oval = gen_reg_rtx (mode);
+
+  icode = direct_optab_handler (atomic_compare_and_swap_optab, mode);
+  if (icode != CODE_FOR_nothing)
+    {
+      enum machine_mode bool_mode = insn_data[icode].operand[0].mode;
+
+      /* Make sure we always have a place for the bool operand.  */
+      if (ptarget_bool == NULL
+	  || (target_bool = *ptarget_bool) == NULL
+	  || GET_MODE (target_bool) != bool_mode)
+	target_bool = gen_reg_rtx (bool_mode);
+
+      /* Emit the compare_and_swap.  */
+      create_output_operand (&ops[0], target_bool, bool_mode);
+      create_output_operand (&ops[1], target_oval, mode);
+      create_fixed_operand (&ops[2], mem);
+      create_convert_operand_to (&ops[3], expected, mode, true);
+      create_convert_operand_to (&ops[4], desired, mode, true);
+      create_integer_operand (&ops[5], is_weak);
+      create_integer_operand (&ops[6], succ_model);
+      create_integer_operand (&ops[7], fail_model);
+      expand_insn (icode, 8, ops);
+
+      /* Return success/failure.  */
+      target_bool = ops[0].value;
+      target_oval = ops[1].value;
+      goto success;
+    }
+
+  /* Otherwise fall back to the original __sync_val_compare_and_swap
+     which is always seq-cst.  */
+  icode = optab_handler (sync_compare_and_swap_optab, mode);
+  if (icode != CODE_FOR_nothing)
+    {
+      rtx cc_reg;
+
+      create_output_operand (&ops[0], target_oval, mode);
+      create_fixed_operand (&ops[1], mem);
+      create_convert_operand_to (&ops[2], expected, mode, true);
+      create_convert_operand_to (&ops[3], desired, mode, true);
+      if (!maybe_expand_insn (icode, 4, ops))
+	return false;
+
+      target_oval = ops[0].value;
+
+      /* If the caller isn't interested in the boolean return value,
+	 skip the computation of it.  */
+      if (ptarget_bool == NULL)
+	goto success;
+
+      /* Otherwise, work out if the compare-and-swap succeeded.  */
+      cc_reg = NULL_RTX;
+      if (have_insn_for (COMPARE, CCmode))
+	note_stores (PATTERN (get_last_insn ()), find_cc_set, &cc_reg);
+      if (cc_reg)
+	{
+	  target_bool = emit_store_flag_force (target_bool, EQ, cc_reg,
+					       const0_rtx, VOIDmode, 0, 1);
+	  goto success;
+	}
+      goto success_bool_from_val;
+    }
+
+  /* Also check for library support for __sync_val_compare_and_swap.  */
+  libfunc = optab_libfunc (sync_compare_and_swap_optab, mode);
+  if (libfunc != NULL)
+    {
+      rtx addr = convert_memory_address (ptr_mode, XEXP (mem, 0));
+      target_oval = emit_library_call_value (libfunc, target_oval, LCT_NORMAL,
+					     mode, 3, addr, ptr_mode,
+					     expected, mode, desired, mode);
+
+      /* Compute the boolean return value only if requested.  */
+      if (ptarget_bool)
+	goto success_bool_from_val;
+      else
+	goto success;
+    }
+
+  /* Failure.  */
+  return false;
+
+ success_bool_from_val:
+   target_bool = emit_store_flag_force (target_bool, EQ, target_oval,
+					expected, VOIDmode, 1, 1);
+ success:
+  /* Make sure that the oval output winds up where the caller asked.  */
+  if (ptarget_oval)
+    *ptarget_oval = target_oval;
+  if (ptarget_bool)
+    *ptarget_bool = target_bool;
+  return true;
+}
+
+/* Generate asm volatile("" : : : "memory") as the memory barrier.  */
+
+static void
+expand_asm_memory_barrier (void)
+{
+  rtx asm_op, clob;
+
+  asm_op = gen_rtx_ASM_OPERANDS (VOIDmode, empty_string, empty_string, 0,
+				 rtvec_alloc (0), rtvec_alloc (0),
+				 rtvec_alloc (0), UNKNOWN_LOCATION);
+  MEM_VOLATILE_P (asm_op) = 1;
+
+  clob = gen_rtx_SCRATCH (VOIDmode);
+  clob = gen_rtx_MEM (BLKmode, clob);
+  clob = gen_rtx_CLOBBER (VOIDmode, clob);
+
+  emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, asm_op, clob)));
+}
+
+/* This routine will either emit the mem_thread_fence pattern or issue a 
+   sync_synchronize to generate a fence for memory model MEMMODEL.  */
+
+#ifndef HAVE_mem_thread_fence
+# define HAVE_mem_thread_fence 0
+# define gen_mem_thread_fence(x) (gcc_unreachable (), NULL_RTX)
+#endif
+#ifndef HAVE_memory_barrier
+# define HAVE_memory_barrier 0
+# define gen_memory_barrier()  (gcc_unreachable (), NULL_RTX)
+#endif
+
+void
+expand_mem_thread_fence (enum memmodel model)
+{
+  if (HAVE_mem_thread_fence)
+    emit_insn (gen_mem_thread_fence (GEN_INT (model)));
+  else if (model != MEMMODEL_RELAXED)
+    {
+      if (HAVE_memory_barrier)
+	emit_insn (gen_memory_barrier ());
+      else if (synchronize_libfunc != NULL_RTX)
+	emit_library_call (synchronize_libfunc, LCT_NORMAL, VOIDmode, 0);
+      else
+	expand_asm_memory_barrier ();
+    }
+}
+
+/* This routine will either emit the mem_signal_fence pattern or issue a 
+   sync_synchronize to generate a fence for memory model MEMMODEL.  */
+
+#ifndef HAVE_mem_signal_fence
+# define HAVE_mem_signal_fence 0
+# define gen_mem_signal_fence(x) (gcc_unreachable (), NULL_RTX)
+#endif
+
+void
+expand_mem_signal_fence (enum memmodel model)
+{
+  if (HAVE_mem_signal_fence)
+    emit_insn (gen_mem_signal_fence (GEN_INT (model)));
+  else if (model != MEMMODEL_RELAXED)
+    {
+      /* By default targets are coherent between a thread and the signal
+	 handler running on the same thread.  Thus this really becomes a
+	 compiler barrier, in that stores must not be sunk past
+	 (or raised above) a given point.  */
+      expand_asm_memory_barrier ();
+    }
+}
+
+/* This function expands the atomic load operation:
+   return the atomically loaded value in MEM.
+
+   MEMMODEL is the memory model variant to use.
+   TARGET is an option place to stick the return value.  */
+
+rtx
+expand_atomic_load (rtx target, rtx mem, enum memmodel model)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  enum insn_code icode;
+
+  /* If the target supports the load directly, great.  */
+  icode = direct_optab_handler (atomic_load_optab, mode);
+  if (icode != CODE_FOR_nothing)
+    {
+      struct expand_operand ops[3];
+
+      create_output_operand (&ops[0], target, mode);
+      create_fixed_operand (&ops[1], mem);
+      create_integer_operand (&ops[2], model);
+      if (maybe_expand_insn (icode, 3, ops))
+	return ops[0].value;
+    }
+
+  /* If the size of the object is greater than word size on this target,
+     then we assume that a load will not be atomic.  */
+  if (GET_MODE_PRECISION (mode) > BITS_PER_WORD)
+    {
+      /* Issue val = compare_and_swap (mem, 0, 0).
+	 This may cause the occasional harmless store of 0 when the value is
+	 already 0, but it seems to be OK according to the standards guys.  */
+      expand_atomic_compare_and_swap (NULL, &target, mem, const0_rtx,
+				      const0_rtx, false, model, model);
+      return target;
+    }
+
+  /* Otherwise assume loads are atomic, and emit the proper barriers.  */
+  if (!target || target == const0_rtx)
+    target = gen_reg_rtx (mode);
+
+  /* Emit the appropriate barrier before the load.  */
+  expand_mem_thread_fence (model);
+
+  emit_move_insn (target, mem);
+
+  /* For SEQ_CST, also emit a barrier after the load.  */
+  if (model == MEMMODEL_SEQ_CST)
+    expand_mem_thread_fence (model);
+
+  return target;
+}
+
+/* This function expands the atomic store operation:
+   Atomically store VAL in MEM.
+   MEMMODEL is the memory model variant to use.
+   USE_RELEASE is true if __sync_lock_release can be used as a fall back.
+   function returns const0_rtx if a pattern was emitted.  */
+
+rtx
+expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  enum insn_code icode;
+  struct expand_operand ops[3];
+
+  /* If the target supports the store directly, great.  */
+  icode = direct_optab_handler (atomic_store_optab, mode);
+  if (icode != CODE_FOR_nothing)
+    {
+      create_fixed_operand (&ops[0], mem);
+      create_input_operand (&ops[1], val, mode);
+      create_integer_operand (&ops[2], model);
+      if (maybe_expand_insn (icode, 3, ops))
+	return const0_rtx;
+    }
+
+  /* If using __sync_lock_release is a viable alternative, try it.  */
+  if (use_release)
+    {
+      icode = direct_optab_handler (sync_lock_release_optab, mode);
+      if (icode != CODE_FOR_nothing)
+	{
+	  create_fixed_operand (&ops[0], mem);
+	  create_input_operand (&ops[1], const0_rtx, mode);
+	  if (maybe_expand_insn (icode, 2, ops))
+	    {
+	      /* lock_release is only a release barrier.  */
+	      if (model == MEMMODEL_SEQ_CST)
+		expand_mem_thread_fence (model);
+	      return const0_rtx;
+	    }
+	}
+    }
+
+  /* If the size of the object is greater than word size on this target,
+     a default store will not be atomic, Try a mem_exchange and throw away
+     the result.  If that doesn't work, don't do anything.  */
+  if (GET_MODE_PRECISION(mode) > BITS_PER_WORD)
+    {
+      rtx target = expand_atomic_exchange (NULL_RTX, mem, val, model, false);
+      if (target)
+        return const0_rtx;
+      else
+        return NULL_RTX;
+    }
+
+  /* If there is no mem_store, default to a move with barriers */
+  if (model == MEMMODEL_SEQ_CST || model == MEMMODEL_RELEASE)
+    expand_mem_thread_fence (model);
+
+  emit_move_insn (mem, val);
+
+  /* For SEQ_CST, also emit a barrier after the load.  */
+  if (model == MEMMODEL_SEQ_CST)
+    expand_mem_thread_fence (model);
+
+  return const0_rtx;
+}
+
+
+/* Structure containing the pointers and values required to process the
+   various forms of the atomic_fetch_op and atomic_op_fetch builtins.  */
+
+struct atomic_op_functions
+{
+  direct_optab mem_fetch_before;
+  direct_optab mem_fetch_after;
+  direct_optab mem_no_result;
+  optab fetch_before;
+  optab fetch_after;
+  direct_optab no_result;
+  enum rtx_code reverse_code;
+};
+
+
+/* Fill in structure pointed to by OP with the various optab entries for an 
+   operation of type CODE.  */
+
+static void
+get_atomic_op_for_code (struct atomic_op_functions *op, enum rtx_code code)
+{
+  gcc_assert (op!= NULL);
+
+  /* If SWITCHABLE_TARGET is defined, then subtargets can be switched
+     in the source code during compilation, and the optab entries are not
+     computable until runtime.  Fill in the values at runtime.  */
+  switch (code)
+    {
+    case PLUS:
+      op->mem_fetch_before = atomic_fetch_add_optab;
+      op->mem_fetch_after = atomic_add_fetch_optab;
+      op->mem_no_result = atomic_add_optab;
+      op->fetch_before = sync_old_add_optab;
+      op->fetch_after = sync_new_add_optab;
+      op->no_result = sync_add_optab;
+      op->reverse_code = MINUS;
+      break;
+    case MINUS:
+      op->mem_fetch_before = atomic_fetch_sub_optab;
+      op->mem_fetch_after = atomic_sub_fetch_optab;
+      op->mem_no_result = atomic_sub_optab;
+      op->fetch_before = sync_old_sub_optab;
+      op->fetch_after = sync_new_sub_optab;
+      op->no_result = sync_sub_optab;
+      op->reverse_code = PLUS;
+      break;
+    case XOR:
+      op->mem_fetch_before = atomic_fetch_xor_optab;
+      op->mem_fetch_after = atomic_xor_fetch_optab;
+      op->mem_no_result = atomic_xor_optab;
+      op->fetch_before = sync_old_xor_optab;
+      op->fetch_after = sync_new_xor_optab;
+      op->no_result = sync_xor_optab;
+      op->reverse_code = XOR;
+      break;
+    case AND:
+      op->mem_fetch_before = atomic_fetch_and_optab;
+      op->mem_fetch_after = atomic_and_fetch_optab;
+      op->mem_no_result = atomic_and_optab;
+      op->fetch_before = sync_old_and_optab;
+      op->fetch_after = sync_new_and_optab;
+      op->no_result = sync_and_optab;
+      op->reverse_code = UNKNOWN;
+      break;
+    case IOR:
+      op->mem_fetch_before = atomic_fetch_or_optab;
+      op->mem_fetch_after = atomic_or_fetch_optab;
+      op->mem_no_result = atomic_or_optab;
+      op->fetch_before = sync_old_ior_optab;
+      op->fetch_after = sync_new_ior_optab;
+      op->no_result = sync_ior_optab;
+      op->reverse_code = UNKNOWN;
+      break;
+    case NOT:
+      op->mem_fetch_before = atomic_fetch_nand_optab;
+      op->mem_fetch_after = atomic_nand_fetch_optab;
+      op->mem_no_result = atomic_nand_optab;
+      op->fetch_before = sync_old_nand_optab;
+      op->fetch_after = sync_new_nand_optab;
+      op->no_result = sync_nand_optab;
+      op->reverse_code = UNKNOWN;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Try to emit an instruction for a specific operation varaition. 
+   OPTAB contains the OP functions.
+   TARGET is an optional place to return the result. const0_rtx means unused.
+   MEM is the memory location to operate on.
+   VAL is the value to use in the operation.
+   USE_MEMMODEL is TRUE if the variation with a memory model should be tried.
+   MODEL is the memory model, if used.
+   AFTER is true if the returned result is the value after the operation.  */
+
+static rtx 
+maybe_emit_op (const struct atomic_op_functions *optab, rtx target, rtx mem,
+	       rtx val, bool use_memmodel, enum memmodel model, bool after)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  struct expand_operand ops[4];
+  enum insn_code icode;
+  int op_counter = 0;
+  int num_ops;
+
+  /* Check to see if there is a result returned.  */
+  if (target == const0_rtx)
+    {
+      if (use_memmodel)
+        {
+	  icode = direct_optab_handler (optab->mem_no_result, mode);
+	  create_integer_operand (&ops[2], model);
+	  num_ops = 3;
+	}
+      else
+        {
+	  icode = direct_optab_handler (optab->no_result, mode);
+	  num_ops = 2;
+	}
+    }
+  /* Otherwise, we need to generate a result.  */
+  else
+    {
+      if (use_memmodel)
+        {
+	  icode = direct_optab_handler (after ? optab->mem_fetch_after
+					: optab->mem_fetch_before, mode);
+	  create_integer_operand (&ops[3], model);
+	  num_ops = 4;
+	}
+      else
+	{
+	  icode = optab_handler (after ? optab->fetch_after
+				 : optab->fetch_before, mode);
+	  num_ops = 3;
+	}
+      create_output_operand (&ops[op_counter++], target, mode);
+    }
+  if (icode == CODE_FOR_nothing)
+    return NULL_RTX;
+
+  create_fixed_operand (&ops[op_counter++], mem);
+  /* VAL may have been promoted to a wider mode.  Shrink it if so.  */
+  create_convert_operand_to (&ops[op_counter++], val, mode, true);
+
+  if (maybe_expand_insn (icode, num_ops, ops))
+    return (target == const0_rtx ? const0_rtx : ops[0].value);
+
+  return NULL_RTX;
+} 
+
+
+/* This function expands an atomic fetch_OP or OP_fetch operation:
+   TARGET is an option place to stick the return value.  const0_rtx indicates
+   the result is unused. 
+   atomically fetch MEM, perform the operation with VAL and return it to MEM.
+   CODE is the operation being performed (OP)
+   MEMMODEL is the memory model variant to use.
+   AFTER is true to return the result of the operation (OP_fetch).
+   AFTER is false to return the value before the operation (fetch_OP).  */
+rtx
+expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
+			enum memmodel model, bool after)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  struct atomic_op_functions optab;
+  rtx result;
+  bool unused_result = (target == const0_rtx);
+
+  get_atomic_op_for_code (&optab, code);
+
+  /* Check for the case where the result isn't used and try those patterns.  */
+  if (unused_result)
+    {
+      /* Try the memory model variant first.  */
+      result = maybe_emit_op (&optab, target, mem, val, true, model, true);
+      if (result)
+        return result;
+
+      /* Next try the old style withuot a memory model.  */
+      result = maybe_emit_op (&optab, target, mem, val, false, model, true);
+      if (result)
+        return result;
+
+      /* There is no no-result pattern, so try patterns with a result.  */
+      target = NULL_RTX;
+    }
+
+  /* Try the __atomic version.  */
+  result = maybe_emit_op (&optab, target, mem, val, true, model, after);
+  if (result)
+    return result;
+
+  /* Try the older __sync version.  */
+  result = maybe_emit_op (&optab, target, mem, val, false, model, after);
+  if (result)
+    return result;
+
+  /* If the fetch value can be calculated from the other variation of fetch,
+     try that operation.  */
+  if (after || unused_result || optab.reverse_code != UNKNOWN)
+    {
+      /* Try the __atomic version, then the older __sync version.  */
+      result = maybe_emit_op (&optab, target, mem, val, true, model, !after);
+      if (!result)
+	result = maybe_emit_op (&optab, target, mem, val, false, model, !after);
+
+      if (result)
+	{
+	  /* If the result isn't used, no need to do compensation code.  */
+	  if (unused_result)
+	    return target;
+
+	  /* Issue compensation code.  Fetch_after  == fetch_before OP val.
+	     Fetch_before == after REVERSE_OP val.  */
+	  if (!after)
+	    code = optab.reverse_code;
+	  if (code == NOT)
+	    {
+	      result = expand_simple_binop (mode, AND, result, val, NULL_RTX,
+					    true, OPTAB_LIB_WIDEN);
+	      result = expand_simple_unop (mode, NOT, result, target, true);
+	    }
+	  else
+	    result = expand_simple_binop (mode, code, result, val, target,
+					  true, OPTAB_LIB_WIDEN);
+	  return result;
+	}
+    }
+
+  /* Try the __sync libcalls only if we can't do compare-and-swap inline.  */
+  if (!can_compare_and_swap_p (mode, false))
+    {
+      rtx libfunc;
+      bool fixup = false;
+
+      libfunc = optab_libfunc (after ? optab.fetch_after
+			       : optab.fetch_before, mode);
+      if (libfunc == NULL
+	  && (after || unused_result || optab.reverse_code != UNKNOWN))
+	{
+	  fixup = true;
+	  if (!after)
+	    code = optab.reverse_code;
+	  libfunc = optab_libfunc (after ? optab.fetch_before
+				   : optab.fetch_after, mode);
+	}
+      if (libfunc != NULL)
+	{
+	  rtx addr = convert_memory_address (ptr_mode, XEXP (mem, 0));
+	  result = emit_library_call_value (libfunc, NULL, LCT_NORMAL, mode,
+					    2, addr, ptr_mode, val, mode);
+
+	  if (unused_result)
+	    return target;
+	  if (fixup)
+	    result = expand_simple_binop (mode, code, result, val, target,
+					  true, OPTAB_LIB_WIDEN);
+	  return result;
+	}
+    }
+
+  /* If nothing else has succeeded, default to a compare and swap loop.  */
+  if (can_compare_and_swap_p (mode, true))
+    {
+      rtx insn;
+      rtx t0 = gen_reg_rtx (mode), t1;
+
+      start_sequence ();
+
+      /* If the result is used, get a register for it.  */
+      if (!unused_result) 
+        {
+	  if (!target || !register_operand (target, mode))
+	    target = gen_reg_rtx (mode);
+	  /* If fetch_before, copy the value now.  */
+	  if (!after)
+	    emit_move_insn (target, t0);
+	}
+      else
+        target = const0_rtx;
+
+      t1 = t0;
+      if (code == NOT)
+        {
+	  t1 = expand_simple_binop (mode, AND, t1, val, NULL_RTX,
+				    true, OPTAB_LIB_WIDEN);
+	  t1 = expand_simple_unop (mode, code, t1, NULL_RTX, true);
+	}
+      else
+	t1 = expand_simple_binop (mode, code, t1, val, NULL_RTX, true, 
+				  OPTAB_LIB_WIDEN);
+
+      /* For after, copy the value now.  */
+      if (!unused_result && after)
+        emit_move_insn (target, t1);
+      insn = get_insns ();
+      end_sequence ();
+
+      if (t1 != NULL && expand_compare_and_swap_loop (mem, t0, t1, insn))
+        return target;
     }
 
   return NULL_RTX;
@@ -7741,6 +8350,14 @@ maybe_gen_insn (enum insn_code icode, unsigned int nops,
     case 6:
       return GEN_FCN (icode) (ops[0].value, ops[1].value, ops[2].value,
 			      ops[3].value, ops[4].value, ops[5].value);
+    case 7:
+      return GEN_FCN (icode) (ops[0].value, ops[1].value, ops[2].value,
+			      ops[3].value, ops[4].value, ops[5].value,
+			      ops[6].value);
+    case 8:
+      return GEN_FCN (icode) (ops[0].value, ops[1].value, ops[2].value,
+			      ops[3].value, ops[4].value, ops[5].value,
+			      ops[6].value, ops[7].value);
     }
   gcc_unreachable ();
 }

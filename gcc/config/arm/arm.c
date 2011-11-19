@@ -10247,6 +10247,9 @@ store_multiple_sequence (rtx *operands, int nops, int nops_total,
   rtx base_reg_rtx = NULL;
   int i, stm_case;
 
+  /* Write back of base register is currently only supported for Thumb 1.  */
+  int base_writeback = TARGET_THUMB1;
+
   /* Can only handle up to MAX_LDM_STM_OPS insns at present, though could be
      easily extended if required.  */
   gcc_assert (nops >= 2 && nops <= MAX_LDM_STM_OPS);
@@ -10304,7 +10307,9 @@ store_multiple_sequence (rtx *operands, int nops, int nops_total,
 	  /* If it isn't an integer register, then we can't do this.  */
 	  if (unsorted_regs[i] < 0
 	      || (TARGET_THUMB1 && unsorted_regs[i] > LAST_LO_REGNUM)
-	      || (TARGET_THUMB2 && unsorted_regs[i] == base_reg)
+	      /* The effects are unpredictable if the base register is
+		 both updated and stored.  */
+	      || (base_writeback && unsorted_regs[i] == base_reg)
 	      || (TARGET_THUMB2 && unsorted_regs[i] == SP_REGNUM)
 	      || unsorted_regs[i] > 14)
 	    return 0;
@@ -22216,6 +22221,8 @@ thumb1_expand_epilogue (void)
   gcc_assert (amount >= 0);
   if (amount)
     {
+      emit_insn (gen_blockage ());
+
       if (amount < 512)
 	emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
 			       GEN_INT (amount)));
@@ -23495,7 +23502,7 @@ arm_small_register_classes_for_mode_p (enum machine_mode mode ATTRIBUTE_UNUSED)
 
 /* Implement TARGET_SHIFT_TRUNCATION_MASK.  SImode shifts use normal
    ARM insns and therefore guarantee that the shift count is modulo 256.
-   DImode shifts (those implemented by lib1funcs.asm or by optabs.c)
+   DImode shifts (those implemented by lib1funcs.S or by optabs.c)
    guarantee no particular behavior for out-of-range counts.  */
 
 static unsigned HOST_WIDE_INT

@@ -256,15 +256,15 @@ func ReadFull(r Reader, buf []byte) (n int, err os.Error) {
 	return ReadAtLeast(r, buf, len(buf))
 }
 
-// Copyn copies n bytes (or until an error) from src to dst.
+// CopyN copies n bytes (or until an error) from src to dst.
 // It returns the number of bytes copied and the earliest
 // error encountered while copying.  Because Read can
 // return the full amount requested as well as an error
-// (including os.EOF), so can Copyn.
+// (including os.EOF), so can CopyN.
 //
 // If dst implements the ReaderFrom interface,
 // the copy is implemented by calling dst.ReadFrom(src).
-func Copyn(dst Writer, src Reader, n int64) (written int64, err os.Error) {
+func CopyN(dst Writer, src Reader, n int64) (written int64, err os.Error) {
 	// If the writer has a ReadFrom method, use it to do the copy.
 	// Avoids a buffer allocation and a copy.
 	if rt, ok := dst.(ReaderFrom); ok {
@@ -437,3 +437,27 @@ func (s *SectionReader) ReadAt(p []byte, off int64) (n int, err os.Error) {
 
 // Size returns the size of the section in bytes.
 func (s *SectionReader) Size() int64 { return s.limit - s.base }
+
+// TeeReader returns a Reader that writes to w what it reads from r.
+// All reads from r performed through it are matched with
+// corresponding writes to w.  There is no internal buffering -
+// the write must complete before the read completes.
+// Any error encountered while writing is reported as a read error.
+func TeeReader(r Reader, w Writer) Reader {
+	return &teeReader{r, w}
+}
+
+type teeReader struct {
+	r Reader
+	w Writer
+}
+
+func (t *teeReader) Read(p []byte) (n int, err os.Error) {
+	n, err = t.r.Read(p)
+	if n > 0 {
+		if n, err := t.w.Write(p[:n]); err != nil {
+			return n, err
+		}
+	}
+	return
+}

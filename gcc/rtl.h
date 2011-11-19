@@ -1812,7 +1812,6 @@ extern rtx next_real_insn (rtx);
 extern rtx prev_active_insn (rtx);
 extern rtx next_active_insn (rtx);
 extern int active_insn_p (const_rtx);
-extern rtx prev_label (rtx);
 extern rtx next_label (rtx);
 extern rtx skip_consecutive_labels (rtx);
 extern rtx next_cc0_user (rtx);
@@ -1941,6 +1940,11 @@ extern rtx find_last_value (rtx, rtx *, rtx, int);
 extern int refers_to_regno_p (unsigned int, unsigned int, const_rtx, rtx *);
 extern int reg_overlap_mentioned_p (const_rtx, const_rtx);
 extern const_rtx set_of (const_rtx, const_rtx);
+extern void record_hard_reg_sets (rtx, const_rtx, void *);
+extern void record_hard_reg_uses (rtx *, void *);
+#ifdef HARD_CONST
+extern void find_all_hard_reg_sets (const_rtx, HARD_REG_SET *);
+#endif
 extern void note_stores (const_rtx, void (*) (rtx, const_rtx, void *), void *);
 extern void note_uses (rtx *, void (*) (rtx *, void *), void *);
 extern int dead_or_set_p (const_rtx, const_rtx);
@@ -2036,12 +2040,14 @@ extern void subreg_get_info (unsigned int, enum machine_mode,
 
 /* lists.c */
 
-extern void free_EXPR_LIST_list		(rtx *);
-extern void free_INSN_LIST_list		(rtx *);
-extern void free_EXPR_LIST_node		(rtx);
-extern void free_INSN_LIST_node		(rtx);
-extern rtx alloc_INSN_LIST			(rtx, rtx);
-extern rtx alloc_EXPR_LIST			(int, rtx, rtx);
+extern void free_EXPR_LIST_list (rtx *);
+extern void free_INSN_LIST_list (rtx *);
+extern void free_EXPR_LIST_node (rtx);
+extern void free_INSN_LIST_node (rtx);
+extern rtx alloc_INSN_LIST (rtx, rtx);
+extern rtx copy_INSN_LIST (rtx);
+extern rtx concat_INSN_LIST (rtx, rtx);
+extern rtx alloc_EXPR_LIST (int, rtx, rtx);
 extern void remove_free_INSN_LIST_elem (rtx, rtx *);
 extern rtx remove_list_elem (rtx, rtx *);
 extern rtx remove_free_INSN_LIST_node (rtx *);
@@ -2390,7 +2396,7 @@ extern int exp_equiv_p (const_rtx, const_rtx, int, bool);
 extern unsigned hash_rtx (const_rtx x, enum machine_mode, int *, int *, bool);
 
 /* In dse.c */
-extern void check_for_inc_dec (rtx insn);
+extern bool check_for_inc_dec (rtx insn);
 
 /* In jump.c */
 extern int comparison_dominates_p (enum rtx_code, enum rtx_code);

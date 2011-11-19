@@ -16,3 +16,8 @@ func sysSleep(t int64) os.Error {
 	}
 	return nil
 }
+
+// for testing: whatever interrupts a sleep
+func interrupt() {
+	// cannot predict pid, don't want to kill group
+}

@@ -54,7 +54,10 @@ static abi::__cxa_cdtor_return_type dtor (void *x)
 
 // track new and delete
 static int blocks = 0;
-void *operator new[] (std::size_t size) throw (std::bad_alloc)
+void *operator new[] (std::size_t size)
+#if __cplusplus <= 199711L
+  throw (std::bad_alloc)
+#endif
 {
   void *ptr = malloc (size);
   

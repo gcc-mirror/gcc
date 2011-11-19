@@ -1,8 +1,3 @@
-# For C++ crtstuff
-EXTRA_MULTILIB_PARTS = crtbegin$(objext) crtend$(objext)
-
-EXTRA_PARTS += crti$(objext) crtn$(objext)
-
 MULTILIB_OPTIONS = mxl-barrel-shift mno-xl-soft-mul mxl-multiply-high
 MULTILIB_DIRNAMES = bs m mh
 MULTILIB_EXCEPTIONS = *mxl-barrel-shift/mxl-multiply-high mxl-multiply-high
@@ -13,10 +8,3 @@ microblaze-c.o: $(srcdir)/config/microblaze/microblaze-c.c \
     $(CONFIG_H) $(SYSTEM_H) $(CPPLIB_H) $(TM_P_H) $(TREE_H) errors.h $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(srcdir)/config/microblaze/microblaze-c.c
-
-# Assemble startup files
-$(T)crti$(objext): $(srcdir)/config/microblaze/crti.s
-	$(GCC_FOR_TARGET) -c $(srcdir)/config/microblaze/crti.s -o $(T)crti$(objext)
-
-$(T)crtn$(objext): $(srcdir)/config/microblaze/crtn.s
-	$(GCC_FOR_TARGET) -c $(srcdir)/config/microblaze/crtn.s -o $(T)crtn$(objext)

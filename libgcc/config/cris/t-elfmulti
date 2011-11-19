@@ -1,0 +1,3 @@
+LIB2ADD_ST = $(srcdir)/config/cris/mulsi3.S
+
+CRTSTUFF_T_CFLAGS = -moverride-best-lib-options

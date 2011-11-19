@@ -283,6 +283,7 @@ print_rtx (const_rtx in_rtx)
 	        }
 
 	      case NOTE_INSN_DELETED_LABEL:
+	      case NOTE_INSN_DELETED_DEBUG_LABEL:
 		{
 		  const char *label = NOTE_DELETED_LABEL_NAME (in_rtx);
 		  if (label)
@@ -442,7 +443,8 @@ print_rtx (const_rtx in_rtx)
 	  {
 	    /* This field is only used for NOTE_INSN_DELETED_LABEL, and
 	       other times often contains garbage from INSN->NOTE death.  */
-	    if (NOTE_KIND (in_rtx) == NOTE_INSN_DELETED_LABEL)
+	    if (NOTE_KIND (in_rtx) == NOTE_INSN_DELETED_LABEL
+		|| NOTE_KIND (in_rtx) == NOTE_INSN_DELETED_DEBUG_LABEL)
 	      fprintf (outfile, " %d",  XINT (in_rtx, i));
 	  }
 #if !defined(GENERATOR_FILE) && NUM_UNSPECV_VALUES > 0
@@ -466,11 +468,10 @@ print_rtx (const_rtx in_rtx)
 	    const char *name;
 
 #ifndef GENERATOR_FILE
-	    if (REG_P (in_rtx) && value < FIRST_PSEUDO_REGISTER)
-	      fprintf (outfile, " %d %s", REGNO (in_rtx),
-		       reg_names[REGNO (in_rtx)]);
+	    if (REG_P (in_rtx) && (unsigned) value < FIRST_PSEUDO_REGISTER)
+	      fprintf (outfile, " %d %s", value, reg_names[value]);
 	    else if (REG_P (in_rtx)
-		     && value <= LAST_VIRTUAL_REGISTER)
+		     && (unsigned) value <= LAST_VIRTUAL_REGISTER)
 	      {
 		if (value == VIRTUAL_INCOMING_ARGS_REGNUM)
 		  fprintf (outfile, " %d virtual-incoming-args", value);

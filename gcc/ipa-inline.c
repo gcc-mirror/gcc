@@ -284,6 +284,14 @@ can_inline_edge_p (struct cgraph_edge *e, bool report)
       e->inline_failed = CIF_EH_PERSONALITY;
       inlinable = false;
     }
+  /* TM pure functions should not get inlined if the outer function is
+     a TM safe function.  */
+  else if (is_tm_pure (callee->decl)
+	   && is_tm_safe (e->caller->decl))
+    {
+      e->inline_failed = CIF_UNSPECIFIED;
+      inlinable = false;
+    }
   /* Don't inline if the callee can throw non-call exceptions but the
      caller cannot.
      FIXME: this is obviously wrong for LTO where STRUCT_FUNCTION is missing.
@@ -822,8 +830,10 @@ edge_badness (struct cgraph_edge *edge, bool dump)
       /* Result must be integer in range 0...INT_MAX.
 	 Set the base of fixed point calculation so we don't lose much of
 	 precision for small bandesses (those are interesting) yet we don't
-	 overflow for growths that are still in interesting range.  */
-      badness = ((gcov_type)growth) * (1<<18);
+	 overflow for growths that are still in interesting range.
+
+	 Fixed point arithmetic with point at 8th bit. */
+      badness = ((gcov_type)growth) * (1<<(19+8));
       badness = (badness + div / 2) / div;
 
       /* Overall growth of inlining all calls of function matters: we want to
@@ -838,10 +848,14 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	 We might mix the valud into the fraction by taking into account
 	 relative growth of the unit, but for now just add the number
 	 into resulting fraction.  */
+      if (badness > INT_MAX / 2)
+	{
+	  badness = INT_MAX / 2;
+	  if (dump)
+	    fprintf (dump_file, "Badness overflow\n");
+	}
       growth_for_all = estimate_growth (callee);
       badness += growth_for_all;
-      if (badness > INT_MAX - 1)
-	badness = INT_MAX - 1;
       if (dump)
 	{
 	  fprintf (dump_file,
@@ -1943,6 +1957,8 @@ early_inliner (void)
 		= estimate_num_insns (edge->call_stmt, &eni_size_weights);
 	      es->call_stmt_time
 		= estimate_num_insns (edge->call_stmt, &eni_time_weights);
+	      edge->call_stmt_cannot_inline_p
+		= gimple_call_cannot_inline_p (edge->call_stmt);
 	    }
 	  timevar_pop (TV_INTEGRATION);
 	  iterations++;

@@ -934,7 +934,7 @@ null_arg:
 gfc_try
 gfc_check_atan_2 (gfc_expr *y, gfc_expr *x)
 {
-  /* gfc_notify_std would be a wast of time as the return value
+  /* gfc_notify_std would be a waste of time as the return value
      is seemingly used only for the generic resolution.  The error
      will be: Too many arguments.  */
   if ((gfc_option.allow_std & GFC_STD_F2008) == 0)
@@ -1483,7 +1483,14 @@ gfc_check_dshift (gfc_expr *i, gfc_expr *j, gfc_expr *shift)
   if (type_check (j, 1, BT_INTEGER) == FAILURE)
     return FAILURE;
 
-  if (same_type_check (i, 0, j, 1) == FAILURE)
+  if (i->is_boz && j->is_boz)
+    {
+      gfc_error ("'I' at %L and 'J' at %L cannot both be BOZ literal "
+		 "constants", &i->where, &j->where);
+      return FAILURE;
+    }
+
+  if (!i->is_boz && !j->is_boz && same_type_check (i, 0, j, 1) == FAILURE)
     return FAILURE;
 
   if (type_check (shift, 2, BT_INTEGER) == FAILURE)
@@ -1492,8 +1499,18 @@ gfc_check_dshift (gfc_expr *i, gfc_expr *j, gfc_expr *shift)
   if (nonnegative_check ("SHIFT", shift) == FAILURE)
     return FAILURE;
 
-  if (less_than_bitsize1 ("I", i, "SHIFT", shift, true) == FAILURE)
-    return FAILURE;
+  if (i->is_boz)
+    {
+      if (less_than_bitsize1 ("J", j, "SHIFT", shift, true) == FAILURE)
+    	return FAILURE;
+      i->ts.kind = j->ts.kind;
+    }
+  else
+    {
+      if (less_than_bitsize1 ("I", i, "SHIFT", shift, true) == FAILURE)
+    	return FAILURE;
+      j->ts.kind = i->ts.kind;
+    }
 
   return SUCCESS;
 }
@@ -1967,22 +1984,29 @@ gfc_check_ishftc (gfc_expr *i, gfc_expr *shift, gfc_expr *size)
       if (less_than_bitsize1 ("I", i, "SIZE", size, true) == FAILURE)
 	return FAILURE;
 
-      gfc_extract_int (size, &i3);
-      if (i3 <= 0)
+      if (size->expr_type == EXPR_CONSTANT)
 	{
-	  gfc_error ("SIZE at %L must be positive", &size->where);
-	  return FAILURE;
-	}
+	  gfc_extract_int (size, &i3);
+	  if (i3 <= 0)
+	    {
+	      gfc_error ("SIZE at %L must be positive", &size->where);
+	      return FAILURE;
+	    }
 
-      gfc_extract_int (shift, &i2);
-      if (i2 < 0)
-	i2 = -i2;
+	  if (shift->expr_type == EXPR_CONSTANT)
+	    {
+	      gfc_extract_int (shift, &i2);
+	      if (i2 < 0)
+		i2 = -i2;
 
-      if (i2 > i3)
-	{
-	  gfc_error ("The absolute value of SHIFT at %L must be less than "
-		     "or equal to SIZE at %L", &shift->where, &size->where);
-	  return FAILURE;
+	      if (i2 > i3)
+		{
+		  gfc_error ("The absolute value of SHIFT at %L must be less "
+			     "than or equal to SIZE at %L", &shift->where,
+			     &size->where);
+		  return FAILURE;
+		}
+	     }
 	}
     }
   else if (less_than_bitsize1 ("I", i, NULL, shift, true) == FAILURE)
@@ -2702,6 +2726,16 @@ gfc_check_nearest (gfc_expr *x, gfc_expr *s)
 
   if (type_check (s, 1, BT_REAL) == FAILURE)
     return FAILURE;
+
+  if (s->expr_type == EXPR_CONSTANT)
+    {
+      if (mpfr_sgn (s->value.real) == 0)
+	{
+	  gfc_error ("Argument 'S' of NEAREST at %L shall not be zero",
+		     &s->where);
+	  return FAILURE;
+	}
+    }
 
   return SUCCESS;
 }

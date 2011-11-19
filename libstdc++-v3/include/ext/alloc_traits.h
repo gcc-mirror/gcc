@@ -161,7 +161,7 @@ template<typename _Alloc>
 
     template<typename _Tp>
       struct rebind
-      { typedef typename _Base_type::template __rebind_alloc<_Tp>::__type other; };
+      { typedef typename _Base_type::template rebind_alloc<_Tp> other; };
 #else
 
     typedef typename _Alloc::pointer                pointer;

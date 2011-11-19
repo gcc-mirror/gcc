@@ -119,13 +119,15 @@ type stateFn func(*lexer) stateFn
 
 // lexer holds the state of the scanner.
 type lexer struct {
-	name  string    // the name of the input; used only for error reports.
-	input string    // the string being scanned.
-	state stateFn   // the next lexing function to enter
-	pos   int       // current position in the input.
-	start int       // start position of this item.
-	width int       // width of last rune read from input.
-	items chan item // channel of scanned items.
+	name       string    // the name of the input; used only for error reports.
+	input      string    // the string being scanned.
+	leftDelim  string    // start of action.
+	rightDelim string    // end of action.
+	state      stateFn   // the next lexing function to enter.
+	pos        int       // current position in the input.
+	start      int       // start position of this item.
+	width      int       // width of last rune read from input.
+	items      chan item // channel of scanned items.
 }
 
 // next returns the next rune in the input.
@@ -205,12 +207,20 @@ func (l *lexer) nextItem() item {
 }
 
 // lex creates a new scanner for the input string.
-func lex(name, input string) *lexer {
+func lex(name, input, left, right string) *lexer {
+	if left == "" {
+		left = leftDelim
+	}
+	if right == "" {
+		right = rightDelim
+	}
 	l := &lexer{
-		name:  name,
-		input: input,
-		state: lexText,
-		items: make(chan item, 2), // Two items of buffering is sufficient for all state functions
+		name:       name,
+		input:      input,
+		leftDelim:  left,
+		rightDelim: right,
+		state:      lexText,
+		items:      make(chan item, 2), // Two items of buffering is sufficient for all state functions
 	}
 	return l
 }
@@ -220,14 +230,14 @@ func lex(name, input string) *lexer {
 const (
 	leftDelim    = "{{"
 	rightDelim   = "}}"
-	leftComment  = "{{/*"
-	rightComment = "*/}}"
+	leftComment  = "/*"
+	rightComment = "*/"
 )
 
 // lexText scans until an opening action delimiter, "{{".
 func lexText(l *lexer) stateFn {
 	for {
-		if strings.HasPrefix(l.input[l.pos:], leftDelim) {
+		if strings.HasPrefix(l.input[l.pos:], l.leftDelim) {
 			if l.pos > l.start {
 				l.emit(itemText)
 			}
@@ -247,28 +257,28 @@ func lexText(l *lexer) stateFn {
 
 // lexLeftDelim scans the left delimiter, which is known to be present.
 func lexLeftDelim(l *lexer) stateFn {
-	if strings.HasPrefix(l.input[l.pos:], leftComment) {
+	if strings.HasPrefix(l.input[l.pos:], l.leftDelim+leftComment) {
 		return lexComment
 	}
-	l.pos += len(leftDelim)
+	l.pos += len(l.leftDelim)
 	l.emit(itemLeftDelim)
 	return lexInsideAction
 }
 
 // lexComment scans a comment. The left comment marker is known to be present.
 func lexComment(l *lexer) stateFn {
-	i := strings.Index(l.input[l.pos:], rightComment)
+	i := strings.Index(l.input[l.pos:], rightComment+l.rightDelim)
 	if i < 0 {
 		return l.errorf("unclosed comment")
 	}
-	l.pos += i + len(rightComment)
+	l.pos += i + len(rightComment) + len(l.rightDelim)
 	l.ignore()
 	return lexText
 }
 
 // lexRightDelim scans the right delimiter, which is known to be present.
 func lexRightDelim(l *lexer) stateFn {
-	l.pos += len(rightDelim)
+	l.pos += len(l.rightDelim)
 	l.emit(itemRightDelim)
 	return lexText
 }
@@ -278,7 +288,7 @@ func lexInsideAction(l *lexer) stateFn {
 	// Either number, quoted string, or identifier.
 	// Spaces separate and are ignored.
 	// Pipe symbols separate and are emitted.
-	if strings.HasPrefix(l.input[l.pos:], rightDelim) {
+	if strings.HasPrefix(l.input[l.pos:], l.rightDelim) {
 		return lexRightDelim
 	}
 	switch r := l.next(); {

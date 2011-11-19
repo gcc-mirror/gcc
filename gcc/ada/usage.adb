@@ -172,6 +172,11 @@ begin
    Write_Switch_Char ("ec=?");
    Write_Line ("Specify configuration pragmas file, e.g. -gnatec=/x/f.adc");
 
+   --  Line for -gnated switch
+
+   Write_Switch_Char ("ed");
+   Write_Line ("Disable synchronization of atomic variables");
+
    --  Line for -gnateD switch
 
    Write_Switch_Char ("eD?");

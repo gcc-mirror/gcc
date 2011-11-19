@@ -48,6 +48,11 @@ typedef union
   __float128 value;
 
   struct
+#ifdef __MINGW32__
+  /* On mingw targets the ms-bitfields option is active by default.
+     Therefore enforce gnu-bitfield style.  */
+  __attribute__ ((gcc_struct))
+#endif
   {
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
     unsigned negative:1;
@@ -89,6 +94,10 @@ typedef union
   } words32;
 
   struct
+#ifdef __MINGW32__
+  /* Make sure we are using gnu-style bitfield handling.  */
+  __attribute__ ((gcc_struct))
+#endif
   {
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
     unsigned negative:1;

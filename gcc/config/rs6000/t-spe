@@ -18,9 +18,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
-
 # What we really want are these variants:
 #	-mcpu=7400
 #	-mcpu=7400 -maltivec -mabi=altivec

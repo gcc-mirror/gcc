@@ -89,18 +89,14 @@ if [ -n "$HEADERS" ]; then
 fi
 
 # If this is tm.h, now include insn-flags.h only if IN_GCC is defined
-# but neither GENERATOR_FILE nor USED_FOR_TARGET is defined.  Also
-# include libgcc_tm.h if USED_FOR_TARGET is defined.  (Much of this is
-# temporary.)
+# but neither GENERATOR_FILE nor USED_FOR_TARGET is defined.  (Much of this
+# is temporary.)
 
 case $output in
     tm.h )
         cat >> ${output}T <<EOF
 #if defined IN_GCC && !defined GENERATOR_FILE && !defined USED_FOR_TARGET
 # include "insn-flags.h"
-#endif
-#ifdef USED_FOR_TARGET
-# include "libgcc_tm.h"
 #endif
 EOF
     ;;

@@ -188,7 +188,7 @@ GLIBCXX_3.4 {
     _ZNSs[0-58-9]a*;
     _ZNSs5beginEv;
     _ZNSs[0-58-9][c-e]*;
-    _ZNSs[0-58-9][g-z]*;
+    _ZNSs[0-59][g-z]*;
 #   _ZNSs[67][a-z]*E[PRcjmvy]*;
     _ZNSs6appendE[PRcjmvy]*;
     _ZNSs6assignE[PRcjmvy]*;
@@ -249,7 +249,7 @@ GLIBCXX_3.4 {
     _ZNSbIwSt11char_traitsIwESaIwEE[0-58-9]a*;
     _ZNSbIwSt11char_traitsIwESaIwEE5beginEv;
     _ZNSbIwSt11char_traitsIwESaIwEE[0-58-9][c-e]*;
-    _ZNSbIwSt11char_traitsIwESaIwEE[0-58-9][g-z]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[0-59][g-z]*;
 #   _ZNSbIwSt11char_traitsIwESaIwEE[67][a-b]*E[PRwjmvy]*;
     _ZNSbIwSt11char_traitsIwESaIwEE6appendE[PRwjmvy]*;
     _ZNSbIwSt11char_traitsIwESaIwEE6assignE[PRwjmvy]*;
@@ -1302,6 +1302,11 @@ GLIBCXX_3.4.17 {
     _ZNSt14numeric_limitsInE*;
     _ZNSt14numeric_limitsIoE*;
 
+    # std::string::pop_back()
+    _ZNSs8pop_backEv;
+    # std::wstring::pop_back()
+    _ZNSbIwSt11char_traitsIwESaIwEE8pop_backEv;
+
 } GLIBCXX_3.4.16;
 
 # Symbols in the support library (libsupc++) have their own tag.
@@ -1457,6 +1462,15 @@ CXXABI_1.3.3 {
     _ZSt17rethrow_exceptionNSt15__exception_ptr13exception_ptrE;
 
 } CXXABI_1.3.2;
+
+# Symbols in the support library (libsupc++) supporting trans-mem.
+CXXABI_TM_1 {
+  global:
+    __cxa_tm_cleanup;
+
+  local:
+    *;
+};
 
 CXXABI_1.3.4 {
 

@@ -8,6 +8,7 @@
 #include "go-panic.h"
 #include "array.h"
 #include "runtime.h"
+#include "arch.h"
 #include "malloc.h"
 
 /* We should be OK if we don't split the stack here, since the only

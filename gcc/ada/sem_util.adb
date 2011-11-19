@@ -5965,6 +5965,29 @@ package body Sem_Util is
       return Name_Buffer (Name_Len) = Suffix;
    end Has_Suffix;
 
+   ----------------
+   -- Add_Suffix --
+   ----------------
+
+   function Add_Suffix (E : Entity_Id; Suffix : Character) return Name_Id is
+   begin
+      Get_Name_String (Chars (E));
+      Add_Char_To_Name_Buffer (Suffix);
+      return Name_Find;
+   end Add_Suffix;
+
+   -------------------
+   -- Remove_Suffix --
+   -------------------
+
+   function Remove_Suffix (E : Entity_Id; Suffix : Character) return Name_Id is
+   begin
+      pragma Assert (Has_Suffix (E, Suffix));
+      Get_Name_String (Chars (E));
+      Name_Len := Name_Len - 1;
+      return Name_Find;
+   end Remove_Suffix;
+
    --------------------------
    -- Has_Tagged_Component --
    --------------------------
@@ -10814,7 +10837,9 @@ package body Sem_Util is
                --  source. This excludes, for example, calls to a dispatching
                --  assignment operation when the left-hand side is tagged.
 
-               if Modification_Comes_From_Source then
+               if Modification_Comes_From_Source
+                 or else Alfa_Mode
+               then
                   Generate_Reference (Ent, Exp, 'm');
 
                   --  If the target of the assignment is the bound variable
@@ -12810,6 +12835,11 @@ package body Sem_Util is
                end if;
             else
                U := Corresponding_Spec (P);
+            end if;
+
+         when Formal_Kind =>
+            if Present (Spec_Entity (E)) then
+               U := Spec_Entity (E);
             end if;
 
          when others =>

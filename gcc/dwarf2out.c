@@ -98,6 +98,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static void dwarf2out_source_line (unsigned int, const char *, int, bool);
 static rtx last_var_location_insn;
+static rtx cached_next_real_insn;
 
 #ifdef VMS_DEBUGGING_INFO
 int vms_file_stats_name (const char *, long long *, long *, char *, int *);
@@ -1090,6 +1091,7 @@ dwarf2out_end_epilogue (unsigned int line ATTRIBUTE_UNUSED,
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
   last_var_location_insn = NULL_RTX;
+  cached_next_real_insn = NULL_RTX;
 
   if (dwarf2out_do_cfi_asm ())
     fprintf (asm_out_file, "\t.cfi_endproc\n");
@@ -15457,7 +15459,11 @@ add_gnat_descriptive_type_attribute (dw_die_ref die, tree type,
   dtype_die = lookup_type_die (dtype);
   if (!dtype_die)
     {
+      /* The descriptive type indirectly references TYPE if this is also the
+	 case for TYPE itself.  Do not deal with the circularity here.  */
+      TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (type)) = 1;
       gen_type_die (dtype, context_die);
+      TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (type)) = 0;
       dtype_die = lookup_type_die (dtype);
       gcc_assert (dtype_die);
     }
@@ -18063,6 +18069,14 @@ gen_label_die (tree decl, dw_die_ref context_die)
 	  ASM_GENERATE_INTERNAL_LABEL (label, "L", CODE_LABEL_NUMBER (insn));
 	  add_AT_lbl_id (lbl_die, DW_AT_low_pc, label);
 	}
+      else if (insn
+	       && NOTE_P (insn)
+	       && NOTE_KIND (insn) == NOTE_INSN_DELETED_DEBUG_LABEL
+	       && CODE_LABEL_NUMBER (insn) != -1)
+	{
+	  ASM_GENERATE_INTERNAL_LABEL (label, "LDL", CODE_LABEL_NUMBER (insn));
+	  add_AT_lbl_id (lbl_die, DW_AT_low_pc, label);
+	}
     }
 }
 
@@ -20173,10 +20187,11 @@ dwarf2out_var_location (rtx loc_note)
 {
   char loclabel[MAX_ARTIFICIAL_LABEL_BYTES + 2];
   struct var_loc_node *newloc;
-  rtx next_real;
+  rtx next_real, next_note;
   static const char *last_label;
   static const char *last_postcall_label;
   static bool last_in_cold_section_p;
+  static rtx expected_next_loc_note;
   tree decl;
   bool var_loc_p;
 
@@ -20195,7 +20210,35 @@ dwarf2out_var_location (rtx loc_note)
   if (var_loc_p && !DECL_P (NOTE_VAR_LOCATION_DECL (loc_note)))
     return;
 
-  next_real = next_real_insn (loc_note);
+  /* Optimize processing a large consecutive sequence of location
+     notes so we don't spend too much time in next_real_insn.  If the
+     next insn is another location note, remember the next_real_insn
+     calculation for next time.  */
+  next_real = cached_next_real_insn;
+  if (next_real)
+    {
+      if (expected_next_loc_note != loc_note)
+	next_real = NULL_RTX;
+    }
+
+  next_note = NEXT_INSN (loc_note);
+  if (! next_note
+      || INSN_DELETED_P (next_note)
+      || GET_CODE (next_note) != NOTE
+      || (NOTE_KIND (next_note) != NOTE_INSN_VAR_LOCATION
+	  && NOTE_KIND (next_note) != NOTE_INSN_CALL_ARG_LOCATION))
+    next_note = NULL_RTX;
+
+  if (! next_real)
+    next_real = next_real_insn (loc_note);
+
+  if (next_note)
+    {
+      expected_next_loc_note = next_note;
+      cached_next_real_insn = next_real;
+    }
+  else
+    cached_next_real_insn = NULL_RTX;
 
   /* If there are no instructions which would be affected by this note,
      don't do anything.  */
@@ -20378,6 +20421,10 @@ set_cur_line_info_table (section *sec)
       VEC_safe_push (dw_line_info_table_p, gc, separate_line_info, table);
     }
 
+  if (DWARF2_ASM_LINE_DEBUG_INFO)
+    table->is_stmt = (cur_line_info_table
+		      ? cur_line_info_table->is_stmt
+		      : DWARF_LINE_DEFAULT_IS_STMT_START);
   cur_line_info_table = table;
 }
 
@@ -20475,12 +20522,27 @@ dwarf2out_source_line (unsigned int line, const char *filename,
   if (DWARF2_ASM_LINE_DEBUG_INFO)
     {
       /* Emit the .loc directive understood by GNU as.  */
-      fprintf (asm_out_file, "\t.loc %d %d 0", file_num, line);
+      /* "\t.loc %u %u 0 is_stmt %u discriminator %u",
+	 file_num, line, is_stmt, discriminator */
+      fputs ("\t.loc ", asm_out_file);
+      fprint_ul (asm_out_file, file_num);
+      putc (' ', asm_out_file);
+      fprint_ul (asm_out_file, line);
+      putc (' ', asm_out_file);
+      putc ('0', asm_out_file);
+
       if (is_stmt != table->is_stmt)
-	fprintf (asm_out_file, " is_stmt %d", is_stmt ? 1 : 0);
+	{
+	  fputs (" is_stmt ", asm_out_file);
+	  putc (is_stmt ? '1' : '0', asm_out_file);
+	}
       if (SUPPORTS_DISCRIMINATOR && discriminator != 0)
-	fprintf (asm_out_file, " discriminator %d", discriminator);
-      fputc ('\n', asm_out_file);
+	{
+	  gcc_assert (discriminator > 0);
+	  fputs (" discriminator ", asm_out_file);
+	  fprint_ul (asm_out_file, (unsigned long) discriminator);
+	}
+      putc ('\n', asm_out_file);
     }
   else
     {

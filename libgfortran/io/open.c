@@ -153,7 +153,7 @@ static const st_option async_opt[] =
 static void
 test_endfile (gfc_unit * u)
 {
-  if (u->endfile == NO_ENDFILE && file_length (u->s) == stell (u->s))
+  if (u->endfile == NO_ENDFILE && ssize (u->s) == stell (u->s))
     u->endfile = AT_ENDFILE;
 }
 
@@ -554,7 +554,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
 
   if (flags->position == POSITION_APPEND)
     {
-      if (file_size (opp->file, opp->file_len) > 0 && sseek (u->s, 0, SEEK_END) < 0)
+      if (sseek (u->s, 0, SEEK_END) < 0)
 	generate_error (&opp->common, LIBERROR_OS, NULL);
       u->endfile = AT_ENDFILE;
     }

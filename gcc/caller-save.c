@@ -231,7 +231,8 @@ init_caller_save (void)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (TEST_HARD_REG_BIT
 	(reg_class_contents
-	 [(int) base_reg_class (regno_save_mode[i][1], PLUS, CONST_INT)], i))
+	 [(int) base_reg_class (regno_save_mode[i][1], ADDR_SPACE_GENERIC,
+				PLUS, CONST_INT)], i))
       break;
 
   gcc_assert (i < FIRST_PSEUDO_REGISTER);

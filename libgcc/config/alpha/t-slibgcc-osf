@@ -22,7 +22,7 @@
 SHLIB_LDFLAGS = -Wl,-msym -Wl,-set_version,gcc.1 -Wl,-soname,$(SHLIB_SONAME) \
 	-Wl,-hidden -Wl,-input,$(SHLIB_MAP)
 
-SHLIB_MKMAP = $(gcc_srcdir)/mkmap-flat.awk
+SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
 SHLIB_MKMAP_OPTS = -v osf_export=1
 # Needed so mkmap-flat.awk can parse the nm output.
 SHLIB_NM_FLAGS = -Bg

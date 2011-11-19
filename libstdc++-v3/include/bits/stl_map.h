@@ -59,7 +59,9 @@
 
 #include <bits/functexcept.h>
 #include <bits/concept_check.h>
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <initializer_list>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -614,6 +616,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       iterator
       erase(const_iterator __position)
+      { return _M_t.erase(__position); }
+
+      // LWG 2059.
+      iterator
+      erase(iterator __position)
       { return _M_t.erase(__position); }
 #else
       /**

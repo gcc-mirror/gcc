@@ -37,6 +37,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "tconfig.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "libgcc_tm.h"
 #include "fp-bit.h"
 
 /* The following macros can be defined to change the behavior of this file:

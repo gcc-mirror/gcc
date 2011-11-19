@@ -80,7 +80,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Don't put any single quote (') in MOD_VERSION, 
    if yout want it to be recognized.  */
-#define MOD_VERSION "7"
+#define MOD_VERSION "8"
 
 
 /* Structure that describes a position within a module file.  */
@@ -429,6 +429,34 @@ resolve_fixups (fixup_t *f, void *gp)
 }
 
 
+/* Convert a string such that it starts with a lower-case character. Used
+   to convert the symtree name of a derived-type to the symbol name or to
+   the name of the associated generic function.  */
+
+const char *
+dt_lower_string (const char *name)
+{
+  if (name[0] != (char) TOLOWER ((unsigned char) name[0]))
+    return gfc_get_string ("%c%s", (char) TOLOWER ((unsigned char) name[0]),
+			   &name[1]);
+  return gfc_get_string (name);
+}
+
+
+/* Convert a string such that it starts with an upper-case character. Used to
+   return the symtree-name for a derived type; the symbol name itself and the
+   symtree/symbol name of the associated generic function start with a lower-
+   case character.  */
+
+const char *
+dt_upper_string (const char *name)
+{
+  if (name[0] != (char) TOUPPER ((unsigned char) name[0]))
+    return gfc_get_string ("%c%s", (char) TOUPPER ((unsigned char) name[0]),
+			   &name[1]);
+  return gfc_get_string (name);
+}
+
 /* Call here during module reading when we know what pointer to
    associate with an integer.  Any fixups that exist are resolved at
    this time.  */
@@ -699,12 +727,18 @@ static const char *
 find_use_name_n (const char *name, int *inst, bool interface)
 {
   gfc_use_rename *u;
+  const char *low_name = NULL;
   int i;
+
+  /* For derived types.  */
+  if (name[0] != (char) TOLOWER ((unsigned char) name[0]))
+    low_name = dt_lower_string (name);
 
   i = 0;
   for (u = gfc_rename_list; u; u = u->next)
     {
-      if (strcmp (u->use_name, name) != 0
+      if ((!low_name && strcmp (u->use_name, name) != 0)
+	  || (low_name && strcmp (u->use_name, low_name) != 0)
 	  || (u->op == INTRINSIC_USER && !interface)
 	  || (u->op != INTRINSIC_USER &&  interface))
 	continue;
@@ -722,6 +756,13 @@ find_use_name_n (const char *name, int *inst, bool interface)
     return only_flag ? NULL : name;
 
   u->found = 1;
+
+  if (low_name)
+    {
+      if (u->local_name[0] == '\0')
+	return name;
+      return dt_upper_string (u->local_name);
+    }
 
   return (u->local_name[0] != '\0') ? u->local_name : name;
 }
@@ -780,6 +821,7 @@ find_use_operator (gfc_intrinsic_op op)
 typedef struct true_name
 {
   BBT_HEADER (true_name);
+  const char *name;
   gfc_symbol *sym;
 }
 true_name;
@@ -803,7 +845,7 @@ compare_true_names (void *_t1, void *_t2)
   if (c != 0)
     return c;
 
-  return strcmp (t1->sym->name, t2->sym->name);
+  return strcmp (t1->name, t2->name);
 }
 
 
@@ -817,7 +859,7 @@ find_true_name (const char *name, const char *module)
   gfc_symbol sym;
   int c;
 
-  sym.name = gfc_get_string (name);
+  t.name = gfc_get_string (name);
   if (module != NULL)
     sym.module = gfc_get_string (module);
   else
@@ -847,6 +889,10 @@ add_true_name (gfc_symbol *sym)
 
   t = XCNEW (true_name);
   t->sym = sym;
+  if (sym->attr.flavor == FL_DERIVED)
+    t->name = dt_upper_string (sym->name);
+  else
+    t->name = sym->name;
 
   gfc_insert_bbt (&true_name_root, t, compare_true_names);
 }
@@ -858,13 +904,19 @@ add_true_name (gfc_symbol *sym)
 static void
 build_tnt (gfc_symtree *st)
 {
+  const char *name;
   if (st == NULL)
     return;
 
   build_tnt (st->left);
   build_tnt (st->right);
 
-  if (find_true_name (st->n.sym->name, st->n.sym->module) != NULL)
+  if (st->n.sym->attr.flavor == FL_DERIVED)
+    name = dt_upper_string (st->n.sym->name);
+  else
+    name = st->n.sym->name;
+
+  if (find_true_name (name, st->n.sym->module) != NULL)
     return;
 
   add_true_name (st->n.sym);
@@ -2986,8 +3038,12 @@ fix_mio_expr (gfc_expr *e)
 	 namespace to see if the required, non-contained symbol is available
 	 yet. If so, the latter should be written.  */
       if (e->symtree->n.sym && check_unique_name (e->symtree->name))
-	ns_st = gfc_find_symtree (gfc_current_ns->sym_root,
-				  e->symtree->n.sym->name);
+	{
+          const char *name = e->symtree->n.sym->name;
+	  if (e->symtree->n.sym->attr.flavor == FL_DERIVED)
+	    name = dt_upper_string (name);
+	  ns_st = gfc_find_symtree (gfc_current_ns->sym_root, name);
+	}
 
       /* On the other hand, if the existing symbol is the module name or the
 	 new symbol is a dummy argument, do not do the promotion.  */
@@ -4205,6 +4261,7 @@ load_needed (pointer_info *p)
 				 1, &ns->proc_name);
 
       sym = gfc_new_symbol (p->u.rsym.true_name, ns);
+      sym->name = dt_lower_string (p->u.rsym.true_name);
       sym->module = gfc_get_string (p->u.rsym.module);
       strcpy (sym->binding_label, p->u.rsym.binding_label);
 
@@ -4497,6 +4554,7 @@ read_module (void)
 		{
 		  info->u.rsym.sym = gfc_new_symbol (info->u.rsym.true_name,
 						     gfc_current_ns);
+		  info->u.rsym.sym->name = dt_lower_string (info->u.rsym.true_name);
 		  sym = info->u.rsym.sym;
 		  sym->module = gfc_get_string (info->u.rsym.module);
 
@@ -4835,7 +4893,7 @@ write_dt_extensions (gfc_symtree *st)
     return;
 
   mio_lparen ();
-  mio_pool_string (&st->n.sym->name);
+  mio_pool_string (&st->name);
   if (st->n.sym->module != NULL)
     mio_pool_string (&st->n.sym->module);
   else
@@ -4870,7 +4928,15 @@ write_symbol (int n, gfc_symbol *sym)
     gfc_internal_error ("write_symbol(): bad module symbol '%s'", sym->name);
 
   mio_integer (&n);
-  mio_pool_string (&sym->name);
+
+  if (sym->attr.flavor == FL_DERIVED)
+    {
+      const char *name;
+      name = dt_upper_string (sym->name);
+      mio_pool_string (&name);
+    }
+  else
+    mio_pool_string (&sym->name);
 
   mio_pool_string (&sym->module);
   if (sym->attr.is_bind_c || sym->attr.is_iso_c)
@@ -5566,7 +5632,8 @@ create_derived_type (const char *name, const char *modname,
 		      intmod_id module, int id)
 {
   gfc_symtree *tmp_symtree;
-  gfc_symbol *sym;
+  gfc_symbol *sym, *dt_sym;
+  gfc_interface *intr, *head;
 
   tmp_symtree = gfc_find_symtree (gfc_current_ns->sym_root, name);
   if (tmp_symtree != NULL)
@@ -5579,16 +5646,33 @@ create_derived_type (const char *name, const char *modname,
 
   gfc_get_sym_tree (name, gfc_current_ns, &tmp_symtree, false);
   sym = tmp_symtree->n.sym;
-
   sym->module = gfc_get_string (modname);
   sym->from_intmod = module;
   sym->intmod_sym_id = id;
-  sym->attr.flavor = FL_DERIVED;
-  sym->attr.private_comp = 1;
-  sym->attr.zero_comp = 1;
-  sym->attr.use_assoc = 1;
-}
+  sym->attr.flavor = FL_PROCEDURE;
+  sym->attr.function = 1;
+  sym->attr.generic = 1;
 
+  gfc_get_sym_tree (dt_upper_string (sym->name),
+		    gfc_current_ns, &tmp_symtree, false);
+  dt_sym = tmp_symtree->n.sym;
+  dt_sym->name = gfc_get_string (sym->name);
+  dt_sym->attr.flavor = FL_DERIVED;
+  dt_sym->attr.private_comp = 1;
+  dt_sym->attr.zero_comp = 1;
+  dt_sym->attr.use_assoc = 1;
+  dt_sym->module = gfc_get_string (modname);
+  dt_sym->from_intmod = module;
+  dt_sym->intmod_sym_id = id;
+
+  head = sym->generic;
+  intr = gfc_get_interface ();
+  intr->sym = dt_sym;
+  intr->where = gfc_current_locus;
+  intr->next = head;
+  sym->generic = intr;
+  sym->attr.if_source = IFSRC_DECL;
+}
 
 
 /* USE the ISO_FORTRAN_ENV intrinsic module.  */

@@ -14,19 +14,6 @@ runtime_initlock(Lock *l)
 		runtime_throw("sem_init failed");
 }
 
-static uint32
-runtime_xadd(uint32 volatile *val, int32 delta)
-{
-	uint32 oval, nval;
-
-	for(;;){
-		oval = *val;
-		nval = oval + delta;
-		if(runtime_cas(val, oval, nval))
-			return nval;
-	}
-}
-
 // noinline so that runtime_lock doesn't have to split the stack.
 static void runtime_lock_full(Lock *l) __attribute__ ((noinline));
 

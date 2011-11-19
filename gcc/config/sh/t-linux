@@ -1,8 +1,2 @@
-LIB1ASMFUNCS_CACHE = _ic_invalidate _ic_invalidate_array
-
-LIB2FUNCS_EXTRA= $(srcdir)/config/sh/linux-atomic.asm
-
 MULTILIB_DIRNAMES= 
 MULTILIB_MATCHES = 
-
-EXTRA_MULTILIB_PARTS= crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o

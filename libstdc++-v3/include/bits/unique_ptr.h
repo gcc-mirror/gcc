@@ -545,7 +545,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __hash_base<size_t, unique_ptr<_Tp, _Dp>>
     {
       size_t
-      operator()(const unique_ptr<_Tp, _Dp>& __u) const
+      operator()(const unique_ptr<_Tp, _Dp>& __u) const noexcept
       {
 	typedef unique_ptr<_Tp, _Dp> _UP;
 	return std::hash<typename _UP::pointer>()(__u.get());

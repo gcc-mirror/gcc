@@ -172,7 +172,8 @@ ada_demangle (const char *mangled, int options);
 enum gnu_v3_ctor_kinds {
   gnu_v3_complete_object_ctor = 1,
   gnu_v3_base_object_ctor,
-  gnu_v3_complete_object_allocating_ctor
+  gnu_v3_complete_object_allocating_ctor,
+  gnu_v3_object_ctor_group
 };
 
 /* Return non-zero iff NAME is the mangled form of a constructor name
@@ -186,7 +187,8 @@ extern enum gnu_v3_ctor_kinds
 enum gnu_v3_dtor_kinds {
   gnu_v3_deleting_dtor = 1,
   gnu_v3_complete_object_dtor,
-  gnu_v3_base_object_dtor
+  gnu_v3_base_object_dtor,
+  gnu_v3_object_dtor_group
 };
 
 /* Return non-zero iff NAME is the mangled form of a destructor name
@@ -401,6 +403,13 @@ enum demangle_component_type
   DEMANGLE_COMPONENT_DEFAULT_ARG,
   /* An unnamed type.  */
   DEMANGLE_COMPONENT_UNNAMED_TYPE,
+  /* A transactional clone.  This has one subtree, the encoding for
+     which it is providing alternative linkage.  */
+  DEMANGLE_COMPONENT_TRANSACTION_CLONE,
+  /* A non-transactional clone entry point.  In the i386/x86_64 abi,
+     the unmangled symbol of a tm_callable becomes a thunk and the
+     non-transactional function version is mangled thus.  */
+  DEMANGLE_COMPONENT_NONTRANSACTION_CLONE,
   /* A pack expansion.  */
   DEMANGLE_COMPONENT_PACK_EXPANSION,
   /* A cloned function.  */

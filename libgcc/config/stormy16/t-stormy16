@@ -1,0 +1,39 @@
+# -*- makefile -*-
+#
+# Copyright (C) 2001, 2004, 2010, 2011 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# SImode arithmetic and logical routines, HImode bit counting routines.
+LIB2ADD = \
+	$(srcdir)/config/stormy16/udivmodsi4.c \
+	$(srcdir)/config/stormy16/divsi3.c \
+	$(srcdir)/config/stormy16/modsi3.c \
+	$(srcdir)/config/stormy16/udivsi3.c \
+	$(srcdir)/config/stormy16/umodsi3.c \
+	$(srcdir)/config/stormy16/ashlsi3.c \
+	$(srcdir)/config/stormy16/ashrsi3.c \
+	$(srcdir)/config/stormy16/lshrsi3.c \
+	$(srcdir)/config/stormy16/popcounthi2.c \
+	$(srcdir)/config/stormy16/parityhi2.c \
+	$(srcdir)/config/stormy16/clzhi2.c \
+	$(srcdir)/config/stormy16/ctzhi2.c \
+	$(srcdir)/config/stormy16/ffshi2.c \
+	$(srcdir)/config/stormy16/cmpsi2.c \
+	$(srcdir)/config/stormy16/ucmpsi2.c
+
+HOST_LIBGCC2_CFLAGS += -O2

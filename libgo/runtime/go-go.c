@@ -17,6 +17,7 @@
 #include "go-panic.h"
 #include "go-alloc.h"
 #include "runtime.h"
+#include "arch.h"
 #include "malloc.h"
 
 #ifdef USING_SPLIT_STACK
@@ -114,6 +115,7 @@ remove_current_thread (void *dummy __attribute__ ((unused)))
      any code from here to thread exit must not assume that m is
      valid.  */
   m = NULL;
+  g = NULL;
 
   i = pthread_mutex_unlock (&__go_thread_ids_lock);
   __go_assert (i == 0);
@@ -134,10 +136,11 @@ start_go_thread (void *thread_arg)
 
 #ifdef __rtems__
   __wrap_rtems_task_variable_add ((void **) &m);
-  __wrap_rtems_task_variable_add ((void **) &__go_panic_defer);
+  __wrap_rtems_task_variable_add ((void **) &g);
 #endif
 
   m = newm;
+  g = m->curg;
 
   pthread_cleanup_push (remove_current_thread, NULL);
 
@@ -229,6 +232,9 @@ __go_go (void (*pfn) (void*), void *arg)
 
   newm->list_entry = list_entry;
 
+  newm->curg = __go_alloc (sizeof (G));
+  newm->curg->m = newm;
+
   newm->id = __sync_fetch_and_add (&mcount, 1);
   newm->fastrand = 0x49f6428aUL + newm->id;
 
@@ -297,9 +303,6 @@ stop_for_gc (void)
       }
   }
 #endif
-
-  /* FIXME: Perhaps we should just move __go_panic_defer into M.  */
-  m->gc_panic_defer = __go_panic_defer;
 
   /* Tell the garbage collector that we are ready by posting to the
      semaphore.  */
@@ -432,10 +435,6 @@ runtime_stoptheworld (void)
       --c;
     }
 
-  /* The gc_panic_defer field should now be set for all M's except the
-     one in this thread.  Set this one now.  */
-  m->gc_panic_defer = __go_panic_defer;
-
   /* Leave with __go_thread_ids_lock held.  */
 }
 
@@ -561,7 +560,7 @@ __go_cachestats (void)
 /* Start the other threads after garbage collection.  */
 
 void
-runtime_starttheworld (void)
+runtime_starttheworld (bool extra __attribute__ ((unused)))
 {
   int i;
   pthread_t me;

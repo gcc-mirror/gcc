@@ -1,0 +1,19 @@
+# If we are building next to winsup, this will let us find the real
+# limits.h when building libgcc2.  Otherwise, winsup must be installed
+# first.
+LIBGCC2_INCLUDES += -I$(srcdir)/../winsup/include \
+	-I$(srcdir)/../winsup/cygwin/include
+
+# Cygwin-specific parts of LIB_SPEC
+SHLIB_LC = -lcygwin -ladvapi32 -lshell32 -luser32 -lkernel32
+
+# We have already included one of the t-{dw2,sjlj}-eh fragments for EH_MODEL
+SHLIB_EH_EXTENSION = $(subst -dw2,,-$(EH_MODEL))
+
+# Cygwin uses different conventions than MinGW; override generic SHLIB_ def'ns here.
+SHLIB_IMPLIB = @shlib_base_name@$(SHLIB_EXT).a
+SHLIB_SONAME = cyggcc_s$(SHLIB_EH_EXTENSION)-$(SHLIB_SOVERSION)$(SHLIB_EXT)
+# This must match the definitions of SHLIB_SONAME/SHLIB_SOVERSION and LIBGCC_SONAME.
+# We'd like to use SHLIB_SONAME here too, and we can, since
+# we don't rely on shlib_base_name substitution for it.
+SHLIB_MKMAP_OPTS = -v pe_dll=$(SHLIB_SONAME)

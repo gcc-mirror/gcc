@@ -51,6 +51,7 @@
 #include "debug.h"
 #include "opts.h"
 #include "hw-doloop.h"
+#include "regrename.h"
 
 /* Table of supported architecture variants.  */
 typedef struct
@@ -3312,6 +3313,25 @@ merge_unit_reqs (unit_req_table reqs)
     }
 }
 
+/* Examine the table REQS and return a measure of unit imbalance by comparing
+   the two sides of the machine.  If, for example, D1 is used twice and D2
+   used not at all, the return value should be 1 in the absence of other
+   imbalances.  */
+static int
+unit_req_imbalance (unit_req_table reqs)
+{
+  int val = 0;
+  int i;
+
+  for (i = 0; i < UNIT_REQ_MAX; i++)
+    {
+      int factor = unit_req_factor ((enum unitreqs) i);
+      int diff = abs (reqs[0][i] - reqs[1][i]);
+      val += (diff + factor - 1) / factor / 2;
+    }
+  return val;
+}
+
 /* Return the resource-constrained minimum iteration interval given the
    data in the REQS table.  This must have been processed with
    merge_unit_reqs already.  */
@@ -3323,11 +3343,238 @@ res_mii (unit_req_table reqs)
   for (side = 0; side < 2; side++)
     for (req = 0; req < UNIT_REQ_MAX; req++)
       {
-	int factor = unit_req_factor (req);
+	int factor = unit_req_factor ((enum unitreqs) req);
 	worst = MAX ((reqs[side][UNIT_REQ_D] + factor - 1) / factor, worst);
       }
 
   return worst;
+}
+
+/* Examine INSN, and store in PMASK1 and PMASK2 bitmasks that represent
+   the operands that are involved in the (up to) two reservations, as
+   found by get_unit_reqs.  Return true if we did this successfully, false
+   if we couldn't identify what to do with INSN.  */
+static bool
+get_unit_operand_masks (rtx insn, unsigned int *pmask1, unsigned int *pmask2)
+{
+  enum attr_op_pattern op_pat;
+
+  if (recog_memoized (insn) < 0)
+    return 0;
+  if (GET_CODE (PATTERN (insn)) == COND_EXEC)
+    return false;
+  extract_insn (insn);
+  op_pat = get_attr_op_pattern (insn);
+  if (op_pat == OP_PATTERN_DT)
+    {
+      gcc_assert (recog_data.n_operands == 2);
+      *pmask1 = 1 << 0;
+      *pmask2 = 1 << 1;
+      return true;
+    }
+  else if (op_pat == OP_PATTERN_TD)
+    {
+      gcc_assert (recog_data.n_operands == 2);
+      *pmask1 = 1 << 1;
+      *pmask2 = 1 << 0;
+      return true;
+    }
+  else if (op_pat == OP_PATTERN_SXS)
+    {
+      gcc_assert (recog_data.n_operands == 3);
+      *pmask1 = (1 << 0) | (1 << 2);
+      *pmask2 = 1 << 1;
+      return true;
+    }
+  else if (op_pat == OP_PATTERN_SX)
+    {
+      gcc_assert (recog_data.n_operands == 2);
+      *pmask1 = 1 << 0;
+      *pmask2 = 1 << 1;
+      return true;
+    }
+  else if (op_pat == OP_PATTERN_SSX)
+    {
+      gcc_assert (recog_data.n_operands == 3);
+      *pmask1 = (1 << 0) | (1 << 1);
+      *pmask2 = 1 << 2;
+      return true;
+    }
+  return false;
+}
+
+/* Try to replace a register in INSN, which has corresponding rename info
+   from regrename_analyze in INFO.  OP_MASK and ORIG_SIDE provide information
+   about the operands that must be renamed and the side they are on.
+   REQS is the table of unit reservations in the loop between HEAD and TAIL.
+   We recompute this information locally after our transformation, and keep
+   it only if we managed to improve the balance.  */
+static void
+try_rename_operands (rtx head, rtx tail, unit_req_table reqs, rtx insn,
+		     insn_rr_info *info, unsigned int op_mask, int orig_side)
+{
+  enum reg_class super_class = orig_side == 0 ? B_REGS : A_REGS;
+  HARD_REG_SET unavailable;
+  du_head_p this_head;
+  struct du_chain *chain;
+  int i;
+  unsigned tmp_mask;
+  int best_reg, old_reg;
+  VEC (du_head_p, heap) *involved_chains = NULL;
+  unit_req_table new_reqs;
+
+  for (i = 0, tmp_mask = op_mask; tmp_mask; i++)
+    {
+      du_head_p op_chain;
+      if ((tmp_mask & (1 << i)) == 0)
+	continue;
+      if (info->op_info[i].n_chains != 1)
+	goto out_fail;
+      op_chain = regrename_chain_from_id (info->op_info[i].heads[0]->id);
+      VEC_safe_push (du_head_p, heap, involved_chains, op_chain);
+      tmp_mask &= ~(1 << i);
+    }
+
+  if (VEC_length (du_head_p, involved_chains) > 1)
+    goto out_fail;
+
+  this_head = VEC_index (du_head_p, involved_chains, 0);
+  if (this_head->cannot_rename)
+    goto out_fail;
+
+  for (chain = this_head->first; chain; chain = chain->next_use)
+    {
+      unsigned int mask1, mask2, mask_changed;
+      int count, side1, side2, req1, req2;
+      insn_rr_info *this_rr = VEC_index (insn_rr_info, insn_rr,
+					 INSN_UID (chain->insn));
+
+      count = get_unit_reqs (chain->insn, &req1, &side1, &req2, &side2);
+
+      if (count == 0)
+	goto out_fail;
+
+      if (!get_unit_operand_masks (chain->insn, &mask1, &mask2))
+	goto out_fail;
+
+      extract_insn (chain->insn);
+
+      mask_changed = 0;
+      for (i = 0; i < recog_data.n_operands; i++)
+	{
+	  int j;
+	  int n_this_op = this_rr->op_info[i].n_chains;
+	  for (j = 0; j < n_this_op; j++)
+	    {
+	      du_head_p other = this_rr->op_info[i].heads[j];
+	      if (regrename_chain_from_id (other->id) == this_head)
+		break;
+	    }
+	  if (j == n_this_op)
+	    continue;
+
+	  if (n_this_op != 1)
+	    goto out_fail;
+	  mask_changed |= 1 << i;
+	}
+      gcc_assert (mask_changed != 0);
+      if (mask_changed != mask1 && mask_changed != mask2)
+	goto out_fail;
+    }
+
+  /* If we get here, we can do the renaming.  */
+  COMPL_HARD_REG_SET (unavailable, reg_class_contents[(int) super_class]);
+
+  old_reg = this_head->regno;
+  best_reg = find_best_rename_reg (this_head, super_class, &unavailable, old_reg);
+
+  regrename_do_replace (this_head, best_reg);
+
+  count_unit_reqs (new_reqs, head, PREV_INSN (tail));
+  merge_unit_reqs (new_reqs);
+  if (dump_file)
+    {
+      fprintf (dump_file, "reshuffle for insn %d, op_mask %x, "
+	       "original side %d, new reg %d\n",
+	       INSN_UID (insn), op_mask, orig_side, best_reg);
+      fprintf (dump_file, "  imbalance %d -> %d\n",
+	       unit_req_imbalance (reqs), unit_req_imbalance (new_reqs));
+    }
+  if (unit_req_imbalance (new_reqs) > unit_req_imbalance (reqs))
+    regrename_do_replace (this_head, old_reg);
+  else
+    memcpy (reqs, new_reqs, sizeof (unit_req_table));
+
+ out_fail:
+  VEC_free (du_head_p, heap, involved_chains);
+}
+
+/* Find insns in LOOP which would, if shifted to the other side
+   of the machine, reduce an imbalance in the unit reservations.  */
+static void
+reshuffle_units (basic_block loop)
+{
+  rtx head = BB_HEAD (loop);
+  rtx tail = BB_END (loop);
+  rtx insn;
+  unit_req_table reqs;
+  edge e;
+  edge_iterator ei;
+  bitmap_head bbs;
+
+  count_unit_reqs (reqs, head, PREV_INSN (tail));
+  merge_unit_reqs (reqs);
+
+  regrename_init (true);
+
+  bitmap_initialize (&bbs, &bitmap_default_obstack);
+
+  FOR_EACH_EDGE (e, ei, loop->preds)
+    bitmap_set_bit (&bbs, e->src->index);
+
+  bitmap_set_bit (&bbs, loop->index);
+  regrename_analyze (&bbs);
+
+  for (insn = head; insn != NEXT_INSN (tail); insn = NEXT_INSN (insn))
+    {
+      enum attr_units units;
+      int count, side1, side2, req1, req2;
+      unsigned int mask1, mask2;
+      insn_rr_info *info;
+
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+
+      count = get_unit_reqs (insn, &req1, &side1, &req2, &side2);
+
+      if (count == 0)
+	continue;
+
+      if (!get_unit_operand_masks (insn, &mask1, &mask2))
+	continue;
+
+      info = VEC_index (insn_rr_info, insn_rr, INSN_UID (insn));
+      if (info->op_info == NULL)
+	continue;
+
+      if (reqs[side1][req1] > 1
+	  && reqs[side1][req1] > 2 * reqs[side1 ^ 1][req1])
+	{
+	  try_rename_operands (head, tail, reqs, insn, info, mask1, side1);
+	}
+
+      units = get_attr_units (insn);
+      if (units == UNITS_D_ADDR)
+	{
+	  gcc_assert (count == 2);
+	  if (reqs[side2][req2] > 1
+	      && reqs[side2][req2] > 2 * reqs[side2 ^ 1][req2])
+	    {
+	      try_rename_operands (head, tail, reqs, insn, info, mask2, side2);
+	    }
+	}
+    }
+  regrename_finish ();
 }
 
 /* Backend scheduling state.  */
@@ -3672,7 +3919,7 @@ c6x_set_sched_flags (spec_info_t spec_info)
 
   if (*flags & SCHED_EBB)
     {
-      *flags |= DO_BACKTRACKING;
+      *flags |= DO_BACKTRACKING | DO_PREDICATION;
     }
 
   spec_info->mask = 0;
@@ -5222,6 +5469,26 @@ filter_insns_above (basic_block bb, int max_uid)
     }
 }
 
+/* Implement TARGET_ASM_EMIT_EXCEPT_PERSONALITY.  */
+
+static void
+c6x_asm_emit_except_personality (rtx personality)
+{
+  fputs ("\t.personality\t", asm_out_file);
+  output_addr_const (asm_out_file, personality);
+  fputc ('\n', asm_out_file);
+}
+
+/* Use a special assembly directive rather than a regular setion for
+   unwind table data.  */
+
+static void
+c6x_asm_init_sections (void)
+{
+  exception_section = get_unnamed_section (0, output_section_asm_op,
+					   "\t.handlerdata");
+}
+
 /* A callback for the hw-doloop pass.  Called to optimize LOOP in a
    machine-specific fashion; returns true if successful and false if
    the hwloop_fail function should be called.  */
@@ -5232,7 +5499,7 @@ hwloop_optimize (hwloop_info loop)
   basic_block entry_bb, bb;
   rtx seq, insn, prev, entry_after, end_packet;
   rtx head_insn, tail_insn, new_insns, last_insn;
-  int loop_earliest, entry_earliest, entry_end_cycle;
+  int loop_earliest;
   int n_execute_packets;
   edge entry_edge;
   unsigned ix;
@@ -5262,6 +5529,8 @@ hwloop_optimize (hwloop_info loop)
       break;
   if (entry_edge == NULL)
     return false;
+
+  reshuffle_units (loop->head);
 
   schedule_ebbs_init ();
   schedule_ebb (BB_HEAD (loop->tail), loop->loop_end, true);
@@ -5632,10 +5901,13 @@ c6x_reorg (void)
   compute_bb_for_insn ();
 
   df_clear_flags (DF_LR_RUN_DCE);
+  df_note_add_problem ();
 
   /* If optimizing, we'll have split before scheduling.  */
   if (optimize == 0)
     split_all_insns ();
+
+  df_analyze ();
 
   if (c6x_flag_schedule_insns2)
     {
@@ -6536,6 +6808,12 @@ c6x_debug_unwind_info (void)
 /* The C6x ABI follows the ARM EABI exception handling rules.  */
 #undef TARGET_ARM_EABI_UNWINDER
 #define TARGET_ARM_EABI_UNWINDER true
+
+#undef TARGET_ASM_EMIT_EXCEPT_PERSONALITY
+#define TARGET_ASM_EMIT_EXCEPT_PERSONALITY c6x_asm_emit_except_personality
+
+#undef TARGET_ASM_INIT_SECTIONS
+#define TARGET_ASM_INIT_SECTIONS c6x_asm_init_sections
 
 #undef TARGET_DEBUG_UNWIND_INFO
 #define TARGET_DEBUG_UNWIND_INFO  c6x_debug_unwind_info

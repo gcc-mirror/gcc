@@ -367,6 +367,17 @@ pp_cxx_id_expression (cxx_pretty_printer *pp, tree t)
     pp_cxx_unqualified_id (pp, t);
 }
 
+/* user-defined literal:
+      literal ud-suffix  */
+
+void
+pp_cxx_userdef_literal (cxx_pretty_printer *pp, tree t)
+{
+  pp_cxx_constant (pp, USERDEF_LITERAL_VALUE (t));
+  pp_cxx_id_expression (pp, USERDEF_LITERAL_SUFFIX_ID (t));
+}
+
+
 /* primary-expression:
      literal
      this
@@ -411,6 +422,10 @@ pp_cxx_primary_expression (cxx_pretty_printer *pp, tree t)
     case COMPLEX_CST:
     case STRING_CST:
       pp_cxx_constant (pp, t);
+      break;
+
+    case USERDEF_LITERAL:
+      pp_cxx_userdef_literal (pp, t);
       break;
 
     case BASELINK:
@@ -1022,6 +1037,10 @@ pp_cxx_expression (cxx_pretty_printer *pp, tree t)
     case REAL_CST:
     case COMPLEX_CST:
       pp_cxx_constant (pp, t);
+      break;
+
+    case USERDEF_LITERAL:
+      pp_cxx_userdef_literal (pp, t);
       break;
 
     case RESULT_DECL:

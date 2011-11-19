@@ -20,6 +20,3 @@
 MULTILIB_OPTIONS = msoft-float
 MULTILIB_DIRNAMES = soft
 MULTILIB_MATCHES = msoft-float=mno-fpu
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

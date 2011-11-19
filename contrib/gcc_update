@@ -141,6 +141,11 @@ libgupc/config.h.in: libgupc/configure.ac
 libgupc/configure: libgupc/configure.ac libgupc/aclocal.m4 libgupc/acinclude.m4
 libgupc/Makefile.in: libgupc/Makefile.am libgupc/aclocal.m4
 libgupc/testsuite/Makefile.in: libgupc/Makefile.am libgupc/aclocal.m4
+libitm/aclocal.m4: libitm/configure.ac libitm/acinclude.m4
+libitm/Makefile.in: libitm/Makefile.am libitm/aclocal.m4
+libitm/testsuite/Makefile.in: libitm/testsuite/Makefile.am libitm/aclocal.m4
+libitm/configure: libitm/configure.ac libitm/aclocal.m4
+libitm/config.h.in: libitm/configure.ac libitm/aclocal.m4
 # Top level
 Makefile.in: Makefile.tpl Makefile.def
 configure: configure.ac config/acx.m4

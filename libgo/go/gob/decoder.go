@@ -29,9 +29,15 @@ type Decoder struct {
 }
 
 // NewDecoder returns a new decoder that reads from the io.Reader.
+// If r does not also implement io.ByteReader, it will be wrapped in a
+// bufio.Reader.
 func NewDecoder(r io.Reader) *Decoder {
 	dec := new(Decoder)
-	dec.r = bufio.NewReader(r)
+	// We use the ability to read bytes as a plausible surrogate for buffering.
+	if _, ok := r.(io.ByteReader); !ok {
+		r = bufio.NewReader(r)
+	}
+	dec.r = r
 	dec.wireType = make(map[typeId]*wireType)
 	dec.decoderCache = make(map[reflect.Type]map[typeId]**decEngine)
 	dec.ignorerCache = make(map[typeId]**decEngine)
@@ -58,6 +64,8 @@ func (dec *Decoder) recvType(id typeId) {
 	dec.wireType[id] = wire
 }
 
+var errBadCount = gobError{os.NewError("invalid message length")}
+
 // recvMessage reads the next count-delimited item from the input. It is the converse
 // of Encoder.writeMessage. It returns false on EOF or other error reading the message.
 func (dec *Decoder) recvMessage() bool {
@@ -65,6 +73,10 @@ func (dec *Decoder) recvMessage() bool {
 	nbytes, _, err := decodeUintReader(dec.r, dec.countBuf)
 	if err != nil {
 		dec.err = err
+		return false
+	}
+	if nbytes >= 1<<31 {
+		dec.err = errBadCount
 		return false
 	}
 	dec.readMessage(int(nbytes))

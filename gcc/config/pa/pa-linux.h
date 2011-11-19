@@ -128,7 +128,7 @@ along with GCC; see the file COPYING3.  If not see
   do								\
     {								\
       if (!FUNCTION_NAME_P (XSTR (FUN, 0)))			\
-	hppa_encode_label (FUN);				\
+	pa_encode_label (FUN);					\
       (*targetm.asm_out.globalize_label) (FILE, XSTR (FUN, 0));	\
     }								\
   while (0)
@@ -136,3 +136,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Linux always uses gas.  */
 #undef TARGET_GAS
 #define TARGET_GAS 1
+
+#undef TARGET_SYNC_LIBCALL
+#define TARGET_SYNC_LIBCALL 1

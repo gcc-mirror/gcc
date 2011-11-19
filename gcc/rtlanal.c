@@ -25,8 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "diagnostic-core.h"
-#include "rtl.h"
 #include "hard-reg-set.h"
+#include "rtl.h"
 #include "insn-config.h"
 #include "recog.h"
 #include "target.h"
@@ -999,6 +999,56 @@ set_of (const_rtx pat, const_rtx insn)
   note_stores (INSN_P (insn) ? PATTERN (insn) : insn, set_of_1, &data);
   return data.found;
 }
+
+/* This function, called through note_stores, collects sets and
+   clobbers of hard registers in a HARD_REG_SET, which is pointed to
+   by DATA.  */
+void
+record_hard_reg_sets (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
+{
+  HARD_REG_SET *pset = (HARD_REG_SET *)data;
+  if (REG_P (x) && HARD_REGISTER_P (x))
+    add_to_hard_reg_set (pset, GET_MODE (x), REGNO (x));
+}
+
+/* Examine INSN, and compute the set of hard registers written by it.
+   Store it in *PSET.  Should only be called after reload.  */
+void
+find_all_hard_reg_sets (const_rtx insn, HARD_REG_SET *pset)
+{
+  rtx link;
+
+  CLEAR_HARD_REG_SET (*pset);
+  note_stores (PATTERN (insn), record_hard_reg_sets, pset);
+  if (CALL_P (insn))
+    IOR_HARD_REG_SET (*pset, call_used_reg_set);
+  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+    if (REG_NOTE_KIND (link) == REG_INC)
+      record_hard_reg_sets (XEXP (link, 0), NULL, pset);
+}
+
+/* A for_each_rtx subroutine of record_hard_reg_uses.  */
+static int
+record_hard_reg_uses_1 (rtx *px, void *data)
+{
+  rtx x = *px;
+  HARD_REG_SET *pused = (HARD_REG_SET *)data;
+
+  if (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER)
+    {
+      int nregs = hard_regno_nregs[REGNO (x)][GET_MODE (x)];
+      while (nregs-- > 0)
+	SET_HARD_REG_BIT (*pused, REGNO (x) + nregs);
+    }
+  return 0;
+}
+
+/* Like record_hard_reg_sets, but called through note_uses.  */
+void
+record_hard_reg_uses (rtx *px, void *data)
+{
+  for_each_rtx (px, record_hard_reg_uses_1, data);
+}
 
 /* Given an INSN, return a SET expression if this insn has only a single SET.
    It may also have CLOBBERs, USEs, or SET whose output
@@ -1868,6 +1918,7 @@ alloc_reg_note (enum reg_note kind, rtx datum, rtx list)
     case REG_CC_USER:
     case REG_LABEL_TARGET:
     case REG_LABEL_OPERAND:
+    case REG_TM:
       /* These types of register notes use an INSN_LIST rather than an
 	 EXPR_LIST, so that copying is done right and dumps look
 	 better.  */

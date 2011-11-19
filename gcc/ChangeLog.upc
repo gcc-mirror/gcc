@@ -1,8 +1,13 @@
+2011-11-18  Gary Funck  <gary@intrepid.com>
+
+        Merge trunk version 181493 into gupc branch.
+        Incorporates final fix for PR target/49992.
+
 2011-11-09  Nenad Vukicevic <nenad@intrepid.com>
 
-	* Makefile.in (CRTSTUFF_CFLAGS): Taking out the previous
+	* Makefile.in (CRTSTUFF_CFLAGS): Revert the previous
 	change that converted relative include paths into absolute
-	ones, as it does not work with previous version of make (3.80).
+	ones, as it does not work with older version of make (3.80).
 
 2011-10-27  Nenad Vukicevic <nenad@intrepid.com>
 
@@ -35,7 +40,7 @@
 	Change "xupc" to "xgupc".
 	* configure.ac: Change "GCC UPC" to "GNU UPC".
 	* Makefile.in (CRTSTUFF_CFLAGS): Adjust $(INCLUDES_FOR_TARGET)
-	so that they are absolute paths.  This his needed because
+	so that they are absolute paths.  This is needed because
 	the upc-crtstuff builds are in the libgupc library build
 	directories which are not at the same level as libgcc.
 	* config/darwin.h: Adjust for rename of libupc to libgupc.

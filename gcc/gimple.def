@@ -124,6 +124,14 @@ DEFGSCODE(GIMPLE_ASM, "gimple_asm", GSS_ASM)
     CHAIN is the optional static chain link for nested functions.  */
 DEFGSCODE(GIMPLE_CALL, "gimple_call", GSS_CALL)
 
+/* GIMPLE_TRANSACTION <BODY, LABEL> represents __transaction_atomic and
+   __transaction_relaxed blocks.
+   BODY is the sequence of statements inside the transaction.
+   LABEL is a label for the statement immediately following the
+   transaction.  This is before RETURN so that it has MEM_OPS,
+   so that it can clobber global memory.  */
+DEFGSCODE(GIMPLE_TRANSACTION, "gimple_transaction", GSS_TRANSACTION)
+
 /* GIMPLE_RETURN <RETVAL> represents return statements.
 
    RETVAL is the value to return or NULL.  If a value is returned it
@@ -150,6 +158,12 @@ DEFGSCODE(GIMPLE_EH_FILTER, "gimple_eh_filter", GSS_EH_FILTER)
    DECL is a noreturn function decl taking no arguments that will
    be invoked if an exception propagates to this point.  */
 DEFGSCODE(GIMPLE_EH_MUST_NOT_THROW, "gimple_eh_must_not_throw", GSS_EH_MNT)
+
+/* GIMPLE_EH_ELSE <N_BODY, E_BODY> must be the sole contents of
+   a GIMPLE_TRY_FINALLY node.  For all normal exits from the try block,
+   N_BODY is run; for all exception exits from the try block,
+   E_BODY is run.  */
+DEFGSCODE(GIMPLE_EH_ELSE, "gimple_eh_else", GSS_EH_ELSE)
 
 /* GIMPLE_RESX resumes execution after an exception.  */
 DEFGSCODE(GIMPLE_RESX, "gimple_resx", GSS_EH_CTRL)

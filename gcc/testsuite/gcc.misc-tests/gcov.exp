@@ -33,7 +33,7 @@ if { ![is_remote host] && [string match "*/*" [lindex $GCC_UNDER_TEST 0]] } {
 dg-init
 
 # Delete old .gcda files.
-set files [glob -nocomplain gcov-*.gcda]
+set files [glob -nocomplain gcov*.gcda]
 if { $files != "" } {
     eval "remote_file build delete $files"
 }

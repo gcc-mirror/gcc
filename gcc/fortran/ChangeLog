@@ -1,3 +1,707 @@
+2011-11-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/39427
+	PR fortran/37829
+	* decl.c (match_data_constant, match_data_constant, variable_decl,
+	gfc_match_decl_type_spec, access_attr_decl,
+	check_extended_derived_type, gfc_match_derived_decl,
+	gfc_match_derived_decl, gfc_match_derived_decl) Modified to deal
+	with DT constructors.
+	* gfortran.h (gfc_find_dt_in_generic,
+	gfc_convert_to_structure_constructor): New function prototypes.
+	* interface.c (check_interface0, check_interface1,
+	gfc_search_interface): Ignore DT constructors in generic list.
+	* match.h (gfc_match_structure_constructor): Update prototype.
+	* match.c (match_derived_type_spec): Ensure that one uses the DT
+	not the generic function.
+	* module.c (MOD_VERSION): Bump.
+	(dt_lower_string, dt_upper_string): New functions.
+	(find_use_name_n, find_use_operator, compare_true_names,
+	find_true_name, add_true_name, fix_mio_expr, load_needed,
+	read_module, write_dt_extensions, write_symbol): Changes to deal with
+	different symtree vs. sym names.
+	(create_derived_type): Create also generic procedure.
+	* parse.c (gfc_fixup_sibling_symbols): Don't regard DT and generic
+	function as the same.
+	* primary.c (gfc_convert_to_structure_constructor): New function.
+	(gfc_match_structure_constructor): Restructured; calls
+	gfc_convert_to_structure_constructor.
+	(build_actual_constructor, gfc_match_rvalue): Update for DT generic
+	functions.
+	* resolve.c (resolve_formal_arglist, resolve_structure_cons,
+	is_illegal_recursion, resolve_generic_f, resolve_variable,
+	resolve_fl_variable_derived, resolve_fl_derived0,
+	resolve_symbol): Handle DT and DT generic constructors.
+	* symbol.c (gfc_use_derived, gfc_undo_symbols,
+	gen_special_c_interop_ptr, gen_cptr_param,
+	generate_isocbinding_symbol, gfc_get_derived_super_type): Handle
+	derived-types, which are hidden in the generic type.
+	(gfc_find_dt_in_generic): New function
+	* trans-array.c (gfc_conv_array_initializer): Replace FL_PARAMETER
+	expr by actual value.
+	* trans-decl.c (gfc_get_module_backend_decl, gfc_trans_use_stmts):
+	Ensure that we use the DT and not the generic function.
+	* trans-types.c (gfc_get_derived_type): Ensure that we use the DT
+	and not the generic procedure.
+
+2011-11-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51073
+	* trans-decl.c (generate_coarray_sym_init): Handle zero-sized arrays.
+
+2011-11-09  Tobias Burnus  <burnus@net-b.de>
+
+	* symbol.c (clear_sym_mark, traverse_ns): Remove functions.
+	(count_st_nodes, do_traverse_symtree, fill_st_vector): New functions.
+	(gfc_traverse_symtree, gfc_traverse_ns): Call do_traverse_symtree.
+
+2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/50016
+	* gfortran.texi (Data consistency and durability): New section.
+
+2011-11-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/50540
+	* resolve.c (resolve_forall_iterators): Transform internal errors
+	to normal errors.
+
+2011-11-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50960
+	* class.c (gfc_find_derived_vtab): Make the vtab symbols FL_PARAMETER.
+	* expr.c (gfc_simplify_expr): Prevent vtabs from being replaced with
+	their value.
+	* resolve.c (resolve_values): Use-associated symbols do not need to
+	be resolved again.
+	(resolve_fl_parameter): Make sure the symbol has a value.
+
+2011-11-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/38718
+	* intrinsic.c (add_functions): Allow dreal simplification.
+	* intrinsic.h (gfc_simplify_dreal): New prototype.
+	* simplify.c (gfc_simplify_dreal): New function.
+
+2011-11-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/21881
+	* trans-types.c (gfc_get_dtype): Issue a fatal error instead of
+	an internal error.
+
+2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/50404
+	* io.c (gfc_resolve_close): CLOSE requires a UNIT.
+
+2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/50409
+	* expr.c (gfc_simplify_expr): Substrings can't have negative
+	length.
+
+2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/50334
+	* invoke.texi (-finit-*): Document interaction with
+	-Wuninitialized.
+
+2011-11-07  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/49188
+	PR libfortran/49336
+	* invoke.texi: Fix documentation of fsign-zero option. Remove
+	contractions.
+	* intrinsic.texi: Fix ATAN2 documentation for signed zeros.
+	Remove contractions.
+	* gfortran.texi: Remove contractions.
+
+2011-11-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50919
+	* class.c (add_proc_comp): Don't add non-overridable procedures to the
+	vtable.
+	* resolve.c (resolve_typebound_function,resolve_typebound_subroutine):
+	Don't generate a dynamic _vptr call for non-overridable procedures.
+
+2011-11-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsic.texi (MCLOCK, MCLOCK8, TIME, TIME8): Functions clock
+	and time are part of the C standard library.
+
+2011-11-06  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.h (gfc_extend_expr): Modified prototype.
+	* interface.c (gfc_extend_expr): Return 'match' instead of 'gfc_try'.
+	Remove argument 'real_error'.
+	* resolve.c (resolve_operator): Modified call to 'gfc_extend_expr'.
+
+2011-11-06  Andrew MacLeod  <amacleod@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	Merged from cxx-mem-model.
+
+	* types.def: (BT_SIZE, BT_CONST_VOLATILE_PTR, BT_FN_VOID_INT,
+	BT_FN_I{1,2,4,8,16}_CONST_VPTR_INT, BT_FN_VOID_VPTR_INT,
+	BT_FN_BOOL_VPTR_INT, BT_FN_BOOL_SIZE_CONST_VPTR,
+	BT_FN_VOID_VPTR_I{1,2,4,8,16}_INT, BT_FN_VOID_SIZE_VPTR_PTR_INT,
+	BT_FN_VOID_SIZE_CONST_VPTR_PTR_INT, BT_FN_VOID_SIZE_VPTR_PTR_PTR_INT,
+	BT_FN_BOOL_VPTR_PTR_I{1,2,4,8,16}_BOOL_INT_INT,
+	BT_FN_I{1,2,4,8,16}_VPTR_I{1,2,4,8,16}_INT): New types.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/43829
+	* trans-array.c (gfc_conv_expr_descriptor): Accept the inline intrinsic
+	case in the assertion.
+	* trans-intrinsic (enter_nested_loop): New function.
+	(gfc_conv_intrinsic_arith): Support non-scalar cases.
+	(nest_loop_dimension, walk_inline_intrinsic_arith): New functions.
+	(walk_inline_intrinsic_function): Handle sum and product.
+	(gfc_inline_intrinsic_function_p): Ditto.
+	* trans.h (gfc_get_loopinfo): New macro.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_arith): Introduce parent
+	expression variable.  Use it.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic.c): Introduce current loop
+	pointer.  Use it.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_arith): Small argument handling
+	cleanup.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_arith): Update conditions.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* frontend-passes.c (cfe_register_funcs): Return early in the case
+	of an inline intrinsic function.
+	(optimize_binop_array_assignment): Skip optimization in the case of
+	an inline intrinsic function.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* array.c (match_subscript): Skip whitespaces before setting locus.
+	* matchexp.c (match_level_1): Ditto.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxval): Set loop's
+	temporary rank to the loop rank. Mark ss chains for multiple loop
+	if necessary.  Use gfc_trans_scalarized_loop_boundary to end one loop
+	and start another.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc): Set loop's
+	temporary rank to the loop rank. Mark ss chains for multiple loop
+	if necessary.  Use gfc_trans_scalarized_loop_boundary to end one loop
+	and start another.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc): Don't calculate
+	offset twice in generated code.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-expr.c (gfc_conv_procedure_call): Handle temporaries for
+	arguments to elemental calls.
+	* trans-stmt.c (replace_ss): New function.
+	(gfc_conv_elemental_dependencies): Remove temporary loop handling.
+	Create a new ss for the temporary and replace the original one with it.
+	Remove fake array references. Recalculate all offsets.
+
+2011-11-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.h (gfc_free_ss, gfc_set_delta): New prototypes.
+	* trans-array.c (gfc_free_ss): Remove forward declaration.
+	Make non-static.
+	(set_delta, gfc_set_delta): Remove forward declaration.
+	Make non-static and rename the former to the later. Update uses.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (gfc_inline_intrinsic_function_p): Move prototype...
+	* gfortran.h (gfc_inline_intrinsic_function_p): ... here.
+	* dependency.c (gfc_check_argument_var_dependency): Check dependencies
+	of inline intrinsics' arguments.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_preloop_setup): New pointers to outer
+	dimension's ss and loop. Use them.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (outermost_loop): New function.
+	(gfc_trans_array_constructor, gfc_set_vector_loop_bounds,
+	gfc_add_loop_ss_code): Put generated code out of the outermost loop.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (constant_array_constructor_loop_size):
+	Handle multiple loops.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (get_rank, get_loop_upper_bound_for_array):
+	New functions.
+	(gfc_trans_array_constructor): Handle multiple loops.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_loopinfo): New field parent.
+	* trans-array.c (gfc_cleanup_loop): Free nested loops.
+	(gfc_add_ss_to_loop): Set nested_loop's parent loop.
+	(gfc_trans_array_constructor): Update assertion.
+	(gfc_conv_loop_setup): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_add_loop_ss_code): Skip non-nestedmost ss.
+	Call recursively gfc_add_loop_ss_code for all the nested loops.
+	(gfc_conv_ss_startstride): Only get the descriptor for the outermost
+	ss. Call recursively gfc_conv_ss_startstride for all the nested loops.
+	(set_loop_bounds): Call recursively for all the nested loops.
+	(set_delta): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_loopinfo): New fields nested and next.
+	* trans-array.c (gfc_add_ss_to_loop): Update list of nested list if
+	ss has non-null nested_ss field.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_create_temp_array): Loop over the parents.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (get_array_ref_dim, get_scalarizer_dim_for_array_dim): 
+	Rename the former to the latter and loop over the parents.
+	(innermost_ss): New function.
+	(get_array_ref_dim_for_loop_dim): New function.
+	(gfc_trans_create_temp_array): Use get_scalarizer_dim_for_array_dim.
+	(set_loop_bounds): Use get_array_dim_for_loop_dim).
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss): New field nested_ss.
+	* trans-expr.c (gfc_advance_se_ss_chain): Update assertion.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (set_vector_loop_bounds): Loop over the parents.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_array_constructor): Loop over the parents.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_set_loop_bounds_from_array_spec): Loop over the
+	parents.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss): New field parent.
+	* trans-array.c (gfc_trans_scalarizing_loops): Skip clearing if a
+	parent exists.
+	* trans-expr.c (gfc_advance_se_ss_chain): Move to parent ss at the
+	end of the chain.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.h (gfc_trans_create_temp_array): Remove loop argument.
+	* trans-array.c (gfc_trans_create_temp_array): Ditto.  Get loop from ss.
+	Update reference to loop.  Remove loop argument.
+	(gfc_trans_array_constructor, gfc_conv_loop_setup): Update calls to
+	gfc_trans_create_temp_array.
+	* trans-expr.c (gfc_conv_procedure_call): Ditto.
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Ditto.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): Ditto.
+	Set loop before calling gfc_trans_create_temp_array.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_create_temp_array): New variable total_dim.
+	Set total_dim to loop's rank. Replace usages of loop's rank.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_array_constructor, trans_array_constructor):
+	Rename the former to the later.  Get loop from ss.
+	Remove loop argument.
+	(gfc_add_loop_ss_code): Update call.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_set_vector_loop_bounds): Get loop from ss.
+	Remove loop argument.
+	(gfc_add_loop_ss_code): Update call.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss): New field loop.
+	* trans-array.c (set_ss_loop): New function.
+	(gfc_add_ss_to_loop): Call set_ss_loop.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss_info): New field refcount.
+	* trans-array.c (free_ss_info): Decrement refcount. Return early if
+	still non-zero.
+	(gfc_get_array_ss, gfc_get_temp_ss, gfc_get_scalar_ss): Increment
+	refcount.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_create_temp_array): Move invariant condition
+	out of the containing loop. 
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_conv_loop_setup, gfc_trans_create_temp_array):
+	Move specloop arrays clearing from the former to the latter.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (set_loop_bounds): Separate the beginning of
+	gfc_conv_loop_setup into a function of its own.
+	(set_delta): Separate the end of gfc_conv_loop_setup into a function
+	of its own.
+	(gfc_conv_loop_setup): Call set_loop_bounds and set delta.
+	(set_loop_bounds, set_delta, gfc_conv_loop_setup): Make loopspec a
+	pointer to the specloop field from the loop struct.
+
+2011-11-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50933
+	* interface.c (gfc_compare_derived_types): Fix check for BIND(C).
+
+2011-11-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50960
+	* trans-decl.c (gfc_finish_var_decl): Mark PARAMETER as TREE_READONLY.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss, struct gfc_ss_info): Move field
+	gfc_ss::where into gfc_ss_info.
+	* trans-array.c (gfc_add_loop_ss_code):
+	Update reference chains.
+	* trans-stmt.c (gfc_trans_where_assign, gfc_trans_where_3): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss, struct gfc_ss_info): Move field
+	gfc_ss::useflags into gfc_ss_info.
+	* trans-array.c (gfc_mark_ss_chain_used, gfc_trans_preloop_setup,
+	gfc_trans_scalarizing_loops, gfc_trans_scalarized_boundary):
+	Update reference chains.
+	* trans-expr.c (gfc_conv_procedure_call): Ditto.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss, struct gfc_ss_info): Move field
+	gfc_ss::data::info into gfc_ss_info::data and remove empty union
+	gfc_ss::data.
+	* trans-array.c (gfc_free_ss, gfc_trans_create_temp_array,
+	gfc_trans_constant_array_constructor, gfc_trans_array_constructor,
+	gfc_set_vector_loop_bounds, gfc_add_loop_ss_code,
+	gfc_conv_ss_descriptor, gfc_trans_array_bound_check,
+	gfc_conv_array_index_offset, gfc_conv_scalarized_array_ref,
+	add_array_offset, gfc_trans_preloop_setup,
+	gfc_trans_scalarized_boundary, gfc_conv_section_startstride,
+	gfc_conv_ss_startstride, gfc_could_be_alias,
+	gfc_conv_loop_setup, gfc_conv_expr_descriptor,
+	gfc_alloc_allocatable_for_assignment, gfc_walk_array_ref):
+	Update reference chains and factor them where possible.
+	* trans-expr.c (gfc_conv_variable, gfc_conv_subref_array_arg,
+	gfc_conv_procedure_call, gfc_trans_subarray_assign): Updata reference
+	chains.
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Ditto.
+	* trans-io.c (transfer_array_component): Ditto.
+	* trans-stmt.c (gfc_conv_elemental_dependencies,
+	gfc_trans_pointer_assign_need_temp): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss, struct gfc_ss_info): Move member struct
+	gfc_ss::data::temp into gfc_ss_info::data.
+	* trans-array.c (gfc_get_temp_ss, gfc_conv_loop_setup): Update reference
+	chains.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss, struct gfc_ss_info): Move member struct
+	gfc_ss::data::scalar into newly created union gfc_ss_info::data,
+	and rename subfield expr to value.
+	* trans-array.c (gfc_add_loop_ss_code, gfc_conv_array_index_offset,
+	gfc_conv_expr_descriptor): Update reference chains.
+	* trans-const.c (gfc_conv_constant): Ditto.
+	* trans-expr.c (gfc_conv_expr): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss, struct gfc_ss_info): Move field
+	string_length from the former struct to the latter.
+	* trans-array.c
+	(gfc_get_temp_ss, gfc_trans_array_constructor, gfc_add_loop_ss_code,
+	gfc_conv_ss_descriptor, gfc_conv_scalarized_array_ref,
+	gfc_conv_resolve_dependencies, gfc_conv_loop_setup,
+	gfc_conv_expr_descriptor): Update references to string_length and
+	factor common reference chains where possible.
+	* trans-const.c (gfc_conv_constant): Ditto.
+	* trans-expr.c (gfc_conv_variable, gfc_conv_subref_array_arg,
+	gfc_conv_expr): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss, struct gfc_ss_info): Move field expr from
+	the former struct to the latter.
+	* trans-array.c
+	(gfc_get_array_ss, gfc_get_scalar_ss,
+	gfc_trans_constant_array_constructor, gfc_trans_array_constructor,
+	gfc_add_loop_ss_code, gfc_conv_ss_descriptor,
+	gfc_trans_array_bound_check, gfc_conv_array_index_offset,
+	gfc_conv_scalarized_array_ref, gfc_conv_ss_startstride,
+	gfc_could_be_alias, gfc_conv_resolve_dependencies,
+	gfc_conv_loop_setup, gfc_conv_expr_descriptor,
+	gfc_alloc_allocatable_for_assignment): Update references to expr and
+	factor common reference chains where possible.
+	* trans-const.c (gfc_conv_constant): Ditto.
+	* trans-expr.c (gfc_conv_variable, gfc_conv_procedure_call,
+	gfc_conv_array_constructor_expr, gfc_conv_expr,
+	gfc_conv_expr_reference): Ditto.
+	* trans-intrinsic.c (trans_this_image, gfc_conv_intrinsic_bound,
+	gfc_conv_intrinsic_cobound, gfc_conv_intrinsic_funcall,
+	gfc_add_intrinsic_ss_code): Ditto.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss_info): New struct.
+	(gfc_get_ss_info): New macro.
+	(struct gfc_ss): Move type field to struct gfc_ss_info.
+	Add an info field of type gfc_ss_info.
+	* trans-array.c (free_ss_info): New function.
+	(gfc_free_ss): Call free_ss_info.
+	(gfc_get_array_ss, gfc_get_temp_ss, gfc_get_scalar_ss):
+	Allocate gfc_ss_info field.
+	(gfc_get_array_ss, gfc_get_temp_ss, gfc_get_scalar_ss,
+	gfc_set_vector_loop_bounds, gfc_add_loop_ss_code,
+	gfc_conv_array_index_offset, gfc_trans_preloop_setup,
+	gfc_trans_scalarized_loop_boundary, gfc_conv_section_startstride,
+	gfc_conv_ss_startstride, gfc_conv_resolve_dependencies,
+	gfc_conv_loop_setup, transposed_dims, gfc_conv_expr_descriptor,
+	gfc_walk_elemental_function_args): Update references to type.
+	* trans-const.c (gfc_conv_constant): Factor common reference chains
+	and update reference to type.
+	* trans-expr.c (gfc_conv_procedure_call, gfc_trans_assignment_1):
+	Update reference to type.
+	(gfc_conv_array_constructor_expr, gfc_conv_expr,
+	gfc_conv_expr_reference): Ditto. Factor common reference chains.
+	* trans-intrinsic.c (walk_inline_intrinsic_transpose): Update references
+	to type
+	* trans-stmt.c (gfc_trans_where_assign): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss, struct gfc_array_info): Move shape field
+	from the former struct to the latter.
+	* trans-array.c (gfc_conv_ss_startstride, gfc_conv_loop_setup):
+	Update field references.
+	* trans-expr.c (gfc_trans_subarray_assign): Update field references
+	and factor common reference chains.
+	* trans-io.c (transfer_array_component): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_array_info): Move dim and dimen fields...
+	(struct gfc_ss): ... here.  Remove gfc_ss::data::temp::dimen field.
+	* trans-array.c (gfc_conv_loop_setup): Remove temp_ss dim array
+	initialization.
+	(gfc_get_temp_ss): Initialize dim and dimen.
+	(gfc_free_ss, gfc_get_array_ss, gfc_get_temp_ss,
+	gfc_set_loop_bounds_from_array_spec, get_array_ref_dim,
+	gfc_trans_create_temp_array, gfc_trans_constant_array_constructor,
+	gfc_set_vector_loop_bounds, gfc_conv_scalarized_array_ref,
+	gfc_trans_preloop_setup, gfc_conv_ss_startstride,
+	gfc_conv_resolve_dependencies, gfc_conv_loop_setup, transposed_dims,
+	gfc_conv_expr_descriptor, gfc_alloc_allocatable_for_assignment,
+	gfc_walk_array_ref): Update field references.
+	* trans-expr.c (gfc_conv_subref_array_arg, gfc_conv_procedure_call):
+	Ditto.
+	* trans-intrinsic.c (walk_inline_intrinsic_transpose): Ditto.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss_info, struct gfc_array_info):
+	Rename the former to the latter.
+	* trans-array.c (gfc_get_array_ss, gfc_trans_allocate_array_storage,
+	get_array_ref_dim, gfc_trans_create_temp_array,
+	gfc_trans_constant_array_constructor, gfc_set_vector_loop_bounds,
+	gfc_conv_array_index_offset, gfc_conv_scalarized_array_ref,
+	add_array_offset, gfc_trans_preloop_setup, gfc_conv_section_startstride,
+	gfc_conv_ss_startstride, gfc_conv_loop_setup, transposed_dims,
+	gfc_conv_expr_descriptor): Update all uses.
+	* trans-expr.c (gfc_conv_subref_array_arg, gfc_conv_procedure_call):
+	Ditto.
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer,
+	walk_inline_intrinsic_transpose): Ditto.
+	* trans-stmt.c (gfc_conv_elemental_dependencies,
+	gfc_trans_pointer_assign_need_temp): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (dim_ok, transposed_dims): Rename the former to the
+	latter.  Change argument type.  Invert return value.
+	(gfc_conv_expr_descriptor): Update calls.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (get_array_ref_dim): Change argument type and name.
+	Obtain previous argument from the new argument in the body.
+	(gfc_trans_create_temp_arry, gfc_conv_loop_setup): Update calls.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_set_vector_loop_bounds, set_vector_loop_bounds):
+	Rename the former to the latter.  Change type and name of argument.
+	Get previous argument from the new one.
+	(gfc_add_loop_ss_code): Update call.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.h (gfc_trans_create_temp_array): Replace info argument
+	with ss argument.
+	* trans-array.c (gfc_trans_create_temp_array): Ditto. Get info from ss.
+	(gfc_trans_array_constructor, gfc_conv_loop_setup): Update call to
+	gfc_trans_create_temp_array.
+	* trans-expr.c (gfc_conv_procedure_call): Ditto.
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Ditto.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): Ditto.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_array_bound_check): Use ss argument
+	to get name.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_array_bound_check,
+	trans_array_bound_check): Rename the former to the latter.
+	Replace descriptor argument with ss argument.  Get descriptor from ss.
+	(gfc_conv_array_index_offset, conv_array_index_offset): Rename the
+	former to the latter.  Update call to trans_array_bound_check.
+	Replace info argument with ss argument.  Get info from ss.
+	(gfc_conv_scalarized_array_ref): Update call to conv_array_index_offset.
+	(add_array_offset): Ditto
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_constant_array_constructor,
+	trans_constant_array_constructor): Rename the former to the latter.
+	Don't set the rank of the temporary for the loop.  Remove then unused
+	loop argument.
+	(gfc_trans_array_constructor): Update call.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_scalarizing_loops): Stop loop before end
+	marker, not after it.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_conv_loop_setup): Also skip temporary arrays.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_conv_ss_startstride): Access array bounds along
+	array dimensions instead of loop dimensions.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_preloop_setup): Assertify one condition.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_walk_array_ref): Skip coarray dimensions.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (get_array_ref_dim): Remove redundant condition.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_preloop_setup): Move common code...
+	(add_array_offset): ...into that new function.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_preloop_setup): Use loop's dimension instead
+	of array's dimention. Check that it is indeed the same.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_preloop_setup): Remove redundant assertion.
+	Special case outermost loop.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_preloop_setup): Factor loop index
+	initialization.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_preloop_setup): Move code earlier.
+
+2011-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_preloop_setup): Move array reference
+	initialisation earlier. Factor subsequent array references.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makef-lang.in (gfortranspec.o): Pass SHLIB instead of SHLIB_LINK.
+
+2011-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/50573
+	* check.c (gfc_check_dshift): Update argument checking for BOZ.
+	Update checking SHIFT against BITSIZE of I or J.
+	* intrinsic.texi: Update docs for DSHIFTL and DSHIFTR.
+
+2011-10-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* check.c (gfc_check_atan_2): Typo in comment.
+	(gfc_check_nearest): If 's' is constant, check that it is not 0.
+	* simplify.c (simplify_dshift, gfc_simplify_ibclr, gfc_simplify_ibits,
+	gfc_simplify_ibset, simplify_shift, gfc_simplify_ishftc,
+	gfc_simplify_nearest): Remove dead code.
+
+2011-10-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* simplify.c (simplify_transformation_to_array): Fix memory leak.
+
+2011-10-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/50821
+	* check.c (gfc_check_ishftc): Check args are constant before 
+	extracting the integer.
+
 2011-10-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/50514

@@ -7,6 +7,7 @@ package http
 import (
 	"bytes"
 	"bufio"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -18,10 +19,11 @@ import (
 // sanitizes them without changing the user object and provides methods for
 // writing the respective header, body and trailer in wire format.
 type transferWriter struct {
+	Method           string
 	Body             io.Reader
 	BodyCloser       io.Closer
 	ResponseToHEAD   bool
-	ContentLength    int64
+	ContentLength    int64 // -1 means unknown, 0 means exactly none
 	Close            bool
 	TransferEncoding []string
 	Trailer          Header
@@ -34,6 +36,10 @@ func newTransferWriter(r interface{}) (t *transferWriter, err os.Error) {
 	atLeastHTTP11 := false
 	switch rr := r.(type) {
 	case *Request:
+		if rr.ContentLength != 0 && rr.Body == nil {
+			return nil, fmt.Errorf("http: Request.ContentLength=%d with nil Body", rr.ContentLength)
+		}
+		t.Method = rr.Method
 		t.Body = rr.Body
 		t.BodyCloser = rr.Body
 		t.ContentLength = rr.ContentLength
@@ -64,6 +70,7 @@ func newTransferWriter(r interface{}) (t *transferWriter, err os.Error) {
 			}
 		}
 	case *Response:
+		t.Method = rr.Request.Method
 		t.Body = rr.Body
 		t.BodyCloser = rr.Body
 		t.ContentLength = rr.ContentLength
@@ -105,6 +112,27 @@ func noBodyExpected(requestMethod string) bool {
 	return requestMethod == "HEAD"
 }
 
+func (t *transferWriter) shouldSendContentLength() bool {
+	if chunked(t.TransferEncoding) {
+		return false
+	}
+	if t.ContentLength > 0 {
+		return true
+	}
+	if t.ResponseToHEAD {
+		return true
+	}
+	// Many servers expect a Content-Length for these methods
+	if t.Method == "POST" || t.Method == "PUT" {
+		return true
+	}
+	if t.ContentLength == 0 && isIdentity(t.TransferEncoding) {
+		return true
+	}
+
+	return false
+}
+
 func (t *transferWriter) WriteHeader(w io.Writer) (err os.Error) {
 	if t.Close {
 		_, err = io.WriteString(w, "Connection: close\r\n")
@@ -116,14 +144,14 @@ func (t *transferWriter) WriteHeader(w io.Writer) (err os.Error) {
 	// Write Content-Length and/or Transfer-Encoding whose values are a
 	// function of the sanitized field triple (Body, ContentLength,
 	// TransferEncoding)
-	if chunked(t.TransferEncoding) {
-		_, err = io.WriteString(w, "Transfer-Encoding: chunked\r\n")
+	if t.shouldSendContentLength() {
+		io.WriteString(w, "Content-Length: ")
+		_, err = io.WriteString(w, strconv.Itoa64(t.ContentLength)+"\r\n")
 		if err != nil {
 			return
 		}
-	} else if t.ContentLength > 0 || t.ResponseToHEAD || (t.ContentLength == 0 && isIdentity(t.TransferEncoding)) {
-		io.WriteString(w, "Content-Length: ")
-		_, err = io.WriteString(w, strconv.Itoa64(t.ContentLength)+"\r\n")
+	} else if chunked(t.TransferEncoding) {
+		_, err = io.WriteString(w, "Transfer-Encoding: chunked\r\n")
 		if err != nil {
 			return
 		}
@@ -154,6 +182,8 @@ func (t *transferWriter) WriteHeader(w io.Writer) (err os.Error) {
 }
 
 func (t *transferWriter) WriteBody(w io.Writer) (err os.Error) {
+	var ncopy int64
+
 	// Write body
 	if t.Body != nil {
 		if chunked(t.TransferEncoding) {
@@ -163,9 +193,14 @@ func (t *transferWriter) WriteBody(w io.Writer) (err os.Error) {
 				err = cw.Close()
 			}
 		} else if t.ContentLength == -1 {
-			_, err = io.Copy(w, t.Body)
+			ncopy, err = io.Copy(w, t.Body)
 		} else {
-			_, err = io.Copy(w, io.LimitReader(t.Body, t.ContentLength))
+			ncopy, err = io.Copy(w, io.LimitReader(t.Body, t.ContentLength))
+			nextra, err := io.Copy(ioutil.Discard, t.Body)
+			if err != nil {
+				return err
+			}
+			ncopy += nextra
 		}
 		if err != nil {
 			return err
@@ -173,6 +208,11 @@ func (t *transferWriter) WriteBody(w io.Writer) (err os.Error) {
 		if err = t.BodyCloser.Close(); err != nil {
 			return err
 		}
+	}
+
+	if t.ContentLength != -1 && t.ContentLength != ncopy {
+		return fmt.Errorf("http: Request.ContentLength=%d with Body length %d",
+			t.ContentLength, ncopy)
 	}
 
 	// TODO(petar): Place trailer writer code here.
@@ -326,7 +366,7 @@ func fixTransferEncoding(requestMethod string, header Header) ([]string, os.Erro
 		return nil, nil
 	}
 
-	header["Transfer-Encoding"] = nil, false
+	delete(header, "Transfer-Encoding")
 
 	// Head responses have no bodies, so the transfer encoding
 	// should be ignored.
@@ -359,7 +399,7 @@ func fixTransferEncoding(requestMethod string, header Header) ([]string, os.Erro
 		// Chunked encoding trumps Content-Length. See RFC 2616
 		// Section 4.4. Currently len(te) > 0 implies chunked
 		// encoding.
-		header["Content-Length"] = nil, false
+		delete(header, "Content-Length")
 		return te, nil
 	}
 
@@ -478,6 +518,8 @@ type body struct {
 	r       *bufio.Reader // underlying wire-format reader for the trailer
 	closing bool          // is the connection to be closed after reading body?
 	closed  bool
+
+	res *response // response writer for server requests, else nil
 }
 
 // ErrBodyReadAfterClose is returned when reading a Request Body after
@@ -503,6 +545,15 @@ func (b *body) Close() os.Error {
 	if b.hdr == nil && b.closing {
 		// no trailer and closing the connection next.
 		// no point in reading to EOF.
+		return nil
+	}
+
+	// In a server request, don't continue reading from the client
+	// if we've already hit the maximum body size set by the
+	// handler. If this is set, that also means the TCP connection
+	// is about to be closed, so getting to the next HTTP request
+	// in the stream is not necessary.
+	if b.res != nil && b.res.requestBodyLimitHit {
 		return nil
 	}
 

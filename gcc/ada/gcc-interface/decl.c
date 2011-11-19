@@ -3302,7 +3302,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			        == INTEGER_CST)
 		      {
 			gnu_size = DECL_SIZE (gnu_old_field);
-			if (TREE_CODE (gnu_field_type) == RECORD_TYPE
+			if (RECORD_OR_UNION_TYPE_P (gnu_field_type)
 			    && !TYPE_FAT_POINTER_P (gnu_field_type)
 			    && host_integerp (TYPE_SIZE (gnu_field_type), 1))
 			  gnu_field_type
@@ -4185,7 +4185,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    /* The failure of this assertion will very likely come from an
 	       order of elaboration issue for the type of the parameter.  */
 	    gcc_assert (kind == E_Subprogram_Type
-			|| !TYPE_IS_DUMMY_P (gnu_param_type));
+			|| !TYPE_IS_DUMMY_P (gnu_param_type)
+			|| type_annotate_only);
 
 	    if (gnu_param)
 	      {
@@ -4645,13 +4646,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      tree size;
 
 	      /* If a size was specified, take it into account.  Otherwise
-		 use the RM size for records as the type size has already
-		 been adjusted to the alignment.  */
+		 use the RM size for records or unions as the type size has
+		 already been adjusted to the alignment.  */
 	      if (gnu_size)
 		size = gnu_size;
-	      else if ((TREE_CODE (gnu_type) == RECORD_TYPE
-			|| TREE_CODE (gnu_type) == UNION_TYPE
-			|| TREE_CODE (gnu_type) == QUAL_UNION_TYPE)
+	      else if (RECORD_OR_UNION_TYPE_P (gnu_type)
 		       && !TYPE_FAT_POINTER_P (gnu_type))
 		size = rm_size (gnu_type);
 	      else
@@ -5300,7 +5299,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
       && !Is_Bit_Packed_Array (gnat_array)
       && !Has_Aliased_Components (gnat_array)
       && !Strict_Alignment (gnat_type)
-      && TREE_CODE (gnu_type) == RECORD_TYPE
+      && RECORD_OR_UNION_TYPE_P (gnu_type)
       && !TYPE_FAT_POINTER_P (gnu_type)
       && host_integerp (TYPE_SIZE (gnu_type), 1))
     gnu_type = make_packable_type (gnu_type, false);
@@ -6087,7 +6086,8 @@ static tree
 elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
 			bool definition, bool need_debug)
 {
-  const bool expr_global_p = Is_Public (gnat_entity) || global_bindings_p ();
+  const bool expr_public_p = Is_Public (gnat_entity);
+  const bool expr_global_p = expr_public_p || global_bindings_p ();
   bool expr_variable_p, use_variable;
 
   /* In most cases, we won't see a naked FIELD_DECL because a discriminant
@@ -6155,11 +6155,10 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
   if (use_variable || need_debug)
     {
       tree gnu_decl
-	= create_var_decl (create_concat_name (gnat_entity,
-					       IDENTIFIER_POINTER (gnu_name)),
-			   NULL_TREE, TREE_TYPE (gnu_expr), gnu_expr,
-			   !need_debug, Is_Public (gnat_entity),
-			   !definition, expr_global_p, NULL, gnat_entity);
+	= create_var_decl_1
+	  (create_concat_name (gnat_entity, IDENTIFIER_POINTER (gnu_name)),
+	   NULL_TREE, TREE_TYPE (gnu_expr), gnu_expr, true, expr_public_p,
+	   !definition, expr_global_p, !need_debug, NULL, gnat_entity);
 
       if (use_variable)
 	return gnu_decl;
@@ -6357,9 +6356,7 @@ make_packable_type (tree type, bool in_record)
       tree new_field_type = TREE_TYPE (old_field);
       tree new_field, new_size;
 
-      if ((TREE_CODE (new_field_type) == RECORD_TYPE
-	   || TREE_CODE (new_field_type) == UNION_TYPE
-	   || TREE_CODE (new_field_type) == QUAL_UNION_TYPE)
+      if (RECORD_OR_UNION_TYPE_P (new_field_type)
 	  && !TYPE_FAT_POINTER_P (new_field_type)
 	  && host_integerp (TYPE_SIZE (new_field_type), 1))
 	new_field_type = make_packable_type (new_field_type, true);
@@ -6369,9 +6366,7 @@ make_packable_type (tree type, bool in_record)
 	 packable version of the record type, see finish_record_type.  */
       if (!DECL_CHAIN (old_field)
 	  && !TYPE_PACKED (type)
-	  && (TREE_CODE (new_field_type) == RECORD_TYPE
-	      || TREE_CODE (new_field_type) == UNION_TYPE
-	      || TREE_CODE (new_field_type) == QUAL_UNION_TYPE)
+	  && RECORD_OR_UNION_TYPE_P (new_field_type)
 	  && !TYPE_FAT_POINTER_P (new_field_type)
 	  && !TYPE_CONTAINS_TEMPLATE_P (new_field_type)
 	  && TYPE_ADA_SIZE (new_field_type))
@@ -6533,7 +6528,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
      between them and it might be hard to overcome afterwards, including
      at the RTL level when the stand-alone object is accessed as a whole.  */
   if (align != 0
-      && TREE_CODE (type) == RECORD_TYPE
+      && RECORD_OR_UNION_TYPE_P (type)
       && TYPE_MODE (type) == BLKmode
       && !TREE_ADDRESSABLE (type)
       && TREE_CODE (orig_size) == INTEGER_CST
@@ -6833,7 +6828,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
      effects on the outer record type.  A typical case is a field known to be
      byte-aligned and not to share a byte with another field.  */
   if (!needs_strict_alignment
-      && TREE_CODE (gnu_field_type) == RECORD_TYPE
+      && RECORD_OR_UNION_TYPE_P (gnu_field_type)
       && !TYPE_FAT_POINTER_P (gnu_field_type)
       && host_integerp (TYPE_SIZE (gnu_field_type), 1)
       && (packed == 1
@@ -6853,10 +6848,8 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	}
     }
 
-  /* If we are packing the record and the field is BLKmode, round the
-     size up to a byte boundary.  */
-  if (packed && TYPE_MODE (gnu_field_type) == BLKmode && gnu_size)
-    gnu_size = round_up (gnu_size, BITS_PER_UNIT);
+  if (Is_Atomic (gnat_field))
+    check_ok_for_atomic (gnu_field_type, gnat_field, false);
 
   if (Present (Component_Clause (gnat_field)))
     {
@@ -6946,9 +6939,6 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	      gnu_pos = NULL_TREE;
 	    }
 	}
-
-      if (Is_Atomic (gnat_field))
-	check_ok_for_atomic (gnu_field_type, gnat_field, false);
     }
 
   /* If the record has rep clauses and this is the tag field, make a rep
@@ -6961,7 +6951,14 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
     }
 
   else
-    gnu_pos = NULL_TREE;
+    {
+      gnu_pos = NULL_TREE;
+
+      /* If we are packing the record and the field is BLKmode, round the
+	 size up to a byte boundary.  */
+      if (packed && TYPE_MODE (gnu_field_type) == BLKmode && gnu_size)
+	gnu_size = round_up (gnu_size, BITS_PER_UNIT);
+    }
 
   /* We need to make the size the maximum for the type if it is
      self-referential and an unconstrained type.  In that case, we can't
@@ -7045,9 +7042,7 @@ is_variable_size (tree type)
       && !TREE_CONSTANT (DECL_SIZE (TYPE_FIELDS (type))))
     return true;
 
-  if (TREE_CODE (type) != RECORD_TYPE
-      && TREE_CODE (type) != UNION_TYPE
-      && TREE_CODE (type) != QUAL_UNION_TYPE)
+  if (!RECORD_OR_UNION_TYPE_P (type))
     return false;
 
   for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
@@ -8088,9 +8083,7 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
     SET_TYPE_RM_SIZE (gnu_type, size);
 
   /* ...or the Ada size for record and union types.  */
-  else if ((TREE_CODE (gnu_type) == RECORD_TYPE
-	    || TREE_CODE (gnu_type) == UNION_TYPE
-	    || TREE_CODE (gnu_type) == QUAL_UNION_TYPE)
+  else if (RECORD_OR_UNION_TYPE_P (gnu_type)
 	   && !TYPE_FAT_POINTER_P (gnu_type))
     SET_TYPE_ADA_SIZE (gnu_type, size);
 }
@@ -8942,10 +8935,8 @@ rm_size (tree gnu_type)
 		  rm_size (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_type)))),
 		  DECL_SIZE (TYPE_FIELDS (gnu_type)));
 
-  /* For record types, we store the size explicitly.  */
-  if ((TREE_CODE (gnu_type) == RECORD_TYPE
-       || TREE_CODE (gnu_type) == UNION_TYPE
-       || TREE_CODE (gnu_type) == QUAL_UNION_TYPE)
+  /* For record or union types, we store the size explicitly.  */
+  if (RECORD_OR_UNION_TYPE_P (gnu_type)
       && !TYPE_FAT_POINTER_P (gnu_type)
       && TYPE_ADA_SIZE (gnu_type))
     return TYPE_ADA_SIZE (gnu_type);
@@ -8976,7 +8967,7 @@ create_concat_name (Entity_Id gnat_entity, const char *suffix)
 
   if (suffix)
     {
-      String_Template temp = {1, strlen (suffix)};
+      String_Template temp = {1, (int) strlen (suffix)};
       Fat_Pointer fp = {suffix, &temp};
       Get_External_Name_With_Suffix (gnat_entity, fp);
     }

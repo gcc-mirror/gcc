@@ -92,6 +92,3 @@ endif
 # Remove the default CPU from the explicit exceptions.
 MULTILIB_EXCEPTIONS := \
 	$(patsubst mcpu=$(M68K_MLIB_DEFAULT)/%,%,$(MULTILIB_EXCEPTIONS))
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

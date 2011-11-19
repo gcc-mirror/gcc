@@ -3,5 +3,5 @@
 SHLIB_LDFLAGS = -Wl,-soname,$(SHLIB_SONAME) \
 	-Wl,-exports_file,$(SHLIB_MAP)
 
-SHLIB_MKMAP = $(gcc_srcdir)/mkmap-flat.awk
+SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
 SHLIB_MAPFILES = libgcc-std.ver

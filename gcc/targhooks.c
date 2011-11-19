@@ -1214,6 +1214,12 @@ default_have_conditional_execution (void)
 #endif
 }
 
+tree
+default_builtin_tm_load_store (tree ARG_UNUSED (type))
+{
+  return NULL_TREE;
+}
+
 /* Compute cost of moving registers to/from memory.  */
 
 int

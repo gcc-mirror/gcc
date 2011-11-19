@@ -1,0 +1,2 @@
+LIB2ADD_ST = $(srcdir)/config/mips/mips16.S \
+	     $(srcdir)/config/mips/vr4120-div.S

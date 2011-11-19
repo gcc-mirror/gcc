@@ -327,6 +327,10 @@ namespace __profile
         __profcxx_map_to_unordered_map_erase(this, size(), 1);
         return __i;
       }
+
+      iterator
+      erase(iterator __position)
+      { return erase(const_iterator(__position)); }
 #else
       void
       erase(iterator __position)

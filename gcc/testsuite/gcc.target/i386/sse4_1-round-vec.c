@@ -3,7 +3,15 @@
 /* { dg-require-effective-target sse4 } */
 /* { dg-skip-if "no M_PI" { vxworks_kernel } } */
 
-#include "sse4_1-check.h"
+#ifndef CHECK_H
+#define CHECK_H "sse4_1-check.h"
+#endif
+
+#ifndef TEST
+#define TEST sse4_1_test
+#endif
+
+#include CHECK_H
 
 #include <math.h>
 
@@ -36,7 +44,7 @@ init_src (double *src)
 
 static void
 __attribute__((__target__("fpmath=387")))
-sse4_1_test (void)
+TEST (void)
 {
   double a[NUM];
   double r[NUM];

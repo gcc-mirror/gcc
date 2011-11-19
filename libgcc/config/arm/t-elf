@@ -1,0 +1,18 @@
+# For most CPUs we have an assembly soft-float implementations.
+# However this is not true for ARMv6M.  Here we want to use the soft-fp C
+# implementation.  The soft-fp code is only build for ARMv6M.  This pulls
+# in the asm implementation for other CPUs.
+LIB1ASMFUNCS += _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls _bb_init_func \
+	_call_via_rX _interwork_call_via_rX \
+	_lshrdi3 _ashrdi3 _ashldi3 \
+	_arm_negdf2 _arm_addsubdf3 _arm_muldivdf3 _arm_cmpdf2 _arm_unorddf2 \
+	_arm_fixdfsi _arm_fixunsdfsi \
+	_arm_truncdfsf2 _arm_negsf2 _arm_addsubsf3 _arm_muldivsf3 \
+	_arm_cmpsf2 _arm_unordsf2 _arm_fixsfsi _arm_fixunssfsi \
+	_arm_floatdidf _arm_floatdisf _arm_floatundidf _arm_floatundisf \
+	_clzsi2 _clzdi2 
+
+# Currently there is a bug somewhere in GCC's alias analysis
+# or scheduling code that is breaking _fpmul_parts in fp-bit.c.
+# Disabling function inlining is a workaround for this problem.
+HOST_LIBGCC2_CFLAGS += -fno-inline

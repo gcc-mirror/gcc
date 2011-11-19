@@ -8,6 +8,7 @@
 #include "go-string.h"
 #include "array.h"
 #include "runtime.h"
+#include "arch.h"
 #include "malloc.h"
 
 struct __go_open_array

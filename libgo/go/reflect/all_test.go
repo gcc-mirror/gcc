@@ -6,7 +6,7 @@ package reflect_test
 
 import (
 	"bytes"
-	"container/vector"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"os"
@@ -853,13 +853,13 @@ func TestIsNil(t *testing.T) {
 
 func TestInterfaceExtraction(t *testing.T) {
 	var s struct {
-		w io.Writer
+		W io.Writer
 	}
 
-	s.w = os.Stdout
+	s.W = os.Stdout
 	v := Indirect(ValueOf(&s)).Field(0).Interface()
-	if v != s.w.(interface{}) {
-		t.Error("Interface() on interface: ", v, s.w)
+	if v != s.W.(interface{}) {
+		t.Error("Interface() on interface: ", v, s.W)
 	}
 }
 
@@ -877,19 +877,20 @@ func TestMap(t *testing.T) {
 		t.Errorf("Len = %d, want %d", n, len(m))
 	}
 	keys := mv.MapKeys()
-	i := 0
 	newmap := MakeMap(mv.Type())
 	for k, v := range m {
 		// Check that returned Keys match keys in range.
-		// These aren't required to be in the same order,
-		// but they are in this implementation, which makes
-		// the test easier.
-		if i >= len(keys) {
-			t.Errorf("Missing key #%d %q", i, k)
-		} else if kv := keys[i]; kv.String() != k {
-			t.Errorf("Keys[%q] = %d, want %d", i, kv.Int(), k)
+		// These aren't required to be in the same order.
+		seen := false
+		for _, kv := range keys {
+			if kv.String() == k {
+				seen = true
+				break
+			}
 		}
-		i++
+		if !seen {
+			t.Errorf("Missing key %q", k)
+		}
 
 		// Check that value lookup is correct.
 		vv := mv.MapIndex(ValueOf(k))
@@ -1190,18 +1191,18 @@ type D2 struct {
 }
 
 type S0 struct {
-	a, b, c int
+	A, B, C int
 	D1
 	D2
 }
 
 type S1 struct {
-	b int
+	B int
 	S0
 }
 
 type S2 struct {
-	a int
+	A int
 	*S1
 }
 
@@ -1216,36 +1217,36 @@ type S1y struct {
 type S3 struct {
 	S1x
 	S2
-	d, e int
+	D, E int
 	*S1y
 }
 
 type S4 struct {
 	*S4
-	a int
+	A int
 }
 
 var fieldTests = []FTest{
 	{struct{}{}, "", nil, 0},
-	{struct{}{}, "foo", nil, 0},
-	{S0{a: 'a'}, "a", []int{0}, 'a'},
-	{S0{}, "d", nil, 0},
-	{S1{S0: S0{a: 'a'}}, "a", []int{1, 0}, 'a'},
-	{S1{b: 'b'}, "b", []int{0}, 'b'},
+	{struct{}{}, "Foo", nil, 0},
+	{S0{A: 'a'}, "A", []int{0}, 'a'},
+	{S0{}, "D", nil, 0},
+	{S1{S0: S0{A: 'a'}}, "A", []int{1, 0}, 'a'},
+	{S1{B: 'b'}, "B", []int{0}, 'b'},
 	{S1{}, "S0", []int{1}, 0},
-	{S1{S0: S0{c: 'c'}}, "c", []int{1, 2}, 'c'},
-	{S2{a: 'a'}, "a", []int{0}, 'a'},
+	{S1{S0: S0{C: 'c'}}, "C", []int{1, 2}, 'c'},
+	{S2{A: 'a'}, "A", []int{0}, 'a'},
 	{S2{}, "S1", []int{1}, 0},
-	{S2{S1: &S1{b: 'b'}}, "b", []int{1, 0}, 'b'},
-	{S2{S1: &S1{S0: S0{c: 'c'}}}, "c", []int{1, 1, 2}, 'c'},
-	{S2{}, "d", nil, 0},
+	{S2{S1: &S1{B: 'b'}}, "B", []int{1, 0}, 'b'},
+	{S2{S1: &S1{S0: S0{C: 'c'}}}, "C", []int{1, 1, 2}, 'c'},
+	{S2{}, "D", nil, 0},
 	{S3{}, "S1", nil, 0},
-	{S3{S2: S2{a: 'a'}}, "a", []int{1, 0}, 'a'},
-	{S3{}, "b", nil, 0},
-	{S3{d: 'd'}, "d", []int{2}, 0},
-	{S3{e: 'e'}, "e", []int{3}, 'e'},
-	{S4{a: 'a'}, "a", []int{1}, 'a'},
-	{S4{}, "b", nil, 0},
+	{S3{S2: S2{A: 'a'}}, "A", []int{1, 0}, 'a'},
+	{S3{}, "B", nil, 0},
+	{S3{D: 'd'}, "D", []int{2}, 0},
+	{S3{E: 'e'}, "E", []int{3}, 'e'},
+	{S4{A: 'a'}, "A", []int{1}, 'a'},
+	{S4{}, "B", nil, 0},
 }
 
 func TestFieldByIndex(t *testing.T) {
@@ -1322,8 +1323,8 @@ func TestFieldByName(t *testing.T) {
 }
 
 func TestImportPath(t *testing.T) {
-	if path := TypeOf(vector.Vector{}).PkgPath(); path != "libgo_container.vector" {
-		t.Errorf("TypeOf(vector.Vector{}).PkgPath() = %q, want \"libgo_container.vector\"", path)
+	if path := TypeOf(&base64.Encoding{}).Elem().PkgPath(); path != "libgo_encoding.base64" {
+		t.Errorf(`TypeOf(&base64.Encoding{}).Elem().PkgPath() = %q, want "libgo_encoding.base64"`, path)
 	}
 }
 
@@ -1564,5 +1565,95 @@ func TestTagGet(t *testing.T) {
 		if v := tt.Tag.Get(tt.Key); v != tt.Value {
 			t.Errorf("StructTag(%#q).Get(%#q) = %#q, want %#q", tt.Tag, tt.Key, v, tt.Value)
 		}
+	}
+}
+
+func TestBytes(t *testing.T) {
+	type B []byte
+	x := B{1, 2, 3, 4}
+	y := ValueOf(x).Bytes()
+	if !bytes.Equal(x, y) {
+		t.Fatalf("ValueOf(%v).Bytes() = %v", x, y)
+	}
+	if &x[0] != &y[0] {
+		t.Errorf("ValueOf(%p).Bytes() = %p", &x[0], &y[0])
+	}
+}
+
+func TestSetBytes(t *testing.T) {
+	type B []byte
+	var x B
+	y := []byte{1, 2, 3, 4}
+	ValueOf(&x).Elem().SetBytes(y)
+	if !bytes.Equal(x, y) {
+		t.Fatalf("ValueOf(%v).Bytes() = %v", x, y)
+	}
+	if &x[0] != &y[0] {
+		t.Errorf("ValueOf(%p).Bytes() = %p", &x[0], &y[0])
+	}
+}
+
+type Private struct {
+	x int
+	y **int
+}
+
+func (p *Private) m() {
+}
+
+type Public struct {
+	X int
+	Y **int
+}
+
+func (p *Public) M() {
+}
+
+func TestUnexported(t *testing.T) {
+	var pub Public
+	v := ValueOf(&pub)
+	isValid(v.Elem().Field(0))
+	isValid(v.Elem().Field(1))
+	isValid(v.Elem().FieldByName("X"))
+	isValid(v.Elem().FieldByName("Y"))
+	isValid(v.Type().Method(0).Func)
+	isNonNil(v.Elem().Field(0).Interface())
+	isNonNil(v.Elem().Field(1).Interface())
+	isNonNil(v.Elem().FieldByName("X").Interface())
+	isNonNil(v.Elem().FieldByName("Y").Interface())
+	isNonNil(v.Type().Method(0).Func.Interface())
+
+	var priv Private
+	v = ValueOf(&priv)
+	isValid(v.Elem().Field(0))
+	isValid(v.Elem().Field(1))
+	isValid(v.Elem().FieldByName("x"))
+	isValid(v.Elem().FieldByName("y"))
+	isValid(v.Type().Method(0).Func)
+	shouldPanic(func() { v.Elem().Field(0).Interface() })
+	shouldPanic(func() { v.Elem().Field(1).Interface() })
+	shouldPanic(func() { v.Elem().FieldByName("x").Interface() })
+	shouldPanic(func() { v.Elem().FieldByName("y").Interface() })
+	shouldPanic(func() { v.Type().Method(0).Func.Interface() })
+}
+
+func shouldPanic(f func()) {
+	defer func() {
+		if recover() == nil {
+			panic("did not panic")
+		}
+	}()
+	f()
+}
+
+func isNonNil(x interface{}) {
+	if x == nil {
+		panic("nil interface")
+	}
+}
+
+func isValid(v Value) {
+	if !v.IsValid() {
+		panic("zero Value")
 	}
 }

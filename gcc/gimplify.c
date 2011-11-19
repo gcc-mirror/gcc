@@ -413,6 +413,8 @@ create_tmp_var_name (const char *prefix)
       char *preftmp = ASTRDUP (prefix);
 
       remove_suffix (preftmp, strlen (preftmp));
+      clean_symbol_name (preftmp);
+
       prefix = preftmp;
     }
 
@@ -1075,6 +1077,12 @@ voidify_wrapper_expr (tree wrapper, tree temp)
 		}
 	      break;
 
+	    case TRANSACTION_EXPR:
+	      TREE_SIDE_EFFECTS (*p) = 1;
+	      TREE_TYPE (*p) = void_type_node;
+	      p = &TRANSACTION_EXPR_BODY (*p);
+	      break;
+
 	    default:
 	      goto out;
 	    }
@@ -1130,7 +1138,8 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
   bool old_save_stack = gimplify_ctxp->save_stack;
   tree t;
   gimple gimple_bind;
-  gimple_seq body;
+  gimple_seq body, cleanup;
+  gimple stack_save;
 
   tree temp = voidify_wrapper_expr (bind_expr, NULL);
 
@@ -1176,22 +1185,50 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
   gimplify_stmt (&BIND_EXPR_BODY (bind_expr), &body);
   gimple_bind_set_body (gimple_bind, body);
 
+  cleanup = NULL;
+  stack_save = NULL;
   if (gimplify_ctxp->save_stack)
     {
-      gimple stack_save, stack_restore, gs;
-      gimple_seq cleanup, new_body;
+      gimple stack_restore;
 
       /* Save stack on entry and restore it on exit.  Add a try_finally
 	 block to achieve this.  Note that mudflap depends on the
 	 format of the emitted code: see mx_register_decls().  */
       build_stack_save_restore (&stack_save, &stack_restore);
 
-      cleanup = new_body = NULL;
       gimplify_seq_add_stmt (&cleanup, stack_restore);
+    }
+
+  /* Add clobbers for all variables that go out of scope.  */
+  for (t = BIND_EXPR_VARS (bind_expr); t ; t = DECL_CHAIN (t))
+    {
+      if (TREE_CODE (t) == VAR_DECL
+	  && !is_global_var (t)
+	  && DECL_CONTEXT (t) == current_function_decl
+	  && !DECL_HARD_REGISTER (t)
+	  && !TREE_THIS_VOLATILE (t)
+	  && !DECL_HAS_VALUE_EXPR_P (t)
+	  /* Only care for variables that have to be in memory.  Others
+	     will be rewritten into SSA names, hence moved to the top-level.  */
+	  && needs_to_live_in_memory (t))
+	{
+	  tree clobber = build_constructor (TREE_TYPE (t), NULL);
+	  TREE_THIS_VOLATILE (clobber) = 1;
+	  gimplify_seq_add_stmt (&cleanup, gimple_build_assign (t, clobber));
+	}
+    }
+
+  if (cleanup)
+    {
+      gimple gs;
+      gimple_seq new_body;
+
+      new_body = NULL;
       gs = gimple_build_try (gimple_bind_body (gimple_bind), cleanup,
 	  		     GIMPLE_TRY_FINALLY);
 
-      gimplify_seq_add_stmt (&new_body, stack_save);
+      if (stack_save)
+	gimplify_seq_add_stmt (&new_body, stack_save);
       gimplify_seq_add_stmt (&new_body, gs);
       gimple_bind_set_body (gimple_bind, new_body);
     }
@@ -4520,6 +4557,16 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   gcc_assert (TREE_CODE (*expr_p) == MODIFY_EXPR
 	      || TREE_CODE (*expr_p) == INIT_EXPR);
 
+  /* Trying to simplify a clobber using normal logic doesn't work,
+     so handle it here.  */
+  if (TREE_CLOBBER_P (*from_p))
+    {
+      gcc_assert (!want_value && TREE_CODE (*to_p) == VAR_DECL);
+      gimplify_seq_add_stmt (pre_p, gimple_build_assign (*to_p, *from_p));
+      *expr_p = NULL;
+      return GS_ALL_DONE;
+    }
+
   /* Insert pointer conversions required by the middle-end that are not
      required by the frontend.  This fixes middle-end type checking for
      for example gcc.dg/redecl-6.c.  */
@@ -5301,6 +5348,8 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
   if (init)
     {
+      tree cleanup = NULL_TREE;
+
       /* TARGET_EXPR temps aren't part of the enclosing block, so add it
 	 to the temps list.  Handle also variable length TARGET_EXPRs.  */
       if (TREE_CODE (DECL_SIZE (temp)) != INTEGER_CST)
@@ -5335,8 +5384,30 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
       /* If needed, push the cleanup for the temp.  */
       if (TARGET_EXPR_CLEANUP (targ))
-	gimple_push_cleanup (temp, TARGET_EXPR_CLEANUP (targ),
-			     CLEANUP_EH_ONLY (targ), pre_p);
+	{
+	  if (CLEANUP_EH_ONLY (targ))
+	    gimple_push_cleanup (temp, TARGET_EXPR_CLEANUP (targ),
+				 CLEANUP_EH_ONLY (targ), pre_p);
+	  else
+	    cleanup = TARGET_EXPR_CLEANUP (targ);
+	}
+
+      /* Add a clobber for the temporary going out of scope, like
+	 gimplify_bind_expr.  */
+      if (needs_to_live_in_memory (temp))
+	{
+	  tree clobber = build_constructor (TREE_TYPE (temp), NULL);
+	  TREE_THIS_VOLATILE (clobber) = true;
+	  clobber = build2 (MODIFY_EXPR, TREE_TYPE (temp), temp, clobber);
+	  if (cleanup)
+	    cleanup = build2 (COMPOUND_EXPR, void_type_node, cleanup,
+			      clobber);
+	  else
+	    cleanup = clobber;
+	}
+
+      if (cleanup)
+	gimple_push_cleanup (temp, cleanup, false, pre_p);
 
       /* Only expand this once.  */
       TREE_OPERAND (targ, 3) = init;
@@ -6530,6 +6601,53 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
    return GS_ALL_DONE;
 }
 
+/* Gimplify a TRANSACTION_EXPR.  This involves gimplification of the
+   body, and adding some EH bits.  */
+
+static enum gimplify_status
+gimplify_transaction (tree *expr_p, gimple_seq *pre_p)
+{
+  tree expr = *expr_p, temp, tbody = TRANSACTION_EXPR_BODY (expr);
+  gimple g;
+  gimple_seq body = NULL;
+  struct gimplify_ctx gctx;
+  int subcode = 0;
+
+  /* Wrap the transaction body in a BIND_EXPR so we have a context
+     where to put decls for OpenMP.  */
+  if (TREE_CODE (tbody) != BIND_EXPR)
+    {
+      tree bind = build3 (BIND_EXPR, void_type_node, NULL, tbody, NULL);
+      TREE_SIDE_EFFECTS (bind) = 1;
+      SET_EXPR_LOCATION (bind, EXPR_LOCATION (tbody));
+      TRANSACTION_EXPR_BODY (expr) = bind;
+    }
+
+  push_gimplify_context (&gctx);
+  temp = voidify_wrapper_expr (*expr_p, NULL);
+
+  g = gimplify_and_return_first (TRANSACTION_EXPR_BODY (expr), &body);
+  pop_gimplify_context (g);
+
+  g = gimple_build_transaction (body, NULL);
+  if (TRANSACTION_EXPR_OUTER (expr))
+    subcode = GTMA_IS_OUTER;
+  else if (TRANSACTION_EXPR_RELAXED (expr))
+    subcode = GTMA_IS_RELAXED;
+  gimple_transaction_set_subcode (g, subcode);
+
+  gimplify_seq_add_stmt (pre_p, g);
+
+  if (temp)
+    {
+      *expr_p = temp;
+      return GS_OK;
+    }
+
+  *expr_p = NULL_TREE;
+  return GS_ALL_DONE;
+}
+
 /* Convert the GENERIC expression tree *EXPR_P to GIMPLE.  If the
    expression produces a value to be used as an operand inside a GIMPLE
    statement, the value will be stored back in *EXPR_P.  This value will
@@ -7252,6 +7370,10 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case OMP_ATOMIC_CAPTURE_OLD:
 	case OMP_ATOMIC_CAPTURE_NEW:
 	  ret = gimplify_omp_atomic (expr_p, pre_p);
+	  break;
+
+	case TRANSACTION_EXPR:
+	  ret = gimplify_transaction (expr_p, pre_p);
 	  break;
 
 	case TRUTH_AND_EXPR:

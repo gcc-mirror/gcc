@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++98 -Wc++0x-compat" }
-int static_assert; // { dg-warning "will become a keyword" }
-int nullptr; // { dg-warning "will become a keyword" }
+// { dg-options "-std=gnu++98 -Wc++11-compat" }
+int static_assert; // { dg-warning "is a keyword" }
+int nullptr; // { dg-warning "is a keyword" }
 
 void foo()
 {

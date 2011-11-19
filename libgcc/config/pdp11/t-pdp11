@@ -1,0 +1,8 @@
+LIB2ADD = $(srcdir)/udivmod.c \
+	  $(srcdir)/udivmodsi4.c \
+	  $(srcdir)/memcmp.c \
+	  $(srcdir)/memcpy.c \
+	  $(srcdir)/memmove.c \
+	  $(srcdir)/memset.c
+
+HOST_LIBGCC2_CFLAGS += -O2 -mfloat32

@@ -17,27 +17,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB1ASMFUNCS += _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls _bb_init_func _clzsi2 _clzdi2
-
 MULTILIB_OPTIONS     = mlittle-endian/mbig-endian mfloat-abi=hard/mfloat-abi=soft
 MULTILIB_DIRNAMES    = le be fpu soft
 MULTILIB_EXCEPTIONS  =
 MULTILIB_MATCHES     = mbig-endian=mbe mlittle-endian=mle
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crti.o crtn.o
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
-
-# Currently there is a bug somewhere in GCC's alias analysis
-# or scheduling code that is breaking _fpmul_parts in fp-bit.c.
-# Disabling function inlining is a workaround for this problem.
-TARGET_LIBGCC2_CFLAGS = -fno-inline
-
-# Assemble startup files.
-$(T)crti.o: $(srcdir)/config/arm/crti.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-c -o $(T)crti.o -x assembler-with-cpp $(srcdir)/config/arm/crti.asm
-
-$(T)crtn.o: $(srcdir)/config/arm/crtn.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/arm/crtn.asm

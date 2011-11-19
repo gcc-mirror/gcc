@@ -1,0 +1,3 @@
+# If .sdata is enabled __CTOR_{LIST,END}__ go into .sdata instead of
+# .ctors.
+CRTSTUFF_T_CFLAGS = -msdata=none

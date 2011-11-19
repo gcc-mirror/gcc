@@ -1,0 +1,13 @@
+LIB1ASMSRC = h8300/lib1funcs.S
+LIB1ASMFUNCS = _cmpsi2 _ucmpsi2 _divhi3 _divsi3 _mulhi3 _mulsi3 \
+  _fixunssfsi_asm
+
+LIB2ADD = \
+	$(srcdir)/config/h8300/clzhi2.c \
+	$(srcdir)/config/h8300/ctzhi2.c \
+	$(srcdir)/config/h8300/parityhi2.c \
+	$(srcdir)/config/h8300/popcounthi2.c \
+	$(srcdir)/config/h8300/fixunssfsi.c
+
+# We do not have DF type, so fake out the libgcc2 compilation.
+HOST_LIBGCC2_CFLAGS += -DDF=SF

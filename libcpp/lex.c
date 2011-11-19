@@ -1478,6 +1478,18 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
     }
  break_outer_loop:
 
+  if (CPP_OPTION (pfile, user_literals))
+    {
+      /* Grab user defined literal suffix.  */
+      if (ISIDST (*cur))
+	{
+	  type = cpp_userdef_string_add_type (type);
+	  ++cur;
+	}
+      while (ISIDNUM (*cur))
+	++cur;
+    }
+
   pfile->buffer->cur = cur;
   if (first_buff == NULL)
     create_literal (pfile, token, base, cur - base, type);
@@ -1580,6 +1592,19 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
   if (type == CPP_OTHER && CPP_OPTION (pfile, lang) != CLK_ASM)
     cpp_error (pfile, CPP_DL_PEDWARN, "missing terminating %c character",
 	       (int) terminator);
+
+  if (CPP_OPTION (pfile, user_literals))
+    {
+      /* Grab user defined literal suffix.  */
+      if (ISIDST (*cur))
+	{
+	  type = cpp_userdef_char_add_type (type);
+	  type = cpp_userdef_string_add_type (type);
+          ++cur;
+	}
+      while (ISIDNUM (*cur))
+	++cur;
+    }
 
   pfile->buffer->cur = cur;
   create_literal (pfile, token, base, cur - base, type);
@@ -1703,12 +1728,11 @@ next_tokenrun (tokenrun *run)
   return run->next;
 }
 
-/* Return the number of not yet processed token in the the current
+/* Return the number of not yet processed token in a given
    context.  */
 int
-_cpp_remaining_tokens_num_in_context (cpp_reader *pfile)
+_cpp_remaining_tokens_num_in_context (cpp_context *context)
 {
-  cpp_context *context = pfile->context;
   if (context->tokens_kind == TOKENS_KIND_DIRECT)
     return (LAST (context).token - FIRST (context).token);
   else if (context->tokens_kind == TOKENS_KIND_INDIRECT
@@ -1718,12 +1742,11 @@ _cpp_remaining_tokens_num_in_context (cpp_reader *pfile)
       abort ();
 }
 
-/* Returns the token present at index INDEX in the current context.
-   If INDEX is zero, the next token to be processed is returned.  */
+/* Returns the token present at index INDEX in a given context.  If
+   INDEX is zero, the next token to be processed is returned.  */
 static const cpp_token*
-_cpp_token_from_context_at (cpp_reader *pfile, int index)
+_cpp_token_from_context_at (cpp_context *context, int index)
 {
-  cpp_context *context = pfile->context;
   if (context->tokens_kind == TOKENS_KIND_DIRECT)
     return &(FIRST (context).token[index]);
   else if (context->tokens_kind == TOKENS_KIND_INDIRECT
@@ -1744,10 +1767,10 @@ cpp_peek_token (cpp_reader *pfile, int index)
   /* First, scan through any pending cpp_context objects.  */
   while (context->prev)
     {
-      ptrdiff_t sz = _cpp_remaining_tokens_num_in_context (pfile);
+      ptrdiff_t sz = _cpp_remaining_tokens_num_in_context (context);
 
       if (index < (int) sz)
-        return _cpp_token_from_context_at (pfile, index);
+        return _cpp_token_from_context_at (context, index);
       index -= (int) sz;
       context = context->prev;
     }

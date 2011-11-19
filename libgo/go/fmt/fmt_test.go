@@ -5,6 +5,7 @@
 package fmt_test
 
 import (
+	"bytes"
 	. "fmt"
 	"io"
 	"math"
@@ -61,7 +62,7 @@ type I int
 func (i I) String() string { return Sprintf("<%d>", int(i)) }
 
 type B struct {
-	i I
+	I I
 	j int
 }
 
@@ -83,8 +84,8 @@ func (g G) GoString() string {
 }
 
 type S struct {
-	f F // a struct field that Formats
-	g G // a struct field that GoStrings
+	F F // a struct field that Formats
+	G G // a struct field that GoStrings
 }
 
 // A type with a String method with pointer receiver for testing %p
@@ -332,8 +333,8 @@ var fmttests = []struct {
 	{"%+v", A{1, 2, "a", []int{1, 2}}, `{i:1 j:2 s:a x:[1 2]}`},
 
 	// +v on structs with Stringable items
-	{"%+v", B{1, 2}, `{i:<1> j:2}`},
-	{"%+v", C{1, B{2, 3}}, `{i:1 B:{i:<2> j:3}}`},
+	{"%+v", B{1, 2}, `{I:<1> j:2}`},
+	{"%+v", C{1, B{2, 3}}, `{i:1 B:{I:<2> j:3}}`},
 
 	// q on Stringable items
 	{"%s", I(23), `<23>`},
@@ -348,8 +349,8 @@ var fmttests = []struct {
 	{"%#v", make(chan int), "(chan int)(0xPTR)"},
 	{"%#v", uint64(1<<64 - 1), "0xffffffffffffffff"},
 	{"%#v", 1000000000, "1000000000"},
-	{"%#v", map[string]int{"a": 1, "b": 2}, `map[string] int{"a":1, "b":2}`},
-	{"%#v", map[string]B{"a": {1, 2}, "b": {3, 4}}, `map[string] fmt_test.B{"a":fmt_test.B{i:1, j:2}, "b":fmt_test.B{i:3, j:4}}`},
+	{"%#v", map[string]int{"a": 1}, `map[string] int{"a":1}`},
+	{"%#v", map[string]B{"a": {1, 2}}, `map[string] fmt_test.B{"a":fmt_test.B{I:1, j:2}}`},
 	{"%#v", []string{"a", "b"}, `[]string{"a", "b"}`},
 
 	// slices with other formats
@@ -384,11 +385,11 @@ var fmttests = []struct {
 	// Formatter
 	{"%x", F(1), "<x=F(1)>"},
 	{"%x", G(2), "2"},
-	{"%+v", S{F(4), G(5)}, "{f:<v=F(4)> g:5}"},
+	{"%+v", S{F(4), G(5)}, "{F:<v=F(4)> G:5}"},
 
 	// GoStringer
 	{"%#v", G(6), "GoString(6)"},
-	{"%#v", S{F(7), G(8)}, "fmt_test.S{f:<v=F(7)>, g:GoString(8)}"},
+	{"%#v", S{F(7), G(8)}, "fmt_test.S{F:<v=F(7)>, G:GoString(8)}"},
 
 	// %T
 	{"%T", (4 - 3i), "complex128"},
@@ -504,11 +505,38 @@ func TestCountMallocs(t *testing.T) {
 	runtime.UpdateMemStats()
 	mallocs = 0 - runtime.MemStats.Mallocs
 	for i := 0; i < 100; i++ {
+		Sprintf("%s", "hello")
+	}
+	runtime.UpdateMemStats()
+	mallocs += runtime.MemStats.Mallocs
+	Printf("mallocs per Sprintf(\"%%s\"): %d\n", mallocs/100)
+	runtime.UpdateMemStats()
+	mallocs = 0 - runtime.MemStats.Mallocs
+	for i := 0; i < 100; i++ {
 		Sprintf("%x %x", i, i)
 	}
 	runtime.UpdateMemStats()
 	mallocs += runtime.MemStats.Mallocs
 	Printf("mallocs per Sprintf(\"%%x %%x\"): %d\n", mallocs/100)
+	buf := new(bytes.Buffer)
+	runtime.UpdateMemStats()
+	mallocs = 0 - runtime.MemStats.Mallocs
+	for i := 0; i < 100; i++ {
+		buf.Reset()
+		Fprintf(buf, "%x %x %x", i, i, i)
+	}
+	runtime.UpdateMemStats()
+	mallocs += runtime.MemStats.Mallocs
+	Printf("mallocs per Fprintf(buf, \"%%x %%x %%x\"): %d\n", mallocs/100)
+	runtime.UpdateMemStats()
+	mallocs = 0 - runtime.MemStats.Mallocs
+	for i := 0; i < 100; i++ {
+		buf.Reset()
+		Fprintf(buf, "%s", "hello")
+	}
+	runtime.UpdateMemStats()
+	mallocs += runtime.MemStats.Mallocs
+	Printf("mallocs per Fprintf(buf, \"%%s\"): %d\n", mallocs/100)
 }
 
 type flagPrinter struct{}

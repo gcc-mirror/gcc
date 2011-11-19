@@ -140,7 +140,7 @@ namespace std
     { return !operator==(__arg); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-    size_t hash_code() const throw()
+    size_t hash_code() const noexcept
     {
 #  if !__GXX_MERGED_TYPEINFO_NAMES
       return _Hash_bytes(name(), __builtin_strlen(name()),

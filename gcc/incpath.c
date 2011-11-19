@@ -362,8 +362,10 @@ merge_include_chains (const char *sysroot, cpp_reader *pfile, int verbose)
 void
 split_quote_chain (void)
 {
-  free_path (heads[QUOTE], REASON_QUIET);
-  free_path (tails[QUOTE], REASON_QUIET);
+  if (heads[QUOTE])
+    free_path (heads[QUOTE], REASON_QUIET);
+  if (tails[QUOTE])
+    free_path (tails[QUOTE], REASON_QUIET);
   heads[QUOTE] = heads[BRACKET];
   tails[QUOTE] = tails[BRACKET];
   heads[BRACKET] = NULL;
@@ -458,6 +460,15 @@ register_include_chains (cpp_reader *pfile, const char *sysroot,
   cpp_set_include_chains (pfile, heads[QUOTE], heads[BRACKET],
 			  quote_ignores_source_dir);
 }
+
+/* Return the current chain of cpp dirs.  */
+
+struct cpp_dir *
+get_added_cpp_dirs (int chain)
+{
+  return heads[chain];
+}
+
 #if !(defined TARGET_EXTRA_INCLUDES) || !(defined TARGET_EXTRA_PRE_INCLUDES)
 static void hook_void_charptr_charptr_int (const char *sysroot ATTRIBUTE_UNUSED,
 					   const char *iprefix ATTRIBUTE_UNUSED,

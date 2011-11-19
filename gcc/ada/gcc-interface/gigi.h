@@ -804,6 +804,12 @@ extern unsigned int known_alignment (tree exp);
    of 2.  */
 extern bool value_factor_p (tree value, HOST_WIDE_INT factor);
 
+/* Build an atomic load for the underlying atomic object in SRC.  */
+extern tree build_atomic_load (tree src);
+
+/* Build an atomic store from SRC to the underlying atomic object in DEST.  */
+extern tree build_atomic_store (tree dest, tree src);
+
 /* Make a binary operation of kind OP_CODE.  RESULT_TYPE is the type
    desired for the result.  Usually the operation is to be performed
    in that type.  For MODIFY_EXPR and ARRAY_REF, RESULT_TYPE may be 0

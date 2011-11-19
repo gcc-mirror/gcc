@@ -108,17 +108,13 @@ typedef enum
 gfc_coarray_type;
 
 
-/* Scalarization State chain.  Created by walking an expression tree before
-   creating the scalarization loops. Then passed as part of a gfc_se structure
-   to translate the expression inside the loop.  Note that these chains are
-   terminated by gfc_se_terminator, not NULL.  A NULL pointer in a gfc_se
-   indicates to gfc_conv_* that this is a scalar expression.
-   Note that some member arrays correspond to scalarizer rank and others
-   are the variable rank.  */
+/* The array-specific scalarization informations.  The array members of
+   this struct are indexed by actual array index, and thus can be sparse.  */
 
-typedef struct gfc_ss_info
+typedef struct gfc_array_info
 {
-  int dimen;
+  mpz_t *shape;
+
   /* The ref that holds information on this section.  */
   gfc_ref *ref;
   /* The descriptor of this array.  */
@@ -139,12 +135,8 @@ typedef struct gfc_ss_info
   tree end[GFC_MAX_DIMENSIONS];
   tree stride[GFC_MAX_DIMENSIONS];
   tree delta[GFC_MAX_DIMENSIONS];
-
-  /* Translation from loop dimensions to actual dimensions.
-     actual_dim = dim[loop_dim]  */
-  int dim[GFC_MAX_DIMENSIONS];
 }
-gfc_ss_info;
+gfc_array_info;
 
 typedef enum
 {
@@ -190,47 +182,82 @@ typedef enum
 }
 gfc_ss_type;
 
-/* SS structures can only belong to a single loopinfo.  They must be added
-   otherwise they will not get freed.  */
-typedef struct gfc_ss
+
+typedef struct gfc_ss_info
 {
+  int refcount;
   gfc_ss_type type;
   gfc_expr *expr;
-  mpz_t *shape;
   tree string_length;
+
   union
   {
     /* If type is GFC_SS_SCALAR or GFC_SS_REFERENCE.  */
     struct
     {
-      tree expr;
+      tree value;
     }
     scalar;
 
     /* GFC_SS_TEMP.  */
     struct
     {
-      /* The rank of the temporary.  May be less than the rank of the
-         assigned expression.  */
-      int dimen;
       tree type;
     }
     temp;
+
     /* All other types.  */
-    gfc_ss_info info;
+    gfc_array_info array;
   }
   data;
+
+  /* This is used by assignments requiring temporaries.  The bits specify which
+     loops the terms appear in.  This will be 1 for the RHS expressions,
+     2 for the LHS expressions, and 3(=1|2) for the temporary.  */
+  unsigned useflags:2;
+
+  /* Suppresses precalculation of scalars in WHERE assignments.  */
+  unsigned where:1;
+}
+gfc_ss_info;
+
+#define gfc_get_ss_info() XCNEW (gfc_ss_info)
+
+
+/* Scalarization State chain.  Created by walking an expression tree before
+   creating the scalarization loops.  Then passed as part of a gfc_se structure
+   to translate the expression inside the loop.  Note that these chains are
+   terminated by gfc_ss_terminator, not NULL.  A NULL pointer in a gfc_se
+   indicates to gfc_conv_* that this is a scalar expression.
+   SS structures can only belong to a single loopinfo.  They must be added
+   otherwise they will not get freed.  */
+
+typedef struct gfc_ss
+{
+  gfc_ss_info *info;
+
+  int dimen;
+  /* Translation from loop dimensions to actual array dimensions.
+     actual_dim = dim[loop_dim]  */
+  int dim[GFC_MAX_DIMENSIONS];
 
   /* All the SS in a loop and linked through loop_chain.  The SS for an
      expression are linked by the next pointer.  */
   struct gfc_ss *loop_chain;
   struct gfc_ss *next;
 
-  /* This is used by assignments requiring temporaries. The bits specify which
-     loops the terms appear in.  This will be 1 for the RHS expressions,
-     2 for the LHS expressions, and 3(=1|2) for the temporary.  The bit
-     'where' suppresses precalculation of scalars in WHERE assignments.  */
-  unsigned useflags:2, where:1, is_alloc_lhs:1;
+  /* Non-null if the ss is part of a nested loop.  */
+  struct gfc_ss *parent;
+
+  /* If the evaluation of an expression requires a nested loop (for example
+     if the sum intrinsic is evaluated inline), this points to the nested
+     loop's gfc_ss.  */
+  struct gfc_ss *nested_ss;
+
+  /* The loop this gfc_ss is in.  */
+  struct gfc_loopinfo *loop;
+
+  unsigned is_alloc_lhs:1;
 }
 gfc_ss;
 #define gfc_get_ss() XCNEW (gfc_ss)
@@ -251,6 +278,12 @@ typedef struct gfc_loopinfo
   gfc_ss *ss;
   /* The SS describing the temporary used in an assignment.  */
   gfc_ss *temp_ss;
+
+  /* Non-null if this loop is nested in another one.  */
+  struct gfc_loopinfo *parent;
+
+  /* Chain of nested loops.  */
+  struct gfc_loopinfo *nested, *next;
 
   /* The scalarization loop index variables.  */
   tree loopvar[GFC_MAX_DIMENSIONS];
@@ -277,6 +310,7 @@ typedef struct gfc_loopinfo
 }
 gfc_loopinfo;
 
+#define gfc_get_loopinfo() XCNEW (gfc_loopinfo)
 
 /* Information about a symbol that has been shadowed by a temporary.  */
 typedef struct
@@ -362,9 +396,6 @@ tree gfc_builtin_decl_for_float_kind (enum built_in_function, int);
 /* Intrinsic procedure handling.  */
 tree gfc_conv_intrinsic_subroutine (gfc_code *);
 void gfc_conv_intrinsic_function (gfc_se *, gfc_expr *);
-
-/* Is the intrinsic expanded inline.  */
-bool gfc_inline_intrinsic_function_p (gfc_expr *);
 
 /* Does an intrinsic map directly to an external library call
    This is true for array-returning intrinsics, unless

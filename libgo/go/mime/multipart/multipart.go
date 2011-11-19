@@ -69,8 +69,9 @@ func (p *Part) FileName() string {
 
 func (p *Part) parseContentDisposition() {
 	v := p.Header.Get("Content-Disposition")
-	p.disposition, p.dispositionParams = mime.ParseMediaType(v)
-	if p.dispositionParams == nil {
+	var err os.Error
+	p.disposition, p.dispositionParams, err = mime.ParseMediaType(v)
+	if err != nil {
 		p.dispositionParams = emptyParams
 	}
 }
@@ -145,7 +146,7 @@ func (bp *Part) Read(p []byte) (n int, err os.Error) {
 		return 0, io.ErrUnexpectedEOF
 	}
 	if nCopy > 0 {
-		if _, err := io.Copyn(bp.buffer, bp.mr.bufReader, int64(nCopy)); err != nil {
+		if _, err := io.CopyN(bp.buffer, bp.mr.bufReader, int64(nCopy)); err != nil {
 			return 0, err
 		}
 	}

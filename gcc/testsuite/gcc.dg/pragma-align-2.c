@@ -1,4 +1,5 @@
 /* { dg-do run { target *-*-solaris2.* } } */
+/* { dg-options "-std=gnu99" } */
 
 void abort (void);
 

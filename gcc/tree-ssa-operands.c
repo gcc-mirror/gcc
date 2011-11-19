@@ -956,6 +956,12 @@ get_expr_operands (gimple stmt, tree *expr_p, int flags)
 	constructor_elt *ce;
 	unsigned HOST_WIDE_INT idx;
 
+	/* A volatile constructor is actually TREE_CLOBBER_P, transfer
+	   the volatility to the statement, don't use TREE_CLOBBER_P for
+	   mirroring the other uses of THIS_VOLATILE in this file.  */
+	if (TREE_THIS_VOLATILE (expr))
+	  gimple_set_has_volatile_ops (stmt, true);
+
 	for (idx = 0;
 	     VEC_iterate (constructor_elt, CONSTRUCTOR_ELTS (expr), idx, ce);
 	     idx++)

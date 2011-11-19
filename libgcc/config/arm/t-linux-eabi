@@ -1,0 +1,5 @@
+# Use a version of div0 which raises SIGFPE, and a special __clear_cache.
+LIB1ASMFUNCS := $(filter-out _dvmd_tls,$(LIB1ASMFUNCS)) _dvmd_lnx _clear_cache
+
+LIB2ADD_ST += $(srcdir)/config/arm/linux-atomic.c \
+	      $(srcdir)/config/arm/linux-atomic-64bit.c

@@ -1,6 +1,6 @@
 /* Include file for internal GNU MP types and definitions.
 
-Copyright (C) 1991, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+Copyright (C) 1991, 1993, 1994, 1995, 1996, 2011 Free Software Foundation, Inc.
 
 This file is part of the GNU MP Library.
 
@@ -60,7 +60,7 @@ typedef unsigned int UHWtype;
 #define attribute_hidden
 #endif
 
-#include "../../gcc/longlong.h"
+#include "../../libgcc/longlong.h"
 
 /* Copy NLIMBS *limbs* from SRC to DST.  */
 #define MPN_COPY_INCR(DST, SRC, NLIMBS) \

@@ -276,23 +276,28 @@ dump_file (const char *filename)
 
 static void
 tag_function (const char *filename ATTRIBUTE_UNUSED,
-	      unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
+	      unsigned tag ATTRIBUTE_UNUSED, unsigned length)
 {
   unsigned long pos = gcov_position ();
 
-  printf (" ident=%u", gcov_read_unsigned ());
-  printf (", lineno_checksum=0x%08x", gcov_read_unsigned ());
-  printf (", cfg_checksum_checksum=0x%08x", gcov_read_unsigned ());
-
-  if (gcov_position () - pos < length)
+  if (!length)
+    printf (" placeholder");
+  else
     {
-      const char *name;
+      printf (" ident=%u", gcov_read_unsigned ());
+      printf (", lineno_checksum=0x%08x", gcov_read_unsigned ());
+      printf (", cfg_checksum_checksum=0x%08x", gcov_read_unsigned ());
 
-      name = gcov_read_string ();
-      printf (", `%s'", name ? name : "NULL");
-      name = gcov_read_string ();
-      printf (" %s", name ? name : "NULL");
-      printf (":%u", gcov_read_unsigned ());
+      if (gcov_position () - pos < length)
+	{
+	  const char *name;
+	  
+	  name = gcov_read_string ();
+	  printf (", `%s'", name ? name : "NULL");
+	  name = gcov_read_string ();
+	  printf (" %s", name ? name : "NULL");
+	  printf (":%u", gcov_read_unsigned ());
+	}
     }
 }
 

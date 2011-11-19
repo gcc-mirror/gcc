@@ -55,7 +55,11 @@
    Checking which variant should apply and getting at sc_pregs is simpler
    to express in C (we can't use offsetof in toplevel asms and hardcoding
    constants is not workable with the flurry of VxWorks variants), so this
-   is the choice for our toplevel interface.  */
+   is the choice for our toplevel interface.
+
+   Note that the registers we "restore" here are those to which we have
+   direct access through the system sigcontext structure, which includes
+   only a partial set of the non-volatiles ABI-wise.  */
 
 /* -----------------------------------------
    -- Protypes for our internal asm stubs --
@@ -120,8 +124,9 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
 /* REGNO constants, dwarf column numbers for registers of interest.  */
 
 #define REGNO_LR  65
-#define REGNO_XER 76
+#define REGNO_CTR 66
 #define REGNO_CR  70
+#define REGNO_XER 76
 #define REGNO_GR(N) (N)
 
 #define REGNO_PC  67  /* ARG_POINTER_REGNUM  */
@@ -139,6 +144,8 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
    multine contents:  */
 #define TAB(S) "\t" S
 #define CR(S)  S "\n"
+
+#undef TCR
 #define TCR(S) TAB(CR(S))
 
 /*------------------------------
@@ -147,11 +154,18 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
 
 /* CFA setup block
    ---------------
-   Only non-volatile registers are suitable for a CFA base.  We use r14
-   here and set it to the value we need in stub body that follows.  */
+   Only non-volatile registers are suitable for a CFA base. These are the
+   only ones we can expect to be able retrieve from the unwinding context
+   while walking up the chain, saved by at least the bottom-most exception
+   propagation services.  We use r15 here and set it to the value we need
+   in stub body that follows.  Note that r14 is inappropriate here, even
+   though it is non-volatile according to the ABI, because GCC uses it as
+   an extra SCRATCH on SPE targets.  */
+
+#define CFA_REG 15
 
 #define CFI_DEF_CFA \
-CR(".cfi_def_cfa 14, 0")
+CR(".cfi_def_cfa " S(CFA_REG) ", 0")
 
 /* Register location blocks
    ------------------------
@@ -164,7 +178,18 @@ CR(".cfi_def_cfa 14, 0")
 
 #define CFI_COMMON_REGS \
 CR("# CFI for common registers\n") \
-TCR(COMMON_CFI(GR(1)))  \
+TCR(COMMON_CFI(GR(2)))  \
+TCR(COMMON_CFI(GR(3)))  \
+TCR(COMMON_CFI(GR(4)))  \
+TCR(COMMON_CFI(GR(5)))  \
+TCR(COMMON_CFI(GR(6)))  \
+TCR(COMMON_CFI(GR(7)))  \
+TCR(COMMON_CFI(GR(8)))  \
+TCR(COMMON_CFI(GR(9)))  \
+TCR(COMMON_CFI(GR(10)))  \
+TCR(COMMON_CFI(GR(11)))  \
+TCR(COMMON_CFI(GR(12)))  \
+TCR(COMMON_CFI(GR(13)))  \
 TCR(COMMON_CFI(GR(14))) \
 TCR(COMMON_CFI(GR(15))) \
 TCR(COMMON_CFI(GR(16))) \
@@ -185,6 +210,8 @@ TCR(COMMON_CFI(GR(30))) \
 TCR(COMMON_CFI(GR(31))) \
 TCR(COMMON_CFI(LR)) \
 TCR(COMMON_CFI(CR)) \
+TCR(COMMON_CFI(CTR)) \
+TCR(COMMON_CFI(XER)) \
 TCR(COMMON_CFI(PC)) \
 TCR(".cfi_return_column " S(REGNO_PC))
 
@@ -198,10 +225,10 @@ TCR("# registers we're going to modify") \
 TCR("stwu %r1,-16(%r1)")  \
 TCR("mflr %r0")	\
 TCR("stw %r0,20(%r1)")	\
-TCR("stw %r14,8(%r1)")	\
+TCR("stw %r" S(CFA_REG) ",8(%r1)")	\
 TCR("")			\
-TCR("# Setup r14 = sc_pregs, that we'll retrieve as our CFA value") \
-TCR("mr %r14, %r7") \
+TCR("# Setup CFA_REG = sc_pregs, that we'll retrieve as our CFA value") \
+TCR("mr %r" S(CFA_REG) ", %r7") \
 TCR("")			\
 TCR("# Call the real handler. The signo, siginfo and sigcontext") \
 TCR("# arguments are the same as those we received in r3, r4 and r5") \
@@ -209,7 +236,7 @@ TCR("mtctr %r6") \
 TCR("bctrl")	\
 TCR("")		\
 TCR("# Restore our callee-saved items, release our frame and return") \
-TCR("lwz %r14,8(%r1)")	\
+TCR("lwz %r" S(CFA_REG) ",8(%r1)")	\
 TCR("lwz %r0,20(%r1)")	\
 TCR("mtlr %r0")		\
 TCR("")			\

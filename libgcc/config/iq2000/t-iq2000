@@ -1,0 +1,5 @@
+LIB2ADD = $(srcdir)/udivmod.c \
+	  $(srcdir)/divmod.c \
+	  $(srcdir)/udivmodsi4.c \
+	  $(srcdir)/config/iq2000/lib2funcs.c
+

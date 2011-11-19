@@ -16,9 +16,9 @@ t (void)
   can_throw ();
 }
 // We ought to remove implicit cleanup, since destructor is empty. 
-// { dg-final { scan-tree-dump-times "Empty EH handler" 1 "ehcleanup1" } }
+// { dg-final { scan-tree-dump-times "Empty EH handler" 2 "ehcleanup1" } }
 //
 // And as a result also contained control flow.
-// { dg-final { scan-tree-dump-times "Removing unreachable" 2 "ehcleanup1" } }
+// { dg-final { scan-tree-dump-times "Removing unreachable" 4 "ehcleanup1" } }
 //
 // { dg-final { cleanup-tree-dump "ehcleanup1" } }

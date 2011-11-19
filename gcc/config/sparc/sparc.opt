@@ -197,9 +197,6 @@ Target Report RejectNegative Var(sparc_fix_at697f)
 Enable workaround for single erratum of AT697F processor
 (corresponding to erratum #13 of AT697E processor)
 
-Mask(LITTLE_ENDIAN)
-;; Generate code for little-endian
-
 Mask(LONG_DOUBLE_128)
 ;; Use 128-bit long double
 

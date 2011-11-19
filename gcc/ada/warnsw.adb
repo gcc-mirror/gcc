@@ -67,6 +67,7 @@ package body Warnsw is
             Warn_On_All_Unread_Out_Parameters   := True;
             Warn_On_Assertion_Failure           := True;
             Warn_On_Assumed_Low_Bound           := True;
+            Warn_On_Atomic_Synchronization      := True;
             Warn_On_Bad_Fixed_Value             := True;
             Warn_On_Biased_Representation       := True;
             Warn_On_Constant                    := True;
@@ -119,6 +120,12 @@ package body Warnsw is
 
          when 'M' =>
             Warn_On_Suspicious_Modulus_Value    := False;
+
+         when 'n' =>
+            Warn_On_Atomic_Synchronization      := True;
+
+         when 'N' =>
+            Warn_On_Atomic_Synchronization      := False;
 
          when 'o' =>
             Warn_On_All_Unread_Out_Parameters   := True;
@@ -202,6 +209,7 @@ package body Warnsw is
       Warn_On_All_Unread_Out_Parameters   := False;
       Warn_On_Assertion_Failure           := True;
       Warn_On_Assumed_Low_Bound           := True;
+      Warn_On_Atomic_Synchronization      := False;
       Warn_On_Bad_Fixed_Value             := True;
       Warn_On_Biased_Representation       := True;
       Warn_On_Constant                    := True;
@@ -212,12 +220,16 @@ package body Warnsw is
       Warn_On_Modified_Unread             := True;
       Warn_On_No_Value_Assigned           := True;
       Warn_On_Non_Local_Exception         := False;
-      Warn_On_Object_Renames_Function     := False;
+      Warn_On_Object_Renames_Function     := True;
       Warn_On_Obsolescent_Feature         := True;
+      Warn_On_Overlap                     := True;
+      Warn_On_Overridden_Size             := True;
+      Warn_On_Parameter_Order             := True;
       Warn_On_Questionable_Missing_Parens := True;
+      Warn_On_Record_Holes                := False;
       Warn_On_Redundant_Constructs        := True;
       Warn_On_Reverse_Bit_Order           := False;
-      Warn_On_Object_Renames_Function     := True;
+      Warn_On_Suspicious_Contract         := True;
       Warn_On_Unchecked_Conversion        := True;
       Warn_On_Unordered_Enumeration_Type  := False;
       Warn_On_Unrecognized_Pragma         := True;

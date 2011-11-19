@@ -1,0 +1,140 @@
+; Options for the Adapteva EPIPHANY port of the compiler
+;
+; Copyright (C) 2005, 2007, 2009, 2011 Free Software Foundation, Inc.
+; Contributed by Embecosm on behalf of Adapteva, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT
+; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+; License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+mhalf-reg-file
+Target Mask(HALF_REG_FILE)
+Don't use any of r32..r63.
+
+mprefer-short-insn-regs
+Target Mask(PREFER_SHORT_INSN_REGS)
+preferentially allocate registers that allow short instruction generation.
+
+mbranch-cost=
+Target RejectNegative Joined UInteger Var(epiphany_branch_cost) Init(3)
+Set branch cost
+
+mcmove
+Target Mask(CMOVE)
+enable conditional move instruction usage.
+
+mnops=
+Target RejectNegative Joined UInteger Var(epiphany_n_nops) Init(0)
+set number of nops to emit before each insn pattern
+
+; Problems with using the flags from fsub for comparison are:
+; - Because of underflow (lack of subnormal numbers), different small numbers
+;   can compare as equal.
+; - the set of comparisons is limited, and reversing comparisons doesn't work
+;   in the presence of NaNs.
+; The latter problem might be tolerated with -ffinite-math-only , but nothing
+; in -funsafe-math-optimizations says different small numbers may be considered
+; equal.
+msoft-cmpsf
+Target Mask(SOFT_CMPSF)
+Use software floating point comparisons
+
+msplit-lohi
+Target Mask(SPLIT_LOHI)
+Enable split of 32 bit immediate loads into low / high part
+
+mpost-inc
+Target Mask(POST_INC)
+Enable use of POST_INC / POST_DEC
+
+mpost-modify
+Target Mask(POST_MODIFY)
+Enable use of POST_MODIFY
+
+mstack-offset=
+Target RejectNegative Joined UInteger Var(epiphany_stack_offset) Init(EPIPHANY_STACK_OFFSET)
+Set number of bytes on the stack preallocated for use by the callee.
+
+mround-nearest
+target Mask(ROUND_NEAREST)
+Assume round to nearest is selected for purposes of scheduling.
+
+mlong-calls
+Target Mask(LONG_CALLS)
+Generate call insns as indirect calls
+
+mshort-calls
+Target Mask(SHORT_CALLS)
+Generate call insns as direct calls
+
+msmall16
+Target Mask(SMALL16)
+Assume labels and symbols can be addressed using 16 bit absolute addresses.
+
+mfp-mode=
+Target RejectNegative Joined Var(epiphany_normal_fp_mode) Enum(attr_fp_mode) Init(FP_MODE_CALLER)
+
+; The values are from enum attr_fp_mode, but using that enum would bring
+; problems with enum forward declarations.
+Enum
+Name(attr_fp_mode) Type(int)
+
+EnumValue
+Enum(attr_fp_mode) String(caller) Value(FP_MODE_CALLER)
+
+EnumValue
+Enum(attr_fp_mode) String(round-nearest) Value(FP_MODE_ROUND_NEAREST)
+
+EnumValue
+Enum(attr_fp_mode) String(truncate) Value(FP_MODE_ROUND_TRUNC)
+
+EnumValue
+Enum(attr_fp_mode) String(int) Value(FP_MODE_INT)
+
+mvect-double
+Target Mask(VECT_DOUBLE)
+Vectorize for double-word operations.
+
+max-vect-align=
+Target RejectNegative Joined Var(epiphany_vect_align) Enum(vect_align) Init(8)
+
+Enum
+Name(vect_align) Type(int)
+
+EnumValue
+Enum(vect_align) String(4) Value(4)
+
+EnumValue
+Enum(vect_align) String(8) Value(8)
+
+msplit-vecmove-early
+Target Mask(SPLIT_VECMOVE_EARLY)
+Split unaligned 8 byte vector moves before post-modify address generation.
+
+m1reg-
+Target RejectNegative Joined Var(epiphany_m1reg) Enum(m1reg) Init(-1)
+Set register to hold -1.
+
+Enum
+Name(m1reg) Type(int)
+
+EnumValue
+Enum(m1reg) String(none) Value(-1)
+
+EnumValue
+Enum(m1reg) String(r43) Value(43)
+
+EnumValue
+Enum(m1reg) String(r63) Value(63)

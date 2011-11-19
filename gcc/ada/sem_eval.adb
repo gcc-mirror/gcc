@@ -250,27 +250,32 @@ package body Sem_Eval is
                       and not Range_Checks_Suppressed (T);
 
    begin
-      --  Ignore cases of non-scalar types or error types
+      --  Ignore cases of non-scalar types, error types, or universal real
+      --  types that have no usable bounds.
 
-      if T = Any_Type or else not Is_Scalar_Type (T) then
+      if T = Any_Type
+        or else not Is_Scalar_Type (T)
+        or else T = Universal_Fixed
+        or else T = Universal_Real
+      then
          return;
       end if;
 
-      --  At this stage we have a scalar type. If we have an expression
-      --  that raises CE, then we already issued a warning or error msg
-      --  so there is nothing more to be done in this routine.
+      --  At this stage we have a scalar type. If we have an expression that
+      --  raises CE, then we already issued a warning or error msg so there
+      --  is nothing more to be done in this routine.
 
       if Raises_Constraint_Error (N) then
          return;
       end if;
 
-      --  Now we have a scalar type which is not marked as raising a
-      --  constraint error exception. The main purpose of this routine
-      --  is to deal with static expressions appearing in a non-static
-      --  context. That means that if we do not have a static expression
-      --  then there is not much to do. The one case that we deal with
-      --  here is that if we have a floating-point value that is out of
-      --  range, then we post a warning that an infinity will result.
+      --  Now we have a scalar type which is not marked as raising a constraint
+      --  error exception. The main purpose of this routine is to deal with
+      --  static expressions appearing in a non-static context. That means
+      --  that if we do not have a static expression then there is not much
+      --  to do. The one case that we deal with here is that if we have a
+      --  floating-point value that is out of range, then we post a warning
+      --  that an infinity will result.
 
       if not Is_Static_Expression (N) then
          if Is_Floating_Point_Type (T)
@@ -283,17 +288,17 @@ package body Sem_Eval is
          return;
       end if;
 
-      --  Here we have the case of outer level static expression of
-      --  scalar type, where the processing of this procedure is needed.
+      --  Here we have the case of outer level static expression of scalar
+      --  type, where the processing of this procedure is needed.
 
       --  For real types, this is where we convert the value to a machine
-      --  number (see RM 4.9(38)). Also see ACVC test C490001. We should
-      --  only need to do this if the parent is a constant declaration,
-      --  since in other cases, gigi should do the necessary conversion
-      --  correctly, but experimentation shows that this is not the case
-      --  on all machines, in particular if we do not convert all literals
-      --  to machine values in non-static contexts, then ACVC test C490001
-      --  fails on Sparc/Solaris and SGI/Irix.
+      --  number (see RM 4.9(38)). Also see ACVC test C490001. We should only
+      --  need to do this if the parent is a constant declaration, since in
+      --  other cases, gigi should do the necessary conversion correctly, but
+      --  experimentation shows that this is not the case on all machines, in
+      --  particular if we do not convert all literals to machine values in
+      --  non-static contexts, then ACVC test C490001 fails on Sparc/Solaris
+      --  and SGI/Irix.
 
       if Nkind (N) = N_Real_Literal
         and then not Is_Machine_Number (N)
@@ -320,12 +325,12 @@ package body Sem_Eval is
 
          elsif not UR_Is_Zero (Realval (N)) then
 
-            --  Note: even though RM 4.9(38) specifies biased rounding,
-            --  this has been modified by AI-100 in order to prevent
-            --  confusing differences in rounding between static and
-            --  non-static expressions. AI-100 specifies that the effect
-            --  of such rounding is implementation dependent, and in GNAT
-            --  we round to nearest even to match the run-time behavior.
+            --  Note: even though RM 4.9(38) specifies biased rounding, this
+            --  has been modified by AI-100 in order to prevent confusing
+            --  differences in rounding between static and non-static
+            --  expressions. AI-100 specifies that the effect of such rounding
+            --  is implementation dependent, and in GNAT we round to nearest
+            --  even to match the run-time behavior.
 
             Set_Realval
               (N, Machine (Base_Type (T), Realval (N), Round_Even, N));
@@ -455,10 +460,10 @@ package body Sem_Eval is
       --  simple cases can be recognized.
 
       function Is_Same_Value (L, R : Node_Id) return Boolean;
-      --  Returns True iff L and R represent expressions that definitely
-      --  have identical (but not necessarily compile time known) values
-      --  Indeed the caller is expected to have already dealt with the
-      --  cases of compile time known values, so these are not tested here.
+      --  Returns True iff L and R represent expressions that definitely have
+      --  identical (but not necessarily compile time known) values Indeed the
+      --  caller is expected to have already dealt with the cases of compile
+      --  time known values, so these are not tested here.
 
       -----------------------
       -- Compare_Decompose --

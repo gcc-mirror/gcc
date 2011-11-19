@@ -176,6 +176,8 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
        items with static storage duration that are not otherwise
        initialized are initialized to zero.  */
     ;
+  else if (TYPE_PTR_P (type) || TYPE_PTR_TO_MEMBER_P (type))
+    init = convert (type, nullptr_node);
   else if (SCALAR_TYPE_P (type))
     init = convert (type, integer_zero_node);
   else if (CLASS_TYPE_P (type))
@@ -505,7 +507,15 @@ perform_member_init (tree member, tree init)
 		 tf_warning_or_error, member, /*function_p=*/false,
 		 /*integral_constant_expression_p=*/false));
       else
-	init = break_out_target_exprs (DECL_INITIAL (member));
+	{
+	  init = DECL_INITIAL (member);
+	  /* Strip redundant TARGET_EXPR so we don't need to remap it, and
+	     so the aggregate init code below will see a CONSTRUCTOR.  */
+	  if (init && TREE_CODE (init) == TARGET_EXPR
+	      && !VOID_TYPE_P (TREE_TYPE (TARGET_EXPR_INITIAL (init))))
+	    init = TARGET_EXPR_INITIAL (init);
+	  init = break_out_target_exprs (init);
+	}
     }
 
   /* Effective C++ rule 12 requires that all data members be
@@ -562,6 +572,42 @@ perform_member_init (tree member, tree init)
 	  init = build2 (INIT_EXPR, type, decl, TREE_VALUE (init));
 	  finish_expr_stmt (init);
 	}
+    }
+  else if (init
+	   && (TREE_CODE (type) == REFERENCE_TYPE
+	       /* Pre-digested NSDMI.  */
+	       || (((TREE_CODE (init) == CONSTRUCTOR
+		     && TREE_TYPE (init) == type)
+		    /* { } mem-initializer.  */
+		    || (TREE_CODE (init) == TREE_LIST
+			&& TREE_CODE (TREE_VALUE (init)) == CONSTRUCTOR
+			&& CONSTRUCTOR_IS_DIRECT_INIT (TREE_VALUE (init))))
+		   && (CP_AGGREGATE_TYPE_P (type)
+		       || is_std_init_list (type)))))
+    {
+      /* With references and list-initialization, we need to deal with
+	 extending temporary lifetimes.  12.2p5: "A temporary bound to a
+	 reference member in a constructor’s ctor-initializer (12.6.2)
+	 persists until the constructor exits."  */
+      unsigned i; tree t;
+      VEC(tree,gc) *cleanups = make_tree_vector ();
+      if (TREE_CODE (init) == TREE_LIST)
+	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
+						tf_warning_or_error);
+      if (TREE_TYPE (init) != type)
+	init = digest_init (type, init, tf_warning_or_error);
+      if (init == error_mark_node)
+	return;
+      /* Use 'this' as the decl, as it has the lifetime we want.  */
+      init = extend_ref_init_temps (member, init, &cleanups);
+      if (TREE_CODE (type) == ARRAY_TYPE
+	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (type)))
+	init = build_vec_init_expr (type, init, tf_warning_or_error);
+      init = build2 (INIT_EXPR, type, decl, init);
+      finish_expr_stmt (init);
+      FOR_EACH_VEC_ELT (tree, cleanups, i, t)
+	push_cleanup (decl, t, false);
+      release_tree_vector (cleanups);
     }
   else if (type_build_ctor_call (type)
 	   || (init && CLASS_TYPE_P (strip_array_types (type))))
@@ -1375,6 +1421,8 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
   TREE_THIS_VOLATILE (exp) = 0;
 
   if (init && TREE_CODE (init) != TREE_LIST
+      && !(TREE_CODE (init) == TARGET_EXPR
+	   && TARGET_EXPR_DIRECT_INIT_P (init))
       && !(BRACE_ENCLOSED_INITIALIZER_P (init)
 	   && CONSTRUCTOR_IS_DIRECT_INIT (init)))
     flags |= LOOKUP_ONLYCONVERTING;
@@ -1457,10 +1505,28 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 
   if (init && BRACE_ENCLOSED_INITIALIZER_P (init)
       && CP_AGGREGATE_TYPE_P (type))
+    /* A brace-enclosed initializer for an aggregate.  In C++0x this can
+       happen for direct-initialization, too.  */
+    init = digest_init (type, init, complain);
+
+  /* A CONSTRUCTOR of the target's type is a previously digested
+     initializer, whether that happened just above or in
+     cp_parser_late_parsing_nsdmi.
+
+     A TARGET_EXPR with TARGET_EXPR_DIRECT_INIT_P or TARGET_EXPR_LIST_INIT_P
+     set represents the whole initialization, so we shouldn't build up
+     another ctor call.  */
+  if (init
+      && (TREE_CODE (init) == CONSTRUCTOR
+	  || (TREE_CODE (init) == TARGET_EXPR
+	      && (TARGET_EXPR_DIRECT_INIT_P (init)
+		  || TARGET_EXPR_LIST_INIT_P (init))))
+      && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (init), type))
     {
-      /* A brace-enclosed initializer for an aggregate.  In C++0x this can
-	 happen for direct-initialization, too.  */
-      init = digest_init (type, init, complain);
+      /* Early initialization via a TARGET_EXPR only works for
+	 complete objects.  */
+      gcc_assert (TREE_CODE (init) == CONSTRUCTOR || true_exp == exp);
+
       init = build2 (INIT_EXPR, TREE_TYPE (exp), exp, init);
       TREE_SIDE_EFFECTS (init) = 1;
       finish_expr_stmt (init);
@@ -1575,12 +1641,14 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
   if (init && TREE_CODE (exp) == VAR_DECL
       && COMPOUND_LITERAL_P (init))
     {
+      VEC(tree,gc)* cleanups = NULL;
       /* If store_init_value returns NULL_TREE, the INIT has been
 	 recorded as the DECL_INITIAL for EXP.  That means there's
 	 nothing more we have to do.  */
-      init = store_init_value (exp, init, flags);
+      init = store_init_value (exp, init, &cleanups, flags);
       if (init)
 	finish_expr_stmt (init);
+      gcc_assert (!cleanups);
       return;
     }
 
@@ -2578,7 +2646,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	{
 	  tree ifexp = cp_build_binary_op (input_location,
 					   NE_EXPR, alloc_node,
-					   integer_zero_node,
+					   nullptr_node,
 					   complain);
 	  rval = build_conditional_expr (ifexp, rval, alloc_node, 
                                          complain);
@@ -2890,7 +2958,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 		      fold_build2_loc (input_location,
 				   NE_EXPR, boolean_type_node, base,
 				   convert (TREE_TYPE (base),
-					    integer_zero_node)),
+					    nullptr_node)),
 		      body, integer_zero_node);
   body = build1 (NOP_EXPR, void_type_node, body);
 
@@ -2998,7 +3066,8 @@ build_vec_init (tree base, tree maxindex, tree init,
   if (TREE_CODE (atype) == ARRAY_TYPE && TYPE_DOMAIN (atype))
     maxindex = array_type_nelts (atype);
 
-  if (maxindex == NULL_TREE || maxindex == error_mark_node)
+  if (maxindex == NULL_TREE || maxindex == error_mark_node
+      || integer_all_onesp (maxindex))
     return error_mark_node;
 
   if (explicit_value_init_p)
@@ -3127,6 +3196,9 @@ build_vec_init (tree base, tree maxindex, tree init,
       bool try_const = (TREE_CODE (atype) == ARRAY_TYPE
 			&& (literal_type_p (inner_elt_type)
 			    || TYPE_HAS_CONSTEXPR_CTOR (inner_elt_type)));
+      /* If the constructor already has the array type, it's been through
+	 digest_init, so we shouldn't try to do anything more.  */
+      bool digested = same_type_p (atype, TREE_TYPE (init));
       bool saw_non_const = false;
       bool saw_const = false;
       /* If we're initializing a static array, we want to do static
@@ -3149,7 +3221,9 @@ build_vec_init (tree base, tree maxindex, tree init,
 	  num_initialized_elts++;
 
 	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
-	  if (MAYBE_CLASS_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
+	  if (digested)
+	    one_init = build2 (INIT_EXPR, type, baseref, elt);
+	  else if (MAYBE_CLASS_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
 	    one_init = build_aggr_init (baseref, elt, 0, complain);
 	  else
 	    one_init = cp_build_modify_expr (baseref, NOP_EXPR,
@@ -3611,7 +3685,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 	{
 	  /* Handle deleting a null pointer.  */
 	  ifexp = fold (cp_build_binary_op (input_location,
-					    NE_EXPR, addr, integer_zero_node,
+					    NE_EXPR, addr, nullptr_node,
 					    complain));
 	  if (ifexp == error_mark_node)
 	    return error_mark_node;

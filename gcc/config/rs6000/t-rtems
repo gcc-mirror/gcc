@@ -19,14 +19,12 @@
 # <http://www.gnu.org/licenses/>.
 
 MULTILIB_OPTIONS	= \
-mcpu=403/mcpu=505/mcpu=601/mcpu=603e/mcpu=604/mcpu=860/mcpu=7400 \
-Dmpc8260 \
-msoft-float
+mcpu=403/mcpu=505/mcpu=603e/mcpu=604/mcpu=860/mcpu=7400/mcpu=8540 \
+msoft-float/mfloat-gprs=double
 
 MULTILIB_DIRNAMES	= \
-m403 m505 m601 m603e m604 m860 m7400 \
-mpc8260 \
-nof
+m403 m505 m603e m604 m860 m7400 m8540 \
+nof gprsdouble
 
 # MULTILIB_MATCHES	= ${MULTILIB_MATCHES_FLOAT}
 MULTILIB_MATCHES	=
@@ -47,6 +45,13 @@ MULTILIB_MATCHES	+= mcpu?7400=mcpu?7450
 # Map 750 to .
 MULTILIB_MATCHES	+= mcpu?750=
 
+# Map 8548 to 8540
+MULTILIB_MATCHES	+= mcpu?8540=mcpu?8548
+
+# Map -mcpu=8540 -mfloat-gprs=single to -mcpu=8540
+# (mfloat-gprs=single is implicit default)
+MULTILIB_MATCHES	+= mcpu?8540=mcpu?8540/mfloat-gprs?single
+
 # Soft-float only, default implies msoft-float
 # NOTE: Must match with MULTILIB_MATCHES_FLOAT and MULTILIB_MATCHES
 MULTILIB_SOFTFLOAT_ONLY = \
@@ -62,6 +67,16 @@ MULTILIB_SOFTFLOAT_ONLY = \
 MULTILIB_HARDFLOAT_ONLY = \
 *mcpu=505/*msoft-float*
 
+# Targets which do not support gprs
+MULTILIB_NOGPRS = \
+mfloat-gprs=* \
+*mcpu=403/*mfloat-gprs=* \
+*mcpu=505/*mfloat-gprs=* \
+*mcpu=603e/*mfloat-gprs=* \
+*mcpu=604/*mfloat-gprs=* \
+*mcpu=860/*mfloat-gprs=* \
+*mcpu=7400/*mfloat-gprs=*
+
 MULTILIB_EXCEPTIONS =
 
 # Disallow -Dppc and -Dmpc without other options
@@ -69,14 +84,5 @@ MULTILIB_EXCEPTIONS 	+= Dppc* Dmpc*
 
 MULTILIB_EXCEPTIONS	+= \
 ${MULTILIB_SOFTFLOAT_ONLY} \
-${MULTILIB_HARDFLOAT_ONLY}
-
-# Special rules
-# Take out all variants we don't want
-MULTILIB_EXCEPTIONS += *mcpu=403/Dmpc*
-MULTILIB_EXCEPTIONS += *mcpu=505/Dmpc*
-MULTILIB_EXCEPTIONS += *mcpu=601/Dmpc*
-MULTILIB_EXCEPTIONS += *mcpu=604/Dmpc*
-MULTILIB_EXCEPTIONS += *mcpu=750/Dmpc*
-MULTILIB_EXCEPTIONS += *mcpu=860/Dmpc*
-MULTILIB_EXCEPTIONS += *mcpu=7400/Dmpc*
+${MULTILIB_HARDFLOAT_ONLY} \
+${MULTILIB_NOGPRS}

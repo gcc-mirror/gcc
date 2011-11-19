@@ -187,7 +187,7 @@ typedef struct
   gfc_offset buffer_offset;	/* File offset of the start of the buffer */
   gfc_offset physical_offset;	/* Current physical file offset */
   gfc_offset logical_offset;	/* Current logical file offset */
-  gfc_offset file_length;	/* Length of the file, -1 if not seekable. */
+  gfc_offset file_length;	/* Length of the file. */
 
   char *buffer;                 /* Pointer to the buffer.  */
   int fd;                       /* The POSIX file descriptor.  */
@@ -195,8 +195,6 @@ typedef struct
   int active;			/* Length of valid bytes in the buffer */
 
   int ndirty;			/* Dirty bytes starting at buffer_offset */
-
-  int special_file;             /* =1 if the fd refers to a special file */
 
   /* Cached stat(2) values.  */
   dev_t st_dev;
@@ -334,6 +332,16 @@ raw_tell (unix_stream * s)
   return lseek (s->fd, 0, SEEK_CUR);
 }
 
+static gfc_offset
+raw_size (unix_stream * s)
+{
+  struct stat statbuf;
+  int ret = fstat (s->fd, &statbuf);
+  if (ret == -1)
+    return ret;
+  return statbuf.st_size;
+}
+
 static int
 raw_truncate (unix_stream * s, gfc_offset length)
 {
@@ -400,6 +408,7 @@ raw_init (unix_stream * s)
   s->st.write = (void *) raw_write;
   s->st.seek = (void *) raw_seek;
   s->st.tell = (void *) raw_tell;
+  s->st.size = (void *) raw_size;
   s->st.trunc = (void *) raw_truncate;
   s->st.close = (void *) raw_close;
   s->st.flush = (void *) raw_flush;
@@ -413,7 +422,7 @@ raw_init (unix_stream * s)
 Buffered I/O functions. These functions have the same semantics as the
 raw I/O functions above, except that they are buffered in order to
 improve performance. The buffer must be flushed when switching from
-reading to writing and vice versa.
+reading to writing and vice versa. Only supported for regular files.
 *********************************************************************/
 
 static int
@@ -427,7 +436,7 @@ buf_flush (unix_stream * s)
   if (s->ndirty == 0)
     return 0;
   
-  if (s->file_length != -1 && s->physical_offset != s->buffer_offset
+  if (s->physical_offset != s->buffer_offset
       && lseek (s->fd, s->buffer_offset, SEEK_SET) < 0)
     return -1;
 
@@ -435,17 +444,12 @@ buf_flush (unix_stream * s)
 
   s->physical_offset = s->buffer_offset + writelen;
 
-  /* Don't increment file_length if the file is non-seekable.  */
-  if (s->file_length != -1 && s->physical_offset > s->file_length)
+  if (s->physical_offset > s->file_length)
       s->file_length = s->physical_offset;
 
   s->ndirty -= writelen;
   if (s->ndirty != 0)
     return -1;
-
-#ifdef _WIN32
-  _commit (s->fd);
-#endif
 
   return 0;
 }
@@ -481,7 +485,7 @@ buf_read (unix_stream * s, void * buf, ssize_t nbyte)
       /* At this point we consider all bytes in the buffer discarded.  */
       to_read = nbyte - nread;
       new_logical = s->logical_offset + nread;
-      if (s->file_length != -1 && s->physical_offset != new_logical
+      if (s->physical_offset != new_logical
           && lseek (s->fd, new_logical, SEEK_SET) < 0)
         return -1;
       s->buffer_offset = s->physical_offset = new_logical;
@@ -539,7 +543,7 @@ buf_write (unix_stream * s, const void * buf, ssize_t nbyte)
         }
       else
 	{
-	  if (s->file_length != -1 && s->physical_offset != s->logical_offset)
+	  if (s->physical_offset != s->logical_offset)
 	    {
 	      if (lseek (s->fd, s->logical_offset, SEEK_SET) < 0)
 		return -1;
@@ -551,8 +555,7 @@ buf_write (unix_stream * s, const void * buf, ssize_t nbyte)
 	}
     }
   s->logical_offset += nbyte;
-  /* Don't increment file_length if the file is non-seekable.  */
-  if (s->file_length != -1 && s->logical_offset > s->file_length)
+  if (s->logical_offset > s->file_length)
     s->file_length = s->logical_offset;
   return nbyte;
 }
@@ -560,11 +563,6 @@ buf_write (unix_stream * s, const void * buf, ssize_t nbyte)
 static gfc_offset
 buf_seek (unix_stream * s, gfc_offset offset, int whence)
 {
-  if (s->file_length == -1)
-    {
-      errno = ESPIPE;
-      return -1;
-    }
   switch (whence)
     {
     case SEEK_SET:
@@ -591,6 +589,12 @@ static gfc_offset
 buf_tell (unix_stream * s)
 {
   return buf_seek (s, 0, SEEK_CUR);
+}
+
+static gfc_offset
+buf_size (unix_stream * s)
+{
+  return s->file_length;
 }
 
 static int
@@ -622,6 +626,7 @@ buf_init (unix_stream * s)
   s->st.write = (void *) buf_write;
   s->st.seek = (void *) buf_seek;
   s->st.tell = (void *) buf_tell;
+  s->st.size = (void *) buf_size;
   s->st.trunc = (void *) buf_truncate;
   s->st.close = (void *) buf_close;
   s->st.flush = (void *) buf_flush;
@@ -893,6 +898,9 @@ open_internal (char *base, int length, gfc_offset offset)
   s->st.close = (void *) mem_close;
   s->st.seek = (void *) mem_seek;
   s->st.tell = (void *) mem_tell;
+  /* buf_size is not a typo, we just reuse an identical
+     implementation.  */
+  s->st.size = (void *) buf_size;
   s->st.trunc = (void *) mem_truncate;
   s->st.read = (void *) mem_read;
   s->st.write = (void *) mem_write;
@@ -921,6 +929,9 @@ open_internal4 (char *base, int length, gfc_offset offset)
   s->st.close = (void *) mem_close;
   s->st.seek = (void *) mem_seek;
   s->st.tell = (void *) mem_tell;
+  /* buf_size is not a typo, we just reuse an identical
+     implementation.  */
+  s->st.size = (void *) buf_size;
   s->st.trunc = (void *) mem_truncate;
   s->st.read = (void *) mem_read4;
   s->st.write = (void *) mem_write4;
@@ -953,30 +964,18 @@ fd_to_stream (int fd)
 
   s->st_dev = statbuf.st_dev;
   s->st_ino = statbuf.st_ino;
-  s->special_file = !S_ISREG (statbuf.st_mode);
+  s->file_length = statbuf.st_size;
 
-  if (S_ISREG (statbuf.st_mode))
-    s->file_length = statbuf.st_size;
-  else
-    {
-      /* Some character special files are seekable but most are not,
-	 so figure it out by trying to seek.  On Linux, /dev/null is
-	 an example of such a special file.  */
-      s->file_length = lseek (fd, 0, SEEK_END);
-      if (s->file_length > 0)
-	lseek (fd, 0, SEEK_SET);
-    }
-
-  if (!(S_ISREG (statbuf.st_mode) || S_ISBLK (statbuf.st_mode))
-      || options.all_unbuffered
-      ||(options.unbuffered_preconnected && 
-         (s->fd == STDIN_FILENO 
-          || s->fd == STDOUT_FILENO 
-          || s->fd == STDERR_FILENO))
-      || isatty (s->fd))
-    raw_init (s);
-  else
+  /* Only use buffered IO for regular files.  */
+  if (S_ISREG (statbuf.st_mode)
+      && !options.all_unbuffered
+      && !(options.unbuffered_preconnected && 
+	   (s->fd == STDIN_FILENO 
+	    || s->fd == STDOUT_FILENO 
+	    || s->fd == STDERR_FILENO)))
     buf_init (s);
+  else
+    raw_init (s);
 
   return (stream *) s;
 }
@@ -1758,44 +1757,6 @@ const char *
 inquire_readwrite (const char *string, int len)
 {
   return inquire_access (string, len, R_OK | W_OK);
-}
-
-
-/* file_length()-- Return the file length in bytes, -1 if unknown */
-
-gfc_offset
-file_length (stream * s)
-{
-  gfc_offset curr, end;
-  if (!is_seekable (s))
-    return -1;
-  curr = stell (s);
-  if (curr == -1)
-    return curr;
-  end = sseek (s, 0, SEEK_END);
-  sseek (s, curr, SEEK_SET);
-  return end;
-}
-
-
-/* is_seekable()-- Return nonzero if the stream is seekable, zero if
- * it is not */
-
-int
-is_seekable (stream *s)
-{
-  /* By convention, if file_length == -1, the file is not
-     seekable.  */
-  return ((unix_stream *) s)->file_length!=-1;
-}
-
-
-/* is_special()-- Return nonzero if the stream is not a regular file.  */
-
-int
-is_special (stream *s)
-{
-  return ((unix_stream *) s)->special_file;
 }
 
 

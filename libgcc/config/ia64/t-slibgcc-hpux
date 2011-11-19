@@ -1,0 +1,6 @@
+# Build a shared libgcc library with the HP-UX linker on IA64.
+
+SHLIB_SOVERSION = 0
+# Must include -lunwind in the link, so that libgcc_s.so has the necessary
+# DT_NEEDED entry for libunwind.
+SHLIB_LC += -lunwind

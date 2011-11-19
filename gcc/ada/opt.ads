@@ -1448,6 +1448,11 @@ package Opt is
    --  with literals or S'Length, presumably assuming a lower bound of one. Set
    --  False by -gnatwW.
 
+   Warn_On_Atomic_Synchronization : Boolean := False;
+   --  GNAT
+   --  Set to True to generate information messages for atomic synchronization.
+   --  Set True by use of -gnatw.n.
+
    Warn_On_Bad_Fixed_Value : Boolean := False;
    --  GNAT
    --  Set to True to generate warnings for static fixed-point expression

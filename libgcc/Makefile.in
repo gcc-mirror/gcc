@@ -22,7 +22,6 @@
 libgcc_topdir = @libgcc_topdir@
 host_subdir = @host_subdir@
 
-gcc_srcdir = $(libgcc_topdir)/gcc
 gcc_objdir = $(MULTIBUILDTOP)../../$(host_subdir)/gcc
 
 srcdir = @srcdir@
@@ -50,6 +49,8 @@ target_noncanonical = @target_noncanonical@
 # The rules for compiling them should be in the t-* file for the machine.
 EXTRA_PARTS = @extra_parts@
 
+extra-parts = libgcc-extra-parts
+
 # Multilib support variables.
 MULTISRCTOP =
 MULTIBUILDTOP =
@@ -62,6 +63,7 @@ INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 mkinstalldirs = $(SHELL) $(libgcc_topdir)/mkinstalldirs
+INSTALL_PARTS = $(EXTRA_PARTS)
 
 objext = .o
 
@@ -119,7 +121,7 @@ installcheck:
 .PHONY: all clean
 
 clean:
-	-rm -f config.h stamp-h stmp-ldirs libgcc.map
+	-rm -f config.h libgcc_tm.h stamp-h stmp-ldirs libgcc.map
 	-rm -f *$(objext)
 	-rm -f *.dep
 	-rm -f *.a
@@ -217,6 +219,41 @@ else
 DECNUMINC =
 endif
 
+# Options to use when compiling libgcc2.a.
+#
+LIBGCC2_DEBUG_CFLAGS = -g
+LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(HOST_LIBGCC2_CFLAGS) \
+		 $(LIBGCC2_DEBUG_CFLAGS) -DIN_LIBGCC2 \
+		 -fbuilding-libgcc -fno-stack-protector \
+		 $(INHIBIT_LIBC_CFLAGS)
+
+# Additional options to use when compiling libgcc2.a.
+# Some targets override this to -isystem include
+LIBGCC2_INCLUDES =
+
+# Additional target-dependent options for compiling libgcc2.a.
+HOST_LIBGCC2_CFLAGS =
+
+PICFLAG = @PICFLAG@
+
+# Defined in libgcc2.c, included only in the static library.
+LIB2FUNCS_ST = _eprintf __gcc_bcmp
+
+# List of functions not to build from libgcc2.c.
+LIB2FUNCS_EXCLUDE =
+
+# These might cause a divide overflow trap and so are compiled with
+# unwinder info.
+LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
+
+# List of extra C and assembler files to add to static and shared libgcc2.
+# Assembler files should have names ending in `.S'.
+LIB2ADD = 
+
+# List of extra C and assembler files to add to static libgcc2.
+# Assembler files should have names ending in `.S'.
+LIB2ADD_ST =
+
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
 # so that *config.h will be found in the compilation
@@ -237,6 +274,16 @@ override CFLAGS := $(filter-out -fprofile-generate -fprofile-use,$(CFLAGS))
 # include CFLAGS - that's where multilib options live.
 INTERNAL_CFLAGS = $(CFLAGS) $(LIBGCC2_CFLAGS) $(HOST_LIBGCC2_CFLAGS) \
 		  $(INCLUDES) @set_have_cc_tls@ @set_use_emutls@
+
+# Options to use when compiling crtbegin/end.
+CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
+  -finhibit-size-directive -fno-inline -fno-exceptions \
+  -fno-zero-initialized-in-bss -fno-toplevel-reorder -fno-tree-vectorize \
+  -fno-stack-protector \
+  $(INHIBIT_LIBC_CFLAGS)
+
+# Extra flags to use when compiling crt{begin,end}.o.
+CRTSTUFF_T_CFLAGS =
 
 MULTIDIR := $(shell $(CC) $(CFLAGS) -print-multi-directory)
 MULTIOSDIR := $(shell $(CC) $(CFLAGS) -print-multi-os-directory)
@@ -279,6 +326,9 @@ LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
 LIB2ADDEHSTATIC = $(LIB2ADDEH)
 LIB2ADDEHSHARED = $(LIB2ADDEH)
 
+# nm flags to list global symbols in libgcc object files.
+SHLIB_NM_FLAGS = -pg
+
 # Don't build libunwind by default.
 LIBUNWIND =
 SHLIBUNWIND_LINK =
@@ -286,6 +336,16 @@ SHLIBUNWIND_INSTALL =
 
 tmake_file = @tmake_file@
 include $(srcdir)/empty.mk $(tmake_file)
+
+# Collect target defines and headers from config.host.
+libgcc_tm_defines = @tm_defines@
+libgcc_tm_file = @tm_file@
+libgcc_tm.h: libgcc_tm.stamp; @true
+libgcc_tm.stamp:
+	DEFINES='$(libgcc_tm_defines)' HEADERS='$(libgcc_tm_file)' \
+		$(srcdir)/mkheader.sh > tmp-libgcc_tm.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-libgcc_tm.h libgcc_tm.h
+	echo timestamp > $@
 
 # Only handle shared libraries if both:
 #   - the user requested them
@@ -330,16 +390,6 @@ else
 iterator = $(srcdir)/empty.mk $(patsubst %,$(srcdir)/static-object.mk,$(iter-items))
 vis_hide =
 gen-hide-list = echo > \$@
-endif
-
-ifneq ($(EXTRA_PARTS),)
-  extra-parts = libgcc-extra-parts
-  INSTALL_PARTS = $(EXTRA_PARTS)
-else
-ifneq ($(GCC_EXTRA_PARTS),)
-  extra-parts = gcc-extra-parts
-  INSTALL_PARTS = $(GCC_EXTRA_PARTS)
-endif
 endif
 
 LIB2ADD += enable-execute-stack.c
@@ -388,40 +438,36 @@ LIB2_DIVMOD_FUNCS := $(filter-out $(LIB2FUNCS_EXCLUDE) $(LIB1ASMFUNCS), \
 ifeq ($(enable_shared),yes)
 
 lib1asmfuncs-o = $(patsubst %,%$(objext),$(LIB1ASMFUNCS))
-$(lib1asmfuncs-o): %$(objext): $(gcc_srcdir)/config/$(LIB1ASMSRC) %.vis
-	$(gcc_compile) -DL$* -xassembler-with-cpp \
-	  -c $(gcc_srcdir)/config/$(LIB1ASMSRC) -include $*.vis
+$(lib1asmfuncs-o): %$(objext): $(srcdir)/config/$(LIB1ASMSRC) %.vis
+	$(gcc_compile) -DL$* -xassembler-with-cpp -c $< -include $*.vis
 $(patsubst %,%.vis,$(LIB1ASMFUNCS)): %.vis: %_s$(objext)
 	$(gen-hide-list)
 libgcc-objects += $(lib1asmfuncs-o)
 
 lib1asmfuncs-s-o = $(patsubst %,%_s$(objext),$(LIB1ASMFUNCS))
-$(lib1asmfuncs-s-o): %_s$(objext): $(gcc_srcdir)/config/$(LIB1ASMSRC)
-	$(gcc_s_compile) -DL$* -xassembler-with-cpp \
-	  -c $(gcc_srcdir)/config/$(LIB1ASMSRC)
+$(lib1asmfuncs-s-o): %_s$(objext): $(srcdir)/config/$(LIB1ASMSRC)
+	$(gcc_s_compile) -DL$* -xassembler-with-cpp -c $<
 libgcc-s-objects += $(lib1asmfuncs-s-o)
 
 else
 
 lib1asmfuncs-o = $(patsubst %,%$(objext),$(LIB1ASMFUNCS))
-$(lib1asmfuncs-o): %$(objext): $(gcc_srcdir)/config/$(LIB1ASMSRC)
-	$(gcc_compile) -DL$* -xassembler-with-cpp \
-	  -c $(gcc_srcdir)/config/$(LIB1ASMSRC)
+$(lib1asmfuncs-o): %$(objext): $(srcdir)/config/$(LIB1ASMSRC)
+	$(gcc_compile) -DL$* -xassembler-with-cpp -c $<
 libgcc-objects += $(lib1asmfuncs-o)
 
 endif
 
 # Build lib2funcs.  For the static library also include LIB2FUNCS_ST.
 lib2funcs-o = $(patsubst %,%$(objext),$(lib2funcs) $(LIB2FUNCS_ST))
-$(lib2funcs-o): %$(objext): $(gcc_srcdir)/libgcc2.c
-	$(gcc_compile) -DL$* -c $(gcc_srcdir)/libgcc2.c \
-	  $(vis_hide)
+$(lib2funcs-o): %$(objext): $(srcdir)/libgcc2.c
+	$(gcc_compile) -DL$* -c $< $(vis_hide)
 libgcc-objects += $(lib2funcs-o)
 
 ifeq ($(enable_shared),yes)
 lib2funcs-s-o = $(patsubst %,%_s$(objext),$(lib2funcs))
-$(lib2funcs-s-o): %_s$(objext): $(gcc_srcdir)/libgcc2.c
-	$(gcc_s_compile) -DL$* -c $(gcc_srcdir)/libgcc2.c
+$(lib2funcs-s-o): %_s$(objext): $(srcdir)/libgcc2.c
+	$(gcc_s_compile) -DL$* -c $<
 libgcc-s-objects += $(lib2funcs-s-o)
 endif
 
@@ -449,15 +495,15 @@ endif
 
 # Build LIB2_DIVMOD_FUNCS.
 lib2-divmod-o = $(patsubst %,%$(objext),$(LIB2_DIVMOD_FUNCS))
-$(lib2-divmod-o): %$(objext): $(gcc_srcdir)/libgcc2.c
-	$(gcc_compile) -DL$* -c $(gcc_srcdir)/libgcc2.c \
+$(lib2-divmod-o): %$(objext): $(srcdir)/libgcc2.c
+	$(gcc_compile) -DL$* -c $< \
 	  -fexceptions -fnon-call-exceptions $(vis_hide)
 libgcc-objects += $(lib2-divmod-o)
 
 ifeq ($(enable_shared),yes)
 lib2-divmod-s-o = $(patsubst %,%_s$(objext),$(LIB2_DIVMOD_FUNCS))
-$(lib2-divmod-s-o): %_s$(objext): $(gcc_srcdir)/libgcc2.c
-	$(gcc_s_compile) -DL$* -c $(gcc_srcdir)/libgcc2.c \
+$(lib2-divmod-s-o): %_s$(objext): $(srcdir)/libgcc2.c
+	$(gcc_s_compile) -DL$* -c $< \
 	  -fexceptions -fnon-call-exceptions
 libgcc-s-objects += $(lib2-divmod-s-o)
 endif
@@ -897,45 +943,39 @@ ALL_CRT_CFLAGS = $(CFLAGS) $(CRTSTUFF_CFLAGS) $(INCLUDES)
 crt_compile = $(CC) $(ALL_CRT_CFLAGS) -o $@ $(compile_deps)
 
 ifeq ($(CUSTOM_CRTSTUFF),)
-crtbegin$(objext): $(gcc_srcdir)/crtstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS) \
-	  -c $(gcc_srcdir)/crtstuff.c -DCRT_BEGIN
+# Compile two additional files that are linked with every program
+# linked using GCC on systems using COFF or ELF, for the sake of C++
+# constructors.
+crtbegin$(objext): $(srcdir)/crtstuff.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_BEGIN
 
-crtend$(objext): $(gcc_srcdir)/crtstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS) \
-	  -c $(gcc_srcdir)/crtstuff.c -DCRT_END
+crtend$(objext): $(srcdir)/crtstuff.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_END
 
 # These are versions of crtbegin and crtend for shared libraries.
-crtbeginS$(objext): $(gcc_srcdir)/crtstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) \
-	  -c $(gcc_srcdir)/crtstuff.c -DCRT_BEGIN -DCRTSTUFFS_O
+crtbeginS$(objext): $(srcdir)/crtstuff.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) -c $< -DCRT_BEGIN -DCRTSTUFFS_O
 
-crtendS$(objext): $(gcc_srcdir)/crtstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) \
-	  -c $(gcc_srcdir)/crtstuff.c -DCRT_END -DCRTSTUFFS_O
+crtendS$(objext): $(srcdir)/crtstuff.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) -c $< -DCRT_END -DCRTSTUFFS_O
 
 # This is a version of crtbegin for -static links.
-crtbeginT.o: $(gcc_srcdir)/crtstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS) \
-	  -c $(gcc_srcdir)/crtstuff.c -DCRT_BEGIN -DCRTSTUFFT_O
+crtbeginT$(objext): $(srcdir)/crtstuff.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_BEGIN -DCRTSTUFFT_O
+endif
+
+ifeq ($(CUSTOM_CRTIN),)
+# -x assembler-with-cpp is only needed on case-insensitive filesystem.
+crti$(objext): $(srcdir)/config/$(cpu_type)/crti.S
+	$(crt_compile) -c -x assembler-with-cpp $<
+
+crtn$(objext): $(srcdir)/config/$(cpu_type)/crtn.S
+	$(crt_compile) -c -x assembler-with-cpp $<
 endif
 
 # Build extra startfiles in the libgcc directory.
 .PHONY: libgcc-extra-parts
 libgcc-extra-parts: $(EXTRA_PARTS)
-ifneq ($(GCC_EXTRA_PARTS),)
-ifneq ($(sort $(EXTRA_PARTS)),$(GCC_EXTRA_PARTS))
-	# If the gcc directory specifies which extra parts to
-	# build for this target, and the libgcc configuration also
-	# specifies, make sure they match.  This can be removed
-	# when the gcc directory no longer holds libgcc configuration;
-	# it is useful when migrating a target.
-	@echo "Configuration mismatch!"
-	@echo "Extra parts from gcc directory: $(GCC_EXTRA_PARTS)"
-	@echo "Extra parts from libgcc: $(EXTRA_PARTS)"
-	exit 1
-endif
-endif
 
 	# Early copyback; see "all" above for the rationale.  The
 	# early copy is necessary so that the gcc -B options find
@@ -951,44 +991,12 @@ endif
 	  esac;							\
 	done
 
-# Build extra startfiles in the gcc directory, for unconverted
-# targets.
-.PHONY: gcc-extra-parts
-gcc-extra-parts:
-	# Recursively invoke make in the GCC directory to build any
-	# startfiles (for now).  We must do this just once, passing
-	# it all the GCC_EXTRA_PARTS as simultaneous goal targets,
-	# so that rules which cannot execute simultaneously are properly
-	# serialized.  We indirect through T_TARGET in case any multilib
-	# directories contain an equals sign, to prevent make from
-	# interpreting any of the goals as variable assignments.
-
-	# We must use cd && make rather than make -C, or else the stage
-	# number will be embedded in debug information.
-
-	T=`$(PWD_COMMAND)`/ \
-	&& cd $(gcc_objdir) \
-	&& $(MAKE) GCC_FOR_TARGET="$(CC)" \
-	  MULTILIB_CFLAGS="$(CFLAGS)" \
-	  T=$$T \
-	  T_TARGET="$(patsubst %,$${T}%,$(GCC_EXTRA_PARTS))" \
-	  T_TARGET
-
-	# Early copyback; see "all" above for the rationale.  The
-	# early copy is necessary so that the gcc -B options find
-	# the right startup files when linking shared libgcc.
-	$(mkinstalldirs) $(gcc_objdir)$(MULTISUBDIR)
-	parts="$(GCC_EXTRA_PARTS)";				\
-	for file in $$parts; do					\
-	  rm -f $(gcc_objdir)$(MULTISUBDIR)/$$file;		\
-	  $(INSTALL_DATA) $$file $(gcc_objdir)$(MULTISUBDIR)/;	\
-	  case $$file in 					\
-	    *.a)						\
-	      $(RANLIB) $(gcc_objdir)$(MULTISUBDIR)/$$file ;;	\
-	  esac;							\
-	done
-
 all: $(extra-parts)
+
+$(libgcc-objects) $(libgcc-s-objects) $(libgcc-eh-objects) \
+	$(libgcov-objects) \
+	$(libunwind-objects) $(libunwind-s-objects) \
+	$(EXTRA_PARTS): libgcc_tm.h
 
 install-unwind_h:
 	dest=$(gcc_objdir)/include/tmp$$$$-unwind.h; \
@@ -1067,11 +1075,3 @@ install-strip: install
 .NOEXPORT:
 
 include $(srcdir)/empty.mk $(wildcard *.dep)
-
-# TODO QUEUE:
-#   Garbage collect in gcc/:
-#     $(LIBGCC) settings in t-* are now unused
-#
-#   Remove use of $(gcc_srcdir).  Source files referenced using $(gcc_srcdir)
-#   should move into the libgcc directory.
-

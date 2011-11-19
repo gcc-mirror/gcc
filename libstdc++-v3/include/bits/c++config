@@ -148,6 +148,8 @@
       namespace __detail { }
     }
 
+    namespace tr2 { }
+    
     namespace decimal { }
 
     namespace chrono { }
@@ -196,6 +198,9 @@ namespace std
     namespace regex_constants { inline namespace __7 { } }
     namespace __detail { inline namespace __7 { } }
   }
+
+  namespace tr2
+  { inline namespace __7 { } }
 
   namespace decimal { inline namespace __7 { } }
 

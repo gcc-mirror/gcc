@@ -2436,12 +2436,13 @@ register address.  You should define this macro if base plus index
 addresses have different requirements than other base register uses.
 @end defmac
 
-@defmac MODE_CODE_BASE_REG_CLASS (@var{mode}, @var{outer_code}, @var{index_code})
+@defmac MODE_CODE_BASE_REG_CLASS (@var{mode}, @var{address_space}, @var{outer_code}, @var{index_code})
 A C expression whose value is the register class to which a valid
-base register must belong.  @var{outer_code} and @var{index_code} define the
-context in which the base register occurs.  @var{outer_code} is the code of
-the immediately enclosing expression (@code{MEM} for the top level of an
-address, @code{ADDRESS} for something that occurs in an
+base register for a memory reference in mode @var{mode} to address
+space @var{address_space} must belong.  @var{outer_code} and @var{index_code}
+define the context in which the base register occurs.  @var{outer_code} is
+the code of the immediately enclosing expression (@code{MEM} for the top level
+of an address, @code{ADDRESS} for something that occurs in an
 @code{address_operand}).  @var{index_code} is the code of the corresponding
 index expression if @var{outer_code} is @code{PLUS}; @code{SCRATCH} otherwise.
 @end defmac
@@ -2481,8 +2482,11 @@ Use of this macro is deprecated; please use the more general
 @code{REGNO_MODE_CODE_OK_FOR_BASE_P}.
 @end defmac
 
-@defmac REGNO_MODE_CODE_OK_FOR_BASE_P (@var{num}, @var{mode}, @var{outer_code}, @var{index_code})
-A C expression that is just like @code{REGNO_MODE_OK_FOR_BASE_P}, except
+@defmac REGNO_MODE_CODE_OK_FOR_BASE_P (@var{num}, @var{mode}, @var{address_space}, @var{outer_code}, @var{index_code})
+A C expression which is nonzero if register number @var{num} is
+suitable for use as a base register in operand addresses, accessing
+memory in mode @var{mode} in address space @var{address_space}.
+This is similar to @code{REGNO_MODE_OK_FOR_BASE_P}, except
 that that expression may examine the context in which the register
 appears in the memory reference.  @var{outer_code} is the code of the
 immediately enclosing expression (@code{MEM} if at the top level of the
@@ -5712,7 +5716,7 @@ misalignment value (@var{misalign}).
 Return true if vector alignment is reachable (by peeling N iterations) for the given type.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST_OK (tree @var{vec_type}, tree @var{mask})
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST_OK (enum @var{machine_mode}, const unsigned char *@var{sel})
 Return true if a vector created for @code{vec_perm_const} is valid.
 @end deftypefn
 
@@ -5757,6 +5761,22 @@ This hook should return a mask of sizes that should be iterated over
 after trying to autovectorize using the vector size derived from the
 mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.
 The default is zero which means to not iterate over other vector sizes.
+@end deftypefn
+
+@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_TM_LOAD (tree)
+This hook should return the built-in decl needed to load a vector of the given type within a transaction.
+@end deftypefn
+
+@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_TM_STORE (tree)
+This hook should return the built-in decl needed to store a vector of the given type within a transaction.
+@end deftypefn
+
+@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_GATHER (const_tree @var{mem_vectype}, const_tree @var{index_type}, int @var{scale})
+Target builtin that implements vector gather operation.  @var{mem_vectype}
+is the vector type of the load and @var{index_type} is scalar type of
+the index, scaled by @var{scale}.
+The default is @code{NULL_TREE} which means to not vectorize gather
+loads.
 @end deftypefn
 
 @node Anchored Addresses

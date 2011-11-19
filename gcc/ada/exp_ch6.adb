@@ -2652,10 +2652,13 @@ package body Exp_Ch6 is
             end if;
          end if;
 
-         --  For Ada 2012, if a parameter is aliased, the actual must be an
-         --  aliased object.
+         --  For Ada 2012, if a parameter is aliased, the actual must be a
+         --  tagged type or an aliased view of an object.
 
-         if Is_Aliased (Formal) and then not Is_Aliased_View (Actual) then
+         if Is_Aliased (Formal)
+           and then not Is_Aliased_View (Actual)
+           and then not Is_Tagged_Type (Etype (Formal))
+         then
             Error_Msg_NE
               ("actual for aliased formal& must be aliased object",
                Actual, Formal);
@@ -5679,10 +5682,14 @@ package body Exp_Ch6 is
       end if;
 
       --  If local-exception-to-goto optimization active, insert dummy push
-      --  statements at start, and dummy pop statements at end.
+      --  statements at start, and dummy pop statements at end, but inhibit
+      --  this if we have No_Exception_Handlers, since they are useless and
+      --  intefere with analysis, e.g. by codepeer.
 
       if (Debug_Flag_Dot_G
            or else Restriction_Active (No_Exception_Propagation))
+        and then not Restriction_Active (No_Exception_Handlers)
+        and then not CodePeer_Mode
         and then Is_Non_Empty_List (L)
       then
          declare

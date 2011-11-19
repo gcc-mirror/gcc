@@ -1,14 +1,22 @@
+HOST_LIBGCC2_CFLAGS += -mlibfuncs -O2
+
+# We need to turn off some assumptions on normality for code in crtstuff.c
+# and crt{i,n}.S, specifically about execution not continuing past the
+# end of the section in the file being compiled.  Thus we must stop the
+# assembler from generating stubbable PUSHJ relocs, because that will add
+# stubs at the end of the current section when necessary.
+CRTSTUFF_T_CFLAGS = -Wa,--no-stubs
+
 # Don't use global registers in libraries.
 # FIXME: Not applied at "root" level, so disabled at the moment to stop
 # incorrect comparisons with -mabi=gnu.
 #MULTILIB_EXTRA_OPTS = mno-base-addresses
 
-$(T)crti.o: $(gcc_srcdir)/config/mmix/crti.asm $(GCC_PASSES)
-	$(crt_compile) $(INCLUDES) \
-	$(CRTSTUFF_T_CFLAGS) -c -x assembler-with-cpp \
-	$(gcc_srcdir)/config/mmix/crti.asm
+# Cannot use default rules due to $(CRTSTUFF_T_CFLAGS).
+CUSTOM_CRTIN = yes
 
-$(T)crtn.o: $(gcc_srcdir)/config/mmix/crtn.asm $(GCC_PASSES)
-	$(crt_compile) $(INCLUDES) \
-	$(CRTSTUFF_T_CFLAGS) -c -x assembler-with-cpp \
-	$(gcc_srcdir)/config/mmix/crtn.asm
+crti.o: $(srcdir)/config/mmix/crti.S
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $<
+
+crtn.o: $(srcdir)/config/mmix/crtn.S
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $<

@@ -1,0 +1,10 @@
+LIB2ADD = _udivsi3.c _divsi3.c _umodsi3.c _modsi3.c
+
+# The fixed-point arithmetic code is in one file, arit.c,
+# similar to libgcc2.c (or the old libgcc1.c).  We need to
+# "split it up" with one file per define.
+$(LIB2ADD): $(srcdir)/config/cris/arit.c
+	name=`echo $@ | sed -e 's,.*/,,' | sed -e 's,.c$$,,'`; \
+	echo "#define L$$name" > tmp-$@ \
+	&& echo '#include "$<"' >> tmp-$@ \
+	&& mv -f tmp-$@ $@

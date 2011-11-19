@@ -83,8 +83,6 @@ bits_headers = \
 	${bits_srcdir}/alloc_traits.h \
 	${bits_srcdir}/allocator.h \
 	${bits_srcdir}/atomic_base.h \
-	${bits_srcdir}/atomic_0.h \
-	${bits_srcdir}/atomic_2.h \
 	${bits_srcdir}/basic_ios.h \
 	${bits_srcdir}/basic_ios.tcc \
 	${bits_srcdir}/basic_string.h \
@@ -636,6 +634,7 @@ c_base_headers = \
 	${c_base_srcdir}/cmath \
 	${c_base_srcdir}/csetjmp \
 	${c_base_srcdir}/csignal \
+	${c_base_srcdir}/cstdalign \
 	${c_base_srcdir}/cstdarg \
 	${c_base_srcdir}/cstdbool \
 	${c_base_srcdir}/cstddef \
@@ -855,7 +854,6 @@ thread_host_headers = \
 	${host_builddir}/gthr.h \
 	${host_builddir}/gthr-single.h \
 	${host_builddir}/gthr-posix.h \
-	${host_builddir}/gthr-tpf.h \
 	${host_builddir}/gthr-default.h
 
 
@@ -1122,43 +1120,35 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 # Host includes for threads
 uppercase = [ABCDEFGHIJKLMNOPQRSTUVWXYZ_]
 
-${host_builddir}/gthr.h: ${toplevel_srcdir}/gcc/gthr.h stamp-${host_alias}
+${host_builddir}/gthr.h: ${toplevel_srcdir}/libgcc/gthr.h stamp-${host_alias}
 	sed -e '/^#pragma/b' \
 	    -e '/^#/s/\(${uppercase}${uppercase}*\)/_GLIBCXX_\1/g' \
 	    -e 's/_GLIBCXX_SUPPORTS_WEAK/__GXX_WEAK__/g' \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
-	    < ${toplevel_srcdir}/gcc/gthr.h > $@
+	    < $< > $@
 
-${host_builddir}/gthr-single.h: ${toplevel_srcdir}/gcc/gthr-single.h \
+${host_builddir}/gthr-single.h: ${toplevel_srcdir}/libgcc/gthr-single.h \
 				  stamp-${host_alias}
 	sed -e 's/\(UNUSED\)/_GLIBCXX_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCXX_\1/g' \
-	    < ${toplevel_srcdir}/gcc/gthr-single.h > $@
+	    < $< > $@
 
-${host_builddir}/gthr-posix.h: ${toplevel_srcdir}/gcc/gthr-posix.h \
+${host_builddir}/gthr-posix.h: ${toplevel_srcdir}/libgcc/gthr-posix.h \
 				   stamp-${host_alias}
 	sed -e 's/\(UNUSED\)/_GLIBCXX_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCXX_\1/g' \
 	    -e 's/SUPPORTS_WEAK/__GXX_WEAK__/g' \
 	    -e 's/\(${uppercase}*USE_WEAK\)/_GLIBCXX_\1/g' \
-	    < ${toplevel_srcdir}/gcc/gthr-posix.h > $@
+	    < $< > $@
 
-${host_builddir}/gthr-tpf.h: ${toplevel_srcdir}/gcc/gthr-tpf.h \
-				   stamp-${host_alias}
-	sed -e 's/\(UNUSED\)/_GLIBCXX_\1/g' \
-	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCXX_\1/g' \
-	    -e 's/SUPPORTS_WEAK/__GXX_WEAK__/g' \
-	    -e 's/\(${uppercase}*USE_WEAK\)/_GLIBCXX_\1/g' \
-	    < ${toplevel_srcdir}/gcc/gthr-tpf.h > $@
-
-${host_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcxx_thread_h} \
+${host_builddir}/gthr-default.h: ${toplevel_builddir}/libgcc/gthr-default.h \
 				   stamp-${host_alias}
 	sed -e 's/\(UNUSED\)/_GLIBCXX_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCXX_\1/g' \
 	    -e 's/SUPPORTS_WEAK/__GXX_WEAK__/g' \
 	    -e 's/\(${uppercase}*USE_WEAK\)/_GLIBCXX_\1/g' \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
-	    < ${toplevel_srcdir}/gcc/${glibcxx_thread_h} > $@
+	    < $< > $@
 
 # Build two precompiled C++ includes, stdc++.h.gch/*.gch
 ${pch1a_output}: ${allstamped} ${host_builddir}/c++config.h ${pch1_source}
@@ -1201,8 +1191,10 @@ endif
 # are installed by libsupc++, so only the first four and the sub-includes
 # are copied here.
 install-freestanding-headers:
-	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/bits
 	$(mkinstalldirs) $(DESTDIR)${host_installdir}
+	$(INSTALL_DATA) ${glibcxx_srcdir}/include/bits/c++0x_warning.h \
+	  $(DESTDIR)${gxx_include_dir}/bits
 	for file in ${host_srcdir}/os_defines.h ${host_builddir}/c++config.h \
 	  ${glibcxx_srcdir}/$(ABI_TWEAKS_SRCDIR)/cxxabi_tweaks.h \
 	  ${glibcxx_srcdir}/$(CPU_DEFINES_SRCDIR)/cpu_defines.h; do \

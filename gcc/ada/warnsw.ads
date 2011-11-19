@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,6 +65,10 @@ package Warnsw is
 
    procedure Set_GNAT_Mode_Warnings;
    --  This is called in -gnatg mode to set the warnings for gnat mode. It is
-   --  also used to set the proper warning statuses for -gnatw.g.
+   --  also used to set the proper warning statuses for -gnatw.g. Note that
+   --  this set of warnings is disjoint from -gnatwa, it enables warnings that
+   --  are not included in -gnatwa, and it disables warnings that are included
+   --  in -gnatwa (such as Warn_On_Implementation_Units, which we clearly want
+   --  to be False for units built with -gnatg).
 
 end Warnsw;

@@ -103,13 +103,9 @@ extern rtx rs6000_emit_set_const (rtx, enum machine_mode, rtx, int);
 extern int rs6000_emit_cmove (rtx, rtx, rtx, rtx);
 extern int rs6000_emit_vector_cond_expr (rtx, rtx, rtx, rtx, rtx, rtx);
 extern void rs6000_emit_minmax (rtx, enum rtx_code, rtx, rtx);
-extern void rs6000_emit_sync (enum rtx_code, enum machine_mode,
-			      rtx, rtx, rtx, rtx, bool);
-extern void rs6000_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
-extern void rs6000_split_compare_and_swap (rtx, rtx, rtx, rtx, rtx);
-extern void rs6000_expand_compare_and_swapqhi (rtx, rtx, rtx, rtx);
-extern void rs6000_split_compare_and_swapqhi (rtx, rtx, rtx, rtx, rtx, rtx);
-extern void rs6000_split_lock_test_and_set (rtx, rtx, rtx, rtx);
+extern void rs6000_expand_atomic_compare_and_swap (rtx op[]);
+extern void rs6000_expand_atomic_exchange (rtx op[]);
+extern void rs6000_expand_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 extern void rs6000_emit_swdiv (rtx, rtx, rtx, bool);
 extern void rs6000_emit_swrsqrt (rtx, rtx);
 extern void output_toc (FILE *, rtx, int, enum machine_mode);
@@ -173,6 +169,7 @@ extern void rs6000_emit_eh_reg_restore (rtx, rtx);
 extern const char * output_isel (rtx *);
 extern void rs6000_call_indirect_aix (rtx, rtx, rtx);
 extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
+extern void get_ppc476_thunk_name (char name[32]);
 
 /* Declare functions in rs6000-c.c */
 

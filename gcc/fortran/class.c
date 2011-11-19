@@ -288,6 +288,10 @@ static void
 add_proc_comp (gfc_symbol *vtype, const char *name, gfc_typebound_proc *tb)
 {
   gfc_component *c;
+
+  if (tb->non_overridable)
+    return;
+  
   c = gfc_find_component (vtype, name, true, true);
 
   if (c == NULL)
@@ -424,7 +428,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	{
 	  gfc_get_symbol (name, ns, &vtab);
 	  vtab->ts.type = BT_DERIVED;
-	  if (gfc_add_flavor (&vtab->attr, FL_VARIABLE, NULL,
+	  if (gfc_add_flavor (&vtab->attr, FL_PARAMETER, NULL,
 	                      &gfc_current_locus) == FAILURE)
 	    goto cleanup;
 	  vtab->attr.target = 1;

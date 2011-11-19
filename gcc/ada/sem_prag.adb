@@ -181,7 +181,7 @@ package body Sem_Prag is
    --  original one, following the renaming chain) is returned. Otherwise the
    --  entity is returned unchanged. Should be in Einfo???
 
-   procedure Preanalyze_TC_Args (Arg_Req, Arg_Ens : Node_Id);
+   procedure Preanalyze_TC_Args (N, Arg_Req, Arg_Ens : Node_Id);
    --  Preanalyze the boolean expressions in the Requires and Ensures arguments
    --  of a Test_Case pragma if present (possibly Empty). We treat these as
    --  spec expressions (i.e. similar to a default expression).
@@ -260,8 +260,17 @@ package body Sem_Prag is
       --  Preanalyze the boolean expression, we treat this as a spec expression
       --  (i.e. similar to a default expression).
 
-      Preanalyze_Spec_Expression
-        (Get_Pragma_Arg (Arg1), Standard_Boolean);
+      Preanalyze_Spec_Expression (Get_Pragma_Arg (Arg1), Standard_Boolean);
+
+      --  In ASIS mode, for a pragma generated from a source aspect, also
+      --  analyze the original aspect expression.
+
+      if ASIS_Mode
+        and then Present (Corresponding_Aspect (N))
+      then
+         Preanalyze_Spec_Expression
+           (Expression (Corresponding_Aspect (N)), Standard_Boolean);
+      end if;
 
       --  For a class-wide condition, a reference to a controlling formal must
       --  be interpreted as having the class-wide type (or an access to such)
@@ -518,6 +527,15 @@ package body Sem_Prag is
       --  This procedure checks for possible duplications if this is the export
       --  case, and if found, issues an appropriate error message.
 
+      procedure Check_Expr_Is_Static_Expression
+        (Expr : Node_Id;
+         Typ  : Entity_Id := Empty);
+      --  Check the specified expression Expr to make sure that it is a static
+      --  expression of the given type (i.e. it will be analyzed and resolved
+      --  using this type, which can be any valid argument to Resolve, e.g.
+      --  Any_Integer is OK). If not, given error and raise Pragma_Exit. If
+      --  Typ is left Empty, then any static expression is allowed.
+
       procedure Check_First_Subtype (Arg : Node_Id);
       --  Checks that Arg, whose expression is an entity name, references a
       --  first subtype.
@@ -749,6 +767,10 @@ package body Sem_Prag is
       --  Checks first two arguments of pragma, and sets the appropriate
       --  convention value in the specified entity or entities. On return
       --  C is the convention, Ent is the referenced entity.
+
+      procedure Process_Disable_Enable_Atomic_Sync (Nam : Name_Id);
+      --  Common processing for Disable/Enable_Atomic_Synchronization. Nam is
+      --  Name_Suppress for Disable and Name_Unsuppress for Enable.
 
       procedure Process_Extended_Import_Export_Exception_Pragma
         (Arg_Internal : Node_Id;
@@ -1195,53 +1217,8 @@ package body Sem_Prag is
         (Arg : Node_Id;
          Typ : Entity_Id := Empty)
       is
-         Argx : constant Node_Id := Get_Pragma_Arg (Arg);
-
       begin
-         if Present (Typ) then
-            Analyze_And_Resolve (Argx, Typ);
-         else
-            Analyze_And_Resolve (Argx);
-         end if;
-
-         if Is_OK_Static_Expression (Argx) then
-            return;
-
-         elsif Etype (Argx) = Any_Type then
-            raise Pragma_Exit;
-
-         --  An interesting special case, if we have a string literal and we
-         --  are in Ada 83 mode, then we allow it even though it will not be
-         --  flagged as static. This allows the use of Ada 95 pragmas like
-         --  Import in Ada 83 mode. They will of course be flagged with
-         --  warnings as usual, but will not cause errors.
-
-         elsif Ada_Version = Ada_83
-           and then Nkind (Argx) = N_String_Literal
-         then
-            return;
-
-         --  Static expression that raises Constraint_Error. This has already
-         --  been flagged, so just exit from pragma processing.
-
-         elsif Is_Static_Expression (Argx) then
-            raise Pragma_Exit;
-
-         --  Finally, we have a real error
-
-         else
-            Error_Msg_Name_1 := Pname;
-
-            declare
-               Msg : String :=
-                       "argument for pragma% must be a static expression!";
-            begin
-               Fix_Error (Msg);
-               Flag_Non_Static_Expr (Msg, Argx);
-            end;
-
-            raise Pragma_Exit;
-         end if;
+         Check_Expr_Is_Static_Expression (Get_Pragma_Arg (Arg), Typ);
       end Check_Arg_Is_Static_Expression;
 
       ------------------------------------------
@@ -1473,6 +1450,61 @@ package body Sem_Prag is
             Externals.Append (Nam);
          end if;
       end Check_Duplicated_Export_Name;
+
+      -------------------------------------
+      -- Check_Expr_Is_Static_Expression --
+      -------------------------------------
+
+      procedure Check_Expr_Is_Static_Expression
+        (Expr : Node_Id;
+         Typ  : Entity_Id := Empty)
+      is
+      begin
+         if Present (Typ) then
+            Analyze_And_Resolve (Expr, Typ);
+         else
+            Analyze_And_Resolve (Expr);
+         end if;
+
+         if Is_OK_Static_Expression (Expr) then
+            return;
+
+         elsif Etype (Expr) = Any_Type then
+            raise Pragma_Exit;
+
+         --  An interesting special case, if we have a string literal and we
+         --  are in Ada 83 mode, then we allow it even though it will not be
+         --  flagged as static. This allows the use of Ada 95 pragmas like
+         --  Import in Ada 83 mode. They will of course be flagged with
+         --  warnings as usual, but will not cause errors.
+
+         elsif Ada_Version = Ada_83
+           and then Nkind (Expr) = N_String_Literal
+         then
+            return;
+
+         --  Static expression that raises Constraint_Error. This has already
+         --  been flagged, so just exit from pragma processing.
+
+         elsif Is_Static_Expression (Expr) then
+            raise Pragma_Exit;
+
+         --  Finally, we have a real error
+
+         else
+            Error_Msg_Name_1 := Pname;
+
+            declare
+               Msg : String :=
+                       "argument for pragma% must be a static expression!";
+            begin
+               Fix_Error (Msg);
+               Flag_Non_Static_Expr (Msg, Expr);
+            end;
+
+            raise Pragma_Exit;
+         end if;
+      end Check_Expr_Is_Static_Expression;
 
       -------------------------
       -- Check_First_Subtype --
@@ -1976,6 +2008,16 @@ package body Sem_Prag is
 
                Preanalyze_Spec_Expression
                  (Get_Pragma_Arg (Arg1), Standard_Boolean);
+
+               --  In ASIS mode, for a pragma generated from a source aspect,
+               --  also analyze the original aspect expression.
+
+               if ASIS_Mode
+                 and then Present (Corresponding_Aspect (N))
+               then
+                  Preanalyze_Spec_Expression
+                    (Expression (Corresponding_Aspect (N)), Standard_Boolean);
+               end if;
             end if;
 
             In_Body := True;
@@ -3565,6 +3607,35 @@ package body Sem_Prag is
             end loop;
          end if;
       end Process_Convention;
+
+      ----------------------------------------
+      -- Process_Disable_Enable_Atomic_Sync --
+      ----------------------------------------
+
+      procedure Process_Disable_Enable_Atomic_Sync (Nam : Name_Id) is
+      begin
+         GNAT_Pragma;
+         Check_No_Identifiers;
+         Check_At_Most_N_Arguments (1);
+
+         --  Modeled internally as
+         --    pragma Unsuppress (Atomic_Synchronization [,Entity])
+
+         Rewrite (N,
+           Make_Pragma (Loc,
+             Pragma_Identifier            =>
+               Make_Identifier (Loc, Nam),
+             Pragma_Argument_Associations => New_List (
+               Make_Pragma_Argument_Association (Loc,
+                 Expression =>
+                   Make_Identifier (Loc, Name_Atomic_Synchronization)))));
+
+         if Present (Arg1) then
+            Append_To (Pragma_Argument_Associations (N), New_Copy (Arg1));
+         end if;
+
+         Analyze (N);
+      end Process_Disable_Enable_Atomic_Sync;
 
       -----------------------------------------------------
       -- Process_Extended_Import_Export_Exception_Pragma --
@@ -5305,8 +5376,15 @@ package body Sem_Prag is
                --  H.4(12). Restriction_Warnings never affects generated code
                --  so this is done only in the real restriction case.
 
+               --  Atomic_Synchronization is not a real check, so it is not
+               --  affected by this processing).
+
                if R_Id = No_Exceptions and then not Warn then
-                  Scope_Suppress := (others => True);
+                  for J in Scope_Suppress'Range loop
+                     if J /= Atomic_Synchronization then
+                        Scope_Suppress (J) := True;
+                     end if;
+                  end loop;
                end if;
 
             --  Case of No_Dependence => unit-name. Note that the parser
@@ -5418,6 +5496,17 @@ package body Sem_Prag is
 
          procedure Suppress_Unsuppress_Echeck (E : Entity_Id; C : Check_Id) is
          begin
+            --  Check for error of trying to set atomic synchronization for
+            --  a non-atomic variable.
+
+            if C = Atomic_Synchronization
+              and then not (Is_Atomic (E) or else Has_Atomic_Components (E))
+            then
+               Error_Msg_N
+                 ("pragma & requires atomic type or variable",
+                  Pragma_Identifier (Original_Node (N)));
+            end if;
+
             Set_Checks_May_Be_Suppressed (E);
 
             if In_Package_Spec then
@@ -5425,7 +5514,6 @@ package body Sem_Prag is
                  (Entity   => E,
                   Check    => C,
                   Suppress => Suppress_Case);
-
             else
                Push_Local_Suppress_Stack_Entry
                  (Entity   => E,
@@ -5493,18 +5581,26 @@ package body Sem_Prag is
                --  the exception of Elaboration_Check, which is handled
                --  specially because of not wanting All_Checks to have the
                --  effect of deactivating static elaboration order processing.
+               --  Atomic_Synchronization is also not affected, since this is
+               --  not a real check.
 
                for J in Scope_Suppress'Range loop
-                  if J /= Elaboration_Check then
+                  if J /= Elaboration_Check
+                    and then J /= Atomic_Synchronization
+                  then
                      Scope_Suppress (J) := Suppress_Case;
                   end if;
                end loop;
 
             --  If not All_Checks, and predefined check, then set appropriate
             --  scope entry. Note that we will set Elaboration_Check if this
-            --  is explicitly specified.
+            --  is explicitly specified. Atomic_Synchronization is allowed
+            --  only if internally generated and entity is atomic.
 
-            elsif C in Predefined_Check_Id then
+            elsif C in Predefined_Check_Id
+              and then (not Comes_From_Source (N)
+                         or else C /= Atomic_Synchronization)
+            then
                Scope_Suppress (C) := Suppress_Case;
             end if;
 
@@ -6918,7 +7014,6 @@ package body Sem_Prag is
                Error_Pragma_Arg ("inappropriate entity for pragma%", Arg1);
             end if;
          end Atomic_Components;
-
          --------------------
          -- Attach_Handler --
          --------------------
@@ -7807,10 +7902,13 @@ package body Sem_Prag is
                  N_Indexed_Component,
                  N_Function_Call,
                  N_Identifier,
+                 N_Expanded_Name,
                  N_Selected_Component)
             then
                --  If this pragma Debug comes from source, its argument was
                --  parsed as a name form (which is syntactically identical).
+               --  In a generic context a parameterless call will be left as
+               --  an expanded name (if global) or selected_component if local.
                --  Change it to a procedure call statement now.
 
                Change_Name_To_Procedure_Call_Statement (Call);
@@ -7827,7 +7925,8 @@ package body Sem_Prag is
                --  All other cases: diagnose error
 
                Error_Msg
-                 ("argument of pragma% is not procedure call", Sloc (Call));
+                 ("argument of pragma ""Debug"" is not procedure call",
+                  Sloc (Call));
                return;
             end if;
 
@@ -7941,6 +8040,15 @@ package body Sem_Prag is
             Check_Arg_Is_Static_Expression (Arg2, Standard_Integer);
             Check_Arg_Is_Static_Expression (Arg3, Standard_Integer);
             Check_Arg_Is_Static_Expression (Arg4, Standard_Integer);
+
+         ------------------------------------
+         -- Disable_Atomic_Synchronization --
+         ------------------------------------
+
+         --  pragma Disable_Atomic_Synchronization [(Entity)];
+
+         when Pragma_Disable_Atomic_Synchronization =>
+            Process_Disable_Enable_Atomic_Sync (Name_Suppress);
 
          -------------------
          -- Discard_Names --
@@ -8363,6 +8471,15 @@ package body Sem_Prag is
                Result_Type,
                Source_Location);
          end Eliminate;
+
+         -----------------------------------
+         -- Enable_Atomic_Synchronization --
+         -----------------------------------
+
+         --  pragma Enable_Atomic_Synchronization [(Entity)];
+
+         when Pragma_Enable_Atomic_Synchronization =>
+            Process_Disable_Enable_Atomic_Sync (Name_Unsuppress);
 
          ------------
          -- Export --
@@ -10876,7 +10993,8 @@ package body Sem_Prag is
 
          --  pragma Long_Float (D_Float | G_Float);
 
-         when Pragma_Long_Float =>
+         when Pragma_Long_Float => Long_Float : declare
+         begin
             GNAT_Pragma;
             Check_Valid_Configuration_Pragma;
             Check_Arg_Count (1);
@@ -10891,22 +11009,42 @@ package body Sem_Prag is
 
             if Chars (Get_Pragma_Arg (Arg1)) = Name_D_Float then
                if Opt.Float_Format_Long = 'G' then
-                  Error_Pragma ("G_Float previously specified");
-               end if;
+                  Error_Pragma_Arg
+                    ("G_Float previously specified", Arg1);
 
-               Opt.Float_Format_Long := 'D';
+               elsif Current_Sem_Unit /= Main_Unit
+                 and then Opt.Float_Format_Long /= 'D'
+               then
+                  Error_Pragma_Arg
+                    ("main unit not compiled with pragma Long_Float (D_Float)",
+                     "\pragma% must be used consistently for whole partition",
+                     Arg1);
+
+               else
+                  Opt.Float_Format_Long := 'D';
+               end if;
 
             --  G_Float case (this is the default, does not need overriding)
 
             else
                if Opt.Float_Format_Long = 'D' then
                   Error_Pragma ("D_Float previously specified");
-               end if;
 
-               Opt.Float_Format_Long := 'G';
+               elsif Current_Sem_Unit /= Main_Unit
+                 and then Opt.Float_Format_Long /= 'G'
+               then
+                  Error_Pragma_Arg
+                    ("main unit not compiled with pragma Long_Float (G_Float)",
+                     "\pragma% must be used consistently for whole partition",
+                     Arg1);
+
+               else
+                  Opt.Float_Format_Long := 'G';
+               end if;
             end if;
 
             Set_Standard_Fpt_Formats;
+         end Long_Float;
 
          -----------------------
          -- Machine_Attribute --
@@ -13581,6 +13719,17 @@ package body Sem_Prag is
 
             Check_Optional_Identifier (Arg1, Name_Name);
             Check_Arg_Is_Static_Expression (Arg1, Standard_String);
+
+            --  In ASIS mode, for a pragma generated from a source aspect, also
+            --  analyze the original aspect expression.
+
+            if ASIS_Mode
+              and then Present (Corresponding_Aspect (N))
+            then
+               Check_Expr_Is_Static_Expression
+                 (Original_Node (Get_Pragma_Arg (Arg1)), Standard_String);
+            end if;
+
             Check_Optional_Identifier (Arg2, Name_Mode);
             Check_Arg_Is_One_Of (Arg2, Name_Nominal, Name_Robustness);
 
@@ -14152,16 +14301,12 @@ package body Sem_Prag is
                end;
 
             elsif Nkind (A) = N_Identifier then
-
                if Chars (A) = Name_All_Checks then
                   Set_Validity_Check_Options ("a");
-
                elsif Chars (A) = Name_On then
                   Validity_Checks_On := True;
-
                elsif Chars (A) = Name_Off then
                   Validity_Checks_On := False;
-
                end if;
             end if;
          end Validity_Checks;
@@ -14302,7 +14447,7 @@ package body Sem_Prag is
                      --  actual is a conversion. Retrieve the real entity name.
 
                      if (In_Instance_Body
-                         or else In_Inlined_Body)
+                          or else In_Inlined_Body)
                        and then Nkind (E_Id) = N_Unchecked_Type_Conversion
                      then
                         E_Id := Expression (E_Id);
@@ -14473,7 +14618,8 @@ package body Sem_Prag is
       --  Preanalyze the boolean expressions, we treat these as spec
       --  expressions (i.e. similar to a default expression).
 
-      Preanalyze_TC_Args (Get_Requires_From_Test_Case_Pragma (N),
+      Preanalyze_TC_Args (N,
+                          Get_Requires_From_Test_Case_Pragma (N),
                           Get_Ensures_From_Test_Case_Pragma (N));
 
       --  Remove the subprogram from the scope stack now that the pre-analysis
@@ -14678,194 +14824,196 @@ package body Sem_Prag is
    --  99  special processing required (e.g. for pragma Check)
 
    Sig_Flags : constant array (Pragma_Id) of Int :=
-     (Pragma_AST_Entry                     => -1,
-      Pragma_Abort_Defer                   => -1,
-      Pragma_Ada_83                        => -1,
-      Pragma_Ada_95                        => -1,
-      Pragma_Ada_05                        => -1,
-      Pragma_Ada_2005                      => -1,
-      Pragma_Ada_12                        => -1,
-      Pragma_Ada_2012                      => -1,
-      Pragma_All_Calls_Remote              => -1,
-      Pragma_Annotate                      => -1,
-      Pragma_Assert                        => -1,
-      Pragma_Assertion_Policy              =>  0,
-      Pragma_Assume_No_Invalid_Values      =>  0,
-      Pragma_Asynchronous                  => -1,
-      Pragma_Atomic                        =>  0,
-      Pragma_Atomic_Components             =>  0,
-      Pragma_Attach_Handler                => -1,
-      Pragma_Check                         => 99,
-      Pragma_Check_Name                    =>  0,
-      Pragma_Check_Policy                  =>  0,
-      Pragma_CIL_Constructor               => -1,
-      Pragma_CPP_Class                     =>  0,
-      Pragma_CPP_Constructor               =>  0,
-      Pragma_CPP_Virtual                   =>  0,
-      Pragma_CPP_Vtable                    =>  0,
-      Pragma_CPU                           => -1,
-      Pragma_C_Pass_By_Copy                =>  0,
-      Pragma_Comment                       =>  0,
-      Pragma_Common_Object                 => -1,
-      Pragma_Compile_Time_Error            => -1,
-      Pragma_Compile_Time_Warning          => -1,
-      Pragma_Compiler_Unit                 =>  0,
-      Pragma_Complete_Representation       =>  0,
-      Pragma_Complex_Representation        =>  0,
-      Pragma_Component_Alignment           => -1,
-      Pragma_Controlled                    =>  0,
-      Pragma_Convention                    =>  0,
-      Pragma_Convention_Identifier         =>  0,
-      Pragma_Debug                         => -1,
-      Pragma_Debug_Policy                  =>  0,
-      Pragma_Detect_Blocking               => -1,
-      Pragma_Default_Storage_Pool          => -1,
-      Pragma_Dimension                     => -1,
-      Pragma_Discard_Names                 =>  0,
-      Pragma_Dispatching_Domain            => -1,
-      Pragma_Elaborate                     => -1,
-      Pragma_Elaborate_All                 => -1,
-      Pragma_Elaborate_Body                => -1,
-      Pragma_Elaboration_Checks            => -1,
-      Pragma_Eliminate                     => -1,
-      Pragma_Export                        => -1,
-      Pragma_Export_Exception              => -1,
-      Pragma_Export_Function               => -1,
-      Pragma_Export_Object                 => -1,
-      Pragma_Export_Procedure              => -1,
-      Pragma_Export_Value                  => -1,
-      Pragma_Export_Valued_Procedure       => -1,
-      Pragma_Extend_System                 => -1,
-      Pragma_Extensions_Allowed            => -1,
-      Pragma_External                      => -1,
-      Pragma_Favor_Top_Level               => -1,
-      Pragma_External_Name_Casing          => -1,
-      Pragma_Fast_Math                     => -1,
-      Pragma_Finalize_Storage_Only         =>  0,
-      Pragma_Float_Representation          =>  0,
-      Pragma_Ident                         => -1,
-      Pragma_Implementation_Defined        => -1,
-      Pragma_Implemented                   => -1,
-      Pragma_Implicit_Packing              =>  0,
-      Pragma_Import                        => +2,
-      Pragma_Import_Exception              =>  0,
-      Pragma_Import_Function               =>  0,
-      Pragma_Import_Object                 =>  0,
-      Pragma_Import_Procedure              =>  0,
-      Pragma_Import_Valued_Procedure       =>  0,
-      Pragma_Independent                   =>  0,
-      Pragma_Independent_Components        =>  0,
-      Pragma_Initialize_Scalars            => -1,
-      Pragma_Inline                        =>  0,
-      Pragma_Inline_Always                 =>  0,
-      Pragma_Inline_Generic                =>  0,
-      Pragma_Inspection_Point              => -1,
-      Pragma_Interface                     => +2,
-      Pragma_Interface_Name                => +2,
-      Pragma_Interrupt_Handler             => -1,
-      Pragma_Interrupt_Priority            => -1,
-      Pragma_Interrupt_State               => -1,
-      Pragma_Invariant                     => -1,
-      Pragma_Java_Constructor              => -1,
-      Pragma_Java_Interface                => -1,
-      Pragma_Keep_Names                    =>  0,
-      Pragma_License                       => -1,
-      Pragma_Link_With                     => -1,
-      Pragma_Linker_Alias                  => -1,
-      Pragma_Linker_Constructor            => -1,
-      Pragma_Linker_Destructor             => -1,
-      Pragma_Linker_Options                => -1,
-      Pragma_Linker_Section                => -1,
-      Pragma_List                          => -1,
-      Pragma_Locking_Policy                => -1,
-      Pragma_Long_Float                    => -1,
-      Pragma_Machine_Attribute             => -1,
-      Pragma_Main                          => -1,
-      Pragma_Main_Storage                  => -1,
-      Pragma_Memory_Size                   => -1,
-      Pragma_No_Return                     =>  0,
-      Pragma_No_Body                       =>  0,
-      Pragma_No_Run_Time                   => -1,
-      Pragma_No_Strict_Aliasing            => -1,
-      Pragma_Normalize_Scalars             => -1,
-      Pragma_Obsolescent                   =>  0,
-      Pragma_Optimize                      => -1,
-      Pragma_Optimize_Alignment            => -1,
-      Pragma_Ordered                       =>  0,
-      Pragma_Pack                          =>  0,
-      Pragma_Page                          => -1,
-      Pragma_Passive                       => -1,
-      Pragma_Preelaborable_Initialization  => -1,
-      Pragma_Polling                       => -1,
-      Pragma_Persistent_BSS                =>  0,
-      Pragma_Postcondition                 => -1,
-      Pragma_Precondition                  => -1,
-      Pragma_Predicate                     => -1,
-      Pragma_Preelaborate                  => -1,
-      Pragma_Preelaborate_05               => -1,
-      Pragma_Priority                      => -1,
-      Pragma_Priority_Specific_Dispatching => -1,
-      Pragma_Profile                       =>  0,
-      Pragma_Profile_Warnings              =>  0,
-      Pragma_Propagate_Exceptions          => -1,
-      Pragma_Psect_Object                  => -1,
-      Pragma_Pure                          => -1,
-      Pragma_Pure_05                       => -1,
-      Pragma_Pure_Function                 => -1,
-      Pragma_Queuing_Policy                => -1,
-      Pragma_Ravenscar                     => -1,
-      Pragma_Relative_Deadline             => -1,
-      Pragma_Remote_Call_Interface         => -1,
-      Pragma_Remote_Types                  => -1,
-      Pragma_Restricted_Run_Time           => -1,
-      Pragma_Restriction_Warnings          => -1,
-      Pragma_Restrictions                  => -1,
-      Pragma_Reviewable                    => -1,
-      Pragma_Short_Circuit_And_Or          => -1,
-      Pragma_Share_Generic                 => -1,
-      Pragma_Shared                        => -1,
-      Pragma_Shared_Passive                => -1,
-      Pragma_Short_Descriptors             =>  0,
-      Pragma_Source_File_Name              => -1,
-      Pragma_Source_File_Name_Project      => -1,
-      Pragma_Source_Reference              => -1,
-      Pragma_Storage_Size                  => -1,
-      Pragma_Storage_Unit                  => -1,
-      Pragma_Static_Elaboration_Desired    => -1,
-      Pragma_Stream_Convert                => -1,
-      Pragma_Style_Checks                  => -1,
-      Pragma_Subtitle                      => -1,
-      Pragma_Suppress                      =>  0,
-      Pragma_Suppress_Exception_Locations  =>  0,
-      Pragma_Suppress_All                  => -1,
-      Pragma_Suppress_Debug_Info           =>  0,
-      Pragma_Suppress_Initialization       =>  0,
-      Pragma_System_Name                   => -1,
-      Pragma_Task_Dispatching_Policy       => -1,
-      Pragma_Task_Info                     => -1,
-      Pragma_Task_Name                     => -1,
-      Pragma_Task_Storage                  =>  0,
-      Pragma_Test_Case                     => -1,
-      Pragma_Thread_Local_Storage          =>  0,
-      Pragma_Time_Slice                    => -1,
-      Pragma_Title                         => -1,
-      Pragma_Unchecked_Union               =>  0,
-      Pragma_Unimplemented_Unit            => -1,
-      Pragma_Universal_Aliasing            => -1,
-      Pragma_Universal_Data                => -1,
-      Pragma_Unmodified                    => -1,
-      Pragma_Unreferenced                  => -1,
-      Pragma_Unreferenced_Objects          => -1,
-      Pragma_Unreserve_All_Interrupts      => -1,
-      Pragma_Unsuppress                    =>  0,
-      Pragma_Use_VADS_Size                 => -1,
-      Pragma_Validity_Checks               => -1,
-      Pragma_Volatile                      =>  0,
-      Pragma_Volatile_Components           =>  0,
-      Pragma_Warnings                      => -1,
-      Pragma_Weak_External                 => -1,
-      Pragma_Wide_Character_Encoding       =>  0,
-      Unknown_Pragma                       =>  0);
+     (Pragma_AST_Entry                      => -1,
+      Pragma_Abort_Defer                    => -1,
+      Pragma_Ada_83                         => -1,
+      Pragma_Ada_95                         => -1,
+      Pragma_Ada_05                         => -1,
+      Pragma_Ada_2005                       => -1,
+      Pragma_Ada_12                         => -1,
+      Pragma_Ada_2012                       => -1,
+      Pragma_All_Calls_Remote               => -1,
+      Pragma_Annotate                       => -1,
+      Pragma_Assert                         => -1,
+      Pragma_Assertion_Policy               =>  0,
+      Pragma_Assume_No_Invalid_Values       =>  0,
+      Pragma_Asynchronous                   => -1,
+      Pragma_Atomic                         =>  0,
+      Pragma_Atomic_Components              =>  0,
+      Pragma_Attach_Handler                 => -1,
+      Pragma_Check                          => 99,
+      Pragma_Check_Name                     =>  0,
+      Pragma_Check_Policy                   =>  0,
+      Pragma_CIL_Constructor                => -1,
+      Pragma_CPP_Class                      =>  0,
+      Pragma_CPP_Constructor                =>  0,
+      Pragma_CPP_Virtual                    =>  0,
+      Pragma_CPP_Vtable                     =>  0,
+      Pragma_CPU                            => -1,
+      Pragma_C_Pass_By_Copy                 =>  0,
+      Pragma_Comment                        =>  0,
+      Pragma_Common_Object                  => -1,
+      Pragma_Compile_Time_Error             => -1,
+      Pragma_Compile_Time_Warning           => -1,
+      Pragma_Compiler_Unit                  =>  0,
+      Pragma_Complete_Representation        =>  0,
+      Pragma_Complex_Representation         =>  0,
+      Pragma_Component_Alignment            => -1,
+      Pragma_Controlled                     =>  0,
+      Pragma_Convention                     =>  0,
+      Pragma_Convention_Identifier          =>  0,
+      Pragma_Debug                          => -1,
+      Pragma_Debug_Policy                   =>  0,
+      Pragma_Detect_Blocking                => -1,
+      Pragma_Default_Storage_Pool           => -1,
+      Pragma_Dimension                      => -1,
+      Pragma_Disable_Atomic_Synchronization => -1,
+      Pragma_Discard_Names                  =>  0,
+      Pragma_Dispatching_Domain             => -1,
+      Pragma_Elaborate                      => -1,
+      Pragma_Elaborate_All                  => -1,
+      Pragma_Elaborate_Body                 => -1,
+      Pragma_Elaboration_Checks             => -1,
+      Pragma_Eliminate                      => -1,
+      Pragma_Enable_Atomic_Synchronization  => -1,
+      Pragma_Export                         => -1,
+      Pragma_Export_Exception               => -1,
+      Pragma_Export_Function                => -1,
+      Pragma_Export_Object                  => -1,
+      Pragma_Export_Procedure               => -1,
+      Pragma_Export_Value                   => -1,
+      Pragma_Export_Valued_Procedure        => -1,
+      Pragma_Extend_System                  => -1,
+      Pragma_Extensions_Allowed             => -1,
+      Pragma_External                       => -1,
+      Pragma_Favor_Top_Level                => -1,
+      Pragma_External_Name_Casing           => -1,
+      Pragma_Fast_Math                      => -1,
+      Pragma_Finalize_Storage_Only          =>  0,
+      Pragma_Float_Representation           =>  0,
+      Pragma_Ident                          => -1,
+      Pragma_Implementation_Defined         => -1,
+      Pragma_Implemented                    => -1,
+      Pragma_Implicit_Packing               =>  0,
+      Pragma_Import                         => +2,
+      Pragma_Import_Exception               =>  0,
+      Pragma_Import_Function                =>  0,
+      Pragma_Import_Object                  =>  0,
+      Pragma_Import_Procedure               =>  0,
+      Pragma_Import_Valued_Procedure        =>  0,
+      Pragma_Independent                    =>  0,
+      Pragma_Independent_Components         =>  0,
+      Pragma_Initialize_Scalars             => -1,
+      Pragma_Inline                         =>  0,
+      Pragma_Inline_Always                  =>  0,
+      Pragma_Inline_Generic                 =>  0,
+      Pragma_Inspection_Point               => -1,
+      Pragma_Interface                      => +2,
+      Pragma_Interface_Name                 => +2,
+      Pragma_Interrupt_Handler              => -1,
+      Pragma_Interrupt_Priority             => -1,
+      Pragma_Interrupt_State                => -1,
+      Pragma_Invariant                      => -1,
+      Pragma_Java_Constructor               => -1,
+      Pragma_Java_Interface                 => -1,
+      Pragma_Keep_Names                     =>  0,
+      Pragma_License                        => -1,
+      Pragma_Link_With                      => -1,
+      Pragma_Linker_Alias                   => -1,
+      Pragma_Linker_Constructor             => -1,
+      Pragma_Linker_Destructor              => -1,
+      Pragma_Linker_Options                 => -1,
+      Pragma_Linker_Section                 => -1,
+      Pragma_List                           => -1,
+      Pragma_Locking_Policy                 => -1,
+      Pragma_Long_Float                     => -1,
+      Pragma_Machine_Attribute              => -1,
+      Pragma_Main                           => -1,
+      Pragma_Main_Storage                   => -1,
+      Pragma_Memory_Size                    => -1,
+      Pragma_No_Return                      =>  0,
+      Pragma_No_Body                        =>  0,
+      Pragma_No_Run_Time                    => -1,
+      Pragma_No_Strict_Aliasing             => -1,
+      Pragma_Normalize_Scalars              => -1,
+      Pragma_Obsolescent                    =>  0,
+      Pragma_Optimize                       => -1,
+      Pragma_Optimize_Alignment             => -1,
+      Pragma_Ordered                        =>  0,
+      Pragma_Pack                           =>  0,
+      Pragma_Page                           => -1,
+      Pragma_Passive                        => -1,
+      Pragma_Preelaborable_Initialization   => -1,
+      Pragma_Polling                        => -1,
+      Pragma_Persistent_BSS                 =>  0,
+      Pragma_Postcondition                  => -1,
+      Pragma_Precondition                   => -1,
+      Pragma_Predicate                      => -1,
+      Pragma_Preelaborate                   => -1,
+      Pragma_Preelaborate_05                => -1,
+      Pragma_Priority                       => -1,
+      Pragma_Priority_Specific_Dispatching  => -1,
+      Pragma_Profile                        =>  0,
+      Pragma_Profile_Warnings               =>  0,
+      Pragma_Propagate_Exceptions           => -1,
+      Pragma_Psect_Object                   => -1,
+      Pragma_Pure                           => -1,
+      Pragma_Pure_05                        => -1,
+      Pragma_Pure_Function                  => -1,
+      Pragma_Queuing_Policy                 => -1,
+      Pragma_Ravenscar                      => -1,
+      Pragma_Relative_Deadline              => -1,
+      Pragma_Remote_Call_Interface          => -1,
+      Pragma_Remote_Types                   => -1,
+      Pragma_Restricted_Run_Time            => -1,
+      Pragma_Restriction_Warnings           => -1,
+      Pragma_Restrictions                   => -1,
+      Pragma_Reviewable                     => -1,
+      Pragma_Short_Circuit_And_Or           => -1,
+      Pragma_Share_Generic                  => -1,
+      Pragma_Shared                         => -1,
+      Pragma_Shared_Passive                 => -1,
+      Pragma_Short_Descriptors              =>  0,
+      Pragma_Source_File_Name               => -1,
+      Pragma_Source_File_Name_Project       => -1,
+      Pragma_Source_Reference               => -1,
+      Pragma_Storage_Size                   => -1,
+      Pragma_Storage_Unit                   => -1,
+      Pragma_Static_Elaboration_Desired     => -1,
+      Pragma_Stream_Convert                 => -1,
+      Pragma_Style_Checks                   => -1,
+      Pragma_Subtitle                       => -1,
+      Pragma_Suppress                       =>  0,
+      Pragma_Suppress_Exception_Locations   =>  0,
+      Pragma_Suppress_All                   => -1,
+      Pragma_Suppress_Debug_Info            =>  0,
+      Pragma_Suppress_Initialization        =>  0,
+      Pragma_System_Name                    => -1,
+      Pragma_Task_Dispatching_Policy        => -1,
+      Pragma_Task_Info                      => -1,
+      Pragma_Task_Name                      => -1,
+      Pragma_Task_Storage                   =>  0,
+      Pragma_Test_Case                      => -1,
+      Pragma_Thread_Local_Storage           =>  0,
+      Pragma_Time_Slice                     => -1,
+      Pragma_Title                          => -1,
+      Pragma_Unchecked_Union                =>  0,
+      Pragma_Unimplemented_Unit             => -1,
+      Pragma_Universal_Aliasing             => -1,
+      Pragma_Universal_Data                 => -1,
+      Pragma_Unmodified                     => -1,
+      Pragma_Unreferenced                   => -1,
+      Pragma_Unreferenced_Objects           => -1,
+      Pragma_Unreserve_All_Interrupts       => -1,
+      Pragma_Unsuppress                     =>  0,
+      Pragma_Use_VADS_Size                  => -1,
+      Pragma_Validity_Checks                => -1,
+      Pragma_Volatile                       =>  0,
+      Pragma_Volatile_Components            =>  0,
+      Pragma_Warnings                       => -1,
+      Pragma_Weak_External                  => -1,
+      Pragma_Wide_Character_Encoding        =>  0,
+      Unknown_Pragma                        =>  0);
 
    function Is_Non_Significant_Pragma_Reference (N : Node_Id) return Boolean is
       Id : Pragma_Id;
@@ -14991,7 +15139,7 @@ package body Sem_Prag is
    -- Preanalyze_TC_Args --
    ------------------------
 
-   procedure Preanalyze_TC_Args (Arg_Req, Arg_Ens : Node_Id) is
+   procedure Preanalyze_TC_Args (N, Arg_Req, Arg_Ens : Node_Id) is
    begin
       --  Preanalyze the boolean expressions, we treat these as spec
       --  expressions (i.e. similar to a default expression).
@@ -14999,11 +15147,31 @@ package body Sem_Prag is
       if Present (Arg_Req) then
          Preanalyze_Spec_Expression
            (Get_Pragma_Arg (Arg_Req), Standard_Boolean);
+
+         --  In ASIS mode, for a pragma generated from a source aspect, also
+         --  analyze the original aspect expression.
+
+         if ASIS_Mode
+           and then Present (Corresponding_Aspect (N))
+         then
+            Preanalyze_Spec_Expression
+              (Original_Node (Get_Pragma_Arg (Arg_Req)), Standard_Boolean);
+         end if;
       end if;
 
       if Present (Arg_Ens) then
          Preanalyze_Spec_Expression
            (Get_Pragma_Arg (Arg_Ens), Standard_Boolean);
+
+         --  In ASIS mode, for a pragma generated from a source aspect, also
+         --  analyze the original aspect expression.
+
+         if ASIS_Mode
+           and then Present (Corresponding_Aspect (N))
+         then
+            Preanalyze_Spec_Expression
+              (Original_Node (Get_Pragma_Arg (Arg_Ens)), Standard_Boolean);
+         end if;
       end if;
    end Preanalyze_TC_Args;
 

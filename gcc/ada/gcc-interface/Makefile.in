@@ -121,7 +121,6 @@ THREAD_KIND = native
 THREADSLIB =
 GMEM_LIB =
 MISCLIB =
-SYMDEPS = $(LIBINTL_DEP)
 OUTPUT_OPTION = @OUTPUT_OPTION@
 
 objext = .o
@@ -175,12 +174,12 @@ top_builddir = ../..
 LIBINTL = @LIBINTL@
 LIBINTL_DEP = @LIBINTL_DEP@
 
+# Character encoding conversion library.
+LIBICONV = @LIBICONV@
+LIBICONV_DEP = @LIBICONV_DEP@
+
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
-
-# List of extra object files linked in with various programs.
-EXTRA_GNATTOOLS_OBJS = ../../libcommon-target.a ../../libcommon.a \
-	../../../libcpp/libcpp.a
 
 # List extra gnattools
 EXTRA_GNATTOOLS =
@@ -242,11 +241,13 @@ LIBIBERTY = ../../libiberty/libiberty.a
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = $(LIBINTL) $(LIBIBERTY) $(SYSLIBS)
-LIBDEPS = $(LIBINTL_DEP) $(LIBIBERTY)
+LIBS = $(LIBINTL) $(LIBICONV) $(LIBIBERTY) $(SYSLIBS)
+LIBDEPS = $(LIBINTL_DEP) $(LIBICONV_DEP) $(LIBIBERTY)
 # Default is no TGT_LIB; one might be passed down or something
 TGT_LIB =
-TOOLS_LIBS = $(EXTRA_GNATTOOLS_OBJS) targext.o link.o $(LIBGNAT) $(LIBINTL) ../../../libiberty/libiberty.a $(SYSLIBS) $(TGT_LIB)
+TOOLS_LIBS = targext.o link.o ../../libcommon-target.a ../../libcommon.a \
+  ../../../libcpp/libcpp.a $(LIBGNAT) $(LIBINTL) $(LIBICONV) \
+  ../../../libiberty/libiberty.a $(SYSLIBS) $(TGT_LIB)
 
 # Convert the target variable into a space separated list of architecture,
 # manufacturer, and operating system and assign each of those to its own
@@ -1401,16 +1402,19 @@ ifeq ($(strip $(filter-out ibm aix%,$(manu) $(osys))),)
 	ppc64)
     LIBGNAT_TARGET_PAIRS = \
     $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_64)
+    TOOLS_TARGET_PAIRS = \
+    indepsw.adb<indepsw-aix.adb
   else
     LIBGNAT_TARGET_PAIRS = \
     $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_32)
+    TOOLS_TARGET_PAIRS = \
+    indepsw.adb<indepsw-gnu.adb
   endif
 
   THREADSLIB = -lpthreads
   EH_MECHANISM=-gcc
-  TOOLS_TARGET_PAIRS = \
-  mlib-tgt-specific.adb<mlib-tgt-specific-aix.adb \
-  indepsw.adb<indepsw-aix.adb
+  TOOLS_TARGET_PAIRS += \
+  mlib-tgt-specific.adb<mlib-tgt-specific-aix.adb
 
   GMEM_LIB = gmemlib
 endif
@@ -2112,7 +2116,6 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
   SO_OPTS = -shared-libgcc
   LIBGNAT_TARGET_PAIRS = \
     a-intnam.ads<a-intnam-darwin.ads \
-    i-forbla.adb<i-forbla-darwin.adb \
     s-inmaop.adb<s-inmaop-posix.adb \
     s-osinte.adb<s-osinte-darwin.adb \
     s-osinte.ads<s-osinte-darwin.ads \
@@ -2233,10 +2236,8 @@ LIBGNAT_OBJS = adadecode.o adaint.o argv.o cio.o cstreams.o ctrl_c.o	\
 
 include $(fsrcdir)/ada/Makefile.rtl
 
-GNATRTL_LINEARALGEBRA_OBJS = i-forbla.o i-forlap.o
-
 GNATRTL_OBJS = $(GNATRTL_NONTASKING_OBJS) $(GNATRTL_TASKING_OBJS) \
-  $(GNATRTL_LINEARALGEBRA_OBJS) memtrack.o
+  memtrack.o
 
 # Default run time files
 
@@ -2493,13 +2494,42 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR)
 	                $(RTSDIR)/$(word 1,$(subst <, ,$(PAIR)));)
 # Copy tsystem.h
 	$(CP) $(srcdir)/tsystem.h $(RTSDIR)
-# Copy generated target dependent sources
-	$(RM) $(RTSDIR)/s-oscons.ads
-	(cd $(RTSDIR); $(LN_S) ../s-oscons.ads s-oscons.ads)
 	$(RM) ../stamp-gnatlib-$(RTSDIR)
 	touch ../stamp-gnatlib1-$(RTSDIR)
 
 # GNULLI End #############################################################
+
+ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(subst -, ,$(host)))),)
+OSCONS_CPP=../../$(DECC) -E /comment=as_is -DNATIVE \
+             -DTARGET='""$(target)""' $(fsrcpfx)ada/s-oscons-tmplt.c
+
+OSCONS_EXTRACT=../../$(DECC) -DNATIVE \
+                 -DTARGET='""$(target)""' $(fsrcpfx)ada/s-oscons-tmplt.c ; \
+  ld -o s-oscons-tmplt.exe s-oscons-tmplt.obj; \
+  ./s-oscons-tmplt.exe > s-oscons-tmplt.s
+
+else
+# GCC_FOR_TARGET has paths relative to the gcc directory, so we need to adjust
+# for running it from $(RTSDIR)
+OSCONS_CC=`echo "$(GCC_FOR_TARGET)" \
+  | sed -e 's^\./xgcc^../../xgcc^' -e 's^-B./^-B../../^'`
+OSCONS_CPP=$(OSCONS_CC) $(GNATLIBCFLAGS) -E -C \
+  -DTARGET=\"$(target)\" $(fsrcpfx)ada/s-oscons-tmplt.c > s-oscons-tmplt.i
+OSCONS_EXTRACT=$(OSCONS_CC) -S s-oscons-tmplt.i
+endif
+
+./bldtools/oscons/xoscons: xoscons.adb xutil.ads xutil.adb
+	-$(MKDIR) ./bldtools/oscons
+	$(RM) $(addprefix ./bldtools/oscons/,$(notdir $^))
+	$(CP) $^ ./bldtools/oscons
+	(cd ./bldtools/oscons ; gnatmake -q xoscons)
+
+$(RTSDIR)/s-oscons.ads: ../stamp-gnatlib1-$(RTSDIR) s-oscons-tmplt.c gsocket.h ./bldtools/oscons/xoscons
+	$(RM) $(RTSDIR)/s-oscons-tmplt.i $(RTSDIR)/s-oscons-tmplt.s
+	(cd $(RTSDIR) ; \
+	    $(OSCONS_CPP) ; \
+	    $(OSCONS_EXTRACT) ; \
+	    ../bldtools/oscons/xoscons)
 
 # Don't use semicolon separated shell commands that involve list expansions.
 # The semicolon triggers a call to DCL on VMS and DCL can't handle command
@@ -2507,7 +2537,7 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR)
 # Example: cd $(RTSDIR); ar rc libfoo.a $(LONG_LIST_OF_OBJS)
 # is guaranteed to overflow the buffer.
 
-gnatlib: ../stamp-gnatlib1-$(RTSDIR) ../stamp-gnatlib2-$(RTSDIR)
+gnatlib: ../stamp-gnatlib1-$(RTSDIR) ../stamp-gnatlib2-$(RTSDIR) $(RTSDIR)/s-oscons.ads
 	$(MAKE) -C $(RTSDIR) \
 		CC="`echo \"$(GCC_FOR_TARGET)\" \
 		| sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'`" \
@@ -2533,9 +2563,6 @@ gnatlib: ../stamp-gnatlib1-$(RTSDIR) ../stamp-gnatlib2-$(RTSDIR)
 	$(AR_FOR_TARGET) $(AR_FLAGS) $(RTSDIR)/libgnarl$(arext) \
 	   $(addprefix $(RTSDIR)/,$(GNATRTL_TASKING_OBJS))
 	$(RANLIB_FOR_TARGET) $(RTSDIR)/libgnarl$(arext)
-	$(AR_FOR_TARGET) $(AR_FLAGS) $(RTSDIR)/libgnala$(arext) \
-	   $(addprefix $(RTSDIR)/,$(GNATRTL_LINEARALGEBRA_OBJS))
-	$(RANLIB_FOR_TARGET) $(RTSDIR)/libgnala$(arext)
         ifeq ($(GMEM_LIB),gmemlib)
 		$(AR_FOR_TARGET) $(AR_FLAGS) $(RTSDIR)/libgmem$(arext) \
 		  $(RTSDIR)/memtrack.o

@@ -29,10 +29,10 @@
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "libgcc_tm.h"
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "md-unwind-support.h"
 #include "unwind-ia64.h"
 
 #define __int64 long

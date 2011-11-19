@@ -304,6 +304,8 @@ generate_canonical_option (size_t opt_index, const char *arg, int value,
 	  decoded->canonical_option[0] = concat (opt_text, arg, NULL);
 	  decoded->canonical_option[1] = NULL;
 	  decoded->canonical_option_num_elements = 1;
+	  if (opt_text != option->opt_text)
+	    free (CONST_CAST (char *, opt_text));
 	}
     }
   else
@@ -878,9 +880,6 @@ handle_option (struct gcc_options *opts,
 					    lang_mask, kind, loc,
 					    handlers, dc))
 	  return false;
-	else
-	  handlers->post_handling_callback (decoded,
-					    handlers->handlers[i].mask);
       }
   
   return true;

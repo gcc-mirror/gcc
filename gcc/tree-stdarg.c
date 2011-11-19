@@ -1,5 +1,5 @@
 /* Pass computing data for optimizing stdarg functions.
-   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
@@ -847,8 +847,12 @@ execute_optimize_stdarg (void)
 		  if (get_gimple_rhs_class (gimple_assign_rhs_code (stmt))
 		      == GIMPLE_SINGLE_RHS)
 		    {
+		      /* Check for ap ={v} {}.  */
+		      if (TREE_CLOBBER_P (rhs))
+			continue;
+
 		      /* Check for tem = ap.  */
-		      if (va_list_ptr_read (&si, rhs, lhs))
+		      else if (va_list_ptr_read (&si, rhs, lhs))
 			continue;
 
 		      /* Check for the last insn in:
@@ -872,8 +876,12 @@ execute_optimize_stdarg (void)
 		  if (get_gimple_rhs_class (gimple_assign_rhs_code (stmt))
 		      == GIMPLE_SINGLE_RHS)
 		    {
+		      /* Check for ap ={v} {}.  */
+		      if (TREE_CLOBBER_P (rhs))
+			continue;
+
 		      /* Check for ap[0].field = temp.  */
-		      if (va_list_counter_struct_op (&si, lhs, rhs, true))
+		      else if (va_list_counter_struct_op (&si, lhs, rhs, true))
 			continue;
 
 		      /* Check for temp = ap[0].field.  */

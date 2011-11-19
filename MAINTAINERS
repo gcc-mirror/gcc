@@ -281,14 +281,15 @@ Graphite 		Tobias Grosser		grosser@fim.uni-passau.de
 Graphite		Sebastian Pop		sebastian.pop@amd.com
 libcpp			Tom Tromey		tromey@redhat.com
 loop optimizer		Zdenek Dvorak		ook@ucw.cz
+LTO			Diego Novillo		dnovillo@google.com
+LTO			Richard Guenther	rguenther@suse.de
+LTO plugin		Cary Coutant		ccoutant@google.com
 Plugin			Diego Novillo		dnovillo@google.com
 Plugin			Le-Chun Wu		lcwu@google.com
 register allocation	Peter Bergner		bergner@vnet.ibm.com
 register allocation	Kenneth Zadeck		zadeck@naturalbridge.com
 register allocation	Seongbae Park		seongbae.park@gmail.com
-LTO			Diego Novillo		dnovillo@google.com
-LTO			Richard Guenther	rguenther@suse.de
-LTO plugin		Cary Coutant		ccoutant@google.com
+selective scheduling	Andrey Belevantsev	abel@ispras.ru
 
 Note that while reviewers can approve changes to parts of the compiler
 that they maintain, they still need approval for their own patches
@@ -392,6 +393,7 @@ Fariborz Jahanian				fjahanian@apple.com
 Martin Jambor					mjambor@suse.cz
 Andrew Jenner					andrew@codesourcery.com
 Janis Johnson					janisjo@codesourcery.com
+Teresa Johnson					tejohnson@google.com
 Kean Johnston					jkj@sco.com
 Phillip Jordan					phillip.m.jordan@gmail.com
 Tim Josling					tej@melbpc.org.au
@@ -417,6 +419,7 @@ Georg-Johann Lay				avr@gjlay.de
 Marc Lehmann					pcg@goof.com
 James Lemke					jwlemke@juniper.net
 Kriang Lerdsuwanakij				lerdsuwa@users.sourceforge.net
+Jiangning Liu					jiangning.liu@arm.com
 Sa Liu						saliu@de.ibm.com
 Ralph Loader					rcl@ihug.co.nz
 Gabor Loki					loki@inf.u-szeged.hu
@@ -521,6 +524,7 @@ Canqun Yang					canqun@nudt.edu.cn
 Jeffrey Yasskin					jyasskin@google.com
 Joey Ye						joey.ye@arm.com
 David Yuste					david.yuste@gmail.com
+Kirill Yukhin					kirill.yukhin@gmail.com
 Kenneth Zadeck					zadeck@naturalbridge.com
 Yufeng Zhang					yufeng.zhang@arm.com
 Shujing Zhao					pearly.zhao@oracle.com

@@ -41,15 +41,7 @@ typedef unsigned char uchar;
 /* Helper functions for character(kind=4) internal units.  These are needed
    by write_float.def.  */
 
-static inline void
-memset4 (gfc_char4_t *p, gfc_char4_t c, int k)
-{
-  int j;
-  for (j = 0; j < k; j++)
-    *p++ = c;
-}
-
-static inline void
+static void
 memcpy4 (gfc_char4_t *dest, const char *source, int k)
 {
   int j;

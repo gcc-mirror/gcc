@@ -1,3 +1,47 @@
+2011-11-07  Richard Henderson  <rth@redhat.com>
+
+	Merged from transactional-memory.
+
+	* cp-demangle.c (cplus_demangle_fill_ctor): Accept
+	gnu_v3_object_ctor_group.
+	(cplus_demangle_fill_dtor): Accept gnu_v3_object_dtor_group.
+	(d_ctor_dtor_name): Recognize gnu_v3_object_ctor_group
+	and gnu_v3_object_dtor_group.
+	(d_dump): Handle DEMANGLE_COMPONENT_TRANSACTION_CLONE
+	and DEMANGLE_COMPONENT_NONTRANSACTION_CLONE.
+	(d_make_comp, d_print_comp): Likewise.
+	(d_special_name): Generate them.
+
+2011-11-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48370
+	* cp-demangle.c (d_special_name, d_print_comp): Handle a
+	discriminator number on DEMANGLE_COMPONENT_REFTEMP.
+
+2011-11-02  Doug Evans  <dje@google.com>
+
+	* Makefile.in (CFILES): Add timeval-utils.c.
+	(REQUIRED_OFILES): Add timeval-utils.$(objext).
+	(INSTALLED_HEADERS): Add timeval-utils.h.
+	(timeval-utils.$(objext)): Add rule.
+
+2011-10-28  Ian Lance Taylor  <iant@google.com>
+
+	* setproctitle.c (setproctitle): Use "GNU/Linux" in comment.
+
+2011-10-26  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/48108
+	* simple-object-mach-o.c  (GNU_WRAPPER_SECTS, GNU_WRAPPER_INDEX,
+	GNU_WRAPPER_NAMES): New macros.
+	(simple_object_mach_o_segment): Handle wrapper scheme.
+	(simple_object_mach_o_write_section_header): Allow the segment name
+	to be supplied.
+	(simple_object_mach_o_write_segment): Handle wrapper scheme.  Ensure
+	that the top-level segment name in the load command is empty.
+	(simple_object_mach_o_write_to_file): Determine the number of
+	sections during segment output, use that in writing the header.
+
 2011-10-10  Ian Lance Taylor  <iant@google.com>
 
 	PR c++/48665
@@ -8,10 +52,6 @@
 2011-09-28  Doug Evans  <dje@google.com>
 
 	* timeval-utils.c: New file.
-	* Makefile.in (CFILES): Add it.
-	(REQUIRED_OFILES): Add timeval-utils.$(objext).
-	(INSTALLED_HEADERS): Add timeval-utils.h.
-	(timeval-utils.$(objext)): Add rule.
 
 	* argv.c (countargv): New function.
 

@@ -1,1 +1,0 @@
-SHLIB_MAPFILES += $(srcdir)/config/ia64/libgcc-glibc.ver

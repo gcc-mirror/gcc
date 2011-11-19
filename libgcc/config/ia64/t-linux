@@ -1,0 +1,5 @@
+# Use system libunwind library on IA-64 GLIBC based system.
+LIB2ADDEH = $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c \
+  $(srcdir)/unwind-compat.c
+
+SHLIB_MAPFILES += $(srcdir)/config/ia64/libgcc-glibc.ver

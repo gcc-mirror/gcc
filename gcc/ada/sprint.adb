@@ -2694,9 +2694,19 @@ package body Sprint is
 
             if Paren_Count (Expression (Node)) /= 0 then
                Sprint_Node (Expression (Node));
+
             else
                Write_Char ('(');
                Sprint_Node (Expression (Node));
+
+               --  Odd case, for the qualified expressions used in machine
+               --  code the argument may be a procedure call, resulting in
+               --  a junk semicolon before the right parent, get rid of it.
+
+               Write_Erase_Char (';');
+
+               --  Now we can add the terminating right paren
+
                Write_Char (')');
             end if;
 

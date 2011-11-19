@@ -10,6 +10,7 @@ package jpeg
 import (
 	"bufio"
 	"image"
+	"image/color"
 	"image/ycbcr"
 	"io"
 	"os"
@@ -199,7 +200,7 @@ func (d *decoder) processDQT(n int) os.Error {
 // makeImg allocates and initializes the destination image.
 func (d *decoder) makeImg(h0, v0, mxx, myy int) {
 	if d.nComp == nGrayComponent {
-		m := image.NewGray(8*mxx, 8*myy)
+		m := image.NewGray(image.Rect(0, 0, 8*mxx, 8*myy))
 		d.img1 = m.SubImage(image.Rect(0, 0, d.width, d.height)).(*image.Gray)
 		return
 	}
@@ -464,7 +465,7 @@ func DecodeConfig(r io.Reader) (image.Config, os.Error) {
 	}
 	switch d.nComp {
 	case nGrayComponent:
-		return image.Config{image.GrayColorModel, d.width, d.height}, nil
+		return image.Config{color.GrayModel, d.width, d.height}, nil
 	case nColorComponent:
 		return image.Config{ycbcr.YCbCrColorModel, d.width, d.height}, nil
 	}

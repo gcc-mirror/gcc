@@ -200,7 +200,7 @@ in the following sections.
 -Weffc++  -Wstrict-null-sentinel @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
 -Woverloaded-virtual  -Wno-pmf-conversions @gol
--Wsign-promo}
+-Wsign-promo -Wzero-as-null-pointer-constant}
 
 @item Objective-C and Objective-C++ Language Options
 @xref{Objective-C and Objective-C++ Dialect Options,,Options Controlling
@@ -235,7 +235,7 @@ Objective-C and Objective-C++ Dialects}.
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  -Warray-bounds @gol
 -Wno-attributes -Wno-builtin-macro-redefined @gol
--Wc++-compat -Wc++0x-compat -Wcast-align  -Wcast-qual  @gol
+-Wc++-compat -Wc++11-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment @gol
 -Wconversion  -Wcoverage-mismatch  -Wno-cpp  -Wno-deprecated  @gol
 -Wno-deprecated-declarations -Wdisabled-optimization  @gol
@@ -457,6 +457,14 @@ Objective-C and Objective-C++ Dialects}.
 @c This list is ordered alphanumerically by subsection name.
 @c Try and put the significant identifier (CPU or system) first,
 @c so users have a clue at guessing where the ones they want will be.
+
+@emph{Adapteva Epiphany Options}
+@gccoptlist{-mhalf-reg-file -mprefer-short-insn-regs @gol
+-mbranch-cost=@var{num} -mcmove -mnops=@var{num} -msoft-cmpsf @gol
+-msplit-lohi -mpost-inc -mpost-modify -mstack-offset=@var{num} @gol
+-mround-nearest -mlong-calls -mshort-calls -msmall16 @gol
+-mfp-mode=@var{mode} -mvect-double -max-vect-align=@var{num} @gol
+-msplit-vecmove-early -m1reg-@var{reg}}
 
 @emph{ARM Options}
 @gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
@@ -1574,16 +1582,13 @@ C++ code.
 GNU dialect of @option{-std=c++98}.  This is the default for
 C++ code.
 
-@item c++0x
-The working draft of the upcoming ISO C++0x standard. This option
-enables experimental features that are likely to be included in
-C++0x. The working draft is constantly changing, and any feature that is
-enabled by this flag may be removed from future versions of GCC if it is
-not part of the C++0x standard.
+@item c++11
+The 2011 ISO C++ standard plus amendments.  Support for C++11 is still
+experimental, and may change in incompatible ways in future releases.
 
-@item gnu++0x
-GNU dialect of @option{-std=c++0x}. This option enables
-experimental features that may be removed in future versions of GCC.
+@item gnu++11
+GNU dialect of @option{-std=c++11}. Support for C++11 is still
+experimental, and may change in incompatible ways in future releases.
 @end table
 
 @item -fgnu89-inline
@@ -1717,6 +1722,19 @@ compiler generates parallel code according to the OpenMP Application
 Program Interface v3.0 @w{@uref{http://www.openmp.org/}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
 have support for @option{-pthread}.
+
+@item -fgnu-tm
+@opindex fgnu-tm
+When the option @option{-fgnu-tm} is specified, the compiler will
+generate code for the Linux variant of Intel's current Transactional
+Memory ABI specification document (Revision 1.1, May 6 2009).  This is
+an experimental feature whose interface may change in future versions
+of GCC, as the official specification changes.  Please note that not
+all architectures are supported for this feature.
+
+For more information on GCC's support for transactional memory,
+@xref{Enabling libitm,,The GNU Transactional Memory Library,libitm,GNU
+Transactional Memory Library}.
 
 @item -fms-extensions
 @opindex fms-extensions
@@ -1870,7 +1888,7 @@ Version 5 corrects the mangling of attribute const/volatile on
 function pointer types, decltype of a plain decl, and use of a
 function parameter in the declaration of another parameter.
 
-Version 6 corrects the promotion behavior of C++0x scoped enums.
+Version 6 corrects the promotion behavior of C++11 scoped enums.
 
 See also @option{-Wabi}.
 
@@ -1905,14 +1923,14 @@ been added for putting variables into BSS without making them common.
 
 @item -fconstexpr-depth=@var{n}
 @opindex fconstexpr-depth
-Set the maximum nested evaluation depth for C++0x constexpr functions
+Set the maximum nested evaluation depth for C++11 constexpr functions
 to @var{n}.  A limit is needed to detect endless recursion during
 constant expression evaluation.  The minimum specified by the standard
 is 512.
 
-@item -fno-deduce-init-list
-@opindex fno-deduce-init-list
-Disable deduction of a template type parameter as
+@item -fdeduce-init-list
+@opindex fdeduce-init-list
+Enable deduction of a template type parameter as
 std::initializer_list from a brace-enclosed initializer list, i.e.
 
 @smallexample
@@ -1927,9 +1945,10 @@ void f()
 @}
 @end smallexample
 
-This option is present because this deduction is an extension to the
-current specification in the C++0x working draft, and there was
-some concern about potential overload resolution problems.
+This deduction was implemented as a possible extension to the
+originally proposed semantics for the C++11 standard, but was not part
+of the final standard, so it is disabled by default.  This option is
+deprecated, and may be removed in a future version of G++.
 
 @item -ffriend-injection
 @opindex ffriend-injection
@@ -2093,7 +2112,7 @@ Set the maximum instantiation depth for template classes to @var{n}.
 A limit on the template instantiation depth is needed to detect
 endless recursions during template class instantiation.  ANSI/ISO C++
 conforming programs must not rely on a maximum depth greater than 17
-(changed to 1024 in C++0x).  The default value is 900, as the compiler
+(changed to 1024 in C++11).  The default value is 900, as the compiler
 can run out of stack space before hitting 1024 in some situations.
 
 @item -fno-threadsafe-statics
@@ -2120,7 +2139,7 @@ if the runtime routine is not available.
 @item -fvisibility-inlines-hidden
 @opindex fvisibility-inlines-hidden
 This switch declares that the user does not attempt to compare
-pointers to inline methods where the addresses of the two functions
+pointers to inline functions or methods where the addresses of the two functions
 were taken in different shared objects.
 
 The effect of this is that GCC may, effectively, mark inline methods with
@@ -2365,17 +2384,22 @@ an instance of a derived class through a pointer to a base class if the
 base class does not have a virtual destructor.  This warning is enabled
 by @option{-Wall}.
 
-@item -Wno-narrowing @r{(C++ and Objective-C++ only)}
+@item -Wnarrowing @r{(C++ and Objective-C++ only)}
 @opindex Wnarrowing
 @opindex Wno-narrowing
-With -std=c++0x, suppress the diagnostic required by the standard for
-narrowing conversions within @samp{@{ @}}, e.g.
+Warn when a narrowing conversion prohibited by C++11 occurs within
+@samp{@{ @}}, e.g.
 
 @smallexample
 int i = @{ 2.2 @}; // error: narrowing from double to int
 @end smallexample
 
-This flag can be useful for compiling valid C++98 code in C++0x mode.
+This flag is included in @option{-Wall} and @option{-Wc++11-compat}.
+
+With -std=c++11, @option{-Wno-narrowing} suppresses the diagnostic
+required by the standard.  Note that this does not affect the meaning
+of well-formed code; narrowing conversions are still considered
+ill-formed in SFINAE context.
 
 @item -Wnoexcept @r{(C++ and Objective-C++ only)}
 @opindex Wnoexcept
@@ -2993,7 +3017,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 
 @gccoptlist{-Waddress   @gol
 -Warray-bounds @r{(only with} @option{-O2}@r{)}  @gol
--Wc++0x-compat  @gol
+-Wc++11-compat  @gol
 -Wchar-subscripts  @gol
 -Wenum-compare @r{(in C/Objc; this is on by default in C++)} @gol
 -Wimplicit-int @r{(C and Objective-C only)} @gol
@@ -3532,7 +3556,7 @@ To suppress this warning use the @samp{unused} attribute
 @opindex Wunused-result
 @opindex Wno-unused-result
 Do not warn if a caller of a function marked with attribute
-@code{warn_unused_result} (@pxref{Variable Attributes}) does not use
+@code{warn_unused_result} (@pxref{Function Attributes}) does not use
 its return value. The default is @option{-Wunused-result}.
 
 @item -Wunused-variable
@@ -4063,10 +4087,11 @@ Warn about ISO C constructs that are outside of the common subset of
 ISO C and ISO C++, e.g.@: request for implicit conversion from
 @code{void *} to a pointer to non-@code{void} type.
 
-@item -Wc++0x-compat @r{(C++ and Objective-C++ only)}
-Warn about C++ constructs whose meaning differs between ISO C++ 1998 and
-ISO C++ 200x, e.g., identifiers in ISO C++ 1998 that will become keywords
-in ISO C++ 200x.  This warning is enabled by @option{-Wall}.
+@item -Wc++11-compat @r{(C++ and Objective-C++ only)}
+Warn about C++ constructs whose meaning differs between ISO C++ 1998
+and ISO C++ 2011, e.g., identifiers in ISO C++ 1998 that are keywords
+in ISO C++ 2011.  This warning turns on @option{-Wnarrowing} and is
+enabled by @option{-Wall}.
 
 @item -Wcast-qual
 @opindex Wcast-qual
@@ -4143,6 +4168,12 @@ unsigned integers are disabled by default in C++ unless
 @opindex Wno-conversion-null
 Do not warn for conversions between @code{NULL} and non-pointer
 types. @option{-Wconversion-null} is enabled by default.
+
+@item -Wzero-as-null-pointer-constant @r{(C++ and Objective-C++ only)}
+@opindex Wzero-as-null-pointer-constant
+@opindex Wno-zero-as-null-pointer-constant
+Warn when a literal '0' is used as null pointer constant.  This can
+be useful to facilitate the conversion to @code{nullptr} in C++11.
 
 @item -Wempty-body
 @opindex Wempty-body
@@ -9095,6 +9126,13 @@ parameters only when their cumulative size is less or equal to
 @option{ipa-sra-ptr-growth-factor} times the size of the original
 pointer parameter.
 
+@item tm-max-aggregate-size
+When making copies of thread-local variables in a transaction, this
+parameter specifies the size in bytes after which variables will be
+saved with the logging functions as opposed to save/restore code
+sequence pairs.  This option only applies when using
+@option{-fgnu-tm}.
+
 @item graphite-max-nb-scop-params
 To avoid exponential effects in the Graphite loop transforms, the
 number of parameters in a Static Control Part (SCoP) is bounded.  The
@@ -9133,13 +9171,35 @@ partitions.
 The maximum number of namespaces to consult for suggestions when C++
 name lookup fails for an identifier.  The default is 1000.
 
+@item sink-frequency-threshold
+The maximum relative execution frequency (in percents) of the target block
+relative to a statement's original block to allow statement sinking of a
+statement.  Larger numbers result in more aggressive statement sinking.
+The default value is 75.  A small positive adjustment is applied for
+statements with memory operands as those are even more profitable so sink.
+
 @item max-stores-to-sink
 The maximum number of conditional stores paires that can be sunk.  Set to 0
 if either vectorization (@option{-ftree-vectorize}) or if-conversion
 (@option{-ftree-loop-if-convert}) is disabled.  The default is 2.
 
+@item allow-load-data-races
+Allow optimizers to introduce new data races on loads.
+Set to 1 to allow, otherwise to 0.  This option is enabled by default
+unless implicitly set by the @option{-fmemory-model=} option.
+
 @item allow-store-data-races
 Allow optimizers to introduce new data races on stores.
+Set to 1 to allow, otherwise to 0.  This option is enabled by default
+unless implicitly set by the @option{-fmemory-model=} option.
+
+@item allow-packed-load-data-races
+Allow optimizers to introduce new data races on packed data loads.
+Set to 1 to allow, otherwise to 0.  This option is enabled by default
+unless implicitly set by the @option{-fmemory-model=} option.
+
+@item allow-packed-store-data-races
+Allow optimizers to introduce new data races on packed data stores.
 Set to 1 to allow, otherwise to 0.  This option is enabled by default
 unless implicitly set by the @option{-fmemory-model=} option.
 
@@ -10209,6 +10269,7 @@ platform.
 @c in Machine Dependent Options
 
 @menu
+* Adapteva Epiphany Options::
 * ARM Options::
 * AVR Options::
 * Blackfin Options::
@@ -10256,6 +10317,161 @@ platform.
 * Xtensa Options::
 * zSeries Options::
 @end menu
+
+@node Adapteva Epiphany Options
+@subsection Adapteva Epiphany Options
+
+These @samp{-m} options are defined for Adapteva Epiphany:
+
+@table @gcctabopt
+@item -mhalf-reg-file
+@opindex mhalf-reg-file
+Don't allocate any register in the range @code{r32}@dots{}@code{r63}.
+That allows code to run on hardware variants that lack these registers.
+
+@item -mprefer-short-insn-regs
+@opindex mprefer-short-insn-regs
+Preferrentially allocate registers that allow short instruction generation.
+This can result in increasesd instruction count, so if this reduces or
+increases code size might vary from case to case.
+
+@item -mbranch-cost=@var{num}
+@opindex mbranch-cost
+Set the cost of branches to roughly @var{num} ``simple'' instructions.
+This cost is only a heuristic and is not guaranteed to produce
+consistent results across releases.
+
+@item -mcmove
+@opindex mcmove
+Enable the generation of conditional moves.
+
+@item -mnops=@var{num}
+@opindex mnops
+Emit @var{num} nops before every other generated instruction.
+
+@item -mno-soft-cmpsf
+@opindex mno-soft-cmpsf
+For single-precision floating point comparisons, emit an fsub instruction
+and test the flags.  This is faster than a software comparison, but can
+get incorrect results in the presence of NaNs, or when two different small
+numbers are compared such that their difference is calculated as zero.
+The default is @option{-msoft-cmpsf}, which uses slower, but IEEE-compliant,
+software comparisons.
+
+@item -mstack-offset=@var{num}
+@opindex mstack-offset
+Set the offset between the top of the stack and the stack pointer.
+E.g., a value of 8 means that the eight bytes in the range sp+0@dots{}sp+7
+can be used by leaf functions without stack allocation.
+Values other than @samp{8} or @samp{16} are untested and unlikely to work.
+Note also that this option changes the ABI, compiling a program with a
+different stack offset than the libraries have been compiled with
+will generally not work.
+This option can be useful if you want to evaluate if a different stack
+offset would give you better code, but to actually use a different stack
+offset to build working programs, it is recommended to configure the
+toolchain with the appropriate @samp{--with-stack-offset=@var{num}} option.
+
+@item -mno-round-nearest
+@opindex mno-round-nearest
+Make the scheduler assume that the rounding mode has been set to
+truncating.  The default is @option{-mround-nearest}.
+
+@item -mlong-calls
+@opindex mlong-calls
+If not otherwise specified by an attribute, assume all calls might be beyond
+the offset range of the b / bl instructions, and therefore load the
+function address into a register before performing a (otherwise direct) call.
+This is the default.
+
+@item -mshort-calls
+@opindex short-calls
+If not otherwise specified by an attribute, assume all direct calls are
+in the range of the b / bl instructions, so use these instructions
+for direct calls.  The default is @option{-mlong-calls}.
+
+@item -msmall16
+@opindex msmall16
+Assume addresses can be loaded as 16 bit unsigned values.  This does not
+apply to function addresses for which @option{-mlong-calls} semantics
+are in effect.
+
+@item -mfp-mode=@var{mode}
+@opindex mfp-mode
+Set the prevailing mode of the floating point unit.
+This determines the floating point mode that is provided and expected
+at function call and return time.  Making this mode match the mode you
+predominantly need at function start can make your programs smaller and
+faster by avoiding unnecessary mode switches.
+
+@var{mode} can be set to one the following values:
+
+@table @samp
+@item caller
+Any mode at function entry is valid, and retained or restored when
+the function returns, and when it calls other functions.
+This mode is useful for compiling libraries or other compilation units
+you might want to incorporate into different programs with different
+prevailing FPU modes, and the convenience of being able to use a single
+object file outweighs the size and speed overhead for any extra
+mode switching that might be needed, compared with what would be needed
+with a more specific choice of prevailing FPU mode.
+
+@item truncate
+This is the mode used for floating point calculations with
+truncating (i.e.@: round towards zero) rounding mode.  That includes
+conversion from floating point to integer.
+
+@item round-nearest
+This is the mode used for floating point calculations with
+round-to-nearest-or-even rounding mode.
+
+@item int
+This is the mode used to perform integer calculations in the FPU, e.g.@:
+integer multiply, or integer multiply-and-accumulate.
+@end table
+
+The default is @option{-mfp-mode=caller}
+
+@item -mnosplit-lohi
+@opindex mnosplit-lohi
+@item -mno-postinc
+@opindex mno-postinc
+@item -mno-postmodify
+@opindex mno-postmodify
+Code generation tweaks that disable, respectively, splitting of 32
+bit loads, generation of post-increment addresses, and generation of
+post-modify addresses.  The defaults are @option{msplit-lohi},
+@option{-mpost-inc}, and @option{-mpost-modify}.
+
+@item -mnovect-double
+@opindex mno-vect-double
+Change the preferred SIMD mode to SImode.  The default is
+@option{-mvect-double}, which uses DImode as preferred SIMD mode.
+
+@item -max-vect-align=@var{num}
+@opindex max-vect-align
+The maximum alignment for SIMD vector mode types.
+@var{num} may be 4 or 8.  The default is 8.
+Note that this is an ABI change, even though many library function
+interfaces will be unaffected, if they don't use SIMD vector modes
+in places where they affect size and/or alignment of relevant types.
+
+@item -msplit-vecmove-early
+@opindex msplit-vecmove-early
+Split vector moves into single word moves before reload.  In theory this
+could give better register allocation, but so far the reverse seems to be
+generally the case.
+
+@item -m1reg-@var{reg}
+@opindex m1reg-
+Specify a register to hold the constant @minus{}1, which makes loading small negative
+constants and certain bitmasks faster.
+Allowable values for reg are r43 and r63, which specify to use that register
+as a fixed register, and none, which means that no register is used for this
+purpose.  The default is @option{-m1reg-none}.
+
+@end table
 
 @node ARM Options
 @subsection ARM Options
@@ -10387,8 +10603,8 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{arm10e}, @samp{arm1020e}, @samp{arm1022e},
 @samp{arm1136j-s}, @samp{arm1136jf-s}, @samp{mpcore}, @samp{mpcorenovfp},
 @samp{arm1156t2-s}, @samp{arm1156t2f-s}, @samp{arm1176jz-s}, @samp{arm1176jzf-s},
-@samp{cortex-a5}, @samp{cortex-a8}, @samp{cortex-a9}, @samp{cortex-a15},
-@samp{cortex-r4}, @samp{cortex-r4f}, @samp{cortex-r5},
+@samp{cortex-a5}, @samp{cortex-a7}, @samp{cortex-a8}, @samp{cortex-a9}, 
+@samp{cortex-a15}, @samp{cortex-r4}, @samp{cortex-r4f}, @samp{cortex-r5},
 @samp{cortex-m4}, @samp{cortex-m3},
 @samp{cortex-m1},
 @samp{cortex-m0},
@@ -10722,6 +10938,117 @@ ld   @var{Rn}, X
 sbiw r26, const
 @end example
 @end table
+
+@subsubsection @code{EIND} and Devices with more than 128k Bytes of Flash
+
+Pointers in the implementation are 16 bits wide.
+The address of a function or label is represented as word address so
+that indirect jumps and calls can address any code address in the
+range of 64k words.
+
+In order to faciliate indirect jump on devices with more than 128k
+bytes of program memory space, there is a special function register called
+@code{EIND} that serves as most significant part of the target address
+when @code{EICALL} or @code{EIJMP} instructions are used.
+
+Indirect jumps and calls on these devices are handled as follows and
+are subject to some limitations:
+
+@itemize @bullet
+
+@item
+The compiler never sets @code{EIND}.
+
+@item
+The startup code from libgcc never sets @code{EIND}.
+Notice that startup code is a blend of code from libgcc and avr-libc.
+For the impact of avr-libc on @code{EIND}, see the
+@w{@uref{http://nongnu.org/avr-libc/user-manual,avr-libc user manual}}.
+
+@item
+The compiler uses @code{EIND} implicitely in @code{EICALL}/@code{EIJMP}
+instructions or might read @code{EIND} directly.
+
+@item
+The compiler assumes that @code{EIND} never changes during the startup
+code or run of the application. In particular, @code{EIND} is not
+saved/restored in function or interrupt service routine
+prologue/epilogue.
+
+@item
+It is legitimate for user-specific startup code to set up @code{EIND}
+early, for example by means of initialization code located in
+section @code{.init3}, and thus prior to general startup code that
+initializes RAM and calls constructors.
+
+@item
+For indirect calls to functions and computed goto, the linker will
+generate @emph{stubs}. Stubs are jump pads sometimes also called
+@emph{trampolines}. Thus, the indirect call/jump will jump to such a stub.
+The stub contains a direct jump to the desired address.
+
+@item
+Stubs will be generated automatically by the linker if
+the following two conditions are met:
+@itemize @minus
+
+@item The address of a label is taken by means of the @code{gs} modifier
+(short for @emph{generate stubs}) like so:
+@example
+LDI r24, lo8(gs(@var{func}))
+LDI r25, hi8(gs(@var{func}))
+@end example
+@item The final location of that label is in a code segment
+@emph{outside} the segment where the stubs are located.
+@end itemize
+
+@item
+The compiler will emit such @code{gs} modifiers for code labels in the
+following situations:
+@itemize @minus
+@item Taking address of a function or code label.
+@item Computed goto.
+@item If prologue-save function is used, see @option{-mcall-prologues}
+command line option.
+@item Switch/case dispatch tables. If you do not want such dispatch
+tables you can specify the @option{-fno-jump-tables} command line option.
+@item C and C++ constructors/destructors called during startup/shutdown.
+@item If the tools hit a @code{gs()} modifier explained above.
+@end itemize
+
+@item
+The default linker script is arranged for code with @code{EIND = 0}.
+If code is supposed to work for a setup with @code{EIND != 0}, a custom
+linker script has to be used in order to place the sections whose
+name start with @code{.trampolines} into the segment where @code{EIND}
+points to.
+
+@item
+Jumping to non-symbolic addresses like so is @emph{not} supported:
+
+@example
+int main (void)
+@{
+    /* Call function at word address 0x2 */
+    return ((int(*)(void)) 0x2)();
+@}
+@end example
+
+Instead, a stub has to be set up:
+
+@example
+int main (void)
+@{
+    extern int func_4 (void);
+
+    /* Call function at byte address 0x4 */
+    return func_4();
+@}
+@end example
+
+and the application be linked with @code{-Wl,--defsym,func_4=0x4}.
+Alternatively, @code{func_4} can be defined in the linker script.
+@end itemize
 
 @node Blackfin Options
 @subsection Blackfin Options
@@ -12476,6 +12803,15 @@ Improved versions of k8, opteron and athlon64 with SSE3 instruction set support.
 AMD Family 10h core based CPUs with x86-64 instruction set support.  (This
 supersets MMX, SSE, SSE2, SSE3, SSE4A, 3DNow!, enhanced 3DNow!, ABM and 64-bit
 instruction set extensions.)
+@item bdver1
+AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
+supersets FMA4, AVX, XOP, LWP, AES, PCL_MUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A,
+SSSE3, SSE4.1, SSE4.2, 3DNow!, enhanced 3DNow!, ABM and 64-bit
+instruction set extensions.)
+@item btver1
+AMD Family 14h core based CPUs with x86-64 instruction set support.  (This
+supersets MMX, SSE, SSE2, SSE3, SSSE3, SSE4A, CX16, ABM and 64-bit
+instruction set extensions.)
 @item winchip-c6
 IDT Winchip C6 CPU, dealt in same way as i486 with additional MMX instruction
 set support.
@@ -12888,7 +13224,8 @@ This option will enable GCC to use CMPXCHG16B instruction in generated code.
 CMPXCHG16B allows for atomic operations on 128-bit double quadword (or oword)
 data types.  This is useful for high resolution counters that could be updated
 by multiple processors (or cores).  This instruction is generated as part of
-atomic built-in functions: see @ref{Atomic Builtins} for details.
+atomic built-in functions: see @ref{__sync Builtins} or
+@ref{__atomic Builtins} for details.
 
 @item -msahf
 @opindex msahf

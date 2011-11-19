@@ -111,7 +111,7 @@ DEFPARAM (PARAM_EARLY_INLINER_MAX_ITERATIONS,
 /* Limit on probability of entry BB.  */
 DEFPARAM (PARAM_COMDAT_SHARING_PROBABILITY,
 	  "comdat-sharing-probability",
-	  "Probability that COMDAT function will be shared with different compilatoin unit",
+	  "Probability that COMDAT function will be shared with different compilation unit",
 	  20, 0, 0)
 
 /* Limit on probability of entry BB.  */
@@ -566,6 +566,11 @@ DEFPARAM(PARAM_MAX_RELOAD_SEARCH_INSNS,
 	 "The maximum number of instructions to search backward when looking for equivalent reload",
 	 100, 0, 0)
 
+DEFPARAM(PARAM_SINK_FREQUENCY_THRESHOLD,
+	 "sink-frequency-threshold",
+	 "Target block's relative execution frequency (as a percentage) required to sink a statement",
+	 75, 0, 100)
+
 DEFPARAM(PARAM_MAX_SCHED_REGION_BLOCKS,
 	 "max-sched-region-blocks",
 	 "The maximum number of blocks in a region to be considered for interblock scheduling",
@@ -867,6 +872,13 @@ DEFPARAM (PARAM_IPA_SRA_PTR_GROWTH_FACTOR,
 	  "a pointer to an aggregate with",
 	  2, 0, 0)
 
+DEFPARAM (PARAM_TM_MAX_AGGREGATE_SIZE,
+	  "tm-max-aggregate-size",
+	  "Size in bytes after which thread-local aggregates should be "
+	  "instrumented with the logging functions instead of save/restore "
+	  "pairs",
+	  9, 0, 0)
+
 DEFPARAM (PARAM_IPA_CP_VALUE_LIST_SIZE,
 	  "ipa-cp-value-list-size",
 	  "Maximum size of a list of values associated with each parameter for "
@@ -916,9 +928,24 @@ DEFPARAM (PARAM_CASE_VALUES_THRESHOLD,
           0, 0, 0)
 
 /* Data race flags for C++0x memory model compliance.  */
+DEFPARAM (PARAM_ALLOW_LOAD_DATA_RACES,
+	  "allow-load-data-races",
+	  "Allow new data races on loads to be introduced",
+	  1, 0, 1)
+
 DEFPARAM (PARAM_ALLOW_STORE_DATA_RACES,
 	  "allow-store-data-races",
 	  "Allow new data races on stores to be introduced",
+	  1, 0, 1)
+
+DEFPARAM (PARAM_ALLOW_PACKED_LOAD_DATA_RACES,
+	  "allow-packed-load-data-races",
+	  "Allow new data races on packed data loads to be introduced",
+	  1, 0, 1)
+
+DEFPARAM (PARAM_ALLOW_PACKED_STORE_DATA_RACES,
+	  "allow-packed-store-data-races",
+	  "Allow new data races on packed data stores to be introduced",
 	  1, 0, 1)
 
 /* Reassociation width to be used by tree reassoc optimization.  */

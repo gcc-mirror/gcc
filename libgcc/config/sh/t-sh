@@ -1,0 +1,63 @@
+# Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
+# 2003, 2004, 2006, 2008, 2009, 2011 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+LIB1ASMSRC = sh/lib1funcs.S
+LIB1ASMFUNCS = _ashiftrt _ashiftrt_n _ashiftlt _lshiftrt _movmem \
+  _movmem_i4 _mulsi3 _sdivsi3 _sdivsi3_i4 _udivsi3 _udivsi3_i4 _set_fpscr \
+  _div_table _udiv_qrnnd_16 \
+  $(LIB1ASMFUNCS_CACHE)
+LIB1ASMFUNCS_CACHE = _ic_invalidate _ic_invalidate_array
+
+crt1.o: $(srcdir)/config/sh/crt1.S
+	$(gcc_compile) -c $<
+
+ic_invalidate_array_4-100.o: $(srcdir)/config/sh/lib1funcs.S
+	$(gcc_compile) -c -DL_ic_invalidate_array -DWAYS=1 -DWAY_SIZE=0x2000 $<
+libic_invalidate_array_4-100.a: ic_invalidate_array_4-100.o
+	$(AR_CREATE_FOR_TARGET) $@ $<
+
+ic_invalidate_array_4-200.o: $(srcdir)/config/sh/lib1funcs.S
+	$(gcc_compile) -c -DL_ic_invalidate_array -DWAYS=2 -DWAY_SIZE=0x2000 $<
+libic_invalidate_array_4-200.a: ic_invalidate_array_4-200.o
+	$(AR_CREATE_FOR_TARGET) $@ $<
+
+ic_invalidate_array_4a.o: $(srcdir)/config/sh/lib1funcs.S
+	$(gcc_compile) -c -DL_ic_invalidate_array -D__FORCE_SH4A__ $<
+libic_invalidate_array_4a.a: ic_invalidate_array_4a.o
+	$(AR_CREATE_FOR_TARGET) $@ $<
+
+sdivsi3_i4i-Os-4-200.o: $(srcdir)/config/sh/lib1funcs-Os-4-200.S
+	$(gcc_compile) -c -DL_sdivsi3_i4i $<
+udivsi3_i4i-Os-4-200.o: $(srcdir)/config/sh/lib1funcs-Os-4-200.S
+	$(gcc_compile) -c -DL_udivsi3_i4i $<
+unwind-dw2-Os-4-200.o: $(srcdir)/unwind-dw2.c
+	$(gcc_compile) $(LIBGCC2_CFLAGS) $(vis_hide) -fexceptions -Os -c $<
+
+OBJS_Os_4_200=sdivsi3_i4i-Os-4-200.o udivsi3_i4i-Os-4-200.o unwind-dw2-Os-4-200.o
+libgcc-Os-4-200.a: $(OBJS_Os_4_200)
+	$(AR_CREATE_FOR_TARGET) $@ $(OBJS_Os_4_200)
+
+div_table-4-300.o: $(srcdir)/config/sh/lib1funcs-4-300.S
+	$(gcc_compile) -c -DL_div_table $<
+
+libgcc-4-300.a: div_table-4-300.o
+	$(AR_CREATE_FOR_TARGET) $@ div_table-4-300.o
+
+HOST_LIBGCC2_CFLAGS += -mieee
+

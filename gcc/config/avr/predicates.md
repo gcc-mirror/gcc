@@ -57,6 +57,18 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE((INTVAL (op)), 0x20, (0x60 - GET_MODE_SIZE(mode)))")))
 
+;; Return 1 if OP is a general operand not in program memory
+(define_predicate "nop_general_operand"
+  (and (match_operand 0 "general_operand")
+       (match_test "!avr_mem_pgm_p (op)")))
+
+;; Return 1 if OP is an "ordinary" general operand, i.e. a general
+;; operand whose load is not handled by a libgcc call or ELPM.
+(define_predicate "nox_general_operand"
+  (and (match_operand 0 "general_operand")
+       (not (match_test "avr_load_libgcc_p (op)"))
+       (not (match_test "avr_mem_pgmx_p (op)"))))
+
 ;; Return 1 if OP is the zero constant for MODE.
 (define_predicate "const0_operand"
   (and (match_code "const_int,const_double")
@@ -135,7 +147,7 @@
 ;;
 (define_predicate "avr_sp_immediate_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) >= -6 && INTVAL (op) <= 5")))
+       (match_test "satisfies_constraint_Csp (op)")))
 
 ;; True for EQ & NE
 (define_predicate "eqne_operator"

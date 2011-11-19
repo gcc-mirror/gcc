@@ -1,0 +1,103 @@
+# -*- shell-script -*-
+#   Copyright (C) 2011 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  
+
+# This is the target specific configuration file.  This is invoked by the
+# autoconf generated configure script.  Putting it in a separate shell file
+# lets us skip running autoconf when modifying target specific information.
+
+# This file switches on the shell variable ${target}, and sets the
+# following shell variables:
+#  config_path		An ordered list of directories to search for
+#			sources and headers.  This is relative to the
+#			config subdirectory of the source tree.
+#  XCFLAGS		Add extra compile flags to use.
+#  XLDFLAGS		Add extra link flags to use.
+
+# Optimize TLS usage by avoiding the overhead of dynamic allocation.
+if test "$gcc_cv_have_tls" = yes ; then
+  case "${target}" in
+
+    # For x86, we use slots in the TCB head for most of our TLS.
+    # The setup of those slots in beginTransaction can afford to
+    # use the global-dynamic model.
+    i[456]86-*-linux* | x86_64-*-linux*)
+	;;
+    
+    *-*-linux*)
+	XCFLAGS="${XCFLAGS} -ftls-model=initial-exec"
+	;;
+  esac
+fi
+
+# Map the target cpu to an ARCH sub-directory.  At the same time,
+# work out any special compilation flags as necessary.
+case "${target_cpu}" in
+  alpha*)	ARCH=alpha ;;
+
+  i[3456]86)
+	case " ${CC} ${CFLAGS} " in
+	  *" -m64 "*)
+	    ;;
+	  *)
+	    if test -z "$with_arch"; then
+	      XCFLAGS="${XCFLAGS} -march=i486 -mtune=${target_cpu}"
+	      XCFLAGS="${XCFLAGS} -fomit-frame-pointer"
+	    fi
+	esac
+	ARCH=x86
+	;;
+
+  x86_64)
+	case " ${CC} ${CFLAGS} " in
+	  *" -m32 "*)
+	    XCFLAGS="${XCFLAGS} -march=i486 -mtune=i686"
+	    XCFLAGS="${XCFLAGS} -fomit-frame-pointer"
+	    ;;
+	esac
+	ARCH=x86
+	;;
+
+  *)
+	ARCH="${target_cpu}"
+	;;
+esac
+
+# For the benefit of top-level configure, determine if the cpu is supported.
+test -d ${srcdir}/config/$ARCH || UNSUPPORTED=1
+
+# Since we require POSIX threads, assume a POSIX system by default.
+config_path="$ARCH posix generic"
+
+# Other system configury
+case "${target}" in
+  *-*-linux*)
+	if test "$enable_linux_futex" = yes; then
+	  config_path="linux/$ARCH linux $config_path"
+	fi
+	;;
+
+  *-*-gnu* | *-*-k*bsd*-gnu \
+  | *-*-netbsd* | *-*-freebsd* | *-*-openbsd* \
+  | *-*-solaris2* | *-*-sysv4* | *-*-irix6* | *-*-osf* | *-*-hpux11* \
+  | *-*-darwin* | *-*-aix*)
+	# POSIX system.  The OS is supported.
+	;;
+
+  *)	# Non-POSIX, or embedded system
+	UNSUPPORTED=1
+	;;
+esac

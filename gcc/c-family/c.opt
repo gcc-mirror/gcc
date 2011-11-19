@@ -292,7 +292,11 @@ Warn about C constructs that are not in the common subset of C and C++
 
 Wc++0x-compat
 C++ ObjC++ Var(warn_cxx0x_compat) Warning
-Warn about C++ constructs whose meaning differs between ISO C++ 1998 and ISO C++ 200x
+Deprecated in favor of -Wc++11-compat
+
+Wc++11-compat
+C++ ObjC++ Warning Alias(Wc++0x-compat)
+Warn about C++ constructs whose meaning differs between ISO C++ 1998 and ISO C++ 2011
 
 Wcast-qual
 C UPC ObjC C++ ObjC++ Var(warn_cast_qual) Warning
@@ -493,8 +497,8 @@ C UPC ObjC C++ ObjC++ Warning
 Warn about use of multi-character character constants
 
 Wnarrowing
-C UPC Objc C++ ObjC++ Warning Var(warn_narrowing) Init(1)
--Wno-narrowing	  In C++0x mode, ignore ill-formed narrowing conversions within { }
+C UPC ObjC C++ ObjC++ Warning Var(warn_narrowing) Init(-1)
+Warn about narrowing conversions within { } that are ill-formed in C++11
 
 Wnested-externs
 C UPC ObjC Var(warn_nested_externs) Warning
@@ -688,6 +692,10 @@ Wpointer-sign
 C UPC ObjC Var(warn_pointer_sign) Init(-1) Warning
 Warn when a pointer differs in signedness in an assignment
 
+Wzero-as-null-pointer-constant
+C++ ObjC++ Var(warn_zero_as_null_pointer_constant) Warning
+Warn when a literal '0' is used as null pointer
+
 ansi
 C UPC ObjC C++ ObjC++
 A synonym for -std=c89 (for C) or -std=c++98 (for C++)
@@ -755,8 +763,8 @@ C UPC ObjC C++ ObjC++
 Emit debug annotations during preprocessing
 
 fdeduce-init-list
-C++ ObjC++ Var(flag_deduce_init_list) Init(1)
--fno-deduce-init-list	disable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list
+C++ ObjC++ Var(flag_deduce_init_list) Init(0)
+-fdeduce-init-list	enable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list
 
 fdefault-inline
 C++ ObjC++ Ignore
@@ -1089,7 +1097,7 @@ Use __cxa_get_exception_ptr in exception handling
 
 fvisibility-inlines-hidden
 C++ ObjC++
-Marks all inlined methods as having hidden visibility
+Marks all inlined functions and methods as having hidden visibility
 
 fvisibility-ms-compat
 C++ ObjC++ Var(flag_visibility_ms_compat)
@@ -1224,12 +1232,13 @@ std=c++03
 C++ ObjC++ Alias(std=c++98)
 Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum
 
-std=c++0x
+std=c++11
 C++ ObjC++
-Conform to the ISO 1998 C++ standard, with extensions that are likely to
-become a part of the upcoming ISO C++ standard, dubbed C++0x. Note that the
-extensions enabled by this mode are experimental and may be removed in
-future releases of GCC.
+Conform to the ISO 2011 C++ standard (experimental and incomplete support)
+
+std=c++0x
+C++ ObjC++ Alias(std=c++11)
+Deprecated in favor of -std=c++11
 
 std=c1x
 C UPC ObjC
@@ -1253,14 +1262,21 @@ Deprecated in favor of -std=c99
 
 std=gnu++98
 C++ ObjC++
-Conform to the ISO 1998 C++ standard with GNU extensions
+Conform to the ISO 1998 C++ standard revised by the 2003 technical
+corrigendum with GNU extensions
+
+std=gnu++03
+C++ ObjC++ Alias(std=gnu++98)
+Conform to the ISO 1998 C++ standard revised by the 2003 technical
+corrigendum with GNU extensions
+
+std=gnu++11
+C++ ObjC++
+Conform to the ISO 2011 C++ standard with GNU extensions (experimental and incomplete support)
 
 std=gnu++0x
-C++ ObjC++
-Conform to the ISO 1998 C++ standard, with GNU extensions and
-extensions that are likely to become a part of the upcoming ISO C++
-standard, dubbed C++0x. Note that the extensions enabled by this mode
-are experimental and may be removed in future releases of GCC.
+C++ ObjC++ Alias(std=gnu++11)
+Deprecated in favor of -std=gnu++11
 
 std=gnu1x
 C UPC ObjC

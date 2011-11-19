@@ -153,10 +153,7 @@ pop_compact_frame (_Unwind_Context * context, _uw mask, _uw *ptr, int inc_sp)
 {
   int size;
   _uw test;
-  int i;
-  int regno;
-  int regno2;
-  int nregs;
+  int i, regno, nregs;
 
   size = 0;
   nregs = __builtin_popcount (mask);
@@ -167,13 +164,11 @@ pop_compact_frame (_Unwind_Context * context, _uw mask, _uw *ptr, int inc_sp)
 	continue;
 
       regno = unwind_frame_regs[12 - i];
-      /* The last slot is a sigle word, so cannot store a register pair.  */
-      if (nregs > 2)
-	regno2 = unwind_frame_regs[13 - i];
-      else
-	regno2 = 0xff;
 
-      if ((mask & (test << 1)) != 0 && regno2 == regno + 1 && (regno & 1) == 0)
+      if (i < 12 && nregs > 2
+	  && (mask & (test << 1)) != 0
+	  && unwind_frame_regs[11 - i] == regno + 1
+	  && (regno & 1) == 0)
 	{
 	  i++;
 	  nregs--;
@@ -196,12 +191,11 @@ pop_compact_frame (_Unwind_Context * context, _uw mask, _uw *ptr, int inc_sp)
 	continue;
 
       regno = unwind_frame_regs[12 - i];
-      if (nregs > 2)
-	regno2 = unwind_frame_regs[13 - i];
-      else
-	regno2 = 0xff;
 
-      if ((mask & (test << 1)) != 0 && regno2 == regno + 1 && (regno & 1) == 0)
+      if (i < 12 && nregs > 2
+	  && (mask & (test << 1)) != 0
+	  && unwind_frame_regs[11 - i] == regno + 1
+	  && (regno & 1) == 0)
 	{
 	  /* Register pair.  */
 	  unwind_restore_pair (context, regno, ptr);
@@ -243,7 +237,7 @@ pop_frame (_Unwind_Context * context, _uw mask, _uw *ptr, int inc_sp)
       if ((mask & (1 << i)) == 0)
 	continue;
       regno = unwind_frame_regs[12 - i];
-      if (i < 12 && unwind_frame_regs[13 - i] == (regno + 1)
+      if (i < 12 && unwind_frame_regs[11 - i] == (regno + 1)
 	  && (mask & (1 << (i + 1))) != 0
 	  && (((_uw)ptr) & 4) == 0
 	  && (regno & 1) == 0)
@@ -273,6 +267,14 @@ __gnu_unwind_24bit (_Unwind_Context * context, _uw data, int compact)
   _uw mask;
   _uw *ptr;
   _uw tmp;
+  int ret_reg = unwind_frame_regs[data & 0xf];
+
+  if (ret_reg != R_B3)
+    {
+      _Unwind_VRS_Get (context, _UVRSC_CORE, unwind_frame_regs[data & 0xf],
+		       _UVRSD_UINT32, &tmp);
+      _Unwind_VRS_Set (context, _UVRSC_CORE, R_B3, _UVRSD_UINT32, &tmp);
+    }
 
   mask = (data >> 4) & 0x1fff;
 
@@ -291,8 +293,7 @@ __gnu_unwind_24bit (_Unwind_Context * context, _uw data, int compact)
   else
     pop_frame (context, mask, ptr, offset != 0x7f);
 
-  _Unwind_VRS_Get (context, _UVRSC_CORE, unwind_frame_regs[data & 0xf],
-		   _UVRSD_UINT32, &tmp);
+  _Unwind_VRS_Get (context, _UVRSC_CORE, R_B3, _UVRSD_UINT32, &tmp);
   _Unwind_VRS_Set (context, _UVRSC_CORE, R_PC, _UVRSD_UINT32, &tmp);
 
   return _URC_OK;

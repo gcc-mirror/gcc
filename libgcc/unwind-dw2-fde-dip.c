@@ -1,4 +1,4 @@
-/* Copyright (C) 2001, 2002, 2003, 2004, 2005, 2009, 2010
+/* Copyright (C) 2001, 2002, 2003, 2004, 2005, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
@@ -38,6 +38,7 @@
 #endif
 #include "coretypes.h"
 #include "tm.h"
+#include "libgcc_tm.h"
 #include "dwarf2.h"
 #include "unwind.h"
 #define NO_BASE_OF_ENCODED_VALUE

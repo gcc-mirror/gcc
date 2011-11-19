@@ -181,6 +181,7 @@ static void write_template_prefix (const tree);
 static void write_unqualified_name (const tree);
 static void write_conversion_operator_name (const tree);
 static void write_source_name (tree);
+static void write_literal_operator_name (tree);
 static void write_unnamed_type_name (const tree);
 static void write_closure_type_name (const tree);
 static int hwint_to_ascii (unsigned HOST_WIDE_INT, const unsigned int, char *,
@@ -1174,6 +1175,8 @@ write_unqualified_id (tree identifier)
 	  }
       write_string (mangled_name);
     }
+  else if (UDLIT_OPER_P (identifier))
+    write_literal_operator_name (identifier);
   else
     write_source_name (identifier);
 }
@@ -1227,6 +1230,8 @@ write_unqualified_name (const tree decl)
 
 	  write_string (oni[DECL_OVERLOADED_OPERATOR_P (decl)].mangled_name);
 	}
+      else if (UDLIT_OPER_P (DECL_NAME (decl)))
+	write_literal_operator_name (DECL_NAME (decl));
       else
 	found = false;
 
@@ -1286,6 +1291,21 @@ write_source_name (tree identifier)
   write_identifier (IDENTIFIER_POINTER (identifier));
 }
 
+/* Write a user-defined literal operator.
+   IDENTIFIER is an LITERAL_IDENTIFIER_NODE.  */
+
+static void
+write_literal_operator_name (tree identifier)
+{
+  const char* suffix = UDLIT_OP_SUFFIX (identifier);
+  char* buffer = XNEWVEC (char, strlen (UDLIT_OP_MANGLED_PREFIX)
+			      + strlen (suffix) + 10);
+  sprintf (buffer, UDLIT_OP_MANGLED_FORMAT, suffix);
+
+  write_unsigned_number (strlen (buffer));
+  write_identifier (buffer);
+}
+
 /* Encode 0 as _, and 1+ as n-1_.  */
 
 static void
@@ -1319,7 +1339,7 @@ nested_anon_class_index (tree type)
 /* <unnamed-type-name> ::= Ut [ <nonnegative number> ] _ */
 
 static void
-write_unnamed_type_name (const tree type __attribute__ ((__unused__)))
+write_unnamed_type_name (const tree type ATTRIBUTE_UNUSED)
 {
   int discriminator;
   MANGLE_TRACE_TREE ("unnamed-type-name", type);
@@ -3157,13 +3177,21 @@ mangle_decl_string (const tree decl)
   return result;
 }
 
+/* Return an identifier for the external mangled name of DECL.  */
+
+static tree
+get_mangled_id (tree decl)
+{
+  tree id = mangle_decl_string (decl);
+  return targetm.mangle_decl_assembler_name (decl, id);
+}
+
 /* Create an identifier for the external mangled name of DECL.  */
 
 void
 mangle_decl (const tree decl)
 {
-  tree id = mangle_decl_string (decl);
-  id = targetm.mangle_decl_assembler_name (decl, id);
+  tree id = get_mangled_id (decl);
   SET_DECL_ASSEMBLER_NAME (decl, id);
 
   if (G.need_abi_warning)
@@ -3475,12 +3503,17 @@ mangle_guard_variable (const tree variable)
    initialize a static reference.  This isn't part of the ABI, but we might
    as well call them something readable.  */
 
+static GTY(()) int temp_count;
+
 tree
 mangle_ref_init_variable (const tree variable)
 {
   start_mangling (variable);
   write_string ("_ZGR");
   write_name (variable, /*ignore_local_scope=*/0);
+  /* Avoid name clashes with aggregate initialization of multiple
+     references at once.  */
+  write_unsigned_number (temp_count++);
   return finish_mangling_get_identifier (/*warn=*/false);
 }
 

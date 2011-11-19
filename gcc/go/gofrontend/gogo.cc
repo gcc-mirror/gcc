@@ -85,6 +85,10 @@ Gogo::Gogo(Backend* backend, int int_type_size, int pointer_size)
   Named_object* byte_type = this->declare_type("byte", loc);
   byte_type->set_type_value(uint8_type);
 
+  // "rune" is an alias for "int".
+  Named_object* rune_type = this->declare_type("rune", loc);
+  rune_type->set_type_value(int_type);
+
   this->add_named_type(Type::make_integer_type("uintptr", true,
 					       pointer_size,
 					       RUNTIME_TYPE_KIND_UINTPTR));
@@ -201,6 +205,11 @@ Gogo::Gogo(Backend* backend, int int_type_size, int pointer_size)
   imag_type->set_is_varargs();
   imag_type->set_is_builtin();
   this->globals_->add_function_declaration("imag", NULL, imag_type, loc);
+
+  Function_type* delete_type = Type::make_function_type(NULL, NULL, NULL, loc);
+  delete_type->set_is_varargs();
+  delete_type->set_is_builtin();
+  this->globals_->add_function_declaration("delete", NULL, delete_type, loc);
 }
 
 // Munge name for use in an error message.
@@ -3662,7 +3671,7 @@ Variable::type_from_range(Expression* expr, bool get_index_type,
   if (t->array_type() != NULL
       || (t->points_to() != NULL
 	  && t->points_to()->array_type() != NULL
-	  && !t->points_to()->is_open_array_type()))
+	  && !t->points_to()->is_slice_type()))
     {
       if (get_index_type)
 	return Type::lookup_integer_type("int");

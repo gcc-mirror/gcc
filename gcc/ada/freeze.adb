@@ -4063,6 +4063,16 @@ package body Freeze is
             Layout_Type (E);
          end if;
 
+         --  If this is an access to subprogram whose designated type is itself
+         --  a subprogram type, the return type of this anonymous subprogram
+         --  type must be decorated as well.
+
+         if Ekind (E) = E_Anonymous_Access_Subprogram_Type
+           and then Ekind (Designated_Type (E)) = E_Subprogram_Type
+         then
+            Layout_Type (Etype (Designated_Type (E)));
+         end if;
+
          --  If the type has a Defaut_Value/Default_Component_Value aspect,
          --  this is where we analye the expression (after the type is frozen,
          --  since in the case of Default_Value, we are analyzing with the

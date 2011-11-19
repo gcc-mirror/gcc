@@ -2100,15 +2100,14 @@ pedantic_non_lvalue_loc (location_t loc, tree x)
   return protected_set_expr_location_unshare (x, loc);
 }
 
-/* Given a tree comparison code, return the code that is the logical inverse
-   of the given code.  It is not safe to do this for floating-point
-   comparisons, except for NE_EXPR and EQ_EXPR, so we receive a machine mode
-   as well: if reversing the comparison is unsafe, return ERROR_MARK.  */
+/* Given a tree comparison code, return the code that is the logical inverse.
+   It is generally not safe to do this for floating-point comparisons, except
+   for EQ_EXPR and NE_EXPR, so we return ERROR_MARK in this case.  */
 
 enum tree_code
 invert_tree_comparison (enum tree_code code, bool honor_nans)
 {
-  if (honor_nans && flag_trapping_math)
+  if (honor_nans && flag_trapping_math && code != EQ_EXPR && code != NE_EXPR)
     return ERROR_MARK;
 
   switch (code)
@@ -3695,22 +3694,22 @@ simple_operand_p (const_tree exp)
 
 /* Subroutine for fold_truth_andor: determine if an operand is simple enough
    to be evaluated unconditionally.
-   I addition to simple_operand_p, we assume that comparisons and logic-not
-   operations are simple, if their operands are simple, too.  */
+   I addition to simple_operand_p, we assume that comparisons, conversions,
+   and logic-not operations are simple, if their operands are simple, too.  */
 
 static bool
 simple_operand_p_2 (tree exp)
 {
   enum tree_code code;
 
-  /* Strip any conversions that don't change the machine mode.  */
-  STRIP_NOPS (exp);
-
-  code = TREE_CODE (exp);
-
   if (TREE_SIDE_EFFECTS (exp)
       || tree_could_trap_p (exp))
     return false;
+
+  while (CONVERT_EXPR_P (exp))
+    exp = TREE_OPERAND (exp, 0);
+
+  code = TREE_CODE (exp);
 
   if (TREE_CODE_CLASS (code) == tcc_comparison)
     return (simple_operand_p (TREE_OPERAND (exp, 0))
@@ -9558,6 +9557,86 @@ get_pointer_modulus_and_residue (tree expr, unsigned HOST_WIDE_INT *residue,
   return 1;
 }
 
+/* Helper function for fold_vec_perm.  Store elements of VECTOR_CST or
+   CONSTRUCTOR ARG into array ELTS and return true if successful.  */
+
+static bool
+vec_cst_ctor_to_array (tree arg, tree *elts)
+{
+  unsigned int nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg)), i;
+
+  if (TREE_CODE (arg) == VECTOR_CST)
+    {
+      tree t;
+
+      for (i = 0, t = TREE_VECTOR_CST_ELTS (arg);
+	   i < nelts && t; i++, t = TREE_CHAIN (t))
+	elts[i] = TREE_VALUE (t);
+      if (t)
+	return false;
+    }
+  else if (TREE_CODE (arg) == CONSTRUCTOR)
+    {
+      constructor_elt *elt;
+
+      FOR_EACH_VEC_ELT (constructor_elt, CONSTRUCTOR_ELTS (arg), i, elt)
+	if (i >= nelts)
+	  return false;
+	else
+	  elts[i] = elt->value;
+    }
+  else
+    return false;
+  for (; i < nelts; i++)
+    elts[i]
+      = fold_convert (TREE_TYPE (TREE_TYPE (arg)), integer_zero_node);
+  return true;
+}
+
+/* Attempt to fold vector permutation of ARG0 and ARG1 vectors using SEL
+   selector.  Return the folded VECTOR_CST or CONSTRUCTOR if successful,
+   NULL_TREE otherwise.  */
+
+static tree
+fold_vec_perm (tree type, tree arg0, tree arg1, const unsigned char *sel)
+{
+  unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i;
+  tree *elts;
+  bool need_ctor = false;
+
+  gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)) == nelts
+	      && TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1)) == nelts);
+  if (TREE_TYPE (TREE_TYPE (arg0)) != TREE_TYPE (type)
+      || TREE_TYPE (TREE_TYPE (arg1)) != TREE_TYPE (type))
+    return NULL_TREE;
+
+  elts = XALLOCAVEC (tree, nelts * 3);
+  if (!vec_cst_ctor_to_array (arg0, elts)
+      || !vec_cst_ctor_to_array (arg1, elts + nelts))
+    return NULL_TREE;
+
+  for (i = 0; i < nelts; i++)
+    {
+      if (!CONSTANT_CLASS_P (elts[sel[i]]))
+	need_ctor = true;
+      elts[i + 2 * nelts] = unshare_expr (elts[sel[i]]);
+    }
+
+  if (need_ctor)
+    {
+      VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, nelts);
+      for (i = 0; i < nelts; i++)
+	CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elts[2 * nelts + i]);
+      return build_constructor (type, v);
+    }
+  else
+    {
+      tree vals = NULL_TREE;
+      for (i = 0; i < nelts; i++)
+	vals = tree_cons (NULL_TREE, elts[3 * nelts - i - 1], vals);
+      return build_vector (type, vals);
+    }
+}
 
 /* Fold a binary expression of code CODE and type TYPE with operands
    OP0 and OP1.  LOC is the location of the resulting expression.
@@ -13430,6 +13509,41 @@ fold_binary_loc (location_t loc,
       /* An ASSERT_EXPR should never be passed to fold_binary.  */
       gcc_unreachable ();
 
+    case VEC_EXTRACT_EVEN_EXPR:
+    case VEC_EXTRACT_ODD_EXPR:
+    case VEC_INTERLEAVE_HIGH_EXPR:
+    case VEC_INTERLEAVE_LOW_EXPR:
+      if ((TREE_CODE (arg0) == VECTOR_CST
+	   || TREE_CODE (arg0) == CONSTRUCTOR)
+	  && (TREE_CODE (arg1) == VECTOR_CST
+	      || TREE_CODE (arg1) == CONSTRUCTOR))
+	{
+	  unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i;
+	  unsigned char *sel = XALLOCAVEC (unsigned char, nelts);
+
+	  for (i = 0; i < nelts; i++)
+	    switch (code)
+	      {
+	      case VEC_EXTRACT_EVEN_EXPR:
+		sel[i] = i * 2;
+		break;
+	      case VEC_EXTRACT_ODD_EXPR:
+		sel[i] = i * 2 + 1;
+		break;
+	      case VEC_INTERLEAVE_HIGH_EXPR:
+		sel[i] = (i + nelts) / 2 + ((i & 1) ? nelts : 0);
+		break;
+	      case VEC_INTERLEAVE_LOW_EXPR:
+		sel[i] = i / 2 + ((i & 1) ? nelts : 0);
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
+
+	  return fold_vec_perm (type, arg0, arg1, sel);
+	}
+      return NULL_TREE;
+
     default:
       return NULL_TREE;
     } /* switch (code) */
@@ -13816,6 +13930,55 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 
       return fold_fma (loc, type, arg0, arg1, arg2);
 
+    case VEC_PERM_EXPR:
+      if (TREE_CODE (arg2) == VECTOR_CST)
+	{
+	  unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i;
+	  unsigned char *sel = XALLOCAVEC (unsigned char, nelts);
+	  tree t;
+	  bool need_mask_canon = false;
+
+	  gcc_assert (nelts == TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg2)));
+	  for (i = 0, t = TREE_VECTOR_CST_ELTS (arg2);
+	       i < nelts && t; i++, t = TREE_CHAIN (t))
+	    {
+	      if (TREE_CODE (TREE_VALUE (t)) != INTEGER_CST)
+		return NULL_TREE;
+
+	      sel[i] = TREE_INT_CST_LOW (TREE_VALUE (t)) & (2 * nelts - 1);
+	      if (TREE_INT_CST_HIGH (TREE_VALUE (t))
+		  || ((unsigned HOST_WIDE_INT)
+		      TREE_INT_CST_LOW (TREE_VALUE (t)) != sel[i]))
+		need_mask_canon = true;
+	    }
+	  if (t)
+	    return NULL_TREE;
+	  for (; i < nelts; i++)
+	    sel[i] = 0;
+
+	  if ((TREE_CODE (arg0) == VECTOR_CST
+	       || TREE_CODE (arg0) == CONSTRUCTOR)
+	      && (TREE_CODE (arg1) == VECTOR_CST
+		  || TREE_CODE (arg1) == CONSTRUCTOR))
+	    {
+	      t = fold_vec_perm (type, arg0, arg1, sel);
+	      if (t != NULL_TREE)
+		return t;
+	    }
+
+	  if (need_mask_canon && arg2 == op2)
+	    {
+	      tree list = NULL_TREE, eltype = TREE_TYPE (TREE_TYPE (arg2));
+	      for (i = 0; i < nelts; i++)
+		list = tree_cons (NULL_TREE,
+				  build_int_cst (eltype, sel[nelts - i - 1]),
+				  list);
+	      t = build_vector (TREE_TYPE (arg2), list);
+	      return build3_loc (loc, VEC_PERM_EXPR, type, op0, op1, t);
+	    }
+	}
+      return NULL_TREE;
+
     default:
       return NULL_TREE;
     } /* switch (code) */
@@ -14042,7 +14205,8 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx, htab_t ht)
 	}
     }
   md5_process_bytes (expr, tree_size (expr), ctx);
-  fold_checksum_tree (TREE_TYPE (expr), ctx, ht);
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
+    fold_checksum_tree (TREE_TYPE (expr), ctx, ht);
   if (TREE_CODE_CLASS (code) != tcc_type
       && TREE_CODE_CLASS (code) != tcc_declaration
       && code != TREE_LIST

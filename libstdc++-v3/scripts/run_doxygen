@@ -261,7 +261,7 @@ for f in $problematic; do
     # this is also slow, but safe and easy to debug
     oldh=`sed -n '/fC#include </s/.*<\(.*\)>.*/\1/p' $f`
     newh=`echo $oldh | ./stdheader`
-    sed "s=${oldh}=${newh}=" $f > TEMP
+    sed 's=${oldh}=${newh}=' $f > TEMP
     mv TEMP $f
 done
 rm stdheader
@@ -337,6 +337,10 @@ done
 # Then, clean up other top-level namespaces.
 for f in std_tr1_*; do
     newname=`echo $f | sed 's/^std_tr1_/std::tr1::/'`
+    mv $f $newname
+done
+for f in std_tr2_*; do
+    newname=`echo $f | sed 's/^std_tr2_/std::tr2::/'`
     mv $f $newname
 done
 for f in std_*; do

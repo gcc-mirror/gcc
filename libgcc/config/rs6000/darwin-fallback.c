@@ -1,5 +1,5 @@
 /* Fallback frame-state unwinder for Darwin.
-   Copyright (C) 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2009, 2011 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -28,6 +28,7 @@
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "libgcc_tm.h"
 #include "dwarf2.h"
 #include "unwind.h"
 #include "unwind-dw2.h"

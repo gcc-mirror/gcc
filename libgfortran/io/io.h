@@ -1,4 +1,5 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
@@ -576,10 +577,6 @@ gfc_unit;
 extern gfc_offset max_offset;
 internal_proto(max_offset);
 
-/* Unit number to be assigned when NEWUNIT is used in an OPEN statement.  */
-extern GFC_INTEGER_4 next_available_newunit;
-internal_proto(next_available_newunit);
-
 /* Unit tree root.  */
 extern gfc_unit *unit_root;
 internal_proto(unit_root);
@@ -607,9 +604,6 @@ internal_proto(get_unit);
 
 extern void unlock_unit (gfc_unit *);
 internal_proto(unlock_unit);
-
-extern void update_position (gfc_unit *);
-internal_proto(update_position);
 
 extern void finish_last_advance_record (gfc_unit *u);
 internal_proto (finish_last_advance_record);
@@ -805,6 +799,15 @@ dec_waiting_unlocked (gfc_unit *u)
   u->waiting--;
   __gthread_mutex_unlock (&unit_lock);
 #endif
+}
+
+
+static inline void
+memset4 (gfc_char4_t *p, gfc_char4_t c, int k)
+{
+  int j;
+  for (j = 0; j < k; j++)
+    *p++ = c;
 }
 
 #endif

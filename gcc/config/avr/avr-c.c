@@ -18,6 +18,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+/* Not included in avr.c since this requires C front end.  */
 
 #include "config.h"
 #include "system.h"
@@ -27,8 +28,23 @@
 #include "cpplib.h"
 #include "tree.h"
 #include "c-family/c-common.h"
+#include "langhooks.h"
 
-/* Not included in avr.c since this requires C front end.  */
+
+/* Implement `REGISTER_TARGET_PRAGMAS'.  */
+
+void
+avr_register_target_pragmas (void)
+{
+  c_register_addr_space ("__pgm", ADDR_SPACE_PGM);
+  c_register_addr_space ("__pgm1", ADDR_SPACE_PGM1);
+  c_register_addr_space ("__pgm2", ADDR_SPACE_PGM2);
+  c_register_addr_space ("__pgm3", ADDR_SPACE_PGM3);
+  c_register_addr_space ("__pgm4", ADDR_SPACE_PGM4);
+  c_register_addr_space ("__pgm5", ADDR_SPACE_PGM5);
+  c_register_addr_space ("__pgmx", ADDR_SPACE_PGMX);
+}
+
 
 /* Worker function for TARGET_CPU_CPP_BUILTINS.  */
 
@@ -90,6 +106,23 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
         cpp_define (pfile, "__AVR_ERRATA_SKIP_JMP_CALL__");
     }
 
+  /* Define builtin macros so that the user can easily query if or if not
+     non-generic address spaces (and which) are supported.
+     This is only supported for C.  For C++, a language extension is needed
+     (as mentioned in ISO/IEC DTR 18037; Annex F.2) which is not
+     implemented in GCC up to now.  */
+  
+  if (!strcmp (lang_hooks.name, "GNU C"))
+    {
+      cpp_define (pfile, "__PGM=__pgm");
+      cpp_define (pfile, "__PGM1=__pgm1");
+      cpp_define (pfile, "__PGM2=__pgm2");
+      cpp_define (pfile, "__PGM3=__pgm3");
+      cpp_define (pfile, "__PGM4=__pgm4");
+      cpp_define (pfile, "__PGM5=__pgm5");
+      cpp_define (pfile, "__PGMX=__pgmx");
+    }
+
   /* Define builtin macros so that the user can
      easily query if or if not a specific builtin
      is available. */
@@ -105,4 +138,8 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   cpp_define (pfile, "__BUILTIN_AVR_FMUL");
   cpp_define (pfile, "__BUILTIN_AVR_FMULS");
   cpp_define (pfile, "__BUILTIN_AVR_FMULSU");
+
+  cpp_define (pfile, "__INT24_MAX__=8388607L");
+  cpp_define (pfile, "__INT24_MIN__=(-__INT24_MAX__-1)");
+  cpp_define (pfile, "__UINT24_MAX__=16777215UL");
 }

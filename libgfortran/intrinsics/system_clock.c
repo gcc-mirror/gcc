@@ -75,7 +75,7 @@ static int weak_gettime (clockid_t, struct timespec *)
    Return value: 0 for success, -1 for error. In case of error, errno
    is set.
 */
-static inline int
+static int
 gf_gettime_mono (time_t * secs, long * nanosecs)
 {
   int err;

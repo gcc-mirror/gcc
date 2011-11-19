@@ -19,4 +19,4 @@
 # <http://www.gnu.org/licenses/>.
 
 # We do not want to build ibm-ldouble.c.
-LIB2ADD := $(filter-out ibm-ldouble.c, $(LIB2ADD))
+LIB2ADD := $(filter-out %ibm-ldouble.c, $(LIB2ADD))

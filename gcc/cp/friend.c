@@ -314,7 +314,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
 	    }
 	  else
 	    {
-	      decl = lookup_member (ctype, name, 0, true);
+	      decl = lookup_member (ctype, name, 0, true, tf_warning_or_error);
 	      if (!decl)
 		{
 		  error ("%qT is not a member of %qT", name, ctype);

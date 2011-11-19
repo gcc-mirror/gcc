@@ -202,7 +202,12 @@ package Ada.Containers.Vectors is
    function Reference (Container : Vector; Position : Index_Type)
    return Reference_Type;
 
+   procedure Assign (Target : in out Vector; Source : Vector);
+
+   function Copy (Source : Vector; Capacity : Count_Type := 0) return Vector;
+
    procedure Move (Target : in out Vector; Source : in out Vector);
+
    procedure Insert
      (Container : in out Vector;
       Before    : Extended_Index;

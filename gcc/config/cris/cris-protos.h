@@ -33,8 +33,13 @@ extern bool cris_cc0_user_requires_cmp (rtx);
 extern rtx cris_return_addr_rtx (int, rtx);
 extern rtx cris_split_movdx (rtx *);
 extern int cris_legitimate_pic_operand (rtx);
-extern enum cris_pic_symbol_type cris_pic_symbol_type_of (rtx);
-extern bool cris_valid_pic_const (rtx, bool);
+extern enum cris_pic_symbol_type cris_pic_symbol_type_of (const_rtx);
+extern bool cris_valid_pic_const (const_rtx, bool);
+extern bool cris_constant_index_p (const_rtx);
+extern bool cris_base_p (const_rtx, bool);
+extern bool cris_base_or_autoincr_p (const_rtx, bool);
+extern bool cris_bdap_index_p (const_rtx, bool);
+extern bool cris_biap_index_p (const_rtx, bool);
 extern bool cris_store_multiple_op_p (rtx);
 extern bool cris_movem_load_rest_p (rtx, int);
 extern void cris_asm_output_symbol_ref (FILE *, rtx);
@@ -60,5 +65,3 @@ extern int cris_fatal (char *);
 extern int cris_initial_elimination_offset (int, int);
 
 extern void cris_init_expanders (void);
-
-extern bool cris_function_value_regno_p (const unsigned int);

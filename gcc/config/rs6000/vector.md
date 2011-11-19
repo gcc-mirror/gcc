@@ -406,6 +406,44 @@
     FAIL;
 }")
 
+(define_expand "vcondv4sfv4si"
+  [(set (match_operand:V4SF 0 "vfloat_operand" "")
+	(if_then_else:V4SF
+	 (match_operator 3 "comparison_operator"
+			 [(match_operand:V4SI 4 "vint_operand" "")
+			  (match_operand:V4SI 5 "vint_operand" "")])
+	 (match_operand:V4SF 1 "vfloat_operand" "")
+	 (match_operand:V4SF 2 "vfloat_operand" "")))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
+   && VECTOR_UNIT_ALTIVEC_P (V4SImode)"
+  "
+{
+  if (rs6000_emit_vector_cond_expr (operands[0], operands[1], operands[2],
+				    operands[3], operands[4], operands[5]))
+    DONE;
+  else
+    FAIL;
+}")
+
+(define_expand "vcondv4siv4sf"
+  [(set (match_operand:V4SI 0 "vint_operand" "")
+	(if_then_else:V4SI
+	 (match_operator 3 "comparison_operator"
+			 [(match_operand:V4SF 4 "vfloat_operand" "")
+			  (match_operand:V4SF 5 "vfloat_operand" "")])
+	 (match_operand:V4SI 1 "vint_operand" "")
+	 (match_operand:V4SI 2 "vint_operand" "")))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
+   && VECTOR_UNIT_ALTIVEC_P (V4SImode)"
+  "
+{
+  if (rs6000_emit_vector_cond_expr (operands[0], operands[1], operands[2],
+				    operands[3], operands[4], operands[5]))
+    DONE;
+  else
+    FAIL;
+}")
+
 (define_expand "vcondu<mode><mode>"
   [(set (match_operand:VEC_I 0 "vint_operand" "")
 	(if_then_else:VEC_I
@@ -415,6 +453,25 @@
 	 (match_operand:VEC_I 1 "vint_operand" "")
 	 (match_operand:VEC_I 2 "vint_operand" "")))]
   "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "
+{
+  if (rs6000_emit_vector_cond_expr (operands[0], operands[1], operands[2],
+				    operands[3], operands[4], operands[5]))
+    DONE;
+  else
+    FAIL;
+}")
+
+(define_expand "vconduv4sfv4si"
+  [(set (match_operand:V4SF 0 "vfloat_operand" "")
+	(if_then_else:V4SF
+	 (match_operator 3 "comparison_operator"
+			 [(match_operand:V4SI 4 "vint_operand" "")
+			  (match_operand:V4SI 5 "vint_operand" "")])
+	 (match_operand:V4SF 1 "vfloat_operand" "")
+	 (match_operand:V4SF 2 "vfloat_operand" "")))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
+   && VECTOR_UNIT_ALTIVEC_P (V4SImode)"
   "
 {
   if (rs6000_emit_vector_cond_expr (operands[0], operands[1], operands[2],

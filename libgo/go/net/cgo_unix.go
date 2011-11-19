@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build darwin freebsd linux
+
 package net
 
 /*
@@ -23,6 +25,17 @@ import (
 func libc_getaddrinfo(node *byte, service *byte, hints *syscall.Addrinfo, res **syscall.Addrinfo) int __asm__ ("getaddrinfo")
 func libc_freeaddrinfo(res *syscall.Addrinfo) __asm__ ("freeaddrinfo")
 func libc_gai_strerror(errcode int) *byte __asm__ ("gai_strerror")
+
+// bytePtrToString takes a NUL-terminated array of bytes and convert
+// it to a Go string.
+func bytePtrToString(p *byte) string {
+	a := (*[10000]byte)(unsafe.Pointer(p))
+	i := 0
+	for a[i] != 0 {
+		i++
+	}
+	return string(a[:i])
+}
 
 func cgoLookupHost(name string) (addrs []string, err os.Error, completed bool) {
 	ip, err, completed := cgoLookupIP(name)
@@ -99,13 +112,13 @@ func cgoLookupIPCNAME(name string) (addrs []IP, cname string, err os.Error, comp
 		} else if gerrno == syscall.EAI_SYSTEM {
 			str = syscall.Errstr(syscall.GetErrno())
 		} else {
-			str = syscall.BytePtrToString(libc_gai_strerror(gerrno))
+			str = bytePtrToString(libc_gai_strerror(gerrno))
 		}
 		return nil, "", &DNSError{Error: str, Name: name}, true
 	}
 	defer libc_freeaddrinfo(res)
 	if res != nil {
-		cname = syscall.BytePtrToString((*byte)(unsafe.Pointer(res.Ai_canonname)))
+		cname = bytePtrToString((*byte)(unsafe.Pointer(res.Ai_canonname)))
 		if cname == "" {
 			cname = name
 		}

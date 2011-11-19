@@ -1418,6 +1418,14 @@ _mm_stream_si32 (int *__A, int __B)
   __builtin_ia32_movnti (__A, __B);
 }
 
+#ifdef __x86_64__
+extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_stream_si64 (long long int *__A, long long int __B)
+{
+  __builtin_ia32_movnti64 (__A, __B);
+}
+#endif
+
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_stream_si128 (__m128i *__A, __m128i __B)
 {

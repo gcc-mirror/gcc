@@ -26,9 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "time_1.h"
 
 
-static inline void __cpu_time_1 (long *, long *) ATTRIBUTE_ALWAYS_INLINE;
-
-static inline void
+static void
 __cpu_time_1 (long *sec, long *usec)
 {
   long user_sec, user_usec, system_sec, system_usec;

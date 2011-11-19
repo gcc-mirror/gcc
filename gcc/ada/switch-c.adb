@@ -440,6 +440,11 @@ package body Switch.C is
                   --     Ptr := Ptr + 1;
                   --     Generate_SCIL := True;
 
+                  --  -gnated switch (disable atomic synchronization)
+
+                  when 'd' =>
+                     Suppress_Options (Atomic_Synchronization) := True;
+
                   --  -gnateD switch (preprocessing symbol definition)
 
                   when 'D' =>
@@ -743,10 +748,14 @@ package body Switch.C is
                   --  Set all specific options as well as All_Checks in the
                   --  Suppress_Options array, excluding Elaboration_Check,
                   --  since this is treated specially because we do not want
-                  --  -gnatp to disable static elaboration processing.
+                  --  -gnatp to disable static elaboration processing. Also
+                  --  exclude Atomic_Synchronization, since this is not a real
+                  --  check.
 
                   for J in Suppress_Options'Range loop
-                     if J /= Elaboration_Check then
+                     if J /= Elaboration_Check
+                       and then J /= Atomic_Synchronization
+                     then
                         Suppress_Options (J) := True;
                      end if;
                   end loop;

@@ -753,6 +753,10 @@ extern void used_types_insert (tree);
 extern int get_next_funcdef_no (void);
 extern int get_last_funcdef_no (void);
 
+#ifdef HAVE_simple_return
+extern bool requires_stack_frame_p (rtx, HARD_REG_SET, HARD_REG_SET);
+#endif                        
+
 /* In predict.c */
 extern bool optimize_function_for_size_p (struct function *);
 extern bool optimize_function_for_speed_p (struct function *);

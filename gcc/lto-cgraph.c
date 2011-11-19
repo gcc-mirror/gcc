@@ -512,7 +512,13 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 		     || referenced_from_other_partition_p (&node->ref_list, set, vset)), 1);
   bp_pack_value (&bp, node->lowered, 1);
   bp_pack_value (&bp, in_other_partition, 1);
-  bp_pack_value (&bp, node->alias && !boundary_p, 1);
+  /* Real aliases in a boundary become non-aliases. However we still stream
+     alias info on weakrefs. 
+     TODO: We lose a bit of information here - when we know that variable is
+     defined in other unit, we may use the info on aliases to resolve 
+     symbol1 != symbol2 type tests that we can do only for locally defined objects
+     otherwise.  */
+  bp_pack_value (&bp, node->alias && (!boundary_p || DECL_EXTERNAL (node->decl)), 1);
   bp_pack_value (&bp, node->frequency, 2);
   bp_pack_value (&bp, node->only_called_at_startup, 1);
   bp_pack_value (&bp, node->only_called_at_exit, 1);
@@ -530,7 +536,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.fixed_offset);
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.virtual_value);
     }
-  if ((node->alias || node->thunk.thunk_p) && !boundary_p)
+  if ((node->alias || node->thunk.thunk_p)
+      && (!boundary_p || (node->alias && DECL_EXTERNAL (node->decl))))
     {
       streamer_write_hwi_in_range (ob->main_stream, 0, 1,
 					node->thunk.alias != NULL);

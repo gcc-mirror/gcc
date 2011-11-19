@@ -9,5 +9,5 @@ namespace N
 
 void bar(A *p)
 {
-  p->N::foo<0>; // { dg-error "not a member" } 
+  p->N::foo<0>; // { dg-error "not a class member" }
 }

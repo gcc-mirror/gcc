@@ -9,7 +9,10 @@
 int ret = 1;
 
 void *ptr;
-void * operator new[] (std::size_t s) throw (std::bad_alloc)
+void * operator new[] (std::size_t s)
+#if __cplusplus <= 199711L
+  throw (std::bad_alloc)
+#endif
 {
   ptr = operator new (s);
   return ptr;

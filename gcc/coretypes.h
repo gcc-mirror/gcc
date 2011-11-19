@@ -181,5 +181,18 @@ union _dont_use_tree_here_;
 
 #endif
 
+/* Memory model types for the __atomic* builtins. 
+   This must match the order in libstdc++-v3/include/bits/atomic_base.h.  */
+enum memmodel
+{
+  MEMMODEL_RELAXED = 0,
+  MEMMODEL_CONSUME = 1,
+  MEMMODEL_ACQUIRE = 2,
+  MEMMODEL_RELEASE = 3,
+  MEMMODEL_ACQ_REL = 4,
+  MEMMODEL_SEQ_CST = 5,
+  MEMMODEL_LAST = 6
+};
+
 #endif /* coretypes.h */
 

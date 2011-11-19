@@ -1,3 +1,1129 @@
+2011-11-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49868
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _xload_2 _xload_3 _xload_4.
+	* config/avr/lib1funcs.S (__xload_2, __xload_3, __xload_4):
+	New functions.
+
+2011-11-16  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* config/arm/lib1funcs.asm (udivsi3): Add support for divide
+	functions.
+	(aeabi_uidivmod): Likewise.	
+	(umodsi3): Likewise.
+	(divsi3): Likewise.
+	(aeabi_idivmod): Likewise.
+	(modsi3): Likewise.
+
+2011-11-16  Tristan Gingold  <gingold@adacore.com>
+
+	* config/alpha/qrnnd.S: Use specific pseudos for VMS.
+
+2011-11-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49868
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _load_3,  _load_4.
+	* config/avr/lib1funcs.S (__load_3, __load_4, __xload_2): New functions.
+
+2011-11-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config.host (hppa*64*-*-hpux11*): Remove pa/t-stublib64 from
+	tmake_file list.
+	* config/pa/t-stublib: Merge rules from config/pa/t-stublib64.
+	* config/pa/t-stublib64: Delete.
+
+2011-11-12  Richard Henderson  <rth@redhat.com>
+
+	* config/rs6000/linux-unwind.h (frob_update_context): Properly
+	cast the pointer argument to _Unwind_SetGRPtr.
+
+2011-11-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/spu/t-elf (LIB2ADD): Use LIB2FUNCS_EXCLUDE instead.
+
+2011-11-09  Ian Lance Taylor  <iant@google.com>
+
+	* generic-morestack.c: Include <string.h>.
+	(uintptr_type): Define.
+	(struct initial_sp): Add dont_block_signals field.  Reduce size of
+	extra array by 1.
+	(allocate_segment): Set prev field to NULL.  Don't set
+	__morestack_current_segment or __morestack_segments.
+	(__generic_morestack): Update current->prev and *pp after calling
+	allocate_segment.
+	(__morestack_block_signals): Don't do anything if
+	dont_block_signals is set.
+	(__morestack_unblock_signals): Likewise.
+	(__generic_findstack): Check for initial_sp == NULL.  Add casts to
+	uintptr_type.
+	(__splitstack_block_signals): New function.
+	(enum __splitstack_content_offsets): Define.
+	(__splitstack_getcontext, __splitstack_setcontext): New functions.
+	(__splitstack_makecontext): New function.
+	(__splitstack_block_signals_context): New function.
+	(__splitstack_find_context): New function.
+	* config/i386/morestack.S (__morestack_get_guard): New function.
+	(__morestack_set_guard, __morestack_make_guard): New functions.
+	* libgcc-std.ver.in: Add new functions to GCC_4.7.0.
+
+2011-11-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (i[34567]86-*-cygwin*): Move i386/t-mingw-pthread ...
+	(i[34567]86-*-mingw*): ... here.
+	(x86_64-*-mingw*): ... here.
+
+2011-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/c6x/t-elf (LIB2ADD): Add instead of assigning.
+
+2011-11-07  Nathan Sidwell  <nathan@acm.org>
+
+	* libgcov.c (struct gcov_fn_buffer): New struct.
+	(buffer_fn_data): New helper.
+	(gcov_exit): Rework for new gcov data structures.
+
+2011-11-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49313
+	* config/avr/lib1funcs.S (__divmodhi4, __divmodsi4): Tweak speed.
+
+2011-11-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (tmake_file): Correct comment.
+	(bfin*-elf*): Remove bfin/t-elf from tmake_file, add
+	t-libgcc-pic.
+	(bfin*-uclinux*): Likewise.
+	(bfin*-linux-uclibc*): Likewise.
+	(xstormy16-*-elf): Add stormy16/t-stormy16 to tmake_file.
+
+	* config/arm/t-elf (HOST_LIBGCC2_CFLAGS): Append instead of
+	assigning.
+	* config/arm/t-strongarm-elf (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/avr/t-avr (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/c6x/t-elf (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/h8300/t-h8300 (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/lm32/t-elf (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/m32r/t-m32r (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/mcore/t-mcore (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/mips/t-elf (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/mmix/t-mmix (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/pdp11/t-pdp11 (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/picochip/t-picochip (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/stormy16/t-stormy16 (HOST_LIBGCC2_CFLAGS): Likewise.
+	* config/t-openbsd-thread (HOST_LIBGCC2_CFLAGS): Likewise.
+
+	* config/bfin/t-elf: Remove.
+	* config/t-vxworks (HOST_LIBGCC2_CFLAGS): Remove.
+
+2011-11-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (*-*-rtems*): Add t-rtems to tmake_file.
+	(i[34567]86-*-rtems*): Remove t-rtems from tmake_file.
+	(lm32-*-elf*, lm32-*-rtems*): Split into ...
+	(lm32-*-elf*): ... this.
+	(lm32-*-rtems*): ... and this.
+	Add to tmake_file.
+	(m32r-*-rtems*): Add to tmake_file.
+	(moxie-*-rtems*): Likewise.
+	(sparc-*-rtems*): Likewise.
+	Remove t-rtems from tmake_file.
+	(sparc64-*-rtems*): Likewise.
+	* config/t-rtems (HOST_LIBGCC2_CFLAGS): Use LIBGCC2_INCLUDES
+	instead.
+
+2011-11-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/50982
+	* config/gthr-posix.h: Move ...
+	* gthr-posix.h: ... here.
+	* config/gthr-lynx.h: Reflect this.
+	* config/gthr-vxworks.h: Likewise.
+	* config/rs6000/gthr-aix.h: Likewise.
+	* configure.ac (target_thread_file): Likewise.
+	* configure: Regenerate.
+
+2011-11-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.host (arm*-*-rtemseabi*): New target.
+
+2011-11-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR other/50991
+	* Makefile.in: Make EXTRA_PARTS depend on libgcc_tm.h instead of
+	extra-parts.
+
+2011-11-05  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config.host (epiphany-*-elf*): New configuration.
+	* config/epiphany: New Directory.
+
+2011-11-05  Ralf Corsépius  <ralf.corsepius@rtems.org>
+
+	* config.host (avr-*-rtems*): Add config/avr/t-rtems.
+	* config/avr/t-rtems: New.
+	Filter out _exit from LIB1ASMFUNCS.
+
+2011-11-04  David S. Miller  <davem@davemloft.net>
+
+	* configure.ac: Test for 64-bit addresses on !x86 using __LP64__.
+	* configure: Rebuild.
+
+2011-11-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/t-crtstuff: Add -fPIC to CRTSTUFF_T_CFLAGS_S
+	variable.
+
+2011-11-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50931
+	* config/t-avr (LIB1ASMFUNCS): Add _divmodpsi4, _udivmodpsi4.
+	* config/lib1funcs.S (__udivmodpsi4, __divmodpsi4): New functions.
+
+2011-11-04  Joel Sherrill  <joel.sherrill@oarcorp.com>
+
+	PR target/50989
+	* config.host (sparc-*-rtems*): Add sparc/t-softmul.
+
+2011-11-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/c6x/t-elf (LIB2ADDEH): Set.
+	* config/c6x/t-c6x-elf: Remove.
+
+2011-11-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/sol2-ci.S: Rename to ...
+	* config/i386/crti.S: ... this.
+	* config/i386/sol2-cn.S: Rename to ...
+	* config/i386/crtn.S: ... this.
+	* config/sparc/sol2-ci.S: Rename to ...
+	* config/sparc/crti.S: ... this.
+	* config/sparc/sol2-cn.S: Rename to ...
+	* config/sparc/crtn.S: ... this.
+	* config/t-sol2 (CUSTOM_CRTIN): Remove.
+	(crti.o, crtn.o): Remove.
+
+2011-11-04  Tristan Gingold  <gingold@adacore.com>
+
+	* config/ia64/fde-vms.c: Do not include md-unwind-support.h
+
+2011-11-04  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/t-sh: Use $(gcc_compile) instead of $(compile).
+
+2011-11-03  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config.host (crisv32-*-none, cris-*-none): Remove.
+	(crisv32-*-elf): Append to tmake_file, don't just set it.
+	(cris-*-elf): Add missing t-fdpbit to tmake_file.
+
+2011-11-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/rs6000/t-ppccomm (ecrti$(objext)): Use $<.
+	(ecrtn$(objext)): Likewise.
+	(ncrti$(objext)): Likewise.
+	(ncrtn$(objext)): Likewise.
+
+2011-11-03  Andreas Schwab  <schwab@redhat.com>
+
+	* config/ia64/t-ia64 (crtbeginS.o): Fix whitespace damage.
+
+2011-11-02  David S. Miller  <davem@davemloft.net>
+
+	* configure.ac: Set host_address on sparc too.
+	* configure: Regenerate.
+	* config.host: Add sparc/t-linux64 and sparc/t-softmul conditionally
+	based upon host_address.
+	* config/sparc/t-linux64: Set CRTSTUFF_T_CFLAGS unconditionally.
+
+2011-11-02  Jason Merrill  <jason@redhat.com>
+
+	* config/rs6000/t-ppccomm: Add missing \.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gthr-single.h, gthr.h: New files.
+	* config/gthr-lynx.h, config/gthr-posix.h., config/gthr-rtems.h,
+	config/gthr-vxworks.h, config/i386/gthr-win32.h,
+	config/mips/gthr-mipssde.h, config/pa/gthr-dce.h,
+	config/rs6000/gthr-aix.h, config/s390/gthr-tpf.h: New files.
+	* config/i386/gthr-win32.c: Include "gthr-win32.h".
+	* configure.ac (thread_header): New variable.
+	Set it depending on target_thread_file.
+	(gthr-default.h): Link from $thread_header.
+	* configure: Regenerate.
+	* Makefile.in (LIBGCC2_CFLAGS): Remove $(GTHREAD_FLAGS).
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (tm_file_): New variable.
+	Determine from tm_file.
+	(tm_file, tm_defines): Substitute.
+	* configure: Regenerate.
+	* mkheader.sh: New file.
+	* Makefile.in (clean): Remove libgcc_tm.h.
+	($(objects)): Depend on libgcc_tm.h.
+	(libgcc_tm_defines, libgcc_tm_file): New variables.
+	(libgcc_tm.h, libgcc_tm.stamp): New targets.
+	($(libgcc-objects), $(libgcc-s-objects), $(libgcc-eh-objects))
+	($(libgcov-objects), $(libunwind-objects), $(libunwind-s-objects))
+	($(extra-parts)): Depend on libgcc_tm.h.
+	* config.host (tm_defines, tm_file): New variable.
+	(arm*-*-linux*): Set tm_file for arm*-*-linux-*eabi.
+	(arm*-*-uclinux*): Set tm_file for arm*-*-uclinux*eabi.
+	(arm*-*-eabi*, arm*-*-symbianelf*): Set tm_file.
+	(avr-*-rtems*): Likewise.
+	(avr-*-*): Likewise.
+	(frv-*-elf): Likewise.
+	(frv-*-*linux*): Likewise.
+	(h8300-*-rtems*): Likewise.
+	(h8300-*-elf*): Likewise.
+	(i[34567]86-*-darwin*): Likewise.
+	(x86_64-*-darwin*): Likewise.
+	(rx-*-elf): Likewise.
+	(tic6x-*-uclinux): Likewise.
+	(tic6x-*-elf): Likewise.
+	(i[34567]86-*-linux*, x86_64-*-linux*): Likewise.
+	* config/alpha/gthr-posix.c: Include libgcc_tm.h.
+	* config/i386/cygming-crtbegin.c: Likewise.
+	* config/i386/cygming-crtend.c: Likewise.
+	* config/ia64/fde-vms.c: Likewise.
+	* config/ia64/unwind-ia64.c: Likewise.
+	* config/libbid/bid_gcc_intrinsics.h: Likewise.
+	* config/rs6000/darwin-fallback.c: Likewise.
+	* config/stormy16/lib2funcs.c: Likewise.
+	* config/xtensa/unwind-dw2-xtensa.c: Likewise.
+	* crtstuff.c: Likewise.
+	* dfp-bit.h: Likewise.
+	* emutls.c: Likewise.
+	* fixed-bit.c: Likewise.
+	* fp-bit.c: Likewise.
+	* generic-morestack-thread.c: Likewise.
+	* generic-morestack.c: Likewise.
+	* libgcc2.c: Likewise.
+	* libgcov.c: Likewise.
+	* unwind-dw2-fde-dip.c: Likewise.
+	* unwind-dw2-fde.c: Likewise.
+	* unwind-dw2.c: Likewise.
+	* unwind-sjlj.c: Likewise.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Include ../config/picflag.m4.
+	(GCC_PICFLAG): Call it.
+	Substitute.
+	* configure: Regenerate.
+	* Makefile.in (gcc_srcdir): Remove.
+	(LIBGCC2_DEBUG_CFLAGS, LIBGCC2_CFLAGS, LIBGCC2_INCLUDES)
+	(HOST_LIBGCC2_CFLAGS, PICFLAG, LIB2FUNCS_ST, LIB2FUNCS_EXCLUDE)
+	(LIB2_DIVMOD_FUNCS, LIB2ADD, LIB2ADD_ST): Set.
+	($(lib2funcs-o), $(lib2funcs-s-o), $(lib2-divmod-o))
+	($(lib2-divmod-s-o)): Use $(srcdir) to refer to libgcc2.c.
+	Use $<.
+	Remove comment.
+	* libgcc2.c, libgcc2.h, gbl-ctors.h, longlong.h: New files.
+	* siditi-object.mk ($o$(objext), $(o)_s$(objext)): Use $(srcdir)
+	to refer to libgcc2.c.
+	Use $<.
+	* config/darwin-64.c: New file.
+	* config/darwin-crt3.c: Remove comment.
+	* config/divmod.c, config/floatunsidf.c, config/floatunsisf.c,
+	config/floatunsitf.c, config/floatunsixf.c, config/udivmod.c,
+	config/udivmodsi4.c: New files.
+	* config/memcmp.c, config/memcpy.c, config/memmove.c,
+	config/memset.c: New files.
+	* config/t-crtstuff-pic (CRTSTUFF_T_CFLAGS_S): Use $(PICFLAG).
+	* config/t-darwin (HOST_LIBGCC2_CFLAGS): Set.
+	* config/t-freebsd-thread, config/t-libgcc-pic: New files.
+	* config/t-libunwind (HOST_LIBGCC2_CFLAGS): Set.
+	* config/t-openbsd-thread: New file.
+	* config/t-sol2 (HOST_LIBGCC2_CFLAGS): Remove.
+	* config/t-vxworks, config/vxlib-tls.c, config/vxlib.c: New files.
+	* config/alpha/gthr-posix.c, config/alpha/qrnnd.S: New files.
+	* config/alpha/t-alpha (LIB2ADD): Use $(srcdir) to refer to
+	qrnnd.S.
+	Adapt filename.
+	* config/alpha/t-osf-pthread (LIB2ADD): Use $(srcdir)/config/alpha
+	to refer to gthr-posix.c.
+	* config/alpha/t-vms (LIB2ADD): Set.
+	* config/alpha/vms-gcc_shell_handler.c: New file.
+	* config/arm/bpabi.c, config/arm/fp16.c,
+	config/arm/linux-atomic.c, config/arm/linux-atomic-64bit.c,
+	config/arm/unaligned-funcs.c: New files.
+	* config/arm/t-bpabi (LIB2ADD, LIB2ADD_ST): Set.
+	* config/arm/t-elf (HOST_LIBGCC2_CFLAGS): Set.
+	* config/arm/t-linux: Likewise.
+	* config/arm/t-linux-eabi (LIB2ADD_ST): Add.
+	* config/arm/t-netbsd: New file.
+	* config/arm/t-strongarm-elf (HOST_LIBGCC2_CFLAGS): Set.
+	* config/arm/t-symbian (LIB2ADD_ST): Set.
+	* config/avr/t-avr (LIB2FUNCS_EXCLUDE, HOST_LIBGCC2_CFLAGS): Set.
+	* config/bfin/t-crtstuff (CRTSTUFF_T_CFLAGS): Use $(PICFLAG).
+	* config/bfin/t-elf: New file.
+	* config/c6x/eqd.c, config/c6x/eqf.c, config/c6x/ged.c,
+	config/c6x/gef.c, config/c6x/gtd.c, config/c6x/gtf.c,
+	config/c6x/led.c, config/c6x/lef.c, config/c6x/ltd.c,
+	config/c6x/ltf.c: New files.
+	* config/c6x/t-elf (LIB2FUNCS_EXCLUDE, LIB2ADD)
+	(HOST_LIBGCC2_CFLAGS): Set.
+	* config/c6x/t-uclinux (HOST_LIBGCC2_CFLAGS): Set.
+	(CRTSTUFF_T_CFLAGS): Use $(PICFLAG).
+	* config/cris/arit.c, config/cris/mulsi3.S, config/cris/t-cris:
+	New files.
+	* config/cris/t-elfmulti (LIB2ADD_ST): Set.
+	* config/cris/t-linux (HOST_LIBGCC2_CFLAGS): Remove.
+	* config/frv/cmovd.c, config/frv/cmovh.c, config/frv/cmovw.c,
+	config/frv/modi.c, config/frv/uitod.c, config/frv/uitof.c,
+	config/frv/ulltod.c, config/frv/ulltof.c, config/frv/umodi.c: New
+	files.
+	* config/frv/t-frv (LIB2ADD): Set.
+	* config/frv/t-linux (CRTSTUFF_T_CFLAGS): Use $(PICFLAG).
+	* config/h8300/clzhi2.c, config/h8300/ctzhi2.c,
+	config/h8300/fixunssfsi.c, config/h8300/parityhi2.c,
+	config/h8300/popcounthi2.c: New files.
+	* config/h8300/t-h8300 (LIB2ADD, HOST_LIBGCC2_CFLAGS): Set.
+	* config/i386/gthr-win32.c: New file.
+	* config/i386/t-cygming (LIBGCC2_INCLUDES): Set.
+	* config/i386/t-cygwin: Likewise.
+	* config/i386/t-darwin, config/i386/t-darwin64,
+	config/i386/t-gthr-win32, config/i386/t-interix: New files.
+	* config/i386/t-nto (HOST_LIBGCC2_CFLAGS): Set.
+	(CRTSTUFF_T_CFLAGS): Use $(PICFLAG).
+	* config/i386/t-sol2 (CRTSTUFF_T_CFLAGS): Use $(PICFLAG).
+	* config/ia64/quadlib.c: New file.
+	* config/ia64/t-hpux (LIB2ADD): Set.
+	* config/ia64/t-ia64: Add comment.
+	* config/iq2000/lib2funcs.c, config/iq2000/t-iq2000: New files.
+	* config/lm32/t-uclinux (CRTSTUFF_T_CFLAGS): Use $(PICFLAG).
+	(HOST_LIBGCC2_CFLAGS): Append, remove -fPIC.
+	* config/m32c/lib2funcs.c, config/m32c/trapv.c: New files.
+	* config/m32c/t-m32c (LIB2ADD): Set.
+	* config/m32r/t-linux (HOST_LIBGCC2_CFLAGS): Set.
+	* config/m32r/t-m32r: Likewise.
+	* config/m68k/fpgnulib.c: New file.
+	* config/m68k/t-floatlib (LIB2ADD): Set.
+	(xfgnulib.c): New target.
+	* config/mcore/t-mcore (HOST_LIBGCC2_CFLAGS): Set.
+	* config/mep/lib2funcs.c, config/mep/tramp.c: New files.
+	* config/mep/t-mep (LIB2ADD): Set.
+	* config/microblaze/divsi3.asm: Rename to divsi3.S.
+	* config/microblaze/moddi3.asm: Rename to moddi3.S.
+	* config/microblaze/modsi3.asm: Rename to modsi3.S.
+	* config/microblaze/muldi3_hard.asm: Rename to hard.S.
+	* config/microblaze/mulsi3.asm: Rename to mulsi3.S.
+	* config/microblaze/stack_overflow_exit.asm: Rename to exit.S.
+	* config/microblaze/udivsi3.asm: Rename to udivsi3.S.
+	* config/microblaze/umodsi3.asm: Rename to umodsi3.S.
+	* config/microblaze/t-microblaze (LIB2ADD): Reflect this.
+	* config/mips/t-elf, config/mips/t-vr, config/mips/vr4120-div.S:
+	New files.
+	* config/mips/t-mips (LIB2_SIDITI_CONV_FUNCS): Set.
+	* config/mmix/t-mmix (HOST_LIBGCC2_CFLAGS): Set.
+	* config/pa/fptr.c, config/pa/lib2funcs.S,
+	config/pa/linux-atomic.c, config/pa/quadlib.c: New files.
+	* config/pa/t-linux (HOST_LIBGCC2_CFLAGS): Set.
+	(LIB2ADD, LIB2ADD_ST): Set.
+	* config/pa/t-hpux, config/pa/t-hpux10, config/pa/t-pa64: New files.
+	* config/pa/t-linux (HOST_LIBGCC2_CFLAGS, LIB2ADD, LIB2ADD_ST):
+	Set.
+	* config/pa/t-linux64 (LIB2ADD_ST, HOST_LIBGCC2_CFLAGS): Set.
+	* config/pdp11/t-pdp11: New file.
+	* config/picochip/libgccExtras/adddi3.S,
+	config/picochip/libgccExtras/ashlsi3.S,
+	config/picochip/libgccExtras/ashrsi3.S,
+	config/picochip/libgccExtras/clzsi2.S,
+	config/picochip/libgccExtras/cmpsi2.S,
+	config/picochip/libgccExtras/divmod15.S,
+	config/picochip/libgccExtras/divmodhi4.S,
+	config/picochip/libgccExtras/divmodsi4.S,
+	config/picochip/libgccExtras/lshrsi3.S,
+	config/picochip/libgccExtras/parityhi2.S,
+	config/picochip/libgccExtras/popcounthi2.S,
+	config/picochip/libgccExtras/subdi3.S,
+	config/picochip/libgccExtras/ucmpsi2.S,
+	config/picochip/libgccExtras/udivmodhi4.S,
+	config/picochip/libgccExtras/udivmodsi4.S: New files.
+	* config/picochip/t-picochip (LIB2ADD, HOST_LIBGCC2_CFLAGS)
+	(LIBGCC2_DEBUG_CFLAGS, RANLIB_FOR_TARGET): Set.
+	* config/rs6000/crtresfpr.S, config/rs6000/crtresgpr.S,
+	config/rs6000/crtresxfpr.S, config/rs6000/crtresxgpr.S,
+	config/rs6000/crtsavfpr.S, config/rs6000/crtsavgpr.S)
+	config/rs6000/darwin-asm.h, config/rs6000/darwin-fpsave.S,
+	config/rs6000/darwin-gpsave.S, 	config/rs6000/darwin-tramp.S,
+	config/rs6000/darwin-vecsave.S, config/rs6000/darwin-world.S: New
+	files.
+	* config/rs6000/t-darwin (LIB2ADD, LIB2ADD_ST)
+	(HOST_LIBGCC2_CFLAGS): Set.
+	* config/rs6000/t-darwin64: New file.
+	* config/rs6000/t-linux64 (HOST_LIBGCC2_CFLAGS): Set.
+	* config/rs6000/t-lynx, config/rs6000/t-netbsd: New files.
+	* config/rs6000/t-ppccomm (LIB2ADD): Add
+	$(srcdir)/config/rs6000/tramp.S.
+	(LIB2ADD_ST): Use $(srcdir)/config/rs6000 to refer to sources.
+	Add  $(srcdir)/config/rs6000/eabi.S.
+	(crtsavfpr.S, crtresfpr.S, crtsavgpr.S, crtresgpr.S, crtresxfpr.S)
+	(crtresxgpr.S, e500crtres32gpr.S, e500crtres64gpr.S)
+	(e500crtres64gprctr.S, e500crtrest32gpr.S, e500crtrest64gpr.S)
+	(e500crtresx32gpr.S, e500crtresx64gpr.S, e500crtsav32gpr.S)
+	(e500crtsav64gpr.S, e500crtsav64gprctr.S, e500crtsavg32gpr.S)
+	(e500crtsavg64gpr.S, e500crtsavg64gprctr.S): Remove.
+	* config/rs6000/tramp.S: New file.
+	* config/s390/t-tpf: Remove.
+	* config/sh/linux-atomic.S: New file.
+	* config/sh/t-linux (LIB2ADD): Set.
+	(HOST_LIBGCC2_CFLAGS): Append, remove -fpic.
+	* config/sh/t-netbsd (LIB2ADD, HOST_LIBGCC2_CFLAGS): Set.
+	* config/sh/t-sh (unwind-dw2-Os-4-200.o): Use $(srcdir) to refer
+	to unwind-dw2.c.
+	(HOST_LIBGCC2_CFLAGS): Set.
+	* config/sparc/t-sol2 (CRTSTUFF_T_CFLAGS): Use $(PICFLAG).
+	* config/spu/divmodti4.c, config/spu/divv2df3.c,
+	config/spu/float_disf.c, config/spu/float_unsdidf.c,
+	config/spu/float_unsdisf.c, config/spu/float_unssidf.c,
+	config/spu/mfc_multi_tag_release.c,
+	config/spu/mfc_multi_tag_reserve.c, config/spu/mfc_tag_release.c,
+	config/spu/mfc_tag_reserve.c, config/spu/mfc_tag_table.c,
+	config/spu/multi3.c: New files.
+	* config/spu/t-elf (LIB2ADD, LIB2ADD_ST, LIB2_SIDITI_CONV_FUNCS)
+	(HOST_LIBGCC2_CFLAGS): Set.
+	* config/stormy16/ashlsi3.c, config/stormy16/ashrsi3.c,
+	config/stormy16/clzhi2.c, config/stormy16/cmpsi2.c,
+	config/stormy16/ctzhi2.c, config/stormy16/divsi3.c,
+	config/stormy16/ffshi2.c, config/stormy16/lib2.c,
+	config/stormy16/lshrsi3.c, config/stormy16/modsi3.c,
+	config/stormy16/parityhi2.c, config/stormy16/popcounthi2.c,
+	config/stormy16/t-stormy16, config/stormy16/ucmpsi2.c,
+	config/stormy16/udivmodsi4.c, config/stormy16/udivsi3.c,
+	config/stormy16/umodsi3.c: New files.
+	* config/xtensa/lib2funcs.S: New file.
+	* config/xtensa/t-elf (HOST_LIBGCC2_CFLAGS): Set.
+	* config/xtensa/t-xtensa (LIB2ADD): Set.
+	* config.host (*-*-darwin*): Add t-libgcc-pic to tmake_file.
+	(*-*-freebsd*): Add t-freebsd, t-libgcc-pic to tmake_file.
+	Add t-freebsd-thread to tmake_file for posix threads.
+	(*-*-linux*, frv-*-*linux*, *-*-kfreebsd*-gnu, *-*-knetbsd*-gnu)
+	(*-*-gnu*, *-*-kopensolaris*-gnu): Add t-libgcc-pic to tmake_file.
+	(*-*-lynxos*): Likewise.
+	(*-*-netbsd*): Likewise.
+	(*-*-openbsd*): Likewise.
+	Add t-openbsd-thread to tmake_file for posix threads.
+	(*-*-solaris2*): Add t-libgcc-pic to tmake_file.
+	(*-*-vxworks*): Set tmake_file.
+	(alpha*-*-linux*): Add alpha/t-alpha, alpha/t-ieee to tmake_file.
+	(alpha*-*-freebsd*): Likewise.
+	(alpha*-*-netbsd*): Likewise.
+	(alpha*-*-openbsd*): Likewise.
+	(alpha*-dec-osf5.1*): Remove qrnnd.o, gthr-posix.o from extra_parts.
+	(alpha64-dec-*vms*): Add alpha/t-alpha, alpha/t-ieee to tmake_file.
+	(alpha*-dec-*vms*): Likewise.
+	(arm*-*-netbsdelf*): Add arm/t-netbsd to tmake_file.
+	(bfin*-elf*): Add bfin/t-elf to tmake_file.
+	(bfin*-uclinux*): Likewise.
+	(bfin*-linux-uclibc*): Likewise.
+	(crisv32-*-elf): Add cris/t-cris to tmake_file.
+	(crisv32-*-none): Likewise.
+	(cris-*-elf): Likewise.
+	(cris-*-none): Likewise.
+	(cris-*-linux*, crisv32-*-linux*): Likewise.
+	(hppa[12]*-*-hpux10*): Add pa/t-hpux pa/t-hpux10, t-libgcc-pic to
+	tmake_file.
+	(hppa*64*-*-hpux11*): Add pa/t-hpux, pa/t-pa64, t-libgcc-pic to
+	tmake_file.
+	(hppa[12]*-*-hpux11*): Add pa/t-hpux, t-libgcc-pic to tmake_file.
+	(i[34567]86-*-elf*): Add t-libgcc-pic to tmake_file.
+	(x86_64-*-elf*): Likewise.
+	(i[34567]86-*-nto-qnx*): Likewise.
+	(i[34567]86-*-mingw*): Add i386/t-gthr-win32 to tmake_file for
+	win32 threads.
+	(x86_64-*-mingw*): Likewise.
+	(i[34567]86-*-interix3*): Add i386/t-interix to tmake_file.
+	(lm32-*-uclinux*): Add t-libgcc-pic to tmake_file.
+	(mipsisa32-*-elf*, mipsisa32el-*-elf*, mipsisa32r2-*-elf*)
+	(mipsisa32r2el-*-elf*, mipsisa64-*-elf*, mipsisa64el-*-elf*)
+	(mipsisa64r2-*-elf*, mipsisa64r2el-*-elf*): Add mips/t-elf to
+	tmake_file.
+	(mipsisa64sr71k-*-elf*): Likewise.
+	(mipsisa64sb1-*-elf*, mipsisa64sb1el-*-elf*): Likewise.
+	(mips-*-elf*, mipsel-*-elf*): Likewise.
+	(mips64-*-elf*, mips64el-*-elf*): Likewise.
+	(mips64orion-*-elf*, mips64orionel-*-elf*): Likewise.
+	(mips*-*-rtems*): Likewise.
+	(mips64vr-*-elf*, mips64vrel-*-elf*): Add mips/t-elf, mips/t-vr
+	to tmake_file.
+	(pdp11-*-*): Add pdp11/t-pdp11 to tmake_file.
+	(powerpc64-*-darwin*): Add rs6000/t-darwin64 to tmake_file.
+	(s390x-ibm-tpf*): Add t-libgcc-pic to tmake_file.
+	(spu-*-elf*): Likewise.
+	(tic6x-*-uclinux): Add t-libgcc-pic to tmake_file.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in ($(lib1asmfuncs-o), $(lib1asmfuncs-s-o)): Use
+	$(srcdir) to refer to $(LIB1ASMSRC).
+	Use $<.
+	* config/arm/bpabi-v6m.S, config/arm/bpabi.S,
+	config/arm/ieee754-df.S, config/arm/ieee754-sf.S,
+	config/arm/lib1funcs.S: New files.
+	* config/arm/libunwind.S [!__symbian__]: Use lib1funcs.S.
+	* config/arm/t-arm: New file.
+	* config/arm/t-bpabi (LIB1ASMFUNCS): Set.
+	* config/arm/t-elf, config/arm/t-linux, config/arm/t-linux-eabi,
+	config/arm/t-strongarm-elf: New files.
+	* config/arm/t-symbian (LIB1ASMFUNCS): Set.
+	* config/arm/t-vxworks, config/arm/t-wince-pe: New files.
+	* config/avr/lib1funcs.S: New file.
+	* config/avr/t-avr (LIB1ASMSRC, LIB1ASMFUNCS): Set.
+	* config/bfin/lib1funcs.S, config/bfin/t-bfin: New files.
+	* config/c6x/lib1funcs.S: New file.
+	* config/c6x/t-elf (LIB1ASMSRC, LIB1ASMFUNCS): Set.
+	* config/fr30/lib1funcs.S, config/fr30/t-fr30: New files.
+	* config/frv/lib1funcs.S: New file.
+	* config/frv/t-frv (LIB1ASMSRC, LIB1ASMFUNCS): Set.
+	* config/h8300/lib1funcs.S, config/h8300/t-h8300: New files.
+	* config/i386/cygwin.S, config/i386/t-chkstk: New files.
+	* config/ia64/__divxf3.asm: Rename to ...
+	* config/ia64/__divxf3.S: ... this.
+	Adapt lib1funcs.asm filename.
+	* config/ia64/_fixtfdi.asm: Rename to ...
+	* config/ia64/_fixtfdi.S: ... this.
+	Adapt lib1funcs.asm filename.
+	* config/ia64/_fixunstfdi.asm: Rename to ...
+	* config/ia64/_fixunstfdi.S: ... this.
+	Adapt lib1funcs.asm filename.
+	* config/ia64/_floatditf.asm: Rename to ...
+	* config/ia64/_floatditf.S: ... this.
+	Adapt lib1funcs.asm filename.
+	* config/ia64/lib1funcs.S: New file.
+	* config/ia64/t-hpux (LIB1ASMFUNCS): Set.
+	* config/ia64/t-ia64 (LIB1ASMSRC, LIB1ASMFUNCS): Set.
+	* config/ia64/t-softfp-compat (libgcc1-tf-compats): Adapt suffix.
+	* config/m32c/lib1funcs.S, config/m32c/t-m32c: New files.
+	* config/m68k/lb1sf68.S, config/m68k/t-floatlib: New files.
+	* config/mcore/lib1funcs.S, config/mcore/t-mcore: New files.
+	* config/mep/lib1funcs.S: New file.
+	* config/mep/t-mep (LIB1ASMSRC, LIB1ASMFUNCS): Set.
+	* config/mips/mips16.S: New file.
+	* config/mips/t-mips16 (LIB1ASMSRC, LIB1ASMFUNCS): Set.
+	* config/pa/milli64.S: New file.
+	* config/pa/t-linux, config/pa/t-linux64: New files.
+	* config/picochip/lib1funcs.S: New file.
+	* config/picochip/t-picochip (LIB1ASMSRC, LIB1ASMFUNCS): Set.
+	* config/sh/lib1funcs.S, config/sh/lib1funcs.h: New files.
+	* config/sh/t-linux (LIB1ASMFUNCS_CACHE): Set.
+	* config/sh/t-netbsd: New file.
+	* config/sh/t-sh (LIB1ASMSRC, LIB1ASMFUNCS, LIB1ASMFUNCS_CACHE): Set.
+	Use $(srcdir) to refer to lib1funcs.S, adapt filename.
+	* config/sh/t-sh64: New file.
+	* config/sparc/lb1spc.S: New file.
+	* config/sparc/t-softmul (LIB1ASMSRC): Adapt sparc/lb1spc.asm
+	filename.
+	* config/v850/lib1funcs.S, config/v850/t-v850: New files.
+	* config/vax/lib1funcs.S, config/vax/t-linux: New files.
+	* config/xtensa/ieee754-df.S, config/xtensa/ieee754-sf.S,
+	config/xtensa/lib1funcs.S: New files.
+	* config/xtensa/t-xtensa (LIB1ASMSRC, LIB1ASMFUNCS): Set.
+	* config.host (arm-wrs-vxworks): Add arm/t-arm, arm/t-vxworks to
+	tmake_file.
+	(arm*-*-freebsd*): Add arm/t-arm, arm/t-strongarm-elf to tmake_file.
+	(arm*-*-netbsdelf*): Add arm/t-arm to tmake_file.
+	(arm*-*-linux*): Likewise.
+	Add arm/t-elf, arm/t-bpabi, arm/t-linux-eabi to tmake_file for
+	arm*-*-linux-*eabi, add arm/t-linux otherwise.
+	(arm*-*-uclinux*): Add arm/t-arm, arm/t-elf to tmake_file.
+	(arm*-*-ecos-elf): Likewise.
+	(arm*-*-eabi*, arm*-*-symbianelf*): Likewise.
+	(arm*-*-rtems*): Likewise.
+	(arm*-*-elf): Likewise.
+	(arm*-wince-pe*): Add arm/t-arm, arm/t-wince-pe to tmake_file.
+	(avr-*-rtems*): Add to tmake_file, add avr/t-avr.
+	(bfin*-elf*): Add bfin/t-bfin to tmake_file.
+	(bfin*-uclinux*): Likewise.
+	(bfin*-linux-uclibc*): Likewise.
+	(bfin*-rtems*): Likewise.
+	(bfin*-*): Likewise.
+	(fido-*-elf): Merge into m68k-*-elf*.
+	(fr30-*-elf)): Add fr30/t-fr30 to tmake_file.
+	(frv-*-*linux*): Add frv/t-frv to tmake_file.
+	(h8300-*-rtems*): Add h8300/t-h8300 to tmake_file.
+	(h8300-*-elf*): Likewise.
+	(hppa*64*-*-linux*): Add pa/t-linux, pa/t-linux64 to tmake_file.
+	(hppa*-*-linux*): Add pa/t-linux to tmake_file.
+	(i[34567]86-*-cygwin*): Add i386/t-chkstk to tmake_file.
+	(i[34567]86-*-mingw*): Likewise.
+	(x86_64-*-mingw*): Likewise.
+	(i[34567]86-*-interix3*): Likewise.
+	(ia64*-*-hpux*): Add ia64/t-ia64, ia64/t-hpux to tmake_file.
+	(ia64-hp-*vms*): Add ia64/t-ia64 to tmake_file.
+	(m68k-*-elf*): Also handle fido-*-elf.
+	Add m68k/t-floatlib to tmake_file.
+	(m68k-*-uclinux*): Add m68k/t-floatlib to tmake_file.
+	(m68k-*-linux*): Likewise.
+	(m68k-*-rtems*): Likewise.
+	(mcore-*-elf): Add mcore/t-mcore to tmake_file.
+	(sh-*-elf*, sh[12346l]*-*-elf*): Add sh/t-sh64 to tmake_file for
+	sh64*-*-*.
+	(sh-*-linux*, sh[2346lbe]*-*-linux*): Add sh/t-sh to tmake_file.
+	Add sh/t-sh64 to tmake_file for sh64*-*-linux*.
+	(sh-*-netbsdelf*, shl*-*-netbsdelf*, sh5-*-netbsd*)
+	(sh5l*-*-netbsd*, sh64-*-netbsd*, sh64l*-*-netbsd*): Add sh/t-sh,
+	sh/t-netbsd to tmake_file.
+	Add sh/t-sh64 to tmake_file for sh5*-*-netbsd*, sh64*-netbsd*.
+	(sh-*-rtems*): Add sh/t-sh to tmake_file.
+	(sh-wrs-vxworks): Likewise.
+	(sparc-*-linux*): Add sparc/t-softmul to tmake_file except for
+	*-leon[3-9]*.
+	(v850*-*-*): Add v850/t-v850 to tmake_file.
+	(vax-*-linux*): Add vax/t-linux to tmake_file.
+	(m32c-*-elf*, m32c-*-rtems*): Add m32c/t-m32c to tmake_file.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* crtstuff.c: New file.
+	* Makefile.in (CRTSTUFF_CFLAGS): Define.
+	(CRTSTUFF_T_CFLAGS): Define.
+	(extra-parts, INSTALL_PARTS): Remove conditional assignments.
+	(crtbegin$(objext), crtend$(objext), crtbeginS$(objext))
+	(crtendS$(objext), crtbeginT.o): Use $(srcdir) to refer to
+	crtstuff.c.
+	Use $<.
+	(crtbeginT.o): Use $(objext).
+	[!CUSTOM_CRTIN] (crti$(objext), crtn$(objext)): New rules.
+	(libgcc-extra-parts): Don't compare EXTRA_PARTS, GCC_EXTRA_PARTS.
+	(gcc-extra-parts): Remove.
+	* config.host (*-*-freebsd*): Add t-crtstuff-pic to tmake_file.
+	Set extra_parts.
+	(*-*-linux*, frv-*-*linux*, *-*-kfreebsd*-gnu, *-*-knetbsd*-gnu,
+	*-*-gnu*): Also handle *-*-kopensolaris*-gnu.
+	Add t-crtstuff-pic to tmake_file.
+	(*-*-lynxos*): New case.
+	Set tmake_file, extra_parts.
+	(*-*-netbsd*): Add t-crtstuff-pic to tmake_file.
+	Set extra_parts for *-*-netbsd*1.[7-9]*, *-*-netbsd[2-9]*,
+	*-*-netbsdelf[2-9]*.
+	(*-*-openbsd*): Add t-crtstuff-pic to tmake_file.
+	(*-*-rtems*): Set extra_parts.
+	(*-*-solaris2*): Remove t-crtin from tmake_file for Solaris < 10.
+	(*-*-uclinux*): New case.
+	Set extra_parts.
+	(*-*-vms*): New case.
+	Set tmake_file, extra_parts.
+	(*-*-elf): Set extra_parts.
+	(alpha*-*-freebsd*): Add crtbeginT.o to extra_parts.
+	(alpha64-dec-*vms*): Append to tmake_file, remove vms/t-vms,
+	vms/t-vms64.
+	Set extra_parts.
+	(alpha*-dec-*vms*): Append to tmake_file, remove vms/t-vms.
+	Set extra_parts.
+	(arm*-*-freebsd*): Add t-crtin to tmake_file.
+	Add crtbegin.o, crtend.o, crti.o, crtn.o to extra_parts.
+	(arm-wrs-vxworks): Append to tmake_file.
+	Set extra_parts.
+	(arm*-*-uclinux*): Set extra_parts.
+	(arm*-*-ecos-elf): Likewise.
+	(arm*-*-eabi*, arm*-*-symbianelf*): Set extra_parts for
+	arm*-*-eabi*.
+	(arm*-*-rtems*): Set extra_parts.
+	(arm*-*-elf): Likewise.
+	(avr-*-rtems*): Clear extra_parts.
+	(bfin*-elf*): Add bfin/t-crtlibid, bfin/t-crtstuff to extra_parts.
+	Set extra_parts.
+	(bfin*-uclinux*): Likewise.
+	(bfin*-linux-uclibc*): Add bfin/t-crtstuff to tmake_file.
+	(bfin*-rtems*): Append to tmake_file.
+	Set extra_parts.
+	(bfin*-*): Likewise.
+	(crisv32-*-elf, crisv32-*-none, cris-*-elf, cris-*-none): Split into ...
+	(crisv32-*-elf): ... this.
+	(crisv32-*-none): ... this.
+	(cris-*-elf, cris-*-none): New cases.
+	Add cris/t-elfmulti to tmake_file.
+	(fr30-*-elf): Append to tmake_file.
+	Set extra_parts.
+	(frv-*-elf): Append to tmake_file, add frv/t-frv.
+	Set extra_parts.
+	(h8300-*-rtems*): Append to tmake_file.
+	Set extra_parts.
+	(h8300-*-elf*): Likewise.
+	(hppa*64*-*-hpux11*): Add pa/t-stublib, pa/t-stublib64 to tmake_file.
+	Set extra_parts.
+	(hppa[12]*-*-hpux11*): Add pa/t-stublib to tmake_file.
+	Set extra_parts.
+	(i[34567]86-*-elf*): Add i386/t-crtstuff, t-crtstuff-pic to tmake_file.
+	(x86_64-*-elf*): Likewise.
+	(i[34567]86-*-freebsd*): Add i386/t-crtstuff to tmake_file.
+	(x86_64-*-freebsd*): Likewise.
+	(x86_64-*-netbsd*): Likewise.
+	(i[34567]86-*-linux*): Likewise.
+	(i[34567]86-*-kfreebsd*-gnu, i[34567]86-*-knetbsd*-gnu)
+	(i[34567]86-*-gnu*, i[34567]86-*-kopensolaris*-gnu): Likewise.
+	(x86_64-*-linux*): Likewise.
+	(x86_64-*-kfreebsd*-gnu, x86_64-*-knetbsd*-gnu): Likewise.
+	(i[34567]86-*-lynxos*): Add t-crtstuff-pic, i386/t-crtstuff to
+	tmake_file.
+	Set extra_parts.
+	(i[34567]86-*-nto-qnx*): Set tmake_file, extra_parts.
+	(i[34567]86-*-rtems*): Append to tmake_file, remove t-crtin.
+	Append to extra_parts, remove crtbegin.o, crtend.o.
+	(ia64*-*-elf*): Append to extra_parts, remove crtbegin.o, crtend.o.
+	(ia64*-*-freebsd*): Append to extra_parts, remove crtbegin.o,
+	crtend.o, crtbeginS.o, crtendS.o.
+	(ia64*-*-linux*): Comment extra_parts.
+	(ia64-hp-*vms*): Append to tmake_file, remove vms/t-vms, vms/t-vms64.
+	Set extra_parts.
+	(iq2000*-*-elf*): Clear extra_parts.
+	(lm32-*-elf*, lm32-*-rtems*): Add t-crtin to tmake_file.
+	(lm32-*-uclinux*): Add to extra_parts, remove crtbegin.o, crtend.o
+	(m32r-*-elf*, m32r-*-rtems*): Split off ...
+	(m32r-*-rtems*): ... this.
+	Add m32r/t-m32r to tmake_file.
+	(m68k-*-elf*): Add t-crtin to tmake_file.
+	(m68k-*-rtems*): Add crti.o, crtn.o to extra_parts.
+	(mcore-*-elf): Likewise.
+	(microblaze*-*-*): Set extra_parts.
+	(mips*-sde-elf*): New case.
+	Set tmake_file, extra_parts.
+	(mipsisa32-*-elf*, mipsisa32el-*-elf*, mipsisa32r2-*-elf*)
+	(mipsisa32r2el-*-elf*, mipsisa64-*-elf*, mipsisa64el-*-elf*)
+	(mipsisa64r2-*-elf*, mipsisa64r2el-*-elf*): Add mips/t-crtstuff to
+	tmake_file.
+	Set extra_parts.
+	(mipsisa64sr71k-*-elf*): Likewise.
+	(mipsisa64sb1-*-elf*, mipsisa64sb1el-*-elf*): Likewise.
+	(mips-*-elf*, mipsel-*-elf*): Likewise.
+	(mips64-*-elf*, mips64el-*-elf*): Likewise.
+	(mips64vr-*-elf*, mips64vrel-*-elf*): Likewise.
+	(mips64orion-*-elf*,  mips64orionel-*-elf*): Likewise.
+	(mips*-*-rtems*): Likewise.
+	(mipstx39-*-elf*, mipstx39el-*-elf*): Likewise.
+	(moxie-*-*): Split into ...
+	(moxie-*-elf, moxie-*-uclinux*): ... this.
+	Add to extra_parts, remove crtbegin.o, crtend.o.
+	(moxie-*-rtems*): New case.
+	Set tmake_file.
+	Clear extra_parts.
+	(powerpc-*-freebsd*): Add rs6000/t-crtstuff to tmake_file.
+	Set extra_parts.
+	(powerpc-*-netbsd*): Add rs6000/t-netbsd to tmake_file.
+	(powerpc-*-eabispe*): Add rs6000/t-crtstuff, t-crtstuff-pic to
+	tmake_file.
+	Set extra_parts.
+	(powerpc-*-eabisimaltivec*): Add to tmake_file, add rs6000/t-ppccomm,
+	rs6000/t-crtstuff, t-crtstuff-pic to tmake_file.
+	Set extra_parts.
+	(powerpc-*-eabisim*): Likewise.
+	(powerpc-*-elf*): Likewise.
+	(powerpc-*-eabialtivec*): Likewise.
+	(powerpc-xilinx-eabi*): Likewise.
+	(powerpc-*-eabi*): Likewise.
+	(powerpc-*-rtems*): Likewise.
+	(powerpc-*-linux*, powerpc64-*-linux*): Add rs6000/t-crtstuff to
+	tmake_file.
+	Set extra_parts.
+	(powerpc-*-lynxos*): Add to tmake_file.
+	(powerpcle-*-elf*): Add to tmake_file, add rs6000/t-ppccomm,
+	rs6000/t-crtstuff, t-crtstuff-pic.
+	Set extra_parts.
+	(powerpcle-*-eabisim*): Likewise.
+	(powerpcle-*-eabi*): Likewise.
+	(rx-*-elf): Remove extra_parts.
+	(s390x-ibm-tpf*): Set extra_parts.
+	(score-*-elf): Set extra_parts.
+	(sh-*-elf*, sh[12346l]*-*-elf*, sh-*-linux*)
+	(sh[2346lbe]*-*-linux*, sh-*-netbsdelf*, shl*-*-netbsdelf*)
+	(sh5-*-netbsd*, sh5l*-*-netbsd*, sh64-*-netbsd*)
+	(sh64l*-*-netbsd*): Split into ...
+	(sh-*-elf*, sh[12346l]*-*-elf*): ... this.
+	Add t-crtstuff-pic to tmake_file.
+	Set extra_parts.
+	(sh-*-rtems*): Add to tmake_file, add t-crtstuff-pic.
+	Set extra_parts.
+	(sh-wrs-vxworks): Add to tmake_file, add t-crtstuff-pic.
+	(sparc-*-elf*): Remove t-crtin from tmake_file.
+	Add to extra_parts, remove crtbegin.o, crtend.o.
+	(sparc-*-linux*): Add sparc/t-linux64 to tmake_file.
+	(sparc64-*-linux*): Likewise.
+	(sparc-*-rtems*): Remove sparc/t-elf from tmake_file.
+	Add to extra_parts, remove crtbegin.o, crtend.o.
+	(sparc64-*-elf*): Remove t-crtin from tmake_file.
+	Add to extra_parts, remove crtbegin.o, crtend.o.
+	(sparc64-*-rtems*): Remove t-crtin from tmake_file.
+	Add to extra_parts, remove crtbegin.o, crtend.o.
+	(sparc64-*-freebsd*, ultrasparc-*-freebsd*): Add to extra_parts.
+	(sparc64-*-linux*): Add sparc/t-linux64 to tmake_file.
+	(spu-*-elf*): Add to tmake_file, add spu/t-elf.
+	Set extra_parts.
+	(tic6x-*-uclinux): Add c6x/t-uxlinux, t-crtstuff-pic to tmake_file.
+	Set extra_parts.
+	(tic6x-*-*): Change to ...
+	(tic6x-*-elf): ... this.
+	Set extra_parts.
+	(xtensa*-*-elf*): Add to tmake_file, add xtensa/t-elf.
+	Set extra_parts.
+	(am33_2.0-*-linux*): Add comment.
+	(mep*-*-*): Add mep/t-mep to tmake_file.
+	Set extra_parts.
+	* config/alpha/t-vms: New file.
+	* config/alpha/vms-dwarf2.S, config/alpha/vms-dwarf2eh.S: New files.
+	* config/arm/crti.S, config/arm/crtn.S: New files.
+	* config/bfin/crti.S, config/bfin/crtn.S: New files.
+	* config/bfin/crtlibid.S: New file.
+	* config/bfin/t-crtlibid, config/bfin/t-crtstuff: New files.
+	* config/c6x/crti.S, config/c6x/crtn.S: New files.
+	* config/c6x/t-elf (CUSTOM_CRTIN): Set.
+	(crti.o, crtin.o): New rules.
+	(CRTSTUFF_T_CFLAGS, CRTSTUFF_T_CFLAGS_S): Set.
+	* config/c6x/t-uclinux: New file.
+	* config/cris/t-elfmulti: New file.
+	* config/cris/t-linux (CRTSTUFF_T_CFLAGS_S): Set.
+	* config/fr30/crti.S, config/fr30/crtn.S: New files.
+	* config/frv/frvbegin.c, config/frv/frvend.c: New files.
+	* config/frv/t-frv: New file.
+	* config/frv/t-linux (CRTSTUFF_T_CFLAGS): Set.
+	* config/h8300/crti.S, config/h8300/crtn.S: New files.
+	* config/i386/cygming-crtbegin.c, config/i386/cygming-crtend.c:
+	New files.
+	* config/i386/t-cygming (crtbegin.o, crtend.o): Use $(srcdir) to
+	refer to cygming-crtbegin.c, cygming-crtend.c.
+	Use $<.
+	* config/i386/t-nto: New file.
+	* config/ia64/crtbegin.S, config/ia64/crtend.S: New files.
+	* config/ia64/crti.S, config/ia64/crtn.S: New files.
+	* config/ia64/t-ia64 (crtbegin.o, crtend.o, crtbeginS.o,
+	crtendS.o): Use $(srcdir) to refer to crtbegin.S, crtend.S.
+	Use .S extension.
+	Use $<.
+	* config/ia64/t-vms (CRTSTUFF_T_CFLAGS, CRTSTUFF_T_CFLAGS_S): Set.
+	(crtinitS.o): New rule.
+	* config/ia64/vms-crtinit.S: New file.
+	* config/lm32/t-elf ($(T)crti.o, $(T)crtn.o): Remove.
+	* config/m32r/initfini.c: New file.
+	* config/m32r/t-linux, config/m32r/t-m32r: New files.
+	* config/m68k/crti.S, config/m68k/crtn.S: New files.
+	* config/mcore/crti.S, config/mcore/crtn.S: New files.
+	* config/mep/t-mep: New file.
+	* config/microblaze/crti.S, config/microblaze/crtn.S: New files.
+	* config/microblaze/t-microblaze (MULTILIB_OPTIONS): Remove.
+	* config/mips/crti.S, config/mips/crtn.S: New files.
+	* config/mips/t-crtstuff: New file.
+	* config/mmix/crti.S, config/mmix/crtn.S: New files.
+	* config/mmix/t-mmix (CRTSTUFF_T_CFLAGS): Set.
+	(CUSTOM_CRTIN): Set.
+	($(T)crti.o, $(T)crtn.o): Remove $(T),
+	dependencies.
+	Use $(srcdir) to refer to crti.S, crtn.S.
+	Use .S extension, $<.
+	* config/moxie/crti.asm: Rename to ...
+	* config/moxie/crti.S: ... this.
+	* config/moxie/crtn.asm: Rename to ...
+	* config/moxie/crtn.S: ... this.
+	* config/moxie/t-moxie: Remove.
+	* config/pa/stublib.c: New file.
+	* config/pa/t-stublib, config/pa/t-stublib64: New files.
+	* config/rs6000/eabi-ci.S, config/rs6000/eabi-cn.S: New files.
+	* config/rs6000/sol-ci.S, config/rs6000/sol-cn.S: New files.
+	* config/rs6000/t-crtstuff: New file.
+	* config/rs6000/t-ppccomm (EXTRA_PARTS): Remove.
+	(ecrti.S, ecrtn.S, ncrti.S, ncrtn.S): Remove.
+	(ecrti$(objext)): Depend on $(srcdir)/config/rs6000/eabi-ci.S.
+	Make output file explicit.
+	(ecrtn$(objext)): Depend on $(srcdir)/config/rs6000/eabi-cn.S.
+	Make output file explicit.
+	(ncrti$(objext): Depend on $(srcdir)/config/rs6000/sol-ci.S.
+	Make output file explicit.
+	(ncrtn$(objext)): Depend on $(srcdir)/config/rs6000/sol-cn.S.
+	Make output file explicit.
+	* config/score/crti.S, config/score/crtn.S: New files.
+	* config/sh/crt1.S, config/sh/crti.S, config/sh/crtn.S: New files.
+	* config/sh/lib1funcs-4-300.S, config/sh/lib1funcs-Os-4-200.S: New
+	files.
+	* config/sh/t-sh, config/sh/t-superh: New files.
+	* config/sparc/t-linux64: New file.
+	* config/spu/cache.S, config/spu/cachemgr.c: New files.
+	* config/spu/t-elf (CRTSTUFF_T_CFLAGS): Set.
+	(cachemgr.o, cachemgr_nonatomic.o, libgcc_%.a, cache8k.o)
+	(cache16k.o, cache32k.o, cache64k.o, cache128k.o): New rules.
+	* config/t-crtin: Remove.
+	* config/t-crtstuff-pic: New file.
+	* config/t-sol2 (CUSTOM_CRTIN): Set.
+	(crti.o, crtn.o): New rules.
+	* config/vms/t-vms: New file.
+	* config/vms/vms-ucrt0.c: New file.
+	* config/xtensa/t-elf: New file.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (SHLIB_NM_FLAGS): Set.
+	* mkmap-flat.awk, mkmap-symver.awk: New files.
+	* configure.ac (libgcc_cv_lib_sjlj_exceptions): Check for SjLj
+	exceptions.
+	* configure: Regenerate.
+	* config/libgcc-glibc.ver: New file.
+	* config/libgcc-libsystem.ver: New file.
+	* config/t-libunwind (SHLIB_LC): Set.
+	* config/t-linux: New file.
+	* config/t-slibgcc (INSTALL_SHLIB): New.
+	(SHLIB_INSTALL): Use it.
+	* config/t-slibgcc-darwin (SHLIB_MKMAP): Use $(srcdir) to refer
+	to mkmap-symver.awk.
+	(SHLIB_MAPFILES): Don't append, adapt pathname.
+	(SHLIB_VERPFX): Set.
+	* config/t-slibgcc-elf-ver (SHLIB_MKMAP): Use $(srcdir) to refer
+	to mkmap-symver.awk.
+	* config/t-slibgcc-gld-nover, config/t-slibgcc-hpux,
+	config/t-slibgcc-libgcc, config/t-slibgcc-vms: New files.
+	* config/alpha/libgcc-alpha-ldbl.ver, config/alpha/t-linux: New files.
+	* config/alpha/t-slibgcc-osf (SHLIB_MKMAP): Use $(srcdir) to refer
+	to mkmap-flat.awk.
+	* config/arm/t-bpabi (SHLIB_MAPFILES): Set.
+	* config/bfin/libgcc-glibc.ver, config/bfin/t-linux: New files.
+	* config/c6x/libgcc-eabi.ver, config/c6x/t-elf: New files.
+	* config/cris/libgcc-glibc.ver, config/cris/t-linux: New files.
+	* config/frv/libgcc-frv.ver, config/frv/t-linux: New files.
+	* config/i386/libgcc-darwin.10.4.ver,
+	config/i386/libgcc-darwin.10.5.ver, config/i386/libgcc-glibc.ver:
+	New files.
+	* config/i386/t-darwin: Remove.
+	* config/i386/t-darwin64: Likewise.
+	* config/i386/t-dw2-eh, config/i386/t-sjlj-eh: New files.
+	* config/i386/t-slibgcc-cygming, config/i386/t-cygwin,
+	config/i386/t-dlldir, config/i386/t-dlldir-x: New files.
+	* config/i386/t-linux: New file.
+	* config/i386/t-mingw32: New file.
+	* config/ia64/libgcc-glibc.ver, config/ia64/libgcc-ia64.ver: New files.
+	* config/ia64/t-glibc: Rename to ...
+	* config/ia64/t-linux: ... this.
+	(SHLIB_MAPFILES): Set.
+	* config/ia64/t-glibc-libunwind: Rename to ...
+	* config/ia64/t-linux-libunwind: ... this.
+	* config/ia64/t-ia64 (SHLIB_MAPFILES): Set.
+	* config/ia64/t-slibgcc-hpux: New file.
+	* config/m32r/libgcc-glibc.ver, config/m32r/t-linux: New files.
+	* config/m68k/t-slibgcc-elf-ver: New file.
+	* config/mips/t-mips16 (SHLIB_MAPFILES): Set.
+	* config/mips/t-slibgcc-irix (SHLIB_MKMAP): Use $(srcdir) to refer
+	to mkmap-flat.awk.
+	* config/pa/t-slibgcc-hpux: New file.
+	* config/pa/t-slibgcc-dwarf-ver, config/pa/t-slibgcc-sjsj-ver: New
+	files.
+	* config/rs6000/libgcc-darwin.10.4.ver,
+	config/rs6000/libgcc-darwin.10.5.ver: New files.
+	* config/rs6000/libgcc-ppc-glibc.ver: Rename to
+	config/rs6000/libgcc-glibc.ver.
+	* config/rs6000/libgcc-ppc64.ver: Rename to
+	config/rs6000/libgcc-ibm-ldouble.ver.
+	* config/rs6000/t-darwin (SHLIB_VERPFX): Remove.
+	* config/rs6000/t-ibm-ldouble (SHLIB_MAPFILES): Adapt filename.
+	* config/rs6000/t-ldbl128: Rename to ...
+	* config/rs6000/t-linux: ... this.
+	(SHLIB_MAPFILES): Adapt filename.
+	* config/rs6000/t-slibgcc-aix: New file.
+	* config/sh/libgcc-excl.ver, config/sh/libgcc-glibc.ver: New files.
+	* config/sh/t-linux (SHLIB_MAPFILES): Use $(srcdir) to refer to
+	libgcc-excl.ver, libgcc-glibc.ver.
+	(SHLIB_LINK, SHLIB_INSTALL): Remove.
+	* config/sparc/libgcc-glibc.ver: New file.
+	* config/sparc/t-linux: New file.
+	* config/xtensa/libgcc-glibc.ver, config/xtensa/t-linux: New files.
+	* config.host (*-*-freebsd*): Add t-slibgcc, t-slibgcc-gld,
+	t-slibgcc-elf-ver to tmake_file.
+	Add t-slibgcc-nolc-override to tmake_file for posix threads on
+	*-*-freebsd[34].
+	(*-*-linux*, frv-*-*linux*, *-*-kfreebsd*-gnu, *-*-knetbsd*-gnu,
+	*-*-gnu*, *-*-kopensolaris*-gnu): Add t-slibgcc, t-slibgcc-gld,
+	t-slibgcc-elf-ver, t-linux to tmake_file.
+	(*-*-netbsd*): Add t-slibgcc, t-slibgcc-gld, t-slibgcc-elf-ver to
+	tmake_file.
+	(alpha*-*-linux*): Add alpha/t-linux to tmake_file.
+	(alpha64-dec-*vms*): Add t-slibgcc-vms to tmake_file.
+	(alpha*-dec-*vms*): Likewise.
+	(arm*-*-freebsd*): Append to tmake_file.
+	(arm*-*-netbsdelf*): Add t-slibgcc-gld-nover to tmake_file.
+	(arm*-*-linux*): Add t-slibgcc-libgcc to tmake_file for
+	arm*-*-linux-*eabi.
+	(arm*-*-eabi*, arm*-*-symbianelf*): Add t-slibgcc-nolc-override to
+	tmake_file for arm*-*-symbianelf*.
+	(bfin*-linux-uclibc*): Append to tmake_file, add bfin/t-linux.
+	(cris-*-linux*, crisv32-*-linux*): Append to tmake_file, add
+	cris/t-linux.
+	(frv-*-*linux*): Append to tmake_file, add frv/t-linux.
+	(hppa*-*-linux*): Add t-slibgcc-libgcc, pa/t-slibgcc-sjlj-ver,
+	pa/t-slibgcc-dwarf-ver to tmake_file.
+	(hppa[12]*-*-hpux10*): Add t-slibgcc, pa/t-slibgcc-sjlj-ver,
+	pa/t-slibgcc-dwarf-ver, t-slibgcc-hpux, pa/t-slibgcc-hpux to tmake_file.
+	(hppa*64*-*-hpux11*): Likewise.
+	(hppa[12]*-*-hpux11*): Likewise.
+	(x86_64-*-darwin*): Don't override tmake_file, but only keep
+	i386/t-crtpc, i386/t-crtfm.
+	(i[34567]86-*-cygwin*): Set tmake_eh_file, tmake_dlldir_file.
+	Prepend $tmake_eh_file, $tmake_dlldir_file, i386/t-slibgcc-cygming
+	to tmake_file.
+	Add i386/t-cygwin to tmake_file.
+	Prepent i386/t-mingw-pthread to tmake_file for posix threads.
+	(i[34567]86-*-mingw*): Set tmake_eh_file, tmake_dlldir_file.
+	Prepend $tmake_eh_file, $tmake_dlldir_file, i386/t-slibgcc-cygming
+	to tmake_file.
+	Add i386/t-mingw32 to tmake_file.
+	(x86_64-*-mingw*): Likewise.
+	(ia64*-*-freebsd*): Append to tmake_file.
+	(ia64*-*-linux*): Append to tmake_file.
+	Replace ia64/t-glibc by ia64/t-linux.
+	Replace ia64/t-glibc-libunwind by ia64/t-linux-libunwind if using
+	system libunwind.
+	(ia64*-*-hpux*): Add t-slibgcc, ia64/t-slibgcc-hpux,
+	t-slibgcc-hpux to tmake_file.
+	(ia64-hp-*vms*): Add t-slibgcc-vms to tmake_file.
+	(m32r-*-linux*): Append to tmake_file, add m32r/t-linux.
+	(m32rle-*-linux*): Likewise.
+	(m68k-*-linux*)): Add m68k/t-slibgcc-elf-ver to tmake_file unless
+	sjlj exceptions.
+	(microblaze*-linux*): New case.
+	Append to tmake_file, add t-slibgcc-nolc-override.
+	(powerpc-*-freebsd*): Add t-slibgcc-libgcc to tmake_file.
+	(powerpc-*-linux*, powerpc64-*-linux*): Likewise.
+	Replace rs6000/t-ldbl128 by rs6000/t-linux in tmake_file.
+	(rs6000-ibm-aix4.[3456789]*, powerpc-ibm-aix4.[3456789]*): Add
+	rs6000/t-slibgcc-aix to tmake_file.
+	(rs6000-ibm-aix5.1.*, powerpc-ibm-aix5.1.*): Likewise.
+	(rs6000-ibm-aix[56789].*, powerpc-ibm-aix[56789].*): Likewise.
+	(sh-*-elf*, sh[12346l]*-*-elf*, sh-*-linux*)
+	(sh[2346lbe]*-*-linux*, sh-*-netbsdelf*, shl*-*-netbsdelf*)
+	(sh5-*-netbsd*, sh5l*-*-netbsd*, sh64-*-netbsd*)
+	(sh64l*-*-netbsd*): Add t-slibgcc-libgcc to tmake_file for
+	sh*-*-linux*.
+	(sparc-*-linux*): Append to tmake_file for *-leon*.
+	Add sparc/t-linux to tmake_file for non-Leon targets.
+	(sparc64-*-linux*): Add sparc/t-linux to tmake_file.
+	(tic6x-*-uclinux): New case.
+	Add t-slibgcc, t-slibgcc-gld, t-slibgcc-elf-ver to tmake_file.
+	(tic6x-*-*): Add c6x/t-elf to tmake_file.
+	(xtensa*-*-linux*): Append to tmake_file, add xtensa/t-linux.
+	(am33_2.0-*-linux*): Append to tmake_file.
+	(i[34567]86-*-linux*, x86_64-*-linux*, i[34567]86-*-kfreebsd*-gnu)
+	(i[34567]86-*-knetbsd*-gnu, i[34567]86-*-gnu*): Also handle
+	x86_64-*-kfreebsd*-gnu.
+	Add i386/t-linux to tmake_file.
+
+2011-10-28  Ian Lance Taylor  <iant@google.com>
+
+	* config/i386/morestack.S: Correct CFI information to do proper
+	returns throughout function.  In 32-bit mode, save %ebx so that it
+	is restored on unwind.
+
+2011-10-25  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/c6x/pr-support.c (__gnu_unwind_24bit): Correct logic for the
+	case where B3 isn't the return register.
+
+	* config/c6x/pr-support.c (pop_compact_frame, pop_frame): Correct
+	logic for doubleword pops.
+
+2011-10-25  Andreas Tobler  <andreast@fgznet.ch>
+
+	* config/rs6000/t-freebsd: Add wildcard.
+
+2011-10-21  Paul Brook  <paul@codesourcery.com>
+
+	* unwind-arm-common.inc: Handle ID3/4 unwinding data.
+
 2011-10-16  Uros Bizjak  <ubizjak@gmail.com>
 	    Eric Botcazou  <ebotcazou@adacore.com>
 

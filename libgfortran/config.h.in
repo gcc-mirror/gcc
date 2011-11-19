@@ -81,12 +81,6 @@
 /* Define to 1 if the target supports __attribute__((visibility(...))). */
 #undef HAVE_ATTRIBUTE_VISIBILITY
 
-/* Define to 1 if you have the `backtrace' function. */
-#undef HAVE_BACKTRACE
-
-/* Define to 1 if you have the `backtrace_symbols_fd' function. */
-#undef HAVE_BACKTRACE_SYMBOLS_FD
-
 /* Define if powf is broken. */
 #undef HAVE_BROKEN_POWF
 
@@ -204,9 +198,6 @@
 /* Define to 1 if you have the `chsize' function. */
 #undef HAVE_CHSIZE
 
-/* Define to 1 if you have the `clock' function. */
-#undef HAVE_CLOCK
-
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
 
@@ -234,7 +225,7 @@
 /* Define to 1 if you have the `close' function. */
 #undef HAVE_CLOSE
 
-/* complex.h exists */
+/* Define to 1 if you have the <complex.h> header file. */
 #undef HAVE_COMPLEX_H
 
 /* libm includes copysign */
@@ -348,14 +339,11 @@
 /* libm includes erfl */
 #undef HAVE_ERFL
 
-/* Define to 1 if you have the <execinfo.h> header file. */
-#undef HAVE_EXECINFO_H
-
 /* Define to 1 if you have the `execl' function. */
 #undef HAVE_EXECL
 
-/* Define to 1 if you have the `execvp' function. */
-#undef HAVE_EXECVP
+/* Define to 1 if you have the `execve' function. */
+#undef HAVE_EXECVE
 
 /* libm includes exp */
 #undef HAVE_EXP
@@ -389,9 +377,6 @@
 
 /* Define to 1 if you have the <floatingpoint.h> header file. */
 #undef HAVE_FLOATINGPOINT_H
-
-/* Define to 1 if you have the <float.h> header file. */
-#undef HAVE_FLOAT_H
 
 /* libm includes floor */
 #undef HAVE_FLOOR
@@ -444,22 +429,25 @@
 /* Define to 1 if you have the `getcwd' function. */
 #undef HAVE_GETCWD
 
-/* libc includes geteuid */
+/* Define to 1 if you have the `geteuid' function. */
 #undef HAVE_GETEUID
 
-/* libc includes getgid */
+/* Define to 1 if you have the `getgid' function. */
 #undef HAVE_GETGID
 
 /* Define to 1 if you have the `gethostname' function. */
 #undef HAVE_GETHOSTNAME
 
+/* Define if _Unwind_GetIPInfo is available. */
+#undef HAVE_GETIPINFO
+
 /* Define to 1 if you have the `getlogin' function. */
 #undef HAVE_GETLOGIN
 
-/* libc includes getpid */
+/* Define to 1 if you have the `getpid' function. */
 #undef HAVE_GETPID
 
-/* libc includes getppid */
+/* Define to 1 if you have the `getppid' function. */
 #undef HAVE_GETPPID
 
 /* Define to 1 if you have the `getpwuid' function. */
@@ -477,14 +465,11 @@
 /* Define to 1 if you have the `gettimeofday' function. */
 #undef HAVE_GETTIMEOFDAY
 
-/* libc includes getuid */
+/* Define to 1 if you have the `getuid' function. */
 #undef HAVE_GETUID
 
 /* Define to 1 if you have the `gmtime_r' function. */
 #undef HAVE_GMTIME_R
-
-/* Define if the compiler has a thread header that is non single. */
-#undef HAVE_GTHR_DEFAULT
 
 /* libm includes hypot */
 #undef HAVE_HYPOT
@@ -615,9 +600,6 @@
 /* libm includes nextafterl */
 #undef HAVE_NEXTAFTERL
 
-/* Define to 1 if you have the `perror' function. */
-#undef HAVE_PERROR
-
 /* Define to 1 if you have the `pipe' function. */
 #undef HAVE_PIPE
 
@@ -663,12 +645,6 @@
 /* Define to 1 if you have the `setmode' function. */
 #undef HAVE_SETMODE
 
-/* Define to 1 if you have the `signal' function. */
-#undef HAVE_SIGNAL
-
-/* Define to 1 if you have the <signal.h> header file. */
-#undef HAVE_SIGNAL_H
-
 /* libm includes sin */
 #undef HAVE_SIN
 
@@ -705,14 +681,8 @@
 /* Define to 1 if you have the `stat' function. */
 #undef HAVE_STAT
 
-/* Define to 1 if you have the <stdarg.h> header file. */
-#undef HAVE_STDARG_H
-
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
-
-/* Define to 1 if you have the <stdio.h> header file. */
-#undef HAVE_STDIO_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
@@ -720,14 +690,8 @@
 /* Define to 1 if you have the `strcasestr' function. */
 #undef HAVE_STRCASESTR
 
-/* Define to 1 if you have the `strerror' function. */
-#undef HAVE_STRERROR
-
 /* Define to 1 if you have the `strerror_r' function. */
 #undef HAVE_STRERROR_R
-
-/* Define to 1 if you have the `strftime' function. */
-#undef HAVE_STRFTIME
 
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
@@ -801,14 +765,8 @@
 /* libm includes tgammal */
 #undef HAVE_TGAMMAL
 
-/* Define to 1 if you have the `time' function. */
-#undef HAVE_TIME
-
 /* Define to 1 if you have the `times' function. */
 #undef HAVE_TIMES
-
-/* Define to 1 if you have the <time.h> header file. */
-#undef HAVE_TIME_H
 
 /* libm includes trunc */
 #undef HAVE_TRUNC
@@ -874,6 +832,9 @@
    */
 #undef LT_OBJDIR
 
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+#undef NO_MINUS_C_MINUS_O
+
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
 
@@ -912,9 +873,6 @@
 
 /* Define to 1 if the target supports #pragma weak */
 #undef SUPPORTS_WEAK
-
-/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
-#undef TIME_WITH_SYS_TIME
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE

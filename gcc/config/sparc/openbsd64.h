@@ -50,7 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_SPEC
 #define ASM_SPEC "\
 -s %{fpic|fPIC|fpie|fPIE:-K PIC} \
-%{mlittle-endian:-EL} \
 %(asm_cpu) %(asm_arch) \
 "
 

@@ -30,25 +30,25 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  condition_variable::condition_variable() throw ()
-  {
 #ifdef __GTHREAD_COND_INIT
-    __native_type __tmp = __GTHREAD_COND_INIT;
-    _M_cond = __tmp;
+  condition_variable::condition_variable() noexcept = default;
+  condition_variable::~condition_variable() noexcept = default;
 #else
+  condition_variable::condition_variable() noexcept
+  {
     int __e = __gthread_cond_init(&_M_cond, 0);
 
     if (__e)
       __throw_system_error(__e);
-#endif
   }
 
-  condition_variable::~condition_variable() throw ()
+  condition_variable::~condition_variable() noexcept
   {
     // XXX no thread blocked
     /* int __e = */ __gthread_cond_destroy(&_M_cond);
     // if __e == EBUSY then blocked
   }
+#endif
 
   void
   condition_variable::wait(unique_lock<mutex>& __lock)
@@ -60,7 +60,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   void
-  condition_variable::notify_one()
+  condition_variable::notify_one() noexcept
   {
     int __e = __gthread_cond_signal(&_M_cond);
 
@@ -71,7 +71,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   void
-  condition_variable::notify_all()
+  condition_variable::notify_all() noexcept
   {
     int __e = __gthread_cond_broadcast(&_M_cond);
 
@@ -81,11 +81,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __throw_system_error(__e);
   }
 
-  condition_variable_any::condition_variable_any() throw ()
-  { }
+  condition_variable_any::condition_variable_any() noexcept = default;
 
-  condition_variable_any::~condition_variable_any() throw ()
-  { }
+  condition_variable_any::~condition_variable_any() noexcept = default;
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

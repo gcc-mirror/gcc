@@ -619,7 +619,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __hash_base<size_t, shared_ptr<_Tp>>
     {
       size_t
-      operator()(const shared_ptr<_Tp>& __s) const
+      operator()(const shared_ptr<_Tp>& __s) const noexcept
       { return std::hash<_Tp*>()(__s.get()); }
     };
 

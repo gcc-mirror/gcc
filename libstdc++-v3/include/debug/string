@@ -580,6 +580,16 @@ namespace __gnu_debug
       return iterator(__res, this);
     }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    void
+    pop_back()
+    {
+      __glibcxx_check_nonempty();
+      _Base::pop_back();
+      this->_M_invalidate_all();
+    }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
     basic_string&
     replace(size_type __pos1, size_type __n1, const basic_string& __str)
     {

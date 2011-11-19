@@ -74,7 +74,7 @@ static __gthread_mutex_t random_lock;
    correct offset.  */
 
 
-static inline void
+static void
 rnumber_4 (GFC_REAL_4 *f, GFC_UINTEGER_4 v)
 {
   GFC_UINTEGER_4 mask;
@@ -89,7 +89,7 @@ rnumber_4 (GFC_REAL_4 *f, GFC_UINTEGER_4 v)
   *f = (GFC_REAL_4) v * GFC_REAL_4_LITERAL(0x1.p-32);
 }
 
-static inline void
+static void
 rnumber_8 (GFC_REAL_8 *f, GFC_UINTEGER_8 v)
 {
   GFC_UINTEGER_8 mask;
@@ -106,7 +106,7 @@ rnumber_8 (GFC_REAL_8 *f, GFC_UINTEGER_8 v)
 
 #ifdef HAVE_GFC_REAL_10
 
-static inline void
+static void
 rnumber_10 (GFC_REAL_10 *f, GFC_UINTEGER_8 v)
 {
   GFC_UINTEGER_8 mask;
@@ -126,7 +126,7 @@ rnumber_10 (GFC_REAL_10 *f, GFC_UINTEGER_8 v)
 
 /* For REAL(KIND=16), we only need to mask off the lower bits.  */
 
-static inline void
+static void
 rnumber_16 (GFC_REAL_16 *f, GFC_UINTEGER_8 v1, GFC_UINTEGER_8 v2)
 {
   GFC_UINTEGER_8 mask;

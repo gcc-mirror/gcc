@@ -40,18 +40,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    As usual with UNIX systems, unfortunately no single way is
    available for all systems.  */
 
-#ifdef TIME_WITH_SYS_TIME
-#  include <sys/time.h>
-#  include <time.h>
-#else
-#  if HAVE_SYS_TIME_H
-#    include <sys/time.h>
-#  else
-#    ifdef HAVE_TIME_H
-#      include <time.h>
-#    endif
-#  endif
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
 #endif
+
+#include <time.h>
 
 #ifdef HAVE_SYS_TYPES_H
      #include <sys/types.h>
@@ -104,14 +97,6 @@ localtime_r (const time_t * timep, struct tm * result)
 #endif
 
 
-#if defined (__GNUC__) && (__GNUC__ >= 3)
-#  define ATTRIBUTE_ALWAYS_INLINE __attribute__ ((__always_inline__))
-#else
-#  define ATTRIBUTE_ALWAYS_INLINE
-#endif
-
-static inline int gf_cputime (long *, long *, long *, long *) ATTRIBUTE_ALWAYS_INLINE;
-
 /* Helper function for the actual implementation of the DTIME, ETIME and
    CPU_TIME intrinsics.  Returns 0 for success or -1 if no
    CPU time could be computed.  */
@@ -121,7 +106,7 @@ static inline int gf_cputime (long *, long *, long *, long *) ATTRIBUTE_ALWAYS_I
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-static int
+static inline int
 gf_cputime (long *user_sec, long *user_usec, long *system_sec, long *system_usec)
 {
   union {
@@ -174,20 +159,21 @@ gf_cputime (long *user_sec, long *user_usec, long *system_sec, long *system_usec
   clock_t err;
   err = times (&buf);
   *user_sec = buf.tms_utime / HZ;
-  *user_usec = buf.tms_utime % HZ * (1000000 / HZ);
+  *user_usec = buf.tms_utime % HZ * (1000000. / HZ);
   *system_sec = buf.tms_stime / HZ;
-  *system_usec = buf.tms_stime % HZ * (1000000 / HZ);
+  *system_usec = buf.tms_stime % HZ * (1000000. / HZ);
   if ((err == (clock_t) -1) && errno != 0)
     return -1;
   return 0;
 
 #else 
-
-  /* We have nothing to go on.  Return -1.  */
-  *user_sec = *system_sec = 0;
-  *user_usec = *system_usec = 0;
-  errno = ENOSYS;
-  return -1;
+  clock_t c = clock ();
+  *user_sec = c / CLOCKS_PER_SEC;
+  *user_usec = c % CLOCKS_PER_SEC * (1000000. / CLOCKS_PER_SEC);
+  *system_sec = *system_usec = 0;
+  if (c == (clock_t) -1)
+    return -1;
+  return 0;
 
 #endif
 }
@@ -218,19 +204,13 @@ gf_gettime (time_t * secs, long * usecs)
   *secs = tv.tv_sec;
   *usecs = tv.tv_usec;
   return err;
-#elif HAVE_TIME
-  time_t t, t2;
-  t = time (&t2);
-  *secs = t2;
+#else
+  time_t t = time (NULL);
+  *secs = t;
   *usecs = 0;
   if (t == ((time_t)-1))
     return -1;
   return 0;
-#else
-  *secs = 0;
-  *usecs = 0;
-  errno = ENOSYS;
-  return -1;
 #endif
 }
 

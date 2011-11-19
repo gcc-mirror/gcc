@@ -5318,7 +5318,7 @@ This pragma signals that the entities whose names are listed are
 deliberately not referenced in the current source unit. This
 suppresses warnings about the
 entities being unreferenced, and in addition a warning will be
-generated if one of these entities is in fact referenced in the
+generated if one of these entities is in fact subsequently referenced in the
 same unit as the pragma (or in the corresponding body, or one
 of its subunits).
 
@@ -5575,7 +5575,7 @@ as possibly modified by compiler switches. Then each pragma Warning
 modifies this set of warnings as specified. This form of the pragma may
 also be used as a configuration pragma.
 
-The fourth form, with an On|Off parameter and a string, is used to
+The fourth form, with an @code{On|Off} parameter and a string, is used to
 control individual messages, based on their text. The string argument
 is a pattern that is used to match against the text of individual
 warning messages (not including the initial "warning: " tag).
@@ -5587,7 +5587,7 @@ message @code{warning: 960 bits of "a" unused}. No other regular
 expression notations are permitted. All characters other than asterisk in
 these three specific cases are treated as literal characters in the match.
 
-There are two ways to use this pragma. The OFF form can be used as a
+There are two ways to use the pragma in this form. The OFF form can be used as a
 configuration pragma. The effect is to suppress all warnings (if any)
 that match the pattern string throughout the compilation.
 
@@ -5603,6 +5603,13 @@ pragma Warnings (On, Pattern);
 @noindent
 In this usage, the pattern string must match in the Off and On pragmas,
 and at least one matching warning must be suppressed.
+
+Note: to write a string that will match any warning, use the string
+@code{"***"}. It will not work to use a single asterisk or two asterisks
+since this looks like an operator name. This form with three asterisks
+is similar in effect to specifying @code{pragma Warnings (Off)} except that a
+matching @code{pragma Warnings (On, "***")} will be required. This can be
+helpful in avoiding forgetting to turn warnings back on.
 
 Note: the debug flag -gnatd.i (@code{/NOWARNINGS_PRAGMAS} in VMS) can be
 used to cause the compiler to entirely ignore all WARNINGS pragmas. This can
@@ -9016,6 +9023,32 @@ in a distributed environment. If this exception is active, then the generated
 code is simplified by omitting the otherwise-required global registration
 of exceptions when they are declared.
 
+@item No_Finalization
+@findex No_Finalization
+This restriction disables the language features described in chapter 7.6 of the
+Ada 2005 RM as well as all form of code generation performed by the compiler to
+support these features. The following types are no longer considered controlled
+when this restriction is in effect:
+@itemize @bullet
+@item
+@code{Ada.Finalization.Controlled}
+@item
+@code{Ada.Finalization.Limited_Controlled}
+@item
+Derivations from @code{Controlled} or @code{Limited_Controlled}
+@item
+Class-wide types
+@item
+Protected types
+@item
+Task types
+@item
+Array and record types with controlled components
+@end itemize
+The compiler no longer generates code to initialize, finalize or adjust an
+object or a nested component, either declared on the stack or on the heap. The
+deallocation of a controlled object no longer finalizes its contents.
+
 @item No_Implicit_Aliasing
 @findex No_Implicit_Aliasing
 
@@ -9091,6 +9124,17 @@ only declared at the library level.
 This restriction ensures at compile time that there are no allocator
 expressions that attempt to allocate protected objects.
 
+@item No_Relative_Delay
+@findex No_Relative_Delay
+This restriction ensures at compile time that there are no delay relative
+statements and prevents expressions such as @code{delay 1.23;} from appearing
+in source code.
+
+@item No_Requeue_Statements
+@findex No_Requeue_Statements
+This restriction ensures at compile time that no requeue statements are
+permitted and prevents keyword @code{requeue} from being used in source code.
+
 @item No_Secondary_Stack
 @findex No_Secondary_Stack
 This restriction ensures at compile time that the generated code does not
@@ -9111,6 +9155,14 @@ This restriction ensures at compile time that no access types
 use the standard default storage pool.  Any access type declared must
 have an explicit Storage_Pool attribute defined specifying a
 user-defined storage pool.
+
+@item No_Stream_Optimizations
+@findex No_Stream_Optimizations
+This restriction affects the performance of stream operations on types
+@code{String}, @code{Wide_String} and @code{Wide_Wide_String}. By default, the
+compiler uses block reads and writes when manipulating @code{String} objects
+due to their supperior performance. When this restriction is in effect, the
+compiler performs all IO operations on a per-character basis.
 
 @item No_Streams
 @findex No_Streams
@@ -10170,7 +10222,7 @@ floating-point standard.
 
 Note that on machines that are not fully compliant with the IEEE
 floating-point standard, such as Alpha, the @option{-mieee} compiler flag
-must be used for achieving IEEE confirming behavior (although at the cost
+must be used for achieving IEEE conforming behavior (although at the cost
 of a significant performance penalty), so infinite and NaN values are
 properly generated.
 
@@ -11925,9 +11977,7 @@ The type of the item is non-elementary (e.g.@: a record or array).
 
 @item
 There is explicit or implicit initialization required for the object.
-Note that access values are always implicitly initialized, and also
-in GNAT, certain bit-packed arrays (those having a dynamic length or
-a length greater than 64) will also be implicitly initialized to zero.
+Note that access values are always implicitly initialized.
 
 @item
 The address value is non-static.  Here GNAT is more permissive than the

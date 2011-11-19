@@ -28,18 +28,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <assert.h>
 #include <string.h>
 #include <errno.h>
-
-#ifdef HAVE_SIGNAL_H
 #include <signal.h>
-#endif
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
@@ -172,9 +167,7 @@ sys_abort (void)
       || (options.backtrace == -1 && compile_options.backtrace == 1))
     {
       show_backtrace ();
-#if defined(HAVE_SIGNAL) && defined(SIGABRT)
       signal (SIGABRT, SIG_DFL);
-#endif
     }
 
   abort();
@@ -219,19 +212,13 @@ gf_strerror (int errnum,
 	     size_t buflen __attribute__((unused)))
 {
 #ifdef HAVE_STRERROR_R
-  /* TODO: How to prevent the compiler warning due to strerror_r of
-     the untaken branch having the wrong return type?  */
-  if (__builtin_classify_type (strerror_r (0, buf, 0)) == 5)
-    {
-      /* GNU strerror_r()  */
-      return strerror_r (errnum, buf, buflen);
-    }
-  else
-    {
-      /* POSIX strerror_r ()  */
-      strerror_r (errnum, buf, buflen);
-      return buf;
-    }
+  return
+    __builtin_choose_expr (__builtin_classify_type (strerror_r (0, buf, 0))
+			   == 5,
+			   /* GNU strerror_r()  */
+			   strerror_r (errnum, buf, buflen),
+			   /* POSIX strerror_r ()  */
+			   (strerror_r (errnum, buf, buflen), buf));
 #else
   /* strerror () is not necessarily thread-safe, but should at least
      be available everywhere.  */

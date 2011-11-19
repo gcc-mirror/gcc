@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build darwin freebsd linux openbsd windows
+
 package os
 
 import (
@@ -19,39 +21,6 @@ func epipecheck(file *File, e int) {
 	} else {
 		file.nepipe = 0
 	}
-}
-
-// Stat returns a FileInfo structure describing the named file and an error, if any.
-// If name names a valid symbolic link, the returned FileInfo describes
-// the file pointed at by the link and has fi.FollowedSymlink set to true.
-// If name names an invalid symbolic link, the returned FileInfo describes
-// the link itself and has fi.FollowedSymlink set to false.
-func Stat(name string) (fi *FileInfo, err Error) {
-	var lstat, stat syscall.Stat_t
-	e := syscall.Lstat(name, &lstat)
-	if iserror(e) {
-		return nil, &PathError{"stat", name, Errno(e)}
-	}
-	statp := &lstat
-	if lstat.Mode&syscall.S_IFMT == syscall.S_IFLNK {
-		e := syscall.Stat(name, &stat)
-		if !iserror(e) {
-			statp = &stat
-		}
-	}
-	return fileInfoFromStat(name, new(FileInfo), &lstat, statp), nil
-}
-
-// Lstat returns the FileInfo structure describing the named file and an
-// error, if any.  If the file is a symbolic link, the returned FileInfo
-// describes the symbolic link.  Lstat makes no attempt to follow the link.
-func Lstat(name string) (fi *FileInfo, err Error) {
-	var stat syscall.Stat_t
-	e := syscall.Lstat(name, &stat)
-	if iserror(e) {
-		return nil, &PathError{"lstat", name, Errno(e)}
-	}
-	return fileInfoFromStat(name, new(FileInfo), &stat, &stat), nil
 }
 
 // Remove removes the named file or directory.
@@ -79,7 +48,7 @@ func Remove(name string) Error {
 	// both errors will be ENOTDIR, so it's okay to
 	// use the error from unlink.
 	// For windows syscall.ENOTDIR is set
-	// to syscall.ERROR_DIRECTORY, hopefully it should
+	// to syscall.ERROR_PATH_NOT_FOUND, hopefully it should
 	// do the trick.
 	if e1 != syscall.ENOTDIR {
 		e = e1

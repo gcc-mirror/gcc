@@ -18,13 +18,6 @@
 
 ## Target part of the Makefile
 
-LIB1ASMSRC = bfin/lib1funcs.asm
-LIB1ASMFUNCS = _divsi3 _udivsi3 _umodsi3 _modsi3 _muldi3 _umulsi3_highpart
-LIB1ASMFUNCS += _smulsi3_highpart
-
-CRTSTUFF_T_CFLAGS = -fpic
-TARGET_LIBGCC2_CFLAGS = -fpic
-
 MULTILIB_OPTIONS=mcpu=bf532-none
 MULTILIB_OPTIONS+=mid-shared-library/msep-data mleaf-id-shared-library
 MULTILIB_DIRNAMES=bf532-none mid-shared-library msep-data mleaf-id-shared-library
@@ -53,11 +46,3 @@ MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf592-none
 MULTILIB_EXCEPTIONS=mleaf-id-shared-library*
 MULTILIB_EXCEPTIONS+=mcpu=bf532-none/mleaf-id-shared-library*
 MULTILIB_EXCEPTIONS+=*msep-data/mleaf-id-shared-library*
-
-# Assemble startup files.
-$(T)crtlibid.o: $(srcdir)/config/bfin/crtlibid.s $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-c -o $(T)crtlibid.o -x assembler-with-cpp \
-	$(srcdir)/config/bfin/crtlibid.s
-
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crtbeginS.o crtendS.o crtlibid.o

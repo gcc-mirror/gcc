@@ -15,73 +15,8 @@
 #  along with GCC; see the file COPYING3.  If not see
 #  <http://www.gnu.org/licenses/>.
 
-# Suppress building libgcc1.a
-LIBGCC1 =
-CROSS_LIBGCC1 =
-
-TARGET_LIBGCC2_CFLAGS = -fPIC -mwarn-reloc -D__IN_LIBGCC2
-
-# We exclude those because the libgcc2.c default versions do not support
-# the SPU single-precision format (round towards zero).  We provide our
-# own versions below and/or via direct expansion.
-LIB2FUNCS_EXCLUDE = _floatdisf _floatundisf _floattisf _floatunstisf
-
-LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/spu/float_unssidf.c \
-			 $(srcdir)/config/spu/float_unsdidf.c \
-			 $(srcdir)/config/spu/float_unsdisf.c \
-			 $(srcdir)/config/spu/float_disf.c \
-			 $(srcdir)/config/spu/mfc_tag_table.c \
-			 $(srcdir)/config/spu/mfc_tag_reserve.c \
-			 $(srcdir)/config/spu/mfc_tag_release.c \
-			 $(srcdir)/config/spu/mfc_multi_tag_reserve.c \
-			 $(srcdir)/config/spu/mfc_multi_tag_release.c \
-			 $(srcdir)/config/spu/multi3.c \
-			 $(srcdir)/config/spu/divmodti4.c \
-			 $(srcdir)/config/spu/divv2df3.c
-
-# Build TImode conversion routines to support Fortran 128-bit
-# integer data types.
-LIB2_SIDITI_CONV_FUNCS=yes
-
-# Don't let CTOR_LIST end up in sdata section.
-CRTSTUFF_T_CFLAGS =
-
 # Multi-lib support.
 MULTILIB_OPTIONS=mea64
-
-# Neither gcc or newlib seem to have a standard way to generate multiple
-# crt*.o files.  So we don't use the standard crt0.o name anymore.
-
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o libgcc_cachemgr.a libgcc_cachemgr_nonatomic.a \
-	libgcc_cache8k.a libgcc_cache16k.a libgcc_cache32k.a libgcc_cache64k.a libgcc_cache128k.a
-
-$(T)cachemgr.o: $(srcdir)/config/spu/cachemgr.c
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(MULTILIB_CFLAGS) -c $< -o $@
-
-# Specialised rule to add a -D flag.
-$(T)cachemgr_nonatomic.o: $(srcdir)/config/spu/cachemgr.c
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(MULTILIB_CFLAGS) -DNONATOMIC -c $< -o $@
-
-$(T)libgcc_%.a: $(T)%.o
-	$(AR_FOR_TARGET) -rcs $@ $<
-
-$(T)cache8k.o: $(srcdir)/config/spu/cache.S
-	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -D__CACHE_SIZE__=8 -o $@ -c $<
-
-$(T)cache16k.o: $(srcdir)/config/spu/cache.S
-	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -D__CACHE_SIZE__=16 -o $@ -c $<
-
-$(T)cache32k.o: $(srcdir)/config/spu/cache.S
-	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -D__CACHE_SIZE__=32 -o $@ -c $<
-
-$(T)cache64k.o: $(srcdir)/config/spu/cache.S
-	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -D__CACHE_SIZE__=64 -o $@ -c $<
-
-$(T)cache128k.o: $(srcdir)/config/spu/cache.S
-	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -D__CACHE_SIZE__=128 -o $@ -c $<
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
 
 spu.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(REGS_H) hard-reg-set.h \

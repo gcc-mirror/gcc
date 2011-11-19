@@ -37,10 +37,3 @@ MULTILIB_DIRNAMES   = $(patsubst m%, %, $(subst /, ,$(MULTILIB_OPTIONS)))
 MULTILIB_OSDIRNAMES = m64=../lib64
 MULTILIB_OSDIRNAMES+= m32=$(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)
 MULTILIB_OSDIRNAMES+= mx32=../libx32
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
-
-EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o \
-		     crtbeginT.o crtprec32.o crtprec64.o crtprec80.o \
-		     crtfastmath.o

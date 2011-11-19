@@ -52,7 +52,7 @@ int main()
   // { dg-error "is initialized like a variable" "var" { target *-*-* } 51 }
     ;
   
-  if (int a[2] = {1, 2})	// { dg-error "extended init" } 
+  if (int a[2] = {1, 2})	// { dg-error "extended init" "" { target c++98 } }
     ;
 
 }

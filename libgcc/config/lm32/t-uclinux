@@ -1,2 +1,2 @@
-CRTSTUFF_T_CFLAGS = -fPIC -msign-extend-enabled
-HOST_LIBGCC2_CFLAGS = -fPIC -msign-extend-enabled
+CRTSTUFF_T_CFLAGS = $(PICFLAG) -msign-extend-enabled
+HOST_LIBGCC2_CFLAGS += -msign-extend-enabled

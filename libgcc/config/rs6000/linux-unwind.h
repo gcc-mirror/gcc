@@ -368,7 +368,7 @@ frob_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs ATT
 		 before the bctrl so this is the first and only place
 		 we need to use the stored R2.  */
 	      _Unwind_Word sp = _Unwind_GetGR (context, 1);
-	      _Unwind_SetGRPtr (context, 2, sp + 40);
+	      _Unwind_SetGRPtr (context, 2, (void *)(sp + 40));
 	    }
 	}
     }

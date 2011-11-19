@@ -8,7 +8,10 @@ extern "C" void *malloc (size_t);
 int special;
 int space = 0xdeadbeef;
 
-void *operator new (size_t size) throw (bad_alloc)
+void *operator new (size_t size)
+#if __cplusplus <= 199711L
+  throw (std::bad_alloc)
+#endif
 {
   if (special)
     return &space;

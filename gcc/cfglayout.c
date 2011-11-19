@@ -149,6 +149,7 @@ skip_insns_after_block (basic_block bb)
 	    break;
 	  case NOTE_INSN_DELETED:
 	  case NOTE_INSN_DELETED_LABEL:
+	  case NOTE_INSN_DELETED_DEBUG_LABEL:
 	    continue;
 	  default:
 	    reorder_insns (insn, insn, last_insn);
@@ -1174,6 +1175,10 @@ duplicate_insn_chain (rtx from, rtx to)
       switch (GET_CODE (insn))
 	{
 	case DEBUG_INSN:
+	  /* Don't duplicate label debug insns.  */
+	  if (TREE_CODE (INSN_VAR_LOCATION_DECL (insn)) == LABEL_DECL)
+	    break;
+	  /* FALLTHRU */
 	case INSN:
 	case CALL_INSN:
 	case JUMP_INSN:
@@ -1219,6 +1224,7 @@ duplicate_insn_chain (rtx from, rtx to)
 
 	    case NOTE_INSN_DELETED:
 	    case NOTE_INSN_DELETED_LABEL:
+	    case NOTE_INSN_DELETED_DEBUG_LABEL:
 	      /* No problem to strip these.  */
 	    case NOTE_INSN_FUNCTION_BEG:
 	      /* There is always just single entry to function.  */

@@ -2778,7 +2778,14 @@ build_function_call_vec (location_t loc, tree function, VEC(tree,gc) *params,
 	return tem;
 
       name = DECL_NAME (function);
+
+      if (flag_tm)
+	tm_malloc_replacement (function);
       fundecl = function;
+      /* Atomic functions have type checking/casting already done.  They are 
+	 often rewritten and don't match the original parameter list.  */
+      if (name && !strncmp (IDENTIFIER_POINTER (name), "__atomic_", 9))
+        origtypes = NULL;
     }
   if (TREE_CODE (TREE_TYPE (function)) == FUNCTION_TYPE)
     function = function_to_pointer_conversion (loc, function);
@@ -3986,10 +3993,7 @@ build_unary_op (location_t location,
       if (val && TREE_CODE (val) == INDIRECT_REF
           && TREE_CONSTANT (TREE_OPERAND (val, 0)))
 	{
-	  tree op0 = fold_offsetof (arg, val), op1;
-
-	  op1 = fold_convert_loc (location, argtype, TREE_OPERAND (val, 0));
-	  ret = fold_build_pointer_plus_loc (location, op1, op0);
+	  ret = fold_convert_loc (location, argtype, fold_offsetof_1 (arg));
 	  goto return_build_unary_op;
 	}
 
@@ -11212,6 +11216,19 @@ c_finish_omp_clauses (tree clauses)
 
   bitmap_obstack_release (NULL);
   return clauses;
+}
+
+/* Create a transaction node.  */
+
+tree
+c_finish_transaction (location_t loc, tree block, int flags)
+{
+  tree stmt = build_stmt (loc, TRANSACTION_EXPR, block);
+  if (flags & TM_STMT_ATTR_OUTER)
+    TRANSACTION_EXPR_OUTER (stmt) = 1;
+  if (flags & TM_STMT_ATTR_RELAXED)
+    TRANSACTION_EXPR_RELAXED (stmt) = 1;
+  return add_stmt (stmt);
 }
 
 /* Make a variant type in the proper way for C/C++, propagating qualifiers

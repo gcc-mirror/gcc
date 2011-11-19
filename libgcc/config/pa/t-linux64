@@ -1,0 +1,8 @@
+# Plug millicode routines into libgcc.a  We want these on both native and
+# cross compiles.
+# FIXME: Explain.
+LIB1ASMFUNCS := $(filter-out _dyncall, $(LIB1ASMFUNCS))
+
+LIB2ADD_ST = $(srcdir)/config/pa/linux-atomic.c
+
+HOST_LIBGCC2_CFLAGS += -Dpa64=1 -DELF=1

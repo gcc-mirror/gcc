@@ -22,26 +22,10 @@
 # .def are examined to begin with.
 
 #   These files are part of libgcc, or target headers provided by gcc.
-config/vxlib.c
-crtstuff.c
-gbl-ctors.h
 gcov-io.h
 gcov-iov.c
-gthr-aix.h
-gthr-dce.h
-gthr-posix.c
-gthr-posix.h
-gthr-rtems.h
-gthr-single.h
-gthr-solaris.h
-gthr-vxworks.h
-gthr-win32.h
-gthr.h
-libgcc2.c
-libgcc2.h
 limitx.h
 limity.h
-longlong.h
 
 #   These programs are meant to be executed only by GCC maintainers or
 #   installers.  Such files do not need to be translated, as these

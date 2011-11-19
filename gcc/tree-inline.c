@@ -1365,6 +1365,12 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
 	    = gimple_build_omp_critical (s1, gimple_omp_critical_name (stmt));
 	  break;
 
+	case GIMPLE_TRANSACTION:
+	  s1 = remap_gimple_seq (gimple_transaction_body (stmt), id);
+	  copy = gimple_build_transaction (s1, gimple_transaction_label (stmt));
+	  gimple_transaction_set_subcode (copy, gimple_transaction_subcode (stmt));
+	  break;
+
 	default:
 	  gcc_unreachable ();
 	}
@@ -2568,14 +2574,21 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
       && value != error_mark_node
       && !useless_type_conversion_p (TREE_TYPE (p), TREE_TYPE (value)))
     {
+      /* If we can match up types by promotion/demotion do so.  */
       if (fold_convertible_p (TREE_TYPE (p), value))
-	rhs = fold_build1 (NOP_EXPR, TREE_TYPE (p), value);
+	rhs = fold_convert (TREE_TYPE (p), value);
       else
-	/* ???  For valid (GIMPLE) programs we should not end up here.
-	   Still if something has gone wrong and we end up with truly
-	   mismatched types here, fall back to using a VIEW_CONVERT_EXPR
-	   to not leak invalid GIMPLE to the following passes.  */
-	rhs = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (p), value);
+	{
+	  /* ???  For valid programs we should not end up here.
+	     Still if we end up with truly mismatched types here, fall back
+	     to using a VIEW_CONVERT_EXPR or a literal zero to not leak invalid
+	     GIMPLE to the following passes.  */
+	  if (!is_gimple_reg_type (TREE_TYPE (value))
+	      || TYPE_SIZE (TREE_TYPE (p)) == TYPE_SIZE (TREE_TYPE (value)))
+	    rhs = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (p), value);
+	  else
+	    rhs = build_zero_cst (TREE_TYPE (p));
+	}
     }
 
   /* Make an equivalent VAR_DECL.  Note that we must NOT remap the type
@@ -2906,7 +2919,27 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
      promoted, convert it back to the expected type.  */
   use = var;
   if (!useless_type_conversion_p (caller_type, TREE_TYPE (var)))
-    use = fold_convert (caller_type, var);
+    {
+      /* If we can match up types by promotion/demotion do so.  */
+      if (fold_convertible_p (caller_type, var))
+	use = fold_convert (caller_type, var);
+      else
+	{
+	  /* ???  For valid programs we should not end up here.
+	     Still if we end up with truly mismatched types here, fall back
+	     to using a MEM_REF to not leak invalid GIMPLE to the following
+	     passes.  */
+	  /* Prevent var from being written into SSA form.  */
+	  if (TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE
+	      || TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE)
+	    DECL_GIMPLE_REG_P (var) = false;
+	  else if (is_gimple_reg_type (TREE_TYPE (var)))
+	    TREE_ADDRESSABLE (var) = true;
+	  use = fold_build2 (MEM_REF, caller_type,
+			     build_fold_addr_expr (var),
+			     build_int_cst (ptr_type_node, 0));
+	}
+    }
 
   STRIP_USELESS_TYPE_CONVERSION (use);
 
@@ -3488,7 +3521,7 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
     case GIMPLE_CALL:
       {
 	tree decl = gimple_call_fndecl (stmt);
-	struct cgraph_node *node;
+	struct cgraph_node *node = NULL;
 
 	/* Do not special case builtins where we see the body.
 	   This just confuse inliner.  */
@@ -3523,7 +3556,7 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 	      }
 	  }
 
-	cost = weights->call_cost;
+	cost = node ? weights->call_cost : weights->indirect_call_cost;
 	if (gimple_call_lhs (stmt))
 	  cost += estimate_move_cost (TREE_TYPE (gimple_call_lhs (stmt)));
 	for (i = 0; i < gimple_call_num_args (stmt); i++)
@@ -3600,6 +3633,11 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
       return (weights->omp_cost
               + estimate_num_insns_seq (gimple_omp_body (stmt), weights));
 
+    case GIMPLE_TRANSACTION:
+      return (weights->tm_cost
+	      + estimate_num_insns_seq (gimple_transaction_body (stmt),
+					weights));
+
     default:
       gcc_unreachable ();
     }
@@ -3636,9 +3674,11 @@ void
 init_inline_once (void)
 {
   eni_size_weights.call_cost = 1;
+  eni_size_weights.indirect_call_cost = 3;
   eni_size_weights.target_builtin_call_cost = 1;
   eni_size_weights.div_mod_cost = 1;
   eni_size_weights.omp_cost = 40;
+  eni_size_weights.tm_cost = 10;
   eni_size_weights.time_based = false;
   eni_size_weights.return_cost = 1;
 
@@ -3647,9 +3687,11 @@ init_inline_once (void)
      underestimating the cost does less harm than overestimating it, so
      we choose a rather small value here.  */
   eni_time_weights.call_cost = 10;
+  eni_time_weights.indirect_call_cost = 15;
   eni_time_weights.target_builtin_call_cost = 1;
   eni_time_weights.div_mod_cost = 10;
   eni_time_weights.omp_cost = 40;
+  eni_time_weights.tm_cost = 40;
   eni_time_weights.time_based = true;
   eni_time_weights.return_cost = 2;
 }
@@ -4041,9 +4083,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 
 /* Expand call statements reachable from STMT_P.
    We can only have CALL_EXPRs as the "toplevel" tree code or nested
-   in a MODIFY_EXPR.  See gimple.c:get_call_expr_in().  We can
-   unfortunately not use that function here because we need a pointer
-   to the CALL_EXPR, not the tree itself.  */
+   in a MODIFY_EXPR.  */
 
 static bool
 gimple_expand_calls_inline (basic_block bb, copy_body_data *id)

@@ -23,5 +23,5 @@
 #include <atomic>
 #include <testsuite_character.h>
 
-template class std::atomic<__gnu_test::pod_char>;
+template class std::atomic<__gnu_test::pod_state>;
 template class std::atomic<__gnu_test::pod_char*>;

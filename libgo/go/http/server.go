@@ -16,6 +16,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -122,27 +123,46 @@ type response struct {
 	// "Connection: keep-alive" response header and a
 	// Content-Length.
 	closeAfterReply bool
+
+	// requestBodyLimitHit is set by requestTooLarge when
+	// maxBytesReader hits its max size. It is checked in
+	// WriteHeader, to make sure we don't consume the the
+	// remaining request body to try to advance to the next HTTP
+	// request. Instead, when this is set, we stop doing
+	// subsequent requests on this connection and stop reading
+	// input from it.
+	requestBodyLimitHit bool
+}
+
+// requestTooLarge is called by maxBytesReader when too much input has
+// been read from the client.
+func (w *response) requestTooLarge() {
+	w.closeAfterReply = true
+	w.requestBodyLimitHit = true
+	if !w.wroteHeader {
+		w.Header().Set("Connection", "close")
+	}
 }
 
 type writerOnly struct {
 	io.Writer
 }
 
-func (r *response) ReadFrom(src io.Reader) (n int64, err os.Error) {
-	// Flush before checking r.chunking, as Flush will call
+func (w *response) ReadFrom(src io.Reader) (n int64, err os.Error) {
+	// Flush before checking w.chunking, as Flush will call
 	// WriteHeader if it hasn't been called yet, and WriteHeader
-	// is what sets r.chunking.
-	r.Flush()
-	if !r.chunking && r.bodyAllowed() && !r.needSniff {
-		if rf, ok := r.conn.rwc.(io.ReaderFrom); ok {
+	// is what sets w.chunking.
+	w.Flush()
+	if !w.chunking && w.bodyAllowed() && !w.needSniff {
+		if rf, ok := w.conn.rwc.(io.ReaderFrom); ok {
 			n, err = rf.ReadFrom(src)
-			r.written += n
+			w.written += n
 			return
 		}
 	}
 	// Fall back to default io.Copy implementation.
-	// Use wrapper to hide r.ReadFrom from io.Copy.
-	return io.Copy(writerOnly{r}, src)
+	// Use wrapper to hide w.ReadFrom from io.Copy.
+	return io.Copy(writerOnly{w}, src)
 }
 
 // noLimit is an effective infinite upper bound for io.LimitedReader
@@ -159,13 +179,6 @@ func (srv *Server) newConn(rwc net.Conn) (c *conn, err os.Error) {
 	br := bufio.NewReader(c.lr)
 	bw := bufio.NewWriter(rwc)
 	c.buf = bufio.NewReadWriter(br, bw)
-
-	if tlsConn, ok := rwc.(*tls.Conn); ok {
-		tlsConn.Handshake()
-		c.tlsState = new(tls.ConnectionState)
-		*c.tlsState = tlsConn.ConnectionState()
-	}
-
 	return c, nil
 }
 
@@ -245,6 +258,17 @@ func (w *response) Header() Header {
 	return w.header
 }
 
+// maxPostHandlerReadBytes is the max number of Request.Body bytes not
+// consumed by a handler that the server will read from the a client
+// in order to keep a connection alive.  If there are more bytes than
+// this then the server to be paranoid instead sends a "Connection:
+// close" response.
+//
+// This number is approximately what a typical machine's TCP buffer
+// size is anyway.  (if we have the bytes on the machine, we might as
+// well read them)
+const maxPostHandlerReadBytes = 256 << 10
+
 func (w *response) WriteHeader(code int) {
 	if w.conn.hijacked {
 		log.Print("http: response.WriteHeader on hijacked connection")
@@ -254,18 +278,54 @@ func (w *response) WriteHeader(code int) {
 		log.Print("http: multiple response.WriteHeader calls")
 		return
 	}
+	w.wroteHeader = true
+	w.status = code
 
-	// Per RFC 2616, we should consume the request body before
-	// replying, if the handler hasn't already done so.
-	if w.req.ContentLength != 0 {
-		ecr, isExpecter := w.req.Body.(*expectContinueReader)
-		if !isExpecter || ecr.resp.wroteContinue {
-			w.req.Body.Close()
+	// Check for a explicit (and valid) Content-Length header.
+	var hasCL bool
+	var contentLength int64
+	if clenStr := w.header.Get("Content-Length"); clenStr != "" {
+		var err os.Error
+		contentLength, err = strconv.Atoi64(clenStr)
+		if err == nil {
+			hasCL = true
+		} else {
+			log.Printf("http: invalid Content-Length of %q sent", clenStr)
+			w.header.Del("Content-Length")
 		}
 	}
 
-	w.wroteHeader = true
-	w.status = code
+	if w.req.wantsHttp10KeepAlive() && (w.req.Method == "HEAD" || hasCL) {
+		_, connectionHeaderSet := w.header["Connection"]
+		if !connectionHeaderSet {
+			w.header.Set("Connection", "keep-alive")
+		}
+	} else if !w.req.ProtoAtLeast(1, 1) {
+		// Client did not ask to keep connection alive.
+		w.closeAfterReply = true
+	}
+
+	if w.header.Get("Connection") == "close" {
+		w.closeAfterReply = true
+	}
+
+	// Per RFC 2616, we should consume the request body before
+	// replying, if the handler hasn't already done so.  But we
+	// don't want to do an unbounded amount of reading here for
+	// DoS reasons, so we only try up to a threshold.
+	if w.req.ContentLength != 0 && !w.closeAfterReply {
+		ecr, isExpecter := w.req.Body.(*expectContinueReader)
+		if !isExpecter || ecr.resp.wroteContinue {
+			n, _ := io.CopyN(ioutil.Discard, w.req.Body, maxPostHandlerReadBytes+1)
+			if n >= maxPostHandlerReadBytes {
+				w.requestTooLarge()
+				w.header.Set("Connection", "close")
+			} else {
+				w.req.Body.Close()
+			}
+		}
+	}
+
 	if code == StatusNotModified {
 		// Must not have body.
 		for _, header := range []string{"Content-Type", "Content-Length", "Transfer-Encoding"} {
@@ -286,20 +346,6 @@ func (w *response) WriteHeader(code int) {
 
 	if _, ok := w.header["Date"]; !ok {
 		w.Header().Set("Date", time.UTC().Format(TimeFormat))
-	}
-
-	// Check for a explicit (and valid) Content-Length header.
-	var hasCL bool
-	var contentLength int64
-	if clenStr := w.header.Get("Content-Length"); clenStr != "" {
-		var err os.Error
-		contentLength, err = strconv.Atoi64(clenStr)
-		if err == nil {
-			hasCL = true
-		} else {
-			log.Printf("http: invalid Content-Length of %q sent", clenStr)
-			w.header.Del("Content-Length")
-		}
 	}
 
 	te := w.header.Get("Transfer-Encoding")
@@ -332,20 +378,6 @@ func (w *response) WriteHeader(code int) {
 		// signal EOF by closing connection.
 		w.closeAfterReply = true
 		w.header.Del("Transfer-Encoding") // in case already set
-	}
-
-	if w.req.wantsHttp10KeepAlive() && (w.req.Method == "HEAD" || hasCL) {
-		_, connectionHeaderSet := w.header["Connection"]
-		if !connectionHeaderSet {
-			w.header.Set("Connection", "keep-alive")
-		}
-	} else if !w.req.ProtoAtLeast(1, 1) {
-		// Client did not ask to keep connection alive.
-		w.closeAfterReply = true
-	}
-
-	if w.header.Get("Connection") == "close" {
-		w.closeAfterReply = true
 	}
 
 	// Cannot use Content-Length with non-identity Transfer-Encoding.
@@ -472,55 +504,6 @@ func (w *response) Write(data []byte) (n int, err os.Error) {
 	return m + n, err
 }
 
-// If this is an error reply (4xx or 5xx)
-// and the handler wrote some data explaining the error,
-// some browsers (i.e., Chrome, Internet Explorer)
-// will show their own error instead unless the error is
-// long enough.  The minimum lengths used in those
-// browsers are in the 256-512 range.
-// Pad to 1024 bytes.
-func errorKludge(w *response) {
-	const min = 1024
-
-	// Is this an error?
-	if kind := w.status / 100; kind != 4 && kind != 5 {
-		return
-	}
-
-	// Did the handler supply any info?  Enough?
-	if w.written == 0 || w.written >= min {
-		return
-	}
-
-	// Is it a broken browser?
-	var msg string
-	switch agent := w.req.UserAgent(); {
-	case strings.Contains(agent, "MSIE"):
-		msg = "Internet Explorer"
-	case strings.Contains(agent, "Chrome/"):
-		msg = "Chrome"
-	default:
-		return
-	}
-	msg += " would ignore this error page if this text weren't here.\n"
-
-	// Is it text?  ("Content-Type" is always in the map)
-	baseType := strings.SplitN(w.header.Get("Content-Type"), ";", 2)[0]
-	switch baseType {
-	case "text/html":
-		io.WriteString(w, "<!-- ")
-		for w.written < min {
-			io.WriteString(w, msg)
-		}
-		io.WriteString(w, " -->")
-	case "text/plain":
-		io.WriteString(w, "\n")
-		for w.written < min {
-			io.WriteString(w, msg)
-		}
-	}
-}
-
 func (w *response) finishRequest() {
 	// If this was an HTTP/1.0 request with keep-alive and we sent a Content-Length
 	// back, we can make this a keep-alive response ...
@@ -536,14 +519,17 @@ func (w *response) finishRequest() {
 	if w.needSniff {
 		w.sniff()
 	}
-	errorKludge(w)
 	if w.chunking {
 		io.WriteString(w.conn.buf, "0\r\n")
 		// trailer key/value pairs, followed by blank line
 		io.WriteString(w.conn.buf, "\r\n")
 	}
 	w.conn.buf.Flush()
-	w.req.Body.Close()
+	// Close the body, unless we're about to close the whole TCP connection
+	// anyway.
+	if !w.closeAfterReply {
+		w.req.Body.Close()
+	}
 	if w.req.MultipartForm != nil {
 		w.req.MultipartForm.RemoveAll()
 	}
@@ -581,7 +567,9 @@ func (c *conn) serve() {
 		if err == nil {
 			return
 		}
-		c.rwc.Close()
+		if c.rwc != nil { // may be nil if connection hijacked
+			c.rwc.Close()
+		}
 
 		var buf bytes.Buffer
 		fmt.Fprintf(&buf, "http: panic serving %v: %v\n", c.remoteAddr, err)
@@ -589,17 +577,32 @@ func (c *conn) serve() {
 		log.Print(buf.String())
 	}()
 
+	if tlsConn, ok := c.rwc.(*tls.Conn); ok {
+		if err := tlsConn.Handshake(); err != nil {
+			c.close()
+			return
+		}
+		c.tlsState = new(tls.ConnectionState)
+		*c.tlsState = tlsConn.ConnectionState()
+	}
+
 	for {
 		w, err := c.readRequest()
 		if err != nil {
+			msg := "400 Bad Request"
 			if err == errTooLarge {
 				// Their HTTP client may or may not be
 				// able to read this if we're
 				// responding to them and hanging up
 				// while they're still writing their
 				// request.  Undefined behavior.
-				fmt.Fprintf(c.rwc, "HTTP/1.1 400 Request Too Large\r\n\r\n")
+				msg = "413 Request Entity Too Large"
+			} else if err == io.ErrUnexpectedEOF {
+				break // Don't reply
+			} else if neterr, ok := err.(net.Error); ok && neterr.Timeout() {
+				break // Don't reply
 			}
+			fmt.Fprintf(c.rwc, "HTTP/1.1 %s\r\n\r\n", msg)
 			break
 		}
 
@@ -774,13 +777,16 @@ func Redirect(w ResponseWriter, r *Request, urlStr string, code int) {
 	}
 }
 
+var htmlReplacer = strings.NewReplacer(
+	"&", "&amp;",
+	"<", "&lt;",
+	">", "&gt;",
+	`"`, "&quot;",
+	"'", "&apos;",
+)
+
 func htmlEscape(s string) string {
-	s = strings.Replace(s, "&", "&amp;", -1)
-	s = strings.Replace(s, "<", "&lt;", -1)
-	s = strings.Replace(s, ">", "&gt;", -1)
-	s = strings.Replace(s, "\"", "&quot;", -1)
-	s = strings.Replace(s, "'", "&apos;", -1)
-	return s
+	return htmlReplacer.Replace(s)
 }
 
 // Redirect to a fixed URL

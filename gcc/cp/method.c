@@ -339,6 +339,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   DECL_EXTERNAL (thunk_fndecl) = 0;
   /* The linkage of the function may have changed.  FIXME in linkage
      rewrite.  */
+  gcc_assert (DECL_INTERFACE_KNOWN (function));
   TREE_PUBLIC (thunk_fndecl) = TREE_PUBLIC (function);
   DECL_VISIBILITY (thunk_fndecl) = DECL_VISIBILITY (function);
   DECL_VISIBILITY_SPECIFIED (thunk_fndecl)

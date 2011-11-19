@@ -655,6 +655,28 @@ proc check_effective_target_tls_runtime {} {
     } [add_options_for_tls ""]]
 }
 
+# Return 1 if atomic compare-and-swap is supported on 'int'
+
+proc check_effective_target_cas_char {} {
+    return [check_no_compiler_messages cas_char assembly {
+	#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_1
+	#error unsupported
+	#endif
+    } ""]
+}
+
+proc check_effective_target_cas_int {} {
+    return [check_no_compiler_messages cas_int assembly {
+	#if __INT_MAX__ == 0x7fff && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
+        /* ok */
+        #elif __INT_MAX__ == 0x7fffffff && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
+	/* ok */
+	#else
+	#error unsupported
+	#endif
+    } ""]
+}
+
 # Return 1 if -ffunction-sections is supported, 0 otherwise.
 
 proc check_effective_target_function_sections {} {
@@ -1753,6 +1775,7 @@ proc check_effective_target_vect_cmdline_needed { } {
 	     || ([istarget powerpc*-*-*]
 		 && ([check_effective_target_powerpc_spe]
 		     || [check_effective_target_powerpc_altivec]))
+	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_vis])
              || [istarget spu-*-*]
 	     || ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
 	   set et_vect_cmdline_needed_saved 0
@@ -2447,6 +2470,40 @@ proc check_effective_target_ultrasparc_hw { } {
     return [check_runtime ultrasparc_hw {
 	int main() { return 0; }
     } "-mcpu=ultrasparc"]
+}
+
+# Return 1 if the test environment supports executing UltraSPARC VIS2
+# instructions.  We check this by attempting: "bmask %g0, %g0, %g0"
+
+proc check_effective_target_ultrasparc_vis2_hw { } {
+    return [check_runtime ultrasparc_hw {
+	int main() { __asm__(".word 0x81b00320"); return 0; }
+    } "-mcpu=ultrasparc3"]
+}
+
+# Return 1 if the test environment supports executing UltraSPARC VIS3
+# instructions.  We check this by attempting: "addxc %g0, %g0, %g0"
+
+proc check_effective_target_ultrasparc_vis3_hw { } {
+    return [check_runtime ultrasparc_hw {
+	int main() { __asm__(".word 0x81b00220"); return 0; }
+    } "-mcpu=niagara3"]
+}
+
+# Return 1 if this is a Sparc target with VIS enabled.
+
+proc check_effective_target_sparc_vis { } {
+    if { [istarget sparc*-*-*] } {
+	return [check_no_compiler_messages sparc_vis object {
+	    #ifndef __VIS__
+	    #error not VIS
+	    #else
+	    int dummy;
+	    #endif
+	}]
+    } else {
+	return 0
+    }
 }
 
 # Return 1 if the target supports hardware vector shift operation.
@@ -3297,7 +3354,8 @@ proc check_effective_target_vect_cond_mixed { } {
     } else {
 	set et_vect_cond_mixed_saved 0
 	if { [istarget i?86-*-*]
-	     || [istarget x86_64-*-*] } {
+	     || [istarget x86_64-*-*]
+	     || [istarget powerpc*-*-*] } {
 	   set et_vect_cond_mixed_saved 1
 	}
     }
@@ -3480,6 +3538,58 @@ proc check_effective_target_vect64 { } {
     return $et_vect64_saved
 }
 
+# Return 1 if the target supports vector copysignf calls.
+
+proc check_effective_target_vect_call_copysignf { } {
+    global et_vect_call_copysignf_saved
+
+    if [info exists et_vect_call_copysignf_saved] {
+	verbose "check_effective_target_vect_call_copysignf: using cached result" 2
+    } else {
+	set et_vect_call_copysignf_saved 0
+	if { [istarget i?86-*-*]
+	     || [istarget x86_64-*-*]
+	     || [istarget powerpc*-*-*] } {
+	   set et_vect_call_copysignf_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_call_copysignf: returning $et_vect_call_copysignf_saved" 2
+    return $et_vect_call_copysignf_saved
+}
+
+# Return 1 if the target supports vector sqrtf calls.
+
+proc check_effective_target_vect_call_sqrtf { } {
+    global et_vect_call_sqrtf_saved
+
+    if [info exists et_vect_call_sqrtf_saved] {
+	verbose "check_effective_target_vect_call_sqrtf: using cached result" 2
+    } else {
+	set et_vect_call_sqrtf_saved 0
+	if { [istarget i?86-*-*]
+	     || [istarget x86_64-*-*]
+	     || ([istarget powerpc*-*-*] && [check_vsx_hw_available]) } {
+	    set et_vect_call_sqrtf_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_call_sqrtf: returning $et_vect_call_sqrtf_saved" 2
+    return $et_vect_call_sqrtf_saved
+}
+
+# Return 1 if the target supports vector lrint calls.
+
+proc check_effective_target_vect_call_lrint { } {
+    set et_vect_call_lrint 0
+    if { ([istarget i?86-*-*] || [istarget x86_64-*-*]) && [check_effective_target_ilp32] } {
+	set et_vect_call_lrint 1
+    }
+
+    verbose "check_effective_target_vect_call_lrint: returning $et_vect_call_lrint" 2
+    return $et_vect_call_lrint
+}
+
 # Return 1 if the target supports section-anchors
 
 proc check_effective_target_section_anchors { } {
@@ -3497,6 +3607,28 @@ proc check_effective_target_section_anchors { } {
 
     verbose "check_effective_target_section_anchors: returning $et_section_anchors_saved" 2
     return $et_section_anchors_saved
+}
+
+# Return 1 if the target supports atomic operations on "int_128" values.
+
+proc check_effective_target_sync_int_128 { } {
+    if { ([istarget x86_64-*-*] || [istarget i?86-*-*])
+	 && ![is-effective-target ia32] } {
+	return 1
+    } else {
+	return 0
+    }
+}
+
+# Return 1 if the target supports atomic operations on "long long".
+
+proc check_effective_target_sync_long_long { } {
+    if { ([istarget x86_64-*-*] || [istarget i?86-*-*])
+	 && ![is-effective-target ia32] } {
+	return 1
+    } else {
+	return 0
+    }
 }
 
 # Return 1 if the target supports atomic operations on "int" and "long".
@@ -4163,6 +4295,24 @@ proc check_effective_target_c++ { } {
  return 0
 }
 
+# Check which language standard is active by checking for the presence of
+# one of the C++11 -std flags.  This assumes that the default for the
+# compiler is C++98, and that there will never be multiple -std= arguments
+# on the command line.
+proc check_effective_target_c++11 { } {
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    return [check-flags { { } { } { -std=c++0x -std=gnu++0x -std=c++11 -std=gnu++11 } }]
+}
+
+proc check_effective_target_c++98 { } {
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    return [check-flags { { } { } { } { -std=c++0x -std=gnu++0x -std=c++11 -std=gnu++11 } }]
+}
+
 # Return 1 if expensive testcases should be run.
 
 proc check_effective_target_run_expensive_tests { } {
@@ -4279,4 +4429,12 @@ proc check_effective_target_non_strict_align {} {
 	c *z;
 	void foo(void) { z = (c *) y; }
     } "-Wcast-align"]
+}
+
+# Return 1 if the target has <ucontext.h>.
+
+proc check_effective_target_ucontext_h { } {
+    return [check_no_compiler_messages ucontext_h assembly {
+	#include <ucontext.h>
+    }]
 }

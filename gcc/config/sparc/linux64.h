@@ -133,7 +133,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef  LINK_SPEC
 #define LINK_SPEC "\
 %(link_arch) \
-%{mlittle-endian:-EL} \
 %{!mno-relax:%{!r:-relax}} \
 "
 
@@ -166,6 +165,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 %{m32:%{m64:%emay not use both -m32 and -m64}} \
 %{m32:-mptr32 -mno-stack-bias %{!mlong-double-128:-mlong-double-64} \
   %{!mcpu*:-mcpu=cypress}} \
+%{mv8plus:-mptr32 -mno-stack-bias %{!mlong-double-128:-mlong-double-64} \
+  %{!mcpu*:-mcpu=v9}} \
 %{!m32:%{!mcpu*:-mcpu=ultrasparc}} \
 %{!mno-vis:%{!m32:%{!mcpu=v9:-mvis}}} \
 "
@@ -207,7 +208,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
       %{rdynamic:-export-dynamic} \
       -dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "} \
     %{static:-static}} \
-%{mlittle-endian:-EL} \
 %{!mno-relax:%{!r:-relax}} \
 "
 
@@ -219,7 +219,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 -s \
 %{fpic|fPIC|fpie|fPIE:-K PIC} \
 %{!.c:%{findirect-dispatch:-K PIC}} \
-%{mlittle-endian:-EL} \
 %(asm_cpu) %(asm_arch) %(asm_relax)"
 
 #undef ASM_OUTPUT_ALIGNED_LOCAL
@@ -236,15 +235,6 @@ do {									\
 
 #undef  LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX  "."
-
-/* This is how to store into the string LABEL
-   the symbol_ref name of an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.
-   This is suitable for output with `assemble_name'.  */
-
-#undef  ASM_GENERATE_INTERNAL_LABEL
-#define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*.L%s%ld", PREFIX, (long)(NUM))
 
 /* DWARF bits.  */
 

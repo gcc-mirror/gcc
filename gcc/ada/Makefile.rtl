@@ -122,6 +122,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-ciormu$(objext) \
   a-ciorse$(objext) \
   a-clrefi$(objext) \
+  a-cogeso$(objext) \
   a-cohama$(objext) \
   a-cohase$(objext) \
   a-cohata$(objext) \
@@ -214,9 +215,15 @@ GNATRTL_NONTASKING_OBJS= \
   a-rbtgbo$(objext) \
   a-rbtgbk$(objext) \
   a-rbtgso$(objext) \
+  a-sbecin$(objext) \
+  a-sbhcin$(objext) \
+  a-sblcin$(objext) \
   a-scteio$(objext) \
   a-secain$(objext) \
   a-sequio$(objext) \
+  a-sfecin$(objext) \
+  a-sfhcin$(objext) \
+  a-sflcin$(objext) \
   a-sfteio$(objext) \
   a-sfwtio$(objext) \
   a-sfztio$(objext) \
@@ -261,10 +268,13 @@ GNATRTL_NONTASKING_OBJS= \
   a-stzsea$(objext) \
   a-stzsup$(objext) \
   a-stzunb$(objext) \
+  a-suecin$(objext) \
   a-suenco$(objext) \
   a-suenst$(objext) \
   a-suewst$(objext) \
   a-suezst$(objext) \
+  a-suhcin$(objext) \
+  a-sulcin$(objext) \
   a-suteio$(objext) \
   a-swbwha$(objext) \
   a-swfwha$(objext) \

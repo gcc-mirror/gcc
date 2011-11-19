@@ -1,3 +1,143 @@
+2011-11-08  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/51010
+	c-family/
+
+2011-11-07  Richard Henderson  <rth@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+	    Torvald Riegel  <triegel@redhat.com>
+
+	Merged from transactional-memory.
+
+	* c-common.c (handle_tm_wrap_attribute,
+	handle_tm_attribute, ignore_attribute, parse_tm_stmt_attr): New.
+	(struct c_common_reswords): Added __transaction* keywords.
+	(struct c_common_attribute_table): Added transaction* and tm_regparm
+	attributes.
+	* c-common.h: Added RID_TRANSACTION*. Added TM_ATTR* and TM_STMT*
+	masks.
+	(parse_tm_stmt_attr, tm_attr_to_mask, tm_mask_to_attr,
+	find_tm_attribute): Declare.
+
+2011-11-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35688
+	* c-common.c, c-common.h: Revert yesterday's changes.
+
+2011-11-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35688
+	* c-common.c (decl_has_visibility_attr): Split out from...
+	(c_determine_visibility): ...here.
+	* c-common.h: Declare it.
+
+2011-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (c_common_reswords): Add _Alignas and _Alignof.
+	(c_sizeof_or_alignof_type): Diagnose alignof applied to a function
+	type.
+	(check_user_alignment): New.  Split out of
+	handle_aligned_attribute.  Disallow integer constants with
+	noninteger types.  Conditionally allow zero.
+	(handle_aligned_attribute): Use check_user_alignment.
+	* c-common.h (RID_ALIGNAS, check_user_alignment): New.
+
+2011-11-06  Andrew MacLeod  <amacleod@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	Merged from cxx-mem-model.
+
+	* c-cppbuiltin.c (c_cpp_builtins): Test both atomic and sync patterns.
+	* c-common.c (sync_resolve_params, sync_resolve_return): Only tweak 
+	parameters that are the same type size.
+	(get_atomic_generic_size): New.  Find size of generic
+	atomic function parameters and do typechecking.
+	(add_atomic_size_parameter): New.  Insert size into parameter list.
+	(resolve_overloaded_atomic_exchange): Restructure __atomic_exchange to
+	either __atomic_exchange_n or external library call.
+	(resolve_overloaded_atomic_compare_exchange): Restructure 
+	__atomic_compare_exchange to either _n variant or external library call.
+	(resolve_overloaded_atomic_load): Restructure __atomic_load to either 
+	__atomic_load_n or an external library call.
+	(resolve_overloaded_atomic_store): Restructure __atomic_store to either
+	__atomic_store_n or an external library call.
+	(resolve_overloaded_builtin): Handle new __atomic builtins.
+
+2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/50608
+	* c-common.c (c_fully_fold_internal) <ADDR_EXPR>: Call fold_offsetof_1.
+	(fold_offsetof_1): Make global.  Remove STOP_REF argument and adjust.
+	<INDIRECT_REF>: Return the argument.
+	<ARRAY_REF>: Remove special code for negative offset.
+	Call fold_build_pointer_plus instead of size_binop.
+	(fold_offsetof): Remove STOP_REF argument and adjust.
+	* c-common.h (fold_offsetof_1): Declare.
+	(fold_offsetof): Remove STOP_REF argument.
+
+2011-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50810
+	* c-opts.c (c_common_handle_option): Enable -Wnarrowing as part
+	of -Wall; include -Wnarrowing in -Wc++0x-compat; adjust default
+	Wnarrowing for C++0x and C++98.
+	* c.opt ([Wnarrowing]): Update.
+
+2011-11-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44277
+	* c.opt: Add Wzero-as-null-pointer-constant.
+
+2011-10-31  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (-fdeduce-init-list): Off by default.
+
+	PR c++/50920
+	* c-common.h (cxx_dialect): Add cxx11 and cxx03.
+	* c.opt: Add -std=c++11, -std=gnu++11, -std=gnu++03,
+	and -Wc++11-compat.
+	* c-opts.c (set_std_cxx11): Rename from set_std_cxx0x.
+
+2011-10-27  Roberto Agostino Vitillo  <ravitillo@lbl.gov>
+
+	PR c++/30066
+	* c.opt (fvisibility-inlines-hidden): Description change.
+
+2011-10-26  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement C++11 user-defined literals.
+	* c-common.c (build_userdef_literal): New.
+	* c-common.def: New tree code.
+	* c-common.h (tree_userdef_literal): New tree struct and accessors.
+	* c-lex.c (interpret_float): Add suffix parm.
+	(c_lex_with_flags): Build literal tokens.
+
+2011-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50841
+	Revert:
+	2011-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50810
+	* c-opts.c (c_common_handle_option): Enable -Wnarrowing as part
+	of -Wall; include -Wnarrowing in -Wc++0x-compat; adjust default
+	Wnarrowing for C++0x and C++98.
+	* c.opt ([Wnarrowing]): Update.
+
+2011-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50810
+	* c-opts.c (c_common_handle_option): Enable -Wnarrowing as part
+	of -Wall; include -Wnarrowing in -Wc++0x-compat; adjust default
+	Wnarrowing for C++0x and C++98.
+	* c.opt ([Wnarrowing]): Update.
+
+2011-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/45385
+	* c-common.c (conversion_warning): Remove code looking for
+	artificial operands.
+
 2011-10-18  Dodji Seketeli  <dodji@redhat.com>
 
 	PR bootstrap/50760

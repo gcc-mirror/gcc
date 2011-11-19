@@ -3,6 +3,6 @@
 
 struct A
 {
-  struct type {}; // { dg-error "conflicts with previous" }
-  typedef int type; // { dg-error "declaration" }
+  struct type {}; // { dg-message "previous" }
+  typedef int type; // { dg-error "conflicts" }
 };

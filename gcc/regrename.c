@@ -1182,7 +1182,8 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 
 static void
 scan_rtx_address (rtx insn, rtx *loc, enum reg_class cl,
-		  enum scan_actions action, enum machine_mode mode)
+		  enum scan_actions action, enum machine_mode mode,
+		  addr_space_t as)
 {
   rtx x = *loc;
   RTX_CODE code = GET_CODE (x);
@@ -1250,15 +1251,15 @@ scan_rtx_address (rtx insn, rtx *loc, enum reg_class cl,
 	    unsigned regno0 = REGNO (op0), regno1 = REGNO (op1);
 
 	    if (REGNO_OK_FOR_INDEX_P (regno1)
-		&& regno_ok_for_base_p (regno0, mode, PLUS, REG))
+		&& regno_ok_for_base_p (regno0, mode, as, PLUS, REG))
 	      index_op = 1;
 	    else if (REGNO_OK_FOR_INDEX_P (regno0)
-		     && regno_ok_for_base_p (regno1, mode, PLUS, REG))
+		     && regno_ok_for_base_p (regno1, mode, as, PLUS, REG))
 	      index_op = 0;
-	    else if (regno_ok_for_base_p (regno0, mode, PLUS, REG)
+	    else if (regno_ok_for_base_p (regno0, mode, as, PLUS, REG)
 		     || REGNO_OK_FOR_INDEX_P (regno1))
 	      index_op = 1;
-	    else if (regno_ok_for_base_p (regno1, mode, PLUS, REG))
+	    else if (regno_ok_for_base_p (regno1, mode, as, PLUS, REG))
 	      index_op = 0;
 	    else
 	      index_op = 1;
@@ -1281,10 +1282,11 @@ scan_rtx_address (rtx insn, rtx *loc, enum reg_class cl,
 	  }
 
 	if (locI)
-	  scan_rtx_address (insn, locI, INDEX_REG_CLASS, action, mode);
+	  scan_rtx_address (insn, locI, INDEX_REG_CLASS, action, mode, as);
 	if (locB)
-	  scan_rtx_address (insn, locB, base_reg_class (mode, PLUS, index_code),
-			    action, mode);
+	  scan_rtx_address (insn, locB,
+			    base_reg_class (mode, as, PLUS, index_code),
+			    action, mode, as);
 
 	return;
       }
@@ -1304,8 +1306,9 @@ scan_rtx_address (rtx insn, rtx *loc, enum reg_class cl,
 
     case MEM:
       scan_rtx_address (insn, &XEXP (x, 0),
-			base_reg_class (GET_MODE (x), MEM, SCRATCH), action,
-			GET_MODE (x));
+			base_reg_class (GET_MODE (x), MEM_ADDR_SPACE (x),
+					MEM, SCRATCH),
+			action, GET_MODE (x), MEM_ADDR_SPACE (x));
       return;
 
     case REG:
@@ -1320,10 +1323,10 @@ scan_rtx_address (rtx insn, rtx *loc, enum reg_class cl,
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	scan_rtx_address (insn, &XEXP (x, i), cl, action, mode);
+	scan_rtx_address (insn, &XEXP (x, i), cl, action, mode, as);
       else if (fmt[i] == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  scan_rtx_address (insn, &XVECEXP (x, i, j), cl, action, mode);
+	  scan_rtx_address (insn, &XVECEXP (x, i, j), cl, action, mode, as);
     }
 }
 
@@ -1356,8 +1359,9 @@ scan_rtx (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 
     case MEM:
       scan_rtx_address (insn, &XEXP (x, 0),
-			base_reg_class (GET_MODE (x), MEM, SCRATCH), action,
-			GET_MODE (x));
+			base_reg_class (GET_MODE (x), MEM_ADDR_SPACE (x),
+					MEM, SCRATCH),
+			action, GET_MODE (x), MEM_ADDR_SPACE (x));
       return;
 
     case SET:
@@ -1697,7 +1701,8 @@ build_def_use (basic_block bb)
 	      if (insn_info)
 		cur_operand = i == opn ? insn_info->op_info + i : NULL;
 	      if (recog_op_alt[opn][alt].is_address)
-		scan_rtx_address (insn, loc, cl, mark_read, VOIDmode);
+		scan_rtx_address (insn, loc, cl, mark_read,
+				  VOIDmode, ADDR_SPACE_GENERIC);
 	      else
 		scan_rtx (insn, loc, cl, mark_read, type);
 	    }

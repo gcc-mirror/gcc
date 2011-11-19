@@ -262,6 +262,7 @@ gfc_expr *gfc_simplify_digits (gfc_expr *);
 gfc_expr *gfc_simplify_dim (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_dprod (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_dot_product (gfc_expr *, gfc_expr *);
+gfc_expr *gfc_simplify_dreal (gfc_expr *);
 gfc_expr *gfc_simplify_dshiftl (gfc_expr *, gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_dshiftr (gfc_expr *, gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_epsilon (gfc_expr *);

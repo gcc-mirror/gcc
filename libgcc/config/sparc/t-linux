@@ -1,0 +1,4 @@
+# Override t-slibgcc-elf-ver to export some libgcc symbols with
+# the symbol versions that glibc used.
+# Avoid the t-linux version file.
+SHLIB_MAPFILES = libgcc-std.ver $(srcdir)/config/sparc/libgcc-glibc.ver

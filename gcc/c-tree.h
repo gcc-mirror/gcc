@@ -241,6 +241,10 @@ struct c_declspecs {
   /* For UPC, this is the blocking factor (layout qualifier).
      For example, shared [10] int x;  */
   tree upc_layout_qualifier;
+  /* The base-2 log of the greatest alignment required by an _Alignas
+     specifier, in bytes, or -1 if no such specifiers with nonzero
+     alignment.  */
+  int align_log;
   /* The storage class specifier, or csc_none if none.  */
   enum c_storage_class storage_class;
   /* Any type specifier keyword used such as "int", not reflecting
@@ -303,6 +307,9 @@ struct c_declspecs {
   BOOL_BITFIELD strict_p : 1;
   /* Whether "relaxed" was specified.  */
   BOOL_BITFIELD relaxed_p : 1;
+  /* Whether any alignment specifier (even with zero alignment) was
+     specified.  */
+  BOOL_BITFIELD alignas_p : 1;
   /* The address space that the declaration belongs to.  */
   addr_space_t address_space;
 };
@@ -522,6 +529,7 @@ extern struct c_declspecs *declspecs_add_scspec (struct c_declspecs *, tree);
 extern struct c_declspecs *declspecs_add_attrs (struct c_declspecs *, tree);
 extern struct c_declspecs *declspecs_add_addrspace (struct c_declspecs *,
 						    addr_space_t);
+extern struct c_declspecs *declspecs_add_alignas (struct c_declspecs *, tree);
 extern struct c_declspecs *finish_declspecs (struct c_declspecs *);
 
 /* in c-objc-common.c */
@@ -607,6 +615,7 @@ extern tree c_begin_omp_task (void);
 extern tree c_finish_omp_task (location_t, tree, tree);
 extern tree c_finish_omp_clauses (tree);
 extern tree c_build_va_arg (location_t, tree, tree);
+extern tree c_finish_transaction (location_t, tree, int);
 extern tree c_build_vec_perm_expr (location_t, tree, tree, tree);
 
 /* Set to 0 at beginning of a function definition, set to 1 if

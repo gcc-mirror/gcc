@@ -491,7 +491,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend bool
       operator==(const mersenne_twister_engine& __lhs,
 		 const mersenne_twister_engine& __rhs)
-      { return std::equal(__lhs._M_x, __lhs._M_x + state_size, __rhs._M_x); }
+      { return (std::equal(__lhs._M_x, __lhs._M_x + state_size, __rhs._M_x)
+		&& __lhs._M_p == __rhs._M_p); }
 
       /**
        * @brief Inserts the current state of a % mersenne_twister_engine
@@ -705,7 +706,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend bool
       operator==(const subtract_with_carry_engine& __lhs,
 		 const subtract_with_carry_engine& __rhs)
-      { return std::equal(__lhs._M_x, __lhs._M_x + long_lag, __rhs._M_x); }
+      { return (std::equal(__lhs._M_x, __lhs._M_x + long_lag, __rhs._M_x)
+		&& __lhs._M_carry == __rhs._M_carry
+		&& __lhs._M_p == __rhs._M_p); }
 
       /**
        * @brief Inserts the current state of a % subtract_with_carry_engine
@@ -1370,7 +1373,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend bool
       operator==(const shuffle_order_engine& __lhs,
 		 const shuffle_order_engine& __rhs)
-      { return __lhs._M_b == __rhs._M_b; }
+      { return (__lhs._M_b == __rhs._M_b
+		&& std::equal(__lhs._M_v, __lhs._M_v + __k, __rhs._M_v)
+		&& __lhs._M_y == __rhs._M_y); }
 
       /**
        * @brief Inserts the current state of a %shuffle_order_engine random

@@ -1,3 +1,199 @@
+2011-11-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/51090
+	* runtime/main.c (find_addr2line): NULL check before proceeding.
+
+2011-11-10  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/cpu_time.c (__cpu_time_1): Don't force inlining.
+	* intrinsics/random.c (rnumber_4): Remove inline attribute.
+	(rnumber_8, rnumber_10, rnumber_16): Likewise.
+	* intrinsics/system_clock.c (gf_gettime_mono): Likewise.
+	* intrinsics/time_1.h (ATTRIBUTE_ALWAYS_INLINE): Remove macro.
+	(gf_cputime): Add inline attribute for MingW version.
+	* io/format.c (format_hash): Remove inline attribute.
+	* io/io.h (memset4): Inline function from transfer.c and write.c
+	moved here.
+	* io/transfer.c (min_off): Remove inline attribute.
+	(memset4): Move to io.h.
+	* io/write.c (memset4): Likewise.
+	(memcpy4): Remove inline attribute.
+	* io/write_float.def (calculate_exp): Likewise.
+
+2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/time_1.h (gf_gettime): Simplify time() usage.
+
+2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure.ac (AC_STDC_HEADERS): Remove.
+	(AC_HEADER_TIME): Remove.
+	(AC_HAVE_HEADERS, AC_CHECK_HEADERS): Move into a single invocation
+	of AC_CHECK_HEADERS_ONCE, don't check for presence of C89 headers.
+	(AC_CHECK_MEMBERS): Use single invocation.
+	(AC_CHECK_FUNCS): Move into single invocation of
+	AC_CHEC_FUNCS_ONCE, don't check for presence of C89 functions.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* intrinsics/clock.c: Include time.h.
+	(mclock): Assume clock() is present.
+	(mclock8): Likewise.
+	* intrinsics/ctime.c (strctime): Assume strftime is present.
+	(fdate): Assume time() is present.
+	(fdate_sub): Likewise.
+	(ctime): Likewise.
+	* intrinsics/date_and_time.c: Don't provide abs macro.
+	(HAVE_NO_DATE_TIME): Remove code related to macro which is never
+	set.
+	* intrinsics/execute_command_line.c: Assume stdlib.h is present.
+	* intrinsics/exit.c: Likewise.
+	* intrinsics/extends_type_of.c: Likewise.
+	* intrinsics/gerror.c: Assume strerror() is present.
+	* intrinsics/kill.c: Assume signal.h is present.
+	* intrinsics/malloc.c: Assume stdlib.h is present.
+	* intrinsics/move_alloc.c: Likewise.
+	* intrinsics/perror.c: Assume perror() is present.
+	* intrinsics/signal.c: Assume signal.h is present.
+	* intrinsics/stat.c: Assume stdlib.h is present.
+	* intrinsics/system.c: Likewise.
+	* intrinsics/time.c: Include time.h, assume time() is present.
+	* intrinsics/time_1.h: Conditionally include sys/time.h,
+	unconditionally time.h.
+	(gf_cputime): Do division in double, fallback using clock().
+	(gf_gettime): Assume time() is present.
+	* intrinsics/umask.c: Assume stdlib.h is present.
+	* runtime/backtrace.c: Likewise.
+	* runtime/compile_options.c: Assume signal.h is present, assume
+	C89 signals are present.
+	* runtime/error.c: Assume signal.h and stdlib.h are present.
+
+2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/46686
+	* runtime/backtrace.c (show_backtrace): Fix incorrect comment.
+
+2011-11-09  Tobias Burnus  <burnus@net-b.de>
+
+	* configure.ac: Make more cross-compile friendly.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/46686
+	* configure.ac: Don't check execinfo.h, backtrace,
+	backtrace_symbols_fd. Check execve instead of execvp. Call
+	GCC_CHECK_UNWIND_GETIPINFO.
+	* runtime/backtrace.c: Don't include unused headers, include
+	limits.h and unwind.h.
+	(CAN_FORK): Check execve instead of execvp.
+	(GLIBC_BACKTRACE): Remove.
+	(bt_header): Conform to gdb backtrace format.
+	(struct bt_state): New struct.
+	(trace_function): New function.
+	(show_backtrace): Use _Unwind_Backtrace from libgcc instead of
+	glibc backtrace functions.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Regenerated.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
+2011-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/50016
+	* io/inquire.c (inquire_via_unit): Flush the unit and use ssize.
+	* io/unix.c (buf_flush): Don't call _commit.
+
+2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/47972
+	* runtime/error.c (gf_strerror): Silence warning.
+
+2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/47972
+	* runtime/error.c (gf_strerror): Silence warning.
+
+2011-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/47970
+	* intrinsics/c99_functions.c (round): Move higher in the file.
+
+2011-11-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/45723
+	* io/open.c (new_unit): Don't check file size before attempting
+	seek.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am (AM_CPPFLAGS): Add
+	-I$(srcdir)/$(MULTISRCTOP)../libgcc, -I$(MULTIBUILDTOP)../libgcc.
+	* Makefile.in: Regenerate.
+	* acinclude.m4 (LIBGFOR_CHECK_GTHR_DEFAULT): Remove.
+	* configure.ac (LIBGFOR_CHECK_GTHR_DEFAULT): Likewise.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2011-11-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/io.h (next_available_newunit): Remove prototype.
+	* io/unit.h (next_available_newunit): Make variable static,
+	initialize it.
+	(init_units): Don't initialize next_available_newunit.
+	(get_unique_unit_number): Use atomic builtin if available.
+
+2011-10-31  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/inquire.c (inquire_via_unit): Check whether we're at the
+	beginning or end if the position is unspecified. If the position
+	is not one of the 3 standard ones, return unspecified.
+	* io/io.h (update_position): Remove prototype.
+	* io/transfer.c (next_record): Set the position to unspecified,
+	letting inquire figure it out more exactly when needed.
+	* io/unit.c (update_position): Remove function.
+
+2011-10-31  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/unix.h (struct stream): Add size function pointer.
+	(ssize): New inline function.
+	(file_length): Remove prototype.
+	* io/unix.c (raw_size): New function.
+	(raw_init): Initialize st.size pointer.
+	(buf_size): New function.
+	(buf_init): Initialize st.size pointer.
+	(open_internal): Likewise.
+	(open_internal4): Likewise.
+	(file_length): Remove function.
+	* io/file_pos.c (st_rewind): Use ssize instead of file_length.
+	* io/open.c (test_endfile): Likewise.
+	* io/transfer.c (data_transfer_init): Likewise.
+	(next_record_r): Likewise.
+	(next_record_w): Likewise.
+	* io/unit.c (update_position): Likewise.
+
+2011-10-31  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/file_pos.c (st_rewind): Handle regular and special files
+	identically.
+	* io/intrinsics.c (fseek_sub): Don't check whether we think the
+	file is seekable, just do what the caller says.
+	* io/transfer.c (skip_record): First try to seek, then fallback to
+	reading and throwing away what we read.
+	* io/unit.c (update_position): Don't check whether file is
+	seekable, just try to do what we're told.
+	(unit_truncate): Likewise.
+	* io/unix.c (struct unix_stream): Remove special_file flag.
+	(buf_flush): Remove code for handling unseekable files.
+	(buf_seek): Likewise.
+	(fd_to_stream): Use buffered IO only for regular files.
+	(file_length): Remove is_seekable() call.
+	(is_seekable): Remove function.
+	(is_special): Likewise.
+	* io/unix.h: Remove prototypes for is_seekable and is_special.
+
 2011-09-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/49479
@@ -429,9 +625,9 @@
 
 2011-06-18  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR libfortran/49296
-        * io/list_read.c (read_character): Accept EOF as a separator when
-        reading string.
+	PR libfortran/49296
+	* io/list_read.c (read_character): Accept EOF as a separator when
+	reading string.
 
 2011-06-17  Daniel Carrera  <dcarrera@gmail.com>
 

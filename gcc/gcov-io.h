@@ -130,26 +130,26 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    blocks they are for.
 
    The data file contains the following records.
-        data: {unit function-data* summary:object summary:program*}*
+        data: {unit summary:object summary:program* function-data*}*
 	unit: header int32:checksum
-        function-data:	announce_function arc_counts
+        function-data:	announce_function present counts
 	announce_function: header int32:ident
 		int32:lineno_checksum int32:cfg_checksum
-	arc_counts: header int64:count*
-	summary: int32:checksum {count-summary}GCOV_COUNTERS
+	present: header int32:present
+	counts: header int64:count*
+	summary: int32:checksum {count-summary}GCOV_COUNTERS_SUMMABLE
 	count-summary:	int32:num int32:runs int64:sum
 			int64:max int64:sum_max
 
    The ANNOUNCE_FUNCTION record is the same as that in the note file,
-   but without the source location.  The ARC_COUNTS gives the counter
-   values for those arcs that are instrumented.  The SUMMARY records
-   give information about the whole object file and about the whole
+   but without the source location.  The COUNTS gives the
+   counter values for instrumented features.  The about the whole
    program.  The checksum is used for whole program summaries, and
    disambiguates different programs which include the same
    instrumented object file.  There may be several program summaries,
-   each with a unique checksum.  The object summary's checksum is zero.
-   Note that the data file might contain information from several runs
-   concatenated, or the data might be merged.
+   each with a unique checksum.  The object summary's checksum is
+   zero.  Note that the data file might contain information from
+   several runs concatenated, or the data might be merged.
 
    This file is included by both the compiler, gcov tools and the
    runtime support library libgcov. IN_LIBGCOV and IN_GCOV are used to
@@ -307,7 +307,7 @@ typedef HOST_WIDEST_INT gcov_type;
 #define GCOV_TAG_COUNTER_BASE 	 ((gcov_unsigned_t)0x01a10000)
 #define GCOV_TAG_COUNTER_LENGTH(NUM) ((NUM) * 2)
 #define GCOV_TAG_COUNTER_NUM(LENGTH) ((LENGTH) / 2)
-#define GCOV_TAG_OBJECT_SUMMARY  ((gcov_unsigned_t)0xa1000000)
+#define GCOV_TAG_OBJECT_SUMMARY  ((gcov_unsigned_t)0xa1000000) /* Obsolete */
 #define GCOV_TAG_PROGRAM_SUMMARY ((gcov_unsigned_t)0xa3000000)
 #define GCOV_TAG_SUMMARY_LENGTH  \
 	(1 + GCOV_COUNTERS_SUMMABLE * (2 + 3 * 2))
@@ -343,7 +343,7 @@ typedef HOST_WIDEST_INT gcov_type;
 
   /* A list of human readable names of the counters */
 #define GCOV_COUNTER_NAMES	{"arcs", "interval", "pow2", "single", \
-				 "delta","indirect_call", "average", "ior"}
+      				 "delta", "indirect_call", "average", "ior"}
 
   /* Names of merge functions for counters.  */
 #define GCOV_MERGE_FUNCTIONS	{"__gcov_merge_add",	\
@@ -410,29 +410,30 @@ struct gcov_summary
    by write_profile must match these.  */
 
 #if IN_LIBGCOV
-/* Information about a single function.  This uses the trailing array
-   idiom. The number of counters is determined from the counter_mask
-   in gcov_info.  We hold an array of function info, so have to
-   explicitly calculate the correct array stride.  */
-
-struct gcov_fn_info
-{
-  gcov_unsigned_t ident;	/* unique ident of function */
-  gcov_unsigned_t lineno_checksum;	/* function lineo_checksum */
-  gcov_unsigned_t cfg_checksum;	/* function cfg checksum */
-  unsigned n_ctrs[0];		/* instrumented counters */
-};
-
-/* Type of function used to merge counters.  */
-typedef void (*gcov_merge_fn) (gcov_type *, gcov_unsigned_t);
-
-/* Information about counters.  */
+/* Information about counters for a single function.  */
 struct gcov_ctr_info
 {
   gcov_unsigned_t num;		/* number of counters.  */
   gcov_type *values;		/* their values.  */
-  gcov_merge_fn merge;  	/* The function used to merge them.  */
 };
+
+/* Information about a single function.  This uses the trailing array
+   idiom. The number of counters is determined from the merge pointer
+   array in gcov_info.  The key is used to detect which of a set of
+   comdat functions was selected -- it points to the gcov_info object
+   of the object file containing the selected comdat function.  */
+
+struct gcov_fn_info
+{
+  const struct gcov_info *key;		/* comdat key */
+  gcov_unsigned_t ident;		/* unique ident of function */
+  gcov_unsigned_t lineno_checksum;	/* function lineo_checksum */
+  gcov_unsigned_t cfg_checksum;		/* function cfg checksum */
+  struct gcov_ctr_info ctrs[0];		/* instrumented counters */
+};
+
+/* Type of function used to merge counters.  */
+typedef void (*gcov_merge_fn) (gcov_type *, gcov_unsigned_t);
 
 /* Information about a single object file.  */
 struct gcov_info
@@ -443,14 +444,12 @@ struct gcov_info
   gcov_unsigned_t stamp;	/* uniquifying time stamp */
   const char *filename;		/* output file name */
 
+  gcov_merge_fn merge[GCOV_COUNTERS];  /* merge functions (null for
+					  unused) */
+  
   unsigned n_functions;		/* number of functions */
-  const struct gcov_fn_info *functions; /* table of functions */
-
-  unsigned ctr_mask;		/* mask of counters instrumented.  */
-  struct gcov_ctr_info counts[0]; /* count data. The number of bits
-				     set in the ctr_mask field
-				     determines how big this array
-				     is.  */
+  const struct gcov_fn_info *functions[0]; /* pointers to function
+					      information  */
 };
 
 /* Register a new object file module.  */

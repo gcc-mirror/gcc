@@ -14,6 +14,6 @@ end
 
 ! PR 50403: SIGSEGV in gfc_use_derived
 
-type(f) function f()  ! { dg-error "conflicts with DERIVED attribute|is not accessible" }
+type(f) function f()  ! { dg-error "Type name 'f' at .1. conflicts with previously declared entity|The type for function 'f' at .1. is not accessible" }
   f=110               ! { dg-error "Unclassifiable statement" }
 end

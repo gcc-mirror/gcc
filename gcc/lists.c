@@ -164,6 +164,37 @@ free_INSN_LIST_list (rtx *listp)
   free_list (listp, &unused_insn_list);
 }
 
+/* Make a copy of the INSN_LIST list LINK and return it.  */
+rtx
+copy_INSN_LIST (rtx link)
+{
+  rtx new_queue;
+  rtx *pqueue = &new_queue;
+
+  for (; link; link = XEXP (link, 1))
+    {
+      rtx x = XEXP (link, 0);
+      rtx newlink = alloc_INSN_LIST (x, NULL);
+      *pqueue = newlink;
+      pqueue = &XEXP (newlink, 1);
+    }
+  *pqueue = NULL_RTX;
+  return new_queue;
+}
+
+/* Duplicate the INSN_LIST elements of COPY and prepend them to OLD.  */
+rtx
+concat_INSN_LIST (rtx copy, rtx old)
+{
+  rtx new_rtx = old;
+  for (; copy ; copy = XEXP (copy, 1))
+    {
+      new_rtx = alloc_INSN_LIST (XEXP (copy, 0), new_rtx);
+      PUT_REG_NOTE_KIND (new_rtx, REG_NOTE_KIND (copy));
+    }
+  return new_rtx;
+}
+
 /* This function will free up an individual EXPR_LIST node.  */
 void
 free_EXPR_LIST_node (rtx ptr)

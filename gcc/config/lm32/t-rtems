@@ -1,0 +1,21 @@
+# Custom RTEMS multilibs
+
+MULTILIB_OPTIONS = mmultiply-enabled mbarrel-shift-enabled
+MULTILIB_OPTIONS += mdivide-enabled msign-extend-enabled
+
+MULTILIB_EXCEPTIONS =
+# MULTILIB_EXCEPTIONS += mmultiply-enabled/mbarrel-shift-enabled/mdivide-enabled/msign-extend-enabled
+MULTILIB_EXCEPTIONS += mmultiply-enabled/mbarrel-shift-enabled/mdivide-enabled
+MULTILIB_EXCEPTIONS += mmultiply-enabled/mbarrel-shift-enabled/msign-extend-enabled
+# MULTILIB_EXCEPTIONS += mmultiply-enabled/mbarrel-shift-enabled
+MULTILIB_EXCEPTIONS += mmultiply-enabled/mdivide-enabled/msign-extend-enabled
+MULTILIB_EXCEPTIONS += mmultiply-enabled/mdivide-enabled
+MULTILIB_EXCEPTIONS += mmultiply-enabled/msign-extend-enabled
+# MULTILIB_EXCEPTIONS += mmultiply-enabled
+MULTILIB_EXCEPTIONS += mbarrel-shift-enabled/mdivide-enabled/msign-extend-enabled
+MULTILIB_EXCEPTIONS += mbarrel-shift-enabled/mdivide-enabled
+MULTILIB_EXCEPTIONS += mbarrel-shift-enabled/msign-extend-enabled
+# MULTILIB_EXCEPTIONS += mbarrel-shift-enabled
+MULTILIB_EXCEPTIONS += mdivide-enabled/msign-extend-enabled
+MULTILIB_EXCEPTIONS += mdivide-enabled
+MULTILIB_EXCEPTIONS += msign-extend-enabled

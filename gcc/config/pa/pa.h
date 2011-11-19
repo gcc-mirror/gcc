@@ -74,6 +74,11 @@ extern unsigned long total_code_bytes;
 #define HPUX_LONG_DOUBLE_LIBRARY 0
 #endif
 
+/* Linux kernel atomic operation support.  */
+#ifndef TARGET_SYNC_LIBCALL
+#define TARGET_SYNC_LIBCALL 0
+#endif
+
 /* The following three defines are potential target switches.  The current
    defines are optimal given the current capabilities of GAS and GNU ld.  */
 
@@ -162,11 +167,11 @@ extern unsigned long total_code_bytes;
    the stack pointer at the function's entry.  Yuk!  */
 #define DEBUGGER_AUTO_OFFSET(X) \
   ((GET_CODE (X) == PLUS ? INTVAL (XEXP (X, 1)) : 0) \
-    + (frame_pointer_needed ? 0 : compute_frame_size (get_frame_size (), 0)))
+    + (frame_pointer_needed ? 0 : pa_compute_frame_size (get_frame_size (), 0)))
 
 #define DEBUGGER_ARG_OFFSET(OFFSET, X) \
   ((GET_CODE (X) == PLUS ? OFFSET : 0) \
-    + (frame_pointer_needed ? 0 : compute_frame_size (get_frame_size (), 0)))
+    + (frame_pointer_needed ? 0 : pa_compute_frame_size (get_frame_size (), 0)))
 
 #define TARGET_CPU_CPP_BUILTINS()				\
 do {								\
@@ -457,7 +462,7 @@ extern rtx hppa_pic_save_rtx (void);
       {									\
 	fputs (integer_asm_op (SIZE, FALSE), FILE);			\
 	if ((ENCODING) & DW_EH_PE_indirect)				\
-	  output_addr_const (FILE, get_deferred_plabel (ADDR));		\
+	  output_addr_const (FILE, pa_get_deferred_plabel (ADDR));	\
 	else								\
 	  assemble_name (FILE, XSTR ((ADDR), 0));			\
 	fputs ("+8-$PIC_pcrel$0", FILE);				\
@@ -661,7 +666,8 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
 
 /* If defined, a C expression which determines whether, and in which
    direction, to pad out an argument with extra space.  */
-#define FUNCTION_ARG_PADDING(MODE, TYPE) function_arg_padding ((MODE), (TYPE))
+#define FUNCTION_ARG_PADDING(MODE, TYPE) \
+  pa_function_arg_padding ((MODE), (TYPE))
 
 /* Specify padding for the last element of a block move between registers
    and memory.
@@ -673,7 +679,7 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
    so that there is only one element.  This allows the object to be
    correctly padded.  */
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  function_arg_padding ((MODE), (TYPE))
+  pa_function_arg_padding ((MODE), (TYPE))
 
 
 /* On HPPA, we emit profiling code as rtl via PROFILE_HOOK rather than
@@ -793,7 +799,8 @@ extern int may_call_alloca;
    || (GET_CODE (X) == SYMBOL_REF && !SYMBOL_REF_TLS_MODEL (X))		\
    || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
    || GET_CODE (X) == HIGH) 						\
-   && (reload_in_progress || reload_completed || ! symbolic_expression_p (X)))
+   && (reload_in_progress || reload_completed				\
+       || ! pa_symbolic_expression_p (X)))
 
 /* A C expression that is nonzero if we are using the new HP assembler.  */
 
@@ -926,7 +933,7 @@ extern int may_call_alloca;
    the REG_POINTER lossage can be fixed, it seems better canonicalize.
 
    We initially break out scaled indexed addresses in canonical order
-   in emit_move_sequence.  LEGITIMIZE_ADDRESS also canonicalizes
+   in pa_emit_move_sequence.  LEGITIMIZE_ADDRESS also canonicalizes
    scaled indexed addresses during RTL generation.  However, fold_rtx
    has its own opinion on how the operands of a PLUS should be ordered.
    If one of the operands is equivalent to a constant, it will make
@@ -1183,7 +1190,7 @@ do { 									\
   (TREE_CODE (DECL) == FUNCTION_DECL					\
    || (TREE_CODE (DECL) == VAR_DECL					\
        && TREE_READONLY (DECL) && ! TREE_SIDE_EFFECTS (DECL)		\
-       && (! DECL_INITIAL (DECL) || ! reloc_needed (DECL_INITIAL (DECL))) \
+       && (! DECL_INITIAL (DECL) || ! pa_reloc_needed (DECL_INITIAL (DECL))) \
        && !flag_pic)							\
    || CONSTANT_CLASS_P (DECL))
 
@@ -1290,7 +1297,7 @@ do { 									\
    get_attr_type will try to recognize the given insn, so make sure to
    filter out things it will not accept -- SEQUENCE, USE and CLOBBER insns
    in particular.  */
-#define INSN_REFERENCES_ARE_DELAYED(X) (insn_refs_are_delayed (X))
+#define INSN_REFERENCES_ARE_DELAYED(X) (pa_insn_refs_are_delayed (X))
 
 
 /* Control the assembler format that we output.  */
@@ -1368,7 +1375,7 @@ do { 									\
 #define TARGET_ASM_GLOBALIZE_LABEL pa_globalize_label
 
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
-  output_ascii ((FILE), (P), (SIZE))
+  pa_output_ascii ((FILE), (P), (SIZE))
 
 /* Jump tables are always placed in the text section.  Technically, it
    is possible to put them in the readonly data section when -mbig-switch
@@ -1452,7 +1459,7 @@ do { 									\
    M modifier to handle preincrement addressing for memory refs.
    F modifier to handle preincrement addressing for fp memory refs */
 
-#define PRINT_OPERAND(FILE, X, CODE) print_operand (FILE, X, CODE)
+#define PRINT_OPERAND(FILE, X, CODE) pa_print_operand (FILE, X, CODE)
 
 
 /* Print a memory address as an operand to reference that memory location.  */
@@ -1476,7 +1483,7 @@ do { 									\
 	fputs ("RR'", FILE);						\
       else								\
 	fputs ("RT'", FILE);						\
-      output_global_address (FILE, XEXP (addr, 1), 0);			\
+      pa_output_global_address (FILE, XEXP (addr, 1), 0);		\
       fputs ("(", FILE);						\
       output_operand (XEXP (addr, 0), 0);				\
       fputs (")", FILE);						\
@@ -1492,7 +1499,7 @@ do { 									\
 /* Find the return address associated with the frame given by
    FRAMEADDR.  */
 #define RETURN_ADDR_RTX(COUNT, FRAMEADDR)				 \
-  (return_addr_rtx (COUNT, FRAMEADDR))
+  (pa_return_addr_rtx (COUNT, FRAMEADDR))
 
 /* Used to mask out junk bits from the return address, such as
    processor state, interrupt status, condition codes and the like.  */

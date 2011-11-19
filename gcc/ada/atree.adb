@@ -1797,6 +1797,15 @@ package body Atree is
       Nodes.Table (N).Has_Aspects := Val;
    end Set_Has_Aspects;
 
+   -----------------------
+   -- Set_Original_Node --
+   -----------------------
+
+   procedure Set_Original_Node (N : Node_Id; Val : Node_Id) is
+   begin
+      Orig_Nodes.Table (N) := Val;
+   end Set_Original_Node;
+
    ---------------------
    -- Set_Paren_Count --
    ---------------------

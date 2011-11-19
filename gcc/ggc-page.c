@@ -221,6 +221,10 @@ static const size_t extra_order_size_table[] = {
 
 #define ROUND_UP(x, f) (CEIL (x, f) * (f))
 
+/* Round X to next multiple of the page size */
+
+#define PAGE_ALIGN(x) (((x) + G.pagesize - 1) & ~(G.pagesize - 1))
+
 /* The Ith entry is the number of objects on a page or order I.  */
 
 static unsigned objects_per_page_table[NUM_ORDERS];
@@ -483,7 +487,7 @@ static int ggc_allocated_p (const void *);
 static page_entry *lookup_page_table_entry (const void *);
 static void set_page_table_entry (void *, page_entry *);
 #ifdef USING_MMAP
-static char *alloc_anon (char *, size_t);
+static char *alloc_anon (char *, size_t, bool check);
 #endif
 #ifdef USING_MALLOC_PAGE_GROUPS
 static size_t page_group_index (char *, char *);
@@ -662,7 +666,7 @@ debug_print_page_list (int order)
    compile error unless exactly one of the HAVE_* is defined.  */
 
 static inline char *
-alloc_anon (char *pref ATTRIBUTE_UNUSED, size_t size)
+alloc_anon (char *pref ATTRIBUTE_UNUSED, size_t size, bool check)
 {
 #ifdef HAVE_MMAP_ANON
   char *page = (char *) mmap (pref, size, PROT_READ | PROT_WRITE,
@@ -675,6 +679,8 @@ alloc_anon (char *pref ATTRIBUTE_UNUSED, size_t size)
 
   if (page == (char *) MAP_FAILED)
     {
+      if (!check)
+        return NULL;
       perror ("virtual memory exhausted");
       exit (FATAL_EXIT_CODE);
     }
@@ -737,6 +743,7 @@ alloc_page (unsigned order)
   entry_size = num_objects * OBJECT_SIZE (order);
   if (entry_size < G.pagesize)
     entry_size = G.pagesize;
+  entry_size = PAGE_ALIGN (entry_size);
 
   entry = NULL;
   page = NULL;
@@ -776,13 +783,18 @@ alloc_page (unsigned order)
 	 extras on the freelist.  (Can only do this optimization with
 	 mmap for backing store.)  */
       struct page_entry *e, *f = G.free_pages;
-      int i;
+      int i, entries = GGC_QUIRE_SIZE;
 
-      page = alloc_anon (NULL, G.pagesize * GGC_QUIRE_SIZE);
+      page = alloc_anon (NULL, G.pagesize * GGC_QUIRE_SIZE, false);
+      if (page == NULL)
+     	{
+	  page = alloc_anon(NULL, G.pagesize, true);
+          entries = 1;
+	}
 
       /* This loop counts down so that the chain will be in ascending
 	 memory order.  */
-      for (i = GGC_QUIRE_SIZE - 1; i >= 1; i--)
+      for (i = entries - 1; i >= 1; i--)
 	{
 	  e = XCNEWVAR (struct page_entry, page_entry_size);
 	  e->order = order;
@@ -795,7 +807,7 @@ alloc_page (unsigned order)
       G.free_pages = f;
     }
   else
-    page = alloc_anon (NULL, entry_size);
+    page = alloc_anon (NULL, entry_size, true);
 #endif
 #ifdef USING_MALLOC_PAGE_GROUPS
   else
@@ -972,6 +984,54 @@ release_pages (void)
   page_entry *p, *start_p;
   char *start;
   size_t len;
+  size_t mapped_len;
+  page_entry *next, *prev, *newprev;
+  size_t free_unit = (GGC_QUIRE_SIZE/2) * G.pagesize;
+
+  /* First free larger continuous areas to the OS.
+     This allows other allocators to grab these areas if needed.
+     This is only done on larger chunks to avoid fragmentation. 
+     This does not always work because the free_pages list is only
+     approximately sorted. */
+
+  p = G.free_pages;
+  prev = NULL;
+  while (p)
+    {
+      start = p->page;
+      start_p = p;
+      len = 0;
+      mapped_len = 0;
+      newprev = prev;
+      while (p && p->page == start + len)
+        {
+          len += p->bytes;
+	  if (!p->discarded)
+	      mapped_len += p->bytes;
+	  newprev = p;
+          p = p->next;
+        }
+      if (len >= free_unit)
+        {
+          while (start_p != p)
+            {
+              next = start_p->next;
+              free (start_p);
+              start_p = next;
+            }
+          munmap (start, len);
+	  if (prev)
+	    prev->next = p;
+          else
+            G.free_pages = p;
+          G.bytes_mapped -= mapped_len;
+	  continue;
+        }
+      prev = newprev;
+   }
+
+  /* Now give back the fragmented pages to the OS, but keep the address 
+     space to reuse it next time. */
 
   for (p = G.free_pages; p; )
     {
@@ -1600,14 +1660,14 @@ init_ggc (void)
      believe, is an unaligned page allocation, which would cause us to
      hork badly if we tried to use it.  */
   {
-    char *p = alloc_anon (NULL, G.pagesize);
+    char *p = alloc_anon (NULL, G.pagesize, true);
     struct page_entry *e;
     if ((size_t)p & (G.pagesize - 1))
       {
 	/* How losing.  Discard this one and try another.  If we still
 	   can't get something useful, give up.  */
 
-	p = alloc_anon (NULL, G.pagesize);
+	p = alloc_anon (NULL, G.pagesize, true);
 	gcc_assert (!((size_t)p & (G.pagesize - 1)));
       }
 
@@ -2180,7 +2240,7 @@ ggc_pch_total_size (struct ggc_pch_data *d)
   unsigned i;
 
   for (i = 0; i < NUM_ORDERS; i++)
-    a += ROUND_UP (d->d.totals[i] * OBJECT_SIZE (i), G.pagesize);
+    a += PAGE_ALIGN (d->d.totals[i] * OBJECT_SIZE (i));
   return a;
 }
 
@@ -2193,7 +2253,7 @@ ggc_pch_this_base (struct ggc_pch_data *d, void *base)
   for (i = 0; i < NUM_ORDERS; i++)
     {
       d->base[i] = a;
-      a += ROUND_UP (d->d.totals[i] * OBJECT_SIZE (i), G.pagesize);
+      a += PAGE_ALIGN (d->d.totals[i] * OBJECT_SIZE (i));
     }
 }
 
@@ -2386,7 +2446,7 @@ ggc_pch_read (FILE *f, void *addr)
       if (d.totals[i] == 0)
 	continue;
 
-      bytes = ROUND_UP (d.totals[i] * OBJECT_SIZE (i), G.pagesize);
+      bytes = PAGE_ALIGN (d.totals[i] * OBJECT_SIZE (i));
       num_objs = bytes / OBJECT_SIZE (i);
       entry = XCNEWVAR (struct page_entry, (sizeof (struct page_entry)
 					    - sizeof (long)

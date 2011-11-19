@@ -1,3 +1,0 @@
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o
-
-SHLIB_MAPFILES += $(srcdir)/config/xtensa/libgcc-xtensa.ver

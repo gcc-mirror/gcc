@@ -40,7 +40,7 @@
 
 #ifndef __symbian__
 
-#include "config/arm/lib1funcs.asm"
+#include "lib1funcs.S"
 
 .macro UNPREFIX name
 	.global SYM (\name)

@@ -569,7 +569,8 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
 	else if ((is_gimple_lvalue (op1) || INDIRECT_REF_P (op1)
 		  || (TREE_CODE (op1) == CONSTRUCTOR
-		      && CONSTRUCTOR_NELTS (op1) == 0)
+		      && CONSTRUCTOR_NELTS (op1) == 0
+		      && !TREE_CLOBBER_P (op1))
 		  || (TREE_CODE (op1) == CALL_EXPR
 		      && !CALL_EXPR_RETURN_SLOT_OPT (op1)))
 		 && is_really_empty_class (TREE_TYPE (op0)))

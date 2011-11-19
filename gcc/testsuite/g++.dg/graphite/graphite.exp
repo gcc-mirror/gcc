@@ -46,14 +46,14 @@ set block_files       [lsort [glob -nocomplain $srcdir/$subdir/block-*.C ] ]
 
 # Tests to be compiled.
 set dg-do-what-default compile
-dg-runtest $scop_files        "" "-O2 -fgraphite -fdump-tree-graphite-all"
-dg-runtest $id_files          "" "-O2 -fgraphite-identity -ffast-math"
+g++-dg-runtest $scop_files        "-O2 -fgraphite -fdump-tree-graphite-all"
+g++-dg-runtest $id_files          "-O2 -fgraphite-identity -ffast-math"
 
 # Tests to be run.
 set dg-do-what-default run
-dg-runtest $run_id_files      "" "-O2 -fgraphite-identity"
-dg-runtest $interchange_files "" "-O2 -floop-interchange -fno-loop-block -fno-loop-strip-mine -ffast-math -fdump-tree-graphite-all"
-dg-runtest $block_files       "" "-O2 -floop-block -fno-loop-strip-mine -fno-loop-interchange -ffast-math -fdump-tree-graphite-all"
+g++-dg-runtest $run_id_files      "-O2 -fgraphite-identity"
+g++-dg-runtest $interchange_files "-O2 -floop-interchange -fno-loop-block -fno-loop-strip-mine -ffast-math -fdump-tree-graphite-all"
+g++-dg-runtest $block_files       "-O2 -floop-block -fno-loop-strip-mine -fno-loop-interchange -ffast-math -fdump-tree-graphite-all"
 
 # The default action for the rest of the files is 'compile'.
 set dg-do-what-default compile
@@ -62,7 +62,7 @@ foreach f $id_files          {lremove wait_to_run_files $f}
 foreach f $run_id_files      {lremove wait_to_run_files $f}
 foreach f $interchange_files {lremove wait_to_run_files $f}
 foreach f $block_files       {lremove wait_to_run_files $f}
-dg-runtest $wait_to_run_files "" "-ansi -pedantic-errors"
+g++-dg-runtest $wait_to_run_files " -pedantic-errors"
 
 # Clean up.
 set dg-do-what-default ${save-dg-do-what-default}

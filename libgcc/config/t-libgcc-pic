@@ -1,0 +1,2 @@
+# Compile libgcc2.a with pic.
+HOST_LIBGCC2_CFLAGS += $(PICFLAG)

@@ -9,6 +9,20 @@
 
 
 
+#if defined( AIX_ONCE_INIT_1_CHECK )
+#define PTHREAD_ONCE_INIT \
+{{ \
+
+#endif  /* AIX_ONCE_INIT_1_CHECK */
+
+
+#if defined( AIX_ONCE_INIT_2_CHECK )
+	0 \
+}}
+
+#endif  /* AIX_ONCE_INIT_2_CHECK */
+
+
 #if defined( AIX_PTHREAD_CHECK )
 #define PTHREAD_MUTEX_INITIALIZER \
 {...init stuff...}

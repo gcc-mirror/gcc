@@ -203,8 +203,8 @@ cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
       /* Conversions are handled on the fly by the middle end,
 	 transpose during trans-* stages and TRANSFER by the middle end.  */
       if ((*e)->value.function.isym->id == GFC_ISYM_CONVERSION
-	  || (*e)->value.function.isym->id == GFC_ISYM_TRANSPOSE
-	  || (*e)->value.function.isym->id == GFC_ISYM_TRANSFER)
+	  || (*e)->value.function.isym->id == GFC_ISYM_TRANSFER
+	  || gfc_inline_intrinsic_function_p (*e))
 	return 0;
 
       /* Don't create an array temporary for elemental functions,
@@ -567,7 +567,8 @@ optimize_binop_array_assignment (gfc_code *c, gfc_expr **rhs, bool seen_op)
 	   && ! (e->value.function.isym
 		 && (e->value.function.isym->elemental
 		     || e->ts.type != c->expr1->ts.type
-		     || e->ts.kind != c->expr1->ts.kind)))
+		     || e->ts.kind != c->expr1->ts.kind))
+	   && ! gfc_inline_intrinsic_function_p (e))
     {
 
       gfc_code *n;

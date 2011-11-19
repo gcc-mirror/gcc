@@ -12,7 +12,7 @@
 #include "runtime.h"
 
 /* We use a single global lock and condition variable.  It would be
-   better to use a futex on Linux.  */
+   better to use a futex on GNU/Linux.  */
 
 static pthread_mutex_t note_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t note_cond = PTHREAD_COND_INITIALIZER;

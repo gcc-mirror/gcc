@@ -1,0 +1,32 @@
+# Copyright (C) 2009, 2011 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Instead of creating $(SHLIB_SOLINK) symlink create a GNU ld
+# linker script which sources in both $(SHLIB_SONAME) and libgcc.a.
+# This is needed on targets where libgcc.a contains routines that aren't in
+# $(SHLIB_SONAME) and are needed for shared libraries.
+
+SHLIB_MAKE_SOLINK = \
+	(echo "/* GNU ld script"; \
+	 echo "   Use the shared library, but some functions are only in"; \
+	 echo "   the static library.  */"; \
+	 echo "GROUP ( $(SHLIB_SONAME) libgcc.a )" \
+	) > $(SHLIB_DIR)/$(SHLIB_SOLINK)
+SHLIB_INSTALL_SOLINK = \
+	$(INSTALL_DATA) $(SHLIB_DIR)/$(SHLIB_SOLINK) \
+	  $(DESTDIR)$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK)

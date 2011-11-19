@@ -25,5 +25,3 @@ crt1.o: $(srcdir)/config/$(cpu_type)/sol2-c1.S
 	$(crt_compile) -c $<
 gcrt1.o: $(srcdir)/config/$(cpu_type)/sol2-c1.S
 	$(crt_compile) -c -DGCRT1 $<
-
-HOST_LIBGCC2_CFLAGS = -fPIC

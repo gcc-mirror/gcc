@@ -1,0 +1,16 @@
+# profiling support
+LIB1ASMSRC = mep/lib1funcs.S
+
+LIB1ASMFUNCS = _mep_profile \
+	       _mep_bb_init_trace \
+	       _mep_bb_init \
+	       _mep_bb_trace \
+	       _mep_bb_increment
+
+# multiply and divide routines
+LIB2ADD = \
+	$(srcdir)/config/mep/lib2funcs.c \
+	$(srcdir)/config/mep/tramp.c
+
+# Use -O0 instead of -O2 so we don't get complex relocations
+CRTSTUFF_CFLAGS += -O0

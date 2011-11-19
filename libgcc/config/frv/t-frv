@@ -1,0 +1,22 @@
+LIB1ASMSRC	= frv/lib1funcs.S
+LIB1ASMFUNCS	= _cmpll _cmpf _cmpd _addll _subll _andll _orll _xorll _notll _cmov
+
+LIB2ADD	= $(srcdir)/config/frv/cmovh.c \
+	  $(srcdir)/config/frv/cmovw.c \
+	  $(srcdir)/config/frv/cmovd.c \
+	  $(srcdir)/config/frv/modi.c \
+	  $(srcdir)/config/frv/umodi.c \
+	  $(srcdir)/config/frv/uitof.c \
+	  $(srcdir)/config/frv/uitod.c \
+	  $(srcdir)/config/frv/ulltof.c \
+	  $(srcdir)/config/frv/ulltod.c
+
+# Compile two additional files that are linked with every program
+# linked using GCC on systems using COFF or ELF, for the sake of C++
+# constructors.
+
+frvbegin$(objext): $(srcdir)/config/frv/frvbegin.c
+	$(gcc_compile) -c $<
+
+frvend$(objext): $(srcdir)/config/frv/frvend.c
+	$(gcc_compile) -c $<

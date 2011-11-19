@@ -22,11 +22,10 @@
 #include <sys/mman.h>
 #endif
 
+#include "array.h"
 #include "go-alloc.h"
 #include "go-panic.h"
 #include "go-string.h"
-
-typedef struct __go_string String;
 
 /* This file supports C files copied from the 6g runtime library.
    This is a version of the 6g runtime.h rewritten for gccgo's version
@@ -48,10 +47,16 @@ typedef unsigned int uintptr __attribute__ ((mode (pointer)));
 
 typedef	uint8			bool;
 typedef	uint8			byte;
+typedef	struct	G		G;
 typedef	struct	M		M;
 typedef	struct	MCache		MCache;
 typedef struct	FixAlloc	FixAlloc;
 typedef	struct	Lock		Lock;
+
+typedef	struct	__go_defer_stack	Defer;
+typedef	struct	__go_panic_stack	Panic;
+typedef	struct	__go_open_array		Slice;
+typedef	struct	__go_string		String;
 
 /* We use mutexes for locks.  6g uses futexes directly, and perhaps
    someday we will do that too.  */
@@ -76,9 +81,11 @@ struct Note {
 #define __thread
 #endif
 
+extern __thread		G*	g;
 extern __thread		M* 	m;
 
-extern M	m0;
+extern M	runtime_m0;
+extern G	runtime_g0;
 
 #ifdef __rtems__
 #undef __thread
@@ -94,8 +101,34 @@ enum
 
 /* Structures.  */
 
+struct	G
+{
+	Defer*	defer;
+	Panic*	panic;
+	void*	exception;	// current exception being thrown
+	bool	is_foreign;	// whether current exception from other language
+	byte*	entry;		// initial function
+	G*	alllink;	// on allg
+	void*	param;		// passed parameter on wakeup
+	int16	status;
+	int32	goid;
+	int8*	waitreason;	// if status==Gwaiting
+	G*	schedlink;
+	bool	readyonstop;
+	bool	ispanic;
+	M*	m;		// for debuggers, but offset not hard-coded
+	M*	lockedm;
+	M*	idlem;
+	// int32	sig;
+	// uintptr	sigcode0;
+	// uintptr	sigcode1;
+	// uintptr	sigpc;
+	// uintptr	gopc;	// pc of go statement that created this goroutine
+};
+
 struct	M
 {
+	G*	curg;		// current running goroutine
 	int32	id;
 	int32	mallocing;
 	int32	gcing;
@@ -104,6 +137,7 @@ struct	M
 	int32	gcing_for_prof;
 	int32	holds_finlock;
 	int32	gcing_for_finlock;
+	int32	dying;
 	int32	profilehz;
 	uint32	fastrand;
 	MCache	*mcache;
@@ -117,18 +151,43 @@ struct	M
 	void	*gc_next_segment;
 	void	*gc_next_sp;
 	void	*gc_initial_sp;
-	struct __go_panic_defer_struct *gc_panic_defer;
 };
 
 /* Macros.  */
+
+#ifdef __WINDOWS__
+enum {
+   Windows = 1
+};
+#else
+enum {
+   Windows = 0
+};
+#endif
+
 #define	nelem(x)	(sizeof(x)/sizeof((x)[0]))
 #define	nil		((void*)0)
 #define USED(v)		((void) v)
 
-/* We map throw to assert.  */
-#define runtime_throw(s) __go_assert(s == 0)
+/*
+ * external data
+ */
+extern	uint32	runtime_panicking;
 
+/*
+ * common functions and data
+ */
+int32	runtime_findnull(const byte*);
+
+/*
+ * very low level c-called
+ */
+void	runtime_args(int32, byte**);
+void	runtime_goargs(void);
+void	runtime_goenvs(void);
+void	runtime_throw(const char*);
 void*	runtime_mal(uintptr);
+String	runtime_gostringnocopy(byte*);
 void	runtime_mallocinit(void);
 void	runtime_initfintab(void);
 void	siginit(void);
@@ -136,7 +195,7 @@ bool	__go_sigsend(int32 sig);
 int64	runtime_nanotime(void);
 
 void	runtime_stoptheworld(void);
-void	runtime_starttheworld(void);
+void	runtime_starttheworld(bool);
 void	__go_go(void (*pfn)(void*), void*);
 void	__go_gc_goroutine_init(void*);
 void	__go_enable_gc(void);
@@ -177,25 +236,32 @@ void	runtime_notewakeup(Note*);
 #define runtime_free(p) __go_free(p)
 #define runtime_memclr(buf, size) __builtin_memset((buf), 0, (size))
 #define runtime_strcmp(s1, s2) __builtin_strcmp((s1), (s2))
-#define runtime_getenv(s) getenv(s)
-#define runtime_atoi(s) atoi(s)
 #define runtime_mcmp(a, b, s) __builtin_memcmp((a), (b), (s))
 #define runtime_memmove(a, b, s) __builtin_memmove((a), (b), (s))
+#define runtime_exit(s) _exit(s)
 MCache*	runtime_allocmcache(void);
 void	free(void *v);
 struct __go_func_type;
-void	runtime_addfinalizer(void*, void(*fn)(void*), const struct __go_func_type *);
-void	runtime_walkfintab(void (*fn)(void*), void (*scan)(byte *, int64));
+bool	runtime_addfinalizer(void*, void(*fn)(void*), const struct __go_func_type *);
 #define runtime_mmap mmap
 #define runtime_munmap(p, s) munmap((p), (s))
 #define runtime_cas(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 #define runtime_casp(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
+#define runtime_xadd(p, v) __sync_add_and_fetch (p, v)
 
+void	runtime_initpanic(void);
+void	runtime_dopanic(int32) __attribute__ ((noreturn));
+void	runtime_startpanic(void);
+const byte*	runtime_getenv(const char*);
+int32	runtime_atoi(const byte*);
 void	runtime_sigprof(uint8 *pc, uint8 *sp, uint8 *lr);
 void	runtime_cpuprofinit(void);
 void	runtime_resetcpuprofiler(int32);
 void	runtime_setcpuprofilerate(void(*)(uintptr*, int32), int32);
 uint32	runtime_fastrand1(void);
+void	runtime_procyield(uint32);
+void	runtime_osyield(void);
+void	runtime_usleep(uint32);
 
 struct __go_func_type;
 void reflect_call(const struct __go_func_type *, const void *, _Bool, _Bool,

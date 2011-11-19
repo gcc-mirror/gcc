@@ -1,0 +1,3 @@
+CRTSTUFF_T_CFLAGS = $(PICFLAG)
+
+SHLIB_MAPFILES = libgcc-std.ver $(srcdir)/config/frv/libgcc-glibc.ver

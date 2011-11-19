@@ -1103,7 +1103,9 @@ build_accesses_from_assign (gimple stmt)
   tree lhs, rhs;
   struct access *lacc, *racc;
 
-  if (!gimple_assign_single_p (stmt))
+  if (!gimple_assign_single_p (stmt)
+      /* Scope clobbers don't influence scalarization.  */
+      || gimple_clobber_p (stmt))
     return false;
 
   lhs = gimple_assign_lhs (stmt);

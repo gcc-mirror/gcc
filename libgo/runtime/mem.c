@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 #include "runtime.h"
+#include "arch.h"
 #include "malloc.h"
 
 #ifndef MAP_ANON
@@ -84,6 +85,7 @@ void*
 runtime_SysReserve(void *v, uintptr n)
 {
 	int fd = -1;
+	void *p;
 
 	// On 64-bit, people with ulimit -v set complain if we reserve too
 	// much address space.  Instead, assume that the reservation is okay
@@ -102,7 +104,11 @@ runtime_SysReserve(void *v, uintptr n)
 	fd = dev_zero;
 #endif
 
-	return runtime_mmap(v, n, PROT_NONE, MAP_ANON|MAP_PRIVATE, fd, 0);
+	p = runtime_mmap(v, n, PROT_NONE, MAP_ANON|MAP_PRIVATE, fd, 0);
+	if((uintptr)p < 4096 || -(uintptr)p < 4096) {
+		return nil;
+	}
+	return p;
 }
 
 void

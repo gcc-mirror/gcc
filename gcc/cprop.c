@@ -69,7 +69,7 @@ typedef struct occr *occr_t;
 DEF_VEC_P (occr_t);
 DEF_VEC_ALLOC_P (occr_t, heap);
 
-/* Hash table entry for an assignment expressions.  */
+/* Hash table entry for assignment expressions.  */
 
 struct expr
 {
@@ -83,8 +83,8 @@ struct expr
   struct expr *next_same_hash;
   /* List of available occurrence in basic blocks in the function.
      An "available occurrence" is one that is the last occurrence in the
-     basic block and the operands are not modified by following statements in
-     the basic block [including this insn].  */
+     basic block and whose operands are not modified by following statements
+     in the basic block [including this insn].  */
   struct occr *avail_occr;
 };
 
@@ -116,6 +116,11 @@ static struct hash_table_d set_hash_table;
 /* Array of implicit set patterns indexed by basic block index.  */
 static rtx *implicit_sets;
 
+/* Array of indexes of expressions for implicit set patterns indexed by basic
+   block index.  In other words, implicit_set_indexes[i] is the bitmap_index
+   of the expression whose RTX is implicit_sets[i].  */
+static int *implicit_set_indexes;
+
 /* Bitmap containing one bit for each register in the program.
    Used when performing GCSE to track which registers have been set since
    the start or end of the basic block while traversing that block.  */
@@ -136,7 +141,6 @@ static int local_copy_prop_count;
 static int global_const_prop_count;
 /* Number of global copies propagated.  */
 static int global_copy_prop_count;
-
 
 #define GOBNEW(T)		((T *) cprop_alloc (sizeof (T)))
 #define GOBNEWVAR(T, S)		((T *) cprop_alloc ((S)))
@@ -178,10 +182,12 @@ hash_set (int regno, int hash_table_size)
 /* Insert assignment DEST:=SET from INSN in the hash table.
    DEST is a register and SET is a register or a suitable constant.
    If the assignment is already present in the table, record it as
-   the last occurrence in INSN's basic block.  */
+   the last occurrence in INSN's basic block.
+   IMPLICIT is true if it's an implicit set, false otherwise.  */
 
 static void
-insert_set_in_table (rtx dest, rtx src, rtx insn, struct hash_table_d *table)
+insert_set_in_table (rtx dest, rtx src, rtx insn, struct hash_table_d *table,
+		     bool implicit)
 {
   bool found = false;
   unsigned int hash;
@@ -244,6 +250,10 @@ insert_set_in_table (rtx dest, rtx src, rtx insn, struct hash_table_d *table)
       cur_occr->next = cur_expr->avail_occr;
       cur_expr->avail_occr = cur_occr;
     }
+
+  /* Record bitmap_index of the implicit set in implicit_set_indexes.  */
+  if (implicit)
+    implicit_set_indexes[BLOCK_FOR_INSN(insn)->index] = cur_expr->bitmap_index;
 }
 
 /* Determine whether the rtx X should be treated as a constant for CPROP.
@@ -256,14 +266,14 @@ cprop_constant_p (const_rtx x)
   return CONSTANT_P (x) && (GET_CODE (x) != CONST || shared_const_p (x));
 }
 
-/* Scan pattern PAT of INSN and add an entry to the hash TABLE (set or
-   expression one).  */
+/* Scan SET present in INSN and add an entry to the hash TABLE.
+   IMPLICIT is true if it's an implicit set, false otherwise.  */
 
 static void
-hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
+hash_scan_set (rtx set, rtx insn, struct hash_table_d *table, bool implicit)
 {
-  rtx src = SET_SRC (pat);
-  rtx dest = SET_DEST (pat);
+  rtx src = SET_SRC (set);
+  rtx dest = SET_DEST (set);
 
   if (REG_P (dest)
       && ! HARD_REGISTER_P (dest)
@@ -288,7 +298,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 	  && REG_NOTE_KIND (note) == REG_EQUAL
 	  && !REG_P (src)
 	  && cprop_constant_p (XEXP (note, 0)))
-	src = XEXP (note, 0), pat = gen_rtx_SET (VOIDmode, dest, src);
+	src = XEXP (note, 0), set = gen_rtx_SET (VOIDmode, dest, src);
 
       /* Record sets for constant/copy propagation.  */
       if ((REG_P (src)
@@ -296,20 +306,11 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 	   && ! HARD_REGISTER_P (src)
 	   && reg_available_p (src, insn))
 	  || cprop_constant_p (src))
-	insert_set_in_table (dest, src, insn, table);
+	insert_set_in_table (dest, src, insn, table, implicit);
     }
 }
 
-/* Process INSN and add hash table entries as appropriate.
-
-   Only available expressions that set a single pseudo-reg are recorded.
-
-   Single sets in a PARALLEL could be handled, but it's an extra complication
-   that isn't dealt with right now.  The trick is handling the CLOBBERs that
-   are also in the PARALLEL.  Later.
-
-   If SET_P is nonzero, this is for the assignment hash table,
-   otherwise it is for the expression hash table.  */
+/* Process INSN and add hash table entries as appropriate.  */
 
 static void
 hash_scan_insn (rtx insn, struct hash_table_d *table)
@@ -321,16 +322,18 @@ hash_scan_insn (rtx insn, struct hash_table_d *table)
      what's been modified.  */
 
   if (GET_CODE (pat) == SET)
-    hash_scan_set (pat, insn, table);
+    hash_scan_set (pat, insn, table, false);
   else if (GET_CODE (pat) == PARALLEL)
     for (i = 0; i < XVECLEN (pat, 0); i++)
       {
 	rtx x = XVECEXP (pat, 0, i);
 
 	if (GET_CODE (x) == SET)
-	  hash_scan_set (x, insn, table);
+	  hash_scan_set (x, insn, table, false);
       }
 }
+
+/* Dump the hash table TABLE to file FILE under the name NAME.  */
 
 static void
 dump_hash_table (FILE *file, const char *name, struct hash_table_d *table)
@@ -373,6 +376,7 @@ dump_hash_table (FILE *file, const char *name, struct hash_table_d *table)
 }
 
 /* Record as unavailable all registers that are DEF operands of INSN.  */
+
 static void
 make_set_regs_unavailable (rtx insn)
 {
@@ -383,7 +387,7 @@ make_set_regs_unavailable (rtx insn)
     SET_REGNO_REG_SET (reg_set_bitmap, DF_REF_REGNO (*def_rec));
 }
 
-/* Top level function to create an assignments hash table.
+/* Top level function to create an assignment hash table.
 
    Assignment entries are placed in the hash table if
    - they are of the form (set (pseudo-reg) src),
@@ -429,7 +433,7 @@ compute_hash_table_work (struct hash_table_d *table)
       /* Insert implicit sets in the hash table, pretending they appear as
 	 insns at the head of the basic block.  */
       if (implicit_sets[bb->index] != NULL_RTX)
-	hash_scan_set (implicit_sets[bb->index], BB_HEAD (bb), table);
+	hash_scan_set (implicit_sets[bb->index], BB_HEAD (bb), table, true);
     }
 
   FREE_REG_SET (reg_set_bitmap);
@@ -541,13 +545,12 @@ mark_oprs_set (rtx insn)
   for (def_rec = DF_INSN_INFO_DEFS (insn_info); *def_rec; def_rec++)
     SET_REGNO_REG_SET (reg_set_bitmap, DF_REF_REGNO (*def_rec));
 }
-
 
 /* Compute copy/constant propagation working variables.  */
 
 /* Local properties of assignments.  */
-static sbitmap *cprop_pavloc;
-static sbitmap *cprop_absaltered;
+static sbitmap *cprop_avloc;
+static sbitmap *cprop_kill;
 
 /* Global properties of assignments (computed from the local properties).  */
 static sbitmap *cprop_avin;
@@ -559,8 +562,8 @@ static sbitmap *cprop_avout;
 static void
 alloc_cprop_mem (int n_blocks, int n_sets)
 {
-  cprop_pavloc = sbitmap_vector_alloc (n_blocks, n_sets);
-  cprop_absaltered = sbitmap_vector_alloc (n_blocks, n_sets);
+  cprop_avloc = sbitmap_vector_alloc (n_blocks, n_sets);
+  cprop_kill = sbitmap_vector_alloc (n_blocks, n_sets);
 
   cprop_avin = sbitmap_vector_alloc (n_blocks, n_sets);
   cprop_avout = sbitmap_vector_alloc (n_blocks, n_sets);
@@ -571,8 +574,8 @@ alloc_cprop_mem (int n_blocks, int n_sets)
 static void
 free_cprop_mem (void)
 {
-  sbitmap_vector_free (cprop_pavloc);
-  sbitmap_vector_free (cprop_absaltered);
+  sbitmap_vector_free (cprop_avloc);
+  sbitmap_vector_free (cprop_kill);
   sbitmap_vector_free (cprop_avin);
   sbitmap_vector_free (cprop_avout);
 }
@@ -582,23 +585,23 @@ free_cprop_mem (void)
    Local properties are those that are defined by the block, irrespective of
    other blocks.
 
-   An expression is transparent in a block if its operands are not modified
-   in the block.
+   An expression is killed in a block if its operands, either DEST or SRC, are
+   modified in the block.
 
    An expression is computed (locally available) in a block if it is computed
    at least once and expression would contain the same value if the
    computation was moved to the end of the block.
 
-   TRANSP and COMP are destination sbitmaps for recording local properties.  */
+   KILL and COMP are destination sbitmaps for recording local properties.  */
 
 static void
-compute_local_properties (sbitmap *transp, sbitmap *comp,
+compute_local_properties (sbitmap *kill, sbitmap *comp,
 			  struct hash_table_d *table)
 {
   unsigned int i;
 
   /* Initialize the bitmaps that were passed in.  */
-  sbitmap_vector_zero (transp, last_basic_block);
+  sbitmap_vector_zero (kill, last_basic_block);
   sbitmap_vector_zero (comp, last_basic_block);
 
   for (i = 0; i < table->size; i++)
@@ -611,20 +614,21 @@ compute_local_properties (sbitmap *transp, sbitmap *comp,
 	  df_ref def;
 	  struct occr *occr;
 
-	  /* The expression is transparent in a block if it is not killed,
-	     i.e. DEST and SRC are not set or clobbered in the block.
-	     We start by assuming all are transparent [none are killed],
-	     and then set the bits for those that are.  */
+	  /* For each definition of the destination pseudo-reg, the expression
+	     is killed in the block where the definition is.  */
 	  for (def = DF_REG_DEF_CHAIN (REGNO (expr->dest));
 	       def; def = DF_REF_NEXT_REG (def))
-	    SET_BIT (transp[DF_REF_BB (def)->index], indx);
+	    SET_BIT (kill[DF_REF_BB (def)->index], indx);
+
+	  /* If the source is a pseudo-reg, for each definition of the source,
+	     the expression is killed in the block where the definition is.  */
 	  if (REG_P (expr->src))
 	    for (def = DF_REG_DEF_CHAIN (REGNO (expr->src));
 		 def; def = DF_REF_NEXT_REG (def))
-	      SET_BIT (transp[DF_REF_BB (def)->index], indx);
+	      SET_BIT (kill[DF_REF_BB (def)->index], indx);
 
 	  /* The occurrences recorded in avail_occr are exactly those that
-	     we want to set to nonzero in COMP.  */
+	     are locally available in the block where they are.  */
 	  for (occr = expr->avail_occr; occr != NULL; occr = occr->next)
 	    {
 	      SET_BIT (comp[BLOCK_FOR_INSN (occr->insn)->index], indx);
@@ -641,9 +645,22 @@ compute_local_properties (sbitmap *transp, sbitmap *comp,
 static void
 compute_cprop_data (void)
 {
-  compute_local_properties (cprop_absaltered, cprop_pavloc, &set_hash_table);
-  compute_available (cprop_pavloc, cprop_absaltered,
-		     cprop_avout, cprop_avin);
+  basic_block bb;
+
+  compute_local_properties (cprop_kill, cprop_avloc, &set_hash_table);
+  compute_available (cprop_avloc, cprop_kill, cprop_avout, cprop_avin);
+
+  /* Merge implicit sets into CPROP_AVIN.  They are always available at the
+     entry of their basic block.  We need to do this because 1) implicit sets
+     aren't recorded for the local pass so they cannot be propagated within
+     their basic block by this pass and 2) the global pass would otherwise
+     propagate them only in the successors of their basic block.  */
+  FOR_EACH_BB (bb)
+    {
+      int index = implicit_set_indexes[bb->index];
+      if (index != -1)
+	SET_BIT (cprop_avin[bb->index], index);
+    }
 }
 
 /* Copy/constant propagation.  */
@@ -712,8 +729,8 @@ find_used_regs (rtx *xptr, void *data ATTRIBUTE_UNUSED)
     }
 }
 
-/* Try to replace all non-SET_DEST occurrences of FROM in INSN with TO.
-   Returns nonzero is successful.  */
+/* Try to replace all uses of FROM in INSN with TO.
+   Return nonzero if successful.  */
 
 static int
 try_replace_reg (rtx from, rtx to, rtx insn)
@@ -748,9 +765,9 @@ try_replace_reg (rtx from, rtx to, rtx insn)
 			 simplify_replace_rtx (XEXP (note, 0), from, to));
   if (!success && set && reg_mentioned_p (from, SET_SRC (set)))
     {
-      /* If above failed and this is a single set, try to simplify the source of
-	 the set given our substitution.  We could perhaps try this for multiple
-	 SETs, but it probably won't buy us anything.  */
+      /* If above failed and this is a single set, try to simplify the source
+	 of the set given our substitution.  We could perhaps try this for
+	 multiple SETs, but it probably won't buy us anything.  */
       src = simplify_replace_rtx (SET_SRC (set), from, to);
 
       if (!rtx_equal_p (src, SET_SRC (set))
@@ -764,6 +781,18 @@ try_replace_reg (rtx from, rtx to, rtx insn)
 	note = set_unique_reg_note (insn, REG_EQUAL, copy_rtx (src));
     }
 
+  if (set && MEM_P (SET_DEST (set)) && reg_mentioned_p (from, SET_DEST (set)))
+    {
+      /* Registers can also appear as uses in SET_DEST if it is a MEM.
+         We could perhaps try this for multiple SETs, but it probably
+         won't buy us anything.  */
+      rtx dest = simplify_replace_rtx (SET_DEST (set), from, to);
+
+      if (!rtx_equal_p (dest, SET_DEST (set))
+          && validate_change (insn, &SET_DEST (set), dest, 0))
+        success = 1;
+    }
+
   /* REG_EQUAL may get simplified into register.
      We don't allow that. Remove that note. This code ought
      not to happen, because previous code ought to synthesize
@@ -774,7 +803,7 @@ try_replace_reg (rtx from, rtx to, rtx insn)
   return success;
 }
 
-/* Find a set of REGNOs that are available on entry to INSN's block.  Returns
+/* Find a set of REGNOs that are available on entry to INSN's block.  Return
    NULL no such set is found.  */
 
 static struct expr *
@@ -844,7 +873,7 @@ find_avail_set (int regno, rtx insn)
    JUMP_INSNS.  JUMP must be a conditional jump.  If SETCC is non-NULL
    it is the instruction that immediately precedes JUMP, and must be a
    single SET of a register.  FROM is what we will try to replace,
-   SRC is the constant we will try to substitute for it.  Returns nonzero
+   SRC is the constant we will try to substitute for it.  Return nonzero
    if a change was made.  */
 
 static int
@@ -928,8 +957,8 @@ cprop_jump (basic_block bb, rtx setcc, rtx jump, rtx from, rtx src)
   if (dump_file != NULL)
     {
       fprintf (dump_file,
-	       "GLOBAL CONST-PROP: Replacing reg %d in jump_insn %d with constant ",
-	       REGNO (from), INSN_UID (jump));
+	       "GLOBAL CONST-PROP: Replacing reg %d in jump_insn %d with"
+	       "constant ", REGNO (from), INSN_UID (jump));
       print_rtl (dump_file, src);
       fprintf (dump_file, "\n");
     }
@@ -956,8 +985,12 @@ cprop_jump (basic_block bb, rtx setcc, rtx jump, rtx from, rtx src)
   return 1;
 }
 
-static bool
-constprop_register (rtx insn, rtx from, rtx to)
+/* Subroutine of cprop_insn that tries to propagate constants.  FROM is what
+   we will try to replace, SRC is the constant we will try to substitute for
+   it and INSN is the instruction where this will be happening.  */
+
+static int
+constprop_register (rtx from, rtx src, rtx insn)
 {
   rtx sset;
 
@@ -969,13 +1002,13 @@ constprop_register (rtx insn, rtx from, rtx to)
     {
       rtx dest = SET_DEST (sset);
       if ((REG_P (dest) || CC0_P (dest))
-	  && cprop_jump (BLOCK_FOR_INSN (insn), insn, NEXT_INSN (insn), from, to))
+	  && cprop_jump (BLOCK_FOR_INSN (insn), insn, NEXT_INSN (insn),
+			 from, src))
 	return 1;
     }
 
   /* Handle normal insns next.  */
-  if (NONJUMP_INSN_P (insn)
-      && try_replace_reg (from, to, insn))
+  if (NONJUMP_INSN_P (insn) && try_replace_reg (from, src, insn))
     return 1;
 
   /* Try to propagate a CONST_INT into a conditional jump.
@@ -985,12 +1018,12 @@ constprop_register (rtx insn, rtx from, rtx to)
      Right now the insn in question must look like
      (set (pc) (if_then_else ...))  */
   else if (any_condjump_p (insn) && onlyjump_p (insn))
-    return cprop_jump (BLOCK_FOR_INSN (insn), NULL, insn, from, to);
+    return cprop_jump (BLOCK_FOR_INSN (insn), NULL, insn, from, src);
   return 0;
 }
 
 /* Perform constant and copy propagation on INSN.
-   The result is nonzero if a change was made.  */
+   Return nonzero if a change was made.  */
 
 static int
 cprop_insn (rtx insn)
@@ -1032,14 +1065,16 @@ retry:
       /* Constant propagation.  */
       if (cprop_constant_p (src))
 	{
-          if (constprop_register (insn, reg_used, src))
+          if (constprop_register (reg_used, src, insn))
 	    {
 	      changed_this_round = changed = 1;
 	      global_const_prop_count++;
 	      if (dump_file != NULL)
 		{
-		  fprintf (dump_file, "GLOBAL CONST-PROP: Replacing reg %d in ", regno);
-		  fprintf (dump_file, "insn %d with constant ", INSN_UID (insn));
+		  fprintf (dump_file,
+			   "GLOBAL CONST-PROP: Replacing reg %d in ", regno);
+		  fprintf (dump_file, "insn %d with constant ",
+			   INSN_UID (insn));
 		  print_rtl (dump_file, src);
 		  fprintf (dump_file, "\n");
 		}
@@ -1057,7 +1092,8 @@ retry:
 	      global_copy_prop_count++;
 	      if (dump_file != NULL)
 		{
-		  fprintf (dump_file, "GLOBAL COPY-PROP: Replacing reg %d in insn %d",
+		  fprintf (dump_file,
+			   "GLOBAL COPY-PROP: Replacing reg %d in insn %d",
 			   regno, INSN_UID (insn));
 		  fprintf (dump_file, " with reg %d\n", REGNO (src));
 		}
@@ -1163,7 +1199,7 @@ do_local_cprop (rtx x, rtx insn)
 		  || ! MEM_P (XEXP (note, 0))))
 	    newreg = this_rtx;
 	}
-      if (newcnst && constprop_register (insn, x, newcnst))
+      if (newcnst && constprop_register (x, newcnst, insn))
 	{
 	  if (dump_file != NULL)
 	    {
@@ -1397,7 +1433,7 @@ find_implicit_sets (void)
 static int bypass_last_basic_block;
 
 /* Find a set of REGNO to a constant that is available at the end of basic
-   block BB.  Returns NULL if no such set is found.  Based heavily upon
+   block BB.  Return NULL if no such set is found.  Based heavily upon
    find_avail_set.  */
 
 static struct expr *
@@ -1431,7 +1467,6 @@ find_bypass_set (int regno, int bb)
     }
   return result;
 }
-
 
 /* Subroutine of bypass_block that checks whether a pseudo is killed by
    any of the instructions inserted on an edge.  Jump bypassing places
@@ -1508,8 +1543,8 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	}
 
       /* The irreducible loops created by redirecting of edges entering the
-	 loop from outside would decrease effectiveness of some of the following
-	 optimizations, so prevent this.  */
+	 loop from outside would decrease effectiveness of some of the
+	 following optimizations, so prevent this.  */
       if (may_be_loop_header
 	  && !(e->flags & EDGE_DFS_BACK))
 	{
@@ -1547,7 +1582,6 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	     edges of the CFG.  We can't bypass an outgoing edge that
 	     has instructions associated with it, as these insns won't
 	     get executed if the incoming edge is redirected.  */
-
 	  if (new_rtx == pc_rtx)
 	    {
 	      edest = FALLTHRU_EDGE (bb);
@@ -1567,7 +1601,6 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	  /* Avoid unification of the edge with other edges from original
 	     branch.  We would end up emitting the instruction on "both"
 	     edges.  */
-
 	  if (dest && setcc && !CC0_P (SET_DEST (PATTERN (setcc)))
 	      && find_edge (e->src, dest))
 	    dest = NULL;
@@ -1611,7 +1644,7 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 /* Find basic blocks with more than one predecessor that only contain a
    single conditional jump.  If the result of the comparison is known at
    compile-time from any incoming edge, redirect that edge to the
-   appropriate target.  Returns nonzero if a change was made.
+   appropriate target.  Return nonzero if a change was made.
 
    This function is now mis-named, because we also handle indirect jumps.  */
 
@@ -1675,7 +1708,7 @@ bypass_conditional_jumps (void)
   return changed;
 }
 
-/* Return true if the graph is too expensive to optimize. PASS is the
+/* Return true if the graph is too expensive to optimize.  PASS is the
    optimization about to be performed.  */
 
 static bool
@@ -1714,13 +1747,13 @@ is_too_expensive (const char *pass)
 
   return false;
 }
-
 
 /* Main function for the CPROP pass.  */
 
 static int
 one_cprop_pass (void)
 {
+  int i;
   int changed = 0;
 
   /* Return if there's nothing to do, or it is too expensive.  */
@@ -1768,6 +1801,11 @@ one_cprop_pass (void)
   if (changed)
     df_analyze ();
 
+  /* Initialize implicit_set_indexes array.  */
+  implicit_set_indexes = XNEWVEC (int, last_basic_block);
+  for (i = 0; i < last_basic_block; i++)
+    implicit_set_indexes[i] = -1;
+
   alloc_hash_table (&set_hash_table);
   compute_hash_table (&set_hash_table);
 
@@ -1785,10 +1823,14 @@ one_cprop_pass (void)
       alloc_cprop_mem (last_basic_block, set_hash_table.n_elems);
       compute_cprop_data ();
 
+      free (implicit_set_indexes);
+      implicit_set_indexes = NULL;
+
       /* Allocate vars to track sets of regs.  */
       reg_set_bitmap = ALLOC_REG_SET (NULL);
 
-      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb->next_bb, EXIT_BLOCK_PTR, next_bb)
+      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb->next_bb, EXIT_BLOCK_PTR,
+		      next_bb)
 	{
 	  /* Reset tables used to keep track of what's still valid [since
 	     the start of the block].  */
@@ -1813,6 +1855,11 @@ one_cprop_pass (void)
       FREE_REG_SET (reg_set_bitmap);
       free_cprop_mem ();
     }
+  else
+    {
+      free (implicit_set_indexes);
+      implicit_set_indexes = NULL;
+    }
 
   free_hash_table (&set_hash_table);
   obstack_free (&cprop_obstack, NULL);
@@ -1829,7 +1876,6 @@ one_cprop_pass (void)
 
   return changed;
 }
-
 
 /* All the passes implemented in this file.  Each pass has its
    own gate and execute function, and at the end of the file a

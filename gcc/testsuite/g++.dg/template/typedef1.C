@@ -12,7 +12,7 @@ template <typename T> struct A
 
 template <typename T> struct B
 {
-  typedef int xxx; // { dg-error "" }
+  typedef int xxx; // { dg-message "" }
   typedef T xxx; // { dg-error "" }
   typedef typename A<T>::type xxx; // { dg-error "" }
   typedef A<int>::type xxx; // { dg-error "" }

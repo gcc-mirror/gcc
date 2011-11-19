@@ -135,6 +135,9 @@ typedef struct eni_weights_d
   /* Cost per call.  */
   unsigned call_cost;
 
+  /* Cost per indirect call.  */
+  unsigned indirect_call_cost;
+
   /* Cost per call to a target specific builtin */
   unsigned target_builtin_call_cost;
 
@@ -143,6 +146,9 @@ typedef struct eni_weights_d
 
   /* Cost for omp construct.  */
   unsigned omp_cost;
+
+  /* Cost for tm transaction.  */
+  unsigned tm_cost;
 
   /* Cost of return.  */
   unsigned return_cost;

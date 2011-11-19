@@ -199,6 +199,7 @@ namespace __gnu_test
   struct NoexceptMoveConsClass
   {
     NoexceptMoveConsClass(NoexceptMoveConsClass&&) noexcept(true);
+    NoexceptMoveConsClass& operator=(NoexceptMoveConsClass&&) = default;
   };
 
   struct ExceptMoveConsClass
@@ -220,6 +221,7 @@ namespace __gnu_test
 
   struct NoexceptMoveAssignClass
   {
+    NoexceptMoveAssignClass(NoexceptMoveAssignClass&&) = default;
     NoexceptMoveAssignClass&
     operator=(NoexceptMoveAssignClass&&) noexcept(true);
   };

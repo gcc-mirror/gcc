@@ -113,6 +113,10 @@ package Ada.Containers.Ordered_Sets is
      (Position : Cursor;
       Process  : not null access procedure (Element : Element_Type));
 
+   procedure Assign (Target : in out Set; Source : Set);
+
+   function Copy (Source : Set) return Set;
+
    procedure Move (Target : in out Set; Source : in out Set);
 
    procedure Insert

@@ -49,7 +49,7 @@ static struct vendor_cpu arm_cpu_table[] = {
     {NULL, NULL, NULL}
 };
 
-struct {
+static struct {
   const char *vendor_no;
   const struct vendor_cpu *vendor_parts;
 } vendors[] = {

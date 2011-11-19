@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "debug.h"
 #include "output.h"
+#include "tm-constrs.h"
 #include "target.h"
 #include "target-def.h"
 #include "ggc.h"
@@ -125,6 +126,8 @@ static void cris_init_libfuncs (void);
 
 static reg_class_t cris_preferred_reload_class (rtx, reg_class_t);
 
+static bool cris_legitimate_address_p (enum machine_mode, rtx, bool);
+
 static int cris_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
 static int cris_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static bool cris_rtx_costs (rtx, int, int, int, int *, bool);
@@ -150,6 +153,7 @@ static void cris_trampoline_init (rtx, tree, rtx);
 
 static rtx cris_function_value(const_tree, const_tree, bool);
 static rtx cris_libcall_value (enum machine_mode, const_rtx);
+static bool cris_function_value_regno_p (const unsigned int);
 
 /* This is the parsed result of the "-max-stack-stackframe=" option.  If
    it (still) is zero, then there was no such option given.  */
@@ -200,6 +204,9 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS cris_init_libfuncs
 
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P cris_legitimate_address_p
+
 #undef TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS cris_preferred_reload_class
 
@@ -246,6 +253,8 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_FUNCTION_VALUE cris_function_value
 #undef TARGET_LIBCALL_VALUE
 #define TARGET_LIBCALL_VALUE cris_libcall_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P cris_function_value_regno_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -698,8 +707,7 @@ cris_print_operand (FILE *file, rtx x, int code)
     case 'b':
       /* Print the unsigned supplied integer as if it were signed
 	 and < 0, i.e print 255 or 65535 as -1, 254, 65534 as -2, etc.  */
-      if (!CONST_INT_P (x)
-	  || !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (x), 'O'))
+      if (!satisfies_constraint_O (x))
 	LOSE_AND_RETURN ("invalid operand for 'b' modifier", x);
       fprintf (file, HOST_WIDE_INT_PRINT_DEC,
 	       INTVAL (x)| (INTVAL (x) <= 255 ? ~255 : ~65535));
@@ -1122,7 +1130,7 @@ cris_print_operand_address (FILE *file, rtx x)
 
   if (CONSTANT_ADDRESS_P (x))
     cris_output_addr_const (file, x);
-  else if (BASE_OR_AUTOINCR_P (x))
+  else if (cris_base_or_autoincr_p (x, true))
     cris_print_base (x, file);
   else if (GET_CODE (x) == PLUS)
     {
@@ -1130,12 +1138,12 @@ cris_print_operand_address (FILE *file, rtx x)
 
       x1 = XEXP (x, 0);
       x2 = XEXP (x, 1);
-      if (BASE_P (x1))
+      if (cris_base_p (x1, true))
 	{
 	  cris_print_base (x1, file);
 	  cris_print_index (x2, file);
 	}
-      else if (BASE_P (x2))
+      else if (cris_base_p (x2, true))
 	{
 	  cris_print_base (x2, file);
 	  cris_print_index (x1, file);
@@ -1270,6 +1278,136 @@ cris_initial_elimination_offset (int fromreg, int toreg)
     return ap_fp_offset + fp_sp_offset - 4;
 
   gcc_unreachable ();
+}
+
+/* Nonzero if X is a hard reg that can be used as an index.  */
+static inline bool
+reg_ok_for_base_p (const_rtx x, bool strict)
+{
+  return ((! strict && ! HARD_REGISTER_P (x))
+          || REGNO_OK_FOR_BASE_P (REGNO (x)));
+}
+
+/* Nonzero if X is a hard reg that can be used as an index.  */
+static inline bool
+reg_ok_for_index_p (const_rtx x, bool strict)
+{
+  return reg_ok_for_base_p (x, strict);
+}
+
+/* No symbol can be used as an index (or more correct, as a base) together
+   with a register with PIC; the PIC register must be there.  */
+
+bool
+cris_constant_index_p (const_rtx x)
+{
+  return (CONSTANT_P (x) && (!flag_pic || cris_valid_pic_const (x, true)));
+}
+
+/* True if X is a valid base register.  */
+
+bool
+cris_base_p (const_rtx x, bool strict)
+{
+  return (REG_P (x) && reg_ok_for_base_p (x, strict));
+}
+
+/* True if X is a valid index register.  */
+
+static inline bool
+cris_index_p (const_rtx x, bool strict)
+{
+  return (REG_P (x) && reg_ok_for_index_p (x, strict));
+}
+
+/* True if X is a valid base register with or without autoincrement.  */
+
+bool
+cris_base_or_autoincr_p (const_rtx x, bool strict)
+{
+  return (cris_base_p (x, strict)
+	  || (GET_CODE (x) == POST_INC
+	      && cris_base_p (XEXP (x, 0), strict)
+	      && REGNO (XEXP (x, 0)) != CRIS_ACR_REGNUM));
+}
+
+/* True if X is a valid (register) index for BDAP, i.e. [Rs].S or [Rs+].S.  */
+
+bool
+cris_bdap_index_p (const_rtx x, bool strict)
+{
+  return ((MEM_P (x)
+	   && GET_MODE (x) == SImode
+	   && cris_base_or_autoincr_p (XEXP (x, 0), strict))
+	  || (GET_CODE (x) == SIGN_EXTEND
+	      && MEM_P (XEXP (x, 0))
+	      && (GET_MODE (XEXP (x, 0)) == HImode
+		  || GET_MODE (XEXP (x, 0)) == QImode)
+	      && cris_base_or_autoincr_p (XEXP (XEXP (x, 0), 0), strict)));
+}
+
+/* True if X is a valid (register) index for BIAP, i.e. Rd.m.  */
+
+bool
+cris_biap_index_p (const_rtx x, bool strict)
+{
+  return (cris_index_p (x, strict)
+	  || (GET_CODE (x) == MULT
+	      && cris_index_p (XEXP (x, 0), strict)
+	      && cris_scale_int_operand (XEXP (x, 1), VOIDmode)));
+}
+
+/* Worker function for TARGET_LEGITIMATE_ADDRESS_P.
+
+   A PIC operand looks like a normal symbol here.  At output we dress it
+   in "[rPIC+symbol:GOT]" (global symbol) or "rPIC+symbol:GOTOFF" (local
+   symbol) so we exclude all addressing modes where we can't replace a
+   plain "symbol" with that.  A global PIC symbol does not fit anywhere
+   here (but is thankfully a general_operand in itself).  A local PIC
+   symbol is valid for the plain "symbol + offset" case.  */
+
+static bool
+cris_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
+{
+  const_rtx x1, x2;
+
+  if (cris_base_or_autoincr_p (x, strict))
+    return true;
+  else if (TARGET_V32)
+    /* Nothing else is valid then.  */
+    return false;
+  else if (cris_constant_index_p (x))
+    return true;
+  /* Indexed?  */
+  else if (GET_CODE (x) == PLUS)
+    {
+      x1 = XEXP (x, 0);
+      x2 = XEXP (x, 1);
+      /* BDAP o, Rd.  */
+      if ((cris_base_p (x1, strict) && cris_constant_index_p (x2))
+	  || (cris_base_p (x2, strict) && cris_constant_index_p (x1))
+	   /* BDAP Rs[+], Rd.  */
+	  || (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
+	      && ((cris_base_p (x1, strict)
+		   && cris_bdap_index_p (x2, strict))
+		  || (cris_base_p (x2, strict)
+		      && cris_bdap_index_p (x1, strict))
+		  /* BIAP.m Rs, Rd */
+		  || (cris_base_p (x1, strict)
+		      && cris_biap_index_p (x2, strict))
+		  || (cris_base_p (x2, strict)
+		      && cris_biap_index_p (x1, strict)))))
+	return true;
+     }
+  else if (MEM_P (x))
+    {
+      /* DIP (Rs).  Reject [[reg+]] and [[reg]] for DImode (long long).  */
+      if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
+	  && cris_base_or_autoincr_p (XEXP (x, 0), strict))
+	return true;
+    }
+
+  return false;
 }
 
 /* Worker function for LEGITIMIZE_RELOAD_ADDRESS.  */
@@ -1557,9 +1695,7 @@ cris_normal_notice_update_cc (rtx exp, rtx insn)
 		       && (REGNO (SET_SRC (exp))
 			   > CRIS_LAST_GENERAL_REGISTER))
 		   || (TARGET_V32
-		       && GET_CODE (SET_SRC (exp)) == CONST_INT
-		       && CRIS_CONST_OK_FOR_LETTER_P (INTVAL (SET_SRC (exp)),
-						      'I')))
+		       && satisfies_constraint_I (SET_SRC (exp))))
 	    {
 	      /* There's no CC0 change for this case.  Just check
 		 for overlap.  */
@@ -1860,7 +1996,7 @@ cris_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
 
 	 FIXME: this case is a stop-gap for 4.3 and 4.4, this whole
 	 function should be rewritten.  */
-      if (outer_code == PLUS && BIAP_INDEX_P (x))
+      if (outer_code == PLUS && cris_biap_index_p (x, false))
 	{
 	  *total = 0;
 	  return true;
@@ -1902,7 +2038,7 @@ cris_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
       if (CONST_INT_P (XEXP (x, 1))
           /* Two constants may actually happen before optimization.  */
           && !CONST_INT_P (XEXP (x, 0))
-          && !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (XEXP (x, 1)), 'I'))
+	  && !satisfies_constraint_I (XEXP (x, 1)))
 	{
 	  *total
 	    = (rtx_cost (XEXP (x, 0), (enum rtx_code) outer_code,
@@ -1942,7 +2078,7 @@ cris_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
      loop there, without apparent reason.  */
 
   /* The cheapest addressing modes get 0, since nothing extra is needed.  */
-  if (BASE_OR_AUTOINCR_P (x))
+  if (cris_base_or_autoincr_p (x, false))
     return 0;
 
   /* An indirect mem must be a DIP.  This means two bytes extra for code,
@@ -1972,7 +2108,7 @@ cris_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
       /* A BIAP is 2 extra bytes for the prefix insn, nothing more.  We
 	 recognize the typical MULT which is always in tem1 because of
 	 insn canonicalization.  */
-      if ((GET_CODE (tem1) == MULT && BIAP_INDEX_P (tem1))
+      if ((GET_CODE (tem1) == MULT && cris_biap_index_p (tem1, false))
 	  || REG_P (tem2))
 	return 2 / 2;
 
@@ -1983,8 +2119,7 @@ cris_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
 
       /* A BDAP -32768 .. 32767 is like BDAP quick, but with 2 extra
 	 bytes.  */
-      if (CONST_INT_P (tem2)
-	  && CRIS_CONST_OK_FOR_LETTER_P (INTVAL (tem2), 'L'))
+      if (satisfies_constraint_L (tem2))
 	return (2 + 2) / 2;
 
       /* A BDAP with some other constant is 2 bytes extra.  */
@@ -2030,12 +2165,12 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
   /* The operands may be swapped.  Canonicalize them in reg_rtx and
      val_rtx, where reg_rtx always is a reg (for this constraint to
      match).  */
-  if (! BASE_P (reg_rtx))
+  if (! cris_base_p (reg_rtx, reload_in_progress || reload_completed))
     reg_rtx = val_rtx, val_rtx = ops[rreg];
 
   /* Don't forget to check that reg_rtx really is a reg.  If it isn't,
      we have no business.  */
-  if (! BASE_P (reg_rtx))
+  if (! cris_base_p (reg_rtx, reload_in_progress || reload_completed))
     return 0;
 
   /* Don't do this when -mno-split.  */
@@ -2060,8 +2195,9 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
       /* Check if the lvalue register is the same as the "other
 	 operand".  If so, the result is undefined and we shouldn't do
 	 this.  FIXME:  Check again.  */
-      if ((BASE_P (ops[lreg])
-	   && BASE_P (ops[other_op])
+      if ((cris_base_p (ops[lreg], reload_in_progress || reload_completed)
+	   && cris_base_p (ops[other_op],
+			   reload_in_progress || reload_completed)
 	   && REGNO (ops[lreg]) == REGNO (ops[other_op]))
 	  || rtx_equal_p (ops[other_op], ops[lreg]))
       return 0;
@@ -2074,7 +2210,7 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
     return 0;
 
   if (code == PLUS
-      && ! BASE_P (val_rtx))
+      && ! cris_base_p (val_rtx, reload_in_progress || reload_completed))
     {
 
       /* Do not allow rx = rx + n if a normal add or sub with same size
@@ -2088,19 +2224,24 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
       if (CONSTANT_P (val_rtx))
 	return 1;
 
-      if (MEM_P (val_rtx) && BASE_OR_AUTOINCR_P (XEXP (val_rtx, 0)))
+      if (MEM_P (val_rtx)
+	  && cris_base_or_autoincr_p (XEXP (val_rtx, 0),
+				      reload_in_progress || reload_completed))
 	return 1;
 
       if (GET_CODE (val_rtx) == SIGN_EXTEND
 	  && MEM_P (XEXP (val_rtx, 0))
-	  && BASE_OR_AUTOINCR_P (XEXP (XEXP (val_rtx, 0), 0)))
+	  && cris_base_or_autoincr_p (XEXP (XEXP (val_rtx, 0), 0),
+				      reload_in_progress || reload_completed))
 	return 1;
 
       /* If we got here, it's not a valid addressing mode.  */
       return 0;
     }
   else if (code == MULT
-	   || (code == PLUS && BASE_P (val_rtx)))
+	   || (code == PLUS
+	       && cris_base_p (val_rtx,
+			       reload_in_progress || reload_completed)))
     {
       /* Do not allow rx = rx + ry.S, since it doesn't give better code.  */
       if (rtx_equal_p (ops[lreg], reg_rtx)
@@ -2112,7 +2253,7 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
 	return 0;
 
       /* Only allow  r + ...  */
-      if (! BASE_P (reg_rtx))
+      if (! cris_base_p (reg_rtx, reload_in_progress || reload_completed))
 	return 0;
 
       /* If we got here, all seems ok.
@@ -2202,7 +2343,7 @@ cris_target_asm_named_section (const char *name, unsigned int flags,
    elsewhere.  */
 
 bool
-cris_valid_pic_const (rtx x, bool any_operand)
+cris_valid_pic_const (const_rtx x, bool any_operand)
 {
   gcc_assert (flag_pic);
 
@@ -2252,7 +2393,7 @@ cris_valid_pic_const (rtx x, bool any_operand)
    given the original (non-PIC) representation.  */
 
 enum cris_pic_symbol_type
-cris_pic_symbol_type_of (rtx x)
+cris_pic_symbol_type_of (const_rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -3793,7 +3934,7 @@ cris_libcall_value (enum machine_mode mode,
 /* Let's assume all functions return in r[CRIS_FIRST_ARG_REG] for the
    time being.  */
 
-bool
+static bool
 cris_function_value_regno_p (const unsigned int regno)
 {
   return (regno == CRIS_FIRST_ARG_REG);

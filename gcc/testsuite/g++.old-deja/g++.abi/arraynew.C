@@ -8,7 +8,10 @@
 
 void* p;
 
-void* operator new[](size_t s) throw (std::bad_alloc)
+void* operator new[](size_t s)
+#if __cplusplus <= 199711L
+  throw (std::bad_alloc)
+#endif
 {
   // Record the base of the last array allocated.
   p = malloc (s);

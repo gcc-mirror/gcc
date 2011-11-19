@@ -2,5 +2,3 @@
 # We cope by building variants of libgcc.
 MULTILIB_OPTIONS = fpic
 MULTILIB_MATCHES=fpic=fPIC
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

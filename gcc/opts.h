@@ -291,10 +291,6 @@ struct cl_option_handlers
   void (*wrong_lang_callback) (const struct cl_decoded_option *decoded,
 			       unsigned int lang_mask);
 
-  /* Callback to call after the successful handling of any option.  */
-  void (*post_handling_callback) (const struct cl_decoded_option *decoded,
-				  unsigned int mask);
-
   /* The number of individual handlers.  */
   size_t num_handlers;
 

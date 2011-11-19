@@ -1,0 +1,2 @@
+LIB1ASMSRC = vax/lib1funcs.S
+LIB1ASMFUNCS = _udivsi3 _umodsi3

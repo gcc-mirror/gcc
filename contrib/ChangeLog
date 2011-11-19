@@ -1,3 +1,18 @@
+2011-11-07  Richard Henderson  <rth@redhat.com>
+
+	Merged from transactional-memory.
+
+	* gcc_update: Add libitm to touch data.
+
+2011-11-07   Quentin Neill  <quentin.neill@amd.com>
+
+	* compare_tests: Add ability to compare all .sum
+	files from two build directories.
+
+2011-11-05  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* contrib-list.mk: Add Epiphany configurations.
+
 2011-09-13   Diego Novillo  <dnovillo@google.com>
 
 	* testsuite-management: New.

@@ -151,14 +151,14 @@ package Atree is
    --   it is useful to be able to do untyped traversals, and an internal
    --   package in Atree allows for direct untyped accesses in such cases.
 
-   --   Flag4         Sixteen Boolean flags (use depends on Nkind and
+   --   Flag4         Fifteen Boolean flags (use depends on Nkind and
    --   Flag5         Ekind, as described for FieldN). Again the access
    --   Flag6         is usually via subprograms in Sinfo and Einfo which
    --   Flag7         provide high-level synonyms for these flags, and
    --   Flag8         contain debugging code that checks that the values
    --   Flag9         in Nkind and Ekind are appropriate for the access.
    --   Flag10
-   --   Flag11        Note that Flag1-2 are missing from this list. For
+   --   Flag11        Note that Flag1-3 are missing from this list. For
    --   Flag12        historical reasons, these flag names are unused.
    --   Flag13
    --   Flag14
@@ -761,6 +761,14 @@ package Atree is
    procedure Set_Has_Aspects (N : Node_Id; Val : Boolean := True);
    pragma Inline (Set_Has_Aspects);
 
+   procedure Set_Original_Node (N : Node_Id; Val : Node_Id);
+   pragma Inline (Set_Original_Node);
+   --  Note that this routine is used only in very peculiar cases. In normal
+   --  cases, the Original_Node link is set by calls to Rewrite. We currently
+   --  use it in ASIS mode to manually set the link from pragma expressions
+   --  to their aspect original source expressions, so that the original source
+   --  expressions accessed by ASIS are also semantically analyzed.
+
    ------------------------------
    -- Entity Update Procedures --
    ------------------------------
@@ -887,9 +895,13 @@ package Atree is
    -----------------------------------
 
    --  This subpackage provides the functions for accessing and procedures for
-   --  setting fields that are normally referenced by their logical synonyms
-   --  defined in packages Sinfo and Einfo. The implementations of these
-   --  packages use the package Atree.Unchecked_Access.
+   --  setting fields that are normally referenced by wrapper subprograms (e.g.
+   --  logical synonyms defined in packages Sinfo and Einfo, or specialized
+   --  routines such as Rewrite (for Original_Node), or the node creation
+   --  routines (for Set_Nkind). The implementations of these wrapper
+   --  subprograms use the package Atree.Unchecked_Access as do various
+   --  special case accesses where no wrapper applies. Documentation is always
+   --  required for such a special case access explaining why it is needed.
 
    package Unchecked_Access is
 

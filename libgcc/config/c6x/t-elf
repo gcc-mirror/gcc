@@ -1,0 +1,40 @@
+# Cannot use default rules due to $(CRTSTUFF_T_CFLAGS).
+CUSTOM_CRTIN = yes
+
+LIB1ASMSRC = c6x/lib1funcs.S
+LIB1ASMFUNCS = _divsi3 _udivsi3 _umodsi3 _modsi3 _udivmodsi4 _divmodsi4
+LIB1ASMFUNCS += _strasgi _strasgi_64plus _clzsi2 _clzdi2 _clz
+LIB1ASMFUNCS += _push_rts _pop_rts _call_stub
+
+LIB2FUNCS_EXCLUDE = _cmpdi2 _ucmpdi2 _gcc_bcmp _eprintf _clzsi _clzdi
+
+LIB2ADD += $(srcdir)/config/c6x/gef.c \
+           $(srcdir)/config/c6x/gtf.c \
+           $(srcdir)/config/c6x/lef.c \
+           $(srcdir)/config/c6x/ltf.c \
+           $(srcdir)/config/c6x/eqf.c \
+           $(srcdir)/config/c6x/ged.c \
+           $(srcdir)/config/c6x/gtd.c \
+           $(srcdir)/config/c6x/led.c \
+           $(srcdir)/config/c6x/ltd.c \
+           $(srcdir)/config/c6x/eqd.c
+
+# Avoid failures when the user's GOT becomes too large.
+HOST_LIBGCC2_CFLAGS += -msdata=none
+
+LIB2ADDEH = $(srcdir)/config/c6x/unwind-c6x.c \
+  $(srcdir)/config/c6x/libunwind.S \
+  $(srcdir)/config/c6x/pr-support.c $(srcdir)/unwind-c.c
+
+# Assemble startup files.
+crti.o: $(srcdir)/config/c6x/crti.S
+	$(crt_compile) -c $(CRTSTUFF_T_CFLAGS) $<
+
+crtn.o: $(srcdir)/config/c6x/crtn.S
+	$(crt_compile) -c $(CRTSTUFF_T_CFLAGS) $<
+
+# Avoid failures when the user's GOT becomes too large.
+CRTSTUFF_T_CFLAGS = -msdata=none
+CRTSTUFF_T_CFLAGS_S = -msdata=none
+
+SHLIB_MAPFILES += $(srcdir)/config/c6x/libgcc-eabi.ver

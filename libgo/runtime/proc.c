@@ -3,17 +3,20 @@
 // license that can be found in the LICENSE file.
 
 #include "runtime.h"
+#include "arch.h"
 #include "malloc.h"	/* so that acid generated from proc.c includes malloc data structures */
 
 typedef struct Sched Sched;
 
-M	m0;
+G	runtime_g0;
+M	runtime_m0;
 
 #ifdef __rtems__
 #define __thread
 #endif
 
-__thread M *m = &m0;
+__thread G *g;
+__thread M *m;
 
 static struct {
 	Lock;
@@ -70,4 +73,22 @@ runtime_setcpuprofilerate(void (*fn)(uintptr*, int32), int32 hz)
 	
 	if(hz != 0)
 		runtime_resetcpuprofiler(hz);
+}
+
+/* The entersyscall and exitsyscall functions aren't used for anything
+   yet.  Eventually they will be used to switch to a new OS thread
+   when making a potentially-blocking library call.  */
+
+void runtime_entersyscall() __asm__("libgo_syscall.syscall.entersyscall");
+
+void
+runtime_entersyscall()
+{
+}
+
+void runtime_exitsyscall() __asm__("libgo_syscall.syscall.exitsyscall");
+
+void
+runtime_exitsyscall()
+{
 }

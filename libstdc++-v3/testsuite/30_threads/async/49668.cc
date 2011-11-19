@@ -4,6 +4,7 @@
 // { dg-options " -std=gnu++0x " { target *-*-cygwin *-*-darwin* } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
+// { dg-require-atomic-builtins "" }
 
 // Copyright (C) 2011 Free Software Foundation, Inc.
 //

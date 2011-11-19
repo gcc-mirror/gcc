@@ -5,7 +5,11 @@
 #include <new>
 
 bool abort_new;
-void *operator new[](size_t bytes) throw (std::bad_alloc) { 
+void *operator new[](size_t bytes)
+#if __cplusplus <= 199711L
+  throw (std::bad_alloc)
+#endif
+{
   if (abort_new)
     abort(); 
   return operator new (bytes);

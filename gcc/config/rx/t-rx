@@ -27,8 +27,3 @@ MULTILIB_MATCHES    = nofpu=mnofpu  nofpu=mcpu?rx200
 
 MULTILIB_EXCEPTIONS =
 MULTILIB_EXTRA_OPTS = 
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
-
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o
