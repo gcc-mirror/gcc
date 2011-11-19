@@ -232,10 +232,10 @@ namespace __profile
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 11. Bitset minor problems
-      bool
+      _GLIBCXX_CONSTEXPR bool
       operator[](size_t __pos) const
       {
-	return _M_base()[__pos];
+	return _Base::operator[](__pos);
       }
 
       using _Base::to_ulong;

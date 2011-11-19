@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-require-normal-mode "" }
 // { dg-options "-std=gnu++0x" }
 
 // Copyright (C) 2011 Free Software Foundation, Inc.
@@ -22,10 +23,14 @@
 
 int main()
 {
-  // bitset operators
-  typedef std::bitset<6> bitset_type;
-  constexpr bitset_type a = bitset_type();
-  constexpr auto v __attribute__((unused)) = a[0];
+  // bitset base type
+  typedef std::_Base_bitset<6> bitset_base;
+  constexpr bitset_base base = bitset_base();
+
+  constexpr auto r1 __attribute__((unused)) = base._M_getword(2);
+  // constexpr auto r2 = base._M_getdata(); // error, pointer to this
+  auto r2 __attribute__((unused)) = base._M_getdata(); 
+  constexpr auto r3 __attribute__((unused)) = base._M_hiword();
 
   return 0;
 }

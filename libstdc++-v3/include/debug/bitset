@@ -51,7 +51,7 @@ namespace __debug
     public:
       // In C++0x we rely on normal reference type to preserve the property
       // of bitset to be use as a literal.
-      // TODO: Find an other solution.
+      // TODO: Find another solution.
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       typedef typename _Base::reference reference;
 #else
@@ -272,11 +272,14 @@ namespace __debug
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 11. Bitset minor problems
-      bool
+      _GLIBCXX_CONSTEXPR bool
       operator[](size_t __pos) const
       {
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+	// TODO: Check in debug-mode too.
 	__glibcxx_check_subscript(__pos);
-	return _M_base()[__pos];
+#endif
+	return _Base::operator[](__pos);
       }
 
       using _Base::to_ulong;
