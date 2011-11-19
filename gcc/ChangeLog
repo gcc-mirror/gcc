@@ -1,3 +1,8 @@
+2011-11-19  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/darwin.h (ASM_DEBUG_SPEC): New.
+	* config/darwin9.h (ASM_DEBUG_SPEC): New.
+
 2011-11-18  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/i386.c (atom_cost): Disable SSE loop until alignment

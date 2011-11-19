@@ -395,6 +395,11 @@ extern GTY(()) int darwin_ms_struct;
   %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL} \
   %{static}"
 
+/* Default ASM_DEBUG_SPEC.  Darwin's as cannot currently produce dwarf
+   debugging data.  */
+
+#define ASM_DEBUG_SPEC  "%{g*:%{!g0:%{!gdwarf*:--gstabs}}}"
+
 /* We still allow output of STABS.  */
 
 #define DBX_DEBUGGING_INFO 1
