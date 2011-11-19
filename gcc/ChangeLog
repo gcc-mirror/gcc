@@ -1,3 +1,9 @@
+2011-11-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/50493
+	* arm.c (neon_disambiguate_copy): Correctly handle partial overlap
+	of src and dest operands.
+
 2011-11-18  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/49992
