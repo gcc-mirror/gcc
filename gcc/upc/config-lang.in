@@ -45,27 +45,4 @@ target_libs="target-libgupc"
 
 gtfiles="\$(srcdir)/c-lang.h \$(srcdir)/c-tree.h \$(srcdir)/c-family/c-common.h \$(srcdir)/c-family/c-pragma.h \$(srcdir)/c-family/c-upc.h \$(srcdir)/upc/upc-act.h \$(srcdir)/upc/upc-genericize.h \$(srcdir)/c-decl.c \$(srcdir)/c-family/c-common.c \$(srcdir)/c-family/c-cppbuiltin.c \$(srcdir)/c-family/c-pragma.c \$(srcdir)/c-objc-common.c \$(srcdir)/c-parser.c \$(srcdir)/upc/upc-act.c \$(srcdir)/upc/upc-genericize.c"
 
-#
-# UPC specific configuration definitions
-#
-case $build in
-alpha*-*-unicosmk*)
-      ;;
-i[356]86-*-darwin*)
-      ;;
-i[56]86-*-linux*)
-      ;;
-mips-sgi-irix6*)
-      ;;
-ia64-*-linux*)
-      ;;
-x86_64-*-linux*)
-      ;;
-x86_64-*-darwin*)
-      ;;
-*)
-      echo "UPC has not been configured for ${build}." >&2
-      exit 2
-      ;;
-esac 
 extra_parts="${extra_parts} ${upc_extra_parts}"

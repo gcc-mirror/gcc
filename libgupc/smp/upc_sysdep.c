@@ -69,6 +69,10 @@ char *__upc_strsignal (sig)
     return (sprintf (sigbuf, "signal number %d", sig), sigbuf);
 }
 
+#ifndef __upc_atomic_cas
+/* If a builtin implementation of __upc_atomic_cas was found,
+   then the symbol will be defined as a pre-processor macro.
+   Otherwise, implement the function out-of-line.  */
 #ifdef __sgi__
 int
 __upc_atomic_cas (os_atomic_p ptr, os_atomic_t old, os_atomic_t new)
@@ -120,6 +124,7 @@ __upc_atomic_cas (os_atomic_p ptr, os_atomic_t old, os_atomic_t new)
 #else
   #error "__upc_atomic_cas not implemented on this target"
 #endif
+#endif /* ! __upc_atomic_cas */
 
 int
 __upc_atomic_get_bit (os_atomic_p bits, int bitnum)

@@ -1,3 +1,8 @@
+2011-11-19  Gary Funck  <gary@intrepid.com>
+
+	* config-lang.in: Remove checks for supported targets.
+	This is now done at a higher level.
+ 
 2011-10-26  Gary Funck  <gary@intrepid.com>
 
 	Rename "GCC/UPC" to "GNU UPC", "UPC" to "GUPC", and

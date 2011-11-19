@@ -1,3 +1,9 @@
+2011-11-19  Gary Funck  <gary@intrepid.com>
+
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue):
+	Add check for UPC when defining the language type value
+	in a traceback entry.
+
 2011-11-18  Gary Funck  <gary@intrepid.com>
 
         Merge trunk version 181493 into gupc branch.
@@ -12,7 +18,6 @@
 2011-10-27  Nenad Vukicevic <nenad@intrepid.com>
 
 	Apply patch for Darwin build - PR49992.
-
 	* top-level/configure.ac: Don't run ranlib with '-c' option for Darwin.
 	* gcc/configure.ac: Ditto.
 	* gcc/ada/mlib-tgt-specific-darwin.adb: Ditto.

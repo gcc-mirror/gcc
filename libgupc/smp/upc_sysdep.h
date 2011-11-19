@@ -97,7 +97,15 @@ extern int __upc_num_cpus;
 
 extern void __upc_sys_init (void);
 
-extern int __upc_atomic_cas (os_atomic_p, os_atomic_t, os_atomic_t);
+#if defined (__GCC_HAVE_SYNC_COMPARE_AND_SWAP_8) \
+    || defined (__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4)
+  /* Use GCC's builtin implementation, if available.  */
+  #define __upc_atomic_cas(PTR, OLD_VAL, NEW_VAL) \
+    __sync_bool_compare_and_swap (PTR, OLD_VAL, NEW_VAL)
+#else
+  extern int __upc_atomic_cas (os_atomic_p, os_atomic_t, os_atomic_t);
+#endif
+
 extern int __upc_atomic_get_bit (os_atomic_p, int);
 extern void __upc_atomic_set_bit (os_atomic_p, int);
 
