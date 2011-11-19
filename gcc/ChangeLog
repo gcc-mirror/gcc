@@ -1,3 +1,9 @@
+2011-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/51187
+	* reorg.c (relax_delay_slots): Do not consider a jump useless if there
+	is a barrier between the jump and its target label.
+
 2011-11-19  Patrick Marlier  <patrick.marlier@gmail.com>
 
 	PR middle-end/51211

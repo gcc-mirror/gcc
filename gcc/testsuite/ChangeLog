@@ -1,3 +1,7 @@
+2011-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/delay-slot-2.c: New test.
+
 2011-11-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/cpp/assert4.c: Test __linux__, not __gnu_linux__.
