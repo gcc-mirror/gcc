@@ -1,6 +1,6 @@
 2011-11-12  Iain Sandoe  <iains@gcc.gnu.org>
 
-	Makefile.in: Change dependency on oscons to depend on the generator
+	* Makefile.in: Change dependency on oscons to depend on the generator
 	tool.
 
 2011-10-12  Eric Botcazou  <ebotcazou@adacore.com>
