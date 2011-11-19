@@ -1,3 +1,8 @@
+2011-11-19  Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR middle-end/51211
+	* tracer.c (ignore_bb_p): Don't copy GIMPLE_TRANSACTION.
+
 2011-11-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expmed.c (store_bit_field_1): Revert bogus formatting change.
