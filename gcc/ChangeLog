@@ -1,8 +1,12 @@
+2011-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expmed.c (store_bit_field_1): Revert bogus formatting change.
+
 2011-11-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/50493
-	* arm.c (neon_disambiguate_copy): Correctly handle partial overlap
-	of src and dest operands.
+	* config/arm/arm.c (neon_disambiguate_copy): Correctly handle partial
+	overlap of src and dest operands.
 
 2011-11-19  Iain Sandoe  <iains@gcc.gnu.org>
 
