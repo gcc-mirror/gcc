@@ -20728,39 +20728,34 @@ neon_emit_pair_result_insn (enum machine_mode mode,
   emit_move_insn (mem, tmp2);
 }
 
-/* Set up operands for a register copy from src to dest, taking care not to
-   clobber registers in the process.
-   FIXME: This has rather high polynomial complexity (O(n^3)?) but shouldn't
-   be called with a large N, so that should be OK.  */
+/* Set up OPERANDS for a register copy from SRC to DEST, taking care
+   not to early-clobber SRC registers in the process.
 
+   We assume that the operands described by SRC and DEST represent a
+   decomposed copy of OPERANDS[1] into OPERANDS[0].  COUNT is the
+   number of components into which the copy has been decomposed.  */
 void
 neon_disambiguate_copy (rtx *operands, rtx *dest, rtx *src, unsigned int count)
 {
-  unsigned int copied = 0, opctr = 0;
-  unsigned int done = (1 << count) - 1;
-  unsigned int i, j;
+  unsigned int i;
 
-  while (copied != done)
+  if (!reg_overlap_mentioned_p (operands[0], operands[1])
+      || REGNO (operands[0]) < REGNO (operands[1]))
     {
       for (i = 0; i < count; i++)
-        {
-          int good = 1;
-
-          for (j = 0; good && j < count; j++)
-            if (i != j && (copied & (1 << j)) == 0
-                && reg_overlap_mentioned_p (src[j], dest[i]))
-              good = 0;
-
-          if (good)
-            {
-              operands[opctr++] = dest[i];
-              operands[opctr++] = src[i];
-              copied |= 1 << i;
-            }
-        }
+	{
+	  operands[2 * i] = dest[i];
+	  operands[2 * i + 1] = src[i];
+	}
     }
-
-  gcc_assert (opctr == count * 2);
+  else
+    {
+      for (i = 0; i < count; i++)
+	{
+	  operands[2 * i] = dest[count - i - 1];
+	  operands[2 * i + 1] = src[count - i - 1];
+	}
+    }
 }
 
 /* Expand an expression EXP that calls a built-in function,
