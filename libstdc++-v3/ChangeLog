@@ -15,7 +15,7 @@
 	global search and replace of "part" by "chapter".
 	* doc/xml/manual/shared_ptr.xml: Remove outdated information.
 	* doc/xml/manual/messages.xml: Be more specific about systems where
-	using 'int' for catalog handle is not a problem, mentioned LWG issue.
+	using 'int' for catalog handle is not a problem, mention LWG issue.
 
 2011-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
