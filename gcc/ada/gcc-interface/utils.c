@@ -4744,18 +4744,16 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 enum tree_code
 tree_code_for_record_type (Entity_Id gnat_type)
 {
-  Node_Id component_list
-    = Component_List (Type_Definition
-		      (Declaration_Node
-		       (Implementation_Base_Type (gnat_type))));
-  Node_Id component;
+  Node_Id component_list, component;
 
- /* Make this a UNION_TYPE unless it's either not an Unchecked_Union or
-    we have a non-discriminant field outside a variant.  In either case,
-    it's a RECORD_TYPE.  */
-
+  /* Return UNION_TYPE if it's an Unchecked_Union whose non-discriminant
+     fields are all in the variant part.  Otherwise, return RECORD_TYPE.  */
   if (!Is_Unchecked_Union (gnat_type))
     return RECORD_TYPE;
+
+  gnat_type = Implementation_Base_Type (gnat_type);
+  component_list
+    = Component_List (Type_Definition (Declaration_Node (gnat_type)));
 
   for (component = First_Non_Pragma (Component_Items (component_list));
        Present (component);

@@ -1,3 +1,25 @@
+2011-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: Adjust
+	call to components_to_record.
+	(components_to_record): Add FIRST_FREE_POS parameter.  For the variant
+	part, reuse enclosing union even if there is a representation clause
+	on the Unchecked_Union.  If there is a variant part, compute the new
+	first free position, if any.  Adjust call to self.  Use a single field
+	directly only if it hasn't got a representation clause or is placed at
+	offset zero.  Create the variant part at offset 0 if all the fields
+	down to this level have a rep clause.  Do not chain the variant part
+	immediately and adjust downstream.
+	Do not test ALL_REP before moving the fields without rep clause to the
+	previous level.  Call create_rep_part to create the REP part and force
+	a minimum size on it if necessary.  Do not chain it immediately.
+	Create a fake REP part if there are fields without rep clause that need
+	to be laid out starting from FIRST_FREE_POS.
+	At the end, chain the REP part and then the variant part.
+	(create_rep_part): New function.
+	(get_rep_part): Minor tweak.
+	* gcc-interface/utils.c (tree_code_for_record_type): Minor tweak.
+
 2011-11-18  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/50678
