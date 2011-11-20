@@ -1,3 +1,13 @@
+2011-11-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR gcov-profile/51113
+	* gcc.misc-tests/gcov-13.c: Check gcovpart-13b coverage
+	* gcc.misc-tests/gcov-16.c: New.
+	* gcc.misc-tests/gcov-17.c: New.
+	* g++.dg/gcov/gcov-8.C: New.
+	* g++.dg/gcov/gcov-9.C: New.
+	* g++.dg/gcov/gcov-10.C: New.
+
 2011-11-20  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51194
