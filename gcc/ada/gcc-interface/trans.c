@@ -3278,6 +3278,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 	save_gnu_tree (gnat_param, NULL_TREE, false);
     }
 
+  /* Disconnect the variable created for the return value.  */
   if (gnu_return_var_elmt)
     TREE_VALUE (gnu_return_var_elmt) = void_type_node;
 
@@ -5889,12 +5890,12 @@ gnat_to_gnu (Node_Id gnat_node)
 					       gnat_node, false);
 	      }
 
-	    /* If the function returns by invisible reference, dereference
+	    /* Otherwise, if it returns by invisible reference, dereference
 	       the pointer it is passed using the type of the return value
 	       and build the copy operation manually.  This ensures that we
 	       don't copy too much data, for example if the return type is
 	       unconstrained with a maximum size.  */
-	    if (TREE_ADDRESSABLE (gnu_subprog_type))
+	    else if (TREE_ADDRESSABLE (gnu_subprog_type))
 	      {
 		tree gnu_ret_deref
 		  = build_unary_op (INDIRECT_REF, TREE_TYPE (gnu_ret_val),
@@ -5905,11 +5906,9 @@ gnat_to_gnu (Node_Id gnat_node)
 		gnu_ret_val = NULL_TREE;
 	      }
 	  }
+
 	else
-	  {
-	    gnu_ret_obj = NULL_TREE;
-	    gnu_ret_val = NULL_TREE;
-	  }
+	  gnu_ret_obj = gnu_ret_val = NULL_TREE;
 
 	/* If we have a return label defined, convert this into a branch to
 	   that label.  The return proper will be handled elsewhere.  */
@@ -5934,8 +5933,8 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Goto_Statement:
-      gnu_result = build1 (GOTO_EXPR, void_type_node,
-			   gnat_to_gnu (Name (gnat_node)));
+      gnu_result
+	= build1 (GOTO_EXPR, void_type_node, gnat_to_gnu (Name (gnat_node)));
       break;
 
     /***************************/

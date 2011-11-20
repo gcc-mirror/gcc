@@ -1,3 +1,13 @@
+2011-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Add comment.
+	(gnat_to_gnu) <N_Return_Statement>: Add 'else' to avoid doing a useless
+	test.  Tweak default case.
+	<N_Goto_Statement>: Use better formatting.
+	* gcc-interface/utils2.c (maybe_wrap_malloc): Use INIT_EXPR instead of
+	MODIFY_EXPR to initialize the storage.
+	(build_allocator): Likewise.
+
 2011-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: Adjust
