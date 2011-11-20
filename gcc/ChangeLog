@@ -1,3 +1,13 @@
+2011-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (UNSPEC_MOVNTI): Remove.
+	(UNSPEC_MOVNTQ): New unspec.
+	* config/i386/mmx.md (sse_movntq): Rename from sse_movntdi.
+	Use UNSPEC_MOVNTQ instead of UNSPEC_MOVNT.
+	* config/i386/sse.md (sse2_movnti<mode>): Use UNSPEC_MOVNT instead of
+	UNSPEC_MOVNTI.
+	(STORENT_MODE): Add DI and V4DI modes.
+
 2011-11-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR gcov-profile/51113
@@ -119,7 +129,7 @@
 	(avr_const_address_lo16): New static function.
 	(avr_assemble_integer): Use it to handle 3-byte integers.
 	(avr_emit_movmemhi, avr_out_movmem): New functions.
-	
+
 	* config/avr/predicates.md (nox_general_operand): Handle new
 	address spaces.
 	* config/avr/avr.md (unspec): Add UNSPEC_MOVMEM.
