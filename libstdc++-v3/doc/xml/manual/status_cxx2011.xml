@@ -2648,29 +2648,29 @@ particular release.
       <methodname>native_handle</methodname> are provided. The handle types
       are defined in terms of the Gthreads abstraction layer.
       <itemizedlist>
-         <listitem><classname>thread</classname>: The native handle type is
+         <listitem><para><classname>thread</classname>: The native handle type is
             a typedef for <code>__gthread_t</code> i.e. <code>pthread_t</code>
             when GCC is configured with the <literal>posix</literal> thread
             model. The value of the native handle is undefined for a thread
             which is not joinable.
-         </listitem>
-         <listitem><classname>mutex</classname> and
-         <classname>timed_mutex</classname>:
+         </para></listitem>
+         <listitem><para><classname>mutex</classname> and
+            <classname>timed_mutex</classname>:
             The native handle type is <code>__gthread_mutex_t*</code> i.e.
             <code>pthread_mutex_t*</code> for the <literal>posix</literal>
             thread model.
-         </listitem>
-         <listitem><classname>recursive_mutex</classname> and
+         </para></listitem>
+         <listitem><para><classname>recursive_mutex</classname> and
          <classname>recursive_timed_mutex</classname>:
             The native handle type is <code>__gthread_recursive_mutex_t*</code>
             i.e. <code>pthread_mutex_t*</code> for the <literal>posix</literal>
             thread model.
-         </listitem>
-         <listitem><classname>condition_variable</classname>: The native
+         </para></listitem>
+         <listitem><para><classname>condition_variable</classname>: The native
             handle type is <code>__gthread_cond_t*</code> i.e.
             <code>pthread_cond_t*</code> for the <literal>posix</literal>
             thread model.
-         </listitem>
+         </para></listitem>
       </itemizedlist>
    </para>
 

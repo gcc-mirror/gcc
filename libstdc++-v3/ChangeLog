@@ -1,5 +1,9 @@
 2011-11-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* doc/xml/manual/status_cxx2011.xml: Fix docbook markup.
+
+2011-11-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* doc/xml/manual/appendix_contributing.xml: Do not use "here" as link
 	text.
 	* doc/xml/faq.xml: Likewise. Do not request standard library issues
