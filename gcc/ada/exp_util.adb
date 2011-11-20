@@ -6712,6 +6712,7 @@ package body Exp_Util is
                New_Exp := E;
             else
                New_Exp := Make_Reference (Loc, E);
+               Set_Is_Known_Non_Null (Def_Id);
             end if;
          end if;
 
