@@ -7270,6 +7270,12 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       int is_dependent_type;
       int use_partial_inst_tmpl = false;
 
+      if (template_type == error_mark_node)
+	/* An error occured while building the template TEMPL, and a
+	   diagnostic has most certainly been emitted for that
+	   already.  Let's propagate that error.  */
+	return error_mark_node;
+
       gen_tmpl = most_general_template (templ);
       parmlist = DECL_TEMPLATE_PARMS (gen_tmpl);
       parm_depth = TMPL_PARMS_DEPTH (parmlist);
