@@ -1,3 +1,8 @@
+2011-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51230
+	* g++.dg/template/error46.C: New.
+
 2011-11-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/51235
