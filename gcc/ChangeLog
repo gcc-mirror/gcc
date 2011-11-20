@@ -1,7 +1,8 @@
 2011-11-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR gcov-profile/51113
-	* coverage.c (build_var): Propagate visibility for public decls.
+	* coverage.c (build_var): Propagate visibility for public
+	decls.  Use make_decl_one_only for PIC correctness.
 
 	testsuite/
 	* gcc.misc-tests/gcov-13.c: Check gcovpart-13b coverage
