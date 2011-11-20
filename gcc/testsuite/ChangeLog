@@ -1,3 +1,11 @@
+2011-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/51235
+	* gcc.target/i386/pr51235.c: New test.
+
+	PR target/51236
+	* gcc.target/i386/pr51236.c: New test.
+
 2011-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr32.adb: New test.
