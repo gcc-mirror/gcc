@@ -1,5 +1,15 @@
 2011-11-20  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/51235
+	* config/i386/i386.c (ix86_expand_vcond): Generate TARGET_XOP
+	patterns for supported mode only.
+
+	PR target/51236
+	* config/i386/i386.c (ix86_expand_builtin)
+	<IX86_BUILTIN_GATHERALTSIV4DI>: Use CODE_FOR_avx2_gathersiv4di.
+
+2011-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (UNSPEC_MOVNTI): Remove.
 	(UNSPEC_MOVNTQ): New unspec.
 	* config/i386/mmx.md (sse_movntq): Rename from sse_movntdi.
