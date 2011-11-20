@@ -2126,7 +2126,7 @@ maybe_wrap_malloc (tree data_size, tree data_type, Node_Id gnat_node)
 
       return
 	build2 (COMPOUND_EXPR, TREE_TYPE (aligning_field_addr),
-		build_binary_op (MODIFY_EXPR, NULL_TREE,
+		build_binary_op (INIT_EXPR, NULL_TREE,
 				 storage_ptr_slot, storage_ptr),
 		aligning_field_addr);
     }
@@ -2279,12 +2279,12 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 	  CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (storage_type)),
 				  init);
 	  storage_init
-	    = build_binary_op (MODIFY_EXPR, NULL_TREE, storage_deref,
+	    = build_binary_op (INIT_EXPR, NULL_TREE, storage_deref,
 			       gnat_build_constructor (storage_type, v));
 	}
       else
 	storage_init
-	  = build_binary_op (MODIFY_EXPR, NULL_TREE,
+	  = build_binary_op (INIT_EXPR, NULL_TREE,
 			     build_component_ref (storage_deref, NULL_TREE,
 						  TYPE_FIELDS (storage_type),
 						  false),
@@ -2332,7 +2332,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
       storage_deref = build_unary_op (INDIRECT_REF, NULL_TREE, storage);
       TREE_THIS_NOTRAP (storage_deref) = 1;
       storage_init
-	= build_binary_op (MODIFY_EXPR, NULL_TREE, storage_deref, init);
+	= build_binary_op (INIT_EXPR, NULL_TREE, storage_deref, init);
       return build2 (COMPOUND_EXPR, result_type, storage_init, storage);
     }
 
