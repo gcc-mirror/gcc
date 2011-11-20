@@ -1,3 +1,8 @@
+2011-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr32.adb: New test.
+	* gnat.dg/discr32_pkg.ads: New helper.
+
 2011-11-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR gcov-profile/51113
