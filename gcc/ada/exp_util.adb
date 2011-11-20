@@ -6710,6 +6710,10 @@ package body Exp_Util is
 
             if Alfa_Mode then
                New_Exp := E;
+
+            --  Otherwise generate reference, marking the value as non-null
+            --  since we know it cannot be null and we don't want a check.
+
             else
                New_Exp := Make_Reference (Loc, E);
                Set_Is_Known_Non_Null (Def_Id);

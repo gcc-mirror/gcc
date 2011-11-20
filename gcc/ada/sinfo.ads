@@ -7310,6 +7310,11 @@ package Sinfo is
       --  more sense to call it an Expression field, but then we would have to
       --  special case the treatment of the N_Reference node.
 
+      --  Note: evaluating a N_Reference node is guaranteed to yield a non-null
+      --  value at run time. Therefore, it is valid to set Is_Known_Non_Null on
+      --  a temporary initialized to a N_Reference node in order to eliminate
+      --  superfluous access checks.
+
       --  Sprint syntax: prefix'reference
 
       --  N_Reference
