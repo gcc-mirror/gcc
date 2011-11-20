@@ -16,3 +16,4 @@ int main ()
 }
 
 /* { dg-final { run-gcov { -a gcov-13.c } } } */
+/* { dg-final { run-gcov { -a gcovpart-13b.c } } } */
