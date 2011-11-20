@@ -11218,9 +11218,13 @@ mips_init_libfuncs (void)
     }
 
   /* The MIPS16 ISA does not have an encoding for "sync", so we rely
-     on an external non-MIPS16 routine to implement __sync_synchronize.  */
+     on an external non-MIPS16 routine to implement __sync_synchronize.
+     Similarly for the rest of the ll/sc libfuncs.  */
   if (TARGET_MIPS16)
-    synchronize_libfunc = init_one_libfunc ("__sync_synchronize");
+    {
+      synchronize_libfunc = init_one_libfunc ("__sync_synchronize");
+      init_sync_libfuncs (UNITS_PER_WORD);
+    }
 }
 
 /* Build up a multi-insn sequence that loads label TARGET into $AT.  */
