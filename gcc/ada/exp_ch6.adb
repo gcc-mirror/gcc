@@ -7954,6 +7954,7 @@ package body Exp_Ch6 is
       Obj_Id       : Entity_Id;
       Ptr_Typ      : Entity_Id;
       Ptr_Typ_Decl : Node_Id;
+      New_Expr     : Node_Id;
       Result_Subt  : Entity_Id;
       Target       : Node_Id;
 
@@ -8035,14 +8036,17 @@ package body Exp_Ch6 is
       --  Finally, create an access object initialized to a reference to the
       --  function call.
 
-      Obj_Id := Make_Temporary (Loc, 'R');
+      New_Expr := Make_Reference (Loc, Relocate_Node (Func_Call));
+
+      Obj_Id := Make_Temporary (Loc, 'R', New_Expr);
       Set_Etype (Obj_Id, Ptr_Typ);
+      Set_Is_Known_Non_Null (Obj_Id);
 
       Obj_Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Obj_Id,
           Object_Definition   => New_Reference_To (Ptr_Typ, Loc),
-          Expression => Make_Reference (Loc, Relocate_Node (Func_Call)));
+          Expression          => New_Expr);
       Insert_After_And_Analyze (Ptr_Typ_Decl, Obj_Decl);
 
       Rewrite (Assign, Make_Null_Statement (Loc));
@@ -8301,6 +8305,7 @@ package body Exp_Ch6 is
 
       Def_Id := Make_Temporary (Loc, 'R', New_Expr);
       Set_Etype (Def_Id, Ref_Type);
+      Set_Is_Known_Non_Null (Def_Id);
 
       Insert_After_And_Analyze (Ptr_Typ_Decl,
         Make_Object_Declaration (Loc,
