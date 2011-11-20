@@ -1,4 +1,19 @@
-2011-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+2011-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (struct language_function): Add GNAT_RET.
+	(f_gnat_ret): New macro.
+	(struct nrv_data): Add GNAT_RET.
+	(finalize_nrv_unc_r): New helper function.
+	(finalize_nrv): Add GNAT_RET parameter.  Copy it into DATA.  If the
+	function returns unconstrained, use finalize_nrv_unc_r as callback.
+	(return_value_ok_for_nrv_p): Test the alignment of RET_OBJ only if
+	RET_OBJ is non-null.
+	(Subprogram_Body_to_gnu): Pass GNAT_RET to finalize_nrv.
+	(gnat_to_gnu) <N_Return_Statement>: In the return-unconstrained case,
+	if optimization is enabled, record candidates for the Named Return
+	Value optimization.
+
+2011-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Add comment.
 	(gnat_to_gnu) <N_Return_Statement>: Add 'else' to avoid doing a useless

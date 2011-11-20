@@ -129,6 +129,7 @@ struct GTY(()) language_function {
   VEC(parm_attr,gc) *parm_attr_cache;
   bitmap named_ret_val;
   VEC(tree,gc) *other_ret_val;
+  int gnat_ret;
 };
 
 #define f_parm_attr_cache \
@@ -139,6 +140,9 @@ struct GTY(()) language_function {
 
 #define f_other_ret_val \
   DECL_STRUCT_FUNCTION (current_function_decl)->language->other_ret_val
+
+#define f_gnat_ret \
+  DECL_STRUCT_FUNCTION (current_function_decl)->language->gnat_ret
 
 /* A structure used to gather together information about a statement group.
    We use this to gather related statements, for example the "then" part
@@ -2674,12 +2678,20 @@ establish_gnat_vms_condition_handler (void)
 	first list.  These are the Named Return Values.
 
      4. Adjust the relevant RETURN_EXPRs and replace the occurrences of the
-	Named Return Values in the function with the RESULT_DECL.  */
+	Named Return Values in the function with the RESULT_DECL.
+
+   If the function returns an unconstrained type, things are a bit different
+   because the anonymous return object is allocated on the secondary stack
+   and RESULT_DECL is only a pointer to it.  Each return object can be of a
+   different size and is allocated separately so we need not care about the
+   aforementioned overlapping issues.  Therefore, we don't collect the other
+   expressions and skip step #2 in the algorithm.  */
 
 struct nrv_data
 {
   bitmap nrv;
   tree result;
+  Node_Id gnat_ret;
   struct pointer_set_t *visited;
 };
 
@@ -2812,8 +2824,153 @@ finalize_nrv_r (tree *tp, int *walk_subtrees, void *data)
     *tp = convert (TREE_TYPE (t), dp->result);
 
   /* Avoid walking into the same tree more than once.  Unfortunately, we
-     can't just use walk_tree_without_duplicates because it would only call
-     us for the first occurrence of NRVs in the function body.  */
+     can't just use walk_tree_without_duplicates because it would only
+     call us for the first occurrence of NRVs in the function body.  */
+  if (pointer_set_insert (dp->visited, *tp))
+    *walk_subtrees = 0;
+
+  return NULL_TREE;
+}
+
+/* Likewise, but used when the function returns an unconstrained type.  */
+
+static tree
+finalize_nrv_unc_r (tree *tp, int *walk_subtrees, void *data)
+{
+  struct nrv_data *dp = (struct nrv_data *)data;
+  tree t = *tp;
+
+  /* No need to walk into types.  */
+  if (TYPE_P (t))
+    *walk_subtrees = 0;
+
+  /* We need to see the DECL_EXPR of NRVs before any other references so we
+     walk the body of BIND_EXPR before walking its variables.  */
+  else if (TREE_CODE (t) == BIND_EXPR)
+    walk_tree (&BIND_EXPR_BODY (t), finalize_nrv_unc_r, data, NULL);
+
+  /* Change RETURN_EXPRs of NRVs to assign to the RESULT_DECL only the final
+     return value built by the allocator instead of the whole construct.  */
+  else if (TREE_CODE (t) == RETURN_EXPR
+	   && TREE_CODE (TREE_OPERAND (t, 0)) == MODIFY_EXPR)
+    {
+      tree ret_val = TREE_OPERAND (TREE_OPERAND (t, 0), 1);
+
+      /* This is the construct returned by the allocator.  */
+      if (TREE_CODE (ret_val) == COMPOUND_EXPR
+	  && TREE_CODE (TREE_OPERAND (ret_val, 0)) == INIT_EXPR)
+	{
+	  if (TYPE_IS_FAT_POINTER_P (TREE_TYPE (ret_val)))
+	    ret_val
+	      = VEC_index (constructor_elt,
+			   CONSTRUCTOR_ELTS
+			   (TREE_OPERAND (TREE_OPERAND (ret_val, 0), 1)),
+			    1)->value;
+	  else
+	    ret_val = TREE_OPERAND (TREE_OPERAND (ret_val, 0), 1);
+	}
+
+      /* Strip useless conversions around the return value.  */
+      if (gnat_useless_type_conversion (ret_val)
+	  || TREE_CODE (ret_val) == VIEW_CONVERT_EXPR)
+	ret_val = TREE_OPERAND (ret_val, 0);
+
+      /* Strip unpadding around the return value.  */
+      if (TREE_CODE (ret_val) == COMPONENT_REF
+	  && TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (ret_val, 0))))
+	ret_val = TREE_OPERAND (ret_val, 0);
+
+      /* Assign the new return value to the RESULT_DECL.  */
+      if (is_nrv_p (dp->nrv, ret_val))
+	TREE_OPERAND (TREE_OPERAND (t, 0), 1)
+	  = TREE_OPERAND (DECL_INITIAL (ret_val), 0);
+    }
+
+  /* Adjust the DECL_EXPR of NRVs to call the allocator and save the result
+     into a new variable.  */
+  else if (TREE_CODE (t) == DECL_EXPR
+	   && is_nrv_p (dp->nrv, DECL_EXPR_DECL (t)))
+    {
+      tree saved_current_function_decl = current_function_decl;
+      tree var = DECL_EXPR_DECL (t);
+      tree alloc, p_array, new_var, new_ret;
+      VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 2);
+
+      /* Create an artificial context to build the allocation.  */
+      current_function_decl = decl_function_context (var);
+      start_stmt_group ();
+      gnat_pushlevel ();
+
+      /* This will return a COMPOUND_EXPR with the allocation in the first
+	 arm and the final return value in the second arm.  */
+      alloc = build_allocator (TREE_TYPE (var), DECL_INITIAL (var),
+			       TREE_TYPE (dp->result),
+			       Procedure_To_Call (dp->gnat_ret),
+			       Storage_Pool (dp->gnat_ret),
+			       Empty, false);
+
+      /* The new variable is built as a reference to the allocated space.  */
+      new_var
+	= build_decl (DECL_SOURCE_LOCATION (var), VAR_DECL, DECL_NAME (var),
+		      build_reference_type (TREE_TYPE (var)));
+      DECL_BY_REFERENCE (new_var) = 1;
+
+      if (TYPE_IS_FAT_POINTER_P (TREE_TYPE (alloc)))
+	{
+	  /* The new initial value is a COMPOUND_EXPR with the allocation in
+	     the first arm and the value of P_ARRAY in the second arm.  */
+	  DECL_INITIAL (new_var)
+	    = build2 (COMPOUND_EXPR, TREE_TYPE (new_var),
+		      TREE_OPERAND (alloc, 0),
+		      VEC_index (constructor_elt,
+				 CONSTRUCTOR_ELTS (TREE_OPERAND (alloc, 1)),
+						   0)->value);
+
+	  /* Build a modified CONSTRUCTOR that references NEW_VAR.  */
+	  p_array = TYPE_FIELDS (TREE_TYPE (alloc));
+	  CONSTRUCTOR_APPEND_ELT (v, p_array,
+				  fold_convert (TREE_TYPE (p_array), new_var));
+	  CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (p_array),
+				  VEC_index (constructor_elt,
+					     CONSTRUCTOR_ELTS
+					     (TREE_OPERAND (alloc, 1)),
+					      1)->value);
+	  new_ret = build_constructor (TREE_TYPE (alloc), v);
+	}
+      else
+	{
+	  /* The new initial value is just the allocation.  */
+	  DECL_INITIAL (new_var) = alloc;
+	  new_ret = fold_convert (TREE_TYPE (alloc), new_var);
+	}
+
+      gnat_pushdecl (new_var, Empty);
+
+      /* Destroy the artificial context and insert the new statements.  */
+      gnat_zaplevel ();
+      *tp = end_stmt_group ();
+      current_function_decl = saved_current_function_decl;
+
+      /* Chain NEW_VAR immediately after VAR and ignore the latter.  */
+      DECL_CHAIN (new_var) = DECL_CHAIN (var);
+      DECL_CHAIN (var) = new_var;
+      DECL_IGNORED_P (var) = 1;
+
+      /* Save the new return value and the dereference of NEW_VAR.  */
+      DECL_INITIAL (var)
+	= build2 (COMPOUND_EXPR, TREE_TYPE (var), new_ret,
+		  build1 (INDIRECT_REF, TREE_TYPE (var), new_var));
+      /* ??? Kludge to avoid messing up during inlining.  */
+      DECL_CONTEXT (var) = NULL_TREE;
+    }
+
+  /* And replace all uses of NRVs with the dereference of NEW_VAR.  */
+  else if (is_nrv_p (dp->nrv, t))
+    *tp = TREE_OPERAND (DECL_INITIAL (t), 1);
+
+  /* Avoid walking into the same tree more than once.  Unfortunately, we
+     can't just use walk_tree_without_duplicates because it would only
+     call us for the first occurrence of NRVs in the function body.  */
   if (pointer_set_insert (dp->visited, *tp))
     *walk_subtrees = 0;
 
@@ -2822,13 +2979,14 @@ finalize_nrv_r (tree *tp, int *walk_subtrees, void *data)
 
 /* Finalize the Named Return Value optimization for FNDECL.  The NRV bitmap
    contains the candidates for Named Return Value and OTHER is a list of
-   the other return values.  */
+   the other return values.  GNAT_RET is a representative return node.  */
 
 static void
-finalize_nrv (tree fndecl, bitmap nrv, VEC(tree,gc) *other)
+finalize_nrv (tree fndecl, bitmap nrv, VEC(tree,gc) *other, Node_Id gnat_ret)
 {
   struct cgraph_node *node;
   struct nrv_data data;
+  walk_tree_fn func;
   unsigned int i;
   tree iter;
 
@@ -2860,8 +3018,13 @@ finalize_nrv (tree fndecl, bitmap nrv, VEC(tree,gc) *other)
   /* Adjust the relevant RETURN_EXPRs and replace the occurrences of NRVs.  */
   data.nrv = nrv;
   data.result = DECL_RESULT (fndecl);
+  data.gnat_ret = gnat_ret;
   data.visited = pointer_set_create ();
-  walk_tree (&DECL_SAVED_TREE (fndecl), finalize_nrv_r, &data, NULL);
+  if (TYPE_RETURN_UNCONSTRAINED_P (TREE_TYPE (fndecl)))
+    func = finalize_nrv_unc_r;
+  else
+    func = finalize_nrv_r;
+  walk_tree (&DECL_SAVED_TREE (fndecl), func, &data, NULL);
   pointer_set_destroy (data.visited);
 }
 
@@ -2886,7 +3049,7 @@ return_value_ok_for_nrv_p (tree ret_obj, tree ret_val)
   if (TREE_ADDRESSABLE (ret_val))
     return false;
 
-  if (DECL_ALIGN (ret_val) > DECL_ALIGN (ret_obj))
+  if (ret_obj && DECL_ALIGN (ret_val) > DECL_ALIGN (ret_obj))
     return false;
 
   return true;
@@ -3286,8 +3449,10 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
      a Named Return Value, finalize the optimization.  */
   if (optimize && gnu_subprog_language->named_ret_val)
     {
-      finalize_nrv (gnu_subprog_decl, gnu_subprog_language->named_ret_val,
-		    gnu_subprog_language->other_ret_val);
+      finalize_nrv (gnu_subprog_decl,
+		    gnu_subprog_language->named_ret_val,
+		    gnu_subprog_language->other_ret_val,
+		    gnu_subprog_language->gnat_ret);
       gnu_subprog_language->named_ret_val = NULL;
       gnu_subprog_language->other_ret_val = NULL;
     }
@@ -5882,6 +6047,34 @@ gnat_to_gnu (Node_Id gnat_node)
 	    else if (TYPE_RETURN_UNCONSTRAINED_P (gnu_subprog_type))
 	      {
 		gnu_ret_val = maybe_unconstrained_array (gnu_ret_val);
+
+		/* And find out whether this is a candidate for Named Return
+		   Value.  If so, record it.  */
+		if (!TYPE_CI_CO_LIST (gnu_subprog_type) && optimize)
+		  {
+		    tree ret_val = gnu_ret_val;
+
+		    /* Strip useless conversions around the return value.  */
+		    if (gnat_useless_type_conversion (ret_val))
+		      ret_val = TREE_OPERAND (ret_val, 0);
+
+		    /* Strip unpadding around the return value.  */
+		    if (TREE_CODE (ret_val) == COMPONENT_REF
+			&& TYPE_IS_PADDING_P
+			   (TREE_TYPE (TREE_OPERAND (ret_val, 0))))
+		      ret_val = TREE_OPERAND (ret_val, 0);
+
+		    /* Now apply the test to the return value.  */
+		    if (return_value_ok_for_nrv_p (NULL_TREE, ret_val))
+		      {
+			if (!f_named_ret_val)
+			  f_named_ret_val = BITMAP_GGC_ALLOC ();
+			bitmap_set_bit (f_named_ret_val, DECL_UID (ret_val));
+			if (!f_gnat_ret)
+			  f_gnat_ret = gnat_node;
+		      }
+		  }
+
 		gnu_ret_val = build_allocator (TREE_TYPE (gnu_ret_val),
 					       gnu_ret_val,
 					       TREE_TYPE (gnu_ret_obj),
