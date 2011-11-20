@@ -1779,4 +1779,20 @@ release.
 </tgroup>
 </table>
 
+<section xml:id="iso.tr1.specific" xreflabel="Implementation Specific"><info><title>Implementation Specific Behavior</title></info>
+
+   <para>For behaviour which is specified by the 1998 and 2003 standards,
+      see <link linkend="iso.1998.specific">C++ 1998/2003 Implementation
+      Specific Behavior</link>. This section documents behaviour which
+      is required by TR1.
+   </para>
+
+   <para>
+     <emphasis>3.6.4 [tr.func.bind.place]/1</emphasis> There are 29
+     placeholders defined and the placeholder types are
+     <literal>Assignable</literal>.
+   </para>
+
+</section>
+
 </section>
