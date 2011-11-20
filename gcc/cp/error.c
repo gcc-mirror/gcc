@@ -2406,6 +2406,7 @@ dump_expr (tree t, int flags)
       break;
 
     case TEMPLATE_TYPE_PARM:
+    case TEMPLATE_TEMPLATE_PARM:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
       dump_type (t, flags);
       break;
