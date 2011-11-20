@@ -2409,7 +2409,8 @@ particular release.
       <entry>30.4.1.3</entry>
       <entry>Timed mutex types</entry>
       <entry/>
-      <entry/>
+      <entry>On POSIX sytems these types are only defined if the OS
+         supports the POSIX Timeouts option. </entry>
     </row>
     <row>
       <entry>30.4.1.3.1</entry>
@@ -2627,5 +2628,59 @@ particular release.
 </tgroup>
 </table>
 
+<section xml:id="iso.2011.specific" xreflabel="Implementation Specific"><info><title>Implementation Specific Behavior</title></info>
+
+   <para>For behaviour which is also specified by the 1998 and 2003 standards,
+      see <link linkend="iso.1998.specific">C++ 1998/2003 Implementation
+      Specific Behavior</link>. This section only documents behaviour which
+      is new in the 2011 standard.
+   </para>
+
+   <para>
+      <emphasis>20.8.9.1.3 [func.bind.place]/1</emphasis> There are 29
+      placeholders defined and the placeholder types are
+      <literal>CopyAssignable</literal>.
+   </para>
+
+   <para>
+      <emphasis>30.2.3 [thread.req.native]/1</emphasis>
+      <classname>native_handle_type</classname> and
+      <methodname>native_handle</methodname> are provided. The handle types
+      are defined in terms of the Gthreads abstraction layer.
+      <itemizedlist>
+         <listitem><classname>thread</classname>: The native handle type is
+            a typedef for <code>__gthread_t</code> i.e. <code>pthread_t</code>
+            when GCC is configured with the <literal>posix</literal> thread
+            model. The value of the native handle is undefined for a thread
+            which is not joinable.
+         </listitem>
+         <listitem><classname>mutex</classname> and
+         <classname>timed_mutex</classname>:
+            The native handle type is <code>__gthread_mutex_t*</code> i.e.
+            <code>pthread_mutex_t*</code> for the <literal>posix</literal>
+            thread model.
+         </listitem>
+         <listitem><classname>recursive_mutex</classname> and
+         <classname>recursive_timed_mutex</classname>:
+            The native handle type is <code>__gthread_recursive_mutex_t*</code>
+            i.e. <code>pthread_mutex_t*</code> for the <literal>posix</literal>
+            thread model.
+         </listitem>
+         <listitem><classname>condition_variable</classname>: The native
+            handle type is <code>__gthread_cond_t*</code> i.e.
+            <code>pthread_cond_t*</code> for the <literal>posix</literal>
+            thread model.
+         </listitem>
+      </itemizedlist>
+   </para>
+
+   <para>
+      <emphasis>30.6.1 [futures.overview]/2</emphasis>
+      <code>launch</code> is a scoped enumeration type with
+      overloaded operators to support bitmask operations. There are no
+      additional bitmask elements defined.
+   </para>
+
+</section>
 
 </section>
