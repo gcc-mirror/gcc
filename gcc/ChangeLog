@@ -1,3 +1,7 @@
+2011-11-20  Andreas Tobler  <andreast@fgznet.ch>
+
+	* configure: Regenerate.
+
 2011-11-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/51187

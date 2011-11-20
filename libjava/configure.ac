@@ -1060,7 +1060,7 @@ case "$THREADS" in
      *-*-cygwin*)
 	# Don't set THREADLIBS here.  Cygwin doesn't have -lpthread.
 	;;
-     *-*-freebsd[[1234]]*)
+     *-*-freebsd[[34]].*)
 	# Before FreeBSD 5, it didn't have -lpthread (or any library which
 	# merely adds pthread_* functions) but it does have a -pthread switch
 	# which is required at link-time to select -lc_r *instead* of -lc.

@@ -1,3 +1,8 @@
+2011-11-20  Andreas Tobler  <andreast@fgznet.ch>
+
+	* acinclude.m4: Additional FreeBSD 10 fixes.
+	* configure: Regenerate.
+
 2011-10-26  Release Manager
 
 	* GCC 4.6.2 released.

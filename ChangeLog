@@ -1,3 +1,7 @@
+2011-11-20  Andreas Tobler  <andreast@fgznet.ch>
+
+	* libtool.m4: Additional FreeBSD 10 fixes.
+
 2011-11-18  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/49992

@@ -1,3 +1,7 @@
+2011-11-20  Andreas Tobler  <andreast@fgznet.ch>
+
+	* configure: Regenerate.
+
 2011-11-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/51142
