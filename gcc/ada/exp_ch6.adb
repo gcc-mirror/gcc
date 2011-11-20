@@ -8034,7 +8034,8 @@ package body Exp_Ch6 is
       Insert_After_And_Analyze (Assign, Ptr_Typ_Decl);
 
       --  Finally, create an access object initialized to a reference to the
-      --  function call.
+      --  function call. We know this access value is non-null, so mark the
+      --  entity accordingly to suppress junk access checks.
 
       New_Expr := Make_Reference (Loc, Relocate_Node (Func_Call));
 
@@ -8299,7 +8300,8 @@ package body Exp_Ch6 is
       end if;
 
       --  Finally, create an access object initialized to a reference to the
-      --  function call.
+      --  function call. We know this access value cannot be null, so mark the
+      --  entity accordingly to suppress the access check.
 
       New_Expr := Make_Reference (Loc, Relocate_Node (Func_Call));
 

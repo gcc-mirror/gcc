@@ -1,3 +1,18 @@
+2011-11-20  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb, exp_util.adb: Minor reformatting
+
+2011-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sinfo.ads (Reference): Document that it is OK to set
+	Is_Known_Non_Null on a temporary initialized to a N_Reference
+	node.
+
+2011-11-20  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cbdlli.adb, a-cfdlli.adb (Move): Set Last component to 0
+	for Source list.
+
 2011-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch6.adb (Make_Build_In_Place_Call_In_Assignment):
