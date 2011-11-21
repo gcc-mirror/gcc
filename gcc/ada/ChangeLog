@@ -1,3 +1,23 @@
+2011-11-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_elab.adb: Minor reformatting
+
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb: Minor reformatting.
+
+2011-11-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Check_Formal_Package_Instance): If a formal
+	subprogram of the formal package is covered by an others
+	association with a box initialization, no check is needed
+	against the actual in the instantiation of the formal package.
+
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_elab.adb (Check_Internal_Call_Continue): Suppress junk
+	elab warning from within precondition/postcondition etc.
+
 2011-11-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch6.adb (Expand_Actuals): In Ada 2012, a function call

@@ -2133,7 +2133,7 @@ package body Sem_Elab is
       --  been encountered. A warning message is needed, except if this is the
       --  case of appearing within an aspect specification that results in
       --  a check call, we do not really have such a situation, so no warning
-      --  is needed (e.g., the case of a precondition, where the call appears
+      --  is needed (e.g. the case of a precondition, where the call appears
       --  textually before the body, but in actual fact is moved to the
       --  appropriate subprogram body and so does not need a check).
 
