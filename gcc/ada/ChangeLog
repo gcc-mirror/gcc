@@ -1,3 +1,9 @@
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
+	* exp_prag.adb, exp_util.adb, sinfo.ads, sem_res.adb, s-stposu.adb,
+	sem_attr.adb, s-stposu.ads, s-taprop-solaris.adb, s-taprop-irix.adb,
+	sem_ch6.adb: Minor reformatting.
+
 2011-11-21  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-taprop-irix.adb, s-taprop-solaris.adb (Create_Task): Use

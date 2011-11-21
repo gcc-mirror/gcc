@@ -8668,6 +8668,14 @@ package body Sem_Res is
                      --  this by making sure that the expanded code points to
                      --  the Sloc of the expression, not the original pragma.
 
+                     --  Note: Use Error_Msg_F here rather than Error_Msg_N.
+                     --  The source location of the expression is not usually
+                     --  the best choice here. For example, it gets located on
+                     --  the last AND keyword in a chain of boolean expressiond
+                     --  AND'ed together. It is best to put the message on the
+                     --  first character of the assertion, which is the effect
+                     --  of the First_Node call here.
+
                      Error_Msg_F
                        ("?assertion would fail at run time!",
                         Expression
@@ -8693,7 +8701,13 @@ package body Sem_Res is
                     and then Entity (Expr) = Standard_False
                   then
                      null;
+
+                  --  Post warning
+
                   else
+                     --  Again use Error_Msg_F rather than Error_Msg_N, see
+                     --  comment above for an explanation of why we do this.
+
                      Error_Msg_F
                        ("?check would fail at run time!",
                         Expression

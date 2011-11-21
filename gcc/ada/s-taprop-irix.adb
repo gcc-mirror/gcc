@@ -836,6 +836,12 @@ package body System.Task_Primitives.Operations is
       --  do not need to manipulate caller's signal mask at this point.
       --  All tasks in RTS will have All_Tasks_Mask initially.
 
+      --  Note: the use of Unrestricted_Access in the following call is needed
+      --  because otherwise we have an error of getting a access-to-volatile
+      --  value which points to a non-volatile object. But in this case it is
+      --  safe to do this, since we know we have no problems with aliasing and
+      --  Unrestricted_Access bypasses this check.
+
       Result :=
         pthread_create
           (T.Common.LL.Thread'Unrestricted_Access,
@@ -864,6 +870,12 @@ package body System.Task_Primitives.Operations is
            pthread_attr_setscope
              (Attributes'Access, To_Int (T.Common.Task_Info.Scope));
          pragma Assert (Result = 0);
+
+         --  Note: the use of Unrestricted_Access in the following call
+         --  is needed because otherwise we have an error of getting a
+         --  access-to-volatile value which points to a non-volatile object.
+         --  But in this case it is safe to do this, since we know we have no
+         --  aliasing problems and Unrestricted_Access bypasses this check.
 
          Result :=
            pthread_create

@@ -331,7 +331,7 @@ private
 
    function Header_Size_With_Padding
      (Alignment : System.Storage_Elements.Storage_Count)
-   return System.Storage_Elements.Storage_Count;
+      return System.Storage_Elements.Storage_Count;
    --  Given an arbitrary alignment, calculate the size of the header which
    --  precedes a controlled object as the nearest multiple rounded up of the
    --  alignment.
