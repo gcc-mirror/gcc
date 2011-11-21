@@ -1353,6 +1353,7 @@ package Rtsfind is
 
      RE_Allocate_Any_Controlled,         -- System.Storage_Pools.Subpools
      RE_Deallocate_Any_Controlled,       -- System.Storage_Pools.Subpools
+     RE_Header_Size_With_Padding,        -- System.Storage_Pools.Subpools
      RE_Root_Storage_Pool_With_Subpools, -- System.Storage_Pools.Subpools
      RE_Root_Subpool,                    -- System.Storage_Pools.Subpools
      RE_Subpool_Handle,                  -- System.Storage_Pools.Subpools
@@ -2550,6 +2551,7 @@ package Rtsfind is
 
      RE_Allocate_Any_Controlled          => System_Storage_Pools_Subpools,
      RE_Deallocate_Any_Controlled        => System_Storage_Pools_Subpools,
+     RE_Header_Size_With_Padding         => System_Storage_Pools_Subpools,
      RE_Root_Storage_Pool_With_Subpools  => System_Storage_Pools_Subpools,
      RE_Root_Subpool                     => System_Storage_Pools_Subpools,
      RE_Subpool_Handle                   => System_Storage_Pools_Subpools,

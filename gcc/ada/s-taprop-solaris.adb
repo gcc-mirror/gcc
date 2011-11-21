@@ -1012,7 +1012,7 @@ package body System.Task_Primitives.Operations is
            Thread_Body_Access (Wrapper),
            To_Address (T),
            Opts,
-           T.Common.LL.Thread'Access);
+           T.Common.LL.Thread'Unrestricted_Access);
 
       Succeeded := Result = 0;
       pragma Assert

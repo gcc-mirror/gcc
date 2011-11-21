@@ -838,7 +838,7 @@ package body System.Task_Primitives.Operations is
 
       Result :=
         pthread_create
-          (T.Common.LL.Thread'Access,
+          (T.Common.LL.Thread'Unrestricted_Access,
            Attributes'Access,
            Thread_Body_Access (Wrapper),
            To_Address (T));
@@ -867,7 +867,7 @@ package body System.Task_Primitives.Operations is
 
          Result :=
            pthread_create
-             (T.Common.LL.Thread'Access,
+             (T.Common.LL.Thread'Unrestricted_Access,
               Attributes'Access,
               Thread_Body_Access (Wrapper),
               To_Address (T));

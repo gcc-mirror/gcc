@@ -8668,7 +8668,7 @@ package body Sem_Res is
                      --  this by making sure that the expanded code points to
                      --  the Sloc of the expression, not the original pragma.
 
-                     Error_Msg_N
+                     Error_Msg_F
                        ("?assertion would fail at run time!",
                         Expression
                           (First (Pragma_Argument_Associations (Orig))));
@@ -8694,7 +8694,7 @@ package body Sem_Res is
                   then
                      null;
                   else
-                     Error_Msg_N
+                     Error_Msg_F
                        ("?check would fail at run time!",
                         Expression
                           (Last (Pragma_Argument_Associations (Orig))));
