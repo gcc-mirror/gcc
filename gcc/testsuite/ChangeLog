@@ -1,5 +1,13 @@
 2011-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* lib/target-supports.exp
+	(check_effective_target_ultrasparc_vis2_hw): Call check_runtime
+	with ultrasparc_vis2_hw.
+	(check_effective_target_ultrasparc_vis3_hw): Call check_runtime
+	with ultrasparc_vis3_hw.
+
+2011-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* c-c++-common/tm/malloc.c: Scan tree dumps for std::malloc if
 	*-*-solaris2* && c++.
 
