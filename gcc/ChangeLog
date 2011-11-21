@@ -1,3 +1,7 @@
+2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
+
+	* configure: Regenerate.
+
 2011-11-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (output_reload_in_const): Loading a byte with 0

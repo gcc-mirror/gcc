@@ -1,3 +1,7 @@
+2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
+
+	* configure: Regenerate.
+
 2011-10-10  Matthias Klose  <doko@ubuntu.com>
 
 	* config/posix95: Remove empty directory.
