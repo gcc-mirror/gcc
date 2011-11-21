@@ -1,3 +1,8 @@
+2011-11-21  Torvald Riegel  <triegel@redhat.com>
+
+	* trans-mem.c (diagnose_tm_1): Print an expression instead of a
+	declaration in error messages for indirect calls.
+
 2011-11-21  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.c (sparc_regmode_natural_size): New function
