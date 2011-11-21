@@ -1,3 +1,11 @@
+2011-11-21  Daniel Krugler  <daniel.kruegler@googlemail.com>
+
+	PR libstdc++/51185
+	* include/std/type_traits (__is_base_to_derived_ref,
+	__is_lvalue_to_rvalue_ref): Fix.
+	* testsuite/20_util/is_constructible/51185.cc: New.
+	* testsuite/20_util/is_constructible/value-2.cc: Extend.
+
 2011-11-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/tuple (__conv_types, __one_by_one_convertible,
