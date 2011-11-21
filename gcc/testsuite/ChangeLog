@@ -1,3 +1,7 @@
+2011-11-21  Torvald Riegel  <triegel@redhat.com>
+
+	* g++.dg/tm/template-2.C: New test.
+
 2011-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/50827
