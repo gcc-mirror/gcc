@@ -11805,7 +11805,7 @@ recognized by GNAT:
 @section Handling of Configuration Pragmas
 
 Configuration pragmas may either appear at the start of a compilation
-unit, in which case they apply only to that unit, or they may apply to
+unit, or they can appear in a configuration pragma file to apply to
 all compilations performed in a given compilation environment.
 
 GNAT also provides the @code{gnatchop} utility to provide an automatic
@@ -11815,6 +11815,30 @@ See @ref{Operating gnatchop in Compilation Mode} for details.
 However, for most purposes, it will be more convenient to edit the
 @file{gnat.adc} file that contains configuration pragmas directly,
 as described in the following section.
+
+In the case of @code{Restrictions} pragmas appearing as configuration
+pragmas in individual compilation units, the exact handling depends on
+the type of restriction.
+
+Restrictions that require partition-wide consistency (like
+@code{No_Tasking}) are
+recognized wherever they appear
+and can be freely inherited, e.g. from a with'ed unit to the with'ing
+unit. This makes sense since the binder will in any case insist on seeing
+consistent use, so any unit not conforming to any restrictions that are
+anywhere in the partition will be rejected, and you might as well find
+that out at compile time rather than at bind time.
+
+For restrictions that do not require partition-wide consistency, e.g.
+SPARK or No_Implementation_Attributes, in general the restriction applies
+only to the unit in which the pragma appears, and not to any other units.
+
+The exception is No_Elaboration_Code which always applies to the entire
+object file from a compilation, i.e. to the body, spec, and all subunits.
+This restriction can be specified in a configuration pragma file, or it
+can be on the body and/or the spec (in eithe case it applies to all the
+relevant units). It can appear on a subunit only if it has previously
+appeared in the body of spec.
 
 @node The Configuration Pragmas Files
 @section The Configuration Pragmas Files

@@ -467,7 +467,6 @@ package body Sem_Ch10 is
                --  generated with clauses or limited with clauses. Note that
                --  we examine with clauses having pragmas Elaborate or
                --  Elaborate_All applied to them due to cases such as:
-               --
 
                --     with Pack;
                --     with Pack;
@@ -725,7 +724,12 @@ package body Sem_Ch10 is
             return;
 
          else
+            --  Analyze the package spec
+
             Semantics (Lib_Unit);
+
+            --  Check for unused with's
+
             Check_Unused_Withs (Get_Cunit_Unit_Number (Lib_Unit));
 
             --  Verify that the library unit is a package declaration
@@ -857,8 +861,6 @@ package body Sem_Ch10 is
 
          declare
             Save_Style_Check : constant Boolean := Style_Check;
-            Save_C_Restrict  : constant Save_Cunit_Boolean_Restrictions :=
-                                 Cunit_Boolean_Restrictions_Save;
 
          begin
             if not GNAT_Mode then
@@ -867,8 +869,10 @@ package body Sem_Ch10 is
 
             Semantics (Parent_Spec (Unit_Node));
             Version_Update (N, Parent_Spec (Unit_Node));
+
+            --  Restore style check settings
+
             Style_Check := Save_Style_Check;
-            Cunit_Boolean_Restrictions_Restore (Save_C_Restrict);
          end;
       end if;
 
@@ -1052,8 +1056,6 @@ package body Sem_Ch10 is
             Un    : Unit_Number_Type;
 
             Save_Style_Check : constant Boolean := Style_Check;
-            Save_C_Restrict  : constant Save_Cunit_Boolean_Restrictions :=
-                                 Cunit_Boolean_Restrictions_Save;
 
          begin
             Item := First (Context_Items (N));
@@ -1122,8 +1124,9 @@ package body Sem_Ch10 is
                Next (Item);
             end loop;
 
+            --  Restore style checks settings
+
             Style_Check := Save_Style_Check;
-            Cunit_Boolean_Restrictions_Restore (Save_C_Restrict);
          end;
       end if;
 
@@ -1641,7 +1644,7 @@ package body Sem_Ch10 is
       --  subunit, and that the current unit is one of its parents which was
       --  being analyzed to provide the needed context for the analysis of the
       --  subunit. In this case we analyze the subunit and continue with the
-      --  parent, without looking a subsequent subunits.
+      --  parent, without looking at subsequent subunits.
 
       if Is_Loaded (Subunit_Name) then
 
@@ -2351,7 +2354,6 @@ package body Sem_Ch10 is
       --  warnings if we have this definite error.
 
       Save_Style_Check : constant Boolean := Opt.Style_Check;
-      Save_C_Restrict  : Save_Cunit_Boolean_Restrictions;
 
    begin
       U := Unit (Library_Unit (N));
@@ -2387,10 +2389,6 @@ package body Sem_Ch10 is
             Restriction_Violation := True;
          end if;
       end if;
-
-      --  Save current restriction set, does not apply to with'ed unit
-
-      Save_C_Restrict := Cunit_Boolean_Restrictions_Save;
 
       --  Several actions are skipped for dummy packages (those supplied for
       --  with's where no matching file could be found). Such packages are
@@ -2591,10 +2589,9 @@ package body Sem_Ch10 is
          end if;
       end if;
 
-      --  Restore style checks and restrictions
+      --  Restore style checks
 
       Style_Check := Save_Style_Check;
-      Cunit_Boolean_Restrictions_Restore (Save_C_Restrict);
 
       --  Record the reference, but do NOT set the unit as referenced, we want
       --  to consider the unit as unreferenced if this is the only reference
