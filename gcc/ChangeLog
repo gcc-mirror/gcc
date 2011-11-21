@@ -1,3 +1,9 @@
+2011-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/50827
+	* var-tracking.c (loc_cmp): For ENTRY_VALUEs use ENTRY_VALUE_EXP
+	macro instead of XEXP.
+
 2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
 
 	* configure: Regenerate.
