@@ -1,5 +1,19 @@
 2011-11-21  Pascal Obry  <obry@adacore.com>
 
+	* s-taprop-linux.adb (Initialize_Lock): Do not allocate a cond
+	attribute as not needed.
+
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+
+2011-11-21  Pascal Obry  <obry@adacore.com>
+
+	* gnat_rm.texi: Document restriction for stdcall convention on
+	dispatching calls.
+
+2011-11-21  Pascal Obry  <obry@adacore.com>
+
 	* sem_prag.adb (Process_Convention): A dispatching call cannot
 	have a stdcall calling convention.
 

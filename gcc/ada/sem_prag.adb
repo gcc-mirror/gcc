@@ -3524,13 +3524,25 @@ package body Sem_Prag is
               ("second argument of pragma% must be a subprogram", Arg2);
          end if;
 
-         --  For Stdcall, a subprogram, variable or subprogram type is required
+         --  Stdcall case
 
          if C = Convention_Stdcall
+
+            --  Subprogram is allowed, but not a generic subprogram, and not a
+            --  dispatching operation. A dispatching subprogram cannot be used
+            --  to interface to the Win32 API, so in fact this check does not
+            --  impose any effective restriction.
+
            and then
              ((not Is_Subprogram (E) and then not Is_Generic_Subprogram (E))
                 or else Is_Dispatching_Operation (E))
+
+            --  A variable is OK
+
            and then Ekind (E) /= E_Variable
+
+           --  An access to subprogram is also allowed
+
            and then not
              (Is_Access_Type (E)
                and then Ekind (Designated_Type (E)) = E_Subprogram_Type)
