@@ -1,3 +1,11 @@
+2011-11-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/tuple (__conv_types, __one_by_one_convertible,
+	__all_convertible): Remove.
+	(tuple<>::tuple(_UElements&&...),
+	tuple<>::tuple(const tuple<_UElements...>&),
+	tuple<>::tuple(tuple<_UElements...>&&)): Remove wa for c++/48322.
+
 2011-11-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48322
