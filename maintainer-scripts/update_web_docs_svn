@@ -93,6 +93,7 @@ fi
 
 if [ ! -d $DOCSDIR ]; then
   mkdir $DOCSDIR
+  chmod g+w $DOCSDIR
 fi
 
 if [ -z "$RELEASE" ]; then
