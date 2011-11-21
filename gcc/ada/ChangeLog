@@ -1,3 +1,13 @@
+2011-11-13  Iain Sandoe  <iains@gcc.gnu.org>
+
+	Backport from mainline r181474
+	PR target/50678
+	* init.c (__gnat_error_handler) [Darwin]: Move work-around to the
+	bug filed as radar #10302855 from __gnat_error_handler ...
+	... to (__gnat_adjust_context_for_raise) [Darwin]: New.
+	(HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE) [Darwin]: Define.
+	(__gnat_error_handler) [Darwin]: Use __gnat_adjust_context_for_raise.
+	
 2011-11-18  Tristan Gingold  <gingold@adacore.com>
 	    Iain Sandoe  <iains@gcc.gnu.org>
 
