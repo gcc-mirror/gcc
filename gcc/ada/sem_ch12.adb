@@ -5076,6 +5076,18 @@ package body Sem_Ch12 is
             then
                null;
 
+            --  If the formal package has an "others"  box association that
+            --  covers this formal, there is no need for a check either.
+
+            elsif Nkind (Unit_Declaration_Node (E2)) in
+                    N_Formal_Subprogram_Declaration
+              and then Box_Present (Unit_Declaration_Node (E2))
+            then
+               null;
+
+            --  Otherwise the actual in the formal and the actual in the
+            --  instantiation of the formal must match, up to renamings.
+
             else
                Check_Mismatch
                  (Ekind (E2) /= Ekind (E1) or else (Alias (E1)) /= Alias (E2));
@@ -12383,9 +12395,11 @@ package body Sem_Ch12 is
       procedure Reset_Entity (N : Node_Id) is
 
          procedure Set_Global_Type (N : Node_Id; N2 : Node_Id);
-         --  If the type of N2 is global to the generic unit. Save the type in
-         --  the generic node.
-         --  What does this comment mean???
+         --  If the type of N2 is global to the generic unit, save the type in
+         --  the generic node. Just as we perform name capture for explicit
+         --  references within the generic, we must capture the global types
+         --  of local entities because they may participate in resolution in
+         --  the instance.
 
          function Top_Ancestor (E : Entity_Id) return Entity_Id;
          --  Find the ultimate ancestor of the current unit. If it is not a

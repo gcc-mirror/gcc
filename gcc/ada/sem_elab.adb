@@ -2130,7 +2130,32 @@ package body Sem_Elab is
       end if;
 
       --  Here is the case of calling a subprogram where the body has not yet
-      --  been encountered, a warning message is needed.
+      --  been encountered. A warning message is needed, except if this is the
+      --  case of appearing within an aspect specification that results in
+      --  a check call, we do not really have such a situation, so no warning
+      --  is needed (e.g., the case of a precondition, where the call appears
+      --  textually before the body, but in actual fact is moved to the
+      --  appropriate subprogram body and so does not need a check).
+
+      declare
+         P : Node_Id;
+      begin
+         P := Parent (N);
+         loop
+            if Nkind (P) in N_Subexpr then
+               P := Parent (P);
+            elsif Nkind (P) = N_If_Statement
+              and then Nkind (Original_Node (P)) = N_Pragma
+              and then Present (Corresponding_Aspect (Original_Node (P)))
+            then
+               return;
+            else
+               exit;
+            end if;
+         end loop;
+      end;
+
+      --  Not that special case, warning and dynamic check is required
 
       --  If we have nothing in the call stack, then this is at the outer
       --  level, and the ABE is bound to occur.

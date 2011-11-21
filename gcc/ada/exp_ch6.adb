@@ -8532,8 +8532,8 @@ package body Exp_Ch6 is
          return False;
 
       --  Handle a corner case, a cross-dialect subp renaming. For example,
-      --  an Ada 2012 renaming of an Ada 05 subprogram. This can occur when a
-      --  non-Ada 2012 unit references predefined run-time units.
+      --  an Ada 2012 renaming of an Ada 2005 subprogram. This can occur when
+      --  an Ada 2005 (or earlier) unit references predefined run-time units.
 
       elsif Present (Alias (Func_Id)) then
 
