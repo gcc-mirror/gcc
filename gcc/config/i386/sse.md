@@ -18,6 +18,85 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+(define_c_enum "unspec" [
+  ;; SSE
+  UNSPEC_MOVNT
+  UNSPEC_MOVU
+
+  ;; SSE3
+  UNSPEC_LDDQU
+
+  ;; SSSE3
+  UNSPEC_PSHUFB
+  UNSPEC_PSIGN
+  UNSPEC_PALIGNR
+
+  ;; For SSE4A support
+  UNSPEC_EXTRQI
+  UNSPEC_EXTRQ
+  UNSPEC_INSERTQI
+  UNSPEC_INSERTQ
+
+  ;; For SSE4.1 support
+  UNSPEC_BLENDV
+  UNSPEC_INSERTPS
+  UNSPEC_DP
+  UNSPEC_MOVNTDQA
+  UNSPEC_MPSADBW
+  UNSPEC_PHMINPOSUW
+  UNSPEC_PTEST
+
+  ;; For SSE4.2 support
+  UNSPEC_PCMPESTR
+  UNSPEC_PCMPISTR
+
+  ;; For FMA4 support
+  UNSPEC_FMADDSUB
+  UNSPEC_XOP_UNSIGNED_CMP
+  UNSPEC_XOP_TRUEFALSE
+  UNSPEC_XOP_PERMUTE
+  UNSPEC_FRCZ
+
+  ;; For AES support
+  UNSPEC_AESENC
+  UNSPEC_AESENCLAST
+  UNSPEC_AESDEC
+  UNSPEC_AESDECLAST
+  UNSPEC_AESIMC
+  UNSPEC_AESKEYGENASSIST
+
+  ;; For PCLMUL support
+  UNSPEC_PCLMUL
+
+  ;; For AVX support
+  UNSPEC_PCMP
+  UNSPEC_VPERMIL
+  UNSPEC_VPERMIL2
+  UNSPEC_VPERMIL2F128
+  UNSPEC_CAST
+  UNSPEC_VTESTP
+  UNSPEC_VCVTPH2PS
+  UNSPEC_VCVTPS2PH
+
+  ;; For AVX2 support
+  UNSPEC_VPERMSI
+  UNSPEC_VPERMDF
+  UNSPEC_VPERMSF
+  UNSPEC_VPERMTI
+  UNSPEC_GATHER
+  UNSPEC_VSIBADDR
+])
+
+(define_c_enum "unspecv" [
+  UNSPECV_LDMXCSR
+  UNSPECV_STMXCSR
+  UNSPECV_CLFLUSH
+  UNSPECV_MONITOR
+  UNSPECV_MWAIT
+  UNSPECV_VZEROALL
+  UNSPECV_VZEROUPPER
+])
+
 ;; All vector modes including V?TImode, used in move patterns.
 (define_mode_iterator V16
   [(V32QI "TARGET_AVX") V16QI
@@ -8041,25 +8120,6 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "memory" "store")])
 
-(define_expand "sse_sfence"
-  [(set (match_dup 0)
-	(unspec:BLK [(match_dup 0)] UNSPEC_SFENCE))]
-  "TARGET_SSE || TARGET_3DNOW_A"
-{
-  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
-  MEM_VOLATILE_P (operands[0]) = 1;
-})
-
-(define_insn "*sse_sfence"
-  [(set (match_operand:BLK 0 "" "")
-	(unspec:BLK [(match_dup 0)] UNSPEC_SFENCE))]
-  "TARGET_SSE || TARGET_3DNOW_A"
-  "sfence"
-  [(set_attr "type" "sse")
-   (set_attr "length_address" "0")
-   (set_attr "atom_sse_attr" "fence")
-   (set_attr "memory" "unknown")])
-
 (define_insn "sse2_clflush"
   [(unspec_volatile [(match_operand 0 "address_operand" "p")]
 		    UNSPECV_CLFLUSH)]
@@ -8069,43 +8129,6 @@
    (set_attr "atom_sse_attr" "fence")
    (set_attr "memory" "unknown")])
 
-(define_expand "sse2_mfence"
-  [(set (match_dup 0)
-	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))]
-  "TARGET_SSE2"
-{
-  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
-  MEM_VOLATILE_P (operands[0]) = 1;
-})
-
-(define_insn "*sse2_mfence"
-  [(set (match_operand:BLK 0 "" "")
-	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))]
-  "TARGET_64BIT || TARGET_SSE2"
-  "mfence"
-  [(set_attr "type" "sse")
-   (set_attr "length_address" "0")
-   (set_attr "atom_sse_attr" "fence")
-   (set_attr "memory" "unknown")])
-
-(define_expand "sse2_lfence"
-  [(set (match_dup 0)
-	(unspec:BLK [(match_dup 0)] UNSPEC_LFENCE))]
-  "TARGET_SSE2"
-{
-  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
-  MEM_VOLATILE_P (operands[0]) = 1;
-})
-
-(define_insn "*sse2_lfence"
-  [(set (match_operand:BLK 0 "" "")
-	(unspec:BLK [(match_dup 0)] UNSPEC_LFENCE))]
-  "TARGET_SSE2"
-  "lfence"
-  [(set_attr "type" "sse")
-   (set_attr "length_address" "0")
-   (set_attr "atom_sse_attr" "lfence")
-   (set_attr "memory" "unknown")])
 
 (define_insn "sse3_mwait"
   [(unspec_volatile [(match_operand:SI 0 "register_operand" "a")
