@@ -1,5 +1,9 @@
 2011-11-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48322
+	* g++.dg/cpp0x/variadic120.C: New.
+	* g++.dg/cpp0x/sfinae26.C: Adjust.
+
 	* g++.dg/cpp0x/sfinae11.C: Adjust.
 	* g++.dg/cpp0x/sfinae26.C: Adjust.
 	* g++.dg/template/unify11.C: Adjust.

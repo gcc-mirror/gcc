@@ -2813,7 +2813,14 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define PACK_EXPANSION_PARAMETER_PACKS(NODE)		\
   *(TREE_CODE (NODE) == EXPR_PACK_EXPANSION		\
     ? &TREE_OPERAND (NODE, 1)				\
-    : &TREE_CHAIN (TYPE_PACK_EXPANSION_CHECK (NODE)))
+    : &TYPE_MINVAL (TYPE_PACK_EXPANSION_CHECK (NODE)))
+
+/* Any additional template args to be applied when substituting into
+   the pattern, set by tsubst_pack_expansion for partial instantiations.  */
+#define PACK_EXPANSION_EXTRA_ARGS(NODE)		\
+  *(TREE_CODE (NODE) == TYPE_PACK_EXPANSION	\
+    ? &TYPE_MAXVAL (NODE)			\
+    : &TREE_OPERAND ((NODE), 2))
 
 /* Determine if this is an argument pack.  */
 #define ARGUMENT_PACK_P(NODE)                          \

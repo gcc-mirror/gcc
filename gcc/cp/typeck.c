@@ -1329,8 +1329,10 @@ structural_comptypes (tree t1, tree t2, int strict)
       break;
 
     case TYPE_PACK_EXPANSION:
-      return same_type_p (PACK_EXPANSION_PATTERN (t1), 
-                          PACK_EXPANSION_PATTERN (t2));
+      return (same_type_p (PACK_EXPANSION_PATTERN (t1),
+			   PACK_EXPANSION_PATTERN (t2))
+	      && comp_template_args (PACK_EXPANSION_EXTRA_ARGS (t1),
+				     PACK_EXPANSION_EXTRA_ARGS (t2)));
 
     case DECLTYPE_TYPE:
       if (DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t1)

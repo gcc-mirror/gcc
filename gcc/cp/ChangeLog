@@ -1,5 +1,16 @@
 2011-11-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48322
+	* cp-tree.h (PACK_EXPANSION_EXTRA_ARGS): New.
+	* cp-tree.def (EXPR_PACK_EXPANSION): Add an operand for it.
+	* pt.c (tsubst_pack_expansion): Set and use it.
+	(iterative_hash_template_arg): Hash it.
+	(template_args_equal): Compare it.
+	(comp_template_args_with_info): Handle nulls.
+	* tree.c (cp_walk_subtrees): Walk it.
+	* typeck.c (structural_comptypes): Compare it.
+	* ptree.c (cxx_print_type): Print it.
+
 	* pt.c (type_unification_real): Set input_location
 	during default arg instantiation.
 
