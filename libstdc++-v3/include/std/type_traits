@@ -745,6 +745,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Implementation for non-reference types. To meet the proper
   // variable definition semantics, we also need to test for
   // is_destructible in this case.
+  // This form should be simplified by a single expression:
+  // ::delete ::new _Tp(declval<_Arg>()), see c++/51222.
   struct __do_is_direct_constructible_impl
   {
     template<typename _Tp, typename _Arg, typename
@@ -778,9 +780,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct remove_reference;
 
   template<typename _From, typename _To, bool
-           = is_reference<_From>::value>
+           = __not_<__or_<is_void<_From>, 
+                          is_function<_From>>>::value>
     struct __is_base_to_derived_ref;
 
+  // Detect whether we have a downcast situation during
+  // reference binding.
   template<typename _From, typename _To>
     struct __is_base_to_derived_ref<_From, _To, true>
     {
@@ -803,6 +808,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     is_rvalue_reference<_To>>::value>
     struct __is_lvalue_to_rvalue_ref;
 
+  // Detect whether we have an lvalue of non-function type
+  // bound to a reference-compatible rvalue-reference.
   template<typename _From, typename _To>
     struct __is_lvalue_to_rvalue_ref<_From, _To, true>
     {
@@ -810,8 +817,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         _From>::type>::type __src_t;
       typedef typename remove_cv<typename remove_reference<
         _To>::type>::type __dst_t;
-      typedef __or_<is_same<__src_t, __dst_t>,
-		    is_base_of<__dst_t, __src_t>> type;
+      typedef __and_<__not_<is_function<__src_t>>, 
+        __or_<is_same<__src_t, __dst_t>,
+		    is_base_of<__dst_t, __src_t>>> type;
       static constexpr bool value = type::value;
     };
 
@@ -823,9 +831,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Here we handle direct-initialization to a reference type as 
   // equivalent to a static_cast modulo overshooting conversions.
   // These are restricted to the following conversions:
-  //    a) A glvalue of a base class to a derived class reference
+  //    a) A base class value to a derived class reference
   //    b) An lvalue to an rvalue-reference of reference-compatible 
-  //       types
+  //       types that are not functions
   template<typename _Tp, typename _Arg>
     struct __is_direct_constructible_ref_cast
     : public __and_<__is_static_castable<_Arg, _Tp>,
@@ -850,7 +858,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Since default-construction and binary direct-initialization have
   // been handled separately, the implementation of the remaining
-  // n-ary construction cases is rather straightforward.
+  // n-ary construction cases is rather straightforward. We can use
+  // here a functional cast, because array types are excluded anyway
+  // and this form is never interpreted as a C cast.
   struct __do_is_nary_constructible_impl
   {
     template<typename _Tp, typename... _Args, typename
