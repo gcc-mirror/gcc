@@ -69,35 +69,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __add_r_ref<_Tp&>
     { typedef _Tp& type; };
 
-  // To work around c++/49225 aka c++/48322.
-  template<typename...>
-    struct __conv_types { };
-
-  template<typename _Tuple1, typename _Tuple2>
-    struct __one_by_one_convertible
-    : public false_type { };
-
-  template<typename _Tp, typename _Up>
-    struct __one_by_one_convertible<__conv_types<_Tp>, __conv_types<_Up>>
-    : public is_convertible<_Tp, _Up>::type { };
-
-  template<typename _T1, typename... _TR, typename _U1, typename... _UR>
-    struct __one_by_one_convertible<__conv_types<_T1, _TR...>,
-                                    __conv_types<_U1, _UR...>>
-    : public __and_<is_convertible<_T1, _U1>,
-                    __one_by_one_convertible<__conv_types<_TR...>,
-                                             __conv_types<_UR...>>>::type
-    { };
-
-  template<typename _Tuple1, typename _Tuple2>
-    struct __all_convertible;
-
-  template<typename... _TTypes, typename... _UTypes>
-    struct __all_convertible<__conv_types<_TTypes...>,
-                             __conv_types<_UTypes...>>
-    : public __one_by_one_convertible<__conv_types<_TTypes...>,
-                                      __conv_types<_UTypes...>>::type { };
-
   template<std::size_t _Idx, typename _Head, bool _IsEmpty>
     struct _Head_base;
 
@@ -407,13 +378,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr tuple(const _Elements&... __elements)
       : _Inherited(__elements...) { }
 
-      template<typename... _UElements,
-	       typename = typename enable_if<sizeof...(_UElements)
-					     == sizeof...(_Elements)>::type,
-	       typename = typename
-	         enable_if<__all_convertible<__conv_types<_UElements...>,
-					     __conv_types<_Elements...> >::value
-			   >::type>
+      template<typename... _UElements, typename = typename
+        enable_if<__and_<is_convertible<_UElements,
+					_Elements>...>::value>::type>
 	explicit
         constexpr tuple(_UElements&&... __elements)
 	: _Inherited(std::forward<_UElements>(__elements)...) {	}
@@ -423,21 +390,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr tuple(tuple&&) = default; 
 
       template<typename... _UElements, typename = typename
-	enable_if<__and_<integral_constant<bool, sizeof...(_UElements)
-					   == sizeof...(_Elements)>,
-			 __all_convertible<__conv_types<const _UElements&...>,
-					   __conv_types<_Elements...>>
-                         >::value>::type>
+        enable_if<__and_<is_convertible<const _UElements&,
+					_Elements>...>::value>::type>
         constexpr tuple(const tuple<_UElements...>& __in)
         : _Inherited(static_cast<const _Tuple_impl<0, _UElements...>&>(__in))
         { }
 
       template<typename... _UElements, typename = typename
-	enable_if<__and_<integral_constant<bool, sizeof...(_UElements)
-					   == sizeof...(_Elements)>,
-			 __all_convertible<__conv_types<_UElements...>,
-					   __conv_types<_Elements...>>
-			 >::value>::type>
+        enable_if<__and_<is_convertible<_UElements,
+					_Elements>...>::value>::type>
         constexpr tuple(tuple<_UElements...>&& __in)
         : _Inherited(static_cast<_Tuple_impl<0, _UElements...>&&>(__in)) { }
 
