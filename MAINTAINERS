@@ -139,6 +139,7 @@ C front end/ISO C99	Richard Henderson	rth@redhat.com
 Ada front end		Geert Bosch		bosch@gnat.com
 Ada front end		Robert Dewar		dewar@gnat.com
 Ada front end		Arnaud Charlet		charlet@act-europe.fr
+Ada front end		Eric Botcazou		ebotcazou@libertysurf.fr
 Fortran			Paul Brook		paul@codesourcery.com
 c++			Jason Merrill		jason@redhat.com
 c++			Mark Mitchell		mark@codesourcery.com

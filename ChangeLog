@@ -1,3 +1,7 @@
+2011-11-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* MAINTAINERS: Add self as co-maintainer of the Ada front end.
+
 2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
 
 	* libtool.m4: dditional FreeBSD 10 fixes.
