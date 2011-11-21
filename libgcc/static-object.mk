@@ -6,10 +6,15 @@ iter-items := $(filter-out $o,$(iter-items))
 
 base := $(basename $(notdir $o))
 
+# Copy c_flags to a rule-specific copy and use the copy, to avoid the
+# following rules being affected by later changes to c_flags in the
+# including file.
+c_flags-$o := $(c_flags)
+
 ifeq ($(suffix $o),.c)
 
 $(base)$(objext): $o
-	$(gcc_compile) $(c_flags) -c $< $(vis_hide)
+	$(gcc_compile) $(c_flags-$<) -c $< $(vis_hide)
 
 else
 

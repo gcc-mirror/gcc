@@ -1,3 +1,8 @@
+2011-11-20  Hans-Peter Nilsson  <hp@axis.com>
+
+	* static-object.mk (c_flags-$o): Save c_flags.
+	($(base)$(objext)): Use it.
+
 2011-11-18  Steve Ellcey  <sje@cup.hp.com>
 
 	* Makefile.in (c_flags): Set to -fno-exceptions to build libunwind.
