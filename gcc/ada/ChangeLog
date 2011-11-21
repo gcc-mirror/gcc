@@ -1,5 +1,78 @@
 2011-11-21  Robert Dewar  <dewar@adacore.com>
 
+	* sinput.ads: Minor comment fix.
+
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case First_Bit,
+	Last_Bit, Position): Handle 2005 case.
+
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
+	* s-atocou-builtin.adb (Decrement): Use Unrestricted_Access
+	to deal with fact that we properly detect the error if Access
+	is used.
+	(Increment): Same fix.
+	* s-taprop-linux.adb (Create_Task): Use Unrestricted_Access
+	to deal with fact that we properly detect the error if Access
+	is used.
+	* sem_util.adb (Is_Volatile_Object): Properly record that A.B is
+	volatile if the B component is volatile. This affects the check
+	for passing such a by reference volatile actual to a non-volatile
+	formal (which should be illegal)
+
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Enumeration_Type): Make sure to set both
+	size and alignment for foreign convention enumeration types.
+	* layout.adb (Set_Elem_Alignment): Redo setting of alignment
+	when size is set.
+
+2011-11-21  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb (Apply_Access_Check, Apply_Arithmetic_Overflow_Check,
+	Apply_Discriminant_Check, Apply_Divide_Check,
+	Apply_Selected_Length_Checks, Apply_Selected_Range_Checks,
+	Build_Discriminant_Checks, Insert_Range_Checks, Selected_Length_Checks,
+	Selected_Range_Checks): Replace reference to Expander_Active
+	with reference to Full_Expander_Active, so that expansion of
+	checks is not performed in Alfa mode
+
+2011-11-21  Tristan Gingold  <gingold@adacore.com>
+
+	* s-taprop-vms.adb (Create_Task): Use Unrestricted_Access to deal with
+	fact that we properly detect the error if Access is used.
+
+2011-11-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* par-ch4.adb (P_Quantified_Expression): Add an Ada 2012 check.
+
+2011-11-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_imgv.adb: Add with and use clause for Errout.
+	(Expand_Width_Attribute): Emit a warning when in
+	configurable run-time mode to provide a better diagnostic message.
+
+2011-11-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* s-finmas.adb (Finalize): Add comment concerning double finalization.
+
+2011-11-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Definition): If the access definition
+	is itself the return type of an access to function definition
+	which is ultimately the return type of an access to subprogram
+	declaration, its scope is the enclosing scope of the ultimate
+	access to subprogram.
+
+2011-11-21  Steve Baird  <baird@adacore.com>
+
+	* sem_res.adb (Valid_Conversion): If a conversion was legal
+	in the body of a generic, then the corresponding conversion is
+	legal in the expanded body of an instance of the generic.
+
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb: Minor reformatting.
 
 2011-11-21  Robert Dewar  <dewar@adacore.com>

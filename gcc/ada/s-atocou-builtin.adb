@@ -50,7 +50,12 @@ package body System.Atomic_Counters is
 
    function Decrement (Item : in out Atomic_Counter) return Boolean is
    begin
-      return Sync_Sub_And_Fetch (Item.Value'Access, 1) = 0;
+      --  Note: the use of Unrestricted_Access here is required because we
+      --  are obtaining an access-to-volatile pointer to a non-volatile object.
+      --  This is not allowed for [Unchecked_]Access, but is safe in this case
+      --  because we know that no aliases are being created.
+
+      return Sync_Sub_And_Fetch (Item.Value'Unrestricted_Access, 1) = 0;
    end Decrement;
 
    ---------------
@@ -59,7 +64,12 @@ package body System.Atomic_Counters is
 
    procedure Increment (Item : in out Atomic_Counter) is
    begin
-      Sync_Add_And_Fetch (Item.Value'Access, 1);
+      --  Note: the use of Unrestricted_Access here is required because we
+      --  are obtaining an access-to-volatile pointer to a non-volatile object.
+      --  This is not allowed for [Unchecked_]Access, but is safe in this case
+      --  because we know that no aliases are being created.
+
+      Sync_Add_And_Fetch (Item.Value'Unrestricted_Access, 1);
    end Increment;
 
    ------------

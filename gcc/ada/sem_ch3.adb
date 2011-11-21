@@ -726,12 +726,32 @@ package body Sem_Ch3 is
 
       --  If the access definition is the return type of another access to
       --  function, scope is the current one, because it is the one of the
-      --  current type declaration.
+      --  current type declaration, except for the pathological case below.
 
       if Nkind_In (Related_Nod, N_Object_Declaration,
                                 N_Access_Function_Definition)
       then
          Anon_Scope := Current_Scope;
+
+         --  A pathological case: function returning access functions that
+         --  return access functions, etc.  Each anonymous access type created
+         --  is in the enclosing scope of the outermost function.
+
+         declare
+            Par : Node_Id;
+         begin
+            Par := Related_Nod;
+            while Nkind_In (Par,
+                             N_Access_Function_Definition,
+                             N_Access_Definition)
+            loop
+               Par := Parent (Par);
+            end loop;
+
+            if Nkind (Par) = N_Function_Specification then
+               Anon_Scope := Scope (Defining_Entity (Par));
+            end if;
+         end;
 
       --  For the anonymous function result case, retrieve the scope of the
       --  function specification's associated entity rather than using the

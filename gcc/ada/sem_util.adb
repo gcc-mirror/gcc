@@ -8727,10 +8727,15 @@ package body Sem_Util is
       then
          return True;
 
-      elsif Nkind (N) = N_Indexed_Component
-        or else Nkind (N) = N_Selected_Component
+      elsif Nkind_In (N, N_Indexed_Component, N_Selected_Component)
+        and then Is_Volatile_Prefix (Prefix (N))
       then
-         return Is_Volatile_Prefix (Prefix (N));
+         return True;
+
+      elsif Nkind (N) = N_Selected_Component
+        and then Is_Volatile (Entity (Selector_Name (N)))
+      then
+         return True;
 
       else
          return False;
@@ -10833,9 +10838,7 @@ package body Sem_Util is
                --  source. This excludes, for example, calls to a dispatching
                --  assignment operation when the left-hand side is tagged.
 
-               if Modification_Comes_From_Source
-                 or else Alfa_Mode
-               then
+               if Modification_Comes_From_Source or else Alfa_Mode then
                   Generate_Reference (Ent, Exp, 'm');
 
                   --  If the target of the assignment is the bound variable

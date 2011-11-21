@@ -477,13 +477,13 @@ package Sinput is
 
    --  In addition to the set of characters defined by the type in Types, in
    --  wide character encoding, then the codes returning True for a call to
-   --  System.UTF_32.Is_UTF_32_Line_Terminator are also recognized as ending
-   --  a physical source line. This includes the standard codes defined above
-   --  in addition to NEL (NEXT LINE), LINE SEPARATOR and PARAGRAPH SEPARATOR.
-   --  Again, as in the case of VT and FF, the standard requires we recognize
-   --  these as line terminators, but we consider them to be logical line
-   --  terminators. The only physical line terminators recognized are the
-   --  standard ones (CR, LF, or CR/LF).
+   --  System.UTF_32.Is_UTF_32_Line_Terminator are also recognized as ending a
+   --  source line. This includes the standard codes defined above in addition
+   --  to NEL (NEXT LINE), LINE SEPARATOR and PARAGRAPH SEPARATOR. Again, as in
+   --  the case of VT and FF, the standard requires we recognize these as line
+   --  terminators, but we consider them to be logical line terminators. The
+   --  only physical line terminators recognized are the standard ones (CR,
+   --  LF, or CR/LF).
 
    --  However, we do not recognize the NEL (16#85#) character as having the
    --  significance of an end of line character when operating in normal 8-bit

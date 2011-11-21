@@ -181,6 +181,12 @@ package body System.Finalization_Masters is
 
       if Master.Finalization_Started then
          Unlock_Task.all;
+
+         --  Double finalization may occur during the handling of stand alone
+         --  libraries or the finalization of a pool with subpools. Due to the
+         --  potential aliasing of masters in these two cases, do not process
+         --  the same master twice.
+
          return;
       end if;
 

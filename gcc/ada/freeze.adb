@@ -4239,7 +4239,8 @@ package body Freeze is
       --  By default, if no size clause is present, an enumeration type with
       --  Convention C is assumed to interface to a C enum, and has integer
       --  size. This applies to types. For subtypes, verify that its base
-      --  type has no size clause either.
+      --  type has no size clause either. Treat other foreign conventions
+      --  in the same way, and also make sure alignment is set right.
 
       if Has_Foreign_Convention (Typ)
         and then not Has_Size_Clause (Typ)
@@ -4247,6 +4248,7 @@ package body Freeze is
         and then Esize (Typ) < Standard_Integer_Size
       then
          Init_Esize (Typ, Standard_Integer_Size);
+         Set_Alignment (Typ, Alignment (Standard_Integer));
 
       else
          --  If the enumeration type interfaces to C, and it has a size clause
