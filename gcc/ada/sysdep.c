@@ -80,54 +80,6 @@ extern struct tm *localtime_r(const time_t *, struct tm *);
 #endif
 
 /*
-   mode_read_text
-   open text file for reading
-   rt for DOS and Windows NT, r for Unix
-
-   mode_write_text
-   truncate to zero length or create text file for writing
-   wt for DOS and Windows NT, w for Unix
-
-   mode_append_text
-   append; open or create text file for writing at end-of-file
-   at for DOS and Windows NT, a for Unix
-
-   mode_read_binary
-   open binary file for reading
-   rb for DOS and Windows NT, r for Unix
-
-   mode_write_binary
-   truncate to zero length or create binary file for writing
-   wb for DOS and Windows NT, w for Unix
-
-   mode_append_binary
-   append; open or create binary file for writing at end-of-file
-   ab for DOS and Windows NT, a for Unix
-
-   mode_read_text_plus
-   open text file for update (reading and writing)
-   r+t for DOS and Windows NT, r+ for Unix
-
-   mode_write_text_plus
-   truncate to zero length or create text file for update
-   w+t for DOS and Windows NT, w+ for Unix
-
-   mode_append_text_plus
-   append; open or create text file for update, writing at end-of-file
-   a+t for DOS and Windows NT, a+ for Unix
-
-   mode_read_binary_plus
-   open binary file for update (reading and writing)
-   r+b for DOS and Windows NT, r+ for Unix
-
-   mode_write_binary_plus
-   truncate to zero length or create binary file for update
-   w+b for DOS and Windows NT, w+ for Unix
-
-   mode_append_binary_plus
-   append; open or create binary file for update, writing at end-of-file
-   a+b for DOS and Windows NT, a+ for Unix
-
    Notes:
 
    (1) Opening a file with read mode fails if the file does not exist or
@@ -169,18 +121,7 @@ extern struct tm *localtime_r(const time_t *, struct tm *);
 */
 
 #if defined(WINNT)
-static const char *mode_read_text = "rt";
-static const char *mode_write_text = "wt";
-static const char *mode_append_text = "at";
-static const char *mode_read_binary = "rb";
-static const char *mode_write_binary = "wb";
-static const char *mode_append_binary = "ab";
-static const char *mode_read_text_plus = "r+t";
-static const char *mode_write_text_plus = "w+t";
-static const char *mode_append_text_plus = "a+t";
-static const char *mode_read_binary_plus = "r+b";
-static const char *mode_write_binary_plus = "w+b";
-static const char *mode_append_binary_plus = "a+b";
+
 const char __gnat_text_translation_required = 1;
 
 void
@@ -261,18 +202,6 @@ __gnat_get_stack_bounds (void **base, void **limit)
 
 #else
 
-static const char *mode_read_text = "r";
-static const char *mode_write_text = "w";
-static const char *mode_append_text = "a";
-static const char *mode_read_binary = "r";
-static const char *mode_write_binary = "w";
-static const char *mode_append_binary = "a";
-static const char *mode_read_text_plus = "r+";
-static const char *mode_write_text_plus = "w+";
-static const char *mode_append_text_plus = "a+";
-static const char *mode_read_binary_plus = "r+";
-static const char *mode_write_binary_plus = "w+";
-static const char *mode_append_binary_plus = "a+";
 const char __gnat_text_translation_required = 0;
 
 /* These functions do nothing in non-DOS systems. */

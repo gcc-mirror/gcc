@@ -2437,7 +2437,8 @@ package body Sem_Util is
                          (Defining_Identifier
                            (Associated_Node_For_Itype (Typ))));
 
-      --  For generic formal type, return Int'Last (infinite) (why ???)
+      --  For generic formal type, return Int'Last (infinite).
+      --  See comment preceding Is_Generic_Type call in Type_Access_Level.
 
       elsif Is_Generic_Type (Root_Type (Typ)) then
          return UI_From_Int (Int'Last);
@@ -12719,7 +12720,20 @@ package body Sem_Util is
          end if;
       end if;
 
-      --  Return library level for a generic formal type (why???)
+      --  Return library level for a generic formal type. This is done because
+      --  RM(10.3.2) says that "The statically deeper relationship does not
+      --  apply to ... a descendant of a generic formal type". Rather than
+      --  checking at each point where a static accessibility check is
+      --  performed to see if we are dealing with a formal type, this rule is
+      --  implemented by having Type_Access_Level and Deepest_Type_Access_Level
+      --  return extreme values for a formal type; Deepest_Type_Access_Level
+      --  returns Int'Last. By calling the appropriate function from among the
+      --  two, we ensure that the static accessibility check will pass if we
+      --  happen to run into a formal type. More specifically, we should call
+      --  Deepest_Type_Access_Level instead of Type_Access_Level whenever the
+      --  call occurs as part of a static accessibility check and the error
+      --  case is the case where the type's level is too shallow (as opposed
+      --  to too deep).
 
       if Is_Generic_Type (Root_Type (Btyp)) then
          return Scope_Depth (Standard_Standard);

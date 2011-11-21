@@ -1156,31 +1156,27 @@ package body Exp_Imgv is
       else
          pragma Assert (Is_Enumeration_Type (Rtyp));
 
+         --  Whenever pragma Discard_Names is in effect, it suppresses the
+         --  generation of string literals for enumeration types. Since the
+         --  literals are required to evaluate the 'Width of an enumeration
+         --  type, emit an error.
+
+         --  ??? This is fine for configurable runtimes, but dubious in the
+         --  general case. For now keep both error messages until this issue
+         --  has been verified with the ARG.
+
          if Discard_Names (Rtyp) then
+            Error_Msg_Name_1 := Attribute_Name (N);
 
-            --  Emit a detailed warning in configurable run-time mode because
-            --  loading RE_Null does not give a precise indication of the real
-            --  issue.
-
-            if Configurable_Run_Time_Mode
-              and then not Has_Warnings_Off (Rtyp)
-            then
-               Error_Msg_Name_1 := Attribute_Name (N);
-               Error_Msg_N ("?attribute % not supported in configurable " &
+            if Configurable_Run_Time_Mode then
+               Error_Msg_N ("attribute % not supported in configurable " &
                             "run-time mode", N);
+            else
+               Error_Msg_N ("attribute % not supported when pragma " &
+                            "Discard_Names is in effect", N);
             end if;
 
-            --  This is a configurable run-time, or else a restriction is in
-            --  effect. In either case the attribute cannot be supported. Force
-            --  a load error from Rtsfind to generate an appropriate message,
-            --  as is done with other ZFP violations.
-
-            declare
-               Discard : constant Entity_Id := RTE (RE_Null);
-               pragma Unreferenced (Discard);
-            begin
-               return;
-            end;
+            return;
          end if;
 
          Ttyp := Component_Type (Etype (Lit_Indexes (Rtyp)));

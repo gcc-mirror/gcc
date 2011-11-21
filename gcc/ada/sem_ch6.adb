@@ -268,16 +268,22 @@ package body Sem_Ch6 is
    procedure Analyze_Expression_Function (N : Node_Id) is
       Loc      : constant Source_Ptr := Sloc (N);
       LocX     : constant Source_Ptr := Sloc (Expression (N));
-      Def_Id   : constant Entity_Id  := Defining_Entity (Specification (N));
       Expr     : constant Node_Id    := Expression (N);
+      Spec     : constant Node_Id    := Specification (N);
+
+      Def_Id   :  Entity_Id;
+      pragma Unreferenced (Def_Id);
+
+      Prev     :  Entity_Id;
+      --  If the expression is a completion, Prev is the entity whose
+      --  declaration is completed. Def_Id is needed to analyze the spec.
+
       New_Body : Node_Id;
       New_Decl : Node_Id;
-
-      Prev : constant Entity_Id := Current_Entity_In_Scope (Def_Id);
-      --  If the expression is a completion, Prev is the entity whose
-      --  declaration is completed.
+      New_Spec : Node_Id;
 
    begin
+
       --  This is one of the occasions on which we transform the tree during
       --  semantic analysis. If this is a completion, transform the expression
       --  function into an equivalent subprogram body, and analyze it.
@@ -286,10 +292,22 @@ package body Sem_Ch6 is
       --  determine whether this is possible.
 
       Inline_Processing_Required := True;
+      New_Spec := Copy_Separate_Tree (Spec);
+      Prev     := Current_Entity_In_Scope (Defining_Entity (Spec));
+
+      --  If there are previous overloadable entities with the same name,
+      --  check whether any of them is completed by the expression function.
+
+      if Present (Prev)
+        and then Is_Overloadable (Prev)
+      then
+         Def_Id   := Analyze_Subprogram_Specification (Spec);
+         Prev     := Find_Corresponding_Spec (N);
+      end if;
 
       New_Body :=
         Make_Subprogram_Body (Loc,
-          Specification              => Copy_Separate_Tree (Specification (N)),
+          Specification              => New_Spec,
           Declarations               => Empty_List,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (LocX,
@@ -307,6 +325,7 @@ package body Sem_Ch6 is
 
          Insert_After (N, New_Body);
          Rewrite (N, Make_Null_Statement (Loc));
+         Set_Has_Completion (Prev, False);
          Analyze (N);
          Analyze (New_Body);
          Set_Is_Inlined (Prev);
@@ -314,6 +333,7 @@ package body Sem_Ch6 is
       elsif Present (Prev)
         and then Comes_From_Source (Prev)
       then
+         Set_Has_Completion (Prev, False);
          Rewrite (N, New_Body);
          Analyze (N);
 
@@ -333,8 +353,7 @@ package body Sem_Ch6 is
 
       else
          New_Decl :=
-           Make_Subprogram_Declaration (Loc,
-             Specification => Specification (N));
+           Make_Subprogram_Declaration (Loc, Specification => Spec);
 
          Rewrite (N, New_Decl);
          Analyze (N);
