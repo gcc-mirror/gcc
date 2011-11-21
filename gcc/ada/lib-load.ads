@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -155,6 +155,7 @@ package Lib.Load is
    --
    --  PMES indicates the required setting of Parsing_Main_Extended_Unit during
    --  loading of the unit. This flag is saved and restored over the call.
+   --  Note: PMES is false for the subunit case, which seems wrong???
 
    procedure Change_Main_Unit_To_Spec;
    --  This procedure is called if the main unit file contains a No_Body pragma

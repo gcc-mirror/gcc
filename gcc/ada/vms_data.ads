@@ -6200,6 +6200,14 @@ package VMS_Data is
    --
    --   Set the maximum line length, nnn from 32 ..256. The default is 79.
 
+   S_Pretty_Maxact    : aliased constant S := "/MAX_ACT=#"                 &
+                                                 "--call_threshold=#";
+   --        /MAX_ACT=nnn
+   --
+   --  If the number of parameter associations is greater than nnn and if at
+   --  least one association uses named notation, start each association from
+   --  a new line
+
    S_Pretty_Maxind    : aliased constant S := "/MAX_INDENT=#"              &
                                                  "-T#";
    --        /MAX_INDENT=nnn
@@ -6208,6 +6216,14 @@ package VMS_Data is
    --   and variants if their number is nnn or more. The default is 10.
    --   If nnn is zero, an additional indentation level is used for any
    --   number of case alternatives and variants.
+
+   S_Pretty_Maxpar    : aliased constant S := "/MAX_PAR=#"                 &
+                                                 "--par_threshold=#";
+   --        /MAX_PAR=nnn
+   --
+   --  If the number of parameter specifications is greater than nnn (or equal
+   --  to nnn in case of a function), start each specification from a new line.
+   --  The default value is 3.
 
    S_Pretty_Mess      : aliased constant S := "/MESSAGES_PROJECT_FILE="    &
                                             "DEFAULT "                     &
@@ -6401,7 +6417,9 @@ package VMS_Data is
                         S_Pretty_Indent           'Access,
                         S_Pretty_Keyword          'Access,
                         S_Pretty_Maxlen           'Access,
+                        S_Pretty_Maxact           'Access,
                         S_Pretty_Maxind           'Access,
+                        S_Pretty_Maxpar           'Access,
                         S_Pretty_Mess             'Access,
                         S_Pretty_Names            'Access,
                         S_Pretty_No_Labels        'Access,

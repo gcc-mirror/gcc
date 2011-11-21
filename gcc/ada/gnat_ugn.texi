@@ -13364,6 +13364,19 @@ and variants if there are @var{nnn} or more (the default
 value is 10).
 If @var{nnn} is 0, an additional indentation level is
 used for @b{case} alternatives and variants regardless of their number.
+
+@item ^--call_threshold=@var{nnn}^/MAX_ACT=@var{nnn}^
+@cindex @option{^--call_threshold^/MAX_ACT^} (@command{gnatpp})
+If the number of parameter associations is greater than @var{nnn} and if at
+least one association uses named notation, start each association from
+a new line. If @var{nnn} is 0, no check for the number of associations
+is made, this is the default.
+
+@item ^--par_threshold=@var{nnn}^/MAX_PAR=@var{nnn}^
+@cindex @option{^--par_threshold^/MAX_PAR^} (@command{gnatpp})
+If the number of parameter specifications is greater than @var{nnn}
+(or equal to @var{nnn} in case of a function), start each specification from
+a new line. The default for @var{nnn} is 3.
 @end table
 
 @node Setting the Source Search Path

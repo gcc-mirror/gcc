@@ -96,6 +96,7 @@ package Aspects is
       Aspect_Preelaborate_05,               -- GNAT
       Aspect_Pure,
       Aspect_Pure_05,                       -- GNAT
+      Aspect_Pure_12,                       -- GNAT
       Aspect_Remote_Call_Interface,
       Aspect_Remote_Types,
       Aspect_Shared_Passive,
@@ -154,6 +155,7 @@ package Aspects is
                              Aspect_Compiler_Unit        => True,
                              Aspect_Preelaborate_05      => True,
                              Aspect_Pure_05              => True,
+                             Aspect_Pure_12              => True,
                              Aspect_Universal_Data       => True,
                              Aspect_Ada_2005             => True,
                              Aspect_Ada_2012             => True,
@@ -324,6 +326,7 @@ package Aspects is
      Aspect_Priority                     => Name_Priority,
      Aspect_Pure                         => Name_Pure,
      Aspect_Pure_05                      => Name_Pure_05,
+     Aspect_Pure_12                      => Name_Pure_12,
      Aspect_Pure_Function                => Name_Pure_Function,
      Aspect_Read                         => Name_Read,
      Aspect_Remote_Call_Interface        => Name_Remote_Call_Interface,

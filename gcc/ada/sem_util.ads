@@ -775,8 +775,12 @@ package Sem_Util is
 
    function Is_Aliased_View (Obj : Node_Id) return Boolean;
    --  Determine if Obj is an aliased view, i.e. the name of an object to which
-   --  'Access or 'Unchecked_Access can apply. Note that the implementation
-   --  takes the No_Implicit_Aiasing restriction into account.
+   --  'Access or 'Unchecked_Access can apply. Note that this routine uses the
+   --  rules of the language, it does not take into account the restriction
+   --  No_Implicit_Aliasing, so it can return True if the restriction is active
+   --  and Obj violates the restriction. The caller is responsible for calling
+   --  Restrict.Check_No_Implicit_Aliasing if True is returned, but there is a
+   --  requirement for obeying the restriction in the call context.
 
    function Is_Ancestor_Package
      (E1 : Entity_Id;
