@@ -1,5 +1,7 @@
 2011-11-20  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (tsubst_pack_expansion): Fix SFINAE.
+
 	PR c++/48322
 	* cp-tree.h (PACK_EXPANSION_EXTRA_ARGS): New.
 	* cp-tree.def (EXPR_PACK_EXPANSION): Add an operand for it.
