@@ -1,3 +1,32 @@
+2011-11-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.h (struct base_arch_s): Add field sfr_offset.
+	* config/avr/avr-devices.c: Ditto. And initialize it.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): New built-in define
+	__AVR_SFR_OFFSET__.
+	* config/avr/avr-protos.h (out_movqi_r_mr, out_movqi_mr_r): Remove.
+	(out_movhi_r_mr, out_movhi_mr_r): Remove.
+	(out_movsi_r_mr, out_movsi_mr_r): Remove.
+	* config/avr/avr.md (*cbi, *sbi): Use %i instead of %m-0x20.
+	(*insv.io, *insv.not.io): Ditto.
+	* config/avr/avr.c (out_movsi_r_mr, out_movsi_mr_r): Make static.
+	(print_operand): Implement "%i" to print address as I/O address.
+	(output_movqi): Clean up call of out_movqi_mr_r.
+	(output_movhi): Clean up call of out_movhi_mr_r.
+	(avr_file_start): Use avr_current_arch->sfr_offset instead of
+	magic -0x20. Use TMP_REGNO, ZERO_REGNO instead of 0, 1.
+	(avr_out_sbxx_branch): Use %i instead of %m-0x20.
+	(out_movqi_r_mr, out_movqi_mr_r): Ditto. And make static.
+	(out_movhi_r_mr, out_movhi_mr_r): Ditto. And use avr_asm_len.
+	(out_shift_with_cnt): Clean up code: Use avr_asm_len.
+	(output_movsisf): Use output_reload_insisf for all CONSTANT_P sources.
+	(avr_out_movpsi): USE avr_out_reload_inpsi for all CONSTANT_P sources.
+	Clean up call of avr_out_store_psi.
+	(output_reload_in_const): Don't cut symbols longer than 2 bytes.
+	(output_reload_insisf): Filter CONST_INT_P or CONST_DOUBLE_P to
+	try if setting pre-cleared register is advantageous.
+	(avr_out_plus_1): Use gen_int_mode instead of GEN_INT.
+
 2011-11-20  Joey Ye  <joey.ye@arm.com>
 
 	* expr.c (expand_expr_real_1): Correctly handle strict volatile

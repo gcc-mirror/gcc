@@ -106,6 +106,9 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
         cpp_define (pfile, "__AVR_ERRATA_SKIP_JMP_CALL__");
     }
 
+  cpp_define_formatted (pfile, "__AVR_SFR_OFFSET__=0x%x",
+                        avr_current_arch->sfr_offset);
+    
   /* Define builtin macros so that the user can easily query if or if not
      non-generic address spaces (and which) are supported.
      This is only supported for C.  For C++, a language extension is needed

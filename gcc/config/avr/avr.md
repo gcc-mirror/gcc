@@ -28,6 +28,8 @@
 ;;  j  Branch condition.
 ;;  k  Reverse branch condition.
 ;;..m..Constant Direct Data memory address.
+;;  i  Print the SFR address quivalent of a CONST_INT RAM address.
+;;     The resulting addres is suitable to be used in IN/OUT.
 ;;  o  Displacement for (mem (plus (reg) (const_int))) operands.
 ;;  p  POST_INC or PRE_DEC address as a pointer (X, Y, Z)
 ;;  r  POST_INC or PRE_DEC address as a register (r26, r28, r30)
@@ -45,12 +47,12 @@
    (LPM_REGNO	0)	; implicit target register of LPM
    (TMP_REGNO	0)	; temporary register r0
    (ZERO_REGNO	1)	; zero register r1
-   
-   (SREG_ADDR   0x5F)
-   (SP_ADDR     0x5D)
 
-   ;; Register holding the address' high part when loading via ELPM
-   (RAMPZ_ADDR  0x5B)
+   ;; RAM addresses of some SFRs common to all Devices.
+
+   (SREG_ADDR   0x5F)   ; Status Register
+   (SP_ADDR     0x5D)   ; Stack Pointer
+   (RAMPZ_ADDR  0x5B)   ; Address' high part when loading via ELPM
    ])
 
 (define_c_enum "unspec"
@@ -4658,25 +4660,25 @@
 
 (define_insn "*cbi"
   [(set (mem:QI (match_operand 0 "low_io_address_operand" "n"))
-	(and:QI (mem:QI (match_dup 0))
-		(match_operand:QI 1 "single_zero_operand" "n")))]
-  "(optimize > 0)"
-{
-  operands[2] = GEN_INT (exact_log2 (~INTVAL (operands[1]) & 0xff));
-  return AS2 (cbi,%m0-0x20,%2);
-}
+        (and:QI (mem:QI (match_dup 0))
+                (match_operand:QI 1 "single_zero_operand" "n")))]
+  "optimize > 0"
+  {
+    operands[2] = GEN_INT (exact_log2 (~INTVAL (operands[1]) & 0xff));
+    return "cbi %i0,%2";
+  }
   [(set_attr "length" "1")
    (set_attr "cc" "none")])
 
 (define_insn "*sbi"
   [(set (mem:QI (match_operand 0 "low_io_address_operand" "n"))
-	(ior:QI (mem:QI (match_dup 0))
-		(match_operand:QI 1 "single_one_operand" "n")))]
-  "(optimize > 0)"
-{
-  operands[2] = GEN_INT (exact_log2 (INTVAL (operands[1]) & 0xff));
-  return AS2 (sbi,%m0-0x20,%2);
-}
+        (ior:QI (mem:QI (match_dup 0))
+                (match_operand:QI 1 "single_one_operand" "n")))]
+  "optimize > 0"
+  {
+    operands[2] = GEN_INT (exact_log2 (INTVAL (operands[1]) & 0xff));
+    return "sbi %i0,%2";
+  }
   [(set_attr "length" "1")
    (set_attr "cc" "none")])
 
@@ -5635,9 +5637,9 @@
         (match_operand:QI 2 "nonmemory_operand"                            "L,P,r"))]
   ""
   "@
-	cbi %m0-0x20,%1
-	sbi %m0-0x20,%1
-	sbrc %2,0\;sbi %m0-0x20,%1\;sbrs %2,0\;cbi %m0-0x20,%1"
+	cbi %i0,%1
+	sbi %i0,%1
+	sbrc %2,0\;sbi %i0,%1\;sbrs %2,0\;cbi %i0,%1"
   [(set_attr "length" "1,1,4")
    (set_attr "cc" "none")])
 
@@ -5647,7 +5649,7 @@
                          (match_operand:QI 1 "const_0_to_7_operand"        "n"))
         (not:QI (match_operand:QI 2 "register_operand"                     "r")))]
   ""
-  "sbrs %2,0\;sbi %m0-0x20,%1\;sbrc %2,0\;cbi %m0-0x20,%1"
+  "sbrs %2,0\;sbi %i0,%1\;sbrc %2,0\;cbi %i0,%1"
   [(set_attr "length" "4")
    (set_attr "cc" "none")])
 

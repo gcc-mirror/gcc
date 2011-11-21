@@ -63,6 +63,13 @@
 
 /* Prototypes for local helper functions.  */
 
+static const char* out_movqi_r_mr (rtx, rtx[], int*);
+static const char* out_movhi_r_mr (rtx, rtx[], int*);
+static const char* out_movsi_r_mr (rtx, rtx[], int*);
+static const char* out_movqi_mr_r (rtx, rtx[], int*);
+static const char* out_movhi_mr_r (rtx, rtx[], int*);
+static const char* out_movsi_mr_r (rtx, rtx[], int*);
+
 static int avr_naked_function_p (tree);
 static int interrupt_function_p (tree);
 static int signal_function_p (tree);
@@ -1824,7 +1831,7 @@ print_operand (FILE *file, rtx x, int code)
       if (code == 'm')
 	{
           if (!CONSTANT_P (addr))
-            fatal_insn ("bad address, not a constant):", addr);
+            fatal_insn ("bad address, not a constant:", addr);
           /* Assembler template with m-code is data - not progmem section */
           if (text_segment_operand (addr, VOIDmode))
             if (warning (0, "accessing data memory with"
@@ -1835,6 +1842,24 @@ print_operand (FILE *file, rtx x, int code)
               }
           output_addr_const (file, addr);
 	}
+      else if (code == 'i')
+        {
+          if (!io_address_operand (addr, GET_MODE (x)))
+            fatal_insn ("bad address, not an I/O address:", addr);
+          
+          switch (INTVAL (addr))
+            {
+            case RAMPZ_ADDR: fprintf (file, "__RAMPZ__"); break;
+            case SREG_ADDR: fprintf (file, "__SREG__"); break;
+            case SP_ADDR:   fprintf (file, "__SP_L__"); break;
+            case SP_ADDR+1: fprintf (file, "__SP_H__"); break;
+              
+            default:
+              fprintf (file, HOST_WIDE_INT_PRINT_HEX,
+                       UINTVAL (addr) - avr_current_arch->sfr_offset);
+              break;
+            }
+        }
       else if (code == 'o')
 	{
 	  if (GET_CODE (addr) != PLUS)
@@ -2796,17 +2821,12 @@ output_movqi (rtx insn, rtx operands[], int *l)
     }
   else if (GET_CODE (dest) == MEM)
     {
-      const char *templ;
+      rtx xop[2];
 
-      if (src == const0_rtx)
-	operands[1] = zero_reg_rtx;
+      xop[0] = dest;
+      xop[1] = src == const0_rtx ? zero_reg_rtx : src;
 
-      templ = out_movqi_mr_r (insn, operands, real_l);
-
-      if (!real_l)
-	output_asm_insn (templ, operands);
-
-      operands[1] = src;
+      return out_movqi_mr_r (insn, xop, real_l);
     }
   return "";
 }
@@ -2877,24 +2897,18 @@ output_movhi (rtx insn, rtx operands[], int *l)
     }
   else if (GET_CODE (dest) == MEM)
     {
-      const char *templ;
+      rtx xop[2];
 
-      if (src == const0_rtx)
-	operands[1] = zero_reg_rtx;
+      xop[0] = dest;
+      xop[1] = src == const0_rtx ? zero_reg_rtx : src;
 
-      templ = out_movhi_mr_r (insn, operands, real_l);
-
-      if (!real_l)
-	output_asm_insn (templ, operands);
-
-      operands[1] = src;
-      return "";
+      return out_movhi_mr_r (insn, xop, real_l);
     }
   fatal_insn ("invalid insn:", insn);
   return "";
 }
 
-const char *
+static const char*
 out_movqi_r_mr (rtx insn, rtx op[], int *plen)
 {
   rtx dest = op[0];
@@ -2903,19 +2917,9 @@ out_movqi_r_mr (rtx insn, rtx op[], int *plen)
   
   if (CONSTANT_ADDRESS_P (x))
     {
-      if (CONST_INT_P (x))
-        {
-          if (SREG_ADDR == INTVAL (x))
-            return avr_asm_len ("in %0,__SREG__", op, plen, -1);
-
-          if (RAMPZ_ADDR == INTVAL (x))
-            return avr_asm_len ("in %0,__RAMPZ__", op, plen, -1);
-        }
-      
-      if (optimize > 0 && io_address_operand (x, QImode))
-        return avr_asm_len ("in %0,%m1-0x20", op, plen, -1);
-
-      return avr_asm_len ("lds %0,%m1", op, plen, -2);
+      return optimize > 0 && io_address_operand (x, QImode)
+        ? avr_asm_len ("in %0,%i1", op, plen, -1)
+        : avr_asm_len ("lds %0,%m1", op, plen, -2);
     }
   else if (GET_CODE (x) == PLUS
            && REG_P (XEXP (x, 0))
@@ -2964,8 +2968,8 @@ out_movqi_r_mr (rtx insn, rtx op[], int *plen)
   return avr_asm_len ("ld %0,%1", op, plen, -1);
 }
 
-const char *
-out_movhi_r_mr (rtx insn, rtx op[], int *l)
+static const char*
+out_movhi_r_mr (rtx insn, rtx op[], int *plen)
 {
   rtx dest = op[0];
   rtx src = op[1];
@@ -2975,39 +2979,25 @@ out_movhi_r_mr (rtx insn, rtx op[], int *l)
   /* "volatile" forces reading low byte first, even if less efficient,
      for correct operation with 16-bit I/O registers.  */
   int mem_volatile_p = MEM_VOLATILE_P (src);
-  int tmp;
-
-  if (!l)
-    l = &tmp;
 
   if (reg_base > 0)
     {
       if (reg_dest == reg_base)         /* R = (R) */
-	{
-	  *l = 3;
-	  return (AS2 (ld,__tmp_reg__,%1+) CR_TAB
-		  AS2 (ld,%B0,%1) CR_TAB
-		  AS2 (mov,%A0,__tmp_reg__));
-	}
-      else if (reg_base == REG_X)        /* (R26) */
-        {
-          if (reg_unused_after (insn, base))
-	    {
-	      *l = 2;
-	      return (AS2 (ld,%A0,X+) CR_TAB
-		      AS2 (ld,%B0,X));
-	    }
-	  *l  = 3;
-	  return (AS2 (ld,%A0,X+) CR_TAB
-		  AS2 (ld,%B0,X) CR_TAB
-		  AS2 (sbiw,r26,1));
-        }
-      else                      /* (R)  */
-	{
-	  *l = 2;
-	  return (AS2 (ld,%A0,%1)    CR_TAB
-		  AS2 (ldd,%B0,%1+1));
-	}
+        return avr_asm_len ("ld __tmp_reg__,%1+" CR_TAB
+                            "ld %B0,%1"          CR_TAB
+                            "mov %A0,__tmp_reg__", op, plen, -3);
+
+      if (reg_base != REG_X)
+        return avr_asm_len ("ld %A0,%1" CR_TAB
+                            "ldd %B0,%1+1", op, plen, -2);
+      
+      avr_asm_len ("ld %A0,X+" CR_TAB
+                   "ld %B0,X", op, plen, -2);
+          
+      if (!reg_unused_after (insn, base))
+        avr_asm_len ("sbiw r26,1", op, plen, 1);
+
+      return "";
     }
   else if (GET_CODE (base) == PLUS) /* (R + i) */
     {
@@ -3015,109 +3005,90 @@ out_movhi_r_mr (rtx insn, rtx op[], int *l)
       int reg_base = true_regnum (XEXP (base, 0));
       
       if (disp > MAX_LD_OFFSET (GET_MODE (src)))
-	{
-	  if (REGNO (XEXP (base, 0)) != REG_Y)
-	    fatal_insn ("incorrect insn:",insn);
-	  
-	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (src)))
-	    return *l = 4, (AS2 (adiw,r28,%o1-62) CR_TAB
-			    AS2 (ldd,%A0,Y+62)    CR_TAB
-			    AS2 (ldd,%B0,Y+63)    CR_TAB
-			    AS2 (sbiw,r28,%o1-62));
+        {
+          if (REGNO (XEXP (base, 0)) != REG_Y)
+            fatal_insn ("incorrect insn:",insn);
+          
+          return disp <= 63 + MAX_LD_OFFSET (GET_MODE (src))
+            ? avr_asm_len ("adiw r28,%o1-62" CR_TAB
+                           "ldd %A0,Y+62"    CR_TAB
+                           "ldd %B0,Y+63"    CR_TAB
+                           "sbiw r28,%o1-62", op, plen, -4)
 
-	  return *l = 6, (AS2 (subi,r28,lo8(-%o1)) CR_TAB
-			  AS2 (sbci,r29,hi8(-%o1)) CR_TAB
-			  AS2 (ld,%A0,Y)           CR_TAB
-			  AS2 (ldd,%B0,Y+1)        CR_TAB
-			  AS2 (subi,r28,lo8(%o1))  CR_TAB
-			  AS2 (sbci,r29,hi8(%o1)));
-	}
+            : avr_asm_len ("subi r28,lo8(-%o1)" CR_TAB
+                           "sbci r29,hi8(-%o1)" CR_TAB
+                           "ld %A0,Y"           CR_TAB
+                           "ldd %B0,Y+1"        CR_TAB
+                           "subi r28,lo8(%o1)"  CR_TAB
+                           "sbci r29,hi8(%o1)", op, plen, -6);
+        }
+
+      /* This is a paranoid case. LEGITIMIZE_RELOAD_ADDRESS must exclude
+         it but I have this situation with extremal
+         optimization options.  */
+
       if (reg_base == REG_X)
-	{
-	  /* This is a paranoid case. LEGITIMIZE_RELOAD_ADDRESS must exclude
-	     it but I have this situation with extremal
-	     optimization options.  */
-	  
-	  *l = 4;
-	  if (reg_base == reg_dest)
-	    return (AS2 (adiw,r26,%o1)      CR_TAB
-		    AS2 (ld,__tmp_reg__,X+) CR_TAB
-		    AS2 (ld,%B0,X)          CR_TAB
-		    AS2 (mov,%A0,__tmp_reg__));
+        return reg_base == reg_dest
+          ? avr_asm_len ("adiw r26,%o1"      CR_TAB
+                         "ld __tmp_reg__,X+" CR_TAB
+                         "ld %B0,X"          CR_TAB
+                         "mov %A0,__tmp_reg__", op, plen, -4)
 
-	  return (AS2 (adiw,r26,%o1) CR_TAB
-		  AS2 (ld,%A0,X+)    CR_TAB
-		  AS2 (ld,%B0,X)     CR_TAB
-		  AS2 (sbiw,r26,%o1+1));
-	}
+          : avr_asm_len ("adiw r26,%o1" CR_TAB
+                         "ld %A0,X+"    CR_TAB
+                         "ld %B0,X"     CR_TAB
+                         "sbiw r26,%o1+1", op, plen, -4);
 
-      if (reg_base == reg_dest)
-	{
-	  *l = 3;
-	  return (AS2 (ldd,__tmp_reg__,%A1) CR_TAB
-		  AS2 (ldd,%B0,%B1)         CR_TAB
-		  AS2 (mov,%A0,__tmp_reg__));
-	}
-      
-      *l = 2;
-      return (AS2 (ldd,%A0,%A1) CR_TAB
-	      AS2 (ldd,%B0,%B1));
+      return reg_base == reg_dest
+        ? avr_asm_len ("ldd __tmp_reg__,%A1" CR_TAB
+                       "ldd %B0,%B1"         CR_TAB
+                       "mov %A0,__tmp_reg__", op, plen, -3)
+
+        : avr_asm_len ("ldd %A0,%A1" CR_TAB
+                       "ldd %B0,%B1", op, plen, -2);
     }
   else if (GET_CODE (base) == PRE_DEC) /* (--R) */
     {
       if (reg_overlap_mentioned_p (dest, XEXP (base, 0)))
-	fatal_insn ("incorrect insn:", insn);
+        fatal_insn ("incorrect insn:", insn);
 
-      if (mem_volatile_p)
-        {
-          if (REGNO (XEXP (base, 0)) == REG_X)
-            {
-              *l = 4;
-              return (AS2 (sbiw,r26,2)  CR_TAB
-                      AS2 (ld,%A0,X+)   CR_TAB
-                      AS2 (ld,%B0,X)    CR_TAB
-                      AS2 (sbiw,r26,1));
-            }
-          else
-            {
-              *l = 3;
-              return (AS2 (sbiw,%r1,2)   CR_TAB
-                      AS2 (ld,%A0,%p1)  CR_TAB
-                      AS2 (ldd,%B0,%p1+1));
-            }
-        }
-
-      *l = 2;
-      return (AS2 (ld,%B0,%1) CR_TAB
-	      AS2 (ld,%A0,%1));
+      if (!mem_volatile_p)
+        return avr_asm_len ("ld %B0,%1" CR_TAB
+                            "ld %A0,%1", op, plen, -2);
+      
+      return REGNO (XEXP (base, 0)) == REG_X
+        ? avr_asm_len ("sbiw r26,2"  CR_TAB
+                       "ld %A0,X+"   CR_TAB
+                       "ld %B0,X"    CR_TAB
+                       "sbiw r26,1", op, plen, -4)
+        
+        : avr_asm_len ("sbiw %r1,2"  CR_TAB
+                       "ld %A0,%p1"  CR_TAB
+                       "ldd %B0,%p1+1", op, plen, -3);
     }
   else if (GET_CODE (base) == POST_INC) /* (R++) */
     {
       if (reg_overlap_mentioned_p (dest, XEXP (base, 0)))
-	fatal_insn ("incorrect insn:", insn);
+        fatal_insn ("incorrect insn:", insn);
 
-      *l = 2;
-      return (AS2 (ld,%A0,%1)  CR_TAB
-	      AS2 (ld,%B0,%1));
+      return avr_asm_len ("ld %A0,%1"  CR_TAB
+                          "ld %B0,%1", op, plen, -2);
     }
   else if (CONSTANT_ADDRESS_P (base))
     {
-      if (optimize > 0 && io_address_operand (base, HImode))
-	{
-	  *l = 2;
-	  return (AS2 (in,%A0,%m1-0x20) CR_TAB
-		  AS2 (in,%B0,%m1+1-0x20));
-	}
-      *l = 4;
-      return (AS2 (lds,%A0,%m1) CR_TAB
-	      AS2 (lds,%B0,%m1+1));
+      return optimize > 0 && io_address_operand (base, HImode)
+        ? avr_asm_len ("in %A0,%i1" CR_TAB
+                       "in %B0,%i1+1", op, plen, -2)
+
+        : avr_asm_len ("lds %A0,%m1" CR_TAB
+                       "lds %B0,%m1+1", op, plen, -4);
     }
   
   fatal_insn ("unknown move insn:",insn);
   return "";
 }
 
-const char *
+static const char*
 out_movsi_r_mr (rtx insn, rtx op[], int *l)
 {
   rtx dest = op[0];
@@ -3278,7 +3249,7 @@ out_movsi_r_mr (rtx insn, rtx op[], int *l)
   return "";
 }
 
-const char *
+static const char*
 out_movsi_mr_r (rtx insn, rtx op[], int *l)
 {
   rtx dest = op[0];
@@ -3483,34 +3454,10 @@ output_movsisf (rtx insn, rtx operands[], int *l)
 		      AS2 (mov,%D0,%D1));
 	    }
 	}
-      else if (CONST_INT_P (src)
-               || CONST_DOUBLE_P (src))
-        {
-          return output_reload_insisf (operands, NULL_RTX, real_l);
-        }
       else if (CONSTANT_P (src))
 	{
-	  if (test_hard_reg_class (LD_REGS, dest)) /* ldi d,i */
-	    {
-	      *l = 4;
-	      return (AS2 (ldi,%A0,lo8(%1))  CR_TAB
-		      AS2 (ldi,%B0,hi8(%1))  CR_TAB
-		      AS2 (ldi,%C0,hlo8(%1)) CR_TAB
-		      AS2 (ldi,%D0,hhi8(%1)));
-	    }
-	  /* Last resort, better than loading from memory.  */
-	  *l = 10;
-	  return (AS2 (mov,__tmp_reg__,r31) CR_TAB
-		  AS2 (ldi,r31,lo8(%1))     CR_TAB
-		  AS2 (mov,%A0,r31)         CR_TAB
-		  AS2 (ldi,r31,hi8(%1))     CR_TAB
-		  AS2 (mov,%B0,r31)         CR_TAB
-		  AS2 (ldi,r31,hlo8(%1))    CR_TAB
-		  AS2 (mov,%C0,r31)         CR_TAB
-		  AS2 (ldi,r31,hhi8(%1))    CR_TAB
-		  AS2 (mov,%D0,r31)         CR_TAB
-		  AS2 (mov,r31,__tmp_reg__));
-	}
+          return output_reload_insisf (operands, NULL_RTX, real_l);
+        }
       else if (GET_CODE (src) == MEM)
 	return out_movsi_r_mr (insn, operands, real_l); /* mov r,m */
     }
@@ -3797,41 +3744,21 @@ avr_out_movpsi (rtx insn, rtx *op, int *plen)
               return avr_asm_len ("mov %C0,%C1", op, plen, 1);
             }
         }
-      else if (CONST_INT_P (src))
-        {
-          return avr_out_reload_inpsi (op, NULL_RTX, plen);
-        }
       else if (CONSTANT_P (src))
         {
-          if (test_hard_reg_class (LD_REGS, dest)) /* ldi d,i */
-            {
-              return avr_asm_len ("ldi %A0,lo8(%1)" CR_TAB
-                                  "ldi %B0,hi8(%1)" CR_TAB
-                                  "ldi %C0,hh8(%1)", op, plen, -3);
-            }
-          
-          /* Last resort, better than loading from memory.  */
-          return avr_asm_len ("mov __tmp_reg__,r31" CR_TAB
-                              "ldi r31,lo8(%1)" CR_TAB
-                              "mov %A0,r31"     CR_TAB
-                              "ldi r31,hi8(%1)" CR_TAB
-                              "mov %B0,r31"     CR_TAB
-                              "ldi r31,hh8(%1)" CR_TAB
-                              "mov %C0,r31"     CR_TAB
-                              "mov r31,__tmp_reg__", op, plen, -8);
+          return avr_out_reload_inpsi (op, NULL_RTX, plen);
         }
       else if (MEM_P (src))
         return avr_out_load_psi (insn, op, plen); /* mov r,m */
     }
   else if (MEM_P (dest))
     {
-      if (src == CONST0_RTX (GET_MODE (dest)))
-        op[1] = zero_reg_rtx;
+      rtx xop[2];
+
+      xop[0] = dest;
+      xop[1] = src == CONST0_RTX (GET_MODE (dest)) ? zero_reg_rtx : src;
       
-      avr_out_store_psi (insn, op, plen);
-      
-      op[1] = src;
-      return "";
+      return avr_out_store_psi (insn, xop, plen);
     }
     
   fatal_insn ("invalid insn:", insn);
@@ -3839,7 +3766,7 @@ avr_out_movpsi (rtx insn, rtx *op, int *plen)
 }
 
 
-const char *
+static const char*
 out_movqi_mr_r (rtx insn, rtx op[], int *plen)
 {
   rtx dest = op[0];
@@ -3848,19 +3775,9 @@ out_movqi_mr_r (rtx insn, rtx op[], int *plen)
   
   if (CONSTANT_ADDRESS_P (x))
     {
-      if (CONST_INT_P (x))
-        {
-          if (SREG_ADDR == INTVAL (x))
-            return avr_asm_len ("out __SREG__,%1", op, plen, -1);
-
-          if (RAMPZ_ADDR == INTVAL (x))
-            return avr_asm_len ("out __RAMPZ__,%1", op, plen, -1);
-        }
-      
-      if (optimize > 0 && io_address_operand (x, QImode))
-        avr_asm_len ("out %m0-0x20,%1", op, plen, -1);
-
-      return avr_asm_len ("sts %m0,%1", op, plen, -2);
+      return optimize > 0 && io_address_operand (x, QImode)
+        ? avr_asm_len ("out %i0,%1", op, plen, -1)
+        : avr_asm_len ("sts %m0,%1", op, plen, -2);
     }
   else if (GET_CODE (x) == PLUS
            && REG_P (XEXP (x, 0))
@@ -3912,8 +3829,8 @@ out_movqi_mr_r (rtx insn, rtx op[], int *plen)
   return avr_asm_len ("st %0,%1", op, plen, 1);
 }
 
-const char *
-out_movhi_mr_r (rtx insn, rtx op[], int *l)
+static const char*
+out_movhi_mr_r (rtx insn, rtx op[], int *plen)
 {
   rtx dest = op[0];
   rtx src = op[1];
@@ -3923,127 +3840,103 @@ out_movhi_mr_r (rtx insn, rtx op[], int *l)
   /* "volatile" forces writing high byte first, even if less efficient,
      for correct operation with 16-bit I/O registers.  */
   int mem_volatile_p = MEM_VOLATILE_P (dest);
-  int tmp;
 
-  if (!l)
-    l = &tmp;
   if (CONSTANT_ADDRESS_P (base))
-    {
-      if (optimize > 0 && io_address_operand (base, HImode))
-	{
-	  *l = 2;
-	  return (AS2 (out,%m0+1-0x20,%B1) CR_TAB
-		  AS2 (out,%m0-0x20,%A1));
-	}
-      return *l = 4, (AS2 (sts,%m0+1,%B1) CR_TAB
-		      AS2 (sts,%m0,%A1));
-    }
+    return optimize > 0 && io_address_operand (base, HImode)
+      ? avr_asm_len ("out %i0+1,%B1" CR_TAB
+                     "out %i0,%A1", op, plen, -2)
+
+      : avr_asm_len ("sts %m0+1,%B1" CR_TAB
+                     "sts %m0,%A1", op, plen, -4);
+  
   if (reg_base > 0)
     {
-      if (reg_base == REG_X)
-        {
-          if (reg_src == REG_X)
-            {
-              /* "st X+,r26" and "st -X,r26" are undefined.  */
-              if (!mem_volatile_p && reg_unused_after (insn, src))
-		return *l=4, (AS2 (mov,__tmp_reg__,r27) CR_TAB
-			      AS2 (st,X,r26)            CR_TAB
-			      AS2 (adiw,r26,1)          CR_TAB
-			      AS2 (st,X,__tmp_reg__));
-              else
-		return *l=5, (AS2 (mov,__tmp_reg__,r27) CR_TAB
-			      AS2 (adiw,r26,1)          CR_TAB
-			      AS2 (st,X,__tmp_reg__)    CR_TAB
-                              AS2 (sbiw,r26,1)          CR_TAB
-                              AS2 (st,X,r26));
-            }
-          else
-            {
-              if (!mem_volatile_p && reg_unused_after (insn, base))
-                return *l=2, (AS2 (st,X+,%A1) CR_TAB
-                              AS2 (st,X,%B1));
-              else
-                return *l=3, (AS2 (adiw,r26,1) CR_TAB
-                              AS2 (st,X,%B1)   CR_TAB
-                              AS2 (st,-X,%A1));
-            }
-        }
-      else
-        return  *l=2, (AS2 (std,%0+1,%B1) CR_TAB
-                       AS2 (st,%0,%A1));
+      if (reg_base != REG_X)
+        return avr_asm_len ("std %0+1,%B1" CR_TAB
+                            "st %0,%A1", op, plen, -2);
+      
+      if (reg_src == REG_X)
+        /* "st X+,r26" and "st -X,r26" are undefined.  */
+        return !mem_volatile_p && reg_unused_after (insn, src)
+          ? avr_asm_len ("mov __tmp_reg__,r27" CR_TAB
+                         "st X,r26"            CR_TAB
+                         "adiw r26,1"          CR_TAB
+                         "st X,__tmp_reg__", op, plen, -4)
+
+          : avr_asm_len ("mov __tmp_reg__,r27" CR_TAB
+                         "adiw r26,1"          CR_TAB
+                         "st X,__tmp_reg__"    CR_TAB
+                         "sbiw r26,1"          CR_TAB
+                         "st X,r26", op, plen, -5);
+      
+      return !mem_volatile_p && reg_unused_after (insn, base)
+        ? avr_asm_len ("st X+,%A1" CR_TAB
+                       "st X,%B1", op, plen, -2)
+        : avr_asm_len ("adiw r26,1" CR_TAB
+                       "st X,%B1"   CR_TAB
+                       "st -X,%A1", op, plen, -3);
     }
   else if (GET_CODE (base) == PLUS)
     {
       int disp = INTVAL (XEXP (base, 1));
       reg_base = REGNO (XEXP (base, 0));
       if (disp > MAX_LD_OFFSET (GET_MODE (dest)))
-	{
-	  if (reg_base != REG_Y)
-	    fatal_insn ("incorrect insn:",insn);
+        {
+          if (reg_base != REG_Y)
+            fatal_insn ("incorrect insn:",insn);
+          
+          return disp <= 63 + MAX_LD_OFFSET (GET_MODE (dest))
+            ? avr_asm_len ("adiw r28,%o0-62" CR_TAB
+                           "std Y+63,%B1"    CR_TAB
+                           "std Y+62,%A1"    CR_TAB
+                           "sbiw r28,%o0-62", op, plen, -4)
 
-	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (dest)))
-	    return *l = 4, (AS2 (adiw,r28,%o0-62) CR_TAB
-			    AS2 (std,Y+63,%B1)    CR_TAB
-			    AS2 (std,Y+62,%A1)    CR_TAB
-			    AS2 (sbiw,r28,%o0-62));
+            : avr_asm_len ("subi r28,lo8(-%o0)" CR_TAB
+                           "sbci r29,hi8(-%o0)" CR_TAB
+                           "std Y+1,%B1"        CR_TAB
+                           "st Y,%A1"           CR_TAB
+                           "subi r28,lo8(%o0)"  CR_TAB
+                           "sbci r29,hi8(%o0)", op, plen, -6);
+        }
+      
+      if (reg_base != REG_X)
+        return avr_asm_len ("std %B0,%B1" CR_TAB
+                            "std %A0,%A1", op, plen, -2);
+      /* (X + d) = R */
+      return reg_src == REG_X
+        ? avr_asm_len ("mov __tmp_reg__,r26"  CR_TAB
+                       "mov __zero_reg__,r27" CR_TAB
+                       "adiw r26,%o0+1"       CR_TAB
+                       "st X,__zero_reg__"    CR_TAB
+                       "st -X,__tmp_reg__"    CR_TAB
+                       "clr __zero_reg__"     CR_TAB
+                       "sbiw r26,%o0", op, plen, -7)
 
-	  return *l = 6, (AS2 (subi,r28,lo8(-%o0)) CR_TAB
-			  AS2 (sbci,r29,hi8(-%o0)) CR_TAB
-			  AS2 (std,Y+1,%B1)        CR_TAB
-			  AS2 (st,Y,%A1)           CR_TAB
-			  AS2 (subi,r28,lo8(%o0))  CR_TAB
-			  AS2 (sbci,r29,hi8(%o0)));
-	}
-      if (reg_base == REG_X)
-	{
-	  /* (X + d) = R */
-	  if (reg_src == REG_X)
-            {
-	      *l = 7;
-	      return (AS2 (mov,__tmp_reg__,r26)  CR_TAB
-		      AS2 (mov,__zero_reg__,r27) CR_TAB
-                      AS2 (adiw,r26,%o0+1)       CR_TAB
-		      AS2 (st,X,__zero_reg__)    CR_TAB
-		      AS2 (st,-X,__tmp_reg__)    CR_TAB
-		      AS1 (clr,__zero_reg__)     CR_TAB
-                      AS2 (sbiw,r26,%o0));
-	    }
-	  *l = 4;
-          return (AS2 (adiw,r26,%o0+1) CR_TAB
-                  AS2 (st,X,%B1)       CR_TAB
-                  AS2 (st,-X,%A1)      CR_TAB
-                  AS2 (sbiw,r26,%o0));
-	}
-      return *l=2, (AS2 (std,%B0,%B1)    CR_TAB
-                    AS2 (std,%A0,%A1));
+        : avr_asm_len ("adiw r26,%o0+1" CR_TAB
+                       "st X,%B1"       CR_TAB
+                       "st -X,%A1"      CR_TAB
+                       "sbiw r26,%o0", op, plen, -4);
     }
   else if (GET_CODE (base) == PRE_DEC) /* (--R) */
-    return *l=2, (AS2 (st,%0,%B1) CR_TAB
-		  AS2 (st,%0,%A1));
+    {
+      return avr_asm_len ("st %0,%B1" CR_TAB
+                          "st %0,%A1", op, plen, -2);
+    }
   else if (GET_CODE (base) == POST_INC) /* (R++) */
     {
-      if (mem_volatile_p)
-        {
-          if (REGNO (XEXP (base, 0)) == REG_X)
-            {
-              *l = 4;
-              return (AS2 (adiw,r26,1)  CR_TAB
-                      AS2 (st,X,%B1)    CR_TAB
-                      AS2 (st,-X,%A1)   CR_TAB
-                      AS2 (adiw,r26,2));
-            }
-          else
-            {
-              *l = 3;
-              return (AS2 (std,%p0+1,%B1) CR_TAB
-                      AS2 (st,%p0,%A1)    CR_TAB
-                      AS2 (adiw,%r0,2));
-            }
-        }
+      if (!mem_volatile_p)
+        return avr_asm_len ("st %0,%A1"  CR_TAB
+                            "st %0,%B1", op, plen, -2);
+      
+      return REGNO (XEXP (base, 0)) == REG_X
+        ? avr_asm_len ("adiw r26,1"  CR_TAB
+                       "st X,%B1"    CR_TAB
+                       "st -X,%A1"   CR_TAB
+                       "adiw r26,2", op, plen, -4)
 
-      *l = 2;
-      return (AS2 (st,%0,%A1)  CR_TAB
-            AS2 (st,%0,%B1));
+        : avr_asm_len ("std %p0+1,%B1" CR_TAB
+                       "st %p0,%A1"    CR_TAB
+                       "adiw %r0,2", op, plen, -3);
     }
   fatal_insn ("unknown move insn:",insn);
   return "";
@@ -4338,29 +4231,33 @@ avr_out_tstsi (rtx insn, rtx *op, int *plen)
 }
 
 
-/* Generate asm equivalent for various shifts.
-   Shift count is a CONST_INT, MEM or REG.
-   This only handles cases that are not already
-   carefully hand-optimized in ?sh??i3_out.  */
+/* Generate asm equivalent for various shifts.  This only handles cases
+   that are not already carefully hand-optimized in ?sh??i3_out.
+
+   OPERANDS[0] resp. %0 in TEMPL is the operand to be shifted.
+   OPERANDS[2] is the shift count as CONST_INT, MEM or REG.
+   OPERANDS[3] is a QImode scratch register from LD regs if
+               available and SCRATCH, otherwise (no scratch available)
+
+   TEMPL is an assembler template that shifts by one position.
+   T_LEN is the length of this template.  */
 
 void
 out_shift_with_cnt (const char *templ, rtx insn, rtx operands[],
-		    int *len, int t_len)
+		    int *plen, int t_len)
 {
-  rtx op[10];
-  char str[500];
-  int second_label = 1;
-  int saved_in_tmp = 0;
-  int use_zero_reg = 0;
+  bool second_label = true;
+  bool saved_in_tmp = false;
+  bool use_zero_reg = false;
+  rtx op[5];
 
   op[0] = operands[0];
   op[1] = operands[1];
   op[2] = operands[2];
   op[3] = operands[3];
-  str[0] = 0;
 
-  if (len)
-    *len = 1;
+  if (plen)
+    *plen = 0;
 
   if (CONST_INT_P (operands[2]))
     {
@@ -4370,118 +4267,90 @@ out_shift_with_cnt (const char *templ, rtx insn, rtx operands[],
       int max_len = 10;  /* If larger than this, always use a loop.  */
 
       if (count <= 0)
-	{
-	  if (len)
-	    *len = 0;
-	  return;
-	}
+          return;
 
       if (count < 8 && !scratch)
-	use_zero_reg = 1;
+        use_zero_reg = true;
 
       if (optimize_size)
-	max_len = t_len + (scratch ? 3 : (use_zero_reg ? 4 : 5));
+        max_len = t_len + (scratch ? 3 : (use_zero_reg ? 4 : 5));
 
       if (t_len * count <= max_len)
-	{
-	  /* Output shifts inline with no loop - faster.  */
-	  if (len)
-	    *len = t_len * count;
-	  else
-	    {
-	      while (count-- > 0)
-		output_asm_insn (templ, op);
-	    }
+        {
+          /* Output shifts inline with no loop - faster.  */
+          
+          while (count-- > 0)
+            avr_asm_len (templ, op, plen, t_len);
 
-	  return;
-	}
+          return;
+        }
 
       if (scratch)
-	{
-	  if (!len)
-	    strcat (str, AS2 (ldi,%3,%2));
-	}
-      else if (use_zero_reg)
-	{
-	  /* Hack to save one word: use __zero_reg__ as loop counter.
-	     Set one bit, then shift in a loop until it is 0 again.  */
-
-	  op[3] = zero_reg_rtx;
-	  if (len)
-	    *len = 2;
-	  else
-	    strcat (str, ("set" CR_TAB
-			  AS2 (bld,%3,%2-1)));
-	}
-      else
-	{
-	  /* No scratch register available, use one from LD_REGS (saved in
-	     __tmp_reg__) that doesn't overlap with registers to shift.  */
-
-	  op[3] = all_regs_rtx[((REGNO (operands[0]) - 1) & 15) + 16];
-	  op[4] = tmp_reg_rtx;
-	  saved_in_tmp = 1;
-
-	  if (len)
-	    *len = 3;  /* Includes "mov %3,%4" after the loop.  */
-	  else
-	    strcat (str, (AS2 (mov,%4,%3) CR_TAB
-			  AS2 (ldi,%3,%2)));
-	}
-
-      second_label = 0;
-    }
-  else if (GET_CODE (operands[2]) == MEM)
-    {
-      rtx op_mov[10];
-      
-      op[3] = op_mov[0] = tmp_reg_rtx;
-      op_mov[1] = op[2];
-
-      if (len)
-	out_movqi_r_mr (insn, op_mov, len);
-      else
-	output_asm_insn (out_movqi_r_mr (insn, op_mov, NULL), op_mov);
-    }
-  else if (register_operand (operands[2], QImode))
-    {
-      if (reg_unused_after (insn, operands[2])
-          && !reg_overlap_mentioned_p (operands[0], operands[2]))
         {
-          op[3] = op[2];
+          avr_asm_len ("ldi %3,%2", op, plen, 1);
+        }
+      else if (use_zero_reg)
+        {
+          /* Hack to save one word: use __zero_reg__ as loop counter.
+             Set one bit, then shift in a loop until it is 0 again.  */
+
+          op[3] = zero_reg_rtx;
+
+          avr_asm_len ("set" CR_TAB
+                       "bld %3,%2-1", op, plen, 2);
         }
       else
-	{
-	  op[3] = tmp_reg_rtx;
-	  if (!len)
-	    strcat (str, (AS2 (mov,%3,%2) CR_TAB));
-	}
+        {
+          /* No scratch register available, use one from LD_REGS (saved in
+             __tmp_reg__) that doesn't overlap with registers to shift.  */
+
+          op[3] = all_regs_rtx[((REGNO (op[0]) - 1) & 15) + 16];
+          op[4] = tmp_reg_rtx;
+          saved_in_tmp = true;
+
+          avr_asm_len ("mov %4,%3" CR_TAB
+                       "ldi %3,%2", op, plen, 2);
+        }
+
+      second_label = false;
+    }
+  else if (MEM_P (op[2]))
+    {
+      rtx op_mov[2];
+      
+      op_mov[0] = op[3] = tmp_reg_rtx;
+      op_mov[1] = op[2];
+
+      out_movqi_r_mr (insn, op_mov, plen);
+    }
+  else if (register_operand (op[2], QImode))
+    {
+      op[3] = op[2];
+      
+      if (!reg_unused_after (insn, op[2])
+          || reg_overlap_mentioned_p (op[0], op[2]))
+        {
+          op[3] = tmp_reg_rtx;
+          avr_asm_len ("mov %3,%2", op, plen, 1);
+        }
     }
   else
     fatal_insn ("bad shift insn:", insn);
 
   if (second_label)
-    {
-      if (len)
-	++*len;
-      else
-	strcat (str, AS1 (rjmp,2f));
-    }
+      avr_asm_len ("rjmp 2f", op, plen, 1);
 
-  if (len)
-    *len += t_len + 2;  /* template + dec + brXX */
-  else
-    {
-      strcat (str, "\n1:\t");
-      strcat (str, templ);
-      strcat (str, second_label ? "\n2:\t" : "\n\t");
-      strcat (str, use_zero_reg ? AS1 (lsr,%3) : AS1 (dec,%3));
-      strcat (str, CR_TAB);
-      strcat (str, second_label ? AS1 (brpl,1b) : AS1 (brne,1b));
-      if (saved_in_tmp)
-	strcat (str, (CR_TAB AS2 (mov,%3,%4)));
-      output_asm_insn (str, op);
-    }
+  avr_asm_len ("1:", op, plen, 0);
+  avr_asm_len (templ, op, plen, t_len);
+
+  if (second_label)
+    avr_asm_len ("2:", op, plen, 0);
+
+  avr_asm_len (use_zero_reg ? "lsr %3" : "dec %3", op, plen, 1);
+  avr_asm_len (second_label ? "brpl 1b" : "brne 1b", op, plen, 1);
+
+  if (saved_in_tmp)
+    avr_asm_len ("mov %3,%4", op, plen, 1);
 }
 
 
@@ -5946,7 +5815,7 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc)
       bool ld_reg_p = test_hard_reg_class (LD_REGS, reg8);
 
       op[0] = reg8;
-      op[1] = GEN_INT (val8);
+      op[1] = gen_int_mode (val8, QImode);
 
       /* To get usable cc0 no low-bytes must have been skipped.  */
       
@@ -7355,7 +7224,7 @@ avr_asm_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
 static void
 avr_file_start (void)
 {
-  int sfr_offset = 0x20;
+  int sfr_offset = avr_current_arch->sfr_offset;
 
   if (avr_current_arch->asm_only)
     error ("MCU %qs supported for assembler only", avr_current_device->name);
@@ -7367,12 +7236,14 @@ avr_file_start (void)
            "__SP_H__ = 0x%02x\n"
            "__SP_L__ = 0x%02x\n"
            "__RAMPZ__ = 0x%02x\n"
-           "__tmp_reg__ = 0\n" 
-           "__zero_reg__ = 1\n",
+           "__tmp_reg__ = %d\n" 
+           "__zero_reg__ = %d\n",
            -sfr_offset + SREG_ADDR,
            -sfr_offset + SP_ADDR + 1,
            -sfr_offset + SP_ADDR,
-           -sfr_offset + RAMPZ_ADDR);
+           -sfr_offset + RAMPZ_ADDR,
+           TMP_REGNO,
+           ZERO_REGNO);
 }
 
 
@@ -9042,7 +8913,7 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
           xop[1] = src;
           xop[2] = clobber_reg;
 
-          if (n >= 2)
+          if (n >= 2 + (avr_current_arch->n_segments > 1))
             avr_asm_len ("clr %0", xop, len, 1);
           else
             avr_asm_len (asm_code[n][ldreg_p], xop, len, ldreg_p ? 1 : 2);
@@ -9218,7 +9089,9 @@ const char *
 output_reload_insisf (rtx *op, rtx clobber_reg, int *len)
 {
   if (AVR_HAVE_MOVW
-      && !test_hard_reg_class (LD_REGS, op[0]))
+      && !test_hard_reg_class (LD_REGS, op[0])
+      && (CONST_INT_P (op[1])
+          || CONST_DOUBLE_P (op[1])))
     {
       int len_clr, len_noclr;
       
@@ -9373,13 +9246,13 @@ avr_out_sbxx_branch (rtx insn, rtx operands[])
       if (low_io_address_operand (operands[1], QImode))
         {
           if (comp == EQ)
-            output_asm_insn ("sbis %m1-0x20,%2", operands);
+            output_asm_insn ("sbis %i1,%2", operands);
           else
-            output_asm_insn ("sbic %m1-0x20,%2", operands);
+            output_asm_insn ("sbic %i1,%2", operands);
         }
       else
         {
-          output_asm_insn ("in __tmp_reg__,%m1-0x20", operands);
+          output_asm_insn ("in __tmp_reg__,%i1", operands);
           if (comp == EQ)
             output_asm_insn ("sbrs __tmp_reg__,%2", operands);
           else
