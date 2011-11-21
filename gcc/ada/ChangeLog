@@ -1,3 +1,15 @@
+2011-11-21  Pascal Obry  <obry@adacore.com>
+
+	* sem_prag.adb (Process_Convention): A dispatching call cannot
+	have a stdcall calling convention.
+
+2011-11-21  Pascal Obry  <obry@adacore.com>
+
+	* s-taprop-linux.adb (Initialize_Lock): Do not allocate a
+	mutex attribute as not needed.
+	(Initialize_TCB): Likewise.
+	(Initialize): Likewise.
+
 2011-11-21  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch6.adb (Is_Public_Subprogram_For): New procedure
