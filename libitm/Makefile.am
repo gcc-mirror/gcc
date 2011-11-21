@@ -27,15 +27,33 @@ toolexeclib_LTLIBRARIES = libitm.la
 nodist_toolexeclib_HEADERS = libitm.spec
 
 if LIBITM_BUILD_VERSIONED_SHLIB
+if LIBITM_BUILD_VERSIONED_SHLIB_GNU
 libitm_version_script = -Wl,--version-script,$(top_srcdir)/libitm.map
+libitm_version_dep = $(top_srcdir)/libitm.map
+endif
+if LIBITM_BUILD_VERSIONED_SHLIB_SUN
+libitm_version_script = -Wl,-M,libitm.map-sun
+libitm_version_dep = libitm.map-sun
+libitm.map-sun : $(top_srcdir)/libitm.map \
+		$(top_srcdir)/../contrib/make_sunver.pl \
+		$(libitm_la_OBJECTS) $(libitm_la_LIBADD)
+	perl $(top_srcdir)/../contrib/make_sunver.pl \
+	  $(top_srcdir)/libitm.map \
+	  $(libitm_la_OBJECTS:%.lo=.libs/%.o) \
+	 `echo $(libitm_la_LIBADD) | \
+	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+	 > $@ || (rm -f $@ ; exit 1)
+endif
 else
 libitm_version_script =
+libitm_version_dep =
 endif
 libitm_version_info = -version-info $(libtool_VERSION)
 
 # Force link with C, not C++.  For now, while we're using C++ we don't
 # want or need libstdc++.
-libitm_la_LINK = $(LINK)
+libitm_la_DEPENDENCIES = $(libitm_version_dep)
+libitm_la_LINK = $(LINK) $(libitm_la_LDFLAGS)
 libitm_la_LDFLAGS = $(libitm_version_info) $(libitm_version_script) \
         -no-undefined
 

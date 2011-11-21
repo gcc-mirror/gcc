@@ -1,3 +1,7 @@
+2011-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* make_sunver.pl: Convert '?' in glob patterns to '.'.
+
 2011-11-07  Richard Henderson  <rth@redhat.com>
 
 	Merged from transactional-memory.

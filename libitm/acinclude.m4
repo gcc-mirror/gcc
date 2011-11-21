@@ -169,6 +169,7 @@ dnl  OPT_LDFLAGS='-Wl,-O1' if possible
 dnl  LD (as a side effect of testing)
 dnl Sets:
 dnl  with_gnu_ld
+dnl  libitm_ld_is_gold (possibly)
 dnl  libitm_gnu_ld_version (possibly)
 dnl
 dnl The last will be a single integer, e.g., version 1.23.45.0.67.89 will
@@ -200,9 +201,13 @@ AC_DEFUN([LIBITM_CHECK_LINKER_FEATURES], [
 
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
+  libitm_ld_is_gold=no
+  if $LD --version 2>/dev/null | grep 'GNU gold'> /dev/null 2>&1; then
+    libitm_ld_is_gold=yes
+  fi
   changequote(,)
-  ldver=`$LD --version 2>/dev/null | head -1 | \
-         sed -e 's/GNU ld \(version \)\{0,1\}\(([^)]*) \)\{0,1\}\([0-9.][0-9.]*\).*/\3/'`
+  ldver=`$LD --version 2>/dev/null |
+         sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
   changequote([,])
   libitm_gnu_ld_version=`echo $ldver | \
          $AWK -F. '{ if (NF<3) [$]3=0; print ([$]1*100+[$]2)*100+[$]3 }'`
@@ -272,16 +277,46 @@ AC_DEFUN([LIBITM_ENABLE_SYMVERS], [
 
 LIBITM_ENABLE(symvers,yes,[=STYLE],
   [enables symbol versioning of the shared library],
-  [permit yes|no|gnu])
+  [permit yes|no|gnu*|sun])
 
 # If we never went through the LIBITM_CHECK_LINKER_FEATURES macro, then we
 # don't know enough about $LD to do tricks...
 AC_REQUIRE([LIBITM_CHECK_LINKER_FEATURES])
-# FIXME  The following test is too strict, in theory.
-if test $enable_shared = no ||
-        test "x$LD" = x ||
-        test x$libitm_gnu_ld_version = x; then
-  enable_symvers=no
+
+# Turn a 'yes' into a suitable default.
+if test x$enable_symvers = xyes ; then
+  # FIXME  The following test is too strict, in theory.
+  if test $enable_shared = no || test "x$LD" = x; then
+    enable_symvers=no
+  else
+    if test $with_gnu_ld = yes ; then
+      enable_symvers=gnu
+    else
+      case ${target_os} in
+        # Sun symbol versioning exists since Solaris 2.5.
+        solaris2.[[5-9]]* | solaris2.1[[0-9]]*)
+          enable_symvers=sun ;;
+        *)
+          enable_symvers=no ;;
+      esac
+    fi
+  fi
+fi
+
+# Check if 'sun' was requested on non-Solaris 2 platforms.
+if test x$enable_symvers = xsun ; then
+  case ${target_os} in
+    solaris2*)
+      # All fine.
+      ;;
+    *)
+      # Unlikely to work.
+      AC_MSG_WARN([=== You have requested Sun symbol versioning, but])
+      AC_MSG_WARN([=== you are not targetting Solaris 2.])
+      AC_MSG_WARN([=== Symbol versioning will be disabled.])
+      enable_symvers=no
+      ;;
+  esac
 fi
 
 # Check to see if libgcc_s exists, indicating that shared libgcc is possible.
@@ -318,11 +353,11 @@ libitm_min_gnu_ld_version=21400
 
 # Check to see if unspecified "yes" value can win, given results above.
 # Change "yes" into either "no" or a style name.
-if test $enable_symvers = yes; then
-  if test $with_gnu_ld = yes &&
-     test $libitm_shared_libgcc = yes;
-  then
+if test $enable_symvers != no && test $libitm_shared_libgcc = yes; then
+  if test $with_gnu_ld = yes; then
     if test $libitm_gnu_ld_version -ge $libitm_min_gnu_ld_version ; then
+      enable_symvers=gnu
+    elif test $libitm_ld_is_gold = yes ; then
       enable_symvers=gnu
     else
       # The right tools, the right setup, but too old.  Fallbacks?
@@ -342,6 +377,8 @@ if test $enable_symvers = yes; then
         enable_symvers=no
       fi
     fi
+  elif test $enable_symvers = sun; then
+    : All interesting versions of Sun ld support sun style symbol versioning.
   else
     # just fail for now
     AC_MSG_WARN([=== You have requested some kind of symbol versioning, but])
@@ -353,5 +390,7 @@ if test $enable_symvers = yes; then
 fi
 
 AM_CONDITIONAL(LIBITM_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
+AM_CONDITIONAL(LIBITM_BUILD_VERSIONED_SHLIB_GNU, test $enable_symvers = gnu)
+AM_CONDITIONAL(LIBITM_BUILD_VERSIONED_SHLIB_SUN, test $enable_symvers = sun)
 AC_MSG_NOTICE(versioning on shared library symbols is $enable_symvers)
 ])

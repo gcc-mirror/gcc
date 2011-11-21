@@ -276,9 +276,10 @@ while (<F>) {
     if (/^([ \t]*)([^ \t;{}#]+);?[ \t]*$/) {
 	my $ws = $1;
 	my $ptn = $2;
-	# Turn the glob into a regex by replacing '*' with '.*'.
+	# Turn the glob into a regex by replacing '*' with '.*', '?' with '.'.
 	# Keep $ptn so we can still print the original form.
 	($pattern = $ptn) =~ s/\*/\.\*/g;
+	$pattern =~ s/\?/\./g;
 
 	if ($glob eq 'ign') {
 	    # We're in a local: * section; just continue.
