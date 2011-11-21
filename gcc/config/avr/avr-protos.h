@@ -51,12 +51,6 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 #ifdef RTX_CODE
 extern const char *output_movqi (rtx insn, rtx operands[], int *l);
 extern const char *output_movhi (rtx insn, rtx operands[], int *l);
-extern const char *out_movqi_r_mr (rtx insn, rtx op[], int *l);
-extern const char *out_movqi_mr_r (rtx insn, rtx op[], int *l);
-extern const char *out_movhi_r_mr (rtx insn, rtx op[], int *l);
-extern const char *out_movhi_mr_r (rtx insn, rtx op[], int *l);
-extern const char *out_movsi_r_mr (rtx insn, rtx op[], int *l);
-extern const char *out_movsi_mr_r (rtx insn, rtx op[], int *l);
 extern const char *output_movsisf (rtx insn, rtx operands[], int *l);
 extern const char *avr_out_tstsi (rtx, rtx*, int*);
 extern const char *avr_out_tsthi (rtx, rtx*, int*);
