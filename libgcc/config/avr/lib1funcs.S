@@ -61,6 +61,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 	.endm
 
+.macro	wmov  r_dest, r_src
+#if defined (__AVR_HAVE_MOVW__)
+    movw \r_dest,   \r_src
+#else
+    mov \r_dest,    \r_src
+    mov \r_dest+1,  \r_src+1
+#endif
+.endm
+
 #if defined (__AVR_HAVE_JMP_CALL__)
 #define XCALL call
 #define XJMP  jmp
@@ -846,6 +855,352 @@ __divmodsi4_exit:
 ENDF __divmodsi4
 #endif /* defined (L_divmodsi4) */
 
+
+/*******************************************************
+       Division 64 / 64
+       Modulo   64 % 64
+*******************************************************/
+
+;; Use Speed-optimized Version on "big" Devices, i.e. Devices with
+;; at least 16k of Program Memory.  For smaller Devices, depend
+;; on MOVW.
+
+#if defined (__AVR_HAVE_JMP_CALL__)
+#   define SPEED_DIV 8
+#elif defined (__AVR_HAVE_MOVW__)
+#   define SPEED_DIV 16
+#else
+#   define SPEED_DIV 0
+#endif
+
+;; A[0..7]: In: Dividend;
+;; Out: Quotient  (T = 0)
+;; Out: Remainder (T = 1)
+#define A0  18
+#define A1  A0+1
+#define A2  A0+2
+#define A3  A0+3
+#define A4  A0+4
+#define A5  A0+5
+#define A6  A0+6
+#define A7  A0+7
+
+;; B[0..7]: In: Divisor;   Out: Clobber
+#define B0  10
+#define B1  B0+1
+#define B2  B0+2
+#define B3  B0+3
+#define B4  B0+4
+#define B5  B0+5
+#define B6  B0+6
+#define B7  B0+7
+
+;; C[0..7]: Expand remainder;  Out: Remainder (unused)
+#define C0  8
+#define C1  C0+1
+#define C2  30
+#define C3  C2+1
+#define C4  28
+#define C5  C4+1
+#define C6  26
+#define C7  C6+1
+
+;; Holds Signs during Division Routine
+#define SS      __tmp_reg__
+
+;; Bit-Counter in Division Routine
+#define R_cnt   __zero_reg__
+
+;; Scratch Register for Negation
+#define NN      r31
+
+#if defined (L_udivdi3)
+
+;; R25:R18 = R24:R18  umod  R17:R10
+;; Ordinary ABI-Function
+
+DEFUN __umoddi3
+    set
+    rjmp __udivdi3_umoddi3
+ENDF __umoddi3
+
+;; R25:R18 = R24:R18  udiv  R17:R10
+;; Ordinary ABI-Function
+
+DEFUN __udivdi3
+    clt
+ENDF __udivdi3
+
+DEFUN __udivdi3_umoddi3
+    push    C0
+    push    C1
+    push    C4
+    push    C5
+    XCALL   __udivmod64
+    pop     C5
+    pop     C4
+    pop     C1
+    pop     C0
+    ret
+ENDF __udivdi3_umoddi3
+#endif /* L_udivdi3 */
+
+#if defined (L_udivmod64)
+
+;; Worker Routine for 64-Bit unsigned Quotient and Remainder Computation
+;; No Registers saved/restored; the Callers will take Care.
+;; Preserves B[] and T-flag
+;; T = 0: Compute Quotient  in A[]
+;; T = 1: Compute Remainder in A[] and shift SS one Bit left
+
+DEFUN __udivmod64
+
+    ;; Clear Remainder (C6, C7 will follow)
+    clr     C0
+    clr     C1
+    wmov    C2, C0
+    wmov    C4, C0
+    ldi     C7, 64
+
+#if SPEED_DIV == 0 || SPEED_DIV == 16
+    ;; Initialize Loop-Counter
+    mov     R_cnt, C7
+    wmov    C6, C0
+#endif /* SPEED_DIV */
+
+#if SPEED_DIV == 8
+
+    push    A7
+    clr     C6
+
+1:  ;; Compare shifted Devidend against Divisor
+    ;; If -- even after Shifting -- it is smaller...
+    CP  A7,B0  $  cpc C0,B1  $  cpc C1,B2  $  cpc C2,B3  
+    cpc C3,B4  $  cpc C4,B5  $  cpc C5,B6  $  cpc C6,B7  
+    brcc    2f
+
+    ;; ...then we can subtract it.  Thus, it is legal to shift left
+               $  mov C6,C5  $  mov C5,C4  $  mov C4,C3
+    mov C3,C2  $  mov C2,C1  $  mov C1,C0  $  mov C0,A7
+    mov A7,A6  $  mov A6,A5  $  mov A5,A4  $  mov A4,A3
+    mov A3,A2  $  mov A2,A1  $  mov A1,A0  $  clr A0
+
+    ;; 8 Bits are done
+    subi    C7, 8
+    brne    1b
+
+    ;; Shifted 64 Bits:  A7 has traveled to C7
+    pop     C7
+    ;; Divisor is greater than Dividend. We have:
+    ;; A[] % B[] = A[]
+    ;; A[] / B[] = 0
+    ;; Thus, we can return immediately
+    rjmp    5f
+
+2:  ;; Initialze Bit-Counter with Number of Bits still to be performed
+    mov     R_cnt, C7
+
+    ;; Push of A7 is not needed because C7 is still 0
+    pop     C7
+    clr     C7
+
+#elif  SPEED_DIV == 16
+
+    ;; Compare shifted Dividend against Divisor
+    cp      A7, B3
+    cpc     C0, B4
+    cpc     C1, B5
+    cpc     C2, B6
+    cpc     C3, B7
+    brcc    2f
+
+    ;; Divisor is greater than shifted Dividen: We can shift the Dividend
+    ;; and it is still smaller than the Divisor --> Shift one 32-Bit Chunk
+    wmov  C2,A6  $  wmov C0,A4
+    wmov  A6,A2  $  wmov A4,A0
+    wmov  A2,C6  $  wmov A0,C4
+
+    ;; Set Bit Counter to 32
+    lsr     R_cnt
+2:
+#elif SPEED_DIV
+#error SPEED_DIV = ?
+#endif /* SPEED_DIV */
+
+;; The very Division + Remainder Routine
+
+3:  ;; Left-shift Dividend...
+    lsl A0     $  rol A1     $  rol A2     $  rol A3
+    rol A4     $  rol A5     $  rol A6     $  rol A7
+
+    ;; ...into Remainder
+    rol C0     $  rol C1     $  rol C2     $  rol C3
+    rol C4     $  rol C5     $  rol C6     $  rol C7
+
+    ;; Compare Remainder and Divisor
+    CP  C0,B0  $  cpc C1,B1  $  cpc C2,B2  $  cpc C3,B3
+    cpc C4,B4  $  cpc C5,B5  $  cpc C6,B6  $  cpc C7,B7
+
+    brcs 4f
+
+    ;; Divisor fits into Remainder:  Subtract it from Remainder...
+    SUB C0,B0  $  sbc C1,B1  $  sbc C2,B2  $  sbc C3,B3
+    sbc C4,B4  $  sbc C5,B5  $  sbc C6,B6  $  sbc C7,B7
+
+    ;; ...and set according Bit in the upcoming Quotient
+    ;; The Bit will travel to its final Position
+    ori A0, 1
+
+4:  ;; This Bit is done
+    dec     R_cnt
+    brne    3b
+    ;; __zero_reg__ is 0 again
+
+    ;; T = 0: We are fine with the Quotient in A[]
+    ;; T = 1: Copy Remainder to A[]
+5:  brtc    6f
+    wmov    A0, C0
+    wmov    A2, C2
+    wmov    A4, C4
+    wmov    A6, C6
+    ;; Move the Sign of the Result to SS.7
+    lsl     SS
+
+6:  ret
+
+ENDF __udivmod64
+#endif /* L_udivmod64 */
+    
+
+#if defined (L_divdi3)
+
+;; R25:R18 = R24:R18  mod  R17:R10
+;; Ordinary ABI-Function
+
+DEFUN __moddi3
+    set
+    rjmp    __divdi3_moddi3
+ENDF __moddi3
+
+;; R25:R18 = R24:R18  div  R17:R10
+;; Ordinary ABI-Function
+
+DEFUN __divdi3
+    clt
+ENDF __divdi3
+
+DEFUN  __divdi3_moddi3
+#if SPEED_DIV
+    mov     r31, A7
+    or      r31, B7
+    brmi    0f
+    ;; Both Signs are 0:  the following Complexitiy is not needed
+    XJMP    __udivdi3_umoddi3
+#endif /* SPEED_DIV */    
+
+0:  ;; The Prologue
+    ;; Save Z = 12 Registers:  Y, 17...8
+    ;; No Frame needed (X = 0)
+    clr r26
+    clr r27
+    ldi r30, lo8(gs(1f))
+    ldi r31, hi8(gs(1f))
+    XJMP __prologue_saves__ + ((18 - 12) * 2)
+
+1:  ;; SS.7 will contain the Sign of the Quotient  (A.sign * B.sign)
+    ;; SS.6 will contain the Sign of the Remainder (A.sign)
+    mov     SS, A7
+    asr     SS
+    ;; Adjust Dividend's Sign as needed
+#if SPEED_DIV
+    ;; Compiling for Speed we know that at least one Sign must be < 0
+    ;; Thus, if A[] >= 0 then we know B[] < 0
+    brpl    22f
+#else
+    brpl    21f
+#endif /* SPEED_DIV */
+   
+    XCALL   __negdi2
+
+    ;; Adjust Divisor's Sign and SS.7 as needed
+21: tst     B7
+    brpl    3f
+22: ldi     NN, 1 << 7
+    eor     SS, NN
+
+    ldi NN, -1
+    com B4     $  com B5     $  com B6     $  com B7
+               $  com B1     $  com B2     $  com B3
+    NEG B0
+               $  sbc B1,NN  $  sbc B2,NN  $  sbc B3,NN
+    sbc B4,NN  $  sbc B5,NN  $  sbc B6,NN  $  sbc B7,NN
+
+3:  ;; Do the unsigned 64-Bit Division/Modulo (depending on T-flag)
+    XCALL   __udivmod64
+
+    ;; Adjust Result's Sign
+#ifdef __AVR_ERRATA_SKIP_JMP_CALL__
+    tst     SS
+    brpl    4f
+#else
+    sbrc    SS, 7
+#endif /* __AVR_HAVE_JMP_CALL__ */
+    XCALL   __negdi2
+
+4:  ;; Epilogue: Restore the Z = 12 Registers and return
+    in r28, __SP_L__
+    in r29, __SP_H__
+    ldi r30, 12
+    XJMP __epilogue_restores__ + ((18 - 12) * 2)
+
+ENDF __divdi3_moddi3
+
+#undef R_cnt
+#undef SS
+#undef NN
+
+#endif /* L_divdi3 */
+
+#if defined (L_negdi2)
+DEFUN __negdi2
+
+    com  A4    $  com  A5    $  com  A6    $  com  A7
+               $  com  A1    $  com  A2    $  com  A3
+    NEG  A0
+               $  sbci A1,-1 $  sbci A2,-1 $  sbci A3,-1
+    sbci A4,-1 $  sbci A5,-1 $  sbci A6,-1 $  sbci A7,-1
+    ret
+
+ENDF __negdi2
+#endif /* L_negdi2 */
+
+#undef C7
+#undef C6
+#undef C5
+#undef C4
+#undef C3
+#undef C2
+#undef C1
+#undef C0
+
+#undef B7
+#undef B6
+#undef B5
+#undef B4
+#undef B3
+#undef B2
+#undef B1
+#undef B0
+
+#undef A7
+#undef A6
+#undef A5
+#undef A4
+#undef A3
+#undef A2
+#undef A1
+#undef A0
+
 
 .section .text.libgcc.prologue, "ax", @progbits
     
@@ -854,6 +1209,7 @@ ENDF __divmodsi4
  **********************************/
 #if defined (L_prologue)
 
+;; This function does not clobber T-flag; 64-bit division relies on it
 DEFUN __prologue_saves__
 	push r2
 	push r3

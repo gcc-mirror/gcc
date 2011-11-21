@@ -15,6 +15,9 @@ LIB1ASMFUNCS = \
 	_divmodpsi4 _udivmodpsi4 \
 	_udivmodsi4 \
 	_divmodsi4 \
+	_divdi3 _udivdi3 \
+	_udivmod64 \
+	_negdi2 \
 	_prologue \
 	_epilogue \
 	_exit \
@@ -50,6 +53,7 @@ LIB1ASMFUNCS = \
 	_fmul _fmuls _fmulsu
 
 LIB2FUNCS_EXCLUDE = \
+	_moddi3 _umoddi3 \
 	_clz
 
 # We do not have the DF type.
