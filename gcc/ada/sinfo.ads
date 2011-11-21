@@ -761,7 +761,7 @@ package Sinfo is
    --    if there is no corresponding spec, as in the case of a subprogram body
    --    that serves as its own spec.
    --
-   --    In Ada2012, Corresponding_Spec is set on expression functions that
+   --    In Ada 2012, Corresponding_Spec is set on expression functions that
    --    complete a subprogram declaration.
 
    --  Corresponding_Stub (Node3-Sem)

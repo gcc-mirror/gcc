@@ -1,5 +1,19 @@
 2011-11-21  Robert Dewar  <dewar@adacore.com>
 
+	* exp_imgv.adb (Expand_Width_Attribute): Handle case of
+	Discard_Names.
+	* sem_attr.adb (Eval_Attribute, case Width): Ditto.
+
+2011-11-21  Thomas Quinot  <quinot@adacore.com>
+
+	* sinfo.ads: Minor reformatting.
+
+2011-11-21  Yannick Moy  <moy@adacore.com>
+
+	* exp_util.adb: Minor reformatting. Update comments.
+
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
 	* exp_prag.adb, exp_util.adb, sinfo.ads, sem_res.adb, s-stposu.adb,
 	sem_attr.adb, s-stposu.ads, s-taprop-solaris.adb, s-taprop-irix.adb,
 	sem_ch6.adb: Minor reformatting.
