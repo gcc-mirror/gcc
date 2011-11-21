@@ -1,3 +1,8 @@
+2011-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/50827
+	* gcc.dg/pr50827.c: New test.
+
 2011-11-21  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/50958

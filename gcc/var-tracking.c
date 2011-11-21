@@ -3008,7 +3008,7 @@ loc_cmp (rtx x, rtx y)
       if (GET_CODE (y) != ENTRY_VALUE)
 	return 1;
       gcc_assert (GET_MODE (x) == GET_MODE (y));
-      return loc_cmp (XEXP (x, 0), XEXP (y, 0));
+      return loc_cmp (ENTRY_VALUE_EXP (x), ENTRY_VALUE_EXP (y));
     }
 
   if (GET_CODE (y) == ENTRY_VALUE)
