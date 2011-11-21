@@ -1007,16 +1007,65 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
 
       Clear (Target);
 
-      while Source.Length > 0 loop
+      while Source.Length > 1 loop
+
+         pragma Assert (Source.First in 1 .. Source.Capacity);
+         pragma Assert (Source.Last /= Source.First);
+         pragma Assert (N (Source.First).Prev = 0);
+         pragma Assert (N (Source.Last).Next = 0);
+
+         --  Copy first element from Source to Target
+
          X := Source.First;
          Append (Target, N (X).Element);  -- optimize away???
+
+         --  Unlink first node of Source
 
          Source.First := N (X).Next;
          N (Source.First).Prev := 0;
 
          Source.Length := Source.Length - 1;
+
+         --  The representation invariants for Source have been restored. It is
+         --  now safe to free the unlinked node, without fear of corrupting the
+         --  active links of Source.
+
+         --  Note that the algorithm we use here models similar algorithms used
+         --  in the unbounded form of the doubly-linked list container. In that
+         --  case, Free is an instantation of Unchecked_Deallocation, which can
+         --  fail (because PE will be raised if controlled Finalize fails), so
+         --  we must defer the call until the very last step. Here in the
+         --  bounded form, Free merely links the node we have just
+         --  "deallocated" onto a list of inactive nodes, so technically Free
+         --  cannot fail. However, for consistency, we handle Free the same way
+         --  here as we do for the unbounded form, with the pessimistic
+         --  assumption that it can fail.
+
          Free (Source, X);
       end loop;
+
+      if Source.Length = 1 then
+
+         pragma Assert (Source.First in 1 .. Source.Capacity);
+         pragma Assert (Source.Last = Source.First);
+         pragma Assert (N (Source.First).Prev = 0);
+         pragma Assert (N (Source.Last).Next = 0);
+
+         --  Copy element from Source to Target
+
+         X := Source.First;
+         Append (Target, N (X).Element);
+
+         --  Unlink node of Source
+
+         Source.First := 0;
+         Source.Last := 0;
+         Source.Length := 0;
+
+         --  Return the unlinked node to the free store
+
+         Free (Source, X);
+      end if;
    end Move;
 
    ----------

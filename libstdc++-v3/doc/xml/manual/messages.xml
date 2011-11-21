@@ -119,8 +119,9 @@ A couple of notes on the standard.
 <para>
 First, why is <code>messages_base::catalog</code> specified as a typedef
 to int? This makes sense for implementations that use
-<code>catopen</code>, but not for others. Fortunately, it's not heavily
-used and so only a minor irritant.
+<code>catopen</code> and define <code>nl_catd</code> as int, but not for
+others. Fortunately, it's not heavily used and so only a minor irritant. 
+This has been reported as a possible defect in the standard (LWG 2028).
 </para>
 
 <para>

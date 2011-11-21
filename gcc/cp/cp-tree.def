@@ -419,7 +419,7 @@ DEFTREECODE (TYPE_PACK_EXPANSION, "type_pack_expansion", tcc_type, 0)
 
    EXPR_PACK_EXPANSION plays precisely the same role as TYPE_PACK_EXPANSION,
    but will be used for expressions.  */
-DEFTREECODE (EXPR_PACK_EXPANSION, "expr_pack_expansion", tcc_expression, 2)
+DEFTREECODE (EXPR_PACK_EXPANSION, "expr_pack_expansion", tcc_expression, 3)
 
 /* Selects the Ith parameter out of an argument pack. This node will
    be used when instantiating pack expansions; see

@@ -407,12 +407,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr tuple(const _Elements&... __elements)
       : _Inherited(__elements...) { }
 
-      template<typename... _UElements, typename = typename
-	enable_if<__and_<integral_constant<bool, sizeof...(_UElements)
-					   == sizeof...(_Elements)>,
-			 __all_convertible<__conv_types<_UElements...>,
-					   __conv_types<_Elements...>>
-			 >::value>::type>
+      template<typename... _UElements,
+	       typename = typename enable_if<sizeof...(_UElements)
+					     == sizeof...(_Elements)>::type,
+	       typename = typename
+	         enable_if<__all_convertible<__conv_types<_UElements...>,
+					     __conv_types<_Elements...> >::value
+			   >::type>
 	explicit
         constexpr tuple(_UElements&&... __elements)
 	: _Inherited(std::forward<_UElements>(__elements)...) {	}

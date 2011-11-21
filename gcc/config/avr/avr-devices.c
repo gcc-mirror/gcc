@@ -23,29 +23,30 @@
 #include "coretypes.h"
 #include "tm.h"
 
-/* List of all known AVR MCU architectures.  */
+/* List of all known AVR MCU architectures.
+   Order as of enum avr_arch from avr.h.  */
 
 const struct base_arch_s
 avr_arch_types[] =
 {
   /* unknown device specified */
-  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x0060, 1, NULL,               "avr2" },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x0060, 32, 1, NULL,              "avr2"  },
   /*
-    A  M  J  L  E  E  E         d  S   # F
-    S  U  M  P  L  L  I         a  t   6 l 
-    M  L  P  M  P  P  J  -  -   t  a   4 a   
-             X  M  M  M         a  r     s
-                   X  P            t   k h  */
-  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0x0060, 1, "__AVR_ARCH__=1",   "avr1" },
-  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x0060, 1, "__AVR_ARCH__=2",   "avr2" },
-  { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0x0060, 1, "__AVR_ARCH__=25",  "avr25" },
-  { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0x0060, 1, "__AVR_ARCH__=3",   "avr3" },
-  { 0, 0, 1, 0, 1, 0, 0, 0, 0, 0x0060, 2, "__AVR_ARCH__=31",  "avr31" },
-  { 0, 0, 1, 1, 0, 0, 0, 0, 0, 0x0060, 1, "__AVR_ARCH__=35",  "avr35" },
-  { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0x0060, 1, "__AVR_ARCH__=4",   "avr4" },
-  { 0, 1, 1, 1, 0, 0, 0, 0, 0, 0x0060, 1, "__AVR_ARCH__=5",   "avr5" },
-  { 0, 1, 1, 1, 1, 1, 0, 0, 0, 0x0060, 2, "__AVR_ARCH__=51",  "avr51" },
-  { 0, 1, 1, 1, 1, 1, 1, 0, 0, 0x0060, 4, "__AVR_ARCH__=6",   "avr6" }
+    A  M  J  LM E  E  E         d S   S O  # F
+    S  U  M  PO L  L  I         a t   F ff 6 l 
+    M  L  P  MV P  P  J  -  -   t a   R s  4 a   
+             XW M  M  M         a r     e    s
+                   X  P           t     t  k h  */
+  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0x0060, 32, 1, "__AVR_ARCH__=1",  "avr1"  },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x0060, 32, 1, "__AVR_ARCH__=2",  "avr2"  },
+  { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0x0060, 32, 1, "__AVR_ARCH__=25", "avr25" },
+  { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0x0060, 32, 1, "__AVR_ARCH__=3",  "avr3"  },
+  { 0, 0, 1, 0, 1, 0, 0, 0, 0, 0x0060, 32, 2, "__AVR_ARCH__=31", "avr31" },
+  { 0, 0, 1, 1, 0, 0, 0, 0, 0, 0x0060, 32, 1, "__AVR_ARCH__=35", "avr35" },
+  { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0x0060, 32, 1, "__AVR_ARCH__=4",  "avr4"  },
+  { 0, 1, 1, 1, 0, 0, 0, 0, 0, 0x0060, 32, 1, "__AVR_ARCH__=5",  "avr5"  },
+  { 0, 1, 1, 1, 1, 1, 0, 0, 0, 0x0060, 32, 2, "__AVR_ARCH__=51", "avr51" },
+  { 0, 1, 1, 1, 1, 1, 1, 0, 0, 0x0060, 32, 4, "__AVR_ARCH__=6",  "avr6"  }
 };
 
 const struct mcu_type_s avr_mcu_types[] = {

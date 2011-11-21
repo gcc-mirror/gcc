@@ -1,3 +1,42 @@
+2011-11-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48322
+	* include/std/tuple (tuple(_UElements&&...)): Fix SFINAE.
+
+	* testsuite/20_util/bind/ref_neg.cc: Adjust error markings.
+
+2011-11-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/backward/binders.h: Fix examples in doxygen comments and
+	suggest using std::bind instead.
+
+2011-11-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Fix docbook markup.
+
+2011-11-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Do not use "here" as link
+	text.
+	* doc/xml/faq.xml: Likewise. Do not request standard library issues
+	to be reported to the libstdc++ mailing list.
+	* doc/xml/manual/status_cxx2011.xml: Document implementation-defined
+	behaviour.
+	* doc/xml/manual/status_cxxtr1.xml: Likewise.
+	* doc/xml/manual/utilities.xml: Fix grammar, probably caused by a
+	global search and replace of "part" by "chapter".
+	* doc/xml/manual/shared_ptr.xml: Remove outdated information.
+	* doc/xml/manual/messages.xml: Be more specific about systems where
+	using 'int' for catalog handle is not a problem, mention LWG issue.
+
+2011-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/bitset (operator[](size_t) const): Declare constexpr.
+	* include/profile/bitset: Likewise.
+	* testsuite/23_containers/bitset/operations/constexpr.cc: Split out
+	non portable bits to...
+	* testsuite/23_containers/bitset/operations/constexpr-2.cc: ... here.
+
 2011-11-18  Harti Brandt  <hartmut.brandt@dlr.de>
 
 	PR libstdc++/51209

@@ -1,3 +1,63 @@
+2011-11-20  Joey Ye  <joey.ye@arm.com>
+
+	* gcc.dg/volatile-bitfields-1.c: New.
+
+2011-11-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48322
+	* g++.dg/cpp0x/variadic120.C: New.
+	* g++.dg/cpp0x/sfinae26.C: Adjust.
+
+	* g++.dg/cpp0x/sfinae11.C: Adjust.
+	* g++.dg/cpp0x/sfinae26.C: Adjust.
+	* g++.dg/template/unify11.C: Adjust.
+
+2011-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51230
+	* g++.dg/template/error46.C: New.
+
+2011-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/51235
+	* gcc.target/i386/pr51235.c: New test.
+
+	PR target/51236
+	* gcc.target/i386/pr51236.c: New test.
+
+2011-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr32.adb: New test.
+	* gnat.dg/discr32_pkg.ads: New helper.
+
+2011-11-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR gcov-profile/51113
+	* gcc.misc-tests/gcov-13.c: Check gcovpart-13b coverage
+	* gcc.misc-tests/gcov-16.c: New.
+	* gcc.misc-tests/gcov-17.c: New.
+	* g++.dg/gcov/gcov-8.C: New.
+	* g++.dg/gcov/gcov-9.C: New.
+	* g++.dg/gcov/gcov-10.C: New.
+
+2011-11-20  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/51194
+	* g++.dg/cpp0x/alias-decl-15.C: New test.
+
+2011-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51216
+	* g++.dg/cpp0x/pr51216.C: New.
+
+2011-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/delay-slot-2.c: New test.
+
+2011-11-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/cpp/assert4.c: Test __linux__, not __gnu_linux__.
+
 2011-11-18  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/51188

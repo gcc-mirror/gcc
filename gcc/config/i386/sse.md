@@ -576,7 +576,7 @@
 (define_insn "sse2_movnti<mode>"
   [(set (match_operand:SWI48 0 "memory_operand" "=m")
 	(unspec:SWI48 [(match_operand:SWI48 1 "register_operand" "r")]
-		      UNSPEC_MOVNTI))]
+		      UNSPEC_MOVNT))]
   "TARGET_SSE2"
   "movnti\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssemov")
@@ -614,8 +614,9 @@
 
 ;; Modes handled by storent patterns.
 (define_mode_iterator STORENT_MODE
-  [(SI "TARGET_SSE2") (SF "TARGET_SSE4A") (DF "TARGET_SSE4A")
-   (V2DI "TARGET_SSE2")
+  [(DI "TARGET_SSE2 && TARGET_64BIT") (SI "TARGET_SSE2")
+   (SF "TARGET_SSE4A") (DF "TARGET_SSE4A")
+   (V4DI "TARGET_AVX") (V2DI "TARGET_SSE2")
    (V8SF "TARGET_AVX") V4SF
    (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")])
 

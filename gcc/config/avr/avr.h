@@ -23,7 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-struct base_arch_s {
+struct base_arch_s
+{
   /* Assembler only.  */
   int asm_only;
 
@@ -53,6 +54,10 @@ struct base_arch_s {
   
   /* Default start of data section address for architecture.  */
   int default_data_section_start;
+
+  /* Offset between SFR address and RAM address:
+     SFR-address = RAM-address - sfr_offset  */
+  int sfr_offset;
 
   /* Number of 64k segments in the flash.  */
   int n_segments;

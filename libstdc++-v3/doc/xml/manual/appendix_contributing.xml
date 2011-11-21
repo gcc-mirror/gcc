@@ -45,10 +45,10 @@
 	  two meeting commitment for voting rights, may get a copy of
 	  the standard from their respective national standards
 	  organization. In the USA, this national standards
-	  organization is ANSI and their web-site is right
-	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.ansi.org">here.</link>
-	  (And if you've already registered with them, clicking this link will take you to directly to the place where you can
-	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://webstore.ansi.org/RecordDetail.aspx?sku=ISO%2FIEC+14882:2003">buy the standard on-line</link>.)
+	  organization is
+	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.ansi.org">ANSI</link>.
+	  (And if you've already registered with them you can
+	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://webstore.ansi.org/RecordDetail.aspx?sku=INCITS%2fISO%2fIEC+14882-2003">buy the standard on-line</link>.)
 	</para>
       </listitem>
 
@@ -56,17 +56,16 @@
 	<para>
 	  The library working group bugs, and known defects, can
 	  be obtained here:
-	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/">http://www.open-std.org/jtc1/sc22/wg21 </link>
+	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/">http://www.open-std.org/jtc1/sc22/wg21</link>
 	</para>
       </listitem>
 
       <listitem>
 	<para>
 	  The newsgroup dedicated to standardization issues is
-	  comp.std.c++: this FAQ for this group is quite useful and
-	  can be
-	  found <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.comeaucomputing.com/csc/faq.html">
-	  here </link>.
+	  comp.std.c++: the
+	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.comeaucomputing.com/csc/faq.html">FAQ</link>
+          for this group is quite useful.
       </para>
       </listitem>
 
@@ -83,15 +82,15 @@
 	<para>
 	  Be familiar with the extensions that preceded these
 	  general GNU rules. These style issues for libstdc++ can be
-	  found <link linkend="contrib.coding_style">here</link>.
+	  found in <link linkend="contrib.coding_style">Coding Style</link>.
       </para>
       </listitem>
 
       <listitem>
 	<para>
 	  And last but certainly not least, read the
-	  library-specific information
-	  found <link linkend="appendix.porting"> here</link>.
+	  library-specific information found in
+          <link linkend="appendix.porting">Porting and Maintenance</link>.
       </para>
       </listitem>
     </itemizedlist>
@@ -271,7 +270,7 @@ It has subdirectories:
     Files that are used in constructing the library, but are not
     installed.
 
-  testsuites/[backward, demangle, ext, performance, thread, 17_* to 27_*]
+  testsuites/[backward, demangle, ext, performance, thread, 17_* to 30_*]
     Test programs are here, and may be used to begin to exercise the
     library.  Support for "make check" and "make check-install" is
     complete, and runs through all the subdirectories here when this

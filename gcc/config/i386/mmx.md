@@ -329,10 +329,10 @@
   DONE;
 })
 
-(define_insn "sse_movntdi"
+(define_insn "sse_movntq"
   [(set (match_operand:DI 0 "memory_operand" "=m")
 	(unspec:DI [(match_operand:DI 1 "register_operand" "y")]
-		   UNSPEC_MOVNT))]
+		   UNSPEC_MOVNTQ))]
   "TARGET_SSE || TARGET_3DNOW_A"
   "movntq\t{%1, %0|%0, %1}"
   [(set_attr "type" "mmxmov")

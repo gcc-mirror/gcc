@@ -1,3 +1,8 @@
+2011-11-18  Gary Funck  <gary@intrepid.com>
+
+        Merge trunk version 181552 into gupc branch.
+        Incorporates libgcc/libunwind fix for IA64.
+
 2011-11-19  Gary Funck  <gary@intrepid.com>
 
 	* config/rs6000/rs6000.c (rs6000_output_function_epilogue):

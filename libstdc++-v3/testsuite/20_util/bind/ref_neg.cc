@@ -29,8 +29,12 @@ int inc(int& i) { return ++i; }
 void test01()
 {
   const int dummy = 0;
-  std::bind(&inc, _1)(0);               // { dg-error  "no match|rvalue" }
-  std::bind(&inc, std::ref(dummy))();	// { dg-error  "no match|const" }
+  std::bind(&inc, _1)(0);               // { dg-error  "no match" }
+  // { dg-error "rvalue|const" "" { target *-*-* } 1199 }
+  // { dg-error "rvalue|const" "" { target *-*-* } 1212 }
+  // { dg-error "rvalue|const" "" { target *-*-* } 1226 }
+  // { dg-error "rvalue|const" "" { target *-*-* } 1240 }
+  std::bind(&inc, std::ref(dummy))();	// { dg-error  "no match" }
 }
 
 struct Inc

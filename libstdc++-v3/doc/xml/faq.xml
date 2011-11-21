@@ -713,14 +713,15 @@
     For those people who are not part of the ISO Library Group
     (i.e., nearly all of us needing to read this page in the first
     place), a public list of the library defects is occasionally
-    published <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/">here</link>.
+    published on <link xmlns:xlink="http://www.w3.org/1999/xlink"
+    xlink:href="http://www.open-std.org/jtc1/sc22/wg21/">the WG21
+    website</link>.
     Some of these issues have resulted in code changes in libstdc++.
     </para> 
     <para>
     If you think you've discovered a new bug that is not listed,
-    please post a message describing your problem
-    to <email>libstdc++@gcc.gnu.org</email> or the Usenet group
-    comp.lang.c++.moderated.
+    please post a message describing your problem to the author of
+    the library issues list or the Usenet group comp.lang.c++.moderated.
     </para>
   </answer>
 </qandaentry>

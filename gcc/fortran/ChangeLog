@@ -1,3 +1,17 @@
+2011-11-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51207
+	* class.c (gfc_find_derived_vtab): Mark __def_init as PARAMETER
+	and hence as TREE_READONLY; add subroutine attribute to
+	__copy_ procedure.
+
+	PR fortran/50640
+	* trans.h (GFC_DECL_PUSH_TOPLEVEL): New DECL_LANG_FLAG_7.
+	* trans-decl.c (gfc_get_symbol_decl): Mark __def_init and vtab as
+	GFC_DECL_PUSH_TOPLEVEL.
+	(gfc_generate_function_code): If GFC_DECL_PUSH_TOPLEVEL, push it there.
+	(build_function_decl): Push __copy_ procedure to the toplevel.
+
 2011-11-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/39427
