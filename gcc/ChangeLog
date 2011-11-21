@@ -1,3 +1,10 @@
+2011-11-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (output_reload_in_const): Loading a byte with 0
+	must not affect cc0.
+	* config/avr/avr.md (*movhi, *movpsi, *movsi, *movsf): Zero to any
+	register does not change cc0. Same for any constant to ld-register.
+
 2011-11-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md (unspec) <UNSPEC_MOVNTQ, UNSPEC_PFRCP,

@@ -649,7 +649,7 @@
   }
   [(set_attr "length" "2,2,6,7,2,6,5,2")
    (set_attr "adjust_len" "mov16")
-   (set_attr "cc" "none,clobber,clobber,clobber,none,clobber,none,none")])
+   (set_attr "cc" "none,none,clobber,clobber,none,clobber,none,none")])
 
 (define_peephole2 ; movw
   [(set (match_operand:QI 0 "even_register_operand" "")
@@ -752,7 +752,7 @@
   }
   [(set_attr "length" "3,3,8,9,4,10")
    (set_attr "adjust_len" "mov24")
-   (set_attr "cc" "none,set_zn,clobber,clobber,clobber,clobber")])
+   (set_attr "cc" "none,none,clobber,clobber,none,clobber")])
   
 ;;==========================================================================
 ;; move double word (32 bit)
@@ -793,7 +793,7 @@
   }
   [(set_attr "length" "4,4,8,9,4,10")
    (set_attr "adjust_len" "mov32")
-   (set_attr "cc" "none,set_zn,clobber,clobber,clobber,clobber")])
+   (set_attr "cc" "none,none,clobber,clobber,none,clobber")])
 
 ;; fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 ;; move floating point numbers (32 bit)
@@ -809,7 +809,7 @@
   }
   [(set_attr "length" "4,4,8,9,4,10")
    (set_attr "adjust_len" "mov32")
-   (set_attr "cc" "none,set_zn,clobber,clobber,clobber,clobber")])
+   (set_attr "cc" "none,none,clobber,clobber,none,clobber")])
 
 (define_peephole2 ; *reload_insf
   [(match_scratch:QI 2 "d")
