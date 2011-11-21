@@ -55,6 +55,7 @@ bfin port		Bernd Schmidt		bernds@codesourcery.com
 bfin port		Jie Zhang		jzhang918@gmail.com
 c6x port		Bernd Schmidt		bernds@codesourcery.com
 cris port		Hans-Peter Nilsson	hp@axis.com
+epiphany port		Joern Rennecke		joern.rennecke@embecosm.com
 fr30 port		Nick Clifton		nickc@redhat.com
 frv port		Nick Clifton		nickc@redhat.com
 frv port		Alexandre Oliva		aoliva@redhat.com
@@ -468,8 +469,6 @@ Ramana Radhakrishnan				ramana.radhakrishnan@arm.com
 Easwaran Raman					eraman@google.com
 Rolf Rasmussen					rolfwr@gcc.gnu.org
 Volker Reichelt					v.reichelt@netcologne.de
-Joern Rennecke					amylaar@spamcop.net
-Joern Rennecke					joern.rennecke@embecosm.com
 Bernhard Reutner-Fischer			rep.dot.nop@gmail.com
 Tom Rix						trix@redhat.com
 Craig Rodrigues					rodrigc@gcc.gnu.org
