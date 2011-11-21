@@ -598,7 +598,9 @@ perform_member_init (tree member, tree init)
 	init = digest_init (type, init, tf_warning_or_error);
       if (init == error_mark_node)
 	return;
-      /* Use 'this' as the decl, as it has the lifetime we want.  */
+      /* A FIELD_DECL doesn't really have a suitable lifetime, but
+	 make_temporary_var_for_ref_to_temp will treat it as automatic and
+	 set_up_extended_ref_temp wants to use the decl in a warning.  */
       init = extend_ref_init_temps (member, init, &cleanups);
       if (TREE_CODE (type) == ARRAY_TYPE
 	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (type)))
