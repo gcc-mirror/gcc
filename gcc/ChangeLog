@@ -1,3 +1,13 @@
+2011-11-21  David S. Miller  <davem@davemloft.net>
+
+	Revert
+	2011-11-16  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR middle-end/50325
+	* expmed.c (store_bit_field_1): Use extract_bit_field on big
+	endian targets if the source cannot be exactly covered by word
+	mode chunks.
+
 2011-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/50827
