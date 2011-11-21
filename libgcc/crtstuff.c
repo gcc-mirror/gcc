@@ -127,6 +127,10 @@ call_ ## FUNC (void)					\
 # define HIDDEN_DTOR_LIST_END
 #endif
 
+#if !defined(USE_TM_CLONE_REGISTRY) && defined(OBJECT_FORMAT_ELF)
+# define USE_TM_CLONE_REGISTRY 1
+#endif
+
 /* We do not want to add the weak attribute to the declarations of these
    routines in unwind-dw2-fde.h because that will cause the definition of
    these symbols to be weak as well.
@@ -162,6 +166,10 @@ extern void __do_global_ctors_1 (void);
 
 /* Likewise for _Jv_RegisterClasses.  */
 extern void _Jv_RegisterClasses (void *) TARGET_ATTRIBUTE_WEAK;
+
+/* Likewise for transactional memory clone tables.  */
+extern void _ITM_registerTMCloneTable (void *, size_t) TARGET_ATTRIBUTE_WEAK;
+extern void _ITM_deregisterTMCloneTable (void *) TARGET_ATTRIBUTE_WEAK;
 
 #ifdef OBJECT_FORMAT_ELF
 
@@ -241,6 +249,13 @@ STATIC void *__JCR_LIST__[]
   __attribute__ ((used, section(JCR_SECTION_NAME), aligned(sizeof(void*))))
   = { };
 #endif /* JCR_SECTION_NAME */
+
+#if USE_TM_CLONE_REGISTRY
+STATIC func_ptr __TMC_LIST__[]
+  __attribute__((unused, section(".tm_clone_table"), aligned(sizeof(void*))))
+  = { };
+extern func_ptr __TMC_END__[] __attribute__((__visibility__ ("hidden")));
+#endif /* USE_TM_CLONE_REGISTRY */
 
 #if defined(INIT_SECTION_ASM_OP) || defined(INIT_ARRAY_SECTION_ASM_OP)
 
@@ -331,6 +346,16 @@ __do_global_dtors_aux (void)
   }
 #endif /* !defined(FINI_ARRAY_SECTION_ASM_OP) */
 
+#if USE_TM_CLONE_REGISTRY
+  if (__TMC_END__ - __TMC_LIST__ > 0)
+    {
+      void (*deregister_clones) (void *) = _ITM_deregisterTMCloneTable;
+      __asm ("" : "+r" (deregister_clones));
+      if (deregister_clones)
+	deregister_clones (__TMC_LIST__);
+    }
+#endif /* USE_TM_CLONE_REGISTRY */
+
 #ifdef USE_EH_FRAME_REGISTRY
 #ifdef CRT_GET_RFIB_DATA
   /* If we used the new __register_frame_info_bases interface,
@@ -362,7 +387,9 @@ __do_global_dtors_aux_1 (void)
 CRT_CALL_STATIC_FUNCTION (INIT_SECTION_ASM_OP, __do_global_dtors_aux_1)
 #endif
 
-#if defined(USE_EH_FRAME_REGISTRY) || defined(JCR_SECTION_NAME)
+#if defined(USE_EH_FRAME_REGISTRY) \
+    || defined(JCR_SECTION_NAME) \
+    || defined(USE_TM_CLONE_REGISTRY)
 /* Stick a call to __register_frame_info into the .init section.  For some
    reason calls with no arguments work more reliably in .init, so stick the
    call in another function.  */
@@ -383,6 +410,7 @@ frame_dummy (void)
     __register_frame_info (__EH_FRAME_BEGIN__, &object);
 #endif /* CRT_GET_RFIB_DATA */
 #endif /* USE_EH_FRAME_REGISTRY */
+
 #ifdef JCR_SECTION_NAME
   if (__JCR_LIST__[0])
     {
@@ -392,6 +420,19 @@ frame_dummy (void)
 	register_classes (__JCR_LIST__);
     }
 #endif /* JCR_SECTION_NAME */
+
+#if USE_TM_CLONE_REGISTRY
+  if (__TMC_END__ - __TMC_LIST__ > 0)
+    {
+      void (*register_clones) (void *, size_t) = _ITM_registerTMCloneTable;
+      __asm ("" : "+r" (register_clones));
+      if (register_clones)
+	{
+	  size_t size = (size_t)(__TMC_END__ - __TMC_LIST__) / 2;
+	  _ITM_registerTMCloneTable (__TMC_LIST__, size);
+	}
+    }
+#endif /* USE_TM_CLONE_REGISTRY */
 }
 
 #ifdef INIT_SECTION_ASM_OP
@@ -401,7 +442,7 @@ static func_ptr __frame_dummy_init_array_entry[]
   __attribute__ ((__used__, section(".init_array")))
   = { frame_dummy };
 #endif /* !defined(INIT_SECTION_ASM_OP) */
-#endif /* USE_EH_FRAME_REGISTRY || JCR_SECTION_NAME */
+#endif /* USE_EH_FRAME_REGISTRY || JCR_SECTION_NAME || USE_TM_CLONE_REGISTRY */
 
 #else  /* OBJECT_FORMAT_ELF */
 
@@ -458,13 +499,25 @@ __do_global_dtors (void)
   for (p = __DTOR_LIST__ + 1; (f = *p); p++)
     f ();
 
+#if USE_TM_CLONE_REGISTRY
+  if (__TMC_END__ - __TMC_LIST__ > 0)
+    {
+      void (*deregister_clones) (void *) = _ITM_deregisterTMCloneTable;
+      __asm ("" : "+r" (deregister_clones));
+      if (deregister_clones)
+	deregister_clones (__TMC_LIST__);
+    }
+#endif /* USE_TM_CLONE_REGISTRY */
+
 #ifdef USE_EH_FRAME_REGISTRY
   if (__deregister_frame_info)
     __deregister_frame_info (__EH_FRAME_BEGIN__);
 #endif
 }
 
-#if defined(USE_EH_FRAME_REGISTRY) || defined(JCR_SECTION_NAME)
+#if defined(USE_EH_FRAME_REGISTRY) \
+    || defined(JCR_SECTION_NAME) \
+    || defined(USE_TM_CLONE_REGISTRY)
 /* A helper function for __do_global_ctors, which is in crtend.o.  Here
    in crtbegin.o, we can reference a couple of symbols not visible there.
    Plus, since we're before libgcc.a, we have no problems referencing
@@ -477,6 +530,7 @@ __do_global_ctors_1(void)
   if (__register_frame_info)
     __register_frame_info (__EH_FRAME_BEGIN__, &object);
 #endif
+
 #ifdef JCR_SECTION_NAME
   if (__JCR_LIST__[0])
     {
@@ -486,8 +540,21 @@ __do_global_ctors_1(void)
 	register_classes (__JCR_LIST__);
     }
 #endif
+
+#if USE_TM_CLONE_REGISTRY
+  if (__TMC_END__ - __TMC_LIST__ > 0)
+    {
+      void (*register_clones) (void *, size_t) = _ITM_registerTMCloneTable;
+      __asm ("" : "+r" (register_clones));
+      if (register_clones)
+	{
+	  size_t size = (size_t)(__TMC_END__ - __TMC_LIST__) / 2;
+	  register_clones (__TMC_LIST__, size);
+	}
+    }
+#endif /* USE_TM_CLONE_REGISTRY */
 }
-#endif /* USE_EH_FRAME_REGISTRY || JCR_SECTION_NAME */
+#endif /* USE_EH_FRAME_REGISTRY || JCR_SECTION_NAME || USE_TM_CLONE_REGISTRY */
 
 #else /* ! INIT_SECTION_ASM_OP && ! HAS_INIT_SECTION */
 #error "What are you doing with crtstuff.c, then?"
@@ -571,6 +638,13 @@ STATIC void *__JCR_END__[1]
    = { 0 };
 #endif /* JCR_SECTION_NAME */
 
+#if USE_TM_CLONE_REGISTRY
+func_ptr __TMC_END__[]
+  __attribute__((unused, section(".tm_clone_table"), aligned(sizeof(void *)),
+		 __visibility__ ("hidden")))
+  = { };
+#endif /* USE_TM_CLONE_REGISTRY */
+
 #ifdef INIT_ARRAY_SECTION_ASM_OP
 
 /* If we are using .init_array, there is nothing to do.  */
@@ -635,7 +709,9 @@ void
 __do_global_ctors (void)
 {
   func_ptr *p;
-#if defined(USE_EH_FRAME_REGISTRY) || defined(JCR_SECTION_NAME)
+#if defined(USE_EH_FRAME_REGISTRY) \
+    || defined(JCR_SECTION_NAME) \
+    || defined(USE_TM_CLONE_REGISTRY)
   __do_global_ctors_1();
 #endif
   for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)

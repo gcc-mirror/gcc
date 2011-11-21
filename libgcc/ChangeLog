@@ -1,3 +1,12 @@
+2011-11-21  Richard Henderson  <rth@redhat.com>
+
+	* crtstuff.c (USE_TM_CLONE_REGISTRY): Default to 1 on ELF.
+	(__TMC_LIST__, __TMC_END__): New.
+	(__do_global_dtors_aux): Call _ITM_deregisterTMCloneTable.
+	(__do_global_dtors): Likewise.
+	(frame_dummy): Call _ITM_registerTMCloneTable.
+	(__do_global_ctors_1): Likewise.
+
 2011-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.host (iq2000*-*-elf*): Add iq2000/t-iq2000 to tmake_file.
