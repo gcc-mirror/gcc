@@ -5350,6 +5350,46 @@ package body Sem_Prag is
                   Check_Restriction (No_Implementation_Restrictions, Arg);
                end if;
 
+               --  Special processing for No_Elaboration_Code restriction
+
+               if R_Id = No_Elaboration_Code then
+
+                  --  Restriction is only recognized within a configuration
+                  --  pragma file, or within a unit of the main extended
+                  --  program. Note: the test for Main_Unit is needed to
+                  --  properly include the case of configuration pragma files.
+
+                  if not (Current_Sem_Unit = Main_Unit
+                           or else In_Extended_Main_Source_Unit (N))
+                  then
+                     return;
+
+                  --  Don't allow in a subunit unless already specified in
+                  --  body or spec.
+
+                  elsif Nkind (Parent (N)) = N_Compilation_Unit
+                    and then Nkind (Unit (Parent (N))) = N_Subunit
+                    and then not Restriction_Active (No_Elaboration_Code)
+                  then
+                     Error_Msg_N
+                       ("invalid specification of ""No_Elaboration_Code""",
+                        N);
+                     Error_Msg_N
+                       ("\restriction cannot be specified in a subunit", N);
+                     Error_Msg_N
+                       ("\unless also specified in body or spec", N);
+                     return;
+
+                  --  If we have a No_Elaboration_Code pragma that we
+                  --  accept, then it needs to be added to the configuration
+                  --  restrcition set so that we get proper application to
+                  --  other units in the main extended source as required.
+
+                  else
+                     Add_To_Config_Boolean_Restrictions (No_Elaboration_Code);
+                  end if;
+               end if;
+
                --  If this is a warning, then set the warning unless we already
                --  have a real restriction active (we never want a warning to
                --  override a real restriction).

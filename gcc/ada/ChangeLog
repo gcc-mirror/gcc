@@ -1,3 +1,26 @@
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
+	* frontend.adb (Frontend): Capture restrictions from config files
+	* lib-load.adb (Load_Unit): Save/set/restore restriction pragma
+	information
+	* lib-xref.adb (Generate_Reference): Fix handling of obsolescent
+	references. This was noticed during debugging, but it is not
+	known if it causes real bugs.
+	* restrict.ads, restrict.adb: New routines to save/set/restore
+	non-partition-wide restrictions.
+	* s-rident.ads: Comment changes for new handling of
+	No_Elaboration_Code
+	* sem.adb (Sem): Save/Set/Restore non-partition-wide restrictions
+	* sem_ch10.adb (Analyze_Compilation_Unit): Remove incomplete
+	attempt to save/restore non-partition-wide restrictions (now
+	this work is all done in Sem).
+	* sem_prag.adb (Process_Restrictions_Or_Restriction_Warnings):
+	Special handling for restriction No_Elaboration_Code.
+
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Document new handling of restrictions pragmas.
+
 2011-11-21  Pascal Obry  <obry@adacore.com>
 
 	* s-taprop-linux.adb (Initialize_Lock): Do not allocate a cond

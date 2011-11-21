@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -359,8 +359,24 @@ package body Lib.Load is
       Src_Ind      : Source_File_Index;
       Save_PMES    : constant Boolean := Parsing_Main_Extended_Source;
 
+      Save_Cunit_Restrictions : constant Save_Cunit_Boolean_Restrictions :=
+                                  Cunit_Boolean_Restrictions_Save;
+      --  Save current restrictions for restore at end
+
    begin
       Parsing_Main_Extended_Source := PMES;
+
+      --  Initialize restrictions to config restrictions for unit to load if
+      --  it is part of the main extended source, otherwise reset them.
+
+      --  Note: it's a bit odd but PMES is False for subunits, which is why
+      --  we have the OR here. Should be investigated some time???
+
+      if PMES or Subunit then
+         Restore_Config_Cunit_Boolean_Restrictions;
+      else
+         Reset_Cunit_Boolean_Restrictions;
+      end if;
 
       --  If renamings are allowed and we have a child unit name, then we
       --  must first load the parent to deal with finding the real name.
@@ -782,6 +798,7 @@ package body Lib.Load is
 
       <<Done>>
       Parsing_Main_Extended_Source := Save_PMES;
+      Cunit_Boolean_Restrictions_Restore (Save_Cunit_Restrictions);
       return Unum;
    end Load_Unit;
 
