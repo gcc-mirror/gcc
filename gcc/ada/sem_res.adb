@@ -4095,10 +4095,10 @@ package body Sem_Res is
          --  object must not be deeper than that of the allocator's type.
 
          elsif Nkind (Disc_Exp) = N_Attribute_Reference
-           and then Get_Attribute_Id (Attribute_Name (Disc_Exp))
-                      = Attribute_Access
-           and then Object_Access_Level (Prefix (Disc_Exp))
-                      > Deepest_Type_Access_Level (Alloc_Typ)
+           and then Get_Attribute_Id (Attribute_Name (Disc_Exp)) =
+                      Attribute_Access
+           and then Object_Access_Level (Prefix (Disc_Exp)) >
+                      Deepest_Type_Access_Level (Alloc_Typ)
          then
             Error_Msg_N
               ("prefix of attribute has deeper level than allocator type",
@@ -4109,8 +4109,8 @@ package body Sem_Res is
 
          elsif Ekind (Etype (Disc_Exp)) = E_Anonymous_Access_Type
            and then Nkind (Disc_Exp) = N_Selected_Component
-           and then Object_Access_Level (Prefix (Disc_Exp))
-                      > Deepest_Type_Access_Level (Alloc_Typ)
+           and then Object_Access_Level (Prefix (Disc_Exp)) >
+                      Deepest_Type_Access_Level (Alloc_Typ)
          then
             Error_Msg_N
               ("access discriminant has deeper level than allocator type",
@@ -4315,7 +4315,8 @@ package body Sem_Res is
             end if;
 
             if Type_Access_Level (Exp_Typ) >
-              Deepest_Type_Access_Level (Typ) then
+                 Deepest_Type_Access_Level (Typ)
+            then
                if In_Instance_Body then
                   Error_Msg_N ("?type in allocator has deeper level than" &
                                " designated class-wide type", E);
@@ -10359,13 +10360,15 @@ package body Sem_Res is
                 Subtypes_Statically_Match (Target_Comp_Type, Opnd_Comp_Type)
             then
                if Type_Access_Level (Target_Type) <
-                   Deepest_Type_Access_Level (Opnd_Type)
+                    Deepest_Type_Access_Level (Opnd_Type)
                then
                   if In_Instance_Body then
-                     Error_Msg_N ("?source array type " &
-                       "has deeper accessibility level than target", Operand);
-                     Error_Msg_N ("\?Program_Error will be raised at run time",
-                         Operand);
+                     Error_Msg_N
+                       ("?source array type has " &
+                        "deeper accessibility level than target", Operand);
+                     Error_Msg_N
+                       ("\?Program_Error will be raised at run time",
+                        Operand);
                      Rewrite (N,
                        Make_Raise_Program_Error (Sloc (N),
                          Reason => PE_Accessibility_Check_Failed));
@@ -10375,8 +10378,9 @@ package body Sem_Res is
                   --  Conversion not allowed because of accessibility levels
 
                   else
-                     Error_Msg_N ("source array type " &
-                       "has deeper accessibility level than target", Operand);
+                     Error_Msg_N
+                       ("source array type has " &
+                       "deeper accessibility level than target", Operand);
                      return False;
                   end if;
 
@@ -10399,7 +10403,7 @@ package body Sem_Res is
             --  All of this is checked in Subtypes_Statically_Match.
 
             if not Subtypes_Statically_Match
-                            (Target_Comp_Type, Opnd_Comp_Type)
+                     (Target_Comp_Type, Opnd_Comp_Type)
             then
                Error_Msg_N
                  ("component subtypes must statically match", Operand);

@@ -8642,10 +8642,10 @@ package body Sem_Attr is
                   end if;
                end if;
 
-               --  Check the static accessibility rule of 3.10.2(28).
-               --  Note that this check is not performed for the
-               --  case of an anonymous access type, since the access
-               --  attribute is always legal in such a context.
+               --  Check the static accessibility rule of 3.10.2(28). Note that
+               --  this check is not performed for the case of an anonymous
+               --  access type, since the access attribute is always legal
+               --  in such a context.
 
                if Attr_Id /= Attribute_Unchecked_Access
                  and then

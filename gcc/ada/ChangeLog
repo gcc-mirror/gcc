@@ -1,3 +1,14 @@
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_util.adb, sem_res.adb, sem_attr.adb: Minor
+	reformatting.
+
+2011-11-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taprop-posix.adb (Create_Task): Use Unrestricted_Access
+	to deal with fact that we properly detect the error if Access
+	is used.
+
 2011-11-21  Steve Baird  <baird@adacore.com>
 
 	* sem_util.ads: Update comment describing function
