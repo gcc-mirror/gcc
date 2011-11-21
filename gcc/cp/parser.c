@@ -3547,40 +3547,79 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
   return value;
 }
 
+/* Look up a literal operator with the name and the exact arguments.  */
+
+static tree
+lookup_literal_operator (tree name, VEC(tree,gc) *args)
+{
+  tree decl, fns;
+  decl = lookup_name (name);
+  if (!decl || decl == error_mark_node)
+    return error_mark_node;
+
+  for (fns = decl; fns; fns = OVL_NEXT (fns))
+    {
+      unsigned int ix;
+      bool found = true;
+      tree fn = OVL_CURRENT (fns);
+      tree argtypes = NULL_TREE;
+      argtypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
+      if (argtypes != NULL_TREE)
+	{
+	  for (ix = 0; ix < VEC_length (tree, args) && argtypes != NULL_TREE;
+	       ++ix, argtypes = TREE_CHAIN (argtypes))
+	    {
+	      tree targ = TREE_VALUE (argtypes);
+	      tree tparm = TREE_TYPE (VEC_index (tree, args, ix));
+	      bool ptr = TREE_CODE (targ) == POINTER_TYPE;
+	      bool arr = TREE_CODE (tparm) == ARRAY_TYPE;
+	      if ((ptr || arr || !same_type_p (targ, tparm))
+		  && (!ptr || !arr
+		      || !same_type_p (TREE_TYPE (targ),
+				       TREE_TYPE (tparm))))
+		found = false;
+	    }
+	  if (found)
+	    return fn;
+	}
+    }
+
+  return error_mark_node;
+}
+
 /* Parse a user-defined char constant.  Returns a call to a user-defined
    literal operator taking the character as an argument.  */
 
 static tree
 cp_parser_userdef_char_literal (cp_parser *parser)
 {
-  cp_token *token = NULL;
-  tree literal, suffix_id, value;
-  tree name, decl;
-  tree result;
-  VEC(tree,gc) *vec;
-
-  token = cp_lexer_consume_token (parser->lexer);
-  literal = token->u.value;
-  suffix_id = USERDEF_LITERAL_SUFFIX_ID (literal);
-  value = USERDEF_LITERAL_VALUE (literal);
-  name = cp_literal_operator_id (IDENTIFIER_POINTER (suffix_id));
+  cp_token *token = cp_lexer_consume_token (parser->lexer);
+  tree literal = token->u.value;
+  tree suffix_id = USERDEF_LITERAL_SUFFIX_ID (literal);
+  tree value = USERDEF_LITERAL_VALUE (literal);
+  tree name = cp_literal_operator_id (IDENTIFIER_POINTER (suffix_id));
+  tree decl, result;
 
   /* Build up a call to the user-defined operator  */
   /* Lookup the name we got back from the id-expression.  */
-  vec = make_tree_vector ();
-  VEC_safe_push (tree, gc, vec, value);
-  decl = lookup_function_nonclass (name, vec, /*block_p=*/false);
+  VEC(tree,gc) *args = make_tree_vector ();
+  VEC_safe_push (tree, gc, args, value);
+  decl = lookup_literal_operator (name, args);
   if (!decl || decl == error_mark_node)
     {
-      error ("unable to find user-defined character literal operator %qD",
-	     name);
-      release_tree_vector (vec);
+      error ("unable to find character literal operator %qD with %qT argument",
+	     name, TREE_TYPE (value));
+      release_tree_vector (args);
       return error_mark_node;
     }
-  result = finish_call_expr (decl, &vec, false, true, tf_warning_or_error);
-  release_tree_vector (vec);
+  result = finish_call_expr (decl, &args, false, true, tf_warning_or_error);
+  release_tree_vector (args);
+  if (result != error_mark_node)
+    return result;
 
-  return result;
+  error ("unable to find character literal operator %qD with %qT argument",
+	 name, TREE_TYPE (value));
+  return error_mark_node;
 }
 
 /* A subroutine of cp_parser_userdef_numeric_literal to
@@ -3615,26 +3654,20 @@ make_char_string_pack (tree value)
 static tree
 cp_parser_userdef_numeric_literal (cp_parser *parser)
 {
-  cp_token *token = NULL;
-  tree literal, suffix_id, value, num_string;
-  tree name, decl;
-  tree result = error_mark_node;
+  cp_token *token = cp_lexer_consume_token (parser->lexer);
+  tree literal = token->u.value;
+  tree suffix_id = USERDEF_LITERAL_SUFFIX_ID (literal);
+  tree value = USERDEF_LITERAL_VALUE (literal);
+  tree num_string = USERDEF_LITERAL_NUM_STRING (literal);
+  tree name = cp_literal_operator_id (IDENTIFIER_POINTER (suffix_id));
+  tree decl, result;
   VEC(tree,gc) *args;
 
-  token = cp_lexer_consume_token (parser->lexer);
-  literal = token->u.value;
-  suffix_id = USERDEF_LITERAL_SUFFIX_ID (literal);
-  value = USERDEF_LITERAL_VALUE (literal);
-  num_string = USERDEF_LITERAL_NUM_STRING (literal);
-  name = cp_literal_operator_id (IDENTIFIER_POINTER (suffix_id));
-
-  /* Build up a call to the user-defined operator  */
-  /* Lookup the name we got back from the id-expression.  */
-  /* Try to find the literal operator by finishing the call expression
-     with the numeric argument.  */
+  /* Look for a literal operator taking the exact type of numeric argument
+     as the literal value.  */
   args = make_tree_vector ();
   VEC_safe_push (tree, gc, args, value);
-  decl = lookup_function_nonclass (name, args, /*block_p=*/false);
+  decl = lookup_literal_operator (name, args);
   if (decl && decl != error_mark_node)
     {
       result = finish_call_expr (decl, &args, false, true, tf_none);
@@ -3651,7 +3684,7 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
      in string format.  */
   args = make_tree_vector ();
   VEC_safe_push (tree, gc, args, num_string);
-  decl = lookup_function_nonclass (name, args, /*block_p=*/false);
+  decl = lookup_literal_operator (name, args);
   if (decl && decl != error_mark_node)
     {
       result = finish_call_expr (decl, &args, false, true, tf_none);
@@ -3667,7 +3700,7 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
      function with parameter pack char....  Call the function with
      template parameter characters representing the number.  */
   args = make_tree_vector ();
-  decl = lookup_function_nonclass (name, args, /*block_p=*/false);
+  decl = lookup_literal_operator (name, args);
   if (decl && decl != error_mark_node)
     {
       tree tmpl_args = make_char_string_pack (num_string);
@@ -3681,10 +3714,8 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
     }
   release_tree_vector (args);
 
-  if (result == error_mark_node)
-    error ("unable to find user-defined numeric literal operator %qD", name);
-
-  return result;
+  error ("unable to find numeric literal operator %qD", name);
+  return error_mark_node;
 }
 
 /* Parse a user-defined string constant.  Returns a call to a user-defined
@@ -3694,38 +3725,34 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
 static tree
 cp_parser_userdef_string_literal (cp_token *token)
 {
-  tree literal, suffix_id, value;
-  tree name, decl;
-  tree result;
-  VEC(tree,gc) *vec;
-  int len;
-
-  literal = token->u.value;
-  suffix_id = USERDEF_LITERAL_SUFFIX_ID (literal);
-  name = cp_literal_operator_id (IDENTIFIER_POINTER (suffix_id));
-  value = USERDEF_LITERAL_VALUE (literal);
-  len = TREE_STRING_LENGTH (value)
+  tree literal = token->u.value;
+  tree suffix_id = USERDEF_LITERAL_SUFFIX_ID (literal);
+  tree name = cp_literal_operator_id (IDENTIFIER_POINTER (suffix_id));
+  tree value = USERDEF_LITERAL_VALUE (literal);
+  int len = TREE_STRING_LENGTH (value)
 	/ TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (value)))) - 1;
+  tree decl, result;
+
   /* Build up a call to the user-defined operator  */
   /* Lookup the name we got back from the id-expression.  */
-  vec = make_tree_vector ();
-  VEC_safe_push (tree, gc, vec, value);
-  VEC_safe_push (tree, gc, vec, build_int_cst (size_type_node, len));
-  decl = lookup_function_nonclass (name, vec, /*block_p=*/false);
+  VEC(tree,gc) *args = make_tree_vector ();
+  VEC_safe_push (tree, gc, args, value);
+  VEC_safe_push (tree, gc, args, build_int_cst (size_type_node, len));
+  decl = lookup_name (name);
   if (!decl || decl == error_mark_node)
     {
-      error ("unable to find user-defined string literal operator %qD", name);
-      release_tree_vector (vec);
+      error ("unable to find string literal operator %qD", name);
+      release_tree_vector (args);
       return error_mark_node;
     }
-  result = finish_call_expr (decl, &vec, false, true, tf_none);
-  if (result == error_mark_node)
-    error ("unable to find valid user-defined string literal operator %qD."
-	   "  Possible missing length argument in string literal operator.",
-	   name);
-  release_tree_vector (vec);
+  result = finish_call_expr (decl, &args, false, true, tf_none);
+  release_tree_vector (args);
+  if (result != error_mark_node)
+    return result;
 
-  return result;
+  error ("unable to find string literal operator %qD with %qT, %qT arguments",
+	 name, TREE_TYPE (value), size_type_node);
+  return error_mark_node;
 }
 
 

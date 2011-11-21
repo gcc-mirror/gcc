@@ -1,3 +1,14 @@
+2011-11-21  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/50958
+	* g++.dg/cpp0x/udlit-declare-neg.C: Adjust.
+	* g++.dg/cpp0x/udlit-implicit-conv-neg.C: New.
+	* g++.dg/cpp0x/udlit-member.C: Adjust.
+	* g++.dg/cpp0x/udlit-raw-length.C: New.
+	* g++.dg/cpp0x/udlit-raw-op-string-neg.C: Adjust.
+	* g++.dg/cpp0x/udlit-resolve.C: New.
+	* c-c++-common/dfp/pr33466.c: Adjust.
+
 2011-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/target-supports.exp

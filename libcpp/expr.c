@@ -284,9 +284,9 @@ cpp_userdef_char_remove_type (enum cpp_ttype type)
   else if (type == CPP_WCHAR_USERDEF)
     return CPP_WCHAR;
   else if (type == CPP_CHAR16_USERDEF)
-    return CPP_STRING16;
+    return CPP_CHAR16;
   else if (type == CPP_CHAR32_USERDEF)
-    return CPP_STRING32;
+    return CPP_CHAR32;
   else
     return type;
 }

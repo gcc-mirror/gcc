@@ -1,3 +1,11 @@
+2011-11-21  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/50958
+	* parser.c (lookup_literal_operator): New.
+	(cp_parser_userdef_char_literal): Use it.
+	(cp_parser_userdef_numeric_literal): Use it.
+	(cp_parser_userdef_string_literal): Use lookup_name.
+
 2011-11-20  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst_pack_expansion): Fix SFINAE.
