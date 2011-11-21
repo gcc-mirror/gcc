@@ -1,3 +1,7 @@
+2011-11-20  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/bind/ref_neg.cc: Adjust error markings.
+
 2011-11-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/backward/binders.h: Fix examples in doxygen comments and

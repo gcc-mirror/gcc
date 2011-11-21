@@ -1,3 +1,8 @@
+2011-11-20  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (type_unification_real): Set input_location
+	during default arg instantiation.
+
 2011-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51230

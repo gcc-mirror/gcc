@@ -15218,9 +15218,13 @@ type_unification_real (tree tparms,
 	    {
 	      tree parm = TREE_VALUE (TREE_VEC_ELT (tparms, i));
 	      tree arg = TREE_PURPOSE (TREE_VEC_ELT (tparms, i));
+	      location_t save_loc = input_location;
+	      if (DECL_P (parm))
+		input_location = DECL_SOURCE_LOCATION (parm);
 	      arg = tsubst_template_arg (arg, targs, complain, NULL_TREE);
 	      arg = convert_template_argument (parm, arg, targs, complain,
 					       i, NULL_TREE);
+	      input_location = save_loc;
 	      if (arg == error_mark_node)
 		return 1;
 	      else
