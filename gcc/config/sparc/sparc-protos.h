@@ -109,6 +109,8 @@ extern void sparc_expand_vector_init (rtx, rtx);
 extern void sparc_expand_vec_perm_bmask(enum machine_mode, rtx);
 extern bool sparc_expand_conditional_move (enum machine_mode, rtx *);
 extern void sparc_expand_vcond (enum machine_mode, rtx *, int, int);
+unsigned int sparc_regmode_natural_size (enum machine_mode);
+bool sparc_modes_tieable_p (enum machine_mode, enum machine_mode);
 #endif /* RTX_CODE */
 
 #endif /* __SPARC_PROTOS_H__ */
