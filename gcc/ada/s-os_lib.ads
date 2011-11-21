@@ -174,7 +174,7 @@ package System.OS_Lib is
    --  File descriptors for standard input output files
 
    Invalid_FD : constant File_Descriptor := -1;
-   --  File descriptor returned when error in opening/creating file;
+   --  File descriptor returned when error in opening/creating file
 
    type Mode is (Binary, Text);
    for Mode'Size use Integer'Size;

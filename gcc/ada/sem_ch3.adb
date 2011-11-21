@@ -11786,7 +11786,7 @@ package body Sem_Ch3 is
          --  needed, since checks may cause duplication of the expressions
          --  which must not be reevaluated.
 
-         if Expander_Active then
+         if Full_Expander_Active then
             Force_Evaluation (Low_Bound (R));
             Force_Evaluation (High_Bound (R));
          end if;
@@ -18326,7 +18326,7 @@ package body Sem_Ch3 is
             --  if needed, before applying checks, since checks may cause
             --  duplication of the expression without forcing evaluation.
 
-            if Expander_Active then
+            if Full_Expander_Active then
                Force_Evaluation (Lo);
                Force_Evaluation (Hi);
             end if;
@@ -18436,7 +18436,7 @@ package body Sem_Ch3 is
 
       --  Case of other than an explicit N_Range node
 
-      elsif Expander_Active then
+      elsif Full_Expander_Active then
          Get_Index_Bounds (R, Lo, Hi);
          Force_Evaluation (Lo);
          Force_Evaluation (Hi);

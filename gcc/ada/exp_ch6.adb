@@ -7805,6 +7805,15 @@ package body Exp_Ch6 is
       --  to the object created by the allocator).
 
       Rewrite (Allocator, Make_Reference (Loc, Relocate_Node (Function_Call)));
+
+      --  Ada 2005 (AI-251): If the type of the allocator is an interface then
+      --  generate an implicit conversion to force displacement of the "this"
+      --  pointer.
+
+      if Is_Interface (Designated_Type (Acc_Type)) then
+         Rewrite (Allocator, Convert_To (Acc_Type, Relocate_Node (Allocator)));
+      end if;
+
       Analyze_And_Resolve (Allocator, Acc_Type);
    end Make_Build_In_Place_Call_In_Allocator;
 

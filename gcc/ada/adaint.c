@@ -2449,6 +2449,14 @@ __gnat_dup2 (int oldfd, int newfd)
   /* Not supported on VxWorks 5.x, but supported on VxWorks 6.0 when using
      RTPs.  */
   return -1;
+#elif defined (_WIN32)
+  /* Special case when oldfd and newfd are identical and are the standard
+     input, output or error as this makes Windows XP hangs. Note that we
+     do that only for standard file descriptors that are known to be valid. */
+  if (oldfd == newfd && newfd >= 0 && newfd <= 2)
+    return newfd;
+  else
+    return dup2 (oldfd, newfd);
 #else
   return dup2 (oldfd, newfd);
 #endif

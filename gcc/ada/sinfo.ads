@@ -760,6 +760,8 @@ package Sinfo is
    --    renaming declaration when it is a Renaming_As_Body. The field is Empty
    --    if there is no corresponding spec, as in the case of a subprogram body
    --    that serves as its own spec.
+   --    In Ada2012, Corresponding_Spec is set on expression functions that
+   --    complete a subprogram declaration.
 
    --  Corresponding_Stub (Node3-Sem)
    --    This field is present in an N_Subunit node. It holds the node in
@@ -4607,6 +4609,7 @@ package Sinfo is
       --  Sloc points to FUNCTION
       --  Specification (Node1)
       --  Expression (Node3)
+      --  Corresponding_Spec (Node5-Sem)
 
       -----------------------------------
       -- 6.4  Procedure Call Statement --

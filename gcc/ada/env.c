@@ -110,8 +110,6 @@ __gnat_getenv (char *name, int *len, char **value)
 
 #ifdef VMS
 
-static char *to_host_path_spec (char *);
-
 typedef struct _ile3
 {
   unsigned short len, code;

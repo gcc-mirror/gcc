@@ -1,3 +1,67 @@
+2011-11-21  Tristan Gingold  <gingold@adacore.com>
+
+	* env.c: Remove unused declaration.
+
+2011-11-21  Pascal Obry  <obry@adacore.com>
+
+	* s-os_lib.ads: Minor style fix.
+
+2011-11-21  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (__gnat_dup2): When fd are stdout, stdin or stderr and
+	identical, do nothing on Windows XP.
+
+2011-11-21  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb (Constrain_Index, Process_Range_Expr_In_Decl):
+	Use Full_Expander_Active instead of Expander_Active to control
+	the forced evaluation of expressions for the sake of generating
+	checks.
+
+2011-11-21  Thomas Quinot  <quinot@adacore.com>
+
+	* init.c: On FreeBSD, stack checking failures may raise SIGBUS.
+
+2011-11-21  Tristan Gingold  <gingold@adacore.com>
+
+	* sysdep.c (mode_read_text, mode_write_text, mode_append_text,
+	mode_read_binary, mode_write_binary, mode_append_binary,
+	mode_read_text_plus, mode_write_text_plus, mode_append_text_plus,
+	mode_read_binary_plus, mode_write_binary_plus,
+	mode_append_binary_plus): Remove unused declarations.
+
+2011-11-21  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Minor rewording.
+
+2011-11-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_imgv.adb (Expand_Width_Attribute): Emit
+	an error message rather than a warning when pragma Discard_Names
+	prevents the computation of 'Width. Do not emit an error through
+	the use of RE_Null.
+
+2011-11-21  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Allocator): Add
+	implicit type conversion when the type of the allocator is an
+	interface. Done to force generation of displacement of the "this"
+	pointer when required.
+
+2011-11-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb: Corresponding_Spec applies to expression
+	functions, and is set when the expression is a completion of a
+	previous declaration.
+	* sem_ch6.adb (Analyze_Expression_Function): To determine properly
+	whether an expression function completes a previous declaration,
+	use Find_Corresponding_Spec, as when analyzing a subprogram body.
+
+2011-11-21  Steve Baird  <baird@adacore.com>
+
+	* sem_util.adb (Deepest_Type_Access_Level): Improve comment.
+	(Type_Access_Level): Improve comment.
+
 2011-11-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in (INCLUDES_FOR_SUBDIR): Add $(fsrcdir) by
