@@ -442,7 +442,7 @@ package body Checks is
       --  are cases (e.g. with pragma Debug) where generating the checks
       --  can cause real trouble).
 
-      if not Expander_Active then
+      if not Full_Expander_Active then
          return;
       end if;
 
@@ -878,7 +878,7 @@ package body Checks is
 
          if Backend_Overflow_Checks_On_Target
            or else not Do_Overflow_Check (N)
-           or else not Expander_Active
+           or else not Full_Expander_Active
            or else (Present (Parent (N))
                      and then Nkind (Parent (N)) = N_Type_Conversion
                      and then Integer_Promotion_Possible (Parent (N)))
@@ -1178,7 +1178,7 @@ package body Checks is
       --  Nothing to do if discriminant checks are suppressed or else no code
       --  is to be generated
 
-      if not Expander_Active
+      if not Full_Expander_Active
         or else Discriminant_Checks_Suppressed (T_Typ)
       then
          return;
@@ -1462,7 +1462,7 @@ package body Checks is
       --  Don't actually use this value
 
    begin
-      if Expander_Active
+      if Full_Expander_Active
         and then not Backend_Divide_Checks_On_Target
         and then Check_Needed (Right, Division_Check)
       then
@@ -2118,7 +2118,7 @@ package body Checks is
                       (not Length_Checks_Suppressed (Target_Typ));
 
    begin
-      if not Expander_Active then
+      if not Full_Expander_Active then
          return;
       end if;
 
@@ -2226,7 +2226,7 @@ package body Checks is
                     (not Range_Checks_Suppressed (Target_Typ));
 
    begin
-      if not Expander_Active or else not Checks_On then
+      if not Full_Expander_Active or else not Checks_On then
          return;
       end if;
 
@@ -5309,7 +5309,7 @@ package body Checks is
       --  enhanced to check for an always True value in the condition and to
       --  generate a compilation warning???
 
-      if not Expander_Active or else not Checks_On then
+      if not Full_Expander_Active or else not Checks_On then
          return;
       end if;
 
@@ -6236,7 +6236,7 @@ package body Checks is
    --  Start of processing for Selected_Length_Checks
 
    begin
-      if not Expander_Active then
+      if not Full_Expander_Active then
          return Ret_Result;
       end if;
 
@@ -6810,7 +6810,7 @@ package body Checks is
    --  Start of processing for Selected_Range_Checks
 
    begin
-      if not Expander_Active then
+      if not Full_Expander_Active then
          return Ret_Result;
       end if;
 

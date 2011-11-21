@@ -2117,21 +2117,38 @@ package body Exp_Attr is
       --  computation to be completed in the back-end, since we don't know what
       --  layout will be chosen.
 
-      when Attribute_First_Bit => First_Bit : declare
+      when Attribute_First_Bit => First_Bit_Attr : declare
          CE : constant Entity_Id := Entity (Selector_Name (Pref));
 
       begin
-         if Known_Static_Component_Bit_Offset (CE) then
+         --  In Ada 2005 (or later) if we have the standard nondefault
+         --  bit order, then we return the original value as given in
+         --  the component clause (RM 2005 13.5.2(3/2)).
+
+         if Present (Component_Clause (CE))
+           and then Ada_Version >= Ada_2005
+           and then not Reverse_Bit_Order (Scope (CE))
+         then
+            Rewrite (N,
+              Make_Integer_Literal (Loc,
+                Intval => Expr_Value (First_Bit (Component_Clause (CE)))));
+            Analyze_And_Resolve (N, Typ);
+
+         --  Otherwise (Ada 83/95 or Ada 2005 or later with reverse bit order),
+         --  rewrite with normalized value if we know it statically.
+
+         elsif Known_Static_Component_Bit_Offset (CE) then
             Rewrite (N,
               Make_Integer_Literal (Loc,
                 Component_Bit_Offset (CE) mod System_Storage_Unit));
-
             Analyze_And_Resolve (N, Typ);
+
+         --  Otherwise left to back end, just do universal integer checks
 
          else
             Apply_Universal_Integer_Attribute_Checks (N);
          end if;
-      end First_Bit;
+      end First_Bit_Attr;
 
       -----------------
       -- Fixed_Value --
@@ -2680,24 +2697,41 @@ package body Exp_Attr is
       --  the computation up to the back end, since we don't know what layout
       --  will be chosen.
 
-      when Attribute_Last_Bit => Last_Bit : declare
+      when Attribute_Last_Bit => Last_Bit_Attr : declare
          CE : constant Entity_Id := Entity (Selector_Name (Pref));
 
       begin
-         if Known_Static_Component_Bit_Offset (CE)
+         --  In Ada 2005 (or later) if we have the standard nondefault
+         --  bit order, then we return the original value as given in
+         --  the component clause (RM 2005 13.5.2(4/2)).
+
+         if Present (Component_Clause (CE))
+           and then Ada_Version >= Ada_2005
+           and then not Reverse_Bit_Order (Scope (CE))
+         then
+            Rewrite (N,
+              Make_Integer_Literal (Loc,
+                Intval => Expr_Value (Last_Bit (Component_Clause (CE)))));
+            Analyze_And_Resolve (N, Typ);
+
+         --  Otherwise (Ada 83/95 or Ada 2005 or later with reverse bit order),
+         --  rewrite with normalized value if we know it statically.
+
+         elsif Known_Static_Component_Bit_Offset (CE)
            and then Known_Static_Esize (CE)
          then
             Rewrite (N,
               Make_Integer_Literal (Loc,
                Intval => (Component_Bit_Offset (CE) mod System_Storage_Unit)
                                 + Esize (CE) - 1));
-
             Analyze_And_Resolve (N, Typ);
+
+         --  Otherwise leave to back end, just apply universal integer checks
 
          else
             Apply_Universal_Integer_Attribute_Checks (N);
          end if;
-      end Last_Bit;
+      end Last_Bit_Attr;
 
       ------------------
       -- Leading_Part --
@@ -3495,21 +3529,41 @@ package body Exp_Attr is
       --  the computation up to the back end, since we don't know what layout
       --  will be chosen.
 
-      when Attribute_Position => Position :
+      when Attribute_Position => Position_Attr :
       declare
          CE : constant Entity_Id := Entity (Selector_Name (Pref));
 
       begin
          if Present (Component_Clause (CE)) then
-            Rewrite (N,
-              Make_Integer_Literal (Loc,
-                Intval => Component_Bit_Offset (CE) / System_Storage_Unit));
+
+            --  In Ada 2005 (or later) if we have the standard nondefault
+            --  bit order, then we return the original value as given in
+            --  the component clause (RM 2005 13.5.2(2/2)).
+
+            if Ada_Version >= Ada_2005
+              and then not Reverse_Bit_Order (Scope (CE))
+            then
+               Rewrite (N,
+                  Make_Integer_Literal (Loc,
+                    Intval => Expr_Value (Position (Component_Clause (CE)))));
+
+            --  Otherwise (Ada 83 or 95, or reverse bit order specified in
+            --  later Ada version), return the normalized value.
+
+            else
+               Rewrite (N,
+                 Make_Integer_Literal (Loc,
+                   Intval => Component_Bit_Offset (CE) / System_Storage_Unit));
+            end if;
+
             Analyze_And_Resolve (N, Typ);
+
+         --  If back end is doing things, just apply universal integer checks
 
          else
             Apply_Universal_Integer_Attribute_Checks (N);
          end if;
-      end Position;
+      end Position_Attr;
 
       ----------
       -- Pred --

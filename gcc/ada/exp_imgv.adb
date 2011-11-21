@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
+with Errout;   use Errout;
 with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
 with Namet;    use Namet;
@@ -1065,10 +1066,10 @@ package body Exp_Imgv is
       Pref    : constant Node_Id    := Prefix (N);
       Ptyp    : constant Entity_Id  := Etype (Pref);
       Rtyp    : constant Entity_Id  := Root_Type (Ptyp);
-      XX      : RE_Id;
-      YY      : Entity_Id;
       Arglist : List_Id;
       Ttyp    : Entity_Id;
+      XX      : RE_Id;
+      YY      : Entity_Id;
 
    begin
       --  Types derived from Standard.Boolean
@@ -1156,6 +1157,18 @@ package body Exp_Imgv is
          pragma Assert (Is_Enumeration_Type (Rtyp));
 
          if Discard_Names (Rtyp) then
+
+            --  Emit a detailed warning in configurable run-time mode because
+            --  loading RE_Null does not give a precise indication of the real
+            --  issue.
+
+            if Configurable_Run_Time_Mode
+              and then not Has_Warnings_Off (Rtyp)
+            then
+               Error_Msg_Name_1 := Attribute_Name (N);
+               Error_Msg_N ("?attribute % not supported in configurable " &
+                            "run-time mode", N);
+            end if;
 
             --  This is a configurable run-time, or else a restriction is in
             --  effect. In either case the attribute cannot be supported. Force
