@@ -2437,6 +2437,8 @@ package body Sem_Util is
                          (Defining_Identifier
                            (Associated_Node_For_Itype (Typ))));
 
+      --  For generic formal type, return Int'Last (infinite) (why ???)
+
       elsif Is_Generic_Type (Root_Type (Typ)) then
          return UI_From_Int (Int'Last);
 
@@ -12716,6 +12718,8 @@ package body Sem_Util is
             return Scope_Depth (Enclosing_Dynamic_Scope (Btyp)) + 1;
          end if;
       end if;
+
+      --  Return library level for a generic formal type (why???)
 
       if Is_Generic_Type (Root_Type (Btyp)) then
          return Scope_Depth (Standard_Standard);
