@@ -9350,7 +9350,9 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	    len = my_len;
           else if (len != my_len)
             {
-              if (TREE_CODE (t) == TYPE_PACK_EXPANSION)
+	      if (!(complain & tf_error))
+		/* Fail quietly.  */;
+              else if (TREE_CODE (t) == TYPE_PACK_EXPANSION)
                 error ("mismatched argument pack lengths while expanding "
                        "%<%T%>",
                        pattern);
