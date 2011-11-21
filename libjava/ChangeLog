@@ -1,3 +1,8 @@
+2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
+
+	* configure.ac: Fix FreeBSD 10 detection.
+	* configure: Regenerate.
+
 2011-10-17  Paul Brook  <paul@codesourcery.com>
 
 	* exception.cc (parse_lsda_header): hardcode ttype_encoding for older

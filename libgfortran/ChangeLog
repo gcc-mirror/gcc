@@ -1,3 +1,7 @@
+2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
+
+	* configure: Regenerate.
+
 2011-11-11  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/51090

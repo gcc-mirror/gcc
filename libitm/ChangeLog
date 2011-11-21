@@ -1,3 +1,7 @@
+2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
+
+	* configure: Regenerate.
+
 2011-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* acinclude.m4 (LIBITM_CHECK_LINKER_FEATURES): Handle gold.
