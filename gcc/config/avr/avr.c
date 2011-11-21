@@ -8836,7 +8836,13 @@ avr_regno_mode_code_ok_for_base_p (int regno,
    LEN != NULL: set *LEN to the length of the instruction sequence
                 (in words) printed with LEN = NULL.
    If CLEAR_P is true, OP[0] had been cleard to Zero already.
-   If CLEAR_P is false, nothing is known about OP[0].  */
+   If CLEAR_P is false, nothing is known about OP[0].
+
+   The effect on cc0 is as follows:
+
+   Load 0 to any register          : NONE
+   Load ld register with any value : NONE
+   Anything else:                  : CLOBBER  */
 
 static void
 output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
@@ -8914,7 +8920,7 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
           xop[2] = clobber_reg;
 
           if (n >= 2 + (avr_current_arch->n_segments > 1))
-            avr_asm_len ("clr %0", xop, len, 1);
+            avr_asm_len ("mov %0,__zero_reg__", xop, len, 1);
           else
             avr_asm_len (asm_code[n][ldreg_p], xop, len, ldreg_p ? 1 : 2);
           continue;
@@ -8946,14 +8952,13 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
             }
         }
 
-      /* Use CLR to zero a value so that cc0 is set as expected
-         for zero.  */
+      /* Don't use CLR so that cc0 is set as expected.  */
       
       if (ival[n] == 0)
         {
           if (!clear_p)
-            avr_asm_len ("clr %0", &xdest[n], len, 1);
-          
+            avr_asm_len (ldreg_p ? "ldi %0,0" : "mov %0,__zero_reg__",
+                         &xdest[n], len, 1);
           continue;
         }
 
