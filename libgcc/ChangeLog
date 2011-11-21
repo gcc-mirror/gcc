@@ -1,3 +1,14 @@
+2011-11-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49313
+	* config/avr/t-avr (LIB2FUNCS_EXCLUDE): Add _moddi3, _umoddi3.
+	(LIB1ASMFUNCS): Add _divdi3, _udivdi3, _udivmod64, _negdi2.
+	* config/avr/lib1funcs.S (wmov): New assembler macro.
+	(__umoddi3, __udivdi3, __udivdi3_umoddi3): New functions.
+	(__moddi3, __divdi3, __divdi3_moddi3): New functions.
+	(__udivmod64): New function.
+	(__negdi2): New function.
+
 2011-11-21  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config.host (*-*-freebsd[12], *-*-freebsd[12].*,
