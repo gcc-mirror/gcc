@@ -1,3 +1,8 @@
+2011-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* c-c++-common/tm/malloc.c: Scan tree dumps for std::malloc if
+	*-*-solaris2* && c++.
+
 2011-11-20  Joey Ye  <joey.ye@arm.com>
 
 	* gcc.dg/volatile-bitfields-1.c: New.
