@@ -18,25 +18,78 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(define_expand "mem_thread_fence"
-  [(match_operand:SI 0 "const_int_operand" "")]		;; model
-  ""
-{
-  /* Unless this is a SEQ_CST fence, the i386 memory model is strong
-     enough not to require barriers of any kind.  */
-  if (INTVAL (operands[0]) != MEMMODEL_SEQ_CST)
-    DONE;
+(define_c_enum "unspec" [
+  UNSPEC_LFENCE
+  UNSPEC_SFENCE
+  UNSPEC_MFENCE
+  UNSPEC_MOVA	; For __atomic support
+])
 
-  if (TARGET_64BIT || TARGET_SSE2)
-    emit_insn (gen_sse2_mfence ());
-  else
-    {
-      rtx mem = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
-      MEM_VOLATILE_P (mem) = 1;
-      emit_insn (gen_mfence_nosse (mem));
-    }
-  DONE;
+(define_c_enum "unspecv" [
+  UNSPECV_CMPXCHG_1
+  UNSPECV_CMPXCHG_2
+  UNSPECV_CMPXCHG_3
+  UNSPECV_CMPXCHG_4
+  UNSPECV_XCHG
+  UNSPECV_LOCK
+])
+
+(define_expand "sse2_lfence"
+  [(set (match_dup 0)
+	(unspec:BLK [(match_dup 0)] UNSPEC_LFENCE))]
+  "TARGET_SSE2"
+{
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[0]) = 1;
 })
+
+(define_insn "*sse2_lfence"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0)] UNSPEC_LFENCE))]
+  "TARGET_SSE2"
+  "lfence"
+  [(set_attr "type" "sse")
+   (set_attr "length_address" "0")
+   (set_attr "atom_sse_attr" "lfence")
+   (set_attr "memory" "unknown")])
+
+(define_expand "sse_sfence"
+  [(set (match_dup 0)
+	(unspec:BLK [(match_dup 0)] UNSPEC_SFENCE))]
+  "TARGET_SSE || TARGET_3DNOW_A"
+{
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[0]) = 1;
+})
+
+(define_insn "*sse_sfence"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0)] UNSPEC_SFENCE))]
+  "TARGET_SSE || TARGET_3DNOW_A"
+  "sfence"
+  [(set_attr "type" "sse")
+   (set_attr "length_address" "0")
+   (set_attr "atom_sse_attr" "fence")
+   (set_attr "memory" "unknown")])
+
+(define_expand "sse2_mfence"
+  [(set (match_dup 0)
+	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))]
+  "TARGET_SSE2"
+{
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[0]) = 1;
+})
+
+(define_insn "mfence_sse2"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))]
+  "TARGET_64BIT || TARGET_SSE2"
+  "mfence"
+  [(set_attr "type" "sse")
+   (set_attr "length_address" "0")
+   (set_attr "atom_sse_attr" "fence")
+   (set_attr "memory" "unknown")])
 
 (define_insn "mfence_nosse"
   [(set (match_operand:BLK 0 "" "")
@@ -45,6 +98,30 @@
   "!(TARGET_64BIT || TARGET_SSE2)"
   "lock{%;} or{l}\t{$0, (%%esp)|DWORD PTR [esp], 0}"
   [(set_attr "memory" "unknown")])
+
+(define_expand "mem_thread_fence"
+  [(match_operand:SI 0 "const_int_operand" "")]		;; model
+  ""
+{
+  /* Unless this is a SEQ_CST fence, the i386 memory model is strong
+     enough not to require barriers of any kind.  */
+  if (INTVAL (operands[0]) == MEMMODEL_SEQ_CST)
+    {
+      rtx (*mfence_insn)(rtx);
+      rtx mem;
+
+      if (TARGET_64BIT || TARGET_SSE2)
+	mfence_insn = gen_mfence_sse2;
+      else
+	mfence_insn = gen_mfence_nosse;
+
+      mem = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+      MEM_VOLATILE_P (mem) = 1;
+
+      emit_insn (mfence_insn (mem));
+    }
+  DONE;
+})
 
 ;; ??? From volume 3 section 7.1.1 Guaranteed Atomic Operations,
 ;; Only beginning at Pentium family processors do we get any guarantee of
