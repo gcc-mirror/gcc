@@ -2476,7 +2476,7 @@ proc check_effective_target_ultrasparc_hw { } {
 # instructions.  We check this by attempting: "bmask %g0, %g0, %g0"
 
 proc check_effective_target_ultrasparc_vis2_hw { } {
-    return [check_runtime ultrasparc_hw {
+    return [check_runtime ultrasparc_vis2_hw {
 	int main() { __asm__(".word 0x81b00320"); return 0; }
     } "-mcpu=ultrasparc3"]
 }
@@ -2485,7 +2485,7 @@ proc check_effective_target_ultrasparc_vis2_hw { } {
 # instructions.  We check this by attempting: "addxc %g0, %g0, %g0"
 
 proc check_effective_target_ultrasparc_vis3_hw { } {
-    return [check_runtime ultrasparc_hw {
+    return [check_runtime ultrasparc_vis3_hw {
 	int main() { __asm__(".word 0x81b00220"); return 0; }
     } "-mcpu=niagara3"]
 }
