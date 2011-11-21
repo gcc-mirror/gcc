@@ -4086,7 +4086,7 @@ package body Sem_Res is
       is
       begin
          if Type_Access_Level (Etype (Disc_Exp)) >
-            Type_Access_Level (Alloc_Typ)
+            Deepest_Type_Access_Level (Alloc_Typ)
          then
             Error_Msg_N
               ("operand type has deeper level than allocator type", Disc_Exp);
@@ -4098,7 +4098,7 @@ package body Sem_Res is
            and then Get_Attribute_Id (Attribute_Name (Disc_Exp))
                       = Attribute_Access
            and then Object_Access_Level (Prefix (Disc_Exp))
-                      > Type_Access_Level (Alloc_Typ)
+                      > Deepest_Type_Access_Level (Alloc_Typ)
          then
             Error_Msg_N
               ("prefix of attribute has deeper level than allocator type",
@@ -4110,7 +4110,7 @@ package body Sem_Res is
          elsif Ekind (Etype (Disc_Exp)) = E_Anonymous_Access_Type
            and then Nkind (Disc_Exp) = N_Selected_Component
            and then Object_Access_Level (Prefix (Disc_Exp))
-                      > Type_Access_Level (Alloc_Typ)
+                      > Deepest_Type_Access_Level (Alloc_Typ)
          then
             Error_Msg_N
               ("access discriminant has deeper level than allocator type",
@@ -4314,7 +4314,8 @@ package body Sem_Res is
                Exp_Typ := Entity (E);
             end if;
 
-            if Type_Access_Level (Exp_Typ) > Type_Access_Level (Typ) then
+            if Type_Access_Level (Exp_Typ) >
+              Deepest_Type_Access_Level (Typ) then
                if In_Instance_Body then
                   Error_Msg_N ("?type in allocator has deeper level than" &
                                " designated class-wide type", E);
@@ -10358,7 +10359,7 @@ package body Sem_Res is
                 Subtypes_Statically_Match (Target_Comp_Type, Opnd_Comp_Type)
             then
                if Type_Access_Level (Target_Type) <
-                   Type_Access_Level (Opnd_Type)
+                   Deepest_Type_Access_Level (Opnd_Type)
                then
                   if In_Instance_Body then
                      Error_Msg_N ("?source array type " &
