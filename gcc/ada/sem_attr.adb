@@ -7821,14 +7821,30 @@ package body Sem_Attr is
                         T := T / 10;
                      end loop;
 
+                  --  User declared enum type with discard names
+
+                  elsif Discard_Names (R) then
+
+                     --  If range is null, result is zero, that has already
+                     --  been dealt with, so what we need is the power of ten
+                     --  that accomodates the Pos of the largest value, which
+                     --  is the high bound of the range + one for the space.
+
+                     W := 1;
+                     T := Hi;
+                     while T /= 0 loop
+                        T := T / 10;
+                        W := W + 1;
+                     end loop;
+
                   --  Only remaining possibility is user declared enum type
+                  --  with normal case of Discard_Names not active.
 
                   else
                      pragma Assert (Is_Enumeration_Type (P_Type));
 
                      W := 0;
                      L := First_Literal (P_Type);
-
                      while Present (L) loop
 
                         --  Only pay attention to in range characters

@@ -271,10 +271,10 @@ package body Sem_Ch6 is
       Expr     : constant Node_Id    := Expression (N);
       Spec     : constant Node_Id    := Specification (N);
 
-      Def_Id   :  Entity_Id;
+      Def_Id :  Entity_Id;
       pragma Unreferenced (Def_Id);
 
-      Prev     :  Entity_Id;
+      Prev :  Entity_Id;
       --  If the expression is a completion, Prev is the entity whose
       --  declaration is completed. Def_Id is needed to analyze the spec.
 
@@ -283,7 +283,6 @@ package body Sem_Ch6 is
       New_Spec : Node_Id;
 
    begin
-
       --  This is one of the occasions on which we transform the tree during
       --  semantic analysis. If this is a completion, transform the expression
       --  function into an equivalent subprogram body, and analyze it.
@@ -298,9 +297,7 @@ package body Sem_Ch6 is
       --  If there are previous overloadable entities with the same name,
       --  check whether any of them is completed by the expression function.
 
-      if Present (Prev)
-        and then Is_Overloadable (Prev)
-      then
+      if Present (Prev) and then Is_Overloadable (Prev) then
          Def_Id   := Analyze_Subprogram_Specification (Spec);
          Prev     := Find_Corresponding_Spec (N);
       end if;

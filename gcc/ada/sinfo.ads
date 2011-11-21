@@ -760,6 +760,7 @@ package Sinfo is
    --    renaming declaration when it is a Renaming_As_Body. The field is Empty
    --    if there is no corresponding spec, as in the case of a subprogram body
    --    that serves as its own spec.
+   --
    --    In Ada2012, Corresponding_Spec is set on expression functions that
    --    complete a subprogram declaration.
 

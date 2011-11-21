@@ -6425,6 +6425,9 @@ package body Exp_Util is
       --  Instead, formal verification is performed only on those expressions
       --  provably side-effect free.
 
+      --  Why? Is the Alfa mode test just an optimization? Most likely not,
+      --  most likely it is functionally necessary, if so why ???
+
       if not Full_Expander_Active then
          return;
 

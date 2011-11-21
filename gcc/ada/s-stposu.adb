@@ -565,7 +565,7 @@ package body System.Storage_Pools.Subpools is
 
    function Header_Size_With_Padding
      (Alignment : System.Storage_Elements.Storage_Count)
-   return System.Storage_Elements.Storage_Count
+      return System.Storage_Elements.Storage_Count
    is
       Size : constant Storage_Count := Header_Size;
 
