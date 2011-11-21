@@ -1,3 +1,51 @@
+2011-11-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taprop-irix.adb, s-taprop-solaris.adb (Create_Task): Use
+	Unrestricted_Access to deal with fact that we properly detect the
+	error if Access is used.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2011-11-21  Yannick Moy  <moy@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Check): Place error on first character
+	of expression.
+	* sem_res.adb (Resolve_Short_Circuit): Place error on first
+	character of expression.
+
+2011-11-21  Yannick Moy  <moy@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): Do nothing in Alfa mode.
+
+2011-11-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case
+	Max_Size_In_Storage_Elements): Account for the size of the
+	hidden list header which precedes controlled objects allocated
+	on the heap.
+	* rtsfind.ads: Add RE_Header_Size_With_Padding to the runtime
+	tables.
+	* sinfo.adb (Header_Size_Added): New routine.
+	(Set_Header_Size_Added): New routine.
+	* sinfo.ads: Add flag Controlled_Header_Added along with
+	associated comment.
+	(Header_Size_Added): New inlined routine.
+	(Set_Header_Size_Added): New inlined routine.
+	* s-stposu.adb (Allocate_Any_Controlled): Use
+	Header_Size_With_Padding to calculate the proper
+	size of the header.
+	(Deallocate_Any_Controlled): Use
+	Header_Size_With_Padding to calculate the proper size
+	of the header.	(Header_Size_With_Padding): New routine.
+	(Nearest_Multiple_Rounded_Up): Removed along with its uses.
+	* s-stposu.ads (Header_Size_With_Padding): New routine.
+
+2011-11-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* aspects.adb: Aspect specifications are allowed on renaming
+	declarations
+	* par-ch6.adb (P_Subprogram): Parse aspect specifications in a
+	subprogram renaming declaration
+
 2011-11-21  Tristan Gingold  <gingold@adacore.com>
 
 	* env.c: Remove unused declaration.

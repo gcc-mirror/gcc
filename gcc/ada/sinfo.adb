@@ -1573,6 +1573,14 @@ package body Sinfo is
       return Flag13 (N);
    end Has_Wide_Wide_Character;
 
+   function Header_Size_Added
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Attribute_Reference);
+      return Flag11 (N);
+   end Header_Size_Added;
+
    function Hidden_By_Use_Clause
      (N : Node_Id) return Elist_Id is
    begin
@@ -4636,6 +4644,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_String_Literal);
       Set_Flag13 (N, Val);
    end Set_Has_Wide_Wide_Character;
+
+   procedure Set_Header_Size_Added
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Attribute_Reference);
+      Set_Flag11 (N, Val);
+   end Set_Header_Size_Added;
 
    procedure Set_Hidden_By_Use_Clause
      (N : Node_Id; Val : Elist_Id) is

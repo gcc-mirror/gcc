@@ -2989,6 +2989,52 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, Typ);
       end Mantissa;
 
+      ----------------------------------
+      -- Max_Size_In_Storage_Elements --
+      ----------------------------------
+
+      when Attribute_Max_Size_In_Storage_Elements =>
+         Apply_Universal_Integer_Attribute_Checks (N);
+
+         --  Heap-allocated controlled objects contain two extra pointers which
+         --  are not part of the actual type. Transform the attribute reference
+         --  into a runtime expression to add the size of the hidden header.
+
+         --  Do not perform this expansion on .NET/JVM targets because the
+         --  two pointers are already present in the type.
+
+         if VM_Target = No_VM
+           and then Nkind (N) = N_Attribute_Reference
+           and then Needs_Finalization (Ptyp)
+           and then not Header_Size_Added (N)
+         then
+            Set_Header_Size_Added (N);
+
+            --  Generate:
+            --    P'Max_Size_In_Storage_Elements +
+            --      Universal_Integer
+            --        (Header_Size_With_Padding (Ptyp'Alignment))
+
+            Rewrite (N,
+              Make_Op_Add (Loc,
+                Left_Opnd  => Relocate_Node (N),
+                Right_Opnd =>
+                  Convert_To (Universal_Integer,
+                    Make_Function_Call (Loc,
+                      Name                   =>
+                        New_Reference_To
+                          (RTE (RE_Header_Size_With_Padding), Loc),
+
+                      Parameter_Associations => New_List (
+                        Make_Attribute_Reference (Loc,
+                          Prefix         =>
+                            New_Reference_To (Ptyp, Loc),
+                          Attribute_Name => Name_Alignment))))));
+
+            Analyze (N);
+            return;
+         end if;
+
       --------------------
       -- Mechanism_Code --
       --------------------
@@ -5572,8 +5618,7 @@ package body Exp_Attr is
       --  that the result is in range.
 
       when Attribute_Aft                          |
-           Attribute_Max_Alignment_For_Allocation |
-           Attribute_Max_Size_In_Storage_Elements =>
+           Attribute_Max_Alignment_For_Allocation =>
          Apply_Universal_Integer_Attribute_Checks (N);
 
       --  The following attributes should not appear at this stage, since they
