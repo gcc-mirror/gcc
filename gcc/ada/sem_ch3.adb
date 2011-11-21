@@ -2664,8 +2664,8 @@ package body Sem_Ch3 is
       --  Process expression, replacing error by integer zero, to avoid
       --  cascaded errors or aborts further along in the processing
 
-      --  Replace Error by integer zero, which seems least likely to
-      --  cause cascaded errors.
+      --  Replace Error by integer zero, which seems least likely to cause
+      --  cascaded errors.
 
       if E = Error then
          Rewrite (E, Make_Integer_Literal (Sloc (E), Uint_0));

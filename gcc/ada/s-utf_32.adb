@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2005-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2005-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6182,6 +6182,7 @@ package body System.UTF_32 is
    function Is_UTF_32_Line_Terminator (U : UTF_32) return Boolean is
    begin
       return U in 10 .. 13     -- Ascii.LF Ascii.VT Ascii.FF Ascii.CR
+        or else U = 16#00085#  -- NEL
         or else U = 16#02028#  -- LINE SEPARATOR
         or else U = 16#02029#; -- PARAGRAPH SEPARATOR
    end Is_UTF_32_Line_Terminator;

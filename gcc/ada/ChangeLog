@@ -1,5 +1,16 @@
 2011-11-21  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch3.adb: Minor reformatting.
+
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
+	* s-utf_32.adb (Is_UTF_32_Line_Terminator): Recognize NEL as
+	line terminator.
+	* sinput.ads: Add section on Handling of Source Line Terminators.
+	* types.ads (Line_Terminator): Adjust comments.
+
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
 	* frontend.adb (Frontend): Capture restrictions from config files
 	* lib-load.adb (Load_Unit): Save/set/restore restriction pragma
 	information
