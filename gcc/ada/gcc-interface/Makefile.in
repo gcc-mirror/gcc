@@ -273,15 +273,9 @@ INCLUDES = -I- -I. -I.. -I$(srcdir)/ada -I$(srcdir) -I$(srcdir)/config \
 
 ADA_INCLUDES = -I- -I. -I$(srcdir)/ada
 
-INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. -iquote $(fsrcdir)/ada \
-	-I$(fsrcdir)/../include
-
-ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
-  # On Windows native the tconfig.h files used by C runtime files needs to have
-  # the gcc source dir in its include dir list
-  INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. -iquote $(fsrcdir)/ada \
-        -I$(fsrcdir)/../include -I$(fsrcdir)
-endif
+INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
+		      -iquote $(fsrcdir)/ada -iquote $(fsrcdir) \
+		      -I$(fsrcdir)/../include
 
 ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
 
