@@ -359,12 +359,17 @@ AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
 toolexeclib_LTLIBRARIES = libitm.la
 nodist_toolexeclib_HEADERS = libitm.spec
 @LIBITM_BUILD_VERSIONED_SHLIB_FALSE@libitm_version_script = 
-@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@libitm_version_script = -Wl,--version-script,$(top_srcdir)/libitm.map
+@LIBITM_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@libitm_version_script = -Wl,--version-script,$(top_srcdir)/libitm.map
+@LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@libitm_version_script = -Wl,-M,libitm.map-sun
+@LIBITM_BUILD_VERSIONED_SHLIB_FALSE@libitm_version_dep = 
+@LIBITM_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@libitm_version_dep = $(top_srcdir)/libitm.map
+@LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@libitm_version_dep = libitm.map-sun
 libitm_version_info = -version-info $(libtool_VERSION)
 
 # Force link with C, not C++.  For now, while we're using C++ we don't
 # want or need libstdc++.
-libitm_la_LINK = $(LINK)
+libitm_la_DEPENDENCIES = $(libitm_version_dep)
+libitm_la_LINK = $(LINK) $(libitm_la_LDFLAGS)
 libitm_la_LDFLAGS = $(libitm_version_info) $(libitm_version_script) \
         -no-undefined
 
@@ -1258,6 +1263,15 @@ uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
 
 
 vpath % $(strip $(search_path))
+@LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@libitm.map-sun : $(top_srcdir)/libitm.map \
+@LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@		$(top_srcdir)/../contrib/make_sunver.pl \
+@LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@		$(libitm_la_OBJECTS) $(libitm_la_LIBADD)
+@LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@	perl $(top_srcdir)/../contrib/make_sunver.pl \
+@LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@	  $(top_srcdir)/libitm.map \
+@LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@	  $(libitm_la_OBJECTS:%.lo=.libs/%.o) \
+@LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@	 `echo $(libitm_la_LIBADD) | \
+@LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+@LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 @ARCH_X86_TRUE@x86_sse.lo : XCFLAGS += -msse
 @ARCH_X86_AVX_TRUE@x86_avx.lo : XCFLAGS += -mavx
 
