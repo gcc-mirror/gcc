@@ -1534,7 +1534,8 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 
     case TYPE_PACK_EXPANSION:
     case EXPR_PACK_EXPANSION:
-      return iterative_hash_template_arg (PACK_EXPANSION_PATTERN (arg), val);
+      val = iterative_hash_template_arg (PACK_EXPANSION_PATTERN (arg), val);
+      return iterative_hash_template_arg (PACK_EXPANSION_EXTRA_ARGS (arg), val);
 
     case TYPE_ARGUMENT_PACK:
     case NONTYPE_ARGUMENT_PACK:
@@ -6902,9 +6903,11 @@ template_args_equal (tree ot, tree nt)
     /* For member templates */
     return TREE_CODE (ot) == TREE_VEC && comp_template_args (ot, nt);
   else if (PACK_EXPANSION_P (ot))
-    return PACK_EXPANSION_P (nt) 
-      && template_args_equal (PACK_EXPANSION_PATTERN (ot),
-                              PACK_EXPANSION_PATTERN (nt));
+    return (PACK_EXPANSION_P (nt)
+	    && template_args_equal (PACK_EXPANSION_PATTERN (ot),
+				    PACK_EXPANSION_PATTERN (nt))
+	    && template_args_equal (PACK_EXPANSION_EXTRA_ARGS (ot),
+				    PACK_EXPANSION_EXTRA_ARGS (nt)));
   else if (ARGUMENT_PACK_P (ot))
     {
       int i, len;
@@ -6953,6 +6956,12 @@ comp_template_args_with_info (tree oldargs, tree newargs,
 			      tree *oldarg_ptr, tree *newarg_ptr)
 {
   int i;
+
+  if (oldargs == newargs)
+    return 1;
+
+  if (!oldargs || !newargs)
+    return 0;
 
   if (TREE_VEC_LENGTH (oldargs) != TREE_VEC_LENGTH (newargs))
     return 0;
@@ -9241,12 +9250,20 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   tree pattern;
   tree pack, packs = NULL_TREE;
   bool unsubstituted_packs = false;
+  bool real_packs = false;
+  int missing_level = 0;
   int i, len = -1;
   tree result;
   htab_t saved_local_specializations = NULL;
+  int levels;
 
   gcc_assert (PACK_EXPANSION_P (t));
   pattern = PACK_EXPANSION_PATTERN (t);
+
+  /* Add in any args remembered from an earlier partial instantiation.  */
+  args = add_to_template_args (PACK_EXPANSION_EXTRA_ARGS (t), args);
+
+  levels = TMPL_ARGS_DEPTH (args);
 
   /* Determine the argument packs that will instantiate the parameter
      packs used in the expansion expression. While we're at it,
@@ -9258,6 +9275,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       tree parm_pack = TREE_VALUE (pack);
       tree arg_pack = NULL_TREE;
       tree orig_arg = NULL_TREE;
+      int level = 0;
 
       if (TREE_CODE (parm_pack) == BASES)
        {
@@ -9290,10 +9308,9 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	}
       else
         {
-          int level, idx, levels;
+	  int idx;
           template_parm_level_and_index (parm_pack, &level, &idx);
 
-          levels = TMPL_ARGS_DEPTH (args);
           if (level <= levels)
             arg_pack = TMPL_ARG (args, level, idx);
         }
@@ -9344,6 +9361,13 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
               return error_mark_node;
             }
 
+	  if (TREE_VEC_LENGTH (ARGUMENT_PACK_ARGS (arg_pack)) == 1
+	      && PACK_EXPANSION_P (TREE_VEC_ELT (ARGUMENT_PACK_ARGS (arg_pack),
+						 0)))
+	    /* This isn't a real argument pack yet.  */;
+	  else
+	    real_packs = true;
+
           /* Keep track of the parameter packs and their corresponding
              argument packs.  */
           packs = tree_cons (parm_pack, arg_pack, packs);
@@ -9351,25 +9375,57 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
         }
       else
 	{
-	  /* We can't substitute for this parameter pack.  */
+	  /* We can't substitute for this parameter pack.  We use a flag as
+	     well as the missing_level counter because function parameter
+	     packs don't have a level.  */
 	  unsubstituted_packs = true;
-	  break;
+	  if (!missing_level || missing_level > level)
+	    missing_level = level;
 	}
     }
 
   /* We cannot expand this expansion expression, because we don't have
-     all of the argument packs we need. Substitute into the pattern
-     and return a PACK_EXPANSION_*. The caller will need to deal with
-     that.  */
+     all of the argument packs we need.  */
   if (unsubstituted_packs)
     {
-      tree new_pat;
-      if (TREE_CODE (t) == EXPR_PACK_EXPANSION)
-	new_pat = tsubst_expr (pattern, args, complain, in_decl,
-			       /*integral_constant_expression_p=*/false);
+      if (real_packs)
+	{
+	  /* We got some full packs, but we can't substitute them in until we
+	     have values for all the packs.  So remember these until then.  */
+	  tree save_args;
+
+	  t = make_pack_expansion (pattern);
+
+	  /* The call to add_to_template_args above assumes no overlap
+	     between saved args and new args, so prune away any fake
+	     args, i.e. those that satisfied arg_from_parm_pack_p above.  */
+	  if (missing_level && levels >= missing_level)
+	    {
+	      gcc_assert (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (args)
+			  && missing_level > 1);
+	      TREE_VEC_LENGTH (args) = missing_level - 1;
+	      save_args = copy_node (args);
+	      TREE_VEC_LENGTH (args) = levels;
+	    }
+	  else
+	    save_args = args;
+
+	  PACK_EXPANSION_EXTRA_ARGS (t) = save_args;
+	}
       else
-	new_pat = tsubst (pattern, args, complain, in_decl);
-      return make_pack_expansion (new_pat);
+	{
+	  /* There were no real arguments, we're just replacing a parameter
+	     pack with another version of itself. Substitute into the
+	     pattern and return a PACK_EXPANSION_*. The caller will need to
+	     deal with that.  */
+	  if (TREE_CODE (t) == EXPR_PACK_EXPANSION)
+	    t = tsubst_expr (pattern, args, complain, in_decl,
+			     /*integral_constant_expression_p=*/false);
+	  else
+	    t = tsubst (pattern, args, complain, in_decl);
+	  t = make_pack_expansion (t);
+	}
+      return t;
     }
 
   /* We could not find any argument packs that work.  */
