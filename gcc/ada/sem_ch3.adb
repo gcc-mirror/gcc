@@ -734,16 +734,16 @@ package body Sem_Ch3 is
          Anon_Scope := Current_Scope;
 
          --  A pathological case: function returning access functions that
-         --  return access functions, etc.  Each anonymous access type created
+         --  return access functions, etc. Each anonymous access type created
          --  is in the enclosing scope of the outermost function.
 
          declare
             Par : Node_Id;
+
          begin
             Par := Related_Nod;
-            while Nkind_In (Par,
-                             N_Access_Function_Definition,
-                             N_Access_Definition)
+            while Nkind_In (Par, N_Access_Function_Definition,
+                                 N_Access_Definition)
             loop
                Par := Parent (Par);
             end loop;

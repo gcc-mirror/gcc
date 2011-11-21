@@ -1,5 +1,9 @@
 2011-11-21  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch3.adb, s-taprop-vms.adb, opt.ads: Minor reformatting.
+
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
 	* sinput.ads: Minor comment fix.
 
 2011-11-21  Robert Dewar  <dewar@adacore.com>

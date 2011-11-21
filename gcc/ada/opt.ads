@@ -1830,6 +1830,9 @@ package Opt is
    --  this flag, see package Expander. Indeed this flag might more logically
    --  be in the spec of Expander, but it is referenced by Errout, and it
    --  really seems wrong for Errout to depend on Expander.
+   --
+   --  Note: for many purposes, it is more appropriate to test the flag
+   --  Full_Expander_Active, which also checks that Alfa mode is not active.
 
    Static_Dispatch_Tables : Boolean := True;
    --  This flag indicates if the backend supports generation of statically
