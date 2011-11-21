@@ -1,3 +1,12 @@
+2011-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (iq2000*-*-elf*): Add iq2000/t-iq2000 to tmake_file.
+	(powerpc-*-netbsd*): Add rs6000/t-netbsd to tmake_file.
+	(powerpc-wrs-vxworks, powerpc-wrs-vxworksae): Add to tmake_file.
+	(powerpc-*-lynxos*): Add rs6000/t-lynx to tmake_file.
+	* config/i386/t-darwin64: Remove.
+	* config/sh/t-netbsd (LIB2ADD): Remove.
+
 2011-11-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/49313

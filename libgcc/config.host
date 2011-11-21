@@ -663,7 +663,7 @@ ia64-hp-*vms*)
 	md_unwind_header=ia64/vms-unwind.h
 	;;
 iq2000*-*-elf*)
-	tmake_file=t-fdpbit
+	tmake_file="iq2000/t-iq2000 t-fdpbit"
 	# Don't use default.
 	extra_parts=
         ;;
@@ -847,7 +847,7 @@ powerpc-*-freebsd*)
 	extra_parts="$extra_parts crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	;;
 powerpc-*-netbsd*)
-	tmake_file="$tmake_file rs6000/t-crtstuff"
+	tmake_file="$tmake_file rs6000/t-netbsd rs6000/t-crtstuff"
 	;;
 powerpc-*-eabispe*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic"
@@ -887,10 +887,10 @@ powerpc-*-linux* | powerpc64-*-linux*)
 	md_unwind_header=rs6000/linux-unwind.h
 	;;
 powerpc-wrs-vxworks|powerpc-wrs-vxworksae)
-	tmake_file="rs6000/t-ppccomm-ldbl t-fdpbit"
+	tmake_file="$tmake_file rs6000/t-ppccomm-ldbl t-fdpbit"
 	;;
 powerpc-*-lynxos*)
-	tmake_file="$tmake_file t-fdpbit"
+	tmake_file="$tmake_file rs6000/t-lynx t-fdpbit"
 	;;
 powerpcle-*-elf*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ppccomm-ldbl rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
