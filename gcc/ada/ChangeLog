@@ -1,3 +1,8 @@
+2011-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (INCLUDES_FOR_SUBDIR): Add $(fsrcdir) by
+	means of -iquote unconditionally.
+
 2011-11-21  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, sem_util.adb, sem_res.adb, sem_attr.adb: Minor
