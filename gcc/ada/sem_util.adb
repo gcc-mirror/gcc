@@ -6583,10 +6583,6 @@ package body Sem_Util is
       if Is_Entity_Name (Obj) then
          E := Entity (Obj);
 
-         if Is_Object (E) and then not Is_Aliased (E) then
-            Check_Restriction (No_Implicit_Aliasing, Obj);
-         end if;
-
          return
            (Is_Object (E)
              and then

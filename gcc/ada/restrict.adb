@@ -183,6 +183,78 @@ package body Restrict is
       end if;
    end Check_SPARK_Restriction;
 
+   --------------------------------
+   -- Check_No_Implicit_Aliasing --
+   --------------------------------
+
+   procedure Check_No_Implicit_Aliasing (Obj : Node_Id) is
+      E : Entity_Id;
+
+   begin
+      --  If restriction not active, nothing to check
+
+      if not Restriction_Active (No_Implicit_Aliasing) then
+         return;
+      end if;
+
+      --  If we have an entity name, check entity
+
+      if Is_Entity_Name (Obj) then
+         E := Entity (Obj);
+
+         --  Restriction applies to entities that are objects
+
+         if Is_Object (E) then
+            if Is_Aliased (E) then
+               return;
+
+            elsif Present (Renamed_Object (E)) then
+               Check_No_Implicit_Aliasing (Renamed_Object (E));
+               return;
+            end if;
+
+         --  If we don't have an object, then it's OK
+
+         else
+            return;
+         end if;
+
+      --  For selected component, check selector
+
+      elsif Nkind (Obj) = N_Selected_Component then
+         Check_No_Implicit_Aliasing (Selector_Name (Obj));
+         return;
+
+      --  Indexed component is OK if aliased components
+
+      elsif Nkind (Obj) = N_Indexed_Component then
+         if Has_Aliased_Components (Etype (Prefix (Obj)))
+           or else
+             (Is_Access_Type (Etype (Prefix (Obj)))
+               and then Has_Aliased_Components
+                          (Designated_Type (Etype (Prefix (Obj)))))
+         then
+            return;
+         end if;
+
+      --  For type conversion, check converted expression
+
+      elsif Nkind_In (Obj, N_Unchecked_Type_Conversion, N_Type_Conversion) then
+         Check_No_Implicit_Aliasing (Expression (Obj));
+         return;
+
+      --  Explicit dereference is always OK
+
+      elsif Nkind (Obj) = N_Explicit_Dereference then
+         return;
+      end if;
+
+      --  If we fall through, then we have an aliased view that does not meet
+      --  the rules for being explicitly aliased, so issue restriction msg.
+
+      Check_Restriction (No_Implicit_Aliasing, Obj);
+   end Check_No_Implicit_Aliasing;
+
    -----------------------------------------
    -- Check_Implicit_Dynamic_Code_Allowed --
    -----------------------------------------

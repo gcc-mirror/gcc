@@ -1216,6 +1216,7 @@ begin
            Pragma_Psect_Object                   |
            Pragma_Pure                           |
            Pragma_Pure_05                        |
+           Pragma_Pure_12                        |
            Pragma_Pure_Function                  |
            Pragma_Queuing_Policy                 |
            Pragma_Relative_Deadline              |

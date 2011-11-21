@@ -8536,19 +8536,19 @@ package body Sem_Ch6 is
            and then In_Private_Part (Current_Scope)
          then
             Priv_Decls :=
-              Private_Declarations (
-                Specification (Unit_Declaration_Node (Current_Scope)));
+              Private_Declarations
+                (Specification (Unit_Declaration_Node (Current_Scope)));
 
             return In_Package_Body (Current_Scope)
               or else
                 (Is_List_Member (Decl)
-                   and then List_Containing (Decl) = Priv_Decls)
+                  and then List_Containing (Decl) = Priv_Decls)
               or else (Nkind (Parent (Decl)) = N_Package_Specification
-                         and then not
-                           Is_Compilation_Unit
-                             (Defining_Entity (Parent (Decl)))
-                         and then List_Containing (Parent (Parent (Decl)))
-                                    = Priv_Decls);
+                        and then not
+                          Is_Compilation_Unit
+                            (Defining_Entity (Parent (Decl)))
+                        and then List_Containing (Parent (Parent (Decl))) =
+                                                                Priv_Decls);
          else
             return False;
          end if;
@@ -9562,6 +9562,15 @@ package body Sem_Ch6 is
       --  or IN OUT parameters of the subprogram, or (for a function) if the
       --  return value has an invariant.
 
+      function Is_Public_Subprogram_For (T : Entity_Id) return Boolean;
+      --  T is the entity for a private type for which invariants are defined.
+      --  This function returns True if the procedure corresponding to the
+      --  value of Designator is a public procedure from the point of view of
+      --  this type (i.e. its spec is in the visible part of the package that
+      --  contains the declaration of the private type). A True value means
+      --  that an invariant check is required (for an IN OUT parameter, or
+      --  the returned value of a function.
+
       --------------
       -- Grab_PPC --
       --------------
@@ -9688,6 +9697,45 @@ package body Sem_Ch6 is
 
          return False;
       end Invariants_Or_Predicates_Present;
+
+      ------------------------------
+      -- Is_Public_Subprogram_For --
+      ------------------------------
+
+      --  The type T is a private type, its declaration is therefore in
+      --  the list of public declarations of some package. The test for a
+      --  public subprogram is that its declaration is in this same list
+      --  of declarations for the same package (note that all the public
+      --  declarations are in one list, and all the private declarations
+      --  in another, so this deals with the public/private distinction).
+
+      function Is_Public_Subprogram_For (T : Entity_Id) return Boolean is
+         DD : constant Node_Id := Unit_Declaration_Node (Designator);
+         --  The subprogram declaration for the subprogram in question
+
+         TL : constant List_Id :=
+                Visible_Declarations
+                  (Specification (Unit_Declaration_Node (Scope (T))));
+         --  The list of declarations containing the private declaration of
+         --  the type. We know it is a private type, so we know its scope is
+         --  the package in question, and we know it must be in the visible
+         --  declarations of this package.
+
+      begin
+         --  If the subprogram declaration is not a list member, it must be
+         --  an Init_Proc, in which case we want to consider it to be a
+         --  public subprogram, since we do get initializations to deal with.
+
+         if not Is_List_Member (DD) then
+            return True;
+
+         --  Otherwise we test whether the subprogram is declared in the
+         --  visible declarations of the package containing the type.
+
+         else
+            return TL = List_Containing (DD);
+         end if;
+      end Is_Public_Subprogram_For;
 
    --  Start of processing for Process_PPCs
 
@@ -9985,10 +10033,13 @@ package body Sem_Ch6 is
                      Parameter_Type      => New_Occurrence_Of (Ftyp, Loc),
                      Defining_Identifier => Rent));
 
-               --  Add invariant call if returning type with invariants
+               --  Add invariant call if returning type with invariants and
+               --  this is a public function, i.e. a function declared in the
+               --  visible part of the package defining the private type.
 
                if Has_Invariants (Etype (Rent))
                  and then Present (Invariant_Procedure (Etype (Rent)))
+                 and then Is_Public_Subprogram_For (Etype (Rent))
                then
                   Append_To (Plist,
                     Make_Invariant_Call (New_Occurrence_Of (Rent, Loc)));
@@ -10017,6 +10068,7 @@ package body Sem_Ch6 is
 
                   if Has_Invariants (Ftype)
                     and then Present (Invariant_Procedure (Ftype))
+                    and then Is_Public_Subprogram_For (Ftype)
                   then
                      Append_To (Plist,
                        Make_Invariant_Call

@@ -140,7 +140,7 @@ package Opt is
    --  or internal units, so it reflects the Ada version explicitly set
    --  using configuration pragmas or compiler switches (or if neither
    --  appears, it remains set to Ada_Version_Default). This is used in
-   --  the rare cases (notably for pragmas Preelaborate_05 and Pure_05)
+   --  the rare cases (notably for pragmas Preelaborate_05 and Pure_05/12)
    --  where in the run-time we want the explicit version set.
 
    Ada_Version_Runtime : Ada_Version_Type := Ada_2012;

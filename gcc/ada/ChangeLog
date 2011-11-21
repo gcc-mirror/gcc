@@ -1,3 +1,38 @@
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb (Is_Public_Subprogram_For): New procedure
+	(Process_PPCs): Invariants only apply to public subprograms.
+
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb, sem_util.ads, sem_attr.adb, restrict.adb,
+	restrict.ads: Fix for No_Implicit_Aliasing in the renames case.
+
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
+	* a-finali.ads: Use pragma Pure_12 for this unit
+	* aspects.adb: Add aspect Pure_12
+	* aspects.ads: Add aspect Pure_12
+	* opt.ads: Add note on Pure_12
+	* par-prag.adb: Add dummy entry for Pure_12
+	* sem_prag.adb: Implement Pure_12 pragma
+	* snames.ads-tmpl: Add Entry for Pure_12
+
+2011-11-21  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* vms_data.ads: Add qualifiers for new gnatpp options
+	'--call_threshold' and '--par_threshold".
+	* gnat_ugn.texi: Add description for new gnatpp options
+	'--call_threshold' and '--par_threshold".
+
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
+	* lib.ads: Minor reformatting.
+
+2011-11-21  Robert Dewar  <dewar@adacore.com>
+
+	* lib-load.ads: Add comment.
+
 2011-11-21  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_elab.adb: Minor reformatting

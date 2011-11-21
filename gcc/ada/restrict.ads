@@ -279,6 +279,13 @@ package Restrict is
    --  Same as Check_SPARK_Restriction except there is a continuation message
    --  Msg2 following the initial message Msg1.
 
+   procedure Check_No_Implicit_Aliasing (Obj : Node_Id);
+   --  Obj is a node for which Is_Aliased_View is True, which is being used in
+   --  a context (e.g. 'Access) where no implicit aliasing is allowed if the
+   --  restriction No_Implicit_Aliasing is set. This procedure checks for the
+   --  case where the restriction is active and Obj does not meet the required
+   --  rules for avoiding implicit aliases, and issues a restriction message.
+
    procedure Check_Implicit_Dynamic_Code_Allowed (N : Node_Id);
    --  Tests to see if dynamic code generation (dynamically generated
    --  trampolines, in particular) is allowed by the current restrictions

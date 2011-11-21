@@ -255,6 +255,7 @@ package body Aspects is
     Aspect_Preelaborate_05              => Aspect_Preelaborate_05,
     Aspect_Pure                         => Aspect_Pure,
     Aspect_Pure_05                      => Aspect_Pure_05,
+    Aspect_Pure_12                      => Aspect_Pure_12,
     Aspect_Remote_Call_Interface        => Aspect_Remote_Call_Interface,
     Aspect_Remote_Types                 => Aspect_Remote_Types,
     Aspect_Shared_Passive               => Aspect_Shared_Passive,

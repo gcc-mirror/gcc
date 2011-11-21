@@ -841,13 +841,8 @@ package body Sem_Attr is
            and then not In_Instance
            and then not In_Inlined_Body
          then
-            if Restriction_Check_Required (No_Implicit_Aliasing) then
-               Error_Attr_P
-                 ("prefix of % attribute must be explicitly aliased");
-            else
-               Error_Attr_P
-                 ("prefix of % attribute must be aliased");
-            end if;
+            Error_Attr_P ("prefix of % attribute must be aliased");
+            Check_No_Implicit_Aliasing (P);
          end if;
       end Analyze_Access_Attribute;
 
@@ -2245,6 +2240,8 @@ package body Sem_Attr is
                   if Restriction_Check_Required (No_Implicit_Aliasing) then
                      if not Is_Aliased_View (P) then
                         Check_Restriction (No_Implicit_Aliasing, P);
+                     else
+                        Check_No_Implicit_Aliasing (P);
                      end if;
                   end if;
 

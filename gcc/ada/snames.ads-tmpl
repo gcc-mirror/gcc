@@ -524,6 +524,7 @@ package Snames is
    Name_Psect_Object                   : constant Name_Id := N + $; -- VMS
    Name_Pure                           : constant Name_Id := N + $;
    Name_Pure_05                        : constant Name_Id := N + $; -- GNAT
+   Name_Pure_12                        : constant Name_Id := N + $; -- GNAT
    Name_Pure_Function                  : constant Name_Id := N + $; -- GNAT
    Name_Relative_Deadline              : constant Name_Id := N + $; -- Ada 05
    Name_Remote_Call_Interface          : constant Name_Id := N + $;
@@ -1672,6 +1673,7 @@ package Snames is
       Pragma_Psect_Object,
       Pragma_Pure,
       Pragma_Pure_05,
+      Pragma_Pure_12,
       Pragma_Pure_Function,
       Pragma_Relative_Deadline,
       Pragma_Remote_Call_Interface,

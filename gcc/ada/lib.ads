@@ -518,7 +518,7 @@ package Lib is
    --  its subunits (considered recursively). Units for which this enquiry
    --  returns True are those for which code will be generated. Nodes from
    --  instantiations are included in the extended main unit for this call.
-   --  If the main unit is itself a subunit, then the extended main unit
+   --  If the main unit is itself a subunit, then the extended main code unit
    --  includes its parent unit, and the parent unit spec if it is separate.
 
    function In_Extended_Main_Code_Unit (Loc : Source_Ptr) return Boolean;
@@ -533,7 +533,7 @@ package Lib is
    --  returns True are those for which code will be generated. This differs
    --  from In_Extended_Main_Code_Unit only in that instantiations are not
    --  included for the purposes of this call. If the main unit is itself
-   --  a subunit, then the extended main unit includes its parent unit,
+   --  a subunit, then the extended main source unit includes its parent unit,
    --  and the parent unit spec if it is separate.
 
    function In_Extended_Main_Source_Unit (Loc : Source_Ptr) return Boolean;
