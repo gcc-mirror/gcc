@@ -11616,4 +11616,69 @@ sparc_expand_vcond (enum machine_mode mode, rtx *operands, int ccode, int fcode)
   emit_insn (gen_rtx_SET (VOIDmode, operands[0], bshuf));
 }
 
+/* On sparc, any mode which naturally allocates into the float
+   registers should return 4 here.  */
+
+unsigned int
+sparc_regmode_natural_size (enum machine_mode mode)
+{
+  int size = UNITS_PER_WORD;
+
+  if (TARGET_ARCH64)
+    {
+      enum mode_class mclass = GET_MODE_CLASS (mode);
+
+      if (mclass == MODE_FLOAT || mclass == MODE_VECTOR_INT)
+	size = 4;
+    }
+
+  return size;
+}
+
+/* Return TRUE if it is a good idea to tie two pseudo registers
+   when one has mode MODE1 and one has mode MODE2.
+   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
+   for any hard reg, then this must be FALSE for correct output.
+
+   For V9 we have to deal with the fact that only the lower 32 floating
+   point registers are 32-bit addressable.  */
+
+bool
+sparc_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
+{
+  enum mode_class mclass1, mclass2;
+  unsigned short size1, size2;
+
+  if (mode1 == mode2)
+    return true;
+
+  mclass1 = GET_MODE_CLASS (mode1);
+  mclass2 = GET_MODE_CLASS (mode2);
+  if (mclass1 != mclass2)
+    return false;
+
+  if (! TARGET_V9)
+    return true;
+
+  /* Classes are the same and we are V9 so we have to deal with upper
+     vs. lower floating point registers.  If one of the modes is a
+     4-byte mode, and the other is not, we have to mark them as not
+     tieable because only the lower 32 floating point register are
+     addressable 32-bits at a time.
+
+     We can't just test explicitly for SFmode, otherwise we won't
+     cover the vector mode cases properly.  */
+
+  if (mclass1 != MODE_FLOAT && mclass1 != MODE_VECTOR_INT)
+    return true;
+
+  size1 = GET_MODE_SIZE (mode1);
+  size2 = GET_MODE_SIZE (mode2);
+  if ((size1 > 4 && size2 == 4)
+      || (size2 > 4 && size1 == 4))
+    return false;
+
+  return true;
+}
+
 #include "gt-sparc.h"
