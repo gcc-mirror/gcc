@@ -9633,7 +9633,8 @@ separate section on Intrinsic Subprograms.
 @item Stdcall
 Stdcall (used for Windows implementations only).  This convention correspond
 to the WINAPI (previously called Pascal convention) C/C++ convention under
-Windows.  A function with this convention cleans the stack before exit.
+Windows.  A routine with this convention cleans the stack before
+exit. This pragma cannot be applied to a dispatching call.
 @item DLL
 Synonym for Stdcall
 @item Win32

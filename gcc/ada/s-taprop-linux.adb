@@ -1069,8 +1069,7 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Initialize (S : in out Suspension_Object) is
-      Cond_Attr : aliased pthread_condattr_t;
-      Result    : Interfaces.C.int;
+      Result : Interfaces.C.int;
 
    begin
       --  Initialize internal state (always to False (RM D.10(6)))
@@ -1090,10 +1089,7 @@ package body System.Task_Primitives.Operations is
 
       --  Initialize internal condition variable
 
-      Result := pthread_condattr_init (Cond_Attr'Access);
-      pragma Assert (Result = 0);
-
-      Result := pthread_cond_init (S.CV'Access, Cond_Attr'Access);
+      Result := pthread_cond_init (S.CV'Access, null);
 
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
