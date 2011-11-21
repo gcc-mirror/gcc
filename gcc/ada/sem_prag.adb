@@ -3527,8 +3527,9 @@ package body Sem_Prag is
          --  For Stdcall, a subprogram, variable or subprogram type is required
 
          if C = Convention_Stdcall
-           and then not Is_Subprogram (E)
-           and then not Is_Generic_Subprogram (E)
+           and then
+             ((not Is_Subprogram (E) and then not Is_Generic_Subprogram (E))
+                or else Is_Dispatching_Operation (E))
            and then Ekind (E) /= E_Variable
            and then not
              (Is_Access_Type (E)
