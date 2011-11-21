@@ -14290,6 +14290,10 @@ tsubst_copy_and_build (tree t,
 	return r;
       }
 
+    case TRANSACTION_EXPR:
+      return tsubst_expr(t, args, complain, in_decl,
+	     integral_constant_expression_p);
+
     default:
       /* Handle Objective-C++ constructs, if appropriate.  */
       {

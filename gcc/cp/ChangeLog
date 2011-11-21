@@ -1,3 +1,7 @@
+2011-11-21  Torvald Riegel  <triegel@redhat.com>
+
+	* pt.c (tsubst_copy_and_build): Handle TRANSACTION_EXPR.
+
 2011-11-21  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/50958
