@@ -1750,24 +1750,50 @@ package body Exp_Ch6 is
 
       if not Is_Empty_List (Post_Call) then
 
-         --  If call is not a list member, it must be the triggering statement
-         --  of a triggering alternative or an entry call alternative, and we
-         --  can add the post call stuff to the corresponding statement list.
+         --  Cases where the call is not a member of a statement list
 
          if not Is_List_Member (N) then
             declare
-               P : constant Node_Id := Parent (N);
+               P :  Node_Id := Parent (N);
 
             begin
-               pragma Assert (Nkind_In (P, N_Triggering_Alternative,
-                                           N_Entry_Call_Alternative));
+               --  In Ada 2012 the call may be a function call in an expression
+               --  (since OUT and IN OUT parameters are now allowed for such
+               --  calls. The write-back of (in)-out parameters is handled
+               --  by the back-end, but the constraint checks generated when
+               --  subtypes of formal and actual don't match must be inserted
+               --  in the form of assignments, at the nearest point after the
+               --  declaration or statement that contains the call.
 
-               if Is_Non_Empty_List (Statements (P)) then
-                  Insert_List_Before_And_Analyze
-                    (First (Statements (P)), Post_Call);
+               if Ada_Version >= Ada_2012
+                 and then Nkind (N) = N_Function_Call
+               then
+                  while Nkind (P) not in N_Declaration
+                    and then
+                      Nkind (P) not in N_Statement_Other_Than_Procedure_Call
+                  loop
+                     P := Parent (P);
+                  end loop;
+
+                  Insert_Actions_After (P, Post_Call);
+
+               --  If not the special Ada 2012 case of a function call, then
+               --  we must have the triggering statement of a triggering
+               --  alternative or an entry call alternative, and we can add
+               --  the post call stuff to the corresponding statement list.
+
                else
-                  Set_Statements (P, Post_Call);
+                  pragma Assert (Nkind_In (P, N_Triggering_Alternative,
+                                              N_Entry_Call_Alternative));
+
+                  if Is_Non_Empty_List (Statements (P)) then
+                     Insert_List_Before_And_Analyze
+                       (First (Statements (P)), Post_Call);
+                  else
+                     Set_Statements (P, Post_Call);
+                  end if;
                end if;
+
             end;
 
          --  Otherwise, normal case where N is in a statement sequence,
@@ -2764,7 +2790,7 @@ package body Exp_Ch6 is
          Next_Formal (Formal);
       end loop;
 
-      --  If we are calling an Ada2012 function which needs to have the
+      --  If we are calling an Ada 2012 function which needs to have the
       --  "accessibility level determined by the point of call" (AI05-0234)
       --  passed in to it, then pass it in.
 
@@ -8506,8 +8532,8 @@ package body Exp_Ch6 is
          return False;
 
       --  Handle a corner case, a cross-dialect subp renaming. For example,
-      --  an Ada2012 renaming of an Ada05 subprogram. This can occur when a
-      --  non-Ada2012 unit references predefined runtime units.
+      --  an Ada 2012 renaming of an Ada 05 subprogram. This can occur when a
+      --  non-Ada 2012 unit references predefined run-time units.
 
       elsif Present (Alias (Func_Id)) then
 

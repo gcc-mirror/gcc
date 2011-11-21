@@ -743,7 +743,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
    begin
 
       if Before.Node /= 0 then
-         null;
          pragma Assert (Vet (Container, Before), "bad cursor in Insert");
       end if;
 
@@ -793,7 +792,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
    begin
 
       if Before.Node /= 0 then
-         null;
          pragma Assert (Vet (Container, Before), "bad cursor in Insert");
       end if;
 
@@ -1008,7 +1006,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       Clear (Target);
 
       while Source.Length > 1 loop
-
          pragma Assert (Source.First in 1 .. Source.Capacity);
          pragma Assert (Source.Last /= Source.First);
          pragma Assert (N (Source.First).Prev = 0);
@@ -1034,18 +1031,16 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          --  in the unbounded form of the doubly-linked list container. In that
          --  case, Free is an instantation of Unchecked_Deallocation, which can
          --  fail (because PE will be raised if controlled Finalize fails), so
-         --  we must defer the call until the very last step. Here in the
-         --  bounded form, Free merely links the node we have just
-         --  "deallocated" onto a list of inactive nodes, so technically Free
-         --  cannot fail. However, for consistency, we handle Free the same way
-         --  here as we do for the unbounded form, with the pessimistic
-         --  assumption that it can fail.
+         --  we must defer the call until the last step. Here in the bounded
+         --  form, Free merely links the node we have just "deallocated" onto a
+         --  list of inactive nodes, so technically Free cannot fail. However,
+         --  for consistency, we handle Free the same way here as we do for the
+         --  unbounded form, with the pessimistic assumption that it can fail.
 
          Free (Source, X);
       end loop;
 
       if Source.Length = 1 then
-
          pragma Assert (Source.First in 1 .. Source.Capacity);
          pragma Assert (Source.Last = Source.First);
          pragma Assert (N (Source.First).Prev = 0);
@@ -1221,8 +1216,8 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
            "attempt to tamper with cursors (list is locked)";
       end if;
 
-      pragma Assert (Vet (Container, Position),
-                     "bad cursor in Replace_Element");
+      pragma Assert
+        (Vet (Container, Position), "bad cursor in Replace_Element");
 
       declare
          N : Node_Array renames Container.Nodes;
@@ -1421,7 +1416,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
 
    begin
       if Before.Node /= 0 then
-         null;
          pragma Assert (Vet (Target, Before), "bad cursor in Splice");
       end if;
 
@@ -1513,17 +1507,16 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
 
    begin
       if Before.Node /= 0 then
-         null;
-         pragma Assert (Vet (Container, Before),
-                        "bad Before cursor in Splice");
+         pragma Assert
+           (Vet (Container, Before), "bad Before cursor in Splice");
       end if;
 
       if Position.Node = 0 then
          raise Constraint_Error with "Position cursor has no element";
       end if;
 
-      pragma Assert (Vet (Container, Position),
-                     "bad Position cursor in Splice");
+      pragma Assert
+        (Vet (Container, Position), "bad Position cursor in Splice");
 
       if Position.Node = Before.Node
         or else N (Position.Node).Next = Before.Node
@@ -1732,8 +1725,8 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          raise Constraint_Error with "Position cursor has no element";
       end if;
 
-      pragma Assert (Vet (Container, Position),
-                     "bad cursor in Update_Element");
+      pragma Assert
+        (Vet (Container, Position), "bad cursor in Update_Element");
 
       declare
          B : Natural renames Container.Busy;

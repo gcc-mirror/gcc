@@ -17889,6 +17889,9 @@ gnatmake -P<harness-dir>/test_driver
 test_runner
 @end smallexample
 
+Note that you might need to specify the necessary values of scenario variables
+when you are not using the AUnit defaults.
+
 @item actual unit test stubs
 a test stub for each visible subprogram is created in a separate file, if it
 doesn't exist already. By default, those separate test files are located in a
@@ -17899,6 +17902,9 @@ file my_unit.ads in directory src contains a visible subprogram Proc, then
 the corresponding unit test will be found in file
 src/tests/my_unit-tests-proc_<code>.adb. <code> is a signature encoding used to
 differentiate test names in cases of overloading.
+
+Note that if the project already has both my_unit.ads and my_unit-tests.ads this
+will cause name a conflict with generated test package.
 @end itemize
 
 @node Switches for gnattest
@@ -17920,6 +17926,10 @@ manual tests to be added to the test suite.
 @item -r
 @cindex @option{-r} (@command{gnattest})
 Recursively consider all sources from all projects.
+
+@item -X@var{name=value}
+@cindex @option{-X} (@command{gnattest})
+Indicate that external variable @var{name} has the value @var{value}.
 
 @item -q
 @cindex @option{-q} (@command{gnattest})
@@ -18311,6 +18321,8 @@ The tool currently does not support following features:
 @item generic tests for generic packages and package instantiations
 @item tests for protected subprograms and entries
 @item aspects Precondition, Postcondition, and Test_Case
+@item generating test packages for code that is not conformant with ada 2005
+
 @end itemize
 
 @c *********************************

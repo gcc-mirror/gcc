@@ -1164,10 +1164,11 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
            "attempt to tamper with cursors of Source (list is busy)";
       end if;
 
-      Clear (Target);  -- checks busy bit of Target
+      --  Clear target, note that this checks busy bits of Target
+
+      Clear (Target);
 
       while Source.Length > 1 loop
-
          pragma Assert (Source.First in 1 .. Source.Capacity);
          pragma Assert (Source.Last /= Source.First);
          pragma Assert (N (Source.First).Prev = 0);
@@ -1193,18 +1194,16 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
          --  in the unbounded form of the doubly-linked list container. In that
          --  case, Free is an instantation of Unchecked_Deallocation, which can
          --  fail (because PE will be raised if controlled Finalize fails), so
-         --  we must defer the call until the very last step. Here in the
-         --  bounded form, Free merely links the node we have just
-         --  "deallocated" onto a list of inactive nodes, so technically Free
-         --  cannot fail. However, for consistency, we handle Free the same way
-         --  here as we do for the unbounded form, with the pessimistic
-         --  assumption that it can fail.
+         --  we must defer the call until the last step. Here in the bounded
+         --  form, Free merely links the node we have just "deallocated" onto a
+         --  list of inactive nodes, so technically Free cannot fail. However,
+         --  for consistency, we handle Free the same way here as we do for the
+         --  unbounded form, with the pessimistic assumption that it can fail.
 
          Free (Source, X);
       end loop;
 
       if Source.Length = 1 then
-
          pragma Assert (Source.First in 1 .. Source.Capacity);
          pragma Assert (Source.Last = Source.First);
          pragma Assert (N (Source.First).Prev = 0);
@@ -1247,6 +1246,7 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       declare
          Nodes : Node_Array renames Position.Container.Nodes;
          Node  : constant Count_Type := Nodes (Position.Node).Next;
+
       begin
          if Node = 0 then
             return No_Element;
