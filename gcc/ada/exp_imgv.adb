@@ -27,7 +27,6 @@ with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
-with Errout;   use Errout;
 with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
 with Namet;    use Namet;
@@ -246,7 +245,10 @@ package body Exp_Imgv is
    --  Snn (1 .. Pnn) then occurs as in the other cases. A special case is
    --  when pragma Discard_Names applies, in which case we replace expr by:
 
-   --    Missing ???
+   --     (rt'pos (expr))'Img
+
+   --  So that the result is a space followed by the decimal value for the
+   --  position of the enumeration value in the enumeration type.
 
    procedure Expand_Image_Attribute (N : Node_Id) is
       Loc       : constant Source_Ptr := Sloc (N);
@@ -369,7 +371,7 @@ package body Exp_Imgv is
            or else No (Lit_Strings (Root_Type (Ptyp)))
          then
             --  When pragma Discard_Names applies to the first subtype, build
-            --  (Pref'Pos)'Img.
+            --  (Pref'Pos (Expr))'Img.
 
             Rewrite (N,
               Make_Attribute_Reference (Loc,
@@ -1056,9 +1058,14 @@ package body Exp_Imgv is
    --                   typ'Pos (Typ'Last))
    --                   Wide_Character_Encoding_Method);
 
-   --  where typS and typI are the enumeration image strings and
-   --  indexes table, as described in Build_Enumeration_Image_Tables.
-   --  NN is 8/16/32 for depending on the element type for typI.
+   --  where typS and typI are the enumeration image strings and indexes
+   --  table, as described in Build_Enumeration_Image_Tables. NN is 8/16/32
+   --  for depending on the element type for typI.
+
+   --  Finally if Discard_Names is in effect for an enumeration type, then
+   --  a special conditional expression is built that yields the space needed
+   --  for the decimal representation of the largest pos value in the subtype.
+   --  See code below for details.
 
    procedure Expand_Width_Attribute (N : Node_Id; Attr : Atype := Normal) is
       Loc     : constant Source_Ptr := Sloc (N);
@@ -1126,7 +1133,6 @@ package body Exp_Imgv is
       --  Real types
 
       elsif Is_Real_Type (Rtyp) then
-
          Rewrite (N,
            Make_Conditional_Expression (Loc,
              Expressions => New_List (
@@ -1156,28 +1162,115 @@ package body Exp_Imgv is
       else
          pragma Assert (Is_Enumeration_Type (Rtyp));
 
-         --  Whenever pragma Discard_Names is in effect, it suppresses the
-         --  generation of string literals for enumeration types. Since the
-         --  literals are required to evaluate the 'Width of an enumeration
-         --  type, emit an error.
+         --  Whenever pragma Discard_Names is in effect, the value we need
+         --  is the value needed to accomodate the largest integer pos value
+         --  in the range of the subtype + 1 for the space at the start. We
+         --  build:
 
-         --  ??? This is fine for configurable runtimes, but dubious in the
-         --  general case. For now keep both error messages until this issue
-         --  has been verified with the ARG.
+         --     Tnn : constant Integer := Rtyp'Pos (Ptyp'Last)
+
+         --  and replace the expression by
+
+         --     (if Ptyp'Range_Length = 0 then 0
+         --      else (if Tnn < 10 then 2
+         --            else (if Tnn < 100 then 3
+         --                  ...
+         --                      else n)))...
+
+         --  where n is equal to Rtyp'Pos (Rtyp'Last) + 1
+
+         --  Note: The above processing is in accordance with the intent of
+         --  the RM, which is that Width should be related to the impl-defined
+         --  behavior of Image. It is not clear what this means if Image is
+         --  not defined (as in the configurable run-time case for GNAT) and
+         --  gives an error at compile time.
+
+         --  We choose in this case to just go ahead and implement Width the
+         --  same way, returning what Image would have returned if it has been
+         --  available in the configurable run-time library.
 
          if Discard_Names (Rtyp) then
-            Error_Msg_Name_1 := Attribute_Name (N);
+            declare
+               Tnn : constant Entity_Id :=
+                       Make_Defining_Identifier (Loc,
+                         Chars => New_Internal_Name ('T'));
 
-            if Configurable_Run_Time_Mode then
-               Error_Msg_N ("attribute % not supported in configurable " &
-                            "run-time mode", N);
-            else
-               Error_Msg_N ("attribute % not supported when pragma " &
-                            "Discard_Names is in effect", N);
-            end if;
+               Cexpr : Node_Id;
+               P     : Int;
+               M     : Int;
+               K     : Int;
 
-            return;
+            begin
+               Insert_Action (N,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Tnn,
+                   Constant_Present    => True,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Standard_Integer, Loc),
+                   Expression =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix            => New_Occurrence_Of (Rtyp, Loc),
+                       Attribute_Name    => Name_Pos,
+                       Expressions       => New_List (
+                         Make_Attribute_Reference (Loc,
+                           Prefix            => New_Occurrence_Of (Ptyp, Loc),
+                           Attribute_Name    => Name_Last)))));
+
+               --  OK, now we need to build the conditional expression. First
+               --  get the value of M, the largest possible value needed.
+
+               P := UI_To_Int
+                      (Enumeration_Pos (Entity (Type_High_Bound (Rtyp))));
+
+               K := 1;
+               M := 1;
+               while M < P loop
+                  M := M * 10;
+                  K := K + 1;
+               end loop;
+
+               --  Build inner else
+
+               Cexpr := Make_Integer_Literal (Loc, K);
+
+               --  Wrap in inner if's until counted down to 2
+
+               while K > 2 loop
+                  M := M / 10;
+                  K := K - 1;
+
+                  Cexpr :=
+                    Make_Conditional_Expression (Loc,
+                      Expressions => New_List (
+                        Make_Op_Lt (Loc,
+                          Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
+                          Right_Opnd => Make_Integer_Literal (Loc, M)),
+                        Make_Integer_Literal (Loc, K),
+                        Cexpr));
+               end loop;
+
+               --  Add initial comparison for null range and we are done, so
+               --  rewrite the attribute occurrence with this expression.
+
+               Rewrite (N,
+                 Convert_To (Typ,
+                   Make_Conditional_Expression (Loc,
+                     Expressions => New_List (
+                       Make_Op_Eq (Loc,
+                         Left_Opnd  =>
+                           Make_Attribute_Reference (Loc,
+                             Prefix         => New_Occurrence_Of (Ptyp, Loc),
+                             Attribute_Name => Name_Range_Length),
+                         Right_Opnd => Make_Integer_Literal (Loc, 0)),
+                       Make_Integer_Literal (Loc, 0),
+                       Cexpr))));
+
+               Analyze_And_Resolve (N, Typ);
+               return;
+            end;
          end if;
+
+         --  Normal case, not Discard_Names
 
          Ttyp := Component_Type (Etype (Lit_Indexes (Rtyp)));
 

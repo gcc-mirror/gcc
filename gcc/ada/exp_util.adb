@@ -6420,23 +6420,29 @@ package body Exp_Util is
    --  Start of processing for Remove_Side_Effects
 
    begin
-      --  Handle cases in which there is nothing to do. In particular,
-      --  side-effects are not removed in Alfa mode for formal verification.
-      --  Instead, formal verification is performed only on those expressions
-      --  provably side-effect free.
+      --  We only need to do removal of side effects if we are generating
+      --  actual code. That's because the whole issue of side effects is purely
+      --  a run-time issue, and the removal is required only to get proper
+      --  behavior at run-time.
 
-      --  Why? Is the Alfa mode test just an optimization? Most likely not,
-      --  most likely it is functionally necessary, if so why ???
+      --  In the Alfa case, we don't need to remove side effects because we
+      --  only perform formal verification is performed only on expressions
+      --  that are provably side-effect free. If we tried to remove side
+      --  effects in the Alfa case, we would get into a mess since in the case
+      --  of limited types in particular, removal of side effects involves the
+      --  use of access types or references which are not permitted in Alfa
+      --  mode.
 
       if not Full_Expander_Active then
          return;
+      end if;
 
       --  Cannot generate temporaries if the invocation to remove side effects
       --  was issued too early and the type of the expression is not resolved
       --  (this happens because routines Duplicate_Subexpr_XX implicitly invoke
       --  Remove_Side_Effects).
 
-      elsif No (Exp_Type)
+      if No (Exp_Type)
         or else Ekind (Exp_Type) = E_Access_Attribute_Type
       then
          return;
