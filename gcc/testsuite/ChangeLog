@@ -1,3 +1,9 @@
+2011-11-20  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/sfinae11.C: Adjust.
+	* g++.dg/cpp0x/sfinae26.C: Adjust.
+	* g++.dg/template/unify11.C: Adjust.
+
 2011-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51230

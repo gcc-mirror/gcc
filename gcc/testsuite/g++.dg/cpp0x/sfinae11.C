@@ -12,7 +12,8 @@ inline void f1( T& x ) noexcept( noexcept( declval<T&>().foo() ) ) // { dg-error
 }
 
 template< class T,
-  bool Noexcept = noexcept( declval<T&>().foo() )
+  bool Noexcept = noexcept( declval<T&>().foo() ) // { dg-error "no member|not convert" }
+
 >
 inline void f2( T& x ) noexcept( Noexcept )
 {
@@ -51,7 +52,6 @@ int main()
   // static_assert(  noexcept( f3(y) ), "shall be ill-formed(OK)." );
 
   noexcept( f1(z) );		// { dg-message "required" }
-  static_assert(  noexcept( f2(z) ), "shall be ill-formed." ); // { dg-error "no match|could not convert" }
-  // { dg-error "no member" "" { target *-*-* } 54 }
+  static_assert(  noexcept( f2(z) ), "shall be ill-formed." ); // { dg-error "no match" }
   noexcept( f3(z) );		// { dg-message "required" }
 }
