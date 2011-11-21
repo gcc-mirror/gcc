@@ -1,3 +1,8 @@
+2011-11-21  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config.host (*-*-freebsd[12], *-*-freebsd[12].*,
+	*-*-freebsd*aout*): Remove.
+
 2011-11-20  Hans-Peter Nilsson  <hp@axis.com>
 
 	* static-object.mk (c_flags-$o): Save c_flags.
