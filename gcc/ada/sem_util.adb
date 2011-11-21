@@ -2437,6 +2437,9 @@ package body Sem_Util is
                          (Defining_Identifier
                            (Associated_Node_For_Itype (Typ))));
 
+      elsif Is_Generic_Type (Root_Type (Typ)) then
+         return UI_From_Int (Int'Last);
+
       else
          return Type_Access_Level (Typ);
       end if;
@@ -12712,6 +12715,10 @@ package body Sem_Util is
          then
             return Scope_Depth (Enclosing_Dynamic_Scope (Btyp)) + 1;
          end if;
+      end if;
+
+      if Is_Generic_Type (Root_Type (Btyp)) then
+         return Scope_Depth (Standard_Standard);
       end if;
 
       return Scope_Depth (Enclosing_Dynamic_Scope (Btyp));

@@ -1896,7 +1896,8 @@ package body Sem_Ch3 is
             --  (Ada 2005: AI-230): Accessibility check for anonymous
             --  components
 
-            if Type_Access_Level (Etype (E)) > Type_Access_Level (T) then
+            if Type_Access_Level (Etype (E)) >
+              Deepest_Type_Access_Level (T) then
                Error_Msg_N
                  ("expression has deeper access level than component " &
                   "(RM 3.10.2 (12.2))", E);

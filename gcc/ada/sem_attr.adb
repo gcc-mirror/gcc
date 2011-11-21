@@ -8648,7 +8648,8 @@ package body Sem_Attr is
                --  attribute is always legal in such a context.
 
                if Attr_Id /= Attribute_Unchecked_Access
-                 and then Object_Access_Level (P) > Type_Access_Level (Btyp)
+                 and then
+                   Object_Access_Level (P) > Deepest_Type_Access_Level (Btyp)
                  and then Ekind (Btyp) = E_General_Access_Type
                then
                   Accessibility_Message;
@@ -8670,7 +8671,7 @@ package body Sem_Attr is
                --  anonymous_access_to_protected, there are no accessibility
                --  checks either. Omit check entirely for Unrestricted_Access.
 
-               elsif Object_Access_Level (P) > Type_Access_Level (Btyp)
+               elsif Object_Access_Level (P) > Deepest_Type_Access_Level (Btyp)
                  and then Comes_From_Source (N)
                  and then Ekind (Btyp) = E_Access_Protected_Subprogram_Type
                  and then Attr_Id /= Attribute_Unrestricted_Access

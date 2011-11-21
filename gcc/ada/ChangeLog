@@ -1,3 +1,23 @@
+2011-11-21  Steve Baird  <baird@adacore.com>
+
+	* sem_util.ads: Update comment describing function
+	Deepest_Access_Level.
+	* sem_util.adb (Deepest_Type_Access_Level): Return Int'Last for a
+	generic formal type.
+	(Type_Access_Level): Return library level
+	for a generic formal type.
+	* sem_attr.adb (Resolve_Attribute): Replace two Type_Access_Level
+	calls with calls to Deepest_Type_Access_Level.
+	* sem_ch3.adb (Analyze_Component_Declaration): replace a
+	Type_Access_Level call with a call to Deepest_Type_Access_Level.
+	* sem_res.adb (Resolve_Allocator.Check_Allocator_Discrim_Accessibility):
+	Replace three Type_Access_Level calls with calls to
+	Deepest_Type_Access_Level.
+	(Resolve_Allocator): Replace a Type_Access_Level call with a call to
+	Deepest_Type_Access_Level.
+	(Valid_Conversion.Valid_Array_Conversion): Replace a
+	Type_Access_Level call with a call to Deepest_Type_Access_Level.
+
 2011-11-21  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, s-taprop-vms.adb, opt.ads: Minor reformatting.

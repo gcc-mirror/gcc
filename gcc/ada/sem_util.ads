@@ -314,7 +314,9 @@ package Sem_Util is
    --  static accesssibility level of the object. In that case, the dynamic
    --  accessibility level of the object may take on values in a range. The low
    --  bound of of that range is returned by Type_Access_Level; this function
-   --  yields the high bound of that range.
+   --  yields the high bound of that range. Also differs from Type_Access_Level
+   --  in the case of a descendant of a generic formal type (returns Int'Last
+   --  instead of 0).
 
    function Defining_Entity (N : Node_Id) return Entity_Id;
    --  Given a declaration N, returns the associated defining entity. If the
