@@ -5,6 +5,8 @@
 	(tuple<>::tuple(_UElements&&...),
 	tuple<>::tuple(const tuple<_UElements...>&),
 	tuple<>::tuple(tuple<_UElements...>&&)): Remove wa for c++/48322.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Adjust dg-error
+	line number.
 
 2011-11-20  Jason Merrill  <jason@redhat.com>
 
