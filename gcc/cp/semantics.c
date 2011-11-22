@@ -4927,8 +4927,9 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
           gcc_unreachable ();
 
         case INTEGER_CST:
+	case PTRMEM_CST:
           /* We can get here when the id-expression refers to an
-             enumerator.  */
+             enumerator or non-type template parameter.  */
           type = TREE_TYPE (expr);
           break;
 

@@ -1,3 +1,8 @@
+2011-11-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51265
+	* g++.dg/cpp0x/decltype36.C: New.
+
 2011-11-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/delay-slot-2.c: New test.

@@ -1,3 +1,8 @@
+2011-11-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51265
+	* semantics.c (finish_decltype_type): Handle PTRMEM_CST.
+
 2011-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51150
