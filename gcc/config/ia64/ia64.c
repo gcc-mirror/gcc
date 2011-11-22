@@ -2266,7 +2266,7 @@ ia64_split_call (rtx retval, rtx addr, rtx retaddr, rtx scratch_r,
 
 void
 ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
-		       rtx old_dst, rtx new_dst)
+		       rtx old_dst, rtx new_dst, enum memmodel model)
 {
   enum machine_mode mode = GET_MODE (mem);
   rtx old_reg, new_reg, cmp_reg, ar_ccv, label;
@@ -2283,12 +2283,31 @@ ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
       if (!old_dst)
         old_dst = gen_reg_rtx (mode);
 
-      emit_insn (gen_memory_barrier ());
+      switch (model)
+	{
+	case MEMMODEL_ACQ_REL:
+	case MEMMODEL_SEQ_CST:
+	  emit_insn (gen_memory_barrier ());
+	  /* FALLTHRU */
+	case MEMMODEL_RELAXED:
+	case MEMMODEL_ACQUIRE:
+	case MEMMODEL_CONSUME:
+	  if (mode == SImode)
+	    icode = CODE_FOR_fetchadd_acq_si;
+	  else
+	    icode = CODE_FOR_fetchadd_acq_di;
+	  break;
+	case MEMMODEL_RELEASE:
+	  if (mode == SImode)
+	    icode = CODE_FOR_fetchadd_rel_si;
+	  else
+	    icode = CODE_FOR_fetchadd_rel_di;
+	  break;
 
-      if (mode == SImode)
-	icode = CODE_FOR_fetchadd_acq_si;
-      else
-	icode = CODE_FOR_fetchadd_acq_di;
+	default:
+	  gcc_unreachable ();
+	}
+
       emit_insn (GEN_FCN (icode) (old_dst, mem, val));
 
       if (new_dst)
@@ -2302,8 +2321,12 @@ ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
     }
 
   /* Because of the volatile mem read, we get an ld.acq, which is the
-     front half of the full barrier.  The end half is the cmpxchg.rel.  */
-  gcc_assert (MEM_VOLATILE_P (mem));
+     front half of the full barrier.  The end half is the cmpxchg.rel.
+     For relaxed and release memory models, we don't need this.  But we
+     also don't bother trying to prevent it either.  */
+  gcc_assert (model == MEMMODEL_RELAXED
+	      || model == MEMMODEL_RELEASE
+	      || MEM_VOLATILE_P (mem));
 
   old_reg = gen_reg_rtx (DImode);
   cmp_reg = gen_reg_rtx (DImode);
@@ -2342,12 +2365,36 @@ ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
   if (new_dst)
     emit_move_insn (new_dst, new_reg);
 
-  switch (mode)
+  switch (model)
     {
-    case QImode:  icode = CODE_FOR_cmpxchg_rel_qi;  break;
-    case HImode:  icode = CODE_FOR_cmpxchg_rel_hi;  break;
-    case SImode:  icode = CODE_FOR_cmpxchg_rel_si;  break;
-    case DImode:  icode = CODE_FOR_cmpxchg_rel_di;  break;
+    case MEMMODEL_RELAXED:
+    case MEMMODEL_ACQUIRE:
+    case MEMMODEL_CONSUME:
+      switch (mode)
+	{
+	case QImode: icode = CODE_FOR_cmpxchg_acq_qi;  break;
+	case HImode: icode = CODE_FOR_cmpxchg_acq_hi;  break;
+	case SImode: icode = CODE_FOR_cmpxchg_acq_si;  break;
+	case DImode: icode = CODE_FOR_cmpxchg_acq_di;  break;
+	default:
+	  gcc_unreachable ();
+	}
+      break;
+
+    case MEMMODEL_RELEASE:
+    case MEMMODEL_ACQ_REL:
+    case MEMMODEL_SEQ_CST:
+      switch (mode)
+	{
+	case QImode: icode = CODE_FOR_cmpxchg_rel_qi;  break;
+	case HImode: icode = CODE_FOR_cmpxchg_rel_hi;  break;
+	case SImode: icode = CODE_FOR_cmpxchg_rel_si;  break;
+	case DImode: icode = CODE_FOR_cmpxchg_rel_di;  break;
+	default:
+	  gcc_unreachable ();
+	}
+      break;
+
     default:
       gcc_unreachable ();
     }
@@ -6342,6 +6389,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 	case UNSPEC_PIC_CALL:
         case UNSPEC_MF:
         case UNSPEC_FETCHADD_ACQ:
+        case UNSPEC_FETCHADD_REL:
 	case UNSPEC_BSP_VALUE:
 	case UNSPEC_FLUSHRS:
 	case UNSPEC_BUNDLE_SELECTOR:
@@ -6385,6 +6433,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 	  break;
 
         case UNSPEC_CMPXCHG_ACQ:
+        case UNSPEC_CMPXCHG_REL:
 	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 1), flags, pred);
 	  need_barrier |= rtx_needs_barrier (XVECEXP (x, 0, 2), flags, pred);
 	  break;
