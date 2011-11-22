@@ -1,3 +1,9 @@
+2011-11-22  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/50764
+	* sched-deps.c (sched_analyze_insn): Make sure frame-related insns are
+	not moved past preceding jump.
+
 2011-11-22  Jeff Law  <law@redhat.com>
 
 	* doc/contrib.texi: Add entry for David Binderman.
