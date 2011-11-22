@@ -1,3 +1,10 @@
+2011-11-22   Diego Novillo  <dnovillo@google.com>
+
+	* include/line-map.h (linemap_dump): Declare.
+	(line_table_dump): Declare.
+	* line-map.c (linemap_dump): New.
+	(line_table_dump): New.
+
 2011-11-21  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/50958
