@@ -784,8 +784,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 #endif
       if (!opts->x_flag_fat_lto_objects && !HAVE_LTO_PLUGIN)
         error_at (loc, "-fno-fat-lto-objects are supported only with linker plugin.");
-      if (opts->x_flag_tm)
-	error_at (loc, "LTO is currently not supported with transactional memory");
 }
   if ((opts->x_flag_lto_partition_balanced != 0) + (opts->x_flag_lto_partition_1to1 != 0)
        + (opts->x_flag_lto_partition_none != 0) >= 1)

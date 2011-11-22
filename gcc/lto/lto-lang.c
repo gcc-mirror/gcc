@@ -46,6 +46,7 @@ static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
 static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
 static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
+static tree handle_transaction_pure_attribute (tree *, tree, tree, int, bool *);
 static tree handle_format_attribute (tree *, tree, tree, int, bool *);
 static tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
 
@@ -75,6 +76,8 @@ const struct attribute_spec lto_attribute_table[] =
 			      handle_sentinel_attribute, false },
   { "type generic",           0, 0, false, true, true,
 			      handle_type_generic_attribute, false },
+  { "transaction_pure",	      0, 0, false, true, true,
+			      handle_transaction_pure_attribute, false },
   { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
@@ -398,6 +401,20 @@ handle_type_generic_attribute (tree *node, tree ARG_UNUSED (name),
   
   /* Ensure we have a variadic function.  */
   gcc_assert (!prototype_p (*node) || stdarg_p (*node));
+
+  return NULL_TREE;
+}
+
+/* Handle a "transaction_pure" attribute.  */
+
+static tree
+handle_transaction_pure_attribute (tree *node, tree ARG_UNUSED (name),
+				   tree ARG_UNUSED (args),
+				   int ARG_UNUSED (flags),
+				   bool * ARG_UNUSED (no_add_attrs))
+{
+  /* Ensure we have a function type.  */
+  gcc_assert (TREE_CODE (*node) == FUNCTION_TYPE);
 
   return NULL_TREE;
 }
