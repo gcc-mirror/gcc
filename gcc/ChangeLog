@@ -1,3 +1,7 @@
+2011-11-22  Jeff Law  <law@redhat.com>
+
+	* doc/contrib.texi: Add entry for David Binderman.
+
 2011-11-22  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* postreload.c (reload_combine): Mark reg_state as invalid at
