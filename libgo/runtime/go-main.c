@@ -47,11 +47,10 @@ main (int argc, char **argv)
   g = &runtime_g0;
   m->curg = g;
   g->m = m;
-  runtime_initpanic ();
   runtime_mallocinit ();
-  runtime_cpuprofinit ();
   __go_gc_goroutine_init (&argc);
 
+  runtime_osinit();
   runtime_goargs();
   runtime_goenvs();
 

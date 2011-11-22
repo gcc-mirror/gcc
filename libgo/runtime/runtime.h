@@ -48,32 +48,16 @@ typedef unsigned int uintptr __attribute__ ((mode (pointer)));
 typedef	uint8			bool;
 typedef	uint8			byte;
 typedef	struct	G		G;
+typedef	union	Lock		Lock;
 typedef	struct	M		M;
+typedef	union	Note		Note;
 typedef	struct	MCache		MCache;
 typedef struct	FixAlloc	FixAlloc;
-typedef	struct	Lock		Lock;
 
 typedef	struct	__go_defer_stack	Defer;
 typedef	struct	__go_panic_stack	Panic;
 typedef	struct	__go_open_array		Slice;
 typedef	struct	__go_string		String;
-
-/* We use mutexes for locks.  6g uses futexes directly, and perhaps
-   someday we will do that too.  */
-
-struct	Lock
-{
-	uint32 key;
-	sem_t sem;
-};
-
-/* A Note.  */
-
-typedef	struct	Note		Note;
-
-struct Note {
-	int32 woken;
-};
 
 /* Per CPU declarations.  */
 
@@ -99,8 +83,19 @@ enum
 	false	= 0,
 };
 
-/* Structures.  */
-
+/*
+ * structures
+ */
+union	Lock
+{
+	uint32	key;	// futex-based impl
+	M*	waitm;	// linked list of waiting M's (sema-based impl)
+};
+union	Note
+{
+	uint32	key;	// futex-based impl
+	M*	waitm;	// waiting M (sema-based impl)
+};
 struct	G
 {
 	Defer*	defer;
@@ -141,6 +136,10 @@ struct	M
 	int32	profilehz;
 	uint32	fastrand;
 	MCache	*mcache;
+	M*	nextwaitm;	// next M waiting for lock
+	uintptr	waitsema;	// semaphore for parking on locks
+	uint32	waitsemacount;
+	uint32	waitsemalock;
 
 	/* For the list of all threads.  */
 	struct __go_thread_id *list_entry;
@@ -173,6 +172,7 @@ enum {
  * external data
  */
 extern	uint32	runtime_panicking;
+int32	runtime_ncpu;
 
 /*
  * common functions and data
@@ -183,13 +183,13 @@ int32	runtime_findnull(const byte*);
  * very low level c-called
  */
 void	runtime_args(int32, byte**);
+void	runtime_osinit();
 void	runtime_goargs(void);
 void	runtime_goenvs(void);
 void	runtime_throw(const char*);
 void*	runtime_mal(uintptr);
 String	runtime_gostringnocopy(byte*);
 void	runtime_mallocinit(void);
-void	runtime_initfintab(void);
 void	siginit(void);
 bool	__go_sigsend(int32 sig);
 int64	runtime_nanotime(void);
@@ -208,27 +208,45 @@ void	__go_cachestats(void);
  * mutual exclusion locks.  in the uncontended case,
  * as fast as spin locks (just a few user-level instructions),
  * but on the contention path they sleep in the kernel.
+ * a zeroed Lock is unlocked (no need to initialize each lock).
  */
-void	runtime_initlock(Lock*);
 void	runtime_lock(Lock*);
 void	runtime_unlock(Lock*);
-void	runtime_destroylock(Lock*);
-
-void runtime_semacquire (uint32 *) asm ("libgo_runtime.runtime.Semacquire");
-void runtime_semrelease (uint32 *) asm ("libgo_runtime.runtime.Semrelease");
 
 /*
  * sleep and wakeup on one-time events.
  * before any calls to notesleep or notewakeup,
  * must call noteclear to initialize the Note.
- * then, any number of threads can call notesleep
+ * then, exactly one thread can call notesleep
  * and exactly one thread can call notewakeup (once).
- * once notewakeup has been called, all the notesleeps
- * will return.  future notesleeps will return immediately.
+ * once notewakeup has been called, the notesleep
+ * will return.  future notesleep will return immediately.
+ * subsequent noteclear must be called only after
+ * previous notesleep has returned, e.g. it's disallowed
+ * to call noteclear straight after notewakeup.
+ *
+ * notetsleep is like notesleep but wakes up after
+ * a given number of nanoseconds even if the event
+ * has not yet happened.  if a goroutine uses notetsleep to
+ * wake up early, it must wait to call noteclear until it
+ * can be sure that no other goroutine is calling
+ * notewakeup.
  */
 void	runtime_noteclear(Note*);
 void	runtime_notesleep(Note*);
 void	runtime_notewakeup(Note*);
+void	runtime_notetsleep(Note*, int64);
+
+/*
+ * low-level synchronization for implementing the above
+ */
+uintptr	runtime_semacreate(void);
+int32	runtime_semasleep(int64);
+void	runtime_semawakeup(M*);
+// or
+void	runtime_futexsleep(uint32*, uint32, int64);
+void	runtime_futexwakeup(uint32*, uint32);
+
 
 /* Functions.  */
 #define runtime_printf printf
@@ -248,17 +266,22 @@ bool	runtime_addfinalizer(void*, void(*fn)(void*), const struct __go_func_type *
 #define runtime_cas(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 #define runtime_casp(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 #define runtime_xadd(p, v) __sync_add_and_fetch (p, v)
+#define runtime_xchg(p, v) __atomic_exchange_n (p, v, __ATOMIC_SEQ_CST)
+#define runtime_atomicload(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
+#define runtime_atomicstore(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
+#define runtime_atomicloadp(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
+#define runtime_atomicstorep(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
 
-void	runtime_initpanic(void);
 void	runtime_dopanic(int32) __attribute__ ((noreturn));
 void	runtime_startpanic(void);
 const byte*	runtime_getenv(const char*);
 int32	runtime_atoi(const byte*);
 void	runtime_sigprof(uint8 *pc, uint8 *sp, uint8 *lr);
-void	runtime_cpuprofinit(void);
 void	runtime_resetcpuprofiler(int32);
 void	runtime_setcpuprofilerate(void(*)(uintptr*, int32), int32);
 uint32	runtime_fastrand1(void);
+void	runtime_semacquire (uint32 *) asm ("libgo_runtime.runtime.Semacquire");
+void	runtime_semrelease (uint32 *) asm ("libgo_runtime.runtime.Semrelease");
 void	runtime_procyield(uint32);
 void	runtime_osyield(void);
 void	runtime_usleep(uint32);

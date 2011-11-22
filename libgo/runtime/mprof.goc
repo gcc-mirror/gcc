@@ -186,12 +186,6 @@ found:
 	return nil;
 }
 
-void
-runtime_Mprof_Init()
-{
-	runtime_initlock(&proflock);
-}
-
 // Called by malloc to record a profiled block.
 void
 runtime_MProf_Malloc(void *p, uintptr size)

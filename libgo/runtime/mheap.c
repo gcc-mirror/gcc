@@ -40,7 +40,6 @@ runtime_MHeap_Init(MHeap *h, void *(*alloc)(uintptr))
 {
 	uint32 i;
 
-	runtime_initlock(h);
 	runtime_FixAlloc_Init(&h->spanalloc, sizeof(MSpan), alloc, RecordSpan, h);
 	runtime_FixAlloc_Init(&h->cachealloc, sizeof(MCache), alloc, nil, nil);
 	// h->mapcache needs no init

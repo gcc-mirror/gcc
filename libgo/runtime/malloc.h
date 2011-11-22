@@ -405,7 +405,6 @@ enum
 	FlagNoGC = 1<<2,	// must not free or scan for pointers
 };
 
-void	runtime_Mprof_Init(void);
 void	runtime_MProf_Malloc(void*, uintptr);
 void	runtime_MProf_Free(void*, uintptr);
 void	runtime_MProf_Mark(void (*scan)(byte *, int64));
