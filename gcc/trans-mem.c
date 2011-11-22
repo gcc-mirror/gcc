@@ -2333,7 +2333,8 @@ expand_block_tm (struct tm_region *region, basic_block bb)
 	{
 	case GIMPLE_ASSIGN:
 	  /* Only memory reads/writes need to be instrumented.  */
-	  if (gimple_assign_single_p (stmt))
+	  if (gimple_assign_single_p (stmt)
+	      && !gimple_clobber_p (stmt))
 	    {
 	      expand_assign_tm (region, &gsi);
 	      continue;
