@@ -14967,6 +14967,7 @@ cp_parser_alias_declaration (cp_parser* parser)
   cp_declarator *declarator;
   cp_decl_specifier_seq decl_specs;
   bool member_p;
+  const char *saved_message = NULL;
 
   /* Look for the `using' keyword.  */
   cp_parser_require_keyword (parser, RID_USING, RT_USING);
@@ -14975,7 +14976,35 @@ cp_parser_alias_declaration (cp_parser* parser)
   attributes = cp_parser_attributes_opt (parser);
   cp_parser_require (parser, CPP_EQ, RT_EQ);
 
+  /* Now we are going to parse the type-id of the declaration.  */
+
+  /*
+    [dcl.type]/3 says:
+
+	"A type-specifier-seq shall not define a class or enumeration
+	 unless it appears in the type-id of an alias-declaration (7.1.3) that
+	 is not the declaration of a template-declaration."
+
+    In other words, if we currently are in an alias template, the
+    type-id should not define a type.
+
+    So let's set parser->type_definition_forbidden_message in that
+    case; cp_parser_check_type_definition (called by
+    cp_parser_class_specifier) will then emit an error if a type is
+    defined in the type-id.  */
+  if (parser->num_template_parameter_lists)
+    {
+      saved_message = parser->type_definition_forbidden_message;
+      parser->type_definition_forbidden_message =
+	G_("types may not be defined in alias template declarations");
+    }
+
   type = cp_parser_type_id (parser);
+
+  /* Restore the error message if need be.  */
+  if (parser->num_template_parameter_lists)
+    parser->type_definition_forbidden_message = saved_message;
+
   cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
 
   if (cp_parser_error_occurred (parser))
