@@ -376,12 +376,6 @@ runtime_mallocinit(void)
 	runtime_MHeap_Init(&runtime_mheap, runtime_SysAlloc);
 	m->mcache = runtime_allocmcache();
 
-	// Initialize malloc profiling.
-	runtime_Mprof_Init();
-
-	// Initialize finalizer.
-	runtime_initfintab();
-
 	// See if it works.
 	runtime_free(runtime_malloc(1));
 }

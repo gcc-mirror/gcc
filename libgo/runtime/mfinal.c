@@ -41,15 +41,6 @@ static struct {
 	uint8 pad[0 /* CacheLineSize - sizeof(Fintab) */];	
 } fintab[TABSZ];
 
-void
-runtime_initfintab()
-{
-	int32 i;
-
-	for(i=0; i<TABSZ; i++)
-		runtime_initlock(&fintab[i]);
-}
-
 static void
 addfintab(Fintab *t, void *k, void (*fn)(void*), const struct __go_func_type *ft)
 {

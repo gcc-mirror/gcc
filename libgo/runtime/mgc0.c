@@ -860,12 +860,6 @@ runtime_gc(int32 force __attribute__ ((unused)))
 		p = runtime_getenv("GOGCTRACE");
 		if(p != nil)
 			gctrace = runtime_atoi(p);
-
-		runtime_initlock(&work.fmu);
-		runtime_initlock(&work.emu);
-		runtime_initlock(&work.markgate);
-		runtime_initlock(&work.sweepgate);
-		runtime_initlock(&work.Lock);
 	}
 	if(gcpercent < 0)
 		return;

@@ -115,12 +115,6 @@ static void add(Profile*, uintptr*, int32);
 static bool evict(Profile*, Entry*);
 static bool flushlog(Profile*);
 
-void
-runtime_cpuprofinit(void)
-{
-	runtime_initlock(&lk);
-}
-
 // LostProfileData is a no-op function used in profiles
 // to mark the number of profiling stack traces that were
 // discarded due to slow data writers.

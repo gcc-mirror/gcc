@@ -394,6 +394,12 @@ else
 rtems_task_variable_add_file =
 endif
 
+if LIBGO_IS_LINUX
+runtime_lock_files = runtime/lock_futex.c runtime/thread-linux.c
+else
+runtime_lock_files = runtime/lock_sema.c runtime/thread-sema.c
+endif
+
 runtime_files = \
 	runtime/go-append.c \
 	runtime/go-assert.c \
@@ -432,7 +438,6 @@ runtime_files = \
 	runtime/go-new-channel.c \
 	runtime/go-new-map.c \
 	runtime/go-new.c \
-	runtime/go-note.c \
 	runtime/go-panic.c \
 	runtime/go-print.c \
 	runtime/go-rec-big.c \
@@ -474,6 +479,7 @@ runtime_files = \
 	runtime/go-unsafe-pointer.c \
 	runtime/go-unwind.c \
 	runtime/cpuprof.c \
+	$(runtime_lock_files) \
 	runtime/mcache.c \
 	runtime/mcentral.c \
 	$(runtime_mem_file) \

@@ -14,12 +14,6 @@ uint32	runtime_panicking;
 static Lock paniclk;
 
 void
-runtime_initpanic(void)
-{
-	runtime_initlock(&paniclk);
-}
-
-void
 runtime_startpanic(void)
 {
 	if(m->dying) {
@@ -56,7 +50,6 @@ runtime_dopanic(int32 unused __attribute__ ((unused)))
 		// Wait forever without chewing up cpu.
 		// It will exit when it's done.
 		static Lock deadlock;
-		runtime_initlock(&deadlock);
 		runtime_lock(&deadlock);
 		runtime_lock(&deadlock);
 	}
