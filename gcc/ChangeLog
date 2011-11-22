@@ -1,3 +1,10 @@
+2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
+
+	*  config/darwin.h (ENDFILE_SPEC): New.
+	(DARWIN_CRT1_SPEC): Add crttms.o.
+	(STARTFILE_SPEC): Likewise for dynamic libs and bundles.
+	* config/i386.h (ENDFILE_SPEC): Amend to include crttme.o.
+
 2011-11-22  Michael Matz  <matz@suse.de>
 
 	PR c++/51264

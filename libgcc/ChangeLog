@@ -1,3 +1,11 @@
+2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/darwin-crt-tm.c: New file.
+	* config.host (darwin): Build crttms.o crttme.o to provide
+	startup and shutdown for tm clones.
+	* config/t-darwin (crttms.o): New build rule.
+	(crttme.o): Likewise.
+
 2011-11-21  Hans-Peter Nilsson  <hp@axis.com>
 
 	* Makefile.in ($(srcdir)/emutls.c): Explain why it's in LIB2ADDEH
