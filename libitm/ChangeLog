@@ -1,5 +1,16 @@
 2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
 
+	* config/x86/sjlj.S (CONCAT1, CONCAT2, SYM): Respond to
+	__USER_LABEL_PREFIX__ for targets that use it.
+	TYPE, SIZE, HIDDEN): New macros to assist on non-elf targets.
+	(_ITM_beginTransaction): Use SYM, TYPE, SIZE macros to assist
+	in portability to non-elf targets.
+	(GTM_longjmp): LIkewise.
+	* libitm_i.h (begin_transaction): Apply __USER_LABEL_PREFIX__
+	where required.
+
+2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
+
 	* testsuite/libitm.c/memcpy-1.c: Allow for MAP_ANON spelling.
 	* testsuite/libitm.c/memset-1.c: Likewise.
 
