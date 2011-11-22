@@ -1,3 +1,8 @@
+2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* testsuite/libitm.c/memcpy-1.c: Allow for MAP_ANON spelling.
+	* testsuite/libitm.c/memset-1.c: Likewise.
+
 2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
 
 	* configure: Regenerate.
