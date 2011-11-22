@@ -33,6 +33,12 @@ static unsigned char *buf;
 static size_t bufsize, page_size;
 static int fail;
 
+#ifndef MAP_ANONYMOUS
+#  ifdef MAP_ANON
+#    define MAP_ANONYMOUS MAP_ANON
+#  endif
+#endif
+
 static void
 do_test (size_t align, size_t len)
 {
