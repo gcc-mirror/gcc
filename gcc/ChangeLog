@@ -1,3 +1,8 @@
+2011-11-22  Ian Lance Taylor  <iant@google.com>
+
+	* doc/install.texi (Configuration): Correct doc of
+	--enable-build-poststage1-with-cxx: it is not experimental.
+
 2011-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51074
