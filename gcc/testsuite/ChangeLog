@@ -1,3 +1,8 @@
+2011-11-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51265
+	* g++.dg/cpp0x/decltype36.C: New.
+
 2011-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51074
