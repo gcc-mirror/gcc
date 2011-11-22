@@ -1,3 +1,8 @@
+2011-11-22  Michael Matz  <matz@suse.de>
+
+	PR other/51125
+	* trans-mem.c (expand_block_tm): Ignore clobbers.
+
 2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
 
 	*  config/darwin.h (ENDFILE_SPEC): New.
