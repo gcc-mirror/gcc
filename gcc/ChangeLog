@@ -1,3 +1,8 @@
+2011-11-22  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* postreload.c (reload_combine): Mark reg_state as invalid at
+	volatile insns if there has been a use already.
+
 2011-11-21  Aldy Hernandez  <aldyh@redhat.com>
 
 	* opts.c (finish_options): Do not fail for -fgnu-tm.
