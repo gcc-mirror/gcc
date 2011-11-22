@@ -6994,7 +6994,6 @@ iterative_hash_expr (const_tree t, hashval_t val)
 	      val = iterative_hash_expr (TREE_OPERAND (t, i), val);
 	}
       return val;
-      break;
     }
 }
 
