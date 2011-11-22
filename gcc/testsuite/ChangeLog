@@ -1,3 +1,8 @@
+2011-11-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/51143
+	* g++.dg/cpp0x/alias-decl-16.C: New test.
+
 2011-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/50765
