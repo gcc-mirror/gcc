@@ -1,3 +1,10 @@
+2011-11-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51196
+	* typeck.c (cp_build_binary_op, [case EQ_EXPR]): For targets having
+	TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_delta, do here
+	the -Wzero-as-null-pointer-constant warning for pmf == 0.
+
 2011-11-21  Torvald Riegel  <triegel@redhat.com>
 
 	* pt.c (tsubst_copy_and_build): Handle TRANSACTION_EXPR.
