@@ -1,3 +1,8 @@
+2011-11-22  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.md: Use define_e_enum for UNSPEC_*
+	and UNSPECV_* constants.
+
 2011-11-22  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/50764
