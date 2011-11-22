@@ -1,3 +1,11 @@
+2011-11-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* opts.c (finish_options): Do not fail for -fgnu-tm.
+	* gimple-streamer-out.c (output_gimple_stmt): Handle GIMPLE_TRANSACTION.
+	* gimple-streamer-in.c (input_gimple_stmt): Same.
+	* lto-cgraph.c (input_overwrite_node): Read tm_clone bit.
+	(lto_output_node): Write tm_clone bit.
+
 2011-11-22  Ian Lance Taylor  <iant@google.com>
 
 	* doc/install.texi (Configuration): Correct doc of
