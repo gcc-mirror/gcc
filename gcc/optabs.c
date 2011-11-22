@@ -6932,9 +6932,9 @@ can_vec_perm_for_code_p (enum tree_code code, enum machine_mode mode,
 	  break;
 
 	case VEC_INTERLEAVE_HIGH_EXPR:
-	  alt = nelt / 2;
-	  /* FALLTHRU */
 	case VEC_INTERLEAVE_LOW_EXPR:
+	  if ((BYTES_BIG_ENDIAN != 0) ^ (code == VEC_INTERLEAVE_HIGH_EXPR))
+	    alt = nelt / 2;
 	  for (i = 0; i < nelt / 2; ++i)
 	    {
 	      data[i * 2] = i + alt;

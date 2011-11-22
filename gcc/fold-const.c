@@ -13483,10 +13483,12 @@ fold_binary_loc (location_t loc,
 		sel[i] = i * 2 + 1;
 		break;
 	      case VEC_INTERLEAVE_HIGH_EXPR:
-		sel[i] = (i + nelts) / 2 + ((i & 1) ? nelts : 0);
+		sel[i] = (i + (BYTES_BIG_ENDIAN ? 0 : nelts)) / 2
+			 + ((i & 1) ? nelts : 0);
 		break;
 	      case VEC_INTERLEAVE_LOW_EXPR:
-		sel[i] = i / 2 + ((i & 1) ? nelts : 0);
+		sel[i] = (i + (BYTES_BIG_ENDIAN ? nelts : 0)) / 2
+			 + ((i & 1) ? nelts : 0);
 		break;
 	      default:
 		gcc_unreachable ();

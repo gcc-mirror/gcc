@@ -1,3 +1,10 @@
+2011-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51074
+	* fold-const.c (fold_binary_loc): Fix up VEC_INTERLEAVE_*_EXPR
+	handling for BYTES_BIG_ENDIAN.
+	* optabs.c (can_vec_perm_for_code_p): Likewise.
+
 2011-11-22  Michael Matz  <matz@suse.de>
 
 	PR other/51125
