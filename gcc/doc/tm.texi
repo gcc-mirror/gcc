@@ -7090,6 +7090,10 @@ section names for mergeable constant data.  Define this macro to override
 the string if a different section name should be used.
 @end deftypevr
 
+@deftypefn {Target Hook} {section *} TARGET_ASM_TM_CLONE_TABLE_SECTION (void)
+Return the section that should be used for transactional memory clone  tables.
+@end deftypefn
+
 @deftypefn {Target Hook} {section *} TARGET_ASM_SELECT_RTX_SECTION (enum machine_mode @var{mode}, rtx @var{x}, unsigned HOST_WIDE_INT @var{align})
 Return the section into which a constant @var{x}, of mode @var{mode},
 should be placed.  You can assume that @var{x} is some kind of

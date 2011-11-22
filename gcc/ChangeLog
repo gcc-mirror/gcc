@@ -1,3 +1,14 @@
+2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* target.def (tm_clone_table_section): New hook.
+	* doc/tm.texi.in (TARGET_ASM_TM_CLONE_TABLE_SECTION): Define.
+	* doc/tm.texi: Regenerate.
+	* varasm.c (dump_tm_clone_pairs): Use target tm_clone_table_section.
+	* output.h (default_clone_table_section): New prototype.
+	* config/darwin.h (TARGET_ASM_TM_CLONE_TABLE_SECTION): New.
+	* config/darwin-protos.h (darwin_tm_clone_table_section): New prototype.
+	* config/darwin.c (darwin_tm_clone_table_section): New.
+
 2011-11-21  Torvald Riegel  <triegel@redhat.com>
 
 	* trans-mem.c (diagnose_tm_1): Print an expression instead of a

@@ -305,6 +305,13 @@ section names for mergeable constant data.  Define this macro to override\n\
 the string if a different section name should be used.",
  const char *, ".rodata")
 
+/* Return the section to be used for transactional memory clone tables.  */
+DEFHOOK
+(tm_clone_table_section,
+ "Return the section that should be used for transactional memory clone\
+  tables.",
+ section *, (void), default_clone_table_section)
+
 /* Output a constructor for a symbol with a given priority.  */
 DEFHOOK
 (constructor,
