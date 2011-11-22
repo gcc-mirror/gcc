@@ -7013,6 +7013,8 @@ otherwise.
 
 @hook TARGET_ASM_MERGEABLE_RODATA_PREFIX
 
+@hook TARGET_ASM_TM_CLONE_TABLE_SECTION
+
 @hook TARGET_ASM_SELECT_RTX_SECTION
 Return the section into which a constant @var{x}, of mode @var{mode},
 should be placed.  You can assume that @var{x} is some kind of

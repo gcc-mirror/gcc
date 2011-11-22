@@ -1265,6 +1265,14 @@ darwin_mergeable_constant_section (tree exp,
   return readonly_data_section;
 }
 
+section *
+darwin_tm_clone_table_section (void)
+{
+  return get_named_section (NULL,
+			    "__DATA,__tm_clone_table,regular,no_dead_strip",
+			    3);
+}
+
 int
 machopic_reloc_rw_mask (void)
 {

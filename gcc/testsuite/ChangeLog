@@ -1,5 +1,9 @@
 2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
 
+     * gcc.dg/tm/20100615.c: Adjust for Darwin tm_clone_table section name.
+
+2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
+
 	* gcc.misc-tests/gcov-16.c: Adjust scan-assembler for Darwin.
 	* gcc.misc-tests/gcov-17.c: Likewise.
 	* g++.dg/gcov/gcov-8.C: Likewise.

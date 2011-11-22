@@ -5961,7 +5961,7 @@ dump_tm_clone_pairs (VEC(tm_alias_pair,heap) *tm_alias_pairs)
 
       if (!switched)
 	{
-	  switch_to_section (get_named_section (NULL, ".tm_clone_table", 3));
+	  switch_to_section (targetm.asm_out.tm_clone_table_section ());
 	  assemble_align (POINTER_SIZE);
 	  switched = true;
 	}
@@ -5971,6 +5971,14 @@ dump_tm_clone_pairs (VEC(tm_alias_pair,heap) *tm_alias_pairs)
       assemble_integer (XEXP (DECL_RTL (dst), 0),
 			POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
     }
+}
+
+/* Provide a default for the tm_clone_table section.  */
+
+section *
+default_clone_table_section (void)
+{
+  return get_named_section (NULL, ".tm_clone_table", 3);
 }
 
 /* Helper comparison function for qsorting by the DECL_UID stored in
