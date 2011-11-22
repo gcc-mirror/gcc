@@ -900,8 +900,7 @@ DEFTREECODE (CATCH_EXPR, "catch_expr", tcc_statement, 2)
 
 /* Used to represent an exception specification.  EH_FILTER_TYPES is a list
    of allowed types, and EH_FILTER_FAILURE is an expression to evaluate on
-   failure.  EH_FILTER_MUST_NOT_THROW controls which range type to use when
-   expanding.  */
+   failure.  */
 DEFTREECODE (EH_FILTER_EXPR, "eh_filter_expr", tcc_statement, 2)
 
 /* Node used for describing a property that is known at compile
