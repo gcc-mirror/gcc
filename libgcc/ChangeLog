@@ -1,3 +1,8 @@
+2011-11-21  Hans-Peter Nilsson  <hp@axis.com>
+
+	* Makefile.in ($(srcdir)/emutls.c): Explain why it's in LIB2ADDEH
+	et al.
+
 2011-11-21  Richard Henderson  <rth@redhat.com>
 
 	* crtstuff.c (USE_TM_CLONE_REGISTRY): Default to 1 on ELF.
