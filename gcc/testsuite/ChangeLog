@@ -1,6 +1,11 @@
+2011-11-22  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+        * gcc.dg/vshift-1.c (main): Call rand instead of random.
+        * gcc.dg/vshift-3.c (main): Likewise.
+
 2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
 
-     * gcc.dg/tm/20100615.c: Adjust for Darwin tm_clone_table section name.
+	* gcc.dg/tm/20100615.c: Adjust for Darwin tm_clone_table section name.
 
 2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
 
