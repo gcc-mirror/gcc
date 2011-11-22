@@ -1,5 +1,27 @@
 2011-11-22  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (ia64_expand_atomic_op): Add model parameter.
+	Generate the barrier required for the memory model.
+	(rtx_needs_barrier): Handle UNSPEC_FETCHADD_REL, UNSPEC_CMPXCHG_REL.
+	* config/ia64/ia64-protos.h: Update.
+	* config/ia64/ia64.md (UNSPEC_FETCHADD_REL): New.
+	(UNSPEC_CMPXCHG_REL): New.
+	* config/ia64/sync.md (mem_thread_fence): New.
+	(atomic_load<IMODE>, atomic_store<IMODE>): New.
+	(atomic_compare_and_swap<IMODE>): New.
+	(cmpxchg_acq_<I124MODE>, cmpxchg_acq_di): New.
+	(atomic_exchange<IMODE>): New.
+	(xchg_acq_<IMODE>): Rename from sync_lock_test_and_set<IMODE>.
+	(atomic_<FETCHOP><IMODE>, atomic_nand<IMODE>): New.
+	(atomic_fetch_<FETCHOP><IMODE>, atomic_fetch_nand<IMODE>): New.
+	(atomic_<FETCHOP>_fetch<IMODE>, atomic_nand_fetch<IMODE>): New.
+	(fetchadd_rel_<I48MODE>): New.
+	(sync_<FETCHOP><IMODE>, sync_nand<IMODE>): Remove.
+	(sync_old_<FETCHOP><IMODE>, sync_old_nand<IMODE>): Remove.
+	(sync_new_<FETCHOP><IMODE>, sync_new_nand<IMODE>): Remove.
+	(sync_compare_and_swap<IMODE>): Remove.
+	(sync_lock_release<IMODE>): Remove.
+
 	* config/ia64/ia64.md: Use define_e_enum for UNSPEC_*
 	and UNSPECV_* constants.
 

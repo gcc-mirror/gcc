@@ -47,7 +47,8 @@ extern void ia64_expand_dot_prod_v8qi (rtx[], bool);
 extern void ia64_expand_call (rtx, rtx, rtx, int);
 extern void ia64_split_call (rtx, rtx, rtx, rtx, rtx, int, int);
 extern void ia64_reload_gp (void);
-extern void ia64_expand_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx);
+extern void ia64_expand_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx,
+				   enum memmodel);
 
 extern HOST_WIDE_INT ia64_initial_elimination_offset (int, int);
 extern void ia64_expand_prologue (void);
