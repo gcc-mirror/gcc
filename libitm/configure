@@ -17213,6 +17213,57 @@ $as_echo "#define HAVE_AS_AVX 1" >>confdefs.h
   ;;
 esac
 
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether weak refs work like ELF" >&5
+$as_echo_n "checking whether weak refs work like ELF... " >&6; }
+if test "${ac_cv_have_elf_style_weakref+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  weakref_m4_saved_CFLAGS="$CFLAGS"
+  case "${host}" in
+    *-apple-darwin*) CFLAGS="$CFLAGS -Wl,-undefined,dynamic_lookup" ;;
+    *) ;;
+  esac
+  if test "$cross_compiling" = yes; then :
+
+case "${host}" in
+  alpha*-dec-osf*) ac_cv_have_elf_style_weakref=no ;;
+  *-apple-darwin[89]*) ac_cv_have_elf_style_weakref=no ;;
+  *) ac_cv_have_elf_style_weakref=yes;;
+esac
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+extern void fNotToBeFound(void) __attribute__((weak));
+int main ()
+{
+  if (fNotToBeFound)
+    return 1;
+  else
+    return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  ac_cv_have_elf_style_weakref=yes
+else
+  ac_cv_have_elf_style_weakref=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+CFLAGS="$weakref_m4_saved_CFLAGS"
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_have_elf_style_weakref" >&5
+$as_echo "$ac_cv_have_elf_style_weakref" >&6; }
+if test x"$ac_cv_have_elf_style_weakref" = xyes; then
+
+$as_echo "#define HAVE_ELF_STYLE_WEAKREF 1" >>confdefs.h
+
+fi
+
 # Cleanup and exit.
 CFLAGS="$save_CFLAGS"
 cat >confcache <<\_ACEOF

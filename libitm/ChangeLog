@@ -1,11 +1,23 @@
 2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
 
+	* configure.ac: Use GCC_CHECK_ELF_STYLE_WEAKREF.
+	* alloc_cpp.cc: Generate dummy functions if we don't
+	HAVE_ELF_STYLE_WEAKREF.
+	* eh_cpp.cc: Likewise.
+	* configure: Regenerate.
+	* aclocal.m4:  Likewise.
+	* config.h.in: Likewise.
+	* Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
+
 	* config/x86/sjlj.S (CONCAT1, CONCAT2, SYM): Respond to
 	__USER_LABEL_PREFIX__ for targets that use it.
-	TYPE, SIZE, HIDDEN): New macros to assist on non-elf targets.
+	(TYPE, SIZE, HIDDEN): New macros to assist on non-elf targets.
 	(_ITM_beginTransaction): Use SYM, TYPE, SIZE macros to assist
 	in portability to non-elf targets.
-	(GTM_longjmp): LIkewise.
+	(GTM_longjmp): Likewise.
 	* libitm_i.h (begin_transaction): Apply __USER_LABEL_PREFIX__
 	where required.
 
