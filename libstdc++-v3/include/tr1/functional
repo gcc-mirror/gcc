@@ -43,9 +43,20 @@
 #include <tr1/functional_hash.h>
 #include <ext/type_traits.h>
 #include <bits/move.h> // for std::__addressof
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#  include <type_traits> // for integral_constant, true_type, false_type
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  template<int> struct _Placeholder;
+  template<typename> class _Bind;
+  template<typename, typename> class _Bind_result;
+_GLIBCXX_END_NAMESPACE_VERSION
+#endif
+
 namespace tr1
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -847,16 +858,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 
-  /** @namespace std::placeholders
-   *  @brief ISO C++ 0x entities sub namespace for functional.
-   *
-   *  Define a large number of placeholders. There is no way to
-   *  simplify this with variadic templates, because we're introducing
-   *  unique names for each.
+  /** @namespace std::tr1::placeholders
+   *  @brief Sub-namespace for tr1/functional.
    */
   namespace placeholders 
   { 
   _GLIBCXX_BEGIN_NAMESPACE_VERSION
+    /*  Define a large number of placeholders. There is no way to
+     *  simplify this with variadic templates, because we're introducing
+     *  unique names for each.
+     */
     namespace 
     {
       _Placeholder<1> _1;
@@ -903,6 +914,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<int _Num>
     const int is_placeholder<_Placeholder<_Num> >::value;
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<int _Num>
+    struct is_placeholder<std::_Placeholder<_Num>>
+    : std::integral_constant<int, _Num>
+    { };
+
+  template<int _Num>
+    struct is_placeholder<const std::_Placeholder<_Num>>
+    : std::integral_constant<int, _Num>
+    { };
+#endif
 
   /**
    * Stores a tuple of indices. Used by bind() to extract the elements
@@ -1347,6 +1370,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Signature>
     const bool is_bind_expression<_Bind<_Signature> >::value;
 
+  /// Class template _Bind is always a bind expression.
+  template<typename _Signature>
+    struct is_bind_expression<const _Bind<_Signature> >
+    { static const bool value = true; };
+
+  template<typename _Signature>
+    const bool is_bind_expression<const _Bind<_Signature> >::value;
+
+  /// Class template _Bind is always a bind expression.
+  template<typename _Signature>
+    struct is_bind_expression<volatile _Bind<_Signature> >
+    { static const bool value = true; };
+
+  template<typename _Signature>
+    const bool is_bind_expression<volatile _Bind<_Signature> >::value;
+
+  /// Class template _Bind is always a bind expression.
+  template<typename _Signature>
+    struct is_bind_expression<const volatile _Bind<_Signature> >
+    { static const bool value = true; };
+
+  template<typename _Signature>
+    const bool is_bind_expression<const volatile _Bind<_Signature> >::value;
+
   /// Class template _Bind_result is always a bind expression.
   template<typename _Result, typename _Signature>
     struct is_bind_expression<_Bind_result<_Result, _Signature> >
@@ -1354,6 +1401,70 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Result, typename _Signature>
     const bool is_bind_expression<_Bind_result<_Result, _Signature> >::value;
+
+  /// Class template _Bind_result is always a bind expression.
+  template<typename _Result, typename _Signature>
+    struct is_bind_expression<const _Bind_result<_Result, _Signature> >
+    { static const bool value = true; };
+
+  template<typename _Result, typename _Signature>
+    const bool
+    is_bind_expression<const _Bind_result<_Result, _Signature> >::value;
+
+  /// Class template _Bind_result is always a bind expression.
+  template<typename _Result, typename _Signature>
+    struct is_bind_expression<volatile _Bind_result<_Result, _Signature> >
+    { static const bool value = true; };
+
+  template<typename _Result, typename _Signature>
+    const bool
+    is_bind_expression<volatile _Bind_result<_Result, _Signature> >::value;
+
+  /// Class template _Bind_result is always a bind expression.
+  template<typename _Result, typename _Signature>
+    struct
+    is_bind_expression<const volatile _Bind_result<_Result, _Signature> >
+    { static const bool value = true; };
+
+  template<typename _Result, typename _Signature>
+    const bool
+    is_bind_expression<const volatile _Bind_result<_Result,
+                                                   _Signature> >::value;
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Signature>
+    struct is_bind_expression<std::_Bind<_Signature>>
+    : true_type { };
+
+  template<typename _Signature>
+    struct is_bind_expression<const std::_Bind<_Signature>>
+    : true_type { };
+
+  template<typename _Signature>
+    struct is_bind_expression<volatile std::_Bind<_Signature>>
+    : true_type { };
+
+  template<typename _Signature>
+    struct is_bind_expression<const volatile std::_Bind<_Signature>>
+    : true_type { };
+
+  template<typename _Result, typename _Signature>
+    struct is_bind_expression<std::_Bind_result<_Result, _Signature>>
+    : true_type { };
+
+  template<typename _Result, typename _Signature>
+    struct is_bind_expression<const std::_Bind_result<_Result, _Signature>>
+    : true_type { };
+
+  template<typename _Result, typename _Signature>
+    struct is_bind_expression<volatile std::_Bind_result<_Result, _Signature>>
+    : true_type { };
+
+  template<typename _Result, typename _Signature>
+    struct is_bind_expression<const volatile std::_Bind_result<_Result,
+                                                               _Signature>>
+    : true_type { };
+#endif
 
   /// bind
   template<typename _Functor, typename... _ArgTypes>
@@ -2147,6 +2258,59 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<typename> struct is_placeholder;
+
+  template<int _Num>
+    struct is_placeholder<tr1::_Placeholder<_Num>>
+    : integral_constant<int, _Num>
+    { };
+
+  template<int _Num>
+    struct is_placeholder<const tr1::_Placeholder<_Num>>
+    : integral_constant<int, _Num>
+    { };
+
+  template<typename> struct is_bind_expression;
+
+  template<typename _Signature>
+    struct is_bind_expression<tr1::_Bind<_Signature>>
+    : true_type { };
+
+  template<typename _Signature>
+    struct is_bind_expression<const tr1::_Bind<_Signature>>
+    : true_type { };
+
+  template<typename _Signature>
+    struct is_bind_expression<volatile tr1::_Bind<_Signature>>
+    : true_type { };
+
+  template<typename _Signature>
+    struct is_bind_expression<const volatile tr1::_Bind<_Signature>>
+    : true_type { };
+
+  template<typename _Result, typename _Signature>
+    struct is_bind_expression<tr1::_Bind_result<_Result, _Signature>>
+    : true_type { };
+
+  template<typename _Result, typename _Signature>
+    struct is_bind_expression<const tr1::_Bind_result<_Result, _Signature>>
+    : true_type { };
+
+  template<typename _Result, typename _Signature>
+    struct is_bind_expression<volatile tr1::_Bind_result<_Result, _Signature>>
+    : true_type { };
+
+  template<typename _Result, typename _Signature>
+    struct is_bind_expression<const volatile tr1::_Bind_result<_Result,
+                                                               _Signature>>
+    : true_type { };
+
+_GLIBCXX_END_NAMESPACE_VERSION
+#endif
 }
 
 #endif // _GLIBCXX_TR1_FUNCTIONAL
