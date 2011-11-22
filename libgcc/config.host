@@ -170,7 +170,7 @@ case ${host} in
 *-*-darwin*)
   asm_hidden_op=.private_extern
   tmake_file="$tmake_file t-darwin ${cpu_type}/t-darwin t-libgcc-pic t-slibgcc-darwin"
-  extra_parts=crt3.o
+  extra_parts="crt3.o crttms.o crttme.o"
   ;;
 *-*-freebsd*)
   # This is the generic ELF configuration of FreeBSD.  Later

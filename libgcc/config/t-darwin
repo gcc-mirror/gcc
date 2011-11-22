@@ -3,6 +3,12 @@ crt3.o: $(srcdir)/config/darwin-crt3.c
 	$(crt_compile) \
 	  -fno-tree-dominator-opts $(DARWIN_EXTRA_CRT_BUILD_CFLAGS) -c $<
 
+crttms.o: $(srcdir)/config/darwin-crt-tm.c
+	$(crt_compile) $(DARWIN_EXTRA_CRT_BUILD_CFLAGS) -DSTART -c $<
+
+crttme.o: $(srcdir)/config/darwin-crt-tm.c
+	$(crt_compile) $(DARWIN_EXTRA_CRT_BUILD_CFLAGS) -DEND -c $<
+
 # -pipe because there's an assembler bug, 4077127, which causes
 # it to not properly process the first # directive, causing temporary
 # file names to appear in stabs, causing the bootstrap to fail.  Using -pipe

@@ -359,8 +359,8 @@ extern GTY(()) int darwin_ms_struct;
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC							    \
-  "%{Zdynamiclib: %(darwin_dylib1) }					    \
-   %{!Zdynamiclib:%{Zbundle:%{!static:-lbundle1.o}}			    \
+  "%{Zdynamiclib: %(darwin_dylib1) %{fgnu-tm: -lcrttms.o}}		    \
+   %{!Zdynamiclib:%{Zbundle:%{!static:-lbundle1.o %{fgnu-tm: -lcrttms.o}}}  \
      %{!Zbundle:%{pg:%{static:-lgcrt0.o}				    \
                      %{!static:%{object:-lgcrt0.o}			    \
                                %{!object:%{preload:-lgcrt0.o}		    \
@@ -372,10 +372,8 @@ extern GTY(()) int darwin_ms_struct;
 					      %(darwin_crt2)}}}}}}	    \
   %{shared-libgcc:%:version-compare(< 10.5 mmacosx-version-min= crt3.o%s)}"
 
-/* The native Darwin linker doesn't necessarily place files in the order
-   that they're specified on the link line.  Thus, it is pointless
-   to put anything in ENDFILE_SPEC.  */
-/* #define ENDFILE_SPEC "" */
+/* We want a destructor last in the list.  */
+#define ENDFILE_SPEC "%{fgnu-tm: -lcrttme.o}"
 
 #define DARWIN_EXTRA_SPECS						\
   { "darwin_crt1", DARWIN_CRT1_SPEC },					\
@@ -388,7 +386,8 @@ extern GTY(()) int darwin_ms_struct;
 
 #define DARWIN_CRT1_SPEC						\
   "%:version-compare(!> 10.5 mmacosx-version-min= -lcrt1.o)		\
-   %:version-compare(>= 10.5 mmacosx-version-min= -lcrt1.10.5.o)"
+   %:version-compare(>= 10.5 mmacosx-version-min= -lcrt1.10.5.o)	\
+   %{fgnu-tm: -lcrttms.o}"
 
 /* Default Darwin ASM_SPEC, very simple.  */
 #define ASM_SPEC "-arch %(darwin_arch) \
