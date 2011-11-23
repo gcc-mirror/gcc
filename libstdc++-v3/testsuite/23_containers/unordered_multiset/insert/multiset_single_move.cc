@@ -26,6 +26,19 @@
 #include <testsuite_hooks.h>
 #include <testsuite_rvalref.h>
 
+namespace
+{
+  template <typename _Tp>
+    std::size_t
+    get_nb_bucket_elems(const std::unordered_multiset<_Tp>& us)
+    {
+      std::size_t nb = 0;
+      for (std::size_t b = 0; b != us.bucket_count(); ++b)
+	nb += us.bucket_size(b);
+      return nb;
+    }
+}
+
 void test01()
 {
   bool test __attribute__((unused)) = true;
@@ -37,6 +50,7 @@ void test01()
 
   Set::iterator i = s.insert(rvalstruct(1));
   VERIFY( s.size() == 1 );
+  VERIFY( get_nb_bucket_elems(s) == 1 );
   VERIFY( std::distance(s.begin(), s.end()) == 1 );
   VERIFY( i == s.begin() );
   VERIFY( (*i).val == 1 );
@@ -54,6 +68,7 @@ void test02()
   s.insert(rvalstruct(2));
   Set::iterator i = s.insert(rvalstruct(2));
   VERIFY( s.size() == 2 );
+  VERIFY( get_nb_bucket_elems(s) == 2 );
   VERIFY( std::distance(s.begin(), s.end()) == 2 );
   VERIFY( (*i).val == 2 );
   

@@ -1,3 +1,32 @@
+2011-11-23  François Dumont <fdumont@gcc.gnu.org>
+
+	PR libstdc++/41975
+	* include/bits/hashtable.h (_Hashtable<>): Major data model
+	modification to limit performance impact of empty buckets in
+	erase(iterator) implementation.
+	* include/bits/hashtable_policy.h (_Hashtable_iterator,
+	_Hashtable_const_iterator): Remove not used anymore.
+	* include/bits/hashtable_policy.h (_Prime_rehash_policy): Remove
+	_M_grow_factor, just use natural evolution of prime numbers. Add
+	_M_prev_size to know when the number of buckets can be reduced.
+	* include/bits/unordered_set.h (__unordered_set<>,
+	__unordered_multiset<>), unordered_map.h (__unordered_map<>,
+	__unordered_multimap<>): Change default value of cache hash code
+	template parameter, false for integral types with noexcept hash
+	functor, true otherwise.
+	* include/debug/unordered_map, unordered_set: Adapt transformation
+	from iterator/const_iterator to respectively
+	local_iterator/const_local_iterator.
+	* testsuite/performance/23_containers/copy_construct/unordered_set.cc:
+	New.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc: New.
+	* testsuite/23_containers/unordered_set/hash_policy/rehash.cc: New.
+	* testsuite/23_containers/unordered_multiset/cons/copy.cc: New.
+	* testsuite/23_containers/unordered_multiset/erase/1.cc,
+	24061-multiset.cc: Add checks on the number of bucket elements.
+	* testsuite/23_containers/unordered_multiset/insert/multiset_range.cc,
+	multiset_single.cc, multiset_single_move.cc: Likewise.
+
 2011-11-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/functional (is_placeholder, is_bind_expression): Add

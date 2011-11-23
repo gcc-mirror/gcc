@@ -24,6 +24,19 @@
 #include <unordered_set>
 #include <testsuite_hooks.h>
 
+namespace
+{
+  std::size_t
+  get_nb_bucket_elems(const std::unordered_multiset<std::string>& us)
+  {
+    std::size_t nb = 0;
+    for (std::size_t b = 0; b != us.bucket_count(); ++b)
+      nb += us.bucket_size(b);
+    return nb;
+  }
+}
+
+
 void test01()
 {
   bool test __attribute__((unused)) = true;
@@ -33,7 +46,8 @@ void test01()
   VERIFY(s.empty());
 
   Set::iterator i = s.insert("abcde");
-  VERIFY(s.size() == 1);
+  VERIFY( s.size() == 1 );
+  VERIFY( get_nb_bucket_elems(s) == 1 );
   VERIFY(std::distance(s.begin(), s.end()) == 1);
   VERIFY(i == s.begin());
   VERIFY(*i == "abcde");
@@ -50,6 +64,7 @@ void test02()
   s.insert("abcde");
   Set::iterator i = s.insert("abcde");
   VERIFY(s.size() == 2);
+  VERIFY( get_nb_bucket_elems(s) == 2 );
   VERIFY(std::distance(s.begin(), s.end()) == 2);
   VERIFY(*i == "abcde");
   
