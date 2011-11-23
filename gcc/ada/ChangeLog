@@ -1,5 +1,22 @@
 2011-11-23  Pascal Obry  <obry@adacore.com>
 
+	* sem_prag.adb (Process_Convention): Better error message for
+	stdcall convention on dispatching calls.
+
+2011-11-23  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch4.adb, sem_ch13.adb: Minor reformatting.
+
+2011-11-23  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return): Add missing
+	implicit type conversion when the returned object is allocated
+	in the secondary stack and the type of the returned object is
+	an interface. Done to force generation of displacement of the
+	"this" pointer.
+
+2011-11-23  Pascal Obry  <obry@adacore.com>
+
 	* impunit.adb: Add g-exptty and g-tty units.
 
 2011-11-23  Robert Dewar  <dewar@adacore.com>

@@ -161,15 +161,15 @@ package body Sem_Ch13 is
    ----------------------------------------------
 
    --  The following table collects unchecked conversions for validation.
-   --  Entries are made by Validate_Unchecked_Conversion and then the
-   --  call to Validate_Unchecked_Conversions does the actual error
-   --  checking and posting of warnings. The reason for this delayed
-   --  processing is to take advantage of back-annotations of size and
-   --  alignment values performed by the back end.
+   --  Entries are made by Validate_Unchecked_Conversion and then the call
+   --  to Validate_Unchecked_Conversions does the actual error checking and
+   --  posting of warnings. The reason for this delayed processing is to take
+   --  advantage of back-annotations of size and alignment values performed by
+   --  the back end.
 
-   --  Note: the reason we store a Source_Ptr value instead of a Node_Id
-   --  is that by the time Validate_Unchecked_Conversions is called, Sprint
-   --  will already have modified all Sloc values if the -gnatD option is set.
+   --  Note: the reason we store a Source_Ptr value instead of a Node_Id is
+   --  that by the time Validate_Unchecked_Conversions is called, Sprint will
+   --  already have modified all Sloc values if the -gnatD option is set.
 
    type UC_Entry is record
       Eloc   : Source_Ptr; -- node used for posting warnings
@@ -193,13 +193,13 @@ package body Sem_Ch13 is
 
    --    for X'Address use Expr
 
-   --  where Expr is of the form Y'Address or recursively is a reference
-   --  to a constant of either of these forms, and X and Y are entities of
-   --  objects, then if Y has a smaller alignment than X, that merits a
-   --  warning about possible bad alignment. The following table collects
-   --  address clauses of this kind. We put these in a table so that they
-   --  can be checked after the back end has completed annotation of the
-   --  alignments of objects, since we can catch more cases that way.
+   --  where Expr is of the form Y'Address or recursively is a reference to a
+   --  constant of either of these forms, and X and Y are entities of objects,
+   --  then if Y has a smaller alignment than X, that merits a warning about
+   --  possible bad alignment. The following table collects address clauses of
+   --  this kind. We put these in a table so that they can be checked after the
+   --  back end has completed annotation of the alignments of objects, since we
+   --  can catch more cases that way.
 
    type Address_Clause_Check_Record is record
       N : Node_Id;
@@ -8618,8 +8618,8 @@ package body Sem_Ch13 is
       Target := Ancestor_Subtype (Etype (Act_Unit));
 
       --  If either type is generic, the instantiation happens within a generic
-      --  unit, and there is nothing to check. The proper check
-      --  will happen when the enclosing generic is instantiated.
+      --  unit, and there is nothing to check. The proper check will happen
+      --  when the enclosing generic is instantiated.
 
       if Is_Generic_Type (Source) or else Is_Generic_Type (Target) then
          return;
@@ -8717,9 +8717,8 @@ package body Sem_Ch13 is
       end if;
 
       --  If unchecked conversion to access type, and access type is declared
-      --  in the same unit as the unchecked conversion, then set the
-      --  No_Strict_Aliasing flag (no strict aliasing is implicit in this
-      --  situation).
+      --  in the same unit as the unchecked conversion, then set the flag
+      --  No_Strict_Aliasing (no strict aliasing is implicit here)
 
       if Is_Access_Type (Target) and then
         In_Same_Source_Unit (Target, N)
@@ -8727,11 +8726,11 @@ package body Sem_Ch13 is
          Set_No_Strict_Aliasing (Implementation_Base_Type (Target));
       end if;
 
-      --  Generate N_Validate_Unchecked_Conversion node for back end in
-      --  case the back end needs to perform special validation checks.
+      --  Generate N_Validate_Unchecked_Conversion node for back end in case
+      --  the back end needs to perform special validation checks.
 
-      --  Shouldn't this be in Exp_Ch13, since the check only gets done
-      --  if we have full expansion and the back end is called ???
+      --  Shouldn't this be in Exp_Ch13, since the check only gets done if we
+      --  have full expansion and the back end is called ???
 
       Vnode :=
         Make_Validate_Unchecked_Conversion (Sloc (N));

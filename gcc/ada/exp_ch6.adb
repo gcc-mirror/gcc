@@ -6700,6 +6700,14 @@ package body Exp_Ch6 is
                  Make_Explicit_Dereference (Loc,
                  Prefix => New_Reference_To (Temp, Loc)));
 
+               --  Ada 2005 (AI-251): If the type of the returned object is
+               --  an interface then add an implicit type conversion to force
+               --  displacement of the "this" pointer.
+
+               if Is_Interface (R_Type) then
+                  Rewrite (Exp, Convert_To (R_Type, Relocate_Node (Exp)));
+               end if;
+
                Analyze_And_Resolve (Exp, R_Type);
             end;
 

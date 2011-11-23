@@ -3526,30 +3526,37 @@ package body Sem_Prag is
 
          --  Stdcall case
 
-         if C = Convention_Stdcall
+         if C = Convention_Stdcall then
+
+            --  A dispatching call is not allowed. A dispatching subprogram
+            --  cannot be used to interface to the Win32 API, so in fact this
+            --  check does not impose any effective restriction.
+
+            if Is_Dispatching_Operation (E) then
+
+               Error_Pragma
+                 ("dispatching subprograms cannot use Stdcall convention");
 
             --  Subprogram is allowed, but not a generic subprogram, and not a
-            --  dispatching operation. A dispatching subprogram cannot be used
-            --  to interface to the Win32 API, so in fact this check does not
-            --  impose any effective restriction.
+            --  dispatching operation.
 
-           and then
-             ((not Is_Subprogram (E) and then not Is_Generic_Subprogram (E))
-                or else Is_Dispatching_Operation (E))
+            elsif not Is_Subprogram (E)
+              and then not Is_Generic_Subprogram (E)
 
-            --  A variable is OK
+              --  A variable is OK
 
-           and then Ekind (E) /= E_Variable
+              and then Ekind (E) /= E_Variable
 
-           --  An access to subprogram is also allowed
+              --  An access to subprogram is also allowed
 
-           and then not
-             (Is_Access_Type (E)
-               and then Ekind (Designated_Type (E)) = E_Subprogram_Type)
-         then
-            Error_Pragma_Arg
-              ("second argument of pragma% must be subprogram (type)",
-               Arg2);
+              and then not
+                (Is_Access_Type (E)
+                  and then Ekind (Designated_Type (E)) = E_Subprogram_Type)
+            then
+               Error_Pragma_Arg
+                 ("second argument of pragma% must be subprogram (type)",
+                  Arg2);
+            end if;
          end if;
 
          if not Is_Subprogram (E)
