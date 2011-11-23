@@ -1681,7 +1681,7 @@ package body Ch6 is
 
          if Ada_Version < Ada_2012 then
             Error_Msg_SC -- CODEFIX
-              ("ALIASED not allowed in extended return in Ada2012?");
+              ("ALIASED not allowed in extended return in Ada 2012?");
          else
             Error_Msg_SC -- CODEFIX
               ("ALIASED not allowed in extended return");

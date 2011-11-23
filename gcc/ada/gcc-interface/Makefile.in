@@ -2213,12 +2213,13 @@ LIBGNAT_SRCS = adadecode.c adadecode.h adaint.c adaint.h	\
   argv.c cio.c cstreams.c errno.c exit.c cal.c ctrl_c.c env.c env.h	\
   arit64.c raise.h raise.c sysdep.c aux-io.c init.c initialize.c	\
   locales.c seh_init.c final.c tracebak.c tb-alvms.c tb-alvxw.c         \
-  tb-gcc.c expect.c mkdir.c socket.c gsocket.h targext.c $(EXTRA_LIBGNAT_SRCS)
+  tb-gcc.c expect.c mkdir.c socket.c gsocket.h targext.c \
+  terminals.c $(EXTRA_LIBGNAT_SRCS)
 
 LIBGNAT_OBJS = adadecode.o adaint.o argv.o cio.o cstreams.o ctrl_c.o	\
   errno.o exit.o env.o raise.o sysdep.o aux-io.o init.o initialize.o	\
   locales.o seh_init.o cal.o arit64.o final.o tracebak.o expect.o       \
-  mkdir.o socket.o targext.o $(EXTRA_LIBGNAT_OBJS)
+  mkdir.o socket.o targext.o terminals.o $(EXTRA_LIBGNAT_OBJS)
 
 # NOTE ??? - when the -I option for compiling Ada code is made to work,
 #  the library installation will change and there will be a
@@ -2859,6 +2860,7 @@ socket.o  : socket.c gsocket.h
 sysdep.o  : sysdep.c
 raise.o   : raise.c raise.h
 sigtramp-ppcvxw.o : sigtramp-ppcvxw.c sigtramp.h
+terminals.o : terminals.c
 vx_stack_info.o : vx_stack_info.c
 
 raise-gcc.o : raise-gcc.c raise.h

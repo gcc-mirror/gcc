@@ -6425,13 +6425,12 @@ package body Exp_Util is
       --  a run-time issue, and the removal is required only to get proper
       --  behavior at run-time.
 
-      --  In the Alfa case, we don't need to remove side effects because we
-      --  only perform formal verification is performed only on expressions
-      --  that are provably side-effect free. If we tried to remove side
-      --  effects in the Alfa case, we would get into a mess since in the case
-      --  of limited types in particular, removal of side effects involves the
-      --  use of access types or references which are not permitted in Alfa
-      --  mode.
+      --  In the Alfa case, we don't need to remove side effects because formal
+      --  verification is performed only on expressions that are provably
+      --  side-effect free. If we tried to remove side effects in the Alfa
+      --  case, we would get into a mess since in the case of limited types in
+      --  particular, removal of side effects involves the use of access types
+      --  or references which are not permitted in Alfa mode.
 
       if not Full_Expander_Active then
          return;

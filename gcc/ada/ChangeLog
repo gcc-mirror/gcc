@@ -1,7 +1,24 @@
+2011-11-23  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb, par-ch6.adb, sem_res.adb, par-util.adb: Minor
+	reformatting.
+
+2011-11-23  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Place error on
+	line of precondition/ postcondition/invariant.
+2011-11-23  Pascal Obry  <obry@adacore.com>
+
+	* g-exptty.ads, g-exptty.adb, g-tty.ads, g-tty.adb,
+	terminals.c: New files.
+	Makefile.rtl: Add these new files.
+	* gnat_rm.texi: Add documentation for GNAT.Expect.TTY.
+	* gcc-interface/Makefile.in: Add g-exptty, g-tty, terminals.o
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2011-11-21  Robert Dewar  <dewar@adacore.com>
 
-	* exp_imgv.adb (Expand_Width_Attribute): Handle case of
-	Discard_Names.
+	* exp_imgv.adb (Expand_Width_Attribute): Handle case of Discard_Names.
 	* sem_attr.adb (Eval_Attribute, case Width): Ditto.
 
 2011-11-21  Thomas Quinot  <quinot@adacore.com>

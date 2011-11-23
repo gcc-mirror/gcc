@@ -374,6 +374,7 @@ The GNAT Library
 * GNAT.Exception_Traces (g-exctra.ads)::
 * GNAT.Exceptions (g-except.ads)::
 * GNAT.Expect (g-expect.ads)::
+* GNAT.Expect.TTY (g-exptty.ads)::
 * GNAT.Float_Control (g-flocon.ads)::
 * GNAT.Heap_Sort (g-heasor.ads)::
 * GNAT.Heap_Sort_A (g-hesora.ads)::
@@ -14187,6 +14188,7 @@ of GNAT, and will generate a warning message.
 * GNAT.Exception_Traces (g-exctra.ads)::
 * GNAT.Exceptions (g-except.ads)::
 * GNAT.Expect (g-expect.ads)::
+* GNAT.Expect.TTY (g-exptty.ads)::
 * GNAT.Float_Control (g-flocon.ads)::
 * GNAT.Heap_Sort (g-heasor.ads)::
 * GNAT.Heap_Sort_A (g-hesora.ads)::
@@ -15053,6 +15055,16 @@ with some expected regular expression. Currently @code{GNAT.Expect}
 is implemented on all native GNAT ports except for OpenVMS@.
 It is not implemented for cross ports, and in particular is not
 implemented for VxWorks or LynxOS@.
+
+@node GNAT.Expect.TTY (g-exptty.ads)
+@section @code{GNAT.Expect.TTY} (@file{g-exptty.ads})
+@cindex @code{GNAT.Expect.TTY} (@file{g-exptty.ads})
+
+@noindent
+As GNAT.Expect but using pseudo-terminal.
+Currently @code{GNAT.Expect.TTY} is implemented on all native GNAT
+ports except for OpenVMS@. It is not implemented for cross ports, and
+in particular is not implemented for VxWorks or LynxOS@.
 
 @node GNAT.Float_Control (g-flocon.ads)
 @section @code{GNAT.Float_Control} (@file{g-flocon.ads})

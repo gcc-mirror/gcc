@@ -728,8 +728,9 @@ package body Sem_Ch13 is
             A_Id : constant Aspect_Id  := Get_Aspect_Id (Nam);
             Anod : Node_Id;
 
-            Eloc : Source_Ptr := Sloc (Expr);
-            --  Source location of expression, modified when we split PPC's
+            Eloc : Source_Ptr := No_Location;
+            --  Source location of expression, modified when we split PPC's. It
+            --  is set below when Expr is present.
 
             procedure Check_False_Aspect_For_Derived_Type;
             --  This procedure checks for the case of a false aspect for a
@@ -802,6 +803,18 @@ package body Sem_Ch13 is
 
             if Analyzed (Aspect) then
                goto Continue;
+            end if;
+
+            --  Set the source location of expression, used in the case of
+            --  a failed precondition/postcondition or invariant. Note that
+            --  the source location of the expression is not usually the best
+            --  choice here. For example, it gets located on the last AND
+            --  keyword in a chain of boolean expressiond AND'ed together.
+            --  It is best to put the message on the first character of the
+            --  assertion, which is the effect of the First_Node call here.
+
+            if Present (Expr) then
+               Eloc := Sloc (First_Node (Expr));
             end if;
 
             --  Check restriction No_Implementation_Aspect_Specifications
