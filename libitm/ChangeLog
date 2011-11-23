@@ -1,3 +1,8 @@
+2011-11-23  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* Makefile.am (libitm_la_LDFLAGS): Remove "-no-undefined".
+	* Makefile.in: Regenerate.
+
 2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* configure.ac: Use GCC_CHECK_ELF_STYLE_WEAKREF.
