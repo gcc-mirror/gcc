@@ -1,3 +1,38 @@
+2011-11-23  Matthew Heaney  <heaney@adacore.com>
+
+	* a-coorse.ads, a-ciorse.ads, a-cborse.ads (Set_Iterator_Interfaces):
+	Renamed from Ordered_Set_Iterator_Interfaces.
+	* a-coorse.adb, a-ciorse.adb, a-cborse.adb (Iterator): Declared
+	Iterator type as limited (First, Last): Cursor return value
+	depends on iterator node value (Iterate): Use start position as
+	iterator node value (Next, Previous): Forward to corresponding
+	cursor-based operation.
+	* a-cohase.ads, a-cohase.adb: Implemented forward iterator.
+	* a-cihase.adb, a-cbhase.adb (Iterator): Removed unnecessary
+	node component (First, Next): Forward call to corresponding
+	cursor-based operation (Iterate): Representation of iterator no
+	longer has node component
+
+2011-11-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_intr.adb (Expand_Unc_Deallocation): Ensure that the
+	dereference has a proper type before the side effect removal
+	mechanism kicks in.
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Handle a rare case
+	where the base type of the subtype is a private itype created
+	to act as the partial view of a constrained record type. This
+	scenario manifests with equivalent class-wide types for records
+	with unknown discriminants.
+
+2011-11-23  Jerome Guitton  <guitton@adacore.com>
+
+	* s-osprim-vxworks.adb (Clock): Use Clock_RT_Ada.
+
+2011-11-23  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c: Fix unbalanced preprocessor directives Minor
+	reformatting/reorganization.
+
 2011-11-23  Thomas Quinot  <quinot@adacore.com>
 
 	* g-htable.ads: Remove old comments.

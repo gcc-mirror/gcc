@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,12 +37,15 @@ with System.OS_Interface;
 --  set of C imported routines: using Ada routines from this package would
 --  create a dependency on libgnarl in libgnat, which is not desirable.
 
+with System.OS_Constants;
 with Interfaces.C;
 
 package body System.OS_Primitives is
 
    use System.OS_Interface;
    use type Interfaces.C.int;
+
+   package OSC renames System.OS_Constants;
 
    ------------------------
    -- Internal functions --
@@ -94,7 +97,7 @@ package body System.OS_Primitives is
       TS     : aliased timespec;
       Result : int;
    begin
-      Result := clock_gettime (CLOCK_REALTIME, TS'Unchecked_Access);
+      Result := clock_gettime (OSC.CLOCK_RT_Ada, TS'Unchecked_Access);
       pragma Assert (Result = 0);
       return Duration (TS.ts_sec) + Duration (TS.ts_nsec) / 10#1#E9;
    end Clock;

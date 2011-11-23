@@ -41,6 +41,17 @@ with System; use type System.Address;
 
 package body Ada.Containers.Hashed_Sets is
 
+   type Iterator is limited new
+     Set_Iterator_Interfaces.Forward_Iterator with record
+        Container : Set_Access;
+     end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -601,6 +612,11 @@ package body Ada.Containers.Hashed_Sets is
       return Cursor'(Container'Unrestricted_Access, Node);
    end First;
 
+   function First (Object : Iterator) return Cursor is
+   begin
+      return Object.Container.First;
+   end First;
+
    ----------
    -- Free --
    ----------
@@ -920,6 +936,13 @@ package body Ada.Containers.Hashed_Sets is
       B := B - 1;
    end Iterate;
 
+   function Iterate
+     (Container : Set) return Set_Iterator_Interfaces.Forward_Iterator'Class
+   is
+   begin
+      return Iterator'(Container => Container'Unrestricted_Access);
+   end Iterate;
+
    ------------
    -- Length --
    ------------
@@ -971,6 +994,23 @@ package body Ada.Containers.Hashed_Sets is
    procedure Next (Position : in out Cursor) is
    begin
       Position := Next (Position);
+   end Next;
+
+   function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor
+   is
+   begin
+      if Position.Container = null then
+         return No_Element;
+      end if;
+
+      if Position.Container /= Object.Container then
+         raise Program_Error with
+           "Position cursor of Next designates wrong set";
+      end if;
+
+      return Next (Position);
    end Next;
 
    -------------
@@ -1695,7 +1735,7 @@ package body Ada.Containers.Hashed_Sets is
 
       begin
          if Node = null then
-            raise Constraint_Error with "key not in map";
+            raise Constraint_Error with "key not in map";  -- ??? "set"
          end if;
 
          return Node.Element;
