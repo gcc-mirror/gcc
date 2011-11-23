@@ -1,3 +1,8 @@
+2011-11-23  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config.host (*-*-freebsd[12], *-*-freebsd[12].*,
+	*-*-freebsd*aout*): Remove.
+
 2011-10-26  Release Manager
 
 	* GCC 4.6.2 released.

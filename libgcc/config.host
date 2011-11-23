@@ -145,15 +145,6 @@ case ${host} in
   asm_hidden_op=.private_extern
   tmake_file="t-darwin ${cpu_type}/t-darwin t-slibgcc-darwin"
   ;;
-*-*-freebsd[12] | *-*-freebsd[12].* | *-*-freebsd*aout*)
-  # This is the place-holder for the generic a.out configuration
-  # of FreeBSD.  No actual configuration resides here since
-  # there was only ever a bare-bones ix86 configuration for
-  # a.out and it exists solely in the machine-specific section.
-  # This place-holder must exist to avoid dropping into
-  # the generic ELF configuration of FreeBSD (i.e. it must be
-  # ordered before that section).
-  ;;
 *-*-freebsd*)
   # This is the generic ELF configuration of FreeBSD.  Later
   # machine-specific sections may refine and add to this
