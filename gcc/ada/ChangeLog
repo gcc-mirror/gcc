@@ -1,3 +1,7 @@
+2011-11-23  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_imgv.adb: Minor reformatting.
+
 2011-11-23  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch9.adb (Analyze_Entry_Declaration): Check for entry
