@@ -75,7 +75,9 @@ GNATRTL_TASKING_OBJS= \
   s-tpoben$(objext) \
   s-tpobop$(objext) \
   s-tposen$(objext) \
-  s-tratas$(objext) $(EXTRA_GNATRTL_TASKING_OBJS)
+  s-tratas$(objext) \
+  thread$(objext) \
+  $(EXTRA_GNATRTL_TASKING_OBJS)
 
 # Objects needed for non-tasking.
 GNATRTL_NONTASKING_OBJS= \

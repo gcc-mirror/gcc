@@ -34,6 +34,7 @@
 with Ada.Task_Identification;  use Ada.Task_Identification;
 with Ada.Unchecked_Conversion;
 
+with System.OS_Constants; use System.OS_Constants;
 with System.OS_Interface; use System.OS_Interface;
 
 with Interfaces.C; use Interfaces.C;
@@ -111,9 +112,6 @@ package body Ada.Execution_Time is
          return int;
       pragma Import (C, clock_gettime, "clock_gettime");
       --  Function from the POSIX.1b Realtime Extensions library
-
-      CLOCK_THREAD_CPUTIME_ID : constant := 3;
-      --  Identifier for the clock returning per-task CPU time
 
    begin
       if T = Ada.Task_Identification.Null_Task_Id then

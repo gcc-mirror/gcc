@@ -6420,19 +6420,9 @@ package body Exp_Util is
    --  Start of processing for Remove_Side_Effects
 
    begin
-      --  We only need to do removal of side effects if we are generating
-      --  actual code. That's because the whole issue of side effects is purely
-      --  a run-time issue, and the removal is required only to get proper
-      --  behavior at run-time.
+      --  Handle cases in which there is nothing to do
 
-      --  In the Alfa case, we don't need to remove side effects because formal
-      --  verification is performed only on expressions that are provably
-      --  side-effect free. If we tried to remove side effects in the Alfa
-      --  case, we would get into a mess since in the case of limited types in
-      --  particular, removal of side effects involves the use of access types
-      --  or references which are not permitted in Alfa mode.
-
-      if not Full_Expander_Active then
+      if not Expander_Active then
          return;
       end if;
 
@@ -6633,6 +6623,15 @@ package body Exp_Util is
       --  Otherwise we generate a reference to the value
 
       else
+         --  An expression which is in Alfa mode is considered side effect free
+         --  if the resulting value is captured by a variable or a constant.
+
+         if Alfa_Mode
+           and then Nkind (Parent (Exp)) = N_Object_Declaration
+         then
+            return;
+         end if;
+
          --  Special processing for function calls that return a limited type.
          --  We need to build a declaration that will enable build-in-place
          --  expansion of the call. This is not done if the context is already
@@ -6667,25 +6666,39 @@ package body Exp_Util is
          Def_Id := Make_Temporary (Loc, 'R', Exp);
          Set_Etype (Def_Id, Exp_Type);
 
-         Res :=
-           Make_Explicit_Dereference (Loc,
-             Prefix => New_Reference_To (Def_Id, Loc));
+         --  The regular expansion of functions with side effects involves the
+         --  generation of an access type to capture the return value found on
+         --  the secondary stack. Since Alfa (and why) cannot process access
+         --  types, use a different approach which ignores the secondary stack
+         --  and "copies" the returned object.
 
-         --  Generate:
-         --    type Ann is access all <Exp_Type>;
+         if Alfa_Mode then
+            Res := New_Reference_To (Def_Id, Loc);
+            Ref_Type := Exp_Type;
 
-         Ref_Type := Make_Temporary (Loc, 'A');
+         --  Regular expansion utilizing an access type and 'reference
 
-         Ptr_Typ_Decl :=
-           Make_Full_Type_Declaration (Loc,
-             Defining_Identifier => Ref_Type,
-             Type_Definition     =>
-               Make_Access_To_Object_Definition (Loc,
-                 All_Present        => True,
-                 Subtype_Indication =>
-                   New_Reference_To (Exp_Type, Loc)));
+         else
+            Res :=
+              Make_Explicit_Dereference (Loc,
+                Prefix => New_Reference_To (Def_Id, Loc));
 
-         Insert_Action (Exp, Ptr_Typ_Decl);
+            --  Generate:
+            --    type Ann is access all <Exp_Type>;
+
+            Ref_Type := Make_Temporary (Loc, 'A');
+
+            Ptr_Typ_Decl :=
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier => Ref_Type,
+                Type_Definition     =>
+                  Make_Access_To_Object_Definition (Loc,
+                    All_Present        => True,
+                    Subtype_Indication =>
+                      New_Reference_To (Exp_Type, Loc)));
+
+            Insert_Action (Exp, Ptr_Typ_Decl);
+         end if;
 
          E := Exp;
          if Nkind (E) = N_Explicit_Dereference then

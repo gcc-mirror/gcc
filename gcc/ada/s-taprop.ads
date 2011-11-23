@@ -34,12 +34,14 @@
 
 with System.Parameters;
 with System.Tasking;
+with System.OS_Constants;
 with System.OS_Interface;
 
 package System.Task_Primitives.Operations is
    pragma Preelaborate;
 
    package ST renames System.Tasking;
+   package OSC renames System.OS_Constants;
    package OSI renames System.OS_Interface;
 
    procedure Initialize (Environment_Task : ST.Task_Id);

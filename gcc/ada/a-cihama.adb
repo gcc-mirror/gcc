@@ -45,10 +45,9 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    procedure Free_Element is
       new Ada.Unchecked_Deallocation (Element_Type, Element_Access);
 
-   type Iterator is new
+   type Iterator is limited new
      Map_Iterator_Interfaces.Forward_Iterator with record
         Container : Map_Access;
-        Node      : Node_Access;
      end record;
 
    overriding function First (Object : Iterator) return Cursor;
@@ -476,14 +475,8 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    end First;
 
    function First (Object : Iterator) return Cursor is
-      M : constant Map_Access  := Object.Container;
-      N : constant Node_Access := HT_Ops.First (M.HT);
    begin
-      if N = null then
-         return No_Element;
-      else
-         return Cursor'(Object.Container.all'Unchecked_Access, N);
-      end if;
+      return Object.Container.First;
    end First;
 
    ----------
@@ -715,13 +708,11 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       B := B - 1;
    end Iterate;
 
-   function Iterate (Container : Map)
-      return Map_Iterator_Interfaces.Forward_Iterator'class
+   function Iterate
+     (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'Class
    is
-      Node : constant Node_Access := HT_Ops.First (Container.HT);
-      It   : constant Iterator := (Container'Unrestricted_Access, Node);
    begin
-      return It;
+      return Iterator'(Container => Container'Unrestricted_Access);
    end Iterate;
 
    ---------
@@ -809,11 +800,16 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
    function Next (Object : Iterator; Position : Cursor) return Cursor is
    begin
-      if Position.Node = null then
+      if Position.Container = null then
          return No_Element;
-      else
-         return (Object.Container, Next (Position).Node);
       end if;
+
+      if Position.Container /= Object.Container then
+         raise Program_Error with
+           "Position cursor of Next designates wrong map";
+      end if;
+
+      return Next (Position);
    end Next;
 
    -------------------

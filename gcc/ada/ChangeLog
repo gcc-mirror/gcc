@@ -1,3 +1,51 @@
+2011-11-23  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch9.adb (Analyze_Entry_Declaration): Check for entry
+	family bounds out of range.
+
+2011-11-23  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cohama.adb, a-cihama.adb, a-cbhama.adb (Iterator): Declare
+	type as limited, and remove node component.
+	(First, Next): Forward call to corresponding cursor-based operation.
+	(Iterate): Representation of iterator no longer has node component.
+
+2011-11-23  Yannick Moy  <moy@adacore.com>
+
+	* exp_util.adb: Revert previous change to remove side-effects in Alfa
+	mode, which is not the correct thing to do for renamings.
+
+2011-11-23  Thomas Quinot  <quinot@adacore.com>
+
+	* s-osinte-hpux.ads, s-taprop-vxworks.adb, s-taprop-tru64.adb,
+	s-osinte-vxworks.ads, s-osinte-aix.ads, s-osinte-lynxos.ads,
+	s-osinte-solaris-posix.ads, s-taprop-solaris.adb, a-exetim-posix.adb,
+	s-osinte-irix.ads, s-osinte-solaris.ads, s-oscons-tmplt.c,
+	s-taprop-irix.adb, s-osinte-hpux-dce.ads, Makefile.rtl,
+	s-osinte-tru64.ads, s-osinte-darwin.ads, s-taprop.ads,
+	s-osinte-freebsd.ads, s-osinte-lynxos-3.ads, s-taprop-hpux-dce.adb,
+	s-taprop-posix.adb: Remove hard-coded clock ids;
+	instead, generate them in System.OS_Constants.
+	(System.OS_Constants.CLOCK_RT_Ada): New constant denoting the
+	id of the clock providing Ada.Real_Time.Monotonic_Clock.
+	* thread.c: New file.
+	(__gnat_pthread_condattr_setup): New function. For platforms where
+	CLOCK_RT_Ada is not CLOCK_REALTIME, set appropriate condition
+	variable attribute.
+
+2011-11-23  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb: Restore the use of Expander_Active instead of
+	Full_Expander_Active, so that the evaluation is forced in Alfa
+	mode too. Otherwise, we end up with an unexpected insertion in a
+	place where it is not supposed to happen, on default parameters
+	of a call.
+
+2011-11-23  Thomas Quinot  <quinot@adacore.com>
+
+	* prj-pp.adb, prj-pp.ads: Minor new addition: wrapper procedure "wpr"
+	for Pretty_Print, for use from within gdb.
+
 2011-11-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch5.adb (Expand_Iterator_Loop): Wrap the expanded loop
