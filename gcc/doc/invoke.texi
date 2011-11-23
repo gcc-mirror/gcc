@@ -6731,13 +6731,16 @@ rule generates a better code.
 Use specified regions for the integrated register allocator.  The
 @var{region} argument should be one of @code{all}, @code{mixed}, or
 @code{one}.  The first value means using all loops as register
-allocation regions, the second value which is the default means using
-all loops except for loops with small register pressure as the
-regions, and third one means using all function as a single region.
-The first value can give best result for machines with small size and
-irregular register set, the third one results in faster and generates
-decent code and the smallest size code, and the default value usually
-give the best results in most cases and for most architectures.
+allocation regions, the second value which is enabled by default when
+compiling with optimization for speed (@option{-O}, @option{-O2},
+@dots{}) means using all loops except for loops with small register
+pressure as the regions, and third one which is enabled by default for
+@option{-Os} or @option{-O0} means using all function as a single
+region.  The first value can give best result for machines with small
+size and irregular register set, the third one results in faster and
+generates decent code and the smallest size code, and the second value
+usually give the best results in most cases and for most
+architectures.
 
 @item -fira-loop-pressure
 @opindex fira-loop-pressure
