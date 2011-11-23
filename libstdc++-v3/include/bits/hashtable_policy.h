@@ -59,6 +59,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __distance_fw(__first, __last, _Tag());
     }
 
+  // Helper type used to detect when the hash functor is noexcept qualified or
+  // not
+  template <typename _Key, typename _Hash>
+    struct __is_noexcept_hash : std::integral_constant<bool,
+	noexcept(declval<const _Hash&>()(declval<const _Key&>()))>
+    {};
+
   // Auxiliary types used for all instantiations of _Hashtable: nodes
   // and iterators.
 
@@ -211,155 +218,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
-  template<typename _Value, bool __cache>
-    struct _Hashtable_iterator_base
-    {
-      _Hashtable_iterator_base(_Hash_node<_Value, __cache>* __node,
-			       _Hash_node<_Value, __cache>** __bucket)
-      : _M_cur_node(__node), _M_cur_bucket(__bucket) { }
-
-      void
-      _M_incr()
-      {
-	_M_cur_node = _M_cur_node->_M_next;
-	if (!_M_cur_node)
-	  _M_incr_bucket();
-      }
-
-      void
-      _M_incr_bucket();
-
-      _Hash_node<_Value, __cache>*   _M_cur_node;
-      _Hash_node<_Value, __cache>**  _M_cur_bucket;
-    };
-
-  // Global iterators, used for arbitrary iteration within a hash
-  // table.  Larger and more expensive than local iterators.
-  template<typename _Value, bool __cache>
-    void
-    _Hashtable_iterator_base<_Value, __cache>::
-    _M_incr_bucket()
-    {
-      ++_M_cur_bucket;
-
-      // This loop requires the bucket array to have a non-null sentinel.
-      while (!*_M_cur_bucket)
-	++_M_cur_bucket;
-      _M_cur_node = *_M_cur_bucket;
-    }
-
-  template<typename _Value, bool __cache>
-    inline bool
-    operator==(const _Hashtable_iterator_base<_Value, __cache>& __x,
-	       const _Hashtable_iterator_base<_Value, __cache>& __y)
-    { return __x._M_cur_node == __y._M_cur_node; }
-
-  template<typename _Value, bool __cache>
-    inline bool
-    operator!=(const _Hashtable_iterator_base<_Value, __cache>& __x,
-	       const _Hashtable_iterator_base<_Value, __cache>& __y)
-    { return __x._M_cur_node != __y._M_cur_node; }
-
-  template<typename _Value, bool __constant_iterators, bool __cache>
-    struct _Hashtable_iterator
-    : public _Hashtable_iterator_base<_Value, __cache>
-    {
-      typedef _Value                                   value_type;
-      typedef typename std::conditional<__constant_iterators,
-					const _Value*, _Value*>::type
-						       pointer;
-      typedef typename std::conditional<__constant_iterators,
-					const _Value&, _Value&>::type
-						       reference;
-      typedef std::ptrdiff_t                           difference_type;
-      typedef std::forward_iterator_tag                iterator_category;
-
-      _Hashtable_iterator()
-      : _Hashtable_iterator_base<_Value, __cache>(0, 0) { }
-
-      _Hashtable_iterator(_Hash_node<_Value, __cache>* __p,
-			  _Hash_node<_Value, __cache>** __b)
-      : _Hashtable_iterator_base<_Value, __cache>(__p, __b) { }
-
-      explicit
-      _Hashtable_iterator(_Hash_node<_Value, __cache>** __b)
-      : _Hashtable_iterator_base<_Value, __cache>(*__b, __b) { }
-
-      reference
-      operator*() const
-      { return this->_M_cur_node->_M_v; }
-
-      pointer
-      operator->() const
-      { return std::__addressof(this->_M_cur_node->_M_v); }
-
-      _Hashtable_iterator&
-      operator++()
-      {
-	this->_M_incr();
-	return *this;
-      }
-
-      _Hashtable_iterator
-      operator++(int)
-      {
-	_Hashtable_iterator __tmp(*this);
-	this->_M_incr();
-	return __tmp;
-      }
-    };
-
-  template<typename _Value, bool __constant_iterators, bool __cache>
-    struct _Hashtable_const_iterator
-    : public _Hashtable_iterator_base<_Value, __cache>
-    {
-      typedef _Value                                   value_type;
-      typedef const _Value*                            pointer;
-      typedef const _Value&                            reference;
-      typedef std::ptrdiff_t                           difference_type;
-      typedef std::forward_iterator_tag                iterator_category;
-
-      _Hashtable_const_iterator()
-      : _Hashtable_iterator_base<_Value, __cache>(0, 0) { }
-
-      _Hashtable_const_iterator(_Hash_node<_Value, __cache>* __p,
-				_Hash_node<_Value, __cache>** __b)
-      : _Hashtable_iterator_base<_Value, __cache>(__p, __b) { }
-
-      explicit
-      _Hashtable_const_iterator(_Hash_node<_Value, __cache>** __b)
-      : _Hashtable_iterator_base<_Value, __cache>(*__b, __b) { }
-
-      _Hashtable_const_iterator(const _Hashtable_iterator<_Value,
-				__constant_iterators, __cache>& __x)
-      : _Hashtable_iterator_base<_Value, __cache>(__x._M_cur_node,
-						  __x._M_cur_bucket) { }
-
-      reference
-      operator*() const
-      { return this->_M_cur_node->_M_v; }
-
-      pointer
-      operator->() const
-      { return std::__addressof(this->_M_cur_node->_M_v); }
-
-      _Hashtable_const_iterator&
-      operator++()
-      {
-	this->_M_incr();
-	return *this;
-      }
-
-      _Hashtable_const_iterator
-      operator++(int)
-      {
-	_Hashtable_const_iterator __tmp(*this);
-	this->_M_incr();
-	return __tmp;
-      }
-    };
-
-
   // Many of class template _Hashtable's template parameters are policy
   // classes.  These are defaults for the policies.
 
@@ -388,7 +246,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct _Prime_rehash_policy
   {
     _Prime_rehash_policy(float __z = 1.0)
-    : _M_max_load_factor(__z), _M_growth_factor(2.f), _M_next_resize(0) { }
+    : _M_max_load_factor(__z), _M_prev_resize(0), _M_next_resize(0) { }
 
     float
     max_load_factor() const noexcept
@@ -410,10 +268,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_need_rehash(std::size_t __n_bkt, std::size_t __n_elt,
 		   std::size_t __n_ins) const;
 
+    typedef std::pair<std::size_t, std::size_t> _State;
+
+    _State
+    _M_state() const
+    { return std::make_pair(_M_prev_resize, _M_next_resize); }
+
+    void
+    _M_reset(const _State& __state)
+    {
+      _M_prev_resize = __state.first;
+      _M_next_resize = __state.second;
+    }
+
     enum { _S_n_primes = sizeof(unsigned long) != 8 ? 256 : 256 + 48 };
 
     float                _M_max_load_factor;
-    float                _M_growth_factor;
+    mutable std::size_t  _M_prev_resize;
     mutable std::size_t  _M_next_resize;
   };
 
@@ -429,15 +300,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     // Optimize lookups involving the first elements of __prime_list.
     // (useful to speed-up, eg, constructors)
-    static const unsigned char __fast_bkt[12]
+    static const unsigned long __fast_bkt[12]
       = { 2, 2, 2, 3, 5, 5, 7, 7, 11, 11, 11, 11 };
 
-    const unsigned long __p
-      = __n <= 11 ? __fast_bkt[__n]
-                  : *std::lower_bound(__prime_list + 5,
-				      __prime_list + _S_n_primes, __n);
-    _M_next_resize = __builtin_floor(__p * (long double)_M_max_load_factor);
-    return __p;
+    const unsigned long* __p
+      = __n <= 11 ? __fast_bkt + __n
+		  : std::lower_bound(__prime_list + 5,
+				     __prime_list + _S_n_primes, __n);
+
+    _M_prev_resize = __builtin_floor(*__p * (long double)_M_max_load_factor);
+    if (__p != __fast_bkt)
+      _M_prev_resize = std::min(_M_prev_resize,
+				static_cast<std::size_t>(*(__p - 1)));
+    // Lets guaranty a minimal grow step of 11:
+    if (*__p - __n < 11)
+      __p = std::lower_bound(__prime_list + 5,
+			     __prime_list + _S_n_primes, __n + 11);
+    _M_next_resize = __builtin_floor(*__p * (long double)_M_max_load_factor);
+    return *__p;
   }
 
   // Return the smallest prime p such that alpha p >= n, where alpha
@@ -461,23 +341,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   _M_need_rehash(std::size_t __n_bkt, std::size_t __n_elt,
 		 std::size_t __n_ins) const
   {
-    if (__n_elt + __n_ins > _M_next_resize)
+    if (__n_elt + __n_ins >= _M_next_resize)
       {
-	long double __min_bkts = ((__n_elt + __n_ins)
-				  / (long double)_M_max_load_factor);
-	if (__min_bkts > __n_bkt)
-	  {
-	    __min_bkts = std::max(__min_bkts, (long double)_M_growth_factor
-				  * __n_bkt);
-	    return std::make_pair(true,
-				  _M_next_bkt(__builtin_ceil(__min_bkts)));
-	  }
+	long double __min_bkts = (__n_elt + __n_ins)
+				 / (long double)_M_max_load_factor;
+	if (__min_bkts >= __n_bkt)
+	  return std::make_pair(true,
+				_M_next_bkt(__builtin_floor(__min_bkts) + 1));
 	else
 	  {
 	    _M_next_resize
 	      = __builtin_floor(__n_bkt * (long double)_M_max_load_factor);
 	    return std::make_pair(false, 0);
 	  }
+      }
+    else if (__n_elt + __n_ins < _M_prev_resize)
+      {
+	long double __min_bkts = (__n_elt + __n_ins)
+				 / (long double)_M_max_load_factor;
+	return std::make_pair(true,
+			      _M_next_bkt(__builtin_floor(__min_bkts) + 1));
       }
     else
       return std::make_pair(false, 0);
@@ -538,8 +421,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::size_t __n = __h->_M_bucket_index(__k, __code,
 					     __h->_M_bucket_count);
 
-      typename _Hashtable::_Node* __p =
-	__h->_M_find_node(__h->_M_buckets[__n], __k, __code);
+      typename _Hashtable::_Node* __p = __h->_M_find_node(__n, __k, __code);
       if (!__p)
 	return __h->_M_insert_bucket(std::make_pair(__k, mapped_type()),
 				     __n, __code)->second;
@@ -557,8 +439,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::size_t __n = __h->_M_bucket_index(__k, __code,
 					     __h->_M_bucket_count);
 
-      typename _Hashtable::_Node* __p =
-	__h->_M_find_node(__h->_M_buckets[__n], __k, __code);
+      typename _Hashtable::_Node* __p = __h->_M_find_node(__n, __k, __code);
       if (!__p)
 	return __h->_M_insert_bucket(std::make_pair(std::move(__k),
 						    mapped_type()),
@@ -577,8 +458,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::size_t __n = __h->_M_bucket_index(__k, __code,
 					     __h->_M_bucket_count);
 
-      typename _Hashtable::_Node* __p =
-	__h->_M_find_node(__h->_M_buckets[__n], __k, __code);
+      typename _Hashtable::_Node* __p = __h->_M_find_node(__n, __k, __code);
       if (!__p)
 	__throw_out_of_range(__N("_Map_base::at"));
       return (__p->_M_v).second;
@@ -595,8 +475,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::size_t __n = __h->_M_bucket_index(__k, __code,
 					     __h->_M_bucket_count);
 
-      typename _Hashtable::_Node* __p =
-	__h->_M_find_node(__h->_M_buckets[__n], __k, __code);
+      typename _Hashtable::_Node* __p = __h->_M_find_node(__n, __k, __code);
       if (!__p)
 	__throw_out_of_range(__N("_Map_base::at"));
       return (__p->_M_v).second;

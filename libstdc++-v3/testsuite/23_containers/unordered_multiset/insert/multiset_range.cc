@@ -25,6 +25,19 @@
 #include <unordered_set>
 #include <testsuite_hooks.h>
 
+namespace
+{
+  template <typename _Tp>
+    std::size_t
+    get_nb_bucket_elems(const std::unordered_multiset<_Tp>& us)
+    {
+      std::size_t nb = 0;
+      for (std::size_t b = 0; b != us.bucket_count(); ++b)
+	nb += us.bucket_size(b);
+      return nb;
+    }
+}
+
 void test01()
 {
   bool test __attribute__((unused)) = true;
@@ -38,8 +51,9 @@ void test01()
 			     "magenta", "yellow", "orange", "pink", "gray" };
 
   s.insert(A+0, A+N);
-  VERIFY(s.size() == static_cast<unsigned int>(N));
-  VERIFY(std::distance(s.begin(), s.end()) == N);
+  VERIFY( s.size() == static_cast<unsigned int>(N) );
+  VERIFY( std::distance(s.begin(), s.end()) == N );
+  VERIFY( get_nb_bucket_elems(s) == N );
 
   for (int i = 0; i < N; ++i) {
     std::string str = A[i];
@@ -62,6 +76,7 @@ void test02()
   s.insert(A+0, A+N);
   VERIFY(s.size() == static_cast<unsigned int>(N));
   VERIFY(std::distance(s.begin(), s.end()) == N);
+  VERIFY( get_nb_bucket_elems(s) == N );
 
   VERIFY(std::count(s.begin(), s.end(), 2) == 1);
   VERIFY(std::count(s.begin(), s.end(), 3) == 1);

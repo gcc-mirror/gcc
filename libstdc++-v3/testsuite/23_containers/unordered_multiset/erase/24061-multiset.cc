@@ -23,6 +23,20 @@
 #include <string>
 #include <testsuite_hooks.h>
 
+namespace
+{
+  std::size_t
+  get_nb_bucket_elems(const std::unordered_multiset<std::string>& us)
+  {
+    std::size_t nb = 0;
+    for (std::size_t b = 0; b != us.bucket_count(); ++b)
+      {
+	nb += us.bucket_size(b);
+      }
+    return nb;
+  }
+}
+
 // libstdc++/24061
 void test01()
 {
@@ -49,6 +63,7 @@ void test01()
   ms1.insert("love is not enough");
   ms1.insert("every day is exactly the same");
   VERIFY( ms1.size() == 13 );
+  VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
 
   iterator it1 = ms1.begin();
   ++it1;
@@ -56,6 +71,7 @@ void test01()
   ++it2;
   iterator it3 = ms1.erase(it1);
   VERIFY( ms1.size() == 12 );
+  VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
   VERIFY( it3 == it2 );
   VERIFY( *it3 == *it2 );
 
@@ -68,6 +84,7 @@ void test01()
   ++it5;
   iterator it6 = ms1.erase(it4, it5);
   VERIFY( ms1.size() == 10 );
+  VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
   VERIFY( it6 == it5 );
   VERIFY( *it6 == *it5 );
 
@@ -79,6 +96,7 @@ void test01()
   ++it8;
   const_iterator it9 = ms1.erase(it7);
   VERIFY( ms1.size() == 9 );
+  VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
   VERIFY( it9 == it8 );
   VERIFY( *it9 == *it8 );
 
@@ -91,11 +109,13 @@ void test01()
   ++it11;
   const_iterator it12 = ms1.erase(it10, it11);
   VERIFY( ms1.size() == 5 );
+  VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
   VERIFY( it12 == it11 );
   VERIFY( *it12 == *it11 );
 
   iterator it13 = ms1.erase(ms1.begin(), ms1.end());
   VERIFY( ms1.size() == 0 );
+  VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
   VERIFY( it13 == ms1.end() );
   VERIFY( it13 == ms1.begin() );
 }
