@@ -6,7 +6,7 @@ template<class T> using AS0 = S0<T>;
 template<template<class> class TT>
 void f(TT<int>);
 
-template class AS0<char>;
+template class AS0<char>; // { dg-error "alias templ\[^\n\r\]*specialization\[^\n\r\]*after\[^\n\r\]*class" }
 
 void
 foo()

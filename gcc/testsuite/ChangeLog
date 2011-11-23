@@ -1,3 +1,27 @@
+2011-11-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/51145
+	* g++.dg/cpp0x/alias-decl-14.C: New test.
+	* g++.dg/cpp0x/alias-decl-2.C: Adjust for tests that were wrongly
+	passing before.
+	* g++.dg/cpp0x/alias-decl-10.C: Likewise and adjust for diagnostic
+	change.
+	* g++.dg/ext/attrib27.C: Adjust for diagnostic change.
+	* g++.dg/lookup/struct1.C: Likewise.
+	* g++.dg/parse/elab1.C: Likewise.
+	* g++.dg/parse/elab2.C: Likewise.
+	* g++.dg/parse/int-as-enum1.C: Likewise.
+	* g++.dg/parse/typedef1.C: Likewise.
+	* g++.dg/parse/typedef3.C: Likewise.
+	* g++.dg/parse/typedef4.C: Likewise.
+	* g++.dg/parse/typedef5.C: Likewise.
+	* g++.dg/template/crash26.C: Likewise.
+	* g++.dg/template/nontype4.C: Likewise.
+	* g++.old-deja/g++.benjamin/typedef01.C: Likewise.
+	* g++.old-deja/g++.brendan/line1.C: Likewise.
+	* g++.old-deja/g++.other/elab1.C: Likewise.
+	* g++.old-deja/g++.other/syntax4.C: Likewise.
+
 2011-11-22  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/50764
