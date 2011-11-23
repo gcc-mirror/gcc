@@ -203,18 +203,22 @@ package Ada.Containers.Ordered_Maps is
      (Container : Map;
       Process   : not null access procedure (Position : Cursor));
 
+   procedure Reverse_Iterate
+     (Container : Map;
+      Process   : not null access procedure (Position : Cursor));
+
+   --  The map container supports iteration in both the forward and reverse
+   --  directions, hence these constructor functions return an object that
+   --  supports the Reversible_Iterator interface.
+
    function Iterate
      (Container : Map)
-      return Map_Iterator_Interfaces.Forward_Iterator'class;
+      return Map_Iterator_Interfaces.Reversible_Iterator'class;
 
    function Iterate
      (Container : Map;
       Start     : Cursor)
       return Map_Iterator_Interfaces.Reversible_Iterator'class;
-
-   procedure Reverse_Iterate
-     (Container : Map;
-      Process   : not null access procedure (Position : Cursor));
 
 private
 

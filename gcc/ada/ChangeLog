@@ -1,3 +1,19 @@
+2011-11-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop): Wrap the expanded loop
+	and the cursor declarations in a block, so that the loop variable
+	is local to the construct.
+
+2011-11-23  Matthew Heaney  <heaney@adacore.com>
+
+	* a-coorma.ads, a-ciorma.ads, a-cborma.ads (Iterate): Returns
+	type Reversible_Iterator'Class.
+	* a-coorma.adb, a-ciorma.adb, a-cborma.adb (Iterator):
+	Declare type as limited.
+	(First, Last): Return value depends on iterator's start node value.
+	(Next, Previous): Call corresponding Cursor-based operation.
+	(Iterate): Indicate whether complete or partial iteration
+
 2011-11-23  Robert Dewar  <dewar@adacore.com>
 
 	* errout.adb: Minor reformattin (Finalize): Take templates into

@@ -227,17 +227,18 @@ package Ada.Containers.Bounded_Ordered_Maps is
      (Container : Map;
       Process   : not null access procedure (Position : Cursor));
 
+   procedure Reverse_Iterate
+     (Container : Map;
+      Process   : not null access procedure (Position : Cursor));
+
    function Iterate
-     (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'class;
+     (Container : Map)
+      return Map_Iterator_Interfaces.Reversible_Iterator'Class;
 
    function Iterate
      (Container : Map;
       Start     : Cursor)
-      return Map_Iterator_Interfaces.Reversible_Iterator'class;
-
-   procedure Reverse_Iterate
-     (Container : Map;
-      Process   : not null access procedure (Position : Cursor));
+      return Map_Iterator_Interfaces.Reversible_Iterator'Class;
 
 private
 
