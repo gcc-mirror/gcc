@@ -556,6 +556,10 @@ java_init_options_struct (struct gcc_options *opts)
 
   /* Java requires left-to-right evaluation of subexpressions.  */
   opts->x_flag_evaluation_order = 1;
+
+  /* Java catches NULL pointer exceptions, thus we can not necessarily
+     rely on a pointer having a non-NULL value after a dereference.  */
+  opts->x_flag_delete_null_pointer_checks = 0;
 }
 
 static void
