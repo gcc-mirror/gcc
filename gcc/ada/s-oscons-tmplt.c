@@ -1360,13 +1360,22 @@ CND(CLOCK_SGI_FAST,  "SGI fast clock")
 CND(CLOCK_SGI_CYCLE, "SGI CPU clock")
 #endif
 
+#ifndef CLOCK_THREAD_CPUTIME_ID
+# define CLOCK_THREAD_CPUTIME_ID -1
+#endif
+CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
+
 #if defined(__APPLE__)
-/* There's no clock_gettime or clock_id's on Darwin */
+/* There's no clock_gettime or clock_id's on Darwin, generate a dummy value */
 # define CLOCK_RT_Ada "-1"
 
-#elif defined(FreeBSD) || defined(_AIX)
-/* On these platforms use system provided monotonic clock */
+#elif defined(FreeBSD) || (defined(_AIX) && defined(_AIXVERSION_530))
+/** On these platforms use system provided monotonic clock instead of
+ ** the default CLOCK_REALTIME. We then need to set up cond var attributes
+ ** appropriately (see thread.c).
+ **/
 # define CLOCK_RT_Ada "CLOCK_MONOTONIC"
+# define NEED_PTHREAD_CONDATTR_SETCLOCK
 
 #elif defined(CLOCK_REALTIME)
 /* By default use CLOCK_REALTIME */
@@ -1376,11 +1385,6 @@ CND(CLOCK_SGI_CYCLE, "SGI CPU clock")
 #ifdef CLOCK_RT_Ada
 CNS(CLOCK_RT_Ada, "")
 #endif
-
-#ifndef CLOCK_THREAD_CPUTIME_ID
-# define CLOCK_THREAD_CPUTIME_ID -1
-#endif
-CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
 
 #if defined (__APPLE__) || defined (__linux__) || defined (DUMMY)
 /*

@@ -2,7 +2,7 @@
  *                                                                          *
  *                         GNAT COMPILER COMPONENTS                         *
  *                                                                          *
- *                               T H R E A D                                *
+ *                              P T H R E A D                               *
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
@@ -31,20 +31,27 @@
 
 /*  This file provides utility functions to access the threads API          */
 
-#include <pthread.h>
-#include <time.h>
 #include "s-oscons.h"
+
+#ifdef NEED_PTHREAD_CONDATTR_SETCLOCK
+# include <pthread.h>
+# include <time.h>
 
 int
 __gnat_pthread_condattr_setup(pthread_condattr_t *attr) {
 /*
  * If using a clock other than CLOCK_REALTIME for the Ada Monotonic_Clock,
  * the corresponding clock id must be set for condition variables.
- * There are no clock_id's on Darwin.
  */
-#if defined(__APPLE__) || ((CLOCK_RT_Ada) == (CLOCK_REALTIME))
-  return 0;
-#else
   return pthread_condattr_setclock (attr, CLOCK_RT_Ada);
-#endif
 }
+
+#else
+
+int
+__gnat_pthread_condattr_setup (void *attr) {
+  /* Dummy version for other platforms, which may or may not have pthread.h */
+  return 0;
+}
+
+#endif
