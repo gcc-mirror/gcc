@@ -1,5 +1,13 @@
 2011-11-23  Matthew Heaney  <heaney@adacore.com>
 
+	* a-cdlili.adb, a-cidlli.adb, a-cbdlli.adb (Iterator): Declared
+	Iterator type as limited (First, Last): Cursor return value
+	depends on iterator node value (Iterate): Use start position as
+	iterator node value (Next, Previous): Forward to corresponding
+	cursor-based operation.
+
+2011-11-23  Matthew Heaney  <heaney@adacore.com>
+
 	* a-coorse.ads, a-ciorse.ads, a-cborse.ads (Set_Iterator_Interfaces):
 	Renamed from Ordered_Set_Iterator_Interfaces.
 	* a-coorse.adb, a-ciorse.adb, a-cborse.adb (Iterator): Declared
