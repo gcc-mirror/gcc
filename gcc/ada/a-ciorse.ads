@@ -64,7 +64,7 @@ package Ada.Containers.Indefinite_Ordered_Sets is
 
    function Has_Element (Position : Cursor) return Boolean;
 
-   package Ordered_Set_Iterator_Interfaces is new
+   package Set_Iterator_Interfaces is new
      Ada.Iterator_Interfaces (Cursor, Has_Element);
 
    type Constant_Reference_Type
@@ -233,12 +233,12 @@ package Ada.Containers.Indefinite_Ordered_Sets is
 
    function Iterate
      (Container : Set)
-      return Ordered_Set_Iterator_Interfaces.Reversible_Iterator'class;
+      return Set_Iterator_Interfaces.Reversible_Iterator'class;
 
    function Iterate
      (Container : Set;
       Start     : Cursor)
-      return Ordered_Set_Iterator_Interfaces.Reversible_Iterator'class;
+      return Set_Iterator_Interfaces.Reversible_Iterator'class;
 
    generic
       type Key_Type (<>) is private;

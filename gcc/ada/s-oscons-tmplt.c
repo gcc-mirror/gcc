@@ -146,7 +146,7 @@ pragma Style_Checks ("M32766");
 
 # define NATIVE
 
-#endif
+#endif /* DUMMY */
 
 #ifndef TARGET
 # error Please define TARGET
@@ -213,7 +213,7 @@ int counter = 0;
   : : "i" (__LINE__));
 /* Freeform text */
 
-#endif
+#endif /* NATIVE */
 
 #define CST(name,comment) C(#name,String,name,comment)
 
@@ -1208,55 +1208,6 @@ CND(IP_DROP_MEMBERSHIP, "Leave a multicast group")
 #endif
 CND(IP_PKTINFO, "Get datagram info")
 
-#endif /* HAVE_SOCKETS */
-
-/*
-
-   ------------
-   -- Clocks --
-   ------------
-
-*/
-
-#ifdef CLOCK_REALTIME
-CND(CLOCK_REALTIME, "System realtime clock")
-#endif
-
-#ifdef CLOCK_MONOTONIC
-CND(CLOCK_MONOTONIC, "System monotonic clock")
-#endif
-
-#ifdef CLOCK_FASTEST
-CND(CLOCK_FASTEST, "Fastest clock")
-#endif
-
-#if defined (__sgi)
-CND(CLOCK_SGI_FAST,  "SGI fast clock")
-CND(CLOCK_SGI_CYCLE, "SGI CPU clock")
-#endif
-
-#if defined(__APPLE__)
-/* There's no clock_gettime or clock_id's on Darwin */
-# define CLOCK_RT_Ada "-1"
-
-#elif defined(FreeBSD) || defined(_AIX)
-/* On these platforms use system provided monotonic clock */
-# define CLOCK_RT_Ada "CLOCK_MONOTONIC"
-
-#elif defined(CLOCK_REALTIME)
-/* By default use CLOCK_REALTIME */
-# define CLOCK_RT_Ada "CLOCK_REALTIME"
-#endif
-
-#ifdef CLOCK_RT_Ada
-CNS(CLOCK_RT_Ada, "Ada realtime clock")
-#endif
-
-#ifndef CLOCK_THREAD_CPUTIME_ID
-# define CLOCK_THREAD_CPUTIME_ID -1
-#endif
-CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
-
 /*
 
    ----------------------
@@ -1367,58 +1318,67 @@ CST(Inet_Pton_Linkname, "")
 
 #endif /* HAVE_SOCKETS */
 
-/**
- **  System-specific constants follow
- **  Each section should be activated if compiling for the corresponding
- **  platform *or* generating the dummy version for runtime test compilation.
- **/
-
-#if defined (__vxworks) || defined (DUMMY)
-
 /*
 
-   --------------------------------
-   -- VxWorks-specific constants --
-   --------------------------------
+   ---------------------
+   -- Threads support --
+   ---------------------
 
-   --  These constants may be used only within the VxWorks version of
-   --  GNAT.Sockets.Thin.
+   --  Clock identifier definitions
+
 */
 
-CND(OK,    "VxWorks generic success")
-CND(ERROR, "VxWorks generic error")
-
+#ifdef CLOCK_REALTIME
+CND(CLOCK_REALTIME, "System realtime clock")
 #endif
 
-#if defined (__MINGW32__) || defined (DUMMY)
-/*
-
-   ------------------------------
-   -- MinGW-specific constants --
-   ------------------------------
-
-   --  These constants may be used only within the MinGW version of
-   --  GNAT.Sockets.Thin.
-*/
-
-CND(WSASYSNOTREADY,     "System not ready")
-CND(WSAVERNOTSUPPORTED, "Version not supported")
-CND(WSANOTINITIALISED,  "Winsock not initialized")
-CND(WSAEDISCON,         "Disconnected")
-
+#ifdef CLOCK_MONOTONIC
+CND(CLOCK_MONOTONIC, "System monotonic clock")
 #endif
 
-#ifdef NATIVE
-   putchar ('\n');
+#ifdef CLOCK_FASTEST
+CND(CLOCK_FASTEST, "Fastest clock")
 #endif
+
+#if defined (__sgi)
+CND(CLOCK_SGI_FAST,  "SGI fast clock")
+CND(CLOCK_SGI_CYCLE, "SGI CPU clock")
+#endif
+
+#if defined(__APPLE__)
+/* There's no clock_gettime or clock_id's on Darwin */
+# define CLOCK_RT_Ada "-1"
+
+#elif defined(FreeBSD) || defined(_AIX)
+/* On these platforms use system provided monotonic clock */
+# define CLOCK_RT_Ada "CLOCK_MONOTONIC"
+
+#elif defined(CLOCK_REALTIME)
+/* By default use CLOCK_REALTIME */
+# define CLOCK_RT_Ada "CLOCK_REALTIME"
+#endif
+
+#ifdef CLOCK_RT_Ada
+CNS(CLOCK_RT_Ada, "")
+#endif
+
+#ifndef CLOCK_THREAD_CPUTIME_ID
+# define CLOCK_THREAD_CPUTIME_ID -1
+#endif
+CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
 
 #if defined (__APPLE__) || defined (__linux__) || defined (DUMMY)
 /*
 
-   --  Sizes of pthread data types (on Darwin these are padding)
+   --  Sizes of pthread data types
+
 */
 
 #if defined (__APPLE__) || defined (DUMMY)
+/*
+   --  (on Darwin, these are just placeholders)
+
+*/
 #define PTHREAD_SIZE            __PTHREAD_SIZE__
 #define PTHREAD_ATTR_SIZE       __PTHREAD_ATTR_SIZE__
 #define PTHREAD_MUTEXATTR_SIZE  __PTHREAD_MUTEXATTR_SIZE__
@@ -1440,24 +1400,65 @@ CND(WSAEDISCON,         "Disconnected")
 #define PTHREAD_ONCE_SIZE       (sizeof (pthread_once_t))
 #endif
 
-CND(PTHREAD_SIZE, "pthread_t")
-
-CND(PTHREAD_ATTR_SIZE, "pthread_attr_t")
-
-CND(PTHREAD_MUTEXATTR_SIZE, "pthread_mutexattr_t")
-
-CND(PTHREAD_MUTEX_SIZE, "pthread_mutex_t")
-
-CND(PTHREAD_CONDATTR_SIZE, "pthread_condattr_t")
-
-CND(PTHREAD_COND_SIZE, "pthread_cond_t")
-
+CND(PTHREAD_SIZE,            "pthread_t")
+CND(PTHREAD_ATTR_SIZE,       "pthread_attr_t")
+CND(PTHREAD_MUTEXATTR_SIZE,  "pthread_mutexattr_t")
+CND(PTHREAD_MUTEX_SIZE,      "pthread_mutex_t")
+CND(PTHREAD_CONDATTR_SIZE,   "pthread_condattr_t")
+CND(PTHREAD_COND_SIZE,       "pthread_cond_t")
 CND(PTHREAD_RWLOCKATTR_SIZE, "pthread_rwlockattr_t")
+CND(PTHREAD_RWLOCK_SIZE,     "pthread_rwlock_t")
+CND(PTHREAD_ONCE_SIZE,       "pthread_once_t")
 
-CND(PTHREAD_RWLOCK_SIZE, "pthread_rwlock_t")
+#endif /* __APPLE__ || __linux__ */
 
-CND(PTHREAD_ONCE_SIZE, "pthread_once_t")
+/**
+ **  System-specific constants follow
+ **  Each section should be activated if compiling for the corresponding
+ **  platform *or* generating the dummy version for runtime test compilation.
+ **/
 
+#if defined (__vxworks) || defined (DUMMY)
+
+/*
+
+   --------------------------------
+   -- VxWorks-specific constants --
+   --------------------------------
+
+   --  These constants may be used only within the VxWorks version of
+   --  GNAT.Sockets.Thin.
+*/
+
+CND(OK,    "VxWorks generic success")
+CND(ERROR, "VxWorks generic error")
+
+#endif /* __vxworks */
+
+#if defined (__MINGW32__) || defined (DUMMY)
+/*
+
+   ------------------------------
+   -- MinGW-specific constants --
+   ------------------------------
+
+   --  These constants may be used only within the MinGW version of
+   --  GNAT.Sockets.Thin.
+*/
+
+CND(WSASYSNOTREADY,     "System not ready")
+CND(WSAVERNOTSUPPORTED, "Version not supported")
+CND(WSANOTINITIALISED,  "Winsock not initialized")
+CND(WSAEDISCON,         "Disconnected")
+
+#endif /* __MINGW32__ */
+
+/**
+ ** End of constants definitions
+ **/
+
+#ifdef NATIVE
+   putchar ('\n');
 #endif
 
 /*

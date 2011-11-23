@@ -41,10 +41,10 @@ with System;  use type System.Address;
 
 package body Ada.Containers.Indefinite_Hashed_Sets is
 
-   type Iterator is new Set_Iterator_Interfaces.Forward_Iterator with record
-      Container : Set_Access;
-      Position  : Cursor;
-   end record;
+   type Iterator is limited new
+     Set_Iterator_Interfaces.Forward_Iterator with record
+        Container : Set_Access;
+     end record;
 
    overriding function First (Object : Iterator) return Cursor;
 
@@ -649,10 +649,8 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    end First;
 
    function First (Object : Iterator) return Cursor is
-      Node : constant Node_Access := HT_Ops.First (Object.Container.HT);
    begin
-      return (if Node = null then No_Element
-              else Cursor'(Object.Container, Node));
+      return Object.Container.First;
    end First;
 
    ----------
@@ -1011,7 +1009,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    function Iterate (Container : Set)
      return Set_Iterator_Interfaces.Forward_Iterator'Class is
    begin
-      return Iterator'(Container'Unrestricted_Access, First (Container));
+      return Iterator'(Container => Container'Unrestricted_Access);
    end Iterate;
 
    ------------
@@ -1072,12 +1070,16 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       Position : Cursor) return Cursor
    is
    begin
-      if Position.Container /= Object.Container then
-         raise Program_Error with
-           "Position cursor designates wrong set";
+      if Position.Container = null then
+         return No_Element;
       end if;
 
-      return (if Position.Node = null then No_Element else Next (Position));
+      if Position.Container /= Object.Container then
+         raise Program_Error with
+           "Position cursor of Next designates wrong set";
+      end if;
+
+      return Next (Position);
    end Next;
 
    -------------
@@ -1895,7 +1897,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          Key_Keys.Delete_Key_Sans_Free (Container.HT, Key, X);
 
          if X = null then
-            raise Constraint_Error with "key not in map";
+            raise Constraint_Error with "key not in map";  -- ??? "set"
          end if;
 
          Free (X);
@@ -1913,7 +1915,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
       begin
          if Node = null then
-            raise Constraint_Error with "key not in map";
+            raise Constraint_Error with "key not in map";  -- ??? "set"
          end if;
 
          return Node.Element.all;
