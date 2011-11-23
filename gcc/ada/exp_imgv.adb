@@ -1191,10 +1191,7 @@ package body Exp_Imgv is
 
          if Discard_Names (Rtyp) then
             declare
-               Tnn : constant Entity_Id :=
-                       Make_Defining_Identifier (Loc,
-                         Chars => New_Internal_Name ('T'));
-
+               Tnn   : constant Entity_Id := Make_Temporary (Loc, 'T');
                Cexpr : Node_Id;
                P     : Int;
                M     : Int;

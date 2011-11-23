@@ -270,6 +270,7 @@ package body Impunit is
     ("g-except", F),  -- GNAT.Exceptions
     ("g-exctra", F),  -- GNAT.Exception_Traces
     ("g-expect", F),  -- GNAT.Expect
+    ("g-exptty", F),  -- GNAT.Expect.TTY
     ("g-flocon", F),  -- GNAT.Float_Control
     ("g-heasor", F),  -- GNAT.Heap_Sort
     ("g-hesora", F),  -- GNAT.Heap_Sort_A
@@ -318,6 +319,7 @@ package body Impunit is
     ("g-timsta", F),  -- GNAT.Time_Stamp
     ("g-traceb", F),  -- GNAT.Traceback
     ("g-trasym", F),  -- GNAT.Traceback.Symbolic
+    ("g-tty   ", F),  -- GNAT.TTY
     ("g-utf_32", F),  -- GNAT.UTF_32
     ("g-u3spch", F),  -- GNAT.UTF_32_Spelling_Checker
     ("g-wispch", F),  -- GNAT.Wide_Spelling_Checker
