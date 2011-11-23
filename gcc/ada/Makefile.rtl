@@ -404,6 +404,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-except$(objext) \
   g-exctra$(objext) \
   g-expect$(objext) \
+  g-exptty$(objext) \
   g-flocon$(objext) \
   g-heasor$(objext) \
   g-hesora$(objext) \
@@ -450,6 +451,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-timsta$(objext) \
   g-traceb$(objext) \
   g-trasym$(objext) \
+  g-tty$(objext) \
   g-u3spch$(objext) \
   g-utf_32$(objext) \
   g-wispch$(objext) \

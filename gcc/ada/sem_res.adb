@@ -2811,7 +2811,7 @@ package body Sem_Res is
          --  default expression mode (the Freeze_Expression routine tests this
          --  flag and only freezes static types if it is set).
 
-         --  AI05-177 (Ada2012): Expression functions do not freeze. Only
+         --  Ada 2012 (AI05-177): Expression functions do not freeze. Only
          --  their use (in an expanded call) freezes.
 
          if Ekind (Current_Scope) /= E_Function

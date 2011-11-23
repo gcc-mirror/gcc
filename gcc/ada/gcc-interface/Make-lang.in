@@ -2617,9 +2617,9 @@ ada/exp_util.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/lib.ads ada/lib.adb ada/lib-list.adb ada/lib-load.ads \
    ada/lib-sort.adb ada/lib-util.ads ada/lib-xref.ads ada/namet.ads \
    ada/namet.adb ada/nlists.ads ada/nlists.adb ada/nmake.ads ada/nmake.adb \
-   ada/opt.ads ada/output.ads ada/put_alfa.ads ada/restrict.ads \
-   ada/restrict.adb ada/rident.ads ada/rtsfind.ads ada/scans.ads \
-   ada/sem.ads ada/sem.adb ada/sem_attr.ads ada/sem_aux.ads \
+   ada/opt.ads ada/opt.adb ada/output.ads ada/put_alfa.ads \
+   ada/restrict.ads ada/restrict.adb ada/rident.ads ada/rtsfind.ads \
+   ada/scans.ads ada/sem.ads ada/sem.adb ada/sem_attr.ads ada/sem_aux.ads \
    ada/sem_aux.adb ada/sem_cat.ads ada/sem_ch10.ads ada/sem_ch11.ads \
    ada/sem_ch12.ads ada/sem_ch13.ads ada/sem_ch2.ads ada/sem_ch3.ads \
    ada/sem_ch4.ads ada/sem_ch5.ads ada/sem_ch6.ads ada/sem_ch7.ads \
