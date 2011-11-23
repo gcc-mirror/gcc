@@ -13960,7 +13960,8 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
       else if (tag_type == typename_type && TREE_CODE (decl) != TYPE_DECL)
         type = NULL_TREE; 
       else 
-	type = TREE_TYPE (decl);
+	type = check_elaborated_type_specifier (tag_type, decl,
+						/*allow_template_p=*/true);
     }
 
   if (!type)
