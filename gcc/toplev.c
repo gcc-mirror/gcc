@@ -1333,6 +1333,11 @@ process_options (void)
 	   "and -ftree-loop-linear)");
 #endif
 
+  /* One region RA really helps to decrease the code size.  */
+  if (flag_ira_region == IRA_REGION_AUTODETECT)
+    flag_ira_region
+      = optimize_size || !optimize ? IRA_REGION_ONE : IRA_REGION_MIXED;
+
   /* Unrolling all loops implies that standard loop unrolling must also
      be done.  */
   if (flag_unroll_all_loops)

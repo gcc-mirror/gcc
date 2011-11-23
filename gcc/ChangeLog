@@ -1,3 +1,19 @@
+2011-11-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/48455
+	* doc/invoke.texi (-fira-region): Document default values.
+
+	* flags-types.h (enum ira_region): Add new value
+	IRA_REGION_AUTODETECT.
+
+	* common.opt (fira-region): Set up initial value to
+	IRA_REGION_AUTODETECT.
+
+	* toplev.c (process_options): Set up flag_ira_region depending on
+	-O options.
+
+	* ira.c (ira.c): Remove optimize guard for ira_build.
+
 2011-11-23  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR rtl-optimization/50496

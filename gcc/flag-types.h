@@ -118,7 +118,11 @@ enum ira_region
 {
   IRA_REGION_ONE,
   IRA_REGION_ALL,
-  IRA_REGION_MIXED
+  IRA_REGION_MIXED,
+  /* This value means that there were no options -fira-region on the
+     command line and that we should choose a value depending on the
+     used -O option.  */
+  IRA_REGION_AUTODETECT
 };
 
 /* The options for excess precision.  */
