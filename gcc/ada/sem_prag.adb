@@ -14528,7 +14528,7 @@ package body Sem_Prag is
                      end;
                   end if;
 
-                  --  Two or more arguments (must be two)
+               --  Two or more arguments (must be two)
 
                else
                   Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
@@ -14547,8 +14547,7 @@ package body Sem_Prag is
                      --  the formal may be wrapped in a conversion if the
                      --  actual is a conversion. Retrieve the real entity name.
 
-                     if (In_Instance_Body
-                          or else In_Inlined_Body)
+                     if (In_Instance_Body or else In_Inlined_Body)
                        and then Nkind (E_Id) = N_Unchecked_Type_Conversion
                      then
                         E_Id := Expression (E_Id);
@@ -14612,10 +14611,21 @@ package body Sem_Prag is
                         --  In any other case, an error will be signalled (ON
                         --  with no matching OFF).
 
+                        --  Note: We set Used if we are inside a generic to
+                        --  disable the test that the non-config case actually
+                        --  cancels a warning. That's because we can't be sure
+                        --  there isn't an instantiation in some other unit
+                        --  where a warning is suppressed.
+
+                        --  We could do a little better here by checking if the
+                        --  generic unit we are inside is public, but for now
+                        --  we don't bother with that refinement.
+
                         if Chars (Argx) = Name_Off then
                            Set_Specific_Warning_Off
                              (Loc, Name_Buffer (1 .. Name_Len),
-                              Config => Is_Configuration_Pragma);
+                              Config => Is_Configuration_Pragma,
+                              Used   => Inside_A_Generic or else In_Instance);
 
                         elsif Chars (Argx) = Name_On then
                            Set_Specific_Warning_On

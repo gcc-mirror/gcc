@@ -445,7 +445,8 @@ package Erroutc is
    procedure Set_Specific_Warning_Off
      (Loc    : Source_Ptr;
       Msg    : String;
-      Config : Boolean);
+      Config : Boolean;
+      Used   : Boolean := False);
    --  This is called in response to the two argument form of pragma Warnings
    --  where the first argument is OFF, and the second argument is a string
    --  which identifies a specific warning to be suppressed. The first argument
@@ -453,6 +454,8 @@ package Erroutc is
    --  string from the pragma. Loc is the location of the pragma (which is the
    --  start of the range to suppress). Config is True for the configuration
    --  pragma case (where there is no requirement for a matching OFF pragma).
+   --  Used is set True to disable the check that the warning actually has
+   --  has the effect of suppressing a warning.
 
    procedure Set_Specific_Warning_On
      (Loc : Source_Ptr;
