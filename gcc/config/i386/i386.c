@@ -22106,12 +22106,12 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
   else
     optimize_for_speed = true;
 
+  *dynamic_check = -1;
   if (!optimize)
     return (rep_prefix_usable ? rep_prefix_1_byte : libcall);
 
   cost = optimize_for_speed ? ix86_cost : &ix86_size_cost;
 
-  *dynamic_check = -1;
   if (memset)
     algs = &cost->memset[align_unknown][TARGET_64BIT != 0];
   else

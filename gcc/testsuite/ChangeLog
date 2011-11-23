@@ -1,3 +1,8 @@
+2011-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/51261
+	* gcc.dg/pr51261.c: New test.
+
 2011-11-22  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51145
