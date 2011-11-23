@@ -37,20 +37,21 @@ with Ada.Containers.Red_Black_Trees.Generic_Set_Operations;
 pragma Elaborate_All (Ada.Containers.Red_Black_Trees.Generic_Set_Operations);
 
 with Ada.Unchecked_Deallocation;
-
 with System; use type System.Address;
 
 package body Ada.Containers.Indefinite_Ordered_Sets is
 
-   type Iterator is limited new
-     Set_Iterator_Interfaces.Reversible_Iterator with record
-        Container : Set_Access;
-        Node      : Node_Access;
-     end record;
+   type Iterator is new Limited_Controlled and
+     Set_Iterator_Interfaces.Reversible_Iterator with
+   record
+      Container : Set_Access;
+      Node      : Node_Access;
+   end record;
+
+   overriding procedure Finalize (Object : in out Iterator);
 
    overriding function First (Object : Iterator) return Cursor;
-
-   overriding function Last (Object : Iterator) return Cursor;
+   overriding function Last  (Object : Iterator) return Cursor;
 
    overriding function Next
      (Object   : Iterator;
@@ -570,6 +571,22 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          Free (X);
       end if;
    end Exclude;
+
+   --------------
+   -- Finalize --
+   --------------
+
+   procedure Finalize (Object : in out Iterator) is
+   begin
+      if Object.Container /= null then
+         declare
+            B : Natural renames Object.Container.all.Tree.Busy;
+
+         begin
+            B := B - 1;
+         end;
+      end if;
+   end Finalize;
 
    ----------
    -- Find --
@@ -1254,7 +1271,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          Process (Cursor'(Container'Unrestricted_Access, Node));
       end Process_Node;
 
-      T : Tree_Type renames Container.Tree'Unrestricted_Access.all;
+      T : Tree_Type renames Container'Unrestricted_Access.all.Tree;
       B : Natural renames T.Busy;
 
    --  Start of processing for Iterate
@@ -1275,8 +1292,10 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
    function Iterate
      (Container : Set)
-      return Set_Iterator_Interfaces.Reversible_Iterator'Class
+      return Set_Iterator_Interfaces.Reversible_Iterator'class
    is
+      B  : Natural renames Container'Unrestricted_Access.all.Tree.Busy;
+
    begin
       --  The value of the Node component influences the behavior of the First
       --  and Last selector functions of the iterator object. When the Node
@@ -1288,14 +1307,22 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       --  Note: For a forward iterator, Container.First is the beginning, and
       --  for a reverse iterator, Container.Last is the beginning.
 
-      return Iterator'(Container'Unrestricted_Access, Node => null);
+      return It : constant Iterator :=
+                    Iterator'(Limited_Controlled with
+                                Container => Container'Unrestricted_Access,
+                                Node      => null)
+      do
+         B := B + 1;
+      end return;
    end Iterate;
 
    function Iterate
      (Container : Set;
       Start     : Cursor)
-      return Set_Iterator_Interfaces.Reversible_Iterator'Class
+      return Set_Iterator_Interfaces.Reversible_Iterator'class
    is
+      B  : Natural renames Container'Unrestricted_Access.all.Tree.Busy;
+
    begin
       --  It was formerly the case that when Start = No_Element, the partial
       --  iterator was defined to behave the same as for a complete iterator,
@@ -1330,7 +1357,13 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       --  the start position has the same value irrespective of whether this is
       --  a forward or reverse iteration.
 
-      return Iterator'(Container'Unrestricted_Access, Node => Start.Node);
+      return It : constant Iterator :=
+                    (Limited_Controlled with
+                       Container => Container'Unrestricted_Access,
+                       Node      => Start.Node)
+      do
+         B := B + 1;
+      end return;
    end Iterate;
 
    ----------

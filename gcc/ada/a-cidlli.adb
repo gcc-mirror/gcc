@@ -27,23 +27,25 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
-with System;  use type System.Address;
 with Ada.Unchecked_Deallocation;
+with System; use type System.Address;
 
 package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
    procedure Free is
      new Ada.Unchecked_Deallocation (Element_Type, Element_Access);
 
-   type Iterator is limited new
-     List_Iterator_Interfaces.Reversible_Iterator with record
-        Container : List_Access;
-        Node      : Node_Access;
-     end record;
+   type Iterator is new Limited_Controlled and
+     List_Iterator_Interfaces.Reversible_Iterator with
+   record
+      Container : List_Access;
+      Node      : Node_Access;
+   end record;
+
+   overriding procedure Finalize (Object : in out Iterator);
 
    overriding function First (Object : Iterator) return Cursor;
-
-   overriding function Last (Object : Iterator) return Cursor;
+   overriding function Last  (Object : Iterator) return Cursor;
 
    overriding function Next
      (Object   : Iterator;
@@ -429,6 +431,22 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       return Position.Node.Element.all;
    end Element;
 
+   --------------
+   -- Finalize --
+   --------------
+
+   procedure Finalize (Object : in out Iterator) is
+   begin
+      if Object.Container /= null then
+         declare
+            B : Natural renames Object.Container.all.Busy;
+
+         begin
+            B := B - 1;
+         end;
+      end if;
+   end Finalize;
+
    ----------
    -- Find --
    ----------
@@ -459,7 +477,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
       while Node /= null loop
          if Node.Element.all = Item then
-            return Cursor'(Container'Unchecked_Access, Node);
+            return Cursor'(Container'Unrestricted_Access, Node);
          end if;
 
          Node := Node.Next;
@@ -478,7 +496,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          return No_Element;
       end if;
 
-      return Cursor'(Container'Unchecked_Access, Container.First);
+      return Cursor'(Container'Unrestricted_Access, Container.First);
    end First;
 
    function First (Object : Iterator) return Cursor is
@@ -884,9 +902,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
      (Container : List;
       Process   : not null access procedure (Position : Cursor))
    is
-      C : List renames Container'Unrestricted_Access.all;
-      B : Natural renames C.Busy;
-
+      B    : Natural renames Container'Unrestricted_Access.all.Busy;
       Node : Node_Access := Container.First;
 
    begin
@@ -894,7 +910,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
       begin
          while Node /= null loop
-            Process (Cursor'(Container'Unchecked_Access, Node));
+            Process (Cursor'(Container'Unrestricted_Access, Node));
             Node := Node.Next;
          end loop;
       exception
@@ -908,8 +924,10 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
    function Iterate
      (Container : List)
-      return List_Iterator_Interfaces.Reversible_Iterator'Class
+      return List_Iterator_Interfaces.Reversible_Iterator'class
    is
+      B : Natural renames Container'Unrestricted_Access.all.Busy;
+
    begin
       --  The value of the Node component influences the behavior of the First
       --  and Last selector functions of the iterator object. When the Node
@@ -921,7 +939,13 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       --  Note: For a forward iterator, Container.First is the beginning, and
       --  for a reverse iterator, Container.Last is the beginning.
 
-      return Iterator'(Container'Unrestricted_Access, Node => null);
+      return It : constant Iterator :=
+                    Iterator'(Limited_Controlled with
+                                Container => Container'Unrestricted_Access,
+                                Node      => null)
+      do
+         B := B + 1;
+      end return;
    end Iterate;
 
    function Iterate
@@ -929,6 +953,8 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Start     : Cursor)
       return List_Iterator_Interfaces.Reversible_Iterator'Class
    is
+      B  : Natural renames Container'Unrestricted_Access.all.Busy;
+
    begin
       --  It was formerly the case that when Start = No_Element, the partial
       --  iterator was defined to behave the same as for a complete iterator,
@@ -962,7 +988,13 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       --  the start position has the same value irrespective of whether this
       --  is a forward or reverse iteration.
 
-      return Iterator'(Container'Unrestricted_Access, Node => Start.Node);
+      return It : constant Iterator :=
+                    Iterator'(Limited_Controlled with
+                                Container => Container'Unrestricted_Access,
+                                Node      => Start.Node)
+      do
+         B := B + 1;
+      end return;
    end Iterate;
 
    ----------
@@ -975,7 +1007,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          return No_Element;
       end if;
 
-      return Cursor'(Container'Unchecked_Access, Container.Last);
+      return Cursor'(Container'Unrestricted_Access, Container.Last);
    end Last;
 
    function Last (Object : Iterator) return Cursor is
@@ -1452,7 +1484,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
       while Node /= null loop
          if Node.Element.all = Item then
-            return Cursor'(Container'Unchecked_Access, Node);
+            return Cursor'(Container'Unrestricted_Access, Node);
          end if;
 
          Node := Node.Prev;
@@ -1479,7 +1511,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
       begin
          while Node /= null loop
-            Process (Cursor'(Container'Unchecked_Access, Node));
+            Process (Cursor'(Container'Unrestricted_Access, Node));
             Node := Node.Prev;
          end loop;
       exception

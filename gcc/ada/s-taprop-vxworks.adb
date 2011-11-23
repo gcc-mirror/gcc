@@ -46,6 +46,7 @@ with System.Multiprocessors;
 with System.Tasking.Debug;
 with System.Interrupt_Management;
 with System.Float_Control;
+with System.OS_Constants;
 
 with System.Soft_Links;
 --  We use System.Soft_Links instead of System.Tasking.Initialization
@@ -58,6 +59,7 @@ with System.VxWorks.Ext;
 
 package body System.Task_Primitives.Operations is
 
+   package OSC renames System.OS_Constants;
    package SSL renames System.Soft_Links;
 
    use System.Tasking.Debug;

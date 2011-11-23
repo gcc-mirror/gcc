@@ -926,6 +926,21 @@ CND(VEOL2, "Alternative EOL")
 
 #endif /* HAVE_TERMIOS */
 
+/*
+
+   -----------------------------
+   -- Pseudo terminal library --
+   -----------------------------
+
+*/
+
+#if defined (__FreeBSD__) || defined (linux)
+# define PTY_Library "-lutil"
+#else
+# define PTY_Library ""
+#endif
+CST(PTY_Library, "for g-exptty")
+
 /**
  **  Sockets constants
  **/

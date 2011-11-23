@@ -32,8 +32,11 @@
 with GNAT.TTY;
 
 with System;
+with System.OS_Constants;
 
 package GNAT.Expect.TTY is
+
+   pragma Linker_Options (System.OS_Constants.PTY_Library);
 
    ------------------
    --  TTY_Process --

@@ -309,7 +309,7 @@ private
 
    for List'Write use Write;
 
-   type List_Access is access constant List;
+   type List_Access is access all List;
    for List_Access'Storage_Size use 0;
 
    type Cursor is

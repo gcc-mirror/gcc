@@ -1,3 +1,101 @@
+2011-11-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_All_Ent): An incomplete type is not
+	frozen by a subprogram body that does not come from source.
+
+2011-11-23  Pascal Obry  <obry@adacore.com>
+
+	* s-oscons-tmplt.c: Add PTY_Library constant. It contains
+	the library for pseudo terminal support.
+	* g-exptty.ads: Add pseudo-terminal library into a Linker_Options
+	pragma.
+
+2011-11-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch9.adb: No check on entry family index if generic.
+
+2011-11-23  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch9.adb, s-taprop.ads, s-taprop-hpux-dce.adb, s-taprop-irix.adb,
+	s-taprop-posix.adb, s-taprop-rtx.adb, s-taprop-solaris.adb,
+	s-taprop-tru64.adb, s-taprop-vxworks.adb: Move dependency on
+	System.OS_Constants from shared spec of
+	System.Tasking.Primitive_Operations to the specific body variants
+	that really require this dependency.
+
+2011-11-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming_Declaration):
+	If the declaration has aspects, analyze them so they can be
+	properly rejected.
+
+2011-11-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-comutr.adb, a-coorma.adb, a-coorse.adb, a-convec.adb, a-cihase.adb,
+	a-cimutr.adb, a-coinve.adb, a-ciorma.adb, a-ciorse.adb, a-cobove.adb,
+	a-cohama.adb, a-cihama.adb, a-cidlli.adb, a-cdlili.adb, a-cbhama.adb,
+	a-cbhase.adb, a-cbmutr.adb, a-cborma.adb, a-cborse.adb, a-cbdlli.adb:
+	Add with and use clause for Ada.Finalization. Type
+	Iterator and Child_Iterator are now derived from Limited_Controlled.
+	(Finalize): New routine.
+	(Iterate): Add a renaming of counter Busy and
+	increment it. Update the return aggregate.
+	(Iterate_Children): Add a renaming of
+	counter Busy and increment it. Update the return aggregate.
+	(Iterate_Subtree): Add a renaming of counter Busy and increment
+	it. Update the return aggregate.
+	* a-cdlili.ads, a-cidlli.ads: Type List_Access is now a general access
+	type.
+	* a-cihama.ads: Type Map_Access is now a general access type.
+	* a-comutr.ads, a-cimutr.ads: Use type Natural for the two locks
+	associated with the tree.
+	* a-cohama.ads: Type Map_Access is now a general access type.
+	* a-coinve.ads, a-convec.ads: Type Vector_Access is now a general
+	access type.
+	* exp_ch5.adb (Expand_Iterator_Loop): Do not create a block
+	to wrap the loop as this is done at an earlier step, during
+	analysis. The declarations of the iterator and the cursor use
+	the usual Insert_Action mechanism when added into the tree.
+	* sem_ch5.adb (Analyze_Loop_Statement): Remove local constant
+	Loop_Statement and replace all respective uses by N. Add local
+	constant Loc. Preanalyze the loop iterator to discover whether
+	it is a container iterator and if it is, wrap the loop in a
+	block. This ensures that any controlled temporaries produced
+	by the iteration scheme share the same lifetime of the loop.
+	(Is_Container_Iterator): New routine.
+	(Is_Wrapped_In_Block): New routine.
+	(Pre_Analyze_Range): Move spec and body to the library level.
+
+2011-11-23  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi, vms_data.ads: Add documentation for new gnatpp option
+	that controls casing of type and subtype names.
+
+2011-11-23  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb: Minor addition of comments.
+
+2011-11-23  Thomas Quinot  <quinot@adacore.com>
+
+	* prj-part.adb (Extension_Withs): New global variable,
+	contains the head of the list of WITH clauses from the EXTENDS
+	ALL projects for which virtual packages are being created.
+	(Look_For_Virtual_Projects_For): When recursing through
+	an EXTENDS ALL, add the WITH clauses of the extending
+	project to Extension_Withs.  When adding a project to the
+	Virtual_Hash, record the associated Extension_Withs list.
+	(Create_Virtual_Extending_Project): Add a copy of the appropriate
+	Extension_Withs to the virtual project.
+
+2011-11-23  Thomas Quinot  <quinot@adacore.com>
+
+	* mlib-tgt-specific-vxworks.adb: Minor reformatting.
+
+2011-11-23  Thomas Quinot  <quinot@adacore.com>
+
+	* Make-generated.in (Sdefault.Target_Name): Set to
+	$(target_noncanonical) instead of $(target) for consistency.
+
 2011-11-23  Matthew Heaney  <heaney@adacore.com>
 
 	* a-cdlili.adb, a-cidlli.adb, a-cbdlli.adb (Iterator): Declared

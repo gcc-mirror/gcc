@@ -34,14 +34,18 @@ with Ada.Containers.Hash_Tables.Generic_Bounded_Keys;
 pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Bounded_Keys);
 
 with Ada.Containers.Prime_Numbers;  use Ada.Containers.Prime_Numbers;
+with Ada.Finalization;              use Ada.Finalization;
 with System;  use type System.Address;
 
 package body Ada.Containers.Bounded_Hashed_Maps is
 
-   type Iterator is new
-     Map_Iterator_Interfaces.Forward_Iterator with record
-        Container : Map_Access;
-     end record;
+   type Iterator is new Limited_Controlled and
+     Map_Iterator_Interfaces.Forward_Iterator with
+   record
+      Container : Map_Access;
+   end record;
+
+   overriding procedure Finalize (Object : in out Iterator);
 
    overriding function First (Object : Iterator) return Cursor;
 
@@ -392,6 +396,22 @@ package body Ada.Containers.Bounded_Hashed_Maps is
       HT_Ops.Free (Container, X);
    end Exclude;
 
+   --------------
+   -- Finalize --
+   --------------
+
+   procedure Finalize (Object : in out Iterator) is
+   begin
+      if Object.Container /= null then
+         declare
+            B : Natural renames Object.Container.all.Busy;
+
+         begin
+            B := B - 1;
+         end;
+      end if;
+   end Finalize;
+
    ----------
    -- Find --
    ----------
@@ -649,7 +669,7 @@ package body Ada.Containers.Bounded_Hashed_Maps is
          Process (Cursor'(Container'Unrestricted_Access, Node));
       end Process_Node;
 
-      B : Natural renames Container'Unrestricted_Access.Busy;
+      B : Natural renames Container'Unrestricted_Access.all.Busy;
 
    --  Start of processing for Iterate
 
@@ -670,8 +690,15 @@ package body Ada.Containers.Bounded_Hashed_Maps is
    function Iterate
      (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'Class
    is
+      B  : Natural renames Container'Unrestricted_Access.all.Busy;
+
    begin
-      return Iterator'(Container => Container'Unrestricted_Access);
+      return It : constant Iterator :=
+                    (Limited_Controlled with
+                       Container => Container'Unrestricted_Access)
+      do
+         B := B + 1;
+      end return;
    end Iterate;
 
    ---------

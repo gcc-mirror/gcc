@@ -13188,6 +13188,23 @@ setting.
 Enumeration literals are in mixed case. Overrides ^-n^/NAME_CASING^ casing
 setting.
 
+@cindex @option{^-nt@var{x}^/TYPE_CASING^} (@command{gnatpp})
+@item ^-neD^/TYPE_CASING=AS_DECLARED^
+Type and subtype name casing for defining occurrences are as they appear in
+the source file. Overrides ^-n^/NAME_CASING^ casing setting.
+
+@item ^-ntU^/TYPE_CASING=UPPER_CASE^
+Type and subtype names are in upper case. Overrides ^-n^/NAME_CASING^ casing
+setting.
+
+@item ^-ntL^/TYPE_CASING=LOWER_CASE^
+Type and subtype names are in lower case. Overrides ^-n^/NAME_CASING^ casing
+setting.
+
+@item ^-ntM^/TYPE_CASING=MIXED_CASE^
+Type and subtype names are in mixed case. Overrides ^-n^/NAME_CASING^ casing
+setting.
+
 @cindex @option{^-p@var{x}^/PRAGMA_CASING^} (@command{gnatpp})
 @item ^-pL^/PRAGMA_CASING=LOWER_CASE^
 Pragma names are lower case

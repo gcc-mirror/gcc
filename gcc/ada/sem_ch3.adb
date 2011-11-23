@@ -11799,6 +11799,11 @@ package body Sem_Ch3 is
          --  needed, since checks may cause duplication of the expressions
          --  which must not be reevaluated.
 
+         --  The forced evaluation removes side effects from expressions,
+         --  which should occur also in Alfa mode. Otherwise, we end up with
+         --  unexpected insertions of actions at places where this is not
+         --  supposed to occur, e.g. on default parameters of a call.
+
          if Expander_Active then
             Force_Evaluation (Low_Bound (R));
             Force_Evaluation (High_Bound (R));
@@ -18339,6 +18344,11 @@ package body Sem_Ch3 is
             --  if needed, before applying checks, since checks may cause
             --  duplication of the expression without forcing evaluation.
 
+            --  The forced evaluation removes side effects from expressions,
+            --  which should occur also in Alfa mode. Otherwise, we end up with
+            --  unexpected insertions of actions at places where this is not
+            --  supposed to occur, e.g. on default parameters of a call.
+
             if Expander_Active then
                Force_Evaluation (Lo);
                Force_Evaluation (Hi);
@@ -18448,6 +18458,11 @@ package body Sem_Ch3 is
          end if;
 
       --  Case of other than an explicit N_Range node
+
+      --  The forced evaluation removes side effects from expressions, which
+      --  should occur also in Alfa mode. Otherwise, we end up with unexpected
+      --  insertions of actions at places where this is not supposed to occur,
+      --  e.g. on default parameters of a call.
 
       elsif Expander_Active then
          Get_Index_Bounds (R, Lo, Hi);

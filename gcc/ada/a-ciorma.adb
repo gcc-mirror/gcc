@@ -40,15 +40,17 @@ with System; use type System.Address;
 package body Ada.Containers.Indefinite_Ordered_Maps is
    pragma Suppress (All_Checks);
 
-   type Iterator is limited new
-     Map_Iterator_Interfaces.Reversible_Iterator with record
-        Container : Map_Access;
-        Node      : Node_Access;
-     end record;
+   type Iterator is new Limited_Controlled and
+     Map_Iterator_Interfaces.Reversible_Iterator with
+   record
+      Container : Map_Access;
+      Node      : Node_Access;
+   end record;
+
+   overriding procedure Finalize (Object : in out Iterator);
 
    overriding function First (Object : Iterator) return Cursor;
-
-   overriding function Last (Object : Iterator) return Cursor;
+   overriding function Last  (Object : Iterator) return Cursor;
 
    overriding function Next
      (Object   : Iterator;
@@ -535,6 +537,22 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       end if;
    end Exclude;
 
+   --------------
+   -- Finalize --
+   --------------
+
+   procedure Finalize (Object : in out Iterator) is
+   begin
+      if Object.Container /= null then
+         declare
+            B : Natural renames Object.Container.all.Tree.Busy;
+
+         begin
+            B := B - 1;
+         end;
+      end if;
+   end Finalize;
+
    ----------
    -- Find --
    ----------
@@ -857,7 +875,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          Process (Cursor'(Container'Unrestricted_Access, Node));
       end Process_Node;
 
-      B : Natural renames Container.Tree'Unrestricted_Access.all.Busy;
+      B : Natural renames Container'Unrestricted_Access.all.Tree.Busy;
 
    --  Start of processing for Iterate
 
@@ -878,6 +896,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    function Iterate
      (Container : Map) return Map_Iterator_Interfaces.Reversible_Iterator'Class
    is
+      B  : Natural renames Container'Unrestricted_Access.all.Tree.Busy;
+
    begin
       --  The value of the Node component influences the behavior of the First
       --  and Last selector functions of the iterator object. When the Node
@@ -889,7 +909,13 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       --  Note: For a forward iterator, Container.First is the beginning, and
       --  for a reverse iterator, Container.Last is the beginning.
 
-      return Iterator'(Container'Unrestricted_Access, Node => null);
+      return It : constant Iterator :=
+                    (Limited_Controlled with
+                       Container => Container'Unrestricted_Access,
+                       Node      => null)
+      do
+         B := B + 1;
+      end return;
    end Iterate;
 
    function Iterate
@@ -897,6 +923,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       Start     : Cursor)
       return Map_Iterator_Interfaces.Reversible_Iterator'Class
    is
+      B  : Natural renames Container'Unrestricted_Access.all.Tree.Busy;
+
    begin
       --  It was formerly the case that when Start = No_Element, the partial
       --  iterator was defined to behave the same as for a complete iterator,
@@ -931,7 +959,13 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       --  the start position has the same value irrespective of whether this
       --  is a forward or reverse iteration.
 
-      return Iterator'(Container'Unrestricted_Access, Node => Start.Node);
+      return It : constant Iterator :=
+                    (Limited_Controlled with
+                       Container => Container'Unrestricted_Access,
+                       Node      => Start.Node)
+      do
+         B := B + 1;
+      end return;
    end Iterate;
 
    ---------

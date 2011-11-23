@@ -3233,7 +3233,7 @@ package body Exp_Ch5 is
                           Make_Selected_Component (Loc,
                            Prefix => New_Occurrence_Of (Pack, Loc),
                            Selector_Name =>
-                             Make_Identifier (Loc,  Name_Has_Element)),
+                             Make_Identifier (Loc, Name_Has_Element)),
 
                         Parameter_Associations =>
                           New_List (
@@ -3250,21 +3250,19 @@ package body Exp_Ch5 is
             --    I : Iterator_Type renames Container;
             --    C : Pack.Cursor_Type := Container.[First | Last];
 
+            Insert_Action (N,
+              Make_Object_Renaming_Declaration (Loc,
+                Defining_Identifier => Iterator,
+                Subtype_Mark  => New_Occurrence_Of (Iter_Type, Loc),
+                Name          => Relocate_Node (Name (I_Spec))));
+
+            --  Create declaration for cursor
+
             declare
-               Decl1 : Node_Id;
-               Decl2 : Node_Id;
-               Decl3 : Node_Id;
+               Decl : Node_Id;
 
             begin
-               Decl1 :=
-                 Make_Object_Renaming_Declaration (Loc,
-                   Defining_Identifier => Iterator,
-                   Subtype_Mark  => New_Occurrence_Of (Iter_Type, Loc),
-                   Name          => Relocate_Node (Name (I_Spec)));
-
-               --  Create declaration for cursor
-
-               Decl2 :=
+               Decl :=
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Cursor,
                    Object_Definition   =>
@@ -3275,31 +3273,14 @@ package body Exp_Ch5 is
                        Selector_Name =>
                          Make_Identifier (Loc, Name_Init)));
 
-               Set_Assignment_OK (Decl2);
-
                --  The cursor is only modified in expanded code, so it appears
                --  as unassigned to the warning machinery. We must suppress
                --  this spurious warning explicitly.
 
-               Decl3 :=
-                 Make_Pragma (Loc,
-                   Chars => Name_Warnings,
-                   Pragma_Argument_Associations => New_List (
-                     Make_Pragma_Argument_Association (Loc,
-                       Expression => Make_Identifier (Loc, Name_Off)),
-                     Make_Pragma_Argument_Association (Loc,
-                       Expression =>
-                         New_Occurrence_Of (Cursor, Loc))));
+               Set_Warnings_Off (Cursor);
+               Set_Assignment_OK (Decl);
 
-               --  The expanded loop is wrapped in a block, to make the loop
-               --  variable local.
-
-               New_Loop :=
-                 Make_Block_Statement (Loc,
-                   Declarations => New_List (Decl1, Decl2, Decl3),
-                   Handled_Statement_Sequence =>
-                     Make_Handled_Sequence_Of_Statements (Loc,
-                       Statements => New_List (New_Loop)));
+               Insert_Action (N, Decl);
             end;
 
             --  If the range of iteration is given by a function call that
