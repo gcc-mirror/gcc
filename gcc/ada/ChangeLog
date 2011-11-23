@@ -1,3 +1,15 @@
+2011-11-23  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb: Minor reformattin (Finalize): Take templates into
+	account for warning suppression.
+	* errout.ads (Set_Specific_Warning_Off): Add Used parameter.
+	* erroutc.adb: Minor reformatting (Finalize): Take generic
+	templates into account for warning suppress.
+	* erroutc.ads (Set_Specific_Warning_Off): Add Used parameter.
+	* sem_prag.adb: Minor reformatting (Analyze_Pragma,
+	case Warnings): Provide Used parameter in call to
+	Set_Specific_Warnings_Off (to deal with generic template case).
+
 2011-11-23  Pascal Obry  <obry@adacore.com>
 
 	* sem_prag.adb (Process_Convention): Better error message for
