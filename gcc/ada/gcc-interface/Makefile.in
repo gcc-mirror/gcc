@@ -1156,6 +1156,7 @@ ifeq ($(strip $(filter-out %86 kfreebsd%,$(arch) $(osys))),)
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
+  MISCLIB = -lutil
 endif
 
 ifeq ($(strip $(filter-out x86_64 kfreebsd%,$(arch) $(osys))),)
@@ -1209,6 +1210,7 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(arch) $(osys))),)
   THREADSLIB= -lpthread
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
+  MISCLIB = -lutil
 endif
 
 ifeq ($(strip $(filter-out %86_64 freebsd%,$(arch) $(osys))),)
@@ -1235,6 +1237,7 @@ ifeq ($(strip $(filter-out %86_64 freebsd%,$(arch) $(osys))),)
   THREADSLIB= -lpthread
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
+  MISCLIB = -lutil
 endif
 
 ifeq ($(strip $(filter-out s390% linux%,$(arch) $(osys))),)

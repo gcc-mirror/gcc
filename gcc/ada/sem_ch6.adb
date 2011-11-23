@@ -1485,9 +1485,19 @@ package body Sem_Ch6 is
          --  extended_return_statement.
 
          if Returns_Object then
-            Error_Msg_N
-              ("extended_return_statement cannot return value; " &
-               "use `""RETURN;""`", N);
+            if Nkind (N) = N_Extended_Return_Statement then
+               Error_Msg_N
+                 ("extended return statements cannot be nested; use `RETURN;`",
+                  N);
+
+            --  Case of a simple return statement with a value inside extended
+            --  return statement.
+
+            else
+               Error_Msg_N
+                 ("return nested in extended return statement cannot return " &
+                  "value; use `RETURN;`", N);
+            end if;
          end if;
 
       else

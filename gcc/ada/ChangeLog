@@ -1,3 +1,20 @@
+2011-11-23  Thomas Quinot  <quinot@adacore.com>
+
+	* thread.c, s-oscons-tmplt.c: Generate __gnat_pthread_condattr_setup
+	only on platforms where this is required, as determined by
+	s-oscons.h.
+
+2011-11-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch9.adb: No check on entry index if error on index.
+
+2011-11-23  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb (Analyze_Return_Statement): Improve error messages for
+	return statements nested inside an extended_return_statement.
+	* gcc-interface/Make-lang.in: Update dependencies.
+	* gcc-interface/Makefile.in (MISCLIB): Add -lutil for BSD targets.
+
 2011-11-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Freeze_All_Ent): An incomplete type is not

@@ -924,8 +924,13 @@ package body Sem_Ch9 is
             UBR : Node_Id;
 
          begin
+
+            --  No bounds checking if the type is generic or if previous error.
+            --  In an instance the check is dynamic.
+
             if Is_Generic_Type (Etype (D_Sdef))
               or else In_Instance
+              or else Error_Posted (D_Sdef)
             then
                goto Skip_LB;
 
@@ -951,6 +956,7 @@ package body Sem_Ch9 is
             <<Skip_LB>>
             if Is_Generic_Type (Etype (D_Sdef))
               or else In_Instance
+              or else Error_Posted (D_Sdef)
             then
                goto Skip_UB;
 
