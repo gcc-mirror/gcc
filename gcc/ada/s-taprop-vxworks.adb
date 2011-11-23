@@ -718,7 +718,7 @@ package body System.Task_Primitives.Operations is
       TS     : aliased timespec;
       Result : int;
    begin
-      Result := clock_gettime (CLOCK_REALTIME, TS'Unchecked_Access);
+      Result := clock_gettime (OSC.CLOCK_RT_Ada, TS'Unchecked_Access);
       pragma Assert (Result = 0);
       return To_Duration (TS);
    end Monotonic_Clock;

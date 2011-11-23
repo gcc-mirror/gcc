@@ -41,7 +41,6 @@ package body Ada.Containers.Bounded_Hashed_Maps is
    type Iterator is new
      Map_Iterator_Interfaces.Forward_Iterator with record
         Container : Map_Access;
-        Node      : Count_Type;
      end record;
 
    overriding function First (Object : Iterator) return Cursor;
@@ -424,14 +423,8 @@ package body Ada.Containers.Bounded_Hashed_Maps is
    end First;
 
    function First (Object : Iterator) return Cursor is
-      M : constant Map_Access := Object.Container;
-      N : constant Count_Type := HT_Ops.First (M.all);
    begin
-      if N = 0 then
-         return No_Element;
-      else
-         return Cursor'(Object.Container.all'Unchecked_Access, N);
-      end if;
+      return Object.Container.First;
    end First;
 
    -----------------
@@ -675,12 +668,10 @@ package body Ada.Containers.Bounded_Hashed_Maps is
    end Iterate;
 
    function Iterate
-     (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'class
+     (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'Class
    is
-      Node : constant Count_Type := HT_Ops.First (Container);
-      It   : constant Iterator   := (Container'Unrestricted_Access, Node);
    begin
-      return It;
+      return Iterator'(Container => Container'Unrestricted_Access);
    end Iterate;
 
    ---------
@@ -770,11 +761,16 @@ package body Ada.Containers.Bounded_Hashed_Maps is
       Position : Cursor) return Cursor
    is
    begin
-      if Position.Node = 0 then
+      if Position.Container = null then
          return No_Element;
-      else
-         return (Object.Container, Next (Position).Node);
       end if;
+
+      if Position.Container /= Object.Container then
+         raise Program_Error with
+           "Position cursor of Next designates wrong map";
+      end if;
+
+      return Next (Position);
    end Next;
 
    -------------------

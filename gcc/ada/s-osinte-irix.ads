@@ -172,11 +172,7 @@ package System.OS_Interface is
    type timespec is private;
    type timespec_ptr is access all timespec;
 
-   type clockid_t is private;
-
-   CLOCK_REALTIME  : constant clockid_t;
-   CLOCK_SGI_FAST  : constant clockid_t;
-   CLOCK_SGI_CYCLE : constant clockid_t;
+   type clockid_t is new int;
 
    SGI_CYCLECNTR_SIZE : constant := 165;
 
@@ -485,11 +481,6 @@ private
       tv_nsec : long;
    end record;
    pragma Convention (C, timespec);
-
-   type clockid_t is new int;
-   CLOCK_REALTIME  : constant clockid_t := 1;
-   CLOCK_SGI_CYCLE : constant clockid_t := 2;
-   CLOCK_SGI_FAST  : constant clockid_t := 3;
 
    type array_type_9 is array (Integer range 0 .. 4) of long;
    type pthread_attr_t is record

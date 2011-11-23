@@ -968,4 +968,15 @@ package body Prj.PP is
       Output.Write_Eol;
    end Output_Statistics;
 
+   ---------
+   -- wpr --
+   ---------
+
+   procedure wpr
+     (Project : Prj.Tree.Project_Node_Id;
+      In_Tree : Prj.Tree.Project_Node_Tree_Ref) is
+   begin
+      Pretty_Print (Project, In_Tree, Backward_Compatibility => False);
+   end wpr;
+
 end Prj.PP;

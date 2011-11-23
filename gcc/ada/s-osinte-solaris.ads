@@ -243,9 +243,7 @@ package System.OS_Interface is
 
    type timespec is private;
 
-   type clockid_t is private;
-
-   CLOCK_REALTIME : constant clockid_t;
+   type clockid_t is new int;
 
    function clock_gettime
      (clock_id : clockid_t; tp : access timespec) return int;
@@ -530,9 +528,6 @@ private
       tv_nsec : long;
    end record;
    pragma Convention (C, timespec);
-
-   type clockid_t is new int;
-   CLOCK_REALTIME : constant clockid_t := 0;
 
    type array_type_9 is array (0 .. 3) of unsigned_char;
    type record_type_3 is record

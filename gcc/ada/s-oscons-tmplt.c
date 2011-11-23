@@ -97,6 +97,7 @@ pragma Style_Checks ("M32766");
 #include <string.h>
 #include <limits.h>
 #include <fcntl.h>
+#include <time.h>
 
 #if defined (__alpha__) && defined (__osf__)
 /** Tru64 is unable to do vector IO operations with default value of IOV_MAX,
@@ -1206,6 +1207,55 @@ CND(IP_DROP_MEMBERSHIP, "Leave a multicast group")
 # define IP_PKTINFO -1
 #endif
 CND(IP_PKTINFO, "Get datagram info")
+
+#endif /* HAVE_SOCKETS */
+
+/*
+
+   ------------
+   -- Clocks --
+   ------------
+
+*/
+
+#ifdef CLOCK_REALTIME
+CND(CLOCK_REALTIME, "System realtime clock")
+#endif
+
+#ifdef CLOCK_MONOTONIC
+CND(CLOCK_MONOTONIC, "System monotonic clock")
+#endif
+
+#ifdef CLOCK_FASTEST
+CND(CLOCK_FASTEST, "Fastest clock")
+#endif
+
+#if defined (__sgi)
+CND(CLOCK_SGI_FAST,  "SGI fast clock")
+CND(CLOCK_SGI_CYCLE, "SGI CPU clock")
+#endif
+
+#if defined(__APPLE__)
+/* There's no clock_gettime or clock_id's on Darwin */
+# define CLOCK_RT_Ada "-1"
+
+#elif defined(FreeBSD) || defined(_AIX)
+/* On these platforms use system provided monotonic clock */
+# define CLOCK_RT_Ada "CLOCK_MONOTONIC"
+
+#elif defined(CLOCK_REALTIME)
+/* By default use CLOCK_REALTIME */
+# define CLOCK_RT_Ada "CLOCK_REALTIME"
+#endif
+
+#ifdef CLOCK_RT_Ada
+CNS(CLOCK_RT_Ada, "Ada realtime clock")
+#endif
+
+#ifndef CLOCK_THREAD_CPUTIME_ID
+# define CLOCK_THREAD_CPUTIME_ID -1
+#endif
+CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
 
 /*
 

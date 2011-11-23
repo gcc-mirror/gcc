@@ -905,6 +905,60 @@ package body Sem_Ch9 is
          Bad_Predicated_Subtype_Use
            ("subtype& has predicate, not allowed in entry family",
             D_Sdef, Etype (D_Sdef));
+
+         --  Check entry family static bounds outside allowed limits
+
+         --  Note: originally this check was not performed here, but in that
+         --  case the check happens deep in the expander, and the message is
+         --  posted at the wrong location, and omitted in -gnatc mode.
+
+         declare
+            PEI : constant Entity_Id := RTE (RE_Protected_Entry_Index);
+            LB  : constant Uint      := Expr_Value (Type_Low_Bound (PEI));
+            UB  : constant Uint      := Expr_Value (Type_High_Bound (PEI));
+
+            LBR : Node_Id;
+            UBR : Node_Id;
+
+         begin
+            if Nkind (D_Sdef) = N_Range then
+               LBR := Low_Bound (D_Sdef);
+            elsif Is_Entity_Name (D_Sdef)
+              and then Is_Type (Entity (D_Sdef))
+            then
+               LBR := Type_Low_Bound (Entity (D_Sdef));
+            else
+               goto Skip_LB;
+            end if;
+
+            if Is_Static_Expression (LBR)
+              and then Expr_Value (LBR) < LB
+            then
+               Error_Msg_Uint_1 := LB;
+               Error_Msg_N ("entry family low bound must be '>'= ^!", D_Sdef);
+            end if;
+
+            <<Skip_LB>>
+            if Nkind (D_Sdef) = N_Range then
+               UBR := High_Bound (D_Sdef);
+            elsif Is_Entity_Name (D_Sdef)
+              and then Is_Type (Entity (D_Sdef))
+            then
+               UBR := Type_High_Bound (Entity (D_Sdef));
+            else
+               goto Skip_UB;
+            end if;
+
+            if Is_Static_Expression (UBR)
+              and then Expr_Value (UBR) > UB
+            then
+               Error_Msg_Uint_1 := UB;
+               Error_Msg_N ("entry family high bound must be '<'= ^!", D_Sdef);
+            end if;
+
+            <<Skip_UB>>
+            null;
+         end;
       end if;
 
       --  Decorate Def_Id
