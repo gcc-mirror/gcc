@@ -72,7 +72,7 @@ $(ADA_GEN_SUBDIR)/stamp-sdefault : $(srcdir)/version.c Makefile
 	$(ECHO) "   S0 : constant String := \"$(prefix)/\";" >>tmp-sdefault.adb
 	$(ECHO) "   S1 : constant String := \"$(ADA_INCLUDE_DIR)/\";" >>tmp-sdefault.adb
 	$(ECHO) "   S2 : constant String := \"$(ADA_RTL_OBJ_DIR)/\";" >>tmp-sdefault.adb
-	$(ECHO) "   S3 : constant String := \"$(target)/\";" >>tmp-sdefault.adb
+	$(ECHO) "   S3 : constant String := \"$(target_noncanonical)/\";" >>tmp-sdefault.adb
 	$(ECHO) "   S4 : constant String := \"$(libsubdir)/\";" >>tmp-sdefault.adb
 	$(ECHO) "   function Include_Dir_Default_Name return String_Ptr is" >>tmp-sdefault.adb
 	$(ECHO) "   begin" >>tmp-sdefault.adb
