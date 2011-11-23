@@ -911,6 +911,9 @@ package body Sem_Ch9 is
          --  Note: originally this check was not performed here, but in that
          --  case the check happens deep in the expander, and the message is
          --  posted at the wrong location, and omitted in -gnatc mode.
+         --  If the type of the entry index is a generic formal, no check
+         --  is possible. In an instance, the check is not static and a run-
+         --  time exception will be raised if the bounds are unreasonable.
 
          declare
             PEI : constant Entity_Id := RTE (RE_Protected_Entry_Index);
@@ -921,12 +924,19 @@ package body Sem_Ch9 is
             UBR : Node_Id;
 
          begin
-            if Nkind (D_Sdef) = N_Range then
+            if Is_Generic_Type (Etype (D_Sdef))
+              or else In_Instance
+            then
+               goto Skip_LB;
+
+            elsif Nkind (D_Sdef) = N_Range then
                LBR := Low_Bound (D_Sdef);
+
             elsif Is_Entity_Name (D_Sdef)
               and then Is_Type (Entity (D_Sdef))
             then
                LBR := Type_Low_Bound (Entity (D_Sdef));
+
             else
                goto Skip_LB;
             end if;
@@ -939,12 +949,19 @@ package body Sem_Ch9 is
             end if;
 
             <<Skip_LB>>
-            if Nkind (D_Sdef) = N_Range then
+            if Is_Generic_Type (Etype (D_Sdef))
+              or else In_Instance
+            then
+               goto Skip_UB;
+
+            elsif Nkind (D_Sdef) = N_Range then
                UBR := High_Bound (D_Sdef);
+
             elsif Is_Entity_Name (D_Sdef)
               and then Is_Type (Entity (D_Sdef))
             then
                UBR := Type_High_Bound (Entity (D_Sdef));
+
             else
                goto Skip_UB;
             end if;

@@ -341,11 +341,10 @@ private
    use HT_Types;
    use Ada.Finalization;
 
-   overriding procedure Adjust (Container : in out Map);
-
+   overriding procedure Adjust   (Container : in out Map);
    overriding procedure Finalize (Container : in out Map);
 
-   type Map_Access is access constant Map;
+   type Map_Access is access all Map;
    for Map_Access'Storage_Size use 0;
 
    type Cursor is record

@@ -426,7 +426,7 @@ private
 
    for Vector'Read use Read;
 
-   type Vector_Access is access constant Vector;
+   type Vector_Access is access all Vector;
    for Vector_Access'Storage_Size use 0;
 
    type Cursor is record

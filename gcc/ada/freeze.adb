@@ -1342,7 +1342,9 @@ package body Freeze is
 
             --  If an incomplete type is still not frozen, this may be a
             --  premature freezing because of a body declaration that follows.
-            --  Indicate where the freezing took place.
+            --  Indicate where the freezing took place. Freezing will happen
+            --  if the body comes from source, but not if it is internally
+            --  generated, for example as the body of a type invariant.
 
             --  If the freezing is caused by the end of the current declarative
             --  part, it is a Taft Amendment type, and there is no error.
@@ -1360,8 +1362,9 @@ package body Freeze is
                                      N_Protected_Body,
                                      N_Task_Body)
                         or else Nkind (Bod) in N_Body_Stub)
-                     and then
-                       List_Containing (After) = List_Containing (Parent (E))
+                    and then
+                     List_Containing (After) = List_Containing (Parent (E))
+                    and then Comes_From_Source (Bod)
                   then
                      Error_Msg_Sloc := Sloc (Next (After));
                      Error_Msg_NE

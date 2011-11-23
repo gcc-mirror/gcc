@@ -28,35 +28,41 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Deallocation;
-with System;  use type System.Address;
+with System; use type System.Address;
 
 package body Ada.Containers.Indefinite_Multiway_Trees is
 
-   type Iterator is new Tree_Iterator_Interfaces.Forward_Iterator with
+   type Iterator is new Limited_Controlled and
+     Tree_Iterator_Interfaces.Forward_Iterator with
    record
       Container : Tree_Access;
       Position  : Cursor;
       From_Root : Boolean;
    end record;
 
-   type Child_Iterator is new Tree_Iterator_Interfaces.Reversible_Iterator with
+   type Child_Iterator is new Limited_Controlled and
+     Tree_Iterator_Interfaces.Reversible_Iterator with
    record
       Container : Tree_Access;
       Position  : Cursor;
    end record;
 
+   overriding procedure Finalize (Object : in out Iterator);
+
    overriding function First (Object : Iterator) return Cursor;
    overriding function Next
-     (Object : Iterator;
+     (Object   : Iterator;
       Position : Cursor) return Cursor;
+
+   overriding procedure Finalize (Object : in out Child_Iterator);
 
    overriding function First (Object : Child_Iterator) return Cursor;
    overriding function Next
-     (Object : Child_Iterator;
+     (Object   : Child_Iterator;
       Position : Cursor) return Cursor;
 
    overriding function Previous
-     (Object : Child_Iterator;
+     (Object   : Child_Iterator;
       Position : Cursor) return Cursor;
 
    overriding function Last (Object : Child_Iterator) return Cursor;
@@ -925,6 +931,34 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       return Equal_Children (Left_Subtree, Right_Subtree);
    end Equal_Subtree;
 
+   --------------
+   -- Finalize --
+   --------------
+
+   procedure Finalize (Object : in out Iterator) is
+   begin
+      if Object.Container /= null then
+         declare
+            B : Natural renames Object.Container.all.Busy;
+
+         begin
+            B := B - 1;
+         end;
+      end if;
+   end Finalize;
+
+   procedure Finalize (Object : in out Child_Iterator) is
+   begin
+      if Object.Container /= null then
+         declare
+            B : Natural renames Object.Container.all.Busy;
+
+         begin
+            B := B - 1;
+         end;
+      end if;
+   end Finalize;
+
    ----------
    -- Find --
    ----------
@@ -1304,8 +1338,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
      (Container : Tree;
       Process   : not null access procedure (Position : Cursor))
    is
-      T : Tree renames Container'Unrestricted_Access.all;
-      B : Integer renames T.Busy;
+      B : Natural renames Container'Unrestricted_Access.all.Busy;
 
    begin
       B := B + 1;
@@ -1326,13 +1359,19 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
    function Iterate (Container : Tree)
      return Tree_Iterator_Interfaces.Forward_Iterator'Class
    is
-      Root_Cursor : constant Cursor :=
-                      (Container'Unrestricted_Access, Root_Node (Container));
+      B  : Natural renames Container'Unrestricted_Access.all.Busy;
+      RC : constant Cursor :=
+             (Container'Unrestricted_Access, Root_Node (Container));
+
    begin
-      return
-        Iterator'(Container'Unrestricted_Access,
-                  First_Child (Root_Cursor),
-                  From_Root => True);
+      return It : constant Iterator :=
+                    Iterator'(Limited_Controlled with
+                                Container => Container'Unrestricted_Access,
+                                Position  => First_Child (RC),
+                                From_Root => True)
+      do
+         B := B + 1;
+      end return;
    end Iterate;
 
    ----------------------
@@ -1349,7 +1388,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       end if;
 
       declare
-         B : Integer renames Parent.Container.Busy;
+         B : Natural renames Parent.Container.Busy;
          C : Tree_Node_Access;
 
       begin
@@ -1396,9 +1435,16 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Parent    : Cursor)
      return Tree_Iterator_Interfaces.Reversible_Iterator'Class
    is
-      pragma Unreferenced (Container);
+      B : Natural renames Container'Unrestricted_Access.all.Busy;
+
    begin
-      return Child_Iterator'(Parent.Container, Parent);
+      return It : constant Child_Iterator :=
+                    Child_Iterator'(Limited_Controlled with
+                                      Container => Parent.Container,
+                                      Position  => Parent)
+      do
+         B := B + 1;
+      end return;
    end Iterate_Children;
 
    ---------------------
@@ -1409,8 +1455,17 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
      (Position : Cursor)
       return Tree_Iterator_Interfaces.Forward_Iterator'Class
    is
+      B : Natural renames Position.Container'Unrestricted_Access.all.Busy;
+
    begin
-      return Iterator'(Position.Container, Position, From_Root => False);
+      return It : constant Iterator :=
+                    Iterator'(Limited_Controlled with
+                                Container => Position.Container,
+                                Position  => Position,
+                                From_Root => False)
+      do
+         B := B + 1;
+      end return;
    end Iterate_Subtree;
 
    procedure Iterate_Subtree
@@ -1423,7 +1478,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       end if;
 
       declare
-         B : Integer renames Position.Container.Busy;
+         B : Natural renames Position.Container.Busy;
 
       begin
          B := B + 1;
@@ -1789,8 +1844,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
 
       declare
          T : Tree renames Position.Container.all'Unrestricted_Access.all;
-         B : Integer renames T.Busy;
-         L : Integer renames T.Lock;
+         B : Natural renames T.Busy;
+         L : Natural renames T.Lock;
 
       begin
          B := B + 1;
@@ -2052,7 +2107,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       end if;
 
       declare
-         B : Integer renames Parent.Container.Busy;
+         B : Natural renames Parent.Container.Busy;
          C : Tree_Node_Access;
 
       begin
@@ -2555,8 +2610,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
 
       declare
          T : Tree renames Position.Container.all'Unrestricted_Access.all;
-         B : Integer renames T.Busy;
-         L : Integer renames T.Lock;
+         B : Natural renames T.Busy;
+         L : Natural renames T.Lock;
 
       begin
          B := B + 1;

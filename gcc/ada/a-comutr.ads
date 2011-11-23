@@ -372,8 +372,8 @@ private
 
    type Tree is new Controlled with record
       Root  : aliased Root_Node_Type;
-      Busy  : Integer := 0;
-      Lock  : Integer := 0;
+      Busy  : Natural := 0;
+      Lock  : Natural := 0;
       Count : Count_Type := 0;
    end record;
 

@@ -6377,6 +6377,30 @@ package VMS_Data is
    --   of the directory specified in the project file. If the subdirectory
    --   does not exist, it is created automatically.
 
+   S_Pretty_Types     : aliased constant S := "/TYPE_CASING="              &
+                                              "AS_DECLARED "               &
+                                                 "-ntD "                   &
+                                              "LOWER_CASE "                &
+                                                 "-ntL "                   &
+                                              "UPPER_CASE "                &
+                                                 "-ntU "                   &
+                                              "MIXED_CASE "                &
+                                                 "-ntM";
+   --        /TYPE_CASING=name-option
+   --
+   --   Specify the casing of type and subtype. If not specified, the
+   --   casing of these names is defined by the NAME_CASING option.
+   --   'name-option' may be one of:
+   --
+   --      AS_DECLARED       Name casing for defining occurrences are
+   --                        as they appear in the source file.
+   --
+   --      LOWER_CASE        Namess are in lower case.
+   --
+   --      UPPER_CASE        Namess are in upper case.
+   --
+   --      MIXED_CASE        Namess are in mixed case.
+
    S_Pretty_Verbose   : aliased constant S := "/VERBOSE "                  &
                                               "-v";
    --        /NOVERBOSE (D)
@@ -6440,6 +6464,7 @@ package VMS_Data is
                         S_Pretty_Stnm_On_Nw_Line  'Access,
                         S_Pretty_Specific         'Access,
                         S_Pretty_Standard         'Access,
+                        S_Pretty_Types            'Access,
                         S_Pretty_Verbose          'Access,
                         S_Pretty_Warnings         'Access);
 

@@ -384,7 +384,7 @@ private
 
    for Map'Read use Read;
 
-   type Map_Access is access constant Map;
+   type Map_Access is access all Map;
    for Map_Access'Storage_Size use 0;
 
    type Cursor is record
