@@ -1,3 +1,11 @@
+2011-11-23  Pascal Obry  <obry@adacore.com>
+
+	* impunit.adb: Add g-exptty and g-tty units.
+
+2011-11-23  Robert Dewar  <dewar@adacore.com>
+
+	* exp_imgv.adb: Minor code reorganization (use Make_Temporary).
+
 2011-11-23  Robert Dewar  <dewar@adacore.com>
 
 	* exp_util.adb, par-ch6.adb, sem_res.adb, par-util.adb: Minor
@@ -7,6 +15,7 @@
 
 	* sem_ch13.adb (Analyze_Aspect_Specifications): Place error on
 	line of precondition/ postcondition/invariant.
+
 2011-11-23  Pascal Obry  <obry@adacore.com>
 
 	* g-exptty.ads, g-exptty.adb, g-tty.ads, g-tty.adb,
