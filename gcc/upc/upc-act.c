@@ -153,8 +153,10 @@ void
 upc_cpp_builtins (cpp_reader * pfile)
 {
   char def_buf[256];
-  cpp_define (pfile, "__GCC_UPC__=1");
   cpp_define (pfile, "__UPC__=1");
+  cpp_define (pfile, "__GUPC__=1");
+  /* Define __GCC_UPC__ for backward compatibility.  */
+  cpp_define (pfile, "__GCC_UPC__=1");
   cpp_define (pfile, "__UPC_VERSION__=200505L");
   (void) sprintf (def_buf, "UPC_MAX_BLOCK_SIZE=%lu",
 		  (unsigned long) UPC_MAX_BLOCK_SIZE);

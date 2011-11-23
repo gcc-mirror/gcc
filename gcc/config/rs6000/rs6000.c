@@ -21568,7 +21568,7 @@ rs6000_output_function_epilogue (FILE *file,
       if (! strcmp (language_string, "GNU C")
 	  || ! strcmp (language_string, "GNU GIMPLE")
 	  || ! strcmp (language_string, "GNU Go")
-          || ! strcmp (language_string, "GCC UPC"))
+          || ! strcmp (language_string, "GNU UPC"))
 	i = 0;
       else if (! strcmp (language_string, "GNU F77")
 	       || ! strcmp (language_string, "GNU Fortran"))

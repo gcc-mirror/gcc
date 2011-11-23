@@ -18462,8 +18462,7 @@ gen_compile_unit_die (const char *filename)
   else if (strcmp (language_string, "GNU Pascal") == 0)
     language = DW_LANG_Pascal83;
   else if (use_upc_dwarf2_extensions
-           && ((strcmp (language_string, "GNU UPC") == 0)
-	        || (strcmp (language_string, "GCC UPC") == 0)))
+           && (strcmp (language_string, "GNU UPC") == 0))
     language = DW_LANG_Upc;
   else if (dwarf_version >= 3 || !dwarf_strict)
     {

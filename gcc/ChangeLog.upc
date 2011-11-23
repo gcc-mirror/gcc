@@ -1,3 +1,10 @@
+2011-11-22  Gary Funck  <gary@intrepid.com>
+
+	* DEV-PHASE: "GCC UPC" -> "GNU UPC", and bump minor rev.
+	* dwarf2out.c (gen_compile_unit_die): Check for
+	the "GNU UPC" language string in lieu of "GCC UPC".
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Ditto.
+
 2011-11-18  Gary Funck  <gary@intrepid.com>
 
         Merge trunk version 181552 into gupc branch.
