@@ -1,5 +1,9 @@
 2011-11-23  Thomas Quinot  <quinot@adacore.com>
 
+	* g-htable.ads: Remove old comments.
+
+2011-11-23  Thomas Quinot  <quinot@adacore.com>
+
 	* exp_imgv.adb: Minor reformatting.
 
 2011-11-23  Robert Dewar  <dewar@adacore.com>
