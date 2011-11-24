@@ -1,3 +1,11 @@
+2011-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/50888
+	* prims.cc: Don't include ctype.h.
+	(c_isspace): Define.
+	(next_property_key, next_property_value): Use it instead
+	of isspace.
+
 2011-11-20  Andreas Tobler  <andreast@fgznet.ch>
 
 	* configure.ac: Fix FreeBSD 10 detection.
