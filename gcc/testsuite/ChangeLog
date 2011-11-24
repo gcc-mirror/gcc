@@ -1,3 +1,8 @@
+2011-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/50290
+	* gcc.dg/pr50290.c: New test.
+
 2011-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51290
