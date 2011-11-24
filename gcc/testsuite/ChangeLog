@@ -1,3 +1,13 @@
+2011-11-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/51258
+	* gcc.dg/atomic-compare-exchange-5.c: Add -mcx16 on i?86-*-*.
+	* gcc.dg/atomic-exchange-5.c: Likewise.
+	* gcc.dg/atomic-load-5.c: Likewise.
+	* gcc.dg/atomic-op-5.c: Likewise.
+	* gcc.dg/atomic-store-5.c: Likewise.
+	* gcc.dg/simulate-thread/atomic-other-int128.c: Fix typo.
+
 2011-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/50290
