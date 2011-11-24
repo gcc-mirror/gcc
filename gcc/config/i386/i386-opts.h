@@ -37,8 +37,7 @@ enum stringop_alg
    rep_prefix_8_byte,
    loop_1_byte,
    loop,
-   unrolled_loop,
-   sse_loop
+   unrolled_loop
 };
 
 /* Available call abi.  */

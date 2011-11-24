@@ -159,12 +159,8 @@ struct processor_costs {
   const int fchs;		/* cost of FCHS instruction.  */
   const int fsqrt;		/* cost of FSQRT instruction.  */
 				/* Specify what algorithm
-				   to use for stringops on unknown size.
-				   First index is used to specify whether
-				   alignment is known or not.
-				   Second - to specify whether 32 or 64 bits
-				   are used.  */
-  struct stringop_algs memcpy[2][2], memset[2][2];
+				   to use for stringops on unknown size.  */
+  struct stringop_algs memcpy[2], memset[2];
   const int scalar_stmt_cost;   /* Cost of any scalar operation, excluding
 				   load and store.  */
   const int scalar_load_cost;   /* Cost of scalar load.  */

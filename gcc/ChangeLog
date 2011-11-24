@@ -1,3 +1,30 @@
+2011-11-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/51134
+	* config/i386/i386.h (processor_costs): Revert revision 181357.
+	* config/i386/i386.c (cost models): Likewise.
+	(core_cost): Likewise.
+	(promote_duplicated_reg): Likewise.
+	(promote_duplicated_reg_to_size): Likewise.
+	(processor_target): Likewise.
+	(expand_set_or_movmem_via_loop_with_iter): Likewise.
+	(expand_set_or_movmem_via_loop): Likewise.
+	(emit_strset): Likewise.
+	(expand_movmem_epilogue): Likewise.
+	(expand_setmem_epilogue): Likewise.
+	(expand_movmem_prologue): Likewise.
+	(expand_setmem_prologue): Likewise.
+	(expand_constant_movmem_prologue): Likewise.
+	(expand_constant_setmem_prologue): Likewise.
+	(decide_alg): Likewise.
+	(decide_alignment): Likewise.
+	(ix86_expand_movmem): Likewise.
+	(ix86_expand_setmem): Likewise.
+	(ix86_slow_unaligned_access): Likewise.
+	* config/i386/i386.md (strset): Likewise.
+	* config/i386/sse.md (vec_dupv4si): Likewise.
+	(vec_dupv2di): Likewise.
+
 2011-11-24  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (*rotlhi2.15): Set length to 4.

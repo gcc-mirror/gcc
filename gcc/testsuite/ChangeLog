@@ -1,3 +1,8 @@
+2011-11-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/51134
+	* gcc.target/i386/sw-1.c: Revert revision 181357.
+
 2011-11-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51218
