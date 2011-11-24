@@ -1,3 +1,7 @@
+2011-11-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* s-taprop-tru64.adb (Create_Task): Use Unrestricted_Access.
+
 2011-11-23  Thomas Quinot  <quinot@adacore.com>
 
 	* thread.c, s-oscons-tmplt.c: Generate __gnat_pthread_condattr_setup
