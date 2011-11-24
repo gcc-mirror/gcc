@@ -2534,7 +2534,10 @@ warn_if_shadowing (tree new_decl)
 
   /* Is anything being shadowed?  Invisible decls do not count.  */
   for (b = I_SYMBOL_BINDING (DECL_NAME (new_decl)); b; b = b->shadowed)
-    if (b->decl && b->decl != new_decl && !b->invisible)
+    if (b->decl && b->decl != new_decl && !b->invisible
+	&& (b->decl == error_mark_node
+	    || diagnostic_report_warnings_p (global_dc,
+					     DECL_SOURCE_LOCATION (b->decl))))
       {
 	tree old_decl = b->decl;
 

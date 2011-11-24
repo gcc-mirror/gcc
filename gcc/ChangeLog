@@ -1,3 +1,8 @@
+2011-11-24  Alan Modra  <amodra@gmail.com>
+
+	* c-decl.c (warn_if_shadowing): Don't warn if shadowed
+	identifier is from system header.
+
 2011-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/51261
@@ -104,7 +109,7 @@
 
 	PR c++/51264
 	* tree.c (iterative_hash_expr): Remove break after return.
-	
+
 2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* target.def (tm_clone_table_section): New hook.
