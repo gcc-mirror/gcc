@@ -1385,8 +1385,7 @@ initialize_data_dependence_relation (struct data_reference *a,
       return res;
     }
 
-  /* When the references are exactly the same, don't spend time doing
-     the data dependence tests, just initialize the ddr and return.  */
+  /* The case where the references are exactly the same.  */
   if (operand_equal_p (DR_REF (a), DR_REF (b), 0))
     {
      if (loop_nest
@@ -4130,19 +4129,6 @@ compute_affine_dependence (struct data_dependence_relation *ddr,
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, ")\n");
-}
-
-/* This computes the dependence relation for the same data
-   reference into DDR.  */
-
-void
-compute_self_dependence (struct data_dependence_relation *ddr)
-{
-  if (DDR_ARE_DEPENDENT (ddr) != NULL_TREE)
-    return;
-
-  if (DDR_LOOP_NEST (ddr))
-    compute_affine_dependence (ddr, VEC_index (loop_p, DDR_LOOP_NEST (ddr), 0));
 }
 
 /* Compute in DEPENDENCE_RELATIONS the data dependence graph for all

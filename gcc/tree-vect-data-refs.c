@@ -3122,7 +3122,6 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	  ddr = VEC_index (ddr_p, ddrs, k);
 	  gcc_assert (DDR_A (ddr) == olddr && DDR_B (ddr) == olddr);
 	  newddr = initialize_data_dependence_relation (dr, dr, nest);
-	  compute_self_dependence (newddr);
 	  VEC_replace (ddr_p, ddrs, k, newddr);
 	  free_dependence_relation (ddr);
 	  VEC_replace (data_reference_p, datarefs, i, dr);
