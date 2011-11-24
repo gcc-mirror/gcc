@@ -3132,10 +3132,10 @@ resolve_function (gfc_expr *expr)
 		     "procedure within a PURE procedure", name, &expr->where);
 	  t = FAILURE;
 	}
-    }
 
-  if (!pure_function (expr, &name) && name && gfc_implicit_pure (NULL))
-    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+      if (gfc_implicit_pure (NULL))
+	gfc_current_ns->proc_name->attr.implicit_pure = 0;
+    }
 
   /* Functions without the RECURSIVE attribution are not allowed to
    * call themselves.  */
@@ -3195,6 +3195,9 @@ pure_subroutine (gfc_code *c, gfc_symbol *sym)
   else if (gfc_pure (NULL))
     gfc_error ("Subroutine call to '%s' at %L is not PURE", sym->name,
 	       &c->loc);
+
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
 }
 
 

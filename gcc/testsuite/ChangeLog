@@ -1,3 +1,10 @@
+2011-11-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51218
+	* resolve.c (pure_subroutine): If called subroutine is
+	impure, unset implicit_pure.
+	(resolve_function): Move impure check to simplify code.
+
 2011-11-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51265
