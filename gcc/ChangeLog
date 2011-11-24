@@ -1,3 +1,10 @@
+2011-11-24  Razya Ladelsky  <razya@il.ibm.com>
+
+	* tree-data-ref.c (initialize_data_dependence_relation): Update 
+	comment for the self dependence case.
+	(compute_self_dependence): Remove.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Remove call to 
+	compute_self_dependenc. 
 2011-11-24  Alan Modra  <amodra@gmail.com>
 
 	* c-decl.c (warn_if_shadowing): Don't warn if shadowed
