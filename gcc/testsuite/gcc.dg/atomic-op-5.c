@@ -2,7 +2,7 @@
    values with each valid memory model.  */
 /* { dg-do run } */
 /* { dg-require-effective-target sync_int_128 } */
-/* { dg-options "-mcx16" { target { x86_64-*-* } } } */
+/* { dg-options "-mcx16" { target { i?86-*-* x86_64-*-* } } } */
 
 /* Test the execution of the __atomic_*OP builtin routines for an int_128.  */
 
