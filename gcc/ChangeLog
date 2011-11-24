@@ -1,3 +1,26 @@
+2011-11-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* optab.c (maybe_emit_atomic_exchange): New.  Try to emit an
+	atomic_exchange pattern.
+	(maybe_emit_sync_lock_test_and_set): New.  Try to emit an exchange
+	using __sync_lock_test_and_set.
+	(maybe_emit_compare_and_swap_exchange_loop): New. Try to emit an
+	exchange using a compare_and_swap loop.
+	(expand_sync_lock_test_and_set): New.  Expand sync_lock_test_and_set.
+	(expand_atomic_test_and_set): New.  Expand test_and_set operation.
+	(expand_atomic_exchange): Use new maybe_emit_* functions.
+	(expand_atomic_store): Use new maybe_emit_* functions.
+	* builtins.c (expand_builtin_sync_lock_test_and_set): Call
+	expand_sync_lock_test_and_set routine.
+	(expand_builtin_atomic_exchange): Remove parameter from call.
+	(expand_builtin_atomic_clear): Use atomic_clear pattern if present.
+	(expand_builtin_atomic_test_and_set): Add target and simply call
+	expand_atomic_test_and_set.
+	(expand_builtin): Add target to expand_builtin_atomic_test_and_set.
+	* expr.h (expand_atomic_exchange): Add parameter.
+	(expand_sync_lock_test_and_set): New prototype.
+	(expand_atomic_test_and_set, expand_atomic_clear): New prototypes.
+
 2011-11-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/51134
