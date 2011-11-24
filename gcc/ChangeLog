@@ -1,3 +1,7 @@
+2011-11-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (*rotlhi2.15): Set length to 4.
+
 2011-11-24  Razya Ladelsky  <razya@il.ibm.com>
 
 	* tree-data-ref.c (initialize_data_dependence_relation): Update 

@@ -3020,7 +3020,7 @@
                    (const_int 15)))]
   ""
   "bst %A0,0\;ror %B0\;ror %A0\;bld %B0,7"
-  [(set_attr "length" "3")
+  [(set_attr "length" "4")
    (set_attr "cc" "clobber")])
 
 (define_insn "*rotlpsi2.1"
