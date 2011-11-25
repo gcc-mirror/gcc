@@ -142,6 +142,7 @@ extern void avr_log_set_avr_log (void);
 typedef struct
 {
   unsigned address_cost :1;
+  unsigned builtin :1;
   unsigned constraints :1;
   unsigned legitimate_address_p :1;
   unsigned legitimize_address :1;

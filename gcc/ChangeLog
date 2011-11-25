@@ -1,3 +1,13 @@
+2011-11-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50566
+	* config/avr/avr-protos.h (avr_log_t): Add field .builtin.
+	* config/avr/avr-log.c (avr_log_set_avr_log): Initialize it.
+	Don't bypass TARGET_ALL_DEBUG.  Print self-info with ?.
+	(avr_log_vadump): Support %D and %X to print double_int.
+	(avr_double_int_pop_digit): New static function.
+	(avr_dump_double_int_hex): New static function.
+
 2011-11-24  Enkovich Ilya  <ilya.enkovich@intel.com>
 
 	PR target/51287
