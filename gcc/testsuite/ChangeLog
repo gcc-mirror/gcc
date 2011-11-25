@@ -1,3 +1,8 @@
+2011-11-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51302
+	* gfortran.dg/volatile13.f90: New.
+
 2011-11-24  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR c/51256
