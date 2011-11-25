@@ -1,3 +1,13 @@
+2011-11-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR c/51256
+	* c-common.c (get_atomic_generic_size): Check for various error 
+	conditions
+	(resolve_overloaded_atomic_exchange, 
+	resolve_overloaded_atomic_compare_exchange, 
+	resolve_overloaded_atomic_load, resolve_overloaded_atomic_store): Return
+	error_mark_node for error conditions.
+	
 2011-11-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/51010
