@@ -288,6 +288,6 @@ main()
 {
   test24 ();
   if (MYTHREAD == 0)
-    printf ("test24: global/local allocation test - passed\n");
+    printf ("test24: global/local allocation test - passed.\\n");
   return 0;
 }

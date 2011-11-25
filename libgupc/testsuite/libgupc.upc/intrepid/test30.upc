@@ -130,7 +130,7 @@ main ()
     }
   #else
   if (!MYTHREAD)
-    printf ("test30: test GUPC struct PTS alignment: passed\n"
+    printf ("test30: test GUPC struct PTS alignment: passed.\\n"
 	    "(This test applies only to GUPC's struct "
 	    "PTS representation)\n");
   #endif

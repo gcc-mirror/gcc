@@ -1,6 +1,7 @@
 2011-11-22  Gary Funck  <gary@intrepid.com>
 
-	* upc-act.c (upc_cpp_builtins): Generate new pre-defined macro: __GUPC__.
+	* upc-act.c (upc_cpp_builtins): Generate new pre-defined
+	macro: __GUPC__.
 
 2011-11-19  Gary Funck  <gary@intrepid.com>
 
