@@ -16273,7 +16273,6 @@ distance_non_agu_define_in_bb (unsigned int regno1, unsigned int regno2,
   basic_block bb = start ? BLOCK_FOR_INSN (start) : NULL;
   rtx prev = start;
   rtx next = NULL;
-  enum attr_type insn_type;
 
   *found = false;
 
@@ -16286,8 +16285,8 @@ distance_non_agu_define_in_bb (unsigned int regno1, unsigned int regno2,
 	  distance = increase_distance (prev, next, distance);
 	  if (insn_defines_reg (regno1, regno2, prev))
 	    {
-	      insn_type = get_attr_type (prev);
-	      if (insn_type != TYPE_LEA)
+	      if (recog_memoized (prev) < 0
+		  || get_attr_type (prev) != TYPE_LEA)
 		{
 		  *found = true;
 		  return distance;
