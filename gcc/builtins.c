@@ -227,7 +227,7 @@ static void expand_builtin_sync_synchronize (void);
 
 /* Return true if NAME starts with __builtin_ or __sync_.  */
 
-bool
+static bool
 is_builtin_name (const char *name)
 {
   if (strncmp (name, "__builtin_", 10) == 0)

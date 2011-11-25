@@ -5460,7 +5460,6 @@ extern tree build_va_arg_indirect_ref (tree);
 extern tree build_string_literal (int, const char *);
 extern bool validate_arglist (const_tree, ...);
 extern rtx builtin_memset_read_str (void *, HOST_WIDE_INT, enum machine_mode);
-extern bool is_builtin_name (const char *);
 extern bool is_builtin_fn (tree);
 extern unsigned int get_object_alignment_1 (tree, unsigned HOST_WIDE_INT *);
 extern unsigned int get_object_alignment (tree);

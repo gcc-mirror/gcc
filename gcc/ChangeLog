@@ -1,3 +1,11 @@
+2011-11-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR other/51011
+	* tree.h (is_builtin_name): No longer external.
+	* builtins.c (is_builtin_name): Make static.
+	* varasm.c (incorporeal_function_p): __sync and __atomic external calls
+	are not incorporeal and may need asm label processing.
+
 2011-11-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50566
