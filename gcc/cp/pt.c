@@ -9103,14 +9103,20 @@ instantiate_class_template_1 (tree type)
 
   if (CLASSTYPE_LAMBDA_EXPR (type))
     {
-      tree lambda = CLASSTYPE_LAMBDA_EXPR (type);
-      if (LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P (lambda))
+      tree decl = lambda_function (type);
+      if (decl)
 	{
-	  apply_lambda_return_type (lambda, void_type_node);
-	  LAMBDA_EXPR_RETURN_TYPE (lambda) = NULL_TREE;
+	  tree lambda = CLASSTYPE_LAMBDA_EXPR (type);
+	  if (LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P (lambda))
+	    {
+	      apply_lambda_return_type (lambda, void_type_node);
+	      LAMBDA_EXPR_RETURN_TYPE (lambda) = NULL_TREE;
+	    }
+	  instantiate_decl (decl, false, false);
+	  maybe_add_lambda_conv_op (type);
 	}
-      instantiate_decl (lambda_function (type), false, false);
-      maybe_add_lambda_conv_op (type);
+      else
+	gcc_assert (errorcount);
     }
 
   /* Set the file and line number information to whatever is given for
