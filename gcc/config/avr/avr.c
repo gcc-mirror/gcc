@@ -1822,9 +1822,32 @@ print_operand (FILE *file, rtx x, int code)
       else
 	fprintf (file, reg_names[true_regnum (x) + abcd]);
     }
-  else if (GET_CODE (x) == CONST_INT)
-    fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) + abcd);
-  else if (GET_CODE (x) == MEM)
+  else if (CONST_INT_P (x))
+    {
+      HOST_WIDE_INT ival = INTVAL (x);
+        
+      if ('i' != code)
+        fprintf (file, HOST_WIDE_INT_PRINT_DEC, ival + abcd);
+      else if (low_io_address_operand (x, VOIDmode)
+               || high_io_address_operand (x, VOIDmode))
+        {
+          switch (ival)
+            {
+            case RAMPZ_ADDR: fprintf (file, "__RAMPZ__"); break;
+            case SREG_ADDR: fprintf (file, "__SREG__"); break;
+            case SP_ADDR:   fprintf (file, "__SP_L__"); break;
+            case SP_ADDR+1: fprintf (file, "__SP_H__"); break;
+              
+            default:
+              fprintf (file, HOST_WIDE_INT_PRINT_HEX,
+                       ival - avr_current_arch->sfr_offset);
+              break;
+            }
+        }
+      else
+        fatal_insn ("bad address, not an I/O address:", x);
+    }
+  else if (MEM_P (x))
     {
       rtx addr = XEXP (x, 0);
       
@@ -1844,21 +1867,7 @@ print_operand (FILE *file, rtx x, int code)
 	}
       else if (code == 'i')
         {
-          if (!io_address_operand (addr, GET_MODE (x)))
-            fatal_insn ("bad address, not an I/O address:", addr);
-          
-          switch (INTVAL (addr))
-            {
-            case RAMPZ_ADDR: fprintf (file, "__RAMPZ__"); break;
-            case SREG_ADDR: fprintf (file, "__SREG__"); break;
-            case SP_ADDR:   fprintf (file, "__SP_L__"); break;
-            case SP_ADDR+1: fprintf (file, "__SP_H__"); break;
-              
-            default:
-              fprintf (file, HOST_WIDE_INT_PRINT_HEX,
-                       UINTVAL (addr) - avr_current_arch->sfr_offset);
-              break;
-            }
+          print_operand (file, addr, 'i');
         }
       else if (code == 'o')
 	{
@@ -1888,6 +1897,10 @@ print_operand (FILE *file, rtx x, int code)
 	}
       else
 	print_operand_address (file, addr);
+    }
+  else if (code == 'i')
+    {
+      fatal_insn ("bad address, not an I/O address:", x);
     }
   else if (code == 'x')
     {

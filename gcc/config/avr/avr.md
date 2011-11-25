@@ -28,8 +28,8 @@
 ;;  j  Branch condition.
 ;;  k  Reverse branch condition.
 ;;..m..Constant Direct Data memory address.
-;;  i  Print the SFR address quivalent of a CONST_INT RAM address.
-;;     The resulting addres is suitable to be used in IN/OUT.
+;;  i  Print the SFR address quivalent of a CONST_INT or a CONST_INT
+;;     RAM address.  The resulting addres is suitable to be used in IN/OUT.
 ;;  o  Displacement for (mem (plus (reg) (const_int))) operands.
 ;;  p  POST_INC or PRE_DEC address as a pointer (X, Y, Z)
 ;;  r  POST_INC or PRE_DEC address as a register (r26, r28, r30)

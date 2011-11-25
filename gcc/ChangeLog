@@ -1,3 +1,7 @@
+2011-11-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (print_operand): Support code = 'i' for CONST_INT.
+
 2011-11-24  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR other/51011
