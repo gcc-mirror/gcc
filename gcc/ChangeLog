@@ -1,3 +1,8 @@
+2011-11-24  Enkovich Ilya  <ilya.enkovich@intel.com>
+
+	PR target/51287
+	* i386.c (distance_non_agu_define): Fix insn attr check.
+
 2011-11-20  Andreas Tobler  <andreast@fgznet.ch>
 
 	* configure: Regenerate.

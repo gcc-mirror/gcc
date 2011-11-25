@@ -16329,7 +16329,6 @@ distance_non_agu_define (unsigned int regno1, unsigned int regno2,
   basic_block bb = BLOCK_FOR_INSN (insn);
   int distance = 0;
   df_ref *def_rec;
-  enum attr_type insn_type;
 
   if (insn != BB_HEAD (bb))
     {
@@ -16345,8 +16344,8 @@ distance_non_agu_define (unsigned int regno1, unsigned int regno2,
                     && (regno1 == DF_REF_REGNO (*def_rec)
 			|| regno2 == DF_REF_REGNO (*def_rec)))
 		  {
-		    insn_type = get_attr_type (prev);
-		    if (insn_type != TYPE_LEA)
+		    if (recog_memoized (prev) < 0
+			|| get_attr_type (prev) != TYPE_LEA)
 		      goto done;
 		  }
 	    }
@@ -16385,8 +16384,8 @@ distance_non_agu_define (unsigned int regno1, unsigned int regno2,
 			&& (regno1 == DF_REF_REGNO (*def_rec)
 			    || regno2 == DF_REF_REGNO (*def_rec)))
 		      {
-			insn_type = get_attr_type (prev);
-			if (insn_type != TYPE_LEA)
+			if (recog_memoized (prev) < 0
+			    || get_attr_type (prev) != TYPE_LEA)
 			  goto done;
 		      }
 		}
