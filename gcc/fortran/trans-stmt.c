@@ -1259,7 +1259,8 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
   loc = code->ext.iterator->start->where.lb->location;
 
   /* Initialize the DO variable: dovar = from.  */
-  gfc_add_modify_loc (loc, pblock, dovar, from);
+  gfc_add_modify_loc (loc, pblock, dovar,
+		      fold_convert (TREE_TYPE(dovar), from));
   
   /* Save value for do-tinkering checking. */
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)

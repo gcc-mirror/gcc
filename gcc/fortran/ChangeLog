@@ -1,3 +1,8 @@
+2011-11-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51302
+	* trans-stmt.c (gfc_trans_simple_do): Add a fold_convert.
+
 2011-11-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51218
