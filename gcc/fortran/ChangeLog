@@ -1,5 +1,9 @@
 2011-11-25  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (set_loop_bounds): Remove dead conditions.
+
+2011-11-25  Mikael Morin  <mikael@gcc.gnu.org>
+
 	PR fortran/51250
 	PR fortran/43829
 	* trans-array.c (gfc_trans_create_temp_array): Get dimension from

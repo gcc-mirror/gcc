@@ -4341,9 +4341,9 @@ set_loop_bounds (gfc_loopinfo *loop)
 	}
 
       /* Transform everything so we have a simple incrementing variable.  */
-      if (n < loop->dimen && integer_onep (info->stride[dim]))
+      if (integer_onep (info->stride[dim]))
 	info->delta[dim] = gfc_index_zero_node;
-      else if (n < loop->dimen)
+      else
 	{
 	  /* Set the delta for this section.  */
 	  info->delta[dim] = gfc_evaluate_now (loop->from[n], &loop->pre);
