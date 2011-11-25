@@ -2109,7 +2109,9 @@ incorporeal_function_p (tree decl)
 	return true;
 
       name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-      if (is_builtin_name (name))
+      /* Atomic or sync builtins which have survived this far will be
+	 resolved externally and therefore are not incorporeal.  */
+      if (strncmp (name, "__builtin_", 10) == 0)
 	return true;
     }
   return false;
