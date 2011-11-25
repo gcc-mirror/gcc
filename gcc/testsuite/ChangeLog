@@ -1,3 +1,8 @@
+2011-11-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR c/51256
+	* gcc.dg/atomic-pr51256.c: New.  Test error conditions.
+	
 2011-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51227

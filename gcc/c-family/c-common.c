@@ -9392,7 +9392,7 @@ get_atomic_generic_size (location_t loc, tree function, VEC(tree,gc) *params)
       n_model = 2;
       break;
     default:
-      return 0;
+      gcc_unreachable ();
     }
 
   if (VEC_length (tree, params) != n_param)
@@ -9403,12 +9403,32 @@ get_atomic_generic_size (location_t loc, tree function, VEC(tree,gc) *params)
 
   /* Get type of first parameter, and determine its size.  */
   type_0 = TREE_TYPE (VEC_index (tree, params, 0));
-  if (TREE_CODE (type_0) != POINTER_TYPE)
+  if (TREE_CODE (type_0) != POINTER_TYPE || VOID_TYPE_P (TREE_TYPE (type_0)))
     {
-      error_at (loc, "argument 1 of %qE must be a pointer type", function);
+      error_at (loc, "argument 1 of %qE must be a non-void pointer type",
+		function);
       return 0;
     }
+
+  /* Types must be compile time constant sizes. */
+  if (TREE_CODE ((TYPE_SIZE_UNIT (TREE_TYPE (type_0)))) != INTEGER_CST)
+    {
+      error_at (loc, 
+		"argument 1 of %qE must be a pointer to a constant size type",
+		function);
+      return 0;
+    }
+
   size_0 = tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (type_0)), 1);
+
+  /* Zero size objects are not allowed.  */
+  if (size_0 == 0)
+    {
+      error_at (loc, 
+		"argument 1 of %qE must be a pointer to a nonzero size object",
+		function);
+      return 0;
+    }
 
   /* Check each other parameter is a pointer and the same size.  */
   for (x = 0; x < n_param - n_model; x++)
@@ -9445,7 +9465,6 @@ get_atomic_generic_size (location_t loc, tree function, VEC(tree,gc) *params)
 	      warning_at (loc, OPT_Winvalid_memory_model,
 			  "invalid memory model argument %d of %qE", x + 1,
 			  function);
-	      return MEMMODEL_SEQ_CST;
 	    }
 	}
       else
@@ -9515,6 +9534,13 @@ resolve_overloaded_atomic_exchange (location_t loc, tree function,
   tree I_type, I_type_ptr;
   int n = get_atomic_generic_size (loc, function, params);
 
+  /* Size of 0 is an error condition.  */
+  if (n == 0)
+    {
+      *new_return = error_mark_node;
+      return true;
+    }
+
   /* If not a lock-free size, change to the library generic format.  */
   if (n != 1 && n != 2 && n != 4 && n != 8 && n != 16)
     {
@@ -9538,8 +9564,7 @@ resolve_overloaded_atomic_exchange (location_t loc, tree function,
 
   /* Convert object pointer to required type.  */
   p0 = build1 (VIEW_CONVERT_EXPR, I_type_ptr, p0);
-  VEC_replace (tree, params, 0, p0);
-
+  VEC_replace (tree, params, 0, p0); 
   /* Convert new value to required type, and dereference it.  */
   p1 = build_indirect_ref (loc, p1, RO_UNARY_STAR);
   p1 = build1 (VIEW_CONVERT_EXPR, I_type, p1);
@@ -9573,6 +9598,13 @@ resolve_overloaded_atomic_compare_exchange (location_t loc, tree function,
   tree p0, p1, p2;
   tree I_type, I_type_ptr;
   int n = get_atomic_generic_size (loc, function, params);
+
+  /* Size of 0 is an error condition.  */
+  if (n == 0)
+    {
+      *new_return = error_mark_node;
+      return true;
+    }
 
   /* If not a lock-free size, change to the library generic format.  */
   if (n != 1 && n != 2 && n != 4 && n != 8 && n != 16)
@@ -9643,6 +9675,13 @@ resolve_overloaded_atomic_load (location_t loc, tree function,
   tree I_type, I_type_ptr;
   int n = get_atomic_generic_size (loc, function, params);
 
+  /* Size of 0 is an error condition.  */
+  if (n == 0)
+    {
+      *new_return = error_mark_node;
+      return true;
+    }
+
   /* If not a lock-free size, change to the library generic format.  */
   if (n != 1 && n != 2 && n != 4 && n != 8 && n != 16)
     {
@@ -9695,6 +9734,13 @@ resolve_overloaded_atomic_store (location_t loc, tree function,
   tree p0, p1;
   tree I_type, I_type_ptr;
   int n = get_atomic_generic_size (loc, function, params);
+
+  /* Size of 0 is an error condition.  */
+  if (n == 0)
+    {
+      *new_return = error_mark_node;
+      return true;
+    }
 
   /* If not a lock-free size, change to the library generic format.  */
   if (n != 1 && n != 2 && n != 4 && n != 8 && n != 16)
