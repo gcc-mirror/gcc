@@ -1,3 +1,10 @@
+2011-11-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/51250
+	PR fortran/43829
+	* trans-array.c (gfc_trans_create_temp_array): Get dimension from
+	the right gfc_ss struct.
+
 2011-11-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50408

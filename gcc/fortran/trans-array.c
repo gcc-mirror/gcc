@@ -1087,7 +1087,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
     for (s = ss; s; s = s->parent)
       for (n = 0; n < s->loop->dimen; n++)
 	{
-	  dim = get_scalarizer_dim_for_array_dim (ss, ss->dim[n]);
+	  dim = get_scalarizer_dim_for_array_dim (ss, s->dim[n]);
 
 	  /* For a callee allocated array express the loop bounds in terms
 	     of the descriptor fields.  */
