@@ -1,5 +1,5 @@
 /* { dg-do link } */
-/* { dg-require-effective-target sync_long_long } */
+/* { dg-require-effective-target sync_long_long_runtime } */
 /* { dg-options "" } */
 /* { dg-final { simulate-thread } } */
 

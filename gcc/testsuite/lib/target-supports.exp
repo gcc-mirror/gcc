@@ -3620,12 +3620,75 @@ proc check_effective_target_sync_int_128 { } {
     }
 }
 
+# Return 1 if the target supports atomic operations on "int_128" values
+# and can execute them.
+
+proc check_effective_target_sync_int_128_runtime { } {
+    if { ([istarget x86_64-*-*] || [istarget i?86-*-*])
+	 && ![is-effective-target ia32] } {
+	return [check_cached_effective_target sync_int_128_available {
+	    check_runtime_nocache sync_int_128_available {
+		#include "cpuid.h"
+		int main ()
+		{
+		  unsigned int eax, ebx, ecx, edx;
+		  if (__get_cpuid (1, &eax, &ebx, &ecx, &edx))
+		    return !(ecx & bit_CMPXCHG16B);
+		  return 1;
+		}
+	    } ""
+	}]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if the target supports atomic operations on "long long".
 
 proc check_effective_target_sync_long_long { } {
     if { ([istarget x86_64-*-*] || [istarget i?86-*-*])
-	 && ![is-effective-target ia32] } {
+	 && ![is-effective-target ia32]
+	 || [istarget arm*-*-*] } {
 	return 1
+    } else {
+	return 0
+    }
+}
+
+# Return 1 if the target supports atomic operations on "long long"
+# and can execute them.
+
+proc check_effective_target_sync_long_long_runtime { } {
+    if { ([istarget x86_64-*-*] || [istarget i?86-*-*])
+	 && ![is-effective-target ia32] } {
+	return [check_cached_effective_target sync_long_long_available {
+	    check_runtime_nocache sync_long_long_available {
+		#include "cpuid.h"
+		int main ()
+		{
+		  unsigned int eax, ebx, ecx, edx;
+		  if (__get_cpuid (1, &eax, &ebx, &ecx, &edx))
+		    return !(edx & bit_CMPXCHG8B);
+		  return 1;
+		}
+	    } ""
+	}]
+    } elseif { [istarget arm*-*-linux-gnueabi] } {
+	return [check_runtime sync_longlong_runtime {
+	    #include <stdlib.h>
+	    int main ()
+	    {
+	      long long l1;
+
+	      if (sizeof (long long) != 8)
+		exit (1);
+
+	      /* Just check for native; checking for kernel fallback is tricky.  */
+	      asm volatile ("ldrexd r0,r1, [%0]" : : "r" (&l1) : "r0", "r1");
+
+	      exit (0);
+	    }
+	} "" ]
     } else {
 	return 0
     }
@@ -3660,31 +3723,6 @@ proc check_effective_target_sync_int_long { } {
 
     verbose "check_effective_target_sync_int_long: returning $et_sync_int_long_saved" 2
     return $et_sync_int_long_saved
-}
-
-# Return 1 if the target supports atomic operations on "long long" and can
-# execute them
-# So far only put checks in for ARM, others may want to add their own
-proc check_effective_target_sync_longlong { } {
-    return [check_runtime sync_longlong_runtime {
-      #include <stdlib.h>
-      int main ()
-      {
-	long long l1;
-
-	if (sizeof (long long) != 8)
-	  exit (1);
-
-      #ifdef __arm__
-	/* Just check for native; checking for kernel fallback is tricky.  */
-	asm volatile ("ldrexd r0,r1, [%0]" : : "r" (&l1) : "r0", "r1");
-      #else
-      # error "Add other suitable archs here"
-      #endif
-
-	exit (0);
-      }
-    } "" ]
 }
 
 # Return 1 if the target supports atomic operations on "char" and "short".

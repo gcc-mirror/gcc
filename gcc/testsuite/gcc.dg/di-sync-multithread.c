@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target sync_longlong } */
+/* { dg-require-effective-target sync_long_long_runtime } */
 /* { dg-require-effective-target pthread_h } */
 /* { dg-require-effective-target pthread } */
 /* { dg-options "-pthread -std=gnu99" } */
