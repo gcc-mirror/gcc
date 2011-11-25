@@ -3,6 +3,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target sync_long_long_runtime } */
 /* { dg-options "" } */
+/* { dg-options "-march=pentium" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 /* Test the execution of the __atomic_*OP builtin routines for long long.  */
 

@@ -3644,11 +3644,14 @@ proc check_effective_target_sync_int_128_runtime { } {
 }
 
 # Return 1 if the target supports atomic operations on "long long".
+#
+# Note: 32bit x86 targets require -march=pentium in dg-options.
 
 proc check_effective_target_sync_long_long { } {
-    if { ([istarget x86_64-*-*] || [istarget i?86-*-*])
-	 && ![is-effective-target ia32]
-	 || [istarget arm*-*-*] } {
+    if { [istarget x86_64-*-*]
+	 || [istarget i?86-*-*])
+	 || [istarget arm*-*-*]
+	 || [istarget alpha*-*-*] } {
 	return 1
     } else {
 	return 0
@@ -3657,10 +3660,12 @@ proc check_effective_target_sync_long_long { } {
 
 # Return 1 if the target supports atomic operations on "long long"
 # and can execute them.
+#
+# Note: 32bit x86 targets require -march=pentium in dg-options.
 
 proc check_effective_target_sync_long_long_runtime { } {
-    if { ([istarget x86_64-*-*] || [istarget i?86-*-*])
-	 && ![is-effective-target ia32] } {
+    if { [istarget x86_64-*-*]
+	 || [istarget i?86-*-*] } {
 	return [check_cached_effective_target sync_long_long_available {
 	    check_runtime_nocache sync_long_long_available {
 		#include "cpuid.h"
@@ -3689,6 +3694,8 @@ proc check_effective_target_sync_long_long_runtime { } {
 	      exit (0);
 	    }
 	} "" ]
+    } elseif { [istarget alpha*-*-*] } {
+	return 1
     } else {
 	return 0
     }
