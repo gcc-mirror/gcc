@@ -2092,6 +2092,9 @@ gfc_copy_dt_decls_ifequal (gfc_symbol *from, gfc_symbol *to,
   gfc_component *to_cm;
   gfc_component *from_cm;
 
+  if (from == to)
+    return 1;
+
   if (from->backend_decl == NULL
 	|| !gfc_compare_derived_types (from, to))
     return 0;

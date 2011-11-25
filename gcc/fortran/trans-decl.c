@@ -677,7 +677,7 @@ gfc_get_module_backend_decl (gfc_symbol *sym)
 	}
       else if (s->backend_decl)
 	{
-	  if (sym->ts.type == BT_DERIVED)
+	  if (sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS)
 	    gfc_copy_dt_decls_ifequal (s->ts.u.derived, sym->ts.u.derived,
 				       true);
 	  else if (sym->ts.type == BT_CHARACTER)
@@ -1602,6 +1602,11 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
       gfc_find_symbol (sym->name, gsym->ns, 0, &s);
       if (s && s->backend_decl)
 	{
+	  if (sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS)
+	    gfc_copy_dt_decls_ifequal (s->ts.u.derived, sym->ts.u.derived,
+				       true);
+	  else if (sym->ts.type == BT_CHARACTER)
+	    sym->ts.u.cl->backend_decl = s->ts.u.cl->backend_decl;
 	  sym->backend_decl = s->backend_decl;
 	  return sym->backend_decl;
 	}
