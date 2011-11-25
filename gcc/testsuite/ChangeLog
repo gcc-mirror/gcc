@@ -2,6 +2,26 @@
 
 	PR testsuite/51258
 	* lib/target-supports.exp
+	(check_effective_target_sync_long_long): Also supported on 32bit
+	x86 targets.  Add comment about required dg-options.
+	Add alpha*-*-* targets.
+	(check_effective_target_sync_long_long_runtime): Ditto.
+
+	* gcc.dg/atomic-op-4.c (dg-options): Add -march=pentium for
+	32bit x86 targets.
+	* gcc.dg/atomic-compare-exchange-4.c: Ditto.
+	* gcc.dg/atomic-exchange-4.c: Ditto.
+	* gcc.dg/atomic-load-4.c: Ditto.
+	* gcc.dg/atomic-store-4.c: Ditto.
+	* gcc.dg/di-longlong64-sync-1.c: Ditto.
+	* gcc.dg/di-sync-multithread.c: Ditto.
+	* gcc.dg/simulate-thread/atomic-load-longlong.c: Ditto.
+	* gcc.dg/simulate-thread/atomic-other-longlong.c: Ditto.
+
+2011-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/51258
+	* lib/target-supports.exp
 	(check_effective_target_sync_int_128_runtime): New procedure.
 	(check_effective_target_sync_long_long_runtime): Ditto.
 	(check_effective_target_sync_long_long): Add arm*-*-*.
