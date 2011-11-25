@@ -87,6 +87,6 @@ main()
 {
   test25 ();
   if (MYTHREAD == 0)
-    printf ("test25: UPC initialization test - passed.\\n");
+    printf ("test25: UPC initialization test - passed.\n");
   return 0;
 }

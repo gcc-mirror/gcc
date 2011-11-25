@@ -1,6 +1,10 @@
+2011-10-25  Gary Funck  <gary@intrepid.com>
+
+	Re-fix typo in previous commit.
+
 2011-10-24  Gary Funck  <gary@intrepid.com>
 
-	* test21.upc: Fix typo in passed message. Terminate with '.'.
+	* test21.upc: Fix typo in "passed" message. Terminate with '.'.
 	* test24.upc: Ditto.
 	* test25.upc: Ditto.
 	* test30.upc: Ditto.

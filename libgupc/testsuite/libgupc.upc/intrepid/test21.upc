@@ -76,6 +76,6 @@ main ()
 {
   test21 ();
   if (MYTHREAD == 0)
-    printf ("test21: global/local address check - passed.\\n");
+    printf ("test21: global/local address check - passed.\n");
   return 0;
 }
