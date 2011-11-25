@@ -1,3 +1,30 @@
+2011-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/51258
+	* lib/target-supports.exp
+	(check_effective_target_sync_int_128_runtime): New procedure.
+	(check_effective_target_sync_long_long_runtime): Ditto.
+	(check_effective_target_sync_long_long): Add arm*-*-*.
+	(check_effective_target_sync_longlong): Remove.
+
+	* gcc.dg/atomic-op-5.c: Require sync_int_128_runtime effective target.
+	* gcc.dg/atomic-compare-exchange-5.c: Ditto.
+	* gcc.dg/atomic-exchange-5.c: Ditto.
+	* gcc.dg/atomic-load-5.c: Ditto.
+	* gcc.dg/atomic-store-5.c: Ditto.
+	* gcc.dg/simulate-thread/atomic-load-int128.c: Ditto.
+	* gcc.dg/simulate-thread/atomic-other-int128.c: Ditto.
+	* gcc.dg/atomic-op-4.c: Require sync_long_long_runtime
+	effective target.
+	* gcc.dg/atomic-compare-exchange-4.c: Ditto.
+	* gcc.dg/atomic-exchange-4.c: Ditto.
+	* gcc.dg/atomic-load-4.c: Ditto.
+	* gcc.dg/atomic-store-4.c: Ditto.
+	* gcc.dg/di-longlong64-sync-1.c: Ditto.
+	* gcc.dg/di-sync-multithread.c: Ditto.
+	* gcc.dg/simulate-thread/atomic-load-longlong.c: Ditto.
+	* gcc.dg/simulate-thread/atomic-other-longlong.c: Ditto.
+
 2011-11-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50408
@@ -12,7 +39,7 @@
 
 	PR c/51256
 	* gcc.dg/atomic-pr51256.c: New.  Test error conditions.
-	
+
 2011-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51227
@@ -104,8 +131,8 @@
 
 2011-11-22  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
-        * gcc.dg/vshift-1.c (main): Call rand instead of random.
-        * gcc.dg/vshift-3.c (main): Likewise.
+	* gcc.dg/vshift-1.c (main): Call rand instead of random.
+	* gcc.dg/vshift-3.c (main): Likewise.
 
 2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
 

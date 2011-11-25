@@ -1,7 +1,7 @@
 /* Test __atomic routines for existence and proper execution on 8 byte 
    values with each valid memory model.  */
 /* { dg-do run } */
-/* { dg-require-effective-target sync_long_long } */
+/* { dg-require-effective-target sync_long_long_runtime } */
 /* { dg-options "" } */
 
 /* Test the execution of the __atomic_*OP builtin routines for long long.  */

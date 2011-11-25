@@ -1,5 +1,5 @@
 /* { dg-do link } */
-/* { dg-require-effective-target sync_int_128 } */
+/* { dg-require-effective-target sync_int_128_runtime } */
 /* { dg-options "-mcx16" { target { x86_64-*-* i?86-*-* } } } */
 /* { dg-final { simulate-thread } } */
 

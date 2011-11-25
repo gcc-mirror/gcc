@@ -82,11 +82,12 @@
 
 2011-11-24  Razya Ladelsky  <razya@il.ibm.com>
 
-	* tree-data-ref.c (initialize_data_dependence_relation): Update 
+	* tree-data-ref.c (initialize_data_dependence_relation): Update
 	comment for the self dependence case.
 	(compute_self_dependence): Remove.
-	* tree-vect-data-refs.c (vect_analyze_data_refs): Remove call to 
-	compute_self_dependenc. 
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Remove call to
+	compute_self_dependenc.
+
 2011-11-24  Alan Modra  <amodra@gmail.com>
 
 	* c-decl.c (warn_if_shadowing): Don't warn if shadowed
@@ -144,7 +145,7 @@
 	(sync_compare_and_swap<IMODE>): Remove.
 	(sync_lock_release<IMODE>): Remove.
 
-	* config/ia64/ia64.md: Use define_e_enum for UNSPEC_*
+	* config/ia64/ia64.md: Use define_c_enum for UNSPEC_*
 	and UNSPECV_* constants.
 
 2011-11-22  Tom de Vries  <tom@codesourcery.com>
@@ -165,7 +166,8 @@
 2011-11-21  Aldy Hernandez  <aldyh@redhat.com>
 
 	* opts.c (finish_options): Do not fail for -fgnu-tm.
-	* gimple-streamer-out.c (output_gimple_stmt): Handle GIMPLE_TRANSACTION.
+	* gimple-streamer-out.c (output_gimple_stmt): Handle
+	GIMPLE_TRANSACTION.
 	* gimple-streamer-in.c (input_gimple_stmt): Same.
 	* lto-cgraph.c (input_overwrite_node): Read tm_clone bit.
 	(lto_output_node): Write tm_clone bit.
