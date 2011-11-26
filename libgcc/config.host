@@ -701,14 +701,14 @@ m68k*-*-netbsdelf*)
 	;;
 m68k*-*-openbsd*)
 	;;
-m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux with uClibc
-	tmake_file="$tmake_file m68k/t-floatlib"
+m68k-*-uclinux*)	# Motorola m68k/ColdFire running uClinux with uClibc
+	tmake_file="$tmake_file m68k/t-floatlib m68k/t-linux"
 	md_unwind_header=m68k/linux-unwind.h
 	;;
 m68k-*-linux*)			# Motorola m68k's running GNU/Linux
 				# with ELF format using glibc 2
 				# aka the GNU/Linux C library 6.
-	tmake_file="$tmake_file m68k/t-floatlib"
+	tmake_file="$tmake_file m68k/t-floatlib m68k/t-linux"
 	# If not configured with --enable-sjlj-exceptions, bump the
 	# libgcc version number.
 	if test x$enable_sjlj_exceptions != xyes; then

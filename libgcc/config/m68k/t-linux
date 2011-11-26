@@ -1,0 +1,1 @@
+LIB2ADD_ST = $(srcdir)/config/m68k/linux-atomic.c
