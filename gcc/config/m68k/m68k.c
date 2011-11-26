@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-codes.h"
 #include "ggc.h"
 #include "opts.h"
+#include "optabs.h"
 
 enum reg_class regno_reg_class[] =
 {
@@ -164,6 +165,7 @@ static rtx m68k_function_arg (cumulative_args_t, enum machine_mode,
 			      const_tree, bool);
 static bool m68k_cannot_force_const_mem (enum machine_mode mode, rtx x);
 static bool m68k_output_addr_const_extra (FILE *, rtx);
+static void m68k_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
 
 /* Initialize the GCC target structure.  */
 
@@ -6522,6 +6524,12 @@ m68k_conditional_register_usage (void)
     }
   if (flag_pic)
     fixed_regs[PIC_REG] = call_used_regs[PIC_REG] = 1;
+}
+
+static void
+m68k_init_sync_libfuncs (void)
+{
+  init_sync_libfuncs (UNITS_PER_WORD);
 }
 
 #include "gt-m68k.h"
