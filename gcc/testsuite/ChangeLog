@@ -2,6 +2,7 @@
 
 	* gcc.dg/vect/fast-math-vect-call-2.c: Require vect_double
 	effective target.
+	* gcc.dg/vect/fast-math-bb-slp-call-2.c: Ditto.
 
 2011-11-25  Mikael Morin  <mikael@gcc.gnu.org>
 
