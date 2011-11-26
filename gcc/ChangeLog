@@ -1,3 +1,9 @@
+2011-11-26  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR middle-end/50074
+	* calls.c (mem_overlaps_already_clobbered_arg_p):
+	Return false if no outgoing arguments have been stored so far.
+
 2011-11-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (print_operand): Support code = 'i' for CONST_INT.

@@ -1668,6 +1668,8 @@ mem_overlaps_already_clobbered_arg_p (rtx addr, unsigned HOST_WIDE_INT size)
 {
   HOST_WIDE_INT i;
 
+  if (sbitmap_empty_p (stored_args_map))
+    return false;
   if (addr == crtl->args.internal_arg_pointer)
     i = 0;
   else if (GET_CODE (addr) == PLUS
