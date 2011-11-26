@@ -1,3 +1,9 @@
+2011-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/49912
+	* cfgrtl.c (rtl_verify_flow_info_1): Ignore also EDGE_PRESERVE bit
+	when counting n_branch.
+
 2011-11-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sync.md (movdi_via_fpu): Add %Z insn suffixes.
