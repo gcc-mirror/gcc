@@ -1,3 +1,7 @@
+2011-11-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sync.md (movdi_via_fpu): Add %Z insn suffixes.
+
 2011-11-26  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR middle-end/50074
