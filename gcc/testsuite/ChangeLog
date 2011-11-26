@@ -1,3 +1,8 @@
+2011-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/49912
+	* g++.dg/other/pr49912.C: New test.
+
 2011-11-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/vect/fast-math-vect-call-2.c: Require vect_double

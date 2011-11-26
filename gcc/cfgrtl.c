@@ -1875,7 +1875,8 @@ rtl_verify_flow_info_1 (void)
 			    | EDGE_CAN_FALLTHRU
 			    | EDGE_IRREDUCIBLE_LOOP
 			    | EDGE_LOOP_EXIT
-			    | EDGE_CROSSING)) == 0)
+			    | EDGE_CROSSING
+			    | EDGE_PRESERVE)) == 0)
 	    n_branch++;
 
 	  if (e->flags & EDGE_ABNORMAL_CALL)
