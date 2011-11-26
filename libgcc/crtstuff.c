@@ -252,9 +252,51 @@ STATIC void *__JCR_LIST__[]
 
 #if USE_TM_CLONE_REGISTRY
 STATIC func_ptr __TMC_LIST__[]
-  __attribute__((unused, section(".tm_clone_table"), aligned(sizeof(void*))))
+  __attribute__((used, section(".tm_clone_table"), aligned(sizeof(void*))))
   = { };
+# ifdef HAVE_GAS_HIDDEN
 extern func_ptr __TMC_END__[] __attribute__((__visibility__ ("hidden")));
+# endif
+
+static inline void
+deregister_tm_clones (void)
+{
+  void (*fn) (void *);
+
+#ifdef HAVE_GAS_HIDDEN
+  if (__TMC_END__ - __TMC_LIST__ == 0)
+    return;
+#else
+  if (__TMC_LIST__[0] == NULL)
+    return;
+#endif
+
+  fn = _ITM_deregisterTMCloneTable;
+  __asm ("" : "+r" (fn));
+  if (fn)
+    fn (__TMC_LIST__);
+}
+
+static inline void
+register_tm_clones (void)
+{
+  void (*fn) (void *, size_t);
+  size_t size;
+
+#ifdef HAVE_GAS_HIDDEN
+  size = (__TMC_END__ - __TMC_LIST__) / 2;
+#else
+  for (size = 0; __TMC_LIST__[size * 2] != NULL; size++)
+    continue;
+#endif
+  if (size == 0)
+    return;
+
+  fn = _ITM_registerTMCloneTable;
+  __asm ("" : "+r" (fn));
+  if (fn)
+    fn (__TMC_LIST__, size);
+}
 #endif /* USE_TM_CLONE_REGISTRY */
 
 #if defined(INIT_SECTION_ASM_OP) || defined(INIT_ARRAY_SECTION_ASM_OP)
@@ -347,13 +389,7 @@ __do_global_dtors_aux (void)
 #endif /* !defined(FINI_ARRAY_SECTION_ASM_OP) */
 
 #if USE_TM_CLONE_REGISTRY
-  if (__TMC_END__ - __TMC_LIST__ > 0)
-    {
-      void (*deregister_clones) (void *) = _ITM_deregisterTMCloneTable;
-      __asm ("" : "+r" (deregister_clones));
-      if (deregister_clones)
-	deregister_clones (__TMC_LIST__);
-    }
+  deregister_tm_clones ();
 #endif /* USE_TM_CLONE_REGISTRY */
 
 #ifdef USE_EH_FRAME_REGISTRY
@@ -422,16 +458,7 @@ frame_dummy (void)
 #endif /* JCR_SECTION_NAME */
 
 #if USE_TM_CLONE_REGISTRY
-  if (__TMC_END__ - __TMC_LIST__ > 0)
-    {
-      void (*register_clones) (void *, size_t) = _ITM_registerTMCloneTable;
-      __asm ("" : "+r" (register_clones));
-      if (register_clones)
-	{
-	  size_t size = (size_t)(__TMC_END__ - __TMC_LIST__) / 2;
-	  _ITM_registerTMCloneTable (__TMC_LIST__, size);
-	}
-    }
+  register_tm_clones ();
 #endif /* USE_TM_CLONE_REGISTRY */
 }
 
@@ -500,13 +527,7 @@ __do_global_dtors (void)
     f ();
 
 #if USE_TM_CLONE_REGISTRY
-  if (__TMC_END__ - __TMC_LIST__ > 0)
-    {
-      void (*deregister_clones) (void *) = _ITM_deregisterTMCloneTable;
-      __asm ("" : "+r" (deregister_clones));
-      if (deregister_clones)
-	deregister_clones (__TMC_LIST__);
-    }
+  deregister_tm_clones ();
 #endif /* USE_TM_CLONE_REGISTRY */
 
 #ifdef USE_EH_FRAME_REGISTRY
@@ -542,16 +563,7 @@ __do_global_ctors_1(void)
 #endif
 
 #if USE_TM_CLONE_REGISTRY
-  if (__TMC_END__ - __TMC_LIST__ > 0)
-    {
-      void (*register_clones) (void *, size_t) = _ITM_registerTMCloneTable;
-      __asm ("" : "+r" (register_clones));
-      if (register_clones)
-	{
-	  size_t size = (size_t)(__TMC_END__ - __TMC_LIST__) / 2;
-	  register_clones (__TMC_LIST__, size);
-	}
-    }
+  register_tm_clones ();
 #endif /* USE_TM_CLONE_REGISTRY */
 }
 #endif /* USE_EH_FRAME_REGISTRY || JCR_SECTION_NAME || USE_TM_CLONE_REGISTRY */
@@ -639,10 +651,16 @@ STATIC void *__JCR_END__[1]
 #endif /* JCR_SECTION_NAME */
 
 #if USE_TM_CLONE_REGISTRY
+# ifndef HAVE_GAS_HIDDEN
+static
+# endif
 func_ptr __TMC_END__[]
-  __attribute__((unused, section(".tm_clone_table"), aligned(sizeof(void *)),
-		 __visibility__ ("hidden")))
-  = { };
+  __attribute__((used, section(".tm_clone_table"), aligned(sizeof(void *))))
+# ifdef HAVE_GAS_HIDDEN
+  __attribute__((__visibility__ ("hidden"))) = { };
+# else
+  = { 0, 0 };
+# endif
 #endif /* USE_TM_CLONE_REGISTRY */
 
 #ifdef INIT_ARRAY_SECTION_ASM_OP
