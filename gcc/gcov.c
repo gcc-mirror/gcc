@@ -406,6 +406,11 @@ main (int argc, char **argv)
   /* Handle response files.  */
   expandargv (&argc, &argv);
 
+  a_names = 10;
+  names = XNEWVEC (name_map_t, a_names);
+  a_sources = 10;
+  sources = XNEWVEC (source_t, a_sources);
+  
   argno = process_args (argc, argv);
   if (optind == argc)
     print_usage (true);
@@ -874,8 +879,6 @@ find_source (const char *file_name)
     {
       /* Extend the name map array -- we'll be inserting one or two
 	 entries.  */
-      if (!a_names)
-	a_names = 10;
       a_names *= 2;
       name_map = XNEWVEC (name_map_t, a_names);
       memcpy (name_map, names, n_names * sizeof (*names));
@@ -894,8 +897,6 @@ find_source (const char *file_name)
       
       if (n_sources == a_sources)
 	{
-	  if (!a_sources)
-	    a_sources = 10;
 	  a_sources *= 2;
 	  src = XNEWVEC (source_t, a_sources);
 	  memcpy (src, sources, n_sources * sizeof (*sources));
