@@ -1,3 +1,9 @@
+2011-11-26  Nathan Sidwell  <nathan@acm.org>
+
+	PR gcov-profile/51297
+	* gcov.c (main): Allocate initial names and sources arrays.
+	(find_source): Don't check for null name or source arrays here.
+
 2011-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/49912
