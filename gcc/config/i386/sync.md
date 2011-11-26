@@ -123,7 +123,7 @@
   DONE;
 })
 
-;; ??? From volume 3 section 7.1.1 Guaranteed Atomic Operations,
+;; ??? From volume 3 section 8.1.1 Guaranteed Atomic Operations,
 ;; Only beginning at Pentium family processors do we get any guarantee of
 ;; atomicity in aligned 64-bit quantities.  Beginning at P6, we get a
 ;; guarantee for 64-bit accesses that do not cross a cacheline boundary.
@@ -281,7 +281,7 @@
 	(unspec:DI [(match_operand:DI 1 "memory_operand" "m")] UNSPEC_MOVA))
    (clobber (match_operand:DF 2 "register_operand" "=f"))]
   "TARGET_80387"
-  "fild\t%1\;fistp\t%0"
+  "fild%Z1\t%1\;fistp%Z0\t%0"
   [(set_attr "type" "multi")
    ;; Worst case based on full sib+offset32 addressing modes
    (set_attr "length" "14")])
