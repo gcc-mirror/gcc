@@ -1,3 +1,5 @@
+/* { dg-require-effective-target vect_double } */
+
 #include "tree-vect.h"
 
 extern long int lrint (double);
