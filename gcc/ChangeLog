@@ -1,5 +1,10 @@
 2011-11-26  Richard Henderson  <rth@redhat.com>
 
+	* config/arm/arm.c (arm_init_libfuncs): Call init_sync_libfuncs
+	for Linux.
+
+2011-11-26  Richard Henderson  <rth@redhat.com>
+
 	* optabs.c (expand_atomic_fetch_op): Always return result.
 
 	* optabs.c (init_sync_libfuncs_1): Include max in iteration.
