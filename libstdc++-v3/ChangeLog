@@ -1,5 +1,10 @@
 2011-11-27  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/xml/manual/using.xml (Prerequisites): Refer to x86 instead
+	of i386.
+
+2011-11-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
 	* scripts/run_doxygen (problematic): Change Linux reference to
 	GNU/Linux.
 
