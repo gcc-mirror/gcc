@@ -1,5 +1,51 @@
 2011-11-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips-protos.h (mips_emit_binary): Declare.
+	* config/mips/mips.c (mips_emit_binary): Make global.
+	(mips_set_mips16_mode): Turn off -mfix-r4000 in MIPS16 mode.
+	(mips_conditional_register_usage): Don't treat LO and HI as
+	register operands in MIPS16 mode.
+	(mips_mulsidi3_gen_fn): Use {u,}mulsidi3_{32,64}bit_mips16
+	for MIPS16 code.
+	* config/mips/predicates.md (muldiv_target_operand): New predicate.
+	(move_operand): Allow hilo_operand.
+	* config/mips/mips.md (mul<mode>3): Explicitly specify LO as the
+	target of MIPS16 multiplies, then move it into the target register.
+	(mul<mode>3_internal, *macc2, *msac2): Use muldiv_target_operand.
+	(<u>mulsidi3_32bit_mips16): New expander.
+	(<u>mulsidi3_32bit): Use muldiv_target_operand.
+	(<u>mulsidi3_32bit_r4000): Disable for ISA_HAS_DSP.
+	(<u>mulsidi3_64bit): Require !TARGET_MIPS16.  Split into
+	<u>mulsidi3_64bit_split.
+	(<u>mulsidi3_64bit_mips16): New expander.
+	(<u>mulsidi3_64bit_split): Likewise, using expansions from
+	two previous define_splits.
+	(<u>mulsidi3_64bit_hilo, *muls<u>_di, <u>msubsidi4): Use
+	muldiv_target_operand.
+	(<su>mulsi3_highpart): Use <su>mulsi3_highpart_split for MIPS16 code.
+	(<su>mulsi3_highpart_internal): Require !TARGET_MIPS16.
+	Split into <su>mulsi3_highpart_split.
+	(<su>mulsi3_highpart_split): New expander.
+	(<su>muldi3_highpart): Turn into a define_expand.
+	Use <su>muldi3_highpart_split for MIPS16 code.
+	(<su>muldi3_highpart_internal): Renamed from <su>muldi3_highpart.
+	Require !TARGET_MIPS16.  Split into <su>muldi3_highpart_split.
+	(<su>muldi3_highpart_split): New expander.
+	(<u>mulditi3): Explicitly specify LO as the target of MIPS16
+	multiplies, then move it into the target register.
+	(<u>mulditi3_internal, <u>maddsidi4): Use muldiv_target_operand.
+	(divmod<mode>4, udivmod<mode>4): Turn into define_expands.
+	Use <u>divmod<mode>4_split for MIPS16 code, then explicitly
+	move LO into operand 0.
+	(divmod<mode>4_internal, udivmod<mode>4_internal): Renamed
+	from <u>divmod<mode>4.  Use muldiv_target_operand.
+	Require !TARGET_MIPS16.  Split into <u>divmod<mode>4_split.
+	(<u>divmod<mode>4_split): New expander.
+	(<u>divmod<GPR:mode>4_hilo_<HILO:mode>): Use muldiv_target_operand.
+	(mfhi<GPR:mode>_<HILO:mode>): Use hilo_operand.
+
+2011-11-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* hard-reg-set.h (target_hard_regs): Add x_accessible_reg_set
 	and x_operand_reg_set.
 	(accessible_reg_set, operand_reg_set): New macros.
