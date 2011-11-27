@@ -1,5 +1,9 @@
 2011-11-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.c (mips16_unextended_reference_p): Test for BLKmode.
+
+2011-11-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips-protos.h (mips_emit_binary): Declare.
 	* config/mips/mips.c (mips_emit_binary): Make global.
 	(mips_set_mips16_mode): Turn off -mfix-r4000 in MIPS16 mode.
