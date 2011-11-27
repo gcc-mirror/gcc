@@ -25,10 +25,6 @@ extern char * getsectdata (const char*,const char*,unsigned long*);
 
 #define WEAK __attribute__((weak))
 
-#ifndef ATTRIBUTE_UNUSED
-#define ATTRIBUTE_UNUSED __attribute__((unused))
-#endif
-
 extern void _ITM_registerTMCloneTable (void *, size_t) WEAK;
 extern void _ITM_deregisterTMCloneTable (void *) WEAK;
 
@@ -73,11 +69,4 @@ void __doTMdeRegistrations (void)
 
 }
 
-/* Provide dumy funcs for the weak ones - needed on most Darwin versions
-   for now.  */
-
-void _ITM_registerTMCloneTable (void *n ATTRIBUTE_UNUSED, size_t s ATTRIBUTE_UNUSED)
-{}
-void _ITM_deregisterTMCloneTable (void *n ATTRIBUTE_UNUSED)
-{}
 #endif
