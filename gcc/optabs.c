@@ -6606,7 +6606,7 @@ init_sync_libfuncs_1 (optab tab, const char *base, int max)
   buf[len + 2] = '\0';
 
   mode = QImode;
-  for (i = 1; i < max; i *= 2)
+  for (i = 1; i <= max; i *= 2)
     {
       buf[len + 1] = '0' + i;
       set_optab_libfunc (tab, mode, buf);
