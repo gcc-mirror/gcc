@@ -1096,6 +1096,10 @@ arm_set_fixed_conv_libfunc (convert_optab optable, enum machine_mode to,
 static void
 arm_init_libfuncs (void)
 {
+  /* For Linux, we have access to kernel support for atomic operations.  */
+  if (arm_abi == ARM_ABI_AAPCS_LINUX)
+    init_sync_libfuncs (2 * UNITS_PER_WORD);
+
   /* There are no special library functions unless we are using the
      ARM BPABI.  */
   if (!TARGET_BPABI)
