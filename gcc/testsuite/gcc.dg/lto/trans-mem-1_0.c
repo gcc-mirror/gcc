@@ -1,4 +1,5 @@
 /* { dg-lto-options {{-flto -fgnu-tm}} } */
+/* { dg-lto-do link } */
 
 int i;
 

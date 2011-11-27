@@ -1,3 +1,12 @@
+2011-11-27  Aldy Hernandez  <aldyh@redhat.com>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc.dg/lto/trans-mem-2_0.c: Add dg-lto-do link.  Add dummy
+	functions for _ITM_registerTMCloneTable, _ITM_deregisterTMCloneTable.
+	* gcc.dg/lto/trans-mem-1_0.c: Add dg-lto-do link.
+	* gcc.dg/lto/trans-mem-1_1.c:  Add dummy functions for
+	_ITM_registerTMCloneTable, _ITM_deregisterTMCloneTable.
+	
 2011-11-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/mult-2.c, gcc.target/mips/mult-3.c,
