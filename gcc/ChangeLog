@@ -1,5 +1,10 @@
 2011-11-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR target/51278
+	* config/mips/mips.c (mips_rtx_costs): Handle baddu.
+
+2011-11-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips.c (mips16_unextended_reference_p): Test for BLKmode.
 
 2011-11-27  Richard Sandiford  <rdsandiford@googlemail.com>
