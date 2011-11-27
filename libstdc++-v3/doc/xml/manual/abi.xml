@@ -596,8 +596,8 @@ compatible.
     </para>
 
     <para>
-      Most modern Linux and BSD versions, particularly ones using
-      gcc-3.1.x tools and more recent vintages, will meet the
+      Most modern GNU/Linux and BSD versions, particularly ones using
+      GCC 3.1 and later, will meet the
       requirements above, as does Solaris 2.5 and up.
     </para>
   </section>
