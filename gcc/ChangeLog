@@ -1,5 +1,7 @@
 2011-11-26  Richard Henderson  <rth@redhat.com>
 
+	* optabs.c (expand_atomic_fetch_op): Always return result.
+
 	* optabs.c (init_sync_libfuncs_1): Include max in iteration.
 
 	* omp-low.c (expand_omp_atomic): Assume anything aligned to

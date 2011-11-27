@@ -8068,7 +8068,7 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
 	{
 	  /* If the result isn't used, no need to do compensation code.  */
 	  if (unused_result)
-	    return target;
+	    return result;
 
 	  /* Issue compensation code.  Fetch_after  == fetch_before OP val.
 	     Fetch_before == after REVERSE_OP val.  */
@@ -8110,9 +8110,7 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
 	  result = emit_library_call_value (libfunc, NULL, LCT_NORMAL, mode,
 					    2, addr, ptr_mode, val, mode);
 
-	  if (unused_result)
-	    return target;
-	  if (fixup)
+	  if (!unused_result && fixup)
 	    result = expand_simple_binop (mode, code, result, val, target,
 					  true, OPTAB_LIB_WIDEN);
 	  return result;
