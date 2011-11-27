@@ -1,3 +1,8 @@
+2011-11-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/abi.xml (Prerequisites): Refer to GNU/Linux.
+	Fix reference to GCC.
+
 2011-11-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/51296
