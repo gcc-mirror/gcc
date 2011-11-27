@@ -15835,31 +15835,26 @@ mips_conditional_register_usage (void)
       global_regs[CCDSP_PO_REGNUM] = 1;
       global_regs[CCDSP_SC_REGNUM] = 1;
     }
-  else 
-    {
-      int regno;
+  else
+    AND_COMPL_HARD_REG_SET (accessible_reg_set,
+			    reg_class_contents[(int) DSP_ACC_REGS]);
 
-      for (regno = DSP_ACC_REG_FIRST; regno <= DSP_ACC_REG_LAST; regno++)
-	fixed_regs[regno] = call_used_regs[regno] = 1;
-    }
   if (!TARGET_HARD_FLOAT)
     {
-      int regno;
-
-      for (regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
-	fixed_regs[regno] = call_used_regs[regno] = 1;
-      for (regno = ST_REG_FIRST; regno <= ST_REG_LAST; regno++)
-	fixed_regs[regno] = call_used_regs[regno] = 1;
+      AND_COMPL_HARD_REG_SET (accessible_reg_set,
+			      reg_class_contents[(int) FP_REGS]);
+      AND_COMPL_HARD_REG_SET (accessible_reg_set,
+			      reg_class_contents[(int) ST_REGS]);
     }
-  else if (! ISA_HAS_8CC)
+  else if (!ISA_HAS_8CC)
     {
-      int regno;
-
       /* We only have a single condition-code register.  We implement
 	 this by fixing all the condition-code registers and generating
 	 RTL that refers directly to ST_REG_FIRST.  */
-      for (regno = ST_REG_FIRST; regno <= ST_REG_LAST; regno++)
-	fixed_regs[regno] = call_used_regs[regno] = 1;
+      AND_COMPL_HARD_REG_SET (accessible_reg_set,
+			      reg_class_contents[(int) ST_REGS]);
+      SET_HARD_REG_BIT (accessible_reg_set, FPSW_REGNUM);
+      fixed_regs[FPSW_REGNUM] = call_used_regs[FPSW_REGNUM] = 1;
     }
   /* In MIPS16 mode, we permit the $t temporary registers to be used
      for reload.  We prohibit the unused $s registers, since they
