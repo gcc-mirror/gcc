@@ -1198,16 +1198,23 @@ make_decl_rtl (tree decl)
   else if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl))
     {
       const char *asmspec = name+1;
+      enum machine_mode mode = DECL_MODE (decl);
       reg_number = decode_reg_name (asmspec);
       /* First detect errors in declaring global registers.  */
       if (reg_number == -1)
 	error ("register name not specified for %q+D", decl);
       else if (reg_number < 0)
 	error ("invalid register name for %q+D", decl);
-      else if (TYPE_MODE (TREE_TYPE (decl)) == BLKmode)
+      else if (mode == BLKmode)
 	error ("data type of %q+D isn%'t suitable for a register",
 	       decl);
-      else if (! HARD_REGNO_MODE_OK (reg_number, TYPE_MODE (TREE_TYPE (decl))))
+      else if (!in_hard_reg_set_p (accessible_reg_set, mode, reg_number))
+	error ("the register specified for %q+D cannot be accessed"
+	       " by the current target", decl);
+      else if (!in_hard_reg_set_p (operand_reg_set, mode, reg_number))
+	error ("the register specified for %q+D is not general enough"
+	       " to be used as a register variable", decl);
+      else if (!HARD_REGNO_MODE_OK (reg_number, mode))
 	error ("register specified for %q+D isn%'t suitable for data type",
                decl);
       /* Now handle properly declared static register variables.  */
@@ -1230,7 +1237,7 @@ make_decl_rtl (tree decl)
 	     confused with that register and be eliminated.  This usage is
 	     somewhat suspect...  */
 
-	  SET_DECL_RTL (decl, gen_rtx_raw_REG (DECL_MODE (decl), reg_number));
+	  SET_DECL_RTL (decl, gen_rtx_raw_REG (mode, reg_number));
 	  ORIGINAL_REGNO (DECL_RTL (decl)) = reg_number;
 	  REG_USERVAR_P (DECL_RTL (decl)) = 1;
 
@@ -1242,7 +1249,7 @@ make_decl_rtl (tree decl)
 	      name = IDENTIFIER_POINTER (DECL_NAME (decl));
 	      ASM_DECLARE_REGISTER_GLOBAL (asm_out_file, decl, reg_number, name);
 #endif
-	      nregs = hard_regno_nregs[reg_number][DECL_MODE (decl)];
+	      nregs = hard_regno_nregs[reg_number][mode];
 	      while (nregs > 0)
 		globalize_reg (decl, reg_number + --nregs);
 	    }

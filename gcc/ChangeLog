@@ -1,3 +1,25 @@
+2011-11-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* hard-reg-set.h (target_hard_regs): Add x_accessible_reg_set
+	and x_operand_reg_set.
+	(accessible_reg_set, operand_reg_set): New macros.
+	* reginfo.c (init_reg_sets): Initialize accessible_reg_set and
+	operand_reg_set.
+	(saved_accessible_reg_set, saved_operand_reg_set): New variables.
+	(save_register_info): Save them.
+	(restore_register_info): Restore them.
+	(init_reg_sets_1): Limit operand_reg_set to accessible_reg_set.
+	Remove NO_REGS registers from operand_reg_set.  Treat members
+	of operand_reg_set as fixed.
+	* recog.c (general_operand): Check operand_reg_set rather than
+	NO_REGS.
+	(register_operand, nonmemory_operand): Likewise.
+	* varasm.c (make_decl_rtl): Always use DECL_MODE as the mode of
+	register variables.  Check accessible_reg_set and operand_reg_set.
+	* config/mips/mips.c (mips_conditional_register_usage): Remove
+	inaccessible register from accessible_reg_set, rather than just
+	making them fixed.
+
 2011-11-27  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config/pa/pa-linux.h (TARGET_GAS): Remove comment.
