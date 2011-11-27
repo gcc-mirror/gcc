@@ -2163,7 +2163,7 @@ static bool
 mips16_unextended_reference_p (enum machine_mode mode, rtx base,
 			       unsigned HOST_WIDE_INT offset)
 {
-  if (offset % GET_MODE_SIZE (mode) == 0)
+  if (mode != BLKmode && offset % GET_MODE_SIZE (mode) == 0)
     {
       if (GET_MODE_SIZE (mode) == 4 && base == stack_pointer_rtx)
 	return offset < 256U * GET_MODE_SIZE (mode);
