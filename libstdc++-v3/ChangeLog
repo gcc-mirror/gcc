@@ -1,3 +1,8 @@
+2011-11-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* scripts/run_doxygen (problematic): Change Linux reference to
+	GNU/Linux.
+
 2011-11-26  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/abi.xml (Prerequisites): Refer to GNU/Linux.
