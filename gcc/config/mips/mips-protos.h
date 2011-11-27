@@ -191,6 +191,9 @@ extern int mips_split_const_insns (rtx);
 extern int mips_load_store_insns (rtx, rtx);
 extern int mips_idiv_insns (void);
 extern rtx mips_emit_move (rtx, rtx);
+#ifdef RTX_CODE
+extern void mips_emit_binary (enum rtx_code, rtx, rtx, rtx);
+#endif
 extern rtx mips_pic_base_register (rtx);
 extern rtx mips_got_load (rtx, rtx, enum mips_symbol_type);
 extern bool mips_split_symbol (rtx, rtx, enum machine_mode, rtx *);

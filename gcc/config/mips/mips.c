@@ -2398,7 +2398,7 @@ mips_force_unary (enum machine_mode mode, enum rtx_code code, rtx op0)
 
 /* Emit an instruction of the form (set TARGET (CODE OP0 OP1)).  */
 
-static void
+void
 mips_emit_binary (enum rtx_code code, rtx target, rtx op0, rtx op1)
 {
   emit_insn (gen_rtx_SET (VOIDmode, target,
@@ -15250,6 +15250,11 @@ mips_set_mips16_mode (int mips16_p)
       /* MIPS16 has no BAL instruction.  */
       target_flags &= ~MASK_RELAX_PIC_CALLS;
 
+      /* The R4000 errata don't apply to any known MIPS16 cores.
+	 It's simpler to make the R4000 fixes and MIPS16 mode
+	 mutually exclusive.  */
+      target_flags &= ~MASK_FIX_R4000;
+
       if (flag_pic && !TARGET_OLDABI)
 	sorry ("MIPS16 PIC for ABIs other than o32 and o64");
 
@@ -15856,12 +15861,12 @@ mips_conditional_register_usage (void)
       SET_HARD_REG_BIT (accessible_reg_set, FPSW_REGNUM);
       fixed_regs[FPSW_REGNUM] = call_used_regs[FPSW_REGNUM] = 1;
     }
-  /* In MIPS16 mode, we permit the $t temporary registers to be used
-     for reload.  We prohibit the unused $s registers, since they
-     are call-saved, and saving them via a MIPS16 register would
-     probably waste more time than just reloading the value.  */
   if (TARGET_MIPS16)
     {
+      /* In MIPS16 mode, we permit the $t temporary registers to be used
+	 for reload.  We prohibit the unused $s registers, since they
+	 are call-saved, and saving them via a MIPS16 register would
+	 probably waste more time than just reloading the value.  */
       fixed_regs[18] = call_used_regs[18] = 1;
       fixed_regs[19] = call_used_regs[19] = 1;
       fixed_regs[20] = call_used_regs[20] = 1;
@@ -15871,6 +15876,12 @@ mips_conditional_register_usage (void)
       fixed_regs[26] = call_used_regs[26] = 1;
       fixed_regs[27] = call_used_regs[27] = 1;
       fixed_regs[30] = call_used_regs[30] = 1;
+
+      /* Do not allow HI and LO to be treated as register operands.
+	 There are no MTHI or MTLO instructions (or any real need
+	 for them) and one-way registers cannot easily be reloaded.  */
+      AND_COMPL_HARD_REG_SET (operand_reg_set,
+			      reg_class_contents[(int) MD_REGS]);
     }
   /* $f20-$f23 are call-clobbered for n64.  */
   if (mips_abi == ABI_64)
@@ -16056,12 +16067,20 @@ mips_mulsidi3_gen_fn (enum rtx_code ext_code)
 	 case we still expand mulsidi3 for DMUL.  */
       if (ISA_HAS_DMUL3)
 	return signed_p ? gen_mulsidi3_64bit_dmul : NULL;
+      if (TARGET_MIPS16)
+	return (signed_p
+		? gen_mulsidi3_64bit_mips16
+		: gen_umulsidi3_64bit_mips16);
       if (TARGET_FIX_R4000)
 	return NULL;
       return signed_p ? gen_mulsidi3_64bit : gen_umulsidi3_64bit;
     }
   else
     {
+      if (TARGET_MIPS16)
+	return (signed_p
+		? gen_mulsidi3_32bit_mips16
+		: gen_umulsidi3_32bit_mips16);
       if (TARGET_FIX_R4000 && !ISA_HAS_DSP)
 	return signed_p ? gen_mulsidi3_32bit_r4000 : gen_umulsidi3_32bit_r4000;
       return signed_p ? gen_mulsidi3_32bit : gen_umulsidi3_32bit;

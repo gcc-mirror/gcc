@@ -1,5 +1,35 @@
 2011-11-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.target/mips/mult-2.c, gcc.target/mips/mult-3.c,
+	gcc.target/mips/mult-4.c, gcc.target/mips/mult-5.c,
+	gcc.target/mips/mult-6.c, gcc.target/mips/mult-7.c,
+	gcc.target/mips/mult-8.c, gcc.target/mips/mult-9.c,
+	gcc.target/mips/mult-10.c, gcc.target/mips/mult-11.c,
+	gcc.target/mips/mult-12.c, gcc.target/mips/mult-13.c,
+	gcc.target/mips/mult-14.c, gcc.target/mips/mult-15.c,
+	gcc.target/mips/mult-16.c, gcc.target/mips/mult-17.c,
+	gcc.target/mips/mult-18.c, gcc.target/mips/mult-19.c,
+	gcc.target/mips/div-1.c, gcc.target/mips/div-2.c,
+	gcc.target/mips/div-3.c, gcc.target/mips/div-4.c,
+	gcc.target/mips/div-5.c, gcc.target/mips/div-6.c,
+	gcc.target/mips/div-7.c, gcc.target/mips/div-8.c,
+	gcc.target/mips/div-9.c, gcc.target/mips/div-10.c,
+	gcc.target/mips/div-11.c, gcc.target/mips/div-12.c: New tests.
+	* gcc.target/mips/fix-r4000-1.c (foo, bar): Add NOMIPS16.
+	* gcc.target/mips/fix-r4000-2.c (foo): Likewise.
+	* gcc.target/mips/fix-r4000-3.c (foo): Likewise.
+	* gcc.target/mips/fix-r4000-4.c (foo): Likewise.
+	* gcc.target/mips/fix-r4000-5.c (foo): Likewise.
+	* gcc.target/mips/fix-r4000-6.c (foo): Likewise.
+	* gcc.target/mips/fix-r4000-7.c (foo): Likewise.
+	* gcc.target/mips/fix-r4000-8.c (foo): Likewise.
+	* gcc.target/mips/fix-r4000-9.c (foo): Likewise.
+	* gcc.target/mips/fix-r4000-10.c (foo): Likewise.
+	* gcc.target/mips/fix-r4000-11.c (foo): Likewise.
+	* gcc.target/mips/fix-r4000-12.c (foo): Likewise.
+
+2011-11-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.target/mips/mips.exp (mips-dg-options): Make -mno-dsp
 	imply -mno-dspr2.
 	* gcc.target/mips/no-dsp-1.c: New test.
