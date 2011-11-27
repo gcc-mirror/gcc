@@ -3777,6 +3777,16 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       return false;
 
     case ZERO_EXTEND:
+      if (outer_code == SET
+	  && ISA_HAS_BADDU
+	  && (GET_CODE (XEXP (x, 0)) == TRUNCATE
+	      || GET_CODE (XEXP (x, 0)) == SUBREG)
+	  && GET_MODE (XEXP (x, 0)) == QImode
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS)
+	{
+	  *total = set_src_cost (XEXP (XEXP (x, 0), 0), speed);
+	  return true;
+	}
       *total = mips_zero_extend_cost (mode, XEXP (x, 0));
       return false;
 
