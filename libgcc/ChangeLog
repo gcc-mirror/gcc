@@ -1,3 +1,28 @@
+2011-11-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR other/51022
+	* config/rs6000/t-savresfgpr: New file.
+	* config/rs6000/t-ppccomm (LIB2ADD_ST): Remove all but
+	$(srcdir)/config/rs6000/eabi.S.
+	* config/rs6000/t-ppccomm-ldbl: Remove.
+	* config.host (powerpc-*-freebsd*): Add rs6000/t-savresfgpr to
+	tmake_file.
+	(powerpc-*-eabispe*): Likewise.
+	(powerpc-*-eabi*): Likewise.
+	(powerpc-*-linux*, powerpc64-*-linux*): Likewise.
+	(powerpc-wrs-vxworks, powerpc-wrs-vxworksae): Add rs6000/t-ppccomm
+	to tmake_file, remove rs6000/t-ppccomm-ldbl.
+	(powerpc-*-eabisimaltivec*): Remove rs6000/t-ppccomm-ldbl from
+	tmake_file.
+	(powerpc-*-eabisim*): Likewise.
+	(powerpc-*-elf*): Likewise.
+	(powerpc-*-eabialtivec*): Likewise.
+	(powerpc-xilinx-eabi*): Likewise.
+	(powerpc-*-rtems*): Likewise.
+	(powerpcle-*-elf*): Likewise.
+	(powerpcle-*-eabisim*): Likewise.
+	(powerpcle-*-eabi*): Likewise.
+
 2011-11-27  Ian Lance Taylor  <iant@google.com>
 
 	* generic-morestack.c (__splitstack_find): Check for NULL old

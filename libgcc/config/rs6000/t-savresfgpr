@@ -1,0 +1,21 @@
+# These can't end up in shared libgcc
+LIB2ADD_ST += \
+	   $(srcdir)/config/rs6000/crtsavfpr.S \
+	   $(srcdir)/config/rs6000/crtresfpr.S \
+	   $(srcdir)/config/rs6000/crtsavgpr.S \
+	   $(srcdir)/config/rs6000/crtresgpr.S \
+	   $(srcdir)/config/rs6000/crtresxfpr.S \
+	   $(srcdir)/config/rs6000/crtresxgpr.S \
+	   $(srcdir)/config/rs6000/e500crtres32gpr.S \
+	   $(srcdir)/config/rs6000/e500crtres64gpr.S \
+	   $(srcdir)/config/rs6000/e500crtres64gprctr.S \
+	   $(srcdir)/config/rs6000/e500crtrest32gpr.S \
+	   $(srcdir)/config/rs6000/e500crtrest64gpr.S \
+	   $(srcdir)/config/rs6000/e500crtresx32gpr.S \
+	   $(srcdir)/config/rs6000/e500crtresx64gpr.S \
+	   $(srcdir)/config/rs6000/e500crtsav32gpr.S \
+	   $(srcdir)/config/rs6000/e500crtsav64gpr.S \
+	   $(srcdir)/config/rs6000/e500crtsav64gprctr.S \
+	   $(srcdir)/config/rs6000/e500crtsavg32gpr.S \
+	   $(srcdir)/config/rs6000/e500crtsavg64gpr.S \
+	   $(srcdir)/config/rs6000/e500crtsavg64gprctr.S
