@@ -1,5 +1,9 @@
 2011-11-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/50907
+	* function.c (convert_jumps_to_returns): When redirecting an edge
+	succ to EXIT_BLOCK_PTR, clear EDGE_CROSSING flag.
+
 	PR tree-optimization/50078
 	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Copy over
 	TREE_THIS_VOLATILE also from the old to new lhs resp. rhs.
