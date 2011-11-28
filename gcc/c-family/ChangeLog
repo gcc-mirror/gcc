@@ -1,3 +1,10 @@
+2011-11-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-cpp-builtin.c (cpp_atomic_builtins):New.  Emit all atomic
+	predefines in one place.  Add LOCK_FREE predefines.
+	(c_cpp_builtins): Move Legacy HAVE_SYNC predefines to
+	new func.
+
 2011-11-24  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR c/51256

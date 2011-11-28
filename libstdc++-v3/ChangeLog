@@ -1,3 +1,10 @@
+2011-11-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* include/bits/atomic_base.h (ATOMIC_*_LOCK_FREE): Use new cpp
+	predefined macros.
+	* testsuite/29_atomics/headers/atomic/macros.cc: Add BOOL and POINTER
+	macro checks.  Check for expected compile time values.
+
 2011-11-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/51288
