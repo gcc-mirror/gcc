@@ -843,65 +843,65 @@ powerpc64-*-darwin*)
 	extra_parts="$extra_parts crt2.o"
 	;;
 powerpc-*-freebsd*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff rs6000/t-freebsd t-softfp-sfdf t-softfp-excl t-softfp t-slibgcc-libgcc"
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-savresfgpr rs6000/t-crtstuff rs6000/t-freebsd t-softfp-sfdf t-softfp-excl t-softfp t-slibgcc-libgcc"
 	extra_parts="$extra_parts crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	;;
 powerpc-*-netbsd*)
 	tmake_file="$tmake_file rs6000/t-netbsd rs6000/t-crtstuff"
 	;;
 powerpc-*-eabispe*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic"
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-savresfgpr rs6000/t-crtstuff t-crtstuff-pic"
 	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	;;
 powerpc-*-eabisimaltivec*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ppccomm-ldbl rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
-	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
-	;;
-powerpc-*-eabisim*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ppccomm-ldbl rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
-	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
-	;;
-powerpc-*-elf*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ppccomm-ldbl rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
-	extra_parts="$extra_parts crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
-	;;
-powerpc-*-eabialtivec*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ppccomm-ldbl rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
-	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
-	;;
-powerpc-xilinx-eabi*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ppccomm-ldbl rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
-	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
-	;;
-powerpc-*-eabi*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
 	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	;;
+powerpc-*-eabisim*)
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
+	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
+	;;
+powerpc-*-elf*)
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
+	extra_parts="$extra_parts crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
+	;;
+powerpc-*-eabialtivec*)
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
+	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
+	;;
+powerpc-xilinx-eabi*)
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
+	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
+	;;
+powerpc-*-eabi*)
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-savresfgpr rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
+	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
+	;;
 powerpc-*-rtems*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ppccomm-ldbl rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	;;
 powerpc-*-linux* | powerpc64-*-linux*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff rs6000/t-linux t-softfp-sfdf t-softfp-excl t-dfprules rs6000/t-ppc64-fp t-softfp t-slibgcc-libgcc"
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-savresfgpr rs6000/t-crtstuff rs6000/t-linux t-softfp-sfdf t-softfp-excl t-dfprules rs6000/t-ppc64-fp t-softfp t-slibgcc-libgcc"
 	extra_parts="$extra_parts ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	md_unwind_header=rs6000/linux-unwind.h
 	;;
 powerpc-wrs-vxworks|powerpc-wrs-vxworksae)
-	tmake_file="$tmake_file rs6000/t-ppccomm-ldbl t-fdpbit"
+	tmake_file="$tmake_file rs6000/t-ppccomm t-fdpbit"
 	;;
 powerpc-*-lynxos*)
 	tmake_file="$tmake_file rs6000/t-lynx t-fdpbit"
 	;;
 powerpcle-*-elf*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ppccomm-ldbl rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	;;
 powerpcle-*-eabisim*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ppccomm-ldbl rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
 	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	;;
 powerpcle-*-eabi*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ppccomm-ldbl rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
 	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	;;
 rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
