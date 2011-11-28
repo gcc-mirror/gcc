@@ -1,3 +1,10 @@
+2011-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50682
+	* tree-eh.c (maybe_remove_unreachable_handlers): New function.
+	* tree-flow.h (maybe_remove_unreachable_handlers): New prototype.
+	* tree-optimize.c (execute_cleanup_cfg_post_optimizing): Call it.
+
 2011-11-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	* doc/extend.texi (AVR Built-in Functions): Add documentation for

@@ -1,3 +1,8 @@
+2011-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50682
+	* g++.dg/opt/pr50682.C: New test.
+
 2011-11-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51308
