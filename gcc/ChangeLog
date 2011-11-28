@@ -1,5 +1,9 @@
 2011-11-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/50078
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Copy over
+	TREE_THIS_VOLATILE also from the old to new lhs resp. rhs.
+
 	PR tree-optimization/50682
 	* tree-eh.c (maybe_remove_unreachable_handlers): New function.
 	* tree-flow.h (maybe_remove_unreachable_handlers): New prototype.

@@ -1,5 +1,8 @@
 2011-11-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/50078
+	* gcc.dg/pr50078.c: New test.
+
 	PR tree-optimization/50682
 	* g++.dg/opt/pr50682.C: New test.
 
