@@ -3473,6 +3473,29 @@ remove_unreachable_handlers (void)
 #endif
 }
 
+/* Remove unreachable handlers if any landing pads have been removed after
+   last ehcleanup pass (due to gimple_purge_dead_eh_edges).  */
+
+void
+maybe_remove_unreachable_handlers (void)
+{
+  eh_landing_pad lp;
+  int i;
+
+  if (cfun->eh == NULL)
+    return;
+              
+  for (i = 1; VEC_iterate (eh_landing_pad, cfun->eh->lp_array, i, lp); ++i)
+    if (lp && lp->post_landing_pad)
+      {
+	if (label_to_block (lp->post_landing_pad) == NULL)
+	  {
+	    remove_unreachable_handlers ();
+	    return;
+	  }
+      }
+}
+
 /* Remove regions that do not have landing pads.  This assumes
    that remove_unreachable_handlers has already been run, and
    that we've just manipulated the landing pads since then.  */
