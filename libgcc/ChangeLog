@@ -1,3 +1,11 @@
+2011-11-27  Ian Lance Taylor  <iant@google.com>
+
+	* generic-morestack.c (__splitstack_find): Check for NULL old
+	stack value.
+	(__splitstack_resetcontext): New function.
+	(__splitstack_releasecontext): New function.
+	* libgcc-std.ver.in: Add new functions to GCC_4.7.0.
+
 2011-11-27  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin-crt-tm.c: Correct comments, use correct licence.
