@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "runtime.h"
 #include "go-assert.h"
 #include "go-panic.h"
 #include "channel.h"
@@ -62,8 +63,7 @@ __go_send_acquire (struct __go_channel *channel, _Bool for_select)
       /* Wait for something to change, then loop around and try
 	 again.  */
 
-      i = pthread_cond_wait (&channel->cond, &channel->lock);
-      __go_assert (i == 0);
+      runtime_cond_wait (&channel->cond, &channel->lock);
     }
 }
 
@@ -118,8 +118,7 @@ __go_send_release (struct __go_channel *channel)
 		}
 	    }
 
-	  i = pthread_cond_wait (&channel->cond, &channel->lock);
-	  __go_assert (i == 0);
+	  runtime_cond_wait (&channel->cond, &channel->lock);
 	}
 
       channel->waiting_to_send = 0;

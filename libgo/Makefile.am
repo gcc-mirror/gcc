@@ -421,14 +421,11 @@ runtime_files = \
 	runtime/go-eface-compare.c \
 	runtime/go-eface-val-compare.c \
 	runtime/go-getgoroot.c \
-	runtime/go-go.c \
-	runtime/go-gomaxprocs.c \
 	runtime/go-int-array-to-string.c \
 	runtime/go-int-to-string.c \
 	runtime/go-interface-compare.c \
 	runtime/go-interface-eface-compare.c \
 	runtime/go-interface-val-compare.c \
-	runtime/go-lock-os-thread.c \
 	runtime/go-make-slice.c \
 	runtime/go-map-delete.c \
 	runtime/go-map-index.c \
@@ -451,9 +448,7 @@ runtime_files = \
 	runtime/go-reflect-map.c \
 	runtime/go-rune.c \
 	runtime/go-runtime-error.c \
-	runtime/go-sched.c \
 	runtime/go-select.c \
-	runtime/go-semacquire.c \
 	runtime/go-send-big.c \
 	runtime/go-send-nb-big.c \
 	runtime/go-send-nb-small.c \
@@ -499,6 +494,8 @@ runtime_files = \
 	map.c \
 	mprof.c \
 	reflect.c \
+	runtime1.c \
+	sema.c \
 	sigqueue.c \
 	string.c
 
@@ -518,6 +515,14 @@ mprof.c: $(srcdir)/runtime/mprof.goc goc2c
 
 reflect.c: $(srcdir)/runtime/reflect.goc goc2c
 	./goc2c --gcc --go-prefix libgo_reflect $< > $@.tmp
+	mv -f $@.tmp $@
+
+runtime1.c: $(srcdir)/runtime/runtime1.goc goc2c
+	./goc2c --gcc --go-prefix libgo_runtime $< > $@.tmp
+	mv -f $@.tmp $@
+
+sema.c: $(srcdir)/runtime/sema.goc goc2c
+	./goc2c --gcc --go-prefix libgo_runtime $< > $@.tmp
 	mv -f $@.tmp $@
 
 sigqueue.c: $(srcdir)/runtime/sigqueue.goc goc2c

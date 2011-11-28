@@ -35,7 +35,7 @@ runtime_lock(Lock *l)
 {
 	uint32 i, v, wait, spin;
 
-	if(m->locks++ < 0)
+	if(runtime_m()->locks++ < 0)
 		runtime_throw("runtime_lock: lock count");
 
 	// Speculative grab for lock.
@@ -89,7 +89,7 @@ runtime_unlock(Lock *l)
 {
 	uint32 v;
 
-	if(--m->locks < 0)
+	if(--runtime_m()->locks < 0)
 		runtime_throw("runtime_unlock: lock count");
 
 	v = runtime_xchg(&l->key, MUTEX_UNLOCKED);

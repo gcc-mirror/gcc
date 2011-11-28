@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "runtime.h"
 #include "config.h"
 #include "go-assert.h"
 #include "channel.h"
@@ -746,10 +747,7 @@ __go_select (uintptr_t count, _Bool has_default,
 					  (is_queued
 					   ? NULL
 					   : &selected_for_read)))
-	    {
-	      x = pthread_cond_wait (&__go_select_cond, &__go_select_mutex);
-	      __go_assert (x == 0);
-	    }
+	    runtime_cond_wait (&__go_select_cond, &__go_select_mutex);
 
 	  is_queued = 1;
 	}

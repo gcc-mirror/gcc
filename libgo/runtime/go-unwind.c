@@ -47,7 +47,10 @@ static const _Unwind_Exception_Class __go_exception_class =
 void
 __go_check_defer (_Bool *frame)
 {
+  G *g;
   struct _Unwind_Exception *hdr;
+
+  g = runtime_g ();
 
   if (g == NULL)
     {
@@ -164,7 +167,7 @@ __go_unwind_stack ()
 		    sizeof hdr->exception_class);
   hdr->exception_cleanup = NULL;
 
-  g->exception = hdr;
+  runtime_g ()->exception = hdr;
 
 #ifdef __USING_SJLJ_EXCEPTIONS__
   _Unwind_SjLj_RaiseException (hdr);
@@ -280,6 +283,7 @@ PERSONALITY_FUNCTION (int version,
   _Unwind_Ptr landing_pad, ip;
   int ip_before_insn = 0;
   _Bool is_foreign;
+  G *g;
 
 #ifdef __ARM_EABI_UNWINDER__
   _Unwind_Action actions;
@@ -416,6 +420,7 @@ PERSONALITY_FUNCTION (int version,
 
   /* It's possible for g to be NULL here for an exception thrown by a
      language other than Go.  */
+  g = runtime_g ();
   if (g == NULL)
     {
       if (!is_foreign)

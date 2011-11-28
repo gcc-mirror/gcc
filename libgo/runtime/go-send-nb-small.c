@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "runtime.h"
 #include "go-assert.h"
 #include "go-panic.h"
 #include "channel.h"
@@ -24,10 +25,7 @@ __go_send_nonblocking_acquire (struct __go_channel *channel)
   __go_assert (i == 0);
 
   while (channel->selected_for_send)
-    {
-      i = pthread_cond_wait (&channel->cond, &channel->lock);
-      __go_assert (i == 0);
-    }
+    runtime_cond_wait (&channel->cond, &channel->lock);
 
   if (channel->is_closed)
     {

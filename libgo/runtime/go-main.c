@@ -8,6 +8,7 @@
 
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 #ifdef HAVE_FPU_CONTROL_H
 #include <fpu_control.h>
@@ -15,7 +16,6 @@
 
 #include "go-alloc.h"
 #include "array.h"
-#include "go-signal.h"
 #include "go-string.h"
 
 #include "runtime.h"
@@ -36,36 +36,39 @@ extern char **environ;
 extern void __go_init_main (void);
 extern void real_main (void) asm ("main.main");
 
+static void mainstart (void *);
+
 /* The main function.  */
 
 int
 main (int argc, char **argv)
 {
+  runtime_initsig (0);
   runtime_args (argc, (byte **) argv);
-
-  m = &runtime_m0;
-  g = &runtime_g0;
-  m->curg = g;
-  g->m = m;
-  runtime_mallocinit ();
-  __go_gc_goroutine_init (&argc);
-
-  runtime_osinit();
-  runtime_goargs();
-  runtime_goenvs();
-
-  __initsig ();
+  runtime_osinit ();
+  runtime_schedinit ();
 
 #if defined(HAVE_SRANDOM)
   srandom ((unsigned int) time (NULL));
 #else
   srand ((unsigned int) time (NULL));
 #endif
+
+  __go_go (mainstart, NULL);
+  runtime_mstart (runtime_m ());
+  abort ();
+}
+
+static void
+mainstart (void *arg __attribute__ ((unused)))
+{
   __go_init_main ();
 
-  __go_enable_gc ();
+  mstats.enablegc = 1;
 
   real_main ();
 
-  return 0;
+  runtime_exit (0);
+
+  abort ();
 }

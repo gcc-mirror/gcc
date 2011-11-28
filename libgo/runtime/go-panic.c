@@ -39,7 +39,10 @@ __printpanics (struct __go_panic_stack *p)
 void
 __go_panic (struct __go_empty_interface arg)
 {
+  G *g;
   struct __go_panic_stack *n;
+
+  g = runtime_g ();
 
   n = (struct __go_panic_stack *) __go_alloc (sizeof (struct __go_panic_stack));
   n->__arg = arg;

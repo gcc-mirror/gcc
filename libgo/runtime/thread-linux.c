@@ -66,7 +66,8 @@ static int32
 getproccount(void)
 {
 	int32 fd, rd, cnt, cpustrlen;
-	const byte *cpustr, *pos;
+	const char *cpustr;
+	const byte *pos;
 	byte *bufpos;
 	byte buf[256];
 
@@ -75,14 +76,14 @@ getproccount(void)
 		return 1;
 	cnt = 0;
 	bufpos = buf;
-	cpustr = (const byte*)"\ncpu";
-	cpustrlen = runtime_findnull((const byte*)cpustr);
+	cpustr = "\ncpu";
+	cpustrlen = strlen(cpustr);
 	for(;;) {
 		rd = read(fd, bufpos, sizeof(buf)-cpustrlen);
 		if(rd == -1)
 			break;
 		bufpos[rd] = 0;
-		for(pos=buf; (pos=(const byte*)strstr((const char*)pos, (const char*)cpustr)) != nil; cnt++, pos++) {
+		for(pos=buf; (pos=(const byte*)strstr((const char*)pos, cpustr)) != nil; cnt++, pos++) {
 		}
 		if(rd < cpustrlen)
 			break;
