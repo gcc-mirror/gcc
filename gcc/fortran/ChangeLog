@@ -1,3 +1,12 @@
+2011-11-28  Tobias Burnus  <burnus@net-b.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/51308
+	* symbol.c (check_conflict): Ignore BIND(C) + PARAMETER
+	conflicts for ISO_C_BINDING variables.
+	(gen_special_c_interop_ptr): Don't mark c_ptr_null/c_funptr_null
+	as SAVE.
+
 2011-11-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-array.c (set_loop_bounds): Remove dead conditions.
