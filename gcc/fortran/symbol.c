@@ -742,9 +742,10 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       conf2 (asynchronous);
       conf2 (threadprivate);
       conf2 (value);
-      conf2 (is_bind_c);
       conf2 (codimension);
       conf2 (result);
+      if (!attr->is_iso_c)
+	conf2 (is_bind_c);
       break;
 
     default:
@@ -3763,13 +3764,11 @@ gen_special_c_interop_ptr (int ptr_id, const char *ptr_name,
                           "create symbol for %s", ptr_name);
     }
 
-  /* Set up the symbol's important fields.  Save attr required so we can
-     initialize the ptr to NULL.  */
-  tmp_sym->attr.save = SAVE_EXPLICIT;
   tmp_sym->ts.is_c_interop = 1;
   tmp_sym->attr.is_c_interop = 1;
   tmp_sym->ts.is_iso_c = 1;
   tmp_sym->ts.type = BT_DERIVED;
+  tmp_sym->attr.flavor = FL_PARAMETER;
 
   /* The c_ptr and c_funptr derived types will provide the
      definition for c_null_ptr and c_null_funptr, respectively.  */
@@ -3817,9 +3816,6 @@ gen_special_c_interop_ptr (int ptr_id, const char *ptr_name,
   c->expr = gfc_get_expr ();
   c->expr->expr_type = EXPR_NULL;
   c->expr->ts.is_iso_c = 1;
-  /* Must declare c_null_ptr and c_null_funptr as having the
-     PARAMETER attribute so they can be used in init expressions.  */
-  tmp_sym->attr.flavor = FL_PARAMETER;
 
   return SUCCESS;
 }
