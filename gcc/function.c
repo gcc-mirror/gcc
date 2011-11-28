@@ -5670,6 +5670,7 @@ convert_jumps_to_returns (basic_block last_bb, bool simple_p,
 
       /* Fix up the CFG for the successful change we just made.  */
       redirect_edge_succ (e, EXIT_BLOCK_PTR);
+      e->flags &= ~EDGE_CROSSING;
     }
   VEC_free (basic_block, heap, src_bbs);
   return unconverted;
