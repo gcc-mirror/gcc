@@ -2118,7 +2118,7 @@ execute_update_addresses_taken (void)
   if (update_vops)
     {
       FOR_EACH_BB (bb)
-	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	  {
 	    gimple stmt = gsi_stmt (gsi);
 
@@ -2158,6 +2158,18 @@ execute_update_addresses_taken (void)
 
 		if (gimple_assign_lhs (stmt) != lhs)
 		  gimple_assign_set_lhs (stmt, lhs);
+
+		/* For var ={v} {CLOBBER}; where var lost
+		   TREE_ADDRESSABLE just remove the stmt.  */
+		if (DECL_P (lhs)
+		    && TREE_CLOBBER_P (rhs)
+		    && symbol_marked_for_renaming (lhs))
+		  {
+		    unlink_stmt_vdef (stmt);
+      		    gsi_remove (&gsi, true);
+		    release_defs (stmt);
+		    continue;
+		  }
 
 		if (gimple_assign_rhs1 (stmt) != rhs)
 		  {
@@ -2205,6 +2217,8 @@ execute_update_addresses_taken (void)
 	    if (gimple_references_memory_p (stmt)
 		|| is_gimple_debug (stmt))
 	      update_stmt (stmt);
+
+	    gsi_next (&gsi);
 	  }
 
       /* Update SSA form here, we are called as non-pass as well.  */

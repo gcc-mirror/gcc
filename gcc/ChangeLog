@@ -1,5 +1,10 @@
 2011-11-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/50317
+	* tree-ssa.c (execute_update_addresses_taken): Remove
+	var ={v} {CLOBBER} stmts instead of rewriting them into
+	var_N ={v} {CLOBBER}.
+
 	PR middle-end/50907
 	* function.c (convert_jumps_to_returns): When redirecting an edge
 	succ to EXIT_BLOCK_PTR, clear EDGE_CROSSING flag.
