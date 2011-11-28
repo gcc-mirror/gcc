@@ -33,6 +33,16 @@
 ;;  o  Displacement for (mem (plus (reg) (const_int))) operands.
 ;;  p  POST_INC or PRE_DEC address as a pointer (X, Y, Z)
 ;;  r  POST_INC or PRE_DEC address as a register (r26, r28, r30)
+;; T/T Print operand suitable for BLD/BST instruction, i.e. register and
+;;     bit number.  This gets 2 operands: The first %T gets a REG_P and
+;;     just cashes the operand for the next %T.  The second %T gets
+;;     a CONST_INT that represents a bit position.
+;;     Example: With %0 = (reg:HI 18)  and  %1 = (const_int 13)
+;;              "%T0%T1" it will print "r19,5".
+;;     Notice that you must not write a comma between %T0 and %T1.
+;; T/t Similar to above, but don't print the comma and the bit number.
+;;     Example: With %0 = (reg:HI 18)  and  %1 = (const_int 13)
+;;              "%T0%t1" it will print "r19".
 ;;..x..Constant Direct Program memory address.
 ;;  ~  Output 'r' if not AVR_HAVE_JMP_CALL.
 ;;  !  Output 'e' if AVR_HAVE_EIJMP_EICALL.
@@ -64,6 +74,7 @@
    UNSPEC_FMULSU
    UNSPEC_COPYSIGN
    UNSPEC_IDENTITY
+   UNSPEC_MAP_BITS
    ])
 
 (define_c_enum "unspecv"
@@ -139,6 +150,7 @@
    ashlhi, ashrhi, lshrhi,
    ashlsi, ashrsi, lshrsi,
    ashlpsi, ashrpsi, lshrpsi,
+   map_bits,
    no"
   (const_string "no"))
 
@@ -5091,6 +5103,30 @@
 	sbci %4,0
 	brne 1b"
   [(set_attr "length" "9")
+   (set_attr "cc" "clobber")])
+
+(define_insn "map_bitsqi"
+  [(set (match_operand:QI 0 "register_operand"             "=d")
+        (unspec:QI [(match_operand:SI 1 "const_int_operand" "n")
+                    (match_operand:QI 2 "register_operand"  "r")]
+                   UNSPEC_MAP_BITS))]
+  ""
+  {
+    return avr_out_map_bits (insn, operands, NULL);
+  }
+  [(set_attr "adjust_len" "map_bits")
+   (set_attr "cc" "clobber")])
+
+(define_insn "map_bitshi"
+  [(set (match_operand:HI 0 "register_operand"               "=&r")
+        (unspec:HI [(match_operand:DI 1 "const_double_operand" "n")
+                    (match_operand:HI 2 "register_operand"     "r")]
+                   UNSPEC_MAP_BITS))]
+  ""
+  {
+    return avr_out_map_bits (insn, operands, NULL);
+  }
+  [(set_attr "adjust_len" "map_bits")
    (set_attr "cc" "clobber")])
 
 

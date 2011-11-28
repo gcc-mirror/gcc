@@ -8594,10 +8594,40 @@ implements
 void __builtin_avr_delay_cycles (unsigned long ticks)
 @end smallexample
 
+@noindent
 @code{ticks} is the number of ticks to delay execution. Note that this
 built-in does not take into account the effect of interrupts which
 might increase delay time. @code{ticks} must be a compile time
 integer constant; delays with a variable number of cycles are not supported.
+
+@smallexample
+     unsigned char __builtin_avr_map8 (unsigned long map, unsigned char val)
+@end smallexample
+
+@noindent
+Each bit of the result is copied from a specific bit of @code{val}.
+@code{map} is a compile time constant that represents a map composed
+of 8 nibbles (4-bit groups):
+The @var{n}-th nibble of @code{map} specifies which bit of @code{val}
+is to be moved to the @var{n}-th bit of the result.
+For example, @code{map = 0x76543210} represents identity: The MSB of
+the result is read from the 7-th bit of @code{val}, the LSB is
+read from the 0-th bit to @code{val}, etc.
+Two more examples: @code{0x01234567} reverses the bit order and
+@code{0x32107654} is equivalent to a @code{swap} instruction.
+
+@noindent
+One typical use case for this and the following built-in is adjusting input and
+output values to non-contiguous port layouts.
+
+@smallexample
+     unsigned int __builtin_avr_map16 (unsigned long long map, unsigned int val)
+@end smallexample
+
+@noindent
+Similar to the previous built-in except that it operates on @code{int}
+and thus 16 bits are involved.  Again, @code{map} must be a compile
+time constant.
 
 @node Blackfin Built-in Functions
 @subsection Blackfin Built-in Functions

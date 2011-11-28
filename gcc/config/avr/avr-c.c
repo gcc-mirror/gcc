@@ -136,6 +136,8 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   cpp_define (pfile, "__BUILTIN_AVR_WDR");
   cpp_define (pfile, "__BUILTIN_AVR_SLEEP");
   cpp_define (pfile, "__BUILTIN_AVR_SWAP");
+  cpp_define (pfile, "__BUILTIN_AVR_MAP8");
+  cpp_define (pfile, "__BUILTIN_AVR_MAP16");
   cpp_define (pfile, "__BUILTIN_AVR_DELAY_CYCLES");
 
   cpp_define (pfile, "__BUILTIN_AVR_FMUL");

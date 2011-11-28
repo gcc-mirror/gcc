@@ -1,3 +1,27 @@
+2011-11-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/extend.texi (AVR Built-in Functions): Add documentation for
+	__builtin_avr_map8 and __builtin_avr_map16.
+
+	* config/avr/avr.md: Document new %t and %T asm output codes.
+	(define_c_enum "unspec"): Add UNSPEC_MAP_BITS.
+	(adjust_len): Add map_bits.
+	(map_bitsqi, map_bitshi): New insns.
+	* config/avr/avr-protos.h (avr_out_map_bits): New.
+	* config/avr/avr-protos.c (print_operand): Implement %t and %T.
+	(adjust_insn_length): Handle ADJUST_LEN_MAP_BITS.
+	(avr_double_int_push_digit): New function.
+	(avr_map, avr_revert_map, avr_swap_map, avr_id_map): New functions.
+	(avr_sig_map, avr_map_hamming_byte): New functions.
+	(avr_out_swap_bits, avr_out_revert_bits, avr_move_bits,
+	avr_out_map_bits): New functions.
+	(enum avr_builtin_id): Add AVR_BUILTIN_MAP8, AVR_BUILTIN_MAP16.
+	(avr_init_builtins): Populate __builtin_avr_map8, __builtin_avr_map16.
+	(bdesc_2arg): Add __builtin_avr_map8, __builtin_avr_map16 ...
+	(avr_expand_builtin): ...and expand them.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): New built-in defines:
+	__BUILTIN_AVR_MAP8, __BUILTIN_AVR_MAP16.
+
 2011-11-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR target/51278
