@@ -3,6 +3,8 @@
 // license that can be found in the LICENSE file.
 
 #include <errno.h>
+#include <signal.h>
+
 #include "runtime.h"
 #include "go-assert.h"
 
@@ -71,3 +73,44 @@ __sync_fetch_and_add_4 (uint32* ptr, uint32 add)
 }
 
 #endif
+
+// Called to initialize a new m (including the bootstrap m).
+void
+runtime_minit(void)
+{
+	byte* stack;
+	size_t stacksize;
+	stack_t ss;
+
+	// Initialize signal handling.
+	runtime_m()->gsignal = runtime_malg(32*1024, &stack, &stacksize);	// OS X wants >=8K, Linux >=2K
+	ss.ss_sp = stack;
+	ss.ss_flags = 0;
+	ss.ss_size = stacksize;
+	if(sigaltstack(&ss, nil) < 0)
+		*(int *)0xf1 = 0xf1;
+}
+
+// Temporary functions, which will be removed when we stop using
+// condition variables.
+
+void
+runtime_cond_wait(pthread_cond_t* cond, pthread_mutex_t* mutex)
+{
+	int i;
+
+	runtime_entersyscall();
+
+	i = pthread_cond_wait(cond, mutex);
+	if(i != 0)
+		runtime_throw("pthread_cond_wait");
+	i = pthread_mutex_unlock(mutex);
+	if(i != 0)
+		runtime_throw("pthread_mutex_unlock");
+
+	runtime_exitsyscall();
+
+	i = pthread_mutex_lock(mutex);
+	if(i != 0)
+		runtime_throw("pthread_mutex_lock");
+}

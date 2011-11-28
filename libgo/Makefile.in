@@ -189,25 +189,24 @@ am__libgo_la_SOURCES_DIST = runtime/go-append.c runtime/go-assert.c \
 	runtime/go-copy.c runtime/go-defer.c \
 	runtime/go-deferred-recover.c runtime/go-eface-compare.c \
 	runtime/go-eface-val-compare.c runtime/go-getgoroot.c \
-	runtime/go-go.c runtime/go-gomaxprocs.c \
 	runtime/go-int-array-to-string.c runtime/go-int-to-string.c \
 	runtime/go-interface-compare.c \
 	runtime/go-interface-eface-compare.c \
-	runtime/go-interface-val-compare.c runtime/go-lock-os-thread.c \
-	runtime/go-make-slice.c runtime/go-map-delete.c \
-	runtime/go-map-index.c runtime/go-map-len.c \
-	runtime/go-map-range.c runtime/go-nanotime.c \
-	runtime/go-new-channel.c runtime/go-new-map.c runtime/go-new.c \
-	runtime/go-panic.c runtime/go-print.c runtime/go-rec-big.c \
+	runtime/go-interface-val-compare.c runtime/go-make-slice.c \
+	runtime/go-map-delete.c runtime/go-map-index.c \
+	runtime/go-map-len.c runtime/go-map-range.c \
+	runtime/go-nanotime.c runtime/go-new-channel.c \
+	runtime/go-new-map.c runtime/go-new.c runtime/go-panic.c \
+	runtime/go-print.c runtime/go-rec-big.c \
 	runtime/go-rec-nb-big.c runtime/go-rec-nb-small.c \
 	runtime/go-rec-small.c runtime/go-recover.c \
 	runtime/go-reflect.c runtime/go-reflect-call.c \
 	runtime/go-reflect-chan.c runtime/go-reflect-map.c \
 	runtime/go-rune.c runtime/go-runtime-error.c \
-	runtime/go-sched.c runtime/go-select.c runtime/go-semacquire.c \
-	runtime/go-send-big.c runtime/go-send-nb-big.c \
-	runtime/go-send-nb-small.c runtime/go-send-small.c \
-	runtime/go-setenv.c runtime/go-signal.c runtime/go-strcmp.c \
+	runtime/go-select.c runtime/go-send-big.c \
+	runtime/go-send-nb-big.c runtime/go-send-nb-small.c \
+	runtime/go-send-small.c runtime/go-setenv.c \
+	runtime/go-signal.c runtime/go-strcmp.c \
 	runtime/go-string-to-byte-array.c \
 	runtime/go-string-to-int-array.c runtime/go-strplus.c \
 	runtime/go-strslice.c runtime/go-trampoline.c \
@@ -224,7 +223,7 @@ am__libgo_la_SOURCES_DIST = runtime/go-append.c runtime/go-assert.c \
 	runtime/mheap.c runtime/msize.c runtime/proc.c \
 	runtime/runtime.c runtime/thread.c runtime/yield.c \
 	runtime/rtems-task-variable-add.c chan.c iface.c malloc.c \
-	map.c mprof.c reflect.c sigqueue.c string.c
+	map.c mprof.c reflect.c runtime1.c sema.c sigqueue.c string.c
 @LIBGO_IS_LINUX_FALSE@am__objects_1 = lock_sema.lo thread-sema.lo
 @LIBGO_IS_LINUX_TRUE@am__objects_1 = lock_futex.lo thread-linux.lo
 @HAVE_SYS_MMAN_H_FALSE@am__objects_2 = mem_posix_memalign.lo
@@ -236,19 +235,18 @@ am__objects_4 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-chan-len.lo go-check-interface.lo go-close.lo \
 	go-construct-map.lo go-convert-interface.lo go-copy.lo \
 	go-defer.lo go-deferred-recover.lo go-eface-compare.lo \
-	go-eface-val-compare.lo go-getgoroot.lo go-go.lo \
-	go-gomaxprocs.lo go-int-array-to-string.lo go-int-to-string.lo \
+	go-eface-val-compare.lo go-getgoroot.lo \
+	go-int-array-to-string.lo go-int-to-string.lo \
 	go-interface-compare.lo go-interface-eface-compare.lo \
-	go-interface-val-compare.lo go-lock-os-thread.lo \
-	go-make-slice.lo go-map-delete.lo go-map-index.lo \
-	go-map-len.lo go-map-range.lo go-nanotime.lo go-new-channel.lo \
-	go-new-map.lo go-new.lo go-panic.lo go-print.lo go-rec-big.lo \
-	go-rec-nb-big.lo go-rec-nb-small.lo go-rec-small.lo \
-	go-recover.lo go-reflect.lo go-reflect-call.lo \
+	go-interface-val-compare.lo go-make-slice.lo go-map-delete.lo \
+	go-map-index.lo go-map-len.lo go-map-range.lo go-nanotime.lo \
+	go-new-channel.lo go-new-map.lo go-new.lo go-panic.lo \
+	go-print.lo go-rec-big.lo go-rec-nb-big.lo go-rec-nb-small.lo \
+	go-rec-small.lo go-recover.lo go-reflect.lo go-reflect-call.lo \
 	go-reflect-chan.lo go-reflect-map.lo go-rune.lo \
-	go-runtime-error.lo go-sched.lo go-select.lo go-semacquire.lo \
-	go-send-big.lo go-send-nb-big.lo go-send-nb-small.lo \
-	go-send-small.lo go-setenv.lo go-signal.lo go-strcmp.lo \
+	go-runtime-error.lo go-select.lo go-send-big.lo \
+	go-send-nb-big.lo go-send-nb-small.lo go-send-small.lo \
+	go-setenv.lo go-signal.lo go-strcmp.lo \
 	go-string-to-byte-array.lo go-string-to-int-array.lo \
 	go-strplus.lo go-strslice.lo go-trampoline.lo go-type-eface.lo \
 	go-type-error.lo go-type-identity.lo go-type-interface.lo \
@@ -258,7 +256,7 @@ am__objects_4 = go-append.lo go-assert.lo go-assert-interface.lo \
 	mcache.lo mcentral.lo $(am__objects_2) mfinal.lo mfixalloc.lo \
 	mgc0.lo mheap.lo msize.lo proc.lo runtime.lo thread.lo \
 	yield.lo $(am__objects_3) chan.lo iface.lo malloc.lo map.lo \
-	mprof.lo reflect.lo sigqueue.lo string.lo
+	mprof.lo reflect.lo runtime1.lo sema.lo sigqueue.lo string.lo
 am_libgo_la_OBJECTS = $(am__objects_4)
 libgo_la_OBJECTS = $(am_libgo_la_OBJECTS)
 libgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
@@ -850,14 +848,11 @@ runtime_files = \
 	runtime/go-eface-compare.c \
 	runtime/go-eface-val-compare.c \
 	runtime/go-getgoroot.c \
-	runtime/go-go.c \
-	runtime/go-gomaxprocs.c \
 	runtime/go-int-array-to-string.c \
 	runtime/go-int-to-string.c \
 	runtime/go-interface-compare.c \
 	runtime/go-interface-eface-compare.c \
 	runtime/go-interface-val-compare.c \
-	runtime/go-lock-os-thread.c \
 	runtime/go-make-slice.c \
 	runtime/go-map-delete.c \
 	runtime/go-map-index.c \
@@ -880,9 +875,7 @@ runtime_files = \
 	runtime/go-reflect-map.c \
 	runtime/go-rune.c \
 	runtime/go-runtime-error.c \
-	runtime/go-sched.c \
 	runtime/go-select.c \
-	runtime/go-semacquire.c \
 	runtime/go-send-big.c \
 	runtime/go-send-nb-big.c \
 	runtime/go-send-nb-small.c \
@@ -928,6 +921,8 @@ runtime_files = \
 	map.c \
 	mprof.c \
 	reflect.c \
+	runtime1.c \
+	sema.c \
 	sigqueue.c \
 	string.c
 
@@ -2476,14 +2471,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-eface-compare.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-eface-val-compare.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-getgoroot.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-go.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-gomaxprocs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-int-array-to-string.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-int-to-string.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-interface-compare.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-interface-eface-compare.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-interface-val-compare.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-lock-os-thread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-make-slice.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-map-delete.Plo@am__quote@
@@ -2507,9 +2499,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-reflect.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-rune.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-runtime-error.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-sched.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-select.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-semacquire.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-send-big.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-send-nb-big.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-send-nb-small.Plo@am__quote@
@@ -2553,6 +2543,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reflect.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rtems-task-variable-add.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtime.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtime1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sema.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sigqueue.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/string.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thread-linux.Plo@am__quote@
@@ -2735,20 +2727,6 @@ go-getgoroot.lo: runtime/go-getgoroot.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-getgoroot.lo `test -f 'runtime/go-getgoroot.c' || echo '$(srcdir)/'`runtime/go-getgoroot.c
 
-go-go.lo: runtime/go-go.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-go.lo -MD -MP -MF $(DEPDIR)/go-go.Tpo -c -o go-go.lo `test -f 'runtime/go-go.c' || echo '$(srcdir)/'`runtime/go-go.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-go.Tpo $(DEPDIR)/go-go.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-go.c' object='go-go.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-go.lo `test -f 'runtime/go-go.c' || echo '$(srcdir)/'`runtime/go-go.c
-
-go-gomaxprocs.lo: runtime/go-gomaxprocs.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-gomaxprocs.lo -MD -MP -MF $(DEPDIR)/go-gomaxprocs.Tpo -c -o go-gomaxprocs.lo `test -f 'runtime/go-gomaxprocs.c' || echo '$(srcdir)/'`runtime/go-gomaxprocs.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-gomaxprocs.Tpo $(DEPDIR)/go-gomaxprocs.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-gomaxprocs.c' object='go-gomaxprocs.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-gomaxprocs.lo `test -f 'runtime/go-gomaxprocs.c' || echo '$(srcdir)/'`runtime/go-gomaxprocs.c
-
 go-int-array-to-string.lo: runtime/go-int-array-to-string.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-int-array-to-string.lo -MD -MP -MF $(DEPDIR)/go-int-array-to-string.Tpo -c -o go-int-array-to-string.lo `test -f 'runtime/go-int-array-to-string.c' || echo '$(srcdir)/'`runtime/go-int-array-to-string.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-int-array-to-string.Tpo $(DEPDIR)/go-int-array-to-string.Plo
@@ -2783,13 +2761,6 @@ go-interface-val-compare.lo: runtime/go-interface-val-compare.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-interface-val-compare.c' object='go-interface-val-compare.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-interface-val-compare.lo `test -f 'runtime/go-interface-val-compare.c' || echo '$(srcdir)/'`runtime/go-interface-val-compare.c
-
-go-lock-os-thread.lo: runtime/go-lock-os-thread.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-lock-os-thread.lo -MD -MP -MF $(DEPDIR)/go-lock-os-thread.Tpo -c -o go-lock-os-thread.lo `test -f 'runtime/go-lock-os-thread.c' || echo '$(srcdir)/'`runtime/go-lock-os-thread.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-lock-os-thread.Tpo $(DEPDIR)/go-lock-os-thread.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-lock-os-thread.c' object='go-lock-os-thread.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-lock-os-thread.lo `test -f 'runtime/go-lock-os-thread.c' || echo '$(srcdir)/'`runtime/go-lock-os-thread.c
 
 go-make-slice.lo: runtime/go-make-slice.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-make-slice.lo -MD -MP -MF $(DEPDIR)/go-make-slice.Tpo -c -o go-make-slice.lo `test -f 'runtime/go-make-slice.c' || echo '$(srcdir)/'`runtime/go-make-slice.c
@@ -2945,26 +2916,12 @@ go-runtime-error.lo: runtime/go-runtime-error.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-runtime-error.lo `test -f 'runtime/go-runtime-error.c' || echo '$(srcdir)/'`runtime/go-runtime-error.c
 
-go-sched.lo: runtime/go-sched.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-sched.lo -MD -MP -MF $(DEPDIR)/go-sched.Tpo -c -o go-sched.lo `test -f 'runtime/go-sched.c' || echo '$(srcdir)/'`runtime/go-sched.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-sched.Tpo $(DEPDIR)/go-sched.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-sched.c' object='go-sched.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-sched.lo `test -f 'runtime/go-sched.c' || echo '$(srcdir)/'`runtime/go-sched.c
-
 go-select.lo: runtime/go-select.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-select.lo -MD -MP -MF $(DEPDIR)/go-select.Tpo -c -o go-select.lo `test -f 'runtime/go-select.c' || echo '$(srcdir)/'`runtime/go-select.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-select.Tpo $(DEPDIR)/go-select.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-select.c' object='go-select.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-select.lo `test -f 'runtime/go-select.c' || echo '$(srcdir)/'`runtime/go-select.c
-
-go-semacquire.lo: runtime/go-semacquire.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-semacquire.lo -MD -MP -MF $(DEPDIR)/go-semacquire.Tpo -c -o go-semacquire.lo `test -f 'runtime/go-semacquire.c' || echo '$(srcdir)/'`runtime/go-semacquire.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-semacquire.Tpo $(DEPDIR)/go-semacquire.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-semacquire.c' object='go-semacquire.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-semacquire.lo `test -f 'runtime/go-semacquire.c' || echo '$(srcdir)/'`runtime/go-semacquire.c
 
 go-send-big.lo: runtime/go-send-big.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-send-big.lo -MD -MP -MF $(DEPDIR)/go-send-big.Tpo -c -o go-send-big.lo `test -f 'runtime/go-send-big.c' || echo '$(srcdir)/'`runtime/go-send-big.c
@@ -4452,6 +4409,14 @@ mprof.c: $(srcdir)/runtime/mprof.goc goc2c
 
 reflect.c: $(srcdir)/runtime/reflect.goc goc2c
 	./goc2c --gcc --go-prefix libgo_reflect $< > $@.tmp
+	mv -f $@.tmp $@
+
+runtime1.c: $(srcdir)/runtime/runtime1.goc goc2c
+	./goc2c --gcc --go-prefix libgo_runtime $< > $@.tmp
+	mv -f $@.tmp $@
+
+sema.c: $(srcdir)/runtime/sema.goc goc2c
+	./goc2c --gcc --go-prefix libgo_runtime $< > $@.tmp
 	mv -f $@.tmp $@
 
 sigqueue.c: $(srcdir)/runtime/sigqueue.goc goc2c

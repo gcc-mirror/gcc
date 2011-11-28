@@ -8,6 +8,7 @@
 
 #define _GNU_SOURCE
 #include "go-assert.h"
+#include <setjmp.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +18,7 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <ucontext.h>
 
 #ifdef HAVE_SYS_MMAN_H
 #include <sys/mman.h>
@@ -59,24 +61,33 @@ typedef	struct	__go_panic_stack	Panic;
 typedef	struct	__go_open_array		Slice;
 typedef	struct	__go_string		String;
 
-/* Per CPU declarations.  */
-
-#ifdef __rtems__
-#define __thread
-#endif
-
-extern __thread		G*	g;
-extern __thread		M* 	m;
+/*
+ * per-cpu declaration.
+ */
+extern M*	runtime_m(void);
+extern G*	runtime_g(void);
 
 extern M	runtime_m0;
 extern G	runtime_g0;
 
-#ifdef __rtems__
-#undef __thread
-#endif
-
-/* Constants.  */
-
+/*
+ * defined constants
+ */
+enum
+{
+	// G status
+	//
+	// If you add to this list, add to the list
+	// of "okay during garbage collection" status
+	// in mgc0.c too.
+	Gidle,
+	Grunnable,
+	Grunning,
+	Gsyscall,
+	Gwaiting,
+	Gmoribund,
+	Gdead,
+};
 enum
 {
 	true	= 1,
@@ -102,12 +113,19 @@ struct	G
 	Panic*	panic;
 	void*	exception;	// current exception being thrown
 	bool	is_foreign;	// whether current exception from other language
+	void	*gcstack;	// if status==Gsyscall, gcstack = stackbase to use during gc
+	uintptr	gcstack_size;
+	void*	gcnext_segment;
+	void*	gcnext_sp;
+	void*	gcinitial_sp;
+	jmp_buf	gcregs;
 	byte*	entry;		// initial function
 	G*	alllink;	// on allg
 	void*	param;		// passed parameter on wakeup
+	bool	fromgogo;	// reached from gogo
 	int16	status;
 	int32	goid;
-	int8*	waitreason;	// if status==Gwaiting
+	const char*	waitreason;	// if status==Gwaiting
 	G*	schedlink;
 	bool	readyonstop;
 	bool	ispanic;
@@ -118,38 +136,38 @@ struct	G
 	// uintptr	sigcode0;
 	// uintptr	sigcode1;
 	// uintptr	sigpc;
-	// uintptr	gopc;	// pc of go statement that created this goroutine
+	uintptr	gopc;	// pc of go statement that created this goroutine
+
+	ucontext_t	context;
+	void*		stack_context[10];
 };
 
 struct	M
 {
+	G*	g0;		// goroutine with scheduling stack
+	G*	gsignal;	// signal-handling G
 	G*	curg;		// current running goroutine
 	int32	id;
 	int32	mallocing;
 	int32	gcing;
 	int32	locks;
 	int32	nomemprof;
-	int32	gcing_for_prof;
-	int32	holds_finlock;
-	int32	gcing_for_finlock;
+	int32	waitnextg;
 	int32	dying;
 	int32	profilehz;
+	int32	helpgc;
 	uint32	fastrand;
+	Note	havenextg;
+	G*	nextg;
+	M*	alllink;	// on allm
+	M*	schedlink;
 	MCache	*mcache;
+	G*	lockedg;
+	G*	idleg;
 	M*	nextwaitm;	// next M waiting for lock
 	uintptr	waitsema;	// semaphore for parking on locks
 	uint32	waitsemacount;
 	uint32	waitsemalock;
-
-	/* For the list of all threads.  */
-	struct __go_thread_id *list_entry;
-
-	/* For the garbage collector.  */
-	void	*gc_sp;
-	size_t	gc_len;
-	void	*gc_next_segment;
-	void	*gc_next_sp;
-	void	*gc_initial_sp;
 };
 
 /* Macros.  */
@@ -171,7 +189,13 @@ enum {
 /*
  * external data
  */
+G*	runtime_allg;
+G*	runtime_lastg;
+M*	runtime_allm;
+extern	int32	runtime_gomaxprocs;
+extern	bool	runtime_singleproc;
 extern	uint32	runtime_panicking;
+extern	int32	runtime_gcwaiting;		// gc is waiting to run
 int32	runtime_ncpu;
 
 /*
@@ -188,21 +212,24 @@ void	runtime_goargs(void);
 void	runtime_goenvs(void);
 void	runtime_throw(const char*);
 void*	runtime_mal(uintptr);
+void	runtime_schedinit(void);
+void	runtime_initsig(int32);
 String	runtime_gostringnocopy(byte*);
+void*	runtime_mstart(void*);
+G*	runtime_malg(int32, byte**, size_t*);
+void	runtime_minit(void);
 void	runtime_mallocinit(void);
+void	runtime_gosched(void);
+void	runtime_goexit(void);
+void	runtime_entersyscall(void) __asm__("libgo_syscall.syscall.entersyscall");
+void	runtime_exitsyscall(void) __asm__("libgo_syscall.syscall.exitsyscall");
 void	siginit(void);
 bool	__go_sigsend(int32 sig);
 int64	runtime_nanotime(void);
 
 void	runtime_stoptheworld(void);
 void	runtime_starttheworld(bool);
-void	__go_go(void (*pfn)(void*), void*);
-void	__go_gc_goroutine_init(void*);
-void	__go_enable_gc(void);
-int	__go_run_goroutine_gc(int);
-void	__go_scanstacks(void (*scan)(byte *, int64));
-void	__go_stealcache(void);
-void	__go_cachestats(void);
+G*	__go_go(void (*pfn)(void*), void*);
 
 /*
  * mutual exclusion locks.  in the uncontended case,
@@ -274,14 +301,16 @@ bool	runtime_addfinalizer(void*, void(*fn)(void*), const struct __go_func_type *
 
 void	runtime_dopanic(int32) __attribute__ ((noreturn));
 void	runtime_startpanic(void);
+void	runtime_ready(G*);
 const byte*	runtime_getenv(const char*);
 int32	runtime_atoi(const byte*);
-void	runtime_sigprof(uint8 *pc, uint8 *sp, uint8 *lr);
+void	runtime_sigprof(uint8 *pc, uint8 *sp, uint8 *lr, G *gp);
 void	runtime_resetcpuprofiler(int32);
 void	runtime_setcpuprofilerate(void(*)(uintptr*, int32), int32);
 uint32	runtime_fastrand1(void);
-void	runtime_semacquire (uint32 *) asm ("libgo_runtime.runtime.Semacquire");
-void	runtime_semrelease (uint32 *) asm ("libgo_runtime.runtime.Semrelease");
+void	runtime_semacquire(uint32 volatile *);
+void	runtime_semrelease(uint32 volatile *);
+int32	runtime_gomaxprocsfunc(int32 n);
 void	runtime_procyield(uint32);
 void	runtime_osyield(void);
 void	runtime_usleep(uint32);
@@ -294,3 +323,6 @@ void reflect_call(const struct __go_func_type *, const void *, _Bool, _Bool,
 #ifdef __rtems__
 void __wrap_rtems_task_variable_add(void **);
 #endif
+
+/* Temporary.  */
+void	runtime_cond_wait(pthread_cond_t*, pthread_mutex_t*);

@@ -422,4 +422,4 @@ extern int32 runtime_malloc_profile;
 
 struct __go_func_type;
 bool	runtime_getfinalizer(void *p, bool del, void (**fn)(void*), const struct __go_func_type **ft);
-void	runtime_walkfintab(void (*fn)(void*), void (*scan)(byte*, int64));
+void	runtime_walkfintab(void (*fn)(void*), void (*scan)(byte *, int64));

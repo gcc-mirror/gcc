@@ -79,6 +79,9 @@
 struct __go_empty_interface
 __go_deferred_recover ()
 {
+  G *g;
+
+  g = runtime_g ();
   if (g->defer == NULL || g->defer->__panic != g->panic)
     {
       struct __go_empty_interface ret;
@@ -87,5 +90,5 @@ __go_deferred_recover ()
       ret.__object = NULL;
       return ret;
     }
-  return __go_recover();
+  return __go_recover ();
 }

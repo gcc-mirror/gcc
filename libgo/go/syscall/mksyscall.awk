@@ -102,10 +102,6 @@ BEGIN {
 	   gofnname, gofnparams, gofnresults == "" ? "" : "(", gofnresults,
 	   gofnresults == "" ? "" : ")", gofnresults == "" ? "" : " ")
 
-    if (blocking) {
-	print "\tentersyscall()"
-    }
-
     loc = gofnname "/" cfnname ":"
 
     split(gofnparams, goargs, ", *")
@@ -151,7 +147,8 @@ BEGIN {
 		status = 1
 		next
 	    }
-	    args = args "StringBytePtr(" goname ")"
+	    printf("\t_p%d := StringBytePtr(%s)\n", goarg, goname)
+	    args = sprintf("%s_p%d", args, goarg)
 	} else if (gotype ~ /^\[\](.*)/) {
 	    if (ctype !~ /^\*/ || cargs[carg + 1] == "") {
 		print loc, "bad C type for slice:", gotype, ctype | "cat 1>&2"
@@ -190,6 +187,10 @@ BEGIN {
 	print loc, "too many C parameters" | "cat 1>&2"
 	status = 1
 	next
+    }
+
+    if (blocking) {
+	print "\tentersyscall()"
     }
 
     printf("\t")
