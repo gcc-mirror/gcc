@@ -1795,8 +1795,9 @@ print_operand_address (FILE *file, rtx addr)
 }
 
 
-/* Output X as assembler operand to file FILE.  */
-     
+/* Output X as assembler operand to file FILE.
+   For a description of supported %-codes, see top of avr.md.  */
+
 void
 print_operand (FILE *file, rtx x, int code)
 {
@@ -1814,6 +1815,31 @@ print_operand (FILE *file, rtx x, int code)
     {
       if (AVR_HAVE_EIJMP_EICALL)
 	fputc ('e', file);
+    }
+  else if (code == 't'
+           || code == 'T')
+    {
+      static int t_regno = -1;
+      static int t_nbits = -1;
+
+      if (REG_P (x) && t_regno < 0 && code == 'T')
+        {
+          t_regno = REGNO (x);
+          t_nbits = GET_MODE_BITSIZE (GET_MODE (x));
+        }
+      else if (CONST_INT_P (x) && t_regno >= 0
+               && IN_RANGE (INTVAL (x), 0, t_nbits - 1))
+        {
+          int bpos = INTVAL (x);
+
+          fprintf (file, "%s", reg_names[t_regno + bpos / 8]);
+          if (code == 'T')
+            fprintf (file, ",%d", bpos % 8);
+
+          t_regno = -1;
+        }
+      else
+        fatal_insn ("operands to %T/%t must be reg + const_int:", x);
     }
   else if (REG_P (x))
     {
@@ -6403,6 +6429,8 @@ adjust_insn_length (rtx insn, int len)
 
     case ADJUST_LEN_CALL: len = AVR_HAVE_JMP_CALL ? 2 : 1; break;
 
+    case ADJUST_LEN_MAP_BITS: avr_out_map_bits (insn, op, &len); break;
+
     default:
       gcc_unreachable();
     }
@@ -9857,6 +9885,345 @@ avr_expand_delay_cycles (rtx operands0)
     }
 }
 
+
+/* Return VAL * BASE + DIGIT.  BASE = 0 is shortcut for BASE = 2^{32}   */
+
+static double_int
+avr_double_int_push_digit (double_int val, int base,
+                           unsigned HOST_WIDE_INT digit)
+{
+  val = 0 == base
+    ? double_int_lshift (val, 32, 64, false)
+    : double_int_mul (val, uhwi_to_double_int (base));
+  
+  return double_int_add (val, uhwi_to_double_int (digit));
+}
+
+
+/* Compute the image of x under f, i.e. perform   x --> f(x)    */
+
+static int
+avr_map (double_int f, int x)
+{
+  return 0xf & double_int_to_uhwi (double_int_rshift (f, 4*x, 64, false));
+}
+
+
+/* Return the map R that reverses the bits of byte B.
+
+   R(0)  =  (0  7)  o  (1  6)  o   (2  5)  o   (3  4)
+   R(1)  =  (8 15)  o  (9 14)  o  (10 13)  o  (11 12)
+            
+   Notice that R o R = id.  */
+
+static double_int
+avr_revert_map (int b)
+{
+  int i;
+  double_int r = double_int_zero;
+
+  for (i = 16-1; i >= 0; i--)
+    r = avr_double_int_push_digit (r, 16, i >> 3 == b ? i ^ 7 : i);
+
+  return r;
+}
+
+
+/* Return the map R that swaps bit-chunks of size SIZE in byte B.
+
+   R(1,0)  =  (0 1)  o   (2  3)  o   (4  5)  o   (6  7)
+   R(1,1)  =  (8 9)  o  (10 11)  o  (12 13)  o  (14 15)
+
+   R(4,0)  =  (0  4)  o  (1  5)  o   (2  6)  o   (3  7)
+   R(4,1)  =  (8 12)  o  (9 13)  o  (10 14)  o  (11 15)
+
+   Notice that R o R = id.  */
+
+static double_int
+avr_swap_map (int size, int b)
+{
+  int i;
+  double_int r = double_int_zero;
+
+  for (i = 16-1; i >= 0; i--)
+    r = avr_double_int_push_digit (r, 16, i ^ (i >> 3 == b ? size : 0));
+
+  return r;
+}
+
+
+/* Return Identity.  */
+
+static double_int
+avr_id_map (void)
+{
+  int i;
+  double_int r = double_int_zero;
+
+  for (i = 16-1; i >= 0; i--)
+    r = avr_double_int_push_digit (r, 16, i);
+
+  return r;
+}
+
+
+enum
+  {
+    SIG_ID        = 0,
+    /* for QI and HI */
+    SIG_ROL       = 0xf,
+    SIG_REVERT_0  = 1 << 4,
+    SIG_SWAP1_0   = 1 << 5,
+    /* HI only */
+    SIG_REVERT_1  = 1 << 6,
+    SIG_SWAP1_1   = 1 << 7,
+    SIG_SWAP4_0   = 1 << 8,
+    SIG_SWAP4_1   = 1 << 9
+  };
+
+
+/* Return basic map with signature SIG.  */
+
+static double_int
+avr_sig_map (int n ATTRIBUTE_UNUSED, int sig)
+{
+  if (sig == SIG_ID)            return avr_id_map ();
+  else if (sig == SIG_REVERT_0) return avr_revert_map (0);
+  else if (sig == SIG_REVERT_1) return avr_revert_map (1);
+  else if (sig == SIG_SWAP1_0)  return avr_swap_map (1, 0);
+  else if (sig == SIG_SWAP1_1)  return avr_swap_map (1, 1);
+  else if (sig == SIG_SWAP4_0)  return avr_swap_map (4, 0);
+  else if (sig == SIG_SWAP4_1)  return avr_swap_map (4, 1);
+  else
+    gcc_unreachable();
+}
+
+
+/* Return the Hamming distance between the B-th byte of A and C.  */
+
+static bool
+avr_map_hamming_byte (int n, int b, double_int a, double_int c, bool strict)
+{
+  int i, hamming = 0;
+
+  for (i = 8*b; i < n && i < 8*b + 8; i++)
+    {
+      int ai = avr_map (a, i);
+      int ci = avr_map (c, i);
+
+      hamming += ai != ci && (strict || (ai < n && ci < n));
+    }
+  
+  return hamming;
+}
+
+
+/* Return the non-strict Hamming distance between A and B.  */
+
+#define avr_map_hamming_nonstrict(N,A,B)              \
+  (+ avr_map_hamming_byte (N, 0, A, B, false)         \
+   + avr_map_hamming_byte (N, 1, A, B, false))
+
+
+/* Return TRUE iff A and B represent the same mapping.  */
+
+#define avr_map_equal_p(N,A,B) (0 == avr_map_hamming_nonstrict (N, A, B))
+
+
+/* Return TRUE iff A is a map of signature S.  Notice that there is no
+   1:1 correspondance between maps and signatures and thus this is
+   only supported for basic signatures recognized by avr_sig_map().  */
+
+#define avr_map_sig_p(N,A,S) avr_map_equal_p (N, A, avr_sig_map (N, S))
+
+
+/* Swap odd/even bits of ld-reg %0:  %0 = bit-swap (%0)  */
+
+static const char*
+avr_out_swap_bits (rtx *xop, int *plen)
+{
+  xop[1] = tmp_reg_rtx;
+  
+  return avr_asm_len ("mov %1,%0"    CR_TAB
+                      "andi %0,0xaa" CR_TAB
+                      "eor %1,%0"    CR_TAB
+                      "lsr %0"       CR_TAB
+                      "lsl %1"       CR_TAB
+                      "or %0,%1", xop, plen, 6);
+}
+
+/* Revert bit order:  %0 = Revert (%1) with %0 != %1 and clobber %1  */
+
+static const char*
+avr_out_revert_bits (rtx *xop, int *plen)
+{
+  return avr_asm_len ("inc __zero_reg__" "\n"
+                      "0:\tror %1"       CR_TAB
+                      "rol %0"           CR_TAB
+                      "lsl __zero_reg__" CR_TAB
+                      "brne 0b", xop, plen, 5);
+}
+
+
+/* If OUT_P = true:  Output BST/BLD instruction according to MAP.
+   If OUT_P = false: Just dry-run and fix XOP[1] to resolve
+                     early-clobber conflicts if XOP[0] = XOP[1].  */
+
+static void
+avr_move_bits (rtx *xop, double_int map, int n_bits, bool out_p, int *plen)
+{
+  int bit_dest, b, clobber = 0;
+
+  /* T-flag contains this bit of the source, i.e. of XOP[1]  */
+  int t_bit_src = -1;
+
+  if (!optimize && !out_p)
+    {
+      avr_asm_len ("mov __tmp_reg__,%1", xop, plen, 1);
+      xop[1] = tmp_reg_rtx;
+      return;
+    }
+  
+  /* We order the operations according to the requested source bit b.  */
+  
+  for (b = 0; b < n_bits; b++)
+    for (bit_dest = 0; bit_dest < n_bits; bit_dest++)
+      {
+        int bit_src = avr_map (map, bit_dest);
+        
+        if (b != bit_src
+            /* Same position: No need to copy as the caller did MOV.  */
+            || bit_dest == bit_src
+            /* Accessing bits 8..f for 8-bit version is void. */
+            || bit_src >= n_bits)
+          continue;
+
+        if (t_bit_src != bit_src)
+          {
+            /* Source bit is not yet in T: Store it to T.  */
+              
+            t_bit_src = bit_src;
+
+            if (out_p)
+              {
+                xop[2] = GEN_INT (bit_src);
+                avr_asm_len ("bst %T1%T2", xop, plen, 1);
+              }
+            else if (clobber & (1 << bit_src))
+              {
+                /* Bit to be read was written already: Backup input
+                   to resolve early-clobber conflict.  */
+               
+                avr_asm_len ("mov __tmp_reg__,%1", xop, plen, 1);
+                xop[1] = tmp_reg_rtx;
+                return;
+              }
+          }
+
+        /* Load destination bit with T.  */
+        
+        if (out_p)
+          {
+            xop[2] = GEN_INT (bit_dest);
+            avr_asm_len ("bld %T0%T2", xop, plen, 1);
+          }
+        
+        clobber |= 1 << bit_dest;
+      }
+}
+
+
+/* Print assembler code for `map_bitsqi' and `map_bitshi'.  */
+
+const char*
+avr_out_map_bits (rtx insn, rtx *operands, int *plen)
+{
+  bool copy_0, copy_1;
+  int n_bits = GET_MODE_BITSIZE (GET_MODE (operands[0]));
+  double_int map = rtx_to_double_int (operands[1]);
+  rtx xop[3];
+
+  xop[0] = operands[0];
+  xop[1] = operands[2];
+
+  if (plen)
+    *plen = 0;
+  else if (flag_print_asm_name)
+    avr_fdump (asm_out_file, ASM_COMMENT_START "%X\n", map);
+
+  switch (n_bits)
+    {
+    default:
+      gcc_unreachable();
+      
+    case 8:
+      if (avr_map_sig_p (n_bits, map, SIG_SWAP1_0))
+        {
+          return avr_out_swap_bits (xop, plen);
+        }
+      else if (avr_map_sig_p (n_bits, map, SIG_REVERT_0))
+        {
+          if (REGNO (xop[0]) == REGNO (xop[1])
+              || !reg_unused_after (insn, xop[1]))
+            {
+              avr_asm_len ("mov __tmp_reg__,%1", xop, plen, 1);
+              xop[1] = tmp_reg_rtx;
+            }
+          
+          return avr_out_revert_bits (xop, plen);
+        }
+      
+      break; /* 8 */
+
+    case 16:
+      
+      break; /* 16 */
+    }
+
+  /* Copy whole byte is cheaper than moving bits that stay at the same
+     position.  Some bits in a byte stay at the same position iff the
+     strict Hamming distance to Identity is not 8.  */
+
+  copy_0 = 8 != avr_map_hamming_byte (n_bits, 0, map, avr_id_map(), true);
+  copy_1 = 8 != avr_map_hamming_byte (n_bits, 1, map, avr_id_map(), true);
+     
+  /* Perform the move(s) just worked out.  */
+
+  if (n_bits == 8)
+    {
+      if (REGNO (xop[0]) == REGNO (xop[1]))
+        {
+          /* Fix early-clobber clashes.
+             Notice XOP[0] hat no eary-clobber in its constraint.  */
+          
+          avr_move_bits (xop, map, n_bits, false, plen);
+        }
+      else if (copy_0)
+        {
+          avr_asm_len ("mov %0,%1", xop, plen, 1);
+        }
+    }
+  else if (AVR_HAVE_MOVW && copy_0 && copy_1)
+    {
+      avr_asm_len ("movw %A0,%A1", xop, plen, 1);
+    }
+  else
+    {
+      if (copy_0)
+        avr_asm_len ("mov %A0,%A1", xop, plen, 1);
+
+      if (copy_1)
+        avr_asm_len ("mov %B0,%B1", xop, plen, 1);
+    }
+
+  /* Move individual bits.  */
+
+  avr_move_bits (xop, map, n_bits, true, plen);
+  
+  return "";
+}
+
+
 /* IDs for all the AVR builtins.  */
 
 enum avr_builtin_id
@@ -9867,6 +10234,8 @@ enum avr_builtin_id
     AVR_BUILTIN_WDR,
     AVR_BUILTIN_SLEEP,
     AVR_BUILTIN_SWAP,
+    AVR_BUILTIN_MAP8,
+    AVR_BUILTIN_MAP16,
     AVR_BUILTIN_FMUL,
     AVR_BUILTIN_FMULS,
     AVR_BUILTIN_FMULSU,
@@ -9923,6 +10292,18 @@ avr_init_builtins (void)
                                 long_unsigned_type_node,
                                 NULL_TREE);
 
+  tree uchar_ftype_ulong_uchar
+    = build_function_type_list (unsigned_char_type_node,
+                                long_unsigned_type_node,
+                                unsigned_char_type_node,
+                                NULL_TREE);
+
+  tree uint_ftype_ullong_uint
+    = build_function_type_list (unsigned_type_node,
+                                long_long_unsigned_type_node,
+                                unsigned_type_node,
+                                NULL_TREE);
+
   DEF_BUILTIN ("__builtin_avr_nop", void_ftype_void, AVR_BUILTIN_NOP);
   DEF_BUILTIN ("__builtin_avr_sei", void_ftype_void, AVR_BUILTIN_SEI);
   DEF_BUILTIN ("__builtin_avr_cli", void_ftype_void, AVR_BUILTIN_CLI);
@@ -9938,6 +10319,11 @@ avr_init_builtins (void)
                AVR_BUILTIN_FMULS);
   DEF_BUILTIN ("__builtin_avr_fmulsu", int_ftype_char_uchar, 
                AVR_BUILTIN_FMULSU);
+
+  DEF_BUILTIN ("__builtin_avr_map8", uchar_ftype_ulong_uchar, 
+               AVR_BUILTIN_MAP8);
+  DEF_BUILTIN ("__builtin_avr_map16", uint_ftype_ullong_uint, 
+               AVR_BUILTIN_MAP16);
 
   avr_init_builtin_int24 ();
 }
@@ -9962,7 +10348,9 @@ bdesc_2arg[] =
   {
     { CODE_FOR_fmul, "__builtin_avr_fmul", AVR_BUILTIN_FMUL },
     { CODE_FOR_fmuls, "__builtin_avr_fmuls", AVR_BUILTIN_FMULS },
-    { CODE_FOR_fmulsu, "__builtin_avr_fmulsu", AVR_BUILTIN_FMULSU }
+    { CODE_FOR_fmulsu, "__builtin_avr_fmulsu", AVR_BUILTIN_FMULSU },
+    { CODE_FOR_map_bitsqi, "__builtin_avr_map8", AVR_BUILTIN_MAP8 },
+    { CODE_FOR_map_bitshi, "__builtin_avr_map16", AVR_BUILTIN_MAP16 }
   };
 
 /* Subroutine of avr_expand_builtin to take care of unop insns.  */
@@ -10078,6 +10466,7 @@ avr_expand_builtin (tree exp, rtx target,
   size_t i;
   const struct avr_builtin_description *d;
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
+  const char* bname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
   unsigned int id = DECL_FUNCTION_CODE (fndecl);
   tree arg0;
   rtx op0;
@@ -10110,11 +10499,36 @@ avr_expand_builtin (tree exp, rtx target,
         op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
         if (! CONST_INT_P (op0))
-          error ("__builtin_avr_delay_cycles expects a"
-                 " compile time integer constant.");
+          error ("%s expects a compile time integer constant", bname);
 
         avr_expand_delay_cycles (op0);
         return 0;
+      }
+
+    case AVR_BUILTIN_MAP8:
+      {
+        arg0 = CALL_EXPR_ARG (exp, 0);
+        op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+
+        if (!CONST_INT_P (op0))
+          {
+            error ("%s expects a compile time long integer constant"
+                   " as first argument", bname);
+            return target;
+          }
+      }
+
+    case AVR_BUILTIN_MAP16:
+      {
+        arg0 = CALL_EXPR_ARG (exp, 0);
+        op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+
+        if (!const_double_operand (op0, VOIDmode))
+          {
+            error ("%s expects a compile time long long integer constant"
+                   " as first argument", bname);
+            return target;
+          }
       }
     }
 
