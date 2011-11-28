@@ -1,3 +1,15 @@
+2011-11-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/51288
+	* include/std/iomanip (get_money, put_money): Use sentry.
+	* testsuite/27_io/manipulators/extended/get_money/char/51288.cc: New.
+	* testsuite/27_io/manipulators/extended/get_money/wchar_t/51288.cc:
+	Likewise.
+	* testsuite/27_io/manipulators/extended/put_money/char/51288.cc:
+	Likewise.
+	* testsuite/27_io/manipulators/extended/put_money/wchar_t/51288.cc:
+	Likewise.
+
 2011-11-27  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/using.xml (Prerequisites): Refer to x86 instead
