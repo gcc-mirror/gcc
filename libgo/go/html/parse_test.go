@@ -69,11 +69,15 @@ func readDat(filename string, c chan io.Reader) {
 	}
 }
 
-func dumpLevel(w io.Writer, n *Node, level int) os.Error {
+func dumpIndent(w io.Writer, level int) {
 	io.WriteString(w, "| ")
 	for i := 0; i < level; i++ {
 		io.WriteString(w, "  ")
 	}
+}
+
+func dumpLevel(w io.Writer, n *Node, level int) os.Error {
+	dumpIndent(w, level)
 	switch n.Type {
 	case ErrorNode:
 		return os.NewError("unexpected ErrorNode")
@@ -81,10 +85,15 @@ func dumpLevel(w io.Writer, n *Node, level int) os.Error {
 		return os.NewError("unexpected DocumentNode")
 	case ElementNode:
 		fmt.Fprintf(w, "<%s>", n.Data)
+		for _, a := range n.Attr {
+			io.WriteString(w, "\n")
+			dumpIndent(w, level+1)
+			fmt.Fprintf(w, `%s="%s"`, a.Key, a.Val)
+		}
 	case TextNode:
 		fmt.Fprintf(w, "%q", n.Data)
 	case CommentNode:
-		return os.NewError("COMMENT")
+		fmt.Fprintf(w, "<!-- %s -->", n.Data)
 	case DoctypeNode:
 		fmt.Fprintf(w, "<!DOCTYPE %s>", n.Data)
 	case scopeMarkerNode:
@@ -123,7 +132,7 @@ func TestParser(t *testing.T) {
 		rc := make(chan io.Reader)
 		go readDat(filename, rc)
 		// TODO(nigeltao): Process all test cases, not just a subset.
-		for i := 0; i < 27; i++ {
+		for i := 0; i < 34; i++ {
 			// Parse the #data section.
 			b, err := ioutil.ReadAll(<-rc)
 			if err != nil {
@@ -152,6 +161,13 @@ func TestParser(t *testing.T) {
 				continue
 			}
 			// Check that rendering and re-parsing results in an identical tree.
+			if filename == "tests1.dat" && i == 30 {
+				// Test 30 in tests1.dat is such messed-up markup that a correct parse
+				// results in a non-conforming tree (one <a> element nested inside another).
+				// Therefore when it is rendered and re-parsed, it isn't the same.
+				// So we skip rendering on that test.
+				continue
+			}
 			pr, pw := io.Pipe()
 			go func() {
 				pw.CloseWithError(Render(pw, doc))

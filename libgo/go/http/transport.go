@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// HTTP client implementation. See RFC 2616.
+// 
+// This is the low-level Transport implementation of RoundTripper.
+// The high-level interface is in client.go.
+
 package http
 
 import (
@@ -357,8 +362,10 @@ func (t *Transport) getConn(cm *connectMethod) (*persistConn, os.Error) {
 		if err = conn.(*tls.Conn).Handshake(); err != nil {
 			return nil, err
 		}
-		if err = conn.(*tls.Conn).VerifyHostname(cm.tlsHost()); err != nil {
-			return nil, err
+		if t.TLSClientConfig == nil || !t.TLSClientConfig.InsecureSkipVerify {
+			if err = conn.(*tls.Conn).VerifyHostname(cm.tlsHost()); err != nil {
+				return nil, err
+			}
 		}
 		pconn.conn = conn
 	}
