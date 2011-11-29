@@ -62,6 +62,10 @@ runtime_futexwakeup(uint32 *addr, uint32 cnt)
 	*(int32*)0x1006 = 0x1006;
 }
 
+#ifndef O_CLOEXEC
+#define O_CLOEXEC 0
+#endif
+
 static int32
 getproccount(void)
 {
