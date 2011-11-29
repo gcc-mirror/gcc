@@ -58,16 +58,19 @@ void test01()
   ms1.insert("because to why");
   VERIFY( ms1.size() == 11 );
   VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
+  VERIFY( distance(ms1.begin(), ms1.end()) == ms1.size() );
 
   VERIFY( ms1.erase("eeilo") == 1 );
   VERIFY( ms1.size() == 10 );
   VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
+  VERIFY( distance(ms1.begin(), ms1.end()) == ms1.size() );
   iterator it1 = ms1.find("eeilo");
   VERIFY( it1 == ms1.end() );
 
   VERIFY( ms1.erase("tillsammans") == 1 );
   VERIFY( ms1.size() == 9 );
   VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
+  VERIFY( distance(ms1.begin(), ms1.end()) == ms1.size() );
   iterator it2 = ms1.find("tillsammans");
   VERIFY( it2 == ms1.end() );
 
@@ -77,12 +80,14 @@ void test01()
   VERIFY( ms1.erase(*it3) == 1 );
   VERIFY( ms1.size() == 8 );
   VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
+  VERIFY( distance(ms1.begin(), ms1.end()) == ms1.size() );
   it3 = ms1.find("belonging (no longer mix)");
   VERIFY( it3 == ms1.end() );
 
   VERIFY( !ms1.erase("abra") );
   VERIFY( ms1.size() == 8 );
   VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
+  VERIFY( distance(ms1.begin(), ms1.end()) == ms1.size() );
 
   VERIFY( !ms1.erase("eeilo") );
   VERIFY( ms1.size() == 8 );
@@ -90,6 +95,7 @@ void test01()
   VERIFY( ms1.erase("because to why") == 2 );
   VERIFY( ms1.size() == 6 );
   VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
+  VERIFY( distance(ms1.begin(), ms1.end()) == ms1.size() );
   iterator it4 = ms1.find("because to why");
   VERIFY( it4 == ms1.end() );
 
@@ -106,12 +112,14 @@ void test01()
   VERIFY( ms1.erase(*it5) == 1 );
   VERIFY( ms1.size() == 5 );
   VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
+  VERIFY( distance(ms1.begin(), ms1.end()) == ms1.size() );
   it5 = ms1.find("umbra/penumbra");
   VERIFY( it5 == ms1.end() );
 
   VERIFY( ms1.erase(*it6) == 1 );
   VERIFY( ms1.size() == 4 );
   VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
+  VERIFY( distance(ms1.begin(), ms1.end()) == ms1.size() );
   it6 = ms1.find("one line behind");
   VERIFY( it6 == ms1.end() );
 
@@ -124,6 +132,7 @@ void test01()
   VERIFY( ms1.erase(*it8) == 1 );
   VERIFY( ms1.size() == 3 );
   VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
+  VERIFY( distance(ms1.begin(), ms1.end()) == ms1.size() );
   VERIFY( ++it7 == it9 );
 
   iterator it10 = it9;
@@ -132,17 +141,20 @@ void test01()
 
   VERIFY( ms1.erase(*it9) == 1 );
   VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
+  VERIFY( distance(ms1.begin(), ms1.end()) == ms1.size() );
   VERIFY( ms1.size() == 2 );
   VERIFY( ++it10 == ms1.end() );
 
   VERIFY( ms1.erase(ms1.begin()) != ms1.end() );  
   VERIFY( ms1.size() == 1 );
   VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
+  VERIFY( distance(ms1.begin(), ms1.end()) == ms1.size() );
   VERIFY( ms1.begin() == it11 );
 
   VERIFY( ms1.erase(*ms1.begin()) == 1 );  
   VERIFY( ms1.size() == 0 );
   VERIFY( get_nb_bucket_elems(ms1) == ms1.size() );
+  VERIFY( distance(ms1.begin(), ms1.end()) == ms1.size() );
   VERIFY( ms1.begin() == ms1.end() );
 }
 

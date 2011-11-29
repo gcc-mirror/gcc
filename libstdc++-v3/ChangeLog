@@ -1,3 +1,17 @@
+2011-11-29  François Dumont <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable.h (_Hashtable<>::_M_rehash): Remove code
+	useless now that the hashtable implementation put the hash code in
+	cache if the hash functor throws.
+	* testsuite/23_containers/unordered_set/erase/1.cc: Enhance test by
+	checking also distance between begin and end iterators to validate
+	underlying data model.
+	* testsuite/23_containers/unordered_multiset/erase/1.cc: Likewise.
+	* testsuire/23_containers/unordered_map/erase/1.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/erase/1.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/erase/2.cc: New.
+	* testsuite/23_containers/unordered_multimap/erase/2.cc: New.
+
 2011-11-28  Andrew MacLeod  <amacleod@redhat.com>
 
 	* include/bits/atomic_base.h (ATOMIC_*_LOCK_FREE): Use new cpp
