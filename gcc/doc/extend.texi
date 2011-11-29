@@ -1220,11 +1220,12 @@ Fixed-point types are supported by the DWARF2 debug information format.
 
 As an extension, the GNU C compiler supports named address spaces as
 defined in the N1275 draft of ISO/IEC DTR 18037.  Support for named
-address spaces in GCC will evolve as the draft technical report changes.
-Calling conventions for any target might also change.  At present, only
-the SPU and M32C targets support other address spaces.  On the SPU target, for
-example, variables may be declared as belonging to another address space
-by qualifying the type with the @code{__ea} address space identifier:
+address spaces in GCC will evolve as the draft technical report
+changes.  Calling conventions for any target might also change.  At
+present, only the SPU, M32C, and RL78 targets support other address
+spaces.  On the SPU target, for example, variables may be declared as
+belonging to another address space by qualifying the type with the
+@code{__ea} address space identifier:
 
 @smallexample
 extern int __ea i;
@@ -1243,6 +1244,11 @@ On the M32C target, with the R8C and M16C cpu variants, variables
 qualified with @code{__far} are accessed using 32-bit addresses in
 order to access memory beyond the first 64k bytes.  If @code{__far} is
 used with the M32CM or M32C cpu variants, it has no effect.
+
+On the RL78 target, variables qualified with @code{__far} are accessed
+with 32-bit pointers (20-bit addresses) rather than the default 16-bit
+addresses.  Non-far variables are assumed to appear in the topmost 64
+kB of the address space.
 
 @node Zero Length
 @section Arrays of Length Zero
@@ -2553,7 +2559,7 @@ This attribute is ignored for R8C target.
 @item interrupt
 @cindex interrupt handler functions
 Use this attribute on the ARM, AVR, Epiphany, M32C, M32R/D, m68k, MeP, MIPS,
-RX and Xstormy16 ports to indicate that the specified function is an
+RL78, RX and Xstormy16 ports to indicate that the specified function is an
 interrupt handler.  The compiler will generate function entry and exit
 sequences suitable for use in an interrupt handler when this attribute
 is present.
@@ -2610,6 +2616,10 @@ void __attribute__ ((interrupt, use_shadow_register_set,
                      keep_interrupts_masked,
                      use_debug_exception_return)) v7 ();
 @end smallexample
+
+On RL78, use @code{brk_interrupt} instead of @code{interrupt} for
+handlers intended to be used with the @code{BRK} opcode (i.e.  those
+that must end with @code{RETB} instead of @code{RETI}).
 
 @item ifunc ("@var{resolver}")
 @cindex @code{ifunc} attribute

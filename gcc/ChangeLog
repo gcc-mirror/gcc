@@ -1,3 +1,13 @@
+2011-11-29  DJ Delorie  <dj@redhat.com>
+
+	* config.gcc (rl78-*-elf): New case.
+	* doc/extend.texi: Add RL78 documentation.
+	* doc/invoke.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* doc/contrib.texi: Add RL78.
+	* doc/install.texi: Add rl78-*-elf.
+	* config/rl78: New directory for the Renesas RL78.
+
 2011-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51247

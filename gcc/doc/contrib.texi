@@ -220,7 +220,7 @@ Mo DeJong for GCJ and libgcj bug fixes.
 
 @item
 DJ Delorie for the DJGPP port, build and libiberty maintenance,
-various bug fixes, and the M32C and MeP ports.
+various bug fixes, and the M32C, MeP, and RL78 ports.
 
 @item
 Arnaud Desitter for helping to debug GNU Fortran.

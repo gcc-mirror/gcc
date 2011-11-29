@@ -2115,6 +2115,13 @@ rs6000-ibm-aix[6789].* | powerpc-ibm-aix[6789].*)
 	use_gcc_stdint=wrap
 	extra_headers=altivec.h
 	;;
+rl78-*-elf*)
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	target_has_targetm_common=no
+	c_target_objs="rl78-c.o"
+	cxx_target_objs="rl78-c.o"
+	tmake_file="${tmake_file} rl78/t-rl78"
+	;;
 rx-*-elf*)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	tmake_file="${tmake_file} rx/t-rx"
