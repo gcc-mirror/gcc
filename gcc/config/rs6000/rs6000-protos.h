@@ -170,6 +170,8 @@ extern const char * output_isel (rtx *);
 extern void rs6000_call_indirect_aix (rtx, rtx, rtx);
 extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
 extern void get_ppc476_thunk_name (char name[32]);
+extern bool rs6000_overloaded_builtin_p (enum rs6000_builtins);
+extern unsigned rs6000_builtin_mask_calculate (void);
 
 /* Declare functions in rs6000-c.c */
 
@@ -178,6 +180,8 @@ extern void rs6000_cpu_cpp_builtins (struct cpp_reader *);
 #ifdef TREE_CODE
 extern bool rs6000_pragma_target_parse (tree, tree);
 #endif
+extern void rs6000_target_modify_macros (bool, int, unsigned);
+extern void (*rs6000_target_modify_macros_ptr) (bool, int, unsigned);
 
 #if TARGET_MACHO
 char *output_call (rtx, rtx *, int, int);

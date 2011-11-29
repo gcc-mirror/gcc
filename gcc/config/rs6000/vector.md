@@ -677,7 +677,7 @@
     }
 }")
 
-(define_expand "unsigned_float<VEC_int><mode>2"
+(define_expand "floatuns<VEC_int><mode>2"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
 	(unsigned_float:VEC_F (match_operand:<VEC_INT> 1 "vint_operand" "")))]
   "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
