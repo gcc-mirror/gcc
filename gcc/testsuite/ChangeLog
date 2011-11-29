@@ -1,3 +1,12 @@
+2011-11-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51306
+	PR fortran/48700
+	* gfortran.dg/move_alloc_5.f90: Add dg-error.
+	* gfortran.dg/select_type_23.f03: Add dg-error.
+	* gfortran.dg/move_alloc_6.f90: New.
+	* gfortran.dg/move_alloc_7.f90: New.
+
 2011-11-29  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/51301
