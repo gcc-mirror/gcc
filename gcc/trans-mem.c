@@ -4213,7 +4213,7 @@ ipa_tm_create_version_alias (struct cgraph_node *node, void *data)
   TREE_SYMBOL_REFERENCED (tm_name) = 1;
 
   /* Perform the same remapping to the comdat group.  */
-  if (DECL_COMDAT (new_decl))
+  if (DECL_ONE_ONLY (new_decl))
     DECL_COMDAT_GROUP (new_decl) = tm_mangle (DECL_COMDAT_GROUP (old_decl));
 
   new_node = cgraph_same_body_alias (NULL, new_decl, info->new_decl);
@@ -4248,7 +4248,7 @@ ipa_tm_create_version (struct cgraph_node *old_node)
   TREE_SYMBOL_REFERENCED (tm_name) = 1;
 
   /* Perform the same remapping to the comdat group.  */
-  if (DECL_COMDAT (new_decl))
+  if (DECL_ONE_ONLY (new_decl))
     DECL_COMDAT_GROUP (new_decl) = tm_mangle (DECL_COMDAT_GROUP (old_decl));
 
   new_node = cgraph_copy_node_for_versioning (old_node, new_decl, NULL, NULL);

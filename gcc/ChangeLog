@@ -1,3 +1,10 @@
+2011-11-21  David Edelsohn  <dje.gcc@gmail.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-mem.c (ipa_tm_create_version_alias): Mangle new_decl
+	if DECL_ONE_ONLY.
+	(ipa_tm_create_version): Same.
+
 2011-11-29  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* haifa-sched.c (recompute_todo_spec): Simplify and correct the
