@@ -1,3 +1,10 @@
+2011-11-29  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/51301
+	* tree-vect-patterns.c (vect_recog_over_widening_pattern): Check that
+	the last statement doesn't convert to a bigger type than the original
+	type of the computation.
+
 2011-11-28  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_expand_atomic_compare_and_swap):
