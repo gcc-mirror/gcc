@@ -1,3 +1,9 @@
+2011-11-29  Andreas Tobler  <andreast@fgznet.ch>
+
+	* config.rpath (ld_shlibs): Fix detection of FreeBSD-10 and up.
+	(libname_spec): Likewise.
+	* configure: Regenerate with autoconf -I ../../.
+
 2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* config.rpath, ltcf-c.sh, ltcf-gcj.sh, ltconfig: Remove
