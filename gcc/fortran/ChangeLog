@@ -1,3 +1,15 @@
+2011-11-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/40958
+	* module.c (prev_module_line):  New variable.
+	(prev_module_column):  New variable.
+	(prev_character):  New variable.
+	(module_char):  Update the new variables.
+	(module_unget_char):  New function.
+	(parse_string):  Use module_unget_char.
+	(parse_integer):  Likewise.
+	(parse_name):  Likewise.
+
 2011-11-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51306
