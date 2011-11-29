@@ -1068,9 +1068,11 @@ spu-*-elf*)
 		libgcc_cache64k.a libgcc_cache128k.a"
 	;;
 tic6x-*-uclinux)
-	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp c6x/t-elf  c6x/t-uclinux t-crtstuff-pic t-libgcc-pic t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-gnu-prefix"
+	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp \
+		c6x/t-elf  c6x/t-uclinux t-crtstuff-pic t-libgcc-pic \
+		t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-gnu-prefix"
 	tm_file="$tm_file c6x/c6x-abi.h"
-	extra_parts="crtbeginS.o crtendS.o crti.o crtn.o"
+	extra_parts="$extra_parts crtbeginS.o crtendS.o crti.o crtn.o"
 	unwind_header=config/c6x/unwind-c6x.h
 	;;
 tic6x-*-elf)
