@@ -1088,6 +1088,7 @@ vect_recog_over_widening_pattern (VEC (gimple, heap) **stmts,
   tree var = NULL_TREE, new_type = NULL_TREE, tmp, new_oprnd;
   bool first;
   struct loop *loop = (gimple_bb (stmt))->loop_father;
+  tree type = NULL;
 
   first = true;
   while (1)
@@ -1150,6 +1151,7 @@ vect_recog_over_widening_pattern (VEC (gimple, heap) **stmts,
           print_gimple_stmt (vect_dump, pattern_stmt, 0, TDF_SLIM);
         }
 
+      type = gimple_expr_type (stmt);
       prev_stmt = stmt;
       stmt = use_stmt;
 
@@ -1165,9 +1167,11 @@ vect_recog_over_widening_pattern (VEC (gimple, heap) **stmts,
     {
       use_lhs = gimple_assign_lhs (use_stmt);
       use_type = TREE_TYPE (use_lhs);
-      /* Support only type promotion or signedess change.  */
+      /* Support only type promotion or signedess change.  Check that USE_TYPE
+	 is not bigger than the original type.  */
       if (!INTEGRAL_TYPE_P (use_type)
-          || TYPE_PRECISION (new_type) > TYPE_PRECISION (use_type))
+          || TYPE_PRECISION (new_type) > TYPE_PRECISION (use_type)
+	  || TYPE_PRECISION (type) < TYPE_PRECISION (use_type))
         return NULL;
 
       if (TYPE_UNSIGNED (new_type) != TYPE_UNSIGNED (use_type)
