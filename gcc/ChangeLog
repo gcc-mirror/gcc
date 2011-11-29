@@ -1,5 +1,16 @@
 2011-11-29  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/sync.md (UNSPEC_LDA, UNSPEC_STA): New unspecs.
+	(movdi_via_fpu): Remove.
+	(loaddi_via_fpu): New insn pattern.
+	(storedi_via_fpu): Ditto.
+	(atomic_loaddi_fpu): Use loaddi_via_fpu and storedi_via_fpu.
+	(atomic_storedi_fpu): Ditto.
+	* reg-stack.c (get_true_reg): Handle UNSPEC_LDA.
+	(subst_stack_regs_pat): Handle UNSPEC_STA.
+
+2011-11-29  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (*floathi<mode>2_i387_with_temp): Do not
 	allocate scratch memory for alternative 0.
 

@@ -23,6 +23,8 @@
   UNSPEC_SFENCE
   UNSPEC_MFENCE
   UNSPEC_MOVA	; For __atomic support
+  UNSPEC_LDA
+  UNSPEC_STA
 ])
 
 (define_c_enum "unspecv" [
@@ -180,7 +182,10 @@
 	mem = dst;
 
       if (FP_REG_P (tmp))
-	emit_insn (gen_movdi_via_fpu (mem, src, tmp));
+        {
+	  emit_insn (gen_loaddi_via_fpu (tmp, src));
+	  emit_insn (gen_storedi_via_fpu (mem, tmp));
+	}
       else
 	{
 	  adjust_reg_mode (tmp, DImode);
@@ -258,7 +263,8 @@
 
       if (FP_REG_P (tmp))
 	{
-	  emit_insn (gen_movdi_via_fpu (dst, src, tmp));
+	  emit_insn (gen_loaddi_via_fpu (tmp, src));
+	  emit_insn (gen_storedi_via_fpu (dst, tmp));
 	  DONE;
 	}
       else
@@ -276,15 +282,27 @@
 ;; operations.  But the fix_trunc patterns want way more setup than we want
 ;; to provide.  Note that the scratch is DFmode instead of XFmode in order
 ;; to make it easy to allocate a scratch in either SSE or FP_REGs above.
-(define_insn "movdi_via_fpu"
-  [(set (match_operand:DI 0 "memory_operand" "=m")
-	(unspec:DI [(match_operand:DI 1 "memory_operand" "m")] UNSPEC_MOVA))
-   (clobber (match_operand:DF 2 "register_operand" "=f"))]
+
+(define_insn "loaddi_via_fpu"
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(unspec:DF [(match_operand:DI 1 "memory_operand" "m")] UNSPEC_LDA))]
   "TARGET_80387"
-  "fild%Z1\t%1\;fistp%Z0\t%0"
-  [(set_attr "type" "multi")
-   ;; Worst case based on full sib+offset32 addressing modes
-   (set_attr "length" "14")])
+  "fild%Z1\t%1"
+  [(set_attr "type" "fmov")
+   (set_attr "mode" "DF")
+   (set_attr "fp_int_src" "true")])
+
+(define_insn "storedi_via_fpu"
+  [(set (match_operand:DI 0 "memory_operand" "=m")
+	(unspec:DI [(match_operand:DF 1 "register_operand" "f")] UNSPEC_STA))]
+  "TARGET_80387"
+{
+  gcc_assert (find_regno_note (insn, REG_DEAD, FIRST_STACK_REG) != NULL_RTX);
+
+  return "fistp%Z0\t%0";
+}
+  [(set_attr "type" "fmov")
+   (set_attr "mode" "DI")])
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:QI 0 "register_operand" "")		;; bool success output
