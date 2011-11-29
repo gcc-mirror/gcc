@@ -23,6 +23,18 @@
 #include <string>
 #include <testsuite_hooks.h>
 
+namespace
+{
+  std::size_t
+  get_nb_bucket_elems(const std::unordered_set<std::string>& us)
+  {
+    std::size_t nb = 0;
+    for (std::size_t b = 0; b != us.bucket_count(); ++b)
+      nb += us.bucket_size(b);
+    return nb;
+  }
+}
+
 void test01()
 {
   bool test __attribute__((unused)) = true;
@@ -44,14 +56,20 @@ void test01()
   s1.insert("belonging (no longer mix)");
   s1.insert("one line behind");
   VERIFY( s1.size() == 10 );
+  VERIFY( get_nb_bucket_elems(s1) == s1.size() );
+  VERIFY( distance(s1.begin(), s1.end()) == s1.size() );
 
   VERIFY( s1.erase("eeilo") == 1 );
   VERIFY( s1.size() == 9 );
+  VERIFY( get_nb_bucket_elems(s1) == s1.size() );
+  VERIFY( distance(s1.begin(), s1.end()) == s1.size() );
   iterator it1 = s1.find("eeilo");
   VERIFY( it1 == s1.end() );
 
   VERIFY( s1.erase("tillsammans") == 1 );
   VERIFY( s1.size() == 8 );
+  VERIFY( get_nb_bucket_elems(s1) == s1.size() );
+  VERIFY( distance(s1.begin(), s1.end()) == s1.size() );
   iterator it2 = s1.find("tillsammans");
   VERIFY( it2 == s1.end() );
 
@@ -60,17 +78,23 @@ void test01()
   VERIFY( it3 != s1.end() );
   VERIFY( s1.erase(*it3) == 1 );
   VERIFY( s1.size() == 7 );
+  VERIFY( get_nb_bucket_elems(s1) == s1.size() );
+  VERIFY( distance(s1.begin(), s1.end()) == s1.size() );
   it3 = s1.find("belonging (no longer mix)");
   VERIFY( it3 == s1.end() );
 
   VERIFY( !s1.erase("abra") );
   VERIFY( s1.size() == 7 );
+  VERIFY( get_nb_bucket_elems(s1) == s1.size() );
+  VERIFY( distance(s1.begin(), s1.end()) == s1.size() );
 
   VERIFY( !s1.erase("eeilo") );
   VERIFY( s1.size() == 7 );
 
   VERIFY( s1.erase("because to why") == 1 );
   VERIFY( s1.size() == 6 );
+  VERIFY( get_nb_bucket_elems(s1) == s1.size() );
+  VERIFY( distance(s1.begin(), s1.end()) == s1.size() );
   iterator it4 = s1.find("because to why");
   VERIFY( it4 == s1.end() );
 
@@ -86,11 +110,15 @@ void test01()
 
   VERIFY( s1.erase(*it5) == 1 );
   VERIFY( s1.size() == 5 );
+  VERIFY( get_nb_bucket_elems(s1) == s1.size() );
+  VERIFY( distance(s1.begin(), s1.end()) == s1.size() );
   it5 = s1.find("umbra/penumbra");
   VERIFY( it5 == s1.end() );
 
   VERIFY( s1.erase(*it6) == 1 );
   VERIFY( s1.size() == 4 );
+  VERIFY( get_nb_bucket_elems(s1) == s1.size() );
+  VERIFY( distance(s1.begin(), s1.end()) == s1.size() );
   it6 = s1.find("one line behind");
   VERIFY( it6 == s1.end() );
 
@@ -102,6 +130,8 @@ void test01()
 
   VERIFY( s1.erase(*it8) == 1 );
   VERIFY( s1.size() == 3 );
+  VERIFY( get_nb_bucket_elems(s1) == s1.size() );
+  VERIFY( distance(s1.begin(), s1.end()) == s1.size() );
   VERIFY( ++it7 == it9 );
 
   iterator it10 = it9;
@@ -109,15 +139,21 @@ void test01()
   iterator it11 = it10;
 
   VERIFY( s1.erase(*it9) == 1 );
+  VERIFY( get_nb_bucket_elems(s1) == s1.size() );
+  VERIFY( distance(s1.begin(), s1.end()) == s1.size() );
   VERIFY( s1.size() == 2 );
   VERIFY( ++it10 == s1.end() );
 
   VERIFY( s1.erase(s1.begin()) != s1.end() );  
   VERIFY( s1.size() == 1 );
+  VERIFY( get_nb_bucket_elems(s1) == s1.size() );
+  VERIFY( distance(s1.begin(), s1.end()) == s1.size() );
   VERIFY( s1.begin() == it11 );
 
   VERIFY( s1.erase(*s1.begin()) == 1 );  
   VERIFY( s1.size() == 0 );
+  VERIFY( get_nb_bucket_elems(s1) == s1.size() );
+  VERIFY( distance(s1.begin(), s1.end()) == s1.size() );
   VERIFY( s1.begin() == s1.end() );
 }
 

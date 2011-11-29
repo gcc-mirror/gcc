@@ -233,11 +233,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_deallocate_node(_Node* __n);
 
-      // Deallocate all nodes contained in the bucket array, buckets' nodes
-      // are not linked to each other
-      void
-      _M_deallocate_nodes(_Bucket*, size_type);
-
       // Deallocate the linked list of nodes pointed to by __n
       void
       _M_deallocate_nodes(_Node* __n);
@@ -582,19 +577,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       _M_node_allocator.destroy(__n);
       _M_node_allocator.deallocate(__n, 1);
-    }
-
-  template<typename _Key, typename _Value,
-	   typename _Allocator, typename _ExtractKey, typename _Equal,
-	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
-	   bool __chc, bool __cit, bool __uk>
-    void
-    _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
-	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
-    _M_deallocate_nodes(_Bucket* __buckets, size_type __n)
-    {
-      for (size_type __i = 0; __i != __n; ++__i)
-	_M_deallocate_nodes(__buckets[__i]);
     }
 
   template<typename _Key, typename _Value,
@@ -1542,11 +1524,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
     _M_rehash(size_type __n, const _RehashPolicyState& __state)
     {
-      _Bucket* __new_buckets = nullptr;
-      _Node* __p = _M_buckets[_M_begin_bucket_index];
       __try
 	{
-	  __new_buckets = _M_allocate_buckets(__n);
+	  _Bucket* __new_buckets = _M_allocate_buckets(__n);
+	  _Node* __p = _M_buckets[_M_begin_bucket_index];
 	  // First loop to store each node in its new bucket
 	  while (__p)
 	    {
@@ -1591,24 +1572,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       __catch(...)
 	{
-	  if (__new_buckets)
-	    {
-	      // A failure here means that a hash function threw an exception.
-	      // We can't restore the previous state without calling the hash
-	      // function again, so the only sensible recovery is to delete
-	      // everything.
-	      _M_deallocate_nodes(__new_buckets, __n);
-	      _M_deallocate_buckets(__new_buckets, __n);
-	      _M_deallocate_nodes(__p);
-	      __builtin_memset(_M_buckets, 0, sizeof(_Bucket) * _M_bucket_count);
-	      _M_element_count = 0;
-	      _M_begin_bucket_index = _M_bucket_count;
-	      _M_rehash_policy._M_reset(_RehashPolicyState());
-	    }
-	  else
-	    // A failure here means that buckets allocation failed.  We only
-	    // have to restore hash policy previous state.
-	    _M_rehash_policy._M_reset(__state);
+	  // A failure here means that buckets allocation failed.  We only
+	  // have to restore hash policy previous state.
+	  _M_rehash_policy._M_reset(__state);
 	  __throw_exception_again;
 	}
     }
