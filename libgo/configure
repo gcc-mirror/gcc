@@ -14559,6 +14559,24 @@ else
 fi
 
 
+CFLAGS_hold="$CFLAGS"
+CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+LIBS_hold="$LIBS"
+LIBS="$LIBS $PTHREAD_LIBS"
+for ac_func in sem_timedwait
+do :
+  ac_fn_c_check_func "$LINENO" "sem_timedwait" "ac_cv_func_sem_timedwait"
+if test "x$ac_cv_func_sem_timedwait" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SEM_TIMEDWAIT 1
+_ACEOF
+
+fi
+done
+
+CFLAGS="$CFLAGS_hold"
+LIBS="$LIBS_hold"
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __sync_bool_compare_and_swap_4" >&5
 $as_echo_n "checking for __sync_bool_compare_and_swap_4... " >&6; }
 if test "${libgo_cv_func___sync_bool_compare_and_swap_4+set}" = set; then :
