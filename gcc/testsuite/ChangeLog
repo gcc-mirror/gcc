@@ -1,3 +1,9 @@
+2011-11-29  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	Use complex floating-point constant in CDBL.
+
+	* gcc.dg/compat/compat-common.h (CDBL): Replace 1i with 1.0i.
+
 2011-11-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51306
