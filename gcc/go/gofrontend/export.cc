@@ -279,7 +279,7 @@ Export::write_type(const Type* type)
       if (named_type != NULL)
 	{
 	  // The builtin types should have been predefined.
-	  go_assert(named_type->location() != BUILTINS_LOCATION
+	  go_assert(!Linemap::is_predeclared_location(named_type->location())
 		     || (named_type->named_object()->package()->name()
 			 == "unsafe"));
 	  named_object = named_type->named_object();

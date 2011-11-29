@@ -32,7 +32,7 @@ class Runtime
 
   // Make a call to a runtime function.
   static Call_expression*
-  make_call(Function, source_location, int, ...);
+  make_call(Function, Location, int, ...);
 
   // Convert all the types used by runtime functions to the backend
   // representation.

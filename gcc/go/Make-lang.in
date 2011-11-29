@@ -54,6 +54,7 @@ GO_OBJS = \
 	go/go-dump.o \
 	go/go-gcc.o \
 	go/go-lang.o \
+	go/go-linemap.o \
 	go/go-optimize.o \
 	go/go.o \
 	go/gogo-tree.o \
@@ -217,14 +218,15 @@ GO_SYSTEM_H = go/go-system.h $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(DIAGNOSTIC_CORE_H) $(INPUT_H) intl.h
 
 GO_C_H = go/go-c.h $(MACHMODE_H)
-GO_LEX_H = go/gofrontend/lex.h go/gofrontend/operator.h
+GO_LINEMAP_H = go/gofrontend/go-linemap.h $(GO_SYSTEM_H) go/go-location.h
+GO_LEX_H = go/gofrontend/lex.h go/gofrontend/operator.h $(GO_LINEMAP_H)
 GO_PARSE_H = go/gofrontend/parse.h
-GO_GOGO_H = go/gofrontend/gogo.h
-GO_TYPES_H = go/gofrontend/types.h
+GO_GOGO_H = go/gofrontend/gogo.h $(GO_LINEMAP_H)
+GO_TYPES_H = go/gofrontend/types.h $(GO_LINEMAP_H)
 GO_STATEMENTS_H = go/gofrontend/statements.h go/gofrontend/operator.h
 GO_EXPRESSIONS_H = go/gofrontend/expressions.h go/gofrontend/operator.h
 GO_EXPORT_H = go/gofrontend/export.h go/gofrontend/string-dump.h
-GO_IMPORT_H = go/gofrontend/import.h $(GO_EXPORT_H)
+GO_IMPORT_H = go/gofrontend/import.h $(GO_EXPORT_H) $(GO_LINEMAP_H)
 GO_RUNTIME_H = go/gofrontend/runtime.h go/gofrontend/runtime.def
 GO_AST_DUMP_H = go/gofrontend/ast-dump.h go/gofrontend/string-dump.h
 
@@ -245,6 +247,9 @@ GOINCLUDES = -I $(srcdir)/go -I $(srcdir)/go/gofrontend
 go/go-gcc.o: go/go-gcc.cc $(GO_SYSTEM_H) $(TREE_H) tree-iterator.h \
 		$(GIMPLE_H) toplev.h $(GO_C_H) $(GO_GOGO_H) \
 		go/gofrontend/backend.h
+	$(CXX) -c $(GOINCLUDES) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $< $(OUTPUT_OPTION)
+
+go/go-linemap.o: go/go-linemap.cc $(GO_SYSTEM_H) $(GO_LINEMAP_H)
 	$(CXX) -c $(GOINCLUDES) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $< $(OUTPUT_OPTION)
 
 go/%.o: go/gofrontend/%.cc

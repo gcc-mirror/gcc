@@ -189,8 +189,8 @@ Dataflow::Compare_vars::operator()(const Named_object* no1,
     return false;
 
   // We can have two different variables with the same name.
-  source_location loc1 = no1->location();
-  source_location loc2 = no2->location();
+  Location loc1 = no1->location();
+  Location loc2 = no2->location();
   if (loc1 < loc2)
     return false;
   if (loc1 > loc2)

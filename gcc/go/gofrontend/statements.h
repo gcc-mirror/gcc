@@ -123,7 +123,7 @@ class Statement
     STATEMENT_TYPE_SWITCH
   };
 
-  Statement(Statement_classification, source_location);
+  Statement(Statement_classification, Location);
 
   virtual ~Statement();
 
@@ -139,30 +139,30 @@ class Statement
   // Either the type or the initialization expression may be NULL, but
   // not both.
   static Temporary_statement*
-  make_temporary(Type*, Expression*, source_location);
+  make_temporary(Type*, Expression*, Location);
 
   // Make an assignment statement.
   static Statement*
-  make_assignment(Expression*, Expression*, source_location);
+  make_assignment(Expression*, Expression*, Location);
 
   // Make an assignment operation (+=, etc.).
   static Statement*
   make_assignment_operation(Operator, Expression*, Expression*,
-			    source_location);
+			    Location);
 
   // Make a tuple assignment statement.
   static Statement*
-  make_tuple_assignment(Expression_list*, Expression_list*, source_location);
+  make_tuple_assignment(Expression_list*, Expression_list*, Location);
 
   // Make an assignment from a map index to a pair of variables.
   static Statement*
   make_tuple_map_assignment(Expression* val, Expression* present,
-			    Expression*, source_location);
+			    Expression*, Location);
 
   // Make a statement which assigns a pair of values to a map.
   static Statement*
   make_map_assignment(Expression*, Expression* val,
-		      Expression* should_set, source_location);
+		      Expression* should_set, Location);
 
   // Make an assignment from a nonblocking receive to a pair of
   // variables.  FOR_SELECT is true is this is being created for a
@@ -170,13 +170,13 @@ class Statement
   static Statement*
   make_tuple_receive_assignment(Expression* val, Expression* closed,
 				Expression* channel, bool for_select,
-				source_location);
+				Location);
 
   // Make an assignment from a type guard to a pair of variables.
   static Statement*
   make_tuple_type_guard_assignment(Expression* val, Expression* ok,
 				   Expression* expr, Type* type,
-				   source_location);
+				   Location);
 
   // Make an expression statement from an Expression.  IS_IGNORED is
   // true if the value is being explicitly ignored, as in an
@@ -187,7 +187,7 @@ class Statement
   // Make a block statement from a Block.  This is an embedded list of
   // statements which may also include variable definitions.
   static Statement*
-  make_block_statement(Block*, source_location);
+  make_block_statement(Block*, Location);
 
   // Make an increment statement.
   static Statement*
@@ -199,35 +199,35 @@ class Statement
 
   // Make a go statement.
   static Statement*
-  make_go_statement(Call_expression* call, source_location);
+  make_go_statement(Call_expression* call, Location);
 
   // Make a defer statement.
   static Statement*
-  make_defer_statement(Call_expression* call, source_location);
+  make_defer_statement(Call_expression* call, Location);
 
   // Make a return statement.
   static Return_statement*
-  make_return_statement(Expression_list*, source_location);
+  make_return_statement(Expression_list*, Location);
 
   // Make a break statement.
   static Statement*
-  make_break_statement(Unnamed_label* label, source_location);
+  make_break_statement(Unnamed_label* label, Location);
 
   // Make a continue statement.
   static Statement*
-  make_continue_statement(Unnamed_label* label, source_location);
+  make_continue_statement(Unnamed_label* label, Location);
 
   // Make a goto statement.
   static Statement*
-  make_goto_statement(Label* label, source_location);
+  make_goto_statement(Label* label, Location);
 
   // Make a goto statement to an unnamed label.
   static Statement*
-  make_goto_unnamed_statement(Unnamed_label* label, source_location);
+  make_goto_unnamed_statement(Unnamed_label* label, Location);
 
   // Make a label statement--where the label is defined.
   static Statement*
-  make_label_statement(Label* label, source_location);
+  make_label_statement(Label* label, Location);
 
   // Make an unnamed label statement--where the label is defined.
   static Statement*
@@ -236,33 +236,33 @@ class Statement
   // Make an if statement.
   static Statement*
   make_if_statement(Expression* cond, Block* then_block, Block* else_block,
-		    source_location);
+		    Location);
 
   // Make a switch statement.
   static Switch_statement*
-  make_switch_statement(Expression* switch_val, source_location);
+  make_switch_statement(Expression* switch_val, Location);
 
   // Make a type switch statement.
   static Type_switch_statement*
-  make_type_switch_statement(Named_object* var, Expression*, source_location);
+  make_type_switch_statement(Named_object* var, Expression*, Location);
 
   // Make a send statement.
   static Send_statement*
-  make_send_statement(Expression* channel, Expression* val, source_location);
+  make_send_statement(Expression* channel, Expression* val, Location);
 
   // Make a select statement.
   static Select_statement*
-  make_select_statement(source_location);
+  make_select_statement(Location);
 
   // Make a for statement.
   static For_statement*
   make_for_statement(Block* init, Expression* cond, Block* post,
-		     source_location location);
+		     Location location);
 
   // Make a for statement with a range clause.
   static For_range_statement*
   make_for_range_statement(Expression* index_var, Expression* value_var,
-			   Expression* range, source_location);
+			   Expression* range, Location);
 
   // Return the statement classification.
   Statement_classification
@@ -270,7 +270,7 @@ class Statement
   { return this->classification_; }
 
   // Get the statement location.
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -448,7 +448,7 @@ class Statement
 
   // For children to return an error statement from lower().
   static Statement*
-  make_error_statement(source_location);
+  make_error_statement(Location);
 
  private:
   // Convert to the desired statement classification, or return NULL.
@@ -474,7 +474,7 @@ class Statement
   // The statement classification.
   Statement_classification classification_;
   // The location in the input file of the start of this statement.
-  source_location location_;
+  Location location_;
 };
 
 // A statement which creates and initializes a temporary variable.
@@ -482,7 +482,7 @@ class Statement
 class Temporary_statement : public Statement
 {
  public:
-  Temporary_statement(Type* type, Expression* init, source_location location)
+  Temporary_statement(Type* type, Expression* init, Location location)
     : Statement(STATEMENT_TEMPORARY, location),
       type_(type), init_(init), bvariable_(NULL), are_hidden_fields_ok_(false),
       is_address_taken_(false)
@@ -579,7 +579,7 @@ class Variable_declaration_statement : public Statement
 class Return_statement : public Statement
 {
  public:
-  Return_statement(Expression_list* vals, source_location location)
+  Return_statement(Expression_list* vals, Location location)
     : Statement(STATEMENT_RETURN, location),
       vals_(vals), are_hidden_fields_ok_(false), is_lowered_(false)
   { }
@@ -632,7 +632,7 @@ class Send_statement : public Statement
 {
  public:
   Send_statement(Expression* channel, Expression* val,
-		 source_location location)
+		 Location location)
     : Statement(STATEMENT_SEND, location),
       channel_(channel), val_(val), for_select_(false)
   { }
@@ -691,7 +691,7 @@ class Select_clauses
   void
   add(bool is_send, Expression* channel, Expression* val, Expression* closed,
       Named_object* var, Named_object* closedvar, bool is_default,
-      Block* statements, source_location location)
+      Block* statements, Location location)
   {
     this->clauses_.push_back(Select_clause(is_send, channel, val, closed, var,
 					   closedvar, is_default, statements,
@@ -717,7 +717,7 @@ class Select_clauses
 
   // Convert to the backend representation.
   Bstatement*
-  get_backend(Translate_context*, Unnamed_label* break_label, source_location);
+  get_backend(Translate_context*, Unnamed_label* break_label, Location);
 
   // Dump AST representation.
   void
@@ -737,7 +737,7 @@ class Select_clauses
     Select_clause(bool is_send, Expression* channel, Expression* val,
 		  Expression* closed, Named_object* var,
 		  Named_object* closedvar, bool is_default, Block* statements,
-		  source_location location)
+		  Location location)
       : channel_(channel), val_(val), closed_(closed), var_(var),
 	closedvar_(closedvar), statements_(statements), location_(location),
 	is_send_(is_send), is_default_(is_default), is_lowered_(false)
@@ -780,7 +780,7 @@ class Select_clauses
     { return this->statements_; }
 
     // Return the location.
-    source_location
+    Location
     location() const
     { return this->location_; }
 
@@ -813,7 +813,7 @@ class Select_clauses
     // The statements to execute.
     Block* statements_;
     // The location of this clause.
-    source_location location_;
+    Location location_;
     // Whether this is a send or a receive.
     bool is_send_;
     // Whether this is the default.
@@ -823,7 +823,7 @@ class Select_clauses
   };
 
   void
-  add_clause_backend(Translate_context*, source_location, int index,
+  add_clause_backend(Translate_context*, Location, int index,
 		     int case_value, Select_clause*, Unnamed_label*,
 		     std::vector<std::vector<Bexpression*> >* cases,
 		     std::vector<Bstatement*>* clauses);
@@ -838,7 +838,7 @@ class Select_clauses
 class Select_statement : public Statement
 {
  public:
-  Select_statement(source_location location)
+  Select_statement(Location location)
     : Statement(STATEMENT_SELECT, location),
       clauses_(NULL), break_label_(NULL), is_lowered_(false)
   { }
@@ -892,7 +892,7 @@ class Thunk_statement : public Statement
 {
  public:
   Thunk_statement(Statement_classification, Call_expression*,
-		  source_location);
+		  Location);
 
   // Return the call expression.
   Expression*
@@ -955,7 +955,7 @@ class Thunk_statement : public Statement
 class Go_statement : public Thunk_statement
 {
  public:
-  Go_statement(Call_expression* call, source_location location)
+  Go_statement(Call_expression* call, Location location)
     : Thunk_statement(STATEMENT_GO, call, location)
   { }
 
@@ -972,7 +972,7 @@ class Go_statement : public Thunk_statement
 class Defer_statement : public Thunk_statement
 {
  public:
-  Defer_statement(Call_expression* call, source_location location)
+  Defer_statement(Call_expression* call, Location location)
     : Thunk_statement(STATEMENT_DEFER, call, location)
   { }
 
@@ -989,7 +989,7 @@ class Defer_statement : public Thunk_statement
 class Label_statement : public Statement
 {
  public:
-  Label_statement(Label* label, source_location location)
+  Label_statement(Label* label, Location location)
     : Statement(STATEMENT_LABEL, location),
       label_(label)
   { }
@@ -1020,7 +1020,7 @@ class For_statement : public Statement
 {
  public:
   For_statement(Block* init, Expression* cond, Block* post,
-		source_location location)
+		Location location)
     : Statement(STATEMENT_FOR, location),
       init_(init), cond_(cond), post_(post), statements_(NULL),
       break_label_(NULL), continue_label_(NULL)
@@ -1086,7 +1086,7 @@ class For_range_statement : public Statement
 {
  public:
   For_range_statement(Expression* index_var, Expression* value_var,
-		      Expression* range, source_location location)
+		      Expression* range, Location location)
     : Statement(STATEMENT_FOR_RANGE, location),
       index_var_(index_var), value_var_(value_var), range_(range),
       statements_(NULL), break_label_(NULL), continue_label_(NULL)
@@ -1128,10 +1128,10 @@ class For_range_statement : public Statement
 
  private:
   Expression*
-  make_range_ref(Named_object*, Temporary_statement*, source_location);
+  make_range_ref(Named_object*, Temporary_statement*, Location);
 
   Expression*
-  call_builtin(Gogo*, const char* funcname, Expression* arg, source_location);
+  call_builtin(Gogo*, const char* funcname, Expression* arg, Location);
 
   void
   lower_range_array(Gogo*, Block*, Block*, Named_object*, Temporary_statement*,
@@ -1186,7 +1186,7 @@ class Case_clauses
   // next clause.
   void
   add(Expression_list* cases, bool is_default, Block* statements,
-      bool is_fallthrough, source_location location)
+      bool is_fallthrough, Location location)
   {
     this->clauses_.push_back(Case_clause(cases, is_default, statements,
 					 is_fallthrough, location));
@@ -1252,7 +1252,7 @@ class Case_clauses
     { }
 
     Case_clause(Expression_list* cases, bool is_default, Block* statements,
-		bool is_fallthrough, source_location location)
+		bool is_fallthrough, Location location)
       : cases_(cases), statements_(statements), is_default_(is_default),
 	is_fallthrough_(is_fallthrough), location_(location)
     { }
@@ -1268,7 +1268,7 @@ class Case_clauses
     { return this->is_default_; }
 
     // The location of this clause.
-    source_location
+    Location
     location() const
     { return this->location_; }
 
@@ -1318,7 +1318,7 @@ class Case_clauses
     // Whether this falls through after the statements.
     bool is_fallthrough_;
     // The location of this case clause.
-    source_location location_;
+    Location location_;
   };
 
   friend class Case_clause;
@@ -1335,7 +1335,7 @@ class Case_clauses
 class Switch_statement : public Statement
 {
  public:
-  Switch_statement(Expression* val, source_location location)
+  Switch_statement(Expression* val, Location location)
     : Statement(STATEMENT_SWITCH, location),
       val_(val), clauses_(NULL), break_label_(NULL)
   { }
@@ -1392,7 +1392,7 @@ class Type_case_clauses
   // statements; it may be NULL.
   void
   add(Type* type, bool is_fallthrough, bool is_default, Block* statements,
-      source_location location)
+      Location location)
   {
     this->clauses_.push_back(Type_case_clause(type, is_fallthrough, is_default,
 					      statements, location));
@@ -1431,7 +1431,7 @@ class Type_case_clauses
     { }
 
     Type_case_clause(Type* type, bool is_fallthrough, bool is_default,
-		     Block* statements, source_location location)
+		     Block* statements, Location location)
       : type_(type), statements_(statements), is_fallthrough_(is_fallthrough),
 	is_default_(is_default), location_(location)
     { }
@@ -1447,7 +1447,7 @@ class Type_case_clauses
     { return this->is_default_; }
 
     // The location of this type clause.
-    source_location
+    Location
     location() const
     { return this->location_; }
 
@@ -1474,7 +1474,7 @@ class Type_case_clauses
     // Whether this is the default case.
     bool is_default_;
     // The location of this type case clause.
-    source_location location_;
+    Location location_;
   };
 
   friend class Type_case_clause;
@@ -1492,7 +1492,7 @@ class Type_switch_statement : public Statement
 {
  public:
   Type_switch_statement(Named_object* var, Expression* expr,
-			source_location location)
+			Location location)
     : Statement(STATEMENT_TYPE_SWITCH, location),
       var_(var), expr_(expr), clauses_(NULL), break_label_(NULL)
   { go_assert(var == NULL || expr == NULL); }

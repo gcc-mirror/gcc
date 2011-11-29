@@ -11,6 +11,7 @@
 #include <mpfr.h>
 
 #include "operator.h"
+#include "go-linemap.h"
 
 struct Unicode_range;
 
@@ -88,17 +89,17 @@ class Token
 
   // Make a token for an invalid value.
   static Token
-  make_invalid_token(source_location location)
+  make_invalid_token(Location location)
   { return Token(TOKEN_INVALID, location); }
 
   // Make a token representing end of file.
   static Token
-  make_eof_token(source_location location)
+  make_eof_token(Location location)
   { return Token(TOKEN_EOF, location); }
 
   // Make a keyword token.
   static Token
-  make_keyword_token(Keyword keyword, source_location location)
+  make_keyword_token(Keyword keyword, Location location)
   {
     Token tok(TOKEN_KEYWORD, location);
     tok.u_.keyword = keyword;
@@ -108,7 +109,7 @@ class Token
   // Make an identifier token.
   static Token
   make_identifier_token(const std::string& value, bool is_exported,
-			source_location location)
+			Location location)
   {
     Token tok(TOKEN_IDENTIFIER, location);
     tok.u_.identifier_value.name = new std::string(value);
@@ -118,7 +119,7 @@ class Token
 
   // Make a quoted string token.
   static Token
-  make_string_token(const std::string& value, source_location location)
+  make_string_token(const std::string& value, Location location)
   {
     Token tok(TOKEN_STRING, location);
     tok.u_.string_value = new std::string(value);
@@ -127,7 +128,7 @@ class Token
 
   // Make an operator token.
   static Token
-  make_operator_token(Operator op, source_location location)
+  make_operator_token(Operator op, Location location)
   {
     Token tok(TOKEN_OPERATOR, location);
     tok.u_.op = op;
@@ -136,7 +137,7 @@ class Token
 
   // Make an integer token.
   static Token
-  make_integer_token(mpz_t val, source_location location)
+  make_integer_token(mpz_t val, Location location)
   {
     Token tok(TOKEN_INTEGER, location);
     mpz_init(tok.u_.integer_value);
@@ -146,7 +147,7 @@ class Token
 
   // Make a float token.
   static Token
-  make_float_token(mpfr_t val, source_location location)
+  make_float_token(mpfr_t val, Location location)
   {
     Token tok(TOKEN_FLOAT, location);
     mpfr_init(tok.u_.float_value);
@@ -156,7 +157,7 @@ class Token
 
   // Make a token for an imaginary number.
   static Token
-  make_imaginary_token(mpfr_t val, source_location location)
+  make_imaginary_token(mpfr_t val, Location location)
   {
     Token tok(TOKEN_IMAGINARY, location);
     mpfr_init(tok.u_.float_value);
@@ -165,7 +166,7 @@ class Token
   }
 
   // Get the location of the token.
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -275,7 +276,7 @@ class Token
 
  private:
   // Private constructor used by make_..._token functions above.
-  Token(Classification, source_location);
+  Token(Classification, Location);
 
   // Clear the token.
   void
@@ -307,7 +308,7 @@ class Token
     Operator op;
   } u_;
   // The source location.
-  source_location location_;
+  Location location_;
 };
 
 // The lexer itself.
@@ -315,7 +316,7 @@ class Token
 class Lex
 {
  public:
-  Lex(const char* input_file_name, FILE* input_file);
+  Lex(const char* input_file_name, FILE* input_file, Linemap *linemap);
 
   ~Lex();
 
@@ -334,7 +335,7 @@ class Lex
   // location is used to warn about an out of range character.
   static void
   append_char(unsigned int v, bool is_charater, std::string* str,
-	      source_location);
+	      Location);
 
   // A helper function.  Fetch a UTF-8 character from STR and store it
   // in *VALUE.  Return the number of bytes read from STR.  Return 0
@@ -350,11 +351,11 @@ class Lex
   require_line();
 
   // The current location.
-  source_location
+  Location
   location() const;
 
   // A position CHARS column positions before the current location.
-  source_location
+  Location
   earlier_location(int chars) const;
 
   static bool
@@ -432,6 +433,8 @@ class Lex
   const char* input_file_name_;
   // The input file.
   FILE* input_file_;
+  // The object used to keep track of file names and line numbers.
+  Linemap* linemap_;
   // The line buffer.  This holds the current line.
   char* linebuf_;
   // The size of the line buffer.
