@@ -1,3 +1,7 @@
+2011-11-28  Richard Henderson  <rth@redhat.com>
+
+	* libgomp.h (enum memmodel): New.
+
 2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
 
 	* configure: Regenerate.

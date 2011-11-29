@@ -45,6 +45,17 @@
 # pragma GCC visibility push(hidden)
 #endif
 
+/* If we were a C++ library, we'd get this from <std/atomic>.  */
+enum memmodel
+{
+  MEMMODEL_RELAXED = 0,
+  MEMMODEL_CONSUME = 1,
+  MEMMODEL_ACQUIRE = 2,
+  MEMMODEL_RELEASE = 3,
+  MEMMODEL_ACQ_REL = 4,
+  MEMMODEL_SEQ_CST = 5
+};
+
 #include "sem.h"
 #include "mutex.h"
 #include "bar.h"
