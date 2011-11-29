@@ -1,3 +1,9 @@
+2011-11-29  Oleg Endo  <oleg.endo@t-online.de>
+
+	PR target/51337
+	* config/sh/sh.c (sh_secondary_reload): Add case when FPUL
+	register is being loaded from a pseudo in memory.
+
 2011-11-29  DJ Delorie  <dj@redhat.com>
 
 	* config.gcc (rl78-*-elf): New case.
