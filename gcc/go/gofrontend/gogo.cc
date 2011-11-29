@@ -97,6 +97,18 @@ Gogo::Gogo(Backend* backend, int int_type_size, int pointer_size)
 
   this->add_named_type(Type::make_named_string_type());
 
+  // "error" is interface { Error() string }.
+  {
+    Typed_identifier_list *methods = new Typed_identifier_list;
+    Typed_identifier_list *results = new Typed_identifier_list;
+    results->push_back(Typed_identifier("", Type::lookup_string_type(), loc));
+    Type *method_type = Type::make_function_type(NULL, NULL, results, loc);
+    methods->push_back(Typed_identifier("Error", method_type, loc));
+    Type *error_iface = Type::make_interface_type(methods, loc);
+    Named_type *error_type = Named_object::make_type("error", NULL, error_iface, loc)->type_value();
+    this->add_named_type(error_type);
+  }
+
   this->globals_->add_constant(Typed_identifier("true",
 						Type::make_boolean_type(),
 						loc),
