@@ -1693,8 +1693,13 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	  /* For LT_EXPR, we create the range [MIN, MAX - 1].  */
 	  if (cond_code == LT_EXPR)
 	    {
-	      tree one = build_int_cst (TREE_TYPE (max), 1);
-	      max = fold_build2 (MINUS_EXPR, TREE_TYPE (max), max, one);
+	      if (TYPE_PRECISION (TREE_TYPE (max)) == 1
+		  && !TYPE_UNSIGNED (TREE_TYPE (max)))
+		max = fold_build2 (PLUS_EXPR, TREE_TYPE (max), max,
+				   build_int_cst (TREE_TYPE (max), -1));
+	      else
+		max = fold_build2 (MINUS_EXPR, TREE_TYPE (max), max,
+				   build_int_cst (TREE_TYPE (max), 1));
 	      if (EXPR_P (max))
 		TREE_NO_WARNING (max) = 1;
 	    }
@@ -1728,8 +1733,13 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	  /* For GT_EXPR, we create the range [MIN + 1, MAX].  */
 	  if (cond_code == GT_EXPR)
 	    {
-	      tree one = build_int_cst (TREE_TYPE (min), 1);
-	      min = fold_build2 (PLUS_EXPR, TREE_TYPE (min), min, one);
+	      if (TYPE_PRECISION (TREE_TYPE (min)) == 1
+		  && !TYPE_UNSIGNED (TREE_TYPE (min)))
+		min = fold_build2 (MINUS_EXPR, TREE_TYPE (min), min,
+				   build_int_cst (TREE_TYPE (min), -1));
+	      else
+		min = fold_build2 (PLUS_EXPR, TREE_TYPE (min), min,
+				   build_int_cst (TREE_TYPE (min), 1));
 	      if (EXPR_P (min))
 		TREE_NO_WARNING (min) = 1;
 	    }
@@ -1915,9 +1925,19 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 		  min = positive_overflow_infinity (TREE_TYPE (var_vr->min));
 		}
 	      else if (!POINTER_TYPE_P (TREE_TYPE (var_vr->min)))
-		min = fold_build2 (PLUS_EXPR, TREE_TYPE (var_vr->min),
-				   anti_max,
-				   build_int_cst (TREE_TYPE (var_vr->min), 1));
+		{
+		  if (TYPE_PRECISION (TREE_TYPE (var_vr->min)) == 1
+		      && !TYPE_UNSIGNED (TREE_TYPE (var_vr->min)))
+		    min = fold_build2 (MINUS_EXPR, TREE_TYPE (var_vr->min),
+				       anti_max,
+				       build_int_cst (TREE_TYPE (var_vr->min),
+						      -1));
+		  else
+		    min = fold_build2 (PLUS_EXPR, TREE_TYPE (var_vr->min),
+				       anti_max,
+				       build_int_cst (TREE_TYPE (var_vr->min),
+						      1));
+		}
 	      else
 		min = fold_build_pointer_plus_hwi (anti_max, 1);
 	      max = real_max;
@@ -1942,9 +1962,19 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 		  max = negative_overflow_infinity (TREE_TYPE (var_vr->min));
 		}
 	      else if (!POINTER_TYPE_P (TREE_TYPE (var_vr->min)))
-		max = fold_build2 (MINUS_EXPR, TREE_TYPE (var_vr->min),
-				   anti_min,
-				   build_int_cst (TREE_TYPE (var_vr->min), 1));
+		{
+		  if (TYPE_PRECISION (TREE_TYPE (var_vr->min)) == 1
+		      && !TYPE_UNSIGNED (TREE_TYPE (var_vr->min)))
+		    max = fold_build2 (PLUS_EXPR, TREE_TYPE (var_vr->min),
+				       anti_min,
+				       build_int_cst (TREE_TYPE (var_vr->min),
+						      -1));
+		  else
+		    max = fold_build2 (MINUS_EXPR, TREE_TYPE (var_vr->min),
+				       anti_min,
+				       build_int_cst (TREE_TYPE (var_vr->min),
+						      1));
+		}
 	      else
 		max = fold_build_pointer_plus_hwi (anti_min, -1);
 	      min = real_min;

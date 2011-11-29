@@ -1,3 +1,10 @@
+2011-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51247
+	* tree-vrp.c (extract_range_from_assert): For signed 1-bit precision
+	types instead of adding 1 subtract -1 and instead of subtracting 1
+	add -1 to avoid overflows.
+
 2011-11-29  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR target/50123
