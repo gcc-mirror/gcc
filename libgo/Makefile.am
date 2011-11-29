@@ -236,11 +236,19 @@ toolexeclibgoencoding_DATA = \
 	encoding/hex.gox \
 	encoding/pem.gox
 
+if LIBGO_IS_LINUX
+# exp_inotify_gox = exp/inotify.gox
+exp_inotify_gox =
+else
+exp_inotify_gox =
+endif
+
 toolexeclibgoexpdir = $(toolexeclibgodir)/exp
 
 toolexeclibgoexp_DATA = \
 	exp/ebnf.gox \
 	exp/gui.gox \
+	$(exp_inotify_gox) \
 	exp/norm.gox \
 	exp/spdy.gox \
 	exp/sql.gox \
@@ -332,15 +340,7 @@ toolexeclibgoold_DATA = \
 
 toolexeclibgoosdir = $(toolexeclibgodir)/os
 
-if LIBGO_IS_LINUX
-# os_inotify_gox = os/inotify.gox
-os_inotify_gox =
-else
-os_inotify_gox =
-endif
-
 toolexeclibgoos_DATA = \
-	$(os_inotify_gox) \
 	os/user.gox \
 	os/signal.gox
 
@@ -1212,6 +1212,8 @@ go_exp_ebnf_files = \
 	go/exp/ebnf/parser.go
 go_exp_gui_files = \
 	go/exp/gui/gui.go
+go_exp_inotify_files = \
+	go/exp/inotify/inotify_linux.go
 go_exp_norm_files = \
 	go/exp/norm/composition.go \
 	go/exp/norm/forminfo.go \
@@ -1229,11 +1231,13 @@ go_exp_sql_files = \
 	go/exp/sql/sql.go
 go_exp_ssh_files = \
 	go/exp/ssh/channel.go \
+	go/exp/ssh/client.go \
 	go/exp/ssh/common.go \
 	go/exp/ssh/doc.go \
 	go/exp/ssh/messages.go \
 	go/exp/ssh/server.go \
 	go/exp/ssh/server_shell.go \
+	go/exp/ssh/session.go \
 	go/exp/ssh/transport.go
 go_exp_terminal_files = \
 	go/exp/terminal/shell.go \
@@ -1386,9 +1390,6 @@ go_old_template_files = \
 	go/old/template/execute.go \
 	go/old/template/format.go \
 	go/old/template/parse.go
-
-go_os_inotify_files = \
-	go/os/inotify/inotify_linux.go
 
 go_os_user_files = \
 	go/os/user/user.go \
@@ -2723,6 +2724,13 @@ exp/gui/x11/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: exp/gui/x11/check
 
+exp/inotify.lo: $(go_exp_inotify_files) fmt.gox os.gox strings.gox syscall.gox
+	$(BUILDPACKAGE)
+exp/inotify/check: $(CHECK_DEPS)
+	@$(MKDIR_P) exp/inotify
+	@$(CHECK)
+.PHONY: exp/inotify/check
+
 exp/sql/driver.lo: $(go_exp_sql_driver_files) fmt.gox os.gox reflect.gox \
 		strconv.gox
 	$(BUILDPACKAGE)
@@ -2997,13 +3005,6 @@ old/template/check: $(CHECK_DEPS)
 	@$(MKDIR_P) old/template
 	@$(CHECK)
 .PHONY: old/template/check
-
-os/inotify.lo: $(go_os_inotify_files) fmt.gox os.gox strings.gox syscall.gox
-	$(BUILDPACKAGE)
-os/inotify/check: $(CHECK_DEPS)
-	@$(MKDIR_P) os/inotify
-	@$(CHECK)
-.PHONY: os/inotify/check
 
 os/user.lo: $(go_os_user_files) fmt.gox os.gox runtime.gox strconv.gox \
 		strings.gox syscall.gox
@@ -3331,6 +3332,8 @@ exp/ebnf.gox: exp/ebnf.lo
 	$(BUILDGOX)
 exp/gui.gox: exp/gui.lo
 	$(BUILDGOX)
+exp/inotify.gox: exp/inotify.lo
+	$(BUILDGOX)
 exp/norm.gox: exp/norm.lo
 	$(BUILDGOX)
 exp/spdy.gox: exp/spdy.lo
@@ -3424,8 +3427,6 @@ old/regexp.gox: old/regexp.lo
 old/template.gox: old/template.lo
 	$(BUILDGOX)
 
-os/inotify.gox: os/inotify.lo
-	$(BUILDGOX)
 os/user.gox: os/user.lo
 	$(BUILDGOX)
 os/signal.gox: os/signal.lo
@@ -3459,10 +3460,10 @@ testing/script.gox: testing/script.lo
 	$(BUILDGOX)
 
 if LIBGO_IS_LINUX
-# os_inotify_check = os/inotify/check
-os_inotify_check =
+# exp_inotify_check = exp/inotify/check
+exp_inotify_check =
 else
-os_inotify_check =
+exp_inotify_check =
 endif
 
 TEST_PACKAGES = \
@@ -3563,6 +3564,7 @@ TEST_PACKAGES = \
 	encoding/hex/check \
 	encoding/pem/check \
 	exp/ebnf/check \
+	$(exp_inotify_check) \
 	exp/norm/check \
 	exp/spdy/check \
 	exp/sql/check \
@@ -3594,7 +3596,6 @@ TEST_PACKAGES = \
 	old/netchan/check \
 	old/regexp/check \
 	old/template/check \
-	$(os_inotify_check) \
 	os/user/check \
 	os/signal/check \
 	path/filepath/check \
