@@ -456,6 +456,14 @@ AC_CHECK_FUNCS(srandom random strerror_r strsignal wait4 mincore setenv)
 AM_CONDITIONAL(HAVE_STRERROR_R, test "$ac_cv_func_strerror_r" = yes)
 AM_CONDITIONAL(HAVE_WAIT4, test "$ac_cv_func_wait4" = yes)
 
+CFLAGS_hold="$CFLAGS"
+CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+LIBS_hold="$LIBS"
+LIBS="$LIBS $PTHREAD_LIBS"
+AC_CHECK_FUNCS(sem_timedwait)
+CFLAGS="$CFLAGS_hold"
+LIBS="$LIBS_hold"
+
 AC_CACHE_CHECK([for __sync_bool_compare_and_swap_4],
 [libgo_cv_func___sync_bool_compare_and_swap_4],
 [AC_LINK_IFELSE([

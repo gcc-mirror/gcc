@@ -36,6 +36,9 @@
 /* Define to 1 if you have the `random' function. */
 #undef HAVE_RANDOM
 
+/* Define to 1 if you have the `sem_timedwait' function. */
+#undef HAVE_SEM_TIMEDWAIT
+
 /* Define to 1 if you have the `setenv' function. */
 #undef HAVE_SETENV
 

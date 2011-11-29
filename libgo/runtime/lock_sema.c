@@ -32,9 +32,11 @@ enum
 void
 runtime_lock(Lock *l)
 {
+	M *m;
 	uintptr v;
 	uint32 i, spin;
 
+	m = runtime_m();
 	if(m->locks++ < 0)
 		runtime_throw("runtime_lock: lock count");
 
@@ -91,7 +93,7 @@ runtime_unlock(Lock *l)
 	uintptr v;
 	M *mp;
 
-	if(--m->locks < 0)
+	if(--runtime_m()->locks < 0)
 		runtime_throw("runtime_unlock: lock count");
 
 	for(;;) {
@@ -144,6 +146,9 @@ runtime_notewakeup(Note *n)
 void
 runtime_notesleep(Note *n)
 {
+	M *m;
+
+	m = runtime_m();
 	if(m->waitsema == 0)
 		m->waitsema = runtime_semacreate();
 	if(!runtime_casp(&n->waitm, nil, m)) {  // must be LOCKED (got wakeup)
@@ -158,6 +163,7 @@ runtime_notesleep(Note *n)
 void
 runtime_notetsleep(Note *n, int64 ns)
 {
+	M *m;
 	M *mp;
 	int64 deadline, now;
 
@@ -166,6 +172,7 @@ runtime_notetsleep(Note *n, int64 ns)
 		return;
 	}
 
+	m = runtime_m();
 	if(m->waitsema == 0)
 		m->waitsema = runtime_semacreate();
 
