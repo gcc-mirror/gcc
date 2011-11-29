@@ -56,10 +56,10 @@ typedef struct
 {
   const struct line_map *map;
   source_location where;
-} loc_t;
+} loc_map_pair;
 
-DEF_VEC_O (loc_t);
-DEF_VEC_ALLOC_O (loc_t, heap);
+DEF_VEC_O (loc_map_pair);
+DEF_VEC_ALLOC_O (loc_map_pair, heap);
 
 /* Unwind the different macro expansions that lead to the token which
    location is WHERE and emit diagnostics showing the resulting
@@ -111,9 +111,9 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
                                  const struct line_map **first_exp_point_map)
 {
   const struct line_map *map;
-  VEC(loc_t,heap) *loc_vec = NULL;
+  VEC(loc_map_pair,heap) *loc_vec = NULL;
   unsigned ix;
-  loc_t loc, *iter;
+  loc_map_pair loc, *iter;
 
   map = linemap_lookup (line_table, where);
   if (!linemap_macro_expansion_map_p (map))
@@ -132,7 +132,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
       loc.where = where;
       loc.map = map;
 
-      VEC_safe_push (loc_t, heap, loc_vec, &loc);
+      VEC_safe_push (loc_map_pair, heap, loc_vec, &loc);
 
       /* WHERE is the location of a token inside the expansion of a
          macro.  MAP is the map holding the locations of that macro
@@ -150,7 +150,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
      first macro which expansion triggered this trace was expanded
      inside a system header.  */
   if (!LINEMAP_SYSP (map))
-    FOR_EACH_VEC_ELT (loc_t, loc_vec, ix, iter)
+    FOR_EACH_VEC_ELT (loc_map_pair, loc_vec, ix, iter)
       {
         source_location resolved_def_loc = 0, resolved_exp_loc = 0;
         diagnostic_t saved_kind;
@@ -203,7 +203,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
         context->printer->prefix = saved_prefix;
       }
 
-  VEC_free (loc_t, heap, loc_vec);
+  VEC_free (loc_map_pair, heap, loc_vec);
 }
 
 /*  This is a diagnostic finalizer implementation that is aware of
