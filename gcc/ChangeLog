@@ -1,3 +1,10 @@
+2011-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/sh/sh.h (enum reg_class, REG_CLASS_NAMES)
+	(REG_CLASS_CONTENTS): Add NON_SP_REGS.
+	(REGCLASS_HAS_GENERAL_REG): Handle NON_SP_REGS.
+	* config/sh/constraints.md (u): New constraint.
+
 2011-11-29  Oleg Endo  <oleg.endo@t-online.de>
 
 	PR target/51337

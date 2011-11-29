@@ -1059,6 +1059,7 @@ enum reg_class
   MAC_REGS,
   FPUL_REGS,
   SIBCALL_REGS,
+  NON_SP_REGS,
   GENERAL_REGS,
   FP0_REGS,
   FP_REGS,
@@ -1084,6 +1085,7 @@ enum reg_class
   "MAC_REGS",		\
   "FPUL_REGS",		\
   "SIBCALL_REGS",	\
+  "NON_SP_REGS",	\
   "GENERAL_REGS",	\
   "FP0_REGS",		\
   "FP_REGS",		\
@@ -1116,6 +1118,8 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00400000 },	\
 /* SIBCALL_REGS: Initialized in TARGET_CONDITIONAL_REGISTER_USAGE.  */	\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	\
+/* NON_SP_REGS:  */							\
+  { 0xffff7fff, 0xffffffff, 0x00000000, 0x00000000, 0x03020000 },	\
 /* GENERAL_REGS:  */							\
   { 0xffffffff, 0xffffffff, 0x00000000, 0x00000000, 0x03020000 },	\
 /* FP0_REGS:  */							\
@@ -2072,7 +2076,7 @@ struct sh_args {
    register information here is not used for SFmode.  */
 
 #define REGCLASS_HAS_GENERAL_REG(CLASS) \
-  ((CLASS) == GENERAL_REGS || (CLASS) == R0_REGS \
+  ((CLASS) == GENERAL_REGS || (CLASS) == R0_REGS || (CLASS) == NON_SP_REGS \
     || (! TARGET_SHMEDIA && (CLASS) == SIBCALL_REGS))
 
 #define REGCLASS_HAS_FP_REG(CLASS) \

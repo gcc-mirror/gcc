@@ -75,6 +75,9 @@
 (define_register_constraint "t" "T_REGS"
   "T register.")
 
+(define_register_constraint "u" "NON_SP_REGS"
+  "Non-stack-pointer register.")
+
 (define_register_constraint "w" "FP0_REGS"
   "Floating-point register 0.")
 
