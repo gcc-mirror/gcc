@@ -268,7 +268,7 @@
 ; can be placed.  If the distance is zero, then this insn will never
 ; reference the pool.
 ; NEG_POOL_RANGE is nonzero for insns that can reference a constant pool entry
-; before its address.
+; before its address.  It is set to <max_range> - (8 + <data_size>).
 (define_attr "arm_pool_range" "" (const_int 0))
 (define_attr "thumb2_pool_range" "" (const_int 0))
 (define_attr "arm_neg_pool_range" "" (const_int 0))
@@ -5223,7 +5223,7 @@
   [(set_attr "length" "8,12,16,8,8")
    (set_attr "type" "*,*,*,load2,store2")
    (set_attr "arm_pool_range" "*,*,*,1020,*")
-   (set_attr "arm_neg_pool_range" "*,*,*,1008,*")
+   (set_attr "arm_neg_pool_range" "*,*,*,1004,*")
    (set_attr "thumb2_pool_range" "*,*,*,4096,*")
    (set_attr "thumb2_neg_pool_range" "*,*,*,0,*")]
 )
@@ -6583,7 +6583,7 @@
   [(set_attr "length" "8,12,16,8,8")
    (set_attr "type" "*,*,*,load2,store2")
    (set_attr "pool_range" "*,*,*,1020,*")
-   (set_attr "arm_neg_pool_range" "*,*,*,1008,*")
+   (set_attr "arm_neg_pool_range" "*,*,*,1004,*")
    (set_attr "thumb2_neg_pool_range" "*,*,*,0,*")]
 )
 

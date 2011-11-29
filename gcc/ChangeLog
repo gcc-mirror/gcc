@@ -1,3 +1,13 @@
+2011-11-29  Sameera Deshpande  <sameera.deshpande@arm.com>
+
+	* config/arm/arm.md (arm_movdi): Update NEG_POOL_RANGE.
+	  (movdf_soft_insn): Likewise.
+	* config/arm/fpa.md (thumb2_movdf_fpa): Likewise.
+	* config/arm/neon.md (neon_mov<mode>): Likewise.
+	* config/arm/vfp.md (movdi_vfp): Likewise.
+	 (movdi_vfp_cortexa8): Likewise.
+	 (movdf_vfp): Likewise.
+
 2011-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/50074

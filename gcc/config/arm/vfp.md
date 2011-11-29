@@ -178,7 +178,7 @@
                                  (const_int 4))]
                               (const_int 4)))
    (set_attr "pool_range"     "*,*,*,*,1020,4096,*,*,*,*,1020,*")
-   (set_attr "neg_pool_range" "*,*,*,*,1008,0,*,*,*,*,1008,*")
+   (set_attr "neg_pool_range" "*,*,*,*,1004,0,*,*,*,*,1004,*")
    (set_attr "arch"           "t2,any,any,any,a,t2,any,any,any,any,any,any")]
 )
 
@@ -223,7 +223,7 @@
                               (const_int 4)))
    (set_attr "predicable"    "yes")
    (set_attr "pool_range"     "*,*,*,*,1020,4096,*,*,*,*,1020,*")
-   (set_attr "neg_pool_range" "*,*,*,*,1008,0,*,*,*,*,1008,*")
+   (set_attr "neg_pool_range" "*,*,*,*,1004,0,*,*,*,*,1004,*")
    (set (attr "ce_count") 
 	(symbol_ref "get_attr_length (insn) / 4"))
    (set_attr "arch"           "t2,any,any,any,a,t2,any,any,any,any,any,any")]
@@ -460,7 +460,7 @@
 			      (const_int 4)))
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,*,*,1020,*,1020,*,*,*")
-   (set_attr "neg_pool_range" "*,*,*,1008,*,1008,*,*,*")]
+   (set_attr "neg_pool_range" "*,*,*,1004,*,1004,*,*,*")]
 )
 
 (define_insn "*thumb2_movdf_vfp"
