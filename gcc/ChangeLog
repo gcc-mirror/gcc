@@ -1,3 +1,8 @@
+2011-11-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*floathi<mode>2_i387_with_temp): Do not
+	allocate scratch memory for alternative 0.
+
 2011-11-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtins.def: Completely rewrite builtin
@@ -10,8 +15,7 @@
 	the use of a builtin unless the appropriate switch is used, or
 	#pragma GCC target is used to change the options.  If the user
 	uses #pragma GCC target, update the appropriate hardware macros.
-	* common/config/rs6000/rs6000-common.c (rs6000_handle_option):
-	Ditto.
+	* common/config/rs6000/rs6000-common.c (rs6000_handle_option): Ditto.
 	* config/rs6000/rs6000.opt (rs6000_builtin_mask): Ditto.
 	* config/rs6000/rs6000-c.c (rs6000_macro_to_expand): Ditto.
 	(rs6000_define_or_undefine_macro): Ditto.
@@ -19,8 +23,7 @@
 	(rs6000_cpu_cpp_builtins): Ditto.
 	(altivec_overloaded_builtins): Ditto.
 	(altivec_build_resolved_builtin): Ditto.
-	* config/rs6000/rs6000.c (rs6000_target_modify_macros_ptr):
-	Ditto.
+	* config/rs6000/rs6000.c (rs6000_target_modify_macros_ptr): Ditto.
 	(rs6000_builtin_info): Ditto.
 	(def_builtin): Ditto.
 	(enable_mask_for_builtins): Ditto.
@@ -65,8 +68,7 @@
 	(RS6000_BTC_*): Ditto.
 	(RS6000_BTM_*): Ditto.
 	(enum rs6000_builtins): Ditto.
-	* config/rs6000/rs6000-protos.h (rs6000_overloaded_builtin_p):
-	Ditto.
+	* config/rs6000/rs6000-protos.h (rs6000_overloaded_builtin_p): Ditto.
 	(rs6000_target_modify_macros): Ditto.
 	(rs6000_target_modify_macros_ptr): Ditto.
 
@@ -74,8 +76,7 @@
 	standard name for converting vector unsigned values to floating
 	point.  Delete the TARGET_VECTORIZE_BUILTIN_CONVERSION hook, which
 	is handled by machine independent code.
-	* config/rs6000/rs6000.c (TARGET_VECTORIZE_BUILTIN_CONVERSION):
-	Ditto.
+	* config/rs6000/rs6000.c (TARGET_VECTORIZE_BUILTIN_CONVERSION): Ditto.
 	(rs6000_builtin_conversion): Ditto.
 
 2011-11-29  Dodji Seketeli  <dodji@redhat.com>
@@ -99,19 +100,18 @@
 2011-11-29   Diego Novillo  <dnovillo@google.com>
 
 	* gimple.c (gimple_call_set_cannot_inline): Move from gimple.h.
-	Update field call_stmt_cannot_inline_p from call graph edge, if
-	needed.
+	Update field call_stmt_cannot_inline_p from call graph edge, if needed.
 	* gimple.h (gimple_call_set_cannot_inline): Move to gimple.c.
 
 2011-11-29  Sameera Deshpande  <sameera.deshpande@arm.com>
 
 	* config/arm/arm.md (arm_movdi): Update NEG_POOL_RANGE.
-	  (movdf_soft_insn): Likewise.
+	(movdf_soft_insn): Likewise.
 	* config/arm/fpa.md (thumb2_movdf_fpa): Likewise.
 	* config/arm/neon.md (neon_mov<mode>): Likewise.
 	* config/arm/vfp.md (movdi_vfp): Likewise.
-	 (movdi_vfp_cortexa8): Likewise.
-	 (movdf_vfp): Likewise.
+	(movdi_vfp_cortexa8): Likewise.
+	(movdf_vfp): Likewise.
 
 2011-11-29  Jakub Jelinek  <jakub@redhat.com>
 
@@ -244,8 +244,7 @@
 	(init_reg_sets_1): Limit operand_reg_set to accessible_reg_set.
 	Remove NO_REGS registers from operand_reg_set.  Treat members
 	of operand_reg_set as fixed.
-	* recog.c (general_operand): Check operand_reg_set rather than
-	NO_REGS.
+	* recog.c (general_operand): Check operand_reg_set rather than NO_REGS.
 	(register_operand, nonmemory_operand): Likewise.
 	* varasm.c (make_decl_rtl): Always use DECL_MODE as the mode of
 	register variables.  Check accessible_reg_set and operand_reg_set.
