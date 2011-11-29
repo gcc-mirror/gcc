@@ -198,7 +198,7 @@
   (set_attr "insn" "*,*,*,*,*,*,mov,*,*")
   (set_attr "length" "4,4,4,4,4,4,8,8,8")
   (set_attr "pool_range"     "*,*,*,1020,*,*,*,1020,*")
-  (set_attr "neg_pool_range" "*,*,*,1008,*,*,*,1008,*")])
+  (set_attr "neg_pool_range" "*,*,*,1004,*,*,*,1004,*")])
 
 (define_insn "*neon_mov<mode>"
   [(set (match_operand:VQXMOV 0 "nonimmediate_operand"
@@ -243,7 +243,7 @@
    (set_attr "insn" "*,*,*,*,*,*,mov,*,*")
    (set_attr "length" "4,8,4,8,8,8,16,8,16")
    (set_attr "pool_range" "*,*,*,1020,*,*,*,1020,*")
-   (set_attr "neg_pool_range" "*,*,*,1008,*,*,*,1008,*")])
+   (set_attr "neg_pool_range" "*,*,*,996,*,*,*,996,*")])
 
 (define_expand "movti"
   [(set (match_operand:TI 0 "nonimmediate_operand" "")

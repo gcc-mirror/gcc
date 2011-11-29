@@ -671,7 +671,7 @@
    (set_attr "type"
     "load1,store2,*,store2,load1,ffarith,ffarith,f_fpa_load,f_fpa_store,r_mem_f,f_mem_r")
    (set_attr "pool_range" "*,*,*,*,4092,*,*,1024,*,*,*")
-   (set_attr "neg_pool_range" "*,*,*,*,0,*,*,1020,*,*,*")]
+   (set_attr "neg_pool_range" "*,*,*,*,0,*,*,1008,*,*,*")]
 )
 
 ;; Saving and restoring the floating point registers in the prologue should
