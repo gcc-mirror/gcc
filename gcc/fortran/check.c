@@ -2691,6 +2691,14 @@ gfc_check_move_alloc (gfc_expr *from, gfc_expr *to)
   if (same_type_check (to, 1, from, 0) == FAILURE)
     return FAILURE;
 
+  if (to->ts.type != from->ts.type)
+    {
+      gfc_error ("The FROM and TO arguments in MOVE_ALLOC call at %L must be "
+		 "either both polymorphic or both nonpolymorphic",
+		 &from->where);
+      return FAILURE;
+    }
+
   if (to->rank != from->rank)
     {
       gfc_error ("the '%s' and '%s' arguments of '%s' intrinsic at %L must "

@@ -5892,7 +5892,7 @@ gfc_conv_intrinsic_si_kind (gfc_se *se, gfc_expr *expr)
 }
 
 
-/* Generate code for SELECTED_REAL_KIND (P, R) intrinsic function.  */
+/* Generate code for SELECTED_REAL_KIND (P, R, RADIX) intrinsic function.  */
 
 static void
 gfc_conv_intrinsic_sr_kind (gfc_se *se, gfc_expr *expr)
@@ -7182,50 +7182,123 @@ conv_intrinsic_atomic_ref (gfc_code *code)
 static tree
 conv_intrinsic_move_alloc (gfc_code *code)
 {
-  if (code->ext.actual->expr->rank == 0)
+  stmtblock_t block;
+  gfc_expr *from_expr, *to_expr;
+  gfc_expr *to_expr2, *from_expr2;
+  gfc_se from_se, to_se;
+  gfc_ss *from_ss, *to_ss;
+  tree tmp;
+
+  gfc_start_block (&block);
+
+  from_expr = code->ext.actual->expr;
+  to_expr = code->ext.actual->next->expr;
+
+  gfc_init_se (&from_se, NULL);
+  gfc_init_se (&to_se, NULL);
+
+  if (from_expr->rank == 0)
     {
-      /* Scalar arguments: Generate pointer assignments.  */
-      gfc_expr *from, *to, *deal;
-      stmtblock_t block;
-      tree tmp;
-      gfc_se se;
-
-      from = code->ext.actual->expr;
-      to = code->ext.actual->next->expr;
-
-      gfc_start_block (&block);
-
-      /* Deallocate 'TO' argument.  */
-      gfc_init_se (&se, NULL);
-      se.want_pointer = 1;
-      deal = gfc_copy_expr (to);
-      if (deal->ts.type == BT_CLASS)
-	gfc_add_data_component (deal);
-      gfc_conv_expr (&se, deal);
-      tmp = gfc_deallocate_scalar_with_status (se.expr, NULL, true,
-					       deal, deal->ts);
-      gfc_add_expr_to_block (&block, tmp);
-      gfc_free_expr (deal);
-
-      if (to->ts.type == BT_CLASS)
-	tmp = gfc_trans_class_assign (to, from, EXEC_POINTER_ASSIGN);
+      if (from_expr->ts.type != BT_CLASS)
+	{
+	  from_expr2 = to_expr;
+	  to_expr2 = to_expr;
+	}
       else
-	tmp = gfc_trans_pointer_assignment (to, from);
+	{
+	  to_expr2 = gfc_copy_expr (to_expr);
+	  from_expr2 = gfc_copy_expr (from_expr);
+	  gfc_add_data_component (from_expr2);
+	  gfc_add_data_component (to_expr2);
+	}
+
+      from_se.want_pointer = 1;
+      to_se.want_pointer = 1;
+      gfc_conv_expr (&from_se, from_expr2);
+      gfc_conv_expr (&to_se, to_expr2);
+      gfc_add_block_to_block (&block, &from_se.pre);
+      gfc_add_block_to_block (&block, &to_se.pre);
+
+      /* Deallocate "to".  */
+      tmp = gfc_deallocate_scalar_with_status (to_se.expr, NULL_TREE, true,
+					       to_expr2, to_expr->ts);
       gfc_add_expr_to_block (&block, tmp);
 
-      if (from->ts.type == BT_CLASS)
-	tmp = gfc_trans_class_assign (from, gfc_get_null_expr (NULL),
-				      EXEC_POINTER_ASSIGN);
-      else
-	tmp = gfc_trans_pointer_assignment (from,
-					    gfc_get_null_expr (NULL));
-      gfc_add_expr_to_block (&block, tmp);
+      /* Assign (_data) pointers.  */
+      gfc_add_modify_loc (input_location, &block, to_se.expr,
+			  fold_convert (TREE_TYPE (to_se.expr), from_se.expr));
+
+      /* Set "from" to NULL.  */
+      gfc_add_modify_loc (input_location, &block, from_se.expr,
+			  fold_convert (TREE_TYPE (from_se.expr), null_pointer_node));
+
+      gfc_add_block_to_block (&block, &from_se.post);
+      gfc_add_block_to_block (&block, &to_se.post);
+
+      /* Set _vptr.  */
+      if (from_expr->ts.type == BT_CLASS)
+	{
+	  gfc_free_expr (from_expr2);
+          gfc_free_expr (to_expr2);
+
+	  gfc_init_se (&from_se, NULL);
+	  gfc_init_se (&to_se, NULL);
+	  from_se.want_pointer = 1;
+	  to_se.want_pointer = 1;
+	  gfc_add_vptr_component (from_expr);
+	  gfc_add_vptr_component (to_expr);
+
+	  gfc_conv_expr (&from_se, from_expr);
+	  gfc_conv_expr (&to_se, to_expr);
+	  gfc_add_modify_loc (input_location, &block, to_se.expr,
+			      fold_convert (TREE_TYPE (to_se.expr), from_se.expr));
+	}
 
       return gfc_finish_block (&block);
     }
-  else
-    /* Array arguments: Generate library code.  */
-    return gfc_trans_call (code, false, NULL_TREE, NULL_TREE, false);
+
+  /* Update _vptr component.  */
+  if (from_expr->ts.type == BT_CLASS)
+    {
+      from_se.want_pointer = 1;
+      to_se.want_pointer = 1;
+
+      from_expr2 = gfc_copy_expr (from_expr);
+      to_expr2 = gfc_copy_expr (to_expr);
+      gfc_add_vptr_component (from_expr2);
+      gfc_add_vptr_component (to_expr2);
+
+      gfc_conv_expr (&from_se, from_expr2);
+      gfc_conv_expr (&to_se, to_expr2);
+
+      gfc_add_modify_loc (input_location, &block, to_se.expr,
+			  fold_convert (TREE_TYPE (to_se.expr), from_se.expr));
+      gfc_free_expr (to_expr2);
+      gfc_free_expr (from_expr2);
+
+      gfc_init_se (&from_se, NULL);
+      gfc_init_se (&to_se, NULL);
+    }
+
+  /* Deallocate "to".  */
+  to_ss = gfc_walk_expr (to_expr);
+  from_ss = gfc_walk_expr (from_expr);
+  gfc_conv_expr_descriptor (&to_se, to_expr, to_ss);
+  gfc_conv_expr_descriptor (&from_se, from_expr, from_ss);
+
+  tmp = gfc_conv_descriptor_data_get (to_se.expr);
+  tmp = gfc_deallocate_with_status (tmp, NULL_TREE, true, to_expr);
+  gfc_add_expr_to_block (&block, tmp);
+
+  /* Move the pointer and update the array descriptor data.  */
+  gfc_add_modify_loc (input_location, &block, to_se.expr, from_se.expr);
+
+  /* Set "to" to NULL.  */
+  tmp = gfc_conv_descriptor_data_get (from_se.expr);
+  gfc_add_modify_loc (input_location, &block, tmp,
+		      fold_convert (TREE_TYPE (tmp), null_pointer_node));
+
+  return gfc_finish_block (&block);
 }
 
 

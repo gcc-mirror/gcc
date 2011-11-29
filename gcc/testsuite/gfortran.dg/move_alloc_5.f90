@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do compile }
 !
 ! PR 48699: [4.6/4.7 Regression] [OOP] MOVE_ALLOC inside SELECT TYPE
 !
@@ -16,7 +16,7 @@ program testmv1
   type(bar2), allocatable :: sm2
 
   allocate (sm2)
-  call move_alloc (sm2,sm)
+  call move_alloc (sm2,sm) ! { dg-error "must be either both polymorphic or both nonpolymorphic" }
 
   if (allocated(sm2)) call abort()
   if (.not. allocated(sm)) call abort()
