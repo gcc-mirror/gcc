@@ -4140,6 +4140,13 @@ Embedded PowerPC system in little endian mode.
 @html
 <hr />
 @end html
+@heading @anchor{rl78-x-elf}rl78-*-elf
+The Renesas RL78 processor.
+This configuration is intended for embedded systems.
+
+@html
+<hr />
+@end html
 @heading @anchor{rx-x-elf}rx-*-elf
 The Renesas RX processor.  See
 @uref{http://eu.renesas.com/fmwk.jsp?cnt=rx600_series_landing.jsp&fp=/products/mpumcu/rx_family/rx600_series}

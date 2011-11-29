@@ -1,3 +1,9 @@
+2011-11-29  DJ Delorie  <dj@redhat.com>
+
+	* configure.ac (rl78-*-*) New case.
+	* configure: Regenerate.
+	* MAINTAINERS: Add myself as RL78 maintainer.
+
 2011-11-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* MAINTAINERS: Add self as co-maintainer of the Ada front end.

@@ -1,3 +1,8 @@
+2011-11-29  DJ Delorie  <dj@redhat.com>
+
+	* config.host (rl78-*-elf): New case.
+	* config/rl78: New directory for the Renesas RL78.
+
 2011-11-29  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config.host (tic6x-*-uclinux): Append to extra_parts.  Fix

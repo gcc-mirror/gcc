@@ -778,6 +778,9 @@ Objective-C and Objective-C++ Dialects}.
 @emph{PowerPC Options}
 See RS/6000 and PowerPC Options.
 
+@emph{RL78 Options}
+@gccoptlist{-msim -mmul=none -mmul=g13 -mmul=rl78}
+
 @emph{RS/6000 and PowerPC Options}
 @gccoptlist{-mcpu=@var{cpu-type} @gol
 -mtune=@var{cpu-type} @gol
@@ -10303,6 +10306,7 @@ platform.
 * PDP-11 Options::
 * picoChip Options::
 * PowerPC Options::
+* RL78 Options::
 * RS/6000 and PowerPC Options::
 * RX Options::
 * S/390 and zSeries Options::
@@ -15930,6 +15934,29 @@ the warning to be turned off.
 @cindex PowerPC options
 
 These are listed under @xref{RS/6000 and PowerPC Options}.
+
+@node RL78 Options
+@subsection RL78 Options
+@cindex RL78 Options
+
+@table @gcctabopt
+
+@item -msim
+@opindex msim
+Links in additional target libraries to support operation within a
+simulator.
+
+@item -mmul=none
+@itemx -mmul=g13
+@itemx -mmul=rl78
+@opindex mmul
+Specifies the type of hardware multiplication support to be used.  The
+default is @code{none}, which uses software multiplication functions.
+The @code{g13} option is for the hardware multiply/divide peripheral
+only on the RL78/G13 targets.  The @code{rl78} option is for the
+standard hardware multiplication defined in the RL78 software manual.
+
+@end table
 
 @node RS/6000 and PowerPC Options
 @subsection IBM RS/6000 and PowerPC Options
