@@ -1,3 +1,10 @@
+2011-11-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR target/50123
+	* optabs.c (maybe_optimize_fetch_op): New.  Look for more optimal
+	instructions for a FECTH_OP or OP_FECTH sequence.
+	(expand_atomic_fetch_op): Call maybe_optimize_fetch_op.
+
 2011-11-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sync.md (UNSPEC_LDA, UNSPEC_STA): New unspecs.

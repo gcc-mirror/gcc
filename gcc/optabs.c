@@ -7943,6 +7943,41 @@ get_atomic_op_for_code (struct atomic_op_functions *op, enum rtx_code code)
     }
 }
 
+/* See if there is a more optimal way to implement the operation "*MEM CODE VAL"
+   using memory order MODEL.  If AFTER is true the operation needs to return
+   the value of *MEM after the operation, otherwise the previous value.  
+   TARGET is an optional place to place the result.  The result is unused if
+   it is const0_rtx.
+   Return the result if there is a better sequence, otherwise NULL_RTX.  */
+
+static rtx
+maybe_optimize_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
+			 enum memmodel model, bool after)
+{
+  /* If the value is prefetched, or not used, it may be possible to replace
+     the sequence with a native exchange operation.  */
+  if (!after || target == const0_rtx)
+    {
+      /* fetch_and (&x, 0, m) can be replaced with exchange (&x, 0, m).  */
+      if (code == AND && val == const0_rtx)
+        {
+	  if (target == const0_rtx)
+	    target = gen_reg_rtx (GET_MODE (mem));
+	  return maybe_emit_atomic_exchange (target, mem, val, model);
+	}
+
+      /* fetch_or (&x, -1, m) can be replaced with exchange (&x, -1, m).  */
+      if (code == IOR && val == constm1_rtx)
+        {
+	  if (target == const0_rtx)
+	    target = gen_reg_rtx (GET_MODE (mem));
+	  return maybe_emit_atomic_exchange (target, mem, val, model);
+	}
+    }
+
+  return NULL_RTX;
+}
+
 /* Try to emit an instruction for a specific operation varaition. 
    OPTAB contains the OP functions.
    TARGET is an optional place to return the result. const0_rtx means unused.
@@ -8027,6 +8062,11 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
   bool unused_result = (target == const0_rtx);
 
   get_atomic_op_for_code (&optab, code);
+
+  /* Check to see if there are any better instructions.  */
+  result = maybe_optimize_fetch_op (target, mem, val, code, model, after);
+  if (result)
+    return result;
 
   /* Check for the case where the result isn't used and try those patterns.  */
   if (unused_result)
