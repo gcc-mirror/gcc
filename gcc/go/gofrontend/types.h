@@ -7,6 +7,8 @@
 #ifndef GO_TYPES_H
 #define GO_TYPES_H
 
+#include "go-linemap.h"
+
 class Gogo;
 class Package;
 class Traverse;
@@ -147,14 +149,14 @@ class Method
   { return this->do_type(); }
 
   // Return the location of the method receiver.
-  source_location
+  Location
   receiver_location() const
   { return this->do_receiver_location(); }
 
   // Return an expression which binds this method to EXPR.  This is
   // something which can be used with a function call.
   Expression*
-  bind_method(Expression* expr, source_location location) const;
+  bind_method(Expression* expr, Location location) const;
 
   // Return the named object for this method.  This may only be called
   // after methods are finalized.
@@ -195,12 +197,12 @@ class Method
   do_type() const = 0;
 
   // Return the location of the method receiver.
-  virtual source_location
+  virtual Location
   do_receiver_location() const = 0;
 
   // Bind a method to an object.
   virtual Expression*
-  do_bind_method(Expression* expr, source_location location) const = 0;
+  do_bind_method(Expression* expr, Location location) const = 0;
 
  private:
   // The sequence of field indexes used for this method.  If this is
@@ -245,12 +247,12 @@ class Named_method : public Method
   do_type() const;
 
   // Return the location of the method receiver.
-  source_location
+  Location
   do_receiver_location() const;
 
   // Bind a method to an object.
   Expression*
-  do_bind_method(Expression* expr, source_location location) const;
+  do_bind_method(Expression* expr, Location location) const;
 
  private:
   // The method itself.  For a method which needs a stub, this starts
@@ -265,7 +267,7 @@ class Named_method : public Method
 class Interface_method : public Method
 {
  public:
-  Interface_method(const std::string& name, source_location location,
+  Interface_method(const std::string& name, Location location,
 		   Function_type* fntype, const Field_indexes* field_indexes,
 		   unsigned int depth)
     : Method(field_indexes, depth, true, true),
@@ -285,19 +287,19 @@ class Interface_method : public Method
   { return this->fntype_; }
 
   // Return the location of the method receiver.
-  source_location
+  Location
   do_receiver_location() const
   { return this->location_; }
 
   // Bind a method to an object.
   Expression*
-  do_bind_method(Expression* expr, source_location location) const;
+  do_bind_method(Expression* expr, Location location) const;
 
  private:
   // The name of the interface method to call.
   std::string name_;
   // The location of the definition of the interface method.
-  source_location location_;
+  Location location_;
   // The type of the interface method.
   Function_type* fntype_;
 };
@@ -457,7 +459,7 @@ class Type
   make_function_type(Typed_identifier* receiver,
 		     Typed_identifier_list* parameters,
 		     Typed_identifier_list* results,
-		     source_location);
+		     Location);
 
   static Pointer_type*
   make_pointer_type(Type*);
@@ -469,19 +471,19 @@ class Type
   make_call_multiple_result_type(Call_expression*);
 
   static Struct_type*
-  make_struct_type(Struct_field_list* fields, source_location);
+  make_struct_type(Struct_field_list* fields, Location);
 
   static Array_type*
   make_array_type(Type* element_type, Expression* length);
 
   static Map_type*
-  make_map_type(Type* key_type, Type* value_type, source_location);
+  make_map_type(Type* key_type, Type* value_type, Location);
 
   static Channel_type*
   make_channel_type(bool send, bool receive, Type*);
 
   static Interface_type*
-  make_interface_type(Typed_identifier_list* methods, source_location);
+  make_interface_type(Typed_identifier_list* methods, Location);
 
   static Type*
   make_type_descriptor_type();
@@ -490,7 +492,7 @@ class Type
   make_type_descriptor_ptr_type();
 
   static Named_type*
-  make_named_type(Named_object*, Type*, source_location);
+  make_named_type(Named_object*, Type*, Location);
 
   static Type*
   make_forward_declaration(Named_object*);
@@ -806,7 +808,7 @@ class Type
   // it, bound to EXPR.
   static Expression*
   bind_field_or_method(Gogo*, const Type* type, Expression* expr,
-		       const std::string& name, source_location);
+		       const std::string& name, Location);
 
   // Return true if NAME is an unexported field or method of TYPE.
   static bool
@@ -825,7 +827,7 @@ class Type
   // it.  The location is the location which causes us to need the
   // entry.
   tree
-  type_descriptor_pointer(Gogo* gogo, source_location);
+  type_descriptor_pointer(Gogo* gogo, Location);
 
   // Return the type reflection string for this type.
   std::string
@@ -889,7 +891,7 @@ class Type
 
   // Finalize the methods for a type.
   static void
-  finalize_methods(Gogo*, const Type*, source_location, Methods**);
+  finalize_methods(Gogo*, const Type*, Location, Methods**);
 
   // Return a method from a set of methods.
   static Method*
@@ -1061,16 +1063,16 @@ class Type
   // Build stub methods for a type.
   static void
   build_stub_methods(Gogo*, const Type* type, const Methods* methods,
-		     source_location);
+		     Location);
 
   static void
   build_one_stub_method(Gogo*, Method*, const char* receiver_name,
 			const Typed_identifier_list*, bool is_varargs,
-			source_location);
+			Location);
 
   static Expression*
   apply_field_indexes(Expression*, const Method::Field_indexes*,
-		      source_location);
+		      Location);
 
   // Look for a field or method named NAME in TYPE.
   static bool
@@ -1129,7 +1131,7 @@ class Typed_identifier
 {
  public:
   Typed_identifier(const std::string& name, Type* type,
-		   source_location location)
+		   Location location)
     : name_(name), type_(type), location_(location)
   { }
 
@@ -1145,7 +1147,7 @@ class Typed_identifier
 
   // Return the location where the name was seen.  This is not always
   // meaningful.
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -1163,7 +1165,7 @@ class Typed_identifier
   // Type.
   Type* type_;
   // The location where the name was seen.
-  source_location location_;
+  Location location_;
 };
 
 // A list of Typed_identifiers.
@@ -1240,7 +1242,8 @@ class Typed_identifier_list
   resize(size_t c)
   {
     go_assert(c <= this->entries_.size());
-    this->entries_.resize(c, Typed_identifier("", NULL, UNKNOWN_LOCATION));
+    this->entries_.resize(c, Typed_identifier("", NULL,
+                                              Linemap::unknown_location()));
   }
 
   // Iterators.
@@ -1524,7 +1527,7 @@ class Function_type : public Type
 {
  public:
   Function_type(Typed_identifier* receiver, Typed_identifier_list* parameters,
-		Typed_identifier_list* results, source_location location)
+		Typed_identifier_list* results, Location location)
     : Type(TYPE_FUNCTION),
       receiver_(receiver), parameters_(parameters), results_(results),
       location_(location), is_varargs_(false), is_builtin_(false)
@@ -1556,7 +1559,7 @@ class Function_type : public Type
   { return this->is_builtin_; }
 
   // The location where this type was defined.
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -1659,7 +1662,7 @@ class Function_type : public Type
   // The location where this type was defined.  This exists solely to
   // give a location for the fields of the struct if this function
   // returns multiple values.
-  source_location location_;
+  Location location_;
   // Whether this function takes a variable number of arguments.
   bool is_varargs_;
   // Whether this is a special builtin function which can not simply
@@ -1742,7 +1745,7 @@ class Struct_field
   { return this->typed_identifier_.type(); }
 
   // The field location.
-  source_location
+  Location
   location() const
   { return this->typed_identifier_.location(); }
 
@@ -1845,7 +1848,7 @@ class Struct_field_list
 class Struct_type : public Type
 {
  public:
-  Struct_type(Struct_field_list* fields, source_location location)
+  Struct_type(Struct_field_list* fields, Location location)
     : Type(TYPE_STRUCT),
       fields_(fields), location_(location), all_methods_(NULL)
   { }
@@ -1882,7 +1885,7 @@ class Struct_type : public Type
   // NULL if there is no field with that name.
   Field_reference_expression*
   field_reference(Expression* struct_expr, const std::string& name,
-		  source_location) const;
+		  Location) const;
 
   // Return the total number of fields, including embedded fields.
   // This is the number of values which can appear in a conversion to
@@ -1979,13 +1982,13 @@ class Struct_type : public Type
 
   Field_reference_expression*
   field_reference_depth(Expression* struct_expr, const std::string& name,
-			source_location, Saw_named_type*,
+			Location, Saw_named_type*,
 			unsigned int* depth) const;
 
   // The fields of the struct.
   Struct_field_list* fields_;
   // The place where the struct was declared.
-  source_location location_;
+  Location location_;
   // If this struct is unnamed, a list of methods.
   Methods* all_methods_;
 };
@@ -2106,7 +2109,7 @@ class Array_type : public Type
 class Map_type : public Type
 {
  public:
-  Map_type(Type* key_type, Type* val_type, source_location location)
+  Map_type(Type* key_type, Type* val_type, Location location)
     : Type(TYPE_MAP),
       key_type_(key_type), val_type_(val_type), location_(location)
   { }
@@ -2139,7 +2142,7 @@ class Map_type : public Type
   // The location is the location which causes us to need the
   // descriptor.
   tree
-  map_descriptor_pointer(Gogo* gogo, source_location);
+  map_descriptor_pointer(Gogo* gogo, Location);
 
  protected:
   int
@@ -2184,7 +2187,7 @@ class Map_type : public Type
   // The value type.
   Type* val_type_;
   // Where the type was defined.
-  source_location location_;
+  Location location_;
 };
 
 // The type of a channel.
@@ -2267,13 +2270,13 @@ class Channel_type : public Type
 class Interface_type : public Type
 {
  public:
-  Interface_type(Typed_identifier_list* methods, source_location location)
+  Interface_type(Typed_identifier_list* methods, Location location)
     : Type(TYPE_INTERFACE),
       methods_(methods), location_(location)
   { go_assert(methods == NULL || !methods->empty()); }
 
   // The location where the interface type was defined.
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -2368,7 +2371,7 @@ class Interface_type : public Type
   // NULL for the empty interface.
   Typed_identifier_list* methods_;
   // The location where the interface was defined.
-  source_location location_;
+  Location location_;
 };
 
 // The value we keep for a named type.  This lets us get the right
@@ -2380,7 +2383,7 @@ class Interface_type : public Type
 class Named_type : public Type
 {
  public:
-  Named_type(Named_object* named_object, Type* type, source_location location)
+  Named_type(Named_object* named_object, Type* type, Location location)
     : Type(TYPE_NAMED),
       named_object_(named_object), in_function_(NULL), type_(type),
       local_methods_(NULL), all_methods_(NULL),
@@ -2436,7 +2439,7 @@ class Named_type : public Type
   { return this->type_; }
 
   // Return the location.
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -2458,7 +2461,7 @@ class Named_type : public Type
   // Whether this is a builtin type.
   bool
   is_builtin() const
-  { return this->location_ == BUILTINS_LOCATION; }
+  { return Linemap::is_predeclared_location(this->location_); }
 
   // Whether this is a circular type: a pointer or function type that
   // refers to itself, which is not possible in C.
@@ -2484,7 +2487,7 @@ class Named_type : public Type
   // Add a method declaration to this type.
   Named_object*
   add_method_declaration(const std::string& name, Package* package,
-			 Function_type* type, source_location location);
+			 Function_type* type, Location location);
 
   // Add an existing method--one defined before the type itself was
   // defined--to a type.
@@ -2617,7 +2620,7 @@ class Named_type : public Type
   // tables for pointers to this type.
   Interface_method_tables* pointer_interface_method_tables_;
   // The location where this type was defined.
-  source_location location_;
+  Location location_;
   // The backend representation of this type during backend
   // conversion.  This is used to avoid endless recursion when a named
   // type refers to itself.
@@ -2691,7 +2694,7 @@ class Forward_declaration_type : public Type
   // Add a method declaration to this type.
   Named_object*
   add_method_declaration(const std::string& name, Function_type*,
-			 source_location);
+			 Location);
 
  protected:
   int

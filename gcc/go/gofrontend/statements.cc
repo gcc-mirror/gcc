@@ -20,7 +20,7 @@
 // Class Statement.
 
 Statement::Statement(Statement_classification classification,
-		     source_location location)
+		     Location location)
   : classification_(classification), location_(location)
 {
 }
@@ -175,7 +175,7 @@ Statement::report_error(const char* msg)
 class Error_statement : public Statement
 {
  public:
-  Error_statement(source_location location)
+  Error_statement(Location location)
     : Statement(STATEMENT_ERROR, location)
   { }
 
@@ -204,7 +204,7 @@ Error_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 // Make an error statement.
 
 Statement*
-Statement::make_error_statement(source_location location)
+Statement::make_error_statement(Location location)
 {
   return new Error_statement(location);
 }
@@ -268,7 +268,7 @@ Variable_declaration_statement::do_get_backend(Translate_context* context)
   // Something takes the address of this variable, so the value is
   // stored in the heap.  Initialize it to newly allocated memory
   // space, and assign the initial value to the new space.
-  source_location loc = this->location();
+  Location loc = this->location();
   Named_object* newfn = context->gogo()->lookup_global("new");
   go_assert(newfn != NULL && newfn->is_function_declaration());
   Expression* func = Expression::make_func_reference(newfn, NULL, loc);
@@ -497,7 +497,7 @@ Temporary_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 
 Temporary_statement*
 Statement::make_temporary(Type* type, Expression* init,
-			  source_location location)
+			  Location location)
 {
   return new Temporary_statement(type, init, location);
 }
@@ -508,7 +508,7 @@ class Assignment_statement : public Statement
 {
  public:
   Assignment_statement(Expression* lhs, Expression* rhs,
-		       source_location location)
+		       Location location)
     : Statement(STATEMENT_ASSIGNMENT, location),
       lhs_(lhs), rhs_(rhs), are_hidden_fields_ok_(false)
   { }
@@ -647,7 +647,7 @@ Assignment_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
 
 Statement*
 Statement::make_assignment(Expression* lhs, Expression* rhs,
-			   source_location location)
+			   Location location)
 {
   return new Assignment_statement(lhs, rhs, location);
 }
@@ -684,7 +684,7 @@ Move_subexpressions::expression(Expression** pexpr)
     --this->skip_;
   else if ((*pexpr)->temporary_reference_expression() == NULL)
     {
-      source_location loc = (*pexpr)->location();
+      Location loc = (*pexpr)->location();
       Temporary_statement* temp = Statement::make_temporary(NULL, *pexpr, loc);
       this->block_->add_statement(temp);
       *pexpr = Expression::make_temporary_reference(temp, loc);
@@ -731,7 +731,7 @@ Move_ordered_evals::expression(Expression** pexpr)
 
   if ((*pexpr)->must_eval_in_order())
     {
-      source_location loc = (*pexpr)->location();
+      Location loc = (*pexpr)->location();
       Temporary_statement* temp = Statement::make_temporary(NULL, *pexpr, loc);
       this->block_->add_statement(temp);
       *pexpr = Expression::make_temporary_reference(temp, loc);
@@ -745,7 +745,7 @@ class Assignment_operation_statement : public Statement
 {
  public:
   Assignment_operation_statement(Operator op, Expression* lhs, Expression* rhs,
-				 source_location location)
+				 Location location)
     : Statement(STATEMENT_ASSIGNMENT_OPERATION, location),
       op_(op), lhs_(lhs), rhs_(rhs)
   { }
@@ -794,7 +794,7 @@ Statement*
 Assignment_operation_statement::do_lower(Gogo*, Named_object*,
 					 Block* enclosing, Statement_inserter*)
 {
-  source_location loc = this->location();
+  Location loc = this->location();
 
   // We have to evaluate the left hand side expression only once.  We
   // do this by moving out any expression with side effects.
@@ -875,7 +875,7 @@ Assignment_operation_statement::do_dump_statement(
 
 Statement*
 Statement::make_assignment_operation(Operator op, Expression* lhs,
-				     Expression* rhs, source_location location)
+				     Expression* rhs, Location location)
 {
   return new Assignment_operation_statement(op, lhs, rhs, location);
 }
@@ -888,7 +888,7 @@ class Tuple_assignment_statement : public Statement
 {
  public:
   Tuple_assignment_statement(Expression_list* lhs, Expression_list* rhs,
-			     source_location location)
+			     Location location)
     : Statement(STATEMENT_TUPLE_ASSIGNMENT, location),
       lhs_(lhs), rhs_(rhs), are_hidden_fields_ok_(false)
   { }
@@ -944,7 +944,7 @@ Statement*
 Tuple_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
 				     Statement_inserter*)
 {
-  source_location loc = this->location();
+  Location loc = this->location();
 
   Block* b = new Block(enclosing, loc);
 
@@ -1035,7 +1035,7 @@ Tuple_assignment_statement::do_dump_statement(
 
 Statement*
 Statement::make_tuple_assignment(Expression_list* lhs, Expression_list* rhs,
-				 source_location location)
+				 Location location)
 {
   return new Tuple_assignment_statement(lhs, rhs, location);
 }
@@ -1048,7 +1048,7 @@ class Tuple_map_assignment_statement : public Statement
 public:
   Tuple_map_assignment_statement(Expression* val, Expression* present,
 				 Expression* map_index,
-				 source_location location)
+				 Location location)
     : Statement(STATEMENT_TUPLE_MAP_ASSIGNMENT, location),
       val_(val), present_(present), map_index_(map_index)
   { }
@@ -1097,7 +1097,7 @@ Statement*
 Tuple_map_assignment_statement::do_lower(Gogo*, Named_object*,
 					 Block* enclosing, Statement_inserter*)
 {
-  source_location loc = this->location();
+  Location loc = this->location();
 
   Map_index_expression* map_index = this->map_index_->map_index_expression();
   if (map_index == NULL)
@@ -1184,7 +1184,7 @@ Tuple_map_assignment_statement::do_dump_statement(
 Statement*
 Statement::make_tuple_map_assignment(Expression* val, Expression* present,
 				     Expression* map_index,
-				     source_location location)
+				     Location location)
 {
   return new Tuple_map_assignment_statement(val, present, map_index, location);
 }
@@ -1197,7 +1197,7 @@ class Map_assignment_statement : public Statement
  public:
   Map_assignment_statement(Expression* map_index,
 			   Expression* val, Expression* should_set,
-			   source_location location)
+			   Location location)
     : Statement(STATEMENT_MAP_ASSIGNMENT, location),
       map_index_(map_index), val_(val), should_set_(should_set)
   { }
@@ -1246,7 +1246,7 @@ Statement*
 Map_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
 				   Statement_inserter*)
 {
-  source_location loc = this->location();
+  Location loc = this->location();
 
   Map_index_expression* map_index = this->map_index_->map_index_expression();
   if (map_index == NULL)
@@ -1318,7 +1318,7 @@ Map_assignment_statement::do_dump_statement(
 Statement*
 Statement::make_map_assignment(Expression* map_index,
 			       Expression* val, Expression* should_set,
-			       source_location location)
+			       Location location)
 {
   return new Map_assignment_statement(map_index, val, should_set, location);
 }
@@ -1330,7 +1330,7 @@ class Tuple_receive_assignment_statement : public Statement
  public:
   Tuple_receive_assignment_statement(Expression* val, Expression* closed,
 				     Expression* channel, bool for_select,
-				     source_location location)
+				     Location location)
     : Statement(STATEMENT_TUPLE_RECEIVE_ASSIGNMENT, location),
       val_(val), closed_(closed), channel_(channel), for_select_(for_select)
   { }
@@ -1382,7 +1382,7 @@ Tuple_receive_assignment_statement::do_lower(Gogo*, Named_object*,
 					     Block* enclosing,
 					     Statement_inserter*)
 {
-  source_location loc = this->location();
+  Location loc = this->location();
 
   Channel_type* channel_type = this->channel_->type()->channel_type();
   if (channel_type == NULL)
@@ -1461,7 +1461,7 @@ Statement*
 Statement::make_tuple_receive_assignment(Expression* val, Expression* closed,
 					 Expression* channel,
 					 bool for_select,
-					 source_location location)
+					 Location location)
 {
   return new Tuple_receive_assignment_statement(val, closed, channel,
 						for_select, location);
@@ -1475,7 +1475,7 @@ class Tuple_type_guard_assignment_statement : public Statement
  public:
   Tuple_type_guard_assignment_statement(Expression* val, Expression* ok,
 					Expression* expr, Type* type,
-					source_location location)
+					Location location)
     : Statement(STATEMENT_TUPLE_TYPE_GUARD_ASSIGNMENT, location),
       val_(val), ok_(ok), expr_(expr), type_(type)
   { }
@@ -1534,7 +1534,7 @@ Tuple_type_guard_assignment_statement::do_lower(Gogo*, Named_object*,
 						Block* enclosing,
 						Statement_inserter*)
 {
-  source_location loc = this->location();
+  Location loc = this->location();
 
   Type* expr_type = this->expr_->type();
   if (expr_type->interface_type() == NULL)
@@ -1599,7 +1599,7 @@ Tuple_type_guard_assignment_statement::do_lower(Gogo*, Named_object*,
 Call_expression*
 Tuple_type_guard_assignment_statement::lower_to_type(Runtime::Function code)
 {
-  source_location loc = this->location();
+  Location loc = this->location();
   return Runtime::make_call(code, loc, 2,
 			    Expression::make_type_descriptor(this->type_, loc),
 			    this->expr_);
@@ -1612,7 +1612,7 @@ Tuple_type_guard_assignment_statement::lower_to_object_type(
     Block* b,
     Runtime::Function code)
 {
-  source_location loc = this->location();
+  Location loc = this->location();
 
   // var val_temp TYPE
   Temporary_statement* val_temp = Statement::make_temporary(this->type_,
@@ -1655,7 +1655,7 @@ Tuple_type_guard_assignment_statement::do_dump_statement(
 Statement*
 Statement::make_tuple_type_guard_assignment(Expression* val, Expression* ok,
 					    Expression* expr, Type* type,
-					    source_location location)
+					    Location location)
 {
   return new Tuple_type_guard_assignment_statement(val, ok, expr, type,
 						   location);
@@ -1778,7 +1778,7 @@ Statement::make_statement(Expression* expr, bool is_ignored)
 class Block_statement : public Statement
 {
  public:
-  Block_statement(Block* block, source_location location)
+  Block_statement(Block* block, Location location)
     : Statement(STATEMENT_BLOCK, location),
       block_(block)
   { }
@@ -1826,7 +1826,7 @@ Block_statement::do_dump_statement(Ast_dump_context*) const
 // Make a block statement.
 
 Statement*
-Statement::make_block_statement(Block* block, source_location location)
+Statement::make_block_statement(Block* block, Location location)
 {
   return new Block_statement(block, location);
 }
@@ -1872,7 +1872,7 @@ class Inc_dec_statement : public Statement
 Statement*
 Inc_dec_statement::do_lower(Gogo*, Named_object*, Block*, Statement_inserter*)
 {
-  source_location loc = this->location();
+  Location loc = this->location();
 
   mpz_t oval;
   mpz_init_set_ui(oval, 1UL);
@@ -1916,7 +1916,7 @@ Statement::make_dec_statement(Expression* expr)
 
 Thunk_statement::Thunk_statement(Statement_classification classification,
 				 Call_expression* call,
-				 source_location location)
+				 Location location)
     : Statement(classification, location),
       call_(call), struct_type_(NULL)
 {
@@ -2145,7 +2145,7 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   Interface_field_reference_expression* interface_method =
     fn->interface_field_reference_expression();
 
-  source_location location = this->location();
+  Location location = this->location();
 
   std::string thunk_name = Gogo::thunk_name();
 
@@ -2230,7 +2230,7 @@ Thunk_statement::thunk_field_param(int n, char* buf, size_t buflen)
 Struct_type*
 Thunk_statement::build_struct(Function_type* fntype)
 {
-  source_location location = this->location();
+  Location location = this->location();
 
   Struct_field_list* fields = new Struct_field_list();
 
@@ -2288,7 +2288,7 @@ Thunk_statement::build_struct(Function_type* fntype)
 void
 Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
 {
-  source_location location = this->location();
+  Location location = this->location();
 
   Call_expression* ce = this->call_->call_expression();
 
@@ -2541,7 +2541,7 @@ Go_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 // Make a go statement.
 
 Statement*
-Statement::make_go_statement(Call_expression* call, source_location location)
+Statement::make_go_statement(Call_expression* call, Location location)
 {
   return new Go_statement(call, location);
 }
@@ -2556,7 +2556,7 @@ Defer_statement::do_get_backend(Translate_context* context)
   if (!this->get_fn_and_arg(&fn, &arg))
     return context->backend()->error_statement();
 
-  source_location loc = this->location();
+  Location loc = this->location();
   Expression* ds = context->function()->func_value()->defer_stack(loc);
 
   Expression* call = Runtime::make_call(Runtime::DEFER, loc, 3,
@@ -2581,7 +2581,7 @@ Defer_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 
 Statement*
 Statement::make_defer_statement(Call_expression* call,
-				source_location location)
+				Location location)
 {
   return new Defer_statement(call, location);
 }
@@ -2623,7 +2623,7 @@ Return_statement::do_lower(Gogo*, Named_object* function, Block* enclosing,
   this->vals_ = NULL;
   this->is_lowered_ = true;
 
-  source_location loc = this->location();
+  Location loc = this->location();
 
   size_t vals_count = vals == NULL ? 0 : vals->size();
   Function::Results* results = function->func_value()->result_variables();
@@ -2757,7 +2757,7 @@ Return_statement::do_lower(Gogo*, Named_object* function, Block* enclosing,
 Bstatement*
 Return_statement::do_get_backend(Translate_context* context)
 {
-  source_location loc = this->location();
+  Location loc = this->location();
 
   Function* function = context->function()->func_value();
   tree fndecl = function->get_decl();
@@ -2795,7 +2795,7 @@ Return_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 
 Return_statement*
 Statement::make_return_statement(Expression_list* vals,
-				 source_location location)
+				 Location location)
 {
   return new Return_statement(vals, location);
 }
@@ -2805,7 +2805,7 @@ Statement::make_return_statement(Expression_list* vals,
 class Bc_statement : public Statement
 {
  public:
-  Bc_statement(bool is_break, Unnamed_label* label, source_location location)
+  Bc_statement(bool is_break, Unnamed_label* label, Location location)
     : Statement(STATEMENT_BREAK_OR_CONTINUE, location),
       label_(label), is_break_(is_break)
   { }
@@ -2855,7 +2855,7 @@ Bc_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 // Make a break statement.
 
 Statement*
-Statement::make_break_statement(Unnamed_label* label, source_location location)
+Statement::make_break_statement(Unnamed_label* label, Location location)
 {
   return new Bc_statement(true, label, location);
 }
@@ -2864,7 +2864,7 @@ Statement::make_break_statement(Unnamed_label* label, source_location location)
 
 Statement*
 Statement::make_continue_statement(Unnamed_label* label,
-				   source_location location)
+				   Location location)
 {
   return new Bc_statement(false, label, location);
 }
@@ -2874,7 +2874,7 @@ Statement::make_continue_statement(Unnamed_label* label,
 class Goto_statement : public Statement
 {
  public:
-  Goto_statement(Label* label, source_location location)
+  Goto_statement(Label* label, Location location)
     : Statement(STATEMENT_GOTO, location),
       label_(label)
   { }
@@ -2936,7 +2936,7 @@ Goto_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 // Make a goto statement.
 
 Statement*
-Statement::make_goto_statement(Label* label, source_location location)
+Statement::make_goto_statement(Label* label, Location location)
 {
   return new Goto_statement(label, location);
 }
@@ -2946,7 +2946,7 @@ Statement::make_goto_statement(Label* label, source_location location)
 class Goto_unnamed_statement : public Statement
 {
  public:
-  Goto_unnamed_statement(Unnamed_label* label, source_location location)
+  Goto_unnamed_statement(Unnamed_label* label, Location location)
     : Statement(STATEMENT_GOTO_UNNAMED, location),
       label_(label)
   { }
@@ -2987,7 +2987,7 @@ Goto_unnamed_statement::do_dump_statement(
 
 Statement*
 Statement::make_goto_unnamed_statement(Unnamed_label* label,
-				       source_location location)
+				       Location location)
 {
   return new Goto_unnamed_statement(label, location);
 }
@@ -3024,7 +3024,7 @@ Label_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 // Make a label statement.
 
 Statement*
-Statement::make_label_statement(Label* label, source_location location)
+Statement::make_label_statement(Label* label, Location location)
 {
   return new Label_statement(label, location);
 }
@@ -3081,7 +3081,7 @@ class If_statement : public Statement
 {
  public:
   If_statement(Expression* cond, Block* then_block, Block* else_block,
-	       source_location location)
+	       Location location)
     : Statement(STATEMENT_IF, location),
       cond_(cond), then_block_(then_block), else_block_(else_block)
   { }
@@ -3201,7 +3201,7 @@ If_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 
 Statement*
 Statement::make_if_statement(Expression* cond, Block* then_block,
-			     Block* else_block, source_location location)
+			     Block* else_block, Location location)
 {
   return new If_statement(cond, then_block, else_block, location);
 }
@@ -3303,7 +3303,7 @@ Case_clauses::Case_clause::lower(Block* b, Temporary_statement* val_temp,
 				 Unnamed_label* start_label,
 				 Unnamed_label* finish_label) const
 {
-  source_location loc = this->location_;
+  Location loc = this->location_;
   Unnamed_label* next_case_label;
   if (this->cases_ == NULL || this->cases_->empty())
     {
@@ -3335,7 +3335,7 @@ Case_clauses::Case_clause::lower(Block* b, Temporary_statement* val_temp,
 	}
 
       Block* then_block = new Block(b, loc);
-      next_case_label = new Unnamed_label(UNKNOWN_LOCATION);
+      next_case_label = new Unnamed_label(Linemap::unknown_location());
       Statement* s = Statement::make_goto_unnamed_statement(next_case_label,
 							    loc);
       then_block->add_statement(s);
@@ -3693,7 +3693,7 @@ class Constant_switch_statement : public Statement
  public:
   Constant_switch_statement(Expression* val, Case_clauses* clauses,
 			    Unnamed_label* break_label,
-			    source_location location)
+			    Location location)
     : Statement(STATEMENT_CONSTANT_SWITCH, location),
       val_(val), clauses_(clauses), break_label_(break_label)
   { }
@@ -3838,7 +3838,7 @@ Statement*
 Switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
 			   Statement_inserter*)
 {
-  source_location loc = this->location();
+  Location loc = this->location();
 
   if (this->val_ != NULL
       && (this->val_->is_error_expression()
@@ -3915,7 +3915,7 @@ Switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 // Make a switch statement.
 
 Switch_statement*
-Statement::make_switch_statement(Expression* val, source_location location)
+Statement::make_switch_statement(Expression* val, Location location)
 {
   return new Switch_statement(val, location);
 }
@@ -3949,7 +3949,7 @@ Type_case_clauses::Type_case_clause::lower(Block* b,
 					   Unnamed_label* break_label,
 					   Unnamed_label** stmts_label) const
 {
-  source_location loc = this->location_;
+  Location loc = this->location_;
 
   Unnamed_label* next_case_label = NULL;
   if (!this->is_default_)
@@ -3979,7 +3979,7 @@ Type_case_clauses::Type_case_clause::lower(Block* b,
       if (!this->is_fallthrough_)
 	{
 	  // if !COND { goto NEXT_CASE_LABEL }
-	  next_case_label = new Unnamed_label(UNKNOWN_LOCATION);
+	  next_case_label = new Unnamed_label(Linemap::unknown_location());
 	  dest = next_case_label;
 	  cond = Expression::make_unary(OPERATOR_NOT, cond, loc);
 	}
@@ -3988,7 +3988,7 @@ Type_case_clauses::Type_case_clause::lower(Block* b,
 	  // if COND { goto STMTS_LABEL }
 	  go_assert(stmts_label != NULL);
 	  if (*stmts_label == NULL)
-	    *stmts_label = new Unnamed_label(UNKNOWN_LOCATION);
+	    *stmts_label = new Unnamed_label(Linemap::unknown_location());
 	  dest = *stmts_label;
 	}
       Block* then_block = new Block(b, loc);
@@ -4022,7 +4022,7 @@ Type_case_clauses::Type_case_clause::lower(Block* b,
     go_assert(next_case_label == NULL);
   else
     {
-      source_location gloc = (this->statements_ == NULL
+      Location gloc = (this->statements_ == NULL
 			      ? loc
 			      : this->statements_->end_location());
       b->add_statement(Statement::make_goto_unnamed_statement(break_label,
@@ -4169,7 +4169,7 @@ Statement*
 Type_switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
 				Statement_inserter*)
 {
-  const source_location loc = this->location();
+  const Location loc = this->location();
 
   if (this->clauses_ != NULL)
     this->clauses_->check_duplicates();
@@ -4268,7 +4268,7 @@ Type_switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
 
 Type_switch_statement*
 Statement::make_type_switch_statement(Named_object* var, Expression* expr,
-				      source_location location)
+				      Location location)
 {
   return new Type_switch_statement(var, expr, location);
 }
@@ -4334,7 +4334,7 @@ Send_statement::do_check_types(Gogo*)
 Bstatement*
 Send_statement::do_get_backend(Translate_context* context)
 {
-  source_location loc = this->location();
+  Location loc = this->location();
 
   Channel_type* channel_type = this->channel_->type()->channel_type();
   Type* element_type = channel_type->element_type();
@@ -4450,7 +4450,7 @@ Send_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 
 Send_statement*
 Statement::make_send_statement(Expression* channel, Expression* val,
-			       source_location location)
+			       Location location)
 {
   return new Send_statement(channel, val, location);
 }
@@ -4505,7 +4505,7 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
       return;
     }
 
-  source_location loc = this->location_;
+  Location loc = this->location_;
 
   // Evaluate the channel before the select statement.
   Temporary_statement* channel_temp = Statement::make_temporary(NULL,
@@ -4767,7 +4767,7 @@ Select_clauses::may_fall_through() const
 Bstatement*
 Select_clauses::get_backend(Translate_context* context,
 			    Unnamed_label *break_label,
-			    source_location location)
+			    Location location)
 {
   size_t count = this->clauses_.size();
 
@@ -4941,7 +4941,7 @@ Select_clauses::get_backend(Translate_context* context,
 void
 Select_clauses::add_clause_backend(
     Translate_context* context,
-    source_location location,
+    Location location,
     int index,
     int case_value,
     Select_clause* clause,
@@ -4957,7 +4957,7 @@ Select_clauses::add_clause_backend(
 
   Bstatement* s = clause->get_statements_backend(context);
 
-  source_location gloc = (clause->statements() == NULL
+  Location gloc = (clause->statements() == NULL
 			  ? clause->location()
 			  : clause->statements()->end_location());
   Bstatement* g = bottom_label->get_goto(context, gloc);
@@ -5038,7 +5038,7 @@ Select_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 // Make a select statement.
 
 Select_statement*
-Statement::make_select_statement(source_location location)
+Statement::make_select_statement(Location location)
 {
   return new Select_statement(location);
 }
@@ -5076,7 +5076,7 @@ For_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
 			Statement_inserter*)
 {
   Statement* s;
-  source_location loc = this->location();
+  Location loc = this->location();
 
   Block* b = new Block(enclosing, this->location());
   if (this->init_ != NULL)
@@ -5100,7 +5100,7 @@ For_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
 				      this->statements_->start_location());
   b->add_statement(s);
 
-  source_location end_loc = this->statements_->end_location();
+  Location end_loc = this->statements_->end_location();
 
   Unnamed_label* cont = this->continue_label_;
   if (cont != NULL)
@@ -5120,7 +5120,7 @@ For_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
     {
       b->add_statement(Statement::make_unnamed_label_statement(entry));
 
-      source_location cond_loc = this->cond_->location();
+      Location cond_loc = this->cond_->location();
       Block* then_block = new Block(b, cond_loc);
       s = Statement::make_goto_unnamed_statement(top, cond_loc);
       then_block->add_statement(s);
@@ -5211,7 +5211,7 @@ For_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 
 For_statement*
 Statement::make_for_statement(Block* init, Expression* cond, Block* post,
-			      source_location location)
+			      Location location)
 {
   return new For_statement(init, cond, post, location);
 }
@@ -5285,7 +5285,7 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
       return Statement::make_error_statement(this->location());
     }
 
-  source_location loc = this->location();
+  Location loc = this->location();
   Block* temp_block = new Block(enclosing, loc);
 
   Named_object* range_object = NULL;
@@ -5388,7 +5388,7 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
 Expression*
 For_range_statement::make_range_ref(Named_object* range_object,
 				    Temporary_statement* range_temp,
-				    source_location loc)
+				    Location loc)
 {
   if (range_object != NULL)
     return Expression::make_var_reference(range_object, loc);
@@ -5402,7 +5402,7 @@ For_range_statement::make_range_ref(Named_object* range_object,
 Expression*
 For_range_statement::call_builtin(Gogo* gogo, const char* funcname,
 				  Expression* arg,
-				  source_location loc)
+				  Location loc)
 {
   Named_object* no = gogo->lookup_global(funcname);
   go_assert(no != NULL && no->is_function_declaration());
@@ -5427,7 +5427,7 @@ For_range_statement::lower_range_array(Gogo* gogo,
 				       Block** piter_init,
 				       Block** ppost)
 {
-  source_location loc = this->location();
+  Location loc = this->location();
 
   // The loop we generate:
   //   len_temp := len(range)
@@ -5519,7 +5519,7 @@ For_range_statement::lower_range_string(Gogo*,
 					Block** piter_init,
 					Block** ppost)
 {
-  source_location loc = this->location();
+  Location loc = this->location();
 
   // The loop we generate:
   //   var next_index_temp int
@@ -5647,7 +5647,7 @@ For_range_statement::lower_range_map(Gogo*,
 				     Block** piter_init,
 				     Block** ppost)
 {
-  source_location loc = this->location();
+  Location loc = this->location();
 
   // The runtime uses a struct to handle ranges over a map.  The
   // struct is four pointers long.  The first pointer is NULL when we
@@ -5752,7 +5752,7 @@ For_range_statement::lower_range_channel(Gogo*,
 {
   go_assert(value_temp == NULL);
 
-  source_location loc = this->location();
+  Location loc = this->location();
 
   // The loop we generate:
   //   for {
@@ -5863,7 +5863,7 @@ For_range_statement*
 Statement::make_for_range_statement(Expression* index_var,
 				    Expression* value_var,
 				    Expression* range,
-				    source_location location)
+				    Location location)
 {
   return new For_range_statement(index_var, value_var, range, location);
 }

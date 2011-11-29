@@ -82,7 +82,7 @@ runtime_function_type(Runtime_function_type bft)
   go_assert(bft < NUMBER_OF_RUNTIME_FUNCTION_TYPES);
   if (runtime_function_types[bft] == NULL)
     {
-      const source_location bloc = BUILTINS_LOCATION;
+      const Location bloc = Linemap::predeclared_location();
       Type* t;
       switch (bft)
 	{
@@ -193,7 +193,7 @@ runtime_function_type(Runtime_function_type bft)
 
 static Expression*
 convert_to_runtime_function_type(Runtime_function_type bft, Expression* e,
-				 source_location loc)
+				 Location loc)
 {
   switch (bft)
     {
@@ -295,7 +295,7 @@ Runtime::runtime_declaration(Function code)
     {
       const Runtime_function* pb = &runtime_functions[code];
 
-      source_location bloc = BUILTINS_LOCATION;
+      Location bloc = Linemap::predeclared_location();
 
       Typed_identifier_list* param_types = NULL;
       if (pb->parameter_types[0] != RFT_VOID)
@@ -347,7 +347,7 @@ Runtime::runtime_declaration(Function code)
 // Make a call to a runtime function.
 
 Call_expression*
-Runtime::make_call(Runtime::Function code, source_location loc,
+Runtime::make_call(Runtime::Function code, Location loc,
 		   int param_count, ...)
 {
   go_assert(code < Runtime::NUMBER_OF_FUNCTIONS);
@@ -387,7 +387,8 @@ Runtime::map_iteration_type()
 
   mpz_t ival;
   mpz_init_set_ui(ival, map_iteration_size);
-  Expression* iexpr = Expression::make_integer(&ival, NULL, BUILTINS_LOCATION);
+  Expression* iexpr = Expression::make_integer(&ival, NULL,
+                                               Linemap::predeclared_location());
   mpz_clear(ival);
 
   return Type::make_array_type(runtime_function_type(RFT_POINTER), iexpr);

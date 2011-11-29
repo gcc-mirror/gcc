@@ -853,7 +853,7 @@ Type::get_btype_without_hash(Gogo* gogo)
 // Return a pointer to the type descriptor for this type.
 
 tree
-Type::type_descriptor_pointer(Gogo* gogo, source_location location)
+Type::type_descriptor_pointer(Gogo* gogo, Location location)
 {
   Type* t = this->forwarded();
   if (t->type_descriptor_var_ == NULL)
@@ -864,7 +864,7 @@ Type::type_descriptor_pointer(Gogo* gogo, source_location location)
   tree var_tree = var_to_tree(t->type_descriptor_var_);
   if (var_tree == error_mark_node)
     return error_mark_node;
-  return build_fold_addr_expr_loc(location, var_tree);
+  return build_fold_addr_expr_loc(location.gcc_location(), var_tree);
 }
 
 // A mapping from unnamed types to type descriptor variables.
@@ -934,7 +934,7 @@ Type::make_type_descriptor_var(Gogo* gogo)
 	}
     }
 
-  source_location loc = nt == NULL ? BUILTINS_LOCATION : nt->location();
+  Location loc = nt == NULL ? Linemap::predeclared_location() : nt->location();
 
   if (is_defined_elsewhere)
     {
@@ -1054,7 +1054,7 @@ Type::make_builtin_struct_type(int nfields, ...)
   va_list ap;
   va_start(ap, nfields);
 
-  source_location bloc = BUILTINS_LOCATION;
+  Location bloc = Linemap::predeclared_location();
   Struct_field_list* sfl = new Struct_field_list();
   for (int i = 0; i < nfields; i++)
     {
@@ -1077,7 +1077,7 @@ std::vector<Named_type*> Type::named_builtin_types;
 Named_type*
 Type::make_builtin_named_type(const char* name, Type* type)
 {
-  source_location bloc = BUILTINS_LOCATION;
+  Location bloc = Linemap::predeclared_location();
   Named_object* no = Named_object::make_type(name, NULL, type, bloc);
   Named_type* ret = no->type_value();
   Type::named_builtin_types.push_back(ret);
@@ -1110,7 +1110,7 @@ Type::make_type_descriptor_type()
   static Type* ret;
   if (ret == NULL)
     {
-      source_location bloc = BUILTINS_LOCATION;
+      Location bloc = Linemap::predeclared_location();
 
       Type* uint8_type = Type::lookup_integer_type("uint8");
       Type* uint32_type = Type::lookup_integer_type("uint32");
@@ -1286,7 +1286,7 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
 				  Named_type* name, const Methods* methods,
 				  bool only_value_methods)
 {
-  source_location bloc = BUILTINS_LOCATION;
+  Location bloc = Linemap::predeclared_location();
 
   Type* td_type = Type::make_type_descriptor_type();
   const Struct_field_list* fields = td_type->struct_type()->fields();
@@ -1394,7 +1394,7 @@ Type::uncommon_type_constructor(Gogo* gogo, Type* uncommon_type,
 				Named_type* name, const Methods* methods,
 				bool only_value_methods) const
 {
-  source_location bloc = BUILTINS_LOCATION;
+  Location bloc = Linemap::predeclared_location();
 
   const Struct_field_list* fields = uncommon_type->struct_type()->fields();
 
@@ -1477,7 +1477,7 @@ Type::methods_constructor(Gogo* gogo, Type* methods_type,
 			  const Methods* methods,
 			  bool only_value_methods) const
 {
-  source_location bloc = BUILTINS_LOCATION;
+  Location bloc = Linemap::predeclared_location();
 
   std::vector<std::pair<std::string, const Method*> > smethods;
   if (methods != NULL)
@@ -1524,7 +1524,7 @@ Type::method_constructor(Gogo*, Type* method_type,
 			 const Method* m,
 			 bool only_value_methods) const
 {
-  source_location bloc = BUILTINS_LOCATION;
+  Location bloc = Linemap::predeclared_location();
 
   const Struct_field_list* fields = method_type->struct_type()->fields();
 
@@ -1688,7 +1688,7 @@ class Error_type : public Type
 
   Expression*
   do_type_descriptor(Gogo*, Named_type*)
-  { return Expression::make_error(BUILTINS_LOCATION); }
+  { return Expression::make_error(Linemap::predeclared_location()); }
 
   void
   do_reflection(Gogo*, std::string*) const
@@ -1807,9 +1807,9 @@ Named_type*
 Type::make_named_bool_type()
 {
   Type* bool_type = Type::make_boolean_type();
-  Named_object* named_object = Named_object::make_type("bool", NULL,
-						       bool_type,
-						       BUILTINS_LOCATION);
+  Named_object* named_object =
+    Named_object::make_type("bool", NULL, bool_type,
+                            Linemap::predeclared_location());
   Named_type* named_type = named_object->type_value();
   named_bool_type = named_type;
   return named_type;
@@ -1829,9 +1829,9 @@ Integer_type::create_integer_type(const char* name, bool is_unsigned,
   Integer_type* integer_type = new Integer_type(false, is_unsigned, bits,
 						runtime_type_kind);
   std::string sname(name);
-  Named_object* named_object = Named_object::make_type(sname, NULL,
-						       integer_type,
-						       BUILTINS_LOCATION);
+  Named_object* named_object =
+    Named_object::make_type(sname, NULL, integer_type,
+                            Linemap::predeclared_location());
   Named_type* named_type = named_object->type_value();
   std::pair<Named_integer_types::iterator, bool> ins =
     Integer_type::named_integer_types.insert(std::make_pair(sname, named_type));
@@ -1965,8 +1965,9 @@ Float_type::create_float_type(const char* name, int bits,
 {
   Float_type* float_type = new Float_type(false, bits, runtime_type_kind);
   std::string sname(name);
-  Named_object* named_object = Named_object::make_type(sname, NULL, float_type,
-						       BUILTINS_LOCATION);
+  Named_object* named_object =
+    Named_object::make_type(sname, NULL, float_type,
+                            Linemap::predeclared_location());
   Named_type* named_type = named_object->type_value();
   std::pair<Named_float_types::iterator, bool> ins =
     Float_type::named_float_types.insert(std::make_pair(sname, named_type));
@@ -2089,9 +2090,9 @@ Complex_type::create_complex_type(const char* name, int bits,
   Complex_type* complex_type = new Complex_type(false, bits,
 						runtime_type_kind);
   std::string sname(name);
-  Named_object* named_object = Named_object::make_type(sname, NULL,
-						       complex_type,
-						       BUILTINS_LOCATION);
+  Named_object* named_object =
+    Named_object::make_type(sname, NULL, complex_type,
+                            Linemap::predeclared_location());
   Named_type* named_type = named_object->type_value();
   std::pair<Named_complex_types::iterator, bool> ins =
     Complex_type::named_complex_types.insert(std::make_pair(sname,
@@ -2219,12 +2220,12 @@ String_type::do_get_backend(Gogo* gogo)
       Type* pb = Type::make_pointer_type(b);
       fields[0].name = "__data";
       fields[0].btype = pb->get_backend(gogo);
-      fields[0].location = UNKNOWN_LOCATION;
+      fields[0].location = Linemap::predeclared_location();
 
       Type* int_type = Type::lookup_integer_type("int");
       fields[1].name = "__length";
       fields[1].btype = int_type->get_backend(gogo);
-      fields[1].location = UNKNOWN_LOCATION;
+      fields[1].location = fields[0].location;
 
       backend_string_type = gogo->backend()->struct_type(fields);
     }
@@ -2317,9 +2318,9 @@ Named_type*
 Type::make_named_string_type()
 {
   Type* string_type = Type::make_string_type();
-  Named_object* named_object = Named_object::make_type("string", NULL,
-						       string_type,
-						       BUILTINS_LOCATION);
+  Named_object* named_object =
+    Named_object::make_type("string", NULL, string_type,
+                            Linemap::predeclared_location());
   Named_type* named_type = named_object->type_value();
   named_string_type = named_type;
   return named_type;
@@ -2742,7 +2743,7 @@ Function_type::make_function_type_descriptor_type()
 Expression*
 Function_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 {
-  source_location bloc = BUILTINS_LOCATION;
+  Location bloc = Linemap::predeclared_location();
 
   Type* ftdt = Function_type::make_function_type_descriptor_type();
 
@@ -2785,7 +2786,7 @@ Function_type::type_descriptor_params(Type* params_type,
 				      const Typed_identifier* receiver,
 				      const Typed_identifier_list* params)
 {
-  source_location bloc = BUILTINS_LOCATION;
+  Location bloc = Linemap::predeclared_location();
 
   if (receiver == NULL && params == NULL)
     return Expression::make_slice_composite_literal(params_type, NULL, bloc);
@@ -3073,7 +3074,7 @@ Function_type*
 Type::make_function_type(Typed_identifier* receiver,
 			 Typed_identifier_list* parameters,
 			 Typed_identifier_list* results,
-			 source_location location)
+			 Location location)
 {
   return new Function_type(receiver, parameters, results, location);
 }
@@ -3140,7 +3141,7 @@ Pointer_type::do_type_descriptor(Gogo* gogo, Named_type* name)
     }
   else
     {
-      source_location bloc = BUILTINS_LOCATION;
+      Location bloc = Linemap::predeclared_location();
 
       const Methods* methods;
       Type* deref = this->points_to();
@@ -3302,7 +3303,7 @@ class Call_multiple_result_type : public Type
   do_type_descriptor(Gogo*, Named_type*)
   {
     go_assert(saw_errors());
-    return Expression::make_error(UNKNOWN_LOCATION);
+    return Expression::make_error(Linemap::unknown_location());
   }
 
   void
@@ -3609,7 +3610,7 @@ Struct_type::find_local_field(const std::string& name,
 
 Field_reference_expression*
 Struct_type::field_reference(Expression* struct_expr, const std::string& name,
-			     source_location location) const
+			     Location location) const
 {
   unsigned int depth;
   return this->field_reference_depth(struct_expr, name, location, NULL,
@@ -3622,7 +3623,7 @@ Struct_type::field_reference(Expression* struct_expr, const std::string& name,
 Field_reference_expression*
 Struct_type::field_reference_depth(Expression* struct_expr,
 				   const std::string& name,
-				   source_location location,
+				   Location location,
 				   Saw_named_type* saw,
 				   unsigned int* depth) const
 {
@@ -3867,7 +3868,7 @@ Struct_type::make_struct_type_descriptor_type()
 Expression*
 Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 {
-  source_location bloc = BUILTINS_LOCATION;
+  Location bloc = Linemap::predeclared_location();
 
   Type* stdt = Struct_type::make_struct_type_descriptor_type();
 
@@ -4081,8 +4082,8 @@ Struct_type::do_export(Export* exp) const
       if (p->has_tag())
 	{
 	  exp->write_c_string(" ");
-	  Expression* expr = Expression::make_string(p->tag(),
-						     BUILTINS_LOCATION);
+	  Expression* expr =
+            Expression::make_string(p->tag(), Linemap::predeclared_location());
 	  expr->export_expression(exp);
 	  delete expr;
 	}
@@ -4140,7 +4141,7 @@ Struct_type::do_import(Import* imp)
 
 Struct_type*
 Type::make_struct_type(Struct_field_list* fields,
-		       source_location location)
+		       Location location)
 {
   return new Struct_type(fields, location);
 }
@@ -4356,23 +4357,24 @@ get_backend_slice_fields(Gogo* gogo, Array_type* type,
 
   Type* pet = Type::make_pointer_type(type->element_type());
   Btype* pbet = pet->get_backend(gogo);
+  Location ploc = Linemap::predeclared_location();
 
   Backend::Btyped_identifier* p = &(*bfields)[0];
   p->name = "__values";
   p->btype = pbet;
-  p->location = UNKNOWN_LOCATION;
+  p->location = ploc;
 
   Type* int_type = Type::lookup_integer_type("int");
 
   p = &(*bfields)[1];
   p->name = "__count";
   p->btype = int_type->get_backend(gogo);
-  p->location = UNKNOWN_LOCATION;
+  p->location = ploc;
 
   p = &(*bfields)[2];
   p->name = "__capacity";
   p->btype = int_type->get_backend(gogo);
-  p->location = UNKNOWN_LOCATION;
+  p->location = ploc;
 }
 
 // Get a tree for the type of this array.  A fixed array is simply
@@ -4579,7 +4581,7 @@ Array_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 Expression*
 Array_type::array_type_descriptor(Gogo* gogo, Named_type* name)
 {
-  source_location bloc = BUILTINS_LOCATION;
+  Location bloc = Linemap::predeclared_location();
 
   Type* atdt = Array_type::make_array_type_descriptor_type();
 
@@ -4618,7 +4620,7 @@ Array_type::array_type_descriptor(Gogo* gogo, Named_type* name)
 Expression*
 Array_type::slice_type_descriptor(Gogo* gogo, Named_type* name)
 {
-  source_location bloc = BUILTINS_LOCATION;
+  Location bloc = Linemap::predeclared_location();
 
   Type* stdt = Array_type::make_slice_type_descriptor_type();
 
@@ -4772,29 +4774,31 @@ Map_type::do_get_backend(Gogo* gogo)
     {
       std::vector<Backend::Btyped_identifier> bfields(4);
 
+      Location bloc = Linemap::predeclared_location();
+
       Type* pdt = Type::make_type_descriptor_ptr_type();
       bfields[0].name = "__descriptor";
       bfields[0].btype = pdt->get_backend(gogo);
-      bfields[0].location = BUILTINS_LOCATION;
+      bfields[0].location = bloc;
 
       Type* uintptr_type = Type::lookup_integer_type("uintptr");
       bfields[1].name = "__element_count";
       bfields[1].btype = uintptr_type->get_backend(gogo);
-      bfields[1].location = BUILTINS_LOCATION;
+      bfields[1].location = bloc;
 
       bfields[2].name = "__bucket_count";
       bfields[2].btype = bfields[1].btype;
-      bfields[2].location = BUILTINS_LOCATION;
+      bfields[2].location = bloc;
 
       Btype* bvt = gogo->backend()->void_type();
       Btype* bpvt = gogo->backend()->pointer_type(bvt);
       Btype* bppvt = gogo->backend()->pointer_type(bpvt);
       bfields[3].name = "__buckets";
       bfields[3].btype = bppvt;
-      bfields[3].location = BUILTINS_LOCATION;
+      bfields[3].location = bloc;
 
       Btype *bt = gogo->backend()->struct_type(bfields);
-      bt = gogo->backend()->named_type("__go_map", bt, BUILTINS_LOCATION);
+      bt = gogo->backend()->named_type("__go_map", bt, bloc);
       backend_map_type = gogo->backend()->pointer_type(bt);
     }
   return backend_map_type;
@@ -4828,7 +4832,7 @@ Map_type::make_map_type_descriptor_type()
 Expression*
 Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 {
-  source_location bloc = BUILTINS_LOCATION;
+  Location bloc = Linemap::predeclared_location();
 
   Type* mtdt = Map_type::make_map_type_descriptor_type();
 
@@ -4864,13 +4868,13 @@ Map_type::Map_descriptors Map_type::map_descriptors;
 // Build a map descriptor for this type.  Return a pointer to it.
 
 tree
-Map_type::map_descriptor_pointer(Gogo* gogo, source_location location)
+Map_type::map_descriptor_pointer(Gogo* gogo, Location location)
 {
   Bvariable* bvar = this->map_descriptor(gogo);
   tree var_tree = var_to_tree(bvar);
   if (var_tree == error_mark_node)
     return error_mark_node;
-  return build_fold_addr_expr_loc(location, var_tree);
+  return build_fold_addr_expr_loc(location.gcc_location(), var_tree);
 }
 
 // Build a map descriptor for this type.
@@ -4907,7 +4911,7 @@ Map_type::map_descriptor(Gogo* gogo)
   Expression_list* vals = new Expression_list();
   vals->reserve(4);
 
-  source_location bloc = BUILTINS_LOCATION;
+  Location bloc = Linemap::predeclared_location();
 
   Struct_field_list::const_iterator p = fields->begin();
 
@@ -5028,7 +5032,7 @@ Map_type::do_import(Import* imp)
 // Make a map type.
 
 Map_type*
-Type::make_map_type(Type* key_type, Type* val_type, source_location location)
+Type::make_map_type(Type* key_type, Type* val_type, Location location)
 {
   return new Map_type(key_type, val_type, location);
 }
@@ -5075,7 +5079,8 @@ Channel_type::do_get_backend(Gogo* gogo)
     {
       std::vector<Backend::Btyped_identifier> bfields;
       Btype* bt = gogo->backend()->struct_type(bfields);
-      bt = gogo->backend()->named_type("__go_channel", bt, BUILTINS_LOCATION);
+      bt = gogo->backend()->named_type("__go_channel", bt,
+                                       Linemap::predeclared_location());
       backend_channel_type = gogo->backend()->pointer_type(bt);
     }
   return backend_channel_type;
@@ -5111,7 +5116,7 @@ Channel_type::make_chan_type_descriptor_type()
 Expression*
 Channel_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 {
-  source_location bloc = BUILTINS_LOCATION;
+  Location bloc = Linemap::predeclared_location();
 
   Type* ctdt = Channel_type::make_chan_type_descriptor_type();
 
@@ -5670,15 +5675,17 @@ Interface_type::get_backend_empty_interface_type(Gogo* gogo)
     {
       std::vector<Backend::Btyped_identifier> bfields(2);
 
+      Location bloc = Linemap::predeclared_location();
+
       Type* pdt = Type::make_type_descriptor_ptr_type();
       bfields[0].name = "__type_descriptor";
       bfields[0].btype = pdt->get_backend(gogo);
-      bfields[0].location = UNKNOWN_LOCATION;
+      bfields[0].location = bloc;
 
       Type* vt = Type::make_pointer_type(Type::make_void_type());
       bfields[1].name = "__object";
       bfields[1].btype = vt->get_backend(gogo);
-      bfields[1].location = UNKNOWN_LOCATION;
+      bfields[1].location = bloc;
 
       empty_interface_type = gogo->backend()->struct_type(bfields);
     }
@@ -5693,7 +5700,7 @@ static void
 get_backend_interface_fields(Gogo* gogo, Interface_type* type,
 			     std::vector<Backend::Btyped_identifier>* bfields)
 {
-  source_location loc = type->location();
+  Location loc = type->location();
 
   std::vector<Backend::Btyped_identifier> mfields(type->methods()->size() + 1);
 
@@ -5727,7 +5734,7 @@ get_backend_interface_fields(Gogo* gogo, Interface_type* type,
   Type* vt = Type::make_pointer_type(Type::make_void_type());
   (*bfields)[1].name = "__object";
   (*bfields)[1].btype = vt->get_backend(gogo);
-  (*bfields)[1].location = UNKNOWN_LOCATION;
+  (*bfields)[1].location = Linemap::predeclared_location();
 }
 
 // Return a tree for an interface type.  An interface is a pointer to
@@ -5789,7 +5796,7 @@ Interface_type::make_interface_type_descriptor_type()
 Expression*
 Interface_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 {
-  source_location bloc = BUILTINS_LOCATION;
+  Location bloc = Linemap::predeclared_location();
 
   Type* itdt = Interface_type::make_interface_type_descriptor_type();
 
@@ -5800,9 +5807,9 @@ Interface_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 
   Struct_field_list::const_iterator pif = ifields->begin();
   go_assert(pif->is_field_name("commonType"));
-  ivals->push_back(this->type_descriptor_constructor(gogo,
-						     RUNTIME_TYPE_KIND_INTERFACE,
-						     name, NULL, true));
+  const int rt = RUNTIME_TYPE_KIND_INTERFACE;
+  ivals->push_back(this->type_descriptor_constructor(gogo, rt, name, NULL,
+						     true));
 
   ++pif;
   go_assert(pif->is_field_name("methods"));
@@ -6095,7 +6102,7 @@ Interface_type::do_import(Import* imp)
 
 Interface_type*
 Type::make_interface_type(Typed_identifier_list* methods,
-			  source_location location)
+			  Location location)
 {
   return new Interface_type(methods, location);
 }
@@ -6105,7 +6112,7 @@ Type::make_interface_type(Typed_identifier_list* methods,
 // Bind a method to an object.
 
 Expression*
-Method::bind_method(Expression* expr, source_location location) const
+Method::bind_method(Expression* expr, Location location) const
 {
   if (this->stub_ == NULL)
     {
@@ -6144,7 +6151,7 @@ Named_method::do_type() const
 
 // Return the location of the method receiver.
 
-source_location
+Location
 Named_method::do_receiver_location() const
 {
   return this->do_type()->receiver()->location();
@@ -6153,7 +6160,7 @@ Named_method::do_receiver_location() const
 // Bind a method to an object.
 
 Expression*
-Named_method::do_bind_method(Expression* expr, source_location location) const
+Named_method::do_bind_method(Expression* expr, Location location) const
 {
   Named_object* no = this->named_object_;
   Bound_method_expression* bme = Expression::make_bound_method(expr, no,
@@ -6177,7 +6184,7 @@ Named_method::do_bind_method(Expression* expr, source_location location) const
 
 Expression*
 Interface_method::do_bind_method(Expression* expr,
-				 source_location location) const
+				 Location location) const
 {
   return Expression::make_interface_field_reference(expr, this->name_,
 						    location);
@@ -6299,7 +6306,7 @@ Named_type::add_method(const std::string& name, Function* function)
 Named_object*
 Named_type::add_method_declaration(const std::string& name, Package* package,
 				   Function_type* type,
-				   source_location location)
+				   Location location)
 {
   if (this->local_methods_ == NULL)
     this->local_methods_ = new Bindings(NULL);
@@ -6967,7 +6974,7 @@ Named_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 void
 Named_type::do_reflection(Gogo* gogo, std::string* ret) const
 {
-  if (this->location() != BUILTINS_LOCATION)
+  if (!Linemap::is_predeclared_location(this->location()))
     {
       const Package* package = this->named_object_->package();
       if (package != NULL)
@@ -6991,7 +6998,7 @@ Named_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 {
   Named_object* no = this->named_object_;
   std::string name;
-  if (this->location() == BUILTINS_LOCATION)
+  if (Linemap::is_predeclared_location(this->location()))
     go_assert(this->in_function_ == NULL);
   else
     {
@@ -7081,7 +7088,7 @@ Named_type::do_export(Export* exp) const
 
 Named_type*
 Type::make_named_type(Named_object* named_object, Type* type,
-		      source_location location)
+		      Location location)
 {
   return new Named_type(named_object, type, location);
 }
@@ -7091,7 +7098,7 @@ Type::make_named_type(Named_object* named_object, Type* type,
 // all required stubs.
 
 void
-Type::finalize_methods(Gogo* gogo, const Type* type, source_location location,
+Type::finalize_methods(Gogo* gogo, const Type* type, Location location,
 		       Methods** all_methods)
 {
   *all_methods = NULL;
@@ -7291,7 +7298,7 @@ Type::add_interface_methods_for_type(const Type* type,
 
 void
 Type::build_stub_methods(Gogo* gogo, const Type* type, const Methods* methods,
-			 source_location location)
+			 Location location)
 {
   if (methods == NULL)
     return;
@@ -7317,7 +7324,7 @@ Type::build_stub_methods(Gogo* gogo, const Type* type, const Methods* methods,
       Type* receiver_type = const_cast<Type*>(type);
       if (!m->is_value_method())
 	receiver_type = Type::make_pointer_type(receiver_type);
-      source_location receiver_location = m->receiver_location();
+      Location receiver_location = m->receiver_location();
       Typed_identifier* receiver = new Typed_identifier(buf, receiver_type,
 							receiver_location);
 
@@ -7397,7 +7404,7 @@ Type::build_one_stub_method(Gogo* gogo, Method* method,
 			    const char* receiver_name,
 			    const Typed_identifier_list* params,
 			    bool is_varargs,
-			    source_location location)
+			    Location location)
 {
   Named_object* receiver_object = gogo->lookup(receiver_name, NULL);
   go_assert(receiver_object != NULL);
@@ -7460,7 +7467,7 @@ Type::build_one_stub_method(Gogo* gogo, Method* method,
 Expression*
 Type::apply_field_indexes(Expression* expr,
 			  const Method::Field_indexes* field_indexes,
-			  source_location location)
+			  Location location)
 {
   if (field_indexes == NULL)
     return expr;
@@ -7526,7 +7533,7 @@ Type::method_function(const Methods* methods, const std::string& name,
 Expression*
 Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 			   const std::string& name,
-			   source_location location)
+			   Location location)
 {
   if (type->deref()->is_error_type())
     return Expression::make_error(location);
@@ -8040,7 +8047,7 @@ Forward_declaration_type::add_method(const std::string& name,
 Named_object*
 Forward_declaration_type::add_method_declaration(const std::string& name,
 						 Function_type* type,
-						 source_location location)
+						 Location location)
 {
   Named_object* no = this->named_object();
   if (no->is_unknown())
@@ -8085,15 +8092,16 @@ Forward_declaration_type::do_get_backend(Gogo* gogo)
 Expression*
 Forward_declaration_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 {
+  Location ploc = Linemap::predeclared_location();
   if (!this->is_defined())
-    return Expression::make_nil(BUILTINS_LOCATION);
+    return Expression::make_nil(ploc);
   else
     {
       Type* t = this->real_type();
       if (name != NULL)
 	return this->named_type_descriptor(gogo, t, name);
       else
-	return Expression::make_type_descriptor(t, BUILTINS_LOCATION);
+	return Expression::make_type_descriptor(t, ploc);
     }
 }
 

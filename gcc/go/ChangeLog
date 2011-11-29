@@ -1,3 +1,15 @@
+2011-11-29  Sanjoy Das  <thedigitalangel@gmail.com>
+	    Ian Lance Taylor  <iant@google.com>
+
+	* go-location.h: New file.
+	* go-linemap.cc: New file.
+	* go-gcc.cc: Change all uses of source_location to Location.
+	* Make-lang.in (GO_OBJS): Add go/go-linemap.o.
+	(GO_LINEMAP_H): New variable.
+	(GO_LEX_H): Use $(GO_LINEMAP_H).
+	(GO_GOGO_H, GO_TYPES_H, GO_IMPORT_H): Likewise.
+	(go/go-linemap.o): New target.
+
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Make-lang.in (gospec.o): Pass SHLIB instead of SHLIB_LINK.

@@ -59,7 +59,7 @@ const char* const Import::import_marker = "*imported*";
 // later in the search path.
 
 Import::Stream*
-Import::open_package(const std::string& filename, source_location location)
+Import::open_package(const std::string& filename, Location location)
 {
   if (!IS_ABSOLUTE_PATH(filename))
     {
@@ -88,7 +88,7 @@ Import::open_package(const std::string& filename, source_location location)
 
 Import::Stream*
 Import::try_package_in_directory(const std::string& filename,
-				 source_location location)
+				 Location location)
 {
   std::string found_filename = filename;
   int fd = open(found_filename.c_str(), O_RDONLY | O_BINARY);
@@ -175,7 +175,7 @@ Import::try_suffixes(std::string* pfilename)
 
 Import::Stream*
 Import::find_export_data(const std::string& filename, int fd,
-			 source_location location)
+			 Location location)
 {
   // See if we can read this as an object file.
   Import::Stream* stream = Import::find_object_export_data(filename, fd, 0,
@@ -213,7 +213,7 @@ Import::Stream*
 Import::find_object_export_data(const std::string& filename,
 				int fd,
 				off_t offset,
-				source_location location)
+				Location location)
 {
   const char* errmsg;
   int err;
@@ -262,7 +262,7 @@ Import::find_object_export_data(const std::string& filename,
 // Construct an Import object.  We make the builtin_types_ vector
 // large enough to hold all the builtin types.
 
-Import::Import(Stream* stream, source_location location)
+Import::Import(Stream* stream, Location location)
   : gogo_(NULL), stream_(stream), location_(location), package_(NULL),
     add_to_globals_(false),
     builtin_types_((- SMALLEST_BUILTIN_CODE) + 1),
@@ -448,7 +448,7 @@ Import::import_func(Package* package)
   if (is_varargs)
     fntype->set_is_varargs();
 
-  source_location loc = this->location_;
+  Location loc = this->location_;
   Named_object* no;
   if (fntype->is_method())
     {
@@ -603,7 +603,7 @@ Import::read_type()
     package = this->package_;
   else
     package = this->gogo_->register_package(package_name, unique_prefix,
-					    UNKNOWN_LOCATION);
+					    Linemap::unknown_location());
 
   Named_object* no = package->bindings()->lookup(type_name);
   if (no == NULL)
@@ -798,7 +798,7 @@ Import::Stream::match_bytes(const char* bytes, size_t length)
 // Require that the next LENGTH bytes from the stream match BYTES.
 
 void
-Import::Stream::require_bytes(source_location location, const char* bytes,
+Import::Stream::require_bytes(Location location, const char* bytes,
 			      size_t length)
 {
   const char* read;
