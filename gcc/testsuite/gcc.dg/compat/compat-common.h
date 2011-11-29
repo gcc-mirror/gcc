@@ -33,7 +33,7 @@
 #ifndef SKIP_COMPLEX
 #ifdef __GNUC__
 #define CINT(x, y) (x + y * __extension__ 1i)
-#define CDBL(x, y) (x + y * __extension__ 1i)
+#define CDBL(x, y) (x + y * __extension__ 1.0i)
 #else
 #ifdef __SUNPRO_C
 /* ??? Complex support without <complex.h>.  */
