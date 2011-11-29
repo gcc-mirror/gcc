@@ -17352,10 +17352,10 @@ rs6000_expand_atomic_compare_and_swap (rtx operands[])
       retval = gen_reg_rtx (SImode);
       mode = SImode;
     }
+  else if (reg_overlap_mentioned_p (retval, oldval))
+    oldval = copy_to_reg (oldval);
 
   rs6000_pre_atomic_barrier (mod_s);
-
-  emit_move_insn (boolval, const0_rtx);
 
   label1 = NULL_RTX;
   if (!is_weak)
@@ -17374,28 +17374,23 @@ rs6000_expand_atomic_compare_and_swap (rtx operands[])
 			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
     }
 
-  x = gen_rtx_NE (VOIDmode, x, oldval);
-  x = rs6000_generate_compare (x, mode);
+  cond = gen_reg_rtx (CCmode);
+  x = gen_rtx_COMPARE (CCmode, x, oldval);
+  emit_insn (gen_rtx_SET (VOIDmode, cond, x));
+
+  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
   emit_unlikely_jump (x, label2);
 
   x = newval;
   if (mask)
     x = rs6000_mask_atomic_subword (retval, newval, mask);
 
-  cond = gen_reg_rtx (CCmode);
   emit_store_conditional (mode, cond, mem, x);
 
-  if (is_weak)
-    {
-      /* ??? It's either this or an unlikely jump over (set bool 1).  */
-      x = gen_rtx_EQ (SImode, cond, const0_rtx);
-      emit_insn (gen_rtx_SET (VOIDmode, boolval, x));
-    }
-  else
+  if (!is_weak)
     {
       x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
       emit_unlikely_jump (x, label1);
-      emit_move_insn (boolval, const1_rtx);
     }
 
   if (mod_f != MEMMODEL_RELAXED)
@@ -17408,6 +17403,10 @@ rs6000_expand_atomic_compare_and_swap (rtx operands[])
 
   if (shift)
     rs6000_finish_atomic_subword (operands[1], retval, shift);
+
+  /* In all cases, CR0 contains EQ on success, and NE on failure.  */
+  x = gen_rtx_EQ (SImode, cond, const0_rtx);
+  emit_insn (gen_rtx_SET (VOIDmode, boolval, x));
 }
 
 /* Expand an atomic exchange operation.  */
