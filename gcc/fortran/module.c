@@ -194,6 +194,8 @@ static char module_name[GFC_MAX_SYMBOL_LEN + 1];
 static bool specified_nonint, specified_int;
 
 static int module_line, module_column, only_flag;
+static int prev_module_line, prev_module_column, prev_character;
+
 static enum
 { IO_INPUT, IO_OUTPUT }
 iomode;
@@ -1036,6 +1038,10 @@ module_char (void)
   if (c == EOF)
     bad_module ("Unexpected EOF");
 
+  prev_module_line = module_line;
+  prev_module_column = module_column;
+  prev_character = c;
+
   if (c == '\n')
     {
       module_line++;
@@ -1046,6 +1052,16 @@ module_char (void)
   return c;
 }
 
+/* Unget a character while remembering the line and column.  Works for
+   a single character only.  */
+
+static void
+module_unget_char (void)
+{
+  module_line = prev_module_line;
+  module_column = prev_module_column;
+  ungetc (prev_character, module_fp);
+}
 
 /* Parse a string constant.  The delimiter is guaranteed to be a
    single quote.  */
@@ -1106,24 +1122,22 @@ parse_string (void)
 static void
 parse_integer (int c)
 {
-  module_locus m;
-
   atom_int = c - '0';
 
   for (;;)
     {
-      get_module_locus (&m);
-
       c = module_char ();
       if (!ISDIGIT (c))
-	break;
+	{
+	  module_unget_char ();
+	  break;
+	}
 
       atom_int = 10 * atom_int + c - '0';
       if (atom_int > 99999999)
 	bad_module ("Integer overflow");
     }
 
-  set_module_locus (&m);
 }
 
 
@@ -1132,7 +1146,6 @@ parse_integer (int c)
 static void
 parse_name (int c)
 {
-  module_locus m;
   char *p;
   int len;
 
@@ -1141,13 +1154,14 @@ parse_name (int c)
   *p++ = c;
   len = 1;
 
-  get_module_locus (&m);
-
   for (;;)
     {
       c = module_char ();
       if (!ISALNUM (c) && c != '_' && c != '-')
-	break;
+	{
+	  module_unget_char ();
+	  break;
+	}
 
       *p++ = c;
       if (++len > GFC_MAX_SYMBOL_LEN)
@@ -1156,11 +1170,6 @@ parse_name (int c)
 
   *p = '\0';
 
-  fseek (module_fp, -1, SEEK_CUR);
-  module_column = m.column + len - 1;
-
-  if (c == '\n')
-    module_line--;
 }
 
 
