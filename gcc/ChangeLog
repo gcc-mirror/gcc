@@ -1,3 +1,83 @@
+2011-11-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def: Completely rewrite builtin
+	handling to centralize more of the builtins in this file.  Change
+	some builtin enumerations to be more consistant.  Use a new mask
+	to hold the current builtins, including SPE and PAIRED builtins
+	which no longer are set via target_flags masks.  Add
+	-mdebug=builtin debug support.  For power machines, define all
+	Altivec and VSX buitins when the compiler starts, but don't allow
+	the use of a builtin unless the appropriate switch is used, or
+	#pragma GCC target is used to change the options.  If the user
+	uses #pragma GCC target, update the appropriate hardware macros.
+	* common/config/rs6000/rs6000-common.c (rs6000_handle_option):
+	Ditto.
+	* config/rs6000/rs6000.opt (rs6000_builtin_mask): Ditto.
+	* config/rs6000/rs6000-c.c (rs6000_macro_to_expand): Ditto.
+	(rs6000_define_or_undefine_macro): Ditto.
+	(rs6000_target_modify_macros): Ditto.
+	(rs6000_cpu_cpp_builtins): Ditto.
+	(altivec_overloaded_builtins): Ditto.
+	(altivec_build_resolved_builtin): Ditto.
+	* config/rs6000/rs6000.c (rs6000_target_modify_macros_ptr):
+	Ditto.
+	(rs6000_builtin_info): Ditto.
+	(def_builtin): Ditto.
+	(enable_mask_for_builtins): Ditto.
+	(DEBUG_FMT_X): Ditto.
+	(rs6000_debug_reg_global): Ditto.
+	(rs6000_builtin_mask_calculate): Ditto.
+	(rs6000_option_override_internal): Ditto.
+	(rs6000_builtin_conversion): Ditto.
+	(rs6000_builtin_vectorized_function): Ditto.
+	(bdesc_3arg): Ditto.
+	(bdesc_dst): Ditto.
+	(bdesc_2arg): Ditto.
+	(builtin_description_predicates): Ditto.
+	(bdesc_altivec_preds): Ditto.
+	(bdesc_spe_predicates): Ditto.
+	(bdesc_spe_evsel): Ditto.
+	(bdesc_paired_preds): Ditto.
+	(bdesc_abs): Ditto.
+	(bdesc_1arg): Ditto.
+	(rs6000_overloaded_builtin_p): Ditto.
+	(rs6000_expand_unop_builtin): Ditto.
+	(bdesc_2arg_spe): Ditto.
+	(spe_expand_builtin): Ditto.
+	(rs6000_invalid_builtin): Ditto.
+	(rs6000_expand_builtin): Ditto.
+	(rs6000_init_builtins): Ditto.
+	(spe_init_builtins): Ditto.
+	(paired_init_builtins): Ditto.
+	(altivec_init_builtins): Ditto.
+	(builtin_function_type): Ditto.
+	(rs6000_common_init_builtins): Ditto.
+	(rs6000_builtin_reciprocal): Ditto.
+	(rs6000_builtin_mask_names): Ditto.
+	(rs6000_pragma_target_parse): Ditto.
+	(rs6000_function_specific_print): Ditto.
+	* config/rs6000/rs6000.h (MASK_DEBUG_BUILTIN): Ditto.
+	(MASK_DEBUG_ALL): Ditto.
+	(TARGET_DEBUG_BUILTIN): Ditto.
+	(TARGET_EXTRA_BUILTINS): Ditto.
+	(REGISTER_TARGET_PRAGMAS): Ditto.
+	(enum rs6000_btc): Ditto.
+	(RS6000_BTC_*): Ditto.
+	(RS6000_BTM_*): Ditto.
+	(enum rs6000_builtins): Ditto.
+	* config/rs6000/rs6000-protos.h (rs6000_overloaded_builtin_p):
+	Ditto.
+	(rs6000_target_modify_macros): Ditto.
+	(rs6000_target_modify_macros_ptr): Ditto.
+
+	* config/rs6000/vector.md (unsfloat<VEC_int><mode>2): Use the
+	standard name for converting vector unsigned values to floating
+	point.  Delete the TARGET_VECTORIZE_BUILTIN_CONVERSION hook, which
+	is handled by machine independent code.
+	* config/rs6000/rs6000.c (TARGET_VECTORIZE_BUILTIN_CONVERSION):
+	Ditto.
+	(rs6000_builtin_conversion): Ditto.
+
 2011-11-29  Dodji Seketeli  <dodji@redhat.com>
 
 	* tree-diagnostic (struct loc_t): Rename into struct loc_map_pair.
