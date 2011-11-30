@@ -17,9 +17,6 @@ package runtime
 #include "go-string.h"
 #include "interface.h"
 #include "go-type.h"
-typedef struct __go_empty_interface Eface;
-typedef struct __go_type_descriptor Type;
-typedef struct __go_func_type FuncType;
 
 MHeap runtime_mheap;
 extern MStats mstats;	// defined in extern.go

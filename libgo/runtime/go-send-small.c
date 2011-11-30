@@ -31,7 +31,7 @@ __go_send_acquire (struct __go_channel *channel, _Bool for_select)
 	    channel->selected_for_send = 0;
 	  i = pthread_mutex_unlock (&channel->lock);
 	  __go_assert (i == 0);
-	  __go_panic_msg ("send on closed channel");
+	  runtime_panicstring ("send on closed channel");
 	}
 
       /* If somebody else has the channel locked for sending, we have

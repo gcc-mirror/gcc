@@ -34,9 +34,6 @@ struct __go_panic_stack
 extern void __go_panic (struct __go_empty_interface)
   __attribute__ ((noreturn));
 
-extern void __go_panic_msg (const char* msg)
-  __attribute__ ((noreturn));
-
 extern void __go_print_string (struct __go_string);
 
 extern struct __go_empty_interface __go_recover (void);
@@ -55,7 +52,8 @@ extern void newTypeAssertionError(const struct __go_type_descriptor *pt1,
 				  struct __go_empty_interface *ret)
   __asm__ ("libgo_runtime.runtime.NewTypeAssertionError");
 
-extern void newErrorString(struct __go_string, struct __go_empty_interface *)
+extern void runtime_newErrorString(struct __go_string,
+				   struct __go_empty_interface *)
   __asm__ ("libgo_runtime.runtime.NewErrorString");
 
 extern void printany(struct __go_empty_interface)

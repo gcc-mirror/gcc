@@ -57,9 +57,15 @@ typedef	struct	MCache		MCache;
 typedef struct	FixAlloc	FixAlloc;
 
 typedef	struct	__go_defer_stack	Defer;
+typedef struct	__go_interface		Iface;
+typedef	struct	__go_empty_interface	Eface;
+typedef	struct	__go_type_descriptor	Type;
 typedef	struct	__go_panic_stack	Panic;
 typedef	struct	__go_open_array		Slice;
 typedef	struct	__go_string		String;
+
+typedef struct	__go_func_type		FuncType;
+typedef struct	__go_map_type		MapType;
 
 /*
  * per-cpu declaration.
@@ -211,10 +217,11 @@ void	runtime_osinit();
 void	runtime_goargs(void);
 void	runtime_goenvs(void);
 void	runtime_throw(const char*);
+void	runtime_panicstring(const char*) __attribute__ ((noreturn));
 void*	runtime_mal(uintptr);
 void	runtime_schedinit(void);
 void	runtime_initsig(int32);
-String	runtime_gostringnocopy(byte*);
+String	runtime_gostringnocopy(const byte*);
 void*	runtime_mstart(void*);
 G*	runtime_malg(int32, byte**, size_t*);
 void	runtime_minit(void);
@@ -274,8 +281,13 @@ void	runtime_semawakeup(M*);
 void	runtime_futexsleep(uint32*, uint32, int64);
 void	runtime_futexwakeup(uint32*, uint32);
 
+/*
+ * runtime go-called
+ */
+void	runtime_panic(Eface);
 
 /* Functions.  */
+#define runtime_panic __go_panic
 #define runtime_printf printf
 #define runtime_malloc(s) __go_alloc(s)
 #define runtime_free(p) __go_free(p)

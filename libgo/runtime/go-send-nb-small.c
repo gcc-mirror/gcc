@@ -31,7 +31,7 @@ __go_send_nonblocking_acquire (struct __go_channel *channel)
     {
       i = pthread_mutex_unlock (&channel->lock);
       __go_assert (i == 0);
-      __go_panic_msg ("send on closed channel");
+      runtime_panicstring ("send on closed channel");
     }
 
   if (channel->num_entries > 0)

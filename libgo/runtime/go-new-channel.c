@@ -7,9 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "runtime.h"
 #include "go-alloc.h"
 #include "go-assert.h"
-#include "go-panic.h"
 #include "channel.h"
 
 struct __go_channel*
@@ -34,7 +34,7 @@ __go_new_channel (const struct __go_type_descriptor *channel_type,
   if (ientries < 0
       || (uintptr_t) ientries != entries
       || (element_size > 0 && entries > (uintptr_t) -1 / element_size))
-    __go_panic_msg ("chan size out of range");
+    runtime_panicstring ("chan size out of range");
 
   alloc_size = (element_size + sizeof (uint64_t) - 1) / sizeof (uint64_t);
 

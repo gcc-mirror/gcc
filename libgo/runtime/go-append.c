@@ -32,7 +32,7 @@ __go_append (struct __go_open_array a, void *bvalues, uintptr_t bcount,
   ucount = (uintptr_t) a.__count + bcount;
   count = (int) ucount;
   if ((uintptr_t) count != ucount || count <= a.__count)
-    __go_panic_msg ("append: slice overflow");
+    runtime_panicstring ("append: slice overflow");
 
   if (count > a.__capacity)
     {

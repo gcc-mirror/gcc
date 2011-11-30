@@ -178,7 +178,7 @@ sighandler (int sig)
       i = sigprocmask (SIG_UNBLOCK, &clear, NULL);
       __go_assert (i == 0);
 
-      __go_panic_msg (msg);
+      runtime_panicstring (msg);
     }
 
   for (i = 0; signals[i].sig != -1; ++i)
