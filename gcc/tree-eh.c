@@ -3653,6 +3653,22 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
   bitmap rename_virts;
   bitmap ophi_handled;
 
+  /* The destination block must not be a regular successor for any
+     of the preds of the landing pad.  Thus, avoid turning
+        <..>
+	 |  \ EH
+	 |  <..>
+	 |  /
+	<..>
+     into
+        <..>
+	|  | EH
+	<..>
+     which CFG verification would choke on.  See PR45172 and PR51089.  */
+  FOR_EACH_EDGE (e, ei, old_bb->preds)
+    if (find_edge (e->src, new_bb))
+      return false;
+
   FOR_EACH_EDGE (e, ei, old_bb->preds)
     redirect_edge_var_map_clear (e);
 
@@ -3815,8 +3831,6 @@ cleanup_empty_eh_unsplit (basic_block bb, edge e_out, eh_landing_pad lp)
 {
   gimple_stmt_iterator gsi;
   tree lab;
-  edge_iterator ei;
-  edge e;
 
   /* We really ought not have totally lost everything following
      a landing pad label.  Given that BB is empty, there had better
@@ -3838,22 +3852,6 @@ cleanup_empty_eh_unsplit (basic_block bb, edge e_out, eh_landing_pad lp)
       if (lp_nr && get_eh_region_from_lp_number (lp_nr) != lp->region)
 	return false;
     }
-
-  /* The destination block must not be a regular successor for any
-     of the preds of the landing pad.  Thus, avoid turning
-        <..>
-	 |  \ EH
-	 |  <..>
-	 |  /
-	<..>
-     into
-        <..>
-	|  | EH
-	<..>
-     which CFG verification would choke on.  See PR45172.  */
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    if (find_edge (e->src, e_out->dest))
-      return false;
 
   /* Attempt to move the PHIs into the successor block.  */
   if (cleanup_empty_eh_merge_phis (e_out->dest, bb, e_out, false))
