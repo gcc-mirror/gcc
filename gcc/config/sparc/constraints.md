@@ -19,7 +19,7 @@
 
 ;;; Unused letters:
 ;;;    AB                       
-;;;    a        jkl    q  tuvwxyz
+;;;    a        jkl    q  tuv xyz
 
 
 ;; Register constraints
@@ -44,6 +44,9 @@
 (define_register_constraint "h" "(TARGET_V9 && TARGET_V8PLUS ? I64_REGS : NO_REGS)"
  "64-bit global or out register in V8+ mode")
 
+(define_memory_constraint "w"
+  "A memory with only a base register"
+  (match_operand 0 "mem_noofs_operand"))
 
 ;; Floating-point constant constraints
 

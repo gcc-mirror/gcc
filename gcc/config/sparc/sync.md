@@ -161,55 +161,49 @@
   [(set_attr "type" "store,store,fpstore")
    (set_attr "cpu_feature" "v9,*,*")])
 
-;;;;;;;;
-
-(define_expand "sync_compare_and_swap<mode>"
-  [(match_operand:I12MODE 0 "register_operand" "")
-   (match_operand:I12MODE 1 "memory_operand" "")
-   (match_operand:I12MODE 2 "register_operand" "")
-   (match_operand:I12MODE 3 "register_operand" "")]
-  "TARGET_V9"
+(define_expand "atomic_compare_and_swap<mode>"
+  [(match_operand:SI 0 "register_operand" "")		;; bool output
+   (match_operand:I 1 "register_operand" "")		;; val output
+   (match_operand:I 2 "mem_noofs_operand" "")		;; memory
+   (match_operand:I 3 "register_operand" "")		;; expected
+   (match_operand:I 4 "register_operand" "")		;; desired
+   (match_operand:SI 5 "const_int_operand" "")		;; is_weak
+   (match_operand:SI 6 "const_int_operand" "")		;; mod_s
+   (match_operand:SI 7 "const_int_operand" "")]		;; mod_f
+  "TARGET_V9 && (<MODE>mode != DImode || TARGET_ARCH64 || TARGET_V8PLUS)"
 {
-  sparc_expand_compare_and_swap_12 (operands[0], operands[1],
-				    operands[2], operands[3]);
+  sparc_expand_compare_and_swap (operands);
   DONE;
 })
 
-(define_expand "sync_compare_and_swap<mode>"
+(define_expand "atomic_compare_and_swap<mode>_1"
   [(parallel
      [(set (match_operand:I48MODE 0 "register_operand" "")
-	   (match_operand:I48MODE 1 "memory_operand" ""))
+	   (match_operand:I48MODE 1 "mem_noofs_operand" ""))
       (set (match_dup 1)
 	   (unspec_volatile:I48MODE
 	     [(match_operand:I48MODE 2 "register_operand" "")
 	      (match_operand:I48MODE 3 "register_operand" "")]
 	     UNSPECV_CAS))])]
   "TARGET_V9"
-{
-  if (!REG_P (XEXP (operands[1], 0)))
-    {
-      rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
-      operands[1] = replace_equiv_address (operands[1], addr);
-    }
-  emit_insn (gen_memory_barrier ());
-})
+  "")
 
-(define_insn "*sync_compare_and_swap<mode>"
+(define_insn "*atomic_compare_and_swap<mode>_1"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
-	(mem:I48MODE (match_operand 1 "register_operand" "r")))
-   (set (mem:I48MODE (match_dup 1))
+	(match_operand:I48MODE 1 "mem_noofs_operand" "+w"))
+   (set (match_dup 1)
 	(unspec_volatile:I48MODE
 	  [(match_operand:I48MODE 2 "register_operand" "r")
 	   (match_operand:I48MODE 3 "register_operand" "0")]
 	  UNSPECV_CAS))]
   "TARGET_V9 && (<MODE>mode == SImode || TARGET_ARCH64)"
-  "cas<modesuffix>\t[%1], %2, %0"
+  "cas<modesuffix>\t%1, %2, %0"
   [(set_attr "type" "multi")])
 
-(define_insn "*sync_compare_and_swapdi_v8plus"
+(define_insn "*atomic_compare_and_swapdi_v8plus"
   [(set (match_operand:DI 0 "register_operand" "=h")
-	(mem:DI (match_operand 1 "register_operand" "r")))
-   (set (mem:DI (match_dup 1))
+	(match_operand:DI 1 "mem_noofs_operand" "+w"))
+   (set (match_dup 1)
 	(unspec_volatile:DI
 	  [(match_operand:DI 2 "register_operand" "h")
 	   (match_operand:DI 3 "register_operand" "0")]
@@ -224,11 +218,13 @@
     output_asm_insn ("srl\t%L2, 0, %L2", operands);
   output_asm_insn ("sllx\t%H2, 32, %H3", operands);
   output_asm_insn ("or\t%L2, %H3, %H3", operands);
-  output_asm_insn ("casx\t[%1], %H3, %L3", operands);
+  output_asm_insn ("casx\t%1, %H3, %L3", operands);
   return "srlx\t%L3, 32, %H3";
 }
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
+
+;;;;;;;;
 
 (define_expand "sync_lock_test_and_set<mode>"
   [(match_operand:I12MODE 0 "register_operand" "")

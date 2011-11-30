@@ -104,7 +104,7 @@ extern int v9_regcmp_p (enum rtx_code);
    32 bits of REG are 0 before INSN.  */   
 extern int sparc_check_64 (rtx, rtx);
 extern rtx gen_df_reg (rtx, int);
-extern void sparc_expand_compare_and_swap_12 (rtx, rtx, rtx, rtx);
+extern void sparc_expand_compare_and_swap (rtx op[]);
 extern void sparc_expand_vector_init (rtx, rtx);
 extern void sparc_expand_vec_perm_bmask(enum machine_mode, rtx);
 extern bool sparc_expand_conditional_move (enum machine_mode, rtx *);

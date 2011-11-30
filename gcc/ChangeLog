@@ -1,5 +1,20 @@
 2011-11-30  Richard Henderson  <rth@redhat.com>
 
+	* config/sparc/constraints.md ("w"): New.
+	* config/sparc/predicates.md (mem_noofs_operand): New.
+	* config/sparc/sparc.c (sparc_expand_compare_and_swap_12): Make static.
+	Generate the boolean result of the atomic_compare_exchange.
+	(sparc_expand_compare_and_swap): New.
+	* config/sparc/sync.md (atomic_compare_and_swap<I>): New.
+	(atomic_compare_and_swap<I48MODE>_1): Rename from
+	*sync_compare_and_swap<I48MODE>, use mem_noofs_operand.
+	(*atomic_compare_and_swapdi_v8plus): Rename from
+	*sync_compare_and_swapdi_v8plus, use mem_noofs_operand.
+	(sync_compare_and_swap<I12MODE>): Remove.
+	(sync_compare_and_swap<I48MODE>): Remove.
+
+2011-11-30  Richard Henderson  <rth@redhat.com>
+
 	* config/sparc/predicates.md (register_or_v9_zero_operand): New.
 	* config/sparc/sparc.md (UNSPEC_ATOMIC): New.
 	* config/sparc/sync.md (atomic_load<I>): New.

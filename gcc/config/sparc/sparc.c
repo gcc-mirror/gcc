@@ -10899,8 +10899,9 @@ sparc_emit_membar_for_model (enum memmodel model,
 /* Expand code to perform a 8 or 16-bit compare and swap by doing 32-bit
    compare and swap on the word containing the byte or half-word.  */
 
-void
-sparc_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
+static void
+sparc_expand_compare_and_swap_12 (rtx bool_result, rtx result, rtx mem,
+				  rtx oldval, rtx newval)
 {
   rtx addr1 = force_reg (Pmode, XEXP (mem, 0));
   rtx addr = gen_reg_rtx (Pmode);
@@ -10925,7 +10926,7 @@ sparc_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
   set_mem_alias_set (memsi, ALIAS_SET_MEMORY_BARRIER);
   MEM_VOLATILE_P (memsi) = MEM_VOLATILE_P (mem);
 
-  val = force_reg (SImode, memsi);
+  val = copy_to_reg (memsi);
 
   emit_insn (gen_rtx_SET (VOIDmode, off,
 			  gen_rtx_XOR (SImode, off,
@@ -10971,13 +10972,17 @@ sparc_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
   emit_insn (gen_rtx_SET (VOIDmode, newvalue,
 			  gen_rtx_IOR (SImode, newv, val)));
 
-  emit_insn (gen_sync_compare_and_swapsi (res, memsi, oldvalue, newvalue));
+  emit_move_insn (bool_result, const1_rtx);
+
+  emit_insn (gen_atomic_compare_and_swapsi_1 (res, memsi, oldvalue, newvalue));
 
   emit_cmp_and_jump_insns (res, oldvalue, EQ, NULL, SImode, 0, end_label);
 
   emit_insn (gen_rtx_SET (VOIDmode, resv,
 			  gen_rtx_AND (SImode, gen_rtx_NOT (SImode, mask),
 				       res)));
+
+  emit_move_insn (bool_result, const0_rtx);
 
   cc = gen_compare_reg_1 (NE, resv, val);
   emit_insn (gen_rtx_SET (VOIDmode, val, resv));
@@ -10995,6 +11000,49 @@ sparc_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
 			  gen_rtx_LSHIFTRT (SImode, res, off)));
 
   emit_move_insn (result, gen_lowpart (GET_MODE (result), res));
+}
+
+/* Expand code to perform a compare-and-swap.  */
+
+void
+sparc_expand_compare_and_swap (rtx operands[])
+{
+  rtx bval, retval, mem, oldval, newval;
+  enum machine_mode mode;
+  enum memmodel model;
+
+  bval = operands[0];
+  retval = operands[1];
+  mem = operands[2];
+  oldval = operands[3];
+  newval = operands[4];
+  model = (enum memmodel) INTVAL (operands[6]);
+  mode = GET_MODE (mem);
+
+  sparc_emit_membar_for_model (model, 3, 1);
+
+  if (reg_overlap_mentioned_p (retval, oldval))
+    oldval = copy_to_reg (oldval);
+
+  if (mode == QImode || mode == HImode)
+    sparc_expand_compare_and_swap_12 (bval, retval, mem, oldval, newval);
+  else
+    {
+      rtx (*gen) (rtx, rtx, rtx, rtx);
+      rtx x;
+
+      if (mode == SImode)
+	gen = gen_atomic_compare_and_swapsi_1;
+      else
+	gen = gen_atomic_compare_and_swapdi_1;
+      emit_insn (gen (retval, mem, oldval, newval));
+
+      x = emit_store_flag (bval, EQ, retval, oldval, mode, 1, 1);
+      if (x != bval)
+	convert_move (bval, x, 1);
+    }
+
+  sparc_emit_membar_for_model (model, 3, 2);
 }
 
 void
