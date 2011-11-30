@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -28,34 +28,56 @@
 
 #include "wait.h"
 
-
 void
-gomp_sem_wait_slow (gomp_sem_t *sem)
+gomp_sem_wait_slow (gomp_sem_t *sem, int count)
 {
+  /* First loop spins a while.  */
+  while (count == 0)
+    if (do_spin (sem, 0)
+	/* Spin timeout, nothing changed.  Set waiting flag.  */
+	&& __atomic_compare_exchange_n (sem, &count, SEM_WAIT, false,
+					MEMMODEL_ACQUIRE, MEMMODEL_RELAXED))
+      {
+	futex_wait (sem, SEM_WAIT);
+	count = *sem;
+	break;
+      }
+  /* Something changed.  If it wasn't the wait flag, we're good to go.  */
+    else if (__builtin_expect (((count = *sem) & SEM_WAIT) == 0 && count != 0,
+			       1))
+      {
+	if (__atomic_compare_exchange_n (sem, &count, count - SEM_INC, false,
+					 MEMMODEL_ACQUIRE, MEMMODEL_RELAXED))
+	  return;
+      }
+
+  /* Second loop waits until semaphore is posted.  We always exit this
+     loop with wait flag set, so next post will awaken a thread.  */
   while (1)
     {
-      int val = __sync_val_compare_and_swap (sem, 0, -1);
-      if (val > 0)
+      unsigned int wake = count & ~SEM_WAIT;
+      int newval = SEM_WAIT;
+
+      if (wake != 0)
+	newval |= wake - SEM_INC;
+      if (__atomic_compare_exchange_n (sem, &count, newval, false,
+				       MEMMODEL_ACQUIRE, MEMMODEL_RELAXED))
 	{
-	  if (__sync_bool_compare_and_swap (sem, val, val - 1))
-	    return;
+	  if (wake != 0)
+	    {
+	      /* If we can wake more threads, do so now.  */
+	      if (wake > SEM_INC)
+		gomp_sem_post_slow (sem);
+	      break;
+	    }
+	  do_wait (sem, SEM_WAIT);
+	  count = *sem;
 	}
-      do_wait (sem, -1);
     }
 }
 
 void
 gomp_sem_post_slow (gomp_sem_t *sem)
 {
-  int old, tmp = *sem, wake;
-
-  do
-    {
-      old = tmp;
-      wake = old > 0 ? old + 1 : 1;
-      tmp = __sync_val_compare_and_swap (sem, old, wake);
-    }
-  while (old != tmp);
-
-  futex_wake (sem, wake);
+  futex_wake (sem, 1);
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -24,34 +24,64 @@
 
 /* This is a Linux specific implementation of a semaphore synchronization
    mechanism for libgomp.  This type is private to the library.  This 
-   implementation uses atomic instructions and the futex syscall.  */
+   counting semaphore implementation uses atomic instructions and the
+   futex syscall, and a single 32-bit int to store semaphore state.
+   The low 31 bits are the count, the top bit is a flag set when some
+   threads may be waiting.  */
 
 #ifndef GOMP_SEM_H
 #define GOMP_SEM_H 1
 
+#include <limits.h> /* For INT_MIN */
+
 typedef int gomp_sem_t;
+#define SEM_WAIT INT_MIN
+#define SEM_INC 1
 
-static inline void gomp_sem_init (gomp_sem_t *sem, int value)
-{
-  *sem = value;
-}
-
-extern void gomp_sem_wait_slow (gomp_sem_t *);
-static inline void gomp_sem_wait (gomp_sem_t *sem)
-{
-  if (!__sync_bool_compare_and_swap (sem, 1, 0))
-    gomp_sem_wait_slow (sem);
-}
-
+extern void gomp_sem_wait_slow (gomp_sem_t *, int);
 extern void gomp_sem_post_slow (gomp_sem_t *);
-static inline void gomp_sem_post (gomp_sem_t *sem)
+
+static inline void
+gomp_sem_init (gomp_sem_t *sem, int value)
 {
-  if (!__sync_bool_compare_and_swap (sem, 0, 1))
+  *sem = value * SEM_INC;
+}
+
+static inline void
+gomp_sem_destroy (gomp_sem_t *sem)
+{
+}
+
+static inline void
+gomp_sem_wait (gomp_sem_t *sem)
+{
+  int count = *sem;
+
+  while ((count & ~SEM_WAIT) != 0)
+    if (__atomic_compare_exchange_n (sem, &count, count - SEM_INC, true,
+				     MEMMODEL_ACQUIRE, MEMMODEL_RELAXED))
+      return;
+  gomp_sem_wait_slow (sem, count);
+}
+
+static inline void
+gomp_sem_post (gomp_sem_t *sem)
+{
+  int count = *sem;
+
+  /* Clear SEM_WAIT here so that if there are no more waiting threads
+     we transition back to the uncontended state that does not make
+     futex syscalls.  If there are waiting threads then when one is
+     awoken it will set SEM_WAIT again, so other waiting threads are
+     woken on a future gomp_sem_post.  Furthermore, the awoken thread
+     will wake other threads in case gomp_sem_post was called again
+     before it had time to set SEM_WAIT.  */
+  while (!__atomic_compare_exchange_n (sem, &count,
+				       (count + SEM_INC) & ~SEM_WAIT, true,
+				       MEMMODEL_RELEASE, MEMMODEL_RELAXED))
+    continue;
+
+  if (__builtin_expect (count & SEM_WAIT, 0))
     gomp_sem_post_slow (sem);
 }
-
-static inline void gomp_sem_destroy (gomp_sem_t *sem)
-{
-}
-
 #endif /* GOMP_SEM_H */
