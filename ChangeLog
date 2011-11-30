@@ -1,3 +1,7 @@
+2011-11-30  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* MAINTAINERS (write-after-approval): Add self.
+
 2011-11-29  DJ Delorie  <dj@redhat.com>
 
 	* configure.ac (rl78-*-*) New case.
