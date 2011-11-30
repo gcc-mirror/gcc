@@ -1,5 +1,12 @@
 2011-11-30  Richard Henderson  <rth@redhat.com>
 
+	* config/sparc/predicates.md (register_or_v9_zero_operand): New.
+	* config/sparc/sparc.md (UNSPEC_ATOMIC): New.
+	* config/sparc/sync.md (atomic_load<I>): New.
+	(atomic_loaddi_1, atomic_store<I>, atomic_storedi_1): New.
+
+2011-11-30  Richard Henderson  <rth@redhat.com>
+
 	* config/sparc/predicates.md (zero_or_v7_operand): New.
 	* config/sparc/sparc.c (sparc_emit_membar_for_model): New.
 	* config/sparc/sparc-protos.h: Update.
