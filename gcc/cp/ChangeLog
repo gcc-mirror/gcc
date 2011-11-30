@@ -1,3 +1,10 @@
+2011-11-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51299
+	* rtti.c (ifnonnull): Use nullptr_node.
+	(build_dynamic_cast_1): Call cp_truthvalue_conversion instead
+	of c_common_truthvalue_conversion.
+
 2011-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51227
