@@ -33,39 +33,34 @@ typedef int gomp_mutex_t;
 
 #define GOMP_MUTEX_INIT_0 1
 
-static inline void gomp_mutex_init (gomp_mutex_t *mutex)
+extern void gomp_mutex_lock_slow (gomp_mutex_t *mutex, int);
+extern void gomp_mutex_unlock_slow (gomp_mutex_t *mutex);
+
+static inline void
+gomp_mutex_init (gomp_mutex_t *mutex)
 {
   *mutex = 0;
 }
 
-extern void gomp_mutex_lock_slow (gomp_mutex_t *mutex, int);
-static inline void gomp_mutex_lock (gomp_mutex_t *mutex)
+static inline void
+gomp_mutex_destroy (gomp_mutex_t *mutex)
 {
-  int oldval = __sync_val_compare_and_swap (mutex, 0, 1);
-  if (__builtin_expect (oldval, 0))
+}
+
+static inline void
+gomp_mutex_lock (gomp_mutex_t *mutex)
+{
+  int oldval = 0;
+  if (!__atomic_compare_exchange_n (mutex, &oldval, 1, false,
+				    MEMMODEL_ACQUIRE, MEMMODEL_RELAXED))
     gomp_mutex_lock_slow (mutex, oldval);
 }
 
-extern void gomp_mutex_unlock_slow (gomp_mutex_t *mutex);
-static inline void gomp_mutex_unlock (gomp_mutex_t *mutex)
+static inline void
+gomp_mutex_unlock (gomp_mutex_t *mutex)
 {
-  /* Warning: By definition __sync_lock_test_and_set() does not have
-     proper memory barrier semantics for a mutex unlock operation.
-     However, this default implementation is written assuming that it
-     does, which is true for some targets.
-
-     Targets that require additional memory barriers before
-     __sync_lock_test_and_set to achieve the release semantics of
-     mutex unlock, are encouraged to include
-     "config/linux/ia64/mutex.h" in a target specific mutex.h instead
-     of using this file.  */
-  int val = __sync_lock_test_and_set (mutex, 0);
-  if (__builtin_expect (val > 1, 0))
+  int wait = __atomic_exchange_n (mutex, 0, MEMMODEL_RELEASE);
+  if (__builtin_expect (wait < 0, 0))
     gomp_mutex_unlock_slow (mutex);
 }
-
-static inline void gomp_mutex_destroy (gomp_mutex_t *mutex)
-{
-}
-
 #endif /* GOMP_MUTEX_H */
