@@ -113,21 +113,20 @@ SYM(_ITM_beginTransaction):
 SYM(GTM_longjmp):
 	cfi_startproc
 #ifdef __x86_64__
-	movq	(%rdi), %rcx
-	movq	8(%rdi), %rdx
-	movq	16(%rdi), %rbx
-	movq	24(%rdi), %rbp
-	movq	32(%rdi), %r12
-	movq	40(%rdi), %r13
-	movq	48(%rdi), %r14
-	movq	56(%rdi), %r15
-	movl	%esi, %eax
+	movq	(%rsi), %rcx
+	movq	8(%rsi), %rdx
+	movq	16(%rsi), %rbx
+	movq	24(%rsi), %rbp
+	movq	32(%rsi), %r12
+	movq	40(%rsi), %r13
+	movq	48(%rsi), %r14
+	movq	56(%rsi), %r15
+	movl	%edi, %eax
 	cfi_def_cfa(%rcx, 0)
 	cfi_register(%rip, %rdx)
 	movq	%rcx, %rsp
 	jmp	*%rdx
 #else
-	xchgl	%eax, %edx
 	movl	(%edx), %ecx
 	movl	4(%edx), %ebx
 	movl	8(%edx), %esi
