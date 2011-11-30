@@ -4,8 +4,8 @@
    Use of this source code is governed by a BSD-style
    license that can be found in the LICENSE file.  */
 
+#include "runtime.h"
 #include "go-alloc.h"
-#include "go-panic.h"
 #include "map.h"
 
 /* List of prime numbers, copied from libstdc++/src/hashtable.c.  */
@@ -111,7 +111,7 @@ __go_new_map (const struct __go_map_descriptor *descriptor, uintptr_t entries)
 
   ientries = (int) entries;
   if (ientries < 0 || (uintptr_t) ientries != entries)
-    __go_panic_msg ("map size out of range");
+    runtime_panicstring ("map size out of range");
 
   if (entries == 0)
     entries = 5;

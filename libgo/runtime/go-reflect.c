@@ -7,9 +7,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include "runtime.h"
 #include "interface.h"
 #include "go-alloc.h"
-#include "go-panic.h"
 #include "go-string.h"
 #include "go-type.h"
 
@@ -122,7 +122,7 @@ Reflect (struct __go_empty_interface e)
   struct reflect_ret ret;
 
   if (((uintptr_t) e.__type_descriptor & reflectFlags) != 0)
-    __go_panic_msg ("invalid interface value");
+    runtime_panicstring ("invalid interface value");
 
   if (e.__type_descriptor == NULL)
     {
@@ -170,7 +170,7 @@ Typeof (const struct __go_empty_interface e)
   struct __go_empty_interface ret;
 
   if (((uintptr_t) e.__type_descriptor & reflectFlags) != 0)
-    __go_panic_msg ("invalid interface value");
+    runtime_panicstring ("invalid interface value");
 
   if (e.__type_descriptor == NULL)
     {

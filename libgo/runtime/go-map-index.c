@@ -7,9 +7,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "runtime.h"
 #include "go-alloc.h"
 #include "go-assert.h"
-#include "go-panic.h"
 #include "map.h"
 
 /* Rehash MAP to a larger size.  */
@@ -89,7 +89,7 @@ __go_map_index (struct __go_map *map, const void *key, _Bool insert)
   if (map == NULL)
     {
       if (insert)
-	__go_panic_msg ("assignment to entry in nil map");
+	runtime_panicstring ("assignment to entry in nil map");
       return NULL;
     }
 

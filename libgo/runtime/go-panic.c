@@ -105,22 +105,3 @@ __go_panic (struct __go_empty_interface arg)
   __printpanics (g->panic);
   runtime_dopanic (0);
 }
-
-/* This is used by the runtime library.  */
-
-void
-__go_panic_msg (const char* msg)
-{
-  size_t len;
-  unsigned char *sdata;
-  struct __go_string s;
-  struct __go_empty_interface arg;
-
-  len = __builtin_strlen (msg);
-  sdata = runtime_mallocgc (len, FlagNoPointers, 0, 0);
-  __builtin_memcpy (sdata, msg, len);
-  s.__data = sdata;
-  s.__length = len;
-  newErrorString(s, &arg);
-  __go_panic (arg);
-}
