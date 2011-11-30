@@ -102,6 +102,65 @@
   "membar\t%1"
   [(set_attr "type" "multi")])
 
+(define_expand "atomic_load<mode>"
+  [(match_operand:I 0 "register_operand" "")
+   (match_operand:I 1 "memory_operand" "")
+   (match_operand:SI 2 "const_int_operand" "")]
+  ""
+{
+  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+
+  sparc_emit_membar_for_model (model, 1, 1);
+
+  if (TARGET_ARCH64 || <MODE>mode != DImode)
+    emit_move_insn (operands[0], operands[1]);
+  else
+    emit_insn (gen_atomic_loaddi_1 (operands[0], operands[1]));
+
+  sparc_emit_membar_for_model (model, 1, 2);
+  DONE;
+})
+
+(define_insn "atomic_loaddi_1"
+  [(set (match_operand:DI 0 "register_operand" "=U,?*f")
+	(unspec:DI [(match_operand:DI 1 "memory_operand" "m,m")]
+		   UNSPEC_ATOMIC))]
+  "!TARGET_ARCH64"
+  "ldd\t%1, %0"
+  [(set_attr "type" "load,fpload")])
+
+(define_expand "atomic_store<mode>"
+  [(match_operand:I 0 "register_operand" "")
+   (match_operand:I 1 "memory_operand" "")
+   (match_operand:SI 2 "const_int_operand" "")]
+  ""
+{
+  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+
+  sparc_emit_membar_for_model (model, 2, 1);
+
+  if (TARGET_ARCH64 || <MODE>mode != DImode)
+    emit_move_insn (operands[0], operands[1]);
+  else
+    emit_insn (gen_atomic_storedi_1 (operands[0], operands[1]));
+
+  sparc_emit_membar_for_model (model, 2, 2);
+  DONE;
+})
+
+(define_insn "atomic_storedi_1"
+  [(set (match_operand:DI 0 "memory_operand" "=m,m,m")
+	(unspec:DI
+	  [(match_operand:DI 1 "register_or_v9_zero_operand" "J,U,?*f")]
+	  UNSPEC_ATOMIC))]
+  "!TARGET_ARCH64"
+  "@
+   stx\t%r1, %0
+   std\t%1, %0
+   std\t%1, %0"
+  [(set_attr "type" "store,store,fpstore")
+   (set_attr "cpu_feature" "v9,*,*")])
+
 ;;;;;;;;
 
 (define_expand "sync_compare_and_swap<mode>"

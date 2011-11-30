@@ -239,6 +239,11 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "const_zero_operand")))
 
+(define_predicate "register_or_v9_zero_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_test "TARGET_V9")
+	    (match_operand 0 "const_zero_operand"))))
+
 ;; Return true if OP is either the zero constant, the all-ones
 ;; constant, or a register.
 (define_predicate "register_or_zero_or_all_ones_operand"
