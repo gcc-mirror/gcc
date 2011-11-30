@@ -2873,7 +2873,11 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
 	  else
 	    sched_analyze_2 (deps, XEXP (link, 0), insn);
 	}
-      if (find_reg_note (insn, REG_SETJMP, NULL))
+      /* Don't schedule anything after a tail call, tail call needs
+	 to use at least all call-saved registers.  */
+      if (SIBLING_CALL_P (insn))
+	reg_pending_barrier = TRUE_BARRIER;
+      else if (find_reg_note (insn, REG_SETJMP, NULL))
 	reg_pending_barrier = MOVE_BARRIER;
     }
 
