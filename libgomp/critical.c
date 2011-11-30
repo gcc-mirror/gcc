@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -33,6 +33,8 @@ static gomp_mutex_t default_lock;
 void
 GOMP_critical_start (void)
 {
+  /* There is an implicit flush on entry to a critical region. */
+  __atomic_thread_fence (MEMMODEL_RELEASE);
   gomp_mutex_lock (&default_lock);
 }
 

@@ -1,5 +1,17 @@
 2011-11-30  Alan Modra  <amodra@gmail.com>
 
+	* ordered.c (gomp_ordered_sync): Add MEMMODEL_ACQ_REL fence.
+	* critical.c (GOMP_critical_start): Add MEMMODEL_RELEASE fence.
+	* config/linux/mutex.h: Use atomic rather than sync builtins.
+	* config/linux/mutex.c: Likewise.  Comment.  Use -1 for waiting state.
+	* config/linux/omp-lock.h: Comment fix.
+	* config/linux/arm/mutex.h: Delete.
+	* config/linux/powerpc/mutex.h: Delete.
+	* config/linux/ia64/mutex.h: Delete.
+	* config/linux/mips/mutex.h: Delete.
+
+2011-11-30  Alan Modra  <amodra@gmail.com>
+
 	PR libgomp/51249
 	* config/linux/sem.h: Rewrite.
 	* config/linux/sem.c: Rewrite.
