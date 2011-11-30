@@ -404,8 +404,8 @@ _ITM_abortTransaction (_ITM_abortReason reason)
       tx->rollback (cp, true);
 
       // Jump to nested transaction (use the saved jump buffer).
-      GTM_longjmp (&longjmp_jb, a_abortTransaction | a_restoreLiveVariables,
-	  longjmp_prop);
+      GTM_longjmp (a_abortTransaction | a_restoreLiveVariables,
+		   &longjmp_jb, longjmp_prop);
     }
   else
     {
@@ -421,8 +421,8 @@ _ITM_abortTransaction (_ITM_abortReason reason)
 	gtm_thread::serial_lock.read_unlock (tx);
       tx->state = 0;
 
-      GTM_longjmp (&tx->jb, a_abortTransaction | a_restoreLiveVariables,
-	  tx->prop);
+      GTM_longjmp (a_abortTransaction | a_restoreLiveVariables,
+		   &tx->jb, tx->prop);
     }
 }
 
@@ -512,8 +512,8 @@ GTM::gtm_thread::restart (gtm_restart_reason r)
       disp = abi_disp();
     }
 
-  GTM_longjmp (&jb,
-      choose_code_path(prop, disp) | a_restoreLiveVariables, prop);
+  GTM_longjmp (choose_code_path(prop, disp) | a_restoreLiveVariables,
+	       &jb, prop);
 }
 
 void ITM_REGPARM

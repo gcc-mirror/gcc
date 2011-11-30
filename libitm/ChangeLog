@@ -1,3 +1,11 @@
+2011-11-30  Richard Henderson  <rth@redhat.com>
+
+	* libitm_i.h (GTM_longjmp): Swap first and second arguments.
+	* beginend.c (_ITM_abortTransaction): Update to match.
+	(GTM::gtm_thread::restart): Likewise.
+	* config/alpha/sjlj.S (GTM_longjmp): Likewise.
+	* config/x86/sjlj.S (GTM_longjmp): Likewise.
+
 2011-11-23  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* Makefile.am (libitm_la_LDFLAGS): Remove "-no-undefined".
