@@ -1,5 +1,15 @@
 2011-11-30  Richard Henderson  <rth@redhat.com>
 
+	* config/sparc/sparc-opts.h (enum sparc_memory_model_type): New.
+	* config/sparc/sparc.opt (mmemory-model=): New option.
+	* doc/invoke.texi (Sparc Options): Document it.
+	* config/sparc/sparc.c (sparc_option_override): Provide default
+	for sparc_memory_model.
+	(sparc_emit_membar_for_model): Omit barrier combinations that are
+	implied by the memory model.
+
+2011-11-30  Richard Henderson  <rth@redhat.com>
+
 	* config/sparc/sync.md (I124MODE): New mode iterator.
 	(memory_barrier): Remove.
 	(atomic_exchangesi): New.
