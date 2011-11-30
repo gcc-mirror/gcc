@@ -1,5 +1,14 @@
 2011-11-30  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
+	* config/arm/arm.c (arm_issue_rate): Cortex-A15 can triple issue.
+	* config/arm/arm.md (mul64): New attribute.
+	(generic_sched): Cortex-A15 is not scheduled generically.
+	(cortex-a15.md): Include.
+	* config/arm/cortex-a15.md: New machine description.
+	* config/arm/t-arm (MD_INCLUDES): Add cortex-a15.md.
+
+2011-11-30  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
 	* config/arm/t-arm (MD_INCLUDES): Ensure all md files are listed.
 
 2011-11-30  Iain Sandoe  <iains@gcc.gnu.org>

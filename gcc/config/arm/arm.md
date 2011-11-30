@@ -355,6 +355,13 @@
 	 (const_string "mult")
 	 (const_string "alu")))
 
+; Is this an (integer side) multiply with a 64-bit result?
+(define_attr "mul64" "no,yes"
+	     (if_then_else
+	       (eq_attr "insn" "smlalxy,umull,umulls,umlal,umlals,smull,smulls,smlal,smlals")
+	       (const_string "yes")
+	       (const_string "no")))
+
 ; Load scheduling, set from the arm_ld_sched variable
 ; initialized by arm_option_override()
 (define_attr "ldsched" "no,yes" (const (symbol_ref "arm_ld_sched")))
@@ -518,7 +525,7 @@
 
 (define_attr "generic_sched" "yes,no"
   (const (if_then_else
-          (ior (eq_attr "tune" "fa526,fa626,fa606te,fa626te,fmp626,fa726te,arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs,cortexa5,cortexa8,cortexa9,cortexm4")
+          (ior (eq_attr "tune" "fa526,fa626,fa606te,fa626te,fmp626,fa726te,arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs,cortexa5,cortexa8,cortexa9,cortexa15,cortexm4")
 	       (eq_attr "tune_cortexr4" "yes"))
           (const_string "no")
           (const_string "yes"))))
@@ -544,6 +551,7 @@
 (include "cortex-a5.md")
 (include "cortex-a8.md")
 (include "cortex-a9.md")
+(include "cortex-a15.md")
 (include "cortex-r4.md")
 (include "cortex-r4f.md")
 (include "cortex-m4.md")
