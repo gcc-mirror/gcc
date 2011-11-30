@@ -24127,6 +24127,9 @@ arm_issue_rate (void)
 {
   switch (arm_tune)
     {
+    case cortexa15:
+      return 3;
+
     case cortexr4:
     case cortexr4f:
     case cortexr5:
