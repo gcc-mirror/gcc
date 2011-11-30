@@ -1,5 +1,5 @@
 ;; GCC machine description for SPARC synchronization instructions.
-;; Copyright (C) 2005, 2007, 2009, 2010
+;; Copyright (C) 2005, 2007, 2009, 2010, 2011
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -23,35 +23,86 @@
 (define_mode_iterator I48MODE [SI (DI "TARGET_ARCH64 || TARGET_V8PLUS")])
 (define_mode_attr modesuffix [(SI "") (DI "x")])
 
-(define_expand "memory_barrier"
-  [(set (match_dup 0)
-	(unspec:BLK [(match_dup 0)] UNSPEC_MEMBAR))]
+(define_expand "mem_thread_fence"
+  [(match_operand:SI 0 "const_int_operand")]
   "TARGET_V8 || TARGET_V9"
 {
-  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
-  MEM_VOLATILE_P (operands[0]) = 1;
+  enum memmodel model = (enum memmodel) INTVAL (operands[0]);
+  sparc_emit_membar_for_model (model, 3, 3);
+  DONE;
 })
 
-;; In V8, loads are blocking and ordered wrt earlier loads, i.e. every load
-;; is virtually followed by a load barrier (membar #LoadStore | #LoadLoad).
-;; In PSO, stbar orders the stores (membar #StoreStore).
-;; In TSO, ldstub orders the stores wrt subsequent loads (membar #StoreLoad).
-;; The combination of the three yields a full memory barrier in all cases.
+(define_expand "memory_barrier"
+  [(const_int 0)]
+  "TARGET_V8 || TARGET_V9"
+{
+  sparc_emit_membar_for_model (MEMMODEL_SEQ_CST, 3, 3);
+  DONE;
+})
+
+(define_expand "membar"
+  [(set (match_dup 1)
+	(unspec:BLK [(match_dup 1)
+		     (match_operand:SI 0 "const_int_operand")]
+		    UNSPEC_MEMBAR))]
+  "TARGET_V8 || TARGET_V9"
+{
+  operands[1] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[1]) = 1;
+})
+
+;; A compiler-only memory barrier.  Generic code, when checking for the
+;; existance of various named patterns, uses asm("":::"memory") when we
+;; don't need an actual instruction.  Here, it's easiest to pretend that
+;; membar 0 is such a barrier.  Further, this gives us a nice hook to 
+;; ignore all such barriers on Sparc V7.
+(define_insn "*membar_empty"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0) (match_operand:SI 1 "zero_or_v7_operand")]
+		    UNSPEC_MEMBAR))]
+  ""
+  ""
+  [(set_attr "type" "multi")
+   (set_attr "length" "0")])
+
+;; For V8, STBAR is exactly membar #StoreStore, by definition.
+(define_insn "*membar_storestore"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0) (const_int 8)] UNSPEC_MEMBAR))]
+  "TARGET_V8"
+  "stbar"
+  [(set_attr "type" "multi")])
+
+;; For V8, LDSTUB has the effect of membar #StoreLoad
+(define_insn "*membar_storeload"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0) (const_int 2)] UNSPEC_MEMBAR))]
+  "TARGET_V8"
+  "ldstub\t[%%sp-1], %%g0"
+  [(set_attr "type" "multi")])
+
+;; Put the two together, in combination with the fact that V8 implements PSO
+;; as its weakest memory model, means a full barrier.  Match all remaining
+;; instances of the membar pattern for Sparc V8.
 (define_insn "*membar_v8"
   [(set (match_operand:BLK 0 "" "")
-	(unspec:BLK [(match_dup 0)] UNSPEC_MEMBAR))]
+	(unspec:BLK [(match_dup 0) (match_operand:SI 1 "const_int_operand")]
+		    UNSPEC_MEMBAR))]
   "TARGET_V8"
   "stbar\n\tldstub\t[%%sp-1], %%g0"
   [(set_attr "type" "multi")
    (set_attr "length" "2")])
 
-;; membar #StoreStore | #LoadStore | #StoreLoad | #LoadLoad
+;; For V9, we have the full membar instruction.
 (define_insn "*membar"
   [(set (match_operand:BLK 0 "" "")
-	(unspec:BLK [(match_dup 0)] UNSPEC_MEMBAR))]
+	(unspec:BLK [(match_dup 0) (match_operand:SI 1 "const_int_operand")]
+		    UNSPEC_MEMBAR))]
   "TARGET_V9"
-  "membar\t15"
+  "membar\t%1"
   [(set_attr "type" "multi")])
+
+;;;;;;;;
 
 (define_expand "sync_compare_and_swap<mode>"
   [(match_operand:I12MODE 0 "register_operand" "")
