@@ -471,6 +471,10 @@
        (match_test "call_address_operand (XEXP (op, 0), mode)")))
 
 
+(define_predicate "mem_noofs_operand"
+  (and (match_code "mem")
+       (match_code "reg" "0")))
+
 ;; Predicates for operators.
 
 ;; Return true if OP is a comparison operator.  This allows the use of
