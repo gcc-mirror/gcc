@@ -1,3 +1,9 @@
+2011-11-30  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* c.opt (fgnu-runtime): Provide full description.
+	(fnext-runtime): Likewise.
+	* c-opts.c (OPT_fgnu_runtime, OPT_fnext_runtime) Remove.
+
 2011-11-28  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-cpp-builtin.c (cpp_atomic_builtins):New.  Emit all atomic

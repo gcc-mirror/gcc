@@ -1,3 +1,16 @@
+2011-11-30  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* doc/tm.texi.in (NEXT_OBJC_RUNTIME): Update macro description.
+	* doc/tm.texi: Regenerate.
+	* flags.h (flag_next_runtime): Remove references.
+	* toplev.c: Likewise.
+	* defaults.h (NEXT_OBJC_RUNTIME): Provide default.
+	* gccspec.c (lang_specific_driver): Adjust use of NEXT_OBJC_RUNTIME.
+	* config/darwin.c (darwin_override_options): Provide default
+	Objective-C abi settings and target conflict checks.
+	* config/darwin.h (SUBTARGET_C_COMMON_OVERRIDE_OPTIONS): Remove unused
+	code. Adjust indenting.
+
 2011-11-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/sh/sh.h (enum reg_class, REG_CLASS_NAMES)

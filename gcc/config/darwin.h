@@ -112,7 +112,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Default to using the NeXT-style runtime, since that's what is
    pre-installed on Darwin systems.  */
 
-#define NEXT_OBJC_RUNTIME
+#define NEXT_OBJC_RUNTIME 1
 
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */
@@ -140,20 +140,8 @@ extern GTY(()) int darwin_ms_struct;
   } while (0)
 
 #define SUBTARGET_C_COMMON_OVERRIDE_OPTIONS do {                        \
-  /* Unless set, force ABI=2 for NeXT and m64, 0 otherwise.  */		\
-  if (!global_options_set.x_flag_objc_abi)				\
-    global_options.x_flag_objc_abi					\
-	= (flag_next_runtime && TARGET_64BIT) ? 2 : 0;			\
-  /* Objective-C family ABI 2 is only valid for next/m64 at present. */	\
-  if (global_options_set.x_flag_objc_abi && flag_next_runtime)		\
-    if (TARGET_64BIT && global_options.x_flag_objc_abi < 2)		\
-      error_at (UNKNOWN_LOCATION, "%<-fobjc-abi-version%> >= 2 is only"	\
-		" supported on %<-m64%> targets for"			\
-		" %<-fnext-runtime%>");					\
-  /* Sort out ObjC exceptions: If the runtime is NeXT we default to	\
-     sjlj for m32 only.  */						\
-  if (!global_options_set.x_flag_objc_sjlj_exceptions)			\
-    global_options.x_flag_objc_sjlj_exceptions = 			\
+    if (!global_options_set.x_flag_objc_sjlj_exceptions)		\
+      global_options.x_flag_objc_sjlj_exceptions = 			\
 				flag_next_runtime && !TARGET_64BIT;	\
     if (flag_mkernel || flag_apple_kext)				\
       {									\

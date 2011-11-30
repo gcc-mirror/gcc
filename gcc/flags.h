@@ -56,10 +56,6 @@ extern bool final_insns_dump_p;
 /* Nonzero means make permerror produce warnings instead of errors.  */
 
 extern int flag_permissive;
-
-/* Generate code for GNU or NeXT Objective-C runtime environment.  */
-
-extern int flag_next_runtime;
 
 /* Other basic status info about current function.  */
 

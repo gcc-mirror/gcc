@@ -604,14 +604,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       cpp_opts->extended_identifiers = value;
       break;
 
-    case OPT_fgnu_runtime:
-      flag_next_runtime = !value;
-      break;
-
-    case OPT_fnext_runtime:
-      flag_next_runtime = value;
-      break;
-
     case OPT_foperator_names:
       cpp_opts->operator_names = value;
       break;

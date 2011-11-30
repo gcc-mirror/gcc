@@ -2942,6 +2942,33 @@ darwin_override_options (void)
       /* Earlier versions are not specifically accounted, until required.  */
     }
 
+  /* In principle, this should be c-family only.  However, we really need to
+     set sensible defaults for LTO as well, since the section selection stuff
+     should check for correctness re. the ABI.  TODO: check and provide the
+     flags (runtime & ABI) from the lto wrapper).  */
+
+  /* Unless set, force ABI=2 for NeXT and m64, 0 otherwise.  */
+  if (!global_options_set.x_flag_objc_abi)
+    global_options.x_flag_objc_abi
+	= (!flag_next_runtime)
+		? 0
+		: (TARGET_64BIT ? 2
+				: (generating_for_darwin_version >= 9) ? 1
+								       : 0);
+
+  /* Objective-C family ABI 2 is only valid for next/m64 at present.  */
+  if (global_options_set.x_flag_objc_abi && flag_next_runtime)
+    {
+      if (TARGET_64BIT && global_options.x_flag_objc_abi < 2)
+	error_at (UNKNOWN_LOCATION, "%<-fobjc-abi-version%> >= 2 must be"
+				    " used for %<-m64%> targets with"
+				    " %<-fnext-runtime%>");
+      if (!TARGET_64BIT && global_options.x_flag_objc_abi >= 2)
+	error_at (UNKNOWN_LOCATION, "%<-fobjc-abi-version%> >= 2 is not"
+				    " supported on %<-m32%> targets with"
+				    " %<-fnext-runtime%>");
+    }
+
   /* Don't emit DWARF3/4 unless specifically selected.  This is a 
      workaround for tool bugs.  */
   if (!global_options_set.x_dwarf_strict) 
