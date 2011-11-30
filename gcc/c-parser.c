@@ -6568,9 +6568,16 @@ c_parser_postfix_expression (c_parser *parser)
 				     "expected %<)%>");
 	  {
 	    tree e1, e2;
+	    e1 = groktypename (t1, NULL, NULL);
+	    e2 = groktypename (t2, NULL, NULL);
+	    if (e1 == error_mark_node || e2 == error_mark_node)
+	      {
+		expr.value = error_mark_node;
+		break;
+	      }
 
-	    e1 = TYPE_MAIN_VARIANT (groktypename (t1, NULL, NULL));
-	    e2 = TYPE_MAIN_VARIANT (groktypename (t2, NULL, NULL));
+	    e1 = TYPE_MAIN_VARIANT (e1);
+	    e2 = TYPE_MAIN_VARIANT (e2);
 
 	    expr.value
 	      = comptypes (e1, e2) ? integer_one_node : integer_zero_node;
