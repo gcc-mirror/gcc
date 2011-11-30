@@ -146,14 +146,6 @@ HOST_WIDE_INT random_seed;
 
 /* -f flags.  */
 
-/* Generate code for GNU or NeXT Objective-C runtime environment.  */
-
-#ifdef NEXT_OBJC_RUNTIME
-int flag_next_runtime = 1;
-#else
-int flag_next_runtime = 0;
-#endif
-
 /* Nonzero means make permerror produce warnings instead of errors.  */
 
 int flag_permissive = 0;

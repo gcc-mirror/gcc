@@ -5289,13 +5289,18 @@ void sincosl(long double x, long double *sin, long double *cos);
 @end defmac
 
 @defmac NEXT_OBJC_RUNTIME
-Define this macro to generate code for Objective-C message sending using
-the calling convention of the NeXT system.  This calling convention
-involves passing the object, the selector and the method arguments all
-at once to the method-lookup library function.
+Set this macro to 1 to use the "NeXT" Objective-C message sending conventions
+by default.  This calling convention involves passing the object, the selector
+and the method arguments all at once to the method-lookup library function.
+This is the usual setting when targeting Darwin/Mac OS X systems, which have
+the NeXT runtime installed.
 
-The default calling convention passes just the object and the selector
-to the lookup function, which returns a pointer to the method.
+If the macro is set to 0, the "GNU" Objective-C message sending convention
+will be used by default.  This convention passes just the object and the
+selector to the method-lookup function, which returns a pointer to the method.
+
+In either case, it remains possible to select code-generation for the alternate
+scheme, by means of compiler command line switches.
 @end defmac
 
 @node Addressing Modes

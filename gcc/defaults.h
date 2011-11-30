@@ -793,6 +793,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define ACCUMULATE_OUTGOING_ARGS 0
 #endif
 
+/* By default, use the GNU runtime for Objective C.  */
+#ifndef NEXT_OBJC_RUNTIME
+#define NEXT_OBJC_RUNTIME 0
+#endif
+
 /* Supply a default definition for PUSH_ARGS.  */
 #ifndef PUSH_ARGS
 #ifdef PUSH_ROUNDING

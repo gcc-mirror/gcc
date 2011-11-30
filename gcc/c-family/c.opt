@@ -810,7 +810,7 @@ C++ ObjC++ Var(flag_no_gnu_keywords, 0)
 Recognize GNU-defined keywords
 
 fgnu-runtime
-ObjC ObjC++
+ObjC ObjC++ Report RejectNegative Var(flag_next_runtime,0) Init(NEXT_OBJC_RUNTIME)
 Generate code for GNU runtime environment
 
 fgnu89-inline
@@ -872,7 +872,7 @@ fnew-abi
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fnext-runtime
-ObjC ObjC++
+ObjC ObjC++ Report RejectNegative Var(flag_next_runtime)
 Generate code for NeXT (Apple Mac OS X) runtime environment
 
 fnil-receivers
