@@ -895,7 +895,12 @@ emit_inc_dec_insn_before (rtx mem ATTRIBUTE_UNUSED,
   /* We can reuse all operands without copying, because we are about
      to delete the insn that contained it.  */
   if (srcoff)
-    new_insn = gen_add3_insn (dest, src, srcoff);
+    {
+      start_sequence ();
+      emit_insn (gen_add3_insn (dest, src, srcoff));
+      new_insn = get_insns ();
+      end_sequence ();
+    }
   else
     new_insn = gen_move_insn (dest, src);
   info.first = new_insn;

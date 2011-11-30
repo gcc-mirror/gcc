@@ -1,5 +1,9 @@
 2011-11-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/51044
+	* dse.c (emit_inc_dec_insn_before): Ensure new_insn is an instruction
+	rather than just insn body.
+
 	PR target/50725
 	* function.c (thread_prologue_and_epilogue_insns): If
 	stack_realign_drap, add drap_reg to SET_UP_BY_PROLOGUE
