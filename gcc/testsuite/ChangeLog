@@ -1,3 +1,8 @@
+2011-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/48721
+	* gcc.target/i386/pr48721.c: New test.
+
 2011-11-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51299

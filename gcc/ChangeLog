@@ -1,6 +1,10 @@
 2011-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/48721
+	* sched-deps.c (sched_analyze_insn): For SIBLING_CALL_P set
+	reg_pending_barrier to TRUE_BARRIER.
+
+	PR rtl-optimization/48721
 	* sched-ebb.c (begin_move_insn): Insert empty unreachable
 	block after BARRIER if insn is followed by it.
 
