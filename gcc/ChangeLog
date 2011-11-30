@@ -1,3 +1,8 @@
+2011-11-30  Richard Henderson  <rth@redhat.com>
+
+	* predict.c (expr_expected_value_1): Assume compare-and-swap builtin
+	boolean return is true.
+
 2011-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/51044

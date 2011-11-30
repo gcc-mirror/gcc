@@ -1190,7 +1190,8 @@ static tree expr_expected_value (tree, bitmap);
 /* Helper function for expr_expected_value.  */
 
 static tree
-expr_expected_value_1 (tree type, tree op0, enum tree_code code, tree op1, bitmap visited)
+expr_expected_value_1 (tree type, tree op0, enum tree_code code,
+		       tree op1, bitmap visited)
 {
   gimple def;
 
@@ -1255,17 +1256,36 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code, tree op1, bitma
 	  tree decl = gimple_call_fndecl (def);
 	  if (!decl)
 	    return NULL;
-	  if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (decl) == BUILT_IN_EXPECT)
-	    {
-	      tree val;
+	  if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+	    switch (DECL_FUNCTION_CODE (decl))
+	      {
+	      case BUILT_IN_EXPECT:
+		{
+		  tree val;
+		  if (gimple_call_num_args (def) != 2)
+		    return NULL;
+		  val = gimple_call_arg (def, 0);
+		  if (TREE_CONSTANT (val))
+		    return val;
+		  return gimple_call_arg (def, 1);
+		}
 
-	      if (gimple_call_num_args (def) != 2)
-		return NULL;
-	      val = gimple_call_arg (def, 0);
-	      if (TREE_CONSTANT (val))
-		return val;
-	      return gimple_call_arg (def, 1);
+	      case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N:
+	      case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_1:
+	      case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_2:
+	      case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_4:
+	      case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_8:
+	      case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_16:
+	      case BUILT_IN_ATOMIC_COMPARE_EXCHANGE:
+	      case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_N:
+	      case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_1:
+	      case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_2:
+	      case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_4:
+	      case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_8:
+	      case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_16:
+		/* Assume that any given atomic operation has low contention,
+		   and thus the compare-and-swap operation succeeds.  */
+		return boolean_true_node;
 	    }
 	}
 
