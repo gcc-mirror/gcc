@@ -1,3 +1,10 @@
+2011-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/51089
+	* tree-eh.c (cleanup_empty_eh_merge_phis): Add check to
+	avoid creating duplicate edges here.
+	(cleanup_empty_eh_unsplit): And remove it in the caller.
+
 2011-11-30  Andrew Pinski  <apinski@cavium.com>
 
 	PR c/51321
