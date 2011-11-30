@@ -887,6 +887,7 @@ See RS/6000 and PowerPC Options.
 @gccoptlist{-mcpu=@var{cpu-type} @gol
 -mtune=@var{cpu-type} @gol
 -mcmodel=@var{code-model} @gol
+-mmemory-model=@var{mem-model} @gol
 -m32  -m64  -mapp-regs  -mno-app-regs @gol
 -mfaster-structs  -mno-faster-structs  -mflat  -mno-flat @gol
 -mfpu  -mno-fpu  -mhard-float  -msoft-float @gol
@@ -17838,13 +17839,22 @@ an architecture and not an implementation.  These are @samp{v7}, @samp{v8},
 Here is a list of each supported architecture and their supported
 implementations.
 
-@smallexample
-    v7:             cypress
-    v8:             supersparc, hypersparc, leon
-    sparclite:      f930, f934, sparclite86x
-    sparclet:       tsc701
-    v9:             ultrasparc, ultrasparc3, niagara, niagara2, niagara3, niagara4
-@end smallexample
+@table @asis
+@item v7
+cypress
+
+@item v8
+supersparc, hypersparc, leon
+
+@item sparclite
+f930, f934, sparclite86x
+
+@item sparclet
+tsc701
+
+@item v9
+ultrasparc, ultrasparc3, niagara, niagara2, niagara3, niagara4
+@end table
 
 By default (unless configured otherwise), GCC generates code for the V7
 variant of the SPARC architecture.  With @option{-mcpu=cypress}, the compiler
@@ -17979,33 +17989,59 @@ The 32-bit environment sets int, long and pointer to 32 bits.
 The 64-bit environment sets int to 32 bits and long and pointer
 to 64 bits.
 
-@item -mcmodel=medlow
-@opindex mcmodel=medlow
-Generate code for the Medium/Low code model: 64-bit addresses, programs
+@item -mcmodel=@var{which}
+@opindex mcmodel
+Set the code model to one of
+
+@table @samp
+@item medlow
+The Medium/Low code model: 64-bit addresses, programs
 must be linked in the low 32 bits of memory.  Programs can be statically
 or dynamically linked.
 
-@item -mcmodel=medmid
-@opindex mcmodel=medmid
-Generate code for the Medium/Middle code model: 64-bit addresses, programs
+@item medmid
+The Medium/Middle code model: 64-bit addresses, programs
 must be linked in the low 44 bits of memory, the text and data segments must
 be less than 2GB in size and the data segment must be located within 2GB of
 the text segment.
 
-@item -mcmodel=medany
-@opindex mcmodel=medany
-Generate code for the Medium/Anywhere code model: 64-bit addresses, programs
+@item medany
+The Medium/Anywhere code model: 64-bit addresses, programs
 may be linked anywhere in memory, the text and data segments must be less
 than 2GB in size and the data segment must be located within 2GB of the
 text segment.
 
-@item -mcmodel=embmedany
-@opindex mcmodel=embmedany
-Generate code for the Medium/Anywhere code model for embedded systems:
+@item embmedany
+The Medium/Anywhere code model for embedded systems:
 64-bit addresses, the text and data segments must be less than 2GB in
 size, both starting anywhere in memory (determined at link time).  The
 global register %g4 points to the base of the data segment.  Programs
 are statically linked and PIC is not supported.
+@end table
+
+@item -mmemory-model=@var{mem-model}
+@opindex mmemory-model
+Set the memory model in force on the processor to one of
+
+@table @samp
+@item default
+The default memory model for the processor and operating system.
+
+@item rmo
+Relaxed Memory Order
+
+@item pso
+Partial Store Order
+
+@item tso
+Total Store Order
+
+@item sc
+Sequential Consistency
+@end table
+
+These memory models are formally defined in Appendix D of the Sparc V9
+architecture manual, as set in the processor's @code{PSTATE.MM} field.
 
 @item -mstack-bias
 @itemx -mno-stack-bias

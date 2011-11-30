@@ -1160,6 +1160,17 @@ sparc_option_override (void)
       gcc_unreachable ();
     };
 
+  if (sparc_memory_model == SMM_DEFAULT)
+    {
+      /* Choose the most relaxed model for the processor.  */
+      if (TARGET_V9)
+	sparc_memory_model = SMM_RMO;
+      else if (TARGET_V8)
+	sparc_memory_model = SMM_PSO;
+      else
+	sparc_memory_model = SMM_SC;
+    }
+
 #ifdef TARGET_DEFAULT_LONG_DOUBLE_128
   if (!(target_flags_explicit & MASK_LONG_DOUBLE_128))
     target_flags |= MASK_LONG_DOUBLE_128;
@@ -10863,7 +10874,40 @@ sparc_emit_membar_for_model (enum memmodel model,
   const int LoadStore = 4;
   const int StoreStore = 8;
 
-  int mm = 0;
+  int mm = 0, implied = 0;
+
+  switch (sparc_memory_model)
+    {
+    case SMM_SC:
+      /* Sequential Consistency.  All memory transactions are immediately
+	 visible in sequential execution order.  No barriers needed.  */
+      implied = LoadLoad | StoreLoad | LoadStore | StoreStore;
+      break;
+
+    case SMM_TSO:
+      /* Total Store Ordering: all memory transactions with store semantics
+	 are followed by an implied StoreStore.  */
+      implied |= StoreStore;
+      /* FALLTHRU */
+
+    case SMM_PSO:
+      /* Partial Store Ordering: all memory transactions with load semantics
+	 are followed by an implied LoadLoad | LoadStore.  */
+      implied |= LoadLoad | LoadStore;
+
+      /* If we're not looking for a raw barrer (before+after), then atomic
+	 operations get the benefit of being both load and store.  */
+      if (load_store == 3 && before_after == 2)
+	implied |= StoreLoad | StoreStore;
+      /* FALLTHRU */
+
+    case SMM_RMO:
+      /* Relaxed Memory Ordering: no implicit bits.  */
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
 
   if (before_after & 1)
     {
@@ -10889,6 +10933,9 @@ sparc_emit_membar_for_model (enum memmodel model,
 	    mm |= LoadStore | StoreStore;
 	}
     }
+
+  /* Remove the bits implied by the system memory model.  */
+  mm &= ~implied;
 
   /* For raw barriers (before+after), always emit a barrier.
      This will become a compile-time barrier if needed.  */
