@@ -19,26 +19,43 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-MD_INCLUDES= 	$(srcdir)/config/arm/arm-tune.md \
-		$(srcdir)/config/arm/predicates.md \
-		$(srcdir)/config/arm/arm-generic.md \
-		$(srcdir)/config/arm/arm1020e.md \
+# All md files - except for arm.md.
+# This list should be kept in alphabetical order and updated whenever an md
+# file is added or removed.
+MD_INCLUDES=	$(srcdir)/config/arm/arm1020e.md \
 		$(srcdir)/config/arm/arm1026ejs.md \
 		$(srcdir)/config/arm/arm1136jfs.md \
+		$(srcdir)/config/arm/arm926ejs.md \
+		$(srcdir)/config/arm/arm-fixed.md \
+		$(srcdir)/config/arm/arm-generic.md \
+		$(srcdir)/config/arm/arm-tune.md \
+		$(srcdir)/config/arm/cirrus.md \
+		$(srcdir)/config/arm/constraints.md \
+		$(srcdir)/config/arm/cortex-a5.md \
+		$(srcdir)/config/arm/cortex-a8.md \
+		$(srcdir)/config/arm/cortex-a8-neon.md \
+		$(srcdir)/config/arm/cortex-a9.md \
+		$(srcdir)/config/arm/cortex-a9-neon.md \
+		$(srcdir)/config/arm/cortex-m4-fpu.md \
+		$(srcdir)/config/arm/cortex-m4.md \
+		$(srcdir)/config/arm/cortex-r4f.md \
+		$(srcdir)/config/arm/cortex-r4.md \
 		$(srcdir)/config/arm/fa526.md \
 		$(srcdir)/config/arm/fa606te.md \
 		$(srcdir)/config/arm/fa626te.md \
-		$(srcdir)/config/arm/fmp626.md \
 		$(srcdir)/config/arm/fa726te.md \
-		$(srcdir)/config/arm/arm926ejs.md \
-		$(srcdir)/config/arm/cirrus.md \
+		$(srcdir)/config/arm/fmp626.md \
 		$(srcdir)/config/arm/fpa.md \
-		$(srcdir)/config/arm/vec-common.md \
+		$(srcdir)/config/arm/iterators.md \
 		$(srcdir)/config/arm/iwmmxt.md \
-		$(srcdir)/config/arm/vfp.md \
+		$(srcdir)/config/arm/ldmstm.md \
 		$(srcdir)/config/arm/neon.md \
+		$(srcdir)/config/arm/predicates.md \
+		$(srcdir)/config/arm/sync.md \
 		$(srcdir)/config/arm/thumb2.md \
-		$(srcdir)/config/arm/arm-fixed.md
+		$(srcdir)/config/arm/vec-common.md \
+		$(srcdir)/config/arm/vfp11.md \
+		$(srcdir)/config/arm/vfp.md
 
 s-config s-conditions s-flags s-codes s-constants s-emit s-recog s-preds \
 	s-opinit s-extract s-peep s-attr s-attrtab s-output: $(MD_INCLUDES)
