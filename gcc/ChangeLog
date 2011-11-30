@@ -1,3 +1,7 @@
+2011-11-30  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* config/arm/t-arm (MD_INCLUDES): Ensure all md files are listed.
+
 2011-11-30  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* doc/tm.texi.in (NEXT_OBJC_RUNTIME): Update macro description.
