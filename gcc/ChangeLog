@@ -1,5 +1,10 @@
 2011-11-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/50725
+	* function.c (thread_prologue_and_epilogue_insns): If
+	stack_realign_drap, add drap_reg to SET_UP_BY_PROLOGUE
+	regset.
+
 	PR middle-end/51089
 	* tree-eh.c (cleanup_empty_eh_merge_phis): Add check to
 	avoid creating duplicate edges here.

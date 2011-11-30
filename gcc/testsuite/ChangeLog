@@ -1,5 +1,8 @@
 2011-11-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/50725
+	* gcc.target/i386/pr50725.c: New test.
+
 	PR middle-end/51089
 	* gfortran.dg/gomp/pr51089.f90: New test.
 
