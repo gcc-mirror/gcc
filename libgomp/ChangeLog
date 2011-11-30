@@ -1,5 +1,14 @@
 2011-11-30  Alan Modra  <amodra@gmail.com>
 
+	PR libgomp/51298
+	* config/linux/bar.h: Use atomic rather than sync builtins.
+	* config/linux/bar.c: Likewise.  Add missing acquire
+	synchronisation on generation field.
+	* task.c (gomp_barrier_handle_tasks): Regain lock so as to not
+	double unlock.
+
+2011-11-30  Alan Modra  <amodra@gmail.com>
+
 	* ordered.c (gomp_ordered_sync): Add MEMMODEL_ACQ_REL fence.
 	* critical.c (GOMP_critical_start): Add MEMMODEL_RELEASE fence.
 	* config/linux/mutex.h: Use atomic rather than sync builtins.

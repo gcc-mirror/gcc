@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -37,17 +37,15 @@ gomp_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
     {
       /* Next time we'll be awaiting TOTAL threads again.  */
       bar->awaited = bar->total;
-      atomic_write_barrier ();
-      bar->generation += 4;
+      __atomic_store_n (&bar->generation, bar->generation + 4,
+			MEMMODEL_RELEASE);
       futex_wake ((int *) &bar->generation, INT_MAX);
     }
   else
     {
-      unsigned int generation = state;
-
       do
-	do_wait ((int *) &bar->generation, generation);
-      while (bar->generation == generation);
+	do_wait ((int *) &bar->generation, state);
+      while (__atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE) == state);
     }
 }
 
@@ -81,15 +79,15 @@ gomp_team_barrier_wake (gomp_barrier_t *bar, int count)
 void
 gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 {
-  unsigned int generation;
+  unsigned int generation, gen;
 
   if (__builtin_expect ((state & 1) != 0, 0))
     {
       /* Next time we'll be awaiting TOTAL threads again.  */
       struct gomp_thread *thr = gomp_thread ();
       struct gomp_team *team = thr->ts.team;
+
       bar->awaited = bar->total;
-      atomic_write_barrier ();
       if (__builtin_expect (team->task_count, 0))
 	{
 	  gomp_barrier_handle_tasks (state);
@@ -97,7 +95,7 @@ gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 	}
       else
 	{
-	  bar->generation = state + 3;
+	  __atomic_store_n (&bar->generation, state + 3, MEMMODEL_RELEASE);
 	  futex_wake ((int *) &bar->generation, INT_MAX);
 	  return;
 	}
@@ -107,12 +105,16 @@ gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
   do
     {
       do_wait ((int *) &bar->generation, generation);
-      if (__builtin_expect (bar->generation & 1, 0))
-	gomp_barrier_handle_tasks (state);
-      if ((bar->generation & 2))
+      gen = __atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE);
+      if (__builtin_expect (gen & 1, 0))
+	{
+	  gomp_barrier_handle_tasks (state);
+	  gen = __atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE);
+	}
+      if ((gen & 2) != 0)
 	generation |= 2;
     }
-  while (bar->generation != state + 4);
+  while (gen != state + 4);
 }
 
 void

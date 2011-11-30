@@ -273,6 +273,7 @@ gomp_barrier_handle_tasks (gomp_barrier_state_t state)
 	      gomp_team_barrier_done (&team->barrier, state);
 	      gomp_mutex_unlock (&team->task_lock);
 	      gomp_team_barrier_wake (&team->barrier, 0);
+	      gomp_mutex_lock (&team->task_lock);
 	    }
 	}
     }
