@@ -19,6 +19,7 @@
 ;; <http://www.gnu.org/licenses/>.
 
 (define_mode_iterator I12MODE [QI HI])
+(define_mode_iterator I124MODE [QI HI SI])
 (define_mode_iterator I24MODE [HI SI])
 (define_mode_iterator I48MODE [SI (DI "TARGET_ARCH64 || TARGET_V8PLUS")])
 (define_mode_attr modesuffix [(SI "") (DI "x")])
@@ -29,14 +30,6 @@
 {
   enum memmodel model = (enum memmodel) INTVAL (operands[0]);
   sparc_emit_membar_for_model (model, 3, 3);
-  DONE;
-})
-
-(define_expand "memory_barrier"
-  [(const_int 0)]
-  "TARGET_V8 || TARGET_V9"
-{
-  sparc_emit_membar_for_model (MEMMODEL_SEQ_CST, 3, 3);
   DONE;
 })
 
@@ -224,46 +217,22 @@
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
-;;;;;;;;
-
-(define_expand "sync_lock_test_and_set<mode>"
-  [(match_operand:I12MODE 0 "register_operand" "")
-   (match_operand:I12MODE 1 "memory_operand" "")
-   (match_operand:I12MODE 2 "arith_operand" "")]
-  "!TARGET_V9"
+(define_expand "atomic_exchangesi"
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:SI 1 "memory_operand" "")
+   (match_operand:SI 2 "register_operand" "")
+   (match_operand:SI 3 "const_int_operand" "")]
+  "TARGET_V8 || TARGET_V9"
 {
-  if (operands[2] != const1_rtx)
-    FAIL;
-  if (TARGET_V8)
-    emit_insn (gen_memory_barrier ());
-  if (<MODE>mode != QImode)
-    operands[1] = adjust_address (operands[1], QImode, 0);
-  emit_insn (gen_ldstub<mode> (operands[0], operands[1]));
+  enum memmodel model = (enum memmodel) INTVAL (operands[3]);
+
+  sparc_emit_membar_for_model (model, 3, 1);
+  emit_insn (gen_swapsi (operands[0], operands[1], operands[2]));
+  sparc_emit_membar_for_model (model, 3, 2);
   DONE;
 })
 
-(define_expand "sync_lock_test_and_setsi"
-  [(parallel
-     [(set (match_operand:SI 0 "register_operand" "")
-	   (unspec_volatile:SI [(match_operand:SI 1 "memory_operand" "")]
-			       UNSPECV_SWAP))
-      (set (match_dup 1)
-	   (match_operand:SI 2 "arith_operand" ""))])]
-  ""
-{
-  if (! TARGET_V8 && ! TARGET_V9)
-    {
-      if (operands[2] != const1_rtx)
-	FAIL;
-      operands[1] = adjust_address (operands[1], QImode, 0);
-      emit_insn (gen_ldstubsi (operands[0], operands[1]));
-      DONE;
-    }
-  emit_insn (gen_memory_barrier ());
-  operands[2] = force_reg (SImode, operands[2]);
-})
-
-(define_insn "*swapsi"
+(define_insn "swapsi"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec_volatile:SI [(match_operand:SI 1 "memory_operand" "+m")]
 			    UNSPECV_SWAP))
@@ -273,24 +242,25 @@
   "swap\t%1, %0"
   [(set_attr "type" "multi")])
 
-(define_expand "ldstubqi"
-  [(parallel [(set (match_operand:QI 0 "register_operand" "")
-		   (unspec_volatile:QI [(match_operand:QI 1 "memory_operand" "")]
-				       UNSPECV_LDSTUB))
-	      (set (match_dup 1) (const_int -1))])]
+(define_expand "atomic_test_and_set<mode>"
+  [(match_operand:I124MODE 0 "register_operand" "")
+   (match_operand:I124MODE 1 "memory_operand" "")
+   (match_operand:SI 2 "const_int_operand" "")]
   ""
-  "")
+{
+  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
 
-(define_expand "ldstub<mode>"
-  [(parallel [(set (match_operand:I24MODE 0 "register_operand" "")
-		   (zero_extend:I24MODE
-		      (unspec_volatile:QI [(match_operand:QI 1 "memory_operand" "")]
-					  UNSPECV_LDSTUB)))
-	      (set (match_dup 1) (const_int -1))])]
-  ""
-  "")
+  sparc_emit_membar_for_model (model, 3, 1);
 
-(define_insn "*ldstubqi"
+  if (<MODE>mode != QImode)
+    operands[1] = adjust_address (operands[1], QImode, 0);
+  emit_insn (gen_ldstub<mode> (operands[0], operands[1]));
+
+  sparc_emit_membar_for_model (model, 3, 2);
+  DONE;
+})
+
+(define_insn "ldstubqi"
   [(set (match_operand:QI 0 "register_operand" "=r")
 	(unspec_volatile:QI [(match_operand:QI 1 "memory_operand" "+m")]
 			    UNSPECV_LDSTUB))
@@ -299,7 +269,7 @@
   "ldstub\t%1, %0"
   [(set_attr "type" "multi")])
 
-(define_insn "*ldstub<mode>"
+(define_insn "ldstub<mode>"
   [(set (match_operand:I24MODE 0 "register_operand" "=r")
 	(zero_extend:I24MODE
 	  (unspec_volatile:QI [(match_operand:QI 1 "memory_operand" "+m")]
