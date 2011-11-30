@@ -1,3 +1,9 @@
+2011-11-30  Alan Modra  <amodra@gmail.com>
+
+	PR libgomp/51249
+	* config/linux/sem.h: Rewrite.
+	* config/linux/sem.c: Rewrite.
+
 2011-11-28  Richard Henderson  <rth@redhat.com>
 
 	* libgomp.h (enum memmodel): New.
@@ -316,7 +322,7 @@
 	    Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32049
-	* configure.ac: 
+	* configure.ac:
 	* configure: Regenerate.
 
 2010-10-06  Marcus Shawcroft  <marcus.shawcroft@arm.com>
@@ -1080,7 +1086,7 @@
 	(gomp_new_thread_pool, gomp_free_pool_helper, gomp_free_thread): New
 	functions.
 	(gomp_team_start): Create new pool if current thread doesn't have
-	one.  Use pool fields instead of global gomp_* variables. 
+	one.  Use pool fields instead of global gomp_* variables.
 	Initialize thread_pool field for new threads.  Clear single_count.
 	Change last argument from ws to team, don't create
 	new team, set ts.work_share to &team->work_shares[0] and clear
@@ -1312,7 +1318,7 @@
 	inlines.
 	* config/posix/bar.c (gomp_barrier_init): Clear generation field.
 	(gomp_barrier_wait_end): Change second argument to
-	gomp_barrier_state_t. 
+	gomp_barrier_state_t.
 	(gomp_team_barrier_wait, gomp_team_barrier_wait_end,
 	gomp_team_barrier_wake): New functions.
 	* config/linux/mutex.c: Include wait.h instead of libgomp.h and
