@@ -1,3 +1,9 @@
+2011-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/48721
+	* sched-ebb.c (begin_move_insn): Insert empty unreachable
+	block after BARRIER if insn is followed by it.
+
 2011-11-30  Richard Henderson  <rth@redhat.com>
 
 	* config/sparc/sparc-opts.h (enum sparc_memory_model_type): New.
