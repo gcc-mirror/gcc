@@ -113,4 +113,6 @@ unsigned int sparc_regmode_natural_size (enum machine_mode);
 bool sparc_modes_tieable_p (enum machine_mode, enum machine_mode);
 #endif /* RTX_CODE */
 
+extern void sparc_emit_membar_for_model (enum memmodel, int, int);
+
 #endif /* __SPARC_PROTOS_H__ */

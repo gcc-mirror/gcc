@@ -10849,6 +10849,53 @@ sparc_mangle_type (const_tree type)
 }
 #endif
 
+/* Expand a membar instruction for various use cases.  Both the LOAD_STORE
+   and BEFORE_AFTER arguments of the form X_Y.  They are two-bit masks where
+   bit 0 indicates that X is true, and bit 1 indicates Y is true.  */
+
+void
+sparc_emit_membar_for_model (enum memmodel model,
+			     int load_store, int before_after)
+{
+  /* Bits for the MEMBAR mmask field.  */
+  const int LoadLoad = 1;
+  const int StoreLoad = 2;
+  const int LoadStore = 4;
+  const int StoreStore = 8;
+
+  int mm = 0;
+
+  if (before_after & 1)
+    {
+      if (model == MEMMODEL_ACQUIRE
+          || model == MEMMODEL_ACQ_REL
+          || model == MEMMODEL_SEQ_CST)
+	{
+	  if (load_store & 1)
+	    mm |= LoadLoad | LoadStore;
+	  if (load_store & 2)
+	    mm |= StoreLoad | StoreStore;
+	}
+    }
+  if (before_after & 2)
+    {
+      if (model == MEMMODEL_RELEASE
+	  || model == MEMMODEL_ACQ_REL
+	  || model == MEMMODEL_SEQ_CST)
+	{
+	  if (load_store & 1)
+	    mm |= LoadLoad | StoreLoad;
+	  if (load_store & 2)
+	    mm |= LoadStore | StoreStore;
+	}
+    }
+
+  /* For raw barriers (before+after), always emit a barrier.
+     This will become a compile-time barrier if needed.  */
+  if (mm || before_after == 3)
+    emit_insn (gen_membar (GEN_INT (mm)));
+}
+
 /* Expand code to perform a 8 or 16-bit compare and swap by doing 32-bit
    compare and swap on the word containing the byte or half-word.  */
 

@@ -1,3 +1,14 @@
+2011-11-30  Richard Henderson  <rth@redhat.com>
+
+	* config/sparc/predicates.md (zero_or_v7_operand): New.
+	* config/sparc/sparc.c (sparc_emit_membar_for_model): New.
+	* config/sparc/sparc-protos.h: Update.
+	* config/sparc/sync.md (mem_thread_fence): New.
+	(memory_barrier): Use sparc_emit_membar_for_model.
+	(membar, *membar_empty, *membar_storestore, *membar_storeload): New.
+	(*membar_v8): Accept and ignore the membar mask.
+	(*membar): Accept and print the membar mask.
+
 2011-11-30  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	* config/arm/arm.c (arm_issue_rate): Cortex-A15 can triple issue.

@@ -111,6 +111,10 @@
 (define_predicate "const_double_or_vector_operand"
   (match_code "const_double,const_vector"))
 
+;; Return true if OP is Zero, or if the target is V7.
+(define_predicate "zero_or_v7_operand"
+  (ior (match_test "op == const0_rtx")
+       (match_test "!TARGET_V8 && !TARGET_V9")))
 
 ;; Predicates for symbolic constants.
 
