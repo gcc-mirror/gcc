@@ -1,3 +1,9 @@
+2011-11-30  Andrew Pinski  <apinski@cavium.com>
+
+	PR c/51321
+	* c-parser.c (c_parser_postfix_expression): Check groktypename results
+	before looking at the main variant.
+
 2011-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/48721
