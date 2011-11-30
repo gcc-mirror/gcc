@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -50,7 +50,7 @@ static inline void gomp_barrier_init (gomp_barrier_t *bar, unsigned count)
 
 static inline void gomp_barrier_reinit (gomp_barrier_t *bar, unsigned count)
 {
-  __sync_fetch_and_add (&bar->awaited, count - bar->total);
+  __atomic_add_fetch (&bar->awaited, count - bar->total, MEMMODEL_ACQ_REL);
   bar->total = count;
 }
 
@@ -69,10 +69,13 @@ extern void gomp_team_barrier_wake (gomp_barrier_t *, int);
 static inline gomp_barrier_state_t
 gomp_barrier_wait_start (gomp_barrier_t *bar)
 {
-  unsigned int ret = bar->generation & ~3;
-  /* Do we need any barrier here or is __sync_add_and_fetch acting
-     as the needed LoadLoad barrier already?  */
-  ret += __sync_add_and_fetch (&bar->awaited, -1) == 0;
+  unsigned int ret = __atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE) & ~3;
+  /* A memory barrier is needed before exiting from the various forms
+     of gomp_barrier_wait, to satisfy OpenMP API version 3.1 section
+     2.8.6 flush Construct, which says there is an implicit flush during
+     a barrier region.  This is a convenient place to add the barrier,
+     so we use MEMMODEL_ACQ_REL here rather than MEMMODEL_ACQUIRE.  */
+  ret += __atomic_add_fetch (&bar->awaited, -1, MEMMODEL_ACQ_REL) == 0;
   return ret;
 }
 
