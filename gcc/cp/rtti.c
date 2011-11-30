@@ -503,8 +503,8 @@ ifnonnull (tree test, tree result)
 {
   return build3 (COND_EXPR, TREE_TYPE (result),
 		 build2 (EQ_EXPR, boolean_type_node, test,
-			 cp_convert (TREE_TYPE (test), integer_zero_node)),
-		 cp_convert (TREE_TYPE (result), integer_zero_node),
+			 cp_convert (TREE_TYPE (test), nullptr_node)),
+		 cp_convert (TREE_TYPE (result), nullptr_node),
 		 result);
 }
 
@@ -747,7 +747,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	      tree neq;
 
 	      result = save_expr (result);
-	      neq = c_common_truthvalue_conversion (input_location, result);
+	      neq = cp_truthvalue_conversion (result);
 	      return cp_convert (type,
 				 build3 (COND_EXPR, TREE_TYPE (result),
 					 neq, result, bad));
