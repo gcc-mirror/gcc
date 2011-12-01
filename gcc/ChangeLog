@@ -1,3 +1,13 @@
+2011-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/50317
+	* tree-ssa-dce.c (remove_dead_stmt): Add a debug stmt when removing
+	as unnecessary a store to a variable with gimple reg type.
+	* tree-ssa-live.c (remove_unused_locals): Clear TREE_ADDRESSABLE bit
+	on local unreferenced variables.
+	* cfgexpand.c (expand_gimple_basic_block): Don't emit DEBUG_INSNs
+	for !target_for_debug_bind variables.
+
 2011-12-01  Patrick Marlier  <patrick.marlier@gmail.com>
 
 	PR middle-end/51273

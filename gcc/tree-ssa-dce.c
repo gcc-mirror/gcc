@@ -1215,6 +1215,26 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
 	  ei_next (&ei);
     }
 
+  /* If this is a store into a variable that is being optimized away,
+     add a debug bind stmt if possible.  */
+  if (MAY_HAVE_DEBUG_STMTS
+      && gimple_assign_single_p (stmt)
+      && is_gimple_val (gimple_assign_rhs1 (stmt)))
+    {
+      tree lhs = gimple_assign_lhs (stmt);
+      if ((TREE_CODE (lhs) == VAR_DECL || TREE_CODE (lhs) == PARM_DECL)
+	  && !DECL_IGNORED_P (lhs)
+	  && is_gimple_reg_type (TREE_TYPE (lhs))
+	  && !is_global_var (lhs)
+	  && !DECL_HAS_VALUE_EXPR_P (lhs))
+	{
+	  tree rhs = gimple_assign_rhs1 (stmt);
+	  gimple note
+	    = gimple_build_debug_bind (lhs, unshare_expr (rhs), stmt);
+	  gsi_insert_after (i, note, GSI_SAME_STMT);
+	}
+    }
+
   unlink_stmt_vdef (stmt);
   gsi_remove (i, true);
   release_defs (stmt);

@@ -3903,6 +3903,11 @@ expand_gimple_basic_block (basic_block bb)
 	      rtx val;
 	      enum machine_mode mode;
 
+	      if (TREE_CODE (var) != DEBUG_EXPR_DECL
+		  && TREE_CODE (var) != LABEL_DECL
+		  && !target_for_debug_bind (var))
+		goto delink_debug_stmt;
+
 	      if (gimple_debug_bind_has_value_p (stmt))
 		value = gimple_debug_bind_get_value (stmt);
 	      else
@@ -3932,6 +3937,7 @@ expand_gimple_basic_block (basic_block bb)
 		  PAT_VAR_LOCATION_LOC (val) = (rtx)value;
 		}
 
+	    delink_debug_stmt:
 	      /* In order not to generate too many debug temporaries,
 	         we delink all uses of debug statements we already expanded.
 		 Therefore debug statements between definition and real

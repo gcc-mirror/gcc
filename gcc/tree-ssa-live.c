@@ -1,5 +1,5 @@
 /* Liveness for SSA trees.
-   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
 
@@ -814,7 +814,15 @@ remove_unused_locals (void)
 	      bitmap_set_bit (global_unused_vars, DECL_UID (var));
 	    }
 	  else
-	    continue;
+	    {
+	      /* For unreferenced local vars drop TREE_ADDRESSABLE
+		 bit in case it is referenced from debug stmts.  */
+	      if (DECL_CONTEXT (var) == current_function_decl
+		  && TREE_ADDRESSABLE (var)
+		  && is_gimple_reg_type (TREE_TYPE (var)))
+		TREE_ADDRESSABLE (var) = 0;
+	      continue;
+	    }
 	}
       else if (TREE_CODE (var) == VAR_DECL
 	       && DECL_HARD_REGISTER (var)
