@@ -1,5 +1,14 @@
 2011-12-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	PR fortran/25708
+	* module.c (parse_string): Read string into resizable array
+	instead of parsing twice and seeking.
+	(peek_atom): New implementation avoiding seeks.
+	(require_atom): Save and set column and line explicitly for error
+	handling.
+
+2011-12-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	* misc.c (gfc_open_file): Don't call stat.
 
 2011-11-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
