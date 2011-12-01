@@ -1,5 +1,5 @@
 /* Stub functions.
-   Copyright (C) 2006, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,46 +22,66 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "tsystem.h"
+
 #ifdef L_register_frame_info
 struct object;
-void  __register_frame_info (const void * __attribute__((unused)),
-			     struct object * __attribute__((unused)));
+void  __register_frame_info (const void *, struct object *);
 void
-__register_frame_info (const void *p, struct object *ob)
+__register_frame_info (__attribute__((unused)) const void *p,
+		       __attribute__((unused)) struct object *ob)
 {
 }
 #endif
 
 #ifdef L_deregister_frame_info
-void *__deregister_frame_info (const void * __attribute__((unused)));
+void *__deregister_frame_info (const void *);
 void *
-__deregister_frame_info (const void *p)
+__deregister_frame_info (__attribute__((unused)) const void *p)
 {
   return (void *)0;
 }
 #endif
 
-#ifdef L_cxa_finalize
-void __cxa_finalize (void * __attribute__((unused)));
+#ifdef L_ITM_registerTMCloneTable
+struct object;
+void  _ITM_registerTMCloneTable (const void *, size_t);
 void
-__cxa_finalize (void *p)
+_ITM_registerTMCloneTable (__attribute__((unused)) const void *p,
+			   __attribute__((unused)) size_t s)
+{
+}
+#endif
+
+#ifdef L_ITM_deregisterTMCloneTable
+void _ITM_deregisterTMCloneTable (const void *);
+void
+_ITM_deregisterTMCloneTable (__attribute__((unused)) const void *p)
+{
+}
+#endif
+
+#ifdef L_cxa_finalize
+void __cxa_finalize (void *);
+void
+__cxa_finalize (__attribute__((unused)) void *p)
 {
 }
 #endif
 
 #ifdef L_Jv_RegisterClasses
-void _Jv_RegisterClasses (void * __attribute__((unused)));
+void _Jv_RegisterClasses (void *);
 void
-_Jv_RegisterClasses (void *p)
+_Jv_RegisterClasses (__attribute__((unused)) void *p)
 {
 }
 #endif
 
 #ifdef L_pthread_default_stacksize_np
-int pthread_default_stacksize_np (unsigned long __attribute__((unused)),
-				  unsigned long *);
+int pthread_default_stacksize_np (unsigned long, unsigned long *);
 int
-pthread_default_stacksize_np (unsigned long new, unsigned long *old)
+pthread_default_stacksize_np (__attribute__((unused)) unsigned long new,
+			      unsigned long *old)
 {
   if (old)
     *old = 0;
