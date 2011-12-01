@@ -1780,7 +1780,6 @@ Parse::init_vars_from_receive(const Typed_identifier_list* vars, Type* type,
   Statement* s = Statement::make_tuple_receive_assignment(val_var,
 							  received_var,
 							  receive->channel(),
-							  false,
 							  location);
 
   if (!this->gogo_->in_global_scope())
@@ -3769,7 +3768,6 @@ Parse::tuple_assignment(Expression_list* lhs, Range_clause* p_range_clause)
       Expression* channel = receive->channel();
       Statement* s = Statement::make_tuple_receive_assignment(val, success,
 							      channel,
-							      false,
 							      location);
       this->gogo_->add_statement(s);
     }

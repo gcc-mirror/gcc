@@ -13493,12 +13493,18 @@ Receive_expression::do_check_types(Gogo*)
 tree
 Receive_expression::do_get_tree(Translate_context* context)
 {
+  Location loc = this->location();
+
   Channel_type* channel_type = this->channel_->type()->channel_type();
   if (channel_type == NULL)
     {
       go_assert(this->channel_->type()->is_error());
       return error_mark_node;
     }
+
+  Expression* td = Expression::make_type_descriptor(channel_type, loc);
+  tree td_tree = td->get_tree(context);
+
   Type* element_type = channel_type->element_type();
   Btype* element_type_btype = element_type->get_backend(context->gogo());
   tree element_type_tree = type_to_tree(element_type_btype);
@@ -13507,8 +13513,7 @@ Receive_expression::do_get_tree(Translate_context* context)
   if (element_type_tree == error_mark_node || channel == error_mark_node)
     return error_mark_node;
 
-  return Gogo::receive_from_channel(element_type_tree, channel,
-				    this->for_select_, this->location());
+  return Gogo::receive_from_channel(element_type_tree, td_tree, channel, loc);
 }
 
 // Dump ast representation for a receive expression.

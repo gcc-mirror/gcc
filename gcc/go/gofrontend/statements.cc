@@ -1329,10 +1329,9 @@ class Tuple_receive_assignment_statement : public Statement
 {
  public:
   Tuple_receive_assignment_statement(Expression* val, Expression* closed,
-				     Expression* channel, bool for_select,
-				     Location location)
+				     Expression* channel, Location location)
     : Statement(STATEMENT_TUPLE_RECEIVE_ASSIGNMENT, location),
-      val_(val), closed_(closed), channel_(channel), for_select_(for_select)
+      val_(val), closed_(closed), channel_(channel)
   { }
 
  protected:
@@ -1360,8 +1359,6 @@ class Tuple_receive_assignment_statement : public Statement
   Expression* closed_;
   // The channel on which we receive the value.
   Expression* channel_;
-  // Whether this is for a select statement.
-  bool for_select_;
 };
 
 // Traversal.
@@ -1414,14 +1411,14 @@ Tuple_receive_assignment_statement::do_lower(Gogo*, Named_object*,
     Statement::make_temporary(Type::lookup_bool_type(), NULL, loc);
   b->add_statement(closed_temp);
 
-  // closed_temp = chanrecv[23](channel, &val_temp)
+  // closed_temp = chanrecv2(type, channel, &val_temp)
+  Expression* td = Expression::make_type_descriptor(this->channel_->type(),
+						    loc);
   Temporary_reference_expression* ref =
     Expression::make_temporary_reference(val_temp, loc);
   Expression* p2 = Expression::make_unary(OPERATOR_AND, ref, loc);
-  Expression* call = Runtime::make_call((this->for_select_
-					 ? Runtime::CHANRECV3
-					 : Runtime::CHANRECV2),
-					loc, 2, this->channel_, p2);
+  Expression* call = Runtime::make_call(Runtime::CHANRECV2,
+					loc, 3, td, this->channel_, p2);
   ref = Expression::make_temporary_reference(closed_temp, loc);
   ref->set_is_lvalue();
   Statement* s = Statement::make_assignment(ref, call, loc);
@@ -1460,11 +1457,10 @@ Tuple_receive_assignment_statement::do_dump_statement(
 Statement*
 Statement::make_tuple_receive_assignment(Expression* val, Expression* closed,
 					 Expression* channel,
-					 bool for_select,
 					 Location location)
 {
   return new Tuple_receive_assignment_statement(val, closed, channel,
-						for_select, location);
+						location);
 }
 
 // An assignment to a pair of values from a type guard.  This is a
@@ -4391,9 +4387,11 @@ Send_statement::do_get_backend(Translate_context* context)
       && val->temporary_reference_expression() == NULL)
     can_take_address = false;
 
+  Expression* td = Expression::make_type_descriptor(this->channel_->type(),
+						    loc);
+
   Runtime::Function code;
   Bstatement* btemp = NULL;
-  Expression* call;
   if (is_small)
       {
 	// Type is small enough to handle as uint64.
@@ -4421,8 +4419,7 @@ Send_statement::do_get_backend(Translate_context* context)
       btemp = temp->get_backend(context);
     }
 
-  call = Runtime::make_call(code, loc, 3, this->channel_, val,
-			    Expression::make_boolean(this->for_select_, loc));
+  Expression* call = Runtime::make_call(code, loc, 3, td, this->channel_, val);
 
   context->gogo()->lower_expression(context->function(), NULL, &call);
   Bexpression* bcall = tree_to_expr(call->get_tree(context));
@@ -4490,134 +4487,178 @@ Select_clauses::Select_clause::traverse(Traverse* traverse)
   return TRAVERSE_CONTINUE;
 }
 
-// Lowering.  Here we pull out the channel and the send values, to
-// enforce the order of evaluation.  We also add explicit send and
-// receive statements to the clauses.
+// Lowering.  We call a function to register this clause, and arrange
+// to set any variables in any receive clause.
 
 void
 Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
-				     Block* b)
+				     Block* b, Temporary_statement* sel)
 {
+  Location loc = this->location_;
+
+  Expression* selref = Expression::make_temporary_reference(sel, loc);
+
+  mpz_t ival;
+  mpz_init_set_ui(ival, this->index_);
+  Expression* index_expr = Expression::make_integer(&ival, NULL, loc);
+  mpz_clear(ival);
+
   if (this->is_default_)
     {
       go_assert(this->channel_ == NULL && this->val_ == NULL);
+      this->lower_default(b, selref, index_expr);
       this->is_lowered_ = true;
       return;
     }
-
-  Location loc = this->location_;
 
   // Evaluate the channel before the select statement.
   Temporary_statement* channel_temp = Statement::make_temporary(NULL,
 								this->channel_,
 								loc);
   b->add_statement(channel_temp);
-  this->channel_ = Expression::make_temporary_reference(channel_temp, loc);
+  Expression* chanref = Expression::make_temporary_reference(channel_temp,
+							     loc);
 
-  // If this is a send clause, evaluate the value to send before the
-  // select statement.
-  Temporary_statement* val_temp = NULL;
-  if (this->is_send_ && !this->val_->is_constant())
-    {
-      val_temp = Statement::make_temporary(NULL, this->val_, loc);
-      b->add_statement(val_temp);
-    }
-
-  // Add the send or receive before the rest of the statements if any.
-  Block *init = new Block(b, loc);
-  Expression* ref = Expression::make_temporary_reference(channel_temp, loc);
   if (this->is_send_)
-    {
-      Expression* ref2;
-      if (val_temp == NULL)
-	ref2 = this->val_;
-      else
-	ref2 = Expression::make_temporary_reference(val_temp, loc);
-      Send_statement* send = Statement::make_send_statement(ref, ref2, loc);
-      send->set_for_select();
-      init->add_statement(send);
-    }
-  else if (this->closed_ != NULL && !this->closed_->is_sink_expression())
-    {
-      go_assert(this->var_ == NULL && this->closedvar_ == NULL);
-      if (this->val_ == NULL)
-	this->val_ = Expression::make_sink(loc);
-      Statement* s = Statement::make_tuple_receive_assignment(this->val_,
-							      this->closed_,
-							      ref, true, loc);
-      init->add_statement(s);
-    }
-  else if (this->closedvar_ != NULL)
-    {
-      go_assert(this->val_ == NULL);
-      Expression* val;
-      if (this->var_ == NULL)
-	val = Expression::make_sink(loc);
-      else
-	val = Expression::make_var_reference(this->var_, loc);
-      Expression* closed = Expression::make_var_reference(this->closedvar_,
-							  loc);
-      Statement* s = Statement::make_tuple_receive_assignment(val, closed, ref,
-							      true, loc);
-
-      // We have to put S in STATEMENTS_, because that is where the
-      // variables are declared.
-
-      go_assert(this->statements_ != NULL);
-
-      // Skip the variable declaration statements themselves.
-      size_t skip = 1;
-      if (this->var_ != NULL)
-	skip = 2;
-
-      // Verify that we are only skipping variable declarations.
-      size_t i = 0;
-      for (Block::iterator p = this->statements_->begin();
-	   i < skip && p != this->statements_->end();
-	   ++p, ++i)
-	go_assert((*p)->variable_declaration_statement() != NULL);
-
-      this->statements_->insert_statement_before(skip, s);
-
-      // We have to lower STATEMENTS_ again, to lower the tuple
-      // receive assignment we just added.
-      gogo->lower_block(function, this->statements_);
-    }
+    this->lower_send(b, selref, chanref, index_expr);
   else
-    {
-      Receive_expression* recv = Expression::make_receive(ref, loc);
-      recv->set_for_select();
-      if (this->val_ != NULL)
-	{
-	  go_assert(this->var_ == NULL);
-	  init->add_statement(Statement::make_assignment(this->val_, recv,
-							 loc));
-	}
-      else if (this->var_ != NULL)
-	{
-	  this->var_->var_value()->set_init(recv);
-	  this->var_->var_value()->clear_type_from_chan_element();
-	}
-      else
-	{
-	  init->add_statement(Statement::make_statement(recv, true));
-	}
-    }
-
-  // Lower any statements we just created.
-  gogo->lower_block(function, init);
-
-  if (this->statements_ != NULL)
-    init->add_statement(Statement::make_block_statement(this->statements_,
-							loc));
-
-  this->statements_ = init;
+    this->lower_recv(gogo, function, b, selref, chanref, index_expr);
 
   // Now all references should be handled through the statements, not
   // through here.
   this->is_lowered_ = true;
   this->val_ = NULL;
   this->var_ = NULL;
+}
+
+// Lower a default clause in a select statement.
+
+void
+Select_clauses::Select_clause::lower_default(Block* b, Expression* selref,
+					     Expression* index_expr)
+{
+  Location loc = this->location_;
+  Expression* call = Runtime::make_call(Runtime::SELECTDEFAULT, loc, 2, selref,
+					index_expr);
+  b->add_statement(Statement::make_statement(call, true));
+}
+
+// Lower a send clause in a select statement.
+
+void
+Select_clauses::Select_clause::lower_send(Block* b, Expression* selref,
+					  Expression* chanref,
+					  Expression* index_expr)
+{
+  Location loc = this->location_;
+
+  Channel_type* ct = this->channel_->type()->channel_type();
+  if (ct == NULL)
+    return;
+
+  Type* valtype = ct->element_type();
+
+  // Note that copying the value to a temporary here means that we
+  // evaluate the send values in the required order.
+  Temporary_statement* val = Statement::make_temporary(valtype, this->val_,
+						       loc);
+  b->add_statement(val);
+
+  Expression* valref = Expression::make_temporary_reference(val, loc);
+  Expression* valaddr = Expression::make_unary(OPERATOR_AND, valref, loc);
+
+  Expression* call = Runtime::make_call(Runtime::SELECTSEND, loc, 4, selref,
+					chanref, valaddr, index_expr);
+  b->add_statement(Statement::make_statement(call, true));
+}
+
+// Lower a receive clause in a select statement.
+
+void
+Select_clauses::Select_clause::lower_recv(Gogo* gogo, Named_object* function,
+					  Block* b, Expression* selref,
+					  Expression* chanref,
+					  Expression* index_expr)
+{
+  Location loc = this->location_;
+
+  Channel_type* ct = this->channel_->type()->channel_type();
+  if (ct == NULL)
+    return;
+
+  Type* valtype = ct->element_type();
+  Temporary_statement* val = Statement::make_temporary(valtype, NULL, loc);
+  b->add_statement(val);
+
+  Expression* valref = Expression::make_temporary_reference(val, loc);
+  Expression* valaddr = Expression::make_unary(OPERATOR_AND, valref, loc);
+
+  Temporary_statement* closed_temp = NULL;
+
+  Expression* call;
+  if (this->closed_ == NULL && this->closedvar_ == NULL)
+    call = Runtime::make_call(Runtime::SELECTRECV, loc, 4, selref, chanref,
+			      valaddr, index_expr);
+  else
+    {
+      closed_temp = Statement::make_temporary(Type::lookup_bool_type(), NULL,
+					      loc);
+      b->add_statement(closed_temp);
+      Expression* cref = Expression::make_temporary_reference(closed_temp,
+							      loc);
+      Expression* caddr = Expression::make_unary(OPERATOR_AND, cref, loc);
+      call = Runtime::make_call(Runtime::SELECTRECV2, loc, 5, selref, chanref,
+				valaddr, caddr, index_expr);
+    }
+
+  b->add_statement(Statement::make_statement(call, true));
+
+  // If the block of statements is executed, arrange for the received
+  // value to move from VAL to the place where the statements expect
+  // it.
+
+  Block* init = NULL;
+
+  if (this->var_ != NULL)
+    {
+      go_assert(this->val_ == NULL);
+      valref = Expression::make_temporary_reference(val, loc);
+      this->var_->var_value()->set_init(valref);
+      this->var_->var_value()->clear_type_from_chan_element();
+    }
+  else if (this->val_ != NULL && !this->val_->is_sink_expression())
+    {
+      init = new Block(b, loc);
+      valref = Expression::make_temporary_reference(val, loc);
+      init->add_statement(Statement::make_assignment(this->val_, valref, loc));
+    }
+
+  if (this->closedvar_ != NULL)
+    {
+      go_assert(this->closed_ == NULL);
+      Expression* cref = Expression::make_temporary_reference(closed_temp,
+							      loc);
+      this->closedvar_->var_value()->set_init(cref);
+    }
+  else if (this->closed_ != NULL && !this->closed_->is_sink_expression())
+    {
+      if (init == NULL)
+	init = new Block(b, loc);
+      Expression* cref = Expression::make_temporary_reference(closed_temp,
+							      loc);
+      init->add_statement(Statement::make_assignment(this->closed_, cref,
+						     loc));
+    }
+
+  if (init != NULL)
+    {
+      gogo->lower_block(function, init);
+
+      if (this->statements_ != NULL)
+	init->add_statement(Statement::make_block_statement(this->statements_,
+							    loc));
+      this->statements_ = init;
+    }
 }
 
 // Determine types.
@@ -4628,6 +4669,27 @@ Select_clauses::Select_clause::determine_types()
   go_assert(this->is_lowered_);
   if (this->statements_ != NULL)
     this->statements_->determine_types();
+}
+
+// Check types.
+
+void
+Select_clauses::Select_clause::check_types()
+{
+  if (this->is_default_)
+    return;
+
+  Channel_type* ct = this->channel_->type()->channel_type();
+  if (ct == NULL)
+    {
+      error_at(this->channel_->location(), "expected channel");
+      return;
+    }
+
+  if (this->is_send_ && !ct->may_send())
+    error_at(this->location(), "invalid send on receive-only channel");
+  else if (!this->is_send_ && !ct->may_receive())
+    error_at(this->location(), "invalid receive on send-only channel");
 }
 
 // Whether this clause may fall through to the statement which follows
@@ -4717,12 +4779,13 @@ Select_clauses::traverse(Traverse* traverse)
 // receive statements to the clauses.
 
 void
-Select_clauses::lower(Gogo* gogo, Named_object* function, Block* b)
+Select_clauses::lower(Gogo* gogo, Named_object* function, Block* b,
+		      Temporary_statement* sel)
 {
   for (Clauses::iterator p = this->clauses_.begin();
        p != this->clauses_.end();
        ++p)
-    p->lower(gogo, function, b);
+    p->lower(gogo, function, b, sel);
 }
 
 // Determine types.
@@ -4734,6 +4797,17 @@ Select_clauses::determine_types()
        p != this->clauses_.end();
        ++p)
     p->determine_types();
+}
+
+// Check types.
+
+void
+Select_clauses::check_types()
+{
+  for (Clauses::iterator p = this->clauses_.begin();
+       p != this->clauses_.end();
+       ++p)
+    p->check_types();
 }
 
 // Return whether these select clauses fall through to the statement
@@ -4750,179 +4824,55 @@ Select_clauses::may_fall_through() const
   return false;
 }
 
-// Convert to the backend representation.  We build a call to
-//   size_t __go_select(size_t count, _Bool has_default,
-//                      channel* channels, _Bool* is_send)
-//
-// There are COUNT entries in the CHANNELS and IS_SEND arrays.  The
-// value in the IS_SEND array is true for send, false for receive.
-// __go_select returns an integer from 0 to COUNT, inclusive.  A
-// return of 0 means that the default case should be run; this only
-// happens if HAS_DEFAULT is non-zero.  Otherwise the number indicates
-// the case to run.
-
-// FIXME: This doesn't handle channels which send interface types
-// where the receiver has a static type which matches that interface.
+// Convert to the backend representation.  We have already accumulated
+// all the select information.  Now we call selectgo, which will
+// return the index of the clause to execute.
 
 Bstatement*
 Select_clauses::get_backend(Translate_context* context,
+			    Temporary_statement* sel,
 			    Unnamed_label *break_label,
 			    Location location)
 {
   size_t count = this->clauses_.size();
+  std::vector<std::vector<Bexpression*> > cases(count);
+  std::vector<Bstatement*> clauses(count);
 
-  Expression_list* chan_init = new Expression_list();
-  chan_init->reserve(count);
-
-  Expression_list* is_send_init = new Expression_list();
-  is_send_init->reserve(count);
-
-  Select_clause *default_clause = NULL;
-
-  Type* runtime_chanptr_type = Runtime::chanptr_type();
-  Type* runtime_chan_type = runtime_chanptr_type->points_to();
-
+  int i = 0;
   for (Clauses::iterator p = this->clauses_.begin();
        p != this->clauses_.end();
-       ++p)
+       ++p, ++i)
     {
-      if (p->is_default())
-	{
-	  default_clause = &*p;
-	  --count;
-	  continue;
-	}
+      int index = p->index();
+      mpz_t ival;
+      mpz_init_set_ui(ival, index);
+      Expression* index_expr = Expression::make_integer(&ival, NULL, location);
+      mpz_clear(ival);
+      cases[i].push_back(tree_to_expr(index_expr->get_tree(context)));
 
-      if (p->channel()->type()->channel_type() == NULL)
-	{
-	  // We should have given an error in the send or receive
-	  // statement we created via lowering.
-	  go_assert(saw_errors());
-	  return context->backend()->error_statement();
-	}
+      Bstatement* s = p->get_statements_backend(context);
+      Location gloc = (p->statements() == NULL
+		       ? p->location()
+		       : p->statements()->end_location());
+      Bstatement* g = break_label->get_goto(context, gloc);
 
-      Expression* c = p->channel();
-      c = Expression::make_unsafe_cast(runtime_chan_type, c, p->location());
-      chan_init->push_back(c);
-
-      is_send_init->push_back(Expression::make_boolean(p->is_send(),
-						       p->location()));
-    }
-
-  if (chan_init->empty())
-    {
-      go_assert(count == 0);
-      Bstatement* s;
-      Bstatement* ldef = break_label->get_definition(context);
-      if (default_clause != NULL)
-	{
-	  // There is a default clause and no cases.  Just execute the
-	  // default clause.
-	  s = default_clause->get_statements_backend(context);
-	}
-      else
-	{
-	  // There isn't even a default clause.  In this case select
-	  // pauses forever.  Call the runtime function with nils.
-	  mpz_t zval;
-	  mpz_init_set_ui(zval, 0);
-	  Expression* zero = Expression::make_integer(&zval, NULL, location);
-	  mpz_clear(zval);
-	  Expression* default_arg = Expression::make_boolean(false, location);
-	  Expression* nil1 = Expression::make_nil(location);
-	  Expression* nil2 = nil1->copy();
-	  Expression* call = Runtime::make_call(Runtime::SELECT, location, 4,
-						zero, default_arg, nil1, nil2);
-	  context->gogo()->lower_expression(context->function(), NULL, &call);
-	  Bexpression* bcall = tree_to_expr(call->get_tree(context));
-	  s = context->backend()->expression_statement(bcall);
-	}
       if (s == NULL)
-	return ldef;
-      return context->backend()->compound_statement(s, ldef);
+	clauses[i] = g;
+      else
+	clauses[i] = context->backend()->compound_statement(s, g);
     }
-  go_assert(count > 0);
 
-  std::vector<Bstatement*> statements;
-
-  mpz_t ival;
-  mpz_init_set_ui(ival, count);
-  Expression* ecount = Expression::make_integer(&ival, NULL, location);
-  mpz_clear(ival);
-
-  Type* chan_array_type = Type::make_array_type(runtime_chan_type, ecount);
-  Expression* chans = Expression::make_composite_literal(chan_array_type, 0,
-							 false, chan_init,
-							 location);
-  context->gogo()->lower_expression(context->function(), NULL, &chans);
-  Temporary_statement* chan_temp = Statement::make_temporary(chan_array_type,
-							     chans,
-							     location);
-  statements.push_back(chan_temp->get_backend(context));
-
-  Type* is_send_array_type = Type::make_array_type(Type::lookup_bool_type(),
-						   ecount->copy());
-  Expression* is_sends = Expression::make_composite_literal(is_send_array_type,
-							    0, false,
-							    is_send_init,
-							    location);
-  context->gogo()->lower_expression(context->function(), NULL, &is_sends);
-  Temporary_statement* is_send_temp =
-    Statement::make_temporary(is_send_array_type, is_sends, location);
-  statements.push_back(is_send_temp->get_backend(context));
-
-  mpz_init_set_ui(ival, 0);
-  Expression* zero = Expression::make_integer(&ival, NULL, location);
-  mpz_clear(ival);
-
-  Expression* ref = Expression::make_temporary_reference(chan_temp, location);
-  Expression* chan_arg = Expression::make_array_index(ref, zero, NULL,
-						      location);
-  chan_arg = Expression::make_unary(OPERATOR_AND, chan_arg, location);
-  chan_arg = Expression::make_unsafe_cast(runtime_chanptr_type, chan_arg,
-					  location);
-
-  ref = Expression::make_temporary_reference(is_send_temp, location);
-  Expression* is_send_arg = Expression::make_array_index(ref, zero->copy(),
-							 NULL, location);
-  is_send_arg = Expression::make_unary(OPERATOR_AND, is_send_arg, location);
-
-  Expression* default_arg = Expression::make_boolean(default_clause != NULL,
-						     location);
-  Expression* call = Runtime::make_call(Runtime::SELECT, location, 4,
-					ecount->copy(), default_arg,
-					chan_arg, is_send_arg);
+  Expression* selref = Expression::make_temporary_reference(sel, location);
+  Expression* call = Runtime::make_call(Runtime::SELECTGO, location, 1,
+					selref);
   context->gogo()->lower_expression(context->function(), NULL, &call);
   Bexpression* bcall = tree_to_expr(call->get_tree(context));
 
-  std::vector<std::vector<Bexpression*> > cases;
-  std::vector<Bstatement*> clauses;
+  if (count == 0)
+    return context->backend()->expression_statement(bcall);
 
-  cases.resize(count + (default_clause != NULL ? 1 : 0));
-  clauses.resize(count + (default_clause != NULL ? 1 : 0));
-
-  int index = 0;
-
-  if (default_clause != NULL)
-    {
-      this->add_clause_backend(context, location, index, 0, default_clause,
-			       break_label, &cases, &clauses);
-      ++index;
-    }
-
-  int i = 1;
-  for (Clauses::iterator p = this->clauses_.begin();
-       p != this->clauses_.end();
-       ++p)
-    {
-      if (!p->is_default())
-	{
-	  this->add_clause_backend(context, location, index, i, &*p,
-				   break_label, &cases, &clauses);
-	  ++i;
-	  ++index;
-	}
-    }
+  std::vector<Bstatement*> statements;
+  statements.reserve(2);
 
   Bstatement* switch_stmt = context->backend()->switch_statement(bcall,
 								 cases,
@@ -4935,39 +4885,6 @@ Select_clauses::get_backend(Translate_context* context,
 
   return context->backend()->statement_list(statements);
 }
-
-// Add CLAUSE to CASES/CLAUSES at INDEX.
-
-void
-Select_clauses::add_clause_backend(
-    Translate_context* context,
-    Location location,
-    int index,
-    int case_value,
-    Select_clause* clause,
-    Unnamed_label* bottom_label,
-    std::vector<std::vector<Bexpression*> > *cases,
-    std::vector<Bstatement*>* clauses)
-{
-  mpz_t ival;
-  mpz_init_set_ui(ival, case_value);
-  Expression* e = Expression::make_integer(&ival, NULL, location);
-  mpz_clear(ival);
-  (*cases)[index].push_back(tree_to_expr(e->get_tree(context)));
-
-  Bstatement* s = clause->get_statements_backend(context);
-
-  Location gloc = (clause->statements() == NULL
-			  ? clause->location()
-			  : clause->statements()->end_location());
-  Bstatement* g = bottom_label->get_goto(context, gloc);
-
-  if (s == NULL)
-    (*clauses)[index] = g;
-  else
-    (*clauses)[index] = context->backend()->compound_statement(s, g);
-}
-
 // Dump the AST representation for select clauses.
 
 void
@@ -5003,11 +4920,28 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
 {
   if (this->is_lowered_)
     return this;
-  Block* b = new Block(enclosing, this->location());
-  this->clauses_->lower(gogo, function, b);
+
+  Location loc = this->location();
+
+  Block* b = new Block(enclosing, loc);
+
+  go_assert(this->sel_ == NULL);
+
+  mpz_t ival;
+  mpz_init_set_ui(ival, this->clauses_->size());
+  Expression* size_expr = Expression::make_integer(&ival, NULL, loc);
+  mpz_clear(ival);
+
+  Expression* call = Runtime::make_call(Runtime::NEWSELECT, loc, 1, size_expr);
+
+  this->sel_ = Statement::make_temporary(NULL, call, loc);
+  b->add_statement(this->sel_);
+
+  this->clauses_->lower(gogo, function, b, this->sel_);
   this->is_lowered_ = true;
   b->add_statement(this);
-  return Statement::make_block_statement(b, this->location());
+
+  return Statement::make_block_statement(b, loc);
 }
 
 // Return the backend representation for a select statement.
@@ -5015,7 +4949,7 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
 Bstatement*
 Select_statement::do_get_backend(Translate_context* context)
 {
-  return this->clauses_->get_backend(context, this->break_label(),
+  return this->clauses_->get_backend(context, this->sel_, this->break_label(),
 				     this->location());
 }
 
@@ -5790,7 +5724,7 @@ For_range_statement::lower_range_channel(Gogo*,
     Expression::make_temporary_reference(ok_temp, loc);
   oref->set_is_lvalue();
   Statement* s = Statement::make_tuple_receive_assignment(iref, oref, cref,
-							  false, loc);
+							  loc);
   iter_init->add_statement(s);
 
   Block* then_block = new Block(iter_init, loc);

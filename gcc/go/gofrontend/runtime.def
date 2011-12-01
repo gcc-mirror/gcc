@@ -121,31 +121,44 @@ DEF_GO_RUNTIME(CHAN_LEN, "__go_chan_len", P1(CHAN), R1(INT))
 DEF_GO_RUNTIME(CHAN_CAP, "__go_chan_cap", P1(CHAN), R1(INT))
 
 // Send a small value on a channel.
-DEF_GO_RUNTIME(SEND_SMALL, "__go_send_small", P3(CHAN, UINT64, BOOL), R0())
-
-// Send a small value on a channel without blocking.
-DEF_GO_RUNTIME(SEND_NONBLOCKING_SMALL, "__go_send_nonblocking_small",
-	       P2(CHAN, UINT64), R1(BOOL))
+DEF_GO_RUNTIME(SEND_SMALL, "__go_send_small", P3(TYPE, CHAN, UINT64), R0())
 
 // Send a big value on a channel.
-DEF_GO_RUNTIME(SEND_BIG, "__go_send_big", P3(CHAN, POINTER, BOOL), R0())
-
-// Send a big value on a channel without blocking.
-DEF_GO_RUNTIME(SEND_NONBLOCKING_BIG, "__go_send_nonblocking_big",
-	       P2(CHAN, POINTER), R1(BOOL))
+DEF_GO_RUNTIME(SEND_BIG, "__go_send_big", P3(TYPE, CHAN, POINTER), R0())
 
 // Receive a small value from a channel.
-DEF_GO_RUNTIME(RECEIVE_SMALL, "__go_receive_small", P2(CHAN, BOOL), R1(UINT64))
+DEF_GO_RUNTIME(RECEIVE_SMALL, "__go_receive_small", P2(TYPE, CHAN), R1(UINT64))
 
 // Receive a big value from a channel.
-DEF_GO_RUNTIME(RECEIVE_BIG, "__go_receive_big", P3(CHAN, POINTER, BOOL),
-	       R1(BOOL))
+DEF_GO_RUNTIME(RECEIVE_BIG, "__go_receive_big", P3(TYPE, CHAN, POINTER), R0())
 
 // Receive a value from a channel returning whether it is closed.
-DEF_GO_RUNTIME(CHANRECV2, "runtime.chanrecv2", P2(CHAN, POINTER), R1(BOOL))
+DEF_GO_RUNTIME(CHANRECV2, "runtime.chanrecv2", P3(TYPE, CHAN, POINTER),
+	       R1(BOOL))
 
-// Receive a value from a channel returning whether it is closed, for select.
-DEF_GO_RUNTIME(CHANRECV3, "runtime.chanrecv3", P2(CHAN, POINTER), R1(BOOL))
+
+// Start building a select statement.
+DEF_GO_RUNTIME(NEWSELECT, "runtime.newselect", P1(INT), R1(POINTER))
+
+// Add a default clause to a select statement.
+DEF_GO_RUNTIME(SELECTDEFAULT, "runtime.selectdefault", P2(POINTER, INT), R0())
+
+// Add a send clause to a select statement.
+DEF_GO_RUNTIME(SELECTSEND, "runtime.selectsend",
+	       P4(POINTER, CHAN, POINTER, INT), R0())
+
+// Add a receive clause to a select statement, for a clause which does
+// not check whether the channel is closed.
+DEF_GO_RUNTIME(SELECTRECV, "runtime.selectrecv",
+	       P4(POINTER, CHAN, POINTER, INT), R0())
+
+// Add a receive clause to a select statement, for a clause which does
+// check whether the channel is closed.
+DEF_GO_RUNTIME(SELECTRECV2, "runtime.selectrecv2",
+	       P5(POINTER, CHAN, POINTER, BOOLPTR, INT), R0())
+
+// Run a select, returning the index of the selected clause.
+DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo", P1(POINTER), R1(INT))
 
 
 // Panic.
@@ -211,11 +224,6 @@ DEF_GO_RUNTIME(GO, "__go_go", P2(FUNC_PTR, POINTER), R0())
 
 // Defer a function.
 DEF_GO_RUNTIME(DEFER, "__go_defer", P3(BOOLPTR, FUNC_PTR, POINTER), R0())
-
-
-// Run a select statement.
-DEF_GO_RUNTIME(SELECT, "__go_select", P4(UINTPTR, BOOL, CHANPTR, BOOLPTR),
-	       R1(UINTPTR))
 
 
 // Convert an empty interface to an empty interface, returning ok.
