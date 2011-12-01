@@ -1,3 +1,9 @@
+2011-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/51014
+	* loop-unroll.c (apply_opt_in_copies): Ignore label DEBUG_INSNs
+	both from bb and orig_bb.
+
 2011-12-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR tree-optimization/50802
