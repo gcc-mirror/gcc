@@ -1,3 +1,9 @@
+2011-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51367
+	* pt.c (unify_inconsistency): Use either %qT or %qE depending on
+	whether parm is a type or non-type parameter.
+
 2011-11-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51009
