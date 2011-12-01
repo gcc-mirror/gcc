@@ -1,3 +1,8 @@
+2011-12-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lto-lang.c (lto_attribute_table): Handle *tm regparm.
+	(ignore_attribute): New.
+
 2011-11-21  Aldy Hernandez  <aldyh@redhat.com>
 
 	* lto-lang.c (lto_attribute_table): Handle transaction_pure.
