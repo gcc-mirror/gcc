@@ -1,3 +1,8 @@
+2011-11-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51009
+	* g++.dg/init/aggr8.C: New.
+
 2011-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/50725

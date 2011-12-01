@@ -5916,6 +5916,7 @@ push_to_top_level (void)
   s->function_decl = current_function_decl;
   s->unevaluated_operand = cp_unevaluated_operand;
   s->inhibit_evaluation_warnings = c_inhibit_evaluation_warnings;
+  s->x_stmt_tree.stmts_are_full_exprs_p = true;
 
   scope_chain = s;
   current_function_decl = NULL_TREE;

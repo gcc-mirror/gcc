@@ -487,17 +487,12 @@ struct GTY(()) stmt_tree_s {
   VEC(tree,gc) *x_cur_stmt_list;
 
   /* In C++, Nonzero if we should treat statements as full
-     expressions.  In particular, this variable is no-zero if at the
+     expressions.  In particular, this variable is non-zero if at the
      end of a statement we should destroy any temporaries created
      during that statement.  Similarly, if, at the end of a block, we
      should destroy any local variables in this block.  Normally, this
      variable is nonzero, since those are the normal semantics of
      C++.
-
-     However, in order to represent aggregate initialization code as
-     tree structure, we use statement-expressions.  The statements
-     within the statement expression should not result in cleanups
-     being run until the entire enclosing statement is complete.
 
      This flag has no effect in C.  */
   int stmts_are_full_exprs_p;

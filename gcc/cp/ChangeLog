@@ -1,3 +1,10 @@
+2011-11-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51009
+	* name-lookup.c (push_to_top_level): Set stmts_are_full_exprs_p.
+	* decl.c (build_aggr_init_full_exprs): Just assert that it's true.
+	(check_initializer): Here too.
+
 2011-11-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51299
