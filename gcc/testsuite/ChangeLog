@@ -1,3 +1,16 @@
+2011-12-01  Nathan Sidwell  <nathan@acm.org>
+
+	PR gcov-profile/51113
+	* lib/gcov.exp (verify-lines): Add support for xfailing.
+	(run-gcov): Likewise.
+	* gcc.misc-tests/gcov-13.c: Xfail weak function.
+	* gcc.misc-tests/gcov-16.c: Remove.
+	* gcc.misc-tests/gcov-17.c: Remove.
+	* g++.dg/gcov-8.C: Remove.
+	* g++.dg/gcov-9.C: Remove.
+	* g++.dg/gcovpart-12b.C: New.
+	* g++.dg/gcov-12.C: New.
+
 2011-12-01  Andrew Pinski  <apinski@cavium.com>
 
 	PR lto/51198

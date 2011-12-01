@@ -1,3 +1,8 @@
+2011-12-01  Nathan Sidwell  <nathan@acm.org>
+
+	PR gcov-profile/51113
+	* coverage.c (build_var): Keep coverage variables static.
+
 2011-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51356

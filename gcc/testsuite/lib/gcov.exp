@@ -39,19 +39,28 @@ proc clean-gcov { testcase } {
 #
 proc verify-lines { testcase file } {
     #send_user "verify-lines\n"
+    global subdir
     set failed 0
     set fd [open $file r]
     while { [gets $fd line] >= 0 } {
         # We want to match both "-" and "#####" as count as well as numbers,
         # since we want to detect lines that shouldn't be marked as covered.
-	if [regexp "^ *(\[^:]*): *(\[0-9\\-#]+):.*count\\((\[0-9\\-#]+)\\)" \
-		"$line" all is n shouldbe] {
+	if [regexp "^ *(\[^:]*): *(\[0-9\\-#]+):.*count\\((\[0-9\\-#]+)\\)(.*)" \
+		"$line" all is n shouldbe rest] {
+	    if [regexp "^ *{(.*)}" $rest all xfailed] {
+		switch [dg-process-target $xfailed] {
+		    "N" { continue }
+		    "F" { setup_xfail "*-*-*" }
+		}
+	    }
 	    if { $is == "" } {
-		fail "$n:no data available for this line"
+		fail "$subdir/$testcase:$n:no data available for this line"
 		incr failed
 	    } elseif { $is != $shouldbe } {
-		fail "$n:is $is:should be $shouldbe"
+		fail "$subdir/$testcase:$n:is $is:should be $shouldbe"
 		incr failed
+	    } else {
+		pass "$subdir/$testcase:$n line count"
 	    }
 	}
     }
@@ -230,32 +239,36 @@ proc run-gcov { args } {
     global GCOV
     global srcdir subdir
 
-    set gcov_args [lindex $args end]
-
+    set gcov_args ""
     set gcov_verify_calls 0
     set gcov_verify_branches 0
-    set gcov_execute_xfail ""
-    set gcov_verify_xfail ""
+    set xfailed 0
 
     foreach a $args {
 	if { $a == "calls" } {
 	  set gcov_verify_calls 1
 	} elseif { $a == "branches" } {
 	  set gcov_verify_branches 1
+	} elseif { $gcov_args == "" } {
+	    set gcov_args $a
+	} else {
+	    switch [dg-process-target $a] {
+		"N" { return }
+		"F" { set xfailed 1 }
+	    }
 	}
     }
 
     # Extract the test name from the arguments.
     set testcase [lindex $gcov_args end]
 
-    if { $gcov_execute_xfail != "" } {
-	eval setup_xfail [split $gcov_execute_xfail]
-    }
-
     verbose "Running $GCOV $testcase" 2
     set testcase [remote_download host $testcase]
     set result [remote_exec host $GCOV $gcov_args]
     if { [lindex $result 0] != 0 } {
+	if { $xfailed } {
+	    setup_xfail "*-*-*"
+	}
 	fail "$subdir/$testcase gcov failed: [lindex $result 1]"
 	clean-gcov $testcase
 	return
@@ -264,15 +277,14 @@ proc run-gcov { args } {
     # Get the gcov output file after making sure it exists.
     set files [glob -nocomplain $testcase.gcov]
     if { $files == "" } {
+	if { $xfailed } {
+	    setup_xfail "*-*-*"
+	}
         fail "$subdir/$testcase gcov failed: $testcase.gcov does not exist"
         clean-gcov $testcase
         return
     }
     remote_upload host $testcase.gcov $testcase.gcov
-
-    if { $gcov_verify_xfail != "" } {
-	eval setup_xfail [split $gcov_verify_xfail]
-    }
 
     # Check that line execution counts are as expected.
     set lfailed [verify-lines $testcase $testcase.gcov]
@@ -293,6 +305,9 @@ proc run-gcov { args } {
     # Report whether the gcov test passed or failed.  If there were
     # multiple failures then the message is a summary.
     set tfailed [expr $lfailed + $bfailed + $cfailed]
+    if { $xfailed } {
+	setup_xfail "*-*-*"
+    }
     if { $tfailed > 0 } {
 	fail "$subdir/$testcase gcov: $lfailed failures in line counts, $bfailed in branch percentages, $cfailed in return percentages"
     } else {
