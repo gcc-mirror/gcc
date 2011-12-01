@@ -2318,6 +2318,8 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
        cgraph_redirect_edge_callee (e, new_version);
      }
 
+   cgraph_call_node_duplication_hooks (old_version, new_version);
+
    return new_version;
  }
 

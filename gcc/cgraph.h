@@ -513,6 +513,8 @@ struct cgraph_node * cgraph_clone_node (struct cgraph_node *, tree, gcov_type,
 					int, bool, VEC(cgraph_edge_p,heap) *,
 					bool);
 struct cgraph_node *cgraph_create_function_alias (tree, tree);
+void cgraph_call_node_duplication_hooks (struct cgraph_node *node1,
+					 struct cgraph_node *node2);
 
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
 void cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *);
