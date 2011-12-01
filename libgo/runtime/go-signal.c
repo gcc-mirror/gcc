@@ -218,7 +218,7 @@ sighandler (int sig)
 /* Ignore a signal.  */
 
 static void
-sigignore (int sig __attribute__ ((unused)))
+sig_ignore (int sig __attribute__ ((unused)))
 {
 }
 
@@ -247,7 +247,7 @@ runtime_initsig (int32 queue)
       if (signals[i].catch || signals[i].queue)
 	sa.sa_handler = sighandler;
       else
-	sa.sa_handler = sigignore;
+	sa.sa_handler = sig_ignore;
       sa.sa_flags = signals[i].restart ? SA_RESTART : 0;
       if (sigaction (signals[i].sig, &sa, NULL) != 0)
 	__go_assert (0);
