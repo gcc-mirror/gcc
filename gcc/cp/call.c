@@ -3373,7 +3373,7 @@ static struct z_candidate *
 build_user_type_conversion_1 (tree totype, tree expr, int flags)
 {
   struct z_candidate *candidates, *cand;
-  tree fromtype = TREE_TYPE (expr);
+  tree fromtype;
   tree ctors = NULL_TREE;
   tree conv_fns = NULL_TREE;
   conversion *conv = NULL;
@@ -3381,6 +3381,11 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
   VEC(tree,gc) *args = NULL;
   bool any_viable_p;
   int convflags;
+
+  if (!expr)
+    return NULL;
+
+  fromtype = TREE_TYPE (expr);
 
   /* We represent conversion within a hierarchy using RVALUE_CONV and
      BASE_CONV, as specified by [over.best.ics]; these become plain

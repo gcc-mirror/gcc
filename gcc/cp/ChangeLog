@@ -1,5 +1,11 @@
 2011-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/51326
+	* call.c (build_user_type_conversion_1): Early return NULL if
+	expr is NULL_TREE.
+
+2011-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/51367
 	* pt.c (unify_inconsistency): Use either %qT or %qE depending on
 	whether parm is a type or non-type parameter.
