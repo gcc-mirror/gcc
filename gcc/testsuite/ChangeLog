@@ -1,3 +1,8 @@
+2011-12-01  Andrew Pinski  <apinski@cavium.com>
+
+	PR lto/51198
+	* g++.dg/torture/pr51198.C: New testcase.
+
 2011-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51246

@@ -1,3 +1,9 @@
+2011-12-01  Andrew Pinski  <apinski@cavium.com>
+
+	PR lto/51198
+	* tree.c (free_lang_data_in_decl): Clear FIELD_DECL's
+	DECL_INITIAL also.
+
 2011-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51246
