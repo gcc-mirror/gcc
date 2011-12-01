@@ -412,7 +412,7 @@ cgraph_remove_node_duplication_hook (struct cgraph_2node_hook_list *entry)
 }
 
 /* Call all node duplication hooks.  */
-static void
+void
 cgraph_call_node_duplication_hooks (struct cgraph_node *node1,
 				    struct cgraph_node *node2)
 {

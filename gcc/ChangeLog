@@ -1,3 +1,10 @@
+2011-12-01  Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR middle-end/51273
+	* cgraph.h (cgraph_call_node_duplication_hooks): Declare.
+	* cgraph.c (cgraph_call_node_duplication_hooks): Make global. 
+	* cgraphunit.c (cgraph_copy_node_for_versioning): Call it.
+
 2011-12-01  Andrew Pinski  <apinski@cavium.com>
 
 	PR lto/51198
