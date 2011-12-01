@@ -1,5 +1,14 @@
 2011-12-01   Diego Novillo  <dnovillo@google.com>
 
+	PR bootstrap/51346
+	* ipa-inline.c (can_inline_edge_p): If the edge E has a
+	statement, use the statement's inline indicator instead
+	of E's.
+	Remove consistency check.
+
+2011-12-01   Diego Novillo  <dnovillo@google.com>
+
+	PR bootstrap/51346
 	Revert
 
 	2011-11-29   Diego Novillo  <dnovillo@google.com>
