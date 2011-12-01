@@ -657,8 +657,7 @@ coverage_end_function (unsigned lineno_checksum, unsigned cfg_checksum)
 }
 
 /* Build a coverage variable of TYPE for function FN_DECL.  If COUNTER
-   >= 0 it is a counter array, otherwise it is the function structure.
-   Propagate appropriate linkage and visibility from the function decl.  */
+   >= 0 it is a counter array, otherwise it is the function structure.  */
 
 static tree
 build_var (tree fn_decl, tree type, int counter)
@@ -675,21 +674,6 @@ build_var (tree fn_decl, tree type, int counter)
   TREE_STATIC (var) = 1;
   TREE_ADDRESSABLE (var) = 1;
   DECL_ALIGN (var) = TYPE_ALIGN (type);
-  DECL_WEAK (var) = DECL_WEAK (fn_decl);
-  TREE_PUBLIC (var)
-    = TREE_PUBLIC (fn_decl) && (counter < 0 || DECL_WEAK (fn_decl));
-  if (DECL_ONE_ONLY (fn_decl))
-    make_decl_one_only (var, DECL_COMDAT_GROUP (fn_decl));
-  
-  if (TREE_PUBLIC (var))
-    {
-      DECL_VISIBILITY (var) = DECL_VISIBILITY (fn_decl);
-      DECL_VISIBILITY_SPECIFIED (var)
-	= DECL_VISIBILITY_SPECIFIED (fn_decl);
-
-      /* Initialize assembler name so we can stream out. */
-      DECL_ASSEMBLER_NAME (var);
-    }
 
   return var;
 }
