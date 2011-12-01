@@ -32,7 +32,7 @@
 #include <ext/atomicity.h>
 #include <ext/concurrence.h>
 #if defined(__GTHREADS) && defined(__GTHREAD_HAS_COND) \
-    && defined(_GLIBCXX_ATOMIC_BUILTINS_4) && defined(_GLIBCXX_HAVE_LINUX_FUTEX)
+  && (ATOMIC_INT_LOCK_FREE > 1) && defined(_GLIBCXX_HAVE_LINUX_FUTEX)
 # include <climits>
 # include <syscall.h>
 # include <unistd.h>

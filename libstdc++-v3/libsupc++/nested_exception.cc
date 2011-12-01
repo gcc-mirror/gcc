@@ -25,7 +25,7 @@
 
 namespace std 
 {
-#ifdef _GLIBCXX_ATOMIC_BUILTINS_4
+#if ATOMIC_INT_LOCK_FREE > 1
   nested_exception::~nested_exception() = default;
 #endif
 } // namespace std

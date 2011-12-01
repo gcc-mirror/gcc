@@ -37,6 +37,7 @@
 #pragma GCC visibility push(default)
 
 #include <bits/c++config.h>
+#include <bits/atomic_lockfree_defines.h>
 
 extern "C++" {
 
@@ -149,8 +150,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #pragma GCC visibility pop
 
-#if (defined(__GXX_EXPERIMENTAL_CXX0X__) \
-     && defined(_GLIBCXX_ATOMIC_BUILTINS_4))
+#if defined(__GXX_EXPERIMENTAL_CXX0X__) && (ATOMIC_INT_LOCK_FREE > 1)
 #include <bits/exception_ptr.h>
 #include <bits/nested_exception.h>
 #endif

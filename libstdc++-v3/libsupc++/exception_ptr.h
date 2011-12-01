@@ -36,7 +36,7 @@
 #include <bits/c++config.h>
 #include <bits/exception_defines.h>
 
-#if !defined(_GLIBCXX_ATOMIC_BUILTINS_4)
+#if ATOMIC_INT_LOCK_FREE < 2
 #  error This platform does not support exception propagation.
 #endif
 

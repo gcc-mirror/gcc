@@ -150,11 +150,14 @@ void test06()
 
   may_destruct = false;
 
-  try {
-    test06_helper();
-  } catch(...) {
-    may_destruct = true;
-  }
+  try 
+    {
+      test06_helper();
+    } 
+  catch(...) 
+    {
+      may_destruct = true;
+    }
   may_destruct = false;
 }
 
@@ -167,11 +170,14 @@ void test99()
 
   may_destruct = false;
 
-  try {
-    throw destructing();
-  } catch(...) {
-    gep = current_exception();
-  }
+  try 
+    {
+      throw destructing();
+    } 
+  catch(...) 
+    {
+      gep = current_exception();
+    }
 }
 
 int main()
