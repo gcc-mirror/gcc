@@ -1,6 +1,6 @@
 ;;- Machine description for Renesas / SuperH SH.
 ;;  Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-;;  2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+;;  2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 ;;  Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
@@ -3568,15 +3568,6 @@ label:
 ;;
 ;; shift left
 
-(define_insn "ashlsi3_sh2a"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
-		   (match_operand:SI 2 "arith_reg_operand" "r")))]
-  "TARGET_SH2A"
-  "shad	%2,%0"
-  [(set_attr "type" "arith")
-   (set_attr "length" "4")])
-
 ;; This pattern is used by init_expmed for computing the costs of shift
 ;; insns.
 
@@ -3585,14 +3576,14 @@ label:
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0,0,0,0")
 		   (match_operand:SI 2 "nonmemory_operand" "r,M,P27,?ri")))
    (clobber (match_scratch:SI 3 "=X,X,X,&r"))]
-  "TARGET_SH3
+  "(TARGET_SH3 || TARGET_SH2A)
    || (TARGET_SH1 && satisfies_constraint_P27 (operands[2]))"
   "@
    shld	%2,%0
    add	%0,%0
    shll%O2	%0
    #"
-  "TARGET_SH3
+  "(TARGET_SH3 || TARGET_SH2A)
    && reload_completed
    && CONST_INT_P (operands[2])
    && ! satisfies_constraint_P27 (operands[2])"
@@ -3671,7 +3662,7 @@ label:
   if (CONST_INT_P (operands[2])
       && sh_dynamicalize_shift_p (operands[2]))
     operands[2] = force_reg (SImode, operands[2]);
-  if (TARGET_SH3)
+  if (TARGET_SH3 || TARGET_SH2A)
     {
       emit_insn (gen_ashlsi3_std (operands[0], operands[1], operands[2]));
       DONE;
@@ -3727,15 +3718,6 @@ label:
 ;
 ; arithmetic shift right
 ;
-
-(define_insn "ashrsi3_sh2a"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
-		   (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
-  "TARGET_SH2A"
-  "shad	%2,%0"
-  [(set_attr "type" "dyn_shift")
-   (set_attr "length" "4")])
 
 (define_insn "ashrsi3_k"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
@@ -3831,7 +3813,7 @@ label:
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
-  "TARGET_SH3"
+  "TARGET_SH3 || TARGET_SH2A"
   "shad	%2,%0"
   [(set_attr "type" "dyn_shift")])
 
@@ -3879,20 +3861,11 @@ label:
 
 ;; logical shift right
 
-(define_insn "lshrsi3_sh2a"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
-		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
-  "TARGET_SH2A"
-  "shld	%2,%0"
-  [(set_attr "type" "dyn_shift")
-   (set_attr "length" "4")])
-
 (define_insn "lshrsi3_d"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
-  "TARGET_SH3"
+  "TARGET_SH3 || TARGET_SH2A"
   "shld	%2,%0"
   [(set_attr "type" "dyn_shift")])
 
@@ -3973,7 +3946,8 @@ label:
   if (CONST_INT_P (operands[2])
       && sh_dynamicalize_shift_p (operands[2]))
     operands[2] = force_reg (SImode, operands[2]);
-  if (TARGET_SH3 && arith_reg_operand (operands[2], GET_MODE (operands[2])))
+  if ((TARGET_SH3 || TARGET_SH2A)
+      && arith_reg_operand (operands[2], GET_MODE (operands[2])))
     {
       rtx count = copy_to_mode_reg (SImode, operands[2]);
       emit_insn (gen_negsi2 (count, count));

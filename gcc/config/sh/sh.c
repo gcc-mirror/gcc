@@ -3266,7 +3266,7 @@ expand_ashiftrt (rtx *operands)
   char func[18];
   int value;
 
-  if (TARGET_SH3)
+  if (TARGET_SH3 || TARGET_SH2A)
     {
       if (!CONST_INT_P (operands[2]))
 	{
@@ -3715,7 +3715,7 @@ shl_sext_kind (rtx left_rtx, rtx size_rtx, int *costp)
 	    }
 	}
     }
-  if (TARGET_SH3)
+  if (TARGET_SH3 || TARGET_SH2A)
     {
       /* Try to use a dynamic shift.  */
       cost = shift_insns[32 - insize] + 1 + SH_DYNAMIC_SHIFT_COST;

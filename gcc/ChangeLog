@@ -1,3 +1,18 @@
+2011-12-01  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/50814.
+	* config/sh/sh.c (expand_ashiftrt): Handle TARGET_SH2A same as
+	TARGET_SH3.
+	(shl_sext_kind): Likewise.
+	* config/sh/sh.h (SH_DYNAMIC_SHIFT_COST): Likewise.
+	* config/sh/sh.md (ashlsi3_sh2a, ashrsi3_sh2a, lshrsi3_sh2a):
+	Remove.
+	(ashlsi3_std): Handle TARGET_SH2A same as TARGET_SH3.
+	(ashlsi3): Likewise.
+	(ashrsi3_d): Likewise.
+	(lshrsi3_d): Likewise.
+	(lshrsi3): Likewise.
+
 2011-12-01   Diego Novillo  <dnovillo@google.com>
 
 	PR bootstrap/51346
