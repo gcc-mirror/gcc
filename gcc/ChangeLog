@@ -1,5 +1,9 @@
 2011-12-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/51356
+	* tree-vect-patterns.c (vect_recog_bool_pattern): Give up if
+	vectype doesn't have VECTOR_MODE_P.
+
 	PR debug/50317
 	* tree-ssa-dce.c (remove_dead_stmt): Add a debug stmt when removing
 	as unnecessary a store to a variable with gimple reg type.
