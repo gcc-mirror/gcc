@@ -1,3 +1,13 @@
+2011-11-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR other/51272
+	* config/pa/stublib.c (_ITM_registerTMCloneTable): New stub.
+	(_ITM_deregisterTMCloneTable): Likewise.
+	(__register_frame_info): Fix unused warning.
+	(__deregister_frame_info, __cxa_finalize, _Jv_RegisterClasses,
+	pthread_default_stacksize_np): Likewise.
+	* config/pa/t-stublib (LIBGCCSTUB_OBJS): Add new objects and rules.
+	
 2011-11-29  DJ Delorie  <dj@redhat.com>
 
 	* config.host (rl78-*-elf): New case.
