@@ -1035,7 +1035,6 @@ extern bool walk_stmt_load_store_ops (gimple, void *,
 extern bool gimple_ior_addresses_taken (bitmap, gimple);
 extern bool gimple_call_builtin_p (gimple, enum built_in_function);
 extern bool gimple_asm_clobbers_memory_p (const_gimple);
-extern void gimple_call_set_cannot_inline (gimple, bool);
 
 /* In gimplify.c  */
 extern tree create_tmp_var_raw (tree, const char *);
@@ -2341,6 +2340,19 @@ gimple_call_tail_p (gimple s)
 {
   GIMPLE_CHECK (s, GIMPLE_CALL);
   return (s->gsbase.subcode & GF_CALL_TAILCALL) != 0;
+}
+
+
+/* Set the inlinable status of GIMPLE_CALL S to INLINABLE_P.  */
+
+static inline void
+gimple_call_set_cannot_inline (gimple s, bool inlinable_p)
+{
+  GIMPLE_CHECK (s, GIMPLE_CALL);
+  if (inlinable_p)
+    s->gsbase.subcode |= GF_CALL_CANNOT_INLINE;
+  else
+    s->gsbase.subcode &= ~GF_CALL_CANNOT_INLINE;
 }
 
 
