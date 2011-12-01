@@ -2394,7 +2394,8 @@ extern int current_function_interrupt;
 #define ACCUMULATE_OUTGOING_ARGS TARGET_ACCUMULATE_OUTGOING_ARGS
 
 #define SH_DYNAMIC_SHIFT_COST \
-  (TARGET_HARD_SH4 ? 1 : TARGET_SH3 ? (optimize_size ? 1 : 2) : 20)
+  (TARGET_HARD_SH4 ? 1	\
+   : (TARGET_SH3 || TARGET_SH2A) ? (optimize_size ? 1 : 2) : 20)
 
 
 #define NUM_MODES_FOR_MODE_SWITCHING { FP_MODE_NONE }
