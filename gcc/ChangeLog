@@ -1,3 +1,14 @@
+2011-12-01   Diego Novillo  <dnovillo@google.com>
+
+	Revert
+
+	2011-11-29   Diego Novillo  <dnovillo@google.com>
+
+		* gimple.c (gimple_call_set_cannot_inline): Move from gimple.h.
+		Update field call_stmt_cannot_inline_p from call
+		graph edge, if needed.
+		* gimple.h (gimple_call_set_cannot_inline): Move to gimple.c.
+
 2011-12-01  Nathan Sidwell  <nathan@acm.org>
 
 	PR gcov-profile/51113

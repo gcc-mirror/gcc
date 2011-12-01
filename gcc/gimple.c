@@ -5558,34 +5558,4 @@ gimple_asm_clobbers_memory_p (const_gimple stmt)
 
   return false;
 }
-
-
-/* Set the inlinable status of GIMPLE_CALL S to INLINABLE_P.  */
-
-void
-gimple_call_set_cannot_inline (gimple s, bool inlinable_p)
-{
-  bool prev_inlinable_p;
-
-  GIMPLE_CHECK (s, GIMPLE_CALL);
-
-  prev_inlinable_p = gimple_call_cannot_inline_p (s);
-
-  if (inlinable_p)
-    s->gsbase.subcode |= GF_CALL_CANNOT_INLINE;
-  else
-    s->gsbase.subcode &= ~GF_CALL_CANNOT_INLINE;
-
-  /* If we have changed the inlinable attribute, and there is a call
-     graph edge going out of this statement, update its inlinable
-     attribute as well.  */
-  if (current_function_decl && prev_inlinable_p != inlinable_p)
-    {
-      struct cgraph_node *n = cgraph_get_node (current_function_decl);
-      struct cgraph_edge *e = cgraph_edge (n, s);
-      if (e)
-	e->call_stmt_cannot_inline_p = inlinable_p;
-    }
-}
-
 #include "gt-gimple.h"
