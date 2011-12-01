@@ -54,8 +54,6 @@ enum Runtime_function_type
   RFT_MAPITER,
   // Go type chan any, C type struct __go_channel *.
   RFT_CHAN,
-  // Go type *chan any, C type struct __go_channel **.
-  RFT_CHANPTR,
   // Go type non-empty interface, C type struct __go_interface.
   RFT_IFACE,
   // Go type interface{}, C type struct __go_empty_interface.
@@ -148,10 +146,6 @@ runtime_function_type(Runtime_function_type bft)
 	  t = Type::make_channel_type(true, true, Type::make_void_type());
 	  break;
 
-	case RFT_CHANPTR:
-	  t = Type::make_pointer_type(runtime_function_type(RFT_CHAN));
-	  break;
-
 	case RFT_IFACE:
 	  {
 	    Typed_identifier_list* methods = new Typed_identifier_list();
@@ -223,7 +217,6 @@ convert_to_runtime_function_type(Runtime_function_type bft, Expression* e,
     case RFT_SLICE:
     case RFT_MAP:
     case RFT_CHAN:
-    case RFT_CHANPTR:
     case RFT_IFACE:
     case RFT_EFACE:
       return Expression::make_unsafe_cast(runtime_function_type(bft), e, loc);
@@ -392,13 +385,4 @@ Runtime::map_iteration_type()
   mpz_clear(ival);
 
   return Type::make_array_type(runtime_function_type(RFT_POINTER), iexpr);
-}
-
-// Return the type used to pass a list of general channels to the
-// select runtime function.
-
-Type*
-Runtime::chanptr_type()
-{
-  return runtime_function_type(RFT_CHANPTR);
 }

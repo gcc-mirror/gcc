@@ -409,10 +409,7 @@ runtime_files = \
 	runtime/go-caller.c \
 	runtime/go-can-convert-interface.c \
 	runtime/go-cgo.c \
-	runtime/go-chan-cap.c \
-	runtime/go-chan-len.c \
 	runtime/go-check-interface.c \
-	runtime/go-close.c \
 	runtime/go-construct-map.c \
 	runtime/go-convert-interface.c \
 	runtime/go-copy.c \
@@ -432,27 +429,16 @@ runtime_files = \
 	runtime/go-map-len.c \
 	runtime/go-map-range.c \
 	runtime/go-nanotime.c \
-	runtime/go-new-channel.c \
 	runtime/go-new-map.c \
 	runtime/go-new.c \
 	runtime/go-panic.c \
 	runtime/go-print.c \
-	runtime/go-rec-big.c \
-	runtime/go-rec-nb-big.c \
-	runtime/go-rec-nb-small.c \
-	runtime/go-rec-small.c \
 	runtime/go-recover.c \
 	runtime/go-reflect.c \
 	runtime/go-reflect-call.c \
-	runtime/go-reflect-chan.c \
 	runtime/go-reflect-map.c \
 	runtime/go-rune.c \
 	runtime/go-runtime-error.c \
-	runtime/go-select.c \
-	runtime/go-send-big.c \
-	runtime/go-send-nb-big.c \
-	runtime/go-send-nb-small.c \
-	runtime/go-send-small.c \
 	runtime/go-setenv.c \
 	runtime/go-signal.c \
 	runtime/go-strcmp.c \
@@ -473,6 +459,7 @@ runtime_files = \
 	runtime/go-unsafe-newarray.c \
 	runtime/go-unsafe-pointer.c \
 	runtime/go-unwind.c \
+	runtime/chan.c \
 	runtime/cpuprof.c \
 	$(runtime_lock_files) \
 	runtime/mcache.c \
@@ -488,7 +475,6 @@ runtime_files = \
 	runtime/thread.c \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
-	chan.c \
 	iface.c \
 	malloc.c \
 	map.c \

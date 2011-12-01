@@ -2201,13 +2201,12 @@ Gogo::runtime_error(int code, Location location)
 }
 
 // Return a tree for receiving a value of type TYPE_TREE on CHANNEL.
-// This does a blocking receive and returns the value read from the
-// channel.  If FOR_SELECT is true, this is being done because it was
-// chosen in a select statement.
+// TYPE_DESCRIPTOR_TREE is the channel's type descriptor.  This does a
+// blocking receive and returns the value read from the channel.
 
 tree
-Gogo::receive_from_channel(tree type_tree, tree channel, bool for_select,
-			   Location location)
+Gogo::receive_from_channel(tree type_tree, tree type_descriptor_tree,
+			   tree channel, Location location)
 {
   if (type_tree == error_mark_node || channel == error_mark_node)
     return error_mark_node;
@@ -2222,12 +2221,10 @@ Gogo::receive_from_channel(tree type_tree, tree channel, bool for_select,
 				     "__go_receive_small",
 				     2,
 				     uint64_type_node,
+				     TREE_TYPE(type_descriptor_tree),
+				     type_descriptor_tree,
 				     ptr_type_node,
-				     channel,
-				     boolean_type_node,
-				     (for_select
-				      ? boolean_true_node
-				      : boolean_false_node));
+				     channel);
       if (call == error_mark_node)
 	return error_mark_node;
       // This can panic if there are too many operations on a closed
@@ -2253,15 +2250,13 @@ Gogo::receive_from_channel(tree type_tree, tree channel, bool for_select,
 				     location,
 				     "__go_receive_big",
 				     3,
-				     boolean_type_node,
+				     void_type_node,
+				     TREE_TYPE(type_descriptor_tree),
+				     type_descriptor_tree,
 				     ptr_type_node,
 				     channel,
 				     ptr_type_node,
-				     tmpaddr,
-				     boolean_type_node,
-				     (for_select
-				      ? boolean_true_node
-				      : boolean_false_node));
+				     tmpaddr);
       if (call == error_mark_node)
 	return error_mark_node;
       // This can panic if there are too many operations on a closed

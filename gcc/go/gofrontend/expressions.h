@@ -1947,18 +1947,13 @@ class Receive_expression : public Expression
  public:
   Receive_expression(Expression* channel, Location location)
     : Expression(EXPRESSION_RECEIVE, location),
-      channel_(channel), for_select_(false)
+      channel_(channel)
   { }
 
   // Return the channel.
   Expression*
   channel()
   { return this->channel_; }
-
-  // Note that this is for a select statement.
-  void
-  set_for_select()
-  { this->for_select_ = true; }
 
  protected:
   int
@@ -1998,8 +1993,6 @@ class Receive_expression : public Expression
  private:
   // The channel from which we are receiving.
   Expression* channel_;
-  // Whether this is for a select statement.
-  bool for_select_;
 };
 
 #endif // !defined(GO_EXPRESSIONS_H)

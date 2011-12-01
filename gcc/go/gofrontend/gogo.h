@@ -527,13 +527,8 @@ class Gogo
 
   // Receive a value from a channel.
   static tree
-  receive_from_channel(tree type_tree, tree channel, bool for_select,
+  receive_from_channel(tree type_tree, tree type_descriptor_tree, tree channel,
 		       Location);
-
-  // Return a tree for receiving an integer on a channel.
-  static tree
-  receive_as_64bit_integer(tree type, tree channel, bool blocking,
-			   bool for_select);
 
   // Make a trampoline which calls FNADDR passing CLOSURE.
   tree

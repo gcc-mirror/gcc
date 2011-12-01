@@ -165,12 +165,10 @@ class Statement
 		      Expression* should_set, Location);
 
   // Make an assignment from a nonblocking receive to a pair of
-  // variables.  FOR_SELECT is true is this is being created for a
-  // case x, ok := <-c in a select statement.
+  // variables.
   static Statement*
   make_tuple_receive_assignment(Expression* val, Expression* closed,
-				Expression* channel, bool for_select,
-				Location);
+				Expression* channel, Location);
 
   // Make an assignment from a type guard to a pair of variables.
   static Statement*
@@ -634,13 +632,8 @@ class Send_statement : public Statement
   Send_statement(Expression* channel, Expression* val,
 		 Location location)
     : Statement(STATEMENT_SEND, location),
-      channel_(channel), val_(val), for_select_(false)
+      channel_(channel), val_(val)
   { }
-
-  // Note that this is for a select statement.
-  void
-  set_for_select()
-  { this->for_select_ = true; }
 
  protected:
   int
@@ -663,8 +656,6 @@ class Send_statement : public Statement
   Expression* channel_;
   // The value to send.
   Expression* val_;
-  // Whether this is for a select statement.
-  bool for_select_;
 };
 
 // Select_clauses holds the clauses of a select statement.  This is
@@ -693,10 +684,15 @@ class Select_clauses
       Named_object* var, Named_object* closedvar, bool is_default,
       Block* statements, Location location)
   {
-    this->clauses_.push_back(Select_clause(is_send, channel, val, closed, var,
-					   closedvar, is_default, statements,
-					   location));
+    int index = static_cast<int>(this->clauses_.size());
+    this->clauses_.push_back(Select_clause(index, is_send, channel, val,
+					   closed, var, closedvar, is_default,
+					   statements, location));
   }
+
+  size_t
+  size() const
+  { return this->clauses_.size(); }
 
   // Traverse the select clauses.
   int
@@ -704,11 +700,15 @@ class Select_clauses
 
   // Lower statements.
   void
-  lower(Gogo*, Named_object*, Block*);
+  lower(Gogo*, Named_object*, Block*, Temporary_statement*);
 
   // Determine types.
   void
   determine_types();
+
+  // Check types.
+  void
+  check_types();
 
   // Whether the select clauses may fall through to the statement
   // which follows the overall select statement.
@@ -717,7 +717,8 @@ class Select_clauses
 
   // Convert to the backend representation.
   Bstatement*
-  get_backend(Translate_context*, Unnamed_label* break_label, Location);
+  get_backend(Translate_context*, Temporary_statement* sel,
+	      Unnamed_label* break_label, Location);
 
   // Dump AST representation.
   void
@@ -734,14 +735,20 @@ class Select_clauses
 	is_default_(false)
     { }
 
-    Select_clause(bool is_send, Expression* channel, Expression* val,
-		  Expression* closed, Named_object* var,
+    Select_clause(int index, bool is_send, Expression* channel,
+		  Expression* val, Expression* closed, Named_object* var,
 		  Named_object* closedvar, bool is_default, Block* statements,
 		  Location location)
-      : channel_(channel), val_(val), closed_(closed), var_(var),
-	closedvar_(closedvar), statements_(statements), location_(location),
-	is_send_(is_send), is_default_(is_default), is_lowered_(false)
+      : index_(index), channel_(channel), val_(val), closed_(closed),
+	var_(var), closedvar_(closedvar), statements_(statements),
+	location_(location), is_send_(is_send), is_default_(is_default),
+	is_lowered_(false)
     { go_assert(is_default ? channel == NULL : channel != NULL); }
+
+    // Return the index of this clause.
+    int
+    index() const
+    { return this->index_; }
 
     // Traverse the select clause.
     int
@@ -749,11 +756,15 @@ class Select_clauses
 
     // Lower statements.
     void
-    lower(Gogo*, Named_object*, Block*);
+    lower(Gogo*, Named_object*, Block*, Temporary_statement*);
 
     // Determine types.
     void
     determine_types();
+
+    // Check types.
+    void
+    check_types();
 
     // Return true if this is the default clause.
     bool
@@ -798,6 +809,18 @@ class Select_clauses
     dump_clause(Ast_dump_context*) const;
 
    private:
+    void
+    lower_default(Block*, Expression*, Expression*);
+
+    void
+    lower_send(Block*, Expression*, Expression*, Expression*);
+
+    void
+    lower_recv(Gogo*, Named_object*, Block*, Expression*, Expression*,
+	       Expression*);
+
+    // The index of this case in the generated switch statement.
+    int index_;
     // The channel.
     Expression* channel_;
     // The value to send or the lvalue to receive into.
@@ -822,12 +845,6 @@ class Select_clauses
     bool is_lowered_;
   };
 
-  void
-  add_clause_backend(Translate_context*, Location, int index,
-		     int case_value, Select_clause*, Unnamed_label*,
-		     std::vector<std::vector<Bexpression*> >* cases,
-		     std::vector<Bstatement*>* clauses);
-
   typedef std::vector<Select_clause> Clauses;
 
   Clauses clauses_;
@@ -840,7 +857,7 @@ class Select_statement : public Statement
  public:
   Select_statement(Location location)
     : Statement(STATEMENT_SELECT, location),
-      clauses_(NULL), break_label_(NULL), is_lowered_(false)
+      clauses_(NULL), sel_(NULL), break_label_(NULL), is_lowered_(false)
   { }
 
   // Add the clauses.
@@ -867,6 +884,10 @@ class Select_statement : public Statement
   do_determine_types()
   { this->clauses_->determine_types(); }
 
+  void
+  do_check_types(Gogo*)
+  { this->clauses_->check_types(); }
+
   bool
   do_may_fall_through() const
   { return this->clauses_->may_fall_through(); }
@@ -880,6 +901,8 @@ class Select_statement : public Statement
  private:
   // The select clauses.
   Select_clauses* clauses_;
+  // A temporary which holds the select structure we build up at runtime.
+  Temporary_statement* sel_;
   // The break label.
   Unnamed_label* break_label_;
   // Whether this statement has been lowered.
