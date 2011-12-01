@@ -1,5 +1,5 @@
 // -*- C++ -*- Implement the members of exception_ptr.
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -23,8 +23,9 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <bits/c++config.h>
+#include <bits/atomic_lockfree_defines.h>
 
-#ifdef _GLIBCXX_ATOMIC_BUILTINS_4
+#if ATOMIC_INT_LOCK_FREE > 1
 
 #define _GLIBCXX_EH_PTR_COMPAT
 

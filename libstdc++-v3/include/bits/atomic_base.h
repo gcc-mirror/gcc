@@ -35,6 +35,7 @@
 #include <bits/c++config.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <bits/atomic_lockfree_defines.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -70,15 +71,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   inline void
   atomic_thread_fence(memory_order __m) noexcept
-  {
-    __atomic_thread_fence (__m);
-  }
+  { __atomic_thread_fence(__m); }
 
   inline void
   atomic_signal_fence(memory_order __m) noexcept
-  {
-    __atomic_thread_fence (__m);
-  }
+  { __atomic_thread_fence(__m); }
 
   /// kill_dependency
   template<typename _Tp>
@@ -89,19 +86,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __ret;
     }
 
-  /// Lock-free Property
-
-
-#define ATOMIC_BOOL_LOCK_FREE		__GCC_ATOMIC_BOOL_LOCK_FREE
-#define ATOMIC_CHAR_LOCK_FREE		__GCC_ATOMIC_CHAR_LOCK_FREE
-#define ATOMIC_WCHAR_T_LOCK_FREE	__GCC_ATOMIC_WCHAR_T_LOCK_FREE
-#define ATOMIC_CHAR16_T_LOCK_FREE	__GCC_ATOMIC_CHAR16_T_LOCK_FREE
-#define ATOMIC_CHAR32_T_LOCK_FREE	__GCC_ATOMIC_CHAR32_T_LOCK_FREE
-#define ATOMIC_SHORT_LOCK_FREE		__GCC_ATOMIC_SHORT_LOCK_FREE
-#define ATOMIC_INT_LOCK_FREE		__GCC_ATOMIC_INT_LOCK_FREE
-#define ATOMIC_LONG_LOCK_FREE		__GCC_ATOMIC_LONG_LOCK_FREE
-#define ATOMIC_LLONG_LOCK_FREE		__GCC_ATOMIC_LLONG_LOCK_FREE
-#define ATOMIC_POINTER_LOCK_FREE	__GCC_ATOMIC_POINTER_LOCK_FREE
 
   // Base types for atomics.
   template<typename _IntTp>

@@ -43,7 +43,7 @@ __gxx_exception_cleanup (_Unwind_Reason_Code code, _Unwind_Exception *exc)
   if (code != _URC_FOREIGN_EXCEPTION_CAUGHT && code != _URC_NO_REASON)
     __terminate (header->exc.terminateHandler);
 
-#ifdef _GLIBCXX_ATOMIC_BUILTINS_4
+#if ATOMIC_INT_LOCK_FREE > 1
   if (__sync_sub_and_fetch (&header->referenceCount, 1) == 0)
     {
 #endif
@@ -51,7 +51,7 @@ __gxx_exception_cleanup (_Unwind_Reason_Code code, _Unwind_Exception *exc)
 	header->exc.exceptionDestructor (header + 1);
 
       __cxa_free_exception (header + 1);
-#ifdef _GLIBCXX_ATOMIC_BUILTINS_4
+#if ATOMIC_INT_LOCK_FREE > 1
     }
 #endif
 }

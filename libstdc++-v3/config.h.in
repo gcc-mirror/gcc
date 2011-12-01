@@ -689,19 +689,8 @@
 /* Version number of package */
 #undef VERSION
 
-/* Define if builtin atomic operations for bool are supported on this host. */
-#undef _GLIBCXX_ATOMIC_BUILTINS_1
-
-/* Define if builtin atomic operations for short are supported on this host.
-   */
-#undef _GLIBCXX_ATOMIC_BUILTINS_2
-
-/* Define if builtin atomic operations for int are supported on this host. */
-#undef _GLIBCXX_ATOMIC_BUILTINS_4
-
-/* Define if builtin atomic operations for long long are supported on this
-   host. */
-#undef _GLIBCXX_ATOMIC_BUILTINS_8
+/* Define if the compiler supports C++11 atomics. */
+#undef _GLIBCXX_ATOMIC_BUILTINS
 
 /* Define to use concept checking code from the boost libraries. */
 #undef _GLIBCXX_CONCEPT_CHECKS

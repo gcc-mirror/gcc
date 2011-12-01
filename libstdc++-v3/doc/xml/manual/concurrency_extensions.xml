@@ -210,11 +210,19 @@ usage vary depending on the target hardware and the flags used during
 compile.
 </para>
 
+
+
+<para>
+<remark>
+Incomplete/inconsistent. This is only C++11.
+</remark>
+</para>
+
 <para>
 If builtins are possible for bool-sized integral types,
-<code>_GLIBCXX_ATOMIC_BUILTINS_1</code> will be defined.
+<code>ATOMIC_BOOL_LOCK_FREE</code> will be defined.
 If builtins are possible for int-sized integral types,
-<code>_GLIBCXX_ATOMIC_BUILTINS_4</code> will be defined.
+<code>ATOMIC_INT_LOCK_FREE</code> will be defined.
 </para>
 
 
