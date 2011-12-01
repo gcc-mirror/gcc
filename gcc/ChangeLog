@@ -1,3 +1,10 @@
+2011-12-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR tree-optimization/50802
+	* tree-vrp.c (simplify_conversion_using_ranges): Rewrite test
+	considering what happens to ranges during sign changes and/or
+	intermediate narrowing conversions.
+
 2011-11-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/50283

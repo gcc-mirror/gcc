@@ -7284,7 +7284,9 @@ simplify_conversion_using_ranges (gimple stmt)
   tree innerop, middleop, finaltype;
   gimple def_stmt;
   value_range_t *innervr;
-  double_int innermin, innermax, middlemin, middlemax;
+  bool inner_unsigned_p, middle_unsigned_p, final_unsigned_p;
+  unsigned inner_prec, middle_prec, final_prec;
+  double_int innermin, innermed, innermax, middlemin, middlemed, middlemax;
 
   finaltype = TREE_TYPE (gimple_assign_lhs (stmt));
   if (!INTEGRAL_TYPE_P (finaltype))
@@ -7309,33 +7311,49 @@ simplify_conversion_using_ranges (gimple stmt)
      the middle conversion is removed.  */
   innermin = tree_to_double_int (innervr->min);
   innermax = tree_to_double_int (innervr->max);
-  middlemin = double_int_ext (innermin, TYPE_PRECISION (TREE_TYPE (middleop)),
-			      TYPE_UNSIGNED (TREE_TYPE (middleop)));
-  middlemax = double_int_ext (innermax, TYPE_PRECISION (TREE_TYPE (middleop)),
-			      TYPE_UNSIGNED (TREE_TYPE (middleop)));
-  /* If the middle values are not equal to the original values fail.
-     But only if the inner cast truncates (thus we ignore differences
-     in extension to handle the case going from a range to an anti-range
-     and back).  */
-  if ((TYPE_PRECISION (TREE_TYPE (innerop))
-       > TYPE_PRECISION (TREE_TYPE (middleop)))
-      && (!double_int_equal_p (innermin, middlemin)
-	  || !double_int_equal_p (innermax, middlemax)))
+
+  inner_prec = TYPE_PRECISION (TREE_TYPE (innerop));
+  middle_prec = TYPE_PRECISION (TREE_TYPE (middleop));
+  final_prec = TYPE_PRECISION (finaltype);
+
+  /* If the first conversion is not injective, the second must not
+     be widening.  */
+  if (double_int_cmp (double_int_sub (innermax, innermin),
+		      double_int_mask (middle_prec), true) > 0
+      && middle_prec < final_prec)
     return false;
+  /* We also want a medium value so that we can track the effect that
+     narrowing conversions with sign change have.  */
+  inner_unsigned_p = TYPE_UNSIGNED (TREE_TYPE (innerop));
+  if (inner_unsigned_p)
+    innermed = double_int_rshift (double_int_mask (inner_prec),
+				  1, inner_prec, false);
+  else
+    innermed = double_int_zero;
+  if (double_int_cmp (innermin, innermed, inner_unsigned_p) >= 0
+      || double_int_cmp (innermed, innermax, inner_unsigned_p) >= 0)
+    innermed = innermin;
+
+  middle_unsigned_p = TYPE_UNSIGNED (TREE_TYPE (middleop));
+  middlemin = double_int_ext (innermin, middle_prec, middle_unsigned_p);
+  middlemed = double_int_ext (innermed, middle_prec, middle_unsigned_p);
+  middlemax = double_int_ext (innermax, middle_prec, middle_unsigned_p);
+
   /* Require that the final conversion applied to both the original
      and the intermediate range produces the same result.  */
+  final_unsigned_p = TYPE_UNSIGNED (finaltype);
   if (!double_int_equal_p (double_int_ext (middlemin,
-					   TYPE_PRECISION (finaltype),
-					   TYPE_UNSIGNED (finaltype)),
+					   final_prec, final_unsigned_p),
 			   double_int_ext (innermin,
-					   TYPE_PRECISION (finaltype),
-					   TYPE_UNSIGNED (finaltype)))
+					   final_prec, final_unsigned_p))
+      || !double_int_equal_p (double_int_ext (middlemed,
+					      final_prec, final_unsigned_p),
+			      double_int_ext (innermed,
+					      final_prec, final_unsigned_p))
       || !double_int_equal_p (double_int_ext (middlemax,
-					      TYPE_PRECISION (finaltype),
-					      TYPE_UNSIGNED (finaltype)),
+					      final_prec, final_unsigned_p),
 			      double_int_ext (innermax,
-					      TYPE_PRECISION (finaltype),
-					      TYPE_UNSIGNED (finaltype))))
+					      final_prec, final_unsigned_p)))
     return false;
 
   gimple_assign_set_rhs1 (stmt, innerop);
