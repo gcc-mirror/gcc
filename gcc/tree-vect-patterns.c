@@ -2074,6 +2074,8 @@ vect_recog_bool_pattern (VEC (gimple, heap) **stmts, tree *type_in,
       stmt_vec_info pattern_stmt_info;
       vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
       gcc_assert (vectype != NULL_TREE);
+      if (!VECTOR_MODE_P (TYPE_MODE (vectype)))
+	return NULL;
       if (!check_bool_pattern (var, loop_vinfo))
 	return NULL;
 
