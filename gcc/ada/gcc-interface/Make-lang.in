@@ -118,7 +118,7 @@ ifeq ($(build), $(host))
 
     # put the host RTS dir first in the PATH to hide the default runtime
     # files that are among the sources
-    RTS_DIR:=$(strip $(subst \,/,$(shell gnatls -v | grep adalib )))
+    RTS_DIR=$(strip $(subst \,/,$(shell gnatls -v | grep adalib )))
 
     ADA_TOOLS_FLAGS_TO_PASS=\
         CC="$(CC)" \
@@ -153,7 +153,7 @@ else
   else
     # This is a canadian cross. We should use a toolchain running on the
     # build platform and targeting the host platform.
-    RTS_DIR:=$(strip $(subst \,/,$(shell $(GNATLS_FOR_HOST) -v | grep adalib )))
+    RTS_DIR=$(strip $(subst \,/,$(shell $(GNATLS_FOR_HOST) -v | grep adalib )))
     ADA_TOOLS_FLAGS_TO_PASS=\
         CC="$(CC)" \
         $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS)  \
