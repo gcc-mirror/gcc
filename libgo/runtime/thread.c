@@ -90,27 +90,3 @@ runtime_minit(void)
 	if(sigaltstack(&ss, nil) < 0)
 		*(int *)0xf1 = 0xf1;
 }
-
-// Temporary functions, which will be removed when we stop using
-// condition variables.
-
-void
-runtime_cond_wait(pthread_cond_t* cond, pthread_mutex_t* mutex)
-{
-	int i;
-
-	runtime_entersyscall();
-
-	i = pthread_cond_wait(cond, mutex);
-	if(i != 0)
-		runtime_throw("pthread_cond_wait");
-	i = pthread_mutex_unlock(mutex);
-	if(i != 0)
-		runtime_throw("pthread_mutex_unlock");
-
-	runtime_exitsyscall();
-
-	i = pthread_mutex_lock(mutex);
-	if(i != 0)
-		runtime_throw("pthread_mutex_lock");
-}

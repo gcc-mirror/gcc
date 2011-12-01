@@ -337,6 +337,3 @@ void reflect_call(const struct __go_func_type *, const void *, _Bool, _Bool,
 #ifdef __rtems__
 void __wrap_rtems_task_variable_add(void **);
 #endif
-
-/* Temporary.  */
-void	runtime_cond_wait(pthread_cond_t*, pthread_mutex_t*);
