@@ -121,10 +121,12 @@
 
 ;; Attributes for instruction and branch scheduling
 
-;; For conditional branches.
+;; For conditional branches. Frame related instructions are not allowed
+;; because they confuse the unwind support.
 (define_attr "in_branch_delay" "false,true"
   (if_then_else (and (eq_attr "type" "!uncond_branch,btable_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch")
-		     (eq_attr "length" "4"))
+		     (eq_attr "length" "4")
+		     (not (match_test "RTX_FRAME_RELATED_P (insn)")))
 		(const_string "true")
 		(const_string "false")))
 
@@ -132,7 +134,8 @@
 ;; even if the instruction is nullified.
 (define_attr "in_nullified_branch_delay" "false,true"
   (if_then_else (and (eq_attr "type" "!uncond_branch,btable_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,parallel_branch")
-		     (eq_attr "length" "4"))
+		     (eq_attr "length" "4")
+		     (not (match_test "RTX_FRAME_RELATED_P (insn)")))
 		(const_string "true")
 		(const_string "false")))
 
@@ -140,7 +143,8 @@
 ;; delay slot.
 (define_attr "in_call_delay" "false,true"
   (cond [(and (eq_attr "type" "!uncond_branch,btable_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch")
-	      (eq_attr "length" "4"))
+	      (eq_attr "length" "4")
+	      (not (match_test "RTX_FRAME_RELATED_P (insn)")))
 	   (const_string "true")
 	 (eq_attr "type" "uncond_branch")
 	   (if_then_else (match_test "TARGET_JUMP_IN_DELAY")

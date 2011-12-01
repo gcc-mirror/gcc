@@ -1,3 +1,10 @@
+2011-11-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/50283
+	* config/pa/pa.md (in_branch_delay): Disallow frame related insns.
+	(in_nullified_branch_delay): Likewise.
+	(in_call_delay): Likewise.
+
 2011-11-30  Richard Henderson  <rth@redhat.com>
 
 	* predict.c (expr_expected_value_1): Assume compare-and-swap builtin
