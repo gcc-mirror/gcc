@@ -1,3 +1,7 @@
+2011-12-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* misc.c (gfc_open_file): Don't call stat.
+
 2011-11-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/40958
