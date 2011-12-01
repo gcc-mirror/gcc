@@ -1,3 +1,8 @@
+2011-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51326
+	* g++.dg/inherit/crash3.C: New.
+
 2011-12-01  Nathan Sidwell  <nathan@acm.org>
 
 	PR gcov-profile/51113
