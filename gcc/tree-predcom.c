@@ -1306,8 +1306,20 @@ replace_ref_with (gimple stmt, tree new_tree, bool set, bool in_lhs)
       val = gimple_assign_lhs (stmt);
       if (TREE_CODE (val) != SSA_NAME)
 	{
-	  gcc_assert (gimple_assign_copy_p (stmt));
 	  val = gimple_assign_rhs1 (stmt);
+	  gcc_assert (gimple_assign_single_p (stmt));
+	  if (TREE_CLOBBER_P (val))
+	    {
+	      val = gimple_default_def (cfun, SSA_NAME_VAR (new_tree));
+	      if (val == NULL_TREE)
+		{
+		  val = make_ssa_name (SSA_NAME_VAR (new_tree),
+				       gimple_build_nop ());
+		  set_default_def (SSA_NAME_VAR (new_tree), val);
+		}
+	    }
+	  else
+	    gcc_assert (gimple_assign_copy_p (stmt));
 	}
     }
   else

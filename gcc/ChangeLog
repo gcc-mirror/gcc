@@ -1,5 +1,9 @@
 2011-12-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/51246
+	* tree-predcom.c (replace_ref_with): Handle also clobber on the
+	rhs.
+
 	PR rtl-optimization/51014
 	* loop-unroll.c (apply_opt_in_copies): Ignore label DEBUG_INSNs
 	both from bb and orig_bb.
