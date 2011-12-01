@@ -1,5 +1,10 @@
 2011-12-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* module.c (dt_lower_string): Make static.
+	(dt_upper_string): Likewise.
+
+2011-12-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR fortran/25708
 	* module.c (parse_string): Read string into resizable array
 	instead of parsing twice and seeking.

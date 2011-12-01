@@ -435,7 +435,7 @@ resolve_fixups (fixup_t *f, void *gp)
    to convert the symtree name of a derived-type to the symbol name or to
    the name of the associated generic function.  */
 
-const char *
+static const char *
 dt_lower_string (const char *name)
 {
   if (name[0] != (char) TOLOWER ((unsigned char) name[0]))
@@ -450,7 +450,7 @@ dt_lower_string (const char *name)
    symtree/symbol name of the associated generic function start with a lower-
    case character.  */
 
-const char *
+static const char *
 dt_upper_string (const char *name)
 {
   if (name[0] != (char) TOUPPER ((unsigned char) name[0]))
