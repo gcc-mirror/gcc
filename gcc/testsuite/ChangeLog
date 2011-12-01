@@ -1,3 +1,8 @@
+2011-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/51014
+	* g++.dg/opt/pr51014.C: New test.
+
 2011-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51367
