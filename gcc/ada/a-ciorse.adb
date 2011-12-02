@@ -37,6 +37,7 @@ with Ada.Containers.Red_Black_Trees.Generic_Set_Operations;
 pragma Elaborate_All (Ada.Containers.Red_Black_Trees.Generic_Set_Operations);
 
 with Ada.Unchecked_Deallocation;
+
 with System; use type System.Address;
 
 package body Ada.Containers.Indefinite_Ordered_Sets is
@@ -581,7 +582,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.Tree.Busy;
-
          begin
             B := B - 1;
          end;
@@ -595,13 +595,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    function Find (Container : Set; Item : Element_Type) return Cursor is
       Node : constant Node_Access :=
                Element_Keys.Find (Container.Tree, Item);
-
    begin
       if Node = null then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, Node);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, Node);
    end Find;
 
    -----------
@@ -766,13 +765,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       function Element (Container : Set; Key : Key_Type) return Element_Type is
          Node : constant Node_Access :=
                   Key_Keys.Find (Container.Tree, Key);
-
       begin
          if Node = null then
             raise Constraint_Error with "key not in set";
+         else
+            return Node.Element.all;
          end if;
-
-         return Node.Element.all;
       end Element;
 
       ---------------------

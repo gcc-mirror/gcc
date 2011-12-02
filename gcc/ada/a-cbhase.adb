@@ -583,7 +583,6 @@ package body Ada.Containers.Bounded_Hashed_Sets is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.Busy;
-
          begin
             B := B - 1;
          end;
@@ -930,10 +929,8 @@ package body Ada.Containers.Bounded_Hashed_Sets is
      return Set_Iterator_Interfaces.Forward_Iterator'Class
    is
       B : Natural renames Container'Unrestricted_Access.all.Busy;
-
    begin
       B := B + 1;
-
       return It : constant Iterator :=
                     Iterator'(Limited_Controlled with
                                 Container => Container'Unrestricted_Access);

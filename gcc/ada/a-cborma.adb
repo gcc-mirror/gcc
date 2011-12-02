@@ -36,6 +36,7 @@ pragma Elaborate_All
   (Ada.Containers.Red_Black_Trees.Generic_Bounded_Keys);
 
 with Ada.Finalization; use Ada.Finalization;
+
 with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Ordered_Maps is
@@ -563,7 +564,6 @@ package body Ada.Containers.Bounded_Ordered_Maps is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.Busy;
-
          begin
             B := B - 1;
          end;

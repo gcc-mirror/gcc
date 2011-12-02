@@ -28,6 +28,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Deallocation;
+
 with System; use type System.Address;
 
 package body Ada.Containers.Doubly_Linked_Lists is
@@ -407,7 +408,6 @@ package body Ada.Containers.Doubly_Linked_Lists is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.Busy;
-
          begin
             B := B - 1;
          end;
@@ -504,7 +504,6 @@ package body Ada.Containers.Doubly_Linked_Lists is
    procedure Free (X : in out Node_Access) is
       procedure Deallocate is
          new Ada.Unchecked_Deallocation (Node_Type, Node_Access);
-
    begin
       X.Prev := X;
       X.Next := X;

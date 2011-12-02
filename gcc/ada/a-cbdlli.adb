@@ -28,6 +28,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Finalization; use Ada.Finalization;
+
 with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Doubly_Linked_Lists is
@@ -129,24 +130,23 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       if Container.Free >= 0 then
          New_Node := Container.Free;
 
-         --  We always perform the assignment first, before we
-         --  change container state, in order to defend against
-         --  exceptions duration assignment.
+         --  We always perform the assignment first, before we change container
+         --  state, in order to defend against exceptions duration assignment.
 
          N (New_Node).Element := New_Item;
          Container.Free := N (New_Node).Next;
 
       else
-         --  A negative free store value means that the links of the nodes
-         --  in the free store have not been initialized. In this case, the
-         --  nodes are physically contiguous in the array, starting at the
-         --  index that is the absolute value of the Container.Free, and
-         --  continuing until the end of the array (Nodes'Last).
+         --  A negative free store value means that the links of the nodes in
+         --  the free store have not been initialized. In this case, the nodes
+         --  are physically contiguous in the array, starting at the index that
+         --  is the absolute value of the Container.Free, and continuing until
+         --  the end of the array (Nodes'Last).
 
          New_Node := abs Container.Free;
 
-         --  As above, we perform this assignment first, before modifying
-         --  any container state.
+         --  As above, we perform this assignment first, before modifying any
+         --  container state.
 
          N (New_Node).Element := New_Item;
          Container.Free := Container.Free - 1;
@@ -164,24 +164,23 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       if Container.Free >= 0 then
          New_Node := Container.Free;
 
-         --  We always perform the assignment first, before we
-         --  change container state, in order to defend against
-         --  exceptions duration assignment.
+         --  We always perform the assignment first, before we change container
+         --  state, in order to defend against exceptions duration assignment.
 
          Element_Type'Read (Stream, N (New_Node).Element);
          Container.Free := N (New_Node).Next;
 
       else
-         --  A negative free store value means that the links of the nodes
-         --  in the free store have not been initialized. In this case, the
-         --  nodes are physically contiguous in the array, starting at the
-         --  index that is the absolute value of the Container.Free, and
-         --  continuing until the end of the array (Nodes'Last).
+         --  A negative free store value means that the links of the nodes in
+         --  the free store have not been initialized. In this case, the nodes
+         --  are physically contiguous in the array, starting at the index that
+         --  is the absolute value of the Container.Free, and continuing until
+         --  the end of the array (Nodes'Last).
 
          New_Node := abs Container.Free;
 
-         --  As above, we perform this assignment first, before modifying
-         --  any container state.
+         --  As above, we perform this assignment first, before modifying any
+         --  container state.
 
          Element_Type'Read (Stream, N (New_Node).Element);
          Container.Free := Container.Free - 1;
@@ -674,7 +673,10 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
          --  inactive immediately precedes the start of the free store. All
          --  we need to do is move the start of the free store back by one.
 
-         N (X).Next := 0;  -- not strictly necessary, but marginally safer
+         --  Note: initializing Next to zero is not strictly necessary but
+         --  seems cleaner and marginally safer.
+
+         N (X).Next := 0;
          Container.Free := Container.Free + 1;
 
       else
@@ -794,7 +796,6 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
             if RN (RI.Node).Element < LN (LI.Node).Element then
                declare
                   RJ : Cursor := RI;
-                  pragma Warnings (Off, RJ);
                begin
                   RI.Node := RN (RI.Node).Next;
                   Splice (Target, LI, Source, RJ);
@@ -1035,7 +1036,9 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
          Container.Last := New_Node;
          N (Container.Last).Next := 0;
 
-      elsif Before = 0 then  -- means append
+      --  Before = zero means append
+
+      elsif Before = 0 then
          pragma Assert (N (Container.Last).Next = 0);
 
          N (Container.Last).Next := New_Node;
@@ -1044,7 +1047,9 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
          Container.Last := New_Node;
          N (Container.Last).Next := 0;
 
-      elsif Before = Container.First then  -- means prepend
+      --  Before = Container.First means prepend
+
+      elsif Before = Container.First then
          pragma Assert (N (Container.First).Prev = 0);
 
          N (Container.First).Prev := New_Node;
@@ -2129,20 +2134,17 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       declare
          L : List renames Position.Container.all;
          N : Node_Array renames L.Nodes;
+
       begin
          if L.Length = 0 then
             return False;
          end if;
 
-         if L.First = 0
-           or L.First > L.Capacity
-         then
+         if L.First = 0 or L.First > L.Capacity then
             return False;
          end if;
 
-         if L.Last = 0
-           or L.Last > L.Capacity
-         then
+         if L.Last = 0 or L.Last > L.Capacity then
             return False;
          end if;
 
@@ -2182,6 +2184,7 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
 
          --  If we get here, we know that this disjunction is true:
          --  N (Position.Node).Prev /= 0 or else Position.Node = L.First
+         --  Why not do this with an assertion???
 
          if N (Position.Node).Next = 0
            and then Position.Node /= L.Last
@@ -2191,6 +2194,7 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
 
          --  If we get here, we know that this disjunction is true:
          --  N (Position.Node).Next /= 0 or else Position.Node = L.Last
+         --  Why not do this with an assertion???
 
          if L.Length = 1 then
             return L.First = L.Last;
@@ -2242,15 +2246,15 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
             return True;
          end if;
 
-         --  If we get here, we know (disjunctive syllogism) that this
-         --  predicate is true: N (Position.Node).Prev /= 0
+         --  If we get to this point, we know that this predicate is true:
+         --  N (Position.Node).Prev /= 0
 
          if Position.Node = L.Last then  -- eliminates earlier disjunct
             return True;
          end if;
 
-         --  If we get here, we know (disjunctive syllogism) that this
-         --  predicate is true: N (Position.Node).Next /= 0
+         --  If we get to this point, we know that this predicate is true:
+         --  N (Position.Node).Next /= 0
 
          if N (N (Position.Node).Next).Prev /= Position.Node then
             return False;

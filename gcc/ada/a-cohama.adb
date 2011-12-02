@@ -393,7 +393,6 @@ package body Ada.Containers.Hashed_Maps is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.HT.Busy;
-
          begin
             B := B - 1;
          end;
@@ -678,7 +677,6 @@ package body Ada.Containers.Hashed_Maps is
      (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'Class
    is
       B  : Natural renames Container'Unrestricted_Access.all.HT.Busy;
-
    begin
       return It : constant Iterator :=
                     (Limited_Controlled with
