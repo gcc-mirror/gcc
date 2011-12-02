@@ -1240,7 +1240,9 @@ package body Checks is
       --  partial view that is constrained.
 
       elsif Ada_Version >= Ada_2005
-        and then Effectively_Has_Constrained_Partial_View (Base_Type (T_Typ))
+        and then Effectively_Has_Constrained_Partial_View
+                   (Typ  => Base_Type (T_Typ),
+                    Scop => Current_Scope)
       then
          return;
       end if;

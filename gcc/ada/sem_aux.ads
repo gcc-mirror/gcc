@@ -104,6 +104,14 @@ package Sem_Aux is
    --  constants from the point of view of constant folding. Empty is also
    --  returned for variables with no initialization expression.
 
+   function Effectively_Has_Constrained_Partial_View
+     (Typ  : Entity_Id;
+      Scop : Entity_Id) return Boolean;
+   --  Return True if Typ has attribute Has_Constrained_Partial_View set to
+   --  True; in addition, within a generic body, return True if a subtype is
+   --  a descendant of an untagged generic formal private or derived type, and
+   --  the subtype is not an unconstrained array subtype (RM 3.3(23.10/3)).
+
    function Enclosing_Dynamic_Scope (Ent : Entity_Id) return Entity_Id;
    --  For any entity, Ent, returns the closest dynamic scope in which the
    --  entity is declared or Standard_Standard for library-level entities.
@@ -146,6 +154,9 @@ package Sem_Aux is
    function First_Tag_Component (Typ : Entity_Id) return Entity_Id;
    --  Typ must be a tagged record type. This function returns the Entity for
    --  the first _Tag field in the record type.
+
+   function In_Generic_Body (Id : Entity_Id) return Boolean;
+   --  Determine whether entity Id appears inside a generic body
 
    function Is_By_Copy_Type (Ent : Entity_Id) return Boolean;
    --  Ent is any entity. Returns True if Ent is a type entity where the type
@@ -227,5 +238,12 @@ package Sem_Aux is
    pragma Inline (Ultimate_Alias);
    --  Return the last entity in the chain of aliased entities of Prim. If Prim
    --  has no alias return Prim.
+
+   function Unit_Declaration_Node (Unit_Id : Entity_Id) return Node_Id;
+   --  Unit_Id is the simple name of a program unit, this function returns the
+   --  corresponding xxx_Declaration node for the entity. Also applies to the
+   --  body entities for subprograms, tasks and protected units, in which case
+   --  it returns the subprogram, task or protected body node for it. The unit
+   --  may be a child unit with any number of ancestors.
 
 end Sem_Aux;

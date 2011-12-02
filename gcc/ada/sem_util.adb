@@ -3039,25 +3039,6 @@ package body Sem_Util is
       return Extra_Accessibility (Id);
    end Effective_Extra_Accessibility;
 
-   ----------------------------------------------
-   -- Effectively_Has_Constrained_Partial_View --
-   ----------------------------------------------
-
-   function Effectively_Has_Constrained_Partial_View
-     (Typ  : Entity_Id;
-      Scop : Entity_Id := Current_Scope) return Boolean
-   is
-   begin
-      return Has_Constrained_Partial_View (Typ)
-        or else (In_Generic_Body (Scop)
-                   and then Is_Generic_Type (Base_Type (Typ))
-                   and then Is_Private_Type (Base_Type (Typ))
-                   and then not Is_Tagged_Type (Typ)
-                   and then not (Is_Array_Type (Typ)
-                                   and then not Is_Constrained (Typ))
-                   and then Has_Discriminants (Typ));
-   end Effectively_Has_Constrained_Partial_View;
-
    --------------------------
    -- Enclosing_CPP_Parent --
    --------------------------
@@ -6107,43 +6088,6 @@ package body Sem_Util is
       return False;
    end Implements_Interface;
 
-   ---------------------
-   -- In_Generic_Body --
-   ---------------------
-
-   function In_Generic_Body (Id : Entity_Id) return Boolean is
-      S : Entity_Id;
-
-   begin
-      --  Climb scopes looking for generic body
-
-      S := Id;
-      while Present (S) and then S /= Standard_Standard loop
-
-         --  Generic package body
-
-         if Ekind (S) = E_Generic_Package
-           and then In_Package_Body (S)
-         then
-            return True;
-
-         --  Generic subprogram body
-
-         elsif Is_Subprogram (S)
-           and then Nkind (Unit_Declaration_Node (S))
-                      = N_Generic_Subprogram_Declaration
-         then
-            return True;
-         end if;
-
-         S := Scope (S);
-      end loop;
-
-      --  False if top of scope stack without finding a generic body
-
-      return False;
-   end In_Generic_Body;
-
    -----------------
    -- In_Instance --
    -----------------
@@ -7002,7 +6946,8 @@ package body Sem_Util is
 
                   if Ekind (Prefix_Type) = E_Access_Type
                     and then not Effectively_Has_Constrained_Partial_View
-                                   (Designated_Type (Prefix_Type))
+                                   (Typ  => Designated_Type (Prefix_Type),
+                                    Scop => Current_Scope)
                   then
                      return False;
 
@@ -12984,55 +12929,6 @@ package body Sem_Util is
          return Get_Scoped_Name (Unique_Entity (E));
       end if;
    end Unique_Name;
-
-   --------------------------
-   -- Unit_Declaration_Node --
-   --------------------------
-
-   function Unit_Declaration_Node (Unit_Id : Entity_Id) return Node_Id is
-      N : Node_Id := Parent (Unit_Id);
-
-   begin
-      --  Predefined operators do not have a full function declaration
-
-      if Ekind (Unit_Id) = E_Operator then
-         return N;
-      end if;
-
-      --  Isn't there some better way to express the following ???
-
-      while Nkind (N) /= N_Abstract_Subprogram_Declaration
-        and then Nkind (N) /= N_Formal_Package_Declaration
-        and then Nkind (N) /= N_Function_Instantiation
-        and then Nkind (N) /= N_Generic_Package_Declaration
-        and then Nkind (N) /= N_Generic_Subprogram_Declaration
-        and then Nkind (N) /= N_Package_Declaration
-        and then Nkind (N) /= N_Package_Body
-        and then Nkind (N) /= N_Package_Instantiation
-        and then Nkind (N) /= N_Package_Renaming_Declaration
-        and then Nkind (N) /= N_Procedure_Instantiation
-        and then Nkind (N) /= N_Protected_Body
-        and then Nkind (N) /= N_Subprogram_Declaration
-        and then Nkind (N) /= N_Subprogram_Body
-        and then Nkind (N) /= N_Subprogram_Body_Stub
-        and then Nkind (N) /= N_Subprogram_Renaming_Declaration
-        and then Nkind (N) /= N_Task_Body
-        and then Nkind (N) /= N_Task_Type_Declaration
-        and then Nkind (N) not in N_Formal_Subprogram_Declaration
-        and then Nkind (N) not in N_Generic_Renaming_Declaration
-      loop
-         N := Parent (N);
-
-         --  We don't use Assert here, because that causes an infinite loop
-         --  when assertions are turned off. Better to crash.
-
-         if No (N) then
-            raise Program_Error;
-         end if;
-      end loop;
-
-      return N;
-   end Unit_Declaration_Node;
 
    ---------------------
    -- Unit_Is_Visible --

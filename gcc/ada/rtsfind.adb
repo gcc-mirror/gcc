@@ -42,6 +42,7 @@ with Output;   use Output;
 with Opt;      use Opt;
 with Restrict; use Restrict;
 with Sem;      use Sem;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Dist; use Sem_Dist;
 with Sem_Util; use Sem_Util;
