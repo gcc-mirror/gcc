@@ -991,7 +991,8 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
 
 /* On some system termio is either absent or including it will disable termios
    (HP-UX) */
-#if ! defined (__hpux__) && ! defined (FREEBSD) && ! defined (__APPLE__)
+#if ! defined (__hpux__) && ! defined (FREEBSD) && \
+    ! defined (__APPLE__) && ! defined(__rtems__)
 #   include <termio.h>
 #endif
 
@@ -1142,10 +1143,12 @@ allocate_pty_desc (pty_desc **desc) {
       return -1;
     }
 
+#if !defined(__rtems__)
   /* grant access to the slave side */
   grantpt (master_fd);
   /* unlock the terminal */
   unlockpt (master_fd);
+#endif
 
   /* set desc and return 0 */
   result = malloc (sizeof (pty_desc));

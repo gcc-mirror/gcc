@@ -1,3 +1,13 @@
+2011-12-02  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* s-tpopsp-rtems.adb: Use ATCB_Key rather than RTEMS_Ada_Self variable
+	for consistency with other ports.
+	* s-osinte-rtems.adb: Add body for dummy implementation of
+	pthread_rwlockattr_setkind_np().
+	* s-osinte-rtems.ads: Add missing clock and rwlock bindings.
+	* terminals.c: Add __rtems__ conditionals to account for differences
+	in termios implementation.
+
 2011-12-02  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, sem_attr.adb, a-comutr.adb, a-cbmutr.adb,
