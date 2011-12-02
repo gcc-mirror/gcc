@@ -45,7 +45,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
      Tree_Iterator_Interfaces.Reversible_Iterator with
    record
       Container : Tree_Access;
-      Position  : Cursor;
+      Parent    : Tree_Node_Access;
    end record;
 
    overriding procedure Finalize (Object : in out Iterator);
@@ -937,25 +937,15 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
    --------------
 
    procedure Finalize (Object : in out Iterator) is
+      B : Natural renames Object.Container.Busy;
    begin
-      if Object.Container /= null then
-         declare
-            B : Natural renames Object.Container.all.Busy;
-         begin
-            B := B - 1;
-         end;
-      end if;
+      B := B - 1;
    end Finalize;
 
    procedure Finalize (Object : in out Child_Iterator) is
+      B : Natural renames Object.Container.Busy;
    begin
-      if Object.Container /= null then
-         declare
-            B : Natural renames Object.Container.all.Busy;
-         begin
-            B := B - 1;
-         end;
-      end if;
+      B := B - 1;
    end Finalize;
 
    ----------
@@ -988,7 +978,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
 
    function First (Object : Child_Iterator) return Cursor is
    begin
-      return (Object.Container, Object.Position.Node.Children.First);
+      return First_Child (Cursor'(Object.Container, Object.Parent));
    end First;
 
    -----------------
@@ -1433,13 +1423,22 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Parent    : Cursor)
      return Tree_Iterator_Interfaces.Reversible_Iterator'Class
    is
-      B : Natural renames Container'Unrestricted_Access.all.Busy;
+      C : constant Tree_Access := Container'Unrestricted_Access;
+      B : Natural renames C.Busy;
 
    begin
+      if Parent = No_Element then
+         raise Constraint_Error with "Parent cursor has no element";
+      end if;
+
+      if Parent.Container /= C then
+         raise Program_Error with "Parent cursor not in container";
+      end if;
+
       return It : constant Child_Iterator :=
                     Child_Iterator'(Limited_Controlled with
-                                      Container => Parent.Container,
-                                      Position  => Parent)
+                                      Container => C,
+                                      Parent    => Parent.Node)
       do
          B := B + 1;
       end return;
@@ -1516,7 +1515,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
 
    overriding function Last (Object : Child_Iterator) return Cursor is
    begin
-      return (Object.Container, Object.Position.Node.Children.Last);
+      return Last_Child (Cursor'(Object.Container, Object.Parent));
    end Last;
 
    ----------------
@@ -1646,18 +1645,20 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
    end Next;
 
    function Next
-     (Object : Child_Iterator;
+     (Object   : Child_Iterator;
       Position : Cursor) return Cursor
    is
-      C : constant Tree_Node_Access := Position.Node.Next;
-
    begin
-      if C = null then
+      if Position.Container = null then
          return No_Element;
-
-      else
-         return (Object.Container, C);
       end if;
+
+      if Position.Container /= Object.Container then
+         raise Program_Error with
+           "Position cursor of Next designates wrong tree";
+      end if;
+
+      return Next_Sibling (Position);
    end Next;
 
    ------------------
@@ -1787,18 +1788,20 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
    --------------
 
    overriding function Previous
-     (Object : Child_Iterator;
+     (Object   : Child_Iterator;
       Position : Cursor) return Cursor
    is
-      C : constant Tree_Node_Access := Position.Node.Prev;
-
    begin
-      if C = null then
+      if Position.Container = null then
          return No_Element;
-
-      else
-         return (Object.Container, C);
       end if;
+
+      if Position.Container /= Object.Container then
+         raise Program_Error with
+           "Position cursor of Previous designates wrong tree";
+      end if;
+
+      return Previous_Sibling (Position);
    end Previous;
 
    ----------------------

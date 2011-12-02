@@ -1420,6 +1420,8 @@ package Einfo is
 --       type has no discriminants and the full view has discriminants with
 --       defaults. In Ada 2005 heap-allocated objects of such types are not
 --       constrained, and can change their discriminants with full assignment.
+--       Sem_Util.Effectively_Has_Constrained_Partial_View should be always
+--       used by callers, rather than reading this attribute directly.
 
 --    Has_Contiguous_Rep (Flag181)
 --       Present in enumeration types. True if the type as a representation

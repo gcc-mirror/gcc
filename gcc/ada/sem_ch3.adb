@@ -10674,8 +10674,7 @@ package body Sem_Ch3 is
             return;
          end if;
 
-         if (Ekind (T) = E_General_Access_Type
-              or else Ada_Version >= Ada_2005)
+         if Ekind (T) = E_General_Access_Type
            and then Has_Private_Declaration (Desig_Type)
            and then In_Open_Scopes (Scope (Desig_Type))
            and then Has_Discriminants (Desig_Type)
@@ -10686,11 +10685,6 @@ package body Sem_Ch3 is
             --  a derivation from a private type) has no discriminants.
             --  (Defect Report 8652/0008, Technical Corrigendum 1, checked
             --  by ACATS B371001).
-
-            --  Rule updated for Ada 2005: the private type is said to have
-            --  a constrained partial view, given that objects of the type
-            --  can be declared. Furthermore, the rule applies to all access
-            --  types, unlike the rule concerning default discriminants.
 
             declare
                Pack  : constant Node_Id :=

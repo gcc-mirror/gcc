@@ -2850,7 +2850,8 @@ package body Sem_Ch8 is
       end if;
 
       --  Implementation-defined aspect specifications can appear in a renaming
-      --  declaration, but not language-defined ones.
+      --  declaration, but not language-defined ones. The call to procedure
+      --  Analyze_Aspect_Specifications will take care of this error check.
 
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, New_S);

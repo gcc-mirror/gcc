@@ -3039,6 +3039,24 @@ package body Sem_Util is
       return Extra_Accessibility (Id);
    end Effective_Extra_Accessibility;
 
+   ----------------------------------------------
+   -- Effectively_Has_Constrained_Partial_View --
+   ----------------------------------------------
+
+   function Effectively_Has_Constrained_Partial_View
+     (Typ  : Entity_Id;
+      Scop : Entity_Id := Current_Scope) return Boolean is
+   begin
+      return Has_Constrained_Partial_View (Typ)
+        or else (In_Generic_Body (Scop)
+                   and then Is_Generic_Type (Base_Type (Typ))
+                   and then Is_Private_Type (Base_Type (Typ))
+                   and then not Is_Tagged_Type (Typ)
+                   and then not (Is_Array_Type (Typ)
+                                   and then not Is_Constrained (Typ))
+                   and then Has_Discriminants (Typ));
+   end Effectively_Has_Constrained_Partial_View;
+
    --------------------------
    -- Enclosing_CPP_Parent --
    --------------------------
@@ -6088,6 +6106,38 @@ package body Sem_Util is
       return False;
    end Implements_Interface;
 
+   ---------------------
+   -- In_Generic_Body --
+   ---------------------
+
+   function In_Generic_Body (Id : Entity_Id) return Boolean is
+      S : Entity_Id := Id;
+
+   begin
+      while Present (S) and then S /= Standard_Standard loop
+
+         --  Generic package body
+
+         if Ekind (S) = E_Generic_Package
+           and then In_Package_Body (S)
+         then
+            return True;
+
+         --  Generic subprogram body
+
+         elsif Is_Subprogram (S)
+           and then Nkind (Unit_Declaration_Node (S))
+                      = N_Generic_Subprogram_Declaration
+         then
+            return True;
+         end if;
+
+         S := Scope (S);
+      end loop;
+
+      return False;
+   end In_Generic_Body;
+
    -----------------
    -- In_Instance --
    -----------------
@@ -6945,7 +6995,7 @@ package body Sem_Util is
                   --  designated object is known to be constrained.
 
                   if Ekind (Prefix_Type) = E_Access_Type
-                    and then not Has_Constrained_Partial_View
+                    and then not Effectively_Has_Constrained_Partial_View
                                    (Designated_Type (Prefix_Type))
                   then
                      return False;

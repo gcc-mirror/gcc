@@ -55,7 +55,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Tree_Iterator_Interfaces.Reversible_Iterator with
    record
       Container : Tree_Access;
-      Position  : Cursor;
+      Parent    : Count_Type;
    end record;
 
    overriding procedure Finalize (Object : in out Child_Iterator);
@@ -1243,25 +1243,15 @@ package body Ada.Containers.Bounded_Multiway_Trees is
    --------------
 
    procedure Finalize (Object : in out Iterator) is
+      B : Natural renames Object.Container.Busy;
    begin
-      if Object.Container /= null then
-         declare
-            B : Natural renames Object.Container.all.Busy;
-         begin
-            B := B - 1;
-         end;
-      end if;
+      B := B - 1;
    end Finalize;
 
    procedure Finalize (Object : in out Child_Iterator) is
+      B : Natural renames Object.Container.Busy;
    begin
-      if Object.Container /= null then
-         declare
-            B : Natural renames Object.Container.all.Busy;
-         begin
-            B := B - 1;
-         end;
-      end if;
+      B := B - 1;
    end Finalize;
 
    ----------
@@ -1294,10 +1284,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
    end First;
 
    function First (Object : Child_Iterator) return Cursor is
-      Node : Count_Type'Base;
    begin
-      Node := Object.Container.Nodes (Object.Position.Node).Children.First;
-      return (Object.Container, Node);
+      return First_Child (Cursor'(Object.Container, Object.Parent));
    end First;
 
    -----------------
@@ -1876,13 +1864,22 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Parent    : Cursor)
       return Tree_Iterator_Interfaces.Reversible_Iterator'Class
    is
-      B : Natural renames Container'Unrestricted_Access.all.Busy;
+      C : constant Tree_Access := Container'Unrestricted_Access;
+      B : Natural renames C.Busy;
 
    begin
+      if Parent = No_Element then
+         raise Constraint_Error with "Parent cursor has no element";
+      end if;
+
+      if Parent.Container /= C then
+         raise Program_Error with "Parent cursor not in container";
+      end if;
+
       return It : constant Child_Iterator :=
                     Child_Iterator'(Limited_Controlled with
-                                      Container => Parent.Container,
-                                      Position  => Parent)
+                                      Container => C,
+                                      Parent    => Parent.Node)
       do
          B := B + 1;
       end return;
@@ -1965,7 +1962,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
 
    overriding function Last (Object : Child_Iterator) return Cursor is
    begin
-      return Last_Child (Object.Position);
+      return Last_Child (Cursor'(Object.Container, Object.Parent));
    end Last;
 
    ----------------
@@ -2089,13 +2086,18 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       end if;
    end Next;
 
-   function Next
+   overriding function Next
      (Object   : Child_Iterator;
       Position : Cursor) return Cursor
    is
    begin
-      if Object.Container /= Position.Container then
-         raise Program_Error;
+      if Position.Container = null then
+         return No_Element;
+      end if;
+
+      if Position.Container /= Object.Container then
+         raise Program_Error with
+           "Position cursor of Next designates wrong tree";
       end if;
 
       return Next_Sibling (Position);
@@ -2255,8 +2257,13 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Position : Cursor) return Cursor
    is
    begin
-      if Object.Container /= Position.Container then
-         raise Program_Error;
+      if Position.Container = null then
+         return No_Element;
+      end if;
+
+      if Position.Container /= Object.Container then
+         raise Program_Error with
+           "Position cursor of Previous designates wrong tree";
       end if;
 
       return Previous_Sibling (Position);

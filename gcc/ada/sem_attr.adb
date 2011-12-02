@@ -8632,7 +8632,7 @@ package body Sem_Attr is
                  and then
                    (Ada_Version < Ada_2005
                      or else
-                       not Has_Constrained_Partial_View
+                       not Effectively_Has_Constrained_Partial_View
                              (Designated_Type (Base_Type (Typ))))
                then
                   null;

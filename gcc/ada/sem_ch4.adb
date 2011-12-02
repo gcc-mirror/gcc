@@ -576,10 +576,10 @@ package body Sem_Ch4 is
                --  and the allocated object is unconstrained.
 
                elsif Ada_Version >= Ada_2005
-                 and then Has_Constrained_Partial_View (Base_Typ)
+                 and then Effectively_Has_Constrained_Partial_View (Base_Typ)
                then
                   Error_Msg_N
-                    ("constraint no allowed when type " &
+                    ("constraint not allowed when type " &
                       "has a constrained partial view", Constraint (E));
                end if;
 

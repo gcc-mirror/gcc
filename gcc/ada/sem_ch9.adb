@@ -953,7 +953,7 @@ package body Sem_Ch9 is
                Error_Msg_N ("entry family low bound must be '>'= ^!", D_Sdef);
             end if;
 
-            <<Skip_LB>>
+         <<Skip_LB>>
             if Is_Generic_Type (Etype (D_Sdef))
               or else In_Instance
               or else Error_Posted (D_Sdef)
@@ -979,7 +979,7 @@ package body Sem_Ch9 is
                Error_Msg_N ("entry family high bound must be '<'= ^!", D_Sdef);
             end if;
 
-            <<Skip_UB>>
+         <<Skip_UB>>
             null;
          end;
       end if;
