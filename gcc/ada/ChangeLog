@@ -1,3 +1,14 @@
+2011-12-02  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Unique_Name): Reach through Unique_Entity to
+	get the name of the entity.
+	(Unique_Entity): Correct case for subprogram stubs.
+
+2011-12-02  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb (Check_Initialization): Do not emit warning on
+	initialization of limited type object in Alfa mode.
+
 2011-12-02  Robert Dewar  <dewar@adacore.com>
 
 	* sinfo.ads: Minor reformatting.
