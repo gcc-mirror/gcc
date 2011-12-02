@@ -8936,7 +8936,7 @@ package body Sem_Ch6 is
                               Set_Is_Immediately_Visible (E, False);
                            else
                               --  Work done in Override_Dispatching_Operation,
-                              --  so nothing else need to be done here.
+                              --  so nothing else needs to be done here.
 
                               null;
                            end if;
