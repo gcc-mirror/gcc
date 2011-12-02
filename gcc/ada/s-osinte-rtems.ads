@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---          Copyright (C) 1997-2009 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2011 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -176,9 +176,10 @@ package System.OS_Interface is
 
    type timespec is private;
 
-   type clockid_t is private;
+   type clockid_t is new int;
 
-   CLOCK_REALTIME : constant clockid_t;
+   CLOCK_REALTIME  : constant clockid_t;
+   CLOCK_MONOTONIC : constant clockid_t;
 
    function clock_gettime
      (clock_id : clockid_t;
@@ -236,12 +237,14 @@ package System.OS_Interface is
    type pthread_t           is private;
    subtype Thread_Id        is pthread_t;
 
-   type pthread_mutex_t     is limited private;
-   type pthread_cond_t      is limited private;
-   type pthread_attr_t      is limited private;
-   type pthread_mutexattr_t is limited private;
-   type pthread_condattr_t  is limited private;
-   type pthread_key_t       is private;
+   type pthread_mutex_t      is limited private;
+   type pthread_rwlock_t     is limited private;
+   type pthread_cond_t       is limited private;
+   type pthread_attr_t       is limited private;
+   type pthread_mutexattr_t  is limited private;
+   type pthread_rwlockattr_t is limited private;
+   type pthread_condattr_t   is limited private;
+   type pthread_key_t        is private;
 
    No_Key : constant pthread_key_t;
 
@@ -352,6 +355,40 @@ package System.OS_Interface is
 
    function pthread_mutex_unlock (mutex : access pthread_mutex_t) return int;
    pragma Import (C, pthread_mutex_unlock, "pthread_mutex_unlock");
+
+   function pthread_rwlockattr_init
+     (attr : access pthread_rwlockattr_t) return int;
+   pragma Import (C, pthread_rwlockattr_init, "pthread_rwlockattr_init");
+
+   function pthread_rwlockattr_destroy
+     (attr : access pthread_rwlockattr_t) return int;
+   pragma Import (C, pthread_rwlockattr_destroy, "pthread_rwlockattr_destroy");
+
+   PTHREAD_RWLOCK_PREFER_READER_NP              : constant := 0;
+   PTHREAD_RWLOCK_PREFER_WRITER_NP              : constant := 1;
+   PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP : constant := 2;
+
+   function pthread_rwlockattr_setkind_np
+     (attr : access pthread_rwlockattr_t;
+      pref : int) return int;
+
+   function pthread_rwlock_init
+     (mutex : access pthread_rwlock_t;
+      attr  : access pthread_rwlockattr_t) return int;
+   pragma Import (C, pthread_rwlock_init, "pthread_rwlock_init");
+
+   function pthread_rwlock_destroy
+     (mutex : access pthread_rwlock_t) return int;
+   pragma Import (C, pthread_rwlock_destroy, "pthread_rwlock_destroy");
+
+   function pthread_rwlock_rdlock (mutex : access pthread_rwlock_t) return int;
+   pragma Import (C, pthread_rwlock_rdlock, "pthread_rwlock_rdlock");
+
+   function pthread_rwlock_wrlock (mutex : access pthread_rwlock_t) return int;
+   pragma Import (C, pthread_rwlock_wrlock, "pthread_rwlock_wrlock");
+
+   function pthread_rwlock_unlock (mutex : access pthread_rwlock_t) return int;
+   pragma Import (C, pthread_rwlock_unlock, "pthread_rwlock_unlock");
 
    function pthread_condattr_init
      (attr : access pthread_condattr_t) return int;
@@ -584,8 +621,8 @@ private
    end record;
    pragma Convention (C, timespec);
 
-   type clockid_t is new rtems_id;
-   CLOCK_REALTIME : constant clockid_t := 1;
+   CLOCK_REALTIME :  constant clockid_t := 1;
+   CLOCK_MONOTONIC : constant clockid_t := 4;
 
    type pthread_attr_t is record
       is_initialized  : int;
@@ -616,9 +653,17 @@ private
    end record;
    pragma Convention (C, pthread_mutexattr_t);
 
+   type pthread_rwlockattr_t is record
+      is_initialized  : int;
+      process_shared  : int;
+   end record;
+   pragma Convention (C, pthread_rwlockattr_t);
+
    type pthread_t is new rtems_id;
 
    type pthread_mutex_t is new rtems_id;
+
+   type pthread_rwlock_t is new rtems_id;
 
    type pthread_cond_t is new rtems_id;
 
