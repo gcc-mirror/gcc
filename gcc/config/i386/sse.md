@@ -5066,7 +5066,24 @@
 					gen_lowpart (mulmode, t[3]))));
 
   /* Extract the even bytes and merge them back together.  */
-  ix86_expand_vec_extract_even_odd (operands[0], t[5], t[4], 0);
+  if (<MODE>mode == V16QImode)
+    ix86_expand_vec_extract_even_odd (operands[0], t[5], t[4], 0);
+  else
+    {
+      /* Since avx2_interleave_{low,high}v32qi used above aren't cross-lane,
+	 this can't be normal even extraction, but one where additionally
+	 the second and third quarter are swapped.  That is even one insn
+	 shorter than even extraction.  */
+      rtvec v = rtvec_alloc (32);
+      for (i = 0; i < 32; ++i)
+	RTVEC_ELT (v, i)
+	  = GEN_INT (i * 2 + ((i & 24) == 8 ? 16 : (i & 24) == 16 ? -16 : 0));
+      t[0] = operands[0];
+      t[1] = t[5];
+      t[2] = t[4];
+      t[3] = gen_rtx_CONST_VECTOR (<MODE>mode, v);
+      ix86_expand_vec_perm_const (t);
+    }
 
   set_unique_reg_note (get_last_insn (), REG_EQUAL,
 		       gen_rtx_MULT (<MODE>mode, operands[1], operands[2]));
