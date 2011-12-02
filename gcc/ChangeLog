@@ -1,3 +1,19 @@
+2011-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* gcov.c (struct arc_info): Add is_throw field.
+	(struct (block_info): Add exceptional field, reduce flags size to
+	account for it.
+	(struct function_info): Add has_catch field.
+	(struct line_info): Add unexceptional field.
+	(process_file): Call find_exception_blocks if necessary.
+	(read_graph_file): Adjust.  Note if an exceptional edge is seen.
+	(find_exception_blocks): New.
+	(add_line_counts): Set line's unexceptional flag if not
+	exceptional.
+	(output_branch_count): Note exceptional arcs, lines and blocks.
+	* gcov-dump.c (tag_arcs): Decode arc flags.
+	* doc/gcov.texi: Document '=====' lines.
+
 2011-12-02  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/ia64/ia64.h (PRINT_OPERAND, PRINT_OPERAND_ADDRESS,

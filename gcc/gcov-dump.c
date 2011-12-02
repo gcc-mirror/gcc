@@ -351,6 +351,18 @@ tag_arcs (const char *filename ATTRIBUTE_UNUSED,
 	  dst = gcov_read_unsigned ();
 	  flags = gcov_read_unsigned ();
 	  printf (" %u:%04x", dst, flags);
+	  if (flags)
+	    {
+	      char c = '(';
+	      
+	      if (flags & GCOV_ARC_ON_TREE)
+		printf ("%ctree", c), c = ',';
+	      if (flags & GCOV_ARC_FAKE)
+		printf ("%cfake", c), c = ',';
+	      if (flags & GCOV_ARC_FALLTHROUGH)
+		printf ("%cfall", c), c = ',';
+	      printf (")");
+	    }
 	}
     }
 }
