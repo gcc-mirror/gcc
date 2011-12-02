@@ -1,3 +1,8 @@
+2011-12-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/iomanip (put_money): Fix thinko, use __err local,
+	like in, eg, basic_ostream::_M_insert.
+
 2011-11-30  Benjamin Kosnik  <bkoz@redhat.com>
 
         * acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): Remove
