@@ -252,7 +252,6 @@ TOOLS_LIBS = targext.o link.o ../../libcommon-target.a ../../libcommon.a \
 # Convert the target variable into a space separated list of architecture,
 # manufacturer, and operating system and assign each of those to its own
 # variable.
-
 host:=$(subst -, ,$(host_canonical))
 targ:=$(subst -, ,$(target))
 arch:=$(word 1,$(targ))
@@ -268,14 +267,22 @@ endif
 # Both . and srcdir are used, in that order,
 # so that tm.h and config.h will be found in the compilation
 # subdirectory rather than in the source directory.
-INCLUDES = -I- -I. -I.. -I$(srcdir)/ada -I$(srcdir) -I$(srcdir)/config \
-	-I$(srcdir)/../include
+INCLUDES = -I- -I. -I.. -I$(srcdir)/ada -I$(srcdir) -I$(srcdir)/../include
 
 ADA_INCLUDES = -I- -I. -I$(srcdir)/ada
 
-INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
-		      -iquote $(fsrcdir)/ada -iquote $(fsrcdir) \
-		      -I$(fsrcdir)/../include
+# Likewise, but valid for subdirectories of the current dir.
+# FIXME: for VxWorks, we cannot add $(fsrcdir) because the regs.h file in
+# that directory conflicts with a system header file.
+ifneq ($(findstring vxworks,$(osys)),)
+  INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
+			-iquote $(fsrcdir)/ada \
+			-I$(fsrcdir)/../include
+else
+  INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
+			-iquote $(fsrcdir)/ada -iquote $(fsrcdir) \
+			-I$(fsrcdir)/../include
+endif
 
 ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
 
@@ -2216,8 +2223,8 @@ LIBGNAT_SRCS = adadecode.c adadecode.h adaint.c adaint.h	\
   argv.c cio.c cstreams.c errno.c exit.c cal.c ctrl_c.c env.c env.h	\
   arit64.c raise.h raise.c sysdep.c aux-io.c init.c initialize.c	\
   locales.c seh_init.c final.c tracebak.c tb-alvms.c tb-alvxw.c         \
-  tb-gcc.c expect.c mkdir.c socket.c gsocket.h targext.c \
-  terminals.c $(EXTRA_LIBGNAT_SRCS)
+  tb-gcc.c expect.c mkdir.c socket.c gsocket.h targext.c terminals.c	\
+  thread.c $(EXTRA_LIBGNAT_SRCS)
 
 LIBGNAT_OBJS = adadecode.o adaint.o argv.o cio.o cstreams.o ctrl_c.o	\
   errno.o exit.o env.o raise.o sysdep.o aux-io.o init.o initialize.o	\
