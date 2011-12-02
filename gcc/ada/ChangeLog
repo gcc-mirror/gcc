@@ -1,5 +1,41 @@
 2011-12-02  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch6.adb: Minor change in error message.
+
+2011-12-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch9.adb, prj-part.adb, vms_data.ads, sem_ch8.adb: Minor
+	reformatting.
+
+2011-12-02  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Constrain_Access): Enable on Ada 2005 mode the
+	static check of the rule of general access types whose designated
+	type has discriminants.
+	* sem_util.ads, sem_util.adb
+	(Effectively_Has_Constrained_Partial_View): New subprogram.
+	(In_Generic_Body): New subprogram.
+	* einfo.ads (Has_Constrained_Partial_View): Adding documentation.
+	* sem_prag.adb (Inside_Generic_Body): Removed. Replaced by new
+	subprogram In_Generic_Body.
+	* exp_attr.adb, checks.adb, sem_attr.adb, exp_ch4.adb,
+	sem_ch4.adb: In addition, this patch replaces the occurrences of
+	Has_Constrained_Partial_View by
+	Effectively_Has_Constrained_Partial_View.
+
+2011-12-02  Matthew Heaney  <heaney@adacore.com>
+
+	* a-comutr.adb, a-cimutr.adb, a-cbmutr.adb (Iterator): Rename
+	Position component.
+	(Finalize): Remove unnecessary access check.
+	(First): Forward to First_Child.
+	(Last): Forward to Last_Child.
+	(Iterate): Check preconditions for parent node parameter.
+	(Next): Forward to Next_Sibling.
+	(Previous): Forward to Previous_Sibling.
+
+2011-12-02  Robert Dewar  <dewar@adacore.com>
+
 	* a-coinve.adb, a-coorma.adb, freeze.adb, a-coorse.adb, a-comutr.adb,
 	a-coormu.adb, a-convec.adb: Minor reformatting.
 

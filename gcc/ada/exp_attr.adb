@@ -1559,10 +1559,11 @@ package body Exp_Attr is
                return Is_Aliased_View (Obj)
                         and then
                       (Is_Constrained (Etype (Obj))
-                         or else (Nkind (Obj) = N_Explicit_Dereference
-                                    and then
-                                      not Has_Constrained_Partial_View
-                                            (Base_Type (Etype (Obj)))));
+                         or else
+                           (Nkind (Obj) = N_Explicit_Dereference
+                              and then
+                                not Effectively_Has_Constrained_Partial_View
+                                      (Base_Type (Etype (Obj)))));
             end if;
          end Is_Constrained_Aliased_View;
 
@@ -1684,7 +1685,8 @@ package body Exp_Attr is
                     or else
                      (Nkind (Pref) = N_Explicit_Dereference
                        and then
-                         not Has_Constrained_Partial_View (Base_Type (Ptyp)))
+                         not Effectively_Has_Constrained_Partial_View
+                               (Base_Type (Ptyp)))
                     or else Is_Constrained (Underlying_Type (Ptyp))
                     or else (Ada_Version >= Ada_2012
                               and then Is_Tagged_Type (Underlying_Type (Ptyp))

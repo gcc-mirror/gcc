@@ -368,6 +368,14 @@ package Sem_Util is
    --  Same as Einfo.Extra_Accessibility except thtat object renames
    --  are looked through.
 
+   function Effectively_Has_Constrained_Partial_View
+     (Typ  : Entity_Id;
+      Scop : Entity_Id := Current_Scope) return Boolean;
+   --  Return True if Typ has attribute Has_Constrained_Partial_View set to
+   --  True; in addition, within a generic body, return True if a subtype is
+   --  a descendant of an untagged generic formal private or derived type, and
+   --  the subtype is not an unconstrained array subtype (RM 3.3(23.10/3)).
+
    function Enclosing_CPP_Parent (Typ : Entity_Id) return Entity_Id;
    --  Returns the closest ancestor of Typ that is a CPP type.
 
@@ -716,6 +724,9 @@ package Sem_Util is
       Iface_Ent       : Entity_Id;
       Exclude_Parents : Boolean := False) return Boolean;
    --  Returns true if the Typ_Ent implements interface Iface_Ent
+
+   function In_Generic_Body (Id : Entity_Id) return Boolean;
+   --  Determine whether entity Id appears inside a generic body
 
    function In_Instance return Boolean;
    --  Returns True if the current scope is within a generic instance

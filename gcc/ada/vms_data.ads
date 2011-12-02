@@ -6388,18 +6388,18 @@ package VMS_Data is
                                                  "-ntM";
    --        /TYPE_CASING=name-option
    --
-   --   Specify the casing of type and subtype. If not specified, the
-   --   casing of these names is defined by the NAME_CASING option.
-   --   'name-option' may be one of:
+   --   Specify the casing of subtype names (including first subtypes from
+   --   type declarations). If not specified, the casing of these names is
+   --   defined by the NAME_CASING option. 'name-option' is one of:
    --
-   --      AS_DECLARED       Name casing for defining occurrences are
-   --                        as they appear in the source file.
+   --      AS_DECLARED       Names are cased as they appear in the declaration
+   --                        in the source file.
    --
-   --      LOWER_CASE        Namess are in lower case.
+   --      LOWER_CASE        Names are in lower case.
    --
-   --      UPPER_CASE        Namess are in upper case.
+   --      UPPER_CASE        Names are in upper case.
    --
-   --      MIXED_CASE        Namess are in mixed case.
+   --      MIXED_CASE        Names are in mixed case.
 
    S_Pretty_Verbose   : aliased constant S := "/VERBOSE "                  &
                                               "-v";

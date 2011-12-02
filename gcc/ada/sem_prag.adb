@@ -1314,34 +1314,6 @@ package body Sem_Prag is
                      Subtype_Indication (Component_Definition (Comp));
          Typ     : constant Entity_Id := Etype (Comp_Id);
 
-         function Inside_Generic_Body (Id : Entity_Id) return Boolean;
-         --  Determine whether entity Id appears inside a generic body.
-         --  Shouldn't this be in a more general place ???
-
-         -------------------------
-         -- Inside_Generic_Body --
-         -------------------------
-
-         function Inside_Generic_Body (Id : Entity_Id) return Boolean is
-            S : Entity_Id;
-
-         begin
-            S := Id;
-            while Present (S) and then S /= Standard_Standard loop
-               if Ekind (S) = E_Generic_Package
-                 and then In_Package_Body (S)
-               then
-                  return True;
-               end if;
-
-               S := Scope (S);
-            end loop;
-
-            return False;
-         end Inside_Generic_Body;
-
-      --  Start of processing for Check_Component
-
       begin
          --  Ada 2005 (AI-216): If a component subtype is subject to a per-
          --  object constraint, then the component type shall be an Unchecked_
@@ -1363,7 +1335,7 @@ package body Sem_Prag is
          --  the formal part of the generic unit.
 
          elsif Ada_Version >= Ada_2012
-           and then Inside_Generic_Body (UU_Typ)
+           and then In_Generic_Body (UU_Typ)
            and then In_Variant_Part
            and then Is_Private_Type (Typ)
            and then Is_Generic_Type (Typ)

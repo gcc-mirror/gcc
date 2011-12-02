@@ -374,6 +374,7 @@ package body Prj.Part is
       declare
          Org_With_Clause : Project_Node_Id := Extension_Withs;
          New_With_Clause : Project_Node_Id := Empty_Node;
+
       begin
          while Present (Org_With_Clause) loop
             New_With_Clause :=
@@ -381,6 +382,7 @@ package body Prj.Part is
 
             Org_With_Clause := Next_With_Clause_Of (Org_With_Clause, In_Tree);
          end loop;
+
          Set_First_With_Clause_Of (Virtual_Project, In_Tree, New_With_Clause);
       end;
 
@@ -442,10 +444,10 @@ package body Prj.Part is
       With_Clause : Project_Node_Id := Empty_Node;
       --  Node for a with clause of Proj
 
-      Imported    : Project_Node_Id := Empty_Node;
+      Imported : Project_Node_Id := Empty_Node;
       --  Node for a project imported by Proj
 
-      Extended    : Project_Node_Id := Empty_Node;
+      Extended : Project_Node_Id := Empty_Node;
       --  Node for the eventual project extended by Proj
 
       Extends_All : Boolean := False;
@@ -457,6 +459,7 @@ package body Prj.Part is
       --  Nothing to do if Proj is undefined or has already been processed
 
       if Present (Proj) and then not Processed_Hash.Get (Proj) then
+
          --  Make sure the project will not be processed again
 
          Processed_Hash.Set (Proj, True);
@@ -478,7 +481,6 @@ package body Prj.Part is
          --  Now check the projects it imports
 
          With_Clause := First_With_Clause_Of (Proj, In_Tree);
-
          while Present (With_Clause) loop
             Imported := Project_Node_Of (With_Clause, In_Tree);
 
@@ -488,6 +490,7 @@ package body Prj.Part is
             end if;
 
             if Extends_All then
+
                --  This is an EXTENDS ALL project: prepend each of its WITH
                --  clauses to the currently active list of extension deps.
 
@@ -757,7 +760,7 @@ package body Prj.Part is
          end if;
 
          if Limited_With then
-            Scan (In_Tree);  --  scan past LIMITED
+            Scan (In_Tree);  --  past LIMITED
             Expect (Tok_With, "WITH");
             exit With_Loop when Token /= Tok_With;
          end if;
@@ -801,7 +804,7 @@ package body Prj.Part is
 
                --  End of (possibly multiple) with clause;
 
-               Scan (In_Tree); -- past the semicolon
+               Scan (In_Tree); -- past semicolon
                exit Comma_Loop;
 
             elsif Token = Tok_Comma then
