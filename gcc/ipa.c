@@ -662,6 +662,8 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
   if (varpool_used_from_object_file_p (vnode))
     return true;
 
+  if (DECL_HARD_REGISTER (vnode->decl))
+    return true;
   if (DECL_PRESERVE_P (vnode->decl))
     return true;
   if (lookup_attribute ("externally_visible",
