@@ -109,7 +109,7 @@ gomp_init_thread_affinity (pthread_attr_t *attr)
   unsigned int cpu;
   cpu_set_t cpuset;
 
-  cpu = __sync_fetch_and_add (&affinity_counter, 1);
+  cpu = __atomic_fetch_add (&affinity_counter, 1, MEMMODEL_RELAXED);
   cpu %= gomp_cpu_affinity_len;
   CPU_ZERO (&cpuset);
   CPU_SET (gomp_cpu_affinity[cpu], &cpuset);

@@ -1,3 +1,20 @@
+2011-12-02  Alan Modra  <amodra@gmail.com>
+
+	* config/linux/affinity.c: Use atomic rather than sync builtin.
+	* config/linux/lock.c: Likewise.
+	* config/linux/ptrlock.h: Likewise.
+	* config/linux/ptrlock.c: Likewise.
+	* config/linux/ptrlock.h (gomp_ptrlock_set): Always write here..
+	* config/linux/ptrlock.c (gomp_ptrlock_set_slow): ..not here.
+	* config/linux/futex.h (atomic_write_barrier): Delete unused function.
+	* config/linux/alpha/futex.h (atomic_write_barrier): Likewise.
+	* config/linux/ia64/futex.h (atomic_write_barrier): Likewise.
+	* config/linux/mips/futex.h (atomic_write_barrier): Likewise.
+	* config/linux/powerpc/futex.h (atomic_write_barrier): Likewise.
+	* config/linux/s390/futex.h (atomic_write_barrier): Likewise.
+	* config/linux/sparc/futex.h (atomic_write_barrier): Likewise.
+	* config/linux/x86/futex.h (atomic_write_barrier): Likewise.
+
 2011-11-30  Alan Modra  <amodra@gmail.com>
 
 	PR libgomp/51298

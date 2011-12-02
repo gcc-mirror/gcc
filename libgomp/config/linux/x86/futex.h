@@ -145,9 +145,3 @@ cpu_relax (void)
 {
   __asm volatile ("rep; nop" : : : "memory");
 }
-
-static inline void
-atomic_write_barrier (void)
-{
-  __sync_synchronize ();
-}

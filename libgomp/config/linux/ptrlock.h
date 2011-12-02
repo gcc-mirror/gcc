@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -24,7 +24,14 @@
 
 /* This is a Linux specific implementation of a mutex synchronization
    mechanism for libgomp.  This type is private to the library.  This
-   implementation uses atomic instructions and the futex syscall.  */
+   implementation uses atomic instructions and the futex syscall.
+
+   A ptrlock has four states:
+   0/NULL Initial
+   1      Owned by me, I get to write a pointer to ptrlock.
+   2      Some thread is waiting on the ptrlock.
+   >2     Ptrlock contains a valid pointer.
+   It is not valid to gain the ptrlock and then write a NULL to it.  */
 
 #ifndef GOMP_PTRLOCK_H
 #define GOMP_PTRLOCK_H 1
@@ -39,20 +46,25 @@ static inline void gomp_ptrlock_init (gomp_ptrlock_t *ptrlock, void *ptr)
 extern void *gomp_ptrlock_get_slow (gomp_ptrlock_t *ptrlock);
 static inline void *gomp_ptrlock_get (gomp_ptrlock_t *ptrlock)
 {
+  uintptr_t oldval;
+
   if ((uintptr_t) *ptrlock > 2)
     return *ptrlock;
 
-  if (__sync_bool_compare_and_swap (ptrlock, NULL, (uintptr_t) 1))
+  oldval = 0;
+  if (__atomic_compare_exchange_n (ptrlock, &oldval, 1, false,
+				   MEMMODEL_ACQUIRE, MEMMODEL_ACQUIRE))
     return NULL;
 
   return gomp_ptrlock_get_slow (ptrlock);
 }
 
-extern void gomp_ptrlock_set_slow (gomp_ptrlock_t *ptrlock, void *ptr);
+extern void gomp_ptrlock_set_slow (gomp_ptrlock_t *ptrlock);
 static inline void gomp_ptrlock_set (gomp_ptrlock_t *ptrlock, void *ptr)
 {
-  if (!__sync_bool_compare_and_swap (ptrlock, (uintptr_t) 1, ptr))
-    gomp_ptrlock_set_slow (ptrlock, ptr);
+  void *wait = __atomic_exchange_n (ptrlock, ptr, MEMMODEL_RELEASE);
+  if ((uintptr_t) wait != 1)
+    gomp_ptrlock_set_slow (ptrlock);
 }
 
 static inline void gomp_ptrlock_destroy (gomp_ptrlock_t *ptrlock)
