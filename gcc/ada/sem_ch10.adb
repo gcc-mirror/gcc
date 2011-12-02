@@ -807,9 +807,20 @@ package body Sem_Ch10 is
 
                   begin
                      Set_Comes_From_Source_Default (False);
+
+                     --  Checks for redundant USE TYPE clauses have a special
+                     --  exception for the synthetic spec we create here. This
+                     --  special case relies on the two compilation units
+                     --  sharing the same context clause.
+
+                     --  Note: We used to do a shallow copy (New_Copy_List),
+                     --  which defeated those checks and also created malformed
+                     --  trees (subtype mark shared by two distinct
+                     --  N_Use_Type_Clause nodes) which crashed the compiler.
+
                      Lib_Unit :=
                        Make_Compilation_Unit (Loc,
-                         Context_Items => New_Copy_List (Context_Items (N)),
+                         Context_Items => Context_Items (N),
                          Unit =>
                            Make_Subprogram_Declaration (Sloc (N),
                              Specification =>
