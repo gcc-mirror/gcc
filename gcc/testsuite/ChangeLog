@@ -1,3 +1,8 @@
+2011-12-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.c-torture/execute/vector-subscript-1.c (main): Fix
+	__builtin_memcpy arguments to honor sizeof(a).
+
 2011-12-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.c-torture/execute/doloop-1.c,
