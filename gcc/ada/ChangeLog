@@ -1,3 +1,12 @@
+2011-12-02  Eric Botcazou  <ebotcazou@adacore.com>
+	    Thomas Quinot <quinot@adacore.com>
+
+	* gcc-interface/Makefile.in (INCLUDES): Remove $(srcdir)/config.
+	(INCLUDES_FOR_SUBDIR): Add $(fsrcdir) except for VxWorks.
+	Add thread.c to LIBGNAT_SRCS so that a symlink is created in ada/rts,
+	which allows the file to be installed in adainclude.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2011-12-02  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Constrain_Access): Undo previous
