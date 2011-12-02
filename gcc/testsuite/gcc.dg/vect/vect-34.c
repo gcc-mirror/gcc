@@ -3,18 +3,27 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 16
+#define N 128
 
 struct {
   char ca[N];
 } s;
-char cb[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
- 
+char cb[N];
+
+volatile int y = 0;
+
 __attribute__ ((noinline))
 int main1 ()
 {  
   int i;
 
+  for (i = 0; i < N; i++)
+    {
+      cb[i] = i*3;
+      /* To avoid vectorization.  */
+      if (y)
+	abort ();
+    }
   for (i = 0; i < N; i++)
     {
       s.ca[i] = cb[i];

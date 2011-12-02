@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 32
+#define N 256
 
 struct t{
   int k[N];

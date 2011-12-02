@@ -3,16 +3,27 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 16
+#define N 128
 
-char cb[N] = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17};
-char cc[N] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+char cb[N];
+char cc[N];
+
+volatile int y = 0;
 
 __attribute__ ((noinline)) int
 main1 (void)
 {
   int i;
   int diff = 0;
+  int check_diff = 0;
+  for (i = 0; i < N; i++) {
+    cb[i] = i + 2;
+    cc[i] = i + 1;
+    check_diff += (cb[i] - cc[i]);
+    /* Avoid vectorization.  */
+    if (y)
+      abort ();
+  }
 
   /* Cross-iteration cycle.  */
   diff = 0;
@@ -21,8 +32,8 @@ main1 (void)
   }
 
   /* Check results.  */
-  if (diff != 16)
-    abort();
+  if (diff != check_diff)
+    abort ();
 
   return 0;
 }

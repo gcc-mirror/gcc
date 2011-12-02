@@ -3,19 +3,40 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 16
+#define N 128
 
-float results1[N] = {192.00,240.00,288.00,336.00,384.00,432.00,480.00,528.00,0.00};
-float results2[N] = {0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,54.00,120.00,198.00,288.00,390.00,504.00,630.00};
+float results1[N];
+float results2[N];
 float a[N] = {0};
 float e[N] = {0};
-float b[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
-float c[N] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+float b[N];
+float c[N];
+
+volatile int y = 0;
 
 __attribute__ ((noinline))
 int main1 ()
 {
   int i;
+
+  for (i=0; i<N; i++)
+    {
+      b[i] = i*3;
+      c[i] = i;
+      results1[i] = 0;
+      results2[i] = 0;
+      /* Avoid vectorization.  */
+      if (y)
+	abort ();
+    }
+  for (i=0; i<N/2; i++)
+    {
+      results1[i] = b[i+N/2] * c[i+N/2] - b[i] * c[i];
+      results2[i+N/2] = b[i] * c[i+N/2] + b[i+N/2] * c[i];
+      /* Avoid vectorization.  */
+      if (y)
+	abort ();
+    }
 
   for (i = 0; i < N/2; i++)
     { 

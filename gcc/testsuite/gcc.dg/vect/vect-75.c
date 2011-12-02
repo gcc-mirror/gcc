@@ -3,14 +3,16 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 8
+#define N 120
 #define OFF 8
 
 /* Check handling of accesses for which the "initial condition" -
    the expression that represents the first location accessed - is
    more involved than just an ssa_name.  */
 
-int ib[N+OFF] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = {0, 1, 3, 5, 7, 11, 13, 17, 0, 2, 6, 10, 14, 22, 26, 34};
+int ib[N+OFF] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = {0, 1, 3, 5, 7, 11, 13, 17};
+
+volatile int y = 0;
 
 __attribute__ ((noinline))
 int main1 (int *ib)
@@ -18,6 +20,12 @@ int main1 (int *ib)
   int i;
   int ia[N];
 
+  for (i = OFF; i < N+OFF; i++)
+    {
+      ib[i] = ib[i%OFF]*(i/OFF);
+      if (y)
+	abort ();
+    }
   for (i = 0; i < N; i++)
     {
       ia[i] = ib[i+OFF];

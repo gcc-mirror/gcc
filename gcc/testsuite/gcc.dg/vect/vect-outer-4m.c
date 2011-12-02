@@ -2,8 +2,8 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 40
-#define M 128
+#define N 320
+#define M 1024
 unsigned short in[N+M];
 unsigned int out[N];
 

@@ -3,11 +3,13 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 16
-#define DIFF 242
+#define N 256
 
-unsigned char ub[N] = {1,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
-unsigned char uc[N] = {1,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+unsigned char ub[N];
+unsigned char uc[N];
+unsigned char diff;
+
+volatile int y = 0;
 
 __attribute__ ((noinline)) void
 main1 (unsigned char x, unsigned char max_result, unsigned char min_result)
@@ -17,8 +19,26 @@ main1 (unsigned char x, unsigned char max_result, unsigned char min_result)
   unsigned char umax = x;
   unsigned char umin = x;
 
+  diff = 2;
   for (i = 0; i < N; i++) {
-    udiff += (unsigned char)(ub[i] - uc[i]);
+    ub[i] = i;
+    uc[i] = i;
+    if (i%16 == 0)
+      {
+	ub[i] = i+2;
+	diff += 2;
+      }
+    if (uc[i] > max_result)
+      max_result = uc[i];
+    if (uc[i] < min_result)
+      min_result = uc[i];
+
+    /* Avoid vectorization.  */
+    if (y)
+      abort ();
+  }
+  for (i = 0; i < N; i++) {
+    udiff += (unsigned char) (ub[i] - uc[i]);
   }
 
   for (i = 0; i < N; i++) {
@@ -30,7 +50,7 @@ main1 (unsigned char x, unsigned char max_result, unsigned char min_result)
   }
 
   /* check results:  */
-  if (udiff != DIFF)
+  if (udiff != diff)
     abort ();
   if (umax != max_result)
     abort ();
@@ -39,9 +59,9 @@ main1 (unsigned char x, unsigned char max_result, unsigned char min_result)
 }
 
 int main (void)
-{ 
+{
   check_vect ();
-  
+
   main1 (100, 100, 1);
   main1 (0, 15, 0);
   return 0;
