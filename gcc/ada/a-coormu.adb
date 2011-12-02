@@ -1555,11 +1555,8 @@ package body Ada.Containers.Ordered_Multisets is
          Node : constant Node_Access :=
                   Tree_Operations.Previous (Position.Node);
       begin
-         if Node = null then
-            return No_Element;
-         end if;
-
-         return Cursor'(Position.Container, Node);
+         return (if Node = null then No_Element
+                 else Cursor'(Position.Container, Node));
       end;
    end Previous;
 

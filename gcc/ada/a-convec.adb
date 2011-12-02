@@ -29,6 +29,7 @@
 
 with Ada.Containers.Generic_Array_Sort;
 with Ada.Unchecked_Deallocation;
+
 with System; use type System.Address;
 
 package body Ada.Containers.Vectors is
@@ -785,7 +786,6 @@ package body Ada.Containers.Vectors is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.Busy;
-
          begin
             B := B - 1;
          end;
@@ -923,7 +923,6 @@ package body Ada.Containers.Vectors is
          J : Index_Type'Base;
 
       begin
-
          --  The semantics of Merge changed slightly per AI05-0021. It was
          --  originally the case that if Target and Source denoted the same
          --  container object, then the GNAT implementation of Merge did
@@ -1489,8 +1488,8 @@ package body Ada.Containers.Vectors is
          K : Index_Type'Base;
 
       begin
-         --  We next copy the source items that follow the space we
-         --  inserted. Index value K is the first index of that portion of the
+         --  We next copy the source items that follow the space we inserted.
+         --  Index value K is the first index of that portion of the
          --  destination that receives this slice of the source. (For the
          --  reasons given above, this slice is guaranteed to be non-empty.)
 
