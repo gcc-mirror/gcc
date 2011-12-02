@@ -282,7 +282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  __catch(...)
 	    { __is._M_setstate(ios_base::badbit); }
-	  if (ios_base::goodbit != __err)
+	  if (__err)
 	    __is.setstate(__err);
 	}
       return __is; 
@@ -312,15 +312,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typename basic_ostream<_CharT, _Traits>::sentry __cerb(__os);
       if (__cerb)
 	{
+	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
 	    {
 	      typedef ostreambuf_iterator<_CharT, _Traits>   _Iter;
 	      typedef money_put<_CharT, _Iter>               _MoneyPut;
+
 	      const _MoneyPut& __mp = use_facet<_MoneyPut>(__os.getloc());
-	      const _Iter __end = __mp.put(_Iter(__os.rdbuf()), __f._M_intl,
-					   __os, __os.fill(), __f._M_mon);
-	      if (__end.failed())
-		__os.setstate(ios_base::badbit);
+	      if (__mp.put(_Iter(__os.rdbuf()), __f._M_intl, __os,
+			   __os.fill(), __f._M_mon).failed())
+		__err |= ios_base::badbit;
 	    }
 	  __catch(__cxxabiv1::__forced_unwind&)
 	    {
@@ -329,6 +330,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  __catch(...)
 	    { __os._M_setstate(ios_base::badbit); }
+	  if (__err)
+	    __os.setstate(__err);
 	}
       return __os; 
     }
