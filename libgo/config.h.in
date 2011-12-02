@@ -33,17 +33,11 @@
 /* Define to 1 if the system has the type `off64_t'. */
 #undef HAVE_OFF64_T
 
-/* Define to 1 if you have the `random' function. */
-#undef HAVE_RANDOM
-
 /* Define to 1 if you have the `sem_timedwait' function. */
 #undef HAVE_SEM_TIMEDWAIT
 
 /* Define to 1 if you have the `setenv' function. */
 #undef HAVE_SETENV
-
-/* Define to 1 if you have the `srandom' function. */
-#undef HAVE_SRANDOM
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H

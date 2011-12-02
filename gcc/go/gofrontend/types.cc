@@ -5876,13 +5876,13 @@ Interface_type::do_reflection(Gogo* gogo, std::string* ret) const
   ret->append("interface {");
   if (this->methods_ != NULL)
     {
+      ret->push_back(' ');
       for (Typed_identifier_list::const_iterator p = this->methods_->begin();
 	   p != this->methods_->end();
 	   ++p)
 	{
 	  if (p != this->methods_->begin())
-	    ret->append(";");
-	  ret->push_back(' ');
+	    ret->append("; ");
 	  if (!Gogo::is_hidden_name(p->name()))
 	    ret->append(p->name());
 	  else
@@ -5898,8 +5898,9 @@ Interface_type::do_reflection(Gogo* gogo, std::string* ret) const
 	  sub = sub.substr(4);
 	  ret->append(sub);
 	}
+      ret->push_back(' ');
     }
-  ret->append(" }");
+  ret->append("}");
 }
 
 // Mangled name.

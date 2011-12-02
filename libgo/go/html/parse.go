@@ -7,6 +7,7 @@ package html
 import (
 	"io"
 	"os"
+	"strings"
 )
 
 // A parser implements the HTML5 parsing algorithm:
@@ -125,6 +126,7 @@ func (p *parser) addChild(n *Node) {
 // fosterParent adds a child node according to the foster parenting rules.
 // Section 11.2.5.3, "foster parenting".
 func (p *parser) fosterParent(n *Node) {
+	p.fosterParenting = false
 	var table, parent *Node
 	var i int
 	for i = len(p.oe) - 1; i >= 0; i-- {
@@ -430,6 +432,8 @@ func beforeHeadIM(p *parser) (insertionMode, bool) {
 	return inHeadIM, !implied
 }
 
+const whitespace = " \t\r\n\f"
+
 // Section 11.2.5.4.4.
 func inHeadIM(p *parser) (insertionMode, bool) {
 	var (
@@ -437,13 +441,24 @@ func inHeadIM(p *parser) (insertionMode, bool) {
 		implied bool
 	)
 	switch p.tok.Type {
-	case ErrorToken, TextToken:
+	case ErrorToken:
+		implied = true
+	case TextToken:
+		s := strings.TrimLeft(p.tok.Data, whitespace)
+		if len(s) < len(p.tok.Data) {
+			// Add the initial whitespace to the current node.
+			p.addText(p.tok.Data[:len(p.tok.Data)-len(s)])
+			if s == "" {
+				return inHeadIM, true
+			}
+			p.tok.Data = s
+		}
 		implied = true
 	case StartTagToken:
 		switch p.tok.Data {
 		case "meta":
 			// TODO.
-		case "script", "title":
+		case "script", "title", "noscript", "noframes", "style":
 			p.addElement(p.tok.Data, p.tok.Attr)
 			p.setOriginalIM(inHeadIM)
 			return textIM, true
@@ -469,7 +484,7 @@ func inHeadIM(p *parser) (insertionMode, bool) {
 		}
 		return afterHeadIM, !implied
 	}
-	return inHeadIM, !implied
+	return inHeadIM, true
 }
 
 // Section 11.2.5.4.6.
@@ -538,10 +553,13 @@ func inBodyIM(p *parser) (insertionMode, bool) {
 			}
 			p.addElement(p.tok.Data, p.tok.Attr)
 		case "a":
-			if n := p.afe.forTag("a"); n != nil {
-				p.inBodyEndTagFormatting("a")
-				p.oe.remove(n)
-				p.afe.remove(n)
+			for i := len(p.afe) - 1; i >= 0 && p.afe[i].Type != scopeMarkerNode; i-- {
+				if n := p.afe[i]; n.Type == ElementNode && n.Data == "a" {
+					p.inBodyEndTagFormatting("a")
+					p.oe.remove(n)
+					p.afe.remove(n)
+					break
+				}
 			}
 			p.reconstructActiveFormattingElements()
 			p.addFormattingElement(p.tok.Data, p.tok.Attr)
@@ -594,6 +612,12 @@ func inBodyIM(p *parser) (insertionMode, bool) {
 			}
 			p.popUntil(buttonScopeStopTags, "p")
 			p.addElement("li", p.tok.Attr)
+		case "optgroup", "option":
+			if p.top().Data == "option" {
+				p.oe.pop()
+			}
+			p.reconstructActiveFormattingElements()
+			p.addElement(p.tok.Data, p.tok.Attr)
 		default:
 			// TODO.
 			p.addElement(p.tok.Data, p.tok.Attr)
@@ -653,6 +677,10 @@ func (p *parser) inBodyEndTagFormatting(tag string) {
 		feIndex := p.oe.index(formattingElement)
 		if feIndex == -1 {
 			p.afe.remove(formattingElement)
+			return
+		}
+		if !p.elementInScope(defaultScopeStopTags, tag) {
+			// Ignore the tag.
 			return
 		}
 
@@ -732,6 +760,10 @@ func (p *parser) inBodyEndTagFormatting(tag string) {
 		furthestBlock.Add(clone)
 
 		// Step 14. Fix up the list of active formatting elements.
+		if oldLoc := p.afe.index(formattingElement); oldLoc != -1 && oldLoc < bookmark {
+			// Move the bookmark with the rest of the list.
+			bookmark--
+		}
 		p.afe.remove(formattingElement)
 		p.afe.insert(bookmark, clone)
 
@@ -757,6 +789,8 @@ func (p *parser) inBodyEndTagOther(tag string) {
 // Section 11.2.5.4.8.
 func textIM(p *parser) (insertionMode, bool) {
 	switch p.tok.Type {
+	case ErrorToken:
+		p.oe.pop()
 	case TextToken:
 		p.addText(p.tok.Data)
 		return textIM, true
@@ -956,7 +990,12 @@ func inCellIM(p *parser) (insertionMode, bool) {
 	case EndTagToken:
 		switch p.tok.Data {
 		case "td", "th":
-			// TODO.
+			if !p.popUntil(tableScopeStopTags, p.tok.Data) {
+				// Ignore the token.
+				return inCellIM, true
+			}
+			p.clearActiveFormattingElements()
+			return inRowIM, true
 		case "body", "caption", "col", "colgroup", "html":
 			// TODO.
 		case "table", "tbody", "tfoot", "thead", "tr":
