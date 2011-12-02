@@ -234,6 +234,10 @@ static void ia64_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void ia64_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void ia64_output_function_end_prologue (FILE *);
 
+static void ia64_print_operand (FILE *, rtx, int);
+static void ia64_print_operand_address (FILE *, rtx);
+static bool ia64_print_operand_punct_valid_p (unsigned char code);
+
 static int ia64_issue_rate (void);
 static int ia64_adjust_cost_2 (rtx, int, rtx, int, dw_t);
 static void ia64_sched_init (FILE *, int, int);
@@ -382,6 +386,13 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_ASM_FUNCTION_END_PROLOGUE ia64_output_function_end_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE ia64_output_function_epilogue
+
+#undef TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND ia64_print_operand
+#undef TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS ia64_print_operand_address
+#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P ia64_print_operand_punct_valid_p
 
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P  ia64_in_small_data_p
@@ -4966,7 +4977,7 @@ ia64_output_dwarf_dtprel (FILE *file, int size, rtx x)
 /* ??? Do we need this?  It gets used only for 'a' operands.  We could perhaps
    also call this from ia64_print_operand for memory addresses.  */
 
-void
+static void
 ia64_print_operand_address (FILE * stream ATTRIBUTE_UNUSED,
 			    rtx address ATTRIBUTE_UNUSED)
 {
@@ -4997,7 +5008,7 @@ ia64_print_operand_address (FILE * stream ATTRIBUTE_UNUSED,
 	Linux kernel.
    v    Print vector constant value as an 8-byte integer value.  */
 
-void
+static void
 ia64_print_operand (FILE * file, rtx x, int code)
 {
   const char *str;
@@ -5283,6 +5294,14 @@ ia64_print_operand (FILE * file, rtx x, int code)
     }
 
   return;
+}
+
+/* Worker function for TARGET_PRINT_OPERAND_PUNCT_VALID_P.  */
+
+static bool
+ia64_print_operand_punct_valid_p (unsigned char code)
+{
+  return (code == '+' || code == ',');
 }
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete

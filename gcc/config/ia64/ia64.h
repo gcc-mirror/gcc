@@ -1512,27 +1512,6 @@ do {									\
   { "loc79", LOC_REG (79) }, 						\
 }
 
-/* A C compound statement to output to stdio stream STREAM the assembler syntax
-   for an instruction operand X.  X is an RTL expression.  */
-
-#define PRINT_OPERAND(STREAM, X, CODE) \
-  ia64_print_operand (STREAM, X, CODE)
-
-/* A C expression which evaluates to true if CODE is a valid punctuation
-   character for use in the `PRINT_OPERAND' macro.  */
-
-/* ??? Keep this around for now, as we might need it later.  */
-
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
-  ((CODE) == '+' || (CODE) == ',')
-
-/* A C compound statement to output to stdio stream STREAM the assembler syntax
-   for an instruction operand that is a memory reference whose address is X.  X
-   is an RTL expression.  */
-
-#define PRINT_OPERAND_ADDRESS(STREAM, X) \
-  ia64_print_operand_address (STREAM, X)
-
 /* If defined, C string expressions to be used for the `%R', `%L', `%U', and
    `%I' options of `asm_fprintf' (see `final.c').  */
 

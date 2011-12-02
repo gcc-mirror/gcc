@@ -1,3 +1,15 @@
+2011-12-02  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/ia64/ia64.h (PRINT_OPERAND, PRINT_OPERAND_ADDRESS,
+	PRINT_OPERAND_PUNCT_VALID_P): Remove macros.
+	* config/ia64/ia64-protos.h (ia64_print_operand,
+	ia64_print_operand_address): Remove.
+	* config/ia64/ia64.c (TARGET_PRINT_OPERAND,
+	TARGET_PRINT_OPERAND_ADDRESS, TARGET_PRINT_OPERAND_PUNCT_VALID_P):
+	Define.
+	(ia64_print_operand_punct_valid_p): New function.
+	(ia64_print_operand, ia64_print_operand_address): Make static.
+
 2011-12-02  Michael Meissner  <meissner@the-meissners.org>
 
 	PR target/51390
