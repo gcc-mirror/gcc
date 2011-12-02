@@ -25,10 +25,15 @@ if ! test -f MERGE; then
   exit 1
 fi
 
-if test $# -ne 1; then
-  echo 1>&2 "merge.sh: Usage: merge.sh mercurial-repository"
+rev=weekly
+case $# in
+1) ;;
+2) rev=$2 ;;
+*)
+  echo 1>&2 "merge.sh: Usage: merge.sh mercurial-repository [revision]"
   exit 1
-fi
+  ;;
+esac
 
 repository=$1
 
@@ -38,9 +43,9 @@ rm -rf ${OLDDIR}
 hg clone -r ${old_rev} ${repository} ${OLDDIR}
 
 rm -rf ${NEWDIR}
-hg clone -u weekly ${repository} ${NEWDIR}
+hg clone -u ${rev} ${repository} ${NEWDIR}
 
-new_rev=`cd ${NEWDIR} && hg log -r weekly | sed 1q | sed -e 's/.*://'`
+new_rev=`cd ${NEWDIR} && hg log -r ${rev} | sed 1q | sed -e 's/.*://'`
 
 merge() {
   name=$1
@@ -146,12 +151,33 @@ done
   done
 done
 
-runtime="goc2c.c mcache.c mcentral.c mfinal.c mfixalloc.c mgc0.c mheap.c msize.c malloc.h malloc.goc mprof.goc"
+runtime="chan.c cpuprof.c goc2c.c lock_futex.c lock_sema.c mcache.c mcentral.c mfinal.c mfixalloc.c mgc0.c mheap.c msize.c proc.c runtime.c runtime.h malloc.h malloc.goc mprof.goc runtime1.goc sema.goc sigqueue.goc string.goc"
 for f in $runtime; do
   oldfile=${OLDDIR}/src/pkg/runtime/$f
-  newfile=${NEWDIR}/src/pkg/runtime/$f
-  libgofile=runtime/$f
-  merge $f ${oldfile} ${newfile} ${libgofile}
+  if test -f ${oldfile}; then
+    sed -e 's/·/_/g' < ${oldfile} > ${oldfile}.tmp
+    oldfile=${oldfile}.tmp
+    newfile=${NEWDIR}/src/pkg/runtime/$f
+    sed -e 's/·/_/g' < ${newfile} > ${newfile}.tmp
+    newfile=${newfile}.tmp
+    libgofile=runtime/$f
+    merge $f ${oldfile} ${newfile} ${libgofile}
+  fi
+done
+
+runtime2="linux/thread.c thread-linux.c linux/mem.c mem.c"
+echo $runtime2 | while read from; do
+  read to
+  oldfile=${OLDDIR}/src/pkg/runtime/$from
+  if test -f ${oldfile}; then
+    sed -e 's/·/_/g' < ${oldfile} > ${oldfile}.tmp
+    oldfile=${oldfile}.tmp
+    newfile=${NEWDIR}/src/pkg/runtime/$from
+    sed -e 's/·/_/g' < ${newfile} > ${newfile}.tmp
+    newfile=${newfile}.tmp
+    libgofile=runtime/$to
+    merge $f ${oldfile} ${newfile} ${libgofile}
+  fi
 done
 
 (cd ${OLDDIR}/src/pkg && find . -name '*.go' -print) | while read f; do
