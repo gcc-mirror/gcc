@@ -499,7 +499,6 @@ package body Ada.Containers.Ordered_Maps is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.Tree.Busy;
-
          begin
             B := B - 1;
          end;
@@ -512,13 +511,9 @@ package body Ada.Containers.Ordered_Maps is
 
    function Find (Container : Map; Key : Key_Type) return Cursor is
       Node : constant Node_Access := Key_Ops.Find (Container.Tree, Key);
-
    begin
-      if Node = null then
-         return No_Element;
-      end if;
-
-      return Cursor'(Container'Unrestricted_Access, Node);
+      return (if Node = null then No_Element
+                else Cursor'(Container'Unrestricted_Access, Node));
    end Find;
 
    -----------
@@ -778,10 +773,8 @@ package body Ada.Containers.Ordered_Maps is
    begin
       if L.Key < R.Key then
          return False;
-
       elsif R.Key < L.Key then
          return False;
-
       else
          return L.Element = R.Element;
       end if;

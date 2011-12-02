@@ -29,6 +29,7 @@
 
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+
 with System; use type System.Address;
 
 package body Ada.Containers.Multiway_Trees is
@@ -913,7 +914,6 @@ package body Ada.Containers.Multiway_Trees is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.Busy;
-
          begin
             B := B - 1;
          end;
@@ -925,7 +925,6 @@ package body Ada.Containers.Multiway_Trees is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.Busy;
-
          begin
             B := B - 1;
          end;
@@ -942,13 +941,12 @@ package body Ada.Containers.Multiway_Trees is
    is
       N : constant Tree_Node_Access :=
             Find_In_Children (Root_Node (Container), Item);
-
    begin
       if N = null then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, N);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, N);
    end Find;
 
    -----------
@@ -1071,11 +1069,8 @@ package body Ada.Containers.Multiway_Trees is
 
    function Has_Element (Position : Cursor) return Boolean is
    begin
-      if Position = No_Element then
-         return False;
-      end if;
-
-      return Position.Node.Parent /= null;
+      return (if Position = No_Element then False
+              else Position.Node.Parent /= null);
    end Has_Element;
 
    ------------------
@@ -1325,11 +1320,8 @@ package body Ada.Containers.Multiway_Trees is
 
    function Is_Leaf (Position : Cursor) return Boolean is
    begin
-      if Position = No_Element then
-         return False;
-      end if;
-
-      return Position.Node.Children.First = null;
+      return (if Position = No_Element then False
+              else Position.Node.Children.First = null);
    end Is_Leaf;
 
    ------------------
@@ -1361,11 +1353,8 @@ package body Ada.Containers.Multiway_Trees is
 
    function Is_Root (Position : Cursor) return Boolean is
    begin
-      if Position.Container = null then
-         return False;
-      end if;
-
-      return Position = Root (Position.Container.all);
+      return (if Position.Container = null then False
+              else Position = Root (Position.Container.all));
    end Is_Root;
 
    -------------
@@ -1400,7 +1389,6 @@ package body Ada.Containers.Multiway_Trees is
       B  : Natural renames Container'Unrestricted_Access.all.Busy;
       RC : constant Cursor :=
             (Container'Unrestricted_Access, Root_Node (Container));
-
    begin
       return It : constant Iterator :=
                     Iterator'(Limited_Controlled with
@@ -1474,7 +1462,6 @@ package body Ada.Containers.Multiway_Trees is
       return Tree_Iterator_Interfaces.Reversible_Iterator'Class
    is
       B : Natural renames Container'Unrestricted_Access.all.Busy;
-
    begin
       return It : constant Child_Iterator :=
                     Child_Iterator'(Limited_Controlled with
@@ -1494,7 +1481,6 @@ package body Ada.Containers.Multiway_Trees is
       return Tree_Iterator_Interfaces.Forward_Iterator'Class
    is
       B : Natural renames Position.Container'Unrestricted_Access.all.Busy;
-
    begin
       return It : constant Iterator :=
                     Iterator'(Limited_Controlled with
@@ -1635,7 +1621,7 @@ package body Ada.Containers.Multiway_Trees is
    begin
       if Is_Leaf (Position) then
 
-         --  If sibling is present, return it.
+         --  If sibling is present, return it
 
          if N.Next /= null then
             return (Object.Container, N.Next);
@@ -1650,7 +1636,7 @@ package body Ada.Containers.Multiway_Trees is
             begin
                while Par.Next = null loop
 
-                  --  If we are back at the root the iteration is complete.
+                  --  If we are back at the root the iteration is complete
 
                   if Par = Root_Node (T)  then
                      return No_Element;
@@ -1679,7 +1665,7 @@ package body Ada.Containers.Multiway_Trees is
          end if;
 
       else
-         --  If an internal node, return its first child.
+         --  If an internal node, return its first child
 
          return (Object.Container, N.Children.First);
       end if;
@@ -1790,7 +1776,7 @@ package body Ada.Containers.Multiway_Trees is
 
       for J in Count_Type'(2) .. Count loop
 
-         --  Reclaim other nodes if Storage_Error.  ???
+         --  Reclaim other nodes if Storage_Error???
 
          Last.Next := new Tree_Node_Type'(Parent  => Parent.Node,
                                           Prev    => Last,
@@ -2044,8 +2030,8 @@ package body Ada.Containers.Multiway_Trees is
       C : Children_Type renames Subtree.Parent.Children;
 
    begin
-      --  This is a utility operation to remove a subtree
-      --  node from its parent's list of children.
+      --  This is a utility operation to remove a subtree node from its
+      --  parent's list of children.
 
       if C.First = Subtree then
          pragma Assert (Subtree.Prev = null);

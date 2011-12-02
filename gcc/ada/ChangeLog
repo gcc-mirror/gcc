@@ -1,3 +1,8 @@
+2011-12-02  Robert Dewar  <dewar@adacore.com>
+
+	* a-coinve.adb, a-coorma.adb, freeze.adb, a-coorse.adb, a-comutr.adb,
+	a-coormu.adb, a-convec.adb: Minor reformatting.
+
 2011-12-02  Matthew Heaney  <heaney@adacore.com>
 
 	* a-coormu.ads, a-ciormu.ads: Declare iterator factory function.

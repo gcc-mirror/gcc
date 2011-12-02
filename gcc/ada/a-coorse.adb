@@ -523,7 +523,6 @@ package body Ada.Containers.Ordered_Sets is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.Tree.Busy;
-
          begin
             B := B - 1;
          end;
