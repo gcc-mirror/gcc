@@ -318,16 +318,20 @@ void	runtime_startpanic(void);
 void	runtime_ready(G*);
 const byte*	runtime_getenv(const char*);
 int32	runtime_atoi(const byte*);
+uint32	runtime_fastrand1(void);
+
 void	runtime_sigprof(uint8 *pc, uint8 *sp, uint8 *lr, G *gp);
 void	runtime_resetcpuprofiler(int32);
 void	runtime_setcpuprofilerate(void(*)(uintptr*, int32), int32);
-uint32	runtime_fastrand1(void);
+void	runtime_usleep(uint32);
+
 void	runtime_semacquire(uint32 volatile *);
 void	runtime_semrelease(uint32 volatile *);
 int32	runtime_gomaxprocsfunc(int32 n);
 void	runtime_procyield(uint32);
 void	runtime_osyield(void);
-void	runtime_usleep(uint32);
+void	runtime_LockOSThread(void) __asm__("libgo_runtime.runtime.LockOSThread");
+void	runtime_UnlockOSThread(void) __asm__("libgo_runtime.runtime.UnlockOSThread");
 
 struct __go_func_type;
 void reflect_call(const struct __go_func_type *, const void *, _Bool, _Bool,

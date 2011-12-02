@@ -32,10 +32,7 @@
 
 extern char **environ;
 
-/* These functions are created for the main package.  */
-extern void __go_init_main (void);
-extern void real_main (void) asm ("main.main");
-
+extern void runtime_main (void);
 static void mainstart (void *);
 
 /* The main function.  */
@@ -47,13 +44,6 @@ main (int argc, char **argv)
   runtime_args (argc, (byte **) argv);
   runtime_osinit ();
   runtime_schedinit ();
-
-#if defined(HAVE_SRANDOM)
-  srandom ((unsigned int) time (NULL));
-#else
-  srand ((unsigned int) time (NULL));
-#endif
-
   __go_go (mainstart, NULL);
   runtime_mstart (runtime_m ());
   abort ();
@@ -62,13 +52,5 @@ main (int argc, char **argv)
 static void
 mainstart (void *arg __attribute__ ((unused)))
 {
-  __go_init_main ();
-
-  mstats.enablegc = 1;
-
-  real_main ();
-
-  runtime_exit (0);
-
-  abort ();
+  runtime_main ();
 }

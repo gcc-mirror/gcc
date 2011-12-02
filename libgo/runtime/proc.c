@@ -128,6 +128,9 @@ struct Sched {
 	volatile uint32 atomic;	// atomic scheduling word (see below)
 
 	int32 profilehz;	// cpu profiling rate
+	
+	bool init;  // running initialization
+	bool lockmain;  // init called runtime.LockOSThread
 
 	Note	stopped;	// one g can set waitstop and wait here for m's to stop
 };
@@ -292,11 +295,7 @@ runtime_mcall(void (*pfn)(G*))
 //	make & queue new G
 //	call runtime_mstart
 //
-// The new G does:
-//
-//	call main_init_function
-//	call initdone
-//	call main_main
+// The new G calls runtime_main.
 void
 runtime_schedinit(void)
 {
@@ -338,6 +337,37 @@ runtime_schedinit(void)
 	// Can not enable GC until all roots are registered.
 	// mstats.enablegc = 1;
 	m->nomemprof--;
+}
+
+extern void main_init(void) __asm__ ("__go_init_main");
+extern void main_main(void) __asm__ ("main.main");
+
+// The main goroutine.
+void
+runtime_main(void)
+{
+	// Lock the main goroutine onto this, the main OS thread,
+	// during initialization.  Most programs won't care, but a few
+	// do require certain calls to be made by the main thread.
+	// Those can arrange for main.main to run in the main thread
+	// by calling runtime.LockOSThread during initialization
+	// to preserve the lock.
+	runtime_LockOSThread();
+	runtime_sched.init = true;
+	main_init();
+	runtime_sched.init = false;
+	if(!runtime_sched.lockmain)
+		runtime_UnlockOSThread();
+
+	// For gccgo we have to wait until after main is initialized
+	// to enable GC, because initializing main registers the GC
+	// roots.
+	mstats.enablegc = 1;
+
+	main_main();
+	runtime_exit(0);
+	for(;;)
+		*(int32*)0 = 0;
 }
 
 // Lock the scheduler.
@@ -1233,16 +1263,6 @@ runtime_Gosched(void)
 	runtime_gosched();
 }
 
-void runtime_LockOSThread (void)
-  __asm__ ("libgo_runtime.runtime.LockOSThread");
-
-void
-runtime_LockOSThread(void)
-{
-	m->lockedg = g;
-	g->lockedm = m;
-}
-
 // delete when scheduler is stronger
 int32
 runtime_gomaxprocsfunc(int32 n)
@@ -1282,12 +1302,24 @@ runtime_gomaxprocsfunc(int32 n)
 	return ret;
 }
 
-void runtime_UnlockOSThread (void)
-  __asm__ ("libgo_runtime.runtime.UnlockOSThread");
+void
+runtime_LockOSThread(void)
+{
+	if(m == &runtime_m0 && runtime_sched.init) {
+		runtime_sched.lockmain = true;
+		return;
+	}
+	m->lockedg = g;
+	g->lockedm = m;
+}
 
 void
 runtime_UnlockOSThread(void)
 {
+	if(m == &runtime_m0 && runtime_sched.init) {
+		runtime_sched.lockmain = false;
+		return;
+	}
 	m->lockedg = nil;
 	g->lockedm = nil;
 }

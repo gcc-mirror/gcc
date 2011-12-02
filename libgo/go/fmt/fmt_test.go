@@ -73,7 +73,7 @@ type C struct {
 
 type F int
 
-func (f F) Format(s State, c int) {
+func (f F) Format(s State, c rune) {
 	Fprintf(s, "<%c=F(%d)>", c, int(f))
 }
 
@@ -356,7 +356,7 @@ var fmttests = []struct {
 	{"%#v", map[string]int{"a": 1}, `map[string] int{"a":1}`},
 	{"%#v", map[string]B{"a": {1, 2}}, `map[string] fmt_test.B{"a":fmt_test.B{I:1, j:2}}`},
 	{"%#v", []string{"a", "b"}, `[]string{"a", "b"}`},
-	{"%#v", SI{}, `fmt_test.SI{I:interface { }(nil)}`},
+	{"%#v", SI{}, `fmt_test.SI{I:interface {}(nil)}`},
 
 	// slices with other formats
 	{"%#x", []int{1, 2, 15}, `[0x1 0x2 0xf]`},
@@ -546,7 +546,7 @@ func TestCountMallocs(t *testing.T) {
 
 type flagPrinter struct{}
 
-func (*flagPrinter) Format(f State, c int) {
+func (*flagPrinter) Format(f State, c rune) {
 	s := "%"
 	for i := 0; i < 128; i++ {
 		if f.Flag(i) {
@@ -746,7 +746,7 @@ type PanicF struct {
 }
 
 // Value receiver.
-func (p PanicF) Format(f State, c int) {
+func (p PanicF) Format(f State, c rune) {
 	panic(p.message)
 }
 
