@@ -1,3 +1,11 @@
+2011-12-02  Michael Meissner  <meissner@the-meissners.org>
+
+	PR target/51390
+	* config/rs6000/rs6000.c (def_builtin): Use the correct field to
+	figure out the function's attributes.
+	(struct builtin_description): Mark mask field as const since we no
+	longer need to modify it for SPE and PAIRED builtins.
+
 2011-12-02  Joseph Myers  <joseph@codesourcery.com>
 
 	Revert:

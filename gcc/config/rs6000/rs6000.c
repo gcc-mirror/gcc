@@ -215,10 +215,7 @@ static GTY(()) section *toc_section;
 
 struct builtin_description
 {
-  /* mask is not const because we're going to alter it below.  This
-     nonsense will go away when we rewrite the -march infrastructure
-     to give us more target flag bits.  */
-  unsigned int mask;
+  const unsigned int mask;
   const enum insn_code icode;
   const char *const name;
   const enum rs6000_builtins code;
@@ -9394,7 +9391,7 @@ static void
 def_builtin (const char *name, tree type, enum rs6000_builtins code)
 {
   tree t;
-  unsigned classify = rs6000_builtin_info[(int)code].mask;
+  unsigned classify = rs6000_builtin_info[(int)code].attr;
   const char *attr_string = "";
 
   gcc_assert (name != NULL);
