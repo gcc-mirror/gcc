@@ -301,6 +301,8 @@ package Ada.Containers.Bounded_Multiway_Trees is
 private
    use Ada.Streams;
 
+   No_Node : constant Count_Type'Base := -1;
+
    type Children_Type is record
       First : Count_Type'Base;
       Last  : Count_Type'Base;
@@ -319,7 +321,7 @@ private
    type Tree (Capacity : Count_Type) is tagged record
       Nodes    : Tree_Node_Array (0 .. Capacity) := (others => <>);
       Elements : Element_Array (1 .. Capacity) := (others => <>);
-      Free     : Count_Type'Base := -1;
+      Free     : Count_Type'Base := No_Node;
       Busy     : Integer := 0;
       Lock     : Integer := 0;
       Count    : Count_Type := 0;
@@ -342,7 +344,7 @@ private
 
    type Cursor is record
       Container : Tree_Access;
-      Node      : Count_Type'Base := -1;
+      Node      : Count_Type'Base := No_Node;
    end record;
 
    procedure  Read

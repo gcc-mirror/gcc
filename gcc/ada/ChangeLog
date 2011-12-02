@@ -1,3 +1,47 @@
+2011-12-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_dbug.adb: Comment reformatting.
+	(Get_External_Name): Use Reset_Buffers to reset the contents of
+	Name_Buffer and Homonym_Numbers.
+	(Qualify_All_Entity_Names): Reset the contents of Name_Buffer and
+	Homonym_Numbers before creating a new qualified name for a particular
+	entity.
+	(Reset_Buffers): New routine.
+
+2011-12-02  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cbmutr.ads (No_Node): Moved declaration from body to spec
+	* a-comutr.adb, a-cimutr.adb, a-cbmutr.adb (Iterator): Derives
+	from Root_Iterator.
+	(Child_Iterator): Derives from Root_Iterator.
+	(Finalize): Implemented as an override operation for Root_Iterator.
+	(First): Return value depends on Subtree component.
+	(Last): Component was renamed from Parent to Subtree.
+	(Next): Checks parameter value, and uses simplified loop.
+	(Iterate): Forwards to Iterate_Subtree.
+	(Iterate_Children): Component was renamed from Parent to Subtree.
+	(Iterate_Subtree): Checks parameter value
+
+2011-12-02  Robert Dewar  <dewar@adacore.com>
+
+	* usage.adb: Add lines for -gnatw.n and -gnatw.N
+	(atomic sync info msgs).
+
+2011-12-02  Steve Baird  <baird@adacore.com>
+
+	* sem_ch3.adb (Check_Completion): An Ada 2012
+	generic formal type doesn't require a completion.
+
+2011-12-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Set_Debug_Info_Needed): Also set the flag on the
+	packed array type if it is to be set on the array type used to
+	represent it.
+
+2011-12-02  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Eliminate confusing use of type name.
+
 2011-12-02  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch10.adb (Analyze_Compilation_Unit): For a library subprogram
