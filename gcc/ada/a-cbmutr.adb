@@ -2047,6 +2047,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       declare
          Nodes : Tree_Node_Array renames Object.Container.Nodes;
          Node  : Count_Type;
+
       begin
          Node := Position.Node;
 

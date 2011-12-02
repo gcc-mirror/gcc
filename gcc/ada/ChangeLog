@@ -1,3 +1,8 @@
+2011-12-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_attr.adb, a-comutr.adb, a-cbmutr.adb,
+	a-cbmutr.ads: Minor reformatting.
+
 2011-12-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_dbug.adb: Comment reformatting.

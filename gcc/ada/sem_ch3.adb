@@ -9526,6 +9526,7 @@ package body Sem_Ch3 is
          --  In case of previous errors, other expansion actions that provide
          --  bodies for null procedures with not be invoked, so inhibit message
          --  in those cases.
+
          --  Note that E_Operator is not in the list that follows, because
          --  this kind is reserved for predefined operators, that are
          --  intrinsic and do not need completion.
@@ -9582,6 +9583,8 @@ package body Sem_Ch3 is
             elsif not Is_Child_Unit (E) then
                May_Need_Implicit_Body (E);
             end if;
+
+         --  Comment needed here for Is_Generic_Type test ???
 
          elsif Ekind (E) = E_Incomplete_Type
            and then No (Underlying_Type (E))
