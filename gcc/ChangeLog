@@ -1,3 +1,22 @@
+2011-12-02  Joseph Myers  <joseph@codesourcery.com>
+
+	Revert:
+
+	2008-09-18  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR rtl-opt/37451
+	* loop-doloop.c (doloop_modify): New argument zero_extend_p and
+	zero extend count after the correction to it is done.
+	(doloop_optimize): Update call to doloop_modify, don't zero extend
+	count before call.
+
+	2008-11-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR rtl-opt/37782
+	* loop-doloop.c (doloop_modify): Add from_mode argument that says what
+	mode count is in.
+	(doloop_optimize): Update call to doloop_modify.
+
 2011-12-02  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/47259
