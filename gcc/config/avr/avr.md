@@ -299,7 +299,7 @@
   [(set (match_operand:HI 0 "stack_register_operand" "=q")
         (unspec_volatile:HI [(match_operand:HI 1 "register_operand"  "r")] 
 			    UNSPECV_WRITE_SP_IRQ_OFF))]
-  ""
+  "!AVR_HAVE_8BIT_SP"
   "out __SP_H__, %B1
 	out __SP_L__, %A1"
   [(set_attr "length" "2")
@@ -309,7 +309,7 @@
   [(set (match_operand:HI 0 "stack_register_operand" "=q")
         (unspec_volatile:HI [(match_operand:HI 1 "register_operand"  "r")] 
 			    UNSPECV_WRITE_SP_IRQ_ON))]
-  ""
+  "!AVR_HAVE_8BIT_SP"
   "cli
         out __SP_H__, %B1
 	sei

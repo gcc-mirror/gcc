@@ -70,7 +70,7 @@ const struct mcu_type_s avr_mcu_types[] = {
   { "attiny2313a",          ARCH_AVR25, "__AVR_ATtiny2313A__",      1, 0x0060, "tn2313a" },
   { "attiny24",             ARCH_AVR25, "__AVR_ATtiny24__",         1, 0x0060, "tn24" },
   { "attiny24a",            ARCH_AVR25, "__AVR_ATtiny24A__",        1, 0x0060, "tn24a" },
-  { "attiny4313",           ARCH_AVR25, "__AVR_ATtiny4313__",       1, 0x0060, "tn4313" },
+  { "attiny4313",           ARCH_AVR25, "__AVR_ATtiny4313__",       0, 0x0060, "tn4313" },
   { "attiny44",             ARCH_AVR25, "__AVR_ATtiny44__",         0, 0x0060, "tn44" },
   { "attiny44a",            ARCH_AVR25, "__AVR_ATtiny44A__",        0, 0x0060, "tn44a" },
   { "attiny84",             ARCH_AVR25, "__AVR_ATtiny84__",         0, 0x0060, "tn84" },
@@ -88,7 +88,7 @@ const struct mcu_type_s avr_mcu_types[] = {
   { "attiny87",             ARCH_AVR25, "__AVR_ATtiny87__",         0, 0x0100, "tn87" },
   { "attiny48",             ARCH_AVR25, "__AVR_ATtiny48__",         0, 0x0100, "tn48" },
   { "attiny88",             ARCH_AVR25, "__AVR_ATtiny88__",         0, 0x0100, "tn88" },
-  { "at86rf401",            ARCH_AVR25, "__AVR_AT86RF401__",        1, 0x0060, "86401" },
+  { "at86rf401",            ARCH_AVR25, "__AVR_AT86RF401__",        0, 0x0060, "86401" },
     /* Classic, > 8K, <= 64K.  */
   { "avr3",                 ARCH_AVR3, NULL,                        0, 0x0060, "43355" },
   { "at43usb355",           ARCH_AVR3, "__AVR_AT43USB355__",        0, 0x0060, "43355" },

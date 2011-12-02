@@ -1,3 +1,18 @@
+2011-12-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/51002
+	PR target/51345
+	* config/avr/libgcc.S (__prologue_saves__, __epilogue_restores__):
+	Enclose parts using __SP_H__ in !defined (__AVR_HAVE_8BIT_SP__).
+	Add FIXME comments.
+	* config/avr/avr.md (movhi_sp_r_irq_off, movhi_sp_r_irq_on): Set
+	insn condition to !AVR_HAVE_8BIT_SP.
+	* config/avr/avr.c (output_movhi): "clr%B0" instead of "in
+	%B0,__SP_H__" if AVR_HAVE_8BIT_SP.
+	(avr_file_start): Only print "__SP_H__ = 0x3e" if !AVR_HAVE_8BIT_SP.
+	* config/avr/avr-devices.c (avr_mcu_types): ATtiny4313 and
+	AT86RF401 have a 16-bit SP (their manual is bogus).
+
 2011-11-25  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	Backport from mainline:

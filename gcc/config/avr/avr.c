@@ -1879,9 +1879,12 @@ output_movhi (rtx insn, rtx operands[], int *l)
 	    }
 	  else if (test_hard_reg_class (STACK_REG, src))
 	    {
-	      *l = 2;	
-	      return (AS2 (in,%A0,__SP_L__) CR_TAB
-		      AS2 (in,%B0,__SP_H__));
+              *l = 2;
+              return AVR_HAVE_8BIT_SP
+                ? (AS2 (in,%A0,__SP_L__) CR_TAB
+                   AS1 (clr,%B0))
+                : (AS2 (in,%A0,__SP_L__) CR_TAB
+                   AS2 (in,%B0,__SP_H__));
 	    }
 
 	  if (AVR_HAVE_MOVW)
@@ -5173,10 +5176,10 @@ avr_file_start (void)
 
   default_file_start ();
 
-/*  fprintf (asm_out_file, "\t.arch %s\n", avr_mcu_name);*/
-  fputs ("__SREG__ = 0x3f\n"
-	 "__SP_H__ = 0x3e\n"
-	 "__SP_L__ = 0x3d\n", asm_out_file);
+  fputs ("__SREG__ = 0x3f\n", asm_out_file);
+  if (!AVR_HAVE_8BIT_SP)
+    fputs ("__SP_H__ = 0x3e\n", asm_out_file);
+  fputs ("__SP_L__ = 0x3d\n", asm_out_file);
   
   fputs ("__tmp_reg__ = 0\n" 
          "__zero_reg__ = 1\n", asm_out_file);
