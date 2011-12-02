@@ -1,3 +1,9 @@
+2011-12-02  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/47259
+	* ipa.c (varpool_externally_visible_p): Register variables
+	are always externally visible.
+
 2011-12-02  Sameera Deshpande  <sameera.deshpande@arm.com>
 
 	* gimple-pretty-print.c (dump_gimple_call): Dereference fn only if
