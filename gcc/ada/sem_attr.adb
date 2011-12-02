@@ -8633,7 +8633,8 @@ package body Sem_Attr is
                    (Ada_Version < Ada_2005
                      or else
                        not Effectively_Has_Constrained_Partial_View
-                             (Designated_Type (Base_Type (Typ))))
+                        (Typ => Designated_Type (Base_Type (Typ)),
+                         Scop => Current_Scope))
                then
                   null;
 

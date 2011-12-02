@@ -8660,6 +8660,9 @@ This is because in the default static elaboration mode, all necessary
 These implicit pragmas are still respected by the binder in
 @option{^-p^/PESSIMISTIC_ELABORATION^} mode, so a
 safe elaboration order is assured.
+
+Note that @option{^-p^/PESSIMISTIC_ELABORATION^} is not intended for
+production use; it is more for debugging/experimental use.
 @end table
 
 @node Output Control

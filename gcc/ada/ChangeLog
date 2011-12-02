@@ -1,3 +1,19 @@
+2011-12-02  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Clarify usage of -p binder switch.
+
+2011-12-02  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.ads, sem_util.adb, sem_aux.ads, sem_aux.adb
+	(Effectively_Has_Constrained_Partial_View): Moved to sem_aux
+	(In_Generic_Body): Moved to sem_aux.
+	(Unit_Declaration_Node): Moved to sem_aux.
+	* einfo.ads (Effectively_Has_Constrained_Partial_View): Complete
+	documentation.
+	* exp_attr.adb, live.adb, sem_ch10.adb, checks.adb, sem.adb,
+	rtsfind.adb, sem_attr.adb, sem_elab.adb, exp_ch4.adb, sem_ch4.adb,
+	exp_ch13.adb: Add with-clause on Sem_Aux.
+
 2011-12-02  Yannick Moy  <moy@adacore.com>
 
 	* sem_util.adb (Unique_Name): Reach through Unique_Entity to
