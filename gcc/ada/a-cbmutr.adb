@@ -28,6 +28,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Finalization; use Ada.Finalization;
+
 with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Multiway_Trees is
@@ -1246,7 +1247,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.Busy;
-
          begin
             B := B - 1;
          end;
@@ -1258,7 +1258,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.Busy;
-
          begin
             B := B - 1;
          end;

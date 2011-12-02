@@ -36,6 +36,7 @@ with Ada.Containers.Hash_Tables.Generic_Keys;
 pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Keys);
 
 with Ada.Containers.Prime_Numbers;
+
 with System; use type System.Address;
 
 package body Ada.Containers.Indefinite_Hashed_Sets is
@@ -576,7 +577,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.HT.Busy;
-
          begin
             B := B - 1;
          end;
@@ -1024,7 +1024,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
      return Set_Iterator_Interfaces.Forward_Iterator'Class
    is
       B : Natural renames Container'Unrestricted_Access.all.HT.Busy;
-
    begin
       return It : constant Iterator :=
                     Iterator'(Limited_Controlled with

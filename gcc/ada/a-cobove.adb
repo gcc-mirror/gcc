@@ -29,6 +29,7 @@
 
 with Ada.Containers.Generic_Array_Sort;
 with Ada.Finalization; use Ada.Finalization;
+
 with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Vectors is
@@ -670,7 +671,6 @@ package body Ada.Containers.Bounded_Vectors is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.Busy;
-
          begin
             B := B - 1;
          end;
@@ -1649,7 +1649,6 @@ package body Ada.Containers.Bounded_Vectors is
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class
    is
       B : Natural renames Container'Unrestricted_Access.all.Busy;
-
    begin
       return It : constant Iterator :=
                     Iterator'(Limited_Controlled with
@@ -1666,7 +1665,6 @@ package body Ada.Containers.Bounded_Vectors is
       return Vector_Iterator_Interfaces.Reversible_Iterator'class
    is
       B : Natural renames Container'Unrestricted_Access.all.Busy;
-
    begin
       return It : constant Iterator :=
                     Iterator'(Limited_Controlled with
@@ -1783,7 +1781,8 @@ package body Ada.Containers.Bounded_Vectors is
            "attempt to tamper with cursors (Source is busy)";
       end if;
 
-      --  Clear Target now, in case element assignment fails.
+      --  Clear Target now, in case element assignment fails
+
       Target.Last := No_Index;
 
       Target.Elements (1 .. Source.Length) :=
@@ -1992,8 +1991,10 @@ package body Ada.Containers.Bounded_Vectors is
    ---------------
 
    function Constant_Reference
-     (Container : Vector; Position : Cursor)    --  SHOULD BE ALIASED
-   return Constant_Reference_Type is
+     (Container : Vector;
+      Position  : Cursor)    --  SHOULD BE ALIASED
+      return Constant_Reference_Type
+   is
    begin
       pragma Unreferenced (Container);
 
@@ -2012,8 +2013,10 @@ package body Ada.Containers.Bounded_Vectors is
    end Constant_Reference;
 
    function Constant_Reference
-     (Container : Vector; Position : Index_Type)
-   return Constant_Reference_Type is
+     (Container : Vector;
+      Position  : Index_Type)
+      return Constant_Reference_Type
+   is
    begin
       if (Position) > Container.Last then
          raise Constraint_Error with "Index is out of range";
@@ -2023,8 +2026,11 @@ package body Ada.Containers.Bounded_Vectors is
                 Container.Elements (To_Array_Index (Position))'Access);
    end Constant_Reference;
 
-   function Reference (Container : Vector; Position : Cursor)
-   return Reference_Type is
+   function Reference
+     (Container : Vector;
+      Position  : Cursor)
+      return Reference_Type
+   is
    begin
       pragma Unreferenced (Container);
 
@@ -2042,8 +2048,11 @@ package body Ada.Containers.Bounded_Vectors is
              (To_Array_Index (Position.Index))'Access);
    end Reference;
 
-   function Reference (Container : Vector; Position : Index_Type)
-   return Reference_Type is
+   function Reference
+     (Container : Vector;
+      Position  : Index_Type)
+      return Reference_Type
+   is
    begin
       if Position > Container.Last then
          raise Constraint_Error with "Index is out of range";

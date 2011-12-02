@@ -35,6 +35,7 @@ pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Bounded_Keys);
 
 with Ada.Containers.Prime_Numbers;  use Ada.Containers.Prime_Numbers;
 with Ada.Finalization;              use Ada.Finalization;
+
 with System;  use type System.Address;
 
 package body Ada.Containers.Bounded_Hashed_Maps is
@@ -405,7 +406,6 @@ package body Ada.Containers.Bounded_Hashed_Maps is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.Busy;
-
          begin
             B := B - 1;
          end;
@@ -418,13 +418,12 @@ package body Ada.Containers.Bounded_Hashed_Maps is
 
    function Find (Container : Map; Key : Key_Type) return Cursor is
       Node : constant Count_Type := Key_Ops.Find (Container, Key);
-
    begin
       if Node = 0 then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, Node);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, Node);
    end Find;
 
    -----------
@@ -433,13 +432,12 @@ package body Ada.Containers.Bounded_Hashed_Maps is
 
    function First (Container : Map) return Cursor is
       Node : constant Count_Type := HT_Ops.First (Container);
-
    begin
       if Node = 0 then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, Node);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, Node);
    end First;
 
    function First (Object : Iterator) return Cursor is
@@ -489,7 +487,6 @@ package body Ada.Containers.Bounded_Hashed_Maps is
 
          declare
             N : Node_Type renames Container.Nodes (Position.Node);
-
          begin
             N.Key := Key;
             N.Element := New_Item;
@@ -532,6 +529,7 @@ package body Ada.Containers.Bounded_Hashed_Maps is
          --  parameter.
 
          --  Node.Element := New_Item;
+         --  What is this deleted code about???
       end Assign_Key;
 
       --------------
@@ -768,13 +766,12 @@ package body Ada.Containers.Bounded_Hashed_Maps is
       declare
          M    : Map renames Position.Container.all;
          Node : constant Count_Type := HT_Ops.Next (M, Position.Node);
-
       begin
          if Node = 0 then
             return No_Element;
+         else
+            return Cursor'(Position.Container, Node);
          end if;
-
-         return Cursor'(Position.Container, Node);
       end;
    end Next;
 

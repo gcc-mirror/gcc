@@ -1,3 +1,20 @@
+2011-12-02  Matthew Heaney  <heaney@adacore.com>
+
+	* a-coormu.ads, a-ciormu.ads: Declare iterator factory function.
+	* a-ciormu.adb, a-ciormu.adb (Iterator): Declare concrete
+	Iterator type.
+	(Finalize): Decrement busy counter.
+	(First, Last): Cursor return value depends on iterator node value.
+	(Iterate): Use start position as iterator node value.
+	(Next, Previous): Forward to corresponding cursor-based operation.
+
+2011-12-02  Robert Dewar  <dewar@adacore.com>
+
+	* a-cborma.adb, a-cbhama.adb, a-cbdlli.adb, a-cbmutr.adb,
+	a-cbhase.adb, a-cdlili.adb, a-cihama.adb, a-ciorse.adb, a-cidlli.adb,
+	a-cimutr.adb, a-cihase.adb, a-cohama.adb, a-cborse.adb,
+	a-ciorma.adb, a-cobove.adb: Minor reformatting.
+
 2011-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/51201

@@ -546,7 +546,6 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.Tree.Busy;
-
          begin
             B := B - 1;
          end;

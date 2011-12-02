@@ -34,6 +34,7 @@ with Ada.Containers.Hash_Tables.Generic_Keys;
 pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Keys);
 
 with Ada.Unchecked_Deallocation;
+
 with System; use type System.Address;
 
 package body Ada.Containers.Indefinite_Hashed_Maps is
@@ -428,7 +429,6 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       if Object.Container /= null then
          declare
             B : Natural renames Object.Container.all.HT.Busy;
-
          begin
             B := B - 1;
          end;
@@ -479,13 +479,12 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
    function First (Container : Map) return Cursor is
       Node : constant Node_Access := HT_Ops.First (Container.HT);
-
    begin
       if Node = null then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, Node);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, Node);
    end First;
 
    function First (Object : Iterator) return Cursor is
@@ -726,7 +725,6 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
      (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'Class
    is
       B  : Natural renames Container'Unrestricted_Access.all.HT.Busy;
-
    begin
       return It : constant Iterator :=
                     (Limited_Controlled with
@@ -809,13 +807,12 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       declare
          HT   : Hash_Table_Type renames Position.Container.HT;
          Node : constant Node_Access := HT_Ops.Next (HT, Position.Node);
-
       begin
          if Node = null then
             return No_Element;
+         else
+            return Cursor'(Position.Container, Node);
          end if;
-
-         return Cursor'(Position.Container, Node);
       end;
    end Next;
 
