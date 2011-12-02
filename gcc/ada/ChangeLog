@@ -1,3 +1,10 @@
+2011-12-02  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch10.adb (Analyze_Compilation_Unit): For a library subprogram
+	body that acts as spec, do not create a shallow copy of the context
+	clause for the synthetized spec (instead, use the same list as
+	in the body).
+
 2011-12-02  Bob Duff  <duff@adacore.com>
 
 	* gnat_ugn.texi: Clarify usage of -p binder switch.
