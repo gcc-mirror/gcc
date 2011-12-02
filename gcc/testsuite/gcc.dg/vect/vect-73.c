@@ -3,17 +3,26 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 16
+#define N 128
 
 int ic[N*2];
-int ib[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
+int ib[N];
 
 #define ia (ic+N)
+
+volatile int y = 0;
 
 __attribute__ ((noinline))
 int main1 ()
 {
   int i, j;
+
+  for (i = 0; i < N; i++)
+    {
+      ib[i] = i*3;
+      if (y)
+	abort ();
+    }
 
   for (i = 0; i < N; i++)
     {
@@ -24,7 +33,7 @@ int main1 ()
   for (i = 0; i < N; i++)
     {
        if (ia[i] != ib[i])
-         abort();
+         abort ();
     }
 
   return 0;

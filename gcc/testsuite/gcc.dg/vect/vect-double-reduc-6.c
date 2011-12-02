@@ -3,13 +3,15 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define K 4 
+#define K 16
 
 int in[2*K][K] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 int out[K];
-int check_result[K] = {0,16,256,4096};
+int check_result[K];
 
-__attribute__ ((noinline)) void 
+volatile int y = 0;
+
+__attribute__ ((noinline)) void
 foo ()
 {
   int sum;
@@ -18,7 +20,21 @@ foo ()
   for (k = 0; k < K; k++)
     {
       sum = 1;
-      for (j = 0; j < K; j++) 
+      for (j = 0; j < K; j++)
+        for (i = 0; i < K; i++)
+	{
+          sum *= in[i+k][j];
+	  /* Avoid vectorization.  */
+	  if (y)
+	    abort ();
+	}
+      check_result[k] = sum;
+    }
+
+  for (k = 0; k < K; k++)
+    {
+      sum = 1;
+      for (j = 0; j < K; j++)
         for (i = 0; i < K; i++)
           sum *= in[i+k][j];
       out[k] = sum;
@@ -43,7 +59,7 @@ int main ()
 
   return 0;
 }
-        
+
 /* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
-      
+

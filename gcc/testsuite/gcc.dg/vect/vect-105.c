@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 4
+#define N 16
 
 struct extraction
 {
@@ -12,17 +12,51 @@ struct extraction
   int b[N][N];
 };
 
-static int a[N][N] = {{1,2,3,11},{4,5,6,12},{7,8,9,13},{34,45,67,83}};
-static int b[N][N] = {{17,28,15,23},{0,2,3,24},{4,31,82,25},{29,31,432,256}};
-static int c[N][N] = {{1,2,3,11},{4,9,13,34},{45,67,83,13},{34,45,67,83}};
+static int a[N][N];
+static int b[N][N];
+static int c[N][N];
 
 volatile int y;
 
 __attribute__ ((noinline))
 int main1 (int x) {
-  int i,j;
+  int i,j, off;
   struct extraction *p;
   p = (struct extraction *) malloc (sizeof (struct extraction));
+  for (i = 0; i < N; i++)
+   {
+    for (j = 0; j < N; j++)
+     {
+       a[i][j] = (i*7 + j*17)%53;
+       b[i][j] = (i*11+ j*13)%41;
+       if (y)
+	 abort (); /* to avoid vectorization.  */
+     }
+   }
+  for (i = 0; i < N; i++)
+   {
+    for (j = 0; j < N; j++)
+     {
+       c[i][j] = a[i][j];
+       if (y)
+	 abort (); /* to avoid vectorization.  */
+     }
+   }
+  for (i = 1; i < N; i++)
+  {
+    for (j = 0; j < N; j++)
+    {
+      off = x + i + j + N+1;
+      if (x + i + j > N*N-1)
+	break;
+      if (off > N*N-1)
+	*(&c[0][0]+x+i+j) = *(&b[0][0] + off - N*N);
+      else
+	*(&c[0][0]+x+i+j) = *(&a[0][0] + off);
+       if (y)
+	 abort (); /* to avoid vectorization.  */
+    }
+  }
 
   for (i = 0; i < N; i++)
    {
@@ -33,7 +67,7 @@ int main1 (int x) {
        /* Because Y is volatile, the compiler cannot move this check out
 	  of the loop.  */
        if (y)
-	 abort (); /* to avoid vectorization  */
+	 abort (); /* to avoid vectorization.  */
      }
    }
 
@@ -42,7 +76,7 @@ int main1 (int x) {
   {
     for (j = 0; j < N; j++)
     {
-       *((int *)p + x + i + j) = *((int *)p + x + i + j + 5);
+       *((int *)p + x + i + j) = *((int *)p + x + i + j + N+1);
     }
   }
 
@@ -52,7 +86,7 @@ int main1 (int x) {
     for (j = 0; j < N; j++)
      {
        if (p->a[i][j] != c[i][j])
-         abort();
+         abort ();
      }
   }
   return 0;
@@ -66,7 +100,7 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/*  { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 2 "vect" { target vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 2 "vect" { target vect_no_align } } } */
 /* { dg-final { scan-tree-dump-times "possible dependence between data-refs" 0 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 

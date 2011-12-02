@@ -3,8 +3,8 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 40
-#define M 128
+#define N 80
+#define M 256
 float in[N+M];
 float coeff[M];
 float out[N];

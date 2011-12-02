@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 16
+#define N 128
 
 struct tmp_struct
 {

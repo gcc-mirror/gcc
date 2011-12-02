@@ -5,7 +5,7 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 64
+#define N 512
 
 /* Modified rgb to rgb conversion from FFmpeg.  */
 __attribute__ ((noinline)) void

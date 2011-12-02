@@ -3,16 +3,26 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 16
-signed char data_ch[N] =
-  { 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28 };
-#define SUM 210
+#define N 128
+signed char data_ch[N];
+
+volatile int y = 0;
 
 __attribute__ ((noinline)) int
 foo ()
 {
   int i;
   signed int intsum = 0;
+  signed int check_intsum = 0;
+
+  for (i = 0; i < N; i++)
+    {
+      data_ch[i] = i*2;
+      check_intsum += data_ch[i];
+      /* Avoid vectorization.  */
+      if (y)
+	abort ();
+    }
 
   /* widenning sum: sum chars into int.  */
   for (i = 0; i < N; i++)
@@ -21,7 +31,7 @@ foo ()
     }
 
   /* check results:  */
-  if (intsum != SUM)
+  if (intsum != check_intsum)
     abort ();
 
   return 0;
