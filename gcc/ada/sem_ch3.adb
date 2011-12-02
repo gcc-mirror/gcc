@@ -10694,18 +10694,24 @@ package body Sem_Ch3 is
             return;
          end if;
 
-         if Ekind (T) = E_General_Access_Type
+         --  Enforce rule that the constraint is illegal if there is an
+         --  unconstrained view of the designated type. This means that the
+         --  partial view (either a private type declaration or a derivation
+         --  from a private type) has no discriminants. (Defect Report
+         --  8652/0008, Technical Corrigendum 1, checked by ACATS B371001).
+
+         --  Rule updated for Ada 2005: the private type is said to have
+         --  a constrained partial view, given that objects of the type
+         --  can be declared. Furthermore, the rule applies to all access
+         --  types, unlike the rule concerning default discriminants (see
+         --  RM 3.7.1(7/3))
+
+         if (Ekind (T) = E_General_Access_Type
+              or else Ada_Version >= Ada_2005)
            and then Has_Private_Declaration (Desig_Type)
            and then In_Open_Scopes (Scope (Desig_Type))
            and then Has_Discriminants (Desig_Type)
          then
-            --  Enforce rule that the constraint is illegal if there is
-            --  an unconstrained view of the designated type. This means
-            --  that the partial view (either a private type declaration or
-            --  a derivation from a private type) has no discriminants.
-            --  (Defect Report 8652/0008, Technical Corrigendum 1, checked
-            --  by ACATS B371001).
-
             declare
                Pack  : constant Node_Id :=
                          Unit_Declaration_Node (Scope (Desig_Type));
@@ -10733,9 +10739,8 @@ package body Sem_Ch3 is
                      then
                         if No (Discriminant_Specifications (Decl)) then
                            Error_Msg_N
-                            ("cannot constrain general access type if " &
-                               "designated type has constrained partial view",
-                                S);
+                            ("cannot constrain access type if designated " &
+                               "type has constrained partial view", S);
                         end if;
 
                         exit;

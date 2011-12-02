@@ -1,3 +1,13 @@
+2011-12-02  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Constrain_Access): Undo previous
+	patch for this routine. Required since the RM rule 3.7.1(7/3)
+	applies to all access types.
+
+2011-12-02  Bob Duff  <duff@adacore.com>
+
+	* sem_ch6.adb: Minor comment fix.
+
 2011-12-02  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* s-tpopsp-rtems.adb: Use ATCB_Key rather than RTEMS_Ada_Self variable
