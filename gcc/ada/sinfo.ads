@@ -2176,7 +2176,6 @@ package Sinfo is
       --    type DEFINING_IDENTIFIER [KNOWN_DISCRIMINANT_PART]
       --      is TYPE_DEFINITION
       --        [ASPECT_SPECIFICATIONS];
-
       --  | TASK_TYPE_DECLARATION
       --  | PROTECTED_TYPE_DECLARATION
 

@@ -1,5 +1,10 @@
 2011-12-02  Robert Dewar  <dewar@adacore.com>
 
+	* sinfo.ads: Minor reformatting.
+	* gnat_ugn.texi: Fix confusion in use of term "type name".
+
+2011-12-02  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch6.adb: Minor change in error message.
 
 2011-12-02  Robert Dewar  <dewar@adacore.com>
