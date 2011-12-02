@@ -698,6 +698,9 @@ dump_gimple_call (pretty_printer *buffer, gimple gs, int spc, int flags)
   if (gimple_call_tail_p (gs))
     pp_string (buffer, " [tail call]");
 
+  if (fn == NULL)
+    return;
+
   /* Dump the arguments of _ITM_beginTransaction sanely.  */
   if (TREE_CODE (fn) == ADDR_EXPR)
     fn = TREE_OPERAND (fn, 0);
