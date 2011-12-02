@@ -1,3 +1,8 @@
+2011-12-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/50622
+	* g++.dg/tree-ssa/pr50622.C: New test.
+
 2011-12-01  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/initlist61.C: New.

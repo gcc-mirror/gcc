@@ -1,3 +1,9 @@
+2011-12-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/50622
+	* tree-sra.c (load_assign_lhs_subreplacements): Force gimple operand
+	if both lacc and racc are grp_partial_lhs.
+
 2011-12-01  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/50814.
