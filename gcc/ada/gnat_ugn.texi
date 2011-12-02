@@ -13190,20 +13190,21 @@ setting.
 
 @cindex @option{^-nt@var{x}^/TYPE_CASING^} (@command{gnatpp})
 @item ^-neD^/TYPE_CASING=AS_DECLARED^
-Type and subtype name casing for defining occurrences are as they appear in
-the source file. Overrides ^-n^/NAME_CASING^ casing setting.
+Names introduced by type and subtype declarations are always
+cased as they appear in the declaration in the source file.
+Overrides ^-n^/NAME_CASING^ casing setting.
 
 @item ^-ntU^/TYPE_CASING=UPPER_CASE^
-Type and subtype names are in upper case. Overrides ^-n^/NAME_CASING^ casing
-setting.
+Names introduced by type and subtype declarations are always in
+upper case. Overrides ^-n^/NAME_CASING^ casing setting.
 
 @item ^-ntL^/TYPE_CASING=LOWER_CASE^
-Type and subtype names are in lower case. Overrides ^-n^/NAME_CASING^ casing
-setting.
+Names introduced by type and subtype declarations are always in
+lower case. Overrides ^-n^/NAME_CASING^ casing setting.
 
 @item ^-ntM^/TYPE_CASING=MIXED_CASE^
-Type and subtype names are in mixed case. Overrides ^-n^/NAME_CASING^ casing
-setting.
+Names introduced by type and subtype declarations are always in
+mixed case. Overrides ^-n^/NAME_CASING^ casing setting.
 
 @cindex @option{^-p@var{x}^/PRAGMA_CASING^} (@command{gnatpp})
 @item ^-pL^/PRAGMA_CASING=LOWER_CASE^
@@ -26370,7 +26371,7 @@ of the methodological principle known as the ``contract model'',
 the generic declaration explicitly indicates whether
 or not such instantiations are permitted.  If a generic formal parameter
 has explicit unknown discriminants, indicated by using @code{(<>)} after the
-type name, then it can be instantiated with indefinite types, but no
+subtype name, then it can be instantiated with indefinite types, but no
 stand-alone variables can be declared of this type.  Any attempt to declare
 such a variable will result in an illegality at the time the generic is
 declared.  If the @code{(<>)} notation is not used, then it is illegal
