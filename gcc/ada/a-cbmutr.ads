@@ -302,6 +302,9 @@ private
    use Ada.Streams;
 
    No_Node : constant Count_Type'Base := -1;
+   --  Need to document all global declarations such as this ???
+
+   --  Following decls also need much more documentation ???
 
    type Children_Type is record
       First : Count_Type'Base;

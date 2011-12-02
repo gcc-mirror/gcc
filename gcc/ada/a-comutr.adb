@@ -51,6 +51,9 @@ package body Ada.Containers.Multiway_Trees is
    --  Subtree_Iterator --
    -----------------------
 
+   --  ??? these headers are a bit odd, but for sure they do not substitute
+   --  for documenting things, what *is* a Subtree_Iterator?
+
    type Subtree_Iterator is new Root_Iterator with null record;
 
    overriding function First (Object : Subtree_Iterator) return Cursor;
