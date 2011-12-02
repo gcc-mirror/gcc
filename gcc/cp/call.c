@@ -7198,6 +7198,7 @@ build_new_method_call_1 (tree instance, tree fns, VEC(tree,gc) **args,
       && CONSTRUCTOR_IS_DIRECT_INIT (VEC_index (tree, *args, 0)))
     {
       tree init_list = VEC_index (tree, *args, 0);
+      tree init = NULL_TREE;
 
       gcc_assert (VEC_length (tree, *args) == 1
 		  && !(flags & LOOKUP_ONLYCONVERTING));
@@ -7209,8 +7210,16 @@ build_new_method_call_1 (tree instance, tree fns, VEC(tree,gc) **args,
       if (CONSTRUCTOR_NELTS (init_list) == 0
 	  && TYPE_HAS_DEFAULT_CONSTRUCTOR (basetype)
 	  && !processing_template_decl)
+	init = build_value_init (basetype, complain);
+
+      /* If BASETYPE is an aggregate, we need to do aggregate
+	 initialization.  */
+      else if (CP_AGGREGATE_TYPE_P (basetype))
+	init = digest_init (basetype, init_list, complain);
+
+      if (init)
 	{
-	  tree ob, init = build_value_init (basetype, complain);
+	  tree ob;
 	  if (integer_zerop (instance_ptr))
 	    return get_target_expr_sfinae (init, complain);
 	  ob = build_fold_indirect_ref (instance_ptr);
@@ -7219,6 +7228,7 @@ build_new_method_call_1 (tree instance, tree fns, VEC(tree,gc) **args,
 	  return init;
 	}
 
+      /* Otherwise go ahead with overload resolution.  */
       add_list_candidates (fns, first_mem_arg, init_list,
 			   basetype, explicit_targs, template_only,
 			   conversion_path, access_binfo, flags, &candidates);

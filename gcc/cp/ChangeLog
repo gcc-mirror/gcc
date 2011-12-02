@@ -1,3 +1,8 @@
+2011-12-01  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_new_method_call_1): Handle aggregate initialization.
+	* tree.c (stabilize_init): Handle CONSTRUCTOR.
+
 2011-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51326
