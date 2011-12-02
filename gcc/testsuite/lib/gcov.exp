@@ -45,7 +45,7 @@ proc verify-lines { testcase file } {
     while { [gets $fd line] >= 0 } {
         # We want to match both "-" and "#####" as count as well as numbers,
         # since we want to detect lines that shouldn't be marked as covered.
-	if [regexp "^ *(\[^:]*): *(\[0-9\\-#]+):.*count\\((\[0-9\\-#]+)\\)(.*)" \
+	if [regexp "^ *(\[^:]*): *(\[0-9\\-#]+):.*count\\((\[0-9\\-#=]+)\\)(.*)" \
 		"$line" all is n shouldbe rest] {
 	    if [regexp "^ *{(.*)}" $rest all xfailed] {
 		switch [dg-process-target $xfailed] {

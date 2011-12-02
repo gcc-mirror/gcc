@@ -261,10 +261,13 @@ program source code.  The format is
 
 Additional block information may succeed each line, when requested by
 command line option.  The @var{execution_count} is @samp{-} for lines
-containing no code and @samp{#####} for lines which were never executed.
-Some lines of information at the start have @var{line_number} of zero.
+containing no code.  Unexecuted lines are marked @samp{#####} or
+@samp{====}, depending on whether they are reachable by
+non-exceptional paths or only exceptional paths such as C++ exception
+handlers, respectively.
 
-The preamble lines are of the form
+Some lines of information at the start have @var{line_number} of zero.
+These preamble lines are of the form
 
 @smallexample
 -:0:@var{tag}:@var{value}

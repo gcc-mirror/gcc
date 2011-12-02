@@ -1,3 +1,8 @@
+2011-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* lib/gcov.exp (verify-lines): Allow = as a count char.
+	* g++.dg/gcov/gcov-13.C: New.
+
 2011-12-02  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* gcc.dg/vect/slp-13.c: Increase array size, add initialization.
