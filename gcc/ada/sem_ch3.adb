@@ -9704,9 +9704,25 @@ package body Sem_Ch3 is
                  ("?cannot initialize entities of limited type!", Exp);
 
             elsif Ada_Version < Ada_2005 then
-               Error_Msg_N
-                 ("cannot initialize entities of limited type", Exp);
-               Explain_Limited_Type (T, Exp);
+
+               --  The side effect removal machinery may generate illegal Ada
+               --  code to avoid the usage of access types and 'reference in
+               --  Alfa mode. Since this is legal code with respect to theorem
+               --  proving, do not emit the error.
+
+               if Alfa_Mode
+                 and then Nkind (Exp) = N_Function_Call
+                 and then Nkind (Parent (Exp)) = N_Object_Declaration
+                 and then not Comes_From_Source
+                                (Defining_Identifier (Parent (Exp)))
+               then
+                  null;
+
+               else
+                  Error_Msg_N
+                    ("cannot initialize entities of limited type", Exp);
+                  Explain_Limited_Type (T, Exp);
+               end if;
 
             else
                --  Specialize error message according to kind of illegal

@@ -3045,7 +3045,8 @@ package body Sem_Util is
 
    function Effectively_Has_Constrained_Partial_View
      (Typ  : Entity_Id;
-      Scop : Entity_Id := Current_Scope) return Boolean is
+      Scop : Entity_Id := Current_Scope) return Boolean
+   is
    begin
       return Has_Constrained_Partial_View (Typ)
         or else (In_Generic_Body (Scop)
@@ -6111,9 +6112,12 @@ package body Sem_Util is
    ---------------------
 
    function In_Generic_Body (Id : Entity_Id) return Boolean is
-      S : Entity_Id := Id;
+      S : Entity_Id;
 
    begin
+      --  Climb scopes looking for generic body
+
+      S := Id;
       while Present (S) and then S /= Standard_Standard loop
 
          --  Generic package body
@@ -6134,6 +6138,8 @@ package body Sem_Util is
 
          S := Scope (S);
       end loop;
+
+      --  False if top of scope stack without finding a generic body
 
       return False;
    end In_Generic_Body;
@@ -12905,7 +12911,12 @@ package body Sem_Util is
 
             if Nkind (P) = N_Subprogram_Body_Stub then
                if Present (Library_Unit (P)) then
-                  U := Get_Body_From_Stub (P);
+
+                  --  Get to the function or procedure (generic) entity through
+                  --  the body entity.
+
+                  U :=
+                    Unique_Entity (Defining_Entity (Get_Body_From_Stub (P)));
                end if;
             else
                U := Corresponding_Spec (P);
@@ -12929,6 +12940,11 @@ package body Sem_Util is
 
    function Unique_Name (E : Entity_Id) return String is
 
+      --  Names of E_Subprogram_Body or E_Package_Body entities are not
+      --  reliable, as they may not include the overloading suffix. Instead,
+      --  when looking for the name of E or one of its enclosing scope, we get
+      --  the name of the corresponding Unique_Entity.
+
       function Get_Scoped_Name (E : Entity_Id) return String;
       --  Return the name of E prefixed by all the names of the scopes to which
       --  E belongs, except for Standard.
@@ -12945,7 +12961,7 @@ package body Sem_Util is
          then
             return Name;
          else
-            return Get_Scoped_Name (Scope (E)) & "__" & Name;
+            return Get_Scoped_Name (Unique_Entity (Scope (E))) & "__" & Name;
          end if;
       end Get_Scoped_Name;
 
@@ -12965,7 +12981,7 @@ package body Sem_Util is
          return Unique_Name (Etype (E)) & "__" & Get_Name_String (Chars (E));
 
       else
-         return Get_Scoped_Name (E);
+         return Get_Scoped_Name (Unique_Entity (E));
       end if;
    end Unique_Name;
 
