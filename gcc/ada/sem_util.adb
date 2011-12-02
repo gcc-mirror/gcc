@@ -12210,8 +12210,16 @@ package body Sem_Util is
                end loop;
             end;
 
+            --  For a packed array type, we also need debug information for
+            --  the type used to represent the packed array. Conversely, we
+            --  also need it for the former if we need it for the latter.
+
             if Is_Packed (T) then
                Set_Debug_Info_Needed_If_Not_Set (Packed_Array_Type (T));
+            end if;
+
+            if Is_Packed_Array_Type (T) then
+               Set_Debug_Info_Needed_If_Not_Set (Original_Array_Type (T));
             end if;
 
          elsif Is_Access_Type (T) then

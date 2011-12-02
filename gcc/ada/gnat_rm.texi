@@ -4953,12 +4953,14 @@ with this pragma and others compiled in normal mode without it.
 Syntax:
 
 @smallexample @c ada
-pragma Suppress_Initialization ([Entity =>] type_Name);
+pragma Suppress_Initialization ([Entity =>] subtype_Name);
 @end smallexample
 
 @noindent
+Here subtype_Name is the name introduced by a type declaration
+or subtype declaration.
 This pragma suppresses any implicit or explicit initialization
-associated with the given type name for all variables of this type,
+for all variables of the given type or subtype,
 including initialization resulting from the use of pragmas
 Normalize_Scalars or Initialize_Scalars.
 

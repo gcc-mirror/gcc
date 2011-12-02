@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -105,11 +105,11 @@ package body Exp_Dbug is
    -- Homonym_Suffix --
    --------------------
 
-   --  The string defined here (and its associated length) is used to
-   --  gather the homonym string that will be appended to Name_Buffer
-   --  when the name is complete. Strip_Suffixes appends to this string
-   --  as does Append_Homonym_Number, and Output_Homonym_Numbers_Suffix
-   --  appends the string to the end of Name_Buffer.
+   --  The string defined here (and its associated length) is used to gather
+   --  the homonym string that will be appended to Name_Buffer when the name
+   --  is complete. Strip_Suffixes appends to this string as does
+   --  Append_Homonym_Number, and Output_Homonym_Numbers_Suffix appends the
+   --  string to the end of Name_Buffer.
 
    Homonym_Numbers : String (1 .. 256);
    Homonym_Len     : Natural := 0;
@@ -146,6 +146,10 @@ package body Exp_Dbug is
    procedure Qualify_Entity_Name (Ent : Entity_Id);
    --  If not already done, replaces the Chars field of the given entity
    --  with the appropriate fully qualified name.
+
+   procedure Reset_Buffers;
+   --  Reset the contents of Name_Buffer and Homonym_Numbers by setting their
+   --  respective lengths to zero.
 
    procedure Strip_Suffixes (BNPE_Suffix_Found : in out Boolean);
    --  Given an qualified entity name in Name_Buffer, remove any plain X or
@@ -701,8 +705,7 @@ package body Exp_Dbug is
    --  Start of processing for Get_External_Name
 
    begin
-      Name_Len    := 0;
-      Homonym_Len := 0;
+      Reset_Buffers;
 
       --  If this is a child unit, we want the child
 
@@ -1022,6 +1025,7 @@ package body Exp_Dbug is
    begin
       for J in Name_Qualify_Units.First .. Name_Qualify_Units.Last loop
          E := Defining_Entity (Name_Qualify_Units.Table (J));
+         Reset_Buffers;
          Qualify_Entity_Name (E);
 
          --  Normally entities in the qualification list are scopes, but in the
@@ -1033,6 +1037,7 @@ package body Exp_Dbug is
          if Ekind (E) /= E_Variable then
             Ent := First_Entity (E);
             while Present (Ent) loop
+               Reset_Buffers;
                Qualify_Entity_Name (Ent);
                Next_Entity (Ent);
 
@@ -1101,10 +1106,10 @@ package body Exp_Dbug is
          if No (E) then
             return;
 
-         --  If this we are qualifying entities local to a generic
-         --  instance, use the name of the original instantiation,
-         --  not that of the anonymous subprogram in the wrapper
-         --  package, so that gdb doesn't have to know about these.
+         --  If this we are qualifying entities local to a generic instance,
+         --  use the name of the original instantiation, not that of the
+         --  anonymous subprogram in the wrapper package, so that gdb doesn't
+         --  have to know about these.
 
          elsif Is_Generic_Instance (E)
            and then Is_Subprogram (E)
@@ -1393,6 +1398,16 @@ package body Exp_Dbug is
    begin
       Name_Qualify_Units.Append (N);
    end Qualify_Entity_Names;
+
+   -------------------
+   -- Reset_Buffers --
+   -------------------
+
+   procedure Reset_Buffers is
+   begin
+      Name_Len    := 0;
+      Homonym_Len := 0;
+   end Reset_Buffers;
 
    --------------------
    -- Strip_Suffixes --

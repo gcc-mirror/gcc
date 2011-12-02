@@ -9585,6 +9585,7 @@ package body Sem_Ch3 is
 
          elsif Ekind (E) = E_Incomplete_Type
            and then No (Underlying_Type (E))
+           and then not Is_Generic_Type (E)
          then
             Post_Error;
 
