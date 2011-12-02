@@ -1,3 +1,10 @@
+2011-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/51387
+	* config/i386/sse.md (mul<mode>3 with VI1_AVX2 iterator): For
+	V32QImode use { 0,2,..,14,32,34,..,46,16,18,..,30,48,50,..,62 }
+	permutation instead of extract even permutation.
+
 2011-12-02  Nathan Sidwell  <nathan@acm.org>
 
 	* gcov.c (struct arc_info): Add is_throw field.
