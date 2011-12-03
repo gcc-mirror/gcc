@@ -3546,7 +3546,7 @@ process_jvm_instruction (int PC, const unsigned char* byte_ops,
 	  break; \
 	} \
       default: \
-        error ("unrecogized wide sub-instruction"); \
+        error ("unrecognized wide sub-instruction"); \
       } \
   }
 

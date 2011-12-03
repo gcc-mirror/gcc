@@ -1,3 +1,7 @@
+2011-12-03  Matthias Klose  <doko@ubuntu.com>
+
+	* expr.c (SPECIAL_WIDE): Fix typo in message.
+
 2011-11-23  Jeffrey A Law  (law@cygnus.com)
 
 	* lang.c (java_init_options_struct): Disable optimizations
