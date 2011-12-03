@@ -18,7 +18,7 @@ contains
   function basicGet(self)
     implicit none
     class(t0), pointer :: basicGet
-    class(t0), intent(in) :: self
+    class(t0), target, intent(in) :: self
     select type (self)
     type is (t1)
        basicGet => self

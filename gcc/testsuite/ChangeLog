@@ -1,3 +1,10 @@
+2011-12-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48887
+	* gfortran.dg/select_type_24.f90: New.
+	* gfortran.dg/select_type_23.f03: Add dg-error.
+	* gfortran.dg/class_45a.f03: Add missing TARGET attribute.
+
 2011-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/vect/vect-122.c: New test.

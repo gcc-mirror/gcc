@@ -188,7 +188,8 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
     /* Class container has already been built.  */
     return SUCCESS;
 
-  attr->class_ok = attr->dummy || attr->pointer || attr->allocatable;
+  attr->class_ok = attr->dummy || attr->pointer || attr->allocatable
+		   || attr->select_type_temporary;
   
   if (!attr->class_ok)
     /* We can not build the class container yet.  */
@@ -239,7 +240,8 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
       c->attr.access = ACCESS_PRIVATE;
       c->ts.u.derived = ts->u.derived;
       c->attr.class_pointer = attr->pointer;
-      c->attr.pointer = attr->pointer || attr->dummy;
+      c->attr.pointer = attr->pointer || (attr->dummy && !attr->allocatable)
+			|| attr->select_type_temporary;
       c->attr.allocatable = attr->allocatable;
       c->attr.dimension = attr->dimension;
       c->attr.codimension = attr->codimension;
