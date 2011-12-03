@@ -665,6 +665,7 @@ LIBGO_IS_FREEBSD_FALSE
 LIBGO_IS_FREEBSD_TRUE
 LIBGO_IS_DARWIN_FALSE
 LIBGO_IS_DARWIN_TRUE
+go_include
 LIBFFIINCS
 LIBFFI
 glibgo_toolexeclibdir
@@ -11096,7 +11097,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11099 "configure"
+#line 11100 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11202,7 +11203,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11205 "configure"
+#line 11206 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13453,6 +13454,11 @@ $as_echo "#define USE_LIBFFI 1" >>confdefs.h
    LIBFFIINCS='-I$(top_srcdir)/../libffi/include -I../libffi/include'
 fi
 
+
+
+# Used to tell GNU make to include a file without telling automake to
+# include it.
+go_include="-include"
 
 
 is_darwin=no

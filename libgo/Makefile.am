@@ -1801,6 +1801,12 @@ LTGOCOMPILE = $(LIBTOOL) --tag GO --mode=compile $(GOC) $(INCLUDES) \
 GOLINK = $(LIBTOOL) --tag GO --mode-link $(GOC) \
 	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_GOCFLAGS) $(LTLDFLAGS) -o $@
 
+# Build the dependencies for a Go package.
+BUILDDEPS = \
+	$(MKDIR_P) $(@D); \
+	$(SHELL) $(srcdir)/godeps.sh `echo $@ | sed -e 's/.dep$$//'` $^ > $@.tmp; \
+	mv -f $@.tmp $@
+
 # Build the .go files for a package, generating a .lo file.
 BUILDPACKAGE = \
 	$(MKDIR_P) $(@D); \
@@ -1873,27 +1879,37 @@ CHECK_DEPS = libgo.la libgobegin.a \
 	$(toolexeclibgosync_DATA) \
 	$(toolexeclibgotesting_DATA)
 
-asn1/asn1.lo: $(go_asn1_files) big.gox bytes.gox fmt.gox io.gox os.gox \
-		reflect.gox strconv.gox strings.gox time.gox
+@go_include@ asn1/asn1.lo.dep
+asn1/asn1.lo.dep: $(go_asn1_files)
+	$(BUILDDEPS)
+asn1/asn1.lo: $(go_asn1_files)
 	$(BUILDPACKAGE)
 asn1/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: asn1/check
 
-big/big.lo: $(go_big_files) encoding/binary.gox fmt.gox io.gox os.gox \
-		rand.gox strings.gox
+@go_include@ big/big.lo.dep
+big/big.lo.dep: $(go_big_files)
+	$(BUILDDEPS)
+big/big.lo: $(go_big_files)
 	$(BUILDPACKAGE)
 big/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: big/check
 
-bufio/bufio.lo: $(go_bufio_files) bytes.gox io.gox os.gox strconv.gox utf8.gox
+@go_include@ bufio/bufio.lo.dep
+bufio/bufio.lo.dep: $(go_bufio_files)
+	$(BUILDDEPS)
+bufio/bufio.lo: $(go_bufio_files)
 	$(BUILDPACKAGE)
 bufio/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: bufio/check
 
-bytes/bytes.lo: $(go_bytes_files) io.gox os.gox unicode.gox utf8.gox
+@go_include@ bytes/bytes.lo.dep
+bytes/bytes.lo.dep: $(go_bytes_files)
+	$(BUILDDEPS)
+bytes/bytes.lo: $(go_bytes_files)
 	$(BUILDPACKAGE)
 bytes/index.lo: $(go_bytes_c_files) bytes/bytes.lo
 	$(LTCOMPILE) -c -o bytes/index.lo $(srcdir)/go/bytes/indexbyte.c
@@ -1901,142 +1917,181 @@ bytes/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: bytes/check
 
-cmath/cmath.lo: $(go_cmath_files) math.gox
+@go_include@ cmath/cmath.lo.dep
+cmath/cmath.lo.dep: $(go_cmath_files)
+	$(BUILDDEPS)
+cmath/cmath.lo: $(go_cmath_files)
 	$(BUILDPACKAGE)
 cmath/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: cmath/check
 
-crypto/crypto.lo: $(go_crypto_files) hash.gox
+@go_include@ crypto/crypto.lo.dep
+crypto/crypto.lo.dep: $(go_crypto_files)
+	$(BUILDDEPS)
+crypto/crypto.lo: $(go_crypto_files)
 	$(BUILDPACKAGE)
 crypto/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: crypto/check
 
-csv/csv.lo: $(go_csv_files) bufio.gox bytes.gox fmt.gox io.gox os.gox \
-		strings.gox unicode.gox utf8.gox
+@go_include@ csv/csv.lo.dep
+csv/csv.lo.dep: $(go_csv_files)
+	$(BUILDDEPS)
+csv/csv.lo: $(go_csv_files)
 	$(BUILDPACKAGE)
 csv/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: csv/check
 
-exec/exec.lo: $(go_exec_files) bytes.gox io.gox os.gox strconv.gox \
-		strings.gox syscall.gox
+@go_include@ exec/exec.lo.dep
+exec/exec.lo.dep: $(go_exec_files)
+	$(BUILDDEPS)
+exec/exec.lo: $(go_exec_files)
 	$(BUILDPACKAGE)
 exec/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: exec/check
 
-expvar/expvar.lo: $(go_expvar_files) bytes.gox fmt.gox http.gox json.gox \
-		log.gox os.gox runtime.gox strconv.gox sync.gox
+@go_include@ expvar/expvar.lo.dep
+expvar/expvar.lo.dep: $(go_expvar_files)
+	$(BUILDDEPS)
+expvar/expvar.lo: $(go_expvar_files)
 	$(BUILDPACKAGE)
 expvar/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: expvar/check
 
-flag/flag.lo: $(go_flag_files) fmt.gox os.gox strconv.gox
+@go_include@ flag/flag.lo.dep
+flag/flag.lo.dep: $(go_flag_files)
+	$(BUILDDEPS)
+flag/flag.lo: $(go_flag_files)
 	$(BUILDPACKAGE)
 flag/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: flag/check
 
-fmt/fmt.lo: $(go_fmt_files) bytes.gox io.gox math.gox os.gox reflect.gox \
-		strconv.gox strings.gox sync.gox unicode.gox utf8.gox
+@go_include@ fmt/fmt.lo.dep
+fmt/fmt.lo.dep: $(go_fmt_files)
+	$(BUILDDEPS)
+fmt/fmt.lo: $(go_fmt_files)
 	$(BUILDPACKAGE)
 fmt/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: fmt/check
 
-gob/gob.lo: $(go_gob_files) bufio.gox bytes.gox fmt.gox io.gox math.gox \
-		os.gox reflect.gox runtime.gox strings.gox sync.gox \
-		unicode.gox utf8.gox
+@go_include@ gob/gob.lo.dep
+gob/gob.lo.dep: $(go_gob_files)
+	$(BUILDDEPS)
+gob/gob.lo: $(go_gob_files)
 	$(BUILDPACKAGE)
 gob/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: gob/check
 
-hash/hash.lo: $(go_hash_files) io.gox
+@go_include@ hash/hash.lo.dep
+hash/hash.lo.dep: $(go_hash_files)
+	$(BUILDDEPS)
+hash/hash.lo: $(go_hash_files)
 	$(BUILDPACKAGE)
 hash/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: hash/check
 
-html/html.lo: $(go_html_files) bufio.gox bytes.gox fmt.gox io.gox os.gox \
-		strconv.gox strings.gox utf8.gox
+@go_include@ html/html.lo.dep
+html/html.lo.dep: $(go_html_files)
+	$(BUILDDEPS)
+html/html.lo: $(go_html_files)
 	$(BUILDPACKAGE)
 html/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: html/check
 
-http/http.lo: $(go_http_files) bufio.gox bytes.gox compress/gzip.gox \
-		crypto/rand.gox crypto/tls.gox encoding/base64.gox \
-		encoding/binary.gox fmt.gox io.gox io/ioutil.gox log.gox \
-		mime.gox mime/multipart.gox net.gox net/textproto.gox os.gox \
-		path.gox path/filepath.gox runtime/debug.gox sort.gox \
-		strconv.gox strings.gox sync.gox time.gox url.gox utf8.gox
+@go_include@ http/http.lo.dep
+http/http.lo.dep: $(go_http_files)
+	$(BUILDDEPS)
+http/http.lo: $(go_http_files)
 	$(BUILDPACKAGE)
 http/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: http/check
 
-image/image.lo: $(go_image_files) bufio.gox image/color.gox io.gox os.gox \
-		strconv.gox
+@go_include@ image/image.lo.dep
+image/image.lo.dep: $(go_image_files)
+	$(BUILDDEPS)
+image/image.lo: $(go_image_files)
 	$(BUILDPACKAGE)
 image/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: image/check
 
-io/io.lo: $(go_io_files) os.gox sync.gox
+@go_include@ io/io.lo.dep
+io/io.lo.dep: $(go_io_files)
+	$(BUILDDEPS)
+io/io.lo: $(go_io_files)
 	$(BUILDPACKAGE)
 io/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: io/check
 
-json/json.lo: $(go_json_files) bytes.gox encoding/base64.gox fmt.gox io.gox \
-		math.gox os.gox reflect.gox runtime.gox strconv.gox \
-		strings.gox unicode.gox utf16.gox utf8.gox
+@go_include@ json/json.lo.dep
+json/json.lo.dep: $(go_json_files)
+	$(BUILDDEPS)
+json/json.lo: $(go_json_files)
 	$(BUILDPACKAGE)
 json/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: json/check
 
-log/log.lo: $(go_log_files) bytes.gox fmt.gox io.gox runtime.gox os.gox \
-		sync.gox time.gox
+@go_include@ log/log.lo.dep
+log/log.lo.dep: $(go_log_files)
+	$(BUILDDEPS)
+log/log.lo: $(go_log_files)
 	$(BUILDPACKAGE)
 log/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: log/check
 
+@go_include@ math/math.lo.dep
+math/math.lo.dep: $(go_math_files)
+	$(BUILDDEPS)
 math/math.lo: $(go_math_files)
 	$(BUILDPACKAGE)
 math/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: math/check
 
-mail/mail.lo: $(go_mail_files) bufio.gox bytes.gox encoding/base64.gox \
-		fmt.gox io.gox io/ioutil.gox log.gox net/textproto.gox os.gox \
-		strconv.gox strings.gox time.gox
+@go_include@ mail/mail.lo.dep
+mail/mail.lo.dep: $(go_mail_files)
+	$(BUILDDEPS)
+mail/mail.lo: $(go_mail_files)
 	$(BUILDPACKAGE)
 mail/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: mail/check
 
-mime/mime.lo: $(go_mime_files) bufio.gox bytes.gox fmt.gox os.gox strings.gox \
-		sync.gox unicode.gox
+@go_include@ mime/mime.lo.dep
+mime/mime.lo.dep: $(go_mime_files)
+	$(BUILDDEPS)
+mime/mime.lo: $(go_mime_files)
 	$(BUILDPACKAGE)
 mime/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: mime/check
 
-net/net.lo: $(go_net_files) bytes.gox fmt.gox io.gox os.gox rand.gox \
-		reflect.gox sort.gox strconv.gox strings.gox sync.gox \
-		syscall.gox time.gox
+@go_include@ net/net.lo.dep
+net/net.lo.dep: $(go_net_files)
+	$(BUILDDEPS)
+net/net.lo: $(go_net_files)
 	$(BUILDPACKAGE)
 net/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: net/check
 
-os/os.lo: $(go_os_files) runtime.gox sync.gox syscall.gox
+@go_include@ os/os.lo.dep
+os/os.lo.dep: $(go_os_files)
+	$(BUILDDEPS)
+os/os.lo: $(go_os_files)
 	$(BUILDPACKAGE)
 os/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2046,94 +2101,127 @@ signal_unix.go: $(srcdir)/go/os/mkunixsignals.sh sysinfo.go
 	$(SHELL) $(srcdir)/go/os/mkunixsignals.sh sysinfo.go > $@.tmp
 	mv -f $@.tmp $@
 
-patch/patch.lo: $(go_patch_files) bytes.gox compress/zlib.gox \
-		crypto/sha1.gox encoding/git85.gox fmt.gox io.gox os.gox \
-		path.gox strings.gox
+@go_include@ patch/patch.lo.dep
+patch/patch.lo.dep: $(go_patch_files)
+	$(BUILDDEPS)
+patch/patch.lo: $(go_patch_files)
 	$(BUILDPACKAGE)
 patch/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: patch/check
 
-path/path.lo: $(go_path_files) os.gox strings.gox utf8.gox
+@go_include@ path/path.lo.dep
+path/path.lo.dep: $(go_path_files)
+	$(BUILDDEPS)
+path/path.lo: $(go_path_files)
 	$(BUILDPACKAGE)
 path/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: path/check
 
-rand/rand.lo: $(go_rand_files) math.gox sync.gox
+@go_include@ rand/rand.lo.dep
+rand/rand.lo.dep: $(go_rand_files)
+	$(BUILDDEPS)
+rand/rand.lo: $(go_rand_files)
 	$(BUILDPACKAGE)
 rand/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: rand/check
 
-reflect/reflect.lo: $(go_reflect_files) math.gox runtime.gox strconv.gox \
-		sync.gox
+@go_include@ reflect/reflect.lo.dep
+reflect/reflect.lo.dep: $(go_reflect_files)
+	$(BUILDDEPS)
+reflect/reflect.lo: $(go_reflect_files)
 	$(BUILDPACKAGE)
 reflect/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: reflect/check
 
-regexp/regexp.lo: $(go_regexp_files) bytes.gox io.gox os.gox \
-		regexp/syntax.gox strconv.gox strings.gox sync.gox utf8.gox
+@go_include@ regexp/regexp.lo.dep
+regexp/regexp.lo.dep: $(go_regexp_files)
+	$(BUILDDEPS)
+regexp/regexp.lo: $(go_regexp_files)
 	$(BUILDPACKAGE)
 regexp/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: regexp/check
 
-rpc/rpc.lo: $(go_rpc_files) bufio.gox fmt.gox gob.gox http.gox io.gox log.gox \
-		net.gox os.gox reflect.gox sort.gox strings.gox strconv.gox \
-		sync.gox template.gox unicode.gox utf8.gox
+@go_include@ rpc/rpc.lo.dep
+rpc/rpc.lo.dep: $(go_rpc_files)
+	$(BUILDDEPS)
+rpc/rpc.lo: $(go_rpc_files)
 	$(BUILDPACKAGE)
 rpc/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: rpc/check
 
+@go_include@ runtime/runtime.lo.dep
+runtime/runtime.lo.dep: $(go_runtime_files)
+	$(BUILDDEPS)
 runtime/runtime.lo: $(go_runtime_files)
 	$(BUILDPACKAGE)
 runtime/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: runtime/check
 
-scanner/scanner.lo: $(go_scanner_files) bytes.gox fmt.gox io.gox os.gox \
-		unicode.gox utf8.gox
+@go_include@ scanner/scanner.lo.dep
+scanner/scanner.lo.dep: $(go_scanner_files)
+	$(BUILDDEPS)
+scanner/scanner.lo: $(go_scanner_files)
 	$(BUILDPACKAGE)
 scanner/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: scanner/check
 
-smtp/smtp.lo: $(go_smtp_files) crypto/tls.gox encoding/base64.gox io.gox \
-		net.gox net/textproto.gox os.gox strings.gox
+@go_include@ smtp/smtp.lo.dep
+smtp/smtp.lo.dep: $(go_smtp_files)
+	$(BUILDDEPS)
+smtp/smtp.lo: $(go_smtp_files)
 	$(BUILDPACKAGE)
 smtp/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: smtp/check
 
-sort/sort.lo: $(go_sort_files) math.gox
+@go_include@ sort/sort.lo.dep
+sort/sort.lo.dep: $(go_sort_files)
+	$(BUILDDEPS)
+sort/sort.lo: $(go_sort_files)
 	$(BUILDPACKAGE)
 sort/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: sort/check
 
-strconv/strconv.lo: $(go_strconv_files) bytes.gox math.gox os.gox strings.gox \
-		unicode.gox utf8.gox
+@go_include@ strconv/strconv.lo.dep
+strconv/strconv.lo.dep: $(go_strconv_files)
+	$(BUILDDEPS)
+strconv/strconv.lo: $(go_strconv_files)
 	$(BUILDPACKAGE)
 strconv/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: strconv/check
 
-strings/strings.lo: $(go_strings_files) io.gox os.gox unicode.gox utf8.gox
+@go_include@ strings/strings.lo.dep
+strings/strings.lo.dep: $(go_strings_files)
+	$(BUILDDEPS)
+strings/strings.lo: $(go_strings_files)
 	$(BUILDPACKAGE)
 strings/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: strings/check
 
-sync/sync.lo: $(go_sync_files) runtime.gox sync/atomic.gox
+@go_include@ sync/sync.lo.dep
+sync/sync.lo.dep: $(go_sync_files)
+	$(BUILDDEPS)
+sync/sync.lo: $(go_sync_files)
 	$(BUILDPACKAGE)
 sync/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: sync/check
 
-syslog/syslog.lo: $(go_syslog_files) fmt.gox log.gox net.gox os.gox syscall.gox
+@go_include@ syslog/syslog.lo.dep
+syslog/syslog.lo.dep: $(go_syslog_files)
+	$(BUILDDEPS)
+syslog/syslog.lo: $(go_syslog_files)
 	$(BUILDPACKAGE)
 syslog/syslog_c.lo: $(go_syslog_c_files) syslog/syslog.lo
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/syslog/syslog_c.c
@@ -2141,139 +2229,179 @@ syslog/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: syslog/check
 
-tabwriter/tabwriter.lo: $(go_tabwriter_files) bytes.gox io.gox os.gox utf8.gox
+@go_include@ tabwriter/tabwriter.lo.dep
+tabwriter/tabwriter.lo.dep: $(go_tabwriter_files)
+	$(BUILDDEPS)
+tabwriter/tabwriter.lo: $(go_tabwriter_files)
 	$(BUILDPACKAGE)
 tabwriter/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: tabwriter/check
 
-template/template.lo: $(go_template_files) bytes.gox fmt.gox io.gox \
-		io/ioutil.gox os.gox path/filepath.gox reflect.gox \
-		runtime.gox strings.gox template/parse.gox unicode.gox \
-		url.gox utf8.gox
+@go_include@ template/template.lo.dep
+template/template.lo.dep: $(go_template_files)
+	$(BUILDDEPS)
+template/template.lo: $(go_template_files)
 	$(BUILDPACKAGE)
 template/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: template/check
 
-testing/testing.lo: $(go_testing_files) bytes.gox flag.gox fmt.gox io.gox \
-		os.gox regexp.gox runtime.gox runtime/pprof.gox strings.gox \
-		strconv.gox time.gox
+@go_include@ testing/testing.lo.dep
+testing/testing.lo.dep: $(go_testing_files)
+	$(BUILDDEPS)
+testing/testing.lo: $(go_testing_files)
 	$(BUILDPACKAGE)
 testing/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: testing/check
 
-time/time.lo: $(go_time_files) bytes.gox container/heap.gox io/ioutil.gox \
-		os.gox strconv.gox sync.gox syscall.gox
+@go_include@ time/time.lo.dep
+time/time.lo.dep: $(go_time_files)
+	$(BUILDDEPS)
+time/time.lo: $(go_time_files)
 	$(BUILDPACKAGE)
 time/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: time/check
 
+@go_include@ unicode/unicode.lo.dep
+unicode/unicode.lo.dep: $(go_unicode_files)
+	$(BUILDDEPS)
 unicode/unicode.lo: $(go_unicode_files)
 	$(BUILDPACKAGE)
 unicode/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: unicode/check
 
-url/url.lo: $(go_url_files) os.gox strconv.gox strings.gox
+@go_include@ url/url.lo.dep
+url/url.lo.dep: $(go_url_files)
+	$(BUILDDEPS)
+url/url.lo: $(go_url_files)
 	$(BUILDPACKAGE)
 url/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: url/check
 
-utf16/utf16.lo: $(go_utf16_files) unicode.gox
+@go_include@ utf16/utf16.lo.dep
+utf16/utf16.lo.dep: $(go_utf16_files)
+	$(BUILDDEPS)
+utf16/utf16.lo: $(go_utf16_files)
 	$(BUILDPACKAGE)
 utf16/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: utf16/check
 
-utf8/utf8.lo: $(go_utf8_files) unicode.gox
+@go_include@ utf8/utf8.lo.dep
+utf8/utf8.lo.dep: $(go_utf8_files)
+	$(BUILDDEPS)
+utf8/utf8.lo: $(go_utf8_files)
 	$(BUILDPACKAGE)
 utf8/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: utf8/check
 
-websocket/websocket.lo: $(go_websocket_files) bufio.gox bytes.gox \
-		crypto/md5.gox crypto/rand.gox crypto/sha1.gox crypto/tls.gox \
-		encoding/base64.gox encoding/binary.gox fmt.gox http.gox \
-		io.gox io/ioutil.gox json.gox net.gox os.gox rand.gox \
-		strings.gox strconv.gox sync.gox url.gox
+@go_include@ websocket/websocket.lo.dep
+websocket/websocket.lo.dep: $(go_websocket_files)
+	$(BUILDDEPS)
+websocket/websocket.lo: $(go_websocket_files)
 	$(BUILDPACKAGE)
 websocket/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: websocket/check
 
-xml/xml.lo: $(go_xml_files) bufio.gox bytes.gox fmt.gox io.gox os.gox \
-		reflect.gox strconv.gox strings.gox unicode.gox utf8.gox
+@go_include@ xml/xml.lo.dep
+xml/xml.lo.dep: $(go_xml_files)
+	$(BUILDDEPS)
+xml/xml.lo: $(go_xml_files)
 	$(BUILDPACKAGE)
 xml/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: xml/check
 
-archive/tar.lo: $(go_archive_tar_files) bytes.gox io.gox io/ioutil.gox os.gox \
-		strconv.gox strings.gox
+@go_include@ archive/tar.lo.dep
+archive/tar.lo.dep: $(go_archive_tar_files)
+	$(BUILDDEPS)
+archive/tar.lo: $(go_archive_tar_files)
 	$(BUILDPACKAGE)
 archive/tar/check: $(CHECK_DEPS)
 	@$(MKDIR_P) archive/tar
 	@$(CHECK)
 .PHONY: archive/tar/check
 
-archive/zip.lo: $(go_archive_zip_files) bufio.gox compress/flate.gox \
-		encoding/binary.gox hash.gox hash/crc32.gox \
-		encoding/binary.gox io.gox io/ioutil.gox os.gox time.gox
+@go_include@ archive/zip.lo.dep
+archive/zip.lo.dep: $(go_archive_zip_files)
+	$(BUILDDEPS)
+archive/zip.lo: $(go_archive_zip_files)
 	$(BUILDPACKAGE)
 archive/zip/check: $(CHECK_DEPS)
 	@$(MKDIR_P) archive/zip
 	@$(CHECK)
 .PHONY: archive/zip/check
 
-compress/bzip2.lo: $(go_compress_bzip2_files) bufio.gox io.gox os.gox sort.gox
+@go_include@ compress/bzip2.lo.dep
+compress/bzip2.lo.dep: $(go_compress_bzip2_files)
+	$(BUILDDEPS)
+compress/bzip2.lo: $(go_compress_bzip2_files)
 	$(BUILDPACKAGE)
 compress/bzip2/check: $(CHECK_DEPS)
 	@$(MKDIR_P) compress/bzip2
 	@$(CHECK)
 .PHONY: compress/bzip2/check
 
-compress/flate.lo: $(go_compress_flate_files) bufio.gox io.gox math.gox \
-		os.gox sort.gox strconv.gox
+@go_include@ compress/flate.lo.dep
+compress/flate.lo.dep: $(go_compress_flate_files)
+	$(BUILDDEPS)
+compress/flate.lo: $(go_compress_flate_files)
 	$(BUILDPACKAGE)
 compress/flate/check: $(CHECK_DEPS)
 	@$(MKDIR_P) compress/flate
 	@$(CHECK)
 .PHONY: compress/flate/check
 
-compress/gzip.lo: $(go_compress_gzip_files) bufio.gox compress/flate.gox \
-		hash.gox hash/crc32.gox io.gox os.gox
+@go_include@ compress/gzip.lo.dep
+compress/gzip.lo.dep: $(go_compress_gzip_files)
+	$(BUILDDEPS)
+compress/gzip.lo: $(go_compress_gzip_files)
 	$(BUILDPACKAGE)
 compress/gzip/check: $(CHECK_DEPS)
 	@$(MKDIR_P) compress/gzip
 	@$(CHECK)
 .PHONY: compress/gzip/check
 
-compress/lzw.lo: $(go_compress_lzw_files) bufio.gox fmt.gox io.gox os.gox
+@go_include@ compress/lzw.lo.dep
+compress/lzw.lo.dep: $(go_compress_lzw_files)
+	$(BUILDDEPS)
+compress/lzw.lo: $(go_compress_lzw_files)
 	$(BUILDPACKAGE)
 compress/lzw/check: $(CHECK_DEPS)
 	@$(MKDIR_P) compress/lzw
 	@$(CHECK)
 .PHONY: compress/lzw/check
 
-compress/zlib.lo: $(go_compress_zlib_files) bufio.gox compress/flate.gox \
-		hash.gox hash/adler32.gox io.gox os.gox
+@go_include@ compress/zlib.lo.dep
+compress/zlib.lo.dep: $(go_compress_zlib_files)
+	$(BUILDDEPS)
+compress/zlib.lo: $(go_compress_zlib_files)
 	$(BUILDPACKAGE)
 compress/zlib/check: $(CHECK_DEPS)
 	@$(MKDIR_P) compress/zlib
 	@$(CHECK)
 .PHONY: compress/zlib/check
 
-container/heap.lo: $(go_container_heap_files) sort.gox
+@go_include@ container/heap.lo.dep
+container/heap.lo.dep: $(go_container_heap_files)
+	$(BUILDDEPS)
+container/heap.lo: $(go_container_heap_files)
 	$(BUILDPACKAGE)
 container/heap/check: $(CHECK_DEPS)
 	@$(MKDIR_P) container/heap
 	@$(CHECK)
 .PHONY: container/heap/check
 
+@go_include@ container/list.lo.dep
+container/list.lo.dep: $(go_container_list_files)
+	$(BUILDDEPS)
 container/list.lo: $(go_container_list_files)
 	$(BUILDPACKAGE)
 container/list/check: $(CHECK_DEPS)
@@ -2281,6 +2409,9 @@ container/list/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: container/list/check
 
+@go_include@ container/ring.lo.dep
+container/ring.lo.dep: $(go_container_ring_files)
+	$(BUILDDEPS)
 container/ring.lo: $(go_container_ring_files)
 	$(BUILDPACKAGE)
 container/ring/check: $(CHECK_DEPS)
@@ -2288,166 +2419,219 @@ container/ring/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: container/ring/check
 
-crypto/aes.lo: $(go_crypto_aes_files) os.gox strconv.gox
+@go_include@ crypto/aes.lo.dep
+crypto/aes.lo.dep: $(go_crypto_aes_files)
+	$(BUILDDEPS)
+crypto/aes.lo: $(go_crypto_aes_files)
 	$(BUILDPACKAGE)
 crypto/aes/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/aes
 	@$(CHECK)
 .PHONY: crypto/aes/check
 
-crypto/bcrypt.lo: $(go_crypto_bcrypt_files) crypto/blowfish.gox \
-		crypto/rand.gox crypto/subtle.gox encoding/base64.gox \
-		fmt.gox io.gox os.gox strconv.gox
+@go_include@ crypto/bcrypt.lo.dep
+crypto/bcrypt.lo.dep: $(go_crypto_bcrypt_files)
+	$(BUILDDEPS)
+crypto/bcrypt.lo: $(go_crypto_bcrypt_files)
 	$(BUILDPACKAGE)
 crypto/bcrypt/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/bcrypt
 	@$(CHECK)
 .PHONY: crypto/bcrypt/check
 
-crypto/blowfish.lo: $(go_crypto_blowfish_files) os.gox strconv.gox
+@go_include@ crypto/blowfish.lo.dep
+crypto/blowfish.lo.dep: $(go_crypto_blowfish_files)
+	$(BUILDDEPS)
+crypto/blowfish.lo: $(go_crypto_blowfish_files)
 	$(BUILDPACKAGE)
 crypto/blowfish/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/blowfish
 	@$(CHECK)
 .PHONY: crypto/blowfish/check
 
-crypto/cast5.lo: $(go_crypto_cast5_files) os.gox
+@go_include@ crypto/cast5.lo.dep
+crypto/cast5.lo.dep: $(go_crypto_cast5_files)
+	$(BUILDDEPS)
+crypto/cast5.lo: $(go_crypto_cast5_files)
 	$(BUILDPACKAGE)
 crypto/cast5/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/cast5
 	@$(CHECK)
 .PHONY: crypto/cast5/check
 
-crypto/cipher.lo: $(go_crypto_cipher_files) io.gox os.gox
+@go_include@ crypto/cipher.lo.dep
+crypto/cipher.lo.dep: $(go_crypto_cipher_files)
+	$(BUILDDEPS)
+crypto/cipher.lo: $(go_crypto_cipher_files)
 	$(BUILDPACKAGE)
 crypto/cipher/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/cipher
 	@$(CHECK)
 .PHONY: crypto/cipher/check
 
-crypto/des.lo: $(go_crypto_des_files) encoding/binary.gox os.gox strconv.gox
+@go_include@ crypto/des.lo.dep
+crypto/des.lo.dep: $(go_crypto_des_files)
+	$(BUILDDEPS)
+crypto/des.lo: $(go_crypto_des_files)
 	$(BUILDPACKAGE)
 crypto/des/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/des
 	@$(CHECK)
 .PHONY: crypto/des/check
 
-crypto/dsa.lo: $(go_crypto_dsa_files) big.gox io.gox os.gox
+@go_include@ crypto/dsa.lo.dep
+crypto/dsa.lo.dep: $(go_crypto_dsa_files)
+	$(BUILDDEPS)
+crypto/dsa.lo: $(go_crypto_dsa_files)
 	$(BUILDPACKAGE)
 crypto/dsa/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/dsa
 	@$(CHECK)
 .PHONY: crypto/dsa/check
 
-crypto/ecdsa.lo: $(go_crypto_ecdsa_files) big.gox crypto/elliptic.gox io.gox \
-		os.gox
+@go_include@ crypto/ecdsa.lo.dep
+crypto/ecdsa.lo.dep: $(go_crypto_ecdsa_files)
+	$(BUILDDEPS)
+crypto/ecdsa.lo: $(go_crypto_ecdsa_files)
 	$(BUILDPACKAGE)
 crypto/ecdsa/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/ecdsa
 	@$(CHECK)
 .PHONY: crypto/ecdsa/check
 
-crypto/elliptic.lo: $(go_crypto_elliptic_files) big.gox io.gox os.gox sync.gox
+@go_include@ crypto/elliptic.lo.dep
+crypto/elliptic.lo.dep: $(go_crypto_elliptic_files)
+	$(BUILDDEPS)
+crypto/elliptic.lo: $(go_crypto_elliptic_files)
 	$(BUILDPACKAGE)
 crypto/elliptic/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/elliptic
 	@$(CHECK)
 .PHONY: crypto/elliptic/check
 
-crypto/hmac.lo: $(go_crypto_hmac_files) crypto/md5.gox crypto/sha1.gox \
-		crypto/sha256.gox hash.gox os.gox
+@go_include@ crypto/hmac.lo.dep
+crypto/hmac.lo.dep: $(go_crypto_hmac_files)
+	$(BUILDDEPS)
+crypto/hmac.lo: $(go_crypto_hmac_files)
 	$(BUILDPACKAGE)
 crypto/hmac/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/hmac
 	@$(CHECK)
 .PHONY: crypto/hmac/check
 
-crypto/md4.lo: $(go_crypto_md4_files) crypto.gox hash.gox os.gox
+@go_include@ crypto/md4.lo.dep
+crypto/md4.lo.dep: $(go_crypto_md4_files)
+	$(BUILDDEPS)
+crypto/md4.lo: $(go_crypto_md4_files)
 	$(BUILDPACKAGE)
 crypto/md4/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/md4
 	@$(CHECK)
 .PHONY: crypto/md4/check
 
-crypto/md5.lo: $(go_crypto_md5_files) crypto.gox hash.gox os.gox
+@go_include@ crypto/md5.lo.dep
+crypto/md5.lo.dep: $(go_crypto_md5_files)
+	$(BUILDDEPS)
+crypto/md5.lo: $(go_crypto_md5_files)
 	$(BUILDPACKAGE)
 crypto/md5/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/md5
 	@$(CHECK)
 .PHONY: crypto/md5/check
 
-crypto/ocsp.lo: $(go_crypto_ocsp_files) asn1.gox crypto.gox crypto/rsa.gox \
-		crypto/sha1.gox crypto/x509.gox crypto/x509/pkix.gox os.gox \
-		time.gox
+@go_include@ crypto/ocsp.lo.dep
+crypto/ocsp.lo.dep: $(go_crypto_ocsp_files)
+	$(BUILDDEPS)
+crypto/ocsp.lo: $(go_crypto_ocsp_files)
 	$(BUILDPACKAGE)
 crypto/ocsp/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/ocsp
 	@$(CHECK)
 .PHONY: crypto/ocsp/check
 
-crypto/openpgp.lo: $(go_crypto_openpgp_files) crypto.gox \
-		crypto/openpgp/armor.gox crypto/openpgp/error.gox \
-		crypto/openpgp/packet.gox crypto/openpgp/s2k.gox \
-		crypto/rand.gox crypto/rsa.gox crypto/sha256.gox hash.gox \
-		io.gox os.gox strconv.gox time.gox
+@go_include@ crypto/openpgp.lo.dep
+crypto/openpgp.lo.dep: $(go_crypto_openpgp_files)
+	$(BUILDDEPS)
+crypto/openpgp.lo: $(go_crypto_openpgp_files)
 	$(BUILDPACKAGE)
 crypto/openpgp/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/openpgp
 	@$(CHECK)
 .PHONY: crypto/openpgp/check
 
-crypto/rand.lo: $(go_crypto_rand_files) big.gox bufio.gox crypto/aes.gox \
-		io.gox os.gox sync.gox time.gox
+@go_include@ crypto/rand.lo.dep
+crypto/rand.lo.dep: $(go_crypto_rand_files)
+	$(BUILDDEPS)
+crypto/rand.lo: $(go_crypto_rand_files)
 	$(BUILDPACKAGE)
 crypto/rand/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/rand
 	@$(CHECK)
 .PHONY: crypto/rand/check
 
-crypto/rc4.lo: $(go_crypto_rc4_files) os.gox strconv.gox
+@go_include@ crypto/rc4.lo.dep
+crypto/rc4.lo.dep: $(go_crypto_rc4_files)
+	$(BUILDDEPS)
+crypto/rc4.lo: $(go_crypto_rc4_files)
 	$(BUILDPACKAGE)
 crypto/rc4/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/rc4
 	@$(CHECK)
 .PHONY: crypto/rc4/check
 
-crypto/ripemd160.lo: $(go_crypto_ripemd160_files) crypto.gox hash.gox os.gox
+@go_include@ crypto/ripemd160.lo.dep
+crypto/ripemd160.lo.dep: $(go_crypto_ripemd160_files)
+	$(BUILDDEPS)
+crypto/ripemd160.lo: $(go_crypto_ripemd160_files)
 	$(BUILDPACKAGE)
 crypto/ripemd160/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/ripemd160
 	@$(CHECK)
 .PHONY: crypto/ripemd160/check
 
-crypto/rsa.lo: $(go_crypto_rsa_files) big.gox crypto.gox crypto/rand.gox \
-		crypto/sha1.gox crypto/subtle.gox encoding/hex.gox hash.gox \
-		io.gox os.gox
+@go_include@ crypto/rsa.lo.dep
+crypto/rsa.lo.dep: $(go_crypto_rsa_files)
+	$(BUILDDEPS)
+crypto/rsa.lo: $(go_crypto_rsa_files)
 	$(BUILDPACKAGE)
 crypto/rsa/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/rsa
 	@$(CHECK)
 .PHONY: crypto/rsa/check
 
-crypto/sha1.lo: $(go_crypto_sha1_files) crypto.gox hash.gox os.gox
+@go_include@ crypto/sha1.lo.dep
+crypto/sha1.lo.dep: $(go_crypto_sha1_files)
+	$(BUILDDEPS)
+crypto/sha1.lo: $(go_crypto_sha1_files)
 	$(BUILDPACKAGE)
 crypto/sha1/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/sha1
 	@$(CHECK)
 .PHONY: crypto/sha1/check
 
-crypto/sha256.lo: $(go_crypto_sha256_files) crypto.gox hash.gox os.gox
+@go_include@ crypto/sha256.lo.dep
+crypto/sha256.lo.dep: $(go_crypto_sha256_files)
+	$(BUILDDEPS)
+crypto/sha256.lo: $(go_crypto_sha256_files)
 	$(BUILDPACKAGE)
 crypto/sha256/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/sha256
 	@$(CHECK)
 .PHONY: crypto/sha256/check
 
-crypto/sha512.lo: $(go_crypto_sha512_files) crypto.gox hash.gox os.gox
+@go_include@ crypto/sha512.lo.dep
+crypto/sha512.lo.dep: $(go_crypto_sha512_files)
+	$(BUILDDEPS)
+crypto/sha512.lo: $(go_crypto_sha512_files)
 	$(BUILDPACKAGE)
 crypto/sha512/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/sha512
 	@$(CHECK)
 .PHONY: crypto/sha512/check
 
+@go_include@ crypto/subtle.lo.dep
+crypto/subtle.lo.dep: $(go_crypto_subtle_files)
+	$(BUILDDEPS)
 crypto/subtle.lo: $(go_crypto_subtle_files)
 	$(BUILDPACKAGE)
 crypto/subtle/check: $(CHECK_DEPS)
@@ -2455,297 +2639,360 @@ crypto/subtle/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: crypto/subtle/check
 
-crypto/tls.lo: $(go_crypto_tls_files) big.gox bytes.gox crypto.gox \
-		crypto/aes.gox crypto/cipher.gox crypto/des.gox \
-		crypto/elliptic.gox crypto/hmac.gox crypto/md5.gox \
-		crypto/rand.gox crypto/rc4.gox crypto/rsa.gox crypto/sha1.gox \
-		crypto/subtle.gox crypto/x509.gox crypto/x509/pkix.gox \
-		encoding/pem.gox hash.gox io.gox io/ioutil.gox net.gox os.gox \
-		strconv.gox strings.gox sync.gox time.gox
+@go_include@ crypto/tls.lo.dep
+crypto/tls.lo.dep: $(go_crypto_tls_files)
+	$(BUILDDEPS)
+crypto/tls.lo: $(go_crypto_tls_files)
 	$(BUILDPACKAGE)
 crypto/tls/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/tls
 	@$(CHECK)
 .PHONY: crypto/tls/check
 
-crypto/twofish.lo: $(go_crypto_twofish_files) os.gox strconv.gox
+@go_include@ crypto/twofish.lo.dep
+crypto/twofish.lo.dep: $(go_crypto_twofish_files)
+	$(BUILDDEPS)
+crypto/twofish.lo: $(go_crypto_twofish_files)
 	$(BUILDPACKAGE)
 crypto/twofish/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/twofish
 	@$(CHECK)
 .PHONY: crypto/twofish/check
 
-crypto/x509.lo: $(go_crypto_x509_files) asn1.gox big.gox bytes.gox crypto.gox \
-		crypto/dsa.gox crypto/rsa.gox crypto/sha1.gox \
-		crypto/x509/pkix.gox encoding/pem.gox os.gox strings.gox \
-		time.gox
+@go_include@ crypto/x509.lo.dep
+crypto/x509.lo.dep: $(go_crypto_x509_files)
+	$(BUILDDEPS)
+crypto/x509.lo: $(go_crypto_x509_files)
 	$(BUILDPACKAGE)
 crypto/x509/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/x509
 	@$(CHECK)
 .PHONY: crypto/x509/check
 
-crypto/xtea.lo: $(go_crypto_xtea_files) os.gox strconv.gox
+@go_include@ crypto/xtea.lo.dep
+crypto/xtea.lo.dep: $(go_crypto_xtea_files)
+	$(BUILDDEPS)
+crypto/xtea.lo: $(go_crypto_xtea_files)
 	$(BUILDPACKAGE)
 crypto/xtea/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/xtea
 	@$(CHECK)
 .PHONY: crypto/xtea/check
 
-crypto/openpgp/armor.lo: $(go_crypto_openpgp_armor_files) bufio.gox bytes.gox \
-		crypto/openpgp/error.gox encoding/base64.gox io.gox os.gox
+@go_include@ crypto/openpgp/armor.lo.dep
+crypto/openpgp/armor.lo.dep: $(go_crypto_openpgp_armor_files)
+	$(BUILDDEPS)
+crypto/openpgp/armor.lo: $(go_crypto_openpgp_armor_files)
 	$(BUILDPACKAGE)
 crypto/openpgp/armor/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/openpgp/armor
 	@$(CHECK)
 .PHONY: crypto/openpgp/armor/check
 
-crypto/openpgp/elgamal.lo: $(go_crypto_openpgp_elgamal_files) big.gox \
-		crypto/rand.gox crypto/subtle.gox io.gox os.gox
+@go_include@ crypto/openpgp/elgamal.lo.dep
+crypto/openpgp/elgamal.lo.dep: $(go_crypto_openpgp_elgamal_files)
+	$(BUILDDEPS)
+crypto/openpgp/elgamal.lo: $(go_crypto_openpgp_elgamal_files)
 	$(BUILDPACKAGE)
 crypto/openpgp/elgamal/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/openpgp/elgamal
 	@$(CHECK)
 .PHONY: crypto/openpgp/elgamal/check
 
-crypto/openpgp/error.lo: $(go_crypto_openpgp_error_files) strconv.gox
+@go_include@ crypto/openpgp/error.lo.dep
+crypto/openpgp/error.lo.dep: $(go_crypto_openpgp_error_files)
+	$(BUILDDEPS)
+crypto/openpgp/error.lo: $(go_crypto_openpgp_error_files)
 	$(BUILDPACKAGE)
 crypto/openpgp/error/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/openpgp/error
 	@$(CHECK)
 .PHONY: crypto/openpgp/error/check
 
-crypto/openpgp/packet.lo: $(go_crypto_openpgp_packet_files) big.gox bytes.gox \
-		compress/flate.gox compress/zlib.gox crypto.gox \
-		crypto/aes.gox crypto/cast5.gox crypto/cipher.gox \
-		crypto/dsa.gox crypto/openpgp/elgamal.gox \
-		crypto/openpgp/error.gox crypto/openpgp/s2k.gox \
-		crypto/rand.gox crypto/rsa.gox crypto/sha1.gox \
-		crypto/subtle.gox encoding/binary.gox fmt.gox \
-		hash.gox io.gox io/ioutil.gox os.gox strconv.gox strings.gox
+@go_include@ crypto/openpgp/packet.lo.dep
+crypto/openpgp/packet.lo.dep: $(go_crypto_openpgp_packet_files)
+	$(BUILDDEPS)
+crypto/openpgp/packet.lo: $(go_crypto_openpgp_packet_files)
 	$(BUILDPACKAGE)
 crypto/openpgp/packet/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/openpgp/packet
 	@$(CHECK)
 .PHONY: crypto/openpgp/packet/check
 
-crypto/openpgp/s2k.lo: $(go_crypto_openpgp_s2k_files) crypto.gox \
-		crypto/md5.gox crypto/openpgp/error.gox crypto/rand.gox \
-		crypto/ripemd160.gox crypto/sha1.gox crypto/sha256.gox \
-		crypto/sha512.gox hash.gox io.gox os.gox
+@go_include@ crypto/openpgp/s2k.lo.dep
+crypto/openpgp/s2k.lo.dep: $(go_crypto_openpgp_s2k_files)
+	$(BUILDDEPS)
+crypto/openpgp/s2k.lo: $(go_crypto_openpgp_s2k_files)
 	$(BUILDPACKAGE)
 crypto/openpgp/s2k/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/openpgp/s2k
 	@$(CHECK)
 .PHONY: crypto/openpgp/s2k/check
 
-crypto/x509/pkix.lo: $(go_crypto_x509_pkix_files) asn1.gox big.gox time.gox
+@go_include@ crypto/x509/pkix.lo.dep
+crypto/x509/pkix.lo.dep: $(go_crypto_x509_pkix_files)
+	$(BUILDDEPS)
+crypto/x509/pkix.lo: $(go_crypto_x509_pkix_files)
 	$(BUILDPACKAGE)
 crypto/x509/pkix/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/x509/pkix
 	@$(CHECK)
 .PHONY: crypto/x509/pkix/check
 
-debug/dwarf.lo: $(go_debug_dwarf_files) encoding/binary.gox os.gox strconv.gox
+@go_include@ debug/dwarf.lo.dep
+debug/dwarf.lo.dep: $(go_debug_dwarf_files)
+	$(BUILDDEPS)
+debug/dwarf.lo: $(go_debug_dwarf_files)
 	$(BUILDPACKAGE)
 debug/dwarf/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/dwarf
 	@$(CHECK)
 .PHONY: debug/dwarf/check
 
-debug/elf.lo: $(go_debug_elf_files) bytes.gox debug/dwarf.gox \
-		encoding/binary.gox fmt.gox io.gox os.gox strconv.gox
+@go_include@ debug/elf.lo.dep
+debug/elf.lo.dep: $(go_debug_elf_files)
+	$(BUILDDEPS)
+debug/elf.lo: $(go_debug_elf_files)
 	$(BUILDPACKAGE)
 debug/elf/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/elf
 	@$(CHECK)
 .PHONY: debug/elf/check
 
-debug/gosym.lo: $(go_debug_gosym_files) encoding/binary.gox fmt.gox os.gox \
-		strconv.gox strings.gox
+@go_include@ debug/gosym.lo.dep
+debug/gosym.lo.dep: $(go_debug_gosym_files)
+	$(BUILDDEPS)
+debug/gosym.lo: $(go_debug_gosym_files)
 	$(BUILDPACKAGE)
 debug/gosym/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/gosym
 	@$(CHECK)
 .PHONY: debug/gosym/check
 
-debug/macho.lo: $(go_debug_macho_files) bytes.gox debug/dwarf.gox \
-		encoding/binary.gox fmt.gox io.gox os.gox strconv.gox
+@go_include@ debug/macho.lo.dep
+debug/macho.lo.dep: $(go_debug_macho_files)
+	$(BUILDDEPS)
+debug/macho.lo: $(go_debug_macho_files)
 	$(BUILDPACKAGE)
 debug/macho/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/macho
 	@$(CHECK)
 .PHONY: debug/macho/check
 
-debug/pe.lo: $(go_debug_pe_files) debug/dwarf.gox \
-		encoding/binary.gox fmt.gox io.gox os.gox strconv.gox
+@go_include@ debug/pe.lo.dep
+debug/pe.lo.dep: $(go_debug_pe_files)
+	$(BUILDDEPS)
+debug/pe.lo: $(go_debug_pe_files)
 	$(BUILDPACKAGE)
 debug/pe/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/pe
 	@$(CHECK)
 .PHONY: debug/pe/check
 
-encoding/ascii85.lo: $(go_encoding_ascii85_files) io.gox os.gox strconv.gox
+@go_include@ encoding/ascii85.lo.dep
+encoding/ascii85.lo.dep: $(go_encoding_ascii85_files)
+	$(BUILDDEPS)
+encoding/ascii85.lo: $(go_encoding_ascii85_files)
 	$(BUILDPACKAGE)
 encoding/ascii85/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/ascii85
 	@$(CHECK)
 .PHONY: encoding/ascii85/check
 
-encoding/base32.lo: $(go_encoding_base32_files) io.gox os.gox strconv.gox
+@go_include@ encoding/base32.lo.dep
+encoding/base32.lo.dep: $(go_encoding_base32_files)
+	$(BUILDDEPS)
+encoding/base32.lo: $(go_encoding_base32_files)
 	$(BUILDPACKAGE)
 encoding/base32/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/base32
 	@$(CHECK)
 .PHONY: encoding/base32/check
 
-encoding/base64.lo: $(go_encoding_base64_files) io.gox os.gox strconv.gox
+@go_include@ encoding/base64.lo.dep
+encoding/base64.lo.dep: $(go_encoding_base64_files)
+	$(BUILDDEPS)
+encoding/base64.lo: $(go_encoding_base64_files)
 	$(BUILDPACKAGE)
 encoding/base64/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/base64
 	@$(CHECK)
 .PHONY: encoding/base64/check
 
-encoding/binary.lo: $(go_encoding_binary_files) io.gox math.gox os.gox \
-		reflect.gox
+@go_include@ encoding/binary.lo.dep
+encoding/binary.lo.dep: $(go_encoding_binary_files)
+	$(BUILDDEPS)
+encoding/binary.lo: $(go_encoding_binary_files)
 	$(BUILDPACKAGE)
 encoding/binary/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/binary
 	@$(CHECK)
 .PHONY: encoding/binary/check
 
-encoding/git85.lo: $(go_encoding_git85_files) bytes.gox io.gox os.gox \
-		strconv.gox
+@go_include@ encoding/git85.lo.dep
+encoding/git85.lo.dep: $(go_encoding_git85_files)
+	$(BUILDDEPS)
+encoding/git85.lo: $(go_encoding_git85_files)
 	$(BUILDPACKAGE)
 encoding/git85/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/git85
 	@$(CHECK)
 .PHONY: encoding/git85/check
 
-encoding/hex.lo: $(go_encoding_hex_files) bytes.gox io.gox os.gox strconv.gox
+@go_include@ encoding/hex.lo.dep
+encoding/hex.lo.dep: $(go_encoding_hex_files)
+	$(BUILDDEPS)
+encoding/hex.lo: $(go_encoding_hex_files)
 	$(BUILDPACKAGE)
 encoding/hex/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/hex
 	@$(CHECK)
 .PHONY: encoding/hex/check
 
-encoding/pem.lo: $(go_encoding_pem_files) bytes.gox encoding/base64.gox
+@go_include@ encoding/pem.lo.dep
+encoding/pem.lo.dep: $(go_encoding_pem_files)
+	$(BUILDDEPS)
+encoding/pem.lo: $(go_encoding_pem_files)
 	$(BUILDPACKAGE)
 encoding/pem/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/pem
 	@$(CHECK)
 .PHONY: encoding/pem/check
 
-exp/ebnf.lo: $(go_exp_ebnf_files) scanner.gox go/token.gox os.gox \
-		strconv.gox unicode.gox utf8.gox
+@go_include@ exp/ebnf.lo.dep
+exp/ebnf.lo.dep: $(go_exp_ebnf_files)
+	$(BUILDDEPS)
+exp/ebnf.lo: $(go_exp_ebnf_files)
 	$(BUILDPACKAGE)
 exp/ebnf/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/ebnf
 	@$(CHECK)
 .PHONY: exp/ebnf/check
 
-exp/gui.lo: $(go_exp_gui_files) image.gox image/draw.gox os.gox
+@go_include@ exp/gui.lo.dep
+exp/gui.lo.dep: $(go_exp_gui_files)
+	$(BUILDDEPS)
+exp/gui.lo: $(go_exp_gui_files)
 	$(BUILDPACKAGE)
 exp/gui/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/gui
 	@$(CHECK)
 .PHONY: exp/gui/check
 
-exp/norm.lo: $(go_exp_norm_files) io.gox os.gox utf8.gox
+@go_include@ exp/norm.lo.dep
+exp/norm.lo.dep: $(go_exp_norm_files)
+	$(BUILDDEPS)
+exp/norm.lo: $(go_exp_norm_files)
 	$(BUILDPACKAGE)
 exp/norm/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/norm
 	@$(CHECK)
 .PHONY: exp/norm/check
 
-exp/spdy.lo: $(go_exp_spdy_files) bytes.gox compress/zlib.gox \
-		encoding/binary.gox http.gox io.gox os.gox strings.gox
+@go_include@ exp/spdy.lo.dep
+exp/spdy.lo.dep: $(go_exp_spdy_files)
+	$(BUILDDEPS)
+exp/spdy.lo: $(go_exp_spdy_files)
 	$(BUILDPACKAGE)
 exp/spdy/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/spdy
 	@$(CHECK)
 .PHONY: exp/spdy/check
 
-exp/sql.lo: $(go_exp_sql_files) exp/sql/driver.gox fmt.gox os.gox reflect.gox \
-		runtime.gox strconv.gox sync.gox
+@go_include@ exp/sql.lo.dep
+exp/sql.lo.dep: $(go_exp_sql_files)
+	$(BUILDDEPS)
+exp/sql.lo: $(go_exp_sql_files)
 	$(BUILDPACKAGE)
 exp/sql/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/sql
 	@$(CHECK)
 .PHONY: exp/sql/check
 
-exp/ssh.lo: $(go_exp_ssh_files) big.gox bufio.gox bytes.gox crypto.gox \
-		crypto/aes.gox crypto/cipher.gox crypto/hmac.gox \
-		crypto/rand.gox crypto/rsa.gox crypto/sha1.gox \
-		crypto/subtle.gox crypto/x509.gox encoding/pem.gox hash.gox \
-		io.gox net.gox os.gox reflect.gox strconv.gox sync.gox
+@go_include@ exp/ssh.lo.dep
+exp/ssh.lo.dep: $(go_exp_ssh_files)
+	$(BUILDDEPS)
+exp/ssh.lo: $(go_exp_ssh_files)
 	$(BUILDPACKAGE)
 exp/ssh/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/ssh
 	@$(CHECK)
 .PHONY: exp/ssh/check
 
-exp/terminal.lo: $(go_exp_terminal_files) io.gox os.gox syscall.gox
+@go_include@ exp/terminal.lo.dep
+exp/terminal.lo.dep: $(go_exp_terminal_files)
+	$(BUILDDEPS)
+exp/terminal.lo: $(go_exp_terminal_files)
 	$(BUILDPACKAGE)
 exp/terminal/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/terminal
 	@$(CHECK)
 .PHONY: exp/terminal/check
 
-exp/types.lo: $(go_exp_types_files) big.gox bufio.gox fmt.gox go/ast.gox \
-		go/token.gox io.gox os.gox path/filepath.gox runtime.gox \
-		scanner.gox sort.gox strconv.gox strings.gox
+@go_include@ exp/types.lo.dep
+exp/types.lo.dep: $(go_exp_types_files)
+	$(BUILDDEPS)
+exp/types.lo: $(go_exp_types_files)
 	$(BUILDPACKAGE)
 exp/types/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/types
 	@$(CHECK)
 .PHONY: exp/types/check
 
-exp/gui/x11.lo: $(go_exp_gui_x11_files) bufio.gox exp/gui.gox image.gox \
-		image/draw.gox io.gox log.gox net.gox os.gox strconv.gox \
-		strings.gox time.gox
+@go_include@ exp/gui/x11.lo.dep
+exp/gui/x11.lo.dep: $(go_exp_gui_x11_files)
+	$(BUILDDEPS)
+exp/gui/x11.lo: $(go_exp_gui_x11_files)
 	$(BUILDPACKAGE)
 exp/gui/x11/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/gui/x11
 	@$(CHECK)
 .PHONY: exp/gui/x11/check
 
-exp/inotify.lo: $(go_exp_inotify_files) fmt.gox os.gox strings.gox syscall.gox
+@go_include@ exp/inotify.lo.dep
+exp/inotify.lo.dep: $(go_exp_inotify_files)
+	$(BUILDDEPS)
+exp/inotify.lo: $(go_exp_inotify_files)
 	$(BUILDPACKAGE)
 exp/inotify/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/inotify
 	@$(CHECK)
 .PHONY: exp/inotify/check
 
-exp/sql/driver.lo: $(go_exp_sql_driver_files) fmt.gox os.gox reflect.gox \
-		strconv.gox
+@go_include@ exp/sql/driver.lo.dep
+exp/sql/driver.lo.dep: $(go_exp_sql_driver_files)
+	$(BUILDDEPS)
+exp/sql/driver.lo: $(go_exp_sql_driver_files)
 	$(BUILDPACKAGE)
 exp/sql/driver/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/sql/driver
 	@$(CHECK)
 .PHONY: exp/sql/driver/check
 
-exp/template/html.lo: $(go_exp_template_html_files) bytes.gox fmt.gox \
-		html.gox json.gox os.gox strings.gox template.gox \
-		template/parse.gox unicode.gox utf8.gox 
+@go_include@ exp/template/html.lo.dep
+exp/template/html.lo.dep: $(go_exp_template_html_files)
+	$(BUILDDEPS)
+exp/template/html.lo: $(go_exp_template_html_files)
 	$(BUILDPACKAGE)
 exp/template/html/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/template/html
 	@$(CHECK)
 .PHONY: exp/template/html/check
 
-go/ast.lo: $(go_go_ast_files) bytes.gox fmt.gox go/scanner.gox go/token.gox \
-		io.gox os.gox reflect.gox strconv.gox unicode.gox utf8.gox
+@go_include@ go/ast.lo.dep
+go/ast.lo.dep: $(go_go_ast_files)
+	$(BUILDDEPS)
+go/ast.lo: $(go_go_ast_files)
 	$(BUILDPACKAGE)
 go/ast/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/ast
 	@$(CHECK)
 .PHONY: go/ast/check
 
-go/build.lo: $(go_go_build_files) bytes.gox exec.gox fmt.gox go/ast.gox \
-		go/doc.gox go/parser.gox go/token.gox io/ioutil.gox log.gox \
-		os.gox path.gox path/filepath.gox regexp.gox runtime.gox \
-		sort.gox strconv.gox strings.gox runtime.gox unicode.gox
+@go_include@ go/build.lo.dep
+go/build.lo.dep: $(go_go_build_files)
+	$(BUILDDEPS)
+go/build.lo: $(go_go_build_files)
 	$(BUILDPACKAGE)
 go/build/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/build
@@ -2761,119 +3008,149 @@ s-syslist: Makefile
 	$(SHELL) $(srcdir)/../move-if-change syslist.go.tmp syslist.go
 	$(STAMP) $@
 
-go/doc.lo: $(go_go_doc_files) go/ast.gox go/token.gox io.gox regexp.gox \
-		sort.gox strings.gox template.gox unicode.gox utf8.gox
+@go_include@ go/doc.lo.dep
+go/doc.lo.dep: $(go_go_doc_files)
+	$(BUILDDEPS)
+go/doc.lo: $(go_go_doc_files)
 	$(BUILDPACKAGE)
 go/doc/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/doc
 	@$(CHECK)
 .PHONY: go/doc/check
 
-go/parser.lo: $(go_go_parser_files) bytes.gox fmt.gox go/ast.gox \
-		go/scanner.gox go/token.gox io.gox io/ioutil.gox os.gox \
-		path/filepath.gox strings.gox
+@go_include@ go/parser.lo.dep
+go/parser.lo.dep: $(go_go_parser_files)
+	$(BUILDDEPS)
+go/parser.lo: $(go_go_parser_files)
 	$(BUILDPACKAGE)
 go/parser/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/parser
 	@$(CHECK)
 .PHONY: go/parser/check
 
-go/printer.lo: $(go_go_printer_files) bytes.gox fmt.gox go/ast.gox \
-		go/token.gox io.gox os.gox path/filepath.gox reflect.gox \
-		strings.gox tabwriter.gox
+@go_include@ go/printer.lo.dep
+go/printer.lo.dep: $(go_go_printer_files)
+	$(BUILDDEPS)
+go/printer.lo: $(go_go_printer_files)
 	$(BUILDPACKAGE)
 go/printer/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/printer
 	@$(CHECK)
 .PHONY: go/printer/check
 
-go/scanner.lo: $(go_go_scanner_files) bytes.gox fmt.gox go/token.gox io.gox \
-		os.gox path/filepath.gox sort.gox strconv.gox unicode.gox \
-		utf8.gox
+@go_include@ go/scanner.lo.dep
+go/scanner.lo.dep: $(go_go_scanner_files)
+	$(BUILDDEPS)
+go/scanner.lo: $(go_go_scanner_files)
 	$(BUILDPACKAGE)
 go/scanner/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/scanner
 	@$(CHECK)
 .PHONY: go/scanner/check
 
-go/token.lo: $(go_go_token_files) fmt.gox gob.gox io.gox os.gox sort.gox \
-		strconv.gox sync.gox
+@go_include@ go/token.lo.dep
+go/token.lo.dep: $(go_go_token_files)
+	$(BUILDDEPS)
+go/token.lo: $(go_go_token_files)
 	$(BUILDPACKAGE)
 go/token/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/token
 	@$(CHECK)
 .PHONY: go/token/check
 
-hash/adler32.lo: $(go_hash_adler32_files) hash.gox os.gox
+@go_include@ hash/adler32.lo.dep
+hash/adler32.lo.dep: $(go_hash_adler32_files)
+	$(BUILDDEPS)
+hash/adler32.lo: $(go_hash_adler32_files)
 	$(BUILDPACKAGE)
 hash/adler32/check: $(CHECK_DEPS)
 	@$(MKDIR_P) hash/adler32
 	@$(CHECK)
 .PHONY: hash/adler32/check
 
-hash/crc32.lo: $(go_hash_crc32_files) hash.gox os.gox sync.gox
+@go_include@ hash/crc32.lo.dep
+hash/crc32.lo.dep: $(go_hash_crc32_files)
+	$(BUILDDEPS)
+hash/crc32.lo: $(go_hash_crc32_files)
 	$(BUILDPACKAGE)
 hash/crc32/check: $(CHECK_DEPS)
 	@$(MKDIR_P) hash/crc32
 	@$(CHECK)
 .PHONY: hash/crc32/check
 
-hash/crc64.lo: $(go_hash_crc64_files) hash.gox os.gox
+@go_include@ hash/crc64.lo.dep
+hash/crc64.lo.dep: $(go_hash_crc64_files)
+	$(BUILDDEPS)
+hash/crc64.lo: $(go_hash_crc64_files)
 	$(BUILDPACKAGE)
 hash/crc64/check: $(CHECK_DEPS)
 	@$(MKDIR_P) hash/crc64
 	@$(CHECK)
 .PHONY: hash/crc64/check
 
-hash/fnv.lo: $(go_hash_fnv_files) encoding/binary.gox hash.gox os.gox
+@go_include@ hash/fnv.lo.dep
+hash/fnv.lo.dep: $(go_hash_fnv_files)
+	$(BUILDDEPS)
+hash/fnv.lo: $(go_hash_fnv_files)
 	$(BUILDPACKAGE)
 hash/fnv/check: $(CHECK_DEPS)
 	@$(MKDIR_P) hash/fnv
 	@$(CHECK)
 .PHONY: hash/fnv/check
 
-http/cgi.lo: $(go_http_cgi_files) bufio.gox crypto/tls.gox exec.gox fmt.gox \
-		http.gox net.gox io.gox io/ioutil.gox log.gox os.gox \
-		path/filepath.gox regexp.gox strconv.gox strings.gox url.gox
+@go_include@ http/cgi.lo.dep
+http/cgi.lo.dep: $(go_http_cgi_files)
+	$(BUILDDEPS)
+http/cgi.lo: $(go_http_cgi_files)
 	$(BUILDPACKAGE)
 http/cgi/check: $(CHECK_DEPS)
 	@$(MKDIR_P) http/cgi
 	@$(CHECK)
 .PHONY: http/cgi/check
 
-http/fcgi.lo: $(go_http_fcgi_files) bufio.gox bytes.gox encoding/binary.gox \
-		fmt.gox http.gox http/cgi.gox io.gox net.gox os.gox sync.gox \
-		time.gox
+@go_include@ http/fcgi.lo.dep
+http/fcgi.lo.dep: $(go_http_fcgi_files)
+	$(BUILDDEPS)
+http/fcgi.lo: $(go_http_fcgi_files)
 	$(BUILDPACKAGE)
 http/fcgi/check: $(CHECK_DEPS)
 	@$(MKDIR_P) http/fcgi
 	@$(CHECK)
 .PHONY: http/fcgi/check
 
-http/httptest.lo: $(go_http_httptest_files) bytes.gox crypto/rand.gox \
-		crypto/tls.gox flag.gox fmt.gox http.gox net.gox os.gox \
-		time.gox
+@go_include@ http/httptest.lo.dep
+http/httptest.lo.dep: $(go_http_httptest_files)
+	$(BUILDDEPS)
+http/httptest.lo: $(go_http_httptest_files)
 	$(BUILDPACKAGE)
 http/httptest/check: $(CHECK_DEPS)
 	@$(MKDIR_P) http/httptest
 	@$(CHECK)
 .PHONY: http/httptest/check
 
-http/pprof.lo: $(go_http_pprof_files) bufio.gox bytes.gox fmt.gox http.gox \
-		os.gox runtime.gox runtime/pprof.gox strconv.gox strings.gox
+@go_include@ http/pprof.lo.dep
+http/pprof.lo.dep: $(go_http_pprof_files)
+	$(BUILDDEPS)
+http/pprof.lo: $(go_http_pprof_files)
 	$(BUILDPACKAGE)
 http/pprof/check: $(CHECK_DEPS)
 	@$(MKDIR_P) http/pprof
 	@$(CHECK)
 .PHONY: http/pprof/check
 
-image/bmp.lo: $(go_image_bmp_files) image.gox image/color.gox io.gox os.gox
+@go_include@ image/bmp.lo.dep
+image/bmp.lo.dep: $(go_image_bmp_files)
+	$(BUILDDEPS)
+image/bmp.lo: $(go_image_bmp_files)
 	$(BUILDPACKAGE)
 image/bmp/check: $(CHECK_DEPS)
 	@$(MKDIR_P) image/bmp
 	@$(CHECK)
 .PHONY: image/bmp/check
 
+@go_include@ image/color.lo.dep
+image/color.lo.dep: $(go_image_color_files)
+	$(BUILDDEPS)
 image/color.lo: $(go_image_color_files)
 	$(BUILDPACKAGE)
 image/color/check: $(CHECK_DEPS)
@@ -2881,172 +3158,215 @@ image/color/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: image/color/check
 
-image/draw.lo: $(go_image_draw_files) image.gox image/color.gox image/ycbcr.gox
+@go_include@ image/draw.lo.dep
+image/draw.lo.dep: $(go_image_draw_files)
+	$(BUILDDEPS)
+image/draw.lo: $(go_image_draw_files)
 	$(BUILDPACKAGE)
 image/draw/check: $(CHECK_DEPS)
 	@$(MKDIR_P) image/draw
 	@$(CHECK)
 .PHONY: image/draw/check
 
-image/gif.lo: $(go_image_gif_files) bufio.gox compress/lzw.gox fmt.gox \
-		image.gox image/color.gox io.gox os.gox
+@go_include@ image/gif.lo.dep
+image/gif.lo.dep: $(go_image_gif_files)
+	$(BUILDDEPS)
+image/gif.lo: $(go_image_gif_files)
 	$(BUILDPACKAGE)
 image/gif/check: $(CHECK_DEPS)
 	@$(MKDIR_P) image/gif
 	@$(CHECK)
 .PHONY: image/gif/check
 
-image/jpeg.lo: $(go_image_jpeg_files) bufio.gox image.gox image/color.gox \
-		image/ycbcr.gox io.gox os.gox
+@go_include@ image/jpeg.lo.dep
+image/jpeg.lo.dep: $(go_image_jpeg_files)
+	$(BUILDDEPS)
+image/jpeg.lo: $(go_image_jpeg_files)
 	$(BUILDPACKAGE)
 image/jpeg/check: $(CHECK_DEPS)
 	@$(MKDIR_P) image/jpeg
 	@$(CHECK)
 .PHONY: image/jpeg/check
 
-image/png.lo: $(go_image_png_files) bufio.gox compress/zlib.gox \
-		encoding/binary.gox fmt.gox hash.gox hash/crc32.gox image.gox \
-		image/color.gox io.gox os.gox strconv.gox
+@go_include@ image/png.lo.dep
+image/png.lo.dep: $(go_image_png_files)
+	$(BUILDDEPS)
+image/png.lo: $(go_image_png_files)
 	$(BUILDPACKAGE)
 image/png/check: $(CHECK_DEPS)
 	@$(MKDIR_P) image/png
 	@$(CHECK)
 .PHONY: image/png/check
 
-image/tiff.lo: $(go_image_tiff_files) bufio.gox compress/lzw.gox \
-		compress/zlib.gox encoding/binary.gox image.gox \
-		image/color.gox io.gox io/ioutil.gox os.gox
+@go_include@ image/tiff.lo.dep
+image/tiff.lo.dep: $(go_image_tiff_files)
+	$(BUILDDEPS)
+image/tiff.lo: $(go_image_tiff_files)
 	$(BUILDPACKAGE)
 image/tiff/check: $(CHECK_DEPS)
 	@$(MKDIR_P) image/tiff
 	@$(CHECK)
 .PHONY: image/tiff/check
 
-image/ycbcr.lo: $(go_image_ycbcr_files) image.gox image/color.gox
+@go_include@ image/ycbcr.lo.dep
+image/ycbcr.lo.dep: $(go_image_ycbcr_files)
+	$(BUILDDEPS)
+image/ycbcr.lo: $(go_image_ycbcr_files)
 	$(BUILDPACKAGE)
 image/ycbcr/check: $(CHECK_DEPS)
 	@$(MKDIR_P) image/ycbcr
 	@$(CHECK)
 .PHONY: image/ycbcr/check
 
-index/suffixarray.lo: $(go_index_suffixarray_files) bytes.gox \
-		encoding/binary.gox io.gox os.gox regexp.gox sort.gox
+@go_include@ index/suffixarray.lo.dep
+index/suffixarray.lo.dep: $(go_index_suffixarray_files)
+	$(BUILDDEPS)
+index/suffixarray.lo: $(go_index_suffixarray_files)
 	$(BUILDPACKAGE)
 index/suffixarray/check: $(CHECK_DEPS)
 	@$(MKDIR_P) index/suffixarray
 	@$(CHECK)
 .PHONY: index/suffixarray/check
 
-io/ioutil.lo: $(go_io_ioutil_files) bytes.gox io.gox os.gox path/filepath.gox \
-		sort.gox strconv.gox
+@go_include@ io/ioutil.lo.dep
+io/ioutil.lo.dep: $(go_io_ioutil_files)
+	$(BUILDDEPS)
+io/ioutil.lo: $(go_io_ioutil_files)
 	$(BUILDPACKAGE)
 io/ioutil/check: $(CHECK_DEPS)
 	@$(MKDIR_P) io/ioutil
 	@$(CHECK)
 .PHONY: io/ioutil/check
 
-mime/multipart.lo: $(go_mime_multipart_files) bufio.gox bytes.gox \
-		crypto/rand.gox fmt.gox io.gox io/ioutil.gox mime.gox \
-		net/textproto.gox os.gox strings.gox
+@go_include@ mime/multipart.lo.dep
+mime/multipart.lo.dep: $(go_mime_multipart_files)
+	$(BUILDDEPS)
+mime/multipart.lo: $(go_mime_multipart_files)
 	$(BUILDPACKAGE)
 mime/multipart/check: $(CHECK_DEPS)
 	@$(MKDIR_P) mime/multipart
 	@$(CHECK)
 .PHONY: mime/multipart/check
 
-net/dict.lo: $(go_net_dict_files) net/textproto.gox os.gox strconv.gox \
-		strings.gox
+@go_include@ net/dict.lo.dep
+net/dict.lo.dep: $(go_net_dict_files)
+	$(BUILDDEPS)
+net/dict.lo: $(go_net_dict_files)
 	$(BUILDPACKAGE)
 
-net/textproto.lo: $(go_net_textproto_files) bufio.gox bytes.gox fmt.gox \
-		io.gox io/ioutil.gox net.gox os.gox strings.gox strconv.gox \
-		sync.gox
+@go_include@ net/textproto.lo.dep
+net/textproto.lo.dep: $(go_net_textproto_files)
+	$(BUILDDEPS)
+net/textproto.lo: $(go_net_textproto_files)
 	$(BUILDPACKAGE)
 net/textproto/check: $(CHECK_DEPS)
 	@$(MKDIR_P) net/textproto
 	@$(CHECK)
 .PHONY: net/textproto/check
 
-old/netchan.lo: $(go_old_netchan_files) gob.gox io.gox log.gox net.gox os.gox \
-		reflect.gox strconv.gox sync.gox time.gox
+@go_include@ old/netchan.lo.dep
+old/netchan.lo.dep: $(go_old_netchan_files)
+	$(BUILDDEPS)
+old/netchan.lo: $(go_old_netchan_files)
 	$(BUILDPACKAGE)
 old/netchan/check: $(CHECK_DEPS)
 	@$(MKDIR_P) old/netchan
 	@$(CHECK)
 .PHONY: old/netchan/check
 
-old/regexp.lo: $(go_old_regexp_files) bytes.gox io.gox os.gox strings.gox \
-		utf8.gox
+@go_include@ old/regexp.lo.dep
+old/regexp.lo.dep: $(go_old_regexp_files)
+	$(BUILDDEPS)
+old/regexp.lo: $(go_old_regexp_files)
 	$(BUILDPACKAGE)
 old/regexp/check: $(CHECK_DEPS)
 	@$(MKDIR_P) old/regexp
 	@$(CHECK)
 .PHONY: old/regexp/check
 
-old/template.lo: $(go_old_template_files) bytes.gox fmt.gox io.gox \
-		io/ioutil.gox os.gox reflect.gox strconv.gox strings.gox \
-		unicode.gox utf8.gox
+@go_include@ old/template.lo.dep
+old/template.lo.dep: $(go_old_template_files)
+	$(BUILDDEPS)
+old/template.lo: $(go_old_template_files)
 	$(BUILDPACKAGE)
 old/template/check: $(CHECK_DEPS)
 	@$(MKDIR_P) old/template
 	@$(CHECK)
 .PHONY: old/template/check
 
-os/user.lo: $(go_os_user_files) fmt.gox os.gox runtime.gox strconv.gox \
-		strings.gox syscall.gox
+@go_include@ os/user.lo.dep
+os/user.lo.dep: $(go_os_user_files)
+	$(BUILDDEPS)
+os/user.lo: $(go_os_user_files)
 	$(BUILDPACKAGE)
 os/user/check: $(CHECK_DEPS)
 	@$(MKDIR_P) os/user
 	@$(CHECK)
 .PHONY: os/user/check
 
-os/signal.lo: $(go_os_signal_files) os.gox runtime.gox
+@go_include@ os/signal.lo.dep
+os/signal.lo.dep: $(go_os_signal_files)
+	$(BUILDDEPS)
+os/signal.lo: $(go_os_signal_files)
 	$(BUILDPACKAGE)
 os/signal/check: $(CHECK_DEPS)
 	@$(MKDIR_P) os/signal
 	@$(CHECK)
 .PHONY: os/signal/check
 
-path/filepath.lo: $(go_path_filepath_files) bytes.gox os.gox runtime.gox \
-		sort.gox strings.gox utf8.gox
+@go_include@ path/filepath.lo.dep
+path/filepath.lo.dep: $(go_path_filepath_files)
+	$(BUILDDEPS)
+path/filepath.lo: $(go_path_filepath_files)
 	$(BUILDPACKAGE)
 path/filepath/check: $(CHECK_DEPS)
 	@$(MKDIR_P) path/filepath
 	@$(CHECK)
 .PHONY: path/filepath/check
 
-regexp/syntax.lo: $(go_regexp_syntax_files) bytes.gox os.gox sort.gox \
-		strconv.gox strings.gox unicode.gox utf8.gox
+@go_include@ regexp/syntax.lo.dep
+regexp/syntax.lo.dep: $(go_regexp_syntax_files)
+	$(BUILDDEPS)
+regexp/syntax.lo: $(go_regexp_syntax_files)
 	$(BUILDPACKAGE)
 regexp/syntax/check: $(CHECK_DEPS)
 	@$(MKDIR_P) regexp/syntax
 	@$(CHECK)
 .PHONY: regexp/syntax/check
 
-rpc/jsonrpc.lo: $(go_rpc_jsonrpc_files) fmt.gox io.gox json.gox net.gox \
-		os.gox rpc.gox sync.gox
+@go_include@ rpc/jsonrpc.lo.dep
+rpc/jsonrpc.lo.dep: $(go_rpc_jsonrpc_files)
+	$(BUILDDEPS)
+rpc/jsonrpc.lo: $(go_rpc_jsonrpc_files)
 	$(BUILDPACKAGE)
 rpc/jsonrpc/check: $(CHECK_DEPS)
 	@$(MKDIR_P) rpc/jsonrpc
 	@$(CHECK)
 .PHONY: rpc/jsonrpc/check
 
-runtime/debug.lo: $(go_runtime_debug_files) bytes.gox fmt.gox io/ioutil.gox \
-		os.gox runtime.gox
+@go_include@ runtime/debug.lo.dep
+runtime/debug.lo.dep: $(go_runtime_debug_files)
+	$(BUILDDEPS)
+runtime/debug.lo: $(go_runtime_debug_files)
 	$(BUILDPACKAGE)
 runtime/debug/check: $(CHECK_DEPS)
 	@$(MKDIR_P) runtime/debug
 	@$(CHECK)
 .PHONY: runtime/debug/check
 
-runtime/pprof.lo: $(go_runtime_pprof_files) bufio.gox fmt.gox io.gox os.gox \
-		runtime.gox sync.gox
+@go_include@ runtime/pprof.lo.dep
+runtime/pprof.lo.dep: $(go_runtime_pprof_files)
+	$(BUILDDEPS)
+runtime/pprof.lo: $(go_runtime_pprof_files)
 	$(BUILDPACKAGE)
 runtime/pprof/check: $(CHECK_DEPS)
 	@$(MKDIR_P) runtime/pprof
 	@$(CHECK)
 .PHONY: runtime/pprof/check
 
+@go_include@ sync/atomic.lo.dep
+sync/atomic.lo.dep: $(go_sync_atomic_files)
+	$(BUILDDEPS)
 sync/atomic.lo: $(go_sync_atomic_files)
 	$(BUILDPACKAGE)
 sync/atomic_c.lo: $(go_sync_atomic_c_files) sync/atomic.lo
@@ -3056,38 +3376,50 @@ sync/atomic/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: sync/atomic/check
 
-template/parse.lo: $(go_template_parse_files) bytes.gox fmt.gox os.gox \
-		runtime.gox strconv.gox strings.gox unicode.gox utf8.gox
+@go_include@ template/parse.lo.dep
+template/parse.lo.dep: $(go_template_parse_files)
+	$(BUILDDEPS)
+template/parse.lo: $(go_template_parse_files)
 	$(BUILDPACKAGE)
 template/parse/check: $(CHECK_DEPS)
 	@$(MKDIR_P) template/parse
 	@$(CHECK)
 .PHONY: template/parse/check
 
-testing/iotest.lo: $(go_testing_iotest_files) io.gox log.gox os.gox
+@go_include@ testing/iotest.lo.dep
+testing/iotest.lo.dep: $(go_testing_iotest_files)
+	$(BUILDDEPS)
+testing/iotest.lo: $(go_testing_iotest_files)
 	$(BUILDPACKAGE)
 testing/iotest/check: $(CHECK_DEPS)
 	@$(MKDIR_P) testing/iotest
 	@$(CHECK)
 .PHONY: testing/iotest/check
 
-testing/quick.lo: $(go_testing_quick_files) flag.gox fmt.gox math.gox os.gox \
-		rand.gox reflect.gox strings.gox
+@go_include@ testing/quick.lo.dep
+testing/quick.lo.dep: $(go_testing_quick_files)
+	$(BUILDDEPS)
+testing/quick.lo: $(go_testing_quick_files)
 	$(BUILDPACKAGE)
 testing/quick/check: $(CHECK_DEPS)
 	@$(MKDIR_P) testing/quick
 	@$(CHECK)
 .PHONY: testing/quick/check
 
-testing/script.lo: $(go_testing_script_files) fmt.gox os.gox rand.gox \
-		reflect.gox strings.gox
+@go_include@ testing/script.lo.dep
+testing/script.lo.dep: $(go_testing_script_files)
+	$(BUILDDEPS)
+testing/script.lo: $(go_testing_script_files)
 	$(BUILDPACKAGE)
 testing/script/check: $(CHECK_DEPS)
 	@$(MKDIR_P) testing/script
 	@$(CHECK)
 .PHONY: testing/script/check
 
-syscall/syscall.lo: $(go_syscall_files) sync.gox
+@go_include@ syscall/syscall.lo.dep
+syscall/syscall.lo.dep: $(go_syscall_files)
+	$(BUILDDEPS)
+syscall/syscall.lo: $(go_syscall_files)
 	$(BUILDPACKAGE)
 syscall/errno.lo: go/syscall/errno.c
 	$(LTCOMPILE) -c -o $@ $<
