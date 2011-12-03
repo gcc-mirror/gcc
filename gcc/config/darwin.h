@@ -348,7 +348,9 @@ extern GTY(()) int darwin_ms_struct;
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC							    \
   "%{Zdynamiclib: %(darwin_dylib1) %{fgnu-tm: -lcrttms.o}}		    \
-   %{!Zdynamiclib:%{Zbundle:%{!static:-lbundle1.o %{fgnu-tm: -lcrttms.o}}}  \
+   %{!Zdynamiclib:%{Zbundle:%{!static:					    \
+	%:version-compare(< 10.6 mmacosx-version-min= -lbundle1.o)	    \
+	%{fgnu-tm: -lcrttms.o}}}					    \
      %{!Zbundle:%{pg:%{static:-lgcrt0.o}				    \
                      %{!static:%{object:-lgcrt0.o}			    \
                                %{!object:%{preload:-lgcrt0.o}		    \
@@ -370,11 +372,12 @@ extern GTY(()) int darwin_ms_struct;
 
 #define DARWIN_DYLIB1_SPEC						\
   "%:version-compare(!> 10.5 mmacosx-version-min= -ldylib1.o)		\
-   %:version-compare(>= 10.5 mmacosx-version-min= -ldylib1.10.5.o)"
+   %:version-compare(>< 10.5 10.6 mmacosx-version-min= -ldylib1.10.5.o)"
 
 #define DARWIN_CRT1_SPEC						\
   "%:version-compare(!> 10.5 mmacosx-version-min= -lcrt1.o)		\
-   %:version-compare(>= 10.5 mmacosx-version-min= -lcrt1.10.5.o)	\
+   %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lcrt1.10.5.o)	\
+   %:version-compare(>= 10.6 mmacosx-version-min= -lcrt1.10.6.o)	\
    %{fgnu-tm: -lcrttms.o}"
 
 /* Default Darwin ASM_SPEC, very simple.  */

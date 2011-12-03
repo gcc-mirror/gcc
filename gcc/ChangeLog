@@ -1,3 +1,10 @@
+2011-12-03  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/darwin.h (STARTFILE_SPEC): Do not use -lbundle1.o when 
+	Darwin >= 10.
+	(DARWIN_DYLIB1_SPEC): Do not use -ldylib1.10.5.o when Darwin >= 10.
+	(DARWIN_CRT1_SPEC): Use -lcrt1.10.6.o when Darwin >= 10.
+
 2011-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* fold-const.c (fold_unary_loc): Fold VEC_UNPACK_LO_EXPR,
