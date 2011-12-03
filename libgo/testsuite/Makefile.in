@@ -169,6 +169,7 @@ exec_prefix = @exec_prefix@
 glibgo_prefixdir = @glibgo_prefixdir@
 glibgo_toolexecdir = @glibgo_toolexecdir@
 glibgo_toolexeclibdir = @glibgo_toolexeclibdir@
+go_include = @go_include@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@

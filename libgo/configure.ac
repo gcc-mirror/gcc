@@ -117,6 +117,11 @@ fi
 AC_SUBST(LIBFFI)
 AC_SUBST(LIBFFIINCS)
 
+# Used to tell GNU make to include a file without telling automake to
+# include it.
+go_include="-include"
+AC_SUBST(go_include)
+
 is_darwin=no
 is_freebsd=no
 is_irix=no
