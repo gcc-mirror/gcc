@@ -485,10 +485,31 @@ variable_check (gfc_expr *e, int n, bool allow_proc)
       && (gfc_current_intrinsic_arg[n]->intent == INTENT_OUT
 	  || gfc_current_intrinsic_arg[n]->intent == INTENT_INOUT))
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L cannot be INTENT(IN)",
-		 gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
-		 &e->where);
-      return FAILURE;
+      gfc_ref *ref;
+      bool pointer = e->symtree->n.sym->ts.type == BT_CLASS
+		     && CLASS_DATA (e->symtree->n.sym)
+		     ? CLASS_DATA (e->symtree->n.sym)->attr.class_pointer
+		     : e->symtree->n.sym->attr.pointer;
+
+      for (ref = e->ref; ref; ref = ref->next)
+	{
+	  if (pointer && ref->type == REF_COMPONENT)
+	    break;
+	  if (ref->type == REF_COMPONENT
+	      && ((ref->u.c.component->ts.type == BT_CLASS
+		   && CLASS_DATA (ref->u.c.component)->attr.class_pointer)
+		  || (ref->u.c.component->ts.type != BT_CLASS
+		      && ref->u.c.component->attr.pointer)))
+	    break;
+	} 
+
+      if (!ref)
+	{
+	  gfc_error ("'%s' argument of '%s' intrinsic at %L cannot be "
+		     "INTENT(IN)", gfc_current_intrinsic_arg[n]->name,
+		     gfc_current_intrinsic, &e->where);
+	  return FAILURE;
+	}
     }
 
   if (e->expr_type == EXPR_VARIABLE
