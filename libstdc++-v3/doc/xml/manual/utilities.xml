@@ -50,8 +50,7 @@
    <para>does what you think it does, <code>first</code> getting <code>x</code>
       and <code>second</code> getting <code>y</code>.
    </para>
-   <para>There is a copy constructor, but it requires that your compiler
-      handle member function templates:
+   <para>There is a constructor template for copying pairs of other types:
    </para>
    <programlisting>
     template &lt;class U, class V&gt; pair (const pair&lt;U,V&gt;&amp; p);
