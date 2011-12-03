@@ -814,15 +814,7 @@ remove_unused_locals (void)
 	      bitmap_set_bit (global_unused_vars, DECL_UID (var));
 	    }
 	  else
-	    {
-	      /* For unreferenced local vars drop TREE_ADDRESSABLE
-		 bit in case it is referenced from debug stmts.  */
-	      if (DECL_CONTEXT (var) == current_function_decl
-		  && TREE_ADDRESSABLE (var)
-		  && is_gimple_reg_type (TREE_TYPE (var)))
-		TREE_ADDRESSABLE (var) = 0;
-	      continue;
-	    }
+	    continue;
 	}
       else if (TREE_CODE (var) == VAR_DECL
 	       && DECL_HARD_REGISTER (var)

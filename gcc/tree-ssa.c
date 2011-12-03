@@ -264,7 +264,12 @@ target_for_debug_bind (tree var)
     return NULL_TREE;
 
   if (!is_gimple_reg (var))
-    return NULL_TREE;
+    {
+      if (is_gimple_reg_type (TREE_TYPE (var))
+	  && referenced_var_lookup (cfun, DECL_UID (var)) == NULL_TREE)
+	return var;
+      return NULL_TREE;
+    }
 
   return var;
 }
