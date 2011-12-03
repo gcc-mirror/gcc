@@ -5152,16 +5152,11 @@ select_type_set_tmp (gfc_typespec *ts)
   gfc_get_sym_tree (name, gfc_current_ns, &tmp, false);
   gfc_add_type (tmp->n.sym, ts, NULL);
   gfc_set_sym_referenced (tmp->n.sym);
-  if (select_type_stack->selector->ts.type == BT_CLASS &&
-      CLASS_DATA (select_type_stack->selector)->attr.allocatable)
-    gfc_add_allocatable (&tmp->n.sym->attr, NULL);
-  else
-    gfc_add_pointer (&tmp->n.sym->attr, NULL);
   gfc_add_flavor (&tmp->n.sym->attr, FL_VARIABLE, name, NULL);
+  tmp->n.sym->attr.select_type_temporary = 1;
   if (ts->type == BT_CLASS)
     gfc_build_class_symbol (&tmp->n.sym->ts, &tmp->n.sym->attr,
 			    &tmp->n.sym->as, false);
-  tmp->n.sym->attr.select_type_temporary = 1;
 
   /* Add an association for it, so the rest of the parser knows it is
      an associate-name.  The target will be set during resolution.  */

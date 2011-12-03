@@ -1,3 +1,11 @@
+2011-12-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48887
+	* match.c (select_type_set_tmp): Don't set allocatable/pointer
+	attribute.
+	* class.c (gfc_build_class_symbol): Handle
+	attr.select_type_temporary.
+
 2011-12-03  Tobias Burnus  <burnus@net-b.de>                                                                                                           
 
 	PR fortran/50684
