@@ -1,3 +1,13 @@
+2011-12-03  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/arm/arm.h (LIBCALL_VALUE, FUNCTION_VALUE_REGNO_P): Remove.
+	* config/arm/arm-protos.h (aapcs_libcall_value): Remove.
+	* config/arm/arm.c (TARGET_FUNCTION_VALUE_REGNO_P): Define.
+	(arm_libcall_value_1, arm_function_value_regno_p): New function.
+	(arm_function_value, arm_libcall_value): Use arm_libcall_value_1.
+	(aapcs_libcall_value): Make static.
+	(arm_libcall_value): Add static qualifier.
+
 2011-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/51387

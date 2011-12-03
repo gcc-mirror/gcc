@@ -1348,32 +1348,6 @@ do {									      \
 /* Offset of first parameter from the argument pointer register value.  */
 #define FIRST_PARM_OFFSET(FNDECL)  (TARGET_ARM ? 4 : 0)
 
-/* Define how to find the value returned by a library function
-   assuming the value has mode MODE.  */
-#define LIBCALL_VALUE(MODE)  						\
-  (TARGET_AAPCS_BASED ? aapcs_libcall_value (MODE)			\
-   : (TARGET_32BIT && TARGET_HARD_FLOAT_ABI && TARGET_FPA		\
-      && GET_MODE_CLASS (MODE) == MODE_FLOAT)				\
-   ? gen_rtx_REG (MODE, FIRST_FPA_REGNUM)				\
-   : TARGET_32BIT && TARGET_HARD_FLOAT_ABI && TARGET_MAVERICK		\
-     && GET_MODE_CLASS (MODE) == MODE_FLOAT				\
-   ? gen_rtx_REG (MODE, FIRST_CIRRUS_FP_REGNUM) 			\
-   : TARGET_IWMMXT_ABI && arm_vector_mode_supported_p (MODE)    	\
-   ? gen_rtx_REG (MODE, FIRST_IWMMXT_REGNUM) 				\
-   : gen_rtx_REG (MODE, ARG_REGISTER (1)))
-
-/* 1 if REGNO is a possible register number for a function value.  */
-#define FUNCTION_VALUE_REGNO_P(REGNO)				\
-  ((REGNO) == ARG_REGISTER (1)					\
-   || (TARGET_AAPCS_BASED && TARGET_32BIT 			\
-       && TARGET_VFP && TARGET_HARD_FLOAT			\
-       && (REGNO) == FIRST_VFP_REGNUM)				\
-   || (TARGET_32BIT && ((REGNO) == FIRST_CIRRUS_FP_REGNUM)	\
-       && TARGET_HARD_FLOAT_ABI && TARGET_MAVERICK)		\
-   || ((REGNO) == FIRST_IWMMXT_REGNUM && TARGET_IWMMXT_ABI)	\
-   || (TARGET_32BIT && ((REGNO) == FIRST_FPA_REGNUM)		\
-       && TARGET_HARD_FLOAT_ABI && TARGET_FPA))
-
 /* Amount of memory needed for an untyped call to save all possible return
    registers.  */
 #define APPLY_RESULT_SIZE arm_apply_result_size()
