@@ -57,6 +57,13 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__valid_range(_First, _Last),	\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
 
+// Verify that [_First, _Last) forms a non-empty iterator range.
+#define __glibcxx_check_non_empty_range(_First,_Last)			\
+_GLIBCXX_DEBUG_VERIFY(_First != _Last,					\
+		      _M_message(__gnu_debug::__msg_non_empty_range)	\
+		      ._M_iterator(_First, #_First)			\
+		      ._M_iterator(_Last, #_Last))
+
 /** Verify that we can insert into *this with the iterator _Position.
  *  Insertion into a container at a specific position requires that
  *  the iterator be nonsingular, either dereferenceable or past-the-end,

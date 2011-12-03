@@ -1,5 +1,14 @@
 2011-12-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/debug/macros.h (__glibcxx_check_non_empty_range): Define.
+	* include/debug/debug.h (__glibcxx_requires_non_empty_range): Define.
+	* include/debug/formatter.h (__msg_non_empty_range): Add.
+	* src/debug.cc: Message text for __msg_non_empty_range.
+	* include/bits/stl_heap.h (pop_heap): Check for non-empty range.
+	* testsuite/25_algorithms/pop_heap/empty_neg.cc: New.
+
+2011-12-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* doc/xml/manual/utilities.xml: Remove outdated text.
 
 2011-12-02  Paolo Carlini  <paolo.carlini@oracle.com>
