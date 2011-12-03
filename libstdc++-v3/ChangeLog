@@ -1,3 +1,7 @@
+2011-12-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/utilities.xml: Remove outdated text.
+
 2011-12-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/iomanip (put_money): Fix thinko, use __err local,
