@@ -108,7 +108,8 @@ namespace __gnu_debug
     __msg_erase_after_bad,
     __msg_valid_range2,
     // unordered sequence local iterators
-    __msg_local_iter_compare_bad
+    __msg_local_iter_compare_bad,
+    __msg_non_empty_range
   };
 
   class _Error_formatter

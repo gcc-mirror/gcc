@@ -1,7 +1,7 @@
 // Heap implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+// 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -270,6 +270,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @brief  Pop an element off a heap.
    *  @param  __first  Start of heap.
    *  @param  __last   End of heap.
+   *  @pre    [__first, __last) is a valid, non-empty range.
    *  @ingroup heap_algorithms
    *
    *  This operation pops the top of the heap.  The elements __first
@@ -287,6 +288,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
       __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
+      __glibcxx_requires_non_empty_range(__first, __last);
       __glibcxx_requires_valid_range(__first, __last);
       __glibcxx_requires_heap(__first, __last);
 
