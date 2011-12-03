@@ -1,3 +1,8 @@
+2011-12-03  Tobias Burnus  <burnus@net-b.de>                                                                                                           
+
+	PR fortran/50684
+	* check.c (variable_check): Fix intent(in) check.
+
 2011-12-03  Tobias Burnus  <burnus@net-b.de>
 
 	* check.c (gfc_check_move_alloc): Allow nonpolymorphic
