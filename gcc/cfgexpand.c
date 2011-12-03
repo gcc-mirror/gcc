@@ -3325,7 +3325,8 @@ expand_debug_expr (tree exp)
 	  if ((TREE_CODE (TREE_OPERAND (exp, 0)) == VAR_DECL
 	       || TREE_CODE (TREE_OPERAND (exp, 0)) == PARM_DECL
 	       || TREE_CODE (TREE_OPERAND (exp, 0)) == RESULT_DECL)
-	      && !TREE_ADDRESSABLE (TREE_OPERAND (exp, 0)))
+	      && (!TREE_ADDRESSABLE (TREE_OPERAND (exp, 0))
+		  || target_for_debug_bind (TREE_OPERAND (exp, 0))))
 	    return gen_rtx_DEBUG_IMPLICIT_PTR (mode, TREE_OPERAND (exp, 0));
 
 	  if (handled_component_p (TREE_OPERAND (exp, 0)))
@@ -3337,7 +3338,8 @@ expand_debug_expr (tree exp)
 	      if ((TREE_CODE (decl) == VAR_DECL
 		   || TREE_CODE (decl) == PARM_DECL
 		   || TREE_CODE (decl) == RESULT_DECL)
-		  && !TREE_ADDRESSABLE (decl)
+		  && (!TREE_ADDRESSABLE (decl)
+		      || target_for_debug_bind (decl))
 		  && (bitoffset % BITS_PER_UNIT) == 0
 		  && bitsize > 0
 		  && bitsize == maxsize)

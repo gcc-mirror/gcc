@@ -1,3 +1,13 @@
+2011-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/50317
+	* tree-ssa.c (target_for_debug_bind): Also allow is_gimple_reg_type
+	vars that aren't referenced.
+	(tree-ssa-live.c (remove_unused_locals): Don't clear TREE_ADDRESSABLE
+	of unreferenced local vars.
+	* cfgexpand.c (expand_debug_expr): For DEBUG_IMPLICIT_PTR allow also
+	TREE_ADDRESSABLE vars that satisfy target_for_debug_bind.
+
 2011-12-03  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/arm/arm.h (LIBCALL_VALUE, FUNCTION_VALUE_REGNO_P): Remove.
