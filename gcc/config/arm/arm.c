@@ -147,8 +147,9 @@ static enum machine_mode arm_promote_function_mode (const_tree,
 						    const_tree, int);
 static bool arm_return_in_memory (const_tree, const_tree);
 static rtx arm_function_value (const_tree, const_tree, bool);
+static rtx arm_libcall_value_1 (enum machine_mode);
 static rtx arm_libcall_value (enum machine_mode, const_rtx);
-
+static bool arm_function_value_regno_p (const unsigned int);
 static void arm_internal_label (FILE *, const char *, unsigned long);
 static void arm_output_mi_thunk (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT,
 				 tree);
@@ -184,6 +185,7 @@ static void arm_function_arg_advance (cumulative_args_t, enum machine_mode,
 static unsigned int arm_function_arg_boundary (enum machine_mode, const_tree);
 static rtx aapcs_allocate_return_reg (enum machine_mode, const_tree,
 				      const_tree);
+static rtx aapcs_libcall_value (enum machine_mode);
 static int aapcs_select_return_coproc (const_tree, const_tree);
 
 #ifdef OBJECT_FORMAT_ELF
@@ -382,6 +384,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef  TARGET_LIBCALL_VALUE
 #define TARGET_LIBCALL_VALUE arm_libcall_value
+
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P arm_function_value_regno_p
 
 #undef  TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK arm_output_mi_thunk
@@ -3592,7 +3597,7 @@ arm_function_value(const_tree type, const_tree func,
 	}
     }
 
-  return LIBCALL_VALUE (mode);
+  return arm_libcall_value_1 (mode);
 }
 
 static int
@@ -3682,7 +3687,32 @@ arm_libcall_uses_aapcs_base (const_rtx libcall)
   return libcall && htab_find (libcall_htab, libcall) != NULL;
 }
 
-rtx
+static rtx
+arm_libcall_value_1 (enum machine_mode mode)
+{
+  if (TARGET_AAPCS_BASED)
+    return aapcs_libcall_value (mode);
+  else if (TARGET_32BIT
+	   && TARGET_HARD_FLOAT_ABI
+	   && TARGET_FPA
+	   && GET_MODE_CLASS (mode) == MODE_FLOAT)
+    return gen_rtx_REG (mode, FIRST_FPA_REGNUM);
+  else if (TARGET_32BIT
+	   && TARGET_HARD_FLOAT_ABI
+	   && TARGET_MAVERICK
+	   && GET_MODE_CLASS (mode) == MODE_FLOAT)
+    return gen_rtx_REG (mode, FIRST_CIRRUS_FP_REGNUM);
+  else if (TARGET_IWMMXT_ABI
+	   && arm_vector_mode_supported_p (mode))
+    return gen_rtx_REG (mode, FIRST_IWMMXT_REGNUM);
+  else
+    return gen_rtx_REG (mode, ARG_REGISTER (1));
+}
+
+/* Define how to find the value returned by a library function
+   assuming the value has mode MODE.  */
+
+static rtx
 arm_libcall_value (enum machine_mode mode, const_rtx libcall)
 {
   if (TARGET_AAPCS_BASED && arm_pcs_default != ARM_PCS_AAPCS
@@ -3695,7 +3725,33 @@ arm_libcall_value (enum machine_mode mode, const_rtx libcall)
 
     }
 
-  return LIBCALL_VALUE (mode);
+  return arm_libcall_value_1 (mode);
+}
+
+/* Implement TARGET_FUNCTION_VALUE_REGNO_P.  */
+
+static bool
+arm_function_value_regno_p (const unsigned int regno)
+{
+  if (regno == ARG_REGISTER (1)
+      || (TARGET_32BIT
+	  && TARGET_AAPCS_BASED
+	  && TARGET_VFP
+	  && TARGET_HARD_FLOAT
+	  && regno == FIRST_VFP_REGNUM)
+      || (TARGET_32BIT
+	  && TARGET_HARD_FLOAT_ABI
+	  && TARGET_MAVERICK
+	  && regno == FIRST_CIRRUS_FP_REGNUM)
+      || (TARGET_IWMMXT_ABI
+	  && regno == FIRST_IWMMXT_REGNUM)
+      || (TARGET_32BIT
+	  && TARGET_HARD_FLOAT_ABI
+	  && TARGET_FPA
+	  && regno == FIRST_FPA_REGNUM))
+    return true;
+
+  return false;
 }
 
 /* Determine the amount of memory needed to store the possible return
@@ -4513,7 +4569,7 @@ aapcs_allocate_return_reg (enum machine_mode mode, const_tree type,
   return gen_rtx_REG (mode, R0_REGNUM);
 }
 
-rtx
+static rtx
 aapcs_libcall_value (enum machine_mode mode)
 {
   if (BYTES_BIG_ENDIAN && ALL_FIXED_POINT_MODE_P (mode)
