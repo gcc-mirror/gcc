@@ -1,3 +1,7 @@
+2011-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/vect-122.c: New test.
+
 2011-12-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50684
