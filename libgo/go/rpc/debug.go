@@ -27,7 +27,7 @@ const debugText = `<html>
 		<th align=center>Method</th><th align=center>Calls</th>
 		{{range .Method}}
 			<tr>
-			<td align=left font=fixed>{{.Name}}({{.Type.ArgType}}, {{.Type.ReplyType}}) os.Error</td>
+			<td align=left font=fixed>{{.Name}}({{.Type.ArgType}}, {{.Type.ReplyType}}) error</td>
 			<td align=center>{{.Type.NumCalls}}</td>
 			</tr>
 		{{end}}
@@ -85,6 +85,6 @@ func (server debugHTTP) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	sort.Sort(services)
 	err := debug.Execute(w, services)
 	if err != nil {
-		fmt.Fprintln(w, "rpc: error executing template:", err.String())
+		fmt.Fprintln(w, "rpc: error executing template:", err.Error())
 	}
 }

@@ -121,6 +121,21 @@ merge() {
   fi
 }
 
+merge_c() {
+  from=$1
+  to=$2
+  oldfile=${OLDDIR}/src/pkg/runtime/$from
+  if test -f ${oldfile}; then
+    sed -e 's/·/_/g' < ${oldfile} > ${oldfile}.tmp
+    oldfile=${oldfile}.tmp
+    newfile=${NEWDIR}/src/pkg/runtime/$from
+    sed -e 's/·/_/g' < ${newfile} > ${newfile}.tmp
+    newfile=${newfile}.tmp
+    libgofile=runtime/$to
+    merge $from ${oldfile} ${newfile} ${libgofile}
+  fi
+}
+
 (cd ${NEWDIR}/src/pkg && find . -name '*.go' -print) | while read f; do
   if test `dirname $f` = "./syscall"; then
     continue
@@ -153,32 +168,11 @@ done
 
 runtime="chan.c cpuprof.c goc2c.c lock_futex.c lock_sema.c mcache.c mcentral.c mfinal.c mfixalloc.c mgc0.c mheap.c msize.c proc.c runtime.c runtime.h malloc.h malloc.goc mprof.goc runtime1.goc sema.goc sigqueue.goc string.goc"
 for f in $runtime; do
-  oldfile=${OLDDIR}/src/pkg/runtime/$f
-  if test -f ${oldfile}; then
-    sed -e 's/·/_/g' < ${oldfile} > ${oldfile}.tmp
-    oldfile=${oldfile}.tmp
-    newfile=${NEWDIR}/src/pkg/runtime/$f
-    sed -e 's/·/_/g' < ${newfile} > ${newfile}.tmp
-    newfile=${newfile}.tmp
-    libgofile=runtime/$f
-    merge $f ${oldfile} ${newfile} ${libgofile}
-  fi
+  merge_c $f $f
 done
 
-runtime2="linux/thread.c thread-linux.c linux/mem.c mem.c"
-echo $runtime2 | while read from; do
-  read to
-  oldfile=${OLDDIR}/src/pkg/runtime/$from
-  if test -f ${oldfile}; then
-    sed -e 's/·/_/g' < ${oldfile} > ${oldfile}.tmp
-    oldfile=${oldfile}.tmp
-    newfile=${NEWDIR}/src/pkg/runtime/$from
-    sed -e 's/·/_/g' < ${newfile} > ${newfile}.tmp
-    newfile=${newfile}.tmp
-    libgofile=runtime/$to
-    merge $f ${oldfile} ${newfile} ${libgofile}
-  fi
-done
+merge_c linux/thread.c thread-linux.c
+merge_c linux/mem.c mem.c
 
 (cd ${OLDDIR}/src/pkg && find . -name '*.go' -print) | while read f; do
   oldfile=${OLDDIR}/src/pkg/$f

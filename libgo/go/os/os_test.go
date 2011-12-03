@@ -75,7 +75,7 @@ func size(name string, t *testing.T) int64 {
 	for {
 		n, e := file.Read(buf[0:])
 		len += n
-		if e == EOF {
+		if e == io.EOF {
 			break
 		}
 		if e != nil {
@@ -255,7 +255,7 @@ func smallReaddirnames(file *File, length int, t *testing.T) []string {
 	count := 0
 	for {
 		d, err := file.Readdirnames(1)
-		if err == EOF {
+		if err == io.EOF {
 			break
 		}
 		if err != nil {
@@ -326,14 +326,14 @@ func TestReaddirNValues(t *testing.T) {
 
 	var d *File
 	openDir := func() {
-		var err Error
+		var err error
 		d, err = Open(dir)
 		if err != nil {
 			t.Fatalf("Open directory: %v", err)
 		}
 	}
 
-	readDirExpect := func(n, want int, wantErr Error) {
+	readDirExpect := func(n, want int, wantErr error) {
 		fi, err := d.Readdir(n)
 		if err != wantErr {
 			t.Fatalf("Readdir of %d got error %v, want %v", n, err, wantErr)
@@ -343,7 +343,7 @@ func TestReaddirNValues(t *testing.T) {
 		}
 	}
 
-	readDirNamesExpect := func(n, want int, wantErr Error) {
+	readDirNamesExpect := func(n, want int, wantErr error) {
 		fi, err := d.Readdirnames(n)
 		if err != wantErr {
 			t.Fatalf("Readdirnames of %d got error %v, want %v", n, err, wantErr)
@@ -353,7 +353,7 @@ func TestReaddirNValues(t *testing.T) {
 		}
 	}
 
-	for _, fn := range []func(int, int, Error){readDirExpect, readDirNamesExpect} {
+	for _, fn := range []func(int, int, error){readDirExpect, readDirNamesExpect} {
 		// Test the slurp case
 		openDir()
 		fn(0, 105, nil)
@@ -372,7 +372,7 @@ func TestReaddirNValues(t *testing.T) {
 		fn(1, 1, nil)
 		fn(2, 2, nil)
 		fn(105, 102, nil) // and tests buffer >100 case
-		fn(3, 0, EOF)
+		fn(3, 0, io.EOF)
 		d.Close()
 	}
 }
@@ -839,7 +839,7 @@ func TestSeek(t *testing.T) {
 	for i, tt := range tests {
 		off, err := f.Seek(tt.in, tt.whence)
 		if off != tt.out || err != nil {
-			if e, ok := err.(*PathError); ok && e.Error == EINVAL && tt.out > 1<<32 {
+			if e, ok := err.(*PathError); ok && e.Err == EINVAL && tt.out > 1<<32 {
 				// Reiserfs rejects the big seeks.
 				// http://code.google.com/p/go/issues/detail?id=91
 				break
@@ -852,7 +852,7 @@ func TestSeek(t *testing.T) {
 type openErrorTest struct {
 	path  string
 	mode  int
-	error Error
+	error error
 }
 
 var openErrorTests = []openErrorTest{
@@ -885,15 +885,15 @@ func TestOpenError(t *testing.T) {
 		if !ok {
 			t.Errorf("Open(%q, %d) returns error of %T type; want *os.PathError", tt.path, tt.mode, err)
 		}
-		if perr.Error != tt.error {
+		if perr.Err != tt.error {
 			if syscall.OS == "plan9" {
-				syscallErrStr := perr.Error.String()
-				expectedErrStr := strings.Replace(tt.error.String(), "file ", "", 1)
+				syscallErrStr := perr.Err.Error()
+				expectedErrStr := strings.Replace(tt.error.Error(), "file ", "", 1)
 				if !strings.HasSuffix(syscallErrStr, expectedErrStr) {
 					t.Errorf("Open(%q, %d) = _, %q; want suffix %q", tt.path, tt.mode, syscallErrStr, expectedErrStr)
 				}
 			} else {
-				t.Errorf("Open(%q, %d) = _, %q; want %q", tt.path, tt.mode, perr.Error.String(), tt.error.String())
+				t.Errorf("Open(%q, %d) = _, %q; want %q", tt.path, tt.mode, perr.Err.Error(), tt.error.Error())
 			}
 		}
 	}

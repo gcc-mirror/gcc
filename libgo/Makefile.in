@@ -132,46 +132,46 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = asn1/asn1.lo big/big.lo bufio/bufio.lo \
 	bytes/bytes.lo bytes/index.lo cmath/cmath.lo crypto/crypto.lo \
-	csv/csv.lo exec/exec.lo expvar/expvar.lo flag/flag.lo \
-	fmt/fmt.lo gob/gob.lo hash/hash.lo html/html.lo http/http.lo \
-	image/image.lo io/io.lo json/json.lo log/log.lo math/math.lo \
-	mail/mail.lo mime/mime.lo net/net.lo os/os.lo patch/patch.lo \
-	path/path.lo rand/rand.lo reflect/reflect.lo regexp/regexp.lo \
-	rpc/rpc.lo runtime/runtime.lo scanner/scanner.lo smtp/smtp.lo \
-	sort/sort.lo strconv/strconv.lo strings/strings.lo \
-	sync/sync.lo syslog/syslog.lo syslog/syslog_c.lo \
-	tabwriter/tabwriter.lo template/template.lo time/time.lo \
-	unicode/unicode.lo url/url.lo utf16/utf16.lo utf8/utf8.lo \
-	websocket/websocket.lo xml/xml.lo archive/tar.lo \
-	archive/zip.lo compress/bzip2.lo compress/flate.lo \
-	compress/gzip.lo compress/lzw.lo compress/zlib.lo \
-	container/heap.lo container/list.lo container/ring.lo \
-	crypto/aes.lo crypto/bcrypt.lo crypto/blowfish.lo \
-	crypto/cast5.lo crypto/cipher.lo crypto/des.lo crypto/dsa.lo \
-	crypto/ecdsa.lo crypto/elliptic.lo crypto/hmac.lo \
-	crypto/md4.lo crypto/md5.lo crypto/ocsp.lo crypto/openpgp.lo \
-	crypto/rand.lo crypto/rc4.lo crypto/ripemd160.lo crypto/rsa.lo \
-	crypto/sha1.lo crypto/sha256.lo crypto/sha512.lo \
-	crypto/subtle.lo crypto/tls.lo crypto/twofish.lo \
-	crypto/x509.lo crypto/xtea.lo crypto/openpgp/armor.lo \
-	crypto/openpgp/elgamal.lo crypto/openpgp/error.lo \
-	crypto/openpgp/packet.lo crypto/openpgp/s2k.lo \
-	crypto/x509/pkix.lo debug/dwarf.lo debug/elf.lo debug/gosym.lo \
-	debug/macho.lo debug/pe.lo encoding/ascii85.lo \
-	encoding/base32.lo encoding/base64.lo encoding/binary.lo \
-	encoding/git85.lo encoding/hex.lo encoding/pem.lo exp/ebnf.lo \
-	exp/gui.lo exp/norm.lo exp/spdy.lo exp/sql.lo exp/ssh.lo \
-	exp/terminal.lo exp/types.lo exp/gui/x11.lo exp/sql/driver.lo \
-	exp/template/html.lo go/ast.lo go/build.lo go/doc.lo \
-	go/parser.lo go/printer.lo go/scanner.lo go/token.lo \
-	hash/adler32.lo hash/crc32.lo hash/crc64.lo hash/fnv.lo \
-	http/cgi.lo http/fcgi.lo http/httptest.lo http/pprof.lo \
-	image/bmp.lo image/color.lo image/draw.lo image/gif.lo \
-	image/jpeg.lo image/png.lo image/tiff.lo image/ycbcr.lo \
-	index/suffixarray.lo io/ioutil.lo mime/multipart.lo \
-	net/dict.lo net/textproto.lo old/netchan.lo old/regexp.lo \
-	old/template.lo $(am__DEPENDENCIES_1) os/user.lo os/signal.lo \
-	path/filepath.lo regexp/syntax.lo rpc/jsonrpc.lo \
+	csv/csv.lo errors/errors.lo exec/exec.lo expvar/expvar.lo \
+	flag/flag.lo fmt/fmt.lo gob/gob.lo hash/hash.lo html/html.lo \
+	http/http.lo image/image.lo io/io.lo json/json.lo log/log.lo \
+	math/math.lo mail/mail.lo mime/mime.lo net/net.lo os/os.lo \
+	patch/patch.lo path/path.lo rand/rand.lo reflect/reflect.lo \
+	regexp/regexp.lo rpc/rpc.lo runtime/runtime.lo \
+	scanner/scanner.lo smtp/smtp.lo sort/sort.lo \
+	strconv/strconv.lo strings/strings.lo sync/sync.lo \
+	syslog/syslog.lo syslog/syslog_c.lo tabwriter/tabwriter.lo \
+	template/template.lo time/time.lo unicode/unicode.lo \
+	url/url.lo utf16/utf16.lo utf8/utf8.lo websocket/websocket.lo \
+	xml/xml.lo archive/tar.lo archive/zip.lo compress/bzip2.lo \
+	compress/flate.lo compress/gzip.lo compress/lzw.lo \
+	compress/zlib.lo container/heap.lo container/list.lo \
+	container/ring.lo crypto/aes.lo crypto/bcrypt.lo \
+	crypto/blowfish.lo crypto/cast5.lo crypto/cipher.lo \
+	crypto/des.lo crypto/dsa.lo crypto/ecdsa.lo crypto/elliptic.lo \
+	crypto/hmac.lo crypto/md4.lo crypto/md5.lo crypto/ocsp.lo \
+	crypto/openpgp.lo crypto/rand.lo crypto/rc4.lo \
+	crypto/ripemd160.lo crypto/rsa.lo crypto/sha1.lo \
+	crypto/sha256.lo crypto/sha512.lo crypto/subtle.lo \
+	crypto/tls.lo crypto/twofish.lo crypto/x509.lo crypto/xtea.lo \
+	crypto/openpgp/armor.lo crypto/openpgp/elgamal.lo \
+	crypto/openpgp/error.lo crypto/openpgp/packet.lo \
+	crypto/openpgp/s2k.lo crypto/x509/pkix.lo debug/dwarf.lo \
+	debug/elf.lo debug/gosym.lo debug/macho.lo debug/pe.lo \
+	encoding/ascii85.lo encoding/base32.lo encoding/base64.lo \
+	encoding/binary.lo encoding/git85.lo encoding/hex.lo \
+	encoding/pem.lo exp/ebnf.lo exp/gui.lo exp/norm.lo exp/spdy.lo \
+	exp/sql.lo exp/ssh.lo exp/terminal.lo exp/types.lo \
+	exp/gui/x11.lo exp/sql/driver.lo exp/template/html.lo \
+	go/ast.lo go/build.lo go/doc.lo go/parser.lo go/printer.lo \
+	go/scanner.lo go/token.lo hash/adler32.lo hash/crc32.lo \
+	hash/crc64.lo hash/fnv.lo http/cgi.lo http/fcgi.lo \
+	http/httptest.lo http/pprof.lo image/bmp.lo image/color.lo \
+	image/draw.lo image/gif.lo image/jpeg.lo image/png.lo \
+	image/tiff.lo image/ycbcr.lo index/suffixarray.lo io/ioutil.lo \
+	mime/multipart.lo net/dict.lo net/textproto.lo old/netchan.lo \
+	old/regexp.lo old/template.lo $(am__DEPENDENCIES_1) os/user.lo \
+	os/signal.lo path/filepath.lo regexp/syntax.lo rpc/jsonrpc.lo \
 	runtime/debug.lo runtime/pprof.lo sync/atomic.lo \
 	sync/atomic_c.lo syscall/syscall.lo syscall/errno.lo \
 	syscall/wait.lo template/parse.lo testing/testing.lo \
@@ -568,6 +568,7 @@ toolexeclibgo_DATA = \
 	cmath.gox \
 	crypto.gox \
 	csv.gox \
+	errors.gox \
 	exec.gox \
 	expvar.gox \
 	flag.gox \
@@ -946,6 +947,9 @@ go_crypto_files = \
 go_csv_files = \
 	go/csv/reader.go \
 	go/csv/writer.go
+
+go_errors_files = \
+	go/errors/errors.go
 
 go_exec_files = \
 	go/exec/exec.go \
@@ -1900,6 +1904,7 @@ libgo_go_objs = \
 	cmath/cmath.lo \
 	crypto/crypto.lo \
 	csv/csv.lo \
+	errors/errors.lo \
 	exec/exec.lo \
 	expvar/expvar.lo \
 	flag/flag.lo \
@@ -2167,6 +2172,7 @@ TEST_PACKAGES = \
 	bytes/check \
 	cmath/check \
 	csv/check \
+	errors/check \
 	exec/check \
 	expvar/check \
 	flag/check \
@@ -4434,6 +4440,15 @@ csv/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: csv/check
 
+@go_include@ errors/errors.lo.dep
+errors/errors.lo.dep: $(go_errors_files)
+	$(BUILDDEPS)
+errors/errors.lo: $(go_errors_files)
+	$(BUILDPACKAGE)
+errors/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: errors/check
+
 @go_include@ exec/exec.lo.dep
 exec/exec.lo.dep: $(go_exec_files)
 	$(BUILDDEPS)
@@ -5929,6 +5944,8 @@ cmath.gox: cmath/cmath.lo
 crypto.gox: crypto/crypto.lo
 	$(BUILDGOX)
 csv.gox: csv/csv.lo
+	$(BUILDGOX)
+errors.gox: errors/errors.lo
 	$(BUILDGOX)
 exec.gox: exec/exec.lo
 	$(BUILDGOX)

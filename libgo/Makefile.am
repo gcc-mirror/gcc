@@ -107,6 +107,7 @@ toolexeclibgo_DATA = \
 	cmath.gox \
 	crypto.gox \
 	csv.gox \
+	errors.gox \
 	exec.gox \
 	expvar.gox \
 	flag.gox \
@@ -562,6 +563,9 @@ go_crypto_files = \
 go_csv_files = \
 	go/csv/reader.go \
 	go/csv/writer.go
+
+go_errors_files = \
+	go/errors/errors.go
 
 go_exec_files = \
 	go/exec/exec.go \
@@ -1623,6 +1627,7 @@ libgo_go_objs = \
 	cmath/cmath.lo \
 	crypto/crypto.lo \
 	csv/csv.lo \
+	errors/errors.lo \
 	exec/exec.lo \
 	expvar/expvar.lo \
 	flag/flag.lo \
@@ -1943,6 +1948,15 @@ csv/csv.lo: $(go_csv_files)
 csv/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: csv/check
+
+@go_include@ errors/errors.lo.dep
+errors/errors.lo.dep: $(go_errors_files)
+	$(BUILDDEPS)
+errors/errors.lo: $(go_errors_files)
+	$(BUILDPACKAGE)
+errors/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: errors/check
 
 @go_include@ exec/exec.lo.dep
 exec/exec.lo.dep: $(go_exec_files)
@@ -3445,6 +3459,8 @@ crypto.gox: crypto/crypto.lo
 	$(BUILDGOX)
 csv.gox: csv/csv.lo
 	$(BUILDGOX)
+errors.gox: errors/errors.lo
+	$(BUILDGOX)
 exec.gox: exec/exec.lo
 	$(BUILDGOX)
 expvar.gox: expvar/expvar.lo
@@ -3791,6 +3807,7 @@ TEST_PACKAGES = \
 	bytes/check \
 	cmath/check \
 	csv/check \
+	errors/check \
 	exec/check \
 	expvar/check \
 	flag/check \

@@ -5,6 +5,8 @@
 package os
 
 import (
+	"errors"
+	"io"
 	"syscall"
 )
 
@@ -15,15 +17,15 @@ import (
 //
 // If n > 0, Readdir returns at most n FileInfo structures. In this case, if
 // Readdirnames returns an empty slice, it will return a non-nil error
-// explaining why. At the end of a directory, the error is os.EOF.
+// explaining why. At the end of a directory, the error is io.EOF.
 //
 // If n <= 0, Readdir returns all the FileInfo from the directory in
 // a single slice. In this case, if Readdir succeeds (reads all
 // the way to the end of the directory), it returns the slice and a
-// nil os.Error. If it encounters an error before the end of the
+// nil error. If it encounters an error before the end of the
 // directory, Readdir returns the FileInfo read until that point
 // and a non-nil error.
-func (file *File) Readdir(n int) (fi []FileInfo, err Error) {
+func (file *File) Readdir(n int) (fi []FileInfo, err error) {
 	// If this file has no dirinfo, create one.
 	if file.dirinfo == nil {
 		file.dirinfo = new(dirInfo)
@@ -39,12 +41,12 @@ func (file *File) Readdir(n int) (fi []FileInfo, err Error) {
 		// Refill the buffer if necessary
 		if d.bufp >= d.nbuf {
 			d.bufp = 0
-			var e Error
+			var e error
 			d.nbuf, e = file.Read(d.buf[:])
-			if e != nil && e != EOF {
+			if e != nil && e != io.EOF {
 				return result, &PathError{"readdir", file.name, e}
 			}
-			if e == EOF {
+			if e == io.EOF {
 				break
 			}
 			if d.nbuf < syscall.STATFIXLEN {
@@ -71,7 +73,7 @@ func (file *File) Readdir(n int) (fi []FileInfo, err Error) {
 	}
 
 	if n >= 0 && len(result) == 0 {
-		return result, EOF
+		return result, io.EOF
 	}
 	return result, nil
 }
@@ -80,15 +82,15 @@ func (file *File) Readdir(n int) (fi []FileInfo, err Error) {
 //
 // If n > 0, Readdirnames returns at most n names. In this case, if
 // Readdirnames returns an empty slice, it will return a non-nil error
-// explaining why. At the end of a directory, the error is os.EOF.
+// explaining why. At the end of a directory, the error is io.EOF.
 //
 // If n <= 0, Readdirnames returns all the names from the directory in
 // a single slice. In this case, if Readdirnames succeeds (reads all
 // the way to the end of the directory), it returns the slice and a
-// nil os.Error. If it encounters an error before the end of the
+// nil error. If it encounters an error before the end of the
 // directory, Readdirnames returns the names read until that point and
 // a non-nil error.
-func (file *File) Readdirnames(n int) (names []string, err Error) {
+func (file *File) Readdirnames(n int) (names []string, err error) {
 	fi, err := file.Readdir(n)
 	names = make([]string, len(fi))
 	for i := range fi {
@@ -160,7 +162,7 @@ func pdir(b []byte, d *Dir) []byte {
 
 // UnmarshalDir reads a 9P Stat message from a 9P protocol message stored in b,
 // returning the corresponding Dir struct.
-func UnmarshalDir(b []byte) (d *Dir, err Error) {
+func UnmarshalDir(b []byte) (d *Dir, err error) {
 	n := uint16(0)
 	n, b = gbit16(b)
 
@@ -292,7 +294,7 @@ func pbit64(b []byte, x uint64) []byte {
 // pstring appends a Go string s to a 9P message b.
 func pstring(b []byte, s string) []byte {
 	if len(s) >= 1<<16 {
-		panic(NewError("string too long"))
+		panic(errors.New("string too long"))
 	}
 	b = pbit16(b, uint16(len(s)))
 	b = append(b, s...)
