@@ -212,10 +212,10 @@ func (b *Writer) dump() {
 	print("\n")
 }
 
-// local error wrapper so we can distinguish os.Errors we want to return
+// local error wrapper so we can distinguish errors we want to return
 // as errors from genuine panics (which we don't want to return as errors)
 type osError struct {
-	err os.Error
+	err error
 }
 
 func (b *Writer) write0(buf []byte) {
@@ -441,7 +441,7 @@ func (b *Writer) terminateCell(htab bool) int {
 	return len(*line)
 }
 
-func handlePanic(err *os.Error) {
+func handlePanic(err *error) {
 	if e := recover(); e != nil {
 		*err = e.(osError).err // re-panics if it's not a local osError
 	}
@@ -452,7 +452,7 @@ func handlePanic(err *os.Error) {
 // incomplete escape sequence at the end is simply considered
 // complete for formatting purposes.
 //
-func (b *Writer) Flush() (err os.Error) {
+func (b *Writer) Flush() (err error) {
 	defer b.reset() // even in the presence of errors
 	defer handlePanic(&err)
 
@@ -477,7 +477,7 @@ var hbar = []byte("---\n")
 // The only errors returned are ones encountered
 // while writing to the underlying output stream.
 //
-func (b *Writer) Write(buf []byte) (n int, err os.Error) {
+func (b *Writer) Write(buf []byte) (n int, err error) {
 	defer handlePanic(&err)
 
 	// split text into cells

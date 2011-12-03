@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"os"
 	"reflect"
 	"strings"
 	"unicode"
@@ -18,7 +17,7 @@ import (
 
 // FuncMap is the type of the map defining the mapping from names to functions.
 // Each function must have either a single return value, or two return values of
-// which the second has type os.Error. If the second argument evaluates to non-nil
+// which the second has type error. If the second argument evaluates to non-nil
 // during execution, execution terminates and Execute returns an error.
 type FuncMap map[string]interface{}
 
@@ -69,7 +68,7 @@ func addFuncs(out, in FuncMap) {
 
 // goodFunc checks that the function or method has the right result signature.
 func goodFunc(typ reflect.Type) bool {
-	// We allow functions with 1 result or 2 results where the second is an os.Error.
+	// We allow functions with 1 result or 2 results where the second is an error.
 	switch {
 	case typ.NumOut() == 1:
 		return true
@@ -102,7 +101,7 @@ func findFunction(name string, tmpl *Template, set *Set) (reflect.Value, bool) {
 // index returns the result of indexing its first argument by the following
 // arguments.  Thus "index x 1 2 3" is, in Go syntax, x[1][2][3]. Each
 // indexed item must be a map, slice, or array.
-func index(item interface{}, indices ...interface{}) (interface{}, os.Error) {
+func index(item interface{}, indices ...interface{}) (interface{}, error) {
 	v := reflect.ValueOf(item)
 	for _, i := range indices {
 		index := reflect.ValueOf(i)
@@ -144,7 +143,7 @@ func index(item interface{}, indices ...interface{}) (interface{}, os.Error) {
 // Length
 
 // length returns the length of the item, with an error if it has no defined length.
-func length(item interface{}) (int, os.Error) {
+func length(item interface{}) (int, error) {
 	v, isNil := indirect(reflect.ValueOf(item))
 	if isNil {
 		return 0, fmt.Errorf("len of nil pointer")

@@ -4,9 +4,7 @@
 
 package smtp
 
-import (
-	"os"
-)
+import "errors"
 
 // Auth is implemented by an SMTP authentication mechanism.
 type Auth interface {
@@ -15,17 +13,17 @@ type Auth interface {
 	// and optionally data to include in the initial AUTH message
 	// sent to the server. It can return proto == "" to indicate
 	// that the authentication should be skipped.
-	// If it returns a non-nil os.Error, the SMTP client aborts
+	// If it returns a non-nil error, the SMTP client aborts
 	// the authentication attempt and closes the connection.
-	Start(server *ServerInfo) (proto string, toServer []byte, err os.Error)
+	Start(server *ServerInfo) (proto string, toServer []byte, err error)
 
 	// Next continues the authentication. The server has just sent
 	// the fromServer data. If more is true, the server expects a
 	// response, which Next should return as toServer; otherwise
 	// Next should return toServer == nil.
-	// If Next returns a non-nil os.Error, the SMTP client aborts
+	// If Next returns a non-nil error, the SMTP client aborts
 	// the authentication attempt and closes the connection.
-	Next(fromServer []byte, more bool) (toServer []byte, err os.Error)
+	Next(fromServer []byte, more bool) (toServer []byte, err error)
 }
 
 // ServerInfo records information about an SMTP server.
@@ -49,21 +47,21 @@ func PlainAuth(identity, username, password, host string) Auth {
 	return &plainAuth{identity, username, password, host}
 }
 
-func (a *plainAuth) Start(server *ServerInfo) (string, []byte, os.Error) {
+func (a *plainAuth) Start(server *ServerInfo) (string, []byte, error) {
 	if !server.TLS {
-		return "", nil, os.NewError("unencrypted connection")
+		return "", nil, errors.New("unencrypted connection")
 	}
 	if server.Name != a.host {
-		return "", nil, os.NewError("wrong host name")
+		return "", nil, errors.New("wrong host name")
 	}
 	resp := []byte(a.identity + "\x00" + a.username + "\x00" + a.password)
 	return "PLAIN", resp, nil
 }
 
-func (a *plainAuth) Next(fromServer []byte, more bool) ([]byte, os.Error) {
+func (a *plainAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 	if more {
 		// We've already sent everything.
-		return nil, os.NewError("unexpected server challenge")
+		return nil, errors.New("unexpected server challenge")
 	}
 	return nil, nil
 }

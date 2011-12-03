@@ -346,7 +346,6 @@ localname() {
 		echo 'import "./_xtest_"'
 	fi
 	echo 'import "testing"'
-	echo 'import __os__     "os"' # rename in case tested package is called os
 	echo 'import __regexp__ "regexp"' # rename in case tested package is called regexp
 	# test array
 	echo
@@ -385,7 +384,7 @@ localname() {
 var matchPat string
 var matchRe *__regexp__.Regexp
 
-func matchString(pat, str string) (result bool, err __os__.Error) {
+func matchString(pat, str string) (result bool, err error) {
 	if matchRe == nil || matchPat != pat {
 		matchPat = pat
 		matchRe, err = __regexp__.Compile(matchPat)
