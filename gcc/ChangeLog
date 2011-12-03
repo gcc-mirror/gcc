@@ -1,5 +1,12 @@
 2011-12-03  Jakub Jelinek  <jakub@redhat.com>
 
+	* fold-const.c (fold_unary_loc): Fold VEC_UNPACK_LO_EXPR,
+	VEC_UNPACK_HI_EXPR, VEC_UNPACK_FLOAT_LO_EXPR and
+	VEC_UNPACK_FLOAT_HI_EXPR with VECTOR_CST argument.
+	(fold_binary_loc): Fold VEC_PACK_TRUNC_EXPR,
+	VEC_PACK_FIX_TRUNC_EXPR, VEC_WIDEN_MULT_LO_EXPR
+	and VEC_WIDEN_MULT_HI_EXPR with VECTOR_CST arguments.
+
 	PR debug/50317
 	* tree-ssa.c (target_for_debug_bind): Also allow is_gimple_reg_type
 	vars that aren't referenced.
