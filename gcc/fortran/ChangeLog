@@ -1,3 +1,10 @@
+2011-12-03  Tobias Burnus  <burnus@net-b.de>
+
+	* check.c (gfc_check_move_alloc): Allow nonpolymorphic
+	FROM with polymorphic TO.
+	* trans-intrinsic.c (conv_intrinsic_move_alloc): Handle
+	nonpolymorphic FROM with polymorphic TO.
+
 2011-12-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* module.c (dt_lower_string): Make static.

@@ -7184,7 +7184,7 @@ conv_intrinsic_move_alloc (gfc_code *code)
 {
   stmtblock_t block;
   gfc_expr *from_expr, *to_expr;
-  gfc_expr *to_expr2, *from_expr2;
+  gfc_expr *to_expr2, *from_expr2 = NULL;
   gfc_se from_se, to_se;
   gfc_ss *from_ss, *to_ss;
   tree tmp;
@@ -7199,16 +7199,21 @@ conv_intrinsic_move_alloc (gfc_code *code)
 
   if (from_expr->rank == 0)
     {
+      gcc_assert (from_expr->ts.type != BT_CLASS
+		  || to_expr->ts.type == BT_CLASS);
       if (from_expr->ts.type != BT_CLASS)
+	from_expr2 = from_expr;
+      else
 	{
-	  from_expr2 = to_expr;
-	  to_expr2 = to_expr;
+	  from_expr2 = gfc_copy_expr (from_expr);
+	  gfc_add_data_component (from_expr2);
 	}
+
+      if (to_expr->ts.type != BT_CLASS)
+	to_expr2 = to_expr;
       else
 	{
 	  to_expr2 = gfc_copy_expr (to_expr);
-	  from_expr2 = gfc_copy_expr (from_expr);
-	  gfc_add_data_component (from_expr2);
 	  gfc_add_data_component (to_expr2);
 	}
 
@@ -7236,48 +7241,72 @@ conv_intrinsic_move_alloc (gfc_code *code)
       gfc_add_block_to_block (&block, &to_se.post);
 
       /* Set _vptr.  */
-      if (from_expr->ts.type == BT_CLASS)
+      if (to_expr->ts.type == BT_CLASS)
 	{
-	  gfc_free_expr (from_expr2);
-          gfc_free_expr (to_expr2);
-
-	  gfc_init_se (&from_se, NULL);
+	  gfc_free_expr (to_expr2);
 	  gfc_init_se (&to_se, NULL);
-	  from_se.want_pointer = 1;
 	  to_se.want_pointer = 1;
-	  gfc_add_vptr_component (from_expr);
 	  gfc_add_vptr_component (to_expr);
-
-	  gfc_conv_expr (&from_se, from_expr);
 	  gfc_conv_expr (&to_se, to_expr);
+
+	  if (from_expr->ts.type == BT_CLASS)
+	    {
+	      gfc_free_expr (from_expr2);
+	      gfc_init_se (&from_se, NULL);
+	      from_se.want_pointer = 1;
+	      gfc_add_vptr_component (from_expr);
+	      gfc_conv_expr (&from_se, from_expr);
+	      tmp = from_se.expr;
+	    }
+	  else
+	    {
+	      gfc_symbol *vtab;
+	      vtab = gfc_find_derived_vtab (from_expr->ts.u.derived);
+	      gcc_assert (vtab);
+	      tmp = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtab));
+	    }
+
 	  gfc_add_modify_loc (input_location, &block, to_se.expr,
-			      fold_convert (TREE_TYPE (to_se.expr), from_se.expr));
+			      fold_convert (TREE_TYPE (to_se.expr), tmp));
 	}
 
       return gfc_finish_block (&block);
     }
 
   /* Update _vptr component.  */
-  if (from_expr->ts.type == BT_CLASS)
+  if (to_expr->ts.type == BT_CLASS)
     {
-      from_se.want_pointer = 1;
       to_se.want_pointer = 1;
-
-      from_expr2 = gfc_copy_expr (from_expr);
       to_expr2 = gfc_copy_expr (to_expr);
-      gfc_add_vptr_component (from_expr2);
       gfc_add_vptr_component (to_expr2);
-
-      gfc_conv_expr (&from_se, from_expr2);
       gfc_conv_expr (&to_se, to_expr2);
 
-      gfc_add_modify_loc (input_location, &block, to_se.expr,
-			  fold_convert (TREE_TYPE (to_se.expr), from_se.expr));
-      gfc_free_expr (to_expr2);
-      gfc_free_expr (from_expr2);
+      if (from_expr->ts.type == BT_CLASS)
+	{
+	  from_se.want_pointer = 1;
+	  from_expr2 = gfc_copy_expr (from_expr);
+	  gfc_add_vptr_component (from_expr2);
+	  gfc_conv_expr (&from_se, from_expr2);
+	  tmp = from_se.expr;
+	}
+      else
+	{
+	  gfc_symbol *vtab;
+	  vtab = gfc_find_derived_vtab (from_expr->ts.u.derived);
+	  gcc_assert (vtab);
+	  tmp = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtab));
+	}
 
-      gfc_init_se (&from_se, NULL);
+      gfc_add_modify_loc (input_location, &block, to_se.expr,
+			  fold_convert (TREE_TYPE (to_se.expr), tmp));
+      gfc_free_expr (to_expr2);
       gfc_init_se (&to_se, NULL);
+
+      if (from_expr->ts.type == BT_CLASS)
+	{
+	  gfc_free_expr (from_expr2);
+	  gfc_init_se (&from_se, NULL);
+	}
     }
 
   /* Deallocate "to".  */
