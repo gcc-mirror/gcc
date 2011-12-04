@@ -1,3 +1,9 @@
+2011-12-04  Uros Bizjak  <ubizjak@gmail.com>
+	    Jérémie Detrey  <Jeremie.Detrey@loria.fr>
+
+	PR target/51393
+	* gcc.target/i386/pr51393.c: New test.
+
 2011-12-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50684
@@ -80,9 +86,9 @@
 
 2011-10-20  Uros Bizjak  <ubizjak@gmail.com>
 
-       * gcc.dg/ipa/ipa-sra-2.c: Add dg-require-effective-target
-       non_strict_align.
-       * gcc.dg/ipa/ipa-sra-6.c: Ditto.
+	* gcc.dg/ipa/ipa-sra-2.c: Add dg-require-effective-target
+	non_strict_align.
+	* gcc.dg/ipa/ipa-sra-6.c: Ditto.
 
 2011-10-19  Jason Merrill  <jason@redhat.com>
 
