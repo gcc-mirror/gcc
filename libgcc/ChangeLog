@@ -1,3 +1,7 @@
+2011-12-04  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/rs6000/t-darwin64 (LIB2ADD): Add fp and gp save routines.
+
 2011-11-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR other/51272
