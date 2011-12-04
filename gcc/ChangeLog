@@ -1,3 +1,9 @@
+2011-12-04  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR middle-end/51285
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Create exit
+	phi nodes for outer loop in case of double reduction.
+
 2011-12-04  Jérémie Detrey  <Jeremie.Detrey@loria.fr>
 
 	PR target/51393

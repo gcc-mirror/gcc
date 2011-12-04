@@ -1,3 +1,8 @@
+2011-12-04  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR middle-end/51285
+	* gfortran.dg/vect/pr51285.f90: New test.
+
 2011-12-04  Uros Bizjak  <ubizjak@gmail.com>
 	    Jérémie Detrey  <Jeremie.Detrey@loria.fr>
 

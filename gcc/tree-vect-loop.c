@@ -3462,6 +3462,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
   gimple use_stmt, orig_stmt, reduction_phi = NULL;
   bool nested_in_vect_loop = false;
   VEC (gimple, heap) *new_phis = NULL;
+  VEC (gimple, heap) *inner_phis = NULL;
   enum vect_def_type dt = vect_unknown_def_type;
   int j, i;
   VEC (tree, heap) *scalar_results = NULL;
@@ -3470,6 +3471,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
   VEC (gimple, heap) *phis;
   bool slp_reduc = false;
   tree new_phi_result;
+  gimple inner_phi = NULL;
 
   if (slp_node)
     group_size = VEC_length (gimple, SLP_TREE_SCALAR_STMTS (slp_node)); 
@@ -3626,11 +3628,36 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
     }
 
   /* The epilogue is created for the outer-loop, i.e., for the loop being
-     vectorized.  */
+     vectorized.  Create exit phis for the outer loop.  */
   if (double_reduc)
     {
       loop = outer_loop;
       exit_bb = single_exit (loop)->dest;
+      inner_phis = VEC_alloc (gimple, heap, VEC_length (tree, vect_defs));
+      FOR_EACH_VEC_ELT (gimple, new_phis, i, phi)
+	{
+	  gimple outer_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (phi)),
+					      exit_bb);
+	  SET_PHI_ARG_DEF (outer_phi, single_exit (loop)->dest_idx,
+			   PHI_RESULT (phi));
+	  set_vinfo_for_stmt (outer_phi, new_stmt_vec_info (outer_phi,
+							    loop_vinfo, NULL));
+	  VEC_quick_push (gimple, inner_phis, phi);
+	  VEC_replace (gimple, new_phis, i, outer_phi);
+	  prev_phi_info = vinfo_for_stmt (outer_phi);
+          while (STMT_VINFO_RELATED_STMT (vinfo_for_stmt (phi)))
+            {
+	      phi = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (phi));
+	      outer_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (phi)),
+					   exit_bb);
+	      SET_PHI_ARG_DEF (outer_phi, single_exit (loop)->dest_idx,
+			       PHI_RESULT (phi));
+	      set_vinfo_for_stmt (outer_phi, new_stmt_vec_info (outer_phi,
+							loop_vinfo, NULL));
+	      STMT_VINFO_RELATED_STMT (prev_phi_info) = outer_phi;
+	      prev_phi_info = vinfo_for_stmt (outer_phi);
+	    }
+	}
     }
 
   exit_gsi = gsi_after_labels (exit_bb);
@@ -4040,6 +4067,8 @@ vect_finalize_reduction:
         {
           epilog_stmt = VEC_index (gimple, new_phis, k / ratio);
           reduction_phi = VEC_index (gimple, reduction_phis, k / ratio);
+	  if (double_reduc)
+	    inner_phi = VEC_index (gimple, inner_phis, k / ratio);
         }
 
       if (slp_reduc)
@@ -4123,7 +4152,7 @@ vect_finalize_reduction:
                      vs1 was created previously in this function by a call to
                        vect_get_vec_def_for_operand and is stored in
                        vec_initial_def;
-                     vs2 is defined by EPILOG_STMT, the vectorized EXIT_PHI;
+                     vs2 is defined by INNER_PHI, the vectorized EXIT_PHI;
                      vs0 is created here.  */
 
                   /* Create vector phi node.  */
@@ -4144,7 +4173,7 @@ vect_finalize_reduction:
                   add_phi_arg (vect_phi, vect_phi_init,
                                loop_preheader_edge (outer_loop),
                                UNKNOWN_LOCATION);
-                  add_phi_arg (vect_phi, PHI_RESULT (epilog_stmt),
+                  add_phi_arg (vect_phi, PHI_RESULT (inner_phi),
                                loop_latch_edge (outer_loop), UNKNOWN_LOCATION);
                   if (vect_print_dump_info (REPORT_DETAILS))
                     {
