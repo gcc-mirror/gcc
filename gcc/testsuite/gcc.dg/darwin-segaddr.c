@@ -1,7 +1,7 @@
 /* Check that -segaddr gets through and works.  */
 /* { dg-do run { target *-*-darwin* } } */
-/* { dg-options "-O0 -segaddr __TEST 0x200000" { target { *-*-darwin* && { ! lp64 } } } } */
-/* { dg-options "-O0 -segaddr __TEST 0x110000000" { target { *-*-darwin* && lp64 } } } */
+/* { dg-options "-O0 -segaddr __TEST 0x200000 -fno-pie" { target { *-*-darwin* && { ! lp64 } } } } */
+/* { dg-options "-O0 -segaddr __TEST 0x110000000 -fno-pie" { target { *-*-darwin* && lp64 } } } */
 
 extern void abort ();
 
