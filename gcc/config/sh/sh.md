@@ -13667,3 +13667,5 @@ mov.l\\t1f,r0\\n\\
   "ld%M1.q\t%m1, %0\;ld%M2.q\t%m2, %3\;cmpeq\t%0, %3, %0\;movi\t0, %3"
   [(set_attr "type" "other")
    (set_attr "length" "16")])
+
+(include "sync.md")

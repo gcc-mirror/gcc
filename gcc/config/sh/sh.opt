@@ -1,6 +1,6 @@
 ; Options for the SH port of the compiler.
 
-; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
 ; Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
@@ -318,6 +318,10 @@ Shorten address references during linking
 mrenesas
 Target Mask(HITACHI) MaskExists
 Follow Renesas (formerly Hitachi) / SuperH calling conventions
+
+msoft-atomic
+Target Report Mask(SOFT_ATOMIC)
+Use software atomic sequences supported by kernel
 
 mspace
 Target RejectNegative Alias(Os)

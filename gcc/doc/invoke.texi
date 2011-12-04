@@ -877,7 +877,7 @@ See RS/6000 and PowerPC Options.
 -mprefergot  -musermode -multcost=@var{number} -mdiv=@var{strategy} @gol
 -mdivsi3_libfunc=@var{name} -mfixed-range=@var{register-range} @gol
 -madjust-unroll -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
--maccumulate-outgoing-args -minvalid-symbols}
+-maccumulate-outgoing-args -minvalid-symbols -msoft-atomic}
 
 @emph{Solaris 2 Options}
 @gccoptlist{-mimpure-text  -mno-impure-text @gol
@@ -17546,6 +17546,11 @@ Dump instruction size and location in the assembly code.
 @opindex mpadstruct
 This option is deprecated.  It pads structures to multiple of 4 bytes,
 which is incompatible with the SH ABI@.
+
+@item -msoft-atomic
+@opindex msoft-atomic
+Generate software atomic sequences for the atomic operations.
+This is the default when the target is @code{sh-*-linux*}.
 
 @item -mspace
 @opindex mspace
