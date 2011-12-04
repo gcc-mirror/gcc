@@ -1,3 +1,9 @@
+2011-12-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/51351
+	* optabs.c (init_sync_libfuncs): Use "or" rather than "ior"
+	in the external names.
+
 2011-12-03  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	* config/darwin10.h (LINK_GCC_C_SEQUENCE_SPEC):

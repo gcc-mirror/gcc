@@ -6624,14 +6624,14 @@ init_sync_libfuncs (int max)
 
   init_sync_libfuncs_1 (sync_old_add_optab, "__sync_fetch_and_add", max);
   init_sync_libfuncs_1 (sync_old_sub_optab, "__sync_fetch_and_sub", max);
-  init_sync_libfuncs_1 (sync_old_ior_optab, "__sync_fetch_and_ior", max);
+  init_sync_libfuncs_1 (sync_old_ior_optab, "__sync_fetch_and_or", max);
   init_sync_libfuncs_1 (sync_old_and_optab, "__sync_fetch_and_and", max);
   init_sync_libfuncs_1 (sync_old_xor_optab, "__sync_fetch_and_xor", max);
   init_sync_libfuncs_1 (sync_old_nand_optab, "__sync_fetch_and_nand", max);
 
   init_sync_libfuncs_1 (sync_new_add_optab, "__sync_add_and_fetch", max);
   init_sync_libfuncs_1 (sync_new_sub_optab, "__sync_sub_and_fetch", max);
-  init_sync_libfuncs_1 (sync_new_ior_optab, "__sync_ior_and_fetch", max);
+  init_sync_libfuncs_1 (sync_new_ior_optab, "__sync_or_and_fetch", max);
   init_sync_libfuncs_1 (sync_new_and_optab, "__sync_and_and_fetch", max);
   init_sync_libfuncs_1 (sync_new_xor_optab, "__sync_xor_and_fetch", max);
   init_sync_libfuncs_1 (sync_new_nand_optab, "__sync_nand_and_fetch", max);
