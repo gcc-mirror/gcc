@@ -1,3 +1,9 @@
+2011-12-04  Jérémie Detrey  <Jeremie.Detrey@loria.fr>
+
+	PR target/51393
+	* config/i386/avxintrin.h (_mm256_insert_epi64): Declare second
+	parameter as long long.
+
 2011-11-25  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	Backport from mainline:
