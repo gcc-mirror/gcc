@@ -1,3 +1,10 @@
+2011-12-04  Markus Trippelsdorf <markus@trippelsdorf.de>
+            Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/stl_heap.h (pop_heap): Check for non-empty range in
+	overload taking a predicate.
+	* testsuite/25_algorithms/pop_heap/empty2_neg.cc: New.
+
 2011-12-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/debug/macros.h (__glibcxx_check_non_empty_range): Define.
