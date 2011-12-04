@@ -1,3 +1,9 @@
+2011-12-03  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR obj-c++/51349
+	* obj-c++.dg/naming-3.mm: Adjust for changing error messages.
+	* obj-c++.dg/naming-4.mm: Likewise.
+
 2011-12-03  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* gcc.dg/darwin-segaddr.c: Use -no-pie.
