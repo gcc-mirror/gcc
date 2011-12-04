@@ -4515,14 +4515,12 @@ find_array_spec (gfc_expr *e)
 {
   gfc_array_spec *as;
   gfc_component *c;
-  gfc_symbol *derived;
   gfc_ref *ref;
 
   if (e->symtree->n.sym->ts.type == BT_CLASS)
     as = CLASS_DATA (e->symtree->n.sym)->as;
   else
     as = e->symtree->n.sym->as;
-  derived = NULL;
 
   for (ref = e->ref; ref; ref = ref->next)
     switch (ref->type)
@@ -4536,26 +4534,7 @@ find_array_spec (gfc_expr *e)
 	break;
 
       case REF_COMPONENT:
-	if (derived == NULL)
-	  derived = e->symtree->n.sym->ts.u.derived;
-
-	if (derived->attr.is_class)
-	  derived = derived->components->ts.u.derived;
-
-	c = derived->components;
-
-	for (; c; c = c->next)
-	  if (c == ref->u.c.component)
-	    {
-	      /* Track the sequence of component references.  */
-	      if (c->ts.type == BT_DERIVED)
-		derived = c->ts.u.derived;
-	      break;
-	    }
-
-	if (c == NULL)
-	  gfc_internal_error ("find_array_spec(): Component not found");
-
+	c = ref->u.c.component;
 	if (c->attr.dimension)
 	  {
 	    if (as != NULL)
