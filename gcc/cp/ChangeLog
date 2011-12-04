@@ -1,3 +1,8 @@
+2011-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51313
+	* call.c (null_ptr_cst_p): STRIP_NOPS in c++11 mode too.
+
 2011-12-01  Jason Merrill  <jason@redhat.com>
 
 	* call.c (build_new_method_call_1): Handle aggregate initialization.
