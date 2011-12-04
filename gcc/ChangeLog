@@ -1,3 +1,9 @@
+2011-12-04  Jérémie Detrey  <Jeremie.Detrey@loria.fr>
+
+	PR target/51393
+	* config/i386/avxintrin.h (_mm256_insert_epi64): Declare second
+	parameter as long long.
+
 2011-12-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR middle-end/51351
@@ -6,12 +12,12 @@
 
 2011-12-03  Jack Howarth <howarth@bromo.med.uc.edu>
 
-	* config/darwin10.h (LINK_GCC_C_SEQUENCE_SPEC):
-	  Pass -no_pie for non-PIC code when targeting 10.7 or later.
+	* config/darwin10.h (LINK_GCC_C_SEQUENCE_SPEC): Pass -no_pie for
+	non-PIC code when targeting 10.7 or later.
 
 2011-12-03  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* config/darwin.h (STARTFILE_SPEC): Do not use -lbundle1.o when 
+	* config/darwin.h (STARTFILE_SPEC): Do not use -lbundle1.o when
 	Darwin >= 10.
 	(DARWIN_DYLIB1_SPEC): Do not use -ldylib1.10.5.o when Darwin >= 10.
 	(DARWIN_CRT1_SPEC): Use -lcrt1.10.6.o when Darwin >= 10.
@@ -129,33 +135,31 @@
 	TARGET_SH3.
 	(shl_sext_kind): Likewise.
 	* config/sh/sh.h (SH_DYNAMIC_SHIFT_COST): Likewise.
-	* config/sh/sh.md (ashlsi3_sh2a, ashrsi3_sh2a, lshrsi3_sh2a):
-	Remove.
+	* config/sh/sh.md (ashlsi3_sh2a, ashrsi3_sh2a, lshrsi3_sh2a): Remove.
 	(ashlsi3_std): Handle TARGET_SH2A same as TARGET_SH3.
 	(ashlsi3): Likewise.
 	(ashrsi3_d): Likewise.
 	(lshrsi3_d): Likewise.
 	(lshrsi3): Likewise.
 
-2011-12-01   Diego Novillo  <dnovillo@google.com>
+2011-12-01  Diego Novillo  <dnovillo@google.com>
 
 	PR bootstrap/51346
-	* ipa-inline.c (can_inline_edge_p): If the edge E has a
-	statement, use the statement's inline indicator instead
-	of E's.
+	* ipa-inline.c (can_inline_edge_p): If the edge E has a statement,
+	use the statement's inline indicator instead of E's.
 	Remove consistency check.
 
-2011-12-01   Diego Novillo  <dnovillo@google.com>
+2011-12-01  Diego Novillo  <dnovillo@google.com>
 
 	PR bootstrap/51346
 	Revert
 
-	2011-11-29   Diego Novillo  <dnovillo@google.com>
+	2011-11-29  Diego Novillo  <dnovillo@google.com>
 
-		* gimple.c (gimple_call_set_cannot_inline): Move from gimple.h.
-		Update field call_stmt_cannot_inline_p from call
-		graph edge, if needed.
-		* gimple.h (gimple_call_set_cannot_inline): Move to gimple.c.
+	* gimple.c (gimple_call_set_cannot_inline): Move from gimple.h.
+	Update field call_stmt_cannot_inline_p from call
+	graph edge, if needed.
+	* gimple.h (gimple_call_set_cannot_inline): Move to gimple.c.
 
 2011-12-01  Nathan Sidwell  <nathan@acm.org>
 
@@ -180,7 +184,7 @@
 
 	PR middle-end/51273
 	* cgraph.h (cgraph_call_node_duplication_hooks): Declare.
-	* cgraph.c (cgraph_call_node_duplication_hooks): Make global. 
+	* cgraph.c (cgraph_call_node_duplication_hooks): Make global.
 	* cgraphunit.c (cgraph_copy_node_for_versioning): Call it.
 
 2011-12-01  Andrew Pinski  <apinski@cavium.com>
@@ -192,8 +196,7 @@
 2011-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51246
-	* tree-predcom.c (replace_ref_with): Handle also clobber on the
-	rhs.
+	* tree-predcom.c (replace_ref_with): Handle also clobber on the rhs.
 
 	PR rtl-optimization/51014
 	* loop-unroll.c (apply_opt_in_copies): Ignore label DEBUG_INSNs
@@ -478,7 +481,7 @@
 	code checking for a clobber of a condition register when deciding
 	whether to predicate.
 
-2011-11-29   Diego Novillo  <dnovillo@google.com>
+2011-11-29  Diego Novillo  <dnovillo@google.com>
 
 	* gimple.c (gimple_call_set_cannot_inline): Move from gimple.h.
 	Update field call_stmt_cannot_inline_p from call graph edge, if needed.
@@ -7410,7 +7413,7 @@
 	(duplicate_insns_of_cycles): Use register indices directly,
 	rather than finding instructions using PREV_INSN.  Use ps_reg_move.
 	(sms_schedule): Call schedule_reg_moves before committing to
-	a partial schedule.   Try the next ii if the schedule fails.
+	a partial schedule.  Try the next ii if the schedule fails.
 	Use apply_reg_moves instead of generate_reg_moves.  Adjust
 	call to print_node_sched_params.  Free node_sched_param_vec
 	instead of node_sched_params.
@@ -8566,18 +8569,18 @@
 	(remove_duplicate_close_phi): Detect and repair creation of
 	duplicate close-phis for a containing loop.
 
-2011-09-27   Andi Kleen <ak@linux.intel.com>
+2011-09-27  Andi Kleen  <ak@linux.intel.com>
 
 	* gcc.c (get_local_tick). Rename to get_random_number.  Read from
 	/dev/urandom.  Add getpid call.
 	(compare_debug_dump_opt_spec_function): Drop getpid call.
 
-2011-09-26   Andi Kleen <ak@linux.intel.com>
+2011-09-26  Andi Kleen  <ak@linux.intel.com>
 
 	* toplev.c (init_local_tick): Try reading random seed
 	from /dev/urandom.
 
-2011-09-26   Andi Kleen <ak@linux.intel.com>
+2011-09-26  Andi Kleen  <ak@linux.intel.com>
 
 	* hwint.h (HOST_WIDE_INT_PRINT_HEX_PURE): Add.
 	* lto-streamer.c (lto_get_section_name): Remove crc32_string.
@@ -9685,13 +9688,13 @@
 	HImode by 1 in the case of multiplying with a CONST_INT.
 	Record cost of *ashiftqihi2.signx.1 in case ASHIFT:QI.
 
-2011-09-15   Jan Hubicka  <jh@suse.cz>
+2011-09-15  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/50430
 	* gimple-fold.c (gimple_get_virt_method_for_binfo): Do not ICE on
 	error_mark_node in the DECL_INITIAL of vtable.
 
-2011-09-15   Diego Novillo  <dnovillo@google.com>
+2011-09-15  Diego Novillo  <dnovillo@google.com>
 
 	* Makefile.in (SYSROOT_CFLAGS_FOR_TARGET): Define from
 	@SYSROOT_CFLAGS_FOR_TARGET@.
@@ -12906,7 +12909,7 @@
 	separately.
 	* tree-ssa-uninit.c (warn_uninitialized_phi): Adjust.
 
-2011-08-11   Kazuhiro Inaoka  <kazuhiro.inaoka.ud@renesas.com>
+2011-08-11  Kazuhiro Inaoka  <kazuhiro.inaoka.ud@renesas.com>
 
 	* config/rx/rx.md (movsicc): Allow register to register transfers.
 	(*movsicc): Likewise.
@@ -12914,7 +12917,7 @@
 	(*stcc_reg): New pattern.  Works for any comparison but only for
 	register transfers.
 
-2011-08-11   Diego Novillo  <dnovillo@google.com>
+2011-08-11  Diego Novillo  <dnovillo@google.com>
 
 	* tree-streamer-out.c (lto_output_ts_decl_with_vis_tree_pointers):
 	Call stream_write_tree instead of output_record_start.
@@ -13252,7 +13255,7 @@
 	* tree-sra.c (access_precludes_ipa_sra_p): Also check access
 	memory alignment.
 
-2011-08-08   Diego Novillo  <dnovillo@google.com>
+2011-08-08  Diego Novillo  <dnovillo@google.com>
 
 	* Makefile.in (LTO_STREAMER_H): Add DIAGNOSTIC_H.
 	(DATA_STREAMER_H): New.
@@ -13579,7 +13582,7 @@
 	(TARGET_INSTANTIATE_DECLS): New define.
 
 2011-08-06  Paolo Bonzini  <bonzini@gnu.org>
-	    Mikael Morin   <mikael.morin@sfr.fr>
+	    Mikael Morin  <mikael.morin@sfr.fr>
 
 	* Makefile.in (INCLUDES_FOR_TARGET): New.
 	(LIBGCC2_CFLAGS): Use it.
@@ -14013,12 +14016,12 @@
 	* config/arm/arm.c (arm_set_fixed_optab_libfunc): Constify
 	maybe_suffix.
 
-2011-08-03   David Li  <davidxl@google.com>
+2011-08-03  David Li  <davidxl@google.com>
 
 	* tree-optimize.c (execute_fixup_cfg): Fix up entry
 	outgoing edge counts after inlining.
 
-2011-08-03   David Li  <davidxl@google.com>
+2011-08-03  David Li  <davidxl@google.com>
 
 	* profile.c (compute_branch_probabilities): Compute
 	function frequency after profile annotation.
@@ -20559,8 +20562,8 @@
 	* config/arm/neon.md (vec_pack_trunc): Set the lengths
 	correctly for the case with Quad vectors.
 
-2011-06-13 Jakub Jelinek  <jakub@redhat.com>
-	   Ira Rosen  <ira.rosen@linaro.org>
+2011-06-13  Jakub Jelinek  <jakub@redhat.com>
+	    Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/49352
 	* tree-vect-loop.c (vect_is_slp_reduction): Don't count debug uses at
@@ -21532,7 +21535,7 @@
 	* calls.c (emit_call_1): Prefer the __builtin declaration of
 	builtin functions.
 
-2011-06-03   Diego Novillo  <dnovillo@google.com>
+2011-06-03  Diego Novillo  <dnovillo@google.com>
 
 	* lto-streamer-in.c (unpack_value_fields): Remove unneeded asserts.
 	(lto_input_tree_pointers): Likewise.
@@ -25530,7 +25533,7 @@
 	* config/m68k/m68k.c (m68k_expand_prologue): Set
 	current_function_static_stack_size.
 
-2011-05-02   Jan Hubicka  <jh@suse.cz>
+2011-05-02  Jan Hubicka  <jh@suse.cz>
 
 	* lto-streamer.c (lto_streamer_cache_insert_1,
 	lto_streamer_cache_lookup, lto_streamer_cache_create,
