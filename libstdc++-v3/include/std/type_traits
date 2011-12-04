@@ -1,4 +1,4 @@
-// C++0x type_traits -*- C++ -*-
+// C++11 type_traits -*- C++ -*-
 
 // Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
@@ -42,7 +42,13 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
-   * @addtogroup metaprogramming
+   * @defgroup metaprogramming Metaprogramming and type traits
+   * @ingroup utilities
+   *
+   * Template utilities for compile-time introspection and modification,
+   * including type classification traits, type property inspection traits
+   * and type transformation traits.
+   *
    * @{
    */
 
@@ -56,10 +62,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr operator value_type() { return value; }
     };
   
-  /// typedef for true_type
+  /// The type used as a compile-time boolean with true value.
   typedef integral_constant<bool, true>     true_type;
 
-  /// typedef for false_type
+  /// The type used as a compile-time boolean with false value.
   typedef integral_constant<bool, false>    false_type;
 
   template<typename _Tp, _Tp __v>
@@ -451,7 +457,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_compound
     : public integral_constant<bool, !is_fundamental<_Tp>::value> { };
 
-  /// is_member_pointer
   template<typename _Tp>
     struct __is_member_pointer_helper
     : public false_type { };
@@ -460,6 +465,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_member_pointer_helper<_Tp _Cp::*>
     : public true_type { };
 
+  /// is_member_pointer
   template<typename _Tp>
     struct is_member_pointer
     : public integral_constant<bool, (__is_member_pointer_helper<
@@ -492,7 +498,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public integral_constant<bool, __is_trivial(_Tp)>
     { };
 
-  /// is_trivially_copyable (still unimplemented)
+  // is_trivially_copyable (still unimplemented)
 
   /// is_standard_layout
   template<typename _Tp>
@@ -564,6 +570,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename>
     struct add_rvalue_reference;
 
+  /**
+   *  @brief  Utility to simplify expressions used in unevaluated operands
+   *  @ingroup utilities
+   */
   template<typename _Tp>
     typename add_rvalue_reference<_Tp>::type declval() noexcept;
 
@@ -1702,9 +1712,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 
-  // Define a nested type if some predicate holds.
   // Primary template.
-  /// enable_if
+  /// Define a member typedef @c type only if a boolean constant is true.
   template<bool, typename _Tp = void>
     struct enable_if 
     { };
@@ -1715,9 +1724,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { typedef _Tp type; };
 
 
-  // A conditional expression, but for types. If true, first, if false, second.
   // Primary template.
-  /// conditional
+  /// Define a member typedef @c type to one of two argument types.
   template<bool _Cond, typename _Iftrue, typename _Iffalse>
     struct conditional
     { typedef _Iftrue type; };
@@ -1747,14 +1755,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         common_type<typename common_type<_Tp, _Up>::type, _Vp...>::type type;
     };
 
-  /// underlying_type
+  /// The underlying type of an enum.
   template<typename _Tp>
     struct underlying_type
     {
       typedef __underlying_type(_Tp) type;
     };
 
-  /// declval
   template<typename _Tp>
     struct __declval_protector
     {
@@ -1892,7 +1899,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			<typename remove_cv<_Tp>::type>::value>  \
     { };
 
-  // @} group metaprogramming
+  /// @} group metaprogramming
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
