@@ -1,3 +1,9 @@
+2011-12-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51383
+	* resolve.c (find_array_spec): Use ref->u.c.component
+	directly without starting from ts.u.derived.
+
 2011-12-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48887
