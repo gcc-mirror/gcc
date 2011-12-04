@@ -41,7 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
   (TARGET_CPU_DEFAULT | MASK_USERMODE | TARGET_ENDIAN_DEFAULT \
-   | TARGET_OPT_DEFAULT)
+   | TARGET_OPT_DEFAULT | MASK_SOFT_ATOMIC)
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 

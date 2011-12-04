@@ -1,3 +1,11 @@
+2011-12-04  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux.h (TARGET_DEFAULT): Add MASK_SOFT_ATOMIC.
+	* config/sh/sync.md: New file.
+	* config/sh/sh.md: Include sync.md.
+	* config/sh/sh.opt (msoft-atomic): New option.
+	* doc/invoke.texi (SH Options): Document it.
+
 2011-12-04  Nathan Sidwell  <nathan@acm.org>
 
 	* gcov-io.h (struct gcov_info): Replace trailing array with
