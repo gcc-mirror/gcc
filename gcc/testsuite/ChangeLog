@@ -8600,7 +8600,7 @@
 
 2011-06-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	PR objc-++/48275
+	PR obj-c++/48275
 	* obj-c++.dg/property/cxx-property-1.mm: New.
 	* obj-c++.dg/property/cxx-property-2.mm: New.
 
