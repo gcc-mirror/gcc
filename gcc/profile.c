@@ -1110,30 +1110,25 @@ branch_prob (void)
   lineno_checksum = coverage_compute_lineno_checksum ();
 
   /* Write the data from which gcov can reconstruct the basic block
-     graph.  */
+     graph and function line numbers  */
 
-  /* Basic block flags */
-  if (coverage_begin_output (lineno_checksum, cfg_checksum))
+  if (coverage_begin_function (lineno_checksum, cfg_checksum))
     {
       gcov_position_t offset;
 
+      /* Basic block flags */
       offset = gcov_write_tag (GCOV_TAG_BLOCKS);
       for (i = 0; i != (unsigned) (n_basic_blocks); i++)
 	gcov_write_unsigned (0);
       gcov_write_length (offset);
-    }
 
-   /* Keep all basic block indexes nonnegative in the gcov output.
-      Index 0 is used for entry block, last index is for exit block.
-      */
-  ENTRY_BLOCK_PTR->index = 1;
-  EXIT_BLOCK_PTR->index = last_basic_block;
+      /* Keep all basic block indexes nonnegative in the gcov output.
+	 Index 0 is used for entry block, last index is for exit
+	 block.    */
+      ENTRY_BLOCK_PTR->index = 1;
+      EXIT_BLOCK_PTR->index = last_basic_block;
 
-  /* Arcs */
-  if (coverage_begin_output (lineno_checksum, cfg_checksum))
-    {
-      gcov_position_t offset;
-
+      /* Arcs */
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
 	{
 	  edge e;
@@ -1168,11 +1163,11 @@ branch_prob (void)
 
 	  gcov_write_length (offset);
 	}
-    }
 
-  /* Line numbers.  */
-  if (coverage_begin_output (lineno_checksum, cfg_checksum))
-    {
+      ENTRY_BLOCK_PTR->index = ENTRY_BLOCK;
+      EXIT_BLOCK_PTR->index = EXIT_BLOCK;
+
+      /* Line numbers.  */
       /* Initialize the output.  */
       output_location (NULL, 0, NULL, NULL);
 
@@ -1217,8 +1212,6 @@ branch_prob (void)
 	}
     }
 
-  ENTRY_BLOCK_PTR->index = ENTRY_BLOCK;
-  EXIT_BLOCK_PTR->index = EXIT_BLOCK;
 #undef BB_TO_GCOV_INDEX
 
   if (flag_profile_values)
