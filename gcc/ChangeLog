@@ -1,3 +1,30 @@
+2011-12-04  Nathan Sidwell  <nathan@acm.org>
+
+	* gcov-io.h (struct gcov_info): Replace trailing array with
+	pointer to array.
+	* profile.c (branch_prob): Only call renamed
+	coverage_begin_function once.
+	* coverage.h (coverage_begin_output): Rename to ...
+	(coverage_begin_function): ... here.
+	* coverage.c (struct function_list): Rename to ...
+	(struct coverage_data): ... this.  Update all uses.
+	(gcov_info_var, gcov_fn_info_type, gcov_fn_info_ptr_type): New
+	globals.
+	(bbg_file_opened, bbg_function_announced): Remove.
+	(get_coverage_counts): Adjust message.
+	(coverage_begin_ouput): Rename to ...
+	(coverage_begin_function): ... here.  Move file opening to
+	coverage_init.  Adjust for being called only once.
+	(coverage_end_function): Remove bbg file and inhibit further
+	output here on error.
+	(build_info_type): Adjust for change to pointer to array.
+	(build_info): Receive array of function pointers and adjust.
+	(create_coverage): Break into ...
+	(coverage_obj_init, coverage_obj_fn, coverage_obj_finish):
+	... these, and adjust.
+	(coverage_init): Open the notes file here.  Tidy.
+	(coverage_finish): Call coverage_obj_init etc.
+
 2011-12-04  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR middle-end/51285

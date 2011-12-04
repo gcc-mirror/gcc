@@ -448,8 +448,8 @@ struct gcov_info
 					  unused) */
   
   unsigned n_functions;		/* number of functions */
-  const struct gcov_fn_info *functions[0]; /* pointers to function
-					      information  */
+  const struct gcov_fn_info *const *functions; /* pointer to pointers
+					          to function information  */
 };
 
 /* Register a new object file module.  */
