@@ -1,3 +1,9 @@
+2011-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51414
+	* semantics.c (finish_underlying_type): Use %qT, not %qE for the
+	error message.
+
 2011-12-05  Jason Merrill  <jason@redhat.com>
 
 	* init.c (expand_default_init): Unshare args in ctor delegation.

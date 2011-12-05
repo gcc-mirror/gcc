@@ -3401,7 +3401,7 @@ finish_underlying_type (tree type)
 
   if (TREE_CODE (type) != ENUMERAL_TYPE)
     {
-      error ("%qE is not an enumeration type", type);
+      error ("%qT is not an enumeration type", type);
       return error_mark_node;
     }
 
