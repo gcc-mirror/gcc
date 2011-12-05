@@ -241,6 +241,7 @@ struct tune_params
 };
 
 extern const struct tune_params *current_tune;
+extern int vfp3_const_double_for_fract_bits (rtx);
 #endif /* RTX_CODE */
 
 #endif /* ! GCC_ARM_PROTOS_H */
