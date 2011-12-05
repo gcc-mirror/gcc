@@ -2893,6 +2893,8 @@ finish_id_expression (tree id_expression,
 		      const char **error_msg,
 		      location_t location)
 {
+  decl = strip_using_decl (decl);
+
   /* Initialize the output parameters.  */
   *idk = CP_ID_KIND_NONE;
   *error_msg = NULL;
