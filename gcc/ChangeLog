@@ -1,5 +1,33 @@
 2011-12-05  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/50904
+	* tree-ssa-loop-im.c (struct mem_ref): Remove vops member.
+	(MEM_ANALYZABLE): New.
+	(memory_references): Remove clobbered_vops and vop_ref_map
+	members, add all_refs_stored_in_loop member.
+	(memref_free): Adjust.
+	(mem_ref_alloc): Likewise.
+	(gather_mem_refs_stmt): Do not record clobbers, instead
+	record refs for unanalyzable stmts.
+	(gather_mem_refs_in_loops): Do not propagate clobbers.
+	(struct vop_to_refs_elt, vtoe_hash, vtoe_eq, vtoe_free,
+	record_vop_access, get_vop_accesses, get_vop_stores,
+	add_vop_ref_mapping): Remove.
+	(create_vop_ref_mapping_loop): Adjust to simply record all
+	stores.
+	(analyze_memory_references): Adjust.
+	(refs_independent_p): Check for not analyzable refs.
+	(can_sm_ref_p): Likewise.
+	(ref_indep_loop_p_1): Simplify.
+	(tree_ssa_lim_finalize): Adjust.
+
+	* tree-ssa-loop-im.c (stmt_cost): Simplify, use LIM_EXPENSIVE
+	rather than magic constants.  Assign zero cost to PAREN_EXPR
+	and SSA_NAME copies.  Assign cost proportional to the vector
+	size for vector constructors.
+
+2011-12-05  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-alias.h (struct ao_ref_s): Add volatile_p field.
 	* tree-ssa-alias.c (ao_ref_init): Initialize it.
 	(ao_ref_init_from_ptr_and_size): Likewise.
