@@ -1,3 +1,10 @@
+2011-12-05  Jakub Jelinek  <jakub@redhat.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/51323
+	PR middle-end/50074
+	* gcc.c-torture/execute/pr51323.c: New test.
+
 2011-12-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51383
