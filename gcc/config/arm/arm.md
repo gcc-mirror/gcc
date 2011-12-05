@@ -3413,7 +3413,7 @@
     bool need_else;
 
     if (which_alternative != 0 || operands[3] != const0_rtx
-        || (code != PLUS && code != MINUS && code != IOR && code != XOR))
+        || (code != PLUS && code != IOR && code != XOR))
       need_else = true;
     else
       need_else = false;
