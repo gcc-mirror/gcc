@@ -1653,7 +1653,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
     {
       if (complain & tf_error)
 	error ("invalid use of %<auto%>");
-      type = error_mark_node;
+      return error_mark_node;
     }
 
   if (processing_template_decl)

@@ -1,3 +1,12 @@
+2011-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51404
+	* typeck2.c (build_functional_cast): Early return error_mark_node
+	for invalid uses of 'auto'.
+	* parser.c (cp_parser_direct_declarator): When
+	cp_parser_constant_expression returns error do not produce further
+	diagnostic for the bound.
+
 2011-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51313
