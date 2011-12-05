@@ -149,8 +149,10 @@
        * config/arm/constraints.md ("Dt"): New constraint.
        * config/arm/predicates.md
        (const_double_vcvt_power_of_two_reciprocal): New.
-       * config/arm/vfp.md (*arm_combine_vcvt_f32_s32): New.
-       (*arm_combine_vcvt_f32_u32): New.
+       * config/arm/vfp.md (FCVTI32typename): New.
+       (FCVT): New iterator.
+       (*combine_vcvt_f32_<FCVTI32typename>): New.
+       (*combine_vcvt_f64_<FCVTI32typename>): New.
 
 2011-12-05  Richard Guenther  <rguenther@suse.de>
 
