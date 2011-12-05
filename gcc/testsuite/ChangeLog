@@ -1,3 +1,7 @@
+2011-12-05  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/dc6.C: New.
+
 2011-12-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
 	    Pedro Lamarão <pedro.lamarao@gmail.com>
 

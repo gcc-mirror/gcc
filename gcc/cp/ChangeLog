@@ -1,3 +1,7 @@
+2011-12-05  Jason Merrill  <jason@redhat.com>
+
+	* init.c (expand_default_init): Unshare args in ctor delegation.
+
 2011-12-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
 	    Pedro Lamarão  <pedro.lamarao@gmail.com>
 

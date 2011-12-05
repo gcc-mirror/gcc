@@ -1619,17 +1619,30 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
       /* Delegating constructor. */
       tree complete;
       tree base;
+      tree elt; unsigned i;
+
+      /* Unshare the arguments for the second call.  */
+      VEC(tree,gc) *parms2 = make_tree_vector ();
+      FOR_EACH_VEC_ELT (tree, parms, i, elt)
+	{
+	  elt = break_out_target_exprs (elt);
+	  VEC_safe_push (tree, gc, parms2, elt);
+	}
       complete = build_special_member_call (exp, complete_ctor_identifier,
-					&parms, binfo, flags,
-					complain);
+					    &parms2, binfo, flags,
+					    complain);
+      complete = fold_build_cleanup_point_expr (void_type_node, complete);
+      release_tree_vector (parms2);
+
       base = build_special_member_call (exp, base_ctor_identifier,
 					&parms, binfo, flags,
 					complain);
-      rval = build3 (COND_EXPR, TREE_TYPE (complete),
-		    build2 (EQ_EXPR, boolean_type_node,
-			    current_in_charge_parm, integer_zero_node),
-		    base,
-		    complete);
+      base = fold_build_cleanup_point_expr (void_type_node, base);
+      rval = build3 (COND_EXPR, void_type_node,
+		     build2 (EQ_EXPR, boolean_type_node,
+			     current_in_charge_parm, integer_zero_node),
+		     base,
+		     complete);
     }
    else
     {
