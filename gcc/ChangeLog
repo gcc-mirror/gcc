@@ -1,3 +1,11 @@
+2011-12-05  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa.c (verify_ssa): Verify SSA names in the loop
+	over all SSA names.  Remove SSA operand checking, call
+	verify_ssa_operands.
+	* tree-ssa-operands.h (verify_ssa_operands): Declare.
+	* tree-ssa-operands.c (verify_ssa_operands): New function.
+
 2011-12-05  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
        * config/arm/arm.c (vfp3_const_double_for_fract_bits): Define.
