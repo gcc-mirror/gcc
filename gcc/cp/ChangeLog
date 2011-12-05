@@ -1,5 +1,10 @@
 2011-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/51399
+	* init.c (perform_member_init): Early return if init is error_mark_node.
+
+2011-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/51414
 	* semantics.c (finish_underlying_type): Use %qT, not %qE for the
 	error message.
