@@ -1,3 +1,69 @@
+2011-12-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR other/50775
+	* ira-int.h (struct ira_object): Remove add_data.
+	(OBJECT_ADD_DATA): Remove.
+
+	* ira-build.c (ira_create_object): Remove OBJECT_ADD_DATA
+	initialization.
+
+	* ira-color.c (object_hard_regs_t, object_hard_regs): Rename to
+	allocno_hard_regs_t, allocno_hard_regs.
+	(object_hard_regs_node_t, object_hard_regs_node): Rename to
+	allocno_hard_regs_node_t and allocno_hard_regs_node.
+	(struct allocno_color_data): Add new member last_process.  Move
+	profitable_hard_regs, hard_regs_node, and hard_regs_subnodes_start
+	from object_color_data.
+	(object_color_data_t, object_color_data, OBJECT_COLOR_DATA):
+	Remove.
+	(curr_allocno_process): New static variable.
+	(object_hard_regs_eq, object_hard_regs_htab): Rename to
+	allocno_hard_regs_eq and allocno_hard_regs_htab.
+	(init_object_hard_regs, finish_object_hard_regs): Rename to
+	init_allocno_hard_regs and finish_allocno_hard_regs.
+	(object_hard_regs_compare, object_hard_regs_node_t): Rename to
+	allocno_hard_regs_compare and allocno_hard_regs_node_t.
+	(create_new_object_hard_regs_node): Rename to
+	create_new_allocno_hard_regs_node.
+	(add_new_object_hard_regs_node_to_forest): Rename to
+	add_new_allocno_hard_regs_node_to_forest.
+	(add_object_hard_regs_to_forest, collect_object_hard_regs_cover):
+	Rename to add_allocno_hard_regs_to_forest and collect_allocno_hard_regs_cover.
+	(setup_object_hard_regs_nodes_parent): Rename to setup_allocno_hard_regs_nodes_parent.
+	(remove_unused_object_hard_regs_nodes): Rename to remove_unused_allocno_hard_regs_nodes.
+	(enumerate_object_hard_regs_nodes, object_hard_regs_nodes_num):
+	Rename to enumerate_allocno_hard_regs_nodes and allocno_hard_regs_nodes_num.
+	(object_hard_regs_nodes, object_hard_regs_subnode_t): Rename to
+	allocno_hard_regs_nodes and allocno_hard_regs_subnode_t.
+	(object_hard_regs_subnode, object_hard_regs_subnodes): Rename to
+	allocno_hard_regs_subnode and allocno_hard_regs_subnodes.
+	(object_hard_regs_subnode_index): Rename to allocno_hard_regs_subnode_index.
+	(setup_object_hard_regs_subnode_index): Rename to
+	setup_allocno_hard_regs_subnode_index.
+	(get_object_hard_regs_subnodes_num): Rename to get_allocno_hard_regs_subnodes_num.
+	(form_object_hard_regs_nodes_forest): Rename to form_allocno_hard_regs_nodes_forest.
+	(finish_object_hard_regs_nodes_tree): Rename to form_allocno_hard_regs_nodes_forest
+	(finish_object_hard_regs_nodes_forest): Rename to
+	finish_allocno_hard_regs_nodes_forest.
+	(setup_left_conflict_sizes_p): Use allocno data instead of object
+	ones.  Process conflict allocnos once.
+	(update_left_conflict_sizes_p): Use allocno data instead of object
+	ones.  Change prototype signature.
+	(empty_profitable_hard_regs): Use allocno data instead of object
+	ones.
+	(setup_profitable_hard_regs): Ditto.
+	(get_conflict_profitable_regs): Rename to
+	get_conflict_and_start_profitable_regs.  Use allocno data for
+	profitable regs calculation.
+	(check_hard_reg_p): Change prototype signature.  Check profitable
+	regs for allocno not the objects.
+	(assign_hard_reg): Process conflict allocnos only once for
+	updating conflict costs.
+	(setup_allocno_available_regs_num): Use allocno data instead of
+	object ones.  Modify debug output.
+	(color_pass): Remove initialization and finalization of object
+	color data.
+
 2011-12-05  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR target/51408
