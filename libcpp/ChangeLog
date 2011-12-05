@@ -1,3 +1,9 @@
+2011-12-03  Dodji Seketeli  <dodji@redhat.com>
+
+	* macro.c (tokens_buff_remove_last_token)
+	(tokens_buff_put_token_to): Add an 'inline' function specifier to
+	the prototype.
+
 2011-11-22   Diego Novillo  <dnovillo@google.com>
 
 	* include/line-map.h (linemap_dump): Declare.
