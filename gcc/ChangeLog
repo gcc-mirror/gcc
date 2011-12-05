@@ -1,3 +1,16 @@
+2011-12-05  Jakub Jelinek  <jakub@redhat.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/51323
+	PR middle-end/50074
+	* calls.c (internal_arg_pointer_exp_state): New variable.
+	(internal_arg_pointer_based_exp_1,
+	internal_arg_pointer_exp_scan): New functions.
+	(internal_arg_pointer_based_exp): New function.
+	(mem_overlaps_already_clobbered_arg_p): Use it.
+	(expand_call): Free internal_arg_pointer_exp_state.cache vector
+	and clear internal_arg_pointer_exp_state.scan_start.
+
 2011-12-04  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux.h (TARGET_DEFAULT): Add MASK_SOFT_ATOMIC.
