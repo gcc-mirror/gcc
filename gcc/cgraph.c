@@ -988,8 +988,12 @@ cgraph_create_edge_1 (struct cgraph_node *caller, struct cgraph_node *callee,
   edge->can_throw_external
     = call_stmt ? stmt_can_throw_external (call_stmt) : false;
   pop_cfun ();
-  edge->call_stmt_cannot_inline_p =
-    (call_stmt ? gimple_call_cannot_inline_p (call_stmt) : false);
+  if (call_stmt
+      && callee && callee->decl
+      && !gimple_check_call_matching_types (call_stmt, callee->decl))
+    edge->call_stmt_cannot_inline_p = true;
+  else
+    edge->call_stmt_cannot_inline_p = false;
   if (call_stmt && caller->call_site_hash)
     cgraph_add_edge_to_call_site_hash (edge);
 
@@ -1184,12 +1188,9 @@ cgraph_make_edge_direct (struct cgraph_edge *edge, struct cgraph_node *callee)
   /* Insert to callers list of the new callee.  */
   cgraph_set_edge_callee (edge, callee);
 
-  if (edge->call_stmt
-      && !gimple_check_call_matching_types (edge->call_stmt, callee->decl))
-    {
-      gimple_call_set_cannot_inline (edge->call_stmt, true);
-      edge->call_stmt_cannot_inline_p = true;
-    }
+  if (edge->call_stmt)
+    edge->call_stmt_cannot_inline_p
+      = !gimple_check_call_matching_types (edge->call_stmt, callee->decl);
 
   /* We need to re-determine the inlining status of the edge.  */
   initialize_inline_failed (edge);

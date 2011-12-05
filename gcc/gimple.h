@@ -97,14 +97,13 @@ enum gimple_rhs_class
 enum gf_mask {
     GF_ASM_INPUT		= 1 << 0,
     GF_ASM_VOLATILE		= 1 << 1,
-    GF_CALL_CANNOT_INLINE	= 1 << 0,
-    GF_CALL_FROM_THUNK		= 1 << 1,
-    GF_CALL_RETURN_SLOT_OPT	= 1 << 2,
-    GF_CALL_TAILCALL		= 1 << 3,
-    GF_CALL_VA_ARG_PACK		= 1 << 4,
-    GF_CALL_NOTHROW		= 1 << 5,
-    GF_CALL_ALLOCA_FOR_VAR	= 1 << 6,
-    GF_CALL_INTERNAL		= 1 << 7,
+    GF_CALL_FROM_THUNK		= 1 << 0,
+    GF_CALL_RETURN_SLOT_OPT	= 1 << 1,
+    GF_CALL_TAILCALL		= 1 << 2,
+    GF_CALL_VA_ARG_PACK		= 1 << 3,
+    GF_CALL_NOTHROW		= 1 << 4,
+    GF_CALL_ALLOCA_FOR_VAR	= 1 << 5,
+    GF_CALL_INTERNAL		= 1 << 6,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
 
     /* True on an GIMPLE_OMP_RETURN statement if the return does not require
@@ -2340,29 +2339,6 @@ gimple_call_tail_p (gimple s)
 {
   GIMPLE_CHECK (s, GIMPLE_CALL);
   return (s->gsbase.subcode & GF_CALL_TAILCALL) != 0;
-}
-
-
-/* Set the inlinable status of GIMPLE_CALL S to INLINABLE_P.  */
-
-static inline void
-gimple_call_set_cannot_inline (gimple s, bool inlinable_p)
-{
-  GIMPLE_CHECK (s, GIMPLE_CALL);
-  if (inlinable_p)
-    s->gsbase.subcode |= GF_CALL_CANNOT_INLINE;
-  else
-    s->gsbase.subcode &= ~GF_CALL_CANNOT_INLINE;
-}
-
-
-/* Return true if GIMPLE_CALL S cannot be inlined.  */
-
-static inline bool
-gimple_call_cannot_inline_p (gimple s)
-{
-  GIMPLE_CHECK (s, GIMPLE_CALL);
-  return (s->gsbase.subcode & GF_CALL_CANNOT_INLINE) != 0;
 }
 
 

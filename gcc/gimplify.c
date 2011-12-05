@@ -2449,7 +2449,6 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	  CALL_EXPR_RETURN_SLOT_OPT (*expr_p)
 	    = CALL_EXPR_RETURN_SLOT_OPT (call);
 	  CALL_FROM_THUNK_P (*expr_p) = CALL_FROM_THUNK_P (call);
-	  CALL_CANNOT_INLINE_P (*expr_p) = CALL_CANNOT_INLINE_P (call);
 	  SET_EXPR_LOCATION (*expr_p, EXPR_LOCATION (call));
 	  TREE_BLOCK (*expr_p) = TREE_BLOCK (call);
 

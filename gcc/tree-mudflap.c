@@ -929,7 +929,6 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
 }
 /* Transform
    1) Memory references.
-   2) BUILTIN_ALLOCA calls.
 */
 static void
 mf_xform_statements (void)
@@ -968,16 +967,6 @@ mf_xform_statements (void)
 				     gimple_location (s),
 				     integer_zero_node);
                 }
-              break;
-
-            case GIMPLE_CALL:
-              {
-                tree fndecl = gimple_call_fndecl (s);
-                if (fndecl && (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA
-			       || (DECL_FUNCTION_CODE (fndecl)
-				   == BUILT_IN_ALLOCA_WITH_ALIGN)))
-                  gimple_call_set_cannot_inline (s, true);
-              }
               break;
 
             default:

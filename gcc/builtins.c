@@ -4523,8 +4523,8 @@ expand_builtin_alloca (tree exp, bool cannot_accumulate)
   bool alloca_with_align = (DECL_FUNCTION_CODE (get_callee_fndecl (exp))
 			    == BUILT_IN_ALLOCA_WITH_ALIGN);
 
-  /* Emit normal call if marked not-inlineable.  */
-  if (CALL_CANNOT_INLINE_P (exp))
+  /* Emit normal call if we use mudflap.  */
+  if (flag_mudflap)
     return NULL_RTX;
 
   valid_arglist

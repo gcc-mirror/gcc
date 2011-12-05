@@ -1108,23 +1108,12 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	}
     }
 
-  /* Check whether propagating into the function address made the
-     call direct, and thus possibly non-inlineable.
-     ???  This asks for a more conservative setting of the non-inlinable
-     flag, namely true for all indirect calls.  But that would require
-     that we can re-compute the flag conservatively, thus it isn't
-     ever initialized from something else than return/argument type
-     checks .  */
-  callee = gimple_call_fndecl (stmt);
-  if (callee
-      && !gimple_check_call_matching_types (stmt, callee))
-    gimple_call_set_cannot_inline (stmt, true);
-
   if (inplace)
     return changed;
 
   /* Check for builtins that CCP can handle using information not
      available in the generic fold routines.  */
+  callee = gimple_call_fndecl (stmt);
   if (callee && DECL_BUILT_IN (callee))
     {
       tree result = gimple_fold_builtin (stmt);
