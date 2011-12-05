@@ -104,9 +104,9 @@ flttointtest##intt (void)						\
       abort ();								\
   for (i = 0; i < N; i++)						\
     {									\
-      unsigned long long r = random ();					\
-      r = (r << 21) ^ (unsigned) random ();				\
-      r = (r << 21) ^ (unsigned) random ();				\
+      unsigned long long r = rand ();					\
+      r = (r << 21) ^ (unsigned) rand ();				\
+      r = (r << 21) ^ (unsigned) rand ();				\
       asm ("");								\
       f[i] = (r >> 59) / 32.0f + (__typeof (intt[0])) r;		\
       if (f[i] < fltmin) f[i] = fltmin;					\
@@ -157,9 +157,9 @@ inttoflttest##intt (void)						\
     }									\
   for (i = 0; i < N; i++)						\
     {									\
-      unsigned long long r = random ();					\
-      r = (r << 21) ^ (unsigned) random ();				\
-      r = (r << 21) ^ (unsigned) random ();				\
+      unsigned long long r = rand ();					\
+      r = (r << 21) ^ (unsigned) rand ();				\
+      r = (r << 21) ^ (unsigned) rand ();				\
       asm ("");								\
       intt[i] = r;							\
     }									\

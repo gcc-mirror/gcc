@@ -1,3 +1,7 @@
+2011-12-05  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* gcc.dg/torture/vec-cvt-1.c (FLTTEST): Call rand instead of random.
+
 2011-12-05  Jakub Jelinek  <jakub@redhat.com>
 	    Eric Botcazou  <ebotcazou@adacore.com>
 
