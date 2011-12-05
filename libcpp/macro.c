@@ -128,13 +128,13 @@ static _cpp_buff *tokens_buff_new (cpp_reader *, size_t,
 				   source_location **);
 static size_t tokens_buff_count (_cpp_buff *);
 static const cpp_token **tokens_buff_last_token_ptr (_cpp_buff *);
-static const cpp_token **tokens_buff_put_token_to (const cpp_token **,
-						   source_location *, 
-						   const cpp_token *,
-						   source_location,
-						   source_location,
-						   const struct line_map *,
-						   unsigned int);
+static inline const cpp_token **tokens_buff_put_token_to (const cpp_token **,
+                                                          source_location *,
+                                                          const cpp_token *,
+                                                          source_location,
+                                                          source_location,
+                                                          const struct line_map *,
+                                                          unsigned int);
 
 static const cpp_token **tokens_buff_add_token (_cpp_buff *,
 						source_location *,
@@ -143,7 +143,7 @@ static const cpp_token **tokens_buff_add_token (_cpp_buff *,
 						source_location,
 						const struct line_map *,
 						unsigned int);
-static void tokens_buff_remove_last_token (_cpp_buff *);
+static inline void tokens_buff_remove_last_token (_cpp_buff *);
 static void replace_args (cpp_reader *, cpp_hashnode *, cpp_macro *,
 			  macro_arg *, source_location);
 static _cpp_buff *funlike_invocation_p (cpp_reader *, cpp_hashnode *,
