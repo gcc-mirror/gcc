@@ -542,6 +542,9 @@ perform_member_init (tree member, tree init)
 	}
     }
 
+  if (init == error_mark_node)
+    return;
+
   /* Effective C++ rule 12 requires that all data members be
      initialized.  */
   if (warn_ecpp && init == NULL_TREE && TREE_CODE (type) != ARRAY_TYPE)
