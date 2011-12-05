@@ -2429,6 +2429,12 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
   if (optab_handler (fma_optab, TYPE_MODE (type)) == CODE_FOR_nothing)
     return false;
 
+  /* If the multiplication has zero uses, it is kept around probably because
+     of -fnon-call-exceptions.  Don't optimize it away in that case,
+     it is DCE job.  */
+  if (has_zero_uses (mul_result))
+    return false;
+
   /* Make sure that the multiplication statement becomes dead after
      the transformation, thus that all uses are transformed to FMAs.
      This means we assume that an FMA operation has the same cost

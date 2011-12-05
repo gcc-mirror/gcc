@@ -1,5 +1,8 @@
 2011-12-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/51396
+	* g++.dg/opt/pr51396.C: New test.
+
 	PR debug/51410
 	* gcc.dg/debug/dwarf2/pr51410.c: New test.
 
