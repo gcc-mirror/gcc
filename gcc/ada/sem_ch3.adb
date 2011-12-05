@@ -12820,14 +12820,15 @@ package body Sem_Ch3 is
                Iface_Subp := Node (Prim_Elmt);
 
                --  Exclude derivation of predefined primitives except those
-               --  that come from source. Required to catch declarations of
-               --  equality operators of interfaces. For example:
+               --  that come from source, or are inherited from one that comes
+               --  from source. Required to catch declarations of equality
+               --  operators of interfaces. For example:
 
                --     type Iface is interface;
                --     function "=" (Left, Right : Iface) return Boolean;
 
                if not Is_Predefined_Dispatching_Operation (Iface_Subp)
-                 or else Comes_From_Source (Iface_Subp)
+                 or else Comes_From_Source (Ultimate_Alias (Iface_Subp))
                then
                   E := Find_Primitive_Covering_Interface
                          (Tagged_Type => Tagged_Type,
