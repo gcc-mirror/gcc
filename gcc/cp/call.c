@@ -6978,8 +6978,10 @@ build_special_member_call (tree instance, tree name, VEC(tree,gc) **args,
 			    current_in_charge_parm, integer_zero_node),
 		    current_vtt_parm,
 		    vtt);
-      gcc_assert (BINFO_SUBVTT_INDEX (binfo));
-      sub_vtt = fold_build_pointer_plus (vtt, BINFO_SUBVTT_INDEX (binfo));
+      if (BINFO_SUBVTT_INDEX (binfo))
+	sub_vtt = fold_build_pointer_plus (vtt, BINFO_SUBVTT_INDEX (binfo));
+      else
+	sub_vtt = vtt;
 
       if (args == NULL)
 	{

@@ -1,3 +1,16 @@
+2011-12-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
+	    Pedro Lamarão  <pedro.lamarao@gmail.com>
+
+	Implement C++11 delegating constructors.
+	* cp-tree.h (enum cpp0x_warn_str): Add CPP0X_DELEGATING_CTORS.
+	* error.c (maybe_warn_cpp0x): Adjust.
+	* parser.c (cp_parser_mem_initializer_list): Use it.  Diagnose
+	multiple initializers if a delegating initializer is present.
+	* call.c (build_special_member_call): Convert an assert into an if.
+	* init.c (perform_target_ctor): New.
+	(emit_mem_initializers): Use it.
+	(expand_member_init, expand_default_init): Adjust.
+
 2011-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51404

@@ -3304,6 +3304,11 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
 		 "user-defined literals "
 		 "only available with -std=c++11 or -std=gnu++11");
 	break;
+      case CPP0X_DELEGATING_CTORS:
+	pedwarn (input_location, 0,
+		 "delegating constructors "
+		 "only available with -std=c++11 or -std=gnu++11");
+        break;
       default:
 	gcc_unreachable ();
       }
