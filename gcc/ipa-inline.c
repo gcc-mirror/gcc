@@ -246,14 +246,6 @@ can_inline_edge_p (struct cgraph_edge *e, bool report)
   struct function *caller_cfun = DECL_STRUCT_FUNCTION (e->caller->decl);
   struct function *callee_cfun
     = callee ? DECL_STRUCT_FUNCTION (callee->decl) : NULL;
-  bool call_stmt_cannot_inline_p;
-
-  /* If E has a call statement in it, use the inline attribute from
-     the statement, otherwise use the inline attribute in E.  Edges
-     will not have statements when working in WPA mode.  */
-  call_stmt_cannot_inline_p = (e->call_stmt)
-			      ? gimple_call_cannot_inline_p (e->call_stmt)
-			      : e->call_stmt_cannot_inline_p;
 
   if (!caller_cfun && e->caller->clone_of)
     caller_cfun = DECL_STRUCT_FUNCTION (e->caller->clone_of->decl);
@@ -278,7 +270,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report)
       e->inline_failed = CIF_OVERWRITABLE;
       return false;
     }
-  else if (call_stmt_cannot_inline_p)
+  else if (e->call_stmt_cannot_inline_p)
     {
       e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
       inlinable = false;
@@ -1957,8 +1949,10 @@ early_inliner (void)
 		= estimate_num_insns (edge->call_stmt, &eni_size_weights);
 	      es->call_stmt_time
 		= estimate_num_insns (edge->call_stmt, &eni_time_weights);
-	      edge->call_stmt_cannot_inline_p
-		= gimple_call_cannot_inline_p (edge->call_stmt);
+	      if (edge->callee->decl
+		  && !gimple_check_call_matching_types (edge->call_stmt,
+							edge->callee->decl))
+		edge->call_stmt_cannot_inline_p = true;
 	    }
 	  timevar_pop (TV_INTEGRATION);
 	  iterations++;

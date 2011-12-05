@@ -1249,7 +1249,7 @@ initialize_inline_failed (struct cgraph_edge *e)
     e->inline_failed = CIF_BODY_NOT_AVAILABLE;
   else if (callee->local.redefined_extern_inline)
     e->inline_failed = CIF_REDEFINED_EXTERN_INLINE;
-  else if (e->call_stmt && gimple_call_cannot_inline_p (e->call_stmt))
+  else if (e->call_stmt_cannot_inline_p)
     e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
   else
     e->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;

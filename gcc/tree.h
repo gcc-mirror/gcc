@@ -533,9 +533,6 @@ struct GTY(()) tree_common {
        CASE_HIGH_SEEN in
            CASE_LABEL_EXPR
 
-       CALL_CANNOT_INLINE_P in
-           CALL_EXPR
- 
        ENUM_IS_SCOPED in
 	   ENUMERAL_TYPE
 
@@ -1244,9 +1241,6 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    CASE_HIGH operand has been processed.  */
 #define CASE_HIGH_SEEN(NODE) \
   (CASE_LABEL_EXPR_CHECK (NODE)->base.static_flag)
-
-/* Used to mark a CALL_EXPR as not suitable for inlining.  */
-#define CALL_CANNOT_INLINE_P(NODE) (CALL_EXPR_CHECK (NODE)->base.static_flag)
 
 /* Used to mark scoped enums.  */
 #define ENUM_IS_SCOPED(NODE) (ENUMERAL_TYPE_CHECK (NODE)->base.static_flag)

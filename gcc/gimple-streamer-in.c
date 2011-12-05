@@ -219,18 +219,11 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	}
       if (is_gimple_call (stmt))
 	{
-	  tree fndecl;
 	  if (gimple_call_internal_p (stmt))
 	    gimple_call_set_internal_fn
 	      (stmt, streamer_read_enum (ib, internal_fn, IFN_LAST));
 	  else
 	    gimple_call_set_fntype (stmt, stream_read_tree (ib, data_in));
-	  /* Update the non-inlinable flag conservatively.  */
-	  fndecl = gimple_call_fndecl (stmt);
-	  if (fndecl
-	      && !gimple_call_cannot_inline_p (stmt)
-	      && !gimple_check_call_matching_types (stmt, fndecl))
-	    gimple_call_set_cannot_inline (stmt, true);
 	}
       break;
 

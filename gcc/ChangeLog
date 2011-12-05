@@ -1,3 +1,32 @@
+2011-12-05  Richard Guenther  <rguenther@suse.de>
+
+	* cgraph.c (cgraph_create_edge_1): Initialize
+	call_stmt_cannot_inline_p from the stmt if possible.
+	(cgraph_make_edge_direct): Likewise.
+	* gimple-streamer-in.c (input_gimple_stmt): Do not
+	call gimple_call_set_cannot_inline.
+	* gimple.h (enum gf_mask): Remove GF_CALL_CANNOT_INLINE, shift
+	values.
+	(gimple_call_set_cannot_inline): Remove.
+	(gimple_call_cannot_inline_p): Likewise.
+	* ipa-inline-analysis.c (initialize_inline_failed): Look
+	at the edge call_stmt_cannot_inline_p flag.
+	* ipa-inline.c (can_inline_edge_p): Likewise.
+	(early_inliner): Only update the edge flag.
+	* ipa-prop.c (update_indirect_edges_after_inlining): Likewise.
+	(ipa_modify_call_arguments): Do not call gimple_call_set_cannot_inline.
+	* cgraphunit.c (assemble_thunk): Likewise.
+	* gimple-fold.c (gimple_fold_call): Likewise.
+
+	* tree.h (CALL_CANNOT_INLINE_P): Remove.
+	* tree-mudflap.c (mf_xform_statements): Do not modify alloca calls.
+	* builtins.c (expand_builtin_alloca): With -fmudflap do not expand
+	alloca calls inline.
+	* cfgexpand.c (expand_call_stmt): Do not set CALL_CANNOT_INLINE_P.
+	* gimple.c (gimple_build_call_from_tree): Do not read
+	CALL_CANNOT_INLINE_P.
+	* gimplify.c (gimplify_call_expr): Do not copy CALL_CANNOT_INLINE_P.
+
 2011-12-05  Jakub Jelinek  <jakub@redhat.com>
 	    Eric Botcazou  <ebotcazou@adacore.com>
 
