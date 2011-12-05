@@ -1,3 +1,8 @@
+2011-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libsupc++/initializer_list: Do not declare anything if
+	__GXX_EXPERIMENTAL_CXX0X__ is not defined.
+
 2011-12-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/type_traits: Doxygen improvements.
