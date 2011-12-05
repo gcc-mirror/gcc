@@ -1,3 +1,9 @@
+2011-12-05  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/51319
+	* semantics.c (finish_id_expression): Strip using declarations
+	early in the function.
+
 2011-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51399
