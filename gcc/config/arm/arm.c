@@ -17671,6 +17671,11 @@ arm_print_operand (FILE *stream, rtx x, int code)
       }
       return;
 
+    case 'v':
+	gcc_assert (GET_CODE (x) == CONST_DOUBLE);
+	fprintf (stream, "#%d", vfp3_const_double_for_fract_bits (x));
+	return;
+
     /* Register specifier for vld1.16/vst1.16.  Translate the S register
        number into a D register number and element index.  */
     case 'z':
@@ -25038,4 +25043,27 @@ arm_count_output_move_double_insns (rtx *operands)
   return count;
 }
 
+int
+vfp3_const_double_for_fract_bits (rtx operand)
+{
+  REAL_VALUE_TYPE r0;
+  
+  if (GET_CODE (operand) != CONST_DOUBLE)
+    return 0;
+  
+  REAL_VALUE_FROM_CONST_DOUBLE (r0, operand);
+  if (exact_real_inverse (DFmode, &r0))
+    {
+      if (exact_real_truncate (DFmode, &r0))
+	{
+	  HOST_WIDE_INT value = real_to_integer (&r0);
+	  value = value & 0xffffffff;
+	  if ((value != 0) && ( (value & (value - 1)) == 0))
+	    return int_log2 (value);
+	}
+    }
+  return 0;
+}
+
 #include "gt-arm.h"
+

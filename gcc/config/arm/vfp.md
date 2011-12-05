@@ -1144,9 +1144,40 @@
    (set_attr "type" "fcmpd")]
 )
 
+;; Fixed point to floating point conversions. 
+(define_code_iterator FCVT [unsigned_float float])
+(define_code_attr FCVTI32typename [(unsigned_float "u32") (float "s32")])
+
+(define_insn "*combine_vcvt_f32_<FCVTI32typename>"
+  [(set (match_operand:SF 0 "s_register_operand" "=t")
+	(mult:SF (FCVT:SF (match_operand:SI 1 "s_register_operand" "0"))
+		 (match_operand 2 
+			"const_double_vcvt_power_of_two_reciprocal" "Dt")))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP3 && !flag_rounding_math"
+  "vcvt.f32.<FCVTI32typename>\\t%0, %1, %v2"
+ [(set_attr "predicable" "no")
+  (set_attr "type" "f_cvt")]
+)
+
+;; Not the ideal way of implementing this. Ideally we would be able to split
+;; this into a move to a DP register and then a vcvt.f64.i32
+(define_insn "*combine_vcvt_f64_<FCVTI32typename>"
+  [(set (match_operand:DF 0 "s_register_operand" "=x,x,w")
+	(mult:DF (FCVT:DF (match_operand:SI 1 "s_register_operand" "r,t,r"))
+		 (match_operand 2 
+		     "const_double_vcvt_power_of_two_reciprocal" "Dt,Dt,Dt")))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP3 && !flag_rounding_math 
+  && !TARGET_VFP_SINGLE"
+  "@
+  vmov.f32\\t%0, %1\;vcvt.f64.<FCVTI32typename>\\t%P0, %P0, %v2
+  vmov.f32\\t%0, %1\;vcvt.f64.<FCVTI32typename>\\t%P0, %P0, %v2
+  vmov.f64\\t%0, %1, %1\; vcvt.f64.<FCVTI32typename>\\t%P0, %P0, %v2"
+ [(set_attr "predicable" "no")
+  (set_attr "type" "f_cvt")
+  (set_attr "length" "8")]
+)
 
 ;; Store multiple insn used in function prologue.
-
 (define_insn "*push_multi_vfp"
   [(match_parallel 2 "multi_register_push"
     [(set (match_operand:BLK 0 "memory_operand" "=m")

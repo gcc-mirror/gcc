@@ -754,6 +754,11 @@
   return true; 
 })
 
+(define_predicate "const_double_vcvt_power_of_two_reciprocal"
+  (and (match_code "const_double")
+       (match_test "TARGET_32BIT && TARGET_VFP 
+       		   && vfp3_const_double_for_fract_bits (op)")))
+
 (define_predicate "neon_struct_operand"
   (and (match_code "mem")
        (match_test "TARGET_32BIT && neon_vector_mem_operand (op, 2)")))
