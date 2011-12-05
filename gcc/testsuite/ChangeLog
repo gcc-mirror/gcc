@@ -1,5 +1,8 @@
 2011-12-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/51410
+	* gcc.dg/debug/dwarf2/pr51410.c: New test.
+
 	PR c/51339
 	* gcc.dg/gomp/pr51339.c: New test.
 
