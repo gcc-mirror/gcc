@@ -262,9 +262,6 @@ struct ira_object
      ira_object structures.  Otherwise, we use a bit vector indexed
      by conflict ID numbers.  */
   unsigned int conflict_vec_p : 1;
-  /* Different additional data.  It is used to decrease size of
-     allocno data footprint.  */
-  void *add_data;
 };
 
 /* A structure representing an allocno (allocation entity).  Allocno
@@ -499,7 +496,6 @@ allocno_emit_reg (ira_allocno_t a)
 #define OBJECT_MAX(O) ((O)->max)
 #define OBJECT_CONFLICT_ID(O) ((O)->id)
 #define OBJECT_LIVE_RANGES(O) ((O)->live_ranges)
-#define OBJECT_ADD_DATA(O) ((O)->add_data)
 
 /* Map regno -> allocnos with given regno (see comments for
    allocno member `next_regno_allocno').  */
