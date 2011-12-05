@@ -1,5 +1,9 @@
 2011-12-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/51396
+	* tree-ssa-math-opts.c (convert_mult_to_fma): Don't optimize
+	if MUL_RESULT has zero uses.
+
 	PR debug/51410
 	* c-decl.c (pop_scope): Don't add DECL_EXTERNAL decls
 	for debug info if scope is file_scope.
