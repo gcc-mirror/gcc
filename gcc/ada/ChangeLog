@@ -1,5 +1,37 @@
 2011-12-05  Bob Duff  <duff@adacore.com>
 
+	* sem_ch4.adb: Minor comment fix.
+
+2011-12-05  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Add documentation for -gnatw.e.
+
+2011-12-05  Bob Duff  <duff@adacore.com>
+
+	* treepr.adb (pn): Print something useful for
+	Elmt_Ids. Add Write_Eol to 'when others' case, so the output
+	will be seen immediately in gdb.
+
+2011-12-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-writ.adb (Output_Main_Program_Line): A generic subprogram
+	is never a main program.
+
+2011-12-05  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb: Various minor adjustments to dominance markers
+	generation.
+
+2011-12-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): If the function is
+	a completion, generate a body reference for its defining entity,
+	before rewriting the node as a body.
+	* sem_util.adb (Defining_Entity): Add entry for expression
+	function.
+
+2011-12-05  Bob Duff  <duff@adacore.com>
+
 	* sem_ch3.adb (Derive_Progenitor_Subprograms): Add Ultimate_Alias
 	to the Comes_From_Source check, to deal properly with the case
 	of indirect inheritance of "=".

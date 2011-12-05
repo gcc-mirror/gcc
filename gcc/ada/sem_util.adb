@@ -2467,7 +2467,8 @@ package body Sem_Util is
            N_Subprogram_Body_Stub                   |
            N_Generic_Subprogram_Declaration         |
            N_Generic_Package_Declaration            |
-           N_Formal_Subprogram_Declaration
+           N_Formal_Subprogram_Declaration          |
+           N_Expression_Function
          =>
             return Defining_Entity (Specification (N));
 
