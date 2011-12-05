@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fdump-tree-optimized" } */
+/* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } { "" } } */
 
 struct hardware {
   int parm1:8;

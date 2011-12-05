@@ -1,3 +1,21 @@
+2011-12-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/51128
+	* gcc.dg/torture/pr23821.c: Skip if -fno-fat-lto-objects was passed.
+	* gcc.dg/torture/pr39074.c: Ditto.
+	* gcc.dg/torture/pr39074-2.c: Ditto.
+	* gcc.dg/torture/pr42898.c: Ditto.
+	* gcc.dg/torture/pr42898-2.c: Ditto.
+	* gcc.dg/torture/pr45704.c: Ditto.
+	* gcc.dg/torture/pr50472.c: Ditto.
+	* gcc.dg/torture/pta-callused-1.c: Ditto.
+	* gcc.dg/torture/pta-ptrarith-1.c: Ditto.
+	* gcc.dg/torture/pta-ptrarith-2.c: Ditto.
+	* gcc.dg/torture/pta-ptrarith-3.c: Ditto.
+	* gcc.dg/torture/pta-escape-1.c: Ditto.
+	* gcc.dg/torture/ipa-pta-1.c: Ditto.
+	* gcc.dg/torture/ssa-pta-fn-1.c: Ditto.
+
 2011-12-05  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR target/51408

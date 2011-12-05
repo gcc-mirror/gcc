@@ -1,6 +1,6 @@
 /* { dg-do compile { target { nonpic } } } */
 /* { dg-options "-fipa-pta -fdump-ipa-pta" } */
-/* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
+/* { dg-skip-if "" { *-*-* } { "-O0" "-fno-fat-lto-objects" } { "" } } */
 
 struct X { char x; char y; };
 
