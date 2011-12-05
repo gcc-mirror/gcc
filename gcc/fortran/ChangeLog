@@ -1,3 +1,9 @@
+2011-12-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/51338
+	* dependency.c (are_identical_variables):  Handle case where
+	end fields of substring references are NULL.
+
 2011-12-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51383
@@ -12,7 +18,7 @@
 	* class.c (gfc_build_class_symbol): Handle
 	attr.select_type_temporary.
 
-2011-12-03  Tobias Burnus  <burnus@net-b.de>                                                                                                           
+2011-12-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50684
 	* check.c (variable_check): Fix intent(in) check.
