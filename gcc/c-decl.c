@@ -719,7 +719,7 @@ c_finish_incomplete_decl (tree decl)
 
 	  complete_array_type (&TREE_TYPE (decl), NULL_TREE, true);
 
-	  layout_decl (decl, 0);
+	  relayout_decl (decl);
 	}
     }
 }
@@ -4311,7 +4311,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
       if (DECL_INITIAL (decl))
 	TREE_TYPE (DECL_INITIAL (decl)) = type;
 
-      layout_decl (decl, 0);
+      relayout_decl (decl);
     }
 
   if (TREE_CODE (decl) == VAR_DECL)
