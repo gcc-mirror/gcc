@@ -266,18 +266,13 @@ begin
                Pid : Pragma_Id;
 
             begin
-               --  If continuation, reset Last indication in last entry
-               --  stored for previous CS or cs line, and start with key
-               --  set to s for continuations.
+               Key := 'S';
+
+               --  If continuation, reset Last indication in last entry stored
+               --  for previous CS or cs line.
 
                if C = 's' then
                   SCO_Table.Table (SCO_Table.Last).Last := False;
-                  Key := 's';
-
-               --  CS case (first line, so start with key set to S)
-
-               else
-                  Key := 'S';
                end if;
 
                --  Initialize to scan items on one line
@@ -287,39 +282,54 @@ begin
                --  Loop through items on one line
 
                loop
+                  Pid := Unknown_Pragma;
                   Typ := Nextc;
 
-                  if Typ in '1' .. '9' then
-                     Typ := ' ';
-                  else
-                     Skipc;
-                     if Typ = 'P' then
-                        Pid := Unknown_Pragma;
+                  case Typ is
+                     when '>' =>
+                        --  A dominance marker may be present only at an entry
+                        --  point.
 
-                        if Nextc not in '1' .. '9' then
-                           N := 1;
-                           loop
-                              Buf (N) := Getc;
-                              exit when Nextc = ':';
-                              N := N + 1;
-                           end loop;
-                           Skipc;
+                        pragma Assert (Key = 'S');
 
-                           begin
-                              Pid :=
-                                Pragma_Id'Value ("pragma_" & Buf (1 .. N));
-                           exception
-                              when Constraint_Error =>
+                        Key := '>';
+                        Typ := Nextc;
 
-                                 --  Pid remains set to Unknown_Pragma
+                     when '1' .. '9' =>
+                        Typ := ' ';
 
-                                 null;
-                           end;
+                     when others =>
+                        Skipc;
+                        if Typ = 'P' then
+                           if Nextc not in '1' .. '9' then
+                              N := 1;
+                              loop
+                                 Buf (N) := Getc;
+                                 exit when Nextc = ':';
+                                 N := N + 1;
+                              end loop;
+                              Skipc;
+
+                              begin
+                                 Pid :=
+                                   Pragma_Id'Value ("pragma_" & Buf (1 .. N));
+                              exception
+                                 when Constraint_Error =>
+
+                                    --  Pid remains set to Unknown_Pragma
+
+                                    null;
+                              end;
+                           end if;
                         end if;
-                     end if;
-                  end if;
+                  end case;
 
-                  Get_Source_Location_Range (Loc1, Loc2);
+                  if Key = '>' and then Typ /= 'E' then
+                     Get_Source_Location (Loc1);
+                     Loc2 := No_Source_Location;
+                  else
+                     Get_Source_Location_Range (Loc1, Loc2);
+                  end if;
 
                   SCO_Table.Append
                     ((C1          => Key,
@@ -330,8 +340,11 @@ begin
                       Pragma_Sloc => No_Location,
                       Pragma_Name => Pid));
 
+                  if Key = '>' then
+                     Key := 'S';
+                  end if;
+
                   exit when At_EOL;
-                  Key := 's';
                end loop;
             end;
 

@@ -1,3 +1,20 @@
+2011-12-05  Bob Duff  <duff@adacore.com>
+
+	* sem_ch3.adb (Derive_Progenitor_Subprograms): Add Ultimate_Alias
+	to the Comes_From_Source check, to deal properly with the case
+	of indirect inheritance of "=".
+
+2011-12-05  Thomas Quinot  <quinot@adacore.com>
+
+	PR ada/51307
+	* s-oscons-tmplt.c: On HP-UX, CLOCK_REALTIME is an enum literal,
+	not a macro.
+
+2011-12-05  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb, scos.ads, put_scos.adb, get_scos.adb: Generate dominance
+	information in SCOs.
+
 2011-12-02  Eric Botcazou  <ebotcazou@adacore.com>
 	    Thomas Quinot <quinot@adacore.com>
 
