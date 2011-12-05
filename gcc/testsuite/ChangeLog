@@ -1,3 +1,13 @@
+2011-12-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
+	    Pedro Lamarão <pedro.lamarao@gmail.com>
+
+	* g++.dg/cpp0x/dc1.C: New test.
+	* g++.dg/cpp0x/dc2.C: New test.
+	* g++.dg/cpp0x/dc3.C: New test.
+	* g++.dg/cpp0x/dc4.C: New test.
+	* g++.dg/cpp0x/dc5.C: New test.
+	* g++.dg/template/meminit1.C: Adjust expected error.
+
 2011-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51404

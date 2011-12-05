@@ -11321,6 +11321,7 @@ static void
 cp_parser_mem_initializer_list (cp_parser* parser)
 {
   tree mem_initializer_list = NULL_TREE;
+  tree target_ctor = error_mark_node;
   cp_token *token = cp_lexer_peek_token (parser->lexer);
 
   /* Let the semantic analysis code know that we are starting the
@@ -11358,6 +11359,27 @@ cp_parser_mem_initializer_list (cp_parser* parser)
           if (mem_initializer != error_mark_node)
             mem_initializer = make_pack_expansion (mem_initializer);
         }
+      if (target_ctor != error_mark_node
+	  && mem_initializer != error_mark_node)
+	{
+	  error ("mem-initializer for %qD follows constructor delegation",
+		 TREE_PURPOSE (mem_initializer));
+	  mem_initializer = error_mark_node;
+	}
+      /* Look for a target constructor. */
+      if (mem_initializer != error_mark_node
+	  && TYPE_P (TREE_PURPOSE (mem_initializer))
+	  && same_type_p (TREE_PURPOSE (mem_initializer), current_class_type))
+	{
+	  maybe_warn_cpp0x (CPP0X_DELEGATING_CTORS);
+	  if (mem_initializer_list)
+	    {
+	      error ("constructor delegation follows mem-initializer for %qD",
+		     TREE_PURPOSE (mem_initializer_list));
+	      mem_initializer = error_mark_node;
+	    }
+	  target_ctor = mem_initializer;
+	}
       /* Add it to the list, unless it was erroneous.  */
       if (mem_initializer != error_mark_node)
 	{

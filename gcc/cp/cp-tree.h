@@ -404,7 +404,9 @@ typedef enum cpp0x_warn_str
   /* non-static data member initializers */
   CPP0X_NSDMI,
   /* user defined literals */
-  CPP0X_USER_DEFINED_LITERALS
+  CPP0X_USER_DEFINED_LITERALS,
+  /* delegating constructors */
+  CPP0X_DELEGATING_CTORS
 } cpp0x_warn_str;
   
 /* The various kinds of operation used by composite_pointer_type. */
