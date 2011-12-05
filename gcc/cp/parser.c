@@ -16055,18 +16055,20 @@ cp_parser_direct_declarator (cp_parser* parser,
 						 &non_constant_p);
 	      if (!non_constant_p)
 		/* OK */;
-	      /* Normally, the array bound must be an integral constant
-		 expression.  However, as an extension, we allow VLAs
-		 in function scopes as long as they aren't part of a
-		 parameter declaration.  */
+	      else if (error_operand_p (bounds))
+		/* Already gave an error.  */;
 	      else if (!parser->in_function_body
 		       || current_binding_level->kind == sk_function_parms)
 		{
+		  /* Normally, the array bound must be an integral constant
+		     expression.  However, as an extension, we allow VLAs
+		     in function scopes as long as they aren't part of a
+		     parameter declaration.  */
 		  cp_parser_error (parser,
 				   "array bound is not an integer constant");
 		  bounds = error_mark_node;
 		}
-	      else if (processing_template_decl && !error_operand_p (bounds))
+	      else if (processing_template_decl)
 		{
 		  /* Remember this wasn't a constant-expression.  */
 		  bounds = build_nop (TREE_TYPE (bounds), bounds);
