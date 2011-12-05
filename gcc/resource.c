@@ -1145,11 +1145,11 @@ init_resource_info (rtx epilogue_insn)
   basic_block bb;
 
   /* Indicate what resources are required to be valid at the end of the current
-     function.  The condition code never is and memory always is.  If the
-     frame pointer is needed, it is and so is the stack pointer unless
-     EXIT_IGNORE_STACK is nonzero.  If the frame pointer is not needed, the
-     stack pointer is.  Registers used to return the function value are
-     needed.  Registers holding global variables are needed.  */
+     function.  The condition code never is and memory always is.
+     The stack pointer is needed unless EXIT_IGNORE_STACK is true
+     and there is an epilogue that restores the original stack pointer
+     from the frame pointer.  Registers used to return the function value
+     are needed.  Registers holding global variables are needed.  */
 
   end_of_function_needs.cc = 0;
   end_of_function_needs.memory = 1;
@@ -1162,11 +1162,11 @@ init_resource_info (rtx epilogue_insn)
 #if !HARD_FRAME_POINTER_IS_FRAME_POINTER
       SET_HARD_REG_BIT (end_of_function_needs.regs, HARD_FRAME_POINTER_REGNUM);
 #endif
-      if (! EXIT_IGNORE_STACK
-	  || current_function_sp_is_unchanging)
-	SET_HARD_REG_BIT (end_of_function_needs.regs, STACK_POINTER_REGNUM);
     }
-  else
+  if (!(frame_pointer_needed
+	&& EXIT_IGNORE_STACK
+	&& epilogue_insn
+	&& !current_function_sp_is_unchanging))
     SET_HARD_REG_BIT (end_of_function_needs.regs, STACK_POINTER_REGNUM);
 
   if (crtl->return_rtx != 0)
