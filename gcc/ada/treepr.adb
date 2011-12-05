@@ -273,7 +273,17 @@ package body Treepr is
          when Elist_Range =>
             Print_Tree_Elist (Elist_Id (N));
          when Elmt_Range =>
-            raise Program_Error;
+            declare
+               Id : constant Elmt_Id := Elmt_Id (N);
+            begin
+               if No (Id) then
+                  Write_Str ("No_Elmt");
+                  Write_Eol;
+               else
+                  Write_Str ("Elmt_Id --> ");
+                  Print_Tree_Node (Node (Id));
+               end if;
+            end;
          when Names_Range =>
             Namet.wn (Name_Id (N));
          when Strings_Range =>
@@ -285,6 +295,7 @@ package body Treepr is
          when others =>
             Write_Str ("Invalid Union_Id: ");
             Write_Int (Int (N));
+            Write_Eol;
       end case;
    end pn;
 

@@ -5242,7 +5242,12 @@ is the only -gnatw switch that affects the handling of style check messages.
 @cindex @option{-gnatw.e} (@command{gcc})
 @cindex Warnings, activate every optional warning
 This switch activates all optional warnings, including those which
-are not activated by @code{-gnatwa}.
+are not activated by @code{-gnatwa}. The use of this switch is not
+recommended for normal use. If you turn this switch on, it is almost
+certain that you will get large numbers of useless warnings. The
+warnings that are excluded from @code{-gnatwa} are typically highly
+specialized warnings that are suitable for use only in code that has
+been specifically designed according to specialized coding rules.
 
 @item -gnatwf
 @emph{Activate warnings on unreferenced formals.}

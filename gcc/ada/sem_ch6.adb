@@ -331,6 +331,10 @@ package body Sem_Ch6 is
         and then Comes_From_Source (Prev)
       then
          Set_Has_Completion (Prev, False);
+
+         --  For navigation purposes, indicate that the function is a body
+
+         Generate_Reference (Prev, Defining_Entity (N), 'b', Force => True);
          Rewrite (N, New_Body);
          Analyze (N);
 

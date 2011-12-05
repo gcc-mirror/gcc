@@ -149,7 +149,9 @@ package body Par_SCO is
    procedure Traverse_Package_Body                (N : Node_Id);
    procedure Traverse_Package_Declaration         (N : Node_Id);
    procedure Traverse_Protected_Body              (N : Node_Id);
-   procedure Traverse_Subprogram_Or_Task_Body     (N : Node_Id);
+   procedure Traverse_Subprogram_Or_Task_Body
+     (N : Node_Id;
+      D : Dominant_Info := No_Dominant);
    procedure Traverse_Subprogram_Declaration      (N : Node_Id);
    --  Traverse the corresponding construct, generating SCO table entries
 
@@ -1039,8 +1041,8 @@ package body Par_SCO is
       Current_Dominant : Dominant_Info := D;
       --  Dominance information for the current basic block
 
-      Current_Condition : Node_Id;
-      --  Last tested condition in current IF statement
+      Current_Test : Node_Id;
+      --  Conditional node (N_If_Statement or N_Elsiif being processed
 
       N     : Node_Id;
       Dummy : Source_Ptr;
@@ -1273,15 +1275,20 @@ package body Par_SCO is
                   declare
                      Cond : constant Node_Id :=
                               Condition (Entry_Body_Formal_Part (N));
-
+                     Inner_Dominant : Dominant_Info := No_Dominant;
                   begin
                      Set_Statement_Entry;
 
                      if Present (Cond) then
                         Process_Decisions_Defer (Cond, 'G');
+
+                        --  For an entry body with a barrier, the entry body
+                        --  is dominanted by a True evaluation of the barrier.
+
+                        Inner_Dominant := ('T', N);
                      end if;
 
-                     Traverse_Subprogram_Or_Task_Body (N);
+                     Traverse_Subprogram_Or_Task_Body (N, Inner_Dominant);
                   end;
 
                --  Protected body
@@ -1299,7 +1306,15 @@ package body Par_SCO is
                   Extend_Statement_Sequence (N, ' ');
                   Process_Decisions_Defer (Condition (N), 'E');
                   Set_Statement_Entry;
-                  Current_Dominant := No_Dominant;
+
+                  --  If condition is present, then following statement is
+                  --  only executed if the condition evaluates to False.
+
+                  if Present (Condition (N)) then
+                     Current_Dominant := ('F', N);
+                  else
+                     Current_Dominant := No_Dominant;
+                  end if;
 
                --  Label, which breaks the current statement sequence, but the
                --  label itself is not included in the next statement sequence,
@@ -1324,41 +1339,57 @@ package body Par_SCO is
                --  but we include the condition in the current sequence.
 
                when N_If_Statement =>
-                  Current_Condition := Condition (N);
-                  Extend_Statement_Sequence (N, Current_Condition, 'I');
-                  Process_Decisions_Defer (Current_Condition, 'I');
+                  Current_Test := N;
+                  Extend_Statement_Sequence (N, Condition (N), 'I');
+                  Process_Decisions_Defer (Condition (N), 'I');
                   Set_Statement_Entry;
 
                   --  Now we traverse the statements in the THEN part
 
                   Traverse_Declarations_Or_Statements
                     (L => Then_Statements (N),
-                     D => ('T', Current_Condition));
+                     D => ('T', N));
 
                   --  Loop through ELSIF parts if present
 
                   if Present (Elsif_Parts (N)) then
                      declare
+                        Saved_Dominant : constant Dominant_Info :=
+                                           Current_Dominant;
                         Elif : Node_Id := First (Elsif_Parts (N));
 
                      begin
                         while Present (Elif) loop
 
+                           --  An Elsif is executed only if the previous test
+                           --  got a FALSE outcome.
+
+                           Current_Dominant := ('F', Current_Test);
+
+                           --  Now update current test information
+
+                           Current_Test := Elif;
+
                            --  We generate a statement sequence for the
                            --  construct "ELSIF condition", so that we have
                            --  a statement for the resulting decisions.
 
-                           Current_Condition := Condition (Elif);
                            Extend_Statement_Sequence
-                             (Elif, Current_Condition, 'I');
-                           Process_Decisions_Defer (Current_Condition, 'I');
+                             (Elif, Condition (Elif), 'I');
+                           Process_Decisions_Defer (Condition (Elif), 'I');
                            Set_Statement_Entry;
+
+                           --  An ELSIF part is never guaranteed to have
+                           --  been executed, following statements are only
+                           --  dominated by the initial IF statement.
+
+                           Current_Dominant := Saved_Dominant;
 
                            --  Traverse the statements in the ELSIF
 
                            Traverse_Declarations_Or_Statements
                              (L => Then_Statements (Elif),
-                              D => ('T', Current_Condition));
+                              D => ('T', Elif));
                            Next (Elif);
                         end loop;
                      end;
@@ -1368,7 +1399,7 @@ package body Par_SCO is
 
                   Traverse_Declarations_Or_Statements
                     (L => Else_Statements (N),
-                     D => ('F', Current_Condition));
+                     D => ('F', Current_Test));
 
                --  Case statement, which breaks the current statement sequence,
                --  but we include the expression in the current sequence.
@@ -1433,16 +1464,16 @@ package body Par_SCO is
                --  may not be executed as part of the current sequence.
 
                when N_Loop_Statement =>
-                  if Present (Iteration_Scheme (N)) then
+                  declare
+                     ISC : constant Node_Id := Iteration_Scheme (N);
+                     Inner_Dominant : Dominant_Info := No_Dominant;
+                  begin
+                     if Present (ISC) then
 
-                     --  If iteration scheme present, extend the current
-                     --  statement sequence to include the iteration scheme
-                     --  and process any decisions it contains.
+                        --  If iteration scheme present, extend the current
+                        --  statement sequence to include the iteration scheme
+                        --  and process any decisions it contains.
 
-                     declare
-                        ISC : constant Node_Id := Iteration_Scheme (N);
-
-                     begin
                         --  While statement
 
                         if Present (Condition (ISC)) then
@@ -1451,7 +1482,7 @@ package body Par_SCO is
 
                            --  Set more specific dominant for inner statements
 
-                           Current_Dominant := ('T', Condition (ISC));
+                           Inner_Dominant := ('T', N);
 
                         --  For statement
 
@@ -1460,17 +1491,18 @@ package body Par_SCO is
                            Process_Decisions_Defer
                              (Loop_Parameter_Specification (ISC), 'X');
                         end if;
-                     end;
-                  end if;
+                     end if;
 
-                  Set_Statement_Entry;
-                  Traverse_Declarations_Or_Statements
-                    (L => Statements (N),
-                     D => Current_Dominant);
+                     Set_Statement_Entry;
 
-                  --  Reset current dominant
+                     if Inner_Dominant = No_Dominant then
+                        Inner_Dominant := Current_Dominant;
+                     end if;
 
-                  Current_Dominant := ('S', N);
+                     Traverse_Declarations_Or_Statements
+                       (L => Statements (N),
+                        D => Inner_Dominant);
+                  end;
 
                --  Pragma
 
@@ -1708,10 +1740,13 @@ package body Par_SCO is
    -- Traverse_Subprogram_Or_Task_Body --
    --------------------------------------
 
-   procedure Traverse_Subprogram_Or_Task_Body (N : Node_Id) is
+   procedure Traverse_Subprogram_Or_Task_Body
+     (N : Node_Id;
+      D : Dominant_Info := No_Dominant)
+   is
    begin
-      Traverse_Declarations_Or_Statements (Declarations (N));
-      Traverse_Handled_Statement_Sequence (Handled_Statement_Sequence (N));
+      Traverse_Declarations_Or_Statements (Declarations (N), D);
+      Traverse_Handled_Statement_Sequence (Handled_Statement_Sequence (N), D);
    end Traverse_Subprogram_Or_Task_Body;
 
    -------------------------------------
