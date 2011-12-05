@@ -7400,7 +7400,7 @@ maybe_emit_sync_lock_test_and_set (rtx target, rtx mem, rtx val,
 	  rtx addr;
 
 	  addr = convert_memory_address (ptr_mode, XEXP (mem, 0));
-	  return emit_library_call_value (libfunc, target, LCT_NORMAL,
+	  return emit_library_call_value (libfunc, NULL_RTX, LCT_NORMAL,
 					  mode, 2, addr, ptr_mode,
 					  val, mode);
 	}
@@ -7637,7 +7637,7 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
   if (libfunc != NULL)
     {
       rtx addr = convert_memory_address (ptr_mode, XEXP (mem, 0));
-      target_oval = emit_library_call_value (libfunc, target_oval, LCT_NORMAL,
+      target_oval = emit_library_call_value (libfunc, NULL_RTX, LCT_NORMAL,
 					     mode, 3, addr, ptr_mode,
 					     expected, mode, desired, mode);
 
