@@ -1,3 +1,9 @@
+2011-12-05  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* optabs.c (maybe_emit_sync_lock_test_and_set): Pass a null target
+	to emit_library_call_value.
+	(expand_atomic_compare_and_swap): Likewise.
+
 2011-12-05  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR other/50775
