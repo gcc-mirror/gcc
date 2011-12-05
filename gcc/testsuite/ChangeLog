@@ -1,3 +1,9 @@
+2011-12-05  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/51319
+	* g++.dg/lookup/using50.C: New.
+	* g++.dg/lookup/using51.C: New.
+
 2011-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51396
