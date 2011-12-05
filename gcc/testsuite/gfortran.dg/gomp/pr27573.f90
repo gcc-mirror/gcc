@@ -1,5 +1,6 @@
 ! PR middle-end/27573
 ! { dg-do compile }
+! { dg-require-profiling "-fprofile-generate" }
 ! { dg-options "-O2 -fopenmp -fprofile-generate" }
 
 program pr27573
