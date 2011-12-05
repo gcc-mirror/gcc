@@ -1,5 +1,16 @@
 2011-12-05  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-alias.h (struct ao_ref_s): Add volatile_p field.
+	* tree-ssa-alias.c (ao_ref_init): Initialize it.
+	(ao_ref_init_from_ptr_and_size): Likewise.
+	(refs_may_alias_p_1): Two volatile accesses conflict.
+	(ref_maybe_used_by_call_p_1): Likewise.
+	(call_may_clobber_ref_p_1): Likewise.
+	* tree-ssa-sccvn.c (ao_ref_init_from_vn_reference): Initialize
+	volatile_p field.
+
+2011-12-05  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa.c (verify_ssa): Verify SSA names in the loop
 	over all SSA names.  Remove SSA operand checking, call
 	verify_ssa_operands.

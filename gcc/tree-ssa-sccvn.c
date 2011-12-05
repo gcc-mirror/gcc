@@ -918,6 +918,8 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
     ref->base_alias_set = base_alias_set;
   else
     ref->base_alias_set = get_alias_set (base);
+  /* We discount volatiles from value-numbering elsewhere.  */
+  ref->volatile_p = false;
 
   return true;
 }
