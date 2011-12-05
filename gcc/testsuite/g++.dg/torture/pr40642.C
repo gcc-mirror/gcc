@@ -1,4 +1,5 @@
 // { dg-do compile }
+/* { dg-require-profiling "-fprofile-generate" } */
 // { dg-options "-fprofile-generate" }
 
 // GCC used to ICE with some EH edge missing.

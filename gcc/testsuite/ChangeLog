@@ -1,3 +1,22 @@
+2011-12-05  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* g++.dg/debug/pr46338.C: Add dg-require-profiling.
+	* g++.dg/torture/pr39732.C: Likewise.
+	* g++.dg/torture/pr40642.C: Likewise.
+	* gcc.c-torture/compile/pr44686.c: Likewise.
+	* gcc.dg/20050309-1.c: Likewise.
+	* gcc.dg/20050330-2.c: Likewise.
+	* gcc.dg/20051201-1.c: Likewise.
+	* gcc.dg/gomp/pr27573.c: Likewise.
+	* gcc.dg/pr46255.c: Likewise.
+	* gcc.dg/profile-dir-1.c: Likewise.
+	* gcc.dg/profile-dir-2.c: Likewise.
+	* gcc.dg/profile-dir-3.c: Likewise.
+	* gcc.dg/profile-generate-1.c: Likewise.
+	* gfortran.dg/gomp/pr27573.f90: Likewise.
+	* gcc.dg/profile-generate-3.c: Be specific about the type of
+	profiling required.
+
 2011-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51414

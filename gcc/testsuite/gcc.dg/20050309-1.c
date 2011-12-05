@@ -2,6 +2,7 @@
    output reloads.  */
 
 /* { dg-do compile } */
+/* { dg-require-profiling "-fprofile-generate" } */
 /* { dg-options "-O2 -fprofile-generate" } */
 
 char *

@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-profiling "-fprofile-generate" } */
 /* { dg-options "-fprofile-generate" } */
 
 template<class _CharT>     struct char_traits;
