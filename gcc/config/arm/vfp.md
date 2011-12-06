@@ -1171,7 +1171,7 @@
   "@
   vmov.f32\\t%0, %1\;vcvt.f64.<FCVTI32typename>\\t%P0, %P0, %v2
   vmov.f32\\t%0, %1\;vcvt.f64.<FCVTI32typename>\\t%P0, %P0, %v2
-  vmov.f64\\t%0, %1, %1\; vcvt.f64.<FCVTI32typename>\\t%P0, %P0, %v2"
+  vmov.f64\\t%P0, %1, %1\;vcvt.f64.<FCVTI32typename>\\t%P0, %P0, %v2"
  [(set_attr "predicable" "no")
   (set_attr "type" "f_cvt")
   (set_attr "length" "8")]
