@@ -1,3 +1,18 @@
+2011-12-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Chris Jefferson  <chris@bubblescope.net>
+
+	PR libstdc++/51183
+	* include/std/stl_pair.h (pair<>::__cons, pair<>::__do_cons): Remove.
+	(pair<>::pair(piecewise_construct_t, tuple<>, tuple<>): Only declare.
+	(pair<>::pair(tuple<>&, tuple<>&, _Index_tuple<>, _Index_tuple<>)):
+	Declare.
+	* include/std/tuple (pair<>::__cons, pair<>::__do_cons): Remove.
+	(pair<>::pair(tuple<>&, tuple<>&, _Index_tuple<>, _Index_tuple<>)):
+	Define.
+	(pair<>::pair(piecewise_construct_t, tuple<>, tuple<>): Define,
+	delegating to the latter.
+	* testsuite/20_util/pair/piecewise2.cc: New.
+
 2011-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* libsupc++/initializer_list: Do not declare anything if
