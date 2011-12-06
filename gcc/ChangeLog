@@ -1,6 +1,12 @@
 2011-12-06  Georg-Johann Lay  <avr@gjlay.de>
 
 	Forward-port from gcc-4_6-branch r181936 2011-12-02.
+	* config/avr/avr-mcus.def (avr_mcu_types): ATtiny4313 and
+	AT86RF401 have a 16-bit SP (their manual is bogus).
+
+2011-12-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	Forward-port from gcc-4_6-branch r181936 2011-12-02.
 
 	PR target/51002
 	* config/avr/avr.md (movhi_sp_r): Set insn condition to
