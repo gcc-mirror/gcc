@@ -1,3 +1,9 @@
+2011-12-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51435
+	* expr.c (gfc_has_default_initializer): Fix handling of
+	DT with initialized pointer components.
+
 2011-12-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/51338
