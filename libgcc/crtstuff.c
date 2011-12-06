@@ -412,7 +412,7 @@ __do_global_dtors_aux (void)
 CRT_CALL_STATIC_FUNCTION (FINI_SECTION_ASM_OP, __do_global_dtors_aux)
 #elif defined (FINI_ARRAY_SECTION_ASM_OP)
 static func_ptr __do_global_dtors_aux_fini_array_entry[]
-  __attribute__ ((__used__, section(".fini_array")))
+  __attribute__ ((__used__, section(".fini_array"), aligned(sizeof(func_ptr))))
   = { __do_global_dtors_aux };
 #else /* !FINI_SECTION_ASM_OP && !FINI_ARRAY_SECTION_ASM_OP */
 static void __attribute__((used))
@@ -466,7 +466,7 @@ frame_dummy (void)
 CRT_CALL_STATIC_FUNCTION (INIT_SECTION_ASM_OP, frame_dummy)
 #else /* defined(INIT_SECTION_ASM_OP) */
 static func_ptr __frame_dummy_init_array_entry[]
-  __attribute__ ((__used__, section(".init_array")))
+  __attribute__ ((__used__, section(".init_array"), aligned(sizeof(func_ptr))))
   = { frame_dummy };
 #endif /* !defined(INIT_SECTION_ASM_OP) */
 #endif /* USE_EH_FRAME_REGISTRY || JCR_SECTION_NAME || USE_TM_CLONE_REGISTRY */
