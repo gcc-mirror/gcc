@@ -1,3 +1,8 @@
+2011-12-06  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* config/rs6000/rtems.h: Switch to using global_options_set
+	in SUBSUBTARGET_OVERRIDE_OPTIONS.
+
 2011-12-06  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/visintrin.h: Add appropriate __VIS__ cpp protection.
