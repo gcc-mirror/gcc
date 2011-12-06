@@ -56,7 +56,7 @@ AVR_MCU ("attiny2313",           ARCH_AVR25, "__AVR_ATtiny2313__",       1, 0, 0
 AVR_MCU ("attiny2313a",          ARCH_AVR25, "__AVR_ATtiny2313A__",      1, 0, 0x0060, "tn2313a")
 AVR_MCU ("attiny24",             ARCH_AVR25, "__AVR_ATtiny24__",         1, 0, 0x0060, "tn24")
 AVR_MCU ("attiny24a",            ARCH_AVR25, "__AVR_ATtiny24A__",        1, 0, 0x0060, "tn24a")
-AVR_MCU ("attiny4313",           ARCH_AVR25, "__AVR_ATtiny4313__",       1, 0, 0x0060, "tn4313")
+AVR_MCU ("attiny4313",           ARCH_AVR25, "__AVR_ATtiny4313__",       0, 0, 0x0060, "tn4313")
 AVR_MCU ("attiny44",             ARCH_AVR25, "__AVR_ATtiny44__",         0, 0, 0x0060, "tn44")
 AVR_MCU ("attiny44a",            ARCH_AVR25, "__AVR_ATtiny44A__",        0, 0, 0x0060, "tn44a")
 AVR_MCU ("attiny84",             ARCH_AVR25, "__AVR_ATtiny84__",         0, 0, 0x0060, "tn84")
@@ -74,7 +74,7 @@ AVR_MCU ("attiny43u",            ARCH_AVR25, "__AVR_ATtiny43U__",        0, 0, 0
 AVR_MCU ("attiny87",             ARCH_AVR25, "__AVR_ATtiny87__",         0, 0, 0x0100, "tn87")
 AVR_MCU ("attiny48",             ARCH_AVR25, "__AVR_ATtiny48__",         0, 0, 0x0100, "tn48")
 AVR_MCU ("attiny88",             ARCH_AVR25, "__AVR_ATtiny88__",         0, 0, 0x0100, "tn88")
-AVR_MCU ("at86rf401",            ARCH_AVR25, "__AVR_AT86RF401__",        1, 0, 0x0060, "86401")
+AVR_MCU ("at86rf401",            ARCH_AVR25, "__AVR_AT86RF401__",        0, 0, 0x0060, "86401")
 /* Classic, > 8K, <= 64K.  */
 AVR_MCU ("avr3",                 ARCH_AVR3, NULL,                        0, 0, 0x0060, "43355")
 AVR_MCU ("at43usb355",           ARCH_AVR3, "__AVR_AT43USB355__",        0, 0, 0x0060, "43355")
