@@ -156,6 +156,11 @@ rest_of_decl_compilation (tree decl,
       {
 	alias = TREE_VALUE (TREE_VALUE (alias));
 	alias = get_identifier (TREE_STRING_POINTER (alias));
+	/* A quirk of the initial implementation of aliases required that the
+	   user add "extern" to all of them.  Which is silly, but now
+	   historical.  Do note that the symbol is in fact locally defined.  */
+	if (!lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
+	  DECL_EXTERNAL (decl) = 0;
 	assemble_alias (decl, alias);
       }
   }

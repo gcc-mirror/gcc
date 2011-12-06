@@ -1,5 +1,12 @@
 2011-12-06  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/50601
+	* varasm.c (assemble_alias): Move DECL_EXTERNAL implementation
+	quirk adjustjment ...
+	* passes.c (rest_of_decl_compilation): ... here.
+
+2011-12-06  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/51436
 	* gimple-fold.c (gimplify_and_update_call_from_tree): Guard
 	vdef check for the fact we do not have virtual operands when

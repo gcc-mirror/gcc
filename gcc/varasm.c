@@ -5794,13 +5794,10 @@ void
 assemble_alias (tree decl, tree target)
 {
   tree target_decl;
-  bool is_weakref = false;
 
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
     {
       tree alias = DECL_ASSEMBLER_NAME (decl);
-
-      is_weakref = true;
 
       ultimate_transparent_alias_target (&target);
 
@@ -5838,12 +5835,6 @@ assemble_alias (tree decl, tree target)
 #endif
     }
   TREE_USED (decl) = 1;
-
-  /* A quirk of the initial implementation of aliases required that the user
-     add "extern" to all of them.  Which is silly, but now historical.  Do
-     note that the symbol is in fact locally defined.  */
-  if (! is_weakref)
-    DECL_EXTERNAL (decl) = 0;
 
   /* Allow aliases to aliases.  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
