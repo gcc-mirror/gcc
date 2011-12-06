@@ -24,6 +24,8 @@
 #ifndef _VISINTRIN_H_INCLUDED
 #define _VISINTRIN_H_INCLUDED
 
+#ifdef __VIS__
+
 typedef int __v2si __attribute__ ((__vector_size__ (8)));
 typedef int __v1si __attribute__ ((__vector_size__ (4)));
 typedef short __v4hi __attribute__ ((__vector_size__ (8)));
@@ -31,6 +33,8 @@ typedef short __v2hi __attribute__ ((__vector_size__ (4)));
 typedef unsigned char __v8qi __attribute__ ((__vector_size__ (8)));
 typedef unsigned char __v4qi __attribute__ ((__vector_size__ (4)));
 typedef int __i64 __attribute__ ((__mode__ (DI)));
+
+#if __VIS__ >= 0x200
 
 extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -45,6 +49,8 @@ __vis_read_gsr (void)
 {
   return __builtin_vis_read_gsr ();
 }
+
+#endif /* __VIS__ >= 0x200 */
 
 extern __inline void *
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -354,6 +360,8 @@ __vis_array32 (long __A, long __B)
   return __builtin_vis_array32 (__A, __B);
 }
 
+#if __VIS__ >= 0x200
+
 extern __inline long
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __vis_bmask (long __A, long __B)
@@ -430,6 +438,10 @@ __vis_edge32ln (void *__A, void *__B)
 {
   return __builtin_vis_edge32ln (__A, __B);
 }
+
+#endif /* __VIS__ >= 0x200 */
+
+#if __VIS__ >= 0x300
 
 extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -689,5 +701,9 @@ __vis_xmulxhi (__i64 __A, __i64 __B)
 {
   return __builtin_vis_xmulxhi (__A, __B);
 }
+
+#endif /* __VIS__ >= 0x300 */
+
+#endif /* __VIS__ */
 
 #endif  /* _VISINTRIN_H_INCLUDED */
