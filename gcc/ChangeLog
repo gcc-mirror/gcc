@@ -1,5 +1,16 @@
 2011-12-06  Georg-Johann Lay  <avr@gjlay.de>
 
+	Forward-port from gcc-4_6-branch r181936 2011-12-02.
+
+	PR target/51002
+	* config/avr/avr.md (movhi_sp_r): Set insn condition to
+	!AVR_HAVE_8BIT_SP.
+	* config/avr/avr.c (output_movhi): Use "clr%B0" instead of "in
+	%B0,__SP_H__" if AVR_HAVE_8BIT_SP.
+	(avr_file_start): Only print "__SP_H__ = 0x3e" if !AVR_HAVE_8BIT_SP.
+
+2011-12-06  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/51409
 	PR target/49868
 	* config/avr/avr.h (ADDR_SPACE_PGM, ADDR_SPACE_PGM1,
