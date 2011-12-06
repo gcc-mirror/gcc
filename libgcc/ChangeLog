@@ -1,3 +1,9 @@
+2011-12-06  Andrew Pinski  <apinski@cavium.com>
+
+	* crtstuff.c (__do_global_dtors_aux_fini_array_entry): Align to the
+	size of func_ptr.
+	(__frame_dummy_init_array_entry): Likewise.
+
 2011-12-06  Georg-Johann Lay  <avr@gjlay.de>
 
 	Forward-port from gcc-4_6-branch r181936 2011-12-02.
