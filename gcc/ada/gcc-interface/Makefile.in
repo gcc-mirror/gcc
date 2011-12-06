@@ -1580,18 +1580,32 @@ ifeq ($(strip $(filter-out avr none powerpc% eabispe leon% erc32% unknown elf,$(
   indepsw.adb<indepsw-gnu.adb
 endif
 
-ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
-  LIBGNAT_TARGET_PAIRS = \
+ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(osys))),)
+  # Cygwin provides a full Posix environment, and so we use the default
+  # versions of s-memory and g-socthi rather than the Windows-specific
+  # MinGW versions.  Ideally we would use all the default versions for
+  # Cygwin and none of the MinGW versions, but for historical reasons
+  # the Cygwin port has always been a CygMing frankenhybrid and it is
+  # a long-term project to disentangle them.
+  ifeq ($(strip $(filter-out cygwin%,$(osys))),)
+    LIBGNAT_TARGET_PAIRS = \
+    s-memory.adb<s-memory.adb \
+    g-socthi.ads<g-socthi.ads \
+    g-socthi.adb<g-socthi.adb
+  else
+    LIBGNAT_TARGET_PAIRS = \
+    s-memory.adb<s-memory-mingw.adb \
+    g-socthi.ads<g-socthi-mingw.ads \
+    g-socthi.adb<g-socthi-mingw.adb
+  endif
+  LIBGNAT_TARGET_PAIRS += \
   a-dirval.adb<a-dirval-mingw.adb \
   a-excpol.adb<a-excpol-abort.adb \
   s-gloloc.adb<s-gloloc-mingw.adb \
   s-inmaop.adb<s-inmaop-dummy.adb \
-  s-memory.adb<s-memory-mingw.adb \
   s-taspri.ads<s-taspri-mingw.ads \
   s-tasinf.adb<s-tasinf-mingw.adb \
   s-tasinf.ads<s-tasinf-mingw.ads \
-  g-socthi.ads<g-socthi-mingw.ads \
-  g-socthi.adb<g-socthi-mingw.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
   g-soliop.ads<g-soliop-mingw.ads \
   $(ATOMICS_TARGET_PAIRS)

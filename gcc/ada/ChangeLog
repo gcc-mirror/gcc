@@ -1,3 +1,18 @@
+2011-12-06  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* gcc-interface/Makefile.in (LIBGNAT_TARGET_PAIRS [windows targets]):
+	Correctly detect cygwin, which no longer has the '32' suffix, and use
+	appropriate implementations of the sockets and memory packages.
+	* sysdep.c (WIN_SETMODE): New define to choose the correct spelling of
+	setmode/_setmode for MinGW and Cygwin, respectively.
+	(__gnat_set_binary_mode [windows targets]): Use the above, and enable
+	the windows version for Cygwin as well as MinGW.
+	(__gnat_set_text_mode [windows targets]): Likewise.
+	(__gnat_ttyname [windows targets]): Provide a Cygwin implementation
+	in addition to the MinGW version.
+	(__gnat_is_windows_xp): Make available to Cygwin as well as MinGW.
+	(__gnat_get_stack_bounds): Likewise.
+
 2011-12-05  Bob Duff  <duff@adacore.com>
 
 	* sem_ch4.adb: Minor comment fix.
