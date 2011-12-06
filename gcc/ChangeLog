@@ -1,3 +1,7 @@
+2011-12-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_file_start): Fix missing ,
+
 2011-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/51354

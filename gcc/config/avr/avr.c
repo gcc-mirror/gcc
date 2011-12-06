@@ -7273,7 +7273,7 @@ avr_file_start (void)
 
   if (!AVR_HAVE_8BIT_SP)
     fprintf (asm_out_file,
-             "__SP_H__ = 0x%02x\n"
+             "__SP_H__ = 0x%02x\n",
              -sfr_offset + SP_ADDR + 1);
 
   fprintf (asm_out_file,
