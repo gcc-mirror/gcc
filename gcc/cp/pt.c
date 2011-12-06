@@ -10622,7 +10622,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	      type = DECL_ORIGINAL_TYPE (t);
 	    else
 	      type = TREE_TYPE (t);
-	    if (TREE_CODE (t) == VAR_DECL && VAR_HAD_UNKNOWN_BOUND (t))
+	    if (TREE_CODE (t) == VAR_DECL
+		&& VAR_HAD_UNKNOWN_BOUND (t)
+		&& type != error_mark_node)
 	      type = strip_array_domain (type);
 	    type = tsubst (type, args, complain, in_decl);
 	  }
