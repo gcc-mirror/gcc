@@ -1337,6 +1337,33 @@ vn_reference_lookup_2 (ao_ref *op ATTRIBUTE_UNUSED, tree vuse, void *vr_)
   return NULL;
 }
 
+/* Lookup an existing or insert a new vn_reference entry into the
+   value table for the VUSE, SET, TYPE, OPERANDS reference which
+   has the constant value CST.  */
+
+static vn_reference_t
+vn_reference_lookup_or_insert_constant_for_pieces (tree vuse,
+						   alias_set_type set,
+						   tree type,
+						   VEC (vn_reference_op_s,
+							heap) *operands,
+						   tree cst)
+{
+  struct vn_reference_s vr1;
+  vn_reference_t result;
+  vr1.vuse = vuse;
+  vr1.operands = operands;
+  vr1.type = type;
+  vr1.set = set;
+  vr1.hashcode = vn_reference_compute_hash (&vr1);
+  if (vn_reference_lookup_1 (&vr1, &result))
+    return result;
+  return vn_reference_insert_pieces (vuse, set, type,
+				     VEC_copy (vn_reference_op_s, heap,
+					       operands), cst,
+				     get_or_alloc_constant_value_id (cst));
+}
+
 /* Callback for walk_non_aliased_vuses.  Tries to perform a lookup
    from the statement defining VUSE and if not successful tries to
    translate *REFP and VR_ through an aggregate copy at the defintion
@@ -1416,11 +1443,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	  && offset2 + size2 >= offset + maxsize)
 	{
 	  tree val = build_zero_cst (vr->type);
-	  unsigned int value_id = get_or_alloc_constant_value_id (val);
-	  return vn_reference_insert_pieces (vuse, vr->set, vr->type,
-					     VEC_copy (vn_reference_op_s,
-						       heap, vr->operands),
-					     val, value_id);
+	  return vn_reference_lookup_or_insert_constant_for_pieces
+	           (vuse, vr->set, vr->type, vr->operands, val);
 	}
     }
 
@@ -1440,11 +1464,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	  && offset2 + size2 >= offset + maxsize)
 	{
 	  tree val = build_zero_cst (vr->type);
-	  unsigned int value_id = get_or_alloc_constant_value_id (val);
-	  return vn_reference_insert_pieces (vuse, vr->set, vr->type,
-					     VEC_copy (vn_reference_op_s,
-						       heap, vr->operands),
-					     val, value_id);
+	  return vn_reference_lookup_or_insert_constant_for_pieces
+	           (vuse, vr->set, vr->type, vr->operands, val);
 	}
     }
 
@@ -1484,13 +1505,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 						   / BITS_PER_UNIT),
 						ref->size / BITS_PER_UNIT);
 	      if (val)
-		{
-		  unsigned int value_id = get_or_alloc_constant_value_id (val);
-		  return vn_reference_insert_pieces
-		           (vuse, vr->set, vr->type,
-			    VEC_copy (vn_reference_op_s, heap, vr->operands),
-			    val, value_id);
-		}
+		return vn_reference_lookup_or_insert_constant_for_pieces
+		         (vuse, vr->set, vr->type, vr->operands, val);
 	    }
 	}
     }
@@ -1543,13 +1559,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 		    }
 		}
 	      if (val)
-		{
-		  unsigned int value_id = get_or_alloc_constant_value_id (val);
-		  return vn_reference_insert_pieces
-		           (vuse, vr->set, vr->type,
-			    VEC_copy (vn_reference_op_s, heap, vr->operands),
-			    val, value_id);
-		}
+		return vn_reference_lookup_or_insert_constant_for_pieces
+		         (vuse, vr->set, vr->type, vr->operands, val);
 	    }
 	}
     }
@@ -1635,6 +1646,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       FOR_EACH_VEC_ELT (vn_reference_op_s, rhs, j, vro)
 	VEC_replace (vn_reference_op_s, vr->operands, i + 1 + j, vro);
       VEC_free (vn_reference_op_s, heap, rhs);
+      vr->operands = valueize_refs (vr->operands);
       vr->hashcode = vn_reference_compute_hash (vr);
 
       /* Adjust *ref from the new operands.  */

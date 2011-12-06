@@ -1,3 +1,11 @@
+2011-12-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51245
+	* tree-ssa-sccvn.c (vn_reference_lookup_or_insert_constant_for_pieces):
+	New function.
+	(vn_reference_lookup_3): Use it.  Properly valueize all refs
+	we create.
+
 2011-12-06  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/rs6000/rs6000.c (darwin_rs6000_override_options): Initialize
