@@ -1,3 +1,9 @@
+2011-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/51430
+	* pt.c (tsubst_decl): Don't call strip_array_domain on
+	error_mark_node.
+
 2011-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51431

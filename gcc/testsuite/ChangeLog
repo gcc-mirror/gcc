@@ -1,3 +1,8 @@
+2011-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/51430
+	* g++.dg/template/static32.C: New test.
+
 2011-12-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/opt/pr51396.C: Use dg-additional-options.
