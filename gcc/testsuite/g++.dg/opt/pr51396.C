@@ -1,7 +1,7 @@
 // PR tree-optimization/51396
 // { dg-do compile }
-// { dg-options "-O2 -fnon-call-exceptions -mfma" }
-// { dg-options "-O2 -fnon-call-exceptions -mfma" { target i?86-*-* x86_64-*-* } }
+// { dg-options "-O2 -fnon-call-exceptions" }
+// { dg-additional-options "-mfma" { target i?86-*-* x86_64-*-* } }
 
 double baz (double) throw ();
 
