@@ -1,3 +1,8 @@
+2011-12-06  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* config/arm/vfp.md (*combine_vcvt_f64_<FCVTI32typename>): Fix 
+	formatting character for vmov.f64 case.
+
 2011-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51396
