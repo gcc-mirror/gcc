@@ -1,3 +1,14 @@
+2011-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/51132
+	* testsuite/libgomp.graphite/force-parallel-1.c: Move large arrays
+	to file scope.
+	* testsuite/libgomp.graphite/force-parallel-3.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-6.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-7.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-8.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-9.c: Likewise.
+
 2011-12-02  Alan Modra  <amodra@gmail.com>
 
 	* config/linux/affinity.c: Use atomic rather than sync builtin.

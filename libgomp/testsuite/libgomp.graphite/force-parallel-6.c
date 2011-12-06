@@ -1,10 +1,11 @@
 #define N 500
 
+int X[2*N], Y[2*N], B[2*N];
+int A[2*N][2*N], C[2*N][2*N];
+
 int foo(void)
 {
   int i, j, k;
-  int X[2*N], Y[2*N], B[2*N];
-  int A[2*N][2*N], C[2*N][2*N];
 
   for (i = 1; i <= N; i++)
     {
