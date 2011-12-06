@@ -149,11 +149,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: first(std::forward<_U1>(__p.first)),
 	  second(std::forward<_U2>(__p.second)) { }
 
-      template<class... _Args1, class... _Args2>
-	pair(piecewise_construct_t,
-	     tuple<_Args1...> __first, tuple<_Args2...> __second)
-	: first(__cons<first_type>(std::move(__first))),
-	  second(__cons<second_type>(std::move(__second))) { }
+      template<typename... _Args1, typename... _Args2>
+        pair(piecewise_construct_t, tuple<_Args1...>, tuple<_Args2...>);
 
       pair&
       operator=(const pair& __p)
@@ -202,13 +199,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     private:
-      template<typename _Tp, typename... _Args>
-	static _Tp
-	__cons(tuple<_Args...>&&);
-
-      template<typename _Tp, typename... _Args, std::size_t... _Indexes>
-	static _Tp
-	__do_cons(tuple<_Args...>&&, const _Index_tuple<_Indexes...>&);
+      template<typename... _Args1, std::size_t... _Indexes1,
+               typename... _Args2, std::size_t... _Indexes2>
+        pair(tuple<_Args1...>&, tuple<_Args2...>&,
+             _Index_tuple<_Indexes1...>, _Index_tuple<_Indexes2...>);
 #endif
     };
 
