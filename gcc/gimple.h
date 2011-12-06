@@ -948,7 +948,6 @@ void gimple_cond_get_ops_from_tree (tree, enum tree_code *, tree *, tree *);
 gimple gimple_build_cond_from_tree (tree, tree, tree);
 void gimple_cond_set_condition_from_tree (gimple, tree);
 bool gimple_has_side_effects (const_gimple);
-bool gimple_rhs_has_side_effects (const_gimple);
 bool gimple_could_trap_p (gimple);
 bool gimple_could_trap_p_1 (gimple, bool, bool);
 bool gimple_assign_rhs_could_trap_p (gimple);

@@ -1,3 +1,10 @@
+2011-12-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51363
+	* gimple.c (gimple_rhs_has_side_effects): Remove.
+	* gimple.h (gimple_rhs_has_side_effects): Likewise.
+	* tree-ssa-dom.c (optimize_stmt): Simplify conditional.
+
 2011-12-06  Alan Modra  <amodra@gmail.com>
 
 	PR target/50906

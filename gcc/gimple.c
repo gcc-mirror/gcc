@@ -2484,69 +2484,6 @@ gimple_has_side_effects (const_gimple s)
   return false;
 }
 
-/* Return true if the RHS of statement S has side effects.
-   We may use it to determine if it is admissable to replace
-   an assignment or call with a copy of a previously-computed
-   value.  In such cases, side-effects due to the LHS are
-   preserved.  */
-
-bool
-gimple_rhs_has_side_effects (const_gimple s)
-{
-  unsigned i;
-
-  if (is_gimple_call (s))
-    {
-      unsigned nargs = gimple_call_num_args (s);
-      tree fn;
-
-      if (!(gimple_call_flags (s) & (ECF_CONST | ECF_PURE)))
-        return true;
-
-      /* We cannot use gimple_has_volatile_ops here,
-         because we must ignore a volatile LHS.  */
-      fn = gimple_call_fn (s);
-      if (fn && (TREE_SIDE_EFFECTS (fn) || TREE_THIS_VOLATILE (fn)))
-	{
-	  gcc_assert (gimple_has_volatile_ops (s));
-	  return true;
-	}
-
-      for (i = 0; i < nargs; i++)
-        if (TREE_SIDE_EFFECTS (gimple_call_arg (s, i))
-            || TREE_THIS_VOLATILE (gimple_call_arg (s, i)))
-          return true;
-
-      return false;
-    }
-  else if (is_gimple_assign (s))
-    {
-      /* Skip the first operand, the LHS. */
-      for (i = 1; i < gimple_num_ops (s); i++)
-	if (TREE_SIDE_EFFECTS (gimple_op (s, i))
-            || TREE_THIS_VOLATILE (gimple_op (s, i)))
-	  {
-	    gcc_assert (gimple_has_volatile_ops (s));
-	    return true;
-	  }
-    }
-  else if (is_gimple_debug (s))
-    return false;
-  else
-    {
-      /* For statements without an LHS, examine all arguments.  */
-      for (i = 0; i < gimple_num_ops (s); i++)
-	if (TREE_SIDE_EFFECTS (gimple_op (s, i))
-            || TREE_THIS_VOLATILE (gimple_op (s, i)))
-	  {
-	    gcc_assert (gimple_has_volatile_ops (s));
-	    return true;
-	  }
-    }
-
-  return false;
-}
-
 /* Helper for gimple_could_trap_p and gimple_assign_rhs_could_trap_p.
    Return true if S can trap.  When INCLUDE_MEM is true, check whether
    the memory operations could trap.  When INCLUDE_STORES is true and
