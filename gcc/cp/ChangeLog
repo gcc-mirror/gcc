@@ -1,3 +1,9 @@
+2011-12-06  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/51427
+	* parser.c (cp_parser_check_class_key): Add note about earlier
+	declaration.
+
 2011-12-05  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/51319
