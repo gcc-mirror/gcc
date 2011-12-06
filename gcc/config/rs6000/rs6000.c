@@ -2502,6 +2502,7 @@ darwin_rs6000_override_options (void)
      off.  */
   rs6000_altivec_abi = 1;
   TARGET_ALTIVEC_VRSAVE = 1;
+  rs6000_current_abi = ABI_DARWIN;
 
   if (DEFAULT_ABI == ABI_DARWIN
       && TARGET_64BIT)
