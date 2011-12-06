@@ -1,3 +1,23 @@
+2011-12-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/51409
+	PR target/49868
+	* config/avr/avr.h (ADDR_SPACE_PGM, ADDR_SPACE_PGM1,
+	ADDR_SPACE_PGM2, ADDR_SPACE_PGM3, ADDR_SPACE_PGM4,
+	ADDR_SPACE_PGM5, ADDR_SPACE_PGMX): Write as enum.
+	(avr_addrspace_t): New typedef.
+	(avr_addrspace): New declaration.
+	* config/avr/avr-c.c (avr_toupper): New static function.
+	(avr_register_target_pragmas, avr_cpu_cpp_builtins): Use
+	avr_addrspace to get address space information.
+	* config/avr/avr.c (avr_addrspace): New variable.
+	(avr_out_lpm, avr_pgm_check_var_decl, avr_insert_attributes,
+	avr_asm_named_section, avr_section_type_flags,
+	avr_asm_select_section, avr_addr_space_address_mode, 
+	avr_addr_space_convert, avr_emit_movmemhi): Use it.
+	(avr_addr_space_pointer_mode): Forward to avr_addr_space_address_mode.
+	(avr_pgm_segment): Remove.
+
 2011-12-06  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/50601
