@@ -1,3 +1,8 @@
+2011-12-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51435
+	* gfortran.dg/default_initialization_5.f90: New.
+
 2011-12-06  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/50622

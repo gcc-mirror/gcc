@@ -3679,6 +3679,8 @@ gfc_has_default_initializer (gfc_symbol *der)
         if (!c->attr.pointer
 	     && gfc_has_default_initializer (c->ts.u.derived))
 	  return true;
+	if (c->attr.pointer && c->initializer)
+	  return true;
       }
     else
       {
@@ -3688,6 +3690,7 @@ gfc_has_default_initializer (gfc_symbol *der)
 
   return false;
 }
+
 
 /* Get an expression for a default initializer.  */
 
