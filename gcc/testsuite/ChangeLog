@@ -1,3 +1,8 @@
+2011-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/51354
+	* gcc.c-torture/compile/pr51354.c: New test.
+
 2011-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51431
