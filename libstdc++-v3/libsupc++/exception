@@ -62,12 +62,12 @@ namespace std
   class exception
   {
   public:
-    exception() throw() { }
-    virtual ~exception() throw();
+    exception() _GLIBCXX_USE_NOEXCEPT { }
+    virtual ~exception() _GLIBCXX_USE_NOEXCEPT;
 
     /** Returns a C-style character string describing the general cause
      *  of the current error.  */
-    virtual const char* what() const throw();
+    virtual const char* what() const _GLIBCXX_USE_NOEXCEPT;
   };
 
   /** If an %exception is thrown which is not listed in a function's
@@ -75,14 +75,14 @@ namespace std
   class bad_exception : public exception
   {
   public:
-    bad_exception() throw() { }
+    bad_exception() _GLIBCXX_USE_NOEXCEPT { }
 
     // This declaration is not useless:
     // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
-    virtual ~bad_exception() throw();
+    virtual ~bad_exception() _GLIBCXX_USE_NOEXCEPT;
 
     // See comment in eh_exception.cc.
-    virtual const char* what() const throw();
+    virtual const char* what() const _GLIBCXX_USE_NOEXCEPT;
   };
 
   /// If you write a replacement %terminate handler, it must be of this type.
@@ -92,14 +92,14 @@ namespace std
   typedef void (*unexpected_handler) ();
 
   /// Takes a new handler function as an argument, returns the old function.
-  terminate_handler set_terminate(terminate_handler) throw();
+  terminate_handler set_terminate(terminate_handler) _GLIBCXX_USE_NOEXCEPT;
 
   /** The runtime will call this function if %exception handling must be
    *  abandoned for any reason.  It can also be called by the user.  */
-  void terminate() throw() __attribute__ ((__noreturn__));
+  void terminate() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__noreturn__));
 
   /// Takes a new handler function as an argument, returns the old function.
-  unexpected_handler set_unexpected(unexpected_handler) throw();
+  unexpected_handler set_unexpected(unexpected_handler) _GLIBCXX_USE_NOEXCEPT;
 
   /** The runtime will call this function if an %exception is thrown which
    *  violates the function's %exception specification.  */
@@ -116,7 +116,7 @@ namespace std
    *  %exception can result in a call of @c terminate()
    *  (15.5.1).'
    */
-  bool uncaught_exception() throw() __attribute__ ((__pure__));
+  bool uncaught_exception() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
 
   // @} group exceptions
 } // namespace std

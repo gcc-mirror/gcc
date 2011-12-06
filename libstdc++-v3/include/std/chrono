@@ -686,18 +686,18 @@ _GLIBCXX_END_NAMESPACE_VERSION
       static constexpr bool is_steady = false;
 
       static time_point
-      now() throw ();
+      now() noexcept;
 
       // Map to C API
       static std::time_t
-      to_time_t(const time_point& __t)
+      to_time_t(const time_point& __t) noexcept
       {
 	return std::time_t(duration_cast<chrono::seconds>
 			   (__t.time_since_epoch()).count());
       }
 
       static time_point
-      from_time_t(std::time_t __t)
+      from_time_t(std::time_t __t) noexcept
       {
 	typedef chrono::time_point<system_clock, seconds>	__from;
 	return time_point_cast<system_clock::duration>
@@ -717,7 +717,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
       static constexpr bool is_steady = true;
 
       static time_point
-      now();
+      now() noexcept;
     };
 #else
     typedef system_clock steady_clock;

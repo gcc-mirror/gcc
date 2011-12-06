@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-require-atomic-builtins "" }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,8 +23,8 @@
 
 struct derived : std::nested_exception { };
 
-struct not_derived { virtual ~not_derived(); };
-inline not_derived::~not_derived() = default;
+struct not_derived { virtual ~not_derived() noexcept; };
+inline not_derived::~not_derived() noexcept = default;
 
 void test01() 
 {

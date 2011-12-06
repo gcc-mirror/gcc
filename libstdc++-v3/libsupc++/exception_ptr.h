@@ -59,7 +59,7 @@ namespace std
    *  is none, or the currently handled exception is foreign, return the null
    *  value.
    */
-  exception_ptr current_exception() throw();
+  exception_ptr current_exception() _GLIBCXX_USE_NOEXCEPT;
 
   /// Throw the object pointed to by the exception_ptr.
   void rethrow_exception(exception_ptr) __attribute__ ((__noreturn__));
@@ -74,27 +74,27 @@ namespace std
     {
       void* _M_exception_object;
 
-      explicit exception_ptr(void* __e) throw();
+      explicit exception_ptr(void* __e) _GLIBCXX_USE_NOEXCEPT;
 
-      void _M_addref() throw();
-      void _M_release() throw();
+      void _M_addref() _GLIBCXX_USE_NOEXCEPT;
+      void _M_release() _GLIBCXX_USE_NOEXCEPT;
 
-      void *_M_get() const throw() __attribute__ ((__pure__));
+      void *_M_get() const _GLIBCXX_NOEXCEPT __attribute__ ((__pure__));
 
-      friend exception_ptr std::current_exception() throw();
+      friend exception_ptr std::current_exception() _GLIBCXX_USE_NOEXCEPT;
       friend void std::rethrow_exception(exception_ptr);
 
     public:
-      exception_ptr() throw();
+      exception_ptr() _GLIBCXX_USE_NOEXCEPT;
 
-      exception_ptr(const exception_ptr&) throw();
+      exception_ptr(const exception_ptr&) _GLIBCXX_USE_NOEXCEPT;
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      exception_ptr(nullptr_t) throw()
+      exception_ptr(nullptr_t) noexcept
       : _M_exception_object(0)
       { }
 
-      exception_ptr(exception_ptr&& __o) throw()
+      exception_ptr(exception_ptr&& __o) noexcept
       : _M_exception_object(__o._M_exception_object)
       { __o._M_exception_object = 0; }
 #endif
@@ -103,31 +103,33 @@ namespace std
       typedef void (exception_ptr::*__safe_bool)();
 
       // For construction from nullptr or 0.
-      exception_ptr(__safe_bool) throw();
+      exception_ptr(__safe_bool) _GLIBCXX_USE_NOEXCEPT;
 #endif
 
       exception_ptr& 
-      operator=(const exception_ptr&) throw();
+      operator=(const exception_ptr&) _GLIBCXX_USE_NOEXCEPT;
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       exception_ptr& 
-      operator=(exception_ptr&& __o) throw()
+      operator=(exception_ptr&& __o) noexcept
       {
         exception_ptr(static_cast<exception_ptr&&>(__o)).swap(*this);
         return *this;
       }
 #endif
 
-      ~exception_ptr() throw();
+      ~exception_ptr() _GLIBCXX_USE_NOEXCEPT;
 
       void 
-      swap(exception_ptr&) throw();
+      swap(exception_ptr&) _GLIBCXX_USE_NOEXCEPT;
 
 #ifdef _GLIBCXX_EH_PTR_COMPAT
       // Retained for compatibility with CXXABI_1.3.
-      void _M_safe_bool_dummy() throw() __attribute__ ((__const__));
-      bool operator!() const throw() __attribute__ ((__pure__));
-      operator __safe_bool() const throw();
+      void _M_safe_bool_dummy() _GLIBCXX_USE_NOEXCEPT
+	__attribute__ ((__const__));
+      bool operator!() const _GLIBCXX_USE_NOEXCEPT
+	__attribute__ ((__pure__));
+      operator __safe_bool() const _GLIBCXX_USE_NOEXCEPT;
 #endif
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -136,20 +138,21 @@ namespace std
 #endif
 
       friend bool 
-      operator==(const exception_ptr&, const exception_ptr&) throw() 
-      __attribute__ ((__pure__));
+      operator==(const exception_ptr&, const exception_ptr&)
+	_GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
 
       const class type_info*
-      __cxa_exception_type() const throw() __attribute__ ((__pure__));
+      __cxa_exception_type() const _GLIBCXX_USE_NOEXCEPT
+	__attribute__ ((__pure__));
     };
 
     bool 
-    operator==(const exception_ptr&, const exception_ptr&) throw() 
-    __attribute__ ((__pure__));
+    operator==(const exception_ptr&, const exception_ptr&)
+      _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
 
     bool 
-    operator!=(const exception_ptr&, const exception_ptr&) throw() 
-    __attribute__ ((__pure__));
+    operator!=(const exception_ptr&, const exception_ptr&)
+      _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
 
     inline void
     swap(exception_ptr& __lhs, exception_ptr& __rhs)
@@ -161,7 +164,7 @@ namespace std
   /// Obtain an exception_ptr pointing to a copy of the supplied object.
   template<typename _Ex>
     exception_ptr 
-    copy_exception(_Ex __ex) throw()
+    copy_exception(_Ex __ex) _GLIBCXX_USE_NOEXCEPT
     {
       __try
 	{
@@ -180,7 +183,7 @@ namespace std
   /// Obtain an exception_ptr pointing to a copy of the supplied object.
   template<typename _Ex>
     exception_ptr 
-    make_exception_ptr(_Ex __ex) throw()
+    make_exception_ptr(_Ex __ex) _GLIBCXX_USE_NOEXCEPT
     { return std::copy_exception<_Ex>(__ex); }
 
   // @} group exceptions

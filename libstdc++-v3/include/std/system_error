@@ -337,7 +337,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : runtime_error(__what + ": " + error_code(__v, __ecat).message()),
       _M_code(__v, __ecat) { }
 
-    virtual ~system_error() throw();
+    virtual ~system_error() noexcept;
 
     const error_code& 
     code() const noexcept { return _M_code; }

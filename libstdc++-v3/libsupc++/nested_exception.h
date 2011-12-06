@@ -57,13 +57,13 @@ namespace std
     exception_ptr _M_ptr;
 
   public:
-    nested_exception() throw() : _M_ptr(current_exception()) { }
+    nested_exception() noexcept : _M_ptr(current_exception()) { }
 
     nested_exception(const nested_exception&) = default;
 
     nested_exception& operator=(const nested_exception&) = default;
 
-    virtual ~nested_exception();
+    virtual ~nested_exception() noexcept;
 
     void
     rethrow_nested() const __attribute__ ((__noreturn__))

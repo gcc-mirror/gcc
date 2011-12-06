@@ -29,10 +29,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  bad_weak_ptr::~bad_weak_ptr() throw() = default;
+  bad_weak_ptr::~bad_weak_ptr() noexcept = default;
 
   char const*
-  bad_weak_ptr::what() const throw()  
+  bad_weak_ptr::what() const noexcept
   { return "std::bad_weak_ptr"; }
 
 _GLIBCXX_END_NAMESPACE_VERSION
