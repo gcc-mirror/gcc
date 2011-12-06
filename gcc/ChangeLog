@@ -1,3 +1,22 @@
+2011-12-06  Alan Modra  <amodra@gmail.com>
+
+	PR target/50906
+	* config/rs6000/rs6000.c (rs6000_emit_prologue <TARGET_SPE_ABI>):
+	Do not mark r11 setup as frame-related.  Pass correct offset to
+	rs6000_emit_savres_rtx.  Correct out-of-line rs6000_frame_related
+	arguments.  Correct sp_offset.  Remove "offset" fudge from
+	in-line rs6000_frame_related call.  Rename misleading variable.
+	Fix comments and whitespace.  Tidy some expressions.
+	(rs6000_emit_epilogue <TARGET_SPE_ABI>): Always set frame_reg_rtx
+	to r11 in out-of-line case.  Correct sp_offset.  Pass correct
+	offset to rs6000_emit_savres_rtx.  Rename misleading variable.
+	Fix comments and whitespace.  Tidy some expressions.
+	(rs6000_emit_epilogue <non-TARGET_SPE_ABI>): Add sp_offset
+	adjustment when !saving_GPRs_inline.  Correct register mode
+	used in address calcs.
+	(rs6000_emit_epilogue <non-TARGET_SPE_ABI>): Similarly when
+	!restoring_GPRs_inline.
+
 2011-12-04  Jérémie Detrey  <Jeremie.Detrey@loria.fr>
 
 	PR target/51393
