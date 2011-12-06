@@ -1,5 +1,12 @@
 2011-12-06  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/51436
+	* gimple-fold.c (gimplify_and_update_call_from_tree): Guard
+	vdef check for the fact we do not have virtual operands when
+	not optimizing.
+
+2011-12-06  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/51245
 	* tree-ssa-sccvn.c (vn_reference_lookup_or_insert_constant_for_pieces):
 	New function.

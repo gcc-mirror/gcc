@@ -600,7 +600,7 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 	  else
 	    vdef = make_ssa_name (gimple_vop (cfun), new_stmt);
 	  gimple_set_vdef (new_stmt, vdef);
-	  if (TREE_CODE (vdef) == SSA_NAME)
+	  if (vdef && TREE_CODE (vdef) == SSA_NAME)
 	    SSA_NAME_DEF_STMT (vdef) = new_stmt;
 	  laststore = new_stmt;
 	}

@@ -1,5 +1,10 @@
 2011-12-06  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/51436
+	* g++.dg/torture/pr51436.C: New testcase.
+
+2011-12-06  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/51245
 	* gcc.dg/torture/pr51245.c: New testcase.
 
