@@ -1,3 +1,7 @@
+2011-12-06  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/visintrin.h: Add appropriate __VIS__ cpp protection.
+
 2011-12-06  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (avr_file_start): Fix missing ,
