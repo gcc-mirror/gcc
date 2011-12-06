@@ -1633,7 +1633,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
   class bad_function_call : public std::exception
   {
   public:
-    virtual ~bad_function_call() throw();
+    virtual ~bad_function_call() noexcept;
   };
 
   /**

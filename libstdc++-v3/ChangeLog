@@ -1,3 +1,32 @@
+2011-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/51438
+	* libsupc++/nested_exception.h (nested_exception::~nested_exception):
+	Declare noexcept.
+	* libsupc++/nested_exception.cc: Adjust.
+	* testsuite/18_support/nested_exception/51438.cc: New.
+	* testsuite/18_support/nested_exception/throw_with_nested.cc: Adjust.
+	* testsuite/18_support/nested_exception/rethrow_if_nested.cc:
+	Likewise.
+
+	* src/shared_ptr.cc: Use noexcept where appropriate.
+	* include/std/system_error: Likewise.
+	* include/std/functional: Likewise.
+	* include/bits/shared_ptr_base.h: Likewise.
+	* src/stdexcept.cc: Use _GLIBCXX_USE_NOEXCEPT where appropriate.
+	* include/std/stdexcept: Likewise.
+	* libsupc++/bad_cast.cc: Likewise.
+	* libsupc++/bad_typeid.cc: Likewise.
+	* libsupc++/eh_exception.cc: Likewise.
+	* libsupc++/typeinfo: Likewise.
+	* libsupc++/exception: Likewise.
+	* libsupc++/eh_ptr.cc: Likewise.
+	* libsupc++/bad_alloc.cc: Likewise.
+	* libsupc++/exception_ptr.h: Likewise.
+
+	* include/std/chrono: Use noexcept where appropriate.
+	* src/chrono.cc: Likewise.
+
 2011-12-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 	    Chris Jefferson  <chris@bubblescope.net>
 

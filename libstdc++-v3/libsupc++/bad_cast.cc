@@ -1,5 +1,5 @@
 // Copyright (C) 1994, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2007,
-// 2009  Free Software Foundation
+// 2009, 2010, 2011  Free Software Foundation
 //
 // This file is part of GCC.
 //
@@ -26,10 +26,10 @@
 
 namespace std {
 
-bad_cast::~bad_cast() throw() { }
+bad_cast::~bad_cast() _GLIBCXX_USE_NOEXCEPT { }
 
 const char* 
-bad_cast::what() const throw()
+bad_cast::what() const _GLIBCXX_USE_NOEXCEPT
 {
   return "std::bad_cast";
 }
