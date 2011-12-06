@@ -1,3 +1,13 @@
+2011-12-06  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline:
+
+	2011-12-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/50622
+	* tree-sra.c (load_assign_lhs_subreplacements): Force gimple operand
+	if both lacc and racc are grp_partial_lhs.
+
 2011-12-06  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/rs6000/rs6000.c (darwin_rs6000_override_options): Initialize
