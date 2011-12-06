@@ -10,11 +10,10 @@ package syslog
 
 import (
 	"fmt"
-	"os"
 	"syscall"
 )
 
-func unixSyslog() (conn serverConn, err os.Error) {
+func unixSyslog() (conn serverConn, err error) {
 	return libcConn(0), nil
 }
 
@@ -22,16 +21,16 @@ type libcConn int
 
 func syslog_c(int, *byte)
 
-func (libcConn) writeBytes(p Priority, prefix string, b []byte) (int, os.Error) {
+func (libcConn) writeBytes(p Priority, prefix string, b []byte) (int, error) {
 	syslog_c(int(p), syscall.StringBytePtr(fmt.Sprintf("%s: %s", prefix, b)))
 	return len(b), nil
 }
 
-func (libcConn) writeString(p Priority, prefix string, s string) (int, os.Error) {
+func (libcConn) writeString(p Priority, prefix string, s string) (int, error) {
 	syslog_c(int(p), syscall.StringBytePtr(fmt.Sprintf("%s: %s", prefix, s)))
 	return len(s), nil
 }
 
-func (libcConn) close() os.Error {
+func (libcConn) close() error {
 	return nil
 }
