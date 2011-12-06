@@ -1,3 +1,7 @@
+2011-12-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/opt/pr51396.C: Use dg-additional-options.
+
 2011-12-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51435
@@ -188,8 +192,7 @@
 
 	* gfortran.dg/select_type_23.f03: Revert Rev. 181801,
 	i.e. remove the dg-error line.
-	* gfortran.dg/move_alloc_5.f90: Ditto and change back
-	to dg-do run.
+	* gfortran.dg/move_alloc_5.f90: Ditto and change back to dg-do run.
 	* gfortran.dg/move_alloc_9.f90: New.
 	* gfortran.dg/move_alloc_10.f90: New
 
