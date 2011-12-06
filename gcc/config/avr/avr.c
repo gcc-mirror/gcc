@@ -2875,78 +2875,77 @@ output_movqi (rtx insn, rtx operands[], int *l)
 
 
 const char *
-output_movhi (rtx insn, rtx operands[], int *l)
+output_movhi (rtx insn, rtx xop[], int *plen)
 {
-  int dummy;
-  rtx dest = operands[0];
-  rtx src = operands[1];
-  int *real_l = l;
+  rtx dest = xop[0];
+  rtx src = xop[1];
+
+  gcc_assert (GET_MODE_SIZE (GET_MODE (dest)) == 2);
   
   if (avr_mem_pgm_p (src)
       || avr_mem_pgm_p (dest))
     {
-      return avr_out_lpm (insn, operands, real_l);
+      return avr_out_lpm (insn, xop, plen);
     }
 
-  if (!l)
-    l = &dummy;
-  
-  if (register_operand (dest, HImode))
+  if (REG_P (dest))
     {
-      if (register_operand (src, HImode)) /* mov r,r */
-	{
-	  if (test_hard_reg_class (STACK_REG, dest))
-	    {
-	      if (AVR_HAVE_8BIT_SP)
-		return *l = 1, AS2 (out,__SP_L__,%A1);
-              /* Use simple load of stack pointer if no interrupts are 
-		 used.  */
-	      else if (TARGET_NO_INTERRUPTS)
-		return *l = 2, (AS2 (out,__SP_H__,%B1) CR_TAB
-				AS2 (out,__SP_L__,%A1));
-	      *l = 5;
-	      return (AS2 (in,__tmp_reg__,__SREG__)  CR_TAB
-		      "cli"                          CR_TAB
-		      AS2 (out,__SP_H__,%B1)         CR_TAB
-		      AS2 (out,__SREG__,__tmp_reg__) CR_TAB
-		      AS2 (out,__SP_L__,%A1));
-	    }
-	  else if (test_hard_reg_class (STACK_REG, src))
-	    {
-	      *l = 2;	
-	      return (AS2 (in,%A0,__SP_L__) CR_TAB
-		      AS2 (in,%B0,__SP_H__));
-	    }
+      if (REG_P (src)) /* mov r,r */
+        {
+          if (test_hard_reg_class (STACK_REG, dest))
+            {
+              if (AVR_HAVE_8BIT_SP)
+                return avr_asm_len ("out __SP_L__,%A1", xop, plen, -1);
+              
+              /* Use simple load of SP if no interrupts are  used.  */
+              
+              return TARGET_NO_INTERRUPTS
+                ? avr_asm_len ("out __SP_H__,%B1" CR_TAB
+                               "out __SP_L__,%A1", xop, plen, -2)
 
-	  if (AVR_HAVE_MOVW)
-	    {
-	      *l = 1;
-	      return (AS2 (movw,%0,%1));
-	    }
-	  else
-	    {
-	      *l = 2;
-	      return (AS2 (mov,%A0,%A1) CR_TAB
-		      AS2 (mov,%B0,%B1));
-	    }
-	}
+                : avr_asm_len ("in __tmp_reg__,__SREG__"  CR_TAB
+                               "cli"                      CR_TAB
+                               "out __SP_H__,%B1"         CR_TAB
+                               "out __SREG__,__tmp_reg__" CR_TAB
+                               "out __SP_L__,%A1", xop, plen, -5);
+            }
+          else if (test_hard_reg_class (STACK_REG, src))
+            {
+              return AVR_HAVE_8BIT_SP
+                ? avr_asm_len ("in %A0,__SP_L__" CR_TAB
+                               "clr %B0", xop, plen, -2)
+                
+                : avr_asm_len ("in %A0,__SP_L__" CR_TAB
+                               "in %B0,__SP_H__", xop, plen, -2);
+            }
+
+          return AVR_HAVE_MOVW
+            ? avr_asm_len ("movw %0,%1", xop, plen, -1)
+
+            : avr_asm_len ("mov %A0,%A1" CR_TAB
+                           "mov %B0,%B1", xop, plen, -2);
+        } /* REG_P (src) */
       else if (CONSTANT_P (src))
         {
-          return output_reload_inhi (operands, NULL, real_l);
+          return output_reload_inhi (xop, NULL, plen);
         }
-      else if (GET_CODE (src) == MEM)
-	return out_movhi_r_mr (insn, operands, real_l); /* mov r,m */
+      else if (MEM_P (src))
+        {
+          return out_movhi_r_mr (insn, xop, plen); /* mov r,m */
+        }
     }
-  else if (GET_CODE (dest) == MEM)
+  else if (MEM_P (dest))
     {
       rtx xop[2];
 
       xop[0] = dest;
       xop[1] = src == const0_rtx ? zero_reg_rtx : src;
 
-      return out_movhi_mr_r (insn, xop, real_l);
+      return out_movhi_mr_r (insn, xop, plen);
     }
+  
   fatal_insn ("invalid insn:", insn);
+  
   return "";
 }
 
@@ -7272,16 +7271,19 @@ avr_file_start (void)
 
   default_file_start ();
 
+  if (!AVR_HAVE_8BIT_SP)
+    fprintf (asm_out_file,
+             "__SP_H__ = 0x%02x\n"
+             -sfr_offset + SP_ADDR + 1);
+
   fprintf (asm_out_file,
-           "__SREG__ = 0x%02x\n"
-           "__SP_H__ = 0x%02x\n"
            "__SP_L__ = 0x%02x\n"
+           "__SREG__ = 0x%02x\n"
            "__RAMPZ__ = 0x%02x\n"
            "__tmp_reg__ = %d\n" 
            "__zero_reg__ = %d\n",
-           -sfr_offset + SREG_ADDR,
-           -sfr_offset + SP_ADDR + 1,
            -sfr_offset + SP_ADDR,
+           -sfr_offset + SREG_ADDR,
            -sfr_offset + RAMPZ_ADDR,
            TMP_REGNO,
            ZERO_REGNO);

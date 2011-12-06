@@ -1149,7 +1149,14 @@ DEFUN  __divdi3_moddi3
 
 4:  ;; Epilogue: Restore the Z = 12 Registers and return
     in r28, __SP_L__
+#if defined (__AVR_HAVE_8BIT_SP__)
+;; FIXME: __AVR_HAVE_8BIT_SP__ is set on device level, not on core level
+;;        so this lines are dead code.  To make it work, devices without
+;;        SP_H must get their own multilib(s).
+    clr r29
+#else
     in r29, __SP_H__
+#endif /* #SP = 8/16 */
     ldi r30, 12
     XJMP __epilogue_restores__ + ((18 - 12) * 2)
 
@@ -1229,6 +1236,15 @@ DEFUN __prologue_saves__
 	push r17
 	push r28
 	push r29
+#if defined (__AVR_HAVE_8BIT_SP__)
+;; FIXME: __AVR_HAVE_8BIT_SP__ is set on device level, not on core level
+;;        so this lines are dead code.  To make it work, devices without
+;;        SP_H must get their own multilib(s).
+	in	r28,__SP_L__
+	sub	r28,r26
+	out	__SP_L__,r28
+	clr	r29
+#else
 	in	r28,__SP_L__
 	in	r29,__SP_H__
 	sub	r28,r26
@@ -1238,6 +1254,8 @@ DEFUN __prologue_saves__
 	out	__SP_H__,r29
 	out	__SREG__,__tmp_reg__
 	out	__SP_L__,r28
+#endif /* #SP = 8/16 */
+
 #if defined (__AVR_HAVE_EIJMP_EICALL__)
 	eijmp
 #else
@@ -1270,6 +1288,15 @@ DEFUN __epilogue_restores__
 	ldd	r16,Y+4
 	ldd	r17,Y+3
 	ldd	r26,Y+2
+#if defined (__AVR_HAVE_8BIT_SP__)
+;; FIXME: __AVR_HAVE_8BIT_SP__ is set on device level, not on core level
+;;        so this lines are dead code.  To make it work, devices without
+;;        SP_H must get their own multilib(s).
+	ldd	r29,Y+1
+	add	r28,r30
+	out	__SP_L__,r28
+	mov	r28, r26
+#else
 	ldd	r27,Y+1
 	add	r28,r30
 	adc	r29,__zero_reg__
@@ -1280,6 +1307,7 @@ DEFUN __epilogue_restores__
 	out	__SP_L__,r28
 	mov_l	r28, r26
 	mov_h	r29, r27
+#endif /* #SP = 8/16 */
 	ret
 ENDF __epilogue_restores__
 #endif /* defined (L_epilogue) */

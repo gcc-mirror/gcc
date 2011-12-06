@@ -1,3 +1,13 @@
+2011-12-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	Forward-port from gcc-4_6-branch r181936 2011-12-02.
+
+	PR target/51345
+	PR target/51002
+	* config/avr/lib1funcs.S (__prologue_saves__,
+	__epilogue_restores__, __divdi3_moddi3): Enclose parts using
+	__SP_H__ in !defined (__AVR_HAVE_8BIT_SP__).  Add FIXME comments.
+
 2011-12-04  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/rs6000/t-darwin64 (LIB2ADD): Add fp and gp save routines.

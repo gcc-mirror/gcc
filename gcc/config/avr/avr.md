@@ -620,7 +620,7 @@
         (unspec_volatile:HI [(match_operand:HI 1 "register_operand"  "r,r")
                              (match_operand:HI 2 "const_int_operand" "L,P")]
                             UNSPECV_WRITE_SP))]
-  ""
+  "!AVR_HAVE_8BIT_SP"
   "@
 	out __SP_H__,%B1\;out __SP_L__,%A1
 	cli\;out __SP_H__,%B1\;sei\;out __SP_L__,%A1"
