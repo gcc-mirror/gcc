@@ -1,3 +1,8 @@
+2011-12-06  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c (darwin_rs6000_override_options): Initialize
+	rs6000_current_abi.
+
 2011-12-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51363
