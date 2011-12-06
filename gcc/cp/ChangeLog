@@ -1,3 +1,9 @@
+2011-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51431
+	* init.c (build_value_init): Check build_aggr_init_expr return
+	value for error_mark_node.
+
 2011-12-06  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51427

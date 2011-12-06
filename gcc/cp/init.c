@@ -359,11 +359,9 @@ build_value_init (tree type, tsubst_flags_t complain)
 	  tree ctor = build_special_member_call
 	    (NULL_TREE, complete_ctor_identifier,
 	     NULL, type, LOOKUP_NORMAL, complain);
+	  ctor = build_aggr_init_expr (type, ctor, complain);
 	  if (ctor != error_mark_node)
-	    {
-	      ctor = build_aggr_init_expr (type, ctor, complain);
-	      AGGR_INIT_ZERO_FIRST (ctor) = 1;
-	    }
+	    AGGR_INIT_ZERO_FIRST (ctor) = 1;
 	  return ctor;
 	}
     }

@@ -1,3 +1,8 @@
+2011-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51431
+	* g++.dg/other/abstract3.C: New.
+
 2011-12-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49997
