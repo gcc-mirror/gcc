@@ -10545,9 +10545,9 @@ ix86_emit_leave (void)
       add_reg_note (insn, REG_CFA_DEF_CFA,
 		    plus_constant (stack_pointer_rtx, m->fs.sp_offset));
       RTX_FRAME_RELATED_P (insn) = 1;
-      ix86_add_cfa_restore_note (insn, hard_frame_pointer_rtx,
-				 m->fs.fp_offset);
     }
+  ix86_add_cfa_restore_note (insn, hard_frame_pointer_rtx,
+			     m->fs.fp_offset);
 }
 
 /* Emit code to restore saved registers using MOV insns.

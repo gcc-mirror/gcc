@@ -1,3 +1,9 @@
+2011-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/51354
+	* config/i386/i386.c (ix86_emit_leave): Call ix86_add_cfa_restore_note
+	unconditionally.
+
 2011-12-06  Georg-Johann Lay  <avr@gjlay.de>
 
 	Forward-port from gcc-4_6-branch r181936 2011-12-02.
