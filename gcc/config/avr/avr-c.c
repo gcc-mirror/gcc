@@ -36,16 +36,39 @@
 void
 avr_register_target_pragmas (void)
 {
-  c_register_addr_space ("__pgm", ADDR_SPACE_PGM);
-  c_register_addr_space ("__pgm1", ADDR_SPACE_PGM1);
-  c_register_addr_space ("__pgm2", ADDR_SPACE_PGM2);
-  c_register_addr_space ("__pgm3", ADDR_SPACE_PGM3);
-  c_register_addr_space ("__pgm4", ADDR_SPACE_PGM4);
-  c_register_addr_space ("__pgm5", ADDR_SPACE_PGM5);
-  c_register_addr_space ("__pgmx", ADDR_SPACE_PGMX);
+  int i;
+
+  gcc_assert (ADDR_SPACE_GENERIC == ADDR_SPACE_RAM);
+
+  /* Register address spaces.  The order must be the same as in the respective
+     enum from avr.h (or designated initialized must be used in avr.c).  */
+
+  for (i = 0; avr_addrspace[i].name; i++)
+    {
+      gcc_assert (i == avr_addrspace[i].id);
+
+      if (!ADDR_SPACE_GENERIC_P (i))
+        c_register_addr_space (avr_addrspace[i].name, avr_addrspace[i].id);
+    }
 }
 
 
+/* Transorm LO into uppercase and write the result to UP.
+   You must provide enough space for UP.  Return UP.  */
+
+static char*
+avr_toupper (char *up, const char *lo)
+{
+  char *up0 = up;
+  
+  for (; *lo; lo++, up++)
+    *up = TOUPPER (*lo);
+
+  *up = '\0';
+
+  return up0;
+}
+             
 /* Worker function for TARGET_CPU_CPP_BUILTINS.  */
 
 void
@@ -117,13 +140,17 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   
   if (!strcmp (lang_hooks.name, "GNU C"))
     {
-      cpp_define (pfile, "__PGM=__pgm");
-      cpp_define (pfile, "__PGM1=__pgm1");
-      cpp_define (pfile, "__PGM2=__pgm2");
-      cpp_define (pfile, "__PGM3=__pgm3");
-      cpp_define (pfile, "__PGM4=__pgm4");
-      cpp_define (pfile, "__PGM5=__pgm5");
-      cpp_define (pfile, "__PGMX=__pgmx");
+      int i;
+      
+      for (i = 0; avr_addrspace[i].name; i++)
+        if (!ADDR_SPACE_GENERIC_P (i))
+          {
+            const char *name = avr_addrspace[i].name;
+            char *Name = (char*) alloca (1 + strlen (name));
+
+            cpp_define_formatted (pfile, "%s=%s",
+                                  avr_toupper (Name, name), name);
+          }
     }
 
   /* Define builtin macros so that the user can

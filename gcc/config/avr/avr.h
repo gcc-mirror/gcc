@@ -133,6 +133,40 @@ extern const struct mcu_type_s *avr_current_device;
 extern const struct mcu_type_s avr_mcu_types[];
 extern const struct base_arch_s avr_arch_types[];
 
+typedef struct
+{
+  /* Id of the address space as used in c_register_addr_space */
+  unsigned char id;
+
+  /* Flavour of memory: 0 = RAM, 1 = Flash */
+  int memory_class;
+
+  /* Width of pointer (in bytes) */
+  int pointer_size;
+
+  /* Name of the address space as visible to the user */
+  const char *name;
+
+  /* Segment (i.e. 64k memory chunk) number.  */
+  int segment;
+} avr_addrspace_t;
+
+extern const avr_addrspace_t avr_addrspace[];
+
+/* Known address spaces */
+
+enum
+  {
+    ADDR_SPACE_RAM,
+    ADDR_SPACE_PGM,
+    ADDR_SPACE_PGM1,
+    ADDR_SPACE_PGM2,
+    ADDR_SPACE_PGM3,
+    ADDR_SPACE_PGM4,
+    ADDR_SPACE_PGM5,
+    ADDR_SPACE_PGMX
+  };
+
 #define TARGET_CPU_CPP_BUILTINS()	avr_cpu_cpp_builtins (pfile)
 
 #define AVR_HAVE_JMP_CALL (avr_current_arch->have_jmp_call && !TARGET_SHORT_CALLS)
@@ -400,15 +434,6 @@ typedef struct avr_args {
 #define SLOW_BYTE_ACCESS 0
 
 #define NO_FUNCTION_CSE
-
-
-#define ADDR_SPACE_PGM  1
-#define ADDR_SPACE_PGM1 2
-#define ADDR_SPACE_PGM2 3
-#define ADDR_SPACE_PGM3 4
-#define ADDR_SPACE_PGM4 5
-#define ADDR_SPACE_PGM5 6
-#define ADDR_SPACE_PGMX 7
 
 #define REGISTER_TARGET_PRAGMAS()                                       \
   do {                                                                  \

@@ -55,10 +55,38 @@
 /* Return true if STR starts with PREFIX and false, otherwise.  */
 #define STR_PREFIX_P(STR,PREFIX) (0 == strncmp (STR, PREFIX, strlen (PREFIX)))
 
-/* The 4 bits starting at SECTION_MACH_DEP are reverved to store
-   1 + flash segment where progmem data is to be located.
-   For example, data with __pgm2 is stored as (1+2) * SECTION_MACH_DEP.  */
+/* The 4 bits starting at SECTION_MACH_DEP are reserved to store the
+   address space where data is to be located.
+   As the only non-generic address spaces are all located in Flash,
+   this can be used to test if data shall go into some .progmem* section.
+   This must be the rightmost field of machine dependent section flags.  */
 #define AVR_SECTION_PROGMEM (0xf * SECTION_MACH_DEP)
+
+/* Known address spaces.  The order must be the same as in the respective
+   enum from avr.h (or designated initialized must be used).  */
+const avr_addrspace_t avr_addrspace[] =
+{
+    { ADDR_SPACE_RAM,  0, 2, ""     ,   0 },
+    { ADDR_SPACE_PGM,  1, 2, "__pgm",   0 },
+    { ADDR_SPACE_PGM1, 1, 2, "__pgm1",  1 },
+    { ADDR_SPACE_PGM2, 1, 2, "__pgm2",  2 },
+    { ADDR_SPACE_PGM3, 1, 2, "__pgm3",  3 },
+    { ADDR_SPACE_PGM4, 1, 2, "__pgm4",  4 },
+    { ADDR_SPACE_PGM5, 1, 2, "__pgm5",  5 },
+    { ADDR_SPACE_PGMX, 1, 3, "__pgmx",  0 },
+    { 0              , 0, 0, NULL,      0 }
+};
+
+/* Map 64-k Flash segment to section prefix.  */
+static const char* const progmem_section_prefix[6] =
+  {
+    ".progmem.data",
+    ".progmem1.data",
+    ".progmem2.data",
+    ".progmem3.data",
+    ".progmem4.data",
+    ".progmem5.data"
+  };
 
 
 /* Prototypes for local helper functions.  */
@@ -132,18 +160,9 @@ const struct mcu_type_s *avr_current_device;
 /* Section to put switch tables in.  */
 static GTY(()) section *progmem_swtable_section;
 
-/* Unnamed section associated to __attribute__((progmem)) aka. PROGMEM.  */
+/* Unnamed sections associated to __attribute__((progmem)) aka. PROGMEM
+   or to address space __pgm*.  */
 static GTY(()) section *progmem_section[6];
-
-static const char * const progmem_section_prefix[6] =
-  {
-    ".progmem.data",
-    ".progmem1.data",
-    ".progmem2.data",
-    ".progmem3.data",
-    ".progmem4.data",
-    ".progmem5.data"
-  };
 
 /* To track if code will use .bss and/or .data.  */
 bool avr_need_clear_bss_p = false;
@@ -459,29 +478,6 @@ avr_scalar_mode_supported_p (enum machine_mode mode)
     return true;
 
   return default_scalar_mode_supported_p (mode);
-}
-
-
-/* Return the segment number of pgm address space AS, i.e.
-   the 64k block it lives in.
-   Return -1 if unknown, i.e. 24-bit AS in flash.
-   Return -2 for anything else.  */
-
-static int
-avr_pgm_segment (addr_space_t as)
-{
-  switch (as)
-    {
-    default: return -2;
-
-    case ADDR_SPACE_PGMX:  return -1;
-    case ADDR_SPACE_PGM:   return 0;
-    case ADDR_SPACE_PGM1:  return 1;
-    case ADDR_SPACE_PGM2:  return 2;
-    case ADDR_SPACE_PGM3:  return 3;
-    case ADDR_SPACE_PGM4:  return 4;
-    case ADDR_SPACE_PGM5:  return 5;
-    }
 }
 
 
@@ -2582,6 +2578,9 @@ avr_out_lpm (rtx insn, rtx *op, int *plen)
   int n_bytes = GET_MODE_SIZE (GET_MODE (dest));
   int regno_dest;
   int segment;
+  RTX_CODE code;
+  
+  addr_space_t as;
 
   if (plen)
     *plen = 0;
@@ -2589,27 +2588,29 @@ avr_out_lpm (rtx insn, rtx *op, int *plen)
   if (MEM_P (dest))
     {
       warning (0, "writing to address space %qs not supported",
-               c_addr_space_name (MEM_ADDR_SPACE (dest)));
+               avr_addrspace[MEM_ADDR_SPACE (dest)].name);
       
       return "";
     }
 
+  as = MEM_ADDR_SPACE (src);
+
   addr = XEXP (src, 0);
+  code = GET_CODE (addr);
 
-  segment = avr_pgm_segment (MEM_ADDR_SPACE (src));
-
-  gcc_assert (REG_P (dest)
-              && ((segment >= 0
-                   && (REG_P (addr) || POST_INC == GET_CODE (addr)))
-                  || (GET_CODE (addr) == LO_SUM && segment == -1)));
-
-  if (segment == -1)
+  gcc_assert (REG_P (dest));
+  
+  if (as == ADDR_SPACE_PGMX)
     {
       /* We are called from avr_out_xload because someone wrote
          __pgmx on a device with just one flash segment.  */
 
+      gcc_assert (LO_SUM == code);
+
       addr = XEXP (addr, 1);
     }
+  else
+    gcc_assert (REG == code || POST_INC == code);
 
   xop[0] = dest;
   xop[1] = addr;
@@ -2619,11 +2620,10 @@ avr_out_lpm (rtx insn, rtx *op, int *plen)
 
   regno_dest = REGNO (dest);
 
-  /* Cut down segment number to a number the device actually
-     supports.  We do this late to preserve the address space's
-     name for diagnostics.  */
+  /* Cut down segment number to a number the device actually supports.
+     We do this late to preserve the address space's name for diagnostics.  */
 
-  segment %= avr_current_arch->n_segments;
+  segment = avr_addrspace[as].segment % avr_current_arch->n_segments;
 
   /* Set RAMPZ as needed.  */
 
@@ -2652,13 +2652,16 @@ avr_out_lpm (rtx insn, rtx *op, int *plen)
         }
       
       xop[4] = xstring_e;
-    }
 
-  if ((segment == 0 && !AVR_HAVE_LPMX)
-      || (segment != 0 && !AVR_HAVE_ELPMX))
+      if (!AVR_HAVE_ELPMX)
+        return avr_out_lpm_no_lpmx (insn, xop, plen);
+    }
+  else if (!AVR_HAVE_LPMX)
     {
       return avr_out_lpm_no_lpmx (insn, xop, plen);
     }
+
+  /* We have [E]LPMX: Output reading from Flash the comfortable way.  */
 
   switch (GET_CODE (addr))
     {
@@ -6919,10 +6922,10 @@ avr_pgm_check_var_decl (tree node)
     {
       if (TYPE_P (node))
         error ("pointer targeting address space %qs must be const in %qT",
-               c_addr_space_name (as), node);
+               avr_addrspace[as].name, node);
       else
         error ("pointer targeting address space %qs must be const in %s %q+D",
-               c_addr_space_name (as), reason, node);
+               avr_addrspace[as].name, reason, node);
     }
 
   return reason == NULL;
@@ -6959,7 +6962,7 @@ avr_insert_attributes (tree node, tree *attributes)
           const char *reason = "__attribute__((progmem))";
 
           if (!ADDR_SPACE_GENERIC_P (as))
-            reason = c_addr_space_name (as);
+            reason = avr_addrspace[as].name;
           
           if (avr_log.progmem)
             avr_edump ("\n%?: %t\n%t\n", node, node0);
@@ -7136,7 +7139,8 @@ avr_asm_named_section (const char *name, unsigned int flags, tree decl)
 {
   if (flags & AVR_SECTION_PROGMEM)
     {
-      int segment = (flags & AVR_SECTION_PROGMEM) / SECTION_MACH_DEP - 1;
+      addr_space_t as = (flags & AVR_SECTION_PROGMEM) / SECTION_MACH_DEP;
+      int segment = avr_addrspace[as].segment % avr_current_arch->n_segments;
       const char *old_prefix = ".rodata";
       const char *new_prefix = progmem_section_prefix[segment];
       const char *sname = new_prefix;
@@ -7165,7 +7169,6 @@ avr_asm_named_section (const char *name, unsigned int flags, tree decl)
 static unsigned int
 avr_section_type_flags (tree decl, const char *name, int reloc)
 {
-  int prog;
   unsigned int flags = default_section_type_flags (decl, name, reloc);
 
   if (STR_PREFIX_P (name, ".noinit"))
@@ -7179,16 +7182,20 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
     }
 
   if (decl && DECL_P (decl)
-      && (prog = avr_progmem_p (decl, DECL_ATTRIBUTES (decl)), prog))
+      && avr_progmem_p (decl, DECL_ATTRIBUTES (decl)))
     {
-      int segment = 0;
+      addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (decl));
 
-      if (prog == 1)
-        segment = avr_pgm_segment (TYPE_ADDR_SPACE (TREE_TYPE (decl)));
+      /* Attribute progmem puts data in generic address space.
+         Set section flags as if it was in __pgm to get the right
+         section prefix in the remainder.  */
 
+      if (ADDR_SPACE_GENERIC_P (as))
+        as = ADDR_SPACE_PGM;
+
+      flags |= as * SECTION_MACH_DEP;
       flags &= ~SECTION_WRITE;
       flags &= ~SECTION_BSS;
-      flags |= (1 + segment % avr_current_arch->n_segments) * SECTION_MACH_DEP;
     }
   
   return flags;
@@ -7198,8 +7205,7 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
 /* Implement `TARGET_ENCODE_SECTION_INFO'.  */
 
 static void
-avr_encode_section_info (tree decl, rtx rtl,
-                         int new_decl_p)
+avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
 {
   /* In avr_handle_progmem_attribute, DECL_INITIAL is not yet
      readily available, see PR34734.  So we postpone the warning
@@ -7224,19 +7230,13 @@ avr_encode_section_info (tree decl, rtx rtl,
 static section *
 avr_asm_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
 {
-  int prog;
-  
   section * sect = default_elf_select_section (decl, reloc, align);
   
   if (decl && DECL_P (decl)
-      && (prog = avr_progmem_p (decl, DECL_ATTRIBUTES (decl)), prog))
+      && avr_progmem_p (decl, DECL_ATTRIBUTES (decl)))
     {
-      int segment = 0;
-      
-      if (prog == 1)
-        segment = avr_pgm_segment (TYPE_ADDR_SPACE (TREE_TYPE (decl)));
-
-      segment %= avr_current_arch->n_segments;
+      addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (decl));
+      int segment = avr_addrspace[as].segment % avr_current_arch->n_segments;
       
       if (sect->common.flags & SECTION_NAMED)
         {
@@ -9386,7 +9386,7 @@ avr_case_values_threshold (void)
 static enum machine_mode
 avr_addr_space_address_mode (addr_space_t as)
 {
-  return as == ADDR_SPACE_PGMX ? PSImode : HImode;
+  return avr_addrspace[as].pointer_size == 3 ? PSImode : HImode;
 }
 
 
@@ -9395,7 +9395,7 @@ avr_addr_space_address_mode (addr_space_t as)
 static enum machine_mode
 avr_addr_space_pointer_mode (addr_space_t as)
 {
-  return as == ADDR_SPACE_PGMX ? PSImode : HImode;
+  return avr_addr_space_address_mode (as);
 }
 
 
@@ -9573,7 +9573,7 @@ avr_addr_space_convert (rtx src, tree type_from, tree type_to)
         }
       else
         {
-          int segment = avr_pgm_segment (as_from) % n_segments;
+          int segment = avr_addrspace[as_from].segment % n_segments;
 
           new_src = gen_reg_rtx (PSImode);
           emit_insn (gen_n_extendhipsi2 (new_src, GEN_INT (segment), src));
@@ -9642,15 +9642,12 @@ avr_emit_movmemhi (rtx *xop)
     }
   else
     {
-      int seg = avr_pgm_segment (as);
+      int segment = avr_addrspace[as].segment % avr_current_arch->n_segments;
       
       addr1 = a_src;
 
-      if (seg > 0
-          && seg % avr_current_arch->n_segments > 0)
-        {
-          a_hi8 = GEN_INT (seg % avr_current_arch->n_segments);
-        }
+      if (segment)
+        a_hi8 = GEN_INT (segment);
     }
 
   if (a_hi8
