@@ -3554,7 +3554,7 @@ lookup_literal_operator (tree name, VEC(tree,gc) *args)
 {
   tree decl, fns;
   decl = lookup_name (name);
-  if (!decl || decl == error_mark_node)
+  if (!decl || !is_overloaded_fn (decl))
     return error_mark_node;
 
   for (fns = decl; fns; fns = OVL_NEXT (fns))
