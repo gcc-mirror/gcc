@@ -1,3 +1,10 @@
+2011-12-07  François Dumont <fdumont@gcc.gnu.org>
+
+	PR libstdc++/51386
+	* include/bits/hashtable_policy.h (_Prime_rehash_policy::_M_next_bkt):
+	Fix computation of _M_prev_resize so that hashtable do not keep on
+	being rehashed when _M_max_load_factor is lower than 1.
+
 2011-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/51438
