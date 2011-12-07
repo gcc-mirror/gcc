@@ -1,3 +1,9 @@
+2011-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/51369
+	* init.c (build_value_init): Allow array types even when
+	processing_template_decl.
+
 2011-12-07  Ed Smith-Rowland <3dw4rd@verizon.net>
 
 	PR c++/51420
