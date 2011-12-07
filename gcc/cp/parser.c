@@ -17737,7 +17737,8 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 	  designator = cp_parser_constant_expression (parser, false, NULL);
 	  cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
 	  cp_parser_require (parser, CPP_EQ, RT_EQ);
-	  cp_parser_parse_definitely (parser);
+	  if (!cp_parser_parse_definitely (parser))
+	    designator = NULL_TREE;
 	}
       else
 	designator = NULL_TREE;

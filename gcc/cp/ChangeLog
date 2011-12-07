@@ -1,5 +1,11 @@
 2011-12-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/51229
+	* decl.c (reshape_init_class): Complain if d->cur->index is
+	INTEGER_CST.
+	* parser.c (cp_parser_initializer_list): If cp_parser_parse_definitely
+	fails, clear designator.
+
 	PR c++/51369
 	* init.c (build_value_init): Allow array types even when
 	processing_template_decl.

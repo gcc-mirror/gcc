@@ -1,5 +1,8 @@
 2011-12-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/51229
+	* g++.dg/ext/desig3.C: New test.
+
 	PR c++/51369
 	* g++.dg/cpp0x/constexpr-51369.C: New test.
 
