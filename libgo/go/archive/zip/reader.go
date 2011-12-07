@@ -7,10 +7,10 @@ package zip
 import (
 	"bufio"
 	"compress/flate"
+	"encoding/binary"
 	"errors"
 	"hash"
 	"hash/crc32"
-	"encoding/binary"
 	"io"
 	"io/ioutil"
 	"os"
@@ -60,6 +60,7 @@ func OpenReader(name string) (*ReadCloser, error) {
 		f.Close()
 		return nil, err
 	}
+	r.f = f
 	return r, nil
 }
 

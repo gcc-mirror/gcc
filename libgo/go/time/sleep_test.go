@@ -7,8 +7,8 @@ package time_test
 import (
 	"errors"
 	"fmt"
-	"testing"
 	"sort"
+	"testing"
 	. "time"
 )
 
@@ -148,7 +148,7 @@ func TestAfterQueuing(t *testing.T) {
 }
 
 // For gccgo omit 0 for now because it can take too long to start the
-var slots = []int{5, 3, 6, 6, 6, 1, 1, 2, 7, 9, 4, 8, /*0*/}
+var slots = []int{5, 3, 6, 6, 6, 1, 1, 2, 7, 9, 4, 8 /*0*/ }
 
 type afterResult struct {
 	slot int

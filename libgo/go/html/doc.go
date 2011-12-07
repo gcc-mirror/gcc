@@ -36,7 +36,7 @@ lower-cased, and attributes are collected into a []Attribute. For example:
 
 	for {
 		if z.Next() == html.ErrorToken {
-			// Returning os.EOF indicates success.
+			// Returning io.EOF indicates success.
 			return z.Error()
 		}
 		emitToken(z.Token())
@@ -61,7 +61,7 @@ call to Next. For example, to extract an HTML page's anchor text:
 		case StartTagToken, EndTagToken:
 			tn, _ := z.TagName()
 			if len(tn) == 1 && tn[0] == 'a' {
-				if tt == StartTag {
+				if tt == StartTagToken {
 					depth++
 				} else {
 					depth--

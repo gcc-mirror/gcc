@@ -250,7 +250,7 @@ func (p *parser) read() error {
 	p.tok = p.tokenizer.Token()
 	switch p.tok.Type {
 	case ErrorToken:
-		return p.tokenizer.Error()
+		return p.tokenizer.Err()
 	case SelfClosingTagToken:
 		p.hasSelfClosingToken = true
 		p.tok.Type = StartTagToken
@@ -275,7 +275,9 @@ type insertionMode func(*parser) (insertionMode, bool)
 // Section 11.2.3.1, "using the rules for".
 func useTheRulesFor(p *parser, actual, delegate insertionMode) (insertionMode, bool) {
 	im, consumed := delegate(p)
-	// TODO: do we need to update p.originalMode if it equals delegate?
+	if p.originalIM == delegate {
+		p.originalIM = actual
+	}
 	if im != delegate {
 		return im, consumed
 	}
@@ -427,6 +429,7 @@ func beforeHeadIM(p *parser) (insertionMode, bool) {
 	}
 	if add || implied {
 		p.addElement("head", attr)
+		p.head = p.top()
 	}
 	return inHeadIM, !implied
 }
@@ -455,8 +458,10 @@ func inHeadIM(p *parser) (insertionMode, bool) {
 		implied = true
 	case StartTagToken:
 		switch p.tok.Data {
-		case "meta":
-			// TODO.
+		case "base", "basefont", "bgsound", "command", "link", "meta":
+			p.addElement(p.tok.Data, p.tok.Attr)
+			p.oe.pop()
+			p.acknowledgeSelfClosingTag()
 		case "script", "title", "noscript", "noframes", "style":
 			p.addElement(p.tok.Data, p.tok.Attr)
 			p.setOriginalIM(inHeadIM)
@@ -509,7 +514,9 @@ func afterHeadIM(p *parser) (insertionMode, bool) {
 		case "frameset":
 			// TODO.
 		case "base", "basefont", "bgsound", "link", "meta", "noframes", "script", "style", "title":
-			// TODO.
+			p.oe = append(p.oe, p.head)
+			defer p.oe.pop()
+			return useTheRulesFor(p, afterHeadIM, inHeadIM)
 		case "head":
 			// TODO.
 		default:
@@ -530,6 +537,23 @@ func afterHeadIM(p *parser) (insertionMode, bool) {
 		p.framesetOK = framesetOK
 	}
 	return inBodyIM, !implied
+}
+
+// copyAttributes copies attributes of src not found on dst to dst.
+func copyAttributes(dst *Node, src Token) {
+	if len(src.Attr) == 0 {
+		return
+	}
+	attr := map[string]string{}
+	for _, a := range dst.Attr {
+		attr[a.Key] = a.Val
+	}
+	for _, a := range src.Attr {
+		if _, ok := attr[a.Key]; !ok {
+			dst.Attr = append(dst.Attr, a)
+			attr[a.Key] = a.Val
+		}
+	}
 }
 
 // Section 11.2.5.4.7.
@@ -617,6 +641,19 @@ func inBodyIM(p *parser) (insertionMode, bool) {
 			}
 			p.reconstructActiveFormattingElements()
 			p.addElement(p.tok.Data, p.tok.Attr)
+		case "body":
+			if len(p.oe) >= 2 {
+				body := p.oe[1]
+				if body.Type == ElementNode && body.Data == "body" {
+					p.framesetOK = false
+					copyAttributes(body, p.tok)
+				}
+			}
+		case "base", "basefont", "bgsound", "command", "link", "meta", "noframes", "script", "style", "title":
+			return useTheRulesFor(p, inBodyIM, inHeadIM)
+		case "image":
+			p.tok.Data = "img"
+			return inBodyIM, false
 		default:
 			// TODO.
 			p.addElement(p.tok.Data, p.tok.Attr)
@@ -635,6 +672,10 @@ func inBodyIM(p *parser) (insertionMode, bool) {
 			p.inBodyEndTagFormatting(p.tok.Data)
 		case "address", "article", "aside", "blockquote", "button", "center", "details", "dir", "div", "dl", "fieldset", "figcaption", "figure", "footer", "header", "hgroup", "listing", "menu", "nav", "ol", "pre", "section", "summary", "ul":
 			p.popUntil(defaultScopeStopTags, p.tok.Data)
+		case "applet", "marquee", "object":
+			if p.popUntil(defaultScopeStopTags, p.tok.Data) {
+				p.clearActiveFormattingElements()
+			}
 		default:
 			p.inBodyEndTagOther(p.tok.Data)
 		}
@@ -934,22 +975,27 @@ func inRowIM(p *parser) (insertionMode, bool) {
 	case StartTagToken:
 		switch p.tok.Data {
 		case "td", "th":
-			// TODO: clear the stack back to a table row context.
+			p.clearStackToContext(tableRowContextStopTags)
 			p.addElement(p.tok.Data, p.tok.Attr)
 			p.afe = append(p.afe, &scopeMarker)
 			return inCellIM, true
+		case "caption", "col", "colgroup", "tbody", "tfoot", "thead", "tr":
+			if p.popUntil(tableScopeStopTags, "tr") {
+				return inTableBodyIM, false
+			}
+			// Ignore the token.
+			return inRowIM, true
 		default:
 			// TODO.
 		}
 	case EndTagToken:
 		switch p.tok.Data {
 		case "tr":
-			if !p.elementInScope(tableScopeStopTags, "tr") {
-				return inRowIM, true
+			if p.popUntil(tableScopeStopTags, "tr") {
+				return inTableBodyIM, true
 			}
-			p.clearStackToContext(tableRowContextStopTags)
-			p.oe.pop()
-			return inTableBodyIM, true
+			// Ignore the token.
+			return inRowIM, true
 		case "table":
 			if p.popUntil(tableScopeStopTags, "tr") {
 				return inTableBodyIM, false

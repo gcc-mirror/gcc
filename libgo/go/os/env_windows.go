@@ -9,7 +9,7 @@ package os
 import (
 	"errors"
 	"syscall"
-	"utf16"
+	"unicode/utf16"
 	"unsafe"
 )
 

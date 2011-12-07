@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
-	"utf8"
+	"unicode/utf8"
 )
 
 // runeUnreader is the interface to something that can unread runes.
@@ -219,7 +219,7 @@ func (s *ss) getRune() (r rune) {
 	return
 }
 
-// mustReadRune turns os.EOF into a panic(io.ErrUnexpectedEOF).
+// mustReadRune turns io.EOF into a panic(io.ErrUnexpectedEOF).
 // It is called in cases such as string scanning where an EOF is a
 // syntax error.
 func (s *ss) mustReadRune() (r rune) {
