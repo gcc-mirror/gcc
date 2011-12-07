@@ -1,3 +1,8 @@
+2011-12-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50823
+	* gcc.dg/torture/pr50823.c: New testcase.
+
 2011-12-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/50744
