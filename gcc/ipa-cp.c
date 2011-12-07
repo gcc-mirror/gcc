@@ -1210,19 +1210,19 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
       || !optimize_function_for_speed_p (DECL_STRUCT_FUNCTION (node->decl)))
     return false;
 
-  gcc_checking_assert (size_cost >= 0);
+  gcc_assert (size_cost > 0);
 
-  /* FIXME:  These decisions need tuning.  */
   if (max_count)
     {
-      int evaluation, factor = (count_sum * 1000) / max_count;
-
-      evaluation = (time_benefit * factor) / size_cost;
+      int factor = (count_sum * 1000) / max_count;
+      HOST_WIDEST_INT evaluation = (((HOST_WIDEST_INT) time_benefit * factor)
+				    / size_cost);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "     good_cloning_opportunity_p (time: %i, "
 		 "size: %i, count_sum: " HOST_WIDE_INT_PRINT_DEC
-		 ") -> evaluation: %i, threshold: %i\n",
+		 ") -> evaluation: " HOST_WIDEST_INT_PRINT_DEC
+		 ", threshold: %i\n",
 		 time_benefit, size_cost, (HOST_WIDE_INT) count_sum,
 		 evaluation, 500);
 
@@ -1230,11 +1230,13 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
     }
   else
     {
-      int evaluation = (time_benefit * freq_sum) / size_cost;
+      HOST_WIDEST_INT evaluation = (((HOST_WIDEST_INT) time_benefit * freq_sum)
+				    / size_cost);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "     good_cloning_opportunity_p (time: %i, "
-		 "size: %i, freq_sum: %i) -> evaluation: %i, threshold: %i\n",
+		 "size: %i, freq_sum: %i) -> evaluation: "
+		 HOST_WIDEST_INT_PRINT_DEC ", threshold: %i\n",
 		 time_benefit, size_cost, freq_sum, evaluation,
 		 CGRAPH_FREQ_BASE /2);
 
@@ -1561,6 +1563,20 @@ propagate_constants_topo (struct topo_info *topo)
     }
 }
 
+
+/* Return the sum of A and B if none of them is bigger than INT_MAX/2, return
+   the bigger one if otherwise.  */
+
+static int
+safe_add (int a, int b)
+{
+  if (a > INT_MAX/2 || b > INT_MAX/2)
+    return a > b ? a : b;
+  else
+    return a + b;
+}
+
+
 /* Propagate the estimated effects of individual values along the topological
    from the dependant values to those they depend on.  */
 
@@ -1577,8 +1593,9 @@ propagate_effects (void)
 
       for (val = base; val; val = val->scc_next)
 	{
-	  time += val->local_time_benefit + val->prop_time_benefit;
-	  size += val->local_size_cost + val->prop_size_cost;
+	  time = safe_add (time,
+			   val->local_time_benefit + val->prop_time_benefit);
+	  size = safe_add (size, val->local_size_cost + val->prop_size_cost);
 	}
 
       for (val = base; val; val = val->scc_next)
@@ -1586,8 +1603,10 @@ propagate_effects (void)
 	  if (src->val
 	      && cgraph_maybe_hot_edge_p (src->cs))
 	    {
-	      src->val->prop_time_benefit += time;
-	      src->val->prop_size_cost += size;
+	      src->val->prop_time_benefit = safe_add (time,
+						src->val->prop_time_benefit);
+	      src->val->prop_size_cost = safe_add (size,
+						   src->val->prop_size_cost);
 	    }
     }
 }

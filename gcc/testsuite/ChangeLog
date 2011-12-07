@@ -1,3 +1,8 @@
+2011-12-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/50744
+	* gcc.dg/ipa/pr50744.c: New test.
+
 2011-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/51430
