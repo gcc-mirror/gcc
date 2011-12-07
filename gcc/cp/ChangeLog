@@ -1,3 +1,9 @@
+2011-12-07  Ed Smith-Rowland <3dw4rd@verizon.net>
+
+	PR c++/51420
+	* parser.c (lookup_literal_operator): Check that declaration is an
+	overloaded function.
+
 2011-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/51430

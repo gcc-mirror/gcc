@@ -1,3 +1,8 @@
+2011-12-07  Ed Smith-Rowland <3dw4rd@verizon.net>
+
+	PR c++/51420
+	* g++.dg/cpp0x/pr51420.C: New.
+
 2011-12-07  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/48100
