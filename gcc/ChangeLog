@@ -1,3 +1,9 @@
+2011-12-07  Andrew Pinski  <apinski@cavium.com>
+
+	PR middle-end/45416
+	* expr.c (do_store_flag): Rewrite code that looks for BIT_AND_EXPR for
+	SSA-expand.
+
 2011-12-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50823

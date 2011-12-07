@@ -1,3 +1,8 @@
+2011-12-07  Andrew Pinski  <apinski@cavium.com>
+
+	PR middle-end/45416
+	* gcc.dg/pr45416.c: New testcase.
+
 2011-12-07  Ed Smith-Rowland <3dw4rd@verizon.net>
 
 	PR c++/51420
