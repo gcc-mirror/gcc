@@ -1,3 +1,11 @@
+2011-12-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/50744
+	* ipa-cp.c (good_cloning_opportunity_p): Assert size_cost is positive,
+	compute evaluation in HOST_WIDEST_INT.
+	(safe_add): New function
+	(propagate_effects): Use safe_add to accumulate effects.
+
 2011-12-06  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* config/rs6000/rtems.h: Switch to using global_options_set
