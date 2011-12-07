@@ -1,5 +1,9 @@
 2011-12-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/51429
+	* typeck2.c (cxx_incomplete_type_diagnostic): Don't
+	ICE if TREE_OPERAND (value, 1) is overloaded.
+
 	PR c++/51229
 	* decl.c (reshape_init_class): Complain if d->cur->index is
 	INTEGER_CST.
