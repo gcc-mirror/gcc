@@ -1,5 +1,13 @@
 2011-12-07  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/48100
+	* gcc.dg/lto/20111207-1_0.c: New testcase.
+	* gcc.dg/lto/20111207-1_1.c: Likewise.
+	* gcc.dg/lto/20111207-1_2.c: Likewise.
+	* gcc.dg/lto/20111207-1_3.c: Likewise.
+
+2011-12-07  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/50823
 	* gcc.dg/torture/pr50823.c: New testcase.
 
