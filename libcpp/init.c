@@ -134,6 +134,8 @@ init_library (void)
     {
       initialized = 1;
 
+      _cpp_init_lexer ();
+
       /* Set up the trigraph map.  This doesn't need to do anything if
 	 we were compiled with a compiler that supports C99 designated
 	 initializers.  */

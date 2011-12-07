@@ -1,3 +1,13 @@
+2011-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/50237
+	* internal.h (_cpp_init_lexer): New prototype.
+	* init.c (init_library): Call it.
+	* lex.c (init_vectorized_lexer): Remove constructor attribute,
+	add inline keyword.
+	(HAVE_init_vectorized_lexer): Define.
+	(_cpp_init_lexer): New function.
+
 2011-12-03  Dodji Seketeli  <dodji@redhat.com>
 
 	* macro.c (tokens_buff_remove_last_token)
