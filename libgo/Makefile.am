@@ -100,56 +100,36 @@ toolexeclib_LIBRARIES = libgobegin.a
 toolexeclibgodir = $(toolexeclibdir)/go/$(gcc_version)/$(target_alias)
 
 toolexeclibgo_DATA = \
-	asn1.gox \
-	big.gox \
 	bufio.gox \
 	bytes.gox \
-	cmath.gox \
 	crypto.gox \
-	csv.gox \
 	errors.gox \
-	exec.gox \
 	expvar.gox \
 	flag.gox \
 	fmt.gox \
-	gob.gox \
 	hash.gox \
 	html.gox \
-	http.gox \
 	image.gox \
 	io.gox \
-	json.gox \
 	log.gox \
 	math.gox \
-	mail.gox \
 	mime.gox \
 	net.gox \
 	os.gox \
 	patch.gox \
 	path.gox \
-	rand.gox \
 	reflect.gox \
 	regexp.gox \
-	rpc.gox \
 	runtime.gox \
-	scanner.gox \
-	smtp.gox \
 	sort.gox \
 	strconv.gox \
 	strings.gox \
 	sync.gox \
 	syscall.gox \
-	syslog.gox \
-	tabwriter.gox \
-	template.gox \
 	testing.gox \
 	time.gox \
 	unicode.gox \
-	url.gox \
-	utf16.gox \
-	utf8.gox \
-	websocket.gox \
-	xml.gox
+	websocket.gox
 
 toolexeclibgoarchivedir = $(toolexeclibgodir)/archive
 
@@ -230,12 +210,17 @@ toolexeclibgoencodingdir = $(toolexeclibgodir)/encoding
 
 toolexeclibgoencoding_DATA = \
 	encoding/ascii85.gox \
+	encoding/asn1.gox \
 	encoding/base32.gox \
 	encoding/base64.gox \
 	encoding/binary.gox \
+	encoding/csv.gox \
 	encoding/git85.gox \
+	encoding/gob.gox \
 	encoding/hex.gox \
-	encoding/pem.gox
+	encoding/json.gox \
+	encoding/pem.gox \
+	encoding/xml.gox
 
 if LIBGO_IS_LINUX
 # exp_inotify_gox = exp/inotify.gox
@@ -267,11 +252,6 @@ toolexeclibgoexpsqldir = $(toolexeclibgoexpdir)/sql
 toolexeclibgoexpsql_DATA = \
 	exp/sql/driver.gox
 
-toolexeclibgoexptemplatedir = $(toolexeclibgoexpdir)/template
-
-toolexeclibgoexptemplate_DATA = \
-	exp/template/html.gox
-
 toolexeclibgogodir = $(toolexeclibgodir)/go
 
 toolexeclibgogo_DATA = \
@@ -291,13 +271,10 @@ toolexeclibgohash_DATA = \
 	hash/crc64.gox \
 	hash/fnv.gox
 
-toolexeclibgohttpdir = $(toolexeclibgodir)/http
+toolexeclibgohtmldir = $(toolexeclibgodir)/html
 
-toolexeclibgohttp_DATA = \
-	http/cgi.gox \
-	http/fcgi.gox \
-	http/httptest.gox \
-	http/pprof.gox
+toolexeclibgohtml_DATA = \
+	html/template.gox
 
 toolexeclibgoimagedir = $(toolexeclibgodir)/image
 
@@ -321,6 +298,18 @@ toolexeclibgoiodir = $(toolexeclibgodir)/io
 toolexeclibgoio_DATA = \
 	io/ioutil.gox
 
+toolexeclibgologdir = $(toolexeclibgodir)/log
+
+toolexeclibgolog_DATA = \
+	log/syslog.gox
+
+toolexeclibgomathdir = $(toolexeclibgodir)/math
+
+toolexeclibgomath_DATA = \
+	math/big.gox \
+	math/cmplx.gox \
+	math/rand.gox
+
 toolexeclibgomimedir = $(toolexeclibgodir)/mime
 
 toolexeclibgomime_DATA = \
@@ -330,7 +319,26 @@ toolexeclibgonetdir = $(toolexeclibgodir)/net
 
 toolexeclibgonet_DATA = \
 	net/dict.gox \
-	net/textproto.gox
+	net/http.gox \
+	net/mail.gox \
+	net/rpc.gox \
+	net/smtp.gox \
+	net/textproto.gox \
+	net/url.gox
+
+toolexeclibgonethttpdir = $(toolexeclibgonetdir)/http
+
+toolexeclibgonethttp_DATA = \
+	net/http/cgi.gox \
+	net/http/fcgi.gox \
+	net/http/httptest.gox \
+	net/http/httputil.gox \
+	net/http/pprof.gox
+
+toolexeclibgonetrpcdir = $(toolexeclibgonetdir)/rpc
+
+toolexeclibgonetrpc_DATA = \
+	net/rpc/jsonrpc.gox
 
 toolexeclibgoolddir = $(toolexeclibgodir)/old
 
@@ -342,6 +350,7 @@ toolexeclibgoold_DATA = \
 toolexeclibgoosdir = $(toolexeclibgodir)/os
 
 toolexeclibgoos_DATA = \
+	os/exec.gox \
 	os/user.gox \
 	os/signal.gox
 
@@ -355,21 +364,11 @@ toolexeclibgoregexpdir = $(toolexeclibgodir)/regexp
 toolexeclibgoregexp_DATA = \
 	regexp/syntax.gox
 
-toolexeclibgorpcdir = $(toolexeclibgodir)/rpc
-
-toolexeclibgorpc_DATA = \
-	rpc/jsonrpc.gox
-
 toolexeclibgoruntimedir = $(toolexeclibgodir)/runtime
 
 toolexeclibgoruntime_DATA = \
 	runtime/debug.gox \
 	runtime/pprof.gox
-
-toolexeclibgotemplatedir = $(toolexeclibgodir)/template
-
-toolexeclibgotemplate_DATA = \
-	template/parse.gox
 
 toolexeclibgosyncdir = $(toolexeclibgodir)/sync
 
@@ -382,6 +381,24 @@ toolexeclibgotesting_DATA = \
 	testing/iotest.gox \
 	testing/quick.gox \
 	testing/script.gox
+
+toolexeclibgotextdir = $(toolexeclibgodir)/text
+
+toolexeclibgotext_DATA = \
+	text/scanner.gox \
+	text/tabwriter.gox \
+	text/template.gox
+
+toolexeclibgotexttemplatedir = $(toolexeclibgotextdir)/template
+
+toolexeclibgotexttemplate_DATA = \
+	text/template/parse.gox
+
+toolexeclibgounicodedir = $(toolexeclibgodir)/unicode
+
+toolexeclibgounicode_DATA = \
+	unicode/utf16.gox \
+	unicode/utf8.gox
 
 if HAVE_SYS_MMAN_H
 runtime_mem_file = runtime/mem.c
@@ -484,7 +501,8 @@ runtime_files = \
 	runtime1.c \
 	sema.c \
 	sigqueue.c \
-	string.c
+	string.c \
+	time.c
 
 goc2c.$(OBJEXT): runtime/goc2c.c
 	$(CC_FOR_BUILD) -c $(CFLAGS_FOR_BUILD) $<
@@ -516,20 +534,13 @@ sigqueue.c: $(srcdir)/runtime/sigqueue.goc goc2c
 	./goc2c --gcc --go-prefix libgo_runtime $< > $@.tmp
 	mv -f $@.tmp $@
 
+time.c: $(srcdir)/runtime/time.goc goc2c
+	./goc2c --gcc --go-prefix libgo_time $< > $@.tmp
+	mv -f $@.tmp $@
+
 %.c: $(srcdir)/runtime/%.goc goc2c
 	./goc2c --gcc $< > $@.tmp
 	mv -f $@.tmp $@
-
-go_asn1_files = \
-	go/asn1/asn1.go \
-	go/asn1/common.go \
-	go/asn1/marshal.go
-
-go_big_files = \
-	go/big/arith.go \
-	go/big/int.go \
-	go/big/nat.go \
-	go/big/rat.go
 
 go_bufio_files = \
 	go/bufio/bufio.go
@@ -541,35 +552,11 @@ go_bytes_files = \
 go_bytes_c_files = \
 	go/bytes/indexbyte.c
 
-go_cmath_files = \
-	go/cmath/abs.go \
-	go/cmath/asin.go \
-	go/cmath/conj.go \
-	go/cmath/exp.go \
-	go/cmath/isinf.go \
-	go/cmath/isnan.go \
-	go/cmath/log.go \
-	go/cmath/phase.go \
-	go/cmath/polar.go \
-	go/cmath/pow.go \
-	go/cmath/rect.go \
-	go/cmath/sin.go \
-	go/cmath/sqrt.go \
-	go/cmath/tan.go
-
 go_crypto_files = \
 	go/crypto/crypto.go
 
-go_csv_files = \
-	go/csv/reader.go \
-	go/csv/writer.go
-
 go_errors_files = \
 	go/errors/errors.go
-
-go_exec_files = \
-	go/exec/exec.go \
-	go/exec/lp_unix.go
 
 go_expvar_files = \
 	go/expvar/expvar.go
@@ -582,15 +569,6 @@ go_fmt_files = \
 	go/fmt/format.go \
 	go/fmt/print.go \
 	go/fmt/scan.go
-
-go_gob_files = \
-	go/gob/decode.go \
-	go/gob/decoder.go \
-	go/gob/doc.go \
-	go/gob/encode.go \
-	go/gob/encoder.go \
-	go/gob/error.go \
-	go/gob/type.go
 
 go_hash_files = \
 	go/hash/hash.go
@@ -605,25 +583,6 @@ go_html_files = \
 	go/html/render.go \
 	go/html/token.go
 
-go_http_files = \
-	go/http/chunked.go \
-	go/http/client.go \
-	go/http/cookie.go \
-	go/http/dump.go \
-	go/http/filetransport.go \
-	go/http/fs.go \
-	go/http/header.go \
-	go/http/lex.go \
-	go/http/persist.go \
-	go/http/request.go \
-	go/http/response.go \
-	go/http/reverseproxy.go \
-	go/http/server.go \
-	go/http/sniff.go \
-	go/http/status.go \
-	go/http/transfer.go \
-	go/http/transport.go
-
 go_image_files = \
 	go/image/format.go \
 	go/image/geom.go \
@@ -634,14 +593,6 @@ go_io_files = \
 	go/io/multi.go \
 	go/io/io.go \
 	go/io/pipe.go
-
-go_json_files = \
-	go/json/decode.go \
-	go/json/encode.go \
-	go/json/indent.go \
-	go/json/scanner.go \
-	go/json/stream.go \
-	go/json/tags.go
 
 go_log_files = \
 	go/log/log.go
@@ -693,9 +644,6 @@ go_math_files = \
 	go/math/tan.go \
 	go/math/tanh.go \
 	go/math/unsafe.go
-
-go_mail_files = \
-	go/mail/message.go
 
 go_mime_files = \
 	go/mime/grammar.go \
@@ -852,13 +800,6 @@ go_path_files = \
 	go/path/match.go \
 	go/path/path.go
 
-go_rand_files = \
-	go/rand/exp.go \
-	go/rand/normal.go \
-	go/rand/rand.go \
-	go/rand/rng.go \
-	go/rand/zipf.go
-
 go_reflect_files = \
 	go/reflect/deepequal.go \
 	go/reflect/type.go \
@@ -868,10 +809,10 @@ go_regexp_files = \
 	go/regexp/exec.go \
 	go/regexp/regexp.go
 
-go_rpc_files = \
-	go/rpc/client.go \
-	go/rpc/debug.go \
-	go/rpc/server.go
+go_net_rpc_files = \
+	go/net/rpc/client.go \
+	go/net/rpc/debug.go \
+	go/net/rpc/server.go
 
 go_runtime_files = \
 	go/runtime/debug.go \
@@ -893,13 +834,6 @@ s-version: Makefile
 	echo 'const theGoos = "'$(GOOS)'"' >> version.go.tmp
 	$(SHELL) $(srcdir)/../move-if-change version.go.tmp version.go
 	$(STAMP) $@
-
-go_scanner_files = \
-	go/scanner/scanner.go
-
-go_smtp_files = \
-	go/smtp/auth.go \
-	go/smtp/smtp.go
 
 go_sort_files = \
 	go/sort/search.go \
@@ -927,31 +861,20 @@ go_sync_files = \
 	go/sync/waitgroup.go
 
 if LIBGO_IS_SOLARIS
-go_syslog_file = go/syslog/syslog_libc.go
+go_syslog_file = go/log/syslog/syslog_libc.go
 else
 if LIBGO_IS_IRIX
-go_syslog_file = go/syslog/syslog_libc.go
+go_syslog_file = go/log/syslog/syslog_libc.go
 else
-go_syslog_file = go/syslog/syslog_unix.go
+go_syslog_file = go/log/syslog/syslog_unix.go
 endif
 endif
 
-go_syslog_files = \
-	go/syslog/syslog.go \
+go_log_syslog_files = \
+	go/log/syslog/syslog.go \
 	$(go_syslog_file)
 go_syslog_c_files = \
-	go/syslog/syslog_c.c
-
-go_tabwriter_files = \
-	go/tabwriter/tabwriter.go
-
-go_template_files = \
-	go/template/doc.go \
-	go/template/exec.go \
-	go/template/funcs.go \
-	go/template/helper.go \
-	go/template/parse.go \
-	go/template/set.go
+	go/log/syslog/syslog_c.c
 
 go_testing_files = \
 	go/testing/benchmark.go \
@@ -975,16 +898,6 @@ go_unicode_files = \
 	go/unicode/letter.go \
 	go/unicode/tables.go
 
-go_url_files = \
-	go/url/url.go
-
-go_utf16_files = \
-	go/utf16/utf16.go
-
-go_utf8_files = \
-	go/utf8/string.go \
-	go/utf8/utf8.go
-
 go_websocket_files = \
 	go/websocket/client.go \
 	go/websocket/hixie.go \
@@ -992,10 +905,6 @@ go_websocket_files = \
 	go/websocket/server.go \
 	go/websocket/websocket.go
 
-go_xml_files = \
-	go/xml/marshal.go \
-	go/xml/read.go \
-	go/xml/xml.go
 
 go_archive_tar_files = \
 	go/archive/tar/common.go \
@@ -1183,6 +1092,10 @@ go_debug_pe_files = \
 
 go_encoding_ascii85_files = \
 	go/encoding/ascii85/ascii85.go
+go_encoding_asn1_files = \
+	go/encoding/asn1/asn1.go \
+	go/encoding/asn1/common.go \
+	go/encoding/asn1/marshal.go
 go_encoding_base32_files = \
 	go/encoding/base32/base32.go
 go_encoding_base64_files = \
@@ -1190,12 +1103,34 @@ go_encoding_base64_files = \
 go_encoding_binary_files = \
 	go/encoding/binary/binary.go \
 	go/encoding/binary/varint.go
+go_encoding_csv_files = \
+	go/encoding/csv/reader.go \
+	go/encoding/csv/writer.go
 go_encoding_git85_files = \
 	go/encoding/git85/git.go
+go_encoding_gob_files = \
+	go/encoding/gob/decode.go \
+	go/encoding/gob/decoder.go \
+	go/encoding/gob/doc.go \
+	go/encoding/gob/encode.go \
+	go/encoding/gob/encoder.go \
+	go/encoding/gob/error.go \
+	go/encoding/gob/type.go
 go_encoding_hex_files = \
 	go/encoding/hex/hex.go
+go_encoding_json_files = \
+	go/encoding/json/decode.go \
+	go/encoding/json/encode.go \
+	go/encoding/json/indent.go \
+	go/encoding/json/scanner.go \
+	go/encoding/json/stream.go \
+	go/encoding/json/tags.go
 go_encoding_pem_files = \
 	go/encoding/pem/pem.go
+go_encoding_xml_files = \
+	go/encoding/xml/marshal.go \
+	go/encoding/xml/read.go \
+	go/encoding/xml/xml.go
 
 go_exp_ebnf_files = \
 	go/exp/ebnf/ebnf.go \
@@ -1222,6 +1157,7 @@ go_exp_sql_files = \
 go_exp_ssh_files = \
 	go/exp/ssh/channel.go \
 	go/exp/ssh/client.go \
+	go/exp/ssh/client_auth.go \
 	go/exp/ssh/common.go \
 	go/exp/ssh/doc.go \
 	go/exp/ssh/messages.go \
@@ -1248,23 +1184,10 @@ go_exp_sql_driver_files = \
 	go/exp/sql/driver/driver.go \
 	go/exp/sql/driver/types.go
 
-go_exp_template_html_files = \
-	go/exp/template/html/attr.go \
-	go/exp/template/html/clone.go \
-	go/exp/template/html/content.go \
-	go/exp/template/html/context.go \
-	go/exp/template/html/css.go \
-	go/exp/template/html/doc.go \
-	go/exp/template/html/error.go \
-	go/exp/template/html/escape.go \
-	go/exp/template/html/html.go \
-	go/exp/template/html/js.go \
-	go/exp/template/html/transition.go \
-	go/exp/template/html/url.go
-
 go_go_ast_files = \
 	go/go/ast/ast.go \
 	go/go/ast/filter.go \
+	go/go/ast/import.go \
 	go/go/ast/print.go \
 	go/go/ast/resolve.go \
 	go/go/ast/scope.go \
@@ -1302,17 +1225,20 @@ go_hash_crc64_files = \
 go_hash_fnv_files = \
 	go/hash/fnv/fnv.go
 
-go_http_cgi_files = \
-	go/http/cgi/child.go \
-	go/http/cgi/host.go
-go_http_fcgi_files = \
-	go/http/fcgi/child.go \
-	go/http/fcgi/fcgi.go
-go_http_httptest_files = \
-	go/http/httptest/recorder.go \
-	go/http/httptest/server.go
-go_http_pprof_files = \
-	go/http/pprof/pprof.go
+go_html_template_files = \
+	go/html/template/attr.go \
+	go/html/template/clone.go \
+	go/html/template/content.go \
+	go/html/template/context.go \
+	go/html/template/css.go \
+	go/html/template/doc.go \
+	go/html/template/error.go \
+	go/html/template/escape.go \
+	go/html/template/html.go \
+	go/html/template/js.go \
+	go/html/template/template.go \
+	go/html/template/transition.go \
+	go/html/template/url.go
 
 go_image_bmp_files = \
 	go/image/bmp/reader.go
@@ -1354,6 +1280,33 @@ go_io_ioutil_files = \
 	go/io/ioutil/ioutil.go \
 	go/io/ioutil/tempfile.go
 
+go_math_big_files = \
+	go/math/big/arith.go \
+	go/math/big/int.go \
+	go/math/big/nat.go \
+	go/math/big/rat.go
+go_math_cmplx_files = \
+	go/math/cmplx/abs.go \
+	go/math/cmplx/asin.go \
+	go/math/cmplx/conj.go \
+	go/math/cmplx/exp.go \
+	go/math/cmplx/isinf.go \
+	go/math/cmplx/isnan.go \
+	go/math/cmplx/log.go \
+	go/math/cmplx/phase.go \
+	go/math/cmplx/polar.go \
+	go/math/cmplx/pow.go \
+	go/math/cmplx/rect.go \
+	go/math/cmplx/sin.go \
+	go/math/cmplx/sqrt.go \
+	go/math/cmplx/tan.go
+go_math_rand_files = \
+	go/math/rand/exp.go \
+	go/math/rand/normal.go \
+	go/math/rand/rand.go \
+	go/math/rand/rng.go \
+	go/math/rand/zipf.go
+
 go_mime_multipart_files = \
 	go/mime/multipart/formdata.go \
 	go/mime/multipart/multipart.go \
@@ -1361,13 +1314,52 @@ go_mime_multipart_files = \
 
 go_net_dict_files = \
 	go/net/dict/dict.go
-
+go_net_http_files = \
+	go/net/http/chunked.go \
+	go/net/http/client.go \
+	go/net/http/cookie.go \
+	go/net/http/filetransport.go \
+	go/net/http/fs.go \
+	go/net/http/header.go \
+	go/net/http/lex.go \
+	go/net/http/request.go \
+	go/net/http/response.go \
+	go/net/http/server.go \
+	go/net/http/sniff.go \
+	go/net/http/status.go \
+	go/net/http/transfer.go \
+	go/net/http/transport.go
+go_net_mail_files = \
+	go/net/mail/message.go
+go_net_smtp_files = \
+	go/net/smtp/auth.go \
+	go/net/smtp/smtp.go
 go_net_textproto_files = \
 	go/net/textproto/header.go \
 	go/net/textproto/pipeline.go \
 	go/net/textproto/reader.go \
 	go/net/textproto/textproto.go \
 	go/net/textproto/writer.go
+go_net_url_files = \
+	go/net/url/url.go
+
+go_net_http_cgi_files = \
+	go/net/http/cgi/child.go \
+	go/net/http/cgi/host.go
+go_net_http_fcgi_files = \
+	go/net/http/fcgi/child.go \
+	go/net/http/fcgi/fcgi.go
+go_net_http_httptest_files = \
+	go/net/http/httptest/recorder.go \
+	go/net/http/httptest/server.go
+go_net_http_pprof_files = \
+	go/net/http/pprof/pprof.go
+go_net_http_httputil_files = \
+	go/net/http/httputil/chunked.go \
+	go/net/http/httputil/dump.go \
+	go/net/http/httputil/persist.go \
+	go/net/http/httputil/reverseproxy.go
+
 
 go_old_netchan_files = \
 	go/old/netchan/common.go \
@@ -1380,6 +1372,10 @@ go_old_template_files = \
 	go/old/template/execute.go \
 	go/old/template/format.go \
 	go/old/template/parse.go
+
+go_os_exec_files = \
+	go/os/exec/exec.go \
+	go/os/exec/lp_unix.go
 
 go_os_user_files = \
 	go/os/user/user.go \
@@ -1401,20 +1397,29 @@ go_regexp_syntax_files = \
 	go/regexp/syntax/regexp.go \
 	go/regexp/syntax/simplify.go
 
-go_rpc_jsonrpc_files = \
-	go/rpc/jsonrpc/client.go \
-	go/rpc/jsonrpc/server.go
+go_net_rpc_jsonrpc_files = \
+	go/net/rpc/jsonrpc/client.go \
+	go/net/rpc/jsonrpc/server.go
 
 go_runtime_debug_files = \
 	go/runtime/debug/stack.go
 go_runtime_pprof_files = \
 	go/runtime/pprof/pprof.go
 
-go_template_parse_files = \
-	go/template/parse/lex.go \
-	go/template/parse/node.go \
-	go/template/parse/parse.go \
-	go/template/parse/set.go
+go_text_tabwriter_files = \
+	go/text/tabwriter/tabwriter.go
+go_text_template_files = \
+	go/text/template/doc.go \
+	go/text/template/exec.go \
+	go/text/template/funcs.go \
+	go/text/template/helper.go \
+	go/text/template/parse.go \
+	go/text/template/set.go
+go_text_template_parse_files = \
+	go/text/template/parse/lex.go \
+	go/text/template/parse/node.go \
+	go/text/template/parse/parse.go \
+	go/text/template/parse/set.go
 
 go_sync_atomic_files = \
 	go/sync/atomic/doc.go
@@ -1429,6 +1434,15 @@ go_testing_quick_files = \
 	go/testing/quick/quick.go
 go_testing_script_files = \
 	go/testing/script/script.go
+
+go_text_scanner_files = \
+	go/text/scanner/scanner.go
+
+go_unicode_utf16_files = \
+	go/unicode/utf16/utf16.go
+go_unicode_utf8_files = \
+	go/unicode/utf8/string.go \
+	go/unicode/utf8/utf8.go
 
 # Define Syscall and Syscall6.
 if LIBGO_IS_RTEMS
@@ -1619,56 +1633,35 @@ os_lib_inotify_lo =
 endif
 
 libgo_go_objs = \
-	asn1/asn1.lo \
-	big/big.lo \
 	bufio/bufio.lo \
 	bytes/bytes.lo \
 	bytes/index.lo \
-	cmath/cmath.lo \
 	crypto/crypto.lo \
-	csv/csv.lo \
 	errors/errors.lo \
-	exec/exec.lo \
 	expvar/expvar.lo \
 	flag/flag.lo \
 	fmt/fmt.lo \
-	gob/gob.lo \
 	hash/hash.lo \
 	html/html.lo \
-	http/http.lo \
 	image/image.lo \
 	io/io.lo \
-	json/json.lo \
 	log/log.lo \
 	math/math.lo \
-	mail/mail.lo \
-	mime/mime.lo \
 	net/net.lo \
+	os/exec.lo \
 	os/os.lo \
 	patch/patch.lo \
 	path/path.lo \
-	rand/rand.lo \
 	reflect/reflect.lo \
 	regexp/regexp.lo \
-	rpc/rpc.lo \
 	runtime/runtime.lo \
-	scanner/scanner.lo \
-	smtp/smtp.lo \
 	sort/sort.lo \
 	strconv/strconv.lo \
 	strings/strings.lo \
 	sync/sync.lo \
-	syslog/syslog.lo \
-	syslog/syslog_c.lo \
-	tabwriter/tabwriter.lo \
-	template/template.lo \
 	time/time.lo \
 	unicode/unicode.lo \
-	url/url.lo \
-	utf16/utf16.lo \
-	utf8/utf8.lo \
 	websocket/websocket.lo \
-	xml/xml.lo \
 	archive/tar.lo \
 	archive/zip.lo \
 	compress/bzip2.lo \
@@ -1717,12 +1710,17 @@ libgo_go_objs = \
 	debug/macho.lo \
 	debug/pe.lo \
 	encoding/ascii85.lo \
+	encoding/asn1.lo \
 	encoding/base32.lo \
 	encoding/base64.lo \
 	encoding/binary.lo \
+	encoding/csv.lo \
 	encoding/git85.lo \
+	encoding/gob.lo \
 	encoding/hex.lo \
+	encoding/json.lo \
 	encoding/pem.lo \
+	encoding/xml.lo \
 	exp/ebnf.lo \
 	exp/gui.lo \
 	exp/norm.lo \
@@ -1733,7 +1731,7 @@ libgo_go_objs = \
 	exp/types.lo \
 	exp/gui/x11.lo \
 	exp/sql/driver.lo \
-	exp/template/html.lo \
+	html/template.lo \
 	go/ast.lo \
 	go/build.lo \
 	go/doc.lo \
@@ -1745,10 +1743,11 @@ libgo_go_objs = \
 	hash/crc32.lo \
 	hash/crc64.lo \
 	hash/fnv.lo \
-	http/cgi.lo \
-	http/fcgi.lo \
-	http/httptest.lo \
-	http/pprof.lo \
+	net/http/cgi.lo \
+	net/http/fcgi.lo \
+	net/http/httptest.lo \
+	net/http/httputil.lo \
+	net/http/pprof.lo \
 	image/bmp.lo \
 	image/color.lo \
 	image/draw.lo \
@@ -1759,9 +1758,20 @@ libgo_go_objs = \
 	image/ycbcr.lo \
 	index/suffixarray.lo \
 	io/ioutil.lo \
+	log/syslog.lo \
+	log/syslog/syslog_c.lo \
+	math/big.lo \
+	math/cmplx.lo \
+	math/rand.lo \
+	mime/mime.lo \
 	mime/multipart.lo \
 	net/dict.lo \
+	net/http.lo \
+	net/mail.lo \
+	net/rpc.lo \
+	net/smtp.lo \
 	net/textproto.lo \
+	net/url.lo \
 	old/netchan.lo \
 	old/regexp.lo \
 	old/template.lo \
@@ -1770,7 +1780,7 @@ libgo_go_objs = \
 	os/signal.lo \
 	path/filepath.lo \
 	regexp/syntax.lo \
-	rpc/jsonrpc.lo \
+	net/rpc/jsonrpc.lo \
 	runtime/debug.lo \
 	runtime/pprof.lo \
 	sync/atomic.lo \
@@ -1778,11 +1788,16 @@ libgo_go_objs = \
 	syscall/syscall.lo \
 	syscall/errno.lo \
 	syscall/wait.lo \
-	template/parse.lo \
+	text/scanner.lo \
+	text/tabwriter.lo \
+	text/template.lo \
+	text/template/parse.lo \
 	testing/testing.lo \
 	testing/iotest.lo \
 	testing/quick.lo \
-	testing/script.lo
+	testing/script.lo \
+	unicode/utf16.lo \
+	unicode/utf8.lo
 
 libgo_la_SOURCES = $(runtime_files)
 
@@ -1871,36 +1886,23 @@ CHECK_DEPS = libgo.la libgobegin.a \
 	$(toolexeclibgoexp_DATA) \
 	$(toolexeclibgogo_DATA) \
 	$(toolexeclibgohash_DATA) \
-	$(toolexeclibgohttp_DATA) \
 	$(toolexeclibgoimage_DATA) \
 	$(toolexeclibgoindex_DATA) \
 	$(toolexeclibgoio_DATA) \
+	$(toolexeclibgolog_DATA) \
+	$(toolexeclibgomath_DATA) \
 	$(toolexeclibgomime_DATA) \
 	$(toolexeclibgonet_DATA) \
+	$(toolexeclibgonethttp_DATA) \
 	$(toolexeclibgoos_DATA) \
 	$(toolexeclibgopath_DATA) \
 	$(toolexeclibgorpc_DATA) \
 	$(toolexeclibgoruntime_DATA) \
 	$(toolexeclibgosync_DATA) \
-	$(toolexeclibgotesting_DATA)
-
-@go_include@ asn1/asn1.lo.dep
-asn1/asn1.lo.dep: $(go_asn1_files)
-	$(BUILDDEPS)
-asn1/asn1.lo: $(go_asn1_files)
-	$(BUILDPACKAGE)
-asn1/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: asn1/check
-
-@go_include@ big/big.lo.dep
-big/big.lo.dep: $(go_big_files)
-	$(BUILDDEPS)
-big/big.lo: $(go_big_files)
-	$(BUILDPACKAGE)
-big/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: big/check
+	$(toolexeclibgotesting_DATA) \
+	$(toolexeclibgotext_DATA) \
+	$(toolexeclibgotexttemplate_DATA) \
+	$(toolexeclibgounicode_DATA)
 
 @go_include@ bufio/bufio.lo.dep
 bufio/bufio.lo.dep: $(go_bufio_files)
@@ -1922,15 +1924,6 @@ bytes/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: bytes/check
 
-@go_include@ cmath/cmath.lo.dep
-cmath/cmath.lo.dep: $(go_cmath_files)
-	$(BUILDDEPS)
-cmath/cmath.lo: $(go_cmath_files)
-	$(BUILDPACKAGE)
-cmath/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: cmath/check
-
 @go_include@ crypto/crypto.lo.dep
 crypto/crypto.lo.dep: $(go_crypto_files)
 	$(BUILDDEPS)
@@ -1940,15 +1933,6 @@ crypto/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: crypto/check
 
-@go_include@ csv/csv.lo.dep
-csv/csv.lo.dep: $(go_csv_files)
-	$(BUILDDEPS)
-csv/csv.lo: $(go_csv_files)
-	$(BUILDPACKAGE)
-csv/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: csv/check
-
 @go_include@ errors/errors.lo.dep
 errors/errors.lo.dep: $(go_errors_files)
 	$(BUILDDEPS)
@@ -1957,15 +1941,6 @@ errors/errors.lo: $(go_errors_files)
 errors/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: errors/check
-
-@go_include@ exec/exec.lo.dep
-exec/exec.lo.dep: $(go_exec_files)
-	$(BUILDDEPS)
-exec/exec.lo: $(go_exec_files)
-	$(BUILDPACKAGE)
-exec/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: exec/check
 
 @go_include@ expvar/expvar.lo.dep
 expvar/expvar.lo.dep: $(go_expvar_files)
@@ -1994,15 +1969,6 @@ fmt/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: fmt/check
 
-@go_include@ gob/gob.lo.dep
-gob/gob.lo.dep: $(go_gob_files)
-	$(BUILDDEPS)
-gob/gob.lo: $(go_gob_files)
-	$(BUILDPACKAGE)
-gob/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: gob/check
-
 @go_include@ hash/hash.lo.dep
 hash/hash.lo.dep: $(go_hash_files)
 	$(BUILDDEPS)
@@ -2020,15 +1986,6 @@ html/html.lo: $(go_html_files)
 html/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: html/check
-
-@go_include@ http/http.lo.dep
-http/http.lo.dep: $(go_http_files)
-	$(BUILDDEPS)
-http/http.lo: $(go_http_files)
-	$(BUILDPACKAGE)
-http/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: http/check
 
 @go_include@ image/image.lo.dep
 image/image.lo.dep: $(go_image_files)
@@ -2048,15 +2005,6 @@ io/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: io/check
 
-@go_include@ json/json.lo.dep
-json/json.lo.dep: $(go_json_files)
-	$(BUILDDEPS)
-json/json.lo: $(go_json_files)
-	$(BUILDPACKAGE)
-json/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: json/check
-
 @go_include@ log/log.lo.dep
 log/log.lo.dep: $(go_log_files)
 	$(BUILDDEPS)
@@ -2074,15 +2022,6 @@ math/math.lo: $(go_math_files)
 math/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: math/check
-
-@go_include@ mail/mail.lo.dep
-mail/mail.lo.dep: $(go_mail_files)
-	$(BUILDDEPS)
-mail/mail.lo: $(go_mail_files)
-	$(BUILDPACKAGE)
-mail/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: mail/check
 
 @go_include@ mime/mime.lo.dep
 mime/mime.lo.dep: $(go_mime_files)
@@ -2133,15 +2072,6 @@ path/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: path/check
 
-@go_include@ rand/rand.lo.dep
-rand/rand.lo.dep: $(go_rand_files)
-	$(BUILDDEPS)
-rand/rand.lo: $(go_rand_files)
-	$(BUILDPACKAGE)
-rand/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: rand/check
-
 @go_include@ reflect/reflect.lo.dep
 reflect/reflect.lo.dep: $(go_reflect_files)
 	$(BUILDDEPS)
@@ -2160,15 +2090,6 @@ regexp/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: regexp/check
 
-@go_include@ rpc/rpc.lo.dep
-rpc/rpc.lo.dep: $(go_rpc_files)
-	$(BUILDDEPS)
-rpc/rpc.lo: $(go_rpc_files)
-	$(BUILDPACKAGE)
-rpc/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: rpc/check
-
 @go_include@ runtime/runtime.lo.dep
 runtime/runtime.lo.dep: $(go_runtime_files)
 	$(BUILDDEPS)
@@ -2178,23 +2099,15 @@ runtime/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: runtime/check
 
-@go_include@ scanner/scanner.lo.dep
-scanner/scanner.lo.dep: $(go_scanner_files)
+@go_include@ text/scanner.lo.dep
+text/scanner.lo.dep: $(go_text_scanner_files)
 	$(BUILDDEPS)
-scanner/scanner.lo: $(go_scanner_files)
+text/scanner.lo: $(go_text_scanner_files)
 	$(BUILDPACKAGE)
-scanner/check: $(CHECK_DEPS)
+text/scanner/check: $(CHECK_DEPS)
+	@$(MKDIR_P) text/scanner
 	@$(CHECK)
-.PHONY: scanner/check
-
-@go_include@ smtp/smtp.lo.dep
-smtp/smtp.lo.dep: $(go_smtp_files)
-	$(BUILDDEPS)
-smtp/smtp.lo: $(go_smtp_files)
-	$(BUILDPACKAGE)
-smtp/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: smtp/check
+.PHONY: text/scanner/check
 
 @go_include@ sort/sort.lo.dep
 sort/sort.lo.dep: $(go_sort_files)
@@ -2232,35 +2145,6 @@ sync/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: sync/check
 
-@go_include@ syslog/syslog.lo.dep
-syslog/syslog.lo.dep: $(go_syslog_files)
-	$(BUILDDEPS)
-syslog/syslog.lo: $(go_syslog_files)
-	$(BUILDPACKAGE)
-syslog/syslog_c.lo: $(go_syslog_c_files) syslog/syslog.lo
-	$(LTCOMPILE) -c -o $@ $(srcdir)/go/syslog/syslog_c.c
-syslog/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: syslog/check
-
-@go_include@ tabwriter/tabwriter.lo.dep
-tabwriter/tabwriter.lo.dep: $(go_tabwriter_files)
-	$(BUILDDEPS)
-tabwriter/tabwriter.lo: $(go_tabwriter_files)
-	$(BUILDPACKAGE)
-tabwriter/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: tabwriter/check
-
-@go_include@ template/template.lo.dep
-template/template.lo.dep: $(go_template_files)
-	$(BUILDDEPS)
-template/template.lo: $(go_template_files)
-	$(BUILDPACKAGE)
-template/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: template/check
-
 @go_include@ testing/testing.lo.dep
 testing/testing.lo.dep: $(go_testing_files)
 	$(BUILDDEPS)
@@ -2288,33 +2172,6 @@ unicode/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: unicode/check
 
-@go_include@ url/url.lo.dep
-url/url.lo.dep: $(go_url_files)
-	$(BUILDDEPS)
-url/url.lo: $(go_url_files)
-	$(BUILDPACKAGE)
-url/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: url/check
-
-@go_include@ utf16/utf16.lo.dep
-utf16/utf16.lo.dep: $(go_utf16_files)
-	$(BUILDDEPS)
-utf16/utf16.lo: $(go_utf16_files)
-	$(BUILDPACKAGE)
-utf16/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: utf16/check
-
-@go_include@ utf8/utf8.lo.dep
-utf8/utf8.lo.dep: $(go_utf8_files)
-	$(BUILDDEPS)
-utf8/utf8.lo: $(go_utf8_files)
-	$(BUILDPACKAGE)
-utf8/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: utf8/check
-
 @go_include@ websocket/websocket.lo.dep
 websocket/websocket.lo.dep: $(go_websocket_files)
 	$(BUILDDEPS)
@@ -2323,15 +2180,6 @@ websocket/websocket.lo: $(go_websocket_files)
 websocket/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: websocket/check
-
-@go_include@ xml/xml.lo.dep
-xml/xml.lo.dep: $(go_xml_files)
-	$(BUILDDEPS)
-xml/xml.lo: $(go_xml_files)
-	$(BUILDPACKAGE)
-xml/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: xml/check
 
 @go_include@ archive/tar.lo.dep
 archive/tar.lo.dep: $(go_archive_tar_files)
@@ -2803,6 +2651,16 @@ debug/pe/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: debug/pe/check
 
+@go_include@ encoding/asn1.lo.dep
+encoding/asn1.lo.dep: $(go_encoding_asn1_files)
+	$(BUILDDEPS)
+encoding/asn1.lo: $(go_encoding_asn1_files)
+	$(BUILDPACKAGE)
+encoding/asn1/check: $(CHECK_DEPS)
+	@$(MKDIR_P) encoding/asn1
+	@$(CHECK)
+.PHONY: encoding/asn1/check
+
 @go_include@ encoding/ascii85.lo.dep
 encoding/ascii85.lo.dep: $(go_encoding_ascii85_files)
 	$(BUILDDEPS)
@@ -2843,6 +2701,16 @@ encoding/binary/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: encoding/binary/check
 
+@go_include@ encoding/csv.lo.dep
+encoding/csv.lo.dep: $(go_encoding_csv_files)
+	$(BUILDDEPS)
+encoding/csv.lo: $(go_encoding_csv_files)
+	$(BUILDPACKAGE)
+encoding/csv/check: $(CHECK_DEPS)
+	@$(MKDIR_P) encoding/csv
+	@$(CHECK)
+.PHONY: encoding/csv/check
+
 @go_include@ encoding/git85.lo.dep
 encoding/git85.lo.dep: $(go_encoding_git85_files)
 	$(BUILDDEPS)
@@ -2852,6 +2720,16 @@ encoding/git85/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/git85
 	@$(CHECK)
 .PHONY: encoding/git85/check
+
+@go_include@ encoding/gob.lo.dep
+encoding/gob.lo.dep: $(go_encoding_gob_files)
+	$(BUILDDEPS)
+encoding/gob.lo: $(go_encoding_gob_files)
+	$(BUILDPACKAGE)
+encoding/gob/check: $(CHECK_DEPS)
+	@$(MKDIR_P) encoding/gob
+	@$(CHECK)
+.PHONY: encoding/gob/check
 
 @go_include@ encoding/hex.lo.dep
 encoding/hex.lo.dep: $(go_encoding_hex_files)
@@ -2863,6 +2741,16 @@ encoding/hex/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: encoding/hex/check
 
+@go_include@ encoding/json.lo.dep
+encoding/json.lo.dep: $(go_encoding_json_files)
+	$(BUILDDEPS)
+encoding/json.lo: $(go_encoding_json_files)
+	$(BUILDPACKAGE)
+encoding/json/check: $(CHECK_DEPS)
+	@$(MKDIR_P) encoding/json
+	@$(CHECK)
+.PHONY: encoding/json/check
+
 @go_include@ encoding/pem.lo.dep
 encoding/pem.lo.dep: $(go_encoding_pem_files)
 	$(BUILDDEPS)
@@ -2872,6 +2760,16 @@ encoding/pem/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/pem
 	@$(CHECK)
 .PHONY: encoding/pem/check
+
+@go_include@ encoding/xml.lo.dep
+encoding/xml.lo.dep: $(go_encoding_xml_files)
+	$(BUILDDEPS)
+encoding/xml.lo: $(go_encoding_xml_files)
+	$(BUILDPACKAGE)
+encoding/xml/check: $(CHECK_DEPS)
+	@$(MKDIR_P) encoding/xml
+	@$(CHECK)
+.PHONY: encoding/xml/check
 
 @go_include@ exp/ebnf.lo.dep
 exp/ebnf.lo.dep: $(go_exp_ebnf_files)
@@ -2983,15 +2881,15 @@ exp/sql/driver/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: exp/sql/driver/check
 
-@go_include@ exp/template/html.lo.dep
-exp/template/html.lo.dep: $(go_exp_template_html_files)
+@go_include@ html/template.lo.dep
+html/template.lo.dep: $(go_html_template_files)
 	$(BUILDDEPS)
-exp/template/html.lo: $(go_exp_template_html_files)
+html/template.lo: $(go_html_template_files)
 	$(BUILDPACKAGE)
-exp/template/html/check: $(CHECK_DEPS)
-	@$(MKDIR_P) exp/template/html
+html/template/check: $(CHECK_DEPS)
+	@$(MKDIR_P) html/template
 	@$(CHECK)
-.PHONY: exp/template/html/check
+.PHONY: html/template/check
 
 @go_include@ go/ast.lo.dep
 go/ast.lo.dep: $(go_go_ast_files)
@@ -3112,46 +3010,6 @@ hash/fnv/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: hash/fnv/check
 
-@go_include@ http/cgi.lo.dep
-http/cgi.lo.dep: $(go_http_cgi_files)
-	$(BUILDDEPS)
-http/cgi.lo: $(go_http_cgi_files)
-	$(BUILDPACKAGE)
-http/cgi/check: $(CHECK_DEPS)
-	@$(MKDIR_P) http/cgi
-	@$(CHECK)
-.PHONY: http/cgi/check
-
-@go_include@ http/fcgi.lo.dep
-http/fcgi.lo.dep: $(go_http_fcgi_files)
-	$(BUILDDEPS)
-http/fcgi.lo: $(go_http_fcgi_files)
-	$(BUILDPACKAGE)
-http/fcgi/check: $(CHECK_DEPS)
-	@$(MKDIR_P) http/fcgi
-	@$(CHECK)
-.PHONY: http/fcgi/check
-
-@go_include@ http/httptest.lo.dep
-http/httptest.lo.dep: $(go_http_httptest_files)
-	$(BUILDDEPS)
-http/httptest.lo: $(go_http_httptest_files)
-	$(BUILDPACKAGE)
-http/httptest/check: $(CHECK_DEPS)
-	@$(MKDIR_P) http/httptest
-	@$(CHECK)
-.PHONY: http/httptest/check
-
-@go_include@ http/pprof.lo.dep
-http/pprof.lo.dep: $(go_http_pprof_files)
-	$(BUILDDEPS)
-http/pprof.lo: $(go_http_pprof_files)
-	$(BUILDPACKAGE)
-http/pprof/check: $(CHECK_DEPS)
-	@$(MKDIR_P) http/pprof
-	@$(CHECK)
-.PHONY: http/pprof/check
-
 @go_include@ image/bmp.lo.dep
 image/bmp.lo.dep: $(go_image_bmp_files)
 	$(BUILDDEPS)
@@ -3252,6 +3110,48 @@ io/ioutil/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: io/ioutil/check
 
+@go_include@ log/syslog.lo.dep
+log/syslog.lo.dep: $(go_log_syslog_files)
+	$(BUILDDEPS)
+log/syslog.lo: $(go_log_syslog_files)
+	$(BUILDPACKAGE)
+log/syslog/syslog_c.lo: $(go_syslog_c_files) log/syslog.lo
+	$(LTCOMPILE) -c -o $@ $(srcdir)/go/log/syslog/syslog_c.c
+log/syslog/check: $(CHECK_DEPS)
+	@$(MKDIR_P) log/syslog
+	@$(CHECK)
+.PHONY: log/syslog/check
+
+@go_include@ math/big.lo.dep
+math/big.lo.dep: $(go_math_big_files)
+	$(BUILDDEPS)
+math/big.lo: $(go_math_big_files)
+	$(BUILDPACKAGE)
+math/big/check: $(CHECK_DEPS)
+	@$(MKDIR_P) math/big
+	@$(CHECK)
+.PHONY: math/big/check
+
+@go_include@ math/cmplx.lo.dep
+math/cmplx.lo.dep: $(go_math_cmplx_files)
+	$(BUILDDEPS)
+math/cmplx.lo: $(go_math_cmplx_files)
+	$(BUILDPACKAGE)
+math/cmplx/check: $(CHECK_DEPS)
+	@$(MKDIR_P) math/cmplx
+	@$(CHECK)
+.PHONY: math/cmplx/check
+
+@go_include@ math/rand.lo.dep
+math/rand.lo.dep: $(go_math_rand_files)
+	$(BUILDDEPS)
+math/rand.lo: $(go_math_rand_files)
+	$(BUILDPACKAGE)
+math/rand/check: $(CHECK_DEPS)
+	@$(MKDIR_P) math/rand
+	@$(CHECK)
+.PHONY: math/rand/check
+
 @go_include@ mime/multipart.lo.dep
 mime/multipart.lo.dep: $(go_mime_multipart_files)
 	$(BUILDDEPS)
@@ -3268,6 +3168,56 @@ net/dict.lo.dep: $(go_net_dict_files)
 net/dict.lo: $(go_net_dict_files)
 	$(BUILDPACKAGE)
 
+@go_include@ net/http.lo.dep
+net/http.lo.dep: $(go_net_http_files)
+	$(BUILDDEPS)
+net/http.lo: $(go_net_http_files)
+	$(BUILDPACKAGE)
+net/http/check: $(CHECK_DEPS)
+	@$(MKDIR_P) net/http
+	@$(CHECK)
+.PHONY: net/http/check
+
+@go_include@ net/mail.lo.dep
+net/mail.lo.dep: $(go_net_mail_files)
+	$(BUILDDEPS)
+net/mail.lo: $(go_net_mail_files)
+	$(BUILDPACKAGE)
+net/mail/check: $(CHECK_DEPS)
+	@$(MKDIR_P) net/mail
+	@$(CHECK)
+.PHONY: net/mail/check
+
+@go_include@ net/rpc.lo.dep
+net/rpc.lo.dep: $(go_net_rpc_files)
+	$(BUILDDEPS)
+net/rpc.lo: $(go_net_rpc_files)
+	$(BUILDPACKAGE)
+net/rpc/check: $(CHECK_DEPS)
+	@$(MKDIR_P) net/rpc
+	@$(CHECK)
+.PHONY: net/rpc/check
+
+@go_include@ net/smtp.lo.dep
+net/smtp.lo.dep: $(go_net_smtp_files)
+	$(BUILDDEPS)
+net/smtp.lo: $(go_net_smtp_files)
+	$(BUILDPACKAGE)
+net/smtp/check: $(CHECK_DEPS)
+	@$(MKDIR_P) net/smtp
+	@$(CHECK)
+.PHONY: net/smtp/check
+
+@go_include@ net/url.lo.dep
+net/url.lo.dep: $(go_net_url_files)
+	$(BUILDDEPS)
+net/url.lo: $(go_net_url_files)
+	$(BUILDPACKAGE)
+net/url/check: $(CHECK_DEPS)
+	@$(MKDIR_P) net/url
+	@$(CHECK)
+.PHONY: net/url/check
+
 @go_include@ net/textproto.lo.dep
 net/textproto.lo.dep: $(go_net_textproto_files)
 	$(BUILDDEPS)
@@ -3277,6 +3227,66 @@ net/textproto/check: $(CHECK_DEPS)
 	@$(MKDIR_P) net/textproto
 	@$(CHECK)
 .PHONY: net/textproto/check
+
+@go_include@ net/http/cgi.lo.dep
+net/http/cgi.lo.dep: $(go_net_http_cgi_files)
+	$(BUILDDEPS)
+net/http/cgi.lo: $(go_net_http_cgi_files)
+	$(BUILDPACKAGE)
+net/http/cgi/check: $(CHECK_DEPS)
+	@$(MKDIR_P) net/http/cgi
+	@$(CHECK)
+.PHONY: net/http/cgi/check
+
+@go_include@ net/http/fcgi.lo.dep
+net/http/fcgi.lo.dep: $(go_net_http_fcgi_files)
+	$(BUILDDEPS)
+net/http/fcgi.lo: $(go_net_http_fcgi_files)
+	$(BUILDPACKAGE)
+net/http/fcgi/check: $(CHECK_DEPS)
+	@$(MKDIR_P) net/http/fcgi
+	@$(CHECK)
+.PHONY: net/http/fcgi/check
+
+@go_include@ net/http/httptest.lo.dep
+net/http/httptest.lo.dep: $(go_net_http_httptest_files)
+	$(BUILDDEPS)
+net/http/httptest.lo: $(go_net_http_httptest_files)
+	$(BUILDPACKAGE)
+net/http/httptest/check: $(check_deps)
+	@$(MKDIR_P) net/http/httptest
+	@$(CHECK)
+.PHONY: net/http/httptest/check
+
+@go_include@ net/http/httputil.lo.dep
+net/http/httputil.lo.dep: $(go_net_http_httputil_files)
+	$(BUILDDEPS)
+net/http/httputil.lo: $(go_net_http_httputil_files)
+	$(BUILDPACKAGE)
+net/http/httputil/check: $(check_deps)
+	@$(MKDIR_P) net/http/httputil
+	@$(CHECK)
+.PHONY: net/http/httputil/check
+
+@go_include@ net/http/pprof.lo.dep
+net/http/pprof.lo.dep: $(go_net_http_pprof_files)
+	$(BUILDDEPS)
+net/http/pprof.lo: $(go_net_http_pprof_files)
+	$(BUILDPACKAGE)
+net/http/pprof/check: $(CHECK_DEPS)
+	@$(MKDIR_P) net/http/pprof
+	@$(CHECK)
+.PHONY: net/http/pprof/check
+
+@go_include@ net/rpc/jsonrpc.lo.dep
+net/rpc/jsonrpc.lo.dep: $(go_net_rpc_jsonrpc_files)
+	$(BUILDDEPS)
+net/rpc/jsonrpc.lo: $(go_net_rpc_jsonrpc_files)
+	$(BUILDPACKAGE)
+net/rpc/jsonrpc/check: $(CHECK_DEPS)
+	@$(MKDIR_P) net/rpc/jsonrpc
+	@$(CHECK)
+.PHONY: net/rpc/jsonrpc/check
 
 @go_include@ old/netchan.lo.dep
 old/netchan.lo.dep: $(go_old_netchan_files)
@@ -3307,6 +3317,16 @@ old/template/check: $(CHECK_DEPS)
 	@$(MKDIR_P) old/template
 	@$(CHECK)
 .PHONY: old/template/check
+
+@go_include@ os/exec.lo.dep
+os/exec.lo.dep: $(go_os_exec_files)
+	$(BUILDDEPS)
+os/exec.lo: $(go_os_exec_files)
+	$(BUILDPACKAGE)
+os/exec/check: $(CHECK_DEPS)
+	@$(MKDIR_P) os/exec
+	@$(CHECK)
+.PHONY: os/exec/check
 
 @go_include@ os/user.lo.dep
 os/user.lo.dep: $(go_os_user_files)
@@ -3348,16 +3368,6 @@ regexp/syntax/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: regexp/syntax/check
 
-@go_include@ rpc/jsonrpc.lo.dep
-rpc/jsonrpc.lo.dep: $(go_rpc_jsonrpc_files)
-	$(BUILDDEPS)
-rpc/jsonrpc.lo: $(go_rpc_jsonrpc_files)
-	$(BUILDPACKAGE)
-rpc/jsonrpc/check: $(CHECK_DEPS)
-	@$(MKDIR_P) rpc/jsonrpc
-	@$(CHECK)
-.PHONY: rpc/jsonrpc/check
-
 @go_include@ runtime/debug.lo.dep
 runtime/debug.lo.dep: $(go_runtime_debug_files)
 	$(BUILDDEPS)
@@ -3390,15 +3400,34 @@ sync/atomic/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: sync/atomic/check
 
-@go_include@ template/parse.lo.dep
-template/parse.lo.dep: $(go_template_parse_files)
+@go_include@ text/tabwriter.lo.dep
+text/tabwriter.lo.dep: $(go_text_tabwriter_files)
 	$(BUILDDEPS)
-template/parse.lo: $(go_template_parse_files)
+text/tabwriter.lo: $(go_text_tabwriter_files)
 	$(BUILDPACKAGE)
-template/parse/check: $(CHECK_DEPS)
-	@$(MKDIR_P) template/parse
+text/tabwriter/check: $(CHECK_DEPS)
+	@$(MKDIR_P) text/tabwriter
 	@$(CHECK)
-.PHONY: template/parse/check
+.PHONY: text/tabwriter/check
+
+@go_include@ text/template.lo.dep
+text/template.lo.dep: $(go_text_template_files)
+	$(BUILDDEPS)
+text/template.lo: $(go_text_template_files)
+	$(BUILDPACKAGE)
+text/template/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: text/template/check
+
+@go_include@ text/template/parse.lo.dep
+text/template/parse.lo.dep: $(go_text_template_parse_files)
+	$(BUILDDEPS)
+text/template/parse.lo: $(go_text_template_parse_files)
+	$(BUILDPACKAGE)
+text/template/parse/check: $(CHECK_DEPS)
+	@$(MKDIR_P) text/template/parse
+	@$(CHECK)
+.PHONY: text/template/parse/check
 
 @go_include@ testing/iotest.lo.dep
 testing/iotest.lo.dep: $(go_testing_iotest_files)
@@ -3430,6 +3459,26 @@ testing/script/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: testing/script/check
 
+@go_include@ unicode/utf16.lo.dep
+unicode/utf16.lo.dep: $(go_unicode_utf16_files)
+	$(BUILDDEPS)
+unicode/utf16.lo: $(go_unicode_utf16_files)
+	$(BUILDPACKAGE)
+unicode/utf16/check: $(CHECK_DEPS)
+	@$(MKDIR_P) unicode/utf16
+	@$(CHECK)
+.PHONY: unicode/utf16/check
+
+@go_include@ unicode/utf8.lo.dep
+unicode/utf8.lo.dep: $(go_unicode_utf8_files)
+	$(BUILDDEPS)
+unicode/utf8.lo: $(go_unicode_utf8_files)
+	$(BUILDPACKAGE)
+unicode/utf8/check: $(CHECK_DEPS)
+	@$(MKDIR_P) unicode/utf8
+	@$(CHECK)
+.PHONY: unicode/utf8/check
+
 @go_include@ syscall/syscall.lo.dep
 syscall/syscall.lo.dep: $(go_syscall_files)
 	$(BUILDDEPS)
@@ -3445,23 +3494,13 @@ BUILDGOX = \
 	f=`echo $< | sed -e 's/.lo$$/.o/'`; \
 	$(OBJCOPY) -j .go_export $$f $@.tmp && mv -f $@.tmp $@
 
-asn1.gox: asn1/asn1.lo
-	$(BUILDGOX)
-big.gox: big/big.lo
-	$(BUILDGOX)
 bufio.gox: bufio/bufio.lo
 	$(BUILDGOX)
 bytes.gox: bytes/bytes.lo
 	$(BUILDGOX)
-cmath.gox: cmath/cmath.lo
-	$(BUILDGOX)
 crypto.gox: crypto/crypto.lo
 	$(BUILDGOX)
-csv.gox: csv/csv.lo
-	$(BUILDGOX)
 errors.gox: errors/errors.lo
-	$(BUILDGOX)
-exec.gox: exec/exec.lo
 	$(BUILDGOX)
 expvar.gox: expvar/expvar.lo
 	$(BUILDGOX)
@@ -3469,25 +3508,17 @@ flag.gox: flag/flag.lo
 	$(BUILDGOX)
 fmt.gox: fmt/fmt.lo
 	$(BUILDGOX)
-gob.gox: gob/gob.lo
-	$(BUILDGOX)
 hash.gox: hash/hash.lo
 	$(BUILDGOX)
 html.gox: html/html.lo
-	$(BUILDGOX)
-http.gox: http/http.lo
 	$(BUILDGOX)
 image.gox: image/image.lo
 	$(BUILDGOX)
 io.gox: io/io.lo
 	$(BUILDGOX)
-json.gox: json/json.lo
-	$(BUILDGOX)
 log.gox: log/log.lo
 	$(BUILDGOX)
 math.gox: math/math.lo
-	$(BUILDGOX)
-mail.gox: mail/mail.lo
 	$(BUILDGOX)
 mime.gox: mime/mime.lo
 	$(BUILDGOX)
@@ -3499,19 +3530,11 @@ patch.gox: patch/patch.lo
 	$(BUILDGOX)
 path.gox: path/path.lo
 	$(BUILDGOX)
-rand.gox: rand/rand.lo
-	$(BUILDGOX)
 reflect.gox: reflect/reflect.lo
 	$(BUILDGOX)
 regexp.gox: regexp/regexp.lo
 	$(BUILDGOX)
-rpc.gox: rpc/rpc.lo
-	$(BUILDGOX)
 runtime.gox: runtime/runtime.lo
-	$(BUILDGOX)
-scanner.gox: scanner/scanner.lo
-	$(BUILDGOX)
-smtp.gox: smtp/smtp.lo
 	$(BUILDGOX)
 sort.gox: sort/sort.lo
 	$(BUILDGOX)
@@ -3521,13 +3544,7 @@ strings.gox: strings/strings.lo
 	$(BUILDGOX)
 sync.gox: sync/sync.lo
 	$(BUILDGOX)
-syslog.gox: syslog/syslog.lo
-	$(BUILDGOX)
 syscall.gox: syscall/syscall.lo
-	$(BUILDGOX)
-tabwriter.gox: tabwriter/tabwriter.lo
-	$(BUILDGOX)
-template.gox: template/template.lo
 	$(BUILDGOX)
 testing.gox: testing/testing.lo
 	$(BUILDGOX)
@@ -3535,15 +3552,7 @@ time.gox: time/time.lo
 	$(BUILDGOX)
 unicode.gox: unicode/unicode.lo
 	$(BUILDGOX)
-url.gox: url/url.lo
-	$(BUILDGOX)
-utf16.gox: utf16/utf16.lo
-	$(BUILDGOX)
-utf8.gox: utf8/utf8.lo
-	$(BUILDGOX)
 websocket.gox: websocket/websocket.lo
-	$(BUILDGOX)
-xml.gox: xml/xml.lo
 	$(BUILDGOX)
 
 archive/tar.gox: archive/tar.lo
@@ -3649,17 +3658,27 @@ debug/pe.gox: debug/pe.lo
 
 encoding/ascii85.gox: encoding/ascii85.lo
 	$(BUILDGOX)
+encoding/asn1.gox: encoding/asn1.lo
+	$(BUILDGOX)
 encoding/base32.gox: encoding/base32.lo
 	$(BUILDGOX)
 encoding/base64.gox: encoding/base64.lo
 	$(BUILDGOX)
 encoding/binary.gox: encoding/binary.lo
 	$(BUILDGOX)
+encoding/csv.gox: encoding/csv.lo
+	$(BUILDGOX)
 encoding/git85.gox: encoding/git85.lo
+	$(BUILDGOX)
+encoding/gob.gox: encoding/gob.lo
 	$(BUILDGOX)
 encoding/hex.gox: encoding/hex.lo
 	$(BUILDGOX)
+encoding/json.gox: encoding/json.lo
+	$(BUILDGOX)
 encoding/pem.gox: encoding/pem.lo
+	$(BUILDGOX)
+encoding/xml.gox: encoding/xml.lo
 	$(BUILDGOX)
 
 exp/ebnf.gox: exp/ebnf.lo
@@ -3687,7 +3706,7 @@ exp/gui/x11.gox: exp/gui/x11.lo
 exp/sql/driver.gox: exp/sql/driver.lo
 	$(BUILDGOX)
 
-exp/template/html.gox: exp/template/html.lo
+html/template.gox: html/template.lo
 	$(BUILDGOX)
 
 go/ast.gox: go/ast.lo
@@ -3714,15 +3733,6 @@ hash/crc64.gox: hash/crc64.lo
 hash/fnv.gox: hash/fnv.lo
 	$(BUILDGOX)
 
-http/cgi.gox: http/cgi.lo
-	$(BUILDGOX)
-http/fcgi.gox: http/fcgi.lo
-	$(BUILDGOX)
-http/httptest.gox: http/httptest.lo
-	$(BUILDGOX)
-http/pprof.gox: http/pprof.lo
-	$(BUILDGOX)
-
 image/bmp.gox: image/bmp.lo
 	$(BUILDGOX)
 image/color.gox: image/color.lo
@@ -3746,12 +3756,46 @@ index/suffixarray.gox: index/suffixarray.lo
 io/ioutil.gox: io/ioutil.lo
 	$(BUILDGOX)
 
+log/syslog.gox: log/syslog.lo
+	$(BUILDGOX)
+
+math/big.gox: math/big.lo
+	$(BUILDGOX)
+math/cmplx.gox: math/cmplx.lo
+	$(BUILDGOX)
+math/rand.gox: math/rand.lo
+	$(BUILDGOX)
+
 mime/multipart.gox: mime/multipart.lo
 	$(BUILDGOX)
 
 net/dict.gox: net/dict.lo
 	$(BUILDGOX)
+net/http.gox: net/http.lo
+	$(BUILDGOX)
+net/mail.gox: net/mail.lo
+	$(BUILDGOX)
+net/rpc.gox: net/rpc.lo
+	$(BUILDGOX)
+net/smtp.gox: net/smtp.lo
+	$(BUILDGOX)
 net/textproto.gox: net/textproto.lo
+	$(BUILDGOX)
+net/url.gox: net/url.lo
+	$(BUILDGOX)
+
+net/http/cgi.gox: net/http/cgi.lo
+	$(BUILDGOX)
+net/http/fcgi.gox: net/http/fcgi.lo
+	$(BUILDGOX)
+net/http/httptest.gox: net/http/httptest.lo
+	$(BUILDGOX)
+net/http/httputil.gox: net/http/httputil.lo
+	$(BUILDGOX)
+net/http/pprof.gox: net/http/pprof.lo
+	$(BUILDGOX)
+
+net/rpc/jsonrpc.gox: net/rpc/jsonrpc.lo
 	$(BUILDGOX)
 
 old/netchan.gox: old/netchan.lo
@@ -3761,6 +3805,8 @@ old/regexp.gox: old/regexp.lo
 old/template.gox: old/template.lo
 	$(BUILDGOX)
 
+os/exec.gox: os/exec.lo
+	$(BUILDGOX)
 os/user.gox: os/user.lo
 	$(BUILDGOX)
 os/signal.gox: os/signal.lo
@@ -3772,9 +3818,6 @@ path/filepath.gox: path/filepath.lo
 regexp/syntax.gox: regexp/syntax.lo
 	$(BUILDGOX)
 
-rpc/jsonrpc.gox: rpc/jsonrpc.lo
-	$(BUILDGOX)
-
 runtime/debug.gox: runtime/debug.lo
 	$(BUILDGOX)
 runtime/pprof.gox: runtime/pprof.lo
@@ -3783,7 +3826,13 @@ runtime/pprof.gox: runtime/pprof.lo
 sync/atomic.gox: sync/atomic.lo
 	$(BUILDGOX)
 
-template/parse.gox: template/parse.lo
+text/scanner.gox: text/scanner.lo
+	$(BUILDGOX)
+text/tabwriter.gox: text/tabwriter.lo
+	$(BUILDGOX)
+text/template.gox: text/template.lo
+	$(BUILDGOX)
+text/template/parse.gox: text/template/parse.lo
 	$(BUILDGOX)
 
 testing/iotest.gox: testing/iotest.lo
@@ -3791,6 +3840,11 @@ testing/iotest.gox: testing/iotest.lo
 testing/quick.gox: testing/quick.lo
 	$(BUILDGOX)
 testing/script.gox: testing/script.lo
+	$(BUILDGOX)
+
+unicode/utf16.gox: unicode/utf16.lo
+	$(BUILDGOX)
+unicode/utf8.gox: unicode/utf8.lo
 	$(BUILDGOX)
 
 if LIBGO_IS_LINUX
@@ -3801,52 +3855,32 @@ exp_inotify_check =
 endif
 
 TEST_PACKAGES = \
-	asn1/check \
-	big/check \
 	bufio/check \
 	bytes/check \
-	cmath/check \
-	csv/check \
 	errors/check \
-	exec/check \
 	expvar/check \
 	flag/check \
 	fmt/check \
-	gob/check \
 	html/check \
-	http/check \
 	image/check \
 	io/check \
-	json/check \
 	log/check \
 	math/check \
-	mail/check \
 	mime/check \
 	net/check \
 	os/check \
 	patch/check \
 	path/check \
-	rand/check \
 	reflect/check \
 	regexp/check \
-	rpc/check \
 	runtime/check \
-	scanner/check \
-	smtp/check \
 	sort/check \
 	strconv/check \
 	strings/check \
 	sync/check \
-	syslog/check \
-	tabwriter/check \
-	template/check \
 	time/check \
 	unicode/check \
-	url/check \
-	utf16/check \
-	utf8/check \
 	websocket/check \
-	xml/check \
 	archive/tar/check \
 	archive/zip/check \
 	compress/bzip2/check \
@@ -3892,12 +3926,17 @@ TEST_PACKAGES = \
 	debug/macho/check \
 	debug/pe/check \
 	encoding/ascii85/check \
+	encoding/asn1/check \
 	encoding/base32/check \
 	encoding/base64/check \
 	encoding/binary/check \
+	encoding/csv/check \
 	encoding/git85/check \
+	encoding/gob/check \
 	encoding/hex/check \
+	encoding/json/check \
 	encoding/pem/check \
+	encoding/xml/check \
 	exp/ebnf/check \
 	$(exp_inotify_check) \
 	exp/norm/check \
@@ -3905,7 +3944,7 @@ TEST_PACKAGES = \
 	exp/sql/check \
 	exp/ssh/check \
 	exp/terminal/check \
-	exp/template/html/check \
+	html/template/check \
 	go/ast/check \
 	$(go_build_check_omitted_since_it_calls_6g) \
 	go/parser/check \
@@ -3917,8 +3956,6 @@ TEST_PACKAGES = \
 	hash/crc32/check \
 	hash/crc64/check \
 	hash/fnv/check \
-	http/cgi/check \
-	http/fcgi/check \
 	image/draw/check \
 	image/jpeg/check \
 	image/png/check \
@@ -3926,20 +3963,38 @@ TEST_PACKAGES = \
 	image/ycbcr/check \
 	index/suffixarray/check \
 	io/ioutil/check \
+	log/syslog/check \
+	math/big/check \
+	math/cmplx/check \
+	math/rand/check \
 	mime/multipart/check \
+	net/http/check \
+	net/http/cgi/check \
+	net/http/fcgi/check \
+	net/http/httputil/check \
+	net/mail/check \
+	net/rpc/check \
+	net/smtp/check \
 	net/textproto/check \
+	net/url/check \
+	net/rpc/jsonrpc/check \
 	old/netchan/check \
 	old/regexp/check \
 	old/template/check \
+	os/exec/check \
 	os/user/check \
 	os/signal/check \
 	path/filepath/check \
 	regexp/syntax/check \
-	rpc/jsonrpc/check \
 	sync/atomic/check \
-	template/parse/check \
+	text/scanner/check \
+	text/tabwriter/check \
+	text/template/check \
+	text/template/parse/check \
 	testing/quick/check \
-	testing/script/check
+	testing/script/check \
+	unicode/utf16/check \
+	unicode/utf8/check
 
 check: check-tail
 check-recursive: check-head

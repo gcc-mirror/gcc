@@ -23,6 +23,7 @@ func pipeErr(err error) io.Reader {
 }
 
 func readDat(filename string, c chan io.Reader) {
+	defer close(c)
 	f, err := os.Open("testdata/webkit/" + filename)
 	if err != nil {
 		c <- pipeErr(err)
@@ -125,17 +126,27 @@ func dump(n *Node) (string, error) {
 }
 
 func TestParser(t *testing.T) {
-	// TODO(nigeltao): Process all the .dat files, not just the first one.
-	filenames := []string{
-		"tests1.dat",
+	testFiles := []struct {
+		filename string
+		// n is the number of test cases to run from that file.
+		// -1 means all test cases.
+		n int
+	}{
+		// TODO(nigeltao): Process all the test cases from all the .dat files.
+		{"tests1.dat", 92},
+		{"tests2.dat", 0},
+		{"tests3.dat", 0},
 	}
-	for _, filename := range filenames {
+	for _, tf := range testFiles {
 		rc := make(chan io.Reader)
-		go readDat(filename, rc)
-		// TODO(nigeltao): Process all test cases, not just a subset.
-		for i := 0; i < 80; i++ {
+		go readDat(tf.filename, rc)
+		for i := 0; i != tf.n; i++ {
 			// Parse the #data section.
-			b, err := ioutil.ReadAll(<-rc)
+			dataReader := <-rc
+			if dataReader == nil {
+				break
+			}
+			b, err := ioutil.ReadAll(dataReader)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -158,7 +169,7 @@ func TestParser(t *testing.T) {
 				t.Fatal(err)
 			}
 			if want := string(b); got != want {
-				t.Errorf("%s test #%d %q, got vs want:\n----\n%s----\n%s----", filename, i, text, got, want)
+				t.Errorf("%s test #%d %q, got vs want:\n----\n%s----\n%s----", tf.filename, i, text, got, want)
 				continue
 			}
 			if renderTestBlacklist[text] {
@@ -178,8 +189,14 @@ func TestParser(t *testing.T) {
 				t.Fatal(err)
 			}
 			if got != got1 {
-				t.Errorf("%s test #%d %q, got vs got1:\n----\n%s----\n%s----", filename, i, text, got, got1)
+				t.Errorf("%s test #%d %q, got vs got1:\n----\n%s----\n%s----", tf.filename, i, text, got, got1)
 				continue
+			}
+		}
+		// Drain any untested cases for the test file.
+		for r := range rc {
+			if _, err := ioutil.ReadAll(r); err != nil {
+				t.Fatal(err)
 			}
 		}
 	}
@@ -193,6 +210,7 @@ var renderTestBlacklist = map[string]bool{
 	// The second <a> will be reparented to the first <table>'s parent. This
 	// results in an <a> whose parent is an <a>, which is not 'well-formed'.
 	`<a><table><td><a><table></table><a></tr><a></table><b>X</b>C<a>Y`: true,
-	// The second <a> will be reparented, similar to the case above.
+	// More cases of <a> being reparented:
 	`<a href="blah">aba<table><a href="foo">br<tr><td></td></tr>x</table>aoe`: true,
+	`<a><table><a></table><p><a><div><a>`:                                     true,
 }

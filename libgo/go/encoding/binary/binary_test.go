@@ -7,7 +7,6 @@ package binary
 import (
 	"bytes"
 	"io"
-	"bytes"
 	"math"
 	"reflect"
 	"testing"

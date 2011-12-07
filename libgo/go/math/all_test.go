@@ -7,7 +7,6 @@ package math_test
 import (
 	"fmt"
 	. "math"
-	"runtime"
 	"testing"
 )
 
@@ -159,6 +158,19 @@ var cos = []float64{
 	-9.1565869021018925545016502e-01,
 	-2.517729313893103197176091e-01,
 	-7.39241351595676573201918e-01,
+}
+// Results for 100000 * Pi + vf[i]
+var cosLarge = []float64{
+	2.634752141185559426744e-01,
+	1.14855126055543100712e-01,
+	9.61912973266488928113e-01,
+	2.9381411499556122552e-01,
+	-9.777138189880161924641e-01,
+	-9.76930413445147608049e-01,
+	4.940088097314976789841e-01,
+	-9.15658690217517835002e-01,
+	-2.51772931436786954751e-01,
+	-7.3924135157173099849e-01,
 }
 var cosh = []float64{
 	7.2668796942212842775517446e+01,
@@ -502,6 +514,19 @@ var sin = []float64{
 	9.6778633541687993721617774e-01,
 	-6.734405869050344734943028e-01,
 }
+// Results for 100000 * Pi + vf[i]
+var sinLarge = []float64{
+	-9.646661658548936063912e-01,
+	9.933822527198506903752e-01,
+	-2.7335587036246899796e-01,
+	9.55862576853689321268e-01,
+	-2.099421066862688873691e-01,
+	2.13557878070308981163e-01,
+	-8.694568970959221300497e-01,
+	4.01956668098863248917e-01,
+	9.67786335404528727927e-01,
+	-6.7344058693131973066e-01,
+}
 var sinh = []float64{
 	7.2661916084208532301448439e+01,
 	1.1479409110035194500526446e+03,
@@ -537,6 +562,19 @@ var tan = []float64{
 	-4.389808914752818126249079e-01,
 	-3.843885560201130679995041e+00,
 	9.10988793377685105753416e-01,
+}
+// Results for 100000 * Pi + vf[i]
+var tanLarge = []float64{
+	-3.66131656475596512705e+00,
+	8.6490023287202547927e+00,
+	-2.841794195104782406e-01,
+	3.2532901861033120983e+00,
+	2.14727564046880001365e-01,
+	-2.18600910700688062874e-01,
+	-1.760002817699722747043e+00,
+	-4.38980891453536115952e-01,
+	-3.84388555942723509071e+00,
+	9.1098879344275101051e-01,
 }
 var tanh = []float64{
 	9.9990531206936338549262119e-01,
@@ -2247,7 +2285,7 @@ func TestSqrt(t *testing.T) {
 
 func TestTan(t *testing.T) {
 	for i := 0; i < len(vf); i++ {
-		if f := Tan(vf[i]); !close(tan[i], f) {
+		if f := Tan(vf[i]); !veryclose(tan[i], f) {
 			t.Errorf("Tan(%g) = %g, want %g", vf[i], f, tan[i])
 		}
 	}
@@ -2255,16 +2293,6 @@ func TestTan(t *testing.T) {
 	for i := 0; i < len(vfsinSC); i++ {
 		if f := Tan(vfsinSC[i]); !alike(sinSC[i], f) {
 			t.Errorf("Tan(%g) = %g, want %g", vfsinSC[i], f, sinSC[i])
-		}
-	}
-
-	// Make sure portable Tan(Pi/2) doesn't panic (it used to).
-	// The portable implementation returns NaN.
-	// Assembly implementations might not,
-	// because Pi/2 is not exactly representable.
-	if runtime.GOARCH != "386" {
-		if f := Tan(Pi / 2); !alike(f, NaN()) {
-			t.Errorf("Tan(%g) = %g, want %g", Pi/2, f, NaN())
 		}
 	}
 }
@@ -2344,13 +2372,15 @@ func TestYn(t *testing.T) {
 }
 
 // Check that math functions of high angle values
-// return similar results to low angle values
+// return accurate results. [Since (vf[i] + large) - large != vf[i],
+// testing for Trig(vf[i] + large) == Trig(vf[i]), where large is
+// a multiple of 2*Pi, is misleading.]
 func TestLargeCos(t *testing.T) {
 	large := float64(100000 * Pi)
 	for i := 0; i < len(vf); i++ {
-		f1 := Cos(vf[i])
+		f1 := cosLarge[i]
 		f2 := Cos(vf[i] + large)
-		if !kindaclose(f1, f2) {
+		if !close(f1, f2) {
 			t.Errorf("Cos(%g) = %g, want %g", vf[i]+large, f2, f1)
 		}
 	}
@@ -2359,9 +2389,9 @@ func TestLargeCos(t *testing.T) {
 func TestLargeSin(t *testing.T) {
 	large := float64(100000 * Pi)
 	for i := 0; i < len(vf); i++ {
-		f1 := Sin(vf[i])
+		f1 := sinLarge[i]
 		f2 := Sin(vf[i] + large)
-		if !kindaclose(f1, f2) {
+		if !close(f1, f2) {
 			t.Errorf("Sin(%g) = %g, want %g", vf[i]+large, f2, f1)
 		}
 	}
@@ -2370,9 +2400,9 @@ func TestLargeSin(t *testing.T) {
 func TestLargeSincos(t *testing.T) {
 	large := float64(100000 * Pi)
 	for i := 0; i < len(vf); i++ {
-		f1, g1 := Sincos(vf[i])
+		f1, g1 := sinLarge[i], cosLarge[i]
 		f2, g2 := Sincos(vf[i] + large)
-		if !kindaclose(f1, f2) || !kindaclose(g1, g2) {
+		if !close(f1, f2) || !close(g1, g2) {
 			t.Errorf("Sincos(%g) = %g, %g, want %g, %g", vf[i]+large, f2, g2, f1, g1)
 		}
 	}
@@ -2381,9 +2411,9 @@ func TestLargeSincos(t *testing.T) {
 func TestLargeTan(t *testing.T) {
 	large := float64(100000 * Pi)
 	for i := 0; i < len(vf); i++ {
-		f1 := Tan(vf[i])
+		f1 := tanLarge[i]
 		f2 := Tan(vf[i] + large)
-		if !kindaclose(f1, f2) {
+		if !close(f1, f2) {
 			t.Errorf("Tan(%g) = %g, want %g", vf[i]+large, f2, f1)
 		}
 	}

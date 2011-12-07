@@ -166,7 +166,7 @@ done
   done
 done
 
-runtime="chan.c cpuprof.c goc2c.c lock_futex.c lock_sema.c mcache.c mcentral.c mfinal.c mfixalloc.c mgc0.c mheap.c msize.c proc.c runtime.c runtime.h malloc.h malloc.goc mprof.goc runtime1.goc sema.goc sigqueue.goc string.goc"
+runtime="chan.c cpuprof.c goc2c.c lock_futex.c lock_sema.c mcache.c mcentral.c mfinal.c mfixalloc.c mgc0.c mheap.c msize.c proc.c runtime.c runtime.h malloc.h malloc.goc mprof.goc runtime1.goc sema.goc sigqueue.goc string.goc time.goc"
 for f in $runtime; do
   merge_c $f $f
 done
