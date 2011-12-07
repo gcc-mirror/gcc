@@ -1,3 +1,9 @@
+2011-12-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50823
+	* ipa-inline.c (edge_badness): Do not account for the number of
+	remaining calls.
+
 2011-12-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/50744
