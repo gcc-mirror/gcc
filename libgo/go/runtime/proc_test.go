@@ -74,8 +74,6 @@ func BenchmarkStackGrowth(b *testing.B) {
 	}
 }
 
-/* These benchmarks are meaningless for gccgo.
-
 func BenchmarkSyscall(b *testing.B) {
 	const CallsPerSched = 1000
 	procs := runtime.GOMAXPROCS(-1)
@@ -125,5 +123,3 @@ func BenchmarkSyscallWork(b *testing.B) {
 		<-c
 	}
 }
-
-*/

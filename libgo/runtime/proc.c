@@ -1156,6 +1156,26 @@ runtime_malg(int32 stacksize, byte** ret_stack, size_t* ret_stacksize)
 	return newg;
 }
 
+/* For runtime package testing.  */
+
+void runtime_testing_entersyscall(void)
+  __asm__("libgo_runtime.runtime.entersyscall");
+
+void
+runtime_testing_entersyscall()
+{
+	runtime_entersyscall();
+}
+
+void runtime_testing_exitsyscall(void)
+  __asm__("libgo_runtime.runtime.exitsyscall");
+
+void
+runtime_testing_exitsyscall()
+{
+	runtime_exitsyscall();
+}
+
 G*
 __go_go(void (*fn)(void*), void* arg)
 {
@@ -1328,6 +1348,17 @@ bool
 runtime_lockedOSThread(void)
 {
 	return g->lockedm != nil && m->lockedg != nil;
+}
+
+// for testing of callbacks
+
+_Bool runtime_golockedOSThread(void)
+  asm("libgo_runtime.runtime.golockedOSThread");
+
+_Bool
+runtime_golockedOSThread(void)
+{
+	return runtime_lockedOSThread();
 }
 
 // for testing of wire, unwire
