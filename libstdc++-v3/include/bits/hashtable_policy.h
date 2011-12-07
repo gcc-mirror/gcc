@@ -300,23 +300,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     // Optimize lookups involving the first elements of __prime_list.
     // (useful to speed-up, eg, constructors)
-    static const unsigned long __fast_bkt[12]
+    static const unsigned char __fast_bkt[12]
       = { 2, 2, 2, 3, 5, 5, 7, 7, 11, 11, 11, 11 };
 
-    const unsigned long* __p
-      = __n <= 11 ? __fast_bkt + __n
-		  : std::lower_bound(__prime_list + 5,
-				     __prime_list + _S_n_primes, __n);
+    if (__n <= 11)
+      {
+	_M_prev_resize = 0;
+	_M_next_resize
+	  = __builtin_ceil(__fast_bkt[__n] * (long double)_M_max_load_factor);
+	return __fast_bkt[__n];
+      }
 
-    _M_prev_resize = __builtin_floor(*__p * (long double)_M_max_load_factor);
-    if (__p != __fast_bkt)
-      _M_prev_resize = std::min(_M_prev_resize,
-				static_cast<std::size_t>(*(__p - 1)));
-    // Lets guaranty a minimal grow step of 11:
+    const unsigned long* __p
+      = std::lower_bound(__prime_list + 5, __prime_list + _S_n_primes, __n);
+
+    // Shrink will take place only if the number of elements is small enough
+    // so that the prime number 2 steps before __p is large enough to still
+    // conform to the max load factor:
+    _M_prev_resize
+      = __builtin_floor(*(__p - 2) * (long double)_M_max_load_factor);
+
+    // Let's guaranty that a minimal grow step of 11 is used
     if (*__p - __n < 11)
-      __p = std::lower_bound(__prime_list + 5,
-			     __prime_list + _S_n_primes, __n + 11);
-    _M_next_resize = __builtin_floor(*__p * (long double)_M_max_load_factor);
+      __p = std::lower_bound(__p, __prime_list + _S_n_primes, __n + 11);
+    _M_next_resize = __builtin_ceil(*__p * (long double)_M_max_load_factor);
     return *__p;
   }
 
