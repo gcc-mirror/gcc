@@ -1,3 +1,14 @@
+2011-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20111208-1.c: New test.
+
+	Backport from mainline
+	2011-09-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/frame_overflow.ads: New.
+	* gnat.dg/frame_overflow.adb: Adjust.
+	* gnat.dg/specs/addr1.ads: Likewise.
+
 2011-12-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51435

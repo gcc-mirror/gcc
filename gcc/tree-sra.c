@@ -1020,26 +1020,28 @@ disqualify_ops_if_throwing_stmt (gimple stmt, tree lhs, tree rhs)
   return false;
 }
 
-/* Return true iff type of EXP is not sufficiently aligned.  */
+/* Return true if EXP is a memory reference less aligned than ALIGN.  This is
+   invoked only on strict-alignment targets.  */
 
 static bool
-tree_non_mode_aligned_mem_p (tree exp)
+tree_non_aligned_mem_p (tree exp, unsigned int align)
 {
-  enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
-  unsigned int align;
+  unsigned int exp_align;
 
   if (TREE_CODE (exp) == VIEW_CONVERT_EXPR)
     exp = TREE_OPERAND (exp, 0);
 
-  if (TREE_CODE (exp) == SSA_NAME
-      || TREE_CODE (exp) == MEM_REF
-      || mode == BLKmode
-      || is_gimple_min_invariant (exp)
-      || !STRICT_ALIGNMENT)
+  if (TREE_CODE (exp) == SSA_NAME || is_gimple_min_invariant (exp))
     return false;
 
-  align = get_object_alignment (exp, BIGGEST_ALIGNMENT);
-  if (GET_MODE_ALIGNMENT (mode) > align)
+  /* get_object_alignment will fall back to BITS_PER_UNIT if it cannot
+     compute an explicit alignment.  Pretend that dereferenced pointers
+     are always aligned on strict-alignment targets.  */
+  exp_align = get_object_alignment (exp, BIGGEST_ALIGNMENT);
+  if (TREE_CODE (exp) == MEM_REF || TREE_CODE (exp) == TARGET_MEM_REF)
+    exp_align = MAX (TYPE_ALIGN (TREE_TYPE (exp)), exp_align);
+
+  if (exp_align < align)
     return true;
 
   return false;
@@ -1071,7 +1073,11 @@ build_accesses_from_assign (gimple stmt)
   if (lacc)
     {
       lacc->grp_assignment_write = 1;
-      lacc->grp_unscalarizable_region |= tree_non_mode_aligned_mem_p (rhs);
+      if (STRICT_ALIGNMENT
+	  && tree_non_aligned_mem_p (rhs,
+				     get_object_alignment (lhs,
+							   BIGGEST_ALIGNMENT)))
+        lacc->grp_unscalarizable_region = 1;
     }
 
   if (racc)
@@ -1080,7 +1086,11 @@ build_accesses_from_assign (gimple stmt)
       if (should_scalarize_away_bitmap && !gimple_has_volatile_ops (stmt)
 	  && !is_gimple_reg_type (racc->type))
 	bitmap_set_bit (should_scalarize_away_bitmap, DECL_UID (racc->base));
-      racc->grp_unscalarizable_region |= tree_non_mode_aligned_mem_p (lhs);
+      if (STRICT_ALIGNMENT
+	  && tree_non_aligned_mem_p (lhs,
+				     get_object_alignment (rhs,
+							   BIGGEST_ALIGNMENT)))
+        racc->grp_unscalarizable_region = 1;
     }
 
   if (lacc && racc
@@ -3608,7 +3618,8 @@ access_precludes_ipa_sra_p (struct access *access)
 	  || gimple_code (access->stmt) == GIMPLE_ASM))
     return true;
 
-  if (tree_non_mode_aligned_mem_p (access->expr))
+  if (STRICT_ALIGNMENT
+      && tree_non_aligned_mem_p (access->expr, TYPE_ALIGN (access->type)))
     return true;
 
   return false;

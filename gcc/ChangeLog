@@ -1,3 +1,12 @@
+2011-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/51315
+	* tree-sra.c (tree_non_mode_aligned_mem_p): Rename to...
+	(tree_non_aligned_mem_p): ...this.  Add ALIGN parameter.  Look into
+	MEM_REFs and use get_object_or_type_alignment for them.
+	(build_accesses_from_assign): Adjust for above change.
+	(access_precludes_ipa_sra_p): Likewise.
+
 2011-12-06  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline:

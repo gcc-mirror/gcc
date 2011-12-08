@@ -1,3 +1,12 @@
+2011-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/51315
+	Backport from mainline
+	2011-09-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Do not promote
+	the alignment if this doesn't prevent BLKmode access to the object.
+
 2011-11-13  Iain Sandoe  <iains@gcc.gnu.org>
 
 	Backport from mainline r181474
