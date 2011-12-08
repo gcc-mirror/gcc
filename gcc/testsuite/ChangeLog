@@ -1,3 +1,7 @@
+2011-12-08  Teresa Johnson  <tejohnson@google.com>
+
+	* gcc.target/i386/movdi-rex64.c: New.
+
 2011-12-08  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/volatile3.c: New testcase.
