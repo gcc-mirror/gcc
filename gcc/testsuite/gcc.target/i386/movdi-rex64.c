@@ -1,5 +1,5 @@
 /* { dg-do compile { target *-*-linux* } } */
-/* { dg-options "-fPIE -Wwrite-strings" } */
+/* { dg-options "-fPIE" } */
 
 char *strcpy (char *dest, const char *src);
 
