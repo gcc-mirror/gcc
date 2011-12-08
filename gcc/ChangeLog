@@ -1,3 +1,9 @@
+2011-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51466
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Also copy
+	TREE_SIDE_EFFECTS.
+
 2011-12-08  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-operands.c (add_stmt_operand): Do not mark stmts
