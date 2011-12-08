@@ -139,6 +139,16 @@ tree_is_indexable (tree t)
 	   && DECL_CONTEXT (t)
 	   && TREE_CODE (DECL_CONTEXT (t)) == FUNCTION_DECL)
     return false;
+  /* Variably modified types need to be streamed alongside function
+     bodies because they can refer to local entities.  Together with
+     them we have to localize their members as well.
+     ???  In theory that includes non-FIELD_DECLs as well.  */
+  else if (TYPE_P (t)
+	   && variably_modified_type_p (t, NULL_TREE))
+    return false;
+  else if (TREE_CODE (t) == FIELD_DECL
+	   && variably_modified_type_p (DECL_CONTEXT (t), NULL_TREE))
+    return false;
   else
     return (TYPE_P (t) || DECL_P (t) || TREE_CODE (t) == SSA_NAME);
 }
