@@ -1,3 +1,9 @@
+2011-12-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/50395
+	* config/s390/s390.c (s390_mainpool_finish): Emit the jump over
+	the literal pool as jump insn.
+
 2011-12-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49772

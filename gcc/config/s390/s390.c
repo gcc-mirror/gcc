@@ -6476,7 +6476,8 @@ s390_mainpool_finish (struct constant_pool *pool)
       rtx pool_end = gen_label_rtx ();
 
       insn = gen_main_base_31_large (base_reg, pool->label, pool_end);
-      insn = emit_insn_after (insn, pool->pool_insn);
+      insn = emit_jump_insn_after (insn, pool->pool_insn);
+      JUMP_LABEL (insn) = pool_end;
       INSN_ADDRESSES_NEW (insn, -1);
       remove_insn (pool->pool_insn);
 
