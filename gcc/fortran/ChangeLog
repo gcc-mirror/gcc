@@ -1,5 +1,11 @@
 2011-12-08  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/51378
+	* symbol.c (gfc_find_component): Fix access check of parent
+	components.
+
+2011-12-08  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/51407
 	* io/transfer.c (require_numeric_type): New function.
 	(formatted_transfer_scalar_read, formatted_transfer_scalar_write):

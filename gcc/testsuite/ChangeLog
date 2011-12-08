@@ -1,5 +1,10 @@
 2011-12-08  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/51378
+	* gfortran.dg/private_type_14.f90: New.
+
+2011-12-08  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/51407
 	* gfortran.dg/io_real_boz_3.f90: New.
 	* gfortran.dg/io_real_boz_4.f90: New.
