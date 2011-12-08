@@ -1,4 +1,4 @@
-2011-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+2011-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/51315
 	Backport from mainline
