@@ -8804,7 +8804,7 @@ is_normal_capture_proxy (tree decl)
 /* VAR is a capture proxy created by build_capture_proxy; add it to the
    current function, which is the operator() for the appropriate lambda.  */
 
-static inline void
+void
 insert_capture_proxy (tree var)
 {
   cp_binding_level *b;
