@@ -1,3 +1,9 @@
+2011-12-08  Toon Moene  <toon@moene.org>
+
+	PR fortran/51310
+	* invoke.texi: Itemize the cases for which
+	-finit-<type>=<constant> doesn't work.
+
 2011-12-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51435
