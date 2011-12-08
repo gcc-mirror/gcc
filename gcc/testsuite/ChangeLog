@@ -1,3 +1,9 @@
+2011-12-08  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48437
+	* gcc.dg/lto/20111207-2_0.c: New testcase.
+	* gcc.dg/guality/pr48437.c: Likewise.
+
 2011-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/51401
