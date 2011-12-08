@@ -2,6 +2,11 @@
 
 	Backport from mainline
 	2011-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/51339
+	* gcc.dg/gomp/pr51339.c: New test.
+
+	2011-12-05  Jakub Jelinek  <jakub@redhat.com>
 		    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/51323

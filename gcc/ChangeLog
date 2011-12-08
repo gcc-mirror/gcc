@@ -2,6 +2,12 @@
 
 	Backport from mainline
 	2011-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/51339
+	* c-decl.c (c_finish_incomplete_decl, finish_decl): Call
+	relayout_decl instead of layout_decl.
+
+	2011-12-05  Jakub Jelinek  <jakub@redhat.com>
 		    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/51323
