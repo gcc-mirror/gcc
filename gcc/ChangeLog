@@ -1,5 +1,11 @@
 2011-12-08  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/49772
+	* tree-inline.c (optimize_inline_calls): Remove bail out
+	on errors.
+
+2011-12-08  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/50747
 	* lto-streamer-out.c (produce_symtab): Remove asserts.
 

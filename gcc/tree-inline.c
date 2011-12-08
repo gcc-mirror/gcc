@@ -4216,12 +4216,6 @@ optimize_inline_calls (tree fn)
   struct gimplify_ctx gctx;
   bool inlined_p = false;
 
-  /* There is no point in performing inlining if errors have already
-     occurred -- and we might crash if we try to inline invalid
-     code.  */
-  if (seen_error ())
-    return 0;
-
   /* Clear out ID.  */
   memset (&id, 0, sizeof (id));
 
