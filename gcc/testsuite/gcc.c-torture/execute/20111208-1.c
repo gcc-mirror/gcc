@@ -10,26 +10,8 @@ extern void *memcpy (void *__restrict __dest,
 extern size_t strlen (__const char *__s)
      __attribute__ ((__nothrow__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
 
-#if __SIZEOF_SHORT__ == 2
-typedef short int int16_t;
-#elif __SIZEOF_INT__ == 2
-typedef int int16_t;
-#elif __SIZEOF_LONG__ == 2
-typedef long int16_t;
-#else
-#error Fix this
-#endif
-
-
-#if __SIZEOF_INT__ == 4
-typedef int int32_t;
-#elif __SIZEOF_LONG__ == 4
-typedef long int32_t;
-#elif __SIZEOF_SHORT__ == 4
-typedef short int32_t;
-#else
-#error Fix this
-#endif
+typedef __INT16_TYPE__ int16_t;
+typedef __INT32_TYPE__ int32_t;
 
 extern void abort (void);
 
