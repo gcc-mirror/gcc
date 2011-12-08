@@ -1,3 +1,11 @@
+2011-12-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-operands.c (add_stmt_operand): Do not mark stmts
+	volatile when processing operands of an ADDR_EXPR.
+	(get_indirect_ref_operands): Likewise.
+	(get_tmr_operands): Likewise.
+	(get_expr_operands): Likewise.
+
 2011-12-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR target/50395

@@ -668,7 +668,8 @@ add_stmt_operand (tree *var_p, gimple stmt, int flags)
   sym = (TREE_CODE (var) == SSA_NAME ? SSA_NAME_VAR (var) : var);
 
   /* Mark statements with volatile operands.  */
-  if (TREE_THIS_VOLATILE (sym))
+  if (!(flags & opf_no_vops)
+      && TREE_THIS_VOLATILE (sym))
     gimple_set_has_volatile_ops (stmt, true);
 
   if (is_gimple_reg (sym))
@@ -728,7 +729,8 @@ get_indirect_ref_operands (gimple stmt, tree expr, int flags,
 {
   tree *pptr = &TREE_OPERAND (expr, 0);
 
-  if (TREE_THIS_VOLATILE (expr))
+  if (!(flags & opf_no_vops)
+      && TREE_THIS_VOLATILE (expr))
     gimple_set_has_volatile_ops (stmt, true);
 
   /* Add the VOP.  */
@@ -747,7 +749,8 @@ get_indirect_ref_operands (gimple stmt, tree expr, int flags,
 static void
 get_tmr_operands (gimple stmt, tree expr, int flags)
 {
-  if (TREE_THIS_VOLATILE (expr))
+  if (!(flags & opf_no_vops)
+      && TREE_THIS_VOLATILE (expr))
     gimple_set_has_volatile_ops (stmt, true);
 
   /* First record the real operands.  */
@@ -914,14 +917,16 @@ get_expr_operands (gimple stmt, tree *expr_p, int flags)
     case REALPART_EXPR:
     case IMAGPART_EXPR:
       {
-	if (TREE_THIS_VOLATILE (expr))
+	if (!(flags & opf_no_vops)
+	    && TREE_THIS_VOLATILE (expr))
 	  gimple_set_has_volatile_ops (stmt, true);
 
 	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags);
 
 	if (code == COMPONENT_REF)
 	  {
-	    if (TREE_THIS_VOLATILE (TREE_OPERAND (expr, 1)))
+	    if (!(flags & opf_no_vops)
+		&& TREE_THIS_VOLATILE (TREE_OPERAND (expr, 1)))
 	      gimple_set_has_volatile_ops (stmt, true);
 	    get_expr_operands (stmt, &TREE_OPERAND (expr, 2), uflags);
 	  }
@@ -960,7 +965,8 @@ get_expr_operands (gimple stmt, tree *expr_p, int flags)
 	/* A volatile constructor is actually TREE_CLOBBER_P, transfer
 	   the volatility to the statement, don't use TREE_CLOBBER_P for
 	   mirroring the other uses of THIS_VOLATILE in this file.  */
-	if (TREE_THIS_VOLATILE (expr))
+	if (!(flags & opf_no_vops)
+	    && TREE_THIS_VOLATILE (expr))
 	  gimple_set_has_volatile_ops (stmt, true);
 
 	for (idx = 0;
@@ -972,7 +978,8 @@ get_expr_operands (gimple stmt, tree *expr_p, int flags)
       }
 
     case BIT_FIELD_REF:
-      if (TREE_THIS_VOLATILE (expr))
+      if (!(flags & opf_no_vops)
+	  && TREE_THIS_VOLATILE (expr))
 	gimple_set_has_volatile_ops (stmt, true);
       /* FALLTHRU */
 
