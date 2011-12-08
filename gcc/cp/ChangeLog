@@ -1,5 +1,8 @@
 2011-12-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51318
+	* typeck.c (build_x_conditional_expr): Restrict glvalue games to C++11.
+
 	PR c++/51459
 	* pt.c (tsubst_expr) [DECL_EXPR]: Handle capture proxies properly.
 	* semantics.c (insert_capture_proxy): No longer static.
