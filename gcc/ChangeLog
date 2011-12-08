@@ -1,3 +1,13 @@
+2011-12-08  Teresa Johnson  <tejohnson@google.com>
+
+	Backport from mainline:
+
+	2011-08-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdi_internal_rex64): Use "!o" constraint
+	instead of "!m" for operand 0, alternative 4.
+	(*movdf_internal_rex64): Ditto for operand 0, alernative 6.
+
 2011-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
