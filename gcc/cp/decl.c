@@ -9971,6 +9971,12 @@ grokdeclarator (const cp_declarator *declarator,
       }
     else if (decl_context == FIELD)
       {
+	if (!staticp && type_uses_auto (type))
+	  {
+	    error ("non-static data member declared %<auto%>");
+	    type = error_mark_node;
+	  }
+
 	/* The C99 flexible array extension.  */
 	if (!staticp && TREE_CODE (type) == ARRAY_TYPE
 	    && TYPE_DOMAIN (type) == NULL_TREE)
