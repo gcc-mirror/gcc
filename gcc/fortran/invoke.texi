@@ -1471,10 +1471,18 @@ initialization options are provided by the
 the real and imaginary parts of local @code{COMPLEX} variables),
 @option{-finit-logical=@var{<true|false>}}, and
 @option{-finit-character=@var{n}} (where @var{n} is an ASCII character
-value) options.  These options do not initialize components of derived
-type variables, nor do they initialize variables that appear in an
-@code{EQUIVALENCE} statement.  (This limitation may be removed in
-future releases).
+value) options.  These options do not initialize
+@itemize @bullet
+@item
+automatic arrays
+@item
+allocatable arrays
+@item
+components of derived type variables
+@item
+variables that appear in an @code{EQUIVALENCE} statement.
+@end itemize
+(These limitations may be removed in future releases).
 
 Note that the @option{-finit-real=nan} option initializes @code{REAL}
 and @code{COMPLEX} variables with a quiet NaN. For a signalling NaN
