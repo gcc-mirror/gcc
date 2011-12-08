@@ -1,3 +1,17 @@
+2011-12-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR middle-end/39976
+	* tree-ssa-dom.c (enum expr_kind): Add EXPR_PHI.
+	(struct hashable_expr): Add struct phi field.
+	(initialize_hash_element): Handle phis; change to use XCNEWVEC.
+	(hashable_expr_equal_p): Handle phis.
+	(iterative_hash_hashable_expr): Likewise.
+	(print_expr_hash_elt): Likewise.
+	(free_expr_hash_elt): Likewise.
+	(dom_opt_enter_block): Create equivalences from redundant phis.
+	(eliminate_redundant_computations): Handle redundant phis.
+	(lookup_avail_expr): Handle phis.
+
 2011-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51466
