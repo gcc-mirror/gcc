@@ -6772,7 +6772,16 @@ get_std_lbound (gfc_expr *expr, tree desc, int dim, bool assumed_size)
 			      gfc_array_index_type, cond,
 			      lbound, gfc_index_one_node);
     }
-  else if (expr->expr_type == EXPR_VARIABLE)
+
+  if (expr->expr_type == EXPR_FUNCTION)
+    {
+      /* A conversion function, so use the argument.  */
+      gcc_assert (expr->value.function.isym
+		  && expr->value.function.isym->conversion);
+      expr = expr->value.function.actual->expr;
+    }
+
+  if (expr->expr_type == EXPR_VARIABLE)
     {
       tmp = TREE_TYPE (expr->symtree->n.sym->backend_decl);
       for (ref = expr->ref; ref; ref = ref->next)
@@ -6784,15 +6793,6 @@ get_std_lbound (gfc_expr *expr, tree desc, int dim, bool assumed_size)
 	    tmp = TREE_TYPE (ref->u.c.component->backend_decl);
 	}
       return GFC_TYPE_ARRAY_LBOUND(tmp, dim);
-    }
-  else if (expr->expr_type == EXPR_FUNCTION)
-    {
-      /* A conversion function, so use the argument.  */
-      expr = expr->value.function.actual->expr;
-      if (expr->expr_type != EXPR_VARIABLE)
-	return gfc_index_one_node;
-      desc = TREE_TYPE (expr->symtree->n.sym->backend_decl);
-      return get_std_lbound (expr, desc, dim, assumed_size);
     }
 
   return gfc_index_one_node;

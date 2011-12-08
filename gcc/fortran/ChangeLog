@@ -1,3 +1,9 @@
+2011-12-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51448
+	* fortran/trans-array.c (get_std_lbound): Fix handling of
+	conversion functions.
+
 2011-12-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51435
