@@ -408,7 +408,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    memory_order __m = memory_order_seq_cst) noexcept
       {
 	return compare_exchange_weak(__p1, __p2, __m,
-				     __calculate_memory_order(__m));
+				     __cmpexch_failure_order(__m));
       }
 
       bool
@@ -416,7 +416,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    memory_order __m = memory_order_seq_cst) volatile noexcept
       {
 	return compare_exchange_weak(__p1, __p2, __m,
-				     __calculate_memory_order(__m));
+				     __cmpexch_failure_order(__m));
       }
 
       bool
@@ -435,7 +435,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      memory_order __m = memory_order_seq_cst) noexcept
       {
 	return _M_b.compare_exchange_strong(__p1, __p2, __m,
-					    __calculate_memory_order(__m));
+					    __cmpexch_failure_order(__m));
       }
 
       bool
@@ -443,7 +443,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    memory_order __m = memory_order_seq_cst) volatile noexcept
       {
 	return _M_b.compare_exchange_strong(__p1, __p2, __m,
-					    __calculate_memory_order(__m));
+					    __cmpexch_failure_order(__m));
       }
 
       __pointer_type
