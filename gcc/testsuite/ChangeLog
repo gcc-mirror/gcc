@@ -1,6 +1,11 @@
 2011-12-08  Teresa Johnson  <tejohnson@google.com>
 
 	* gcc.target/i386/movdi-rex64.c: Remove unnecessary
+	unused label.
+
+2011-12-08  Teresa Johnson  <tejohnson@google.com>
+
+	* gcc.target/i386/movdi-rex64.c: Remove unnecessary
 	-Wwrite-strings option.
 
 2011-12-08  Teresa Johnson  <tejohnson@google.com>
