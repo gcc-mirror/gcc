@@ -1,3 +1,7 @@
+2011-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20111208-1.c: New test.
+
 2011-12-08  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/48437

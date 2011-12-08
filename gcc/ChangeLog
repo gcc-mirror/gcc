@@ -1,3 +1,15 @@
+2011-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/51315
+	* tree.h (get_object_or_type_alignment): Declare.
+	* expr.c (get_object_or_type_alignment): Move to...
+	* builtins.c (get_object_or_type_alignment): ...here.  Add assertion.
+	* tree-sra.c (tree_non_mode_aligned_mem_p): Rename to...
+	(tree_non_aligned_mem_p): ...this.  Add ALIGN parameter.  Look into
+	MEM_REFs and use get_object_or_type_alignment for them.
+	(build_accesses_from_assign): Adjust for above change.
+	(access_precludes_ipa_sra_p): Likewise.
+
 2011-12-08  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/48437
