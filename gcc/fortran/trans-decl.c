@@ -4695,8 +4695,10 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 	   if the actual argument is (part of) an array, but only if the
 	   dummy argument is an array. (See "Sequence association" in
 	   Section 12.4.1.4 for F95 and 12.4.1.5 for F2003.)  */
-	if (fsym->attr.pointer || fsym->attr.allocatable
-	    || (fsym->as && fsym->as->type == AS_ASSUMED_SHAPE))
+	if (fsym->ts.deferred)
+	  continue;
+	else if (fsym->attr.pointer || fsym->attr.allocatable
+		 || (fsym->as && fsym->as->type == AS_ASSUMED_SHAPE))
 	  {
 	    comparison = NE_EXPR;
 	    message = _("Actual string length does not match the declared one"

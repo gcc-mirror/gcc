@@ -1,5 +1,11 @@
 2011-12-08  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/50815
+	* trans-decl.c (add_argument_checking): Skip bound checking
+	for deferred-length strings.
+
+2011-12-08  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/51378
 	* symbol.c (gfc_find_component): Fix access check of parent
 	components.
