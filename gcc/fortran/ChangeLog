@@ -1,5 +1,12 @@
 2011-12-08  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/51407
+	* io/transfer.c (require_numeric_type): New function.
+	(formatted_transfer_scalar_read, formatted_transfer_scalar_write):
+	Use it, allow BOZ edit descriptors with F2008.
+
+2011-12-08  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/51448
 	* fortran/trans-array.c (get_std_lbound): Fix handling of
 	conversion functions.
