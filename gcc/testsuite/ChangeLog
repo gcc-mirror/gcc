@@ -1,5 +1,8 @@
 2011-12-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51318
+	* g++.dg/template/cond8.C: New.
+
 	PR c++/51459
 	* g++.dg/cpp0x/lambda/lambda-template4.C: New.
 
