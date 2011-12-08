@@ -1,3 +1,9 @@
+2011-12-08  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/49945
+	* lto-streamer-out.c (tree_is_indexable): Localize variably
+	modified types and their FIELD_DECLs.
+
 2011-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/51315
