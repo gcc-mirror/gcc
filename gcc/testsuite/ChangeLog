@@ -1,5 +1,9 @@
 2011-12-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/51401
+	* g++.dg/cpp0x/auto7.C: Adjust expected error message.
+	* g++.dg/cpp0x/auto29.C: New test.
+
 	PR c++/51429
 	* g++.dg/parse/error45.C: New test.
 

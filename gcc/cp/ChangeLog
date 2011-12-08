@@ -1,5 +1,8 @@
 2011-12-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/51401
+	* decl.c (grokdeclarator): Error for auto on non-static data members.
+
 	PR c++/51429
 	* typeck2.c (cxx_incomplete_type_diagnostic): Don't
 	ICE if TREE_OPERAND (value, 1) is overloaded.
