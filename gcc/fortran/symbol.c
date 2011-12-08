@@ -2022,6 +2022,21 @@ gfc_find_component (gfc_symbol *sym, const char *name,
     if (strcmp (p->name, name) == 0)
       break;
 
+  if (p && sym->attr.use_assoc && !noaccess)
+    {
+      bool is_parent_comp = sym->attr.extension && (p == sym->components);
+      if (p->attr.access == ACCESS_PRIVATE ||
+	  (p->attr.access != ACCESS_PUBLIC
+	   && sym->component_access == ACCESS_PRIVATE
+	   && !is_parent_comp))
+	{
+	  if (!silent)
+	    gfc_error ("Component '%s' at %C is a PRIVATE component of '%s'",
+		       name, sym->name);
+	  return NULL;
+	}
+    }
+
   if (p == NULL
 	&& sym->attr.extension
 	&& sym->components->ts.type == BT_DERIVED)
@@ -2036,21 +2051,6 @@ gfc_find_component (gfc_symbol *sym, const char *name,
   if (p == NULL && !silent)
     gfc_error ("'%s' at %C is not a member of the '%s' structure",
 	       name, sym->name);
-
-  else if (sym->attr.use_assoc && !noaccess)
-    {
-      bool is_parent_comp = sym->attr.extension && (p == sym->components);
-      if (p->attr.access == ACCESS_PRIVATE ||
-	  (p->attr.access != ACCESS_PUBLIC
-	   && sym->component_access == ACCESS_PRIVATE
-	   && !is_parent_comp))
-	{
-	  if (!silent)
-	    gfc_error ("Component '%s' at %C is a PRIVATE component of '%s'",
-		       name, sym->name);
-	  return NULL;
-	}
-    }
 
   return p;
 }
