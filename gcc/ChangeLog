@@ -1,11 +1,30 @@
 2011-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2011-12-05  Jakub Jelinek  <jakub@redhat.com>
+		    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/51323
+	PR middle-end/50074
+	* calls.c (internal_arg_pointer_exp_state): New variable.
+	(internal_arg_pointer_based_exp_1,
+	internal_arg_pointer_exp_scan): New functions.
+	(internal_arg_pointer_based_exp): New function.
+	(mem_overlaps_already_clobbered_arg_p): Use it.
+	(expand_call): Free internal_arg_pointer_exp_state.cache vector
+	and clear internal_arg_pointer_exp_state.scan_start.
+
 	2011-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/48721
 	* sched-deps.c (sched_analyze_insn): For SIBLING_CALL_P set
 	reg_pending_barrier to TRUE_BARRIER.
+
+	2011-11-26  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR middle-end/50074
+	* calls.c (mem_overlaps_already_clobbered_arg_p):
+	Return false if no outgoing arguments have been stored so far.
 
 2011-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
