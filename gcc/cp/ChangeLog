@@ -1,3 +1,10 @@
+2011-12-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51459
+	* pt.c (tsubst_expr) [DECL_EXPR]: Handle capture proxies properly.
+	* semantics.c (insert_capture_proxy): No longer static.
+	* cp-tree.h: Declare it.
+
 2011-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/51401

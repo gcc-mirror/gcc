@@ -12810,6 +12810,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		    && ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
 		  /* Anonymous aggregates are a special case.  */
 		  finish_anon_union (decl);
+		else if (is_capture_proxy (DECL_EXPR_DECL (t)))
+		  {
+		    DECL_CONTEXT (decl) = current_function_decl;
+		    insert_capture_proxy (decl);
+		  }
 		else
 		  {
 		    int const_init = false;
