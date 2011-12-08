@@ -3,6 +3,10 @@
 	Backport from mainline
 	2011-12-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/51410
+	* c-decl.c (pop_scope): Don't add DECL_EXTERNAL decls
+	for debug info if scope is file_scope.
+
 	PR c/51339
 	* c-decl.c (c_finish_incomplete_decl, finish_decl): Call
 	relayout_decl instead of layout_decl.
