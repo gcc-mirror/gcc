@@ -452,6 +452,31 @@ get_object_alignment (tree exp)
   return align;
 }
 
+/* Return the alignment of object EXP, also considering its type when we do
+   not know of explicit misalignment.  Only handle MEM_REF and TARGET_MEM_REF.
+
+   ??? Note that, in the general case, the type of an expression is not kept
+   consistent with misalignment information by the front-end, for example when
+   taking the address of a member of a packed structure.  However, in most of
+   the cases, expressions have the alignment of their type so we optimistically
+   fall back to this alignment when we cannot compute a misalignment.  */
+
+unsigned int
+get_object_or_type_alignment (tree exp)
+{
+  unsigned HOST_WIDE_INT misalign;
+  unsigned int align = get_object_alignment_1 (exp, &misalign);
+
+  gcc_assert (TREE_CODE (exp) == MEM_REF || TREE_CODE (exp) == TARGET_MEM_REF);
+
+  if (misalign != 0)
+    align = (misalign & -misalign);
+  else
+    align = MAX (TYPE_ALIGN (TREE_TYPE (exp)), align);
+
+  return align;
+}
+
 /* Return the alignment in bits of EXP, a pointer valued expression.
    The alignment returned is, by default, the alignment of the thing that
    EXP points to.  If it is not a POINTER_TYPE, 0 is returned.
