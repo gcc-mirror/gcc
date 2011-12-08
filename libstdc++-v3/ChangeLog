@@ -1,3 +1,11 @@
+2011-12-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/atomic_base.h (__calculate_memory_order): Rename to...
+	(__cmpexch_failure_order): This, and rewrite as constexpr function.
+	(compare_exchange_strong, compare_exchange_weak): Use it.
+	* include/std/atomic (compare_exchange_strong, compare_exchange_weak):
+	Likewise.
+
 2011-12-07  François Dumont <fdumont@gcc.gnu.org>
 
 	PR libstdc++/51386
