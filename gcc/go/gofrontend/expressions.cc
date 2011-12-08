@@ -12817,7 +12817,22 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
   Location location = this->location();
   Struct_type* st = type->struct_type();
   if (this->vals_ == NULL || !this->has_keys_)
-    return new Struct_construction_expression(type, this->vals_, location);
+    {
+      if (this->vals_ != NULL && !this->vals_->empty())
+	{
+	  std::string reason;
+	  if (type->has_hidden_fields(NULL, &reason))
+	    {
+	      if (reason.empty())
+		error_at(this->location(),
+			 "implicit assignment of hidden field");
+	      else
+		error_at(this->location(), "%s", reason.c_str());
+	    }
+	}
+
+      return new Struct_construction_expression(type, this->vals_, location);
+    }
 
   size_t field_count = st->field_count();
   std::vector<Expression*> vals(field_count);
@@ -12962,6 +12977,26 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 		    ? type->named_type()->message_name().c_str()
 		    : "unnamed struct"));
 	  return Expression::make_error(location);
+	}
+
+      if (type->named_type() != NULL
+	  && type->named_type()->named_object()->package() != NULL
+	  && Gogo::is_hidden_name(sf->field_name()))
+	error_at(name_expr->location(),
+		 "assignment of unexported field %qs in %qs literal",
+		 Gogo::message_name(sf->field_name()).c_str(),
+		 type->named_type()->message_name().c_str());
+      else
+	{
+	  std::string reason;
+	  if (sf->type()->has_hidden_fields(NULL, &reason))
+	    {
+	      if (reason.empty())
+		error_at(name_expr->location(),
+			 "implicit assignment of hidden field");
+	      else
+		error_at(name_expr->location(), "%s", reason.c_str());
+	    }
 	}
 
       vals[index] = val;

@@ -605,7 +605,7 @@ Type::are_assignable_check_hidden(const Type* lhs, const Type* rhs,
 bool
 Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
 {
-  return Type::are_assignable_check_hidden(lhs, rhs, true, reason);
+  return Type::are_assignable_check_hidden(lhs, rhs, false, reason);
 }
 
 // Like are_assignable but don't check for hidden fields.
