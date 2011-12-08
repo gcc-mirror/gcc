@@ -1,6 +1,13 @@
 2011-12-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR tree-optimization/51315
+	* gcc.c-torture/execute/20111208-1.c (int16_t): Use __INT16_TYPE__
+	for typedef.
+	(int32_t): Use __INT32_TYPE__ for typedef.
+
+2011-12-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR tree-optimization/51315
 	* gcc.c-torture/execute/20111208-1.c: Fix wrong assumption
 	sizeof(int)==4.
 
