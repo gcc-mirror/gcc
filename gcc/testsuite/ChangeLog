@@ -1,3 +1,11 @@
+2011-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
+	2011-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/48721
+	* gcc.target/i386/pr48721.c: New test.
+
 2011-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20111208-1.c: New test.
