@@ -1,3 +1,10 @@
+2011-12-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51151
+	* call.c (perform_implicit_conversion_flags): Remove earlier kludge.
+	* parser.c (cp_parser_omp_for_loop): Use cp_parser_omp_for_incr
+	in templates even if decl isn't type-dependent.
+
 2011-12-09  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51289
