@@ -53,7 +53,7 @@ struct allocno_hard_regs
   HARD_REG_SET set;
   /* Overall (spilling) cost of all allocnos with given register
      set.  */
-  long long int cost;
+  HOST_WIDEST_INT cost;
 };
 
 typedef struct allocno_hard_regs_node *allocno_hard_regs_node_t;
@@ -229,7 +229,7 @@ init_allocno_hard_regs (void)
 /* Add (or update info about) allocno hard registers with SET and
    COST.  */
 static allocno_hard_regs_t
-add_allocno_hard_regs (HARD_REG_SET set, long long int cost)
+add_allocno_hard_regs (HARD_REG_SET set, HOST_WIDEST_INT cost)
 {
   struct allocno_hard_regs temp;
   allocno_hard_regs_t hv;
@@ -498,7 +498,7 @@ print_hard_regs_subforest (FILE *f, allocno_hard_regs_node_t roots,
 	fprintf (f, " ");
       fprintf (f, "%d:(", node->preorder_num);
       print_hard_reg_set (f, node->hard_regs->set, false);
-      fprintf (f, ")@%lld\n", node->hard_regs->cost);
+      fprintf (f, ")@" HOST_WIDEST_INT_PRINT_DEC "\n", node->hard_regs->cost);
       print_hard_regs_subforest (f, node->first, level + 1);
     }
 }

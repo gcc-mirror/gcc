@@ -116,8 +116,8 @@ build_conflict_bit_table (void)
 	  = ((OBJECT_MAX (obj) - OBJECT_MIN (obj) + IRA_INT_BITS)
 	     / IRA_INT_BITS);
 	allocated_words_num += conflict_bit_vec_words_num;
-	if ((unsigned long long) allocated_words_num * sizeof (IRA_INT_TYPE)
-	    > (unsigned long long) IRA_MAX_CONFLICT_TABLE_SIZE * 1024 * 1024)
+	if ((unsigned HOST_WIDEST_INT) allocated_words_num * sizeof (IRA_INT_TYPE)
+	    > (unsigned HOST_WIDEST_INT) IRA_MAX_CONFLICT_TABLE_SIZE * 1024 * 1024)
 	  {
 	    if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
 	      fprintf
