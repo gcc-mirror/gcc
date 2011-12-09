@@ -3173,6 +3173,30 @@ struct gimple_opt_pass pass_lower_resx =
  }
 };
 
+/* Try to optimize var = {v} {CLOBBER} stmts followed just by
+   external throw.  */
+
+static void
+optimize_clobbers (basic_block bb)
+{
+  gimple_stmt_iterator gsi = gsi_last_bb (bb);
+  for (gsi_prev (&gsi); !gsi_end_p (gsi);)
+    {
+      gimple stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
+	{
+	  gsi_prev (&gsi);
+	  continue;
+	}
+      if (!gimple_assign_single_p (stmt)
+	  || TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
+	  || !TREE_CLOBBER_P (gimple_assign_rhs1 (stmt)))
+	return;
+      unlink_stmt_vdef (stmt);
+      gsi_remove (&gsi, true);
+      release_defs (stmt);
+    }
+}
 
 /* At the end of inlining, we can lower EH_DISPATCH.  Return true when 
    we have found some duplicate labels and removed some edges.  */
@@ -3337,11 +3361,16 @@ execute_lower_eh_dispatch (void)
   FOR_EACH_BB (bb)
     {
       gimple last = last_stmt (bb);
-      if (last && gimple_code (last) == GIMPLE_EH_DISPATCH)
+      if (last == NULL)
+	continue;
+      if (gimple_code (last) == GIMPLE_EH_DISPATCH)
 	{
 	  redirected |= lower_eh_dispatch (bb, last);
 	  any_rewritten = true;
 	}
+      else if (gimple_code (last) == GIMPLE_RESX
+	       && stmt_can_throw_external (last))
+	optimize_clobbers (bb);
     }
 
   if (redirected)
