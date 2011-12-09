@@ -1,3 +1,14 @@
+2011-12-09  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR middle-end/40154
+	* emit-rtl.c (set_dst_reg_note): New function.
+	* rtl.h (set_dst_reg_note): Declare.
+	* optabs.c (expand_binop, expand_absneg_bit): Use set_dst_reg_note.
+	(emit_libcall_block, expand_fix): Likewise.
+	* function.c (assign_parm_setup_reg, expand_function_start): Likewise.
+	* expmed.c (expand_mult_const, expand_divmod): Likewise.
+	* reload1.c (gen_reload): Likewise.
+
 2011-12-09  Kai Tietz  <ktietz@redhat.com>
 
 	* ira-color.c (print_hard_regs_subforest): Use

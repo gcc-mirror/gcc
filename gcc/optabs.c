@@ -2052,11 +2052,11 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	    {
 	      rtx temp = emit_move_insn (target, xtarget);
 
-	      set_unique_reg_note (temp,
-				   REG_EQUAL,
-				   gen_rtx_fmt_ee (binoptab->code, mode,
-						   copy_rtx (xop0),
-						   copy_rtx (xop1)));
+	      set_dst_reg_note (temp, REG_EQUAL,
+				gen_rtx_fmt_ee (binoptab->code, mode,
+						copy_rtx (xop0),
+						copy_rtx (xop1)),
+				target);
 	    }
 	  else
 	    target = xtarget;
@@ -2104,11 +2104,12 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	  if (optab_handler (mov_optab, mode) != CODE_FOR_nothing)
 	    {
 	      temp = emit_move_insn (target ? target : product, product);
-	      set_unique_reg_note (temp,
-				   REG_EQUAL,
-				   gen_rtx_fmt_ee (MULT, mode,
-						   copy_rtx (op0),
-						   copy_rtx (op1)));
+	      set_dst_reg_note (temp,
+				REG_EQUAL,
+				gen_rtx_fmt_ee (MULT, mode,
+						copy_rtx (op0),
+						copy_rtx (op1)),
+				target ? target : product);
 	    }
 	  return product;
 	}
@@ -2966,8 +2967,9 @@ expand_absneg_bit (enum rtx_code code, enum machine_mode mode,
 		           gen_lowpart (imode, target), 1, OPTAB_LIB_WIDEN);
       target = lowpart_subreg_maybe_copy (mode, temp, imode);
 
-      set_unique_reg_note (get_last_insn (), REG_EQUAL,
-			   gen_rtx_fmt_e (code, mode, copy_rtx (op0)));
+      set_dst_reg_note (get_last_insn (), REG_EQUAL,
+			gen_rtx_fmt_e (code, mode, copy_rtx (op0)),
+			target);
     }
 
   return target;
@@ -3899,8 +3901,7 @@ emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
     }
 
   last = emit_move_insn (target, result);
-  if (optab_handler (mov_optab, GET_MODE (target)) != CODE_FOR_nothing)
-    set_unique_reg_note (last, REG_EQUAL, copy_rtx (equiv));
+  set_dst_reg_note (last, REG_EQUAL, copy_rtx (equiv), target);
 
   if (final_dest != target)
     emit_move_insn (final_dest, target);
@@ -5213,11 +5214,10 @@ expand_fix (rtx to, rtx from, int unsignedp)
 	    {
 	      /* Make a place for a REG_NOTE and add it.  */
 	      insn = emit_move_insn (to, to);
-	      set_unique_reg_note (insn,
-	                           REG_EQUAL,
-				   gen_rtx_fmt_e (UNSIGNED_FIX,
-						  GET_MODE (to),
-						  copy_rtx (from)));
+	      set_dst_reg_note (insn, REG_EQUAL,
+				gen_rtx_fmt_e (UNSIGNED_FIX, GET_MODE (to),
+					       copy_rtx (from)),
+				to);
 	    }
 
 	  return;

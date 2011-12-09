@@ -5004,6 +5004,17 @@ set_unique_reg_note (rtx insn, enum reg_note kind, rtx datum)
 
   return REG_NOTES (insn);
 }
+
+/* Like set_unique_reg_note, but don't do anything unless INSN sets DST.  */
+rtx
+set_dst_reg_note (rtx insn, enum reg_note kind, rtx datum, rtx dst)
+{
+  rtx set = single_set (insn);
+
+  if (set && SET_DEST (set) == dst)
+    return set_unique_reg_note (insn, kind, datum);
+  return NULL_RTX;
+}
 
 /* Return an indication of which type of insn should have X as a body.
    The value is CODE_LABEL, INSN, CALL_INSN or JUMP_INSN.  */
