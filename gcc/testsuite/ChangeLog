@@ -1,3 +1,12 @@
+2011-12-09  Kazu Hirata  <kazu@codesourcery.com>
+
+	Backport from mainline:
+
+	2011-12-05  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR target/51408
+	* gcc.dg/pr51408.c: New.
+
 2011-12-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51448

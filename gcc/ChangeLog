@@ -1,3 +1,13 @@
+2011-12-09  Kazu Hirata  <kazu@codesourcery.com>
+
+	Backport from mainline:
+
+	2011-12-05  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR target/51408
+	* config/arm/arm.md (*minmax_arithsi): Always require the else
+	clause in the MINUS case.
+
 2011-12-08  Teresa Johnson  <tejohnson@google.com>
 
 	Backport from mainline:
