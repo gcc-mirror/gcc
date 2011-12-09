@@ -464,6 +464,249 @@ ENDF __mulsi3
 #undef C3
 
 #endif /* __AVR_HAVE_MUL__ */
+
+/*******************************************************
+       Multiplication 64 x 64
+*******************************************************/
+
+#if defined (L_muldi3)
+
+;; A[] = A[] * B[]
+
+;; A[0..7]: In: Multiplicand
+;; Out: Product
+#define A0  18
+#define A1  A0+1
+#define A2  A0+2
+#define A3  A0+3
+#define A4  A0+4
+#define A5  A0+5
+#define A6  A0+6
+#define A7  A0+7
+
+;; B[0..7]: In: Multiplier
+#define B0  10
+#define B1  B0+1
+#define B2  B0+2
+#define B3  B0+3
+#define B4  B0+4
+#define B5  B0+5
+#define B6  B0+6
+#define B7  B0+7
+
+#if defined (__AVR_HAVE_MUL__)
+
+;; Define C[] for convenience
+;; Notice that parts of C[] overlap A[] respective B[]
+#define C0  16
+#define C1  C0+1
+#define C2  20
+#define C3  C2+1
+#define C4  28
+#define C5  C4+1
+#define C6  C4+2
+#define C7  C4+3
+
+;; A[]     *= B[]
+;; R25:R18 *= R17:R10
+;; Ordinary ABI-Function
+
+DEFUN __muldi3
+    push    r29
+    push    r28
+    push    r17
+    push    r16
+
+    ;; Counting in Words, we have to perform a 4 * 4 Multiplication
+
+    ;; 3 * 0  +  0 * 3
+    mul  A7,B0  $             $  mov C7,r0
+    mul  A0,B7  $             $  add C7,r0
+    mul  A6,B1  $             $  add C7,r0
+    mul  A6,B0  $  mov C6,r0  $  add C7,r1
+    mul  B6,A1  $             $  add C7,r0
+    mul  B6,A0  $  add C6,r0  $  adc C7,r1
+
+    ;; 1 * 2
+    mul  A2,B4  $  add C6,r0  $  adc C7,r1
+    mul  A3,B4  $             $  add C7,r0
+    mul  A2,B5  $             $  add C7,r0
+
+    push    A5
+    push    A4
+    push    B1
+    push    B0
+    push    A3
+    push    A2
+
+    ;; 0 * 0
+    wmov    26, B0
+    XCALL   __umulhisi3
+    wmov    C0, 22
+    wmov    C2, 24
+
+    ;; 0 * 2
+    wmov    26, B4
+    XCALL   __umulhisi3  $  wmov C4,22            $ add C6,24 $ adc C7,25
+
+    wmov    26, B2
+    ;; 0 * 1
+    rcall   __muldi3_6
+
+    pop     A0
+    pop     A1
+    ;; 1 * 1
+    wmov    26, B2
+    XCALL   __umulhisi3  $  add C4,22 $ adc C5,23 $ adc C6,24 $ adc C7,25
+
+    pop     r26
+    pop     r27
+    ;; 1 * 0
+    rcall   __muldi3_6
+
+    pop     A0
+    pop     A1
+    ;; 2 * 0
+    XCALL   __umulhisi3  $  add C4,22 $ adc C5,23 $ adc C6,24 $ adc C7,25
+
+    ;; 2 * 1
+    wmov    26, B2
+    XCALL   __umulhisi3  $            $           $ add C6,22 $ adc C7,23
+
+    ;; A[] = C[]
+    wmov    A0, C0
+    ;; A2 = C2 already
+    wmov    A4, C4
+    wmov    A6, C6
+
+    clr     __zero_reg__
+    pop     r16
+    pop     r17
+    pop     r28
+    pop     r29
+    ret
+
+__muldi3_6:
+    XCALL   __umulhisi3
+    add     C2, 22
+    adc     C3, 23
+    adc     C4, 24
+    adc     C5, 25
+    brcc    0f
+    adiw    C6, 1
+0:  ret
+ENDF __muldi3
+
+#undef C7
+#undef C6
+#undef C5
+#undef C4
+#undef C3
+#undef C2
+#undef C1
+#undef C0
+
+#else /* !HAVE_MUL */
+
+#define C0  26
+#define C1  C0+1
+#define C2  C0+2
+#define C3  C0+3
+#define C4  C0+4
+#define C5  C0+5
+#define C6  0
+#define C7  C6+1
+
+#define Loop 9
+
+;; A[]     *= B[]
+;; R25:R18 *= R17:R10
+;; Ordinary ABI-Function
+
+DEFUN __muldi3
+    push    r29
+    push    r28
+    push    Loop
+
+    ldi     C0, 64
+    mov     Loop, C0
+
+    ;; C[] = 0
+    clr     __tmp_reg__
+    wmov    C0, 0
+    wmov    C2, 0
+    wmov    C4, 0
+
+0:  ;; Rotate B[] right by 1 and set Carry to the N-th Bit of B[]
+    ;; where N = 64 - Loop.
+    ;; Notice that B[] = B[] >>> 64 so after this Routine has finished,
+    ;; B[] will have its initial Value again.
+    LSR  B7     $  ror  B6     $  ror  B5     $  ror  B4
+    ror  B3     $  ror  B2     $  ror  B1     $  ror  B0
+
+    ;; If the N-th Bit of B[] was set then...
+    brcc    1f
+    ;; ...finish Rotation...
+    ori     B7, 1 << 7
+
+    ;; ...and add A[] * 2^N to the Result C[]
+    ADD  C0,A0  $  adc  C1,A1  $  adc  C2,A2  $  adc  C3,A3
+    adc  C4,A4  $  adc  C5,A5  $  adc  C6,A6  $  adc  C7,A7
+
+1:  ;; Multiply A[] by 2
+    LSL  A0     $  rol  A1     $  rol  A2     $  rol  A3
+    rol  A4     $  rol  A5     $  rol  A6     $  rol  A7
+
+    dec     Loop
+    brne    0b
+
+    ;; We expanded the Result in C[]
+    ;; Copy Result to the Return Register A[]
+    wmov    A0, C0
+    wmov    A2, C2
+    wmov    A4, C4
+    wmov    A6, C6
+
+    clr     __zero_reg__
+    pop     Loop
+    pop     r28
+    pop     r29
+    ret
+ENDF __muldi3
+
+#undef Loop
+
+#undef C7
+#undef C6
+#undef C5
+#undef C4
+#undef C3
+#undef C2
+#undef C1
+#undef C0
+
+#endif /* HAVE_MUL */
+
+#undef B7
+#undef B6
+#undef B5
+#undef B4
+#undef B3
+#undef B2
+#undef B1
+#undef B0
+
+#undef A7
+#undef A6
+#undef A5
+#undef A4
+#undef A3
+#undef A2
+#undef A1
+#undef A0
+
+#endif /* L_muldi3 */
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
 
