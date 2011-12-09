@@ -12818,16 +12818,20 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
   Struct_type* st = type->struct_type();
   if (this->vals_ == NULL || !this->has_keys_)
     {
-      if (this->vals_ != NULL && !this->vals_->empty())
+      if (this->vals_ != NULL
+	  && !this->vals_->empty()
+	  && type->named_type() != NULL
+	  && type->named_type()->named_object()->package() != NULL)
 	{
-	  std::string reason;
-	  if (type->has_hidden_fields(NULL, &reason))
+	  for (Struct_field_list::const_iterator pf = st->fields()->begin();
+	       pf != st->fields()->end();
+	       ++pf)
 	    {
-	      if (reason.empty())
+	      if (Gogo::is_hidden_name(pf->field_name()))
 		error_at(this->location(),
-			 "implicit assignment of hidden field");
-	      else
-		error_at(this->location(), "%s", reason.c_str());
+			 "assignment of unexported field %qs in %qs literal",
+			 Gogo::message_name(pf->field_name()).c_str(),
+			 type->named_type()->message_name().c_str());
 	    }
 	}
 
