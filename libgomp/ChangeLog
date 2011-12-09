@@ -1,3 +1,10 @@
+2011-12-09  Alan Modra  <amodra@gmail.com>
+
+	PR libgomp/51376
+	* task.c (GOMP_taskwait): Don't access task->children outside of
+	task_lock mutex region.
+	(GOMP_task): Likewise.
+
 2011-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/51132
