@@ -1,7 +1,7 @@
 /* { dg-require-effective-target vect_cond_mixed } */
 #include "tree-vect.h"
 
-#define N 128
+#define N 32
 int d[N], e[N], f[N];
 unsigned char k[N];
 float a[N], b[N];

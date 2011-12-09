@@ -4,13 +4,13 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 128
+#define N 16
 
-int iadd_results[N];
-float fadd_results[N];
-float fmul_results[N];
-float fresults1[N];
-float fresults2[N];
+int iadd_results[N] = {0,6,12,18,24,30,36,42,48,54,60,66,72,78,84,90};
+float fadd_results[N] = {0.0,6.0,12.0,18.0,24.0,30.0,36.0,42.0,48.0,54.0,60.0,66.0,72.0,78.0,84.0,90.0};
+float fmul_results[N] = {0.0,3.0,12.0,27.0,48.0,75.0,108.0,147.0,192.0,243.0,300.0,363.0,432.0,507.0,588.0,675.0};
+float fresults1[N] = {192.00,240.00,288.00,336.00,384.00,432.00,480.00,528.00,48.00,54.00,60.00,66.00,72.00,78.00,84.00,90.00};
+float fresults2[N] = {0.00,6.00,12.00,18.00,24.00,30.00,36.00,42.00,0.00,54.00,120.00,198.00,288.00,390.00,504.00,630.00};
 
 /****************************************************/
 __attribute__ ((noinline))
@@ -77,32 +77,12 @@ char cb[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
 char ca[N];
 short sa[N];
 
-volatile int y = 0;
-
-/* All of the loops below are currently vectorizable, except
-   initialization ones.  */
+/* All of the loops below are currently vectorizable.  */
 
 __attribute__ ((noinline)) int
 main1 ()
 {
   int i,j;
-  /* Initialization.  */
-  for (i = 0; i < N; i++)
-    {
-      b[i] = i*3;
-      c[i] = i;
-      d[i] = i*2;
-      ic[i] = i*3;
-      ib[i] = i*3;
-      cb[i] = i*3;
-      fadd_results[i] = b[i] + c[i] + d[i];
-      iadd_results[i] = ib[i] + ic[i];
-      fmul_results[i] = b[i] * c[i];
-      fresults1[i] = 0;
-      fresults2[i] = 0;
-      if (y)
-	abort ();
-    }
 
   /* Test 1: copy chars.  */
   for (i = 0; i < N; i++)
@@ -136,21 +116,7 @@ main1 ()
   fbar_add (a);
   fbar_add (e);
 
-  /* Initialization.  */
-  for (i = 0; i < N; i++)
-    {
-      fresults1[i] = a[i];
-      fresults2[i] = e[i];
-      if (y)
-	abort ();
-    }
-  for (i = 0; i < N/2; i++)
-    {
-      fresults1[i] = b[i+N/2] * c[i+N/2] - b[i] * c[i];
-      fresults2[i+N/2] = b[i] * c[i+N/2] + b[i+N/2] * c[i];
-      if (y)
-	abort ();
-    }
+
   /* Test 4: access with offset.  */
   for (i = 0; i < N/2; i++)
     {

@@ -3,40 +3,21 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 256
-volatile int y = 0;
+#define N 16
+#define DIFF 121
 
 __attribute__ ((noinline))
 void main1 (signed char x, signed char max_result, signed char min_result)
 {
   int i;
-  signed char b[N];
-  signed char c[N];
-  signed char check_diff = 2;
+  signed char b[N] = {1,2,3,6,8,10,12,14,16,18,20,22,24,26,28,30};
+  signed char c[N] = {1,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
   signed char diff = 2;
   signed char max = x;
   signed char min = x;
 
-  check_diff = 2;
   for (i = 0; i < N; i++) {
-    b[i] = i;
-    c[i] = i;
-    if (i%16 == 0)
-      {
-	c[i] = i + 1;
-	check_diff += 1;
-      }
-    if (c[i] > max_result)
-      max_result = c[i];
-    if (c[i] < min_result)
-      min_result = c[i];
-    /* Avoid vectorization.  */
-    if (y)
-      abort ();
-  }
-
-  for (i = 0; i < N; i++) {
-    diff += (signed char) (c[i] - b[i]);
+    diff += (signed char)(b[i] - c[i]);
   }
 
   for (i = 0; i < N; i++) {
@@ -48,7 +29,7 @@ void main1 (signed char x, signed char max_result, signed char min_result)
   }
 
   /* check results:  */
-  if (diff != check_diff)
+  if (diff != DIFF)
     abort ();
   if (max != max_result)
     abort ();
@@ -57,9 +38,9 @@ void main1 (signed char x, signed char max_result, signed char min_result)
 }
 
 int main (void)
-{
+{ 
   check_vect ();
-
+  
   main1 (100, 100, 1);
   main1 (0, 15, 0);
   return 0;

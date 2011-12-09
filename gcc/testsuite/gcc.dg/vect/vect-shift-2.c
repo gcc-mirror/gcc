@@ -157,15 +157,15 @@ NAME (PREFIX, tests) (void)						\
   NAME (PREFIX, check) ();						\
 }
 
-VECT_TESTS (uc_, unsigned char,  128)
-VECT_TESTS (us_, unsigned short, 256)
-VECT_TESTS (ui_, unsigned int,   256)
-VECT_TESTS (ul_, unsigned long,  256)
+VECT_TESTS(uc_, unsigned char,  16)
+VECT_TESTS(us_, unsigned short, 32)
+VECT_TESTS(ui_, unsigned int,   32)
+VECT_TESTS(ul_, unsigned long,  32)
 
-VECT_TESTS (sc_, signed char,    128)
-VECT_TESTS (ss_, short,          256)
-VECT_TESTS (si_, int,            256)
-VECT_TESTS (sl_, long,           256)
+VECT_TESTS(sc_, signed char,    16)
+VECT_TESTS(ss_, short,          32)
+VECT_TESTS(si_, int,            32)
+VECT_TESTS(sl_, long,           32)
 
 int main ()
 {

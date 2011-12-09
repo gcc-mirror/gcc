@@ -2,7 +2,7 @@
 /* { dg-require-effective-target vect_int } */
 /* { dg-require-effective-target vect_float } */
 
-#define N 128
+#define N 16
 
 void fbar (float *);
 void ibar (int *);

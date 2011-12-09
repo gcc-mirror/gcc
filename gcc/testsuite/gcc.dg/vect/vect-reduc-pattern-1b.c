@@ -3,25 +3,16 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 128
-unsigned char udata_ch[N];
-#define SUM N*(N-1)
-
-volatile int y = 0;
+#define N 16
+unsigned char udata_ch[N] =
+  { 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28 };
+#define SUM 210
 
 __attribute__ ((noinline)) int
 foo ()
 {
   int i;
   unsigned int intsum = 0;
-
-  for (i = 0; i < N; i++)
-    {
-      udata_ch[i] = i*2;
-      /* Avoid vectorization.  */
-      if (y)
-	abort ();
-    }
 
   /* widenning sum: sum chars into int.  */
   for (i = 0; i < N; i++)

@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 
-#define N 512
-#define M 1024
+#define N 40
+#define M 128
 signed short in[N+M];
 signed short coeff[M];
 signed short out[N];
