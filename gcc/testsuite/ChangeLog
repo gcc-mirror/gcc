@@ -1,3 +1,7 @@
+2011-12-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/compile/20111209-1.c: New test.
+
 2011-12-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51151

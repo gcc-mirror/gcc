@@ -2517,8 +2517,10 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
 	      if (CONVERT_EXPR_CODE_P (subcode)
 		  && POINTER_TYPE_P (TREE_TYPE (lhs))
 		  && POINTER_TYPE_P (TREE_TYPE (op0))
-		  && (TYPE_ADDR_SPACE (TREE_TYPE (lhs))
-		      == TYPE_ADDR_SPACE (TREE_TYPE (op0))))
+		  && TYPE_ADDR_SPACE (TREE_TYPE (lhs))
+		     == TYPE_ADDR_SPACE (TREE_TYPE (op0))
+		  && TYPE_MODE (TREE_TYPE (lhs))
+		     == TYPE_MODE (TREE_TYPE (op0)))
 		return op0;
 
               return

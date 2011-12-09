@@ -1,3 +1,8 @@
+2011-12-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1) <GIMPLE_UNARY_RHS>:
+	Also check the TYPE_MODE to recognize useless pointer conversions.
+
 2011-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51117
