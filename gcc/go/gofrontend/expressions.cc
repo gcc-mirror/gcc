@@ -12986,18 +12986,6 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 		 "assignment of unexported field %qs in %qs literal",
 		 Gogo::message_name(sf->field_name()).c_str(),
 		 type->named_type()->message_name().c_str());
-      else
-	{
-	  std::string reason;
-	  if (sf->type()->has_hidden_fields(NULL, &reason))
-	    {
-	      if (reason.empty())
-		error_at(name_expr->location(),
-			 "implicit assignment of hidden field");
-	      else
-		error_at(name_expr->location(), "%s", reason.c_str());
-	    }
-	}
 
       vals[index] = val;
     }
