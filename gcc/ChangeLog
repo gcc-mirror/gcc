@@ -1,3 +1,11 @@
+2011-12-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR/51291
+	* tree.c (build_common_builtin_nodes): Do not use TM_PURE
+	attribute unless language has support for TM.
+	* config/i386/i386.c (ix86_init_tm_builtins): Exit gracefully in
+	the absence of TM builtins.
+
 2011-12-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-fold.c (gimple_fold_stmt_to_constant_1) <GIMPLE_UNARY_RHS>:
