@@ -1,3 +1,12 @@
+2011-12-09  Michael Meissner  <meissner@the-meissners.org>
+
+	Backport from mainline
+	2011-12-09  Michael Meissner  <meissner@the-meissners.org>
+
+	PR rtl-optimization/51469
+	* varasm.c (default_binds_local_p_1): If the symbol is a gnu
+	indirect function, mark the symbol as non-local.
+
 2011-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
