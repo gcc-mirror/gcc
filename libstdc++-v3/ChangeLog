@@ -1,3 +1,29 @@
+2011-12-09  François Dumont <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable.h (_Hashtable<>::emplace,
+	_Hashtable<>::emplace_hint): Add.
+	* include/debug/unordered_set (unordered_set<>::emplace,
+	unordered_set<>::emplace_hint, unordered_multiset<>::emplace,
+	unordered_multiset<>::emplace_hint): Add.
+	* include/profile/unordered_set: Likewise.
+	* include/debug/unordered_map (unordered_map<>::emplace,
+	unordered_map<>::emplace_hint, unordered_multimap<>::emplace,
+	unordered_multimap<>::emplace_hint): Add.
+	* include/profile/unordered_map: Likewise.
+	* testsuite/23_containers/unordered_map/modifiers/emplace.cc: New.
+	* testsuite/23_containers/unordered_multimap/modifiers/emplace.cc:
+	New.
+	* testsuite/23_containers/unordered_set/modifiers/emplace.cc: New.
+	* testsuite/23_containers/unordered_multiset/modifiers/emplace.cc:
+	New.
+	* testsuite/util/testsuite_container_traits.h
+	(traits_base::has_emplace): Add and defined as std::true_type for
+	unordered containers.
+	* testsuite/util/exception/safety.h (emplace, emplace_hint): Add and
+	use them in basic_safety exception test case.
+	* doc/xml/manual/status_cxx2011.xml: Update unordered containers
+	status.
+
 2011-12-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/atomic_base.h (__calculate_memory_order): Rename to...

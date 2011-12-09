@@ -204,6 +204,29 @@ namespace __debug
       cend(size_type __b) const
       { return const_local_iterator(_Base::cend(__b), __b, this); }
 
+      template<typename... _Args>
+	std::pair<iterator, bool>
+	emplace(_Args&&... __args)
+	{
+	  size_type __bucket_count = this->bucket_count();
+	  std::pair<_Base_iterator, bool> __res
+	    = _Base::emplace(std::forward<_Args>(__args)...);
+	  _M_check_rehashed(__bucket_count);
+	  return std::make_pair(iterator(__res.first, this), __res.second);
+	}
+
+      template<typename... _Args>
+	iterator
+	emplace_hint(const_iterator __hint, _Args&&... __args)
+	{
+	  __glibcxx_check_insert(__hint);
+	  size_type __bucket_count = this->bucket_count();
+	  _Base_iterator __it = _Base::emplace_hint(__hint.base(),
+					std::forward<_Args>(__args)...);
+	  _M_check_rehashed(__bucket_count);
+	  return iterator(__it, this);
+	}
+
       std::pair<iterator, bool>
       insert(const value_type& __obj)
       {
@@ -581,6 +604,29 @@ namespace __debug
       const_local_iterator
       cend(size_type __b) const
       { return const_local_iterator(_Base::cend(__b), __b, this); }
+
+      template<typename... _Args>
+	iterator
+	emplace(_Args&&... __args)
+	{
+	  size_type __bucket_count = this->bucket_count();
+	  _Base_iterator __it
+	    = _Base::emplace(std::forward<_Args>(__args)...);
+	  _M_check_rehashed(__bucket_count);
+	  return iterator(__it, this);
+	}
+
+      template<typename... _Args>
+	iterator
+	emplace_hint(const_iterator __hint, _Args&&... __args)
+	{
+	  __glibcxx_check_insert(__hint);
+	  size_type __bucket_count = this->bucket_count();
+	  _Base_iterator __it = _Base::emplace_hint(__hint.base(),
+					std::forward<_Args>(__args)...);
+	  _M_check_rehashed(__bucket_count);
+	  return iterator(__it, this);
+	}
 
       iterator
       insert(const value_type& __obj)
