@@ -15,6 +15,10 @@
 	* expmed.c (expand_mult_const, expand_divmod): Likewise.
 	* reload1.c (gen_reload): Likewise.
 
+	* dse.c (get_stored_val, get_call_args): Use gen_int_mode.
+	* expmed.c (expand_divmod): Likewise.
+	* combine.c (simplify_if_then_else): Likewise.
+
 2011-12-09  Kai Tietz  <ktietz@redhat.com>
 
 	* ira-color.c (print_hard_regs_subforest): Use

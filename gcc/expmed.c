@@ -4216,10 +4216,9 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 					<< (HOST_BITS_PER_WIDE_INT - 1)))
 			  set_dst_reg_note (insn, REG_EQUAL,
 					    gen_rtx_DIV (compute_mode, op0,
-							 GEN_INT
-							   (trunc_int_for_mode
-							     (abs_d,
-							      compute_mode))),
+							 gen_int_mode
+							   (abs_d,
+							    compute_mode)),
 					    quotient);
 
 			quotient = expand_unop (compute_mode, neg_optab,
