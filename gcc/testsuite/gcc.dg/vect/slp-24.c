@@ -3,7 +3,8 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 64
+#define N 16
+#define DIFF 242
 
 typedef struct {
    unsigned char a;
@@ -12,11 +13,8 @@ typedef struct {
    unsigned char d;
 } s;
 
-unsigned char ub[N*2];
-unsigned char uc[N];
-
-volatile int y = 0;
-unsigned char check_diff = 2;
+unsigned char ub[N*2] = {1,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,1,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
+unsigned char uc[N] = {1,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
 void
 main1 (unsigned char x, unsigned char max_result, unsigned char min_result, s *arr)
@@ -30,7 +28,7 @@ main1 (unsigned char x, unsigned char max_result, unsigned char min_result, s *a
   s out[N];
 
   for (i = 0; i < N; i++) {
-    udiff += (unsigned char) (ub[i] - uc[i]);
+    udiff += (unsigned char)(ub[i] - uc[i]);
 
     ua1[2*i+1] = ub[2*i+1];
     ua1[2*i] = ub[2*i];
@@ -54,7 +52,7 @@ main1 (unsigned char x, unsigned char max_result, unsigned char min_result, s *a
   }
 
   /* check results:  */
-  if (udiff != check_diff)
+  if (udiff != DIFF)
     abort ();
 }
 
@@ -62,21 +60,6 @@ int main (void)
 {
   int i; 
   s arr[N];
-
-  check_diff = 2;
-  ub[0] = uc[0] = 1;
-  for (i = 1; i < N; i++) {
-    ub[i] = (i%5 == 0)?i*3:i;
-    uc[i] = i;
-    check_diff += (unsigned char) (ub[i] - uc[i]);
-    if (y) /* Avoid vectorization.  */
-      abort ();
-  }
-  for (; i < 2*N; i++) {
-    ub[i] = 0;
-    if (y) /* Avoid vectorization.  */
-      abort ();
-  }
 
   for (i = 0; i < N; i++)
     {

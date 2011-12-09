@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 128
+#define N 16 
 
 typedef struct {
    unsigned char a;
@@ -15,8 +15,6 @@ typedef struct {
    unsigned char g;
    unsigned char h;
 } s;
-
-s check_res[N];
 
 __attribute__ ((noinline)) int
 main1 (s *arr)
@@ -46,14 +44,14 @@ main1 (s *arr)
   /* check results:  */
   for (i = 0; i < N; i++)
     { 
-      if (res[i].a != check_res[i].a
-	  || res[i].b != check_res[i].b
-	  || res[i].c != check_res[i].c
-	  || res[i].d != check_res[i].d
-	  || res[i].e != check_res[i].e
-	  || res[i].f != check_res[i].f
-	  || res[i].g != check_res[i].g
-	  || res[i].h != check_res[i].h)
+      if (res[i].c != arr[i].b - arr[i].a + arr[i].d - arr[i].c
+          || res[i].a != arr[i].a + arr[i].b + arr[i].d
+          || res[i].d != arr[i].b - arr[i].a + arr[i].d - arr[i].c
+          || res[i].b != arr[i].h - arr[i].a + arr[i].d - arr[i].c
+          || res[i].f != arr[i].f + arr[i].h
+          || res[i].e != arr[i].b + arr[i].e
+          || res[i].h != arr[i].d
+          || res[i].g != arr[i].b - arr[i].a + arr[i].d - arr[i].c)
          abort();
    }
 }
@@ -63,7 +61,6 @@ int main (void)
 {
   int i;
   s arr[N];
-  unsigned char u, t, s, x, y, z, w;
   
   check_vect ();
 
@@ -77,20 +74,6 @@ int main (void)
       arr[i].f = i * 5;
       arr[i].g = i - 3;
       arr[i].h = 67;
-
-      u = arr[i].b - arr[i].a;
-      t = arr[i].d - arr[i].c;
-      check_res[i].c = u + t;
-      x = arr[i].b + arr[i].d;
-      check_res[i].a = arr[i].a + x;
-      check_res[i].d = u + t;
-      s = arr[i].h - arr[i].a;
-      check_res[i].b = s + t;
-      check_res[i].f = arr[i].f + arr[i].h;
-      check_res[i].e = arr[i].b + arr[i].e;
-      check_res[i].h = arr[i].d;
-      check_res[i].g = u + t;
-
       if (arr[i].a == 178)
          abort(); 
     } 

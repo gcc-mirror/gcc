@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 128
+#define N 16 
 
 typedef struct {
    unsigned char a;
@@ -15,8 +15,6 @@ typedef struct {
    unsigned char g;
    unsigned char h;
 } s;
-
-s check_res[N];
 
 __attribute__ ((noinline)) int
 main1 (s *arr)
@@ -32,24 +30,24 @@ main1 (s *arr)
       res[i].d = ptr->f - ptr->b;
       res[i].b = ptr->f;
       res[i].f = ptr->b;
-      res[i].e = ptr->f - ptr->b;
-      res[i].h = ptr->f;
+      res[i].e = ptr->f - ptr->b; 
+      res[i].h = ptr->f;   
       res[i].g = ptr->f - ptr->b;
-      ptr++;
-    }
-
+      ptr++; 
+    } 
+   
   /* check results:  */
   for (i = 0; i < N; i++)
-    {
-      if (res[i].a != check_res[i].a
-	  || res[i].b != check_res[i].b
-	  || res[i].c != check_res[i].c
-	  || res[i].d != check_res[i].d
-	  || res[i].e != check_res[i].e
-	  || res[i].f != check_res[i].f
-	  || res[i].g != check_res[i].g
-	  || res[i].h != check_res[i].h)
-          abort ();
+    { 
+      if (res[i].c != arr[i].b
+          || res[i].a != arr[i].f + arr[i].b
+          || res[i].d != arr[i].f - arr[i].b
+          || res[i].b != arr[i].f
+          || res[i].f != arr[i].b
+          || res[i].e != arr[i].f - arr[i].b
+          || res[i].h != arr[i].f
+          || res[i].g != arr[i].f - arr[i].b)
+          abort();
    }
 }
 
@@ -58,11 +56,11 @@ int main (void)
 {
   int i;
   s arr[N];
-
+  
   check_vect ();
 
   for (i = 0; i < N; i++)
-    {
+    { 
       arr[i].a = i;
       arr[i].b = i * 2;
       arr[i].c = 17;
@@ -71,18 +69,9 @@ int main (void)
       arr[i].f = i * 2 + 2;
       arr[i].g = i - 3;
       arr[i].h = 56;
-
-      check_res[i].c = arr[i].b;
-      check_res[i].a = arr[i].f + arr[i].b;
-      check_res[i].d = arr[i].f - arr[i].b;
-      check_res[i].b = arr[i].f;
-      check_res[i].f = arr[i].b;
-      check_res[i].e = arr[i].f - arr[i].b;
-      check_res[i].h = arr[i].f;
-      check_res[i].g = arr[i].f - arr[i].b;
       if (arr[i].a == 178)
-         abort ();
-    }
+         abort(); 
+    } 
 
   main1 (arr);
 
@@ -91,4 +80,4 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_strided8 } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
-
+  

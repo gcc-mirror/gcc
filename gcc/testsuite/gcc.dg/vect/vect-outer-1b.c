@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 
-#define N 160
+#define N 40
 signed short image[N][N];
 signed short block[N][N];
 signed short out[N];

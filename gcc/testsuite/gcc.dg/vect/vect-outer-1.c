@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 
-#define N 256
+#define N 64
 signed short image[N][N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 signed short block[N][N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 signed short out[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));

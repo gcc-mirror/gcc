@@ -2,7 +2,7 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 320
+#define N 40
 float image[N][N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 float out[N];
 
