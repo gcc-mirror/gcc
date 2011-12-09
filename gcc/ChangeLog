@@ -1,3 +1,10 @@
+2011-12-09  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <apinski@cavium.com>
+
+	PR tree-optimization/51117
+	* tree-eh.c (optimize_clobbers): New function.
+	(execute_lower_eh_dispatch): Call it.
+
 2011-12-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51482
