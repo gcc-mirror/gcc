@@ -603,3 +603,6 @@ Enum(mips_arch_opt_value) String(loongson3a) Value(79) Canonical
 EnumValue
 Enum(mips_arch_opt_value) String(octeon) Value(80) Canonical
 
+EnumValue
+Enum(mips_arch_opt_value) String(octeon+) Value(81) Canonical
+
