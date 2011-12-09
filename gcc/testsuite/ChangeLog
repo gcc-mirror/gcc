@@ -1,3 +1,8 @@
+2011-12-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51151
+	* g++.dg/warn/Woverflow-4.C: New.
+
 2011-12-09  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51289

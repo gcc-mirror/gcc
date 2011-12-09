@@ -8437,10 +8437,7 @@ perform_implicit_conversion_flags (tree type, tree expr, tsubst_flags_t complain
 	}
       expr = error_mark_node;
     }
-  else if (processing_template_decl
-	   /* As a kludge, we always perform conversions between scalar
-	      types, as IMPLICIT_CONV_EXPR confuses c_finish_omp_for.  */
-	   && !(SCALAR_TYPE_P (type) && SCALAR_TYPE_P (TREE_TYPE (expr))))
+  else if (processing_template_decl && conv->kind != ck_identity)
     {
       /* In a template, we are only concerned about determining the
 	 type of non-dependent expressions, so we do not have to

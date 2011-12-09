@@ -26305,7 +26305,7 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 	  /* If decl is an iterator, preserve the operator on decl
 	     until finish_omp_for.  */
 	  if (decl
-	      && ((type_dependent_expression_p (decl)
+	      && ((processing_template_decl
 		   && !POINTER_TYPE_P (TREE_TYPE (decl)))
 		  || CLASS_TYPE_P (TREE_TYPE (decl))))
 	    incr = cp_parser_omp_for_incr (parser, decl);
