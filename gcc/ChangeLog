@@ -1,3 +1,10 @@
+2011-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51117
+	* tree-eh.c (optimize_clobbers): Don't remove just one
+	clobber, but all consecutive clobbers before RESX.
+	Use gimple_clobber_p predicate.
+
 2011-12-09  Michael Meissner  <meissner@the-meissners.org>
 
 	* config/rs6000/rs6000.c (altivec_expand_builtin): Call
