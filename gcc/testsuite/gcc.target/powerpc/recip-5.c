@@ -1,5 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-require-effective-target powerpc_fprs } */
+/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O3 -ftree-vectorize -mrecip=all -ffast-math -mcpu=power7 -fno-unroll-loops" } */
 /* { dg-final { scan-assembler-times "xvredp" 4 } } */
 /* { dg-final { scan-assembler-times "xvresp" 5 } } */

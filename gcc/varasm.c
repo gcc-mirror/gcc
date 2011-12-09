@@ -6911,11 +6911,14 @@ default_binds_local_p_1 (const_tree exp, int shlib)
   /* A non-decl is an entry in the constant pool.  */
   if (!DECL_P (exp))
     local_p = true;
-  /* Weakrefs may not bind locally, even though the weakref itself is
-     always static and therefore local.
-     FIXME: We can resolve this more curefuly by looking at the weakref
-     alias.  */
-  else if (lookup_attribute ("weakref", DECL_ATTRIBUTES (exp)))
+  /* Weakrefs may not bind locally, even though the weakref itself is always
+     static and therefore local.  Similarly, the resolver for ifunc functions
+     might resolve to a non-local function.
+     FIXME: We can resolve the weakref case more curefuly by looking at the
+     weakref alias.  */
+  else if (lookup_attribute ("weakref", DECL_ATTRIBUTES (exp))
+	   || (TREE_CODE (exp) == FUNCTION_DECL
+	       && lookup_attribute ("ifunc", DECL_ATTRIBUTES (exp))))
     local_p = false;
   /* Static variables are always local.  */
   else if (! TREE_PUBLIC (exp))
