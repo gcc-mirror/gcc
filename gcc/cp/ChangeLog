@@ -1,3 +1,14 @@
+2011-12-09  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/51289
+	* cp-tree.h (TYPE_TEMPLATE_INFO): Rewrite this accessor macro to
+	better support aliased types.
+	(TYPE_ALIAS_P): Don't crash on TYPE_NAME nodes that are not
+	TYPE_DECL.
+	* pt.c (find_parameter_packs_r): Handle types aliases.
+	(push_template_decl_real): Check for bare parameter packs in the
+	underlying type of an alias template.
+
 2011-12-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51318
