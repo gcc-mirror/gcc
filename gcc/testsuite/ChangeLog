@@ -1,3 +1,10 @@
+2011-12-08  Andrew Pinski  <apinski@cavium.com>
+
+	* cc.target/mips/mult-1.c: Forbid all Octeon processors.
+	* gcc.target/mips/dmult-1.c: Likewise.
+	* gcc.target/mips/branch-1.c: Likewise.
+	* gcc.target/mips/extend-1.c: Likewise.
+
 2011-12-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51318

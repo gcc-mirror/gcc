@@ -1,3 +1,9 @@
+2011-12-08  Andrew Pinski  <apinski@cavium.com>
+
+	* config/mips/mips-cpus.def (octeon+): New CPU.
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/mips.h (MIPS_CPP_SET_PROCESSOR): Emit '+' as 'P'.
+
 2011-12-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR middle-end/39976
