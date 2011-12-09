@@ -6010,7 +6010,7 @@ simplify_if_then_else (rtx x)
 	  && exact_log2 (nzb = nonzero_bits (from, GET_MODE (from))) >= 0)
 	{
 	  false_code = EQ;
-	  false_val = GEN_INT (trunc_int_for_mode (nzb, GET_MODE (from)));
+	  false_val = gen_int_mode (nzb, GET_MODE (from));
 	}
       else if (true_code == EQ && true_val == const0_rtx
 	       && (num_sign_bit_copies (from, GET_MODE (from))

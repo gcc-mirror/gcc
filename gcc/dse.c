@@ -1950,7 +1950,7 @@ get_stored_val (store_info_t store_info, enum machine_mode read_mode,
 	      c |= (c << shift);
 	      shift <<= 1;
 	    }
-	  read_reg = GEN_INT (trunc_int_for_mode (c, store_mode));
+	  read_reg = gen_int_mode (c, store_mode);
 	  read_reg = extract_low_bits (read_mode, store_mode, read_reg);
 	}
     }
@@ -2459,7 +2459,7 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
 	{
 	  if (!tmp || !CONST_INT_P (tmp))
 	    return false;
-	  tmp = GEN_INT (trunc_int_for_mode (INTVAL (tmp), mode));
+	  tmp = gen_int_mode (INTVAL (tmp), mode);
 	}
       if (tmp)
 	args[idx] = tmp;
