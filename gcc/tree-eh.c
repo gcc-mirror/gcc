@@ -3180,17 +3180,13 @@ static void
 optimize_clobbers (basic_block bb)
 {
   gimple_stmt_iterator gsi = gsi_last_bb (bb);
-  for (gsi_prev (&gsi); !gsi_end_p (gsi);)
+  for (gsi_prev (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
     {
       gimple stmt = gsi_stmt (gsi);
       if (is_gimple_debug (stmt))
-	{
-	  gsi_prev (&gsi);
-	  continue;
-	}
-      if (!gimple_assign_single_p (stmt)
-	  || TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
-	  || !TREE_CLOBBER_P (gimple_assign_rhs1 (stmt)))
+	continue;
+      if (!gimple_clobber_p (stmt)
+	  || TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME)
 	return;
       unlink_stmt_vdef (stmt);
       gsi_remove (&gsi, true);
