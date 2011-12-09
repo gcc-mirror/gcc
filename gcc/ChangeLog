@@ -1,3 +1,10 @@
+2011-12-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51482
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size):
+	Make sure to only create REAL_TYPE and INTEGER_TYPE component
+	vectors.
+
 2011-12-09  Kai Tietz  <ktietz@redhat.com>
 
 	* implicit-zee.c (num_realized): Change type to long.

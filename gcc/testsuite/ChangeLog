@@ -1,6 +1,11 @@
+2011-12-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51482
+	* g++.dg/torture/pr51482.C: New testcase.
+
 2011-12-08  Andrew Pinski  <apinski@cavium.com>
 
-	* cc.target/mips/mult-1.c: Forbid all Octeon processors.
+	* gcc.target/mips/mult-1.c: Forbid all Octeon processors.
 	* gcc.target/mips/dmult-1.c: Likewise.
 	* gcc.target/mips/branch-1.c: Likewise.
 	* gcc.target/mips/extend-1.c: Likewise.
