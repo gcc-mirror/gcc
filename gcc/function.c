@@ -3140,9 +3140,8 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 		set_unique_reg_note (sinsn, REG_EQUIV, stackr);
 	    }
 	}
-      else if ((set = single_set (linsn)) != 0
-	       && SET_DEST (set) == parmreg)
-	set_unique_reg_note (linsn, REG_EQUIV, equiv_stack_parm);
+      else 
+	set_dst_reg_note (linsn, REG_EQUIV, equiv_stack_parm, parmreg);
     }
 
   /* For pointer data type, suggest pointer register.  */
@@ -4757,7 +4756,7 @@ expand_function_start (tree subr)
       /* Mark the register as eliminable, similar to parameters.  */
       if (MEM_P (chain)
 	  && reg_mentioned_p (arg_pointer_rtx, XEXP (chain, 0)))
-	set_unique_reg_note (insn, REG_EQUIV, chain);
+	set_dst_reg_note (insn, REG_EQUIV, chain, local);
     }
 
   /* If the function receives a non-local goto, then store the

@@ -8574,7 +8574,7 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
       if (insn)
 	{
 	  /* Add a REG_EQUIV note so that find_equiv_reg can find it.  */
-	  set_unique_reg_note (insn, REG_EQUIV, in);
+	  set_dst_reg_note (insn, REG_EQUIV, in, out);
 	  return insn;
 	}
 
@@ -8584,7 +8584,7 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
       gcc_assert (!reg_overlap_mentioned_p (out, op0));
       gen_reload (out, op1, opnum, type);
       insn = emit_insn (gen_add2_insn (out, op0));
-      set_unique_reg_note (insn, REG_EQUIV, in);
+      set_dst_reg_note (insn, REG_EQUIV, in, out);
     }
 
 #ifdef SECONDARY_MEMORY_NEEDED
