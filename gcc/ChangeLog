@@ -1,3 +1,9 @@
+2011-12-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/51425
+	* config/avr/avr.md (config/avr/avr.md, *sbix_branch_tmp): Use
+	zero_extract:QIHI instead of zero_extract:HI.
+
 2011-12-09  Jakub Jelinek  <jakub@redhat.com>
 	    Andrew Pinski  <apinski@cavium.com>
 
