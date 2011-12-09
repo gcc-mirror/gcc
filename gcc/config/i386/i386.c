@@ -27023,6 +27023,11 @@ ix86_init_tm_builtins (void)
   if (!flag_tm)
     return;
 
+  /* If there are no builtins defined, we must be compiling in a
+     language without trans-mem support.  */
+  if (!builtin_decl_explicit_p (BUILT_IN_TM_LOAD_1))
+    return;
+
   /* Use whatever attributes a normal TM load has.  */
   decl = builtin_decl_explicit (BUILT_IN_TM_LOAD_1);
   attrs_load = DECL_ATTRIBUTES (decl);
