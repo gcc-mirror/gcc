@@ -1,3 +1,8 @@
+2011-12-09  Kai Tietz  <ktietz@redhat.com>
+
+	* implicit-zee.c (num_realized): Change type to long.
+	(num_ze_opportunities): Likewise.
+
 2011-12-08  Andrew Pinski  <apinski@cavium.com>
 
 	* config/mips/mips-cpus.def (octeon+): New CPU.

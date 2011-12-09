@@ -889,8 +889,8 @@ find_and_remove_ze (void)
   rtx curr_insn = NULL_RTX;
   int i;
   int ix;
-  long long num_realized = 0;
-  long long num_ze_opportunities = 0;
+  long num_realized = 0;
+  long num_ze_opportunities = 0;
   VEC (rtx, heap) *zeinsn_list;
   VEC (rtx, heap) *zeinsn_del_list;
 
@@ -944,10 +944,10 @@ find_and_remove_ze (void)
   VEC_free (rtx, heap, zeinsn_del_list);
 
   if (dump_file && num_ze_opportunities > 0)
-    fprintf (dump_file, "\n %s : num_zee_opportunities = %lld "
-                        "num_realized = %lld \n",
-                        current_function_name (),
-                        num_ze_opportunities, num_realized);
+    fprintf (dump_file, "\n %s : num_zee_opportunities = %ld"
+			" num_realized = %ld\n",
+                        current_function_name (), num_ze_opportunities,
+                        num_realized);
 
   df_finish_pass (false);
   return 0;
