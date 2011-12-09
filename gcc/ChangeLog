@@ -1,3 +1,9 @@
+2011-12-09  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48042
+	* tree.c (free_lang_data_in_decl): Remove freeing conditional
+	on debuginfo level.
+
 2011-12-09  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR middle-end/40154

@@ -4600,11 +4600,6 @@ free_lang_data_in_decl (tree decl)
   if (TREE_CODE (decl) == FIELD_DECL)
     free_lang_data_in_one_sizepos (&DECL_FIELD_OFFSET (decl));
 
- /* DECL_FCONTEXT is only used for debug info generation.  */
- if (TREE_CODE (decl) == FIELD_DECL
-     && debug_info_level < DINFO_LEVEL_TERSE)
-   DECL_FCONTEXT (decl) = NULL_TREE;
-
  if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       if (gimple_has_body_p (decl))

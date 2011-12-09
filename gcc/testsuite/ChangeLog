@@ -1,5 +1,10 @@
 2011-12-09  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/48042
+	* g++.dg/lto/pr48042_0.C: New testcase.
+
+2011-12-09  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/51482
 	* g++.dg/torture/pr51482.C: New testcase.
 
