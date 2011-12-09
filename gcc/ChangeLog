@@ -1,3 +1,8 @@
+2011-12-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/51479
+	* Makefile.in (errors.o): Restored.
+
 2011-12-09  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/48042
