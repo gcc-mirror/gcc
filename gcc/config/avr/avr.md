@@ -4699,7 +4699,7 @@
   [(set (pc)
 	(if_then_else
 	 (match_operator 0 "eqne_operator"
-			 [(zero_extract:HI
+			 [(zero_extract:QIHI
 			   (mem:QI (match_operand 1 "low_io_address_operand" "n"))
 			   (const_int 1)
 			   (match_operand 2 "const_int_operand" "n"))
@@ -4746,7 +4746,7 @@
   [(set (pc)
 	(if_then_else
 	 (match_operator 0 "eqne_operator"
-			 [(zero_extract:HI
+			 [(zero_extract:QIHI
 			   (mem:QI (match_operand 1 "high_io_address_operand" "n"))
 			   (const_int 1)
 			   (match_operand 2 "const_int_operand" "n"))
