@@ -10,7 +10,7 @@
    can't represent a C varargs function in Go.  */
 
 void syslog_c(int, const char*)
-  asm ("libgo_syslog.syslog.syslog_c");
+  asm ("libgo_log.syslog.syslog_c");
 
 void
 syslog_c (int priority, const char *msg)
