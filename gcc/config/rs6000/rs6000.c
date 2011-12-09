@@ -10578,7 +10578,9 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
     {
       *expandedp = true;
       error ("unresolved overload for Altivec builtin %qF", fndecl);
-      return const0_rtx;
+
+      /* Given it is invalid, just generate a normal call.  */
+      return expand_call (exp, target, false);
     }
 
   target = altivec_expand_ld_builtin (exp, target, expandedp);
@@ -11306,7 +11308,9 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   if (!func_valid_p)
     {
       rs6000_invalid_builtin (fcode);
-      return NULL_RTX;
+
+      /* Given it is invalid, just generate a normal call.  */
+      return expand_call (exp, target, ignore);
     }
 
   switch (fcode)
@@ -26789,6 +26793,11 @@ rs6000_inner_target_options (tree args, bool attr_p)
 			error_p = false;
 			target_flags_explicit |= mask;
 
+			/* VSX needs altivec, so -mvsx automagically sets
+			   altivec.  */
+			if (mask == MASK_VSX && !invert)
+			  mask |= MASK_ALTIVEC;
+
 			if (rs6000_opt_masks[i].invert)
 			  invert = !invert;
 
@@ -27001,7 +27010,6 @@ rs6000_pragma_target_parse (tree args, tree pop_target)
   struct cl_target_option *prev_opt, *cur_opt;
   unsigned prev_bumask, cur_bumask, diff_bumask;
   int prev_flags, cur_flags, diff_flags;
-  bool ret;
 
   if (TARGET_DEBUG_TARGET)
     {
@@ -27023,7 +27031,6 @@ rs6000_pragma_target_parse (tree args, tree pop_target)
 
   if (! args)
     {
-      ret = true;
       cur_tree = ((pop_target)
 		  ? pop_target
 		  : target_option_default_node);
@@ -27033,13 +27040,13 @@ rs6000_pragma_target_parse (tree args, tree pop_target)
   else
     {
       rs6000_cpu_index = rs6000_tune_index = -1;
-      ret = rs6000_inner_target_options (args, false);
-      cur_tree = build_target_option_node ();
-
-      if (!cur_tree)
+      if (!rs6000_inner_target_options (args, false)
+	  || !rs6000_option_override_internal (false)
+	  || (cur_tree = build_target_option_node ()) == NULL_TREE)
 	{
 	  if (TARGET_DEBUG_BUILTIN || TARGET_DEBUG_TARGET)
-	    fprintf (stderr, "build_target_option_node returned NULL\n");
+	    fprintf (stderr, "invalid pragma\n");
+
 	  return false;
 	}
     }
@@ -27075,7 +27082,7 @@ rs6000_pragma_target_parse (tree args, tree pop_target)
 	}
     }
 
-  return ret;
+  return true;
 }
 
 
