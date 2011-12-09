@@ -1,3 +1,14 @@
+2011-12-09  Kai Tietz  <ktietz@redhat.com>
+
+	* ira-color.c (print_hard_regs_subforest): Use
+	HOST_WIDEST_INT_PRINT_DEC instead of %lld.
+	(allocno_hard_regs): Change type of cost member
+	to HOST_WIDEST_INT.
+	(add_allocno_hard_regs): Change type of argument cost
+	to HOST_WIDEST_INT.
+	* ira-conflict.c (build_conflict_bit_table): Replace use
+	of long-long by HOST_WIDEST_INT.
+
 2011-12-09  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/51425
