@@ -1,3 +1,8 @@
+2011-12-09  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/51289
+	* g++.dg/cpp0x/alias-decl-17.C: New test.
+
 2011-12-09  Michael Meissner  <meissner@the-meissners.org>
 
 	* gcc.target/powerpc/recip-5.c: Disable running on any system that

@@ -2976,6 +2976,20 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
     (struct find_parameter_pack_data*)data;
   bool parameter_pack_p = false;
 
+  /* Handle type aliases/typedefs.  */
+  if (TYPE_P (t)
+      && TYPE_NAME (t)
+      && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
+      && TYPE_DECL_ALIAS_P (TYPE_NAME (t)))
+    {
+      if (TYPE_TEMPLATE_INFO (t))
+	cp_walk_tree (&TYPE_TI_ARGS (t),
+		      &find_parameter_packs_r,
+		      ppd, ppd->visited);
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
   /* Identify whether this is a parameter pack or not.  */
   switch (TREE_CODE (t))
     {
@@ -4905,7 +4919,10 @@ push_template_decl_real (tree decl, bool is_friend)
       if (check_for_bare_parameter_packs (TYPE_RAISES_EXCEPTIONS (type)))
 	TYPE_RAISES_EXCEPTIONS (type) = NULL_TREE;
     }
-  else if (check_for_bare_parameter_packs (TREE_TYPE (decl)))
+  else if (check_for_bare_parameter_packs ((TREE_CODE (decl) == TYPE_DECL
+					    && TYPE_DECL_ALIAS_P (decl))
+					   ? DECL_ORIGINAL_TYPE (decl)
+					   : TREE_TYPE (decl)))
     {
       TREE_TYPE (decl) = error_mark_node;
       return error_mark_node;
