@@ -872,7 +872,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 		     TREE_TYPE (gimple_assign_rhs1 (use_stmt))))
 	{
 	  tree *def_rhs_basep = &TREE_OPERAND (def_rhs, 0);
-	  tree new_offset, new_base, saved;
+	  tree new_offset, new_base, saved, new_lhs;
 	  while (handled_component_p (*def_rhs_basep))
 	    def_rhs_basep = &TREE_OPERAND (*def_rhs_basep, 0);
 	  saved = *def_rhs_basep;
@@ -891,9 +891,12 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	  *def_rhs_basep = build2 (MEM_REF, TREE_TYPE (*def_rhs_basep),
 				   new_base, new_offset);
 	  TREE_THIS_VOLATILE (*def_rhs_basep) = TREE_THIS_VOLATILE (lhs);
+	  TREE_SIDE_EFFECTS (*def_rhs_basep) = TREE_SIDE_EFFECTS (lhs);
 	  TREE_THIS_NOTRAP (*def_rhs_basep) = TREE_THIS_NOTRAP (lhs);
-	  gimple_assign_set_lhs (use_stmt,
-				 unshare_expr (TREE_OPERAND (def_rhs, 0)));
+	  new_lhs = unshare_expr (TREE_OPERAND (def_rhs, 0));
+	  gimple_assign_set_lhs (use_stmt, new_lhs);
+	  TREE_THIS_VOLATILE (new_lhs) = TREE_THIS_VOLATILE (lhs);
+	  TREE_SIDE_EFFECTS (new_lhs) = TREE_SIDE_EFFECTS (lhs);
 	  *def_rhs_basep = saved;
 	  tidy_after_forward_propagate_addr (use_stmt);
 	  /* Continue propagating into the RHS if this was not the
@@ -953,7 +956,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 		     TREE_TYPE (TREE_OPERAND (def_rhs, 0))))
 	{
 	  tree *def_rhs_basep = &TREE_OPERAND (def_rhs, 0);
-	  tree new_offset, new_base, saved;
+	  tree new_offset, new_base, saved, new_rhs;
 	  while (handled_component_p (*def_rhs_basep))
 	    def_rhs_basep = &TREE_OPERAND (*def_rhs_basep, 0);
 	  saved = *def_rhs_basep;
@@ -972,9 +975,12 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	  *def_rhs_basep = build2 (MEM_REF, TREE_TYPE (*def_rhs_basep),
 				   new_base, new_offset);
 	  TREE_THIS_VOLATILE (*def_rhs_basep) = TREE_THIS_VOLATILE (rhs);
+	  TREE_SIDE_EFFECTS (*def_rhs_basep) = TREE_SIDE_EFFECTS (rhs);
 	  TREE_THIS_NOTRAP (*def_rhs_basep) = TREE_THIS_NOTRAP (rhs);
-	  gimple_assign_set_rhs1 (use_stmt,
-				  unshare_expr (TREE_OPERAND (def_rhs, 0)));
+	  new_rhs = unshare_expr (TREE_OPERAND (def_rhs, 0));
+	  gimple_assign_set_rhs1 (use_stmt, new_rhs);
+	  TREE_THIS_VOLATILE (new_rhs) = TREE_THIS_VOLATILE (rhs);
+	  TREE_SIDE_EFFECTS (new_rhs) = TREE_SIDE_EFFECTS (rhs);
 	  *def_rhs_basep = saved;
 	  fold_stmt_inplace (use_stmt);
 	  tidy_after_forward_propagate_addr (use_stmt);

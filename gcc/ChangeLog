@@ -1,3 +1,18 @@
+2011-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
+	2011-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51466
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Also copy
+	TREE_SIDE_EFFECTS.
+
+	2011-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/50078
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Copy over
+	TREE_THIS_VOLATILE also from the old to new lhs resp. rhs.
+
 2011-12-09  Kazu Hirata  <kazu@codesourcery.com>
 
 	Backport from mainline:
