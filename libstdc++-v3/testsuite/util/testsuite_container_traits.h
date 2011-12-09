@@ -43,6 +43,7 @@ namespace __gnu_test
     typedef std::false_type	has_throwing_erase;
     typedef std::false_type	has_insert;
     typedef std::false_type	has_insert_after;
+    typedef std::false_type	has_emplace;
     typedef std::false_type	has_push_pop;
     typedef std::false_type	has_size_type_constructor;
   };
@@ -216,6 +217,7 @@ namespace __gnu_test
 
       typedef std::true_type	has_erase;
       typedef std::true_type	has_insert;
+      typedef std::true_type	has_emplace;
     };
 
   template<typename _Tp1, typename _Tp2, typename _Tp3,
@@ -230,6 +232,7 @@ namespace __gnu_test
 
       typedef std::true_type	has_erase;
       typedef std::true_type	has_insert;
+      typedef std::true_type	has_emplace;
     };
 
   template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
@@ -242,6 +245,7 @@ namespace __gnu_test
 
       typedef std::true_type	has_erase;
       typedef std::true_type	has_insert;
+      typedef std::true_type	has_emplace;
     };
 
   template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
@@ -254,6 +258,7 @@ namespace __gnu_test
 
       typedef std::true_type	has_erase;
       typedef std::true_type	has_insert;
+      typedef std::true_type	has_emplace;
     };
 } // namespace __gnu_test
 

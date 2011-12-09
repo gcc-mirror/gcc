@@ -1403,11 +1403,10 @@ particular release.
       <entry>Missing emplace members</entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.2.5</entry>
       <entry>Unordered associative containers</entry>
-      <entry>Partial</entry>
-      <entry>Missing emplace members</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>23.3</entry>
