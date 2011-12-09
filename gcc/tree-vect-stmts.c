@@ -5705,6 +5705,10 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
   if (nbytes == 0)
     return NULL_TREE;
 
+  if (GET_MODE_CLASS (inner_mode) != MODE_INT
+      && GET_MODE_CLASS (inner_mode) != MODE_FLOAT)
+    return NULL_TREE;
+
   /* We can't build a vector type of elements with alignment bigger than
      their size.  */
   if (nbytes < TYPE_ALIGN_UNIT (scalar_type))
@@ -5713,15 +5717,14 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
   /* For vector types of elements whose mode precision doesn't
      match their types precision we use a element type of mode
      precision.  The vectorization routines will have to make sure
-     they support the proper result truncation/extension.  */
+     they support the proper result truncation/extension.
+     We also make sure to build vector types with INTEGER_TYPE
+     component type only.  */
   if (INTEGRAL_TYPE_P (scalar_type)
-      && GET_MODE_BITSIZE (inner_mode) != TYPE_PRECISION (scalar_type))
+      && (GET_MODE_BITSIZE (inner_mode) != TYPE_PRECISION (scalar_type)
+	  || TREE_CODE (scalar_type) != INTEGER_TYPE))
     scalar_type = build_nonstandard_integer_type (GET_MODE_BITSIZE (inner_mode),
 						  TYPE_UNSIGNED (scalar_type));
-
-  if (GET_MODE_CLASS (inner_mode) != MODE_INT
-      && GET_MODE_CLASS (inner_mode) != MODE_FLOAT)
-    return NULL_TREE;
 
   /* We shouldn't end up building VECTOR_TYPEs of non-scalar components.
      When the component mode passes the above test simply use a type
