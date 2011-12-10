@@ -6015,7 +6015,7 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
 			  build_int_cst (ncopies_type, 0));
   gfc_trans_runtime_check (true, false, cond, &se->pre, &expr->where,
 			   "Argument NCOPIES of REPEAT intrinsic is negative "
-			   "(its value is %lld)",
+			   "(its value is %ld)",
 			   fold_convert (long_integer_type_node, ncopies));
 
   /* If the source length is zero, any non negative value of NCOPIES
