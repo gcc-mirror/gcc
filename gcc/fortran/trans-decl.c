@@ -4673,7 +4673,7 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 
   for (formal = sym->formal; formal; formal = formal->next)
     if (formal->sym && formal->sym->ts.type == BT_CHARACTER
-	&& !fsym->ts.deferred)
+	&& !formal->sym->ts.deferred)
       {
 	enum tree_code comparison;
 	tree cond;
