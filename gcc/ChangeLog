@@ -1,3 +1,9 @@
+2011-12-10  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.h (USE_LOAD_POST_INCREMENT): Define.
+	(USE_LOAD_POST_DECREMENT, USE_STORE_POST_INCREMENT): Likewise.
+	(USE_STORE_POST_DECREMENT): Likewise.
+
 2011-12-10  Nathan Sidwell  <nathan@acm.org>
 
 	PR gcov-profile/51449

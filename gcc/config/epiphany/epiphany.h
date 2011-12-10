@@ -602,6 +602,21 @@ typedef struct GTY (()) machine_function
 #define HAVE_POST_MODIFY_DISP TARGET_POST_MODIFY
 #define HAVE_POST_MODIFY_REG TARGET_POST_MODIFY
 
+/* Currently, the only users of the USE_*CREMENT macros are
+   move_by_pieces / store_by_pieces_1 .  We don't want them to use
+   POST_MODIFY modes, because we got ample addressing range for the
+   reg+offset addressing mode; besides, there are short index+offset loads,
+   but the only short post-modify load uses POST_MODIFY_REG.
+   Moreover, using auto-increment in move_by_pieces from structure copying
+   in the prologue causes confused debug output.
+   If another pass starts using these macros where the use of these
+   addressing modes would make more sense, we can try checking the
+   current pass.  */
+#define USE_LOAD_POST_INCREMENT(MODE) 0
+#define USE_LOAD_POST_DECREMENT(MODE) 0
+#define USE_STORE_POST_INCREMENT(MODE) 0
+#define USE_STORE_POST_DECREMENT(MODE) 0
+
 /* Recognize any constant value that is a valid address.  */
 #define CONSTANT_ADDRESS_P(X) \
 (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF	\
