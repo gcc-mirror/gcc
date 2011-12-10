@@ -4,6 +4,11 @@
 	(USE_LOAD_POST_DECREMENT, USE_STORE_POST_INCREMENT): Likewise.
 	(USE_STORE_POST_DECREMENT): Likewise.
 
+	* config/epiphany/epiphany.h (EPIPHANY_RETURN_REGNO): New macro,
+	broken out of ..
+	(INCOMING_RETURN_ADDR_RTX) .. this.  Use EPIPHANY_RETURN_REGNO.
+	(DWARF_FRAME_RETURN_COLUMN): New macro.
+
 2011-12-10  Nathan Sidwell  <nathan@acm.org>
 
 	PR gcov-profile/51449
