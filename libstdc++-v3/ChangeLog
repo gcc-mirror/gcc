@@ -1,3 +1,18 @@
+2011-12-12  François Dumont <fdumont@gcc.gnu.org>
+
+	* include/profile/unordered_set: Minor formatting changes.
+	(unordered_set<>::_M_profile_destruct,
+	unordered_multiset<>::_M_profile_destruct): Fix implementation to not
+	rely on normal implementation details anymore.
+	(unordered_set<>::_M_profile_resize,
+	unordered_multiset<>::_M_profile_resize): Implement consistently
+	accross all unordered containers.
+	(unordered_set<>::emplace, unordered_set<>::emplace_hint,
+	unordered_multiset<>::emplace, unordered_multset<>::emplace_hint): Add
+	to signal rehash to profiling system.
+	* include/profile/unordered_map: Likewise for unordered_map<> and
+	unordered_multimap<>.
+
 2011-12-09  François Dumont <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable.h (_Hashtable<>::emplace,
