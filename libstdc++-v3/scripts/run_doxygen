@@ -325,14 +325,6 @@ for f in *__profile_*; do
     newname=`echo $f | sed 's/__profile_/__profile::/'`
     mv $f $newname
 done
-for f in *__atomic0_*; do
-    newname=`echo $f | sed 's/__atomic0_/__atomic0::/'`
-    mv $f $newname
-done
-for f in *__atomic2_*; do
-    newname=`echo $f | sed 's/__atomic2_/__atomic2::/'`
-    mv $f $newname
-done
 
 # Then, clean up other top-level namespaces.
 for f in std_tr1_*; do
@@ -373,11 +365,6 @@ for f in __cxxabiv1_*; do
 done
 
 # Then piecemeal nested classes
-for f in *__future_base_*; do
-    newname=`echo $f | sed 's/__future_base_/__future_base::/'`
-    mv $f $newname
-done
-
 
 
 # Generic removal bits, where there are things in the generated man

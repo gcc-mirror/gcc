@@ -683,7 +683,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
   /**
-   *  @brief  The %bitset class represents a @e fixed-size sequence of bits.
+   *  The %bitset class represents a @e fixed-size sequence of bits.
    *
    *  @ingroup containers
    *
@@ -855,7 +855,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
       /**
-       *  @brief  Use a subset of a string.
+       *  Use a subset of a string.
        *  @param  __s  A string of @a 0 and @a 1 characters.
        *  @param  __position  Index of the first character in @a __s to use;
        *                    defaults to zero.
@@ -878,7 +878,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 
       /**
-       *  @brief  Use a subset of a string.
+       *  Use a subset of a string.
        *  @param  __s  A string of @a 0 and @a 1 characters.
        *  @param  __position  Index of the first character in @a __s to use.
        *  @param  __n    The number of characters to copy.
@@ -914,7 +914,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
-       *  @brief  Construct from a character %array.
+       *  Construct from a character %array.
        *  @param  __str  An %array of characters @a zero and @a one.
        *  @param  __n    The number of characters to use.
        *  @param  __zero The character corresponding to the value 0.
@@ -944,7 +944,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // 23.3.5.2 bitset operations:
       //@{
       /**
-       *  @brief  Operations on bitsets.
+       *  Operations on bitsets.
        *  @param  __rhs  A same-sized bitset.
        *
        *  These should be self-explanatory.
@@ -973,7 +973,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       
       //@{
       /**
-       *  @brief  Operations on bitsets.
+       *  Operations on bitsets.
        *  @param  __position  The number of places to shift.
        *
        *  These should be self-explanatory.

@@ -746,6 +746,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
 			 include/tr1/ctime \
 			 include/tr1/cwchar \
 			 include/tr1/cwctype \
+			 include/tr2/ \
 			 include/tr2/bool_set \
 			 include/tr2/dynamic_bitset \
 			 include/tr2/ratio \
@@ -1647,9 +1648,10 @@ PREDEFINED             = __cplusplus \
 			 _GLIBCXX_USE_C99_STDINT_TR1 \
 			 _GLIBCXX_USE_SCHED_YIELD \
 			 _GLIBCXX_USE_NANOSLEEP \
-			 PB_DS_DATA_TRUE_INDICATOR \
 			 __EXCEPTIONS \
 			 __GXX_RTTI \
+                         ATOMIC_INT_LOCK_FREE \
+			 PB_DS_DATA_TRUE_INDICATOR \
 			 __glibcxx_function_requires=// \
 			 __glibcxx_class_requires=// \
 			 __glibcxx_class_requires2=// \

@@ -44,9 +44,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  // [27.6.2.1] Template class basic_ostream
   /**
-   *  @brief  Controlling output.
+   *  @brief  Template class basic_ostream.
    *  @ingroup io
    *
    *  This is the base class for all output streams.  It provides text
@@ -57,22 +56,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class basic_ostream : virtual public basic_ios<_CharT, _Traits>
     {
     public:
-      // Types (inherited from basic_ios (27.4.4)):
-      typedef _CharT                     		char_type;
+      // Types (inherited from basic_ios):
+      typedef _CharT			 		char_type;
       typedef typename _Traits::int_type 		int_type;
       typedef typename _Traits::pos_type 		pos_type;
       typedef typename _Traits::off_type 		off_type;
-      typedef _Traits                    		traits_type;
-      
+      typedef _Traits			 		traits_type;
+
       // Non-standard Types:
       typedef basic_streambuf<_CharT, _Traits> 		__streambuf_type;
       typedef basic_ios<_CharT, _Traits>		__ios_type;
       typedef basic_ostream<_CharT, _Traits>		__ostream_type;
-      typedef num_put<_CharT, ostreambuf_iterator<_CharT, _Traits> >        
+      typedef num_put<_CharT, ostreambuf_iterator<_CharT, _Traits> >
       							__num_put_type;
-      typedef ctype<_CharT>           			__ctype_type;
+      typedef ctype<_CharT>	      			__ctype_type;
 
-      // [27.6.2.2] constructor/destructor
       /**
        *  @brief  Base constructor.
        *
@@ -80,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  derived classes' initialization lists, which pass a pointer to
        *  their own stream buffer.
       */
-      explicit 
+      explicit
       basic_ostream(__streambuf_type* __sb)
       { this->init(__sb); }
 
@@ -89,15 +87,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  This does very little apart from providing a virtual base dtor.
       */
-      virtual 
+      virtual
       ~basic_ostream() { }
 
-      // [27.6.2.3] prefix/suffix
+      /// Safe prefix/suffix operations.
       class sentry;
       friend class sentry;
-      
-      // [27.6.2.5] formatted output
-      // [27.6.2.5.3]  basic_ostream::operator<<
+
       //@{
       /**
        *  @brief  Interface for manipulators.
@@ -136,9 +132,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
       //@}
 
-      // [27.6.2.5.2] arithmetic inserters
+      //@{
       /**
-       *  @name Arithmetic Inserters
+       *  @name Inserters
        *
        *  All the @c operator<< functions (aka <em>formatted output
        *  functions</em>) have some common behavior.  Each starts by
@@ -154,31 +150,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  ios_base::failure to be thrown.  The original exception will then
        *  be rethrown.
       */
+
       //@{
       /**
-       *  @brief  Basic arithmetic inserters
-       *  @param  __n, __f, __p A variable of builtin type.
+       *  @brief Integer arithmetic inserters
+       *  @param  __n A variable of builtin integral type.
        *  @return  @c *this if successful
        *
        *  These functions use the stream's current locale (specifically, the
        *  @c num_get facet) to perform numeric formatting.
       */
-      __ostream_type& 
+      __ostream_type&
       operator<<(long __n)
       { return _M_insert(__n); }
-      
-      __ostream_type& 
-      operator<<(unsigned long __n)
-      { return _M_insert(__n); }	
 
-      __ostream_type& 
+      __ostream_type&
+      operator<<(unsigned long __n)
+      { return _M_insert(__n); }
+
+      __ostream_type&
       operator<<(bool __n)
       { return _M_insert(__n); }
 
-      __ostream_type& 
+      __ostream_type&
       operator<<(short __n);
 
-      __ostream_type& 
+      __ostream_type&
       operator<<(unsigned short __n)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -186,10 +183,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_insert(static_cast<unsigned long>(__n));
       }
 
-      __ostream_type& 
+      __ostream_type&
       operator<<(int __n);
 
-      __ostream_type& 
+      __ostream_type&
       operator<<(unsigned int __n)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -198,20 +195,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
-      __ostream_type& 
+      __ostream_type&
       operator<<(long long __n)
       { return _M_insert(__n); }
 
-      __ostream_type& 
+      __ostream_type&
       operator<<(unsigned long long __n)
-      { return _M_insert(__n); }	
+      { return _M_insert(__n); }
 #endif
+      //@}
 
-      __ostream_type& 
+      //@{
+      /**
+       *  @brief  Floating point arithmetic inserters
+       *  @param  __f A variable of builtin floating point type.
+       *  @return  @c *this if successful
+       *
+       *  These functions use the stream's current locale (specifically, the
+       *  @c num_get facet) to perform numeric formatting.
+      */
+      __ostream_type&
       operator<<(double __f)
       { return _M_insert(__f); }
 
-      __ostream_type& 
+      __ostream_type&
       operator<<(float __f)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -219,11 +226,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_insert(static_cast<double>(__f));
       }
 
-      __ostream_type& 
+      __ostream_type&
       operator<<(long double __f)
       { return _M_insert(__f); }
+      //@}
 
-      __ostream_type& 
+      /**
+       *  @brief  Pointer arithmetic inserters
+       *  @param  __p A variable of pointer type.
+       *  @return  @c *this if successful
+       *
+       *  These functions use the stream's current locale (specifically, the
+       *  @c num_get facet) to perform numeric formatting.
+      */
+      __ostream_type&
       operator<<(const void* __p)
       { return _M_insert(__p); }
 
@@ -235,24 +251,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  in that it also constructs a sentry object and has the same error
        *  handling behavior.
        *
-       *  If @a __sb is NULL, the stream will set failbit in its error state.
+       *  If @p __sb is NULL, the stream will set failbit in its error state.
        *
-       *  Characters are extracted from @a __sb and inserted into @c *this
+       *  Characters are extracted from @p __sb and inserted into @c *this
        *  until one of the following occurs:
        *
        *  - the input stream reaches end-of-file,
        *  - insertion into the output sequence fails (in this case, the
        *    character that would have been inserted is not extracted), or
-       *  - an exception occurs while getting a character from @a __sb, which
+       *  - an exception occurs while getting a character from @p __sb, which
        *    sets failbit in the error state
        *
        *  If the function inserts no characters, failbit is set.
       */
-      __ostream_type& 
+      __ostream_type&
       operator<<(__streambuf_type* __sb);
       //@}
 
-      // [27.6.2.6] unformatted output functions
+      //@{
       /**
        *  @name Unformatted Output Functions
        *
@@ -270,21 +286,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  the stream's exceptions mask, the exception will be rethrown
        *  without completing its actions.
       */
-      //@{
+
       /**
        *  @brief  Simple insertion.
        *  @param  __c  The character to insert.
        *  @return  *this
        *
-       *  Tries to insert @a c.
+       *  Tries to insert @p __c.
        *
        *  @note  This function is not overloaded on signed char and
        *         unsigned char.
       */
-      __ostream_type& 
+      __ostream_type&
       put(char_type __c);
 
-      // Core write functionality, without sentry.
+      /**
+       *  @brief  Core write functionality, without sentry.
+       *  @param  __s  The array to insert.
+       *  @param  __n  Maximum number of characters to insert.
+      */
       void
       _M_write(const char_type* __s, streamsize __n)
       {
@@ -299,17 +319,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __n  Maximum number of characters to insert.
        *  @return  *this
        *
-       *  Characters are copied from @a __s and inserted into the stream until
+       *  Characters are copied from @p __s and inserted into the stream until
        *  one of the following happens:
        *
-       *  - @a __n characters are inserted
+       *  - @p __n characters are inserted
        *  - inserting into the output sequence fails (in this case, badbit
        *    will be set in the stream's error state)
        *
        *  @note  This function is not overloaded on signed char and
        *         unsigned char.
       */
-      __ostream_type& 
+      __ostream_type&
       write(const char_type* __s, streamsize __n);
       //@}
 
@@ -322,10 +342,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Otherwise, calls @c rdbuf()->pubsync(), and if that returns -1,
        *  sets badbit.
       */
-      __ostream_type& 
+      __ostream_type&
       flush();
 
-      // [27.6.2.4] seek members
       /**
        *  @brief  Getting the current write position.
        *  @return  A file position object.
@@ -333,7 +352,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  If @c fail() is not false, returns @c pos_type(-1) to indicate
        *  failure.  Otherwise returns @c rdbuf()->pubseekoff(0,cur,out).
       */
-      pos_type 
+      pos_type
       tellp();
 
       /**
@@ -344,7 +363,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  If @c fail() is not true, calls @c rdbuf()->pubseekpos(pos).  If
        *  that function fails, sets failbit.
       */
-      __ostream_type& 
+      __ostream_type&
       seekp(pos_type);
 
       /**
@@ -356,16 +375,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  If @c fail() is not true, calls @c rdbuf()->pubseekoff(off,dir).
        *  If that function fails, sets failbit.
       */
-       __ostream_type& 
+       __ostream_type&
       seekp(off_type, ios_base::seekdir);
-      
+
     protected:
       basic_ostream()
       { this->init(0); }
 
       template<typename _ValueT>
-        __ostream_type&
-        _M_insert(_ValueT __v);
+	__ostream_type&
+	_M_insert(_ValueT __v);
     };
 
   /**
@@ -381,7 +400,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Data Members.
       bool 				_M_ok;
       basic_ostream<_CharT, _Traits>& 	_M_os;
-      
+
     public:
       /**
        *  @brief  The constructor performs preparatory work.
@@ -429,7 +448,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_ok; }
     };
 
-  // [27.6.2.5.4] character insertion templates
   //@{
   /**
    *  @brief  Character inserters
@@ -443,7 +461,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  padding (as determined by [22.2.2.2.2]).  @c __out.width(0) is then
    *  called.
    *
-   *  If @a __c is of type @c char and the character type of the stream is not
+   *  If @p __c is of type @c char and the character type of the stream is not
    *  @c char, the character is widened before insertion.
   */
   template<typename _CharT, typename _Traits>
@@ -457,7 +475,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return (__out << __out.widen(__c)); }
 
   // Specialization
-  template <class _Traits> 
+  template <class _Traits>
     inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, char __c)
     { return __ostream_insert(__out, &__c, 1); }
@@ -467,25 +485,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, signed char __c)
     { return (__out << static_cast<char>(__c)); }
-  
+
   template<class _Traits>
     inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, unsigned char __c)
     { return (__out << static_cast<char>(__c)); }
   //@}
-  
+
   //@{
   /**
    *  @brief  String inserters
    *  @param  __out  An output stream.
    *  @param  __s  A character string.
    *  @return  out
-   *  @pre  @a s must be a non-NULL pointer
+   *  @pre  @p __s must be a non-NULL pointer
    *
    *  Behaves like one of the formatted arithmetic inserters described in
    *  std::basic_ostream.  After constructing a sentry object with good
    *  status, this function inserts @c traits::length(__s) characters starting
-   *  at @a __s, widened if necessary, followed by any required padding (as
+   *  at @p __s, widened if necessary, followed by any required padding (as
    *  determined by [22.2.2.2.2]).  @c __out.width(0) is then called.
   */
   template<typename _CharT, typename _Traits>
@@ -529,7 +547,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return (__out << reinterpret_cast<const char*>(__s)); }
   //@}
 
-  // [27.6.2.7] standard basic_ostream manipulators
+  // Standard basic_ostream manipulators
+
   /**
    *  @brief  Write a newline and flush the stream.
    *
@@ -539,33 +558,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  for more on this subject.
   */
   template<typename _CharT, typename _Traits>
-    inline basic_ostream<_CharT, _Traits>& 
+    inline basic_ostream<_CharT, _Traits>&
     endl(basic_ostream<_CharT, _Traits>& __os)
     { return flush(__os.put(__os.widen('\n'))); }
 
   /**
    *  @brief  Write a null character into the output sequence.
    *
-   *  <em>Null character</em> is @c CharT() by definition.  For CharT of @c char,
-   *  this correctly writes the ASCII @c NUL character string terminator.
+   *  <em>Null character</em> is @c CharT() by definition.  For CharT
+   *  of @c char, this correctly writes the ASCII @c NUL character
+   *  string terminator.
   */
   template<typename _CharT, typename _Traits>
-    inline basic_ostream<_CharT, _Traits>& 
+    inline basic_ostream<_CharT, _Traits>&
     ends(basic_ostream<_CharT, _Traits>& __os)
     { return __os.put(_CharT()); }
-  
+
   /**
    *  @brief  Flushes the output stream.
    *
    *  This manipulator simply calls the stream's @c flush() member function.
   */
   template<typename _CharT, typename _Traits>
-    inline basic_ostream<_CharT, _Traits>& 
+    inline basic_ostream<_CharT, _Traits>&
     flush(basic_ostream<_CharT, _Traits>& __os)
     { return __os.flush(); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-  // [27.7.2.9] Rvalue stream insertion
   /**
    *  @brief  Generic inserter for rvalue stream
    *  @param  __os  An input stream.
@@ -583,7 +602,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 #include <bits/ostream.tcc>
 
