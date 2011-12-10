@@ -435,14 +435,17 @@ epiphany_handle_interrupt_attribute (tree *node ATTRIBUTE_UNUSED,
     }
   else if (strcmp (TREE_STRING_POINTER (value), "reset")
 	   && strcmp (TREE_STRING_POINTER (value), "software_exception")
-	   && strcmp (TREE_STRING_POINTER (value), "timer")
+	   && strcmp (TREE_STRING_POINTER (value), "page_miss")
+	   && strcmp (TREE_STRING_POINTER (value), "timer0")
+	   && strcmp (TREE_STRING_POINTER (value), "timer1")
+	   && strcmp (TREE_STRING_POINTER (value), "message")
 	   && strcmp (TREE_STRING_POINTER (value), "dma0")
 	   && strcmp (TREE_STRING_POINTER (value), "dma1")
-	   && strcmp (TREE_STRING_POINTER (value), "static_flag")
+	   && strcmp (TREE_STRING_POINTER (value), "wand")
 	   && strcmp (TREE_STRING_POINTER (value), "swi"))
     {
       warning (OPT_Wattributes,
-	       "argument of %qE attribute is not \"reset\", \"software_exception\", \"timer\", \"dma0\", \"dma1\", \"static_flag\" or \"swi\"",
+	       "argument of %qE attribute is not \"reset\", \"software_exception\", \"page_miss\", \"timer0\", \"timer1\", \"message\", \"dma0\", \"dma1\", \"wand\" or \"swi\"",
 	       name);
       *no_add_attrs = true;
     }
@@ -892,14 +895,20 @@ epiphany_compute_function_type (tree decl)
 	    fn_type = EPIPHANY_FUNCTION_RESET;
 	  else if (!strcmp (TREE_STRING_POINTER (value), "software_exception"))
 	    fn_type = EPIPHANY_FUNCTION_SOFTWARE_EXCEPTION;
-	  else if (!strcmp (TREE_STRING_POINTER (value), "timer"))
-	    fn_type = EPIPHANY_FUNCTION_TIMER;
+	  else if (!strcmp (TREE_STRING_POINTER (value), "page_miss"))
+	    fn_type = EPIPHANY_FUNCTION_PAGE_MISS;
+	  else if (!strcmp (TREE_STRING_POINTER (value), "timer0"))
+	    fn_type = EPIPHANY_FUNCTION_TIMER0;
+	  else if (!strcmp (TREE_STRING_POINTER (value), "timer1"))
+	    fn_type = EPIPHANY_FUNCTION_TIMER1;
+	  else if (!strcmp (TREE_STRING_POINTER (value), "message"))
+	    fn_type = EPIPHANY_FUNCTION_MESSAGE;
 	  else if (!strcmp (TREE_STRING_POINTER (value), "dma0"))
 	    fn_type = EPIPHANY_FUNCTION_DMA0;
 	  else if (!strcmp (TREE_STRING_POINTER (value), "dma1"))
 	    fn_type = EPIPHANY_FUNCTION_DMA1;
-	  else if (!strcmp (TREE_STRING_POINTER (value), "static_flag"))
-	    fn_type = EPIPHANY_FUNCTION_STATIC_FLAG;
+	  else if (!strcmp (TREE_STRING_POINTER (value), "wand"))
+	    fn_type = EPIPHANY_FUNCTION_WAND;
 	  else if (!strcmp (TREE_STRING_POINTER (value), "swi"))
 	    fn_type = EPIPHANY_FUNCTION_SWI;
 	  else
@@ -1812,14 +1821,14 @@ epiphany_expand_epilogue (int sibcall_p)
     }
   if (interrupt_p)
     {
-      frame_move_insn (gen_rtx_REG (word_mode, STATUS_REGNUM),
-		       gen_rtx_REG (SImode, GPR_0));
-      frame_move_insn (gen_rtx_REG (word_mode, IRET_REGNUM),
-		       gen_rtx_REG (SImode, GPR_0+1));
+      emit_move_insn (gen_rtx_REG (word_mode, STATUS_REGNUM),
+		      gen_rtx_REG (SImode, GPR_0));
+      emit_move_insn (gen_rtx_REG (word_mode, IRET_REGNUM),
+		      gen_rtx_REG (SImode, GPR_0+1));
       addr = plus_constant (stack_pointer_rtx,
 			    - (HOST_WIDE_INT) 2 * UNITS_PER_WORD);
-      frame_move_insn (gen_rtx_REG (DImode, GPR_0),
-		       gen_frame_mem (DImode, addr));
+      emit_move_insn (gen_rtx_REG (DImode, GPR_0),
+		      gen_frame_mem (DImode, addr));
     }
   addr = plus_constant (stack_pointer_rtx,
 			epiphany_stack_offset - (HOST_WIDE_INT) UNITS_PER_WORD);
@@ -2746,6 +2755,30 @@ epiphany_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       assemble_name (file, fname);
       fputc ('\n', file);
     }
+}
+
+void
+epiphany_start_function (FILE *file, const char *name, tree decl)
+{
+  tree attrs, int_attr;
+
+  attrs = DECL_ATTRIBUTES (decl);
+  int_attr = lookup_attribute ("interrupt", attrs);
+  if (int_attr)
+    {
+      char buf[99];
+      const char *fname;
+
+      int_attr = TREE_VALUE (TREE_VALUE (int_attr));
+      sprintf (buf, "ivt_entry_%.80s", TREE_STRING_POINTER (int_attr));
+      switch_to_section (get_section (buf, SECTION_CODE, decl));
+      fname = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+      fputs ("\tb\t", file);
+      assemble_name (file, fname);
+      fputc ('\n', file);
+      switch_to_section (function_section (decl));
+    }
+  ASM_OUTPUT_FUNCTION_LABEL (file, name, decl);
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;
