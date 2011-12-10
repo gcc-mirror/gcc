@@ -4672,7 +4672,8 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
   gfc_formal_arglist *formal;
 
   for (formal = sym->formal; formal; formal = formal->next)
-    if (formal->sym && formal->sym->ts.type == BT_CHARACTER)
+    if (formal->sym && formal->sym->ts.type == BT_CHARACTER
+	&& !fsym->ts.deferred)
       {
 	enum tree_code comparison;
 	tree cond;
@@ -4695,10 +4696,8 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 	   if the actual argument is (part of) an array, but only if the
 	   dummy argument is an array. (See "Sequence association" in
 	   Section 12.4.1.4 for F95 and 12.4.1.5 for F2003.)  */
-	if (fsym->ts.deferred)
-	  continue;
-	else if (fsym->attr.pointer || fsym->attr.allocatable
-		 || (fsym->as && fsym->as->type == AS_ASSUMED_SHAPE))
+	if (fsym->attr.pointer || fsym->attr.allocatable
+	    || (fsym->as && fsym->as->type == AS_ASSUMED_SHAPE))
 	  {
 	    comparison = NE_EXPR;
 	    message = _("Actual string length does not match the declared one"
