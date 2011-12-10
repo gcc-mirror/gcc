@@ -1661,6 +1661,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P rs6000_legitimate_constant_p
 
+#undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
+#define TARGET_VECTORIZE_VEC_PERM_CONST_OK rs6000_vectorize_vec_perm_const_ok
 
 
 /* Simplifications for entries below.  */
@@ -4723,7 +4725,7 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 					  copy_to_reg (XVECEXP (vals, 0, 3))));
 	  emit_insn (gen_vsx_xvcvdpsp (flt_even, dbl_even));
 	  emit_insn (gen_vsx_xvcvdpsp (flt_odd, dbl_odd));
-	  emit_insn (gen_vec_extract_evenv4sf (target, flt_even, flt_odd));
+	  rs6000_expand_extract_even (target, flt_even, flt_odd);
 	}
       return;
     }
@@ -26204,6 +26206,327 @@ rs6000_emit_parity (rtx dst, rtx src)
         rs6000_emit_popcount (tmp, src);
       emit_insn (gen_anddi3 (dst, tmp, const1_rtx));
     }
+}
+
+/* Expand an Altivec constant permutation.  Return true if we match
+   an efficient implementation; false to fall back to VPERM.  */
+
+bool
+altivec_expand_vec_perm_const (rtx operands[4])
+{
+  struct altivec_perm_insn {
+    enum insn_code impl;
+    unsigned char perm[16];
+  };
+  static const struct altivec_perm_insn patterns[] = {
+    { CODE_FOR_altivec_vpkuhum,
+      {  1,  3,  5,  7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31 } },
+    { CODE_FOR_altivec_vpkuwum,
+      {  2,  3,  6,  7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31 } },
+    { CODE_FOR_altivec_vmrghb,
+      {  0, 16,  1, 17,  2, 18,  3, 19,  4, 20,  5, 21,  6, 22,  7, 23 } },
+    { CODE_FOR_altivec_vmrghh,
+      {  0,  1, 16, 17,  2,  3, 18, 19,  4,  5, 20, 21,  6,  7, 22, 23 } },
+    { CODE_FOR_altivec_vmrghw,
+      {  0,  1,  2,  3, 16, 17, 18, 19,  4,  5,  6,  7, 20, 21, 22, 23 } },
+    { CODE_FOR_altivec_vmrglb,
+      {  8, 24,  9, 25, 10, 26, 11, 27, 12, 28, 13, 29, 14, 30, 15, 31 } },
+    { CODE_FOR_altivec_vmrglh,
+      {  8,  9, 24, 25, 10, 11, 26, 27, 12, 13, 28, 29, 14, 15, 30, 31 } },
+    { CODE_FOR_altivec_vmrglw,
+      {  8,  9, 10, 11, 24, 25, 26, 27, 12, 13, 14, 15, 28, 29, 30, 31 } }
+  };
+
+  unsigned int i, j, elt, which;
+  unsigned char perm[16];
+  rtx target, op0, op1, sel, x;
+  bool one_vec;
+
+  target = operands[0];
+  op0 = operands[1];
+  op1 = operands[2];
+  sel = operands[3];
+
+  /* Unpack the constant selector.  */
+  for (i = which = 0; i < 16; ++i)
+    {
+      rtx e = XVECEXP (sel, 0, i);
+      elt = INTVAL (e) & 31;
+      which |= (elt < 16 ? 1 : 2);
+      perm[i] = elt;
+    }
+
+  /* Simplify the constant selector based on operands.  */
+  switch (which)
+    {
+    default:
+      gcc_unreachable ();
+
+    case 3:
+      one_vec = false;
+      if (!rtx_equal_p (op0, op1))
+	break;
+      /* FALLTHRU */
+
+    case 2:
+      for (i = 0; i < 16; ++i)
+	perm[i] &= 15;
+      op0 = op1;
+      one_vec = true;
+      break;
+
+    case 1:
+      op1 = op0;
+      one_vec = true;
+      break;
+    }
+ 
+  /* Look for splat patterns.  */
+  if (one_vec)
+    {
+      elt = perm[0];
+
+      for (i = 0; i < 16; ++i)
+	if (perm[i] != elt)
+	  break;
+      if (i == 16)
+	{
+	  emit_insn (gen_altivec_vspltb (target, op0, GEN_INT (elt)));
+	  return true;
+	}
+
+      if (elt % 2 == 0)
+	{
+	  for (i = 0; i < 16; i += 2)
+	    if (perm[i] != elt || perm[i + 1] != elt + 1)
+	      break;
+	  if (i == 16)
+	    {
+	      x = gen_reg_rtx (V8HImode);
+	      emit_insn (gen_altivec_vsplth (x, gen_lowpart (V8HImode, op0),
+					     GEN_INT (elt / 2)));
+	      emit_move_insn (target, gen_lowpart (V16QImode, x));
+	      return true;
+	    }
+	}
+
+      if (elt % 4 == 0)
+	{
+	  for (i = 0; i < 16; i += 4)
+	    if (perm[i] != elt
+		|| perm[i + 1] != elt + 1
+		|| perm[i + 2] != elt + 2
+		|| perm[i + 3] != elt + 3)
+	      break;
+	  if (i == 16)
+	    {
+	      x = gen_reg_rtx (V4SImode);
+	      emit_insn (gen_altivec_vspltw (x, gen_lowpart (V4SImode, op0),
+					     GEN_INT (elt / 4)));
+	      emit_move_insn (target, gen_lowpart (V16QImode, x));
+	      return true;
+	    }
+	}
+    }
+
+  /* Look for merge and pack patterns.  */
+  for (j = 0; j < ARRAY_SIZE (patterns); ++j)
+    {
+      bool swapped;
+
+      elt = patterns[j].perm[0];
+      if (perm[0] == elt)
+	swapped = false;
+      else if (perm[0] == elt + 16)
+	swapped = true;
+      else
+	continue;
+      for (i = 1; i < 16; ++i)
+	{
+	  elt = patterns[j].perm[i];
+	  if (swapped)
+	    elt = (elt >= 16 ? elt - 16 : elt + 16);
+	  else if (one_vec && elt >= 16)
+	    elt -= 16;
+	  if (perm[i] != elt)
+	    break;
+	}
+      if (i == 16)
+	{
+	  enum insn_code icode = patterns[j].impl;
+	  enum machine_mode omode = insn_data[icode].operand[0].mode;
+	  enum machine_mode imode = insn_data[icode].operand[1].mode;
+
+	  if (swapped)
+	    x = op0, op0 = op1, op1 = x;
+	  if (imode != V16QImode)
+	    {
+	      op0 = gen_lowpart (imode, op0);
+	      op1 = gen_lowpart (imode, op1);
+	    }
+	  if (omode == V16QImode)
+	    x = target;
+	  else
+	    x = gen_reg_rtx (omode);
+	  emit_insn (GEN_FCN (icode) (x, op0, op1));
+	  if (omode != V16QImode)
+	    emit_move_insn (target, gen_lowpart (V16QImode, x));
+	  return true;
+	}
+    }
+
+  return false;
+}
+
+/* Expand a Paired Single, VSX Permute Doubleword, or SPE constant permutation.
+   Return true if we match an efficient implementation.  */
+
+static bool
+rs6000_expand_vec_perm_const_1 (rtx target, rtx op0, rtx op1,
+				unsigned char perm0, unsigned char perm1)
+{
+  rtx x;
+
+  /* If both selectors come from the same operand, fold to single op.  */
+  if ((perm0 & 2) == (perm1 & 2))
+    {
+      if (perm0 & 2)
+	op0 = op1;
+      else
+	op1 = op0;
+    }
+  /* If both operands are equal, fold to simpler permutation.  */
+  if (rtx_equal_p (op0, op1))
+    {
+      perm0 = perm0 & 1;
+      perm1 = (perm1 & 1) + 2;
+    }
+  /* If the first selector comes from the second operand, swap.  */
+  else if (perm0 & 2)
+    {
+      if (perm1 & 2)
+	return false;
+      perm0 -= 2;
+      perm1 += 2;
+      x = op0, op0 = op1, op1 = x;
+    }
+  /* If the second selector does not come from the second operand, fail.  */
+  else if ((perm1 & 2) == 0)
+    return false;
+
+  /* Success! */
+  if (target != NULL)
+    {
+      enum machine_mode vmode, dmode;
+      rtvec v;
+
+      vmode = GET_MODE (target);
+      gcc_assert (GET_MODE_NUNITS (vmode) == 2);
+      dmode = mode_for_vector (GET_MODE_INNER (vmode), 4);
+
+      x = gen_rtx_VEC_CONCAT (dmode, op0, op1);
+      v = gen_rtvec (2, GEN_INT (perm0), GEN_INT (perm1));
+      x = gen_rtx_VEC_SELECT (vmode, x, gen_rtx_PARALLEL (VOIDmode, v));
+      emit_insn (gen_rtx_SET (VOIDmode, target, x));
+    }
+  return true;
+}
+
+bool
+rs6000_expand_vec_perm_const (rtx operands[4])
+{
+  rtx target, op0, op1, sel;
+  unsigned char perm0, perm1;
+
+  target = operands[0];
+  op0 = operands[1];
+  op1 = operands[2];
+  sel = operands[3];
+
+  /* Unpack the constant selector.  */
+  perm0 = INTVAL (XVECEXP (sel, 0, 0)) & 3;
+  perm1 = INTVAL (XVECEXP (sel, 0, 1)) & 3;
+
+  return rs6000_expand_vec_perm_const_1 (target, op0, op1, perm0, perm1);
+}
+
+/* Test whether a constant permutation is supported.  */
+
+static bool
+rs6000_vectorize_vec_perm_const_ok (enum machine_mode vmode,
+				    const unsigned char *sel)
+{
+  /* AltiVec (and thus VSX) can handle arbitrary permutations.  */
+  if (TARGET_ALTIVEC)
+    return true;
+
+  /* Check for ps_merge* or evmerge* insns.  */
+  if ((TARGET_PAIRED_FLOAT && vmode == V2SFmode)
+      || (TARGET_SPE && vmode == V2SImode))
+    {
+      rtx op0 = gen_raw_REG (vmode, LAST_VIRTUAL_REGISTER + 1);
+      rtx op1 = gen_raw_REG (vmode, LAST_VIRTUAL_REGISTER + 2);
+      return rs6000_expand_vec_perm_const_1 (NULL, op0, op1, sel[0], sel[1]);
+    }
+
+  return false;
+}
+
+/* A subroutine for rs6000_expand_extract_even & rs6000_expand_interleave.  */
+
+static void
+rs6000_do_expand_vec_perm (rtx target, rtx op0, rtx op1,
+			   enum machine_mode vmode, unsigned nelt, rtx perm[])
+{
+  enum machine_mode imode;
+  rtx x;
+
+  imode = vmode;
+  if (GET_MODE_CLASS (vmode) != MODE_VECTOR_INT)
+    {
+      imode = GET_MODE_INNER (vmode);
+      imode = mode_for_size (GET_MODE_BITSIZE (imode), MODE_INT, 0);
+      imode = mode_for_vector (imode, nelt);
+    }
+
+  x = gen_rtx_CONST_VECTOR (imode, gen_rtvec_v (nelt, perm));
+  x = expand_vec_perm (vmode, op0, op1, x, target);
+  if (x != target)
+    emit_move_insn (target, x);
+}
+
+/* Expand an extract even operation.  */
+
+void
+rs6000_expand_extract_even (rtx target, rtx op0, rtx op1)
+{
+  enum machine_mode vmode = GET_MODE (target);
+  unsigned i, nelt = GET_MODE_NUNITS (vmode);
+  rtx perm[16];
+
+  for (i = 0; i < nelt; i++)
+    perm[i] = GEN_INT (i * 2);
+
+  rs6000_do_expand_vec_perm (target, op0, op1, vmode, nelt, perm);
+}
+
+/* Expand a vector interleave operation.  */
+
+void
+rs6000_expand_interleave (rtx target, rtx op0, rtx op1, bool highp)
+{
+  enum machine_mode vmode = GET_MODE (target);
+  unsigned i, high, nelt = GET_MODE_NUNITS (vmode);
+  rtx perm[16];
+
+  high = (highp == TARGET_BIG_ENDIAN ? 0 : nelt / 2);
+  for (i = 0; i < nelt / 2; i++)
+    {
+      perm[i * 2] = GEN_INT (i + high);
+      perm[i * 2 + 1] = GEN_INT (i + nelt + high);
+    }
+
+  rs6000_do_expand_vec_perm (target, op0, op1, vmode, nelt, perm);
 }
 
 /* Return an RTX representing where to find the function value of a

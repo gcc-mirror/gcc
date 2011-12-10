@@ -1,3 +1,9 @@
+2011-12-10  Richard Henderson  <rth@redhat.com>
+
+	* gcc.target/powerpc/altivec-perm-1.c: New.
+	* gcc.target/powerpc/altivec-perm-2.c: New.
+	* gcc.target/powerpc/altivec-perm-4.c: New.
+
 2011-12-10  Joern Rennecke <joern.rennecke@embecosm.com>
 
 	* gcc.target/epiphany/interrupt.c: Add dg-options "-g".

@@ -441,12 +441,11 @@
 
 (define_insn "spe_evmergehi"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
-	(vec_merge:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
-			(vec_select:V2SI
-			 (match_operand:V2SI 2 "gpc_reg_operand" "r")
-			 (parallel [(const_int 1)
-				    (const_int 0)]))
-			(const_int 2)))]
+	(vec_select:V2SI
+	  (vec_concat:V4SI
+	    (match_operand:V2SI 1 "gpc_reg_operand" "r")
+	    (match_operand:V2SI 2 "gpc_reg_operand" "r"))
+	  (parallel [(const_int 0) (const_int 2)])))]
   "TARGET_SPE"
   "evmergehi %0,%1,%2"
   [(set_attr "type" "vecsimple")
@@ -454,9 +453,11 @@
 
 (define_insn "spe_evmergehilo"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
-	(vec_merge:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
-			(match_operand:V2SI 2 "gpc_reg_operand" "r")
-			(const_int 2)))]
+	(vec_select:V2SI
+	  (vec_concat:V4SI
+	    (match_operand:V2SI 1 "gpc_reg_operand" "r")
+	    (match_operand:V2SI 2 "gpc_reg_operand" "r"))
+	  (parallel [(const_int 0) (const_int 3)])))]
   "TARGET_SPE"
   "evmergehilo %0,%1,%2"
   [(set_attr "type" "vecsimple")
@@ -464,12 +465,11 @@
 
 (define_insn "spe_evmergelo"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
-	(vec_merge:V2SI (vec_select:V2SI
-			 (match_operand:V2SI 1 "gpc_reg_operand" "r")
-			 (parallel [(const_int 1)
-				    (const_int 0)]))
-			(match_operand:V2SI 2 "gpc_reg_operand" "r")
-			(const_int 2)))]
+	(vec_select:V2SI
+	  (vec_concat:V4SI
+	    (match_operand:V2SI 1 "gpc_reg_operand" "r")
+	    (match_operand:V2SI 2 "gpc_reg_operand" "r"))
+	  (parallel [(const_int 1) (const_int 3)])))]
   "TARGET_SPE"
   "evmergelo %0,%1,%2"
   [(set_attr "type" "vecsimple")
@@ -477,19 +477,28 @@
 
 (define_insn "spe_evmergelohi"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
-	(vec_merge:V2SI (vec_select:V2SI
-			 (match_operand:V2SI 1 "gpc_reg_operand" "r")
-			 (parallel [(const_int 1)
-				    (const_int 0)]))
-			(vec_select:V2SI
-			 (match_operand:V2SI 2 "gpc_reg_operand" "r")
-			 (parallel [(const_int 1)
-				    (const_int 0)]))
-			(const_int 2)))]
+	(vec_select:V2SI
+	  (vec_concat:V4SI
+	    (match_operand:V2SI 1 "gpc_reg_operand" "r")
+	    (match_operand:V2SI 2 "gpc_reg_operand" "r"))
+	  (parallel [(const_int 1) (const_int 2)])))]
   "TARGET_SPE"
   "evmergelohi %0,%1,%2"
   [(set_attr "type" "vecsimple")
    (set_attr  "length" "4")])
+
+(define_expand "vec_perm_constv2si"
+  [(match_operand:V2SI 0 "gpc_reg_operand" "")
+   (match_operand:V2SI 1 "gpc_reg_operand" "")
+   (match_operand:V2SI 2 "gpc_reg_operand" "")
+   (match_operand:V2SI 3 "" "")]
+  "TARGET_SPE"
+{
+  if (rs6000_expand_vec_perm_const (operands))
+    DONE;
+  else
+    FAIL;
+})
 
 (define_insn "spe_evnand"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")

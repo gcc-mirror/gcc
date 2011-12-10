@@ -272,47 +272,60 @@
 
 (define_insn "paired_merge00"
   [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
-	(vec_concat:V2SF
-	 (vec_select:SF (match_operand:V2SF 1 "gpc_reg_operand" "f")
-			(parallel [(const_int 0)]))
-	 (vec_select:SF (match_operand:V2SF 2 "gpc_reg_operand" "f")
-			(parallel [(const_int 0)]))))]
+	(vec_select:V2SF
+	  (vec_concat:V4SF
+	    (match_operand:V2SF 1 "gpc_reg_operand" "f")
+	    (match_operand:V2SF 2 "gpc_reg_operand" "f"))
+	  (parallel [(const_int 0) (const_int 2)])))]
   "TARGET_PAIRED_FLOAT"
   "ps_merge00 %0, %1, %2"
   [(set_attr "type" "fp")])
 
 (define_insn "paired_merge01"
   [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
-	(vec_concat:V2SF
-	 (vec_select:SF (match_operand:V2SF 1 "gpc_reg_operand" "f")
-			(parallel [(const_int 0)]))
-	 (vec_select:SF (match_operand:V2SF 2 "gpc_reg_operand" "f")
-			(parallel [(const_int 1)]))))]
+	(vec_select:V2SF
+	  (vec_concat:V4SF
+	    (match_operand:V2SF 1 "gpc_reg_operand" "f")
+	    (match_operand:V2SF 2 "gpc_reg_operand" "f"))
+	  (parallel [(const_int 0) (const_int 3)])))]
   "TARGET_PAIRED_FLOAT"
   "ps_merge01 %0, %1, %2"
   [(set_attr "type" "fp")])
 
 (define_insn "paired_merge10"
   [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
-	(vec_concat:V2SF
-	 (vec_select:SF (match_operand:V2SF 1 "gpc_reg_operand" "f")
-			(parallel [(const_int 1)]))
-	 (vec_select:SF (match_operand:V2SF 2 "gpc_reg_operand" "f")
-			(parallel [(const_int 0)]))))]
+	(vec_select:V2SF
+	  (vec_concat:V4SF
+	    (match_operand:V2SF 1 "gpc_reg_operand" "f")
+	    (match_operand:V2SF 2 "gpc_reg_operand" "f"))
+	  (parallel [(const_int 1) (const_int 2)])))]
   "TARGET_PAIRED_FLOAT"
   "ps_merge10 %0, %1, %2"
   [(set_attr "type" "fp")])
 
 (define_insn "paired_merge11"
   [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
-	(vec_concat:V2SF
-	 (vec_select:SF (match_operand:V2SF 1 "gpc_reg_operand" "f")
-			(parallel [(const_int 1)]))
-	 (vec_select:SF (match_operand:V2SF 2 "gpc_reg_operand" "f")
-			(parallel [(const_int 1)]))))]
+	(vec_select:V2SF
+	  (vec_concat:V4SF
+	    (match_operand:V2SF 1 "gpc_reg_operand" "f")
+	    (match_operand:V2SF 2 "gpc_reg_operand" "f"))
+	  (parallel [(const_int 1) (const_int 3)])))]
   "TARGET_PAIRED_FLOAT"
   "ps_merge11 %0, %1, %2"
   [(set_attr "type" "fp")])
+
+(define_expand "vec_perm_constv2sf"
+  [(match_operand:V2SF 0 "gpc_reg_operand" "")
+   (match_operand:V2SF 1 "gpc_reg_operand" "")
+   (match_operand:V2SF 2 "gpc_reg_operand" "")
+   (match_operand:V2SI 3 "" "")]
+  "TARGET_PAIRED_FLOAT"
+{
+  if (rs6000_expand_vec_perm_const (operands))
+    DONE;
+  else
+    FAIL;
+})
 
 (define_insn "paired_sum0"
   [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
@@ -439,55 +452,6 @@
   DONE;
 })
 
-(define_expand "vec_interleave_highv2sf"
- [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
-        (unspec:V2SF [(match_operand:V2SF 1 "gpc_reg_operand" "f")
-                      (match_operand:V2SF 2 "gpc_reg_operand" "f")]
-                      UNSPEC_INTERHI_V2SF))]
-  "TARGET_PAIRED_FLOAT"
-  "
-{
-  emit_insn (gen_paired_merge00 (operands[0], operands[1], operands[2]));
-  DONE;
-}")
-
-(define_expand "vec_interleave_lowv2sf"
- [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
-        (unspec:V2SF [(match_operand:V2SF 1 "gpc_reg_operand" "f")
-                      (match_operand:V2SF 2 "gpc_reg_operand" "f")]
-                      UNSPEC_INTERLO_V2SF))]
-  "TARGET_PAIRED_FLOAT"
-  "
-{
-  emit_insn (gen_paired_merge11 (operands[0], operands[1], operands[2]));
-  DONE;
-}")
-
-(define_expand "vec_extract_evenv2sf"
- [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
-        (unspec:V2SF [(match_operand:V2SF 1 "gpc_reg_operand" "f")
-                      (match_operand:V2SF 2 "gpc_reg_operand" "f")]
-                      UNSPEC_EXTEVEN_V2SF))]
-  "TARGET_PAIRED_FLOAT"
-  "
-{
-  emit_insn (gen_paired_merge00 (operands[0], operands[1], operands[2]));
-  DONE;
-}")
-
-(define_expand "vec_extract_oddv2sf"
- [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
-        (unspec:V2SF [(match_operand:V2SF 1 "gpc_reg_operand" "f")
-                      (match_operand:V2SF 2 "gpc_reg_operand" "f")]
-                      UNSPEC_EXTODD_V2SF))]
-  "TARGET_PAIRED_FLOAT"
-  "
-{
-  emit_insn (gen_paired_merge11 (operands[0], operands[1], operands[2]));
-  DONE;
-}")
-
-
 (define_expand "reduc_splus_v2sf"
   [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
         (match_operand:V2SF 1 "gpc_reg_operand" "f"))]
@@ -516,12 +480,10 @@
          (match_operand:V2SF 1 "gpc_reg_operand" "f")
          (match_operand:V2SF 2 "gpc_reg_operand" "f")))]
   "TARGET_PAIRED_FLOAT && flag_unsafe_math_optimizations"
-  "
 {
-        if (paired_emit_vector_cond_expr (operands[0], operands[1], operands[2],
-                                          operands[3], operands[4], operands[5]))
-        DONE;
-        else
-        FAIL;
-}")
-
+  if (paired_emit_vector_cond_expr (operands[0], operands[1], operands[2],
+                                    operands[3], operands[4], operands[5]))
+    DONE;
+  else
+    FAIL;
+})
