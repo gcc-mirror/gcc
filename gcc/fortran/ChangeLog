@@ -1,4 +1,8 @@
 2011-12-10  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-decl.c (add_argument_checking): Fix syntax.
+
+2011-12-10  Tobias Burnus  <burnus@net-b.de>
 	    Kai Tietz  <ktietz@redhat.com>
 
 	* trans-decl.c (add_argument_checking): Check ts.deferred earlier.
