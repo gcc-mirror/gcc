@@ -1,5 +1,47 @@
 2011-12-10  Richard Henderson  <rth@redhat.com>
 
+	* config/rs6000/altivec.md (altivec_vmrghb): Rewrite pattern as
+	vec_select + vec_concat.
+	(altivec_vmrghh, altivec_vmrghw, altivec_vmrghsf, altivec_vmrglb,
+	altivec_vmrglh, altivec_vmrglw, altivec_vmrglsf): Likewise.
+	(vec_perm_constv16qi): New.
+	(vec_extract_evenv4si, vec_extract_evenv4sf, vpkuhum_nomode,
+	vpkuwum_nomode, vec_extract_oddv8hi, vec_extract_oddv16qi,
+	vec_interleave_high<VI>, vec_interleave_low<VI>): Remove.
+	* config/rs6000/paired.md (paired_merge00): Rewrite pattern as
+	vec_select + vec_concat.
+	(paired_merge10, paired_merge01, paired_merge11): Likewise.
+	(vec_perm_constv2sf): New.
+	(vec_interleave_highv2sf, vec_interleave_lowv2sf,
+	vec_extract_evenv2sf, vec_extract_oddv2sf): Remove.
+	* config/rs6000/spe.md (spe_evmergehi): Rewrite pattern as
+	vec_select + vec_concat.
+	(spe_evmergehilo, spe_evmergelo, spe_evmergelohi): New.
+	(vec_perm_constv2si): New.
+	* config/rs6000/vector.md (vec_interleave_highv4sf,
+	vec_interleave_lowv4sf, vec_interleave_high<VEC_64>,
+	vec_interleave_low<VEC_64>): Remove.
+	* config/rs6000/vsx.md (VS_double): New mode attribute.
+	(UNSPEC_VSX_XXPERMDI): Remove.
+	(vsx_xxpermdi_<VSX_L>_1): Rewrite pattern as vec_select + vec_concat.
+	(vsx_xxmrghw_<VSX_W>, vsx_xxmrglw_<VSX_W>): Likewise.
+	(vsx_xxpermdi_<VSX_L>): Change to expander.
+	(vec_perm_const<VSX_D>): New.
+	(vsx_mergel_<VSX_D>, vsx_mergeh_<VSX_D>): New.
+	* config/rs6000/predicates.md (const_0_to_1_operand): New.
+	(const_2_to_3_operand): New.
+	* config/rs6000/rs6000.c (TARGET_VECTORIZE_VEC_PERM_CONST_OK): New.
+	(altivec_expand_vec_perm_const): New.
+	(rs6000_expand_vec_perm_const_1, rs6000_expand_vec_perm_const): New.
+	(rs6000_vectorize_vec_perm_const_ok): New.
+	(rs6000_do_expand_vec_perm): New.
+	(rs6000_expand_extract_even, rs6000_expand_interleave): New.
+	* config/rs6000/rs6000-builtin.def (VEC_MERGE*): Update rtx codes.
+	* config/rs6000/rs6000-modes.def: Add double-wide vector modes.
+	* config/rs6000/rs6000-protos.h: Update.
+
+2011-12-10  Richard Henderson  <rth@redhat.com>
+
 	* expr.c (expand_expr_real_2) [VEC_PERM_EXPR]: Avoid passing a
 	CONST_INT to expand_vec_perm as the selector.
 	* optabs.c (expand_vec_perm): Assert the selector is of a proper mode.

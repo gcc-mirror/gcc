@@ -34,8 +34,10 @@ CC_MODE (CCFP);
 CC_MODE (CCEQ);
 
 /* Vector modes.  */
-VECTOR_MODES (INT, 8);        /*       V8QI V4HI V2SI */
-VECTOR_MODES (INT, 16);       /* V16QI V8HI V4SI V2DI */
+VECTOR_MODES (INT, 8);        /*       V8QI  V4HI V2SI */
+VECTOR_MODES (INT, 16);       /* V16QI V8HI  V4SI V2DI */
+VECTOR_MODES (INT, 32);       /* V32QI V16HI V8SI V4DI */
 VECTOR_MODE (INT, DI, 1);
-VECTOR_MODES (FLOAT, 8);      /*            V4HF V2SF */
-VECTOR_MODES (FLOAT, 16);     /*       V8HF V4SF V2DF */
+VECTOR_MODES (FLOAT, 8);      /*             V4HF V2SF */
+VECTOR_MODES (FLOAT, 16);     /*       V8HF  V4SF V2DF */
+VECTOR_MODES (FLOAT, 32);     /*       V16HF V8SF V4DF */

@@ -112,6 +112,16 @@
   (and (match_code "const_int")
        (match_test "INTVAL (op) > 0 && exact_log2 (INTVAL (op)) >= 0")))
 
+;; Match op = 0 or op = 1.
+(define_predicate "const_0_to_1_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 1)")))
+
+;; Match op = 2 or op = 3.
+(define_predicate "const_2_to_3_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 2, 3)")))
+
 ;; Return 1 if op is a register that is not special.
 (define_predicate "gpc_reg_operand"
    (and (match_operand 0 "register_operand")

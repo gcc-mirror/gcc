@@ -180,7 +180,13 @@
 			     (V4SI	"SI")
 			     (V8HI	"HI")
 			     (V16QI	"QI")])
-			     
+
+;; Map to a double-sized vector mode
+(define_mode_attr VS_double [(V4SI	"V8SI")
+			     (V4SF	"V8SF")
+			     (V2DI	"V4DI")
+			     (V2DF	"V4DF")])
+
 ;; Constants for creating unspecs
 (define_c_enum "unspec"
   [UNSPEC_VSX_CONCAT
@@ -195,7 +201,6 @@
    UNSPEC_VSX_CVSPUXDS
    UNSPEC_VSX_TDIV
    UNSPEC_VSX_TSQRT
-   UNSPEC_VSX_XXPERMDI
    UNSPEC_VSX_SET
    UNSPEC_VSX_ROUND_I
    UNSPEC_VSX_ROUND_IC
@@ -352,7 +357,7 @@
 (define_insn "*vsx_div<mode>3"
   [(set (match_operand:VSX_B 0 "vsx_register_operand" "=<VSr>,?wa")
         (div:VSX_B (match_operand:VSX_B 1 "vsx_register_operand" "<VSr>,wa")
-	 	   (match_operand:VSX_B 2 "vsx_register_operand" "<VSr>,wa")))]
+		   (match_operand:VSX_B 2 "vsx_register_operand" "<VSr>,wa")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "x<VSv>div<VSs> %x0,%x1,%x2"
   [(set_attr "type" "<VStype_div>")
@@ -1184,38 +1189,87 @@
   [(set_attr "length" "4,8")
    (set_attr "type" "fp")])
 
-;; General double word oriented permute, allow the other vector types for
-;; optimizing the permute instruction.
-(define_insn "vsx_xxpermdi_<mode>"
-  [(set (match_operand:VSX_L 0 "vsx_register_operand" "=wd,?wa")
-	(unspec:VSX_L [(match_operand:VSX_L 1 "vsx_register_operand" "wd,wa")
-		       (match_operand:VSX_L 2 "vsx_register_operand" "wd,wa")
-		       (match_operand:QI 3 "u5bit_cint_operand" "i,i")]
-		      UNSPEC_VSX_XXPERMDI))]
-  "VECTOR_MEM_VSX_P (<MODE>mode)"
-  "xxpermdi %x0,%x1,%x2,%3"
-  [(set_attr "type" "vecperm")])
-
-;; Varient of xxpermdi that is emitted by the vec_interleave functions
-(define_insn "*vsx_xxpermdi2_<mode>"
-  [(set (match_operand:VSX_D 0 "vsx_register_operand" "=wd")
-	(vec_concat:VSX_D
-	 (vec_select:<VS_scalar>
-	  (match_operand:VSX_D 1 "vsx_register_operand" "wd")
-	  (parallel
-	   [(match_operand:QI 2 "u5bit_cint_operand" "i")]))
-	 (vec_select:<VS_scalar>
-	  (match_operand:VSX_D 3 "vsx_register_operand" "wd")
-	  (parallel
-	   [(match_operand:QI 4 "u5bit_cint_operand" "i")]))))]
+;; Expand the builtin form of xxpermdi to canonical rtl.
+(define_expand "vsx_xxpermdi_<mode>"
+  [(match_operand:VSX_L 0 "vsx_register_operand" "")
+   (match_operand:VSX_L 1 "vsx_register_operand" "")
+   (match_operand:VSX_L 2 "vsx_register_operand" "")
+   (match_operand:QI 3 "u5bit_cint_operand" "")]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
-  gcc_assert ((UINTVAL (operands[2]) <= 1) && (UINTVAL (operands[4]) <= 1));
-  operands[5] = GEN_INT (((INTVAL (operands[2]) & 1) << 1)
-			 | (INTVAL (operands[4]) & 1));
-  return \"xxpermdi %x0,%x1,%x3,%5\";
+  rtx target = operands[0];
+  rtx op0 = operands[1];
+  rtx op1 = operands[2];
+  int mask = INTVAL (operands[3]);
+  rtx perm0 = GEN_INT ((mask >> 1) & 1);
+  rtx perm1 = GEN_INT ((mask & 1) + 2);
+  rtx (*gen) (rtx, rtx, rtx, rtx, rtx);
+
+  if (<MODE>mode == V2DFmode)
+    gen = gen_vsx_xxpermdi2_v2df_1;
+  else
+    {
+      gen = gen_vsx_xxpermdi2_v2di_1;
+      if (<MODE>mode != V2DImode)
+	{
+	  target = gen_lowpart (V2DImode, target);
+	  op0 = gen_lowpart (V2DImode, target);
+	  op1 = gen_lowpart (V2DImode, target);
+	}
+    }
+  emit_insn (gen (target, op0, op1, perm0, perm1));
+  DONE;
+})
+
+(define_insn "vsx_xxpermdi2_<mode>_1"
+  [(set (match_operand:VSX_D 0 "vsx_register_operand" "=wd")
+	(vec_select:VSX_D
+	  (vec_concat:<VS_double>
+	    (match_operand:VSX_D 1 "vsx_register_operand" "wd")
+	    (match_operand:VSX_D 2 "vsx_register_operand" "wd"))
+	  (parallel [(match_operand 3 "const_0_to_1_operand" "")
+		     (match_operand 4 "const_2_to_3_operand" "")])))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+{
+  int mask = (INTVAL (operands[3]) << 1) | (INTVAL (operands[4]) - 2);
+  operands[3] = GEN_INT (mask);
+  return "xxpermdi %x0,%x1,%x2,%3";
 }
   [(set_attr "type" "vecperm")])
+
+(define_expand "vec_perm_const<mode>"
+  [(match_operand:VSX_D 0 "vsx_register_operand" "")
+   (match_operand:VSX_D 1 "vsx_register_operand" "")
+   (match_operand:VSX_D 2 "vsx_register_operand" "")
+   (match_operand:V2DI  3 "" "")]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+{
+  if (rs6000_expand_vec_perm_const (operands))
+    DONE;
+  else
+    FAIL;
+})
+
+;; Expanders for builtins
+(define_expand "vsx_mergel_<mode>"
+  [(set (match_operand:VSX_D 0 "vsx_register_operand" "")
+	(vec_select:VSX_D
+	  (vec_concat:<VS_double>
+	    (match_operand:VSX_D 1 "vsx_register_operand" "")
+	    (match_operand:VSX_D 2 "vsx_register_operand" ""))
+	  (parallel [(const_int 1) (const_int 3)])))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+  "")
+
+(define_expand "vsx_mergeh_<mode>"
+  [(set (match_operand:VSX_D 0 "vsx_register_operand" "")
+	(vec_select:VSX_D
+	  (vec_concat:<VS_double>
+	    (match_operand:VSX_D 1 "vsx_register_operand" "")
+	    (match_operand:VSX_D 2 "vsx_register_operand" ""))
+	  (parallel [(const_int 0) (const_int 2)])))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+  "")
 
 ;; V2DF/V2DI splat
 (define_insn "vsx_splat_<mode>"
@@ -1247,40 +1301,24 @@
 ;; V4SF/V4SI interleave
 (define_insn "vsx_xxmrghw_<mode>"
   [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wf,?wa")
-        (vec_merge:VSX_W
-	 (vec_select:VSX_W
-	  (match_operand:VSX_W 1 "vsx_register_operand" "wf,wa")
-	  (parallel [(const_int 0)
-		     (const_int 2)
-		     (const_int 1)
-		     (const_int 3)]))
-	 (vec_select:VSX_W
-	  (match_operand:VSX_W 2 "vsx_register_operand" "wf,wa")
-	  (parallel [(const_int 2)
-		     (const_int 0)
-		     (const_int 3)
-		     (const_int 1)]))
-	 (const_int 5)))]
+        (vec_select:VSX_W
+	  (vec_concat:<VS_double>
+	    (match_operand:VSX_W 1 "vsx_register_operand" "wf,wa")
+	    (match_operand:VSX_W 2 "vsx_register_operand" "wf,wa"))
+	  (parallel [(const_int 0) (const_int 4)
+		     (const_int 1) (const_int 5)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "xxmrghw %x0,%x1,%x2"
   [(set_attr "type" "vecperm")])
 
 (define_insn "vsx_xxmrglw_<mode>"
   [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wf,?wa")
-        (vec_merge:VSX_W
-	 (vec_select:VSX_W
-	  (match_operand:VSX_W 1 "vsx_register_operand" "wf,wa")
-	  (parallel [(const_int 2)
-		     (const_int 0)
-		     (const_int 3)
-		     (const_int 1)]))
-	 (vec_select:VSX_W
-	  (match_operand:VSX_W 2 "vsx_register_operand" "wf,?wa")
-	  (parallel [(const_int 0)
-		     (const_int 2)
-		     (const_int 1)
-		     (const_int 3)]))
-	 (const_int 5)))]
+	(vec_select:VSX_W
+	  (vec_concat:<VS_double>
+	    (match_operand:VSX_W 1 "vsx_register_operand" "wf,wa")
+	    (match_operand:VSX_W 2 "vsx_register_operand" "wf,?wa"))
+	  (parallel [(const_int 2) (const_int 6)
+		     (const_int 3) (const_int 7)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "xxmrglw %x0,%x1,%x2"
   [(set_attr "type" "vecperm")])
