@@ -620,7 +620,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
        *  @c ios_base::out|ios_base::trunc is automatically included in
-       *  @a __mode.
+       *  @p __mode.
        *
        *  Tip:  When using std::string to hold the filename, you must use
        *  .c_str() before passing it to this constructor.

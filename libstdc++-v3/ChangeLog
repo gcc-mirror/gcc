@@ -1,4 +1,31 @@
-2011-12-12  François Dumont <fdumont@gcc.gnu.org>
+2011-12-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Add macros, directories.
+	* include/bits/locale_classes.h: Remove doxygen warnings, fix markup.
+	* include/bits/locale_classes.tcc: Same.
+	* include/bits/shared_ptr.h: Same.
+	* include/bits/stl_algo.h: Same.
+	* include/bits/stl_list.h: Same.
+	* include/bits/stl_numeric.h: Same.
+	* include/debug/safe_base.h: Same.
+	* include/parallel/equally_split.h: Same.
+	* include/std/bitset: Same.
+	* include/std/complex: Same.
+	* include/std/fstream: Same.
+	* include/std/istream: Same.
+	* include/std/ostream: Same.
+	* include/tr2/dynamic_bitset: Same.
+	* scripts/run_doxygen: Remove munging for names that no longer exist.
+
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust line numbers.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc: Same.
+
+2011-12-10  François Dumont <fdumont@gcc.gnu.org>
 
 	* include/profile/unordered_set: Minor formatting changes.
 	(unordered_set<>::_M_profile_destruct,
@@ -119,7 +146,7 @@
 	Likewise.
 
 2011-12-04  Markus Trippelsdorf <markus@trippelsdorf.de>
-            Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/stl_heap.h (pop_heap): Check for non-empty range in
 	overload taking a predicate.
@@ -145,37 +172,37 @@
 
 2011-11-30  Benjamin Kosnik  <bkoz@redhat.com>
 
-        * acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): Remove
-        size-specific macros. _GLIBCXX_ATOMIC_BUILTINS_1,
-        _GLIBCXX_ATOMIC_BUILTINS_2, _GLIBCXX_ATOMIC_BUILTINS_4,
-        _GLIBCXX_ATOMIC_BUILTINS_8. Use _GLIBCXX_ATOMIC_BUILTINS to
-        indicate use of C++11 atomic builtins.
-        * config.h.in: Regenerate.
-        * configure: Regenerate.
-        * include/Makefile.am (bits_sup_headers): Add atomic_lockfree_defines.h.
-        * include/Makefile.in: Regenerate.
-        * libsupc++/Makefile.am: Compile C++11 support with -std=gnu++0x.
-        * libsupc++/Makefile.in: Regenerate.
+	* acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): Remove
+	size-specific macros. _GLIBCXX_ATOMIC_BUILTINS_1,
+	_GLIBCXX_ATOMIC_BUILTINS_2, _GLIBCXX_ATOMIC_BUILTINS_4,
+	_GLIBCXX_ATOMIC_BUILTINS_8. Use _GLIBCXX_ATOMIC_BUILTINS to
+	indicate use of C++11 atomic builtins.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/Makefile.am (bits_sup_headers): Add atomic_lockfree_defines.h.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.am: Compile C++11 support with -std=gnu++0x.
+	* libsupc++/Makefile.in: Regenerate.
 
-        * include/bits/atomic_base.h: Move lock-free property macros...
-        * libsupc++/atomic_lockfree_defines.h: ...here.
-        * include/std/future: Use C++11 macros.
-        * libsupc++/eh_ptr.cc: Same.
-        * libsupc++/eh_throw.cc: Same.
-        * libsupc++/exception: Same.
-        * libsupc++/exception_ptr.h: Same.
-        * libsupc++/guard.cc: Same.
-        * libsupc++/nested_exception.cc: Same.
-        * libsupc++/nested_exception.h: Same.
-        * src/future.cc: Same.
+	* include/bits/atomic_base.h: Move lock-free property macros...
+	* libsupc++/atomic_lockfree_defines.h: ...here.
+	* include/std/future: Use C++11 macros.
+	* libsupc++/eh_ptr.cc: Same.
+	* libsupc++/eh_throw.cc: Same.
+	* libsupc++/exception: Same.
+	* libsupc++/exception_ptr.h: Same.
+	* libsupc++/guard.cc: Same.
+	* libsupc++/nested_exception.cc: Same.
+	* libsupc++/nested_exception.h: Same.
+	* src/future.cc: Same.
 
-        * include/ext/atomicity.h: Use _GLIBCXX_ATOMIC_BUILTINS.
+	* include/ext/atomicity.h: Use _GLIBCXX_ATOMIC_BUILTINS.
 
-        * doc/doxygen/user.cfg.in
-        * doc/xml/manual/concurrency_extensions.xml
+	* doc/doxygen/user.cfg.in: Adjust.
+	* doc/xml/manual/concurrency_extensions.xml: Add note.
 
-        * testsuite/18_support/exception_ptr/lifespan.cc
-        * testsuite/lib/libstdc++.exp
+	* testsuite/18_support/exception_ptr/lifespan.cc: Tweak.
+	* testsuite/lib/libstdc++.exp: Same.
 
 2011-11-29  François Dumont <fdumont@gcc.gnu.org>
 

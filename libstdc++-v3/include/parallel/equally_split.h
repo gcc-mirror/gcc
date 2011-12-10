@@ -68,6 +68,7 @@ namespace __gnu_parallel
    *  thread number __thread_no+1 (excluded).
    *  @param __n Number of elements
    *  @param __num_threads Number of parts
+   *  @param __thread_no Number of threads
    *  @returns splitting point */
   template<typename _DifferenceType>
     _DifferenceType

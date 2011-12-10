@@ -133,7 +133,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @brief  Accumulate values in a range with operation.
    *
    *  Accumulates the values in the range [first,last) using the function
-   *  object @a binary_op.  The initial value is @a init.  The values are
+   *  object @p __binary_op.  The initial value is @p __init.  The values are
    *  processed in order.
    *
    *  @param  __first  Start of range.
@@ -159,7 +159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   /**
    *  @brief  Compute inner product of two ranges.
    *
-   *  Starting with an initial value of @a init, multiplies successive
+   *  Starting with an initial value of @p __init, multiplies successive
    *  elements from the two ranges and adds each product into the accumulated
    *  value using operator+().  The values in the ranges are processed in
    *  order.
@@ -188,9 +188,9 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   /**
    *  @brief  Compute inner product of two ranges.
    *
-   *  Starting with an initial value of @a init, applies @a binary_op2 to
+   *  Starting with an initial value of @p __init, applies @p __binary_op2 to
    *  successive elements from the two ranges and accumulates each result into
-   *  the accumulated value using @a binary_op1.  The values in the ranges are
+   *  the accumulated value using @p __binary_op1.  The values in the ranges are
    *  processed in order.
    *
    *  @param  __first1  Start of range 1.
@@ -224,14 +224,14 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *
    *  Accumulates the values in the range [first,last) using operator+().
    *  As each successive input value is added into the total, that partial sum
-   *  is written to @a result.  Therefore, the first value in result is the
+   *  is written to @p __result.  Therefore, the first value in result is the
    *  first value of the input, the second value in result is the sum of the
    *  first and second input values, and so on.
    *
    *  @param  __first  Start of input range.
    *  @param  __last  End of input range.
-   *  @param  __result  Output to write sums to.
-   *  @return  Iterator pointing just beyond the values written to result.
+   *  @param  __result  Output sum.
+   *  @return  Iterator pointing just beyond the values written to __result.
    */
   template<typename _InputIterator, typename _OutputIterator>
     _OutputIterator
@@ -263,14 +263,14 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *
    *  Accumulates the values in the range [first,last) using operator+().
    *  As each successive input value is added into the total, that partial sum
-   *  is written to @a result.  Therefore, the first value in result is the
+   *  is written to @p __result.  Therefore, the first value in result is the
    *  first value of the input, the second value in result is the sum of the
    *  first and second input values, and so on.
    *
    *  @param  __first  Start of input range.
    *  @param  __last  End of input range.
-   *  @param  __result  Output to write sums to.
-   *  @return  Iterator pointing just beyond the values written to result.
+   *  @param  __result  Output sum.
+   *  @return  Iterator pointing just beyond the values written to __result.
    */
   template<typename _InputIterator, typename _OutputIterator,
 	   typename _BinaryOperation>
@@ -302,11 +302,11 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @brief  Return differences between adjacent values.
    *
    *  Computes the difference between adjacent values in the range
-   *  [first,last) using operator-() and writes the result to @a result.
+   *  [first,last) using operator-() and writes the result to @p __result.
    *
    *  @param  __first  Start of input range.
    *  @param  __last  End of input range.
-   *  @param  __result  Output to write sums to.
+   *  @param  __result  Output sums.
    *  @return  Iterator pointing just beyond the values written to result.
    *
    *  _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -342,12 +342,13 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @brief  Return differences between adjacent values.
    *
    *  Computes the difference between adjacent values in the range
-   *  [__first,__last) using the function object @a __binary_op and writes the
-   *  result to @a __result.
+   *  [__first,__last) using the function object @p __binary_op and writes the
+   *  result to @p __result.
    *
    *  @param  __first  Start of input range.
    *  @param  __last  End of input range.
-   *  @param  __result  Output to write sums to.
+   *  @param  __result  Output sum.
+   *  @param  __binary_op Function object.
    *  @return  Iterator pointing just beyond the values written to result.
    *
    *  _GLIBCXX_RESOLVE_LIB_DEFECTS

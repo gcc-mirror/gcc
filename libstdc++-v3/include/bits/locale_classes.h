@@ -571,39 +571,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 
   /**
-   *  @brief  Test for the presence of a facet.
-   *
-   *  has_facet tests the locale argument for the presence of the facet type
-   *  provided as the template parameter.  Facets derived from the facet
-   *  parameter will also return true.
-   *
-   *  @tparam  _Facet  The facet type to test the presence of.
-   *  @param  __loc  The locale to test.
-   *  @return  true if __loc contains a facet of type _Facet, else false.
-  */
-  template<typename _Facet>
-    bool
-    has_facet(const locale& __loc) throw();
-
-  /**
-   *  @brief  Return a facet.
-   *
-   *  use_facet looks for and returns a reference to a facet of type Facet
-   *  where Facet is the template parameter.  If has_facet(locale) is true,
-   *  there is a suitable facet to return.  It throws std::bad_cast if the
-   *  locale doesn't contain a facet of type Facet.
-   *
-   *  @tparam  _Facet  The facet type to access.
-   *  @param  __loc  The locale to use.
-   *  @return  Reference to facet of type Facet.
-   *  @throw  std::bad_cast if __loc doesn't contain a facet of type _Facet.
-  */
-  template<typename _Facet>
-    const _Facet&
-    use_facet(const locale& __loc);
-
-
-  /**
    *  @brief  Facet for localized string comparison.
    *
    *  This facet encapsulates the code to compare strings in a localized

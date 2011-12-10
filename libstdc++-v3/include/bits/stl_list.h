@@ -1441,9 +1441,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Merge sorted lists according to comparison function.
-       *  @param  __x  Sorted list to merge.
        *  @tparam _StrictWeakOrdering Comparison function defining
        *  sort order.
+       *  @param  __x  Sorted list to merge.
+       *  @param  __comp  Comparison functor.
        *
        *  Assumes that both @a __x and this list are sorted according to
        *  StrictWeakOrdering.  Merges elements of @a __x into this list
