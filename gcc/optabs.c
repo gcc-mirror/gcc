@@ -7038,7 +7038,8 @@ expand_vec_perm (enum machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
     }
 
   /* If the input is a constant, expand it specially.  */
-  if (CONSTANT_P (sel))
+  gcc_assert (GET_MODE_CLASS (GET_MODE (sel)) == MODE_VECTOR_INT);
+  if (GET_CODE (sel) == CONST_VECTOR)
     {
       icode = direct_optab_handler (vec_perm_const_optab, mode);
       if (icode != CODE_FOR_nothing)
@@ -7056,7 +7057,7 @@ expand_vec_perm (enum machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
 	    {
 	      unsigned int j, this_e;
 
-	      this_e = INTVAL (XVECEXP (sel, 0, i));
+	      this_e = INTVAL (CONST_VECTOR_ELT (sel, i));
 	      this_e &= 2 * e - 1;
 	      this_e *= u;
 
