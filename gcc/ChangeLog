@@ -1,3 +1,14 @@
+2011-12-10  Richard Henderson  <rth@redhat.com>
+
+	* genmodes.c (struct mode_data): Remove wider_2x member.
+	(blank_mode): Adjust initializer.
+	(calc_wider_mode): Use XALLOCAVEC.
+	(emit_move_wider): Select double-width same-element vectors for
+	2xwider vectors.
+	* machmode.h (GET_MODE_2XWIDER_MODE): Update documentation.
+	* config/i386/i386.c (doublesize_vector_mode): Remove.
+	(expand_vselect_vconcat): Use GET_MODE_2XWIDER_MODE instead.
+
 2011-12-10  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/epiphany.h (USE_LOAD_POST_INCREMENT): Define.

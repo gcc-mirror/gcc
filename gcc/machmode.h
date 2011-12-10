@@ -221,6 +221,8 @@ extern const unsigned char mode_nunits[NUM_MACHINE_MODES];
 extern const unsigned char mode_wider[NUM_MACHINE_MODES];
 #define GET_MODE_WIDER_MODE(MODE) ((enum machine_mode) mode_wider[MODE])
 
+/* For scalars, this is a mode with twice the precision.  For vectors,
+   this is a mode with the same inner mode but with twice the elements.  */
 extern const unsigned char mode_2xwider[NUM_MACHINE_MODES];
 #define GET_MODE_2XWIDER_MODE(MODE) ((enum machine_mode) mode_2xwider[MODE])
 
