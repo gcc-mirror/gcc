@@ -1,3 +1,9 @@
+2011-12-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR gcov-profile/51449
+	* coverage.c (coverage_end_function): Always process the coverage
+	variables.
+
 2011-12-09  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR/51291

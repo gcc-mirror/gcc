@@ -1,3 +1,8 @@
+2011-12-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR gcov-profile/51449
+	* g++.dg/gcov/gcov-14.C: New.
+
 2011-12-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/compile/20111209-1.c: New test.
