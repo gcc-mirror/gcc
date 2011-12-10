@@ -831,14 +831,12 @@ do { if ((LOG) != 0) fprintf (FILE, "\t.balign %d\n", 1 << (LOG)); } while (0)
 enum epiphany_function_type
 {
   EPIPHANY_FUNCTION_UNKNOWN, EPIPHANY_FUNCTION_NORMAL,
-  /* These are interrupt handlers.  The name corresponds to the register
-     name that contains the return address.  */
-  EPIPHANY_FUNCTION_ILINK1, EPIPHANY_FUNCTION_ILINK2,
   /* These are interrupt handlers. The name corresponds to which type
      of interrupt handler we're dealing with. */
   EPIPHANY_FUNCTION_RESET, EPIPHANY_FUNCTION_SOFTWARE_EXCEPTION,
-  EPIPHANY_FUNCTION_TIMER, EPIPHANY_FUNCTION_DMA0,
-  EPIPHANY_FUNCTION_DMA1, EPIPHANY_FUNCTION_STATIC_FLAG,
+  EPIPHANY_FUNCTION_PAGE_MISS,
+  EPIPHANY_FUNCTION_TIMER0, EPIPHANY_FUNCTION_TIMER1, EPIPHANY_FUNCTION_MESSAGE,
+  EPIPHANY_FUNCTION_DMA0, EPIPHANY_FUNCTION_DMA1, EPIPHANY_FUNCTION_WAND,
   EPIPHANY_FUNCTION_SWI
 };
 
@@ -894,5 +892,9 @@ extern struct rtl_opt_pass pass_resolve_sw_modes;
 /* This will need to be adjusted when FP_CONTRACT_ON is properly
    implemented.  */
 #define TARGET_FUSED_MADD (flag_fp_contract_mode == FP_CONTRACT_FAST)
+
+#undef ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
+  epiphany_start_function ((FILE), (NAME), (DECL))
 
 #endif /* !GCC_EPIPHANY_H */

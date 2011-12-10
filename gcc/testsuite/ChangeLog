@@ -1,3 +1,10 @@
+2011-12-10  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	* gcc.target/epiphany/interrupt.c: Add dg-options "-g".
+	Add a scan-assembler-time clause to test for the interupt vector jump.
+	(f): Rename to ...
+	(dma0_handler): ... this.
+
 2011-12-10  Nathan Sidwell  <nathan@acm.org>
 
 	PR gcov-profile/51449

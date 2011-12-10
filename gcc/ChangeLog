@@ -9,6 +9,25 @@
 	(INCOMING_RETURN_ADDR_RTX) .. this.  Use EPIPHANY_RETURN_REGNO.
 	(DWARF_FRAME_RETURN_COLUMN): New macro.
 
+	* config/epiphany/epiphany-protos.h (epiphany_start_function): Declare.
+	* config/epiphany/epiphany.c (epiphany_handle_interrupt_attribute):
+	Split "timer" value into "timer0" and "timer1".
+	Handle page_miss, message and wand.  Don't handle static_flag.
+	Adjust warning text.
+	(epiphany_start_function): New function.
+	(epiphany_compute_function_type): Split "timer" value into "timer0"
+	and "timer1".  Handle page_miss, message and wand.
+	Don't handle static_flag.
+	(epiphany_expand_epilogue): Don't use frame_insn for status / iret
+	restore.
+	* config/epiphany/epiphany.h: ASM_DECLARE_FUNCTION_NAME: Define.
+	(enum epiphany_function_type):
+	Split EPIPHANY_FUNCTION_TIMER value into EPIPHANY_FUNCTION_TIMER0
+	and EPIPHANY_FUNCTION_TIMER1.
+	Remove EPIPHANY_FUNCTION_ILINK1 and EPIPHANY_FUNCTION_ILINK2 values.
+	Add EPIPHANY_FUNCTION_PAGE_MISS and EPIPHANY_FUNCTION_MESSAGE values.
+	Rename EPIPHANY_FUNCTION_STATIC_FLAG to EPIPHANY_FUNCTION_WAND.
+
 2011-12-10  Nathan Sidwell  <nathan@acm.org>
 
 	PR gcov-profile/51449
