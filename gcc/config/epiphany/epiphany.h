@@ -565,13 +565,13 @@ typedef struct GTY (()) machine_function
 #define FRAME_ADDR_RTX(frame) \
   ((frame) == hard_frame_pointer_rtx ? arg_pointer_rtx : NULL)
 
+#define EPIPHANY_RETURN_REGNO \
+  ((current_function_decl != NULL \
+    && epiphany_is_interrupt_p (current_function_decl)) \
+   ? IRET_REGNUM : GPR_LR)
 /* This is not only for dwarf unwind info, but also for the benefit of
    df-scan.c to tell it that LR is live at the function start.  */
-#define INCOMING_RETURN_ADDR_RTX \
-  gen_rtx_REG (Pmode, \
-	       (current_function_decl != NULL \
-		&& epiphany_is_interrupt_p (current_function_decl) \
-	       ? IRET_REGNUM : GPR_LR))
+#define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (Pmode, EPIPHANY_RETURN_REGNO)
 
 /* However, we haven't implemented the rest needed for dwarf2 unwind info.  */
 #define DWARF2_UNWIND_INFO 0
@@ -579,6 +579,8 @@ typedef struct GTY (()) machine_function
 #define RETURN_ADDR_RTX(count, frame) \
   (count ? NULL_RTX \
    : gen_rtx_UNSPEC (SImode, gen_rtvec (1, const0_rtx), UNSPEC_RETURN_ADDR))
+
+#define DWARF_FRAME_RETURN_COLUMN DWARF_FRAME_REGNUM (EPIPHANY_RETURN_REGNO)
 
 /* Trampolines.
    An epiphany trampoline looks like this:
