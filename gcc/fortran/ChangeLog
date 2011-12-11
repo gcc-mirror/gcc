@@ -1,3 +1,10 @@
+2011-12-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50923
+	* trans-decl.c (generate_local_decl): Set TREE_NO_WARNING only
+	if the front end has printed a warning.
+	(gfc_generate_function_code): Fix unset-result warning.
+
 2011-12-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/51338
