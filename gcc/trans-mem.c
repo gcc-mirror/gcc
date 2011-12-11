@@ -4481,7 +4481,6 @@ ipa_tm_transform_calls_redirect (struct cgraph_node *node,
 	{
 	  *need_ssa_rename_p |=
 	    ipa_tm_insert_gettmclone_call (node, region, gsi, stmt);
-	  cgraph_remove_edge (e);
 	  return;
 	}
 
