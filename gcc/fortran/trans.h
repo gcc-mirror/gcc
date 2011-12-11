@@ -333,6 +333,14 @@ typedef struct
 }
 gfc_wrapped_block;
 
+/* Class API functions.  */
+tree gfc_class_data_get (tree);
+tree gfc_class_vptr_get (tree);
+tree gfc_vtable_hash_get (tree);
+tree gfc_vtable_size_get (tree);
+tree gfc_vtable_extends_get (tree);
+tree gfc_vtable_def_init_get (tree);
+tree gfc_vtable_copy_get (tree);
 
 /* Initialize an init/cleanup block.  */
 void gfc_start_wrapped_block (gfc_wrapped_block* block, tree code);
@@ -803,6 +811,7 @@ struct GTY((variable_size)) lang_decl {
 #define GFC_DECL_RESULT(node) DECL_LANG_FLAG_5(node)
 #define GFC_DECL_SUBREF_ARRAY_P(node) DECL_LANG_FLAG_6(node)
 #define GFC_DECL_PUSH_TOPLEVEL(node) DECL_LANG_FLAG_7(node)
+#define GFC_DECL_CLASS(node) DECL_LANG_FLAG_8(node)
 
 /* An array descriptor.  */
 #define GFC_DESCRIPTOR_TYPE_P(node) TYPE_LANG_FLAG_1(node)

@@ -1789,13 +1789,17 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 
   if (gfc_peek_ascii_char () == '[')
     {
-      if (sym->attr.dimension)
+      if ((sym->ts.type != BT_CLASS && sym->attr.dimension)
+	  || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
+	      && CLASS_DATA (sym)->attr.dimension))
 	{
 	  gfc_error ("Array section designator, e.g. '(:)', is required "
 		     "besides the coarray designator '[...]' at %C");
 	  return MATCH_ERROR;
 	}
-      if (!sym->attr.codimension)
+      if ((sym->ts.type != BT_CLASS && !sym->attr.codimension)
+	  || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
+	      && !CLASS_DATA (sym)->attr.codimension))
 	{
 	  gfc_error ("Coarray designator at %C but '%s' is not a coarray",
 		     sym->name);
@@ -1827,7 +1831,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 
       m = gfc_match_array_ref (&tail->u.ar, equiv_flag ? NULL : sym->as,
 			       equiv_flag,
-			       sym->ts.type == BT_CLASS
+			       sym->ts.type == BT_CLASS && CLASS_DATA (sym)
 			       ? (CLASS_DATA (sym)->as
 				  ? CLASS_DATA (sym)->as->corank : 0)
 			       : (sym->as ? sym->as->corank : 0));
@@ -2894,6 +2898,22 @@ gfc_match_rvalue (gfc_expr **result)
 	 variable.  */
 
       if (sym->attr.dimension)
+	{
+	  if (gfc_add_flavor (&sym->attr, FL_VARIABLE,
+			      sym->name, NULL) == FAILURE)
+	    {
+	      m = MATCH_ERROR;
+	      break;
+	    }
+
+	  e = gfc_get_expr ();
+	  e->symtree = symtree;
+	  e->expr_type = EXPR_VARIABLE;
+	  m = gfc_match_varspec (e, 0, false, true);
+	  break;
+	}
+
+      if (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.dimension)
 	{
 	  if (gfc_add_flavor (&sym->attr, FL_VARIABLE,
 			      sym->name, NULL) == FAILURE)

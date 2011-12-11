@@ -2911,11 +2911,14 @@ gfc_try gfc_calculate_transfer_sizes (gfc_expr*, gfc_expr*, gfc_expr*,
 
 /* class.c */
 void gfc_add_component_ref (gfc_expr *, const char *);
+void gfc_add_class_array_ref (gfc_expr *);
 #define gfc_add_data_component(e)     gfc_add_component_ref(e,"_data")
 #define gfc_add_vptr_component(e)     gfc_add_component_ref(e,"_vptr")
 #define gfc_add_hash_component(e)     gfc_add_component_ref(e,"_hash")
 #define gfc_add_size_component(e)     gfc_add_component_ref(e,"_size")
 #define gfc_add_def_init_component(e) gfc_add_component_ref(e,"_def_init")
+bool gfc_is_class_array_ref (gfc_expr *, bool *);
+bool gfc_is_class_scalar_expr (gfc_expr *);
 gfc_expr *gfc_class_null_initializer (gfc_typespec *);
 unsigned int gfc_hash_value (gfc_symbol *);
 gfc_try gfc_build_class_symbol (gfc_typespec *, symbol_attribute *,

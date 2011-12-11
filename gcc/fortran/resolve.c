@@ -5584,14 +5584,6 @@ check_typebound_baseobject (gfc_expr* e)
       goto cleanup;
     }
 
-  /* FIXME: Remove once PR 43214 is fixed (TBP with non-scalar PASS).  */
-  if (base->rank > 0)
-    {
-      gfc_error ("Non-scalar base object at %L currently not implemented",
-		 &e->where);
-      goto cleanup;
-    }
-
   return_value = SUCCESS;
 
 cleanup:
@@ -6765,7 +6757,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
     }
   else
     {
-      if (sym->ts.type == BT_CLASS)
+      if (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
 	{
 	  allocatable = CLASS_DATA (sym)->attr.allocatable;
 	  pointer = CLASS_DATA (sym)->attr.class_pointer;
@@ -6911,7 +6903,16 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
   if (t == FAILURE)
     goto failure;
 
-  if (!code->expr3)
+  if (e->ts.type == BT_CLASS && CLASS_DATA (e)->attr.dimension
+	&& !code->expr3 && code->ext.alloc.ts.type == BT_DERIVED)
+    {
+      /* For class arrays, the initialization with SOURCE is done
+	 using _copy and trans_call. It is convenient to exploit that
+	 when the allocated type is different from the declared type but
+	 no SOURCE exists by setting expr3.  */
+      code->expr3 = gfc_default_initializer (&code->ext.alloc.ts); 
+    }
+  else if (!code->expr3)
     {
       /* Set up default initializer if needed.  */
       gfc_typespec ts;
@@ -6955,6 +6956,8 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       else if (code->ext.alloc.ts.type == BT_DERIVED)
 	ts = code->ext.alloc.ts;
       gfc_find_derived_vtab (ts.u.derived);
+      if (dimension)
+	e = gfc_expr_to_initialize (e);
     }
 
   if (dimension == 0 && codimension == 0)
@@ -7531,16 +7534,6 @@ resolve_select (gfc_code *code)
       return;
     }
 
-  if (case_expr->rank != 0)
-    {
-      gfc_error ("Argument of SELECT statement at %L must be a scalar "
-		 "expression", &case_expr->where);
-
-      /* Punt.  */
-      return;
-    }
-
-
   /* Raise a warning if an INTEGER case value exceeds the range of
      the case-expr. Later, all expressions will be promoted to the
      largest kind of all case-labels.  */
@@ -7825,6 +7818,9 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       sym->attr.volatile_ = tsym->attr.volatile_;
 
       sym->attr.target = (tsym->attr.target || tsym->attr.pointer);
+
+      if (sym->ts.type == BT_DERIVED && target->symtree->n.sym->ts.type == BT_CLASS)
+	target->rank = sym->as ? sym->as->rank : 0;
     }
 
   /* Get type if this was not already set.  Note that it can be
@@ -7839,7 +7835,10 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 			  && !gfc_has_vector_subscript (target));
 
   /* Finally resolve if this is an array or not.  */
-  if (sym->attr.dimension && target->rank == 0)
+  if (sym->attr.dimension
+	&& (target->ts.type == BT_CLASS
+	      ? !CLASS_DATA (target)->attr.dimension
+	      : target->rank == 0))
     {
       gfc_error ("Associate-name '%s' at %L is used as array",
 		 sym->name, &sym->declared_at);
@@ -7955,6 +7954,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
       assoc = gfc_get_association_list ();
       assoc->st = code->expr1->symtree;
       assoc->target = gfc_copy_expr (code->expr2);
+      assoc->target->where = code->expr2->where;
       /* assoc->variable will be set by resolve_assoc_var.  */
       
       code->ext.block.assoc = assoc;
@@ -8006,6 +8006,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
       st = gfc_find_symtree (ns->sym_root, name);
       gcc_assert (st->n.sym->assoc);
       st->n.sym->assoc->target = gfc_get_variable_expr (code->expr1->symtree);
+      st->n.sym->assoc->target->where = code->expr1->where;
       if (c->ts.type == BT_DERIVED)
 	gfc_add_data_component (st->n.sym->assoc->target);
 
@@ -11432,7 +11433,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
   for (c = sym->components; c != NULL; c = c->next)
     {
       /* F2008, C442.  */
-      if (c->attr.codimension /* FIXME: c->as check due to PR 43412.  */
+      if ((!sym->attr.is_class || c != sym->components)
+	  && c->attr.codimension
 	  && (!c->attr.allocatable || (c->as && c->as->type != AS_DEFERRED)))
 	{
 	  gfc_error ("Coarray component '%s' at %L must be allocatable with "

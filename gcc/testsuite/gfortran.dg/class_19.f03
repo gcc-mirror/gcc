@@ -39,7 +39,7 @@ program main
 
 end program main
 
-! { dg-final { scan-tree-dump-times "__builtin_free" 8 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 11 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
 
 ! { dg-final { cleanup-modules "foo_mod" } }

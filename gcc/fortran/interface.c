@@ -1541,6 +1541,9 @@ done:
 static int
 symbol_rank (gfc_symbol *sym)
 {
+  if (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->as)
+    return CLASS_DATA (sym)->as->rank;
+
   return (sym->as == NULL) ? 0 : sym->as->rank;
 }
 
@@ -1691,7 +1694,10 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
   if ((actual->expr_type != EXPR_NULL || actual->ts.type != BT_UNKNOWN)
       && actual->ts.type != BT_HOLLERITH
-      && !gfc_compare_types (&formal->ts, &actual->ts))
+      && !gfc_compare_types (&formal->ts, &actual->ts)
+      && !(formal->ts.type == BT_DERIVED && actual->ts.type == BT_CLASS
+	   && gfc_compare_derived_types (formal->ts.u.derived, 
+					 CLASS_DATA (actual)->ts.u.derived)))
     {
       if (where)
 	gfc_error ("Type mismatch in argument '%s' at %L; passed %s to %s",
@@ -1820,6 +1826,10 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if (symbol_rank (formal) == actual->rank)
     return 1;
 
+  if (actual->ts.type == BT_CLASS && CLASS_DATA (actual)->as
+	&& CLASS_DATA (actual)->as->rank == symbol_rank (formal))
+    return 1;
+
   rank_check = where != NULL && !is_elemental && formal->as
 	       && (formal->as->type == AS_ASSUMED_SHAPE
 		   || formal->as->type == AS_DEFERRED)
@@ -1829,7 +1839,11 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if (rank_check || ranks_must_agree
       || (formal->attr.pointer && actual->expr_type != EXPR_NULL)
       || (actual->rank != 0 && !(is_elemental || formal->attr.dimension))
-      || (actual->rank == 0 && formal->as->type == AS_ASSUMED_SHAPE
+      || (actual->rank == 0
+	  && ((formal->ts.type == BT_CLASS
+	       && CLASS_DATA (formal)->as->type == AS_ASSUMED_SHAPE)
+	      || (formal->ts.type != BT_CLASS
+		   && formal->as->type == AS_ASSUMED_SHAPE))
 	  && actual->expr_type != EXPR_NULL)
       || (actual->rank == 0 && formal->attr.dimension
 	  && gfc_is_coindexed (actual)))
@@ -2158,6 +2172,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
   gfc_formal_arglist *f;
   int i, n, na;
   unsigned long actual_size, formal_size;
+  bool full_array = false;
 
   actual = *ap;
 
@@ -2297,6 +2312,9 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  return 0;
 	}
 
+      if (f->sym->ts.type == BT_CLASS)
+	goto skip_size_check;
+
       actual_size = get_expr_storage_size (a->expr);
       formal_size = get_sym_storage_size (f->sym);
       if (actual_size != 0 && actual_size < formal_size
@@ -2315,6 +2333,8 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 			 &a->expr->where);
 	  return  0;
 	}
+
+     skip_size_check:
 
       /* Satisfy 12.4.1.3 by ensuring that a procedure pointer actual argument
 	 is provided for a procedure pointer formal argument.  */
@@ -2427,6 +2447,18 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		       "or INTENT(IN)", &a->expr->where, f->sym->name);
 	  return 0;
 	}
+
+     if (f->sym->ts.type == BT_CLASS
+	   && CLASS_DATA (f->sym)->attr.allocatable
+	   && gfc_is_class_array_ref (a->expr, &full_array)
+	   && !full_array)
+	{
+	  if (where)
+	    gfc_error ("Actual CLASS array argument for '%s' must be a full "
+		       "array at %L", f->sym->name, &a->expr->where);
+	  return 0;
+	}
+
 
       if (a->expr->expr_type != EXPR_NULL
 	  && compare_allocatable (f->sym, a->expr) == 0)
