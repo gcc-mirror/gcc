@@ -1,3 +1,7 @@
+2011-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gigi): Initialize the linemap earlier.
+
 2011-12-06  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* gcc-interface/Makefile.in (LIBGNAT_TARGET_PAIRS [windows targets]):
