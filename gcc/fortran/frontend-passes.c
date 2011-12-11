@@ -66,6 +66,10 @@ static gfc_namespace *current_ns;
 
 static int forall_level;
 
+/* Keep track of whether we are within an OMP workshare.  */
+
+static bool in_omp_workshare;
+
 /* Entry point - run all passes for a namespace.  So far, only an
    optimization pass is run.  */
 
@@ -367,6 +371,14 @@ cfe_expr_0 (gfc_expr **e, int *walk_subtrees,
   int i,j;
   gfc_expr *newvar;
 
+  /* Don't do this optimization within OMP workshare. */
+
+  if (in_omp_workshare)
+    {
+      *walk_subtrees = 0;
+      return 0;
+    }
+
   expr_count = 0;
 
   gfc_expr_walker (e, cfe_register_funcs, NULL);
@@ -505,6 +517,7 @@ optimize_namespace (gfc_namespace *ns)
 
   current_ns = ns;
   forall_level = 0;
+  in_omp_workshare = false;
 
   gfc_code_walker (&ns->code, convert_do_while, dummy_expr_callback, NULL);
   gfc_code_walker (&ns->code, cfe_code, cfe_expr_0, NULL);
@@ -1150,11 +1163,13 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	  gfc_actual_arglist *a;
 	  gfc_code *co;
 	  gfc_association_list *alist;
+	  bool saved_in_omp_workshare;
 
 	  /* There might be statement insertions before the current code,
 	     which must not affect the expression walker.  */
 
 	  co = *c;
+	  saved_in_omp_workshare = in_omp_workshare;
 
 	  switch (co->op)
 	    {
@@ -1330,16 +1345,34 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      WALK_SUBEXPR (co->ext.dt->extra_comma);
 	      break;
 
-	    case EXEC_OMP_DO:
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
 	    case EXEC_OMP_PARALLEL_SECTIONS:
+
+	      in_omp_workshare = false;
+
+	      /* This goto serves as a shortcut to avoid code
+		 duplication or a larger if or switch statement.  */
+	      goto check_omp_clauses;
+	      
+	    case EXEC_OMP_WORKSHARE:
 	    case EXEC_OMP_PARALLEL_WORKSHARE:
+
+	      in_omp_workshare = true;
+
+	      /* Fall through  */
+	      
+	    case EXEC_OMP_DO:
 	    case EXEC_OMP_SECTIONS:
 	    case EXEC_OMP_SINGLE:
-	    case EXEC_OMP_WORKSHARE:
 	    case EXEC_OMP_END_SINGLE:
 	    case EXEC_OMP_TASK:
+
+	      /* Come to this label only from the
+		 EXEC_OMP_PARALLEL_* cases above.  */
+
+	    check_omp_clauses:
+
 	      if (co->ext.omp_clauses)
 		{
 		  WALK_SUBEXPR (co->ext.omp_clauses->if_expr);
@@ -1366,6 +1399,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	  if (co->op == EXEC_FORALL)
 	    forall_level --;
 
+	  in_omp_workshare = saved_in_omp_workshare;
 	}
     }
   return 0;
