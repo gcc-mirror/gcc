@@ -13,10 +13,14 @@ conditionally, via the <code class="code">-march</code> command line flag. This 
 usage vary depending on the target hardware and the flags used during
 compile.
 </p><p>
+<em><span class="remark">
+Incomplete/inconsistent. This is only C++11.
+</span></em>
+</p><p>
 If builtins are possible for bool-sized integral types,
-<code class="code">_GLIBCXX_ATOMIC_BUILTINS_1</code> will be defined.
+<code class="code">ATOMIC_BOOL_LOCK_FREE</code> will be defined.
 If builtins are possible for int-sized integral types,
-<code class="code">_GLIBCXX_ATOMIC_BUILTINS_4</code> will be defined.
+<code class="code">ATOMIC_INT_LOCK_FREE</code> will be defined.
 </p><p>For the following hosts, intrinsics are enabled by default.
 </p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>alpha</p></li><li class="listitem"><p>ia64</p></li><li class="listitem"><p>powerpc</p></li><li class="listitem"><p>s390</p></li></ul></div><p>For others, some form of <code class="code">-march</code> may work. On
 non-ancient x86 hardware, <code class="code">-march=native</code> usually does the

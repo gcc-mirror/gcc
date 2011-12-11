@@ -164,28 +164,14 @@ compatible.
     </para>
 
     <itemizedlist>
-    <listitem><para>gcc-3.0.0: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.0.1: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.0.2: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.0.3: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.0.4: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.1.0: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.1.1: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.2.0: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.2.1: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.2.2: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.2.3: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.3.0: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.3.1: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.3.2: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.3.3: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.4.x, gcc-4.[0-5].x: libgcc_s.so.1</para></listitem>
+    <listitem><para>GCC 3.x: libgcc_s.so.1</para></listitem>
+    <listitem><para>GCC 4.x: libgcc_s.so.1</para></listitem>
     </itemizedlist>
 
     <para>For m68k-linux the versions differ as follows: </para>
 
     <itemizedlist>
-    <listitem><para>gcc-3.4.x, gcc-4.[0-5].x: libgcc_s.so.1
+    <listitem><para>GCC 3.4, GCC 4.x: libgcc_s.so.1
     when configuring <code>--with-sjlj-exceptions</code>, or
     libgcc_s.so.2 </para> </listitem>
     </itemizedlist>
@@ -193,10 +179,10 @@ compatible.
     <para>For hppa-linux the versions differ as follows: </para>
 
     <itemizedlist>
-    <listitem><para>gcc-3.4.x, gcc-4.[0-1].x: either libgcc_s.so.1
+    <listitem><para>GCC 3.4, GCC 4.[0-1]: either libgcc_s.so.1
     when configuring <code>--with-sjlj-exceptions</code>, or
     libgcc_s.so.2 </para> </listitem>
-    <listitem><para>gcc-4.[2-5].x: either libgcc_s.so.3 when configuring
+    <listitem><para>GCC 4.[2-7]: either libgcc_s.so.3 when configuring
     <code>--with-sjlj-exceptions</code>) or libgcc_s.so.4
     </para> </listitem>
     </itemizedlist>
@@ -213,19 +199,22 @@ compatible.
 
     <para>This corresponds to the mapfile: gcc/libgcc-std.ver</para>
     <itemizedlist>
-    <listitem><para>gcc-3.0.0: GCC_3.0</para></listitem>
-    <listitem><para>gcc-3.3.0: GCC_3.3</para></listitem>
-    <listitem><para>gcc-3.3.1: GCC_3.3.1</para></listitem>
-    <listitem><para>gcc-3.3.2: GCC_3.3.2</para></listitem>
-    <listitem><para>gcc-3.3.4: GCC_3.3.4</para></listitem>
-    <listitem><para>gcc-3.4.0: GCC_3.4</para></listitem>
-    <listitem><para>gcc-3.4.2: GCC_3.4.2</para></listitem>
-    <listitem><para>gcc-3.4.4: GCC_3.4.4</para></listitem>
-    <listitem><para>gcc-4.0.0: GCC_4.0.0</para></listitem>
-    <listitem><para>gcc-4.1.0: GCC_4.1.0</para></listitem>
-    <listitem><para>gcc-4.2.0: GCC_4.2.0</para></listitem>
-    <listitem><para>gcc-4.3.0: GCC_4.3.0</para></listitem>
-    <listitem><para>gcc-4.4.0: GCC_4.4.0</para></listitem>
+    <listitem><para>GCC 3.0.0: GCC_3.0</para></listitem>
+    <listitem><para>GCC 3.3.0: GCC_3.3</para></listitem>
+    <listitem><para>GCC 3.3.1: GCC_3.3.1</para></listitem>
+    <listitem><para>GCC 3.3.2: GCC_3.3.2</para></listitem>
+    <listitem><para>GCC 3.3.4: GCC_3.3.4</para></listitem>
+    <listitem><para>GCC 3.4.0: GCC_3.4</para></listitem>
+    <listitem><para>GCC 3.4.2: GCC_3.4.2</para></listitem>
+    <listitem><para>GCC 3.4.4: GCC_3.4.4</para></listitem>
+    <listitem><para>GCC 4.0.0: GCC_4.0.0</para></listitem>
+    <listitem><para>GCC 4.1.0: GCC_4.1.0</para></listitem>
+    <listitem><para>GCC 4.2.0: GCC_4.2.0</para></listitem>
+    <listitem><para>GCC 4.3.0: GCC_4.3.0</para></listitem>
+    <listitem><para>GCC 4.4.0: GCC_4.4.0</para></listitem>
+    <listitem><para>GCC 4.5.0: GCC_4.5.0</para></listitem>
+    <listitem><para>GCC 4.6.0: GCC_4.6.0</para></listitem>
+    <listitem><para>GCC 4.7.0: GCC_4.7.0</para></listitem>
     </itemizedlist>
     </listitem>
 
@@ -241,54 +230,47 @@ compatible.
 	<constant>DT_SONAME</constant>s are forward-compatibile: in
 	the table below, releases incompatible with the previous
 	one are explicitly noted.
+	If a particular release is not listed, its libstdc++.so binary
+	has the same filename and <constant>DT_SONAME</constant> as the
+	preceding release.
       </para>
 
     <para>It is versioned as follows:
     </para>
     <itemizedlist>
-    <listitem><para>gcc-3.0.0: libstdc++.so.3.0.0</para></listitem>
-    <listitem><para>gcc-3.0.1: libstdc++.so.3.0.1</para></listitem>
-    <listitem><para>gcc-3.0.2: libstdc++.so.3.0.2</para></listitem>
-    <listitem><para>gcc-3.0.3: libstdc++.so.3.0.2 (See Note 1)</para></listitem>
-    <listitem><para>gcc-3.0.4: libstdc++.so.3.0.4</para></listitem>
-    <listitem><para>gcc-3.1.0: libstdc++.so.4.0.0 <emphasis>(Incompatible with previous)</emphasis></para></listitem>
-    <listitem><para>gcc-3.1.1: libstdc++.so.4.0.1</para></listitem>
-    <listitem><para>gcc-3.2.0: libstdc++.so.5.0.0 <emphasis>(Incompatible with previous)</emphasis></para></listitem>
-    <listitem><para>gcc-3.2.1: libstdc++.so.5.0.1</para></listitem>
-    <listitem><para>gcc-3.2.2: libstdc++.so.5.0.2</para></listitem>
-    <listitem><para>gcc-3.2.3: libstdc++.so.5.0.3 (See Note 2)</para></listitem>
-    <listitem><para>gcc-3.3.0: libstdc++.so.5.0.4</para></listitem>
-    <listitem><para>gcc-3.3.1: libstdc++.so.5.0.5</para></listitem>
-    <listitem><para>gcc-3.3.2: libstdc++.so.5.0.5</para></listitem>
-    <listitem><para>gcc-3.3.3: libstdc++.so.5.0.5</para></listitem>
-    <listitem><para>gcc-3.4.0: libstdc++.so.6.0.0 <emphasis>(Incompatible with previous)</emphasis></para></listitem>
-    <listitem><para>gcc-3.4.1: libstdc++.so.6.0.1</para></listitem>
-    <listitem><para>gcc-3.4.2: libstdc++.so.6.0.2</para></listitem>
-    <listitem><para>gcc-3.4.3: libstdc++.so.6.0.3</para></listitem>
-    <listitem><para>gcc-3.4.4: libstdc++.so.6.0.3</para></listitem>
-    <listitem><para>gcc-3.4.5: libstdc++.so.6.0.3</para></listitem>
-    <listitem><para>gcc-3.4.6: libstdc++.so.6.0.3</para></listitem>
-    <listitem><para>gcc-4.0.0: libstdc++.so.6.0.4</para></listitem>
-    <listitem><para>gcc-4.0.1: libstdc++.so.6.0.5</para></listitem>
-    <listitem><para>gcc-4.0.2: libstdc++.so.6.0.6</para></listitem>
-    <listitem><para>gcc-4.0.3: libstdc++.so.6.0.7</para></listitem>
-    <listitem><para>gcc-4.1.0: libstdc++.so.6.0.7</para></listitem>
-    <listitem><para>gcc-4.1.1: libstdc++.so.6.0.8</para></listitem>
-    <listitem><para>gcc-4.1.2: libstdc++.so.6.0.8</para></listitem>
-    <listitem><para>gcc-4.2.0: libstdc++.so.6.0.9</para></listitem>
-    <listitem><para>gcc-4.2.1: libstdc++.so.6.0.9 (See Note 3)</para></listitem>
-    <listitem><para>gcc-4.2.2: libstdc++.so.6.0.9</para></listitem>
-    <listitem><para>gcc-4.2.3: libstdc++.so.6.0.9</para></listitem>
-    <listitem><para>gcc-4.2.4: libstdc++.so.6.0.9</para></listitem>
-    <listitem><para>gcc-4.3.0: libstdc++.so.6.0.10</para></listitem>
-    <listitem><para>gcc-4.3.1: libstdc++.so.6.0.10</para></listitem>
-    <listitem><para>gcc-4.3.2: libstdc++.so.6.0.10</para></listitem>
-    <listitem><para>gcc-4.3.3: libstdc++.so.6.0.10</para></listitem>
-    <listitem><para>gcc-4.3.4: libstdc++.so.6.0.10</para></listitem>
-    <listitem><para>gcc-4.4.0: libstdc++.so.6.0.11</para></listitem>
-    <listitem><para>gcc-4.4.1: libstdc++.so.6.0.12</para></listitem>
-    <listitem><para>gcc-4.4.2: libstdc++.so.6.0.13</para></listitem>
-    <listitem><para>gcc-4.5.0: libstdc++.so.6.0.14</para></listitem>
+    <listitem><para>GCC 3.0.0: libstdc++.so.3.0.0</para></listitem>
+    <listitem><para>GCC 3.0.1: libstdc++.so.3.0.1</para></listitem>
+    <listitem><para>GCC 3.0.2: libstdc++.so.3.0.2</para></listitem>
+    <listitem><para>GCC 3.0.3: libstdc++.so.3.0.2 (See Note 1)</para></listitem>
+    <listitem><para>GCC 3.0.4: libstdc++.so.3.0.4</para></listitem>
+    <listitem><para>GCC 3.1.0: libstdc++.so.4.0.0 <emphasis>(Incompatible with previous)</emphasis></para></listitem>
+    <listitem><para>GCC 3.1.1: libstdc++.so.4.0.1</para></listitem>
+    <listitem><para>GCC 3.2.0: libstdc++.so.5.0.0 <emphasis>(Incompatible with previous)</emphasis></para></listitem>
+    <listitem><para>GCC 3.2.1: libstdc++.so.5.0.1</para></listitem>
+    <listitem><para>GCC 3.2.2: libstdc++.so.5.0.2</para></listitem>
+    <listitem><para>GCC 3.2.3: libstdc++.so.5.0.3 (See Note 2)</para></listitem>
+    <listitem><para>GCC 3.3.0: libstdc++.so.5.0.4</para></listitem>
+    <listitem><para>GCC 3.3.1: libstdc++.so.5.0.5</para></listitem>
+    <listitem><para>GCC 3.4.0: libstdc++.so.6.0.0 <emphasis>(Incompatible with previous)</emphasis></para></listitem>
+    <listitem><para>GCC 3.4.1: libstdc++.so.6.0.1</para></listitem>
+    <listitem><para>GCC 3.4.2: libstdc++.so.6.0.2</para></listitem>
+    <listitem><para>GCC 3.4.3: libstdc++.so.6.0.3</para></listitem>
+    <listitem><para>GCC 4.0.0: libstdc++.so.6.0.4</para></listitem>
+    <listitem><para>GCC 4.0.1: libstdc++.so.6.0.5</para></listitem>
+    <listitem><para>GCC 4.0.2: libstdc++.so.6.0.6</para></listitem>
+    <listitem><para>GCC 4.0.3: libstdc++.so.6.0.7</para></listitem>
+    <listitem><para>GCC 4.1.0: libstdc++.so.6.0.7</para></listitem>
+    <listitem><para>GCC 4.1.1: libstdc++.so.6.0.8</para></listitem>
+    <listitem><para>GCC 4.2.0: libstdc++.so.6.0.9</para></listitem>
+    <listitem><para>GCC 4.2.1: libstdc++.so.6.0.9 (See Note 3)</para></listitem>
+    <listitem><para>GCC 4.2.2: libstdc++.so.6.0.9</para></listitem>
+    <listitem><para>GCC 4.3.0: libstdc++.so.6.0.10</para></listitem>
+    <listitem><para>GCC 4.4.0: libstdc++.so.6.0.11</para></listitem>
+    <listitem><para>GCC 4.4.1: libstdc++.so.6.0.12</para></listitem>
+    <listitem><para>GCC 4.4.2: libstdc++.so.6.0.13</para></listitem>
+    <listitem><para>GCC 4.5.0: libstdc++.so.6.0.14</para></listitem>
+    <listitem><para>GCC 4.6.0: libstdc++.so.6.0.15</para></listitem>
+    <listitem><para>GCC 4.6.1: libstdc++.so.6.0.16</para></listitem>
     </itemizedlist>
     <para>
       Note 1: Error should be libstdc++.so.3.0.3.
@@ -312,49 +294,51 @@ compatible.
    will use the maximum version definition. Thus, for release series
    with the same label, but incremented version definitions, the later
    release has both versions. (An example of this would be the
-   gcc-3.2.1 release, which has GLIBCPP_3.2.1 for new symbols and
-   GLIBCPP_3.2 for symbols that were introduced in the gcc-3.2.0
+   GCC 3.2.1 release, which has GLIBCPP_3.2.1 for new symbols and
+   GLIBCPP_3.2 for symbols that were introduced in the GCC 3.2.0
    release.) If a particular release is not listed, it has the same
    version labels as the preceding release.
    </para>
     <itemizedlist>
-    <listitem><para>gcc-3.0.0: (Error, not versioned)</para></listitem>
-    <listitem><para>gcc-3.0.1: (Error, not versioned)</para></listitem>
-    <listitem><para>gcc-3.0.2: (Error, not versioned)</para></listitem>
-    <listitem><para>gcc-3.0.3: (Error, not versioned)</para></listitem>
-    <listitem><para>gcc-3.0.4: (Error, not versioned)</para></listitem>
-    <listitem><para>gcc-3.1.0: GLIBCPP_3.1, CXXABI_1</para></listitem>
-    <listitem><para>gcc-3.1.1: GLIBCPP_3.1, CXXABI_1</para></listitem>
-    <listitem><para>gcc-3.2.0: GLIBCPP_3.2, CXXABI_1.2</para></listitem>
-    <listitem><para>gcc-3.2.1: GLIBCPP_3.2.1, CXXABI_1.2</para></listitem>
-    <listitem><para>gcc-3.2.2: GLIBCPP_3.2.2, CXXABI_1.2</para></listitem>
-    <listitem><para>gcc-3.2.3: GLIBCPP_3.2.2, CXXABI_1.2</para></listitem>
-    <listitem><para>gcc-3.3.0: GLIBCPP_3.2.2, CXXABI_1.2.1</para></listitem>
-    <listitem><para>gcc-3.3.1: GLIBCPP_3.2.3, CXXABI_1.2.1</para></listitem>
-    <listitem><para>gcc-3.3.2: GLIBCPP_3.2.3, CXXABI_1.2.1</para></listitem>
-    <listitem><para>gcc-3.3.3: GLIBCPP_3.2.3, CXXABI_1.2.1</para></listitem>
-    <listitem><para>gcc-3.4.0: GLIBCXX_3.4, CXXABI_1.3</para></listitem>
-    <listitem><para>gcc-3.4.1: GLIBCXX_3.4.1, CXXABI_1.3</para></listitem>
-    <listitem><para>gcc-3.4.2: GLIBCXX_3.4.2</para></listitem>
-    <listitem><para>gcc-3.4.3: GLIBCXX_3.4.3</para></listitem>
-    <listitem><para>gcc-4.0.0: GLIBCXX_3.4.4, CXXABI_1.3.1</para></listitem>
-    <listitem><para>gcc-4.0.1: GLIBCXX_3.4.5</para></listitem>
-    <listitem><para>gcc-4.0.2: GLIBCXX_3.4.6</para></listitem>
-    <listitem><para>gcc-4.0.3: GLIBCXX_3.4.7</para></listitem>
-    <listitem><para>gcc-4.1.1: GLIBCXX_3.4.8</para></listitem>
-    <listitem><para>gcc-4.2.0: GLIBCXX_3.4.9</para></listitem>
-    <listitem><para>gcc-4.3.0: GLIBCXX_3.4.10, CXXABI_1.3.2</para></listitem>
-    <listitem><para>gcc-4.4.0: GLIBCXX_3.4.11, CXXABI_1.3.3</para></listitem>
-    <listitem><para>gcc-4.4.1: GLIBCXX_3.4.12, CXXABI_1.3.3</para></listitem>
-    <listitem><para>gcc-4.4.2: GLIBCXX_3.4.13, CXXABI_1.3.3</para></listitem>
-    <listitem><para>gcc-4.5.0: GLIBCXX_3.4.14, CXXABI_1.3.4</para></listitem>
+    <listitem><para>GCC 3.0.0: (Error, not versioned)</para></listitem>
+    <listitem><para>GCC 3.0.1: (Error, not versioned)</para></listitem>
+    <listitem><para>GCC 3.0.2: (Error, not versioned)</para></listitem>
+    <listitem><para>GCC 3.0.3: (Error, not versioned)</para></listitem>
+    <listitem><para>GCC 3.0.4: (Error, not versioned)</para></listitem>
+    <listitem><para>GCC 3.1.0: GLIBCPP_3.1, CXXABI_1</para></listitem>
+    <listitem><para>GCC 3.1.1: GLIBCPP_3.1, CXXABI_1</para></listitem>
+    <listitem><para>GCC 3.2.0: GLIBCPP_3.2, CXXABI_1.2</para></listitem>
+    <listitem><para>GCC 3.2.1: GLIBCPP_3.2.1, CXXABI_1.2</para></listitem>
+    <listitem><para>GCC 3.2.2: GLIBCPP_3.2.2, CXXABI_1.2</para></listitem>
+    <listitem><para>GCC 3.2.3: GLIBCPP_3.2.2, CXXABI_1.2</para></listitem>
+    <listitem><para>GCC 3.3.0: GLIBCPP_3.2.2, CXXABI_1.2.1</para></listitem>
+    <listitem><para>GCC 3.3.1: GLIBCPP_3.2.3, CXXABI_1.2.1</para></listitem>
+    <listitem><para>GCC 3.3.2: GLIBCPP_3.2.3, CXXABI_1.2.1</para></listitem>
+    <listitem><para>GCC 3.3.3: GLIBCPP_3.2.3, CXXABI_1.2.1</para></listitem>
+    <listitem><para>GCC 3.4.0: GLIBCXX_3.4, CXXABI_1.3</para></listitem>
+    <listitem><para>GCC 3.4.1: GLIBCXX_3.4.1, CXXABI_1.3</para></listitem>
+    <listitem><para>GCC 3.4.2: GLIBCXX_3.4.2</para></listitem>
+    <listitem><para>GCC 3.4.3: GLIBCXX_3.4.3</para></listitem>
+    <listitem><para>GCC 4.0.0: GLIBCXX_3.4.4, CXXABI_1.3.1</para></listitem>
+    <listitem><para>GCC 4.0.1: GLIBCXX_3.4.5</para></listitem>
+    <listitem><para>GCC 4.0.2: GLIBCXX_3.4.6</para></listitem>
+    <listitem><para>GCC 4.0.3: GLIBCXX_3.4.7</para></listitem>
+    <listitem><para>GCC 4.1.1: GLIBCXX_3.4.8</para></listitem>
+    <listitem><para>GCC 4.2.0: GLIBCXX_3.4.9</para></listitem>
+    <listitem><para>GCC 4.3.0: GLIBCXX_3.4.10, CXXABI_1.3.2</para></listitem>
+    <listitem><para>GCC 4.4.0: GLIBCXX_3.4.11, CXXABI_1.3.3</para></listitem>
+    <listitem><para>GCC 4.4.1: GLIBCXX_3.4.12, CXXABI_1.3.3</para></listitem>
+    <listitem><para>GCC 4.4.2: GLIBCXX_3.4.13, CXXABI_1.3.3</para></listitem>
+    <listitem><para>GCC 4.5.0: GLIBCXX_3.4.14, CXXABI_1.3.4</para></listitem>
+    <listitem><para>GCC 4.6.0: GLIBCXX_3.4.15, CXXABI_1.3.5</para></listitem>
+    <listitem><para>GCC 4.6.1: GLIBCXX_3.4.16, CXXABI_1.3.5</para></listitem>
     </itemizedlist>
     </listitem>
 
     <listitem>
     <para>Incremental bumping of a compiler pre-defined macro,
     __GXX_ABI_VERSION. This macro is defined as the version of the
-    compiler v3 ABI, with g++ 3.0.x being version 100. This macro will
+    compiler v3 ABI, with g++ 3.0 being version 100. This macro will
     be automatically defined whenever g++ is used (the curious can
     test this by invoking g++ with the '-v' flag.)
     </para>
@@ -370,13 +354,13 @@ compatible.
     It is versioned as follows, where 'n' is given by '-fabi-version=n':
     </para>
     <itemizedlist>
-    <listitem><para>gcc-3.0.x: 100</para></listitem>
-    <listitem><para>gcc-3.1.x: 100 (Error, should be 101)</para></listitem>
-    <listitem><para>gcc-3.2.x: 102</para></listitem>
-    <listitem><para>gcc-3.3.x: 102</para></listitem>
-    <listitem><para>gcc-3.4.x, gcc-4.[0-5].x: 102 (when n=1)</para></listitem>
-    <listitem><para>gcc-3.4.x, gcc-4.[0-5].x: 1000 + n (when n&gt;1) </para></listitem>
-    <listitem><para>gcc-3.4.x, gcc-4.[0-5].x: 999999 (when n=0)</para></listitem>
+    <listitem><para>GCC 3.0: 100</para></listitem>
+    <listitem><para>GCC 3.1: 100 (Error, should be 101)</para></listitem>
+    <listitem><para>GCC 3.2: 102</para></listitem>
+    <listitem><para>GCC 3.3: 102</para></listitem>
+    <listitem><para>GCC 3.4, GCC 4.x: 102 (when n=1)</para></listitem>
+    <listitem><para>GCC 3.4, GCC 4.x: 1000 + n (when n&gt;1) </para></listitem>
+    <listitem><para>GCC 3.4, GCC 4.x: 999999 (when n=0)</para></listitem>
     </itemizedlist>
     <para/>
     </listitem>
@@ -389,11 +373,11 @@ compatible.
     It is versioned as follows:
     </para>
     <itemizedlist>
-    <listitem><para>gcc-3.0.x: (Error, not versioned) </para></listitem>
-    <listitem><para>gcc-3.1.x: (Error, not versioned) </para></listitem>
-    <listitem><para>gcc-3.2.x: <code>-fabi-version=1</code></para></listitem>
-    <listitem><para>gcc-3.3.x: <code>-fabi-version=1</code></para></listitem>
-    <listitem><para>gcc-3.4.x, gcc-4.[0-5].x: <code>-fabi-version=2</code> <emphasis>(Incompatible with previous)</emphasis></para></listitem>
+    <listitem><para>GCC 3.0: (Error, not versioned) </para></listitem>
+    <listitem><para>GCC 3.1: (Error, not versioned) </para></listitem>
+    <listitem><para>GCC 3.2: <code>-fabi-version=1</code></para></listitem>
+    <listitem><para>GCC 3.3: <code>-fabi-version=1</code></para></listitem>
+    <listitem><para>GCC 3.4, GCC 4.x: <code>-fabi-version=2</code> <emphasis>(Incompatible with previous)</emphasis></para></listitem>
     </itemizedlist>
     <para/>
     </listitem>
@@ -409,55 +393,69 @@ compatible.
 
     <para>
     This macro is defined in the file "c++config" in the
-    "libstdc++-v3/include/bits" directory. (Up to gcc-4.1.0, it was
-    changed every night by an automated script. Since gcc-4.1.0, it is
+    "libstdc++-v3/include/bits" directory. (Up to GCC 4.1.0, it was
+    changed every night by an automated script. Since GCC 4.1.0, it is
     the same value as gcc/DATESTAMP.)
     </para>
     <para>
     It is versioned as follows:
     </para>
     <itemizedlist>
-    <listitem><para>gcc-3.0.0: 20010615</para></listitem>
-    <listitem><para>gcc-3.0.1: 20010819</para></listitem>
-    <listitem><para>gcc-3.0.2: 20011023</para></listitem>
-    <listitem><para>gcc-3.0.3: 20011220</para></listitem>
-    <listitem><para>gcc-3.0.4: 20020220</para></listitem>
-    <listitem><para>gcc-3.1.0: 20020514</para></listitem>
-    <listitem><para>gcc-3.1.1: 20020725</para></listitem>
-    <listitem><para>gcc-3.2.0: 20020814</para></listitem>
-    <listitem><para>gcc-3.2.1: 20021119</para></listitem>
-    <listitem><para>gcc-3.2.2: 20030205</para></listitem>
-    <listitem><para>gcc-3.2.3: 20030422</para></listitem>
-    <listitem><para>gcc-3.3.0: 20030513</para></listitem>
-    <listitem><para>gcc-3.3.1: 20030804</para></listitem>
-    <listitem><para>gcc-3.3.2: 20031016</para></listitem>
-    <listitem><para>gcc-3.3.3: 20040214</para></listitem>
-    <listitem><para>gcc-3.4.0: 20040419</para></listitem>
-    <listitem><para>gcc-3.4.1: 20040701</para></listitem>
-    <listitem><para>gcc-3.4.2: 20040906</para></listitem>
-    <listitem><para>gcc-3.4.3: 20041105</para></listitem>
-    <listitem><para>gcc-3.4.4: 20050519</para></listitem>
-    <listitem><para>gcc-3.4.5: 20051201</para></listitem>
-    <listitem><para>gcc-3.4.6: 20060306</para></listitem>
-    <listitem><para>gcc-4.0.0: 20050421</para></listitem>
-    <listitem><para>gcc-4.0.1: 20050707</para></listitem>
-    <listitem><para>gcc-4.0.2: 20050921</para></listitem>
-    <listitem><para>gcc-4.0.3: 20060309</para></listitem>
-    <listitem><para>gcc-4.1.0: 20060228</para></listitem>
-    <listitem><para>gcc-4.1.1: 20060524</para></listitem>
-    <listitem><para>gcc-4.1.2: 20070214</para></listitem>
-    <listitem><para>gcc-4.2.0: 20070514</para></listitem>
-    <listitem><para>gcc-4.2.1: 20070719</para></listitem>
-    <listitem><para>gcc-4.2.2: 20071007</para></listitem>
-    <listitem><para>gcc-4.2.3: 20080201</para></listitem>
-    <listitem><para>gcc-4.2.4: 20080519</para></listitem>
-    <listitem><para>gcc-4.3.0: 20080306</para></listitem>
-    <listitem><para>gcc-4.3.1: 20080606</para></listitem>
-    <listitem><para>gcc-4.3.2: 20080827</para></listitem>
-    <listitem><para>gcc-4.3.3: 20090124</para></listitem>
-    <listitem><para>gcc-4.4.0: 20090421</para></listitem>
-    <listitem><para>gcc-4.4.1: 20090722</para></listitem>
-    <listitem><para>gcc-4.4.2: 20091015</para></listitem>
+    <listitem><para>GCC 3.0.0: 20010615</para></listitem>
+    <listitem><para>GCC 3.0.1: 20010819</para></listitem>
+    <listitem><para>GCC 3.0.2: 20011023</para></listitem>
+    <listitem><para>GCC 3.0.3: 20011220</para></listitem>
+    <listitem><para>GCC 3.0.4: 20020220</para></listitem>
+    <listitem><para>GCC 3.1.0: 20020514</para></listitem>
+    <listitem><para>GCC 3.1.1: 20020725</para></listitem>
+    <listitem><para>GCC 3.2.0: 20020814</para></listitem>
+    <listitem><para>GCC 3.2.1: 20021119</para></listitem>
+    <listitem><para>GCC 3.2.2: 20030205</para></listitem>
+    <listitem><para>GCC 3.2.3: 20030422</para></listitem>
+    <listitem><para>GCC 3.3.0: 20030513</para></listitem>
+    <listitem><para>GCC 3.3.1: 20030804</para></listitem>
+    <listitem><para>GCC 3.3.2: 20031016</para></listitem>
+    <listitem><para>GCC 3.3.3: 20040214</para></listitem>
+    <listitem><para>GCC 3.4.0: 20040419</para></listitem>
+    <listitem><para>GCC 3.4.1: 20040701</para></listitem>
+    <listitem><para>GCC 3.4.2: 20040906</para></listitem>
+    <listitem><para>GCC 3.4.3: 20041105</para></listitem>
+    <listitem><para>GCC 3.4.4: 20050519</para></listitem>
+    <listitem><para>GCC 3.4.5: 20051201</para></listitem>
+    <listitem><para>GCC 3.4.6: 20060306</para></listitem>
+    <listitem><para>GCC 4.0.0: 20050421</para></listitem>
+    <listitem><para>GCC 4.0.1: 20050707</para></listitem>
+    <listitem><para>GCC 4.0.2: 20050921</para></listitem>
+    <listitem><para>GCC 4.0.3: 20060309</para></listitem>
+    <listitem><para>GCC 4.1.0: 20060228</para></listitem>
+    <listitem><para>GCC 4.1.1: 20060524</para></listitem>
+    <listitem><para>GCC 4.1.2: 20070214</para></listitem>
+    <listitem><para>GCC 4.2.0: 20070514</para></listitem>
+    <listitem><para>GCC 4.2.1: 20070719</para></listitem>
+    <listitem><para>GCC 4.2.2: 20071007</para></listitem>
+    <listitem><para>GCC 4.2.3: 20080201</para></listitem>
+    <listitem><para>GCC 4.2.4: 20080519</para></listitem>
+    <listitem><para>GCC 4.3.0: 20080306</para></listitem>
+    <listitem><para>GCC 4.3.1: 20080606</para></listitem>
+    <listitem><para>GCC 4.3.2: 20080827</para></listitem>
+    <listitem><para>GCC 4.3.3: 20090124</para></listitem>
+    <listitem><para>GCC 4.3.4: 20090804</para></listitem>
+    <listitem><para>GCC 4.3.5: 20100522</para></listitem>
+    <listitem><para>GCC 4.3.6: 20110627</para></listitem>
+    <listitem><para>GCC 4.4.0: 20090421</para></listitem>
+    <listitem><para>GCC 4.4.1: 20090722</para></listitem>
+    <listitem><para>GCC 4.4.2: 20091015</para></listitem>
+    <listitem><para>GCC 4.4.3: 20100121</para></listitem>
+    <listitem><para>GCC 4.4.4: 20100429</para></listitem>
+    <listitem><para>GCC 4.4.5: 20101001</para></listitem>
+    <listitem><para>GCC 4.4.6: 20110416</para></listitem>
+    <listitem><para>GCC 4.5.0: 20100414</para></listitem>
+    <listitem><para>GCC 4.5.1: 20100731</para></listitem>
+    <listitem><para>GCC 4.5.2: 20101216</para></listitem>
+    <listitem><para>GCC 4.5.3: 20110428</para></listitem>
+    <listitem><para>GCC 4.6.0: 20110325</para></listitem>
+    <listitem><para>GCC 4.6.1: 20110627</para></listitem>
+    <listitem><para>GCC 4.6.2: 20111026</para></listitem>
     </itemizedlist>
     <para/>
     </listitem>
@@ -467,7 +465,7 @@ compatible.
     Incremental bumping of a library pre-defined macro,
     _GLIBCPP_VERSION. This macro is defined as the released version of
     the library, as a string literal. This is only implemented in
-    gcc-3.1.0 releases and higher, and is deprecated in 3.4 (where it
+    GCC 3.1.0 releases and higher, and is deprecated in 3.4 (where it
     is called _GLIBCXX_VERSION).
     </para>
 
@@ -482,23 +480,23 @@ compatible.
     It is versioned as follows:
     </para>
     <itemizedlist>
-    <listitem><para>gcc-3.0.0: "3.0.0"</para></listitem>
-    <listitem><para>gcc-3.0.1: "3.0.0" (Error, should be "3.0.1")</para></listitem>
-    <listitem><para>gcc-3.0.2: "3.0.0" (Error, should be "3.0.2")</para></listitem>
-    <listitem><para>gcc-3.0.3: "3.0.0" (Error, should be "3.0.3")</para></listitem>
-    <listitem><para>gcc-3.0.4: "3.0.0" (Error, should be "3.0.4")</para></listitem>
-    <listitem><para>gcc-3.1.0: "3.1.0"</para></listitem>
-    <listitem><para>gcc-3.1.1: "3.1.1"</para></listitem>
-    <listitem><para>gcc-3.2.0: "3.2"</para></listitem>
-    <listitem><para>gcc-3.2.1: "3.2.1"</para></listitem>
-    <listitem><para>gcc-3.2.2: "3.2.2"</para></listitem>
-    <listitem><para>gcc-3.2.3: "3.2.3"</para></listitem>
-    <listitem><para>gcc-3.3.0: "3.3"</para></listitem>
-    <listitem><para>gcc-3.3.1: "3.3.1"</para></listitem>
-    <listitem><para>gcc-3.3.2: "3.3.2"</para></listitem>
-    <listitem><para>gcc-3.3.3: "3.3.3"</para></listitem>
-    <listitem><para>gcc-3.4.x: "version-unused"</para></listitem>
-    <listitem><para>gcc-4.[0-5].x: "version-unused"</para></listitem>
+    <listitem><para>GCC 3.0.0: "3.0.0"</para></listitem>
+    <listitem><para>GCC 3.0.1: "3.0.0" (Error, should be "3.0.1")</para></listitem>
+    <listitem><para>GCC 3.0.2: "3.0.0" (Error, should be "3.0.2")</para></listitem>
+    <listitem><para>GCC 3.0.3: "3.0.0" (Error, should be "3.0.3")</para></listitem>
+    <listitem><para>GCC 3.0.4: "3.0.0" (Error, should be "3.0.4")</para></listitem>
+    <listitem><para>GCC 3.1.0: "3.1.0"</para></listitem>
+    <listitem><para>GCC 3.1.1: "3.1.1"</para></listitem>
+    <listitem><para>GCC 3.2.0: "3.2"</para></listitem>
+    <listitem><para>GCC 3.2.1: "3.2.1"</para></listitem>
+    <listitem><para>GCC 3.2.2: "3.2.2"</para></listitem>
+    <listitem><para>GCC 3.2.3: "3.2.3"</para></listitem>
+    <listitem><para>GCC 3.3.0: "3.3"</para></listitem>
+    <listitem><para>GCC 3.3.1: "3.3.1"</para></listitem>
+    <listitem><para>GCC 3.3.2: "3.3.2"</para></listitem>
+    <listitem><para>GCC 3.3.3: "3.3.3"</para></listitem>
+    <listitem><para>GCC 3.4: "version-unused"</para></listitem>
+    <listitem><para>GCC 4.x: "version-unused"</para></listitem>
     </itemizedlist>
     <para/>
     </listitem>
@@ -506,62 +504,38 @@ compatible.
     <listitem>
     <para>
     Matching each specific C++ compiler release to a specific set of
-    C++ include files. This is only implemented in gcc-3.1.1 releases
+    C++ include files. This is only implemented in GCC 3.1.1 releases
     and higher.
     </para>
     <para>
-    All C++ includes are installed in include/c++, then nest in a
+    All C++ includes are installed in
+    <filename class="directory">include/c++</filename>, then nest in a
     directory hierarchy corresponding to the C++ compiler's released
     version. This version corresponds to the variable "gcc_version" in
     "libstdc++-v3/acinclude.m4," and more details can be found in that
-    file's macro GLIBCXX_CONFIGURE (GLIBCPP_CONFIGURE before gcc-3.4.0).
+    file's macro GLIBCXX_CONFIGURE (GLIBCPP_CONFIGURE before GCC 3.4.0).
     </para>
     <para>
     C++ includes are versioned as follows:
     </para>
     <itemizedlist>
-    <listitem><para>gcc-3.0.0: include/g++-v3</para></listitem>
-    <listitem><para>gcc-3.0.1: include/g++-v3</para></listitem>
-    <listitem><para>gcc-3.0.2: include/g++-v3</para></listitem>
-    <listitem><para>gcc-3.0.3: include/g++-v3</para></listitem>
-    <listitem><para>gcc-3.0.4: include/g++-v3</para></listitem>
-    <listitem><para>gcc-3.1.0: include/g++-v3</para></listitem>
-    <listitem><para>gcc-3.1.1: include/c++/3.1.1</para></listitem>
-    <listitem><para>gcc-3.2.0: include/c++/3.2</para></listitem>
-    <listitem><para>gcc-3.2.1: include/c++/3.2.1</para></listitem>
-    <listitem><para>gcc-3.2.2: include/c++/3.2.2</para></listitem>
-    <listitem><para>gcc-3.2.3: include/c++/3.2.3</para></listitem>
-    <listitem><para>gcc-3.3.0: include/c++/3.3</para></listitem>
-    <listitem><para>gcc-3.3.1: include/c++/3.3.1</para></listitem>
-    <listitem><para>gcc-3.3.2: include/c++/3.3.2</para></listitem>
-    <listitem><para>gcc-3.3.3: include/c++/3.3.3</para></listitem>
-    <listitem><para>gcc-3.4.0: include/c++/3.4.0</para></listitem>
-    <listitem><para>gcc-3.4.1: include/c++/3.4.1</para></listitem>
-    <listitem><para>gcc-3.4.2: include/c++/3.4.2</para></listitem>
-    <listitem><para>gcc-3.4.3: include/c++/3.4.3</para></listitem>
-    <listitem><para>gcc-3.4.4: include/c++/3.4.4</para></listitem>
-    <listitem><para>gcc-3.4.5: include/c++/3.4.5</para></listitem>
-    <listitem><para>gcc-3.4.6: include/c++/3.4.6</para></listitem>
-    <listitem><para>gcc-4.0.0: include/c++/4.0.0</para></listitem>
-    <listitem><para>gcc-4.0.1: include/c++/4.0.1</para></listitem>
-    <listitem><para>gcc-4.0.2: include/c++/4.0.2</para></listitem>
-    <listitem><para>gcc-4.0.3: include/c++/4.0.3</para></listitem>
-    <listitem><para>gcc-4.1.0: include/c++/4.1.0</para></listitem>
-    <listitem><para>gcc-4.1.1: include/c++/4.1.1</para></listitem>
-    <listitem><para>gcc-4.1.2: include/c++/4.1.2</para></listitem>
-    <listitem><para>gcc-4.2.0: include/c++/4.2.0</para></listitem>
-    <listitem><para>gcc-4.2.1: include/c++/4.2.1</para></listitem>
-    <listitem><para>gcc-4.2.2: include/c++/4.2.2</para></listitem>
-    <listitem><para>gcc-4.2.3: include/c++/4.2.3</para></listitem>
-    <listitem><para>gcc-4.2.4: include/c++/4.2.4</para></listitem>
-    <listitem><para>gcc-4.3.0: include/c++/4.3.0</para></listitem>
-    <listitem><para>gcc-4.3.1: include/c++/4.3.1</para></listitem>
-    <listitem><para>gcc-4.3.3: include/c++/4.3.3</para></listitem>
-    <listitem><para>gcc-4.3.4: include/c++/4.3.4</para></listitem>
-    <listitem><para>gcc-4.4.0: include/c++/4.4.0</para></listitem>
-    <listitem><para>gcc-4.4.1: include/c++/4.4.1</para></listitem>
-    <listitem><para>gcc-4.4.2: include/c++/4.4.2</para></listitem>
-    <listitem><para>gcc-4.5.0: include/c++/4.5.0</para></listitem>
+    <listitem><para>GCC 3.0.0: include/g++-v3</para></listitem>
+    <listitem><para>GCC 3.0.1: include/g++-v3</para></listitem>
+    <listitem><para>GCC 3.0.2: include/g++-v3</para></listitem>
+    <listitem><para>GCC 3.0.3: include/g++-v3</para></listitem>
+    <listitem><para>GCC 3.0.4: include/g++-v3</para></listitem>
+    <listitem><para>GCC 3.1.0: include/g++-v3</para></listitem>
+    <listitem><para>GCC 3.1.1: include/c++/3.1.1</para></listitem>
+    <listitem><para>GCC 3.2.0: include/c++/3.2</para></listitem>
+    <listitem><para>GCC 3.2.1: include/c++/3.2.1</para></listitem>
+    <listitem><para>GCC 3.2.2: include/c++/3.2.2</para></listitem>
+    <listitem><para>GCC 3.2.3: include/c++/3.2.3</para></listitem>
+    <listitem><para>GCC 3.3.0: include/c++/3.3</para></listitem>
+    <listitem><para>GCC 3.3.1: include/c++/3.3.1</para></listitem>
+    <listitem><para>GCC 3.3.2: include/c++/3.3.2</para></listitem>
+    <listitem><para>GCC 3.3.3: include/c++/3.3.3</para></listitem>
+    <listitem><para>GCC 3.4.x: include/c++/3.4.x</para></listitem>
+    <listitem><para>GCC 4.x.y: include/c++/4.x.y</para></listitem>
     </itemizedlist>
     <para/>
     </listitem>
@@ -989,8 +963,8 @@ us. We'd like to know about them!
 <para>
 A "C" application, dynamically linked to two shared libraries, liba,
 libb. The dependent library liba is a C++ shared library compiled with
-gcc-3.3.x, and uses io, exceptions, locale, etc. The dependent library
-libb is a C++ shared library compiled with gcc-3.4.x, and also uses io,
+GCC 3.3, and uses io, exceptions, locale, etc. The dependent library
+libb is a C++ shared library compiled with GCC 3.4, and also uses io,
 exceptions, locale, etc.
 </para>
 
