@@ -1,3 +1,10 @@
+2011-12-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50923
+	* trans-decl.c (generate_local_decl): Set TREE_NO_WARNING only
+	if the front end has printed a warning.
+	(gfc_generate_function_code): Fix unset-result warning.
+
 2011-12-11  Paul Thomas  <pault@gcc.gnu.org>
 	Tobias Burnus  <burnus@gcc.gnu.org>
 
@@ -24,7 +31,7 @@
 	elemental procedure call retain the ss to provide the
 	scalarized array reference. Moved in file.
 	(gfc_conv_class_to_class): New function.
-        (gfc_conv_subref_array_arg): Use the type of the
+	(gfc_conv_subref_array_arg): Use the type of the
 	class _data component as a basetype.
 	(gfc_conv_procedure_call): Ensure that class array expressions
 	have both the _data reference and an array reference. Use 

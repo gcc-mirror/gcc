@@ -4544,10 +4544,16 @@ generate_local_decl (gfc_symbol * sym)
 			     "declared INTENT(OUT) but was not set and "
 			     "does not have a default initializer",
 			     sym->name, &sym->declared_at);
+	      if (sym->backend_decl != NULL_TREE)
+		TREE_NO_WARNING(sym->backend_decl) = 1;
 	    }
 	  else if (gfc_option.warn_unused_dummy_argument)
-	    gfc_warning ("Unused dummy argument '%s' at %L", sym->name,
+	    {
+	      gfc_warning ("Unused dummy argument '%s' at %L", sym->name,
 			 &sym->declared_at);
+	      if (sym->backend_decl != NULL_TREE)
+		TREE_NO_WARNING(sym->backend_decl) = 1;
+	    }
 	}
 
       /* Warn for unused variables, but not if they're inside a common
@@ -4555,11 +4561,19 @@ generate_local_decl (gfc_symbol * sym)
       else if (warn_unused_variable
 	       && !(sym->attr.in_common || sym->attr.use_assoc || sym->mark
 		    || sym->attr.in_namelist))
-	gfc_warning ("Unused variable '%s' declared at %L", sym->name,
-		     &sym->declared_at);
+	{
+	  gfc_warning ("Unused variable '%s' declared at %L", sym->name,
+		       &sym->declared_at);
+	  if (sym->backend_decl != NULL_TREE)
+	    TREE_NO_WARNING(sym->backend_decl) = 1;
+	}
       else if (warn_unused_variable && sym->attr.use_only)
-	gfc_warning ("Unused module variable '%s' which has been explicitly "
-		     "imported at %L", sym->name, &sym->declared_at);
+	{
+	  gfc_warning ("Unused module variable '%s' which has been explicitly "
+		       "imported at %L", sym->name, &sym->declared_at);
+	  if (sym->backend_decl != NULL_TREE)
+	    TREE_NO_WARNING(sym->backend_decl) = 1;
+	}
 
       /* For variable length CHARACTER parameters, the PARM_DECL already
 	 references the length variable, so force gfc_get_symbol_decl
@@ -4595,11 +4609,6 @@ generate_local_decl (gfc_symbol * sym)
 	mark the symbol now, as well as in traverse_ns, to prevent
 	getting stuck in a circular dependency.  */
       sym->mark = 1;
-
-      /* We do not want the middle-end to warn about unused parameters
-         as this was already done above.  */
-      if (sym->attr.dummy && sym->backend_decl != NULL_TREE)
-	  TREE_NO_WARNING(sym->backend_decl) = 1;
     }
   else if (sym->attr.flavor == FL_PARAMETER)
     {
@@ -5323,11 +5332,11 @@ gfc_generate_function_code (gfc_namespace * ns)
       if (result == NULL_TREE)
 	{
 	  /* TODO: move to the appropriate place in resolve.c.  */
-	  if (warn_return_type && !sym->attr.referenced && sym == sym->result)
+	  if (warn_return_type && sym == sym->result)
 	    gfc_warning ("Return value of function '%s' at %L not set",
 			 sym->name, &sym->declared_at);
-
-	  TREE_NO_WARNING(sym->backend_decl) = 1;
+	  if (warn_return_type)
+	    TREE_NO_WARNING(sym->backend_decl) = 1;
 	}
       else
 	gfc_add_expr_to_block (&body, gfc_generate_return ());
