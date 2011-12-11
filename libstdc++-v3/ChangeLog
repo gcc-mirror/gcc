@@ -42,6 +42,7 @@
 
 2011-12-09  François Dumont <fdumont@gcc.gnu.org>
 
+	PR libstdc++/44436 (unordered containers emplace, emplace_hint bits)
 	* include/bits/hashtable.h (_Hashtable<>::emplace,
 	_Hashtable<>::emplace_hint): Add.
 	* include/debug/unordered_set (unordered_set<>::emplace,
