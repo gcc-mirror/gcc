@@ -1008,6 +1008,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			saved = true;
 			annotate_object (gnat_entity, gnu_type, NULL_TREE,
 					 false, false);
+			/* This assertion will fail if the renamed object
+			   isn't aligned enough as to make it possible to
+			   honor the alignment set on the renaming.  */
+			if (align)
+			  {
+			    unsigned int renamed_align
+			      = DECL_P (gnu_decl)
+				? DECL_ALIGN (gnu_decl)
+				: TYPE_ALIGN (TREE_TYPE (gnu_decl));
+			    gcc_assert (renamed_align >= align);
+			  }
 			break;
 		      }
 

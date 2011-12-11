@@ -1,5 +1,11 @@
 2011-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: If there is an
+	alignment set on a renaming, assert that the renamed object is aligned
+	enough as to make it possible to honor it.
+
+2011-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gigi): Initialize the linemap earlier.
 
 2011-12-06  Dave Korn  <dave.korn.cygwin@gmail.com>
