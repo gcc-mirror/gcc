@@ -1,3 +1,9 @@
+2011-12-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/50690
+	* gfortran.dg/gomp/workshare2.f90:  New test.
+	* gfortran.dg/gomp/workshare3.f90:  New test.
+
 2011-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/elab3.ads: New test.

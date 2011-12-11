@@ -1,3 +1,13 @@
+2011-12-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/50690
+	* frontend-passes.c (in_omp_workshare):  New variable.
+	(cfe_expr_0):  Don't eliminiate common function if it would put
+	the variable immediately into a WORKSHARE construct.
+	(optimize_namespace):  Set in_omp_workshare.
+	(gfc_code_walker):  Keep track of OMP PARALLEL and OMP WORKSHARE
+	constructs.
+
 2011-12-10  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-decl.c (add_argument_checking): Fix syntax.
