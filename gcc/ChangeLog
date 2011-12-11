@@ -1,3 +1,8 @@
+2011-12-11  Patrick Marlier  <patrick.marlier@gmail.com>
+
+	* trans-mem.c (ipa_tm_transform_calls_redirect): Do not remove
+	edge.
+
 2011-12-10  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/altivec.md (altivec_vmrghb): Rewrite pattern as
