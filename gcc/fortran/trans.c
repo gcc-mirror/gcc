@@ -315,6 +315,7 @@ gfc_build_array_ref (tree base, tree offset, tree decl)
 {
   tree type = TREE_TYPE (base);
   tree tmp;
+  tree span;
 
   if (GFC_ARRAY_TYPE_P (type) && GFC_TYPE_ARRAY_RANK (type) == 0)
     {
@@ -345,12 +346,33 @@ gfc_build_array_ref (tree base, tree offset, tree decl)
   if (decl && (TREE_CODE (decl) == FIELD_DECL
 		 || TREE_CODE (decl) == VAR_DECL
 		 || TREE_CODE (decl) == PARM_DECL)
-	&& GFC_DECL_SUBREF_ARRAY_P (decl)
-	&& !integer_zerop (GFC_DECL_SPAN(decl)))
+	&& ((GFC_DECL_SUBREF_ARRAY_P (decl)
+	      && !integer_zerop (GFC_DECL_SPAN(decl)))
+	   || GFC_DECL_CLASS (decl)))
     {
+      if (GFC_DECL_CLASS (decl))
+	{
+	  /* Allow for dummy arguments and other good things.  */
+	  if (POINTER_TYPE_P (TREE_TYPE (decl)))
+	    decl = build_fold_indirect_ref_loc (input_location, decl);
+
+	  /* Check if '_data' is an array descriptor. If it is not,
+	     the array must be one of the components of the class object,
+	     so return a normal array reference.  */
+	  if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (gfc_class_data_get (decl))))
+	    return build4_loc (input_location, ARRAY_REF, type, base,
+			       offset, NULL_TREE, NULL_TREE);
+
+	  span = gfc_vtable_size_get (decl);
+	}
+      else if (GFC_DECL_SUBREF_ARRAY_P (decl))
+	span = GFC_DECL_SPAN(decl);
+      else
+	gcc_unreachable ();
+
       offset = fold_build2_loc (input_location, MULT_EXPR,
 				gfc_array_index_type,
-				offset, GFC_DECL_SPAN(decl));
+				offset, span);
       tmp = gfc_build_addr_expr (pvoid_type_node, base);
       tmp = fold_build_pointer_plus_loc (input_location, tmp, offset);
       tmp = fold_convert (build_pointer_type (type), tmp);

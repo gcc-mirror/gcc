@@ -3326,6 +3326,9 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
   gfc_array_spec *as;
   int d;
 
+  if (array->ts.type == BT_CLASS)
+    return NULL;
+
   if (array->expr_type != EXPR_VARIABLE)
     {
       as = NULL;
@@ -3462,7 +3465,9 @@ simplify_cobound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
     return NULL;
 
   /* Follow any component references.  */
-  as = array->symtree->n.sym->as;
+  as = (array->ts.type == BT_CLASS && array->ts.u.derived->components)
+       ? array->ts.u.derived->components->as
+       : array->symtree->n.sym->as;
   for (ref = array->ref; ref; ref = ref->next)
     {
       switch (ref->type)
@@ -3506,11 +3511,12 @@ simplify_cobound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 	}
     }
 
-  gcc_unreachable ();
+  if (!as)
+    gcc_unreachable ();
 
  done:
 
-  if (as->type == AS_DEFERRED || as->type == AS_ASSUMED_SHAPE)
+  if (as->cotype == AS_DEFERRED || as->cotype == AS_ASSUMED_SHAPE)
     return NULL;
 
   if (dim == NULL)
@@ -3523,7 +3529,7 @@ simplify_cobound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
       /* Simplify the cobounds for each dimension.  */
       for (d = 0; d < as->corank; d++)
 	{
-	  bounds[d] = simplify_bound_dim (array, kind, d + 1 + array->rank,
+	  bounds[d] = simplify_bound_dim (array, kind, d + 1 + as->rank,
 					  upper, as, ref, true);
 	  if (bounds[d] == NULL || bounds[d] == &gfc_bad_expr)
 	    {
@@ -3575,7 +3581,7 @@ simplify_cobound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 	  return &gfc_bad_expr;
 	}
 
-      return simplify_bound_dim (array, kind, d+array->rank, upper, as, ref, true);
+      return simplify_bound_dim (array, kind, d+as->rank, upper, as, ref, true);
     }
 }
 

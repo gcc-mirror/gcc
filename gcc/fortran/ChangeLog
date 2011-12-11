@@ -1,3 +1,112 @@
+2011-12-11  Paul Thomas  <pault@gcc.gnu.org>
+	Tobias Burnus  <burnus@gcc.gnu.org>
+
+	PR fortran/41539
+	PR fortran/43214
+	PR fortran/43969
+	PR fortran/44568
+	PR fortran/46356
+	PR fortran/46990
+	PR fortran/49074
+	* interface.c(symbol_rank): Return the rank of the _data
+	component of class objects.
+	(compare_parameter): Also compare the derived type of the class
+	_data component for type mismatch.  Similarly, return 1 if the
+	formal and _data ranks match.
+	(compare_actual_formal): Do not compare storage sizes for class
+	expressions. It is an error if an actual class array, passed to
+	a formal class array is not full.
+	* trans-expr.c (gfc_class_data_get, gfc_class_vptr_get,
+	gfc_vtable_field_get, gfc_vtable_hash_get, gfc_vtable_size_get,
+	gfc_vtable_extends_get, gfc_vtable_def_init_get,
+	gfc_vtable_copy_get): New functions for class API.
+	(gfc_conv_derived_to_class): For an array reference in an
+	elemental procedure call retain the ss to provide the
+	scalarized array reference. Moved in file.
+	(gfc_conv_class_to_class): New function.
+        (gfc_conv_subref_array_arg): Use the type of the
+	class _data component as a basetype.
+	(gfc_conv_procedure_call): Ensure that class array expressions
+	have both the _data reference and an array reference. Use 
+	gfc_conv_class_to_class to handle class arrays for elemental
+	functions in scalarized loops, class array elements and full
+	class arrays. Use a call to gfc_conv_subref_array_arg in order
+	that the copy-in/copy-out for passing class arrays to derived
+	type arrays occurs correctly.
+	(gfc_conv_expr): If it is missing, add the _data component
+	between a class object or component and an array reference.
+	(gfc_trans_class_array_init_assign): New function.
+	(gfc_trans_class_init_assign): Call it for array expressions.
+	* trans-array.c (gfc_add_loop_ss_code): Do not use a temp for
+	class scalars since their size will depend on the dynamic type.
+	(build_class_array_ref): New function.
+	(gfc_conv_scalarized_array_ref): Call build_class_array_ref.
+	(gfc_array_init_size): Add extra argument, expr3, that represents
+	the SOURCE argument. If present,use this for the element size.
+	(gfc_array_allocate): Also add argument expr3 and use it when
+	calling gfc_array_init_size.
+	(structure_alloc_comps): Enable class arrays.
+	* class.c (gfc_add_component_ref): Carry over the derived type
+	of the _data component.
+	(gfc_add_class_array_ref): New function.
+	(class_array_ref_detected): New static function.
+	(gfc_is_class_array_ref): New function that calls previous.
+	(gfc_is_class_scalar_expr): New function.
+	(gfc_build_class_symbol): Throw not implemented error for
+	assumed size class arrays.  Remove error that prevents
+	CLASS arrays.
+	(gfc_build_class_symbol): Prevent pointer/allocatable conflict.
+	Also unset codimension.
+	(gfc_find_derived_vtab): Make 'copy' elemental and set the
+	intent of the arguments accordingly.: 
+	* trans-array.h : Update prototype for gfc_array_allocate.
+	* array.c (gfc_array_dimen_size): Return failure if class expr.
+	(gfc_array_size): Likewise.
+	* gfortran.h : New prototypes for gfc_add_class_array_ref,
+	gfc_is_class_array_ref and gfc_is_class_scalar_expr.
+	* trans-stmt.c (trans_associate_var): Exclude class targets
+	from test. Move the allocation of the _vptr to an earlier time
+	for class objects.
+	(trans_associate_var): Assign the descriptor directly for class
+	arrays.
+	(gfc_trans_allocate): Add expr3 to gfc_array_allocate arguments.
+	Convert array element references into sections. Do not invoke
+	gfc_conv_procedure_call, use gfc_trans_call instead.
+	* expr.c (gfc_get_corank): Fix for BT_CLASS.
+	(gfc_is_simply_contiguous): Exclude class from test.
+	* trans.c (gfc_build_array_ref): Include class array refs.
+	* trans.h : Include prototypes for class API functions that are
+	new in trans-expr. Define GFC_DECL_CLASS(node).
+	* resolve.c (check_typebound_baseobject ): Remove error for
+	non-scalar base object.
+	(resolve_allocate_expr): Ensure that class _data component is
+	present. If array, call gfc_expr_to_intialize.
+	(resolve_select): Remove scalar error for SELECT statement as a
+	temporary measure.
+	(resolve_assoc_var): Update 'target' (aka 'selector') as
+	needed. Ensure that the target expression has the right rank.
+	(resolve_select_type): Ensure that target expressions have a
+	valid locus.
+	(resolve_allocate_expr, resolve_fl_derived0): Fix for BT_CLASS.
+	* trans-decl.c (gfc_get_symbol_decl): Set GFC_DECL_CLASS, where
+	appropriate.
+	(gfc_trans_deferred_vars): Get class arrays right.
+	* match.c(select_type_set_tmp): Add array spec to temporary.
+	(gfc_match_select_type): Allow class arrays.
+	* check.c (array_check): Ensure that class arrays have refs.
+	(dim_corank_check, dim_rank_check): Retrun success if class.
+	* primary.c (gfc_match_varspec): Fix for class arrays and
+	co-arrays. Make sure that class _data is present.
+	(gfc_match_rvalue): Handle class arrays.
+	*trans-intrinsic.c (gfc_conv_intrinsic_size): Add class array
+	reference.
+	(gfc_conv_allocated): Add _data component to class expressions.
+	(gfc_add_intrinsic_ss_code): ditto.
+	* simplify.c (simplify_cobound): Fix for BT_CLASS.
+	(simplify_bound): Return NULL for class arrays.
+	(simplify_cobound): Obtain correct array_spec. Use cotype as
+	appropriate. Use arrayspec for bounds.
+
 2011-12-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/50690

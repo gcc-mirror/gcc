@@ -1,3 +1,32 @@
+2011-12-11  Paul Thomas  <pault@gcc.gnu.org>
+	Tobias Burnus  <burnus@gcc.gnu.org>
+
+	PR fortran/41539
+	PR fortran/43214
+	PR fortran/43969
+	PR fortran/44568
+	PR fortran/46356
+	PR fortran/46990
+	PR fortran/49074
+	* gfortran.dg/class_array_1.f03: New.
+	* gfortran.dg/class_array_2.f03: New.
+	* gfortran.dg/class_array_3.f03: New.
+	* gfortran.dg/class_array_4.f03: New.
+	* gfortran.dg/class_array_5.f03: New.
+	* gfortran.dg/class_array_6.f03: New.
+	* gfortran.dg/class_array_7.f03: New.
+	* gfortran.dg/class_array_8.f03: New.
+	* gfortran.dg/coarray_poly_1.f90: New.
+	* gfortran.dg/coarray_poly_2.f90: New.
+	* gfortran.dg/coarray/poly_run_1.f90: New.
+	* gfortran.dg/coarray/poly_run_2.f90: New.
+	* gfortran.dg/class_to_type_1.f03: New.
+	* gfortran.dg/type_to_class_1.f03: New.
+	* gfortran.dg/typebound_assignment_3.f03: Remove the error.
+	* gfortran.dg/auto_dealloc_2.f90: Occurences of __builtin_free
+	now 2.
+	* gfortran.dg/class_19.f03: Occurences of __builtin_free now 8.
+
 2011-12-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/50690

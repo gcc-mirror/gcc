@@ -64,7 +64,14 @@ gfc_add_component_ref (gfc_expr *e, const char *name)
   while (*tail != NULL)
     {
       if ((*tail)->type == REF_COMPONENT)
-	derived = (*tail)->u.c.component->ts.u.derived;
+	{
+	  if (strcmp ((*tail)->u.c.component->name, "_data") == 0
+		&& (*tail)->next
+		&& (*tail)->next->type == REF_ARRAY
+		&& (*tail)->next->next == NULL)
+	    return;
+	  derived = (*tail)->u.c.component->ts.u.derived;
+	}
       if ((*tail)->type == REF_ARRAY && (*tail)->next == NULL)
 	break;
       tail = &((*tail)->next);
@@ -79,6 +86,155 @@ gfc_add_component_ref (gfc_expr *e, const char *name)
   gcc_assert((*tail)->u.c.component);
   if (!next)
     e->ts = (*tail)->u.c.component->ts;
+}
+
+
+/* This is used to add both the _data component reference and an array
+   reference to class expressions.  Used in translation of intrinsic
+   array inquiry functions.  */
+
+void
+gfc_add_class_array_ref (gfc_expr *e)
+{
+  int rank =  CLASS_DATA (e)->as->rank;
+  gfc_array_spec *as = CLASS_DATA (e)->as;
+  gfc_ref *ref = NULL;
+  gfc_add_component_ref (e, "_data");
+  e->rank = rank;
+  for (ref = e->ref; ref; ref = ref->next)
+    if (!ref->next)
+      break;
+  if (ref->type != REF_ARRAY)
+    {
+      ref->next = gfc_get_ref ();
+      ref = ref->next;
+      ref->type = REF_ARRAY;
+      ref->u.ar.type = AR_FULL;
+      ref->u.ar.as = as;	  
+    }
+}
+
+
+/* Unfortunately, class array expressions can appear in various conditions;
+   with and without both _data component and an arrayspec.  This function
+   deals with that variability.  The previous reference to 'ref' is to a
+   class array.  */
+
+static bool
+class_array_ref_detected (gfc_ref *ref, bool *full_array)
+{
+  bool no_data = false;
+  bool with_data = false;
+
+  /* An array reference with no _data component.  */
+  if (ref && ref->type == REF_ARRAY
+	&& !ref->next
+	&& ref->u.ar.type != AR_ELEMENT)
+    {
+      if (full_array)
+        *full_array = ref->u.ar.type == AR_FULL;
+      no_data = true;
+    }
+
+  /* Cover cases where _data appears, with or without an array ref.  */
+  if (ref && ref->type == REF_COMPONENT
+	&& strcmp (ref->u.c.component->name, "_data") == 0)
+    {
+      if (!ref->next)
+	{
+	  with_data = true;
+	  if (full_array)
+	    *full_array = true;
+	}
+      else if (ref->next && ref->next->type == REF_ARRAY
+	    && !ref->next->next
+	    && ref->type == REF_COMPONENT
+	    && ref->next->type == REF_ARRAY
+	    && ref->next->u.ar.type != AR_ELEMENT)
+	{
+	  with_data = true;
+	  if (full_array)
+	    *full_array = ref->next->u.ar.type == AR_FULL;
+	}
+    }
+
+  return no_data || with_data;
+}
+
+
+/* Returns true if the expression contains a reference to a class
+   array.  Notice that class array elements return false.  */
+
+bool
+gfc_is_class_array_ref (gfc_expr *e, bool *full_array)
+{
+  gfc_ref *ref;
+
+  if (!e->rank)
+    return false;
+
+  if (full_array)
+    *full_array= false;
+
+  /* Is this a class array object? ie. Is the symbol of type class?  */
+  if (e->symtree
+	&& e->symtree->n.sym->ts.type == BT_CLASS
+	&& CLASS_DATA (e->symtree->n.sym)
+	&& CLASS_DATA (e->symtree->n.sym)->attr.dimension
+	&& class_array_ref_detected (e->ref, full_array))
+    return true;
+
+  /* Or is this a class array component reference?  */
+  for (ref = e->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_COMPONENT
+	    && ref->u.c.component->ts.type == BT_CLASS
+	    && CLASS_DATA (ref->u.c.component)->attr.dimension
+	    && class_array_ref_detected (ref->next, full_array))
+	return true;
+    }
+
+  return false;
+}
+
+
+/* Returns true if the expression is a reference to a class
+   scalar.  This function is necessary because such expressions
+   can be dressed with a reference to the _data component and so
+   have a type other than BT_CLASS.  */
+
+bool
+gfc_is_class_scalar_expr (gfc_expr *e)
+{
+  gfc_ref *ref;
+
+  if (e->rank)
+    return false;
+
+  /* Is this a class object?  */
+  if (e->symtree
+	&& e->symtree->n.sym->ts.type == BT_CLASS
+	&& CLASS_DATA (e->symtree->n.sym)
+	&& !CLASS_DATA (e->symtree->n.sym)->attr.dimension
+	&& (e->ref == NULL
+	    || (strcmp (e->ref->u.c.component->name, "_data") == 0
+		&& e->ref->next == NULL)))
+    return true;
+
+  /* Or is the final reference BT_CLASS or _data?  */
+  for (ref = e->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_COMPONENT
+	    && ref->u.c.component->ts.type == BT_CLASS
+	    && CLASS_DATA (ref->u.c.component)
+	    && !CLASS_DATA (ref->u.c.component)->attr.dimension
+	    && (ref->next == NULL
+		|| (strcmp (ref->next->u.c.component->name, "_data") == 0
+		    && ref->next->next == NULL)))
+	return true;
+    }
+
+  return false;
 }
 
 
@@ -183,7 +339,14 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
   gfc_symbol *fclass;
   gfc_symbol *vtab;
   gfc_component *c;
-  
+
+  if (as && *as && (*as)->type == AS_ASSUMED_SIZE)
+    {
+      gfc_error ("Assumed size polymorphic objects or components, such "
+		 "as that at %C, have not yet been implemented");
+      return FAILURE;
+    }
+
   if (attr->class_ok)
     /* Class container has already been built.  */
     return SUCCESS;
@@ -194,12 +357,6 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
   if (!attr->class_ok)
     /* We can not build the class container yet.  */
     return SUCCESS;
-
-  if (*as)
-    {
-      gfc_fatal_error ("Polymorphic array at %C not yet supported");
-      return FAILURE;
-    }
 
   /* Determine the name of the encapsulating type.  */
   get_unique_hashed_string (tname, ts->u.derived);
@@ -277,8 +434,8 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
   fclass->attr.extension = ts->u.derived->attr.extension + 1;
   fclass->attr.is_class = 1;
   ts->u.derived = fclass;
-  attr->allocatable = attr->pointer = attr->dimension = 0;
-  (*as) = NULL;  /* XXX */
+  attr->allocatable = attr->pointer = attr->dimension = attr->codimension = 0;
+  (*as) = NULL;
   return SUCCESS;
 }
 
@@ -402,7 +559,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
   gfc_namespace *ns;
   gfc_symbol *vtab = NULL, *vtype = NULL, *found_sym = NULL, *def_init = NULL;
   gfc_symbol *copy = NULL, *src = NULL, *dst = NULL;
-  
+
   /* Find the top-level namespace (MODULE or PROGRAM).  */
   for (ns = gfc_current_ns; ns; ns = ns->parent)
     if (!ns->parent)
@@ -556,6 +713,9 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  copy->attr.flavor = FL_PROCEDURE;
 		  copy->attr.subroutine = 1;
 		  copy->attr.if_source = IFSRC_DECL;
+		  /* This is elemental so that arrays are automatically
+		     treated correctly by the scalarizer.  */
+		  copy->attr.elemental = 1;
 		  if (ns->proc_name->attr.flavor == FL_MODULE)
 		    copy->module = ns->proc_name->name;
 		  gfc_set_sym_referenced (copy);
@@ -565,6 +725,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  src->ts.u.derived = derived;
 		  src->attr.flavor = FL_VARIABLE;
 		  src->attr.dummy = 1;
+		  src->attr.intent = INTENT_IN;
 		  gfc_set_sym_referenced (src);
 		  copy->formal = gfc_get_formal_arglist ();
 		  copy->formal->sym = src;
@@ -573,6 +734,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  dst->ts.u.derived = derived;
 		  dst->attr.flavor = FL_VARIABLE;
 		  dst->attr.dummy = 1;
+		  dst->attr.intent = INTENT_OUT;
 		  gfc_set_sym_referenced (dst);
 		  copy->formal->next = gfc_get_formal_arglist ();
 		  copy->formal->next->sym = dst;

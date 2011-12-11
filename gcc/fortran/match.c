@@ -5151,6 +5151,27 @@ select_type_set_tmp (gfc_typespec *ts)
     sprintf (name, "__tmp_type_%s", ts->u.derived->name);
   gfc_get_sym_tree (name, gfc_current_ns, &tmp, false);
   gfc_add_type (tmp->n.sym, ts, NULL);
+
+/* Copy across the array spec to the selector, taking care as to
+   whether or not it is a class object or not.  */
+  if (select_type_stack->selector->ts.type == BT_CLASS &&
+      CLASS_DATA (select_type_stack->selector)->attr.dimension)
+    {
+      if (ts->type == BT_CLASS)
+	{
+	  CLASS_DATA (tmp->n.sym)->attr.dimension = 1;
+	  CLASS_DATA (tmp->n.sym)->as = gfc_get_array_spec ();
+	  CLASS_DATA (tmp->n.sym)->as
+			= CLASS_DATA (select_type_stack->selector)->as;
+	}
+      else
+	{
+	  tmp->n.sym->attr.dimension = 1;
+	  tmp->n.sym->as = gfc_get_array_spec ();
+	  tmp->n.sym->as = CLASS_DATA (select_type_stack->selector)->as;
+	}
+    }
+
   gfc_set_sym_referenced (tmp->n.sym);
   gfc_add_flavor (&tmp->n.sym->attr, FL_VARIABLE, name, NULL);
   tmp->n.sym->attr.select_type_temporary = 1;
@@ -5176,6 +5197,7 @@ gfc_match_select_type (void)
   gfc_expr *expr1, *expr2 = NULL;
   match m;
   char name[GFC_MAX_SYMBOL_LEN];
+  bool class_array;
 
   m = gfc_match_label ();
   if (m == MATCH_ERROR)
@@ -5216,8 +5238,24 @@ gfc_match_select_type (void)
   if (m != MATCH_YES)
     goto cleanup;
 
+  /* This ghastly expression seems to be needed to distinguish a CLASS
+     array, which can have a reference, from other expressions that
+     have references, such as derived type components, and are not
+     allowed by the standard.
+     TODO; see is it is sufficent to exclude component and substring
+     references.  */
+  class_array = expr1->expr_type == EXPR_VARIABLE
+		  && expr1->ts.type != BT_UNKNOWN
+		  && CLASS_DATA (expr1)
+		  && (strcmp (CLASS_DATA (expr1)->name, "_data") == 0)
+		  && CLASS_DATA (expr1)->attr.dimension
+		  && expr1->ref
+		  && expr1->ref->type == REF_ARRAY
+		  && expr1->ref->next == NULL;
+
   /* Check for F03:C811.  */
-  if (!expr2 && (expr1->expr_type != EXPR_VARIABLE || expr1->ref != NULL))
+  if (!expr2 && (expr1->expr_type != EXPR_VARIABLE
+		  || (!class_array && expr1->ref != NULL)))
     {
       gfc_error ("Selector in SELECT TYPE at %C is not a named variable; "
 		 "use associate-name=>");
