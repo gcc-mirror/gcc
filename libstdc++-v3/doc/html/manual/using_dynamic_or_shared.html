@@ -76,7 +76,7 @@ A quick read of the relevant part of the GCC
 	  the linker.  The exact format of the options is dependent on
 	  which linker you use:
 	</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
-	      GNU ld (default on Linux):
+	      GNU ld (default on GNU/Linux):
               <code class="literal">-Wl,-rpath,</code><code class="filename">destdir/lib</code>
 	    </p></li><li class="listitem"><p>
 	      IRIX ld:
@@ -92,7 +92,7 @@ A quick read of the relevant part of the GCC
 	  On some platforms the system administrator can configure the
 	  dynamic linker to always look for libraries in
 	  <code class="filename">destdir/lib</code>, for example
-	  by using the <span class="command"><strong>ldconfig</strong></span> utility on Linux
+	  by using the <span class="command"><strong>ldconfig</strong></span> utility on GNU/Linux
 	  or the <span class="command"><strong>crle</strong></span> utility on Solaris. This is a
 	  system-wide change which can make the system unusable so if you
 	  are unsure then use one of the other methods described above.
