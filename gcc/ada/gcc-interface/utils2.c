@@ -1817,7 +1817,7 @@ gnat_build_constructor (tree type, VEC(constructor_elt,gc) *v)
   FOR_EACH_CONSTRUCTOR_ELT (v, n_elmts, obj, val)
     {
       /* The predicate must be in keeping with output_constructor.  */
-      if (!TREE_CONSTANT (val)
+      if ((!TREE_CONSTANT (val) && !TREE_STATIC (val))
 	  || (TREE_CODE (type) == RECORD_TYPE
 	      && CONSTRUCTOR_BITFIELD_P (obj)
 	      && !initializer_constant_valid_for_bitfield_p (val))

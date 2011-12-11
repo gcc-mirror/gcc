@@ -1,5 +1,10 @@
 2011-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils2.c (gnat_build_constructor): Test the TREE_STATIC
+	flag of elements to compute that of the constructor.
+
+2011-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_param): Set the restrict qualifier
 	on references built for parameters which aren't specifically by-ref.
 
