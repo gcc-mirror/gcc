@@ -29,7 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <sys/frame.h>
 #include <sys/stack.h>
 
-#if defined(__arch64__)
+#ifdef __arch64__
 
 #define IS_SIGHANDLER sparc64_is_sighandler
 
