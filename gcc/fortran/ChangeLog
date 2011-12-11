@@ -1,3 +1,10 @@
+2011-12-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/51338
+	Backport from trunk
+	* dependency.c (are_identical_variables):  Handle case where
+	end fields of substring references are NULL.
+
 2011-12-08  Toon Moene  <toon@moene.org>
 
 	PR fortran/51310
