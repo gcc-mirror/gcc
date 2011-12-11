@@ -5518,7 +5518,15 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 		   || (!foreign
 		       && default_pass_by_ref (gnu_param_type)))))
     {
+      /* We take advantage of 6.2(12) by considering that references built for
+	 parameters whose type isn't by-ref and for which the mechanism hasn't
+	 been forced to by-ref are restrict-qualified in the C sense.  */
+      bool restrict_p
+	= !TREE_ADDRESSABLE (gnu_param_type) && mech != By_Reference;
       gnu_param_type = build_reference_type (gnu_param_type);
+      if (restrict_p)
+	gnu_param_type
+	  = build_qualified_type (gnu_param_type, TYPE_QUAL_RESTRICT);
       by_ref = true;
 
       /* In some ABIs, e.g. SPARC 32-bit, fat pointer types are themselves
