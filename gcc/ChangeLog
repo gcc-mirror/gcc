@@ -1,3 +1,9 @@
+2011-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51485
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Give up on
+	DRs in call stmts.
+
 2011-12-11  Patrick Marlier  <patrick.marlier@gmail.com>
 
 	* trans-mem.c (ipa_tm_transform_calls_redirect): Do not remove

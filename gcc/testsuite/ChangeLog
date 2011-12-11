@@ -1,3 +1,8 @@
+2011-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51485
+	* g++.dg/vect/pr51485.cc: New test.
+
 2011-12-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50923
