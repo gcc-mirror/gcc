@@ -1,3 +1,9 @@
+2011-12-12  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/21617
+	* ira-color.c (bucket_allocno_compare_func): Don't compare
+	allocno classes.  Compare number of hard registers needed.
+
 2011-12-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/50569
