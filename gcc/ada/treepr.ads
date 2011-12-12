@@ -37,6 +37,9 @@ package Treepr is
    --  Prints a single tree node, without printing descendants. The Label
    --  string is used to preface each line of the printed output.
 
+   procedure Print_Node_Briefly (N : Node_Id);
+   --  Terse version of Print_Tree_Node
+
    procedure Print_Tree_List (L : List_Id);
    --  Prints a single node list, without printing the descendants of any
    --  of the nodes in the list

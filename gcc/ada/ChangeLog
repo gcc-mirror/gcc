@@ -1,3 +1,40 @@
+2011-12-12  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_disp.adb: Minor reformatting.
+
+2011-12-12  Tristan Gingold  <gingold@adacore.com>
+
+	* gnatls.adb (Search_RTS): New procedure.
+	(Scan_Ls_Arg): Move code that search the RTS.
+	(Gnatls): search the RTS later.
+	* prj-env.ads, prj-env.adb (Get_Runtime_Path): New function.
+
+2011-12-12  Ed Falis  <falis@adacore.com>
+
+	* sysdep.c: Fix treatment of VxWorks task options so that run-times
+	built with __SPE__ get option VX_SPE_TASK while others get VX_FP_TASK.
+
+2011-12-12  Bob Duff  <duff@adacore.com>
+
+	* sem_type.adb, sem_type.ads, sem_ch4.adb, treepr.adb, treepr.ads:
+	Minor cleanup and fiddling with debug printouts.
+
+2011-12-12  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Get_Directories): For a non extending project,
+	always get a declared object and/or exec directory if it already
+	exists, even when there are no sources, but do not create them.
+
+2011-12-12  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb (Resolve): Deal with the case where an abstract
+	operator is called with operands of type universal_integer.
+
+2011-12-12  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb: Minor fix to dominance marker referencing WHILE
+	decision.
+
 2011-12-12  Tristan Gingold  <gingold@adacore.com>
 
 	* mlib-tgt-specific-xi.adb: (Get_Target_Prefix): Simplify code.

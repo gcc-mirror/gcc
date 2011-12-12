@@ -236,6 +236,13 @@ package Prj.Env is
    --
    --  Returns No_Name if no such project was found
 
+   function Get_Runtime_Path (Self : Project_Search_Path; Name : String)
+     return String_Access;
+   --  Compute the full path for the project-based runtime name.  It first
+   --  checks that name is not a simple name (must has a path separator in it),
+   --  and returns null in case of failure.  This check might be removed in the
+   --  future.  The name is simply searched on the project path.
+
 private
    package Projects_Paths is new GNAT.Dynamic_HTables.Simple_HTable
      (Header_Num => Header_Num,

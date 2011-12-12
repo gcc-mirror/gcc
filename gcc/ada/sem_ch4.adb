@@ -6219,6 +6219,11 @@ package body Sem_Ch4 is
 
    begin
       if Is_Overloaded (N) then
+         if Debug_Flag_V then
+            Write_Str ("Remove_Abstract_Operations: ");
+            Write_Overloads (N);
+         end if;
+
          Get_First_Interp (N, I, It);
 
          while Present (It.Nam) loop
@@ -6411,6 +6416,11 @@ package body Sem_Ch4 is
                   Get_Next_Interp (I, It);
                end loop;
             end if;
+         end if;
+
+         if Debug_Flag_V then
+            Write_Str ("Remove_Abstract_Operations done: ");
+            Write_Overloads (N);
          end if;
       end if;
    end Remove_Abstract_Operations;

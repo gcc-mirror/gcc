@@ -138,6 +138,9 @@ package body Treepr is
    --  Print name from names table if currently in print phase, noop if in
    --  marking phase. Note that the name is output in mixed case mode.
 
+   procedure Print_Node_Header (N : Node_Id);
+   --  Print header line used by Print_Node and Print_Node_Briefly
+
    procedure Print_Node_Kind (N : Node_Id);
    --  Print node kind name in mixed case if in print phase, noop if in
    --  marking phase.
@@ -885,7 +888,6 @@ package body Treepr is
       Prefix_Str_Char     : String (Prefix_Str'First .. Prefix_Str'Last + 1);
 
       Sfile : Source_File_Index;
-      Notes : Boolean;
       Fmt   : UI_Format;
 
    begin
@@ -905,48 +907,7 @@ package body Treepr is
       --  Print header line
 
       Print_Str (Prefix_Str);
-      Print_Node_Ref (N);
-
-      Notes := False;
-
-      if N > Atree_Private_Part.Nodes.Last then
-         Print_Str (" (no such node)");
-         Print_Eol;
-         return;
-      end if;
-
-      if Comes_From_Source (N) then
-         Notes := True;
-         Print_Str (" (source");
-      end if;
-
-      if Analyzed (N) then
-         if not Notes then
-            Notes := True;
-            Print_Str (" (");
-         else
-            Print_Str (",");
-         end if;
-
-         Print_Str ("analyzed");
-      end if;
-
-      if Error_Posted (N) then
-         if not Notes then
-            Notes := True;
-            Print_Str (" (");
-         else
-            Print_Str (",");
-         end if;
-
-         Print_Str ("posted");
-      end if;
-
-      if Notes then
-         Print_Char (')');
-      end if;
-
-      Print_Eol;
+      Print_Node_Header (N);
 
       if Is_Rewrite_Substitution (N) then
          Print_Str (Prefix_Str);
@@ -1274,6 +1235,67 @@ package body Treepr is
          Print_Eol;
       end if;
    end Print_Node;
+
+   ------------------------
+   -- Print_Node_Briefly --
+   ------------------------
+
+   procedure Print_Node_Briefly (N : Node_Id) is
+   begin
+      Printing_Descendants := False;
+      Phase := Printing;
+      Print_Node_Header (N);
+   end Print_Node_Briefly;
+
+   -----------------------
+   -- Print_Node_Header --
+   -----------------------
+
+   procedure Print_Node_Header (N : Node_Id) is
+      Notes : Boolean := False;
+
+   begin
+      Print_Node_Ref (N);
+
+      if N > Atree_Private_Part.Nodes.Last then
+         Print_Str (" (no such node)");
+         Print_Eol;
+         return;
+      end if;
+
+      if Comes_From_Source (N) then
+         Notes := True;
+         Print_Str (" (source");
+      end if;
+
+      if Analyzed (N) then
+         if not Notes then
+            Notes := True;
+            Print_Str (" (");
+         else
+            Print_Str (",");
+         end if;
+
+         Print_Str ("analyzed");
+      end if;
+
+      if Error_Posted (N) then
+         if not Notes then
+            Notes := True;
+            Print_Str (" (");
+         else
+            Print_Str (",");
+         end if;
+
+         Print_Str ("posted");
+      end if;
+
+      if Notes then
+         Print_Char (')');
+      end if;
+
+      Print_Eol;
+   end Print_Node_Header;
 
    ---------------------
    -- Print_Node_Kind --
