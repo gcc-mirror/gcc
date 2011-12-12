@@ -9584,7 +9584,8 @@ package body Sem_Ch3 is
                May_Need_Implicit_Body (E);
             end if;
 
-         --  Comment needed here for Is_Generic_Type test ???
+         --  A formal incomplete type (Ada 2012) does not require a completion;
+         --  other incomplete type declarations do.
 
          elsif Ekind (E) = E_Incomplete_Type
            and then No (Underlying_Type (E))

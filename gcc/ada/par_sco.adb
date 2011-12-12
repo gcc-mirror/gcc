@@ -1465,8 +1465,9 @@ package body Par_SCO is
 
                when N_Loop_Statement =>
                   declare
-                     ISC : constant Node_Id := Iteration_Scheme (N);
-                     Inner_Dominant : Dominant_Info := No_Dominant;
+                     ISC            : constant Node_Id := Iteration_Scheme (N);
+                     Inner_Dominant : Dominant_Info    := No_Dominant;
+
                   begin
                      if Present (ISC) then
 
@@ -1474,7 +1475,7 @@ package body Par_SCO is
                         --  statement sequence to include the iteration scheme
                         --  and process any decisions it contains.
 
-                        --  While statement
+                        --  While loop
 
                         if Present (Condition (ISC)) then
                            Extend_Statement_Sequence (N, ISC, 'W');
@@ -1484,7 +1485,7 @@ package body Par_SCO is
 
                            Inner_Dominant := ('T', N);
 
-                        --  For statement
+                        --  For loop
 
                         else
                            Extend_Statement_Sequence (N, ISC, 'F');

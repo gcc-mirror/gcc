@@ -1369,7 +1369,7 @@ package body CStand is
 
       begin
          --  In 32 bit mode, the size is 32 bits, and the delta and
-         --  small values are set to 20 milliseconds (20.0**(10.0**(-3)).
+         --  small values are set to 20 milliseconds (20.0*(10.0**(-3)).
 
          if Duration_32_Bits_On_Target then
             Dlo := Intval (Type_Low_Bound (Standard_Integer_32));
@@ -1377,7 +1377,7 @@ package body CStand is
             Delta_Val := UR_From_Components (UI_From_Int (20), Uint_3, 10);
 
          --  In standard 64-bit mode, the size is 64-bits and the delta and
-         --  small values are set to nanoseconds (1.0**(10.0**(-9))
+         --  small values are set to nanoseconds (1.0*(10.0**(-9))
 
          else
             Dlo := Intval (Type_Low_Bound (Standard_Integer_64));
