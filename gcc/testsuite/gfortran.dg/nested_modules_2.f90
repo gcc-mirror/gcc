@@ -33,7 +33,7 @@ program testfoobar
   call sub1 (l)
   i = 1
   call sub2 (l)
-  if (all (l.ne.(/84,42,0/))) call abort ()
+  if (any (l.ne.(/84,42,0/))) call abort ()
 end program testfoobar
 
 ! { dg-final { cleanup-modules "foo bar foobar" } }

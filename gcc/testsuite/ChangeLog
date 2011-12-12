@@ -1,3 +1,7 @@
+2011-12-12  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.dg/nested_modules_2.f90: Tighten test.
+
 2011-12-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20111212-1.c: New test.
