@@ -1,5 +1,8 @@
 2011-12-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/51511
+	* gcc.dg/pr45819.c: Add -w to dg-options.
+
 	Backported from mainline
 	2011-12-11  Jakub Jelinek  <jakub@redhat.com>
 
