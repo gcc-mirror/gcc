@@ -1184,16 +1184,16 @@ package body Ada.Containers.Indefinite_Vectors is
       --  The value of the iterator object's Index component influences the
       --  behavior of the First (and Last) selector function.
 
-      --  When the Index component is No_Index, this means the iterator object
-      --  was constructed without a start expression, in which case the
+      --  When the Index component is No_Index, this means the iterator
+      --  object was constructed without a start expression, in which case the
       --  (forward) iteration starts from the (logical) beginning of the entire
       --  sequence of items (corresponding to Container.First, for a forward
       --  iterator).
 
-      --  Otherwise, this is iteration over a partial sequence of items. When
-      --  the Index component isn't No_Index, the iterator object was
-      --  constructed with a start expression, that specifies the position from
-      --  which the (forward) partial iteration begins.
+      --  Otherwise, this is iteration over a partial sequence of items.
+      --  When the Index component isn't No_Index, the iterator object was
+      --  constructed with a start expression, that specifies the position
+      --  from which the (forward) partial iteration begins.
 
       if Object.Index = No_Index then
          return First (Object.Container.all);
@@ -2630,8 +2630,8 @@ package body Ada.Containers.Indefinite_Vectors is
       --  is a partial iteration, over a subset of the complete sequence of
       --  items. The iterator object was constructed with a start expression,
       --  indicating the position from which the iteration begins. Note that
-      --  the start position has the same value irrespective of whether this is
-      --  a forward or reverse iteration.
+      --  the start position has the same value irrespective of whether this
+      --  is a forward or reverse iteration.
 
       return It : constant Iterator :=
                     (Limited_Controlled with
@@ -2660,15 +2660,15 @@ package body Ada.Containers.Indefinite_Vectors is
       --  The value of the iterator object's Index component influences the
       --  behavior of the Last (and First) selector function.
 
-      --  When the Index component is No_Index, this means the iterator object
-      --  was constructed without a start expression, in which case the
+      --  When the Index component is No_Index, this means the iterator
+      --  object was constructed without a start expression, in which case the
       --  (reverse) iteration starts from the (logical) beginning of the entire
       --  sequence (corresponding to Container.Last, for a reverse iterator).
 
-      --  Otherwise, this is iteration over a partial sequence of items. When
-      --  the Index component is not No_Index, the iterator object was
-      --  constructed with a start expression, that specifies the position from
-      --  which the (reverse) partial iteration begins.
+      --  Otherwise, this is iteration over a partial sequence of items.
+      --  When the Index component is not No_Index, the iterator object was
+      --  constructed with a start expression, that specifies the position
+      --  from which the (reverse) partial iteration begins.
 
       if Object.Index = No_Index then
          return Last (Object.Container.all);

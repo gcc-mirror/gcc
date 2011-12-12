@@ -5876,12 +5876,9 @@ package body Sem_Ch13 is
          --  aspect expressions have not been preanalyzed, so do it now.
          --  There are no conformance checks to perform in this case.
 
-         if No (T)
-           and then Inside_A_Generic
-         then
+         if No (T) and then Inside_A_Generic then
             Check_Aspect_At_Freeze_Point (ASN);
             return;
-
          else
             Preanalyze_Spec_Expression (End_Decl_Expr, T);
          end if;

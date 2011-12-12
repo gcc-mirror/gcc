@@ -1,3 +1,24 @@
+2011-12-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* freeze.adb (Freeze_Expression): Allow freezing of static
+	scalar subtypes that are prefixes of an attribute, even if not
+	yet marked static. Such attributes will get marked as static
+	later in Eval_Attribute (as called from Resolve_Attribute).
+	* sem_attr.adb (Eval_Attribute): Remove wrong code that does an
+	early return for attribute prefixes that are unfrozen source-level
+	types. This code was incorrectly bypassing folding of unfrozen
+	static subtype attributes in default expressions (the executable
+	example in the now-deleted comment was in fact illegal).
+
+2011-12-12  Robert Dewar  <dewar@adacore.com>
+
+	* a-coinve.adb, sem_res.adb, prj-nmsc.adb, a-cobove.adb, a-convec.adb,
+	gnatls.adb, sem_ch13.adb, prj-env.adb, prj-env.ads: Minor reformatting.
+
+2011-12-12  Tristan Gingold  <gingold@adacore.com>
+
+	* gsocket.h: Adjust previous patch.
+
 2011-12-12  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_disp.adb: Minor reformatting.
