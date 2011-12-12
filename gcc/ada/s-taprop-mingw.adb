@@ -707,8 +707,11 @@ package body System.Task_Primitives.Operations is
       --  Count attribute. So we decided to remove this processing and just
       --  call SwitchToThread unconditionally (leaving Do_Yield unreferenced).
 
-      --  This means that CXD8002 does not pass on Windows, but we cannot
-      --  guarantee full Annex D compliance on Windows in any case.
+      --  Moreover, CXD8002 appears to pass on Windows (although we do not
+      --  guarantee full Annex D compliance on Windows in any case).
+
+      --  What is not clear is why we now call SwitchToThread in the False
+      --  case. Other versions don't do that, is it necessary???
 
       SwitchToThread;
    end Yield;

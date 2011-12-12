@@ -1,5 +1,28 @@
 2011-12-12  Robert Dewar  <dewar@adacore.com>
 
+	* s-taprop-mingw.adb: Minor reformatting.
+
+2011-12-12  Nicolas Roche  <roche@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+	Add gnattools4 target when building tools in canadian mode
+
+2011-12-12  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_VM_TSD): Complete previous
+	patch.
+
+2011-12-12  Bob Duff  <duff@adacore.com>
+
+	* s-tpobop.adb: Use named notation.
+	* g-bytswa.ads, s-taprop.ads: Minor comment fix.
+
+2011-12-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* make.adb: Minor comment update.
+
+2011-12-12  Robert Dewar  <dewar@adacore.com>
+
 	* freeze.adb, s-taprop-mingw.adb, exp_disp.adb, sem_ch13.adb: Minor
 	reformatting.
 
