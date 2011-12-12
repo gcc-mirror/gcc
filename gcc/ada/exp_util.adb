@@ -756,9 +756,7 @@ package body Exp_Util is
          Append_To (Actuals, New_Reference_To (Addr_Id, Loc));
          Append_To (Actuals, New_Reference_To (Size_Id, Loc));
 
-         if Is_Allocate
-           or else not Is_Class_Wide_Type (Desig_Typ)
-         then
+         if Is_Allocate or else not Is_Class_Wide_Type (Desig_Typ) then
             Append_To (Actuals, New_Reference_To (Alig_Id, Loc));
 
          --  For deallocation of class wide types we obtain the value of
@@ -777,7 +775,7 @@ package body Exp_Util is
             Append_To (Actuals,
               Unchecked_Convert_To (RTE (RE_Storage_Offset),
                 Make_Attribute_Reference (Loc,
-                  Prefix =>
+                  Prefix         =>
                     Make_Explicit_Dereference (Loc, Relocate_Node (Expr)),
                   Attribute_Name => Name_Alignment)));
          end if;
@@ -879,6 +877,7 @@ package body Exp_Util is
             else
                Append_To (Actuals, New_Reference_To (Standard_True, Loc));
             end if;
+
          else
             Append_To (Actuals, New_Reference_To (Standard_False, Loc));
          end if;
@@ -917,8 +916,7 @@ package body Exp_Util is
                   --  P : Root_Storage_Pool
 
                    Make_Parameter_Specification (Loc,
-                     Defining_Identifier =>
-                       Make_Temporary (Loc, 'P'),
+                     Defining_Identifier => Make_Temporary (Loc, 'P'),
                      Parameter_Type =>
                        New_Reference_To (RTE (RE_Root_Storage_Pool), Loc)),
 
@@ -926,22 +924,22 @@ package body Exp_Util is
 
                    Make_Parameter_Specification (Loc,
                      Defining_Identifier => Addr_Id,
-                     Out_Present => Is_Allocate,
-                     Parameter_Type =>
+                     Out_Present         => Is_Allocate,
+                     Parameter_Type      =>
                        New_Reference_To (RTE (RE_Address), Loc)),
 
                   --  S : Storage_Count
 
                    Make_Parameter_Specification (Loc,
                      Defining_Identifier => Size_Id,
-                     Parameter_Type =>
+                     Parameter_Type      =>
                        New_Reference_To (RTE (RE_Storage_Count), Loc)),
 
                   --  L : Storage_Count
 
                    Make_Parameter_Specification (Loc,
                      Defining_Identifier => Alig_Id,
-                     Parameter_Type =>
+                     Parameter_Type      =>
                        New_Reference_To (RTE (RE_Storage_Count), Loc)))),
 
              Declarations => No_List,
@@ -950,8 +948,7 @@ package body Exp_Util is
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (
                    Make_Procedure_Call_Statement (Loc,
-                     Name =>
-                       New_Reference_To (Proc_To_Call, Loc),
+                     Name => New_Reference_To (Proc_To_Call, Loc),
                      Parameter_Associations => Actuals)))));
 
          --  The newly generated Allocate / Deallocate becomes the default

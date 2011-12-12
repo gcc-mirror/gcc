@@ -1119,20 +1119,18 @@ package body Exp_Attr is
          --  operation _Alignment applied to X.
 
          elsif Is_Class_Wide_Type (Ptyp) then
-
             New_Node :=
               Build_Get_Alignment (Loc,
                 Make_Attribute_Reference (Loc,
-                  Prefix => Pref,
+                  Prefix         => Pref,
                   Attribute_Name => Name_Tag));
 
+            --  Case where the context is a specific integer type with which
+            --  the original attribute was compatible. The function has a
+            --  specific type as well, so to preserve the compatibility we
+            --  must convert explicitly.
+
             if Typ /= Standard_Integer then
-
-               --  The context is a specific integer type with which the
-               --  original attribute was compatible. The function has a
-               --  specific type as well, so to preserve the compatibility
-               --  we must convert explicitly.
-
                New_Node := Convert_To (Typ, New_Node);
             end if;
 

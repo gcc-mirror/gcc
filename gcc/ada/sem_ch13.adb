@@ -2497,6 +2497,7 @@ package body Sem_Ch13 is
          when Attribute_Alignment => Alignment : declare
             Align     : constant Uint := Get_Alignment_Value (Expr);
             Max_Align : constant Uint := UI_From_Int (Maximum_Alignment);
+
          begin
             FOnly := True;
 
@@ -2512,9 +2513,7 @@ package body Sem_Ch13 is
             elsif Align /= No_Uint then
                Set_Has_Alignment_Clause (U_Ent);
 
-               if Is_Tagged_Type (U_Ent)
-                 and then Align > Max_Align
-               then
+               if Is_Tagged_Type (U_Ent) and then Align > Max_Align then
                   Error_Msg_N
                     ("?alignment for & set to Maximum_Aligment", Nam);
                   Set_Alignment (U_Ent, Max_Align);

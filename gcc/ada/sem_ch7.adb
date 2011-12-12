@@ -2474,10 +2474,13 @@ package body Sem_Ch7 is
                        ("type& must be completed in the private part",
                          Parent (Subp), Id);
 
-                  --  The return type of an access_to_function cannot be a
-                  --  Taft-amendment type.
+                  --  The result type of an access-to-function type cannot be a
+                  --  Taft-amendment type, unless the version is Ada 2012 or
+                  --  later (see AI05-151).
 
-                  elsif Ekind (Subp) = E_Subprogram_Type then
+                  elsif Ada_Version < Ada_2012
+                    and then Ekind (Subp) = E_Subprogram_Type
+                  then
                      if Etype (Subp) = Id
                        or else
                          (Is_Class_Wide_Type (Etype (Subp))
