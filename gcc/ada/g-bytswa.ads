@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2006-2010, AdaCore                     --
+--                     Copyright (C) 2006-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,6 +64,7 @@
 --        subtype String4 is String (1 .. 4);
 --        function Swapped is new Byte_Swapping.Swapped4 (String4);
 --        S : String4 := "ABCD";
+--        for S'Alignment use 4;
 --     begin
 --        Put_Line (S);
 --        S := Swapped (S);
@@ -74,6 +75,7 @@
 
 --     declare
 --        type Mask is array (0 .. 15) of Boolean;
+--        for Mask'Alignment use 2;
 --        for Mask'Component_Size use Boolean'Size;
 --        X : Mask := (0 .. 7 => True, others => False);
 --        function Swapped is new Byte_Swapping.Swapped2 (Mask);

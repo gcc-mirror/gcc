@@ -6511,10 +6511,20 @@ package body Exp_Disp is
 
       --  Alignment
 
-      Append_To (TSD_Aggr_List,
-        Make_Attribute_Reference (Loc,
-          Prefix         => New_Reference_To (Typ, Loc),
-          Attribute_Name => Name_Alignment));
+      --  For CPP types we cannot rely on the value of 'Alignment provided
+      --  by the backend to initialize this TSD field.
+
+      if Convention (Typ) = Convention_CPP
+        or else Is_CPP_Class (Root_Type (Typ))
+      then
+         Append_To (TSD_Aggr_List,
+           Make_Integer_Literal (Loc, 0));
+      else
+         Append_To (TSD_Aggr_List,
+           Make_Attribute_Reference (Loc,
+             Prefix         => New_Reference_To (Typ, Loc),
+             Attribute_Name => Name_Alignment));
+      end if;
 
       --  HT_Link
 

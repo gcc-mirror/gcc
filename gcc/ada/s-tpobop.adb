@@ -740,7 +740,7 @@ package body System.Tasking.Protected_Objects.Operations is
             --  OS (e.g VxWorks) to give higher priority tasks a chance to run
             --  (see CXD6002).
 
-            STPO.Yield (False);
+            STPO.Yield (Do_Yield => False);
 
             if Entry_Call.With_Abort
               and then Entry_Call.Cancellation_Attempted
