@@ -1555,6 +1555,24 @@ package body Sem is
       end if;
    end Semantics;
 
+   --------
+   -- ss --
+   --------
+
+   function ss (Index : Int) return Scope_Stack_Entry is
+   begin
+      return Scope_Stack.Table (Index);
+   end ss;
+
+   ---------
+   -- sst --
+   ---------
+
+   function sst return Scope_Stack_Entry is
+   begin
+      return ss (Scope_Stack.Last);
+   end sst;
+
    ------------------------
    -- Walk_Library_Items --
    ------------------------
@@ -1602,7 +1620,7 @@ package body Sem is
       --  an instance spec, do the body last.
 
       procedure Do_Withed_Unit (Withed_Unit : Node_Id);
-      --  Apply Do_Unit_And_Dependents to a unit in a context clause.
+      --  Apply Do_Unit_And_Dependents to a unit in a context clause
 
       procedure Process_Bodies_In_Context (Comp : Node_Id);
       --  The main unit and its spec may depend on bodies that contain generics

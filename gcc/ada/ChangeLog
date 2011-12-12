@@ -1,3 +1,20 @@
+2011-12-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): If the function
+	is not a completion, pre-analyze the expression now to prevent
+	spurious visibility on later entities. The body is inserted at
+	the end of the current declaration list or package to prevent
+	early freezing, but the visibility is established at the point
+	of definition.
+
+2011-12-12  Bob Duff  <duff@adacore.com>
+
+	* sem.adb, sem.ads: Add debugging routines.
+
+2011-12-12  Tristan Gingold  <gingold@adacore.com>
+
+	* gnatls.adb: (gnatls): Also add the objects dir in search list.
+
 2011-12-12  Robert Dewar  <dewar@adacore.com>
 
 	* exp_atag.adb, exp_atag.ads, exp_util.adb, exp_attr.adb,
