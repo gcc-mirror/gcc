@@ -1,3 +1,8 @@
+2011-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/51511
+	* gcc.dg/pr45819.c: Add -w to dg-options.
+
 2011-12-12  Torvald Riegel  <triegel@redhat.com>
 
 	* g++.dg/tm/noexcept-1.C: New test.
