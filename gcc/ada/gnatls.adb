@@ -1186,10 +1186,11 @@ procedure Gnatls is
    procedure Search_RTS (Name : String) is
       Src_Path : String_Ptr;
       Lib_Path : String_Ptr;
-      --  Pathes for source and include subdirs
+      --  Paths for source and include subdirs
 
       Rts_Full_Path : String_Access;
       --  Full path for RTS project
+
    begin
       --  Try to find the RTS
 
@@ -1207,32 +1208,32 @@ procedure Gnatls is
 
       if Lib_Path /= null then
          Osint.Fail ("RTS path not valid: missing adainclude directory");
-
       elsif Src_Path /= null then
          Osint.Fail ("RTS path not valid: missing adalib directory");
-
       end if;
 
-      --  Try to find the RTS on the project path.  First setup the project
-      --  path.
+      --  Try to find the RTS on the project path. First setup the project path
 
       Initialize_Default_Project_Path
         (Prj_Path, Target_Name => Sdefault.Target_Name.all);
 
       Rts_Full_Path := Get_Runtime_Path (Prj_Path, Name);
+
       if Rts_Full_Path /= null then
+
          --  Directory name was found on the project path.  Look for the
          --  include subdir(s).
 
-         Src_Path := Get_RTS_Search_Dir (Name, Include);
+         Src_Path := Get_RTS_Search_Dir (Rts_Full_Path.all, Include);
+
          if Src_Path /= null then
             Add_Search_Dirs (Src_Path, Include);
             return;
          end if;
       end if;
 
-      Osint.Fail ("RTS path not valid: missing " &
-                    "adainclude and adalib directories");
+      Osint.Fail
+        ("RTS path not valid: missing adainclude and adalib directories");
    end Search_RTS;
 
    -------------------

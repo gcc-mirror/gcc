@@ -738,16 +738,16 @@ package body Ada.Containers.Bounded_Vectors is
       --  The value of the iterator object's Index component influences the
       --  behavior of the First (and Last) selector function.
 
-      --  When the Index component is No_Index, this means the iterator object
-      --  was constructed without a start expression, in which case the
+      --  When the Index component is No_Index, this means the iterator
+      --  object was constructed without a start expression, in which case the
       --  (forward) iteration starts from the (logical) beginning of the entire
       --  sequence of items (corresponding to Container.First, for a forward
       --  iterator).
 
-      --  Otherwise, this is iteration over a partial sequence of items. When
-      --  the Index component isn't No_Index, the iterator object was
-      --  constructed with a start expression, that specifies the position from
-      --  which the (forward) partial iteration begins.
+      --  Otherwise, this is iteration over a partial sequence of items.
+      --  When the Index component isn't No_Index, the iterator object was
+      --  constructed with a start expression, that specifies the position
+      --  from which the (forward) partial iteration begins.
 
       if Object.Index = No_Index then
          return First (Object.Container.all);

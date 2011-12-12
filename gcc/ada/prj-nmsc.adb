@@ -5284,9 +5284,9 @@ package body Prj.Nmsc is
                "Object_Dir cannot be empty",
                Object_Dir.Location, Project);
 
-         elsif Setup_Projects and then
-               No_Sources and then
-               Project.Extends = No_Project
+         elsif Setup_Projects
+           and then No_Sources
+           and then Project.Extends = No_Project
          then
             --  Do not create an object directory for a non extending project
             --  with no sources.
@@ -5371,9 +5371,9 @@ package body Prj.Nmsc is
                "Exec_Dir cannot be empty",
                Exec_Dir.Location, Project);
 
-         elsif Setup_Projects and then
-               No_Sources and then
-               Project.Extends = No_Project
+         elsif Setup_Projects
+           and then No_Sources
+           and then Project.Extends = No_Project
          then
             --  Do not create an exec directory for a non extending project
             --  with no sources.

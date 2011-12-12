@@ -1989,6 +1989,7 @@ package body Sem_Res is
       end if;
 
       Debug_A_Entry ("resolving  ", N);
+
       if Debug_Flag_V then
          Write_Overloads (N);
       end if;
@@ -2584,14 +2585,15 @@ package body Sem_Res is
          Resolution_Failed;
          return;
 
+      --  Only one intepretation
+
       else
          --  In Ada 2005, if we have something like "X : T := 2 + 2;", where
          --  the "+" on T is abstract, and the operands are of universal type,
          --  the above code will have (incorrectly) resolved the "+" to the
-         --  universal one in Standard. Therefore, we check for this case, and
-         --  give an error. We can't do this earlier, because it would cause
-         --  legal cases to get errors (when some other type has an abstract
-         --  "+").
+         --  universal one in Standard. Therefore check for this case and give
+         --  an error. We can't do this earlier, because it would cause legal
+         --  cases to get errors (when some other type has an abstract "+").
 
          if Ada_Version >= Ada_2005 and then
            Nkind (N) in N_Op and then

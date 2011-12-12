@@ -165,13 +165,14 @@
 #include <windows.h>
 
 #elif defined(VMS)
+/* Allow a large number of fds for select.  */
 #define FD_SETSIZE 4096
-#include <sys/types.h>
-#include <sys/time.h>
 #ifndef IN_RTS
-/* These DEC C headers are not available when building with GCC */
-#include <in.h>
+/* These DEC C headers are not available when building with GCC.  Order is
+   important.  */
+#include <time.h>
 #include <tcp.h>
+#include <in.h>
 #include <ioctl.h>
 #include <netdb.h>
 #endif
