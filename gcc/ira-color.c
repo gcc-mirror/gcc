@@ -1797,8 +1797,14 @@ bucket_allocno_compare_func (const void *v1p, const void *v2p)
   ira_allocno_t a1 = *(const ira_allocno_t *) v1p;
   ira_allocno_t a2 = *(const ira_allocno_t *) v2p;
   int diff, a1_freq, a2_freq, a1_num, a2_num;
+  int cl1 = ALLOCNO_CLASS (a1), cl2 = ALLOCNO_CLASS (a2);
 
-  if ((diff = (int) ALLOCNO_CLASS (a2) - ALLOCNO_CLASS (a1)) != 0)
+  /* Push pseudos requiring less hard registers first.  It means that
+     we will assign pseudos requiring more hard registers first
+     avoiding creation small holes in free hard register file into
+     which the pseudos requiring more hard registers can not fit.  */
+  if ((diff = (ira_reg_class_max_nregs[cl1][ALLOCNO_MODE (a1)]
+	       - ira_reg_class_max_nregs[cl2][ALLOCNO_MODE (a2)])) != 0)
     return diff;
   a1_freq = ALLOCNO_FREQ (a1);
   a2_freq = ALLOCNO_FREQ (a2);
