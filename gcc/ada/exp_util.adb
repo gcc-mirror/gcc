@@ -755,7 +755,32 @@ package body Exp_Util is
 
          Append_To (Actuals, New_Reference_To (Addr_Id, Loc));
          Append_To (Actuals, New_Reference_To (Size_Id, Loc));
-         Append_To (Actuals, New_Reference_To (Alig_Id, Loc));
+
+         if Is_Allocate
+           or else not Is_Class_Wide_Type (Desig_Typ)
+         then
+            Append_To (Actuals, New_Reference_To (Alig_Id, Loc));
+
+         --  For deallocation of class wide types we obtain the value of
+         --  alignment from the Type Specific Record of the deallocated object.
+         --  This is needed because the frontend expansion of class-wide types
+         --  into equivalent types confuses the backend.
+
+         else
+            --  Generate:
+            --     Obj.all'Alignment
+
+            --  ... because 'Alignment applied to class-wide types is expanded
+            --  into the code that reads the value of alignment from the TSD
+            --  (see Expand_N_Attribute_Reference)
+
+            Append_To (Actuals,
+              Unchecked_Convert_To (RTE (RE_Storage_Offset),
+                Make_Attribute_Reference (Loc,
+                  Prefix =>
+                    Make_Explicit_Dereference (Loc, Relocate_Node (Expr)),
+                  Attribute_Name => Name_Alignment)));
+         end if;
 
          --  h) Is_Controlled
 

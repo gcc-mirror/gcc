@@ -1,3 +1,42 @@
+2011-12-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (GNAT_Pragma): Check comes from source.
+
+2011-12-12  Robert Dewar  <dewar@adacore.com>
+
+	* gnatls.adb: Minor reformatting.
+
+2011-12-12  Javier Miranda  <miranda@adacore.com>
+
+	* a-tags.ads (Alignment): New TSD field.
+	(Max_Predef_Prims): Value lowered to 15 (or 9 in case of
+	configurable runtime) Update documentation of predefined
+	primitives since Alignment has been removed.
+	* exp_disp.ads Update documentation of slots of dispatching
+	primitives.
+	* exp_disp.adb (Default_Prim_Op_Position): Update slot
+	values since alignment is no longer a predefined primitive.
+	(Is_Predefined_Dispatch_Operation): Remove _alignment.
+	(Is_Predefined_Internal_Operation): Remove _alignment.
+	(Make_DT): Update static test on the value stored in a-tags.ads
+	for Max_Predef_Prims; store the value of 'alignment in the TSD.
+	* exp_atag.ads, exp_atag.adb (Build_Get_Alignment): New subprogram
+	that retrieves the alignment from the TSD
+	* exp_util.adb (Build_Allocated_Deallocate_Proc): For deallocation
+	of class-wide types obtain the value of alignment from the TSD.
+	* exp_attr.adb (Expand_N_Attribute_Reference): For 'alignment
+	applied to a class-wide type invoke Build_Get_Alignment to
+	generate code which retrieves the value of the alignment from
+	the TSD.
+	* rtsfind.ads (RE_Alignment): New Ada.Tags entity
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): For tagged
+	types if the value of the alignment is bigger than the Maximum
+	alignment then set the value of the alignment to the Maximum
+	alignment and report a warning.
+	* exp_ch3.adb (Make_Predefined_Primitive_Specs): Do not generate
+	spec of _alignment.
+	(Predefined_Primitive_Bodies): Do not generate body of _alignment.
+
 2011-12-12  Gary Dismukes  <dismukes@adacore.com>
 
 	* freeze.adb (Freeze_Expression): Allow freezing of static

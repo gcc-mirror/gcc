@@ -2709,7 +2709,14 @@ package body Sem_Prag is
 
       procedure GNAT_Pragma is
       begin
-         Check_Restriction (No_Implementation_Pragmas, N);
+         --  We need to check the No_Implementation_Pragmas restriction for
+         --  the case of a pragma from source. Note that the case of aspects
+         --  generating corresponding pragmas marks these pragmas as not being
+         --  from source, so this test also catches that case.
+
+         if Comes_From_Source (N) then
+            Check_Restriction (No_Implementation_Pragmas, N);
+         end if;
       end GNAT_Pragma;
 
       --------------------------

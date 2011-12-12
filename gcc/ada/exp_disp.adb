@@ -579,32 +579,29 @@ package body Exp_Disp is
       if Chars (E) = Name_uSize then
          return Uint_1;
 
-      elsif Chars (E) = Name_uAlignment then
+      elsif TSS_Name = TSS_Stream_Read then
          return Uint_2;
 
-      elsif TSS_Name = TSS_Stream_Read then
+      elsif TSS_Name = TSS_Stream_Write then
          return Uint_3;
 
-      elsif TSS_Name = TSS_Stream_Write then
+      elsif TSS_Name = TSS_Stream_Input then
          return Uint_4;
 
-      elsif TSS_Name = TSS_Stream_Input then
+      elsif TSS_Name = TSS_Stream_Output then
          return Uint_5;
 
-      elsif TSS_Name = TSS_Stream_Output then
+      elsif Chars (E) = Name_Op_Eq then
          return Uint_6;
 
-      elsif Chars (E) = Name_Op_Eq then
+      elsif Chars (E) = Name_uAssign then
          return Uint_7;
 
-      elsif Chars (E) = Name_uAssign then
+      elsif TSS_Name = TSS_Deep_Adjust then
          return Uint_8;
 
-      elsif TSS_Name = TSS_Deep_Adjust then
-         return Uint_9;
-
       elsif TSS_Name = TSS_Deep_Finalize then
-         return Uint_10;
+         return Uint_9;
 
       --  In VM targets unconditionally allow obtaining the position associated
       --  with predefined interface primitives since in these platforms any
@@ -612,22 +609,22 @@ package body Exp_Disp is
 
       elsif Ada_Version >= Ada_2005 or else not Tagged_Type_Expansion then
          if Chars (E) = Name_uDisp_Asynchronous_Select then
-            return Uint_11;
+            return Uint_10;
 
          elsif Chars (E) = Name_uDisp_Conditional_Select then
-            return Uint_12;
+            return Uint_11;
 
          elsif Chars (E) = Name_uDisp_Get_Prim_Op_Kind then
-            return Uint_13;
+            return Uint_12;
 
          elsif Chars (E) = Name_uDisp_Get_Task_Id then
-            return Uint_14;
+            return Uint_13;
 
          elsif Chars (E) = Name_uDisp_Requeue then
-            return Uint_15;
+            return Uint_14;
 
          elsif Chars (E) = Name_uDisp_Timed_Select then
-            return Uint_16;
+            return Uint_15;
          end if;
       end if;
 
@@ -1945,7 +1942,6 @@ package body Exp_Disp is
          TSS_Name := TSS_Name_Type (Name_Buffer (Name_Len - TSS_Name'Length + 1
                                      .. Name_Len));
          if        Chars (E) = Name_uSize
-           or else Chars (E) = Name_uAlignment
            or else TSS_Name  = TSS_Stream_Read
            or else TSS_Name  = TSS_Stream_Write
            or else TSS_Name  = TSS_Stream_Input
@@ -1991,7 +1987,6 @@ package body Exp_Disp is
              (Name_Buffer (Name_Len - TSS_Name'Length + 1 .. Name_Len));
 
          if        Chars (E) = Name_uSize
-           or else Chars (E) = Name_uAlignment
            or else
              (Chars (E) = Name_Op_Eq
                 and then Etype (First_Formal (E)) = Etype (Last_Formal (E)))
@@ -4513,16 +4508,16 @@ package body Exp_Disp is
       end if;
 
       --  Ensure that the value of Max_Predef_Prims defined in a-tags is
-      --  correct. Valid values are 10 under configurable runtime or 16
+      --  correct. Valid values are 9 under configurable runtime or 15
       --  with full runtime.
 
       if RTE_Available (RE_Interface_Data) then
-         if Max_Predef_Prims /= 16 then
+         if Max_Predef_Prims /= 15 then
             Error_Msg_N ("run-time library configuration error", Typ);
             return Result;
          end if;
       else
-         if Max_Predef_Prims /= 10 then
+         if Max_Predef_Prims /= 9 then
             Error_Msg_N ("run-time library configuration error", Typ);
             Error_Msg_CRT ("tagged types", Typ);
             return Result;
@@ -4846,6 +4841,7 @@ package body Exp_Disp is
       --   TSD : Type_Specific_Data (I_Depth) :=
       --           (Idepth             => I_Depth,
       --            Access_Level       => Type_Access_Level (Typ),
+      --            Alignment          => Typ'Alignment,
       --            Expanded_Name      => Cstring_Ptr!(Exname'Address))
       --            External_Tag       => Cstring_Ptr!(Exname'Address))
       --            HT_Link            => HT_Link'Address,
@@ -4894,6 +4890,23 @@ package body Exp_Disp is
 
       Append_To (TSD_Aggr_List,
         Make_Integer_Literal (Loc, Type_Access_Level (Typ)));
+
+      --  Alignment
+
+      --  For CPP types we cannot rely on the value of 'Alignment provided
+      --  by the backend to initialize this TSD field.
+
+      if Convention (Typ) = Convention_CPP
+        or else Is_CPP_Class (Root_Type (Typ))
+      then
+         Append_To (TSD_Aggr_List,
+           Make_Integer_Literal (Loc, 0));
+      else
+         Append_To (TSD_Aggr_List,
+           Make_Attribute_Reference (Loc,
+             Prefix => New_Reference_To (Typ, Loc),
+             Attribute_Name => Name_Alignment));
+      end if;
 
       --  Expanded_Name
 

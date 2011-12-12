@@ -1221,8 +1221,8 @@ procedure Gnatls is
 
       if Rts_Full_Path /= null then
 
-         --  Directory name was found on the project path.  Look for the
-         --  include subdir(s).
+         --  Directory name was found on the project path. Look for the
+         --  include subdirectory(s).
 
          Src_Path := Get_RTS_Search_Dir (Rts_Full_Path.all, Include);
 

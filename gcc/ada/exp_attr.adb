@@ -1120,19 +1120,11 @@ package body Exp_Attr is
 
          elsif Is_Class_Wide_Type (Ptyp) then
 
-            --  No need to do anything else compiling under restriction
-            --  No_Dispatching_Calls. During the semantic analysis we
-            --  already notified such violation.
-
-            if Restriction_Active (No_Dispatching_Calls) then
-               return;
-            end if;
-
             New_Node :=
-              Make_Function_Call (Loc,
-                Name => New_Reference_To
-                  (Find_Prim_Op (Ptyp, Name_uAlignment), Loc),
-                Parameter_Associations => New_List (Pref));
+              Build_Get_Alignment (Loc,
+                Make_Attribute_Reference (Loc,
+                  Prefix => Pref,
+                  Attribute_Name => Name_Tag));
 
             if Typ /= Standard_Integer then
 

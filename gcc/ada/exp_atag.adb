@@ -289,6 +289,25 @@ package body Exp_Atag is
               (RTE_Record_Component (RE_Access_Level), Loc));
    end Build_Get_Access_Level;
 
+   -------------------------
+   -- Build_Get_Alignment --
+   -------------------------
+
+   function Build_Get_Alignment
+     (Loc      : Source_Ptr;
+      Tag_Node : Node_Id) return Node_Id
+   is
+   begin
+      return
+        Make_Selected_Component (Loc,
+          Prefix =>
+            Build_TSD (Loc,
+              Unchecked_Convert_To (RTE (RE_Address), Tag_Node)),
+          Selector_Name =>
+            New_Reference_To
+              (RTE_Record_Component (RE_Alignment), Loc));
+   end Build_Get_Alignment;
+
    ------------------------------------------
    -- Build_Get_Predefined_Prim_Op_Address --
    ------------------------------------------
