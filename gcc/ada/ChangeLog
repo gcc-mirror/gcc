@@ -1,3 +1,15 @@
+2011-12-12  Robert Dewar  <dewar@adacore.com>
+
+	* par_sco.adb, scos.ads, put_scos.adb, get_scos.adb: Minor reformatting.
+
+2011-12-12  Steve Baird  <baird@adacore.com>
+
+	* sem_ch3.adb (Check_Completion): Improve a comment.
+
+2011-12-12  Tristan Gingold  <gingold@adacore.com>
+
+	* cstand.adb: Minor comment fix.
+
 2011-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils2.c (gnat_build_constructor): Test the TREE_STATIC

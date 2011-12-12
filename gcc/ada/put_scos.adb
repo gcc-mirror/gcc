@@ -169,15 +169,15 @@ begin
                               Write_Info_Char (Sent.C2);
 
                               if Sent.C1 = 'S'
-                                   and then Sent.C2 = 'P'
-                                   and then Sent.Pragma_Name /= Unknown_Pragma
+                                and then Sent.C2 = 'P'
+                                and then Sent.Pragma_Name /= Unknown_Pragma
                               then
+                                 --  Strip leading "PRAGMA_"
+
                                  declare
                                     Pnam : constant String :=
                                              Sent.Pragma_Name'Img;
                                  begin
-                                    --  Strip leading "PRAGMA_"
-
                                     Output_String
                                       (Pnam (Pnam'First + 7 .. Pnam'Last));
                                     Write_Info_Char (':');

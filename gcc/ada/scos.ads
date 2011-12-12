@@ -424,7 +424,7 @@ package SCOs is
    --             handler first sloc ('E')
    --      To   = No_Source_Location ('F'/'T'/'S'), handler last sloc ('E')
 
-   --    Note: A dominance marker is always followed by a statement entry.
+   --    Note: A dominance marker is always followed by a statement entry
 
    --    Decision (EXIT/entry guard/IF/WHILE)
    --      C1   = 'E'/'G'/'I'/'W' (for EXIT/entry Guard/IF/WHILE)
