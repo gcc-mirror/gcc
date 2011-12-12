@@ -3040,7 +3040,7 @@ package body Freeze is
          --  nable and used in subsequent checks, so might as well try to
          --  compute it.
 
-         --  In Ada2012, freeze entities is also used in the front-end to
+         --  In Ada 2012, Freeze_Entities is also used in the front end to
          --  trigger the analysis of aspect expressions, so in this case we
          --  want to continue the freezing process.
 

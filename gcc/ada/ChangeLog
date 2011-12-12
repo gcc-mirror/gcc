@@ -1,5 +1,10 @@
 2011-12-12  Robert Dewar  <dewar@adacore.com>
 
+	* freeze.adb, s-taprop-mingw.adb, exp_disp.adb, sem_ch13.adb: Minor
+	reformatting.
+
+2011-12-12  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch6.adb, gnatls.adb: Minor reformatting.
 
 2011-12-12  Ed Schonberg  <schonberg@adacore.com>
