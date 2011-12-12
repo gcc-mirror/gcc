@@ -133,8 +133,8 @@ func TestParser(t *testing.T) {
 		n int
 	}{
 		// TODO(nigeltao): Process all the test cases from all the .dat files.
-		{"tests1.dat", 92},
-		{"tests2.dat", 0},
+		{"tests1.dat", -1},
+		{"tests2.dat", 43},
 		{"tests3.dat", 0},
 	}
 	for _, tf := range testFiles {
@@ -213,4 +213,8 @@ var renderTestBlacklist = map[string]bool{
 	// More cases of <a> being reparented:
 	`<a href="blah">aba<table><a href="foo">br<tr><td></td></tr>x</table>aoe`: true,
 	`<a><table><a></table><p><a><div><a>`:                                     true,
+	`<a><table><td><a><table></table><a></tr><a></table><a>`:                  true,
+	// A <plaintext> element is reparented, putting it before a table.
+	// A <plaintext> element can't have anything after it in HTML.
+	`<table><plaintext><td>`: true,
 }

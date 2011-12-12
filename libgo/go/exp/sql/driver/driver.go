@@ -36,19 +36,22 @@ type Driver interface {
 	Open(name string) (Conn, error)
 }
 
-// Execer is an optional interface that may be implemented by a Driver
-// or a Conn.
-//
-// If a Driver does not implement Execer, the sql package's DB.Exec
-// method first obtains a free connection from its free pool or from
-// the driver's Open method. Execer should only be implemented by
-// drivers that can provide a more efficient implementation.
+// ErrSkip may be returned by some optional interfaces' methods to
+// indicate at runtime that the fast path is unavailable and the sql
+// package should continue as if the optional interface was not
+// implemented. ErrSkip is only supported where explicitly
+// documented.
+var ErrSkip = errors.New("driver: skip fast-path; continue as if unimplemented")
+
+// Execer is an optional interface that may be implemented by a Conn.
 //
 // If a Conn does not implement Execer, the db package's DB.Exec will
 // first prepare a query, execute the statement, and then close the
 // statement.
 //
 // All arguments are of a subset type as defined in the package docs.
+//
+// Exec may return ErrSkip.
 type Execer interface {
 	Exec(query string, args []interface{}) (Result, error)
 }
@@ -94,6 +97,9 @@ type Stmt interface {
 	Close() error
 
 	// NumInput returns the number of placeholder parameters.
+	// -1 means the driver doesn't know how to count the number of
+	// placeholders, so we won't sanity check input here and instead let the
+	// driver deal with errors.
 	NumInput() int
 
 	// Exec executes a query that doesn't return rows, such
@@ -135,6 +141,8 @@ type Rows interface {
 	// The dest slice may be populated with only with values
 	// of subset types defined above, but excluding string.
 	// All string values must be converted to []byte.
+	//
+	// Next should return io.EOF when there are no more rows.
 	Next(dest []interface{}) error
 }
 

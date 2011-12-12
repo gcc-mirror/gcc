@@ -6,8 +6,8 @@
 
 package syscall
 
-func Sleep(nsec int64) (errno int) {
+func Sleep(nsec int64) (err error) {
 	ts := NsecToTimespec(nsec)
-	errno = Nanosleep(&ts, nil)
+	err = Nanosleep(&ts, nil)
 	return
 }

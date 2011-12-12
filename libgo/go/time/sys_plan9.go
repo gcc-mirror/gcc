@@ -4,19 +4,6 @@
 
 package time
 
-import (
-	"os"
-	"syscall"
-)
-
-func sysSleep(t int64) error {
-	err := syscall.Sleep(t)
-	if err != nil {
-		return os.NewSyscallError("sleep", err)
-	}
-	return nil
-}
-
 // for testing: whatever interrupts a sleep
 func interrupt() {
 	// cannot predict pid, don't want to kill group

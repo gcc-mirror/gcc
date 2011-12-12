@@ -24,7 +24,7 @@ func (e *SyscallError) Error() string { return e.Syscall + ": " + e.Err }
 // NewSyscallError returns, as an error, a new SyscallError
 // with the given system call name and error details.
 // As a convenience, if err is nil, NewSyscallError returns nil.
-func NewSyscallError(syscall string, err syscall.Error) error {
+func NewSyscallError(syscall string, err error) error {
 	if err == nil {
 		return nil
 	}
@@ -57,9 +57,3 @@ var (
 	EPIPE        = errors.New("Broken Pipe")
 	EPLAN9       = errors.New("not supported by plan 9")
 )
-
-func iserror(err syscall.Error) bool {
-	return err != nil
-}
-
-func Errno(e syscall.Error) syscall.Error { return e }

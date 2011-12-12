@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// This code is a duplicate of ../chunked_test.go with these edits:
+//	s/newChunked/NewChunked/g
+//	s/package http/package httputil/
+// Please make any changes in both files.
+
 package httputil
 
 import (
@@ -27,7 +32,8 @@ func TestChunk(t *testing.T) {
 	r := NewChunkedReader(&b)
 	data, err := ioutil.ReadAll(r)
 	if err != nil {
-		t.Fatalf("ReadAll from NewChunkedReader: %v", err)
+		t.Logf(`data: "%s"`, data)
+		t.Fatalf("ReadAll from reader: %v", err)
 	}
 	if g, e := string(data), chunk1+chunk2; g != e {
 		t.Errorf("chunk reader read %q; want %q", g, e)

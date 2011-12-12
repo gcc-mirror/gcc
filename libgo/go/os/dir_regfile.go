@@ -9,4 +9,4 @@ package os
 
 import "syscall"
 
-func libc_readdir_r(*syscall.DIR, *syscall.Dirent, **syscall.Dirent) int __asm__ ("readdir_r")
+func libc_readdir_r(*syscall.DIR, *syscall.Dirent, **syscall.Dirent) syscall.Errno __asm__ ("readdir_r")

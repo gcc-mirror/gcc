@@ -11,6 +11,14 @@ import (
 
 // File represents an open file descriptor.
 type File struct {
+	*file
+}
+
+// file is the real representation of *File.
+// The extra level of indirection ensures that no clients of os
+// can overwrite this data, which could cause the finalizer
+// to close the wrong file descriptor.
+type file struct {
 	fd      int
 	name    string
 	dirinfo *dirInfo // nil unless directory being read
@@ -29,8 +37,8 @@ func NewFile(fd int, name string) *File {
 	if fd < 0 {
 		return nil
 	}
-	f := &File{fd: fd, name: name}
-	runtime.SetFinalizer(f, (*File).Close)
+	f := &File{&file{fd: fd, name: name}}
+	runtime.SetFinalizer(f.file, (*file).close)
 	return f
 }
 
@@ -41,7 +49,7 @@ type dirInfo struct {
 	bufp int                   // location of next record in buf.
 }
 
-func epipecheck(file *File, e syscall.Error) {
+func epipecheck(file *File, e error) {
 }
 
 // DevNull is the name of the operating system's ``null device.''
@@ -56,7 +64,7 @@ const DevNull = "/dev/null"
 func OpenFile(name string, flag int, perm uint32) (file *File, err error) {
 	var (
 		fd     int
-		e      syscall.Error
+		e      error
 		create bool
 		excl   bool
 		trunc  bool
@@ -85,7 +93,7 @@ func OpenFile(name string, flag int, perm uint32) (file *File, err error) {
 	} else {
 		fd, e = syscall.Open(name, flag)
 		if e != nil && create {
-			var e1 syscall.Error
+			var e1 error
 			fd, e1 = syscall.Create(name, flag, perm)
 			if e1 == nil {
 				e = nil
@@ -110,6 +118,10 @@ func OpenFile(name string, flag int, perm uint32) (file *File, err error) {
 // Close closes the File, rendering it unusable for I/O.
 // It returns an error, if any.
 func (file *File) Close() error {
+	return file.file.close()
+}
+
+func (file *file) close() error {
 	if file == nil || file.fd < 0 {
 		return Ebadfd
 	}
@@ -130,7 +142,7 @@ func (file *File) Close() error {
 // It returns the FileInfo and an error, if any.
 func (f *File) Stat() (fi *FileInfo, err error) {
 	d, err := dirstat(f)
-	if iserror(err) {
+	if err != nil {
 		return nil, err
 	}
 	return fileInfoFromStat(new(FileInfo), d), err
@@ -144,7 +156,7 @@ func (f *File) Truncate(size int64) error {
 
 	d.Length = uint64(size)
 
-	if e := syscall.Fwstat(f.fd, pdir(nil, &d)); iserror(e) {
+	if e := syscall.Fwstat(f.fd, pdir(nil, &d)); e != nil {
 		return &PathError{"truncate", f.name, e}
 	}
 	return nil
@@ -157,12 +169,12 @@ func (f *File) Chmod(mode uint32) error {
 
 	d.Null()
 	odir, e := dirstat(f)
-	if iserror(e) {
+	if e != nil {
 		return &PathError{"chmod", f.name, e}
 	}
 
 	d.Mode = (odir.Mode & mask) | (mode &^ mask)
-	if e := syscall.Fwstat(f.fd, pdir(nil, &d)); iserror(e) {
+	if e := syscall.Fwstat(f.fd, pdir(nil, &d)); e != nil {
 		return &PathError{"chmod", f.name, e}
 	}
 	return nil
@@ -179,7 +191,7 @@ func (f *File) Sync() (err error) {
 	var d Dir
 	d.Null()
 
-	if e := syscall.Fwstat(f.fd, pdir(nil, &d)); iserror(e) {
+	if e := syscall.Fwstat(f.fd, pdir(nil, &d)); e != nil {
 		return NewSyscallError("fsync", e)
 	}
 	return nil
@@ -187,26 +199,26 @@ func (f *File) Sync() (err error) {
 
 // read reads up to len(b) bytes from the File.
 // It returns the number of bytes read and an error, if any.
-func (f *File) read(b []byte) (n int, err syscall.Error) {
+func (f *File) read(b []byte) (n int, err error) {
 	return syscall.Read(f.fd, b)
 }
 
 // pread reads len(b) bytes from the File starting at byte offset off.
 // It returns the number of bytes read and the error, if any.
 // EOF is signaled by a zero count with err set to nil.
-func (f *File) pread(b []byte, off int64) (n int, err syscall.Error) {
+func (f *File) pread(b []byte, off int64) (n int, err error) {
 	return syscall.Pread(f.fd, b, off)
 }
 
 // write writes len(b) bytes to the File.
 // It returns the number of bytes written and an error, if any.
-func (f *File) write(b []byte) (n int, err syscall.Error) {
+func (f *File) write(b []byte) (n int, err error) {
 	return syscall.Write(f.fd, b)
 }
 
 // pwrite writes len(b) bytes to the File starting at byte offset off.
 // It returns the number of bytes written and an error, if any.
-func (f *File) pwrite(b []byte, off int64) (n int, err syscall.Error) {
+func (f *File) pwrite(b []byte, off int64) (n int, err error) {
 	return syscall.Pwrite(f.fd, b, off)
 }
 
@@ -214,7 +226,7 @@ func (f *File) pwrite(b []byte, off int64) (n int, err syscall.Error) {
 // according to whence: 0 means relative to the origin of the file, 1 means
 // relative to the current offset, and 2 means relative to the end.
 // It returns the new offset and an error, if any.
-func (f *File) seek(offset int64, whence int) (ret int64, err syscall.Error) {
+func (f *File) seek(offset int64, whence int) (ret int64, err error) {
 	return syscall.Seek(f.fd, offset, whence)
 }
 
@@ -226,7 +238,7 @@ func Truncate(name string, size int64) error {
 
 	d.Length = uint64(size)
 
-	if e := syscall.Wstat(name, pdir(nil, &d)); iserror(e) {
+	if e := syscall.Wstat(name, pdir(nil, &d)); e != nil {
 		return &PathError{"truncate", name, e}
 	}
 	return nil
@@ -234,7 +246,7 @@ func Truncate(name string, size int64) error {
 
 // Remove removes the named file or directory.
 func Remove(name string) error {
-	if e := syscall.Remove(name); iserror(e) {
+	if e := syscall.Remove(name); e != nil {
 		return &PathError{"remove", name, e}
 	}
 	return nil
@@ -247,7 +259,7 @@ func Rename(oldname, newname string) error {
 
 	d.Name = newname
 
-	if e := syscall.Wstat(oldname, pdir(nil, &d)); iserror(e) {
+	if e := syscall.Wstat(oldname, pdir(nil, &d)); e != nil {
 		return &PathError{"rename", oldname, e}
 	}
 	return nil
@@ -260,12 +272,12 @@ func Chmod(name string, mode uint32) error {
 
 	d.Null()
 	odir, e := dirstat(name)
-	if iserror(e) {
+	if e != nil {
 		return &PathError{"chmod", name, e}
 	}
 
 	d.Mode = (odir.Mode & mask) | (mode &^ mask)
-	if e := syscall.Wstat(name, pdir(nil, &d)); iserror(e) {
+	if e := syscall.Wstat(name, pdir(nil, &d)); e != nil {
 		return &PathError{"chmod", name, e}
 	}
 	return nil
@@ -284,7 +296,7 @@ func Chtimes(name string, atimeNs int64, mtimeNs int64) error {
 	d.Atime = uint32(atimeNs / 1e9)
 	d.Mtime = uint32(mtimeNs / 1e9)
 
-	if e := syscall.Wstat(name, pdir(nil, &d)); iserror(e) {
+	if e := syscall.Wstat(name, pdir(nil, &d)); e != nil {
 		return &PathError{"chtimes", name, e}
 	}
 	return nil
@@ -294,7 +306,7 @@ func Pipe() (r *File, w *File, err error) {
 	var p [2]int
 
 	syscall.ForkLock.RLock()
-	if e := syscall.Pipe(p[0:]); iserror(e) {
+	if e := syscall.Pipe(p[0:]); e != nil {
 		syscall.ForkLock.RUnlock()
 		return nil, nil, NewSyscallError("pipe", e)
 	}
@@ -328,4 +340,9 @@ func Lchown(name string, uid, gid int) error {
 
 func (f *File) Chown(uid, gid int) error {
 	return EPLAN9
+}
+
+// TempDir returns the default directory to use for temporary files.
+func TempDir() string {
+	return "/tmp"
 }

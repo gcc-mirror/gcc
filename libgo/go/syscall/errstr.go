@@ -6,14 +6,14 @@
 
 package syscall
 
-//sysnb	strerror_r(errnum int, buf []byte) (errno int)
+//sysnb	strerror_r(errnum int, buf []byte) (err error)
 //strerror_r(errnum int, buf *byte, buflen Size_t) int
 
 func Errstr(errnum int) string {
 	for len := 128; ; len *= 2 {
 		b := make([]byte, len)
 		err := strerror_r(errnum, b)
-		if err == 0 {
+		if err == nil {
 			i := 0
 			for b[i] != 0 {
 				i++

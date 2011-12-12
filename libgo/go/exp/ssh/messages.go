@@ -392,7 +392,10 @@ func parseString(in []byte) (out, rest []byte, ok bool) {
 	return
 }
 
-var comma = []byte{','}
+var (
+	comma         = []byte{','}
+	emptyNameList = []string{}
+)
 
 func parseNameList(in []byte) (out []string, rest []byte, ok bool) {
 	contents, rest, ok := parseString(in)
@@ -400,6 +403,7 @@ func parseNameList(in []byte) (out []string, rest []byte, ok bool) {
 		return
 	}
 	if len(contents) == 0 {
+		out = emptyNameList
 		return
 	}
 	parts := bytes.Split(contents, comma)
@@ -443,8 +447,6 @@ func parseUint32(in []byte) (out uint32, rest []byte, ok bool) {
 	ok = true
 	return
 }
-
-const maxPacketSize = 36000
 
 func nameListLength(namelist []string) int {
 	length := 4 /* uint32 length prefix */

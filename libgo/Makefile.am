@@ -648,7 +648,8 @@ go_math_files = \
 go_mime_files = \
 	go/mime/grammar.go \
 	go/mime/mediatype.go \
-	go/mime/type.go
+	go/mime/type.go \
+	go/mime/type_unix.go
 
 if LIBGO_IS_RTEMS
 go_net_fd_os_file = go/net/fd_select.go
@@ -770,7 +771,6 @@ go_os_files = \
 	$(go_os_dir_file) \
 	go/os/dir.go \
 	go/os/env.go \
-	go/os/env_unix.go \
 	go/os/error.go \
 	go/os/error_posix.go \
 	go/os/exec.go \
@@ -1156,6 +1156,7 @@ go_exp_sql_files = \
 	go/exp/sql/sql.go
 go_exp_ssh_files = \
 	go/exp/ssh/channel.go \
+	go/exp/ssh/cipher.go \
 	go/exp/ssh/client.go \
 	go/exp/ssh/client_auth.go \
 	go/exp/ssh/common.go \
@@ -1164,10 +1165,11 @@ go_exp_ssh_files = \
 	go/exp/ssh/server.go \
 	go/exp/ssh/server_shell.go \
 	go/exp/ssh/session.go \
+	go/exp/ssh/tcpip.go \
 	go/exp/ssh/transport.go
 go_exp_terminal_files = \
-	go/exp/terminal/shell.go \
-	go/exp/terminal/terminal.go
+	go/exp/terminal/terminal.go \
+	go/exp/terminal/util.go
 go_exp_types_files = \
 	go/exp/types/check.go \
 	go/exp/types/const.go \
@@ -1546,6 +1548,7 @@ syscall_netlink_file =
 endif
 
 go_base_syscall_files = \
+	go/syscall/env_unix.go \
 	go/syscall/libcall_support.go \
 	go/syscall/libcall_posix.go \
 	go/syscall/socket.go \

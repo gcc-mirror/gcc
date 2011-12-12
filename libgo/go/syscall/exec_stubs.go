@@ -14,10 +14,10 @@ func Exec(argv0 string, argv []string, envv []string) (err int) {
 	return ENOSYS;
 }
 
-func Wait4(pid int, wstatus *WaitStatus, options int, rusage *Rusage) (wpid int, errno int) {
+func Wait4(pid int, wstatus *WaitStatus, options int, rusage *Rusage) (wpid int, err error) {
 	return -1, ENOSYS;
 }
 
-func raw_ptrace(request int, pid int, addr *byte, data *byte) int {
+func raw_ptrace(request int, pid int, addr *byte, data *byte) Errno {
 	return ENOSYS
 }

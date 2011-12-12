@@ -6,14 +6,13 @@
 
 package syscall
 
-//sys	wait4(pid Pid_t, status *int, options int, rusage *Rusage) (wpid Pid_t, errno int)
+//sys	wait4(pid Pid_t, status *int, options int, rusage *Rusage) (wpid Pid_t, err error)
 //wait4(pid Pid_t, status *int, options int, rusage *Rusage) Pid_t
 
-func Wait4(pid int, wstatus *WaitStatus, options int, rusage *Rusage) (wpid int, errno int) {
+func Wait4(pid int, wstatus *WaitStatus, options int, rusage *Rusage) (wpid int, err error) {
 	var status int
 	r, err := wait4(Pid_t(pid), &status, options, rusage)
 	wpid = int(r)
-	errno = err
 	if wstatus != nil {
 		*wstatus = WaitStatus(status)
 	}

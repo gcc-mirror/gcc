@@ -35,10 +35,6 @@ func Client(c net.Conn, config *ClientConfig) (*ClientConn, error) {
 		conn.Close()
 		return nil, err
 	}
-	if err := conn.authenticate(); err != nil {
-		conn.Close()
-		return nil, err
-	}
 	go conn.mainLoop()
 	return conn, nil
 }
@@ -64,8 +60,8 @@ func (c *ClientConn) handshake() error {
 	clientKexInit := kexInitMsg{
 		KexAlgos:                supportedKexAlgos,
 		ServerHostKeyAlgos:      supportedHostKeyAlgos,
-		CiphersClientServer:     supportedCiphers,
-		CiphersServerClient:     supportedCiphers,
+		CiphersClientServer:     c.config.Crypto.ciphers(),
+		CiphersServerClient:     c.config.Crypto.ciphers(),
 		MACsClientServer:        supportedMACs,
 		MACsServerClient:        supportedMACs,
 		CompressionClientServer: supportedCompressions,
@@ -128,7 +124,10 @@ func (c *ClientConn) handshake() error {
 	if packet[0] != msgNewKeys {
 		return UnexpectedMessageError{msgNewKeys, packet[0]}
 	}
-	return c.transport.reader.setupKeys(serverKeys, K, H, H, hashFunc)
+	if err := c.transport.reader.setupKeys(serverKeys, K, H, H, hashFunc); err != nil {
+		return err
+	}
+	return c.authenticate(H)
 }
 
 // kexDH performs Diffie-Hellman key agreement on a ClientConn. The
@@ -195,6 +194,7 @@ func (c *ClientConn) openChan(typ string) (*clientChan, error) {
 	switch msg := (<-ch.msg).(type) {
 	case *channelOpenConfirmMsg:
 		ch.peersId = msg.MyId
+		ch.win <- int(msg.MyWindow)
 	case *channelOpenFailureMsg:
 		c.chanlist.remove(ch.id)
 		return nil, errors.New(msg.Message)
@@ -301,6 +301,9 @@ type ClientConfig struct {
 	// A slice of ClientAuth methods. Only the first instance 
 	// of a particular RFC 4252 method will be used during authentication.
 	Auth []ClientAuth
+
+	// Cryptographic-related configuration.
+	Crypto CryptoConfig
 }
 
 func (c *ClientConfig) rand() io.Reader {

@@ -6,8 +6,8 @@
 
 package syscall
 
-func Sleep(nsec int64) (errno int) {
+func Sleep(nsec int64) (err error) {
 	tv := NsecToTimeval(nsec);
-	_, err := Select(0, nil, nil, nil, &tv);
+	_, err = Select(0, nil, nil, nil, &tv);
 	return err;
 }
