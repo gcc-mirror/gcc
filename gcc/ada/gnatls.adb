@@ -1232,6 +1232,7 @@ procedure Gnatls is
             --  Add the lib subdirectory if it exists
 
             Lib_Path := Get_RTS_Search_Dir (Name, Objects);
+
             if Lib_Path /= null then
                Add_Search_Dirs (Lib_Path, Objects);
             end if;

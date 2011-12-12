@@ -367,8 +367,8 @@ package body Sem_Ch6 is
          --  on later entities.
 
          declare
-            Decls : List_Id          := List_Containing (N);
-            Par   : constant Node_Id := Parent (Decls);
+            Decls : List_Id            := List_Containing (N);
+            Par   : constant Node_Id   := Parent (Decls);
             Id    : constant Entity_Id := Defining_Entity (New_Decl);
 
          begin
@@ -385,7 +385,6 @@ package body Sem_Ch6 is
             Install_Formals (Id);
             Preanalyze_Spec_Expression (Expression  (Ret), Etype (Id));
             End_Scope;
-
          end;
       end if;
 

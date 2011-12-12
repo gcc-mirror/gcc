@@ -6458,6 +6458,7 @@ package body Exp_Disp is
       --           (Idepth                => I_Depth,
       --            Tag_Kind              => <tag_kind-value>,
       --            Access_Level          => Type_Access_Level (Typ),
+      --            Alignment             => Typ'Alignment,
       --            HT_Link               => null,
       --            Type_Is_Abstract      => <<boolean-value>>,
       --            Type_Is_Library_Level => <<boolean-value>>,
@@ -6507,6 +6508,13 @@ package body Exp_Disp is
 
       Append_To (TSD_Aggr_List,
         Make_Integer_Literal (Loc, Type_Access_Level (Typ)));
+
+      --  Alignment
+
+      Append_To (TSD_Aggr_List,
+        Make_Attribute_Reference (Loc,
+          Prefix => New_Reference_To (Typ, Loc),
+          Attribute_Name => Name_Alignment));
 
       --  HT_Link
 

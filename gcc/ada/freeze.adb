@@ -3040,8 +3040,13 @@ package body Freeze is
          --  nable and used in subsequent checks, so might as well try to
          --  compute it.
 
+         --  In Ada2012, freeze entities is also used in the front-end to
+         --  trigger the analysis of aspect expressions, so in this case we
+         --  want to continue the freezing process.
+
          if Present (Scope (E))
            and then Is_Generic_Unit (Scope (E))
+           and then not Has_Predicates (E)
          then
             Check_Compile_Time_Size (E);
             return No_List;

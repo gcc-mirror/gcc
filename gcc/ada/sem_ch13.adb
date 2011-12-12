@@ -5880,11 +5880,11 @@ package body Sem_Ch13 is
       --  All other cases
 
       else
-         --  In a generic context freeze nodes are not generated, and the
-         --  aspect expressions have not been preanalyzed, so do it now.
+         --  In a generic context the aspect expressions have not been
+         --  preanalyzed, so do it now.
          --  There are no conformance checks to perform in this case.
 
-         if No (T) and then Inside_A_Generic then
+         if No (T) then
             Check_Aspect_At_Freeze_Point (ASN);
             return;
          else

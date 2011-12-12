@@ -1,3 +1,25 @@
+2011-12-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb, gnatls.adb: Minor reformatting.
+
+2011-12-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Entity): If a type declared in a generic
+	context has predicates, generate a freeze node for it.
+	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations): If expression
+	has not been analyzed yet, entity has not been frozen, so analyze
+	it now.
+
+2011-12-12  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_VM_TSD): Generate code
+	to store the value 'alignment in the TSD.
+
+2011-12-12  Bob Duff  <duff@adacore.com>
+
+	* s-taprop-mingw.adb (Yield): Do not delay 1 millisecond in Annex D
+	mode.
+
 2011-12-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Allocator): Update the master of an
