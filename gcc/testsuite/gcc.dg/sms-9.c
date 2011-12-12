@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fmodulo-sched -fno-auto-inc-dec -O2 -fmodulo-sched-allow-regmoves" } */
+/* { dg-options "-O2 -fmodulo-sched -fmodulo-sched-allow-regmoves" } */
 
 #include <stdlib.h>
 #include <stdarg.h>

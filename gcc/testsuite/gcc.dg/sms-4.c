@@ -1,6 +1,7 @@
 /* Inspired from sbitmap_a_or_b_and_c_cg function in sbitmap.c.  */
 /* { dg-do run } */
 /* { dg-options "-O2 -fmodulo-sched -fmodulo-sched-allow-regmoves -fdump-rtl-sms" } */
+/* { dg-options "-O2 -fmodulo-sched -fmodulo-sched-allow-regmoves -fdump-rtl-sms --param sms-min-sc=1" { target powerpc*-*-* } } */
 
 extern void abort (void);
 

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fmodulo-sched -fmodulo-sched-allow-regmoves -funroll-loops -fdump-rtl-sms" } */
+/* { dg-options "-O2 -fmodulo-sched -fmodulo-sched-allow-regmoves -funroll-loops -fdump-rtl-sms --param sms-min-sc=1" } */
 /* This is the same test as loop-2e.c test.  It is related to a fix in
    the generation of the prolog and epilog.  */
 
@@ -46,7 +46,7 @@ int main ()
   return 0;
 }
 
-/* { dg-final { scan-rtl-dump-times "SMS succeeded" 1 "sms"  { target powerpc*-*-* spu-*-* } } } */
+/* { dg-final { scan-rtl-dump-times "SMS succeeded" 1 "sms" { target spu-*-* } } } */
 
 /* { dg-final { cleanup-rtl-dump "sms" } } */
 
