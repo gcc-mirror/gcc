@@ -3479,17 +3479,6 @@ cp_free_lang_data (tree t)
       DECL_EXTERNAL (t) = 1;
       TREE_STATIC (t) = 0;
     }
-  if (CP_AGGREGATE_TYPE_P (t)
-      && TYPE_NAME (t))
-    {
-      tree name = TYPE_NAME (t);
-      if (TREE_CODE (name) == TYPE_DECL)
-	name = DECL_NAME (name);
-      /* Drop anonymous names.  */
-      if (name != NULL_TREE
-	  && ANON_AGGRNAME_P (name))
-	TYPE_NAME (t) = NULL_TREE;
-    }
   if (TREE_CODE (t) == NAMESPACE_DECL)
     {
       /* The list of users of a namespace isn't useful for the middle-end
