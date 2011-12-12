@@ -1,3 +1,7 @@
+2011-12-12  Torvald Riegel  <triegel@redhat.com>
+
+	* c-c++-common/tm/20111206.c: New test.
+
 2011-12-12  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/51262
