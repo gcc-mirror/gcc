@@ -1445,29 +1445,61 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
   return fold_build2_loc (loc, MEM_REF, exp_type, base, off);
 }
 
+DEF_VEC_ALLOC_P_STACK (tree);
+#define VEC_tree_stack_alloc(alloc) VEC_stack_alloc (tree, alloc)
+
 /* Construct a memory reference to a part of an aggregate BASE at the given
-   OFFSET and of the same type as MODEL.  In case this is a reference to a
-   component, the function will replicate the last COMPONENT_REF of model's
-   expr to access it.  GSI and INSERT_AFTER have the same meaning as in
-   build_ref_for_offset.  */
+   OFFSET and of the type of MODEL.  In case this is a chain of references
+   to component, the function will replicate the chain of COMPONENT_REFs of
+   the expression of MODEL to access it.  GSI and INSERT_AFTER have the same
+   meaning as in build_ref_for_offset.  */
 
 static tree
 build_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
 		     struct access *model, gimple_stmt_iterator *gsi,
 		     bool insert_after)
 {
+  tree type = model->type, t;
+  VEC(tree,stack) *cr_stack = NULL;
+
   if (TREE_CODE (model->expr) == COMPONENT_REF)
     {
-      tree t, exp_type, fld = TREE_OPERAND (model->expr, 1);
-      offset -= int_bit_position (fld);
-      exp_type = TREE_TYPE (TREE_OPERAND (model->expr, 0));
-      t = build_ref_for_offset (loc, base, offset, exp_type, gsi, insert_after);
-      return fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (fld), t, fld,
-			      NULL_TREE);
+      tree expr = model->expr;
+
+      /* Create a stack of the COMPONENT_REFs so later we can walk them in
+	 order from inner to outer.  */
+      cr_stack = VEC_alloc (tree, stack, 6);
+
+      do {
+	tree field = TREE_OPERAND (expr, 1);
+	offset -= int_bit_position (field);
+
+	VEC_safe_push (tree, stack, cr_stack, expr);
+
+	expr = TREE_OPERAND (expr, 0);
+	type = TREE_TYPE (expr);
+      } while (TREE_CODE (expr) == COMPONENT_REF);
     }
-  else
-    return build_ref_for_offset (loc, base, offset, model->type,
-				 gsi, insert_after);
+
+  t = build_ref_for_offset (loc, base, offset, type, gsi, insert_after);
+
+  if (TREE_CODE (model->expr) == COMPONENT_REF)
+    {
+      unsigned i;
+      tree expr;
+
+      /* Now replicate the chain of COMPONENT_REFs from inner to outer.  */
+      FOR_EACH_VEC_ELT_REVERSE (tree, cr_stack, i, expr)
+	{
+	  tree field = TREE_OPERAND (expr, 1);
+	  t = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field), t, field,
+			       NULL_TREE);
+	}
+
+      VEC_free (tree, stack, cr_stack);
+    }
+
+  return t;
 }
 
 /* Construct a memory reference consisting of component_refs and array_refs to

@@ -1,3 +1,9 @@
+2011-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/50569
+	* tree-sra.c (build_ref_for_model): Replicate a chain of COMPONENT_REFs
+	in the expression of MODEL instead of just the last one.
+
 2011-12-09  Michael Meissner  <meissner@the-meissners.org>
 
 	Backport from mainline
