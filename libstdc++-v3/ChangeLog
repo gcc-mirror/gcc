@@ -1,6 +1,6 @@
 2011-12-12  Kai Tietz  <ktietz@redhat.com>
 
-	PR libstdc++/511135
+	PR libstdc++/51135
 	* libsupc++/cxxabi.h (__cxxabi_dtor_type): New type.
 	(__cxa_throw): Use it for destructor-argument.
 	* libsupc++/eh_throw.cc (__cxa_throw): Likewise.
