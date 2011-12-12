@@ -5956,9 +5956,22 @@ thread_prologue_and_epilogue_insns (void)
 	  FOR_EACH_EDGE (e, ei, tmp_bb->preds)
 	    if (single_succ_p (e->src)
 		&& !bitmap_bit_p (&bb_on_list, e->src->index)
-		&& can_duplicate_block_p (e->src)
-		&& bitmap_set_bit (&bb_tail, e->src->index))
-	      VEC_quick_push (basic_block, vec, e->src);
+		&& can_duplicate_block_p (e->src))
+	      {
+		edge pe;
+		edge_iterator pei;
+
+		/* If there is predecessor of e->src which doesn't
+		   need prologue and the edge is complex,
+		   we might not be able to redirect the branch
+		   to a copy of e->src.  */
+		FOR_EACH_EDGE (pe, pei, e->src->preds)
+		  if ((pe->flags & EDGE_COMPLEX) != 0
+		      && !bitmap_bit_p (&bb_flags, pe->src->index))
+		    break;
+		if (pe == NULL && bitmap_set_bit (&bb_tail, e->src->index))
+		  VEC_quick_push (basic_block, vec, e->src);
+	      }
 	}
 
       /* Now walk backwards from every block that is marked as needing

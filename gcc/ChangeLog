@@ -1,5 +1,10 @@
 2011-12-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/51495
+	* function.c (thread_prologue_and_epilogue_insns): Don't add
+	to bb_tail basic blocks that have EDGE_COMPLEX predecessor edges
+	from basic blocks not needing prologue.
+
 	PR tree-optimization/51481
 	* gimple-fold.c (gimple_fold_call): Call
 	maybe_clean_or_replace_eh_stmt.  Avoid optimization if stmt has EH
