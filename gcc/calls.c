@@ -1705,9 +1705,11 @@ internal_arg_pointer_based_exp_scan (void)
 	    val = internal_arg_pointer_based_exp (SET_SRC (set), false);
 	  if (val != NULL_RTX)
 	    {
-	      VEC_safe_grow_cleared (rtx, heap,
-				     internal_arg_pointer_exp_state.cache,
-				     idx + 1);
+	      if (idx
+		  >= VEC_length (rtx, internal_arg_pointer_exp_state.cache))
+		VEC_safe_grow_cleared (rtx, heap,
+				       internal_arg_pointer_exp_state.cache,
+				       idx + 1);
 	      VEC_replace (rtx, internal_arg_pointer_exp_state.cache,
 			   idx, val);
 	    }
