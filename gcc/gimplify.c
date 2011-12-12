@@ -1081,6 +1081,15 @@ voidify_wrapper_expr (tree wrapper, tree temp)
 	      break;
 
 	    default:
+	      /* Assume that any tree upon which voidify_wrapper_expr is
+		 directly called is a wrapper, and that its body is op0.  */
+	      if (p == &wrapper)
+		{
+		  TREE_SIDE_EFFECTS (*p) = 1;
+		  TREE_TYPE (*p) = void_type_node;
+		  p = &TREE_OPERAND (*p, 0);
+		  break;
+		}
 	      goto out;
 	    }
 	}
