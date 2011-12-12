@@ -1,3 +1,9 @@
+2011-12-12  Kai Tietz  <ktietz@redhat.com>
+
+	PR libgcj/50053
+	* java/lang/natClass.cc (java::lang::Class::newInstance): Special case
+	member-call for 32-bit IA native Window target.
+
 2011-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/50888
