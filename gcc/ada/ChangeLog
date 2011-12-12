@@ -1,5 +1,20 @@
 2011-12-12  Robert Dewar  <dewar@adacore.com>
 
+	* exp_atag.adb, exp_atag.ads, exp_util.adb, exp_attr.adb,
+	sem_ch13.adb: Minor reformatting.
+
+2011-12-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch7.adb (Uninstall_Declarations): Don't
+	apply check for incomplete types used as a result type for an
+	access-to-function type when compiling for Ada 2012 or later.
+	* sem_ch6.adb (Analyze_Subprogram_Declaration):
+	Specialize error message for interface subprograms that are
+	not declared abstract nor null (functions can't be declared as
+	null). Also, remove "(Ada 2005)" from message.
+
+2011-12-12  Robert Dewar  <dewar@adacore.com>
+
 	* sem_prag.adb (GNAT_Pragma): Check comes from source.
 
 2011-12-12  Robert Dewar  <dewar@adacore.com>
