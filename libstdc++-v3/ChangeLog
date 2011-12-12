@@ -1,11 +1,15 @@
+2011-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* Revert the last commit.
+
 2011-12-12  Kai Tietz  <ktietz@redhat.com>
 
 	PR libstdc++/51135
-	* libsupc++/cxxabi.h (__cxxabi_dtor_type): New type.
+	* libsupc++/cxxabi.h (__cxa_dtor_type): New type.
 	(__cxa_throw): Use it for destructor-argument.
 	* libsupc++/eh_throw.cc (__cxa_throw): Likewise.
 	* libsupc++/unwind-cxx.h (__cxa_exception): Change type of member
-	exceptionDestructor to __cxxabi_dtor_type.
+	exceptionDestructor to __cxa_dtor_type.
 	* config/os/mingw32-w64/os_defines.h (_GLIBCXX_USE_THISCALL_ON_DTOR):
 	Define.
 	(__cxa_dtor_type): Declare target secific type variant.
