@@ -65,12 +65,4 @@
 // ioctlsocket function doesn't work for normal file-descriptors.
 #define _GLIBCXX_NO_IOCTL 1
 
-// See libstdc++/51135
-// Class constructors/destructors have __thiscall calling-convention
-// for IA 32-bit target.
-#if defined (__i386__)
-#define _GLIBCXX_USE_THISCALL_ON_DTOR 1
-typedef void (__thiscall *__cxa_dtor_type) (void *);
-#endif
-
 #endif
