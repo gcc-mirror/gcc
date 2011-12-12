@@ -5020,27 +5020,47 @@ begin_transaction_stmt (location_t loc, tree *pcompound, int flags)
 
 /* End a __transaction_atomic or __transaction_relaxed statement.
    If COMPOUND_STMT is non-null, this is for a function-transaction-block,
-   and we should end the compound.  */
+   and we should end the compound.  If NOEX is non-NULL, we wrap the body in
+   a MUST_NOT_THROW_EXPR with NOEX as condition.  */
 
 void
-finish_transaction_stmt (tree stmt, tree compound_stmt, int flags)
+finish_transaction_stmt (tree stmt, tree compound_stmt, int flags, tree noex)
 {
   TRANSACTION_EXPR_BODY (stmt) = pop_stmt_list (TRANSACTION_EXPR_BODY (stmt));
   TRANSACTION_EXPR_OUTER (stmt) = (flags & TM_STMT_ATTR_OUTER) != 0;
   TRANSACTION_EXPR_RELAXED (stmt) = (flags & TM_STMT_ATTR_RELAXED) != 0;
   TRANSACTION_EXPR_IS_STMT (stmt) = 1;
 
+  /* noexcept specifications are not allowed for function transactions.  */
+  gcc_assert (!(noex && compound_stmt));
+  if (noex)
+    {
+      tree body = build_must_not_throw_expr (TRANSACTION_EXPR_BODY (stmt),
+					     noex);
+      SET_EXPR_LOCATION (body, EXPR_LOCATION (TRANSACTION_EXPR_BODY (stmt)));
+      TREE_SIDE_EFFECTS (body) = 1;
+      TRANSACTION_EXPR_BODY (stmt) = body;
+    }
+
   if (compound_stmt)
     finish_compound_stmt (compound_stmt);
   finish_stmt ();
 }
 
-/* Build a __transaction_atomic or __transaction_relaxed expression.  */
+/* Build a __transaction_atomic or __transaction_relaxed expression.  If
+   NOEX is non-NULL, we wrap the body in a MUST_NOT_THROW_EXPR with NOEX as
+   condition.  */
 
 tree
-build_transaction_expr (location_t loc, tree expr, int flags)
+build_transaction_expr (location_t loc, tree expr, int flags, tree noex)
 {
   tree ret;
+  if (noex)
+    {
+      expr = build_must_not_throw_expr (expr, noex);
+      SET_EXPR_LOCATION (expr, loc);
+      TREE_SIDE_EFFECTS (expr) = 1;
+    }
   ret = build1 (TRANSACTION_EXPR, TREE_TYPE (expr), expr);
   if (flags & TM_STMT_ATTR_RELAXED)
 	TRANSACTION_EXPR_RELAXED (ret) = 1;

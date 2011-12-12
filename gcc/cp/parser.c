@@ -19564,6 +19564,78 @@ cp_parser_base_specifier (cp_parser* parser)
 
 /* Exception handling [gram.exception] */
 
+/* Parse an (optional) noexcept-specification.
+
+   noexcept-specification:
+     noexcept ( constant-expression ) [opt]
+
+   If no noexcept-specification is present, returns NULL_TREE.
+   Otherwise, if REQUIRE_CONSTEXPR is false, then either parse and return any
+   expression if parentheses follow noexcept, or return BOOLEAN_TRUE_NODE if
+   there are no parentheses.  CONSUMED_EXPR will be set accordingly.
+   Otherwise, returns a noexcept specification unless RETURN_COND is true,
+   in which case a boolean condition is returned instead.  */
+
+static tree
+cp_parser_noexcept_specification_opt (cp_parser* parser,
+				      bool require_constexpr,
+				      bool* consumed_expr,
+				      bool return_cond)
+{
+  cp_token *token;
+  const char *saved_message;
+
+  /* Peek at the next token.  */
+  token = cp_lexer_peek_token (parser->lexer);
+
+  /* Is it a noexcept-specification?  */
+  if (cp_parser_is_keyword (token, RID_NOEXCEPT))
+    {
+      tree expr;
+      cp_lexer_consume_token (parser->lexer);
+
+      if (cp_lexer_peek_token (parser->lexer)->type == CPP_OPEN_PAREN)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+
+	  if (require_constexpr)
+	    {
+	      /* Types may not be defined in an exception-specification.  */
+	      saved_message = parser->type_definition_forbidden_message;
+	      parser->type_definition_forbidden_message
+	      = G_("types may not be defined in an exception-specification");
+
+	      expr = cp_parser_constant_expression (parser, false, NULL);
+
+	      /* Restore the saved message.  */
+	      parser->type_definition_forbidden_message = saved_message;
+	    }
+	  else
+	    {
+	      expr = cp_parser_expression (parser, false, NULL);
+	      *consumed_expr = true;
+	    }
+
+	  cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+	}
+      else
+	{
+	  expr = boolean_true_node;
+	  if (!require_constexpr)
+	    *consumed_expr = false;
+	}
+
+      /* We cannot build a noexcept-spec right away because this will check
+	 that expr is a constexpr.  */
+      if (!return_cond)
+	return build_noexcept_spec (expr, tf_warning_or_error);
+      else
+	return expr;
+    }
+  else
+    return NULL_TREE;
+}
+
 /* Parse an (optional) exception-specification.
 
    exception-specification:
@@ -19583,32 +19655,10 @@ cp_parser_exception_specification_opt (cp_parser* parser)
   token = cp_lexer_peek_token (parser->lexer);
 
   /* Is it a noexcept-specification?  */
-  if (cp_parser_is_keyword (token, RID_NOEXCEPT))
-    {
-      tree expr;
-      cp_lexer_consume_token (parser->lexer);
-
-      if (cp_lexer_peek_token (parser->lexer)->type == CPP_OPEN_PAREN)
-	{
-	  cp_lexer_consume_token (parser->lexer);
-
-	  /* Types may not be defined in an exception-specification.  */
-	  saved_message = parser->type_definition_forbidden_message;
-	  parser->type_definition_forbidden_message
-	    = G_("types may not be defined in an exception-specification");
-
-	  expr = cp_parser_constant_expression (parser, false, NULL);
-
-	  /* Restore the saved message.  */
-	  parser->type_definition_forbidden_message = saved_message;
-
-	  cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
-	}
-      else
-	expr = boolean_true_node;
-
-      return build_noexcept_spec (expr, tf_warning_or_error);
-    }
+  type_id_list = cp_parser_noexcept_specification_opt(parser, true, NULL,
+						      false);
+  if (type_id_list != NULL_TREE)
+    return type_id_list;
 
   /* If it's not `throw', then there's no exception-specification.  */
   if (!cp_parser_is_keyword (token, RID_THROW))
@@ -26837,11 +26887,9 @@ cp_parser_txn_attribute_opt (cp_parser *parser)
 /* Parse a __transaction_atomic or __transaction_relaxed statement.
 
    transaction-statement:
-     __transaction_atomic txn-attribute[opt] txn-exception-spec[opt]
+     __transaction_atomic txn-attribute[opt] txn-noexcept-spec[opt]
        compound-statement
-     __transaction_relaxed txn-exception-spec[opt] compound-statement
-
-   ??? The exception specification is not yet implemented.
+     __transaction_relaxed txn-noexcept-spec[opt] compound-statement
 */
 
 static tree
@@ -26850,7 +26898,7 @@ cp_parser_transaction (cp_parser *parser, enum rid keyword)
   unsigned char old_in = parser->in_transaction;
   unsigned char this_in = 1, new_in;
   cp_token *token;
-  tree stmt, attrs;
+  tree stmt, attrs, noex;
 
   gcc_assert (keyword == RID_TRANSACTION_ATOMIC
       || keyword == RID_TRANSACTION_RELAXED);
@@ -26868,6 +26916,9 @@ cp_parser_transaction (cp_parser *parser, enum rid keyword)
 	this_in |= parse_tm_stmt_attr (attrs, TM_STMT_ATTR_OUTER);
     }
 
+  /* Parse a noexcept specification.  */
+  noex = cp_parser_noexcept_specification_opt (parser, true, NULL, true);
+
   /* Keep track if we're in the lexical scope of an outer transaction.  */
   new_in = this_in | (old_in & TM_STMT_ATTR_OUTER);
 
@@ -26877,7 +26928,7 @@ cp_parser_transaction (cp_parser *parser, enum rid keyword)
   cp_parser_compound_statement (parser, NULL, false, false);
   parser->in_transaction = old_in;
 
-  finish_transaction_stmt (stmt, NULL, this_in);
+  finish_transaction_stmt (stmt, NULL, this_in, noex);
 
   return stmt;
 }
@@ -26885,10 +26936,8 @@ cp_parser_transaction (cp_parser *parser, enum rid keyword)
 /* Parse a __transaction_atomic or __transaction_relaxed expression.
 
    transaction-expression:
-     __transaction_atomic txn-exception-spec[opt] ( expression )
-     __transaction_relaxed txn-exception-spec[opt] ( expression )
-
-   ??? The exception specification is not yet implemented.
+     __transaction_atomic txn-noexcept-spec[opt] ( expression )
+     __transaction_relaxed txn-noexcept-spec[opt] ( expression )
 */
 
 static tree
@@ -26897,7 +26946,8 @@ cp_parser_transaction_expression (cp_parser *parser, enum rid keyword)
   unsigned char old_in = parser->in_transaction;
   unsigned char this_in = 1;
   cp_token *token;
-  tree expr;
+  tree expr, noex;
+  bool noex_expr;
 
   gcc_assert (keyword == RID_TRANSACTION_ATOMIC
       || keyword == RID_TRANSACTION_RELAXED);
@@ -26917,14 +26967,36 @@ cp_parser_transaction_expression (cp_parser *parser, enum rid keyword)
   if (keyword == RID_TRANSACTION_RELAXED)
     this_in |= TM_STMT_ATTR_RELAXED;
 
+  /* Set this early.  This might mean that we allow transaction_cancel in
+     an expression that we find out later actually has to be a constexpr.
+     However, we expect that cxx_constant_value will be able to deal with
+     this; also, if the noexcept has no constexpr, then what we parse next
+     really is a transaction's body.  */
   parser->in_transaction = this_in;
-  cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
 
-  expr = cp_parser_expression (parser, /*cast_p=*/false, NULL);
-  finish_parenthesized_expr (expr);
-  expr = build_transaction_expr (token->location, expr, this_in);
+  /* Parse a noexcept specification.  */
+  noex = cp_parser_noexcept_specification_opt (parser, false, &noex_expr,
+					       true);
 
-  cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+  if (!noex || !noex_expr
+      || cp_lexer_peek_token (parser->lexer)->type == CPP_OPEN_PAREN)
+    {
+      cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
+
+      expr = cp_parser_expression (parser, /*cast_p=*/false, NULL);
+      finish_parenthesized_expr (expr);
+
+      cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+    }
+  else
+    {
+      /* The only expression that is available got parsed for the noexcept
+         already.  noexcept is true then.  */
+      expr = noex;
+      noex = boolean_true_node;
+    }
+
+  expr = build_transaction_expr (token->location, expr, this_in, noex);
   parser->in_transaction = old_in;
 
   if (cp_parser_non_integral_constant_expression (parser, NIC_TRANSACTION))
@@ -26980,7 +27052,7 @@ cp_parser_function_transaction (cp_parser *parser, enum rid keyword)
 
   parser->in_transaction = old_in;
 
-  finish_transaction_stmt (stmt, compound_stmt, new_in);
+  finish_transaction_stmt (stmt, compound_stmt, new_in, NULL_TREE);
 
   return ctor_initializer_p;
 }
