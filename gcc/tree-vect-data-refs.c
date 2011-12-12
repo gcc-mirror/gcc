@@ -2631,6 +2631,16 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
           return false;
         }
 
+      if (is_gimple_call (stmt))
+	{
+	  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+	    {
+	      fprintf (vect_dump, "not vectorized: dr in a call ");
+	      print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+	    }
+	  return false;
+	}
+
       /* Update DR field in stmt_vec_info struct.  */
 
       /* If the dataref is in an inner-loop of the loop that is considered for
