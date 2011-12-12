@@ -1,3 +1,8 @@
+2011-12-12  Torvald Riegel  <triegel@redhat.com>
+
+	* tree-ssa-tail-merge.c (gimple_equal_p): Don't treat transaction
+	commits as equal.
+
 2011-12-12  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin-sections.def (zobj_const_data_section): Fix over-
