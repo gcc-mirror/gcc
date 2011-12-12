@@ -1,3 +1,10 @@
+2011-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/51496
+	* parser.c (cp_parser_omp_for_loop): When determining whether
+	to use cp_parser_omp_for_incr or cp_parser_expression and when
+	calling cp_parser_omp_for_incr, use real_decl instead of decl.
+
 2011-12-12  Torvald Riegel  <triegel@redhat.com>
 
 	* semantics.c (finish_transaction_stmt, build_transaction_expr):
@@ -9,7 +16,7 @@
 	(cp_parser_noexcept_specification_opt): ...here.  Allow for parsing
 	non-constexpr noexcept arguments.
 	(cp_parser_transaction, cp_parser_transaction_expression): Parse
-    and handle noexcept-specifications.
+	and handle noexcept-specifications.
 	(cp_parser_function_transaction): Adapt to finish_transaction_stmt
 	change.
 	* pt.c (tsubst_expr): Adapt to new noexcept parameters when
