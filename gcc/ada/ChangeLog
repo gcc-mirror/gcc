@@ -1,3 +1,36 @@
+2011-12-12  Tristan Gingold  <gingold@adacore.com>
+
+	* mlib-tgt-specific-xi.adb: (Get_Target_Prefix): Simplify code.
+
+2011-12-12  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb: Adjust dominant marker for branches of CASE
+	statements.
+
+2011-12-12  Thomas Quinot  <quinot@adacore.com>
+
+	* gsocket.h, s-oscons-tmplt.c: Ensure we do not include any system
+	header file prior to redefining FD_SETSIZE.
+
+2011-12-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations): In
+	a generic context the aspect expressions may not have been
+	preanalyzed if there was no previous freeze point, so the
+	expressions must be preanalyzed now, and there is no conformance
+	to check for visibility changes.
+
+2011-12-12  Matthew Heaney  <heaney@adacore.com>
+
+	* a-convec.adb, a-coinve.adb, a-cobove.adb (Iterator): Use
+	subtype Index_Type'Base for Index component (Finalize): Remove
+	unnecessary access check (First, Last): Cursor return value
+	depends on iterator index value (Iterate): Use start position as
+	iterator index value (Next, Previous): Forward to corresponding
+	cursor-based operation.
+	* a-cborma.adb (Iterate): Properly initialize iterator object (with 0
+	as node index).
+
 2011-12-12  Robert Dewar  <dewar@adacore.com>
 
 	* par_sco.adb, scos.ads, put_scos.adb, get_scos.adb: Minor reformatting.

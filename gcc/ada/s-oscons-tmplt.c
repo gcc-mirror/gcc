@@ -78,6 +78,8 @@ pragma Style_Checks ("M32766");
  **  $ RUN xoscons
  **/
 
+/* Feature macro definitions */
+
 #if defined (__linux__) && !defined (_XOPEN_SOURCE)
 /** For Linux _XOPEN_SOURCE must be defined, otherwise IOV_MAX is not defined
  **/
@@ -92,6 +94,10 @@ pragma Style_Checks ("M32766");
 #define IOV_MAX _XOPEN_IOV_MAX
 #endif
 #endif
+
+/* Include gsocket.h before any system header so it can redefine FD_SETSIZE */
+
+#include "gsocket.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -129,8 +135,6 @@ pragma Style_Checks ("M32766");
 
 # include <vxWorks.h>
 #endif
-
-#include "gsocket.h"
 
 #ifdef DUMMY
 

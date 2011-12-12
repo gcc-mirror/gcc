@@ -3,11 +3,10 @@
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                     M L I B . T G T. S P E C I F I C                     --
---                           (Bare Board Version)                           --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -139,33 +138,11 @@ package body MLib.Tgt.Specific is
 
    function Get_Target_Prefix return String is
       Target_Name : constant String_Ptr := Sdefault.Target_Name;
-      Index       : Positive            := Target_Name'First;
 
    begin
-      while Index < Target_Name'Last
-        and then Target_Name (Index + 1) /= '-'
-      loop
-         Index := Index + 1;
-      end loop;
+      --  Target_name is the program prefix without '-' but with a trailing '/'
 
-      if Target_Name (Target_Name'First .. Index) = "avr" then
-         return "avr-";
-      elsif Target_Name (Target_Name'First .. Index) = "erc32" then
-         return "erc32-elf-";
-      elsif Target_Name (Target_Name'First .. Index) = "leon" then
-         return "leon-elf-";
-      elsif Target_Name (Target_Name'First .. Index) = "powerpc" then
-         if Target_Name'Length >= 23 and then
-           Target_Name (Target_Name'First .. Target_Name'First + 22) =
-                                              "powerpc-unknown-eabispe"
-         then
-            return "powerpc-eabispe-";
-         else
-            return "powerpc-elf-";
-         end if;
-      else
-         return "";
-      end if;
+      return Target_Name (Target_Name'First .. Target_Name'Last - 1) & '-';
    end Get_Target_Prefix;
 
    --------------------------------------

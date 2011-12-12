@@ -5872,7 +5872,20 @@ package body Sem_Ch13 is
       --  All other cases
 
       else
-         Preanalyze_Spec_Expression (End_Decl_Expr, T);
+         --  In a generic context freeze nodes are not generated, and the
+         --  aspect expressions have not been preanalyzed, so do it now.
+         --  There are no conformance checks to perform in this case.
+
+         if No (T)
+           and then Inside_A_Generic
+         then
+            Check_Aspect_At_Freeze_Point (ASN);
+            return;
+
+         else
+            Preanalyze_Spec_Expression (End_Decl_Expr, T);
+         end if;
+
          Err := not Fully_Conformant_Expressions (End_Decl_Expr, Freeze_Expr);
       end if;
 
