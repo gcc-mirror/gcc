@@ -1,3 +1,10 @@
+2011-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51481
+	* gimple-fold.c (gimple_fold_call): Call
+	maybe_clean_or_replace_eh_stmt.  Avoid optimization if stmt has EH
+	edges, but gimple_fold_builtin result can't throw.
+
 2011-12-12  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/21617
