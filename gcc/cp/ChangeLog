@@ -1,5 +1,22 @@
 2011-12-12  Torvald Riegel  <triegel@redhat.com>
 
+	* semantics.c (finish_transaction_stmt, build_transaction_expr):
+	Accept new noexcept parameter and handle it.
+	* cp-tree.h (finish_transaction_stmt, build_transaction_expr): Adapt
+	declarations.
+	* parser.c (cp_parser_exception_specification_opt): Extract
+	noexcept-specification parsing to ...
+	(cp_parser_noexcept_specification_opt): ...here.  Allow for parsing
+	non-constexpr noexcept arguments.
+	(cp_parser_transaction, cp_parser_transaction_expression): Parse
+    and handle noexcept-specifications.
+	(cp_parser_function_transaction): Adapt to finish_transaction_stmt
+	change.
+	* pt.c (tsubst_expr): Adapt to new noexcept parameters when
+	building transactions.
+
+2011-12-12  Torvald Riegel  <triegel@redhat.com>
+
 	* cp-tree.def (MUST_NOT_THROW_EXPR): Add condition parameter.
 	* cp-tree.h (MUST_NOT_THROW_COND): New.
 	(build_must_not_throw_expr): Declare.
