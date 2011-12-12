@@ -1,5 +1,9 @@
 2011-12-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/51510
+	* calls.c (internal_arg_pointer_based_exp_scan): Don't use
+	VEC_safe_grow_cleared if idx is smaller than VEC_length.
+
 	Backported from mainline
 	2011-12-11  Jakub Jelinek  <jakub@redhat.com>
 
