@@ -1,7 +1,12 @@
+2011-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/50569
+	* tree-sra.c (build_ref_for_model): Replicate a chain of COMPONENT_REFs
+	in the expression of MODEL instead of just the last one.
+
 2011-12-12  Dmitry Vyukov  <dvyukov@google.com>
 
-	* cgraphunit.c (init_lowered_empty_function):
-	Fix flags for new edges.
+	* cgraphunit.c (init_lowered_empty_function): Fix flags for new edges.
 
 2011-12-12  Jakub Jelinek  <jakub@redhat.com>
 

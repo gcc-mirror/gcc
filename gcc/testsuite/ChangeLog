@@ -1,3 +1,7 @@
+2011-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20111212-1.c: New test.
+
 2011-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/51511
