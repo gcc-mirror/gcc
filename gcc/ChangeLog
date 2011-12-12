@@ -1,3 +1,10 @@
+2011-12-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR middle-end/50873
+	* optabs.c (maybe_legitimize_operand_same_code): Use copy_to_mode_reg
+	instead of force_reg.  Do nothing if the address is already a
+	non-virtual pseudo register.
+
 2011-12-12  Torvald Riegel  <triegel@redhat.com>
 
 	* gimplify.c (voidify_wrapper_expr): Add default handling for

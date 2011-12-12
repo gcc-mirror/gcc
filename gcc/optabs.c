@@ -8242,24 +8242,31 @@ maybe_legitimize_operand_same_code (enum insn_code icode, unsigned int opno,
     return true;
 
   /* If the operand is a memory whose address has no side effects,
-     try forcing the address into a register.  The check for side
-     effects is important because force_reg cannot handle things
-     like auto-modified addresses.  */
-  if (insn_data[(int) icode].operand[opno].allows_mem
-      && MEM_P (op->value)
-      && !side_effects_p (XEXP (op->value, 0)))
+     try forcing the address into a non-virtual pseudo register.
+     The check for side effects is important because copy_to_mode_reg
+     cannot handle things like auto-modified addresses.  */
+  if (insn_data[(int) icode].operand[opno].allows_mem && MEM_P (op->value))
     {
-      rtx addr, mem, last;
+      rtx addr, mem;
 
-      last = get_last_insn ();
-      addr = force_reg (Pmode, XEXP (op->value, 0));
-      mem = replace_equiv_address (op->value, addr);
-      if (insn_operand_matches (icode, opno, mem))
+      mem = op->value;
+      addr = XEXP (mem, 0);
+      if (!(REG_P (addr) && REGNO (addr) > LAST_VIRTUAL_REGISTER)
+	  && !side_effects_p (addr))
 	{
-	  op->value = mem;
-	  return true;
+	  rtx last;
+	  enum machine_mode mode;
+
+	  last = get_last_insn ();
+	  mode = targetm.addr_space.address_mode (MEM_ADDR_SPACE (mem));
+	  mem = replace_equiv_address (mem, copy_to_mode_reg (mode, addr));
+	  if (insn_operand_matches (icode, opno, mem))
+	    {
+	      op->value = mem;
+	      return true;
+	    }
+	  delete_insns_since (last);
 	}
-      delete_insns_since (last);
     }
 
   return false;
