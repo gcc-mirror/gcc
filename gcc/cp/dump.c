@@ -413,6 +413,7 @@ cp_dump_tree (void* dump_info, tree t)
     case MUST_NOT_THROW_EXPR:
       dump_stmt (di, t);
       dump_child ("body", TREE_OPERAND (t, 0));
+      dump_child ("cond", MUST_NOT_THROW_COND (t));
       break;
 
     case USING_STMT:

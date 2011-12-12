@@ -374,6 +374,28 @@ choose_personality_routine (enum languages lang)
   state = gave_error;
 }
 
+/* Wrap EXPR in a MUST_NOT_THROW_EXPR expressing that EXPR must
+   not throw any exceptions if COND is true.  A condition of
+   NULL_TREE is treated as 'true'.  */
+
+tree
+build_must_not_throw_expr (tree body, tree cond)
+{
+  tree type = body ? TREE_TYPE (body) : void_type_node;
+
+  if (cond && !value_dependent_expression_p (cond))
+    {
+      cond = cxx_constant_value (cond);
+      if (integer_zerop (cond))
+	return body;
+      else if (integer_onep (cond))
+	cond = NULL_TREE;
+    }
+
+  return build2 (MUST_NOT_THROW_EXPR, type, body, cond);
+}
+
+
 /* Initialize the catch parameter DECL.  */
 
 static void
@@ -418,7 +440,7 @@ initialize_handler_parm (tree decl, tree exp)
       /* Force cleanups now to avoid nesting problems with the
 	 MUST_NOT_THROW_EXPR.  */
       init = fold_build_cleanup_point_expr (TREE_TYPE (init), init);
-      init = build1 (MUST_NOT_THROW_EXPR, TREE_TYPE (init), init);
+      init = build_must_not_throw_expr (init, NULL_TREE);
     }
 
   decl = pushdecl (decl);
@@ -560,7 +582,8 @@ begin_eh_spec_block (void)
      MUST_NOT_THROW_EXPR.  */
   if (TYPE_NOEXCEPT_P (TREE_TYPE (current_function_decl)))
     {
-      r = build_stmt (spec_location, MUST_NOT_THROW_EXPR, NULL_TREE);
+      r = build_stmt (spec_location, MUST_NOT_THROW_EXPR,
+		      NULL_TREE, NULL_TREE);
       TREE_SIDE_EFFECTS (r) = 1;
     }
   else
@@ -664,7 +687,8 @@ wrap_cleanups_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
   cleanup = TARGET_EXPR_CLEANUP (exp);
   if (cleanup)
     {
-      cleanup = build1 (MUST_NOT_THROW_EXPR, void_type_node, cleanup);
+      cleanup = build2 (MUST_NOT_THROW_EXPR, void_type_node, cleanup,
+			NULL_TREE);
       TARGET_EXPR_CLEANUP (exp) = cleanup;
     }
 

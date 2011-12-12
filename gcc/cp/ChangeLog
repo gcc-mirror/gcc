@@ -1,3 +1,14 @@
+2011-12-12  Torvald Riegel  <triegel@redhat.com>
+
+	* cp-tree.def (MUST_NOT_THROW_EXPR): Add condition parameter.
+	* cp-tree.h (MUST_NOT_THROW_COND): New.
+	(build_must_not_throw_expr): Declare.
+	* dump.c (cp_dump_tree): Dump MUST_NOT_THROW_EXPR condition.
+	* except.c (build_must_not_throw_expr): New.
+	(initialize_handler_parm): Use it.
+	(begin_eh_spec_block, wrap_cleanups_r): Adapt to condition.
+	* pt.c (tsubst_expr): Handle MUST_NOT_THROW_EXPR.
+
 2011-12-12  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/51262
