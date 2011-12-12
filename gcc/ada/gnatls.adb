@@ -75,7 +75,7 @@ procedure Gnatls is
       Value : String_Access;
       Next  : Dir_Ref;
    end record;
-   --  ??? comment needed
+   --  Simply linked list of dirs
 
    First_Source_Dir : Dir_Ref;
    Last_Source_Dir  : Dir_Ref;
@@ -168,6 +168,9 @@ procedure Gnatls is
 
    procedure Scan_Ls_Arg (Argv : String);
    --  Scan and process lser specific arguments. Argv is a single argument
+
+   procedure Search_RTS (Name : String);
+   --  Find include and objects path for the RTS name.
 
    procedure Usage;
    --  Print usage message
@@ -1176,6 +1179,62 @@ procedure Gnatls is
       end if;
    end Reset_Print;
 
+   ----------------
+   -- Search_RTS --
+   ----------------
+
+   procedure Search_RTS (Name : String) is
+      Src_Path : String_Ptr;
+      Lib_Path : String_Ptr;
+      --  Pathes for source and include subdirs
+
+      Rts_Full_Path : String_Access;
+      --  Full path for RTS project
+   begin
+      --  Try to find the RTS
+
+      Src_Path := Get_RTS_Search_Dir (Name, Include);
+      Lib_Path := Get_RTS_Search_Dir (Name, Objects);
+
+      --  For non-project RTS, both the include and the objects directories
+      --  must be present.
+
+      if Src_Path /= null and then Lib_Path /= null then
+         Add_Search_Dirs (Src_Path, Include);
+         Add_Search_Dirs (Lib_Path, Objects);
+         return;
+      end if;
+
+      if Lib_Path /= null then
+         Osint.Fail ("RTS path not valid: missing adainclude directory");
+
+      elsif Src_Path /= null then
+         Osint.Fail ("RTS path not valid: missing adalib directory");
+
+      end if;
+
+      --  Try to find the RTS on the project path.  First setup the project
+      --  path.
+
+      Initialize_Default_Project_Path
+        (Prj_Path, Target_Name => Sdefault.Target_Name.all);
+
+      Rts_Full_Path := Get_Runtime_Path (Prj_Path, Name);
+      if Rts_Full_Path /= null then
+         --  Directory name was found on the project path.  Look for the
+         --  include subdir(s).
+
+         Src_Path := Get_RTS_Search_Dir (Name, Include);
+         if Src_Path /= null then
+            Add_Search_Dirs (Src_Path, Include);
+            return;
+         end if;
+      end if;
+
+      Osint.Fail ("RTS path not valid: missing " &
+                    "adainclude and adalib directories");
+   end Search_RTS;
+
    -------------------
    -- Scan_Ls_Arg --
    -------------------
@@ -1326,37 +1385,6 @@ procedure Gnatls is
 
                Opt.No_Stdinc := True;
                Opt.RTS_Switch := True;
-
-               declare
-                  Src_Path_Name : constant String_Ptr :=
-                                    Get_RTS_Search_Dir
-                                      (Argv (7 .. Argv'Last), Include);
-                  Lib_Path_Name : constant String_Ptr :=
-                                    Get_RTS_Search_Dir
-                                      (Argv (7 .. Argv'Last), Objects);
-
-               begin
-                  if Src_Path_Name /= null
-                    and then Lib_Path_Name /= null
-                  then
-                     Add_Search_Dirs (Src_Path_Name, Include);
-                     Add_Search_Dirs (Lib_Path_Name, Objects);
-
-                  elsif Src_Path_Name = null
-                    and then Lib_Path_Name = null
-                  then
-                     Osint.Fail ("RTS path not valid: missing " &
-                                 "adainclude and adalib directories");
-
-                  elsif Src_Path_Name = null then
-                     Osint.Fail ("RTS path not valid: missing " &
-                                 "adainclude directory");
-
-                  elsif Lib_Path_Name = null then
-                     Osint.Fail ("RTS path not valid: missing " &
-                                 "adalib directory");
-                  end if;
-               end;
             end if;
          end if;
 
@@ -1519,6 +1547,12 @@ begin
       Write_Eol;
       Usage;
       Exit_Program (E_Fatal);
+   end if;
+
+   --  Handle --RTS switch
+
+   if RTS_Specified /= null then
+      Search_RTS (RTS_Specified.all);
    end if;
 
    --  Add the source and object directories specified on the command line, if

@@ -1989,6 +1989,9 @@ package body Sem_Res is
       end if;
 
       Debug_A_Entry ("resolving  ", N);
+      if Debug_Flag_V then
+         Write_Overloads (N);
+      end if;
 
       if Comes_From_Source (N) then
          if Is_Fixed_Point_Type (Typ) then
@@ -2033,6 +2036,11 @@ package body Sem_Res is
          Get_First_Interp (N, I, It);
          Interp_Loop : while Present (It.Typ) loop
 
+            if Debug_Flag_V then
+               Write_Str ("Interp: ");
+               Write_Interp (It);
+            end if;
+
             --  We are only interested in interpretations that are compatible
             --  with the expected type, any other interpretations are ignored.
 
@@ -2054,6 +2062,10 @@ package body Sem_Res is
                  and then Typ /= Universal_Real
                  and then Present (It.Abstract_Op)
                then
+                  if Debug_Flag_V then
+                     Write_Line ("Skip.");
+                  end if;
+
                   goto Continue;
                end if;
 
@@ -2572,9 +2584,36 @@ package body Sem_Res is
          Resolution_Failed;
          return;
 
-      --  Here we have an acceptable interpretation for the context
-
       else
+         --  In Ada 2005, if we have something like "X : T := 2 + 2;", where
+         --  the "+" on T is abstract, and the operands are of universal type,
+         --  the above code will have (incorrectly) resolved the "+" to the
+         --  universal one in Standard. Therefore, we check for this case, and
+         --  give an error. We can't do this earlier, because it would cause
+         --  legal cases to get errors (when some other type has an abstract
+         --  "+").
+
+         if Ada_Version >= Ada_2005 and then
+           Nkind (N) in N_Op and then
+           Is_Overloaded (N) and then
+           Is_Universal_Numeric_Type (Etype (Entity (N)))
+         then
+            Get_First_Interp (N, I, It);
+            while Present (It.Typ) loop
+               if Present (It.Abstract_Op) and then
+                 Etype (It.Abstract_Op) = Typ
+               then
+                  Error_Msg_NE
+                    ("cannot call abstract subprogram &!", N, It.Abstract_Op);
+                  return;
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+         end if;
+
+         --  Here we have an acceptable interpretation for the context
+
          --  Propagate type information and normalize tree for various
          --  predefined operations. If the context only imposes a class of
          --  types, rather than a specific type, propagate the actual type

@@ -4852,8 +4852,8 @@ package body Exp_Disp is
       --            Transportable      => <<boolean-value>>,
       --            Type_Is_Abstract   => <<boolean-value>>,
       --            Needs_Finalization => <<boolean-value>>,
-      --            [ Size_Func         => Size_Prim'Access ]
-      --            [ Interfaces_Table  => <<access-value>> ]
+      --            [ Size_Func         => Size_Prim'Access, ]
+      --            [ Interfaces_Table  => <<access-value>>, ]
       --            [ SSD               => SSD_Table'Address ]
       --            Tags_Table         => (0 => null,
       --                                   1 => Parent'Tag
@@ -4900,7 +4900,7 @@ package body Exp_Disp is
       Append_To (TSD_Aggr_List,
         Unchecked_Convert_To (RTE (RE_Cstring_Ptr),
           Make_Attribute_Reference (Loc,
-            Prefix => New_Reference_To (Exname, Loc),
+            Prefix         => New_Reference_To (Exname, Loc),
             Attribute_Name => Name_Address)));
 
       --  External_Tag of a local tagged type

@@ -5284,8 +5284,24 @@ package body Prj.Nmsc is
                "Object_Dir cannot be empty",
                Object_Dir.Location, Project);
 
-         elsif not No_Sources then
+         elsif Setup_Projects and then
+               No_Sources and then
+               Project.Extends = No_Project
+         then
+            --  Do not create an object directory for a non extending project
+            --  with no sources.
 
+            Locate_Directory
+              (Project,
+               File_Name_Type (Object_Dir.Value),
+               Path             => Project.Object_Directory,
+               Dir_Exists       => Dir_Exists,
+               Data             => Data,
+               Location         => Object_Dir.Location,
+               Must_Exist       => False,
+               Externally_Built => Project.Externally_Built);
+
+         else
             --  We check that the specified object directory does exist.
             --  However, even when it doesn't exist, we set it to a default
             --  value. This is for the benefit of tools that recover from
@@ -5355,8 +5371,23 @@ package body Prj.Nmsc is
                "Exec_Dir cannot be empty",
                Exec_Dir.Location, Project);
 
-         elsif not No_Sources then
+         elsif Setup_Projects and then
+               No_Sources and then
+               Project.Extends = No_Project
+         then
+            --  Do not create an exec directory for a non extending project
+            --  with no sources.
 
+            Locate_Directory
+              (Project,
+               File_Name_Type (Exec_Dir.Value),
+               Path             => Project.Exec_Directory,
+               Dir_Exists       => Dir_Exists,
+               Data             => Data,
+               Location         => Exec_Dir.Location,
+               Externally_Built => Project.Externally_Built);
+
+         else
             --  We check that the specified exec directory does exist
 
             Locate_Directory

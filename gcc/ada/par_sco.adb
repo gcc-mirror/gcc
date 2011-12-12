@@ -1482,8 +1482,10 @@ package body Par_SCO is
                            Process_Decisions_Defer (Condition (ISC), 'W');
 
                            --  Set more specific dominant for inner statements
+                           --  (the control sloc for the decision is that of
+                           --  the WHILE token).
 
-                           Inner_Dominant := ('T', N);
+                           Inner_Dominant := ('T', ISC);
 
                         --  For loop
 

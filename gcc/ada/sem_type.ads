@@ -73,7 +73,7 @@ package Sem_Type is
 
    No_Interp : constant Interp := (Empty, Empty, Empty);
 
-   subtype Interp_Index is Int;
+   type Interp_Index is new Int;
 
    ---------------------
    -- Error Reporting --
@@ -148,7 +148,7 @@ package Sem_Type is
    --  The end of the list of interpretations is signalled by It.Nam = Empty.
 
    procedure Remove_Interp (I : in out Interp_Index);
-   --  Remove an interpretation that his hidden by another, or that does not
+   --  Remove an interpretation that is hidden by another, or that does not
    --  match the context. The value of I on input was set by a call to either
    --  Get_First_Interp or Get_Next_Interp and references the interpretation
    --  to be removed. The only allowed use of the exit value of I is as input
@@ -263,6 +263,9 @@ package Sem_Type is
    function Valid_Boolean_Arg (T : Entity_Id) return Boolean;
    --  A valid argument of a boolean operator is either some boolean type, or a
    --  one-dimensional array of boolean type.
+
+   procedure Write_Interp (It : Interp);
+   --  Debugging procedure to display an Interp
 
    procedure Write_Interp_Ref (Map_Ptr : Int);
    --  Debugging procedure to display entry in Interp_Map. Would not be needed
