@@ -13260,6 +13260,10 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       }
       break;
 
+    case MUST_NOT_THROW_EXPR:
+      return build_must_not_throw_expr (RECUR (TREE_OPERAND (t, 0)),
+					RECUR (MUST_NOT_THROW_COND (t)));
+
     case EXPR_PACK_EXPANSION:
       error ("invalid use of pack expansion expression");
       return error_mark_node;
