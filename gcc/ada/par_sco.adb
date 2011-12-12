@@ -1410,7 +1410,7 @@ package body Par_SCO is
                   Set_Statement_Entry;
 
                   --  Process case branches, all of which are dominated by the
-                  --  CASE expression.
+                  --  CASE statement.
 
                   declare
                      Alt : Node_Id;
@@ -1419,7 +1419,7 @@ package body Par_SCO is
                      while Present (Alt) loop
                         Traverse_Declarations_Or_Statements
                           (L => Statements (Alt),
-                           D => ('S', Expression (N)));
+                           D => Current_Dominant);
                         Next (Alt);
                      end loop;
                   end;
