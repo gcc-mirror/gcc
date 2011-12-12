@@ -1,6 +1,6 @@
 // -*- C++ -*- Exception handling routines for throwing.
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-// Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+// 2011  Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -58,8 +58,8 @@ __gxx_exception_cleanup (_Unwind_Reason_Code code, _Unwind_Exception *exc)
 
 
 extern "C" void
-__cxxabiv1::__cxa_throw (void *obj, std::type_info *tinfo, 
-			 void (*dest) (void *))
+__cxxabiv1::__cxa_throw (void *obj, std::type_info *tinfo,
+			 __cxa_dtor_type dest)
 {
   // Definitely a primary.
   __cxa_refcounted_exception *header

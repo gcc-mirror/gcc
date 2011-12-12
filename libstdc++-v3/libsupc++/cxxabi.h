@@ -51,6 +51,10 @@
 #include <bits/cxxabi_tweaks.h>
 #include <bits/cxxabi_forced.h>
 
+#ifndef _GLIBCXX_USE_THISCALL_ON_DTOR
+typedef void (*__cxa_dtor_type) (void *);
+#endif
+
 #ifdef __cplusplus
 namespace __cxxabiv1
 {
@@ -596,7 +600,7 @@ namespace __cxxabiv1
 
   // Throw the exception.
   void
-  __cxa_throw(void*, std::type_info*, void (*) (void *)) 
+  __cxa_throw(void*, std::type_info*, __cxa_dtor_type)
   __attribute__((__noreturn__));
 
   // Used to implement exception handlers.
