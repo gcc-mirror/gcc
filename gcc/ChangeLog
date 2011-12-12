@@ -1,5 +1,10 @@
 2011-12-12  Torvald Riegel  <triegel@redhat.com>
 
+	* gimplify.c (voidify_wrapper_expr): Add default handling for
+	outermost wrapper.
+
+2011-12-12  Torvald Riegel  <triegel@redhat.com>
+
 	* tree-ssa-tail-merge.c (gimple_equal_p): Don't treat transaction
 	commits as equal.
 
