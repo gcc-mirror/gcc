@@ -1,3 +1,8 @@
+2011-12-12  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/51262
+	* tree.c (cp_free_lang_data): No longer clear anonymous names.
+
 2011-12-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51151

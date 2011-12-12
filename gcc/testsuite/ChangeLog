@@ -1,3 +1,8 @@
+2011-12-12  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/51262
+	* g++.dg/opt/pr51262.C: New testcase.
+
 2011-12-12  Revital Eres  <revital.eres@linaro.org>
 
 	PR rtl-optimization/47013
