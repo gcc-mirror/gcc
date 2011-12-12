@@ -6513,7 +6513,7 @@ package body Exp_Disp is
 
       Append_To (TSD_Aggr_List,
         Make_Attribute_Reference (Loc,
-          Prefix => New_Reference_To (Typ, Loc),
+          Prefix         => New_Reference_To (Typ, Loc),
           Attribute_Name => Name_Alignment));
 
       --  HT_Link
@@ -6580,13 +6580,13 @@ package body Exp_Disp is
                      Make_Aggregate (Loc,
                        Expressions => New_List (
 
-                           --  Iface_Tag
+                         --  Iface_Tag
 
                          Make_Attribute_Reference (Loc,
                            Prefix         => New_Reference_To (Iface, Loc),
                            Attribute_Name => Name_Tag),
 
-                           --  OSD
+                         --  OSD
 
                          Make_OSD (Iface))));
 
@@ -6658,7 +6658,7 @@ package body Exp_Disp is
 
             Append_To (TSD_Aggr_List,
               Make_Attribute_Reference (Loc,
-                Prefix => New_Reference_To (SSD, Loc),
+                Prefix         => New_Reference_To (SSD, Loc),
                 Attribute_Name => Name_Unchecked_Access));
          else
             Append_To (TSD_Aggr_List, Make_Null (Loc));
@@ -6674,7 +6674,7 @@ package body Exp_Disp is
 
       Append_To (TSD_Tags_List,
         Make_Attribute_Reference (Loc,
-          Prefix => New_Reference_To (Typ, Loc),
+          Prefix         => New_Reference_To (Typ, Loc),
           Attribute_Name => Name_Tag));
 
       --  Fill the rest of the table with the tags of the ancestors
@@ -6699,7 +6699,7 @@ package body Exp_Disp is
 
             Append_To (TSD_Tags_List,
               Make_Attribute_Reference (Loc,
-                Prefix => New_Reference_To (Parent_Typ, Loc),
+                Prefix         => New_Reference_To (Parent_Typ, Loc),
                 Attribute_Name => Name_Tag));
 
             Pos := Pos + 1;
@@ -6907,7 +6907,7 @@ package body Exp_Disp is
                else
                   Tag_Node :=
                     Make_Attribute_Reference (Loc,
-                      Prefix => New_Reference_To (Typ, Loc),
+                      Prefix         => New_Reference_To (Typ, Loc),
                       Attribute_Name => Name_Tag);
                end if;
 
@@ -6940,7 +6940,7 @@ package body Exp_Disp is
                   else
                      Tag_Node :=
                        Make_Attribute_Reference (Loc,
-                         Prefix => New_Reference_To (Typ, Loc),
+                         Prefix         => New_Reference_To (Typ, Loc),
                          Attribute_Name => Name_Tag);
                   end if;
 
@@ -7145,15 +7145,15 @@ package body Exp_Disp is
                    Defining_Identifier => DT_Ptr,
                    Constant_Present    => True,
                    Object_Definition   => New_Reference_To (RTE (RE_Tag), Loc),
-                   Expression =>
+                   Expression          =>
                      Unchecked_Convert_To (RTE (RE_Tag),
                        Make_Attribute_Reference (Loc,
-                         Prefix =>
+                         Prefix         =>
                            Make_Selected_Component (Loc,
-                             Prefix => New_Reference_To (DT, Loc),
-                           Selector_Name =>
-                             New_Occurrence_Of
-                               (RTE_Record_Component (RE_Prims_Ptr), Loc)),
+                             Prefix        => New_Reference_To (DT, Loc),
+                             Selector_Name =>
+                               New_Occurrence_Of
+                                 (RTE_Record_Component (RE_Prims_Ptr), Loc)),
                          Attribute_Name => Name_Address))));
 
                --  Generate the SCIL node for the previous object declaration
@@ -7170,16 +7170,16 @@ package body Exp_Disp is
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Predef_Prims_Ptr,
                    Constant_Present    => True,
-                   Object_Definition   => New_Reference_To
-                                               (RTE (RE_Address), Loc),
-                   Expression =>
+                   Object_Definition   =>
+                     New_Reference_To (RTE (RE_Address), Loc),
+                   Expression          =>
                      Make_Attribute_Reference (Loc,
-                       Prefix =>
+                       Prefix         =>
                          Make_Selected_Component (Loc,
-                           Prefix => New_Reference_To (DT, Loc),
-                         Selector_Name =>
-                           New_Occurrence_Of
-                             (RTE_Record_Component (RE_Predef_Prims), Loc)),
+                           Prefix        => New_Reference_To (DT, Loc),
+                           Selector_Name =>
+                             New_Occurrence_Of
+                               (RTE_Record_Component (RE_Predef_Prims), Loc)),
                        Attribute_Name => Name_Address)));
 
             --  No dispatch table required
@@ -7190,15 +7190,16 @@ package body Exp_Disp is
                    Defining_Identifier => DT_Ptr,
                    Constant_Present    => True,
                    Object_Definition   => New_Reference_To (RTE (RE_Tag), Loc),
-                   Expression =>
+                   Expression          =>
                      Unchecked_Convert_To (RTE (RE_Tag),
                        Make_Attribute_Reference (Loc,
-                         Prefix =>
+                         Prefix         =>
                            Make_Selected_Component (Loc,
                              Prefix => New_Reference_To (DT, Loc),
-                           Selector_Name =>
-                             New_Occurrence_Of
-                               (RTE_Record_Component (RE_NDT_Prims_Ptr), Loc)),
+                             Selector_Name =>
+                               New_Occurrence_Of
+                                 (RTE_Record_Component (RE_NDT_Prims_Ptr),
+                                  Loc)),
                          Attribute_Name => Name_Address))));
             end if;
 
@@ -7308,15 +7309,17 @@ package body Exp_Disp is
                       Constant_Present    => True,
                       Object_Definition   => New_Reference_To
                                                (RTE (RE_Interface_Tag), Loc),
-                      Expression =>
+                      Expression          =>
                         Unchecked_Convert_To (RTE (RE_Interface_Tag),
                           Make_Attribute_Reference (Loc,
-                            Prefix =>
+                            Prefix         =>
                               Make_Selected_Component (Loc,
-                                Prefix => New_Reference_To (Iface_DT, Loc),
-                              Selector_Name =>
-                                New_Occurrence_Of
-                                  (RTE_Record_Component (RE_Prims_Ptr), Loc)),
+                                Prefix        =>
+                                  New_Reference_To (Iface_DT, Loc),
+                                Selector_Name =>
+                                  New_Occurrence_Of
+                                    (RTE_Record_Component (RE_Prims_Ptr),
+                                     Loc)),
                             Attribute_Name => Name_Address))));
                end if;
 
@@ -7660,7 +7663,7 @@ package body Exp_Disp is
                 Address_Node =>
                   Unchecked_Convert_To (RTE (RE_Prim_Ptr),
                     Make_Attribute_Reference (Loc,
-                      Prefix => New_Reference_To (Prim, Loc),
+                      Prefix         => New_Reference_To (Prim, Loc),
                       Attribute_Name => Name_Unrestricted_Access))));
 
             --  Register copy of the pointer to the 'size primitive in the TSD
@@ -7693,7 +7696,7 @@ package body Exp_Disp is
                    Address_Node =>
                      Unchecked_Convert_To (RTE (RE_Prim_Ptr),
                        Make_Attribute_Reference (Loc,
-                         Prefix => New_Reference_To (Prim, Loc),
+                         Prefix         => New_Reference_To (Prim, Loc),
                          Attribute_Name => Name_Unrestricted_Access))));
             end if;
          end if;
@@ -7773,7 +7776,8 @@ package body Exp_Disp is
                    Address_Node =>
                      Unchecked_Convert_To (RTE (RE_Prim_Ptr),
                        Make_Attribute_Reference (Loc,
-                         Prefix => New_Reference_To (Alias (Prim), Loc),
+                         Prefix          =>
+                           New_Reference_To (Alias (Prim), Loc),
                          Attribute_Name  => Name_Unrestricted_Access))));
 
             else
@@ -7804,7 +7808,8 @@ package body Exp_Disp is
                    Address_Node =>
                      Unchecked_Convert_To (RTE (RE_Prim_Ptr),
                        Make_Attribute_Reference (Loc,
-                         Prefix => New_Reference_To (Alias (Prim), Loc),
+                         Prefix         =>
+                           New_Reference_To (Alias (Prim), Loc),
                          Attribute_Name => Name_Unrestricted_Access))));
 
             end if;
