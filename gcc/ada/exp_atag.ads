@@ -66,6 +66,13 @@ package Exp_Atag is
    --
    --  Generates: TSD (Tag).Access_Level
 
+   function Build_Get_Alignment
+     (Loc      : Source_Ptr;
+      Tag_Node : Node_Id) return Node_Id;
+   --  Build code that retrieves the alignment of the tagged type.
+   --
+   --  Generates: TSD (Tag).Alignment
+
    procedure Build_Get_Predefined_Prim_Op_Address
      (Loc      : Source_Ptr;
       Position : Uint;

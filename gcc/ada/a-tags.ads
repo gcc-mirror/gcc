@@ -98,6 +98,8 @@ private
    --           :   primitive ops    :   +-------------------+
    --           |      pointers      |   |   access level    |
    --           +--------------------+   +-------------------+
+   --                                    |     alignment     |
+   --                                    +-------------------+
    --                                    |   expanded name   |
    --                                    +-------------------+
    --                                    |   external tag    |
@@ -269,6 +271,7 @@ private
       --  function return, and class-wide stream I/O, the danger of objects
       --  outliving their type declaration can be eliminated (Ada 2005: AI-344)
 
+      Alignment     : Natural;
       Expanded_Name : Cstring_Ptr;
       External_Tag  : Cstring_Ptr;
       HT_Link       : Tag_Ptr;
@@ -545,25 +548,24 @@ private
    procedure Unregister_Tag (T : Tag);
    --  Remove a particular tag from the external tag hash table
 
-   Max_Predef_Prims : constant Positive := 16;
+   Max_Predef_Prims : constant Positive := 15;
    --  Number of reserved slots for the following predefined ada primitives:
    --
    --    1. Size
-   --    2. Alignment,
-   --    3. Read
-   --    4. Write
-   --    5. Input
-   --    6. Output
-   --    7. "="
-   --    8. assignment
-   --    9. deep adjust
-   --   10. deep finalize
-   --   11. async select
-   --   12. conditional select
-   --   13. prim_op kind
-   --   14. task_id
-   --   15. dispatching requeue
-   --   16. timed select
+   --    2. Read
+   --    3. Write
+   --    4. Input
+   --    5. Output
+   --    6. "="
+   --    7. assignment
+   --    8. deep adjust
+   --    9. deep finalize
+   --   10. async select
+   --   11. conditional select
+   --   12. prim_op kind
+   --   13. task_id
+   --   14. dispatching requeue
+   --   15. timed select
    --
    --  The compiler checks that the value here is correct
 
