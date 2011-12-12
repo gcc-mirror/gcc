@@ -26519,7 +26519,7 @@ rs6000_expand_interleave (rtx target, rtx op0, rtx op1, bool highp)
   unsigned i, high, nelt = GET_MODE_NUNITS (vmode);
   rtx perm[16];
 
-  high = (highp == TARGET_BIG_ENDIAN ? 0 : nelt / 2);
+  high = (highp == BYTES_BIG_ENDIAN ? 0 : nelt / 2);
   for (i = 0; i < nelt / 2; i++)
     {
       perm[i * 2] = GEN_INT (i + high);
