@@ -741,6 +741,7 @@ mark(void (*scan)(byte*, int64))
 	scan((byte*)&runtime_allg, sizeof runtime_allg);
 	scan((byte*)&runtime_allm, sizeof runtime_allm);
 	runtime_MProf_Mark(scan);
+	runtime_time_scan(scan);
 
 	// mark stacks
 	for(gp=runtime_allg; gp!=nil; gp=gp->alllink) {

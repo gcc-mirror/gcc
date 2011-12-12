@@ -120,9 +120,10 @@ grep -v '^// ' gen-sysinfo.go | \
       -e 's/\([^a-zA-Z0-9_]\)_timestruc_t\([^a-zA-Z0-9_]\)/\1Timestruc\2/g' \
     >> ${OUT}
 
-# The errno constants.
-grep '^const _E' gen-sysinfo.go | \
-  sed -e 's/^\(const \)_\(E[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+# The errno constants.  These get type Errno.
+echo '#include <errno.h>' | ${CC} -x c - -E -dM | \
+  egrep '#define E[A-Z0-9_]+ ' | \
+  sed -e 's/^#define \(E[A-Z0-9_]*\) .*$/const \1 = Errno(_\1)/' >> ${OUT}
 
 # The O_xxx flags.
 egrep '^const _(O|F|FD)_' gen-sysinfo.go | \
@@ -191,8 +192,10 @@ fi
 grep '^const __PC' gen-sysinfo.go |
   sed -e 's/^\(const \)__\(PC[^= ]*\)\(.*\)$/\1\2 = __\2/' >> ${OUT}
 
-# The epoll constants were picked up by the errno constants, but we
-# need to be sure the EPOLLRDHUP is defined.
+# epoll constants.
+grep '^const _EPOLL' gen-sysinfo.go |
+  sed -e 's/^\(const \)_\(EPOLL[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+# Make sure EPOLLRDHUP is defined.
 if ! grep '^const EPOLLRDHUP' ${OUT} >/dev/null 2>&1; then
   echo "const EPOLLRDHUP = 0x2000" >> ${OUT}
 fi
@@ -498,9 +501,11 @@ grep '^type _addrinfo ' gen-sysinfo.go | \
       -e 's/ ai_/ Ai_/g' \
     >> ${OUT}
 
-# The addrinfo flags.
+# The addrinfo flags and errors.
 grep '^const _AI_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(AI_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+grep '^const _EAI_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(EAI_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
 # The passwd struct.
 grep '^type _passwd ' gen-sysinfo.go | \
@@ -644,17 +649,18 @@ grep '^type _termios ' gen-sysinfo.go | \
       -e 's/c_ospeed/Ospeed/' \
     >> ${OUT}
 
-# The termios constants.  The ones starting with 'E' were picked up above.
+# The termios constants.
 for n in IGNBRK BRKINT IGNPAR PARMRK INPCK ISTRIP INLCR IGNCR ICRNL IUCLC \
     IXON IXANY IXOFF IMAXBEL IUTF8 OPOST OLCUC ONLCR OCRNL ONOCR ONLRET \
     OFILL OFDEL NLDLY NL0 NL1 CRDLY CR0 CR1 CR2 CR3 TABDLY BSDLY VTDLY \
     FFDLY CBAUD CBAUDEX CSIZE CSTOPB CREAD PARENB PARODD HUPCL CLOCAL \
-    LOBLK CIBAUD CMSPAR CRTSCTS ISIG ICANON XCASE DEFECHK FLUSHO NOFLSH \
-    TOSTOP PENDIN IEXTEN VINTR VQUIT VERASE VKILL VEOF VMIN VEOL VTIME VEOL2 \
-    VSWTCH VSTART VSTOP VSUSP VDSUSP VLNEXT VWERASE VREPRINT VDISCARD VSTATUS \
-    TCSANOW TCSADRAIN, TCSAFLUSH TCIFLUSH TCOFLUSH TCIOFLUSH TCOOFF TCOON \
-    TCIOFF TCION B0 B50 B75 B110 B134 B150 B200 B300 B600 B1200 B1800 B2400 \
-    B4800 B9600 B19200 B38400 B57600 B115200 B230400; do
+    LOBLK CIBAUD CMSPAR CRTSCTS ISIG ICANON XCASE ECHO ECHOE ECHOK ECHONL \
+    ECHOCTL ECHOPRT ECHOKE DEFECHO FLUSHO NOFLSH TOSTOP PENDIN IEXTEN VINTR \
+    VQUIT VERASE VKILL VEOF VMIN VEOL VTIME VEOL2 VSWTCH VSTART VSTOP VSUSP \
+    VDSUSP VLNEXT VWERASE VREPRINT VDISCARD VSTATUS TCSANOW TCSADRAIN \
+    TCSAFLUSH TCIFLUSH TCOFLUSH TCIOFLUSH TCOOFF TCOON TCIOFF TCION B0 B50 \
+    B75 B110 B134 B150 B200 B300 B600 B1200 B1800 B2400 B4800 B9600 B19200 \
+    B38400 B57600 B115200 B230400; do
 
     grep "^const _$n " gen-sysinfo.go | \
 	sed -e 's/^\(const \)_\([^=]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}

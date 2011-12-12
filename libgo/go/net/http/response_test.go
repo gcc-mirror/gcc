@@ -65,6 +65,7 @@ var respTests = []respTest{
 			Proto:         "HTTP/1.1",
 			ProtoMajor:    1,
 			ProtoMinor:    1,
+			Header:        Header{},
 			Request:       dummyReq("GET"),
 			Close:         true,
 			ContentLength: -1,
@@ -85,6 +86,7 @@ var respTests = []respTest{
 			Proto:         "HTTP/1.1",
 			ProtoMajor:    1,
 			ProtoMinor:    1,
+			Header:        Header{},
 			Request:       dummyReq("GET"),
 			Close:         false,
 			ContentLength: 0,
@@ -315,7 +317,7 @@ func TestReadResponseCloseInMiddle(t *testing.T) {
 		}
 		var wr io.Writer = &buf
 		if test.chunked {
-			wr = &chunkedWriter{wr}
+			wr = newChunkedWriter(wr)
 		}
 		if test.compressed {
 			buf.WriteString("Content-Encoding: gzip\r\n")

@@ -23,7 +23,7 @@ func c_syscall64(trap int64, a1, a2, a3, a4, a5, a6 int64) int64 __asm__ ("sysca
 // Do a system call.  We look at the size of uintptr to see how to pass
 // the arguments, so that we don't pass a 64-bit value when the function
 // expects a 32-bit one.
-func Syscall(trap, a1, a2, a3 uintptr) (r1, r2, err uintptr) {
+func Syscall(trap, a1, a2, a3 uintptr) (r1, r2 uintptr, err Errno) {
 	entersyscall()
 	var r uintptr
 	if unsafe.Sizeof(r) == 4 {
@@ -33,12 +33,12 @@ func Syscall(trap, a1, a2, a3 uintptr) (r1, r2, err uintptr) {
 		r1 := c_syscall64(int64(trap), int64(a1), int64(a2), int64(a3), 0, 0, 0)
 		r = uintptr(r1)
 	}
-	errno := GetErrno()
+	err = GetErrno()
 	exitsyscall()
-	return r, 0, uintptr(errno)
+	return r, 0, err
 }
 
-func Syscall6(trap, a1, a2, a3, a4, a5, a6 uintptr) (r1, r2, err uintptr) {
+func Syscall6(trap, a1, a2, a3, a4, a5, a6 uintptr) (r1, r2 uintptr, err Errno) {
 	entersyscall()
 	var r uintptr
 	if unsafe.Sizeof(r) == 4 {
@@ -50,12 +50,12 @@ func Syscall6(trap, a1, a2, a3, a4, a5, a6 uintptr) (r1, r2, err uintptr) {
 			int64(a4), int64(a5), int64(a6))
 		r = uintptr(r1)
 	}
-	errno := GetErrno()
+	err = GetErrno()
 	exitsyscall()
-	return r, 0, uintptr(errno)
+	return r, 0, err
 }
 
-func RawSyscall(trap, a1, a2, a3 uintptr) (r1, r2, err uintptr) {
+func RawSyscall(trap, a1, a2, a3 uintptr) (r1, r2 uintptr, err Errno) {
 	var r uintptr
 	if unsafe.Sizeof(r) == 4 {
 		r1 := c_syscall32(int32(trap), int32(a1), int32(a2), int32(a3), 0, 0, 0)
@@ -64,11 +64,11 @@ func RawSyscall(trap, a1, a2, a3 uintptr) (r1, r2, err uintptr) {
 		r1 := c_syscall64(int64(trap), int64(a1), int64(a2), int64(a3), 0, 0, 0)
 		r = uintptr(r1)
 	}
-	errno := GetErrno()
-	return r, 0, uintptr(errno)
+	err = GetErrno()
+	return r, 0, err
 }
 
-func RawSyscall6(trap, a1, a2, a3, a4, a5, a6 uintptr) (r1, r2, err uintptr) {
+func RawSyscall6(trap, a1, a2, a3, a4, a5, a6 uintptr) (r1, r2 uintptr, err Errno) {
 	var r uintptr
 	if unsafe.Sizeof(r) == 4 {
 		r1 := c_syscall32(int32(trap), int32(a1), int32(a2), int32(a3),
@@ -79,8 +79,8 @@ func RawSyscall6(trap, a1, a2, a3, a4, a5, a6 uintptr) (r1, r2, err uintptr) {
 			int64(a4), int64(a5), int64(a6))
 		r = uintptr(r1)
 	}
-	errno := GetErrno()
-	return r, 0, uintptr(errno)
+	err = GetErrno()
+	return r, 0, err
 }
 
 // Mmap manager, for use by operating system-specific implementations.
@@ -89,18 +89,18 @@ func RawSyscall6(trap, a1, a2, a3, a4, a5, a6 uintptr) (r1, r2, err uintptr) {
 type mmapper struct {
 	sync.Mutex
 	active map[*byte][]byte // active mappings; key is last byte in mapping
-	mmap   func(addr, length uintptr, prot, flags, fd int, offset int64) (uintptr, int)
-	munmap func(addr uintptr, length uintptr) int
+	mmap   func(addr, length uintptr, prot, flags, fd int, offset int64) (uintptr, error)
+	munmap func(addr uintptr, length uintptr) error
 }
 
-func (m *mmapper) Mmap(fd int, offset int64, length int, prot int, flags int) (data []byte, errno int) {
+func (m *mmapper) Mmap(fd int, offset int64, length int, prot int, flags int) (data []byte, err error) {
 	if length <= 0 {
 		return nil, EINVAL
 	}
 
 	// Map the requested memory.
 	addr, errno := m.mmap(0, uintptr(length), prot, flags, fd, offset)
-	if errno != 0 {
+	if errno != nil {
 		return nil, errno
 	}
 
@@ -119,10 +119,10 @@ func (m *mmapper) Mmap(fd int, offset int64, length int, prot int, flags int) (d
 	m.Lock()
 	defer m.Unlock()
 	m.active[p] = b
-	return b, 0
+	return b, nil
 }
 
-func (m *mmapper) Munmap(data []byte) (errno int) {
+func (m *mmapper) Munmap(data []byte) (err error) {
 	if len(data) == 0 || len(data) != cap(data) {
 		return EINVAL
 	}
@@ -137,11 +137,11 @@ func (m *mmapper) Munmap(data []byte) (errno int) {
 	}
 
 	// Unmap the memory and update m.
-	if errno := m.munmap(uintptr(unsafe.Pointer(&b[0])), uintptr(len(b))); errno != 0 {
+	if errno := m.munmap(uintptr(unsafe.Pointer(&b[0])), uintptr(len(b))); errno != nil {
 		return errno
 	}
 	m.active[p] = nil, false
-	return 0
+	return nil
 }
 
 var mapper = &mmapper{
@@ -150,10 +150,32 @@ var mapper = &mmapper{
 	munmap: munmap,
 }
 
-func Mmap(fd int, offset int64, length int, prot int, flags int) (data []byte, errno int) {
+func Mmap(fd int, offset int64, length int, prot int, flags int) (data []byte, err error) {
 	return mapper.Mmap(fd, offset, length, prot, flags)
 }
 
-func Munmap(b []byte) (errno int) {
+func Munmap(b []byte) (err error) {
 	return mapper.Munmap(b)
+}
+
+
+// An Errno is an unsigned number describing an error condition.
+// It implements the error interface.  The zero Errno is by convention
+// a non-error, so code to convert from Errno to error should use:
+//	err = nil
+//	if errno != 0 {
+//		err = errno
+//	}
+type Errno uintptr
+
+func (e Errno) Error() string {
+	return Errstr(int(e))
+}
+
+func (e Errno) Temporary() bool {
+	return e == EINTR || e == EMFILE || e.Timeout()
+}
+
+func (e Errno) Timeout() bool {
+	return e == EAGAIN || e == EWOULDBLOCK || e == ETIMEDOUT
 }

@@ -18,7 +18,7 @@ import (
 
 var dot = []string{
 	"dir_unix.go",
-	"env_unix.go",
+	"env.go",
 	"error.go",
 	"file.go",
 	"os_test.go",
@@ -937,11 +937,6 @@ func TestHostname(t *testing.T) {
 	// There is no other way to fetch hostname on windows, but via winapi.
 	// On Plan 9 it is can be taken from #c/sysname as Hostname() does.
 	if syscall.OS == "windows" || syscall.OS == "plan9" {
-		return
-	}
-
-	// TODO(jsing): Fix nametomib() on OpenBSD
-	if syscall.OS == "openbsd" {
 		return
 	}
 

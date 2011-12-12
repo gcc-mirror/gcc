@@ -137,9 +137,6 @@ merge_c() {
 }
 
 (cd ${NEWDIR}/src/pkg && find . -name '*.go' -print) | while read f; do
-  if test `dirname $f` = "./syscall"; then
-    continue
-  fi
   oldfile=${OLDDIR}/src/pkg/$f
   newfile=${NEWDIR}/src/pkg/$f
   libgofile=go/$f

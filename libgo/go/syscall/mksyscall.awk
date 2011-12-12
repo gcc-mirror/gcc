@@ -12,7 +12,7 @@
 #	  This includes return parameters.
 #	* The parameter lists must give a type for each argument:
 #	   the (x, y, z int) shorthand is not allowed.
-#	* If the return parameter is an error number, it must be named errno.
+#	* If the return parameter is an error, it must be named err.
 
 # A line beginning with //sysnb is like //sys, except that the
 # goroutine will not be suspended during the execution of the library
@@ -217,13 +217,13 @@ BEGIN {
 	    goname = goparam[1]
 	    gotype = goparam[2]
 
-	    if (goname == "errno") {
+	    if (goname == "err") {
 		if (cfnresult ~ /^\*/) {
 		    print "\tif _r == nil {"
 		} else {
 		    print "\tif _r < 0 {"
 		}
-		print "\t\terrno = GetErrno()"
+		print "\t\terr = GetErrno()"
 		print "\t}"
 	    } else if (gotype == "uintptr" && cfnresult ~ /^\*/) {
 		printf("\t%s = (%s)(unsafe.Pointer(_r))\n", goname, gotype)
