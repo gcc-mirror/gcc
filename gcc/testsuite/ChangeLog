@@ -1,3 +1,22 @@
+2011-12-12  Revital Eres  <revital.eres@linaro.org>
+
+	PR rtl-optimization/47013
+	* gcc.dg/sms-2.c: Change scan-tree-dump-times and the code itself
+	to preserve the function.
+	* gcc.dg/sms-6.c: Add --param sms-min-sc=1. Add dg-options for
+	powerpc*-*-*.  Avoid superfluous spaces in dg-final.
+	* gcc.dg/sms-3.c: Add --param sms-min-sc=1 and
+	-fmodulo-sched-allow-regmoves flags.
+	* gcc.dg/sms-7.c: Likewise. Remove dg-final for powerpc*-*-*
+	and avoid superfluous spaces in dg-final for spu-*-*.
+	* gcc.dg/sms-4.c: Add dg-options for powerpc*-*-*.
+	* gcc.dg/sms-8.c: Add --param sms-min-sc=1.  Add dg-options and
+	change scan-rtl-dump-times for powerpc*-*-*.
+	* gcc.dg/sms-5.c: Add --param sms-min-sc=1 flag, remove
+	powerpc*-*-* from dg-final and avoid superfluous spaces in
+	dg-final.
+	* gcc.dg/sms-9.c: Remove -fno-auto-inc-dec.
+
 2011-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51485

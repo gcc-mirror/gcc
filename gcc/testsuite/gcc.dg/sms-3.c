@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fmodulo-sched -funroll-loops -fdump-rtl-sms" } */
+/* { dg-options "-O2 -fmodulo-sched -funroll-loops -fdump-rtl-sms --param sms-min-sc=1 -fmodulo-sched-allow-regmoves" } */
 
 extern void abort (void);
 

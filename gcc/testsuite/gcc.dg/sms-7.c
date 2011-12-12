@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fmodulo-sched -fstrict-aliasing -fdump-rtl-sms" } */
+/* { dg-options "-O3 -fmodulo-sched -fstrict-aliasing -fdump-rtl-sms -fmodulo-sched-allow-regmoves --param sms-min-sc=1" } */
 
 extern void abort (void);
 
@@ -44,7 +44,6 @@ int main()
   return 0;        
 }
 
-/* { dg-final { scan-rtl-dump-times "SMS succeeded" 1 "sms"  { target spu-*-* } } } */
-/* { dg-final { scan-rtl-dump-times "SMS succeeded" 3  "sms" { target powerpc*-*-* } } } */
+/* { dg-final { scan-rtl-dump-times "SMS succeeded" 1 "sms" { target spu-*-* } } } */
 /* { dg-final { cleanup-rtl-dump "sms" } } */
 
