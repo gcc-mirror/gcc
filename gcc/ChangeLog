@@ -1,3 +1,8 @@
+2011-12-11  Richard Henderson  <rth@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_interleave): Use
+	BYTES_BIG_ENDIAN, not TARGET_BIG_ENDIAN.
+
 2011-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51485
