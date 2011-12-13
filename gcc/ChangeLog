@@ -1,3 +1,8 @@
+2011-12-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-mem.c (ipa_tm_create_version_alias): Set DECL_CONTEXT and
+	DECL_LANG_SPECIFIC.
+
 2011-12-13  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* regmove.c (fixup_match_2): Only access call_used_regs with hard
