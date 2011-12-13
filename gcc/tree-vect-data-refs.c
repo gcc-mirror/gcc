@@ -3800,6 +3800,7 @@ vect_create_destination_var (tree scalar_dest, tree vectype)
 bool
 vect_strided_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 {
+  optab ih_optab, il_optab;
   enum machine_mode mode;
 
   mode = TYPE_MODE (vectype);
@@ -3814,23 +3815,18 @@ vect_strided_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
     }
 
   /* Check that the operation is supported.  */
-  if (VECTOR_MODE_P (mode))
-    {
-      unsigned int i, nelt = GET_MODE_NUNITS (mode);
-      unsigned char *sel = XALLOCAVEC (unsigned char, nelt);
-      for (i = 0; i < nelt / 2; i++)
-	{
-	  sel[i * 2] = i;
-	  sel[i * 2 + 1] = i + nelt;
-	}
-      if (can_vec_perm_p (mode, false, sel))
-	{
-	  for (i = 0; i < nelt; i++)
-	    sel[i] += nelt / 2;
-	  if (can_vec_perm_p (mode, false, sel))
-	    return true;
-	}
-    }
+  ih_optab = optab_for_tree_code (VEC_INTERLEAVE_HIGH_EXPR,
+				  vectype, optab_default);
+  il_optab = optab_for_tree_code (VEC_INTERLEAVE_LOW_EXPR,
+				  vectype, optab_default);
+  if (il_optab && ih_optab
+      && optab_handler (ih_optab, mode) != CODE_FOR_nothing
+      && optab_handler (il_optab, mode) != CODE_FOR_nothing)
+    return true;
+
+  if (can_vec_perm_for_code_p (VEC_INTERLEAVE_HIGH_EXPR, mode, NULL)
+      && can_vec_perm_for_code_p (VEC_INTERLEAVE_LOW_EXPR, mode, NULL))
+    return true;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "interleave op not supported by target.");
@@ -3921,26 +3917,15 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
   tree perm_dest, vect1, vect2, high, low;
   gimple perm_stmt;
   tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
-  tree perm_mask_low, perm_mask_high;
-  unsigned int i, n;
-  unsigned int j, nelt = GET_MODE_NUNITS (TYPE_MODE (vectype));
-  unsigned char *sel = XALLOCAVEC (unsigned char, nelt);
+  int i;
+  unsigned int j;
+  enum tree_code high_code, low_code;
 
   gcc_assert (vect_strided_store_supported (vectype, length));
 
   *result_chain = VEC_copy (tree, heap, dr_chain);
 
-  for (i = 0, n = nelt / 2; i < n; i++)
-    {
-      sel[i * 2] = i;
-      sel[i * 2 + 1] = i + nelt;
-    }
-  perm_mask_high = vect_gen_perm_mask (vectype, sel);
-  for (i = 0; i < nelt; i++)
-    sel[i] += nelt / 2;
-  perm_mask_low = vect_gen_perm_mask (vectype, sel);
-
-  for (i = 0, n = exact_log2 (length); i < n; i++)
+  for (i = 0; i < exact_log2 (length); i++)
     {
       for (j = 0; j < length/2; j++)
 	{
@@ -3948,27 +3933,42 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
 	  vect2 = VEC_index (tree, dr_chain, j+length/2);
 
 	  /* Create interleaving stmt:
-	     high = VEC_PERM_EXPR <vect1, vect2, {0, nelt, 1, nelt+1, ...}>  */
+	     in the case of big endian:
+                                high = interleave_high (vect1, vect2)
+             and in the case of little endian:
+                                high = interleave_low (vect1, vect2).  */
 	  perm_dest = create_tmp_var (vectype, "vect_inter_high");
 	  DECL_GIMPLE_REG_P (perm_dest) = 1;
 	  add_referenced_var (perm_dest);
-	  high = make_ssa_name (perm_dest, NULL);
-	  perm_stmt
-	    = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, high,
-					     vect1, vect2, perm_mask_high);
+          if (BYTES_BIG_ENDIAN)
+	    {
+	      high_code = VEC_INTERLEAVE_HIGH_EXPR;
+	      low_code = VEC_INTERLEAVE_LOW_EXPR;
+	    }
+	  else
+	    {
+	      low_code = VEC_INTERLEAVE_HIGH_EXPR;
+	      high_code = VEC_INTERLEAVE_LOW_EXPR;
+	    }
+	  perm_stmt = gimple_build_assign_with_ops (high_code, perm_dest,
+						    vect1, vect2);
+	  high = make_ssa_name (perm_dest, perm_stmt);
+	  gimple_assign_set_lhs (perm_stmt, high);
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
 	  VEC_replace (tree, *result_chain, 2*j, high);
 
 	  /* Create interleaving stmt:
-	     low = VEC_PERM_EXPR <vect1, vect2, {nelt/2, nelt*3/2, nelt/2+1,
-						 nelt*3/2+1, ...}>  */
+             in the case of big endian:
+                               low  = interleave_low (vect1, vect2)
+             and in the case of little endian:
+                               low  = interleave_high (vect1, vect2).  */
 	  perm_dest = create_tmp_var (vectype, "vect_inter_low");
 	  DECL_GIMPLE_REG_P (perm_dest) = 1;
 	  add_referenced_var (perm_dest);
-	  low = make_ssa_name (perm_dest, NULL);
-	  perm_stmt
-	    = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, low,
-					     vect1, vect2, perm_mask_low);
+	  perm_stmt = gimple_build_assign_with_ops (low_code, perm_dest,
+						    vect1, vect2);
+	  low = make_ssa_name (perm_dest, perm_stmt);
+	  gimple_assign_set_lhs (perm_stmt, low);
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
 	  VEC_replace (tree, *result_chain, 2*j+1, low);
 	}

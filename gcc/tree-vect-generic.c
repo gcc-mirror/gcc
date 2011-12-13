@@ -776,7 +776,9 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   /* These are only created by the vectorizer, after having queried
      the target support.  It's more than just looking at the optab,
      and there's no need to do it again.  */
-  if (code == VEC_EXTRACT_EVEN_EXPR
+  if (code == VEC_INTERLEAVE_HIGH_EXPR
+      || code == VEC_INTERLEAVE_LOW_EXPR
+      || code == VEC_EXTRACT_EVEN_EXPR
       || code == VEC_EXTRACT_ODD_EXPR)
     return;
 

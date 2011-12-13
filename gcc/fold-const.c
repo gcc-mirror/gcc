@@ -13503,6 +13503,8 @@ fold_binary_loc (location_t loc,
 
     case VEC_EXTRACT_EVEN_EXPR:
     case VEC_EXTRACT_ODD_EXPR:
+    case VEC_INTERLEAVE_HIGH_EXPR:
+    case VEC_INTERLEAVE_LOW_EXPR:
       if ((TREE_CODE (arg0) == VECTOR_CST
 	   || TREE_CODE (arg0) == CONSTRUCTOR)
 	  && (TREE_CODE (arg1) == VECTOR_CST
@@ -13519,6 +13521,14 @@ fold_binary_loc (location_t loc,
 		break;
 	      case VEC_EXTRACT_ODD_EXPR:
 		sel[i] = i * 2 + 1;
+		break;
+	      case VEC_INTERLEAVE_HIGH_EXPR:
+		sel[i] = (i + (BYTES_BIG_ENDIAN ? 0 : nelts)) / 2
+			 + ((i & 1) ? nelts : 0);
+		break;
+	      case VEC_INTERLEAVE_LOW_EXPR:
+		sel[i] = (i + (BYTES_BIG_ENDIAN ? nelts : 0)) / 2
+			 + ((i & 1) ? nelts : 0);
 		break;
 	      default:
 		gcc_unreachable ();
