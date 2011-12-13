@@ -37,6 +37,7 @@
 #include <string.h>
 #include <unwind.h>
 #include "local_type_traits"
+#include "local_atomic"
 
 #include "common.h"
 
@@ -206,7 +207,7 @@ struct gtm_thread
 
   // If this transaction is inactive, shared_state is ~0. Otherwise, this is
   // an active or serial transaction.
-  gtm_word shared_state;
+  atomic<gtm_word> shared_state;
 
   // The lock that provides access to serial mode.  Non-serialized
   // transactions acquire read locks; a serialized transaction aquires

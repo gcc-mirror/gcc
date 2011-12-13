@@ -53,10 +53,9 @@ void
 gtm_rwlock::read_lock (gtm_thread *tx)
 {
   // Fast path: first announce our intent to read, then check for conflicting
-  // intents to write. The barrier makes sure that this happens in exactly
-  // this order.
+  // intents to write.  Note that direct assignment to an atomic object
+  // is memory_order_seq_cst.
   tx->shared_state = 0;
-  __sync_synchronize();
   unsigned int sum = this->summary;
   if (likely(!(sum & (a_writer | w_writer))))
     return;
@@ -69,7 +68,7 @@ gtm_rwlock::read_lock (gtm_thread *tx)
   // to happen before we leave the slow path and before we wait for any
   // writer).
   // ??? Add a barrier to enforce early visibility of this?
-  tx->shared_state = ~(typeof tx->shared_state)0;
+  tx->shared_state.store(-1, memory_order_relaxed);
 
   pthread_mutex_lock (&this->mutex);
 
@@ -101,7 +100,7 @@ gtm_rwlock::read_lock (gtm_thread *tx)
     }
 
   // Otherwise we can acquire the lock for read.
-  tx->shared_state = 0;
+  tx->shared_state.store(0, memory_order_relaxed);
 
   pthread_mutex_unlock(&this->mutex);
 }
@@ -153,11 +152,11 @@ gtm_rwlock::write_lock_generic (gtm_thread *tx)
   // sure that we first set our write intent and check for active readers
   // after that, in strictly this order (similar to the barrier in the fast
   // path of read_lock()).
-  __sync_synchronize();
+  atomic_thread_fence(memory_order_acq_rel);
 
   // If this is an upgrade, we are not a reader anymore.
   if (tx != 0)
-    tx->shared_state = ~(typeof tx->shared_state)0;
+    tx->shared_state.store(-1, memory_order_relaxed);
 
   // Count the number of active readers to be able to decrease the number of
   // wake-ups and wait calls that are necessary.
@@ -194,7 +193,7 @@ gtm_rwlock::write_lock_generic (gtm_thread *tx)
 	  it = it->next_thread)
 	{
 	  // Don't count ourself if this is an upgrade.
-	  if (it->shared_state != ~(typeof it->shared_state)0)
+	  if (it->shared_state.load(memory_order_relaxed) != -1)
 	    readers++;
 	}
 
@@ -236,8 +235,7 @@ gtm_rwlock::write_upgrade (gtm_thread *tx)
 void
 gtm_rwlock::read_unlock (gtm_thread *tx)
 {
-  tx->shared_state = ~(typeof tx->shared_state)0;
-  __sync_synchronize();
+  tx->shared_state = -1;
   unsigned int sum = this->summary;
   if (likely(!(sum & (a_writer | w_writer))))
     return;

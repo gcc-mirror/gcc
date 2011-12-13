@@ -36,10 +36,9 @@ gtm_rwlock::read_lock (gtm_thread *tx)
   for (;;)
     {
       // Fast path: first announce our intent to read, then check for
-      // conflicting intents to write. The barrier makes sure that this
-      // happens in exactly this order.
+      // conflicting intents to write.  Note that direct assignment to
+      // an atomic object is memory_order_seq_cst.
       tx->shared_state = 0;
-      __sync_synchronize();
       if (likely(writers == 0))
 	return;
 
@@ -51,8 +50,7 @@ gtm_rwlock::read_lock (gtm_thread *tx)
       // We need the barrier here for the same reason that we need it in
       // read_unlock().
       // TODO Potentially too many wake-ups. See comments in read_unlock().
-      tx->shared_state = ~(typeof tx->shared_state)0;
-      __sync_synchronize();
+      tx->shared_state = -1;
       if (writer_readers > 0)
 	{
 	  writer_readers = 0;
@@ -71,7 +69,7 @@ gtm_rwlock::read_lock (gtm_thread *tx)
 	  // are no writers anymore after the barrier because this pending
 	  // store could then lead to lost wake-ups at other readers.
 	  readers = 1;
-	  __sync_synchronize();
+	  atomic_thread_fence(memory_order_acq_rel);
 	  if (writers)
 	    futex_wait(&readers, 1);
 	}
