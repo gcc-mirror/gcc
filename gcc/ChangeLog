@@ -1,3 +1,13 @@
+2011-12-13  Jakub Jelinek  <jakub@redhat.com>
+	    Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/51117
+	* tree-eh.c (sink_clobbers): New function.
+	(execute_lower_eh_dispatch): Call it for BBs ending with
+	internally throwing RESX.
+	* cfgexpand.c (add_scope_conflicts_1): Add all conflicts only
+	at the first real instruction.
+
 2011-12-13  Tristan Gingold  <gingold@adacore.com>
 
 	* final.c (final_scan_insn): Guard the call to begin_epilogue
