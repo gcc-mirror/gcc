@@ -2266,21 +2266,23 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       || racc->grp_unscalarizable_region)
     return false;
 
-  if (!lacc->first_child && !racc->first_child
-      && is_gimple_reg_type (racc->type))
+  if (is_gimple_reg_type (racc->type))
     {
-      tree t = lacc->base;
-
-      lacc->type = racc->type;
-      if (build_user_friendly_ref_for_offset (&t, TREE_TYPE (t), lacc->offset,
-					      racc->type))
-	lacc->expr = t;
-      else
+      if (!lacc->first_child && !racc->first_child)
 	{
-	  lacc->expr = build_ref_for_model (EXPR_LOCATION (lacc->base),
-					    lacc->base, lacc->offset,
-					    racc, NULL, false);
-	  lacc->grp_no_warning = true;
+	  tree t = lacc->base;
+
+	  lacc->type = racc->type;
+	  if (build_user_friendly_ref_for_offset (&t, TREE_TYPE (t),
+						  lacc->offset, racc->type))
+	    lacc->expr = t;
+	  else
+	    {
+	      lacc->expr = build_ref_for_model (EXPR_LOCATION (lacc->base),
+						lacc->base, lacc->offset,
+						racc, NULL, false);
+	      lacc->grp_no_warning = true;
+	    }
 	}
       return false;
     }

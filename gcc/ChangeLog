@@ -1,5 +1,11 @@
 2011-12-13  Martin Jambor  <mjambor@suse.cz>
 
+	PR middle-end/50628
+	* tree-sra.c (propagate_subaccesses_across_link): Do not propagate
+	sub-accesses of scalar accesses.
+
+2011-12-13  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/51362
 	* ipa-cp.c (estimate_local_effects): When estimated size of a
 	specialized clone is zero, bump it to one.
