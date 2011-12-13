@@ -351,7 +351,7 @@ lto_read_file_options (struct lto_file_decl_data *file_data)
   size_t len;
   const char *data;
   const struct lto_simple_header *header;
-  int32_t opts_offset;
+  int opts_offset;
   struct lto_input_block ib;
 
   data = lto_get_section_data (file_data, LTO_section_opts, NULL, &len);
