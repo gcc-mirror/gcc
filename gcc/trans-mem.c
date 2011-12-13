@@ -544,7 +544,6 @@ struct diagnose_tm
   unsigned int summary_flags : 8;
   unsigned int block_flags : 8;
   unsigned int func_flags : 8;
-  unsigned int saw_unsafe : 1;
   unsigned int saw_volatile : 1;
   gimple stmt;
 };
@@ -695,8 +694,6 @@ diagnose_tm_1 (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       else if (d->func_flags & DIAG_TM_SAFE)
 	error_at (gimple_location (stmt),
 		  "asm not allowed in %<transaction_safe%> function");
-      else
-	d->saw_unsafe = true;
       break;
 
     case GIMPLE_TRANSACTION:
@@ -711,8 +708,6 @@ diagnose_tm_1 (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	    else if (d->func_flags & DIAG_TM_SAFE)
 	      error_at (gimple_location (stmt),
 			"relaxed transaction in %<transaction_safe%> function");
-	    else
-	      d->saw_unsafe = true;
 	    inner_flags = DIAG_TM_RELAXED;
 	  }
 	else if (gimple_transaction_subcode (stmt) & GTMA_IS_OUTER)
@@ -727,8 +722,6 @@ diagnose_tm_1 (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	    else if (d->func_flags & DIAG_TM_SAFE)
 	      error_at (gimple_location (stmt),
 			"outer transaction in %<transaction_safe%> function");
-	    else
-	      d->saw_unsafe = true;
 	    inner_flags |= DIAG_TM_OUTER;
 	  }
 
@@ -748,8 +741,6 @@ diagnose_tm_1 (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 
 	    walk_gimple_seq (gimple_transaction_body (stmt),
 			     diagnose_tm_1, diagnose_tm_1_op, &wi_inner);
-
-	    d->saw_unsafe |= d_inner.saw_unsafe;
 	  }
       }
       break;
@@ -779,11 +770,6 @@ diagnose_tm_blocks (void)
 
   walk_gimple_seq (gimple_body (current_function_decl),
 		   diagnose_tm_1, diagnose_tm_1_op, &wi);
-
-  /* If we saw something other than a call that makes this function
-     unsafe, remember it so that the IPA pass only needs to scan calls.  */
-  if (d.saw_unsafe && !is_tm_safe_or_pure (current_function_decl))
-    cgraph_local_info (current_function_decl)->tm_may_enter_irr = 1;
 
   return 0;
 }
@@ -3696,7 +3682,11 @@ ipa_tm_scan_irr_block (basic_block bb)
 		break;
 
 	      d = get_cg_data (cgraph_get_node (fn));
-	      if (d->is_irrevocable)
+
+	      /* Return true if irrevocable, but above all, believe
+		 the user.  */
+	      if (d->is_irrevocable
+		  && !is_tm_safe_or_pure (fn))
 		return true;
 	    }
 	  break;
@@ -3879,6 +3869,11 @@ ipa_tm_scan_irr_function (struct cgraph_node *node, bool for_clone)
   bitmap new_irr, old_irr;
   VEC (basic_block, heap) *queue;
   bool ret = false;
+
+  /* Builtin operators (operator new, and such).  */
+  if (DECL_STRUCT_FUNCTION (node->decl) == NULL
+      || DECL_STRUCT_FUNCTION (node->decl)->cfg == NULL)
+    return false;
 
   current_function_decl = node->decl;
   push_cfun (DECL_STRUCT_FUNCTION (node->decl));
@@ -4689,14 +4684,11 @@ ipa_tm_execute (void)
 	    /* Scan for calls that are in each transaction.  */
 	    ipa_tm_scan_calls_transaction (d, &tm_callees);
 
-	    /* If we saw something that will make us go irrevocable, put it
-	       in the worklist so we can scan the function later
-	       (ipa_tm_scan_irr_function) and mark the irrevocable blocks.  */
-	    if (node->local.tm_may_enter_irr)
-	      {
-		maybe_push_queue (node, &irr_worklist, &d->in_worklist);
-		d->want_irr_scan_normal = true;
-	      }
+	    /* Put it in the worklist so we can scan the function
+	       later (ipa_tm_scan_irr_function) and mark the
+	       irrevocable blocks.  */
+	    maybe_push_queue (node, &irr_worklist, &d->in_worklist);
+	    d->want_irr_scan_normal = true;
 	  }
 
 	pop_cfun ();
@@ -4712,11 +4704,10 @@ ipa_tm_execute (void)
       a = cgraph_function_body_availability (node);
       d = get_cg_data (node);
 
-      /* If we saw something that will make us go irrevocable, put it
-	 in the worklist so we can scan the function later
-	 (ipa_tm_scan_irr_function) and mark the irrevocable blocks.  */
-      if (node->local.tm_may_enter_irr)
-	maybe_push_queue (node, &irr_worklist, &d->in_worklist);
+      /* Put it in the worklist so we can scan the function later
+	 (ipa_tm_scan_irr_function) and mark the irrevocable
+	 blocks.  */
+      maybe_push_queue (node, &irr_worklist, &d->in_worklist);
 
       /* Some callees cannot be arbitrarily cloned.  These will always be
 	 irrevocable.  Mark these now, so that we need not scan them.  */
