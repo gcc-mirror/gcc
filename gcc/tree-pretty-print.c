@@ -2404,22 +2404,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, " > ");
       break;
 
-    case VEC_INTERLEAVE_HIGH_EXPR:
-      pp_string (buffer, " VEC_INTERLEAVE_HIGH_EXPR < ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_string (buffer, ", ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
-      pp_string (buffer, " > ");
-      break;
-
-    case VEC_INTERLEAVE_LOW_EXPR:
-      pp_string (buffer, " VEC_INTERLEAVE_LOW_EXPR < ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_string (buffer, ", ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
-      pp_string (buffer, " > ");
-      break;
-
     default:
       NIY;
     }

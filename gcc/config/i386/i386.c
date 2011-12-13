@@ -35984,6 +35984,8 @@ expand_vec_perm_palignr (struct expand_vec_perm_d *d)
   return ok;
 }
 
+static bool expand_vec_perm_interleave3 (struct expand_vec_perm_d *d);
+
 /* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to simplify
    a two vector permutation into a single vector permutation by using
    an interleave operation to merge the vectors.  */
@@ -36010,6 +36012,17 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
       /* For 32-byte modes allow even d->op0 == d->op1.
 	 The lack of cross-lane shuffling in some instructions
 	 might prevent a single insn shuffle.  */
+      dfinal = *d;
+      dfinal.testing_p = true;
+      /* If expand_vec_perm_interleave3 can expand this into
+	 a 3 insn sequence, give up and let it be expanded as
+	 3 insn sequence.  While that is one insn longer,
+	 it doesn't need a memory operand and in the common
+	 case that both interleave low and high permutations
+	 with the same operands are adjacent needs 4 insns
+	 for both after CSE.  */
+      if (expand_vec_perm_interleave3 (&dfinal))
+	return false;
     }
   else
     return false;
@@ -36849,18 +36862,23 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
 	 stopping once we have promoted to V4SImode and then use pshufd.  */
       do
 	{
-	  optab otab = vec_interleave_low_optab;
+	  rtx dest;
+	  rtx (*gen) (rtx, rtx, rtx)
+	    = vmode == V16QImode ? gen_vec_interleave_lowv16qi
+				 : gen_vec_interleave_lowv8hi;
 
 	  if (elt >= nelt2)
 	    {
-	      otab = vec_interleave_high_optab;
+	      gen = vmode == V16QImode ? gen_vec_interleave_highv16qi
+				       : gen_vec_interleave_highv8hi;
 	      elt -= nelt2;
 	    }
 	  nelt2 /= 2;
 
-	  op0 = expand_binop (vmode, otab, op0, op0, NULL, 0, OPTAB_DIRECT);
+	  dest = gen_reg_rtx (vmode);
+	  emit_insn (gen (dest, op0, op0));
 	  vmode = get_mode_wider_vector (vmode);
-	  op0 = gen_lowpart (vmode, op0);
+	  op0 = gen_lowpart (vmode, dest);
 	}
       while (vmode != V4SImode);
 
