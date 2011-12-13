@@ -1,3 +1,12 @@
+2011-12-13  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/14258
+	* cp-tree.h (USING_DECL_TYPENAME_P): New macro.
+	* parser.c (cp_parser_nonclass_name): Handle using declarations
+	that refer to a dependent type.
+	(cp_parser_using_declaration): Set USING_DECL_TYPENAME_P to 1 if
+	the using declaration refers to a dependent type.
+
 2011-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/51496

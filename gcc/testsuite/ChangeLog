@@ -1,3 +1,9 @@
+2011-12-11  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/14258
+	* g++.dg/template/using16.C: New.
+	* g++.dg/template/using17.C: New.
+
 2011-12-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/51362

@@ -13807,9 +13807,26 @@ cp_parser_nonclass_name (cp_parser* parser)
   /* Look up the type-name.  */
   type_decl = cp_parser_lookup_name_simple (parser, identifier, token->location);
 
-  /* If it is a using decl, use its underlying decl.  */
-  type_decl = strip_using_decl (type_decl);
-
+  if (TREE_CODE (type_decl) == USING_DECL)
+    {
+      if (!DECL_DEPENDENT_P (type_decl))
+	type_decl = strip_using_decl (type_decl);
+      else if (USING_DECL_TYPENAME_P (type_decl))
+	{
+	  /* We have found a type introduced by a using
+	     declaration at class scope that refers to a dependent
+	     type.
+	     
+	     using typename :: [opt] nested-name-specifier unqualified-id ;
+	  */
+	  type_decl = make_typename_type (TREE_TYPE (type_decl),
+					  DECL_NAME (type_decl),
+					  typename_type, tf_error);
+	  if (type_decl != error_mark_node)
+	    type_decl = TYPE_NAME (type_decl);
+	}
+    }
+  
   if (TREE_CODE (type_decl) != TYPE_DECL
       && (objc_is_id (identifier) || objc_is_class_name (identifier)))
     {
@@ -14946,6 +14963,9 @@ cp_parser_using_declaration (cp_parser* parser,
 	{
 	  /* Create the USING_DECL.  */
 	  decl = do_class_using_decl (parser->scope, identifier);
+
+	  if (typename_p)
+	    USING_DECL_TYPENAME_P (decl) = 1;
 
 	  if (check_for_bare_parameter_packs (decl))
             return false;
@@ -18900,7 +18920,11 @@ cp_parser_member_declaration (cp_parser* parser)
   parser->colon_corrects_to_scope_p = false;
 
   if (cp_parser_using_declaration (parser, /*access_declaration=*/true))
-    goto out;
+    {
+      warning (OPT_Wdeprecated, "access declarations are deprecated; "
+	       "employ using declarations instead");
+      goto out;
+    }
 
   /* Parse the decl-specifier-seq.  */
   decl_spec_token_start = cp_lexer_peek_token (parser->lexer);
