@@ -4199,7 +4199,8 @@ ipa_tm_create_version_alias (struct cgraph_node *node, void *data)
 
   /* Based loosely on C++'s make_alias_for().  */
   TREE_PUBLIC (new_decl) = TREE_PUBLIC (old_decl);
-  DECL_CONTEXT (new_decl) = NULL;
+  DECL_CONTEXT (new_decl) = DECL_CONTEXT (old_decl);
+  DECL_LANG_SPECIFIC (new_decl) = DECL_LANG_SPECIFIC (old_decl);
   TREE_READONLY (new_decl) = TREE_READONLY (old_decl);
   DECL_EXTERNAL (new_decl) = 0;
   DECL_ARTIFICIAL (new_decl) = 1;
