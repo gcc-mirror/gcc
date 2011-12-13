@@ -139,7 +139,7 @@ struct Flag_Word
   Boolean      flag94	    :  1;
   Boolean      flag95	    :  1;
   Boolean      flag96	    :  1;
-  Short        convention   :  8;
+  Byte         convention   :  8;
 };
 
 /* Structure used for extra flags in fourth component overlaying Field12 */
