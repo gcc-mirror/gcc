@@ -10,7 +10,7 @@ import "syscall"
 
 func Hostname() (name string, err error) {
 	var u syscall.Utsname
-	if errno := syscall.Uname(&u); errno != 0 {
+	if errno := syscall.Uname(&u); errno != nil {
 		return "", NewSyscallError("uname", errno)
 	}
 	b := make([]byte, len(u.Nodename))
