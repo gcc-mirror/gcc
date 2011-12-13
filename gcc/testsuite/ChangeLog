@@ -1,3 +1,9 @@
+2011-12-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/51524
+	* gcc.target/i386/bmi2-mulx32-1.c (gen_mulx): Add attribute regparm(2).
+	* gcc.target/i386/bmi2-mulx32-2.c (calc_mulx_u32): Ditto.
+
 2011-12-13  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/48354
@@ -81,8 +87,7 @@
 	* gcc.dg/sms-8.c: Add --param sms-min-sc=1.  Add dg-options and
 	change scan-rtl-dump-times for powerpc*-*-*.
 	* gcc.dg/sms-5.c: Add --param sms-min-sc=1 flag, remove
-	powerpc*-*-* from dg-final and avoid superfluous spaces in
-	dg-final.
+	powerpc*-*-* from dg-final and avoid superfluous spaces in dg-final.
 	* gcc.dg/sms-9.c: Remove -fno-auto-inc-dec.
 
 2011-12-11  Jakub Jelinek  <jakub@redhat.com>
@@ -96,7 +101,7 @@
 	* gfortran.dg/warn_function_without_result_2.f90: New.
 
 2011-12-11  Paul Thomas  <pault@gcc.gnu.org>
-	Tobias Burnus  <burnus@gcc.gnu.org>
+	    Tobias Burnus  <burnus@gcc.gnu.org>
 
 	PR fortran/41539
 	PR fortran/43214
@@ -120,8 +125,7 @@
 	* gfortran.dg/class_to_type_1.f03: New.
 	* gfortran.dg/type_to_class_1.f03: New.
 	* gfortran.dg/typebound_assignment_3.f03: Remove the error.
-	* gfortran.dg/auto_dealloc_2.f90: Occurences of __builtin_free
-	now 2.
+	* gfortran.dg/auto_dealloc_2.f90: Occurences of __builtin_free now 2.
 	* gfortran.dg/class_19.f03: Occurences of __builtin_free now 8.
 
 2011-12-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
@@ -357,8 +361,7 @@
 
 2011-12-08  Teresa Johnson  <tejohnson@google.com>
 
-	* gcc.target/i386/movdi-rex64.c: Remove unnecessary
-	unused label.
+	* gcc.target/i386/movdi-rex64.c: Remove unnecessary unused label.
 
 2011-12-08  Teresa Johnson  <tejohnson@google.com>
 

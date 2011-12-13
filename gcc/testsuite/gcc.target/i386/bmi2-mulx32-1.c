@@ -15,7 +15,7 @@ calc_mul_u32 (unsigned volatile a, unsigned b)
   return res;
 }
 
-__attribute__((noinline))
+__attribute__((noinline, regparm (2)))
 unsigned long long
 gen_mulx (unsigned a, unsigned b)
 {
