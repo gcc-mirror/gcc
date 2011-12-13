@@ -3876,6 +3876,65 @@
   [(set_attr "neon_type" "neon_bp_3cycle")]
 )
 
+;; These two are used by the vec_perm infrastructure for V16QImode.
+(define_insn_and_split "neon_vtbl1v16qi"
+  [(set (match_operand:V16QI 0 "s_register_operand" "=w")
+	(unspec:V16QI [(match_operand:V16QI 1 "s_register_operand" "w")
+		       (match_operand:V16QI 2 "s_register_operand" "w")]
+		      UNSPEC_VTBL))]
+  "TARGET_NEON"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx op0, op1, op2, part0, part2;
+  unsigned ofs;
+
+  op0 = operands[0];
+  op1 = gen_lowpart (TImode, operands[1]);
+  op2 = operands[2];
+
+  ofs = subreg_lowpart_offset (V8QImode, V16QImode);
+  part0 = simplify_subreg (V8QImode, op0, V16QImode, ofs);
+  part2 = simplify_subreg (V8QImode, op2, V16QImode, ofs);
+  emit_insn (gen_neon_vtbl2v8qi (part0, op1, part2));
+
+  ofs = subreg_highpart_offset (V8QImode, V16QImode);
+  part0 = simplify_subreg (V8QImode, op0, V16QImode, ofs);
+  part2 = simplify_subreg (V8QImode, op2, V16QImode, ofs);
+  emit_insn (gen_neon_vtbl2v8qi (part0, op1, part2));
+  DONE;
+})
+
+(define_insn_and_split "neon_vtbl2v16qi"
+  [(set (match_operand:V16QI 0 "s_register_operand" "=w")
+	(unspec:V16QI [(match_operand:OI 1 "s_register_operand" "w")
+		       (match_operand:V16QI 2 "s_register_operand" "w")]
+		      UNSPEC_VTBL))]
+  "TARGET_NEON"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx op0, op1, op2, part0, part2;
+  unsigned ofs;
+
+  op0 = operands[0];
+  op1 = operands[1];
+  op2 = operands[2];
+
+  ofs = subreg_lowpart_offset (V8QImode, V16QImode);
+  part0 = simplify_subreg (V8QImode, op0, V16QImode, ofs);
+  part2 = simplify_subreg (V8QImode, op2, V16QImode, ofs);
+  emit_insn (gen_neon_vtbl2v8qi (part0, op1, part2));
+
+  ofs = subreg_highpart_offset (V8QImode, V16QImode);
+  part0 = simplify_subreg (V8QImode, op0, V16QImode, ofs);
+  part2 = simplify_subreg (V8QImode, op2, V16QImode, ofs);
+  emit_insn (gen_neon_vtbl2v8qi (part0, op1, part2));
+  DONE;
+})
+
 (define_insn "neon_vtbx1v8qi"
   [(set (match_operand:V8QI 0 "s_register_operand" "=w")
 	(unspec:V8QI [(match_operand:V8QI 1 "s_register_operand" "0")
