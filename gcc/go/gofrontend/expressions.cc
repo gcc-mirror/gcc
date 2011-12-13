@@ -3669,7 +3669,7 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
       if (e->integer_type()->is_unsigned()
 	  && e->integer_type()->bits() == 8)
 	{
-	  static tree string_to_byte_array_fndecl;
+	  tree string_to_byte_array_fndecl = NULL_TREE;
 	  ret = Gogo::call_builtin(&string_to_byte_array_fndecl,
 				   this->location(),
 				   "__go_string_to_byte_array",
@@ -3681,7 +3681,7 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
       else
 	{
 	  go_assert(e == Type::lookup_integer_type("int"));
-	  static tree string_to_int_array_fndecl;
+	  tree string_to_int_array_fndecl = NULL_TREE;
 	  ret = Gogo::call_builtin(&string_to_int_array_fndecl,
 				   this->location(),
 				   "__go_string_to_int_array",
