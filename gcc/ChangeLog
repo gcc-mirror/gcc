@@ -1,5 +1,10 @@
 2011-12-13  Tristan Gingold  <gingold@adacore.com>
 
+	* final.c (final_scan_insn): Guard the call to begin_epilogue
+	debug hook.
+
+2011-12-13  Tristan Gingold  <gingold@adacore.com>
+
 	* vmsdbgout.c (vmsdbgout_write_source_line): New function.
 	(vmsdbgout_end_prologue): Call vmsdbgout_write_source_line.
 	(vmsdbgout_begin_epilogue): Likewise.
