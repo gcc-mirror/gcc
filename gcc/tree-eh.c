@@ -3194,6 +3194,76 @@ optimize_clobbers (basic_block bb)
     }
 }
 
+/* Try to sink var = {v} {CLOBBER} stmts followed just by
+   internal throw to successor BB.  */
+
+static int
+sink_clobbers (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+  gimple_stmt_iterator gsi, dgsi;
+  basic_block succbb;
+  bool any_clobbers = false;
+
+  /* Only optimize if BB has a single EH successor and
+     all predecessor edges are EH too.  */
+  if (!single_succ_p (bb)
+      || (single_succ_edge (bb)->flags & EDGE_EH) == 0)
+    return 0;
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      if ((e->flags & EDGE_EH) == 0)
+	return 0;
+    }
+
+  /* And BB contains only CLOBBER stmts before the final
+     RESX.  */
+  gsi = gsi_last_bb (bb);
+  for (gsi_prev (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
+    {
+      gimple stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
+	continue;
+      if (gimple_code (stmt) == GIMPLE_LABEL)
+	break;
+      if (!gimple_clobber_p (stmt)
+	  || TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME)
+	return 0;
+      any_clobbers = true;
+    }
+  if (!any_clobbers)
+    return 0;
+
+  succbb = single_succ (bb);
+  dgsi = gsi_after_labels (succbb);
+  gsi = gsi_last_bb (bb);
+  for (gsi_prev (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
+    {
+      gimple stmt = gsi_stmt (gsi);
+      tree vdef;
+      if (is_gimple_debug (stmt))
+	continue;
+      if (gimple_code (stmt) == GIMPLE_LABEL)
+	break;
+      unlink_stmt_vdef (stmt);
+      gsi_remove (&gsi, false);
+      vdef = gimple_vdef (stmt);
+      if (vdef && TREE_CODE (vdef) == SSA_NAME)
+	{
+	  vdef = SSA_NAME_VAR (vdef);
+	  mark_sym_for_renaming (vdef);
+	  gimple_set_vdef (stmt, vdef);
+	  gimple_set_vuse (stmt, vdef);
+	}
+      release_defs (stmt);
+      gsi_insert_before (&dgsi, stmt, GSI_SAME_STMT);
+    }
+
+  return TODO_update_ssa_only_virtuals;
+}
+
 /* At the end of inlining, we can lower EH_DISPATCH.  Return true when 
    we have found some duplicate labels and removed some edges.  */
 
@@ -3349,7 +3419,7 @@ static unsigned
 execute_lower_eh_dispatch (void)
 {
   basic_block bb;
-  bool any_rewritten = false;
+  int flags = 0;
   bool redirected = false;
 
   assign_filter_values ();
@@ -3362,16 +3432,20 @@ execute_lower_eh_dispatch (void)
       if (gimple_code (last) == GIMPLE_EH_DISPATCH)
 	{
 	  redirected |= lower_eh_dispatch (bb, last);
-	  any_rewritten = true;
+	  flags |= TODO_update_ssa_only_virtuals;
 	}
-      else if (gimple_code (last) == GIMPLE_RESX
-	       && stmt_can_throw_external (last))
-	optimize_clobbers (bb);
+      else if (gimple_code (last) == GIMPLE_RESX)
+	{
+	  if (stmt_can_throw_external (last))
+	    optimize_clobbers (bb);
+	  else
+	    flags |= sink_clobbers (bb);
+	}
     }
 
   if (redirected)
     delete_unreachable_blocks ();
-  return any_rewritten ? TODO_update_ssa_only_virtuals : 0;
+  return flags;
 }
 
 static bool

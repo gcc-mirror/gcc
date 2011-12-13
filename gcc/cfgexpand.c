@@ -456,34 +456,14 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
   FOR_EACH_EDGE (e, ei, bb->preds)
     bitmap_ior_into (work, (bitmap)e->src->aux);
 
-  if (for_conflict)
-    {
-      /* We need to add conflicts for everything life at the start of
-         this block.  Unlike classical lifeness for named objects we can't
-	 rely on seeing a def/use of the names we're interested in.
-	 There might merely be indirect loads/stores.  We'd not add any
-	 conflicts for such partitions.  */
-      bitmap_iterator bi;
-      unsigned i;
-      EXECUTE_IF_SET_IN_BITMAP (work, 0, i, bi)
-	{
-	  unsigned j;
-	  bitmap_iterator bj;
-	  EXECUTE_IF_SET_IN_BITMAP (work, i, j, bj)
-	    add_stack_var_conflict (i, j);
-	}
-      visit = visit_conflict;
-    }
-  else
-    visit = visit_op;
+  visit = visit_op;
 
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple stmt = gsi_stmt (gsi);
-      if (!is_gimple_debug (stmt))
-	walk_stmt_load_store_addr_ops (stmt, work, visit, visit, visit);
+      walk_stmt_load_store_addr_ops (stmt, work, NULL, NULL, visit);
     }
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple stmt = gsi_stmt (gsi);
 
@@ -501,7 +481,29 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 	    bitmap_clear_bit (work, *v);
 	}
       else if (!is_gimple_debug (stmt))
-	walk_stmt_load_store_addr_ops (stmt, work, visit, visit, visit);
+	{
+	  if (for_conflict
+	      && visit == visit_op)
+	    {
+	      /* If this is the first real instruction in this BB we need
+	         to add conflicts for everything life at this point now.
+		 Unlike classical lifeness for named objects we can't
+		 rely on seeing a def/use of the names we're interested in.
+		 There might merely be indirect loads/stores.  We'd not add any
+		 conflicts for such partitions.  */
+	      bitmap_iterator bi;
+	      unsigned i;
+	      EXECUTE_IF_SET_IN_BITMAP (work, 0, i, bi)
+		{
+		  unsigned j;
+		  bitmap_iterator bj;
+		  EXECUTE_IF_SET_IN_BITMAP (work, i + 1, j, bj)
+		    add_stack_var_conflict (i, j);
+		}
+	      visit = visit_conflict;
+	    }
+	  walk_stmt_load_store_addr_ops (stmt, work, visit, visit, visit);
+	}
     }
 }
 
