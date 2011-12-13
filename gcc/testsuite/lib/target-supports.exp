@@ -2725,7 +2725,8 @@ proc check_effective_target_vect_perm { } {
         verbose "check_effective_target_vect_perm: using cached result" 2
     } else {
         set et_vect_perm_saved 0
-        if { [istarget powerpc*-*-*]
+        if { [is-effective-target arm_neon_ok]
+	     || [istarget powerpc*-*-*]
              || [istarget spu-*-*]
 	     || [istarget i?86-*-*]
 	     || [istarget x86_64-*-*] } {
@@ -2748,7 +2749,8 @@ proc check_effective_target_vect_perm_byte { } {
         verbose "check_effective_target_vect_perm_byte: using cached result" 2
     } else {
         set et_vect_perm_byte_saved 0
-        if { [istarget powerpc*-*-*]
+        if { [is-effective-target arm_neon_ok]
+	     || [istarget powerpc*-*-*]
              || [istarget spu-*-*] } {
             set et_vect_perm_byte_saved 1
         }
@@ -2769,7 +2771,8 @@ proc check_effective_target_vect_perm_short { } {
         verbose "check_effective_target_vect_perm_short: using cached result" 2
     } else {
         set et_vect_perm_short_saved 0
-        if { [istarget powerpc*-*-*]
+        if { [is-effective-target arm_neon_ok]
+	     || [istarget powerpc*-*-*]
              || [istarget spu-*-*] } {
             set et_vect_perm_short_saved 1
         }
