@@ -1,3 +1,12 @@
+2011-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/vect1.ad[sb]: Add more tests.
+	* gnat.dg/vect2.ad[sb]: Likewise.
+	* gnat.dg/vect3.ad[sb]: Likewise.
+	* gnat.dg/vect4.ad[sb]: Likewise.
+	* gnat.dg/vect5.ad[sb]: Likewise.
+	* gnat.dg/vect6.ad[sb]: Likewise.
+
 2011-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/51495
