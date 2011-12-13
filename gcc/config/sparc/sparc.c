@@ -1162,8 +1162,12 @@ sparc_option_override (void)
 
   if (sparc_memory_model == SMM_DEFAULT)
     {
+      /* Choose the memory model for the operating system.  */
+      enum sparc_memory_model_type os_default = SUBTARGET_DEFAULT_MEMORY_MODEL;
+      if (os_default != SMM_DEFAULT)
+	sparc_memory_model = os_default;
       /* Choose the most relaxed model for the processor.  */
-      if (TARGET_V9)
+      else if (TARGET_V9)
 	sparc_memory_model = SMM_RMO;
       else if (TARGET_V8)
 	sparc_memory_model = SMM_PSO;

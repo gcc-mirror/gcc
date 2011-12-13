@@ -1755,3 +1755,8 @@ extern int sparc_indent_opcode;
 #define MASK_DEBUG_ALL			MASK_DEBUG_OPTIONS
 
 #define TARGET_DEBUG_OPTIONS		(sparc_debug & MASK_DEBUG_OPTIONS)
+
+/* By default, use the weakest memory model for the cpu.  */
+#ifndef SUBTARGET_DEFAULT_MEMORY_MODEL
+#define SUBTARGET_DEFAULT_MEMORY_MODEL	SMM_DEFAULT
+#endif
