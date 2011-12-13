@@ -1,3 +1,15 @@
+2011-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto-streamer-out.c (write_symbol): Use proper 64-bit host type.
+	* lto-cgraph.c (input_cgraph_opt_section): Use 'int' for offsets.
+	* lto-streamer-in.c (lto_read_body): Likewise.
+	(lto_input_toplevel_asms): Likewise.
+	* lto-section-in.c (lto_create_simple_input_block): Likewise.
+	* ipa-inline-analysis.c (inline_read_section): Likewise.
+	* ipa-prop.c (ipa_prop_read_section): Likewise.
+
+	* df.h (DF_NOTE): Fix typo in comment.
+
 2011-12-13  Aldy Hernandez  <aldyh@redhat.com>
 
 	* trans-mem.c (ipa_tm_create_version_alias): Set DECL_CONTEXT and
@@ -14,7 +26,7 @@
 	* config/mips/mips-cpus.def: Add Octeon2.
 	* config/mips/mips-tables.opt: Regenerate.
 	* config/mips/mips.md (define_attr "cpu"): Add Octeon2.
-	* config/mips/driver-native.c (host_detect_local_cpu): Support Octeon2 also.
+	* config/mips/driver-native.c (host_detect_local_cpu): Support Octeon2.
 	* config/mips/octeon.md (octeon_arith): Add Octeon2.
 	(octeon_condmove): Likewise.
 	(octeon_load): Rename to ..
@@ -58,7 +70,7 @@
 
 2011-12-13  Aldy Hernandez  <aldyh@redhat.com>
 
-	PR/51443
+	PR middle-end/51443
 	* trans-mem.c (struct diagnose_tm): Remove saw_unsafe.
 	(diagnose_tm_1): Same.
 	(ipa_tm_execute): Do not test tm_may_enter_irr before we set it.
