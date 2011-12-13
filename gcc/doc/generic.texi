@@ -1697,6 +1697,8 @@ its sole argument yields the representation for @code{ap}.
 @tindex VEC_PACK_FIX_TRUNC_EXPR
 @tindex VEC_EXTRACT_EVEN_EXPR
 @tindex VEC_EXTRACT_ODD_EXPR
+@tindex VEC_INTERLEAVE_HIGH_EXPR
+@tindex VEC_INTERLEAVE_LOW_EXPR
 
 @table @code
 @item VEC_LSHIFT_EXPR
@@ -1771,6 +1773,17 @@ vector.
 These nodes represent extracting of the even/odd elements of the two input
 vectors, respectively. Their operands and result are vectors that contain the
 same number of elements of the same type.
+
+@item VEC_INTERLEAVE_HIGH_EXPR
+@itemx VEC_INTERLEAVE_LOW_EXPR
+These nodes represent merging and interleaving of the high/low elements of the
+two input vectors, respectively. The operands and the result are vectors that
+contain the same number of elements (@code{N}) of the same type.
+In the case of @code{VEC_INTERLEAVE_HIGH_EXPR}, the high @code{N/2} elements of
+the first input vector are interleaved with the high @code{N/2} elements of the
+second input vector. In the case of @code{VEC_INTERLEAVE_LOW_EXPR}, the low
+@code{N/2} elements of the first input vector are interleaved with the low
+@code{N/2} elements of the second input vector.
 
 @end table
 

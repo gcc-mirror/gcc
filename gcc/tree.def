@@ -1192,6 +1192,10 @@ DEFTREECODE (VEC_PACK_FIX_TRUNC_EXPR, "vec_pack_fix_trunc_expr", tcc_binary, 2)
 DEFTREECODE (VEC_EXTRACT_EVEN_EXPR, "vec_extract_even_expr", tcc_binary, 2)
 DEFTREECODE (VEC_EXTRACT_ODD_EXPR, "vec_extract_odd_expr", tcc_binary, 2)
 
+/* Merge input vectors interleaving their fields.  */
+DEFTREECODE (VEC_INTERLEAVE_HIGH_EXPR, "vec_interleave_high_expr", tcc_binary, 2)
+DEFTREECODE (VEC_INTERLEAVE_LOW_EXPR, "vec_interleave_low_expr", tcc_binary, 2)
+
 /* Widening vector shift left in bits.
    Operand 0 is a vector to be shifted with N elements of size S.
    Operand 1 is an integer shift amount in bits.

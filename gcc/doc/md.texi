@@ -4159,6 +4159,20 @@ The odd elements of operand 2 are concatenated to the odd elements of operand
 1 in their original order. The result is stored in operand 0.
 The output and input vectors should have the same modes.
 
+@cindex @code{vec_interleave_high@var{m}} instruction pattern
+@item @samp{vec_interleave_high@var{m}}
+Merge high elements of the two input vectors into the output vector. The output
+and input vectors should have the same modes (@code{N} elements). The high
+@code{N/2} elements of the first input vector are interleaved with the high
+@code{N/2} elements of the second input vector.
+
+@cindex @code{vec_interleave_low@var{m}} instruction pattern
+@item @samp{vec_interleave_low@var{m}}
+Merge low elements of the two input vectors into the output vector. The output
+and input vectors should have the same modes (@code{N} elements). The low
+@code{N/2} elements of the first input vector are interleaved with the low
+@code{N/2} elements of the second input vector.
+
 @cindex @code{vec_init@var{m}} instruction pattern
 @item @samp{vec_init@var{m}}
 Initialize the vector to given values.  Operand 0 is the vector to initialize
