@@ -1,3 +1,13 @@
+2011-12-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR/51443
+	* trans-mem.c (struct diagnose_tm): Remove saw_unsafe.
+	(diagnose_tm_1): Same.
+	(ipa_tm_execute): Do not test tm_may_enter_irr before we set it.
+	(ipa_tm_scan_irr_function): Return gracefully when no
+	DECL_STRUCT_FUNCTION.
+	(ipa_tm_scan_irr_block): Believe the user on TM attributes.
+
 2011-12-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/50628
