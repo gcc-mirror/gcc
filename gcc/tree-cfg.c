@@ -1601,6 +1601,7 @@ replace_uses_by (tree name, tree val)
       if (gimple_code (stmt) != GIMPLE_PHI)
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	  gimple orig_stmt = stmt;
 	  size_t i;
 
 	  fold_stmt (&gsi);
@@ -1619,7 +1620,7 @@ replace_uses_by (tree name, tree val)
 		recompute_tree_invariant_for_addr_expr (op);
 	    }
 
-	  maybe_clean_or_replace_eh_stmt (stmt, stmt);
+	  maybe_clean_or_replace_eh_stmt (orig_stmt, stmt);
 	  update_stmt (stmt);
 	}
     }
