@@ -602,6 +602,8 @@ lto_input_ts_decl_non_common_tree_pointers (struct lto_input_block *ib,
       DECL_ARGUMENTS (expr) = stream_read_tree (ib, data_in);
       DECL_RESULT (expr) = stream_read_tree (ib, data_in);
     }
+  else if (TREE_CODE (expr) == TYPE_DECL)
+    DECL_ORIGINAL_TYPE (expr) = stream_read_tree (ib, data_in);
   DECL_VINDEX (expr) = stream_read_tree (ib, data_in);
 }
 
