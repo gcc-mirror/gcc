@@ -1409,6 +1409,14 @@ estimate_local_effects (struct cgraph_node *node)
 	    + devirtualization_time_bonus (node, known_csts, known_binfos)
 	    + removable_params_cost + emc;
 
+	  gcc_checking_assert (size >=0);
+	  /* The inliner-heuristics based estimates may think that in certain
+	     contexts some functions do not have any size at all but we want
+	     all specializations to have at least a tiny cost, not least not to
+	     divide by zero.  */
+	  if (size == 0)
+	    size = 1;
+
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, " - estimates for value ");

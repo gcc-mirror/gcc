@@ -1,3 +1,9 @@
+2011-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/51362
+	* ipa-cp.c (estimate_local_effects): When estimated size of a
+	specialized clone is zero, bump it to one.
+
 2011-12-13  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/48354
