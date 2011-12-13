@@ -85,7 +85,8 @@ func (p *pollster) WaitFD(s *pollServer, nsec int64) (fd int, mode int, err erro
 			timeout = &tv
 		}
 
-		var n, e int
+		var n int
+		var e error
 		var tmpReadFds, tmpWriteFds syscall.FdSet
 		for {
 			// Temporary syscall.FdSet's into which the values are copied
@@ -101,7 +102,7 @@ func (p *pollster) WaitFD(s *pollServer, nsec int64) (fd int, mode int, err erro
 				break
 			}
 		}
-		if e != 0 {
+		if e != nil {
 			return -1, 0, os.NewSyscallError("select", e)
 		}
 		if n == 0 {
