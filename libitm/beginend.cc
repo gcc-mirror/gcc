@@ -37,12 +37,18 @@ gtm_thread *GTM::gtm_thread::list_of_threads = 0;
 unsigned GTM::gtm_thread::number_of_threads = 0;
 
 gtm_stmlock GTM::gtm_stmlock_array[LOCK_ARRAY_SIZE];
-gtm_version GTM::gtm_clock;
+atomic<gtm_version> GTM::gtm_clock;
 
 /* ??? Move elsewhere when we figure out library initialization.  */
 uint64_t GTM::gtm_spin_count_var = 1000;
 
+#ifdef HAVE_64BIT_SYNC_BUILTINS
+static atomic<_ITM_transactionId_t> global_tid;
+#else
 static _ITM_transactionId_t global_tid;
+static pthread_mutex_t global_tid_lock = PTHREAD_MUTEX_INITIALIZER;
+#endif
+
 
 // Provides a on-thread-exit callback used to release per-thread data.
 static pthread_key_t thr_release_key;
@@ -114,7 +120,7 @@ GTM::gtm_thread::gtm_thread ()
   // This object's memory has been set to zero by operator new, so no need
   // to initialize any of the other primitive-type members that do not have
   // constructors.
-  shared_state = ~(typeof shared_state)0;
+  shared_state.store(-1, memory_order_relaxed);
 
   // Register this transaction with the list of all threads' transactions.
   serial_lock.write_lock ();
@@ -132,13 +138,8 @@ GTM::gtm_thread::gtm_thread ()
     GTM_fatal("Setting thread release TLS key failed.");
 }
 
-
-
-#ifndef HAVE_64BIT_SYNC_BUILTINS
-static pthread_mutex_t global_tid_lock = PTHREAD_MUTEX_INITIALIZER;
-#endif
-
-static inline uint32_t choose_code_path(uint32_t prop, abi_dispatch *disp)
+static inline uint32_t
+choose_code_path(uint32_t prop, abi_dispatch *disp)
 {
   if ((prop & pr_uninstrumentedCode) && disp->can_run_uninstrumented_code())
     return a_runUninstrumentedCode;
@@ -258,7 +259,7 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
   else
     {
 #ifdef HAVE_64BIT_SYNC_BUILTINS
-      tx->id = __sync_add_and_fetch (&global_tid, tid_block_size);
+      tx->id = global_tid.fetch_add(tid_block_size, memory_order_relaxed);
       tx->local_tid = tx->id + 1;
 #else
       pthread_mutex_lock (&global_tid_lock);
@@ -480,7 +481,7 @@ GTM::gtm_thread::trycommit ()
 	      it = it->next_thread)
 	    {
 	      if (it == this) continue;
-	      while (it->shared_state < priv_time)
+	      while (it->shared_state.load(memory_order_relaxed) < priv_time)
 		cpu_relax();
 	    }
 	}

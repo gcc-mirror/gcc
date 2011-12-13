@@ -1,3 +1,26 @@
+2011-12-13  Richard Henderson  <rth@redhat.com>
+
+	* local_atomic: New file.
+	* libitm_i.h: Include it.
+	(gtm_thread::shared_state): Use atomic template.
+	* beginend.cc (GTM::gtm_clock): Use atomic template.
+	(global_tid): Use atomic template if 64-bit atomics available.
+	(gtm_thread::gtm_thread): Update shared_state access.
+	(gtm_thread::trycommit): Likewise.
+	(choose_code_path): Update global_tid access.
+	* method-gl.cc (gl_mg::orec): Use atomic template.  Update all users.
+	* stmlock.h (GTM::gtm_clock): Use atomic template.
+	(gtm_get_clock, gtm_inc_clock): Update accesses.
+	* config/linux/rwlock.cc (gtm_rwlock::read_lock): Remove
+	redundant __sync_synchronize after atomic shared_state access.
+	* config/posix/rwlock.cc (gtm_rwlock::read_lock): Likewise.
+	(gtm_rwlock::write_lock_generic): Likewise.
+	(gtm_rwlock::read_unlock): Likewise.
+	* config/alpha/target.h (atomic_read_barrier): Remove.
+	(atomic_write_barrier): Remove.
+	* config/x86/target.h (atomic_read_barrier): Remove.
+	(atomic_write_barrier): Remove.
+
 2011-11-30  Richard Henderson  <rth@redhat.com>
 
 	* libitm_i.h (GTM_longjmp): Swap first and second arguments.
