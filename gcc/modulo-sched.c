@@ -1204,6 +1204,8 @@ mark_loop_unsched (struct loop *loop)
 
   for (i = 0; i < loop->num_nodes; i++)
     bbs[i]->flags |= BB_DISABLE_SCHEDULE;
+
+  free (bbs);
 }
 
 /* Return true if all the BBs of the loop are empty except the
