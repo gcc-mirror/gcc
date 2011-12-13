@@ -102,7 +102,6 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibgodebugdir)" \
 	"$(DESTDIR)$(toolexeclibgoencodingdir)" \
 	"$(DESTDIR)$(toolexeclibgoexpdir)" \
-	"$(DESTDIR)$(toolexeclibgoexpguidir)" \
 	"$(DESTDIR)$(toolexeclibgoexpsqldir)" \
 	"$(DESTDIR)$(toolexeclibgogodir)" \
 	"$(DESTDIR)$(toolexeclibgohashdir)" \
@@ -161,15 +160,15 @@ am__DEPENDENCIES_2 = bufio/bufio.lo bytes/bytes.lo bytes/index.lo \
 	encoding/base64.lo encoding/binary.lo encoding/csv.lo \
 	encoding/git85.lo encoding/gob.lo encoding/hex.lo \
 	encoding/json.lo encoding/pem.lo encoding/xml.lo exp/ebnf.lo \
-	exp/gui.lo exp/norm.lo exp/spdy.lo exp/sql.lo exp/ssh.lo \
-	exp/terminal.lo exp/types.lo exp/gui/x11.lo exp/sql/driver.lo \
-	html/template.lo go/ast.lo go/build.lo go/doc.lo go/parser.lo \
-	go/printer.lo go/scanner.lo go/token.lo hash/adler32.lo \
-	hash/crc32.lo hash/crc64.lo hash/fnv.lo net/http/cgi.lo \
-	net/http/fcgi.lo net/http/httptest.lo net/http/httputil.lo \
-	net/http/pprof.lo image/bmp.lo image/color.lo image/draw.lo \
-	image/gif.lo image/jpeg.lo image/png.lo image/tiff.lo \
-	image/ycbcr.lo index/suffixarray.lo io/ioutil.lo log/syslog.lo \
+	exp/norm.lo exp/spdy.lo exp/sql.lo exp/ssh.lo exp/terminal.lo \
+	exp/types.lo exp/sql/driver.lo html/template.lo go/ast.lo \
+	go/build.lo go/doc.lo go/parser.lo go/printer.lo go/scanner.lo \
+	go/token.lo hash/adler32.lo hash/crc32.lo hash/crc64.lo \
+	hash/fnv.lo net/http/cgi.lo net/http/fcgi.lo \
+	net/http/httptest.lo net/http/httputil.lo net/http/pprof.lo \
+	image/bmp.lo image/color.lo image/draw.lo image/gif.lo \
+	image/jpeg.lo image/png.lo image/tiff.lo image/ycbcr.lo \
+	index/suffixarray.lo io/ioutil.lo log/syslog.lo \
 	log/syslog/syslog_c.lo math/big.lo math/cmplx.lo math/rand.lo \
 	mime/mime.lo mime/multipart.lo net/dict.lo net/http.lo \
 	net/mail.lo net/rpc.lo net/smtp.lo net/textproto.lo net/url.lo \
@@ -200,12 +199,12 @@ am__libgo_la_SOURCES_DIST = runtime/go-append.c runtime/go-assert.c \
 	runtime/go-interface-val-compare.c runtime/go-make-slice.c \
 	runtime/go-map-delete.c runtime/go-map-index.c \
 	runtime/go-map-len.c runtime/go-map-range.c \
-	runtime/go-nanotime.c runtime/go-new-map.c runtime/go-new.c \
-	runtime/go-panic.c runtime/go-print.c runtime/go-recover.c \
-	runtime/go-reflect.c runtime/go-reflect-call.c \
-	runtime/go-reflect-map.c runtime/go-rune.c \
-	runtime/go-runtime-error.c runtime/go-setenv.c \
-	runtime/go-signal.c runtime/go-strcmp.c \
+	runtime/go-nanotime.c runtime/go-now.c runtime/go-new-map.c \
+	runtime/go-new.c runtime/go-panic.c runtime/go-print.c \
+	runtime/go-recover.c runtime/go-reflect.c \
+	runtime/go-reflect-call.c runtime/go-reflect-map.c \
+	runtime/go-rune.c runtime/go-runtime-error.c \
+	runtime/go-setenv.c runtime/go-signal.c runtime/go-strcmp.c \
 	runtime/go-string-to-byte-array.c \
 	runtime/go-string-to-int-array.c runtime/go-strplus.c \
 	runtime/go-strslice.c runtime/go-trampoline.c \
@@ -238,20 +237,20 @@ am__objects_4 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-interface-compare.lo go-interface-eface-compare.lo \
 	go-interface-val-compare.lo go-make-slice.lo go-map-delete.lo \
 	go-map-index.lo go-map-len.lo go-map-range.lo go-nanotime.lo \
-	go-new-map.lo go-new.lo go-panic.lo go-print.lo go-recover.lo \
-	go-reflect.lo go-reflect-call.lo go-reflect-map.lo go-rune.lo \
-	go-runtime-error.lo go-setenv.lo go-signal.lo go-strcmp.lo \
-	go-string-to-byte-array.lo go-string-to-int-array.lo \
-	go-strplus.lo go-strslice.lo go-trampoline.lo go-type-eface.lo \
-	go-type-error.lo go-type-identity.lo go-type-interface.lo \
-	go-type-string.lo go-typedesc-equal.lo go-typestring.lo \
-	go-unreflect.lo go-unsafe-new.lo go-unsafe-newarray.lo \
-	go-unsafe-pointer.lo go-unwind.lo chan.lo cpuprof.lo \
-	$(am__objects_1) mcache.lo mcentral.lo $(am__objects_2) \
-	mfinal.lo mfixalloc.lo mgc0.lo mheap.lo msize.lo proc.lo \
-	runtime.lo thread.lo yield.lo $(am__objects_3) iface.lo \
-	malloc.lo map.lo mprof.lo reflect.lo runtime1.lo sema.lo \
-	sigqueue.lo string.lo time.lo
+	go-now.lo go-new-map.lo go-new.lo go-panic.lo go-print.lo \
+	go-recover.lo go-reflect.lo go-reflect-call.lo \
+	go-reflect-map.lo go-rune.lo go-runtime-error.lo go-setenv.lo \
+	go-signal.lo go-strcmp.lo go-string-to-byte-array.lo \
+	go-string-to-int-array.lo go-strplus.lo go-strslice.lo \
+	go-trampoline.lo go-type-eface.lo go-type-error.lo \
+	go-type-identity.lo go-type-interface.lo go-type-string.lo \
+	go-typedesc-equal.lo go-typestring.lo go-unreflect.lo \
+	go-unsafe-new.lo go-unsafe-newarray.lo go-unsafe-pointer.lo \
+	go-unwind.lo chan.lo cpuprof.lo $(am__objects_1) mcache.lo \
+	mcentral.lo $(am__objects_2) mfinal.lo mfixalloc.lo mgc0.lo \
+	mheap.lo msize.lo proc.lo runtime.lo thread.lo yield.lo \
+	$(am__objects_3) iface.lo malloc.lo map.lo mprof.lo reflect.lo \
+	runtime1.lo sema.lo sigqueue.lo string.lo time.lo
 am_libgo_la_OBJECTS = $(am__objects_4)
 libgo_la_OBJECTS = $(am_libgo_la_OBJECTS)
 libgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
@@ -290,18 +289,18 @@ DATA = $(toolexeclibgo_DATA) $(toolexeclibgoarchive_DATA) \
 	$(toolexeclibgocrypto_DATA) $(toolexeclibgocryptoopenpgp_DATA) \
 	$(toolexeclibgocryptox509_DATA) $(toolexeclibgodebug_DATA) \
 	$(toolexeclibgoencoding_DATA) $(toolexeclibgoexp_DATA) \
-	$(toolexeclibgoexpgui_DATA) $(toolexeclibgoexpsql_DATA) \
-	$(toolexeclibgogo_DATA) $(toolexeclibgohash_DATA) \
-	$(toolexeclibgohtml_DATA) $(toolexeclibgoimage_DATA) \
-	$(toolexeclibgoindex_DATA) $(toolexeclibgoio_DATA) \
-	$(toolexeclibgolog_DATA) $(toolexeclibgomath_DATA) \
-	$(toolexeclibgomime_DATA) $(toolexeclibgonet_DATA) \
-	$(toolexeclibgonethttp_DATA) $(toolexeclibgonetrpc_DATA) \
-	$(toolexeclibgoold_DATA) $(toolexeclibgoos_DATA) \
-	$(toolexeclibgopath_DATA) $(toolexeclibgoregexp_DATA) \
-	$(toolexeclibgoruntime_DATA) $(toolexeclibgosync_DATA) \
-	$(toolexeclibgotesting_DATA) $(toolexeclibgotext_DATA) \
-	$(toolexeclibgotexttemplate_DATA) $(toolexeclibgounicode_DATA)
+	$(toolexeclibgoexpsql_DATA) $(toolexeclibgogo_DATA) \
+	$(toolexeclibgohash_DATA) $(toolexeclibgohtml_DATA) \
+	$(toolexeclibgoimage_DATA) $(toolexeclibgoindex_DATA) \
+	$(toolexeclibgoio_DATA) $(toolexeclibgolog_DATA) \
+	$(toolexeclibgomath_DATA) $(toolexeclibgomime_DATA) \
+	$(toolexeclibgonet_DATA) $(toolexeclibgonethttp_DATA) \
+	$(toolexeclibgonetrpc_DATA) $(toolexeclibgoold_DATA) \
+	$(toolexeclibgoos_DATA) $(toolexeclibgopath_DATA) \
+	$(toolexeclibgoregexp_DATA) $(toolexeclibgoruntime_DATA) \
+	$(toolexeclibgosync_DATA) $(toolexeclibgotesting_DATA) \
+	$(toolexeclibgotext_DATA) $(toolexeclibgotexttemplate_DATA) \
+	$(toolexeclibgounicode_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
@@ -690,7 +689,6 @@ toolexeclibgoencoding_DATA = \
 toolexeclibgoexpdir = $(toolexeclibgodir)/exp
 toolexeclibgoexp_DATA = \
 	exp/ebnf.gox \
-	exp/gui.gox \
 	$(exp_inotify_gox) \
 	exp/norm.gox \
 	exp/spdy.gox \
@@ -698,10 +696,6 @@ toolexeclibgoexp_DATA = \
 	exp/ssh.gox \
 	exp/terminal.gox \
 	exp/types.gox
-
-toolexeclibgoexpguidir = $(toolexeclibgoexpdir)/gui
-toolexeclibgoexpgui_DATA = \
-	exp/gui/x11.gox
 
 toolexeclibgoexpsqldir = $(toolexeclibgoexpdir)/sql
 toolexeclibgoexpsql_DATA = \
@@ -868,6 +862,7 @@ runtime_files = \
 	runtime/go-map-len.c \
 	runtime/go-map-range.c \
 	runtime/go-nanotime.c \
+	runtime/go-now.c \
 	runtime/go-new-map.c \
 	runtime/go-new.c \
 	runtime/go-panic.c \
@@ -960,6 +955,7 @@ go_hash_files = \
 go_html_files = \
 	go/html/const.go \
 	go/html/doc.go \
+	go/html/doctype.go \
 	go/html/entity.go \
 	go/html/escape.go \
 	go/html/node.go \
@@ -1204,7 +1200,7 @@ go_time_files = \
 	go/time/sys_unix.go \
 	go/time/tick.go \
 	go/time/time.go \
-	go/time/zoneinfo_posix.go \
+	go/time/zoneinfo.go \
 	go/time/zoneinfo_unix.go
 
 go_unicode_files = \
@@ -1377,6 +1373,7 @@ go_crypto_twofish_files = \
 go_crypto_x509_files = \
 	go/crypto/x509/cert_pool.go \
 	go/crypto/x509/pkcs1.go \
+	go/crypto/x509/pkcs8.go \
 	go/crypto/x509/verify.go \
 	go/crypto/x509/x509.go
 
@@ -1495,9 +1492,6 @@ go_exp_ebnf_files = \
 	go/exp/ebnf/ebnf.go \
 	go/exp/ebnf/parser.go
 
-go_exp_gui_files = \
-	go/exp/gui/gui.go
-
 go_exp_inotify_files = \
 	go/exp/inotify/inotify_linux.go
 
@@ -1544,10 +1538,6 @@ go_exp_types_files = \
 	go/exp/types/gcimporter.go \
 	go/exp/types/types.go \
 	go/exp/types/universe.go
-
-go_exp_gui_x11_files = \
-	go/exp/gui/x11/auth.go \
-	go/exp/gui/x11/conn.go
 
 go_exp_sql_driver_files = \
 	go/exp/sql/driver/driver.go \
@@ -1805,14 +1795,12 @@ go_text_template_files = \
 	go/text/template/exec.go \
 	go/text/template/funcs.go \
 	go/text/template/helper.go \
-	go/text/template/parse.go \
-	go/text/template/set.go
+	go/text/template/template.go
 
 go_text_template_parse_files = \
 	go/text/template/parse/lex.go \
 	go/text/template/parse/node.go \
-	go/text/template/parse/parse.go \
-	go/text/template/parse/set.go
+	go/text/template/parse/parse.go
 
 go_sync_atomic_files = \
 	go/sync/atomic/doc.go
@@ -2016,14 +2004,12 @@ libgo_go_objs = \
 	encoding/pem.lo \
 	encoding/xml.lo \
 	exp/ebnf.lo \
-	exp/gui.lo \
 	exp/norm.lo \
 	exp/spdy.lo \
 	exp/sql.lo \
 	exp/ssh.lo \
 	exp/terminal.lo \
 	exp/types.lo \
-	exp/gui/x11.lo \
 	exp/sql/driver.lo \
 	html/template.lo \
 	go/ast.lo \
@@ -2295,6 +2281,7 @@ TEST_PACKAGES = \
 	html/template/check \
 	go/ast/check \
 	$(go_build_check_omitted_since_it_calls_6g) \
+	go/doc/check \
 	go/parser/check \
 	go/printer/check \
 	go/scanner/check \
@@ -2511,6 +2498,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-nanotime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-new-map.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-new.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-now.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-panic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-print.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-recover.Plo@am__quote@
@@ -2798,6 +2786,13 @@ go-nanotime.lo: runtime/go-nanotime.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-nanotime.c' object='go-nanotime.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-nanotime.lo `test -f 'runtime/go-nanotime.c' || echo '$(srcdir)/'`runtime/go-nanotime.c
+
+go-now.lo: runtime/go-now.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-now.lo -MD -MP -MF $(DEPDIR)/go-now.Tpo -c -o go-now.lo `test -f 'runtime/go-now.c' || echo '$(srcdir)/'`runtime/go-now.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-now.Tpo $(DEPDIR)/go-now.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-now.c' object='go-now.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-now.lo `test -f 'runtime/go-now.c' || echo '$(srcdir)/'`runtime/go-now.c
 
 go-new-map.lo: runtime/go-new-map.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-new-map.lo -MD -MP -MF $(DEPDIR)/go-new-map.Tpo -c -o go-new-map.lo `test -f 'runtime/go-new-map.c' || echo '$(srcdir)/'`runtime/go-new-map.c
@@ -3374,26 +3369,6 @@ uninstall-toolexeclibgoexpDATA:
 	test -n "$$files" || exit 0; \
 	echo " ( cd '$(DESTDIR)$(toolexeclibgoexpdir)' && rm -f" $$files ")"; \
 	cd "$(DESTDIR)$(toolexeclibgoexpdir)" && rm -f $$files
-install-toolexeclibgoexpguiDATA: $(toolexeclibgoexpgui_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibgoexpguidir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgoexpguidir)"
-	@list='$(toolexeclibgoexpgui_DATA)'; test -n "$(toolexeclibgoexpguidir)" || list=; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgoexpguidir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgoexpguidir)" || exit $$?; \
-	done
-
-uninstall-toolexeclibgoexpguiDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibgoexpgui_DATA)'; test -n "$(toolexeclibgoexpguidir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibgoexpguidir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibgoexpguidir)" && rm -f $$files
 install-toolexeclibgoexpsqlDATA: $(toolexeclibgoexpsql_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(toolexeclibgoexpsqldir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgoexpsqldir)"
@@ -4171,7 +4146,7 @@ all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) all-multi $(DATA) \
 		config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptoopenpgpdir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgoexpdir)" "$(DESTDIR)$(toolexeclibgoexpguidir)" "$(DESTDIR)$(toolexeclibgoexpsqldir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoolddir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptoopenpgpdir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgoexpdir)" "$(DESTDIR)$(toolexeclibgoexpsqldir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoolddir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -4241,7 +4216,6 @@ install-exec-am: install-multi install-toolexeclibLIBRARIES \
 	install-toolexeclibgocryptox509DATA \
 	install-toolexeclibgodebugDATA \
 	install-toolexeclibgoencodingDATA install-toolexeclibgoexpDATA \
-	install-toolexeclibgoexpguiDATA \
 	install-toolexeclibgoexpsqlDATA install-toolexeclibgogoDATA \
 	install-toolexeclibgohashDATA install-toolexeclibgohtmlDATA \
 	install-toolexeclibgoimageDATA install-toolexeclibgoindexDATA \
@@ -4307,7 +4281,6 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgodebugDATA \
 	uninstall-toolexeclibgoencodingDATA \
 	uninstall-toolexeclibgoexpDATA \
-	uninstall-toolexeclibgoexpguiDATA \
 	uninstall-toolexeclibgoexpsqlDATA \
 	uninstall-toolexeclibgogoDATA uninstall-toolexeclibgohashDATA \
 	uninstall-toolexeclibgohtmlDATA \
@@ -4355,7 +4328,6 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	install-toolexeclibgocryptox509DATA \
 	install-toolexeclibgodebugDATA \
 	install-toolexeclibgoencodingDATA install-toolexeclibgoexpDATA \
-	install-toolexeclibgoexpguiDATA \
 	install-toolexeclibgoexpsqlDATA install-toolexeclibgogoDATA \
 	install-toolexeclibgohashDATA install-toolexeclibgohtmlDATA \
 	install-toolexeclibgoimageDATA install-toolexeclibgoindexDATA \
@@ -4385,7 +4357,6 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgodebugDATA \
 	uninstall-toolexeclibgoencodingDATA \
 	uninstall-toolexeclibgoexpDATA \
-	uninstall-toolexeclibgoexpguiDATA \
 	uninstall-toolexeclibgoexpsqlDATA \
 	uninstall-toolexeclibgogoDATA uninstall-toolexeclibgohashDATA \
 	uninstall-toolexeclibgohtmlDATA \
@@ -5383,16 +5354,6 @@ exp/ebnf/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: exp/ebnf/check
 
-@go_include@ exp/gui.lo.dep
-exp/gui.lo.dep: $(go_exp_gui_files)
-	$(BUILDDEPS)
-exp/gui.lo: $(go_exp_gui_files)
-	$(BUILDPACKAGE)
-exp/gui/check: $(CHECK_DEPS)
-	@$(MKDIR_P) exp/gui
-	@$(CHECK)
-.PHONY: exp/gui/check
-
 @go_include@ exp/norm.lo.dep
 exp/norm.lo.dep: $(go_exp_norm_files)
 	$(BUILDDEPS)
@@ -5452,16 +5413,6 @@ exp/types/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/types
 	@$(CHECK)
 .PHONY: exp/types/check
-
-@go_include@ exp/gui/x11.lo.dep
-exp/gui/x11.lo.dep: $(go_exp_gui_x11_files)
-	$(BUILDDEPS)
-exp/gui/x11.lo: $(go_exp_gui_x11_files)
-	$(BUILDPACKAGE)
-exp/gui/x11/check: $(CHECK_DEPS)
-	@$(MKDIR_P) exp/gui/x11
-	@$(CHECK)
-.PHONY: exp/gui/x11/check
 
 @go_include@ exp/inotify.lo.dep
 exp/inotify.lo.dep: $(go_exp_inotify_files)
@@ -6280,8 +6231,6 @@ encoding/xml.gox: encoding/xml.lo
 
 exp/ebnf.gox: exp/ebnf.lo
 	$(BUILDGOX)
-exp/gui.gox: exp/gui.lo
-	$(BUILDGOX)
 exp/inotify.gox: exp/inotify.lo
 	$(BUILDGOX)
 exp/norm.gox: exp/norm.lo
@@ -6295,9 +6244,6 @@ exp/ssh.gox: exp/ssh.lo
 exp/terminal.gox: exp/terminal.lo
 	$(BUILDGOX)
 exp/types.gox: exp/types.lo
-	$(BUILDGOX)
-
-exp/gui/x11.gox: exp/gui/x11.lo
 	$(BUILDGOX)
 
 exp/sql/driver.gox: exp/sql/driver.lo

@@ -289,7 +289,11 @@ func (z *Tokenizer) readComment() {
 	for dashCount := 2; ; {
 		c := z.readByte()
 		if z.err != nil {
-			z.data.end = z.raw.end
+			// Ignore up to two dashes at EOF.
+			if dashCount > 2 {
+				dashCount = 2
+			}
+			z.data.end = z.raw.end - dashCount
 			return
 		}
 		switch c {
@@ -375,6 +379,28 @@ func (z *Tokenizer) readMarkupDeclaration() TokenType {
 	return DoctypeToken
 }
 
+// startTagIn returns whether the start tag in z.buf[z.data.start:z.data.end]
+// case-insensitively matches any element of ss.
+func (z *Tokenizer) startTagIn(ss ...string) bool {
+loop:
+	for _, s := range ss {
+		if z.data.end-z.data.start != len(s) {
+			continue loop
+		}
+		for i := 0; i < len(s); i++ {
+			c := z.buf[z.data.start+i]
+			if 'A' <= c && c <= 'Z' {
+				c += 'a' - 'A'
+			}
+			if c != s[i] {
+				continue loop
+			}
+		}
+		return true
+	}
+	return false
+}
+
 // readStartTag reads the next start tag token. The opening "<a" has already
 // been consumed, where 'a' means anything in [A-Za-z].
 func (z *Tokenizer) readStartTag() TokenType {
@@ -401,17 +427,27 @@ func (z *Tokenizer) readStartTag() TokenType {
 			break
 		}
 	}
-	// Any "<noembed>", "<noframes>", "<noscript>", "<plaintext", "<script>", "<style>",
-	// "<textarea>" or "<title>" tag flags the tokenizer's next token as raw.
-	// The tag name lengths of these special cases ranges in [5, 9].
-	if x := z.data.end - z.data.start; 5 <= x && x <= 9 {
-		switch z.buf[z.data.start] {
-		case 'n', 'p', 's', 't', 'N', 'P', 'S', 'T':
-			switch s := strings.ToLower(string(z.buf[z.data.start:z.data.end])); s {
-			case "noembed", "noframes", "noscript", "plaintext", "script", "style", "textarea", "title":
-				z.rawTag = s
-			}
-		}
+	// Several tags flag the tokenizer's next token as raw.
+	c, raw := z.buf[z.data.start], false
+	if 'A' <= c && c <= 'Z' {
+		c += 'a' - 'A'
+	}
+	switch c {
+	case 'i':
+		raw = z.startTagIn("iframe")
+	case 'n':
+		raw = z.startTagIn("noembed", "noframes", "noscript")
+	case 'p':
+		raw = z.startTagIn("plaintext")
+	case 's':
+		raw = z.startTagIn("script", "style")
+	case 't':
+		raw = z.startTagIn("textarea", "title")
+	case 'x':
+		raw = z.startTagIn("xmp")
+	}
+	if raw {
+		z.rawTag = strings.ToLower(string(z.buf[z.data.start:z.data.end]))
 	}
 	// Look for a self-closing token like "<br/>".
 	if z.err == nil && z.buf[z.raw.end-2] == '/' {

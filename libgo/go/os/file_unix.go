@@ -28,11 +28,11 @@ type file struct {
 }
 
 // Fd returns the integer Unix file descriptor referencing the open file.
-func (file *File) Fd() int {
-	if file == nil {
+func (f *File) Fd() int {
+	if f == nil {
 		return -1
 	}
-	return file.fd
+	return f.fd
 }
 
 // NewFile returns a new File with the given file descriptor and name.
@@ -77,8 +77,8 @@ func OpenFile(name string, flag int, perm uint32) (file *File, err error) {
 
 // Close closes the File, rendering it unusable for I/O.
 // It returns an error, if any.
-func (file *File) Close() error {
-	return file.file.close()
+func (f *File) Close() error {
+	return f.file.close()
 }
 
 func (file *file) close() error {
@@ -105,50 +105,43 @@ func (file *file) close() error {
 
 // Stat returns the FileInfo structure describing file.
 // It returns the FileInfo and an error, if any.
-func (file *File) Stat() (fi *FileInfo, err error) {
+func (f *File) Stat() (fi FileInfo, err error) {
 	var stat syscall.Stat_t
-	e := syscall.Fstat(file.fd, &stat)
-	if e != nil {
-		return nil, &PathError{"stat", file.name, e}
+	err = syscall.Fstat(f.fd, &stat)
+	if err != nil {
+		return nil, &PathError{"stat", f.name, err}
 	}
-	return fileInfoFromStat(file.name, new(FileInfo), &stat, &stat), nil
+	return fileInfoFromStat(&stat, f.name), nil
 }
 
-// Stat returns a FileInfo structure describing the named file and an error, if any.
+// Stat returns a FileInfo describing the named file and an error, if any.
 // If name names a valid symbolic link, the returned FileInfo describes
 // the file pointed at by the link and has fi.FollowedSymlink set to true.
 // If name names an invalid symbolic link, the returned FileInfo describes
 // the link itself and has fi.FollowedSymlink set to false.
-func Stat(name string) (fi *FileInfo, err error) {
-	var lstat, stat syscall.Stat_t
-	e := syscall.Lstat(name, &lstat)
-	if e != nil {
-		return nil, &PathError{"stat", name, e}
+func Stat(name string) (fi FileInfo, err error) {
+	var stat syscall.Stat_t
+	err = syscall.Stat(name, &stat)
+	if err != nil {
+		return nil, &PathError{"stat", name, err}
 	}
-	statp := &lstat
-	if lstat.Mode&syscall.S_IFMT == syscall.S_IFLNK {
-		e := syscall.Stat(name, &stat)
-		if e == nil {
-			statp = &stat
-		}
-	}
-	return fileInfoFromStat(name, new(FileInfo), &lstat, statp), nil
+	return fileInfoFromStat(&stat, name), nil
 }
 
-// Lstat returns the FileInfo structure describing the named file and an
+// Lstat returns a FileInfo describing the named file and an
 // error, if any.  If the file is a symbolic link, the returned FileInfo
 // describes the symbolic link.  Lstat makes no attempt to follow the link.
-func Lstat(name string) (fi *FileInfo, err error) {
+func Lstat(name string) (fi FileInfo, err error) {
 	var stat syscall.Stat_t
-	e := syscall.Lstat(name, &stat)
-	if e != nil {
-		return nil, &PathError{"lstat", name, e}
+	err = syscall.Lstat(name, &stat)
+	if err != nil {
+		return nil, &PathError{"lstat", name, err}
 	}
-	return fileInfoFromStat(name, new(FileInfo), &stat, &stat), nil
+	return fileInfoFromStat(&stat, name), nil
 }
 
 // Readdir reads the contents of the directory associated with file and
-// returns an array of up to n FileInfo structures, as would be returned
+// returns an array of up to n FileInfo values, as would be returned
 // by Lstat, in directory order. Subsequent calls on the same file will yield
 // further FileInfos.
 //
@@ -162,23 +155,23 @@ func Lstat(name string) (fi *FileInfo, err error) {
 // nil error. If it encounters an error before the end of the
 // directory, Readdir returns the FileInfo read until that point
 // and a non-nil error.
-func (file *File) Readdir(n int) (fi []FileInfo, err error) {
-	dirname := file.name
+func (f *File) Readdir(n int) (fi []FileInfo, err error) {
+	dirname := f.name
 	if dirname == "" {
 		dirname = "."
 	}
 	dirname += "/"
-	names, err := file.Readdirnames(n)
+	names, err := f.Readdirnames(n)
 	fi = make([]FileInfo, len(names))
 	for i, filename := range names {
 		fip, err := Lstat(dirname + filename)
-		if fip == nil || err != nil {
-			fi[i].Name = filename // rest is already zeroed out
+		if err == nil {
+			fi[i] = fip
 		} else {
-			fi[i] = *fip
+			fi[i] = &FileStat{name: filename}
 		}
 	}
-	return
+	return fi, err
 }
 
 // read reads up to len(b) bytes from the File.

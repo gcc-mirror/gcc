@@ -37,6 +37,11 @@ type parser struct {
 	// fosterParenting is whether new elements should be inserted according to
 	// the foster parenting rules (section 11.2.5.3).
 	fosterParenting bool
+	// quirks is whether the parser is operating in "quirks mode."
+	quirks bool
+	// context is the context element when parsing an HTML fragment
+	// (section 11.4).
+	context *Node
 }
 
 func (p *parser) top() *Node {
@@ -285,9 +290,10 @@ func (p *parser) setOriginalIM() {
 func (p *parser) resetInsertionMode() {
 	for i := len(p.oe) - 1; i >= 0; i-- {
 		n := p.oe[i]
-		if i == 0 {
-			// TODO: set n to the context element, for HTML fragment parsing.
+		if i == 0 && p.context != nil {
+			n = p.context
 		}
+
 		switch n.Data {
 		case "select":
 			p.im = inSelectIM
@@ -319,9 +325,17 @@ func (p *parser) resetInsertionMode() {
 	p.im = inBodyIM
 }
 
+const whitespace = " \t\r\n\f"
+
 // Section 11.2.5.4.1.
 func initialIM(p *parser) bool {
 	switch p.tok.Type {
+	case TextToken:
+		p.tok.Data = strings.TrimLeft(p.tok.Data, whitespace)
+		if len(p.tok.Data) == 0 {
+			// It was all whitespace, so ignore it.
+			return true
+		}
 	case CommentToken:
 		p.doc.Add(&Node{
 			Type: CommentNode,
@@ -329,15 +343,13 @@ func initialIM(p *parser) bool {
 		})
 		return true
 	case DoctypeToken:
-		p.doc.Add(&Node{
-			Type: DoctypeNode,
-			Data: p.tok.Data,
-		})
+		n, quirks := parseDoctype(p.tok.Data)
+		p.doc.Add(n)
+		p.quirks = quirks
 		p.im = beforeHTMLIM
 		return true
 	}
-	// TODO: set "quirks mode"? It's defined in the DOM spec instead of HTML5 proper,
-	// and so switching on "quirks mode" might belong in a different package.
+	p.quirks = true
 	p.im = beforeHTMLIM
 	return false
 }
@@ -345,6 +357,12 @@ func initialIM(p *parser) bool {
 // Section 11.2.5.4.2.
 func beforeHTMLIM(p *parser) bool {
 	switch p.tok.Type {
+	case TextToken:
+		p.tok.Data = strings.TrimLeft(p.tok.Data, whitespace)
+		if len(p.tok.Data) == 0 {
+			// It was all whitespace, so ignore it.
+			return true
+		}
 	case StartTagToken:
 		if p.tok.Data == "html" {
 			p.addElement(p.tok.Data, p.tok.Attr)
@@ -383,7 +401,11 @@ func beforeHeadIM(p *parser) bool {
 	case ErrorToken:
 		implied = true
 	case TextToken:
-		// TODO: distinguish whitespace text from others.
+		p.tok.Data = strings.TrimLeft(p.tok.Data, whitespace)
+		if len(p.tok.Data) == 0 {
+			// It was all whitespace, so ignore it.
+			return true
+		}
 		implied = true
 	case StartTagToken:
 		switch p.tok.Data {
@@ -417,8 +439,6 @@ func beforeHeadIM(p *parser) bool {
 	return !implied
 }
 
-const whitespace = " \t\r\n\f"
-
 // Section 11.2.5.4.4.
 func inHeadIM(p *parser) bool {
 	var (
@@ -441,6 +461,8 @@ func inHeadIM(p *parser) bool {
 		implied = true
 	case StartTagToken:
 		switch p.tok.Data {
+		case "html":
+			return inBodyIM(p)
 		case "base", "basefont", "bgsound", "command", "link", "meta":
 			p.addElement(p.tok.Data, p.tok.Attr)
 			p.oe.pop()
@@ -449,6 +471,9 @@ func inHeadIM(p *parser) bool {
 			p.addElement(p.tok.Data, p.tok.Attr)
 			p.setOriginalIM()
 			p.im = textIM
+			return true
+		case "head":
+			// Ignore the token.
 			return true
 		default:
 			implied = true
@@ -560,11 +585,30 @@ func copyAttributes(dst *Node, src Token) {
 func inBodyIM(p *parser) bool {
 	switch p.tok.Type {
 	case TextToken:
+		switch n := p.oe.top(); n.Data {
+		case "pre", "listing", "textarea":
+			if len(n.Child) == 0 {
+				// Ignore a newline at the start of a <pre> block.
+				d := p.tok.Data
+				if d != "" && d[0] == '\r' {
+					d = d[1:]
+				}
+				if d != "" && d[0] == '\n' {
+					d = d[1:]
+				}
+				if d == "" {
+					return true
+				}
+				p.tok.Data = d
+			}
+		}
 		p.reconstructActiveFormattingElements()
 		p.addText(p.tok.Data)
 		p.framesetOK = false
 	case StartTagToken:
 		switch p.tok.Data {
+		case "html":
+			copyAttributes(p.oe[0], p.tok)
 		case "address", "article", "aside", "blockquote", "center", "details", "dir", "div", "dl", "fieldset", "figcaption", "figure", "footer", "header", "hgroup", "menu", "nav", "ol", "p", "section", "summary", "ul":
 			p.popUntil(buttonScopeStopTags, "p")
 			p.addElement(p.tok.Data, p.tok.Attr)
@@ -589,6 +633,13 @@ func inBodyIM(p *parser) bool {
 		case "b", "big", "code", "em", "font", "i", "s", "small", "strike", "strong", "tt", "u":
 			p.reconstructActiveFormattingElements()
 			p.addFormattingElement(p.tok.Data, p.tok.Attr)
+		case "nobr":
+			p.reconstructActiveFormattingElements()
+			if p.elementInScope(defaultScopeStopTags, "nobr") {
+				p.inBodyEndTagFormatting("nobr")
+				p.reconstructActiveFormattingElements()
+			}
+			p.addFormattingElement(p.tok.Data, p.tok.Attr)
 		case "applet", "marquee", "object":
 			p.reconstructActiveFormattingElements()
 			p.addElement(p.tok.Data, p.tok.Attr)
@@ -601,7 +652,9 @@ func inBodyIM(p *parser) bool {
 			p.acknowledgeSelfClosingTag()
 			p.framesetOK = false
 		case "table":
-			p.popUntil(buttonScopeStopTags, "p") // TODO: skip this step in quirks mode.
+			if !p.quirks {
+				p.popUntil(buttonScopeStopTags, "p")
+			}
 			p.addElement(p.tok.Data, p.tok.Attr)
 			p.framesetOK = false
 			p.im = inTableIM
@@ -721,6 +774,11 @@ func inBodyIM(p *parser) bool {
 			p.oe.pop()
 			p.oe.pop()
 			p.form = nil
+		case "xmp":
+			p.popUntil(buttonScopeStopTags, "p")
+			p.reconstructActiveFormattingElements()
+			p.framesetOK = false
+			p.addElement(p.tok.Data, p.tok.Attr)
 		case "caption", "col", "colgroup", "frame", "head", "tbody", "td", "tfoot", "th", "thead", "tr":
 			// Ignore the token.
 		default:
@@ -1462,6 +1520,29 @@ func afterAfterFramesetIM(p *parser) bool {
 	return true
 }
 
+func (p *parser) parse() error {
+	// Iterate until EOF. Any other error will cause an early return.
+	consumed := true
+	for {
+		if consumed {
+			if err := p.read(); err != nil {
+				if err == io.EOF {
+					break
+				}
+				return err
+			}
+		}
+		consumed = p.im(p)
+	}
+	// Loop until the final token (the ErrorToken signifying EOF) is consumed.
+	for {
+		if consumed = p.im(p); consumed {
+			break
+		}
+	}
+	return nil
+}
+
 // Parse returns the parse tree for the HTML from the given Reader.
 // The input is assumed to be UTF-8 encoded.
 func Parse(r io.Reader) (*Node, error) {
@@ -1474,24 +1555,62 @@ func Parse(r io.Reader) (*Node, error) {
 		framesetOK: true,
 		im:         initialIM,
 	}
-	// Iterate until EOF. Any other error will cause an early return.
-	consumed := true
-	for {
-		if consumed {
-			if err := p.read(); err != nil {
-				if err == io.EOF {
-					break
-				}
-				return nil, err
-			}
-		}
-		consumed = p.im(p)
+	err := p.parse()
+	if err != nil {
+		return nil, err
 	}
-	// Loop until the final token (the ErrorToken signifying EOF) is consumed.
-	for {
-		if consumed = p.im(p); consumed {
+	return p.doc, nil
+}
+
+// ParseFragment parses a fragment of HTML and returns the nodes that were 
+// found. If the fragment is the InnerHTML for an existing element, pass that
+// element in context.
+func ParseFragment(r io.Reader, context *Node) ([]*Node, error) {
+	p := &parser{
+		tokenizer: NewTokenizer(r),
+		doc: &Node{
+			Type: DocumentNode,
+		},
+		scripting: true,
+		context:   context,
+	}
+
+	if context != nil {
+		switch context.Data {
+		case "iframe", "noembed", "noframes", "noscript", "plaintext", "script", "style", "title", "textarea", "xmp":
+			p.tokenizer.rawTag = context.Data
+		}
+	}
+
+	root := &Node{
+		Type: ElementNode,
+		Data: "html",
+	}
+	p.doc.Add(root)
+	p.oe = nodeStack{root}
+	p.resetInsertionMode()
+
+	for n := context; n != nil; n = n.Parent {
+		if n.Type == ElementNode && n.Data == "form" {
+			p.form = n
 			break
 		}
 	}
-	return p.doc, nil
+
+	err := p.parse()
+	if err != nil {
+		return nil, err
+	}
+
+	parent := p.doc
+	if context != nil {
+		parent = root
+	}
+
+	result := parent.Child
+	parent.Child = nil
+	for _, n := range result {
+		n.Parent = nil
+	}
+	return result, nil
 }
