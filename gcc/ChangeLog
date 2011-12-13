@@ -1,3 +1,11 @@
+2011-12-13  Tristan Gingold  <gingold@adacore.com>
+
+	* vmsdbgout.c (vmsdbgout_write_source_line): New function.
+	(vmsdbgout_end_prologue): Call vmsdbgout_write_source_line.
+	(vmsdbgout_begin_epilogue): Likewise.
+	(vmsdbgout_end_epilogue): Likewise.
+	(vmsdbgout_source_line): Move code to vmsdbgout_write_source_line.
+
 2011-12-13  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/51481
