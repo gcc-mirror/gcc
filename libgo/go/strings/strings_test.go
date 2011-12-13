@@ -527,7 +527,7 @@ func TestTrim(t *testing.T) {
 		case "TrimRight":
 			f = TrimRight
 		default:
-			t.Error("Undefined trim function %s", name)
+			t.Errorf("Undefined trim function %s", name)
 		}
 		actual := f(tc.in, tc.cutset)
 		if actual != tc.out {
@@ -904,6 +904,56 @@ func TestContains(t *testing.T) {
 		if Contains(ct.str, ct.substr) != ct.expected {
 			t.Errorf("Contains(%s, %s) = %v, want %v",
 				ct.str, ct.substr, !ct.expected, ct.expected)
+		}
+	}
+}
+
+var ContainsAnyTests = []struct {
+	str, substr string
+	expected    bool
+}{
+	{"", "", false},
+	{"", "a", false},
+	{"", "abc", false},
+	{"a", "", false},
+	{"a", "a", true},
+	{"aaa", "a", true},
+	{"abc", "xyz", false},
+	{"abc", "xcz", true},
+	{"a☺b☻c☹d", "uvw☻xyz", true},
+	{"aRegExp*", ".(|)*+?^$[]", true},
+	{dots + dots + dots, " ", false},
+}
+
+func TestContainsAny(t *testing.T) {
+	for _, ct := range ContainsAnyTests {
+		if ContainsAny(ct.str, ct.substr) != ct.expected {
+			t.Errorf("ContainsAny(%s, %s) = %v, want %v",
+				ct.str, ct.substr, !ct.expected, ct.expected)
+		}
+	}
+}
+
+var ContainsRuneTests = []struct {
+	str      string
+	r        rune
+	expected bool
+}{
+	{"", 'a', false},
+	{"a", 'a', true},
+	{"aaa", 'a', true},
+	{"abc", 'y', false},
+	{"abc", 'c', true},
+	{"a☺b☻c☹d", 'x', false},
+	{"a☺b☻c☹d", '☻', true},
+	{"aRegExp*", '*', true},
+}
+
+func TestContainsRune(t *testing.T) {
+	for _, ct := range ContainsRuneTests {
+		if ContainsRune(ct.str, ct.r) != ct.expected {
+			t.Errorf("ContainsRune(%s, %s) = %v, want %v",
+				ct.str, ct.r, !ct.expected, ct.expected)
 		}
 	}
 }

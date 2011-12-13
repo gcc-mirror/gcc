@@ -5,6 +5,7 @@
 package sql
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -22,7 +23,6 @@ func newTestDB(t *testing.T, name string) *DB {
 		exec(t, db, "INSERT|people|name=Alice,age=?", 1)
 		exec(t, db, "INSERT|people|name=Bob,age=?", 2)
 		exec(t, db, "INSERT|people|name=Chris,age=?", 3)
-
 	}
 	return db
 }
@@ -42,6 +42,40 @@ func closeDB(t *testing.T, db *DB) {
 }
 
 func TestQuery(t *testing.T) {
+	db := newTestDB(t, "people")
+	defer closeDB(t, db)
+	rows, err := db.Query("SELECT|people|age,name|")
+	if err != nil {
+		t.Fatalf("Query: %v", err)
+	}
+	type row struct {
+		age  int
+		name string
+	}
+	got := []row{}
+	for rows.Next() {
+		var r row
+		err = rows.Scan(&r.age, &r.name)
+		if err != nil {
+			t.Fatalf("Scan: %v", err)
+		}
+		got = append(got, r)
+	}
+	err = rows.Err()
+	if err != nil {
+		t.Fatalf("Err: %v", err)
+	}
+	want := []row{
+		{age: 1, name: "Alice"},
+		{age: 2, name: "Bob"},
+		{age: 3, name: "Chris"},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Logf(" got: %#v\nwant: %#v", got, want)
+	}
+}
+
+func TestQueryRow(t *testing.T) {
 	db := newTestDB(t, "people")
 	defer closeDB(t, db)
 	var name string
@@ -72,6 +106,24 @@ func TestQuery(t *testing.T) {
 	}
 	if age != 1 {
 		t.Errorf("expected age 1, got %d", age)
+	}
+}
+
+func TestStatementErrorAfterClose(t *testing.T) {
+	db := newTestDB(t, "people")
+	defer closeDB(t, db)
+	stmt, err := db.Prepare("SELECT|people|age|name=?")
+	if err != nil {
+		t.Fatalf("Prepare: %v", err)
+	}
+	err = stmt.Close()
+	if err != nil {
+		t.Fatalf("Close: %v", err)
+	}
+	var name string
+	err = stmt.QueryRow("foo").Scan(&name)
+	if err == nil {
+		t.Errorf("expected error from QueryRow.Scan after Stmt.Close")
 	}
 }
 
@@ -114,7 +166,7 @@ func TestBogusPreboundParameters(t *testing.T) {
 	}
 }
 
-func TestDb(t *testing.T) {
+func TestExec(t *testing.T) {
 	db := newTestDB(t, "foo")
 	defer closeDB(t, db)
 	exec(t, db, "CREATE|t1|name=string,age=int32,dead=bool")
@@ -152,5 +204,27 @@ func TestDb(t *testing.T) {
 			t.Errorf("stmt.Execute #%d: for %v, got error %q, want error %q",
 				n, et.args, errStr, et.wantErr)
 		}
+	}
+}
+
+func TestTxStmt(t *testing.T) {
+	db := newTestDB(t, "")
+	defer closeDB(t, db)
+	exec(t, db, "CREATE|t1|name=string,age=int32,dead=bool")
+	stmt, err := db.Prepare("INSERT|t1|name=?,age=?")
+	if err != nil {
+		t.Fatalf("Stmt, err = %v, %v", stmt, err)
+	}
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatalf("Begin = %v", err)
+	}
+	_, err = tx.Stmt(stmt).Exec("Bobby", 7)
+	if err != nil {
+		t.Fatalf("Exec = %v", err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		t.Fatalf("Commit = %v", err)
 	}
 }

@@ -8,6 +8,7 @@ package os
 
 import (
 	"syscall"
+	"time"
 )
 
 func sigpipe() // implemented in package runtime
@@ -168,11 +169,11 @@ func (f *File) Truncate(size int64) error {
 // Sync commits the current contents of the file to stable storage.
 // Typically, this means flushing the file system's in-memory copy
 // of recently written data to disk.
-func (file *File) Sync() (err error) {
-	if file == nil {
+func (f *File) Sync() (err error) {
+	if f == nil {
 		return EINVAL
 	}
-	if e := syscall.Fsync(file.fd); e != nil {
+	if e := syscall.Fsync(f.fd); e != nil {
 		return NewSyscallError("fsync", e)
 	}
 	return nil
@@ -181,11 +182,12 @@ func (file *File) Sync() (err error) {
 // Chtimes changes the access and modification times of the named
 // file, similar to the Unix utime() or utimes() functions.
 //
-// The argument times are in nanoseconds, although the underlying
-// filesystem may truncate or round the values to a more
-// coarse time unit.
-func Chtimes(name string, atime_ns int64, mtime_ns int64) error {
+// The underlying filesystem may truncate or round the values to a
+// less precise time unit.
+func Chtimes(name string, atime time.Time, mtime time.Time) error {
 	var utimes [2]syscall.Timeval
+	atime_ns := atime.Unix()*1e9 + int64(atime.Nanosecond())
+	mtime_ns := mtime.Unix()*1e9 + int64(mtime.Nanosecond())
 	utimes[0] = syscall.NsecToTimeval(atime_ns)
 	utimes[1] = syscall.NsecToTimeval(mtime_ns)
 	if e := syscall.Utimes(name, utimes[0:]); e != nil {

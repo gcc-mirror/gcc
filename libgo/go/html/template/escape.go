@@ -12,24 +12,15 @@ import (
 	"text/template/parse"
 )
 
-// escape rewrites each action in the template to guarantee that the output is
-// properly escaped.
-func escape(t *template.Template) error {
-	var s template.Set
-	s.Add(t)
-	return escapeSet(&s, t.Name())
-	// TODO: if s contains cloned dependencies due to self-recursion
-	// cross-context, error out.
-}
-
-// escapeSet rewrites the template set to guarantee that the output of any of
-// the named templates is properly escaped.
-// Names should include the names of all templates that might be Executed but
-// need not include helper templates.
-// If no error is returned, then the named templates have been modified. 
-// Otherwise the named templates have been rendered unusable.
-func escapeSet(s *template.Set, names ...string) error {
-	e := newEscaper(s)
+// escapeTemplates rewrites the named templates, which must be
+// associated with t, to guarantee that the output of any of the named
+// templates is properly escaped.  Names should include the names of
+// all templates that might be Executed but need not include helper
+// templates.  If no error is returned, then the named templates have
+// been modified.  Otherwise the named templates have been rendered
+// unusable.
+func escapeTemplates(tmpl *Template, names ...string) error {
+	e := newEscaper(tmpl)
 	for _, name := range names {
 		c, _ := e.escapeTree(context{}, name, 0)
 		var err error
@@ -41,12 +32,13 @@ func escapeSet(s *template.Set, names ...string) error {
 		if err != nil {
 			// Prevent execution of unsafe templates.
 			for _, name := range names {
-				if t := s.Template(name); t != nil {
-					t.Tree = nil
+				if t := tmpl.set[name]; t != nil {
+					t.text.Tree = nil
 				}
 			}
 			return err
 		}
+		tmpl.escaped = true
 	}
 	e.commit()
 	return nil
@@ -83,8 +75,7 @@ var equivEscapers = map[string]string{
 // escaper collects type inferences about templates and changes needed to make
 // templates injection safe.
 type escaper struct {
-	// set is the template set being escaped.
-	set *template.Set
+	tmpl *Template
 	// output[templateName] is the output context for a templateName that
 	// has been mangled to include its input context.
 	output map[string]context
@@ -102,9 +93,9 @@ type escaper struct {
 }
 
 // newEscaper creates a blank escaper for the given set.
-func newEscaper(s *template.Set) *escaper {
+func newEscaper(t *Template) *escaper {
 	return &escaper{
-		s,
+		t,
 		map[string]context{},
 		map[string]*template.Template{},
 		map[string]bool{},
@@ -442,7 +433,7 @@ func (e *escaper) escapeList(c context, n *parse.ListNode) context {
 // It returns the best guess at an output context, and the result of the filter
 // which is the same as whether e was updated.
 func (e *escaper) escapeListConditionally(c context, n *parse.ListNode, filter func(*escaper, context) bool) (context, bool) {
-	e1 := newEscaper(e.set)
+	e1 := newEscaper(e.tmpl)
 	// Make type inferences available to f.
 	for k, v := range e.output {
 		e1.output[k] = v
@@ -501,7 +492,7 @@ func (e *escaper) escapeTree(c context, name string, line int) (context, string)
 		}, dname
 	}
 	if dname != name {
-		// Use any template derived during an earlier call to escapeSet
+		// Use any template derived during an earlier call to escapeTemplate
 		// with different top level templates, or clone if necessary.
 		dt := e.template(dname)
 		if dt == nil {
@@ -529,7 +520,7 @@ func (e *escaper) computeOutCtx(c context, t *template.Template) context {
 	if !ok && c1.state != stateError {
 		return context{
 			state: stateError,
-			// TODO: Find the first node with a line in t.Tree.Root
+			// TODO: Find the first node with a line in t.text.Tree.Root
 			err: errorf(ErrOutputContext, 0, "cannot compute output context for template %s", t.Name()),
 		}
 	}
@@ -729,7 +720,9 @@ func (e *escaper) commit() {
 		e.template(name).Funcs(funcMap)
 	}
 	for _, t := range e.derived {
-		e.set.Add(t)
+		if _, err := e.tmpl.text.AddParseTree(t.Name(), t.Tree); err != nil {
+			panic("error adding derived template")
+		}
 	}
 	for n, s := range e.actionNodeEdits {
 		ensurePipelineContains(n.Pipe, s)
@@ -744,7 +737,7 @@ func (e *escaper) commit() {
 
 // template returns the named template given a mangled template name.
 func (e *escaper) template(name string) *template.Template {
-	t := e.set.Template(name)
+	t := e.tmpl.text.Lookup(name)
 	if t == nil {
 		t = e.derived[name]
 	}

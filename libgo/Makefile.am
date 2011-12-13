@@ -233,7 +233,6 @@ toolexeclibgoexpdir = $(toolexeclibgodir)/exp
 
 toolexeclibgoexp_DATA = \
 	exp/ebnf.gox \
-	exp/gui.gox \
 	$(exp_inotify_gox) \
 	exp/norm.gox \
 	exp/spdy.gox \
@@ -241,11 +240,6 @@ toolexeclibgoexp_DATA = \
 	exp/ssh.gox \
 	exp/terminal.gox \
 	exp/types.gox
-
-toolexeclibgoexpguidir = $(toolexeclibgoexpdir)/gui
-
-toolexeclibgoexpgui_DATA = \
-	exp/gui/x11.gox
 
 toolexeclibgoexpsqldir = $(toolexeclibgoexpdir)/sql
 
@@ -447,6 +441,7 @@ runtime_files = \
 	runtime/go-map-len.c \
 	runtime/go-map-range.c \
 	runtime/go-nanotime.c \
+	runtime/go-now.c \
 	runtime/go-new-map.c \
 	runtime/go-new.c \
 	runtime/go-panic.c \
@@ -576,6 +571,7 @@ go_hash_files = \
 go_html_files = \
 	go/html/const.go \
 	go/html/doc.go \
+	go/html/doctype.go \
 	go/html/entity.go \
 	go/html/escape.go \
 	go/html/node.go \
@@ -888,7 +884,7 @@ go_time_files = \
 	go/time/sys_unix.go \
 	go/time/tick.go \
 	go/time/time.go \
-	go/time/zoneinfo_posix.go \
+	go/time/zoneinfo.go \
 	go/time/zoneinfo_unix.go
 
 go_unicode_files = \
@@ -1038,6 +1034,7 @@ go_crypto_twofish_files = \
 go_crypto_x509_files = \
 	go/crypto/x509/cert_pool.go \
 	go/crypto/x509/pkcs1.go \
+	go/crypto/x509/pkcs8.go \
 	go/crypto/x509/verify.go \
 	go/crypto/x509/x509.go
 go_crypto_xtea_files = \
@@ -1135,8 +1132,6 @@ go_encoding_xml_files = \
 go_exp_ebnf_files = \
 	go/exp/ebnf/ebnf.go \
 	go/exp/ebnf/parser.go
-go_exp_gui_files = \
-	go/exp/gui/gui.go
 go_exp_inotify_files = \
 	go/exp/inotify/inotify_linux.go
 go_exp_norm_files = \
@@ -1177,10 +1172,6 @@ go_exp_types_files = \
 	go/exp/types/gcimporter.go \
 	go/exp/types/types.go \
 	go/exp/types/universe.go
-
-go_exp_gui_x11_files = \
-	go/exp/gui/x11/auth.go \
-	go/exp/gui/x11/conn.go
 
 go_exp_sql_driver_files = \
 	go/exp/sql/driver/driver.go \
@@ -1415,13 +1406,11 @@ go_text_template_files = \
 	go/text/template/exec.go \
 	go/text/template/funcs.go \
 	go/text/template/helper.go \
-	go/text/template/parse.go \
-	go/text/template/set.go
+	go/text/template/template.go
 go_text_template_parse_files = \
 	go/text/template/parse/lex.go \
 	go/text/template/parse/node.go \
-	go/text/template/parse/parse.go \
-	go/text/template/parse/set.go
+	go/text/template/parse/parse.go
 
 go_sync_atomic_files = \
 	go/sync/atomic/doc.go
@@ -1725,14 +1714,12 @@ libgo_go_objs = \
 	encoding/pem.lo \
 	encoding/xml.lo \
 	exp/ebnf.lo \
-	exp/gui.lo \
 	exp/norm.lo \
 	exp/spdy.lo \
 	exp/sql.lo \
 	exp/ssh.lo \
 	exp/terminal.lo \
 	exp/types.lo \
-	exp/gui/x11.lo \
 	exp/sql/driver.lo \
 	html/template.lo \
 	go/ast.lo \
@@ -2784,16 +2771,6 @@ exp/ebnf/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: exp/ebnf/check
 
-@go_include@ exp/gui.lo.dep
-exp/gui.lo.dep: $(go_exp_gui_files)
-	$(BUILDDEPS)
-exp/gui.lo: $(go_exp_gui_files)
-	$(BUILDPACKAGE)
-exp/gui/check: $(CHECK_DEPS)
-	@$(MKDIR_P) exp/gui
-	@$(CHECK)
-.PHONY: exp/gui/check
-
 @go_include@ exp/norm.lo.dep
 exp/norm.lo.dep: $(go_exp_norm_files)
 	$(BUILDDEPS)
@@ -2853,16 +2830,6 @@ exp/types/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/types
 	@$(CHECK)
 .PHONY: exp/types/check
-
-@go_include@ exp/gui/x11.lo.dep
-exp/gui/x11.lo.dep: $(go_exp_gui_x11_files)
-	$(BUILDDEPS)
-exp/gui/x11.lo: $(go_exp_gui_x11_files)
-	$(BUILDPACKAGE)
-exp/gui/x11/check: $(CHECK_DEPS)
-	@$(MKDIR_P) exp/gui/x11
-	@$(CHECK)
-.PHONY: exp/gui/x11/check
 
 @go_include@ exp/inotify.lo.dep
 exp/inotify.lo.dep: $(go_exp_inotify_files)
@@ -3686,8 +3653,6 @@ encoding/xml.gox: encoding/xml.lo
 
 exp/ebnf.gox: exp/ebnf.lo
 	$(BUILDGOX)
-exp/gui.gox: exp/gui.lo
-	$(BUILDGOX)
 exp/inotify.gox: exp/inotify.lo
 	$(BUILDGOX)
 exp/norm.gox: exp/norm.lo
@@ -3701,9 +3666,6 @@ exp/ssh.gox: exp/ssh.lo
 exp/terminal.gox: exp/terminal.lo
 	$(BUILDGOX)
 exp/types.gox: exp/types.lo
-	$(BUILDGOX)
-
-exp/gui/x11.gox: exp/gui/x11.lo
 	$(BUILDGOX)
 
 exp/sql/driver.gox: exp/sql/driver.lo
@@ -3950,6 +3912,7 @@ TEST_PACKAGES = \
 	html/template/check \
 	go/ast/check \
 	$(go_build_check_omitted_since_it_calls_6g) \
+	go/doc/check \
 	go/parser/check \
 	go/printer/check \
 	go/scanner/check \
