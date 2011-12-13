@@ -486,8 +486,8 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 	      && visit == visit_op)
 	    {
 	      /* If this is the first real instruction in this BB we need
-	         to add conflicts for everything life at this point now.
-		 Unlike classical lifeness for named objects we can't
+	         to add conflicts for everything live at this point now.
+		 Unlike classical liveness for named objects we can't
 		 rely on seeing a def/use of the names we're interested in.
 		 There might merely be indirect loads/stores.  We'd not add any
 		 conflicts for such partitions.  */
@@ -517,7 +517,7 @@ add_scope_conflicts (void)
   bool changed;
   bitmap work = BITMAP_ALLOC (NULL);
 
-  /* We approximate the life range of a stack variable by taking the first
+  /* We approximate the live range of a stack variable by taking the first
      mention of its name as starting point(s), and by the end-of-scope
      death clobber added by gimplify as ending point(s) of the range.
      This overapproximates in the case we for instance moved an address-taken
@@ -525,7 +525,7 @@ add_scope_conflicts (void)
      But it's conservatively correct as a variable never can hold values
      before its name is mentioned at least once.
 
-     We then do a mostly classical bitmap lifeness algorithm.  */
+     We then do a mostly classical bitmap liveness algorithm.  */
 
   FOR_ALL_BB (bb)
     bb->aux = BITMAP_ALLOC (NULL);
