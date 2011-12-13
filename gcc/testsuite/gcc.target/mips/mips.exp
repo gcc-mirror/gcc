@@ -226,7 +226,7 @@ set mips_option_groups {
     abi "-mabi=.*"
     addressing "addressing=.*"
     arch "-mips([1-5]|32.*|64.*)|-march=.*|isa(|_rev)(=|<=|>=).*"
-    debug "-g*"
+    debug "-g.*"
     dump_pattern "-dp"
     endianness "-E(L|B)|-me(l|b)"
     float "-m(hard|soft)-float"
@@ -241,6 +241,7 @@ set mips_option_groups {
     profiling "-pg"
     small-data "-G[0-9]+"
     warnings "-w"
+    dump "-fdump-.*"
 }
 
 # Add -mfoo/-mno-foo options to mips_option_groups.
