@@ -1,3 +1,10 @@
+2011-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto.h (lto_parse_hex): Delete.
+	* lto.c (lto_read_decls): Use 'int' for offsets.
+	(lto_parse_hex): Make static and return proper 64-bit host type.
+	(lto_resolution_read): Use proper 64-bit host type.
+
 2011-10-26  Release Manager
 
 	* GCC 4.6.2 released.

@@ -1,3 +1,15 @@
+2011-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto-streamer-out.c (write_symbol): Use proper 64-bit host type.
+	* lto-cgraph.c (input_cgraph_opt_section): Use 'int' for offsets.
+	* lto-streamer-in.c (lto_read_body): Likewise.
+	(lto_input_toplevel_asms): Likewise.
+	* lto-section-in.c (lto_create_simple_input_block): Likewise.
+	* lto-opts.c (lto_read_file_options): Likewise.
+	* ipa-prop.c (ipa_prop_read_section): Likewise.
+
+	* df.h (DF_NOTE): Fix typo in comment.
+
 2011-12-13  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* regmove.c (fixup_match_2): Only access call_used_regs with hard
