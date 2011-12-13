@@ -1,3 +1,8 @@
+2011-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/51362
+	* gcc.dg/ipa/pr51362.c: New test.
+
 2011-12-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/51524
