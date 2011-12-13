@@ -3704,8 +3704,6 @@ do_pointer_plus_expr_check:
     case VEC_PACK_FIX_TRUNC_EXPR:
     case VEC_EXTRACT_EVEN_EXPR:
     case VEC_EXTRACT_ODD_EXPR:
-    case VEC_INTERLEAVE_HIGH_EXPR:
-    case VEC_INTERLEAVE_LOW_EXPR:
       /* FIXME.  */
       return false;
 

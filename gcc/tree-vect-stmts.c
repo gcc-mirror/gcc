@@ -3828,8 +3828,8 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
      Then permutation statements are generated:
 
-        VS5: vx5 = VEC_INTERLEAVE_HIGH_EXPR < vx0, vx3 >
-        VS6: vx6 = VEC_INTERLEAVE_LOW_EXPR < vx0, vx3 >
+	VS5: vx5 = VEC_PERM_EXPR < vx0, vx3, {0, 8, 1, 9, 2, 10, 3, 11} >
+	VS6: vx6 = VEC_PERM_EXPR < vx0, vx3, {4, 12, 5, 13, 6, 14, 7, 15} >
 	...
 
      And they are put in STMT_VINFO_VEC_STMT of the corresponding scalar stmts
@@ -4026,8 +4026,8 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
    the VECTOR_CST mask that implements the permutation of the
    vector elements.  If that is impossible to do, returns NULL.  */
 
-static tree
-gen_perm_mask (tree vectype, unsigned char *sel)
+tree
+vect_gen_perm_mask (tree vectype, unsigned char *sel)
 {
   tree mask_elt_type, mask_type, mask_vec;
   int i, nunits;
@@ -4067,7 +4067,7 @@ perm_mask_for_reverse (tree vectype)
   for (i = 0; i < nunits; ++i)
     sel[i] = nunits - 1 - i;
 
-  return gen_perm_mask (vectype, sel);
+  return vect_gen_perm_mask (vectype, sel);
 }
 
 /* Given a vector variable X and Y, that was generated for the scalar
@@ -4314,7 +4314,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  for (i = 0; i < gather_off_nunits; ++i)
 	    sel[i] = i | nunits;
 
-	  perm_mask = gen_perm_mask (gather_off_vectype, sel);
+	  perm_mask = vect_gen_perm_mask (gather_off_vectype, sel);
 	  gcc_assert (perm_mask != NULL_TREE);
 	}
       else if (nunits == gather_off_nunits * 2)
@@ -4326,7 +4326,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	    sel[i] = i < gather_off_nunits
 		     ? i : i + nunits - gather_off_nunits;
 
-	  perm_mask = gen_perm_mask (vectype, sel);
+	  perm_mask = vect_gen_perm_mask (vectype, sel);
 	  gcc_assert (perm_mask != NULL_TREE);
 	  ncopies *= 2;
 	}
