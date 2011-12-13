@@ -183,10 +183,12 @@ grep '^const _SOMAXCONN' gen-sysinfo.go |
 grep '^const _SHUT_' gen-sysinfo.go |
   sed -e 's/^\(const \)_\(SHUT[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
-# The net package requires a definition for IPV6ONLY.
-if ! grep '^const IPV6_V6ONLY ' ${OUT} >/dev/null 2>&1; then
-  echo "const IPV6_V6ONLY = 0" >> ${OUT}
-fi
+# The net package requires some const definitions.
+for m in IPV6_V6ONLY IPPROTO_IPV6 IPV6_JOIN_GROUP IPV6_LEAVE_GROUP; do
+  if ! grep "^const $m " ${OUT} >/dev/null 2>&1; then
+    echo "const $m = 0" >> ${OUT}
+  fi
+done
 
 # pathconf constants.
 grep '^const __PC' gen-sysinfo.go |
@@ -474,10 +476,13 @@ grep '^type _ip_mreq ' gen-sysinfo.go | \
       -e 's/_in_addr/[4]byte/g' \
     >> ${OUT}
 
-# The size of the ip_mreq struct.
-if grep 'type IPMreq ' ${OUT} > /dev/null 2>&1; then
-  echo 'var SizeofIPMreq = int(unsafe.Sizeof(IPMreq{}))' >> ${OUT}
+# We need IPMreq to compile the net package.
+if ! grep 'type IPMreq ' ${OUT} >/dev/null 2>&1; then
+  echo 'type IPMreq struct { Multiaddr [4]byte; Interface [4]byte; }' >> ${OUT}
 fi
+
+# The size of the ip_mreq struct.
+echo 'var SizeofIPMreq = int(unsafe.Sizeof(IPMreq{}))' >> ${OUT}
 
 # The ipv6_mreq struct.
 grep '^type _ipv6_mreq ' gen-sysinfo.go | \
@@ -486,6 +491,11 @@ grep '^type _ipv6_mreq ' gen-sysinfo.go | \
       -e 's/ipv6mr_interface/Interface/' \
       -e 's/_in6_addr/[16]byte/' \
     >> ${OUT}
+
+# We need IPv6Mreq to compile the net package.
+if ! grep 'type IPv6Mreq ' ${OUT} >/dev/null 2>&1; then
+  echo 'type IPv6Mreq struct { Multiaddr [16]byte; Interface uint32; }' >> ${OUT}
+fi
 
 # Try to guess the type to use for fd_set.
 fd_set=`grep '^type _fd_set ' gen-sysinfo.go || true`
