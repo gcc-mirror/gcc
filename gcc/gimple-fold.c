@@ -1117,21 +1117,10 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
   if (callee && DECL_BUILT_IN (callee))
     {
       tree result = gimple_fold_builtin (stmt);
-      if (result
-	  /* Disallow EH edge removal here.  We can't call
-	     gimple_purge_dead_eh_edges here.  */
-	  && (lookup_stmt_eh_lp (stmt) == 0
-	      || tree_could_throw_p (result)))
+      if (result)
 	{
           if (!update_call_from_tree (gsi, result))
 	    gimplify_and_update_call_from_tree (gsi, result);
-	  if (!gsi_end_p (*gsi))
-	    {
-	      gimple new_stmt = gsi_stmt (*gsi);
-	      bool update_eh ATTRIBUTE_UNUSED
-		= maybe_clean_or_replace_eh_stmt (stmt, new_stmt);
-	      gcc_assert (!update_eh);
-	    }
 	  changed = true;
 	}
     }
