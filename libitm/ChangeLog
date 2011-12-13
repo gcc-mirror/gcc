@@ -1,5 +1,8 @@
 2011-12-13  Richard Henderson  <rth@redhat.com>
 
+	* config/posix/rwlock.cc (gtm_rwlock::write_lock_generic): Fix
+	signed/unsigned comparison werror.
+
 	* local_atomic: New file.
 	* libitm_i.h: Include it.
 	(gtm_thread::shared_state): Use atomic template.
