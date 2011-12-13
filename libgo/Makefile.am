@@ -1450,10 +1450,21 @@ syscall_exec_file = go/syscall/exec_unix.go
 endif
 
 # Define Wait4.
+if LIBGO_IS_RTEMS
+syscall_wait_file =
+else
 if HAVE_WAIT4
 syscall_wait_file = go/syscall/libcall_wait4.go
 else
 syscall_wait_file = go/syscall/libcall_waitpid.go
+endif
+endif
+
+# Support for pulling apart wait status.
+if LIBGO_IS_RTEMS
+syscall_wait_c_file =
+else
+syscall_wait_c_file = go/syscall/wait.c
 endif
 
 # Define Sleep.
@@ -1564,7 +1575,7 @@ go_syscall_files = \
 	syscall_arch.go
 go_syscall_c_files = \
 	go/syscall/errno.c \
-	go/syscall/wait.c
+	$(syscall_wait_c_file)
 
 libcalls.go: s-libcalls; @true
 s-libcalls: Makefile go/syscall/mksyscall.awk $(go_base_syscall_files)

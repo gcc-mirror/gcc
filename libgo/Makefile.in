@@ -1837,10 +1837,15 @@ go_unicode_utf8_files = \
 
 # Define ForkExec and Exec.
 @LIBGO_IS_RTEMS_TRUE@syscall_exec_file = go/syscall/exec_stubs.go
-@HAVE_WAIT4_FALSE@syscall_wait_file = go/syscall/libcall_waitpid.go
+@HAVE_WAIT4_FALSE@@LIBGO_IS_RTEMS_FALSE@syscall_wait_file = go/syscall/libcall_waitpid.go
+@HAVE_WAIT4_TRUE@@LIBGO_IS_RTEMS_FALSE@syscall_wait_file = go/syscall/libcall_wait4.go
 
 # Define Wait4.
-@HAVE_WAIT4_TRUE@syscall_wait_file = go/syscall/libcall_wait4.go
+@LIBGO_IS_RTEMS_TRUE@syscall_wait_file = 
+@LIBGO_IS_RTEMS_FALSE@syscall_wait_c_file = go/syscall/wait.c
+
+# Support for pulling apart wait status.
+@LIBGO_IS_RTEMS_TRUE@syscall_wait_c_file = 
 @LIBGO_IS_RTEMS_FALSE@syscall_sleep_file = go/syscall/sleep_select.go
 
 # Define Sleep.
@@ -1908,7 +1913,7 @@ go_syscall_files = \
 
 go_syscall_c_files = \
 	go/syscall/errno.c \
-	go/syscall/wait.c
+	$(syscall_wait_c_file)
 
 @LIBGO_IS_LINUX_FALSE@os_lib_inotify_lo = 
 
