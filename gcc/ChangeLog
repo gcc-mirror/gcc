@@ -1,3 +1,43 @@
+2011-12-13  Andrew Pinski  <apinski@cavium.com>
+            Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips-cpus.def: Add Octeon2.
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/mips.md (define_attr "cpu"): Add Octeon2.
+	* config/mips/driver-native.c (host_detect_local_cpu): Support Octeon2 also.
+	* config/mips/octeon.md (octeon_arith): Add Octeon2.
+	(octeon_condmove): Likewise.
+	(octeon_load): Rename to ..
+	(octeon_load_o1): this.
+	(octeon_load_o2): New reserve.
+	(octeon_cop_o2): New reserve.
+	(octeon_store):  Match Octeon2 also.
+	(octeon_brj): Rename to ..
+	(octeon_brj_o1): this.
+	(octeon_brj_o2): New reserve.
+	(octeon_imul3): Rename to ...
+	(octeon_imul3_o1): this.
+	(octeon_imul3_o2): New reserve.
+	(octeon_imul): Rename to ...
+	(octeon_imul_o1): this.
+	(octeon_imul_o2): New reserve.
+	(octeon_mfhilo): Rename to ...
+	(octeon_mfhilo_o1): This.
+	(octeon_mfhilo_o2): New reserve.
+	(octeon_imadd): Rename to ...
+	(octeon_imadd_o1): this.
+	(octeon_imadd_o2): New reserve.
+	(octeon_idiv): Rename to ..
+	(octeon_idiv_o1): This.
+	(octeon_idiv_o2_si): New reserve.
+	(octeon_idiv_o2_di): Likewise.
+	(octeon_unknown): Match Octeon2 also.
+	* config/mips/mips.c (mips_rtx_cost_data): Add Octeon2 cost data.
+	(mips_issue_rate): Octeon2 can issue 2 at a time.
+	* config/mips/mips.h (TARGET_OCTEON): Match Octeon2 also.
+	(TARGET_OCTEON2): New define.
+	(TUNE_OCTEON): Match Octeon2 also.
+
 2011-12-13  Richard Henderson  <rth@redhat.com>
 
 	* config/sparc/tso.h: New file.
