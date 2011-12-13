@@ -1,3 +1,10 @@
+2011-12-13  Cesar Strauss  <cestrauss@gmail.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/49084
+	* types.h (Byte): Change typedef to 'unsigned char'.
+	* atree.h (struct Flag_Word): Use Byte for 'convention' field.
+
 2011-12-12  Robert Dewar  <dewar@adacore.com>
 
 	* s-taprop-mingw.adb: Minor reformatting.
@@ -9,8 +16,7 @@
 
 2011-12-12  Javier Miranda  <miranda@adacore.com>
 
-	* exp_disp.adb (Make_VM_TSD): Complete previous
-	patch.
+	* exp_disp.adb (Make_VM_TSD): Complete previous patch.
 
 2011-12-12  Bob Duff  <duff@adacore.com>
 
@@ -40,8 +46,8 @@
 
 2011-12-12  Javier Miranda  <miranda@adacore.com>
 
-	* exp_disp.adb (Make_VM_TSD): Generate code
-	to store the value 'alignment in the TSD.
+	* exp_disp.adb (Make_VM_TSD): Generate code to store the value of
+	'alignment in the TSD.
 
 2011-12-12  Bob Duff  <duff@adacore.com>
 
