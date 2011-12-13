@@ -508,6 +508,8 @@ write_ts_decl_non_common_tree_pointers (struct output_block *ob, tree expr,
       stream_write_tree (ob, DECL_ARGUMENTS (expr), ref_p);
       stream_write_tree (ob, DECL_RESULT (expr), ref_p);
     }
+  else if (TREE_CODE (expr) == TYPE_DECL)
+    stream_write_tree (ob, DECL_ORIGINAL_TYPE (expr), ref_p);
   stream_write_tree (ob, DECL_VINDEX (expr), ref_p);
 }
 

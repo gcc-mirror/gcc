@@ -381,6 +381,13 @@ lto_ft_decl_non_common (tree t)
   LTO_FIXUP_TREE (DECL_ARGUMENT_FLD (t));
   LTO_FIXUP_TREE (DECL_RESULT_FLD (t));
   LTO_FIXUP_TREE (DECL_VINDEX (t));
+  /* The C frontends may create exact duplicates for DECL_ORIGINAL_TYPE
+     like for 'typedef enum foo foo'.  We have no way of avoiding to
+     merge them and dwarf2out.c cannot deal with this,
+     so fix this up by clearing DECL_ORIGINAL_TYPE in this case.  */
+  if (TREE_CODE (t) == TYPE_DECL
+      && DECL_ORIGINAL_TYPE (t) == TREE_TYPE (t))
+    DECL_ORIGINAL_TYPE (t) = NULL_TREE;
 }
 
 /* Fix up fields of a decl_non_common T.  */
