@@ -1,3 +1,11 @@
+2011-12-13  Richard Henderson  <rth@redhat.com>
+
+	* config/sparc/tso.h: New file.
+	* config.gcc (sparc-*-linux*, sparc*-*-solaris2*): Use it.
+	* config/sparc/sparc.c (sparc_option_override): Honor
+	SUBTARGET_DEFAULT_MEMORY_MODEL.
+	* config/sparc/sparc.h (SUBTARGET_DEFAULT_MEMORY_MODEL): New.
+
 2011-12-13  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR/51443

@@ -2357,7 +2357,7 @@ sparc-*-rtems*)
 	tmake_file="sparc/t-sparc sparc/t-elf t-rtems"
 	;;
 sparc-*-linux*)
-	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h"
+	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h sparc/tso.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	case ${target} in
 	    *-leon-*)
@@ -2384,7 +2384,7 @@ sparc-*-netbsdelf*)
 	tmake_file="${tmake_file} sparc/t-sparc"
 	;;
 sparc*-*-solaris2*)
-	tm_file="sparc/biarch64.h ${tm_file} ${sol2_tm_file} sol2-bi.h"
+	tm_file="sparc/biarch64.h ${tm_file} ${sol2_tm_file} sol2-bi.h sparc/tso.h"
 	case ${target} in
 	    sparc64-*-* | sparcv9-*-*)
 		tm_file="sparc/default-64.h ${tm_file}"
@@ -2410,7 +2410,7 @@ sparc64-*-rtems*)
 	tmake_file="${tmake_file} sparc/t-sparc t-rtems"
 	;;
 sparc64-*-linux*)
-	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h sparc/default-64.h sparc/linux64.h"
+	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h sparc/default-64.h sparc/linux64.h sparc/tso.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	tmake_file="${tmake_file} sparc/t-sparc sparc/t-linux64"
 	;;
