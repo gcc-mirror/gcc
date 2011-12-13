@@ -861,7 +861,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   else
     {
       int nest = MIN (inline_edge_summary (edge)->loop_depth, 8);
-      badness = estimate_growth (callee) * 256;
+      badness = growth * 256;
 
       /* Decrease badness if call is nested.  */
       if (badness > 0)
