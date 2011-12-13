@@ -122,12 +122,14 @@ sighandler (int sig)
   const char *msg;
   int i;
 
+#ifdef SIGPROF
   if (sig == SIGPROF)
     {
       /* FIXME.  */
       runtime_sigprof (0, 0, nil, nil);
       return;
     }
+#endif
 
   /* FIXME: Should check siginfo for more information when
      available.  */
@@ -257,6 +259,7 @@ runtime_initsig (int32 queue)
 void
 runtime_resetcpuprofiler(int32 hz)
 {
+#ifdef SIGPROF
   struct itimerval it;
   struct sigaction sa;
   int i;
@@ -289,6 +292,7 @@ runtime_resetcpuprofiler(int32 hz)
       i = setitimer (ITIMER_PROF, &it, NULL);
       __go_assert (i == 0);
     }
+#endif
 
   runtime_m()->profilehz = hz;
 }
