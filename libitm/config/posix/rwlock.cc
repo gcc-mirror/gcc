@@ -193,7 +193,7 @@ gtm_rwlock::write_lock_generic (gtm_thread *tx)
 	  it = it->next_thread)
 	{
 	  // Don't count ourself if this is an upgrade.
-	  if (it->shared_state.load(memory_order_relaxed) != -1)
+	  if (it->shared_state.load(memory_order_relaxed) != (gtm_word)-1)
 	    readers++;
 	}
 
