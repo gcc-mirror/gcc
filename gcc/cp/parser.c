@@ -18920,11 +18920,7 @@ cp_parser_member_declaration (cp_parser* parser)
   parser->colon_corrects_to_scope_p = false;
 
   if (cp_parser_using_declaration (parser, /*access_declaration=*/true))
-    {
-      warning (OPT_Wdeprecated, "access declarations are deprecated; "
-	       "employ using declarations instead");
       goto out;
-    }
 
   /* Parse the decl-specifier-seq.  */
   decl_spec_token_start = cp_lexer_peek_token (parser->lexer);
