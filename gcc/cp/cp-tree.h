@@ -130,6 +130,7 @@ c-common.h, not after.
       DECL_TEMPLATE_INSTANTIATED (in a VAR_DECL or a FUNCTION_DECL)
       DECL_MEMBER_TEMPLATE_P (in TEMPLATE_DECL)
       FUNCTION_PARAMETER_PACK_P (in PARM_DECL)
+      USING_DECL_TYPENAME_P (in USING_DECL)
    2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
       DECL_IMPLICIT_TYPEDEF_P (in a TYPE_DECL)
    3: DECL_IN_AGGR_P.
@@ -2520,6 +2521,9 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 
 /* The decls named by a using decl.  */
 #define USING_DECL_DECLS(NODE) DECL_INITIAL (USING_DECL_CHECK (NODE))
+
+/* Non zero if the using decl refers to a dependent type.  */
+#define USING_DECL_TYPENAME_P(NODE) DECL_LANG_FLAG_1 (USING_DECL_CHECK (NODE))
 
 /* In a VAR_DECL, true if we have a shadowed local variable
    in the shadowed var table for this VAR_DECL.  */
