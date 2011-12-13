@@ -1,5 +1,10 @@
 2011-12-13  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/51519
+	* gcc.dg/pr51519.c: New testcase.
+
+2011-12-13  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/lto/20111213-1_0.c: New testcase.
 
 2011-12-13  Eric Botcazou  <ebotcazou@adacore.com>

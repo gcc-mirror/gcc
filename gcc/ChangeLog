@@ -1,3 +1,9 @@
+2011-12-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51519
+	* ipa-inline.c (edge_badness): Use edge growth in non-guessed
+	branch probability case as well.
+
 2011-12-13  Revital Eres  <revital.eres@linaro.org>
 
 	* modulo-sched.c (mark_loop_unsched): Free bbs.
