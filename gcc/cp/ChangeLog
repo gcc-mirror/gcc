@@ -1,3 +1,11 @@
+2011-12-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51464
+	* semantics.c (begin_lambda_type): Check begin_class_definition return
+	value for error_mark_node.
+	* parser.c (cp_parser_lambda_expression): Check begin_lambda_type
+	return value for error_mark_node.
+
 2011-12-13  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/14258

@@ -1,3 +1,8 @@
+2011-12-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51464
+	* g++.dg/cpp0x/lambda/lambda-ice6.C: New.
+
 2011-12-13  Andrew Pinski  <apinski@cavium.com>
             Adam Nemet  <anemet@caviumnetworks.com>
 

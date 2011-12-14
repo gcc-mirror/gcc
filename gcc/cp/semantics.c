@@ -8623,6 +8623,8 @@ begin_lambda_type (tree lambda)
 
   /* Start the class.  */
   type = begin_class_definition (type, /*attributes=*/NULL_TREE);
+  if (type == error_mark_node)
+    return error_mark_node;
 
   /* Cross-reference the expression and the type.  */
   LAMBDA_EXPR_CLOSURE (lambda) = type;
