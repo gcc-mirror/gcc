@@ -1,3 +1,9 @@
+2011-12-14  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/51476
+	* pt.c (convert_nontype_argument): Don't call maybe_constant_value
+	for PTRMEM_CST nodes.
+
 2011-12-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51406
