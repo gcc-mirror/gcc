@@ -7329,9 +7329,15 @@ cxx_eval_indirect_ref (const constexpr_call *call, tree t,
     {
       tree sub = op0;
       STRIP_NOPS (sub);
-      if (TREE_CODE (sub) == ADDR_EXPR
-	  || TREE_CODE (sub) == POINTER_PLUS_EXPR)
+      if (TREE_CODE (sub) == POINTER_PLUS_EXPR)
 	{
+	  sub = TREE_OPERAND (sub, 0);
+	  STRIP_NOPS (sub);
+	}
+      if (TREE_CODE (sub) == ADDR_EXPR)
+	{
+	  /* We couldn't fold to a constant value.  Make sure it's not
+	     something we should have been able to fold.  */
 	  gcc_assert (!same_type_ignoring_top_level_qualifiers_p
 		      (TREE_TYPE (TREE_TYPE (sub)), TREE_TYPE (t)));
 	  /* DR 1188 says we don't have to deal with this.  */

@@ -1,5 +1,8 @@
 2011-12-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51554
+	* g++.dg/init/constant1.C: New.
+
 	PR c++/51248
 	* g++.dg/other/enum2.C: New.
 
