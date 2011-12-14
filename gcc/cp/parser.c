@@ -8033,6 +8033,8 @@ cp_parser_lambda_expression (cp_parser* parser)
   cp_parser_lambda_introducer (parser, lambda_expr);
 
   type = begin_lambda_type (lambda_expr);
+  if (type == error_mark_node)
+    return error_mark_node;
 
   record_lambda_scope (lambda_expr);
 
