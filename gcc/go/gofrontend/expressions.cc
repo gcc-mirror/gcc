@@ -12783,14 +12783,23 @@ Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function,
 	}
     }
 
+  Type *pt = type->points_to();
+  bool is_pointer = false;
+  if (pt != NULL)
+    {
+      is_pointer = true;
+      type = pt;
+    }
+
+  Expression* ret;
   if (type->is_error())
     return Expression::make_error(this->location());
   else if (type->struct_type() != NULL)
-    return this->lower_struct(gogo, type);
+    ret = this->lower_struct(gogo, type);
   else if (type->array_type() != NULL)
-    return this->lower_array(type);
+    ret = this->lower_array(type);
   else if (type->map_type() != NULL)
-    return this->lower_map(gogo, function, inserter, type);
+    ret = this->lower_map(gogo, function, inserter, type);
   else
     {
       error_at(this->location(),
@@ -12798,6 +12807,11 @@ Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function,
 		"for composite literal"));
       return Expression::make_error(this->location());
     }
+
+  if (is_pointer)
+    ret = Expression::make_heap_composite(ret, this->location());
+
+  return ret;
 }
 
 // Lower a struct composite literal.
