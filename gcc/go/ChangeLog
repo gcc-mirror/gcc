@@ -1,3 +1,12 @@
+2011-12-13  Ian Lance Taylor  <iant@google.com>
+
+	* go-backend.c: #include "simple-object.h" and "intl.h".
+	(GO_EXPORT_SEGMENT_NAME): Define if not defined.
+	(GO_EXPORT_SECTION_NAME): Likewise.
+	(go_write_export_data): Use GO_EXPORT_SECTION_NAME.
+	(go_read_export_data): New function.
+	* go-c.h (go_read_export_data): Declare.
+
 2011-11-29  Sanjoy Das  <thedigitalangel@gmail.com>
 	    Ian Lance Taylor  <iant@google.com>
 
