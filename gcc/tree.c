@@ -4521,9 +4521,6 @@ free_lang_data_in_type (tree type)
 	  && TREE_CODE (TYPE_CONTEXT (type)) != FUNCTION_DECL
 	  && TREE_CODE (TYPE_CONTEXT (type)) != NAMESPACE_DECL))
     TYPE_CONTEXT (type) = NULL_TREE;
-
-  if (debug_info_level < DINFO_LEVEL_TERSE)
-    TYPE_STUB_DECL (type) = NULL_TREE;
 }
 
 
@@ -4881,7 +4878,7 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	    }
 	}
 
-      fld_worklist_push (TREE_CHAIN (t), fld);
+      fld_worklist_push (TYPE_STUB_DECL (t), fld);
       *ws = 0;
     }
   else if (TREE_CODE (t) == BLOCK)
