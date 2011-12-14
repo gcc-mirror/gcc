@@ -1592,7 +1592,7 @@ replace_uses_by (tree name, tree val)
 		  /* This can only occur for virtual operands, since
 		     for the real ones SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
 		     would prevent replacement.  */
-		  gcc_assert (!is_gimple_reg (name));
+		  gcc_checking_assert (!is_gimple_reg (name));
 		  SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val) = 1;
 		}
 	    }
@@ -1604,28 +1604,37 @@ replace_uses_by (tree name, tree val)
 	  gimple orig_stmt = stmt;
 	  size_t i;
 
-	  fold_stmt (&gsi);
-	  stmt = gsi_stmt (gsi);
-	  if (cfgcleanup_altered_bbs && !is_gimple_debug (stmt))
+	  /* Mark the block if we changed the last stmt in it.  */
+	  if (cfgcleanup_altered_bbs
+	      && stmt_ends_bb_p (stmt))
 	    bitmap_set_bit (cfgcleanup_altered_bbs, gimple_bb (stmt)->index);
 
-	  /* FIXME.  This should go in update_stmt.  */
-	  for (i = 0; i < gimple_num_ops (stmt); i++)
+	  /* FIXME.  It shouldn't be required to keep TREE_CONSTANT
+	     on ADDR_EXPRs up-to-date on GIMPLE.  Propagation will
+	     only change sth from non-invariant to invariant, and only
+	     when propagating integer constants.  */
+	  if (TREE_CODE (val) == INTEGER_CST)
+	    for (i = 0; i < gimple_num_ops (stmt); i++)
+	      {
+		tree op = gimple_op (stmt, i);
+		/* Operands may be empty here.  For example, the labels
+		   of a GIMPLE_COND are nulled out following the creation
+		   of the corresponding CFG edges.  */
+		if (op && TREE_CODE (op) == ADDR_EXPR)
+		  recompute_tree_invariant_for_addr_expr (op);
+	      }
+
+	  if (fold_stmt (&gsi))
 	    {
-	      tree op = gimple_op (stmt, i);
-              /* Operands may be empty here.  For example, the labels
-                 of a GIMPLE_COND are nulled out following the creation
-                 of the corresponding CFG edges.  */
-	      if (op && TREE_CODE (op) == ADDR_EXPR)
-		recompute_tree_invariant_for_addr_expr (op);
+	      stmt = gsi_stmt (gsi);
+	      maybe_clean_or_replace_eh_stmt (orig_stmt, stmt);
 	    }
 
-	  maybe_clean_or_replace_eh_stmt (orig_stmt, stmt);
 	  update_stmt (stmt);
 	}
     }
 
-  gcc_assert (has_zero_uses (name));
+  gcc_checking_assert (has_zero_uses (name));
 
   /* Also update the trees stored in loop structures.  */
   if (current_loops)
