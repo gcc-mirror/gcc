@@ -2,6 +2,7 @@ LIB1ASMSRC = avr/lib1funcs.S
 LIB1ASMFUNCS = \
 	_mulqi3 \
 	_mulhi3 \
+	_mulpsi3 _mulsqipsi3 \
 	_mulhisi3 \
 	_umulhisi3 \
 	_usmulhisi3 \
