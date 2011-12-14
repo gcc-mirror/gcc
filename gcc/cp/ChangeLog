@@ -1,3 +1,10 @@
+2011-12-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51406
+	PR c++/51161
+	* typeck.c (build_static_cast_1): Fix cast of lvalue to
+	base rvalue reference.
+
 2011-11-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51265

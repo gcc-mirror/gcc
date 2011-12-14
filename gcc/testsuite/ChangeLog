@@ -1,3 +1,10 @@
+2011-12-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51406
+	PR c++/51161
+	* g++.dg/cpp0x/rv-cast3.C: New.
+	* g++.dg/cpp0x/rv-cast4.C: New.
+
 2011-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/51511
