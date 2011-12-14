@@ -1,3 +1,7 @@
+2011-12-14  Hariharan Sandanagobalane <hariharan.gcc@gmail.com>
+
+	* MAINTAINERS (picochip): Changed email address.
+
 2011-11-30  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	* MAINTAINERS (write-after-approval): Add self.

@@ -85,7 +85,7 @@ mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
 moxie port		Anthony Green		green@moxielogic.com
 pdp11 port		Paul Koning		ni1d@arrl.net
-picochip port		Hariharan Sandanagobalane	hariharan@picochip.com
+picochip port		Hariharan Sandanagobalane	hariharan.gcc@gmail.com
 picochip port		Daniel Towner		dant@picochip.com
 rl78 port		DJ Delorie		dj@redhat.com
 rs6000 port		Geoff Keating		geoffk@geoffk.org
