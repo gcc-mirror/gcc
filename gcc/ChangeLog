@@ -1,5 +1,11 @@
 2011-12-14  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/51497
+	* lto-streamer-in.c (lto_read_body): Fixup local types
+	TYPE_CANONICAL and variant chain.
+
+2011-12-14  Richard Guenther  <rguenther@suse.de>
+
 	* tree.c (free_lang_data_in_type): Do not clear fields
 	dependent on debuginfo level setting.
 	(find_decls_types_r): Use TYPE_STUB_DECL rathern than TREE_CHAIN.
