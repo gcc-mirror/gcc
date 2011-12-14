@@ -5720,11 +5720,15 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
      to a null value, but otherwise still need to be of a specific form.  */
   if (cxx_dialect >= cxx0x)
     {
-      if (INTEGRAL_OR_ENUMERATION_TYPE_P (type))
+      if (TREE_CODE (expr) == PTRMEM_CST)
+	/* A PTRMEM_CST is already constant, and a valid template
+	   argument for a parameter of pointer to member type, we just want
+	   to leave it in that form rather than lower it to a
+	   CONSTRUCTOR.  */;
+      else if (INTEGRAL_OR_ENUMERATION_TYPE_P (type))
 	expr = maybe_constant_value (expr);
       else if (TYPE_PTR_P (type)
-	       || (TYPE_PTR_TO_MEMBER_P (type)
-		   && TREE_CODE (expr) != PTRMEM_CST))
+	       || TYPE_PTR_TO_MEMBER_P (type))
 	{
 	  tree folded = maybe_constant_value (expr);
 	  if (TYPE_PTR_P (type) ? integer_zerop (folded)
