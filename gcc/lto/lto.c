@@ -259,7 +259,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 
 /* Custom version of strtoll, which is not portable.  */
 
-static HOST_WIDEST_INT
+HOST_WIDEST_INT
 lto_parse_hex (const char *p)
 {
   HOST_WIDEST_INT ret = 0;
