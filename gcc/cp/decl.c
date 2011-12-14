@@ -11540,15 +11540,19 @@ xref_basetypes (tree ref, tree base_list)
 static void
 copy_type_enum (tree dst, tree src)
 {
-  TYPE_MIN_VALUE (dst) = TYPE_MIN_VALUE (src);
-  TYPE_MAX_VALUE (dst) = TYPE_MAX_VALUE (src);
-  TYPE_SIZE (dst) = TYPE_SIZE (src);
-  TYPE_SIZE_UNIT (dst) = TYPE_SIZE_UNIT (src);
-  SET_TYPE_MODE (dst, TYPE_MODE (src));
-  TYPE_PRECISION (dst) = TYPE_PRECISION (src);
-  TYPE_ALIGN (dst) = TYPE_ALIGN (src);
-  TYPE_USER_ALIGN (dst) = TYPE_USER_ALIGN (src);
-  TYPE_UNSIGNED (dst) = TYPE_UNSIGNED (src);
+  tree t;
+  for (t = dst; t; t = TYPE_NEXT_VARIANT (t))
+    {
+      TYPE_MIN_VALUE (t) = TYPE_MIN_VALUE (src);
+      TYPE_MAX_VALUE (t) = TYPE_MAX_VALUE (src);
+      TYPE_SIZE (t) = TYPE_SIZE (src);
+      TYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (src);
+      SET_TYPE_MODE (dst, TYPE_MODE (src));
+      TYPE_PRECISION (t) = TYPE_PRECISION (src);
+      TYPE_ALIGN (t) = TYPE_ALIGN (src);
+      TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (src);
+      TYPE_UNSIGNED (t) = TYPE_UNSIGNED (src);
+    }
 }
 
 /* Begin compiling the definition of an enumeration type.
@@ -11903,9 +11907,12 @@ finish_enum (tree enumtype)
       return;
     }
 
-  /* Here there should not be any variants of this type.  */
+  /* If this is a forward declaration, there should not be any variants,
+     though we can get a variant in the middle of an enum-specifier with
+     wacky code like 'enum E { e = sizeof(const E*) };'  */
   gcc_assert (enumtype == TYPE_MAIN_VARIANT (enumtype)
-	      && !TYPE_NEXT_VARIANT (enumtype));
+	      && (TYPE_VALUES (enumtype)
+		  || !TYPE_NEXT_VARIANT (enumtype)));
 }
 
 /* Build and install a CONST_DECL for an enumeration constant of the
