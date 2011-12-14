@@ -305,7 +305,7 @@ func (p *gcParser) parseArrayType() Type {
 	lit := p.expect(scanner.Int)
 	p.expect(']')
 	elt := p.parseType()
-	n, err := strconv.Atoui64(lit)
+	n, err := strconv.ParseUint(lit, 10, 64)
 	if err != nil {
 		p.error(err)
 	}
@@ -323,7 +323,7 @@ func (p *gcParser) parseMapType() Type {
 	return &Map{Key: key, Elt: elt}
 }
 
-// Name = identifier | "?" .
+// Name = identifier | "?" | ExportedName  .
 //
 func (p *gcParser) parseName() (name string) {
 	switch p.tok {
@@ -333,6 +333,9 @@ func (p *gcParser) parseName() (name string) {
 	case '?':
 		// anonymous
 		p.next()
+	case '@':
+		// exported name prefixed with package path
+		_, name = p.parseExportedName()
 	default:
 		p.error("name expected")
 	}
@@ -619,10 +622,11 @@ func (p *gcParser) parseNumber() Const {
 		// exponent (base 2)
 		p.next()
 		sign, val = p.parseInt()
-		exp, err := strconv.Atoui(val)
+		exp64, err := strconv.ParseUint(val, 10, 0)
 		if err != nil {
 			p.error(err)
 		}
+		exp := uint(exp64)
 		if sign == "-" {
 			denom := big.NewInt(1)
 			denom.Lsh(denom, exp)
@@ -747,7 +751,7 @@ func (p *gcParser) parseFuncDecl() {
 	}
 }
 
-// MethodDecl = "func" Receiver identifier Signature .
+// MethodDecl = "func" Receiver Name Signature .
 // Receiver   = "(" ( identifier | "?" ) [ "*" ] ExportedName ")" [ FuncBody ].
 //
 func (p *gcParser) parseMethodDecl() {
@@ -755,7 +759,7 @@ func (p *gcParser) parseMethodDecl() {
 	p.expect('(')
 	p.parseParameter() // receiver
 	p.expect(')')
-	p.expect(scanner.Ident)
+	p.parseName() // unexported method names in imports are qualified with their package.
 	p.parseSignature()
 	if p.tok == '{' {
 		p.parseFuncBody()

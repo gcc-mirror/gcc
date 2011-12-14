@@ -160,19 +160,19 @@ var marshalTests = []struct {
 			Age:   1,
 			Drive: ImprobabilityDrive,
 			Passenger: []*Passenger{
-				&Passenger{
+				{
 					Name:   []string{"Zaphod", "Beeblebrox"},
 					Weight: 7.25,
 				},
-				&Passenger{
+				{
 					Name:   []string{"Trisha", "McMillen"},
 					Weight: 5.5,
 				},
-				&Passenger{
+				{
 					Name:   []string{"Ford", "Prefect"},
 					Weight: 7,
 				},
-				&Passenger{
+				{
 					Name:   []string{"Arthur", "Dent"},
 					Weight: 6.75,
 				},
@@ -326,12 +326,12 @@ var marshalErrorTests = []struct {
 			"question": "What do you get when you multiply six by nine?",
 			"answer":   "42",
 		},
-		Err:  "xml: unsupported type: map[string] string",
+		Err:  "xml: unsupported type: map[string]string",
 		Kind: reflect.Map,
 	},
 	{
 		Value: map[*Ship]bool{nil: false},
-		Err:   "xml: unsupported type: map[*xml.Ship] bool",
+		Err:   "xml: unsupported type: map[*xml.Ship]bool",
 		Kind:  reflect.Map,
 	},
 }

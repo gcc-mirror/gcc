@@ -689,11 +689,11 @@ func TestEscapeSet(t *testing.T) {
 
 	data := dataItem{
 		Children: []*dataItem{
-			&dataItem{X: "foo"},
-			&dataItem{X: "<bar>"},
-			&dataItem{
+			{X: "foo"},
+			{X: "<bar>"},
+			{
 				Children: []*dataItem{
-					&dataItem{X: "baz"},
+					{X: "baz"},
 				},
 			},
 		},
@@ -1597,7 +1597,7 @@ func TestRedundantFuncs(t *testing.T) {
 
 	for n0, m := range redundantFuncs {
 		f0 := funcMap[n0].(func(...interface{}) string)
-		for n1, _ := range m {
+		for n1 := range m {
 			f1 := funcMap[n1].(func(...interface{}) string)
 			for _, input := range inputs {
 				want := f0(input)
