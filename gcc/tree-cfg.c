@@ -1612,8 +1612,8 @@ replace_uses_by (tree name, tree val)
 	  /* FIXME.  It shouldn't be required to keep TREE_CONSTANT
 	     on ADDR_EXPRs up-to-date on GIMPLE.  Propagation will
 	     only change sth from non-invariant to invariant, and only
-	     when propagating integer constants.  */
-	  if (TREE_CODE (val) == INTEGER_CST)
+	     when propagating constants.  */
+	  if (is_gimple_min_invariant (val))
 	    for (i = 0; i < gimple_num_ops (stmt); i++)
 	      {
 		tree op = gimple_op (stmt, i);
