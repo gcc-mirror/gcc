@@ -1,3 +1,8 @@
+2011-12-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* generic-morestack.c (__generic_morestack_set_initial_sp): Check
+	__GLIBC__ instead of __linux__ when using __SIGRTMIN.
+
 2011-12-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/49313
