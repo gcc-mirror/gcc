@@ -1,5 +1,10 @@
 2011-12-14  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/51475
+	* call.c (struct conversion)<u.next>: Update comment.
+    	(next_conversion): New static function.
+    	(convert_like_real): Use it.
+
 	PR c++/51476
 	* pt.c (convert_nontype_argument): Don't call maybe_constant_value
 	for PTRMEM_CST nodes.

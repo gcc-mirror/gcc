@@ -111,12 +111,15 @@ struct conversion {
     /* The next conversion in the chain.  Since the conversions are
        arranged from outermost to innermost, the NEXT conversion will
        actually be performed before this conversion.  This variant is
-       used only when KIND is neither ck_identity nor ck_ambig.  */
+       used only when KIND is neither ck_identity, ck_ambig nor
+       ck_list.  Please use the next_conversion function instead
+       of using this field directly.  */
     conversion *next;
     /* The expression at the beginning of the conversion chain.  This
        variant is used only if KIND is ck_identity or ck_ambig.  */
     tree expr;
-    /* The array of conversions for an initializer_list.  */
+    /* The array of conversions for an initializer_list, so this
+       variant is used only when KIN D is ck_list.  */
     conversion **list;
   } u;
   /* The function candidate corresponding to this conversion
@@ -193,6 +196,7 @@ static conversion *standard_conversion (tree, tree, tree, bool, int);
 static conversion *reference_binding (tree, tree, tree, bool, int);
 static conversion *build_conv (conversion_kind, tree, conversion *);
 static conversion *build_list_conv (tree, tree, int);
+static conversion *next_conversion (conversion *);
 static bool is_subseq (conversion *, conversion *);
 static conversion *maybe_handle_ref_bind (conversion **);
 static void maybe_handle_implicit_object (conversion **);
@@ -831,6 +835,21 @@ build_list_conv (tree type, tree ctor, int flags)
     }
 
   return t;
+}
+
+/* Return the next conversion of the conversion chain (if applicable),
+   or NULL otherwise.  Please use this function instead of directly
+   accessing fields of struct conversion.  */
+
+static conversion *
+next_conversion (conversion *conv)
+{
+  if (conv == NULL
+      || conv->kind == ck_identity
+      || conv->kind == ck_ambig
+      || conv->kind == ck_list)
+    return NULL;
+  return conv->u.next;
 }
 
 /* Subroutine of build_aggr_conv: check whether CTOR, a braced-init-list,
@@ -5603,7 +5622,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  && BRACE_ENCLOSED_INITIALIZER_P (CONSTRUCTOR_ELT (expr, 0)->value))
 	permerror (input_location, "too many braces around initializer for %qT", totype);
 
-      for (; t; t = t->u.next)
+      for (; t ; t = next_conversion (t))
 	{
 	  if (t->kind == ck_user && t->cand->reason)
 	    {

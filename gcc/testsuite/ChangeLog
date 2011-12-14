@@ -1,3 +1,8 @@
+2011-12-14  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/51475
+	* g++.dg/cpp0x/initlist63.C: New test.
+
 2011-12-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50931
