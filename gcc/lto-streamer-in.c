@@ -1012,6 +1012,7 @@ lto_read_body (struct lto_file_decl_data *file_data, tree fn_decl,
       struct function *fn = DECL_STRUCT_FUNCTION (fn_decl);
       struct lto_in_decl_state *decl_state;
       struct cgraph_node *node = cgraph_get_node (fn_decl);
+      unsigned from;
 
       gcc_checking_assert (node);
       push_cfun (fn);
@@ -1025,7 +1026,33 @@ lto_read_body (struct lto_file_decl_data *file_data, tree fn_decl,
       input_cfg (&ib_cfg, fn, node->count_materialization_scale);
 
       /* Set up the struct function.  */
+      from = VEC_length (tree, data_in->reader_cache->nodes);
       input_function (fn_decl, data_in, &ib_main);
+      /* And fixup types we streamed locally.  */
+	{
+	  struct streamer_tree_cache_d *cache = data_in->reader_cache;
+	  unsigned len = VEC_length (tree, cache->nodes);
+	  unsigned i;
+	  for (i = len; i-- > from;)
+	    {
+	      tree t = VEC_index (tree, cache->nodes, i);
+	      if (t == NULL_TREE)
+		continue;
+
+	      if (TYPE_P (t))
+		{
+		  gcc_assert (TYPE_CANONICAL (t) == NULL_TREE);
+		  TYPE_CANONICAL (t) = TYPE_MAIN_VARIANT (t);
+		  if (TYPE_MAIN_VARIANT (t) != t)
+		    {
+		      gcc_assert (TYPE_NEXT_VARIANT (t) == NULL_TREE);
+		      TYPE_NEXT_VARIANT (t)
+			= TYPE_NEXT_VARIANT (TYPE_MAIN_VARIANT (t));
+		      TYPE_NEXT_VARIANT (TYPE_MAIN_VARIANT (t)) = t;
+		    }
+		}
+	    }
+	}
 
       /* We should now be in SSA.  */
       cfun->gimple_df->in_ssa_p = true;
