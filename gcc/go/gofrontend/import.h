@@ -287,7 +287,7 @@ class Stream_from_string : public Import::Stream
   size_t pos_;
 };
 
-// Read import data from an allocated buffer.
+// Read import data from a buffer allocated using malloc.
 
 class Stream_from_buffer : public Import::Stream
 {
@@ -297,7 +297,7 @@ class Stream_from_buffer : public Import::Stream
   { }
 
   ~Stream_from_buffer()
-  { delete[] this->buf_; }
+  { free(this->buf_); }
 
  protected:
   bool

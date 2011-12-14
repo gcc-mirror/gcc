@@ -215,46 +215,24 @@ Import::find_object_export_data(const std::string& filename,
 				off_t offset,
 				Location location)
 {
-  const char* errmsg;
+  char *buf;
+  size_t len;
   int err;
-  simple_object_read* sobj = simple_object_start_read(fd, offset,
-						      "__GNU_GO",
-						      &errmsg, &err);
-  if (sobj == NULL)
+  const char *errmsg = go_read_export_data(fd, offset, &buf, &len, &err);
+  if (errmsg != NULL)
+    {
+      if (err == 0)
+	error_at(location, "%s: %s", filename.c_str(), errmsg);
+      else
+	error_at(location, "%s: %s: %s", filename.c_str(), errmsg,
+		 xstrerror(err));
+      return NULL;
+    }
+
+  if (buf == NULL)
     return NULL;
 
-  off_t sec_offset;
-  off_t sec_length;
-  int found = simple_object_find_section(sobj, ".go_export", &sec_offset,
-					 &sec_length, &errmsg, &err);
-
-  simple_object_release_read(sobj);
-
-  if (!found)
-    return NULL;
-
-  if (lseek(fd, offset + sec_offset, SEEK_SET) < 0)
-    {
-      error_at(location, "lseek %s failed: %m", filename.c_str());
-      return NULL;
-    }
-
-  char* buf = new char[sec_length];
-  ssize_t c = read(fd, buf, sec_length);
-  if (c < 0)
-    {
-      error_at(location, "read %s failed: %m", filename.c_str());
-      delete[] buf;
-      return NULL;
-    }
-  if (c < sec_length)
-    {
-      error_at(location, "%s: short read", filename.c_str());
-      delete[] buf;
-      return NULL;
-    }
-
-  return new Stream_from_buffer(buf, sec_length);
+  return new Stream_from_buffer(buf, len);
 }
 
 // Class Import.
