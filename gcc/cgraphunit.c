@@ -1459,8 +1459,8 @@ init_lowered_empty_function (tree decl)
 
   /* Create BB for body of the function and connect it properly.  */
   bb = create_basic_block (NULL, (void *) 0, ENTRY_BLOCK_PTR);
-  make_edge (ENTRY_BLOCK_PTR, bb, EDGE_FALLTHRU);
-  make_edge (bb, EXIT_BLOCK_PTR, EDGE_FALLTHRU);
+  make_edge (ENTRY_BLOCK_PTR, bb, 0);
+  make_edge (bb, EXIT_BLOCK_PTR, 0);
 
   return bb;
 }
