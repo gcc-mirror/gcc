@@ -1,5 +1,8 @@
 2011-12-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51554
+	* semantics.c (cxx_eval_indirect_ref): Fix sanity check.
+
 	PR c++/51248
 	* decl.c (copy_type_enum): Also update variants.
 	(finish_enum): Allow variants of complete enums.
