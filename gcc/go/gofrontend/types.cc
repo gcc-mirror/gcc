@@ -4989,7 +4989,7 @@ Map_type::do_reflection(Gogo* gogo, std::string* ret) const
 {
   ret->append("map[");
   this->append_reflection(this->key_type_, gogo, ret);
-  ret->append("] ");
+  ret->append("]");
   this->append_reflection(this->val_type_, gogo, ret);
 }
 
