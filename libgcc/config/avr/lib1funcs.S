@@ -466,6 +466,153 @@ ENDF __mulsi3
 #endif /* __AVR_HAVE_MUL__ */
 
 /*******************************************************
+       Multiplication 24 x 24
+*******************************************************/
+
+#if defined (L_mulpsi3)
+
+;; A[0..2]: In: Multiplicand; Out: Product
+#define A0  22
+#define A1  A0+1
+#define A2  A0+2
+
+;; B[0..2]: In: Multiplier
+#define B0  18
+#define B1  B0+1
+#define B2  B0+2
+
+#if defined (__AVR_HAVE_MUL__)
+
+;; C[0..2]: Expand Result
+#define C0  22
+#define C1  C0+1
+#define C2  C0+2
+
+;; R24:R22 *= R20:R18
+;; Clobbers: r21, r25, r26, r27, __tmp_reg__
+
+#define AA0 26
+#define AA2 21
+
+DEFUN __mulpsi3
+    wmov    AA0, A0
+    mov     AA2, A2
+    XCALL   __umulhisi3
+    mul     AA2, B0     $  add  C2, r0
+    mul     AA0, B2     $  add  C2, r0
+    clr     __zero_reg__
+    ret
+ENDF __mulpsi3
+
+#undef AA2
+#undef AA0
+
+#undef C2
+#undef C1
+#undef C0
+
+#else /* !HAVE_MUL */
+
+;; C[0..2]: Expand Result
+#define C0  0
+#define C1  C0+1
+#define C2  21
+
+;; R24:R22 *= R20:R18
+;; Clobbers: __tmp_reg__, R18, R19, R20, R21
+
+DEFUN __mulpsi3
+
+    ;; C[] = 0
+    clr     __tmp_reg__
+    clr     C2
+    
+0:  ;; Shift N-th Bit of B[] into Carry.  N = 24 - Loop
+    LSR  B2     $  ror  B1     $  ror  B0
+    
+    ;; If the N-th Bit of B[] was set...
+    brcc    1f
+    
+    ;; ...then add A[] * 2^N to the Result C[]
+    ADD  C0,A0  $  adc  C1,A1  $  adc  C2,A2
+    
+1:  ;; Multiply A[] by 2
+    LSL  A0     $  rol  A1     $  rol  A2
+    
+    ;; Loop until B[] is 0
+    subi B0,0   $  sbci B1,0   $  sbci B2,0
+    brne    0b
+    
+    ;; Copy C[] to the return Register A[]
+    wmov    A0, C0
+    mov     A2, C2
+
+    clr     __zero_reg__
+    ret
+ENDF __mulpsi3
+
+#undef C2
+#undef C1
+#undef C0
+
+#endif /* HAVE_MUL */
+
+#undef B2
+#undef B1
+#undef B0
+
+#undef A2
+#undef A1
+#undef A0
+
+#endif /* L_mulpsi3 */
+
+#if defined (L_mulsqipsi3) && defined (__AVR_HAVE_MUL__)
+
+;; A[0..2]: In: Multiplicand
+#define A0  22
+#define A1  A0+1
+#define A2  A0+2
+
+;; BB: In: Multiplier
+#define BB  25
+
+;; C[0..2]: Result
+#define C0  18
+#define C1  C0+1
+#define C2  C0+2
+
+;; C[] = A[] * sign_extend (BB)
+DEFUN __mulsqipsi3
+    mul     A0, BB
+    movw    C0, r0
+    mul     A2, BB
+    mov     C2, r0
+    mul     A1, BB
+    add     C1, r0
+    adc     C2, r1
+    clr     __zero_reg__
+    sbrs    BB, 7
+    ret
+    ;; One-extend BB
+    sub     C1, A0
+    sbc     C2, A1
+    ret
+ENDF __mulsqipsi3
+
+#undef C2
+#undef C1
+#undef C0
+
+#undef BB
+
+#undef A2
+#undef A1
+#undef A0
+
+#endif /* L_mulsqipsi3  &&  HAVE_MUL */
+
+/*******************************************************
        Multiplication 64 x 64
 *******************************************************/
 
@@ -1342,7 +1489,7 @@ DEFUN  __divdi3_moddi3
 #endif /* SPEED_DIV */    
 
 0:  ;; The Prologue
-    ;; Save Z = 12 Registers:  Y, 17...8
+    ;; Save 12 Registers:  Y, 17...8
     ;; No Frame needed (X = 0)
     clr r26
     clr r27

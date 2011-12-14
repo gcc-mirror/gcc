@@ -1,3 +1,8 @@
+2011-12-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50931
+	* gcc.target/avr/torture/int24-mul.c: New.
+
 2011-12-14  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51476

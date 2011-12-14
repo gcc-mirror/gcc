@@ -2113,7 +2113,7 @@
   [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
-;; To support widening multiplicatioon with constant we postpone
+;; To support widening multiplication with constant we postpone
 ;; expanding to the implicit library call until post combine and
 ;; prior to register allocation.  Clobber all hard registers that
 ;; might be used by the (widening) multiply until it is split and
@@ -2573,6 +2573,132 @@
   "%~call __udivmodhi4"
   [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 24-bit multiply
+
+;; To support widening multiplication with constant we postpone
+;; expanding to the implicit library call until post combine and
+;; prior to register allocation.  Clobber all hard registers that
+;; might be used by the (widening) multiply until it is split and
+;; it's final register footprint is worked out.
+
+(define_expand "mulpsi3"
+  [(parallel [(set (match_operand:PSI 0 "register_operand" "")
+                   (mult:PSI (match_operand:PSI 1 "register_operand" "")
+                             (match_operand:PSI 2 "nonmemory_operand" "")))
+              (clobber (reg:HI 26))
+              (clobber (reg:DI 18))])]
+  "AVR_HAVE_MUL"
+  {
+    if (s8_operand (operands[2], PSImode))
+      {
+        rtx reg = force_reg (QImode, gen_int_mode (INTVAL (operands[2]), QImode));
+        emit_insn (gen_mulsqipsi3 (operands[0], reg, operands[1]));
+        DONE;
+      }
+  })
+
+(define_insn "*umulqihipsi3"
+  [(set (match_operand:PSI 0 "register_operand"                         "=&r")
+        (mult:PSI (zero_extend:PSI (match_operand:QI 1 "register_operand" "r"))
+                  (zero_extend:PSI (match_operand:HI 2 "register_operand" "r"))))]
+  "AVR_HAVE_MUL"
+  "mul %1,%A2
+	movw %A0,r0
+	mul %1,%B2
+	clr %C0
+	add %B0,r0
+	adc %C0,r1
+	clr __zero_reg__"
+  [(set_attr "length" "7")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*umulhiqipsi3"
+  [(set (match_operand:PSI 0 "register_operand"                         "=&r")
+        (mult:PSI (zero_extend:PSI (match_operand:HI 2 "register_operand" "r"))
+                  (zero_extend:PSI (match_operand:QI 1 "register_operand" "r"))))]
+  "AVR_HAVE_MUL"
+  "mul %1,%A2
+	movw %A0,r0
+	mul %1,%B2
+	add %B0,r0
+	mov %C0,r1
+	clr __zero_reg__
+	adc %C0,__zero_reg__"
+  [(set_attr "length" "7")
+   (set_attr "cc" "clobber")])
+
+(define_insn_and_split "mulsqipsi3"
+  [(set (match_operand:PSI 0 "pseudo_register_operand"                          "=r")
+        (mult:PSI (sign_extend:PSI (match_operand:QI 1 "pseudo_register_operand" "r"))
+                  (match_operand:PSI 2 "pseudo_register_or_const_int_operand"    "rn")))
+   (clobber (reg:HI 26))
+   (clobber (reg:DI 18))]
+  "AVR_HAVE_MUL && !reload_completed"
+  { gcc_unreachable(); }
+  "&& 1"
+  [(set (reg:QI 25)
+        (match_dup 1))
+   (set (reg:PSI 22)
+        (match_dup 2))
+   (set (reg:PSI 18)
+        (mult:PSI (sign_extend:PSI (reg:QI 25))
+                  (reg:PSI 22)))
+   (set (match_dup 0)
+        (reg:PSI 18))])
+
+(define_insn_and_split "*mulpsi3"
+  [(set (match_operand:PSI 0 "pseudo_register_operand"                       "=r")
+        (mult:PSI (match_operand:PSI 1 "pseudo_register_operand"              "r")
+                  (match_operand:PSI 2 "pseudo_register_or_const_int_operand" "rn")))
+   (clobber (reg:HI 26))
+   (clobber (reg:DI 18))]
+  "AVR_HAVE_MUL && !reload_completed"
+  { gcc_unreachable(); }
+  "&& 1"
+  [(set (reg:PSI 18)
+        (match_dup 1))
+   (set (reg:PSI 22) 
+        (match_dup 2))
+   (parallel [(set (reg:PSI 22)
+                   (mult:PSI (reg:PSI 22)
+                             (reg:PSI 18)))
+              (clobber (reg:QI 21))
+              (clobber (reg:QI 25))
+              (clobber (reg:HI 26))])
+   (set (match_dup 0)
+        (reg:PSI 22))]
+  {
+    if (s8_operand (operands[2], PSImode))
+      {
+        rtx reg = force_reg (QImode, gen_int_mode (INTVAL (operands[2]), QImode));
+        emit_insn (gen_mulsqipsi3 (operands[0], reg, operands[1]));
+        DONE;
+      }
+  })
+
+(define_insn "*mulsqipsi3.libgcc"
+  [(set (reg:PSI 18)
+        (mult:PSI (sign_extend:PSI (reg:QI 25))
+                  (reg:PSI 22)))]
+  "AVR_HAVE_MUL"
+  "%~call __mulsqipsi3"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*mulpsi3.libgcc"
+  [(set (reg:PSI 22)
+        (mult:PSI (reg:PSI 22)
+                  (reg:PSI 18)))
+   (clobber (reg:QI 21))
+   (clobber (reg:QI 25))
+   (clobber (reg:HI 26))]
+  "AVR_HAVE_MUL"
+  "%~call __mulpsi3"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 24-bit signed/unsigned division and modulo.
@@ -3363,7 +3489,34 @@
    (set_attr "adjust_len" "ashlsi")
    (set_attr "cc" "none,set_n,clobber,clobber")])
 
-(define_insn "ashlpsi3"
+(define_expand "ashlpsi3"
+  [(parallel [(set (match_operand:PSI 0 "register_operand"             "")
+                   (ashift:PSI (match_operand:PSI 1 "register_operand" "")
+                               (match_operand:QI 2 "nonmemory_operand" "")))
+              (clobber (scratch:QI))])]
+  ""
+  {
+    if (AVR_HAVE_MUL
+        && CONST_INT_P (operands[2]))
+      {
+        if (IN_RANGE (INTVAL (operands[2]), 3, 6))
+          {
+            rtx xoffset = force_reg (QImode, gen_int_mode (1 << INTVAL (operands[2]), QImode));
+            emit_insn (gen_mulsqipsi3 (operands[0], xoffset, operands[1])); 
+            DONE;
+          }
+        else if (optimize_insn_for_speed_p ()
+                 && INTVAL (operands[2]) != 16
+                 && IN_RANGE (INTVAL (operands[2]), 9, 22))
+          {
+            rtx xoffset = force_reg (PSImode, gen_int_mode (1 << INTVAL (operands[2]), PSImode));
+            emit_insn (gen_mulpsi3 (operands[0], operands[1], xoffset)); 
+            DONE;
+          }
+      }
+  })
+
+(define_insn "*ashlpsi3"
   [(set (match_operand:PSI 0 "register_operand"             "=r,r,r,r")
         (ashift:PSI (match_operand:PSI 1 "register_operand"  "0,0,r,0")
                     (match_operand:QI 2 "nonmemory_operand"  "r,P,O,n")))

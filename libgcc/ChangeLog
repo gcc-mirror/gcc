@@ -1,3 +1,9 @@
+2011-12-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49313
+	* config/avr/t-avr (LIB1ASMSRC): Add _mulpsi3, _mulsqipsi3.
+	* config/avr/lib1funcs.S (__mulpsi3, __mulsqipsi3): New functions.
+
 2011-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sol2-unwind.h: Use #ifdef directive consistently.

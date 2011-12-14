@@ -1,3 +1,13 @@
+2011-12-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50931
+	* config/avr/avr.md (mulpsi3): New expander.
+	(*umulqihipsi3, *umulhiqipsi3): New insns.
+	(*mulsqipsi3.libgcc, *mulpsi3.libgcc): New insns.
+	(mulsqipsi3, *mulpsi3): New insn-and-splits.
+	(ashlpsi3): Turn to expander.  Move insn code to...
+	(*ashlpsi3): ...this new insn.
+
 2011-12-14  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (replace_uses_by): Only mark blocks altered
