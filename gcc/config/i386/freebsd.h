@@ -145,3 +145,6 @@ along with GCC; see the file COPYING3.  If not see
 #if FBSD_MAJOR >= 6
 #define SUBTARGET32_DEFAULT_CPU "i486"
 #endif
+
+#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
+
