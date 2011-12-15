@@ -1,3 +1,14 @@
+2011-12-15  Tobias Burnus  <burnus@net-b.de>
+
+	* primary.c (gfc_match_varspec): Match array spec for
+	polymorphic coarrays.
+	(gfc_match_rvalue): If a symbol of unknown flavor has a
+	codimension, mark it as a variable.
+	* simplify.c (gfc_simplify_image_index): Directly call
+	simplify_cobound.
+	* trans-intrinsic.c (trans_this_image): Fix handling of
+	corank = 1 arrays.
+
 2011-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/51517

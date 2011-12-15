@@ -1,3 +1,8 @@
+2011-12-15  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray/poly_run_3.f90: New.
+	* gfortran.dg/coarray/poly_run_2.f90: Enable comment-out test.
+
 2011-12-15  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/51564
