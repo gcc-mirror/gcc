@@ -27,12 +27,15 @@ struct X
   X(T&) {}
 };
 
+struct X_hash
+{ std::size_t operator()(const X&) const { return 0; } };
+
 bool operator==(const X&, const X&) { return false; }
 
 // LWG 2059.
-void erasor(std::unordered_set<X>& s, X x)
+void erasor(std::unordered_set<X, X_hash>& s, X x)
 {
-  std::unordered_set<X>::iterator it = s.find(x);
+  std::unordered_set<X, X_hash>::iterator it = s.find(x);
   if (it != s.end())
     s.erase(it);
 }

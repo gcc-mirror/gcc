@@ -52,36 +52,60 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
 #ifndef _GLIBCXX_LONG_DOUBLE_COMPAT_IMPL
   template<>
-    size_t
-    hash<string>::operator()(string __s) const
-    { return _Hash_impl::hash(__s.data(), __s.length()); }
+    struct hash<string>
+    {
+      size_t operator()(string) const;
+    };
+
+  size_t
+  hash<string>::operator()(string __s) const
+  { return _Hash_impl::hash(__s.data(), __s.length()); }
 
   template<>
-    size_t
-    hash<const string&>::operator()(const string& __s) const
-    { return _Hash_impl::hash(__s.data(), __s.length()); }
+    struct hash<const string&>
+    {
+      size_t operator()(const string&) const;
+    };
+
+  size_t
+  hash<const string&>::operator()(const string& __s) const
+  { return _Hash_impl::hash(__s.data(), __s.length()); }
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<>
-    size_t
-    hash<wstring>::operator()(wstring __s) const
-    { return _Hash_impl::hash(__s.data(), __s.length() * sizeof(wchar_t)); }
+    struct hash<wstring>
+    { 
+      size_t operator()(wstring) const;
+    };
+
+  size_t
+  hash<wstring>::operator()(wstring __s) const
+  { return _Hash_impl::hash(__s.data(), __s.length() * sizeof(wchar_t)); }
 
   template<>
-    size_t
-    hash<const wstring&>::operator()(const wstring& __s) const
-    { return _Hash_impl::hash(__s.data(), __s.length() * sizeof(wchar_t)); }
-#endif
-#endif
-
-  template<>
-    size_t
-    hash<error_code>::operator()(error_code __e) const
+    struct hash<const wstring&>
     {
-      const size_t __tmp = std::_Hash_impl::hash(__e._M_value);
-      return std::_Hash_impl::__hash_combine(__e._M_cat, __tmp);
-    }
+      size_t operator()(const wstring&) const;
+    };
 
+  size_t
+  hash<const wstring&>::operator()(const wstring& __s) const
+  { return _Hash_impl::hash(__s.data(), __s.length() * sizeof(wchar_t)); }
+#endif
+#endif
+
+  template<>
+    struct hash<error_code>
+    {
+      size_t operator()(error_code) const;
+    };
+
+  size_t
+  hash<error_code>::operator()(error_code __e) const
+  {
+    const size_t __tmp = std::_Hash_impl::hash(__e._M_value);
+    return std::_Hash_impl::__hash_combine(__e._M_cat, __tmp);
+  }
 
   // gcc-4.7.0
   // <chrono> changes is_monotonic to is_steady.
