@@ -5203,7 +5203,8 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
   enum vect_relevant relevance = STMT_VINFO_RELEVANT (stmt_info);
   bool ok;
   tree scalar_type, vectype;
-  gimple pattern_stmt, pattern_def_stmt;
+  gimple pattern_stmt;
+  gimple_seq pattern_def_seq;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     {
@@ -5274,21 +5275,29 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
    }
 
   if (is_pattern_stmt_p (stmt_info)
-      && (pattern_def_stmt = STMT_VINFO_PATTERN_DEF_STMT (stmt_info))
-      && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_def_stmt))
-          || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_def_stmt))))
+      && (pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info)))
     {
-      /* Analyze def stmt of STMT if it's a pattern stmt.  */
-      if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "==> examining pattern def statement: ");
-          print_gimple_stmt (vect_dump, pattern_def_stmt, 0, TDF_SLIM);
-        }
+      gimple_stmt_iterator si;
 
-      if (!vect_analyze_stmt (pattern_def_stmt, need_to_vectorize, node))
-        return false;
-   }
+      for (si = gsi_start (pattern_def_seq); !gsi_end_p (si); gsi_next (&si))
+	{
+	  gimple pattern_def_stmt = gsi_stmt (si);
+	  if (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_def_stmt))
+	      || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_def_stmt)))
+	    {
+	      /* Analyze def stmt of STMT if it's a pattern stmt.  */
+	      if (vect_print_dump_info (REPORT_DETAILS))
+		{
+		  fprintf (vect_dump, "==> examining pattern def statement: ");
+		  print_gimple_stmt (vect_dump, pattern_def_stmt, 0, TDF_SLIM);
+		}
 
+	      if (!vect_analyze_stmt (pattern_def_stmt,
+				      need_to_vectorize, node))
+		return false;
+	    }
+	}
+    }
 
   switch (STMT_VINFO_DEF_TYPE (stmt_info))
     {
@@ -5605,7 +5614,7 @@ new_stmt_vec_info (gimple stmt, loop_vec_info loop_vinfo,
   STMT_VINFO_VECTORIZABLE (res) = true;
   STMT_VINFO_IN_PATTERN_P (res) = false;
   STMT_VINFO_RELATED_STMT (res) = NULL;
-  STMT_VINFO_PATTERN_DEF_STMT (res) = NULL;
+  STMT_VINFO_PATTERN_DEF_SEQ (res) = NULL;
   STMT_VINFO_DATA_REF (res) = NULL;
 
   STMT_VINFO_DR_BASE_ADDRESS (res) = NULL;
@@ -5676,8 +5685,13 @@ free_stmt_vec_info (gimple stmt)
 	= vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
       if (patt_info)
 	{
-	  if (STMT_VINFO_PATTERN_DEF_STMT (patt_info))
-	    free_stmt_vec_info (STMT_VINFO_PATTERN_DEF_STMT (patt_info));
+	  gimple_seq seq = STMT_VINFO_PATTERN_DEF_SEQ (patt_info);
+	  if (seq)
+	    {
+	      gimple_stmt_iterator si;
+	      for (si = gsi_start (seq); !gsi_end_p (si); gsi_next (&si))
+		free_stmt_vec_info (gsi_stmt (si));
+	    }
 	  free_stmt_vec_info (STMT_VINFO_RELATED_STMT (stmt_info));
 	}
     }

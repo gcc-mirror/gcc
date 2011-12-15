@@ -19434,6 +19434,45 @@ ix86_expand_int_vcond (rtx operands[])
   cop0 = operands[4];
   cop1 = operands[5];
 
+  /* Try to optimize x < 0 ? -1 : 0 into (signed) x >> 31
+     and x < 0 ? 1 : 0 into (unsigned) x >> 31.  */
+  if ((code == LT || code == GE)
+      && data_mode == mode
+      && cop1 == CONST0_RTX (mode)
+      && operands[1 + (code == LT)] == CONST0_RTX (data_mode)
+      && GET_MODE_SIZE (GET_MODE_INNER (data_mode)) > 1
+      && GET_MODE_SIZE (GET_MODE_INNER (data_mode)) <= 8
+      && (GET_MODE_SIZE (data_mode) == 16
+	  || (TARGET_AVX2 && GET_MODE_SIZE (data_mode) == 32)))
+    {
+      rtx negop = operands[2 - (code == LT)];
+      int shift = GET_MODE_BITSIZE (GET_MODE_INNER (data_mode)) - 1;
+      if (negop == CONST1_RTX (data_mode))
+	{
+	  rtx res = expand_simple_binop (mode, LSHIFTRT, cop0, GEN_INT (shift),
+					 operands[0], 1, OPTAB_DIRECT);
+	  if (res != operands[0])
+	    emit_move_insn (operands[0], res);
+	  return true;
+	}
+      else if (GET_MODE_INNER (data_mode) != DImode
+	       && vector_all_ones_operand (negop, data_mode))
+	{
+	  rtx res = expand_simple_binop (mode, ASHIFTRT, cop0, GEN_INT (shift),
+					 operands[0], 0, OPTAB_DIRECT);
+	  if (res != operands[0])
+	    emit_move_insn (operands[0], res);
+	  return true;
+	}
+    }
+
+  if (!nonimmediate_operand (cop1, mode))
+    cop1 = force_reg (mode, cop1);
+  if (!general_operand (operands[1], data_mode))
+    operands[1] = force_reg (data_mode, operands[1]);
+  if (!general_operand (operands[2], data_mode))
+    operands[2] = force_reg (data_mode, operands[2]);
+
   /* XOP supports all of the comparisons on all 128-bit vector int types.  */
   if (TARGET_XOP
       && (mode == V16QImode || mode == V8HImode
