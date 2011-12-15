@@ -1,3 +1,15 @@
+2011-12-15  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/51564
+	* tree.h (REGISTER_DEFS_IN_THIS_STMT, NECESSARY,
+	STMT_IN_SSA_EDGE_WORKLIST): Remove no longer existing flag
+	uses documentation.
+	(TREE_ASM_WRITTEN): Update documentation to mention its use
+	on TYPE_DECLs from debug info generation.
+	* tree-streamer-out.c (pack_ts_base_value_fields): Stream
+	TREE_ASM_WRITTEN as always zero for TYPE_DECLs, similar to
+	all other types.
+
 2011-12-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/51050

@@ -88,7 +88,8 @@ pack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
   else
     bp_pack_value (bp, 0, 1);
   /* We write debug info two times, do not confuse the second one.  */
-  bp_pack_value (bp, TYPE_P (expr) ? 0 : TREE_ASM_WRITTEN (expr), 1);
+  bp_pack_value (bp, ((TYPE_P (expr) || TREE_CODE (expr) == TYPE_DECL)
+		      ? 0 : TREE_ASM_WRITTEN (expr)), 1);
   if (TYPE_P (expr))
     bp_pack_value (bp, TYPE_ARTIFICIAL (expr), 1);
   else
