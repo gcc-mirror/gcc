@@ -903,7 +903,7 @@ rl78_expand_epilogue (void)
   else if (is_interrupt_func (cfun->decl))
     emit_jump_insn (gen_interrupt_return ());
   else
-    emit_jump_insn (gen_return ());
+    emit_jump_insn (gen_rl78_return ());
 }
 
 /* Likewise, for exception handlers.  */
@@ -911,7 +911,7 @@ void
 rl78_expand_eh_epilogue (rtx x ATTRIBUTE_UNUSED)
 {
   /* FIXME - replace this with an indirect jump with stack adjust.  */
-  emit_jump_insn (gen_return ());
+  emit_jump_insn (gen_rl78_return ());
 }
 
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
@@ -2390,7 +2390,7 @@ rl78_calculate_death_notes (void)
 	  break;
 
 	case JUMP_INSN:
-	  if (INSN_CODE (insn) == CODE_FOR_return)
+	  if (INSN_CODE (insn) == CODE_FOR_rl78_return)
 	    {
 	      memset (dead, 1, sizeof (dead));
 	      /* We expect a USE just prior to this, which will mark

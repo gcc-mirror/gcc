@@ -1,3 +1,10 @@
+2011-12-15  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78.md (return): Rename to rl78_return.
+	* config/rl78/rl78.c (rl78_expand_epilogue): Use new name.
+	(rl78_expand_eh_epilogue): Use new name.
+	(rl78_calculate_death_notes): Likewise.
+
 2011-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vectorizer.h (struct _stmt_vec_info): Remove pattern_def_stmt
