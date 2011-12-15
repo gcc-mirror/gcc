@@ -11432,6 +11432,14 @@ resolve_fl_derived0 (gfc_symbol *sym)
 
   for (c = sym->components; c != NULL; c = c->next)
     {
+      /* See PRs 51550, 47545, 48654, 49050, 51075 - and 45170.  */
+      if (c->ts.type == BT_CHARACTER && c->ts.deferred)
+	{
+	  gfc_error ("Deferred-length character component '%s' at %L is not "
+		     "yet supported", c->name, &c->loc);
+	  return FAILURE;
+	}
+
       /* F2008, C442.  */
       if ((!sym->attr.is_class || c != sym->components)
 	  && c->attr.codimension

@@ -1,5 +1,14 @@
 2011-12-15  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/51550
+	PR fortran/47545
+	PR fortran/49050
+	PR fortran/51075	
+	* resolve.c (resolve_fl_derived0): Print not-implemented error
+	for deferred-length character components.
+
+2011-12-15  Tobias Burnus  <burnus@net-b.de>
+
 	* primary.c (gfc_match_varspec): Match array spec for
 	polymorphic coarrays.
 	(gfc_match_rvalue): If a symbol of unknown flavor has a
