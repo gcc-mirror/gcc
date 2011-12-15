@@ -10220,9 +10220,17 @@ grokdeclarator (const cp_declarator *declarator,
 		  }
 
 		if (initialized)
-		  /* An attempt is being made to initialize a non-static
-		     member.  This is new in C++11.  */
-		  maybe_warn_cpp0x (CPP0X_NSDMI);
+		  {
+		    /* An attempt is being made to initialize a non-static
+		       member.  This is new in C++11.  */
+		    maybe_warn_cpp0x (CPP0X_NSDMI);
+
+		    /* If this has been parsed with static storage class, but
+		       errors forced staticp to be cleared, ensure NSDMI is
+		       not present.  */
+		    if (declspecs->storage_class == sc_static)
+		      DECL_INITIAL (decl) = error_mark_node;
+		  }
 	      }
 
 	    bad_specifiers (decl, BSP_FIELD, virtualp,
