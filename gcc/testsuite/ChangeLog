@@ -1,3 +1,8 @@
+2011-12-15  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/51564
+	* g++.dg/lto/pr51564-1_0.C: New testcase.
+
 2011-12-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/51365

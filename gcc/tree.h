@@ -644,18 +644,12 @@ struct GTY(()) tree_common {
        DECL_UNSIGNED in
            all decls
 
-       REGISTER_DEFS_IN_THIS_STMT in
-           all expressions (tree-into-ssa.c)
-
    asm_written_flag:
 
        TREE_ASM_WRITTEN in
-           VAR_DECL, FUNCTION_DECL
+           VAR_DECL, FUNCTION_DECL, TYPE_DECL
            RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE
            BLOCK, SSA_NAME, STRING_CST
-
-       NECESSARY in
-           all expressions (tree-ssa-dce.c, tree-ssa-pre.c)
 
    used_flag:
 
@@ -684,9 +678,6 @@ struct GTY(()) tree_common {
 
        IDENTIFIER_TRANSPARENT_ALIAS in
            IDENTIFIER_NODE
-
-       STMT_IN_SSA_EDGE_WORKLIST in
-           all expressions (tree-ssa-propagate.c)
 
    visited:
 
@@ -1369,8 +1360,8 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    Nonzero in a FUNCTION_DECL means that the function has been compiled.
    This is interesting in an inline function, since it might not need
    to be compiled separately.
-   Nonzero in a RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE or ENUMERAL_TYPE
-   if the debugging info for the type has been written.
+   Nonzero in a RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE, ENUMERAL_TYPE
+   or TYPE_DECL if the debugging info for the type has been written.
    In a BLOCK node, nonzero if reorder_blocks has already seen this block.
    In an SSA_NAME node, nonzero if the SSA_NAME occurs in an abnormal
    PHI node.  */
