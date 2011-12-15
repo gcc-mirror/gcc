@@ -1,3 +1,7 @@
+2011-12-15  Robert Dewar  <dewar@adacore.com>
+
+	* sigtramp-ppcvxw.c, sigtramp.h: Fix header.
+
 2011-12-15  Javier Miranda  <miranda@adacore.com>
 
 	* exp_attr.adb (Expand_N_Attribute_Reference): For 'alignment
