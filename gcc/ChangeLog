@@ -1,3 +1,8 @@
+2011-12-15  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c  (rs6000_emit_prologue): Move update of
+	VRSave mask to save_world() when that is in use.
+
 2011-12-15  Richard Guenther  <rguenther@suse.de>
 
 	* lto-wrapper.c (run_gcc): In non-parallel mode remove

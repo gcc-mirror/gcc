@@ -19909,7 +19909,9 @@ rs6000_emit_prologue (void)
      used in this function, and do the corresponding magic in the
      epilogue.  */
 
-  if (TARGET_ALTIVEC && TARGET_ALTIVEC_VRSAVE
+  if (!WORLD_SAVE_P (info)
+      && TARGET_ALTIVEC
+      && TARGET_ALTIVEC_VRSAVE
       && info->vrsave_mask != 0)
     {
       rtx reg, mem, vrsave;
@@ -19925,15 +19927,12 @@ rs6000_emit_prologue (void)
       else
         emit_insn (gen_rtx_SET (VOIDmode, reg, vrsave));
 
-      if (!WORLD_SAVE_P (info))
-        {
-          /* Save VRSAVE.  */
-          offset = info->vrsave_save_offset + sp_offset;
-          mem = gen_frame_mem (SImode,
-                               gen_rtx_PLUS (Pmode, frame_reg_rtx,
-                                             GEN_INT (offset)));
-          insn = emit_move_insn (mem, reg);
-        }
+      /* Save VRSAVE.  */
+      offset = info->vrsave_save_offset + sp_offset;
+      mem = gen_frame_mem (SImode,
+			   gen_rtx_PLUS (Pmode, frame_reg_rtx, 
+					 GEN_INT (offset)));
+      insn = emit_move_insn (mem, reg);
 
       /* Include the registers in the mask.  */
       emit_insn (gen_iorsi3 (reg, reg, GEN_INT ((int) info->vrsave_mask)));
