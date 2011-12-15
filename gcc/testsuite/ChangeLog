@@ -34,7 +34,7 @@
 	* g++.dg/cpp0x/lambda/lambda-ice6.C: New.
 
 2011-12-13  Andrew Pinski  <apinski@cavium.com>
-            Adam Nemet  <anemet@caviumnetworks.com>
+	    Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/mips.exp (mips_option_groups): Fix debug.  Add
 	-fdump-* options.
