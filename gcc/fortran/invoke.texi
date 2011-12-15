@@ -1474,8 +1474,6 @@ the real and imaginary parts of local @code{COMPLEX} variables),
 value) options.  These options do not initialize
 @itemize @bullet
 @item
-automatic arrays
-@item
 allocatable arrays
 @item
 components of derived type variables
