@@ -8062,24 +8062,6 @@ package body Sem_Prag is
 
             Default_Pool := Expression (Arg1);
 
-         ---------------
-         -- Dimension --
-         ---------------
-
-         when Pragma_Dimension =>
-            GNAT_Pragma;
-            Check_Arg_Count (4);
-            Check_No_Identifiers;
-            Check_Arg_Is_Local_Name (Arg1);
-
-            if not Is_Type (Arg1) then
-               Error_Pragma ("first argument for pragma% must be subtype");
-            end if;
-
-            Check_Arg_Is_Static_Expression (Arg2, Standard_Integer);
-            Check_Arg_Is_Static_Expression (Arg3, Standard_Integer);
-            Check_Arg_Is_Static_Expression (Arg4, Standard_Integer);
-
          ------------------------------------
          -- Disable_Atomic_Synchronization --
          ------------------------------------
@@ -14956,7 +14938,6 @@ package body Sem_Prag is
       Pragma_Debug_Policy                   =>  0,
       Pragma_Detect_Blocking                => -1,
       Pragma_Default_Storage_Pool           => -1,
-      Pragma_Dimension                      => -1,
       Pragma_Disable_Atomic_Synchronization => -1,
       Pragma_Discard_Names                  =>  0,
       Pragma_Dispatching_Domain             => -1,

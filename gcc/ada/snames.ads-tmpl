@@ -139,6 +139,8 @@ package Snames is
 
    Name_Default_Value                  : constant Name_Id := N + $;
    Name_Default_Component_Value        : constant Name_Id := N + $;
+   Name_Dimension                      : constant Name_Id := N + $;
+   Name_Dimension_System               : constant Name_Id := N + $;
    Name_Dynamic_Predicate              : constant Name_Id := N + $;
    Name_Post                           : constant Name_Id := N + $;
    Name_Pre                            : constant Name_Id := N + $;
@@ -218,6 +220,14 @@ package Snames is
 
    subtype Text_IO_Package_Name is Name_Id
      range First_Text_IO_Package .. Last_Text_IO_Package;
+
+   --  Names used by the analyzer and expander for aspect Dimension and
+   --  Dimension_System to deal with Sqrt and IO routines.
+
+   Name_Dim_Float_IO                 : constant Name_Id := N + $; -- Ada 12
+   Name_Dim_Integer_IO               : constant Name_Id := N + $; -- Ada 12
+   Name_Generic_Elementary_Functions : constant Name_Id := N + $; -- Ada 12
+   Name_Sqrt                         : constant Name_Id := N + $; -- Ada 12
 
    --  Some miscellaneous names used for error detection/recovery
 
@@ -447,7 +457,6 @@ package Snames is
    Name_CPP_Vtable                     : constant Name_Id := N + $; -- GNAT
    Name_CPU                            : constant Name_Id := N + $; -- Ada 12
    Name_Debug                          : constant Name_Id := N + $; -- GNAT
-   Name_Dimension                      : constant Name_Id := N + $; -- GNAT
    Name_Elaborate                      : constant Name_Id := N + $; -- Ada 83
    Name_Elaborate_All                  : constant Name_Id := N + $;
    Name_Elaborate_Body                 : constant Name_Id := N + $;
@@ -1610,7 +1619,6 @@ package Snames is
       Pragma_CPP_Vtable,
       Pragma_CPU,
       Pragma_Debug,
-      Pragma_Dimension,
       Pragma_Elaborate,
       Pragma_Elaborate_All,
       Pragma_Elaborate_Body,

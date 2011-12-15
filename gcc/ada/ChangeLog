@@ -1,3 +1,90 @@
+2011-12-15  Vincent Pucci  <pucci@adacore.com>
+
+	* aspects.adb, aspects.ads Aspect_Dimension and
+	Aspect_Dimension_System added
+	* exp_ch6.adb (Expand_Call): Expand_Put_Call_With_Dimension_String
+	case added
+	* gcc-interface/Make-lang.in: s-llflex, sem_dim added.
+	* impunit.adb :s-diflio and s-diinio defined as GNAT Defined
+	Additions to System.
+	* Makefile.rtl: s-diflio, s-diinio and s-llflex added
+	* par-prag.adb, sem_prag.adb: Pragma_Dimension removed
+	* rtsfind.ads: Expon_LLF added
+	* sem_aggr.adb (Resolve_Aggregate): handles aggregate for
+	Aspect_Dimension case
+	* sem_attr.adb (Resolve_Attribute): analyze dimension for
+	attribute
+	* sem_ch10.adb (Analyze_With_Clause): Avoid the warning messages
+	due to the use of a GNAT library for Dimension packages
+	* sem_ch13.adb (Analyze_Aspect_Specifications):
+	Aspect_Dimension and Aspect_Dimension_System cases added
+	(Check_Aspect_At_Freeze_Point): Aspect_Dimension and
+	Aspect_Dimension_System cases added
+	* sem_ch2.adb (Analyze_Identifier): analyze dimension for
+	identifier
+	* sem_ch3.adb (Analyze_Component_Declaration): analyze dimension
+	for component declaration (Analyze_Object_Declaration): analyze
+	dimension for object declaration (Analyze_Subtype_Declaration):
+	analyze dimension for subtype declaration
+	* sem_ch4.adb (Operator_Check): checks exponent is a rational
+	for dimensioned operand for a N_Op_Expon
+	* sem_ch5.adb (Analyze_Assignment): analyze dimension for
+	assignment (Analyze_Statements): removal of dimensions in all
+	statements
+	* sem_ch6.adb (Analyze_Return_Statement): analyze dimension for
+	return statement
+	* sem_ch8.adb (Analyze_Object_Renaming): analyze dimension for
+	object renaming
+	* sem_dim.adb, sem_dim.ads (Analyze_Aspect_Dimension):
+	analyze the expression for aspect dimension and store the
+	values in a Htable.
+	(Analyze_Aspect_Dimension_System): analyze
+	the expression for aspect dimension system and store the new
+	system in a Table.
+	(Analyze_Dimension): propagates dimension
+	(Expand_Put_Call_With_Dimension_String): add the dimension
+	string as a suffix of the numeric value in the output
+	(Has_Dimension): return True if the node has a dimension
+	(Remove_Dimension_In_Declaration): removal of dimension in the
+	expression of the declaration.
+	(Remove_Dimension_In_Statement): removal of dimension in statement
+	* sem_res.adb (Resolve): analyze dimension if the node
+	has already been analyzed.
+	(Resolve_Arithmetic_Op): analyze
+	dimension for arithmetic op.
+	(Resolve_Call): analyze dimension for function call.
+	(Resolve_Comparison_Op): analyze dimension for comparison op.
+	(Resolve_Equality_Op): analyze dimension for equality op.
+	(Resolve_Indexed_Component): analyze dimension for indexed component.
+	(Resolve_Op_Expon): analyze dimension for op expon.
+	(Resolve_Selected_Component): analyze dimension
+	for selected component.
+	(Resolve_Slice): analyze dimension for slice.
+	(Resolve_Unary_Op): analyze dimension for unary op
+	(Resolve_Type_Conversion): analyze dimension for type conversion
+	(Resolve_Unchecked_Type_Conversion): analyze dimension for
+	unchecked type conversion
+	* snames.ads-tmpl Name_Dimension, Name_Dimension_System,
+	Name_Dim_Float_IO, Name_Dim_Integer_IO,
+	Name_Generic_Elementary_Functions, Name_Sqrt added.
+	Pragma_Dimension removed
+	* s-diflio.adb, s-diflio.ads New GNAT library generic package
+	for dimensioned float type IO
+	* s-diinio.adb, s-diinio.ads New GNAT library generic package
+	for dimensioned integer type IO
+	* s-llflex.ads (Expon_LLF): exponentiation routine for long long
+	floats operand and exponent
+
+2011-12-15  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb: Minor comment addition.
+
+2011-12-15  Bob Duff  <duff@adacore.com>
+
+	* s-tasren.adb (Task_Count): Do not call Yield; E'Count is not a
+	task dispatching point.
+	* s-taprop-mingw.adb (Yield): Do not yield if Do_Yield is False.
+
 2011-12-15  Robert Dewar  <dewar@adacore.com>
 
 	* sigtramp-ppcvxw.c, sigtramp.h: Fix header.

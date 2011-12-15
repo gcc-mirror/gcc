@@ -366,6 +366,8 @@ package body Impunit is
 
     ("s-addima", F),  -- System.Address_Image
     ("s-assert", F),  -- System.Assertions
+    ("s-diflio", F),  -- System.Dim_Float_IO
+    ("s-diinio", F),  -- System.Dim_Integer_IO
     ("s-memory", F),  -- System.Memory
     ("s-parint", F),  -- System.Partition_Interface
     ("s-pooglo", F),  -- System.Pool_Global

@@ -57,6 +57,7 @@ with Sem_Ch4;  use Sem_Ch4;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
+with Sem_Dim;  use Sem_Dim;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
 with Sem_Elim; use Sem_Elim;
@@ -2010,6 +2011,7 @@ package body Sem_Res is
 
       if Analyzed (N) then
          Debug_A_Exit ("resolving  ", N, "  (done, already analyzed)");
+         Analyze_Dimension (N);
          return;
 
       --  Return if type = Any_Type (previous error encountered)
@@ -4878,6 +4880,7 @@ package body Sem_Res is
       end if;
 
       Generate_Operator_Reference (N, Typ);
+      Analyze_Dimension (N);
       Eval_Arithmetic_Op (N);
 
       --  In SPARK, a multiplication or division with operands of fixed point
@@ -5808,6 +5811,10 @@ package body Sem_Res is
          end;
       end if;
 
+      --  dimension analysis
+
+      Analyze_Dimension (N);
+
       --  All done, evaluate call and deal with elaboration issues
 
       Eval_Call (N);
@@ -6004,6 +6011,7 @@ package body Sem_Res is
       --  Evaluate the relation (note we do this after the above check since
       --  this Eval call may change N to True/False.
 
+      Analyze_Dimension (N);
       Eval_Relational_Op (N);
    end Resolve_Comparison_Op;
 
@@ -6889,6 +6897,7 @@ package body Sem_Res is
            or else Is_Intrinsic_Subprogram
                      (Corresponding_Equality (Entity (N)))
          then
+            Analyze_Dimension (N);
             Eval_Relational_Op (N);
 
          elsif Nkind (N) = N_Op_Ne
@@ -7142,6 +7151,8 @@ package body Sem_Res is
             Next (Expr);
          end loop;
       end if;
+
+      Analyze_Dimension (N);
 
       --  Do not generate the warning on suspicious index if we are analyzing
       --  package Ada.Tags; otherwise we will report the warning with the
@@ -7998,6 +8009,24 @@ package body Sem_Res is
 
       Set_Etype (N, B_Typ);
       Generate_Operator_Reference (N, B_Typ);
+
+      Analyze_Dimension (N);
+
+      --  Evaluate the Expon operator for dimensioned type with rational
+      --  exponent.
+
+      if Ada_Version >= Ada_2012
+        and then Is_Dimensioned_Type (B_Typ)
+      then
+         Eval_Op_Expon_For_Dimensioned_Type (N, B_Typ);
+
+         --  Skip the Eval_Op_Expon if the node has already been evaluated
+
+         if Nkind (N) = N_Type_Conversion then
+            return;
+         end if;
+      end if;
+
       Eval_Op_Expon (N);
 
       --  Set overflow checking bit. Much cleverer code needed here eventually
@@ -8196,6 +8225,7 @@ package body Sem_Res is
          Set_Etype (N, Etype (Expr));
       end if;
 
+      Analyze_Dimension (N);
       Eval_Qualified_Expression (N);
    end Resolve_Qualified_Expression;
 
@@ -8629,6 +8659,7 @@ package body Sem_Res is
          Error_Msg_N ("?\may cause unexpected accesses to atomic object",
                       Prefix (N));
       end if;
+      Analyze_Dimension (N);
    end Resolve_Selected_Component;
 
    -------------------
@@ -8940,6 +8971,7 @@ package body Sem_Res is
          Warn_On_Suspicious_Index (Name, High_Bound (Drange));
       end if;
 
+      Analyze_Dimension (N);
       Eval_Slice (N);
    end Resolve_Slice;
 
@@ -9346,6 +9378,8 @@ package body Sem_Res is
          Check_SPARK_Restriction ("object required", Operand);
       end if;
 
+      Analyze_Dimension (N);
+
       --  Note: we do the Eval_Type_Conversion call before applying the
       --  required checks for a subtype conversion. This is important, since
       --  both are prepared under certain circumstances to change the type
@@ -9629,6 +9663,7 @@ package body Sem_Res is
 
       Check_Unset_Reference (R);
       Generate_Operator_Reference (N, B_Typ);
+      Analyze_Dimension (N);
       Eval_Unary_Op (N);
 
       --  Set overflow checking bit. Much cleverer code needed here eventually
@@ -9795,6 +9830,7 @@ package body Sem_Res is
       --  Resolve operand using its own type
 
       Resolve (Operand, Opnd_Type);
+      Analyze_Dimension (N);
       Eval_Unchecked_Conversion (N);
    end Resolve_Unchecked_Type_Conversion;
 

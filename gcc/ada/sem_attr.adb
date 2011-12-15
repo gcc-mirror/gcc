@@ -52,6 +52,7 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch10; use Sem_Ch10;
+with Sem_Dim;  use Sem_Dim;
 with Sem_Dist; use Sem_Dist;
 with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
@@ -9165,6 +9166,7 @@ package body Sem_Attr is
 
       --  Finally perform static evaluation on the attribute reference
 
+      Analyze_Dimension (N);
       Eval_Attribute (N);
    end Resolve_Attribute;
 
