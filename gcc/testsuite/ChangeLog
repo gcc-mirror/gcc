@@ -1,5 +1,9 @@
 2011-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/51360
+	* c-c++-common/gomp/pr51360.c: New test.
+	* g++.dg/gomp/pr51360.C: New test.
+
 	PR middle-end/49806
 	* gcc.dg/tree-ssa-vrp47.c: Add -fdump-tree-dom2 to dg-options.
 	Check for x_? & y in dom2 dump and xfail the check in dom1 dump.

@@ -1,3 +1,9 @@
+2011-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/51360
+	* c-parser.c (c_parser_omp_clause_num_threads,
+	c_parser_omp_clause_schedule): Call mark_exp_read.
+
 2011-12-15  Romain Geissler  <romain.geissler@gmail.com>
 
 	* builtins.def (BUILT_IN_STPNCPY_CHK): New definition.
