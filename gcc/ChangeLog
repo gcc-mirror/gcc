@@ -21,8 +21,7 @@
 	* tree.c (free_lang_data_in_type): Do not clear fields
 	dependent on debuginfo level setting.
 	(find_decls_types_r): Use TYPE_STUB_DECL rathern than TREE_CHAIN.
-	* tree.h (TYPE_STUB_DECL): Properly check that we access
-	a type.
+	* tree.h (TYPE_STUB_DECL): Properly check that we access a type.
 
 2011-12-14  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -60,11 +59,10 @@
 
 2011-12-13  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
-	* regmove.c (fixup_match_2): Only access call_used_regs with hard
-	regs.
+	* regmove.c (fixup_match_2): Only access call_used_regs with hard regs.
 
 2011-12-13  Andrew Pinski  <apinski@cavium.com>
-            Adam Nemet  <anemet@caviumnetworks.com>
+	    Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips-cpus.def: Add Octeon2.
 	* config/mips/mips-tables.opt: Regenerate.
@@ -256,8 +254,7 @@
 
 2011-12-11  Patrick Marlier  <patrick.marlier@gmail.com>
 
-	* trans-mem.c (ipa_tm_transform_calls_redirect): Do not remove
-	edge.
+	* trans-mem.c (ipa_tm_transform_calls_redirect): Do not remove edge.
 
 2011-12-10  Richard Henderson  <rth@redhat.com>
 
@@ -420,8 +417,7 @@
 
 	* ira-color.c (print_hard_regs_subforest): Use
 	HOST_WIDEST_INT_PRINT_DEC instead of %lld.
-	(allocno_hard_regs): Change type of cost member
-	to HOST_WIDEST_INT.
+	(allocno_hard_regs): Change type of cost member to HOST_WIDEST_INT.
 	(add_allocno_hard_regs): Change type of argument cost
 	to HOST_WIDEST_INT.
 	* ira-conflict.c (build_conflict_bit_table): Replace use
@@ -444,8 +440,7 @@
 
 	PR tree-optimization/51482
 	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size):
-	Make sure to only create REAL_TYPE and INTEGER_TYPE component
-	vectors.
+	Make sure to only create REAL_TYPE and INTEGER_TYPE component vectors.
 
 2011-12-09  Kai Tietz  <ktietz@redhat.com>
 
@@ -495,8 +490,7 @@
 2011-12-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49772
-	* tree-inline.c (optimize_inline_calls): Remove bail out
-	on errors.
+	* tree-inline.c (optimize_inline_calls): Remove bail out on errors.
 
 2011-12-08  Richard Guenther  <rguenther@suse.de>
 
@@ -598,7 +592,7 @@
 	* config/avr/avr.c (avr_addrspace): New variable.
 	(avr_out_lpm, avr_pgm_check_var_decl, avr_insert_attributes,
 	avr_asm_named_section, avr_section_type_flags,
-	avr_asm_select_section, avr_addr_space_address_mode, 
+	avr_asm_select_section, avr_addr_space_address_mode,
 	avr_addr_space_convert, avr_emit_movmemhi): Use it.
 	(avr_addr_space_pointer_mode): Forward to avr_addr_space_address_mode.
 	(avr_pgm_segment): Remove.
@@ -613,17 +607,15 @@
 2011-12-06  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/51436
-	* gimple-fold.c (gimplify_and_update_call_from_tree): Guard
-	vdef check for the fact we do not have virtual operands when
-	not optimizing.
+	* gimple-fold.c (gimplify_and_update_call_from_tree): Guard vdef check
+	for the fact we do not have virtual operands when not optimizing.
 
 2011-12-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51245
 	* tree-ssa-sccvn.c (vn_reference_lookup_or_insert_constant_for_pieces):
 	New function.
-	(vn_reference_lookup_3): Use it.  Properly valueize all refs
-	we create.
+	(vn_reference_lookup_3): Use it.  Properly valueize all refs we create.
 
 2011-12-06  Iain Sandoe  <iains@gcc.gnu.org>
 
@@ -702,8 +694,7 @@
 	(struct allocno_color_data): Add new member last_process.  Move
 	profitable_hard_regs, hard_regs_node, and hard_regs_subnodes_start
 	from object_color_data.
-	(object_color_data_t, object_color_data, OBJECT_COLOR_DATA):
-	Remove.
+	(object_color_data_t, object_color_data, OBJECT_COLOR_DATA): Remove.
 	(curr_allocno_process): New static variable.
 	(object_hard_regs_eq, object_hard_regs_htab): Rename to
 	allocno_hard_regs_eq and allocno_hard_regs_htab.
@@ -716,29 +707,36 @@
 	(add_new_object_hard_regs_node_to_forest): Rename to
 	add_new_allocno_hard_regs_node_to_forest.
 	(add_object_hard_regs_to_forest, collect_object_hard_regs_cover):
-	Rename to add_allocno_hard_regs_to_forest and collect_allocno_hard_regs_cover.
-	(setup_object_hard_regs_nodes_parent): Rename to setup_allocno_hard_regs_nodes_parent.
-	(remove_unused_object_hard_regs_nodes): Rename to remove_unused_allocno_hard_regs_nodes.
+	Rename to add_allocno_hard_regs_to_forest and
+	collect_allocno_hard_regs_cover.
+	(setup_object_hard_regs_nodes_parent): Rename to
+	setup_allocno_hard_regs_nodes_parent.
+	(remove_unused_object_hard_regs_nodes): Rename to
+	remove_unused_allocno_hard_regs_nodes.
 	(enumerate_object_hard_regs_nodes, object_hard_regs_nodes_num):
-	Rename to enumerate_allocno_hard_regs_nodes and allocno_hard_regs_nodes_num.
+	Rename to enumerate_allocno_hard_regs_nodes and
+	allocno_hard_regs_nodes_num.
 	(object_hard_regs_nodes, object_hard_regs_subnode_t): Rename to
 	allocno_hard_regs_nodes and allocno_hard_regs_subnode_t.
 	(object_hard_regs_subnode, object_hard_regs_subnodes): Rename to
 	allocno_hard_regs_subnode and allocno_hard_regs_subnodes.
-	(object_hard_regs_subnode_index): Rename to allocno_hard_regs_subnode_index.
+	(object_hard_regs_subnode_index): Rename to
+	allocno_hard_regs_subnode_index.
 	(setup_object_hard_regs_subnode_index): Rename to
 	setup_allocno_hard_regs_subnode_index.
-	(get_object_hard_regs_subnodes_num): Rename to get_allocno_hard_regs_subnodes_num.
-	(form_object_hard_regs_nodes_forest): Rename to form_allocno_hard_regs_nodes_forest.
-	(finish_object_hard_regs_nodes_tree): Rename to form_allocno_hard_regs_nodes_forest
+	(get_object_hard_regs_subnodes_num): Rename to
+	get_allocno_hard_regs_subnodes_num.
+	(form_object_hard_regs_nodes_forest): Rename to
+	form_allocno_hard_regs_nodes_forest.
+	(finish_object_hard_regs_nodes_tree): Rename to
+	form_allocno_hard_regs_nodes_forest
 	(finish_object_hard_regs_nodes_forest): Rename to
 	finish_allocno_hard_regs_nodes_forest.
-	(setup_left_conflict_sizes_p): Use allocno data instead of object
-	ones.  Process conflict allocnos once.
+	(setup_left_conflict_sizes_p): Use allocno data instead of object ones.
+	Process conflict allocnos once.
 	(update_left_conflict_sizes_p): Use allocno data instead of object
 	ones.  Change prototype signature.
-	(empty_profitable_hard_regs): Use allocno data instead of object
-	ones.
+	(empty_profitable_hard_regs): Use allocno data instead of object ones.
 	(setup_profitable_hard_regs): Ditto.
 	(get_conflict_profitable_regs): Rename to
 	get_conflict_and_start_profitable_regs.  Use allocno data for
@@ -773,8 +771,7 @@
 	(struct vop_to_refs_elt, vtoe_hash, vtoe_eq, vtoe_free,
 	record_vop_access, get_vop_accesses, get_vop_stores,
 	add_vop_ref_mapping): Remove.
-	(create_vop_ref_mapping_loop): Adjust to simply record all
-	stores.
+	(create_vop_ref_mapping_loop): Adjust to simply record all stores.
 	(analyze_memory_references): Adjust.
 	(refs_independent_p): Check for not analyzable refs.
 	(can_sm_ref_p): Likewise.
@@ -799,9 +796,8 @@
 
 2011-12-05  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa.c (verify_ssa): Verify SSA names in the loop
-	over all SSA names.  Remove SSA operand checking, call
-	verify_ssa_operands.
+	* tree-ssa.c (verify_ssa): Verify SSA names in the loop over all SSA
+	names.  Remove SSA operand checking, call verify_ssa_operands.
 	* tree-ssa-operands.h (verify_ssa_operands): Declare.
 	* tree-ssa-operands.c (verify_ssa_operands): New function.
 
@@ -824,8 +820,7 @@
 	(cgraph_make_edge_direct): Likewise.
 	* gimple-streamer-in.c (input_gimple_stmt): Do not
 	call gimple_call_set_cannot_inline.
-	* gimple.h (enum gf_mask): Remove GF_CALL_CANNOT_INLINE, shift
-	values.
+	* gimple.h (enum gf_mask): Remove GF_CALL_CANNOT_INLINE, shift values.
 	(gimple_call_set_cannot_inline): Remove.
 	(gimple_call_cannot_inline_p): Likewise.
 	* ipa-inline-analysis.c (initialize_inline_failed): Look
@@ -877,8 +872,7 @@
 	(coverage_begin_function): ... here.
 	* coverage.c (struct function_list): Rename to ...
 	(struct coverage_data): ... this.  Update all uses.
-	(gcov_info_var, gcov_fn_info_type, gcov_fn_info_ptr_type): New
-	globals.
+	(gcov_info_var, gcov_fn_info_type, gcov_fn_info_ptr_type): New globals.
 	(bbg_file_opened, bbg_function_announced): Remove.
 	(get_coverage_counts): Adjust message.
 	(coverage_begin_ouput): Rename to ...
@@ -968,8 +962,7 @@
 	(process_file): Call find_exception_blocks if necessary.
 	(read_graph_file): Adjust.  Note if an exceptional edge is seen.
 	(find_exception_blocks): New.
-	(add_line_counts): Set line's unexceptional flag if not
-	exceptional.
+	(add_line_counts): Set line's unexceptional flag if not exceptional.
 	(output_branch_count): Note exceptional arcs, lines and blocks.
 	* gcov-dump.c (tag_arcs): Decode arc flags.
 	* doc/gcov.texi: Document '=====' lines.
