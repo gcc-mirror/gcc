@@ -1,3 +1,13 @@
+2011-12-15  Romain Geissler  <romain.geissler@gmail.com>
+
+	* gcc.c-torture/execute/builtins/chk.h (stpncpy, stpncpy_disallowed):
+	New definitions.
+	* gcc.c-torture/execute/builtins/lib/chk.c (stpncpy_disallowed):
+	Likewise.
+	(stpncpy, __stpncpy_chk): New functions.
+	* gcc.c-torture/execute/builtins/stpncpy-chk-lib.c: New file.
+	* gcc.c-torture/execute/builtins/stpncpy-chk.c: Likewise.
+
 2011-12-15  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/51567
