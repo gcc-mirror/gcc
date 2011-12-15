@@ -1,3 +1,8 @@
+2011-12-15  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/51567
+	* g++.dg/lto/pr51567-1_0.C: New testcase.
+
 2011-12-15  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51473

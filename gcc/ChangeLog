@@ -1,3 +1,12 @@
+2011-12-15  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/51567
+	* gimple.c (compare_type_names_p): Also compare the TREE_CODE.
+	(iterative_hash_name): Also hash the TREE_CODE.
+	(gimple_types_compatible_p_1): For types with a TYPE_DECL
+	name and a type DECL_CONTEXT recurse to that type.
+	(iterative_hash_gimple_type): Likewise.
+
 2011-12-15  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/rs6000/rs6000.c  (rs6000_emit_prologue): Move update of
