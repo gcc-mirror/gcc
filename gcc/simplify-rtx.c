@@ -4177,10 +4177,20 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
     {
       rtx x = XEXP (op0, 0);
       rtx c = XEXP (op0, 1);
+      enum rtx_code invcode = op0code == PLUS ? MINUS : PLUS;
+      rtx tem = simplify_gen_binary (invcode, cmp_mode, op1, c);
 
-      c = simplify_gen_binary (op0code == PLUS ? MINUS : PLUS,
-			       cmp_mode, op1, c);
-      return simplify_gen_relational (code, mode, cmp_mode, x, c);
+      /* Detect an infinite recursive condition, where we oscillate at this
+	 simplification case between:
+	    A + B == C  <--->  C - B == A,
+	 where A, B, and C are all constants with non-simplifiable expressions,
+	 usually SYMBOL_REFs.  */
+      if (GET_CODE (tem) == invcode
+	  && CONSTANT_P (x)
+	  && rtx_equal_p (c, XEXP (tem, 1)))
+	return NULL_RTX;
+
+      return simplify_gen_relational (code, mode, cmp_mode, x, tem);
     }
 
   /* (ne:SI (zero_extract:SI FOO (const_int 1) BAR) (const_int 0))) is
