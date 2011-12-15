@@ -289,6 +289,13 @@ bool avr_need_copy_data_p = false;
 #undef TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS
 #define TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS avr_addr_space_legitimize_address
 
+#undef  TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND avr_print_operand
+#undef  TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS avr_print_operand_address
+#undef  TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P avr_print_operand_punct_valid_p
+
 
 
 /* Custom function to replace string prefix.
@@ -1733,10 +1740,12 @@ cond_string (enum rtx_code code)
   return "";
 }
 
+
+/* Implement `TARGET_PRINT_OPERAND_ADDRESS'.  */
 /* Output ADDR to FILE as address.  */
 
-void
-print_operand_address (FILE *file, rtx addr)
+static void
+avr_print_operand_address (FILE *file, rtx addr)
 {
   switch (GET_CODE (addr))
     {
@@ -1791,11 +1800,21 @@ print_operand_address (FILE *file, rtx addr)
 }
 
 
+/* Implement `TARGET_PRINT_OPERAND_PUNCT_VALID_P'.  */
+
+static bool
+avr_print_operand_punct_valid_p (unsigned char code)
+{
+  return code == '~' || code == '!';
+}
+
+
+/* Implement `TARGET_PRINT_OPERAND'.  */
 /* Output X as assembler operand to file FILE.
    For a description of supported %-codes, see top of avr.md.  */
 
-void
-print_operand (FILE *file, rtx x, int code)
+static void
+avr_print_operand (FILE *file, rtx x, int code)
 {
   int abcd = 0;
 
@@ -1889,14 +1908,14 @@ print_operand (FILE *file, rtx x, int code)
 	}
       else if (code == 'i')
         {
-          print_operand (file, addr, 'i');
+          avr_print_operand (file, addr, 'i');
         }
       else if (code == 'o')
 	{
 	  if (GET_CODE (addr) != PLUS)
 	    fatal_insn ("bad address, not (reg+disp):", addr);
 
-	  print_operand (file, XEXP (addr, 1), 0);
+	  avr_print_operand (file, XEXP (addr, 1), 0);
 	}
       else if (code == 'p' || code == 'r')
         {
@@ -1904,21 +1923,21 @@ print_operand (FILE *file, rtx x, int code)
             fatal_insn ("bad address, not post_inc or pre_dec:", addr);
           
           if (code == 'p')
-            print_operand_address (file, XEXP (addr, 0));  /* X, Y, Z */
+            avr_print_operand_address (file, XEXP (addr, 0));  /* X, Y, Z */
           else
-            print_operand (file, XEXP (addr, 0), 0);  /* r26, r28, r30 */
+            avr_print_operand (file, XEXP (addr, 0), 0);  /* r26, r28, r30 */
         }
       else if (GET_CODE (addr) == PLUS)
 	{
-	  print_operand_address (file, XEXP (addr,0));
+	  avr_print_operand_address (file, XEXP (addr,0));
 	  if (REGNO (XEXP (addr, 0)) == REG_X)
 	    fatal_insn ("internal compiler error.  Bad address:"
 			,addr);
 	  fputc ('+', file);
-	  print_operand (file, XEXP (addr,1), code);
+	  avr_print_operand (file, XEXP (addr,1), code);
 	}
       else
-	print_operand_address (file, addr);
+	avr_print_operand_address (file, addr);
     }
   else if (code == 'i')
     {
@@ -1954,7 +1973,7 @@ print_operand (FILE *file, rtx x, int code)
   else if (code == 'k')
     fputs (cond_string (reverse_condition (GET_CODE (x))), file);
   else
-    print_operand_address (file, x);
+    avr_print_operand_address (file, x);
 }
 
 /* Update the condition code in the INSN.  */
