@@ -1,3 +1,10 @@
+2011-12-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51458
+	* decl.c (has_designator_problem): New.
+	(reshape_init_r): Check for improper use of
+	designated initializers.
+
 2011-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/51463

@@ -5128,6 +5128,24 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
   return new_init;
 }
 
+/* Subroutine of reshape_init_r.  We're in a context where C99 initializer
+   designators are not valid; either complain or return true to indicate
+   that reshape_init_r should return error_mark_node.  */
+
+static bool
+has_designator_problem (reshape_iter *d, tsubst_flags_t complain)
+{
+  if (d->cur->index)
+    {
+      if (complain & tf_error)
+	error ("C99 designator %qE outside aggregate initializer",
+	       d->cur->index);
+      else
+	return true;
+    }
+  return false;
+}
+
 /* Subroutine of reshape_init, which processes a single initializer (part of
    a CONSTRUCTOR). TYPE is the type of the variable being initialized, D is the
    iterator within the CONSTRUCTOR which points to the initializer to process.
@@ -5141,6 +5159,10 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
   tree init = d->cur->value;
 
   if (error_operand_p (init))
+    return error_mark_node;
+
+  if (first_initializer_p && !CP_AGGREGATE_TYPE_P (type)
+      && has_designator_problem (d, complain))
     return error_mark_node;
 
   if (TREE_CODE (type) == COMPLEX_TYPE)
@@ -5163,6 +5185,8 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	  VEC(constructor_elt, gc) *v = 0;
 	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init);
 	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, d->cur->value);
+	  if (has_designator_problem (d, complain))
+	    return error_mark_node;
 	  d->cur++;
 	  init = build_constructor (init_list_type_node, v);
 	}
@@ -5242,6 +5266,8 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	 array types (one value per array element).  */
       if (TREE_CODE (str_init) == STRING_CST)
 	{
+	  if (has_designator_problem (d, complain))
+	    return error_mark_node;
 	  d->cur++;
 	  return str_init;
 	}
