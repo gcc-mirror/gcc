@@ -834,6 +834,7 @@ gimple_fold_builtin (gimple stmt)
     case BUILT_IN_MEMMOVE_CHK:
     case BUILT_IN_MEMSET_CHK:
     case BUILT_IN_STRNCPY_CHK:
+    case BUILT_IN_STPNCPY_CHK:
       arg_idx = 2;
       type = 2;
       break;
@@ -940,12 +941,14 @@ gimple_fold_builtin (gimple stmt)
       break;
 
     case BUILT_IN_STRNCPY_CHK:
+    case BUILT_IN_STPNCPY_CHK:
       if (val[2] && is_gimple_val (val[2]) && nargs == 4)
-	result = fold_builtin_strncpy_chk (loc, gimple_call_arg (stmt, 0),
+	result = fold_builtin_stxncpy_chk (loc, gimple_call_arg (stmt, 0),
                                            gimple_call_arg (stmt, 1),
                                            gimple_call_arg (stmt, 2),
                                            gimple_call_arg (stmt, 3),
-					   val[2]);
+					   val[2], ignore,
+					   DECL_FUNCTION_CODE (callee));
       break;
 
     case BUILT_IN_SNPRINTF_CHK:

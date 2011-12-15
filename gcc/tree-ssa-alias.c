@@ -1223,6 +1223,7 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 	case BUILT_IN_MEMMOVE_CHK:
 	case BUILT_IN_MEMPCPY_CHK:
 	case BUILT_IN_STPCPY_CHK:
+	case BUILT_IN_STPNCPY_CHK:
 	  {
 	    ao_ref dref;
 	    tree size = NULL_TREE;
@@ -1560,6 +1561,7 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	case BUILT_IN_MEMMOVE_CHK:
 	case BUILT_IN_MEMPCPY_CHK:
 	case BUILT_IN_STPCPY_CHK:
+	case BUILT_IN_STPNCPY_CHK:
 	case BUILT_IN_STRCAT_CHK:
 	case BUILT_IN_STRNCAT_CHK:
 	case BUILT_IN_MEMSET_CHK:

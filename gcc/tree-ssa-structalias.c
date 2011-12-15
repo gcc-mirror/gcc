@@ -4022,6 +4022,7 @@ find_func_aliases_for_builtin_call (gimple t)
       case BUILT_IN_MEMMOVE_CHK:
       case BUILT_IN_MEMPCPY_CHK:
       case BUILT_IN_STPCPY_CHK:
+      case BUILT_IN_STPNCPY_CHK:
       case BUILT_IN_STRCAT_CHK:
       case BUILT_IN_STRNCAT_CHK:
       case BUILT_IN_TM_MEMCPY:
@@ -4039,7 +4040,8 @@ find_func_aliases_for_builtin_call (gimple t)
 		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPCPY
 		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPNCPY
 		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMPCPY_CHK
-		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPCPY_CHK)
+		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPCPY_CHK
+		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPNCPY_CHK)
 		get_constraint_for_ptr_offset (dest, NULL_TREE, &rhsc);
 	      else
 		get_constraint_for (dest, &rhsc);
@@ -4757,6 +4759,7 @@ find_func_clobbers (gimple origt)
 	  case BUILT_IN_MEMMOVE_CHK:
 	  case BUILT_IN_MEMPCPY_CHK:
 	  case BUILT_IN_STPCPY_CHK:
+	  case BUILT_IN_STPNCPY_CHK:
 	  case BUILT_IN_STRCAT_CHK:
 	  case BUILT_IN_STRNCAT_CHK:
 	    {

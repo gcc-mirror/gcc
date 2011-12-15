@@ -1,3 +1,19 @@
+2011-12-15  Romain Geissler  <romain.geissler@gmail.com>
+
+	* builtins.def (BUILT_IN_STPNCPY_CHK): New definition.
+	* builtins.c (expand_builtin, fold_builtin_4, maybe_emit_chk_warning):
+	Add BUILT_IN_STPNCPY_CHK case.
+	* gimple-fold.c (gimple_fold_builtin): Likewise.
+	* tree-object-size.c (pass_through_call): Likewise.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1,
+	call_may_clobber_ref_p_1): Likewise.
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call,
+	find_func_clobbers): Likewise.
+	* tree.h (fold_builtin_strncpy_chk): Rename to fold_builtin_stxncpy_chk
+	* builtins.c (fold_builtin_strncpy_chk): Likewise.
+	Rewrite stpncpy_chk calls to strncpy_chk calls if returned value is
+	ignored.
+
 2011-12-15  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/51567
