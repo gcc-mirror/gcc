@@ -1,3 +1,10 @@
+2011-12-14  Richard Henderson  <rth@redhat.com>
+
+	* config/arm/arm.md (*addsi3_compare0_scratch): Set predicable.
+	(*compare_negsi_si, *compare_addsi2_op0): Likewise.
+	(*compare_addsi2_op1, *zeroextractsi_compare0_scratch): Likewise.
+	(*compareqi_eq0, *arm_cmpsi_insn, *arm_cmpsi_negshiftsi_si): Likewise.
+
 2011-12-14  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (replace_uses_by): Fixup TREE_CONSTANT for
