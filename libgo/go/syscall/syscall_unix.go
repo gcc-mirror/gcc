@@ -157,25 +157,3 @@ func Mmap(fd int, offset int64, length int, prot int, flags int) (data []byte, e
 func Munmap(b []byte) (err error) {
 	return mapper.Munmap(b)
 }
-
-
-// An Errno is an unsigned number describing an error condition.
-// It implements the error interface.  The zero Errno is by convention
-// a non-error, so code to convert from Errno to error should use:
-//	err = nil
-//	if errno != 0 {
-//		err = errno
-//	}
-type Errno uintptr
-
-func (e Errno) Error() string {
-	return Errstr(int(e))
-}
-
-func (e Errno) Temporary() bool {
-	return e == EINTR || e == EMFILE || e.Timeout()
-}
-
-func (e Errno) Timeout() bool {
-	return e == EAGAIN || e == EWOULDBLOCK || e == ETIMEDOUT
-}
