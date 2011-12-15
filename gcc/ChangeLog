@@ -1,3 +1,19 @@
+2011-12-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-protos.h (print_operand): Remove.
+	(print_operand_address): Remove.
+	* config/avr/avr.h (PRINT_OPERAND): Remove.
+	(PRINT_OPERAND_ADDRESS): Remove.
+	(PRINT_OPERAND_PUNCT_VALID_P): Remove.
+	* config/avr/avr.c (TARGET_PRINT_OPERAND): New hook define.
+	(TARGET_PRINT_OPERAND_ADDRESS): New hook define.
+	(TARGET_PRINT_OPERAND_PUNCT_VALID_P): New hook define.
+	(print_operand_address): Rename to...
+	(avr_print_operand_address): ...this and make static.
+	(print_operand): Rename to...
+	(avr_print_operand): ...this and make static.
+	(avr_print_operand_punct_valid_p): New static function.
+
 2011-12-15  Andreas Tobler  <andreast@fgznet.ch>
 
 	* config/i386/freebsd.h (TARGET_ASM_FILE_END): Define.

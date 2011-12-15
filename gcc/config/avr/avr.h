@@ -497,12 +497,6 @@ typedef struct avr_args {
 
 #define FINAL_PRESCAN_INSN(insn, operand, nop) final_prescan_insn (insn, operand,nop)
 
-#define PRINT_OPERAND(STREAM, X, CODE) print_operand (STREAM, X, CODE)
-
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE) ((CODE) == '~' || (CODE) == '!')
-
-#define PRINT_OPERAND_ADDRESS(STREAM, X) print_operand_address(STREAM, X)
-
 #define ASM_OUTPUT_REG_PUSH(STREAM, REGNO)	\
 {						\
   gcc_assert (REGNO < 32);			\
