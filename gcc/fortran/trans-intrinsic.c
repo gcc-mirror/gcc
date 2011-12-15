@@ -1054,6 +1054,11 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
      one always has a dim_arg argument.
 
      m = this_images() - 1
+     if (corank == 1)
+       {
+	 sub(1) = m + lcobound(corank)
+	 return;
+       }
      i = rank
      min_var = min (rank + corank - 2, rank + dim_arg - 1)
      for (;;)
@@ -1070,15 +1075,29 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
 				       : m + lcobound(corank)
   */
 
+  /* this_image () - 1.  */
+  tmp = fold_convert (type, gfort_gvar_caf_this_image);
+  tmp = fold_build2_loc (input_location, MINUS_EXPR, type, tmp,
+		       build_int_cst (type, 1));
+  if (corank == 1)
+    {
+      /* sub(1) = m + lcobound(corank).  */
+      lbound = gfc_conv_descriptor_lbound_get (desc,
+			build_int_cst (TREE_TYPE (gfc_array_index_type),
+				       corank+rank-1));
+      lbound = fold_convert (type, lbound);
+      tmp = fold_build2_loc (input_location, PLUS_EXPR, type, tmp, lbound);
+
+      se->expr = tmp;
+      return;
+    }
+
   m = gfc_create_var (type, NULL); 
   ml = gfc_create_var (type, NULL); 
   loop_var = gfc_create_var (integer_type_node, NULL); 
   min_var = gfc_create_var (integer_type_node, NULL); 
 
   /* m = this_image () - 1.  */
-  tmp = fold_convert (type, gfort_gvar_caf_this_image);
-  tmp = fold_build2_loc (input_location, MINUS_EXPR, type, tmp,
-		       build_int_cst (type, 1));
   gfc_add_modify (&se->pre, m, tmp);
 
   /* min_var = min (rank + corank-2, rank + dim_arg - 1).  */

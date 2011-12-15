@@ -6227,10 +6227,6 @@ gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub)
 gfc_expr *
 gfc_simplify_this_image (gfc_expr *coarray, gfc_expr *dim)
 {
-  gfc_ref *ref;
-  gfc_array_spec *as;
-  int d;
-
   if (gfc_option.coarray != GFC_FCOARRAY_SINGLE)
     return NULL;
 
@@ -6244,74 +6240,8 @@ gfc_simplify_this_image (gfc_expr *coarray, gfc_expr *dim)
       return result;
     }
 
-  gcc_assert (coarray->expr_type == EXPR_VARIABLE);
-
-  /* Follow any component references.  */
-  as = coarray->symtree->n.sym->as;
-  for (ref = coarray->ref; ref; ref = ref->next)
-    if (ref->type == REF_COMPONENT)
-      as = ref->u.ar.as;
-
-  if (as->type == AS_DEFERRED)
-    return NULL;
-
-  if (dim == NULL)
-    {
-      /* Multi-dimensional bounds.  */
-      gfc_expr *bounds[GFC_MAX_DIMENSIONS];
-      gfc_expr *e;
-
-      /* Simplify the bounds for each dimension.  */
-      for (d = 0; d < as->corank; d++)
-	{
-	  bounds[d] = simplify_bound_dim (coarray, NULL, d + as->rank + 1, 0,
-					  as, NULL, true);
-	  if (bounds[d] == NULL || bounds[d] == &gfc_bad_expr)
-	    {
-	      int j;
-
-	      for (j = 0; j < d; j++)
-		gfc_free_expr (bounds[j]);
-
-	      return bounds[d];
-	    }
-	}
-
-      /* Allocate the result expression.  */
-      e = gfc_get_expr ();
-      e->where = coarray->where;
-      e->expr_type = EXPR_ARRAY;
-      e->ts.type = BT_INTEGER;
-      e->ts.kind = gfc_default_integer_kind;
-
-      e->rank = 1;
-      e->shape = gfc_get_shape (1);
-      mpz_init_set_ui (e->shape[0], as->corank);
-
-      /* Create the constructor for this array.  */
-      for (d = 0; d < as->corank; d++)
-        gfc_constructor_append_expr (&e->value.constructor,
-                                     bounds[d], &e->where);
-
-      return e;
-    }
-  else
-    {
-      /* A DIM argument is specified.  */
-      if (dim->expr_type != EXPR_CONSTANT)
-	return NULL;
-
-      d = mpz_get_si (dim->value.integer);
-
-      if (d < 1 || d > as->corank)
-	{
-	  gfc_error ("DIM argument at %L is out of bounds", &dim->where);
-	  return &gfc_bad_expr;
-	}
-
-      return simplify_bound_dim (coarray, NULL, d + as->rank, 0, as, NULL,
-				 true);
-   }
+  /* For -fcoarray=single, this_image(A) is the same as lcobound(A).  */
+  return simplify_cobound (coarray, dim, NULL, 0);
 }
 
 
