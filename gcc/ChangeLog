@@ -1,3 +1,10 @@
+2011-12-15  Andreas Tobler  <andreast@fgznet.ch>
+
+	Backport from mainline.
+	2011-12-15  Andreas Tobler  <andreast@fgznet.ch>
+
+	* config/i386/freebsd.h (TARGET_ASM_FILE_END): Define.
+
 2011-12-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lto-streamer-out.c (write_symbol): Use proper 64-bit host type.
