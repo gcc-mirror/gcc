@@ -1,3 +1,11 @@
+2011-12-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2011-12-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* generic-morestack.c (__generic_morestack_set_initial_sp): Check
+	__GLIBC__ instead of __linux__ when using __SIGRTMIN.
+
 2011-11-23  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config.host (*-*-freebsd[12], *-*-freebsd[12].*,
