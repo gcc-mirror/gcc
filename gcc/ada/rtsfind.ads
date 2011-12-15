@@ -588,6 +588,7 @@ package Rtsfind is
      RE_External_Tag,                    -- Ada.Tags
      RO_TA_External_Tag,                 -- Ada.Tags
      RE_Get_Access_Level,                -- Ada.Tags
+     RE_Get_Alignment,                   -- Ada.Tags
      RE_Get_Entry_Index,                 -- Ada.Tags
      RE_Get_Offset_Index,                -- Ada.Tags
      RE_Get_Prim_Op_Kind,                -- Ada.Tags
@@ -1787,6 +1788,7 @@ package Rtsfind is
      RE_External_Tag                     => Ada_Tags,
      RO_TA_External_Tag                  => Ada_Tags,
      RE_Get_Access_Level                 => Ada_Tags,
+     RE_Get_Alignment                    => Ada_Tags,
      RE_Get_Entry_Index                  => Ada_Tags,
      RE_Get_Offset_Index                 => Ada_Tags,
      RE_Get_Prim_Op_Kind                 => Ada_Tags,
