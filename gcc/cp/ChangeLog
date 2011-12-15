@@ -1,3 +1,9 @@
+2011-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/51360
+	* semantics.c (finish_omp_clauses): For OMP_CLAUSE_NUM_THREADS_EXPR
+	and OMP_CLAUSE_SCHEDULE_CHUNK_EXPR call mark_rvalue_use.
+
 2011-12-15  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51473
