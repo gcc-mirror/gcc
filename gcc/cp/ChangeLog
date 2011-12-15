@@ -1,5 +1,12 @@
 2011-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/51463
+	* decl.c (grokdeclarator): Set DECL_INITIAL of decl
+	to error_mark_node to disallow NSDMI if declspecs->storage_class
+	is sc_static.
+	* parser.c (cp_parser_late_parse_one_default_arg): Return early
+	if default_arg is error_mark_node.
+
 	PR c/51360
 	* semantics.c (finish_omp_clauses): For OMP_CLAUSE_NUM_THREADS_EXPR
 	and OMP_CLAUSE_SCHEDULE_CHUNK_EXPR call mark_rvalue_use.

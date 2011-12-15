@@ -21853,6 +21853,9 @@ cp_parser_late_parse_one_default_arg (cp_parser *parser, tree decl,
   tree parsed_arg;
   bool dummy;
 
+  if (default_arg == error_mark_node)
+    return error_mark_node;
+
   /* Push the saved tokens for the default argument onto the parser's
      lexer stack.  */
   tokens = DEFARG_TOKENS (default_arg);
