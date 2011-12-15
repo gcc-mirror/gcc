@@ -222,11 +222,11 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   /**
    *  @brief  Return list of partial sums
    *
-   *  Accumulates the values in the range [first,last) using operator+().
+   *  Accumulates the values in the range [first,last) using the @c + operator.
    *  As each successive input value is added into the total, that partial sum
-   *  is written to @p __result.  Therefore, the first value in result is the
-   *  first value of the input, the second value in result is the sum of the
-   *  first and second input values, and so on.
+   *  is written to @p __result.  Therefore, the first value in @p __result is
+   *  the first value of the input, the second value in @p __result is the sum
+   *  of the first and second input values, and so on.
    *
    *  @param  __first  Start of input range.
    *  @param  __last  End of input range.
@@ -261,15 +261,16 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   /**
    *  @brief  Return list of partial sums
    *
-   *  Accumulates the values in the range [first,last) using operator+().
+   *  Accumulates the values in the range [first,last) using @p __binary_op.
    *  As each successive input value is added into the total, that partial sum
-   *  is written to @p __result.  Therefore, the first value in result is the
-   *  first value of the input, the second value in result is the sum of the
-   *  first and second input values, and so on.
+   *  is written to @p __result.  Therefore, the first value in @p __result is
+   *  the first value of the input, the second value in @p __result is the sum
+   *  of the first and second input values, and so on.
    *
    *  @param  __first  Start of input range.
    *  @param  __last  End of input range.
    *  @param  __result  Output sum.
+   *  @param  __binary_op  Function object.
    *  @return  Iterator pointing just beyond the values written to __result.
    */
   template<typename _InputIterator, typename _OutputIterator,
