@@ -1,3 +1,15 @@
+2011-12-15  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): For 'alignment
+	applied to a class-wide type under VM targets generate code which
+	invokes the function Get_Alignment to retrieve the value of the
+	alignment from the TSD.
+	* rtsfind.ads (RE_Get_Alignment): New entity.
+
+2011-12-15  Robert Dewar  <dewar@adacore.com>
+
+	* g-comlin.adb: Fix header.
+
 2011-12-15  Tristan Gingold  <gingold@adacore.com>
 
 	* gnatls.adb: Fix typo.

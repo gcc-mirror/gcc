@@ -1120,10 +1120,18 @@ package body Exp_Attr is
 
          elsif Is_Class_Wide_Type (Ptyp) then
             New_Node :=
-              Build_Get_Alignment (Loc,
-                Make_Attribute_Reference (Loc,
-                  Prefix         => Pref,
-                  Attribute_Name => Name_Tag));
+              Make_Attribute_Reference (Loc,
+                Prefix         => Pref,
+                Attribute_Name => Name_Tag);
+
+            if VM_Target = No_VM then
+               New_Node := Build_Get_Alignment (Loc, New_Node);
+            else
+               New_Node :=
+                 Make_Function_Call (Loc,
+                   Name => New_Reference_To (RTE (RE_Get_Alignment), Loc),
+                   Parameter_Associations => New_List (New_Node));
+            end if;
 
             --  Case where the context is a specific integer type with which
             --  the original attribute was compatible. The function has a
