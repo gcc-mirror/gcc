@@ -1,3 +1,8 @@
+2011-12-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51540
+	* include/bits/stl_numeric.h (partial_sum): Adjust doxygen comments.
+
 2011-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:
