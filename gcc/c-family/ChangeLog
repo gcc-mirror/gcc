@@ -1,3 +1,9 @@
+2011-12-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51365
+	* c-common.c (RID_IS_FINAL): Add.
+	* c-common.h (RID_IS_FINAL): Add.
+
 2011-11-30  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* c.opt (fgnu-runtime): Provide full description.

@@ -2380,6 +2380,9 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
     case CPTK_IS_ENUM:
       pp_cxx_ws_string (pp, "__is_enum");
       break;
+    case CPTK_IS_FINAL:
+      pp_cxx_ws_string (pp, "__is_final");
+      break;
     case CPTK_IS_POD:
       pp_cxx_ws_string (pp, "__is_pod");
       break;

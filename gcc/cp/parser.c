@@ -3854,6 +3854,7 @@ cp_parser_translation_unit (cp_parser* parser)
      __is_convertible_to ( type-id , type-id )     
      __is_empty ( type-id )
      __is_enum ( type-id )
+     __is_final ( type-id )
      __is_literal_type ( type-id )
      __is_pod ( type-id )
      __is_polymorphic ( type-id )
@@ -4199,6 +4200,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_IS_CONVERTIBLE_TO:
 	case RID_IS_EMPTY:
 	case RID_IS_ENUM:
+	case RID_IS_FINAL:
 	case RID_IS_LITERAL_TYPE:
 	case RID_IS_POD:
 	case RID_IS_POLYMORPHIC:
@@ -7867,6 +7869,9 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
       break;
     case RID_IS_ENUM:
       kind = CPTK_IS_ENUM;
+      break;
+    case RID_IS_FINAL:
+      kind = CPTK_IS_FINAL;
       break;
     case RID_IS_LITERAL_TYPE:
       kind = CPTK_IS_LITERAL_TYPE;
