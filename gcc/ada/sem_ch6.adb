@@ -60,6 +60,7 @@ with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch12; use Sem_Ch12;
 with Sem_Ch13; use Sem_Ch13;
+with Sem_Dim;  use Sem_Dim;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
 with Sem_Elim; use Sem_Elim;
@@ -1529,6 +1530,8 @@ package body Sem_Ch6 is
 
       Kill_Current_Values (Last_Assignment_Only => True);
       Check_Unreachable_Code (N);
+
+      Analyze_Dimension (N);
    end Analyze_Return_Statement;
 
    -------------------------------------

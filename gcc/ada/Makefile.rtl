@@ -504,6 +504,8 @@ GNATRTL_NONTASKING_OBJS= \
   s-crc32$(objext)  \
   s-crtl$(objext)   \
   s-crtrun$(objext) \
+  s-diflio$(objext) \
+  s-diinio$(objext) \
   s-direio$(objext) \
   s-dsaser$(objext) \
   s-excdeb$(objext) \
@@ -554,6 +556,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-imgwch$(objext) \
   s-imgwiu$(objext) \
   s-io$(objext)     \
+  s-llflex$(objext) \
   s-maccod$(objext) \
   s-mantis$(objext) \
   s-mastop$(objext) \

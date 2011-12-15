@@ -50,6 +50,7 @@ with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch5;  use Sem_Ch5;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Dim;  use Sem_Dim;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
 with Sem_Eval; use Sem_Eval;
@@ -6040,8 +6041,16 @@ package body Sem_Ch4 is
                 First_Subtype (Base_Type (Etype (R))) /= Standard_Integer
               and then Base_Type (Etype (R)) /= Universal_Integer
             then
-               Error_Msg_NE
-                 ("exponent must be of type Natural, found}", R, Etype (R));
+               if Ada_Version >= Ada_2012
+                 and then Is_Dimensioned_Type (Etype (L))
+               then
+                  Error_Msg_NE
+                    ("exponent for dimensioned type must be a Rational" &
+                     ", found}", R, Etype (R));
+               else
+                  Error_Msg_NE
+                    ("exponent must be of type Natural, found}", R, Etype (R));
+               end if;
                return;
             end if;
 

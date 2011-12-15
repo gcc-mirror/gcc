@@ -304,6 +304,7 @@ GNAT_ADA_OBJS =	\
  ada/s-htable.o	\
  ada/s-imenne.o	\
  ada/s-imgenu.o	\
+ ada/s-llflex.o \
  ada/s-mastop.o	\
  ada/s-memory.o	\
  ada/s-os_lib.o	\
@@ -353,6 +354,7 @@ GNAT_ADA_OBJS =	\
  ada/sem_ch7.o	\
  ada/sem_ch8.o	\
  ada/sem_ch9.o	\
+ ada/sem_dim.o  \
  ada/sem_disp.o	\
  ada/sem_dist.o	\
  ada/sem_elab.o	\
@@ -4306,6 +4308,9 @@ ada/sem_ch9.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/types.ads ada/uintp.ads ada/uintp.adb ada/uname.ads \
    ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads ada/validsw.ads \
    ada/warnsw.ads ada/widechar.ads 
+
+ada/sem_dim.o : ada/sem_util.ads ada/sem_util.adb ada/nmake.ads \
+   ada/nmake.adb
 
 ada/sem_disp.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/atree.ads \

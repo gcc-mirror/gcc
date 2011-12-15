@@ -710,10 +710,9 @@ package body System.Task_Primitives.Operations is
       --  Moreover, CXD8002 appears to pass on Windows (although we do not
       --  guarantee full Annex D compliance on Windows in any case).
 
-      --  What is not clear is why we now call SwitchToThread in the False
-      --  case. Other versions don't do that, is it necessary???
-
-      SwitchToThread;
+      if Do_Yield then
+         SwitchToThread;
+      end if;
    end Yield;
 
    ------------------

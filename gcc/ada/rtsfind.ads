@@ -262,6 +262,7 @@ package Rtsfind is
       System_Img_Uns,
       System_Img_WChar,
       System_Interrupts,
+      System_Long_Long_Float_Expon,
       System_Machine_Code,
       System_Mantissa,
       System_Memcop,
@@ -865,6 +866,8 @@ package Rtsfind is
      RE_Register_Interrupt_Handler,      -- System.Interrupts
      RE_Static_Interrupt_Protection,     -- System.Interrupts
      RE_System_Interrupt_Id,             -- System.Interrupts
+
+     RE_Expon_LLF,                       -- System.Long_Long_Float_Expon
 
      RE_Asm_Insn,                        -- System.Machine_Code
      RE_Asm_Input_Operand,               -- System.Machine_Code
@@ -2065,6 +2068,8 @@ package Rtsfind is
      RE_Register_Interrupt_Handler       => System_Interrupts,
      RE_Static_Interrupt_Protection      => System_Interrupts,
      RE_System_Interrupt_Id              => System_Interrupts,
+
+     RE_Expon_LLF                        => System_Long_Long_Float_Expon,
 
      RE_Asm_Insn                         => System_Machine_Code,
      RE_Asm_Input_Operand                => System_Machine_Code,

@@ -46,6 +46,7 @@ with Sem_Aux;  use Sem_Aux;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Dim;  use Sem_Dim;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
@@ -1476,6 +1477,15 @@ package body Sem_Ch13 is
 
                   goto Continue;
                end;
+
+               when Aspect_Dimension =>
+                  Analyze_Aspect_Dimension (N, Id, Expr);
+                  goto Continue;
+
+               when Aspect_Dimension_System =>
+                  Analyze_Aspect_Dimension_System (N, Id, Expr);
+                  goto Continue;
+
             end case;
 
             --  If a delay is required, we delay the freeze (not much point in
@@ -6046,6 +6056,11 @@ package body Sem_Ch13 is
               Aspect_Static_Predicate  |
               Aspect_Type_Invariant    =>
             T := Standard_Boolean;
+
+         when Aspect_Dimension |
+              Aspect_Dimension_System =>
+            raise Program_Error;
+
       end case;
 
       --  Do the preanalyze call
@@ -8777,8 +8792,8 @@ package body Sem_Ch13 is
             Source : constant Entity_Id  := T.Source;
             Target : constant Entity_Id  := T.Target;
 
-            Source_Siz : Uint;
-            Target_Siz : Uint;
+            Source_Siz    : Uint;
+            Target_Siz    : Uint;
 
          begin
             --  This validation check, which warns if we have unequal sizes for

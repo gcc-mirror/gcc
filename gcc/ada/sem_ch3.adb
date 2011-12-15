@@ -56,6 +56,7 @@ with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
+with Sem_Dim;  use Sem_Dim;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
 with Sem_Elim; use Sem_Elim;
@@ -2036,6 +2037,7 @@ package body Sem_Ch3 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
+      Analyze_Dimension (N);
    end Analyze_Component_Declaration;
 
    --------------------------
@@ -2089,6 +2091,11 @@ package body Sem_Ch3 is
          --  Complete analysis of declaration
 
          Analyze (D);
+
+         --  Removal of the dimension in the expression for object & component
+         --  declaration.
+
+         Remove_Dimension_In_Declaration (D);
          Next_Node := Next (D);
 
          if No (Freeze_From) then
@@ -3773,6 +3780,7 @@ package body Sem_Ch3 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
+      Analyze_Dimension (N);
    end Analyze_Object_Declaration;
 
    ---------------------------
@@ -4571,6 +4579,7 @@ package body Sem_Ch3 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
+      Analyze_Dimension (N);
    end Analyze_Subtype_Declaration;
 
    --------------------------------

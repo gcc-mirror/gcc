@@ -60,9 +60,10 @@ with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch12; use Sem_Ch12;
 with Sem_Ch13; use Sem_Ch13;
-with Sem_Eval; use Sem_Eval;
+with Sem_Dim;  use Sem_Dim;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
+with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
 with Sem_Res;  use Sem_Res;
 with Sem_SCIL; use Sem_SCIL;
@@ -2103,6 +2104,20 @@ package body Exp_Ch6 is
    --  Start of processing for Expand_Call
 
    begin
+      --  Expand the procedure call if the first actual has a dimension and if
+      --  the procedure is Put (Ada 2012).
+
+      if Ada_Version >= Ada_2012
+        and then Nkind (Call_Node) = N_Procedure_Call_Statement
+        and then Present (Parameter_Associations (Call_Node))
+      then
+         Expand_Put_Call_With_Dimension_String (Call_Node);
+      end if;
+
+      --  Remove the dimensions of every parameters in call
+
+      Remove_Dimension_In_Call (N);
+
       --  Ignore if previous error
 
       if Nkind (Call_Node) in N_Has_Etype

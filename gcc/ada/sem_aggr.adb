@@ -1691,6 +1691,11 @@ package body Sem_Aggr is
             end if;
          end if;
 
+         --  If an aggregate component has a type with predicates, an explicit
+         --  predicate check must be applied, as for an assignment statement,
+         --  because the aggegate might not be expanded into individual
+         --  component assignments.
+
          if Present (Predicate_Function (Component_Typ)) then
             Apply_Predicate_Check (Expr, Component_Typ);
          end if;
@@ -3296,6 +3301,11 @@ package body Sem_Aggr is
          if not Has_Expansion_Delayed (Expr) then
             Aggregate_Constraint_Checks (Expr, Expr_Type);
          end if;
+
+         --  If an aggregate component has a type with predicates, an explicit
+         --  predicate check must be applied, as for an assignment statement,
+         --  because the aggegate might not be expanded into individual
+         --  component assignments.
 
          if Present (Predicate_Function (Expr_Type)) then
             Apply_Predicate_Check (Expr, Expr_Type);
