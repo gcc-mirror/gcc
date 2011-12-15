@@ -1886,6 +1886,7 @@ go_unicode_utf8_files = \
 @LIBGO_IS_LINUX_TRUE@syscall_netlink_file = go/syscall/netlink_linux.go
 go_base_syscall_files = \
 	go/syscall/env_unix.go \
+	go/syscall/syscall_errno.go \
 	go/syscall/libcall_support.go \
 	go/syscall/libcall_posix.go \
 	go/syscall/socket.go \

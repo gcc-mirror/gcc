@@ -1549,6 +1549,7 @@ endif
 
 go_base_syscall_files = \
 	go/syscall/env_unix.go \
+	go/syscall/syscall_errno.go \
 	go/syscall/libcall_support.go \
 	go/syscall/libcall_posix.go \
 	go/syscall/socket.go \
