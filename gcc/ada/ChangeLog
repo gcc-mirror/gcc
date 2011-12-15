@@ -1,3 +1,9 @@
+2011-12-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-numaux-vms.ads, s-asthan-vms-ia64.adb, s-auxdec-vms-ia64.adb,
+	s-memory-vms_64.adb, s-memory-vms_64.ads, s-osinte-vms-ia64.adb,
+	s-osinte-vms-ia64.ads, s-tasdeb-vms.adb: New files.
+
 2011-12-15  Vincent Pucci  <pucci@adacore.com>
 
 	* aspects.adb, aspects.ads Aspect_Dimension and
