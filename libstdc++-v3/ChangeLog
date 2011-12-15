@@ -1,3 +1,14 @@
+2011-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51558
+	* include/bits/functional_hash.h (struct hash): Add static_assert.
+	* src/compatibility-c++0x.cc: Adjust compatibility definitions.
+	* testsuite/23_containers/unordered_map/erase/51142.cc: Adjust.
+	* testsuite/23_containers/unordered_set/erase/51142.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/erase/51142.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/erase/51142.cc: Likewise.
+
 2011-12-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/num_put/put/char/9780-2.cc: Add test for "C"
