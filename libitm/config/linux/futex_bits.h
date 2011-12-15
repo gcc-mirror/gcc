@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2011 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -22,16 +22,18 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* Provide access to the futex system call.  */
+/* Provide target-independant access to the futex system call.  */
 
-#ifndef GTM_FUTEX_H
-#define GTM_FUTEX_H 1
+/* Note for ARM:
+   There are two styles of syscall, and in the eabi style the syscall
+   number goes into the thumb frame pointer.  We need to either write
+   this in pure assembler or just defer entirely to libc.  */
 
-namespace GTM HIDDEN {
+#include <unistd.h>
+#include <sys/syscall.h>
 
-extern void futex_wait (int *addr, int val);
-extern long futex_wake (int *addr, int count);
-
+static inline long
+sys_futex0 (int *addr, long op, long val)
+{
+  return syscall (SYS_futex, addr, op, val, 0);
 }
-
-#endif /* GTM_FUTEX_H */

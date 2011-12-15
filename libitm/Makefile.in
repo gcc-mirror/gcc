@@ -36,8 +36,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@ARCH_X86_TRUE@am__append_1 = x86_sse.cc x86_avx.cc
-@ARCH_FUTEX_TRUE@am__append_2 = futex.cc
+@ARCH_ARM_TRUE@am__append_1 = hwcap.cc
+@ARCH_X86_TRUE@am__append_2 = x86_sse.cc x86_avx.cc
+@ARCH_FUTEX_TRUE@am__append_3 = futex.cc
 subdir = .
 DIST_COMMON = $(am__configure_deps) $(srcdir)/../config.guess \
 	$(srcdir)/../config.sub $(srcdir)/../depcomp \
@@ -99,15 +100,16 @@ libitm_la_LIBADD =
 am__libitm_la_SOURCES_DIST = aatree.cc alloc.cc alloc_c.cc \
 	alloc_cpp.cc barrier.cc beginend.cc clone.cc eh_cpp.cc \
 	local.cc query.cc retry.cc rwlock.cc useraction.cc util.cc \
-	sjlj.S tls.cc method-serial.cc method-gl.cc x86_sse.cc \
-	x86_avx.cc futex.cc
-@ARCH_X86_TRUE@am__objects_1 = x86_sse.lo x86_avx.lo
-@ARCH_FUTEX_TRUE@am__objects_2 = futex.lo
+	sjlj.S tls.cc method-serial.cc method-gl.cc hwcap.cc \
+	x86_sse.cc x86_avx.cc futex.cc
+@ARCH_ARM_TRUE@am__objects_1 = hwcap.lo
+@ARCH_X86_TRUE@am__objects_2 = x86_sse.lo x86_avx.lo
+@ARCH_FUTEX_TRUE@am__objects_3 = futex.lo
 am_libitm_la_OBJECTS = aatree.lo alloc.lo alloc_c.lo alloc_cpp.lo \
 	barrier.lo beginend.lo clone.lo eh_cpp.lo local.lo query.lo \
 	retry.lo rwlock.lo useraction.lo util.lo sjlj.lo tls.lo \
 	method-serial.lo method-gl.lo $(am__objects_1) \
-	$(am__objects_2)
+	$(am__objects_2) $(am__objects_3)
 libitm_la_OBJECTS = $(am_libitm_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
@@ -376,7 +378,8 @@ libitm_la_LDFLAGS = $(libitm_version_info) $(libitm_version_script)
 libitm_la_SOURCES = aatree.cc alloc.cc alloc_c.cc alloc_cpp.cc \
 	barrier.cc beginend.cc clone.cc eh_cpp.cc local.cc query.cc \
 	retry.cc rwlock.cc useraction.cc util.cc sjlj.S tls.cc \
-	method-serial.cc method-gl.cc $(am__append_1) $(am__append_2)
+	method-serial.cc method-gl.cc $(am__append_1) $(am__append_2) \
+	$(am__append_3)
 
 # Automake Documentation:
 # If your package has Texinfo files in many directories, you can use the
@@ -505,6 +508,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/clone.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eh_cpp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/futex.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwcap.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/local.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/method-gl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/method-serial.Plo@am__quote@

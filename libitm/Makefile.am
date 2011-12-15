@@ -62,6 +62,9 @@ libitm_la_SOURCES = \
 	query.cc retry.cc rwlock.cc useraction.cc util.cc \
 	sjlj.S tls.cc method-serial.cc method-gl.cc
 
+if ARCH_ARM
+libitm_la_SOURCES += hwcap.cc
+endif
 if ARCH_X86
 libitm_la_SOURCES += x86_sse.cc x86_avx.cc
 x86_sse.lo : XCFLAGS += -msse

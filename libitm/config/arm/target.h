@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2011 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -22,16 +22,32 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* Provide access to the futex system call.  */
-
-#ifndef GTM_FUTEX_H
-#define GTM_FUTEX_H 1
-
 namespace GTM HIDDEN {
 
-extern void futex_wait (int *addr, int val);
-extern long futex_wake (int *addr, int count);
+typedef struct gtm_jmpbuf
+{
+  unsigned long long vfp[8];	/* d8-d15 */
+  unsigned long long iwmmxt[6];	/* cr10-cr15 */
+  unsigned long gr[8];		/* r4-r11 */
+  void *cfa;
+  unsigned long pc;
+} gtm_jmpbuf;
 
+/* ARM generally uses a fixed page size of 4K.  */
+#define PAGE_SIZE	4096
+#define FIXED_PAGE_SIZE	1
+
+/* ??? The size of one line in hardware caches (in bytes). */
+#define HW_CACHELINE_SIZE 64
+
+static inline void
+cpu_relax (void)
+{
+  /* ??? The kernel uses the condition
+	#if __LINUX_ARM_ARCH__ == 6 || defined(CONFIG_ARM_ERRATA_754327)
+     Given that we're actually just waiting, it doesn't seem like it 
+     hurts to simply use a full barrier all the time.  */
+  __sync_synchronize ();
 }
 
-#endif /* GTM_FUTEX_H */
+} // namespace GTM
