@@ -1,3 +1,15 @@
+2011-12-15  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/rs6000/darwin-world.S (toplevel): Make it clear that this
+	function is not used for PPC64.  
+	(save_world): Amend comments.  Update the VRsave mask to reflect the
+	saved regs.
+	(rest_world): Update comments, do not  clobber r10, do not use r8.
+	(eh_rest_world_r10): Amend comments, do not use r8.
+	(rest_world_eh_r7r8): Rename as local Lrest_world_eh_r7, since r8 is
+	no longer used, move restore of CR and target address to the end of
+	the routine.
+
 2011-12-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* generic-morestack.c (__generic_morestack_set_initial_sp): Check
