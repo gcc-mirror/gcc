@@ -1,3 +1,7 @@
+2011-12-15  Andreas Tobler  <andreast@fgznet.ch>
+
+	* config/i386/freebsd.h (TARGET_ASM_FILE_END): Define.
+
 2011-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/51360
