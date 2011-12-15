@@ -1,3 +1,15 @@
+2012-12-15  Richard Guenther  <rguenther@suse.de>
+
+	Revert
+	PR lto/48437
+	* lto-streamer-out.c (tree_is_indexable): Exclude block-local
+	extern declarations.
+
+	PR lto/48508
+	PR lto/48437
+	* tree-streamer-out.c (streamer_write_chain): Stream DECL_EXTERNAL
+	VAR_DECLs and FUNCTION_DECLs locally.
+
 2011-12-14  Richard Henderson  <rth@redhat.com>
 
 	* config/arm/arm.md (*addsi3_compare0_scratch): Set predicable.
