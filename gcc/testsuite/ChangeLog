@@ -1,5 +1,7 @@
 2011-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/vect/vect-sdivmod-1.c: New test.
+
 	PR c++/51463
 	* g++.dg/cpp0x/pr51463.C: New test.
 

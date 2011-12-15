@@ -6340,9 +6340,9 @@
 	(if_then_else:V_256
 	  (match_operator 3 ""
 	    [(match_operand:VI_256 4 "nonimmediate_operand" "")
-	     (match_operand:VI_256 5 "nonimmediate_operand" "")])
-	  (match_operand:V_256 1 "general_operand" "")
-	  (match_operand:V_256 2 "general_operand" "")))]
+	     (match_operand:VI_256 5 "general_operand" "")])
+	  (match_operand:V_256 1 "" "")
+	  (match_operand:V_256 2 "" "")))]
   "TARGET_AVX2
    && (GET_MODE_NUNITS (<V_256:MODE>mode)
        == GET_MODE_NUNITS (<VI_256:MODE>mode))"
@@ -6357,9 +6357,9 @@
 	(if_then_else:V_128
 	  (match_operator 3 ""
 	    [(match_operand:VI124_128 4 "nonimmediate_operand" "")
-	     (match_operand:VI124_128 5 "nonimmediate_operand" "")])
-	  (match_operand:V_128 1 "general_operand" "")
-	  (match_operand:V_128 2 "general_operand" "")))]
+	     (match_operand:VI124_128 5 "general_operand" "")])
+	  (match_operand:V_128 1 "" "")
+	  (match_operand:V_128 2 "" "")))]
   "TARGET_SSE2
    && (GET_MODE_NUNITS (<V_128:MODE>mode)
        == GET_MODE_NUNITS (<VI124_128:MODE>mode))"
@@ -6374,9 +6374,9 @@
 	(if_then_else:VI8F_128
 	  (match_operator 3 ""
 	    [(match_operand:V2DI 4 "nonimmediate_operand" "")
-	     (match_operand:V2DI 5 "nonimmediate_operand" "")])
-	  (match_operand:VI8F_128 1 "general_operand" "")
-	  (match_operand:VI8F_128 2 "general_operand" "")))]
+	     (match_operand:V2DI 5 "general_operand" "")])
+	  (match_operand:VI8F_128 1 "" "")
+	  (match_operand:VI8F_128 2 "" "")))]
   "TARGET_SSE4_2"
 {
   bool ok = ix86_expand_int_vcond (operands);

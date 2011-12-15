@@ -1,3 +1,30 @@
+2011-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vectorizer.h (struct _stmt_vec_info): Remove pattern_def_stmt
+	field, add pattern_def_seq.
+	(STMT_VINFO_PATTERN_DEF_STMT): Remove.
+	(STMT_VINFO_PATTERN_DEF_SEQ): Define.
+	(NUM_PATTERNS): Bump to 10.
+	* tree-vect-loop.c (vect_determine_vectorization_factor,
+	vect_transform_loop): Adjust for pattern def changing from a single
+	gimple stmt to gimple_seq.
+	* tree-vect-stmts.c (vect_analyze_stmt, new_stmt_vec_info,
+	free_stmt_vec_info): Likewise.
+	* tree-vect-patterns.c (vect_recog_over_widening_pattern,
+	vect_recog_vector_vector_shift_pattern,
+	vect_recog_mixed_size_cond_pattern, adjust_bool_pattern_cast,
+	adjust_bool_pattern, vect_mark_pattern_stmts): Likewise.
+	(vect_recog_sdivmod_pow2_pattern): New function.
+	(vect_vect_recog_func_ptrs): Add it.
+
+	* config/i386/sse.md (vcond<V_256:mode><VI_256:mode>,
+	vcond<V_128:mode><VI124_128:mode>, vcond<VI8F_128:mode>v2di):
+	Use general_operand instead of nonimmediate_operand for
+	operand 5 and no predicate for operands 1 and 2.
+	* config/i386/i386.c (ix86_expand_int_vcond): Optimize
+	x < 0 ? -1 : 0 and x < 0 ? 1 : 0 into vector arithmetic
+	resp. logical shift.
+
 2011-12-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-protos.h (print_operand): Remove.
