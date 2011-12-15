@@ -1,3 +1,11 @@
+2011-12-15  Toon Moene  <toon@moene.org>
+
+	PR fortran/51310
+	* resolve.c (build_default_init_expr): Allow non-allocatable,
+	non-compile-time-constant-shape arrays to have a default
+	initializer.
+	* invoke.texi: Delete the restriction on automatic arrays not
+
 2011-12-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51550
