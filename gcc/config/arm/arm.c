@@ -164,6 +164,8 @@ static bool arm_xscale_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, bool
 static bool arm_9e_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, bool);
 static bool arm_rtx_costs (rtx, int, int, int, int *, bool);
 static int arm_address_cost (rtx, bool);
+static int arm_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
+static int arm_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static bool arm_memory_load_p (rtx);
 static bool arm_cirrus_insn_p (rtx);
 static void cirrus_reorg (rtx);
@@ -362,6 +364,12 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef  TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST arm_adjust_cost
+
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST arm_register_move_cost
+
+#undef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST arm_memory_move_cost
 
 #undef TARGET_ENCODE_SECTION_INFO
 #ifdef ARM_PE
@@ -8482,6 +8490,63 @@ fa726te_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
     }
 
   return true;
+}
+
+/* Implement TARGET_REGISTER_MOVE_COST.
+
+   Moves between FPA_REGS and GENERAL_REGS are two memory insns.
+   Moves between VFP_REGS and GENERAL_REGS are a single insn, but
+   it is typically more expensive than a single memory access.  We set
+   the cost to less than two memory accesses so that floating
+   point to integer conversion does not go through memory.  */
+
+int
+arm_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+			reg_class_t from, reg_class_t to)
+{
+  if (TARGET_32BIT)
+    {
+      if ((from == FPA_REGS && to != FPA_REGS)
+	  || (from != FPA_REGS && to == FPA_REGS))
+	return 20;
+      else if ((IS_VFP_CLASS (from) && !IS_VFP_CLASS (to))
+	       || (!IS_VFP_CLASS (from) && IS_VFP_CLASS (to)))
+	return 15;
+      else if ((from == IWMMXT_REGS && to != IWMMXT_REGS)
+	       || (from != IWMMXT_REGS && to == IWMMXT_REGS))
+	return 4;
+      else if (from == IWMMXT_GR_REGS || to == IWMMXT_GR_REGS)
+	return 20;
+      else if ((from == CIRRUS_REGS && to != CIRRUS_REGS)
+	       || (from != CIRRUS_REGS && to == CIRRUS_REGS))
+	return 20;
+      else
+	return 2;
+    }
+  else
+    {
+      if (from == HI_REGS || to == HI_REGS)
+	return 4;
+      else
+	return 2;
+    }
+}
+
+/* Implement TARGET_MEMORY_MOVE_COST.  */
+
+int
+arm_memory_move_cost (enum machine_mode mode, reg_class_t rclass,
+		      bool in ATTRIBUTE_UNUSED)
+{
+  if (TARGET_32BIT)
+    return 10;
+  else
+    {
+      if (GET_MODE_SIZE (mode) < 4)
+	return 8;
+      else
+	return ((2 * GET_MODE_SIZE (mode)) * (rclass == LO_REGS ? 1 : 2));
+    }
 }
 
 /* This function implements the target macro TARGET_SCHED_ADJUST_COST.
