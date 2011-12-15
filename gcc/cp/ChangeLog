@@ -1,3 +1,13 @@
+2011-12-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51365
+	* cp-tree.h (CPTK_IS_FINAL): Add.
+	* parser.c (cp_parser_translation_unit): Handle RID_IS_FINAL.
+	(cp_parser_primary_expression, cp_parser_trait_expr): Likewise.
+	* semantics.c (trait_expr_value, finish_trait_expr): Handle
+	CPTK_IS_FINAL.
+	* cxx-pretty-print.c (pp_cxx_trait_expression): Likewise.
+
 2011-12-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51554

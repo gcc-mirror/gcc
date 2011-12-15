@@ -1,3 +1,8 @@
+2011-12-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51365
+	* g++.dg/ext/is_final.C: New.
+
 2012-12-15  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/48508
