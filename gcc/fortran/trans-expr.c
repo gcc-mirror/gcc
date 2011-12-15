@@ -3115,7 +3115,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
   if (se->ss != NULL)
     {
-      if (!sym->attr.elemental)
+      if (!sym->attr.elemental && !(comp && comp->attr.elemental))
 	{
 	  gcc_assert (se->ss->info->type == GFC_SS_FUNCTION);
 	  if (se->ss->info->useflags)

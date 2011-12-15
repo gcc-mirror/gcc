@@ -1,3 +1,11 @@
+2011-12-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	* trans-expr.c (gfc_walk_function_expr): Detect elemental
+	procedure components as well as elemental procedures.
+	* trans-array.c (gfc_conv_procedure_call): Ditto.
+	* trans-decl.c (gfc_trans_deferred_vars): Correct erroneous
+	break for class pointers to continue.
+
 2011-12-15  Toon Moene  <toon@moene.org>
 
 	PR fortran/51310

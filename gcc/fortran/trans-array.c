@@ -8358,7 +8358,7 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
 
   sym = expr->value.function.esym;
   if (!sym)
-      sym = expr->symtree->n.sym;
+    sym = expr->symtree->n.sym;
 
   /* A function that returns arrays.  */
   gfc_is_proc_ptr_comp (expr, &comp);
@@ -8368,7 +8368,7 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
 
   /* Walk the parameters of an elemental function.  For now we always pass
      by reference.  */
-  if (sym->attr.elemental)
+  if (sym->attr.elemental || (comp && comp->attr.elemental))
     return gfc_walk_elemental_function_args (ss, expr->value.function.actual,
 					     GFC_SS_REFERENCE);
 

@@ -3680,7 +3680,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
       else if ((!sym->attr.dummy || sym->ts.deferred)
 		&& (sym->ts.type == BT_CLASS
 		&& CLASS_DATA (sym)->attr.pointer))
-	break;
+	continue;
       else if ((!sym->attr.dummy || sym->ts.deferred)
 		&& (sym->attr.allocatable
 		    || (sym->ts.type == BT_CLASS
