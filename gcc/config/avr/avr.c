@@ -994,7 +994,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               /* The high byte (r29) does not change:
                  Prefer SUBI (1 cycle) over ABIW (2 cycles, same size).  */
 
-              my_fp = simplify_gen_subreg (QImode, fp, Pmode, 0);
+              my_fp = all_regs_rtx[FRAME_POINTER_REGNUM];
             }
 
           /************  Method 1: Adjust frame pointer  ************/
@@ -1292,7 +1292,7 @@ expand_epilogue (bool sibcall_p)
           /* The high byte (r29) does not change:
              Prefer SUBI (1 cycle) over SBIW (2 cycles).  */
                   
-          my_fp = simplify_gen_subreg (QImode, fp, Pmode, 0);
+          my_fp = all_regs_rtx[FRAME_POINTER_REGNUM];
         }
               
       /********** Method 1: Adjust fp register  **********/

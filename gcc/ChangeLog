@@ -1,3 +1,9 @@
+2011-12-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/51050
+	* config/avr/avr.c (expand_epilogue): Don't build SUBREG of fp.
+	(avr_prologue_setup_frame): Ditto.
+
 2011-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/51517
