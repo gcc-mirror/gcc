@@ -1281,26 +1281,6 @@ do {									      \
 
 /* If defined, gives a class of registers that cannot be used as the
    operand of a SUBREG that changes the mode of the object illegally.  */
-
-/* Moves between FPA_REGS and GENERAL_REGS are two memory insns.
-   Moves between VFP_REGS and GENERAL_REGS are a single insn, but
-   it is typically more expensive than a single memory access.  We set
-   the cost to less than two memory accesses so that floating
-   point to integer conversion does not go through memory.  */
-#define REGISTER_MOVE_COST(MODE, FROM, TO)		\
-  (TARGET_32BIT ?						\
-   ((FROM) == FPA_REGS && (TO) != FPA_REGS ? 20 :	\
-    (FROM) != FPA_REGS && (TO) == FPA_REGS ? 20 :	\
-    IS_VFP_CLASS (FROM) && !IS_VFP_CLASS (TO) ? 15 :	\
-    !IS_VFP_CLASS (FROM) && IS_VFP_CLASS (TO) ? 15 :	\
-    (FROM) == IWMMXT_REGS && (TO) != IWMMXT_REGS ? 4 :  \
-    (FROM) != IWMMXT_REGS && (TO) == IWMMXT_REGS ? 4 :  \
-    (FROM) == IWMMXT_GR_REGS || (TO) == IWMMXT_GR_REGS ? 20 :  \
-    (FROM) == CIRRUS_REGS && (TO) != CIRRUS_REGS ? 20 :	\
-    (FROM) != CIRRUS_REGS && (TO) == CIRRUS_REGS ? 20 :	\
-   2)							\
-   :							\
-   ((FROM) == HI_REGS || (TO) == HI_REGS) ? 4 : 2)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -1952,12 +1932,6 @@ typedef struct
 #define ARM_FRAME_RTX(X)					\
   (   (X) == frame_pointer_rtx || (X) == stack_pointer_rtx	\
    || (X) == arg_pointer_rtx)
-
-/* Moves to and from memory are quite expensive */
-#define MEMORY_MOVE_COST(M, CLASS, IN)			\
-  (TARGET_32BIT ? 10 :					\
-   ((GET_MODE_SIZE (M) < 4 ? 8 : 2 * GET_MODE_SIZE (M))	\
-    * (CLASS == LO_REGS ? 1 : 2)))
 
 /* Try to generate sequences that don't involve branches, we can then use
    conditional instructions */

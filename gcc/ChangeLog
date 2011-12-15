@@ -1,3 +1,10 @@
+2011-12-15  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/arm/arm.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): Remove.
+	* config/arm/arm.c (arm_memory_move_cost, arm_register_move_cost):
+	New functions.
+	(TARGET_REGISTER_MOVE_COST, TARGET_MEMORY_MOVE_COST): Define.
+
 2011-12-15  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/51564
