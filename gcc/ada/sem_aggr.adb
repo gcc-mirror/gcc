@@ -1691,6 +1691,10 @@ package body Sem_Aggr is
             end if;
          end if;
 
+         if Present (Predicate_Function (Component_Typ)) then
+            Apply_Predicate_Check (Expr, Component_Typ);
+         end if;
+
          if Raises_Constraint_Error (Expr)
            and then Nkind (Parent (Expr)) /= N_Component_Association
          then
@@ -3291,6 +3295,10 @@ package body Sem_Aggr is
 
          if not Has_Expansion_Delayed (Expr) then
             Aggregate_Constraint_Checks (Expr, Expr_Type);
+         end if;
+
+         if Present (Predicate_Function (Expr_Type)) then
+            Apply_Predicate_Check (Expr, Expr_Type);
          end if;
 
          if Raises_Constraint_Error (Expr) then

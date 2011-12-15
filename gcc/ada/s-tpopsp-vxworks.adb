@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 --  This is a VxWorks version of this package where foreign threads are
---  recognized.
+--  recognized. The implementation is based on VxWorks taskVarLib.
 
 separate (System.Task_Primitives.Operations)
 package body Specific is

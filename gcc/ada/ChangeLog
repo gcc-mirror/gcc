@@ -1,3 +1,17 @@
+2011-12-15  Tristan Gingold  <gingold@adacore.com>
+
+	* gnatls.adb: Fix typo.
+
+2011-12-15  Ed Falis  <falis@adacore.com>
+
+	* s-tpopsp-vxworks.adb: Update comment.
+
+2011-12-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate, Resolve_Aggr_Expr); If
+	the component type has predicates, generate corresponding check.
+	(Resolve_Record_Aggregate, Resolve_Aggr_Expr): Ditto.
+
 2011-12-13  Cesar Strauss  <cestrauss@gmail.com>
 	    Eric Botcazou  <ebotcazou@adacore.com>
 
