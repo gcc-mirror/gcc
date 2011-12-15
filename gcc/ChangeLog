@@ -1,3 +1,10 @@
+2011-12-15  Richard Guenther  <rguenther@suse.de>
+
+	* lto-wrapper.c (run_gcc): In non-parallel mode remove
+	ltrans inputs immediately after processing them.  In parallel
+	mode truncate the ltrans inputs in the make rule that processes
+	them if temporary files are not to be preserved.
+
 2011-12-15  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/arm/arm.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): Remove.
