@@ -1434,7 +1434,6 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       gfc_finish_var_decl (span, sym);
       TREE_STATIC (span) = TREE_STATIC (decl);
       DECL_ARTIFICIAL (span) = 1;
-      DECL_INITIAL (span) = build_int_cst (gfc_array_index_type, 0);
 
       GFC_DECL_SPAN (decl) = span;
       GFC_TYPE_ARRAY_SPAN (TREE_TYPE (decl)) = span;
@@ -3576,6 +3575,17 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 				   && sym->ts.u.derived->attr.alloc_comp;
       if (sym->assoc)
 	continue;
+
+      if (sym->attr.subref_array_pointer
+	  && GFC_DECL_SPAN (sym->backend_decl)
+	  && !TREE_STATIC (GFC_DECL_SPAN (sym->backend_decl)))
+	{
+	  gfc_init_block (&tmpblock);
+	  gfc_add_modify (&tmpblock, GFC_DECL_SPAN (sym->backend_decl),
+			  build_int_cst (gfc_array_index_type, 0));
+	  gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock),
+				NULL_TREE);
+	}
 
       if (sym->attr.dimension || sym->attr.codimension)
 	{

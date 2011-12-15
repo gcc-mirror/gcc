@@ -1,3 +1,10 @@
+2011-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/51517
+	* trans-decl.c (gfc_get_symbol_decl): Don't set DECL_INITAL on span.
+	(gfc_trans_deferred_vars): Instead add its runtime initialization
+	here.
+
 2011-12-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50923
@@ -15,7 +22,7 @@
 	PR fortran/46356
 	PR fortran/46990
 	PR fortran/49074
-	* interface.c(symbol_rank): Return the rank of the _data
+	* interface.c (symbol_rank): Return the rank of the _data
 	component of class objects.
 	(compare_parameter): Also compare the derived type of the class
 	_data component for type mismatch.  Similarly, return 1 if the
@@ -66,10 +73,10 @@
 	Also unset codimension.
 	(gfc_find_derived_vtab): Make 'copy' elemental and set the
 	intent of the arguments accordingly.: 
-	* trans-array.h : Update prototype for gfc_array_allocate.
+	* trans-array.h: Update prototype for gfc_array_allocate.
 	* array.c (gfc_array_dimen_size): Return failure if class expr.
 	(gfc_array_size): Likewise.
-	* gfortran.h : New prototypes for gfc_add_class_array_ref,
+	* gfortran.h: New prototypes for gfc_add_class_array_ref,
 	gfc_is_class_array_ref and gfc_is_class_scalar_expr.
 	* trans-stmt.c (trans_associate_var): Exclude class targets
 	from test. Move the allocation of the _vptr to an earlier time
@@ -82,7 +89,7 @@
 	* expr.c (gfc_get_corank): Fix for BT_CLASS.
 	(gfc_is_simply_contiguous): Exclude class from test.
 	* trans.c (gfc_build_array_ref): Include class array refs.
-	* trans.h : Include prototypes for class API functions that are
+	* trans.h: Include prototypes for class API functions that are
 	new in trans-expr. Define GFC_DECL_CLASS(node).
 	* resolve.c (check_typebound_baseobject ): Remove error for
 	non-scalar base object.
@@ -2428,7 +2435,7 @@
 	changed to GFC_ENABLE_REVERSE.
 	* trans-array.c (gfc_init_loopinfo): GFC_CANNOT_REVERSE changed
 	to GFC_INHIBIT_REVERSE.
-	* gfortran.h : Enum gfc_reverse is now GFC_ENABLE_REVERSE,
+	* gfortran.h: Enum gfc_reverse is now GFC_ENABLE_REVERSE,
 	GFC_FORWARD_SET, GFC_REVERSE_SET and GFC_INHIBIT_REVERSE.
 	* dependency.c (gfc_dep_resolver): Change names for elements of
 	gfc_reverse as necessary. Change the logic so that forward
@@ -3271,7 +3278,7 @@
 2011-03-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/22572
-	* gfortran.h (gfc_option_t) : Add
+	* gfortran.h (gfc_option_t): Add
 	flag_aggressive_function_elimination.
 	(gfc_dep_compare_functions):  Add prototype.
 	* lang.opt: Add faggressive-function-elimination.
@@ -3409,7 +3416,7 @@
 	PR fortran/44945
 	* trans-types.c (gfc_get_derived_type): Remove code that looks
 	for decls in gsym and add call to gfc_get_module_backend_decl.
-	* trans.h : Add prototype for gfc_get_module_backend_decl.
+	* trans.h: Add prototype for gfc_get_module_backend_decl.
 	* trans-decl.c (gfc_get_module_backend_decl): New function.
 	(gfc_get_symbol_decl): Call it.
 
@@ -3708,7 +3715,7 @@
 	is called before reallocation, so that the length is available.
 	(gfc_trans_asssignment): Remove error about assignment to
 	deferred length character variables.
-	* gfortran.texi : Update entry about (re)allocation on
+	* gfortran.texi: Update entry about (re)allocation on
 	assignment.
 	* trans-stmt.c (gfc_trans_allocate): Add code to handle deferred
 	length character variables.
@@ -3889,7 +3896,7 @@
 	implicit pureness of containing procedure.
 	* decl.c (match_old_style_init, gfc_match_data): Where decl
 	would fail in PURE procedure, set implicit_pure to zero.
-	* gfortran.h : Add implicit_pure to structure symbol_attr and
+	* gfortran.h: Add implicit_pure to structure symbol_attr and
 	add prototype for function gfc_implicit_pure.
 	* expr.c (gfc_check_pointer_assign, gfc_check_vardef_context):
 	Where decl would fail in PURE procedure, reset implicit_pure.
@@ -3901,7 +3908,7 @@
 	* parse.c (decode_omp_directive): The same.
 	(parse_contained): If not PURE, set implicit pure attribute.
 	* resolve.c (resolve_formal_arglist, resolve_structure_cons,
-	resolve_function, resolve_ordinary_assign) : The same.
+	resolve_function, resolve_ordinary_assign): The same.
 	(gfc_implicit_pure): New function.
 	* module.c (mio_symbol_attribute): Introduce AB_IMPLICIT_PURE
 	to ab_attribute enum and use it in this function.
