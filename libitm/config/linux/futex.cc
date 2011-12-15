@@ -26,6 +26,7 @@
 
 #include "libitm_i.h"
 #include "futex.h"
+#include <futex_bits.h>
 #include <errno.h>
 
 namespace GTM HIDDEN {

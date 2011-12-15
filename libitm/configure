@@ -607,6 +607,8 @@ ARCH_X86_AVX_FALSE
 ARCH_X86_AVX_TRUE
 ARCH_X86_FALSE
 ARCH_X86_TRUE
+ARCH_ARM_FALSE
+ARCH_ARM_TRUE
 link_itm
 XLDFLAGS
 XCFLAGS
@@ -11720,7 +11722,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11723 "configure"
+#line 11725 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11826,7 +11828,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11829 "configure"
+#line 11831 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17369,6 +17371,14 @@ else
 fi
 
 
+ if test "$ARCH" = arm; then
+  ARCH_ARM_TRUE=
+  ARCH_ARM_FALSE='#'
+else
+  ARCH_ARM_TRUE='#'
+  ARCH_ARM_FALSE=
+fi
+
  if test "$ARCH" = x86; then
   ARCH_X86_TRUE=
   ARCH_X86_FALSE='#'
@@ -17540,6 +17550,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE}" && test -z "${LIBITM_BUILD_VERSIONED_SHLIB_SUN_FALSE}"; then
   as_fn_error "conditional \"LIBITM_BUILD_VERSIONED_SHLIB_SUN\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ARCH_ARM_TRUE}" && test -z "${ARCH_ARM_FALSE}"; then
+  as_fn_error "conditional \"ARCH_ARM\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ARCH_X86_TRUE}" && test -z "${ARCH_X86_FALSE}"; then

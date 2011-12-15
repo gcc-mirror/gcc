@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2011 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -22,16 +22,20 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* Provide access to the futex system call.  */
+/* The following must match the kernel's <asm/procinfo.h>.  */
+#define HWCAP_ARM_SWP           1
+#define HWCAP_ARM_HALF          2
+#define HWCAP_ARM_THUMB         4
+#define HWCAP_ARM_26BIT         8
+#define HWCAP_ARM_FAST_MULT     16
+#define HWCAP_ARM_FPA           32
+#define HWCAP_ARM_VFP           64
+#define HWCAP_ARM_EDSP          128
+#define HWCAP_ARM_JAVA          256
+#define HWCAP_ARM_IWMMXT        512
+#define HWCAP_ARM_CRUNCH        1024
+#define HWCAP_ARM_THUMBEE       2048
+#define HWCAP_ARM_NEON          4096
+#define HWCAP_ARM_VFPv3         8192
+#define HWCAP_ARM_VFPv3D16      16384
 
-#ifndef GTM_FUTEX_H
-#define GTM_FUTEX_H 1
-
-namespace GTM HIDDEN {
-
-extern void futex_wait (int *addr, int val);
-extern long futex_wake (int *addr, int count);
-
-}
-
-#endif /* GTM_FUTEX_H */

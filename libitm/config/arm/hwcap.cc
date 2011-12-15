@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2011 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -22,16 +22,46 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* Provide access to the futex system call.  */
+/* This file initializes GTM_hwcap in some os-specific way to indicate
+   what ISA extensions are present for ARM.  */
 
-#ifndef GTM_FUTEX_H
-#define GTM_FUTEX_H 1
+#include "libitm_i.h"
+#include "hwcap.h"
 
-namespace GTM HIDDEN {
+/* Begin by defaulting to whatever options were given to the compiler.  */
+int GTM_hwcap HIDDEN = 0
+#ifdef __VFP_FP__
+  | HWCAP_ARM_VFP
+#endif
+#ifdef __IWMMXT__
+  | HWCAP_ARM_IWMMXT
+#endif
+  ;
 
-extern void futex_wait (int *addr, int val);
-extern long futex_wake (int *addr, int count);
+#ifdef __linux__
+#include <unistd.h>
+#include <sys/fcntl.h>
+#include <elf.h>
 
+static void __attribute__((constructor))
+init_gtm_hwcap(void)
+{
+  int fd = open ("/proc/self/auxv", O_RDONLY);
+  if (fd < 0)
+    return;
+
+  Elf32_auxv_t pairs[512];
+  ssize_t rlen = read (fd, pairs, sizeof(pairs));
+  close (fd);
+  if (rlen < 0)
+    return;
+
+  size_t n = (size_t)rlen / sizeof(pairs[0]);
+  for (size_t i = 0; i < n; ++i)
+    if (pairs[i].a_type == AT_HWCAP)
+      {
+	GTM_hwcap = pairs[i].a_un.a_val;
+	return;
+      }
 }
-
-#endif /* GTM_FUTEX_H */
+#endif

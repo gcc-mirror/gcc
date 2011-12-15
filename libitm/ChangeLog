@@ -1,3 +1,17 @@
+2011-12-14  Richard Henderson  <rth@redhat.com>
+
+	* config/arm/hwcap.h, config/arm/hwcap.cc: New files.
+	* config/arm/sjlj.S, config/arm/target.h: New files.
+	* config/generic/asmcfi.h (cfi_adjust_cfa_offset): New.
+	(cfi_rel_offset): New.
+	* config/linux/futex_bits.h: New file.
+	* config/linux/futex.cc: Include futex_bits.h here...
+	* config/linux/futex.h: ... not here.
+	* Makefile.am (libitm_la_SOURCES) <ARCH_ARM>: Add hwcap.cc.
+	* configure.ac (ARCH_AM): New conditional.
+	* Makefile.in, configure: Rebuild.
+	* configure.tgt: Handle ARM.
+
 2011-12-13  Richard Henderson  <rth@redhat.com>
 
 	* config/posix/rwlock.cc (gtm_rwlock::write_lock_generic): Fix
