@@ -23,6 +23,10 @@ along with GCC; see the file COPYING3.  If not see
    crtstuff.c and dealing with shared library initialization much easier.  */
 #define OBJECT_FORMAT_ELF
 
+/* Do not use TM clone registry as it currently doesn't work.  Alpha/VMS
+   object is too far from ELF for supporting TM out of the box.  */
+#define USE_TM_CLONE_REGISTRY 0
+
 /* This enables certain macros in alpha.h, which will make an indirect
    reference to an external symbol an invalid address.  This needs to be
    defined before we include alpha.h, since it determines which macros
