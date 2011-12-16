@@ -1,3 +1,10 @@
+2011-12-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51331
+	* class.c (convert_to_base_statically): Just call
+	build_simple_base_path.
+	(build_simple_base_path): Check field offset.
+
 2011-12-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51458
