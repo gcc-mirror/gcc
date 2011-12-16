@@ -1,5 +1,8 @@
 2011-12-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/50803
+	* gcc.dg/ipa/inline-5.c: XFAIL for 32-bit hppa.
+
 	PR tree-optimization/51575
 	* g++.dg/opt/pr51575.C: New test.
 
