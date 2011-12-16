@@ -51,6 +51,10 @@
 #include <bits/cxxabi_tweaks.h>
 #include <bits/cxxabi_forced.h>
 
+#ifndef _GLIBCXX_CDTOR_CALLABI
+#define _GLIBCXX_CDTOR_CALLABI
+#endif
+
 #ifdef __cplusplus
 namespace __cxxabiv1
 {
@@ -596,7 +600,7 @@ namespace __cxxabiv1
 
   // Throw the exception.
   void
-  __cxa_throw(void*, std::type_info*, void (*) (void *))
+  __cxa_throw(void*, std::type_info*, void (_GLIBCXX_CDTOR_CALLABI *) (void *))
   __attribute__((__noreturn__));
 
   // Used to implement exception handlers.

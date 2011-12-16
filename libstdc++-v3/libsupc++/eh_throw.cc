@@ -59,7 +59,7 @@ __gxx_exception_cleanup (_Unwind_Reason_Code code, _Unwind_Exception *exc)
 
 extern "C" void
 __cxxabiv1::__cxa_throw (void *obj, std::type_info *tinfo,
-			 void (*dest) (void *))
+			 void (_GLIBCXX_CDTOR_CALLABI *dest) (void *))
 {
   // Definitely a primary.
   __cxa_refcounted_exception *header

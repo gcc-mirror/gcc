@@ -51,7 +51,7 @@ struct __cxa_exception
 {
   // Manage the exception object itself.
   std::type_info *exceptionType;
-  void (*exceptionDestructor)(void *);
+  void (_GLIBCXX_CDTOR_CALLABI *exceptionDestructor)(void *);
 
   // The C++ standard has entertaining rules wrt calling set_terminate
   // and set_unexpected in the middle of the exception cleanup process.
