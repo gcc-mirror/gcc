@@ -1,3 +1,9 @@
+2011-12-16  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/51572
+	* dwarf2out.c (gen_type_die_with_usage): Use the context of
+	the TYPE_DECL as well if it is file-scope.
+
 2011-12-15  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78.md (return): Rename to rl78_return.

@@ -18842,8 +18842,9 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
 
       /* Use the DIE of the containing namespace as the parent DIE of
          the type description DIE we want to generate.  */
-      if (DECL_CONTEXT (TYPE_NAME (type))
-	  && TREE_CODE (DECL_CONTEXT (TYPE_NAME (type))) == NAMESPACE_DECL)
+      if (DECL_FILE_SCOPE_P (TYPE_NAME (type))
+	  || (DECL_CONTEXT (TYPE_NAME (type))
+	      && TREE_CODE (DECL_CONTEXT (TYPE_NAME (type))) == NAMESPACE_DECL))
 	context_die = get_context_die (DECL_CONTEXT (TYPE_NAME (type)));
 
       TREE_ASM_WRITTEN (type) = 1;
