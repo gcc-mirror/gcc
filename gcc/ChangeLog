@@ -1,5 +1,9 @@
 2011-12-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/51557
+	* sel-sched-ir.c (create_copy_of_insn_rtx): Copy all notes
+	other than REG_EQUAL, REG_EQUIV and REG_LABEL_OPERAND.
+
 	PR tree-optimization/51576
 	* tree-cfg.c (replace_uses_by): Call maybe_clean_or_replace_eh_stmt
 	even if fold_stmt didn't change anything.

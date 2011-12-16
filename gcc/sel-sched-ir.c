@@ -5723,7 +5723,7 @@ create_vinsn_from_insn_rtx (rtx insn_rtx, bool force_unique_p)
 rtx
 create_copy_of_insn_rtx (rtx insn_rtx)
 {
-  rtx res;
+  rtx res, link;
 
   if (DEBUG_INSN_P (insn_rtx))
     return create_insn_rtx_from_pattern (copy_rtx (PATTERN (insn_rtx)),
@@ -5733,6 +5733,22 @@ create_copy_of_insn_rtx (rtx insn_rtx)
 
   res = create_insn_rtx_from_pattern (copy_rtx (PATTERN (insn_rtx)),
                                       NULL_RTX);
+
+  /* Copy all REG_NOTES except REG_EQUAL/REG_EQUIV and REG_LABEL_OPERAND
+     since mark_jump_label will make them.  REG_LABEL_TARGETs are created
+     there too, but are supposed to be sticky, so we copy them.  */
+  for (link = REG_NOTES (insn_rtx); link; link = XEXP (link, 1))
+    if (REG_NOTE_KIND (link) != REG_LABEL_OPERAND
+	&& REG_NOTE_KIND (link) != REG_EQUAL
+	&& REG_NOTE_KIND (link) != REG_EQUIV)
+      {
+	if (GET_CODE (link) == EXPR_LIST)
+	  add_reg_note (res, REG_NOTE_KIND (link),
+			copy_insn_1 (XEXP (link, 0)));
+	else
+	  add_reg_note (res, REG_NOTE_KIND (link), XEXP (link, 0));
+      }
+
   return res;
 }
 
