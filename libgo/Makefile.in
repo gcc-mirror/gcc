@@ -1096,6 +1096,8 @@ go_net_files = \
 @LIBGO_IS_IRIX_TRUE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_sys_file = go/os/sys_uname.go
 @LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@go_os_sys_file = go/os/sys_uname.go
 @LIBGO_IS_LINUX_TRUE@go_os_sys_file = go/os/sys_linux.go
+@LIBGO_IS_SOLARIS_FALSE@go_os_stat_file = go/os/stat.go
+@LIBGO_IS_SOLARIS_TRUE@go_os_stat_file = go/os/stat_solaris.go
 go_os_files = \
 	$(go_os_dir_file) \
 	go/os/dir.go \
@@ -1112,7 +1114,7 @@ go_os_files = \
 	go/os/path.go \
 	go/os/path_unix.go \
 	go/os/proc.go \
-	go/os/stat.go \
+	$(go_os_stat_file) \
 	go/os/str.go \
 	$(go_os_sys_file) \
 	go/os/time.go \
