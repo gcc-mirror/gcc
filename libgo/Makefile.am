@@ -763,6 +763,12 @@ endif
 endif
 endif
 
+if LIBGO_IS_SOLARIS
+go_os_stat_file = go/os/stat_solaris.go
+else
+go_os_stat_file = go/os/stat.go
+endif
+
 go_os_files = \
 	$(go_os_dir_file) \
 	go/os/dir.go \
@@ -779,7 +785,7 @@ go_os_files = \
 	go/os/path.go \
 	go/os/path_unix.go \
 	go/os/proc.go \
-	go/os/stat.go \
+	$(go_os_stat_file) \
 	go/os/str.go \
 	$(go_os_sys_file) \
 	go/os/time.go \
