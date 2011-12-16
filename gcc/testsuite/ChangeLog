@@ -1,3 +1,8 @@
+2011-12-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51331
+	* g++.dg/init/value10.C: New.
+
 2011-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/50803
