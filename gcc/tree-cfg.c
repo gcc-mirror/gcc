@@ -1625,10 +1625,9 @@ replace_uses_by (tree name, tree val)
 	      }
 
 	  if (fold_stmt (&gsi))
-	    {
-	      stmt = gsi_stmt (gsi);
-	      maybe_clean_or_replace_eh_stmt (orig_stmt, stmt);
-	    }
+	    stmt = gsi_stmt (gsi);
+
+	  maybe_clean_or_replace_eh_stmt (orig_stmt, stmt);
 
 	  update_stmt (stmt);
 	}
