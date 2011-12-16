@@ -5449,7 +5449,7 @@ check_initializer (tree decl, tree init, int flags, VEC(tree,gc) **cleanups)
     }
   else if (!COMPLETE_TYPE_P (type))
     {
-      error ("%qD has incomplete type", decl);
+      error ("%q#D has incomplete type", decl);
       TREE_TYPE (decl) = error_mark_node;
       return NULL_TREE;
     }
@@ -7807,7 +7807,10 @@ check_static_variable_definition (tree decl, tree type)
     return 0;
   else if (cxx_dialect >= cxx0x && !INTEGRAL_OR_ENUMERATION_TYPE_P (type))
     {
-      if (literal_type_p (type))
+      if (!COMPLETE_TYPE_P (type))
+	error ("in-class initialization of static data member %q#D of "
+	       "incomplete type", decl);
+      else if (literal_type_p (type))
 	permerror (input_location,
 		   "%<constexpr%> needed for in-class initialization of "
 		   "static data member %q#D of non-integral type", decl);
