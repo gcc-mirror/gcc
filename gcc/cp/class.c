@@ -464,7 +464,14 @@ build_simple_base_path (tree expr, tree binfo)
     /* Is this the base field created by build_base_field?  */
     if (TREE_CODE (field) == FIELD_DECL
 	&& DECL_FIELD_IS_BASE (field)
-	&& TREE_TYPE (field) == type)
+	&& TREE_TYPE (field) == type
+	/* If we're looking for a field in the most-derived class,
+	   also check the field offset; we can have two base fields
+	   of the same type if one is an indirect virtual base and one
+	   is a direct non-virtual base.  */
+	&& (BINFO_INHERITANCE_CHAIN (d_binfo)
+	    || tree_int_cst_equal (byte_position (field),
+				   BINFO_OFFSET (binfo))))
       {
 	/* We don't use build_class_member_access_expr here, as that
 	   has unnecessary checks, and more importantly results in
@@ -540,6 +547,10 @@ convert_to_base_statically (tree expr, tree base)
   if (!SAME_BINFO_TYPE_P (BINFO_TYPE (base), expr_type))
     {
       tree pointer_type;
+
+      /* If this is a non-empty base, use a COMPONENT_REF.  */
+      if (!is_empty_class (BINFO_TYPE (base)))
+	return build_simple_base_path (expr, base);
 
       pointer_type = build_pointer_type (expr_type);
 
