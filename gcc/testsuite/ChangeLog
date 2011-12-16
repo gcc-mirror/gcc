@@ -1,3 +1,8 @@
+2011-12-16  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/51572
+	* gcc.dg/lto/pr51572-1_0.c: New testcase.
+
 2011-12-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51458
