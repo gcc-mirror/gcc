@@ -1,5 +1,9 @@
 2011-12-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51461
+	* decl.c (check_static_variable_definition): Check COMPLETE_TYPE_P
+	before literal_type_p.
+
 	PR c++/51331
 	* class.c (convert_to_base_statically): Just call
 	build_simple_base_path.
