@@ -1,5 +1,9 @@
 2011-12-16  Tristan Gingold  <gingold@adacore.com>
 
+	* config/alpha/vms.h (USE_TM_CLONE_REGISTRY): Define.
+
+2011-12-16  Tristan Gingold  <gingold@adacore.com>
+
 	* config/alpha/alpha.c (alpha_use_linkage): Follow transparent alias.
 	(alpha_write_one_linkage): Use assemble_name to emit linkage name.
 
