@@ -63,6 +63,7 @@ ctermid       64
 ctime
 dup
 dup2
+environ       GLOBAL
 exit
 exp           FLOAT
 fabs          FLOAT
