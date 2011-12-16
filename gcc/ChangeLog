@@ -1,3 +1,9 @@
+2011-12-16  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/vms.c (VMS_CRTL_GLOBAL): Define.
+	(vms_patch_builtins): Handle.
+	* config/vms/vms-crtlmap.map: Add an entry for environ.
+
 2011-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/51557
