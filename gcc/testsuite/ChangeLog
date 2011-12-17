@@ -1,5 +1,8 @@
 2011-12-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51586
+	* g++.dg/lookup/nested2.C: New.
+
 	PR c++/51587
 	* g++.dg/parse/enum6.C: New.
 
