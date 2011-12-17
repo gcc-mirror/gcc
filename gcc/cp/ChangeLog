@@ -1,3 +1,9 @@
+2011-12-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51587
+	* decl.c (start_enum): Avoid using ENUM_UNDERLYING_TYPE on a
+	non-enum.
+
 2011-12-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51416
