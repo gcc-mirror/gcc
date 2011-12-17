@@ -63,6 +63,8 @@ case "${target_cpu}" in
 	ARCH=x86
 	;;
 
+  sh*)		ARCH=sh ;;
+
   x86_64)
 	case " ${CC} ${CFLAGS} " in
 	  *" -m32 "*)
