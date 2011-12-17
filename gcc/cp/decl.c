@@ -12069,6 +12069,7 @@ start_enum (tree name, tree enumtype, tree underlying_type,
       /* Do not push the decl more than once, unless we need to
 	 compare underlying types at instantiation time */
       if (!enumtype
+	  || TREE_CODE (enumtype) != ENUMERAL_TYPE
 	  || (underlying_type
 	      && dependent_type_p (underlying_type))
 	  || (ENUM_UNDERLYING_TYPE (enumtype)
