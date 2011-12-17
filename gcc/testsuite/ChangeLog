@@ -1,3 +1,8 @@
+2011-12-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51416
+	* g++.dg/cpp0x/auto31.C: New.
+
 2011-12-16  Ian Lance Taylor  <iant@google.com>
 
 	PR middle-end/51592

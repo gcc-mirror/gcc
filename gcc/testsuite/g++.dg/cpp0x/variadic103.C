@@ -5,7 +5,7 @@ T&& create();
 
 template<class T, class... Args>
 void test() {
-  T t(create<Args>()...);	// { dg-error "unknown bound" }
+  T t(create<Args>()...);	// { dg-error "incomplete" }
   (void) t;
 }
 
