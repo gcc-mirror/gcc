@@ -1,3 +1,8 @@
+2011-12-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51416
+	* init.c (build_value_init_noctor): Check for incomplete type.
+
 2011-12-16  Richard Henderson  <rth@redhat.com>
 
 	PR bootstrap/51072
