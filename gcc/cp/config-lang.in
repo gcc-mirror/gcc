@@ -28,6 +28,9 @@ language="c++"
 
 compilers="cc1plus\$(exeext)"
 
-target_libs="target-libstdc++-v3"
+# ??? libitm is not a language support library like libstdc++, but it does
+# use c++, and this is the easiest way to have it be disabled if we don't
+# include c++ in the set of enabled languages.
+target_libs="target-libstdc++-v3 target-libitm"
 
 gtfiles="\$(srcdir)/cp/rtti.c \$(srcdir)/cp/mangle.c \$(srcdir)/cp/name-lookup.h \$(srcdir)/cp/name-lookup.c \$(srcdir)/cp/cp-tree.h \$(srcdir)/cp/decl.h \$(srcdir)/cp/call.c \$(srcdir)/cp/decl.c \$(srcdir)/cp/decl2.c \$(srcdir)/cp/pt.c \$(srcdir)/cp/repo.c \$(srcdir)/cp/semantics.c \$(srcdir)/cp/tree.c \$(srcdir)/cp/parser.h \$(srcdir)/cp/parser.c \$(srcdir)/cp/method.c \$(srcdir)/cp/typeck2.c \$(srcdir)/c-family/c-common.c \$(srcdir)/c-family/c-common.h \$(srcdir)/c-family/c-objc.h \$(srcdir)/c-family/c-lex.c \$(srcdir)/c-family/c-pragma.h \$(srcdir)/c-family/c-pragma.c \$(srcdir)/cp/class.c \$(srcdir)/cp/cp-objcp-common.c \$(srcdir)/cp/cp-lang.c \$(srcdir)/cp/except.c"
