@@ -1,3 +1,8 @@
+2011-12-16  Richard Henderson  <rth@redhat.com>
+
+	PR bootstrap/51072
+	* config-lang.in (target_libs): Include target-libitm.
+
 2011-12-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51461
@@ -33,7 +38,7 @@
 
 	PR c++/51473
 	* decl.c (check_tag_decl): Error out on auto specifier with no
-    	declarator.
+	declarator.
 
 2011-12-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
@@ -58,8 +63,8 @@
 
 	PR c++/51475
 	* call.c (struct conversion)<u.next>: Update comment.
-    	(next_conversion): New static function.
-    	(convert_like_real): Use it.
+	(next_conversion): New static function.
+	(convert_like_real): Use it.
 
 	PR c++/51476
 	* pt.c (convert_nontype_argument): Don't call maybe_constant_value
@@ -536,13 +541,13 @@
 
 	PR c++/51027
 	* parser.c (cp_parser_alias_declaration): Require ';' at the end
-    	of the declaration.
+	of the declaration.
 
 2011-11-09  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/51032
 	* decl2.c (check_member_template): Accept alias templates and ...
-    	* parser.c (cp_parser_alias_declaration): ... use it here.
+	* parser.c (cp_parser_alias_declaration): ... use it here.
 
 2011-11-08  Jason Merrill  <jason@redhat.com>
 
@@ -756,8 +761,8 @@
 
 2011-11-04  Magnus Fromreide  <magfr@lysator.liu.se>
 
-        * parser.c (cp_parser_enumerator_list): Do not warn about
-        trailing commas in C++0x mode.
+	* parser.c (cp_parser_enumerator_list): Do not warn about
+	trailing commas in C++0x mode.
 
 2011-11-04  Olivier Goffart  <olivier@woboq.com>
 	    Jason Merrill  <jason@redhat.com>
@@ -886,7 +891,7 @@
 2011-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:
-        2011-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
+	2011-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50864
 	* pt.c (tsubst_copy_and_build): Fix qualified_name_lookup_error
@@ -1598,9 +1603,9 @@
 	PR c++/33255 - Support -Wunused-local-typedefs warning
 	* name-lookup.c (pushdecl_maybe_friend_1): Use the new
 	record_locally_defined_typedef.
-    	* decl.c (finish_function): Use the new
-    	maybe_warn_unused_local_typedefs.
-    	(grokfield): Use the new record_locally_defined_typedef.
+	* decl.c (finish_function): Use the new
+	maybe_warn_unused_local_typedefs.
+	(grokfield): Use the new record_locally_defined_typedef.
 	* parser.c (lookup_name): Use the new maybe_record_typedef_use.
 
 2011-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
@@ -1857,7 +1862,7 @@
 	assignment of two MEM_REFs.
 
 2011-08-11  Romain Geissler  <romain.geissler@gmail.com>
-            Brian Hackett  <bhackett1024@gmail.com>
+	    Brian Hackett  <bhackett1024@gmail.com>
 
 	* decl.c (cp_finish_decl): Invoke callbacks on finish_decl event.
 
@@ -3332,15 +3337,15 @@
 
 2011-05-10  Nathan Froyd  <froydnj@codesourcery.com>
 
-        * cp-tree.def (EXPR_PACK_EXPANSION): Add an operand.
-        * cp-objcp-common.c (cp_common_init_ts): Mark it as TS_TYPED.
-        * cp-tree.h (PACK_EXPANSION_PARAMETER_PACKS): Use the new
-        operand of EXPR_PACK_EXPANSION.
+	* cp-tree.def (EXPR_PACK_EXPANSION): Add an operand.
+	* cp-objcp-common.c (cp_common_init_ts): Mark it as TS_TYPED.
+	* cp-tree.h (PACK_EXPANSION_PARAMETER_PACKS): Use the new
+	operand of EXPR_PACK_EXPANSION.
 	(cp_tree_operand_length): Declare.
-        * tree.c (cp_tree_operand_length): Define.
+	* tree.c (cp_tree_operand_length): Define.
 	(cp_tree_equal): Call it.
-        * pt.c (value_dependent_expr_P): Likewise.
-        * mangle.c (write_expression): Likewise.
+	* pt.c (value_dependent_expr_P): Likewise.
+	* mangle.c (write_expression): Likewise.
 
 2011-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -3492,7 +3497,7 @@
 	(lookup_label): Refactor timevar calls out to a wrapper function.
 	Change TV_NAME_LOOKUP to start_cond/stop_cond.
 
-        * pt.c: (instantiate_class_template): Add a wrapper to push/pop new
+	* pt.c: (instantiate_class_template): Add a wrapper to push/pop new
 	TV_TEMPLATE_INST.
 	(instantiate_template): Add a wrapper to push/pop new TV_TEMPLATE_INST.
 	(lookup_template_class): Refactor timevar calls out to a wrapper
@@ -3557,15 +3562,15 @@
 	new TV_PARSE_INMETH.
 
 	* call.c: Add include of "timevar.h".
-        (convert_class_to_reference): Wrap and add push/pop calls to 
+	(convert_class_to_reference): Wrap and add push/pop calls to 
 	TV_OVERLOAD.
 	(build_op_call): Likewise.
 	(build_conditional_expr): Likewise.
 	(build_new_op): Likewise.
 	(build_new_method_call): Likewise.
-        (build_user_type_conversion): Reorganize to single return and add
+	(build_user_type_conversion): Reorganize to single return and add
 	push/pop calls to TV_OVERLOAD.
-        (perform_overload_resolution): Likewise.
+	(perform_overload_resolution): Likewise.
 
 	* Make-lang.in: Add dependence of call.o and parser.o on $(TIMEVAR_H).
 
@@ -3914,7 +3919,7 @@
 
 	PR c++/48574
 	* class.c (fixed_type_or_null): We cannot determine the dynamic
-    	type of a reference variable if its initializer is dependent.
+	type of a reference variable if its initializer is dependent.
 
 2011-04-13  Jason Merrill  <jason@redhat.com>
 
@@ -4625,9 +4630,9 @@
 
 	PR c++/47208
 	* pt.c (do_auto_deduction): Do not mention error_mark_node in
-    	diagnostics.
+	diagnostics.
 	* semantics.c (finish_id_expression): Do not pass erroneous decl
-    	to decl_constant_var_p.
+	to decl_constant_var_p.
 
 2011-02-17  Jakub Jelinek  <jakub@redhat.com>
 
@@ -4645,7 +4650,7 @@
 
 	PR c++/47326
 	* pt.c (tsubst_copy)<case SIZEOF_EXPR>: Ensure that even pack
-    	expansion arguments are not evaluated.
+	expansion arguments are not evaluated.
 
 2011-02-16  Jakub Jelinek  <jakub@redhat.com>
 
