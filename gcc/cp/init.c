@@ -377,6 +377,12 @@ build_value_init (tree type, tsubst_flags_t complain)
 tree
 build_value_init_noctor (tree type, tsubst_flags_t complain)
 {
+  if (!COMPLETE_TYPE_P (type))
+    {
+      if (complain & tf_error)
+	error ("value-initialization of incomplete type %qT", type);
+      return error_mark_node;
+    }
   /* FIXME the class and array cases should just use digest_init once it is
      SFINAE-enabled.  */
   if (CLASS_TYPE_P (type))
