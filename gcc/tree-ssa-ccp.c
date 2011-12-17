@@ -1690,6 +1690,96 @@ evaluate_stmt (gimple stmt)
   return val;
 }
 
+/* Given a BUILT_IN_STACK_SAVE value SAVED_VAL, insert a clobber of VAR before
+   each matching BUILT_IN_STACK_RESTORE.  Mark visited phis in VISITED.  */
+
+static void
+insert_clobber_before_stack_restore (tree saved_val, tree var, htab_t *visited)
+{
+  gimple stmt, clobber_stmt;
+  tree clobber;
+  imm_use_iterator iter;
+  gimple_stmt_iterator i;
+  gimple *slot;
+
+  FOR_EACH_IMM_USE_STMT (stmt, iter, saved_val)
+    if (gimple_call_builtin_p (stmt, BUILT_IN_STACK_RESTORE))
+      {
+	clobber = build_constructor (TREE_TYPE (var), NULL);
+	TREE_THIS_VOLATILE (clobber) = 1;
+	clobber_stmt = gimple_build_assign (var, clobber);
+
+	i = gsi_for_stmt (stmt);
+	gsi_insert_before (&i, clobber_stmt, GSI_SAME_STMT);
+      }
+    else if (gimple_code (stmt) == GIMPLE_PHI)
+      {
+	if (*visited == NULL)
+	  *visited = htab_create (10, htab_hash_pointer, htab_eq_pointer, NULL);
+
+	slot = (gimple *)htab_find_slot (*visited, stmt, INSERT);
+	if (*slot != NULL)
+	  continue;
+
+	*slot = stmt;
+	insert_clobber_before_stack_restore (gimple_phi_result (stmt), var,
+					     visited);
+      }
+    else
+      gcc_assert (is_gimple_debug (stmt));
+}
+
+/* Advance the iterator to the previous non-debug gimple statement in the same
+   or dominating basic block.  */
+
+static inline void
+gsi_prev_dom_bb_nondebug (gimple_stmt_iterator *i)
+{
+  basic_block dom;
+
+  gsi_prev_nondebug (i);
+  while (gsi_end_p (*i))
+    {
+      dom = get_immediate_dominator (CDI_DOMINATORS, i->bb);
+      if (dom == NULL || dom == ENTRY_BLOCK_PTR)
+	return;
+
+      *i = gsi_last_bb (dom);
+    }
+}
+
+/* Find a BUILT_IN_STACK_SAVE dominating gsi_stmt (I), and insert
+   a clobber of VAR before each matching BUILT_IN_STACK_RESTORE.  */
+
+static void
+insert_clobbers_for_var (gimple_stmt_iterator i, tree var)
+{
+  bool save_found;
+  gimple stmt;
+  tree saved_val;
+  htab_t visited = NULL;
+
+  for (save_found = false; !gsi_end_p (i); gsi_prev_dom_bb_nondebug (&i))
+    {
+      stmt = gsi_stmt (i);
+
+      if (!gimple_call_builtin_p (stmt, BUILT_IN_STACK_SAVE))
+	continue;
+      save_found = true;
+
+      saved_val = gimple_call_lhs (stmt);
+      if (saved_val == NULL_TREE)
+	continue;
+
+      insert_clobber_before_stack_restore (saved_val, var, &visited);
+      break;
+    }
+
+  if (visited != NULL)
+    htab_delete (visited);
+  gcc_assert (save_found);
+}
+
 /* Detects a __builtin_alloca_with_align with constant size argument.  Declares
    fixed-size array and returns the address, if found, otherwise returns
    NULL_TREE.  */
@@ -1824,7 +1914,9 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
             if (new_rhs)
 	      {
 		bool res = update_call_from_tree (gsi, new_rhs);
+		tree var = TREE_OPERAND (TREE_OPERAND (new_rhs, 0),0);
 		gcc_assert (res);
+		insert_clobbers_for_var (*gsi, var);
 		return true;
 	      }
           }
@@ -2024,12 +2116,14 @@ ccp_visit_stmt (gimple stmt, edge *taken_edge_p, tree *output_p)
 static unsigned int
 do_ssa_ccp (void)
 {
+  unsigned int todo = 0;
+  calculate_dominance_info (CDI_DOMINATORS);
   ccp_initialize ();
   ssa_propagate (ccp_visit_stmt, ccp_visit_phi_node);
   if (ccp_finalize ())
-    return (TODO_cleanup_cfg | TODO_update_ssa | TODO_remove_unused_locals);
-  else
-    return 0;
+    todo = (TODO_cleanup_cfg | TODO_update_ssa | TODO_remove_unused_locals);
+  free_dominance_info (CDI_DOMINATORS);
+  return todo;
 }
 
 
