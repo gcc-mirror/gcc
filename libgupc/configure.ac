@@ -227,12 +227,11 @@ ACX_CHECK_PROG_VER([MAKEINFO], [makeinfo], [--version],
 AM_CONDITIONAL(BUILD_INFO, test $gcc_cv_prog_makeinfo_modern = "yes")
 
 
+# libgupc cannot be built as shared library
+enable_shared=no
 # Configure libtool
 AC_DISABLE_SHARED
 AM_PROG_LIBTOOL
-if test "$enabled_shared" = "yes"; then
-  AC_MSG_ERROR([libgupc shared library support currently unimplemented.])
-fi
 
 AM_MAINTAINER_MODE
 

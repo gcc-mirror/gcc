@@ -1,3 +1,14 @@
+2011-12-17  Nenad Vukicevic <nenad@intrepid.com>
+
+	configure.ac: Remove erroneous check for enable_shared. Build 
+	libgupc only as a static library as shared data sections from 
+	all the UPC compilations must be combined into a single 
+	contiguous section.
+	configure.tgt: Always include the necessary libraries required by 
+	libgupc on the command line. This is necessary as we don't build 
+	libgupc as a dynamic link library.
+	configure: Re-generate.
+
 2011-11-19  Gary Funck  <gary@intrepid.com>
 
 	* smp/upc_sync.h (GUPCR_WRITE_FENCE, GUPCR_READ_FENCE):

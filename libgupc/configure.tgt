@@ -100,8 +100,5 @@ if test "$enable_upc_link_script" = yes; then
   libgupc_spec="-T gupc.ld%s ${libgupc_spec}"
 fi
 # Set up the set of libraries that we need to link against for libgupc.
-if test "$enable_shared" = "yes"; then
-  link_upc_spec="${libgupc_spec} %{static: $LIBS}"
-else
-  link_upc_spec="${libgupc_spec} $LIBS"
-fi 
+# 
+link_upc_spec="${libgupc_spec} $LIBS"
