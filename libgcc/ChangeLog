@@ -1,3 +1,8 @@
+2011-12-17  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config.host (mips*-sde-elf*, mipsisa64sr71k-*-elf*): Add to
+	tmake_file rather replacing it.
+
 2011-12-15  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/rs6000/darwin-world.S (toplevel): Make it clear that this

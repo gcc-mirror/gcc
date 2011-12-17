@@ -751,7 +751,7 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 mips*-*-openbsd*)
 	;;
 mips*-sde-elf*)
-	tmake_file="mips/t-crtstuff mips/t-mips16"
+	tmake_file="$tmake_file mips/t-crtstuff mips/t-mips16"
 	case "${with_newlib}" in
 	  yes)
 	    # newlib / libgloss.
@@ -771,7 +771,7 @@ mipsisa64r2-*-elf* | mipsisa64r2el-*-elf*)
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 mipsisa64sr71k-*-elf*)
-	tmake_file="mips/t-elf mips/t-crtstuff t-fdpbit"
+	tmake_file="$tmake_file mips/t-elf mips/t-crtstuff t-fdpbit"
 	extra_parts="$extra_parts crti.o crtn.o"
         ;;
 mipsisa64sb1-*-elf* | mipsisa64sb1el-*-elf*)
