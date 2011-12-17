@@ -370,6 +370,12 @@ build_value_init (tree type, tsubst_flags_t complain)
 tree
 build_value_init_noctor (tree type, tsubst_flags_t complain)
 {
+  if (!COMPLETE_TYPE_P (type))
+    {
+      if (complain & tf_error)
+	error ("value-initialization of incomplete type %qT", type);
+      return error_mark_node;
+    }
   if (CLASS_TYPE_P (type))
     {
       gcc_assert (!TYPE_NEEDS_CONSTRUCTING (type));
