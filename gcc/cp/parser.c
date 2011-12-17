@@ -22624,6 +22624,8 @@ cp_parser_token_is_class_key (cp_token* token)
 static void
 cp_parser_check_class_key (enum tag_types class_key, tree type)
 {
+  if (type == error_mark_node)
+    return;
   if ((TREE_CODE (type) == UNION_TYPE) != (class_key == union_type))
     {
       permerror (input_location, "%qs tag used in naming %q#T",
