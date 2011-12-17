@@ -1,3 +1,9 @@
+2011-12-17  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/51491
+	* gcc.dg/pr51491.c: New test.
+	* gcc.dg/pr51491-2.c: Same.
+
 2011-12-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51416
