@@ -222,10 +222,10 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   /**
    *  @brief  Return list of partial sums
    *
-   *  Accumulates the values in the range [first,last) using operator+().
+   *  Accumulates the values in the range [first,last) using the @c + operator.
    *  As each successive input value is added into the total, that partial sum
-   *  is written to @a result.  Therefore, the first value in result is the
-   *  first value of the input, the second value in result is the sum of the
+   *  is written to @p result.  Therefore, the first value in @p result is the
+   *  first value of the input, the second value in @p result is the sum of the
    *  first and second input values, and so on.
    *
    *  @param  first  Start of input range.
@@ -261,15 +261,16 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   /**
    *  @brief  Return list of partial sums
    *
-   *  Accumulates the values in the range [first,last) using operator+().
+   *  Accumulates the values in the range [first,last) using @p binary_op.
    *  As each successive input value is added into the total, that partial sum
-   *  is written to @a result.  Therefore, the first value in result is the
-   *  first value of the input, the second value in result is the sum of the
+   *  is written to @a result.  Therefore, the first value in @p result is the
+   *  first value of the input, the second value in @p result is the sum of the
    *  first and second input values, and so on.
    *
    *  @param  first  Start of input range.
    *  @param  last  End of input range.
    *  @param  result  Output to write sums to.
+   *  @param  binary_op  Function object.
    *  @return  Iterator pointing just beyond the values written to result.
    */
   template<typename _InputIterator, typename _OutputIterator,
