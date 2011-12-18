@@ -1,3 +1,7 @@
+2011-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* acx.m4 (Test for GNAT): Update comment and add quotes in final test.
+
 2011-11-22  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* weakref.m4: New file.
