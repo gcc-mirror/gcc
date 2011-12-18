@@ -309,6 +309,7 @@ static tree ia64_gimplify_va_arg (tree, tree, gimple_seq *, gimple_seq *);
 static bool ia64_scalar_mode_supported_p (enum machine_mode mode);
 static bool ia64_vector_mode_supported_p (enum machine_mode mode);
 static bool ia64_legitimate_constant_p (enum machine_mode, rtx);
+static bool ia64_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool ia64_cannot_force_const_mem (enum machine_mode, rtx);
 static const char *ia64_mangle_type (const_tree);
 static const char *ia64_invalid_conversion (const_tree, const_tree);
@@ -583,6 +584,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P ia64_legitimate_constant_p
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P ia64_legitimate_address_p
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM ia64_cannot_force_const_mem
@@ -935,6 +938,68 @@ tls_symbolic_operand_type (rtx addr)
     tls_kind = SYMBOL_REF_TLS_MODEL (addr);
 
   return tls_kind;
+}
+
+/* Returns true if REG (assumed to be a `reg' RTX) is valid for use
+   as a base register.  */
+
+static inline bool
+ia64_reg_ok_for_base_p (const_rtx reg, bool strict)
+{
+  if (strict
+      && REGNO_OK_FOR_BASE_P (REGNO (reg)))
+    return true;
+  else if (!strict
+	   && (GENERAL_REGNO_P (REGNO (reg))
+	       || !HARD_REGISTER_P (reg)))
+    return true;
+  else
+    return false;
+}
+
+static bool
+ia64_legitimate_address_reg (const_rtx reg, bool strict)
+{
+  if ((REG_P (reg) && ia64_reg_ok_for_base_p (reg, strict))
+      || (GET_CODE (reg) == SUBREG && REG_P (XEXP (reg, 0))
+	  && ia64_reg_ok_for_base_p (XEXP (reg, 0), strict)))
+    return true;
+
+  return false;
+}
+
+static bool
+ia64_legitimate_address_disp (const_rtx reg, const_rtx disp, bool strict)
+{
+  if (GET_CODE (disp) == PLUS
+      && rtx_equal_p (reg, XEXP (disp, 0))
+      && (ia64_legitimate_address_reg (XEXP (disp, 1), strict)
+	  || (CONST_INT_P (XEXP (disp, 1))
+	      && IN_RANGE (INTVAL (XEXP (disp, 1)), -256, 255))))
+    return true;
+
+  return false;
+}
+
+/* Implement TARGET_LEGITIMATE_ADDRESS_P.  */
+
+static bool
+ia64_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+			   rtx x, bool strict)
+{
+  if (ia64_legitimate_address_reg (x, strict))
+    return true;
+  else if ((GET_CODE (x) == POST_INC || GET_CODE (x) == POST_DEC)
+	   && ia64_legitimate_address_reg (XEXP (x, 0), strict)
+	   && XEXP (x, 0) != arg_pointer_rtx) 
+    return true;
+  else if (GET_CODE (x) == POST_MODIFY
+	   && ia64_legitimate_address_reg (XEXP (x, 0), strict)
+	   && XEXP (x, 0) != arg_pointer_rtx
+	   && ia64_legitimate_address_disp (XEXP (x, 0), XEXP (x, 1), strict))
+    return true;
+  else
+    return false;
 }
 
 /* Return true if X is a constant that is valid for some immediate
