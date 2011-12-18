@@ -1038,8 +1038,9 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	  if (TREE_CODE (gnu_result) == INDIRECT_REF)
 	    TREE_THIS_NOTRAP (gnu_result) = 1;
 
-	  if (read_only)
-	    TREE_READONLY (gnu_result) = 1;
+	  /* The first reference, in case of a double reference, always points
+	     to read-only, see gnat_to_gnu_param for the rationale.  */
+	  TREE_READONLY (gnu_result) = 1;
 	}
 
       /* If it's a PARM_DECL to foreign convention subprogram, convert it.  */
