@@ -16448,6 +16448,9 @@ cp_parser_ptr_operator (cp_parser* parser,
 
 	  if (TREE_CODE (parser->scope) == NAMESPACE_DECL)
 	    error_at (token->location, "%qD is a namespace", parser->scope);
+	  else if (TREE_CODE (parser->scope) == ENUMERAL_TYPE)
+	    error_at (token->location, "cannot form pointer to member of "
+		      "non-class %q#T", parser->scope);
 	  else
 	    {
 	      /* The type of which the member is a member is given by the
