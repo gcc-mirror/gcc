@@ -1,4 +1,8 @@
-2011-12-14  Hariharan Sandanagobalane <hariharan.gcc@gmail.com>
+2011-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure: Regenerate.
+
+2011-12-14  Hariharan Sandanagobalane  <hariharan.gcc@gmail.com>
 
 	* MAINTAINERS (picochip): Changed email address.
 
