@@ -1,3 +1,7 @@
+2011-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure: Regenerate.
+
 2011-06-27  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR regression/47836
