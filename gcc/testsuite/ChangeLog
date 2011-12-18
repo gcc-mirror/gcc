@@ -1,3 +1,7 @@
+2011-12-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/pr51491-2.c: Fix "cleanup-treee-dump" typo.
+
 2011-12-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51588
