@@ -1,3 +1,7 @@
+2011-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure: Regenerate.
+
 2011-11-20  Andreas Tobler  <andreast@fgznet.ch>
 
 	* libtool.m4: Additional FreeBSD 10 fixes.
