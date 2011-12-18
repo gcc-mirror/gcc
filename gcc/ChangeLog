@@ -1,3 +1,13 @@
+2011-12-18  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/ia64/ia64.h (REG_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P,
+	LEGITIMATE_ADDRESS_REG, LEGITIMATE_ADDRESS_DISP,
+	GO_IF_LEGITIMATE_ADDRESS): Remove macros.
+	* config/ia64/ia64.c (TARGET_LEGITIMATE_ADDRESS_P): Define.
+	(ia64_reg_ok_for_base_p, ia64_legitimate_address_reg,
+	ia64_legitimate_address_disp, ia64_legitimate_address_p): New
+	functions.
+
 2011-12-17  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/51491

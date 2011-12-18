@@ -1154,52 +1154,6 @@ do {									\
 
 #define MAX_REGS_PER_ADDRESS 2
 
-/* A C compound statement with a conditional `goto LABEL;' executed if X (an
-   RTX) is a legitimate memory address on the target machine for a memory
-   operand of mode MODE.  */
-
-#define LEGITIMATE_ADDRESS_REG(X)					\
-  ((GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))			\
-   || (GET_CODE (X) == SUBREG && GET_CODE (XEXP (X, 0)) == REG		\
-       && REG_OK_FOR_BASE_P (XEXP (X, 0))))
-
-#define LEGITIMATE_ADDRESS_DISP(R, X)					\
-  (GET_CODE (X) == PLUS							\
-   && rtx_equal_p (R, XEXP (X, 0))					\
-   && (LEGITIMATE_ADDRESS_REG (XEXP (X, 1))				\
-       || (GET_CODE (XEXP (X, 1)) == CONST_INT				\
-	   && INTVAL (XEXP (X, 1)) >= -256				\
-	   && INTVAL (XEXP (X, 1)) < 256)))
-
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL) 			\
-do {									\
-  if (LEGITIMATE_ADDRESS_REG (X))					\
-    goto LABEL;								\
-  else if ((GET_CODE (X) == POST_INC || GET_CODE (X) == POST_DEC)	\
-	   && LEGITIMATE_ADDRESS_REG (XEXP (X, 0))			\
-	   && XEXP (X, 0) != arg_pointer_rtx)				\
-    goto LABEL;								\
-  else if (GET_CODE (X) == POST_MODIFY					\
-	   && LEGITIMATE_ADDRESS_REG (XEXP (X, 0))			\
-	   && XEXP (X, 0) != arg_pointer_rtx				\
-	   && LEGITIMATE_ADDRESS_DISP (XEXP (X, 0), XEXP (X, 1)))	\
-    goto LABEL;								\
-} while (0)
-
-/* A C expression that is nonzero if X (assumed to be a `reg' RTX) is valid for
-   use as a base register.  */
-
-#ifdef REG_OK_STRICT
-#define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-#else
-#define REG_OK_FOR_BASE_P(X) \
-  (GENERAL_REGNO_P (REGNO (X)) || (REGNO (X) >= FIRST_PSEUDO_REGISTER))
-#endif
-
-/* A C expression that is nonzero if X (assumed to be a `reg' RTX) is valid for
-   use as an index register.  This is needed for POST_MODIFY.  */
-
-#define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
 
 /* Condition Code Status */
 
