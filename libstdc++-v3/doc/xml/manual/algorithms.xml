@@ -22,7 +22,7 @@
 
 
 <para>
-  The neatest accomplishment of the algorithms sect1 is that all the
+  The neatest accomplishment of the algorithms section is that all the
   work is done via iterators, not containers directly.  This means two
   important things:
 </para>
@@ -53,14 +53,14 @@
   <emphasis>N</emphasis> as a size in the examples is to keep things
   easy to read but probably won't be valid code.  You can use wrappers
   such as those described in
-  the <link linkend="std.containers">containers sect1</link> to keep
+  the <link linkend="std.containers">containers section</link> to keep
   real code readable.
 </para>
 <para>
   The single thing that trips people up the most is the definition
   of <emphasis>range</emphasis> used with iterators; the famous
   "past-the-end" rule that everybody loves to hate.  The
-  <link linkend="std.iterators">iterators sect1</link> of this
+  <link linkend="std.iterators">iterators section</link> of this
     document has a complete explanation of this simple rule that seems
     to cause so much confusion.  Once you
     get <emphasis>range</emphasis> into your head (it's not that hard,
