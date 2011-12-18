@@ -1,3 +1,8 @@
+2011-12-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51588
+	* parser.c (cp_parser_ptr_operator): Reject pointer to member of enum.
+
 2011-12-17  Richard Henderson  <rth@redhat.com>
 
 	PR bootstrap/51072
