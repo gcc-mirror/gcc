@@ -1,3 +1,10 @@
+2011-12-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/iterators.xml: Replace "sect1" with "section".
+	* doc/xml/manual/algorithms.xml: Likewise.
+	* doc/html/manual/iterators.html: Likewise.
+	* doc/html/manual/algorithms.html: Likewise.
+
 2011-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
