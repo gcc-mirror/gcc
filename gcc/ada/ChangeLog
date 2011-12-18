@@ -1,3 +1,10 @@
+2011-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_param): Add comment about double
+	reference and DECL_POINTS_TO_READONLY_P.
+	* gcc-interface/trans.c (Identifier_to_gnu) <by_ref>: Always set the
+	TREE_READONLY flag on the first dereference of a double dereference.
+
 2011-12-15  Arnaud Charlet  <charlet@adacore.com>
 
 	* a-numaux-vms.ads, s-asthan-vms-ia64.adb, s-auxdec-vms-ia64.adb,

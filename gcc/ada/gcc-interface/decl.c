@@ -5587,6 +5587,10 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
   DECL_BY_COMPONENT_PTR_P (gnu_param) = by_component_ptr;
   DECL_BY_DESCRIPTOR_P (gnu_param) = (mech == By_Descriptor ||
                                       mech == By_Short_Descriptor);
+  /* Note that, in case of a parameter passed by double reference, the
+     DECL_POINTS_TO_READONLY_P flag is meant for the second reference.
+     The first reference always points to read-only, as it points to
+     the second reference, i.e. the reference to the actual parameter.  */
   DECL_POINTS_TO_READONLY_P (gnu_param)
     = (ro_param && (by_ref || by_component_ptr));
   DECL_CAN_NEVER_BE_NULL_P (gnu_param) = Can_Never_Be_Null (gnat_param);
