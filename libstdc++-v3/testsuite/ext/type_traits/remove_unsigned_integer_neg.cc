@@ -36,4 +36,4 @@ int main()
 }
 
 // { dg-error "invalid use of incomplete" "" { target *-*-* } 28 } 
-// { dg-error "declaration of" "" { target *-*-* } 106 }
+// { dg-error "declaration of" "" { target *-*-* } 107 }

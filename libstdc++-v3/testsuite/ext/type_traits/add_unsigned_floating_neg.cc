@@ -35,4 +35,4 @@ int main()
 }
 
 // { dg-error "instantiated from" "" { target *-*-* } 28 } 
-// { dg-error "no type" "" { target *-*-* } 69 } 
+// { dg-error "no type" "" { target *-*-* } 70 } 

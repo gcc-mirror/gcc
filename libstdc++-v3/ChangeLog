@@ -1,5 +1,13 @@
 2011-12-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* testsuite/ext/type_traits/remove_unsigned_integer_neg.cc: Adjust
+	dg-error line numbers.
+	* testsuite/ext/type_traits/add_unsigned_floating_neg.cc: Likewise.
+	* testsuite/ext/type_traits/remove_unsigned_floating_neg.cc: Likewise.
+	* testsuite/ext/type_traits/add_unsigned_integer_neg.cc: Likewise.
+
+2011-12-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/c_global/cmath: Update copyright years.
 	* include/ext/type_traits.h: Likewise.
 
