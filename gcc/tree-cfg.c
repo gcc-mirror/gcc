@@ -1627,7 +1627,8 @@ replace_uses_by (tree name, tree val)
 	  if (fold_stmt (&gsi))
 	    stmt = gsi_stmt (gsi);
 
-	  maybe_clean_or_replace_eh_stmt (orig_stmt, stmt);
+	  if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt))
+	    gimple_purge_dead_eh_edges (gimple_bb (stmt));
 
 	  update_stmt (stmt);
 	}
