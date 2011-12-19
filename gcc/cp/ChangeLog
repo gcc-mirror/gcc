@@ -1,3 +1,8 @@
+2011-12-19  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/51477
+	* search.c (lookup_member): Get out early on invalid base type.
+
 2011-12-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51489
