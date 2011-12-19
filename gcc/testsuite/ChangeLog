@@ -1,3 +1,8 @@
+2011-12-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51228
+	* c-c++-common/transparent-union-1.c: New.
+
 2011-12-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/51580

@@ -6287,13 +6287,27 @@ handle_transparent_union_attribute (tree *node, tree name,
 
   if (TREE_CODE (type) == UNION_TYPE)
     {
-      /* When IN_PLACE is set, leave the check for FIELDS and MODE to
-	 the code in finish_struct.  */
+      /* Make sure that the first field will work for a transparent union.
+	 If the type isn't complete yet, leave the check to the code in
+	 finish_struct.  */
+      if (TYPE_SIZE (type))
+	{
+	  tree first = first_field (type);
+	  if (first == NULL_TREE
+	      || DECL_ARTIFICIAL (first)
+	      || TYPE_MODE (type) != DECL_MODE (first))
+	    goto ignored;
+	}
+
       if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
 	{
-	  if (TYPE_FIELDS (type) == NULL_TREE
-	      || c_dialect_cxx ()
-	      || TYPE_MODE (type) != DECL_MODE (TYPE_FIELDS (type)))
+	  /* If the type isn't complete yet, setting the flag
+	     on a variant wouldn't ever be checked.  */
+	  if (!TYPE_SIZE (type))
+	    goto ignored;
+
+	  /* build_duplicate_type doesn't work for C++.  */
+	  if (c_dialect_cxx ())
 	    goto ignored;
 
 	  /* A type variant isn't good enough, since we don't a cast
