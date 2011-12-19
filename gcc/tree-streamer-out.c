@@ -410,9 +410,11 @@ streamer_write_chain (struct output_block *ob, tree t, bool ref_p)
 	 to the global decls section as we do not want to have them
 	 enter decl merging.  This is, of course, only for the call
 	 for streaming BLOCK_VARS, but other callers are safe.  */
-      stream_write_tree (ob, t,
-			 ref_p && !(VAR_OR_FUNCTION_DECL_P (t)
-				    && DECL_EXTERNAL (t)));
+      if (VAR_OR_FUNCTION_DECL_P (t)
+	  && DECL_EXTERNAL (t))
+	stream_write_tree_shallow_non_ref (ob, t, ref_p);
+      else
+	stream_write_tree (ob, t, ref_p);
 
       TREE_CHAIN (t) = saved_chain;
       t = TREE_CHAIN (t);

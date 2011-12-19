@@ -1,3 +1,9 @@
+2011-12-19  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/51573
+	* gcc.dg/lto/20111207-2_0.c: Adjust.
+	* g++.dg/lto/pr51573-1_0.C: New testcase.
+
 2011-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/51619

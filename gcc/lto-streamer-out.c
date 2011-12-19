@@ -370,11 +370,12 @@ lto_write_tree (struct output_block *ob, tree expr, bool ref_p)
 
 
 /* Emit the physical representation of tree node EXPR to output block
-   OB.  If REF_P is true, the leaves of EXPR are emitted as references
-   via lto_output_tree_ref.  */
+   OB.  If THIS_REF_P is true, the leaves of EXPR are emitted as references
+   via lto_output_tree_ref.  REF_P is used for streaming siblings of EXPR.  */
 
 void
-lto_output_tree (struct output_block *ob, tree expr, bool ref_p)
+lto_output_tree (struct output_block *ob, tree expr,
+		 bool ref_p, bool this_ref_p)
 {
   unsigned ix;
   bool existed_p;
@@ -385,7 +386,7 @@ lto_output_tree (struct output_block *ob, tree expr, bool ref_p)
       return;
     }
 
-  if (ref_p && tree_is_indexable (expr))
+  if (this_ref_p && tree_is_indexable (expr))
     {
       lto_output_tree_ref (ob, expr);
       return;

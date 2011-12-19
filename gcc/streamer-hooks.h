@@ -41,9 +41,10 @@ struct streamer_hooks {
      a tree node.  The arguments are: output_block where to write the
      node, the tree node to write and a boolean flag that should be true
      if the caller wants to write a reference to the tree, instead of the
-     tree itself.  The referencing mechanism is up to each streamer to
-     implement.  */
-  void (*write_tree) (struct output_block *, tree, bool);
+     tree itself.  The second boolean parameter specifies this for
+     the tree itself, the first for all siblings that are streamed.
+     The referencing mechanism is up to each streamer to implement.  */
+  void (*write_tree) (struct output_block *, tree, bool, bool);
 
   /* [REQ] Called by every tree streaming routine that needs to read
      a tree node.  It takes two arguments: an lto_input_block pointing
@@ -64,7 +65,10 @@ struct streamer_hooks {
 };
 
 #define stream_write_tree(OB, EXPR, REF_P) \
-    streamer_hooks.write_tree(OB, EXPR, REF_P)
+    streamer_hooks.write_tree(OB, EXPR, REF_P, REF_P)
+
+#define stream_write_tree_shallow_non_ref(OB, EXPR, REF_P) \
+    streamer_hooks.write_tree(OB, EXPR, REF_P, false)
 
 #define stream_read_tree(IB, DATA_IN) \
     streamer_hooks.read_tree(IB, DATA_IN)
