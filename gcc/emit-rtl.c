@@ -5717,6 +5717,11 @@ init_emit_once (void)
        mode = GET_MODE_WIDER_MODE (mode))
     const_tiny_rtx[3][(int) mode] = constm1_rtx;
 
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_PARTIAL_INT);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    const_tiny_rtx[3][(int) mode] = constm1_rtx;
+      
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_COMPLEX_INT);
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))

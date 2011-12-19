@@ -1,3 +1,8 @@
+2011-12-19  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* emit-rtl.c (init_emit_once): Initialize const_tiny_rtx[3] for
+	partial integer modes.
+
 2011-12-19  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR target/51532
