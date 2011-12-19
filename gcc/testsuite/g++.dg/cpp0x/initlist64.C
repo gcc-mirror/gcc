@@ -22,7 +22,7 @@ X aa = Y();
 X b{ Y() };
 X bb(Y());
 
-X c = { Z() };  // { dg-error "" "" { xfail *-*-* } }
+X c = { Z() };  // { dg-error "" }
 X cc = Z();	// { dg-error "" }
 
 X d{ Z() };

@@ -4384,11 +4384,10 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 #define LOOKUP_PREFER_RVALUE (LOOKUP_HIDDEN << 1)
 /* We're inside an init-list, so narrowing conversions are ill-formed.  */
 #define LOOKUP_NO_NARROWING (LOOKUP_PREFER_RVALUE << 1)
-/* Avoid user-defined conversions for the first parameter of a copy
-   constructor (or move constructor).  */
-#define LOOKUP_NO_COPY_CTOR_CONVERSION (LOOKUP_NO_NARROWING << 1)
+/* We're looking up a constructor for list-initialization.  */
+#define LOOKUP_LIST_INIT_CTOR (LOOKUP_NO_NARROWING << 1)
 /* This is the first parameter of a copy constructor.  */
-#define LOOKUP_COPY_PARM (LOOKUP_NO_COPY_CTOR_CONVERSION << 1)
+#define LOOKUP_COPY_PARM (LOOKUP_LIST_INIT_CTOR << 1)
 /* We only want to consider list constructors.  */
 #define LOOKUP_LIST_ONLY (LOOKUP_COPY_PARM << 1)
 /* Return after determining which function to call and checking access.
