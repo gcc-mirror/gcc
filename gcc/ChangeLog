@@ -1,5 +1,9 @@
 2011-12-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/51596
+	* tree-cfg.c (replace_uses_by): Call gimple_purge_dead_eh_edges
+	when needed.
+
 	PR middle-end/51590
 	PR tree-optimization/51606
 	* tree-vect-patterns.c (append_pattern_def_seq, new_pattern_def_seq):
