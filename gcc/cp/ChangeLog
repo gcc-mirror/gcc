@@ -1,5 +1,8 @@
 2011-12-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51530
+	* pt.c (unify): Handle NULLPTR_TYPE.
+
 	PR c++/51526
 	* semantics.c (build_data_member_initialization): Handle
 	delegating constructor.
