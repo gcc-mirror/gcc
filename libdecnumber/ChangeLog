@@ -1,3 +1,7 @@
+2011-12-19  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* configure: Regenerate.
+
 2011-04-20  Jim Meyering  <meyering@redhat.com>
 
 	* decNumber.c (decNumberFromString): Remove useless
