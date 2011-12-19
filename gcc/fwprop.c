@@ -1112,7 +1112,18 @@ forward_propagate_subreg (df_ref use, rtx def_insn, rtx def_set)
   /* If this is a SUBREG of a ZERO_EXTEND or SIGN_EXTEND, and the SUBREG
      is the low part of the reg being extended then just use the inner
      operand.  Don't do this if the ZERO_EXTEND or SIGN_EXTEND insn will
-     be removed due to it matching a LOAD_EXTEND_OP load from memory.  */
+     be removed due to it matching a LOAD_EXTEND_OP load from memory,
+     or due to the operation being a no-op when applied to registers.
+     For example, if we have:
+
+	 A: (set (reg:DI X) (sign_extend:DI (reg:SI Y)))
+	 B: (... (subreg:SI (reg:DI X)) ...)
+
+     and mode_rep_extended says that Y is already sign-extended,
+     the backend will typically allow A to be combined with the
+     definition of Y or, failing that, allow A to be deleted after
+     reload through register tying.  Introducing more uses of Y
+     prevents both optimisations.  */
   else if (subreg_lowpart_p (use_reg))
     {
       use_insn = DF_REF_INSN (use);
@@ -1123,6 +1134,8 @@ forward_propagate_subreg (df_ref use, rtx def_insn, rtx def_set)
 	  && REGNO (XEXP (src, 0)) >= FIRST_PSEUDO_REGISTER
 	  && GET_MODE (XEXP (src, 0)) == use_mode
 	  && !free_load_extend (src, def_insn)
+	  && (targetm.mode_rep_extended (use_mode, GET_MODE (src))
+	      != (int) GET_CODE (src))
 	  && all_uses_available_at (def_insn, use_insn))
 	return try_fwprop_subst (use, DF_REF_LOC (use), XEXP (src, 0),
 				 def_insn, false);

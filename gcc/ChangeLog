@@ -1,5 +1,10 @@
 2011-12-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* fwprop.c (forward_propagate_subreg): Skip the SIGN/ZERO_EXTEND
+	optimization if the source register is already extended.
+
+2011-12-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* lower-subreg.c (can_decompose_p): Check every word of a hard
 	register.
 
