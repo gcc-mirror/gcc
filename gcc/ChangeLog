@@ -1,3 +1,14 @@
+2011-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/51590
+	PR tree-optimization/51606
+	* tree-vect-patterns.c (append_pattern_def_seq, new_pattern_def_seq):
+	New inline functions.
+	(vect_recog_over_widening_pattern,
+	vect_recog_vector_vector_shift_pattern,
+	vect_recog_sdivmod_pow2_pattern, vect_recog_mixed_size_cond_pattern,
+	adjust_bool_pattern_cast, vect_recog_bool_pattern): Use them.
+
 2011-12-19  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/51572
