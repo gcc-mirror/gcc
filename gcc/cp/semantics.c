@@ -7065,7 +7065,7 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
       if (TREE_CODE (elttype) == ARRAY_TYPE)
 	{
 	  /* A multidimensional array; recurse.  */
-	  if (value_init)
+	  if (value_init || init == NULL_TREE)
 	    eltinit = NULL_TREE;
 	  else
 	    eltinit = cp_build_array_ref (input_location, init, idx,

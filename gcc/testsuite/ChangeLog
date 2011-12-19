@@ -1,3 +1,8 @@
+2011-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/51619
+	* g++.dg/cpp0x/pr51619.C: New test.
+
 2011-12-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51605
