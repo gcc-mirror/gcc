@@ -515,7 +515,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	processor = PROCESSOR_AMDFAM10;
       else if (has_sse2 || has_longmode)
 	processor = PROCESSOR_K8;
-      else if (has_3dnowp)
+      else if (has_3dnowp && family == 6)
 	processor = PROCESSOR_ATHLON;
       else if (has_mmx)
 	processor = PROCESSOR_K6;
