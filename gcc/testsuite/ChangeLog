@@ -1,3 +1,7 @@
+2011-12-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/ext-2.c: Add NOMIPS16.
+
 2011-12-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51526
