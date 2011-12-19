@@ -1,3 +1,9 @@
+2011-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+	    Tom de Vries <tom@codesourcery.com>
+
+	PR rtl-opt/50380
+	* gcc.c-torture/compile/pr50380.c: New testcase.
+
 2011-12-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51605
