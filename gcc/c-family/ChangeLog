@@ -1,3 +1,9 @@
+2011-12-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51228
+	* c-common.c (handle_transparent_union_attribute): Check the first
+	field if the type is complete.
+
 2011-12-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/51365
