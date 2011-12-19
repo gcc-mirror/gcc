@@ -1,5 +1,6 @@
 2011-12-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR rtl-optimization/42839
 	* fwprop.c (forward_propagate_subreg): Skip the SIGN/ZERO_EXTEND
 	optimization if the source register is already extended.
 
