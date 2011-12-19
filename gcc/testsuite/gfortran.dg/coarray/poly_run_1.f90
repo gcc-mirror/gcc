@@ -14,7 +14,7 @@ else
 end if
 if (allocated(A)) i = 5
 call s(A)
-!call t(A) ! FIXME
+!call st(A) ! FIXME
 
 contains
 
@@ -23,21 +23,29 @@ subroutine s(x)
   if (any (lcobound(x) /= [1, -5])) call abort ()
   if (num_images() == 1) then
     if (any (ucobound(x) /= [4, -5])) call abort ()
-! FIXME: Tree-walking issue?
-!  else
-!    if (ucobound(x,dim=1) /= 4) call abort ()
+  else
+    if (ucobound(x,dim=1) /= 4) call abort ()
   end if
 end subroutine s
 
+subroutine st(x)
+  class(t) :: x(:)[4,2:*]
 ! FIXME
-!subroutine st(x)
-!  class(t),allocatable :: x(:)[:,:]
 !  if (any (lcobound(x) /= [1, 2])) call abort ()
+!  if (lcobound(x, dim=1) /= 1) call abort ()
+!  if (lcobound(x, dim=2) /= 2) call abort ()
+!  if (this_image() == 1) then
+!     if (any (this_image(x) /= lcobound(x))) call abort ()
+!     if (this_image(x, dim=1) /= lcobound(x, dim=1)) call abort ()
+!     if (this_image(x, dim=2) /= lcobound(x, dim=2)) call abort ()
+!  end if
 !  if (num_images() == 1) then
-!    if (any (ucobound(x) /= [4, 2])) call abort ()
+!     if (any (ucobound(x) /= [4, 2])) call abort ()
+!     if (ucobound(x, dim=1) /= 4) call abort ()
+!     if (ucobound(x, dim=2) /= 2) call abort ()
 !  else
 !    if (ucobound(x,dim=1) /= 4) call abort ()
 !  end if
-!end subroutine st
+end subroutine st
 end
 

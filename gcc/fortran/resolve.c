@@ -10070,17 +10070,39 @@ apply_default_init_local (gfc_symbol *sym)
 static gfc_try
 resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 {
+  gfc_array_spec *as;
+
   /* Avoid double diagnostics for function result symbols.  */
   if ((sym->result || sym->attr.result) && !sym->attr.dummy
       && (sym->ns != gfc_current_ns))
     return SUCCESS;
 
+  if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
+    as = CLASS_DATA (sym)->as;
+  else
+    as = sym->as;
+
   /* Constraints on deferred shape variable.  */
-  if (sym->as == NULL || sym->as->type != AS_DEFERRED)
+  if (as == NULL || as->type != AS_DEFERRED)
     {
-      if (sym->attr.allocatable)
+      bool pointer, allocatable, dimension;
+
+      if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
 	{
-	  if (sym->attr.dimension)
+	  pointer = CLASS_DATA (sym)->attr.class_pointer;
+	  allocatable = CLASS_DATA (sym)->attr.allocatable;
+	  dimension = CLASS_DATA (sym)->attr.dimension;
+	}
+      else
+	{
+	  pointer = sym->attr.pointer;
+	  allocatable = sym->attr.allocatable;
+	  dimension = sym->attr.dimension;
+	}
+
+      if (allocatable)
+	{
+	  if (dimension)
 	    {
 	      gfc_error ("Allocatable array '%s' at %L must have "
 			 "a deferred shape", sym->name, &sym->declared_at);
@@ -10092,7 +10114,7 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 	    return FAILURE;
 	}
 
-      if (sym->attr.pointer && sym->attr.dimension)
+      if (pointer && dimension)
 	{
 	  gfc_error ("Array pointer '%s' at %L must have a deferred shape",
 		     sym->name, &sym->declared_at);
@@ -11430,7 +11452,10 @@ resolve_fl_derived0 (gfc_symbol *sym)
       return FAILURE;
     }
 
-  for (c = sym->components; c != NULL; c = c->next)
+  c = (sym->attr.is_class) ? sym->components->ts.u.derived->components
+			   : sym->components;
+
+  for ( ; c != NULL; c = c->next)
     {
       /* See PRs 51550, 47545, 48654, 49050, 51075 - and 45170.  */
       if (c->ts.type == BT_CHARACTER && c->ts.deferred)
@@ -11658,13 +11683,21 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	}
 
       /* Check type-spec if this is not the parent-type component.  */
-      if ((!sym->attr.extension || c != sym->components) && !sym->attr.vtype
+      if (((sym->attr.is_class
+	    && (!sym->components->ts.u.derived->attr.extension
+		|| c != sym->components->ts.u.derived->components))
+	   || (!sym->attr.is_class
+	       && (!sym->attr.extension || c != sym->components)))
+	  && !sym->attr.vtype
 	  && resolve_typespec_used (&c->ts, &c->loc, c->name) == FAILURE)
 	return FAILURE;
 
       /* If this type is an extension, set the accessibility of the parent
 	 component.  */
-      if (super_type && c == sym->components
+      if (super_type
+	  && ((sym->attr.is_class
+	       && c == sym->components->ts.u.derived->components)
+	      || (!sym->attr.is_class && c == sym->components))
 	  && strcmp (super_type->name, c->name) == 0)
 	c->attr.access = super_type->attr.access;
       
@@ -12044,6 +12077,8 @@ resolve_symbol (gfc_symbol *sym)
   gfc_symtree *this_symtree;
   gfc_namespace *ns;
   gfc_component *c;
+  symbol_attribute class_attr;
+  gfc_array_spec *as;
 
   if (sym->attr.flavor == FL_UNKNOWN)
     {
@@ -12100,18 +12135,6 @@ resolve_symbol (gfc_symbol *sym)
       return;
     }
 
-
-  /* F2008, C530. */
-  if (sym->attr.contiguous
-      && (!sym->attr.dimension || (sym->as->type != AS_ASSUMED_SHAPE
-				   && !sym->attr.pointer)))
-    {
-      gfc_error ("'%s' at %L has the CONTIGUOUS attribute but is not an "
-		  "array pointer or an assumed-shape array", sym->name,
-		  &sym->declared_at);
-      return;
-    }
-
   if (sym->attr.flavor == FL_DERIVED && resolve_fl_derived (sym) == FAILURE)
     return;
 
@@ -12137,7 +12160,9 @@ resolve_symbol (gfc_symbol *sym)
   if (sym->ts.type == BT_UNKNOWN)
     {
       if (sym->attr.flavor == FL_VARIABLE || sym->attr.flavor == FL_PARAMETER)
-	gfc_set_default_type (sym, 1, NULL);
+	{
+	  gfc_set_default_type (sym, 1, NULL);
+	}
 
       if (sym->attr.flavor == FL_PROCEDURE && sym->attr.external
 	  && !sym->attr.function && !sym->attr.subroutine
@@ -12170,18 +12195,41 @@ resolve_symbol (gfc_symbol *sym)
   else if (mp_flag && sym->attr.flavor == FL_PROCEDURE && sym->attr.function)
     gfc_resolve_array_spec (sym->result->as, false);
 
+  if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
+    {
+      as = CLASS_DATA (sym)->as;
+      class_attr = CLASS_DATA (sym)->attr;
+      class_attr.pointer = class_attr.class_pointer;
+    }
+  else
+    {
+      class_attr = sym->attr;
+      as = sym->as;
+    }
+
+  /* F2008, C530. */
+  if (sym->attr.contiguous
+      && (!class_attr.dimension
+	  || (as->type != AS_ASSUMED_SHAPE && !class_attr.pointer)))
+    {
+      gfc_error ("'%s' at %L has the CONTIGUOUS attribute but is not an "
+		  "array pointer or an assumed-shape array", sym->name,
+		  &sym->declared_at);
+      return;
+    }
+
   /* Assumed size arrays and assumed shape arrays must be dummy
      arguments.  Array-spec's of implied-shape should have been resolved to
      AS_EXPLICIT already.  */
 
-  if (sym->as)
+  if (as)
     {
-      gcc_assert (sym->as->type != AS_IMPLIED_SHAPE);
-      if (((sym->as->type == AS_ASSUMED_SIZE && !sym->as->cp_was_assumed)
-	   || sym->as->type == AS_ASSUMED_SHAPE)
+      gcc_assert (as->type != AS_IMPLIED_SHAPE);
+      if (((as->type == AS_ASSUMED_SIZE && !as->cp_was_assumed)
+	   || as->type == AS_ASSUMED_SHAPE)
 	  && sym->attr.dummy == 0)
 	{
-	  if (sym->as->type == AS_ASSUMED_SIZE)
+	  if (as->type == AS_ASSUMED_SIZE)
 	    gfc_error ("Assumed size array at %L must be a dummy argument",
 		       &sym->declared_at);
 	  else
@@ -12393,8 +12441,10 @@ resolve_symbol (gfc_symbol *sym)
     }
 
   /* F2008, C525.  */
-  if (((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)
-       || sym->attr.codimension)
+  if ((((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)
+	 || (sym->ts.type == BT_CLASS && sym->attr.class_ok
+	     && CLASS_DATA (sym)->attr.coarray_comp))
+       || class_attr.codimension)
       && (sym->attr.result || sym->result == sym))
     {
       gfc_error ("Function result '%s' at %L shall not be a coarray or have "
@@ -12412,9 +12462,11 @@ resolve_symbol (gfc_symbol *sym)
     }
 
   /* F2008, C525.  */
-  if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp
-      && (sym->attr.codimension || sym->attr.pointer || sym->attr.dimension
-	  || sym->attr.allocatable))
+  if (((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)
+	|| (sym->ts.type == BT_CLASS && sym->attr.class_ok
+	    && CLASS_DATA (sym)->attr.coarray_comp))
+      && (class_attr.codimension || class_attr.pointer || class_attr.dimension
+	  || class_attr.allocatable))
     {
       gfc_error ("Variable '%s' at %L with coarray component "
 		 "shall be a nonpointer, nonallocatable scalar",
@@ -12423,8 +12475,9 @@ resolve_symbol (gfc_symbol *sym)
     }
 
   /* F2008, C526.  The function-result case was handled above.  */
-  if (sym->attr.codimension
-      && !(sym->attr.allocatable || sym->attr.dummy || sym->attr.save
+  if (class_attr.codimension
+      && !(class_attr.allocatable || sym->attr.dummy || sym->attr.save
+	   || sym->attr.select_type_temporary
 	   || sym->ns->save_all
 	   || sym->ns->proc_name->attr.flavor == FL_MODULE
 	   || sym->ns->proc_name->attr.is_main_program
@@ -12434,16 +12487,16 @@ resolve_symbol (gfc_symbol *sym)
 		 "nor a dummy argument", sym->name, &sym->declared_at);
       return;
     }
-  /* F2008, C528.  */  /* FIXME: sym->as check due to PR 43412.  */
-  else if (sym->attr.codimension && !sym->attr.allocatable
-      && sym->as && sym->as->cotype == AS_DEFERRED)
+  /* F2008, C528.  */
+  else if (class_attr.codimension && !sym->attr.select_type_temporary
+	   && !class_attr.allocatable && as && as->cotype == AS_DEFERRED)
     {
       gfc_error ("Coarray variable '%s' at %L shall not have codimensions with "
 		 "deferred shape", sym->name, &sym->declared_at);
       return;
     }
-  else if (sym->attr.codimension && sym->attr.allocatable
-      && (sym->as->type != AS_DEFERRED || sym->as->cotype != AS_DEFERRED))
+  else if (class_attr.codimension && class_attr.allocatable && as
+	   && (as->cotype != AS_DEFERRED || as->type != AS_DEFERRED))
     {
       gfc_error ("Allocatable coarray variable '%s' at %L must have "
 		 "deferred shape", sym->name, &sym->declared_at);
@@ -12451,8 +12504,10 @@ resolve_symbol (gfc_symbol *sym)
     }
 
   /* F2008, C541.  */
-  if (((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)
-       || (sym->attr.codimension && sym->attr.allocatable))
+  if ((((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)
+	|| (sym->ts.type == BT_CLASS && sym->attr.class_ok
+	    && CLASS_DATA (sym)->attr.coarray_comp))
+       || (class_attr.codimension && class_attr.allocatable))
       && sym->attr.dummy && sym->attr.intent == INTENT_OUT)
     {
       gfc_error ("Variable '%s' at %L is INTENT(OUT) and can thus not be an "
@@ -12461,7 +12516,7 @@ resolve_symbol (gfc_symbol *sym)
       return;
     }
 
-  if (sym->attr.codimension && sym->attr.dummy
+  if (class_attr.codimension && sym->attr.dummy
       && sym->ns->proc_name && sym->ns->proc_name->attr.is_bind_c)
     {
       gfc_error ("Coarray dummy variable '%s' at %L not allowed in BIND(C) "

@@ -1,3 +1,10 @@
+2011-12-19  Tobias Burnus  <burnus@net-b.de>
+
+	* check.c (coarray_check): Add class ref if needed.
+	* resolve.c (resolve_fl_var_and_proc,
+	resolve_fl_derived0, resolve_symbol): Fix checking
+	for BT_CLASS.
+
 2011-12-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	* trans-expr.c (gfc_walk_function_expr): Detect elemental
