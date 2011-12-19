@@ -1,3 +1,10 @@
+2011-12-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/50862
+	* include/std/condition_variable (condition_variable_any::wait): Fix
+	deadlock and ensure _Lock::lock() is called on exit.
+	* testsuite/30_threads/condition_variable_any/50862.cc: New.
+
 2011-12-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/51540

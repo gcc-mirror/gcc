@@ -198,10 +198,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       wait(_Lock& __lock)
       {
-        unique_lock<mutex> __my_lock(_M_mutex);
-        __lock.unlock();
-        _M_cond.wait(__my_lock);
-        __lock.lock();
+	// scoped unlock - unlocks in ctor, re-locks in dtor
+	struct _Unlock {
+	  explicit _Unlock(_Lock& __lk) : _M_lock(__lk) { __lk.unlock(); }
+	  ~_Unlock() noexcept(false)
+	  {
+	    if (uncaught_exception())
+	      __try { _M_lock.lock(); } __catch(...) { }
+	    else
+	      _M_lock.lock();
+	  }
+	  _Lock& _M_lock;
+	};
+
+	unique_lock<mutex> __my_lock(_M_mutex);
+	_Unlock __unlock(__lock);
+	// _M_mutex must be unlocked before re-locking __lock so move
+	// ownership of _M_mutex lock to an object with shorter lifetime.
+	unique_lock<mutex> __my_lock2(std::move(__my_lock));
+	_M_cond.wait(__my_lock2);
       }
       
 
