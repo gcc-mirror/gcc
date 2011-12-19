@@ -1,3 +1,9 @@
+2011-12-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51553
+	* call.c (add_function_candidate): Allow conversions for the copy
+	parm in list-initialization unless the argument is an init-list.
+
 2011-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/51619

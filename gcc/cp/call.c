@@ -1964,8 +1964,10 @@ add_function_candidate (struct z_candidate **candidates,
 	    {
 	      lflags |= LOOKUP_COPY_PARM;
 	      /* We allow user-defined conversions within init-lists, but
-		 not for the copy constructor.  */
-	      if (flags & LOOKUP_NO_COPY_CTOR_CONVERSION)
+		 don't list-initialize the copy parm, as that would mean
+		 using two levels of braces for the same type.  */
+	      if ((flags & LOOKUP_NO_COPY_CTOR_CONVERSION)
+		  && BRACE_ENCLOSED_INITIALIZER_P (arg))
 		lflags |= LOOKUP_NO_CONVERSION;
 	    }
 	  else
