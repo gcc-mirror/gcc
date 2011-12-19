@@ -1,3 +1,9 @@
+2011-12-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/51580
+	* gnat.dg/specs/loop_optimization1.ads: New test.
+	* gnat.dg/specs/loop_optimization1_pkg.ad[sb]: New helper.
+
 2011-12-19  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/51573
