@@ -226,7 +226,7 @@ void gimple_seq_add_stmt (gimple_seq *, gimple);
    similar to gimple_seq_add_stmt, but does not scan the operands.
    During gimplification, we need to manipulate statement sequences
    before the def/use vectors have been constructed.  */
-void gimplify_seq_add_stmt (gimple_seq *, gimple);
+void gimple_seq_add_stmt_without_update (gimple_seq *, gimple);
 
 /* Allocate a new sequence and initialize its first element with STMT.  */
 

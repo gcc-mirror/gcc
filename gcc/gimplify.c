@@ -162,7 +162,7 @@ gimple_tree_eq (const void *p1, const void *p2)
    before the def/use vectors have been constructed.  */
 
 void
-gimplify_seq_add_stmt (gimple_seq *seq_p, gimple gs)
+gimple_seq_add_stmt_without_update (gimple_seq *seq_p, gimple gs)
 {
   gimple_stmt_iterator si;
 
@@ -175,6 +175,15 @@ gimplify_seq_add_stmt (gimple_seq *seq_p, gimple gs)
   si = gsi_last (*seq_p);
 
   gsi_insert_after_without_update (&si, gs, GSI_NEW_STMT);
+}
+
+/* Shorter alias name for the above function for use in gimplify.c
+   only.  */
+
+static inline void
+gimplify_seq_add_stmt (gimple_seq *seq_p, gimple gs)
+{
+  gimple_seq_add_stmt_without_update (seq_p, gs);
 }
 
 /* Append sequence SRC to the end of sequence *DST_P.  If *DST_P is

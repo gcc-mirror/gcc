@@ -73,7 +73,8 @@ static vect_recog_func_ptr vect_vect_recog_func_ptrs[NUM_PATTERNS] = {
 static inline void
 append_pattern_def_seq (stmt_vec_info stmt_info, gimple stmt)
 {
-  gimplify_seq_add_stmt (&STMT_VINFO_PATTERN_DEF_SEQ (stmt_info), stmt);
+  gimple_seq_add_stmt_without_update (&STMT_VINFO_PATTERN_DEF_SEQ (stmt_info),
+				      stmt);
 }
 
 static inline void

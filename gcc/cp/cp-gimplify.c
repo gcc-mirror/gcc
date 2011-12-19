@@ -475,10 +475,10 @@ gimplify_must_not_throw_expr (tree *expr_p, gimple_seq *pre_p)
 
   gimplify_and_add (body, &try_);
   mnt = gimple_build_eh_must_not_throw (terminate_node);
-  gimplify_seq_add_stmt (&catch_, mnt);
+  gimple_seq_add_stmt_without_update (&catch_, mnt);
   mnt = gimple_build_try (try_, catch_, GIMPLE_TRY_CATCH);
 
-  gimplify_seq_add_stmt (pre_p, mnt);
+  gimple_seq_add_stmt_without_update (pre_p, mnt);
   if (temp)
     {
       *expr_p = temp;
