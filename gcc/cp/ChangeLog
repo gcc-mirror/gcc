@@ -1,6 +1,14 @@
 2011-12-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51553
+	* cp-tree.h (LOOKUP_LIST_INIT_CTOR): Rename from
+	LOOKUP_NO_COPY_CTOR_CONVERSION.
+	(add_list_candidates): Set it earlier.
+	(add_candidates): Don't check explicit on ctors when it's set.
+	(add_function_candidate): Check it even when LOOKUP_ONLYCONVERTING
+	is set.
+
+	PR c++/51553
 	* call.c (add_function_candidate): Allow conversions for the copy
 	parm in list-initialization unless the argument is an init-list.
 

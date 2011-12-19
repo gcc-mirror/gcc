@@ -1956,17 +1956,17 @@ add_function_candidate (struct z_candidate **candidates,
 	     to handle move constructors and template constructors as well;
 	     the standardese should soon be updated similarly.  */
 	  if (ctype && i == 0 && (len-skip == 1)
-	      && !(flags & LOOKUP_ONLYCONVERTING)
 	      && DECL_CONSTRUCTOR_P (fn)
 	      && parmtype != error_mark_node
 	      && (same_type_ignoring_top_level_qualifiers_p
 		  (non_reference (parmtype), ctype)))
 	    {
-	      lflags |= LOOKUP_COPY_PARM;
+	      if (!(flags & LOOKUP_ONLYCONVERTING))
+		lflags |= LOOKUP_COPY_PARM;
 	      /* We allow user-defined conversions within init-lists, but
 		 don't list-initialize the copy parm, as that would mean
 		 using two levels of braces for the same type.  */
-	      if ((flags & LOOKUP_NO_COPY_CTOR_CONVERSION)
+	      if ((flags & LOOKUP_LIST_INIT_CTOR)
 		  && BRACE_ENCLOSED_INITIALIZER_P (arg))
 		lflags |= LOOKUP_NO_CONVERSION;
 	    }
@@ -3344,9 +3344,8 @@ add_list_candidates (tree fns, tree first_arg,
 
   gcc_assert (*candidates == NULL);
 
-  /* For list-initialization we consider explicit constructors, but
-     give an error if one is selected.  */
-  flags &= ~LOOKUP_ONLYCONVERTING;
+  /* We're looking for a ctor for list-initialization.  */
+  flags |= LOOKUP_LIST_INIT_CTOR;
   /* And we don't allow narrowing conversions.  We also use this flag to
      avoid the copy constructor call for copy-list-initialization.  */
   flags |= LOOKUP_NO_NARROWING;
@@ -3374,8 +3373,6 @@ add_list_candidates (tree fns, tree first_arg,
   flags &= ~LOOKUP_LIST_ONLY;
   /* We allow more user-defined conversions within an init-list.  */
   flags &= ~LOOKUP_NO_CONVERSION;
-  /* But not for the copy ctor.  */
-  flags |= LOOKUP_NO_COPY_CTOR_CONVERSION;
 
   add_candidates (fns, first_arg, args, NULL_TREE,
 		  explicit_targs, template_only, conversion_path,
@@ -4801,7 +4798,11 @@ add_candidates (tree fns, tree first_arg, const VEC(tree,gc) *args,
       if (DECL_CONSTRUCTOR_P (fn))
 	{
 	  check_list_ctor = !!(flags & LOOKUP_LIST_ONLY);
-	  check_converting = !!(flags & LOOKUP_ONLYCONVERTING);
+	  /* For list-initialization we consider explicit constructors
+	     and complain if one is chosen.  */
+	  check_converting
+	    = ((flags & (LOOKUP_ONLYCONVERTING|LOOKUP_LIST_INIT_CTOR))
+	       == LOOKUP_ONLYCONVERTING);
 	}
       else
 	{
