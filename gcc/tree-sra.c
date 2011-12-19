@@ -2752,6 +2752,9 @@ load_assign_lhs_subreplacements (struct access *lacc, struct access *top_racc,
 	      else
 		rhs = build_ref_for_model (loc, top_racc->base, offset, lacc,
 					    new_gsi, true);
+	      if (lacc->grp_partial_lhs)
+		rhs = force_gimple_operand_gsi (new_gsi, rhs, true, NULL_TREE,
+						false, GSI_NEW_STMT);
 	    }
 
 	  stmt = gimple_build_assign (get_access_replacement (lacc), rhs);
