@@ -5801,6 +5801,12 @@ build_data_member_initialization (tree t, VEC(constructor_elt,gc) **vec)
 	     the const_cast.  */
 	  member = op;
 	}
+      else if (op == current_class_ptr
+	       && (same_type_ignoring_top_level_qualifiers_p
+		   (TREE_TYPE (TREE_TYPE (member)),
+		    current_class_type)))
+	/* Delegating constructor.  */
+	member = op;
       else
 	{
 	  /* We don't put out anything for an empty base.  */
@@ -5907,7 +5913,20 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
   else
     gcc_assert (errorcount > 0);
   if (ok)
-    return build_constructor (type, vec);
+    {
+      if (VEC_length (constructor_elt, vec) > 0)
+	{
+	  /* In a delegating constructor, return the target.  */
+	  constructor_elt *ce = VEC_index (constructor_elt, vec, 0);
+	  if (ce->index == current_class_ptr)
+	    {
+	      body = ce->value;
+	      VEC_free (constructor_elt, gc, vec);
+	      return body;
+	    }
+	}
+      return build_constructor (type, vec);
+    }
   else
     return error_mark_node;
 }

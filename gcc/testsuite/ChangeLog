@@ -1,3 +1,8 @@
+2011-12-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51526
+	* g++.dg/cpp0x/constexpr-delegating.C: New.
+
 2011-12-19  Sandra Loosemore  <sandra@codesourcery.com>
 	    Tom de Vries <tom@codesourcery.com>
 
