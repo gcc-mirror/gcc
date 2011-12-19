@@ -4260,6 +4260,7 @@ ipa_tm_create_version (struct cgraph_node *old_node)
 	{
 	  DECL_EXTERNAL (new_decl) = 0;
 	  TREE_PUBLIC (new_decl) = 0;
+	  DECL_WEAK (new_decl) = 0;
 	}
 
       tree_function_versioning (old_decl, new_decl, NULL, false, NULL,
