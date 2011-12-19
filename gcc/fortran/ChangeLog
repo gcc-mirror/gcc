@@ -1,6 +1,12 @@
 2011-12-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51605
+	* parse.c (gfc_fixup_sibling_symbols): Regard FL_LABEL as
+	local symbol.
+
+2011-12-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51605
 	* match.c (gfc_match_select_type): Handle
 	scalar polymophic coarrays.
 	(select_type_set_tmp, ): Ditto; avoid segfault if !class_ok.
