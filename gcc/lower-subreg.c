@@ -634,8 +634,15 @@ can_decompose_p (rtx x)
       unsigned int regno = REGNO (x);
 
       if (HARD_REGISTER_NUM_P (regno))
-	return (validate_subreg (word_mode, GET_MODE (x), x, UNITS_PER_WORD)
-		&& HARD_REGNO_MODE_OK (regno, word_mode));
+	{
+	  unsigned int byte, num_bytes;
+
+	  num_bytes = GET_MODE_SIZE (GET_MODE (x));
+	  for (byte = 0; byte < num_bytes; byte += UNITS_PER_WORD)
+	    if (simplify_subreg_regno (regno, GET_MODE (x), byte, word_mode) < 0)
+	      return false;
+	  return true;
+	}
       else
 	return !bitmap_bit_p (subreg_context, regno);
     }
