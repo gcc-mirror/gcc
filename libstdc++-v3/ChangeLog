@@ -1,5 +1,28 @@
 2011-12-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	Backport from mainline
+	2011-11-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_global/cmath (atan2, pow): Simplify constraining on the
+	return type.
+
+	Backport from mainline
+	2011-11-12  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51083
+	* include/ext/type_traits.h (__promote): Only define __type member
+	for integral and floating point types, to prevent math functions
+	participating in overload resolution for other types.
+	(__promote_2, __promote_3, __promote_4): Use __promote in default
+	template argument values, so deduction only succeeds for integral and
+	floating point types.
+	* testsuite/26_numerics/cmath/51083.cc: New.
+	* testsuite/26_numerics/complex/51083.cc: New.
+	* testsuite/tr1/8_c_compatibility/cmath/51083.cc: New.
+	* testsuite/tr1/8_c_compatibility/complex/51083.cc: New.
+
+2011-12-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/50862
 	* include/std/condition_variable (condition_variable_any::wait): Fix
 	deadlock and ensure _Lock::lock() is called on exit.
