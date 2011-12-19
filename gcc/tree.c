@@ -4477,7 +4477,8 @@ free_lang_data_in_type (tree type)
       member = TYPE_FIELDS (type);
       while (member)
 	{
-	  if (TREE_CODE (member) == FIELD_DECL)
+	  if (TREE_CODE (member) == FIELD_DECL
+	      || TREE_CODE (member) == TYPE_DECL)
 	    {
 	      if (prev)
 		TREE_CHAIN (prev) = member;
@@ -4872,7 +4873,8 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	  tem = TYPE_FIELDS (t);
 	  while (tem)
 	    {
-	      if (TREE_CODE (tem) == FIELD_DECL)
+	      if (TREE_CODE (tem) == FIELD_DECL
+		  || TREE_CODE (tem) == TYPE_DECL)
 		fld_worklist_push (tem, fld);
 	      tem = TREE_CHAIN (tem);
 	    }

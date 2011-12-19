@@ -162,6 +162,8 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 		  type = DECL_CONTEXT (field);
 		  for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
 		    {
+		      if (TREE_CODE (tem) != FIELD_DECL)
+			continue;
 		      if (tem == field)
 			break;
 		      if (DECL_NONADDRESSABLE_P (tem)

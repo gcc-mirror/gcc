@@ -4702,7 +4702,7 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
 
 	/* For aggregate types, all the fields must be the same.  */
 	for (f1 = TYPE_FIELDS (t1), f2 = TYPE_FIELDS (t2);
-	     f1 && f2;
+	     f1 || f2;
 	     f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
 	  {
 	    /* Skip non-fields.  */

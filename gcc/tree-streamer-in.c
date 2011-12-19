@@ -643,7 +643,6 @@ lto_input_ts_field_decl_tree_pointers (struct lto_input_block *ib,
   DECL_QUALIFIER (expr) = stream_read_tree (ib, data_in);
   DECL_FIELD_BIT_OFFSET (expr) = stream_read_tree (ib, data_in);
   DECL_FCONTEXT (expr) = stream_read_tree (ib, data_in);
-  TREE_CHAIN (expr) = streamer_read_chain (ib, data_in);
 }
 
 
@@ -706,7 +705,7 @@ lto_input_ts_type_non_common_tree_pointers (struct lto_input_block *ib,
   else if (TREE_CODE (expr) == ARRAY_TYPE)
     TYPE_DOMAIN (expr) = stream_read_tree (ib, data_in);
   else if (RECORD_OR_UNION_TYPE_P (expr))
-    TYPE_FIELDS (expr) = stream_read_tree (ib, data_in);
+    TYPE_FIELDS (expr) = streamer_read_chain (ib, data_in);
   else if (TREE_CODE (expr) == FUNCTION_TYPE
 	   || TREE_CODE (expr) == METHOD_TYPE)
     TYPE_ARG_TYPES (expr) = stream_read_tree (ib, data_in);
