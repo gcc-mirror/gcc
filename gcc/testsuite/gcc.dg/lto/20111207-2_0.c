@@ -1,4 +1,5 @@
 /* { dg-lto-do run } */
+/* { dg-lto-options { { -g -O -flto } } } */
 
 int
 test (void)

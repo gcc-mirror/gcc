@@ -1,3 +1,15 @@
+2011-12-19  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/51573
+	* streamer-hooks.h (struct streamer_hooks): Add second
+	ref_p parameter to write_tree.
+	(stream_write_tree): Adjust.
+	(stream_write_tree_shallow_non_ref): New define.
+	* lto-streamer.h (lto_output_tree): Adjust.
+	* lto-streamer-out.c (lto_output_tree): Likewise.
+	* tree-streamer-out.c (streamer_write_chain): Only
+	force the immediate tree to be streamed as non-reference.
+
 2011-12-19  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/51583
