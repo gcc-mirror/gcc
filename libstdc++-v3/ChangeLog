@@ -1,5 +1,10 @@
 2011-12-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/c_global/cmath: Update copyright years.
+	* include/ext/type_traits.h: Likewise.
+
+2011-12-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	Backport from mainline
 	2011-11-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
