@@ -1,5 +1,8 @@
 2011-12-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51553
+	* g++.dg/cpp0x/initlist64.C: New.
+
 	PR c++/51228
 	* c-c++-common/transparent-union-1.c: New.
 
