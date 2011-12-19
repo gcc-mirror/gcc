@@ -1,3 +1,9 @@
+2011-12-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51328
+	* pt.c (convert_template_argument): Early error out and return
+	error_mark_node for invalid uses of destructors as types.
+
 2011-12-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51530
