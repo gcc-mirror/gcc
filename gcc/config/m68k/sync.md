@@ -28,7 +28,7 @@
    (match_operand:SI 5 "const_int_operand" "")		;; is_weak
    (match_operand:SI 6 "const_int_operand" "")		;; success model
    (match_operand:SI 7 "const_int_operand" "")]		;; failure model
-  "TARGET_68020 || TARGET_68040"
+  "TARGET_CAS"
 {
   emit_insn (gen_atomic_compare_and_swap<mode>_1
 	     (operands[0], operands[1], operands[2],
@@ -52,7 +52,7 @@
 	(unspec_volatile:QI
 	  [(match_dup 2) (match_dup 3) (match_dup 4)]
 	  UNSPECV_CAS_2))]
-  "TARGET_68020 || TARGET_68040"
+  "TARGET_CAS"
   ;; Elide the seq if operands[0] is dead.
   "cas<sz> %1,%4,%2\;seq %0")
 
@@ -60,7 +60,7 @@
   [(match_operand:QI 0 "register_operand" "")
    (match_operand:QI 1 "memory_operand" "")
    (match_operand:QI 2 "general_operand" "")]
-  "!(TARGET_68020 || TARGET_68040)"
+  "!TARGET_CAS"
 {
   if (operands[2] != const1_rtx)
     FAIL;
@@ -76,5 +76,5 @@
 	  UNSPECV_TAS_1))
    (set (match_dup 1)
 	(unspec_volatile:QI [(match_dup 1)] UNSPECV_TAS_2))]
-  "!(TARGET_68020 || TARGET_68040)"
+  "!TARGET_CAS"
   "tas %1\;sne %0")

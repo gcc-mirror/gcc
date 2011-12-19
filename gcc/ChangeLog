@@ -1,3 +1,11 @@
+2011-12-19  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/51532
+	* config/m68k/m68k.h (FL_CAS, TARGET_CAS): Define.
+	* config/m68k/m68k.c (FL_FOR_isa_20): Add FL_CAS.
+	* config/m68k/sync.md: Use TARGET_CAS instead of (TARGET_68020 ||
+	TARGET_68040).
+
 2011-12-18  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/ia64/ia64.h (REG_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P,
