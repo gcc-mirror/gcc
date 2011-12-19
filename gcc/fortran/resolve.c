@@ -7817,9 +7817,12 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       sym->attr.asynchronous = tsym->attr.asynchronous;
       sym->attr.volatile_ = tsym->attr.volatile_;
 
-      sym->attr.target = (tsym->attr.target || tsym->attr.pointer);
+      if (tsym->ts.type == BT_CLASS)
+	sym->attr.target = tsym->attr.target || CLASS_DATA (tsym)->attr.pointer;
+      else
+	sym->attr.target = tsym->attr.target || tsym->attr.pointer;
 
-      if (sym->ts.type == BT_DERIVED && target->symtree->n.sym->ts.type == BT_CLASS)
+      if (sym->ts.type == BT_DERIVED && tsym->ts.type == BT_CLASS)
 	target->rank = sym->as ? sym->as->rank : 0;
     }
 
@@ -7886,6 +7889,9 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 		 "at %L", &code->loc);
       return;
     }
+
+  if (!code->expr1->symtree->n.sym->attr.class_ok)
+    return;
 
   if (code->expr2)
     {

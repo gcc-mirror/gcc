@@ -1,5 +1,16 @@
 2011-12-19  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/51605
+	* match.c (gfc_match_select_type): Handle
+	scalar polymophic coarrays.
+	(select_type_set_tmp, ): Ditto; avoid segfault if !class_ok.
+	* primary.c (gfc_match_rvalue): Avoid segfault if !class_ok.
+	* resolve.c (resolve_select_type): Ditto.
+	(resolve_assoc_var): Fix setting the TARGET attribute for
+	polymorphic selectors which are pointers.
+
+2011-12-19  Tobias Burnus  <burnus@net-b.de>
+
 	* check.c (coarray_check): Add class ref if needed.
 	* resolve.c (resolve_fl_var_and_proc,
 	resolve_fl_derived0, resolve_symbol): Fix checking

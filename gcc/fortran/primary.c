@@ -2914,7 +2914,7 @@ gfc_match_rvalue (gfc_expr **result)
 	  break;
 	}
 
-      if (sym->ts.type == BT_CLASS
+      if (sym->ts.type == BT_CLASS && sym->attr.class_ok
 	  && (CLASS_DATA (sym)->attr.dimension
 	      || CLASS_DATA (sym)->attr.codimension))
 	{
