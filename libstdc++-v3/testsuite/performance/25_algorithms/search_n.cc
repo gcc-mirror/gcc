@@ -31,7 +31,7 @@ using namespace __gnu_test;
 
 const int length = 10000000;
 const int match_length = 3;
-int array[length];
+int ary[length];
 
 int
 main(void)
@@ -41,10 +41,10 @@ main(void)
   int match = rand() % (match_length - 1);
   for(int i = 0; i < length; i++)
     {
-      array[i] = (match != 0) ? 1 : 0;
+      ary[i] = (match != 0) ? 1 : 0;
       if(--match < 0) match = rand() % (match_length - 1);
     }
-  __gnu_test::test_container<int, forward_iterator_wrapper> fcon(array, array + length);
+  __gnu_test::test_container<int, forward_iterator_wrapper> fcon(ary, ary + length);
   start_counters(time, resource);
   for(int i = 0; i < 100; i++)
     search_n(fcon.begin(), fcon.end(), 10, 1);
@@ -52,7 +52,7 @@ main(void)
   report_performance(__FILE__, "forward iterator", time, resource);
   clear_counters(time, resource);
 
-  __gnu_test::test_container<int, random_access_iterator_wrapper> rcon(array, array + length);
+  __gnu_test::test_container<int, random_access_iterator_wrapper> rcon(ary, ary + length);
   start_counters(time, resource);
   for(int i = 0; i < 100; i++)
     search_n(rcon.begin(), rcon.end(), 10, 1);
