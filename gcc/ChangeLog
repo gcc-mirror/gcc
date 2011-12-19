@@ -1,3 +1,10 @@
+2011-12-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/51583
+	* tree-sra.c (load_assign_lhs_subreplacements): Call
+	force_gimple_operand_gsi when necessary also in case of no
+	corresponding replacement on the RHS.
+
 2011-12-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.md (UNSPEC_FRAME_BLOCKAGE): New constant.

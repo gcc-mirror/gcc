@@ -1,3 +1,8 @@
+2011-12-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/51583
+	* gcc.dg/tree-ssa/pr51583.c: New test.
+
 2011-12-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51416
