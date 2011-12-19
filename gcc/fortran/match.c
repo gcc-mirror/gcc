@@ -5154,19 +5154,27 @@ select_type_set_tmp (gfc_typespec *ts)
 
 /* Copy across the array spec to the selector, taking care as to
    whether or not it is a class object or not.  */
-  if (select_type_stack->selector->ts.type == BT_CLASS &&
-      CLASS_DATA (select_type_stack->selector)->attr.dimension)
+  if (select_type_stack->selector->ts.type == BT_CLASS
+      && select_type_stack->selector->attr.class_ok
+      && (CLASS_DATA (select_type_stack->selector)->attr.dimension
+	  || CLASS_DATA (select_type_stack->selector)->attr.codimension))
     {
       if (ts->type == BT_CLASS)
 	{
-	  CLASS_DATA (tmp->n.sym)->attr.dimension = 1;
+	  CLASS_DATA (tmp->n.sym)->attr.dimension
+		= CLASS_DATA (select_type_stack->selector)->attr.dimension;
+	  CLASS_DATA (tmp->n.sym)->attr.codimension
+		= CLASS_DATA (select_type_stack->selector)->attr.codimension;
 	  CLASS_DATA (tmp->n.sym)->as = gfc_get_array_spec ();
 	  CLASS_DATA (tmp->n.sym)->as
 			= CLASS_DATA (select_type_stack->selector)->as;
 	}
       else
 	{
-	  tmp->n.sym->attr.dimension = 1;
+	  tmp->n.sym->attr.dimension
+		= CLASS_DATA (select_type_stack->selector)->attr.dimension;
+	  tmp->n.sym->attr.codimension
+		= CLASS_DATA (select_type_stack->selector)->attr.codimension;
 	  tmp->n.sym->as = gfc_get_array_spec ();
 	  tmp->n.sym->as = CLASS_DATA (select_type_stack->selector)->as;
 	}
@@ -5248,7 +5256,8 @@ gfc_match_select_type (void)
 		  && expr1->ts.type != BT_UNKNOWN
 		  && CLASS_DATA (expr1)
 		  && (strcmp (CLASS_DATA (expr1)->name, "_data") == 0)
-		  && CLASS_DATA (expr1)->attr.dimension
+		  && (CLASS_DATA (expr1)->attr.dimension
+		      || CLASS_DATA (expr1)->attr.codimension)
 		  && expr1->ref
 		  && expr1->ref->type == REF_ARRAY
 		  && expr1->ref->next == NULL;
