@@ -1,3 +1,10 @@
+2011-12-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51489
+	* semantics.c (cxx_eval_outermost_constant_expr): Check for
+	conversion from pointer to integer here.
+	(cxx_eval_constant_expression) [NOP_EXPR]: Not here.
+
 2011-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* semantics.c (finish_compound_literal): Don't call check_narrowing
