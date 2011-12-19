@@ -1,3 +1,8 @@
+2011-12-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51328
+	* g++.dg/template/crash109.C: New.
+
 2011-12-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51530
