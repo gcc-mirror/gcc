@@ -1,3 +1,21 @@
+2011-12-19  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/51572
+	* tree.c (free_lang_data_in_type): Do not unlink TYPE_DECL
+	from TYPE_FIELDS.
+	(find_decls_types_r): Walk TYPE_DECLs in TYPE_FIELDS.
+	* tree-streamer-out.c (write_ts_field_decl_tree_pointers): Do
+	not stream TREE_CHAIN.
+	(write_ts_type_non_common_tree_pointers): Stream TYPE_FIELDS
+	using streamer_write_chain.
+	* tree-streamer-in.c (lto_input_ts_field_decl_tree_pointers):
+	Do not stream TREE_CHAIN.
+	(lto_input_ts_type_non_common_tree_pointers): Stream TYPE_FIELDS
+	using streamer_read_chain.
+	* gimple-streamer-in.c (input_gimple_stmt): Skip non-FIELD_DECLs.
+	* gimple.c (gimple_canonical_types_compatible_p): Properly
+	handle trailing non-FIELD_DECLs in TYPE_FIELDS.
+
 2011-12-19  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* configure: Regenerate.
