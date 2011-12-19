@@ -70,6 +70,19 @@ static vect_recog_func_ptr vect_vect_recog_func_ptrs[NUM_PATTERNS] = {
 	vect_recog_mixed_size_cond_pattern,
 	vect_recog_bool_pattern};
 
+static inline void
+append_pattern_def_seq (stmt_vec_info stmt_info, gimple stmt)
+{
+  gimplify_seq_add_stmt (&STMT_VINFO_PATTERN_DEF_SEQ (stmt_info), stmt);
+}
+
+static inline void
+new_pattern_def_seq (stmt_vec_info stmt_info, gimple stmt)
+{
+  STMT_VINFO_PATTERN_DEF_SEQ (stmt_info) = NULL;
+  append_pattern_def_seq (stmt_info, stmt);
+}
+
 /* Function widened_name_p
 
    Check whether NAME, an ssa-name used in USE_STMT,
@@ -1146,8 +1159,7 @@ vect_recog_over_widening_pattern (VEC (gimple, heap) **stmts,
 	= gimple_build_assign_with_ops (gimple_assign_rhs_code (stmt), var,
 					op0, op1);
       STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt)) = pattern_stmt;
-      STMT_VINFO_PATTERN_DEF_SEQ (vinfo_for_stmt (stmt))
-	= gimple_seq_alloc_with_stmt (new_def_stmt);
+      new_pattern_def_seq (vinfo_for_stmt (stmt), new_def_stmt);
 
       if (vect_print_dump_info (REPORT_DETAILS))
         {
@@ -1559,8 +1571,7 @@ vect_recog_vector_vector_shift_pattern (VEC (gimple, heap) **stmts,
       def = vect_recog_temp_ssa_var (TREE_TYPE (oprnd0), NULL);
       def_stmt = gimple_build_assign_with_ops (NOP_EXPR, def, oprnd1,
 					       NULL_TREE);
-      STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo)
-	= gimple_seq_alloc_with_stmt (def_stmt);
+      new_pattern_def_seq (stmt_vinfo, def_stmt);
     }
 
   /* Pattern detected.  */
@@ -1688,14 +1699,12 @@ vect_recog_sdivmod_pow2_pattern (VEC (gimple, heap) **stmts,
 						      build_int_cst (itype,
 								     1)),
 					 build_int_cst (itype, 0));
-      STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo)
-	= gimple_seq_alloc_with_stmt (def_stmt);
+      new_pattern_def_seq (stmt_vinfo, def_stmt);
       var = vect_recog_temp_ssa_var (itype, NULL);
       def_stmt
 	= gimple_build_assign_with_ops (PLUS_EXPR, var, oprnd0,
 					gimple_assign_lhs (def_stmt));
-      gimplify_seq_add_stmt (&STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo),
-			     def_stmt);
+      append_pattern_def_seq (stmt_vinfo, def_stmt);
 
       pattern_stmt
 	= gimple_build_assign_with_ops (RSHIFT_EXPR,
@@ -1715,8 +1724,7 @@ vect_recog_sdivmod_pow2_pattern (VEC (gimple, heap) **stmts,
 	    = gimple_build_assign_with_ops3 (COND_EXPR, signmask, cond,
 					     build_int_cst (itype, 1),
 					     build_int_cst (itype, 0));
-	  gimplify_seq_add_stmt (&STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo),
-				 def_stmt);
+	  append_pattern_def_seq (stmt_vinfo, def_stmt);
 	}
       else
 	{
@@ -1736,8 +1744,7 @@ vect_recog_sdivmod_pow2_pattern (VEC (gimple, heap) **stmts,
 	  def_stmt_vinfo = new_stmt_vec_info (def_stmt, loop_vinfo, NULL);
 	  set_vinfo_for_stmt (def_stmt, def_stmt_vinfo);
 	  STMT_VINFO_VECTYPE (def_stmt_vinfo) = vecutype;
-	  gimplify_seq_add_stmt (&STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo),
-				 def_stmt);
+	  append_pattern_def_seq (stmt_vinfo, def_stmt);
 	  var = vect_recog_temp_ssa_var (utype, NULL);
 	  def_stmt
 	    = gimple_build_assign_with_ops (RSHIFT_EXPR, var,
@@ -1746,21 +1753,18 @@ vect_recog_sdivmod_pow2_pattern (VEC (gimple, heap) **stmts,
 	  def_stmt_vinfo = new_stmt_vec_info (def_stmt, loop_vinfo, NULL);
 	  set_vinfo_for_stmt (def_stmt, def_stmt_vinfo);
 	  STMT_VINFO_VECTYPE (def_stmt_vinfo) = vecutype;
-	  gimplify_seq_add_stmt (&STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo),
-				 def_stmt);
+	  append_pattern_def_seq (stmt_vinfo, def_stmt);
 	  signmask = vect_recog_temp_ssa_var (itype, NULL);
 	  def_stmt
 	    = gimple_build_assign_with_ops (NOP_EXPR, signmask, var,
 					    NULL_TREE);
-	  gimplify_seq_add_stmt (&STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo),
-				 def_stmt);
+	  append_pattern_def_seq (stmt_vinfo, def_stmt);
 	}
       def_stmt
 	= gimple_build_assign_with_ops (PLUS_EXPR,
 					vect_recog_temp_ssa_var (itype, NULL),
 					oprnd0, signmask);
-      gimplify_seq_add_stmt (&STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo),
-			     def_stmt);
+      append_pattern_def_seq (stmt_vinfo, def_stmt);
       def_stmt
 	= gimple_build_assign_with_ops (BIT_AND_EXPR,
 					vect_recog_temp_ssa_var (itype, NULL),
@@ -1769,8 +1773,7 @@ vect_recog_sdivmod_pow2_pattern (VEC (gimple, heap) **stmts,
 						     oprnd1,
 						     build_int_cst (itype,
 								    1)));
-      gimplify_seq_add_stmt (&STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo),
-			     def_stmt);
+      append_pattern_def_seq (stmt_vinfo, def_stmt);
 
       pattern_stmt
 	= gimple_build_assign_with_ops (MINUS_EXPR,
@@ -1896,8 +1899,7 @@ vect_recog_mixed_size_cond_pattern (VEC (gimple, heap) **stmts, tree *type_in,
 				    vect_recog_temp_ssa_var (type, NULL),
 				    gimple_assign_lhs (def_stmt), NULL_TREE);
 
-  STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo)
-    = gimple_seq_alloc_with_stmt (def_stmt);
+  new_pattern_def_seq (stmt_vinfo, def_stmt);
   def_stmt_info = new_stmt_vec_info (def_stmt, loop_vinfo, NULL);
   set_vinfo_for_stmt (def_stmt, def_stmt_info);
   STMT_VINFO_VECTYPE (def_stmt_info) = vecitype;
@@ -1994,8 +1996,7 @@ adjust_bool_pattern_cast (tree type, tree var)
 
   gcc_assert (!STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo));
   pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
-  STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo)
-    = gimple_seq_alloc_with_stmt (pattern_stmt);
+  new_pattern_def_seq (stmt_vinfo, pattern_stmt);
   cast_stmt
     = gimple_build_assign_with_ops (NOP_EXPR,
 				    vect_recog_temp_ssa_var (type, NULL),
@@ -2304,8 +2305,7 @@ vect_recog_bool_pattern (VEC (gimple, heap) **stmts, tree *type_in,
 	  tree rhs2 = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
 	  gimple cast_stmt
 	    = gimple_build_assign_with_ops (NOP_EXPR, rhs2, rhs, NULL_TREE);
-	  STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo)
-	    = gimple_seq_alloc_with_stmt (cast_stmt);
+	  new_pattern_def_seq (stmt_vinfo, cast_stmt);
 	  rhs = rhs2;
 	}
       pattern_stmt
