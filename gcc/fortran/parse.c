@@ -3908,6 +3908,7 @@ gfc_fixup_sibling_symbols (gfc_symbol *sym, gfc_namespace *siblings)
 		  || old_sym->attr.intrinsic
 		  || old_sym->attr.generic
 		  || old_sym->attr.flavor == FL_NAMELIST
+		  || old_sym->attr.flavor == FL_LABEL
 		  || old_sym->attr.proc == PROC_ST_FUNCTION))
 	{
 	  /* Replace it with the symbol from the parent namespace.  */
