@@ -1,6 +1,6 @@
 # Autoconf include file defining macros related to compile-time warnings.
 
-# Copyright 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
+# Copyright 2004, 2005, 2007, 2009, 2011 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -28,7 +28,13 @@ AC_SUBST(acx_Var)dnl
 m4_expand_once([acx_Var=
 ],m4_quote(acx_Var=))dnl
 save_CFLAGS="$CFLAGS"
-for option in $1; do
+for real_option in $1; do
+  # Do the check with the no- prefix removed since gcc silently
+  # accepts any -Wno-* option on purpose
+  case $real_option in
+    -Wno-*) option=-W`expr $real_option : '-Wno-\(.*\)'` ;;
+    *) option=$real_option ;;
+  esac
   AS_VAR_PUSHDEF([acx_Woption], [acx_cv_prog_cc_warning_$option])
   AC_CACHE_CHECK([whether $CC supports $option], acx_Woption,
     [CFLAGS="$option"
@@ -37,14 +43,14 @@ for option in $1; do
       [AS_VAR_SET(acx_Woption, no)])
   ])
   AS_IF([test AS_VAR_GET(acx_Woption) = yes],
-        [acx_Var="$acx_Var${acx_Var:+ }$option"])
+        [acx_Var="$acx_Var${acx_Var:+ }$real_option"])
   AS_VAR_POPDEF([acx_Woption])dnl
 done
 CFLAGS="$save_CFLAGS"
 m4_popdef([acx_Var])dnl
 ])# ACX_PROG_CC_WARNING_OPTS
 
-# ACX_PROG_CC_WARNING_ALMOST_PEDANTIC(WARNINGS, [VARIABLE = WARN_PEDANTIC)
+# ACX_PROG_CC_WARNING_ALMOST_PEDANTIC(WARNINGS, [VARIABLE = WARN_PEDANTIC])
 #   Append to VARIABLE "-pedantic" + the argument, if the compiler is GCC
 #   and accepts all of those options simultaneously, otherwise to nothing.
 AC_DEFUN([ACX_PROG_CC_WARNING_ALMOST_PEDANTIC],
@@ -53,11 +59,14 @@ m4_pushdef([acx_Var], [m4_default([$2], [WARN_PEDANTIC])])dnl
 AC_SUBST(acx_Var)dnl
 m4_expand_once([acx_Var=
 ],m4_quote(acx_Var=))dnl
-AS_VAR_PUSHDEF([acx_Pedantic], [acx_cv_prog_cc_pedantic_$1])dnl
+# Do the check with the no- prefix removed from the warning options
+# since gcc silently accepts any -Wno-* option on purpose
+m4_pushdef([acx_Woptions], [m4_bpatsubst([$1], [-Wno-], [-W])])dnl
+AS_VAR_PUSHDEF([acx_Pedantic], [acx_cv_prog_cc_pedantic_]acx_Woptions)dnl
 AS_IF([test "$GCC" = yes],
-[AC_CACHE_CHECK([whether $CC supports -pedantic $1], acx_Pedantic,
+[AC_CACHE_CHECK([whether $CC supports -pedantic ]acx_Woptions, acx_Pedantic,
 [save_CFLAGS="$CFLAGS"
-CFLAGS="-pedantic $1"
+CFLAGS="-pedantic acx_Woptions"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
    [AS_VAR_SET(acx_Pedantic, yes)],
    [AS_VAR_SET(acx_Pedantic, no)])
@@ -66,6 +75,7 @@ AS_IF([test AS_VAR_GET(acx_Pedantic) = yes],
       [acx_Var="$acx_Var${acx_Var:+ }-pedantic $1"])
 ])
 AS_VAR_POPDEF([acx_Pedantic])dnl
+m4_popdef([acx_Woptions])dnl
 m4_popdef([acx_Var])dnl
 ])# ACX_PROG_CC_WARNING_ALMOST_PEDANTIC
 

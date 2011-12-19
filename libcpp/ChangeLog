@@ -1,3 +1,7 @@
+2011-12-19  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* configure: Regenerate.
+
 2011-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/50237

@@ -1,3 +1,10 @@
+2011-12-19  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR bootstrap/51388
+	* warnings.m4 (ACX_PROG_CC_WARNING_OPTS)
+	(ACX_PROG_CC_WARNING_ALMOST_PEDANTIC): Run the test without the
+	no- prefix.
+
 2011-12-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* acx.m4 (Test for GNAT): Update comment and add quotes in final test.

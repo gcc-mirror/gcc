@@ -1,3 +1,7 @@
+2011-12-19  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* configure: Regenerate.
+
 2011-11-16  David Edelsohn  <dje.gcc@gmail.com>
 
 	* inclhack.def (aix_once_init_[12]): New fixes.

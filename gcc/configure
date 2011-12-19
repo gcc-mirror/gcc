@@ -6400,7 +6400,13 @@ fi
 
 loose_warn=
 save_CFLAGS="$CFLAGS"
-for option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual; do
+for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual; do
+  # Do the check with the no- prefix removed since gcc silently
+  # accepts any -Wno-* option on purpose
+  case $real_option in
+    -Wno-*) option=-W`expr $real_option : '-Wno-\(.*\)'` ;;
+    *) option=$real_option ;;
+  esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports $option" >&5
@@ -6432,14 +6438,20 @@ eval ac_res=\$$as_acx_Woption
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
   if test `eval 'as_val=${'$as_acx_Woption'};$as_echo "$as_val"'` = yes; then :
-  loose_warn="$loose_warn${loose_warn:+ }$option"
+  loose_warn="$loose_warn${loose_warn:+ }$real_option"
 fi
   done
 CFLAGS="$save_CFLAGS"
 
 c_loose_warn=
 save_CFLAGS="$CFLAGS"
-for option in -Wstrict-prototypes -Wmissing-prototypes; do
+for real_option in -Wstrict-prototypes -Wmissing-prototypes; do
+  # Do the check with the no- prefix removed since gcc silently
+  # accepts any -Wno-* option on purpose
+  case $real_option in
+    -Wno-*) option=-W`expr $real_option : '-Wno-\(.*\)'` ;;
+    *) option=$real_option ;;
+  esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports $option" >&5
@@ -6471,14 +6483,20 @@ eval ac_res=\$$as_acx_Woption
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
   if test `eval 'as_val=${'$as_acx_Woption'};$as_echo "$as_val"'` = yes; then :
-  c_loose_warn="$c_loose_warn${c_loose_warn:+ }$option"
+  c_loose_warn="$c_loose_warn${c_loose_warn:+ }$real_option"
 fi
   done
 CFLAGS="$save_CFLAGS"
 
 strict_warn=
 save_CFLAGS="$CFLAGS"
-for option in -Wmissing-format-attribute; do
+for real_option in -Wmissing-format-attribute; do
+  # Do the check with the no- prefix removed since gcc silently
+  # accepts any -Wno-* option on purpose
+  case $real_option in
+    -Wno-*) option=-W`expr $real_option : '-Wno-\(.*\)'` ;;
+    *) option=$real_option ;;
+  esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports $option" >&5
@@ -6510,14 +6528,20 @@ eval ac_res=\$$as_acx_Woption
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
   if test `eval 'as_val=${'$as_acx_Woption'};$as_echo "$as_val"'` = yes; then :
-  strict_warn="$strict_warn${strict_warn:+ }$option"
+  strict_warn="$strict_warn${strict_warn:+ }$real_option"
 fi
   done
 CFLAGS="$save_CFLAGS"
 
 c_strict_warn=
 save_CFLAGS="$CFLAGS"
-for option in -Wold-style-definition -Wc++-compat; do
+for real_option in -Wold-style-definition -Wc++-compat; do
+  # Do the check with the no- prefix removed since gcc silently
+  # accepts any -Wno-* option on purpose
+  case $real_option in
+    -Wno-*) option=-W`expr $real_option : '-Wno-\(.*\)'` ;;
+    *) option=$real_option ;;
+  esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports $option" >&5
@@ -6549,19 +6573,21 @@ eval ac_res=\$$as_acx_Woption
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
   if test `eval 'as_val=${'$as_acx_Woption'};$as_echo "$as_val"'` = yes; then :
-  c_strict_warn="$c_strict_warn${c_strict_warn:+ }$option"
+  c_strict_warn="$c_strict_warn${c_strict_warn:+ }$real_option"
 fi
   done
 CFLAGS="$save_CFLAGS"
 
+# Do the check with the no- prefix removed from the warning options
+# since gcc silently accepts any -Wno-* option on purpose
 if test "$GCC" = yes; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports -pedantic -Wno-long-long -Wno-variadic-macros -Wno-overlength-strings" >&5
-$as_echo_n "checking whether $CC supports -pedantic -Wno-long-long -Wno-variadic-macros -Wno-overlength-strings... " >&6; }
-if test "${acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings+set}" = set; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports -pedantic -Wlong-long -Wvariadic-macros -Woverlength-strings" >&5
+$as_echo_n "checking whether $CC supports -pedantic -Wlong-long -Wvariadic-macros -Woverlength-strings... " >&6; }
+if test "${acx_cv_prog_cc_pedantic__Wlong_long__Wvariadic_macros__Woverlength_strings+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   save_CFLAGS="$CFLAGS"
-CFLAGS="-pedantic -Wno-long-long -Wno-variadic-macros -Wno-overlength-strings"
+CFLAGS="-pedantic -Wlong-long -Wvariadic-macros -Woverlength-strings"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -6574,16 +6600,16 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings=yes
+  acx_cv_prog_cc_pedantic__Wlong_long__Wvariadic_macros__Woverlength_strings=yes
 else
-  acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings=no
+  acx_cv_prog_cc_pedantic__Wlong_long__Wvariadic_macros__Woverlength_strings=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 CFLAGS="$save_CFLAGS"
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings" >&5
-$as_echo "$acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings" >&6; }
-if test $acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings = yes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_prog_cc_pedantic__Wlong_long__Wvariadic_macros__Woverlength_strings" >&5
+$as_echo "$acx_cv_prog_cc_pedantic__Wlong_long__Wvariadic_macros__Woverlength_strings" >&6; }
+if test $acx_cv_prog_cc_pedantic__Wlong_long__Wvariadic_macros__Woverlength_strings = yes; then :
   strict_warn="$strict_warn${strict_warn:+ }-pedantic -Wno-long-long -Wno-variadic-macros -Wno-overlength-strings"
 fi
 
@@ -6617,7 +6643,13 @@ fi
 # Disable exceptions and RTTI if building with g++
 noexception_flags=
 save_CFLAGS="$CFLAGS"
-for option in -fno-exceptions -fno-rtti; do
+for real_option in -fno-exceptions -fno-rtti; do
+  # Do the check with the no- prefix removed since gcc silently
+  # accepts any -Wno-* option on purpose
+  case $real_option in
+    -Wno-*) option=-W`expr $real_option : '-Wno-\(.*\)'` ;;
+    *) option=$real_option ;;
+  esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports $option" >&5
@@ -6649,7 +6681,7 @@ eval ac_res=\$$as_acx_Woption
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
   if test `eval 'as_val=${'$as_acx_Woption'};$as_echo "$as_val"'` = yes; then :
-  noexception_flags="$noexception_flags${noexception_flags:+ }$option"
+  noexception_flags="$noexception_flags${noexception_flags:+ }$real_option"
 fi
   done
 CFLAGS="$save_CFLAGS"
@@ -18077,7 +18109,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18080 "configure"
+#line 18112 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18183,7 +18215,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18186 "configure"
+#line 18218 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
