@@ -1,5 +1,9 @@
 2011-12-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/51619
+	* semantics.c (cxx_eval_vec_init_1): If init is NULL for
+	multidimensional array, just set eltinit to NULL_TREE.
+
 	* cp-gimplify.c (gimplify_must_not_throw_expr): Use
 	gimple_seq_add_stmt_without_update instead of gimplify_seq_add_stmt.
 
