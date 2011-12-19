@@ -16614,6 +16614,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
     case BOOLEAN_TYPE:
     case ENUMERAL_TYPE:
     case VOID_TYPE:
+    case NULLPTR_TYPE:
       if (TREE_CODE (arg) != TREE_CODE (parm))
 	return unify_type_mismatch (explain_p, parm, arg);
 
