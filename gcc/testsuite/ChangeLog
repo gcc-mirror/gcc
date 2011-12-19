@@ -1,3 +1,8 @@
+2011-12-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51489
+	* g++.dg/cpp0x/constexpr-ptrsub.C: New.
+
 2011-12-18  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/pr51491-2.c: Fix "cleanup-treee-dump" typo.

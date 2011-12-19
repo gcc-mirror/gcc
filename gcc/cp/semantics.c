@@ -7704,17 +7704,6 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
 	tree oldop = TREE_OPERAND (t, 0);
 	tree op = oldop;
 	tree to = TREE_TYPE (t);
-	tree source = TREE_TYPE (op);
-        if (TYPE_PTR_P (source) && ARITHMETIC_TYPE_P (to)
-	    && !(TREE_CODE (op) == COMPONENT_REF
-		 && TYPE_PTRMEMFUNC_P (TREE_TYPE (TREE_OPERAND (op, 0)))))
-          {
-            if (!allow_non_constant)
-              error ("conversion of expression %qE of pointer type "
-                     "cannot yield a constant expression", op);
-	    *non_constant_p = true;
-	    return t;
-          }
 	op = cxx_eval_constant_expression (call, TREE_OPERAND (t, 0),
 					   allow_non_constant, addr,
 					   non_constant_p);
@@ -7800,6 +7789,20 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant)
       if (!allow_non_constant)
 	error ("%qT cannot be the type of a complete constant expression "
 	       "because it has mutable sub-objects", TREE_TYPE (t));
+      non_constant_p = true;
+    }
+
+  /* Technically we should check this for all subexpressions, but that
+     runs into problems with our internal representation of pointer
+     subtraction and the 5.19 rules are still in flux.  */
+  if (CONVERT_EXPR_CODE_P (TREE_CODE (r))
+      && ARITHMETIC_TYPE_P (TREE_TYPE (r))
+      && TREE_CODE (TREE_OPERAND (r, 0)) == ADDR_EXPR)
+    {
+      if (!allow_non_constant)
+	error ("conversion from pointer type %qT "
+	       "to arithmetic type %qT in a constant-expression",
+	       TREE_TYPE (TREE_OPERAND (r, 0)), TREE_TYPE (r));
       non_constant_p = true;
     }
 
@@ -8110,25 +8113,10 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
     case NOP_EXPR:
     case CONVERT_EXPR:
     case VIEW_CONVERT_EXPR:
-      /* -- an array-to-pointer conversion that is applied to an lvalue
-            that designates an object with thread or automatic storage
-            duration;  FIXME not implemented as it breaks constexpr arrays;
-	    need to fix the standard
-         -- a type conversion from a pointer or pointer-to-member type
-            to a literal type.  */
+      /* -- a reinterpret_cast.  FIXME not implemented, and this rule
+	 may change to something more specific to type-punning (DR 1312).  */
       {
         tree from = TREE_OPERAND (t, 0);
-        tree source = TREE_TYPE (from);
-        tree target = TREE_TYPE (t);
-        if (TYPE_PTR_P (source) && ARITHMETIC_TYPE_P (target)
-	    && !(TREE_CODE (from) == COMPONENT_REF
-		 && TYPE_PTRMEMFUNC_P (TREE_TYPE (TREE_OPERAND (from, 0)))))
-          {
-            if (flags & tf_error)
-              error ("conversion of expression %qE of pointer type "
-                     "cannot yield a constant expression", from);
-            return false;
-          }
         return (potential_constant_expression_1
 		(from, TREE_CODE (t) != VIEW_CONVERT_EXPR, flags));
       }
