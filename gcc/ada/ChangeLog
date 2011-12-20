@@ -1,3 +1,29 @@
+2011-12-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Insert_Freeze_Node_For_Instance):  Further
+	refinements on the placement of a freeze node for a package
+	instantiation, when the generic appears within a previous
+	instantiation in the same unit.If the current instance is within
+	the one that contains the generic, the freeze node for the
+	current one must appear in the current declarative part. Ditto
+	if the current instance is within another package instance. In
+	these cases the freeze node of the previous instance is is not
+	relevant. New predicate Enclosing_Body simplifies the process.
+	(Freeze_Subprogram_Body): Rename Enclosing_Body to
+	Enclosing_Package_Body, to prevent confusion with subprogram of
+	same name elsewhere.
+	(Install_Body): Recognize enclosing subprogram bodies to determine
+	whether freeze_node belongs in current declarative list.
+
+2011-12-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Allow
+	attribute definition clause for renaming if generated internally
+	and generate duplicate clause to apply to renamed object.
+	(Rep_Item_Too_Late): Only diagnose source level entities
+	* prj-nmsc.adb: Minor reformatting.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2011-12-20  Bob Duff  <duff@adacore.com>
 
 	* opt.ads (List_Inherited_Aspects): Default to False
