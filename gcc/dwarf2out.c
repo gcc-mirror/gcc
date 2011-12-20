@@ -9873,7 +9873,14 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
     }
   /* This probably indicates a bug.  */
   else if (mod_type_die && mod_type_die->die_tag == DW_TAG_base_type)
-    add_name_attribute (mod_type_die, "__unknown__");
+    {
+      name = TYPE_NAME (type);
+      if (name
+	  && TREE_CODE (name) == TYPE_DECL)
+	name = DECL_NAME (name);
+      add_name_attribute (mod_type_die,
+			  name ? IDENTIFIER_POINTER (name) : "__unknown__");
+    }
 
   if (qualified_type)
     equate_type_number_to_die (qualified_type, mod_type_die);

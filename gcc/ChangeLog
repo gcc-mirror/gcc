@@ -1,3 +1,10 @@
+2011-12-20  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/46796
+	* dwarf2out.c (modified_type_die): When the type variant
+	chain is corrupt use the types name, if available, instead
+	of __unknown__.
+
 2011-12-20  Tristan Gingold  <gingold@adacore.com>
 
 	* config/alpha/alpha.c (alpha_start_function): Adjust condition to
