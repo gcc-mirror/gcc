@@ -1,3 +1,15 @@
+2011-12-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Allocator): Warning on allocation
+	of tasks on a subpool and rewrite the allocator into a raise
+	Program_Error statement.
+	* s-stposu.ads, s-stposu.adb: Code reformatting.
+	(Create_Subpool): Remove formal parameter Storage_Size.
+	(Default_Subpool_For_Pool): Add the default implementation of this
+	routine.
+	(Set_Pool_Of_Subpool): Rename formal parameter Pool to To. Update
+	all the uses of the parameter.
+
 2011-12-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc-interface/Makefile.in (%86 linux%):
