@@ -32,7 +32,7 @@ for real_option in $1; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
-    -Wno-*) option=-W`expr $real_option : '-Wno-\(.*\)'` ;;
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
     *) option=$real_option ;;
   esac
   AS_VAR_PUSHDEF([acx_Woption], [acx_cv_prog_cc_warning_$option])
