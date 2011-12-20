@@ -96,13 +96,113 @@
 #endif
 
 __morestack_non_split:
+	.cfi_startproc
 
 #ifndef __x86_64__
-	addl	$0x4000,4(%esp)
+
+	# See below for an extended explanation of the CFI instructions.
+	.cfi_offset 8, 8		# New PC stored at CFA + 8
+	.cfi_escape 0x15, 4, 0x7d	# DW_CFA_val_offset_sf, %esp, 12/-4
+					# i.e., next %esp is CFA + 12
+
+	pushl	%eax			# Save %eax in case it is a parameter.
+
+	.cfi_def_cfa %esp,8		# Account for pushed register.
+
+	movl	%esp,%eax		# Current stack,
+	subl	8(%esp),%eax		# less required stack frame size,
+	subl	$0x4000,%eax		# less space for non-split code.
+	cmpl	%gs:0x30,%eax		# See if we have enough space.
+	jb	2f			# Get more space if we need it.
+
+	# Here the stack is
+	#	%esp + 20:	stack pointer after two returns
+	#	%esp + 16:	return address of morestack caller's caller
+	#	%esp + 12:	size of parameters
+	#	%esp + 8:	new stack frame size
+	#	%esp + 4:	return address of this function
+	#	%esp:		saved %eax
+	#
+	# Since we aren't doing a full split stack, we don't need to
+	# do anything when our caller returns.  So we return to our
+	# caller rather than calling it, and let it return as usual.
+	# To make that work we adjust the return address.
+
+	# This breaks call/return address prediction for the call to
+	# this function.  I can't figure out a way to make it work
+	# short of copying the parameters down the stack, which will
+	# probably take more clock cycles than we will lose breaking
+	# call/return address prediction.  We will only break
+	# prediction for this call, not for our caller.
+
+	movl	4(%esp),%eax		# Increment the return address
+	cmpb	$0xc3,(%eax)		# to skip the ret instruction;
+	je	1f			# see above.
+	addl	$2,%eax
+1:	inc	%eax
+	movl	%eax,4(%esp)		# Update return address.
+
+	popl	%eax			# Restore %eax and stack.
+
+	.cfi_def_cfa %esp,4		# Account for popped register.
+
+	ret	$8			# Return to caller, popping args.
+
+2:
+	.cfi_def_cfa %esp,8		# Back to where we were.
+
+	popl	%eax			# Restore %eax and stack.
+
+	.cfi_def_cfa %esp,4		# Account for popped register.
+
+	addl	$0x5000+BACKOFF,4(%esp)	# Increment space we request.
+
+	# Fall through into morestack.
+
 #else
-	addq	$0x4000,%r10
+
+	# See below for an extended explanation of the CFI instructions.
+	.cfi_offset 16, 0
+	.cfi_escape 0x15, 7, 0x7f	# DW_CFA_val_offset_sf, %esp, 8/-8
+
+	pushq	%rax			# Save %rax in case caller is using
+					# it to preserve original %r10.
+	.cfi_def_cfa %rsp,16		# Adjust for pushed register.
+
+	movq	%rsp,%rax		# Current stack,
+	subq	%r10,%rax		# less required stack frame size,
+	subq	$0x4000,%rax		# less space for non-split code.
+
+#ifdef __LP64__
+	cmpq	%fs:0x70,%rax		# See if we have enough space.
+#else
+	cmpl	%fs:0x40,%eax
+#endif
+	jb	2f			# Get more space if we need it.
+
+	# This breaks call/return prediction, as described above.
+	incq	8(%rsp)			# Increment the return address.
+
+	popq	%rax			# Restore register.
+
+	.cfi_def_cfa %rsp,8		# Adjust for popped register.
+
+	ret				# Return to caller.
+
+2:
+	.cfi_def_cfa %rsp,16		# Back to where we were.
+
+	popq	%rax			# Restore register.
+
+	.cfi_def_cfa %rsp,8		# Adjust for popped register.
+
+	addq	$0x5000+BACKOFF,%r10	# Increment space we request.
+
+	# Fall throug into morestack.
+
 #endif
 
+	.cfi_endproc
 #ifdef __ELF__
 	.size	__morestack_non_split, . - __morestack_non_split
 #endif
