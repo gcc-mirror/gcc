@@ -1102,9 +1102,21 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
   a-exetim.ads<a-exetim-default.ads \
   s-linux.ads<s-linux.ads \
   s-osinte.adb<s-osinte-posix.adb \
-  system.ads<system-linux-x86.ads \
-  $(ATOMICS_TARGET_PAIRS) \
-  $(X86_TARGET_PAIRS)
+  $(ATOMICS_TARGET_PAIRS)
+
+  LIBGNAT_TARGET_PAIRS_32 = \
+  $(X86_TARGET_PAIRS) \
+  system.ads<system-linux-x86.ads
+
+  LIBGNAT_TARGET_PAIRS_64 = \
+  $(X86_64_TARGET_PAIRS) \
+  system.ads<system-linux-x86_64.ads
+
+  ifeq ($(strip $(MULTISUBDIR)),/64)
+    LIBGNAT_TARGET_PAIRS += $(LIBGNAT_TARGET_PAIRS_64)
+  else
+    LIBGNAT_TARGET_PAIRS += $(LIBGNAT_TARGET_PAIRS_32)
+  endif
 
   ifeq ($(strip $(filter-out xenomai,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS += \
