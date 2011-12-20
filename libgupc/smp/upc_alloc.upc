@@ -256,8 +256,7 @@ __upc_global_heap_alloc (size_t alloc_size)
       const size_t vm_alloc_size = GUPCR_ROUND (chunk_size, GUPCR_VM_PAGE_SIZE);
       const upc_page_num_t vm_alloc_pages = vm_alloc_size / GUPCR_VM_PAGE_SIZE;
       const upc_page_num_t cur_page_alloc = __upc_vm_get_cur_page_alloc ();
-      const size_t new_alloc_base =
-         (size_t)GUPCR_SHARED_SECTION_START + ((size_t)cur_page_alloc * GUPCR_VM_PAGE_SIZE);
+      const size_t new_alloc_base = (size_t)cur_page_alloc * GUPCR_VM_PAGE_SIZE;
       const upc_heap_p new_alloc = __upc_alloc_build_pts (new_alloc_base, 0);
 #ifdef DEBUG_ALLOC
       printf ("%d: __upc_global_heap_alloc: extend heap by %d pages\n",

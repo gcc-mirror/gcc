@@ -553,8 +553,7 @@ __upc_init (char *pgm, const char **err_msg)
   u->init_page_alloc = init_page_alloc;
   u->init_heap_size = heap_size;
   GUPCR_PTS_SET_NULL_SHARED (u->init_heap_base);
-  GUPCR_PTS_SET_VADDR (u->init_heap_base,
-		       (size_t) GUPCR_SHARED_SECTION_START + alloc_data_size);
+  GUPCR_PTS_SET_VADDR (u->init_heap_base, alloc_data_size);
   u->smem_fd = __upc_create_global_mem_file (mmap_file_name, err_msg);
   if (u->smem_fd < 0)
     return 0;

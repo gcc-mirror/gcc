@@ -90,12 +90,13 @@ typedef upc_shared_ptr_t upc_dbg_shared_ptr_t;
 #define GUPCR_PTS_SET_NULL_SHARED(P) \
    {(P).vaddr = 0; (P).thread = 0; (P).phase = 0;}
 
-#define GUPCR_PTS_VADDR(P) (P).vaddr
+#define GUPCR_PTS_VADDR(P) ((size_t)(P).vaddr - (size_t)GUPCR_SHARED_SECTION_START)
 #define GUPCR_PTS_OFFSET(P) ((size_t)(P).vaddr - (size_t)GUPCR_SHARED_SECTION_START)
 #define GUPCR_PTS_THREAD(P) (P).thread
 #define GUPCR_PTS_PHASE(P) (P).phase
 
-#define GUPCR_PTS_SET_VADDR(P,V) (P).vaddr = (void *)(V)
+#define GUPCR_PTS_SET_VADDR(P,V) (P).vaddr = (void *)((char *)(V) \
+			+ (size_t)GUPCR_SHARED_SECTION_START)
 #define GUPCR_PTS_INCR_VADDR(P,V) (P).vaddr += ((size_t)(V))
 #define GUPCR_PTS_SET_THREAD(P,V) (P).thread = (size_t)(V)
 #define GUPCR_PTS_SET_PHASE(P,V) (P).phase = (size_t)(V)
@@ -153,15 +154,14 @@ typedef upc_shared_ptr_t *upc_shared_ptr_p;
    Further, the value being inserted must fit into the field.
    It will not be masked.  */
 #define GUPCR_PTS_VADDR(P)  \
-  (void *)((char *)GUPCR_SHARED_SECTION_START + (size_t)((P)>>GUPCR_PTS_VADDR_SHIFT & GUPCR_PTS_VADDR_MASK))
+  (void *)((size_t)((P)>>GUPCR_PTS_VADDR_SHIFT & GUPCR_PTS_VADDR_MASK))
 #define GUPCR_PTS_THREAD(P) ((size_t)((P)>>GUPCR_PTS_THREAD_SHIFT & GUPCR_PTS_THREAD_MASK))
 #define GUPCR_PTS_PHASE(P)  ((size_t)((P)>>GUPCR_PTS_PHASE_SHIFT & GUPCR_PTS_PHASE_MASK))
 #define GUPCR_PTS_OFFSET(P) ((size_t)((P)>>GUPCR_PTS_VADDR_SHIFT & GUPCR_PTS_VADDR_MASK))
 
 #define GUPCR_PTS_SET_VADDR(P,V) \
   (P) = ((P) & ~(GUPCR_PTS_VADDR_MASK << GUPCR_PTS_VADDR_SHIFT)) \
-         | ((GUPCR_PTS_REP_T)((char *)(V) - (char *)GUPCR_SHARED_SECTION_START) \
-	    << GUPCR_PTS_VADDR_SHIFT)
+         	| ((GUPCR_PTS_REP_T)(V) << GUPCR_PTS_VADDR_SHIFT)
 #define GUPCR_PTS_SET_THREAD(P,V) (P) = ((P) & ~(GUPCR_PTS_THREAD_MASK << GUPCR_PTS_THREAD_SHIFT)) \
                                      | ((GUPCR_PTS_REP_T)(V) << GUPCR_PTS_THREAD_SHIFT)
 #define GUPCR_PTS_SET_PHASE(P,V) (P) = ((P) & ~(GUPCR_PTS_PHASE_MASK << GUPCR_PTS_PHASE_SHIFT)) \

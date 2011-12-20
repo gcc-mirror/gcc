@@ -1,13 +1,30 @@
+2011-12-19  Nenad Vukicevic <nenad@intrepid.com>
+
+	Improve handling of shared pointer vaddr field. Make sure
+	that upc_addrfield() always returns an offset of the shared variable 
+	from the beginning of the shared section.
+	
+	* smp/upc_pts.h (GUPCR_PTS_VADDR): Macro definition returns the
+	offset of the shared variable in the shared section.
+	(GUPCR_PTS_SET_VADDR): Macro definition accepts the offset of the
+	shared variable in the shared section and sets the value of the 
+	vaddr: offset for packed pts rep, address for struct pts rep.
+	* smp/upc_main.c (__upc_init): Adjust the argument for setting of 
+	pointer-to-shared vaddr field.
+	* smp/upc_alloc.upc: Adjust the argument for building a 
+	pointer-to-shared to the offset of the shared variable in the
+	shared section.
+
 2011-12-17  Nenad Vukicevic <nenad@intrepid.com>
 
-	configure.ac: Remove erroneous check for enable_shared. Build 
+	* configure.ac: Remove erroneous check for enable_shared. Build 
 	libgupc only as a static library as shared data sections from 
 	all the UPC compilations must be combined into a single 
 	contiguous section.
-	configure.tgt: Always include the necessary libraries required by 
+	* configure.tgt: Always include the necessary libraries required by 
 	libgupc on the command line. This is necessary as we don't build 
 	libgupc as a dynamic link library.
-	configure: Re-generate.
+	* configure: Re-generate.
 
 2011-11-19  Gary Funck  <gary@intrepid.com>
 
