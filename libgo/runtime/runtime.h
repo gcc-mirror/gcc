@@ -6,7 +6,6 @@
 
 #include "config.h"
 
-#define _GNU_SOURCE
 #include "go-assert.h"
 #include <setjmp.h>
 #include <signal.h>
