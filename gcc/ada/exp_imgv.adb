@@ -1177,7 +1177,7 @@ package body Exp_Imgv is
          --                  ...
          --                      else n)))...
 
-         --  where n is equal to Rtyp'Pos (Rtyp'Last) + 1
+         --  where n is equal to Rtyp'Pos (Ptyp'Last) + 1
 
          --  Note: The above processing is in accordance with the intent of
          --  the RM, which is that Width should be related to the impl-defined
@@ -1206,12 +1206,13 @@ package body Exp_Imgv is
                      New_Occurrence_Of (Standard_Integer, Loc),
                    Expression =>
                      Make_Attribute_Reference (Loc,
-                       Prefix            => New_Occurrence_Of (Rtyp, Loc),
-                       Attribute_Name    => Name_Pos,
-                       Expressions       => New_List (
-                         Make_Attribute_Reference (Loc,
-                           Prefix            => New_Occurrence_Of (Ptyp, Loc),
-                           Attribute_Name    => Name_Last)))));
+                       Prefix         => New_Occurrence_Of (Rtyp, Loc),
+                       Attribute_Name => Name_Pos,
+                       Expressions    => New_List (
+                         Convert_To (Rtyp,
+                           Make_Attribute_Reference (Loc,
+                             Prefix         => New_Occurrence_Of (Ptyp, Loc),
+                             Attribute_Name => Name_Last))))));
 
                --  OK, now we need to build the conditional expression. First
                --  get the value of M, the largest possible value needed.

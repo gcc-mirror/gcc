@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
@@ -3966,6 +3967,13 @@ package body Exp_Util is
       function Is_Allocated (Trans_Id : Entity_Id) return Boolean;
       --  Determine whether transient object Trans_Id is allocated on the heap
 
+      function Is_Iterated_Container
+        (Trans_Id   : Entity_Id;
+         First_Stmt : Node_Id) return Boolean;
+      --  Determine whether transient object Trans_Id denotes a container which
+      --  is in the process of being iterated in the statement list starting
+      --  from First_Stmt.
+
       ---------------------------
       -- Initialized_By_Access --
       ---------------------------
@@ -4180,6 +4188,90 @@ package body Exp_Util is
              and then Nkind (Expr) = N_Allocator;
       end Is_Allocated;
 
+      ---------------------------
+      -- Is_Iterated_Container --
+      ---------------------------
+
+      function Is_Iterated_Container
+        (Trans_Id   : Entity_Id;
+         First_Stmt : Node_Id) return Boolean
+      is
+         Aspect : Node_Id;
+         Call   : Node_Id;
+         Iter   : Entity_Id;
+         Param  : Node_Id;
+         Stmt   : Node_Id;
+         Typ    : Entity_Id;
+
+      begin
+         --  It is not possible to iterate over containers in non-Ada 2012 code
+
+         if Ada_Version < Ada_2012 then
+            return False;
+         end if;
+
+         Typ := Etype (Trans_Id);
+
+         --  Handle access type created for secondary stack use
+
+         if Is_Access_Type (Typ) then
+            Typ := Designated_Type (Typ);
+         end if;
+
+         --  Look for aspect Default_Iterator
+
+         if Has_Aspects (Parent (Typ)) then
+            Aspect := Find_Aspect (Typ, Aspect_Default_Iterator);
+
+            if Present (Aspect) then
+               Iter := Entity (Aspect);
+
+               --  Examine the statements following the container object and
+               --  look for a call to the default iterate routine where the
+               --  first parameter is the transient. Such a call appears as:
+
+               --     It : Access_To_CW_Iterator :=
+               --            Iterate (Tran_Id.all, ...)'reference;
+
+               Stmt := First_Stmt;
+               while Present (Stmt) loop
+
+                  --  Detect an object declaration which is initialized by a
+                  --  secondary stack function call.
+
+                  if Nkind (Stmt) = N_Object_Declaration
+                    and then Present (Expression (Stmt))
+                    and then Nkind (Expression (Stmt)) = N_Reference
+                    and then Nkind (Prefix (Expression (Stmt))) =
+                               N_Function_Call
+                  then
+                     Call := Prefix (Expression (Stmt));
+
+                     --  The call must invoke the default iterate routine of
+                     --  the container and the transient object must appear as
+                     --  the first actual parameter.
+
+                     if Entity (Name (Call)) = Iter
+                       and then Present (Parameter_Associations (Call))
+                     then
+                        Param := First (Parameter_Associations (Call));
+
+                        if Nkind (Param) = N_Explicit_Dereference
+                          and then Entity (Prefix (Param)) = Trans_Id
+                        then
+                           return True;
+                        end if;
+                     end if;
+                  end if;
+
+                  Next (Stmt);
+               end loop;
+            end if;
+         end if;
+
+         return False;
+      end Is_Iterated_Container;
+
    --  Start of processing for Is_Finalizable_Transient
 
    begin
@@ -4220,7 +4312,13 @@ package body Exp_Util is
 
           --  Do not consider conversions of tags to class-wide types
 
-          and then not Is_Tag_To_CW_Conversion (Obj_Id);
+          and then not Is_Tag_To_CW_Conversion (Obj_Id)
+
+          --  Do not consider containers in the context of iterator loops. Such
+          --  transient objects must exist for as long as the loop is around,
+          --  otherwise any operation carried out by the iterator will fail.
+
+          and then not Is_Iterated_Container (Obj_Id, Decl);
    end Is_Finalizable_Transient;
 
    ---------------------------------
