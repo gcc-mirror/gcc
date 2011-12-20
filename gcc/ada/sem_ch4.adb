@@ -6042,7 +6042,7 @@ package body Sem_Ch4 is
               and then Base_Type (Etype (R)) /= Universal_Integer
             then
                if Ada_Version >= Ada_2012
-                 and then Is_Dimensioned_Type (Etype (L))
+                 and then Has_Dimension_System (Etype (L))
                then
                   Error_Msg_NE
                     ("exponent for dimensioned type must be a rational" &

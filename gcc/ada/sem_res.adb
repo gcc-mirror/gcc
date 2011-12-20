@@ -8016,7 +8016,7 @@ package body Sem_Res is
       --  Evaluate the exponentiation operator for dimensioned type with
       --  rational exponent.
 
-      if Ada_Version >= Ada_2012 and then Is_Dimensioned_Type (B_Typ) then
+      if Ada_Version >= Ada_2012 and then Has_Dimension_System (B_Typ) then
          Eval_Op_Expon_For_Dimensioned_Type (N, B_Typ);
 
          --  Skip the Eval_Op_Expon if the node has already been evaluated

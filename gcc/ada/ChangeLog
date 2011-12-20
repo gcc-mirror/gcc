@@ -1,3 +1,32 @@
+2011-12-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch4.adb (Operator_Check): Update the call to
+	Is_Dimensioned_Type.
+	* sem_dim.adb: Remove with and use clause for Namet.Sp. Reorganize
+	all type declarations and datastructures involved. Propagate
+	all changes involving data structures and types throughout
+	the pakage. Alphabetize all subprograms. Add ??? comments.
+	(AD_Hash): Removed.
+	(Analyze_Aspect_Dimension): Rewritten. This
+	routine now does all its checks in one pass rather than
+	two. Refactor code. The error message are now in a more GNAT-ish style.
+	(Create_Rational_From_Expr): This is now a function.
+	(Get_Dimensions): Removed.
+	(Get_Dimensions_String_Id): Removed.
+	(Dimensions_Of): New rouitne.
+	(Exists): New routines.
+	(Is_Invalid): New routine.
+	(Permits_Dimensions): Removed.
+	(Present): Removed.
+	(Set_Symbol): New routine.
+	(System_Of): New routine.
+	* sem_dim.ads: Rewrite the top level description of the
+	package. Alphabetize subprograms. Add various comments on
+	subprogram usage. Add ??? comments.
+	(Is_Dimensioned_Type):
+	Renamed to Has_Dimension_System.
+	* sem_res.adb (Resolve_Op_Expon): Update the call to Is_Dimensioned_Type
+
 2011-12-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Check_Indexing_Functions): The return type of an
