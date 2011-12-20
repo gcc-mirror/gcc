@@ -1,3 +1,8 @@
+2011-12-20  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* warnings.m4 (ACX_PROG_CC_WARNING_OPTS): Avoid leading dash in
+	expr call.
+
 2011-12-19  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR bootstrap/51388

@@ -4849,7 +4849,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_cc_gcc_supports_ada" >&5
 $as_echo "$acx_cv_cc_gcc_supports_ada" >&6; }
 
-if test x$GNATBIND != xno && test x$GNATMAKE != xno && test x$acx_cv_cc_gcc_supports_ada != xno; then
+if test "x$GNATBIND" != xno && test "x$GNATMAKE" != xno && test x$acx_cv_cc_gcc_supports_ada != xno; then
   have_gnat=yes
 else
   have_gnat=no
@@ -6404,7 +6404,7 @@ for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
-    -Wno-*) option=-W`expr $real_option : '-Wno-\(.*\)'` ;;
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
     *) option=$real_option ;;
   esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
@@ -6449,7 +6449,7 @@ for real_option in -Wstrict-prototypes -Wmissing-prototypes; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
-    -Wno-*) option=-W`expr $real_option : '-Wno-\(.*\)'` ;;
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
     *) option=$real_option ;;
   esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
@@ -6494,7 +6494,7 @@ for real_option in -Wmissing-format-attribute; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
-    -Wno-*) option=-W`expr $real_option : '-Wno-\(.*\)'` ;;
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
     *) option=$real_option ;;
   esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
@@ -6539,7 +6539,7 @@ for real_option in -Wold-style-definition -Wc++-compat; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
-    -Wno-*) option=-W`expr $real_option : '-Wno-\(.*\)'` ;;
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
     *) option=$real_option ;;
   esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
@@ -6647,7 +6647,7 @@ for real_option in -fno-exceptions -fno-rtti; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
-    -Wno-*) option=-W`expr $real_option : '-Wno-\(.*\)'` ;;
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
     *) option=$real_option ;;
   esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`

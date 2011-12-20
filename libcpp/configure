@@ -4693,7 +4693,7 @@ for real_option in -W -Wall -Wno-narrowing -Wwrite-strings \
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
-    -Wno-*) option=-W`expr $real_option : '-Wno-\(.*\)'` ;;
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
     *) option=$real_option ;;
   esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
@@ -4739,7 +4739,7 @@ for real_option in -Wstrict-prototypes -Wmissing-prototypes \
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
-    -Wno-*) option=-W`expr $real_option : '-Wno-\(.*\)'` ;;
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
     *) option=$real_option ;;
   esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
@@ -4824,7 +4824,7 @@ for real_option in -fno-exceptions -fno-rtti; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
-    -Wno-*) option=-W`expr $real_option : '-Wno-\(.*\)'` ;;
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
     *) option=$real_option ;;
   esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
