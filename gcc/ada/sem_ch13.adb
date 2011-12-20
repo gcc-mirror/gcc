@@ -1868,9 +1868,9 @@ package body Sem_Ch13 is
 
          procedure Check_One_Function (Subp : Entity_Id) is
             Default_Element : constant Node_Id :=
-              Find_Aspect
-                (Etype (First_Formal (Subp)),
-                   Aspect_Iterator_Element);
+                                Find_Aspect
+                                  (Etype (First_Formal (Subp)),
+                                   Aspect_Iterator_Element);
 
          begin
             if not Check_Primitive_Function (Subp) then
@@ -1885,8 +1885,7 @@ package body Sem_Ch13 is
             if Present (Default_Element) then
                Analyze (Default_Element);
                if Is_Entity_Name (Default_Element)
-                 and then
-                   Covers (Entity (Default_Element), Etype (Subp))
+                 and then Covers (Entity (Default_Element), Etype (Subp))
                then
                   return;
                end if;
@@ -1914,7 +1913,7 @@ package body Sem_Ch13 is
 
          else
             declare
-               I : Interp_Index;
+               I  : Interp_Index;
                It : Interp;
 
             begin
