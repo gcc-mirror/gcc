@@ -5730,6 +5730,12 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	    }
 	}
     }
+  else if (CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fun)))
+    {
+      ret = false;
+      if (complain)
+	error ("%q#T has virtual base classes", DECL_CONTEXT (fun));
+    }
 
   return ret;
 }

@@ -1,3 +1,8 @@
+2011-12-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51612
+	* g++.dg/cpp0x/constexpr-ice4.C: New.
+
 2011-12-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51328
