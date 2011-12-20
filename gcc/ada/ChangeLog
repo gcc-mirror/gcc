@@ -1,5 +1,26 @@
 2011-12-20  Robert Dewar  <dewar@adacore.com>
 
+	* a-cdlili.ads, sem_cat.adb, sem_ch10.adb: Minor reformatting.
+
+2011-12-20  Bob Duff  <duff@adacore.com>
+
+	* s-taprop-mingw.adb (Yield): Do_Yield is no longer Unreferenced.
+
+2011-12-20  Vincent Pucci  <pucci@adacore.com>
+
+	* impunit.adb: s-dimkio, s-dimmks and s-dmotpr defined as GNAT
+	Defined Additions to System.
+	* Makefile.rtl: s-dimkio, s-dimmks and s-dmotpr added.
+	* s-dimkio.ads, s-dimmks.ads, s-dmotpr.ads: New files.
+
+2011-12-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch4.adb (Traverse_Homonyms): Allow a homonym to match when
+	within an instance, even if the homonym is marked Is_Hidden at
+	this point.
+
+2011-12-20  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb, sem_ch5.adb, s-diinio.adb, s-diinio.ads, sem_dim.adb,
 	sem_dim.ads, sem_res.adb, s-stposu.adb, s-stposu.ads, sem_ch4.adb,
 	s-diflio.adb, s-diflio.ads, exp_disp.adb, s-llflex.ads: Minor
