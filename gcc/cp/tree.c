@@ -564,7 +564,7 @@ diagnose_non_constexpr_vec_init (tree expr)
   tree type = TREE_TYPE (VEC_INIT_EXPR_SLOT (expr));
   tree init, elt_init;
   if (VEC_INIT_EXPR_VALUE_INIT (expr))
-    init = void_zero_node;
+    init = void_type_node;
   else
     init = VEC_INIT_EXPR_INIT (expr);
 
