@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--            Copyright (C) 2011, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,10 +38,10 @@ package body System.Dim_Integer_IO is
    ---------
 
    procedure Put
-     (File : File_Type;
-      Item : Num_Dim_Integer;
-      Unit : String := "";
-      Width : Field := Default_Width;
+     (File  : File_Type;
+      Item  : Num_Dim_Integer;
+      Unit  : String      := "";
+      Width : Field       := Default_Width;
       Base  : Number_Base := Default_Base)
 
    is
@@ -51,9 +51,9 @@ package body System.Dim_Integer_IO is
    end Put;
 
    procedure Put
-     (Item : Num_Dim_Integer;
-      Unit : String := "";
-      Width : Field := Default_Width;
+     (Item  : Num_Dim_Integer;
+      Unit  : String      := "";
+      Width : Field       := Default_Width;
       Base  : Number_Base := Default_Base)
 
    is
@@ -63,9 +63,9 @@ package body System.Dim_Integer_IO is
    end Put;
 
    procedure Put
-     (To   : out String;
-      Item : Num_Dim_Integer;
-      Unit : String := "";
+     (To    : out String;
+      Item  : Num_Dim_Integer;
+      Unit  : String      := "";
       Base  : Number_Base := Default_Base)
 
    is

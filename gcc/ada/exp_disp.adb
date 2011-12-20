@@ -6512,7 +6512,7 @@ package body Exp_Disp is
       --  Alignment
 
       --  For CPP types we cannot rely on the value of 'Alignment provided
-      --  by the backend to initialize this TSD field.
+      --  by the backend to initialize this TSD field. Why not???
 
       if Convention (Typ) = Convention_CPP
         or else Is_CPP_Class (Root_Type (Typ))

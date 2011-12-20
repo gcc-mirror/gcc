@@ -5814,8 +5814,6 @@ package body Sem_Res is
          end;
       end if;
 
-      --  dimension analysis
-
       Analyze_Dimension (N);
 
       --  All done, evaluate call and deal with elaboration issues
@@ -8015,12 +8013,10 @@ package body Sem_Res is
 
       Analyze_Dimension (N);
 
-      --  Evaluate the Expon operator for dimensioned type with rational
-      --  exponent.
+      --  Evaluate the exponentiation operator for dimensioned type with
+      --  rational exponent.
 
-      if Ada_Version >= Ada_2012
-        and then Is_Dimensioned_Type (B_Typ)
-      then
+      if Ada_Version >= Ada_2012 and then Is_Dimensioned_Type (B_Typ) then
          Eval_Op_Expon_For_Dimensioned_Type (N, B_Typ);
 
          --  Skip the Eval_Op_Expon if the node has already been evaluated
@@ -8657,11 +8653,12 @@ package body Sem_Res is
         and then Is_Packed (T)
         and then Is_LHS (N)
       then
-         Error_Msg_N ("?assignment to component of packed atomic record",
-                      Prefix (N));
-         Error_Msg_N ("?\may cause unexpected accesses to atomic object",
-                      Prefix (N));
+         Error_Msg_N
+           ("?assignment to component of packed atomic record", Prefix (N));
+         Error_Msg_N
+           ("?\may cause unexpected accesses to atomic object", Prefix (N));
       end if;
+
       Analyze_Dimension (N);
    end Resolve_Selected_Component;
 

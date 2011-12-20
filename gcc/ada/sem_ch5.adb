@@ -827,7 +827,6 @@ package body Sem_Ch5 is
 
       declare
          Ent : constant Entity_Id := Get_Enclosing_Object (Lhs);
-
       begin
          if Present (Ent)
            and then Safe_To_Capture_Value (N, Ent)
@@ -840,6 +839,7 @@ package body Sem_Ch5 is
             Set_Last_Assignment (Ent, Lhs);
          end if;
       end;
+
       Analyze_Dimension (N);
    end Analyze_Assignment;
 

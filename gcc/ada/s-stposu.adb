@@ -440,7 +440,6 @@ package body System.Storage_Pools.Subpools is
    is
    begin
       raise Program_Error;
-
       return Pool.Subpools.Subpool;
    end Default_Subpool_For_Pool;
 
@@ -552,9 +551,7 @@ package body System.Storage_Pools.Subpools is
    begin
       --  Do nothing if the subpool was never used
 
-      if Subpool.Owner = null
-        or else Subpool.Node = null
-      then
+      if Subpool.Owner = null or else Subpool.Node = null then
          return;
       end if;
 
@@ -619,8 +616,9 @@ package body System.Storage_Pools.Subpools is
    -- Pool_Of_Subpool --
    ---------------------
 
-   function Pool_Of_Subpool (Subpool : not null Subpool_Handle)
-     return access Root_Storage_Pool_With_Subpools'Class
+   function Pool_Of_Subpool
+     (Subpool : not null Subpool_Handle)
+      return access Root_Storage_Pool_With_Subpools'Class
    is
    begin
       return Subpool.Owner;
