@@ -1786,7 +1786,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
   /* Redeclaration of a type is a constraint violation (6.7.2.3p1),
      but silently ignore the redeclaration if either is in a system
      header.  (Conflicting redeclarations were handled above.)  This
-     is allowed for C1X if the types are the same, not just
+     is allowed for C11 if the types are the same, not just
      compatible.  */
   if (TREE_CODE (newdecl) == TYPE_DECL)
     {
@@ -1815,7 +1815,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 		 newdecl);
 	  locate_old_decl (olddecl);
 	}
-      else if (pedantic && !flag_isoc1x)
+      else if (pedantic && !flag_isoc11)
 	{
 	  pedwarn (input_location, OPT_pedantic,
 		   "redefinition of typedef %q+D", newdecl);
@@ -6077,7 +6077,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	      DECL_DECLARED_INLINE_P (decl) = 1;
 	    if (declspecs->noreturn_p)
 	      {
-		if (!flag_isoc1x)
+		if (!flag_isoc11)
 		  {
 		    if (flag_isoc99)
 		      pedwarn (loc, OPT_pedantic,
@@ -6761,7 +6761,7 @@ grokfield (location_t loc,
 
 	 If this is something of the form "foo;" and foo is a TYPE_DECL, then
 	   If foo names a structure or union without a tag, then this
-	     is an anonymous struct (this is permitted by C1X).
+	     is an anonymous struct (this is permitted by C11).
 	   If MS or Plan 9 extensions are enabled and foo names a
 	     structure, then again this is an anonymous struct.
 	   Otherwise this is an error.
@@ -6792,7 +6792,7 @@ grokfield (location_t loc,
 	  pedwarn (loc, 0, "declaration does not declare anything");
 	  return NULL_TREE;
 	}
-      if (!flag_isoc1x)
+      if (!flag_isoc11)
 	{
 	  if (flag_isoc99)
 	    pedwarn (loc, OPT_pedantic,
@@ -7072,7 +7072,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	{
 	  if (DECL_NAME (x) != 0)
 	    break;
-	  if (flag_isoc1x
+	  if (flag_isoc11
 	      && (TREE_CODE (TREE_TYPE (x)) == RECORD_TYPE
 		  || TREE_CODE (TREE_TYPE (x)) == UNION_TYPE))
 	    break;

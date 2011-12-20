@@ -1,3 +1,28 @@
+2011-12-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (diagnose_mismatched_decls, grokdeclarator, grokfield)
+	(finish_struct): Refer to C11 in comments.  Use flag_isoc11.
+	* c-parser.c (c_parser_static_assert_declaration)
+	(c_parser_static_assert_declaration_no_semi, c_parser_declspecs)
+	(c_parser_alignas_specifier, c_parser_alignof_expression): Refer
+	to C11 in comments.  Use flag_isoc11.
+	* c-typeck.c (comptypes_check_different_types): Refer to C11 in
+	comment.
+	* doc/cpp.texi (Overview): Refer to -std=c11 instead of -std=c1x.
+	* doc/cppopts.texi (-std=c11, -std=gnu11): Document in preference
+	to -std=c1x and -std=gnu1x.
+	* doc/extend.texi (Inline, Alternate Keywords, Other Builtins)
+	(__builtin_complex, Unnamed Fields): Refer to -std=c11 and C11
+	instead of -std=c1x and C1X.
+	* doc/invoke.texi (-std=c11, -std=iso9899:2011): Document in
+	preference to -std=c1x.
+	(-std=gnu11): Document in preference to -std=gnu1x.
+	* doc/standards.texi: Document C11 instead of C1X.  Document C11
+	as actual standard.  Document headers required from freestanding
+	C11 implementations.
+	* ginclude/float.h, ginclude/stddef.h: Test __STDC_VERSION__ >=
+	201112L for C11.  Update comments to refer to C11.
+
 2011-12-20  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* configure: Regenerate.

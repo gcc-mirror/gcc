@@ -1,3 +1,11 @@
+2011-12-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (CLK_GNUC1X): Change to CLK_GNUC11.
+	(CLK_STDC1X): Change to CLK_STDC11.
+	* init.c (lang_defaults): Update comments.
+	(cpp_init_builtins): Update language tests.  Use 201112L for C11
+	__STDC_VERSION__.
+
 2011-12-20  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* configure: Regenerate.

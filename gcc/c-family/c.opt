@@ -1191,9 +1191,13 @@ std=c++0x
 C++ ObjC++ Alias(std=c++11)
 Deprecated in favor of -std=c++11
 
-std=c1x
+std=c11
 C ObjC
-Conform to the ISO 201X C standard draft (experimental and incomplete support)
+Conform to the ISO 2011 C standard (experimental and incomplete support)
+
+std=c1x
+C ObjC Alias(std=c11)
+Deprecated in favor of -std=c11
 
 std=c89
 C ObjC Alias(std=c90)
@@ -1229,9 +1233,13 @@ std=gnu++0x
 C++ ObjC++ Alias(std=gnu++11)
 Deprecated in favor of -std=gnu++11
 
-std=gnu1x
+std=gnu11
 C ObjC
-Conform to the ISO 201X C standard draft with GNU extensions (experimental and incomplete support)
+Conform to the ISO 2011 C standard with GNU extensions (experimental and incomplete support)
+
+std=gnu1x
+C ObjC Alias(std=gnu11)
+Deprecated in favor of -std=gnu11
 
 std=gnu89
 C ObjC Alias(std=gnu90)
@@ -1264,6 +1272,10 @@ Conform to the ISO 1999 C standard
 std=iso9899:199x
 C ObjC Alias(std=c99)
 Deprecated in favor of -std=iso9899:1999
+
+std=iso9899:2011
+C ObjC Alias(std=c11)
+Conform to the ISO 2011 C standard (experimental and incomplete support)
 
 traditional
 Driver
