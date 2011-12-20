@@ -6491,18 +6491,22 @@ package body Sem_Ch4 is
          Rewrite (N, Indexing);
          Analyze (N);
 
-         --  The return type of the indexing function is a reference type, so
-         --  add the dereference as a possible interpretation.
+         --  If the return type of the indexing function is a reference type,
+         --  add the dereference as a possible interpretation. Note that the
+         --  indexing aspect may be a function that returns the element type
+         --  with no intervening implicit dereference.
 
-         Disc := First_Discriminant (Etype (Func));
-         while Present (Disc) loop
-            if Has_Implicit_Dereference (Disc) then
-               Add_One_Interp (N, Disc, Designated_Type (Etype (Disc)));
-               exit;
-            end if;
+         if Has_Discriminants (Etype (Func)) then
+            Disc := First_Discriminant (Etype (Func));
+            while Present (Disc) loop
+               if Has_Implicit_Dereference (Disc) then
+                  Add_One_Interp (N, Disc, Designated_Type (Etype (Disc)));
+                  exit;
+               end if;
 
-            Next_Discriminant (Disc);
-         end loop;
+               Next_Discriminant (Disc);
+            end loop;
+         end if;
 
       else
          Indexing := Make_Function_Call (Loc,
@@ -6528,16 +6532,18 @@ package body Sem_Ch4 is
 
                   --  Add implicit dereference interpretation
 
-                  Disc := First_Discriminant (Etype (It.Nam));
-                  while Present (Disc) loop
-                     if Has_Implicit_Dereference (Disc) then
-                        Add_One_Interp
-                          (N, Disc, Designated_Type (Etype (Disc)));
-                        exit;
-                     end if;
+                  if Has_Discriminants (Etype (It.Nam)) then
+                     Disc := First_Discriminant (Etype (It.Nam));
+                     while Present (Disc) loop
+                        if Has_Implicit_Dereference (Disc) then
+                           Add_One_Interp
+                             (N, Disc, Designated_Type (Etype (Disc)));
+                           exit;
+                        end if;
 
-                     Next_Discriminant (Disc);
-                  end loop;
+                        Next_Discriminant (Disc);
+                     end loop;
+                  end if;
 
                   exit;
                end if;
