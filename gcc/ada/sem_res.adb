@@ -4469,23 +4469,26 @@ package body Sem_Res is
         and then Ekind (Current_Scope) = E_Package
         and then not In_Package_Body (Current_Scope)
       then
-         Error_Msg_N ("cannot activate task before body seen?", N);
-         Error_Msg_N ("\Program_Error will be raised at run time?", N);
+         Error_Msg_N ("?cannot activate task before body seen", N);
+         Error_Msg_N ("\?Program_Error will be raised at run time", N);
       end if;
 
-      --  Ada 2012 (AI05-0111-3): Issue a warning whenever allocating a task
-      --  or a type containing tasks on a subpool since the deallocation of
-      --  the subpool may lead to undefined task behavior. Perform the check
-      --  only when the allocator has not been converted into a Program_Error
-      --  due to a previous error.
+      --  Ada 2012 (AI05-0111-3): Detect an attempt to allocate a task or a
+      --  type with a task component on a subpool. This action must raise
+      --  Program_Error at runtime.
 
       if Ada_Version >= Ada_2012
         and then Nkind (N) = N_Allocator
         and then Present (Subpool_Handle_Name (N))
         and then Has_Task (Desig_T)
       then
-         Error_Msg_N ("?allocation of task on subpool may lead to " &
-                      "undefined behavior", N);
+         Error_Msg_N ("?cannot allocate task on subpool", N);
+         Error_Msg_N ("\?Program_Error will be raised at run time", N);
+
+         Rewrite (N,
+           Make_Raise_Program_Error (Sloc (N),
+             Reason => PE_Explicit_Raise));
+         Set_Etype (N, Typ);
       end if;
    end Resolve_Allocator;
 
