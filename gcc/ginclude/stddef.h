@@ -412,7 +412,7 @@ typedef __WINT_TYPE__ wint_t;
 /* Offset of member MEMBER in a struct of type TYPE. */
 #define offsetof(TYPE, MEMBER) __builtin_offsetof (TYPE, MEMBER)
 
-#if (defined (__STDC_VERSION__) && __STDC_VERSION__ > 199901L) \
+#if (defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) \
   || (defined(__cplusplus) && __cplusplus >= 201103L)
 #ifndef _GCC_MAX_ALIGN_T
 #define _GCC_MAX_ALIGN_T
@@ -424,7 +424,7 @@ typedef struct {
   long double __max_align_ld __attribute__((__aligned__(__alignof__(long double))));
 } max_align_t;
 #endif
-#endif /* C1X or C++11.  */
+#endif /* C11 or C++11.  */
 
 #endif /* _STDDEF_H was defined this time */
 

@@ -33,6 +33,8 @@ with some exceptions, and possibly with some extensions.
 @cindex C99
 @cindex ISO C9X
 @cindex C9X
+@cindex ISO C11
+@cindex C11
 @cindex ISO C1X
 @cindex C1X
 @cindex Technical Corrigenda
@@ -95,9 +97,11 @@ Errors in the 1999 ISO C standard were corrected in three Technical
 Corrigenda published in 2001, 2004 and 2007.  GCC does not support the
 uncorrected version.
 
-A fourth version of the C standard, known as @dfn{C1X}, is under
-development; GCC has limited preliminary support for parts of this
-standard, enabled with @option{-std=c1x}.
+A fourth version of the C standard, known as @dfn{C11}, was published
+in 2011 as ISO/IEC 9899:2011.  GCC has limited incomplete support for
+parts of this standard, enabled with @option{-std=c11} or
+@option{-std=iso9899:2011}.  (While in development, drafts of this
+standard version were referred to as @dfn{C1X}.)
 
 By default, GCC provides some extensions to the C language that on
 rare occasions conflict with the C standard.  @xref{C
@@ -106,12 +110,14 @@ Extensions,,Extensions to the C Language Family}.  Use of the
 they conflict with the C standard version selected.  You may also
 select an extended version of the C language explicitly with
 @option{-std=gnu90} (for C90 with GNU extensions), @option{-std=gnu99}
-(for C99 with GNU extensions) or @option{-std=gnu1x} (for C1X with GNU
+(for C99 with GNU extensions) or @option{-std=gnu11} (for C11 with GNU
 extensions).  The default, if no C language dialect
 options are given, is @option{-std=gnu90}; this will change to
-@option{-std=gnu99} in some future release when the C99 support is
+@option{-std=gnu99} or @option{-std=gnu11} in some future release when
+the C99 or C11 support is
 complete.  Some features that are part of the C99 standard are
-accepted as extensions in C90 mode.
+accepted as extensions in C90 mode, and some features that are part of
+the C11 standard are accepted as extensions in C90 and C99 modes.
 
 The ISO C standard defines (in clause 4) two classes of conforming
 implementation.  A @dfn{conforming hosted implementation} supports the
@@ -119,8 +125,9 @@ whole standard including all the library facilities; a @dfn{conforming
 freestanding implementation} is only required to provide certain
 library facilities: those in @code{<float.h>}, @code{<limits.h>},
 @code{<stdarg.h>}, and @code{<stddef.h>}; since AMD1, also those in
-@code{<iso646.h>}; and in C99, also those in @code{<stdbool.h>} and
-@code{<stdint.h>}.  In addition, complex types, added in C99, are not
+@code{<iso646.h>}; since C99, also those in @code{<stdbool.h>} and
+@code{<stdint.h>}; and since C11, also those in @code{<stdalign.h>}
+and @code{<stdnoreturn.h>}.  In addition, complex types, added in C99, are not
 required for freestanding implementations.  The standard also defines
 two environments for programs, a @dfn{freestanding environment},
 required of all implementations and which may not have library

@@ -1,3 +1,22 @@
+2011-12-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (flag_isoc99): Update comment to refer to C11.
+	(flag_isoc1x): Change to flag_isoc11.
+	* c-common.h (flag_isoc99): Update comment to refer to C11.
+	(flag_isoc1x): Change to flag_isoc11.
+	* c-cppbuiltin.c (cpp_atomic_builtins): Change comment to refer to
+	C11.
+	* c-opts.c (set_std_c1x): Change to set_std_c11.
+	(c_common_handle_option): Handle OPT_std_c11 and OPT_std_gnu11.
+	Call set_std_c11.
+	(set_std_c89, set_std_c99, set_std_c11): Use flag_isoc11.
+	(set_std_c1): Use CLK_STDC11 and CLK_GNUC11.
+	* c.opt (std=c1x): Change to std=c11.  Document as non-draft
+	standard.
+	(std=c1x, std=iso9899:2011): Add as aliases of std=c11.
+	(std=gnu1x): Change to std=gnu11.  Refer to non-draft standard.
+	(std=gnu1x): Make alias of std=gnu11.
+
 2011-12-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51228

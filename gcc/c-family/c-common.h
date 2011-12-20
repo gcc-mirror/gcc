@@ -106,7 +106,7 @@ enum rid
   RID_DFLOAT32, RID_DFLOAT64, RID_DFLOAT128,
   RID_FRACT, RID_ACCUM,
 
-  /* C1X */
+  /* C11 */
   RID_ALIGNAS,
 
   /* This means to warn that this is a C++ keyword, and then treat it
@@ -607,13 +607,13 @@ extern int flag_cond_mismatch;
 
 extern int flag_isoc94;
 
-/* Nonzero means use the ISO C99 (or C1X) dialect of C.  */
+/* Nonzero means use the ISO C99 (or C11) dialect of C.  */
 
 extern int flag_isoc99;
 
-/* Nonzero means use the ISO C1X dialect of C.  */
+/* Nonzero means use the ISO C11 dialect of C.  */
 
-extern int flag_isoc1x;
+extern int flag_isoc11;
 
 /* Nonzero means that we have builtin functions, and main is an int.  */
 

@@ -216,7 +216,7 @@ few things required by the standard.  These are features which are
 rarely, if ever, used, and may cause surprising changes to the meaning
 of a program which does not expect them.  To get strict ISO Standard C,
 you should use the @option{-std=c90}, @option{-std=c99} or
-@option{-std=c1x} options, depending
+@option{-std=c11} options, depending
 on which version of the standard you want.  To get all the mandatory
 diagnostics, you must also use @option{-pedantic}.  @xref{Invocation}.
 

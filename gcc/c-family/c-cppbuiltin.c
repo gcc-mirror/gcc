@@ -646,7 +646,7 @@ cpp_atomic_builtins (cpp_reader *pfile)
       have_swap[16] = true;
     }
 
-  /* Tell the source code about various types.  These map to the C++11 and C1x
+  /* Tell the source code about various types.  These map to the C++11 and C11
      macros where 2 indicates lock-free always, and 1 indicates sometimes
      lock free.  */
 #define SIZEOF_NODE(T) (tree_low_cst (TYPE_SIZE_UNIT (T), 1))
