@@ -24225,6 +24225,7 @@ case "${host}" in
     ;;
  i?86-*-linux*)
     SIGNAL_HANDLER=include/i386-signal.h
+    SIGNAL_HANDLER_AUX=include/x86_64-signal.h
     ;;
 # ia64-*)
 #    SYSDEP_SOURCES=sysdep/ia64.c

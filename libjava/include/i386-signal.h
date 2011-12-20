@@ -1,7 +1,8 @@
 // i386-signal.h - Catch runtime signals and turn them into exceptions
 // on an i386 based Linux system.
 
-/* Copyright (C) 1998, 1999, 2001, 2002, 2006, 2007  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001, 2002, 2006, 2007, 2011
+   Free Software Foundation
 
    This file is part of libgcj.
 
@@ -9,6 +10,8 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
+
+#ifdef __i386__
 
 #ifndef JAVA_SIGNAL_H
 #define JAVA_SIGNAL_H 1
@@ -165,3 +168,11 @@ while (0)
 
 #endif /* JAVA_SIGNAL_H */
   
+#else /* __i386__ */
+
+/* This is for the 64-bit subsystem on i386.  */
+
+#define sigcontext_struct sigcontext
+#include <java-signal-aux.h>
+
+#endif /* __i386__ */

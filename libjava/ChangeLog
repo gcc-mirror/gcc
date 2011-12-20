@@ -1,3 +1,10 @@
+2011-12-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (i?86-*-linux*): Set SIGNAL_HANDLER_AUX.
+	* configure: Regenerate.
+	* include/i386-signal.h: Wrap in __i386__, include
+	java-signal-aux.h otherwise.
+
 2011-12-12  Kai Tietz  <ktietz@redhat.com>
 
 	PR libgcj/50053
