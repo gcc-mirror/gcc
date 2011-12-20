@@ -1,3 +1,9 @@
+2011-12-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/49865
+	* ira-costs.c (find_costs_and_classes): Prefer registers even
+          if the memory cost is the same.
+
 2011-12-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (diagnose_mismatched_decls, grokdeclarator, grokfield)
