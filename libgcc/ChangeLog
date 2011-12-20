@@ -1,3 +1,9 @@
+2011-12-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/linux-unwind.h: Update copyright years.
+	(MD_FROB_UPDATE_CONTEXT): New define.
+	(alpha_frob_update_context): New function.
+
 2011-12-17  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config.host (mips*-sde-elf*, mipsisa64sr71k-*-elf*): Add to
@@ -6,7 +12,7 @@
 2011-12-15  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/rs6000/darwin-world.S (toplevel): Make it clear that this
-	function is not used for PPC64.  
+	function is not used for PPC64.
 	(save_world): Amend comments.  Update the VRsave mask to reflect the
 	saved regs.
 	(rest_world): Update comments, do not  clobber r10, do not use r8.
@@ -65,7 +71,7 @@
 	(__deregister_frame_info, __cxa_finalize, _Jv_RegisterClasses,
 	pthread_default_stacksize_np): Likewise.
 	* config/pa/t-stublib (LIBGCCSTUB_OBJS): Add new objects and rules.
-	
+
 2011-11-29  DJ Delorie  <dj@redhat.com>
 
 	* config.host (rl78-*-elf): New case.
@@ -199,7 +205,7 @@
 
 	* config/arm/lib1funcs.asm (udivsi3): Add support for divide
 	functions.
-	(aeabi_uidivmod): Likewise.	
+	(aeabi_uidivmod): Likewise.
 	(umodsi3): Likewise.
 	(divsi3): Likewise.
 	(aeabi_idivmod): Likewise.
