@@ -1,3 +1,8 @@
+2011-12-20  Tristan Gingold  <gingold@adacore.com>
+
+	* aclocal.m4: Assume strncmp works in cross case.
+	* configure: Regenerate
+
 2011-12-19  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* configure: Regenerate.
