@@ -1,3 +1,14 @@
+2011-12-20  Sergio Durigan Junior  <sergiodj@redhat.com>
+
+	* unwind-arm-common.inc: Include `tconfig.h', `tsystem.h' and
+	`sys/sdt.h'.
+	(_Unwind_DebugHook): New function.
+	(uw_restore_core_regs): New define.
+	(unwind_phase2): Use uw_restore_core_regs instead of
+	restore_core_regs.
+	(unwind_phase2_forced): Likewise.
+	(__gnu_Unwind_Resume): Likewise.
+
 2011-12-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/linux-unwind.h: Update copyright years.
