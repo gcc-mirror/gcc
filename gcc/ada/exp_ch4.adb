@@ -5228,10 +5228,11 @@ package body Exp_Ch4 is
                 Right_Opnd => Make_Predicate_Call (Rtyp, Lop)));
 
             --  Analyze new expression, mark left operand as analyzed to
-            --  avoid infinite recursion adding predicate calls.
+            --  avoid infinite recursion adding predicate calls. Similarly,
+            --  suppress further range checks on the call.
 
             Set_Analyzed (Left_Opnd (N));
-            Analyze_And_Resolve (N, Standard_Boolean);
+            Analyze_And_Resolve (N, Standard_Boolean, Suppress => All_Checks);
 
             --  All done, skip attempt at compile time determination of result
 

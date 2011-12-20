@@ -1,3 +1,21 @@
+2011-12-20  Bob Duff  <duff@adacore.com>
+
+	* opt.ads (List_Inherited_Aspects): Default to False
+	(i.e. -gnatw.L is the default).
+	* usage.adb: Document new default for -gnatw.L.
+	* gnat_ugn.texi: Document -gnatw.l and -gnatw.L switches.
+	* warnsw.adb (Set_Warning_Switch): Do not include
+	List_Inherited_Aspects in -gnatwa.
+
+2011-12-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Type_Conversion_Checks): For a discrete type
+	with predicates, indicate unconditionally that a range check
+	is needed.
+	* exp_ch4.adb (Expand_N_In): When the membership test is rewritten
+	to incorporate a call to a predicate function, analyze expression
+	with checks suppressed, to prevent infinite recursion.
+
 2011-12-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch11.adb (Find_Local_Handler): Guard the
