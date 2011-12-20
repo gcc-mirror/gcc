@@ -7,9 +7,6 @@
    We use C code to extract the wait status so that we can easily be
    OS-independent.  */
 
-#define _GNU_SOURCE
-#define __EXTENSIONS__
-
 #include <stdint.h>
 #include <sys/wait.h>
 
