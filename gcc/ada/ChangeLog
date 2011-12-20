@@ -1,3 +1,10 @@
+2011-12-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc-interface/Makefile.in (%86 linux%):
+	(LIBGNAT_TARGET_PAIRS_32): Split off from LIBGNAT_TARGET_PAIRS.
+	(LIBGNAT_TARGET_PAIRS_64): New.
+	(LIBGNAT_TARGET_PAIRS): Add either depending on multilib.
+
 2011-12-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_param): Add comment about double
