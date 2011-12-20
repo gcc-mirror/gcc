@@ -25,10 +25,6 @@ rm -f sysinfo.c
 cat > sysinfo.c <<EOF
 #include "config.h"
 
-#define _GNU_SOURCE
-#define _LARGEFILE_SOURCE
-#define _FILE_OFFSET_BITS 64
-
 #include <sys/types.h>
 #include <dirent.h>
 #include <errno.h>
