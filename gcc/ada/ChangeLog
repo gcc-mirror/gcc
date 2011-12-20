@@ -1,3 +1,10 @@
+2011-12-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Check_Indexing_Functions): The return type of an
+	indexing function can be the default element type, and does not
+	need to be a reference type.
+	* sem_ch4.adb (Try_Container_Indexing): Ditto.
+
 2011-12-20  Robert Dewar  <dewar@adacore.com>
 
 	* a-cdlili.ads, sem_cat.adb, sem_ch10.adb: Minor reformatting.

@@ -1867,12 +1867,32 @@ package body Sem_Ch13 is
          ------------------------
 
          procedure Check_One_Function (Subp : Entity_Id) is
+            Default_Element : constant Node_Id :=
+              Find_Aspect
+                (Etype (First_Formal (Subp)),
+                   Aspect_Iterator_Element);
+
          begin
             if not Check_Primitive_Function (Subp) then
                Error_Msg_NE
                  ("aspect Indexing requires a function that applies to type&",
                    Subp, Ent);
             end if;
+
+            --  An indexing function must return either the default element of
+            --  the container, or a reference type.
+
+            if Present (Default_Element) then
+               Analyze (Default_Element);
+               if Is_Entity_Name (Default_Element)
+                 and then
+                   Covers (Entity (Default_Element), Etype (Subp))
+               then
+                  return;
+               end if;
+            end if;
+
+            --  Otherwise the return type must be a reference type.
 
             if not Has_Implicit_Dereference (Etype (Subp)) then
                Error_Msg_N
