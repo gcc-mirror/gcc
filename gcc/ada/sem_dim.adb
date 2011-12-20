@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--            Copyright (C) 2011, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,16 +51,15 @@ with GNAT.HTable;
 
 package body Sem_Dim is
 
+   Max_Dimensions : constant Int := 7;
    --  Maximum number of dimensions in a dimension system
 
-   Max_Dimensions : constant Int := 7;
-
+   subtype Dim_Id is Pos range 1 .. Max_Dimensions;
    --  Dim_Id values are used to identify dimensions in a dimension system
    --  Note that the highest value of Dim_Id is Max_Dimensions
 
-   subtype Dim_Id is Pos range 1 .. Max_Dimensions;
-
    --  Record type for dimension system
+
    --  A dimension system is defined by the number and the names of its
    --  dimensions and its base type.
 
@@ -144,10 +143,12 @@ package body Sem_Dim is
    ---------
 
    function GCD (Left, Right : Whole) return Int is
-      L : Whole := Left;
-      R : Whole := Right;
+      L : Whole;
+      R : Whole;
 
    begin
+      L := Left;
+      R := Right;
       while R /= 0 loop
          L := L mod R;
 
@@ -194,7 +195,6 @@ package body Sem_Dim is
             Rational'(Numerator   => Left.Numerator * Right.Denominator +
                                        Left.Denominator * Right.Numerator,
                       Denominator => Left.Denominator * Right.Denominator);
-
    begin
       return Reduce (R);
    end "+";
@@ -263,6 +263,7 @@ package body Sem_Dim is
    --  The following table provides a relation between nodes and its dimension
    --  (if not dimensionless). If a node is not stored in the Hash Table, the
    --  node is considered to be dimensionless.
+
    --  A dimension is represented by an array of Max_Dimensions Rationals.
    --  If the corresponding dimension system has less than Max_Dimensions
    --  dimensions, the array is filled by as many as Zero_Rationals needed to
@@ -300,6 +301,10 @@ package body Sem_Dim is
    type AD_Hash_Range is range 0 .. 511;
 
    function AD_Hash (F : Node_Id) return AD_Hash_Range;
+
+   -------------
+   -- AD_Hash --
+   -------------
 
    function AD_Hash (F : Node_Id) return AD_Hash_Range is
    begin
@@ -442,8 +447,9 @@ package body Sem_Dim is
       Id   : Node_Id;
       Expr : Node_Id)
    is
-      Def_Id   : constant Entity_Id := Defining_Identifier (N);
-      N_Kind   : constant Node_Kind := Nkind (N);
+      Def_Id : constant Entity_Id := Defining_Identifier (N);
+      N_Kind : constant Node_Kind := Nkind (N);
+
       Analyzed : array (Dimensions'Range) of Boolean := (others => False);
       --  This array has been defined in order to deals with Others_Choice
       --  It is a reminder of the dimensions in the aggregate that have already
@@ -496,6 +502,7 @@ package body Sem_Dim is
       is
          B_Typ   : Node_Id;
          Sub_Ind : Node_Id;
+
       begin
          --  Aspect_Dimension can only apply for subtypes
 
@@ -508,7 +515,6 @@ package body Sem_Dim is
             if Nkind (Sub_Ind) /= N_Subtype_Indication then
                B_Typ := Etype (Sub_Ind);
                return Get_Dimension_System_Id (B_Typ);
-
             else
                return No_Dim_Sys;
             end if;
@@ -529,7 +535,6 @@ package body Sem_Dim is
          Typ      : Entity_Id;
 
       begin
-
          --  Check the type is dimensionless before assigning a dimension
 
          if Nkind (N) = N_Subtype_Declaration then
@@ -580,9 +585,8 @@ package body Sem_Dim is
 
          if Present (Component_Associations (Expr)) then
 
-            --  If the aggregate is a positional aggregate with an
-            --  Others_Choice, the number of expressions must be less than or
-            --  equal to N_Of_Dims - 1.
+            --  For a positional aggregate with an Others_Choice, the number
+            --  of expressions must be less than or equal to N_Of_Dims - 1.
 
             if Present (Comp_Expr) then
                N_Dims_Aggr := List_Length (Expressions (Expr)) - 1;
@@ -711,7 +715,6 @@ package body Sem_Dim is
             if Dim_Name = Na_Id then
                Dim := D;
             end if;
-
          end loop;
 
          return Dim;
@@ -728,14 +731,14 @@ package body Sem_Dim is
          Comp_Expr : Node_Id;
 
       begin
-         Comp_Expr := First (Expressions (Expr));
-         Next (Comp_Expr);
 
+         Comp_Expr := Next (First (Expressions (Expr)));
          while Present (Comp_Expr) loop
 
             --  First, analyze the expression
 
             Analyze_And_Resolve (Comp_Expr);
+
             if not Compile_Time_Known_Value (Comp_Expr) then
                return False;
             end if;
@@ -744,7 +747,6 @@ package body Sem_Dim is
          end loop;
 
          Comp_Assn := First (Component_Associations (Expr));
-
          while Present (Comp_Assn) loop
             Comp_Expr := Expression (Comp_Assn);
 
@@ -823,7 +825,6 @@ package body Sem_Dim is
       Comp_Assn := First (Component_Associations (Expr));
 
       if Present (Comp_Expr) then
-
          if List_Length (Component_Associations (Expr)) > 1 then
             Error_Msg_N ("named association cannot follow " &
                          "positional association for aspect%", Expr);
@@ -927,10 +928,10 @@ package body Sem_Dim is
                   return;
                end if;
 
-               --  End the filling of Dims by the Others_Choice value
-               --  If N_Of_Dims < Max_Dimensions then only the
-               --  positions that haven't been already analyzed from
-               --  Dim_Id'First to N_Of_Dims are filled.
+               --  End the filling of Dims by the Others_Choice value. If
+               --  N_Of_Dims < Max_Dimensions then only the positions that
+               --  haven't been already analyzed from Dim_Id'First to N_Of_Dims
+               --  are filled.
 
                for Dim in Dim_Id'First .. N_Of_Dims loop
                   if not Analyzed (Dim) then
@@ -1011,7 +1012,8 @@ package body Sem_Dim is
    -- Analyze_Aspect_Dimension_System --
    -------------------------------------
 
-   --    with Dimension_System => DIMENSION_PAIRS
+   --  with Dimension_System => DIMENSION_PAIRS
+
    --  DIMENSION_PAIRS ::=
    --    (DIMENSION_PAIR
    --      [, DIMENSION_PAIR]
@@ -1033,9 +1035,9 @@ package body Sem_Dim is
       Dim_Node   : Node_Id;
       Dim_Symbol : Node_Id;
       D_Sys      : Dimension_System := No_Dimension_System;
-      Names      : Name_Array := No_Names;
+      Names      : Name_Array       := No_Names;
       N_Of_Dims  : N_Of_Dimensions;
-      Symbols    : Symbol_Array := No_Symbols;
+      Symbols    : Symbol_Array     := No_Symbols;
 
       function Derived_From_Numeric_Type (N : Node_Id) return Boolean;
       --  Return True if the node is a derived type declaration from any
@@ -1091,16 +1093,17 @@ package body Sem_Dim is
       function Check_Dimension_System_Syntax (N : Node_Id) return Boolean is
          Dim_Node : Node_Id;
          Expr_Dim : Node_Id;
+
       begin
          --  Chek that the aggregate is a positional array
 
          if Present (Component_Associations (N)) then
             return False;
-         else
-            Dim_Node := First (Expressions (N));
 
+         else
             --  Check that each component of the aggregate is an aggregate
 
+            Dim_Node := First (Expressions (N));
             while Present (Dim_Node) loop
 
                --  Verify that the aggregate is a pair of identifier and string
@@ -1161,7 +1164,8 @@ package body Sem_Dim is
 
       begin
          if List_Length (List_Expr) < Dim_Id'First
-           or else List_Length (List_Expr) > Max_Dimensions then
+           or else List_Length (List_Expr) > Max_Dimensions
+         then
             return False;
          else
             return True;
@@ -1181,8 +1185,8 @@ package body Sem_Dim is
       end if;
 
       if not Derived_From_Numeric_Type (N) then
-         Error_Msg_N ("aspect% only apply for type derived from numeric type",
-                      Id);
+         Error_Msg_N
+           ("aspect% only apply for type derived from numeric type", Id);
          return;
       end if;
 
@@ -1325,16 +1329,14 @@ package body Sem_Dim is
          --  Check the lhs and the rhs have the same dimension
 
          if not Present (Dim_Lhs) then
-
             if Present (Dim_Rhs) then
                Error_Msg_N ("?dimensions missmatch in assignment", N);
             end if;
-         else
 
+         else
             if Dim_Lhs /= Dim_Rhs then
                Error_Msg_N ("?dimensions missmatch in assignment", N);
             end if;
-
          end if;
       end Analyze_Dimensions_In_Assignment;
 
@@ -1366,7 +1368,6 @@ package body Sem_Dim is
             Dims              : Dimensions := Zero_Dimensions;
 
          begin
-
             if Nkind_In (N, N_Op_Add, N_Op_Mod, N_Op_Rem, N_Op_Subtract) then
                Error_Msg_Name_1 := Chars (N);
 
@@ -1397,7 +1398,6 @@ package body Sem_Dim is
                end if;
 
             elsif Nkind_In (N_Kind, N_Op_Multiply, N_Op_Divide) then
-
                if L_Has_Dimensions and R_Has_Dimensions then
 
                   --  Get both operands dimension and add them
@@ -1419,7 +1419,6 @@ package body Sem_Dim is
                   Dims := L_Dims;
 
                elsif not L_Has_Dimensions and R_Has_Dimensions then
-
                   if N_Kind = N_Op_Multiply then
                      Dims := R_Dims;
                   else
@@ -1499,8 +1498,7 @@ package body Sem_Dim is
                end;
 
             --  For relational operations, only a dimension checking is
-            --  performed.
-            --  No propagation
+            --  performed (no propagation).
 
             elsif N_Kind in N_Op_Compare then
                Error_Msg_Name_1 := Chars (N);
@@ -1525,9 +1523,9 @@ package body Sem_Dim is
    ---------------------------------------------
 
    procedure Analyze_Dimension_Component_Declaration (N : Node_Id) is
-      Expr   : constant Node_Id   := Expression (N);
-      Id     : constant Entity_Id := Defining_Identifier (N);
-      E_Typ  : constant Entity_Id := Etype (Id);
+      Expr   : constant Node_Id    := Expression (N);
+      Id     : constant Entity_Id  := Defining_Identifier (N);
+      E_Typ  : constant Entity_Id  := Etype (Id);
       Dim_T  : constant Dimensions := Get_Dimensions (E_Typ);
       Dim_E  : Dimensions;
 
@@ -1541,6 +1539,7 @@ package body Sem_Dim is
             Dim_E := Get_Dimensions (Expr);
 
             if Present (Dim_E) then
+
                --  Return an error if the dimension of the expression and the
                --  dimension of the type missmatch.
 
@@ -1549,7 +1548,7 @@ package body Sem_Dim is
                                "declaration", N);
                end if;
 
-            --  If the expression is dimensionless
+               --  Case of dimensionless expression
 
             else
                Error_Msg_N
@@ -1580,7 +1579,6 @@ package body Sem_Dim is
    begin
       if Present (Obj_Decls) then
          Obj_Decl := First (Obj_Decls);
-
          while Present (Obj_Decl) loop
             if Nkind (Obj_Decl) = N_Object_Declaration then
                Obj_Id := Defining_Identifier (Obj_Decl);
@@ -1676,7 +1674,6 @@ package body Sem_Dim is
 
          else
             Param := First (Par_Ass);
-
             while Present (Param) loop
                Dims_Param := Get_Dimensions (Param);
 
@@ -1726,7 +1723,6 @@ package body Sem_Dim is
          begin
             if Present (Exprs) then
                Expr := First (Exprs);
-
                while Present (Expr) loop
                   Remove_Dimensions (Expr);
                   Next (Expr);
@@ -1754,7 +1750,6 @@ package body Sem_Dim is
    procedure Analyze_Dimension_Identifier (N : Node_Id) is
       Ent  : constant Entity_Id := Entity (N);
       Dims : constant Dimensions := Get_Dimensions (Ent);
-
    begin
       if Present (Dims) then
          Set_Dimensions (N, Dims);
@@ -1776,12 +1771,14 @@ package body Sem_Dim is
 
    begin
       if Present (Dim_T) then
+
          --  Expression is present
 
          if Present (Expr) then
             Dim_E := Get_Dimensions (Expr);
 
             if Present (Dim_E) then
+
                --  Return an error if the dimension of the expression and the
                --  dimension of the type missmatch.
 
@@ -1797,13 +1794,12 @@ package body Sem_Dim is
                --  (depending on the dimensioned numeric type), return an error
                --  message.
 
-               if not Nkind_In
-                        (Original_Node (Expr),
-                         N_Real_Literal,
-                         N_Integer_Literal)
+               if not Nkind_In (Original_Node (Expr),
+                                N_Real_Literal,
+                                N_Integer_Literal)
                then
-                  Error_Msg_N ("?dimensions missmatch in object " &
-                               "declaration", N);
+                  Error_Msg_N
+                    ("?dimensions missmatch in object declaration", N);
                end if;
             end if;
 
@@ -1824,7 +1820,6 @@ package body Sem_Dim is
       Ren_Id   : constant Node_Id   := Name (N);
       E_Typ    : constant Entity_Id := Etype (Ren_Id);
       Dims_Typ : constant Dimensions := Get_Dimensions (E_Typ);
-
    begin
       if Present (Dims_Typ) then
          Copy_Dimensions (E_Typ, Id);
@@ -1841,7 +1836,6 @@ package body Sem_Dim is
       R_Ent     : constant Entity_Id := Return_Statement_Entity (N);
       R_Etyp    : constant Entity_Id := Etype (Return_Applies_To (R_Ent));
       Dims_R    : constant Dimensions := Get_Dimensions (R_Etyp);
-
    begin
       if Dims_R /= Dims_Expr then
          Error_Msg_N ("?dimensions missmatch in return statement", N);
@@ -1867,9 +1861,8 @@ package body Sem_Dim is
          begin
             if Present (Dims_Typ) then
 
-               --  If the subtype already has a dimension (from
-               --  Aspect_Dimension), it cannot inherit a dimension from its
-               --  subtype.
+               --  If subtype already has a dimension (from Aspect_Dimension),
+               --  it cannot inherit a dimension from its subtype.
 
                if Present (Dims_Ent) then
                   Error_Msg_N ("?subtype& already has a dimension", N);
@@ -1890,9 +1883,8 @@ package body Sem_Dim is
          begin
             if Present (Dims_Typ) then
 
-               --  If the subtype already has a dimension (from
-               --  Aspect_Dimension), it cannot inherit a dimension from its
-               --  subtype.
+               --  If subtype already has a dimension (from Aspect_Dimension),
+               --  it cannot inherit a dimension from its subtype.
 
                if Present (Dims_Ent) then
                   Error_Msg_N ("?subtype& already has a dimension", N);
@@ -1959,9 +1951,8 @@ package body Sem_Dim is
       Rtype        : Entity_Id;
 
    begin
-      --  A rational number is any number that can be expressed as the quotient
-      --  or fraction a/b of two integers, with the denominator b not equal to
-      --  zero.
+      --  A rational number is a number that can be expressed as the quotient
+      --  or fraction a/b of two integers, where b is non-zero.
 
       --  Check the expression is either a division of two integers or an
       --  integer itself. The check applies to the original node since the
@@ -1975,16 +1966,13 @@ package body Sem_Dim is
          Right := Right_Opnd (Or_N);
          Rtype := Etype (Right);
 
-         if Is_Integer_Type (Ltype)
-           and then Is_Integer_Type (Rtype)
-         then
+         if Is_Integer_Type (Ltype) and then Is_Integer_Type (Rtype) then
             Left_Int  := UI_To_Int (Expr_Value (Left));
             Right_Int := UI_To_Int (Expr_Value (Right));
 
             --  Verify that the denominator of the rational is positive
 
             if Right_Int > 0 then
-
                if Left_Int mod Right_Int = 0 then
                   R := +Whole (UI_To_Int (Expr_Value (Expr)));
                else
@@ -2020,7 +2008,6 @@ package body Sem_Dim is
             --  Verify that the denominator of the rational is positive
 
             if Right_Int > 0 then
-
                if Left_Int mod Right_Int = 0 then
                   R := +Whole (-UI_To_Int (Expr_Value (Expr)));
                else
@@ -2042,6 +2029,7 @@ package body Sem_Dim is
          if Is_Integer_Type (Etype (Expr)) then
             Right_Int := UI_To_Int (Expr_Value (Expr));
             R         :=  +Whole (Right_Int);
+
          else
             Error_Msg_N ("must be a rational", Expr);
          end if;
@@ -2054,9 +2042,8 @@ package body Sem_Dim is
 
    --  Eval the expon operator for dimensioned type
 
-   --  Note that if the exponent is an integer (denominator equals to 1) the
-   --  node is not evaluated here and must be evaluated by the Eval_Op_Expon
-   --  routine.
+   --  Note that if the exponent is an integer (denominator = 1) the node is
+   --  not evaluated here and must be evaluated by the Eval_Op_Expon routine.
 
    procedure Eval_Op_Expon_For_Dimensioned_Type
      (N : Node_Id;
@@ -2064,11 +2051,8 @@ package body Sem_Dim is
    is
       R   : constant Node_Id := Right_Opnd (N);
       Rat : Rational := Zero_Rational;
-
    begin
-      if Compile_Time_Known_Value (R)
-        and then Is_Real_Type (B_Typ)
-      then
+      if Compile_Time_Known_Value (R) and then Is_Real_Type (B_Typ) then
          Create_Rational_From_Expr (R, Rat);
          Eval_Op_Expon_With_Rational_Exponent (N, Rat);
       end if;
@@ -2105,8 +2089,7 @@ package body Sem_Dim is
 
    begin
       --  If Rat.Denominator = 1 that means the exponent is an Integer so
-      --  nothing has to be changed.
-      --  Note that the node must come from source
+      --  nothing has to be changed. Note that the node must come from source.
 
       if Comes_From_Source (N)
         and then Rat.Denominator /= 1
@@ -2143,6 +2126,7 @@ package body Sem_Dim is
 
             --  for Dim in Dims'First .. N_Dims loop
             --     Dim_Value := Dims (Dim);
+
             --     if Dim_Value.Denominator /= 1 then
             --        Append (Dim_Value.Numerator / Dim_Value.Denominator,
             --                Aspect_Dim_Expr);
@@ -2162,21 +2146,20 @@ package body Sem_Dim is
 
             for Dim in Dims'First .. Dim_Systems.Table (Sys).N_Of_Dims loop
                Dim_Value := Dims (Dim);
+
                if Dim_Value.Denominator /= 1 then
-                  Append (
+                  Append_To (List_Of_Dims,
                      Make_Op_Divide (Loc,
                        Left_Opnd  =>
                          Make_Integer_Literal (Loc,
                            Int (Dim_Value.Numerator)),
                        Right_Opnd =>
                          Make_Integer_Literal (Loc,
-                           Int (Dim_Value.Denominator))),
-                     List_Of_Dims);
+                           Int (Dim_Value.Denominator))));
+
                else
-                  Append (
-                    Make_Integer_Literal (Loc,
-                      Int (Dim_Value.Numerator)),
-                    List_Of_Dims);
+                  Append_To (List_Of_Dims,
+                    Make_Integer_Literal (Loc, Int (Dim_Value.Numerator)));
                end if;
             end loop;
 
@@ -2184,11 +2167,9 @@ package body Sem_Dim is
 
             New_Aspect :=
               Make_Aspect_Specification (Loc,
-                Identifier =>
-                  Make_Identifier (Loc, Name_Dimension),
+                Identifier => Make_Identifier (Loc, Name_Dimension),
                 Expression =>
-                  Make_Aggregate (Loc,
-                    Expressions => List_Of_Dims));
+                  Make_Aggregate (Loc, Expressions => List_Of_Dims));
 
             --  Step 1c: New identifier for the subtype
 
@@ -2200,8 +2181,7 @@ package body Sem_Dim is
             New_Typ_L :=
                Make_Subtype_Declaration (Loc,
                   Defining_Identifier => New_E,
-                  Subtype_Indication  =>
-                     New_Occurrence_Of (Base_Typ, Loc));
+                  Subtype_Indication  => New_Occurrence_Of (Base_Typ, Loc));
 
             Append (New_Aspect, New_Aspects);
             Set_Parent (New_Aspects, New_Typ_L);
@@ -2269,9 +2249,9 @@ package body Sem_Dim is
    -- Expand_Put_Call_With_Dimension_String --
    -------------------------------------------
 
-   --  For procedure Put defined in System.Dim_Float_IO and
-   --  System.Dim_Integer_IO, the default string parameter must be rewritten to
-   --  include the dimension symbols in the output of a dimensioned object.
+   --  For procedure Put defined in System.Dim_Float_IO/System.Dim_Integer_IO,
+   --  the default string parameter must be rewritten to include the dimension
+   --  symbols in the output of a dimensioned object.
 
    --  There are two different cases:
 
@@ -2286,9 +2266,9 @@ package body Sem_Dim is
    --  Put (v) returns:
    --  > 2.1 speed
 
-   --  2) If the parameter is an expression, the procedure
+   --  2) If the parameter is an expression, then we call the procedure
    --  Expand_Put_Call_With_Dimension_String creates the string (for instance
-   --  "m.s**(-1)") and rewrites the default string parameter of Put with the
+   --  "m.s**(-1)") and rewrite the default string parameter of Put with the
    --  corresponding the String_Id.
 
    procedure Expand_Put_Call_With_Dimension_String (N : Node_Id) is
@@ -2472,7 +2452,6 @@ package body Sem_Dim is
       Store_String_Char (' ');
 
       for Dim in Dimensions'Range loop
-
          Dim_Rat := Dims (Dim);
          if Dim_Rat /= Zero_Rational then
 
@@ -2485,7 +2464,6 @@ package body Sem_Dim is
             --  Positive dimension case
 
             if Dim_Rat.Numerator > 0 then
-
                if Dim_Systems.Table (Sys).Symbols (Dim) = No_String then
                   Store_String_Chars
                     (Get_Name_String (Dim_Systems.Table (Sys).Names (Dim)));
@@ -2496,7 +2474,6 @@ package body Sem_Dim is
                --  Integer case
 
                if Dim_Rat.Denominator = 1 then
-
                   if Dim_Rat.Numerator /= 1 then
                      Store_String_Chars ("**");
                      Store_String_Int (Int (Dim_Rat.Numerator));
@@ -2574,6 +2551,7 @@ package body Sem_Dim is
 
    begin
       --  Scan the Table in order to find N
+      --  What is N??? no sign of anything called N here ???
 
       for Dim_Sys in 1 .. Dim_Systems.Last loop
          if Parent (E) = Dim_Systems.Table (Dim_Sys).Base_Type then
@@ -2588,14 +2566,13 @@ package body Sem_Dim is
    -- Is_Dimensioned_Type --
    --------------------------
 
-   function Is_Dimensioned_Type (E : Entity_Id) return Boolean
-   is
+   function Is_Dimensioned_Type (E : Entity_Id) return Boolean is
    begin
       if Get_Dimension_System_Id (E) /= No_Dim_Sys then
          return True;
+      else
+         return False;
       end if;
-
-      return False;
    end Is_Dimensioned_Type;
 
    ---------------------
@@ -2606,8 +2583,7 @@ package body Sem_Dim is
       Dims : constant Dimensions := Get_Dimensions (From);
 
    begin
-      --  Copy the dimension of 'From to 'To' and remove the dimension of
-      --  'From'.
+      --  Copy the dimension of 'From to 'To' and remove dimension of 'From'
 
       if Present (Dims) then
          Set_Dimensions (To, Dims);
@@ -2669,7 +2645,6 @@ package body Sem_Dim is
 
    procedure Remove_Dimensions (N : Node_Id) is
       Dims : constant Dimensions := Get_Dimensions (N);
-
    begin
       if Present (Dims) then
          Aspect_Dimension_Hash_Table.Remove (N);
@@ -2691,7 +2666,6 @@ package body Sem_Dim is
 
       if Present (Par_Ass) then
          Actual := First (Par_Ass);
-
          while Present (Actual) loop
             Remove_Dimensions (Actual);
             Next (Actual);
@@ -2740,7 +2714,6 @@ package body Sem_Dim is
       if S_Kind = N_Accept_Statement then
          declare
             Param : Node_Id := First (Parameter_Specifications (S));
-
          begin
             while Present (Param) loop
                Remove_Dimensions (Param);

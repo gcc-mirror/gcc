@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--            Copyright (C) 2011, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 --  Note that this package should only be instantiated with an integer
---  dimensioned type
+--  dimensioned type. Shouldn't this be checked ???
 
 --  This package is a generic package that provides IO facilities for integer
 --  dimensioned types.
@@ -46,26 +46,26 @@ generic
 
 package System.Dim_Integer_IO is
 
-   Default_Width : Field := Num_Dim_Integer'Width;
+   Default_Width : Field       := Num_Dim_Integer'Width;
    Default_Base  : Number_Base := 10;
 
    procedure Put
-     (File : File_Type;
-      Item : Num_Dim_Integer;
-      Unit : String := "";
-      Width : Field := Default_Width;
+     (File  : File_Type;
+      Item  : Num_Dim_Integer;
+      Unit  : String      := "";
+      Width : Field       := Default_Width;
       Base  : Number_Base := Default_Base);
 
    procedure Put
-     (Item : Num_Dim_Integer;
-      Unit : String := "";
-      Width : Field := Default_Width;
+     (Item  : Num_Dim_Integer;
+      Unit  : String      := "";
+      Width : Field       := Default_Width;
       Base  : Number_Base := Default_Base);
 
    procedure Put
-     (To   : out String;
-      Item : Num_Dim_Integer;
-      Unit : String := "";
+     (To    : out String;
+      Item  : Num_Dim_Integer;
+      Unit  : String      := "";
       Base  : Number_Base := Default_Base);
 
    pragma Inline (Put);

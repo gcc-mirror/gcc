@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--            Copyright (C) 2011, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 --  Note that this package should only be instantiated with a float dimensioned
---  type.
+--  type. Shouldn't this be checked???
 
 --  This package is a generic package that provides IO facilities for float
 --  dimensioned types.
@@ -54,23 +54,23 @@ package System.Dim_Float_IO is
      (File : File_Type;
       Item : Num_Dim_Float;
       Unit : String := "";
-      Fore : Field := Default_Fore;
-      Aft  : Field := Default_Aft;
-      Exp  : Field := Default_Exp);
+      Fore : Field  := Default_Fore;
+      Aft  : Field  := Default_Aft;
+      Exp  : Field  := Default_Exp);
 
    procedure Put
      (Item : Num_Dim_Float;
       Unit : String := "";
-      Fore : Field := Default_Fore;
-      Aft  : Field := Default_Aft;
-      Exp  : Field := Default_Exp);
+      Fore : Field  := Default_Fore;
+      Aft  : Field  := Default_Aft;
+      Exp  : Field  := Default_Exp);
 
    procedure Put
      (To   : out String;
       Item : Num_Dim_Float;
       Unit : String := "";
-      Aft  : Field := Default_Aft;
-      Exp  : Field := Default_Exp);
+      Aft  : Field  := Default_Aft;
+      Exp  : Field  := Default_Exp);
 
    pragma Inline (Put);
 

@@ -972,7 +972,13 @@ package body Sem_Cat is
          while Present (Item) loop
             if Nkind (Item) = N_With_Clause
               and then not (Implicit_With (Item)
-                              or else Limited_Present (Item))
+                              or else Limited_Present (Item)
+
+                              --  Skip if error already posted on the WITH
+                              --  clause (in which case the Name attribute
+                              --  may be invalid).
+
+                              or else Error_Posted (Item))
             then
                Entity_Of_Withed := Entity (Name (Item));
                Check_Categorization_Dependencies

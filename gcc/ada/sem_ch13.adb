@@ -2184,17 +2184,40 @@ package body Sem_Ch13 is
          U_Ent := Underlying_Type (Ent);
       end if;
 
-      --  Complete other routine error checks
+      --  Avoid cascaded error
 
       if Etype (Nam) = Any_Type then
          return;
+
+      --  Must be declared in current scope
 
       elsif Scope (Ent) /= Current_Scope then
          Error_Msg_N ("entity must be declared in this scope", Nam);
          return;
 
+      --  Must not be a source renaming (we do have some cases where the
+      --  expander generates a renaming, and those cases are OK, in such
+      --  cases any attribute applies to the renamed object as well.
+
+      elsif Is_Object (Ent)
+        and then Present (Renamed_Object (Ent))
+        and then Comes_From_Source (Renamed_Object (Ent))
+      then
+         Get_Name_String (Chars (N));
+         Error_Msg_Strlen := Name_Len;
+         Error_Msg_String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
+         Error_Msg_N
+           ("~ clause not allowed for a renaming declaration (RM 13.1(6))",
+            Nam);
+         return;
+
+      --  If no underlying entity, use entity itself, applies to some
+      --  previously detected error cases ???
+
       elsif No (U_Ent) then
          U_Ent := Ent;
+
+      --  Cannot specify for a subtype (exception Object/Value_Size)
 
       elsif Is_Type (U_Ent)
         and then not Is_First_Subtype (U_Ent)
@@ -2367,12 +2390,6 @@ package body Sem_Ch13 is
                   then
                      Error_Msg_N ("constant overlays a variable?", Expr);
 
-                  elsif Present (Renamed_Object (U_Ent)) then
-                     Error_Msg_N
-                       ("address clause not allowed"
-                          & " for a renaming declaration (RM 13.1(6))", Nam);
-                     return;
-
                   --  Imported variables can have an address clause, but then
                   --  the import is pretty meaningless except to suppress
                   --  initializations, so we do not need such variables to
@@ -2523,10 +2540,16 @@ package body Sem_Ch13 is
             elsif Align /= No_Uint then
                Set_Has_Alignment_Clause (U_Ent);
 
+               --  Tagged type case, check for attempt to set alignment to a
+               --  value greater than Max_Align, and reset if so.
+
                if Is_Tagged_Type (U_Ent) and then Align > Max_Align then
                   Error_Msg_N
                     ("?alignment for & set to Maximum_Aligment", Nam);
-                  Set_Alignment (U_Ent, Max_Align);
+                     Set_Alignment (U_Ent, Max_Align);
+
+               --  All other cases
+
                else
                   Set_Alignment (U_Ent, Align);
                end if;
@@ -6057,7 +6080,7 @@ package body Sem_Ch13 is
               Aspect_Type_Invariant    =>
             T := Standard_Boolean;
 
-         when Aspect_Dimension |
+         when Aspect_Dimension        |
               Aspect_Dimension_System =>
             raise Program_Error;
 
@@ -8792,8 +8815,8 @@ package body Sem_Ch13 is
             Source : constant Entity_Id  := T.Source;
             Target : constant Entity_Id  := T.Target;
 
-            Source_Siz    : Uint;
-            Target_Siz    : Uint;
+            Source_Siz : Uint;
+            Target_Siz : Uint;
 
          begin
             --  This validation check, which warns if we have unequal sizes for

@@ -1,3 +1,24 @@
+2011-12-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_ch5.adb, s-diinio.adb, s-diinio.ads, sem_dim.adb,
+	sem_dim.ads, sem_res.adb, s-stposu.adb, s-stposu.ads, sem_ch4.adb,
+	s-diflio.adb, s-diflio.ads, exp_disp.adb, s-llflex.ads: Minor
+	reformatting.
+	* aspects.ads: Dimension[_Aspects] are GNAT defined.
+
+2011-12-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Check
+	renaming case.
+
+2011-12-20  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_cat.adb, sem_ch10.adb (Analyze_With_Clause): For a WITH clause on
+	a child unit that is an illegal instantiation, mark the WITH clause in
+	error.
+	(Install_Siblings, Validate_Categorization_Dependency): Guard
+	against WITH clause marked as in error.
+
 2011-12-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_res.adb (Resolve_Allocator): Warning on allocation

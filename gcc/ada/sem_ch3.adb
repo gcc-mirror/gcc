@@ -2037,6 +2037,7 @@ package body Sem_Ch3 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
+
       Analyze_Dimension (N);
    end Analyze_Component_Declaration;
 
@@ -3780,6 +3781,7 @@ package body Sem_Ch3 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
+
       Analyze_Dimension (N);
    end Analyze_Object_Declaration;
 
@@ -4579,6 +4581,7 @@ package body Sem_Ch3 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
+
       Analyze_Dimension (N);
    end Analyze_Subtype_Declaration;
 

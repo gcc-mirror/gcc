@@ -6045,12 +6045,13 @@ package body Sem_Ch4 is
                  and then Is_Dimensioned_Type (Etype (L))
                then
                   Error_Msg_NE
-                    ("exponent for dimensioned type must be a Rational" &
+                    ("exponent for dimensioned type must be a rational" &
                      ", found}", R, Etype (R));
                else
                   Error_Msg_NE
                     ("exponent must be of type Natural, found}", R, Etype (R));
                end if;
+
                return;
             end if;
 
