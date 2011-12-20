@@ -1,5 +1,31 @@
 2011-12-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_ch11.adb (Find_Local_Handler): Guard the
+	search over individual exception choices in case the list of
+	handlers contains other (possibly illegal) constructs.
+
+2011-12-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch8.adb (Find_Type): Test taggedness
+	of the Available_Type when checking for an illegal use of an
+	incomplete type, when the incomplete view is a limited view of
+	a type. Remove redundant Is_Tagged test.
+
+2011-12-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb: Add with and use clause for Aspects.
+	(Is_Finalizable_Transient): Objects which denote Ada containers
+	in the context of iterators are not considered transients. Such
+	object must live for as long as the loop is around.
+	(Is_Iterated_Container): New routine.
+
+2011-12-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_imgv.adb (Expand_Width_Attribute): Add a
+	type conversion from the enumeration subtype to its base subtype.
+
+2011-12-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch4.adb (Operator_Check): Update the call to
 	Is_Dimensioned_Type.
 	* sem_dim.adb: Remove with and use clause for Namet.Sp. Reorganize
