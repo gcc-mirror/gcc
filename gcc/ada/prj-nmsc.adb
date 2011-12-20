@@ -2855,8 +2855,8 @@ package body Prj.Nmsc is
                         Continuation := Continuation_String'Access;
                      end if;
 
-                  elsif (not Unchecked_Shared_Lib_Imports)
-                        and then Project.Library_Kind /= Static
+                  elsif not Unchecked_Shared_Lib_Imports
+                    and then Project.Library_Kind /= Static
                   then
                      Error_Msg
                        (Data.Flags,
@@ -3145,7 +3145,6 @@ package body Prj.Nmsc is
 
             when others =>
                null;
-
          end case;
       end if;
 
@@ -3405,7 +3404,6 @@ package body Prj.Nmsc is
                   Imported_Project_List := Imported_Project_List.Next;
                end loop;
             end if;
-
          end if;
       end if;
 

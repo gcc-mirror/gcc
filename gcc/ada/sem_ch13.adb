@@ -2216,19 +2216,35 @@ package body Sem_Ch13 is
 
       --  Must not be a source renaming (we do have some cases where the
       --  expander generates a renaming, and those cases are OK, in such
-      --  cases any attribute applies to the renamed object as well.
+      --  cases any attribute applies to the renamed object as well).
 
       elsif Is_Object (Ent)
         and then Present (Renamed_Object (Ent))
-        and then Comes_From_Source (Renamed_Object (Ent))
       then
-         Get_Name_String (Chars (N));
-         Error_Msg_Strlen := Name_Len;
-         Error_Msg_String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
-         Error_Msg_N
-           ("~ clause not allowed for a renaming declaration (RM 13.1(6))",
-            Nam);
-         return;
+         --  Case of renamed object from source, this is an error
+
+         if Comes_From_Source (Renamed_Object (Ent)) then
+            Get_Name_String (Chars (N));
+            Error_Msg_Strlen := Name_Len;
+            Error_Msg_String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
+            Error_Msg_N
+              ("~ clause not allowed for a renaming declaration "
+               & "(RM 13.1(6))", Nam);
+            return;
+
+         --  For the case of a compiler generated renaming, the attribute
+         --  definition clause applies to the renamed object created by the
+         --  expander. The easiest general way to handle this is to create a
+         --  copy of the attribute definition clause for this object.
+
+         else
+            Insert_Action (N,
+              Make_Attribute_Definition_Clause (Loc,
+                Name       =>
+                  New_Occurrence_Of (Entity (Renamed_Object (Ent)), Loc),
+                Chars      => Chars (N),
+                Expression => Duplicate_Subexpr (Expression (N))));
+         end if;
 
       --  If no underlying entity, use entity itself, applies to some
       --  previously detected error cases ???
@@ -7812,12 +7828,21 @@ package body Sem_Ch13 is
    --  Start of processing for Rep_Item_Too_Late
 
    begin
-      --  First make sure entity is not frozen (RM 13.1(9)). Exclude imported
-      --  types, which may be frozen if they appear in a representation clause
-      --  for a local type.
+      --  First make sure entity is not frozen (RM 13.1(9))
 
       if Is_Frozen (T)
+
+        --  Exclude imported types, which may be frozen if they appear in a
+        --  representation clause for a local type.
+
         and then not From_With_Type (T)
+
+        --  Exclude generated entitiesa (not coming from source). The common
+        --  case is when we generate a renaming which prematurely freezes the
+        --  renamed internal entity, but we still want to be able to set copies
+        --  of attribute values such as Size/Alignment.
+
+        and then Comes_From_Source (T)
       then
          Too_Late;
          S := First_Subtype (T);
