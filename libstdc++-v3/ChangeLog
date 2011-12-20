@@ -1,5 +1,10 @@
 2011-12-19  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* libsupc++/eh_tm.cc (free_any_cxa_exception): Use
+	__GCC_ATOMIC_INT_LOCK_FREE, not _GLIBCXX_ATOMIC_BUILTINS_4.
+
+2011-12-19  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* testsuite/performance/25_algorithms/search_n.cc: Disambiguate
 	local variable.
 
