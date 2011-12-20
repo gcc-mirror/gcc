@@ -1,3 +1,10 @@
+2011-12-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51365
+	* include/std/tuple (_Tuple_impl): Check __is_final as well as
+	is_empty.
+	* testsuite/20_util/tuple/51365.cc: New.
+
 2011-12-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* libsupc++/eh_tm.cc (free_any_cxa_exception): Use

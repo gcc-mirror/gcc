@@ -69,7 +69,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __add_r_ref<_Tp&>
     { typedef _Tp& type; };
 
-  template<std::size_t _Idx, typename _Head, bool _IsEmpty>
+  template<std::size_t _Idx, typename _Head, bool _IsEmptyNotFinal>
     struct _Head_base;
 
   template<std::size_t _Idx, typename _Head>
@@ -201,6 +201,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void _M_swap(_Tuple_impl&) noexcept { /* no-op */ }
     };
 
+  // Use the Empty Base-class Optimization for empty, non-final types.
+  template<typename _Tp>
+    using __empty_not_final
+      = typename conditional<__is_final(_Tp), false_type, is_empty<_Tp>>::type;
+
   /**
    * Recursive tuple implementation. Here we store the @c Head element
    * and derive from a @c Tuple_impl containing the remaining elements
@@ -209,12 +214,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<std::size_t _Idx, typename _Head, typename... _Tail>
     struct _Tuple_impl<_Idx, _Head, _Tail...>
     : public _Tuple_impl<_Idx + 1, _Tail...>,
-      private _Head_base<_Idx, _Head, std::is_empty<_Head>::value>
+      private _Head_base<_Idx, _Head, __empty_not_final<_Head>::value>
     {
       template<std::size_t, typename...> friend class _Tuple_impl;
 
       typedef _Tuple_impl<_Idx + 1, _Tail...> _Inherited;
-      typedef _Head_base<_Idx, _Head, std::is_empty<_Head>::value> _Base;
+      typedef _Head_base<_Idx, _Head, __empty_not_final<_Head>::value> _Base;
 
       static constexpr _Head&  
       _M_head(_Tuple_impl& __t) noexcept { return _Base::_M_head(__t); }
