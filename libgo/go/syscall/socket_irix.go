@@ -74,54 +74,46 @@ func BindToDevice(fd int, device string) (err error) {
 	return ENOSYS
 }
 
-// struct ip_mreg is provived in <netinet/in.h>, but protected with _SGIAPI.
-// This could be enabled with -D_SGI_SOURCE, but conflicts with
-// -D_XOPEN_SOURCE=500 required for msg_control etc. in struct msghgr, so
-// simply provide it here.
-type IPMreq struct {
-	Multiaddr [4]byte
-	Interface [4]byte
-}
-
-// Similarly, <netdb.h> only provides struct addrinfo, AI_* and EAI_* if
-// _NO_XOPEN4 && _NO_XOPEN5.
+// <netdb.h> only provides struct addrinfo, AI_* and EAI_* if  _NO_XOPEN4
+// && _NO_XOPEN5, but -D_XOPEN_SOURCE=500 is required for msg_control etc.
+// in struct msghgr, so simply provide them here.
 type Addrinfo struct {
-	Ai_flags int32
-	Ai_family int32
-	Ai_socktype int32
-	Ai_protocol int32
-	Ai_addrlen int32
+	Ai_flags     int32
+	Ai_family    int32
+	Ai_socktype  int32
+	Ai_protocol  int32
+	Ai_addrlen   int32
 	Ai_canonname *uint8
-	Ai_addr *_sockaddr
-	Ai_next *Addrinfo
+	Ai_addr      *_sockaddr
+	Ai_next      *Addrinfo
 }
 
 const (
-	AI_PASSIVE	= 0x00000001
-	AI_CANONNAME	= 0x00000002
-	AI_NUMERICHOST	= 0x00000004
-	AI_NUMERICSERV	= 0x00000008
-	AI_ALL		= 0x00000100
-	AI_ADDRCONFIG	= 0x00000400
-	AI_V4MAPPED	= 0x00000800
-	AI_DEFAULT	= (AI_V4MAPPED | AI_ADDRCONFIG)
+	AI_PASSIVE     = 0x00000001
+	AI_CANONNAME   = 0x00000002
+	AI_NUMERICHOST = 0x00000004
+	AI_NUMERICSERV = 0x00000008
+	AI_ALL         = 0x00000100
+	AI_ADDRCONFIG  = 0x00000400
+	AI_V4MAPPED    = 0x00000800
+	AI_DEFAULT     = (AI_V4MAPPED | AI_ADDRCONFIG)
 )
 
 const (
-	EAI_ADDRFAMILY	=  1
-	EAI_AGAIN	=  2
-	EAI_BADFLAGS	=  3
-	EAI_FAIL	=  4
-	EAI_FAMILY	=  5
-	EAI_MEMORY	=  6
-	EAI_NODATA	=  7
-	EAI_NONAME	=  8
-	EAI_SERVICE	=  9
-	EAI_SOCKTYPE	= 10
-	EAI_SYSTEM	= 11
-	EAI_BADHINTS	= 12
-	EAI_OVERFLOW	= 13
-	EAI_MAX		= 14
+	EAI_ADDRFAMILY = 1
+	EAI_AGAIN      = 2
+	EAI_BADFLAGS   = 3
+	EAI_FAIL       = 4
+	EAI_FAMILY     = 5
+	EAI_MEMORY     = 6
+	EAI_NODATA     = 7
+	EAI_NONAME     = 8
+	EAI_SERVICE    = 9
+	EAI_SOCKTYPE   = 10
+	EAI_SYSTEM     = 11
+	EAI_BADHINTS   = 12
+	EAI_OVERFLOW   = 13
+	EAI_MAX        = 14
 )
 
 func anyToSockaddrOS(rsa *RawSockaddrAny) (Sockaddr, error) {
