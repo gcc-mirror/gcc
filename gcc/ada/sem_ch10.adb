@@ -2681,8 +2681,8 @@ package body Sem_Ch10 is
             pragma Assert (Serious_Errors_Detected /= 0);
 
             --  Mark the node to indicate that a related error has been posted.
-            --  This defends further compilation passes against cascaded errors
-            --  caused by the invalid WITH clause node.
+            --  This defends further compilation passes against improper use of
+            --  the invalid WITH clause node.
 
             Set_Error_Posted (N);
             Set_Name (N, Error);

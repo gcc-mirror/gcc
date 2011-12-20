@@ -976,7 +976,10 @@ package body Sem_Cat is
 
                               --  Skip if error already posted on the WITH
                               --  clause (in which case the Name attribute
-                              --  may be invalid).
+                              --  may be invalid). In particular, this fixes
+                              --  the problem of hanging in the presence of a
+                              --  WITH clause on a child that is an illegal
+                              --  generic instantiation.
 
                               or else Error_Posted (Item))
             then
