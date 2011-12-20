@@ -1,3 +1,9 @@
+2011-12-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51621
+	* tree.c (diagnose_non_constexpr_vec_init): For value initialization
+	pass void_type_node, not void_zero_node, to build_vec_init_elt.
+
 2011-12-20  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/49951

@@ -1,3 +1,8 @@
+2011-12-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51621
+	* g++.dg/cpp0x/constexpr-ice5.C: New.
+
 2011-12-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c11-version-1.c, gcc.dg/c11-version-2.c,
