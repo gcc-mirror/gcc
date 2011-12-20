@@ -2304,10 +2304,13 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
   from_mode = TYPE_MODE (type1);
   from_unsigned1 = TYPE_UNSIGNED (type1);
   from_unsigned2 = TYPE_UNSIGNED (type2);
+  optype = type1;
 
   /* There's no such thing as a mixed sign madd yet, so use a wider mode.  */
   if (from_unsigned1 != from_unsigned2)
     {
+      if (!INTEGRAL_TYPE_P (type))
+	return false;
       /* We can use a signed multiply with unsigned types as long as
 	 there is a wider mode to use, or it is the smaller of the two
 	 types that is unsigned.  Note that type1 >= type2, always.  */
@@ -2322,6 +2325,8 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
 	}
 
       from_unsigned1 = from_unsigned2 = false;
+      optype = build_nonstandard_integer_type (GET_MODE_PRECISION (from_mode),
+					       false);
     }
 
   /* If there was a conversion between the multiply and addition
@@ -2355,7 +2360,6 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
   /* Verify that the machine can perform a widening multiply
      accumulate in this mode/signedness combination, otherwise
      this transformation is likely to pessimize code.  */
-  optype = build_nonstandard_integer_type (from_mode, from_unsigned1);
   this_optab = optab_for_tree_code (wmult_code, optype, optab_default);
   handler = find_widening_optab_handler_and_mode (this_optab, to_mode,
 						  from_mode, 0, &actual_mode);

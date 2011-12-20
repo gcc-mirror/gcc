@@ -1,3 +1,9 @@
+2011-12-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* tree-ssa-math-opts.c (convert_plusminus_to_widen): Restrict
+	handling of signedness differences to integer types.  Only build
+	a new optype if type1 isn't correct.
+
 2011-12-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/49865
