@@ -1,3 +1,9 @@
+2011-12-20  Ian Lance Taylor  <iant@google.com>
+
+	* config/i386/morestack.S (__morestack_non_split): If there is
+	enough stack space already, don't split.  Ask for more stack space
+	than we required.
+
 2011-12-20  Sergio Durigan Junior  <sergiodj@redhat.com>
 
 	* unwind-arm-common.inc: Include `tconfig.h', `tsystem.h' and
