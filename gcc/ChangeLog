@@ -1,3 +1,8 @@
+2011-12-20  Tristan Gingold  <gingold@adacore.com>
+
+	* config/alpha/alpha.c (alpha_start_function): Adjust condition to
+	create VMS trampoline entry point.
+
 2011-12-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR rtl-optimization/42839

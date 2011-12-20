@@ -7935,7 +7935,8 @@ alpha_start_function (FILE *file, const char *fnname,
    if (TARGET_ABI_OPEN_VMS
        && !TREE_PUBLIC (decl)
        && DECL_CONTEXT (decl)
-       && !TYPE_P (DECL_CONTEXT (decl)))
+       && !TYPE_P (DECL_CONTEXT (decl))
+       && TREE_CODE (DECL_CONTEXT (decl)) != TRANSLATION_UNIT_DECL)
      {
 	strcpy (tramp_label, fnname);
 	strcat (tramp_label, "..tr");
