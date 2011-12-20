@@ -251,7 +251,6 @@ package body Warnsw is
             Constant_Condition_Warnings         := True;
             Implementation_Unit_Warnings        := True;
             Ineffective_Inline_Warnings         := True;
-            List_Inherited_Aspects              := True;
             Warn_On_Ada_2005_Compatibility      := True;
             Warn_On_Ada_2012_Compatibility      := True;
             Warn_On_Assertion_Failure           := True;

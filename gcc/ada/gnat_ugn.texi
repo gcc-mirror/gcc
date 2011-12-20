@@ -5093,6 +5093,7 @@ switch are
 @option{-gnatwh} (hiding),
 @option{-gnatw.h} (holes (gaps) in record layouts)
 @option{-gnatwl} (elaboration warnings),
+@option{-gnatw.l} (inherited aspects),
 @option{-gnatw.o} (warn on values set by out parameters ignored)
 and @option{-gnatwt} (tracking of deleted conditional code).
 All other optional warnings are turned on.
@@ -5423,6 +5424,19 @@ This warning is not automatically turned on by the use of @option{-gnatwa}.
 This switch suppresses warnings on missing Elaborate and Elaborate_All pragmas.
 See the section in this guide on elaboration checking for details on
 when such pragmas should be used.
+
+@item -gnatw.l
+@emph{List inherited aspects.}
+@cindex @option{-gnatw.l} (@command{gcc})
+This switch causes the compiler to list inherited invariants,
+preconditions, and postconditions from Invariant'Class, Pre'Class, and
+Post'Class aspects. Also list inherited subtype predicates.
+These messages are not automatically turned on by the use of @option{-gnatwa}.
+
+@item -gnatw.L
+@emph{Suppress listing of inherited aspects.}
+@cindex @option{-gnatw.L} (@command{gcc})
+This switch suppresses listing of inherited aspects.
 
 @item -gnatwm
 @emph{Activate warnings on modified but unreferenced variables.}
