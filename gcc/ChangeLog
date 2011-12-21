@@ -1,3 +1,8 @@
+2011-12-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Enable flag_ree
+	also for 32bit targets.
+
 2011-12-21  Richard Henderson  <rth@redhat.com>
 
 	PR target/51552

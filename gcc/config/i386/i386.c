@@ -3445,12 +3445,14 @@ ix86_option_override_internal (bool main_args_p)
 #define USE_X86_64_FRAME_POINTER 0
 #endif
 
+  /* Enable redundant extension instructions removal at -O2 and higher.  */
+  if (optimize >= 2 && !global_options_set.x_flag_ree)
+    flag_ree = 1;
+
   /* Set the default values for switches whose default depends on TARGET_64BIT
      in case they weren't overwritten by command line options.  */
   if (TARGET_64BIT)
     {
-      if (optimize > 1 && !global_options_set.x_flag_ree)
-	flag_ree = 1;
       if (optimize >= 1 && !global_options_set.x_flag_omit_frame_pointer)
 	flag_omit_frame_pointer = !USE_X86_64_FRAME_POINTER;
       if (flag_asynchronous_unwind_tables == 2)
