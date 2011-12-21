@@ -1,5 +1,15 @@
 2011-12-21  Uros Bizjak  <ubizjak@gmail.com>
 
+	Backport from mainline
+	2011-12-21  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41159
+	* tree-outof-ssa.c (insert_value_copy_on_edge): Use the
+	mode of the pseudo as destination mode.  Only assert that
+	is equal to the promoted mode of the decl if it is a REG.
+
+2011-12-21  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/alpha/linux-unwind.h: Update copyright years.
 	(MD_FROB_UPDATE_CONTEXT): New define.
 	(alpha_frob_update_context): New function.
