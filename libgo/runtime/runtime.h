@@ -52,6 +52,7 @@ typedef	struct	G		G;
 typedef	union	Lock		Lock;
 typedef	struct	M		M;
 typedef	union	Note		Note;
+typedef	struct	SigTab		SigTab;
 typedef	struct	MCache		MCache;
 typedef struct	FixAlloc	FixAlloc;
 typedef	struct	Hchan		Hchan;
@@ -179,6 +180,20 @@ struct	M
 	uint32	waitsemalock;
 };
 
+struct	SigTab
+{
+	int32	sig;
+	int32	flags;
+};
+enum
+{
+	SigCatch = 1<<0,
+	SigIgnore = 1<<1,
+	SigRestart = 1<<2,
+	SigQueue = 1<<3,
+	SigPanic = 1<<4,
+};
+
 /* Macros.  */
 
 #ifdef __WINDOWS__
@@ -251,7 +266,7 @@ void	runtime_args(int32, byte**);
 void	runtime_osinit();
 void	runtime_goargs(void);
 void	runtime_goenvs(void);
-void	runtime_throw(const char*);
+void	runtime_throw(const char*) __attribute__ ((noreturn));
 void	runtime_panicstring(const char*) __attribute__ ((noreturn));
 void*	runtime_mal(uintptr);
 void	runtime_schedinit(void);

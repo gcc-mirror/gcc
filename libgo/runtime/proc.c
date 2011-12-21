@@ -29,6 +29,11 @@ extern void * __splitstack_resetcontext(void *context[10], size_t *);
 extern void *__splitstack_find(void *, void *, size_t *, void **, void **,
 			       void **);
 
+extern void __splitstack_block_signals (int *, int *);
+
+extern void __splitstack_block_signals_context (void *context[10], int *,
+						int *);
+
 #endif
 
 #if defined(USING_SPLIT_STACK) && defined(LINKER_SUPPORTS_SPLIT_STACK)
@@ -862,6 +867,14 @@ runtime_mstart(void* mp)
 		*(int*)0x21 = 0x21;
 	}
 	runtime_minit();
+
+#ifdef USING_SPLIT_STACK
+	{
+	  int dont_block_signals = 0;
+	  __splitstack_block_signals(&dont_block_signals, nil);
+	}
+#endif
+
 	schedule(nil);
 	return nil;
 }
@@ -1142,9 +1155,13 @@ runtime_malg(int32 stacksize, byte** ret_stack, size_t* ret_stacksize)
 	newg = runtime_malloc(sizeof(G));
 	if(stacksize >= 0) {
 #if USING_SPLIT_STACK
+		int dont_block_signals = 0;
+
 		*ret_stack = __splitstack_makecontext(stacksize,
 						      &newg->stack_context[0],
 						      ret_stacksize);
+		__splitstack_block_signals_context(&newg->stack_context[0],
+						   &dont_block_signals, nil);
 #else
 		*ret_stack = runtime_mallocgc(stacksize, FlagNoProfiling|FlagNoGC, 0, 0);
 		*ret_stacksize = stacksize;
@@ -1186,8 +1203,12 @@ __go_go(void (*fn)(void*), void* arg)
 
 	if((newg = gfget()) != nil){
 #ifdef USING_SPLIT_STACK
+		int dont_block_signals = 0;
+
 		sp = __splitstack_resetcontext(&newg->stack_context[0],
 					       &spsize);
+		__splitstack_block_signals_context(&newg->stack_context[0],
+						   &dont_block_signals, nil);
 #else
 		sp = newg->gcinitial_sp;
 		spsize = newg->gcstack_size;
