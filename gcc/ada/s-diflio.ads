@@ -29,9 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Note that this package should only be instantiated with a float dimensioned
---  type. Shouldn't this be checked???
-
 --  This package is a generic package that provides IO facilities for float
 --  dimensioned types.
 

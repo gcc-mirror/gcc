@@ -8013,20 +8013,13 @@ package body Sem_Res is
 
       Analyze_Dimension (N);
 
-      --  Evaluate the exponentiation operator for dimensioned type with
-      --  rational exponent.
-
       if Ada_Version >= Ada_2012 and then Has_Dimension_System (B_Typ) then
+         --  Evaluate the exponentiation operator for dimensioned type
+
          Eval_Op_Expon_For_Dimensioned_Type (N, B_Typ);
-
-         --  Skip the Eval_Op_Expon if the node has already been evaluated
-
-         if Nkind (N) = N_Type_Conversion then
-            return;
-         end if;
+      else
+         Eval_Op_Expon (N);
       end if;
-
-      Eval_Op_Expon (N);
 
       --  Set overflow checking bit. Much cleverer code needed here eventually
       --  and perhaps the Resolve routines should be separated for the various

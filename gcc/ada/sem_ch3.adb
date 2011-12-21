@@ -2092,11 +2092,6 @@ package body Sem_Ch3 is
          --  Complete analysis of declaration
 
          Analyze (D);
-
-         --  Removal of the dimension in the expression for object & component
-         --  declaration.
-
-         Remove_Dimension_In_Declaration (D);
          Next_Node := Next (D);
 
          if No (Freeze_From) then

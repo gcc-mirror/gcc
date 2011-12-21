@@ -16360,12 +16360,12 @@ imported from Ada units outside of the library. If other units are imported,
 the binding phase will fail.
 
 @noindent
-It is also possible to build a fully standalone library where not only
+It is also possible to build a fully stand-alone library where not only
 the code to elaborate and finalize the library is embedded but also
 ensuring that the library is linked only against static
-libraries. So a fully standalone library only depends on system
+libraries. So a fully stand-alone library only depends on system
 libraries, all other code, including the GNAT runtime, is embedded. To
-build a fully standalone library the attribute
+build a fully stand-alone library the attribute
 @code{Library_Standalone} must be set to @code{full}:
 
 @smallexample @c projectfile
@@ -16379,7 +16379,7 @@ build a fully standalone library the attribute
 
 @noindent
 The default value for this attribute is @code{standard} in which case
-a not fully standalone library is built.
+a not fully stand-alone library is built.
 
 The attribute @code{Library_Src_Dir} may be specified for a
 Stand-Alone Library. @code{Library_Src_Dir} is a simple attribute that has a
@@ -18530,7 +18530,7 @@ g++ -c -fdump-ada-spec -DXLIB_ILLEGAL_ACCESS -C /usr/include/X11/Xlib.h
 The above will generate more complete bindings than a straight call without
 the @option{-DXLIB_ILLEGAL_ACCESS} switch.
 
-In other cases, it is not possible to parse a header file in a stand alone
+In other cases, it is not possible to parse a header file in a stand-alone
 manner, because other include files need to be included first. In this
 case, the solution is to create a small header file including the needed
 @code{#include} and possible @code{#define} directives. For example, to

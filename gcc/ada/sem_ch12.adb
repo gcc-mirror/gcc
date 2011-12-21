@@ -54,6 +54,7 @@ with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch13; use Sem_Ch13;
+with Sem_Dim;  use Sem_Dim;
 with Sem_Disp; use Sem_Disp;
 with Sem_Elab; use Sem_Elab;
 with Sem_Elim; use Sem_Elim;
@@ -3785,6 +3786,23 @@ package body Sem_Ch12 is
       end if;
 
       Style_Check := Save_Style_Check;
+
+      --  Check that if N is an instantiation of System.Dim_Float_IO or
+      --  System.Dim_Integer_IO, the formal type has a dimension system.
+
+      if Nkind (N) = N_Package_Instantiation
+        and then Is_Dim_IO_Package_Instantiation (N)
+      then
+         declare
+            Assoc : constant Node_Id := First (Generic_Associations (N));
+
+         begin
+            if not Has_Dimension_System
+                     (Etype (Explicit_Generic_Actual_Parameter (Assoc))) then
+               Error_Msg_N ("type with a dimension system expected", Assoc);
+            end if;
+         end;
+      end if;
 
    <<Leave>>
       if Has_Aspects (N) then

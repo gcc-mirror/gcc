@@ -1,3 +1,46 @@
+2011-12-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat_ugn.texi: Minor reformatting.
+
+2011-12-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop): The cursor operation
+	Has_Element is the formal of Iterator_Interfaces, and within
+	the instantion of this package it is a renaming of some local
+	function with an unrelated name. Retrieve the operation from
+	the instance itself, not from the container package.
+
+2011-12-21  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Expand_Put_Call_With_Dimension_String
+	replaced by Expand_Put_Call_With_Dimension_Symbol
+	* sem_ch12.adb (Analyze_Package_Instantiation): New check for
+	System.Dim_Float_IO and System.Dim_Integer_IO instantiation.
+	* sem_ch3.adb (Analyze_Declarations): Removed
+	Remove_Dimension_In_Declaration call.
+	* sem_dim.adb: Update comments. Redefine the
+	representation of a Rational. Propagate all changes involving
+	data structures and types throughout the pakage. Output the
+	dimension aggregates for each error messages.
+	("/"): Rational constructor "/" removed for Whole operands.
+	("/"): New rational operation "/" for Rational operands.
+	("*"): Operation "*" between Rational and Int removed.
+	("abs"): New unary operator "abs" for Rational.
+	(Analyze_Aspect_Dimension_System): Reorganized.
+	(Analyze_Dimension_Identifier): Removed.
+	(Copy_Dimensions): Removed.
+	(Create_Rational_From_Expr): New Boolean parameter.
+	(Dimensions_Msg_Of): New routine. Return
+	a string with the dimensions of the parameter.
+	(From_Dimension_To_String_Of_Symbols): Renaming of
+	From_Dimension_To_String_Id.
+	* sem_dim.ads: Update comments.
+	(Is_Dim_IO_Package_Instantiation): New routine.
+	(Remove_Dimension_In_Declaration): Removed.
+	* sem_res.adb (Resolve_Op_Expon): Reorganized calls of
+	Eval_Op_Expon_For_Dimensioned_Type and Eval_Op_Expon.
+	* s-diflio.ads, s-diinio.ads: Update comments.
+
 2011-12-21  Pascal Obry  <obry@adacore.com>
 
 	* prj-attr.adb, snames.ads-tmpl: Add Library_Standalone,
