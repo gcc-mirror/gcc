@@ -85,6 +85,12 @@ pragma Style_Checks ("M32766");
  **/
 #define _XOPEN_SOURCE 500
 
+#elif defined (__alpha__) && defined (__osf__)
+/** For Tru64 UNIX, _XOPEN_SOURCE must be defined, otherwise CLOCK_REALTIME
+ ** is not defined.
+ **/
+#define _XOPEN_SOURCE 500
+
 #elif defined (__mips) && defined (__sgi)
 /** For IRIX 6, _XOPEN5 must be defined and _XOPEN_IOV_MAX must be used as
  ** IOV_MAX, otherwise IOV_MAX is not defined.  IRIX 5 has neither.
