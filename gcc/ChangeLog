@@ -1,3 +1,8 @@
+2011-12-20  Richard Henderson  <rth@redhat.com>
+
+	* config/arm/arm.md (*arm_cmpdi_unsigned): Enable for thumb2.
+	* config/arm/arm.c (arm_select_cc_mode): Use it.
+
 2011-12-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* tree-ssa-math-opts.c (convert_plusminus_to_widen): Restrict
