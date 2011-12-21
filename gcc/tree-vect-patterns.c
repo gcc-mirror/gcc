@@ -900,6 +900,8 @@ vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
   loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (vinfo_for_stmt (stmt));
   struct loop *loop = LOOP_VINFO_LOOP (loop_info);
 
+  *op0 = NULL_TREE;
+  *op1 = NULL_TREE;
   *new_def_stmt = NULL;
 
   if (!is_gimple_assign (stmt))
