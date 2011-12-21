@@ -1,3 +1,10 @@
+2011-12-21  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-into-ssa.c (rewrite_update_stmt): Do not dump extra newlines.
+	(rewrite_update_enter_block): Likewise.
+	(dump_update_ssa): Likewise.
+	(update_ssa): Likewise but also dump a newline at the beginning.
+
 2011-12-21  Enkovich Ilya  <ilya.enkovich@intel.com>
 
 	PR target/50038

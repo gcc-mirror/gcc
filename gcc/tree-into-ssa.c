@@ -2051,7 +2051,6 @@ rewrite_update_stmt (gimple stmt, gimple_stmt_iterator gsi)
     {
       fprintf (dump_file, "Updating SSA information for statement ");
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-      fprintf (dump_file, "\n");
     }
 
   /* Rewrite USES included in OLD_SSA_NAMES and USES whose underlying
@@ -2199,7 +2198,7 @@ rewrite_update_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
   gimple_stmt_iterator gsi;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\n\nRegistering new PHI nodes in block #%d\n\n",
+    fprintf (dump_file, "Registering new PHI nodes in block #%d\n",
 	     bb->index);
 
   /* Mark the unwind point for this block.  */
@@ -2848,22 +2847,21 @@ dump_update_ssa (FILE *file)
 
   if (!bitmap_empty_p (SYMS_TO_RENAME (cfun)))
     {
-      fprintf (file, "\n\nSymbols to be put in SSA form\n\n");
+      fprintf (file, "\nSymbols to be put in SSA form\n");
       dump_decl_set (file, SYMS_TO_RENAME (cfun));
       fprintf (file, "\n");
     }
 
   if (names_to_release && !bitmap_empty_p (names_to_release))
     {
-      fprintf (file, "\n\nSSA names to release after updating the SSA web\n\n");
+      fprintf (file, "\nSSA names to release after updating the SSA web\n\n");
       EXECUTE_IF_SET_IN_BITMAP (names_to_release, 0, i, bi)
 	{
 	  print_generic_expr (file, ssa_name (i), 0);
 	  fprintf (file, " ");
 	}
+      fprintf (file, "\n");
     }
-
-  fprintf (file, "\n\n");
 }
 
 
@@ -3342,6 +3340,9 @@ update_ssa (unsigned update_flags)
 
   timevar_push (TV_TREE_SSA_INCREMENTAL);
 
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "\nUpdating SSA:\n");
+
   if (!update_ssa_initialized_fn)
     init_update_ssa (cfun);
   gcc_assert (update_ssa_initialized_fn == cfun);
@@ -3506,14 +3507,14 @@ update_ssa (unsigned update_flags)
 
       dump_update_ssa (dump_file);
 
-      fprintf (dump_file, "Incremental SSA update started at block: %d\n\n",
+      fprintf (dump_file, "Incremental SSA update started at block: %d\n",
 	       start_bb->index);
 
       c = 0;
       EXECUTE_IF_SET_IN_BITMAP (blocks_to_update, 0, i, bi)
 	c++;
       fprintf (dump_file, "Number of blocks in CFG: %d\n", last_basic_block);
-      fprintf (dump_file, "Number of blocks to update: %d (%3.0f%%)\n\n",
+      fprintf (dump_file, "Number of blocks to update: %d (%3.0f%%)\n",
 	       c, PERCENT (c, last_basic_block));
 
       if (dump_flags & TDF_DETAILS)
