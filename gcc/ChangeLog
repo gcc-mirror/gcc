@@ -1,3 +1,10 @@
+2011-12-21  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41159
+	* tree-outof-ssa.c (insert_value_copy_on_edge): Use the
+	mode of the pseudo as destination mode.  Only assert that
+	is equal to the promoted mode of the decl if it is a REG.
+
 2011-12-21  Tristan Gingold  <gingold@adacore.com>
 
 	* config/vms/xm-vms.h (STANDARD_EXEC_PREFIX): Remove define.
