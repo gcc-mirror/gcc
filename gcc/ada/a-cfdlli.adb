@@ -253,10 +253,11 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       Capacity : Count_Type := 0) return List
    is
       C : constant Count_Type := Count_Type'Max (Source.Capacity, Capacity);
-      N : Count_Type := 1;
+      N : Count_Type;
       P : List (C);
 
    begin
+      N := 1;
       while N <= Source.Capacity loop
          P.Nodes (N).Prev := Source.Nodes (N).Prev;
          P.Nodes (N).Next := Source.Nodes (N).Next;
@@ -604,12 +605,12 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          Node  : Count_Type := Container.First;
 
       begin
-         for I in 2 .. Container.Length loop
+         for J in 2 .. Container.Length loop
             if Nodes (Nodes (Node).Next).Element < Nodes (Node).Element then
                return False;
+            else
+               Node := Nodes (Node).Next;
             end if;
-
-            Node := Nodes (Node).Next;
          end loop;
 
          return True;
@@ -749,7 +750,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
             end if;
          end Sort;
 
-         --  Start of processing for Sort
+      --  Start of processing for Sort
 
       begin
          if Container.Length <= 1 then
@@ -799,7 +800,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       J : Count_Type;
 
    begin
-
       if Before.Node /= 0 then
          pragma Assert (Vet (Container, Before), "bad cursor in Insert");
       end if;
@@ -848,7 +848,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       J : Count_Type;
 
    begin
-
       if Before.Node /= 0 then
          pragma Assert (Vet (Container, Before), "bad cursor in Insert");
       end if;
@@ -950,15 +949,15 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       Process   :
       not null access procedure (Container : List; Position : Cursor))
    is
-      C : List renames Container'Unrestricted_Access.all;
-      B : Natural renames C.Busy;
-
-      Node : Count_Type := Container.First;
+      C    : List renames Container'Unrestricted_Access.all;
+      B    : Natural renames C.Busy;
+      Node : Count_Type;
 
    begin
       B := B + 1;
 
       begin
+         Node := Container.First;
          while Node /= 0 loop
             Process (Container, (Node => Node));
             Node := Container.Nodes (Node).Next;
@@ -1235,7 +1234,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       Position : Cursor) return Cursor
    is
    begin
-
       return Next (Object.Container.all, Position);
    end Next;
 
@@ -1288,7 +1286,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       Position : Cursor) return Cursor
    is
    begin
-
       return Previous (Object.Container.all, Position);
    end Previous;
 
@@ -1372,10 +1369,11 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
    -- Reference --
    ---------------
 
-   function Constant_Reference (Container : List; Position : Cursor)
-   return Constant_Reference_Type is
+   function Constant_Reference
+     (Container : List;
+      Position  : Cursor) return Constant_Reference_Type
+   is
    begin
-
       if not Has_Element (Container, Position) then
          raise Constraint_Error with "Position cursor has no element";
       end if;
@@ -1393,7 +1391,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       New_Item  : Element_Type)
    is
    begin
-
       if not Has_Element (Container, Position) then
          raise Constraint_Error with "Position cursor has no element";
       end if;
@@ -1411,6 +1408,10 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       begin
          N (Position.Node).Element := New_Item;
       end;
+
+      --  Above is peculiar, why not simply
+      --  Container.Nodes (Position.Node).Element := New_Item ???
+
    end Replace_Element;
 
    ----------------------
@@ -1462,7 +1463,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          end if;
       end Swap;
 
-      --  Start of processing for Reverse_Elements
+   --  Start of processing for Reverse_Elements
 
    begin
       if Container.Length <= 1 then
@@ -1511,6 +1512,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       Position  : Cursor := No_Element) return Cursor
    is
       CFirst : Count_Type := Position.Node;
+
    begin
       if CFirst = 0 then
          CFirst := Container.First;
@@ -1542,12 +1544,13 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       C : List renames Container'Unrestricted_Access.all;
       B : Natural renames C.Busy;
 
-      Node : Count_Type := Container.Last;
+      Node : Count_Type;
 
    begin
       B := B + 1;
 
       begin
+         Node := Container.Last;
          while Node /= 0 loop
             Process (Container, (Node => Node));
             Node := Container.Nodes (Node).Prev;
@@ -1649,7 +1652,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       Target_Position : Cursor;
 
    begin
-
       if Target'Address = Source'Address then
          Splice (Target, Before, Position);
          return;

@@ -390,8 +390,9 @@ package body Prj is
    -------------------------
 
    function Is_Allowed_Language (Name : Name_Id) return Boolean is
-      R : Restricted_Lang_Access := Restricted_Languages;
+      R    : Restricted_Lang_Access := Restricted_Languages;
       Lang : constant String := Get_Name_String (Name);
+
    begin
       if R = null then
          return True;
@@ -1633,6 +1634,7 @@ package body Prj is
          else
             Write_Line (" """ & Get_Name_String (Str2) & '"');
          end if;
+
          Set_Standard_Output;
       end if;
    end Debug_Output;

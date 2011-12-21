@@ -246,8 +246,8 @@ package Ada.Containers.Formal_Doubly_Linked_Lists is
       Implicit_Dereference => Element;
 
    function Constant_Reference
-     (Container : List; Position : Cursor)    --  SHOULD BE ALIASED
-   return Constant_Reference_Type;
+     (Container : List;      --  SHOULD BE ALIASED ???
+      Position  : Cursor)   return Constant_Reference_Type;
 
    function Strict_Equal (Left, Right : List) return Boolean;
    --  Strict_Equal returns True if the containers are physically equal, i.e.
