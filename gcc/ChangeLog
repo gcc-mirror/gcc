@@ -8465,6 +8465,7 @@
 
 2011-10-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR middle-end/48660
 	* expr.h (copy_blkmode_to_reg): Declare.
 	* expr.c (copy_blkmode_to_reg): New function.
 	(expand_assignment): Don't expand register RESULT_DECLs before
