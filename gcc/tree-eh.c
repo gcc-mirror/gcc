@@ -1538,7 +1538,20 @@ decide_copy_try_finally (int ndests, bool may_throw, gimple_seq finally)
     }
 
   if (!optimize)
-    return ndests == 1;
+    {
+      gimple_stmt_iterator gsi;
+
+      if (ndests == 1)
+        return true;
+
+      for (gsi = gsi_start (finally); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  if (!is_gimple_debug (stmt) && !gimple_clobber_p (stmt))
+	    return false;
+	}
+      return true;
+    }
 
   /* Finally estimate N times, plus N gotos.  */
   f_estimate = count_insns_seq (finally, &eni_size_weights);

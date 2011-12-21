@@ -1,3 +1,10 @@
+2011-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/51644
+	PR middle-end/51647
+	* gcc.dg/pr51644.c: New test.
+	* g++.dg/warn/Wreturn-4.C: New test.
+
 2011-12-21  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* gcc.dg/vect/no-section-anchors-vect-31.c: Adjust array size and test
