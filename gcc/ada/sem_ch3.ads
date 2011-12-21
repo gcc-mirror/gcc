@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -114,6 +114,10 @@ package Sem_Ch3 is
    --  If Body_Id is present, it is the defining identifier of a package body,
    --  and errors are posted on that node, rather than on the declarations that
    --  require completion in the package declaration.
+
+   procedure Check_CPP_Type (T : Entity_Id);
+   --  Check that components of imported CPP type T do not have default
+   --  expressions because the constructor (if any) is on the C++ side.
 
    procedure Derive_Subprogram
      (New_Subp     : in out Entity_Id;

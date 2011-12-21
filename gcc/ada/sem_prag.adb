@@ -4602,9 +4602,26 @@ package body Sem_Prag is
 
          --  Import a CPP class
 
-         elsif Is_Record_Type (Def_Id)
-           and then C = Convention_CPP
+         elsif C = Convention_CPP
+           and then (Is_Record_Type (Def_Id)
+                       or else Ekind (Def_Id) = E_Incomplete_Type)
          then
+            if Ekind (Def_Id) = E_Incomplete_Type then
+               if Present (Full_View (Def_Id)) then
+                  Def_Id := Full_View (Def_Id);
+               else
+                  Error_Msg_N
+                    ("cannot import 'C'P'P type before full declaration seen",
+                     Get_Pragma_Arg (Arg2));
+
+                  --  Although we have reported the error we decorate it as
+                  --  CPP_Class to avoid reporting spurious errors
+
+                  Set_Is_CPP_Class (Def_Id);
+                  return;
+               end if;
+            end if;
+
             --  Types treated as CPP classes must be declared limited (note:
             --  this used to be a warning but there is no real benefit to it
             --  since we did effectively intend to treat the type as limited
@@ -4628,38 +4645,13 @@ package body Sem_Prag is
                           (Declaration_Node (Def_Id))));
             end if;
 
-            --  Components of imported CPP types must not have default
-            --  expressions because the constructor (if any) is on the
-            --  C++ side.
+            --  Check that components of imported CPP types do not have default
+            --  expressions. For private types this check is performed when the
+            --  full view is analyzed (see Process_Full_View).
 
-            declare
-               Tdef  : constant Node_Id :=
-                         Type_Definition (Declaration_Node (Def_Id));
-               Clist : Node_Id;
-               Comp  : Node_Id;
-
-            begin
-               if Nkind (Tdef) = N_Record_Definition then
-                  Clist := Component_List (Tdef);
-
-               else
-                  pragma Assert (Nkind (Tdef) = N_Derived_Type_Definition);
-                  Clist := Component_List (Record_Extension_Part (Tdef));
-               end if;
-
-               if Present (Clist) then
-                  Comp := First (Component_Items (Clist));
-                  while Present (Comp) loop
-                     if Present (Expression (Comp)) then
-                        Error_Msg_N
-                          ("component of imported 'C'P'P type cannot have" &
-                           " default expression", Expression (Comp));
-                     end if;
-
-                     Next (Comp);
-                  end loop;
-               end if;
-            end;
+            if not Is_Private_Type (Def_Id) then
+               Check_CPP_Type (Def_Id);
+            end if;
 
          elsif Nkind (Parent (Def_Id)) = N_Incomplete_Type_Declaration then
             Check_No_Link_Name;
@@ -7629,8 +7621,8 @@ package body Sem_Prag is
                   Get_Pragma_Arg (Arg1));
             end if;
 
-            Set_Is_CPP_Class      (Typ);
-            Set_Convention        (Typ, Convention_CPP);
+            Set_Is_CPP_Class (Typ);
+            Set_Convention (Typ, Convention_CPP);
 
             --  Imported CPP types must not have discriminants (because C++
             --  classes do not have discriminants).

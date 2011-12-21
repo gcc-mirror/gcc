@@ -1,3 +1,13 @@
+2011-12-21  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.ads, sem_ch3.adb (Check_CPP_Type): New subprogram.
+	(Process_Full_View): Invoke Check_CPP_Type if processing the
+	full-view of a CPP type.
+	* sem_prag.adb (Process_Import_Or_Interface): Add missing support
+	for importing a CPP type that has an incomplete declaration. Move
+	to new routine Check_CPP_Type the code that verifies that
+	components of imported CPP types do not have default expressions.
+
 2011-12-21  Vincent Celier  <celier@adacore.com>
 
 	* prj-nmsc.adb (Report_No_Sources): Remove argument Lang. Report
