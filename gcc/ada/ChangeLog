@@ -1,3 +1,40 @@
+2011-12-21  Pascal Obry  <obry@adacore.com>
+
+	* prj-attr.adb, snames.ads-tmpl: Add Library_Standalone,
+	Library_Fully_Standalone_Options and
+	Library_Fully_Standalone_Supported attributes.
+	* prj-nmsc.adb (Check_Library): Update check to take into
+	account fully standalone libraries. Such shared libraries can
+	only depend on static libraries.
+	(Check_Stand_Alone_Library): Add support for fully standalone libraries.
+	(Process_Project_Level_Simple_Attributes): Store value for
+	configuration attribute Library_Fully_Standalone_Supported.
+	* prj.ads, makeutl.adb (Standalone): New enumeration type.
+	(Project_Data): Standalone_Library now of type Standlone.
+	(Project_Configuration): Add Lib_Fully_Standalone_Supported
+	field.
+	(Default_Project_Config): Initialize new Lib_Fully_Standalone_Supported
+	field.
+	* clean.adb (Clean_Project): Adjust to new type for Standalone.
+	* make.adb (Library_Phase): Adjust to new type for Standalone.
+	(Gnatmake): Likewise.
+	* mlib-prj.adb (Build_Library): Adjust to new type for
+	Standalone.
+
+2011-12-21  Thomas Quinot  <quinot@adacore.com>
+
+	* gnatls.adb (Gnatls): Call Set_Standard_Error at startup, and then
+	Set_Standard_Output just before producing normal (non-diagnostic)
+	output.
+	* gnatcmd.adb (Gnatcmd): Call Set_Standard_Error at initialization
+	(and again after parsing project files).
+
+2011-12-21  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Do_Autoconf): When the object directory does
+	not exist, create auto.cgpr in the directory where temporary
+	files are created.
+
 2011-12-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Insert_Freeze_Node_For_Instance):  Further

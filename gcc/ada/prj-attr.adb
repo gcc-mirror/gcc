@@ -105,6 +105,9 @@ package body Prj.Attr is
    "SVlibrary_kind#" &
    "SVlibrary_version#" &
    "LVlibrary_interface#" &
+   "SVlibrary_standalone#" &
+   "LVlibrary_fully_standalone_options#" &
+   "SVlibrary_fully_standalone_supported#" &
    "SVlibrary_auto_init#" &
    "LVleading_library_options#" &
    "LVlibrary_options#" &

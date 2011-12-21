@@ -1155,8 +1155,18 @@ package body Prj.Conf is
                         File_Use  => "configuration file");
 
                      if Path_FD /= Invalid_FD then
-                        Args (3) := new String'(Get_Name_String (Path_Name));
-                        GNAT.OS_Lib.Close (Path_FD);
+                        declare
+                           Temp_Dir : constant String :=
+                             Containing_Directory
+                               (Get_Name_String (Path_Name));
+                        begin
+                           GNAT.OS_Lib.Close (Path_FD);
+                           Args (3) :=
+                             new String'(Temp_Dir &
+                                         Directory_Separator &
+                                         Auto_Cgpr);
+                           Delete_File (Get_Name_String (Path_Name));
+                        end;
 
                      else
                         --  We'll have an error message later on
