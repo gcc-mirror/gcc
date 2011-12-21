@@ -95,19 +95,23 @@ package Sem_Dim is
 
    procedure Analyze_Aspect_Dimension
      (N    : Node_Id;
-      Id   : Node_Id;
+      Id   : Entity_Id;
       Aggr : Node_Id);
    --  Analyze the contents of aspect Dimension. Associate the provided values
    --  and quantifiers with the related context N.
-   --  ??? comment on usage of formals needed
+   --  Id is the corresponding Aspect_Id (Aspect_Dimension)
+   --  Aggr is the corresponding expression for the aspect Dimension declared
+   --  by the declaration of N.
 
    procedure Analyze_Aspect_Dimension_System
      (N    : Node_Id;
-      Id   : Node_Id;
-      Expr : Node_Id);
+      Id   : Entity_Id;
+      Aggr : Node_Id);
    --  Analyze the contents of aspect Dimension_System. Extract the numerical
    --  type, unit name and corresponding symbol from each indivitual dimension.
-   --  ??? comment on usage of formals needed
+   --  Id is the corresponding Aspect_Id (Aspect_Dimension_System)
+   --  Aggr is the corresponding expression for the aspect Dimension_System
+   --  declared by the declaration of N.
 
    procedure Analyze_Dimension (N : Node_Id);
    --  N may denote any of the following contexts:
@@ -133,13 +137,15 @@ package Sem_Dim is
    --  involved do not violate the rules of a system.
 
    procedure Eval_Op_Expon_For_Dimensioned_Type
-     (N     : Node_Id;
-      B_Typ : Entity_Id);
-   --  Evaluate the Expon operator for dimensioned type with rational exponent
-   --  ??? the above doesn't explain the purpose of this routine. why is this
-   --  procedure needed?
+     (N    : Node_Id;
+      Btyp : Entity_Id);
+   --  Evaluate the Expon operator for dimensioned type with rational exponent.
+   --  Indeed the regular Eval_Op_Expon routine (see package Sem_Eval) is
+   --  restricted to Integer exponent.
+   --  This routine deals only with rational exponent which is not an integer
+   --  if Btyp is a dimensioned type.
 
-   procedure Expand_Put_Call_With_Dimension_String (N : Node_Id);
+   procedure Expand_Put_Call_With_Dimension_Symbol (N : Node_Id);
    --  Determine whether N denotes a subprogram call to one of the routines
    --  defined in System.Dim_Float_IO or System.Dim_Integer_IO and add an
    --  extra actual to the call to represent the symbolic representation of
@@ -148,11 +154,12 @@ package Sem_Dim is
    function Has_Dimension_System (Typ : Entity_Id) return Boolean;
    --  Return True if type Typ has aspect Dimension_System applied to it
 
+   function Is_Dim_IO_Package_Instantiation (N : Node_Id) return Boolean;
+   --  Return True if N is a package instantiation of System.Dim_Integer_IO or
+   --  of System.Dim_Float_IO.
+
    procedure Remove_Dimension_In_Call (Call : Node_Id);
    --  Remove the dimensions from all formal parameters of Call
-
-   procedure Remove_Dimension_In_Declaration (Decl : Node_Id);
-   --  Remove the dimensions from the expression of Decl
 
    procedure Remove_Dimension_In_Statement (Stmt : Node_Id);
    --  Remove the dimensions associated with Stmt

@@ -2111,7 +2111,7 @@ package body Exp_Ch6 is
         and then Nkind (Call_Node) = N_Procedure_Call_Statement
         and then Present (Parameter_Associations (Call_Node))
       then
-         Expand_Put_Call_With_Dimension_String (Call_Node);
+         Expand_Put_Call_With_Dimension_Symbol (Call_Node);
       end if;
 
       --  Remove the dimensions of every parameters in call
