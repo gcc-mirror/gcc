@@ -1,3 +1,9 @@
+2011-12-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/linux-unwind.h: Update copyright years.
+	(MD_FROB_UPDATE_CONTEXT): New define.
+	(alpha_frob_update_context): New function.
+
 2011-12-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.md (UNSPEC_FRAME_BLOCKAGE): New constant.
