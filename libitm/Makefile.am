@@ -18,8 +18,8 @@ vpath % $(strip $(search_path))
 
 AM_CPPFLAGS = $(addprefix -I, $(search_path))
 AM_CFLAGS = $(XCFLAGS)
-AM_CXXFLAGS = -std=gnu++0x -funwind-tables -fno-exceptions -fno-rtti \
-	$(XCFLAGS) $(abi_version)
+AM_CXXFLAGS = $(XCFLAGS) -std=gnu++0x -funwind-tables -fno-exceptions \
+	-fno-rtti $(abi_version)
 AM_CCASFLAGS = $(XCFLAGS)
 AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
 
