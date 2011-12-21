@@ -1,3 +1,8 @@
+2011-12-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/pr50038.c: Move to ...
+	* gcc.target/i386/pr50038.c: ... here.  Test on all targets.
+
 2011-12-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51611
