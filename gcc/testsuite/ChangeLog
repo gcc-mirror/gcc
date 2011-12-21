@@ -1,3 +1,8 @@
+2011-12-21  Enkovich Ilya  <ilya.enkovich@intel.com>
+
+	PR target/50038
+	* gcc.dg/pr50038.c: New test.
+
 2011-12-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51621
