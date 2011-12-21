@@ -438,9 +438,40 @@ package body Comperr is
    -----------------------
 
    procedure Delete_SCIL_Files is
-      Main    : Node_Id;
-      Success : Boolean;
+      Main      : Node_Id;
+      Unit_Name : Node_Id;
+      Success   : Boolean;
       pragma Unreferenced (Success);
+
+      procedure Decode_Name_Buffer;
+      --  Replace "__" by "." in Name_Buffer, and adjust Name_Len accordingly
+
+      ------------------------
+      -- Decode_Name_Buffer --
+      ------------------------
+
+      procedure Decode_Name_Buffer is
+         J : Natural := 1;
+         K : Natural := 0;
+      begin
+         while J <= Name_Len loop
+            K := K + 1;
+
+            if J < Name_Len
+              and then Name_Buffer (J) = '_'
+              and then Name_Buffer (J + 1) = '_'
+            then
+               Name_Buffer (K) := '.';
+               J := J + 1;
+            else
+               Name_Buffer (K) := Name_Buffer (J);
+            end if;
+
+            J := J + 1;
+         end loop;
+
+         Name_Len := K;
+      end Decode_Name_Buffer;
 
    begin
       --  If parsing was not successful, no Main_Unit is available, so return
@@ -451,20 +482,45 @@ package body Comperr is
       end if;
 
       --  Retrieve unit name, and remove old versions of SCIL/<unit>.scil and
-      --  SCIL/<unit>__body.scil
+      --  SCIL/<unit>__body.scil, ditto for .scilx files.
 
       Main := Unit (Cunit (Main_Unit));
 
-      if Nkind (Main) = N_Subprogram_Body then
-         Get_Name_String (Chars (Defining_Unit_Name (Specification (Main))));
-      else
-         Get_Name_String (Chars (Defining_Unit_Name (Main)));
-      end if;
+      case Nkind (Main) is
+         when N_Subprogram_Body | N_Package_Declaration =>
+            Unit_Name := Defining_Unit_Name (Specification (Main));
+
+         when N_Package_Body =>
+            Unit_Name := Corresponding_Spec (Main);
+
+         when others =>
+            --  Should never happen, but can be ignored in production
+            pragma Assert (False);
+            return;
+      end case;
+
+      case Nkind (Unit_Name) is
+         when N_Defining_Identifier =>
+            Get_Name_String (Chars (Unit_Name));
+
+         when N_Defining_Program_Unit_Name =>
+            Get_Name_String (Chars (Defining_Identifier (Unit_Name)));
+            Decode_Name_Buffer;
+
+         when others =>
+            --  Should never happen, but can be ignored in production
+            pragma Assert (False);
+            return;
+      end case;
 
       Delete_File
         ("SCIL/" & Name_Buffer (1 .. Name_Len) & ".scil", Success);
       Delete_File
+        ("SCIL/" & Name_Buffer (1 .. Name_Len) & ".scilx", Success);
+      Delete_File
         ("SCIL/" & Name_Buffer (1 .. Name_Len) & "__body.scil", Success);
+      Delete_File
+        ("SCIL/" & Name_Buffer (1 .. Name_Len) & "__body.scilx", Success);
    end Delete_SCIL_Files;
 
    -----------------

@@ -1,3 +1,19 @@
+2011-12-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* comperr.adb (Delete_SCIL_Files): Also delete .scilx files.
+	Fix implementation for child packages and package specs.
+	(Delete_SCIL_Files.Decode_Name_Buffer): New function.
+
+2011-12-21  Robert Dewar  <dewar@adacore.com>
+
+	* err_vars.ads, a-cdlili.adb, a-cfdlli.ads, prj.adb, prj-nmsc.adb,
+	a-cbdlli.adb, a-cbdlli.ads, a-cfdlli.adb: Minor reformatting.
+
+2011-12-21  Vincent Pucci  <pucci@adacore.com>
+
+	* s-diflio.adb, s-diflio.ads, s-diinio.adb, s-diinio.ads,
+	s-llflex.ads: Fix header.
+
 2011-12-21  Thomas Quinot  <quinot@adacore.com>
 
 	* thread.c, s-oscons-tmplt.c, init.c (pthread_condattr_setclock): For

@@ -1042,7 +1042,6 @@ package body Prj.Nmsc is
         (Project : Project_Id;
          Data    : in out Tree_Processing_Data)
       is
-
          procedure Check_Not_Defined (Name : Name_Id);
          --  Report an error if Var is defined
 
@@ -1064,6 +1063,8 @@ package body Prj.Nmsc is
                   Var.Location, Project);
             end if;
          end Check_Not_Defined;
+
+      --  Start of processing for Check_Not_Defined
 
       begin
          Check_Not_Defined (Snames.Name_Library_Dir);
@@ -1116,9 +1117,9 @@ package body Prj.Nmsc is
 
       Check_Configuration (Project, Data);
 
+      --  For aggregate project checks that no library attributes are defined
+
       if Project.Qualifier = Aggregate then
-         --  For aggregate project checks that no library attributes are
-         --  defined.
          Check_Aggregate (Project, Data);
 
       else

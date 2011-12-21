@@ -258,12 +258,12 @@ package Ada.Containers.Bounded_Doubly_Linked_Lists is
    for Reference_Type'Read use Read;
 
    function Constant_Reference
-     (Container : List; Position : Cursor)    --  SHOULD BE ALIASED
-   return Constant_Reference_Type;
+     (Container : List;       -- SHOULD BE ALIASED ???
+      Position  : Cursor) return Constant_Reference_Type;
 
    function Reference
-     (Container : List; Position : Cursor)    --  SHOULD BE ALIASED
-   return Reference_Type;
+     (Container : List;       -- SHOULD BE ALIASED ???
+      Position  : Cursor) return Reference_Type;
 
 private
 
