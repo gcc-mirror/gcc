@@ -3207,9 +3207,14 @@ proc check_effective_target_vect_aligned_arrays { } {
 	verbose "check_effective_target_vect_aligned_arrays: using cached result" 2
     } else {
 	set et_vect_aligned_arrays_saved 0
-        if { (([istarget x86_64-*-*]
-              || [istarget i?86-*-*]) && [is-effective-target lp64])
-              || [istarget spu-*-*] } {
+        if { ([istarget x86_64-*-*] || [istarget i?86-*-*]) } {
+	    if { ([is-effective-target lp64]
+	          && ( ![check_avx_available]
+		     || [check_prefer_avx128])) } {
+	         set et_vect_aligned_arrays_saved 1
+	    }
+	}
+        if [istarget spu-*-*] {
 	    set et_vect_aligned_arrays_saved 1
 	}
     }
@@ -3507,13 +3512,14 @@ foreach N {2 3 4 8} {
 proc check_effective_target_vect_multiple_sizes { } {
     global et_vect_multiple_sizes_saved
 
-    if [info exists et_vect_multiple_sizes_saved] {
-        verbose "check_effective_target_vect_multiple_sizes: using cached result" 2
-    } else {
-        set et_vect_multiple_sizes_saved 0
-        if { ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
-           set et_vect_multiple_sizes_saved 1
-        }
+    set et_vect_multiple_sizes_saved 0
+    if { ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
+       set et_vect_multiple_sizes_saved 1
+    }
+    if { ([istarget x86_64-*-*] || [istarget i?86-*-*]) } {
+      if { ([check_avx_available] && ![check_prefer_avx128]) } {
+	set et_vect_multiple_sizes_saved 1
+      }
     }
 
     verbose "check_effective_target_vect_multiple_sizes: returning $et_vect_multiple_sizes_saved" 2
@@ -4124,6 +4130,39 @@ proc check_effective_target_automatic_stack_alignment  { } {
     }
     return 0;
 }
+
+# Return true if we are compiling for AVX target.
+
+proc check_avx_available { } {
+  if { [check_no_compiler_messages avx_available assembly {
+    #ifndef __AVX__
+    #error unsupported
+    #endif
+  } ""] } {
+    return 1;
+  }
+  return 0;
+}
+
+# Return true if 32- and 16-bytes vectors are available.
+
+proc check_effective_target_vect_sizes_32B_16B { } {
+  return [check_avx_available];
+}
+
+# Return true if 128-bits vectors are preferred even if 256-bits vectors
+# are available.
+
+proc check_prefer_avx128 { } {
+    if ![check_avx_available] {
+      return 0;
+    }
+    return [check_no_messages_and_pattern avx_explicit "xmm" assembly {
+      float a[1024],b[1024],c[1024];
+      void foo (void) { int i; for (i = 0; i < 1024; i++) a[i]=b[i]+c[i];}
+    } "-O2 -ftree-vectorize"]
+}
+
 
 # Return 1 if avx instructions can be compiled.
 

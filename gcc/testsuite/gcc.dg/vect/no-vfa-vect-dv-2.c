@@ -74,5 +74,6 @@ int main ()
 
 /* The initialization induction loop (with aligned access) is also vectorized.  */
 /* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "accesses have the same alignment." 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "accesses have the same alignment." 2 "vect" { target { { vect_aligned_arrays } && {! vect_sizes_32B_16B} } } } } */
+/* { dg-final { scan-tree-dump-times "accesses have the same alignment." 1 "vect" { target { {! vect_aligned_arrays } && {vect_sizes_32B_16B} } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

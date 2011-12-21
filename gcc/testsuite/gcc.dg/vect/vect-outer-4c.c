@@ -23,5 +23,5 @@ foo (){
 }
 
 /* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { target { vect_short_mult && { ! vect_no_align } } } } } */
-/* { dg-final { scan-tree-dump-times "zero step in outer loop." 1 "vect" } } */
+/* { dg-final { scan-tree-dump "zero step in outer loop." "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
