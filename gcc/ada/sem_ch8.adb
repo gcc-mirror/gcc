@@ -8031,7 +8031,7 @@ package body Sem_Ch8 is
          end if;
       end Use_Class_Wide_Operations;
 
-   --  Start of processing for Use_One_Type;
+   --  Start of processing for Use_One_Type
 
    begin
       --  It is the type determined by the subtype mark (8.4(8)) whose

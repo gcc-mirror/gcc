@@ -486,6 +486,7 @@ package body Prj.Nmsc is
 
    procedure Report_No_Sources
      (Project      : Project_Id;
+      Lang         : Name_Id;
       Lang_Name    : String;
       Data         : Tree_Processing_Data;
       Location     : Source_Ptr;
@@ -642,6 +643,13 @@ package body Prj.Nmsc is
       Source_To_Replace : Source_Id := No_Source;
 
    begin
+      --  Nothing to do if the language is not one of the restricted ones
+
+      if not Is_Allowed_Language (Lang_Id.Name) then
+         Id := No_Source;
+         return;
+      end if;
+
       --  Check if the same file name or unit is used in the prj tree
 
       Add_Src := True;
@@ -1020,6 +1028,56 @@ package body Prj.Nmsc is
      (Project : Project_Id;
       Data    : in out Tree_Processing_Data)
    is
+      procedure Check_Aggregate
+        (Project : Project_Id;
+         Data    : in out Tree_Processing_Data);
+      --  Check the aggregate project attributes, reject any not supported
+      --  attributes.
+
+      ---------------------
+      -- Check_Aggregate --
+      ---------------------
+
+      procedure Check_Aggregate
+        (Project : Project_Id;
+         Data    : in out Tree_Processing_Data)
+      is
+
+         procedure Check_Not_Defined (Name : Name_Id);
+         --  Report an error if Var is defined
+
+         -----------------------
+         -- Check_Not_Defined --
+         -----------------------
+
+         procedure Check_Not_Defined (Name : Name_Id) is
+            Var : constant Prj.Variable_Value :=
+                    Prj.Util.Value_Of
+                      (Name,
+                       Project.Decl.Attributes,
+                       Data.Tree.Shared);
+         begin
+            if not Var.Default then
+               Error_Msg_Name_1 := Name;
+               Error_Msg
+                 (Data.Flags, "wrong attribute %% in aggregate library",
+                  Var.Location, Project);
+            end if;
+         end Check_Not_Defined;
+
+      begin
+         Check_Not_Defined (Snames.Name_Library_Dir);
+         Check_Not_Defined (Snames.Name_Library_Interface);
+         Check_Not_Defined (Snames.Name_Library_Name);
+         Check_Not_Defined (Snames.Name_Library_Ali_Dir);
+         Check_Not_Defined (Snames.Name_Library_Src_Dir);
+         Check_Not_Defined (Snames.Name_Library_Options);
+         Check_Not_Defined (Snames.Name_Library_Standalone);
+         Check_Not_Defined (Snames.Name_Library_Kind);
+         Check_Not_Defined (Snames.Name_Leading_Library_Options);
+         Check_Not_Defined (Snames.Name_Library_Version);
+      end Check_Aggregate;
+
       Shared   : constant Shared_Project_Tree_Data_Access := Data.Tree.Shared;
       Prj_Data : Project_Processing_Data;
 
@@ -1058,7 +1116,12 @@ package body Prj.Nmsc is
 
       Check_Configuration (Project, Data);
 
-      if Project.Qualifier /= Aggregate then
+      if Project.Qualifier = Aggregate then
+         --  For aggregate project checks that no library attributes are
+         --  defined.
+         Check_Aggregate (Project, Data);
+
+      else
          Check_Library_Attributes (Project, Data);
          Check_Package_Naming (Project, Data);
 
@@ -7745,6 +7808,7 @@ package body Prj.Nmsc is
                   if Source = No_Source then
                      Report_No_Sources
                        (Project.Project,
+                        Language.Name,
                         Get_Name_String (Language.Display_Name),
                         Data,
                         Project.Source_List_File_Location,
@@ -8191,21 +8255,23 @@ package body Prj.Nmsc is
 
    procedure Report_No_Sources
      (Project      : Project_Id;
+      Lang         : Name_Id;
       Lang_Name    : String;
       Data         : Tree_Processing_Data;
       Location     : Source_Ptr;
       Continuation : Boolean := False)
    is
    begin
-      case Data.Flags.When_No_Sources is
+      if Is_Allowed_Language (Lang) then
+         case Data.Flags.When_No_Sources is
          when Silent =>
             null;
 
          when Warning | Error =>
             declare
                Msg : constant String :=
-                       "<there are no "
-                       & Lang_Name & " sources in this project";
+                      "<there are no "
+                      & Lang_Name & " sources in this project";
 
             begin
                Error_Msg_Warn := Data.Flags.When_No_Sources = Warning;
@@ -8216,7 +8282,8 @@ package body Prj.Nmsc is
                   Error_Msg (Data.Flags, Msg, Location, Project);
                end if;
             end;
-      end case;
+         end case;
+      end if;
    end Report_No_Sources;
 
    ----------------------

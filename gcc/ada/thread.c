@@ -37,6 +37,21 @@
 # include <pthread.h>
 # include <time.h>
 
+#ifndef _AIXVERSION_530
+/* We use the same runtime library for AIX 5.2 and 5.3, but pthread_condattr_
+ * setclock exists only on the latter, so for the former provide a dummy
+ * implementation (declared below, weak symbol defined in init.c).
+ *
+ * Note: this means that under AIX 5.2 we'll be using CLOCK_MONOTONIC
+ * timestamps from clock_gettime() as arguments to pthread_cond_timedwait,
+ * which expects a CLOCK_REALTIME value, which is technically wrong, but
+ * inocuous in practice on that particular platform since both clocks happen
+ * to use close epochs.
+ */
+
+extern int pthread_condattr_setclock (pthread_condattr_t *attr, clockid_t cl);
+#endif
+
 int
 __gnat_pthread_condattr_setup(pthread_condattr_t *attr) {
 /*

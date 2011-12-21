@@ -1,3 +1,25 @@
+2011-12-21  Thomas Quinot  <quinot@adacore.com>
+
+	* thread.c, s-oscons-tmplt.c, init.c (pthread_condattr_setclock): For
+	AIX 5.2, define as a dummy weak symbol in init.c.
+	(CLOCK_RT_Ada): Set to CLOCK_MONOTONIC on all versions of AIX.
+
+2011-12-21  Thomas Quinot  <quinot@adacore.com>
+
+	* snames.ads-tmpl, sem_ch8.adb: Minor reformatting.
+	* sem_prag.adb: Minor comment clarification.
+
+2011-12-21  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Report_No_Sources): New argument Lang for the
+	language name as a Name_Id. Do not report no sources if language
+	is not allowed.
+	(Add_Source): Do not add source if language is not allowed.
+	* prj.adb (Add_Restricted_Language): New procedure
+	(Is_Allowed_Language): New function
+	* prj.ads (Add_Restricted_Language): New procedure
+	(Is_Allowed_Language): New function
+
 2011-12-21  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb, sem_dim.adb, sem_dim.ads, sem_ch12.adb, prj-conf.adb:

@@ -14887,7 +14887,8 @@ package body Sem_Prag is
    -----------------------------------------
 
    --  This function makes use of the following static table which indicates
-   --  whether a given pragma is significant.
+   --  whether appearance of some name in a given pragma is to be considered
+   --  as a reference for the purposes of warnings about unreferenced objects.
 
    --  -1  indicates that references in any argument position are significant
    --  0   indicates that appearance in any argument is not significant
