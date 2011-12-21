@@ -1,5 +1,16 @@
 2011-12-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/51626
+	* include/bits/stl_uninitialized.h (_Construct_default_a_impl): Define
+	overloaded functions to conditionally use allocator::construct.
+	(_Construct_default_a): Define to dispatch to appropriate
+	_Construct_default_a_impl overload.
+	(__uninitialized_default_a, __uninitialized_default_n_a): Use
+	_Construct_default_a.
+	* testsuite/20_util/allocator/51626.cc: New.
+
+2011-12-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* testsuite/ext/type_traits/remove_unsigned_integer_neg.cc: Adjust
 	dg-error line numbers.
 	* testsuite/ext/type_traits/add_unsigned_floating_neg.cc: Likewise.

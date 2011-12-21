@@ -1,7 +1,7 @@
 // Raw memory manipulators -*- C++ -*-
 
 // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-// 2009, 2010
+// 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -530,6 +530,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__uninit_default_n(__first, __n);
     }
 
+ template<typename _Tp, typename _Allocator>
+   inline auto
+   _Construct_default_a_impl(_Tp* __ptr, _Allocator& __alloc, void*)
+   -> decltype(__alloc.construct(__ptr))
+   { return __alloc.construct(__ptr); }
+
+  template<typename _Tp, typename _Allocator>
+   inline void
+   _Construct_default_a_impl(_Tp* __ptr, _Allocator& __alloc, ...)
+   { _Construct(__ptr); }
+
+  template<typename _Tp, typename _Allocator>
+   inline void
+   _Construct_default_a(_Tp* __ptr, _Allocator& __alloc)
+   { _Construct_default_a_impl(__ptr, __alloc, nullptr); }
 
   // __uninitialized_default_a
   // Fills [first, last) with std::distance(first, last) default
@@ -544,7 +559,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __try
 	{
 	  for (; __cur != __last; ++__cur)
-	    __alloc.construct(std::__addressof(*__cur));
+	    _Construct_default_a(std::__addressof(*__cur), __alloc);
 	}
       __catch(...)
 	{
@@ -573,7 +588,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __try
 	{
 	  for (; __n > 0; --__n, ++__cur)
-	    __alloc.construct(std::__addressof(*__cur));
+	    _Construct_default_a(std::__addressof(*__cur), __alloc);
 	}
       __catch(...)
 	{
