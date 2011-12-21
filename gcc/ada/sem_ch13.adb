@@ -4738,6 +4738,14 @@ package body Sem_Ch13 is
             --  (this is an error that will be caught elsewhere);
 
             Append_To (Private_Decls, PBody);
+
+            --  If the invariant appears on the full view of a type, the
+            --  analysis of the private part is complete, and we must
+            --  analyze the new body explicitly.
+
+            if In_Private_Part (Current_Scope) then
+               Analyze (PBody);
+            end if;
          end if;
       end if;
    end Build_Invariant_Procedure;

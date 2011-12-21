@@ -1471,7 +1471,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
       --  Start of processing for Union
 
    begin
-
       if Target'Address = Source'Address then
          return;
       end if;
@@ -1646,7 +1645,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
          X : Count_Type;
 
       begin
-
          Key_Keys.Delete_Key_Sans_Free (Container, Key, X);
 
          if X = 0 then
@@ -1768,7 +1766,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
          N    : Nodes_Type renames Container.Nodes;
 
       begin
-
          if Position.Node = 0 then
             raise Constraint_Error with
               "Position cursor equals No_Element";
