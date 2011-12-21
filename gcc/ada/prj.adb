@@ -42,6 +42,17 @@ with GNAT.HTable;
 
 package body Prj is
 
+   type Restricted_Lang;
+   type Restricted_Lang_Access is access Restricted_Lang;
+   type Restricted_Lang is record
+      Name : Name_Id;
+      Next : Restricted_Lang_Access;
+   end record;
+
+   Restricted_Languages : Restricted_Lang_Access := null;
+   --  When null, all languages are allowed, otherwise only the languages in
+   --  the list are allowed.
+
    Object_Suffix : constant String := Get_Target_Object_Suffix.all;
    --  File suffix for object files
 
@@ -85,6 +96,20 @@ package body Prj is
 
    function Contains_ALI_Files (Dir : Path_Name_Type) return Boolean;
    --  Return True if there is at least one ALI file in the directory Dir
+
+   -----------------------------
+   -- Add_Restricted_Language --
+   -----------------------------
+
+   procedure Add_Restricted_Language (Name : String) is
+      N : String (1 .. Name'Length) := Name;
+   begin
+      To_Lower (N);
+      Name_Len := 0;
+      Add_Str_To_Name_Buffer (N);
+      Restricted_Languages :=
+        new Restricted_Lang'(Name => Name_Find, Next => Restricted_Languages);
+   end Add_Restricted_Language;
 
    -------------------
    -- Add_To_Buffer --
@@ -359,6 +384,30 @@ package body Prj is
       Name_Len := Name_Len - 1;
       return Name_Find;
    end Extend_Name;
+
+   -------------------------
+   -- Is_Allowed_Language --
+   -------------------------
+
+   function Is_Allowed_Language (Name : Name_Id) return Boolean is
+      R : Restricted_Lang_Access := Restricted_Languages;
+      Lang : constant String := Get_Name_String (Name);
+   begin
+      if R = null then
+         return True;
+
+      else
+         while R /= null loop
+            if Get_Name_String (R.Name) = Lang then
+               return True;
+            end if;
+
+            R := R.Next;
+         end loop;
+
+         return False;
+      end if;
+   end Is_Allowed_Language;
 
    ---------------------
    -- Project_Changed --
@@ -1549,7 +1598,9 @@ package body Prj is
    procedure Debug_Output (Str : String) is
    begin
       if Current_Verbosity > Default then
+         Set_Standard_Error;
          Write_Line ((1 .. Debug_Level * 2 => ' ') & Str);
+         Set_Standard_Output;
       end if;
    end Debug_Output;
 
@@ -1560,7 +1611,9 @@ package body Prj is
    procedure Debug_Indent is
    begin
       if Current_Verbosity = High then
+         Set_Standard_Error;
          Write_Str ((1 .. Debug_Level * 2 => ' '));
+         Set_Standard_Output;
       end if;
    end Debug_Indent;
 
@@ -1572,6 +1625,7 @@ package body Prj is
    begin
       if Current_Verbosity = High then
          Debug_Indent;
+         Set_Standard_Error;
          Write_Str (Str);
 
          if Str2 = No_Name then
@@ -1579,6 +1633,7 @@ package body Prj is
          else
             Write_Line (" """ & Get_Name_String (Str2) & '"');
          end if;
+         Set_Standard_Output;
       end if;
    end Debug_Output;
 

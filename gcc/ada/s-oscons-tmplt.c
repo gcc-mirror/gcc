@@ -1379,7 +1379,7 @@ CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
 /* There's no clock_gettime or clock_id's on Darwin, generate a dummy value */
 # define CLOCK_RT_Ada "-1"
 
-#elif defined(FreeBSD) || (defined(_AIX) && defined(_AIXVERSION_530))
+#elif defined(FreeBSD) || defined(_AIX)
 /** On these platforms use system provided monotonic clock instead of
  ** the default CLOCK_REALTIME. We then need to set up cond var attributes
  ** appropriately (see thread.c).

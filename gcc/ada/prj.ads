@@ -41,6 +41,14 @@ with GNAT.OS_Lib;          use GNAT.OS_Lib;
 
 package Prj is
 
+   procedure Add_Restricted_Language (Name : String);
+   --  Call by gprbuild for each language specify by switch
+   --  --restricted-to-languages=.
+
+   function Is_Allowed_Language (Name : Name_Id) return Boolean;
+   --  Returns True if --restricted-to-languages= is not used or if Name
+   --  is one of the restricted languages.
+
    All_Other_Names : constant Name_Id := Names_High_Bound;
    --  Name used to replace others as an index of an associative array
    --  attribute in situations where this is allowed.
@@ -1369,6 +1377,10 @@ package Prj is
      (Extending : Project_Id;
       Extended  : Project_Id) return Boolean;
    --  Return True if Extending is extending the Extended project
+
+   function Is_Ext
+     (Extending : Project_Id;
+      Extended  : Project_Id) return Boolean renames Is_Extending;
 
    function Has_Ada_Sources (Data : Project_Id) return Boolean;
    --  Return True if the project has Ada sources

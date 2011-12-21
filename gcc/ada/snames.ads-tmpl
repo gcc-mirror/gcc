@@ -35,8 +35,8 @@ package Snames is
 
 --  This package contains definitions of standard names (i.e. entries in the
 --  Names table) that are used throughout the GNAT compiler. It also contains
---  the definitions of some enumeration types whose definitions are tied to
---  the order of these preset names.
+--  the definitions of some enumeration types whose definitions are tied to the
+--  order of these preset names.
 
    ------------------
    -- Preset Names --
@@ -51,13 +51,13 @@ package Snames is
    --  additional pragmas or attributes are introduced which might otherwise
    --  cause a duplicate, then list it only once in this table, and adjust the
    --  definition of the functions for testing for pragma names and attribute
-   --  names, and returning their ID values. Of course everything is simpler
-   --  if no such duplications occur!
+   --  names, and returning their ID values. Of course everything is simpler if
+   --  no such duplications occur!
 
    --  First we have the one character names used to optimize the lookup
    --  process for one character identifiers (to avoid the hashing in this
-   --  case) There are a full 256 of these, but only the entries for lower
-   --  case and upper case letters have identifiers
+   --  case) There are a full 256 of these, but only the entries for lower case
+   --  and upper case letters have identifiers
 
    --  The lower case letter entries are used for one character identifiers
    --  appearing in the source, for example in pragma Interface (C).
@@ -90,8 +90,8 @@ package Snames is
    Name_Z : constant Name_Id := First_Name_Id + Character'Pos ('z');
 
    --  The upper case letter entries are used by expander code for local
-   --  variables that do not require unique names (e.g. formal parameter
-   --  names in constructed procedures)
+   --  variables that do not require unique names (e.g. formal parameter names
+   --  in constructed procedures).
 
    Name_uA : constant Name_Id := First_Name_Id + Character'Pos ('A');
    Name_uB : constant Name_Id := First_Name_Id + Character'Pos ('B');
@@ -291,9 +291,9 @@ package Snames is
    Name_Obj_TypeCode                   : constant Name_Id := N + $;
    Name_Stub                           : constant Name_Id := N + $;
 
-   --  Operator Symbol entries. The actual names have an upper case O at
-   --  the start in place of the Op_ prefix (e.g. the actual name that
-   --  corresponds to Name_Op_Abs is "Oabs".
+   --  Operator Symbol entries. The actual names have an upper case O at the
+   --  start in place of the Op_ prefix (e.g. the actual name that corresponds
+   --  to Name_Op_Abs is "Oabs".
 
    First_Operator_Name                 : constant Name_Id := N + $;
    Name_Op_Abs                         : constant Name_Id := N + $; -- "abs"
@@ -325,21 +325,21 @@ package Snames is
 
    --  The entries marked GNAT are pragmas that are defined by GNAT and that
    --  are implemented in all modes (Ada 83, Ada 95, and Ada 2005) Complete
-   --  descriptions of the syntax of these implementation dependent pragmas
-   --  may be found in the appropriate section in unit Sem_Prag in file
+   --  descriptions of the syntax of these implementation dependent pragmas may
+   --  be found in the appropriate section in unit Sem_Prag in file
    --  sem-prag.adb, and they are documented in the GNAT reference manual.
 
-   --  The entries marked Ada 05 are Ada 2005 pragmas. They are implemented
-   --  in Ada 83 and Ada 95 mode as well, where they are technically considered
-   --  to be implementation dependent pragmas.
+   --  The entries marked Ada 05 are Ada 2005 pragmas. They are implemented in
+   --  Ada 83 and Ada 95 mode as well, where they are technically considered to
+   --  be implementation dependent pragmas.
 
-   --  The entries marked Ada 12 are Ada 2012 pragmas. They are implemented
-   --  in Ada 83, Ada 95, and Ada 2005 mode as well, where they are technically
+   --  The entries marked Ada 12 are Ada 2012 pragmas. They are implemented in
+   --  Ada 83, Ada 95, and Ada 2005 mode as well, where they are technically
    --  considered to be implementation dependent pragmas.
 
-   --  The entries marked VMS are VMS specific pragmas that are recognized
-   --  only in OpenVMS versions of GNAT. They are ignored in other versions
-   --  with an appropriate warning.
+   --  The entries marked VMS are VMS specific pragmas that are recognized only
+   --  in OpenVMS versions of GNAT. They are ignored in other versions with an
+   --  appropriate warning.
 
    --  The entries marked AAMP are AAMP specific pragmas that are recognized
    --  only in GNAT for the AAMP. They are ignored in other versions with
@@ -381,11 +381,11 @@ package Snames is
    Name_Extensions_Allowed             : constant Name_Id := N + $; -- GNAT
    Name_External_Name_Casing           : constant Name_Id := N + $; -- GNAT
 
-   --  Note: Fast_Math is not in this list because its name matches   -- GNAT
-   --  the name of the corresponding attribute. However, it is
-   --  included in the definition of the type Pragma_Id, and the
-   --  functions Get_Pragma_Id, Is_[Configuration_]Pragma_Id, and
-   --  correctly recognize and process Fast_Math.
+   --  Note: Fast_Math is not in this list because its name matches the name of
+   --  the corresponding attribute. However, it is included in the definition
+   --  of the type Pragma_Id, and the functions Get_Pragma_Id,
+   --  Is_[Configuration_]Pragma_Id, and correctly recognize and process
+   --  Fast_Math.
 
    Name_Favor_Top_Level                : constant Name_Id := N + $; -- GNAT
    Name_Float_Representation           : constant Name_Id := N + $; -- GNAT
@@ -432,11 +432,10 @@ package Snames is
    Name_Abort_Defer                    : constant Name_Id := N + $; -- GNAT
    Name_All_Calls_Remote               : constant Name_Id := N + $;
 
-   --  Note: AST_Entry is not in this list because its name matches -- VMS
-   --  the name of the corresponding attribute. However, it is
-   --  included in the definition of the type Pragma_Id, and the
-   --  functions Get_Pragma_Id and Is_Pragma_Id correctly recognize
-   --  and process Name_AST_Entry.
+   --  Note: AST_Entry is not in this list because its name matches the name of
+   --  the corresponding attribute. However, it is included in the definition
+   --  of the type Pragma_Id, and the functions Get_Pragma_Id and Is_Pragma_Id
+   --  correctly recognize and process Name_AST_Entry.
 
    Name_Assert                         : constant Name_Id := N + $; -- Ada 05
    Name_Asynchronous                   : constant Name_Id := N + $;
@@ -485,11 +484,10 @@ package Snames is
    Name_Inline_Generic                 : constant Name_Id := N + $; -- GNAT
    Name_Inspection_Point               : constant Name_Id := N + $;
 
-   --  Note: Interface is not in this list because its name         -- GNAT
-   --  matches an Ada 05 keyword. However it is included in
-   --  the definition of the type Attribute_Id, and the functions
-   --  Get_Pragma_Id and Is_Pragma_Id correctly recognize and
-   --  process Name_Storage_Size.
+   --  Note: Interface is not in this list because its name matches an Ada 05
+   --  keyword. However it is included in the definition of the type
+   --  Attribute_Id, and the functions Get_Pragma_Id and Is_Pragma_Id correctly
+   --  recognize and process Name_Storage_Size.
 
    Name_Interface_Name                 : constant Name_Id := N + $; -- GNAT
    Name_Interrupt_Handler              : constant Name_Id := N + $;
@@ -524,11 +522,11 @@ package Snames is
    Name_Preelaborate                   : constant Name_Id := N + $;
    Name_Preelaborate_05                : constant Name_Id := N + $; -- GNAT
 
-   --  Note: Priority is not in this list because its name matches
-   --  the name of the corresponding attribute. However, it is
-   --  included in the definition of the type Pragma_Id, and the
-   --  functions Get_Pragma_Id and Is_Pragma_Id correctly recognize
-   --  and process Priority. Priority is a standard Ada 95 pragma.
+   --  Note: Priority is not in this list because its name matches the name of
+   --  the corresponding attribute. However, it is included in the definition
+   --  of the type Pragma_Id, and the functions Get_Pragma_Id and Is_Pragma_Id
+   --  correctly recognize and process Priority. Priority is a standard Ada 95
+   --  pragma.
 
    Name_Psect_Object                   : constant Name_Id := N + $; -- VMS
    Name_Pure                           : constant Name_Id := N + $;
@@ -542,14 +540,13 @@ package Snames is
    Name_Shared                         : constant Name_Id := N + $; -- Ada 83
    Name_Shared_Passive                 : constant Name_Id := N + $;
 
-   --  Note: Storage_Size is not in this list because its name
-   --  matches the name of the corresponding attribute. However,
-   --  it is included in the definition of the type Attribute_Id,
-   --  and the functions Get_Pragma_Id and Is_Pragma_Id correctly
-   --  recognize and process Name_Storage_Size.
+   --  Note: Storage_Size is not in this list because its name matches the name
+   --  of the corresponding attribute. However, it is included in the
+   --  definition of the type Attribute_Id, and the functions Get_Pragma_Id and
+   --  Is_Pragma_Id correctly recognize and process Name_Storage_Size.
 
-   --  Note: Storage_Unit is also omitted from the list because
-   --  of a clash with an attribute name, and is treated similarly.
+   --  Note: Storage_Unit is also omitted from the list because of a clash with
+   --  an attribute name, and is treated similarly.
 
    Name_Source_Reference               : constant Name_Id := N + $; -- GNAT
    Name_Static_Elaboration_Desired     : constant Name_Id := N + $; -- GNAT
@@ -580,8 +577,8 @@ package Snames is
 
    --  Language convention names for pragma Convention/Export/Import/Interface
    --  Note that Name_C is not included in this list, since it was already
-   --  declared earlier in the context of one-character identifier names
-   --  (where the order is critical to the fast look up process).
+   --  declared earlier in the context of one-character identifier names (where
+   --  the order is critical to the fast look up process).
 
    --  Note: there are no convention names corresponding to the conventions
    --  Entry and Protected, this is because these conventions cannot be
@@ -721,10 +718,10 @@ package Snames is
    --  are attributes that are defined in Ada 83, but not in Ada 95. These
    --  attributes are implemented in both Ada 83 and Ada 95 modes in GNAT.
 
-   --  The entries marked GNAT are attributes that are defined by GNAT
-   --  and implemented in both Ada 83 and Ada 95 modes. Full descriptions
-   --  of these implementation dependent attributes may be found in the
-   --  appropriate section in package Sem_Attr in file sem-attr.ads.
+   --  The entries marked GNAT are attributes that are defined by GNAT and
+   --  implemented in both Ada 83 and Ada 95 modes. Full descriptions of these
+   --  implementation dependent attributes may be found in the appropriate
+   --  section in Sem_Attr.
 
    --  The entries marked VMS are recognized only in OpenVMS implementations
    --  of GNAT, and are treated as illegal in all other contexts.
@@ -900,8 +897,8 @@ package Snames is
 
    --  Remaining attributes are ones that return entities
 
-   --  Note that Elab_Subp_Body is not considered to be a valid attribute
-   --  name unless we are operating in CodePeer mode.
+   --  Note that Elab_Subp_Body is not considered to be a valid attribute name
+   --  unless we are operating in CodePeer mode.
 
    First_Entity_Attribute_Name         : constant Name_Id := N + $;
    Name_Elab_Body                      : constant Name_Id := N + $; -- GNAT
@@ -929,9 +926,9 @@ package Snames is
 
    --  Names of recognized queuing policy identifiers
 
-   --  Note: policies are identified by the first character of the
-   --  name (e.g. F for FIFO_Queuing). If new policy names are added,
-   --  the first character must be distinct.
+   --  Note: policies are identified by the first character of the name (e.g. F
+   --  for FIFO_Queuing). If new policy names are added, the first character
+   --  must be distinct.
 
    First_Queuing_Policy_Name           : constant Name_Id := N + $;
    Name_FIFO_Queuing                   : constant Name_Id := N + $;
@@ -940,9 +937,9 @@ package Snames is
 
    --  Names of recognized task dispatching policy identifiers
 
-   --  Note: policies are identified by the first character of the
-   --  name (e.g. F for FIFO_Within_Priorities). If new policy names
-   --  are added, the first character must be distinct.
+   --  Note: policies are identified by the first character of the name (e.g. F
+   --  for FIFO_Within_Priorities). If new policy names are added, the first
+   --  character must be distinct.
 
    First_Task_Dispatching_Policy_Name    : constant Name_Id := N + $;
    Name_EDF_Across_Priorities            : constant Name_Id := N + $;
@@ -1088,8 +1085,8 @@ package Snames is
    Name_Raise_Exception                  : constant Name_Id := N + $;
 
    --  Additional reserved words and identifiers used in GNAT Project Files
-   --  Note that Name_External is already previously declared
-   --  The names with the -- GB annotation are only used in gprbuild
+   --  Note that Name_External is already previously declared.
+   --  The names with the -- GB annotation are only used in gprbuild.
 
    Name_Aggregate                          : constant Name_Id := N + $;
    Name_Archive_Builder                    : constant Name_Id := N + $;
