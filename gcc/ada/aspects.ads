@@ -147,6 +147,24 @@ package Aspects is
                         Aspect_Post          => True,
                         others               => False);
 
+   --  The following array indicates aspects that a subtype inherits from
+   --  its base type. True means that the subtype inherits the aspect from
+   --  its base type. False means it is not inherited.
+
+   Base_Aspect : constant array (Aspect_Id) of Boolean :=
+                   (Aspect_Atomic                  => True,
+                    Aspect_Atomic_Components       => True,
+                    Aspect_Discard_Names           => True,
+                    Aspect_Independent_Components  => True,
+                    Aspect_Iterator_Element        => True,
+                    Aspect_Constant_Indexing       => True,
+                    Aspect_Default_Iterator        => True,
+                    Aspect_Type_Invariant          => True,
+                    Aspect_Unchecked_Union         => True,
+                    Aspect_Variable_Indexing       => True,
+                    Aspect_Volatile                => True,
+                    others                         => False);
+
    --  The following array identifies all implementation defined aspects
 
    Impl_Defined_Aspects : constant array (Aspect_Id) of Boolean :=

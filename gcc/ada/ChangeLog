@@ -1,5 +1,31 @@
 2011-12-21  Arnaud Charlet  <charlet@adacore.com>
 
+	* gnat1drv.adb (Gnat1Drv): Always delete old scil files in
+	CodePeer mode.
+
+2011-12-21  Robert Dewar  <dewar@adacore.com>
+
+	* comperr.adb: Minor reformatting.
+
+2011-12-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* aspects.ads: New table Base_Aspect, to indicate that an aspect
+	is defined on a base type.
+	* aspects.adb (Find_Aspect): If the aspect is a Base_Aspect,
+	examine the representation items of the base type.
+
+2011-12-21  Pascal Obry  <obry@adacore.com>
+
+	* gnat_ugn.texi, prj.ads, prj-nmsc.adb, prj-attr.adb, projects.texi,
+	snames.ads-tmpl: Use Encapsulated instead of Fully Standalone library.
+
+2011-12-21  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (__gnat_is_executable_file_attr) [_WIN32]: Add parentheses
+	to kill warning.
+
+2011-12-21  Arnaud Charlet  <charlet@adacore.com>
+
 	* comperr.adb (Delete_SCIL_Files): Also delete .scilx files.
 	Fix implementation for child packages and package specs.
 	(Delete_SCIL_Files.Decode_Name_Buffer): New function.

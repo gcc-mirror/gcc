@@ -2220,12 +2220,12 @@ package body Prj.Nmsc is
                   end;
 
                elsif
-                 Attribute.Name = Name_Library_Fully_Standalone_Supported
+                 Attribute.Name = Name_Library_Encapsulated_Supported
                then
                   declare
                      pragma Unsuppress (All_Checks);
                   begin
-                     Project.Config.Lib_Fully_Standalone_Supported :=
+                     Project.Config.Lib_Encapsulated_Supported :=
                        Boolean'Value (Get_Name_String (Attribute.Value.Value));
                   exception
                      when Constraint_Error =>
@@ -2233,7 +2233,7 @@ package body Prj.Nmsc is
                           (Data.Flags,
                            "invalid value """
                              & Get_Name_String (Attribute.Value.Value)
-                             & """ for Library_Fully_Standalone_Supported",
+                             & """ for Library_Encapsulated_Supported",
                            Attribute.Value.Location, Project);
                   end;
 
@@ -2955,11 +2955,10 @@ package body Prj.Nmsc is
 
             elsif Project.Library_Kind /= Static
               and then not Lib_Standalone.Default
-              and then Get_Name_String (Lib_Standalone.Value) = "full"
+              and then Get_Name_String (Lib_Standalone.Value) = "encapsulated"
               and then Proj.Library_Kind /= Static
             then
-               --  A fully standalone library must depend only on static
-               --  libraries.
+               --  An encapsulated library must depend only on static libraries
 
                Error_Msg_Name_1 := Project.Name;
                Error_Msg_Name_2 := Proj.Name;
@@ -2967,16 +2966,17 @@ package body Prj.Nmsc is
                Error_Msg
                  (Data.Flags,
                   Continuation.all &
-                    "standalone library project %% cannot import shared " &
+                    "encapsulated library project %% cannot import shared " &
                     "library project %%",
                   Project.Location, Project);
                Continuation := Continuation_String'Access;
 
             elsif Project.Library_Kind /= Static
               and then Proj.Library_Kind = Static
-              and then (Lib_Standalone.Default
-                         or else
-                           Get_Name_String (Lib_Standalone.Value) /= "full")
+              and then
+                (Lib_Standalone.Default
+                  or else
+                    Get_Name_String (Lib_Standalone.Value) /= "encapsulated")
             then
                Error_Msg_Name_1 := Project.Name;
                Error_Msg_Name_2 := Proj.Name;
@@ -4532,8 +4532,8 @@ package body Prj.Nmsc is
                if Name_Buffer (1 .. Name_Len) = "standard" then
                   Project.Standalone_Library := Standard;
 
-               elsif Name_Buffer (1 .. Name_Len) = "full" then
-                  Project.Standalone_Library := Full;
+               elsif Name_Buffer (1 .. Name_Len) = "encapsulated" then
+                  Project.Standalone_Library := Encapsulated;
 
                elsif Name_Buffer (1 .. Name_Len) = "no" then
                   Project.Standalone_Library := No;

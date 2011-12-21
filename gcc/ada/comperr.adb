@@ -440,7 +440,8 @@ package body Comperr is
    procedure Delete_SCIL_Files is
       Main      : Node_Id;
       Unit_Name : Node_Id;
-      Success   : Boolean;
+
+      Success : Boolean;
       pragma Unreferenced (Success);
 
       procedure Decode_Name_Buffer;
@@ -451,9 +452,12 @@ package body Comperr is
       ------------------------
 
       procedure Decode_Name_Buffer is
-         J : Natural := 1;
-         K : Natural := 0;
+         J : Natural;
+         K : Natural;
+
       begin
+         J := 1;
+         K := 0;
          while J <= Name_Len loop
             K := K + 1;
 
@@ -472,6 +476,8 @@ package body Comperr is
 
          Name_Len := K;
       end Decode_Name_Buffer;
+
+   --  Start of processing for Decode_Name_Buffer
 
    begin
       --  If parsing was not successful, no Main_Unit is available, so return
@@ -493,8 +499,9 @@ package body Comperr is
          when N_Package_Body =>
             Unit_Name := Corresponding_Spec (Main);
 
+         --  Should never happen, but can be ignored in production
+
          when others =>
-            --  Should never happen, but can be ignored in production
             pragma Assert (False);
             return;
       end case;
@@ -507,8 +514,9 @@ package body Comperr is
             Get_Name_String (Chars (Defining_Identifier (Unit_Name)));
             Decode_Name_Buffer;
 
+         --  Should never happen, but can be ignored in production
+
          when others =>
-            --  Should never happen, but can be ignored in production
             pragma Assert (False);
             return;
       end case;

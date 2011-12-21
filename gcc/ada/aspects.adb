@@ -125,17 +125,29 @@ package body Aspects is
 
    function Find_Aspect (Ent : Entity_Id; A : Aspect_Id) return Node_Id is
       Ritem : Node_Id;
+      Typ   : Entity_Id;
 
    begin
 
       --  If the aspect is an inherited one and the entity is a class-wide
-      --  type, use the aspect of the specific type.
+      --  type, use the aspect of the specific type. If the type is a base
+      --  aspect, examine the rep. items of the base type.
 
-      if Is_Type (Ent)
-        and then Is_Class_Wide_Type (Ent)
-        and then Inherited_Aspect (A)
-      then
-         Ritem := First_Rep_Item (Etype (Ent));
+      if Is_Type (Ent) then
+         if Base_Aspect (A) then
+            Typ := Base_Type (Ent);
+         else
+            Typ := Ent;
+         end if;
+
+         if Is_Class_Wide_Type (Typ)
+           and then Inherited_Aspect (A)
+         then
+            Ritem := First_Rep_Item (Etype (Typ));
+         else
+            Ritem := First_Rep_Item (Typ);
+         end if;
+
       else
          Ritem := First_Rep_Item (Ent);
       end if;
