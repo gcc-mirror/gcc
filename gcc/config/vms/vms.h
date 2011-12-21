@@ -61,3 +61,7 @@ extern void vms_c_register_includes (const char *, const char *, int);
 #define SIZE_TYPE "unsigned int"
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "int"
+
+/* VMS doesn't support other sections than .text for code.  */
+
+#define TARGET_ASM_FUNCTION_SECTION vms_function_section

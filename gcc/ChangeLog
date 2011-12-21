@@ -1,3 +1,9 @@
+2011-12-21  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/vms-protos.h (vms_function_section): New prototype.
+	* config/vms/vms.c (vms_function_section): New function.
+	* config/vms/vms.h (TARGET_ASM_FUNCTION_SECTION): Define.
+
 2011-12-21  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41159
