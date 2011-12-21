@@ -306,13 +306,16 @@ remember_with_vars (tree t)
   *(tree *) htab_find_slot (tree_with_vars, t, INSERT) = t;
 }
 
+#define GIMPLE_REGISTER_TYPE(tt) \
+   (TREE_VISITED (tt) ? gimple_register_type (tt) : tt)
+
 #define LTO_FIXUP_TREE(tt) \
   do \
     { \
       if (tt) \
 	{ \
 	  if (TYPE_P (tt)) \
-	    (tt) = gimple_register_type (tt); \
+	    (tt) = GIMPLE_REGISTER_TYPE (tt); \
 	  if (VAR_OR_FUNCTION_DECL_P (tt) && TREE_PUBLIC (tt)) \
 	    remember_with_vars (t); \
 	} \
@@ -731,7 +734,14 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
     {
       tree t = VEC_index (tree, cache->nodes, i);
       if (t && TYPE_P (t))
-	gimple_register_type (t);
+	{
+	  tree newt = gimple_register_type (t);
+	  /* Mark non-prevailing types so we fix them up.  No need
+	     to reset that flag afterwards - nothing that refers
+	     to those types is left and they are collected.  */
+	  if (newt != t)
+	    TREE_VISITED (t) = 1;
+	}
     }
 
   /* Second fixup all trees in the new cache entries.  */
@@ -749,7 +759,7 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 	continue;
 
       /* Now try to find a canonical variant of T itself.  */
-      t = gimple_register_type (t);
+      t = GIMPLE_REGISTER_TYPE (t);
 
       if (t == oldt)
 	{
@@ -771,7 +781,7 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 	    }
 
 	  /* Query our new main variant.  */
-	  mv = gimple_register_type (TYPE_MAIN_VARIANT (t));
+	  mv = GIMPLE_REGISTER_TYPE (TYPE_MAIN_VARIANT (t));
 
 	  /* If we were the variant leader and we get replaced ourselves drop
 	     all variants from our list.  */
@@ -900,6 +910,9 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 
   data_in = lto_data_in_create (decl_data, (const char *) data + string_offset,
 				header->string_size, resolutions);
+
+  /* We do not uniquify the pre-loaded cache entries, those are middle-end
+     internal types that should not be merged.  */
 
   /* Read the global declarations and types.  */
   while (ib_main.p < ib_main.len)

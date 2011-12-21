@@ -1,3 +1,11 @@
+2011-12-21  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (GIMPLE_REGISTER_TYPE): New define.
+	(LTO_FIXUP_TREE): Use it.
+	(uniquify_nodes): Mark new non-prevailing types and avoid
+	calling gimple_register_type on others.
+	(lto_read_decls): Add comment.
+
 2011-12-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lto.h (lto_parse_hex): Delete.
