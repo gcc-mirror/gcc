@@ -318,6 +318,19 @@ build_base_path (enum tree_code code,
       return expr;
     }
 
+  /* If we're in an NSDMI, we don't have the full constructor context yet
+     that we need for converting to a virtual base, so just build a stub
+     CONVERT_EXPR and expand it later in bot_replace.  */
+  if (virtual_access && fixed_type_p < 0
+      && current_scope () != current_function_decl)
+    {
+      expr = build1 (CONVERT_EXPR, ptr_target_type, expr);
+      CONVERT_EXPR_VBASE_PATH (expr) = true;
+      if (!want_pointer)
+	expr = build_indirect_ref (EXPR_LOCATION (expr), expr, RO_NULL);
+      return expr;
+    }
+
   /* Do we need to check for a null pointer?  */
   if (want_pointer && !nonnull)
     {

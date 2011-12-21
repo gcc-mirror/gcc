@@ -1,3 +1,12 @@
+2011-12-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51611
+	* cp-tree.h (CONVERT_EXPR_VBASE_PATH): New.
+	* class.c (build_base_path): Defer vbase conversion in an NSDMI.
+	* tree.c (bot_replace): Expand it here.
+	* cp-gimplify.c (cp_genericize_r): Make sure deferred conversion
+	doesn't leak into GENERIC.
+
 2011-12-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51305

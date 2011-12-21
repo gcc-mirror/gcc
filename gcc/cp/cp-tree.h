@@ -74,6 +74,7 @@ c-common.h, not after.
       DECL_OVERRIDE_P (in FUNCTION_DECL)
       IMPLICIT_CONV_EXPR_DIRECT_INIT (in IMPLICIT_CONV_EXPR)
       TRANSACTION_EXPR_IS_STMT (in TRANSACTION_EXPR)
+      CONVERT_EXPR_VBASE_PATH (in CONVERT_EXPR)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -4010,6 +4011,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define DIRECT_INIT_EXPR_P(TYPE,EXPR)					\
   (TREE_CODE (EXPR) == TARGET_EXPR && TREE_LANG_FLAG_2 (EXPR)		\
    && same_type_ignoring_top_level_qualifiers_p (TYPE, TREE_TYPE (EXPR)))
+
+/* True if this CONVERT_EXPR is for a conversion to virtual base in
+   an NSDMI, and should be re-evaluated when used in a constructor.  */
+#define CONVERT_EXPR_VBASE_PATH(NODE) \
+  TREE_LANG_FLAG_0 (CONVERT_EXPR_CHECK (NODE))
 
 /* An enumeration of the kind of tags that C++ accepts.  */
 enum tag_types {
