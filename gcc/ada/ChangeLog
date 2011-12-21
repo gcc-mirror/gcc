@@ -1,3 +1,7 @@
+2011-12-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* s-oscons-tmplt.c [__alpha__ && __osf__] (_XOPEN_SOURCE): Define.
+
 2011-12-21  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.ads, sem_ch3.adb (Check_CPP_Type): New subprogram.
