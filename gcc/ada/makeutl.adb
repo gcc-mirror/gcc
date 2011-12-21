@@ -1539,6 +1539,8 @@ package body Makeutl is
          procedure Do_Complete
            (Project : Project_Id; Tree : Project_Tree_Ref)
          is
+            J : Integer;
+
          begin
             if Mains.Number_Of_Mains (Tree) > 0
               or else Mains.Count_Of_Mains_With_No_Tree > 0
@@ -1547,7 +1549,8 @@ package body Makeutl is
                --  files we will be adding extra files at the end, and there's
                --  no need to process them in turn.
 
-               for J in reverse Names.First .. Names.Last loop
+               J := Names.Last;
+               loop
                   declare
                      File        : Main_Info       := Names.Table (J);
                      Main_Id     : File_Name_Type  := File.File;
@@ -1637,35 +1640,47 @@ package body Makeutl is
                         end if;
 
                         if Source /= No_Source then
+                           if not Is_Allowed_Language
+                                    (Source.Language.Name)
+                           then
+                              --  Remove any main that is not in the list of
+                              --  restricted languages.
 
-                           --  If we have found a multi-unit source file but
-                           --  did not specify an index initially, we'll need
-                           --  to compile all the units from the same source
-                           --  file.
+                              Names.Table (J .. Names.Last - 1) :=
+                                Names.Table (J + 1 .. Names.Last);
+                              Names.Set_Last (Names.Last - 1);
 
-                           if Source.Index /= 0 and then File.Index = 0 then
-                              Add_Multi_Unit_Sources (File.Tree, Source);
+                           else
+                              --  If we have found a multi-unit source file but
+                              --  did not specify an index initially, we'll
+                              --  need to compile all the units from the same
+                              --  source file.
+
+                              if Source.Index /= 0 and then File.Index = 0 then
+                                 Add_Multi_Unit_Sources (File.Tree, Source);
+                              end if;
+
+                              --  Now update the original Main, otherwise it
+                              --  will be reported as not found.
+
+                              Debug_Output
+                                ("found main in project", Source.Project.Name);
+                              Names.Table (J).File    := Source.File;
+                              Names.Table (J).Project := Source.Project;
+
+                              if Names.Table (J).Tree = null then
+                                 Names.Table (J).Tree := File.Tree;
+
+                                 Builder_Data (File.Tree).Number_Of_Mains :=
+                                   Builder_Data (File.Tree).Number_Of_Mains
+                                                                         + 1;
+                                 Mains.Count_Of_Mains_With_No_Tree :=
+                                   Mains.Count_Of_Mains_With_No_Tree - 1;
+                              end if;
+
+                              Names.Table (J).Source  := Source;
+                              Names.Table (J).Index   := Source.Index;
                            end if;
-
-                           --  Now update the original Main, otherwise it will
-                           --  be reported as not found.
-
-                           Debug_Output
-                             ("found main in project", Source.Project.Name);
-                           Names.Table (J).File    := Source.File;
-                           Names.Table (J).Project := Source.Project;
-
-                           if Names.Table (J).Tree = null then
-                              Names.Table (J).Tree := File.Tree;
-
-                              Builder_Data (File.Tree).Number_Of_Mains :=
-                                Builder_Data (File.Tree).Number_Of_Mains + 1;
-                              Mains.Count_Of_Mains_With_No_Tree :=
-                                Mains.Count_Of_Mains_With_No_Tree - 1;
-                           end if;
-
-                           Names.Table (J).Source  := Source;
-                           Names.Table (J).Index   := Source.Index;
 
                         elsif File.Location /= No_Location then
 
@@ -1684,6 +1699,9 @@ package body Makeutl is
                         end if;
                      end if;
                   end;
+
+                  J := J - 1;
+                  exit when J < Names.First;
                end loop;
             end if;
 
@@ -2781,10 +2799,11 @@ package body Makeutl is
                Source := Prj.Element (Iter);
                exit when Source = No_Source;
 
-               if Is_Compilable (Source)
+               if Is_Allowed_Language (Source.Language.Name)
+                 and then Is_Compilable (Source)
                  and then
                    (All_Projects
-                    or else Is_Extending (Project, Source.Project))
+                     or else Is_Extending (Project, Source.Project))
                  and then not Source.Locally_Removed
                  and then Source.Replaced_By = No_Source
                  and then

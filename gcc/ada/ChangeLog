@@ -1,3 +1,50 @@
+2011-12-21  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Report_No_Sources): Remove argument Lang. Report
+	no sources even for languages that are not allowed.
+	(Add_Source): Get the source even when the language is not allowed.
+
+2011-12-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb (Process_Formals): Add defensive code.
+
+2011-12-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch7.adb, sem_ch13.adb (Analyze_Package_Specification): Build the
+	invariant procedure of a type declaration that is a completion and has
+	aspect specifications.
+	(Build_Invariant_Procedure): If the procedure is built for a
+	type declaration that is a completion, analyze body expliitly
+	because all private declarations have been already analyzed.
+
+2011-12-21  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.adb, a-cfhase.adb, a-cforma.adb, a-cforse.adb,
+	a-cofove.adb: Minor reformating on formal containers
+
+2011-12-21  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.adb (Mains.Complete_Mains.Do_Complete): Remove
+	any main that is not in the list of restricted languages.
+	(Insert_Project_Sources.Do_Insert): Only add sources of languages
+	in the list of restricted languages.
+
+2011-12-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Valid_Conversion): A type conversion is valid when
+	the target type is an anonymous access type and the operand is a
+	rewriting of an allocator. The conversion is typically inserted
+	when the designated type is an interface.
+
+2011-12-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Establish_Task_Master): If the enclosing block
+	has no declarations, create new declarative list for it.
+
+2011-12-21  Matthew Heaney  <heaney@adacore.com>
+
+	* a-rbtgbk.adb (Generic_Conditional_Insert): Fixed incorrect comment.
+
 2011-12-21  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Do not

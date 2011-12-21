@@ -1403,15 +1403,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       pragma Assert
         (Vet (Container, Position), "bad cursor in Replace_Element");
 
-      declare
-         N : Node_Array renames Container.Nodes;
-      begin
-         N (Position.Node).Element := New_Item;
-      end;
-
-      --  Above is peculiar, why not simply
-      --  Container.Nodes (Position.Node).Element := New_Item ???
-
+      Container.Nodes (Position.Node).Element := New_Item;
    end Replace_Element;
 
    ----------------------

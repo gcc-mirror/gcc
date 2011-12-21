@@ -486,7 +486,6 @@ package body Prj.Nmsc is
 
    procedure Report_No_Sources
      (Project      : Project_Id;
-      Lang         : Name_Id;
       Lang_Name    : String;
       Data         : Tree_Processing_Data;
       Location     : Source_Ptr;
@@ -643,13 +642,6 @@ package body Prj.Nmsc is
       Source_To_Replace : Source_Id := No_Source;
 
    begin
-      --  Nothing to do if the language is not one of the restricted ones
-
-      if not Is_Allowed_Language (Lang_Id.Name) then
-         Id := No_Source;
-         return;
-      end if;
-
       --  Check if the same file name or unit is used in the prj tree
 
       Add_Src := True;
@@ -7809,7 +7801,6 @@ package body Prj.Nmsc is
                   if Source = No_Source then
                      Report_No_Sources
                        (Project.Project,
-                        Language.Name,
                         Get_Name_String (Language.Display_Name),
                         Data,
                         Project.Source_List_File_Location,
@@ -8256,15 +8247,13 @@ package body Prj.Nmsc is
 
    procedure Report_No_Sources
      (Project      : Project_Id;
-      Lang         : Name_Id;
       Lang_Name    : String;
       Data         : Tree_Processing_Data;
       Location     : Source_Ptr;
       Continuation : Boolean := False)
    is
    begin
-      if Is_Allowed_Language (Lang) then
-         case Data.Flags.When_No_Sources is
+      case Data.Flags.When_No_Sources is
          when Silent =>
             null;
 
@@ -8283,8 +8272,7 @@ package body Prj.Nmsc is
                   Error_Msg (Data.Flags, Msg, Location, Project);
                end if;
             end;
-         end case;
-      end if;
+      end case;
    end Report_No_Sources;
 
    ----------------------

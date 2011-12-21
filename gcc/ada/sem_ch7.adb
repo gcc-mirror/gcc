@@ -1378,6 +1378,16 @@ package body Sem_Ch7 is
               ("full view of & does not have preelaborable initialization", E);
          end if;
 
+         --  An invariant may appear on a full view of a type
+
+         if Is_Type (E)
+           and then Has_Private_Declaration (E)
+           and then Nkind (Parent (E)) = N_Full_Type_Declaration
+           and then Has_Aspects (Parent (E))
+         then
+            Build_Invariant_Procedure (E, N);
+         end if;
+
          Next_Entity (E);
       end loop;
 

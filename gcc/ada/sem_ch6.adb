@@ -9552,6 +9552,12 @@ package body Sem_Ch6 is
             Num_Out_Params := Num_Out_Params + 1;
          end if;
 
+         --  Skip remaining processing if formal type was in error
+
+         if Etype (Formal) = Any_Type or else Error_Posted (Formal) then
+            goto Next_Parameter;
+         end if;
+
          --  Force call by reference if aliased
 
          if Is_Aliased (Formal) then
@@ -9573,6 +9579,7 @@ package body Sem_Ch6 is
             Set_Mechanism (Formal, By_Reference);
          end if;
 
+      <<Next_Parameter>>
          Next (Param_Spec);
       end loop;
 
