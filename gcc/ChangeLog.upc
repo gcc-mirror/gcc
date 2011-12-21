@@ -1,3 +1,10 @@
+2011-12-20  Nenad Vukicevic <nenad@intrepid.com>
+
+	* top-level/Makefile.def (flags_to_pass): Added GUPC
+	defines. Fixes the make error when upc is not specified as one
+	of the languages to build.
+	* top-level/Makefile.in: Re-generate.
+
 2011-11-22  Gary Funck  <gary@intrepid.com>
 
 	* DEV-PHASE: "GCC UPC" -> "GNU UPC", and bump minor rev.
