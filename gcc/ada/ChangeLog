@@ -1,3 +1,28 @@
+2011-12-21  Matthew Heaney  <heaney@adacore.com>
+
+	* a-crbtgk.adb (Generic_Conditional_Insert): Fixed incorrect comment.
+
+2011-12-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): If the name
+	of an element iterator is not an entity name we introduce a
+	local renaming declaration for it. To prevent spurious warnings
+	on parameterless function calls that return a container, when
+	expansion is disabled (either explicitly or because of a previous
+	errors) the name must be marked as not coming from source.
+
+2011-12-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Separate
+	handling in CodePeer mode and only ignore Component_Size
+	attribute.
+
+2011-12-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb (Process_Formals): Set proper mechanism for
+	formals whose types have conventions Ada_Pass_By_Copy or
+	Ada_Pass_By_Reference.
+
 2011-12-21  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat1drv.adb (Gnat1Drv): Always delete old scil files in

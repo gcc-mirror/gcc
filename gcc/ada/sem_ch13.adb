@@ -2108,11 +2108,28 @@ package body Sem_Ch13 is
          Set_Analyzed (N, True);
       end if;
 
-      --  Process Ignore_Rep_Clauses option (we also ignore rep clauses in
-      --  CodePeer mode or Alfa mode, since they are not relevant in these
-      --  contexts).
+      --  Ignore some selected attributes in CodePeer mode since they are not
+      --  relevant in this context.
 
-      if Ignore_Rep_Clauses or CodePeer_Mode or Alfa_Mode then
+      if CodePeer_Mode then
+         case Id is
+
+            --  Ignore Component_Size in CodePeer mode, to avoid changing the
+            --  internal representation of types by implicitly packing them.
+
+            when Attribute_Component_Size =>
+               Rewrite (N, Make_Null_Statement (Sloc (N)));
+               return;
+
+            when others =>
+               null;
+         end case;
+      end if;
+
+      --  Process Ignore_Rep_Clauses option (we also ignore rep clauses in
+      --  Alfa mode, since they are not relevant in this context).
+
+      if Ignore_Rep_Clauses or Alfa_Mode then
          case Id is
 
             --  The following should be ignored. They do not affect legality

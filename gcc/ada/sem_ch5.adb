@@ -2257,11 +2257,17 @@ package body Sem_Ch5 is
          begin
             Typ := Etype (Iter_Name);
 
+            --  The name in the renaming declaration may be a function call.
+            --  Indicate that it does not come from source, to suppress
+            --  spurious warnings on renamings of parameterless functions,
+            --  a common enough idiom in user-defined iterators.
+
             Decl :=
               Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier => Id,
                 Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
-                Name                => Relocate_Node (Iter_Name));
+                Name                =>
+                  New_Copy_Tree (Iter_Name, New_Sloc => Loc));
 
             Insert_Actions (Parent (Parent (N)), New_List (Decl));
             Rewrite (Name (N), New_Occurrence_Of (Id, Loc));

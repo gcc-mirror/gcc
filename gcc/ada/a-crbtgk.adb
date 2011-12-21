@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -121,6 +121,21 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       X : Node_Access := Tree.Root;
 
    begin
+      --  This is a "conditional" insertion, meaning that the insertion request
+      --  can "fail" in the sense that no new node is created. If the Key is
+      --  equivalent to an existing node, then we return the existing node and
+      --  Inserted is set to False. Otherwise, we allocate a new node (via
+      --  Insert_Post) and Inserted is set to True.
+
+      --  Note that we are testing for equivalence here, not equality. Key must
+      --  be strictly less than its next neighbor, and strictly greater than
+      --  its previous neighbor, in order for the conditional insertion to
+      --  succeed.
+
+      --  We search the tree to find the nearest neighbor of Key, which is
+      --  either the smallest node greater than Key (Inserted is True), or the
+      --  largest node less or equivalent to Key (Inserted is False).
+
       Inserted := True;
       while X /= null loop
          Y := X;
@@ -128,32 +143,49 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
          X := (if Inserted then Ops.Left (X) else Ops.Right (X));
       end loop;
 
-      --  If Inserted is True, then this means either that Tree is
-      --  empty, or there was a least one node (strictly) greater than
-      --  Key. Otherwise, it means that Key is equal to or greater than
-      --  every node.
-
       if Inserted then
+
+         --  Either Tree is empty, or Key is less than Y. If Y is the first
+         --  node in the tree, then there are no other nodes that we need to
+         --  search for, and we insert a new node into the tree.
+
          if Y = Tree.First then
             Insert_Post (Tree, Y, True, Node);
             return;
          end if;
 
+         --  Y is the next nearest-neighbor of Key. We know that Key is not
+         --  equivalent to Y (because Key is strictly less than Y), so we move
+         --  to the previous node, the nearest-neighbor just smaller or
+         --  equivalent to Key.
+
          Node := Ops.Previous (Y);
 
       else
+         --  Y is the previous nearest-neighbor of Key. We know that Key is not
+         --  less than Y, which means either that Key is equivalent to Y, or
+         --  greater than Y.
+
          Node := Y;
       end if;
 
-      --  Here Node has a value that is less than or equal to Key. We
-      --  now have to resolve whether Key is equal to or greater than
-      --  Node, which determines whether the insertion succeeds.
+      --  Key is equivalent to or greater than Node. We must resolve which is
+      --  the case, to determine whether the conditional insertion succeeds.
 
       if Is_Greater_Key_Node (Key, Node) then
+
+         --  Key is strictly greater than Node, which means that Key is not
+         --  equivalent to Node. In this case, the insertion succeeds, and we
+         --  insert a new node into the tree.
+
          Insert_Post (Tree, Y, Inserted, Node);
          Inserted := True;
          return;
       end if;
+
+      --  Key is equivalent to Node. This is a conditional insertion, so we do
+      --  not insert a new node in this case. We return the existing node and
+      --  report that no insertion has occurred.
 
       Inserted := False;
    end Generic_Conditional_Insert;
