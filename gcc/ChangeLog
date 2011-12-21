@@ -1,3 +1,7 @@
+2011-12-21  Jason Merrill  <jason@redhat.com>
+
+	* doc/standards.texi (C++ language): Update for C++11.
+
 2011-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-patterns.c (vect_operation_fits_smaller_type): Initialize
