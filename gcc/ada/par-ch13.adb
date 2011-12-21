@@ -376,7 +376,7 @@ package body Ch13 is
    --------------------------------
 
    --  ASPECT_SPECIFICATION ::=
-   --    with ASPECT_MARK [=> ASPECT_DEFINITION] {.
+   --    with ASPECT_MARK [=> ASPECT_DEFINITION] {,
    --         ASPECT_MARK [=> ASPECT_DEFINITION] }
 
    --  ASPECT_MARK ::= aspect_IDENTIFIER['Class]
@@ -411,7 +411,7 @@ package body Ch13 is
       Ptr := Token_Ptr;
       Scan; -- past WITH
 
-      --  Here we have an aspect specification to scan, note that we don;t
+      --  Here we have an aspect specification to scan, note that we don't
       --  set the flag till later, because it may turn out that we have no
       --  valid aspects in the list.
 
@@ -547,16 +547,76 @@ package body Ch13 is
 
             if Token = Tok_Comma then
                Scan; -- past comma
+               goto Continue;
+
+            --  Recognize the case where a comma is missing between two
+            --  aspects, issue an error and proceed with next aspect.
+
+            elsif Token = Tok_Identifier
+              and then Get_Aspect_Id (Token_Name) /= No_Aspect
+            then
+               declare
+                  Scan_State : Saved_Scan_State;
+
+               begin
+                  Save_Scan_State (Scan_State);
+                  Scan; -- past identifier
+
+                  if Token = Tok_Arrow then
+                     Restore_Scan_State (Scan_State);
+                     Error_Msg_AP -- CODEFIX
+                       ("|missing "",""");
+                     goto Continue;
+
+                  else
+                     Restore_Scan_State (Scan_State);
+                  end if;
+               end;
+
+            --  Recognize the case where a semicolon was mistyped for a comma
+            --  between two aspects, issue an error and proceed with next
+            --  aspect.
+
+            elsif Token = Tok_Semicolon then
+               declare
+                  Scan_State : Saved_Scan_State;
+
+               begin
+                  Save_Scan_State (Scan_State);
+                  Scan; -- past semicolon
+
+                  if Token = Tok_Identifier
+                    and then Get_Aspect_Id (Token_Name) /= No_Aspect
+                  then
+                     Scan; -- past identifier
+
+                     if Token = Tok_Arrow then
+                        Restore_Scan_State (Scan_State);
+                        Error_Msg_SC -- CODEFIX
+                          ("|"";"" should be "",""");
+                        Scan; -- past semicolon
+                        goto Continue;
+
+                     else
+                        Restore_Scan_State (Scan_State);
+                     end if;
+
+                  else
+                     Restore_Scan_State (Scan_State);
+                  end if;
+               end;
+            end if;
 
             --  Must be terminator character
 
-            else
-               if Semicolon then
-                  T_Semicolon;
-               end if;
-
-               exit;
+            if Semicolon then
+               T_Semicolon;
             end if;
+
+            exit;
+
+         <<Continue>>
+            null;
          end if;
       end loop;
 

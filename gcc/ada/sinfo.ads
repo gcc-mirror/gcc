@@ -6571,7 +6571,7 @@ package Sinfo is
       --  We modify the RM grammar here, the RM grammar is:
 
       --     ASPECT_SPECIFICATION ::=
-      --       with ASPECT_MARK [=> ASPECT_DEFINITION] {.
+      --       with ASPECT_MARK [=> ASPECT_DEFINITION] {,
       --            ASPECT_MARK [=> ASPECT_DEFINITION] }
 
       --     ASPECT_MARK ::= aspect_IDENTIFIER['Class]

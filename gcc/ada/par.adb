@@ -884,7 +884,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  argument is False, the scan pointer is left pointing past the aspects
       --  and the caller must check for a proper terminator.
       --
-      --  P_Aspect_Specification is called with the current token pointing to
+      --  P_Aspect_Specifications is called with the current token pointing to
       --  either a WITH keyword starting an aspect specification, or an
       --  instance of the terminator token. In the former case, the aspect
       --  specifications are scanned out including the terminator token if it
