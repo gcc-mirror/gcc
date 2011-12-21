@@ -330,6 +330,24 @@ static reg_class_t ia64_preferred_reload_class (rtx, reg_class_t);
 static enum machine_mode ia64_get_reg_raw_mode (int regno);
 static section * ia64_hpux_function_section (tree, enum node_frequency,
 					     bool, bool);
+
+static bool ia64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
+					      const unsigned char *sel);
+
+#define MAX_VECT_LEN	8
+
+struct expand_vec_perm_d
+{
+  rtx target, op0, op1;
+  unsigned char perm[MAX_VECT_LEN];
+  enum machine_mode vmode;
+  unsigned char nelt;
+  bool one_operand_p;
+  bool testing_p; 
+};
+
+static bool ia64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d);
+
 
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ia64_attribute_table[] =
@@ -625,6 +643,9 @@ static const struct attribute_spec ia64_attribute_table[] =
    change order of insns.  It also needs a valid CFG.  */
 #undef TARGET_DELAY_VARTRACK
 #define TARGET_DELAY_VARTRACK true
+
+#undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
+#define TARGET_VECTORIZE_VEC_PERM_CONST_OK ia64_vectorize_vec_perm_const_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2027,28 +2048,28 @@ ia64_expand_vecint_minmax (enum rtx_code code, enum machine_mode mode,
 void
 ia64_unpack_assemble (rtx out, rtx lo, rtx hi, bool highp)
 {
-  enum machine_mode mode = GET_MODE (lo);
-  rtx (*gen) (rtx, rtx, rtx);
-  rtx x;
+  enum machine_mode vmode = GET_MODE (lo);
+  unsigned int i, high, nelt = GET_MODE_NUNITS (vmode);
+  struct expand_vec_perm_d d;
+  bool ok;
 
-  switch (mode)
+  d.target = gen_lowpart (vmode, out);
+  d.op0 = (TARGET_BIG_ENDIAN ? hi : lo);
+  d.op1 = (TARGET_BIG_ENDIAN ? lo : hi);
+  d.vmode = vmode;
+  d.nelt = nelt;
+  d.one_operand_p = false;
+  d.testing_p = false;
+
+  high = (highp ? nelt / 2 : 0);
+  for (i = 0; i < nelt / 2; ++i)
     {
-    case V8QImode:
-      gen = highp ? gen_vec_interleave_highv8qi : gen_vec_interleave_lowv8qi;
-      break;
-    case V4HImode:
-      gen = highp ? gen_vec_interleave_highv4hi : gen_vec_interleave_lowv4hi;
-      break;
-    default:
-      gcc_unreachable ();
+      d.perm[i * 2] = i + high;
+      d.perm[i * 2 + 1] = i + high + nelt;
     }
 
-  x = gen_lowpart (mode, out);
-  if (TARGET_BIG_ENDIAN)
-    x = gen (x, hi, lo);
-  else
-    x = gen (x, lo, hi);
-  emit_insn (x);
+  ok = ia64_expand_vec_perm_const_1 (&d);
+  gcc_assert (ok);
 }
 
 /* Return a vector of the sign-extension of VEC.  */
@@ -11045,6 +11066,558 @@ ia64_hpux_function_section (tree decl ATTRIBUTE_UNUSED,
 			    bool exit ATTRIBUTE_UNUSED)
 {
   return NULL;
+}
+
+/* Construct (set target (vec_select op0 (parallel perm))) and
+   return true if that's a valid instruction in the active ISA.  */
+
+static bool
+expand_vselect (rtx target, rtx op0, const unsigned char *perm, unsigned nelt)
+{
+  rtx rperm[MAX_VECT_LEN], x;
+  unsigned i;
+
+  for (i = 0; i < nelt; ++i)
+    rperm[i] = GEN_INT (perm[i]);
+
+  x = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (nelt, rperm));
+  x = gen_rtx_VEC_SELECT (GET_MODE (target), op0, x);
+  x = gen_rtx_SET (VOIDmode, target, x);
+
+  x = emit_insn (x);
+  if (recog_memoized (x) < 0)
+    {
+      remove_insn (x);
+      return false;
+    }
+  return true;
+}
+
+/* Similar, but generate a vec_concat from op0 and op1 as well.  */
+
+static bool
+expand_vselect_vconcat (rtx target, rtx op0, rtx op1,
+			const unsigned char *perm, unsigned nelt)
+{
+  enum machine_mode v2mode;
+  rtx x;
+
+  v2mode = GET_MODE_2XWIDER_MODE (GET_MODE (op0));
+  x = gen_rtx_VEC_CONCAT (v2mode, op0, op1);
+  return expand_vselect (target, x, perm, nelt);
+}
+
+/* Try to expand a no-op permutation.  */
+
+static bool
+expand_vec_perm_identity (struct expand_vec_perm_d *d)
+{
+  unsigned i, nelt = d->nelt;
+
+  for (i = 0; i < nelt; ++i)
+    if (d->perm[i] != i)
+      return false;
+
+  if (!d->testing_p)
+    emit_move_insn (d->target, d->op0);
+
+  return true;
+}
+
+/* Try to expand D via a shrp instruction.  */
+
+static bool
+expand_vec_perm_shrp (struct expand_vec_perm_d *d)
+{
+  unsigned i, nelt = d->nelt, shift, mask;
+  rtx tmp, op0, op1;;
+
+  /* ??? Don't force V2SFmode into the integer registers.  */
+  if (d->vmode == V2SFmode)
+    return false;
+
+  mask = (d->one_operand_p ? nelt - 1 : 2 * nelt - 1);
+
+  shift = d->perm[0];
+  for (i = 1; i < nelt; ++i)
+    if (d->perm[i] != ((shift + i) & mask))
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+  shift *= GET_MODE_UNIT_SIZE (d->vmode) * BITS_PER_UNIT;
+
+  /* We've eliminated the shift 0 case via expand_vec_perm_identity.  */
+  gcc_assert (IN_RANGE (shift, 1, 63));
+
+  /* Recall that big-endian elements are numbered starting at the top of
+     the register.  Ideally we'd have a shift-left-pair.  But since we
+     don't, convert to a shift the other direction.  */
+  if (BYTES_BIG_ENDIAN)
+    shift = 64 - shift;
+
+  tmp = gen_reg_rtx (DImode);
+  op0 = (shift < nelt ? d->op0 : d->op1);
+  op1 = (shift < nelt ? d->op1 : d->op0);
+  op0 = gen_lowpart (DImode, op0);
+  op1 = gen_lowpart (DImode, op1);
+  emit_insn (gen_shrp (tmp, op0, op1, GEN_INT (shift)));
+
+  emit_move_insn (d->target, gen_lowpart (d->vmode, tmp));
+  return true;
+}
+
+/* Try to instantiate D in a single instruction.  */
+
+static bool
+expand_vec_perm_1 (struct expand_vec_perm_d *d)
+{     
+  unsigned i, nelt = d->nelt;
+  unsigned char perm2[MAX_VECT_LEN];
+
+  /* Try single-operand selections.  */
+  if (d->one_operand_p)
+    {
+      if (expand_vec_perm_identity (d))
+	return true;
+      if (expand_vselect (d->target, d->op0, d->perm, nelt))
+	return true;
+    }
+
+  /* Try two operand selections.  */
+  if (expand_vselect_vconcat (d->target, d->op0, d->op1, d->perm, nelt))
+    return true;
+
+  /* Recognize interleave style patterns with reversed operands.  */
+  if (!d->one_operand_p)
+    {
+      for (i = 0; i < nelt; ++i)
+	{
+	  unsigned e = d->perm[i];
+	  if (e >= nelt)
+	    e -= nelt;
+	  else
+	    e += nelt;
+	  perm2[i] = e;
+	}
+
+      if (expand_vselect_vconcat (d->target, d->op1, d->op0, perm2, nelt))
+	return true;
+    }
+
+  if (expand_vec_perm_shrp (d))
+    return true;
+
+  /* ??? Look for deposit-like permutations where most of the result 
+     comes from one vector unchanged and the rest comes from a 
+     sequential hunk of the other vector.  */
+
+  return false;
+}
+
+/* Pattern match broadcast permutations.  */
+
+static bool
+expand_vec_perm_broadcast (struct expand_vec_perm_d *d)
+{
+  unsigned i, elt, nelt = d->nelt;
+  unsigned char perm2[2];
+  rtx temp;
+  bool ok;
+
+  if (!d->one_operand_p)
+    return false;
+
+  elt = d->perm[0];
+  for (i = 1; i < nelt; ++i)
+    if (d->perm[i] != elt)
+      return false;
+
+  switch (d->vmode)
+    {
+    case V2SImode:
+    case V2SFmode:
+      /* Implementable by interleave.  */
+      perm2[0] = elt;
+      perm2[1] = elt + 2;
+      ok = expand_vselect_vconcat (d->target, d->op0, d->op0, perm2, 2);
+      gcc_assert (ok);
+      break;
+
+    case V8QImode:
+      /* Implementable by extract + broadcast.  */
+      if (BYTES_BIG_ENDIAN)
+	elt = 7 - elt;
+      elt *= BITS_PER_UNIT;
+      temp = gen_reg_rtx (DImode);
+      emit_insn (gen_extzv (temp, gen_lowpart (DImode, d->op0),
+			    GEN_INT (elt), GEN_INT (8)));
+      emit_insn (gen_mux1_brcst_qi (d->target, gen_lowpart (QImode, temp)));
+      break;
+
+    case V4HImode:
+      /* Should have been matched directly by vec_select.  */
+    default:
+      gcc_unreachable ();
+    }
+
+  return true;
+}
+
+/* A subroutine of ia64_expand_vec_perm_const_1.  Try to simplify a
+   two vector permutation into a single vector permutation by using
+   an interleave operation to merge the vectors.  */
+
+static bool
+expand_vec_perm_interleave_2 (struct expand_vec_perm_d *d)
+{
+  struct expand_vec_perm_d dremap, dfinal;
+  unsigned char remap[2 * MAX_VECT_LEN];
+  unsigned contents, i, nelt, nelt2;
+  unsigned h0, h1, h2, h3;
+  rtx seq;
+  bool ok;
+
+  if (d->one_operand_p)
+    return false;
+
+  nelt = d->nelt;
+  nelt2 = nelt / 2;
+
+  /* Examine from whence the elements come.  */
+  contents = 0;
+  for (i = 0; i < nelt; ++i)
+    contents |= 1u << d->perm[i];
+
+  memset (remap, 0xff, sizeof (remap));
+  dremap = *d;
+
+  h0 = (1u << nelt2) - 1;
+  h1 = h0 << nelt2;
+  h2 = h0 << nelt;
+  h3 = h0 << (nelt + nelt2);
+  
+  if ((contents & (h0 | h2)) == contents)	/* punpck even halves */
+    {
+      for (i = 0; i < nelt; ++i)
+	{
+	  unsigned which = i / 2 + (i & 1 ? nelt : 0);
+	  remap[which] = i;
+	  dremap.perm[i] = which;
+	}
+    }
+  else if ((contents & (h1 | h3)) == contents)	/* punpck odd halves */
+    {
+      for (i = 0; i < nelt; ++i)
+	{
+	  unsigned which = i / 2 + nelt2 + (i & 1 ? nelt : 0);
+	  remap[which] = i;
+	  dremap.perm[i] = which;
+	}
+    }
+  else if ((contents & 0x5555) == contents)	/* mix even elements */
+    {
+      for (i = 0; i < nelt; ++i)
+	{
+	  unsigned which = (i & ~1) + (i & 1 ? nelt : 0);
+	  remap[which] = i;
+	  dremap.perm[i] = which;
+	}
+    }
+  else if ((contents & 0xaaaa) == contents)	/* mix odd elements */
+    {
+      for (i = 0; i < nelt; ++i)
+	{
+	  unsigned which = (i | 1) + (i & 1 ? nelt : 0);
+	  remap[which] = i;
+	  dremap.perm[i] = which;
+	}
+    }
+  else if (floor_log2 (contents) - ctz_hwi (contents) < (int)nelt) /* shrp */
+    {
+      unsigned shift = ctz_hwi (contents);
+      for (i = 0; i < nelt; ++i)
+	{
+	  unsigned which = (i + shift) & (2 * nelt - 1);
+	  remap[which] = i;
+	  dremap.perm[i] = which;
+	}
+    }
+  else
+    return false;
+
+  /* Use the remapping array set up above to move the elements from their
+     swizzled locations into their final destinations.  */
+  dfinal = *d;
+  for (i = 0; i < nelt; ++i)
+    {
+      unsigned e = remap[d->perm[i]];
+      gcc_assert (e < nelt);
+      dfinal.perm[i] = e;
+    }
+  dfinal.op0 = gen_reg_rtx (dfinal.vmode);
+  dfinal.op1 = dfinal.op0;
+  dfinal.one_operand_p = true;
+  dremap.target = dfinal.op0;
+
+  /* Test if the final remap can be done with a single insn.  For V4HImode
+     this *will* succeed.  For V8QImode or V2SImode it may not.  */
+  start_sequence ();
+  ok = expand_vec_perm_1 (&dfinal);
+  seq = get_insns ();
+  end_sequence ();
+  if (!ok)
+    return false;
+  if (d->testing_p)
+    return true;
+
+  ok = expand_vec_perm_1 (&dremap);
+  gcc_assert (ok);
+
+  emit_insn (seq);
+  return true;
+}
+
+/* A subroutine of ia64_expand_vec_perm_const_1.  Emit a full V4HImode
+   constant permutation via two mux2 and a merge.  */
+
+static bool
+expand_vec_perm_v4hi_5 (struct expand_vec_perm_d *d)
+{
+  unsigned char perm2[4];
+  rtx rmask[4];
+  unsigned i;
+  rtx t0, t1, mask, x;
+  bool ok;
+
+  if (d->vmode != V4HImode || d->one_operand_p)
+    return false;
+  if (d->testing_p)
+    return true;
+
+  for (i = 0; i < 4; ++i)
+    {
+      perm2[i] = d->perm[i] & 3;
+      rmask[i] = (d->perm[i] & 4 ? const0_rtx : constm1_rtx);
+    }
+  mask = gen_rtx_CONST_VECTOR (V4HImode, gen_rtvec_v (4, rmask));
+  mask = force_reg (V4HImode, mask);
+
+  t0 = gen_reg_rtx (V4HImode);
+  t1 = gen_reg_rtx (V4HImode);
+
+  ok = expand_vselect (t0, d->op0, perm2, 4);
+  gcc_assert (ok);
+  ok = expand_vselect (t1, d->op1, perm2, 4);
+  gcc_assert (ok);
+
+  x = gen_rtx_AND (V4HImode, mask, t0);
+  emit_insn (gen_rtx_SET (VOIDmode, t0, x));
+
+  x = gen_rtx_NOT (V4HImode, mask);
+  x = gen_rtx_AND (V4HImode, x, t1);
+  emit_insn (gen_rtx_SET (VOIDmode, t1, x));
+
+  x = gen_rtx_IOR (V4HImode, t0, t1);
+  emit_insn (gen_rtx_SET (VOIDmode, d->target, x));
+
+  return true;
+}
+
+/* The guts of ia64_expand_vec_perm_const, also used by the ok hook.
+   With all of the interface bits taken care of, perform the expansion
+   in D and return true on success.  */
+
+static bool
+ia64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
+{
+  if (expand_vec_perm_1 (d))
+    return true;
+  if (expand_vec_perm_broadcast (d))
+    return true;
+  if (expand_vec_perm_interleave_2 (d))
+    return true;
+  if (expand_vec_perm_v4hi_5 (d))
+    return true;
+  return false;
+}
+
+bool
+ia64_expand_vec_perm_const (rtx operands[4])
+{
+  struct expand_vec_perm_d d;
+  unsigned char perm[MAX_VECT_LEN];
+  int i, nelt, which;
+  rtx sel;
+
+  d.target = operands[0];
+  d.op0 = operands[1];
+  d.op1 = operands[2];
+  sel = operands[3];
+
+  d.vmode = GET_MODE (d.target);
+  gcc_assert (VECTOR_MODE_P (d.vmode));
+  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
+  d.testing_p = false;
+
+  gcc_assert (GET_CODE (sel) == CONST_VECTOR);
+  gcc_assert (XVECLEN (sel, 0) == nelt);
+  gcc_checking_assert (sizeof (d.perm) == sizeof (perm));
+
+  for (i = which = 0; i < nelt; ++i)
+    {
+      rtx e = XVECEXP (sel, 0, i);
+      int ei = INTVAL (e) & (2 * nelt - 1);
+
+      which |= (ei < nelt ? 1 : 2);
+      d.perm[i] = ei;
+      perm[i] = ei;
+    }
+
+  switch (which)
+    {
+    default:
+      gcc_unreachable();
+
+    case 3:
+      if (!rtx_equal_p (d.op0, d.op1))
+	{
+	  d.one_operand_p = false;
+	  break;
+	}
+
+      /* The elements of PERM do not suggest that only the first operand
+	 is used, but both operands are identical.  Allow easier matching
+	 of the permutation by folding the permutation into the single
+	 input vector.  */
+      for (i = 0; i < nelt; ++i)
+	if (d.perm[i] >= nelt)
+	  d.perm[i] -= nelt;
+      /* FALLTHRU */
+
+    case 1:
+      d.op1 = d.op0;
+      d.one_operand_p = true;
+      break;
+
+    case 2:
+      for (i = 0; i < nelt; ++i)
+        d.perm[i] -= nelt;
+      d.op0 = d.op1;
+      d.one_operand_p = true;
+      break;
+    }
+
+  if (ia64_expand_vec_perm_const_1 (&d))
+    return true;
+
+  /* If the mask says both arguments are needed, but they are the same,
+     the above tried to expand with one_operand_p true.  If that didn't
+     work, retry with one_operand_p false, as that's what we used in _ok.  */
+  if (which == 3 && d.one_operand_p)
+    {
+      memcpy (d.perm, perm, sizeof (perm));
+      d.one_operand_p = false;
+      return ia64_expand_vec_perm_const_1 (&d);
+    }
+
+  return false;
+}
+
+/* Implement targetm.vectorize.vec_perm_const_ok.  */
+
+static bool
+ia64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
+				  const unsigned char *sel)
+{
+  struct expand_vec_perm_d d;
+  unsigned int i, nelt, which;
+  bool ret;
+
+  d.vmode = vmode;
+  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
+  d.testing_p = true;
+
+  /* Extract the values from the vector CST into the permutation
+     array in D.  */
+  memcpy (d.perm, sel, nelt);
+  for (i = which = 0; i < nelt; ++i)
+    {
+      unsigned char e = d.perm[i];
+      gcc_assert (e < 2 * nelt);
+      which |= (e < nelt ? 1 : 2);
+    }
+
+  /* For all elements from second vector, fold the elements to first.  */
+  if (which == 2)
+    for (i = 0; i < nelt; ++i)
+      d.perm[i] -= nelt;
+
+  /* Check whether the mask can be applied to the vector type.  */
+  d.one_operand_p = (which != 3);
+
+  /* Otherwise we have to go through the motions and see if we can
+     figure out how to generate the requested permutation.  */
+  d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
+  d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
+  if (!d.one_operand_p)
+    d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
+
+  start_sequence ();
+  ret = ia64_expand_vec_perm_const_1 (&d);
+  end_sequence ();
+
+  return ret;
+}
+
+void
+ia64_expand_vec_setv2sf (rtx operands[3])
+{
+  struct expand_vec_perm_d d;
+  unsigned int which;
+  bool ok;
+  
+  d.target = operands[0];
+  d.op0 = operands[0];
+  d.op1 = gen_reg_rtx (V2SFmode);
+  d.vmode = V2SFmode;
+  d.nelt = 2;
+  d.one_operand_p = false;
+  d.testing_p = false;
+
+  which = INTVAL (operands[2]);
+  gcc_assert (which <= 1);
+  d.perm[0] = 1 - which;
+  d.perm[1] = which + 2;
+
+  emit_insn (gen_fpack (d.op1, operands[1], CONST0_RTX (SFmode)));
+
+  ok = ia64_expand_vec_perm_const_1 (&d);
+  gcc_assert (ok);
+}
+
+void
+ia64_expand_vec_perm_even_odd (rtx target, rtx op0, rtx op1, int odd)
+{
+  struct expand_vec_perm_d d;
+  enum machine_mode vmode = GET_MODE (target);
+  unsigned int i, nelt = GET_MODE_NUNITS (vmode);
+  bool ok;
+
+  d.target = target;
+  d.op0 = op0;
+  d.op1 = op1;
+  d.vmode = vmode;
+  d.nelt = nelt;
+  d.one_operand_p = false;
+  d.testing_p = false;
+
+  for (i = 0; i < nelt; ++i)
+    d.perm[i] = i * 2 + odd;
+
+  ok = ia64_expand_vec_perm_const_1 (&d);
+  gcc_assert (ok);
 }
 
 #include "gt-ia64.h"
