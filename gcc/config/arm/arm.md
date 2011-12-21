@@ -7541,8 +7541,8 @@
   [(set (reg:CC_CZ CC_REGNUM)
 	(compare:CC_CZ (match_operand:DI 0 "s_register_operand" "r")
 		       (match_operand:DI 1 "arm_di_operand"	"rDi")))]
-  "TARGET_ARM"
-  "cmp%?\\t%R0, %R1\;cmpeq\\t%Q0, %Q1"
+  "TARGET_32BIT"
+  "cmp\\t%R0, %R1\;it eq\;cmpeq\\t%Q0, %Q1"
   [(set_attr "conds" "set")
    (set_attr "length" "8")]
 )
