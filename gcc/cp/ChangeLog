@@ -1,3 +1,9 @@
+2011-12-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51305
+	* semantics.c (massage_constexpr_body): Reorder conditionals, make
+	sure a BIND_EXPR embedded in a MUST_NOT_THROW_EXPR is handled.
+
 2011-12-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51621

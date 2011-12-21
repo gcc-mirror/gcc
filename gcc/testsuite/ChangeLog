@@ -1,3 +1,8 @@
+2011-12-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51305
+	* g++.dg/cpp0x/constexpr-noexcept6.C: New.
+
 2011-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/51644
