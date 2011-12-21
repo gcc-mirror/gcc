@@ -1,3 +1,8 @@
+2011-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (AM_CXXFLAGS): Put $(XCFLAGS) first.
+	* Makefile.in: Regenerated.
+
 2011-12-17  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* configure.tgt: Add sh* case.
