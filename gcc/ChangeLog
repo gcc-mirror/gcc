@@ -1,3 +1,21 @@
+2011-12-21  Enkovich Ilya  <ilya.enkovich@intel.com>
+
+	PR target/50038
+	* implicit-zee.c: Delete.
+	* ree.c: New file.
+	* Makefile.in: Replace implicit-zee.c with ree.c.
+	* config/i386/i386.c (ix86_option_override_internal): Rename
+	flag_zee to flag_ree.
+	* common.opt (fzee): Ignored.
+	(free): New.
+	* passes.c (init_optimization_passes): Replace pass_implicit_zee
+	with pass_ree.
+	* tree-pass.h (pass_implicit_zee): Delete.
+	(pass_ree): New.
+	* timevar.def (TV_ZEE): Delete.
+	(TV_REE): New.
+	* doc/invoke.texi: Add -free description.
+
 2011-12-21  Tristan Gingold  <gingold@adacore.com>
 
 	* config/vms/vms-protos.h (vms_function_section): New prototype.

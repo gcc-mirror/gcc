@@ -1,8 +1,9 @@
-/* Redundant Zero-extension elimination for targets that implicitly
-   zero-extend writes to the lower 32-bit portion of 64-bit registers.
-   Copyright (C) 2010 Free Software Foundation, Inc.
-   Contributed by Sriraman Tallam (tmsriram@google.com) and
-                  Silvius Rus     (rus@google.com)
+/* Redundant Extension Elimination pass for the GNU compiler.
+  Copyright (C) 2010-2011 Free Software Foundation, Inc.
+  Contributed by Ilya Enkovich (ilya.enkovich@intel.com)
+
+  Based on the Redundant Zero-extension elimination pass contributed by
+  Sriraman Tallam (tmsriram@google.com) and Silvius Rus (rus@google.com).
 
 This file is part of GCC.
 
@@ -23,63 +24,63 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Problem Description :
    --------------------
-   This pass is intended to be applicable only to targets that implicitly
-   zero-extend 64-bit registers after writing to their lower 32-bit half.
-   For instance, x86_64 zero-extends the upper bits of a register
-   implicitly whenever an instruction writes to its lower 32-bit half.
-   For example, the instruction *add edi,eax* also zero-extends the upper
-   32-bits of rax after doing the addition.  These zero extensions come
-   for free and GCC does not always exploit this well.  That is, it has
-   been observed that there are plenty of cases where GCC explicitly
-   zero-extends registers for x86_64 that are actually useless because
-   these registers were already implicitly zero-extended in a prior
-   instruction.  This pass tries to eliminate such useless zero extension
-   instructions.
+   This pass is intended to remove redundant extension instructions.
+   Such instructions appear for different reasons.  We expect some of
+   them due to implicit zero-extension in 64-bit registers after writing
+   to their lower 32-bit half (e.g. for the x86-64 architecture).
+   Another possible reason is a type cast which follows a load (for
+   instance a register restore) and which can be combined into a single
+   instruction, and for which earlier local passes, e.g. the combiner,
+   weren't able to optimize.
 
    How does this pass work  ?
    --------------------------
 
    This pass is run after register allocation.  Hence, all registers that
-   this pass deals with are hard registers.  This pass first looks for a
-   zero-extension instruction that could possibly be redundant. Such zero
-   extension instructions show up in RTL with the pattern :
-   (set (reg:DI x) (zero_extend:DI (reg:SI x))).
-   where x can be any one of the 64-bit hard registers.
+   this pass deals with are hard registers.  This pass first looks for an
+   extension instruction that could possibly be redundant.  Such extension
+   instructions show up in RTL with the pattern  :
+   (set (reg:<SWI248> x) (any_extend:<SWI248> (reg:<SWI124> x))),
+   where x can be any hard register.
    Now, this pass tries to eliminate this instruction by merging the
-   zero-extension with the definitions of register x. For instance, if
+   extension with the definitions of register x.  For instance, if
    one of the definitions of register x was  :
    (set (reg:SI x) (plus:SI (reg:SI z1) (reg:SI z2))),
+   followed by extension  :
+   (set (reg:DI x) (zero_extend:DI (reg:SI x)))
    then the combination converts this into :
    (set (reg:DI x) (zero_extend:DI (plus:SI (reg:SI z1) (reg:SI z2)))).
    If all the merged definitions are recognizable assembly instructions,
-   the zero-extension is effectively eliminated.  For example, in x86_64,
-   implicit zero-extensions are captured with appropriate patterns in the
-   i386.md file.  Hence, these merged definition can be matched to a single
-   assembly instruction.  The original zero-extension instruction is then
-   deleted if all the definitions can be merged.
+   the extension is effectively eliminated.
+
+   For example, for the x86-64 architecture, implicit zero-extensions
+   are captured with appropriate patterns in the i386.md file.  Hence,
+   these merged definition can be matched to a single assembly instruction.
+   The original extension instruction is then deleted if all the
+   definitions can be merged.
 
    However, there are cases where the definition instruction cannot be
-   merged with a zero-extend.  Examples are CALL instructions.  In such
-   cases, the original zero extension is not redundant and this pass does
+   merged with an extension.  Examples are CALL instructions.  In such
+   cases, the original extension is not redundant and this pass does
    not delete it.
 
    Handling conditional moves :
    ----------------------------
 
-   Architectures like x86_64 support conditional moves whose semantics for
-   zero-extension differ from the other instructions.  For instance, the
+   Architectures like x86-64 support conditional moves whose semantics for
+   extension differ from the other instructions.  For instance, the
    instruction *cmov ebx, eax*
    zero-extends eax onto rax only when the move from ebx to eax happens.
-   Otherwise, eax may not be zero-extended.  Conditional moves appear as
+   Otherwise, eax may not be zero-extended.  Consider conditional move as
    RTL instructions of the form
    (set (reg:SI x) (if_then_else (cond) (reg:SI y) (reg:SI z))).
-   This pass tries to merge a zero-extension with a conditional move by
-   actually merging the defintions of y and z with a zero-extend and then
+   This pass tries to merge an extension with a conditional move by
+   actually merging the defintions of y and z with an extension and then
    converting the conditional move into :
    (set (reg:DI x) (if_then_else (cond) (reg:DI y) (reg:DI z))).
-   Since registers y and z are zero-extended, register x will also be
-   zero-extended after the conditional move.  Note that this step has to
-   be done transitively since the definition of a conditional copy can be
+   Since registers y and z are extended, register x will also be extended
+   after the conditional move.  Note that this step has to be done
+   transitively since the definition of a conditional copy can be
    another conditional copy.
 
    Motivating Example I :
@@ -100,7 +101,7 @@ along with GCC; see the file COPYING3.  If not see
    }
    **********************************************
 
-   $ gcc -O2 -fsee bad_code.c (Turned on existing sign-extension elimination)
+   $ gcc -O2 bad_code.c
      ........
      400315:       b8 4e 00 00 00          mov    $0x4e,%eax
      40031a:       0f af f8                imul   %eax,%edi
@@ -114,7 +115,7 @@ along with GCC; see the file COPYING3.  If not see
      40033a:       8b 04 bd 60 19 40 00    mov    0x401960(,%rdi,4),%eax
      400341:       c3                      retq
 
-   $ gcc -O2 -fzee bad_code.c
+   $ gcc -O2 -free bad_code.c
      ......
      400315:       6b ff 4e                imul   $0x4e,%edi,%edi
      400318:       8b 04 bd 40 19 40 00    mov    0x401940(,%rdi,4),%eax
@@ -141,7 +142,7 @@ along with GCC; see the file COPYING3.  If not see
      return (unsigned long long)(z);
    }
 
-   $ gcc -O2 -fsee bad_code.c (Turned on existing sign-extension elimination)
+   $ gcc -O2 bad_code.c
      ............
      400360:       8d 14 3e                lea    (%rsi,%rdi,1),%edx
      400363:       89 f8                   mov    %edi,%eax
@@ -151,7 +152,7 @@ along with GCC; see the file COPYING3.  If not see
      40036d:       89 c0                   mov    %eax,%eax  --> Useless extend
      40036f:       c3                      retq
 
-   $ gcc -O2 -fzee bad_code.c
+   $ gcc -O2 -free bad_code.c
      .............
      400360:       89 fa                   mov    %edi,%edx
      400362:       8d 04 3e                lea    (%rsi,%rdi,1),%eax
@@ -161,17 +162,57 @@ along with GCC; see the file COPYING3.  If not see
      40036c:       48 0f 42 c6             cmovb  %rsi,%rax
      400370:       c3                      retq
 
+  Motivating Example III :
+  ---------------------
+
+  Here is an example with a type cast.
+
+  For this program :
+  **********************************************
+
+  void test(int size, unsigned char *in, unsigned char *out)
+  {
+    int i;
+    unsigned char xr, xg, xy=0;
+
+    for (i = 0; i < size; i++) {
+      xr = *in++;
+      xg = *in++;
+      xy = (unsigned char) ((19595*xr + 38470*xg) >> 16);
+      *out++ = xy;
+    }
+  }
+
+  $ gcc -O2 bad_code.c
+    ............
+    10:   0f b6 0e                movzbl (%rsi),%ecx
+    13:   0f b6 46 01             movzbl 0x1(%rsi),%eax
+    17:   48 83 c6 02             add    $0x2,%rsi
+    1b:   0f b6 c9                movzbl %cl,%ecx  --> Useless extend
+    1e:   0f b6 c0                movzbl %al,%eax  --> Useless extend
+    21:   69 c9 8b 4c 00 00       imul   $0x4c8b,%ecx,%ecx
+    27:   69 c0 46 96 00 00       imul   $0x9646,%eax,%eax
+
+   $ gcc -O2 -free bad_code.c
+     .............
+    10:   0f b6 0e                movzbl (%rsi),%ecx
+    13:   0f b6 46 01             movzbl 0x1(%rsi),%eax
+    17:   48 83 c6 02             add    $0x2,%rsi
+    1b:   69 c9 8b 4c 00 00       imul   $0x4c8b,%ecx,%ecx
+    21:   69 c0 46 96 00 00       imul   $0x9646,%eax,%eax
 
    Usefulness :
    ----------
 
-   This pass reduces the dynamic instruction count of a compression benchmark
-   by 2.8% and improves its run time by about 1%.  The compression benchmark
-   had the following code sequence in a very hot region of code before ZEE
-   optimized it :
+   The original redundant zero-extension elimination pass reported reduction
+   of the dynamic instruction count of a compression benchmark by 2.8% and
+   improvement of its run time by about 1%.
 
-   shr $0x5, %edx
-   mov %edx, %edx --> Useless zero-extend  */
+   The additional performance gain with the enhanced pass is mostly expected
+   on in-order architectures where redundancy cannot be compensated by out of
+   order execution.  Measurements showed up to 10% performance gain (reduced
+   run time) on EEMBC 2.0 benchmarks on Atom processor with geomean performance
+   gain 1%.  */
 
 
 #include "config.h"
@@ -205,7 +246,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 
 /* This says if a register is newly created for the purpose of
-   zero-extension.  */
+   extension.  */
 
 enum insn_merge_code
 {
@@ -213,13 +254,26 @@ enum insn_merge_code
   MERGE_SUCCESS
 };
 
+/* This structure is used to hold data about candidate for
+   elimination.  */
+
+typedef struct GTY(()) ext_cand
+{
+  rtx insn;
+  const_rtx expr;
+  enum machine_mode src_mode;
+} ext_cand, *ext_cand_ref;
+
+DEF_VEC_O(ext_cand);
+DEF_VEC_ALLOC_O(ext_cand, heap);
+
 /* This says if a INSN UID or its definition has already been merged
-   with a zero-extend or not.  */
+   with a extension or not.  */
 
 static enum insn_merge_code *is_insn_merge_attempted;
 static int max_insn_uid;
 
-/* Returns the merge code status for INSN.  */
+/* Return the merge code status for INSN.  */
 
 static enum insn_merge_code
 get_insn_status (rtx insn)
@@ -228,7 +282,7 @@ get_insn_status (rtx insn)
   return is_insn_merge_attempted[INSN_UID (insn)];
 }
 
-/* Sets the merge code status of INSN to CODE.  */
+/* Set the merge code status of INSN to CODE.  */
 
 static void
 set_insn_status (rtx insn, enum insn_merge_code code)
@@ -237,78 +291,70 @@ set_insn_status (rtx insn, enum insn_merge_code code)
   is_insn_merge_attempted[INSN_UID (insn)] = code;
 }
 
-/* Given a insn (CURR_INSN) and a pointer to the SET rtx (ORIG_SET)
-   that needs to be modified, this code modifies the SET rtx to a
-   new SET rtx that zero_extends the right hand expression into a DImode
-   register (NEWREG) on the left hand side.  Note that multiple
-   assumptions are made about the nature of the set that needs
-   to be true for this to work and is called from merge_def_and_ze.
+/* Given a insn (CURR_INSN), an extension candidate for removal (CAND)
+   and a pointer to the SET rtx (ORIG_SET) that needs to be modified,
+   this code modifies the SET rtx to a new SET rtx that extends the
+   right hand expression into a register on the left hand side.  Note
+   that multiple assumptions are made about the nature of the set that
+   needs to be true for this to work and is called from merge_def_and_ext.
 
    Original :
-   (set (reg:SI a) (expression))
+   (set (reg a) (expression))
 
    Transform :
-   (set (reg:DI a) (zero_extend (expression)))
+   (set (reg a) (extend (expression)))
 
    Special Cases :
-   If the expression is a constant or another zero_extend directly
-   assign it to the DI mode register.  */
+   If the expression is a constant or another extend directly
+   assign it to the register.  */
 
 static bool
-combine_set_zero_extend (rtx curr_insn, rtx *orig_set, rtx newreg)
+combine_set_extend (ext_cand_ref cand, rtx curr_insn, rtx *orig_set)
 {
   rtx temp_extension, simplified_temp_extension, new_set, new_const_int;
-  rtx orig_src;
-  HOST_WIDE_INT val;
-  unsigned int mask, delta_width;
+  rtx orig_src, cand_src;
+  rtx newreg;
+  enum machine_mode dst_mode = GET_MODE (SET_DEST (cand->expr));
 
   /* Change the SET rtx and validate it.  */
   orig_src = SET_SRC (*orig_set);
+  cand_src = SET_SRC (cand->expr);
   new_set = NULL_RTX;
 
-  /* The right hand side can also be VOIDmode.  These cases have to be
-     handled differently.  */
+  newreg = gen_rtx_REG (dst_mode, REGNO (SET_DEST (*orig_set)));
 
-  if (GET_MODE (orig_src) != SImode)
+  /* Merge constants by directly moving the constant into the
+     register under some conditions.  */
+
+  if (GET_CODE (orig_src) == CONST_INT
+      && HOST_BITS_PER_WIDE_INT >= GET_MODE_BITSIZE (dst_mode))
     {
-      /* Merge constants by directly moving the constant into the
-         DImode register under some conditions.  */
-
-      if (GET_CODE (orig_src) == CONST_INT
-	  && HOST_BITS_PER_WIDE_INT >= GET_MODE_BITSIZE (SImode))
-        {
-          if (INTVAL (orig_src) >= 0)
-            new_set = gen_rtx_SET (VOIDmode, newreg, orig_src);
-          else if (INTVAL (orig_src) < 0)
-            {
-              /* Zero-extending a negative SImode integer into DImode
-                 makes it a positive integer.  Convert the given negative
-                 integer into the appropriate integer when zero-extended.  */
-
-              delta_width = HOST_BITS_PER_WIDE_INT - GET_MODE_BITSIZE (SImode);
-              mask = (~(unsigned HOST_WIDE_INT) 0) >> delta_width;
-              val = INTVAL (orig_src);
-              val = val & mask;
-              new_const_int = gen_rtx_CONST_INT (VOIDmode, val);
-              new_set = gen_rtx_SET (VOIDmode, newreg, new_const_int);
-            }
-          else
-            return false;
-        }
+      if (INTVAL (orig_src) >= 0 || GET_CODE (cand_src) == SIGN_EXTEND)
+	new_set = gen_rtx_SET (VOIDmode, newreg, orig_src);
       else
-        {
-          /* This is mostly due to a call insn that should not be
-             optimized.  */
-
-          return false;
-        }
+	{
+	  /* Zero-extend the negative constant by masking out the bits outside
+	     the source mode.  */
+	  enum machine_mode src_mode = GET_MODE (SET_DEST (*orig_set));
+	  new_const_int
+	    = GEN_INT (INTVAL (orig_src) & GET_MODE_MASK (src_mode));
+	  new_set = gen_rtx_SET (VOIDmode, newreg, new_const_int);
+	}
     }
-  else if (GET_CODE (orig_src) == ZERO_EXTEND)
+  else if (GET_MODE (orig_src) == VOIDmode)
     {
-      /* Here a zero-extend is used to get to SI. Why not make it
-         all the  way till DI.  */
+      /* This is mostly due to a call insn that should not be
+	 optimized.  */
 
-      temp_extension = gen_rtx_ZERO_EXTEND (DImode, XEXP (orig_src, 0));
+      return false;
+    }
+  else if (GET_CODE (orig_src) == GET_CODE (cand_src))
+    {
+      /* Here is a sequence of two extensions.  Try to merge them into a
+	 single one.  */
+
+      temp_extension
+	= gen_rtx_fmt_e (GET_CODE (orig_src), dst_mode, XEXP (orig_src, 0));
       simplified_temp_extension = simplify_rtx (temp_extension);
       if (simplified_temp_extension)
         temp_extension = simplified_temp_extension;
@@ -316,7 +362,7 @@ combine_set_zero_extend (rtx curr_insn, rtx *orig_set, rtx newreg)
     }
   else if (GET_CODE (orig_src) == IF_THEN_ELSE)
     {
-      /* Only IF_THEN_ELSE of phi-type copies are combined. Otherwise,
+      /* Only IF_THEN_ELSE of phi-type copies are combined.  Otherwise,
          in general, IF_THEN_ELSE should not be combined.  */
 
       return false;
@@ -325,7 +371,8 @@ combine_set_zero_extend (rtx curr_insn, rtx *orig_set, rtx newreg)
     {
       /* This is the normal case we expect.  */
 
-      temp_extension = gen_rtx_ZERO_EXTEND (DImode, orig_src);
+      temp_extension
+	= gen_rtx_fmt_e (GET_CODE (cand_src), dst_mode, orig_src);
       simplified_temp_extension = simplify_rtx (temp_extension);
       if (simplified_temp_extension)
         temp_extension = simplified_temp_extension;
@@ -334,14 +381,14 @@ combine_set_zero_extend (rtx curr_insn, rtx *orig_set, rtx newreg)
 
   gcc_assert (new_set != NULL_RTX);
 
-  /* This change is a part of a group of changes. Hence,
+  /* This change is a part of a group of changes.  Hence,
      validate_change will not try to commit the change.  */
 
   if (validate_change (curr_insn, orig_set, new_set, true))
     {
       if (dump_file)
         {
-          fprintf (dump_file, "Merged Instruction with ZERO_EXTEND:\n");
+          fprintf (dump_file, "Merged Instruction with EXTEND:\n");
           print_rtl_single (dump_file, curr_insn);
         }
       return true;
@@ -349,20 +396,8 @@ combine_set_zero_extend (rtx curr_insn, rtx *orig_set, rtx newreg)
   return false;
 }
 
-/* This returns the DI mode for the SI register REG_SI.  */
-
-static rtx
-get_reg_di (rtx reg_si)
-{
-  rtx newreg;
-
-  newreg = gen_rtx_REG (DImode, REGNO (reg_si));
-  gcc_assert (newreg);
-  return newreg;
-}
-
 /* Treat if_then_else insns, where the operands of both branches
-   are registers, as copies. For instance,
+   are registers, as copies.  For instance,
    Original :
    (set (reg:SI a) (if_then_else (cond) (reg:SI b) (reg:SI c)))
    Transformed :
@@ -370,7 +405,7 @@ get_reg_di (rtx reg_si)
    DEF_INSN is the if_then_else insn.  */
 
 static bool
-transform_ifelse (rtx def_insn)
+transform_ifelse (ext_cand_ref cand, rtx def_insn)
 {
   rtx set_insn = PATTERN (def_insn);
   rtx srcreg, dstreg, srcreg2;
@@ -378,16 +413,17 @@ transform_ifelse (rtx def_insn)
   rtx ifexpr;
   rtx cond;
   rtx new_set;
+  enum machine_mode dst_mode = GET_MODE (SET_DEST (cand->expr));
 
   gcc_assert (GET_CODE (set_insn) == SET);
   cond = XEXP (SET_SRC (set_insn), 0);
   dstreg = SET_DEST (set_insn);
   srcreg = XEXP (SET_SRC (set_insn), 1);
   srcreg2 = XEXP (SET_SRC (set_insn), 2);
-  map_srcreg = get_reg_di (srcreg);
-  map_srcreg2 = get_reg_di (srcreg2);
-  map_dstreg = get_reg_di (dstreg);
-  ifexpr = gen_rtx_IF_THEN_ELSE (DImode, cond, map_srcreg, map_srcreg2);
+  map_srcreg = gen_rtx_REG (dst_mode, REGNO (srcreg));
+  map_srcreg2 = gen_rtx_REG (dst_mode, REGNO (srcreg2));
+  map_dstreg = gen_rtx_REG (dst_mode, REGNO (dstreg));
+  ifexpr = gen_rtx_IF_THEN_ELSE (dst_mode, cond, map_srcreg, map_srcreg2);
   new_set = gen_rtx_SET (VOIDmode, map_dstreg, ifexpr);
 
   if (validate_change (def_insn, &PATTERN (def_insn), new_set, true))
@@ -458,7 +494,7 @@ get_defs (rtx curr_insn, rtx which_reg, VEC (rtx,heap) **dest)
 }
 
 /* rtx function to check if this SET insn, EXPR, is a conditional copy insn :
-   (set (reg:SI a ) (IF_THEN_ELSE (cond) (reg:SI b) (reg:SI c)))
+   (set (reg a ) (IF_THEN_ELSE (cond) (reg b) (reg c)))
    Called from is_insn_cond_copy.  DATA stores the two registers on each
    side of the condition.  */
 
@@ -469,12 +505,9 @@ is_this_a_cmove (rtx expr, void *data)
 
   if (GET_CODE (expr) == SET
       && GET_CODE (SET_DEST (expr)) == REG
-      && GET_MODE (SET_DEST (expr)) == SImode
       && GET_CODE (SET_SRC (expr))  == IF_THEN_ELSE
       && GET_CODE (XEXP (SET_SRC (expr), 1)) == REG
-      && GET_MODE (XEXP (SET_SRC (expr), 1)) == SImode
-      && GET_CODE (XEXP (SET_SRC (expr), 2)) == REG
-      && GET_MODE (XEXP (SET_SRC (expr), 2)) == SImode)
+      && GET_CODE (XEXP (SET_SRC (expr), 2)) == REG)
     {
       ((rtx *)data)[0] = XEXP (SET_SRC (expr), 1);
       ((rtx *)data)[1] = XEXP (SET_SRC (expr), 2);
@@ -484,7 +517,7 @@ is_this_a_cmove (rtx expr, void *data)
 }
 
 /* This returns 1 if it found
-   (SET (reg:SI REGNO (def_reg)) (if_then_else (cond) (REG:SI x1) (REG:SI x2)))
+   (SET (reg REGNO (def_reg)) (if_then_else (cond) (REG x1) (REG x2)))
    in the DEF_INSN pattern.  It stores the x1 and x2 in COPY_REG_1
    and COPY_REG_2.  */
 
@@ -515,22 +548,22 @@ is_insn_cond_copy (rtx def_insn, rtx *copy_reg_1, rtx *copy_reg_2)
   return 0;
 }
 
-/* Reaching Definitions of the zero-extended register could be conditional
-   copies or regular definitions.  This function separates the two types into
-   two lists, DEFS_LIST and COPIES_LIST.  This is necessary because, if a
-   reaching definition is a conditional copy, combining the zero_extend with
-   this definition is wrong.  Conditional copies are merged by transitively
-   merging its definitions.  The defs_list is populated with all the reaching
-   definitions of the zero-extension instruction (ZERO_EXTEND_INSN) which must
-   be merged with a zero_extend.  The copies_list contains all the conditional
-   moves that will later be extended into a DI mode conditonal move if all the
-   merges are successful.  The function returns false when there is a failure
-   in getting some definitions, like that of parameters.  It returns 1 upon
-   success, 0 upon failure and 2 when all definitions of the ZERO_EXTEND_INSN
-   were merged previously.  */
+/* Reaching Definitions of the extended register could be conditional copies
+   or regular definitions.  This function separates the two types into two
+   lists, DEFS_LIST and COPIES_LIST.  This is necessary because, if a reaching
+   definition is a conditional copy, combining the extend with this definition
+   is wrong.  Conditional copies are merged by transitively merging its
+   definitions.  The defs_list is populated with all the reaching definitions
+   of the extension instruction (EXTEND_INSN) which must be merged with an
+   extension.  The copies_list contains all the conditional moves that will
+   later be extended into a wider mode conditonal move if all the merges are
+   successful.  The function returns false when there is a failure in getting
+   some definitions, like that of parameters.  It returns 1 upon success, 0
+   upon failure and 2 when all definitions of the EXTEND_INSN were merged
+   previously.  */
 
 static int
-make_defs_and_copies_lists (rtx zero_extend_insn, rtx set_pat,
+make_defs_and_copies_lists (rtx extend_insn, rtx set_pat,
                             VEC (rtx,heap) **defs_list,
                             VEC (rtx,heap) **copies_list)
 {
@@ -547,7 +580,7 @@ make_defs_and_copies_lists (rtx zero_extend_insn, rtx set_pat,
   work_list = VEC_alloc (rtx, heap, 8);
 
   /* Initialize the Work List */
-  n_worklist = get_defs (zero_extend_insn, srcreg, &work_list);
+  n_worklist = get_defs (extend_insn, srcreg, &work_list);
 
   if (n_worklist == 0)
     {
@@ -619,18 +652,19 @@ make_defs_and_copies_lists (rtx zero_extend_insn, rtx set_pat,
   return 1;
 }
 
-/* Merge the DEF_INSN with a zero-extend.  Calls combine_set_zero_extend
+/* Merge the DEF_INSN with an extension.  Calls combine_set_extend
    on the SET pattern.  */
 
 static bool
-merge_def_and_ze (rtx def_insn)
+merge_def_and_ext (ext_cand_ref cand, rtx def_insn)
 {
+  enum machine_mode ext_src_mode;
   enum rtx_code code;
-  rtx setreg;
   rtx *sub_rtx;
   rtx s_expr;
   int i;
 
+  ext_src_mode = GET_MODE (XEXP (SET_SRC (cand->expr), 0));
   code = GET_CODE (PATTERN (def_insn));
   sub_rtx = NULL;
 
@@ -662,27 +696,25 @@ merge_def_and_ze (rtx def_insn)
   gcc_assert (sub_rtx != NULL);
 
   if (GET_CODE (SET_DEST (*sub_rtx)) == REG
-      && GET_MODE (SET_DEST (*sub_rtx)) == SImode)
+      && GET_MODE (SET_DEST (*sub_rtx)) == ext_src_mode)
     {
-      setreg = get_reg_di (SET_DEST (*sub_rtx));
-      return combine_set_zero_extend (def_insn, sub_rtx, setreg);
+      return combine_set_extend (cand, def_insn, sub_rtx);
     }
-  else
-    return false;
-  return true;
+
+  return false;
 }
 
 /* This function goes through all reaching defs of the source
-   of the zero extension instruction (ZERO_EXTEND_INSN) and
-   tries to combine the zero extension with the definition
-   instruction.  The changes are made as a group so that even
-   if one definition cannot be merged, all reaching definitions
-   end up not being merged. When a conditional copy is encountered,
-   merging is attempted transitively on its definitions.  It returns
-   true upon success and false upon failure.  */
+   of the candidate for elimination (CAND) and tries to combine
+   the extension with the definition instruction.  The changes
+   are made as a group so that even if one definition cannot be
+   merged, all reaching definitions end up not being merged.
+   When a conditional copy is encountered, merging is attempted
+   transitively on its definitions.  It returns true upon success
+   and false upon failure.  */
 
 static bool
-combine_reaching_defs (rtx zero_extend_insn, rtx set_pat)
+combine_reaching_defs (ext_cand_ref cand, rtx set_pat)
 {
   rtx def_insn;
   bool merge_successful = true;
@@ -698,11 +730,11 @@ combine_reaching_defs (rtx zero_extend_insn, rtx set_pat)
   defs_list = VEC_alloc (rtx, heap, 8);
   copies_list = VEC_alloc (rtx, heap, 8);
 
-  outcome = make_defs_and_copies_lists (zero_extend_insn,
+  outcome = make_defs_and_copies_lists (cand->insn,
                                         set_pat, &defs_list, &copies_list);
 
-  /* outcome == 2 implies that all the definitions for this zero_extend were
-     merged while previously when handling other zero_extends.  */
+  /* outcome == 2 implies that all the definitions for this extension were
+     merged while previously when handling other extension.  */
 
   if (outcome == 2)
     {
@@ -731,7 +763,7 @@ combine_reaching_defs (rtx zero_extend_insn, rtx set_pat)
       merge_code = get_insn_status (def_insn);
       gcc_assert (merge_code == MERGE_NOT_ATTEMPTED);
 
-      if (merge_def_and_ze (def_insn))
+      if (merge_def_and_ext (cand, def_insn))
         VEC_safe_push (rtx, heap, vec, def_insn);
       else
         {
@@ -747,7 +779,7 @@ combine_reaching_defs (rtx zero_extend_insn, rtx set_pat)
     {
       FOR_EACH_VEC_ELT (rtx, copies_list, i, def_insn)
         {
-          if (transform_ifelse (def_insn))
+          if (transform_ifelse (cand, def_insn))
             {
               VEC_safe_push (rtx, heap, vec, def_insn);
             }
@@ -763,7 +795,7 @@ combine_reaching_defs (rtx zero_extend_insn, rtx set_pat)
     {
       /* Commit the changes here if possible */
       /* XXX : Now, it is an all or nothing scenario.  Even if one definition
-         cannot be merged we totally bail.  In future, allow zero-extensions to
+         cannot be merged we totally fail.  In future, allow extensions to
          be partially eliminated along those paths where the definitions could
          be merged.  */
 
@@ -786,7 +818,7 @@ combine_reaching_defs (rtx zero_extend_insn, rtx set_pat)
         {
           /* Changes need not be cancelled explicitly as apply_change_group
              does it.  Print list of definitions in the dump_file for debug
-             purposes.  This zero-extension cannot be deleted.  */
+             purposes.  This extension cannot be deleted.  */
 
           if (dump_file)
             {
@@ -810,27 +842,36 @@ combine_reaching_defs (rtx zero_extend_insn, rtx set_pat)
   return false;
 }
 
-/* Carry information about zero-extensions while walking the RTL.  */
+/* Carry information about extensions while walking the RTL.  */
 
-struct zero_extend_info
+struct extend_info
 {
-  /* The insn where the zero-extension is.  */
+  /* The insn where the extension is.  */
   rtx insn;
 
   /* The list of candidates.  */
-  VEC (rtx, heap) *insn_list;
+  VEC (ext_cand, heap) *insn_list;
 };
 
-/* Add a zero-extend pattern that could be eliminated.  This is called via
-   note_stores from find_removable_zero_extends.  */
+static void
+add_ext_candidate (VEC (ext_cand, heap) **exts,
+		   rtx insn, const_rtx expr)
+{
+  ext_cand_ref ec = VEC_safe_push (ext_cand, heap, *exts, NULL);
+  ec->insn = insn;
+  ec->expr = expr;
+}
+
+/* Add an extension pattern that could be eliminated.  This is called via
+   note_stores from find_removable_extensions.  */
 
 static void
-add_removable_zero_extend (rtx x ATTRIBUTE_UNUSED, const_rtx expr, void *data)
+add_removable_extension (rtx x ATTRIBUTE_UNUSED, const_rtx expr, void *data)
 {
-  struct zero_extend_info *zei = (struct zero_extend_info *)data;
+  struct extend_info *rei = (struct extend_info *)data;
   rtx src, dest;
 
-  /* We are looking for SET (REG:DI N) (ZERO_EXTEND (REG:SI N)).  */
+  /* We are looking for SET (REG N) (EXTEND (REG N)).  */
   if (GET_CODE (expr) != SET)
     return;
 
@@ -838,34 +879,32 @@ add_removable_zero_extend (rtx x ATTRIBUTE_UNUSED, const_rtx expr, void *data)
   dest = SET_DEST (expr);
 
   if (REG_P (dest)
-      && GET_MODE (dest) == DImode
-      && GET_CODE (src) == ZERO_EXTEND
+      && (GET_CODE (src) == ZERO_EXTEND || GET_CODE (src) == SIGN_EXTEND)
       && REG_P (XEXP (src, 0))
-      && GET_MODE (XEXP (src, 0)) == SImode
       && REGNO (dest) == REGNO (XEXP (src, 0)))
     {
-      if (get_defs (zei->insn, XEXP (src, 0), NULL))
-	VEC_safe_push (rtx, heap, zei->insn_list, zei->insn);
+      if (get_defs (rei->insn, XEXP (src, 0), NULL))
+	add_ext_candidate (&rei->insn_list, rei->insn, expr);
       else if (dump_file)
 	{
-	  fprintf (dump_file, "Cannot eliminate zero-extension: \n");
-	  print_rtl_single (dump_file, zei->insn);
+	  fprintf (dump_file, "Cannot eliminate extension: \n");
+	  print_rtl_single (dump_file, rei->insn);
 	  fprintf (dump_file, "No defs. Could be extending parameters.\n");
 	}
     }
 }
 
-/* Traverse the instruction stream looking for zero-extends and return the
+/* Traverse the instruction stream looking for extensions and return the
    list of candidates.  */
 
-static VEC (rtx,heap)*
-find_removable_zero_extends (void)
+static VEC (ext_cand, heap)*
+find_removable_extensions (void)
 {
-  struct zero_extend_info zei;
+  struct extend_info rei;
   basic_block bb;
   rtx insn;
 
-  zei.insn_list = VEC_alloc (rtx, heap, 8);
+  rei.insn_list = VEC_alloc (ext_cand, heap, 8);
 
   FOR_EACH_BB (bb)
     FOR_BB_INSNS (bb, insn)
@@ -873,29 +912,30 @@ find_removable_zero_extends (void)
 	if (!NONDEBUG_INSN_P (insn))
 	  continue;
 
-	zei.insn = insn;
-	note_stores (PATTERN (insn), add_removable_zero_extend, &zei);
+	rei.insn = insn;
+	note_stores (PATTERN (insn), add_removable_extension, &rei);
       }
 
-  return zei.insn_list;
+  return rei.insn_list;
 }
 
 /* This is the main function that checks the insn stream for redundant
-   zero extensions and tries to remove them if possible.  */
+   extensions and tries to remove them if possible.  */
 
 static unsigned int
-find_and_remove_ze (void)
+find_and_remove_re (void)
 {
+  ext_cand_ref curr_cand;
   rtx curr_insn = NULL_RTX;
   int i;
   int ix;
   long num_realized = 0;
-  long num_ze_opportunities = 0;
-  VEC (rtx, heap) *zeinsn_list;
-  VEC (rtx, heap) *zeinsn_del_list;
+  long num_re_opportunities = 0;
+  VEC (ext_cand, heap) *reinsn_list;
+  VEC (rtx, heap) *reinsn_del_list;
 
   /* Construct DU chain to get all reaching definitions of each
-     zero-extension instruction.  */
+     extension instruction.  */
 
   df_chain_add_problem (DF_UD_CHAIN + DF_DU_CHAIN);
   df_analyze ();
@@ -909,80 +949,80 @@ find_and_remove_ze (void)
   for (i = 0; i < max_insn_uid; i++)
     is_insn_merge_attempted[i] = MERGE_NOT_ATTEMPTED;
 
-  num_ze_opportunities = num_realized = 0;
+  num_re_opportunities = num_realized = 0;
 
-  zeinsn_del_list = VEC_alloc (rtx, heap, 4);
+  reinsn_del_list = VEC_alloc (rtx, heap, 4);
 
-  zeinsn_list = find_removable_zero_extends ();
+  reinsn_list = find_removable_extensions ();
 
-  FOR_EACH_VEC_ELT (rtx, zeinsn_list, ix, curr_insn)
+  FOR_EACH_VEC_ELT (ext_cand, reinsn_list, ix, curr_cand)
     {
-      num_ze_opportunities++;
-      /* Try to combine the zero-extends with the definition here.  */
+      num_re_opportunities++;
+      /* Try to combine the extension with the definition here.  */
 
       if (dump_file)
         {
-          fprintf (dump_file, "Trying to eliminate zero extension : \n");
+          fprintf (dump_file, "Trying to eliminate extension : \n");
           print_rtl_single (dump_file, curr_insn);
         }
 
-      if (combine_reaching_defs (curr_insn, PATTERN (curr_insn)))
+      if (combine_reaching_defs (curr_cand, PATTERN (curr_cand->insn)))
         {
           if (dump_file)
-            fprintf (dump_file, "Eliminated the zero extension...\n");
+            fprintf (dump_file, "Eliminated the extension...\n");
           num_realized++;
-          VEC_safe_push (rtx, heap, zeinsn_del_list, curr_insn);
+          VEC_safe_push (rtx, heap, reinsn_del_list, curr_cand->insn);
         }
     }
 
-  /* Delete all useless zero extensions here in one sweep.  */
-  FOR_EACH_VEC_ELT (rtx, zeinsn_del_list, ix, curr_insn)
+  /* Delete all useless extensions here in one sweep.  */
+  FOR_EACH_VEC_ELT (rtx, reinsn_del_list, ix, curr_insn)
     delete_insn (curr_insn);
 
   free (is_insn_merge_attempted);
-  VEC_free (rtx, heap, zeinsn_list);
-  VEC_free (rtx, heap, zeinsn_del_list);
+  VEC_free (ext_cand, heap, reinsn_list);
+  VEC_free (rtx, heap, reinsn_del_list);
 
-  if (dump_file && num_ze_opportunities > 0)
-    fprintf (dump_file, "\n %s : num_zee_opportunities = %ld"
-			" num_realized = %ld\n",
-                        current_function_name (), num_ze_opportunities,
-                        num_realized);
+  if (dump_file && num_re_opportunities > 0)
+    fprintf (dump_file, "\n %s : num_re_opportunities = %ld "
+                        "num_realized = %ld \n",
+                        current_function_name (),
+                        num_re_opportunities, num_realized);
 
   df_finish_pass (false);
   return 0;
 }
 
-/* Find and remove redundant zero extensions.  */
+/* Find and remove redundant extensions.  */
 
 static unsigned int
-rest_of_handle_zee (void)
+rest_of_handle_ree (void)
 {
-  timevar_push (TV_ZEE);
-  find_and_remove_ze ();
-  timevar_pop (TV_ZEE);
+  timevar_push (TV_REE);
+  find_and_remove_re ();
+  timevar_pop (TV_REE);
   return 0;
 }
 
-/* Run zee pass when flag_zee is set at optimization level > 0.  */
+/* Run REE pass when flag_ree is set at optimization level > 0.  */
 
 static bool
-gate_handle_zee (void)
+gate_handle_ree (void)
 {
-  return (optimize > 0 && flag_zee);
+  return (optimize > 0 && flag_ree);
 }
 
-struct rtl_opt_pass pass_implicit_zee =
+struct rtl_opt_pass pass_ree =
 {
  {
   RTL_PASS,
-  "zee",                                /* name */
-  gate_handle_zee,                      /* gate */
-  rest_of_handle_zee,                   /* execute */
+  "ree",                                /* name */
+  gate_handle_ree,                      /* gate */
+  rest_of_handle_ree,                   /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_ZEE,                               /* tv_id */
+  TV_REE,                               /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */

@@ -530,7 +530,7 @@ extern struct rtl_opt_pass pass_stack_ptr_mod;
 extern struct rtl_opt_pass pass_initialize_regs;
 extern struct rtl_opt_pass pass_combine;
 extern struct rtl_opt_pass pass_if_after_combine;
-extern struct rtl_opt_pass pass_implicit_zee;
+extern struct rtl_opt_pass pass_ree;
 extern struct rtl_opt_pass pass_partition_blocks;
 extern struct rtl_opt_pass pass_match_asm_constraints;
 extern struct rtl_opt_pass pass_regmove;

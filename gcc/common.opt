@@ -1781,8 +1781,12 @@ Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 fzee
-Common Report Var(flag_zee) Init(0)
-Eliminate redundant zero extensions on targets that support implicit extensions.
+Common Ignore
+Does nothing.  Preserved for backward compatibility.
+
+free
+Common Report Var(flag_ree) Init(0)
+Turn on Redundant Extensions Elimination pass.
 
 fshow-column
 Common Report Var(flag_show_column) Init(1)
