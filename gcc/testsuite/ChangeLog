@@ -1,3 +1,42 @@
+2011-12-21  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* gcc.dg/vect/no-section-anchors-vect-31.c: Adjust array size and test
+	diag-scans to fix fail on AVX.
+	* gcc.dg/vect/no-section-anchors-vect-36.c: Ditto.
+	* gcc.dg/vect/no-section-anchors-vect-64.c: Ditto.
+	* gcc.dg/vect/no-section-anchors-vect-66.c: Ditto.
+	* gcc.dg/vect/no-section-anchors-vect-68.c: Ditto.
+	* gcc.dg/vect/no-section-anchors-vect-69.c: Ditto.
+	* gcc.dg/vect/no-vfa-vect-dv-2.c: Adjust dg-scans.
+	* gcc.dg/vect/pr45752.c: Ditto.
+	* gcc.dg/vect/slp-perm-4.c: Ditto.
+	* gcc.dg/vect/slp-perm-9.c: Ditto.
+	* gcc.dg/vect/vect-33.c: Ditto.
+	* gcc.dg/vect/vect-35.c: Ditto.
+	* gcc.dg/vect/vect-6-big-array.c: Ditto.
+	* gcc.dg/vect/vect-6.c: Ditto.
+	* gcc.dg/vect/vect-91.c: Ditto.
+	* gcc.dg/vect/vect-all-big-array.c: Ditto.
+	* gcc.dg/vect/vect-all.c: Ditto.
+	* gcc.dg/vect/vect-multitypes-1.c: Ditto.
+	* gcc.dg/vect/vect-outer-4c.c: Ditto.
+	* gcc.dg/vect/vect-outer-5.c: Ditto.
+	* gcc.dg/vect/vect-over-widen-1.c: Ditto.
+	* gcc.dg/vect/vect-over-widen-3.c: Ditto.
+	* gcc.dg/vect/vect-over-widen-4.c: Ditto.
+	* gcc.dg/vect/vect-peel-1.c: Ditto.
+	* gcc.dg/vect/vect-peel-2.c: Ditto.
+	* gcc.dg/vect/vect-peel-3.c: Ditto.
+	* gcc.dg/vect/vect-reduc-pattern-1b.c: Ditto.
+	* gcc.dg/vect/vect-reduc-pattern-1c.c: Ditto.
+	* gcc.dg/vect/vect-reduc-pattern-2b.c: Ditto.
+	* gcc.dg/vect/wrapv-vect-reduc-pattern-2c.c: Ditto.
+	* lib/target-supports.exp (check_avx_available): New function.
+	(check_effective_target_vect_sizes_32B_16B): Ditto.
+	(check_prefer_avx128): Ditto.
+	(check_effective_target_vect_aligned_arrays): Add handling of AVX.
+	(check_effective_target_vect_multiple_sizes): Ditto.
+
 2011-12-21  Enkovich Ilya  <ilya.enkovich@intel.com>
 
 	PR target/50038

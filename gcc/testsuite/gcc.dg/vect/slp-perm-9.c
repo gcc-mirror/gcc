@@ -52,8 +52,10 @@ int main (int argc, const char* argv[])
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  { target { {! vect_perm } || {! vect_sizes_32B_16B } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect"  { target { { vect_perm } && { vect_sizes_32B_16B } } } } } */
 /* { dg-final { scan-tree-dump-times "permutation requires at least three vectors" 1 "vect" { target vect_perm_short } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect"  } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" { target { {! vect_perm } || {! vect_sizes_32B_16B } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { { vect_perm } && { vect_sizes_32B_16B } } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 
