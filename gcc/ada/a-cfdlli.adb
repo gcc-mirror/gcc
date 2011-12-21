@@ -26,8 +26,29 @@
 ------------------------------------------------------------------------------
 
 with System;  use type System.Address;
+with Ada.Finalization;
 
 package body Ada.Containers.Formal_Doubly_Linked_Lists is
+
+   type Iterator is new Ada.Finalization.Limited_Controlled and
+     List_Iterator_Interfaces.Reversible_Iterator with
+   record
+      Container : List_Access;
+      Node      : Count_Type;
+   end record;
+
+   overriding procedure Finalize (Object : in out Iterator);
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Last  (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
    -----------------------
    -- Local Subprograms --
@@ -423,6 +444,21 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       return Container.Nodes (Position.Node).Element;
    end Element;
 
+   --------------
+   -- Finalize --
+   --------------
+
+   procedure Finalize (Object : in out Iterator) is
+   begin
+      if Object.Container /= null then
+         declare
+            B : Natural renames Object.Container.all.Busy;
+         begin
+            B := B - 1;
+         end;
+      end if;
+   end Finalize;
+
    ----------
    -- Find --
    ----------
@@ -472,6 +508,28 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       end if;
 
       return (Node => Container.First);
+   end First;
+
+   function First (Object : Iterator) return Cursor is
+   begin
+      --  The value of the iterator object's Node component influences the
+      --  behavior of the First (and Last) selector function.
+
+      --  When the Node component is null, this means the iterator object was
+      --  constructed without a start expression, in which case the (forward)
+      --  iteration starts from the (logical) beginning of the entire sequence
+      --  of items (corresponding to Container.First, for a forward iterator).
+
+      --  Otherwise, this is iteration over a partial sequence of items. When
+      --  the Node component is non-null, the iterator object was constructed
+      --  with a start expression, that specifies the position from which the
+      --  (forward) partial iteration begins.
+
+      if Object.Node = 0 then
+         return First (Object.Container.all);
+      else
+         return (Node => Object.Node);
+      end if;
    end First;
 
    -------------------
@@ -915,6 +973,71 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       B := B - 1;
    end Iterate;
 
+   function Iterate (Container : List)
+     return List_Iterator_Interfaces.Reversible_Iterator'Class
+   is
+      B : Natural renames Container'Unrestricted_Access.all.Busy;
+
+   begin
+      --  The value of the Node component influences the behavior of the First
+      --  and Last selector functions of the iterator object. When the Node
+      --  component is null (as is the case here), this means the iterator
+      --  object was constructed without a start expression. This is a
+      --  complete iterator, meaning that the iteration starts from the
+      --  (logical) beginning of the sequence of items.
+
+      --  Note: For a forward iterator, Container.First is the beginning, and
+      --  for a reverse iterator, Container.Last is the beginning.
+
+      return It : constant Iterator :=
+                    Iterator'(Ada.Finalization.Limited_Controlled with
+                                Container => Container'Unrestricted_Access,
+                                Node      => 0)
+      do
+         B := B + 1;
+      end return;
+   end Iterate;
+
+   function Iterate (Container : List; Start : Cursor)
+     return List_Iterator_Interfaces.Reversible_Iterator'Class
+   is
+      B  : Natural renames Container'Unrestricted_Access.all.Busy;
+
+   begin
+      --  It was formerly the case that when Start = No_Element, the partial
+      --  iterator was defined to behave the same as for a complete iterator,
+      --  and iterate over the entire sequence of items. However, those
+      --  semantics were unintuitive and arguably error-prone (it is too easy
+      --  to accidentally create an endless loop), and so they were changed,
+      --  per the ARG meeting in Denver on 2011/11. However, there was no
+      --  consensus about what positive meaning this corner case should have,
+      --  and so it was decided to simply raise an exception. This does imply,
+      --  however, that it is not possible to use a partial iterator to specify
+      --  an empty sequence of items.
+
+      if not Has_Element (Container, Start) then
+         raise Constraint_Error with
+           "Start position for iterator is not a valid cursor";
+      end if;
+
+      --  The value of the Node component influences the behavior of the First
+      --  and Last selector functions of the iterator object. When the Node
+      --  component is non-null (as is the case here), it means that this
+      --  is a partial iteration, over a subset of the complete sequence of
+      --  items. The iterator object was constructed with a start expression,
+      --  indicating the position from which the iteration begins. Note that
+      --  the start position has the same value irrespective of whether this
+      --  is a forward or reverse iteration.
+
+      return It : constant Iterator :=
+                    Iterator'(Ada.Finalization.Limited_Controlled with
+                                Container => Container'Unrestricted_Access,
+                                Node      => Start.Node)
+      do
+         B := B + 1;
+      end return;
+   end Iterate;
+
    ----------
    -- Last --
    ----------
@@ -925,6 +1048,28 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          return No_Element;
       end if;
       return (Node => Container.Last);
+   end Last;
+
+   function Last (Object : Iterator) return Cursor is
+   begin
+      --  The value of the iterator object's Node component influences the
+      --  behavior of the Last (and First) selector function.
+
+      --  When the Node component is null, this means the iterator object was
+      --  constructed without a start expression, in which case the (reverse)
+      --  iteration starts from the (logical) beginning of the entire sequence
+      --  (corresponding to Container.Last, for a reverse iterator).
+
+      --  Otherwise, this is iteration over a partial sequence of items. When
+      --  the Node component is non-null, the iterator object was constructed
+      --  with a start expression, that specifies the position from which the
+      --  (reverse) partial iteration begins.
+
+      if Object.Node = 0 then
+         return Last (Object.Container.all);
+      else
+         return (Node => Object.Node);
+      end if;
    end Last;
 
    ------------------
@@ -1085,6 +1230,24 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       return (Node => Container.Nodes (Position.Node).Next);
    end Next;
 
+   function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor
+   is
+   begin
+
+      return Next (Object.Container.all, Position);
+   end Next;
+
+   --------------------
+   -- Not_No_Element --
+   --------------------
+
+   function Not_No_Element (Position : Cursor) return Boolean is
+   begin
+      return Position /= No_Element;
+   end Not_No_Element;
+
    -------------
    -- Prepend --
    -------------
@@ -1118,6 +1281,15 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       end if;
 
       return (Node => Container.Nodes (Position.Node).Prev);
+   end Previous;
+
+   function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor
+   is
+   begin
+
+      return Previous (Object.Container.all, Position);
    end Previous;
 
    -------------------
@@ -1195,6 +1367,21 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
    begin
       raise Program_Error with "attempt to stream list cursor";
    end Read;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Constant_Reference (Container : List; Position : Cursor)
+   return Constant_Reference_Type is
+   begin
+
+      if not Has_Element (Container, Position) then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      return (Element => Container.Nodes (Position.Node).Element'Access);
+   end Constant_Reference;
 
    ---------------------
    -- Replace_Element --

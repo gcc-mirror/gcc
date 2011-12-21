@@ -3795,10 +3795,10 @@ package body Sem_Ch12 is
       then
          declare
             Assoc : constant Node_Id := First (Generic_Associations (N));
-
          begin
             if not Has_Dimension_System
-                     (Etype (Explicit_Generic_Actual_Parameter (Assoc))) then
+                     (Etype (Explicit_Generic_Actual_Parameter (Assoc)))
+            then
                Error_Msg_N ("type with a dimension system expected", Assoc);
             end if;
          end;

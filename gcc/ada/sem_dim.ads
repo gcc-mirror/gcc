@@ -98,10 +98,9 @@ package Sem_Dim is
       Id   : Entity_Id;
       Aggr : Node_Id);
    --  Analyze the contents of aspect Dimension. Associate the provided values
-   --  and quantifiers with the related context N.
-   --  Id is the corresponding Aspect_Id (Aspect_Dimension)
-   --  Aggr is the corresponding expression for the aspect Dimension declared
-   --  by the declaration of N.
+   --  and quantifiers with the related context N. Id is the corresponding
+   --  Aspect_Id (Aspect_Dimension) Aggr is the corresponding expression for
+   --  the aspect Dimension declared by the declaration of N.
 
    procedure Analyze_Aspect_Dimension_System
      (N    : Node_Id;
@@ -141,9 +140,8 @@ package Sem_Dim is
       Btyp : Entity_Id);
    --  Evaluate the Expon operator for dimensioned type with rational exponent.
    --  Indeed the regular Eval_Op_Expon routine (see package Sem_Eval) is
-   --  restricted to Integer exponent.
-   --  This routine deals only with rational exponent which is not an integer
-   --  if Btyp is a dimensioned type.
+   --  restricted to Integer exponent. This routine deals only with rational
+   --  exponent which is not an integer if Btyp is a dimensioned type.
 
    procedure Expand_Put_Call_With_Dimension_Symbol (N : Node_Id);
    --  Determine whether N denotes a subprogram call to one of the routines

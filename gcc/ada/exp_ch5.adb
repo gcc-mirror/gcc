@@ -3003,7 +3003,7 @@ package body Exp_Ch5 is
          --    Cursor : Cursor_type := First (Iter);
          --    while Has_Element (Iter) loop
          --       declare
-         --       --  the block is added when Element_Type is controlled
+         --       --  The block is added when Element_Type is controlled
 
          --          Obj : Pack.Element_Type := Element (Cursor);
          --          --  for the "of" loop form
@@ -3052,7 +3052,7 @@ package body Exp_Ch5 is
             --  The "of" case uses an internally generated cursor whose type
             --  is found in the container package. The domain of iteration
             --  is expanded into a call to the default Iterator function, but
-            --  this expansion does not take place in a quantifier expressions
+            --  this expansion does not take place in quantified expressions
             --  that are analyzed with expansion disabled, and in that case the
             --  type of the iterator must be obtained from the aspect.
 
@@ -3103,8 +3103,8 @@ package body Exp_Ch5 is
                         New_List (Container_Arg)));
                   Analyze_And_Resolve (Name (I_Spec));
 
-                  --  Find cursor type in proper iterator package, which
-                  --  is an instantiation of Iterator_Interfaces.
+                  --  Find cursor type in proper iterator package, which is an
+                  --  instantiation of Iterator_Interfaces.
 
                   Ent := First_Entity (Pack);
                   while Present (Ent) loop
@@ -3218,7 +3218,7 @@ package body Exp_Ch5 is
             --    while Iterator.Has_Element loop
             --       <Stats>
             --    end loop;
-            --
+
             --   Has_Element is the second actual in the iterator package
 
             New_Loop :=
@@ -3236,12 +3236,8 @@ package body Exp_Ch5 is
 
                 Statements => Stats,
                 End_Label  => Empty);
-            --                 Make_Selected_Component (Loc,
-            --       Prefix => New_Reference_To (Cursor, Loc),
-            --          Selector_Name =>
-            --         Make_Identifier (Loc, Name_Has_Element))),
 
-            --  Create the declarations for Iterator and cursor and insert then
+            --  Create the declarations for Iterator and cursor and insert them
             --  before the source loop. Given that the domain of iteration is
             --  already an entity, the iterator is just a renaming of that
             --  entity. Possible optimization ???
