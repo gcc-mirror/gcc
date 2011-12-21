@@ -2126,10 +2126,9 @@ package body Sem_Ch13 is
          end case;
       end if;
 
-      --  Process Ignore_Rep_Clauses option (we also ignore rep clauses in
-      --  Alfa mode, since they are not relevant in this context).
+      --  Process Ignore_Rep_Clauses option
 
-      if Ignore_Rep_Clauses or Alfa_Mode then
+      if Ignore_Rep_Clauses then
          case Id is
 
             --  The following should be ignored. They do not affect legality
@@ -2149,11 +2148,7 @@ package body Sem_Ch13 is
                Rewrite (N, Make_Null_Statement (Sloc (N)));
                return;
 
-            --  We do not want too ignore 'Small in CodePeer_Mode or Alfa_Mode,
-            --  since it has an impact on the exact computations performed.
-
-            --  Perhaps 'Small should also not be ignored by
-            --  Ignore_Rep_Clauses ???
+            --  Perhaps 'Small should not be ignored by Ignore_Rep_Clauses ???
 
             when Attribute_Small =>
                if Ignore_Rep_Clauses then

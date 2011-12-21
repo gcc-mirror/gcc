@@ -1,3 +1,25 @@
+2011-12-21  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Do not
+	ignore representation attributes in Alfa mode, since formal
+	verification backend does not depend on actual physical
+	representation, but code may still refer to attribute values.
+
+2011-12-21  Yannick Moy  <moy@adacore.com>
+
+	* par-ch13.adb (P_Aspect_Specifications): Recognize the cases
+	where a comma between two aspects is missing, or erroneously
+	replaced by a semicolon, issue an error and proceed with next
+	aspect.
+	* par.adb, sinfo.ads: Fix typos.
+
+2011-12-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Mark_Coextensions): A coextension for an
+	object that is part of the expression in a return statement,
+	or part of the return object in an extended return statement,
+	must be allocated dynamically.
+
 2011-12-21  Matthew Heaney  <heaney@adacore.com>
 
 	* a-crbtgk.adb (Generic_Conditional_Insert): Fixed incorrect comment.
