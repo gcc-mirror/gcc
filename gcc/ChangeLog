@@ -1,3 +1,13 @@
+2011-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/51644
+	PR middle-end/51647
+	* tree-eh.c (decide_copy_try_finally): At -O0, return true
+	even when ndests is not 1, if there are only gimple_clobber_p
+	(or debug) stmts in the finally sequence.
+	* tree-inline.c (estimate_num_insns): Return 0 for gimple_clobber_p
+	stmts.
+
 2011-12-21  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/51472

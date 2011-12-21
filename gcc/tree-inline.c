@@ -3482,6 +3482,9 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 	 likely be a real store, so the cost of the GIMPLE_ASSIGN is the cost
 	 of moving something into "a", which we compute using the function
 	 estimate_move_cost.  */
+      if (gimple_clobber_p (stmt))
+	return 0;	/* ={v} {CLOBBER} stmt expands to nothing.  */
+
       lhs = gimple_assign_lhs (stmt);
       rhs = gimple_assign_rhs1 (stmt);
 
