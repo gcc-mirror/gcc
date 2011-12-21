@@ -1157,8 +1157,8 @@ package body Prj.Conf is
                      if Path_FD /= Invalid_FD then
                         declare
                            Temp_Dir : constant String :=
-                             Containing_Directory
-                               (Get_Name_String (Path_Name));
+                                        Containing_Directory
+                                          (Get_Name_String (Path_Name));
                         begin
                            GNAT.OS_Lib.Close (Path_FD);
                            Args (3) :=

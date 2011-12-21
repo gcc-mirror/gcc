@@ -1,3 +1,17 @@
+2011-12-21  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch5.adb, sem_dim.adb, sem_dim.ads, sem_ch12.adb, prj-conf.adb:
+	Minor reformatting.
+
+2011-12-21  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.ads (Constant_Indexing, Default_Iterator,
+	Iterator_Element): Added to type List.               
+	(Not_No_Element, List_Iterator_Interfaces, Iterate,
+	Constant_Reference_Type, Constant_Reference): New.
+	* a-cfdlli.adb (type Iterator, Finalize, First, Last, Next,
+	Previous, Iterate, Not_No_Element, Constant_Reference): New.
+
 2011-12-21  Gary Dismukes  <dismukes@adacore.com>
 
 	* gnat_ugn.texi: Minor reformatting.
