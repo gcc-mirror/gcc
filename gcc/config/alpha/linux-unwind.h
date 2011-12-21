@@ -74,7 +74,7 @@ alpha_fallback_frame_state (struct _Unwind_Context *context,
 	= (long) &sc->sc_fpregs[i] - new_cfa;
     }
   fs->regs.reg[64].how = REG_SAVED_OFFSET;
-  fs->regs.reg[64].loc.offset = (long) &sc->sc_pc - new_cfa;
+  fs->regs.reg[64].loc.offset = (long)&sc->sc_pc - new_cfa;
   fs->retaddr_column = 64;
   fs->signal_frame = 1;
 
@@ -83,7 +83,7 @@ alpha_fallback_frame_state (struct _Unwind_Context *context,
 
 #define MD_FROB_UPDATE_CONTEXT alpha_frob_update_context
 
-/* Fix up for kernels that have vDSO, but don't have S flag in it.  */
+/* Fix up for signal handlers that don't have S flag set.  */
 
 static void
 alpha_frob_update_context (struct _Unwind_Context *context,
