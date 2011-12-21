@@ -1944,6 +1944,20 @@ bot_replace (tree* t,
 	 parsing with the real one for this function.  */
       *t = current_class_ptr;
     }
+  else if (TREE_CODE (*t) == CONVERT_EXPR
+	   && CONVERT_EXPR_VBASE_PATH (*t))
+    {
+      /* In an NSDMI build_base_path defers building conversions to virtual
+	 bases, and we handle it here.  */
+      tree basetype = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (*t)));
+      VEC(tree,gc) *vbases = CLASSTYPE_VBASECLASSES (current_class_type);
+      int i; tree binfo;
+      FOR_EACH_VEC_ELT (tree, vbases, i, binfo)
+	if (BINFO_TYPE (binfo) == basetype)
+	  break;
+      *t = build_base_path (PLUS_EXPR, TREE_OPERAND (*t, 0), binfo, true,
+			    tf_warning_or_error);
+    }
 
   return NULL_TREE;
 }

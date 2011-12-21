@@ -1100,6 +1100,8 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       wtd->omp_ctx = omp_ctx.outer;
       splay_tree_delete (omp_ctx.variables);
     }
+  else if (TREE_CODE (stmt) == CONVERT_EXPR)
+    gcc_assert (!CONVERT_EXPR_VBASE_PATH (stmt));
 
   pointer_set_insert (p_set, *stmt_p);
 
