@@ -1,3 +1,8 @@
+2011-12-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/51472
+	* trans-mem.c (tm_log_add): Use create_tmp_var_reg.
+
 2011-12-21  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-into-ssa.c (rewrite_update_stmt): Do not dump extra newlines.

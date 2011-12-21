@@ -1003,7 +1003,7 @@ tm_log_add (basic_block entry_block, tree addr, gimple stmt)
 	     special constructors and the like.  */
 	  && !TREE_ADDRESSABLE (type))
 	{
-	  lp->save_var = create_tmp_var (TREE_TYPE (lp->addr), "tm_save");
+	  lp->save_var = create_tmp_reg (TREE_TYPE (lp->addr), "tm_save");
 	  add_referenced_var (lp->save_var);
 	  lp->stmts = NULL;
 	  lp->entry_block = entry_block;
