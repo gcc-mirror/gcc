@@ -1,3 +1,9 @@
+2011-12-21  Richard Henderson  <rth@redhat.com>
+
+	PR target/51552
+	* dwarf2cfi.c (dwarf2out_frame_debug): Move any_cfis_emitted code...
+	(scan_trace): ... here.
+
 2011-12-21  Jason Merrill  <jason@redhat.com>
 
 	* doc/standards.texi (C++ language): Update for C++11.
