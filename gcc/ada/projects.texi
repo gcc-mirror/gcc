@@ -1777,6 +1777,26 @@ two attributes that make a project a Library Project (@code{Library_Name} and
 @end group
 @end smallexample
 
+@item @b{Library_Standalone}:
+@cindex @code{Library_Standalone}
+  This attribute defines the kind of standalone library to
+  build. Values are either @code{standard} (the default), @code{no} or
+  @code{full}. When @code{standard} is used the code to elaborate and
+  finalize the library is embedded, when @code{full} is used the
+  library can furthermore only depends on static libraries (including
+  the GNAT runtime). This attribute can be set to @code{no} to make it clear
+  that the library should not be standalone in which case the
+  @code{Library_Interface} should not defined.
+
+@smallexample @c projectfile
+@group
+     for Library_Dir use "lib";
+     for Library_Name use "loggin";
+     for Library_Interface use ("lib1", "lib2");  --  unit names
+     for Library_Standalone use "full";
+@end group
+@end smallexample
+
 @end table
 
 In order to include the elaboration code in the stand-alone library, the binder

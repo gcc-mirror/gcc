@@ -2896,7 +2896,7 @@ package body Makeutl is
 
                   if Src_Id /= No_Source
                     and then (not Excluding_Shared_SALs
-                               or else not Src_Id.Project.Standalone_Library
+                               or else Src_Id.Project.Standalone_Library = No
                                or else Src_Id.Project.Library_Kind = Static)
                   then
                      Queue.Insert

@@ -34,7 +34,7 @@ with MLib.Fil;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Osint;    use Osint;
-with Output;
+with Output;   use Output;
 with Prj;      use Prj;
 with Prj.Env;
 with Prj.Ext;  use Prj.Ext;
@@ -1375,6 +1375,10 @@ procedure GNATCmd is
 --  Start of processing for GNATCmd
 
 begin
+   --  All output from GNATCmd is debugging or error output: send to stderr
+
+   Set_Standard_Error;
+
    --  Initializations
 
    Csets.Initialize;
@@ -1900,6 +1904,10 @@ begin
             Project_File_Name => Project_File.all,
             Env               => Root_Environment,
             Packages_To_Check => Packages_To_Check);
+
+         --  Prj.Pars.Parse calls Set_Standard_Output, reset to stderr
+
+         Set_Standard_Error;
 
          if Project = Prj.No_Project then
             Fail ("""" & Project_File.all & """ processing failed");

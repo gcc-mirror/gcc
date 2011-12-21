@@ -2155,6 +2155,24 @@ package body Prj.Nmsc is
                            Attribute.Value.Location, Project);
                   end;
 
+               elsif
+                 Attribute.Name = Name_Library_Fully_Standalone_Supported
+               then
+                  declare
+                     pragma Unsuppress (All_Checks);
+                  begin
+                     Project.Config.Lib_Fully_Standalone_Supported :=
+                       Boolean'Value (Get_Name_String (Attribute.Value.Value));
+                  exception
+                     when Constraint_Error =>
+                        Error_Msg
+                          (Data.Flags,
+                           "invalid value """
+                             & Get_Name_String (Attribute.Value.Value)
+                             & """ for Library_Fully_Standalone_Supported",
+                           Attribute.Value.Location, Project);
+                  end;
+
                elsif Attribute.Name = Name_Shared_Library_Prefix then
                   Project.Config.Shared_Lib_Prefix :=
                     File_Name_Type (Attribute.Value.Value);
@@ -2778,36 +2796,39 @@ package body Prj.Nmsc is
    is
       Shared : constant Shared_Project_Tree_Data_Access := Data.Tree.Shared;
 
-      Attributes   : constant Prj.Variable_Id := Project.Decl.Attributes;
+      Attributes     : constant Prj.Variable_Id := Project.Decl.Attributes;
 
-      Lib_Dir      : constant Prj.Variable_Value :=
-                       Prj.Util.Value_Of
-                         (Snames.Name_Library_Dir, Attributes, Shared);
+      Lib_Dir        : constant Prj.Variable_Value :=
+                         Prj.Util.Value_Of
+                           (Snames.Name_Library_Dir, Attributes, Shared);
 
-      Lib_Name     : constant Prj.Variable_Value :=
-                       Prj.Util.Value_Of
-                         (Snames.Name_Library_Name, Attributes, Shared);
+      Lib_Name       : constant Prj.Variable_Value :=
+                         Prj.Util.Value_Of
+                           (Snames.Name_Library_Name, Attributes, Shared);
 
-      Lib_Version  : constant Prj.Variable_Value :=
-                       Prj.Util.Value_Of
-                         (Snames.Name_Library_Version, Attributes, Shared);
+      Lib_Standalone : constant Prj.Variable_Value :=
+                         Prj.Util.Value_Of
+                           (Snames.Name_Library_Standalone,
+                            Attributes, Shared);
 
-      Lib_ALI_Dir  : constant Prj.Variable_Value :=
-                       Prj.Util.Value_Of
-                         (Snames.Name_Library_Ali_Dir, Attributes, Shared);
+      Lib_Version    : constant Prj.Variable_Value :=
+                         Prj.Util.Value_Of
+                           (Snames.Name_Library_Version, Attributes, Shared);
 
-      Lib_GCC      : constant Prj.Variable_Value :=
-                       Prj.Util.Value_Of
-                         (Snames.Name_Library_GCC, Attributes, Shared);
+      Lib_ALI_Dir    : constant Prj.Variable_Value :=
+                         Prj.Util.Value_Of
+                           (Snames.Name_Library_Ali_Dir, Attributes, Shared);
 
-      The_Lib_Kind : constant Prj.Variable_Value :=
-                       Prj.Util.Value_Of
-                         (Snames.Name_Library_Kind, Attributes, Shared);
+      Lib_GCC        : constant Prj.Variable_Value :=
+                         Prj.Util.Value_Of
+                           (Snames.Name_Library_GCC, Attributes, Shared);
+
+      The_Lib_Kind   : constant Prj.Variable_Value :=
+                         Prj.Util.Value_Of
+                           (Snames.Name_Library_Kind, Attributes, Shared);
 
       Imported_Project_List : Project_List;
-
-      Continuation : String_Access := No_Continuation_String'Access;
-
+      Continuation          : String_Access := No_Continuation_String'Access;
       Support_For_Libraries : Library_Support;
 
       Library_Directory_Present : Boolean;
@@ -2869,7 +2890,29 @@ package body Prj.Nmsc is
                end if;
 
             elsif Project.Library_Kind /= Static
+              and then not Lib_Standalone.Default
+              and then Get_Name_String (Lib_Standalone.Value) = "full"
+              and then Proj.Library_Kind /= Static
+            then
+               --  A fully standalone library must depend only on static
+               --  libraries.
+
+               Error_Msg_Name_1 := Project.Name;
+               Error_Msg_Name_2 := Proj.Name;
+
+               Error_Msg
+                 (Data.Flags,
+                  Continuation.all &
+                    "standalone library project %% cannot import shared " &
+                    "library project %%",
+                  Project.Location, Project);
+               Continuation := Continuation_String'Access;
+
+            elsif Project.Library_Kind /= Static
               and then Proj.Library_Kind = Static
+              and then (Lib_Standalone.Default
+                         or else
+                           Get_Name_String (Lib_Standalone.Value) /= "full")
             then
                Error_Msg_Name_1 := Project.Name;
                Error_Msg_Name_2 := Proj.Name;
@@ -4309,6 +4352,12 @@ package body Prj.Nmsc is
                                  Project.Decl.Attributes,
                                  Shared);
 
+      Lib_Standalone      : constant Prj.Variable_Value :=
+                              Prj.Util.Value_Of
+                                (Snames.Name_Library_Standalone,
+                                 Project.Decl.Attributes,
+                                 Shared);
+
       Lib_Auto_Init       : constant Prj.Variable_Value :=
                               Prj.Util.Value_Of
                                 (Snames.Name_Library_Auto_Init,
@@ -4353,8 +4402,17 @@ package body Prj.Nmsc is
       --  It is a stand-alone library project file if attribute
       --  Library_Interface is defined.
 
-      if not Lib_Interfaces.Default then
+      if Lib_Interfaces.Default then
+         if not Lib_Standalone.Default
+           and then Get_Name_String (Lib_Standalone.Value) /= "no"
+         then
+            Error_Msg
+              (Data.Flags,
+               "Library_Standalone valid only if Library_Interface is set",
+               Lib_Standalone.Location, Project);
+         end if;
 
+      else
          --  The name of a stand-alone library needs to have the syntax of an
          --  Ada identifier.
 
@@ -4400,7 +4458,34 @@ package body Prj.Nmsc is
             Unit           : Name_Id;
 
          begin
-            Project.Standalone_Library := True;
+            if Lib_Standalone.Default then
+               Project.Standalone_Library := Standard;
+
+            else
+               Get_Name_String (Lib_Standalone.Value);
+               To_Lower (Name_Buffer (1 .. Name_Len));
+
+               if Name_Buffer (1 .. Name_Len) = "standard" then
+                  Project.Standalone_Library := Standard;
+
+               elsif Name_Buffer (1 .. Name_Len) = "full" then
+                  Project.Standalone_Library := Full;
+
+               elsif Name_Buffer (1 .. Name_Len) = "no" then
+                  Project.Standalone_Library := No;
+                  Error_Msg
+                    (Data.Flags,
+                     "wrong value for Library_Standalone "
+                     & "when Library_Interface defined",
+                     Lib_Standalone.Location, Project);
+
+               else
+                  Error_Msg
+                    (Data.Flags,
+                     "invalid value for attribute Library_Standalone",
+                     Lib_Standalone.Location, Project);
+               end if;
+            end if;
 
             --  Library_Interface cannot be an empty list
 

@@ -16359,6 +16359,28 @@ the Library Directory. As a consequence, only the Interface Units may be
 imported from Ada units outside of the library. If other units are imported,
 the binding phase will fail.
 
+@noindent
+It is also possible to build a fully standalone library where not only
+the code to elaborate and finalize the library is embedded but also
+ensuring that the library is linked only against static
+libraries. So a fully standalone library only depends on system
+libraries, all other code, including the GNAT runtime, is embedded. To
+build a fully standalone library the attribute
+@code{Library_Standalone} must be set to @code{full}:
+
+@smallexample @c projectfile
+@group
+   for Library_Dir use "lib_dir";
+   for Library_Name use "dummy";
+   for Library_Interface use ("int1", "int1.child");
+   for Library_Standalone use "full";
+@end group
+@end smallexample
+
+@noindent
+The default value for this attribute is @code{standard} in which case
+a not fully standalone library is built.
+
 The attribute @code{Library_Src_Dir} may be specified for a
 Stand-Alone Library. @code{Library_Src_Dir} is a simple attribute that has a
 single string value. Its value must be the path (absolute or relative to the

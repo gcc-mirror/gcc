@@ -317,7 +317,7 @@ package body MLib.Prj is
                                 Get_Name_String
                                   (For_Project.Object_Directory.Display_Name);
 
-      Standalone   : constant Boolean := For_Project.Standalone_Library;
+      Standalone   : constant Boolean := For_Project.Standalone_Library /= No;
 
       Project_Name : constant String := Get_Name_String (For_Project.Name);
 
