@@ -1033,7 +1033,7 @@ package Prj is
       --  The level of library support. Specified in the configuration. Support
       --  is none, static libraries only or both static and shared libraries.
 
-      Lib_Fully_Standalone_Supported : Boolean := False;
+      Lib_Encapsulated_Supported : Boolean := False;
       --  True when building fully standalone libraries supported on the target
 
       Archive_Builder : Name_List_Index := No_Name_List;
@@ -1106,7 +1106,7 @@ package Prj is
                                Resp_File_Format               => None,
                                Resp_File_Options              => No_Name_List,
                                Lib_Support                    => None,
-                               Lib_Fully_Standalone_Supported => False,
+                               Lib_Encapsulated_Supported     => False,
                                Archive_Builder                => No_Name_List,
                                Archive_Builder_Append_Option  => No_Name_List,
                                Archive_Indexer                => No_Name_List,
@@ -1151,7 +1151,7 @@ package Prj is
 
    --  The following record describes a project file representation
 
-   type Standalone is (No, Standard, Full);
+   type Standalone is (No, Standard, Encapsulated);
 
    type Project_Data (Qualifier : Project_Qualifier := Unspecified) is record
 
