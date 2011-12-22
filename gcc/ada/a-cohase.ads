@@ -31,10 +31,10 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
+with Ada.Iterator_Interfaces;
 private with Ada.Containers.Hash_Tables;
 private with Ada.Streams;
 private with Ada.Finalization;
-with Ada.Iterator_Interfaces;
 
 generic
    type Element_Type is private;
@@ -52,6 +52,7 @@ package Ada.Containers.Hashed_Sets is
 
    type Set is tagged private
    with
+      constant_Indexing => Constant_Reference,
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type;
 
@@ -147,6 +148,14 @@ package Ada.Containers.Hashed_Sets is
    procedure Assign (Target : in out Set; Source : Set);
 
    function Copy (Source : Set; Capacity : Count_Type := 0) return Set;
+
+   type Constant_Reference_Type
+     (Element : not null access constant Element_Type) is private
+        with Implicit_Dereference => Element;
+
+   function Constant_Reference
+     (Container : aliased Set;
+      Position  : Cursor) return Constant_Reference_Type;
 
    procedure Move (Target : in out Set; Source : in out Set);
    --  Clears Target (if it's not empty), and then moves (not copies) the
@@ -403,13 +412,27 @@ package Ada.Containers.Hashed_Sets is
       --  Equivalent_Keys to compare the saved key-value to the value returned
       --  by applying generic formal operation Key to the post-Process value of
       --  element. If the key values compare equal then the operation
-      --  completes. Otherwise, the node is removed from the map and
+      --  completes. Otherwise, the node is removed from the set and
       --  Program_Error is raised.
+
+      type Reference_Type (Element : not null access Element_Type) is private
+        with Implicit_Dereference => Element;
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Position  : Cursor) return Reference_Type;
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Key  : Key_Type) return Reference_Type;
+
+   private
+      type Reference_Type (Element : not null access Element_Type)
+         is null record;
 
    end Generic_Keys;
 
 private
-
    pragma Inline (Next);
 
    type Node_Type;
@@ -468,6 +491,21 @@ private
       Container : out Set);
 
    for Set'Read use Read;
+
+   type Constant_Reference_Type
+     (Element : not null access constant Element_Type) is null record;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type);
+
+   for Constant_Reference_Type'Read use Read;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type);
+
+   for Constant_Reference_Type'Write use Write;
 
    Empty_Set : constant Set := (Controlled with HT => (null, 0, 0, 0));
 

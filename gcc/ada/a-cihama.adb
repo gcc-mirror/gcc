@@ -973,6 +973,15 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
          Container.Find (Key).Node.Element.all'Unrestricted_Access);
    end Reference;
 
+   function Reference
+     (Container : aliased in out Map;
+      Position  : Cursor) return Reference_Type
+   is
+      pragma Unreferenced (Container);
+   begin
+      return (Element => Element (Position)'Unrestricted_Access);
+   end Reference;
+
    -------------
    -- Replace --
    -------------

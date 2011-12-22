@@ -1100,6 +1100,14 @@ package body Ada.Containers.Hashed_Sets is
       raise Program_Error with "attempt to stream set cursor";
    end Read;
 
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
    ---------------
    -- Read_Node --
    ---------------
@@ -1117,6 +1125,19 @@ package body Ada.Containers.Hashed_Sets is
          Free (Node);
          raise;
    end Read_Node;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Constant_Reference
+     (Container : aliased Set;
+      Position  : Cursor) return Constant_Reference_Type
+   is
+      pragma Unreferenced (Container);
+   begin
+      return (Element => Position.Node.Element'Unrestricted_Access);
+   end Constant_Reference;
 
    -------------
    -- Replace --
@@ -1655,6 +1676,14 @@ package body Ada.Containers.Hashed_Sets is
       raise Program_Error with "attempt to stream set cursor";
    end Write;
 
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Write;
+
    ----------------
    -- Write_Node --
    ----------------
@@ -1923,6 +1952,27 @@ package body Ada.Containers.Hashed_Sets is
          raise Program_Error with "key was modified";
       end Update_Element_Preserving_Key;
 
+      ------------------------------
+      -- Reference_Preserving_Key --
+      ------------------------------
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Position  : Cursor) return Reference_Type
+      is
+         pragma Unreferenced (Container);
+      begin
+         return (Element => Position.Node.Element'Unrestricted_Access);
+      end Reference_Preserving_Key;
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Key       : Key_Type) return Reference_Type
+      is
+         Position : constant Cursor := Find (Container, Key);
+      begin
+         return (Element => Position.Node.Element'Unrestricted_Access);
+      end Reference_Preserving_Key;
    end Generic_Keys;
 
 end Ada.Containers.Hashed_Sets;

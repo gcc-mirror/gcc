@@ -293,8 +293,13 @@ package Ada.Containers.Indefinite_Hashed_Maps is
       Key       : Key_Type)    --  SHOULD BE ALIASED ???
       return Constant_Reference_Type;
 
-   function Reference (Container : Map; Key : Key_Type)
-   return Reference_Type;
+   function Reference
+     (Container : Map;
+      Key       : Key_Type) return Reference_Type;
+
+   function Reference
+     (Container : aliased in out Map;
+      Position  : Cursor) return Reference_Type;
 
    procedure Iterate
      (Container : Map;
