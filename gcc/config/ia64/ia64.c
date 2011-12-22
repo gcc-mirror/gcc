@@ -316,11 +316,6 @@ static const char *ia64_invalid_conversion (const_tree, const_tree);
 static const char *ia64_invalid_unary_op (int, const_tree);
 static const char *ia64_invalid_binary_op (int, const_tree, const_tree);
 static enum machine_mode ia64_c_mode_for_suffix (char);
-static enum machine_mode ia64_promote_function_mode (const_tree,
-						     enum machine_mode,
-						     int *,
-						     const_tree,
-						     int);
 static void ia64_trampoline_init (rtx, tree, rtx);
 static void ia64_override_options_after_change (void);
 
@@ -545,9 +540,6 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL
 #define TARGET_ASM_OUTPUT_DWARF_DTPREL ia64_output_dwarf_dtprel
 #endif
-
-#undef TARGET_PROMOTE_FUNCTION_MODE
-#define TARGET_PROMOTE_FUNCTION_MODE ia64_promote_function_mode
 
 /* ??? Investigate.  */
 #if 0
@@ -5013,9 +5005,9 @@ ia64_function_value (const_tree valtype,
 	  return gen_rtx_PARALLEL (mode, gen_rtvec_v (i, loc));
 	}
 
-      mode = ia64_promote_function_mode (valtype, mode, &unsignedp,
-					 func ? TREE_TYPE (func) : NULL_TREE,
-					 true);
+      mode = promote_function_mode (valtype, mode, &unsignedp,
+                                    func ? TREE_TYPE (func) : NULL_TREE,
+                                    true);
 
       return gen_rtx_REG (mode, GR_RET_FIRST);
     }
@@ -10984,43 +10976,6 @@ ia64_c_mode_for_suffix (char suffix)
   return VOIDmode;
 }
 
-static enum machine_mode
-ia64_promote_function_mode (const_tree type,
-			    enum machine_mode mode,
-			    int *punsignedp,
-			    const_tree funtype,
-			    int for_return)
-{
-  /* Special processing required for OpenVMS ...  */
-
-  if (!TARGET_ABI_OPEN_VMS)
-    return default_promote_function_mode(type, mode, punsignedp, funtype,
-					 for_return);
-
-  /* HP OpenVMS Calling Standard dated June, 2004, that describes
-     HP OpenVMS I64 Version 8.2EFT,
-     chapter 4 "OpenVMS I64 Conventions"
-     section 4.7 "Procedure Linkage"
-     subsection 4.7.5.2, "Normal Register Parameters"
-
-     "Unsigned integral (except unsigned 32-bit), set, and VAX floating-point
-     values passed in registers are zero-filled; signed integral values as
-     well as unsigned 32-bit integral values are sign-extended to 64 bits.
-     For all other types passed in the general registers, unused bits are
-     undefined."  */
-
-  if (for_return != 2
-      && GET_MODE_CLASS (mode) == MODE_INT
-      && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
-    {
-      if (mode == SImode)
-	*punsignedp = 0;
-      return DImode;
-    }
-  else
-    return promote_mode (type, mode, punsignedp);
-}
-   
 static GTY(()) rtx ia64_dconst_0_5_rtx;
 
 rtx

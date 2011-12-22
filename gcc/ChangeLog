@@ -1,3 +1,12 @@
+2011-12-22  Tristan Gingold  <gingold@adacore.com>
+
+	* config/ia64/ia64.c (ia64_promote_function_mode): Remove.
+	(TARGET_PROMOTE_FUNCTION_MODE): Remove.
+	(ia64_function_value): Call promote_function_mode instead of
+	ia64_promote_function_mode.
+	* config/ia64/vms.h (PROMOTE_MODE): Define.
+	(TARGET_PROMOTE_FUNCTION_MODE): Define.
+
 2011-12-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/27468
