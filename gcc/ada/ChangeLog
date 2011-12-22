@@ -1,3 +1,7 @@
+2011-12-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-osinte-hpux-dce.ads: Update header to GPLv3
+
 2011-12-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* a-cohase.ads, a-cohase.adb: Update to latest RM version. Add
