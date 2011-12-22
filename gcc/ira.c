@@ -406,11 +406,12 @@ int ira_spilled_reg_stack_slots_num;
    stack slots used in current function so far.  */
 struct ira_spilled_reg_stack_slot *ira_spilled_reg_stack_slots;
 
-/* Correspondingly overall cost of the allocation, cost of the
-   allocnos assigned to hard-registers, cost of the allocnos assigned
-   to memory, cost of loads, stores and register move insns generated
-   for pseudo-register live range splitting (see ira-emit.c).  */
-int ira_overall_cost;
+/* Correspondingly overall cost of the allocation, overall cost before
+   reload, cost of the allocnos assigned to hard-registers, cost of
+   the allocnos assigned to memory, cost of loads, stores and register
+   move insns generated for pseudo-register live range splitting (see
+   ira-emit.c).  */
+int ira_overall_cost, overall_cost_before;
 int ira_reg_cost, ira_mem_cost;
 int ira_load_cost, ira_store_cost, ira_shuffle_cost;
 int ira_move_loops_num, ira_additional_jumps_num;
@@ -3521,19 +3522,17 @@ struct loops ira_loops;
    mode or when the conflict table is too big.  */
 bool ira_conflicts_p;
 
+/* Saved between IRA and reload.  */
+static int saved_flag_ira_share_spill_slots;
+
 /* This is the main entry of IRA.  */
 static void
 ira (FILE *f)
 {
-  int overall_cost_before, allocated_reg_info_size;
+  int allocated_reg_info_size;
   bool loops_p;
   int max_regno_before_ira, ira_max_point_before_emit;
   int rebuild_p;
-  int saved_flag_ira_share_spill_slots;
-  basic_block bb;
-  bool need_dce;
-
-  timevar_push (TV_IRA);
 
   if (flag_caller_saves)
     init_caller_save ();
@@ -3715,16 +3714,21 @@ ira (FILE *f)
 	      max_regno * sizeof (struct ira_spilled_reg_stack_slot));
     }
   allocate_initial_values (reg_equivs);
+}
 
-  timevar_pop (TV_IRA);
+static void
+do_reload (void)
+{
+  basic_block bb;
+  bool need_dce;
 
-  timevar_push (TV_RELOAD);
+  if (flag_ira_verbose < 10 && dump_file)
+    ira_dump_file = dump_file;
+
   df_set_flags (DF_NO_INSN_RESCAN);
   build_insn_chain ();
 
   need_dce = reload (get_insns (), ira_conflicts_p);
-
-  timevar_pop (TV_RELOAD);
 
   timevar_push (TV_IRA);
 
@@ -3733,7 +3737,6 @@ ira (FILE *f)
       ira_free (ira_spilled_reg_stack_slots);
 
       ira_finish_assign ();
-
     }
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL
       && overall_cost_before != ira_overall_cost)
@@ -3782,15 +3785,7 @@ ira (FILE *f)
 
   timevar_pop (TV_IRA);
 }
-
 
-
-static bool
-gate_ira (void)
-{
-  return true;
-}
-
 /* Run the integrated register allocator.  */
 static unsigned int
 rest_of_handle_ira (void)
@@ -3804,16 +3799,42 @@ struct rtl_opt_pass pass_ira =
  {
   RTL_PASS,
   "ira",                                /* name */
-  gate_ira,                             /* gate */
+  NULL,                                 /* gate */
   rest_of_handle_ira,		        /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_NONE,	                        /* tv_id */
+  TV_IRA,	                        /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_ggc_collect                      /* todo_flags_finish */
+  TODO_dump_func                        /* todo_flags_finish */
+ }
+};
+
+static unsigned int
+rest_of_handle_reload (void)
+{
+  do_reload ();
+  return 0;
+}
+
+struct rtl_opt_pass pass_reload =
+{
+ {
+  RTL_PASS,
+  "reload",                             /* name */
+  NULL,                                 /* gate */
+  rest_of_handle_reload,	        /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_RELOAD,	                        /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func | TODO_ggc_collect     /* todo_flags_finish */
  }
 };

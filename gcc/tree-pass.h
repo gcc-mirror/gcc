@@ -541,6 +541,7 @@ extern struct rtl_opt_pass pass_mode_switching;
 extern struct rtl_opt_pass pass_sms;
 extern struct rtl_opt_pass pass_sched;
 extern struct rtl_opt_pass pass_ira;
+extern struct rtl_opt_pass pass_reload;
 extern struct rtl_opt_pass pass_postreload;
 extern struct rtl_opt_pass pass_clean_state;
 extern struct rtl_opt_pass pass_branch_prob;
