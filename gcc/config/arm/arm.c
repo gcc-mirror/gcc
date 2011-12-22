@@ -5250,6 +5250,14 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
   if (IS_STACKALIGN (func_type))
     return false;
 
+  /* The AAPCS says that, on bare-metal, calls to unresolved weak
+     references should become a NOP.  Don't convert such calls into
+     sibling calls.  */
+  if (TARGET_AAPCS_BASED
+      && arm_abi == ARM_ABI_AAPCS
+      && lookup_attribute ("weak", DECL_ATTRIBUTES (decl)))
+    return false;
+
   /* Everything else is ok.  */
   return true;
 }
