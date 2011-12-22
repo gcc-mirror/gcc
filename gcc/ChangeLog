@@ -1,3 +1,9 @@
+2011-12-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/51212
+	* opts.c (finish_options): Call sorry on -fgnu-tm and
+	-fnon-call-exceptions combination.
+
 2011-12-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/invoke.texi (C++ Dialect Options): Add missing options and
