@@ -12847,8 +12847,10 @@ Embedded AMD CPU with MMX and 3DNow!@: instruction set support.
 
 While picking a specific @var{cpu-type} will schedule things appropriately
 for that particular chip, the compiler will not generate any code that
-does not run on the i386 without the @option{-march=@var{cpu-type}} option
-being used.
+does not run on the default machine type without the @option{-march=@var{cpu-type}}
+option being used. For example, if GCC is configured for i686-pc-linux-gnu
+then @option{-mtune=pentium4} will generate code that is tuned for Pentium4
+but will still run on i686 machines.
 
 @item -march=@var{cpu-type}
 @opindex march

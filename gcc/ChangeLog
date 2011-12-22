@@ -1,3 +1,9 @@
+2011-12-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR target/47643
+	* doc/invoke.texi (i386 and x86-64 Options): Fix description of
+	-mtune without -march.
+
 2011-12-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/51643
