@@ -1,3 +1,13 @@
+2011-12-22  Janne Blomqvist  <jb@gcc.gnu.org>
+	Tobias Burnus  <burnus@net-b.de>
+
+	PR libfortran/51646
+	* acinclude.m4 (LIBGFOR_CHECK_UNLINK_OPEN_FILE): Use POSIX mode
+	flags, omit mode argument when flags argument does not have
+	O_CREAT.
+	* io/unix.c (tempfile): Use POSIX mode flags.
+	* configure: Regenerate.
+
 2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
 
 	* configure: Regenerate.
