@@ -1,3 +1,11 @@
+2011-12-22  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (set_placeholder_pointer_type): Arrange for the type
+	name to have a DECL_ORIGINAL_TYPE as gcc expects.
+	(set_placeholder_struct_type): Likewise.
+	(set_placeholder_array_type): Likewise.
+	(named_type): Set DECL_ORIGINAL_TYPE.
+
 2011-12-13  Ian Lance Taylor  <iant@google.com>
 
 	* go-backend.c: #include "simple-object.h" and "intl.h".
