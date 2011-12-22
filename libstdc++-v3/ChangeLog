@@ -1,6 +1,11 @@
 2011-12-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/48362
+	* testsuite/libstdc++-prettyprinters/48362.cc: New.
+
+2011-12-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/48362
 	* python/libstdcxx/v6/printers.py (StdTuplePrinter): Handle empty
 	tuples.
 
