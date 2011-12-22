@@ -1,3 +1,8 @@
+2011-12-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/51645
+	* g++.dg/cpp0x/alias-decl-debug-0.C: Add dg-skip-if.
+
 2011-12-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/pr50038.c: Move to ...
