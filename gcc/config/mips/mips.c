@@ -15208,14 +15208,8 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 }
 
 /* The last argument passed to mips_set_mips16_mode, or negative if the
-   function hasn't been called yet.
-
-   There are two copies of this information.  One is saved and restored
-   by the PCH process while the other is specific to this compiler
-   invocation.  The information calculated by mips_set_mips16_mode
-   is invalid unless the two variables are the same.  */
+   function hasn't been called yet.  */
 static int was_mips16_p = -1;
-static GTY(()) int was_mips16_pch_p = -1;
 
 /* Set up the target-dependent global state so that it matches the
    current function's ISA mode.  */
@@ -15223,8 +15217,7 @@ static GTY(()) int was_mips16_pch_p = -1;
 static void
 mips_set_mips16_mode (int mips16_p)
 {
-  if (mips16_p == was_mips16_p
-      && mips16_p == was_mips16_pch_p)
+  if (mips16_p == was_mips16_p)
     return;
 
   /* Restore base settings of various flags.  */
@@ -15321,7 +15314,6 @@ mips_set_mips16_mode (int mips16_p)
     restore_target_globals (&default_target_globals);
 
   was_mips16_p = mips16_p;
-  was_mips16_pch_p = mips16_p;
 }
 
 /* Implement TARGET_SET_CURRENT_FUNCTION.  Decide whether the current
@@ -16336,6 +16328,34 @@ mips_shift_truncation_mask (enum machine_mode mode)
   return GET_MODE_BITSIZE (mode) - 1;
 }
 
+/* Implement TARGET_PREPARE_PCH_SAVE.  */
+
+static void
+mips_prepare_pch_save (void)
+{
+  /* We are called in a context where the current MIPS16 vs. non-MIPS16
+     setting should be irrelevant.  The question then is: which setting
+     makes most sense at load time?
+
+     The PCH is loaded before the first token is read.  We should never
+     have switched into MIPS16 mode by that point, and thus should not
+     have populated mips16_globals.  Nor can we load the entire contents
+     of mips16_globals from the PCH file, because mips16_globals contains
+     a combination of GGC and non-GGC data.
+
+     There is therefore no point in trying save the GGC part of
+     mips16_globals to the PCH file, or to preserve MIPS16ness across
+     the PCH save and load.  The loading compiler would not have access
+     to the non-GGC parts of mips16_globals (either from the PCH file,
+     or from a copy that the loading compiler generated itself) and would
+     have to call target_reinit anyway.
+
+     It therefore seems best to switch back to non-MIPS16 mode at
+     save time, and to ensure that mips16_globals remains null after
+     a PCH load.  */
+  mips_set_mips16_mode (false);
+  mips16_globals = 0;
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -16554,6 +16574,9 @@ mips_shift_truncation_mask (enum machine_mode mode)
 
 #undef TARGET_SHIFT_TRUNCATION_MASK
 #define TARGET_SHIFT_TRUNCATION_MASK mips_shift_truncation_mask
+
+#undef TARGET_PREPARE_PCH_SAVE
+#define TARGET_PREPARE_PCH_SAVE mips_prepare_pch_save
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

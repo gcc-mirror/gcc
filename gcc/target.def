@@ -1819,6 +1819,15 @@ DEFHOOK
  const char *, (const void *data, size_t sz),
  default_pch_valid_p)
 
+DEFHOOK
+(prepare_pch_save,
+ "Called before writing out a PCH file.  If the target has some\n\
+garbage-collected data that needs to be in a particular state on PCH loads,\n\
+it can use this hook to enforce that state.  Very few targets need\n\
+to do anything here.",
+ void, (void),
+ hook_void_void)
+
 /* If nonnull, this function checks whether a PCH file with the
    given set of target flags can be used.  It returns NULL if so,
    otherwise it returns an error message.  */

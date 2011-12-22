@@ -9974,6 +9974,8 @@ of @code{target_flags}.  @var{pch_flags} specifies the value that
 value is the same as for @code{TARGET_PCH_VALID_P}.
 @end deftypefn
 
+@hook TARGET_PREPARE_PCH_SAVE
+
 @node C++ ABI
 @section C++ ABI parameters
 @cindex parameters, c++ abi
