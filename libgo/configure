@@ -13818,9 +13818,9 @@ case "$target" in
 	;;
     *-*-solaris2.1[01])
 	# Solaris 10+ needs this so struct msghdr gets the msg_control
-	# etc. fields in <sys/socket.h> (_XPG4_2).  _XOPEN_SOURCE=500 as
+	# etc. fields in <sys/socket.h> (_XPG4_2).  _XOPEN_SOURCE=600 as
 	# above doesn't work with C99.
-	OSCFLAGS="$OSCFLAGS -D_XOPEN_SOURCE=600 -D__EXTENSIONS__"
+	OSCFLAGS="$OSCFLAGS -std=gnu99 -D_XOPEN_SOURCE=600 -D__EXTENSIONS__"
 	;;
 esac
 
