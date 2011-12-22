@@ -1,3 +1,9 @@
+2011-12-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/27468
+	* common/config/alpha/alpha-common.c (alpha_option_optimization_table):
+	Enable flag_ree at -O2 or higher.
+
 2011-12-22  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/51650
