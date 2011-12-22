@@ -251,11 +251,11 @@ class StdTuplePrinter:
             # Set the base class as the initial head of the
             # tuple.
             nodes = self.head.type.fields ()
-            if len (nodes) != 1:
+            if len (nodes) == 1:
+                # Set the actual head to the first pair.
+                self.head  = self.head.cast (nodes[0].type)
+            elif len (nodes) != 0:
                 raise ValueError, "Top of tuple tree does not consist of a single node."
-
-            # Set the actual head to the first pair.
-            self.head  = self.head.cast (nodes[0].type)
             self.count = 0
 
         def __iter__ (self):
@@ -297,6 +297,8 @@ class StdTuplePrinter:
         return self._iterator (self.val)
 
     def to_string (self):
+        if len (self.val.type.fields ()) == 0:
+            return 'empty %s' % (self.typename)
         return '%s containing' % (self.typename)
 
 class StdStackOrQueuePrinter:
