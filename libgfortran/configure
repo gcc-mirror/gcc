@@ -25598,7 +25598,7 @@ int main ()
 {
   int fd;
 
-  fd = open ("testfile", O_RDWR | O_CREAT, S_IWRITE | S_IREAD);
+  fd = open ("testfile", O_RDWR | O_CREAT, S_IWUSR | S_IRUSR);
   if (fd <= 0)
     return 0;
   if (unlink ("testfile") == -1)
@@ -25606,7 +25606,7 @@ int main ()
   write (fd, "This is a test\n", 15);
   close (fd);
 
-  if (open ("testfile", O_RDONLY, S_IWRITE | S_IREAD) == -1 && errno == ENOENT)
+  if (open ("testfile", O_RDONLY) == -1 && errno == ENOENT)
     return 0;
   else
     return 1;
