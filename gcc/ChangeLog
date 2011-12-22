@@ -1,3 +1,14 @@
+2011-12-22  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* doc/tm.texi.in (TARGET_PREPARE_PCH_SAVE): New hook.
+	* doc/tm.texi: Regenerate.
+	* target.def (prepare_pch_save): New hook.
+	* c-family/c-pch.c (c_common_write_pch): Call it.
+	* config/mips/mips.c (was_mips16_pch_p): Delete.
+	(mips_set_mips16_mode): Don't refer to was_mips16_pch_p.
+	(mips_prepare_pch_save): New function.
+	(TARGET_PREPARE_PCH_SAVE): Define.
+
 2011-12-22  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/51212

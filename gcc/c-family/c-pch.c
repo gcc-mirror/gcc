@@ -180,6 +180,8 @@ c_common_write_pch (void)
 
   timevar_push (TV_PCH_SAVE);
 
+  targetm.prepare_pch_save ();
+
   (*debug_hooks->handle_pch) (1);
 
   cpp_write_pch_deps (parse_in, pch_outfile);

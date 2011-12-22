@@ -10079,6 +10079,13 @@ of @code{target_flags}.  @var{pch_flags} specifies the value that
 value is the same as for @code{TARGET_PCH_VALID_P}.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_PREPARE_PCH_SAVE (void)
+Called before writing out a PCH file.  If the target has some
+garbage-collected data that needs to be in a particular state on PCH loads,
+it can use this hook to enforce that state.  Very few targets need
+to do anything here.
+@end deftypefn
+
 @node C++ ABI
 @section C++ ABI parameters
 @cindex parameters, c++ abi
