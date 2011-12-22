@@ -1,3 +1,9 @@
+2011-12-22  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/51650
+	* g++.dg/lto/pr51650-1_0.C: New testcase.
+	* g++.dg/lto/pr51650-2_0.C: Likewise.
+
 2011-12-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/51643

@@ -1,3 +1,9 @@
+2011-12-22  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/51650
+	* lto.c (uniquify_nodes): Register TYPE_DECLs with the
+	debuginfo machinery.
+
 2011-12-22  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* tree-pass.h (pass_reload): Declare.
