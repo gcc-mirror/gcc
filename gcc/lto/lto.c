@@ -881,6 +881,9 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 	lto_register_var_decl_in_symtab (data_in, t);
       else if (TREE_CODE (t) == FUNCTION_DECL && !DECL_BUILT_IN (t))
 	lto_register_function_decl_in_symtab (data_in, t);
+      else if (!flag_wpa
+	       && TREE_CODE (t) == TYPE_DECL)
+	debug_hooks->type_decl (t, !DECL_FILE_SCOPE_P (t));
       else if (TYPE_P (t) && !TYPE_CANONICAL (t))
 	TYPE_CANONICAL (t) = gimple_register_canonical_type (t);
     }
