@@ -196,11 +196,12 @@ in the following sections.
 -fno-default-inline  -fvisibility-inlines-hidden @gol
 -fvisibility-ms-compat @gol
 -Wabi  -Wconversion-null  -Wctor-dtor-privacy @gol
--Wnoexcept -Wnon-virtual-dtor  -Wreorder @gol
+-Wdelete-non-virtual-dtor -Wnarrowing -Wnoexcept @gol
+-Wnon-virtual-dtor  -Wreorder @gol
 -Weffc++  -Wstrict-null-sentinel @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
 -Woverloaded-virtual  -Wno-pmf-conversions @gol
--Wsign-promo -Wzero-as-null-pointer-constant}
+-Wsign-promo}
 
 @item Objective-C and Objective-C++ Language Options
 @xref{Objective-C and Objective-C++ Dialect Options,,Options Controlling
@@ -272,7 +273,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-unused-result -Wunused-value @gol -Wunused-variable @gol
 -Wunused-but-set-parameter -Wunused-but-set-variable @gol
 -Wvariadic-macros -Wvector-operation-performance -Wvla 
--Wvolatile-register-var  -Wwrite-strings}
+-Wvolatile-register-var  -Wwrite-strings -Wzero-as-null-pointer-constant}
 
 @item C and Objective-C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
