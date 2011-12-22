@@ -1,3 +1,8 @@
+2011-12-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Jim Avera  <james_avera@yahoo.com>
+
+	* doc/extend.texi (__builtin_expect): Improve example.  
+
 2011-12-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_option_override_internal): Enable flag_ree

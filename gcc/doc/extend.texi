@@ -7932,7 +7932,7 @@ expressions for @var{exp}, you should use constructions such as
 
 @smallexample
 if (__builtin_expect (ptr != NULL, 1))
-  error ();
+  foo (*ptr);
 @end smallexample
 
 @noindent
