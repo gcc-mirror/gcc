@@ -346,7 +346,11 @@ sig_tramp (int sig)
   mp = runtime_m ();
 
   if (gp != NULL)
-    __splitstack_getcontext (&gp->stack_context[0]);
+    {
+#ifdef USING_SPLIT_STACK
+      __splitstack_getcontext (&gp->stack_context[0]);
+#endif
+    }
 
   if (gp != NULL && mp->gsignal != NULL)
     {
