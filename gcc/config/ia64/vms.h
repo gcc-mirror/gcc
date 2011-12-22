@@ -135,3 +135,25 @@ STATIC func_ptr __CTOR_LIST__[1]                                             \
 
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION ia64_vms_elf_asm_named_section
+
+/* Define this macro if it is advisable to hold scalars in registers
+   in a wider mode than that declared by the program.  In such cases,
+   the value is constrained to be within the bounds of the declared
+   type, but kept valid in the wider mode.  The signedness of the
+   extension may differ from that of the type.
+
+   For ia64, we always store objects in a full register.  32-bit integers
+   are always sign-extended, but smaller objects retain their signedness.  */
+
+#undef PROMOTE_MODE
+#define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)			\
+  if (GET_MODE_CLASS (MODE) == MODE_INT				\
+      && GET_MODE_SIZE (MODE) < UNITS_PER_WORD)			\
+    {								\
+      if ((MODE) == SImode)					\
+	(UNSIGNEDP) = 0;					\
+      (MODE) = DImode;						\
+    }
+
+#undef TARGET_PROMOTE_FUNCTION_MODE
+#define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode_always_promote
