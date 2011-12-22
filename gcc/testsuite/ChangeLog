@@ -1,3 +1,10 @@
+2011-12-22  Doug Kwan  <dougkwan@google.com>
+
+	Backport from mainline
+	2011-11-20  Joey Ye  <joey.ye@arm.com>
+
+	* gcc.dg/volatile-bitfields-1.c: New.
+
 2011-12-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/51643

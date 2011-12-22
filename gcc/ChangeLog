@@ -1,3 +1,16 @@
+2011-12-22  Doug Kwan  <dougkwan@google.com>
+
+	Backport from mainline
+	2011-03-23  Julian Brown  <julian@codesourcery.com>
+
+	* expr.c (expand_expr_real_1): Only use BLKmode for volatile
+	accesses which are not naturally aligned.
+
+	2011-11-20  Joey Ye  <joey.ye@arm.com>
+
+	* expr.c (expand_expr_real_1): Correctly handle strict volatile
+	bitfield loads smaller than mode size.
+
 2011-12-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/51643
