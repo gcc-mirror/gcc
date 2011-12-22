@@ -1,3 +1,29 @@
+2011-12-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Build_Adjust_Or_Finalize_Statements): Create the objects
+	associated with exception handling unconditionally.
+	(Build_Adjust_Statements): Create the objects associated with
+	exception handling unconditionally.
+	(Build_Components): Create the objects associated with exception
+	handling unconditionally.
+	(Build_Finalize_Statements): Create the objects associated with
+	exception handling unconditionally.
+	(Build_Initialize_Statements): Create the objects associated with
+	exception handling unconditionally.
+	(Build_Object_Declarations): Set the proper location of the data
+	record when exception propagation is forbidden.
+
+2011-12-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* a-tienio.adb (Put): Test validity of Item parameters before
+	applying Image, and raise Constraint_Error for invalid values.
+
+2011-12-22  Bob Duff  <duff@adacore.com>
+
+	* a-stwima.ads (Initialize,Adjust,Finalize): Add overriding indicators.
+	* a-ststio.ads (AFCB_Allocate,AFCB_Close,AFCB_Free,Read,Write): Add
+	overriding indicators.
+
 2011-12-22  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-osinte-hpux-dce.ads: Update header to GPLv3

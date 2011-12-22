@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,9 +94,21 @@ package body Ada.Text_IO.Enumeration_IO is
       Width : Field := Default_Width;
       Set   : Type_Set := Default_Setting)
    is
-      Image : constant String := Enum'Image (Item);
    begin
-      Aux.Put (File, Image, Width, Set);
+      --  Ensure that Item is valid before attempting to retrieve the Image, to
+      --  prevent the possibility of out-of-bounds addressing of index or image
+      --  tables. Units in  the run-time library are normally compiled with
+      --  checks suppressed, which includes instantiated generics.
+
+      if not Item'Valid then
+         raise Constraint_Error;
+      end if;
+
+      declare
+         Image : constant String := Enum'Image (Item);
+      begin
+         Aux.Put (File, Image, Width, Set);
+      end;
    end Put;
 
    procedure Put
@@ -113,9 +125,21 @@ package body Ada.Text_IO.Enumeration_IO is
       Item : Enum;
       Set  : Type_Set := Default_Setting)
    is
-      Image : constant String := Enum'Image (Item);
    begin
-      Aux.Puts (To, Image, Set);
+      --  Ensure that Item is valid before attempting to retrieve the Image, to
+      --  prevent the possibility of out-of-bounds addressing of index or image
+      --  tables. Units in the run-time library are normally compiled with
+      --  checks suppressed, which includes instantiated generics.
+
+      if not Item'Valid then
+         raise Constraint_Error;
+      end if;
+
+      declare
+         Image : constant String := Enum'Image (Item);
+      begin
+         Aux.Puts (To, Image, Set);
+      end;
    end Put;
 
 end Ada.Text_IO.Enumeration_IO;

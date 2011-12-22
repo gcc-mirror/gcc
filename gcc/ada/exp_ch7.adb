@@ -1210,10 +1210,8 @@ package body Exp_Ch7 is
 
             Finalizer_Decls := New_List;
 
-            if Exceptions_OK then
-               Build_Object_Declarations
-                 (Finalizer_Data, Finalizer_Decls, Loc, For_Package);
-            end if;
+            Build_Object_Declarations
+              (Finalizer_Data, Finalizer_Decls, Loc, For_Package);
 
             --  Since the total number of controlled objects is always known,
             --  build a subtype of Natural with precise bounds. This allows
@@ -2943,9 +2941,14 @@ package body Exp_Ch7 is
    begin
       pragma Assert (Decls /= No_List);
 
+      --  Always set the proper location as it may be needed even when
+      --  exception propagation is forbidden.
+
+      Data.Loc := Loc;
+
       if Restriction_Active (No_Exception_Propagation) then
-         Data.Abort_Id := Empty;
-         Data.E_Id := Empty;
+         Data.Abort_Id  := Empty;
+         Data.E_Id      := Empty;
          Data.Raised_Id := Empty;
          return;
       end if;
@@ -2953,7 +2956,6 @@ package body Exp_Ch7 is
       Data.Abort_Id  := Make_Temporary (Loc, 'A');
       Data.E_Id      := Make_Temporary (Loc, 'E');
       Data.Raised_Id := Make_Temporary (Loc, 'R');
-      Data.Loc       := Loc;
 
       --  In certain scenarios, finalization can be triggered by an abort. If
       --  the finalization itself fails and raises an exception, the resulting
@@ -4893,12 +4895,10 @@ package body Exp_Ch7 is
       --  Start of processing for Build_Adjust_Or_Finalize_Statements
 
       begin
-         Build_Indices;
+         Finalizer_Decls := New_List;
 
-         if Exceptions_OK then
-            Finalizer_Decls := New_List;
-            Build_Object_Declarations (Finalizer_Data, Finalizer_Decls, Loc);
-         end if;
+         Build_Indices;
+         Build_Object_Declarations (Finalizer_Data, Finalizer_Decls, Loc);
 
          Comp_Ref :=
            Make_Indexed_Component (Loc,
@@ -5168,14 +5168,11 @@ package body Exp_Ch7 is
       --  Start of processing for Build_Initialize_Statements
 
       begin
-         Build_Indices;
-
          Counter_Id := Make_Temporary (Loc, 'C');
+         Finalizer_Decls := New_List;
 
-         if Exceptions_OK then
-            Finalizer_Decls := New_List;
-            Build_Object_Declarations (Finalizer_Data, Finalizer_Decls, Loc);
-         end if;
+         Build_Indices;
+         Build_Object_Declarations (Finalizer_Data, Finalizer_Decls, Loc);
 
          --  Generate the block which houses the finalization call, the index
          --  guard and the handler which triggers Program_Error later on.
@@ -5881,10 +5878,8 @@ package body Exp_Ch7 is
       --  Start of processing for Build_Adjust_Statements
 
       begin
-         if Exceptions_OK then
-            Finalizer_Decls := New_List;
-            Build_Object_Declarations (Finalizer_Data, Finalizer_Decls, Loc);
-         end if;
+         Finalizer_Decls := New_List;
+         Build_Object_Declarations (Finalizer_Data, Finalizer_Decls, Loc);
 
          if Nkind (Typ_Def) = N_Derived_Type_Definition then
             Rec_Def := Record_Extension_Part (Typ_Def);
@@ -6458,10 +6453,8 @@ package body Exp_Ch7 is
       --  Start of processing for Build_Finalize_Statements
 
       begin
-         if Exceptions_OK then
-            Finalizer_Decls := New_List;
-            Build_Object_Declarations (Finalizer_Data, Finalizer_Decls, Loc);
-         end if;
+         Finalizer_Decls := New_List;
+         Build_Object_Declarations (Finalizer_Data, Finalizer_Decls, Loc);
 
          if Nkind (Typ_Def) = N_Derived_Type_Definition then
             Rec_Def := Record_Extension_Part (Typ_Def);
