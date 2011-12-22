@@ -1,3 +1,9 @@
+2011-12-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* common/config/i386/i386-common.c (ix86_option_optimization_table):
+	Move OPT_free processing from ...
+	* config/i386/i386.c (ix86_option_override_internal):  ... here.
+
 2011-12-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/51643
@@ -7,7 +13,7 @@
 2011-12-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
 	    Jim Avera  <james_avera@yahoo.com>
 
-	* doc/extend.texi (__builtin_expect): Improve example.  
+	* doc/extend.texi (__builtin_expect): Improve example.
 
 2011-12-21  Uros Bizjak  <ubizjak@gmail.com>
 
