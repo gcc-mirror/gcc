@@ -4604,11 +4604,12 @@ package body Sem_Prag is
 
          elsif C = Convention_CPP
            and then (Is_Record_Type (Def_Id)
-                       or else Ekind (Def_Id) = E_Incomplete_Type)
+                      or else Ekind (Def_Id) = E_Incomplete_Type)
          then
             if Ekind (Def_Id) = E_Incomplete_Type then
                if Present (Full_View (Def_Id)) then
                   Def_Id := Full_View (Def_Id);
+
                else
                   Error_Msg_N
                     ("cannot import 'C'P'P type before full declaration seen",
@@ -4650,7 +4651,7 @@ package body Sem_Prag is
             --  full view is analyzed (see Process_Full_View).
 
             if not Is_Private_Type (Def_Id) then
-               Check_CPP_Type (Def_Id);
+               Check_CPP_Type_Has_No_Defaults (Def_Id);
             end if;
 
          elsif Nkind (Parent (Def_Id)) = N_Incomplete_Type_Declaration then
@@ -4662,8 +4663,8 @@ package body Sem_Prag is
 
          else
             Error_Pragma_Arg
-              ("second argument of pragma% must be object, subprogram" &
-               " or incomplete type",
+              ("second argument of pragma% must be object, subprogram "
+               & "or incomplete type",
                Arg2);
          end if;
 

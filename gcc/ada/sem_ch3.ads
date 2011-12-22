@@ -115,7 +115,7 @@ package Sem_Ch3 is
    --  and errors are posted on that node, rather than on the declarations that
    --  require completion in the package declaration.
 
-   procedure Check_CPP_Type (T : Entity_Id);
+   procedure Check_CPP_Type_Has_No_Defaults (T : Entity_Id);
    --  Check that components of imported CPP type T do not have default
    --  expressions because the constructor (if any) is on the C++ side.
 
