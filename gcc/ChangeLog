@@ -1,5 +1,11 @@
 2011-12-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* doc/invoke.texi (C++ Dialect Options): Add missing options and
+	move -Wzero-as-null-pointer-constant to ...
+	(Warning Options): ... here.
+
+2011-12-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR target/47643
 	* doc/invoke.texi (i386 and x86-64 Options): Fix description of
 	-mtune without -march.
