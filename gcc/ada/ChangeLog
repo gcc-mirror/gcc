@@ -1,3 +1,13 @@
+2011-12-22  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_dim.adb: Addressed all ??? comments. Replacement of warnings by
+	errors using continuation marks.
+	(Error_Dim_Msg_For_?): Renaming of Error_Dim_For_?.
+
+2011-12-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_ch3.ads, sem_prag.adb: Minor code clean up.
+
 2011-12-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* s-oscons-tmplt.c [__alpha__ && __osf__] (_XOPEN_SOURCE): Define.

@@ -9640,37 +9640,39 @@ package body Sem_Ch3 is
       end loop;
    end Check_Completion;
 
-   --------------------
-   -- Check_CPP_Type --
-   --------------------
+   ------------------------------------
+   -- Check_CPP_Type_Has_No_Defaults --
+   ------------------------------------
 
-   procedure Check_CPP_Type (T : Entity_Id) is
+   procedure Check_CPP_Type_Has_No_Defaults (T : Entity_Id) is
       Tdef  : constant Node_Id := Type_Definition (Declaration_Node (T));
       Clist : Node_Id;
       Comp  : Node_Id;
 
    begin
+      --  Obtain the component list
+
       if Nkind (Tdef) = N_Record_Definition then
          Clist := Component_List (Tdef);
-
-      else
-         pragma Assert (Nkind (Tdef) = N_Derived_Type_Definition);
+      else pragma Assert (Nkind (Tdef) = N_Derived_Type_Definition);
          Clist := Component_List (Record_Extension_Part (Tdef));
       end if;
+
+      --  Check all components to ensure no default expressions
 
       if Present (Clist) then
          Comp := First (Component_Items (Clist));
          while Present (Comp) loop
             if Present (Expression (Comp)) then
                Error_Msg_N
-                 ("component of imported 'C'P'P type cannot have" &
-                    " default expression", Expression (Comp));
+                 ("component of imported 'C'P'P type cannot have "
+                  & "default expression", Expression (Comp));
             end if;
 
             Next (Comp);
          end loop;
       end if;
-   end Check_CPP_Type;
+   end Check_CPP_Type_Has_No_Defaults;
 
    ----------------------------
    -- Check_Delta_Expression --
@@ -18130,7 +18132,7 @@ package body Sem_Ch3 is
          --  Check that components of imported CPP types do not have default
          --  expressions.
 
-         Check_CPP_Type (Full_T);
+         Check_CPP_Type_Has_No_Defaults (Full_T);
       end if;
 
       --  If the private view has user specified stream attributes, then so has
