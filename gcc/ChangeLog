@@ -1,3 +1,17 @@
+2011-12-22  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* tree-pass.h (pass_reload): Declare.
+	* ira.c (overall_cost_before, saved_flag_ira_share_spill_slots):
+	New global variables, moved out of ira.
+	(do_reload): New static function, split off from the second half
+	of ...
+	(ira): ... here.
+	(gate_ira): Remove.
+	(pass_ira): Use TV_IRA, set gate to NULL, and set flags to
+	TODO_dump_func.
+	(rest_of_handle_reload): New static function.
+	(pass_reload): New.
+
 2011-12-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* common/config/i386/i386-common.c (ix86_option_optimization_table):
