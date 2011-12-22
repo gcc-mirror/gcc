@@ -100,14 +100,12 @@ __morestack_non_split:
 
 #ifndef __x86_64__
 
-	# See below for an extended explanation of the CFI instructions.
-	.cfi_offset 8, 8		# New PC stored at CFA + 8
-	.cfi_escape 0x15, 4, 0x7d	# DW_CFA_val_offset_sf, %esp, 12/-4
-					# i.e., next %esp is CFA + 12
+	# See below for an extended explanation of this.
+	.cfi_def_cfa %esp,16
 
 	pushl	%eax			# Save %eax in case it is a parameter.
 
-	.cfi_def_cfa %esp,8		# Account for pushed register.
+	.cfi_adjust_cfa_offset 4	# Account for pushed register.
 
 	movl	%esp,%eax		# Current stack,
 	subl	8(%esp),%eax		# less required stack frame size,
@@ -144,16 +142,16 @@ __morestack_non_split:
 
 	popl	%eax			# Restore %eax and stack.
 
-	.cfi_def_cfa %esp,4		# Account for popped register.
+	.cfi_adjust_cfa_offset -4	# Account for popped register.
 
 	ret	$8			# Return to caller, popping args.
 
 2:
-	.cfi_def_cfa %esp,8		# Back to where we were.
+	.cfi_adjust_cfa_offset 4	# Back to where we were.
 
 	popl	%eax			# Restore %eax and stack.
 
-	.cfi_def_cfa %esp,4		# Account for popped register.
+	.cfi_adjust_cfa_offset -4	# Account for popped register.
 
 	addl	$0x5000+BACKOFF,4(%esp)	# Increment space we request.
 
@@ -161,13 +159,12 @@ __morestack_non_split:
 
 #else
 
-	# See below for an extended explanation of the CFI instructions.
-	.cfi_offset 16, 0
-	.cfi_escape 0x15, 7, 0x7f	# DW_CFA_val_offset_sf, %esp, 8/-8
+	# See below for an extended explanation of this.
+	.cfi_def_cfa %rsp,16
 
 	pushq	%rax			# Save %rax in case caller is using
 					# it to preserve original %r10.
-	.cfi_def_cfa %rsp,16		# Adjust for pushed register.
+	.cfi_adjust_cfa_offset 8	# Adjust for pushed register.
 
 	movq	%rsp,%rax		# Current stack,
 	subq	%r10,%rax		# less required stack frame size,
@@ -178,27 +175,21 @@ __morestack_non_split:
 #else
 	cmpl	%fs:0x40,%eax
 #endif
+	popq	%rax			# Restore register.
+
+	.cfi_adjust_cfa_offset -8	# Adjust for popped register.
+
 	jb	2f			# Get more space if we need it.
 
 	# This breaks call/return prediction, as described above.
-	incq	8(%rsp)			# Increment the return address.
-
-	popq	%rax			# Restore register.
-
-	.cfi_def_cfa %rsp,8		# Adjust for popped register.
+	incq	(%rsp)			# Increment the return address.
 
 	ret				# Return to caller.
 
 2:
-	.cfi_def_cfa %rsp,16		# Back to where we were.
-
-	popq	%rax			# Restore register.
-
-	.cfi_def_cfa %rsp,8		# Adjust for popped register.
-
 	addq	$0x5000+BACKOFF,%r10	# Increment space we request.
 
-	# Fall throug into morestack.
+	# Fall through into morestack.
 
 #endif
 
@@ -245,25 +236,22 @@ __morestack:
 	# instruction, and just return to the real caller.
 
 	# Here CFA points just past the return address on the stack,
-	# e.g., on function entry it is %esp + 4.  Later we will
-	# change it to %ebp + 8, as set by .cfi_def_cfa_register and
-	# .cfi_def_cfa_offset above.  The stack looks like this:
+	# e.g., on function entry it is %esp + 4.  The stack looks
+	# like this:
 	#	CFA + 12:	stack pointer after two returns
 	#	CFA + 8:	return address of morestack caller's caller
 	#	CFA + 4:	size of parameters
 	#	CFA:		new stack frame size
 	#	CFA - 4:	return address of this function
 	#	CFA - 8:	previous value of %ebp; %ebp points here
-	# We want to set %esp to the stack pointer after the double
-	# return, which is CFA + 12.
-	.cfi_offset 8, 8		# New PC stored at CFA + 8
-	.cfi_escape 0x15, 4, 0x7d	# DW_CFA_val_offset_sf, %esp, 12/-4
-					# i.e., next %esp is CFA + 12
+	# Setting the new CFA to be the current CFA + 12 (i.e., %esp +
+	# 16) will make the unwinder pick up the right return address.
 
-	# Set up a normal backtrace.
+	.cfi_def_cfa %esp,16
+
 	pushl	%ebp
-	.cfi_def_cfa_offset 8
-	.cfi_offset %ebp, -8
+	.cfi_adjust_cfa_offset 4
+	.cfi_offset %ebp, -20
 	movl	%esp,%ebp
 	.cfi_def_cfa_register %ebp
 
@@ -281,7 +269,7 @@ __morestack:
 	# register, since we don't change it, we just have to save it
 	# for the unwinder.
 	movl	%ebx,-4(%ebp)
-	.cfi_offset %ebx, -12
+	.cfi_offset %ebx, -24
 
 	# In 32-bit mode the registers %eax, %edx, and %ecx may be
 	# used for parameters, depending on the regparm and fastcall
@@ -385,7 +373,7 @@ __morestack:
 
 	popl	%ebp
 	.cfi_restore %ebp
-	.cfi_def_cfa %esp, 4
+	.cfi_def_cfa %esp, 16
 	ret	$8			# Return to caller, which will
 					# immediately return.  Pop
 					# arguments as we go.
@@ -432,13 +420,12 @@ __morestack:
 	# return to the caller of our caller.  Let the unwinder skip
 	# that single return instruction, and just return to the real
 	# caller.
-	.cfi_offset 16, 0
-	.cfi_escape 0x15, 7, 0x7f	# DW_CFA_val_offset_sf, %esp, 8/-8
+	.cfi_def_cfa %rsp,16
 
 	# Set up a normal backtrace.
 	pushq	%rbp
-	.cfi_def_cfa_offset 16
-	.cfi_offset %rbp, -16
+	.cfi_adjust_cfa_offset 8
+	.cfi_offset %rbp, -24
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register %rbp
 
@@ -551,7 +538,7 @@ __morestack:
 	.cfi_remember_state
 	popq	%rbp
 	.cfi_restore %rbp
-	.cfi_def_cfa %rsp, 8
+	.cfi_def_cfa %rsp, 16
 	ret				# Return to caller, which will
 					# immediately return.
 
