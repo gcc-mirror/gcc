@@ -1,6 +1,12 @@
 2011-12-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/51643
+	* arm.c (arm_function_ok_for_sibcall): Use DECL_WEAK in previous
+	change.
+
+2011-12-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/51643
 	* arm.c (arm_function_ok_for_sibcall): Don't try to tailcall a
 	weak function on bare-metal EABI targets.
 
