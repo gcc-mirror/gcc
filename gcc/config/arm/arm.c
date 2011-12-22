@@ -5255,7 +5255,7 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
      sibling calls.  */
   if (TARGET_AAPCS_BASED
       && arm_abi == ARM_ABI_AAPCS
-      && lookup_attribute ("weak", DECL_ATTRIBUTES (decl)))
+      && DECL_WEAK (decl))
     return false;
 
   /* Everything else is ok.  */
