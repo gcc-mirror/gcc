@@ -1,3 +1,8 @@
+2011-12-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/51643
+	* gcc.target/arm/sibcall-2.c: New test.
+
 2011-12-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/51645
