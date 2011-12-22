@@ -1,3 +1,18 @@
+2011-12-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cohase.ads, a-cohase.adb: Update to latest RM version. Add
+	aspect Constant_Reference to set type, and corresponding
+	functions.
+	* a-cihama.ads, a-cihama.adb: Update to latest RM version. Add
+	function Reference to provide a proper element iterator construct
+	over indefinite maps.
+
+2011-12-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute, case 'Access): Do not insert
+	implicit conversion on prefix of Unrestricted_Access when prefix
+	is an explicit dereference.
+
 2011-12-22  Vincent Pucci  <pucci@adacore.com>
 
 	* sem_dim.adb: Addressed all ??? comments. Replacement of warnings by
