@@ -1,3 +1,12 @@
+2011-12-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/51252
+	* config/pa/pa.c (pa_som_tm_clone_table_section): New function.
+	(som_tm_clone_table_section): Declare.
+	(pa_file_start_space): Create $TM_CLONE_TABLE$ subspace.
+	(pa_som_asm_init_sections): Init som_tm_clone_table_section.
+	* config/pa/som.h (TARGET_ASM_TM_CLONE_TABLE_SECTION): Define.
+
 2011-12-22  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* doc/tm.texi.in (TARGET_PREPARE_PCH_SAVE): New hook.
