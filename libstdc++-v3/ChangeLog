@@ -1,5 +1,10 @@
 2011-12-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/49204
+	* include/std/future (future_errc): Implement LWG 2056.
+
+2011-12-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/bits/regex.h (match_results::size_type): Use
 	allocator_traits.
 
