@@ -8647,10 +8647,6 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
         return temp;
       }
 
-    case VEC_EXTRACT_EVEN_EXPR:
-    case VEC_EXTRACT_ODD_EXPR:
-      goto binop;
-
     case VEC_LSHIFT_EXPR:
     case VEC_RSHIFT_EXPR:
       {

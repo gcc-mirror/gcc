@@ -547,12 +547,6 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     case ABS_EXPR:
       return trapv ? absv_optab : abs_optab;
 
-    case VEC_EXTRACT_EVEN_EXPR:
-      return vec_extract_even_optab;
-
-    case VEC_EXTRACT_ODD_EXPR:
-      return vec_extract_odd_optab;
-
     default:
       return NULL;
     }
@@ -1597,26 +1591,6 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	      if (temp)
 		return temp;
 	    }
-	}
-    }
-
-  /* Certain vector operations can be implemented with vector permutation.  */
-  if (VECTOR_MODE_P (mode))
-    {
-      enum tree_code tcode = ERROR_MARK;
-      rtx sel;
-
-      if (binoptab == vec_extract_even_optab)
-	tcode = VEC_EXTRACT_EVEN_EXPR;
-      else if (binoptab == vec_extract_odd_optab)
-	tcode = VEC_EXTRACT_ODD_EXPR;
-
-      if (tcode != ERROR_MARK
-	  && can_vec_perm_for_code_p (tcode, mode, &sel))
-	{
-	  temp = expand_vec_perm (mode, op0, op1, sel, target);
-	  gcc_assert (temp != NULL);
-	  return temp;
 	}
     }
 
@@ -6259,8 +6233,6 @@ init_optabs (void)
   init_optab (udot_prod_optab, UNKNOWN);
 
   init_optab (vec_extract_optab, UNKNOWN);
-  init_optab (vec_extract_even_optab, UNKNOWN);
-  init_optab (vec_extract_odd_optab, UNKNOWN);
   init_optab (vec_set_optab, UNKNOWN);
   init_optab (vec_init_optab, UNKNOWN);
   init_optab (vec_shl_optab, UNKNOWN);
@@ -6863,86 +6835,6 @@ can_vec_perm_p (enum machine_mode mode, bool variable,
 	return false;
       if (optab_handler (add_optab, qimode) == CODE_FOR_nothing)
 	return false;
-    }
-
-  return true;
-}
-
-/* Return true if we can implement with VEC_PERM_EXPR for this target.
-   If PSEL is non-null, return the selector for the permutation.  */
-
-bool
-can_vec_perm_for_code_p (enum tree_code code, enum machine_mode mode,
-			 rtx *psel)
-{
-  bool need_sel_test = false;
-  enum insn_code icode;
-
-  /* If the target doesn't implement a vector mode for the vector type,
-     then no operations are supported.  */
-  if (!VECTOR_MODE_P (mode))
-    return false;
-
-  /* Do as many tests as possible without reqiring the selector.  */
-  icode = direct_optab_handler (vec_perm_optab, mode);
-  if (icode == CODE_FOR_nothing && GET_MODE_INNER (mode) != QImode)
-    {
-      enum machine_mode qimode
-	= mode_for_vector (QImode, GET_MODE_SIZE (mode));
-      if (VECTOR_MODE_P (qimode))
-	icode = direct_optab_handler (vec_perm_optab, qimode);
-    }
-  if (icode == CODE_FOR_nothing)
-    {
-      icode = direct_optab_handler (vec_perm_const_optab, mode);
-      if (icode != CODE_FOR_nothing
-	  && targetm.vectorize.vec_perm_const_ok != NULL)
-	need_sel_test = true;
-    }
-  if (icode == CODE_FOR_nothing)
-    return false;
-
-  /* If the selector is required, or if we need to test it, build it.  */
-  if (psel || need_sel_test)
-    {
-      int i, nelt = GET_MODE_NUNITS (mode), alt = 0;
-      unsigned char *data = XALLOCAVEC (unsigned char, nelt);
-
-      switch (code)
-	{
-	case VEC_EXTRACT_ODD_EXPR:
-	  alt = 1;
-	  /* FALLTHRU */
-	case VEC_EXTRACT_EVEN_EXPR:
-	  for (i = 0; i < nelt; ++i)
-	    data[i] = i * 2 + alt;
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-
-      if (need_sel_test
-	  && !targetm.vectorize.vec_perm_const_ok (mode, data))
-	return false;
-
-      if (psel)
-	{
-	  rtvec vec = rtvec_alloc (nelt);
-	  enum machine_mode imode = mode;
-
-	  for (i = 0; i < nelt; ++i)
-	    RTVEC_ELT (vec, i) = GEN_INT (data[i]);
-
-	  if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
-	    {
-	      imode = int_mode_for_mode (GET_MODE_INNER (mode));
-	      imode = mode_for_vector (imode, nelt);
-	      gcc_assert (GET_MODE_CLASS (imode) == MODE_VECTOR_INT);
-	    }
-
-	  *psel = gen_rtx_CONST_VECTOR (imode, vec);
-	}
     }
 
   return true;

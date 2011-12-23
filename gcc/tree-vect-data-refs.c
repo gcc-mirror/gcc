@@ -3794,15 +3794,13 @@ vect_create_destination_var (tree scalar_dest, tree vectype)
 
 /* Function vect_strided_store_supported.
 
-   Returns TRUE is INTERLEAVE_HIGH and INTERLEAVE_LOW operations are supported,
-   and FALSE otherwise.  */
+   Returns TRUE if interleave high and interleave low permutations
+   are supported, and FALSE otherwise.  */
 
 bool
 vect_strided_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 {
-  enum machine_mode mode;
-
-  mode = TYPE_MODE (vectype);
+  enum machine_mode mode = TYPE_MODE (vectype);
 
   /* vect_permute_store_chain requires the group size to be a power of two.  */
   if (exact_log2 (count) == -1)
@@ -3813,7 +3811,7 @@ vect_strided_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
       return false;
     }
 
-  /* Check that the operation is supported.  */
+  /* Check that the permutation is supported.  */
   if (VECTOR_MODE_P (mode))
     {
       unsigned int i, nelt = GET_MODE_NUNITS (mode);
@@ -3923,10 +3921,8 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
   tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
   tree perm_mask_low, perm_mask_high;
   unsigned int i, n;
-  unsigned int j, nelt = GET_MODE_NUNITS (TYPE_MODE (vectype));
+  unsigned int j, nelt = TYPE_VECTOR_SUBPARTS (vectype);
   unsigned char *sel = XALLOCAVEC (unsigned char, nelt);
-
-  gcc_assert (vect_strided_store_supported (vectype, length));
 
   *result_chain = VEC_copy (tree, heap, dr_chain);
 
@@ -3936,9 +3932,12 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
       sel[i * 2 + 1] = i + nelt;
     }
   perm_mask_high = vect_gen_perm_mask (vectype, sel);
+  gcc_assert (perm_mask_high != NULL);
+
   for (i = 0; i < nelt; i++)
     sel[i] += nelt / 2;
   perm_mask_low = vect_gen_perm_mask (vectype, sel);
+  gcc_assert (perm_mask_low != NULL);
 
   for (i = 0, n = exact_log2 (length); i < n; i++)
     {
@@ -4246,16 +4245,13 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
 
 /* Function vect_strided_load_supported.
 
-   Returns TRUE is EXTRACT_EVEN and EXTRACT_ODD operations are supported,
+   Returns TRUE if even and odd permutations are supported,
    and FALSE otherwise.  */
 
 bool
 vect_strided_load_supported (tree vectype, unsigned HOST_WIDE_INT count)
 {
-  optab ee_optab, eo_optab;
-  enum machine_mode mode;
-
-  mode = TYPE_MODE (vectype);
+  enum machine_mode mode = TYPE_MODE (vectype);
 
   /* vect_permute_load_chain requires the group size to be a power of two.  */
   if (exact_log2 (count) == -1)
@@ -4266,18 +4262,22 @@ vect_strided_load_supported (tree vectype, unsigned HOST_WIDE_INT count)
       return false;
     }
 
-  ee_optab = optab_for_tree_code (VEC_EXTRACT_EVEN_EXPR,
-				  vectype, optab_default);
-  eo_optab = optab_for_tree_code (VEC_EXTRACT_ODD_EXPR,
-				  vectype, optab_default);
-  if (ee_optab && eo_optab
-      && optab_handler (ee_optab, mode) != CODE_FOR_nothing
-      && optab_handler (eo_optab, mode) != CODE_FOR_nothing)
-    return true;
+  /* Check that the permutation is supported.  */
+  if (VECTOR_MODE_P (mode))
+    {
+      unsigned int i, nelt = GET_MODE_NUNITS (mode);
+      unsigned char *sel = XALLOCAVEC (unsigned char, nelt);
 
-  if (can_vec_perm_for_code_p (VEC_EXTRACT_EVEN_EXPR, mode, NULL)
-      && can_vec_perm_for_code_p (VEC_EXTRACT_ODD_EXPR, mode, NULL))
-    return true;
+      for (i = 0; i < nelt; i++)
+	sel[i] = i * 2;
+      if (can_vec_perm_p (mode, false, sel))
+	{
+	  for (i = 0; i < nelt; i++)
+	    sel[i] = i * 2 + 1;
+	  if (can_vec_perm_p (mode, false, sel))
+	    return true;
+	}
+    }
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "extract even/odd not supported by target");
@@ -4379,17 +4379,28 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 			 VEC(tree,heap) **result_chain)
 {
   tree perm_dest, data_ref, first_vect, second_vect;
+  tree perm_mask_even, perm_mask_odd;
   gimple perm_stmt;
   tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
-  int i;
-  unsigned int j;
-
-  gcc_assert (vect_strided_load_supported (vectype, length));
+  unsigned int i, j, log_length = exact_log2 (length);
+  unsigned nelt = TYPE_VECTOR_SUBPARTS (vectype);
+  unsigned char *sel = XALLOCAVEC (unsigned char, nelt);
 
   *result_chain = VEC_copy (tree, heap, dr_chain);
-  for (i = 0; i < exact_log2 (length); i++)
+
+  for (i = 0; i < nelt; ++i)
+    sel[i] = i * 2;
+  perm_mask_even = vect_gen_perm_mask (vectype, sel);
+  gcc_assert (perm_mask_even != NULL);
+
+  for (i = 0; i < nelt; ++i)
+    sel[i] = i * 2 + 1;
+  perm_mask_odd = vect_gen_perm_mask (vectype, sel);
+  gcc_assert (perm_mask_odd != NULL);
+
+  for (i = 0; i < log_length; i++)
     {
-      for (j = 0; j < length; j +=2)
+      for (j = 0; j < length; j += 2)
 	{
 	  first_vect = VEC_index (tree, dr_chain, j);
 	  second_vect = VEC_index (tree, dr_chain, j+1);
@@ -4399,9 +4410,9 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 	  DECL_GIMPLE_REG_P (perm_dest) = 1;
 	  add_referenced_var (perm_dest);
 
-	  perm_stmt = gimple_build_assign_with_ops (VEC_EXTRACT_EVEN_EXPR,
-						    perm_dest, first_vect,
-						    second_vect);
+	  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, perm_dest,
+						     first_vect, second_vect,
+						     perm_mask_even);
 
 	  data_ref = make_ssa_name (perm_dest, perm_stmt);
 	  gimple_assign_set_lhs (perm_stmt, data_ref);
@@ -4415,9 +4426,10 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 	  DECL_GIMPLE_REG_P (perm_dest) = 1;
 	  add_referenced_var (perm_dest);
 
-	  perm_stmt = gimple_build_assign_with_ops (VEC_EXTRACT_ODD_EXPR,
-						    perm_dest, first_vect,
-						    second_vect);
+	  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, perm_dest,
+						     first_vect, second_vect,
+						     perm_mask_odd);
+
 	  data_ref = make_ssa_name (perm_dest, perm_stmt);
 	  gimple_assign_set_lhs (perm_stmt, data_ref);
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);

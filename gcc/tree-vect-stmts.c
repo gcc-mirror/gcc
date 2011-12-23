@@ -4542,8 +4542,8 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
      Then permutation statements are generated:
 
-     VS5: vx5 = VEC_EXTRACT_EVEN_EXPR < vx0, vx1 >
-     VS6: vx6 = VEC_EXTRACT_ODD_EXPR < vx0, vx1 >
+     VS5: vx5 = VEC_PERM_EXPR < vx0, vx1, { 0, 2, ..., i*2 } >
+     VS6: vx6 = VEC_PERM_EXPR < vx0, vx1, { 1, 3, ..., i*2+1 } >
        ...
 
      And they are put in STMT_VINFO_VEC_STMT of the corresponding scalar stmts

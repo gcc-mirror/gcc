@@ -4145,20 +4145,6 @@ operand 1 is new value of field and operand 2 specify the field index.
 Extract given field from the vector value.  Operand 1 is the vector, operand 2
 specify field index and operand 0 place to store value into.
 
-@cindex @code{vec_extract_even@var{m}} instruction pattern
-@item @samp{vec_extract_even@var{m}}
-Extract even elements from the input vectors (operand 1 and operand 2).
-The even elements of operand 2 are concatenated to the even elements of operand
-1 in their original order. The result is stored in operand 0.
-The output and input vectors should have the same modes.
-
-@cindex @code{vec_extract_odd@var{m}} instruction pattern
-@item @samp{vec_extract_odd@var{m}}
-Extract odd elements from the input vectors (operand 1 and operand 2).
-The odd elements of operand 2 are concatenated to the odd elements of operand
-1 in their original order. The result is stored in operand 0.
-The output and input vectors should have the same modes.
-
 @cindex @code{vec_init@var{m}} instruction pattern
 @item @samp{vec_init@var{m}}
 Initialize the vector to given values.  Operand 0 is the vector to initialize

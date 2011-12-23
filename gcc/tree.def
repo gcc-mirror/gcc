@@ -1188,10 +1188,6 @@ DEFTREECODE (VEC_PACK_SAT_EXPR, "vec_pack_sat_expr", tcc_binary, 2)
    the output vector.  */
 DEFTREECODE (VEC_PACK_FIX_TRUNC_EXPR, "vec_pack_fix_trunc_expr", tcc_binary, 2)
 
-/* Extract even/odd fields from vectors.  */
-DEFTREECODE (VEC_EXTRACT_EVEN_EXPR, "vec_extract_even_expr", tcc_binary, 2)
-DEFTREECODE (VEC_EXTRACT_ODD_EXPR, "vec_extract_odd_expr", tcc_binary, 2)
-
 /* Widening vector shift left in bits.
    Operand 0 is a vector to be shifted with N elements of size S.
    Operand 1 is an integer shift amount in bits.
