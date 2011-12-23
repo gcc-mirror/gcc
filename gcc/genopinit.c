@@ -1,6 +1,6 @@
 /* Generate code to initialize optabs from machine description.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -269,8 +269,6 @@ static const char * const optabs[] =
   "set_optab_handler (vec_extract_optab, $A, CODE_FOR_$(vec_extract$a$))",
   "set_optab_handler (vec_extract_even_optab, $A, CODE_FOR_$(vec_extract_even$a$))",
   "set_optab_handler (vec_extract_odd_optab, $A, CODE_FOR_$(vec_extract_odd$a$))",
-  "set_optab_handler (vec_interleave_high_optab, $A, CODE_FOR_$(vec_interleave_high$a$))",
-  "set_optab_handler (vec_interleave_low_optab, $A, CODE_FOR_$(vec_interleave_low$a$))",
   "set_optab_handler (vec_init_optab, $A, CODE_FOR_$(vec_init$a$))",
   "set_optab_handler (vec_shl_optab, $A, CODE_FOR_$(vec_shl_$a$))",
   "set_optab_handler (vec_shr_optab, $A, CODE_FOR_$(vec_shr_$a$))",

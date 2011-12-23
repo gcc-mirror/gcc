@@ -8649,8 +8649,6 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 
     case VEC_EXTRACT_EVEN_EXPR:
     case VEC_EXTRACT_ODD_EXPR:
-    case VEC_INTERLEAVE_HIGH_EXPR:
-    case VEC_INTERLEAVE_LOW_EXPR:
       goto binop;
 
     case VEC_LSHIFT_EXPR:
