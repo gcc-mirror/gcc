@@ -45,6 +45,12 @@
 #undef NOMINMAX
 #define NOMINMAX 1
 
+// Make sure that POSIX printf/scanf functions are activated.  As
+// libstdc++ depends on POSIX-definitions of those functions, we define
+// it unconditionally.
+#undef __USE_MINGW_ANSI_STDIO
+#define __USE_MINGW_ANSI_STDIO 1
+
 #if defined (_GLIBCXX_DLL)
 #define _GLIBCXX_PSEUDO_VISIBILITY_default __attribute__ ((__dllimport__))
 #else
