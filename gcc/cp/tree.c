@@ -1463,6 +1463,8 @@ dependent_name (tree x)
   if (TREE_CODE (x) == IDENTIFIER_NODE)
     return x;
   if (TREE_CODE (x) != COMPONENT_REF
+      && TREE_CODE (x) != OFFSET_REF
+      && TREE_CODE (x) != BASELINK
       && is_overloaded_fn (x))
     return DECL_NAME (get_first_fn (x));
   return NULL_TREE;
