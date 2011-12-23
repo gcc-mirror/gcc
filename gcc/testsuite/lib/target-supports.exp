@@ -1829,7 +1829,9 @@ proc check_effective_target_vect_intfloat_cvt { } {
         if { [istarget i?86-*-*]
               || ([istarget powerpc*-*-*]
                    && ![istarget powerpc-*-linux*paired*])
-              || [istarget x86_64-*-*] } {
+              || [istarget x86_64-*-*] 
+              || ([istarget arm*-*-*]
+                  && [check_effective_target_arm_neon_ok])} {
            set et_vect_intfloat_cvt_saved 1
         }
     }
@@ -1865,7 +1867,9 @@ proc check_effective_target_vect_uintfloat_cvt { } {
         if { [istarget i?86-*-*]
 	      || ([istarget powerpc*-*-*]
 		  && ![istarget powerpc-*-linux*paired*])
-	      || [istarget x86_64-*-*] } {
+	      || [istarget x86_64-*-*] 
+	      || ([istarget arm*-*-*]
+		  && [check_effective_target_arm_neon_ok])} {
            set et_vect_uintfloat_cvt_saved 1
         }
     }
@@ -1888,7 +1892,9 @@ proc check_effective_target_vect_floatint_cvt { } {
         if { [istarget i?86-*-*]
               || ([istarget powerpc*-*-*]
                    && ![istarget powerpc-*-linux*paired*])
-              || [istarget x86_64-*-*] } {
+              || [istarget x86_64-*-*]
+              || ([istarget arm*-*-*]
+                  && [check_effective_target_arm_neon_ok])} {
            set et_vect_floatint_cvt_saved 1
         }
     }
@@ -1908,7 +1914,9 @@ proc check_effective_target_vect_floatuint_cvt { } {
     } else {
         set et_vect_floatuint_cvt_saved 0
         if { ([istarget powerpc*-*-*]
-	      && ![istarget powerpc-*-linux*paired*]) } {
+	      && ![istarget powerpc-*-linux*paired*])
+	    || ([istarget arm*-*-*]
+	        && [check_effective_target_arm_neon_ok])} {
            set et_vect_floatuint_cvt_saved 1
         }
     }

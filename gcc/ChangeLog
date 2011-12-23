@@ -1,3 +1,11 @@
+2011-12-23  Dmitry Plotnikov  <dplotnikov@ispras.ru>
+
+	* config/arm/neon.md (float<mode><V_cvtto>2): New.
+	(floatuns<mode><V_cvtto>2): New.
+	(fix_trunc<mode><V_cvtto>2): New.
+	(fix_truncuns<mode><V_cvtto>2): New.
+	* config/arm/iterators.md (V_cvtto): New iterator.
+
 2011-12-23  Richard Guenther  <rguenther@suse.de>
 
 	PR rtl-optimization/50396
