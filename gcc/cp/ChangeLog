@@ -1,3 +1,8 @@
+2011-12-23  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (dependent_name): OFFSET_REF and BASELINK
+	are not dependent names.
+
 2011-12-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51611
