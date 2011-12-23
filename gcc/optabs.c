@@ -553,12 +553,6 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     case VEC_EXTRACT_ODD_EXPR:
       return vec_extract_odd_optab;
 
-    case VEC_INTERLEAVE_HIGH_EXPR:
-      return vec_interleave_high_optab;
-
-    case VEC_INTERLEAVE_LOW_EXPR:
-      return vec_interleave_low_optab;
-
     default:
       return NULL;
     }
@@ -1612,11 +1606,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
       enum tree_code tcode = ERROR_MARK;
       rtx sel;
 
-      if (binoptab == vec_interleave_high_optab)
-	tcode = VEC_INTERLEAVE_HIGH_EXPR;
-      else if (binoptab == vec_interleave_low_optab)
-	tcode = VEC_INTERLEAVE_LOW_EXPR;
-      else if (binoptab == vec_extract_even_optab)
+      if (binoptab == vec_extract_even_optab)
 	tcode = VEC_EXTRACT_EVEN_EXPR;
       else if (binoptab == vec_extract_odd_optab)
 	tcode = VEC_EXTRACT_ODD_EXPR;
@@ -6271,8 +6261,6 @@ init_optabs (void)
   init_optab (vec_extract_optab, UNKNOWN);
   init_optab (vec_extract_even_optab, UNKNOWN);
   init_optab (vec_extract_odd_optab, UNKNOWN);
-  init_optab (vec_interleave_high_optab, UNKNOWN);
-  init_optab (vec_interleave_low_optab, UNKNOWN);
   init_optab (vec_set_optab, UNKNOWN);
   init_optab (vec_init_optab, UNKNOWN);
   init_optab (vec_shl_optab, UNKNOWN);
@@ -6880,8 +6868,7 @@ can_vec_perm_p (enum machine_mode mode, bool variable,
   return true;
 }
 
-/* Return true if we can implement VEC_INTERLEAVE_{HIGH,LOW}_EXPR or
-   VEC_EXTRACT_{EVEN,ODD}_EXPR with VEC_PERM_EXPR for this target.
+/* Return true if we can implement with VEC_PERM_EXPR for this target.
    If PSEL is non-null, return the selector for the permutation.  */
 
 bool
@@ -6929,17 +6916,6 @@ can_vec_perm_for_code_p (enum tree_code code, enum machine_mode mode,
 	case VEC_EXTRACT_EVEN_EXPR:
 	  for (i = 0; i < nelt; ++i)
 	    data[i] = i * 2 + alt;
-	  break;
-
-	case VEC_INTERLEAVE_HIGH_EXPR:
-	case VEC_INTERLEAVE_LOW_EXPR:
-	  if ((BYTES_BIG_ENDIAN != 0) ^ (code == VEC_INTERLEAVE_HIGH_EXPR))
-	    alt = nelt / 2;
-	  for (i = 0; i < nelt / 2; ++i)
-	    {
-	      data[i * 2] = i + alt;
-	      data[i * 2 + 1] = i + nelt + alt;
-	    }
 	  break;
 
 	default:

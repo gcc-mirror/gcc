@@ -1,3 +1,40 @@
+2011-12-23  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* tree.def (VEC_INTERLEAVE_HIGH_EXPR, VEC_INTERLEAVE_LOW_EXPR): Remove.
+	* gimple-pretty-print.c (dump_binary_rhs): Don't handle
+	VEC_INTERLEAVE_HIGH_EXPR and VEC_INTERLEAVE_LOW_EXPR.
+	* expr.c (expand_expr_real_2): Likewise.
+	* tree-cfg.c (verify_gimple_assign_binary): Likewise.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-vect-generic.c (expand_vector_operations_1): Likewise.
+	* fold-const.c (fold_binary_loc): Likewise.
+	* doc/generic.texi (VEC_INTERLEAVE_HIGH_EXPR,
+	VEC_INTERLEAVE_LOW_EXPR): Remove documentation.
+	* optabs.c (optab_for_tree_code): Don't handle
+	VEC_INTERLEAVE_HIGH_EXPR and VEC_INTERLEAVE_LOW_EXPR.
+	(expand_binop, init_optabs): Remove vec_interleave_high_optab
+	and vec_interleave_low_optab.
+	* genopinit.c (optabs): Likewise.
+	* optabs.h (OTI_vec_interleave_high, OTI_vec_interleave_low): Remove.
+	(vec_interleave_high_optab, vec_interleave_low_optab): Remove.
+	* doc/md.texi (vec_interleave_high, vec_interleave_low): Remove
+	documentation.
+	* tree-vect-stmts.c (gen_perm_mask): Renamed to...
+	(vect_gen_perm_mask): ... this.  No longer static.
+	(perm_mask_for_reverse, vectorizable_load): Adjust callers.
+	* tree-vectorizer.h (vect_gen_perm_mask): New prototype.
+	* tree-vect-data-refs.c (vect_strided_store_supported): Don't try
+	VEC_INTERLEAVE_*_EXPR, use can_vec_perm_p instead of
+	can_vec_perm_for_code_p.
+	(vect_permute_store_chain): Generate VEC_PERM_EXPR with interleaving
+	masks instead of VEC_INTERLEAVE_HIGH_EXPR and VEC_INTERLEAVE_LOW_EXPR.
+	* config/i386/i386.c (expand_vec_perm_interleave2): If
+	expand_vec_perm_interleave3 would handle it, return false.
+	(expand_vec_perm_broadcast_1): Don't use vec_interleave_*_optab.
+
 2011-12-23  Richard Henderson  <rth@redhat.com>
 
 	* config/mips/loongson.md (UNSPEC_LOONGSON_PINSR_0,
@@ -329,7 +366,7 @@
 
 	PR target/49865
 	* ira-costs.c (find_costs_and_classes): Prefer registers even
-          if the memory cost is the same.
+	if the memory cost is the same.
 
 2011-12-20  Joseph Myers  <joseph@codesourcery.com>
 

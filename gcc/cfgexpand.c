@@ -3451,8 +3451,6 @@ expand_debug_expr (tree exp)
     case VEC_COND_EXPR:
     case VEC_EXTRACT_EVEN_EXPR:
     case VEC_EXTRACT_ODD_EXPR:
-    case VEC_INTERLEAVE_HIGH_EXPR:
-    case VEC_INTERLEAVE_LOW_EXPR:
     case VEC_LSHIFT_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
