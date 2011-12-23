@@ -1,3 +1,8 @@
+2011-12-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/regex.h (match_results::size_type): Use
+	allocator_traits.
+
 2011-12-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/48362

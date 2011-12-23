@@ -1490,8 +1490,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef const_iterator                                  iterator;
       typedef typename std::iterator_traits<_Bi_iter>::difference_type
                                                               difference_type;
-      /* TODO: needs allocator_traits */
-      typedef typename _Allocator::size_type                  size_type;
+      typedef typename allocator_traits<_Allocator>::size_type
+                                                              size_type;
       typedef _Allocator                                      allocator_type;
       typedef typename std::iterator_traits<_Bi_iter>::value_type
                                                               char_type;
