@@ -1,5 +1,9 @@
 2011-12-23  Tristan Gingold  <gingold@adacore.com>
 
+	* config/vms/vms-crtlmap.map (log10): Fix typo.
+
+2011-12-23  Tristan Gingold  <gingold@adacore.com>
+
 	* config/ia64/vms.h (SUPPORTS_ONE_ONLY): Define.
 
 2011-12-22  Bin Cheng  <bin.cheng@arm.com>
