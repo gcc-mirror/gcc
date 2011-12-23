@@ -1,3 +1,11 @@
+2011-12-23  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/score/score.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): Remove.
+	* config/score/score-protos.h (score_register_move_cost): Remove.
+	* config/score/score.c (TARGET_REGISTER_MOVE_COST): Define.
+	(score_register_move_cost): Make static. Change arguments type from
+	enum reg_class to reg_class_t.
+
 2011-12-23  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Henderson  <rth@redhat.com>
 

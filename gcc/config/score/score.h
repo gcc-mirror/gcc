@@ -601,14 +601,6 @@ typedef struct score_args
 #define REVERSIBLE_CC_MODE(MODE)        1
 
 /* Describing Relative Costs of Operations  */
-/* Compute extra cost of moving data between one register class and another.  */
-#define REGISTER_MOVE_COST(MODE, FROM, TO) \
-  score_register_move_cost (MODE, FROM, TO)
-
-/* Moves to and from memory are quite expensive */
-#define MEMORY_MOVE_COST(MODE, CLASS, TO_P) \
-  (4 + memory_move_secondary_cost ((MODE), (CLASS), (TO_P)))
-
 /* Try to generate sequences that don't involve branches.  */
 #define BRANCH_COST(speed_p, predictable_p) 2
 
