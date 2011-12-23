@@ -1,5 +1,11 @@
 2011-12-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51507
+	* search.c (at_function_scope_p): Also check cfun.
+	* pt.c (tsubst_pack_expansion): Check it instead of
+	cp_unevaluated_operand.
+	(instantiate_template_1): Use push_to_top_level.
+
 	* tree.c (dependent_name): OFFSET_REF and BASELINK
 	are not dependent names.
 

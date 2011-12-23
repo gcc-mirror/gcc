@@ -1,3 +1,8 @@
+2011-12-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51507
+	* g++.dg/cpp0x/variadic121.C: New.
+
 2011-12-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/vect/fast-math-pr35982.c: Fix parenthesis in target selectors.
