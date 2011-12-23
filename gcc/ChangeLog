@@ -1,3 +1,9 @@
+2011-12-23  Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/50396
+	* simplify-rtx.c (simplify_binary_operation_1): Properly
+	guard code that only works for integers.
+
 2011-12-23  Tristan Gingold  <gingold@adacore.com>
 
 	* config/vms/vms-crtlmap.map (log10): Fix typo.

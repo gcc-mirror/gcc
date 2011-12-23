@@ -2953,7 +2953,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 		}
 	    }
 	}
-      else
+      else if (SCALAR_INT_MODE_P (mode))
 	{
 	  /* 0/x is 0 (or x&0 if x has side-effects).  */
 	  if (trueop0 == CONST0_RTX (mode)
