@@ -342,3 +342,5 @@ do {						\
 #define SHLIB_SUFFIX ".sl"
 
 #define TARGET_HAVE_NAMED_SECTIONS false
+
+#define TARGET_ASM_TM_CLONE_TABLE_SECTION pa_som_tm_clone_table_section

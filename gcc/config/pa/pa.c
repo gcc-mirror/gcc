@@ -118,6 +118,7 @@ static int pa_adjust_cost (rtx, rtx, rtx, int);
 static int pa_adjust_priority (rtx, int);
 static int pa_issue_rate (void);
 static void pa_som_asm_init_sections (void) ATTRIBUTE_UNUSED;
+static section *pa_som_tm_clone_table_section (void) ATTRIBUTE_UNUSED;
 static section *pa_select_section (tree, int, unsigned HOST_WIDE_INT)
      ATTRIBUTE_UNUSED;
 static void pa_encode_section_info (tree, rtx, int);
@@ -192,6 +193,7 @@ static bool pa_legitimate_constant_p (enum machine_mode, rtx);
 static GTY(()) section *som_readonly_data_section;
 static GTY(()) section *som_one_only_readonly_data_section;
 static GTY(()) section *som_one_only_data_section;
+static GTY(()) section *som_tm_clone_table_section;
 
 /* Counts for the number of callee-saved general and floating point
    registers which were saved by the current function's prologue.  */
@@ -5396,13 +5398,15 @@ pa_file_start_space (int sortspace)
   aputs ("\t.SPACE $PRIVATE$");
   if (sortspace)
     aputs (",SORT=16");
-  aputs ("\n\t.SUBSPA $DATA$,QUAD=1,ALIGN=8,ACCESS=31"
-         "\n\t.SUBSPA $BSS$,QUAD=1,ALIGN=8,ACCESS=31,ZERO,SORT=82"
-         "\n\t.SPACE $TEXT$");
+  aputs ("\n\t.SUBSPA $DATA$,QUAD=1,ALIGN=8,ACCESS=31");
+  if (flag_tm)
+    aputs ("\n\t.SUBSPA $TM_CLONE_TABLE$,QUAD=1,ALIGN=8,ACCESS=31");
+  aputs ("\n\t.SUBSPA $BSS$,QUAD=1,ALIGN=8,ACCESS=31,ZERO,SORT=82"
+	 "\n\t.SPACE $TEXT$");
   if (sortspace)
     aputs (",SORT=8");
   aputs ("\n\t.SUBSPA $LIT$,QUAD=0,ALIGN=8,ACCESS=44"
-         "\n\t.SUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n");
+	 "\n\t.SUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n");
 }
 
 static inline void
@@ -9755,6 +9759,11 @@ pa_som_asm_init_sections (void)
 			   "\t.NSUBSPA $DATA$,QUAD=1,ALIGN=8,"
 			   "ACCESS=31,SORT=24,COMDAT");
 
+  if (flag_tm)
+    som_tm_clone_table_section
+      = get_unnamed_section (0, output_section_asm_op,
+			     "\t.SPACE $PRIVATE$\n\t.SUBSPA $TM_CLONE_TABLE$");
+
   /* FIXME: HPUX ld generates incorrect GOT entries for "T" fixups
      which reference data within the $TEXT$ space (for example constant
      strings in the $LIT$ subspace).
@@ -9775,6 +9784,14 @@ pa_som_asm_init_sections (void)
 
      So, we force exception information into the data section.  */
   exception_section = data_section;
+}
+
+/* Implement TARGET_ASM_TM_CLONE_TABLE_SECTION.  */
+
+static section *
+pa_som_tm_clone_table_section (void)
+{
+  return som_tm_clone_table_section;
 }
 
 /* On hpux10, the linker will give an error if we have a reference
