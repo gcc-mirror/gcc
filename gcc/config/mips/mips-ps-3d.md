@@ -89,61 +89,169 @@
   DONE;
 })
 
-; pul.ps - Pair Upper Lower
-(define_insn "mips_pul_ps"
+(define_insn "vec_perm_const_ps"
   [(set (match_operand:V2SF 0 "register_operand" "=f")
-	(vec_merge:V2SF
-	 (match_operand:V2SF 1 "register_operand" "f")
-	 (match_operand:V2SF 2 "register_operand" "f")
-	 (const_int 2)))]
+	(vec_select:V2SF
+	  (vec_concat:V4SF
+	    (match_operand:V2SF 1 "register_operand" "f")
+	    (match_operand:V2SF 2 "register_operand" "f"))
+	  (parallel [(match_operand:SI 3 "const_0_or_1_operand" "")
+		     (match_operand:SI 4 "const_2_or_3_operand" "")])))]
   "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
-  "pul.ps\t%0,%1,%2"
+{
+  /* Let <op>L be the lower part of operand <op> and <op>U be the upper part.
+     The P[UL][UL].PS instruction always specifies the upper part of the
+     result first, so the instruction is:
+
+	P<aUL><bUL>.PS %0,<aop>,<bop>
+
+     where 0U == <aop><aUL> and 0L == <bop><bUL>.
+
+     GCC's vector indices are specified in memory order, which means
+     that vector element 0 is the lower part (L) on little-endian targets
+     and the upper part (U) on big-endian targets.  vec_concat likewise
+     concatenates in memory order, which means that operand 3 (being
+     0 or 1) selects part of operand 1 and operand 4 (being 2 or 3)
+     selects part of operand 2.
+
+     Let:
+
+	I3 = INTVAL (operands[3])
+	I4 = INTVAL (operands[4]) - 2
+
+     Taking the two endiannesses in turn:
+
+     Little-endian:
+
+        The semantics of the RTL pattern are:
+
+	{ 0L, 0U } = { X[I3], X[I4 + 2] }, where X = { 1L, 1U, 2L, 2U }
+
+	so: 0L = { 1L, 1U }[I3] (= <bop><bUL>)
+	    0U = { 2L, 2U }[I4] (= <aop><aUL>)
+
+	    <aop> = 2, <aUL> = I4 ? U : L
+	    <bop> = 1, <bUL> = I3 ? U : L
+
+	    [LL] !I4 && !I3   [UL] I4 && !I3
+	    [LU] !I4 && I3    [UU] I4 && I3
+
+     Big-endian:
+
+        The semantics of the RTL pattern are:
+
+	{ 0U, 0L } = { X[I3], X[I4 + 2] }, where X = { 1U, 1L, 2U, 2L }
+
+	so: 0U = { 1U, 1L }[I3] (= <aop><aUL>)
+	    0L = { 2U, 2L }[I4] (= <bop><bUL>)
+
+	    <aop> = 1, <aUL> = I3 ? L : U
+	    <bop> = 2, <bUL> = I4 ? L : U
+
+	    [UU] !I3 && !I4   [UL] !I3 && I4
+	    [LU] I3 && !I4    [LL] I3 && I4.  */
+
+  static const char * const mnemonics[2][4] = {
+    /* LE */ { "pll.ps\t%0,%2,%1", "pul.ps\t%0,%2,%1",
+	       "plu.ps\t%0,%2,%1", "puu.ps\t%0,%2,%1" },
+    /* BE */ { "puu.ps\t%0,%1,%2", "pul.ps\t%0,%1,%2",
+	       "plu.ps\t%0,%1,%2", "pll.ps\t%0,%1,%2" },
+  };
+
+  unsigned mask = INTVAL (operands[3]) * 2 + (INTVAL (operands[4]) - 2);
+  return mnemonics[BYTES_BIG_ENDIAN][mask];
+}
   [(set_attr "type" "fmove")
    (set_attr "mode" "SF")])
 
-; puu.ps - Pair upper upper
-(define_insn "mips_puu_ps"
-  [(set (match_operand:V2SF 0 "register_operand" "=f")
-	(vec_merge:V2SF
-	 (match_operand:V2SF 1 "register_operand" "f")
-	 (vec_select:V2SF (match_operand:V2SF 2 "register_operand" "f")
-			  (parallel [(const_int 1)
-				     (const_int 0)]))
-	 (const_int 2)))]
+(define_expand "vec_perm_constv2sf"
+  [(match_operand:V2SF 0 "register_operand" "")
+   (match_operand:V2SF 1 "register_operand" "")
+   (match_operand:V2SF 2 "register_operand" "")
+   (match_operand:V2SI 3 "" "")]
   "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
-  "puu.ps\t%0,%1,%2"
-  [(set_attr "type" "fmove")
-   (set_attr "mode" "SF")])
+{
+  if (mips_expand_vec_perm_const (operands))
+    DONE;
+  else
+    FAIL;
+})
 
-; pll.ps - Pair Lower Lower
-(define_insn "mips_pll_ps"
-  [(set (match_operand:V2SF 0 "register_operand" "=f")
-	(vec_merge:V2SF
-	 (vec_select:V2SF (match_operand:V2SF 1 "register_operand" "f")
-			  (parallel [(const_int 1)
-				     (const_int 0)]))
-	 (match_operand:V2SF 2 "register_operand" "f")
-	 (const_int 2)))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
-  "pll.ps\t%0,%1,%2"
-  [(set_attr "type" "fmove")
-   (set_attr "mode" "SF")])
+;; Expanders for builtins.  The instruction:
+;;
+;;     P[UL][UL].PS <result>, <a>, <b>
+;;
+;; says that the upper part of <result> is taken from half of <a> and
+;; the lower part of <result> is taken from half of <b>.  This means
+;; that the P[UL][UL].PS operand order matches memory order on big-endian
+;; targets; <a> is element 0 of the V2SF result while <b> is element 1.
+;; However, the P[UL][UL].PS operand order is the reverse of memory order
+;; on little-endian targets; <a> is element 1 of the V2SF result while
+;; <b> is element 0.  The arguments to vec_perm_const_ps are always in
+;; memory order.
+;;
+;; Similarly, "U" corresponds to element 0 on big-endian targets but
+;; to element 1 on little-endian targets.
 
-; plu.ps - Pair Lower Upper
-(define_insn "mips_plu_ps"
-  [(set (match_operand:V2SF 0 "register_operand" "=f")
-	(vec_merge:V2SF
-	 (vec_select:V2SF (match_operand:V2SF 1 "register_operand" "f")
-			  (parallel [(const_int 1)
-				     (const_int 0)]))
-	 (vec_select:V2SF (match_operand:V2SF 2 "register_operand" "f")
-			  (parallel [(const_int 1)
-				     (const_int 0)]))
-	 (const_int 2)))]
+(define_expand "mips_puu_ps"
+  [(match_operand:V2SF 0 "register_operand" "")
+   (match_operand:V2SF 1 "register_operand" "")
+   (match_operand:V2SF 2 "register_operand" "")]
   "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
-  "plu.ps\t%0,%1,%2"
-  [(set_attr "type" "fmove")
-   (set_attr "mode" "SF")])
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_vec_perm_const_ps (operands[0], operands[1], operands[2],
+				      const0_rtx, const2_rtx));
+  else
+    emit_insn (gen_vec_perm_const_ps (operands[0], operands[2], operands[1],
+				      const1_rtx, GEN_INT (3)));
+  DONE;
+})
+
+(define_expand "mips_pul_ps"
+  [(match_operand:V2SF 0 "register_operand" "")
+   (match_operand:V2SF 1 "register_operand" "")
+   (match_operand:V2SF 2 "register_operand" "")]
+  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_vec_perm_const_ps (operands[0], operands[1], operands[2],
+				      const0_rtx, GEN_INT (3)));
+  else
+    emit_insn (gen_vec_perm_const_ps (operands[0], operands[2], operands[1],
+				      const0_rtx, GEN_INT (3)));
+  DONE;
+})
+
+(define_expand "mips_plu_ps"
+  [(match_operand:V2SF 0 "register_operand" "")
+   (match_operand:V2SF 1 "register_operand" "")
+   (match_operand:V2SF 2 "register_operand" "")]
+  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_vec_perm_const_ps (operands[0], operands[1], operands[2],
+				      const1_rtx, const2_rtx));
+  else
+    emit_insn (gen_vec_perm_const_ps (operands[0], operands[2], operands[1],
+				      const1_rtx, const2_rtx));
+  DONE;
+})
+
+(define_expand "mips_pll_ps"
+  [(match_operand:V2SF 0 "register_operand" "")
+   (match_operand:V2SF 1 "register_operand" "")
+   (match_operand:V2SF 2 "register_operand" "")]
+  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_vec_perm_const_ps (operands[0], operands[1], operands[2],
+				      const1_rtx, GEN_INT (3)));
+  else
+    emit_insn (gen_vec_perm_const_ps (operands[0], operands[2], operands[1],
+				      const0_rtx, const2_rtx));
+  DONE;
+})
 
 ; vec_init
 (define_expand "vec_initv2sf"
@@ -151,13 +259,11 @@
    (match_operand:V2SF 1 "")]
   "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
 {
-  rtx op0 = force_reg (SFmode, XVECEXP (operands[1], 0, 0));
-  rtx op1 = force_reg (SFmode, XVECEXP (operands[1], 0, 1));
-  emit_insn (gen_vec_initv2sf_internal (operands[0], op0, op1));
+  mips_expand_vector_init (operands[0], operands[1]);
   DONE;
 })
 
-(define_insn "vec_initv2sf_internal"
+(define_insn "vec_concatv2sf"
   [(set (match_operand:V2SF 0 "register_operand" "=f")
 	(vec_concat:V2SF
 	 (match_operand:SF 1 "register_operand" "f")
@@ -195,22 +301,21 @@
 ;; no other way to get a vector mode bitfield store currently.
 
 (define_expand "vec_setv2sf"
-  [(match_operand:V2SF 0 "register_operand")
-   (match_operand:SF 1 "register_operand")
-   (match_operand 2 "const_0_or_1_operand")]
+  [(set (match_operand:V2SF 0 "register_operand" "")
+	(vec_select:V2SF
+	  (vec_concat:V4SF
+	    (match_operand:SF 1 "register_operand" "")
+	    (match_dup 0))
+	  (parallel [(match_operand 2 "const_0_or_1_operand" "")
+		     (match_dup 3)])))]
   "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
 {
-  rtx temp;
-
   /* We don't have an insert instruction, so we duplicate the float, and
      then use a PUL instruction.  */
-  temp = gen_reg_rtx (V2SFmode);
-  emit_insn (gen_mips_cvt_ps_s (temp, operands[1], operands[1]));
-  if (INTVAL (operands[2]) == !BYTES_BIG_ENDIAN)
-    emit_insn (gen_mips_pul_ps (operands[0], temp, operands[0]));
-  else
-    emit_insn (gen_mips_pul_ps (operands[0], operands[0], temp));
-  DONE;
+  rtx temp = gen_reg_rtx (V2SFmode);
+  emit_insn (gen_vec_concatv2sf (temp, operands[1], operands[1]));
+  operands[1] = temp;
+  operands[3] = GEN_INT (1 - INTVAL (operands[2]) + 2);
 })
 
 ; cvt.ps.s - Floating Point Convert Pair to Paired Single
@@ -221,11 +326,9 @@
   "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
 {
   if (BYTES_BIG_ENDIAN)
-    emit_insn (gen_vec_initv2sf_internal (operands[0], operands[1],
-	       operands[2]));
+    emit_insn (gen_vec_concatv2sf (operands[0], operands[1], operands[2]));
   else
-    emit_insn (gen_vec_initv2sf_internal (operands[0], operands[2],
-	       operands[1]));
+    emit_insn (gen_vec_concatv2sf (operands[0], operands[2], operands[1]));
   DONE;
 })
 
@@ -267,6 +370,14 @@
   "addr.ps\t%0,%1,%2"
   [(set_attr "type" "fadd")
    (set_attr "mode" "SF")])
+
+(define_insn "reduc_splus_v2sf"
+  [(set (match_operand:V2SF 0 "register_operand" "=f")
+	(unspec:V2SF [(match_operand:V2SF 1 "register_operand" "f")
+		      (match_dup 1)]
+		     UNSPEC_ADDR_PS))]
+  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "")
 
 ; cvt.pw.ps - Floating Point Convert Paired Single to Paired Word
 (define_insn "mips_cvt_pw_ps"
@@ -631,5 +742,23 @@
 {
   mips_expand_vcondv2sf (operands[0], operands[1], operands[2],
 			 LE, operands[2], operands[1]);
+  DONE;
+})
+
+(define_expand "reduc_smin_v2sf"
+  [(match_operand:V2SF 0 "register_operand")
+   (match_operand:V2SF 1 "register_operand")]
+  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+{
+  mips_expand_vec_reduc (operands[0], operands[1], gen_sminv2sf3);
+  DONE;
+})
+
+(define_expand "reduc_smax_v2sf"
+  [(match_operand:V2SF 0 "register_operand")
+   (match_operand:V2SF 1 "register_operand")]
+  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+{
+  mips_expand_vec_reduc (operands[0], operands[1], gen_smaxv2sf3);
   DONE;
 })

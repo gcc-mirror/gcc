@@ -73,8 +73,15 @@
 ;; This is used for indexing into vectors, and hence only accepts const_int.
 (define_predicate "const_0_or_1_operand"
   (and (match_code "const_int")
-       (ior (match_test "op == CONST0_RTX (GET_MODE (op))")
-	    (match_test "op == CONST1_RTX (GET_MODE (op))"))))
+       (match_test "IN_RANGE (INTVAL (op), 0, 1)")))
+
+(define_predicate "const_2_or_3_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 2, 3)")))
+
+(define_predicate "const_0_to_3_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 3)")))
 
 (define_predicate "qi_mask_operand"
   (and (match_code "const_int")
