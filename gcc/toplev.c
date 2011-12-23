@@ -1332,7 +1332,7 @@ process_options (void)
 
   if (flag_strict_volatile_bitfields > 0 && !abi_version_at_least (2))
     {
-      warning (0, "-fstrict-volatile-bitfield disabled; "
+      warning (0, "-fstrict-volatile-bitfields disabled; "
 	       "it is incompatible with ABI versions < 2");
       flag_strict_volatile_bitfields = 0;
     }

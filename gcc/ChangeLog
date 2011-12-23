@@ -1,3 +1,7 @@
+2011-12-22  Joey Ye  <joey.ye@arm.com>
+
+	* toplev.c (process_options): Fix typo.
+
 2011-12-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/51252
