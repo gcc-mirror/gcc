@@ -1,3 +1,8 @@
+2011-12-23  Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/50396
+	* gcc.dg/torture/pr50396.c: New testcase.
+
 2011-12-22  Doug Kwan  <dougkwan@google.com>
 
 	Backport from mainline
