@@ -1562,9 +1562,10 @@ package Prj is
    generic
       type State is limited private;
       with procedure Action
-        (Project    : Project_Id;
-         Tree       : Project_Tree_Ref;
-         With_State : in out State);
+        (Project          : Project_Id;
+         Tree             : Project_Tree_Ref;
+         In_Aggregate_Lib : Boolean;
+         With_State       : in out State);
    procedure For_Every_Project_Imported
      (By                 : Project_Id;
       Tree               : Project_Tree_Ref;
@@ -1589,7 +1590,9 @@ package Prj is
    --
    --  If Include_Aggregated is True, then an aggregate project will recurse
    --  into the projects it aggregates. Otherwise, the latter are never
-   --  returned
+   --  returned.
+   --
+   --  In_Aggregate_Lib is True if the project is in an aggregate library
    --
    --  The Tree argument passed to the callback is required in the case of
    --  aggregated projects, since they might not be using the same tree as 'By'

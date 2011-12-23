@@ -151,9 +151,10 @@ package body Prj.Nmsc is
    --  be discarded as soon as we have finished processing the project
 
    type Tree_Processing_Data is record
-      Tree      : Project_Tree_Ref;
-      Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
-      Flags     : Prj.Processing_Flags;
+      Tree             : Project_Tree_Ref;
+      Node_Tree        : Prj.Tree.Project_Node_Tree_Ref;
+      Flags            : Prj.Processing_Flags;
+      In_Aggregate_Lib : Boolean;
    end record;
    --  Temporary data which is needed while parsing a project. It does not need
    --  to be kept in memory once a project has been fully loaded, but is
@@ -184,11 +185,6 @@ package body Prj.Nmsc is
 
    procedure Free (Data : in out Tree_Processing_Data);
    --  Free the memory occupied by Data
-
-   procedure Check
-     (Project : Project_Id;
-      Data    : in out Tree_Processing_Data);
-   --  Process the naming scheme for a single project
 
    procedure Initialize
      (Data    : in out Project_Processing_Data;
@@ -728,6 +724,7 @@ package body Prj.Nmsc is
          elsif Prev_Unit /= No_Unit_Index
            and then Prev_Unit.File_Names (Kind) /= null
            and then not Source.Locally_Removed
+           and then not Data.In_Aggregate_Lib
          then
             --  Path is set if this is a source we found on the disk, in which
             --  case we can provide more explicit error message. Path is unset
@@ -765,6 +762,7 @@ package body Prj.Nmsc is
            and then not Data.Flags.Allow_Duplicate_Basenames
            and then Lang_Id.Config.Kind = Unit_Based
            and then Source.Language.Config.Kind = Unit_Based
+           and then not Data.In_Aggregate_Lib
          then
             Error_Msg_File_1 := File_Name;
             Error_Msg_File_2 := File_Name_Type (Source.Project.Name);
@@ -924,9 +922,10 @@ package body Prj.Nmsc is
       Flags     : Processing_Flags)
    is
       Data : Tree_Processing_Data :=
-               (Tree      => Tree,
-                Node_Tree => Node_Tree,
-                Flags     => Flags);
+               (Tree             => Tree,
+                Node_Tree        => Node_Tree,
+                Flags            => Flags,
+                In_Aggregate_Lib => False);
 
       Project_Files : constant Prj.Variable_Value :=
                         Prj.Util.Value_Of
@@ -1011,132 +1010,6 @@ package body Prj.Nmsc is
 
       Free (Project_Path_For_Aggregate);
    end Process_Aggregated_Projects;
-
-   -----------
-   -- Check --
-   -----------
-
-   procedure Check
-     (Project : Project_Id;
-      Data    : in out Tree_Processing_Data)
-   is
-      procedure Check_Aggregate
-        (Project : Project_Id;
-         Data    : in out Tree_Processing_Data);
-      --  Check the aggregate project attributes, reject any not supported
-      --  attributes.
-
-      ---------------------
-      -- Check_Aggregate --
-      ---------------------
-
-      procedure Check_Aggregate
-        (Project : Project_Id;
-         Data    : in out Tree_Processing_Data)
-      is
-         procedure Check_Not_Defined (Name : Name_Id);
-         --  Report an error if Var is defined
-
-         -----------------------
-         -- Check_Not_Defined --
-         -----------------------
-
-         procedure Check_Not_Defined (Name : Name_Id) is
-            Var : constant Prj.Variable_Value :=
-                    Prj.Util.Value_Of
-                      (Name,
-                       Project.Decl.Attributes,
-                       Data.Tree.Shared);
-         begin
-            if not Var.Default then
-               Error_Msg_Name_1 := Name;
-               Error_Msg
-                 (Data.Flags, "wrong attribute %% in aggregate library",
-                  Var.Location, Project);
-            end if;
-         end Check_Not_Defined;
-
-      --  Start of processing for Check_Not_Defined
-
-      begin
-         Check_Not_Defined (Snames.Name_Library_Dir);
-         Check_Not_Defined (Snames.Name_Library_Interface);
-         Check_Not_Defined (Snames.Name_Library_Name);
-         Check_Not_Defined (Snames.Name_Library_Ali_Dir);
-         Check_Not_Defined (Snames.Name_Library_Src_Dir);
-         Check_Not_Defined (Snames.Name_Library_Options);
-         Check_Not_Defined (Snames.Name_Library_Standalone);
-         Check_Not_Defined (Snames.Name_Library_Kind);
-         Check_Not_Defined (Snames.Name_Leading_Library_Options);
-         Check_Not_Defined (Snames.Name_Library_Version);
-      end Check_Aggregate;
-
-      Shared   : constant Shared_Project_Tree_Data_Access := Data.Tree.Shared;
-      Prj_Data : Project_Processing_Data;
-
-   begin
-      Debug_Increase_Indent ("check", Project.Name);
-
-      Initialize (Prj_Data, Project);
-
-      Check_If_Externally_Built (Project, Data);
-
-      case Project.Qualifier is
-         when Aggregate =>
-            null;
-
-         when Aggregate_Library =>
-            if Project.Object_Directory = No_Path_Information then
-               Project.Object_Directory := Project.Directory;
-            end if;
-
-         when others =>
-            Get_Directories (Project, Data);
-            Check_Programming_Languages (Project, Data);
-
-            if Current_Verbosity = High then
-               Show_Source_Dirs (Project, Shared);
-            end if;
-
-            if Project.Qualifier = Dry then
-               Check_Abstract_Project (Project, Data);
-            end if;
-      end case;
-
-      --  Check configuration. This must be done even for gnatmake (even though
-      --  no user configuration file was provided) since the default config we
-      --  generate indicates whether libraries are supported for instance.
-
-      Check_Configuration (Project, Data);
-
-      --  For aggregate project checks that no library attributes are defined
-
-      if Project.Qualifier = Aggregate then
-         Check_Aggregate (Project, Data);
-
-      else
-         Check_Library_Attributes (Project, Data);
-         Check_Package_Naming (Project, Data);
-
-         --  An aggregate library has no source, no need to look for them
-
-         if Project.Qualifier /= Aggregate_Library then
-            Look_For_Sources (Prj_Data, Data);
-         end if;
-
-         Check_Interfaces (Project, Data);
-
-         if Project.Library then
-            Check_Stand_Alone_Library (Project, Data);
-         end if;
-
-         Get_Mains (Project, Data);
-      end if;
-
-      Free (Prj_Data);
-
-      Debug_Decrease_Indent ("done check");
-   end Check;
 
    ----------------------------
    -- Check_Abstract_Project --
@@ -3219,7 +3092,7 @@ package body Prj.Nmsc is
                      Lib_Name.Location, Project);
                end if;
 
-            when Library =>
+            when Library | Aggregate_Library =>
                if not Project.Library then
                   if Project.Library_Name = No_Name then
                      Error_Msg
@@ -3579,7 +3452,7 @@ package body Prj.Nmsc is
          end loop;
       end if;
 
-      if Project.Library then
+      if Project.Library and not Data.In_Aggregate_Lib then
 
          --  Record the library name
 
@@ -8313,20 +8186,163 @@ package body Prj.Nmsc is
       Node_Tree    : Prj.Tree.Project_Node_Tree_Ref;
       Flags        : Processing_Flags)
    is
+
+      procedure Check
+        (Project          : Project_Id;
+         In_Aggregate_Lib : Boolean;
+         Data             : in out Tree_Processing_Data);
+      --  Process the naming scheme for a single project
+
       procedure Recursive_Check
-        (Project  : Project_Id;
-         Prj_Tree : Project_Tree_Ref;
-         Data     : in out Tree_Processing_Data);
+        (Project          : Project_Id;
+         Prj_Tree         : Project_Tree_Ref;
+         In_Aggregate_Lib : Boolean;
+         Data             : in out Tree_Processing_Data);
       --  Check_Naming_Scheme for the project
+
+      -----------
+      -- Check --
+      -----------
+
+      procedure Check
+        (Project          : Project_Id;
+         In_Aggregate_Lib : Boolean;
+         Data             : in out Tree_Processing_Data)
+      is
+         procedure Check_Aggregate
+           (Project : Project_Id;
+            Data    : in out Tree_Processing_Data);
+         --  Check the aggregate project attributes, reject any not supported
+         --  attributes.
+
+         ---------------------
+         -- Check_Aggregate --
+         ---------------------
+
+         procedure Check_Aggregate
+           (Project : Project_Id;
+            Data    : in out Tree_Processing_Data)
+         is
+
+            procedure Check_Not_Defined (Name : Name_Id);
+            --  Report an error if Var is defined
+
+            -----------------------
+            -- Check_Not_Defined --
+            -----------------------
+
+            procedure Check_Not_Defined (Name : Name_Id) is
+               Var : constant Prj.Variable_Value :=
+                       Prj.Util.Value_Of
+                         (Name,
+                          Project.Decl.Attributes,
+                          Data.Tree.Shared);
+            begin
+               if not Var.Default then
+                  Error_Msg_Name_1 := Name;
+                  Error_Msg
+                    (Data.Flags, "wrong attribute %% in aggregate library",
+                     Var.Location, Project);
+               end if;
+            end Check_Not_Defined;
+
+         begin
+            Check_Not_Defined (Snames.Name_Library_Dir);
+            Check_Not_Defined (Snames.Name_Library_Interface);
+            Check_Not_Defined (Snames.Name_Library_Name);
+            Check_Not_Defined (Snames.Name_Library_Ali_Dir);
+            Check_Not_Defined (Snames.Name_Library_Src_Dir);
+            Check_Not_Defined (Snames.Name_Library_Options);
+            Check_Not_Defined (Snames.Name_Library_Standalone);
+            Check_Not_Defined (Snames.Name_Library_Kind);
+            Check_Not_Defined (Snames.Name_Leading_Library_Options);
+            Check_Not_Defined (Snames.Name_Library_Version);
+         end Check_Aggregate;
+
+         Shared   : constant Shared_Project_Tree_Data_Access :=
+                      Data.Tree.Shared;
+         Prj_Data : Project_Processing_Data;
+
+      --  Start of processing for Check
+
+      begin
+         Debug_Increase_Indent ("check", Project.Name);
+
+         Initialize (Prj_Data, Project);
+
+         Check_If_Externally_Built (Project, Data);
+
+         case Project.Qualifier is
+            when Aggregate =>
+               null;
+
+            when Aggregate_Library =>
+               if Project.Object_Directory = No_Path_Information then
+                  Project.Object_Directory := Project.Directory;
+               end if;
+
+            when others =>
+               Get_Directories (Project, Data);
+               Check_Programming_Languages (Project, Data);
+
+               if Current_Verbosity = High then
+                  Show_Source_Dirs (Project, Shared);
+               end if;
+
+               if Project.Qualifier = Dry then
+                  Check_Abstract_Project (Project, Data);
+               end if;
+         end case;
+
+         --  Check configuration. This must be done even for gnatmake (even
+         --  though no user configuration file was provided) since the default
+         --  config we generate indicates whether libraries are supported for
+         --  instance.
+
+         Check_Configuration (Project, Data);
+
+         --  For aggregate project check no library attributes are defined
+
+         if Project.Qualifier = Aggregate then
+            Check_Aggregate (Project, Data);
+
+         else
+            Check_Library_Attributes (Project, Data);
+            Check_Package_Naming (Project, Data);
+
+            --  An aggregate library has no source, no need to look for them
+
+            if Project.Qualifier /= Aggregate_Library then
+               Look_For_Sources (Prj_Data, Data);
+            end if;
+
+            Check_Interfaces (Project, Data);
+
+            --  If this library is part of an aggregated library don't check it
+            --  as it has no sources by itself and so interface won't be found.
+
+            if Project.Library and not In_Aggregate_Lib then
+               Check_Stand_Alone_Library (Project, Data);
+            end if;
+
+            Get_Mains (Project, Data);
+         end if;
+
+         Free (Prj_Data);
+
+         Debug_Decrease_Indent ("done check");
+      end Check;
 
       ---------------------
       -- Recursive_Check --
       ---------------------
 
       procedure Recursive_Check
-        (Project  : Project_Id;
-         Prj_Tree : Project_Tree_Ref;
-         Data     : in out Tree_Processing_Data) is
+        (Project          : Project_Id;
+         Prj_Tree         : Project_Tree_Ref;
+         In_Aggregate_Lib : Boolean;
+         Data             : in out Tree_Processing_Data)
+      is
       begin
          if Current_Verbosity = High then
             Debug_Increase_Indent
@@ -8334,7 +8350,9 @@ package body Prj.Nmsc is
          end if;
 
          Data.Tree := Prj_Tree;
-         Prj.Nmsc.Check (Project, Data);
+         Data.In_Aggregate_Lib := In_Aggregate_Lib;
+
+         Check (Project, In_Aggregate_Lib, Data);
 
          if Current_Verbosity = High then
             Debug_Decrease_Indent ("done Processing_Naming_Scheme");
@@ -8347,6 +8365,7 @@ package body Prj.Nmsc is
       Data : Tree_Processing_Data;
 
    --  Start of processing for Process_Naming_Scheme
+
    begin
       Lib_Data_Table.Init;
       Initialize (Data, Tree => Tree, Node_Tree => Node_Tree, Flags => Flags);

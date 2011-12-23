@@ -1,5 +1,33 @@
 2011-12-23  Pascal Obry  <obry@adacore.com>
 
+	* prj.ads (For_Every_Project_Imported): Add In_Aggregate_Lib
+	parameter to generic formal procedure.
+	* prj.adb (For_Every_Project_Imported): Update accordingly.
+	(Recursive_Check): Likewise. Do not parse imported project for
+	aggregate library. This is needed as the imported projects are
+	there just to handle dependencies.
+	(Look_For_Sources): Likewise.
+	(Recursive_Add): Likewise.
+	* prj-env.adb, prj-conf.adb, makeutl.adb, gnatcmd.adb:
+	Add In_Aggregate_Lib parameter to routines used with
+	For_Every_Project_Imported generic procedure.
+	* prj-nmsc.adb (Tree_Processing_Data): Add In_Aggregate_Lib field.
+	(Check): Move where it is used. Fix implementation
+	to not check libraries that are inside aggregate libraries.
+	(Recursive_Check): Add In_Aggregate_Lib parameter.
+
+2011-12-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch7.adb (Analyze_Package_Body, Has_Referencer): A generic
+	package is a referencer regardless of whether there is a
+	subsequent subprogram with an Inline pragma.
+
+2011-12-23  Geert Bosch  <bosch@adacore.com>
+
+	* sem_ch3.adb (Can_Derive_From): Check matching Float_Rep on VMS.
+
+2011-12-23  Pascal Obry  <obry@adacore.com>
+
 	* gnatcmd.adb, prj.adb, prj-nmsc.adb: Minor reformatting.
 
 2011-12-22  Hristian Kirtchev  <kirtchev@adacore.com>

@@ -638,7 +638,6 @@ package body Sem_Ch7 is
                   --  Processing for package bodies
 
                   elsif K = N_Package_Body
-                    and then not Has_Referencer_Except_For_Subprograms
                     and then Present (Corresponding_Spec (D))
                   then
                      E := Corresponding_Spec (D);
@@ -648,7 +647,10 @@ package body Sem_Ch7 is
                      --  exported, i.e. where the corresponding spec is the
                      --  spec of the current package, but because of nested
                      --  instantiations, a fully private generic body may
-                     --  export other private body entities.
+                     --  export other private body entities. Furthermore,
+                     --  regardless of whether there was a previous inlined
+                     --  subprogram, (an instantiation of) the generic package
+                     --  may reference any entity declared before it.
 
                      if Is_Generic_Unit (E) then
                         return True;
@@ -657,7 +659,9 @@ package body Sem_Ch7 is
                      --  this is an instance, we ignore instances since they
                      --  cannot have references that affect outer entities.
 
-                     elsif not Is_Generic_Instance (E) then
+                     elsif not Is_Generic_Instance (E)
+                       and then not Has_Referencer_Except_For_Subprograms
+                     then
                         if Has_Referencer
                              (Declarations (D), Outer => False)
                         then

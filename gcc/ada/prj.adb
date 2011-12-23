@@ -528,20 +528,24 @@ package body Prj is
       Seen : Project_Boolean_Htable.Instance := Project_Boolean_Htable.Nil;
 
       procedure Recursive_Check
-        (Project : Project_Id;
-         Tree    : Project_Tree_Ref);
-      --  Check if a project has already been seen. If not seen, mark it as
-      --  Seen, Call Action, and check all its imported projects.
+        (Project          : Project_Id;
+         Tree             : Project_Tree_Ref;
+         In_Aggregate_Lib : Boolean);
+      --  Check if a project has already been seen. If not seen, mark it
+      --  as Seen, Call Action, and check all its imported and aggregated
+      --  projects.
 
       ---------------------
       -- Recursive_Check --
       ---------------------
 
       procedure Recursive_Check
-        (Project : Project_Id;
-         Tree    : Project_Tree_Ref)
+        (Project          : Project_Id;
+         Tree             : Project_Tree_Ref;
+         In_Aggregate_Lib : Boolean)
       is
          List : Project_List;
+         T    : Project_Tree_Ref;
 
       begin
          if not Get (Seen, Project) then
@@ -552,22 +556,28 @@ package body Prj is
             Set (Seen, Project, True);
 
             if not Imported_First then
-               Action (Project, Tree, With_State);
+               Action (Project, Tree, In_Aggregate_Lib, With_State);
             end if;
 
             --  Visit all extended projects
 
             if Project.Extends /= No_Project then
-               Recursive_Check (Project.Extends, Tree);
+               Recursive_Check (Project.Extends, Tree, In_Aggregate_Lib);
             end if;
 
-            --  Visit all imported projects
+            --  Visit all imported projects if needed. This is not needed
+            --  for an aggregate library as imported libraries are just
+            --  there for dependency support.
 
-            List := Project.Imported_Projects;
-            while List /= null loop
-               Recursive_Check (List.Project, Tree);
-               List := List.Next;
-            end loop;
+            if Project.Qualifier /= Aggregate_Library
+              or else not Include_Aggregated
+            then
+               List := Project.Imported_Projects;
+               while List /= null loop
+                  Recursive_Check (List.Project, Tree, In_Aggregate_Lib);
+                  List := List.Next;
+               end loop;
+            end if;
 
             --  Visit all aggregated projects
 
@@ -580,14 +590,25 @@ package body Prj is
                   Agg := Project.Aggregated_Projects;
                   while Agg /= null loop
                      pragma Assert (Agg.Project /= No_Project);
-                     Recursive_Check (Agg.Project, Agg.Tree);
+
+                     --  For aggregated libraries, the tree must be the one
+                     --  of the aggregate library.
+
+                     if Project.Qualifier = Aggregate_Library then
+                        T := Tree;
+                     else
+                        T := Agg.Tree;
+                     end if;
+
+                     Recursive_Check
+                       (Agg.Project, T, Project.Qualifier = Aggregate_Library);
                      Agg := Agg.Next;
                   end loop;
                end;
             end if;
 
             if Imported_First then
-               Action (Project, Tree, With_State);
+               Action (Project, Tree, In_Aggregate_Lib, With_State);
             end if;
          end if;
       end Recursive_Check;
@@ -595,7 +616,7 @@ package body Prj is
    --  Start of processing for For_Every_Project_Imported
 
    begin
-      Recursive_Check (Project => By, Tree => Tree);
+      Recursive_Check (Project => By, Tree => Tree, In_Aggregate_Lib => False);
       Reset (Seen);
    end For_Every_Project_Imported;
 
@@ -614,9 +635,10 @@ package body Prj is
       Result : Source_Id  := No_Source;
 
       procedure Look_For_Sources
-        (Proj : Project_Id;
-         Tree : Project_Tree_Ref;
-         Src  : in out Source_Id);
+        (Proj         : Project_Id;
+         Tree         : Project_Tree_Ref;
+         In_Aggregate : Boolean;
+         Src          : in out Source_Id);
       --  Look for Base_Name in the sources of Proj
 
       ----------------------
@@ -624,10 +646,13 @@ package body Prj is
       ----------------------
 
       procedure Look_For_Sources
-        (Proj : Project_Id;
-         Tree : Project_Tree_Ref;
-         Src  : in out Source_Id)
+        (Proj         : Project_Id;
+         Tree         : Project_Tree_Ref;
+         In_Aggregate : Boolean;
+         Src          : in out Source_Id)
       is
+         pragma Unreferenced (In_Aggregate);
+
          Iterator : Source_Iterator;
 
       begin
@@ -662,14 +687,14 @@ package body Prj is
       if In_Extended_Only then
          Proj := Project;
          while Proj /= No_Project loop
-            Look_For_Sources (Proj, In_Tree, Result);
+            Look_For_Sources (Proj, In_Tree, False, Result);
             exit when Result /= No_Source;
 
             Proj := Proj.Extends;
          end loop;
 
       elsif In_Imported_Only then
-         Look_For_Sources (Project, In_Tree, Result);
+         Look_For_Sources (Project, In_Tree, False, Result);
 
          if Result = No_Source then
             For_Imported_Projects
@@ -680,7 +705,7 @@ package body Prj is
          end if;
 
       else
-         Look_For_Sources (No_Project, In_Tree, Result);
+         Look_For_Sources (No_Project, In_Tree, False, Result);
       end if;
 
       return Result;
@@ -1365,9 +1390,10 @@ package body Prj is
          Project : Project_Id;
 
          procedure Recursive_Add
-           (Prj   : Project_Id;
-            Tree  : Project_Tree_Ref;
-            Dummy : in out Boolean);
+           (Prj              : Project_Id;
+            Tree             : Project_Tree_Ref;
+            In_Aggregate_Lib : Boolean;
+            Dummy            : in out Boolean);
          --  Recursively add the projects imported by project Project, but not
          --  those that are extended.
 
@@ -1376,11 +1402,13 @@ package body Prj is
          -------------------
 
          procedure Recursive_Add
-           (Prj   : Project_Id;
-            Tree  : Project_Tree_Ref;
-            Dummy : in out Boolean)
+           (Prj              : Project_Id;
+            Tree             : Project_Tree_Ref;
+            In_Aggregate_Lib : Boolean;
+            Dummy            : in out Boolean)
          is
-            pragma Unreferenced (Dummy, Tree);
+            pragma Unreferenced (Dummy, Tree, In_Aggregate_Lib);
+
             List : Project_List;
             Prj2 : Project_Id;
 

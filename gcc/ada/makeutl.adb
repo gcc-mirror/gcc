@@ -692,9 +692,10 @@ package body Makeutl is
    is
 
       procedure Recursive_Add
-        (Project  : Project_Id;
-         Tree     : Project_Tree_Ref;
-         Extended : in out Boolean);
+        (Project          : Project_Id;
+         Tree             : Project_Tree_Ref;
+         In_Aggregate_Lib : Boolean;
+         Extended         : in out Boolean);
       --  Add all the source directories of a project to the path only if
       --  this project has not been visited. Calls itself recursively for
       --  projects being extended, and imported projects.
@@ -731,14 +732,18 @@ package body Makeutl is
       -------------------
 
       procedure Recursive_Add
-        (Project  : Project_Id;
-         Tree     : Project_Tree_Ref;
-         Extended : in out Boolean)
+        (Project          : Project_Id;
+         Tree             : Project_Tree_Ref;
+         In_Aggregate_Lib : Boolean;
+         Extended         : in out Boolean)
       is
+         pragma Unreferenced (In_Aggregate_Lib);
+
          Current   : String_List_Id;
          Dir       : String_Element;
          OK        : Boolean := False;
          Lang_Proc : Language_Ptr := Project.Languages;
+
       begin
          --  Add to path all directories of this project
 
@@ -1229,9 +1234,10 @@ package body Makeutl is
       In_Tree  : Project_Tree_Ref) return String_List
    is
       procedure Recursive_Add
-        (Proj    : Project_Id;
-         In_Tree : Project_Tree_Ref;
-         Dummy   : in out Boolean);
+        (Proj             : Project_Id;
+         In_Tree          : Project_Tree_Ref;
+         In_Aggregate_Lib : Boolean;
+         Dummy            : in out Boolean);
       --  The recursive routine used to add linker options
 
       -------------------
@@ -1239,11 +1245,12 @@ package body Makeutl is
       -------------------
 
       procedure Recursive_Add
-        (Proj    : Project_Id;
-         In_Tree : Project_Tree_Ref;
-         Dummy   : in out Boolean)
+        (Proj             : Project_Id;
+         In_Tree          : Project_Tree_Ref;
+         In_Aggregate_Lib : Boolean;
+         Dummy            : in out Boolean)
       is
-         pragma Unreferenced (Dummy);
+         pragma Unreferenced (Dummy, In_Aggregate_Lib);
 
          Linker_Package : Package_Id;
          Options        : Variable_Value;
