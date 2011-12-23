@@ -1,3 +1,71 @@
+2011-12-23  Richard Henderson  <rth@redhat.com>
+
+	* config/mips/loongson.md (UNSPEC_LOONGSON_PINSR_0,
+	UNSPEC_LOONGSON_PINSR_1, UNSPEC_LOONGSON_PINSR_2,
+	UNSPEC_LOONGSON_PINSR_3): Replace with...
+	(UNSPEC_LOONGSON_PINSRH): ... this.
+	(UNSPEC_LOONGSON_VINIT): New.
+	(UNSPEC_LOONGSON_DSLL, UNSPEC_LOONGSON_DSRL): New.
+	(VWB): New mode iterator.
+	(V_inner): New mode attribute.
+	(loongson_vec_init1_<VHB>): New.
+	(*vec_concatv2si): New.
+	(and<VWHB>3, ior<VWHB>3, xor<VWHB>3, one_cmpl<VWHB>2): New.
+	(*loongson_nor): New.
+	(loongson_pextrh): Un-macro-ify.
+	(loongson_pmaddhw): Likewise.
+	(smaxv4hi3, umaxv8qi3, sminv4hi3, uminv8qi3): Likewise.
+	(loongson_pinsrh_0): Represent with vec_select+vec_concat.
+	(loongson_pinsrh_1, loongson_pinsrh_2, loongson_pinsrh_3): Likewise.
+	(*vec_setv4hi, vec_setv4hi): New.
+	(sdot_prodv4hi): New.
+	(smax<VWB>3, smin<VWB>3): New.
+	(reduc_uplus_v8qi): New.
+	(loongson_pshufh): Remove destination matching input.
+	(ashl<VWH>3, ashr<VWH>3, lshr<VWH>3): Fix type attribute.
+	(vec_interleave_high<VWHB>, vec_interleave_low<VWHB>): Remove.
+	(loongson_punpckhbh, loongson_punpckhhw, loongson_punpckhhw_qi,
+	loongson_punpckhwd, loongson_punpckhwd_qi, loongson_punpckhwd_hi,
+	loongson_punpcklbh, loongson_punpcklhw, loongson_punpcklhw_qi,
+	loongson_punpcklwd, loongson_punpcklwd_qi, loongson_punpcklwd_hi,
+	vec_perm_const<VWHB>, vec_unpacks_lo_<VHB>, vec_unpacks_hi_<VHB>,
+	vec_unpacku_lo_<VHB>, vec_unpacku_hi_<VHB>, vec_shl_<VWHBDI>,
+	vec_shr_<VWHBDI>, reduc_uplus_<VWH>, reduc_splus_<VWHB>,
+	reduc_smax_<VWHB>, reduc_smin_<VWHB>, reduc_umax_<VWHB>,
+	reduc_umin_<VB>): New.
+	* config/mips/mips-ps-3d.md (vec_perm_const_ps): New.
+	(mips_pul_ps, mips_puu_ps, mips_pll_ps, mips_plu_ps): Expand in
+	terms of vec_perm_const_ps.
+	(vec_perm_constv2sf): New.
+	(vec_initv2sf): Use mips_expand_vector_init.
+	(vec_concatv2sf): Rename from vec_initv2sf_internal.
+	(vec_setv2sf): Use vec_perm_const_ps.
+	(reduc_splus_v2sf, reduc_smin_v2sf, reduc_smax_v2sf): New.
+	* config/mips/loongson.h (pshufh_u, pshufh_s): Don't pass dest to
+	the builtin.
+	* config/mips/mips-modes.def (V16QI, V8HI, V4SI, V4SF): New modes.
+	* config/mips/mips-protos.h: Update.
+	* config/mips/mips.c (mips_get_arg_info): Match V2SFmode, not all
+	MODE_VECTOR_FLOAT.
+	(mips_return_mode_in_fpr_p): Likewise.
+	(mips_cannot_change_mode_class): Allow 8-byte integral mode changes.
+	(CODE_FOR_loongson_punpckhbh, CODE_FOR_loongson_punpckhhw,
+	CODE_FOR_loongson_punpckhwd, CODE_FOR_loongson_punpcklbh,
+	CODE_FOR_loongson_punpcklhw, CODE_FOR_loongson_punpcklwd): Remove.
+	(mips_builtins): Remove first operand for loongson pshufh builtins.
+	(MAX_VECT_LEN, struct expand_vec_perm_d): New.
+	(mips_expand_vselect, mips_expand_vselect_vconcat,
+	mips_expand_vpc_loongson_even_odd, mips_expand_vpc_loongson_pshufh,
+	mips_expand_vpc_loongson_bcast, mips_expand_vec_perm_const_1,
+	mips_expand_vec_perm_const, mips_vectorize_vec_perm_const_ok,
+	mips_expand_vec_unpack, mips_constant_elt_p, mips_expand_vi_broadcast,
+	mips_expand_vi_constant, mips_expand_vi_loongson_one_pinsrh,
+	mips_expand_vi_general, mips_expand_vec_reduc, mips_expand_vec_minmax,
+	TARGET_VECTORIZE_VEC_PERM_CONST_OK): New.
+	(mips_expand_vector_init): Rewrite.
+	* config/mips/predicates.md (const_2_or_3_operand): New.
+	(const_0_to_3_operand): New.
+
 2011-12-23  Dmitry Plotnikov  <dplotnikov@ispras.ru>
 
 	* config/arm/neon.md (float<mode><V_cvtto>2): New.

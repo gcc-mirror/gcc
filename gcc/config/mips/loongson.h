@@ -449,13 +449,13 @@ psadbh (uint8x8_t s, uint8x8_t t)
 __extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
 pshufh_u (uint16x4_t dest, uint16x4_t s, uint8_t order)
 {
-  return __builtin_loongson_pshufh_u (dest, s, order);
+  return __builtin_loongson_pshufh_u (s, order);
 }
 
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
 pshufh_s (int16x4_t dest, int16x4_t s, uint8_t order)
 {
-  return __builtin_loongson_pshufh_s (dest, s, order);
+  return __builtin_loongson_pshufh_s (s, order);
 }
 
 /* Shift left logical.  */

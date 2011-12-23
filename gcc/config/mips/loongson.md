@@ -24,10 +24,8 @@
   UNSPEC_LOONGSON_PCMPEQ
   UNSPEC_LOONGSON_PCMPGT
   UNSPEC_LOONGSON_PEXTR
-  UNSPEC_LOONGSON_PINSR_0
-  UNSPEC_LOONGSON_PINSR_1
-  UNSPEC_LOONGSON_PINSR_2
-  UNSPEC_LOONGSON_PINSR_3
+  UNSPEC_LOONGSON_PINSRH
+  UNSPEC_LOONGSON_VINIT
   UNSPEC_LOONGSON_PMADD
   UNSPEC_LOONGSON_PMOVMSK
   UNSPEC_LOONGSON_PMULHU
@@ -41,6 +39,8 @@
   UNSPEC_LOONGSON_PUNPCKL
   UNSPEC_LOONGSON_PADDD
   UNSPEC_LOONGSON_PSUBD
+  UNSPEC_LOONGSON_DSLL
+  UNSPEC_LOONGSON_DSRL
 ])
 
 ;; Mode iterators and attributes.
@@ -59,6 +59,9 @@
 
 ;; 64-bit vectors of words and halfwords.
 (define_mode_iterator VWH [V2SI V4HI])
+
+;; 64-bit vectors of words and bytes
+(define_mode_iterator VWB [V2SI V8QI])
 
 ;; 64-bit vectors of words, halfwords and bytes.
 (define_mode_iterator VWHB [V2SI V4HI V8QI])
@@ -85,6 +88,9 @@
 ;; Given a vector type T, the mode of a vector the same size as T
 ;; but with twice as many elements.
 (define_mode_attr V_squash_double [(V2SI "V4HI") (V4HI "V8QI")])
+
+;; Given a vector type T, the inner mode.
+(define_mode_attr V_inner [(V8QI "QI") (V4HI "HI") (V2SI "SI")])
 
 ;; The Loongson instruction suffixes corresponding to the conversions
 ;; specified by V_half_width.
@@ -121,6 +127,28 @@
   mips_expand_vector_init (operands[0], operands[1]);
   DONE;
 })
+
+;; Helper for vec_init.  Initialize element 0 of the output from the input.
+;; All other elements are undefined.
+(define_insn "loongson_vec_init1_<mode>"
+  [(set (match_operand:VHB 0 "register_operand" "=f")
+	(unspec:VHB [(truncate:<V_inner>
+		       (match_operand:DI 1 "reg_or_0_operand" "Jd"))]
+		    UNSPEC_LOONGSON_VINIT))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "dmtc1\t%z1,%0"
+  [(set_attr "move_type" "mtc")
+   (set_attr "mode" "DI")])
+
+;; Helper for vec_initv2si.
+(define_insn "*vec_concatv2si"
+  [(set (match_operand:V2SI 0 "register_operand" "=f")
+	(vec_concat:V2SI
+	  (match_operand:SI 1 "register_operand" "f")
+	  (match_operand:SI 2 "register_operand" "f")))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "punpcklwd\t%0,%1,%2"
+  [(set_attr "type" "fcvt")])
 
 ;; Instruction patterns for SIMD instructions.
 
@@ -200,6 +228,51 @@
   "pandn\t%0,%1,%2"
   [(set_attr "type" "fmul")])
 
+;; Logical AND.
+(define_insn "and<mode>3"
+  [(set (match_operand:VWHB 0 "register_operand" "=f")
+	(and:VWHB (match_operand:VWHB 1 "register_operand" "f")
+		  (match_operand:VWHB 2 "register_operand" "f")))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "and\t%0,%1,%2"
+  [(set_attr "type" "fmul")])
+
+;; Logical OR.
+(define_insn "ior<mode>3"
+  [(set (match_operand:VWHB 0 "register_operand" "=f")
+	(ior:VWHB (match_operand:VWHB 1 "register_operand" "f")
+		  (match_operand:VWHB 2 "register_operand" "f")))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "or\t%0,%1,%2"
+  [(set_attr "type" "fcvt")])
+
+;; Logical XOR.
+(define_insn "xor<mode>3"
+  [(set (match_operand:VWHB 0 "register_operand" "=f")
+	(xor:VWHB (match_operand:VWHB 1 "register_operand" "f")
+		  (match_operand:VWHB 2 "register_operand" "f")))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "xor\t%0,%1,%2"
+  [(set_attr "type" "fmul")])
+
+;; Logical NOR.
+(define_insn "*loongson_nor"
+  [(set (match_operand:VWHB 0 "register_operand" "=f")
+	(and:VWHB
+	  (not:VWHB (match_operand:VWHB 1 "register_operand" "f"))
+	  (not:VWHB (match_operand:VWHB 2 "register_operand" "f"))))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "nor\t%0,%1,%2"
+  [(set_attr "type" "fmul")])
+
+;; Logical NOT.
+(define_insn "one_cmpl<mode>2"
+  [(set (match_operand:VWHB 0 "register_operand" "=f")
+	(not:VWHB (match_operand:VWHB 1 "register_operand" "f")))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "nor\t%0,%1,%1"
+  [(set_attr "type" "fmul")])
+
 ;; Average.
 (define_insn "loongson_pavg<V_suffix>"
   [(set (match_operand:VHB 0 "register_operand" "=f")
@@ -231,96 +304,166 @@
   [(set_attr "type" "fadd")])
 
 ;; Extract halfword.
-(define_insn "loongson_pextr<V_suffix>"
-  [(set (match_operand:VH 0 "register_operand" "=f")
-        (unspec:VH [(match_operand:VH 1 "register_operand" "f")
- 		    (match_operand:SI 2 "register_operand" "f")]
+(define_insn "loongson_pextrh"
+  [(set (match_operand:V4HI 0 "register_operand" "=f")
+        (unspec:V4HI [(match_operand:V4HI 1 "register_operand" "f")
+		      (match_operand:SI 2 "register_operand" "f")]
 		   UNSPEC_LOONGSON_PEXTR))]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
-  "pextr<V_suffix>\t%0,%1,%2"
-  [(set_attr "type" "fmul")])
+  "pextrh\t%0,%1,%2"
+  [(set_attr "type" "fcvt")])
 
 ;; Insert halfword.
-(define_insn "loongson_pinsr<V_suffix>_0"
-  [(set (match_operand:VH 0 "register_operand" "=f")
-        (unspec:VH [(match_operand:VH 1 "register_operand" "f")
-		    (match_operand:VH 2 "register_operand" "f")]
-		   UNSPEC_LOONGSON_PINSR_0))]
+(define_insn "loongson_pinsrh_0"
+  [(set (match_operand:V4HI 0 "register_operand" "=f")
+	(vec_select:V4HI
+	  (vec_concat:V8HI
+	    (match_operand:V4HI 1 "register_operand" "f")
+	    (match_operand:V4HI 2 "register_operand" "f"))
+	  (parallel [(const_int 4) (const_int 1)
+		     (const_int 2) (const_int 3)])))]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
-  "pinsr<V_suffix>_0\t%0,%1,%2"
+  "pinsrh_0\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
 
-(define_insn "loongson_pinsr<V_suffix>_1"
-  [(set (match_operand:VH 0 "register_operand" "=f")
-        (unspec:VH [(match_operand:VH 1 "register_operand" "f")
-		    (match_operand:VH 2 "register_operand" "f")]
-		   UNSPEC_LOONGSON_PINSR_1))]
+(define_insn "loongson_pinsrh_1"
+  [(set (match_operand:V4HI 0 "register_operand" "=f")
+	(vec_select:V4HI
+	  (vec_concat:V8HI
+	    (match_operand:V4HI 1 "register_operand" "f")
+	    (match_operand:V4HI 2 "register_operand" "f"))
+	  (parallel [(const_int 0) (const_int 4)
+		     (const_int 2) (const_int 3)])))]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
-  "pinsr<V_suffix>_1\t%0,%1,%2"
+  "pinsrh_1\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
 
-(define_insn "loongson_pinsr<V_suffix>_2"
-  [(set (match_operand:VH 0 "register_operand" "=f")
-        (unspec:VH [(match_operand:VH 1 "register_operand" "f")
-		    (match_operand:VH 2 "register_operand" "f")]
-		   UNSPEC_LOONGSON_PINSR_2))]
+(define_insn "loongson_pinsrh_2"
+  [(set (match_operand:V4HI 0 "register_operand" "=f")
+	(vec_select:V4HI
+	  (vec_concat:V8HI
+	    (match_operand:V4HI 1 "register_operand" "f")
+	    (match_operand:V4HI 2 "register_operand" "f"))
+	  (parallel [(const_int 0) (const_int 1)
+		     (const_int 4) (const_int 3)])))]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
-  "pinsr<V_suffix>_2\t%0,%1,%2"
+  "pinsrh_2\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
 
-(define_insn "loongson_pinsr<V_suffix>_3"
-  [(set (match_operand:VH 0 "register_operand" "=f")
-        (unspec:VH [(match_operand:VH 1 "register_operand" "f")
-		    (match_operand:VH 2 "register_operand" "f")]
-		   UNSPEC_LOONGSON_PINSR_3))]
+(define_insn "loongson_pinsrh_3"
+  [(set (match_operand:V4HI 0 "register_operand" "=f")
+	(vec_select:V4HI
+	  (vec_concat:V8HI
+	    (match_operand:V4HI 1 "register_operand" "f")
+	    (match_operand:V4HI 2 "register_operand" "f"))
+	  (parallel [(const_int 0) (const_int 1)
+		     (const_int 2) (const_int 4)])))]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
-  "pinsr<V_suffix>_3\t%0,%1,%2"
+  "pinsrh_3\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
+
+(define_insn "*vec_setv4hi"
+  [(set (match_operand:V4HI 0 "register_operand" "=f")
+	(unspec:V4HI [(match_operand:V4HI 1 "register_operand" "f")
+		      (match_operand:SI 2 "register_operand" "f")
+		      (match_operand:SI 3 "const_0_to_3_operand" "")]
+		     UNSPEC_LOONGSON_PINSRH))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "pinsrh_%3\t%0,%1,%2"
+  [(set_attr "type" "fdiv")])
+
+(define_expand "vec_setv4hi"
+  [(set (match_operand:V4HI 0 "register_operand" "=f")
+	(unspec:V4HI [(match_operand:V4HI 1 "register_operand" "f")
+		      (match_operand:HI 2 "register_operand" "f")
+		      (match_operand:SI 3 "const_0_to_3_operand" "")]
+		     UNSPEC_LOONGSON_PINSRH))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+{
+  rtx ext = gen_reg_rtx (SImode);
+  emit_move_insn (ext, gen_lowpart (SImode, operands[1]));
+  operands[1] = ext;
+})
 
 ;; Multiply and add packed integers.
-(define_insn "loongson_pmadd<V_stretch_half_suffix>"
-  [(set (match_operand:<V_stretch_half> 0 "register_operand" "=f")
-        (unspec:<V_stretch_half> [(match_operand:VH 1 "register_operand" "f")
-				  (match_operand:VH 2 "register_operand" "f")]
-				 UNSPEC_LOONGSON_PMADD))]
+(define_insn "loongson_pmaddhw"
+  [(set (match_operand:V2SI 0 "register_operand" "=f")
+        (unspec:V2SI [(match_operand:V4HI 1 "register_operand" "f")
+		      (match_operand:V4HI 2 "register_operand" "f")]
+		     UNSPEC_LOONGSON_PMADD))]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
-  "pmadd<V_stretch_half_suffix>\t%0,%1,%2"
+  "pmaddhw\t%0,%1,%2"
   [(set_attr "type" "fmul")])
 
-;; Maximum of signed halfwords.
-(define_insn "smax<mode>3"
-  [(set (match_operand:VH 0 "register_operand" "=f")
-        (smax:VH (match_operand:VH 1 "register_operand" "f")
-		 (match_operand:VH 2 "register_operand" "f")))]
+(define_expand "sdot_prodv4hi"
+  [(match_operand:V2SI 0 "register_operand" "")
+   (match_operand:V4HI 1 "register_operand" "")
+   (match_operand:V4HI 2 "register_operand" "")
+   (match_operand:V2SI 3 "register_operand" "")]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
-  "pmaxs<V_suffix>\t%0,%1,%2"
+{
+  rtx t = gen_reg_rtx (V2SImode);
+  emit_insn (gen_loongson_pmaddhw (t, operands[1], operands[2]));
+  emit_insn (gen_addv2si3 (operands[0], t, operands[3]));
+  DONE;
+})
+
+;; Maximum of signed halfwords.
+(define_insn "smaxv4hi3"
+  [(set (match_operand:V4HI 0 "register_operand" "=f")
+        (smax:V4HI (match_operand:V4HI 1 "register_operand" "f")
+		   (match_operand:V4HI 2 "register_operand" "f")))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "pmaxsh\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
-;; Maximum of unsigned bytes.
-(define_insn "umax<mode>3"
-  [(set (match_operand:VB 0 "register_operand" "=f")
-        (umax:VB (match_operand:VB 1 "register_operand" "f")
-		 (match_operand:VB 2 "register_operand" "f")))]
+(define_expand "smax<mode>3"
+  [(match_operand:VWB 0 "register_operand" "")
+   (match_operand:VWB 1 "register_operand" "")
+   (match_operand:VWB 2 "register_operand" "")]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
-  "pmaxu<V_suffix>\t%0,%1,%2"
+{
+  mips_expand_vec_minmax (operands[0], operands[1], operands[2],
+			  gen_loongson_pcmpgt<V_suffix>, false);
+  DONE;
+})
+
+;; Maximum of unsigned bytes.
+(define_insn "umaxv8qi3"
+  [(set (match_operand:V8QI 0 "register_operand" "=f")
+        (umax:V8QI (match_operand:V8QI 1 "register_operand" "f")
+		   (match_operand:V8QI 2 "register_operand" "f")))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "pmaxub\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
 ;; Minimum of signed halfwords.
-(define_insn "smin<mode>3"
-  [(set (match_operand:VH 0 "register_operand" "=f")
-        (smin:VH (match_operand:VH 1 "register_operand" "f")
-		 (match_operand:VH 2 "register_operand" "f")))]
+(define_insn "sminv4hi3"
+  [(set (match_operand:V4HI 0 "register_operand" "=f")
+        (smin:V4HI (match_operand:V4HI 1 "register_operand" "f")
+		   (match_operand:V4HI 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
-  "pmins<V_suffix>\t%0,%1,%2"
+  "pminsh\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
-;; Minimum of unsigned bytes.
-(define_insn "umin<mode>3"
-  [(set (match_operand:VB 0 "register_operand" "=f")
-        (umin:VB (match_operand:VB 1 "register_operand" "f")
-		 (match_operand:VB 2 "register_operand" "f")))]
+(define_expand "smin<mode>3"
+  [(match_operand:VWB 0 "register_operand" "")
+   (match_operand:VWB 1 "register_operand" "")
+   (match_operand:VWB 2 "register_operand" "")]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
-  "pminu<V_suffix>\t%0,%1,%2"
+{
+  mips_expand_vec_minmax (operands[0], operands[1], operands[2],
+			  gen_loongson_pcmpgt<V_suffix>, true);
+  DONE;
+})
+
+;; Minimum of unsigned bytes.
+(define_insn "uminv8qi3"
+  [(set (match_operand:V8QI 0 "register_operand" "=f")
+        (umin:V8QI (match_operand:V8QI 1 "register_operand" "f")
+		   (match_operand:V8QI 2 "register_operand" "f")))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "pminub\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
 ;; Move byte mask.
@@ -390,6 +533,14 @@
   "biadd\t%0,%1"
   [(set_attr "type" "fabs")])
 
+(define_insn "reduc_uplus_v8qi"
+  [(set (match_operand:V8QI 0 "register_operand" "=f")
+	(unspec:V8QI [(match_operand:V8QI 1 "register_operand" "f")]
+		     UNSPEC_LOONGSON_BIADD))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "biadd\t%0,%1"
+  [(set_attr "type" "fabs")])
+
 ;; Sum of absolute differences.
 (define_insn "loongson_psadbh"
   [(set (match_operand:<V_stretch_half> 0 "register_operand" "=f")
@@ -403,12 +554,11 @@
 ;; Shuffle halfwords.
 (define_insn "loongson_pshufh"
   [(set (match_operand:VH 0 "register_operand" "=f")
-        (unspec:VH [(match_operand:VH 1 "register_operand" "0")
-		    (match_operand:VH 2 "register_operand" "f")
-		    (match_operand:SI 3 "register_operand" "f")]
+        (unspec:VH [(match_operand:VH 1 "register_operand" "f")
+		    (match_operand:SI 2 "register_operand" "f")]
 		   UNSPEC_LOONGSON_PSHUFH))]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
-  "pshufh\t%0,%2,%3"
+  "pshufh\t%0,%1,%2"
   [(set_attr "type" "fmul")])
 
 ;; Shift left logical.
@@ -418,7 +568,7 @@
 		    (match_operand:SI 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
   "psll<V_suffix>\t%0,%1,%2"
-  [(set_attr "type" "fmul")])
+  [(set_attr "type" "fcvt")])
 
 ;; Shift right arithmetic.
 (define_insn "ashr<mode>3"
@@ -427,7 +577,7 @@
 		      (match_operand:SI 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
   "psra<V_suffix>\t%0,%1,%2"
-  [(set_attr "type" "fdiv")])
+  [(set_attr "type" "fcvt")])
 
 ;; Shift right logical.
 (define_insn "lshr<mode>3"
@@ -436,7 +586,7 @@
 		      (match_operand:SI 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
   "psrl<V_suffix>\t%0,%1,%2"
-  [(set_attr "type" "fdiv")])
+  [(set_attr "type" "fcvt")])
 
 ;; Subtraction, treating overflow by wraparound.
 (define_insn "sub<mode>3"
@@ -478,25 +628,285 @@
   "psubus<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
-;; Unpack high data.
-(define_insn "vec_interleave_high<mode>"
-  [(set (match_operand:VWHB 0 "register_operand" "=f")
-        (unspec:VWHB [(match_operand:VWHB 1 "register_operand" "f")
-		      (match_operand:VWHB 2 "register_operand" "f")]
-		     UNSPEC_LOONGSON_PUNPCKH))]
+;; Unpack high data.  Recall that Loongson only runs in little-endian.
+(define_insn "loongson_punpckhbh"
+  [(set (match_operand:V8QI 0 "register_operand" "=f")
+	(vec_select:V8QI
+	  (vec_concat:V16QI
+	    (match_operand:V8QI 1 "register_operand" "f")
+	    (match_operand:V8QI 2 "register_operand" "f"))
+	  (parallel [(const_int 4) (const_int 12)
+		     (const_int 5) (const_int 13)
+		     (const_int 6) (const_int 14)
+		     (const_int 7) (const_int 15)])))]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
-  "punpckh<V_stretch_half_suffix>\t%0,%1,%2"
+  "punpckhbh\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
 
-;; Unpack low data.
-(define_insn "vec_interleave_low<mode>"
-  [(set (match_operand:VWHB 0 "register_operand" "=f")
-        (unspec:VWHB [(match_operand:VWHB 1 "register_operand" "f")
-		      (match_operand:VWHB 2 "register_operand" "f")]
-		     UNSPEC_LOONGSON_PUNPCKL))]
+(define_insn "loongson_punpckhhw"
+  [(set (match_operand:V4HI 0 "register_operand" "=f")
+	(vec_select:V4HI
+	  (vec_concat:V8HI
+	    (match_operand:V4HI 1 "register_operand" "f")
+	    (match_operand:V4HI 2 "register_operand" "f"))
+	  (parallel [(const_int 2) (const_int 6)
+		     (const_int 3) (const_int 7)])))]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
-  "punpckl<V_stretch_half_suffix>\t%0,%1,%2"
+  "punpckhhw\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
+
+(define_insn "loongson_punpckhhw_qi"
+  [(set (match_operand:V8QI 0 "register_operand" "=f")
+	(vec_select:V8QI
+	  (vec_concat:V16QI
+	    (match_operand:V8QI 1 "register_operand" "f")
+	    (match_operand:V8QI 2 "register_operand" "f"))
+	  (parallel [(const_int 4)  (const_int 5)
+		     (const_int 12) (const_int 13)
+		     (const_int 6)  (const_int 7)
+		     (const_int 14) (const_int 15)])))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "punpckhhw\t%0,%1,%2"
+  [(set_attr "type" "fdiv")])
+
+(define_insn "loongson_punpckhwd"
+  [(set (match_operand:V2SI 0 "register_operand" "=f")
+	(vec_select:V2SI
+	  (vec_concat:V4SI
+	    (match_operand:V2SI 1 "register_operand" "f")
+	    (match_operand:V2SI 2 "register_operand" "f"))
+	  (parallel [(const_int 1) (const_int 3)])))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "punpckhwd\t%0,%1,%2"
+  [(set_attr "type" "fcvt")])
+
+(define_insn "loongson_punpckhwd_qi"
+  [(set (match_operand:V8QI 0 "register_operand" "=f")
+	(vec_select:V8QI
+	  (vec_concat:V16QI
+	    (match_operand:V8QI 1 "register_operand" "f")
+	    (match_operand:V8QI 2 "register_operand" "f"))
+	  (parallel [(const_int 4) (const_int 5)
+		     (const_int 6) (const_int 7)
+		     (const_int 12) (const_int 13)
+		     (const_int 14) (const_int 15)])))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "punpckhwd\t%0,%1,%2"
+  [(set_attr "type" "fcvt")])
+
+(define_insn "loongson_punpckhwd_hi"
+  [(set (match_operand:V4HI 0 "register_operand" "=f")
+	(vec_select:V4HI
+	  (vec_concat:V8HI
+	    (match_operand:V4HI 1 "register_operand" "f")
+	    (match_operand:V4HI 2 "register_operand" "f"))
+	  (parallel [(const_int 2) (const_int 3)
+		     (const_int 6) (const_int 7)])))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "punpckhwd\t%0,%1,%2"
+  [(set_attr "type" "fcvt")])
+
+;; Unpack low data.
+(define_insn "loongson_punpcklbh"
+  [(set (match_operand:V8QI 0 "register_operand" "=f")
+	(vec_select:V8QI
+	  (vec_concat:V16QI
+	    (match_operand:V8QI 1 "register_operand" "f")
+	    (match_operand:V8QI 2 "register_operand" "f"))
+	  (parallel [(const_int 0) (const_int 8)
+		     (const_int 1) (const_int 9)
+		     (const_int 2) (const_int 10)
+		     (const_int 3) (const_int 11)])))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "punpcklbh\t%0,%1,%2"
+  [(set_attr "type" "fdiv")])
+
+(define_insn "loongson_punpcklhw"
+  [(set (match_operand:V4HI 0 "register_operand" "=f")
+	(vec_select:V4HI
+	  (vec_concat:V8HI
+	    (match_operand:V4HI 1 "register_operand" "f")
+	    (match_operand:V4HI 2 "register_operand" "f"))
+	  (parallel [(const_int 0) (const_int 4)
+		     (const_int 1) (const_int 5)])))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "punpcklhw\t%0,%1,%2"
+  [(set_attr "type" "fdiv")])
+
+(define_insn "*loongson_punpcklhw_qi"
+  [(set (match_operand:V8QI 0 "register_operand" "=f")
+	(vec_select:V8QI
+	  (vec_concat:V16QI
+	    (match_operand:V8QI 1 "register_operand" "f")
+	    (match_operand:V8QI 2 "register_operand" "f"))
+	  (parallel [(const_int 0)  (const_int 1)
+		     (const_int 8)  (const_int 9)
+		     (const_int 2)  (const_int 3)
+		     (const_int 10) (const_int 11)])))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "punpcklhw\t%0,%1,%2"
+  [(set_attr "type" "fdiv")])
+
+(define_insn "loongson_punpcklwd"
+  [(set (match_operand:V2SI 0 "register_operand" "=f")
+	(vec_select:V2SI
+	  (vec_concat:V4SI
+	    (match_operand:V2SI 1 "register_operand" "f")
+	    (match_operand:V2SI 2 "register_operand" "f"))
+	  (parallel [(const_int 0) (const_int 2)])))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "punpcklwd\t%0,%1,%2"
+  [(set_attr "type" "fcvt")])
+
+(define_insn "*loongson_punpcklwd_qi"
+  [(set (match_operand:V8QI 0 "register_operand" "=f")
+	(vec_select:V8QI
+	  (vec_concat:V16QI
+	    (match_operand:V8QI 1 "register_operand" "f")
+	    (match_operand:V8QI 2 "register_operand" "f"))
+	  (parallel [(const_int 0) (const_int 1)
+		     (const_int 2) (const_int 3)
+		     (const_int 8) (const_int 9)
+		     (const_int 10) (const_int 11)])))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "punpcklwd\t%0,%1,%2"
+  [(set_attr "type" "fcvt")])
+
+(define_insn "*loongson_punpcklwd_hi"
+  [(set (match_operand:V4HI 0 "register_operand" "=f")
+	(vec_select:V4HI
+	  (vec_concat:V8HI
+	    (match_operand:V4HI 1 "register_operand" "f")
+	    (match_operand:V4HI 2 "register_operand" "f"))
+	  (parallel [(const_int 0) (const_int 1)
+		     (const_int 4) (const_int 5)])))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "punpcklwd\t%0,%1,%2"
+  [(set_attr "type" "fcvt")])
+
+(define_expand "vec_perm_const<mode>"
+  [(match_operand:VWHB 0 "register_operand" "")
+   (match_operand:VWHB 1 "register_operand" "")
+   (match_operand:VWHB 2 "register_operand" "")
+   (match_operand:VWHB 3 "" "")]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+{
+  if (mips_expand_vec_perm_const (operands))
+    DONE;
+  else
+    FAIL;
+})
+
+(define_expand "vec_unpacks_lo_<mode>"
+  [(match_operand:<V_stretch_half> 0 "register_operand" "")
+   (match_operand:VHB 1 "register_operand" "")]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+{
+  mips_expand_vec_unpack (operands, false, false);
+  DONE;
+})
+
+(define_expand "vec_unpacks_hi_<mode>"
+  [(match_operand:<V_stretch_half> 0 "register_operand" "")
+   (match_operand:VHB 1 "register_operand" "")]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+{
+  mips_expand_vec_unpack (operands, false, true);
+  DONE;
+})
+
+(define_expand "vec_unpacku_lo_<mode>"
+  [(match_operand:<V_stretch_half> 0 "register_operand" "")
+   (match_operand:VHB 1 "register_operand" "")]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+{
+  mips_expand_vec_unpack (operands, true, false);
+  DONE;
+})
+
+(define_expand "vec_unpacku_hi_<mode>"
+  [(match_operand:<V_stretch_half> 0 "register_operand" "")
+   (match_operand:VHB 1 "register_operand" "")]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+{
+  mips_expand_vec_unpack (operands, true, true);
+  DONE;
+})
+
+;; Whole vector shifts, used for reduction epilogues.
+(define_insn "vec_shl_<mode>"
+  [(set (match_operand:VWHBDI 0 "register_operand" "=f")
+        (unspec:VWHBDI [(match_operand:VWHBDI 1 "register_operand" "f")
+                        (match_operand:SI 2 "register_operand" "f")]
+                       UNSPEC_LOONGSON_DSLL))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "dsll\t%0,%1,%2"
+  [(set_attr "type" "fcvt")])
+
+(define_insn "vec_shr_<mode>"
+  [(set (match_operand:VWHBDI 0 "register_operand" "=f")
+        (unspec:VWHBDI [(match_operand:VWHBDI 1 "register_operand" "f")
+                        (match_operand:SI 2 "register_operand" "f")]
+                       UNSPEC_LOONGSON_DSRL))]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "dsrl\t%0,%1,%2"
+  [(set_attr "type" "fcvt")])
+
+(define_expand "reduc_uplus_<mode>"
+  [(match_operand:VWH 0 "register_operand" "")
+   (match_operand:VWH 1 "register_operand" "")]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+{
+  mips_expand_vec_reduc (operands[0], operands[1], gen_add<mode>3);
+  DONE;
+})
+
+; ??? Given that we're not describing a widening reduction, we should
+; not have separate optabs for signed and unsigned.
+(define_expand "reduc_splus_<mode>"
+  [(match_operand:VWHB 0 "register_operand" "")
+   (match_operand:VWHB 1 "register_operand" "")]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+{
+  emit_insn (gen_reduc_uplus_<mode>(operands[0], operands[1]));
+  DONE;
+})
+
+(define_expand "reduc_smax_<mode>"
+  [(match_operand:VWHB 0 "register_operand" "")
+   (match_operand:VWHB 1 "register_operand" "")]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+{
+  mips_expand_vec_reduc (operands[0], operands[1], gen_smax<mode>3);
+  DONE;
+})
+
+(define_expand "reduc_smin_<mode>"
+  [(match_operand:VWHB 0 "register_operand" "")
+   (match_operand:VWHB 1 "register_operand" "")]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+{
+  mips_expand_vec_reduc (operands[0], operands[1], gen_smin<mode>3);
+  DONE;
+})
+
+(define_expand "reduc_umax_<mode>"
+  [(match_operand:VB 0 "register_operand" "")
+   (match_operand:VB 1 "register_operand" "")]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+{
+  mips_expand_vec_reduc (operands[0], operands[1], gen_umax<mode>3);
+  DONE;
+})
+
+(define_expand "reduc_umin_<mode>"
+  [(match_operand:VB 0 "register_operand" "")
+   (match_operand:VB 1 "register_operand" "")]
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+{
+  mips_expand_vec_reduc (operands[0], operands[1], gen_umin<mode>3);
+  DONE;
+})
 
 ;; Integer division and modulus.  For integer multiplication, see mips.md.
 

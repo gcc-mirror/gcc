@@ -4638,7 +4638,7 @@ mips_get_arg_info (struct mips_arg_info *info, const CUMULATIVE_ARGS *cum,
       /* The EABI conventions have traditionally been defined in terms
 	 of TYPE_MODE, regardless of the actual type.  */
       info->fpr_p = ((GET_MODE_CLASS (mode) == MODE_FLOAT
-		      || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+		      || mode == V2SFmode)
 		     && GET_MODE_SIZE (mode) <= UNITS_PER_FPVALUE);
       break;
 
@@ -4653,7 +4653,7 @@ mips_get_arg_info (struct mips_arg_info *info, const CUMULATIVE_ARGS *cum,
 			 || SCALAR_FLOAT_TYPE_P (type)
 			 || VECTOR_FLOAT_TYPE_P (type))
 		     && (GET_MODE_CLASS (mode) == MODE_FLOAT
-			 || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+			 || mode == V2SFmode)
 		     && GET_MODE_SIZE (mode) <= UNITS_PER_FPVALUE);
       break;
 
@@ -4666,7 +4666,7 @@ mips_get_arg_info (struct mips_arg_info *info, const CUMULATIVE_ARGS *cum,
 		     && (type == 0 || FLOAT_TYPE_P (type))
 		     && (GET_MODE_CLASS (mode) == MODE_FLOAT
 			 || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-			 || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+			 || mode == V2SFmode)
 		     && GET_MODE_UNIT_SIZE (mode) <= UNITS_PER_FPVALUE);
 
       /* ??? According to the ABI documentation, the real and imaginary
@@ -5103,7 +5103,7 @@ static bool
 mips_return_mode_in_fpr_p (enum machine_mode mode)
 {
   return ((GET_MODE_CLASS (mode) == MODE_FLOAT
-	   || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
+	   || mode == V2SFmode
 	   || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
 	  && GET_MODE_UNIT_SIZE (mode) <= UNITS_PER_HWFPVALUE);
 }
@@ -10782,12 +10782,18 @@ mips_class_max_nregs (enum reg_class rclass, enum machine_mode mode)
 /* Implement CANNOT_CHANGE_MODE_CLASS.  */
 
 bool
-mips_cannot_change_mode_class (enum machine_mode from ATTRIBUTE_UNUSED,
-			       enum machine_mode to ATTRIBUTE_UNUSED,
+mips_cannot_change_mode_class (enum machine_mode from,
+			       enum machine_mode to,
 			       enum reg_class rclass)
 {
-  /* There are several problems with changing the modes of values in
-     floating-point registers:
+  /* Allow conversions between different Loongson integer vectors,
+     and between those vectors and DImode.  */
+  if (GET_MODE_SIZE (from) == 8 && GET_MODE_SIZE (to) == 8
+      && INTEGRAL_MODE_P (from) && INTEGRAL_MODE_P (to))
+    return false;
+
+  /* Otherwise, there are several problems with changing the modes of
+     values in floating-point registers:
 
      - When a multi-word value is stored in paired floating-point
        registers, the first register always holds the low word.  We
@@ -10808,6 +10814,7 @@ mips_cannot_change_mode_class (enum machine_mode from ATTRIBUTE_UNUSED,
        format.
 
      We therefore disallow all mode changes involving FPRs.  */
+
   return reg_classes_intersect_p (FP_REGS, rclass);
 }
 
@@ -12785,12 +12792,6 @@ AVAIL_NON_MIPS16 (cache, TARGET_CACHE_BUILTIN)
 #define CODE_FOR_loongson_psubsb CODE_FOR_sssubv8qi3
 #define CODE_FOR_loongson_psubush CODE_FOR_ussubv4hi3
 #define CODE_FOR_loongson_psubusb CODE_FOR_ussubv8qi3
-#define CODE_FOR_loongson_punpckhbh CODE_FOR_vec_interleave_highv8qi
-#define CODE_FOR_loongson_punpckhhw CODE_FOR_vec_interleave_highv4hi
-#define CODE_FOR_loongson_punpckhwd CODE_FOR_vec_interleave_highv2si
-#define CODE_FOR_loongson_punpcklbh CODE_FOR_vec_interleave_lowv8qi
-#define CODE_FOR_loongson_punpcklhw CODE_FOR_vec_interleave_lowv4hi
-#define CODE_FOR_loongson_punpcklwd CODE_FOR_vec_interleave_lowv2si
 
 static const struct mips_builtin_description mips_builtins[] = {
   DIRECT_BUILTIN (pll_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, paired_single),
@@ -13032,8 +13033,8 @@ static const struct mips_builtin_description mips_builtins[] = {
   LOONGSON_BUILTIN (pasubub, MIPS_UV8QI_FTYPE_UV8QI_UV8QI),
   LOONGSON_BUILTIN (biadd, MIPS_UV4HI_FTYPE_UV8QI),
   LOONGSON_BUILTIN (psadbh, MIPS_UV4HI_FTYPE_UV8QI_UV8QI),
-  LOONGSON_BUILTIN_SUFFIX (pshufh, u, MIPS_UV4HI_FTYPE_UV4HI_UV4HI_UQI),
-  LOONGSON_BUILTIN_SUFFIX (pshufh, s, MIPS_V4HI_FTYPE_V4HI_V4HI_UQI),
+  LOONGSON_BUILTIN_SUFFIX (pshufh, u, MIPS_UV4HI_FTYPE_UV4HI_UQI),
+  LOONGSON_BUILTIN_SUFFIX (pshufh, s, MIPS_V4HI_FTYPE_V4HI_UQI),
   LOONGSON_BUILTIN_SUFFIX (psllh, u, MIPS_UV4HI_FTYPE_UV4HI_UQI),
   LOONGSON_BUILTIN_SUFFIX (psllh, s, MIPS_V4HI_FTYPE_V4HI_UQI),
   LOONGSON_BUILTIN_SUFFIX (psllw, u, MIPS_UV2SI_FTYPE_UV2SI_UQI),
@@ -15923,30 +15924,6 @@ mips_conditional_register_usage (void)
     }
 }
 
-/* Initialize vector TARGET to VALS.  */
-
-void
-mips_expand_vector_init (rtx target, rtx vals)
-{
-  enum machine_mode mode;
-  enum machine_mode inner;
-  unsigned int i, n_elts;
-  rtx mem;
-
-  mode = GET_MODE (target);
-  inner = GET_MODE_INNER (mode);
-  n_elts = GET_MODE_NUNITS (mode);
-
-  gcc_assert (VECTOR_MODE_P (mode));
-
-  mem = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
-  for (i = 0; i < n_elts; i++)
-    emit_move_insn (adjust_address_nv (mem, inner, i * GET_MODE_SIZE (inner)),
-                    XVECEXP (vals, 0, i));
-
-  emit_move_insn (target, mem);
-}
-
 /* When generating MIPS16 code, we want to allocate $24 (T_REG) before
    other registers for instructions for which it is possible.  This
    encourages the compiler to use CMP in cases where an XOR would
@@ -16357,6 +16334,667 @@ mips_prepare_pch_save (void)
   mips16_globals = 0;
 }
 
+/* Generate or test for an insn that supports a constant permutation.  */
+
+#define MAX_VECT_LEN 8
+
+struct expand_vec_perm_d
+{
+  rtx target, op0, op1;
+  unsigned char perm[MAX_VECT_LEN];
+  enum machine_mode vmode;
+  unsigned char nelt;
+  bool one_vector_p;
+  bool testing_p;
+};
+
+/* Construct (set target (vec_select op0 (parallel perm))) and
+   return true if that's a valid instruction in the active ISA.  */
+
+static bool
+mips_expand_vselect (rtx target, rtx op0,
+		     const unsigned char *perm, unsigned nelt)
+{
+  rtx rperm[MAX_VECT_LEN], x;
+  unsigned i;
+
+  for (i = 0; i < nelt; ++i)
+    rperm[i] = GEN_INT (perm[i]);
+
+  x = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (nelt, rperm));
+  x = gen_rtx_VEC_SELECT (GET_MODE (target), op0, x);
+  x = gen_rtx_SET (VOIDmode, target, x);
+
+  x = emit_insn (x);
+  if (recog_memoized (x) < 0)
+    {
+      remove_insn (x);
+      return false;
+    }
+  return true;
+}
+
+/* Similar, but generate a vec_concat from op0 and op1 as well.  */
+
+static bool
+mips_expand_vselect_vconcat (rtx target, rtx op0, rtx op1,
+			     const unsigned char *perm, unsigned nelt)
+{
+  enum machine_mode v2mode;
+  rtx x;
+
+  v2mode = GET_MODE_2XWIDER_MODE (GET_MODE (op0));
+  x = gen_rtx_VEC_CONCAT (v2mode, op0, op1);
+  return mips_expand_vselect (target, x, perm, nelt);
+}
+
+/* Recognize patterns for even-odd extraction.  */
+
+static bool
+mips_expand_vpc_loongson_even_odd (struct expand_vec_perm_d *d)
+{
+  unsigned i, odd, nelt = d->nelt;
+  rtx t0, t1, t2, t3;
+
+  if (!(TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS))
+    return false;
+  /* Even-odd for V2SI/V2SFmode is matched by interleave directly.  */
+  if (nelt < 4)
+    return false;
+
+  odd = d->perm[0];
+  if (odd > 1)
+    return false;
+  for (i = 1; i < nelt; ++i)
+    if (d->perm[i] != i * 2 + odd)
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+  /* We need 2*log2(N)-1 operations to achieve odd/even with interleave. */
+  t0 = gen_reg_rtx (d->vmode);
+  t1 = gen_reg_rtx (d->vmode);
+  switch (d->vmode)
+    {
+    case V4HImode:
+      emit_insn (gen_loongson_punpckhhw (t0, d->op0, d->op1));
+      emit_insn (gen_loongson_punpcklhw (t1, d->op0, d->op1));
+      if (odd)
+	emit_insn (gen_loongson_punpckhhw (d->target, t1, t0));
+      else
+	emit_insn (gen_loongson_punpcklhw (d->target, t1, t0));
+      break;
+
+    case V8QImode:
+      t2 = gen_reg_rtx (d->vmode);
+      t3 = gen_reg_rtx (d->vmode);
+      emit_insn (gen_loongson_punpckhbh (t0, d->op0, d->op1));
+      emit_insn (gen_loongson_punpcklbh (t1, d->op0, d->op1));
+      emit_insn (gen_loongson_punpckhbh (t2, t1, t0));
+      emit_insn (gen_loongson_punpcklbh (t3, t1, t0));
+      if (odd)
+	emit_insn (gen_loongson_punpckhbh (d->target, t3, t2));
+      else
+	emit_insn (gen_loongson_punpcklbh (d->target, t3, t2));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+  return true;
+}
+
+/* Recognize patterns for the Loongson PSHUFH instruction.  */
+
+static bool
+mips_expand_vpc_loongson_pshufh (struct expand_vec_perm_d *d)
+{
+  unsigned i, mask;
+  rtx rmask;
+
+  if (!(TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS))
+    return false;
+  if (d->vmode != V4HImode)
+    return false;
+  if (d->testing_p)
+    return true;
+
+  /* Convert the selector into the packed 8-bit form for pshufh.  */
+  /* Recall that loongson is little-endian only.  No big-endian
+     adjustment required.  */
+  for (i = mask = 0; i < 4; i++)
+    mask |= (d->perm[i] & 3) << (i * 2);
+  rmask = force_reg (SImode, GEN_INT (mask));
+
+  if (d->one_vector_p)
+    emit_insn (gen_loongson_pshufh (d->target, d->op0, rmask));
+  else
+    {
+      rtx t0, t1, x, merge, rmerge[4];
+
+      t0 = gen_reg_rtx (V4HImode);
+      t1 = gen_reg_rtx (V4HImode);
+      emit_insn (gen_loongson_pshufh (t1, d->op1, rmask));
+      emit_insn (gen_loongson_pshufh (t0, d->op0, rmask));
+
+      for (i = 0; i < 4; ++i)
+	rmerge[i] = (d->perm[i] & 4 ? constm1_rtx : const0_rtx);
+      merge = gen_rtx_CONST_VECTOR (V4HImode, gen_rtvec_v (4, rmerge));
+      merge = force_reg (V4HImode, merge);
+
+      x = gen_rtx_AND (V4HImode, merge, t1);
+      emit_insn (gen_rtx_SET (VOIDmode, t1, x));
+
+      x = gen_rtx_NOT (V4HImode, merge);
+      x = gen_rtx_AND (V4HImode, x, t0);
+      emit_insn (gen_rtx_SET (VOIDmode, t0, x));
+
+      x = gen_rtx_IOR (V4HImode, t0, t1);
+      emit_insn (gen_rtx_SET (VOIDmode, d->target, x));
+    }
+
+  return true;
+}
+
+/* Recognize broadcast patterns for the Loongson.  */
+
+static bool
+mips_expand_vpc_loongson_bcast (struct expand_vec_perm_d *d)
+{
+  unsigned i, elt;
+  rtx t0, t1;
+
+  if (!(TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS))
+    return false;
+  /* Note that we've already matched V2SI via punpck and V4HI via pshufh.  */
+  if (d->vmode != V8QImode)
+    return false;
+  if (!d->one_vector_p)
+    return false;
+
+  elt = d->perm[0];
+  for (i = 1; i < 8; ++i)
+    if (d->perm[i] != elt)
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+  /* With one interleave we put two of the desired element adjacent.  */
+  t0 = gen_reg_rtx (V8QImode);
+  if (elt < 4)
+    emit_insn (gen_loongson_punpcklbh (t0, d->op0, d->op0));
+  else
+    emit_insn (gen_loongson_punpckhbh (t0, d->op0, d->op0));
+
+  /* Shuffle that one HImode element into all locations.  */
+  elt &= 3;
+  elt *= 0x55;
+  t1 = gen_reg_rtx (V4HImode);
+  emit_insn (gen_loongson_pshufh (t1, gen_lowpart (V4HImode, t0),
+				  force_reg (SImode, GEN_INT (elt))));
+
+  emit_move_insn (d->target, gen_lowpart (V8QImode, t1));
+  return true;
+}
+
+static bool
+mips_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
+{
+  unsigned int i, nelt = d->nelt;
+  unsigned char perm2[MAX_VECT_LEN];
+
+  if (d->one_vector_p)
+    {
+      /* Try interleave with alternating operands.  */
+      memcpy (perm2, d->perm, sizeof(perm2));
+      for (i = 1; i < nelt; i += 2)
+	perm2[i] += nelt;
+      if (mips_expand_vselect_vconcat (d->target, d->op0, d->op1, perm2, nelt))
+	return true;
+    }
+  else
+    {
+      if (mips_expand_vselect_vconcat (d->target, d->op0, d->op1,
+				       d->perm, nelt))
+	return true;
+
+      /* Try again with swapped operands.  */
+      for (i = 0; i < nelt; ++i)
+	perm2[i] = (d->perm[i] + nelt) & (2 * nelt - 1);
+      if (mips_expand_vselect_vconcat (d->target, d->op1, d->op0, perm2, nelt))
+	return true;
+    }
+
+  if (mips_expand_vpc_loongson_even_odd (d))
+    return true;
+  if (mips_expand_vpc_loongson_pshufh (d))
+    return true;
+  if (mips_expand_vpc_loongson_bcast (d))
+    return true;
+  return false;
+}
+
+/* Expand a vec_perm_const pattern.  */
+
+bool
+mips_expand_vec_perm_const (rtx operands[4])
+{
+  struct expand_vec_perm_d d;
+  int i, nelt, which;
+  unsigned char orig_perm[MAX_VECT_LEN];
+  rtx sel;
+  bool ok;
+
+  d.target = operands[0];
+  d.op0 = operands[1];
+  d.op1 = operands[2];
+  sel = operands[3];
+
+  d.vmode = GET_MODE (d.target);
+  gcc_assert (VECTOR_MODE_P (d.vmode));
+  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
+  d.testing_p = false;
+
+  for (i = which = 0; i < nelt; ++i)
+    {
+      rtx e = XVECEXP (sel, 0, i);
+      int ei = INTVAL (e) & (2 * nelt - 1);
+      which |= (ei < nelt ? 1 : 2);
+      orig_perm[i] = ei;
+    }
+  memcpy (d.perm, orig_perm, MAX_VECT_LEN);
+
+  switch (which)
+    {
+    default:
+      gcc_unreachable();
+
+    case 3:
+      d.one_vector_p = false;
+      if (!rtx_equal_p (d.op0, d.op1))
+	break;
+      /* FALLTHRU */
+
+    case 2:
+      for (i = 0; i < nelt; ++i)
+        d.perm[i] &= nelt - 1;
+      d.op0 = d.op1;
+      d.one_vector_p = true;
+      break;
+
+    case 1:
+      d.op1 = d.op0;
+      d.one_vector_p = true;
+      break;
+    }
+
+  ok = mips_expand_vec_perm_const_1 (&d);
+
+  /* If we were given a two-vector permutation which just happened to
+     have both input vectors equal, we folded this into a one-vector
+     permutation.  There are several loongson patterns that are matched
+     via direct vec_select+vec_concat expansion, but we do not have
+     support in mips_expand_vec_perm_const_1 to guess the adjustment
+     that should be made for a single operand.  Just try again with
+     the original permutation.  */
+  if (!ok && which == 3)
+    {
+      d.op0 = operands[1];
+      d.op1 = operands[2];
+      d.one_vector_p = false;
+      memcpy (d.perm, orig_perm, MAX_VECT_LEN);
+      ok = mips_expand_vec_perm_const_1 (&d);
+    }
+
+  return ok;
+}
+
+/* Implement TARGET_VECTORIZE_VEC_PERM_CONST_OK.  */
+
+static bool
+mips_vectorize_vec_perm_const_ok (enum machine_mode vmode,
+				  const unsigned char *sel)
+{
+  struct expand_vec_perm_d d;
+  unsigned int i, nelt, which;
+  bool ret;
+
+  d.vmode = vmode;
+  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
+  d.testing_p = true;
+  memcpy (d.perm, sel, nelt);
+
+  /* Categorize the set of elements in the selector.  */
+  for (i = which = 0; i < nelt; ++i)
+    {
+      unsigned char e = d.perm[i];
+      gcc_assert (e < 2 * nelt);
+      which |= (e < nelt ? 1 : 2);
+    }
+
+  /* For all elements from second vector, fold the elements to first.  */
+  if (which == 2)
+    for (i = 0; i < nelt; ++i)
+      d.perm[i] -= nelt;
+
+  /* Check whether the mask can be applied to the vector type.  */
+  d.one_vector_p = (which != 3);
+
+  d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
+  d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
+  if (!d.one_vector_p)
+    d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
+
+  start_sequence ();
+  ret = mips_expand_vec_perm_const_1 (&d);
+  end_sequence ();
+
+  return ret;
+}
+
+/* Expand an integral vector unpack operation.  */
+
+void
+mips_expand_vec_unpack (rtx operands[2], bool unsigned_p, bool high_p)
+{
+  enum machine_mode imode = GET_MODE (operands[1]);
+  rtx (*unpack) (rtx, rtx, rtx);
+  rtx (*cmpgt) (rtx, rtx, rtx);
+  rtx tmp, dest, zero;
+
+  switch (imode)
+    {
+    case V8QImode:
+      if (high_p)
+	unpack = gen_loongson_punpckhbh;
+      else
+	unpack = gen_loongson_punpcklbh;
+      cmpgt = gen_loongson_pcmpgtb;
+      break;
+    case V4HImode:
+      if (high_p)
+	unpack = gen_loongson_punpckhhw;
+      else
+	unpack = gen_loongson_punpcklhw;
+      cmpgt = gen_loongson_pcmpgth;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  zero = force_reg (imode, CONST0_RTX (imode));
+  if (unsigned_p)
+    tmp = zero;
+  else
+    {
+      tmp = gen_reg_rtx (imode);
+      emit_insn (cmpgt (tmp, zero, operands[1]));
+    }
+
+  dest = gen_reg_rtx (imode);
+  emit_insn (unpack (dest, operands[1], tmp));
+
+  emit_move_insn (operands[0], gen_lowpart (GET_MODE (operands[0]), dest));
+}
+
+/* A subroutine of mips_expand_vec_init, match constant vector elements.  */
+
+static inline bool
+mips_constant_elt_p (rtx x)
+{
+  return CONST_INT_P (x) || GET_CODE (x) == CONST_DOUBLE;
+}
+
+/* A subroutine of mips_expand_vec_init, expand via broadcast.  */
+
+static void
+mips_expand_vi_broadcast (enum machine_mode vmode, rtx target, rtx elt)
+{
+  struct expand_vec_perm_d d;
+  rtx t1;
+  bool ok;
+
+  if (elt != const0_rtx)
+    elt = force_reg (GET_MODE_INNER (vmode), elt);
+  if (REG_P (elt))
+    elt = gen_lowpart (DImode, elt);
+
+  t1 = gen_reg_rtx (vmode);
+  switch (vmode)
+    {
+    case V8QImode:
+      emit_insn (gen_loongson_vec_init1_v8qi (t1, elt));
+      break;
+    case V4HImode:
+      emit_insn (gen_loongson_vec_init1_v4hi (t1, elt));
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  memset (&d, 0, sizeof (d));
+  d.target = target;
+  d.op0 = t1;
+  d.op1 = t1;
+  d.vmode = vmode;
+  d.nelt = GET_MODE_NUNITS (vmode);
+  d.one_vector_p = true;
+
+  ok = mips_expand_vec_perm_const_1 (&d);
+  gcc_assert (ok);
+}
+
+/* A subroutine of mips_expand_vec_init, replacing all of the non-constant
+   elements of VALS with zeros, copy the constant vector to TARGET.  */
+
+static void
+mips_expand_vi_constant (enum machine_mode vmode, unsigned nelt,
+			 rtx target, rtx vals)
+{
+  rtvec vec = shallow_copy_rtvec (XVEC (vals, 0));
+  unsigned i;
+
+  for (i = 0; i < nelt; ++i)
+    {
+      if (!mips_constant_elt_p (RTVEC_ELT (vec, i)))
+	RTVEC_ELT (vec, i) = const0_rtx;
+    }
+
+  emit_move_insn (target, gen_rtx_CONST_VECTOR (vmode, vec));
+}
+
+
+/* A subroutine of mips_expand_vec_init, expand via pinsrh.  */
+
+static void
+mips_expand_vi_loongson_one_pinsrh (rtx target, rtx vals, unsigned one_var)
+{
+  mips_expand_vi_constant (V4HImode, 4, target, vals);
+
+  emit_insn (gen_vec_setv4hi (target, target, XVECEXP (vals, 0, one_var),
+			      GEN_INT (one_var)));
+}
+
+/* A subroutine of mips_expand_vec_init, expand anything via memory.  */
+
+static void
+mips_expand_vi_general (enum machine_mode vmode, enum machine_mode imode,
+			unsigned nelt, unsigned nvar, rtx target, rtx vals)
+{
+  rtx mem = assign_stack_temp (vmode, GET_MODE_SIZE (vmode), 0);
+  unsigned int i, isize = GET_MODE_SIZE (imode);
+
+  if (nvar < nelt)
+    mips_expand_vi_constant (vmode, nelt, mem, vals);
+
+  for (i = 0; i < nelt; ++i)
+    {
+      rtx x = XVECEXP (vals, 0, i);
+      if (!mips_constant_elt_p (x))
+	emit_move_insn (adjust_address (mem, imode, i * isize), x);
+    }
+
+  emit_move_insn (target, mem);
+}
+
+/* Expand a vector initialization.  */
+
+void
+mips_expand_vector_init (rtx target, rtx vals)
+{
+  enum machine_mode vmode = GET_MODE (target);
+  enum machine_mode imode = GET_MODE_INNER (vmode);
+  unsigned i, nelt = GET_MODE_NUNITS (vmode);
+  unsigned nvar = 0, one_var = -1u;
+  bool all_same = true;
+  rtx x;
+
+  for (i = 0; i < nelt; ++i)
+    {
+      x = XVECEXP (vals, 0, i);
+      if (!mips_constant_elt_p (x))
+	nvar++, one_var = i;
+      if (i > 0 && !rtx_equal_p (x, XVECEXP (vals, 0, 0)))
+	all_same = false;
+    }
+
+  /* Load constants from the pool, or whatever's handy.  */
+  if (nvar == 0)
+    {
+      emit_move_insn (target, gen_rtx_CONST_VECTOR (vmode, XVEC (vals, 0)));
+      return;
+    }
+
+  /* For two-part initialization, always use CONCAT.  */
+  if (nelt == 2)
+    {
+      rtx op0 = force_reg (imode, XVECEXP (vals, 0, 0));
+      rtx op1 = force_reg (imode, XVECEXP (vals, 0, 1));
+      x = gen_rtx_VEC_CONCAT (vmode, op0, op1);
+      emit_insn (gen_rtx_SET (VOIDmode, target, x));
+      return;
+    }
+
+  /* Loongson is the only cpu with vectors with more elements.  */
+  gcc_assert (TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS);
+
+  /* If all values are identical, broadcast the value.  */
+  if (all_same)
+    {
+      mips_expand_vi_broadcast (vmode, target, XVECEXP (vals, 0, 0));
+      return;
+    }
+
+  /* If we've only got one non-variable V4HImode, use PINSRH.  */
+  if (nvar == 1 && vmode == V4HImode)
+    {
+      mips_expand_vi_loongson_one_pinsrh (target, vals, one_var);
+      return;
+    }
+
+  mips_expand_vi_general (vmode, imode, nelt, nvar, target, vals);
+}
+
+/* Expand a vector reduction.  */
+
+void
+mips_expand_vec_reduc (rtx target, rtx in, rtx (*gen)(rtx, rtx, rtx))
+{
+  enum machine_mode vmode = GET_MODE (in);
+  unsigned char perm2[2];
+  rtx last, next, fold, x;
+  bool ok;
+
+  last = in;
+  fold = gen_reg_rtx (vmode);
+  switch (vmode)
+    {
+    case V2SFmode:
+      /* Use PUL/PLU to produce { L, H } op { H, L }.
+	 By reversing the pair order, rather than a pure interleave high,
+	 we avoid erroneous exceptional conditions that we might otherwise
+	 produce from the computation of H op H.  */
+      perm2[0] = 1;
+      perm2[1] = 2;
+      ok = mips_expand_vselect_vconcat (fold, last, last, perm2, 2);
+      gcc_assert (ok);
+      break;
+
+    case V2SImode:
+      /* Use interleave to produce { H, L } op { H, H }.  */
+      emit_insn (gen_loongson_punpckhwd (fold, last, last));
+      break;
+
+    case V4HImode:
+      /* Perform the first reduction with interleave,
+	 and subsequent reductions with shifts.  */
+      emit_insn (gen_loongson_punpckhwd_hi (fold, last, last));
+
+      next = gen_reg_rtx (vmode);
+      emit_insn (gen (next, last, fold));
+      last = next;
+
+      fold = gen_reg_rtx (vmode);
+      x = force_reg (SImode, GEN_INT (16));
+      emit_insn (gen_vec_shr_v4hi (fold, last, x));
+      break;
+
+    case V8QImode:
+      emit_insn (gen_loongson_punpckhwd_qi (fold, last, last));
+
+      next = gen_reg_rtx (vmode);
+      emit_insn (gen (next, last, fold));
+      last = next;
+
+      fold = gen_reg_rtx (vmode);
+      x = force_reg (SImode, GEN_INT (16));
+      emit_insn (gen_vec_shr_v8qi (fold, last, x));
+
+      next = gen_reg_rtx (vmode);
+      emit_insn (gen (next, last, fold));
+      last = next;
+
+      fold = gen_reg_rtx (vmode);
+      x = force_reg (SImode, GEN_INT (8));
+      emit_insn (gen_vec_shr_v8qi (fold, last, x));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (gen (target, last, fold));
+}
+
+/* Expand a vector minimum/maximum.  */
+
+void
+mips_expand_vec_minmax (rtx target, rtx op0, rtx op1,
+			rtx (*cmp) (rtx, rtx, rtx), bool min_p)
+{
+  enum machine_mode vmode = GET_MODE (target);
+  rtx tc, t0, t1, x;
+
+  tc = gen_reg_rtx (vmode);
+  t0 = gen_reg_rtx (vmode);
+  t1 = gen_reg_rtx (vmode);
+
+  /* op0 > op1 */
+  emit_insn (cmp (tc, op0, op1));
+
+  x = gen_rtx_AND (vmode, tc, (min_p ? op1 : op0));
+  emit_insn (gen_rtx_SET (VOIDmode, t0, x));
+
+  x = gen_rtx_NOT (vmode, tc);
+  x = gen_rtx_AND (vmode, x, (min_p ? op0 : op1));
+  emit_insn (gen_rtx_SET (VOIDmode, t1, x));
+
+  x = gen_rtx_IOR (vmode, t0, t1);
+  emit_insn (gen_rtx_SET (VOIDmode, target, x));
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -16577,6 +17215,9 @@ mips_prepare_pch_save (void)
 
 #undef TARGET_PREPARE_PCH_SAVE
 #define TARGET_PREPARE_PCH_SAVE mips_prepare_pch_save
+
+#undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
+#define TARGET_VECTORIZE_VEC_PERM_CONST_OK mips_vectorize_vec_perm_const_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
