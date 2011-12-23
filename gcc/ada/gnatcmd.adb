@@ -2091,7 +2091,7 @@ begin
             begin
                if Pkg /= No_Package then
 
-                  --  First, check if there is a single main specified.
+                  --  First, check if there is a single main specified
 
                   for J in 1  .. Last_Switches.Last loop
                      if Last_Switches.Table (J) (1) /= '-' then

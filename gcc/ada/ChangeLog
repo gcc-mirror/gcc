@@ -1,3 +1,7 @@
+2011-12-23  Pascal Obry  <obry@adacore.com>
+
+	* gnatcmd.adb, prj.adb, prj-nmsc.adb: Minor reformatting.
+
 2011-12-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Build_Adjust_Or_Finalize_Statements): Create the objects
