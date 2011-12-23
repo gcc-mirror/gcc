@@ -523,6 +523,7 @@ package body Prj is
       Include_Aggregated : Boolean := True;
       Imported_First     : Boolean := False)
    is
+
       use Project_Boolean_Htable;
       Seen : Project_Boolean_Htable.Instance := Project_Boolean_Htable.Nil;
 
@@ -544,6 +545,7 @@ package body Prj is
 
       begin
          if not Get (Seen, Project) then
+
             --  Even if a project is aggregated multiple times, we will only
             --  return it once.
 

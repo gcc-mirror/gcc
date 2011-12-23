@@ -116,7 +116,7 @@ package body Prj.Nmsc is
    end record;
 
    No_File_Found : constant File_Found :=
-     (No_File, No_File, 0, False, No_Location);
+                     (No_File, No_File, 0, False, No_Location);
 
    package Excluded_Sources_Htable is new GNAT.Dynamic_HTables.Simple_HTable
      (Header_Num => Header_Num,
@@ -4847,7 +4847,7 @@ package body Prj.Nmsc is
                            (Get_Name_String (Lib_Symbol_Policy.Value));
 
             begin
-               --  Symbol policy must hove one of a limited number of values
+               --  Symbol policy must have one of a limited number of values
 
                if Value = "autonomous" or else Value = "default" then
                   Project.Symbol_Data.Symbol_Policy := Autonomous;
