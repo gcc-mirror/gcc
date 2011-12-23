@@ -1,5 +1,9 @@
 2011-12-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/c_global/cinttypes: Update comments that refer to TR1.
+
+2011-12-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/49204
 	* include/std/future (future_errc): Implement LWG 2056.
 
