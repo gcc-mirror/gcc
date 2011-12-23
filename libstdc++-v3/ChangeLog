@@ -1,3 +1,7 @@
+2011-12-23  Kai Tietz  <ktietz@redhat.com>
+
+	* config/os/mingw32-w64/os_defines.h (__USE_MINGW_ANSI_STDIO): Define.
+
 2011-12-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/c_global/cinttypes: Update comments that refer to TR1.
