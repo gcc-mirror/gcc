@@ -1,3 +1,8 @@
+2011-12-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/50722
+	gcc.dg/pr49994-3.c: Skip on hppa*-*-*.
+
 2011-12-22  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/51650
