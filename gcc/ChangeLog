@@ -1,3 +1,32 @@
+2011-12-23  Richard Henderson  <rth@redhat.com>
+
+	* tree.def (VEC_EXTRACT_EVEN_EXPR, VEC_EXTRACT_ODD_EXPR): Remove.
+	* cfgexpand.c (expand_debug_expr): Don't handle them.
+	* expr.c (expand_expr_real_2): Likewise.
+	* fold-const.c (fold_binary_loc): Likewise.
+	* gimple-pretty-print.c (dump_binary_rhs): Likewise.
+	* tree-cfg.c (verify_gimple_assign_binary): Likewise.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-vect-generic.c (expand_vector_operations_1): Likewise.
+	* optabs.c (optab_for_tree_code): Likewise.
+	(can_vec_perm_for_code_p): Remove.
+	(expand_binop): Don't try it.
+	(init_optabs): Don't init vec_extract_even/odd_optab.
+	* genopinit.c (optabs): Likewise.
+	* optabs.h (OTI_vec_extract_even, OTI_vec_extract_odd): Remove.
+	(vec_extract_even_optab, vec_extract_odd_optab): Remove.
+	* tree-vect-data-refs.c (vect_strided_store_supported): Tidy code.
+	(vect_permute_store_chain): Use TYPE_VECTOR_SUBPARTS instead of
+	GET_MODE_NUNITS; check vect_gen_perm_mask return value instead of
+	asserting vect_strided_store_supported.
+	(vect_strided_load_supported): Use can_vec_perm_p.
+	(vect_permute_load_chain): Use VEC_PERM_EXPR.
+
+	* doc/generic.texi (VEC_EXTRACT_EVEN_EXPR): Remove.
+	(VEC_EXTRACT_ODD_EXPR): Remove.
+	* doc/md.texi (vec_extract_even, vec_extract_odd): Remove.
+
 2011-12-23  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/score/score.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): Remove.

@@ -2388,22 +2388,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       dump_block_node (buffer, node, spc, flags);
       break;
 
-    case VEC_EXTRACT_EVEN_EXPR:
-      pp_string (buffer, " VEC_EXTRACT_EVEN_EXPR < ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_string (buffer, ", ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
-      pp_string (buffer, " > ");
-      break;
-
-    case VEC_EXTRACT_ODD_EXPR:
-      pp_string (buffer, " VEC_EXTRACT_ODD_EXPR < ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_string (buffer, ", ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
-      pp_string (buffer, " > ");
-      break;
-
     default:
       NIY;
     }

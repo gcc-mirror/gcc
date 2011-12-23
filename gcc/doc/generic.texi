@@ -1695,8 +1695,6 @@ its sole argument yields the representation for @code{ap}.
 @tindex VEC_PACK_TRUNC_EXPR
 @tindex VEC_PACK_SAT_EXPR
 @tindex VEC_PACK_FIX_TRUNC_EXPR
-@tindex VEC_EXTRACT_EVEN_EXPR
-@tindex VEC_EXTRACT_ODD_EXPR
 
 @table @code
 @item VEC_LSHIFT_EXPR
@@ -1765,13 +1763,6 @@ of elements of a floating point type.  The result is a vector that contains
 twice as many elements of an integral type whose size is half as wide.  The
 elements of the two vectors are merged (concatenated) to form the output
 vector.
-
-@item VEC_EXTRACT_EVEN_EXPR
-@itemx VEC_EXTRACT_ODD_EXPR
-These nodes represent extracting of the even/odd elements of the two input
-vectors, respectively. Their operands and result are vectors that contain the
-same number of elements of the same type.
-
 @end table
 
 

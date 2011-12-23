@@ -267,8 +267,6 @@ static const char * const optabs[] =
   "set_direct_optab_handler (atomic_or_optab, $A, CODE_FOR_$(atomic_or$I$a$))",
   "set_optab_handler (vec_set_optab, $A, CODE_FOR_$(vec_set$a$))",
   "set_optab_handler (vec_extract_optab, $A, CODE_FOR_$(vec_extract$a$))",
-  "set_optab_handler (vec_extract_even_optab, $A, CODE_FOR_$(vec_extract_even$a$))",
-  "set_optab_handler (vec_extract_odd_optab, $A, CODE_FOR_$(vec_extract_odd$a$))",
   "set_optab_handler (vec_init_optab, $A, CODE_FOR_$(vec_init$a$))",
   "set_optab_handler (vec_shl_optab, $A, CODE_FOR_$(vec_shl_$a$))",
   "set_optab_handler (vec_shr_optab, $A, CODE_FOR_$(vec_shr_$a$))",
