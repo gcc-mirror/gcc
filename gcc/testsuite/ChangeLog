@@ -1,11 +1,15 @@
+2011-12-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/vect/fast-math-pr35982.c: Fix parenthesis in target selectors.
+
 2011-12-23  Dmitry Plotnikov  <dplotnikov@ispras.ru>
 
 	* gcc.target/arm/vect-vcvt.c: New test.
 	* gcc.target/arm/vect-vcvtq.c: New test.
-	
+
 	* gcc.dg/vect/fast-math-pr35982.c: Added vect_strided2 alternative
 	in final check.
-	
+
 	* lib/target-supports.exp (check_effective_target_vect_intfloat_cvt):
 	True for ARM NEON.
 	(check_effective_target_vect_uintfloat_cvt): Likewise.
