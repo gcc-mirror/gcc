@@ -9297,6 +9297,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   int i, len = -1;
   tree result;
   htab_t saved_local_specializations = NULL;
+  bool need_local_specializations = false;
   int levels;
 
   gcc_assert (PACK_EXPANSION_P (t));
@@ -9330,7 +9331,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
        }
       if (TREE_CODE (parm_pack) == PARM_DECL)
 	{
-	  if (!cp_unevaluated_operand)
+	  if (at_function_scope_p ())
 	    arg_pack = retrieve_local_specialization (parm_pack);
 	  else
 	    {
@@ -9346,6 +9347,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 		arg_pack = NULL_TREE;
 	      else
 		arg_pack = make_fnparm_pack (arg_pack);
+	      need_local_specializations = true;
 	    }
 	}
       else
@@ -9476,7 +9478,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   if (len < 0)
     return error_mark_node;
 
-  if (cp_unevaluated_operand)
+  if (need_local_specializations)
     {
       /* We're in a late-specified return type, so create our own local
 	 specializations table; the current table is either NULL or (in the
@@ -14524,7 +14526,6 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
   tree fndecl;
   tree gen_tmpl;
   tree spec;
-  HOST_WIDE_INT saved_processing_template_decl;
 
   if (tmpl == error_mark_node)
     return error_mark_node;
@@ -14585,18 +14586,22 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
      deferring all checks until we have the FUNCTION_DECL.  */
   push_deferring_access_checks (dk_deferred);
 
-  /* Although PROCESSING_TEMPLATE_DECL may be true at this point
-     (because, for example, we have encountered a non-dependent
-     function call in the body of a template function and must now
-     determine which of several overloaded functions will be called),
-     within the instantiation itself we are not processing a
-     template.  */  
-  saved_processing_template_decl = processing_template_decl;
-  processing_template_decl = 0;
+  /* Instantiation of the function happens in the context of the function
+     template, not the context of the overload resolution we're doing.  */
+  push_to_top_level ();
+  if (DECL_CLASS_SCOPE_P (gen_tmpl))
+    {
+      tree ctx = tsubst (DECL_CONTEXT (gen_tmpl), targ_ptr,
+			 complain, gen_tmpl);
+      push_nested_class (ctx);
+    }
   /* Substitute template parameters to obtain the specialization.  */
   fndecl = tsubst (DECL_TEMPLATE_RESULT (gen_tmpl),
 		   targ_ptr, complain, gen_tmpl);
-  processing_template_decl = saved_processing_template_decl;
+  if (DECL_CLASS_SCOPE_P (gen_tmpl))
+    pop_nested_class ();
+  pop_from_top_level ();
+
   if (fndecl == error_mark_node)
     return error_mark_node;
 
