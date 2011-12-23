@@ -1,3 +1,10 @@
+2011-12-22  Bin Cheng  <bin.cheng@arm.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43491
+	* tree-ssa-pre.c (eliminate): Don't replace global register
+	variable when it is the RHS of a single assign.
+
 2011-12-22  Joey Ye  <joey.ye@arm.com>
 
 	* toplev.c (process_options): Fix typo.

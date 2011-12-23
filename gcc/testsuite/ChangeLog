@@ -1,3 +1,8 @@
+2011-12-22  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/43491
+	* gcc.dg/tree-ssa/pr43491.c: New test.
+
 2011-12-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/50722
