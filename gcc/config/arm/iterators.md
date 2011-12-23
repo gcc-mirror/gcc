@@ -197,6 +197,10 @@
 (define_mode_attr V_CVTTO [(V2SI "V2SF") (V2SF "V2SI")
                (V4SI "V4SF") (V4SF "V4SI")])
 
+;; As above but in lower case.
+(define_mode_attr V_cvtto [(V2SI "v2sf") (V2SF "v2si")
+                           (V4SI "v4sf") (V4SF "v4si")])
+
 ;; Define element mode for each vector mode.
 (define_mode_attr V_elem [(V8QI "QI") (V16QI "QI")
               (V4HI "HI") (V8HI "HI")

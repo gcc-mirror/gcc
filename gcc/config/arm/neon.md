@@ -2932,6 +2932,50 @@
   DONE;
 })
 
+(define_insn "float<mode><V_cvtto>2"
+  [(set (match_operand:<V_CVTTO> 0 "s_register_operand" "=w")
+        (float:<V_CVTTO> (match_operand:VCVTI 1 "s_register_operand" "w")))]
+  "TARGET_NEON && !flag_rounding_math"
+  "vcvt.f32.s32\t%<V_reg>0, %<V_reg>1"
+  [(set (attr "neon_type")
+     (if_then_else (match_test "<Is_d_reg>")
+                   (const_string "neon_fp_vadd_ddd_vabs_dd")
+                   (const_string "neon_fp_vadd_qqq_vabs_qq")))]
+)
+
+(define_insn "floatuns<mode><V_cvtto>2"
+  [(set (match_operand:<V_CVTTO> 0 "s_register_operand" "=w")
+        (unsigned_float:<V_CVTTO> (match_operand:VCVTI 1 "s_register_operand" "w")))] 
+  "TARGET_NEON && !flag_rounding_math"
+  "vcvt.f32.u32\t%<V_reg>0, %<V_reg>1"
+  [(set (attr "neon_type")
+     (if_then_else (match_test "<Is_d_reg>")
+                   (const_string "neon_fp_vadd_ddd_vabs_dd")
+                   (const_string "neon_fp_vadd_qqq_vabs_qq")))]
+)
+
+(define_insn "fix_trunc<mode><V_cvtto>2"
+  [(set (match_operand:<V_CVTTO> 0 "s_register_operand" "=w")
+        (fix:<V_CVTTO> (match_operand:VCVTF 1 "s_register_operand" "w")))]
+  "TARGET_NEON"
+  "vcvt.s32.f32\t%<V_reg>0, %<V_reg>1"
+  [(set (attr "neon_type")
+     (if_then_else (match_test "<Is_d_reg>")
+                   (const_string "neon_fp_vadd_ddd_vabs_dd")
+                   (const_string "neon_fp_vadd_qqq_vabs_qq")))]
+)
+
+(define_insn "fixuns_trunc<mode><V_cvtto>2"
+  [(set (match_operand:<V_CVTTO> 0 "s_register_operand" "=w")
+        (unsigned_fix:<V_CVTTO> (match_operand:VCVTF 1 "s_register_operand" "w")))]
+  "TARGET_NEON"
+  "vcvt.u32.f32\t%<V_reg>0, %<V_reg>1"
+  [(set (attr "neon_type")
+     (if_then_else (match_test "<Is_d_reg>")
+                   (const_string "neon_fp_vadd_ddd_vabs_dd")
+                   (const_string "neon_fp_vadd_qqq_vabs_qq")))]
+)
+
 (define_insn "neon_vcvt<mode>"
   [(set (match_operand:<V_CVTTO> 0 "s_register_operand" "=w")
 	(unspec:<V_CVTTO> [(match_operand:VCVTF 1 "s_register_operand" "w")
