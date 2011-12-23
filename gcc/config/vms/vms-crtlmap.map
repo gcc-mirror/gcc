@@ -112,7 +112,7 @@ isupper
 kill
 localtime
 log           FLOAT
-log1          FLOAT
+log10         FLOAT
 lseek
 malloc        64 MALLOC
 mbstowcs      64
