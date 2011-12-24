@@ -72,6 +72,7 @@ class gtm_rwlock
   void write_unlock ();
 
   bool write_upgrade (gtm_thread *tx);
+  void write_upgrade_finish (gtm_thread *tx);
 
  protected:
   bool write_lock_generic (gtm_thread *tx);

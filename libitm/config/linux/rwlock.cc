@@ -121,17 +121,13 @@ gtm_rwlock::write_lock_generic (gtm_thread *tx)
   // readers that might still be active.
   // We don't need an extra barrier here because the CAS and the xchg
   // operations have full barrier semantics already.
-
-  // If this is an upgrade, we are not a reader anymore. This is only safe to
-  // do after we have acquired the writer lock.
   // TODO In the worst case, this requires one wait/wake pair for each
   // active reader. Reduce this!
-  if (tx != 0)
-    tx->shared_state.store (-1, memory_order_relaxed);
-
   for (gtm_thread *it = gtm_thread::list_of_threads; it != 0;
       it = it->next_thread)
     {
+      if (it == tx)
+        continue;
       // Use a loop here to check reader flags again after waiting.
       while (it->shared_state.load (memory_order_relaxed)
           != ~(typeof it->shared_state)0)
@@ -172,6 +168,18 @@ bool
 gtm_rwlock::write_upgrade (gtm_thread *tx)
 {
   return write_lock_generic (tx);
+}
+
+
+// Has to be called iff the previous upgrade was successful and after it is
+// safe for the transaction to not be marked as a reader anymore.
+
+void
+gtm_rwlock::write_upgrade_finish (gtm_thread *tx)
+{
+  // We are not a reader anymore.  This is only safe to do after we have
+  // acquired the writer lock.
+  tx->shared_state.store (-1, memory_order_release);
 }
 
 
