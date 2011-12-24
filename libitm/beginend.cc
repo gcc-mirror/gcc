@@ -457,7 +457,12 @@ GTM::gtm_thread::trycommit ()
       // The transaction is now inactive. Everything that we still have to do
       // will not synchronize with other transactions anymore.
       if (state & gtm_thread::STATE_SERIAL)
-	gtm_thread::serial_lock.write_unlock ();
+        {
+          gtm_thread::serial_lock.write_unlock ();
+          // There are no other active transactions, so there's no need to
+          // enforce privatization safety.
+          priv_time = 0;
+        }
       else
 	gtm_thread::serial_lock.read_unlock (this);
       state = 0;
