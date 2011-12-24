@@ -1,3 +1,32 @@
+2011-12-24  Torvald Riegel  <triegel@redhat.com>
+
+	* beginend.cc (GTM::gtm_thread::begin_transaction): Add comment.
+	(GTM::gtm_thread::try_commit): Changed memory order.
+	* config/linux/alpha/futex_bits.h (sys_futex0): Take atomic int
+	as parameter.
+	* config/linux/x86/futex_bits.h (sys_futex0): Same.
+	* config/linux/sh/futex_bits.h (sys_futex0): Same.
+	* config/linux/futex_bits.h (sys_futex0): Same.
+	* config/linux/futex.cc (futex_wait, futex_wake): Same.
+	* config/linux/futex.h (futex_wait, futex_wake): Same.
+	* config/linux/rwlock.h (gtm_rwlock::writers,
+	gtm_rwlock::writer_readers, gtm_rwlock::readers): Change to atomic
+	ints.
+	* config/linux/rwlock.cc (gtm_rwlock::read_lock,
+	gtm_rwlock::write_lock_generic, gtm_rwlock::read_unlock,
+	gtm_rwlock::write_unlock): Fix memory orders and fences.
+	* config/posix/rwlock.cc (gtm_rwlock::read_lock,
+	gtm_rwlock::write_lock_generic, gtm_rwlock::read_unlock,
+	gtm_rwlock::write_unlock): Same.
+	* config/linux/rwlock.h (gtm_rwlock::summary): Change to atomic int.
+	* method-gl.cc (gl_mg::init, gl_wt_dispatch::memtransfer_static,
+	gl_wt_dispatch::memset_static, gl_wt_dispatch::begin_or_restart):
+	Add comments.
+	(gl_wt_dispatch::pre_write, gl_wt_dispatch::validate,
+	gl_wt_dispatch::load, gl_wt_dispatch::store,
+	gl_wt_dispatch::try_commit, gl_wt_dispatch::rollback): Fix memory
+	orders and fences.  Add comments.
+
 2011-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.am (AM_CXXFLAGS): Put $(XCFLAGS) first.

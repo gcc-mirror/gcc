@@ -27,10 +27,12 @@
 #ifndef GTM_FUTEX_H
 #define GTM_FUTEX_H 1
 
+#include "local_atomic"
+
 namespace GTM HIDDEN {
 
-extern void futex_wait (int *addr, int val);
-extern long futex_wake (int *addr, int count);
+extern void futex_wait (std::atomic<int> *addr, int val);
+extern long futex_wake (std::atomic<int> *addr, int count);
 
 }
 
