@@ -1,5 +1,10 @@
 2011-12-24  Torvald Riegel  <triegel@redhat.com>
 
+	* beginend.cc (GTM::gtm_thread::trycommit): Don't enforce
+	privatization safety if already in serial mode.
+
+2011-12-24  Torvald Riegel  <triegel@redhat.com>
+
 	* beginend.cc (GTM::gtm_thread::restart): Add and handle
 	finish_serial_upgrade parameter.
 	* libitm.h (GTM::gtm_thread::restart): Adapt declaration.
