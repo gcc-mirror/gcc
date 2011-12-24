@@ -26,6 +26,7 @@
 #define GTM_RWLOCK_H
 
 #include <pthread.h>
+#include "local_atomic"
 
 namespace GTM HIDDEN {
 
@@ -55,7 +56,7 @@ class gtm_rwlock
   static const unsigned w_writer  = 2;	// The w_writers field != 0
   static const unsigned w_reader  = 4;  // The w_readers field != 0
 
-  unsigned int summary;		// Bitmask of the above.
+  std::atomic<unsigned int> summary;	// Bitmask of the above.
   unsigned int a_readers;	// Nr active readers as observed by a writer
   unsigned int w_readers;	// Nr waiting readers
   unsigned int w_writers;	// Nr waiting writers

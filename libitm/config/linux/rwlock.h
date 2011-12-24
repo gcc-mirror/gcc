@@ -25,6 +25,7 @@
 #ifndef GTM_RWLOCK_H
 #define GTM_RWLOCK_H
 
+#include "local_atomic"
 #include "common.h"
 
 namespace GTM HIDDEN {
@@ -42,9 +43,9 @@ struct gtm_thread;
 class gtm_rwlock
 {
   // TODO Put futexes on different cachelines?
-  int writers;          // Writers' futex.
-  int writer_readers;   // A confirmed writer waits here for readers.
-  int readers;          // Readers wait here for writers (iff true).
+  std::atomic<int> writers;       // Writers' futex.
+  std::atomic<int> writer_readers;// A confirmed writer waits here for readers.
+  std::atomic<int> readers;       // Readers wait here for writers (iff true).
 
  public:
   gtm_rwlock() : writers(0), writer_readers(0), readers(0) {};

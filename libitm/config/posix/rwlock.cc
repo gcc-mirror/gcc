@@ -53,10 +53,11 @@ void
 gtm_rwlock::read_lock (gtm_thread *tx)
 {
   // Fast path: first announce our intent to read, then check for conflicting
-  // intents to write.  Note that direct assignment to an atomic object
-  // is memory_order_seq_cst.
-  tx->shared_state = 0;
-  unsigned int sum = this->summary;
+  // intents to write.  The fence ensure that this happens in exactly this
+  // order.
+  tx->shared_state.store (0, memory_order_relaxed);
+  atomic_thread_fence (memory_order_seq_cst);
+  unsigned int sum = this->summary.load (memory_order_relaxed);
   if (likely(!(sum & (a_writer | w_writer))))
     return;
 
@@ -74,7 +75,7 @@ gtm_rwlock::read_lock (gtm_thread *tx)
 
   // Read summary again after acquiring the mutex because it might have
   // changed during waiting for the mutex to become free.
-  sum = this->summary;
+  sum = this->summary.load (memory_order_relaxed);
 
   // If there is a writer waiting for readers, wake it up. Only do that if we
   // might be the last reader that could do the wake-up, otherwise skip the
@@ -91,10 +92,10 @@ gtm_rwlock::read_lock (gtm_thread *tx)
   // If there is an active or waiting writer, we must wait.
   while (sum & (a_writer | w_writer))
     {
-      this->summary = sum | w_reader;
+      this->summary.store (sum | w_reader, memory_order_relaxed);
       this->w_readers++;
       pthread_cond_wait (&this->c_readers, &this->mutex);
-      sum = this->summary;
+      sum = this->summary.load (memory_order_relaxed);
       if (--this->w_readers == 0)
 	sum &= ~w_reader;
     }
@@ -123,7 +124,7 @@ gtm_rwlock::write_lock_generic (gtm_thread *tx)
 {
   pthread_mutex_lock (&this->mutex);
 
-  unsigned int sum = this->summary;
+  unsigned int sum = this->summary.load (memory_order_relaxed);
 
   // If there is an active writer, wait.
   while (sum & a_writer)
@@ -136,23 +137,23 @@ gtm_rwlock::write_lock_generic (gtm_thread *tx)
 	  return false;
 	}
 
-      this->summary = sum | w_writer;
+      this->summary.store (sum | w_writer, memory_order_relaxed);
       this->w_writers++;
       pthread_cond_wait (&this->c_writers, &this->mutex);
-      sum = this->summary;
+      sum = this->summary.load (memory_order_relaxed);
       if (--this->w_writers == 0)
 	sum &= ~w_writer;
     }
 
   // Otherwise we can acquire the lock for write. As a writer, we have
   // priority, so we don't need to take this back.
-  this->summary = sum | a_writer;
+  this->summary.store (sum | a_writer, memory_order_relaxed);
 
   // We still need to wait for active readers to finish. The barrier makes
   // sure that we first set our write intent and check for active readers
   // after that, in strictly this order (similar to the barrier in the fast
   // path of read_lock()).
-  atomic_thread_fence(memory_order_acq_rel);
+  atomic_thread_fence(memory_order_seq_cst);
 
   // If this is an upgrade, we are not a reader anymore.
   if (tx != 0)
@@ -235,8 +236,18 @@ gtm_rwlock::write_upgrade (gtm_thread *tx)
 void
 gtm_rwlock::read_unlock (gtm_thread *tx)
 {
-  tx->shared_state = -1;
-  unsigned int sum = this->summary;
+  // We only need release memory order here because of privatization safety
+  // (this ensures that marking the transaction as inactive happens after
+  // any prior data accesses by this transaction, and that neither the
+  // compiler nor the hardware order this store earlier).
+  // ??? We might be able to avoid this release here if the compiler can't
+  // merge the release fence with the subsequent seq_cst fence.
+  tx->shared_state.store (-1, memory_order_release);
+  // We need this seq_cst fence here to avoid lost wake-ups.  Furthermore,
+  // the privatization safety implementation in gtm_thread::try_commit()
+  // relies on the existence of this seq_cst fence.
+  atomic_thread_fence (memory_order_seq_cst);
+  unsigned int sum = this->summary.load (memory_order_relaxed);
   if (likely(!(sum & (a_writer | w_writer))))
     return;
 
@@ -269,8 +280,8 @@ gtm_rwlock::write_unlock ()
 {
   pthread_mutex_lock (&this->mutex);
 
-  unsigned int sum = this->summary;
-  this->summary = sum & ~a_writer;
+  unsigned int sum = this->summary.load (memory_order_relaxed);
+  this->summary.store (sum & ~a_writer, memory_order_relaxed);
 
   // If there is a waiting writer, wake it.
   if (unlikely (sum & w_writer))

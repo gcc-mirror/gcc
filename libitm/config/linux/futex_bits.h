@@ -33,7 +33,7 @@
 #include <sys/syscall.h>
 
 static inline long
-sys_futex0 (int *addr, long op, long val)
+sys_futex0 (std::atomic<int> *addr, long op, long val)
 {
-  return syscall (SYS_futex, addr, op, val, 0);
+  return syscall (SYS_futex, (int*) addr, op, val, 0);
 }
