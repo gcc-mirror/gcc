@@ -1,5 +1,20 @@
 2011-12-24  Torvald Riegel  <triegel@redhat.com>
 
+	* beginend.cc (GTM::gtm_thread::restart): Add and handle
+	finish_serial_upgrade parameter.
+	* libitm.h (GTM::gtm_thread::restart): Adapt declaration.
+	* config/linux/rwlock.cc (GTM::gtm_rwlock::write_lock_generic):
+	Don't unset reader flag.
+	(GTM::gtm_rwlock::write_upgrade_finish): New.
+	* config/posix/rwlock.cc: Same.
+	* config/linux/rwlock.h (GTM::gtm_rwlock::write_upgrade_finish):
+	Declare.
+	* config/posix/rwlock.h: Same.
+	* method-serial.cc (GTM::gtm_thread::serialirr_mode): Unset reader
+	flag after commit or after rollback when restarting.
+
+2011-12-24  Torvald Riegel  <triegel@redhat.com>
+
 	* beginend.cc (GTM::gtm_thread::begin_transaction): Add comment.
 	(GTM::gtm_thread::try_commit): Changed memory order.
 	* config/linux/alpha/futex_bits.h (sys_futex0): Take atomic int

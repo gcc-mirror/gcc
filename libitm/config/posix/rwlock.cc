@@ -155,10 +155,6 @@ gtm_rwlock::write_lock_generic (gtm_thread *tx)
   // path of read_lock()).
   atomic_thread_fence(memory_order_seq_cst);
 
-  // If this is an upgrade, we are not a reader anymore.
-  if (tx != 0)
-    tx->shared_state.store(-1, memory_order_relaxed);
-
   // Count the number of active readers to be able to decrease the number of
   // wake-ups and wait calls that are necessary.
   //
@@ -194,6 +190,8 @@ gtm_rwlock::write_lock_generic (gtm_thread *tx)
 	  it = it->next_thread)
 	{
 	  // Don't count ourself if this is an upgrade.
+          if (it == tx)
+            continue;
 	  if (it->shared_state.load(memory_order_relaxed) != (gtm_word)-1)
 	    readers++;
 	}
@@ -228,6 +226,18 @@ bool
 gtm_rwlock::write_upgrade (gtm_thread *tx)
 {
   return write_lock_generic (tx);
+}
+
+
+// Has to be called iff the previous upgrade was successful and after it is
+// safe for the transaction to not be marked as a reader anymore.
+
+void
+gtm_rwlock::write_upgrade_finish (gtm_thread *tx)
+{
+  // We are not a reader anymore.  This is only safe to do after we have
+  // acquired the writer lock.
+  tx->shared_state.store (-1, memory_order_release);
 }
 
 

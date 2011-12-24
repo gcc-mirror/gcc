@@ -511,11 +511,19 @@ GTM::gtm_thread::trycommit ()
 }
 
 void ITM_NORETURN
-GTM::gtm_thread::restart (gtm_restart_reason r)
+GTM::gtm_thread::restart (gtm_restart_reason r, bool finish_serial_upgrade)
 {
   // Roll back to outermost transaction. Do not reset transaction state because
   // we will continue executing this transaction.
   rollback ();
+
+  // If we have to restart while an upgrade of the serial lock is happening,
+  // we need to finish this here, after rollback (to ensure privatization
+  // safety despite undo writes) and before deciding about the retry strategy
+  // (which could switch to/from serial mode).
+  if (finish_serial_upgrade)
+    gtm_thread::serial_lock.write_upgrade_finish(this);
+
   decide_retry_strategy (r);
 
   // Run dispatch-specific restart code. Retry until we succeed.

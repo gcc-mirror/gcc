@@ -231,7 +231,8 @@ struct gtm_thread
   // In beginend.cc
   void rollback (gtm_transaction_cp *cp = 0, bool aborting = false);
   bool trycommit ();
-  void restart (gtm_restart_reason) ITM_NORETURN;
+  void restart (gtm_restart_reason, bool finish_serial_upgrade = false)
+        ITM_NORETURN;
 
   gtm_thread();
   ~gtm_thread();
