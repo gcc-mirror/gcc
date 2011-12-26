@@ -1,3 +1,8 @@
+2011-12-26  Joey Ye  <joey.ye@arm.com>
+
+	PR middle-end/51200
+	* gcc.dg/volatile-bitfields-2.c: New test.
+
 2011-12-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51507
