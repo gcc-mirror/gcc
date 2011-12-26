@@ -1,3 +1,16 @@
+2011-12-26  Oleg Endo  <oleg.endo@t-online.de>
+
+	* config/sh/sync.md: Add soft atomics ABI description.
+	(fetchop_name): Use 'or' instead of 'ior'.
+	(fetchop_insn): Remove.
+	(atomic_compare_and_swap<mode>_soft):
+        Don't insert aligning nop after the write-back instruction.  Fix
+	multi-line asm output formatting style.
+        (atomic_fetch_<fetchop_name><mode>_soft): Likewise.
+        (atomic_fetch_nand<mode>_soft): Likewise.
+        (atomic_<fetchop_name>_fetch<mode>_soft): Likewise.
+        (atomic_nand_fetch<mode>_soft): Likewise.
+
 2011-12-23  Richard Henderson  <rth@redhat.com>
 
 	* tree.def (VEC_EXTRACT_EVEN_EXPR, VEC_EXTRACT_ODD_EXPR): Remove.

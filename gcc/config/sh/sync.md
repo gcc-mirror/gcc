@@ -17,6 +17,77 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
+;;
+;;
+;; Atomic integer operations for the Renesas / SuperH SH CPUs.
+;;
+;; On single-core systems there can only be one execution context running
+;; at a given point in time.  This allows the usage of rewindable atomic
+;; sequences, which effectively emulate locked-load / conditional-store
+;; operations.
+;; When an execution context is interrupted while it is an atomic
+;; sequence, the interrupted context's PC is rewound to the beginning of
+;; the atomic sequence by the interrupt / exception handling code, before
+;; transferring control to another execution context.  This is done by
+;; something like...
+;;
+;;	if (interrupted_context_in_atomic_sequence
+;;	    && interrupted_pc < atomic_exitpoint)
+;;	  interrupted_pc = atomic_entrypoint;
+;;
+;; This method is also known as gUSA ("g" User Space Atomicity) and the
+;; Linux kernel for SH3/SH4 implements support for such software
+;; atomic sequences.  However, it can also be implemented in freestanding
+;; environments.
+;;
+;; For this the following atomic sequence ABI is used.
+;;
+;; r15 >= 0:	Execution context is not in an atomic sequence.
+;;
+;; r15  < 0:	Execution context is in an atomic sequence and r15
+;;		holds the negative byte length of the atomic sequence.
+;;		In this case the following applies:
+;;
+;;		r0:	PC of the first instruction after the atomic
+;;			write-back instruction (exit point).
+;;			The entry point PC of the atomic sequence can be 
+;;			determined by doing r0 + r15.
+;;
+;;		r1:	Saved r15 stack pointer before entering the
+;;			atomic sequence.
+;;
+;; An example atomic add sequence would look like:
+;;
+;;	mova	.Lend,r0		! .Lend must be 4-byte aligned.
+;;	mov	r15,r1
+;;	.align 2			! Insert aligning nop if needed.
+;;	mov	#(.Lstart - .Lend),r15	! Enter atomic sequence
+;;.Lstart:
+;;	mov.l	@r4,r2			! read value
+;;	add	r2,r5			! modify value
+;;	mov.l	r5,@r4			! write-back
+;;.Lend:
+;;	mov	r1,r15			! Exit atomic sequence
+;;					! r2 holds the previous value.
+;;					! r5 holds the new value.
+;;
+;; Notice that due to the restrictions of the mova instruction, the .Lend
+;; label must always be 4-byte aligned.  Aligning the .Lend label would
+;; potentially insert a nop after the write-back instruction which could
+;; make the sequence to be rewound, although it has already passed the
+;; write-back instruction.  This would make it execute twice.
+;; For correct operation the atomic sequences must not be rewound after
+;; they have passed the write-back instruction.
+;;
+;; The current implementation is limited to QImode, HImode and SImode 
+;; atomic operations.  DImode operations could also be implemented but
+;; would require some ABI modifications to support multiple-instruction
+;; write-back.  This is because SH1/SH2/SH3/SH4 does not have a DImode
+;; store instruction.  DImode stores must be split into two SImode stores.
+;;
+;; For some operations it would be possible to use insns with an immediate
+;; operand such as add #imm,Rn.  However, since the original value before
+;; the operation also needs to be available, this is not so handy.
 
 (define_c_enum "unspec" [
   UNSPEC_ATOMIC
@@ -35,13 +106,7 @@
 
 (define_code_iterator FETCHOP [plus minus ior xor and])
 (define_code_attr fetchop_name
-  [(plus "add") (minus "sub") (ior "ior") (xor "xor") (and "and")])
-(define_code_attr fetchop_insn
   [(plus "add") (minus "sub") (ior "or") (xor "xor") (and "and")])
-
-;; Linux specific atomic patterns for the Renesas / SuperH SH CPUs.
-;; Linux kernel for SH3/4 has implemented the support for software
-;; atomic sequences.
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:QI 0 "register_operand" "")		;; bool success output
@@ -85,20 +150,18 @@
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
   "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
-  "*
 {
-  return \"\\
-mova\\t1f, r0\\n\\
-\\t<i124extend_insn>\\t%2, %4\\n\\
-\\tmov\\tr15, r1\\n\\
-\\tmov\\t#(0f-1f), r15\\n\\
-0:\\tmov.<i124suffix>\\t@%1, %0\\n\\
-\\tcmp/eq\\t%0, %4\\n\\
-\\tbf\\t1f\\n\\
-\\tmov.<i124suffix>\\t%3, @%1\\n\\
-\\t.align\\t2\\n\\
-1:\\tmov\tr1, r15\";
-}"
+  return "mova	1f,r0"				"\n"
+	 "	<i124extend_insn>	%2,%4"	"\n"
+	 "	.align 2"			"\n"
+	 "	mov	r15,r1"			"\n"
+	 "	mov	#(0f-1f),r15"		"\n"
+	 "0:	mov.<i124suffix>	@%1,%0"	"\n"
+	 "	cmp/eq	%0,%4"			"\n"
+	 "	bf	1f"			"\n"
+	 "	mov.<i124suffix>	%3,@%1"	"\n"
+	 "1:	mov	r1,r15";
+}
   [(set_attr "length" "20")])
 
 (define_expand "atomic_fetch_<fetchop_name><mode>"
@@ -138,19 +201,17 @@ mova\\t1f, r0\\n\\
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
   "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
-  "*
 {
-  return \"\\
-mova\\t1f, r0\\n\\
-\\tmov\\tr15, r1\\n\\
-\\tmov\\t#(0f-1f), r15\\n\\
-0:\\tmov.<i124suffix>\\t@%1, %0\\n\\
-\\tmov\\t%0, %3\\n\\
-\\t<fetchop_insn>\\t%2, %3\\n\\
-\\tmov.<i124suffix>\\t%3, @%1\\n\\
-\\t.align\\t2\\n\\
-1:\\tmov\tr1, r15\";
-}"
+  return "mova	1f,r0"				"\n"
+	 "	.align 2"			"\n"
+	 "	mov	r15,r1"			"\n"
+	 "	mov	#(0f-1f),r15"		"\n"
+	 "0:	mov.<i124suffix>	@%1,%0"	"\n"
+	 "	mov	%0,%3"			"\n"
+	 "	<fetchop_name>	%2,%3"		"\n"
+	 "	mov.<i124suffix>	%3,@%1"	"\n"
+	 "1:	mov	r1,r15";
+}
   [(set_attr "length" "18")])
 
 (define_expand "atomic_fetch_nand<mode>"
@@ -190,20 +251,18 @@ mova\\t1f, r0\\n\\
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
   "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
-  "*
 {
-  return \"\\
-mova\\t1f, r0\\n\\
-\\tmov\\tr15, r1\\n\\
-\\tmov\\t#(0f-1f), r15\\n\\
-0:\\tmov.<i124suffix>\\t@%1, %0\\n\\
-\\tmov\\t%2, %3\\n\\
-\\tand\\t%0, %3\\n\\
-\\tnot\\t%3, %3\\n\\
-\\tmov.<i124suffix>\\t%3, @%1\\n\\
-\\t.align\\t2\\n\\
-1:\\tmov\tr1, r15\";
-}"
+  return "mova	1f,r0"				"\n"
+	 "	mov	r15,r1"			"\n"
+	 "	.align 2"			"\n"
+	 "	mov	#(0f-1f),r15"		"\n"
+	 "0:	mov.<i124suffix>	@%1,%0"	"\n"
+	 "	mov	%2,%3"			"\n"
+	 "	and	%0,%3"			"\n"
+	 "	not	%3,%3"			"\n"
+	 "	mov.<i124suffix>	%3,@%1"	"\n"
+	 "1:	mov	r1,r15";
+}
   [(set_attr "length" "20")])
 
 (define_expand "atomic_<fetchop_name>_fetch<mode>"
@@ -244,18 +303,16 @@ mova\\t1f, r0\\n\\
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
   "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
-  "*
 {
-  return \"\\
-mova\\t1f, r0\\n\\
-\\tmov\\tr15, r1\\n\\
-\\tmov\\t#(0f-1f), r15\\n\\
-0:\\tmov.<i124suffix>\\t@%1, %0\\n\\
-\\t<fetchop_insn>\\t%2, %0\\n\\
-\\tmov.<i124suffix>\\t%0, @%1\\n\\
-\\t.align\\t2\\n\\
-1:\\tmov\tr1, r15\";
-}"
+  return "mova	1f,r0"				"\n"
+	 "	mov	r15,r1"			"\n"
+	 "	.align 2"			"\n"
+	 "	mov	#(0f-1f),r15"		"\n"
+	 "0:	mov.<i124suffix>	@%1,%0"	"\n"
+	 "	<fetchop_name>	%2,%0"		"\n"
+	 "	mov.<i124suffix>	%0,@%1"	"\n"
+	 "1:	mov	r1,r15";
+}
   [(set_attr "length" "16")])
 
 (define_expand "atomic_nand_fetch<mode>"
@@ -296,17 +353,15 @@ mova\\t1f, r0\\n\\
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
   "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
-  "*
 {
-  return \"\\
-mova\\t1f, r0\\n\\
-\\tmov\\tr15, r1\\n\\
-\\tmov\\t#(0f-1f), r15\\n\\
-0:\\tmov.<i124suffix>\\t@%1, %0\\n\\
-\\tand\\t%2, %0\\n\\
-\\tnot\\t%0, %0\\n\\
-\\tmov.<i124suffix>\\t%0, @%1\\n\\
-\\t.align\\t2\\n\\
-1:\\tmov\tr1, r15\";
-}"
+  return "mova	1f,r0"				"\n"
+	 "	.align 2"			"\n"
+	 "	mov	r15,r1"			"\n"
+	 "	mov	#(0f-1f),r15"		"\n"
+	 "0:	mov.<i124suffix>	@%1,%0"	"\n"
+	 "	and	%2,%0"			"\n"
+	 "	not	%0,%0"			"\n"
+	 "	mov.<i124suffix>	%0,@%1"	"\n"
+	 "1:	mov	r1,r15";
+}
   [(set_attr "length" "18")])
