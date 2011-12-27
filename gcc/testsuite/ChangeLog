@@ -1,3 +1,8 @@
+2011-12-25  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/48641 
+	* gcc.dg/compile/pr48641.c: New file.
+
 2011-12-26  Joey Ye  <joey.ye@arm.com>
 
 	PR middle-end/51200
