@@ -1,6 +1,6 @@
 // locks.h - Thread synchronization primitives. Alpha implementation.
 
-/* Copyright (C) 2002  Free Software Foundation
+/* Copyright (C) 2002, 2011  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -11,41 +11,38 @@ details.  */
 #ifndef __SYSDEP_LOCKS_H__
 #define __SYSDEP_LOCKS_H__
 
-typedef size_t obj_addr_t;	/* Integer type big enough for object	*/
-				/* address.				*/
+/* Integer type big enough for object address.	*/
+typedef size_t obj_addr_t;
 
+// Atomically replace *addr by new_val if it was initially equal to old.
+// Return true if the comparison succeeded.
+// Assumed to have acquire semantics, i.e. later memory operations
+// cannot execute before the compare_and_swap finishes.
 inline static bool
 compare_and_swap(volatile obj_addr_t *addr,
-		  			      obj_addr_t old,
-					      obj_addr_t new_val) 
+		 obj_addr_t old,
+		 obj_addr_t new_val) 
 {
-  unsigned long oldval;
-  char result;
-  __asm__ __volatile__(
-      "1:ldq_l %0, %1\n\t" \
-      "cmpeq %0, %5, %2\n\t" \
-      "beq %2, 2f\n\t" \
-      "mov %3, %0\n\t" \
-      "stq_c %0, %1\n\t" \
-      "bne %0, 2f\n\t" \
-      "br 1b\n\t" \
-      "2:mb"
-	      : "=&r"(oldval), "=m"(*addr), "=&r"(result)
-	      : "r" (new_val), "m"(*addr), "r"(old) : "memory");
-  return (bool) result;
+  return __sync_bool_compare_and_swap(addr, old, new_val);
 }
 
+// Set *addr to new_val with release semantics, i.e. making sure
+// that prior loads and stores complete before this
+// assignment.
 inline static void
 release_set(volatile obj_addr_t *addr, obj_addr_t new_val)
 {
-  __asm__ __volatile__("mb" : : : "memory");
+  __sync_synchronize();
   *(addr) = new_val;
 }
 
+// Compare_and_swap with release semantics instead of acquire semantics.
+// On many architecture, the operation makes both guarantees, so the
+// implementation can be the same.
 inline static bool
 compare_and_swap_release(volatile obj_addr_t *addr,
-		  				     obj_addr_t old,
-						     obj_addr_t new_val)
+			 obj_addr_t old,
+			 obj_addr_t new_val)
 {
   return compare_and_swap(addr, old, new_val);
 }
