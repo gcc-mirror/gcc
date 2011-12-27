@@ -1187,7 +1187,7 @@
 	clobber, but all consecutive clobbers before RESX.
 	Use gimple_clobber_p predicate.
 
-2011-12-09  Michael Meissner  <meissner@the-meissners.org>
+2011-12-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (altivec_expand_builtin): Call
 	expand_call to return a valid funciton instead of return
@@ -1795,7 +1795,7 @@
 	(ia64_print_operand_punct_valid_p): New function.
 	(ia64_print_operand, ia64_print_operand_address): Make static.
 
-2011-12-02  Michael Meissner  <meissner@the-meissners.org>
+2011-12-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/51390
 	* config/rs6000/rs6000.c (def_builtin): Use the correct field to
