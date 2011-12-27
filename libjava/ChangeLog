@@ -1,3 +1,10 @@
+2011-12-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR libgcj/49193
+	* sysdep/alpha/locks.h (compare_and_swap): Call
+	__sync_bool_compare_and_swap.
+	(release_set): Call __sync_synchronize.
+
 2011-12-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (i?86-*-linux*): Set SIGNAL_HANDLER_AUX.
