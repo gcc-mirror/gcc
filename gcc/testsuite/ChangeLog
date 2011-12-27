@@ -1,3 +1,7 @@
+2011-12-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20111227-1.c: New test.
+
 2011-12-25  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/48641 

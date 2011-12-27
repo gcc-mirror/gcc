@@ -1,3 +1,29 @@
+2011-12-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/51667
+	* ree.c (insn_merge_code): Delete.
+	(is_insn_merge_attempted): Likewise.
+	(get_insn_status): Likewise.
+	(set_insn_status): Likewise.
+	(struct ext_cand): Add CODE and MODE fields.
+	(combine_set_extend): Rename to...
+	(combine_set_extension): ...this.  Use above fields and tidy up.
+	(transform_ifelse): Likewise.
+	(get_defs): Return the chain of definitions.
+	(is_this_a_cmove): Merge into...
+	(is_cond_copy_insn): ...this.  Return bool.
+	(make_defs_and_copies_lists): Adjust calls to get_defs and simplify.
+	(merge_def_and_ext): Adjust call to combine_set_extend.
+	(combine_reaching_defs): Remove calls to {g|s}et_insn_status.
+	(struct extend_info): Rename to...
+	(struct re_info): ...this.  Add DEF_MAP field.
+	(add_ext_candidate): Merge into...
+	(add_removable_extension): ...this.  Adjust calls to get_defs.  Ensure
+	reaching definitions are associated with only one kind of extension.
+	(find_removable_extensions): Create and destroy the definition map.
+	(find_and_remove_re): Return void.  Change 'long' variables to 'int'.
+	Do not deal with is_insn_merge_attempted.
+
 2011-12-25  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/48641 
