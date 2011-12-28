@@ -6052,11 +6052,11 @@ Binary_expression::do_determine_type(const Type_context* context)
 }
 
 // Report an error if the binary operator OP does not support TYPE.
-// Return whether the operation is OK.  This should not be used for
-// shift.
+// OTYPE is the type of the other operand.  Return whether the
+// operation is OK.  This should not be used for shift.
 
 bool
-Binary_expression::check_operator_type(Operator op, Type* type,
+Binary_expression::check_operator_type(Operator op, Type* type, Type* otype,
 				       Location location)
 {
   switch (op)
@@ -6090,6 +6090,16 @@ Binary_expression::check_operator_type(Operator op, Type* type,
 		   ("expected integer, floating, complex, string, pointer, "
 		    "boolean, interface, slice, map, channel, "
 		    "or function type"));
+	  return false;
+	}
+      if ((type->is_slice_type()
+	   || type->map_type() != NULL
+	   || type->function_type() != NULL)
+	  && !otype->is_nil_type())
+	{
+	  error_at(location,
+		   ("slice, map, and function types may only "
+		    "be compared to nil"));
 	  return false;
 	}
       break;
@@ -6189,8 +6199,10 @@ Binary_expression::do_check_types(Gogo*)
 	  return;
 	}
       if (!Binary_expression::check_operator_type(this->op_, left_type,
+						  right_type,
 						  this->location())
 	  || !Binary_expression::check_operator_type(this->op_, right_type,
+						     left_type,
 						     this->location()))
 	{
 	  this->set_is_error();
@@ -6205,6 +6217,7 @@ Binary_expression::do_check_types(Gogo*)
 	  return;
 	}
       if (!Binary_expression::check_operator_type(this->op_, left_type,
+						  right_type,
 						  this->location()))
 	{
 	  this->set_is_error();
