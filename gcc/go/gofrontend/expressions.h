@@ -1147,9 +1147,9 @@ class Binary_expression : public Expression
   do_import(Import*);
 
   // Report an error if OP can not be applied to TYPE.  Return whether
-  // it can.
+  // it can.  OTYPE is the type of the other operand.
   static bool
-  check_operator_type(Operator op, Type* type, Location);
+  check_operator_type(Operator op, Type* type, Type* otype, Location);
 
  protected:
   int

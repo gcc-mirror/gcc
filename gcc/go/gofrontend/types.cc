@@ -1235,8 +1235,6 @@ Type::type_functions(const char** hash_fn, const char** equal_fn) const
     case Type::TYPE_FLOAT:
     case Type::TYPE_COMPLEX:
     case Type::TYPE_POINTER:
-    case Type::TYPE_FUNCTION:
-    case Type::TYPE_MAP:
     case Type::TYPE_CHANNEL:
       *hash_fn = "__go_type_hash_identity";
       *equal_fn = "__go_type_equal_identity";
@@ -1249,6 +1247,8 @@ Type::type_functions(const char** hash_fn, const char** equal_fn) const
 
     case Type::TYPE_STRUCT:
     case Type::TYPE_ARRAY:
+    case Type::TYPE_FUNCTION:
+    case Type::TYPE_MAP:
       // These types can not be hashed or compared.
       *hash_fn = "__go_type_hash_error";
       *equal_fn = "__go_type_equal_error";
@@ -4731,7 +4731,9 @@ bool
 Map_type::do_verify()
 {
   if (this->key_type_->struct_type() != NULL
-      || this->key_type_->array_type() != NULL)
+      || this->key_type_->array_type() != NULL
+      || this->key_type_->function_type() != NULL
+      || this->key_type_->map_type() != NULL)
     {
       error_at(this->location_, "invalid map key type");
       return false;
