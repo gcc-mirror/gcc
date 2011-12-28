@@ -2,6 +2,11 @@
 
 	* gcc.dg/torture/pr50396.c: Use dg-add-options ieee.
 
+2011-12-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51547
+	* g++.dg/cpp0x/pr51547.C: New.
+
 2011-12-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20111227-1.c: New test.
