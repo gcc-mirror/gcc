@@ -5260,7 +5260,11 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
   //           original statements
   //   }
 
-  if (range_type->array_type() != NULL)
+  if (range_type->is_slice_type())
+    this->lower_range_slice(gogo, temp_block, body, range_object, range_temp,
+			    index_temp, value_temp, &init, &cond, &iter_init,
+			    &post);
+  else if (range_type->array_type() != NULL)
     this->lower_range_array(gogo, temp_block, body, range_object, range_temp,
 			    index_temp, value_temp, &init, &cond, &iter_init,
 			    &post);
@@ -5346,7 +5350,7 @@ For_range_statement::call_builtin(Gogo* gogo, const char* funcname,
   return Expression::make_call(func, params, false, loc);
 }
 
-// Lower a for range over an array or slice.
+// Lower a for range over an array.
 
 void
 For_range_statement::lower_range_array(Gogo* gogo,
@@ -5416,6 +5420,107 @@ For_range_statement::lower_range_array(Gogo* gogo,
       iter_init = new Block(body_block, loc);
 
       ref = this->make_range_ref(range_object, range_temp, loc);
+      Expression* ref2 = Expression::make_temporary_reference(index_temp, loc);
+      Expression* index = Expression::make_index(ref, ref2, NULL, loc);
+
+      tref = Expression::make_temporary_reference(value_temp, loc);
+      tref->set_is_lvalue();
+      s = Statement::make_assignment(tref, index, loc);
+
+      iter_init->add_statement(s);
+    }
+  *piter_init = iter_init;
+
+  // Set *PPOST to
+  //   index_temp++
+
+  Block* post = new Block(enclosing, loc);
+  tref = Expression::make_temporary_reference(index_temp, loc);
+  tref->set_is_lvalue();
+  s = Statement::make_inc_statement(tref);
+  post->add_statement(s);
+  *ppost = post;
+}
+
+// Lower a for range over a slice.
+
+void
+For_range_statement::lower_range_slice(Gogo* gogo,
+				       Block* enclosing,
+				       Block* body_block,
+				       Named_object* range_object,
+				       Temporary_statement* range_temp,
+				       Temporary_statement* index_temp,
+				       Temporary_statement* value_temp,
+				       Block** pinit,
+				       Expression** pcond,
+				       Block** piter_init,
+				       Block** ppost)
+{
+  Location loc = this->location();
+
+  // The loop we generate:
+  //   for_temp := range
+  //   len_temp := len(for_temp)
+  //   for index_temp = 0; index_temp < len_temp; index_temp++ {
+  //           value_temp = for_temp[index_temp]
+  //           index = index_temp
+  //           value = value_temp
+  //           original body
+  //   }
+  //
+  // Using for_temp means that we don't need to check bounds when
+  // fetching range_temp[index_temp].
+
+  // Set *PINIT to
+  //   range_temp := range
+  //   var len_temp int
+  //   len_temp = len(range_temp)
+  //   index_temp = 0
+
+  Block* init = new Block(enclosing, loc);
+
+  Expression* ref = this->make_range_ref(range_object, range_temp, loc);
+  Temporary_statement* for_temp = Statement::make_temporary(NULL, ref, loc);
+  init->add_statement(for_temp);
+
+  ref = Expression::make_temporary_reference(for_temp, loc);
+  Expression* len_call = this->call_builtin(gogo, "len", ref, loc);
+  Temporary_statement* len_temp = Statement::make_temporary(index_temp->type(),
+							    len_call, loc);
+  init->add_statement(len_temp);
+
+  mpz_t zval;
+  mpz_init_set_ui(zval, 0UL);
+  Expression* zexpr = Expression::make_integer(&zval, NULL, loc);
+  mpz_clear(zval);
+
+  Temporary_reference_expression* tref =
+    Expression::make_temporary_reference(index_temp, loc);
+  tref->set_is_lvalue();
+  Statement* s = Statement::make_assignment(tref, zexpr, loc);
+  init->add_statement(s);
+
+  *pinit = init;
+
+  // Set *PCOND to
+  //   index_temp < len_temp
+
+  ref = Expression::make_temporary_reference(index_temp, loc);
+  Expression* ref2 = Expression::make_temporary_reference(len_temp, loc);
+  Expression* lt = Expression::make_binary(OPERATOR_LT, ref, ref2, loc);
+
+  *pcond = lt;
+
+  // Set *PITER_INIT to
+  //   value_temp = range[index_temp]
+
+  Block* iter_init = NULL;
+  if (value_temp != NULL)
+    {
+      iter_init = new Block(body_block, loc);
+
+      ref = Expression::make_temporary_reference(for_temp, loc);
       Expression* ref2 = Expression::make_temporary_reference(index_temp, loc);
       Expression* index = Expression::make_index(ref, ref2, NULL, loc);
 
