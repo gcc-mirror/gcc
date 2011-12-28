@@ -2885,6 +2885,8 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
       && REFERENCE_CLASS_P (gimple_get_lhs (stmt)))
     { 
       gimple last_store = vect_find_last_store_in_slp_instance (instance);
+      if (is_pattern_stmt_p (vinfo_for_stmt (last_store)))
+       last_store = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (last_store));
       si = gsi_for_stmt (last_store);
     }
 
@@ -2989,6 +2991,8 @@ vect_schedule_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
           if (!STMT_VINFO_DATA_REF (vinfo_for_stmt (store)))
             break;
 
+         if (is_pattern_stmt_p (vinfo_for_stmt (store)))
+           store = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (store));
           /* Free the attached stmt_vec_info and remove the stmt.  */
           gsi = gsi_for_stmt (store);
           gsi_remove (&gsi, true);
