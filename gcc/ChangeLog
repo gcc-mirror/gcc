@@ -1,3 +1,10 @@
+2011-12-28  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/51684
+	* tree-vect-slp.c (vect_schedule_slp_instance): Get gsi of original
+	statement in case of a pattern.
+	(vect_schedule_slp): Likewise.
+
 2011-12-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/51667
