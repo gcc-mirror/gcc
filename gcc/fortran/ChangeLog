@@ -37,6 +37,7 @@
 	non-compile-time-constant-shape arrays to have a default
 	initializer.
 	* invoke.texi: Delete the restriction on automatic arrays not
+	being initialized by -finit-<type>=<constant>.
 
 2011-12-15  Tobias Burnus  <burnus@net-b.de>
 
