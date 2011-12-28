@@ -1,10 +1,18 @@
+2011-12-27  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::set_placeholder_struct_type): Use
+	build_distinct_type_copy rather than build_variant_type_copy.
+	(Gcc_backend::set_placeholder_array_type): Likewise.
+	(Gcc_backend::named_type): Add special handling for builtin
+	basic types.
+
 2011-12-22  Ian Lance Taylor  <iant@google.com>
 
-	* go-gcc.cc (set_placeholder_pointer_type): Arrange for the type
-	name to have a DECL_ORIGINAL_TYPE as gcc expects.
-	(set_placeholder_struct_type): Likewise.
-	(set_placeholder_array_type): Likewise.
-	(named_type): Set DECL_ORIGINAL_TYPE.
+	* go-gcc.cc (Gcc_backend::set_placeholder_pointer_type): Arrange
+	for the type name to have a DECL_ORIGINAL_TYPE as gcc expects.
+	(Gcc_backend::set_placeholder_struct_type): Likewise.
+	(Gcc_backend::set_placeholder_array_type): Likewise.
+	(Gcc_backend::named_type): Set DECL_ORIGINAL_TYPE.
 
 2011-12-13  Ian Lance Taylor  <iant@google.com>
 

@@ -663,7 +663,7 @@ Gcc_backend::set_placeholder_struct_type(
   Btype* r = this->fill_in_struct(placeholder, fields);
 
   // Build the data structure gcc wants to see for a typedef.
-  tree copy = build_variant_type_copy(t);
+  tree copy = build_distinct_type_copy(t);
   TYPE_NAME(copy) = NULL_TREE;
   DECL_ORIGINAL_TYPE(TYPE_NAME(t)) = copy;
 
@@ -696,7 +696,7 @@ Gcc_backend::set_placeholder_array_type(Btype* placeholder,
   Btype* r = this->fill_in_array(placeholder, element_btype, length);
 
   // Build the data structure gcc wants to see for a typedef.
-  tree copy = build_variant_type_copy(t);
+  tree copy = build_distinct_type_copy(t);
   TYPE_NAME(copy) = NULL_TREE;
   DECL_ORIGINAL_TYPE(TYPE_NAME(t)) = copy;
 
@@ -712,6 +712,24 @@ Gcc_backend::named_type(const std::string& name, Btype* btype,
   tree type = btype->get_tree();
   if (type == error_mark_node)
     return this->error_type();
+
+  // The middle-end expects a basic type to have a name.  In Go every
+  // basic type will have a name.  The first time we see a basic type,
+  // give it whatever Go name we have at this point.
+  if (TYPE_NAME(type) == NULL_TREE
+      && location.gcc_location() == BUILTINS_LOCATION
+      && (TREE_CODE(type) == INTEGER_TYPE
+	  || TREE_CODE(type) == REAL_TYPE
+	  || TREE_CODE(type) == COMPLEX_TYPE
+	  || TREE_CODE(type) == BOOLEAN_TYPE))
+    {
+      tree decl = build_decl(BUILTINS_LOCATION, TYPE_DECL,
+			     get_identifier_from_string(name),
+			     type);
+      TYPE_NAME(type) = decl;
+      return this->make_type(type);
+    }
+
   tree copy = build_variant_type_copy(type);
   tree decl = build_decl(location.gcc_location(), TYPE_DECL,
 			 get_identifier_from_string(name),
