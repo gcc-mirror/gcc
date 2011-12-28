@@ -4,7 +4,7 @@
 
 2011-12-25  Jan Hubicka  <jh@suse.cz>
 
-	PR middle-end/48641 
+	PR middle-end/48641
 	* gcc.dg/compile/pr48641.c: New file.
 
 2011-12-26  Joey Ye  <joey.ye@arm.com>
@@ -48,7 +48,7 @@
 2011-12-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/50722
-	gcc.dg/pr49994-3.c: Skip on hppa*-*-*.
+	* gcc.dg/pr49994-3.c: Skip on ia64-*-*-*, hppa*-*-* and *-*-hpux*.
 
 2011-12-22  Richard Guenther  <rguenther@suse.de>
 
