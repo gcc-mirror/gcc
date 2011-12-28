@@ -15,4 +15,4 @@ template <typename T> struct C
     X::Y;			// { dg-error "not a base type" }
 };
 
-C<void> c;			// { dg-message "required" }
+C<void> c;

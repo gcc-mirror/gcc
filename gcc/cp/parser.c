@@ -14971,12 +14971,12 @@ cp_parser_using_declaration (cp_parser* parser,
 	  /* Create the USING_DECL.  */
 	  decl = do_class_using_decl (parser->scope, identifier);
 
-	  if (typename_p)
+	  if (decl && typename_p)
 	    USING_DECL_TYPENAME_P (decl) = 1;
 
 	  if (check_for_bare_parameter_packs (decl))
             return false;
-          else
+	  else
 	    /* Add it to the list of members in this class.  */
 	    finish_member_declaration (decl);
 	}
