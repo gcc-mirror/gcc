@@ -1,3 +1,13 @@
+2011-12-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2011-12-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/51623
+	* config/rs6000/rs6000.c (rs6000_assemble_integer): Don't call
+	unlikely_text_section_p.  Instead check for being in a code
+	section.
+
 2011-12-23  Richard Guenther  <rguenther@suse.de>
 
 	PR rtl-optimization/50396
