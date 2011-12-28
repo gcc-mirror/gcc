@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-add-options ieee } */
 
 extern void abort (void);
 typedef float vf128 __attribute__((vector_size(16)));
