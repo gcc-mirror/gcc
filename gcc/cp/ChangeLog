@@ -1,3 +1,14 @@
+2011-12-27  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/23211
+	* name-lookup.c (do_class_using_decl): Use dependent_scope_p
+	instead of dependent_type_p, to check that a non-dependent
+	nested-name-specifier of a class-scope using declaration refers to
+	a base, even if the current scope is dependent.
+	* parser.c (cp_parser_using_declaration): Set
+	USING_DECL_TYPENAME_P to 1 if the DECL is not null. Re-indent a
+	'else' close to the prior modification.
+
 2011-12-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51507
