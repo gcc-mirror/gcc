@@ -1,3 +1,7 @@
+2011-12-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/function_optimize_9.f90:  New test.
+
 2011-12-27  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/23211
