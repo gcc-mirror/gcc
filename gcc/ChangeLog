@@ -1,3 +1,10 @@
+2011-12-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/51623
+	* config/rs6000/rs6000.c (rs6000_assemble_integer): Delete check
+	for an initialized pointer being in a text section with
+	-mrelocatable, since it should never happen.
+
 2011-12-29  Michael Eager  <eager@eagercon.com>
 
 	* config/microblaze/microblaze.md: Add expander for simple_return,
@@ -7,7 +14,7 @@
 
 	* config/sh/sh.h (BRANCH_COST): Use sh_branch_cost variable.
 	* config/sh/sh.c (sh_option_override): Simplify sh_branch_cost
-        expression.	
+        expression.
 
 2011-12-28  Ian Lance Taylor  <iant@google.com>
 
