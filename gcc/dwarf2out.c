@@ -18433,6 +18433,11 @@ gen_compile_unit_die (const char *filename)
 	language = DW_LANG_ObjC;
       else if (strcmp (language_string, "GNU Objective-C++") == 0)
 	language = DW_LANG_ObjC_plus_plus;
+      else if (dwarf_version >= 5 || !dwarf_strict)
+	{
+	  if (strcmp (language_string, "GNU Go") == 0)
+	    language = DW_LANG_Go;
+	}
     }
 
   add_AT_unsigned (die, DW_AT_language, language);
