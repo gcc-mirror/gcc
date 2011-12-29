@@ -1,3 +1,9 @@
+2011-12-29  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.h (BRANCH_COST): Use sh_branch_cost variable.
+	* config/sh/sh.c (sh_option_override): Simplify sh_branch_cost
+        expression.	
+
 2011-12-28  Ian Lance Taylor  <iant@google.com>
 
 	* dwarf2out.c (gen_compile_unit_die): Use DW_LANG_Go for Go.
