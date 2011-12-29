@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-Wno-long-long" } */
+/* { dg-options "-Wno-long-long -mabi=altivec" { target { { powerpc*-*-linux* } && ilp32 } } } */
+
 #define vector(elcount, type)  \
 __attribute__((vector_size((elcount)*sizeof(type)))) type
 

@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* { dg-options "-mabi=altivec" { target { { powerpc*-*-linux* } && ilp32 } } } */
+
 #define vector(elcount, type)  \
 __attribute__((vector_size((elcount)*sizeof(type)))) type
 
