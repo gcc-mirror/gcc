@@ -1,3 +1,9 @@
+2011-12-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51701
+	* doc/xml/manual/extensions.xml (Input and Output): Remove reference
+	to RWLock class.
+
 2011-12-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/tr1/2_general_utilities/shared_ptr/cons/

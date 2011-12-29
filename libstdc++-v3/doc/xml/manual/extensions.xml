@@ -475,14 +475,7 @@ get_temporary_buffer(5, (int*)0);
 	 descriptor, and provides the <code>fd()</code> function.
      </para></listitem>
    </itemizedlist>
-   <para>If you want to access a <code>filebuf</code>'s file descriptor to
-      implement file locking (e.g. using the <code>fcntl()</code> system
-      call) then you might be interested in Henry Suter's RWLock class.
-      <!-- url="http://suter.home.cern.ch/suter/RWLock.html" -->
-   </para>
 
-    <para>
-    </para>
   </section>
 </chapter>
 
