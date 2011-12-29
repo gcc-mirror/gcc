@@ -1,3 +1,7 @@
+2011-12-28  Ian Lance Taylor  <iant@google.com>
+
+	* dwarf2out.c (gen_compile_unit_die): Use DW_LANG_Go for Go.
+
 2011-12-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/51623
