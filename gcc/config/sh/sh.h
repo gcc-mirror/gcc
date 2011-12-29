@@ -2088,12 +2088,8 @@ struct sh_args {
    different code that does fewer memory accesses.  */
 
 /* A C expression for the cost of a branch instruction.  A value of 1
-   is the default; other values are interpreted relative to that.
-   The SH1 does not have delay slots, hence we get a pipeline stall
-   at every branch.  The SH4 is superscalar, so the single delay slot
-   is not sufficient to keep both pipelines filled.  */
-#define BRANCH_COST(speed_p, predictable_p) \
-	(TARGET_SH5 ? 1 : ! TARGET_SH2 || TARGET_HARD_SH4 ? 2 : 1)
+   is the default; other values are interpreted relative to that.  */
+#define BRANCH_COST(speed_p, predictable_p) sh_branch_cost
 
 /* Assembler output control.  */
 
