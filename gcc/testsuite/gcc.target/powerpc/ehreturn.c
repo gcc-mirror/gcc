@@ -12,4 +12,4 @@ void foo ()
   __builtin_eh_return (l, p);
 }
 
-/* { dg-final { scan-assembler "st\[wd\] 30," } } */
+/* { dg-final { scan-assembler "(st\[wd\]|evstdd) 30," } } */
