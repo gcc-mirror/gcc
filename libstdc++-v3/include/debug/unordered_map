@@ -418,11 +418,19 @@ namespace __debug
 
       static _Base_local_iterator
       _S_to_local(_Base_iterator __it)
-      { return _Base_local_iterator(__it._M_cur); }
+      {
+        // The returned local iterator will not be incremented so we don't
+	// need to compute __it's node bucket
+	return _Base_local_iterator(__it._M_cur, 0, 0);
+      }
 
       static _Base_const_local_iterator
       _S_to_local(_Base_const_iterator __it)
-      { return _Base_const_local_iterator(__it._M_cur); }
+      {
+        // The returned local iterator will not be incremented so we don't
+	// need to compute __it's node bucket
+	return _Base_const_local_iterator(__it._M_cur, 0, 0);
+      }
     };
 
   template<typename _Key, typename _Tp, typename _Hash,
@@ -820,11 +828,19 @@ namespace __debug
 
       static _Base_local_iterator
       _S_to_local(_Base_iterator __it)
-      { return _Base_local_iterator(__it._M_cur); }
+      {
+        // The returned local iterator will not be incremented so we don't
+	// need to compute __it's node bucket
+	return _Base_local_iterator(__it._M_cur, 0, 0);
+      }
 
       static _Base_const_local_iterator
       _S_to_local(_Base_const_iterator __it)
-      { return _Base_const_local_iterator(__it._M_cur); }
+      {
+        // The returned local iterator will not be incremented so we don't
+	// need to compute __it's node bucket
+	return _Base_const_local_iterator(__it._M_cur, 0, 0);
+      }
     };
 
   template<typename _Key, typename _Tp, typename _Hash,

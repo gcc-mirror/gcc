@@ -308,9 +308,9 @@ namespace __profile
 	while (__it != this->end())
 	  {
 	    size_type __bkt = this->bucket(__it->first);
-	    for (++__it; __it != this->end()
-			 && this->bucket(__it->first) == __bkt;
-		 ++__it)
+	    auto __lit = this->begin(__bkt);
+	    auto __lend = this->end(__bkt);
+	    for (++__it, ++__lit; __lit != __lend; ++__it, ++__lit)
 	      ++__chain;
 	    if (__chain)
 	      {
@@ -577,9 +577,9 @@ namespace __profile
 	while (__it != this->end())
 	  {
 	    size_type __bkt = this->bucket(__it->first);
-	    for (++__it; __it != this->end()
-			 && this->bucket(__it->first) == __bkt;
-		 ++__it)
+	    auto __lit = this->begin(__bkt);
+	    auto __lend = this->end(__bkt);
+	    for (++__it, ++__lit; __lit != __lend; ++__it, ++__lit)
 	      ++__chain;
 	    if (__chain)
 	      {

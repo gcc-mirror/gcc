@@ -41,7 +41,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   class _Pred = std::equal_to<_Value>,
 	   class _Alloc = std::allocator<_Value>,
 	   bool __cache_hash_code =
-	     __not_<__and_<is_integral<_Value>,
+	     __not_<__and_<is_integral<_Value>, is_empty<_Hash>,
+			   integral_constant<bool, !__is_final(_Hash)>,
 			   __detail::__is_noexcept_hash<_Value, _Hash>>>::value>
     class __unordered_set
     : public _Hashtable<_Value, _Value, _Alloc,
@@ -124,7 +125,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   class _Pred = std::equal_to<_Value>,
 	   class _Alloc = std::allocator<_Value>,
 	   bool __cache_hash_code =
-	     __not_<__and_<is_integral<_Value>,
+	     __not_<__and_<is_integral<_Value>, is_empty<_Hash>,
+			   integral_constant<bool, !__is_final(_Hash)>,
 			   __detail::__is_noexcept_hash<_Value, _Hash>>>::value>
     class __unordered_multiset
     : public _Hashtable<_Value, _Value, _Alloc,

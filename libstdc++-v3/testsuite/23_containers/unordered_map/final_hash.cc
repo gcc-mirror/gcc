@@ -1,6 +1,5 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++0x" }
-// { dg-require-normal-mode "" }
 
 // Copyright (C) 2011 Free Software Foundation, Inc.
 //
@@ -19,23 +18,22 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 185 }
-
-#include <unordered_set>
+#include <string>
+#include <unordered_map>
 
 namespace
 {
-  struct hash_without_noexcept
+  template<typename _Tp>
+  struct final_hash final
   {
-    std::size_t operator() (int) const
+    std::size_t operator() (const _Tp&) const noexcept
     { return 0; }
   };
 }
 
-void
-test01()
-{
-  std::__unordered_set<int, hash_without_noexcept,
-		       std::equal_to<int>, std::allocator<int>,
-		       false> us;
-}
+// A non-integral type:
+template class std::unordered_map<std::string, int, final_hash<std::string>>;
+
+// An integral type;
+template class std::unordered_map<int, int, final_hash<int>>;
+
