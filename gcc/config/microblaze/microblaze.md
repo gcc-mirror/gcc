@@ -82,6 +82,13 @@
 ;; # instructions (4 bytes each)
 (define_attr "length" "" (const_int 4))
 
+(define_code_iterator any_return [return simple_return])
+
+;; <optab> expands to the name of the optab for a particular code.
+(define_code_attr optab [(return "return")
+			 (simple_return "simple_return")])
+
+
 ;;----------------------------------------------------
 ;; Attribute describing the processor.  
 ;;----------------------------------------------------
@@ -1936,9 +1943,21 @@
 
 ;; Trivial return.  Make it look like a normal return insn as that
 ;; allows jump optimizations to work better .
-(define_insn "return"
-  [(return)]
+(define_expand "return"
+  [(simple_return)]
   "microblaze_can_use_return_insn ()"
+  {}
+)
+
+(define_expand "simple_return"
+  [(simple_return)]
+  ""
+  {}
+)
+
+(define_insn "*<optab>"
+  [(any_return)]
+  ""
   { 
     if (microblaze_is_interrupt_handler ())
         return "rtid\tr14, 0\;%#";
@@ -1947,15 +1966,14 @@
   }
   [(set_attr "type"	"jump")
   (set_attr "mode"	"none")
-  (set_attr "length"	"4")])
+  (set_attr "length"	"4")]
+)
 
 ;; Normal return.
-;; We match any mode for the return address, so that this will work with
-;; both 32 bit and 64 bit targets.
 
-(define_insn "return_internal"
-  [(parallel [(use (match_operand:SI 0 "register_operand" ""))
-              (return)])]
+(define_insn "<optab>_internal"
+  [(any_return)
+   (use (match_operand:SI 0 "register_operand" ""))]
   ""
   {	
     if (microblaze_is_interrupt_handler ())

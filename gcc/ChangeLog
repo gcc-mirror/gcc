@@ -1,3 +1,8 @@
+2011-12-29  Michael Eager  <eager@eagercon.com>
+
+	* config/microblaze/microblaze.md: Add expander for simple_return,
+	return, add return_internal and simple_return_internal insns.
+
 2011-12-29  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.h (BRANCH_COST): Use sh_branch_cost variable.
