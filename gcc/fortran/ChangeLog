@@ -1,3 +1,11 @@
+2011-12-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dependency.c (gfc_dep_compare_functions):  Document
+	new behavior for REALs and complex.  Add comment to cases
+	where only INTEGERs are handled.  Compare REAL and COMPLEX
+	constants, returning 0 and -2 only.  Add assert to make
+	sure that only integer constants are compared.
+
 2011-12-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51605

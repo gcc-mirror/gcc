@@ -245,7 +245,9 @@ gfc_dep_compare_functions (gfc_expr *e1, gfc_expr *e2, bool impure_ok)
    * 0 if e1 == e2
    * -1 if e1 < e2
    * -2 if the relationship could not be determined
-   * -3 if e1 /= e2, but we cannot tell which one is larger.  */
+   * -3 if e1 /= e2, but we cannot tell which one is larger.
+   REAL and COMPLEX constants are only compared for equality
+   or inequality; if they are unequal, -2 is returned in all cases.  */
 
 int
 gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
@@ -303,7 +305,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 
   if (e1->expr_type == EXPR_OP && e1->value.op.op == INTRINSIC_PLUS)
     {
-      /* Compare X+C vs. X.  */
+      /* Compare X+C vs. X, for INTEGER only.  */
       if (e1->value.op.op2->expr_type == EXPR_CONSTANT
 	  && e1->value.op.op2->ts.type == BT_INTEGER
 	  && gfc_dep_compare_expr (e1->value.op.op1, e2) == 0)
@@ -342,7 +344,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 	}
     }
 
-  /* Compare X vs. X+C.  */
+  /* Compare X vs. X+C, for INTEGER only.  */
   if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_PLUS)
     {
       if (e2->value.op.op2->expr_type == EXPR_CONSTANT
@@ -351,7 +353,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 	return -mpz_sgn (e2->value.op.op2->value.integer);
     }
 
-  /* Compare X-C vs. X.  */
+  /* Compare X-C vs. X, for INTEGER only.  */
   if (e1->expr_type == EXPR_OP && e1->value.op.op == INTRINSIC_MINUS)
     {
       if (e1->value.op.op2->expr_type == EXPR_CONSTANT
@@ -415,7 +417,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 	}
     }
 
-  /* Compare X vs. X-C.  */
+  /* Compare X vs. X-C, for INTEGER only.  */
   if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_MINUS)
     {
       if (e2->value.op.op2->expr_type == EXPR_CONSTANT
@@ -434,8 +436,33 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
       if (e1->ts.type == BT_CHARACTER && e2->ts.type == BT_CHARACTER)
 	return gfc_compare_string (e1, e2);
 
+      /* Compare REAL and COMPLEX constants.  Because of the
+	 traps and pitfalls associated with comparing
+	 a + 1.0 with a + 0.5, check for equality only.  */
+      if (e2->expr_type == EXPR_CONSTANT)
+	{
+	  if (e1->ts.type == BT_REAL && e2->ts.type == BT_REAL)
+	    {
+	      if (mpfr_cmp (e1->value.real, e2->value.real) == 0)
+		return 0;
+	      else
+		return -2;
+	    }
+	  else if (e1->ts.type == BT_COMPLEX && e2->ts.type == BT_COMPLEX)
+	    {
+	      if (mpc_cmp (e1->value.complex, e2->value.complex) == 0)
+		return 0;
+	      else
+		return -2;
+	    }
+	}
+
       if (e1->ts.type != BT_INTEGER || e2->ts.type != BT_INTEGER)
 	return -2;
+
+      /* For INTEGER, all cases where e2 is not constant should have
+	 been filtered out above.  */
+      gcc_assert (e2->expr_type == EXPR_CONSTANT);
 
       i = mpz_cmp (e1->value.integer, e2->value.integer);
       if (i == 0)
@@ -465,7 +492,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
       else if (e1->value.op.op == INTRINSIC_TIMES
 	       && gfc_dep_compare_expr (e1->value.op.op1, e2->value.op.op2) == 0
 	       && gfc_dep_compare_expr (e1->value.op.op2, e2->value.op.op1) == 0)
-	/* Commutativity of multiplication.  */
+	/* Commutativity of multiplication; addition is handled above.  */
 	return 0;
 
       return -2;
