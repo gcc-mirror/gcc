@@ -41,7 +41,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   class _Pred = std::equal_to<_Key>,
 	   class _Alloc = std::allocator<std::pair<const _Key, _Tp> >,
 	   bool __cache_hash_code =
-	     __not_<__and_<is_integral<_Key>,
+	     __not_<__and_<is_integral<_Key>, is_empty<_Hash>,
+			   integral_constant<bool, !__is_final(_Hash)>,
 			   __detail::__is_noexcept_hash<_Key, _Hash>>>::value>
     class __unordered_map
     : public _Hashtable<_Key, std::pair<const _Key, _Tp>, _Alloc,
@@ -112,7 +113,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   class _Pred = std::equal_to<_Key>,
 	   class _Alloc = std::allocator<std::pair<const _Key, _Tp> >,
 	   bool __cache_hash_code =
-	     __not_<__and_<is_integral<_Key>,
+	     __not_<__and_<is_integral<_Key>, is_empty<_Hash>,
+			   integral_constant<bool, !__is_final(_Hash)>,
 			   __detail::__is_noexcept_hash<_Key, _Hash>>>::value>
     class __unordered_multimap
     : public _Hashtable<_Key, std::pair<const _Key, _Tp>,

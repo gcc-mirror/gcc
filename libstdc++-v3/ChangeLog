@@ -1,3 +1,43 @@
+2011-12-29  François Dumont <fdumont@gcc.gnu.org>
+
+	PR libstdc++/51608
+	* include/bits/hashtable_policy.h (_Equal_helper<>): New, change the
+	way the _Equal functor is used depending on whether hash code is
+	cached or not.
+	(_Ebo_helper<>): New helper type to introduce EBO when possible.
+	(_Hash_code_base): Use _Ebo_helper to limit memory footprint. Move
+	_Equal functor management...
+	(_Hashtable_base): ...here, new, use _Equal_helper.
+	(_Local_iterator_base<>, _Locale_iterator<>, _Locale_const_iterator<>):
+	New, use _Hash_code_base, implementation of...
+	* include/bits/hashtable.h (_Hashtable<>::local_iterator,
+	_Hashtable<>::const_local_iterator): ...those. Add static assertions
+	checking that some functors are empty depending on whether hash code
+	is cache or not.
+	(_Hashtable<>::_M_bucket_index): New overloads using current bucket
+	count, use through out the _Hastable<> implementation.
+	* include/bits/unordered_set.h (__unordered_set<>,
+	__unordered_multiset<>): Cache hash code iff hash functor is not
+	empty and not final.
+	* include/bits/unordered_map.h (__unordered_map<>,
+	__unordered_multimap<>): Likewise.
+	* include/debug/unordered_map
+	(unordered_map<>::_S_to_local, unordered_multimap<>::_S_to_local):
+	Adapt to match new local iterator implementation.
+	* include/debug/unordered_set (unordered_set<>::_S_to_local,
+	unordered_multiset<>::_S_to_local): Likewise.
+	* include/profile/unordered_map (unordered_map<>::_M_profile_destruct,
+	unordered_multimap<>::_M_profile_destruct): Enhance thanks to usage of
+	local iterators.
+	* include/profile/unordered_set (unordered_set<>::_M_profile_destruct,
+	unordered_multiset<>::_M_profile_destruct): Likewise.
+	* testsuite_files/23_containers/unordered_set/instantiation_neg.cc:
+	Fix error line.
+	* testsuite_files/23_containers/unordered_set/final_hash.cc: New.
+	* testsuite_files/23_containers/unordered_multiset/final_hash.cc: New.
+	* testsuite_files/23_containers/unordered_map/final_hash.cc: New.
+	* testsuite_files/23_containers/unordered_multimap/final_hash.cc: New.
+
 2011-12-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/51701

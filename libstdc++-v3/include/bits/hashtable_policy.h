@@ -101,8 +101,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_next() { }
     };
 
-  // Local iterators, used to iterate within a bucket but not between
-  // buckets.
+  // Node iterators, used to iterate through all the hashtable.
   template<typename _Value, bool __cache>
     struct _Node_iterator_base
     {
@@ -425,8 +424,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       _Hashtable* __h = static_cast<_Hashtable*>(this);
       typename _Hashtable::_Hash_code_type __code = __h->_M_hash_code(__k);
-      std::size_t __n = __h->_M_bucket_index(__k, __code,
-					     __h->_M_bucket_count);
+      std::size_t __n = __h->_M_bucket_index(__k, __code);
 
       typename _Hashtable::_Node* __p = __h->_M_find_node(__n, __k, __code);
       if (!__p)
@@ -443,8 +441,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       _Hashtable* __h = static_cast<_Hashtable*>(this);
       typename _Hashtable::_Hash_code_type __code = __h->_M_hash_code(__k);
-      std::size_t __n = __h->_M_bucket_index(__k, __code,
-					     __h->_M_bucket_count);
+      std::size_t __n = __h->_M_bucket_index(__k, __code);
 
       typename _Hashtable::_Node* __p = __h->_M_find_node(__n, __k, __code);
       if (!__p)
@@ -462,8 +459,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       _Hashtable* __h = static_cast<_Hashtable*>(this);
       typename _Hashtable::_Hash_code_type __code = __h->_M_hash_code(__k);
-      std::size_t __n = __h->_M_bucket_index(__k, __code,
-					     __h->_M_bucket_count);
+      std::size_t __n = __h->_M_bucket_index(__k, __code);
 
       typename _Hashtable::_Node* __p = __h->_M_find_node(__n, __k, __code);
       if (!__p)
@@ -479,8 +475,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       const _Hashtable* __h = static_cast<const _Hashtable*>(this);
       typename _Hashtable::_Hash_code_type __code = __h->_M_hash_code(__k);
-      std::size_t __n = __h->_M_bucket_index(__k, __code,
-					     __h->_M_bucket_count);
+      std::size_t __n = __h->_M_bucket_index(__k, __code);
 
       typename _Hashtable::_Node* __p = __h->_M_find_node(__n, __k, __code);
       if (!__p)
@@ -518,6 +513,49 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
+  // Helper class using EBO when it is not forbidden, type is not final,
+  // and when it worth it, type is empty.
+  template<int _N, typename _Tp,
+	   bool __use_ebo = !__is_final(_Tp) && __is_empty(_Tp)>
+    struct _Ebo_helper;
+
+  // Specialization using EBO
+  template<int _N, typename _Tp>
+    struct _Ebo_helper<_N, _Tp, true> : _Tp
+    {
+      _Ebo_helper() = default;
+      _Ebo_helper(const _Tp& __tp) : _Tp(__tp)
+      { }
+
+      static const _Tp&
+      _S_cget(const _Ebo_helper<_N, _Tp, true>& __eboh)
+      { return static_cast<const _Tp&>(__eboh); }
+
+      static _Tp&
+      _S_get(_Ebo_helper<_N, _Tp, true>& __eboh)
+      { return static_cast<_Tp&>(__eboh); }
+    };
+
+  // Specialization not using EBO
+  template<int _N, typename _Tp>
+    struct _Ebo_helper<_N, _Tp, false>
+    {
+      _Ebo_helper() = default;
+      _Ebo_helper(const _Tp& __tp) : m_tp(__tp)
+      { }
+
+      static const _Tp&
+      _S_cget(const _Ebo_helper<_N, _Tp, false>& __eboh)
+      { return __eboh.m_tp; }
+
+      static _Tp&
+      _S_get(_Ebo_helper<_N, _Tp, false>& __eboh)
+      { return __eboh.m_tp; }
+
+    private:
+      _Tp m_tp;
+    };
+
   // Class template _Hash_code_base.  Encapsulates two policy issues that
   // aren't quite orthogonal.
   //   (1) the difference between using a ranged hash function and using
@@ -526,28 +564,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   //       we have a dummy type as placeholder.
   //   (2) Whether or not we cache hash codes.  Caching hash codes is
   //       meaningless if we have a ranged hash function.
-  // We also put the key extraction and equality comparison function
-  // objects here, for convenience.
+  // We also put the key extraction objects here, for convenience.
+  //
+  // Each specialization derives from one or more of the template parameters to
+  // benefit from Ebo. This is important as this type is inherited in some cases
+  // by the _Local_iterator_base type used to implement local_iterator and
+  // const_local_iterator. As with any iterator type we prefer to make it as
+  // small as possible.
 
   // Primary template: unused except as a hook for specializations.
-  template<typename _Key, typename _Value,
-	   typename _ExtractKey, typename _Equal,
+  template<typename _Key, typename _Value, typename _ExtractKey,
 	   typename _H1, typename _H2, typename _Hash,
 	   bool __cache_hash_code>
     struct _Hash_code_base;
 
   // Specialization: ranged hash function, no caching hash codes.  H1
   // and H2 are provided but ignored.  We define a dummy hash code type.
-  template<typename _Key, typename _Value,
-	   typename _ExtractKey, typename _Equal,
+  template<typename _Key, typename _Value, typename _ExtractKey, 
 	   typename _H1, typename _H2, typename _Hash>
-    struct _Hash_code_base<_Key, _Value, _ExtractKey, _Equal, _H1, _H2,
-			   _Hash, false>
+    struct _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash, false>
+      : _Ebo_helper<0, _ExtractKey>, _Ebo_helper<1, _Hash>
     {
+    private:
+      typedef _Ebo_helper<0, _ExtractKey> _EboExtractKey;
+      typedef _Ebo_helper<1, _Hash> _EboHash;
     protected:
-      _Hash_code_base(const _ExtractKey& __ex, const _Equal& __eq,
+      // We need the default constructor for the local iterators.
+      _Hash_code_base() = default;
+      _Hash_code_base(const _ExtractKey& __ex,
 		      const _H1&, const _H2&, const _Hash& __h)
-      : _M_extract(__ex), _M_eq(__eq), _M_ranged_hash(__h) { }
+	: _EboExtractKey(__ex), _EboHash(__h) { }
 
       typedef void* _Hash_code_type;
 
@@ -558,17 +604,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::size_t
       _M_bucket_index(const _Key& __k, _Hash_code_type,
 		      std::size_t __n) const
-      { return _M_ranged_hash(__k, __n); }
+      { return _M_ranged_hash()(__k, __n); }
 
       std::size_t
       _M_bucket_index(const _Hash_node<_Value, false>* __p,
 		      std::size_t __n) const
-      { return _M_ranged_hash(_M_extract(__p->_M_v), __n); }
-
-      bool
-      _M_compare(const _Key& __k, _Hash_code_type,
-		 _Hash_node<_Value, false>* __n) const
-      { return _M_eq(__k, _M_extract(__n->_M_v)); }
+      { return _M_ranged_hash()(_M_extract()(__p->_M_v), __n); }
 
       void
       _M_store_code(_Hash_node<_Value, false>*, _Hash_code_type) const
@@ -582,72 +623,75 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_swap(_Hash_code_base& __x)
       {
-	std::swap(_M_extract, __x._M_extract);
-	std::swap(_M_eq, __x._M_eq);
-	std::swap(_M_ranged_hash, __x._M_ranged_hash);
+	std::swap(_M_extract(), __x._M_extract());
+	std::swap(_M_ranged_hash(), __x._M_ranged_hash());
       }
 
     protected:
-      _ExtractKey  _M_extract;
-      _Equal       _M_eq;
-      _Hash        _M_ranged_hash;
+      const _ExtractKey&
+      _M_extract() const { return _EboExtractKey::_S_cget(*this); }
+      _ExtractKey&
+      _M_extract() { return _EboExtractKey::_S_get(*this); }
+      const _Hash&
+      _M_ranged_hash() const { return _EboHash::_S_cget(*this); }
+      _Hash&
+      _M_ranged_hash() { return _EboHash::_S_get(*this); }
     };
-
 
   // No specialization for ranged hash function while caching hash codes.
   // That combination is meaningless, and trying to do it is an error.
 
-
   // Specialization: ranged hash function, cache hash codes.  This
   // combination is meaningless, so we provide only a declaration
   // and no definition.
-  template<typename _Key, typename _Value,
-	   typename _ExtractKey, typename _Equal,
+  template<typename _Key, typename _Value, typename _ExtractKey,
 	   typename _H1, typename _H2, typename _Hash>
-    struct _Hash_code_base<_Key, _Value, _ExtractKey, _Equal, _H1, _H2,
-			   _Hash, true>;
+    struct _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash, true>;
 
   // Specialization: hash function and range-hashing function, no
-  // caching of hash codes.  H is provided but ignored.  Provides
-  // typedef and accessor required by TR1.
-  template<typename _Key, typename _Value,
-	   typename _ExtractKey, typename _Equal,
+  // caching of hash codes.
+  // Provides typedef and accessor required by TR1.
+  template<typename _Key, typename _Value, typename _ExtractKey,
 	   typename _H1, typename _H2>
-    struct _Hash_code_base<_Key, _Value, _ExtractKey, _Equal, _H1, _H2,
+    struct _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2,
 			   _Default_ranged_hash, false>
+      : _Ebo_helper<0, _ExtractKey>, _Ebo_helper<1, _H1>, _Ebo_helper<2, _H2>
     {
+    private:
+      typedef _Ebo_helper<0, _ExtractKey> _EboExtractKey;
+      typedef _Ebo_helper<1, _H1> _EboH1;
+      typedef _Ebo_helper<2, _H2> _EboH2;
+
+    public:
       typedef _H1 hasher;
 
       hasher
       hash_function() const
-      { return _M_h1; }
+      { return _M_h1(); }
 
     protected:
-      _Hash_code_base(const _ExtractKey& __ex, const _Equal& __eq,
+      // We need the default constructor for the local iterators.
+      _Hash_code_base() = default;
+      _Hash_code_base(const _ExtractKey& __ex,
 		      const _H1& __h1, const _H2& __h2,
 		      const _Default_ranged_hash&)
-      : _M_extract(__ex), _M_eq(__eq), _M_h1(__h1), _M_h2(__h2) { }
+      : _EboExtractKey(__ex), _EboH1(__h1), _EboH2(__h2) { }
 
       typedef std::size_t _Hash_code_type;
 
       _Hash_code_type
       _M_hash_code(const _Key& __k) const
-      { return _M_h1(__k); }
+      { return _M_h1()(__k); }
 
       std::size_t
       _M_bucket_index(const _Key&, _Hash_code_type __c,
 		      std::size_t __n) const
-      { return _M_h2(__c, __n); }
+      { return _M_h2()(__c, __n); }
 
       std::size_t
       _M_bucket_index(const _Hash_node<_Value, false>* __p,
 		      std::size_t __n) const
-      { return _M_h2(_M_h1(_M_extract(__p->_M_v)), __n); }
-
-      bool
-      _M_compare(const _Key& __k, _Hash_code_type,
-		 _Hash_node<_Value, false>* __n) const
-      { return _M_eq(__k, _M_extract(__n->_M_v)); }
+      { return _M_h2()(_M_h1()(_M_extract()(__p->_M_v)), __n); }
 
       void
       _M_store_code(_Hash_node<_Value, false>*, _Hash_code_type) const
@@ -661,60 +705,68 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_swap(_Hash_code_base& __x)
       {
-	std::swap(_M_extract, __x._M_extract);
-	std::swap(_M_eq, __x._M_eq);
-	std::swap(_M_h1, __x._M_h1);
-	std::swap(_M_h2, __x._M_h2);
+	std::swap(_M_extract(), __x._M_extract());
+	std::swap(_M_h1(), __x._M_h1());
+	std::swap(_M_h2(), __x._M_h2());
       }
 
     protected:
-      _ExtractKey  _M_extract;
-      _Equal       _M_eq;
-      _H1          _M_h1;
-      _H2          _M_h2;
+      const _ExtractKey&
+      _M_extract() const { return _EboExtractKey::_S_cget(*this); }
+      _ExtractKey&
+      _M_extract() { return _EboExtractKey::_S_get(*this); }
+      const _H1&
+      _M_h1() const { return _EboH1::_S_cget(*this); }
+      _H1&
+      _M_h1() { return _EboH1::_S_get(*this); }
+      const _H2&
+      _M_h2() const { return _EboH2::_S_cget(*this); }
+      _H2&
+      _M_h2() { return _EboH2::_S_get(*this); }
     };
 
   // Specialization: hash function and range-hashing function,
   // caching hash codes.  H is provided but ignored.  Provides
   // typedef and accessor required by TR1.
-  template<typename _Key, typename _Value,
-	   typename _ExtractKey, typename _Equal,
+  template<typename _Key, typename _Value, typename _ExtractKey,
 	   typename _H1, typename _H2>
-    struct _Hash_code_base<_Key, _Value, _ExtractKey, _Equal, _H1, _H2,
+    struct _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2,
 			   _Default_ranged_hash, true>
+      : _Ebo_helper<0, _ExtractKey>, _Ebo_helper<1, _H1>, _Ebo_helper<2, _H2>
     {
+    private:
+      typedef _Ebo_helper<0, _ExtractKey> _EboExtractKey;
+      typedef _Ebo_helper<1, _H1> _EboH1;
+      typedef _Ebo_helper<2, _H2> _EboH2;
+
+    public:
       typedef _H1 hasher;
 
       hasher
       hash_function() const
-      { return _M_h1; }
+      { return _M_h1(); }
 
     protected:
-      _Hash_code_base(const _ExtractKey& __ex, const _Equal& __eq,
+      _Hash_code_base(const _ExtractKey& __ex,
 		      const _H1& __h1, const _H2& __h2,
 		      const _Default_ranged_hash&)
-      : _M_extract(__ex), _M_eq(__eq), _M_h1(__h1), _M_h2(__h2) { }
+      : _EboExtractKey(__ex), _EboH1(__h1), _EboH2(__h2) { }
 
       typedef std::size_t _Hash_code_type;
 
       _Hash_code_type
       _M_hash_code(const _Key& __k) const
-      { return _M_h1(__k); }
+      { return _M_h1()(__k); }
 
       std::size_t
       _M_bucket_index(const _Key&, _Hash_code_type __c,
 		      std::size_t __n) const
-      { return _M_h2(__c, __n); }
+      { return _M_h2()(__c, __n); }
 
       std::size_t
       _M_bucket_index(const _Hash_node<_Value, true>* __p,
 		      std::size_t __n) const
-      { return _M_h2(__p->_M_hash_code, __n); }
-
-      bool
-      _M_compare(const _Key& __k, _Hash_code_type __c,
-		 _Hash_node<_Value, true>* __n) const
-      { return __c == __n->_M_hash_code && _M_eq(__k, _M_extract(__n->_M_v)); }
+      { return _M_h2()(__p->_M_hash_code, __n); }
 
       void
       _M_store_code(_Hash_node<_Value, true>* __n, _Hash_code_type __c) const
@@ -728,17 +780,290 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_swap(_Hash_code_base& __x)
       {
-	std::swap(_M_extract, __x._M_extract);
-	std::swap(_M_eq, __x._M_eq);
-	std::swap(_M_h1, __x._M_h1);
-	std::swap(_M_h2, __x._M_h2);
+	std::swap(_M_extract(), __x._M_extract());
+	std::swap(_M_h1(), __x._M_h1());
+	std::swap(_M_h2(), __x._M_h2());
       }
 
     protected:
-      _ExtractKey  _M_extract;
-      _Equal       _M_eq;
-      _H1          _M_h1;
-      _H2          _M_h2;
+      const _ExtractKey&
+      _M_extract() const { return _EboExtractKey::_S_cget(*this); }
+      _ExtractKey&
+      _M_extract() { return _EboExtractKey::_S_get(*this); }
+      const _H1&
+      _M_h1() const { return _EboH1::_S_cget(*this); }
+      _H1&
+      _M_h1() { return _EboH1::_S_get(*this); }
+      const _H2&
+      _M_h2() const { return _EboH2::_S_cget(*this); }
+      _H2&
+      _M_h2() { return _EboH2::_S_get(*this); }
+    };
+
+  template <typename _Key, typename _Value, typename _ExtractKey,
+	    typename _Equal, typename _HashCodeType,
+	    bool __cache_hash_code>
+  struct _Equal_helper;
+
+  template<typename _Key, typename _Value, typename _ExtractKey,
+	   typename _Equal, typename _HashCodeType>
+  struct _Equal_helper<_Key, _Value, _ExtractKey, _Equal, _HashCodeType, true>
+  {
+    static bool
+    _S_equals(const _Equal& __eq, const _ExtractKey& __extract,
+	      const _Key& __k, _HashCodeType __c,
+	      _Hash_node<_Value, true>* __n)
+    { return __c == __n->_M_hash_code
+	     && __eq(__k, __extract(__n->_M_v)); }
+  };
+
+  template<typename _Key, typename _Value, typename _ExtractKey,
+	   typename _Equal, typename _HashCodeType>
+  struct _Equal_helper<_Key, _Value, _ExtractKey, _Equal, _HashCodeType, false>
+  {
+    static bool
+    _S_equals(const _Equal& __eq, const _ExtractKey& __extract,
+	      const _Key& __k, _HashCodeType,
+	      _Hash_node<_Value, false>* __n)
+    { return __eq(__k, __extract(__n->_M_v)); }
+  };
+
+  // Helper class adding management of _Equal functor to _Hash_code_base
+  // type.
+  template<typename _Key, typename _Value,
+	   typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash,
+	   bool __cache_hash_code>
+  struct _Hashtable_base
+    : _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash,
+		      __cache_hash_code>,
+      _Ebo_helper<0, _Equal>
+  {
+  private:
+    typedef _Ebo_helper<0, _Equal> _EboEqual;
+
+  protected:
+    typedef _Hash_code_base<_Key, _Value, _ExtractKey,
+			    _H1, _H2, _Hash, __cache_hash_code> _HCBase;
+    typedef typename _HCBase::_Hash_code_type _Hash_code_type;
+
+    _Hashtable_base(const _ExtractKey& __ex,
+		    const _H1& __h1, const _H2& __h2,
+		    const _Hash& __hash, const _Equal& __eq)
+      : _HCBase(__ex, __h1, __h2, __hash), _EboEqual(__eq) { }
+
+    bool
+    _M_equals(const _Key& __k, _Hash_code_type __c,
+	      _Hash_node<_Value, __cache_hash_code>* __n) const
+    {
+      typedef _Equal_helper<_Key, _Value, _ExtractKey,
+			   _Equal, _Hash_code_type,
+			   __cache_hash_code> _EqualHelper;
+      return _EqualHelper::_S_equals(_M_eq(), this->_M_extract(), __k, __c, __n);
+    }
+
+    void
+    _M_swap(_Hashtable_base& __x)
+    {
+      _HCBase::_M_swap(__x);
+      std::swap(_M_eq(), __x._M_eq());
+    }
+
+  private:
+    const _Equal&
+    _M_eq() const { return _EboEqual::_S_cget(*this); }
+    _Equal&
+    _M_eq() { return _EboEqual::_S_get(*this); }
+  };
+
+  // Local iterators, used to iterate within a bucket but not between
+  // buckets.
+  template<typename _Key, typename _Value, typename _ExtractKey,
+	   typename _H1, typename _H2, typename _Hash,
+	   bool __cache_hash_code>
+    struct _Local_iterator_base;
+
+  template<typename _Key, typename _Value, typename _ExtractKey,
+	   typename _H1, typename _H2, typename _Hash>
+    struct _Local_iterator_base<_Key, _Value, _ExtractKey,
+				_H1, _H2, _Hash, true>
+      : _H2
+    {
+      _Local_iterator_base() = default;
+      _Local_iterator_base(_Hash_node<_Value, true>* __p,
+			   std::size_t __bkt, std::size_t __bkt_count)
+      : _M_cur(__p), _M_bucket(__bkt), _M_bucket_count(__bkt_count) { }
+
+      void
+      _M_incr()
+      {
+	_M_cur = _M_cur->_M_next;
+	if (_M_cur)
+	  {
+	    std::size_t __bkt = _M_h2()(_M_cur->_M_hash_code, _M_bucket_count);
+	    if (__bkt != _M_bucket)
+	      _M_cur = nullptr;
+	  }
+      }
+
+      const _H2& _M_h2() const
+      { return *this; }
+
+      _Hash_node<_Value, true>*  _M_cur;
+      std::size_t _M_bucket;
+      std::size_t _M_bucket_count;
+    };
+
+  template<typename _Key, typename _Value, typename _ExtractKey,
+	   typename _H1, typename _H2, typename _Hash>
+    struct _Local_iterator_base<_Key, _Value, _ExtractKey,
+				_H1, _H2, _Hash, false>
+      : _Hash_code_base<_Key, _Value, _ExtractKey,
+			_H1, _H2, _Hash, false>
+    {
+      _Local_iterator_base() = default;
+      _Local_iterator_base(_Hash_node<_Value, false>* __p,
+			   std::size_t __bkt, std::size_t __bkt_count)
+      : _M_cur(__p), _M_bucket(__bkt), _M_bucket_count(__bkt_count) { }
+
+      void
+      _M_incr()
+      {
+	_M_cur = _M_cur->_M_next;
+	if (_M_cur)
+	  {
+	    std::size_t __bkt = this->_M_bucket_index(_M_cur, _M_bucket_count);
+	    if (__bkt != _M_bucket)
+	      _M_cur = nullptr;
+	  }
+      }
+
+      _Hash_node<_Value, false>*  _M_cur;
+      std::size_t _M_bucket;
+      std::size_t _M_bucket_count;
+    };
+
+  template<typename _Key, typename _Value, typename _ExtractKey,
+	   typename _H1, typename _H2, typename _Hash, bool __cache>
+    inline bool
+    operator==(const _Local_iterator_base<_Key, _Value, _ExtractKey,
+					  _H1, _H2, _Hash, __cache>& __x,
+	       const _Local_iterator_base<_Key, _Value, _ExtractKey,
+					  _H1, _H2, _Hash, __cache>& __y)
+    { return __x._M_cur == __y._M_cur; }
+
+  template<typename _Key, typename _Value, typename _ExtractKey,
+	   typename _H1, typename _H2, typename _Hash, bool __cache>
+    inline bool
+    operator!=(const _Local_iterator_base<_Key, _Value, _ExtractKey,
+					  _H1, _H2, _Hash, __cache>& __x,
+	       const _Local_iterator_base<_Key, _Value, _ExtractKey,
+					  _H1, _H2, _Hash, __cache>& __y)
+    { return __x._M_cur != __y._M_cur; }
+
+  template<typename _Key, typename _Value, typename _ExtractKey,
+	   typename _H1, typename _H2, typename _Hash,
+	   bool __constant_iterators, bool __cache>
+    struct _Local_iterator
+    : public _Local_iterator_base<_Key, _Value, _ExtractKey,
+				  _H1, _H2, _Hash, __cache>
+    {
+      typedef _Value                                   value_type;
+      typedef typename std::conditional<__constant_iterators,
+					const _Value*, _Value*>::type
+						       pointer;
+      typedef typename std::conditional<__constant_iterators,
+					const _Value&, _Value&>::type
+						       reference;
+      typedef std::ptrdiff_t                           difference_type;
+      typedef std::forward_iterator_tag                iterator_category;
+
+      _Local_iterator() = default;
+
+      explicit
+      _Local_iterator(_Hash_node<_Value, __cache>* __p,
+		      std::size_t __bkt, std::size_t __bkt_count)
+      : _Local_iterator_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash,
+			     __cache>(__p, __bkt, __bkt_count)
+      { }
+
+      reference
+      operator*() const
+      { return this->_M_cur->_M_v; }
+
+      pointer
+      operator->() const
+      { return std::__addressof(this->_M_cur->_M_v); }
+
+      _Local_iterator&
+      operator++()
+      {
+	this->_M_incr();
+	return *this;
+      }
+
+      _Local_iterator
+      operator++(int)
+      {
+	_Local_iterator __tmp(*this);
+	this->_M_incr();
+	return __tmp;
+      }
+    };
+
+  template<typename _Key, typename _Value, typename _ExtractKey,
+	   typename _H1, typename _H2, typename _Hash,
+	   bool __constant_iterators, bool __cache>
+    struct _Local_const_iterator
+    : public _Local_iterator_base<_Key, _Value, _ExtractKey,
+				  _H1, _H2, _Hash, __cache>
+    {
+      typedef _Value                                   value_type;
+      typedef const _Value*                            pointer;
+      typedef const _Value&                            reference;
+      typedef std::ptrdiff_t                           difference_type;
+      typedef std::forward_iterator_tag                iterator_category;
+
+      _Local_const_iterator() = default;
+
+      explicit
+      _Local_const_iterator(_Hash_node<_Value, __cache>* __p,
+			    std::size_t __bkt, std::size_t __bkt_count)
+      : _Local_iterator_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash,
+			     __cache>(__p, __bkt, __bkt_count)
+      { }
+
+      _Local_const_iterator(const _Local_iterator<_Key, _Value, _ExtractKey,
+						  _H1, _H2, _Hash,
+						  __constant_iterators,
+						  __cache>& __x)
+      : _Local_iterator_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash,
+			     __cache>(__x._M_cur, __x._M_bucket,
+				      __x._M_bucket_count)
+      { }
+
+      reference
+      operator*() const
+      { return this->_M_cur->_M_v; }
+
+      pointer
+      operator->() const
+      { return std::__addressof(this->_M_cur->_M_v); }
+
+      _Local_const_iterator&
+      operator++()
+      {
+	this->_M_incr();
+	return *this;
+      }
+
+      _Local_const_iterator
+      operator++(int)
+      {
+	_Local_const_iterator __tmp(*this);
+	this->_M_incr();
+	return __tmp;
+      }
     };
 
 
