@@ -1,3 +1,12 @@
+2012-12-29  Kai Tietz  <ktietz@redhat.com>
+
+	* g++.old-deja/g++.brendan/new3.C: Adjust test for mingw
+	targets to use static-version.
+	* g++.old-deja/g++.abi/cxa_vec.C: Likewise.
+	* g++.old-deja/g++.abi/arraynew.C: Likewise.
+	* g++.old-deja/g++.eh/new1.C: Likewise.
+	* g++.old-deja/g++.eh/new2.C: Likewise.
+
 2011-12-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/function_optimize_9.f90:  New test.

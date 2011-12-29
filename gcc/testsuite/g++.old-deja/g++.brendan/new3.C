@@ -5,6 +5,8 @@
 // are resolved when the kernel is linked.
 // { dg-do run { xfail { powerpc-ibm-aix* || vxworks_kernel } } }
 // { dg-options "-flat_namespace" { target *-*-darwin[67]* } }
+// Avoid use of none-overridable new/delete operators in shared
+// { dg-options "-static" { target *-*-mingw* } }
 // GROUPS passed operator-new
 #include <stdio.h>
 #include <stdlib.h>

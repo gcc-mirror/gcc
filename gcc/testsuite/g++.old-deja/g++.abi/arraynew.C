@@ -1,5 +1,7 @@
 // { dg-do run  }
 // Origin: Mark Mitchell <mark@codesourcery.com>
+// Avoid use of none-overridable new/delete operators in shared
+// { dg-options "-static" { target *-*-mingw* } }
 
 #if defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
 
