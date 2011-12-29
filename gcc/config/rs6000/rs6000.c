@@ -15456,12 +15456,13 @@ rs6000_assemble_integer (rtx x, unsigned int size, int aligned_p)
     {
       static int recurse = 0;
 
-      /* For -mrelocatable, we mark all addresses that need to be fixed up
-	 in the .fixup section.  */
+      /* For -mrelocatable, we mark all addresses that need to be fixed up in
+	 the .fixup section.  Since the TOC section is already relocated, we
+	 don't need to mark it here.  We used to skip the text section, but it
+	 should never be valid for relocated addresses to be placed in the text
+	 section.  */
       if (TARGET_RELOCATABLE
 	  && in_section != toc_section
-	  && in_section != text_section
-	  && (in_section && (in_section->common.flags & SECTION_CODE)) == 0
 	  && !recurse
 	  && GET_CODE (x) != CONST_INT
 	  && GET_CODE (x) != CONST_DOUBLE
