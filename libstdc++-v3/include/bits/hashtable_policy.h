@@ -515,45 +515,45 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Helper class using EBO when it is not forbidden, type is not final,
   // and when it worth it, type is empty.
-  template<int _N, typename _Tp,
+  template<int _Nm, typename _Tp,
 	   bool __use_ebo = !__is_final(_Tp) && __is_empty(_Tp)>
     struct _Ebo_helper;
 
-  // Specialization using EBO
-  template<int _N, typename _Tp>
-    struct _Ebo_helper<_N, _Tp, true> : _Tp
+  // Specialization using EBO.
+  template<int _Nm, typename _Tp>
+    struct _Ebo_helper<_Nm, _Tp, true> : _Tp
     {
       _Ebo_helper() = default;
       _Ebo_helper(const _Tp& __tp) : _Tp(__tp)
       { }
 
       static const _Tp&
-      _S_cget(const _Ebo_helper<_N, _Tp, true>& __eboh)
+      _S_cget(const _Ebo_helper& __eboh)
       { return static_cast<const _Tp&>(__eboh); }
 
       static _Tp&
-      _S_get(_Ebo_helper<_N, _Tp, true>& __eboh)
+      _S_get(_Ebo_helper& __eboh)
       { return static_cast<_Tp&>(__eboh); }
     };
 
-  // Specialization not using EBO
-  template<int _N, typename _Tp>
-    struct _Ebo_helper<_N, _Tp, false>
+  // Specialization not using EBO.
+  template<int _Nm, typename _Tp>
+    struct _Ebo_helper<_Nm, _Tp, false>
     {
       _Ebo_helper() = default;
-      _Ebo_helper(const _Tp& __tp) : m_tp(__tp)
+      _Ebo_helper(const _Tp& __tp) : __m_tp(__tp)
       { }
 
       static const _Tp&
-      _S_cget(const _Ebo_helper<_N, _Tp, false>& __eboh)
-      { return __eboh.m_tp; }
+      _S_cget(const _Ebo_helper& __eboh)
+      { return __eboh.__m_tp; }
 
       static _Tp&
-      _S_get(_Ebo_helper<_N, _Tp, false>& __eboh)
-      { return __eboh.m_tp; }
+      _S_get(_Ebo_helper& __eboh)
+      { return __eboh.__m_tp; }
 
     private:
-      _Tp m_tp;
+      _Tp __m_tp;
     };
 
   // Class template _Hash_code_base.  Encapsulates two policy issues that
@@ -583,7 +583,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Key, typename _Value, typename _ExtractKey, 
 	   typename _H1, typename _H2, typename _Hash>
     struct _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash, false>
-      : _Ebo_helper<0, _ExtractKey>, _Ebo_helper<1, _Hash>
+    : _Ebo_helper<0, _ExtractKey>, _Ebo_helper<1, _Hash>
     {
     private:
       typedef _Ebo_helper<0, _ExtractKey> _EboExtractKey;
@@ -655,7 +655,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _H1, typename _H2>
     struct _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2,
 			   _Default_ranged_hash, false>
-      : _Ebo_helper<0, _ExtractKey>, _Ebo_helper<1, _H1>, _Ebo_helper<2, _H2>
+    : _Ebo_helper<0, _ExtractKey>, _Ebo_helper<1, _H1>, _Ebo_helper<2, _H2>
     {
     private:
       typedef _Ebo_helper<0, _ExtractKey> _EboExtractKey;
@@ -732,7 +732,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _H1, typename _H2>
     struct _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2,
 			   _Default_ranged_hash, true>
-      : _Ebo_helper<0, _ExtractKey>, _Ebo_helper<1, _H1>, _Ebo_helper<2, _H2>
+    : _Ebo_helper<0, _ExtractKey>, _Ebo_helper<1, _H1>, _Ebo_helper<2, _H2>
     {
     private:
       typedef _Ebo_helper<0, _ExtractKey> _EboExtractKey;
@@ -835,9 +835,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _H1, typename _H2, typename _Hash,
 	   bool __cache_hash_code>
   struct _Hashtable_base
-    : _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash,
-		      __cache_hash_code>,
-      _Ebo_helper<0, _Equal>
+  : _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash,
+		    __cache_hash_code>,
+    _Ebo_helper<0, _Equal>
   {
   private:
     typedef _Ebo_helper<0, _Equal> _EboEqual;
