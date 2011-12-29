@@ -1,5 +1,8 @@
 2012-12-29  Kai Tietz  <ktietz@redhat.com>
 
+	* g++.dg/abi/bitfield3.C: Make sure test runs
+	for windows targets without activated ms-bitfields option.
+
 	* g++.old-deja/g++.brendan/new3.C: Adjust test for mingw
 	targets to use static-version.
 	* g++.old-deja/g++.abi/cxa_vec.C: Likewise.
