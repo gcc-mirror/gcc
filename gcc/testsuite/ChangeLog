@@ -1,3 +1,17 @@
+2011-12-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR testsuite/51702
+	* gcc.dg/scal-to-vec1.c: If 32-bit powerpc-linux, add the
+	-mabi=altivec option, which suppresses a warning message about
+	passing vectors by reference.  The extra warning causes some tests
+	to fail.
+	* gcc.dg/scal-to-vec2.c: Likewise.
+	* gcc.dg/Wstrict-aliasing-bogus-ref-all-2.c: Likewise.
+	* gcc.dg/pr35442.c: Likewise.
+	* gcc.dg/vector-compare-1.c: Likewise.
+	* gcc.dg/vector-compare-2.c: Likewise.
+	* gcc.dg/torture/pr36891.c: Likewise.
+
 2012-12-29  Kai Tietz  <ktietz@redhat.com>
 
 	* g++.dg/abi/bitfield3.C: Make sure test runs

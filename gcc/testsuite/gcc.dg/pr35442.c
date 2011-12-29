@@ -1,5 +1,6 @@
 /* PR c/35442 */
 /* { dg-bogus "not supported by" "" { target *-*-* } 0 } */
+/* { dg-options "-mabi=altivec" { target { { powerpc*-*-linux* } && ilp32 } } } */
 
 typedef char A __attribute__ ((vector_size (64)));
 typedef int B __attribute__ ((vector_size (64)));
