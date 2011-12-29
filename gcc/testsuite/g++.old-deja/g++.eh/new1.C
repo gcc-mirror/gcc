@@ -1,5 +1,7 @@
 // { dg-do run  }
 // Test that a throw in foo destroys the A, but does not free the memory.
+// Avoid use of none-overridable new/delete operators in shared
+// { dg-options "-static" { target *-*-mingw* } }
 
 #include <cstddef>
 #include <cstdlib>
