@@ -27138,7 +27138,7 @@ rs6000_inner_target_options (tree args, bool attr_p)
 		    if (strcmp (r, rs6000_opt_vars[i].name) == 0)
 		      {
 			size_t j = rs6000_opt_vars[i].global_offset;
-			((int *) &global_options)[j] = !invert;
+			*((int *) ((char *)&global_options + j)) = !invert;
 			error_p = false;
 			break;
 		      }
