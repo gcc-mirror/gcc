@@ -21,7 +21,8 @@
   <section xml:id="manual.ext.concurrency.design.threads" xreflabel="Threads API"><info><title>Interface to Locks and Mutexes</title></info>
     
 
-<para>The file &lt;ext/concurrence.h&gt; contains all the higher-level
+<para>The file <filename class="headerfile">&lt;ext/concurrence.h&gt;</filename>
+contains all the higher-level
 constructs for playing with threads. In contrast to the atomics layer,
 the concurrence layer consists largely of types. All types are defined within <code>namespace __gnu_cxx</code>.
 </para>
@@ -65,14 +66,14 @@ host environment and the current compilation flags.
 interface: <code>__mutex</code>, and <code>__scoped_lock</code>.
 </para>
 
-<para>
-</para>
-
 <para>The scoped lock idiom is well-discussed within the C++
 community. This version takes a <code>__mutex</code> reference, and
-locks it during construction of <code>__scoped_locke</code> and
+locks it during construction of <code>__scoped_lock</code> and
 unlocks it during destruction. This is an efficient way of locking
 critical sections, while retaining exception-safety.
+These types have been superseded in the ISO C++ 2011 standard by the
+mutex and lock types defined in the header
+<filename class="headerfile">&lt;mutex&gt;</filename>.
 </para>
   </section>
 
