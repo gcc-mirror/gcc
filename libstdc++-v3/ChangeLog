@@ -1,3 +1,11 @@
+2011-12-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/51711
+	* include/bits/regex.h (regex_replace): Fix thinko.
+	* testsuite/28_regex/algorithms/regex_replace/char/51711.cc: New.
+	* testsuite/28_regex/algorithms/regex_replace/wchar_t/51711.cc:
+	Likewise.
+
 2011-12-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/51626

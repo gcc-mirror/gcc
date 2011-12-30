@@ -2219,7 +2219,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  regex_constants::match_flag_type __flags
 		  = regex_constants::match_default)
     {
-      std::string __result;
+      basic_string<_Ch_type> __result;
       regex_replace(std::back_inserter(__result),
 		    __s.begin(), __s.end(), __e, __fmt, __flags);
       return __result;
