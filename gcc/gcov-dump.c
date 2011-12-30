@@ -286,7 +286,7 @@ tag_function (const char *filename ATTRIBUTE_UNUSED,
     {
       printf (" ident=%u", gcov_read_unsigned ());
       printf (", lineno_checksum=0x%08x", gcov_read_unsigned ());
-      printf (", cfg_checksum_checksum=0x%08x", gcov_read_unsigned ());
+      printf (", cfg_checksum=0x%08x", gcov_read_unsigned ());
 
       if (gcov_position () - pos < length)
 	{
