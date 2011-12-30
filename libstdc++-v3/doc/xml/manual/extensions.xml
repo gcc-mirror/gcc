@@ -160,7 +160,7 @@ extensions, be aware of two things:
 <para>There are
    versions of single-bit test, set, reset, and flip member functions which
    do no range-checking.  If we call them member functions of an instantiation
-   of "bitset&lt;N&gt;," then their names and signatures are:
+   of <code>bitset&lt;N&gt;</code>, then their names and signatures are:
 </para>
    <programlisting>
    bitset&lt;N&gt;&amp;   _Unchecked_set   (size_t pos);
@@ -173,14 +173,10 @@ extensions, be aware of two things:
    no present plans to do so (and there doesn't seem to be any immediate
    reason to).
 </para>
-<para>The semantics of member function <code>operator[]</code> are not specified
-   in the C++ standard.  A long-standing defect report calls for sensible
-   obvious semantics, which are already implemented here:  <code>op[]</code>
-   on a const bitset returns a bool, and for a non-const bitset returns a
-   <code>reference</code> (a nested type).  However, this implementation does
-   no range-checking on the index argument, which is in keeping with other
-   containers' <code>op[]</code> requirements.  The defect report's proposed
-   resolution calls for range-checking to be done.  We'll just wait and see...
+<para>The member function <code>operator[]</code> on a const bitset returns
+   a bool, and for a non-const bitset returns a <code>reference</code> (a
+   nested type).  No range-checking is done on the index argument, in keeping
+   with other containers' <code>operator[]</code> requirements.
 </para>
 <para>Finally, two additional searching functions have been added.  They return
    the index of the first "on" bit, and the index of the first
@@ -214,16 +210,20 @@ extensions, be aware of two things:
      &lt;rb_tree&gt;
    </programlisting>
    <para>are all here;
-      <code>&lt;hash_map&gt;</code> and <code>&lt;hash_set&gt;</code>
+      <filename class="headerfile">&lt;backwards/hash_map&gt;</filename> and
+      <filename class="headerfile">&lt;backwards/hash_set&gt;</filename>
       are deprecated but available as backwards-compatible extensions,
-      as discussed further below.  <code>&lt;rope&gt;</code> is the
-      SGI specialization for large strings ("rope,"
-      "large strings," get it? Love that geeky humor.)
-      <code>&lt;slist&gt;</code> is a singly-linked list, for when the
-      doubly-linked <code>list&lt;&gt;</code> is too much space
-      overhead, and <code>&lt;rb_tree&gt;</code> exposes the red-black
-      tree classes used in the implementation of the standard maps and
-      sets.
+      as discussed further below.
+      <filename class="headerfile">&lt;ext/rope&gt;</filename> is the SGI
+      specialization for large strings ("rope," "large strings," get it? Love
+      that geeky humor.)
+      <filename class="headerfile">&lt;ext/slist&gt;</filename> (superseded in
+      C++11 by <filename class="headerfile">&lt;forward_list&gt;</filename>)
+      is a singly-linked list, for when the doubly-linked <code>list&lt;&gt;</code>
+      is too much space overhead, and
+      <filename class="headerfile">&lt;ext/rb_tree&gt;</filename> exposes the
+      red-black tree classes used in the implementation of the standard maps
+      and sets.
    </para>
    <para>Each of the associative containers map, multimap, set, and multiset
       have a counterpart which uses a
@@ -256,6 +256,13 @@ extensions, be aware of two things:
      </para>
    </blockquote>
 
+   <para>
+      The deprecated hash tables are superseded by the standard unordered
+      associative containers defined in the ISO C++ 2011 standard in the
+      headers <filename class="headerfile">&lt;unordered_map&gt;</filename>
+      and <filename class="headerfile">&lt;unordered_set&gt;</filename>.
+   </para>
+
   </section>
 </chapter>
 
@@ -264,36 +271,37 @@ extensions, be aware of two things:
 <?dbhtml filename="ext_utilities.html"?>
 
   <para>
-    The &lt;functional&gt; header contains many additional functors
+    The <filename class="headerfile">&lt;functional&gt;</filename> header
+    contains many additional functors
     and helper functions, extending section 20.3.  They are
     implemented in the file stl_function.h:
   </para>
   <itemizedlist>
   <listitem>
-  <para><code>identity_element</code> for addition and multiplication. *
+  <para><code>identity_element</code> for addition and multiplication.
   </para>
   </listitem>
   <listitem>
     <para>The functor <code>identity</code>, whose <code>operator()</code>
-      returns the argument unchanged. *
+      returns the argument unchanged.
   </para>
   </listitem>
   <listitem>
     <para>Composition functors <code>unary_function</code> and
       <code>binary_function</code>, and their helpers <code>compose1</code>
-      and <code>compose2</code>. *
+      and <code>compose2</code>.
     </para>
   </listitem>
   <listitem>
-  <para><code>select1st</code> and <code>select2nd</code>, to strip pairs. *
+  <para><code>select1st</code> and <code>select2nd</code>, to strip pairs.
   </para>
   </listitem>
-  <listitem><para><code>project1st</code> and <code>project2nd</code>. * </para></listitem>
+  <listitem><para><code>project1st</code> and <code>project2nd</code>. </para></listitem>
   <listitem><para>A set of functors/functions which always return the same result.  They
       are <code>constant_void_fun</code>, <code>constant_binary_fun</code>,
       <code>constant_unary_fun</code>, <code>constant0</code>,
-      <code>constant1</code>, and <code>constant2</code>. * </para></listitem>
-  <listitem><para>The class <code>subtractive_rng</code>. * </para></listitem>
+      <code>constant1</code>, and <code>constant2</code>. </para></listitem>
+  <listitem><para>The class <code>subtractive_rng</code>. </para></listitem>
   <listitem><para>mem_fun adaptor helpers <code>mem_fun1</code> and
       <code>mem_fun1_ref</code> are provided for backwards compatibility. </para></listitem>
 </itemizedlist>
@@ -320,11 +328,11 @@ you can also use
 get_temporary_buffer(5, (int*)0);
 </programlisting>
 <para>
-  A class <code>temporary_buffer</code> is given in stl_tempbuf.h. *
+  A class <code>temporary_buffer</code> is given in stl_tempbuf.h.
 </para>
 <para>
   The specialized algorithms of section 20.4.4 are extended with
-  <code>uninitialized_copy_n</code>. *
+  <code>uninitialized_copy_n</code>.
 </para>
 
 </chapter>
@@ -371,25 +379,30 @@ get_temporary_buffer(5, (int*)0);
 <chapter xml:id="manual.ext.numerics" xreflabel="Numerics"><info><title>Numerics</title></info>
 <?dbhtml filename="ext_numerics.html"?>
 
-<para>26.4, the generalized numeric operations such as accumulate, are extended
-   with the following functions:
+<para>26.4, the generalized numeric operations such as <code>accumulate</code>,
+   are extended with the following functions:
 </para>
    <programlisting>
    power (x, n);
-   power (x, n, moniod_operation);</programlisting>
-<para>Returns, in FORTRAN syntax, "x ** n" where n&gt;=0.  In the
-   case of n == 0, returns the identity element for the
+   power (x, n, monoid_operation);</programlisting>
+<para>Returns, in FORTRAN syntax, "<code>x ** n</code>" where
+   <code>n &gt;= 0</code>.  In the
+   case of <code>n == 0</code>, returns the identity element for the
    monoid operation.  The two-argument signature uses multiplication (for
    a true "power" implementation), but addition is supported as well.
    The operation functor must be associative.
 </para>
 <para>The <code>iota</code> function wins the award for Extension With the
-   Coolest Name.  It "assigns sequentially increasing values to a range.
-   That is, it assigns value to *first, value + 1 to *(first + 1) and so
-   on."  Quoted from SGI documentation.
+   Coolest Name (the name comes from Ken Iverson's APL language.)  As
+   described in the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/iota.html">SGI
+   documentation</link>, it "assigns sequentially increasing values to a range.
+   That is, it assigns <code>value</code> to <code>*first</code>,
+   <code>value + 1</code> to<code> *(first + 1)</code> and so on."
 </para>
    <programlisting>
    void iota(_ForwardIter first, _ForwardIter last, _Tp value);</programlisting>
+<para>The <code>iota</code> function is included in the ISO C++ 2011 standard.
+</para>
 </chapter>
 
 <!-- Chapter 12 : Iterators -->
