@@ -1,3 +1,9 @@
+2011-12-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51316
+	* c-common.c (c_sizeof_or_alignof_type): In C++ allow for alignof
+	of array types with an unknown bound.
+
 2011-12-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (flag_isoc99): Update comment to refer to C11.

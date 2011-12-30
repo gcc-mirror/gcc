@@ -4382,11 +4382,20 @@ c_sizeof_or_alignof_type (location_t loc,
         return error_mark_node;
       value = size_one_node;
     }
-  else if (!COMPLETE_TYPE_P (type))
+  else if (!COMPLETE_TYPE_P (type)
+	   && (!c_dialect_cxx () || is_sizeof || type_code != ARRAY_TYPE))
     {
       if (complain)
-	error_at (loc, "invalid application of %qs to incomplete type %qT ",
+	error_at (loc, "invalid application of %qs to incomplete type %qT",
 		  op_name, type);
+      return error_mark_node;
+    }
+  else if (c_dialect_cxx () && type_code == ARRAY_TYPE
+	   && !COMPLETE_TYPE_P (TREE_TYPE (type)))
+    {
+      if (complain)
+	error_at (loc, "invalid application of %qs to array type %qT of "
+		  "incomplete element type", op_name, type);
       return error_mark_node;
     }
   else
