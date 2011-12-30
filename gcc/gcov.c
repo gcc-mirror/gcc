@@ -278,6 +278,9 @@ static unsigned a_names;    /* Allocated names */
 static unsigned object_runs;
 static unsigned program_count;
 
+static unsigned total_lines;
+static unsigned total_executed;
+
 /* Modification time of graph file.  */
 
 static time_t bbg_file_time;
@@ -380,6 +383,7 @@ static void solve_flow_graph (function_t *);
 static void find_exception_blocks (function_t *);
 static void add_branch_counts (coverage_t *, const arc_t *);
 static void add_line_counts (coverage_t *, function_t *);
+static void executed_summary (unsigned, unsigned);
 static void function_summary (const coverage_t *, const char *);
 static const char *format_gcov (gcov_type, gcov_type, int);
 static void accumulate_line_counts (source_t *);
@@ -702,6 +706,8 @@ generate_results (const char *file_name)
       
       accumulate_line_counts (src);
       function_summary (&src->coverage, "File");
+      total_lines += src->coverage.lines;
+      total_executed += src->coverage.lines_executed;
       if (flag_gcov_file && src->coverage.lines)
 	{
 	  char *gcov_file_name
@@ -724,6 +730,9 @@ generate_results (const char *file_name)
 	}
       fnotice (stdout, "\n");
     }
+
+  if (!file_name)
+    executed_summary (total_lines, total_executed);
 }
 
 /* Release a function structure */
@@ -1666,20 +1675,25 @@ format_gcov (gcov_type top, gcov_type bottom, int dp)
   return buffer;
 }
 
+/* Summary of execution */
 
-/* Output summary info for a function.  */
+static void
+executed_summary (unsigned lines, unsigned executed)
+{
+  if (lines)
+    fnotice (stdout, "Lines executed:%s of %d\n",
+	     format_gcov (executed, lines, 2), lines);
+  else
+    fnotice (stdout, "No executable lines\n");
+}
+  
+/* Output summary info for a function or file.  */
 
 static void
 function_summary (const coverage_t *coverage, const char *title)
 {
   fnotice (stdout, "%s '%s'\n", title, coverage->name);
-
-  if (coverage->lines)
-    fnotice (stdout, "Lines executed:%s of %d\n",
-	     format_gcov (coverage->lines_executed, coverage->lines, 2),
-	     coverage->lines);
-  else
-    fnotice (stdout, "No executable lines\n");
+  executed_summary (coverage->lines, coverage->lines_executed);
 
   if (flag_branches)
     {
