@@ -1,3 +1,13 @@
+2011-12-30  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/bfin/bfin.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): Remove.
+	* config/bfin/bfin-protos.h (bfin_register_move_cost,
+	bfin_memory_move_cost): Remove.
+	* config/bfin/bfin.c (bfin_register_move_cost,
+	bfin_memory_move_cost): Make static. Change arguments type from
+	enum reg_class to reg_class_t and from int to bool.
+	(TARGET_REGISTER_MOVE_COST, TARGET_MEMORY_MOVE_COST): Define.
+
 2011-12-30  Nathan Sidwell  <nathan@acm.org>
 
 	* gcov.c (total_lines, total_executed): New global vars.
