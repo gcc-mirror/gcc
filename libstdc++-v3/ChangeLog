@@ -27,7 +27,7 @@
 	(_Hash_code_base): Use _Ebo_helper to limit memory footprint. Move
 	_Equal functor management...
 	(_Hashtable_base): ...here, new, use _Equal_helper.
-	(_Local_iterator_base<>, _Locale_iterator<>, _Locale_const_iterator<>):
+	(_Local_iterator_base<>, _Local_iterator<>, _Local_const_iterator<>):
 	New, use _Hash_code_base, implementation of...
 	* include/bits/hashtable.h (_Hashtable<>::local_iterator,
 	_Hashtable<>::const_local_iterator): ...those. Add static assertions
