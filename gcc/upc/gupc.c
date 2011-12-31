@@ -295,7 +295,7 @@ get_libgupc_path (const char *exec_args[], int n_args)
     if (debug)
       fprintf (stderr, "libgupc.a path = %s\n",
 	       libgupc_archive ? libgupc_archive : "<none>");
-    if (libgupc_archive[0] == '/')
+    if (libgupc_archive && libgupc_archive[0] == '/')
       {
 	const char *s, *last_slash;
 	char *path;
@@ -312,7 +312,8 @@ get_libgupc_path (const char *exec_args[], int n_args)
   }
 #endif
   if (debug)
-    fprintf (stderr, "lib path = %s\n", libgupc_path ? libgupc_path : "<none>");
+    fprintf (stderr, "lib path = %s\n",
+             libgupc_path ? libgupc_path : "<none>");
   return libgupc_path;
 }
 
@@ -552,19 +553,17 @@ main (int argc, char *argv[])
   if (!info_only)
     {
       lib_dir = get_libgupc_path (exec_args, nargs);
-      if (!lib_dir)
+      if (lib_dir)
 	{
-	  fprintf (stderr, "Cannot find UPC library directory.\n");
-	  exit (2);
-	}
-      if (!no_std_inc && !no_upc_pre_inc)
-	{
-	  /* Place libdir first so that we can find gcc-upc-lib.h. */
-	  exec_args[nargs++] = xstrdup ("-isystem");
-	  exec_args[nargs++] = lib_dir;
-	}
-      /* add -B <lib_dir>/ so that we can find libgupc.spec.  */
-      exec_args[nargs++] = concat ("-B", lib_dir, "/", END_ARGS);
+	  if (!no_std_inc && !no_upc_pre_inc)
+	    {
+	      /* Place libdir first so that we can find gcc-upc-lib.h. */
+	      exec_args[nargs++] = xstrdup ("-isystem");
+	      exec_args[nargs++] = lib_dir;
+	    }
+	  /* add -B <lib_dir>/ so that we can find libgupc.spec.  */
+	  exec_args[nargs++] = concat ("-B", lib_dir, "/", END_ARGS);
+        }
     }
 
   if (invoke_linker)

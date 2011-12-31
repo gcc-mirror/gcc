@@ -1,5 +1,14 @@
 2011-12-31  Gary Funck  <gary@intrepid.com>
 
+	Fix gupc driver to avoid segfault when processing
+	invalid use of a switch that expects an argument.
+	* gupc.c (get_libgupc_path): Add check for non-NULL value
+	libgupc_archive before attempting to access libgupc_archive[0].
+	(main): Do not issue error if lib_dir is NULL.  Instead, only
+	process lib_dir if it is non-NULL.
+
+2011-12-31  Gary Funck  <gary@intrepid.com>
+
 	Improve -fupc-debug support.
 	* upc-genericize.c (upc_expand_get, upc_expand_put,
 	upc_genericize_sync_stmt): Add check for flag_upc_debug.
