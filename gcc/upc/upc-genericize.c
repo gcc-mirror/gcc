@@ -159,7 +159,8 @@ upc_expand_get (location_t loc, tree src, int want_stable_value)
   tree result_type = TYPE_MAIN_VARIANT (type);
   int strict_mode = TYPE_STRICT (type)
     || (!TYPE_RELAXED (type) && get_upc_consistency_mode ());
-  int doprofcall = flag_upc_instrument && get_upc_pupc_mode ();
+  int doprofcall = flag_upc_debug
+                   || (flag_upc_instrument && get_upc_pupc_mode ());
   optab get_op = (POINTER_SIZE == 64)
     ? (doprofcall ? (strict_mode ? xgetsg_optab : xgetg_optab)
        : (strict_mode ? xgets_optab : xget_optab))
@@ -230,7 +231,8 @@ upc_expand_put (location_t loc, tree dest, tree src, int want_value)
   tree type = TREE_TYPE (dest);
   int strict_mode = TYPE_STRICT (type)
     || (!TYPE_RELAXED (type) && get_upc_consistency_mode ());
-  int doprofcall = flag_upc_instrument && get_upc_pupc_mode ();
+  int doprofcall = flag_upc_debug
+                   || (flag_upc_instrument && get_upc_pupc_mode ());
   optab put_op = (POINTER_SIZE == 64)
     ? (doprofcall ? (strict_mode ? xputsg_optab : xputg_optab)
        : (strict_mode ? xputs_optab : xput_optab))
@@ -690,7 +692,8 @@ upc_genericize_sync_stmt (location_t loc, tree *stmt_p)
   tree sync_id = UPC_SYNC_ID (stmt);
   const int op = (int) tree_low_cst (sync_op, 1);
   const char *libfunc_name = (char *) 0;
-  int doprofcall = flag_upc_instrument && get_upc_pupc_mode ();
+  int doprofcall = flag_upc_debug
+                   || (flag_upc_instrument && get_upc_pupc_mode ());
   tree libfunc, lib_args;
   switch (op)
     {

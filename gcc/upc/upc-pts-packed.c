@@ -497,7 +497,8 @@ upc_pts_packed_build_cvt (location_t loc, tree exp)
       else
 	{
 	  /* shared -> local */
-	  int doprofcall = flag_upc_instrument && get_upc_pupc_mode ();
+          int doprofcall = flag_upc_debug
+                           || (flag_upc_instrument && get_upc_pupc_mode ());
 	  const char *libfunc_name =
 	    doprofcall ? UPC_GETADDRG_LIBCALL : UPC_GETADDR_LIBCALL;
 	  tree src = build1 (NOP_EXPR, upc_pts_rep_type_node,

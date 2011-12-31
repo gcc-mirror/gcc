@@ -215,8 +215,9 @@ upc_cpp_builtins (cpp_reader * pfile)
     }
   /* Collectives are supported. */
   cpp_define (parse_in, "__UPC_COLLECTIVE__=1");
-  /* If instrumentation is enabled, then disable inlining of the runtime.  */
-  if (flag_upc_instrument)
+  /* If debugging or instrumentation is enabled,
+     then disable inlining of the runtime.  */
+  if (flag_upc_debug || flag_upc_instrument)
     flag_upc_inline_lib = 0;
   /* If -f[no-]upc-inline-lib hasn't been asserted, force inlining of the
      runtime library if optimization is enabled.  */

@@ -1,3 +1,13 @@
+2011-12-31  Gary Funck  <gary@intrepid.com>
+
+	Improve -fupc-debug support.
+	* upc-genericize.c (upc_expand_get, upc_expand_put,
+	upc_genericize_sync_stmt): Add check for flag_upc_debug.
+	* upc-pts-struct.c (upc_pts_struct_build_cvt): Ditto.
+	* upc-pts-packed.c (upc_pts_packed_build_cvt): Ditto.
+	* upc-act.c (upc_cpp_builtins): Disable inlining of the
+	runtime if flag_upc_debug is asserted.
+
 2011-11-22  Gary Funck  <gary@intrepid.com>
 
 	* upc-act.c (upc_cpp_builtins): Generate new pre-defined
