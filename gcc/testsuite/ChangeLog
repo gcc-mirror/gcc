@@ -1,3 +1,8 @@
+2011-12-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51397
+	* g++.dg/cpp0x/static_assert6.C: New.
+
 2011-12-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tree-ssa/vrp47: Pass -march=i586 for ia32 target.
