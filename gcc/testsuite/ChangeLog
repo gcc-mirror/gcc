@@ -1,3 +1,8 @@
+2012-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51683
+	* gcc.dg/pr51683.c: New test.
+
 2011-12-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51397

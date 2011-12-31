@@ -1,3 +1,10 @@
+2012-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51683
+	* tree-ssa-propagate.c (substitute_and_fold): Don't optimize away
+	calls with side-effects.
+	* tree-ssa-ccp.c (ccp_fold_stmt): Likewise.
+
 2011-12-31  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cselib.h (cselib_add_permanent_equiv): Declare.
