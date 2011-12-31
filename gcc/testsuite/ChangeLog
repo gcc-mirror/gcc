@@ -1,3 +1,7 @@
+2011-12-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tree-ssa/vrp47: Pass -march=i586 for ia32 target.
+
 2011-12-31  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/51502

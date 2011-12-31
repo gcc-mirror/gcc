@@ -5,7 +5,7 @@
    this.  */
 /* { dg-do compile { target { ! "mips*-*-* s390*-*-*  avr-*-* mn10300-*-*" } } } */
 /* { dg-options "-O2 -fdump-tree-vrp1 -fdump-tree-dom1 -fdump-tree-dom2" } */
-/* { dg-additional-options "-march=i586" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-additional-options "-march=i586" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 int h(int x, int y)
 {
