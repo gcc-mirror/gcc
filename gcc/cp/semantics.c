@@ -5127,7 +5127,7 @@ finish_static_assert (tree condition, tree message, location_t location,
       if (TREE_CODE (condition) == INTEGER_CST 
           && integer_zerop (condition))
         /* Report the error. */
-        error ("static assertion failed: %E", message);
+        error ("static assertion failed: %s", TREE_STRING_POINTER (message));
       else if (condition && condition != error_mark_node)
 	{
 	  error ("non-constant condition for static assertion");
