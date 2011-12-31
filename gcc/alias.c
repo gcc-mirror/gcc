@@ -1542,7 +1542,8 @@ rtx
 find_base_term (rtx x)
 {
   cselib_val *val;
-  struct elt_loc_list *l;
+  struct elt_loc_list *l, *f;
+  rtx ret;
 
 #if defined (FIND_BASE_TERM)
   /* Try machine-dependent ways to find the base term.  */
@@ -1591,12 +1592,26 @@ find_base_term (rtx x)
 
     case VALUE:
       val = CSELIB_VAL_PTR (x);
+      ret = NULL_RTX;
+
       if (!val)
-	return 0;
-      for (l = val->locs; l; l = l->next)
-	if ((x = find_base_term (l->loc)) != 0)
-	  return x;
-      return 0;
+	return ret;
+
+      f = val->locs;
+      /* Temporarily reset val->locs to avoid infinite recursion.  */
+      val->locs = NULL;
+
+      for (l = f; l; l = l->next)
+	if (GET_CODE (l->loc) == VALUE
+	    && CSELIB_VAL_PTR (l->loc)->locs
+	    && !CSELIB_VAL_PTR (l->loc)->locs->next
+	    && CSELIB_VAL_PTR (l->loc)->locs->loc == x)
+	  continue;
+	else if ((ret = find_base_term (l->loc)) != 0)
+	  break;
+
+      val->locs = f;
+      return ret;
 
     case LO_SUM:
       /* The standard form is (lo_sum reg sym) so look only at the

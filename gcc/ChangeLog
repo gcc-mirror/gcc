@@ -1,3 +1,32 @@
+2011-12-31  Alexandre Oliva  <aoliva@redhat.com>
+
+	* cselib.h (cselib_add_permanent_equiv): Declare.
+	(canonical_cselib_val): New.
+	* cselib.c (new_elt_loc_list): Rework to support value
+	equivalences.  Adjust all callers.
+	(preserve_only_constants): Retain value equivalences.
+	(references_value_p): Retain preserved values.
+	(rtx_equal_for_cselib_1): Handle value equivalences.
+	(cselib_invalidate_regno): Use canonical value.
+	(cselib_add_permanent_equiv): New.
+	* alias.c (find_base_term): Reset locs lists while recursing.
+	* var-tracking.c (val_bind): New.  Don't add equivalences
+	present in cselib table, compared with code moved from...
+	(val_store): ... here.
+	(val_resolve): Use val_bind.
+	(VAL_EXPR_HAS_REVERSE): Drop.
+	(add_uses): Do not create MOps for addresses.  Do not mark
+	non-REG non-MEM expressions as requiring resolution.
+	(reverse_op): Record reverse as a cselib equivalence.
+	(add_stores): Use it.  Do not create MOps for addresses.
+	Do not require resolution for non-REG non-MEM expressions.
+	Simplify support for reverse operations.
+	(compute_bb_dataflow): Drop reverse support.
+	(emit_notes_in_bb): Likewise.
+	(create_entry_value): Rename to...
+	(record_entry_value): ... this.  Use cselib equivalences.
+	(vt_add_function_parameter): Adjust.
+
 2011-12-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_inner_target_options): Fix thinko
