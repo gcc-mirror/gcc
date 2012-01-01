@@ -4523,9 +4523,24 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, const char* context)
       return FAILURE;
     }
 
-  if (!pointer && gfc_implicit_pure (NULL) && gfc_impure_variable (sym))
-    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+  if (!pointer && context && gfc_implicit_pure (NULL)
+      && gfc_impure_variable (sym))
+    {
+      gfc_namespace *ns;
+      gfc_symbol *sym;
 
+      for (ns = gfc_current_ns; ns; ns = ns->parent)
+	{
+	  sym = ns->proc_name;
+	  if (sym == NULL)
+	    break;
+	  if (sym->attr.flavor == FL_PROCEDURE)
+	    {
+	      sym->attr.implicit_pure = 0;
+	      break;
+	    }
+	}
+    }
   /* Check variable definition context for associate-names.  */
   if (!pointer && sym->assoc)
     {

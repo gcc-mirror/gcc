@@ -12936,24 +12936,25 @@ gfc_pure (gfc_symbol *sym)
 int
 gfc_implicit_pure (gfc_symbol *sym)
 {
-  symbol_attribute attr;
+  gfc_namespace *ns;
 
   if (sym == NULL)
     {
-      /* Check if the current namespace is implicit_pure.  */
-      sym = gfc_current_ns->proc_name;
-      if (sym == NULL)
-	return 0;
-      attr = sym->attr;
-      if (attr.flavor == FL_PROCEDURE
-	    && attr.implicit_pure && !attr.pure)
-	return 1;
-      return 0;
+      /* Check if the current procedure is implicit_pure.  Walk up
+	 the procedure list until we find a procedure.  */
+      for (ns = gfc_current_ns; ns; ns = ns->parent)
+	{
+	  sym = ns->proc_name;
+	  if (sym == NULL)
+	    return 0;
+	  
+	  if (sym->attr.flavor == FL_PROCEDURE)
+	    break;
+	}
     }
-
-  attr = sym->attr;
-
-  return attr.flavor == FL_PROCEDURE && attr.implicit_pure && !attr.pure;
+  
+  return sym->attr.flavor == FL_PROCEDURE && sym->attr.implicit_pure
+    && !sym->attr.pure;
 }
 
 

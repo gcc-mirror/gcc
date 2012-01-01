@@ -1,3 +1,14 @@
+2012-01-01  Thomas König  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/51502
+	* expr.c (gfc_check_vardef_context):  When determining
+	implicit pure status, also check for variable definition
+	context.  Walk up namespaces until a procedure is
+	found to reset the implict pure attribute.
+	* resolve.c (gfc_implicit_pure):  Walk up namespaces
+	until a procedure is found.
+
 2011-12-22  Toon Moene  <toon@moene.org>
 
 	PR fortran/51310
