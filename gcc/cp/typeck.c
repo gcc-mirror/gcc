@@ -6203,6 +6203,11 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
   else if (TYPE_PTR_P (type) && INTEGRAL_OR_ENUMERATION_TYPE_P (intype))
     /* OK */
     ;
+  else if ((INTEGRAL_OR_ENUMERATION_TYPE_P (type)
+	    || TYPE_PTR_P (type) || TYPE_PTR_TO_MEMBER_P (type))
+	   && same_type_p (type, intype))
+    /* DR 799 */
+    return fold_if_not_in_template (build_nop (type, expr));
   else if ((TYPE_PTRFN_P (type) && TYPE_PTRFN_P (intype))
 	   || (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype)))
     return fold_if_not_in_template (build_nop (type, expr));

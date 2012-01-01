@@ -1,4 +1,10 @@
-2011-12-31  Fabien Chêne  <fabien@gcc.gnu.org>
+2012-01-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51379
+	* typeck.c (build_reinterpret_cast_1): Implement resolution of
+	DR 799.
+
+2012-01-01  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	* parser.c (cp_parser_using_declaration): Add a warning about
 	deprecated access declarations when no errors were encountered
