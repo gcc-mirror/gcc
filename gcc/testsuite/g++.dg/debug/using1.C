@@ -9,7 +9,7 @@ struct A
 
 struct B : public A
 {
-  A::d;
+  A::d; // { dg-warning "deprecated" }
 };
 
 B b;

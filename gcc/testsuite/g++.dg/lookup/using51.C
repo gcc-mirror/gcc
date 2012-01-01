@@ -1,5 +1,6 @@
 // PR c++/51382
 // { dg-do compile }
+// { dg-options "-Wno-deprecated" }
 
 template< int Value >
 struct Base

@@ -14,5 +14,7 @@ class X {
 class Y : private X {
   public:
     void f(int);
-    X::f;  // used to be an error; now equivalent to 'using X::f'
+
+    // 'X::f' used to be an error; now equivalent to 'using X::f'
+    X::f; // { dg-warning "deprecated" }
 };

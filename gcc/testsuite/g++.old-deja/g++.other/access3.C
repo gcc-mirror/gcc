@@ -10,7 +10,7 @@ struct A
 
 struct B: private virtual A
 {
-  A::f;
+  A::f; // { dg-warning "deprecated" }
 };
 
 struct C: private virtual A, public B
