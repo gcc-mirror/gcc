@@ -23,3 +23,6 @@ struct B
   : B(A<V...>::a)
   { }
 };
+
+constexpr B b1 = A<10, 20, 30>::a;
+constexpr B b2 = A<10, 20, 30>();
