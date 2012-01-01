@@ -290,6 +290,7 @@ remove_path (edge e)
   int i, nrem, n_bord_bbs;
   sbitmap seen;
   bool irred_invalidated = false;
+  edge_iterator ei;
 
   if (!can_remove_branch_p (e))
     return false;
@@ -329,9 +330,13 @@ remove_path (edge e)
   /* Find "border" hexes -- i.e. those with predecessor in removed path.  */
   for (i = 0; i < nrem; i++)
     SET_BIT (seen, rem_bbs[i]->index);
+  if (!irred_invalidated)
+    FOR_EACH_EDGE (ae, ei, e->src->succs)
+      if (ae != e && ae->dest != EXIT_BLOCK_PTR && !TEST_BIT (seen, ae->dest->index)
+	  && ae->flags & EDGE_IRREDUCIBLE_LOOP)
+	irred_invalidated = true;
   for (i = 0; i < nrem; i++)
     {
-      edge_iterator ei;
       bb = rem_bbs[i];
       FOR_EACH_EDGE (ae, ei, rem_bbs[i]->succs)
 	if (ae->dest != EXIT_BLOCK_PTR && !TEST_BIT (seen, ae->dest->index))

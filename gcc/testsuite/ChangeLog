@@ -1,3 +1,8 @@
+2012-01-01  Jan Hubicka  <jh@suse.cz>
+
+	PR rtl-optimization/51069
+	* gcc.c-torture/compile/pr51069.c: New testcase.
+
 2012-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51683
