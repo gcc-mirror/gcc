@@ -1,3 +1,7 @@
+2012-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* jcf-dump.c (version): Update copyright notice dates.
+
 2011-12-03  Matthias Klose  <doko@ubuntu.com>
 
 	* expr.c (SPECIAL_WIDE): Fix typo in message.

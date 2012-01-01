@@ -1,3 +1,11 @@
+2012-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (process_command): Update copyright notice dates.
+	* gcov.c (print_version): Likewise.
+	* gcov-dump.c (print_version): Likewise.
+	* mips-tfile.c (main): Likewise.
+	* mips-tdump.c (main): Likewise.
+
 2012-01-01  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/51704
