@@ -1,3 +1,9 @@
+2012-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gnu/java/rmi/registry/RegistryImpl.java (version): Update
+	copyright notice dates.
+	* tools/gnu/classpath/tools/orbd/Main.java (run): Likewise.
+
 2011-11-29  Andreas Tobler  <andreast@fgznet.ch>
 
 	* config.rpath (ld_shlibs): Fix detection of FreeBSD-10 and up.
