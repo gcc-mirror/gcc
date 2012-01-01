@@ -1,5 +1,10 @@
 2012-01-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/16603
+	* g++.dg/parse/enum8.C: New.
+
+2012-01-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/51379
 	* g++.dg/conversion/reinterpret4.C: New.
 	* g++.dg/conversion/reinterpret1.C: Adjust.
