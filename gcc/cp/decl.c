@@ -12369,14 +12369,11 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 	{
 	  value = cxx_constant_value (value);
 
-	  if (TREE_CODE (value) == INTEGER_CST
-	      && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (value)))
+	  if (TREE_CODE (value) != INTEGER_CST
+	      || ! INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (value)))
 	    {
-	      value = perform_integral_promotions (value);
-	    }
-	  else
-	    {
-	      error ("enumerator value for %qD is not an integer constant", name);
+	      error ("enumerator value for %qD is not an integer constant",
+		     name);
 	      value = NULL_TREE;
 	    }
 	}

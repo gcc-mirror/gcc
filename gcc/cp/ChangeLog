@@ -1,5 +1,11 @@
 2012-01-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/16603
+	* decl.c (build_enumerator): Don't call perform_integral_promotions
+	on the value.
+
+2012-01-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/51379
 	* typeck.c (build_reinterpret_cast_1): Implement resolution of
 	DR 799.
