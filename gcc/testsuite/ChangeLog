@@ -1,3 +1,9 @@
+2012-01-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/51502
+	* lib/gcc-dg.exp (scan-module-absence):  Really commit last
+	change.
+
 2012-01-01  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/51704
