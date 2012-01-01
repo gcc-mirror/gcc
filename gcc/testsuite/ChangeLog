@@ -1,3 +1,25 @@
+2011-12-31  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	* g++.old-deja/g++.brendan/crash25.C: Adjust.
+	* g++.old-deja/g++.brendan/crash56.C: Likewise.
+	* g++.old-deja/g++.jason/access14.C: Likewise.
+	* g++.old-deja/g++.jason/access8.C: Likewise.
+	* g++.old-deja/g++.jason/access1.C: Likewise.
+	* g++.old-deja/g++.other/access3.C: Likewise.
+	* g++.old-deja/g++.other/access5.C: Likewise.
+	* g++.old-deja/g++.law/unsorted1.C: Likewise.
+	* g++.old-deja/g++.law/visibility22.C: Likewise.
+	* g++.old-deja/g++.law/visibility26.C: Likewise.
+	* g++.old-deja/g++.mike/p2746.C: Likewise.
+	* g++.dg/debug/using1.C: Likewise.
+	* g++.dg/lookup/using51.C: Likewise.
+	* g++.dg/inherit/using5.C: Likewise.
+	* g++.dg/inherit/pr30297.C: Likewise.
+	* g++.dg/inherit/access8.C: Likewise.
+	* g++.dg/torture/pr39362.C: Likewise.
+	* g++.dg/template/crash13.C: Likewise.
+	* g++.dg/template/using10.C: Likewise.
+
 2012-01-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/51502

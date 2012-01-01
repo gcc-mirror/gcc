@@ -14887,9 +14887,14 @@ cp_parser_using_declaration (cp_parser* parser,
   tree decl;
   tree identifier;
   tree qscope;
+  int oldcount = errorcount;
+  cp_token *diag_token = NULL;
 
   if (access_declaration_p)
-    cp_parser_parse_tentatively (parser);
+    {
+      diag_token = cp_lexer_peek_token (parser->lexer);
+      cp_parser_parse_tentatively (parser);
+    }
   else
     {
       /* Look for the `using' keyword.  */
@@ -15000,7 +15005,13 @@ cp_parser_using_declaration (cp_parser* parser,
 
   /* Look for the final `;'.  */
   cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
-  
+
+  if (access_declaration_p && errorcount == oldcount)
+    warning_at (diag_token->location, OPT_Wdeprecated,
+		"access declarations are deprecated "
+		"in favour of using-declarations; "
+		"suggestion: add the %<using%> keyword");
+
   return true;
 }
 

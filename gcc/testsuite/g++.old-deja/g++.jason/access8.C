@@ -12,7 +12,7 @@ protected:
 class mel : private inh {
 protected:
         int t;
-	inh::myf;
+	inh::myf;  // { dg-warning "deprecated" }
 };
 
 class top_t : protected mel {

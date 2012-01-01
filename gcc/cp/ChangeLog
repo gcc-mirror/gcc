@@ -1,3 +1,10 @@
+2011-12-31  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	* parser.c (cp_parser_using_declaration): Add a warning about
+	deprecated access declarations when no errors were encountered
+	while parsing the access declaration. Save the first token in
+	order to emit the warning at the right place.
+
 2011-12-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51397

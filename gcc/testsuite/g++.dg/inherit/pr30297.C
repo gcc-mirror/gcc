@@ -7,5 +7,5 @@ struct A
 
 extern "C" struct B : A
 {
-  A::i;
+  A::i; // { dg-warning "deprecated" }
 };
