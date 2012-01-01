@@ -1,4 +1,8 @@
-2011-12-31  Fabien Chêne  <fabien@gcc.gnu.org>
+2012-01-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/constexpr-delegating2.C: Add missing piece.
+
+2012-01-01  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	* g++.old-deja/g++.brendan/crash25.C: Adjust.
 	* g++.old-deja/g++.brendan/crash56.C: Likewise.
