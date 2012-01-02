@@ -1,3 +1,14 @@
+2012-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* make-relative-prefix.c (make_relative_prefix_1): Avoid
+	stack overflow if PATH contains just a single entry and
+	HOST_EXECUTABLE_SUFFIX needs to be used.
+
+	PR driver/48306
+	* make-relative-prefix.c: Include sys/stat.h.
+	(make_relative_prefix_1): If access succeeds, check also stat
+	if nstore is a regular file.
+
 2011-12-20  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* configure: Regenerate.
