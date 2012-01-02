@@ -1,3 +1,7 @@
+2012-01-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (-flto and related options): Copy-edit.
+
 2012-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.md (loadgp_newabi_<mode>): Add missing
