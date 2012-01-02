@@ -1,3 +1,9 @@
+2012-01-02  Revital Eres  <revital.eres@linaro.org>
+
+	* ddg.c (def_has_ccmode_p): New function.
+	(add_cross_iteration_register_deps,
+	create_ddg_dep_from_intra_loop_link): Call it.
+
 2012-01-02  Richard Guenther  <rguenther@suse.de>
 
 	PR other/51679

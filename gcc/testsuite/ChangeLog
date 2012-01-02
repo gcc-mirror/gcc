@@ -1,3 +1,7 @@
+2012-01-02  Revital Eres  <revital.eres@linaro.org>
+
+	* gcc.dg/sms-11.c: New file.
+
 2012-01-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51682
