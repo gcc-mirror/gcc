@@ -8169,7 +8169,7 @@ This violates the ISO C and C++ language standard by possibly changing
 computation result.  NOTE: re-ordering may change the sign of zero as
 well as ignore NaNs and inhibit or create underflow or overflow (and
 thus cannot be used on a code which relies on rounding behavior like
-@code{(x + 2**52) - 2**52)}.  May also reorder floating-point comparisons
+@code{(x + 2**52) - 2**52}.  May also reorder floating-point comparisons
 and thus may not be used when ordered comparisons are required.
 This option requires that both @option{-fno-signed-zeros} and
 @option{-fno-trapping-math} be in effect.  Moreover, it doesn't make
