@@ -166,6 +166,24 @@ autoinc_var_is_used_p (rtx def_insn, rtx use_insn)
   return false;
 }
 
+/* Return true if one of the definitions in INSN has MODE_CC.  Otherwise
+   return false.  */
+static bool
+def_has_ccmode_p (rtx insn)
+{
+  df_ref *def;
+
+  for (def = DF_INSN_DEFS (insn); *def; def++)
+    {
+      enum machine_mode mode = GET_MODE (DF_REF_REG (*def));
+
+      if (GET_MODE_CLASS (mode) == MODE_CC)
+	return true;
+    }
+
+  return false;
+}
+
 /* Computes the dependence parameters (latency, distance etc.), creates
    a ddg_edge and adds it to the given DDG.  */
 static void
@@ -202,6 +220,7 @@ create_ddg_dep_from_intra_loop_link (ddg_ptr g, ddg_node_ptr src_node,
      whose register has multiple defs in the loop.  */
   if (flag_modulo_sched_allow_regmoves 
       && (t == ANTI_DEP && dt == REG_DEP)
+      && !def_has_ccmode_p (dest_node->insn)
       && !autoinc_var_is_used_p (dest_node->insn, src_node->insn))
     {
       rtx set;
@@ -335,7 +354,8 @@ add_cross_iteration_register_deps (ddg_ptr g, df_ref last_def)
           if (DF_REF_ID (last_def) != DF_REF_ID (first_def)
               || !flag_modulo_sched_allow_regmoves
 	      || JUMP_P (use_node->insn)
-              || autoinc_var_is_used_p (DF_REF_INSN (last_def), use_insn))
+              || autoinc_var_is_used_p (DF_REF_INSN (last_def), use_insn)
+	      || def_has_ccmode_p (DF_REF_INSN (last_def)))
             create_ddg_dep_no_link (g, use_node, first_def_node, ANTI_DEP,
                                     REG_DEP, 1);
 
