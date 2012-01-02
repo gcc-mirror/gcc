@@ -21,7 +21,6 @@
 /* List of all known AVR MCU types - if updated, it has to be kept
    in sync in several places (FIXME: is there a better way?):
     - here;
-    - t-avr (MULTILIB_MATCHES);
     - gas/config/tc-avr.c;
     - avr-libc.
 

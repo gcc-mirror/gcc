@@ -34,156 +34,29 @@ avr-log.o: $(srcdir)/config/avr/avr-log.c \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(INPUT_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
-$(srcdir)/config/avr/avr-tables.opt: $(srcdir)/config/avr/genopt.sh \
-  $(srcdir)/config/avr/avr-mcus.def
-	$(SHELL) $(srcdir)/config/avr/genopt.sh $(srcdir)/config/avr > \
-		$(srcdir)/config/avr/avr-tables.opt
+# Files and Variables auto-generated from avr-mcus.def
 
-MULTILIB_OPTIONS = mmcu=avr2/mmcu=avr25/mmcu=avr3/mmcu=avr31/mmcu=avr35/mmcu=avr4/mmcu=avr5/mmcu=avr51/mmcu=avr6
-MULTILIB_DIRNAMES = avr2 avr25 avr3 avr31 avr35 avr4 avr5 avr51 avr6
+AVR_MCUS = $(srcdir)/config/avr/avr-mcus.def
 
-# The many avr2 matches are not listed here - this is the default.
-MULTILIB_MATCHES = \
-	mmcu?avr25=mmcu?ata6289 \
-	mmcu?avr25=mmcu?attiny13 \
-	mmcu?avr25=mmcu?attiny13a \
-	mmcu?avr25=mmcu?attiny2313 \
-	mmcu?avr25=mmcu?attiny2313a \
-	mmcu?avr25=mmcu?attiny4313 \
-	mmcu?avr25=mmcu?attiny24 \
-	mmcu?avr25=mmcu?attiny24a \
-	mmcu?avr25=mmcu?attiny44 \
-	mmcu?avr25=mmcu?attiny44a \
-	mmcu?avr25=mmcu?attiny84 \
-	mmcu?avr25=mmcu?attiny84a \
-	mmcu?avr25=mmcu?attiny25 \
-	mmcu?avr25=mmcu?attiny45 \
-	mmcu?avr25=mmcu?attiny85 \
-	mmcu?avr25=mmcu?attiny261 \
-	mmcu?avr25=mmcu?attiny261a \
-	mmcu?avr25=mmcu?attiny461 \
-	mmcu?avr25=mmcu?attiny461a \
-	mmcu?avr25=mmcu?attiny861 \
-	mmcu?avr25=mmcu?attiny861a \
-	mmcu?avr25=mmcu?attiny43u \
-	mmcu?avr25=mmcu?attiny87 \
-	mmcu?avr25=mmcu?attiny48 \
-	mmcu?avr25=mmcu?attiny88 \
-	mmcu?avr25=mmcu?at86rf401 \
-	mmcu?avr3=mmcu?at43usb355 \
-	mmcu?avr3=mmcu?at76c711 \
-	mmcu?avr31=mmcu?atmega103 \
-	mmcu?avr31=mmcu?at43usb320 \
-	mmcu?avr35=mmcu?at90usb82 \
-	mmcu?avr35=mmcu?at90usb162 \
-	mmcu?avr35=mmcu?atmega8u2 \
-	mmcu?avr35=mmcu?atmega16u2 \
-	mmcu?avr35=mmcu?atmega32u2 \
-	mmcu?avr35=mmcu?attiny167 \
-	mmcu?avr4=mmcu?atmega48 \
-	mmcu?avr4=mmcu?atmega48a \
-	mmcu?avr4=mmcu?atmega48p \
-	mmcu?avr4=mmcu?atmega8 \
-	mmcu?avr4=mmcu?atmega8515 \
-	mmcu?avr4=mmcu?atmega8535 \
-	mmcu?avr4=mmcu?atmega88 \
-	mmcu?avr4=mmcu?atmega88a \
-	mmcu?avr4=mmcu?atmega88p \
-	mmcu?avr4=mmcu?atmega88pa \
-	mmcu?avr4=mmcu?atmega8hva \
-	mmcu?avr4=mmcu?at90pwm1 \
-	mmcu?avr4=mmcu?at90pwm2 \
-	mmcu?avr4=mmcu?at90pwm2b \
-	mmcu?avr4=mmcu?at90pwm3 \
-	mmcu?avr4=mmcu?at90pwm3b \
-	mmcu?avr4=mmcu?at90pwm81 \
-	mmcu?avr5=mmcu?atmega16 \
-	mmcu?avr5=mmcu?atmega16a \
-	mmcu?avr5=mmcu?atmega161 \
-	mmcu?avr5=mmcu?atmega162 \
-	mmcu?avr5=mmcu?atmega163 \
-	mmcu?avr5=mmcu?atmega164a \
-	mmcu?avr5=mmcu?atmega164p \
-	mmcu?avr5=mmcu?atmega165 \
-	mmcu?avr5=mmcu?atmega165a \
-	mmcu?avr5=mmcu?atmega165p \
-	mmcu?avr5=mmcu?atmega168 \
-	mmcu?avr5=mmcu?atmega168a \
-	mmcu?avr5=mmcu?atmega168p \
-	mmcu?avr5=mmcu?atmega169 \
-	mmcu?avr5=mmcu?atmega169a \
-	mmcu?avr5=mmcu?atmega169p \
-	mmcu?avr5=mmcu?atmega169pa \
-	mmcu?avr5=mmcu?atmega32 \
-	mmcu?avr5=mmcu?atmega323 \
-	mmcu?avr5=mmcu?atmega324a \
-	mmcu?avr5=mmcu?atmega324p \
-	mmcu?avr5=mmcu?atmega324pa \
-	mmcu?avr5=mmcu?atmega325 \
-	mmcu?avr5=mmcu?atmega325a \
-	mmcu?avr5=mmcu?atmega325p \
-	mmcu?avr5=mmcu?atmega3250 \
-	mmcu?avr5=mmcu?atmega3250a \
-	mmcu?avr5=mmcu?atmega3250p \
-	mmcu?avr5=mmcu?atmega328 \
-	mmcu?avr5=mmcu?atmega328p \
-	mmcu?avr5=mmcu?atmega329 \
-	mmcu?avr5=mmcu?atmega329a \
-	mmcu?avr5=mmcu?atmega329p \
-	mmcu?avr5=mmcu?atmega329pa \
-	mmcu?avr5=mmcu?atmega3290 \
-	mmcu?avr5=mmcu?atmega3290a \
-	mmcu?avr5=mmcu?atmega3290p \
-	mmcu?avr5=mmcu?atmega406 \
-	mmcu?avr5=mmcu?atmega64  \
-	mmcu?avr5=mmcu?atmega640 \
-	mmcu?avr5=mmcu?atmega644 \
-	mmcu?avr5=mmcu?atmega644a \
-	mmcu?avr5=mmcu?atmega644p \
-	mmcu?avr5=mmcu?atmega644pa \
-	mmcu?avr5=mmcu?atmega645 \
-	mmcu?avr5=mmcu?atmega645a \
-	mmcu?avr5=mmcu?atmega645p \
-	mmcu?avr5=mmcu?atmega6450 \
-	mmcu?avr5=mmcu?atmega6450a \
-	mmcu?avr5=mmcu?atmega6450p \
-	mmcu?avr5=mmcu?atmega649 \
-	mmcu?avr5=mmcu?atmega649a \
-	mmcu?avr5=mmcu?atmega649p \
-	mmcu?avr5=mmcu?atmega6490 \
-	mmcu?avr5=mmcu?atmega6490a \
-	mmcu?avr5=mmcu?atmega6490p \
-	mmcu?avr5=mmcu?atmega16hva \
-	mmcu?avr5=mmcu?atmega16hva2 \
-	mmcu?avr5=mmcu?atmega16hvb \
-	mmcu?avr5=mmcu?atmega32hvb \
-	mmcu?avr5=mmcu?atmega64hve \
-	mmcu?avr5=mmcu?at90can32 \
-	mmcu?avr5=mmcu?at90can64 \
-	mmcu?avr5=mmcu?at90pwm216 \
-	mmcu?avr5=mmcu?at90pwm316 \
-	mmcu?avr5=mmcu?atmega32c1 \
-	mmcu?avr5=mmcu?atmega64c1 \
-	mmcu?avr5=mmcu?atmega16m1 \
-	mmcu?avr5=mmcu?atmega32m1 \
-	mmcu?avr5=mmcu?atmega64m1 \
-	mmcu?avr5=mmcu?atmega16u4 \
-	mmcu?avr5=mmcu?atmega32u4 \
-	mmcu?avr5=mmcu?atmega32u6 \
-	mmcu?avr5=mmcu?at90scr100 \
-	mmcu?avr5=mmcu?at90usb646 \
-	mmcu?avr5=mmcu?at90usb647 \
-	mmcu?avr5=mmcu?at94k \
-	mmcu?avr5=mmcu?m3000 \
-	mmcu?avr51=mmcu?atmega128 \
-	mmcu?avr51=mmcu?atmega1280 \
-	mmcu?avr51=mmcu?atmega1281 \
-	mmcu?avr51=mmcu?atmega1284p \
-	mmcu?avr51=mmcu?atmega128rfa1 \
-	mmcu?avr51=mmcu?at90can128 \
-	mmcu?avr51=mmcu?at90usb1286 \
-	mmcu?avr51=mmcu?at90usb1287 \
-	mmcu?avr6=mmcu?atmega2560 \
-	mmcu?avr6=mmcu?atmega2561
+$(srcdir)/config/avr/avr-tables.opt: $(srcdir)/config/avr/genopt.sh $(AVR_MCUS)
+	$(SHELL) $< $(AVR_MCUS) > $@
 
-MULTILIB_EXCEPTIONS =
+# MULTILIB_OPTIONS
+# MULTILIB_DIRNAMES
+# MULTILIB_EXCEPTIONS
+# MULTILIB_MATCHES
+$(srcdir)/config/avr/t-multilib: s-avr-mlib; @true
+
+# Override multilib_raw[] from multilib.h
+$(srcdir)/config/avr/multilib.h: s-avr-mlib; @true
+
+s-mlib: $(srcdir)/config/avr/t-multilib
+
+s-avr-mlib: $(srcdir)/config/avr/genmultilib.awk $(AVR_MCUS)
+	$(AWK) -f $< -v FORMAT=Makefile   $< $(AVR_MCUS) > tmp-avr-mlib
+	$(AWK) -f $< -v FORMAT=multilib.h $< $(AVR_MCUS) > tmp-avr-mlib.h
+	$(SHELL) $(srcdir)/../move-if-change \
+		tmp-avr-mlib.h 	$(srcdir)/config/avr/multilib.h
+	$(SHELL) $(srcdir)/../move-if-change \
+		tmp-avr-mlib 	$(srcdir)/config/avr/t-multilib
+	$(STAMP) $@

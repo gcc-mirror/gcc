@@ -1,5 +1,28 @@
 2012-01-02  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/51345
+	* config.gcc (tm_file target=avr]): Add avr/avr-multilib.h
+	(tmake_file target=avr): Add avr/t-multilib.
+
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Use AVR_HAVE_8BIT_SP
+	to built-in define __AVR_HAVE_8BIT_SP__, __AVR_HAVE_16BIT_SP__.
+	* config/avr/genmultilib.awk: New file.
+	* config/avr/t-multilib: New auto-generated file.
+	* config/avr/multilib.h: New auto-generated file.
+	* config/avr/t-avr (AVR_MCUS): New variable.
+	(genopt.sh): Use it.
+	(s-mlib): Depend on t-multilib.
+	(t-multilib, multilib.h): New dependencies.
+	(s-avr-mlib): New rule to build t-multilib, multilib.h from AVR_MCUS.
+	(MULTILIB_OPTIONS): Remove.
+	(MULTILIB_MATCHES): Remove.
+	(MULTILIB_DIRNAMES): Remove.
+	(MULTILIB_EXCEPTIONS): Remove:
+	* config/avr/genopt.sh: Don't use hard coded file name;
+	pass AVR_MCUS from t-avr instead.
+
+2012-01-02  Georg-Johann Lay  <avr@gjlay.de>
+
 	* config/avr/avr.c (avr_out_ashrpsi3): Fix "case 31" to "case 23".
 
 2012-01-02  Georg-Johann Lay  <avr@gjlay.de>

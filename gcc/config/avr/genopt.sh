@@ -56,4 +56,4 @@ awk -F'[(, 	]+' 'BEGIN {
     print "Enum(avr_mcu) String(" name ") Value(" value ")"
     print ""
     value++
-}' $1/avr-mcus.def
+}' $1
