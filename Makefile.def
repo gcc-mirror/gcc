@@ -314,6 +314,7 @@ dependencies = { module=html-gcc; on=all-build-libiberty; };
 dependencies = { module=install-gcc ; on=install-fixincludes; };
 dependencies = { module=install-gcc ; on=install-lto-plugin; };
 dependencies = { module=install-strip-gcc ; on=install-strip-fixincludes; };
+dependencies = { module=install-strip-gcc ; on=install-strip-lto-plugin; };
 
 dependencies = { module=configure-libcpp; on=configure-libiberty; hard=true; };
 dependencies = { module=configure-libcpp; on=configure-intl; };

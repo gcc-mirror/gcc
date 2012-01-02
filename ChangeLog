@@ -1,3 +1,9 @@
+2012-01-02  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/51686
+	* Makefile.def (install-strip-gcc): Depend on install-strip-lto-plugin.
+	* Makefile.in: Regenerate.
+
 2011-12-28  Oleg Endo <olegendo@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
