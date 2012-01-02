@@ -1,5 +1,11 @@
 2012-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gfortran.dg/io_real_boz_3.f90: Require fortran_real_16.
+	* gfortran.dg/io_real_boz_4.f90: Likewise.
+	* gfortran.dg/io_real_boz_5.f90: Likewise.
+
+2012-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* g++.dg/opt/devirt2.C: Add -mno-abicalls for MIPS.
 
 2012-01-02  Revital Eres  <revital.eres@linaro.org>
