@@ -1,3 +1,9 @@
+2012-01-02  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/51462
+	* semantics.c (cx_check_missing_mem_inits): Don't assert in case
+    	of error.
+
 2012-01-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/20140
