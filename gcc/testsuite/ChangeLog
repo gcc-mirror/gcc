@@ -1,5 +1,8 @@
 2012-01-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51675
+	* g++.dg/cpp0x/constexpr-union2.C: New.
+
 	PR c++/51666
 	* g++.dg/cpp0x/nsdmi-defer5.C: New.
 
