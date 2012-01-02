@@ -1,3 +1,9 @@
+2012-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/51725
+	* cselib.c (add_mem_for_addr): Call canonical_cselib_val
+	on mem_elt first.
+
 2012-01-02  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (-flto and related options): Copy-edit.
