@@ -1,3 +1,12 @@
+2012-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* passes.c (register_one_dump_file): Free full_name.
+
+	* reload1.c (reload): Don't allocate reg_max_ref_width
+	here.
+	(calculate_elim_costs_all_insns): Free offsets_at and
+	offsets_known_at at the end and clear the pointers.
+
 2012-01-02  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.opt (-mbranch-cost): Fix double definition of
