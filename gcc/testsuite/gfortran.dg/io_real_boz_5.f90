@@ -1,5 +1,6 @@
 ! { dg-do  run }
 ! { dg-options "-std=f2008" }
+! { dg-require-effective-target fortran_real_16 }
 !
 ! PR fortran/51407
 !
