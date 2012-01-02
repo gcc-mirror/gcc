@@ -1,11 +1,14 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-rtl-expand" } */
 
+#ifdef __mips
+__attribute__((nomips16))
+#endif
 void
 f1 (char *p)
 {
-  __builtin_memcpy (p, "123", 3);
+  __builtin_memcpy (p, "12345", 5);
 }
 
-/* { dg-final { scan-rtl-dump-times "mem/s/u" 3 "expand" { target mips*-*-* } } } */
+/* { dg-final { scan-rtl-dump "mem/s/u.*mem/s/u" "expand" { target mips*-*-* } } } */
 /* { dg-final { cleanup-rtl-dump "expand" } } */
