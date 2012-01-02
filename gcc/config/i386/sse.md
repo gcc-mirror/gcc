@@ -1,5 +1,5 @@
 ;; GCC machine description for SSE instructions
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -12831,6 +12831,52 @@
     return "v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %x0|%x0, %6, %4}";
   return "v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %0|%0, %6, %4}";
 }
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "*avx2_gatherdi<mode>_3"
+  [(set (match_operand:<VEC_GATHER_SRCDI> 0 "register_operand" "=&x")
+	(vec_select:<VEC_GATHER_SRCDI>
+	  (unspec:VI4F_256
+	    [(match_operand:<VEC_GATHER_SRCDI> 2 "register_operand" "0")
+	     (match_operator:<ssescalarmode> 7 "vsib_mem_operator"
+	       [(unspec:P
+		  [(match_operand:P 3 "vsib_address_operand" "p")
+		   (match_operand:<VEC_GATHER_IDXDI> 4 "register_operand" "x")
+		   (match_operand:SI 6 "const1248_operand" "n")]
+		  UNSPEC_VSIBADDR)])
+	     (mem:BLK (scratch))
+	     (match_operand:<VEC_GATHER_SRCDI> 5 "register_operand" "1")]
+	     UNSPEC_GATHER)
+	  (parallel [(const_int 0) (const_int 1)
+		     (const_int 2) (const_int 3)])))
+   (clobber (match_scratch:VI4F_256 1 "=&x"))]
+  "TARGET_AVX2"
+  "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %7, %0|%0, %7, %5}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "*avx2_gatherdi<mode>_4"
+  [(set (match_operand:<VEC_GATHER_SRCDI> 0 "register_operand" "=&x")
+	(vec_select:<VEC_GATHER_SRCDI>
+	  (unspec:VI4F_256
+	    [(pc)
+	     (match_operator:<ssescalarmode> 6 "vsib_mem_operator"
+	       [(unspec:P
+		  [(match_operand:P 2 "vsib_address_operand" "p")
+		   (match_operand:<VEC_GATHER_IDXDI> 3 "register_operand" "x")
+		   (match_operand:SI 5 "const1248_operand" "n")]
+		  UNSPEC_VSIBADDR)])
+	     (mem:BLK (scratch))
+	     (match_operand:<VEC_GATHER_SRCDI> 4 "register_operand" "1")]
+	    UNSPEC_GATHER)
+	  (parallel [(const_int 0) (const_int 1)
+		     (const_int 2) (const_int 3)])))
+   (clobber (match_scratch:VI4F_256 1 "=&x"))]
+  "TARGET_AVX2"
+  "v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %0|%0, %6, %4}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
