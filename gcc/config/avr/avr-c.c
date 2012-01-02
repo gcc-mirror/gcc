@@ -113,7 +113,7 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
       cpp_define (pfile, "__AVR_2_BYTE_PC__");
     }
 
-  if (avr_current_device->short_sp)
+  if (AVR_HAVE_8BIT_SP)
     cpp_define (pfile, "__AVR_HAVE_8BIT_SP__");
   else
     cpp_define (pfile, "__AVR_HAVE_16BIT_SP__");

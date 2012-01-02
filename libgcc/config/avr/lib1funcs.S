@@ -1253,11 +1253,12 @@ ENDF __divmodsi4
 
 ;; Use Speed-optimized Version on "big" Devices, i.e. Devices with
 ;; at least 16k of Program Memory.  For smaller Devices, depend
-;; on MOVW.
+;; on MOVW and SP Size.  There is a Connexion between SP Size and
+;; Flash Size so that SP Size can be used to test for Flash Size.
 
 #if defined (__AVR_HAVE_JMP_CALL__)
 #   define SPEED_DIV 8
-#elif defined (__AVR_HAVE_MOVW__)
+#elif defined (__AVR_HAVE_MOVW__) && !defined (__AVR_HAVE_8BIT_SP__)
 #   define SPEED_DIV 16
 #else
 #   define SPEED_DIV 0
@@ -1540,9 +1541,6 @@ DEFUN  __divdi3_moddi3
 4:  ;; Epilogue: Restore the Z = 12 Registers and return
     in r28, __SP_L__
 #if defined (__AVR_HAVE_8BIT_SP__)
-;; FIXME: __AVR_HAVE_8BIT_SP__ is set on device level, not on core level
-;;        so this lines are dead code.  To make it work, devices without
-;;        SP_H must get their own multilib(s).
     clr r29
 #else
     in r29, __SP_H__
@@ -1694,9 +1692,6 @@ DEFUN __prologue_saves__
 	push r28
 	push r29
 #if defined (__AVR_HAVE_8BIT_SP__)
-;; FIXME: __AVR_HAVE_8BIT_SP__ is set on device level, not on core level
-;;        so this lines are dead code.  To make it work, devices without
-;;        SP_H must get their own multilib(s).
 	in	r28,__SP_L__
 	sub	r28,r26
 	out	__SP_L__,r28
@@ -1746,9 +1741,6 @@ DEFUN __epilogue_restores__
 	ldd	r17,Y+3
 	ldd	r26,Y+2
 #if defined (__AVR_HAVE_8BIT_SP__)
-;; FIXME: __AVR_HAVE_8BIT_SP__ is set on device level, not on core level
-;;        so this lines are dead code.  To make it work, devices without
-;;        SP_H must get their own multilib(s).
 	ldd	r29,Y+1
 	add	r28,r30
 	out	__SP_L__,r28

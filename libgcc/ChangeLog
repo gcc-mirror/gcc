@@ -1,5 +1,11 @@
 2012-01-02  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/51345
+	* config/avr/lib1funcs.S: Remove FIXME comments.
+	(SPEED_DIV): Depend on __AVR_HAVE_8BIT_SP__.
+
+2012-01-02  Georg-Johann Lay  <avr@gjlay.de>
+
 	Implement light-weight DImode support.
 	* config/avr/t-avr (LIB1ASMFUNCS): Add _adddi3, _adddi3_s8,
 	_subdi3, _cmpdi2, _cmpdi2_s8, _rotldi3.

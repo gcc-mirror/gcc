@@ -909,13 +909,14 @@ arm*-wince-pe*)
 	extra_objs="pe.o"
 	;;
 avr-*-rtems*)
-	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
-	tmake_file="avr/t-avr t-rtems avr/t-rtems"
+	tm_file="elfos.h avr/elf.h avr/avr.h avr/multilib.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
+	tmake_file="avr/t-avr avr/t-multilib t-rtems avr/t-rtems"
 	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o avr-log.o"
 	;;
 avr-*-*)
-	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h newlib-stdint.h"
+	tm_file="elfos.h avr/elf.h avr/avr.h avr/multilib.h dbxelf.h newlib-stdint.h"
+	tmake_file="avr/t-avr avr/t-multilib"
 	use_gcc_stdint=wrap
 	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o avr-log.o"
