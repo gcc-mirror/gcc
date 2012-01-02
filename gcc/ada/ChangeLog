@@ -1,3 +1,7 @@
+2012-01-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatvsn.ads (Current_Year): Bump to 2012.
+
 2011-12-23  Pascal Obry  <obry@adacore.com>
 
 	* prj.ads (For_Every_Project_Imported): Add In_Aggregate_Lib
