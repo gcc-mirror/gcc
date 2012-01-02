@@ -978,7 +978,8 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
   /* Argument-free version: THIS_IMAGE().  */
   if (expr->value.function.actual->expr == NULL)
     {
-      se->expr = gfort_gvar_caf_this_image;
+      se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind),
+			       gfort_gvar_caf_this_image);
       return;
     }
 
@@ -1053,7 +1054,7 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
   /* Used algorithm; cf. Fortran 2008, C.10. Note, due to the scalarizer,
      one always has a dim_arg argument.
 
-     m = this_images() - 1
+     m = this_image() - 1
      if (corank == 1)
        {
 	 sub(1) = m + lcobound(corank)
@@ -1289,7 +1290,7 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
   else
     {
       gfc_init_coarray_decl (false);
-      num_images = gfort_gvar_caf_num_images;
+      num_images = fold_convert (type, gfort_gvar_caf_num_images);
     }
 
   tmp = gfc_create_var (type, NULL);
@@ -1309,7 +1310,8 @@ static void
 trans_num_images (gfc_se * se)
 {
   gfc_init_coarray_decl (false);
-  se->expr = gfort_gvar_caf_num_images;
+  se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind),
+			   gfort_gvar_caf_num_images);
 }
 
 
@@ -1614,7 +1616,8 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
 				 gfc_array_index_type,
-				 gfort_gvar_caf_num_images,
+				 fold_convert (gfc_array_index_type,
+					       gfort_gvar_caf_num_images),
 				 build_int_cst (gfc_array_index_type, 1));
 	  tmp = fold_build2_loc (input_location, TRUNC_DIV_EXPR,
 				 gfc_array_index_type, tmp,
@@ -1628,7 +1631,8 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 	  gfc_init_coarray_decl (false);
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
 				 gfc_array_index_type,
-				 gfort_gvar_caf_num_images,
+				 fold_convert (gfc_array_index_type,
+					       gfort_gvar_caf_num_images),
 				 build_int_cst (gfc_array_index_type, 1));
 	  resbound = fold_build2_loc (input_location, PLUS_EXPR,
 				      gfc_array_index_type, resbound, tmp);

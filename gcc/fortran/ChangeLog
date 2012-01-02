@@ -1,3 +1,10 @@
+2012-01-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51682
+	* trans-intrinsic.c (trans_this_image, trans_image_index,
+	trans_num_images, conv_intrinsic_cobound): Fold_convert the
+	caf_num_images/caf_this_images variables to the correct int kind.
+
 2012-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortranspec.c (lang_specific_driver): Update copyright notice
