@@ -1,3 +1,8 @@
+2012-01-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51682
+	* gfortran.dg/coarray/image_index_3.f90: New.
+
 2012-01-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/16603
