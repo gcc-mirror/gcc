@@ -1,3 +1,7 @@
+2012-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* g++.dg/opt/devirt2.C: Add -mno-abicalls for MIPS.
+
 2012-01-02  Revital Eres  <revital.eres@linaro.org>
 
 	* gcc.dg/sms-11.c: New file.
