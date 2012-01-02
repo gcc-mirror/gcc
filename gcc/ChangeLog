@@ -1,3 +1,8 @@
+2012-01-02  Richard Guenther  <rguenther@suse.de>
+
+	PR other/51679
+	* invoke.texi (fassociative-math): Remove spurious paranthesis.
+
 2012-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c (process_command): Update copyright notice dates.
