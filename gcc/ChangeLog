@@ -1,5 +1,10 @@
 2012-01-02  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/avr.opt (-mbranch-cost): Fix double definition of
+	this option introduced in r180739.
+
+2012-01-02  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/51345
 	* config.gcc (tm_file target=avr]): Add avr/avr-multilib.h
 	(tmake_file target=avr): Add avr/t-multilib.

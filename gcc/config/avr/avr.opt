@@ -73,7 +73,3 @@ Accumulate outgoing function arguments and acquire/release the needed stack spac
 mstrict-X
 Target Report Var(avr_strict_X) Init(0)
 When accessing RAM, use X as imposed by the hardware, i.e. just use pre-decrement, post-increment and indirect addressing with the X register.  Without this option, the compiler may assume that there is an addressing mode X+const similar to Y+const and Z+const and emit instructions to emulate such an addressing mode for X.
-
-mbranch-cost=
-Target Report RejectNegative Joined UInteger Var(avr_branch_cost) Init(0)
-Set the cost of a branch instruction.  Default value is 0.
