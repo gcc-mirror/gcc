@@ -1,3 +1,12 @@
+2012-01-02  Jason Merrill  <jason@redhat.com>
+
+	DR 325
+	PR c++/51666
+	* parser.c (cp_parser_cache_defarg): Split out...
+	(cp_parser_parameter_declaration): ...from here.
+	(cp_parser_save_nsdmi): Use it.
+	(cp_parser_cache_group): Remove CPP_COMMA support.
+
 2012-01-02  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51462

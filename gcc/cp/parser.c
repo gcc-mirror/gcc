@@ -2249,6 +2249,8 @@ static void cp_parser_pre_parsed_nested_name_specifier
   (cp_parser *);
 static bool cp_parser_cache_group
   (cp_parser *, enum cpp_ttype, unsigned);
+static tree cp_parser_cache_defarg
+  (cp_parser *parser, bool nsdmi);
 static void cp_parser_parse_tentatively
   (cp_parser *);
 static void cp_parser_commit_to_tentative_parse
@@ -17267,159 +17269,18 @@ cp_parser_parameter_declaration (cp_parser *parser,
   /* If the next token is `=', then process a default argument.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
     {
+      token = cp_lexer_peek_token (parser->lexer);
       /* If we are defining a class, then the tokens that make up the
 	 default argument must be saved and processed later.  */
       if (!template_parm_p && at_class_scope_p ()
 	  && TYPE_BEING_DEFINED (current_class_type)
 	  && !LAMBDA_TYPE_P (current_class_type))
-	{
-	  unsigned depth = 0;
-	  int maybe_template_id = 0;
-	  cp_token *first_token;
-	  cp_token *token;
-
-	  /* Add tokens until we have processed the entire default
-	     argument.  We add the range [first_token, token).  */
-	  first_token = cp_lexer_peek_token (parser->lexer);
-	  while (true)
-	    {
-	      bool done = false;
-
-	      /* Peek at the next token.  */
-	      token = cp_lexer_peek_token (parser->lexer);
-	      /* What we do depends on what token we have.  */
-	      switch (token->type)
-		{
-		  /* In valid code, a default argument must be
-		     immediately followed by a `,' `)', or `...'.  */
-		case CPP_COMMA:
-		  if (depth == 0 && maybe_template_id)
-		    {
-		      /* If we've seen a '<', we might be in a
-			 template-argument-list.  Until Core issue 325 is
-			 resolved, we don't know how this situation ought
-			 to be handled, so try to DTRT.  We check whether
-			 what comes after the comma is a valid parameter
-			 declaration list.  If it is, then the comma ends
-			 the default argument; otherwise the default
-			 argument continues.  */
-		      bool error = false;
-		      tree t;
-
-		      /* Set ITALP so cp_parser_parameter_declaration_list
-			 doesn't decide to commit to this parse.  */
-		      bool saved_italp = parser->in_template_argument_list_p;
-		      parser->in_template_argument_list_p = true;
-
-		      cp_parser_parse_tentatively (parser);
-		      cp_lexer_consume_token (parser->lexer);
-		      begin_scope (sk_function_parms, NULL_TREE);
-		      cp_parser_parameter_declaration_list (parser, &error);
-		      for (t = current_binding_level->names; t; t = DECL_CHAIN (t))
-			pop_binding (DECL_NAME (t), t);
-		      leave_scope ();
-		      if (!cp_parser_error_occurred (parser) && !error)
-			done = true;
-		      cp_parser_abort_tentative_parse (parser);
-
-		      parser->in_template_argument_list_p = saved_italp;
-		      break;
-		    }
-		case CPP_CLOSE_PAREN:
-		case CPP_ELLIPSIS:
-		  /* If we run into a non-nested `;', `}', or `]',
-		     then the code is invalid -- but the default
-		     argument is certainly over.  */
-		case CPP_SEMICOLON:
-		case CPP_CLOSE_BRACE:
-		case CPP_CLOSE_SQUARE:
-		  if (depth == 0)
-		    done = true;
-		  /* Update DEPTH, if necessary.  */
-		  else if (token->type == CPP_CLOSE_PAREN
-			   || token->type == CPP_CLOSE_BRACE
-			   || token->type == CPP_CLOSE_SQUARE)
-		    --depth;
-		  break;
-
-		case CPP_OPEN_PAREN:
-		case CPP_OPEN_SQUARE:
-		case CPP_OPEN_BRACE:
-		  ++depth;
-		  break;
-
-		case CPP_LESS:
-		  if (depth == 0)
-		    /* This might be the comparison operator, or it might
-		       start a template argument list.  */
-		    ++maybe_template_id;
-		  break;
-
-                case CPP_RSHIFT:
-                  if (cxx_dialect == cxx98)
-                    break;
-                  /* Fall through for C++0x, which treats the `>>'
-                     operator like two `>' tokens in certain
-                     cases.  */
-
-		case CPP_GREATER:
-		  if (depth == 0)
-		    {
-		      /* This might be an operator, or it might close a
-			 template argument list.  But if a previous '<'
-			 started a template argument list, this will have
-			 closed it, so we can't be in one anymore.  */
-		      maybe_template_id -= 1 + (token->type == CPP_RSHIFT);
-		      if (maybe_template_id < 0)
-			maybe_template_id = 0;
-		    }
-		  break;
-
-		  /* If we run out of tokens, issue an error message.  */
-		case CPP_EOF:
-		case CPP_PRAGMA_EOL:
-		  error_at (token->location, "file ends in default argument");
-		  done = true;
-		  break;
-
-		case CPP_NAME:
-		case CPP_SCOPE:
-		  /* In these cases, we should look for template-ids.
-		     For example, if the default argument is
-		     `X<int, double>()', we need to do name lookup to
-		     figure out whether or not `X' is a template; if
-		     so, the `,' does not end the default argument.
-
-		     That is not yet done.  */
-		  break;
-
-		default:
-		  break;
-		}
-
-	      /* If we've reached the end, stop.  */
-	      if (done)
-		break;
-
-	      /* Add the token to the token block.  */
-	      token = cp_lexer_consume_token (parser->lexer);
-	    }
-
-	  /* Create a DEFAULT_ARG to represent the unparsed default
-	     argument.  */
-	  default_argument = make_node (DEFAULT_ARG);
-	  DEFARG_TOKENS (default_argument)
-	    = cp_token_cache_new (first_token, token);
-	  DEFARG_INSTANTIATIONS (default_argument) = NULL;
-	}
+	default_argument = cp_parser_cache_defarg (parser, /*nsdmi=*/false);
       /* Outside of a class definition, we can just parse the
 	 assignment-expression.  */
       else
-	{
-	  token = cp_lexer_peek_token (parser->lexer);
-	  default_argument 
-	    = cp_parser_default_argument (parser, template_parm_p);
-	}
+	default_argument
+	  = cp_parser_default_argument (parser, template_parm_p);
 
       if (!parser->default_arg_ok_p)
 	{
@@ -21630,24 +21491,8 @@ cp_parser_save_member_function_body (cp_parser* parser,
 static tree
 cp_parser_save_nsdmi (cp_parser* parser)
 {
-  /* Save away the tokens that make up the body of the
-     function.  */
-  cp_token *first = parser->lexer->next_token;
-  cp_token *last;
-  tree node;
-
-  /* Save tokens until the next comma or semicolon.  */
-  cp_parser_cache_group (parser, CPP_COMMA, /*depth=*/0);
-
-  last = parser->lexer->next_token;
-
-  node = make_node (DEFAULT_ARG);
-  DEFARG_TOKENS (node) = cp_token_cache_new (first, last);
-  DEFARG_INSTANTIATIONS (node) = NULL;
-
-  return node;
+  return cp_parser_cache_defarg (parser, /*nsdmi=*/true);
 }
-
 
 /* Parse a template-argument-list, as well as the trailing ">" (but
    not the opening "<").  See cp_parser_template_argument_list for the
@@ -22758,12 +22603,6 @@ cp_parser_cache_group (cp_parser *parser,
 	   kind of syntax error.  */
 	return true;
 
-      /* If we're caching something finished by a comma (or semicolon),
-	 such as an NSDMI, don't consume the comma.  */
-      if (end == CPP_COMMA
-	  && (token->type == CPP_SEMICOLON || token->type == CPP_COMMA))
-	return false;
-
       /* Consume the token.  */
       cp_lexer_consume_token (parser->lexer);
       /* See if it starts a new group.  */
@@ -22787,6 +22626,178 @@ cp_parser_cache_group (cp_parser *parser,
       else if (token->type == end)
 	return false;
     }
+}
+
+/* Like above, for caching a default argument or NSDMI.  Both of these are
+   terminated by a non-nested comma, but it can be unclear whether or not a
+   comma is nested in a template argument list unless we do more parsing.
+   In order to handle this ambiguity, when we encounter a ',' after a '<'
+   we try to parse what follows as a parameter-declaration-list (in the
+   case of a default argument) or a member-declarator (in the case of an
+   NSDMI).  If that succeeds, then we stop caching.  */
+
+static tree
+cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
+{
+  unsigned depth = 0;
+  int maybe_template_id = 0;
+  cp_token *first_token;
+  cp_token *token;
+  tree default_argument;
+
+  /* Add tokens until we have processed the entire default
+     argument.  We add the range [first_token, token).  */
+  first_token = cp_lexer_peek_token (parser->lexer);
+  if (first_token->type == CPP_OPEN_BRACE)
+    {
+      /* For list-initialization, this is straightforward.  */
+      cp_parser_cache_group (parser, CPP_CLOSE_BRACE, /*depth=*/0);
+      token = cp_lexer_peek_token (parser->lexer);
+    }
+  else while (true)
+    {
+      bool done = false;
+
+      /* Peek at the next token.  */
+      token = cp_lexer_peek_token (parser->lexer);
+      /* What we do depends on what token we have.  */
+      switch (token->type)
+	{
+	  /* In valid code, a default argument must be
+	     immediately followed by a `,' `)', or `...'.  */
+	case CPP_COMMA:
+	  if (depth == 0 && maybe_template_id)
+	    {
+	      /* If we've seen a '<', we might be in a
+		 template-argument-list.  Until Core issue 325 is
+		 resolved, we don't know how this situation ought
+		 to be handled, so try to DTRT.  We check whether
+		 what comes after the comma is a valid parameter
+		 declaration list.  If it is, then the comma ends
+		 the default argument; otherwise the default
+		 argument continues.  */
+	      bool error = false;
+	      tree t;
+
+	      /* Set ITALP so cp_parser_parameter_declaration_list
+		 doesn't decide to commit to this parse.  */
+	      bool saved_italp = parser->in_template_argument_list_p;
+	      parser->in_template_argument_list_p = true;
+
+	      cp_parser_parse_tentatively (parser);
+	      cp_lexer_consume_token (parser->lexer);
+
+	      if (nsdmi)
+		{
+		  int ctor_dtor_or_conv_p;
+		  cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
+					&ctor_dtor_or_conv_p,
+					/*parenthesized_p=*/NULL,
+					/*member_p=*/true);
+		}
+	      else
+		{
+		  begin_scope (sk_function_parms, NULL_TREE);
+		  cp_parser_parameter_declaration_list (parser, &error);
+		  for (t = current_binding_level->names; t; t = DECL_CHAIN (t))
+		    pop_binding (DECL_NAME (t), t);
+		  leave_scope ();
+		}
+	      if (!cp_parser_error_occurred (parser) && !error)
+		done = true;
+	      cp_parser_abort_tentative_parse (parser);
+
+	      parser->in_template_argument_list_p = saved_italp;
+	      break;
+	    }
+	case CPP_CLOSE_PAREN:
+	case CPP_ELLIPSIS:
+	  /* If we run into a non-nested `;', `}', or `]',
+	     then the code is invalid -- but the default
+	     argument is certainly over.  */
+	case CPP_SEMICOLON:
+	case CPP_CLOSE_BRACE:
+	case CPP_CLOSE_SQUARE:
+	  if (depth == 0)
+	    done = true;
+	  /* Update DEPTH, if necessary.  */
+	  else if (token->type == CPP_CLOSE_PAREN
+		   || token->type == CPP_CLOSE_BRACE
+		   || token->type == CPP_CLOSE_SQUARE)
+	    --depth;
+	  break;
+
+	case CPP_OPEN_PAREN:
+	case CPP_OPEN_SQUARE:
+	case CPP_OPEN_BRACE:
+	  ++depth;
+	  break;
+
+	case CPP_LESS:
+	  if (depth == 0)
+	    /* This might be the comparison operator, or it might
+	       start a template argument list.  */
+	    ++maybe_template_id;
+	  break;
+
+	case CPP_RSHIFT:
+	  if (cxx_dialect == cxx98)
+	    break;
+	  /* Fall through for C++0x, which treats the `>>'
+	     operator like two `>' tokens in certain
+	     cases.  */
+
+	case CPP_GREATER:
+	  if (depth == 0)
+	    {
+	      /* This might be an operator, or it might close a
+		 template argument list.  But if a previous '<'
+		 started a template argument list, this will have
+		 closed it, so we can't be in one anymore.  */
+	      maybe_template_id -= 1 + (token->type == CPP_RSHIFT);
+	      if (maybe_template_id < 0)
+		maybe_template_id = 0;
+	    }
+	  break;
+
+	  /* If we run out of tokens, issue an error message.  */
+	case CPP_EOF:
+	case CPP_PRAGMA_EOL:
+	  error_at (token->location, "file ends in default argument");
+	  done = true;
+	  break;
+
+	case CPP_NAME:
+	case CPP_SCOPE:
+	  /* In these cases, we should look for template-ids.
+	     For example, if the default argument is
+	     `X<int, double>()', we need to do name lookup to
+	     figure out whether or not `X' is a template; if
+	     so, the `,' does not end the default argument.
+
+	     That is not yet done.  */
+	  break;
+
+	default:
+	  break;
+	}
+
+      /* If we've reached the end, stop.  */
+      if (done)
+	break;
+
+      /* Add the token to the token block.  */
+      token = cp_lexer_consume_token (parser->lexer);
+    }
+
+  /* Create a DEFAULT_ARG to represent the unparsed default
+     argument.  */
+  default_argument = make_node (DEFAULT_ARG);
+  DEFARG_TOKENS (default_argument)
+    = cp_token_cache_new (first_token, token);
+  DEFARG_INSTANTIATIONS (default_argument) = NULL;
+
+  return default_argument;
 }
 
 /* Begin parsing tentatively.  We always save tokens while parsing

@@ -1,3 +1,8 @@
+2012-01-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51666
+	* g++.dg/cpp0x/nsdmi-defer5.C: New.
+
 2012-01-02  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51462
