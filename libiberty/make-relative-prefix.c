@@ -1,6 +1,6 @@
 /* Relative (relocatable) prefix support.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2006 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2006, 2012 Free Software Foundation, Inc.
 
 This file is part of libiberty.
 
@@ -57,6 +57,9 @@ relative prefix can be found, return @code{NULL}.
 #endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
 #endif
 
 #include <string.h>
@@ -248,7 +251,11 @@ make_relative_prefix_1 (const char *progname, const char *bin_prefix,
 	  if (prefixlen < 2)
 	    prefixlen = 2;
 
-	  nstore = (char *) alloca (prefixlen + strlen (progname) + 1);
+	  nstore = (char *) alloca (prefixlen + strlen (progname) + 1
+#ifdef HAVE_HOST_EXECUTABLE_SUFFIX
+				    + strlen (HOST_EXECUTABLE_SUFFIX)
+#endif
+				    );
 
 	  startp = endp = temp;
 	  while (1)
@@ -263,7 +270,7 @@ make_relative_prefix_1 (const char *progname, const char *bin_prefix,
 		    }
 		  else
 		    {
-		      strncpy (nstore, startp, endp - startp);
+		      memcpy (nstore, startp, endp - startp);
 		      if (! IS_DIR_SEPARATOR (endp[-1]))
 			{
 			  nstore[endp - startp] = DIR_SEPARATOR;
@@ -279,8 +286,14 @@ make_relative_prefix_1 (const char *progname, const char *bin_prefix,
 #endif
 		      )
 		    {
-		      progname = nstore;
-		      break;
+#if defined (HAVE_SYS_STAT_H) && defined (S_ISREG)
+		      struct stat st;
+		      if (stat (nstore, &st) >= 0 && S_ISREG (st.st_mode))
+#endif
+			{
+			  progname = nstore;
+			  break;
+			}
 		    }
 
 		  if (*endp == 0)
