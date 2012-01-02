@@ -1,3 +1,9 @@
+2012-01-02  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/51686
+	* Makefile.def (install-strip-gcc): Depend on install-strip-lto-plugin.
+	* Makefile.in: Regenerate.
+
 2011-12-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure: Regenerate.
