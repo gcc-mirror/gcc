@@ -1,5 +1,9 @@
 2012-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.dg/pr46309.c: Add -mtune=octeon2 for MIPS.
+
+2012-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* g++.dg/cpp0x/constexpr-rom.C: Look for .rdata rather than rodata
 	for MIPS.
 
