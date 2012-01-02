@@ -1,6 +1,6 @@
 /* gfortran header file
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010, 2011
+   2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -1696,6 +1696,10 @@ typedef struct gfc_expr
   gfc_ref *ref;
 
   locus where;
+
+  /* Used to store the base expression in component calls, when the expression
+     is not a variable.  */
+  gfc_expr *base_expr;
 
   /* is_boz is true if the integer is regarded as BOZ bitpatten and is_snan
      denotes a signalling not-a-number.  */

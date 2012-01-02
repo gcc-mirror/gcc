@@ -1,6 +1,6 @@
 /* Perform type resolution on the various structures.
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011
+   2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -5620,10 +5620,11 @@ resolve_typebound_static (gfc_expr* e, gfc_symtree** target,
 
 /* Get the ultimate declared type from an expression.  In addition,
    return the last class/derived type reference and the copy of the
-   reference list.  */
+   reference list.  If check_types is set true, derived types are
+   identified as well as class references.  */
 static gfc_symbol*
 get_declared_from_expr (gfc_ref **class_ref, gfc_ref **new_ref,
-			gfc_expr *e)
+			gfc_expr *e, bool check_types)
 {
   gfc_symbol *declared;
   gfc_ref *ref;
@@ -5639,8 +5640,9 @@ get_declared_from_expr (gfc_ref **class_ref, gfc_ref **new_ref,
       if (ref->type != REF_COMPONENT)
 	continue;
 
-      if (ref->u.c.component->ts.type == BT_CLASS
-	    || ref->u.c.component->ts.type == BT_DERIVED)
+      if ((ref->u.c.component->ts.type == BT_CLASS
+	     || (check_types && ref->u.c.component->ts.type == BT_DERIVED))
+	  && ref->u.c.component->attr.flavor != FL_PROCEDURE)
 	{
 	  declared = ref->u.c.component->ts.u.derived;
 	  if (class_ref)
@@ -5735,7 +5737,7 @@ resolve_typebound_generic_call (gfc_expr* e, const char **name)
 
 success:
   /* Make sure that we have the right specific instance for the name.  */
-  derived = get_declared_from_expr (NULL, NULL, e);
+  derived = get_declared_from_expr (NULL, NULL, e, true);
 
   st = gfc_find_typebound_proc (derived, NULL, genname, true, &e->where);
   if (st)
@@ -5852,7 +5854,7 @@ resolve_compcall (gfc_expr* e, const char **name)
 /* Resolve a typebound function, or 'method'. First separate all
    the non-CLASS references by calling resolve_compcall directly.  */
 
-static gfc_try
+gfc_try
 resolve_typebound_function (gfc_expr* e)
 {
   gfc_symbol *declared;
@@ -5872,6 +5874,21 @@ resolve_typebound_function (gfc_expr* e)
   overridable = !e->value.compcall.tbp->non_overridable;
   if (expr && expr->ts.type == BT_CLASS && e->value.compcall.name)
     {
+      /* If the base_object is not a variable, the corresponding actual
+	 argument expression must be stored in e->base_expression so
+	 that the corresponding tree temporary can be used as the base
+	 object in gfc_conv_procedure_call.  */
+      if (expr->expr_type != EXPR_VARIABLE)
+	{
+	  gfc_actual_arglist *args;
+
+	  for (args= e->value.function.actual; args; args = args->next)
+	    {
+	      if (expr == args->expr)
+		expr = args->expr;
+	    }
+	}
+
       /* Since the typebound operators are generic, we have to ensure
 	 that any delays in resolution are corrected and that the vtab
 	 is present.  */
@@ -5888,9 +5905,26 @@ resolve_typebound_function (gfc_expr* e)
       name = name ? name : e->value.function.esym->name;
       e->symtree = expr->symtree;
       e->ref = gfc_copy_ref (expr->ref);
+      get_declared_from_expr (&class_ref, NULL, e, false);
+
+      /* Trim away the extraneous references that emerge from nested
+	 use of interface.c (extend_expr).  */
+      if (class_ref && class_ref->next)
+	{
+	  gfc_free_ref_list (class_ref->next);
+	  class_ref->next = NULL;
+	}
+      else if (e->ref && !class_ref)
+	{
+	  gfc_free_ref_list (e->ref);
+	  e->ref = NULL;
+	}
+
       gfc_add_vptr_component (e);
       gfc_add_component_ref (e, name);
       e->value.function.esym = NULL;
+      if (expr->expr_type != EXPR_VARIABLE)
+	e->base_expr = expr;
       return SUCCESS;
     }
 
@@ -5901,7 +5935,7 @@ resolve_typebound_function (gfc_expr* e)
     return FAILURE;
 
   /* Get the CLASS declared type.  */
-  declared = get_declared_from_expr (&class_ref, &new_ref, e);
+  declared = get_declared_from_expr (&class_ref, &new_ref, e, true);
 
   /* Weed out cases of the ultimate component being a derived type.  */
   if ((class_ref && class_ref->u.c.component->ts.type == BT_DERIVED)
@@ -5967,6 +6001,20 @@ resolve_typebound_subroutine (gfc_code *code)
   overridable = !code->expr1->value.compcall.tbp->non_overridable;
   if (expr && expr->ts.type == BT_CLASS && code->expr1->value.compcall.name)
     {
+      /* If the base_object is not a variable, the corresponding actual
+	 argument expression must be stored in e->base_expression so
+	 that the corresponding tree temporary can be used as the base
+	 object in gfc_conv_procedure_call.  */
+      if (expr->expr_type != EXPR_VARIABLE)
+	{
+	  gfc_actual_arglist *args;
+
+	  args= code->expr1->value.function.actual;
+	  for (; args; args = args->next)
+	    if (expr == args->expr)
+	      expr = args->expr;
+	}
+
       /* Since the typebound operators are generic, we have to ensure
 	 that any delays in resolution are corrected and that the vtab
 	 is present.  */
@@ -5982,9 +6030,27 @@ resolve_typebound_subroutine (gfc_code *code)
       name = name ? name : code->expr1->value.function.esym->name;
       code->expr1->symtree = expr->symtree;
       code->expr1->ref = gfc_copy_ref (expr->ref);
+
+      /* Trim away the extraneous references that emerge from nested
+	 use of interface.c (extend_expr).  */
+      get_declared_from_expr (&class_ref, NULL, code->expr1, false);
+      if (class_ref && class_ref->next)
+	{
+	  gfc_free_ref_list (class_ref->next);
+	  class_ref->next = NULL;
+	}
+      else if (code->expr1->ref && !class_ref)
+	{
+	  gfc_free_ref_list (code->expr1->ref);
+	  code->expr1->ref = NULL;
+	}
+
+      /* Now use the procedure in the vtable.  */
       gfc_add_vptr_component (code->expr1);
       gfc_add_component_ref (code->expr1, name);
       code->expr1->value.function.esym = NULL;
+      if (expr->expr_type != EXPR_VARIABLE)
+	code->expr1->base_expr = expr;
       return SUCCESS;
     }
 
@@ -5995,7 +6061,7 @@ resolve_typebound_subroutine (gfc_code *code)
     return FAILURE;
 
   /* Get the CLASS declared type.  */
-  get_declared_from_expr (&class_ref, &new_ref, code->expr1);
+  get_declared_from_expr (&class_ref, &new_ref, code->expr1, true);
 
   /* Weed out cases of the ultimate component being a derived type.  */
   if ((class_ref && class_ref->u.c.component->ts.type == BT_DERIVED)

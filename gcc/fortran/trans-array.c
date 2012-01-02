@@ -1,6 +1,6 @@
 /* Array translation routines
    Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011
+   2011, 2012
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
@@ -5068,6 +5068,18 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
     tmp = gfc_finish_block (&elseblock);
 
   gfc_add_expr_to_block (&se->pre, tmp);
+
+  if (expr->ts.type == BT_CLASS && expr3)
+    {
+      tmp = build_int_cst (unsigned_char_type_node, 0);
+      /* For class objects we need to nullify the memory in case they have
+	 allocatable components; the reason is that _copy, which is used for
+	 initialization, first frees the destination.  */
+      tmp = build_call_expr_loc (input_location,
+				 builtin_decl_explicit (BUILT_IN_MEMSET),
+				 3, pointer, tmp,  size);
+      gfc_add_expr_to_block (&se->pre, tmp);
+    }
 
   /* Update the array descriptors. */
   if (dimension)
