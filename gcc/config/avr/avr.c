@@ -5222,7 +5222,7 @@ avr_out_ashrpsi3 (rtx insn, rtx *op, int *plen)
 
           /* fall through */
 
-        case 31:
+        case 23:
           return avr_asm_len ("lsl %C0"     CR_TAB
                               "sbc %A0,%A0" CR_TAB
                               "mov %B0,%A0" CR_TAB
