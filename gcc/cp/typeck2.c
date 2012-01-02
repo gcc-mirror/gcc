@@ -902,7 +902,11 @@ digest_init_r (tree type, tree init, bool nested, int flags,
 		}
 	    }
 
-	  TREE_TYPE (init) = type;
+	  if (type != TREE_TYPE (init))
+	    {
+	      init = copy_node (init);
+	      TREE_TYPE (init) = type;
+	    }
 	  if (TYPE_DOMAIN (type) != 0 && TREE_CONSTANT (TYPE_SIZE (type)))
 	    {
 	      int size = TREE_INT_CST_LOW (TYPE_SIZE (type));

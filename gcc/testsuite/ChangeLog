@@ -1,3 +1,8 @@
+2012-01-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/20140
+	* g++.dg/template/init9.C: New.
+
 2012-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.dg/memcpy-4.c: Add nomips16 attribute for MIPS targets.

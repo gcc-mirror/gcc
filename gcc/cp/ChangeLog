@@ -1,3 +1,9 @@
+2012-01-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/20140
+	* typeck2.c (digest_init_r): Use copy_init when initializing
+	an array of chars.
+
 2012-01-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/16603
