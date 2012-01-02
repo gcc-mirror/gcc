@@ -164,6 +164,9 @@ static GTY(()) section *progmem_swtable_section;
    or to address space __pgm*.  */
 static GTY(()) section *progmem_section[6];
 
+/* Condition for insns/expanders from avr-dimode.md.  */
+bool avr_have_dimode = true;
+
 /* To track if code will use .bss and/or .data.  */
 bool avr_need_clear_bss_p = false;
 bool avr_need_copy_data_p = false;
@@ -4091,14 +4094,17 @@ avr_out_compare (rtx insn, rtx *xop, int *plen)
   /* Value (0..0xff) held in clobber register xop[2] or -1 if unknown.  */
   int clobber_val = -1;
 
-  gcc_assert (REG_P (xreg)
-              && CONST_INT_P (xval));
+  gcc_assert (REG_P (xreg));
+  gcc_assert ((CONST_INT_P (xval) && n_bytes <= 4)
+              || (const_double_operand (xval, VOIDmode) && n_bytes == 8));
   
   if (plen)
     *plen = 0;
 
   /* Comparisons == +/-1 and != +/-1 can be done similar to camparing
-     against 0 by ORing the bytes.  This is one instruction shorter.  */
+     against 0 by ORing the bytes.  This is one instruction shorter.
+     Notice that DImode comparisons are always against reg:DI 18
+     and therefore don't use this.  */
 
   if (!test_hard_reg_class (LD_REGS, xreg)
       && compare_eq_p (insn)
@@ -4215,6 +4221,20 @@ avr_out_compare (rtx insn, rtx *xop, int *plen)
   return "";
 }
 
+
+/* Prepare operands of compare_const_di2 to be used with avr_out_compare.  */
+
+const char*
+avr_out_compare64 (rtx insn, rtx *op, int *plen)
+{
+  rtx xop[3];
+
+  xop[0] = gen_rtx_REG (DImode, 18);
+  xop[1] = op[0];
+  xop[2] = op[1];
+
+  return avr_out_compare (insn, xop, plen);
+}
 
 /* Output test instruction for HImode.  */
 
@@ -5855,7 +5875,7 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc)
   *pcc = (MINUS == code) ? CC_SET_CZN : CC_CLOBBER;
 
   if (MINUS == code)
-    xval = gen_int_mode (-UINTVAL (xval), mode);
+    xval = simplify_unary_operation (NEG, mode, xval, mode);
 
   op[2] = xop[3];
 
@@ -6028,6 +6048,25 @@ avr_out_plus_noclobber (rtx *xop, int *plen, int *pcc)
   op[3] = NULL_RTX;
 
   return avr_out_plus (op, plen, pcc);
+}
+
+
+/* Prepare operands of adddi3_const_insn to be used with avr_out_plus_1.  */
+
+const char*
+avr_out_plus64 (rtx addend, int *plen)
+{
+  int cc_dummy;
+  rtx op[4];
+
+  op[0] = gen_rtx_REG (DImode, 18);
+  op[1] = op[0];
+  op[2] = addend;
+  op[3] = NULL_RTX;
+
+  avr_out_plus_1 (op, plen, MINUS, &cc_dummy);
+
+  return "";
 }
 
 /* Output bit operation (IOR, AND, XOR) with register XOP[0] and compile
@@ -6415,6 +6454,7 @@ adjust_insn_length (rtx insn, int len)
     case ADJUST_LEN_OUT_BITOP: avr_out_bitop (insn, op, &len); break;
       
     case ADJUST_LEN_OUT_PLUS: avr_out_plus (op, &len, NULL); break;
+    case ADJUST_LEN_PLUS64: avr_out_plus64 (op[0], &len); break;
     case ADJUST_LEN_OUT_PLUS_NOCLOBBER:
       avr_out_plus_noclobber (op, &len, NULL); break;
 
@@ -6431,6 +6471,7 @@ adjust_insn_length (rtx insn, int len)
     case ADJUST_LEN_TSTPSI: avr_out_tstpsi (insn, op, &len); break;
     case ADJUST_LEN_TSTSI: avr_out_tstsi (insn, op, &len); break;
     case ADJUST_LEN_COMPARE: avr_out_compare (insn, op, &len); break;
+    case ADJUST_LEN_COMPARE64: avr_out_compare64 (insn, op, &len); break;
 
     case ADJUST_LEN_LSHRQI: lshrqi3_out (insn, op, &len); break;
     case ADJUST_LEN_LSHRHI: lshrhi3_out (insn, op, &len); break;
@@ -8389,7 +8430,9 @@ avr_compare_pattern (rtx insn)
   if (pattern
       && NONJUMP_INSN_P (insn)
       && SET_DEST (pattern) == cc0_rtx
-      && GET_CODE (SET_SRC (pattern)) == COMPARE)
+      && GET_CODE (SET_SRC (pattern)) == COMPARE
+      && DImode != GET_MODE (XEXP (SET_SRC (pattern), 0))
+      && DImode != GET_MODE (XEXP (SET_SRC (pattern), 1)))
     {
       return pattern;
     }

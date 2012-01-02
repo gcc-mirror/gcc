@@ -1,3 +1,23 @@
+2012-01-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	Implement light-weight DImode support.
+	* config/avr/avr-dimode.md: New file.
+	* config/avr/avr.md: Include it.
+	(adjust_len): Add plus64, compare64.
+	(HIDI): Remove code iterator.
+	(code_stdname): New code attribute.
+	(rotx, rotsmode): Remove DI.
+	(rotl<mode>3, *rotw<mode>, *rotb<mode>): Use HISI instead of HIDI
+	as code iterator.
+	* config/avr/avr-protos.h (avr_have_dimode): New.
+	(avr_out_plus64, avr_out_compare64): New.
+	* config/avr/avr.c (avr_out_compare): Handle DImode.
+	(avr_have_dimode): New variable definition and initialization.
+	(avr_out_compare64, avr_out_plus64): New functions.
+	(avr_out_plus_1): Use simplify_unary_operation to negate xval.
+	(adjust_insn_length): Handle ADJUST_LEN_COMPARE64, ADJUST_LEN_PLUS64.
+	(avr_compare_pattern): Skip DImode comparisons.
+
 2012-01-02  Revital Eres  <revital.eres@linaro.org>
 
 	* ddg.c (def_has_ccmode_p): New function.

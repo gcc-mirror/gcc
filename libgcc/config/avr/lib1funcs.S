@@ -1558,6 +1558,71 @@ ENDF __divdi3_moddi3
 
 #endif /* L_divdi3 */
 
+.section .text.libgcc, "ax", @progbits
+
+#define TT __tmp_reg__
+
+#if defined (L_adddi3)
+;; (set (reg:DI 18)
+;;      (plus:DI (reg:DI 18)
+;;               (reg:DI 10)))
+DEFUN __adddi3
+    ADD A0,B0  $  adc A1,B1  $  adc A2,B2  $  adc A3,B3
+    adc A4,B4  $  adc A5,B5  $  adc A6,B6  $  adc A7,B7
+    ret
+ENDF __adddi3
+#endif /* L_adddi3 */
+
+#if defined (L_adddi3_s8)
+;; (set (reg:DI 18)
+;;      (plus:DI (reg:DI 18)
+;;               (sign_extend:SI (reg:QI 26))))
+DEFUN __adddi3_s8
+    clr     TT
+    sbrc    r26, 7
+    com     TT
+    ADD A0,r26 $  adc A1,TT  $  adc A2,TT  $  adc A3,TT
+    adc A4,TT  $  adc A5,TT  $  adc A6,TT  $  adc A7,TT
+    ret
+ENDF __adddi3_s8
+#endif /* L_adddi3_s8 */
+
+#if defined (L_subdi3)
+;; (set (reg:DI 18)
+;;      (minus:DI (reg:DI 18)
+;;                (reg:DI 10)))
+DEFUN __subdi3
+    SUB A0,B0  $  sbc A1,B1  $  sbc A2,B2  $  sbc A3,B3
+    sbc A4,B4  $  sbc A5,B5  $  sbc A6,B6  $  sbc A7,B7
+    ret
+ENDF __subdi3
+#endif /* L_subdi3 */
+
+#if defined (L_cmpdi2)
+;; (set (cc0)
+;;      (compare (reg:DI 18)
+;;               (reg:DI 10)))
+DEFUN __cmpdi2
+    CP  A0,B0  $  cpc A1,B1  $  cpc A2,B2  $  cpc A3,B3
+    cpc A4,B4  $  cpc A5,B5  $  cpc A6,B6  $  cpc A7,B7
+    ret
+ENDF __cmpdi2
+#endif /* L_cmpdi2 */
+
+#if defined (L_cmpdi2_s8)
+;; (set (cc0)
+;;      (compare (reg:DI 18)
+;;               (sign_extend:SI (reg:QI 26))))
+DEFUN __cmpdi2_s8
+    clr     TT
+    sbrc    r26, 7
+    com     TT
+    CP  A0,r26 $  cpc A1,TT  $  cpc A2,TT  $  cpc A3,TT
+    cpc A4,TT  $  cpc A5,TT  $  cpc A6,TT  $  cpc A7,TT
+    ret
+ENDF __cmpdi2_s8
+#endif /* L_cmpdi2_s8 */
+
 #if defined (L_negdi2)
 DEFUN __negdi2
 
@@ -1570,6 +1635,8 @@ DEFUN __negdi2
 
 ENDF __negdi2
 #endif /* L_negdi2 */
+
+#undef TT
 
 #undef C7
 #undef C6
@@ -2469,6 +2536,29 @@ DEFUN __ashldi3
     ret
 ENDF __ashldi3
 #endif /* defined (L_ashldi3) */
+
+#if defined (L_rotldi3)
+;; Shift left
+;; r25:r18 = rotl64 (r25:r18, r17:r16)
+DEFUN __rotldi3
+    push r16
+    andi r16, 63
+    breq 2f
+1:  lsl  r18
+    rol  r19
+    rol  r20
+    rol  r21
+    rol  r22
+    rol  r23
+    rol  r24
+    rol  r25
+    adc  r18, __zero_reg__
+    dec  r16
+    brne 1b
+2:  pop  r16
+    ret
+ENDF __rotldi3
+#endif /* defined (L_rotldi3) */
 
 
 .section .text.libgcc.fmul, "ax", @progbits
