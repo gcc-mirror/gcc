@@ -1,3 +1,9 @@
+2012-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/memcpy-4.c: Add nomips16 attribute for MIPS targets.
+	Increase copy to 5 bytes.  Look for at least two "mem/s/u"s,
+	rather than a specific number.
+
 2012-01-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/46262

@@ -6537,6 +6537,92 @@ mips_expand_fcc_reload (rtx dest, rtx src, rtx scratch)
   emit_insn (gen_slt_sf (dest, fp2, fp1));
 }
 
+/* Implement MOVE_BY_PIECES_P.  */
+
+bool
+mips_move_by_pieces_p (unsigned HOST_WIDE_INT size, unsigned int align)
+{
+  if (HAVE_movmemsi)
+    {
+      /* movmemsi is meant to generate code that is at least as good as
+	 move_by_pieces.  However, movmemsi effectively uses a by-pieces
+	 implementation both for moves smaller than a word and for
+	 word-aligned moves of no more than MIPS_MAX_MOVE_BYTES_STRAIGHT
+	 bytes.  We should allow the tree-level optimisers to do such
+	 moves by pieces, as it often exposes other optimization
+	 opportunities.  We might as well continue to use movmemsi at
+	 the rtl level though, as it produces better code when
+	 scheduling is disabled (such as at -O).  */
+      if (currently_expanding_to_rtl)
+	return false;
+      if (align < BITS_PER_WORD)
+	return size < UNITS_PER_WORD;
+      return size <= MIPS_MAX_MOVE_BYTES_STRAIGHT;
+    }
+  /* The default value.  If this becomes a target hook, we should
+     call the default definition instead.  */
+  return (move_by_pieces_ninsns (size, align, MOVE_MAX_PIECES + 1)
+	  < (unsigned int) MOVE_RATIO (optimize_insn_for_speed_p ()));
+}
+
+/* Implement STORE_BY_PIECES_P.  */
+
+bool
+mips_store_by_pieces_p (unsigned HOST_WIDE_INT size, unsigned int align)
+{
+  /* Storing by pieces involves moving constants into registers
+     of size MIN (ALIGN, BITS_PER_WORD), then storing them.
+     We need to decide whether it is cheaper to load the address of
+     constant data into a register and use a block move instead.  */
+
+  /* If the data is only byte aligned, then:
+
+     (a1) A block move of less than 4 bytes would involve three 3 LBs and
+	  3 SBs.  We might as well use 3 single-instruction LIs and 3 SBs
+	  instead.
+
+     (a2) A block move of 4 bytes from aligned source data can use an
+	  LW/SWL/SWR sequence.  This is often better than the 4 LIs and
+	  4 SBs that we would generate when storing by pieces.  */
+  if (align <= BITS_PER_UNIT)
+    return size < 4;
+
+  /* If the data is 2-byte aligned, then:
+
+     (b1) A block move of less than 4 bytes would use a combination of LBs,
+	  LHs, SBs and SHs.  We get better code by using single-instruction
+	  LIs, SBs and SHs instead.
+
+     (b2) A block move of 4 bytes from aligned source data would again use
+	  an LW/SWL/SWR sequence.  In most cases, loading the address of
+	  the source data would require at least one extra instruction.
+	  It is often more efficient to use 2 single-instruction LIs and
+	  2 SHs instead.
+
+     (b3) A block move of up to 3 additional bytes would be like (b1).
+
+     (b4) A block move of 8 bytes from aligned source data can use two
+	  LW/SWL/SWR sequences or a single LD/SDL/SDR sequence.  Both
+	  sequences are better than the 4 LIs and 4 SHs that we'd generate
+	  when storing by pieces.
+
+     The reasoning for higher alignments is similar:
+
+     (c1) A block move of less than 4 bytes would be the same as (b1).
+
+     (c2) A block move of 4 bytes would use an LW/SW sequence.  Again,
+	  loading the address of the source data would typically require
+	  at least one extra instruction.  It is generally better to use
+	  LUI/ORI/SW instead.
+
+     (c3) A block move of up to 3 additional bytes would be like (b1).
+
+     (c4) A block move of 8 bytes can use two LW/SW sequences or a single
+	  LD/SD sequence, and in these cases we've traditionally preferred
+	  the memory copy over the more bulky constant moves.  */
+  return size < 8;
+}
+
 /* Emit straight-line code to move LENGTH bytes from SRC to DEST.
    Assume that the areas do not overlap.  */
 

@@ -123,9 +123,6 @@ struct store_by_pieces_d
   int reverse;
 };
 
-static unsigned HOST_WIDE_INT move_by_pieces_ninsns (unsigned HOST_WIDE_INT,
-						     unsigned int,
-						     unsigned int);
 static void move_by_pieces_1 (rtx (*) (rtx, ...), enum machine_mode,
 			      struct move_by_pieces_d *);
 static bool block_move_libcall_safe_for_call_parm (void);
@@ -1016,7 +1013,7 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
 /* Return number of insns required to move L bytes by pieces.
    ALIGN (in bits) is maximum alignment we can assume.  */
 
-static unsigned HOST_WIDE_INT
+unsigned HOST_WIDE_INT
 move_by_pieces_ninsns (unsigned HOST_WIDE_INT l, unsigned int align,
 		       unsigned int max_size)
 {

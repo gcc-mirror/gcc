@@ -1,3 +1,14 @@
+2012-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* expr.h (move_by_pieces_ninsns): Declare.
+	* expr.c (move_by_pieces_ninsns): Make external.
+	* config/mips/mips-protos.h (mips_move_by_pieces_p): Declare.
+	(mips_store_by_pieces_p): Likewise.
+	* config/mips/mips.h (MOVE_BY_PIECES_P): Call mips_move_by_pieces_p.
+	(STORE_BY_PIECES_P): Likewise mips_store_by_pieces_p.
+	* config/mips/mips.c (mips_move_by_pieces_p): New function.
+	(mips_store_by_pieces_p): Likewise.
+
 2012-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* passes.c (register_one_dump_file): Free full_name.
