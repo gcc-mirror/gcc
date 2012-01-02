@@ -1,3 +1,33 @@
+2012-01-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/51529
+	* trans-array.c (gfc_array_allocate): Null allocated memory of
+	newly allocted class arrays.
+
+	PR fortran/46262
+	PR fortran/46328
+	PR fortran/51052
+	* interface.c(build_compcall_for_operator): Add a type to the
+	expression.
+	* trans-expr.c (conv_base_obj_fcn_val): New function.
+	(gfc_conv_procedure_call): Use base_expr to detect non-variable
+	base objects and, ensuring that there is a temporary variable,
+	build up the typebound call using conv_base_obj_fcn_val.
+	(gfc_trans_class_assign): Pick out class procedure pointer
+	assignments and do the assignment with no further prcessing.
+	(gfc_trans_class_array_init_assign, gfc_trans_class_init_assign
+	gfc_trans_class_assign): Move to top of file.
+	* gfortran.h : Add 'base_expr' field to gfc_expr.
+	* resolve.c (get_declared_from_expr): Add 'types' argument to
+	switch checking of derived types on or off.
+	(resolve_typebound_generic_call): Set the new argument.
+	(resolve_typebound_function, resolve_typebound_subroutine):
+	Set 'types' argument for get_declared_from_expr appropriately.
+	Identify base expression, if not a variable, in the argument
+	list of class valued calls. Assign it to the 'base_expr' field
+	of the final expression. Strip away all references after the
+	last class reference.
+
 2012-01-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51682
