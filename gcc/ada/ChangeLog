@@ -1,3 +1,7 @@
+2012-01-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatvsn.ads (Current_Year): Bump to 2011.
+
 2011-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/51315
