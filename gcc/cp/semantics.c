@@ -6051,7 +6051,8 @@ cx_check_missing_mem_inits (tree fun, tree body, bool complain)
 	      /* It's OK to skip a member with a trivial constexpr ctor.
 	         A constexpr ctor that isn't trivial should have been
 	         added in by now.  */
-	      gcc_checking_assert (!TYPE_HAS_COMPLEX_DFLT (ftype));
+	      gcc_checking_assert (!TYPE_HAS_COMPLEX_DFLT (ftype)
+				   || errorcount != 0);
 	      continue;
 	    }
 	  error ("uninitialized member %qD in %<constexpr%> constructor",
