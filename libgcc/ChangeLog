@@ -1,3 +1,11 @@
+2012-01-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	Implement light-weight DImode support.
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _adddi3, _adddi3_s8,
+	_subdi3, _cmpdi2, _cmpdi2_s8, _rotldi3.
+	* config/avr/lib1funcs.S (__adddi3, __adddi3_s8, __subdi3,
+	__cmpdi2, __cmpdi2_s8, __rotldi3): New functions.
+
 2011-12-30  Nathan Sidwell  <nathan@acm.org>
 
 	* libgcov.c (gcov_crc32): Remove global var.

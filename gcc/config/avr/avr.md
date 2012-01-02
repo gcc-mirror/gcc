@@ -142,8 +142,8 @@
 ;; Otherwise do special processing depending on the attribute.
 
 (define_attr "adjust_len"
-  "out_bitop, out_plus, out_plus_noclobber, addto_sp,
-   tsthi, tstpsi, tstsi, compare, call,
+  "out_bitop, out_plus, out_plus_noclobber, plus64, addto_sp,
+   tsthi, tstpsi, tstsi, compare, compare64, call,
    mov8, mov16, mov24, mov32, reload_in16, reload_in24, reload_in32,
    xload, movmem,
    ashlqi, ashrqi, lshrqi,
@@ -218,7 +218,6 @@
 (define_mode_iterator QIHI2 [(QI "") (HI "")])
 (define_mode_iterator QISI [(QI "") (HI "") (PSI "") (SI "")])
 (define_mode_iterator QIDI [(QI "") (HI "") (PSI "") (SI "") (DI "")])
-(define_mode_iterator HIDI [(HI "") (PSI "") (SI "") (DI "")])
 (define_mode_iterator HISI [(HI "") (PSI "") (SI "")])
 
 ;; All supported move-modes
@@ -247,6 +246,12 @@
   [(zero_extend "r")
    (sign_extend "d")])
 
+;; Map RTX code to its standard insn name
+(define_code_attr code_stdname
+  [(ashift   "ashl")
+   (ashiftrt "ashr")
+   (lshiftrt "lshr")
+   (rotate   "rotl")])
 
 ;;========================================================================
 ;; The following is used by nonlocal_goto and setjmp.
@@ -3094,23 +3099,21 @@
   [(set_attr "length" "2,4,4,1,3,5,3,0")
    (set_attr "cc" "set_n,set_n,clobber,none,set_n,set_n,clobber,none")])
 
-;; Split all rotates of HI,SI and DImode registers where rotation is by
+;; Split all rotates of HI,SI and PSImode registers where rotation is by
 ;; a whole number of bytes.  The split creates the appropriate moves and
-;; considers all overlap situations.  DImode is split before reload.
+;; considers all overlap situations.
 
 ;; HImode does not need scratch.  Use attribute for this constraint.
-;; Use QI scratch for DI mode as this is often split into byte sized operands.
 
-(define_mode_attr rotx [(DI "&r,&r,X") (SI "&r,&r,X") (PSI "&r,&r,X") (HI "X,X,X")])
-(define_mode_attr rotsmode [(DI "QI") (SI "HI") (PSI "QI") (HI "QI")])
+(define_mode_attr rotx [(SI "&r,&r,X") (PSI "&r,&r,X") (HI "X,X,X")])
+(define_mode_attr rotsmode [(SI "HI") (PSI "QI") (HI "QI")])
 
 ;; "rotlhi3"
 ;; "rotlpsi3"
 ;; "rotlsi3"
-;; "rotldi3"
 (define_expand "rotl<mode>3"
-  [(parallel [(set (match_operand:HIDI 0 "register_operand" "")
-                   (rotate:HIDI (match_operand:HIDI 1 "register_operand" "")
+  [(parallel [(set (match_operand:HISI 0 "register_operand" "")
+                   (rotate:HISI (match_operand:HISI 1 "register_operand" "")
                                 (match_operand:VOID 2 "const_int_operand" "")))
               (clobber (match_dup 3))])]
   ""
@@ -3129,9 +3132,8 @@
         else
           operands[3] = gen_rtx_SCRATCH (QImode);
       }
-    else if (<MODE>mode != DImode
-             && (offset == 1
-                 || offset == GET_MODE_BITSIZE (<MODE>mode) -1))
+    else if (offset == 1
+             || offset == GET_MODE_BITSIZE (<MODE>mode) -1)
       {
         /*; Support rotate left/right by 1  */
 
@@ -3207,18 +3209,17 @@
 
 ;; "*rotwhi"
 ;; "*rotwsi"
-;; "*rotwdi"
 (define_insn_and_split "*rotw<mode>"
-  [(set (match_operand:HIDI 0 "register_operand" "=r,r,#&r")
-        (rotate:HIDI (match_operand:HIDI 1 "register_operand" "0,r,r")
-                     (match_operand 2 "const_int_operand" "n,n,n")))
+  [(set (match_operand:HISI 0 "register_operand"             "=r,r,#&r")
+        (rotate:HISI (match_operand:HISI 1 "register_operand" "0,r,r")
+                     (match_operand 2 "const_int_operand"     "n,n,n")))
    (clobber (match_scratch:<rotsmode> 3 "=<rotx>"))]
   "AVR_HAVE_MOVW
    && CONST_INT_P (operands[2])
    && GET_MODE_SIZE (<MODE>mode) % 2 == 0
    && 0 == INTVAL (operands[2]) % 16"
   "#"
-  "&& (reload_completed || <MODE>mode == DImode)"
+  "&& reload_completed"
   [(const_int 0)]
   {
     avr_rotate_bytes (operands);
@@ -3231,11 +3232,10 @@
 ;; "*rotbhi"
 ;; "*rotbpsi"
 ;; "*rotbsi"
-;; "*rotbdi"
 (define_insn_and_split "*rotb<mode>"
-  [(set (match_operand:HIDI 0 "register_operand" "=r,r,#&r")
-        (rotate:HIDI (match_operand:HIDI 1 "register_operand" "0,r,r")
-                     (match_operand 2 "const_int_operand" "n,n,n")))
+  [(set (match_operand:HISI 0 "register_operand"             "=r,r,#&r")
+        (rotate:HISI (match_operand:HISI 1 "register_operand" "0,r,r")
+                     (match_operand 2 "const_int_operand"     "n,n,n")))
    (clobber (match_scratch:QI 3 "=<rotx>"))]
   "CONST_INT_P (operands[2])
    && (8 == INTVAL (operands[2]) % 16
@@ -3243,7 +3243,7 @@
             || GET_MODE_SIZE (<MODE>mode) % 2 != 0)
            && 0 == INTVAL (operands[2]) % 16))"
   "#"
-  "&& (reload_completed || <MODE>mode == DImode)"
+  "&& reload_completed"
   [(const_int 0)]
   {
     avr_rotate_bytes (operands);
@@ -5948,6 +5948,8 @@
     operands[3] = simplify_gen_subreg (QImode, operands[0], HImode, 0);
     operands[4] = simplify_gen_subreg (QImode, operands[0], HImode, 1);
   })
+
+(include "avr-dimode.md")
 
 (define_insn_and_split "*extzv.qihi2"
   [(set (match_operand:HI 0 "register_operand"                      "=r")

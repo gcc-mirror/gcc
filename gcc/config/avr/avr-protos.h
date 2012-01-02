@@ -56,6 +56,7 @@ extern const char *avr_out_tstsi (rtx, rtx*, int*);
 extern const char *avr_out_tsthi (rtx, rtx*, int*);
 extern const char *avr_out_tstpsi (rtx, rtx*, int*);
 extern const char *avr_out_compare (rtx, rtx*, int*);
+extern const char *avr_out_compare64 (rtx, rtx*, int*);
 extern const char *ret_cond_branch (rtx x, int len, int reverse);
 extern const char *avr_out_movpsi (rtx, rtx*, int*);
 
@@ -89,6 +90,7 @@ extern const char *avr_out_sbxx_branch (rtx insn, rtx operands[]);
 extern const char* avr_out_bitop (rtx, rtx*, int*);
 extern const char* avr_out_plus (rtx*, int*, int*);
 extern const char* avr_out_plus_noclobber (rtx*, int*, int*);
+extern const char* avr_out_plus64 (rtx, int*);
 extern const char* avr_out_addto_sp (rtx*, int*);
 extern const char* avr_out_xload (rtx, rtx*, int*);
 extern const char* avr_out_movmem (rtx, rtx*, int*);
@@ -127,6 +129,8 @@ extern bool avr_xload_libgcc_p (enum machine_mode);
 #ifdef REAL_VALUE_TYPE
 extern void asm_output_float (FILE *file, REAL_VALUE_TYPE n);
 #endif
+
+extern bool avr_have_dimode;
 
 /* From avr-log.c */
 
