@@ -1,5 +1,12 @@
 2012-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR target/51729
+	* gcc.target/mips/dspr2-MULT.c: Remove -ffixed-hi -ffixed-lo.
+	XFAIL.
+	* gcc.target/mips/dspr2-MULTU.c: Likewise.
+
+2012-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.dg/pr46309.c: Add -mtune=octeon2 for MIPS.
 
 2012-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
