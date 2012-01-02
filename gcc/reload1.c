@@ -1,7 +1,7 @@
 /* Reload pseudo regs into hard regs for insns that require hard regs.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011 Free Software Foundation, Inc.
+   2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -768,7 +768,6 @@ reload (rtx first, int global)
      be substituted eventually by altering the REG-rtx's.  */
 
   grow_reg_equivs ();
-  reg_max_ref_width = XCNEWVEC (unsigned int, max_regno);
   reg_old_renumber = XCNEWVEC (short, max_regno);
   memcpy (reg_old_renumber, reg_renumber, max_regno * sizeof (short));
   pseudo_forbidden_regs = XNEWVEC (HARD_REG_SET, max_regno);
@@ -1688,6 +1687,10 @@ calculate_elim_costs_all_insns (void)
     }
 
   free (reg_equiv_init_cost);
+  free (offsets_known_at);
+  free (offsets_at);
+  offsets_at = NULL;
+  offsets_known_at = NULL;
 }
 
 /* Comparison function for qsort to decide which of two reloads
