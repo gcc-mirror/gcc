@@ -1,5 +1,11 @@
 2012-01-02  Jason Merrill  <jason@redhat.com>
 
+	DR 1359
+	PR c++/51675
+	* method.c (walk_field_subobs): Don't check for uninitialized
+	fields in a union.
+	(synthesized_method_walk): Check here.
+
 	DR 325
 	PR c++/51666
 	* parser.c (cp_parser_cache_defarg): Split out...
