@@ -1,5 +1,9 @@
 2012-01-02  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/avr.c (avr_out_ashrpsi3): Fix "case 31" to "case 23".
+
+2012-01-02  Georg-Johann Lay  <avr@gjlay.de>
+
 	Implement light-weight DImode support.
 	* config/avr/avr-dimode.md: New file.
 	* config/avr/avr.md: Include it.
