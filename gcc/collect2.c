@@ -1481,11 +1481,14 @@ main (int argc, char **argv)
 			 extra space for remaining arguments.  */
 		      if (add_nbr >= add_max)
 			{
-			  int pos = object - (const char **)object_lst;
+			  int pos =
+			    object - CONST_CAST2 (const char **, char **,
+						  object_lst);
 			  add_max = (add_max == 0) ? 16 : add_max * 2;
 			  object_lst = XRESIZEVEC (char *, object_lst,
                                                    object_nbr + add_max);
-			  object = (const char **) object_lst + pos;
+			  object = CONST_CAST2 (const char **, char **,
+						object_lst) + pos;
 			  object_nbr += add_max;
 			}
 		      *object++ = xstrdup (buf);
