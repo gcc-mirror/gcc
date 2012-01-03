@@ -1,5 +1,14 @@
 2012-01-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/51725
+	* cselib.c (new_elt_loc_list): When moving locs from one
+	cselib_val to its new canonical_cselib_val and the
+	cselib_val was in first_containing_mem chain, but
+	the canonical_cselib_val was not, add the latter into the
+	chain.
+	(cselib_invalidate_mem): Compare canonical_cselib_val of
+	addr_list chain elt with v.
+
 	PR pch/51722
 	* dwarf2out.c (dwarf2out_start_source_file, dwarf2out_define,
 	dwarf2out_undef): Allocate e.info using ggc_strdup instead
