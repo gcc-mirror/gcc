@@ -8886,6 +8886,14 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	      indirect_base0 = true;
 	    }
 	  offset0 = TREE_OPERAND (arg0, 1);
+	  if (host_integerp (offset0, 0)
+	      && ((HOST_WIDE_INT) (TREE_INT_CST_LOW (offset0) * BITS_PER_UNIT)
+		  / BITS_PER_UNIT
+		  == (HOST_WIDE_INT) TREE_INT_CST_LOW (offset0)))
+	    {
+	      bitpos0 = TREE_INT_CST_LOW (offset0) * BITS_PER_UNIT;
+	      offset0 = NULL_TREE;
+	    }
 	}
 
       base1 = arg1;
@@ -8909,6 +8917,14 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	      indirect_base1 = true;
 	    }
 	  offset1 = TREE_OPERAND (arg1, 1);
+	  if (host_integerp (offset1, 0)
+	      && ((HOST_WIDE_INT) (TREE_INT_CST_LOW (offset1) * BITS_PER_UNIT)
+		  / BITS_PER_UNIT
+		  == (HOST_WIDE_INT) TREE_INT_CST_LOW (offset1)))
+	    {
+	      bitpos1 = TREE_INT_CST_LOW (offset1) * BITS_PER_UNIT;
+	      offset1 = NULL_TREE;
+	    }
 	}
 
       /* A local variable can never be pointed to by

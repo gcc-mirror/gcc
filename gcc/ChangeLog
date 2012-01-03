@@ -1,3 +1,9 @@
+2012-01-03  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/51730
+	* fold-const.c (fold_comparison): Properly canonicalize
+	tree offset and HOST_WIDE_INT bit position.
+
 2012-01-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/ia64/ia64.c (expand_vec_perm_broadcast): Use correct
