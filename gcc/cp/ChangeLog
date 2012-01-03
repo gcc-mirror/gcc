@@ -1,5 +1,11 @@
 2012-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/51738
+	* parser.c (cp_parser_postfix_open_square_expression): Handle
+	postfix-expression [ braced-init-list ].
+
+2012-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/29273
 	* rtti.c (build_dynamic_cast_1): In case of T a pointer type,
 	call decay_conversion on v.
