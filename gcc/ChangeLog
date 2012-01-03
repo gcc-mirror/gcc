@@ -1,3 +1,9 @@
+2012-01-03  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md ("*cmp<mode>_ccs"): Fix comment mentioning
+	the instructions emitted by the pattern.
+	("*TDC_insn_<mode>"): Add comment.
+
 2012-01-03  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/51730
