@@ -20903,10 +20903,7 @@ output_macinfo (void)
 	  break;
 	case DW_MACINFO_end_file:
 	  if (!VEC_empty (macinfo_entry, files))
-	    {
-	      macinfo_entry *file = VEC_last (macinfo_entry, files);
-	      VEC_pop (macinfo_entry, files);
-	    }
+	    VEC_pop (macinfo_entry, files);
 	  break;
 	case DW_MACINFO_define:
 	case DW_MACINFO_undef:
