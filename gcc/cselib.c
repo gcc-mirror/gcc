@@ -277,6 +277,12 @@ new_elt_loc_list (cselib_val *val, rtx loc)
 	    }
 	  el->next = val->locs;
 	  next = val->locs = CSELIB_VAL_PTR (loc)->locs;
+	  if (CSELIB_VAL_PTR (loc)->next_containing_mem != NULL
+	      && val->next_containing_mem == NULL)
+	    {
+	      val->next_containing_mem = first_containing_mem;
+	      first_containing_mem = val;
+	    }
 	}
 
       /* Chain LOC back to VAL.  */
@@ -2211,7 +2217,7 @@ cselib_invalidate_mem (rtx mem_rtx)
 	  mem_chain = &addr->addr_list;
 	  for (;;)
 	    {
-	      if ((*mem_chain)->elt == v)
+	      if (canonical_cselib_val ((*mem_chain)->elt) == v)
 		{
 		  unchain_one_elt_list (mem_chain);
 		  break;
