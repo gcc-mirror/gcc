@@ -1,3 +1,8 @@
+2012-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/29273
+	* g++.dg/rtti/dyncast5.C: New.
+
 2012-01-03  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51070

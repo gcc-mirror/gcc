@@ -515,7 +515,7 @@ static tree
 build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 {
   enum tree_code tc = TREE_CODE (type);
-  tree exprtype = TREE_TYPE (expr);
+  tree exprtype;
   tree dcast_fn;
   tree old_expr = expr;
   const char *errstr = NULL;
@@ -551,6 +551,9 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 
   if (tc == POINTER_TYPE)
     {
+      expr = decay_conversion (expr);
+      exprtype = TREE_TYPE (expr);
+
       /* If T is a pointer type, v shall be an rvalue of a pointer to
 	 complete class type, and the result is an rvalue of type T.  */
 
@@ -576,7 +579,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
     {
       expr = mark_lvalue_use (expr);
 
-      exprtype = build_reference_type (exprtype);
+      exprtype = build_reference_type (TREE_TYPE (expr));
 
       /* T is a reference type, v shall be an lvalue of a complete class
 	 type, and the result is an lvalue of the type referred to by T.  */
@@ -764,7 +767,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
  fail:
   if (complain & tf_error)
     error ("cannot dynamic_cast %qE (of type %q#T) to type %q#T (%s)",
-           expr, exprtype, type, errstr);
+           old_expr, TREE_TYPE (old_expr), type, errstr);
   return error_mark_node;
 }
 
