@@ -1,3 +1,8 @@
+2012-01-03  Olivier Hainque  <hainque@adacore.com>
+
+	* collect2.c (main): In AIX specific computations for vector
+	insertions, use CONST_CAST2 to cast from char ** to const char **.
+
 2012-01-03  Richard Guenther  <rguenther@suse.de>
 
 	PR debug/51650
