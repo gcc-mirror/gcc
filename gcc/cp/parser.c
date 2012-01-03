@@ -5831,6 +5831,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
    by cp_parser_builtin_offsetof.  We're looking for
 
      postfix-expression [ expression ]
+     postfix-expression [ braced-init-list ] (C++11)
 
    FOR_OFFSETOF is set if we're being called in that context, which
    changes how we deal with integer constant expressions.  */
@@ -5856,7 +5857,16 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
   if (for_offsetof)
     index = cp_parser_constant_expression (parser, false, NULL);
   else
-    index = cp_parser_expression (parser, /*cast_p=*/false, NULL);
+    {
+      if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+	{
+	  bool expr_nonconst_p;
+	  maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
+	  index = cp_parser_braced_list (parser, &expr_nonconst_p);
+	}
+      else
+	index = cp_parser_expression (parser, /*cast_p=*/false, NULL);
+    }
 
   /* Look for the closing `]'.  */
   cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
