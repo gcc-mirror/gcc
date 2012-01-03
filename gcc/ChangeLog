@@ -1,3 +1,8 @@
+2012-01-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/ia64/ia64.c (expand_vec_perm_broadcast): Use correct
+	operands for extzv pattern.
+
 2012-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/51725
@@ -10,8 +15,7 @@
 
 2012-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
-	* config/mips/mips.md (loadgp_newabi_<mode>): Add missing
-	earlyclobber.
+	* config/mips/mips.md (loadgp_newabi_<mode>): Add missing earlyclobber.
 
 2012-01-02  Jakub Jelinek  <jakub@redhat.com>
 
@@ -33,8 +37,7 @@
 
 	* passes.c (register_one_dump_file): Free full_name.
 
-	* reload1.c (reload): Don't allocate reg_max_ref_width
-	here.
+	* reload1.c (reload): Don't allocate reg_max_ref_width here.
 	(calculate_elim_costs_all_insns): Free offsets_at and
 	offsets_known_at at the end and clear the pointers.
 
@@ -113,8 +116,7 @@
 
 	PR tree-optimization/51704
 	* tree-vect-slp.c (vect_detect_hybrid_slp_stmts): Check that
-	a use is inside the basic block or loop before accessing its
-	vect info.
+	a use is inside the basic block or loop before accessing its vect info.
 
 2012-01-01  Jan Hubicka  <jhjh@suse.cz>
 
@@ -198,7 +200,7 @@
 
 	* config/sh/sh.h (BRANCH_COST): Use sh_branch_cost variable.
 	* config/sh/sh.c (sh_option_override): Simplify sh_branch_cost
-        expression.
+	expression.
 
 2011-12-28  Ian Lance Taylor  <iant@google.com>
 
@@ -208,8 +210,7 @@
 
 	PR target/51623
 	* config/rs6000/rs6000.c (rs6000_assemble_integer): Don't call
-	unlikely_text_section_p.  Instead check for being in a code
-	section.
+	unlikely_text_section_p.  Instead check for being in a code section.
 
 2011-12-28  Ira Rosen  <irar@il.ibm.com>
 
@@ -246,7 +247,7 @@
 
 2011-12-25  Jan Hubicka  <jh@suse.cz>
 
-	PR middle-end/48641 
+	PR middle-end/48641
 	* tree-ssa-threadupdate.c (redirect_edges): Watch for overflow.
 
 2011-12-26  Oleg Endo  <oleg.endo@t-online.de>
@@ -255,12 +256,12 @@
 	(fetchop_name): Use 'or' instead of 'ior'.
 	(fetchop_insn): Remove.
 	(atomic_compare_and_swap<mode>_soft):
-        Don't insert aligning nop after the write-back instruction.  Fix
+	Don't insert aligning nop after the write-back instruction.  Fix
 	multi-line asm output formatting style.
-        (atomic_fetch_<fetchop_name><mode>_soft): Likewise.
-        (atomic_fetch_nand<mode>_soft): Likewise.
-        (atomic_<fetchop_name>_fetch<mode>_soft): Likewise.
-        (atomic_nand_fetch<mode>_soft): Likewise.
+	(atomic_fetch_<fetchop_name><mode>_soft): Likewise.
+	(atomic_fetch_nand<mode>_soft): Likewise.
+	(atomic_<fetchop_name>_fetch<mode>_soft): Likewise.
+	(atomic_nand_fetch<mode>_soft): Likewise.
 
 2011-12-23  Richard Henderson  <rth@redhat.com>
 
