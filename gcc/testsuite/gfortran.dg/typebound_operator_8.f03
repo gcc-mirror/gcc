@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-add-options ieee }
 !
 !     Solve a diffusion problem using an object-oriented approach
 !
