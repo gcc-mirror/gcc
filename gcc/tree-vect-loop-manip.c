@@ -1,5 +1,5 @@
 /* Vectorizer Specific Loop Manipulations
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012
    Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
@@ -1037,7 +1037,7 @@ slpeel_verify_cfg_after_peeling (struct loop *first_loop,
 
 static void
 set_prologue_iterations (basic_block bb_before_first_loop,
-			 tree first_niters,
+			 tree *first_niters,
 			 struct loop *loop,
 			 unsigned int th)
 {
@@ -1100,9 +1100,9 @@ set_prologue_iterations (basic_block bb_before_first_loop,
   newphi = create_phi_node (var, bb_before_first_loop);
   add_phi_arg (newphi, prologue_after_cost_adjust_name, e_fallthru,
 	       UNKNOWN_LOCATION);
-  add_phi_arg (newphi, first_niters, e_false, UNKNOWN_LOCATION);
+  add_phi_arg (newphi, *first_niters, e_false, UNKNOWN_LOCATION);
 
-  first_niters = PHI_RESULT (newphi);
+  *first_niters = PHI_RESULT (newphi);
 }
 
 /* Function slpeel_tree_peel_loop_to_edge.
@@ -1158,7 +1158,7 @@ set_prologue_iterations (basic_block bb_before_first_loop,
 
 static struct loop*
 slpeel_tree_peel_loop_to_edge (struct loop *loop,
-			       edge e, tree first_niters,
+			       edge e, tree *first_niters,
 			       tree niters, bool update_first_loop_count,
 			       unsigned int th, bool check_profitability,
 			       tree cond_expr, gimple_seq cond_expr_stmt_list)
@@ -1328,8 +1328,8 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   if (!update_first_loop_count)
     {
       pre_condition =
-	fold_build2 (LE_EXPR, boolean_type_node, first_niters,
-		     build_int_cst (TREE_TYPE (first_niters), 0));
+	fold_build2 (LE_EXPR, boolean_type_node, *first_niters,
+		     build_int_cst (TREE_TYPE (*first_niters), 0));
       if (check_profitability)
 	{
 	  tree scalar_loop_iters
@@ -1360,8 +1360,8 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
 				 loop, th);
 
       pre_condition =
-	fold_build2 (LE_EXPR, boolean_type_node, first_niters,
-		     build_int_cst (TREE_TYPE (first_niters), 0));
+	fold_build2 (LE_EXPR, boolean_type_node, *first_niters,
+		     build_int_cst (TREE_TYPE (*first_niters), 0));
     }
 
   skip_e = slpeel_add_loop_guard (bb_before_first_loop, pre_condition,
@@ -1402,7 +1402,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   bb_after_second_loop = split_edge (single_exit (second_loop));
 
   pre_condition =
-	fold_build2 (EQ_EXPR, boolean_type_node, first_niters, niters);
+	fold_build2 (EQ_EXPR, boolean_type_node, *first_niters, niters);
   skip_e = slpeel_add_loop_guard (bb_between_loops, pre_condition, NULL,
                                   bb_after_second_loop, bb_before_first_loop);
   slpeel_update_phi_nodes_for_guard2 (skip_e, second_loop,
@@ -1411,7 +1411,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   /* 4. Make first-loop iterate FIRST_NITERS times, if requested.
    */
   if (update_first_loop_count)
-    slpeel_make_loop_iterate_ntimes (first_loop, first_niters);
+    slpeel_make_loop_iterate_ntimes (first_loop, *first_niters);
 
   BITMAP_FREE (definitions);
   delete_update_ssa ();
@@ -1925,7 +1925,7 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
     }
 
   new_loop = slpeel_tree_peel_loop_to_edge (loop, single_exit (loop),
-                                            ratio_mult_vf_name, ni_name, false,
+                                            &ratio_mult_vf_name, ni_name, false,
                                             th, check_profitability,
 					    cond_expr, cond_expr_stmt_list);
   gcc_assert (new_loop);
@@ -1988,8 +1988,7 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
    use TYPE_VECTOR_SUBPARTS.  */
 
 static tree
-vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters,
-				 tree *wide_prolog_niters)
+vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
 {
   struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -2073,19 +2072,6 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters,
   add_referenced_var (var);
   stmts = NULL;
   iters_name = force_gimple_operand (iters, &stmts, false, var);
-  if (types_compatible_p (sizetype, niters_type))
-    *wide_prolog_niters = iters_name;
-  else
-    {
-      gimple_seq seq = NULL;
-      tree wide_iters = fold_convert (sizetype, iters);
-      var = create_tmp_var (sizetype, "prolog_loop_niters");
-      add_referenced_var (var);
-      *wide_prolog_niters = force_gimple_operand (wide_iters, &seq, false,
-						  var);
-      if (seq)
-	gimple_seq_add_seq (&stmts, seq);
-    }
 
   /* Insert stmt on loop preheader edge.  */
   if (stmts)
@@ -2167,9 +2153,8 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
   initialize_original_copy_tables ();
 
   ni_name = vect_build_loop_niters (loop_vinfo, NULL);
-  niters_of_prolog_loop = vect_gen_niters_for_prolog_loop (loop_vinfo, ni_name,
-							   &wide_prolog_niters);
-
+  niters_of_prolog_loop = vect_gen_niters_for_prolog_loop (loop_vinfo,
+							   ni_name);
 
   /* Get profitability threshold for vectorized loop.  */
   min_profitable_iters = LOOP_VINFO_COST_MODEL_MIN_ITERS (loop_vinfo);
@@ -2179,7 +2164,7 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
   /* Peel the prolog loop and iterate it niters_of_prolog_loop.  */
   new_loop =
     slpeel_tree_peel_loop_to_edge (loop, loop_preheader_edge (loop),
-				   niters_of_prolog_loop, ni_name, true,
+				   &niters_of_prolog_loop, ni_name, true,
 				   th, true, NULL_TREE, NULL);
 
   gcc_assert (new_loop);
@@ -2191,6 +2176,25 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
   n_iters = LOOP_VINFO_NITERS (loop_vinfo);
   LOOP_VINFO_NITERS (loop_vinfo) = fold_build2 (MINUS_EXPR,
 		TREE_TYPE (n_iters), n_iters, niters_of_prolog_loop);
+
+  if (types_compatible_p (sizetype, TREE_TYPE (niters_of_prolog_loop)))
+    wide_prolog_niters = niters_of_prolog_loop;
+  else
+    {
+      gimple_seq seq = NULL;
+      edge pe = loop_preheader_edge (loop);
+      tree wide_iters = fold_convert (sizetype, niters_of_prolog_loop);
+      tree var = create_tmp_var (sizetype, "prolog_loop_adjusted_niters");
+      add_referenced_var (var);
+      wide_prolog_niters = force_gimple_operand (wide_iters, &seq, false,
+                                                 var);
+      if (seq)
+	{
+	  /* Insert stmt on loop preheader edge.  */
+          basic_block new_bb = gsi_insert_seq_on_edge_immediate (pe, seq);
+          gcc_assert (!new_bb);
+        }
+    }
 
   /* Update the init conditions of the access functions of all data refs.  */
   vect_update_inits_of_drs (loop_vinfo, wide_prolog_niters);
