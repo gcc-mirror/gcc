@@ -1,3 +1,8 @@
+2012-01-03  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gfortran.h (struct gfc_expr): Add missing "struct"
+	qualifier for member base_expr.
+
 2012-01-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/51529

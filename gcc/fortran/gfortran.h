@@ -1699,7 +1699,7 @@ typedef struct gfc_expr
 
   /* Used to store the base expression in component calls, when the expression
      is not a variable.  */
-  gfc_expr *base_expr;
+  struct gfc_expr *base_expr;
 
   /* is_boz is true if the integer is regarded as BOZ bitpatten and is_snan
      denotes a signalling not-a-number.  */
