@@ -1,5 +1,11 @@
 2012-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/29273
+	* rtti.c (build_dynamic_cast_1): In case of T a pointer type,
+	call decay_conversion on v.
+
+2012-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/15867
 	* decl.c (duplicate_decls): With -Wredundant-decls don't warn for
 	declaration followed by specialization.
