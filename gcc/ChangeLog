@@ -1,3 +1,10 @@
+2012-01-03  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backport from mainline:
+	2012-01-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (-flto and related options): Copy-edit.
+
 2012-01-03  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
