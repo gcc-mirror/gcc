@@ -22501,15 +22501,8 @@ dwarf2out_finish (const char *filename)
 	      else if (TYPE_P (node->created_for))
 		context = TYPE_CONTEXT (node->created_for);
 
-	      gcc_assert (context
-			  && (TREE_CODE (context) == FUNCTION_DECL
-			      || TREE_CODE (context) == NAMESPACE_DECL));
-
-	      origin = lookup_decl_die (context);
-	      if (origin)
-	        add_child_die (origin, die);
-	      else
-	        add_child_die (comp_unit_die (), die);
+	      origin = get_context_die (context);
+	      add_child_die (origin, die);
 	    }
 	}
     }
