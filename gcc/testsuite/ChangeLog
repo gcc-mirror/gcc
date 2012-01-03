@@ -1,3 +1,8 @@
+2012-01-03  Andrew Pinski  <apinski@cavium.com>
+
+	* lib/scanasm.exp (dg-function-on-line): Always use a special format
+	for all mips targets.  Also allow an optional .cfi_startproc.
+
 2012-01-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gfortran.dg/typebound_operator_8.f03: Use dg-add-options ieee.
