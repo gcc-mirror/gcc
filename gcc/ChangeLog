@@ -1,6 +1,15 @@
 2012-01-03  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
+	2011-10-12  Paul Koning  <pkoning@gcc.gnu.org>
+
+	PR tree-optimization/50189
+	* tree-vrp.c (extract_range_from_assert): Use the type of
+	the variable, not the limit.
+
+2012-01-03  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
 	2011-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49279

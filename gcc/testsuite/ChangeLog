@@ -1,6 +1,14 @@
 2012-01-03  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
+	2011-10-12  Paul Koning  <pkoning@gcc.gnu.org>
+
+	PR tree-optimization/50189
+	* g++.dg/torture/pr50189.C: New testcase.
+
+2012-01-03  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
 	2011-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49279
