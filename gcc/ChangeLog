@@ -1,4 +1,12 @@
 2012-01-03  Richard Guenther  <rguenther@suse.de>
+ 
+	Backport from mainline
+	2011-08-23  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50162
+	* tree-vect-stmts.c (vectorizable_call): Fix argument lookup.
+
+2012-01-03  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
 	2011-05-12  Richard Guenther  <rguenther@suse.de>
