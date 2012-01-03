@@ -1,3 +1,11 @@
+2012-01-03  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51070
+	* tree-loop-distribution.c (generate_builtin): Do not replace
+	the loop with a builtin if the partition contains statements which
+	results are used outside of the loop.
+	(stmt_has_scalar_dependences_outside_loop): Properly handle calls.
+
 2011-12-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from the mainline

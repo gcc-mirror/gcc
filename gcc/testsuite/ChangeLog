@@ -1,3 +1,9 @@
+2012-01-03  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51070
+	* gcc.dg/torture/pr51070.c: New testcase.
+	* gcc.dg/torture/pr51070-2.c: Likewise.
+
 2011-12-20  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/49951

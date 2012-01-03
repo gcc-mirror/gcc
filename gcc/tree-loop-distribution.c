@@ -63,6 +63,51 @@ static bitmap remaining_stmts;
    predecessor a node that writes to memory.  */
 static bitmap upstream_mem_writes;
 
+/* Returns true when DEF is an SSA_NAME defined in LOOP and used after
+   the LOOP.  */
+
+static bool
+ssa_name_has_uses_outside_loop_p (tree def, loop_p loop)
+{
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
+
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, def)
+    if (loop != loop_containing_stmt (USE_STMT (use_p)))
+      return true;
+
+  return false;
+}
+
+/* Returns true when STMT defines a scalar variable used after the
+   loop.  */
+
+static bool
+stmt_has_scalar_dependences_outside_loop (gimple stmt)
+{
+  tree name;
+
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_CALL:
+    case GIMPLE_ASSIGN:
+      name = gimple_get_lhs (stmt);
+      break;
+
+    case GIMPLE_PHI:
+      name = gimple_phi_result (stmt);
+      break;
+
+    default:
+      return false;
+    }
+
+  return (name
+	  && TREE_CODE (name) == SSA_NAME
+	  && ssa_name_has_uses_outside_loop_p (name,
+					       loop_containing_stmt (stmt)));
+}
+
 /* Update the PHI nodes of NEW_LOOP.  NEW_LOOP is a duplicate of
    ORIG_LOOP.  */
 
@@ -332,10 +377,18 @@ generate_builtin (struct loop *loop, bitmap partition, bool copy_p)
 	{
 	  gimple stmt = gsi_stmt (bsi);
 
-	  if (gimple_code (stmt) != GIMPLE_LABEL
-	      && !is_gimple_debug (stmt)
-	      && bitmap_bit_p (partition, x++)
-	      && is_gimple_assign (stmt)
+	  if (gimple_code (stmt) == GIMPLE_LABEL
+	      || is_gimple_debug (stmt))
+	    continue;
+
+	  if (!bitmap_bit_p (partition, x++))
+	    continue;
+
+	  /* If the stmt has uses outside of the loop fail.  */
+	  if (stmt_has_scalar_dependences_outside_loop (stmt))
+	    goto end;
+
+	  if (is_gimple_assign (stmt)
 	      && !is_gimple_reg (gimple_assign_lhs (stmt)))
 	    {
 	      /* Don't generate the builtins when there are more than
@@ -824,48 +877,6 @@ fuse_partitions_with_similar_memory_accesses (struct graph *rdg,
 	    VEC_ordered_remove (bitmap, *partitions, p2);
 	    p2--;
 	  }
-}
-
-/* Returns true when DEF is an SSA_NAME defined in LOOP and used after
-   the LOOP.  */
-
-static bool
-ssa_name_has_uses_outside_loop_p (tree def, loop_p loop)
-{
-  imm_use_iterator imm_iter;
-  use_operand_p use_p;
-
-  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, def)
-    if (loop != loop_containing_stmt (USE_STMT (use_p)))
-      return true;
-
-  return false;
-}
-
-/* Returns true when STMT defines a scalar variable used after the
-   loop.  */
-
-static bool
-stmt_has_scalar_dependences_outside_loop (gimple stmt)
-{
-  tree name;
-
-  switch (gimple_code (stmt))
-    {
-    case GIMPLE_ASSIGN:
-      name = gimple_assign_lhs (stmt);
-      break;
-
-    case GIMPLE_PHI:
-      name = gimple_phi_result (stmt);
-      break;
-
-    default:
-      return false;
-    }
-
-  return TREE_CODE (name) == SSA_NAME
-    && ssa_name_has_uses_outside_loop_p (name, loop_containing_stmt (stmt));
 }
 
 /* Returns true when STMT will be code generated in a partition of RDG
