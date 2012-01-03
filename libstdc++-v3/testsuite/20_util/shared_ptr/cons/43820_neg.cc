@@ -35,6 +35,6 @@ void test01()
   // { dg-error "incomplete" "" { target *-*-* } 766 }
 
   std::shared_ptr<X> p9(ap());  // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 858 }
+  // { dg-error "incomplete" "" { target *-*-* } 859 }
 
 }

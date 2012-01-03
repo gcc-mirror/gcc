@@ -799,7 +799,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_ptr(__p), _M_refcount(__r._M_refcount) // never throws
 	{ }
 
-      //  generated copy constructor, assignment, destructor are fine.
+      __shared_ptr(const __shared_ptr&) = default; // never throws
+      __shared_ptr& operator=(const __shared_ptr&) = default; // never throws
 
       template<typename _Tp1, typename = typename
 	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>

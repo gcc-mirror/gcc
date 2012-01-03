@@ -1,3 +1,12 @@
+2012-01-03  Chase Douglas  <chase.douglas@canonical.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/shared_ptr.h: Default copy ctor and assignment.
+	* include/bits/shared_ptr_base.h: Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust dg-error
+	line numbers.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Likewise.
+
 2011-12-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/51711
