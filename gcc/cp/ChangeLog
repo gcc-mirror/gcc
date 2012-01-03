@@ -1,3 +1,9 @@
+2012-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/15867
+	* decl.c (duplicate_decls): With -Wredundant-decls don't warn for
+	declaration followed by specialization.
+
 2012-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/51669
