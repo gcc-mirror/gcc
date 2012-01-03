@@ -1,5 +1,5 @@
 /* Implement __enable_execute_stack using mprotect(2).
-   Copyright (C) 2011 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -61,33 +61,6 @@ check_enabling (void)
 
 static int need_enable_exec_stack = 1;
 #endif
-
-#if defined __NetBSD__
-/* Note that we go out of our way to use namespace-non-invasive calls
-   here.  Unfortunately, there is no libc-internal name for mprotect().  */
-
-#include <sys/sysctl.h>
-
-extern int __sysctl (int *, unsigned int, void *, size_t *, void *, size_t);
-
-static int
-getpagesize (void)
-{
-  static int size;
-
-  if (size == 0)
-    {
-      int mib[2];
-      size_t len;
-
-      mib[0] = CTL_HW;
-      mib[1] = HW_PAGESIZE;
-      len = sizeof (size);
-      (void) __sysctl (mib, 2, &size, &len, NULL, 0);
-    }
-  return size;
-}
-#endif /* __NetBSD__ */
 
 /* Attempt to turn on access permissions for the stack.  Unfortunately it
    is not possible to make this namespace-clean.*/

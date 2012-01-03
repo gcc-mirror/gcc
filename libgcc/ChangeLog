@@ -1,3 +1,9 @@
+2012-01-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR bootstrap/51006
+	* enable-execute-stack-mprotect.c (getpagesize): Do not define
+	for NetBSD.
+
 2012-01-02  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/51345
