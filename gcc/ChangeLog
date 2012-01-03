@@ -1,3 +1,16 @@
+2012-01-03  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/51269
+	* tree-vect-loop-manip.c (set_prologue_iterations): Make
+	first_niters a pointer.
+	(slpeel_tree_peel_loop_to_edge): Likewise.
+	(vect_do_peeling_for_loop_bound): Update call to
+	slpeel_tree_peel_loop_to_edge.
+	(vect_gen_niters_for_prolog_loop): Don't compute wide_prolog_niters
+	here.  Remove it from the parameters list.
+	(vect_do_peeling_for_alignment): Update calls and compute
+	wide_prolog_niters.
+
 2012-01-03  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51070
