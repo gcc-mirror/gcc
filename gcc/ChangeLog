@@ -1,5 +1,14 @@
 2012-01-03  Richard Guenther  <rguenther@suse.de>
 
+	Backport from mainline
+	2011-11-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51042
+	* tree-ssa-pre.c (phi_translate_1): Avoid recursing on
+	self-referential expressions.  Refactor code to avoid duplication.
+
+2012-01-03  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/51070
 	* tree-loop-distribution.c (generate_builtin): Do not replace
 	the loop with a builtin if the partition contains statements which

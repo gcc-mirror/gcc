@@ -1545,7 +1545,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	tree newvuse = vuse;
 	VEC (vn_reference_op_s, heap) *newoperands = NULL;
 	bool changed = false, same_valid = true;
-	unsigned int i, j;
+	unsigned int i, j, n;
 	vn_reference_op_t operand;
 	vn_reference_t newref;
 
@@ -1554,100 +1554,83 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	  {
 	    pre_expr opresult;
 	    pre_expr leader;
-	    tree oldop0 = operand->op0;
-	    tree oldop1 = operand->op1;
-	    tree oldop2 = operand->op2;
-	    tree op0 = oldop0;
-	    tree op1 = oldop1;
-	    tree op2 = oldop2;
+	    tree op[3];
 	    tree type = operand->type;
 	    vn_reference_op_s newop = *operand;
-
-	    if (op0 && TREE_CODE (op0) == SSA_NAME)
+	    op[0] = operand->op0;
+	    op[1] = operand->op1;
+	    op[2] = operand->op2;
+	    for (n = 0; n < 3; ++n)
 	      {
-		unsigned int op_val_id = VN_INFO (op0)->value_id;
-		leader = find_leader_in_sets (op_val_id, set1, set2);
-		opresult = phi_translate (leader, set1, set2, pred, phiblock);
-		if (opresult && opresult != leader)
+		unsigned int op_val_id;
+		if (!op[n])
+		  continue;
+		if (TREE_CODE (op[n]) != SSA_NAME)
 		  {
-		    tree name = get_representative_for (opresult);
-		    if (!name)
+		    /* We can't possibly insert these.  */
+		    if (n != 0
+			&& !is_gimple_min_invariant (op[n]))
 		      break;
-		    op0 = name;
+		    continue;
 		  }
-		else if (!opresult)
+		op_val_id = VN_INFO (op[n])->value_id;
+		leader = find_leader_in_sets (op_val_id, set1, set2);
+		if (!leader)
 		  break;
+		/* Make sure we do not recursively translate ourselves
+		   like for translating a[n_1] with the leader for
+		   n_1 being a[n_1].  */
+		if (get_expression_id (leader) != get_expression_id (expr))
+		  {
+		    opresult = phi_translate (leader, set1, set2,
+					      pred, phiblock);
+		    if (!opresult)
+		      break;
+		    if (opresult != leader)
+		      {
+			tree name = get_representative_for (opresult);
+			if (!name)
+			  break;
+			changed |= name != op[n];
+			op[n] = name;
+		      }
+		  }
 	      }
-	    changed |= op0 != oldop0;
-
-	    if (op1 && TREE_CODE (op1) == SSA_NAME)
+	    if (n != 3)
 	      {
-		unsigned int op_val_id = VN_INFO (op1)->value_id;
-		leader = find_leader_in_sets (op_val_id, set1, set2);
-		opresult = phi_translate (leader, set1, set2, pred, phiblock);
-		if (opresult && opresult != leader)
-		  {
-		    tree name = get_representative_for (opresult);
-		    if (!name)
-		      break;
-		    op1 = name;
-		  }
-		else if (!opresult)
-		  break;
+		if (newoperands)
+		  VEC_free (vn_reference_op_s, heap, newoperands);
+		return NULL;
 	      }
-	    /* We can't possibly insert these.  */
-	    else if (op1 && !is_gimple_min_invariant (op1))
-	      break;
-	    changed |= op1 != oldop1;
-	    if (op2 && TREE_CODE (op2) == SSA_NAME)
-	      {
-		unsigned int op_val_id = VN_INFO (op2)->value_id;
-		leader = find_leader_in_sets (op_val_id, set1, set2);
-		opresult = phi_translate (leader, set1, set2, pred, phiblock);
-		if (opresult && opresult != leader)
-		  {
-		    tree name = get_representative_for (opresult);
-		    if (!name)
-		      break;
-		    op2 = name;
-		  }
-		else if (!opresult)
-		  break;
-	      }
-	    /* We can't possibly insert these.  */
-	    else if (op2 && !is_gimple_min_invariant (op2))
-	      break;
-	    changed |= op2 != oldop2;
-
 	    if (!newoperands)
 	      newoperands = VEC_copy (vn_reference_op_s, heap, operands);
 	    /* We may have changed from an SSA_NAME to a constant */
-	    if (newop.opcode == SSA_NAME && TREE_CODE (op0) != SSA_NAME)
-	      newop.opcode = TREE_CODE (op0);
+	    if (newop.opcode == SSA_NAME && TREE_CODE (op[0]) != SSA_NAME)
+	      newop.opcode = TREE_CODE (op[0]);
 	    newop.type = type;
-	    newop.op0 = op0;
-	    newop.op1 = op1;
-	    newop.op2 = op2;
+	    newop.op0 = op[0];
+	    newop.op1 = op[1];
+	    newop.op2 = op[2];
 	    /* If it transforms a non-constant ARRAY_REF into a constant
 	       one, adjust the constant offset.  */
 	    if (newop.opcode == ARRAY_REF
 		&& newop.off == -1
-		&& TREE_CODE (op0) == INTEGER_CST
-		&& TREE_CODE (op1) == INTEGER_CST
-		&& TREE_CODE (op2) == INTEGER_CST)
+		&& TREE_CODE (op[0]) == INTEGER_CST
+		&& TREE_CODE (op[1]) == INTEGER_CST
+		&& TREE_CODE (op[2]) == INTEGER_CST)
 	      {
-		double_int off = tree_to_double_int (op0);
+		double_int off = tree_to_double_int (op[0]);
 		off = double_int_add (off,
 				      double_int_neg
-				        (tree_to_double_int (op1)));
-		off = double_int_mul (off, tree_to_double_int (op2));
+				        (tree_to_double_int (op[1])));
+		off = double_int_mul (off, tree_to_double_int (op[2]));
 		if (double_int_fits_in_shwi_p (off))
 		  newop.off = off.low;
 	      }
 	    VEC_replace (vn_reference_op_s, newoperands, j, &newop);
 	    /* If it transforms from an SSA_NAME to an address, fold with
 	       a preceding indirect reference.  */
-	    if (j > 0 && op0 && TREE_CODE (op0) == ADDR_EXPR
+	    if (j > 0 && op[0] && TREE_CODE (op[0]) == ADDR_EXPR
 		&& VEC_index (vn_reference_op_s,
 			      newoperands, j - 1)->opcode == MEM_REF)
 	      vn_reference_fold_indirect (&newoperands, &j);
