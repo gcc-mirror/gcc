@@ -1,3 +1,14 @@
+2012-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/51722
+	* dwarf2out.c (dwarf2out_start_source_file, dwarf2out_define,
+	dwarf2out_undef): Allocate e.info using ggc_strdup instead
+	of xstrdup.
+	(output_macinfo_op): Don't ggc_strdup fd->filename.
+	(optimize_macinfo_range): Allocate grp_name using XALLOCAVEC,
+	then ggc_strdup it.  Don't free inc->info or cur->info.
+	(output_macinfo): Don't free ref->info or file->info.
+
 2012-01-03  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/51269
