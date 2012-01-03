@@ -1,3 +1,8 @@
+2012-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51719
+	* g++.dg/tree-prof/pr51719.C: New test.
+
 2012-01-03  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/51730

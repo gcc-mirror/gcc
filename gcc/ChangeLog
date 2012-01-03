@@ -1,3 +1,10 @@
+2012-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51719
+	* value-prof.c (gimple_ic): When indirect call isn't noreturn,
+	but direct call is, clear direct call's lhs and don't add fallthrough
+	edge from dcall_bb to join_bb and PHIs.
+
 2012-01-03  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md ("*cmp<mode>_ccs"): Fix comment mentioning
