@@ -1,3 +1,8 @@
+2012-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/51669
+	* g++.dg/gomp/pr51669.C: New test.
+
 2012-01-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51675
