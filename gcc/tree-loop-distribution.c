@@ -89,8 +89,9 @@ stmt_has_scalar_dependences_outside_loop (gimple stmt)
 
   switch (gimple_code (stmt))
     {
+    case GIMPLE_CALL:
     case GIMPLE_ASSIGN:
-      name = gimple_assign_lhs (stmt);
+      name = gimple_get_lhs (stmt);
       break;
 
     case GIMPLE_PHI:
@@ -101,8 +102,10 @@ stmt_has_scalar_dependences_outside_loop (gimple stmt)
       return false;
     }
 
-  return TREE_CODE (name) == SSA_NAME
-    && ssa_name_has_uses_outside_loop_p (name, loop_containing_stmt (stmt));
+  return (name
+	  && TREE_CODE (name) == SSA_NAME
+	  && ssa_name_has_uses_outside_loop_p (name,
+					       loop_containing_stmt (stmt)));
 }
 
 /* Update the PHI nodes of NEW_LOOP.  NEW_LOOP is a duplicate of
