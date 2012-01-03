@@ -1,6 +1,6 @@
 // Internal policy header for unordered_set and unordered_map -*- C++ -*-
 
-// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -517,43 +517,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // and when it worth it, type is empty.
   template<int _Nm, typename _Tp,
 	   bool __use_ebo = !__is_final(_Tp) && __is_empty(_Tp)>
-    struct _Ebo_helper;
+    struct _Hashtable_ebo_helper;
 
   // Specialization using EBO.
   template<int _Nm, typename _Tp>
-    struct _Ebo_helper<_Nm, _Tp, true> : _Tp
+    struct _Hashtable_ebo_helper<_Nm, _Tp, true> : private _Tp
     {
-      _Ebo_helper() = default;
-      _Ebo_helper(const _Tp& __tp) : _Tp(__tp)
+      _Hashtable_ebo_helper() = default;
+      _Hashtable_ebo_helper(const _Tp& __tp) : _Tp(__tp)
       { }
 
       static const _Tp&
-      _S_cget(const _Ebo_helper& __eboh)
+      _S_cget(const _Hashtable_ebo_helper& __eboh)
       { return static_cast<const _Tp&>(__eboh); }
 
       static _Tp&
-      _S_get(_Ebo_helper& __eboh)
+      _S_get(_Hashtable_ebo_helper& __eboh)
       { return static_cast<_Tp&>(__eboh); }
     };
 
   // Specialization not using EBO.
   template<int _Nm, typename _Tp>
-    struct _Ebo_helper<_Nm, _Tp, false>
+    struct _Hashtable_ebo_helper<_Nm, _Tp, false>
     {
-      _Ebo_helper() = default;
-      _Ebo_helper(const _Tp& __tp) : __m_tp(__tp)
+      _Hashtable_ebo_helper() = default;
+      _Hashtable_ebo_helper(const _Tp& __tp) : _M_tp(__tp)
       { }
 
       static const _Tp&
-      _S_cget(const _Ebo_helper& __eboh)
-      { return __eboh.__m_tp; }
+      _S_cget(const _Hashtable_ebo_helper& __eboh)
+      { return __eboh._M_tp; }
 
       static _Tp&
-      _S_get(_Ebo_helper& __eboh)
-      { return __eboh.__m_tp; }
+      _S_get(_Hashtable_ebo_helper& __eboh)
+      { return __eboh._M_tp; }
 
     private:
-      _Tp __m_tp;
+      _Tp _M_tp;
     };
 
   // Class template _Hash_code_base.  Encapsulates two policy issues that
@@ -583,11 +583,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Key, typename _Value, typename _ExtractKey, 
 	   typename _H1, typename _H2, typename _Hash>
     struct _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash, false>
-    : _Ebo_helper<0, _ExtractKey>, _Ebo_helper<1, _Hash>
+    : private _Hashtable_ebo_helper<0, _ExtractKey>,
+      private _Hashtable_ebo_helper<1, _Hash>
     {
     private:
-      typedef _Ebo_helper<0, _ExtractKey> _EboExtractKey;
-      typedef _Ebo_helper<1, _Hash> _EboHash;
+      typedef _Hashtable_ebo_helper<0, _ExtractKey> _EboExtractKey;
+      typedef _Hashtable_ebo_helper<1, _Hash> _EboHash;
+
     protected:
       // We need the default constructor for the local iterators.
       _Hash_code_base() = default;
@@ -655,12 +657,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _H1, typename _H2>
     struct _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2,
 			   _Default_ranged_hash, false>
-    : _Ebo_helper<0, _ExtractKey>, _Ebo_helper<1, _H1>, _Ebo_helper<2, _H2>
+    : private _Hashtable_ebo_helper<0, _ExtractKey>,
+      private _Hashtable_ebo_helper<1, _H1>,
+      private _Hashtable_ebo_helper<2, _H2>
     {
     private:
-      typedef _Ebo_helper<0, _ExtractKey> _EboExtractKey;
-      typedef _Ebo_helper<1, _H1> _EboH1;
-      typedef _Ebo_helper<2, _H2> _EboH2;
+      typedef _Hashtable_ebo_helper<0, _ExtractKey> _EboExtractKey;
+      typedef _Hashtable_ebo_helper<1, _H1> _EboH1;
+      typedef _Hashtable_ebo_helper<2, _H2> _EboH2;
 
     public:
       typedef _H1 hasher;
@@ -732,12 +736,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _H1, typename _H2>
     struct _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2,
 			   _Default_ranged_hash, true>
-    : _Ebo_helper<0, _ExtractKey>, _Ebo_helper<1, _H1>, _Ebo_helper<2, _H2>
+    : private _Hashtable_ebo_helper<0, _ExtractKey>,
+      private _Hashtable_ebo_helper<1, _H1>,
+      private _Hashtable_ebo_helper<2, _H2>
     {
     private:
-      typedef _Ebo_helper<0, _ExtractKey> _EboExtractKey;
-      typedef _Ebo_helper<1, _H1> _EboH1;
-      typedef _Ebo_helper<2, _H2> _EboH2;
+      typedef _Hashtable_ebo_helper<0, _ExtractKey> _EboExtractKey;
+      typedef _Hashtable_ebo_helper<1, _H1> _EboH1;
+      typedef _Hashtable_ebo_helper<2, _H2> _EboH2;
 
     public:
       typedef _H1 hasher;
@@ -835,12 +841,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _H1, typename _H2, typename _Hash,
 	   bool __cache_hash_code>
   struct _Hashtable_base
-  : _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash,
-		    __cache_hash_code>,
-    _Ebo_helper<0, _Equal>
+  : public  _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash,
+			    __cache_hash_code>,
+    private _Hashtable_ebo_helper<0, _Equal>
   {
   private:
-    typedef _Ebo_helper<0, _Equal> _EboEqual;
+    typedef _Hashtable_ebo_helper<0, _Equal> _EboEqual;
 
   protected:
     typedef _Hash_code_base<_Key, _Value, _ExtractKey,
@@ -859,7 +865,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Equal_helper<_Key, _Value, _ExtractKey,
 			   _Equal, _Hash_code_type,
 			   __cache_hash_code> _EqualHelper;
-      return _EqualHelper::_S_equals(_M_eq(), this->_M_extract(), __k, __c, __n);
+      return _EqualHelper::_S_equals(_M_eq(), this->_M_extract(),
+				     __k, __c, __n);
     }
 
     void
@@ -887,7 +894,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _H1, typename _H2, typename _Hash>
     struct _Local_iterator_base<_Key, _Value, _ExtractKey,
 				_H1, _H2, _Hash, true>
-      : _H2
+      : private _H2
     {
       _Local_iterator_base() = default;
       _Local_iterator_base(_Hash_node<_Value, true>* __p,
@@ -918,8 +925,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _H1, typename _H2, typename _Hash>
     struct _Local_iterator_base<_Key, _Value, _ExtractKey,
 				_H1, _H2, _Hash, false>
-      : _Hash_code_base<_Key, _Value, _ExtractKey,
-			_H1, _H2, _Hash, false>
+      : private _Hash_code_base<_Key, _Value, _ExtractKey,
+				_H1, _H2, _Hash, false>
     {
       _Local_iterator_base() = default;
       _Local_iterator_base(_Hash_node<_Value, false>* __p,
