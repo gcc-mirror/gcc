@@ -1,3 +1,16 @@
+2012-01-03  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2011-08-10  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/49907
+	lto-plugin/
+	* configure.ac: Use ACX_PROG_CC_WARNING_OPTS to detect -Wall presence.
+	* Makefile.am (AM_CFLAGS): Adjust.  Do not build with -Werror.
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
+	* aclocal.m4: Likewise.
+
 2011-11-20  Andreas Tobler  <andreast@fgznet.ch>
 
 	* configure: Regenerate.

@@ -47,6 +47,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/lthostflags.m4 \
 	$(top_srcdir)/../config/override.m4 \
+	$(top_srcdir)/../config/warnings.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
 	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
 	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/configure.ac
@@ -167,6 +168,7 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
+ac_lto_plugin_warn_cflags = @ac_lto_plugin_warn_cflags@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -227,7 +229,7 @@ AUTOMAKE_OPTIONS = no-dependencies
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 libexecsubdir := $(libexecdir)/gcc/$(target_noncanonical)/$(gcc_version)
 AM_CPPFLAGS = -I$(top_srcdir)/../include $(DEFS)
-AM_CFLAGS = -Wall -Werror
+AM_CFLAGS = @ac_lto_plugin_warn_cflags@
 AM_LIBTOOLFLAGS = --tag=disable-static
 libexecsub_LTLIBRARIES = liblto_plugin.la
 gcc_build_dir = ../$(host_subdir)/gcc
