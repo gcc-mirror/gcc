@@ -1,3 +1,11 @@
+2012-01-03  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2011-05-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48172
+	* gcc.dg/vect/pr48172.c: New testcase.
+
 2011-12-20  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/49951
