@@ -11207,7 +11207,7 @@ expand_vec_perm_broadcast (struct expand_vec_perm_d *d)
       elt *= BITS_PER_UNIT;
       temp = gen_reg_rtx (DImode);
       emit_insn (gen_extzv (temp, gen_lowpart (DImode, d->op0),
-			    GEN_INT (elt), GEN_INT (8)));
+			    GEN_INT (8), GEN_INT (elt)));
       emit_insn (gen_mux1_brcst_qi (d->target, gen_lowpart (QImode, temp)));
       break;
 
