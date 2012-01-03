@@ -1,6 +1,14 @@
 2012-01-03  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
+	2011-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49279
+	* gcc.c-torture/execute/pr49279.c: New test.
+
+2012-01-03  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
 	2011-05-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48172

@@ -1,4 +1,13 @@
 2012-01-03  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2011-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49279
+	* tree-ssa-structalias.c (find_func_aliases): Don't handle
+	CAST_RESTRICT.
+
+2012-01-03  Richard Guenther  <rguenther@suse.de>
  
 	Backport from mainline
 	2011-08-23  Richard Guenther  <rguenther@suse.de>
