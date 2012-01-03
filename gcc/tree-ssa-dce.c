@@ -1329,31 +1329,38 @@ eliminate_unnecessary_stmts (void)
 	    }
 	  else if (is_gimple_call (stmt))
 	    {
-	      call = gimple_call_fndecl (stmt);
-	      if (call)
+	      tree name = gimple_call_lhs (stmt);
+
+	      notice_special_calls (stmt);
+
+	      /* When LHS of var = call (); is dead, simplify it into
+		 call (); saving one operand.  */
+	      if (name
+		  && TREE_CODE (name) == SSA_NAME
+		  && !TEST_BIT (processed, SSA_NAME_VERSION (name))
+		  /* Avoid doing so for allocation calls which we
+		     did not mark as necessary, it will confuse the
+		     special logic we apply to malloc/free pair removal.  */
+		  && (!(call = gimple_call_fndecl (stmt))
+		      || DECL_BUILT_IN_CLASS (call) != BUILT_IN_NORMAL
+		      || (DECL_FUNCTION_CODE (call) != BUILT_IN_MALLOC
+			  && DECL_FUNCTION_CODE (call) != BUILT_IN_CALLOC
+			  && DECL_FUNCTION_CODE (call) != BUILT_IN_ALLOCA
+			  && (DECL_FUNCTION_CODE (call)
+			      != BUILT_IN_ALLOCA_WITH_ALIGN))))
 		{
-		  tree name;
-
-		  /* When LHS of var = call (); is dead, simplify it into
-		     call (); saving one operand.  */
-		  name = gimple_call_lhs (stmt);
-		  if (name && TREE_CODE (name) == SSA_NAME
-		           && !TEST_BIT (processed, SSA_NAME_VERSION (name)))
+		  something_changed = true;
+		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
-		      something_changed = true;
-		      if (dump_file && (dump_flags & TDF_DETAILS))
-			{
-			  fprintf (dump_file, "Deleting LHS of call: ");
-			  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-			  fprintf (dump_file, "\n");
-			}
-
-		      gimple_call_set_lhs (stmt, NULL_TREE);
-		      maybe_clean_or_replace_eh_stmt (stmt, stmt);
-		      update_stmt (stmt);
-		      release_ssa_name (name);
+		      fprintf (dump_file, "Deleting LHS of call: ");
+		      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+		      fprintf (dump_file, "\n");
 		    }
-		  notice_special_calls (stmt);
+
+		  gimple_call_set_lhs (stmt, NULL_TREE);
+		  maybe_clean_or_replace_eh_stmt (stmt, stmt);
+		  update_stmt (stmt);
+		  release_ssa_name (name);
 		}
 	    }
 	}
