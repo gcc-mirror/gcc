@@ -5331,6 +5331,11 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
       /* Substitute a scalar expression evaluated outside the scalarization
          loop.  */
       se->expr = ss_info->data.scalar.value;
+      /* If the reference can be NULL, the value field contains the reference,
+	 not the value the reference points to (see gfc_add_loop_ss_code).  */
+      if (ss_info->data.scalar.can_be_null_ref)
+	se->expr = build_fold_indirect_ref_loc (input_location, se->expr);
+
       se->string_length = ss_info->string_length;
       gfc_advance_se_ss_chain (se);
       return;

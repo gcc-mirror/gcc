@@ -1,5 +1,14 @@
 2012-01-04  Mikael Morin  <mikael@gcc.gnu.org>
 
+	PR fortran/50981
+	* trans.h (struct gfc_ss_info): New field data::scalar::can_be_null_ref
+	* trans-array.c: If the reference can be NULL, save the reference
+	instead of the value.
+	* trans-expr.c (gfc_conv_expr): If we have saved a reference,
+	dereference it.
+
+2012-01-04  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-expr.c (gfc_conv_expr): Move address taking...
 	(gfc_conv_expr_reference): ... here.
 

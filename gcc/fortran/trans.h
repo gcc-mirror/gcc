@@ -145,8 +145,9 @@ typedef enum
   GFC_SS_SCALAR,
 
   /* Like GFC_SS_SCALAR it evaluates the expression outside the
-     loop. Is always evaluated as a reference to the temporary.
-     Used for elemental function arguments.  */
+     loop.  Is always evaluated as a reference to the temporary, unless
+     temporary evaluation can result in a NULL pointer dereferencing (case of
+     optional arguments).  Used for elemental function arguments.  */
   GFC_SS_REFERENCE,
 
   /* An array section.  Scalarization indices will be substituted during
@@ -196,6 +197,9 @@ typedef struct gfc_ss_info
     struct
     {
       tree value;
+      /* Tells whether the reference can be null in the GFC_SS_REFERENCE case.
+	 Used to handle elemental procedures' optional arguments.  */
+      bool can_be_null_ref;
     }
     scalar;
 
