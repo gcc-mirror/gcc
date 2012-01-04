@@ -1,3 +1,8 @@
+2012-01-04  Patrick Marlier  <patrick.marlier@gmail.com>
+
+	* gcc.dg/tm/alias-1.c:  Adjust regexp.
+	* gcc.dg/tm/alias-2.c:  Adjust regexp.
+
 2012-01-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51064
