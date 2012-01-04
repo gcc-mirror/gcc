@@ -1,3 +1,11 @@
+2012-01-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/51750
+	* tree.c (size_low_cst): New function.
+	* tree.h (size_low_cst): Declare.
+	* fold-const.c (fold_comparison): Use it to extract the low
+	part of the POINTER_PLUS_EXPR offset.
+
 2012-01-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	Fix clearing ZERO_REG

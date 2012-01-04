@@ -6509,6 +6509,17 @@ tree_low_cst (const_tree t, int pos)
   return TREE_INT_CST_LOW (t);
 }
 
+/* Return the HOST_WIDE_INT least significant bits of T, a sizetype
+   kind INTEGER_CST.  This makes sure to properly sign-extend the
+   constant.  */
+
+HOST_WIDE_INT
+size_low_cst (const_tree t)
+{
+  double_int d = tree_to_double_int (t);
+  return double_int_sext (d, TYPE_PRECISION (TREE_TYPE (t))).low;
+}
+
 /* Return the most significant (sign) bit of T.  */
 
 int
