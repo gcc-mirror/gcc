@@ -51,9 +51,6 @@ case "${$2}" in
     m68k-*-*)
 	$1=-fpic
 	;;
-    s390*-*-*)
-	$1=-fpic
-	;;
     # FIXME: Override -fPIC default in libgcc only? 
     sh-*-linux* | sh[[2346lbe]]*-*-linux*)
 	$1=-fpic

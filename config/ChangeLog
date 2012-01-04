@@ -1,3 +1,8 @@
+2012-01-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR bootstrap/51734
+	* picflag.m4: Remove s390 case statement.
+
 2011-12-20  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* warnings.m4 (ACX_PROG_CC_WARNING_OPTS): Avoid leading dash in
