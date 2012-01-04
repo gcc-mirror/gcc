@@ -1,5 +1,6 @@
 /* Common block and equivalence list handling
-   Copyright (C) 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011, 2012
    Free Software Foundation, Inc.
    Contributed by Canqun Yang <canqun@nudt.edu.cn>
 
@@ -689,7 +690,9 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
 			     VAR_DECL, DECL_NAME (s->field),
 			     TREE_TYPE (s->field));
       TREE_STATIC (var_decl) = TREE_STATIC (decl);
-      TREE_USED (var_decl) = TREE_USED (decl);
+      /* Mark the variable as used in order to avoid warnings about
+	 unused variables.  */
+      TREE_USED (var_decl) = 1;
       if (s->sym->attr.use_assoc)
 	DECL_IGNORED_P (var_decl) = 1;
       if (s->sym->attr.target)

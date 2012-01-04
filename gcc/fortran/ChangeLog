@@ -1,3 +1,10 @@
+2012-01-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/49693
+	* trans-common.c (create_common): Update copyright years.  Mark
+	variables as used to avoid warnings about unused variables in
+	common blocks.
+
 2012-01-03  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gfortran.h (struct gfc_expr): Add missing "struct"
