@@ -2422,10 +2422,21 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	  break;
 
 	case GFC_SS_REFERENCE:
-	  /* Scalar argument to elemental procedure.  Evaluate this
-	     now.  */
+	  /* Scalar argument to elemental procedure.  */
 	  gfc_init_se (&se, NULL);
-	  gfc_conv_expr (&se, expr);
+	  if (ss_info->data.scalar.can_be_null_ref)
+	    {
+	      /* If the actual argument can be absent (in other words, it can
+		 be a NULL reference), don't try to evaluate it; pass instead
+		 the reference directly.  */
+	      gfc_conv_expr_reference (&se, expr);
+	    }
+	  else
+	    {
+	      /* Otherwise, evaluate the argument outside the loop and pass
+		 a reference to the value.  */
+	      gfc_conv_expr (&se, expr);
+	    }
 	  gfc_add_block_to_block (&outer_loop->pre, &se.pre);
 	  gfc_add_block_to_block (&outer_loop->post, &se.post);
 	  if (gfc_is_class_scalar_expr (expr))
