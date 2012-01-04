@@ -1520,11 +1520,16 @@ build_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
       do {
 	tree field = TREE_OPERAND (expr, 1);
 	tree cr_offset = component_ref_field_offset (expr);
-	gcc_assert (cr_offset && host_integerp (cr_offset, 1));
+	HOST_WIDE_INT bit_pos
+	  = tree_low_cst (cr_offset, 1) * BITS_PER_UNIT
+	      + TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (field));
 
-	offset -= TREE_INT_CST_LOW (cr_offset) * BITS_PER_UNIT;
-	offset -= TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (field));
+	/* We can be called with a model different from the one associated
+	   with BASE so we need to avoid going up the chain too far.  */
+	if (offset - bit_pos < 0)
+	  break;
 
+	offset -= bit_pos;
 	VEC_safe_push (tree, stack, cr_stack, expr);
 
 	expr = TREE_OPERAND (expr, 0);
