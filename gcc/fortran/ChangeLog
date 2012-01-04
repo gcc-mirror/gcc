@@ -1,3 +1,8 @@
+2012-01-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-expr.c (gfc_conv_expr): Move address taking...
+	(gfc_conv_expr_reference): ... here.
+
 2012-01-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/49693
