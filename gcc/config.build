@@ -52,20 +52,6 @@ build_file_translate=
 
 # System-specific settings.
 case $build in
-  alpha64-dec-*vms*)
-    build_xm_file="vms/xm-vms.h vms/xm-vms64.h"
-    build_exeext=.exe
-    build_install_headers_dir=install-headers-cp
-    prefix=/gnu
-    local_prefix=/gnu/local
-    ;;
-  alpha*-dec-*vms*)
-    build_xm_file="vms/xm-vms.h"
-    build_exeext=.exe
-    build_install_headers_dir=install-headers-cp
-    prefix=/gnu
-    local_prefix=/gnu/local
-    ;;
   hppa1.0-*-hpux1[01]* | \
   hppa*64*-*-hpux11* | \
   hppa1.1-*-hpux11* | \
@@ -114,13 +100,6 @@ case $build in
   i386-*-vsta) 
     # Intel 80386's running VSTa kernel
     ;;
-  ia64-hp-*vms*)
-    build_xm_file="vms/xm-vms.h vms/xm-vms64.h"
-    build_exeext=.exe
-    build_install_headers_dir=install-headers-cp
-    prefix=/gnu
-    local_prefix=/gnu/local
-    ;;
   m68000-hp-hpux* | m68k-hp-hpux*) 
     # HP 9000 series 300
     build_install_headers_dir=install-headers-cpio
@@ -128,6 +107,12 @@ case $build in
   *-*-sysv*)
     # All other System V variants.
     build_install_headers_dir=install-headers-cpio
+    ;;
+  *-*-*vms*)
+    # All OpenVMS targets.
+    build_xm_file="vms/xm-vms.h"
+    build_exeext=.exe
+    build_install_headers_dir=install-headers-cp
     ;;
 esac
 
