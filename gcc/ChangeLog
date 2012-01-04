@@ -1,5 +1,12 @@
 2012-01-04  Aldy Hernandez  <aldyh@redhat.com>
 
+	PR middle-end/51212
+	* opts.c (finish_options): Sorry out when using transactional
+	memory and non-call exceptions.
+	* doc/invoke.texi (C Dialect Options): Document it.
+
+2012-01-04  Aldy Hernandez  <aldyh@redhat.com>
+
 	PR middle-end/51696
 	* trans-mem.c (diagnose_tm_1): Display indirect calls with no name
 	correctly.

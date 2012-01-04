@@ -1742,6 +1742,9 @@ For more information on GCC's support for transactional memory,
 @xref{Enabling libitm,,The GNU Transactional Memory Library,libitm,GNU
 Transactional Memory Library}.
 
+Note that the transactional memory feature is not supported with
+non-call exceptions (@option{-fnon-call-exceptions}).
+
 @item -fms-extensions
 @opindex fms-extensions
 Accept some non-standard constructs used in Microsoft header files.
