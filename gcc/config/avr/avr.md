@@ -95,7 +95,7 @@
   
 ;; Condition code settings.
 (define_attr "cc" "none,set_czn,set_zn,set_n,compare,clobber,
-                   out_plus, out_plus_noclobber"
+                   out_plus, out_plus_noclobber,ldi"
   (const_string "none"))
 
 (define_attr "type" "branch,branch1,arith,xcall"
@@ -584,7 +584,7 @@
   }
   [(set_attr "length" "1,1,5,5,1,1,4")
    (set_attr "adjust_len" "mov8")
-   (set_attr "cc" "none,none,clobber,clobber,none,none,clobber")])
+   (set_attr "cc" "ldi,none,clobber,clobber,none,none,clobber")])
 
 ;; This is used in peephole2 to optimize loading immediate constants
 ;; if a scratch register from LD_REGS happens to be available.

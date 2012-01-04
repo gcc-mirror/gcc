@@ -1994,6 +1994,7 @@ notice_update_cc (rtx body ATTRIBUTE_UNUSED, rtx insn)
 
     case CC_OUT_PLUS:
     case CC_OUT_PLUS_NOCLOBBER:
+    case CC_LDI:
       {
         rtx *op = recog_data.operand;
         int len_dummy, icc;
@@ -2001,16 +2002,36 @@ notice_update_cc (rtx body ATTRIBUTE_UNUSED, rtx insn)
         /* Extract insn's operands.  */
         extract_constrain_insn_cached (insn);
 
-        if (CC_OUT_PLUS == cc)
-          avr_out_plus (op, &len_dummy, &icc);
-        else
-          avr_out_plus_noclobber (op, &len_dummy, &icc);
-        
-        cc = (enum attr_cc) icc;
-        
+        switch (cc)
+          {
+          default:
+            gcc_unreachable();
+            
+          case CC_OUT_PLUS:
+            avr_out_plus (op, &len_dummy, &icc);
+            cc = (enum attr_cc) icc;
+            break;
+            
+          case CC_OUT_PLUS_NOCLOBBER:
+            avr_out_plus_noclobber (op, &len_dummy, &icc);
+            cc = (enum attr_cc) icc;
+            break;
+
+          case CC_LDI:
+
+            cc = (op[1] == CONST0_RTX (GET_MODE (op[0]))
+                  && reg_overlap_mentioned_p (op[0], zero_reg_rtx))
+              /* Loading zero-reg with 0 uses CLI and thus clobbers cc0.  */
+              ? CC_CLOBBER
+              /* Any other "r,rL" combination does not alter cc0.  */
+              : CC_NONE;
+            
+            break;
+          } /* inner switch */
+
         break;
       }
-    }
+    } /* outer swicth */
 
   switch (cc)
     {
@@ -8945,9 +8966,9 @@ avr_regno_mode_code_ok_for_base_p (int regno,
 
    The effect on cc0 is as follows:
 
-   Load 0 to any register          : NONE
-   Load ld register with any value : NONE
-   Anything else:                  : CLOBBER  */
+   Load 0 to any register except ZERO_REG : NONE
+   Load ld register with any value        : NONE
+   Anything else:                         : CLOBBER  */
 
 static void
 output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
@@ -9062,7 +9083,9 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
       if (ival[n] == 0)
         {
           if (!clear_p)
-            avr_asm_len (ldreg_p ? "ldi %0,0" : "mov %0,__zero_reg__",
+            avr_asm_len (ldreg_p ? "ldi %0,0"
+                         : ZERO_REGNO == REGNO (xdest[n]) ? "clr %0"
+                         : "mov %0,__zero_reg__",
                          &xdest[n], len, 1);
           continue;
         }
@@ -9224,8 +9247,8 @@ output_reload_insisf (rtx *op, rtx clobber_reg, int *len)
         {
           /* Default needs 4 CLR instructions: clear register beforehand.  */
           
-          avr_asm_len ("clr %A0" CR_TAB
-                       "clr %B0" CR_TAB
+          avr_asm_len ("mov %A0,__zero_reg__" CR_TAB
+                       "mov %B0,__zero_reg__" CR_TAB
                        "movw %C0,%A0", &op[0], len, 3);
           
           output_reload_in_const (op, clobber_reg, len, true);

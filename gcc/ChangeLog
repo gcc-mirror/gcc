@@ -1,3 +1,12 @@
+2012-01-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	Fix clearing ZERO_REG
+	* config/avr/avr.md (cc): Add alternative "ldi".
+	(movqi_insn): Use it in cc attribute.
+	* config/avr/avr.c (notice_update_cc): Handle CC_LDI.
+	(output_reload_in_const): Use CLR to move 0 to ZERO_REG.
+	(output_reload_insisf): Use ZERO_REG to pre-clear register.
+
 2012-01-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* configure: Regenerate.
