@@ -4428,6 +4428,7 @@ tree_low_cst (const_tree t, int pos)
   return TREE_INT_CST_LOW (t);
 }
 #endif
+extern HOST_WIDE_INT size_low_cst (const_tree);
 extern int tree_int_cst_sgn (const_tree);
 extern int tree_int_cst_sign_bit (const_tree);
 extern unsigned int tree_int_cst_min_precision (tree, bool);

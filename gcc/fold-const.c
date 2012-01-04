@@ -8886,13 +8886,16 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	      indirect_base0 = true;
 	    }
 	  offset0 = TREE_OPERAND (arg0, 1);
-	  if (host_integerp (offset0, 0)
-	      && ((HOST_WIDE_INT) (TREE_INT_CST_LOW (offset0) * BITS_PER_UNIT)
-		  / BITS_PER_UNIT
-		  == (HOST_WIDE_INT) TREE_INT_CST_LOW (offset0)))
+	  if (host_integerp (offset0, 0))
 	    {
-	      bitpos0 = TREE_INT_CST_LOW (offset0) * BITS_PER_UNIT;
-	      offset0 = NULL_TREE;
+	      HOST_WIDE_INT off = size_low_cst (offset0);
+	      if ((HOST_WIDE_INT) (((unsigned HOST_WIDE_INT) off)
+				   * BITS_PER_UNIT)
+		  / BITS_PER_UNIT == (HOST_WIDE_INT) off)
+		{
+		  bitpos0 = off * BITS_PER_UNIT;
+		  offset0 = NULL_TREE;
+		}
 	    }
 	}
 
@@ -8917,13 +8920,16 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	      indirect_base1 = true;
 	    }
 	  offset1 = TREE_OPERAND (arg1, 1);
-	  if (host_integerp (offset1, 0)
-	      && ((HOST_WIDE_INT) (TREE_INT_CST_LOW (offset1) * BITS_PER_UNIT)
-		  / BITS_PER_UNIT
-		  == (HOST_WIDE_INT) TREE_INT_CST_LOW (offset1)))
+	  if (host_integerp (offset1, 0))
 	    {
-	      bitpos1 = TREE_INT_CST_LOW (offset1) * BITS_PER_UNIT;
-	      offset1 = NULL_TREE;
+	      HOST_WIDE_INT off = size_low_cst (offset1);
+	      if ((HOST_WIDE_INT) (((unsigned HOST_WIDE_INT) off)
+				   * BITS_PER_UNIT)
+		  / BITS_PER_UNIT == (HOST_WIDE_INT) off)
+		{
+		  bitpos1 = off * BITS_PER_UNIT;
+		  offset1 = NULL_TREE;
+		}
 	    }
 	}
 
