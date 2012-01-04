@@ -1,3 +1,9 @@
+2012-01-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51064
+	* pt.c (tsubst_copy_and_build): Maybe set TREE_NO_WARNING on
+	the tree returned by build_x_binary_op.
+
 2012-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51738

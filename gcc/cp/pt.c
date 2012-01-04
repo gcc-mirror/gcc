@@ -13563,18 +13563,23 @@ tsubst_copy_and_build (tree t,
     case GT_EXPR:
     case MEMBER_REF:
     case DOTSTAR_EXPR:
-      return build_x_binary_op
-	(TREE_CODE (t),
-	 RECUR (TREE_OPERAND (t, 0)),
-	 (TREE_NO_WARNING (TREE_OPERAND (t, 0))
-	  ? ERROR_MARK
-	  : TREE_CODE (TREE_OPERAND (t, 0))),
-	 RECUR (TREE_OPERAND (t, 1)),
-	 (TREE_NO_WARNING (TREE_OPERAND (t, 1))
-	  ? ERROR_MARK
-	  : TREE_CODE (TREE_OPERAND (t, 1))),
-	 /*overload=*/NULL,
-	 complain);
+      {
+	tree r = build_x_binary_op
+	  (TREE_CODE (t),
+	   RECUR (TREE_OPERAND (t, 0)),
+	   (TREE_NO_WARNING (TREE_OPERAND (t, 0))
+	    ? ERROR_MARK
+	    : TREE_CODE (TREE_OPERAND (t, 0))),
+	   RECUR (TREE_OPERAND (t, 1)),
+	   (TREE_NO_WARNING (TREE_OPERAND (t, 1))
+	    ? ERROR_MARK
+	    : TREE_CODE (TREE_OPERAND (t, 1))),
+	   /*overload=*/NULL,
+	   complain);
+	if (EXPR_P (r) && TREE_NO_WARNING (t))
+	  TREE_NO_WARNING (r) = TREE_NO_WARNING (t);
+	return r;
+      }
 
     case SCOPE_REF:
       return tsubst_qualified_id (t, args, complain, in_decl, /*done=*/true,
