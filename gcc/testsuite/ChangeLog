@@ -1,3 +1,9 @@
+2012-01-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49651
+	* gcc.dg/tree-ssa/pta-ptrarith-1.c: Adjust.
+	* gcc.dg/tree-ssa/pta-ptrarith-2.c: Likewise.
+
 2012-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51738
