@@ -1,3 +1,33 @@
+2012-01-04  Andrew Pinski  <apinski@cavium.com>
+	    Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.md (size): Add SI and DI.
+	(SIZE): New mode attribute.
+	(U): New code attribute.
+	* config/mips/mips-dsp.md (mips_lbux): Use gen_mips_lbux_extsi.
+	(mips_lbux_<mode>): Delete.
+	(mips_l<SHORT:size><u>x_ext<GPR:mode>_<P:mode>): New pattern.
+	(mips_lhx): Use gen_mips_lhx_extsi.
+	(mips_lhx_<mode>): Delete.
+	(mips_lwx): Delete.
+	(mips_l<size>x): New expand.
+	(mips_lwx_<mode>): Delete.
+	(mips_l<GPR:size>x_<P:mode>): New pattern.
+	(*mips_lw<u>x_<P:mode>_ext): Likewise.
+	* config/mips/mips-ftypes.def: Add DI f(POINTER, SI) function type.
+	* config/mips/mips.c (mips_lx_address_p): New function.
+	(mips_rtx_costs <case MEM>): Call mips_lx_address_p.
+	(dsp64): New availability predicate.
+	(mips_builtins): Add an entry for __builtin_mips_ldx.
+	* config/mips/mips.h (ISA_HAS_LBX): New define.
+	(ISA_HAS_LBUX): Likewise.
+	(ISA_HAS_LHX): Likewise.
+	(ISA_HAS_LHUX): Likewise.
+	(ISA_HAS_LWX): Likewise.
+	(ISA_HAS_LWUX): Likewise.
+	(ISA_HAS_LDX): Likewise.
+	* doc/extend.texi (__builtin_mips_ldx): Document.
+
 2012-01-04  Tristan Gingold  <gingold@adacore.com>
 
 	* config/vms/xm-vms.h (HOST_LONG_FORMAT, HOST_PTR_PRINTF): Define
