@@ -1,6 +1,17 @@
 2012-01-04  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50981
+	* trans-array.h (gfc_walk_elemental_function_args): New argument.
+	* trans-intrinsic.c (gfc_walk_intrinsic_function): Update call.
+	* trans-stmt.c (gfc_trans_call): Ditto.
+	* trans-array.c (gfc_walk_function_expr): Ditto.
+	(gfc_walk_elemental_function_args): Get the dummy argument list
+	if possible.  Check that the dummy and the actual argument are both
+	optional, and set can_be_null_ref accordingly.
+
+2012-01-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50981
 	* trans.h (struct gfc_ss_info): New field data::scalar::can_be_null_ref
 	* trans-array.c: If the reference can be NULL, save the reference
 	instead of the value.
