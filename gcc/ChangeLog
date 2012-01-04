@@ -1,3 +1,9 @@
+2012-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/51695
+	* dwarf2out.c (output_loc_list): For now drop >= 64KB expressions
+	in .debug_loc on the floor.
+
 2012-01-04  Andrew Pinski  <apinski@cavium.com>
 
 	* doc/invoke.texi (-march=@var{arch}): Add octeon+ and octeon2.
