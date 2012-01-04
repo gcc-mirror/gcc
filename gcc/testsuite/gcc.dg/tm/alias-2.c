@@ -36,7 +36,7 @@ void foo()
   candy();
 }
 
-/* { dg-final { scan-tree-dump-times "ui\..* = same as mystruct" 1 "ealias" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "ui\..* = .*same as mystruct" 1 "ealias" } } */
 /* { dg-final { scan-tree-dump-times "mystruct.*ESCAPED" 1 "ealias" } } */
-/* { dg-final { scan-tree-dump-times "pp = same as mystruct" 1 "ealias" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "pp = .*same as mystruct" 1 "ealias" } } */
 /* { dg-final { cleanup-tree-dump "ealias" } } */
