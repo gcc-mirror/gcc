@@ -1,3 +1,7 @@
+2012-01-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* configure: Regenerate.
+
 2011-11-12  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* Makefile.in: Change dependency on oscons to depend on the generator

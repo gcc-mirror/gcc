@@ -1,3 +1,8 @@
+2012-01-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* configure: Regenerate.
+	* config/s390/t-crtstuff: Remove -fPIC.
+
 2012-01-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR bootstrap/51006

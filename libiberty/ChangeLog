@@ -1,3 +1,7 @@
+2012-01-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* configure: Regenerate.
+
 2012-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* make-relative-prefix.c (make_relative_prefix_1): Avoid

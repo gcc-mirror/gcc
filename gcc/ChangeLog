@@ -1,3 +1,7 @@
+2012-01-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* configure: Regenerate.
+
 2012-01-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49651
