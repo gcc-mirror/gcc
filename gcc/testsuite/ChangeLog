@@ -1,5 +1,7 @@
 2012-01-04  Patrick Marlier  <patrick.marlier@gmail.com>
 
+	PR other/51163
+	PR other/51164
 	* gcc.dg/tm/alias-1.c:  Adjust regexp.
 	* gcc.dg/tm/alias-2.c:  Adjust regexp.
 
