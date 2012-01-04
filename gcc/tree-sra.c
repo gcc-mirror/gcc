@@ -1472,8 +1472,14 @@ build_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
 
       do {
 	tree field = TREE_OPERAND (expr, 1);
-	offset -= int_bit_position (field);
+	HOST_WIDE_INT bit_pos = int_bit_position (field);
 
+	/* We can be called with a model different from the one associated
+	   with BASE so we need to avoid going up the chain too far.  */
+	if (offset - bit_pos < 0)
+	  break;
+
+	offset -= bit_pos;
 	VEC_safe_push (tree, stack, cr_stack, expr);
 
 	expr = TREE_OPERAND (expr, 0);

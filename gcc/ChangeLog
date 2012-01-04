@@ -1,3 +1,9 @@
+2012-01-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/51624
+	* tree-sra.c (build_ref_for_model): When replicating a chain of
+	COMPONENT_REFs, stop as soon as the offset would become negative.
+
 2012-01-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49651
