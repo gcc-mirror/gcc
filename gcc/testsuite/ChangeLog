@@ -1,3 +1,11 @@
+2012-01-04  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.target/mips/mips64-dsp-ldx1.c: New test.
+	* gcc.target/mips/octeon2-lx-1.c: New test.
+	* gcc.target/mips/mips64-dsp-ldx.c: New test.
+	* gcc.target/mips/octeon2-lx-2.c: New test.
+	* gcc.target/mips/octeon2-lx-3.c: New test.
+
 2012-01-04  Patrick Marlier  <patrick.marlier@gmail.com>
 
 	PR other/51163

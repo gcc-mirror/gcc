@@ -1,7 +1,7 @@
 /* Subroutines used for MIPS code generation.
    Copyright (C) 1989, 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011
+   2011, 2012
    Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
@@ -2159,6 +2159,29 @@ mips_lwxs_address_p (rtx addr)
     }
   return false;
 }
+
+/* Return true if ADDR matches the pattern for the L{B,H,W,D}{,U}X load 
+   indexed address instruction.  Note that such addresses are
+   not considered legitimate in the TARGET_LEGITIMATE_ADDRESS_P
+   sense, because their use is so restricted.  */
+
+static bool
+mips_lx_address_p (rtx addr, enum machine_mode mode)
+{
+  if (GET_CODE (addr) != PLUS
+      || !REG_P (XEXP (addr, 0))
+      || !REG_P (XEXP (addr, 1)))
+    return false;
+  if (ISA_HAS_LBX && mode == QImode)
+    return true;
+  if (ISA_HAS_LHX && mode == HImode)
+    return true;
+  if (ISA_HAS_LWX && mode == SImode)
+    return true;
+  if (ISA_HAS_LDX && mode == DImode)
+    return true;
+  return false;
+}
 
 /* Return true if a value at OFFSET bytes from base register BASE can be
    accessed using an unextended MIPS16 instruction.  MODE is the mode of
@@ -3547,7 +3570,8 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	  return true;
 	}
       /* Check for a scaled indexed address.  */
-      if (mips_lwxs_address_p (addr))
+      if (mips_lwxs_address_p (addr)
+	  || mips_lx_address_p (addr, mode))
 	{
 	  *total = COSTS_N_INSNS (2);
 	  return true;
@@ -12720,6 +12744,7 @@ AVAIL_NON_MIPS16 (mips3d, TARGET_MIPS3D)
 AVAIL_NON_MIPS16 (dsp, TARGET_DSP)
 AVAIL_NON_MIPS16 (dspr2, TARGET_DSPR2)
 AVAIL_NON_MIPS16 (dsp_32, !TARGET_64BIT && TARGET_DSP)
+AVAIL_NON_MIPS16 (dsp_64, TARGET_64BIT && TARGET_DSP)
 AVAIL_NON_MIPS16 (dspr2_32, !TARGET_64BIT && TARGET_DSPR2)
 AVAIL_NON_MIPS16 (loongson, TARGET_LOONGSON_VECTORS)
 AVAIL_NON_MIPS16 (cache, TARGET_CACHE_BUILTIN)
@@ -13045,6 +13070,9 @@ static const struct mips_builtin_description mips_builtins[] = {
   DIRECT_BUILTIN (msubu, MIPS_DI_FTYPE_DI_USI_USI, dsp_32),
   DIRECT_BUILTIN (mult, MIPS_DI_FTYPE_SI_SI, dsp_32),
   DIRECT_BUILTIN (multu, MIPS_DI_FTYPE_USI_USI, dsp_32),
+
+  /* Built-in functions for the DSP ASE (64-bit only).  */
+  DIRECT_BUILTIN (ldx, MIPS_DI_FTYPE_POINTER_SI, dsp_64),
 
   /* The following are for the MIPS DSP ASE REV 2 (32-bit only).  */
   DIRECT_BUILTIN (dpa_w_ph, MIPS_DI_FTYPE_DI_V2HI_V2HI, dspr2_32),
