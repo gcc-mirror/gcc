@@ -1,3 +1,12 @@
+2012-01-04  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/xm-vms.h (HOST_LONG_FORMAT, HOST_PTR_PRINTF): Define
+	when long pointers are used.
+	* config.build (*-*-*vms*): Handle all OpenVMS targets.
+	(alpha64-dec-*vms*, alpha*-dec-*vms*)
+	(ia64-hp-*vms*): Remove.
+	* config/vms/xm-vms64.h: Delete.
+
 2012-01-04  Aldy Hernandez  <aldyh@redhat.com>
 
 	* opts.c (finish_options): Remove duplicate sorry.

@@ -53,4 +53,12 @@ do                                                         \
 	}                                                  \
   } while (0)
 
+/* If 64 bit pointers are used, use 64 bit specifier.  */
+
+#if (defined (__INITIAL_POINTER_SIZE) && __INITIAL_POINTER_SIZE == 64) \
+  || defined (__LONG_POINTERS)
+#define HOST_LONG_FORMAT "ll"
+#define HOST_PTR_PRINTF "%llp"
+#endif
+
 #define STANDARD_STARTFILE_PREFIX "/gnu/lib/"
