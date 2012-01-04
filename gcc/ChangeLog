@@ -1,4 +1,8 @@
 2012-01-04  Andrew Pinski  <apinski@cavium.com>
+
+	* doc/invoke.texi (-march=@var{arch}): Add octeon+ and octeon2.
+
+2012-01-04  Andrew Pinski  <apinski@cavium.com>
 	    Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.md (size): Add SI and DI.
