@@ -348,7 +348,8 @@ gfc_trans_call (gfc_code * code, bool dependency_check,
 
   ss = gfc_ss_terminator;
   if (code->resolved_sym->attr.elemental)
-    ss = gfc_walk_elemental_function_args (ss, code->ext.actual, GFC_SS_REFERENCE);
+    ss = gfc_walk_elemental_function_args (ss, code->ext.actual,
+					   code->expr1, GFC_SS_REFERENCE);
 
   /* Is not an elemental subroutine call with array valued arguments.  */
   if (ss == gfc_ss_terminator)

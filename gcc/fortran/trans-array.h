@@ -73,7 +73,7 @@ gfc_ss *gfc_walk_subexpr (gfc_ss *, gfc_expr *);
 gfc_ss *gfc_walk_array_ref (gfc_ss *, gfc_expr *, gfc_ref * ref);
 /* Walk the arguments of an elemental function.  */
 gfc_ss *gfc_walk_elemental_function_args (gfc_ss *, gfc_actual_arglist *,
-					  gfc_ss_type);
+					  gfc_expr *, gfc_ss_type);
 /* Walk an intrinsic function.  */
 gfc_ss *gfc_walk_intrinsic_function (gfc_ss *, gfc_expr *,
 				     gfc_intrinsic_sym *);

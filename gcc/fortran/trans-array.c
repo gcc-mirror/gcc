@@ -8307,12 +8307,16 @@ gfc_reverse_ss (gfc_ss * ss)
 }
 
 
-/* Walk the arguments of an elemental function.  */
+/* Walk the arguments of an elemental function.
+   PROC_EXPR is used to check whether an argument is permitted to be absent.  If
+   it is NULL, we don't do the check and the argument is assumed to be present.
+*/
 
 gfc_ss *
 gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
-				  gfc_ss_type type)
+				  gfc_expr *proc_expr, gfc_ss_type type)
 {
+  gfc_formal_arglist *dummy_arg;
   int scalar;
   gfc_ss *head;
   gfc_ss *tail;
@@ -8320,6 +8324,28 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
 
   head = gfc_ss_terminator;
   tail = NULL;
+
+  if (proc_expr)
+    {
+      gfc_ref *ref;
+
+      /* Normal procedure case.  */
+      dummy_arg = proc_expr->symtree->n.sym->formal;
+
+      /* Typebound procedure case.  */
+      for (ref = proc_expr->ref; ref; ref = ref->next)
+	{
+	  if (ref->type == REF_COMPONENT
+	      && ref->u.c.component->attr.proc_pointer
+	      && ref->u.c.component->ts.interface)
+	    dummy_arg = ref->u.c.component->ts.interface->formal;
+	  else
+	    dummy_arg = NULL;
+	}
+    }
+  else
+    dummy_arg = NULL;
+
   scalar = 1;
   for (; arg; arg = arg->next)
     {
@@ -8333,6 +8359,13 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
 	  gcc_assert (type == GFC_SS_SCALAR || type == GFC_SS_REFERENCE);
 	  newss = gfc_get_scalar_ss (head, arg->expr);
 	  newss->info->type = type;
+
+	  if (dummy_arg != NULL
+	      && dummy_arg->sym->attr.optional
+	      && arg->expr->symtree
+	      && arg->expr->symtree->n.sym->attr.optional
+	      && arg->expr->ref == NULL)
+	    newss->info->data.scalar.can_be_null_ref = true;
 	}
       else
 	scalar = 0;
@@ -8344,6 +8377,9 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
           while (tail->next != gfc_ss_terminator)
             tail = tail->next;
         }
+
+      if (dummy_arg != NULL)
+	dummy_arg = dummy_arg->next;
     }
 
   if (scalar)
@@ -8393,7 +8429,7 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
      by reference.  */
   if (sym->attr.elemental || (comp && comp->attr.elemental))
     return gfc_walk_elemental_function_args (ss, expr->value.function.actual,
-					     GFC_SS_REFERENCE);
+					     expr, GFC_SS_REFERENCE);
 
   /* Scalar functions are OK as these are evaluated outside the scalarization
      loop.  Pass back and let the caller deal with it.  */
