@@ -1,9 +1,6 @@
 2012-01-04  Aldy Hernandez  <aldyh@redhat.com>
 
-	PR middle-end/51212
-	* opts.c (finish_options): Sorry out when using transactional
-	memory and non-call exceptions.
-	* doc/invoke.texi (C Dialect Options): Document it.
+	* opts.c (finish_options): Remove duplicate sorry.
 
 2012-01-04  Aldy Hernandez  <aldyh@redhat.com>
 
