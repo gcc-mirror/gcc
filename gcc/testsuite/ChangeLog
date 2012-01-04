@@ -1,3 +1,8 @@
+2012-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/51695
+	* gcc.dg/pr51695.c: New test.
+
 2012-01-04  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.target/mips/mips64-dsp-ldx1.c: New test.

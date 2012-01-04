@@ -8166,6 +8166,13 @@ output_loc_list (dw_loc_list_ref list_head)
       /* Don't output an entry that starts and ends at the same address.  */
       if (strcmp (curr->begin, curr->end) == 0 && !curr->force)
 	continue;
+      size = size_of_locs (curr->expr);
+      /* If the expression is too large, drop it on the floor.  We could
+	 perhaps put it into DW_TAG_dwarf_procedure and refer to that
+	 in the expression, but >= 64KB expressions for a single value
+	 in a single range are unlikely very useful.  */
+      if (size > 0xffff)
+	continue;
       if (!have_multiple_function_sections)
 	{
 	  dw2_asm_output_delta (DWARF2_ADDR_SIZE, curr->begin, curr->section,
@@ -8184,7 +8191,6 @@ output_loc_list (dw_loc_list_ref list_head)
 			       "Location list end address (%s)",
 			       list_head->ll_symbol);
 	}
-      size = size_of_locs (curr->expr);
 
       /* Output the block length for this list of location operations.  */
       gcc_assert (size <= 0xffff);
