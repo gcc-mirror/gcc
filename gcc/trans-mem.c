@@ -664,9 +664,16 @@ diagnose_tm_1 (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 				"unsafe function call %qD within "
 				"atomic transaction", fn);
 		    else
-		      error_at (gimple_location (stmt),
-				"unsafe function call %qE within "
-				"atomic transaction", fn);
+		      {
+			if (!DECL_P (fn) || DECL_NAME (fn))
+			  error_at (gimple_location (stmt),
+				    "unsafe function call %qE within "
+				    "atomic transaction", fn);
+			else
+			  error_at (gimple_location (stmt),
+				    "unsafe indirect function call within "
+				    "atomic transaction");
+		      }
 		  }
 		else
 		  {
@@ -675,9 +682,16 @@ diagnose_tm_1 (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 				"unsafe function call %qD within "
 				"%<transaction_safe%> function", fn);
 		    else
-		      error_at (gimple_location (stmt),
-				"unsafe function call %qE within "
-				"%<transaction_safe%> function", fn);
+		      {
+			if (!DECL_P (fn) || DECL_NAME (fn))
+			  error_at (gimple_location (stmt),
+				    "unsafe function call %qE within "
+				    "%<transaction_safe%> function", fn);
+			else
+			  error_at (gimple_location (stmt),
+				    "unsafe indirect function call within "
+				    "%<transaction_safe%> function");
+		      }
 		  }
 	      }
 	  }

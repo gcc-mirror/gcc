@@ -1,3 +1,9 @@
+2012-01-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/51696
+	* trans-mem.c (diagnose_tm_1): Display indirect calls with no name
+	correctly.
+
 2012-01-04  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/51750
