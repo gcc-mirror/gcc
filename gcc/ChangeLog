@@ -1,3 +1,11 @@
+2012-01-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49651
+	* tree-ssa-structalias.c (type_can_have_subvars): New function.
+	(var_can_have_subvars): Use it.
+	(get_constraint_for_1): Only consider subfields if there
+	can be any.
+
 2012-01-03  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backport from mainline:
