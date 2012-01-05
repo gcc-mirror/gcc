@@ -1,7 +1,7 @@
 /* Tree lowering pass.  This pass converts the GENERIC functions-as-trees
    tree representation into the GIMPLE form.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
+   2012 Free Software Foundation, Inc.
    Major work done by Sebastian Pop <s.pop@laposte.net>,
    Diego Novillo <dnovillo@redhat.com> and Jason Merrill <jason@redhat.com>.
 
@@ -5226,13 +5226,16 @@ gimplify_cleanup_point_expr (tree *expr_p, gimple_seq *pre_p)
      any cleanups collected outside the CLEANUP_POINT_EXPR.  */
   int old_conds = gimplify_ctxp->conditions;
   gimple_seq old_cleanups = gimplify_ctxp->conditional_cleanups;
+  bool old_in_cleanup_point_expr = gimplify_ctxp->in_cleanup_point_expr;
   gimplify_ctxp->conditions = 0;
   gimplify_ctxp->conditional_cleanups = NULL;
+  gimplify_ctxp->in_cleanup_point_expr = true;
 
   gimplify_stmt (&TREE_OPERAND (*expr_p, 0), &body_sequence);
 
   gimplify_ctxp->conditions = old_conds;
   gimplify_ctxp->conditional_cleanups = old_cleanups;
+  gimplify_ctxp->in_cleanup_point_expr = old_in_cleanup_point_expr;
 
   for (iter = gsi_start (body_sequence); !gsi_end_p (iter); )
     {
@@ -5408,7 +5411,8 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
       /* Add a clobber for the temporary going out of scope, like
 	 gimplify_bind_expr.  */
-      if (needs_to_live_in_memory (temp))
+      if (gimplify_ctxp->in_cleanup_point_expr
+	  && needs_to_live_in_memory (temp))
 	{
 	  tree clobber = build_constructor (TREE_TYPE (temp), NULL);
 	  TREE_THIS_VOLATILE (clobber) = true;
