@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 static void
 nogo (void)
 {
-  internal_error ("mudflap: this language is not supported");
+  sorry ("mudflap: this language is not supported");
 }
 
 void
