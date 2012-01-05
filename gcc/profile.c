@@ -1,6 +1,6 @@
 /* Calculate branch probabilities, and basic block execution counts.
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
@@ -1040,6 +1040,41 @@ branch_prob (void)
 	    fprintf (dump_file, "Adding fake entry edge to bb %i\n",
 		     bb->index);
 	  make_edge (ENTRY_BLOCK_PTR, bb, EDGE_FAKE);
+	  /* Avoid bbs that have both fake entry edge and also some
+	     exit edge.  One of those edges wouldn't be added to the
+	     spanning tree, but we can't instrument any of them.  */
+	  if (have_exit_edge || need_exit_edge)
+	    {
+	      gimple_stmt_iterator gsi;
+	      gimple first;
+	      tree fndecl;
+
+	      gsi = gsi_after_labels (bb);
+	      gcc_checking_assert (!gsi_end_p (gsi));
+	      first = gsi_stmt (gsi);
+	      if (is_gimple_debug (first))
+		{
+		  gsi_next_nondebug (&gsi);
+		  gcc_checking_assert (!gsi_end_p (gsi));
+		  first = gsi_stmt (gsi);
+		}
+	      /* Don't split the bbs containing __builtin_setjmp_receiver
+		 or __builtin_setjmp_dispatcher calls.  These are very
+		 special and don't expect anything to be inserted before
+		 them.  */
+	      if (!is_gimple_call (first)
+		  || (fndecl = gimple_call_fndecl (first)) == NULL
+		  || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL
+		  || (DECL_FUNCTION_CODE (fndecl) != BUILT_IN_SETJMP_RECEIVER
+		      && (DECL_FUNCTION_CODE (fndecl)
+			  != BUILT_IN_SETJMP_DISPATCHER)))
+		{
+		  if (dump_file)
+		    fprintf (dump_file, "Splitting bb %i after labels\n",
+			     bb->index);
+		  split_block_after_labels (bb);
+		}
+	    }
 	}
     }
 
