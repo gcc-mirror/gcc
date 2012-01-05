@@ -15046,7 +15046,13 @@ cp_parser_alias_declaration (cp_parser* parser)
   cp_parser_require_keyword (parser, RID_USING, RT_USING);
   id_location = cp_lexer_peek_token (parser->lexer)->location;
   id = cp_parser_identifier (parser);
+  if (id == error_mark_node)
+    return error_mark_node;
+
   attributes = cp_parser_attributes_opt (parser);
+  if (attributes == error_mark_node)
+    return error_mark_node;
+
   cp_parser_require (parser, CPP_EQ, RT_EQ);
 
   /* Now we are going to parse the type-id of the declaration.  */
