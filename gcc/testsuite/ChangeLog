@@ -1,3 +1,8 @@
+2012-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/44777
+	* gcc.dg/tree-prof/pr44777.c: New test.
+
 2012-01-05  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/49710
