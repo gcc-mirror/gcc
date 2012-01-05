@@ -301,31 +301,6 @@ bool avr_need_copy_data_p = false;
 
 
 
-/* Custom function to replace string prefix.
-
-   Return a ggc-allocated string with strlen (OLD_PREFIX) characters removed
-   from the start of OLD_STR and then prepended with NEW_PREFIX.  */
-
-static inline const char*
-avr_replace_prefix (const char *old_str,
-                    const char *old_prefix, const char *new_prefix)
-{
-  char *new_str;
-  size_t len = strlen (old_str) + strlen (new_prefix) - strlen (old_prefix);
-
-  gcc_assert (strlen (old_prefix) <= strlen (old_str));
-
-  /* Unfortunately, ggc_alloc_string returns a const char* and thus cannot be
-     used here.  */
-     
-  new_str = (char*) ggc_alloc_atomic (1 + len);
-
-  strcat (stpcpy (new_str, new_prefix), old_str + strlen (old_prefix));
-  
-  return (const char*) new_str;
-}
-
-
 /* Custom function to count number of set bits.  */
 
 static inline int
@@ -7196,9 +7171,8 @@ avr_asm_function_rodata_section (tree decl)
 
           if (STR_PREFIX_P (name, old_prefix))
             {
-              const char *rname = avr_replace_prefix (name,
-                                                      old_prefix, new_prefix);
-
+              const char *rname = ACONCAT ((new_prefix,
+                                            name + strlen (old_prefix), NULL));
               flags &= ~SECTION_CODE;
               flags |= AVR_HAVE_JMP_CALL ? 0 : SECTION_CODE;
               
@@ -7223,15 +7197,16 @@ avr_asm_named_section (const char *name, unsigned int flags, tree decl)
       int segment = avr_addrspace[as].segment % avr_current_arch->n_segments;
       const char *old_prefix = ".rodata";
       const char *new_prefix = progmem_section_prefix[segment];
-      const char *sname = new_prefix;
       
       if (STR_PREFIX_P (name, old_prefix))
         {
-          sname = avr_replace_prefix (name, old_prefix, new_prefix);
+          const char *sname = ACONCAT ((new_prefix,
+                                        name + strlen (old_prefix), NULL));
+          default_elf_asm_named_section (sname, flags, decl);
+          return;
         }
 
-      default_elf_asm_named_section (sname, flags, decl);
-
+      default_elf_asm_named_section (new_prefix, flags, decl);
       return;
     }
   
@@ -7326,9 +7301,8 @@ avr_asm_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
 
           if (STR_PREFIX_P (name, old_prefix))
             {
-              const char *sname = avr_replace_prefix (name,
-                                                      old_prefix, new_prefix);
-
+              const char *sname = ACONCAT ((new_prefix,
+                                            name + strlen (old_prefix), NULL));
               return get_section (sname, sect->common.flags, sect->named.decl);
             }
         }
