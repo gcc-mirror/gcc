@@ -2579,17 +2579,13 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	 behavior from the shift operation.  We cannot even trust
 	 SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
 	 shifts, and the operation at the tree level may be widened.  */
-      if (code == RSHIFT_EXPR)
+      if (vr1.type != VR_RANGE
+	  || !value_range_nonnegative_p (&vr1)
+	  || TREE_CODE (vr1.max) != INTEGER_CST
+	  || compare_tree_int (vr1.max, TYPE_PRECISION (expr_type) - 1) == 1)
 	{
-	  if (vr1.type != VR_RANGE
-	      || !value_range_nonnegative_p (&vr1)
-	      || TREE_CODE (vr1.max) != INTEGER_CST
-	      || compare_tree_int (vr1.max,
-				   TYPE_PRECISION (expr_type) - 1) == 1)
-	    {
-	      set_value_range_to_varying (vr);
-	      return;
-	    }
+	  set_value_range_to_varying (vr);
+	  return;
 	}
 
       extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
@@ -2990,16 +2986,18 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
 		         size_int (TYPE_PRECISION (outer_type)))))))
 	{
 	  tree new_min, new_max;
-	  new_min = force_fit_type_double (outer_type,
-					   tree_to_double_int (vr0.min),
-					   0, false);
-	  new_max = force_fit_type_double (outer_type,
-					   tree_to_double_int (vr0.max),
-					   0, false);
 	  if (is_overflow_infinity (vr0.min))
 	    new_min = negative_overflow_infinity (outer_type);
+	  else
+	    new_min = force_fit_type_double (outer_type,
+					     tree_to_double_int (vr0.min),
+					     0, false);
 	  if (is_overflow_infinity (vr0.max))
 	    new_max = positive_overflow_infinity (outer_type);
+	  else
+	    new_max = force_fit_type_double (outer_type,
+					     tree_to_double_int (vr0.max),
+					     0, false);
 	  set_and_canonicalize_value_range (vr, vr0.type,
 					    new_min, new_max, NULL);
 	  return;
