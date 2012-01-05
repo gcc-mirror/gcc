@@ -3,6 +3,7 @@
 	PR other/51171
 	* testsuite/libitm.c/reentrant.c: Remove xfail.
 	(thread): Pass x to pure().
+	From Patrik Marlier <patrick.marlier@gmail.com>.
 
 2011-12-24  Torvald Riegel  <triegel@redhat.com>
 
