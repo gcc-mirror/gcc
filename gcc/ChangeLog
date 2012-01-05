@@ -1,3 +1,10 @@
+2012-01-06  Torvald Riegel  <triegel@redhat.com>
+
+	PR rtl-optimization/51771
+	* builtin-attrs.def (ATTR_RETURNS_TWICE, ATTR_TM_NOTHROW_RT_LIST):
+	New.
+	* gtm-builtins.def (BUILT_IN_TM_START): Add returns-twice attrib.
+
 2012-01-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/51315
