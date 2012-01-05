@@ -657,9 +657,10 @@ likely_value (gimple stmt)
 	}
     }
   /* If there was an UNDEFINED operand but the result may be not UNDEFINED
-     fall back to VARYING even if there were CONSTANT operands.  */
+     fall back to CONSTANT.  During iteration UNDEFINED may still drop
+     to CONSTANT.  */
   if (has_undefined_operand)
-    return VARYING;
+    return CONSTANT;
 
   /* We do not consider virtual operands here -- load from read-only
      memory may have only VARYING virtual operands, but still be
@@ -1368,6 +1369,10 @@ bit_value_unop (enum tree_code code, tree type, tree rhs)
   prop_value_t rval = get_value_for_expr (rhs, true);
   double_int value, mask;
   prop_value_t val;
+
+  if (rval.lattice_val == UNDEFINED)
+    return rval;
+
   gcc_assert ((rval.lattice_val == CONSTANT
 	       && TREE_CODE (rval.value) == INTEGER_CST)
 	      || double_int_minus_one_p (rval.mask));
@@ -1399,6 +1404,16 @@ bit_value_binop (enum tree_code code, tree type, tree rhs1, tree rhs2)
   prop_value_t r2val = get_value_for_expr (rhs2, true);
   double_int value, mask;
   prop_value_t val;
+
+  if (r1val.lattice_val == UNDEFINED
+      || r2val.lattice_val == UNDEFINED)
+    {
+      val.lattice_val = VARYING;
+      val.value = NULL_TREE;
+      val.mask = double_int_minus_one;
+      return val;
+    }
+
   gcc_assert ((r1val.lattice_val == CONSTANT
 	       && TREE_CODE (r1val.value) == INTEGER_CST)
 	      || double_int_minus_one_p (r1val.mask));

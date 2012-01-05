@@ -1,3 +1,8 @@
+2012-01-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51760
+	* gcc.dg/torture/pr51760.c: New testcase.
+
 2012-01-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/51472

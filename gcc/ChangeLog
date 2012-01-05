@@ -1,3 +1,11 @@
+2012-01-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51760
+	* tree-ssa-ccp.c (likely_value): Drop UNDEFINED to CONSTANT,
+	not VARYING.
+	(bit_value_unop): Handle UNDEFINED operands.
+	(bit_value_binop): Likewise.
+
 2012-01-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (avr_replace_prefix): Remove.
