@@ -1,3 +1,9 @@
+2012-01-05  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/51541
+	* parser.c (cp_parser_alias_declaration): Get out early upon
+    	errors in the identifier or the attributes.
+
 2012-01-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51064
