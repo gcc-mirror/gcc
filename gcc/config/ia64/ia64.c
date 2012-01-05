@@ -11085,7 +11085,7 @@ static bool
 expand_vec_perm_shrp (struct expand_vec_perm_d *d)
 {
   unsigned i, nelt = d->nelt, shift, mask;
-  rtx tmp, op0, op1;;
+  rtx tmp, hi, lo;
 
   /* ??? Don't force V2SFmode into the integer registers.  */
   if (d->vmode == V2SFmode)
@@ -11094,12 +11094,20 @@ expand_vec_perm_shrp (struct expand_vec_perm_d *d)
   mask = (d->one_operand_p ? nelt - 1 : 2 * nelt - 1);
 
   shift = d->perm[0];
+  if (BYTES_BIG_ENDIAN && shift > nelt)
+    return false;
+
   for (i = 1; i < nelt; ++i)
     if (d->perm[i] != ((shift + i) & mask))
       return false;
 
   if (d->testing_p)
     return true;
+
+  hi = shift < nelt ? d->op1 : d->op0;
+  lo = shift < nelt ? d->op0 : d->op1;
+
+  shift %= nelt;
 
   shift *= GET_MODE_UNIT_SIZE (d->vmode) * BITS_PER_UNIT;
 
@@ -11113,11 +11121,9 @@ expand_vec_perm_shrp (struct expand_vec_perm_d *d)
     shift = 64 - shift;
 
   tmp = gen_reg_rtx (DImode);
-  op0 = (shift < nelt ? d->op0 : d->op1);
-  op1 = (shift < nelt ? d->op1 : d->op0);
-  op0 = gen_lowpart (DImode, op0);
-  op1 = gen_lowpart (DImode, op1);
-  emit_insn (gen_shrp (tmp, op0, op1, GEN_INT (shift)));
+  hi = gen_lowpart (DImode, hi);
+  lo = gen_lowpart (DImode, lo);
+  emit_insn (gen_shrp (tmp, hi, lo, GEN_INT (shift)));
 
   emit_move_insn (d->target, gen_lowpart (d->vmode, tmp));
   return true;

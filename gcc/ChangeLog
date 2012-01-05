@@ -1,3 +1,10 @@
+2012-01-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/51681
+	* config/ia64/ia64.c (expand_vec_perm_shrp): Use correct operands
+	for shrp pattern.  Correctly handle and fixup shift variable.
+	Return false when shift > nelt for BYTES_BIG_ENDIAN target.
+
 2012-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/51762
@@ -42,8 +49,7 @@
 2012-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/51761
-	* gimple.h (struct gimplify_ctx): Add in_cleanup_point_expr
-	field.
+	* gimple.h (struct gimplify_ctx): Add in_cleanup_point_expr field.
 	* gimplify.c (gimplify_cleanup_point_expr): Save and set
 	in_cleanup_point_expr before gimplify_stmt call and restore it
 	afterwards.
@@ -183,17 +189,15 @@
 	PR tree-optimization/49651
 	* tree-ssa-structalias.c (type_can_have_subvars): New function.
 	(var_can_have_subvars): Use it.
-	(get_constraint_for_1): Only consider subfields if there
-	can be any.
+	(get_constraint_for_1): Only consider subfields if there can be any.
 
 2012-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/51725
-	* cselib.c (new_elt_loc_list): When moving locs from one
-	cselib_val to its new canonical_cselib_val and the
-	cselib_val was in first_containing_mem chain, but
-	the canonical_cselib_val was not, add the latter into the
-	chain.
+	* cselib.c (new_elt_loc_list): When moving locs from one cselib_val
+	to its new canonical_cselib_val and the cselib_val was in
+	first_containing_mem chain, but the canonical_cselib_val was not,
+	add the latter into the chain.
 	(cselib_invalidate_mem): Compare canonical_cselib_val of
 	addr_list chain elt with v.
 
