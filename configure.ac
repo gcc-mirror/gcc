@@ -1982,6 +1982,14 @@ case ,${enable_languages},:${enable_objc_gc} in
     ;;
 esac
 
+# Disable libitm if we're not building C++
+case ,${enable_languages}, in
+  *,c++) ;;
+  *)
+    noconfigdirs="$noconfigdirs target-libitm"
+    ;;
+esac
+
 # Remove the entries in $skipdirs and $noconfigdirs from $configdirs,
 # $build_configdirs and $target_configdirs.
 # If we have the source for $noconfigdirs entries, add them to $notsupp.
