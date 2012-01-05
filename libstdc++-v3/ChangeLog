@@ -1,0 +1,10 @@
+2012-01-03  François Dumont <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Ebo_helper<>): Rename to the more
+	specific _Hashtable_ebo_helper. Hide this implementation detail thanks
+	to private inheritance.
+
+2012-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51738
+	* testsuite/23_containers/map/element_access/39901.cc: New.
