@@ -1,5 +1,6 @@
 // PR tree-optimization/49309
 // { dg-do compile }
+// { dg-skip-if "" { *-*-* } { "-flto" } { "" } }
 // { dg-options "-fpreprocessed -fmudflap" }
 
 struct A
