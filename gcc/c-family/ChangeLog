@@ -1,3 +1,9 @@
+2012-01-05  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/51764
+	* c.opt (Wmudflap, fmudflap, fmudflapth, fmudflapir): Move here
+	from common.opt.
+
 2011-12-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51316

@@ -1,5 +1,13 @@
 2012-01-05  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/51764
+	* common.opt (Wmudflap, fmudflap, fmudflapth, fmudflapir): Move
+	to c.opt.
+	* toplev.c (process_options): Reject combining mudflap and LTO.
+	* tree-nomudflap.c (nogo): Use sorry instead of internal_error.
+
+2012-01-05  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/51760
 	* tree-ssa-ccp.c (likely_value): Drop UNDEFINED to CONSTANT,
 	not VARYING.

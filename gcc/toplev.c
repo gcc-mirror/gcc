@@ -1325,6 +1325,9 @@ process_options (void)
 	   "and -ftree-loop-linear)");
 #endif
 
+  if (flag_mudflap && flag_lto)
+    sorry ("mudflap cannot be used together with link-time optimization");
+
   /* One region RA really helps to decrease the code size.  */
   if (flag_ira_region == IRA_REGION_AUTODETECT)
     flag_ira_region

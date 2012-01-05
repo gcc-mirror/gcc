@@ -570,10 +570,6 @@ Wmissing-noreturn
 Common Var(warn_missing_noreturn) Warning
 Warn about functions which might be candidates for __attribute__((noreturn))
 
-Wmudflap
-Common Var(warn_mudflap) Init(1) Warning
-Warn about constructs not instrumented by -fmudflap
-
 Woverflow
 Common Var(warn_overflow) Init(1) Warning
 Warn about overflow in arithmetic expressions
@@ -1464,18 +1460,6 @@ Perform SMS based modulo scheduling with register moves allowed
 fmove-loop-invariants
 Common Report Var(flag_move_loop_invariants) Init(1) Optimization
 Move loop invariant computations out of loops
-
-fmudflap
-Common RejectNegative Report Var(flag_mudflap)
-Add mudflap bounds-checking instrumentation for single-threaded program
-
-fmudflapth
-Common RejectNegative Report Var(flag_mudflap,2)
-Add mudflap bounds-checking instrumentation for multi-threaded program
-
-fmudflapir
-Common RejectNegative Report Var(flag_mudflap_ignore_reads)
-Ignore read operations when inserting mudflap instrumentation
 
 fdce
 Common Var(flag_dce) Init(1) Optimization
