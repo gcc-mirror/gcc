@@ -1,3 +1,8 @@
+2012-01-05  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/49710
+	* gcc.c-torture/compile/pr49710.c: New file.
+
 2012-01-05  Richard Guenther  <rguenther@suse.de>
 
 	* g++.dg/torture/pr49309.C: Skip for -flto.
