@@ -1,5 +1,8 @@
 2012-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/51762
+	* gcc.dg/pr51762.c: New test.
+
 	PR rtl-optimization/51767
 	* gcc.c-torture/compile/pr51767.c: New test.
 
