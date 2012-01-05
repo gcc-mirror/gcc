@@ -1,3 +1,7 @@
+2012-01-05  Richard Guenther  <rguenther@suse.de>
+
+	* g++.dg/torture/pr49309.C: Skip for -flto.
+
 2012-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/51761
