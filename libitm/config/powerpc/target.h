@@ -1,4 +1,4 @@
-/* Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+/* Copyright (C) 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -22,32 +22,37 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
+namespace GTM HIDDEN {
 
-#ifdef HAVE_AS_CFI_PSEUDO_OP
+typedef int v128 __attribute__((vector_size(16), may_alias, aligned(16)));
+typedef struct gtm_jmpbuf
+{
+#if defined(__ALTIVEC__) || defined(__VSX__)
+  v128 vr[12];			/* vr20-vr31 */
+  unsigned long long vscr;	/* long long for padding only */
+#endif
+#ifndef _SOFT_FLOAT
+  double fr[18];		/* f14-f31 */
+  double fpscr;
+#endif
+  unsigned long gr[18];		/* r14-r31 */
+  void *cfa;
+  unsigned long pc;
+  unsigned long toc;		/* r2 on aix, r13 on darwin */
+  unsigned long cr;
+} gtm_jmpbuf;
 
-#define cfi_startproc			.cfi_startproc
-#define cfi_endproc			.cfi_endproc
-#define cfi_adjust_cfa_offset(n)	.cfi_adjust_cfa_offset n
-#define cfi_def_cfa_offset(n)		.cfi_def_cfa_offset n
-#define cfi_def_cfa(r,n)		.cfi_def_cfa r, n
-#define cfi_rel_offset(r,o)		.cfi_rel_offset r, o
-#define cfi_register(o,n)		.cfi_register o, n
-#define cfi_offset(r,o)			.cfi_offset r, o
-#define cfi_restore(r)			.cfi_restore r
-#define cfi_undefined(r)		.cfi_undefined r
-
+/* The size of one line in hardware caches (in bytes). */
+#if defined (__powerpc64__) || defined (__ppc64__)
+# define HW_CACHELINE_SIZE 128
 #else
+# define HW_CACHELINE_SIZE 32
+#endif
 
-#define cfi_startproc
-#define cfi_endproc
-#define cfi_adjust_cfa_offset(n)
-#define cfi_def_cfa_offset(n)
-#define cfi_def_cfa(r,n)
-#define cfi_rel_offset(r,o)
-#define cfi_register(o,n)
-#define cfi_offset(r,o)
-#define cfi_restore(r)
-#define cfi_undefined(r)
+static inline void
+cpu_relax (void)
+{
+  __asm volatile ("" : : : "memory");
+}
 
-#endif /* HAVE_AS_CFI_PSEUDO_OP */
+} // namespace GTM

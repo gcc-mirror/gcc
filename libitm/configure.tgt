@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-#   Copyright (C) 2011 Free Software Foundation, Inc.
+#   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -46,7 +46,8 @@ fi
 # Map the target cpu to an ARCH sub-directory.  At the same time,
 # work out any special compilation flags as necessary.
 case "${target_cpu}" in
-  alpha*)	ARCH=alpha ;;
+  alpha*)		ARCH=alpha ;;
+  rs6000 | powerpc*)	ARCH=powerpc ;;
 
   arm*)		ARCH=arm ;;
 
@@ -92,6 +93,11 @@ case "${target}" in
 	if test "$enable_linux_futex" = yes; then
 	  config_path="linux/$ARCH linux $config_path"
 	fi
+	;;
+
+  powerpc*-*-aix* | rs6000-*-aix*)
+	# The system ought to be supported, but sjlj.S has not been ported.
+	UNSUPPORTED=1
 	;;
 
   *-*-gnu* | *-*-k*bsd*-gnu \

@@ -1,4 +1,4 @@
-/* Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+/* Copyright (C) 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -22,32 +22,21 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
+#ifndef LIBITM_POWERPC_CACHELINE_H
+#define LIBITM_POWERPC_CACHELINE_H 1
 
-#ifdef HAVE_AS_CFI_PSEUDO_OP
-
-#define cfi_startproc			.cfi_startproc
-#define cfi_endproc			.cfi_endproc
-#define cfi_adjust_cfa_offset(n)	.cfi_adjust_cfa_offset n
-#define cfi_def_cfa_offset(n)		.cfi_def_cfa_offset n
-#define cfi_def_cfa(r,n)		.cfi_def_cfa r, n
-#define cfi_rel_offset(r,o)		.cfi_rel_offset r, o
-#define cfi_register(o,n)		.cfi_register o, n
-#define cfi_offset(r,o)			.cfi_offset r, o
-#define cfi_restore(r)			.cfi_restore r
-#define cfi_undefined(r)		.cfi_undefined r
-
+// A cacheline is the smallest unit with which locks are associated.
+// The current implementation of the _ITM_[RW] barriers assumes that
+// all data types can fit (aligned) within a cachline, which means
+// in practice sizeof(complex long double) is the smallest cacheline size.
+// It ought to be small enough for efficient manipulation of the
+// modification mask, below.
+#if defined (__powerpc64__) || defined (__ppc64__)
+# define CACHELINE_SIZE 64
 #else
+# define CACHELINE_SIZE 32
+#endif
 
-#define cfi_startproc
-#define cfi_endproc
-#define cfi_adjust_cfa_offset(n)
-#define cfi_def_cfa_offset(n)
-#define cfi_def_cfa(r,n)
-#define cfi_rel_offset(r,o)
-#define cfi_register(o,n)
-#define cfi_offset(r,o)
-#define cfi_restore(r)
-#define cfi_undefined(r)
+#include "config/generic/cacheline.h"
 
-#endif /* HAVE_AS_CFI_PSEUDO_OP */
+#endif // LIBITM_POWERPC_CACHELINE_H
