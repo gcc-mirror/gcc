@@ -1,7 +1,7 @@
 /* Expands front end tree to back end RTL for GCC
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
    1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010 Free Software Foundation, Inc.
+   2010, 2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1253,11 +1253,11 @@ check_operand_nalternatives (tree outputs, tree inputs)
 static bool
 check_unique_operand_names (tree outputs, tree inputs, tree labels)
 {
-  tree i, j;
+  tree i, j, i_name = NULL_TREE;
 
   for (i = outputs; i ; i = TREE_CHAIN (i))
     {
-      tree i_name = TREE_PURPOSE (TREE_PURPOSE (i));
+      i_name = TREE_PURPOSE (TREE_PURPOSE (i));
       if (! i_name)
 	continue;
 
@@ -1268,7 +1268,7 @@ check_unique_operand_names (tree outputs, tree inputs, tree labels)
 
   for (i = inputs; i ; i = TREE_CHAIN (i))
     {
-      tree i_name = TREE_PURPOSE (TREE_PURPOSE (i));
+      i_name = TREE_PURPOSE (TREE_PURPOSE (i));
       if (! i_name)
 	continue;
 
@@ -1282,7 +1282,7 @@ check_unique_operand_names (tree outputs, tree inputs, tree labels)
 
   for (i = labels; i ; i = TREE_CHAIN (i))
     {
-      tree i_name = TREE_PURPOSE (i);
+      i_name = TREE_PURPOSE (i);
       if (! i_name)
 	continue;
 
@@ -1297,8 +1297,7 @@ check_unique_operand_names (tree outputs, tree inputs, tree labels)
   return true;
 
  failure:
-  error ("duplicate asm operand name %qs",
-	 TREE_STRING_POINTER (TREE_PURPOSE (TREE_PURPOSE (i))));
+  error ("duplicate asm operand name %qs", TREE_STRING_POINTER (i_name));
   return false;
 }
 
