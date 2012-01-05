@@ -1,3 +1,12 @@
+2012-01-05  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/50490
+	* tree-streamer-out.c (write_ts_optimization): New function.
+	(streamer_write_tree_body): Call it.
+	* tree-streamer-in.c (lto_input_ts_optimization): New function.
+	(streamer_read_tree_body): Call it.
+	* lto-streamer-out.c (lto_is_streamable): Handle OPTIMIZATION_NODE.
+
 2012-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/51761

@@ -903,6 +903,23 @@ lto_input_ts_target_option (struct lto_input_block *ib, tree expr)
     fatal_error ("cl_target_option size mismatch in LTO reader and writer");
 }
 
+/* Input a TS_OPTIMIZATION tree from IB into EXPR.  */
+
+static void
+lto_input_ts_optimization (struct lto_input_block *ib, tree expr)
+{
+  unsigned i, len;
+  struct bitpack_d bp;
+  struct cl_optimization *t = TREE_OPTIMIZATION (expr);
+
+  bp = streamer_read_bitpack (ib);
+  len = sizeof (struct cl_optimization);
+  for (i = 0; i < len; i++)
+    ((unsigned char *)t)[i] = bp_unpack_value (&bp, 8);
+  if (bp_unpack_value (&bp, 32) != 0x12345678)
+    fatal_error ("cl_optimization size mismatch in LTO reader and writer");
+}
+
 /* Input a TS_TRANSLATION_UNIT_DECL tree from IB and DATA_IN into EXPR.  */
 
 static void
@@ -978,6 +995,9 @@ streamer_read_tree_body (struct lto_input_block *ib, struct data_in *data_in,
 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
     lto_input_ts_target_option (ib, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
+    lto_input_ts_optimization (ib, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
     lto_input_ts_translation_unit_decl_tree_pointers (ib, data_in, expr);
