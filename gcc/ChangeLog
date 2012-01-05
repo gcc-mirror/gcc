@@ -1,3 +1,9 @@
+2012-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/51762
+	* calls.c (emit_call_1): For noreturn calls force a REG_ARGS_SIZE
+	note when !ACCUMULATE_OUTGOING_ARGS.
+
 2012-01-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-vrp.c (extract_range_from_binary_expr_1): Remove duplicated
