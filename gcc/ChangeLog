@@ -1,3 +1,9 @@
+2012-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-vrp.c (extract_range_from_binary_expr_1): Remove duplicated
+	condition.
+	(extract_range_from_unary_expr_1): Avoid useless computations.
+
 2012-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/51767
