@@ -1,3 +1,14 @@
+2012-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/51761
+	* gimple.h (struct gimplify_ctx): Add in_cleanup_point_expr
+	field.
+	* gimplify.c (gimplify_cleanup_point_expr): Save and set
+	in_cleanup_point_expr before gimplify_stmt call and restore it
+	afterwards.
+	(gimplify_target_expr): Don't add {CLOBBER} cleanup if
+	in_cleanup_point_expr is false.
+
 2012-01-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/51764

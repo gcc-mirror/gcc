@@ -1,3 +1,8 @@
+2012-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/51761
+	* gcc.c-torture/compile/pr51761.c: New test.
+
 2012-01-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51760
