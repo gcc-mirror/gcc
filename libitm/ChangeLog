@@ -1,3 +1,13 @@
+2012-01-06  Richard Henderson  <rth@redhat.com>
+
+	* configure.tgt: Support powerpc-linux and powerpc-darwin.
+	* config/linux/powerpc/futex_bits.h: New file.
+	* config/powerpc/cacheline.h: New file.
+	* config/powerpc/sjlj.S: New file.
+	* config/powerpc/target.h: New file.
+	* config/generic/asmcfi.h (cfi_offset): New.
+	(cfi_restore, cfi_undefined): New.
+
 2012-01-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR other/51171

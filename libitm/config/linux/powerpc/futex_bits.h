@@ -1,4 +1,4 @@
-/* Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+/* Copyright (C) 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -22,32 +22,33 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
+#include <sys/syscall.h>
 
-#ifdef HAVE_AS_CFI_PSEUDO_OP
+static inline long
+sys_futex0 (std::atomic<int> *addr, int op, int val)
+{
+  register long int r0  __asm__ ("r0");
+  register long int r3  __asm__ ("r3");
+  register long int r4  __asm__ ("r4");
+  register long int r5  __asm__ ("r5");
+  register long int r6  __asm__ ("r6");
 
-#define cfi_startproc			.cfi_startproc
-#define cfi_endproc			.cfi_endproc
-#define cfi_adjust_cfa_offset(n)	.cfi_adjust_cfa_offset n
-#define cfi_def_cfa_offset(n)		.cfi_def_cfa_offset n
-#define cfi_def_cfa(r,n)		.cfi_def_cfa r, n
-#define cfi_rel_offset(r,o)		.cfi_rel_offset r, o
-#define cfi_register(o,n)		.cfi_register o, n
-#define cfi_offset(r,o)			.cfi_offset r, o
-#define cfi_restore(r)			.cfi_restore r
-#define cfi_undefined(r)		.cfi_undefined r
+  r0 = SYS_futex;
+  r3 = (long) addr;
+  r4 = op;
+  r5 = val;
+  r6 = 0;
 
-#else
+  /* ??? The powerpc64 sysdep.h file clobbers ctr; the powerpc32 sysdep.h
+     doesn't.  It doesn't much matter for us.  In the interest of unity,
+     go ahead and clobber it always.  */
 
-#define cfi_startproc
-#define cfi_endproc
-#define cfi_adjust_cfa_offset(n)
-#define cfi_def_cfa_offset(n)
-#define cfi_def_cfa(r,n)
-#define cfi_rel_offset(r,o)
-#define cfi_register(o,n)
-#define cfi_offset(r,o)
-#define cfi_restore(r)
-#define cfi_undefined(r)
-
-#endif /* HAVE_AS_CFI_PSEUDO_OP */
+  __asm volatile ("sc; mfcr %0"
+		  : "=r"(r0), "=r"(r3), "=r"(r4), "=r"(r5), "=r"(r6)
+		  : "r"(r0), "r"(r3), "r"(r4), "r"(r5), "r"(r6)
+		  : "r7", "r8", "r9", "r10", "r11", "r12",
+		    "cr0", "ctr", "memory");
+  if (__builtin_expect (r0 & (1 << 28), 0))
+    return r3;
+  return 0;
+}
