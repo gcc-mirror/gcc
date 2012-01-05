@@ -1,5 +1,9 @@
 2012-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/51767
+	* cfgrtl.c (force_nonfallthru_and_redirect): Force addition
+	of jump_block and add an extra edge for degenerated asm gotos.
+
 	PR middle-end/51768
 	* stmt.c (check_unique_operand_names): Don't ICE during error
 	reporting if i is from labels chain.
