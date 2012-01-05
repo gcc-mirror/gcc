@@ -1,3 +1,10 @@
+2012-01-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_replace_prefix): Remove.
+	(avr_asm_named_section): Use ACONCAT instead of avr_replace_prefix.
+	(avr_asm_function_rodata_section): Ditto.
+	(avr_asm_select_section): Ditto.
+
 2012-01-05  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* reload.c (find_reloads): Adjust LABEL_NUSES on REG_LABEL_OPERAND
