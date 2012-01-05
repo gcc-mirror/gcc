@@ -1,5 +1,5 @@
 /* Variable tracking routines for the GNU compiler.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -5519,7 +5519,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
       gcc_assert (oval != v);
       gcc_assert (REG_P (oloc) || MEM_P (oloc));
 
-      if (!cselib_preserved_value_p (oval))
+      if (oval && !cselib_preserved_value_p (oval))
 	{
 	  micro_operation moa;
 
