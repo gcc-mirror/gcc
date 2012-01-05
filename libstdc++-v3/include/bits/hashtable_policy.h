@@ -876,7 +876,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::swap(_M_eq(), __x._M_eq());
     }
 
-  private:
+  protected:
     const _Equal&
     _M_eq() const { return _EboEqual::_S_cget(*this); }
     _Equal&

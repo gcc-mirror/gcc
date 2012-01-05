@@ -1,4 +1,14 @@
-2012-01-03  François Dumont <fdumont@gcc.gnu.org>
+2012-01-05  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Hashtable_base<>::_M_eq()):
+	protected rather than private, use it...
+	* include/bits/hashtable.h (_Hashtable<>::key_eq()): ... here.
+	* testsuite/23_containers/unordered_set/observers.cc: New.
+	* testsuite/23_containers/unordered_multiset/observers.cc: New.
+	* testsuite/23_containers/unordered_map/observers.cc: New.
+	* testsuite/23_containers/unordered_multimap/observers.cc: New.
+
+2012-01-03  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h (_Ebo_helper<>): Rename to the more
 	specific _Hashtable_ebo_helper. Hide this implementation detail thanks

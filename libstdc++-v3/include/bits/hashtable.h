@@ -371,7 +371,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Observers
       key_equal
       key_eq() const
-      { return this->_M_eq; }
+      { return this->_M_eq(); }
 
       // hash_function, if present, comes from _Hash_code_base.
 
