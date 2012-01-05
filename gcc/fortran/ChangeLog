@@ -1,3 +1,10 @@
+2012-01-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/PR48946
+	* resolve.c (resolve_typebound_static): If the typebound
+	procedure is 'deferred' try to find the correct specific
+	procedure in the derived type operator space itself.
+
 2012-01-04  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50981
