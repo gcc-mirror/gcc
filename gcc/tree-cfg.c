@@ -1,6 +1,6 @@
 /* Control flow functions for trees.
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011  Free Software Foundation, Inc.
+   2010, 2011, 2012  Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -6882,9 +6882,20 @@ need_fake_edge_p (gimple t)
 	   && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FORK))
     return false;
 
-  if (is_gimple_call (t)
-      && !(call_flags & ECF_NORETURN))
-    return true;
+  if (is_gimple_call (t))
+    {
+      edge_iterator ei;
+      edge e;
+      basic_block bb;
+
+      if (!(call_flags & ECF_NORETURN))
+	return true;
+
+      bb = gimple_bb (t);
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if ((e->flags & EDGE_FAKE) == 0)
+	  return true;
+    }
 
   if (gimple_code (t) == GIMPLE_ASM
        && (gimple_asm_volatile_p (t) || gimple_asm_input_p (t)))
@@ -6895,9 +6906,10 @@ need_fake_edge_p (gimple t)
 
 
 /* Add fake edges to the function exit for any non constant and non
-   noreturn calls, volatile inline assembly in the bitmap of blocks
-   specified by BLOCKS or to the whole CFG if BLOCKS is zero.  Return
-   the number of blocks that were split.
+   noreturn calls (or noreturn calls with EH/abnormal edges),
+   volatile inline assembly in the bitmap of blocks specified by BLOCKS
+   or to the whole CFG if BLOCKS is zero.  Return the number of blocks
+   that were split.
 
    The goal is to expose cases in which entering a basic block does
    not imply that all subsequent instructions must be executed.  */

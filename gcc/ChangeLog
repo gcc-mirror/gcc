@@ -1,5 +1,9 @@
 2012-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/51648
+	* tree-cfg.c (need_fake_edge_p): Return true also for noreturn
+	calls that have any non-fake successor edges.
+
 	PR debug/51746
 	* var-tracking.c (add_stores): For COND_EXEC allow oval to be NULL.
 
