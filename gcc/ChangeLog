@@ -76,6 +76,11 @@
 
 2012-01-04  Aldy Hernandez  <aldyh@redhat.com>
 
+	PR middle-end/51472
+	* trans-mem.c (expand_assign_tm): Handle TM_MEMMOVE loads correctly.
+
+2012-01-04  Aldy Hernandez  <aldyh@redhat.com>
+
 	* opts.c (finish_options): Remove duplicate sorry.
 
 2012-01-04  Aldy Hernandez  <aldyh@redhat.com>

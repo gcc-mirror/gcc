@@ -2174,7 +2174,7 @@ expand_assign_tm (struct tm_region *region, gimple_stmt_iterator *gsi)
     }
   if (!gcall)
     {
-      tree lhs_addr, rhs_addr;
+      tree lhs_addr, rhs_addr, tmp;
 
       if (load_p)
 	transaction_subcode_ior (region, GTMA_HAVE_LOAD);
@@ -2183,13 +2183,29 @@ expand_assign_tm (struct tm_region *region, gimple_stmt_iterator *gsi)
 
       /* ??? Figure out if there's any possible overlap between the LHS
 	 and the RHS and if not, use MEMCPY.  */
-      lhs_addr = gimplify_addr (gsi, lhs);
+
+      if (load_p && is_gimple_non_addressable (lhs))
+	{
+	  tmp = create_tmp_var (TREE_TYPE (lhs), NULL);
+	  lhs_addr = build_fold_addr_expr (tmp);
+	}
+      else
+	{
+	  tmp = NULL_TREE;
+	  lhs_addr = gimplify_addr (gsi, lhs);
+	}
       rhs_addr = gimplify_addr (gsi, rhs);
       gcall = gimple_build_call (builtin_decl_explicit (BUILT_IN_TM_MEMMOVE),
 				 3, lhs_addr, rhs_addr,
 				 TYPE_SIZE_UNIT (TREE_TYPE (lhs)));
       gimple_set_location (gcall, loc);
       gsi_insert_before (gsi, gcall, GSI_SAME_STMT);
+
+      if (tmp)
+	{
+	  gcall = gimple_build_assign (lhs, tmp);
+	  gsi_insert_before (gsi, gcall, GSI_SAME_STMT);
+	}
     }
 
   /* Now that we have the load/store in its instrumented form, add
