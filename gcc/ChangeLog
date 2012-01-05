@@ -1,3 +1,9 @@
+2012-01-05  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/49710
+	* cfgloopmanip.c (remove_path): Walk loop hiearchy upwards when
+	unlooping loops.
+
 2012-01-05  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/50490
