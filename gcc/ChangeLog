@@ -1,3 +1,9 @@
+2012-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/51315
+	* tree-sra.c (tree_non_aligned_mem_for_access_p): New predicate.
+	(build_accesses_from_assign): Use it instead of tree_non_aligned_mem_p.
+
 2012-01-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/51624
