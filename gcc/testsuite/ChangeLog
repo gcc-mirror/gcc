@@ -1,21 +1,11 @@
-2012-01-05  Jakub Jelinek  <jakub@redhat.com>
+2012-01-05  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR debug/51762
-	* gcc.dg/pr51762.c: New test.
-
-	PR rtl-optimization/51767
-	* gcc.c-torture/compile/pr51767.c: New test.
-
-	PR middle-end/51768
-	* c-c++-common/pr51768.c: New test.
-
-	PR middle-end/44777
-	* gcc.dg/tree-prof/pr44777.c: New test.
-
-2012-01-05  Jan Hubicka  <jh@suse.cz>
-
-	PR middle-end/49710
-	* gcc.c-torture/compile/pr49710.c: New file.
+	PR fortran/PR48946
+	* gfortran.dg/typebound_operator_9.f03: This is now a copy of
+	the old typebound_operator_8.f03.
+	* gfortran.dg/typebound_operator_8.f03: New version of
+	typebound_operator_7.f03 with 'u' a derived type instead of a
+	class object.
 
 2012-01-05  Richard Guenther  <rguenther@suse.de>
 

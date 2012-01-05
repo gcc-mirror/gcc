@@ -5614,6 +5614,39 @@ resolve_typebound_static (gfc_expr* e, gfc_symtree** target,
   e->ref = NULL;
   e->value.compcall.actual = NULL;
 
+  /* If we find a deferred typebound procedure, check for derived types
+     that an over-riding typebound procedure has not been missed.  */
+  if (e->value.compcall.tbp->deferred
+	&& e->value.compcall.name
+	&& !e->value.compcall.tbp->non_overridable
+	&& e->value.compcall.base_object
+	&& e->value.compcall.base_object->ts.type == BT_DERIVED)
+    {
+      gfc_symtree *st;
+      gfc_symbol *derived;
+
+      /* Use the derived type of the base_object.  */
+      derived = e->value.compcall.base_object->ts.u.derived;
+      st = NULL;
+
+      /* If necessary, go throught the inheritance chain.  */
+      while (!st && derived)
+	{
+	  /* Look for the typebound procedure 'name'.  */
+	  if (derived->f2k_derived && derived->f2k_derived->tb_sym_root)
+	    st = gfc_find_symtree (derived->f2k_derived->tb_sym_root,
+				   e->value.compcall.name);
+	  if (!st)
+	    derived = gfc_get_derived_super_type (derived);
+	}
+
+      /* Now find the specific name in the derived type namespace.  */
+      if (st && st->n.tb && st->n.tb->u.specific)
+	gfc_find_sym_tree (st->n.tb->u.specific->name,
+			   derived->ns, 1, &st);
+      if (st)
+	*target = st;
+    }
   return SUCCESS;
 }
 
