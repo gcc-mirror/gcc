@@ -1,3 +1,9 @@
+2012-01-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR other/51171
+	* testsuite/libitm.c/reentrant.c: Remove xfail.
+	(thread): Pass x to pure().
+
 2011-12-24  Torvald Riegel  <triegel@redhat.com>
 
 	* beginend.cc (GTM::gtm_thread::trycommit): Don't enforce
