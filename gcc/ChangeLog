@@ -1,5 +1,9 @@
 2012-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/51768
+	* stmt.c (check_unique_operand_names): Don't ICE during error
+	reporting if i is from labels chain.
+
 	PR middle-end/44777
 	* profile.c (branch_prob): Split bbs that have exit edge
 	and need a fake entry edge too.
