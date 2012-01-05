@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011
+/* Copyright (c) 2009, 2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -46,8 +46,8 @@ keep_busy ()
   while (--busy_count > 0) /* loop */ ;
 }
 
-/* Test for Bug 350: GUPC 4.3.2 - post-increment inside array index,
-   increments twice (for struct sptr rep). This test is deerived from
+/* Test for Bug 350: GCC/UPC 4.3.2 - post-increment inside array index,
+   increments twice (for struct sptr rep). This test is derived from
    the MTU "test_locks2" test, though does a better job of testing
    lock correctness. */
 

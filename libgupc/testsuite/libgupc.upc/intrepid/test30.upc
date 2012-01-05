@@ -1,4 +1,4 @@
-/* Copyright (c) 2011
+/* Copyright (c) 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -123,21 +123,21 @@ main ()
   upc_barrier;
   if (!MYTHREAD)
     {
-      printf ("test30: test GUPC struct PTS alignment: %s.\n",
+      printf ("test30: test GCC/UPC struct PTS alignment: %s.\n",
 	      pass_fail ? "passed" : "failed");
       if (!pass_fail)
 	abort ();
     }
   #else
   if (!MYTHREAD)
-    printf ("test30: test GUPC struct PTS alignment: passed.\n"
-	    "(This test applies only to GUPC's struct "
+    printf ("test30: test GCC/UPC struct PTS alignment: passed.\n"
+	    "(This test applies only to GCC/UPC's struct "
 	    "PTS representation)\n");
   #endif
 #else
   if (!MYTHREAD)
-    printf ("test30: test GUPC struct PTS alignment: non-applicable\n"
-	    "(This test must be compiled with GUPC)\n");
+    printf ("test30: test GCC/UPC struct PTS alignment: non-applicable\n"
+	    "(This test must be compiled with GCC/UPC)\n");
 #endif
   return 0;
 }

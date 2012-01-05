@@ -1,4 +1,5 @@
-/* Copyright (c) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+/* Copyright (c) 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -66,15 +67,16 @@ int main ()
        expected = (ediff - pdiff) * THREADS + tdiff * BLKSIZE + pdiff;
        if (diff != expected)
          {
-	   fprintf (stderr, "Error: pointer difference: %d not equal to expected: %d\n",
-	            diff, expected);
+	   fprintf (stderr, "Error: pointer difference: %d not equal "
+	            "to expected: %d\n", diff, expected);
 	   abort ();
 	 }
       }
    upc_barrier;
    if (!MYTHREAD)
      {
-      printf ("test16: test pointer difference between pointers to shared array with layout specifier - passed.\n");
+      printf ("test16: test pointer difference between pointers "
+              "to shared array with layout specifier - passed.\n");
      }
    return 0;
 }

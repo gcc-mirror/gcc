@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011
+/* Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -48,7 +48,8 @@ test22 ()
     }
   if (cnt != 5) 
     {
-      fprintf (stderr, "test22: Error: Thread %d allocted only %d local buffers.\n", MYTHREAD, cnt);
+      fprintf (stderr, "test22: Error: Thread %d allocated "
+               "only %d local buffers.\n", MYTHREAD, cnt);
       abort ();
     }
   for (i=0; i < NALLOC; i++)

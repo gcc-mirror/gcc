@@ -1,4 +1,5 @@
-/* Copyright (c) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+/* Copyright (c) 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -57,15 +58,18 @@ test14 ()
 	}
       if ((int *) res != 0)
         {
-	  fprintf (stderr, "Error: null PTS to local test 'if ((int *) res != 0)' failed.\n");
+	  fprintf (stderr, "Error: null PTS to local "
+	           "test 'if ((int *) res != 0)' failed.\n");
 	  abort ();
 	}
       if (0 != (int *) res)
         {
-	  fprintf (stderr, "Error: null PTS to local test 'if (0 != (int *) res)' failed.\n");
+	  fprintf (stderr, "Error: null PTS to local "
+	           "test 'if (0 != (int *) res)' failed.\n");
 	  abort ();
 	}
-      printf ("test14: test assignment, comparison, and conversion of a null shared pointer - passed.\n");
+      printf ("test14: test assignment, comparison, and "
+              "conversion of a null shared pointer - passed.\n");
     }
 }
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011
+/* Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -68,7 +68,9 @@ test23()
   diff = (shared [] char *)ptr - (shared [] char *)node;
   if (diff != 64)
     {
-      fprintf (stderr, "Error: address of (ptr) - address of (node) != 64  equals: %ld\n", (long)diff);
+      fprintf (stderr, "Error: address of (ptr)"
+               "- address of (node) != 64 equals: %ld\n",
+	       (long)diff);
       abort ();
     }
   upc_barrier;

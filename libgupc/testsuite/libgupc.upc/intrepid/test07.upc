@@ -1,5 +1,5 @@
 /* Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011
+   2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -50,8 +50,8 @@ test07 ()
 	  int expected = i + 1;
 	  if (got != expected)
 	    {
-	      fprintf (stderr, "test07: error at element %d. Expected %d, got %d\n",
-		       i, expected, got);
+	      fprintf (stderr, "test07: error at element %d. "
+	               "Expected %d, got %d\n", i, expected, got);
 	      abort ();
 	    }
 	}

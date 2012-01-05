@@ -1,4 +1,4 @@
-/* Copyright (c) 2008, 2009, 2010, 2011
+/* Copyright (c) 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -103,10 +103,12 @@ test_compare (enum pkind kind, enum cmp_op op,
 	  const char * const op_s   = op_name_tbl[op];
 	  const char * const p0_s   = sptr(b1, pp0);
 	  const char * const p1_s   = sptr(b2, pp1);
-	  fprintf (stderr,
-	  "test26: Error: thread %d: %s PTS comparison %s failed.\n"
-	  "        t0=%d t1=%d j=%d k=%d jj=%d kk=%d p0=%s p1=%s expected=%d got=%d\n",
-	  MYTHREAD, kind_s, op_s, t0, t1, j, k, jj, kk, p0_s, p1_s, expected, got);
+	  fprintf (stderr, "test26: Error: thread %d: %s PTS comparison "
+	           "%s failed.\n"
+	           "        t0=%d t1=%d j=%d k=%d jj=%d kk=%d "
+	           "p0=%s p1=%s expected=%d got=%d\n",
+	           MYTHREAD, kind_s, op_s, t0, t1, j, k, jj, kk,
+	           p0_s, p1_s, expected, got);
 	  abort ();
 	}
     }
@@ -129,10 +131,12 @@ test_compare (enum pkind kind, enum cmp_op op,
 	  const char * const op_s   = op_name_tbl[op];
 	  const char * const p0_s   = sptr(b1, p0);
 	  const char * const p1_s   = sptr(b2, p1);
-	  fprintf (stderr,
-	  "test26: Error: thread %d: %s PTS comparison %s failed.\n"
-	  "        t0=%d t1=%d j=%d k=%d jj=%d kk=%d p0=%s p1=%s expected=%d got=%d\n",
-	  MYTHREAD, kind_s, op_s, t0, t1, j, k, jj, kk, p0_s, p1_s, expected, got);
+	  fprintf (stderr, "test26: Error: thread %d: %s "
+	           "PTS comparison %s failed.\n"
+	           "        t0=%d t1=%d j=%d k=%d jj=%d kk=%d "
+		   "p0=%s p1=%s expected=%d got=%d\n",
+	           MYTHREAD, kind_s, op_s, t0, t1, j, k, jj, kk,
+		   p0_s, p1_s, expected, got);
 	  abort ();
 	}
     }

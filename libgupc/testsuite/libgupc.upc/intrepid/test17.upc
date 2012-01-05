@@ -1,4 +1,4 @@
-/* Copyright (c) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+/* Copyright (c) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -85,7 +85,9 @@ test17()
 	                  " Expected %d, got %d.\n", expected, got);
 	  abort ();
 	}
-      printf ("test17: test indirection via a shared pointer to shared, and pointer comparison, for pointers with blocking factors - passed.\n");
+      printf ("test17: test indirection via a shared pointer to shared, "
+              "and pointer comparison, for pointers with "
+	      "blocking factors - passed.\n");
     }
 }
 

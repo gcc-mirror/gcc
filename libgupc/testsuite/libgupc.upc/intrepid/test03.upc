@@ -1,5 +1,5 @@
 /* Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011
+   2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -68,7 +68,8 @@ test03 ()
     }
   if (s.x4 != -4)
     {
-      fprintf (stderr, "%d: Error %s : %lld = -4\n", MYTHREAD, "long long", s.x4);
+      fprintf (stderr, "%d: Error %s : %lld = -4\n",
+               MYTHREAD, "long long", s.x4);
       abort ();
     }
   upc_barrier;

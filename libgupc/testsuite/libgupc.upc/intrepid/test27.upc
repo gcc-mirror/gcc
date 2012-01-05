@@ -1,4 +1,4 @@
-/* Copyright (c) 2008, 2009, 2010, 2011
+/* Copyright (c) 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -219,7 +219,7 @@ heap_init (shared void *heap_base, size_t heap_size)
   heap->size = heap_size;
   heap->next = NULL;
   heap->alloc_seq = 1;
-  /* Failed with ICE on 64-bit target, and "struct" pointer represetnation.  */
+  /* Failed with ICE on 64-bit target, and "struct" pointer representation.  */
   global_heap = heap;
 }
 
@@ -257,7 +257,7 @@ heap_test ()
       heap_base = (heap_p)upc_alloc (alloc_size);
       if (!heap_base)
         {
-	  fprintf (stderr, "Error: can't allocate heap memery"
+	  fprintf (stderr, "Error: can't allocate heap memory"
 	                   " - heap_test failed.\n");
 	  abort ();
 	}
@@ -320,7 +320,7 @@ main ()
   if (!MYTHREAD)
     {
       printf
-	("test27: Test misceleneous pointer-to-shared references - passed.\n");
+	("test27: Test miscellaneous pointer-to-shared references - passed.\n");
     }
   return 0;
 }

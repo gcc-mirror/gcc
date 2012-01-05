@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011
+/* Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -58,13 +58,15 @@ test21 ()
       void *remote_to_local_addr = (void *)&str[k];
       if (local_addr != remote_to_local_addr)
 	{
-	  fprintf (stderr, "%d: Error: address compare for size %ld failed at index %d\n"
-	    "    Local address %016lx != %016lx vaddr = %016lx\n",
-	    MYTHREAD, (long int)BUF_SIZE, k,
-	    (long unsigned)local_addr,
-	    (long unsigned)remote_to_local_addr,
-	    (long unsigned)upc_addrfield(
-	       &(((shared [] char *)&ptr[MYTHREAD])[k])));
+	  fprintf (stderr, "%d: Error: address compare "
+	           "for size %ld failed at index %d\n"
+	           "     Local address %016lx != %016lx "
+		   "vaddr = %016lx\n",
+	           MYTHREAD, (long int)BUF_SIZE, k,
+	           (long unsigned)local_addr,
+	           (long unsigned)remote_to_local_addr,
+	           (long unsigned)upc_addrfield(
+	             &(((shared [] char *)&ptr[MYTHREAD])[k])));
 	  abort ();
 	}
     }

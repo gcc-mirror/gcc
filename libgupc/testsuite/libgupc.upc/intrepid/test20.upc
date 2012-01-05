@@ -1,4 +1,4 @@
-/* Copyright (c) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+/* Copyright (c) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -70,14 +70,16 @@ test20 ()
       double got_imag = sh1[MYTHREAD].cell[i].imag;
       if (got_real != expected_real)
         {
-	  fprintf (stderr, "%d: Error mismatch at %i - real, expected: %7.0lf got: %7.0lf\n",
-	     MYTHREAD, i, expected_real, got_real);
+	  fprintf (stderr, "%d: Error mismatch at %i"
+	           "- real, expected: %7.0lf got: %7.0lf\n",
+	           MYTHREAD, i, expected_real, got_real);
           abort ();
 	}
       if (got_imag != expected_imag)
         {
-	  fprintf (stderr, "%d: Error mismatch at %i - imag, expected: %7.0lf got: %7.0lf\n",
-	     MYTHREAD, i, expected_imag, got_imag);
+	  fprintf (stderr, "%d: Error mismatch at %i"
+	           "- imag, expected: %7.0lf got: %7.0lf\n",
+	           MYTHREAD, i, expected_imag, got_imag);
           abort ();
 	}
     }

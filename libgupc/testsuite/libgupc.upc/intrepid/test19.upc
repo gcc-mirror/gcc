@@ -1,4 +1,4 @@
-/* Copyright (c) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+/* Copyright (c) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -116,7 +116,8 @@ test19()
 	  global_ptr = upc_global_alloc (THREADS, MAX_ALLOC_SIZE);
 	  if (!global_ptr)
 	    {
-	      fprintf (stderr, "%d: Error: failed to allocate large block\n", MYTHREAD);
+	      fprintf (stderr, "%d: Error: failed to "
+	               "allocate large block\n", MYTHREAD);
 	      abort ();
 	         
 	    }

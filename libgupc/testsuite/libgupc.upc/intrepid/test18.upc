@@ -1,4 +1,4 @@
-/* Copyright (c) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+/* Copyright (c) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -51,7 +51,8 @@ shared [] int* shared shared_a_indef_ptr[THREADS] __attribute__ ((unused));
 int * shared shared_ptr_to_local_int;
 /* bug 39: can't statically initialize pointer-to-shared with NULL */
 shared int * shared_ptr_null_init = 0;
-/* bug 62: pointer to shared incomplete type with layout specifier not deferred to type completion */
+/* bug 62: pointer to shared incomplete type with layout specifier
+   not deferred to type completion */
 shared [10] struct inc_struct *ptr_to_incomplete;
 struct inc_struct { int x; int y; };
 /* bug 95: cast of pointer to shared const misclassified as an error */
@@ -116,7 +117,8 @@ bug104_proc (int i, int j)
    bug104_proc_1 (bug104_TT[i][j]+2, i+2); 
 }
 
-/* Bug 106: GUPC fails with internal error on a few UPCR regression tests on OPTERON (x86_64) systems */
+/* Bug 106: GCC/UPC fails with internal error on a few
+   UPCR regression tests on OPTERON (x86_64) systems */
 
 typedef struct bug106_U_shared bug106_u_t;
 struct bug106_U_shared 
@@ -203,8 +205,9 @@ bupc156_test()
 	  int got = a[i];
 	  if (got != expected)
 	    {
-	      fprintf (stderr, "Error bupc156 test failed: expected %d got %d at i = %d\n",
-	              expected, got, i);
+	      fprintf (stderr, "Error bupc156 test failed: "
+	               "expected %d got %d at i = %d\n",
+	               expected, got, i);
 	      abort ();
 	    }
 	}
@@ -374,7 +377,7 @@ bug235_test()
     }
 }
 
-/* bug 236: bugzila/bug1126.upc fails to compile -
+/* bug 236: bugzilla/bug1126.upc fails to compile -
    reports __copyblk3 has incompatible type for argument 2
    Problem occurs when a PTS is in shared space.  The result
    of incrementing/decrementing the pointer is erroneously
@@ -400,8 +403,9 @@ void bug236_test ()
 	  bug236_ptr = bug236_ptr + 1;
 	  if (got != expected)
 	    {
-	      fprintf (stderr, "Error threadof(%i) = %d, expected: %d - bug226 test failed.\n",
-			       i, got, expected);
+	      fprintf (stderr, "Error threadof(%i) = %d, "
+	               "expected: %d - bug226 test failed.\n",
+		       i, got, expected);
 	      abort ();
 	    }
         }
@@ -421,8 +425,9 @@ void bug236_test ()
 	  got = upc_threadof (bug236_ptr++);
 	  if (got != expected)
 	    {
-	      fprintf (stderr, "Error threadof(%i) = %d, expected: %d - bug236 test failed.\n",
-			       i, got, expected);
+	      fprintf (stderr, "Error threadof(%i) = %d, "
+	               "expected: %d - bug236 test failed.\n",
+		       i, got, expected);
 	      abort ();
 	    }
         }
@@ -455,8 +460,9 @@ gimple_bug_test()
   got = get_prev();
   if (got != expected)
     {
-      fprintf (stderr, "thread %i: Error: expected: %d  got %d - gimple bug test failed.\n",
-		       MYTHREAD, got, expected);
+      fprintf (stderr, "thread %i: Error: "
+               "expected: %d  got %d - gimple bug test failed.\n",
+	       MYTHREAD, got, expected);
       abort ();
     }
   upc_barrier;
@@ -477,7 +483,8 @@ bupc_bug53_test ()
 	  int got = bupc_bug53_p[i];
 	  if (got != expected)
 	    {
-	      fprintf (stderr, "Error: expected: %d, got: %d - BUPC bug53 test failed\n",
+	      fprintf (stderr, "Error: expected: %d, got: %d "
+	               "- BUPC bug53 test failed\n",
 	               expected, got);
 	      abort ();
 	    }
@@ -510,10 +517,10 @@ bug323_test ()
   while (0) {
      /* Bug 323: ICE: in statement below.
         "The cause of failure is subtle. Internally, the compiler tries to
-	cache constants in the form (<type> <vlue>). In the failing test, there
+	cache constants in the form (<type> <value>). In the failing test, there
 	are two places that it creates a ((shared unsigned int) 0) constant.
 	But the internal cache discards "shared", yet the code tries to compare
-	the constant's type that it pulls from the cache with the (shareed
+	the constant's type that it pulls from the cache with the (shared
 	unsigned int) type. They don't match, and the assertion fails."  */
      if (full_filevec_datasz > 0 &&
         full_filevec_datasz >= neededsz_bytes) break;
@@ -535,8 +542,8 @@ void bug349_proc (shared RowOfBytes *arr, int i)
   int j;
   for (j = 0; j < BLK_349; ++j)
     {
-      /* Bug 349: ICE: GUPC 4.3 - assertion check on
-         attempt to create a shaared temp, when compiling
+      /* Bug 349: ICE: GCC/UPC 4.3 - assertion check on
+         attempt to create a shared temp, when compiling
          sobel (optimized).  */
       arr[i].r[j] = (unsigned char) (j + 1);
     }
@@ -545,7 +552,8 @@ void bug349_proc (shared RowOfBytes *arr, int i)
 void
 bug349_test ()
 {
-  A_349[MYTHREAD].r = (shared [] unsigned char *) &data_349[BLK_349 * MYTHREAD];
+  A_349[MYTHREAD].r = (shared [] unsigned char *)
+                      &data_349[BLK_349 * MYTHREAD];
   upc_barrier;
   bug349_proc (A_349, MYTHREAD);
   upc_barrier;
@@ -579,7 +587,8 @@ bug351_test ()
    * dynamic environment.  */
   if (!MYTHREAD)
     {
-      unsigned long expected = ((unsigned long) SZ_351 * (unsigned long) THREADS
+      unsigned long expected = ((unsigned long) SZ_351
+                                * (unsigned long) THREADS
                                 * (unsigned long) sizeof(A_351[0]));
       unsigned long got = (unsigned long) sizeof (A_351);
       if (got != expected)
@@ -602,7 +611,7 @@ shared [10] int A_362[20*THREADS];
 void
 bug362_test ()
 {
-  /* Code partialy taken from BUPC Bugzilla bug2280.upc */
+  /* Code partially taken from BUPC Bugzilla bug2280.upc */
   const int expected = 1;
   int got;
   shared [10] int *p = &A_362[8];
@@ -637,7 +646,8 @@ bug402_test ()
     {
       if (upc_blocksizeof(A_402) != 16)
 	{
-	  fprintf (stderr, "Error: blocksizef(A_402) != 16  - bug 402 test failed\n");
+	  fprintf (stderr, "Error: blocksizeof(A_402) != 16  "
+	           "- bug 402 test failed\n");
 	  abort ();
 	}
       for (i = 0; i < THREADS; ++i)
@@ -663,18 +673,20 @@ test18()
   int expected;
   /* bug 56: can't initialize a shared pointer to NULL at auto scope */
   shared int *sptr_auto = 0;
-  /* bug 63: compiler refuses to initialize a pointer-to-shared, unless the initialization expression is 'simple' */
+  /* bug 63: compiler refuses to initialize a pointer-to-shared,
+     unless the initialization expression is 'simple' */
   shared [3] int * p_3_init = &(a_3_by_3[2][2]);
-  /* bug 67: ICE on array initializer that references the address of shared variable */
-  shared [5] int *p5_array[] = {&a_blk5[0], &a_blk5[9], &a_blk5[4*MYTHREAD], 0};
-
+  /* bug 67: ICE on array initializer that references the address
+     of shared variable */
+  shared [5] int *p5_array[] = {&a_blk5[0], &a_blk5[9],
+                                &a_blk5[4*MYTHREAD], 0};
   /* bug 24: upc_elemsizeof unimplemented */
   got = upc_elemsizeof a_3_by_3;
   expected = sizeof (int);
   if (got != expected)
     {
-      fprintf (stderr, "Error bug24: upc_elemsizeof failed: got %d expected %d\n",
-                       got, expected);
+      fprintf (stderr, "Error bug24: upc_elemsizeof failed: "
+               "got %d expected %d\n", got, expected);
       abort ();
     }
   /* bug 25: upc_blocksizeof fails on arrays with THREADS multiple */
@@ -682,17 +694,20 @@ test18()
   expected = 3;
   if (got != expected)
     {
-      fprintf (stderr, "Error bug25: upc_blocksizeof fails on arrays with THREADS multiple: got %d expected %d\n",
-                       got, expected);
+      fprintf (stderr, "Error bug25: upc_blocksizeof fails "
+               "on arrays with THREADS multiple: got %d expected %d\n",
+               got, expected);
       abort ();
     }
-  /* bug 26: upc_blocksizeof does not return 0 for arrays with indefinite block size */
+  /* bug 26: upc_blocksizeof does not return 0 for arrays
+     with indefinite block size */
   got = upc_blocksizeof a_indef;
   expected = 0;
   if (got != expected)
     {
-      fprintf (stderr, "Error bug26: upc_blocksizeof does not return 0 for arrays with indefinite block size: got %d expected %d\n",
-                       got, expected);
+      fprintf (stderr, "Error bug26: upc_blocksizeof does not "
+               "return 0 for arrays with indefinite block size: "
+	       "got %d expected %d\n", got, expected);
       abort ();
     }
   /* bug 31: layout '[*]' not implemented */
@@ -700,8 +715,8 @@ test18()
   expected = 10;
   if (got != expected)
     {
-      fprintf (stderr, "Error bug 31: layout '[*]' not implemented: got %d expected %d\n",
-                       got, expected);
+      fprintf (stderr, "Error bug 31: layout '[*]' not implemented: "
+               "got %d expected %d\n", got, expected);
       abort ();
     }
   /* bug 39: can't statically initialize pointer-to-shared with NULL */
@@ -709,8 +724,9 @@ test18()
   expected = 1;
   if (got != expected)
     {
-      fprintf (stderr, "Error bug 39: can't statically initialize pointer-to-shared with NULL: got %d expected %d\n",
-                      got, expected);
+      fprintf (stderr, "Error bug 39: can't statically initialize "
+               "pointer-to-shared with NULL: got %d expected %d\n",
+               got, expected);
       abort ();
     }
   /* bug 46: upc_alloc unimplemented */
@@ -719,8 +735,8 @@ test18()
   expected = 1;
   if (got != expected)
     {
-      fprintf (stderr, "Error bug 46: upc_alloc unimplemented: got %d expected %d\n",
-                       got, expected);
+      fprintf (stderr, "Error bug 46: upc_alloc unimplemented: "
+               "got %d expected %d\n", got, expected);
       abort ();
     }
   /* bug 46: upc_affinitysize unimplemented */
@@ -729,8 +745,8 @@ test18()
   expected = 3 * 5 * sizeof (int);
   if (got != expected)
     {
-      fprintf (stderr, "Error bug 46: upc_affinitysize unimplemented: got %d expected %d\n",
-                       got, expected);
+      fprintf (stderr, "Error bug 46: upc_affinitysize unimplemented: "
+               "got %d expected %d\n", got, expected);
       abort ();
     }
   /* bug 48: upc_lock_free unimplemented */
@@ -744,20 +760,22 @@ test18()
   expected = 0;
   if (got != expected)
     {
-      fprintf (stderr, "Error bug 52: upc_resetphase unimplemented: got %d expected %d\n",
-                       got, expected);
+      fprintf (stderr, "Error bug 52: upc_resetphase unimplemented: "
+               "got %d expected %d\n", got, expected);
       abort ();
     }
 #endif /* !sgi */
-  /* bug 53: cast of pointer-to-shared with differing block size does not reset phase */
+  /* bug 53: cast of pointer-to-shared with differing block size
+     does not reset phase */
   ptr_to_blk5 = &a_blk5[3];
   ptr_to_blk3 = (shared [3] int *)ptr_to_blk5;
   got = upc_phaseof (ptr_to_blk3);
   expected = 0;
   if (got != expected)
     {
-      fprintf (stderr, "Error bug 53: cast of pointer-to-shared with differing block size does not reset phase: got %d expected %d\n",
-                       got, expected);
+      fprintf (stderr, "Error bug 53: cast of pointer-to-shared "
+               "with differing block size does not reset phase: "
+	       "got %d expected %d\n", got, expected);
       abort ();
     }
   /* bug 54: upc_fence is unimplemented */
@@ -769,8 +787,9 @@ test18()
   expected = 1;
   if (got != expected)
     {
-      fprintf (stderr, "Error bug 56: can't initialize a shared pointer to NULL at auto scope: got %d expected %d\n",
-                       got, expected);
+      fprintf (stderr, "Error bug 56: can't initialize a "
+               "shared pointer to NULL at auto scope: got %d expected %d\n",
+               got, expected);
       abort ();
     }
   /* bug 59: UPC_MAX_BLOCK_SIZE is not an integer constant */
@@ -782,45 +801,55 @@ test18()
   expected = 1;
   if (got != expected)
     {
-      fprintf (stderr, "Error bug 59: UPC_MAX_BLOCK_SIZE is not an integer constant: got %d expected %d\n",
-                       got, expected);
+      fprintf (stderr, "Error bug 59: UPC_MAX_BLOCK_SIZE is not "
+               "an integer constant: got %d expected %d\n",
+               got, expected);
       abort ();
     }
-  /* bug 62: pointer to shared incomplete type with layout specifier not deferred to type completion */
+  /* bug 62: pointer to shared incomplete type with
+     layout specifier not deferred to type completion */
   got = upc_blocksizeof *ptr_to_incomplete;
   expected = 10;
   if (got != expected)
     {
-      fprintf (stderr, "Error bug 62: pointer to shared incomplete type with layout specifier not deferred to type completion: got %d expected %d\n",
-                       got, expected);
+      fprintf (stderr, "Error bug 62: pointer to shared incomplete type "
+               "with layout specifier not deferred to type completion: "
+	       "got %d expected %d\n", got, expected);
       abort ();
     }
-  /* bug 63: compiler refuses to initialize a pointer-to-shared, unless the initialization expression is 'simple' */
+  /* bug 63: compiler refuses to initialize a pointer-to-shared,
+     unless the initialization expression is 'simple' */
   got = (p_3_init == &a_3_by_3[2][2]);
   expected = 1;
   if (got != expected)
     {
-      fprintf (stderr, "Error bug 63: compiler refuses to initialize a pointer-to-shared, unless the initialization expression is 'simple': got %d expected %d\n",
-                       got, expected);
+      fprintf (stderr, "Error bug 63: compiler refuses to initialize "
+               "a pointer-to-shared, unless the initialization "
+	       "expression is 'simple': got %d expected %d\n",
+               got, expected);
       abort ();
     }
-  /* bug 67: ICE on array initializer that references the address of shared variable */
+  /* bug 67: ICE on array initializer that references the address
+     of shared variable */
   got = (p5_array[2] == &a_blk5[4*MYTHREAD]);
   expected = 1;
   if (got != expected)
     {
-      fprintf (stderr, "Error bug 67: ICE on array initializer that references the address of shared variable: got %d expected %d\n",
-                       got, expected);
+      fprintf (stderr, "Error bug 67: ICE on array initializer "
+               "that references the address of shared variable: "
+	       "got %d expected %d\n", got, expected);
       abort ();
     }
-  /* bug 68: comparison between generic pointer to shared, and pointer to shared fails */
+  /* bug 68: comparison between generic pointer to shared,
+     and pointer to shared fails */
   ptr_to_blk5 = &a_blk5[4];
   got = ((shared void *)&a_blk5[4] == ptr_to_blk5);
   expected = 1;
   if (got != expected)
     {
-      fprintf (stderr, "Error bug 68: comparison between generic pointer to shared, and pointer to shared fails: got %d expected %d\n",
-                       got, expected);
+      fprintf (stderr, "Error bug 68: comparison between "
+               "generic pointer to shared, and pointer to shared fails: "
+	       "got %d expected %d\n", got, expected);
       abort ();
     }
   /* bug 70: indirection through shared local pointer fails */
@@ -835,8 +864,9 @@ test18()
   expected = 99;
   if (got != expected)
     {
-      fprintf (stderr, "Error bug 70: indirection through shared local pointer fails: got %d expected %d\n",
-                       got, expected);
+      fprintf (stderr, "Error bug 70: indirection through "
+               "shared local pointer fails: got %d expected %d\n",
+               got, expected);
       abort ();
     }
   /* bug 71: upc_forall with integer affinity fails */
@@ -846,12 +876,14 @@ test18()
     expected = MYTHREAD;
     if (got != expected)
       {
-        fprintf (stderr, "Error bug 71: upc_forall with integer affinity fails: got %d expected %d\n",
-                         got, expected);
+        fprintf (stderr, "Error bug 71: upc_forall with "
+	         "integer affinity fails: got %d expected %d\n",
+                 got, expected);
         abort ();
       }
   }
-  /* bug 75: indirection through pointer-to-shared which is itself shared fails */
+  /* bug 75: indirection through pointer-to-shared which is
+     itself shared fails */
   if (!MYTHREAD)
     {
       a_blk5[1] = 99;
@@ -862,8 +894,9 @@ test18()
   expected = 99;
   if (got != expected)
     {
-      fprintf (stderr, "Error bug 75: indirection through pointer-to-shared which is itself shared fails: got %d expected %d\n",
-                       got, expected);
+      fprintf (stderr, "Error bug 75: indirection through "
+               "pointer-to-shared which is itself shared fails: "
+	       "got %d expected %d\n", got, expected);
       abort ();
     }
   /* bug 77: anonymous barriers generate barrier id mismatch */
@@ -880,7 +913,9 @@ test18()
   expected = 1;
   if (got != expected)
     {
-      fprintf (stderr, "Error bug 77: anonymous barriers generate barrier id mismatch: got %d expected %d\n", got, expected);
+      fprintf (stderr, "Error bug 77: anonymous barriers "
+               "generate barrier id mismatch: "
+	       "got %d expected %d\n", got, expected);
       abort ();
     }
   /* bug 95: cast of pointer to shared const misclassified as an error */
@@ -894,7 +929,9 @@ test18()
   got = *((shared int *)shared_struct.field);
   if (got != expected)
     {
-      fprintf (stderr, "Error bug 95: cast of pointer to shared const misclassified as an error: got %d expected %d\n", got, expected);
+      fprintf (stderr, "Error bug 95: cast of pointer to shared const"
+               "misclassified as an error: got %d expected %d\n",
+	       got, expected);
       abort ();
     }
   /* bug 96: ICE: combination of shared and volatile crashes the compiler */
@@ -914,35 +951,42 @@ test18()
 	      got = shared_vol2[i][j];
 	      if (got != expected)
 		{
-		  fprintf (stderr, "Error bug 96: ICE: combination of shared and volatile crashes the compiler failed: got %d expected %d\n",
-				   got, expected);
+		  fprintf (stderr, "Error bug 96: ICE: combination of "
+		           "shared and volatile crashes the "
+			   "compiler failed: got %d expected %d\n",
+			   got, expected);
 		  abort ();
 		}
 	    }
 	}
     }
-  /* bug 100: invalid compilation error when casting null pointer to shared to local pointer */
+  /* bug 100: invalid compilation error when casting null
+     pointer to shared to local pointer */
   upc_barrier;
   localPtr = &localData;
   localPtr = (double *)(shared [] double *) NULL;
   if (localPtr != NULL)
     {
-      fprintf (stderr, "Error bug 100: failed #1 - null local pointer expected.\n");
+      fprintf (stderr, "Error bug 100: failed #1 "
+               "- null local pointer expected.\n");
     }
   localPtr = &localData;
   localPtr = (double *)(shared void *) NULL;
   if (localPtr != NULL)
     {
-      fprintf (stderr, "Error bug 100: failed #2 - null local pointer expected.\n");
+      fprintf (stderr, "Error bug 100: failed #2 "
+               "- null local pointer expected.\n");
     }
   localPtr = &localData;
   localPtr = (double *)((shared void *) 0);
   if (localPtr != NULL)
     {
-      fprintf (stderr, "Error bug 100: failed #3 - null local pointer expected.\n");
+      fprintf (stderr, "Error bug 100: failed #3 "
+               "- null local pointer expected.\n");
     }
   upc_barrier;
-  /* Bug 103: ICE: codegen (AMD64) - fail in emit_move_insn when evaluating shared array element actual parameters */
+  /* Bug 103: ICE: codegen (AMD64) - fail in emit_move_insn
+     when evaluating shared array element actual parameters */
   for (i=0; i<100; i++)
     for (j=0; j<4; j++)
        save_err[i][j][MYTHREAD] = 1.0e-6;
@@ -954,11 +998,12 @@ test18()
                            save_err[i][2][MYTHREAD], save_err[i][3][MYTHREAD]);
       if (!ok)
         {
-          fprintf (stderr, "Error bug 103: failed - save_err[%d][0..3][%d] exceeds"
+          fprintf (stderr, "Error bug 103: failed "
+	           "- save_err[%d][0..3][%d] exceeds"
                    " error tolerance (%0.3lg,%0.3lg,%0.3lg,%0.3lg)\n",
-                    i, MYTHREAD,
-                    save_err[i][0][MYTHREAD], save_err[i][1][MYTHREAD],
-                    save_err[i][2][MYTHREAD], save_err[i][3][MYTHREAD]);
+                   i, MYTHREAD,
+                   save_err[i][0][MYTHREAD], save_err[i][1][MYTHREAD],
+                   save_err[i][2][MYTHREAD], save_err[i][3][MYTHREAD]);
           abort ();
         }
     }
@@ -971,7 +1016,8 @@ test18()
   upc_barrier;
   bug104_proc (4, MYTHREAD); 
   upc_barrier;
-  /* Bug 106: GUPC fails with internal error on a few UPCR regression tests on OPTERON (x86_64) systems */
+  /* Bug 106: GCC/UPC fails with internal error on
+     a few UPCR regression tests on OPTERON (x86_64) systems */
   {
     int i1, i2, i3, i4, i5, i6;
     shared [] double *p;

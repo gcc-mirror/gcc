@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011
+/* Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -167,8 +167,10 @@ test24()
 	      shared char *ptr;
 	      char *s;
 	      if (!a)
-	        { fprintf (stderr, "%d: Error: can't find alloc list entry for size %ld\n",
-		        MYTHREAD, (long int)size);
+	        {
+		  fprintf (stderr, "%d: Error: can't find alloc "
+		           "list entry for size %ld\n",
+		           MYTHREAD, (long int)size);
 		  abort ();
 	        }
 	      memset (buf, c, size - 1);
@@ -244,8 +246,10 @@ test24()
 	      char *s;
 	      int t_free;
 	      if (!a)
-	        { fprintf (stderr, "%d: Error: can't find alloc list entry for size %ld\n",
-		        MYTHREAD, (long int)size);
+	        {
+		  fprintf (stderr, "%d: Error: can't find alloc "
+		           "list entry for size %ld\n",
+		           MYTHREAD, (long int)size);
 		  abort ();
 	        }
 	      ptr = a->ptr;

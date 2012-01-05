@@ -1,5 +1,5 @@
 /* Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011
+   2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -32,14 +32,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* This test replicates a problem where incorrect code was generated
    whenever an intervening declaration of a type that has the same type
-   as the basic elememt type of a shared array whose dimension included
+   as the basic element type of a shared array whose dimension included
    a reference to THREADS.  In that situation, the compiler "forgot"
    to scale all references to the array, by THREADS (when compiled in
    the dynamic compilation environment. */
 
 #define FACTOR 100
 shared int a[FACTOR][THREADS];
-/* following variable is not used, but is required to demosntrate problem */
+/* following variable is not used, but is required to demonstrate problem */
 #if !defined(__GNUC__) && !defined(__attribute__)
 #define __attribute__(X) 
 #endif

@@ -1,5 +1,5 @@
 /* Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011
+   2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -60,32 +60,38 @@ test00 ()
   upc_barrier;
   if (x1 != CHAR_VAL)
     {
-      fprintf (stderr, "%d: Error %s : %d = %d\n", MYTHREAD, "char", x1, CHAR_VAL);
+      fprintf (stderr, "%d: Error %s : %d = %d\n",
+               MYTHREAD, "char", x1, CHAR_VAL);
       abort ();
     }
   if (x2 != SHORT_VAL)
     {
-      fprintf (stderr, "%d: Error %s : %d = %d\n", MYTHREAD, "short", x2, SHORT_VAL);
+      fprintf (stderr, "%d: Error %s : %d = %d\n",
+               MYTHREAD, "short", x2, SHORT_VAL);
       abort ();
     }
   if (x3 != INT_VAL)
     {
-      fprintf (stderr, "%d: Error %s : %d = %d\n", MYTHREAD, "int", x3, INT_VAL);
+      fprintf (stderr, "%d: Error %s : %d = %d\n",
+               MYTHREAD, "int", x3, INT_VAL);
       abort ();
     }
   if (x4 != LL_VAL)
     {
-      fprintf (stderr, "%d: Error %s : %lld = %lld\n", MYTHREAD, "long long", x4, LL_VAL);
+      fprintf (stderr, "%d: Error %s : %lld = %lld\n",
+               MYTHREAD, "long long", x4, LL_VAL);
       abort ();
     }
   if (x5 != SF_VAL)
     {
-      fprintf (stderr, "%d: Error %s : %f = %f\n", MYTHREAD, "float", x5, SF_VAL);
+      fprintf (stderr, "%d: Error %s : %f = %f\n",
+               MYTHREAD, "float", x5, SF_VAL);
       abort ();
     }
   if (x6 != DF_VAL)
     {
-      fprintf (stderr, "%d: Error %s : %f = %f\n", MYTHREAD, "double", x6, DF_VAL);
+      fprintf (stderr, "%d: Error %s : %f = %f\n",
+               MYTHREAD, "double", x6, DF_VAL);
       abort ();
     }
   upc_barrier;

@@ -1,4 +1,4 @@
-/* Copyright (c) 2008, 2009, 2010, 2011
+/* Copyright (c) 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -51,15 +51,15 @@ test25 ()
        f_expected = 1.0; f_got = f1;
        if (f_got != f_expected)
 	 {
-	   fprintf (stderr, "Error: f1 initialization failed, expected: %0.4g got: %0.4g\n",
-	   f_expected, f_got);
+	   fprintf (stderr, "Error: f1 initialization failed, "
+	            "expected: %0.4g got: %0.4g\n", f_expected, f_got);
 	   error_flag = 1;
 	 }
        f_expected = 9.0; f_got = f9;
        if (f_got != f_expected)
 	 {
-	   fprintf (stderr, "Error: f9 initialization failed, expected: %0.4g got: %0.4g\n",
-	   f_expected, f_got);
+	   fprintf (stderr, "Error: f9 initialization failed, "
+	            "expected: %0.4g got: %0.4g\n", f_expected, f_got);
 	   error_flag = 1;
 	 }
        dr_expected = 1.0; dr_got = complex_1_2.real;

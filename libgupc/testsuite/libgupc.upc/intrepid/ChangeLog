@@ -1,3 +1,28 @@
+2012-01-04  Gary Funck  <gary@intrepid.com>
+
+	* test00.upc: Fix spelling errors and split long lines.
+	* test03.upc: Ditto.
+	* test04.upc: Ditto.
+	* test07.upc: Ditto.
+	* test08.upc: Ditto.
+	* test12.upc: Ditto.
+	* test14.upc: Ditto.
+	* test15.upc: Ditto.
+	* test16.upc: Ditto.
+	* test17.upc: Ditto.
+	* test18.upc: Ditto.
+	* test19.upc: Ditto.
+	* test20.upc: Ditto.
+	* test21.upc: Ditto.
+	* test22.upc: Ditto.
+	* test23.upc: Ditto.
+	* test24.upc: Ditto.
+	* test25.upc: Ditto.
+	* test26.upc: Ditto.
+	* test27.upc: Ditto.
+	* test28.upc: Ditto.
+	* test30.upc: Ditto.
+
 2011-10-25  Gary Funck  <gary@intrepid.com>
 
 	Re-fix typo in previous commit.
