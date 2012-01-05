@@ -1,3 +1,8 @@
+2012-01-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/51472
+	* gcc.dg/tm/memopt-6.c: Adjust regexp.
+
 2012-01-05  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41576
