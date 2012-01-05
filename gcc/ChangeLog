@@ -1,3 +1,8 @@
+2012-01-05  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* reload.c (find_reloads): Adjust LABEL_NUSES on REG_LABEL_OPERAND
+	insertion.
+
 2012-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/51648
