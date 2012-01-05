@@ -1,5 +1,11 @@
 2012-01-04  Gary Funck  <gary@intrepid.com>
 
+	* test18.upc: Revert lost GCC/UPC -> GUPC change.
+	* test28.upc: Ditto.
+	* test30.upc: Ditto.
+
+2012-01-04  Gary Funck  <gary@intrepid.com>
+
 	* test00.upc: Fix spelling errors and split long lines.
 	* test03.upc: Ditto.
 	* test04.upc: Ditto.

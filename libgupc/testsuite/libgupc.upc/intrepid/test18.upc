@@ -117,7 +117,7 @@ bug104_proc (int i, int j)
    bug104_proc_1 (bug104_TT[i][j]+2, i+2); 
 }
 
-/* Bug 106: GCC/UPC fails with internal error on a few
+/* Bug 106: GUPC fails with internal error on a few
    UPCR regression tests on OPTERON (x86_64) systems */
 
 typedef struct bug106_U_shared bug106_u_t;
@@ -542,7 +542,7 @@ void bug349_proc (shared RowOfBytes *arr, int i)
   int j;
   for (j = 0; j < BLK_349; ++j)
     {
-      /* Bug 349: ICE: GCC/UPC 4.3 - assertion check on
+      /* Bug 349: ICE: GUPC 4.3 - assertion check on
          attempt to create a shared temp, when compiling
          sobel (optimized).  */
       arr[i].r[j] = (unsigned char) (j + 1);
@@ -1016,7 +1016,7 @@ test18()
   upc_barrier;
   bug104_proc (4, MYTHREAD); 
   upc_barrier;
-  /* Bug 106: GCC/UPC fails with internal error on
+  /* Bug 106: GUPC fails with internal error on
      a few UPCR regression tests on OPTERON (x86_64) systems */
   {
     int i1, i2, i3, i4, i5, i6;

@@ -46,7 +46,7 @@ keep_busy ()
   while (--busy_count > 0) /* loop */ ;
 }
 
-/* Test for Bug 350: GCC/UPC 4.3.2 - post-increment inside array index,
+/* Test for Bug 350: GUPC 4.3.2 - post-increment inside array index,
    increments twice (for struct sptr rep). This test is derived from
    the MTU "test_locks2" test, though does a better job of testing
    lock correctness. */
