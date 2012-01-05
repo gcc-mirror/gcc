@@ -1984,7 +1984,7 @@ esac
 
 # Disable libitm if we're not building C++
 case ,${enable_languages}, in
-  *,c++) ;;
+  *,c++,*) ;;
   *)
     noconfigdirs="$noconfigdirs target-libitm"
     ;;

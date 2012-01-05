@@ -4,6 +4,9 @@
 	* configure.ac: Disable libitm if c++ is not enabled.
 	* configure: Rebuild.
 
+	* configure.ac: Fix regexp for same.
+	* configure: Rebuild.
+
 2012-01-02  Balaji V. Iyer  <bviyer@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
