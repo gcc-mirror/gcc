@@ -1,3 +1,8 @@
+
+2012-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20120104-1.c: New test.
+
 2012-01-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/PR48946

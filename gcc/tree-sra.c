@@ -1095,6 +1095,25 @@ tree_non_aligned_mem_p (tree exp, unsigned int align)
   return false;
 }
 
+/* Return true if EXP is a memory reference less aligned than what the access
+   ACC would require.  This is invoked only on strict-alignment targets.  */
+
+static bool
+tree_non_aligned_mem_for_access_p (tree exp, struct access *acc)
+{
+  unsigned int acc_align;
+
+  /* The alignment of the access is that of its expression.  However, it may
+     have been artificially increased, e.g. by a local alignment promotion,
+     so we cap it to the alignment of the type of the base, on the grounds
+     that valid sub-accesses cannot be more aligned than that.  */
+  acc_align = get_object_alignment (acc->expr);
+  if (acc->base && acc_align > TYPE_ALIGN (TREE_TYPE (acc->base)))
+    acc_align = TYPE_ALIGN (TREE_TYPE (acc->base));
+
+  return tree_non_aligned_mem_p (exp, acc_align);
+}
+
 /* Scan expressions occuring in STMT, create access structures for all accesses
    to candidates for scalarization and remove those candidates which occur in
    statements or expressions that prevent them from being split apart.  Return
@@ -1123,8 +1142,7 @@ build_accesses_from_assign (gimple stmt)
   if (lacc)
     {
       lacc->grp_assignment_write = 1;
-      if (STRICT_ALIGNMENT
-	  && tree_non_aligned_mem_p (rhs, get_object_alignment (lhs)))
+      if (STRICT_ALIGNMENT && tree_non_aligned_mem_for_access_p (rhs, lacc))
         lacc->grp_unscalarizable_region = 1;
     }
 
@@ -1134,8 +1152,7 @@ build_accesses_from_assign (gimple stmt)
       if (should_scalarize_away_bitmap && !gimple_has_volatile_ops (stmt)
 	  && !is_gimple_reg_type (racc->type))
 	bitmap_set_bit (should_scalarize_away_bitmap, DECL_UID (racc->base));
-      if (STRICT_ALIGNMENT
-	  && tree_non_aligned_mem_p (lhs, get_object_alignment (rhs)))
+      if (STRICT_ALIGNMENT && tree_non_aligned_mem_for_access_p (lhs, racc))
         racc->grp_unscalarizable_region = 1;
     }
 
