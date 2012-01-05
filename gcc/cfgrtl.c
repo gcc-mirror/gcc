@@ -1,7 +1,7 @@
 /* Control flow graph manipulation code for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1129,6 +1129,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
   rtx note;
   edge new_edge;
   int abnormal_edge_flags = 0;
+  bool asm_goto_edge = false;
   int loc;
 
   /* In the case the last instruction is conditional jump to the next
@@ -1208,8 +1209,28 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	}
     }
 
-  if (EDGE_COUNT (e->src->succs) >= 2 || abnormal_edge_flags)
+  /* If e->src ends with asm goto, see if any of the ASM_OPERANDS_LABELs
+     don't point to target label.  */
+  if (JUMP_P (BB_END (e->src))
+      && target != EXIT_BLOCK_PTR
+      && e->dest == target
+      && (e->flags & EDGE_FALLTHRU)
+      && (note = extract_asm_operands (PATTERN (BB_END (e->src)))))
     {
+      int i, n = ASM_OPERANDS_LABEL_LENGTH (note);
+
+      for (i = 0; i < n; ++i)
+	if (XEXP (ASM_OPERANDS_LABEL (note, i), 0) == BB_HEAD (target))
+	  {
+	    asm_goto_edge = true;
+	    break;
+	  }
+    }
+
+  if (EDGE_COUNT (e->src->succs) >= 2 || abnormal_edge_flags || asm_goto_edge)
+    {
+      gcov_type count = e->count;
+      int probability = e->probability;
       /* Create the new structures.  */
 
       /* If the old block ended with a tablejump, skip its table
@@ -1220,7 +1241,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
       note = NEXT_INSN (note);
 
       jump_block = create_basic_block (note, NULL, e->src);
-      jump_block->count = e->count;
+      jump_block->count = count;
       jump_block->frequency = EDGE_FREQUENCY (e);
       jump_block->loop_depth = target->loop_depth;
 
@@ -1236,12 +1257,26 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 
       /* Wire edge in.  */
       new_edge = make_edge (e->src, jump_block, EDGE_FALLTHRU);
-      new_edge->probability = e->probability;
-      new_edge->count = e->count;
+      new_edge->probability = probability;
+      new_edge->count = count;
 
       /* Redirect old edge.  */
       redirect_edge_pred (e, jump_block);
       e->probability = REG_BR_PROB_BASE;
+
+      /* If asm goto has any label refs to target's label,
+	 add also edge from asm goto bb to target.  */
+      if (asm_goto_edge)
+	{
+	  new_edge->probability /= 2;
+	  new_edge->count /= 2;
+	  jump_block->count /= 2;
+	  jump_block->frequency /= 2;
+	  new_edge = make_edge (new_edge->src, target,
+				e->flags & ~EDGE_FALLTHRU);
+	  new_edge->probability = probability - probability / 2;
+	  new_edge->count = count - count / 2;
+	}
 
       new_bb = jump_block;
     }

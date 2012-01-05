@@ -1,5 +1,8 @@
 2012-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/51767
+	* gcc.c-torture/compile/pr51767.c: New test.
+
 	PR middle-end/51768
 	* c-c++-common/pr51768.c: New test.
 
