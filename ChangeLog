@@ -1,3 +1,9 @@
+2012-01-05  Richard Henderson  <rth@redhat.com>
+
+	PR bootstrap/51072
+	* configure.ac: Disable libitm if c++ is not enabled.
+	* configure: Rebuild.
+
 2012-01-02  Balaji V. Iyer  <bviyer@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
