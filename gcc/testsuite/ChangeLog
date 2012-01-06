@@ -1,3 +1,9 @@
+2012-01-06  Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR testsuite/51655
+	* c-c++-common/tm/memcpy-1.c: Declare memcpy instead of
+	including <string.h>. 
+
 2012-01-06  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/abi/mangle51.C: New.
