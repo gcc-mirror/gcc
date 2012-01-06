@@ -16885,7 +16885,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 
     default:
       /* An unresolved overload is a nondeduced context.  */
-      if (type_unknown_p (parm))
+      if (is_overloaded_fn (parm) || type_unknown_p (parm))
 	return unify_success (explain_p);
       gcc_assert (EXPR_P (parm));
 

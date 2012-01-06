@@ -1,5 +1,22 @@
 2012-01-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/6057
+	PR c++/48051
+	PR c++/50855
+	PR c++/51322
+	* cp-demangle.c (d_dump): Handle DEMANGLE_COMPONENT_NULLARY and
+	DEMANGLE_COMPONENT_INITIALIZER_LIST.
+	(d_make_comp): Likewise.  Allow null right arg for
+	DEMANGLE_COMPONENT_TRINARY_ARG2.
+	(cplus_demangle_operators): Adjust new/delete; add .*, :: and throw.
+	(d_template_args, d_template_arg): Handle 'J' for argument packs.
+	(d_exprlist): Add terminator parm.
+	(d_expression, d_print_comp): Handle initializer lists, nullary
+	expressions, prefix/suffix operators, and new.
+	(d_print_subexpr): Avoid parens around DEMANGLE_COMPONENT_QUAL_NAME
+	and DEMANGLE_COMPONENT_INITIALIZER_LIST.
+	* testsuite/demangle-expected: Add tests.
+
 	* cp-demangle.c (cplus_demangle_type): decltype, pack expansion
 	and vector are substitutable.
 	(cplus_demangle_operators): Sort.

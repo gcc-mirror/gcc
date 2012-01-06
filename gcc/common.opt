@@ -782,7 +782,10 @@ Driver Undocumented
 ;    function parameters used in other parameters and the return type.
 ;    First selectable in G++ 4.6.
 ;
-; 6: The version of the ABI that doesn't promote scoped enums to int.
+; 6: The version of the ABI that doesn't promote scoped enums to int and
+;    changes the mangling of template argument packs, const/static_cast,
+;    prefix ++ and --, and a class scope function used as a template
+;    argument.
 ;    First selectable in G++ 4.7.
 ;
 ; Additional positive integers will be assigned as new versions of

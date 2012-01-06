@@ -344,6 +344,9 @@ enum demangle_component_type
      template argument, and the right subtree is either NULL or
      another TEMPLATE_ARGLIST node.  */
   DEMANGLE_COMPONENT_TEMPLATE_ARGLIST,
+  /* An initializer list.  The left subtree is either an explicit type or
+     NULL, and the right subtree is a DEMANGLE_COMPONENT_ARGLIST.  */
+  DEMANGLE_COMPONENT_INITIALIZER_LIST,
   /* An operator.  This holds information about a standard
      operator.  */
   DEMANGLE_COMPONENT_OPERATOR,
@@ -353,6 +356,8 @@ enum demangle_component_type
   /* A typecast, represented as a unary operator.  The one subtree is
      the type to which the argument should be cast.  */
   DEMANGLE_COMPONENT_CAST,
+  /* A nullary expression.  The left subtree is the operator.  */
+  DEMANGLE_COMPONENT_NULLARY,
   /* A unary expression.  The left subtree is the operator, and the
      right subtree is the single argument.  */
   DEMANGLE_COMPONENT_UNARY,

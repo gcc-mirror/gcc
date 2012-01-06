@@ -1457,7 +1457,7 @@ is_overloaded_fn (tree x)
    (14.6.2), return the IDENTIFIER_NODE for that name.  Otherwise, return
    NULL_TREE.  */
 
-static tree
+tree
 dependent_name (tree x)
 {
   if (TREE_CODE (x) == IDENTIFIER_NODE)
