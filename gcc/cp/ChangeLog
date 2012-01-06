@@ -1,5 +1,21 @@
 2012-01-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/6057
+	PR c++/48051
+	PR c++/50855
+	PR c++/51322
+	* mangle.c (write_expression): Support NEW_EXPR, DELETE_EXPR,
+	THROW_EXPR, CONSTRUCTOR, OVERLOAD.  Fix PREINCREMENT_EXPR and
+	PREDECREMENT_EXPR.
+	(write_template_arg): Fix mangling of class-scope functions and
+	argument packs.
+	(mangle_decl): Update suggested -fabi-version argument.
+	* operators.def: Add DOTSTAR_EXPR, REINTERPRET_CAST_EXPR,
+	DYNAMIC_CAST_EXPR; correct CONST_CAST_EXPR, STATIC_CAST_EXPR.
+	* tree.c (dependent_name): No longer static.
+	* cp-tree.h: Declare it.
+	* pt.c (unify): Defer handling of unconverted functions.
+
 	* mangle.c (mangle_decl): Don't generate mangling aliases
 	for maybe-in-charge [cd]tors.
 

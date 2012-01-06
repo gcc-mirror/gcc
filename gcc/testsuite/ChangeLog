@@ -1,5 +1,21 @@
 2012-01-06  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/abi/mangle51.C: New.
+	* g++.dg/abi/mangle52.C: New.
+	* g++.dg/abi/mangle53.C: New.
+	* g++.dg/abi/mangle54.C: New.
+	* g++.dg/abi/mangle55.C: New.
+	* g++.dg/abi/mangle56.C: New.
+	* g++.dg/abi/mangle57.C: New.
+	* g++.dg/abi/mangle58.C: New.
+	* g++.dg/abi/mangle59.C: New.
+	* g++.dg/cpp0x/trailing3.C: Update mangling.
+	* g++.dg/cpp0x/variadic111.C: Update mangling.
+	* g++.dg/cpp0x/variadic4.C: Update mangling.
+	* g++.dg/cpp0x/variadic42.C: Pass -fabi-version=5.
+	* g++.dg/template/nontype22.C: Works now.
+	* g++.dg/template/pr35240.C: Works now.
+
 	* g++.dg/cpp0x/error7.C: New.
 
 2012-01-06  Tobias Burnus <burnus@net-b.de>
