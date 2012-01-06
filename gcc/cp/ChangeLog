@@ -1,5 +1,10 @@
 2012-01-06  Jason Merrill  <jason@redhat.com>
 
+	DR 686
+	PR c++/47450
+	* parser.c (cp_parser_new_expression): Set
+	type_definition_forbidden_message.
+
 	PR c++/6057
 	PR c++/48051
 	PR c++/50855

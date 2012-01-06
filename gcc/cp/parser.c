@@ -6668,10 +6668,17 @@ cp_parser_new_expression (cp_parser* parser)
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
     {
       cp_token *token;
+      const char *saved_message = parser->type_definition_forbidden_message;
+
       /* Consume the `('.  */
       cp_lexer_consume_token (parser->lexer);
+
       /* Parse the type-id.  */
+      parser->type_definition_forbidden_message
+	= G_("types may not be defined in a new-expression");
       type = cp_parser_type_id (parser);
+      parser->type_definition_forbidden_message = saved_message;
+
       /* Look for the closing `)'.  */
       cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
       token = cp_lexer_peek_token (parser->lexer);
