@@ -1,6 +1,6 @@
 /* Callgraph based interprocedural optimizations.
    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011 Free Software Foundation, Inc.
+   2011, 2012 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -2187,6 +2187,7 @@ cgraph_optimize (void)
 #endif
   bitmap_obstack_release (NULL);
   cgraph_mark_functions_to_output ();
+  output_weakrefs ();
 
   cgraph_state = CGRAPH_STATE_EXPANSION;
   if (!flag_toplevel_reorder)
@@ -2201,7 +2202,6 @@ cgraph_optimize (void)
       varpool_assemble_pending_decls ();
     }
 
-  output_weakrefs ();
   cgraph_process_new_functions ();
   cgraph_state = CGRAPH_STATE_FINISHED;
 
