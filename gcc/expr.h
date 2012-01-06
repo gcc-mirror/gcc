@@ -324,6 +324,8 @@ extern void emit_group_store (rtx, rtx, tree, int);
 /* Copy BLKmode object from a set of registers.  */
 extern rtx copy_blkmode_from_reg (rtx, rtx, tree);
 
+extern rtx copy_blkmode_to_reg (enum machine_mode, tree);
+
 /* Mark REG as holding a parameter for the next CALL_INSN.  */
 extern void use_reg (rtx *, rtx);
 

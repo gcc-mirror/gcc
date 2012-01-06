@@ -1,3 +1,8 @@
+2012-01-06  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR middle-end/48660
+	* g++.dg/pr48660.C: New test.
+
 2012-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ada/acats/overflow.lst: Add cb20004.
