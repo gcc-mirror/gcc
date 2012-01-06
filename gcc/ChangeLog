@@ -1,3 +1,8 @@
+2012-01-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/51746
+	* cselib.c (cselib_hash_rtx): Hash incoming VALUEs too.
+
 2012-01-06  Arnaud Charlet  <charlet@adacore.com>
 
 	* c-decl.c (ext_block): Moved up.

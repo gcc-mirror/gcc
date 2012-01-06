@@ -1020,6 +1020,10 @@ cselib_hash_rtx (rtx x, int create, enum machine_mode memmode)
 
   switch (code)
     {
+    case VALUE:
+      e = CSELIB_VAL_PTR (x);
+      return e->hash;
+
     case MEM:
     case REG:
       e = cselib_lookup (x, GET_MODE (x), create, memmode);
