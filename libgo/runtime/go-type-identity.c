@@ -8,35 +8,37 @@
 
 #include "go-type.h"
 
-/* Typedefs for accesses of different sizes.  */
+/* The 64-bit type.  */
 
-typedef int QItype __attribute__ ((mode (QI)));
-typedef int HItype __attribute__ ((mode (HI)));
-typedef int SItype __attribute__ ((mode (SI)));
-typedef int DItype __attribute__ ((mode (DI)));
+typedef unsigned int DItype __attribute__ ((mode (DI)));
 
 /* An identity hash function for a type.  This is used for types where
    we can simply use the type value itself as a hash code.  This is
    true of, e.g., integers and pointers.  */
 
-size_t
-__go_type_hash_identity (const void *key, size_t key_size)
+uintptr_t
+__go_type_hash_identity (const void *key, uintptr_t key_size)
 {
-  switch (key_size)
+  uintptr_t ret;
+  uintptr_t i;
+  const unsigned char *p;
+
+  if (key_size <= 8)
     {
-    case 1:
-      return *(const QItype *) key;
-    case 2:
-      return *(const HItype *) key;
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-      return *(const SItype *) key;
-    default:
-      return *(const DItype *) key;
+      union
+      {
+	DItype v;
+	unsigned char a[8];
+      } u;
+      u.v = 0;
+      __builtin_memcpy (&u.a, key, key_size);
+      return (uintptr_t) u.v;
     }
+
+  ret = 5381;
+  for (i = 0, p = (const unsigned char *) key; i < key_size; i++, p++)
+    ret = ret * 33 + *p;
+  return ret;
 }
 
 /* An identity equality function for a type.  This is used for types
@@ -44,7 +46,7 @@ __go_type_hash_identity (const void *key, size_t key_size)
    the same bits.  */
 
 _Bool
-__go_type_equal_identity (const void *k1, const void *k2, size_t key_size)
+__go_type_equal_identity (const void *k1, const void *k2, uintptr_t key_size)
 {
   return __builtin_memcmp (k1, k2, key_size) == 0;
 }

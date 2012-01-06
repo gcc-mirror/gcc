@@ -10,9 +10,9 @@
 /* A hash function used for a type which does not support hash
    functions.  */
 
-size_t
+uintptr_t
 __go_type_hash_error (const void *val __attribute__ ((unused)),
-		      size_t key_size __attribute__ ((unused)))
+		      uintptr_t key_size __attribute__ ((unused)))
 {
   runtime_panicstring ("hash of unhashable type");
 }
@@ -22,7 +22,7 @@ __go_type_hash_error (const void *val __attribute__ ((unused)),
 _Bool
 __go_type_equal_error (const void *v1 __attribute__ ((unused)),
 		       const void *v2 __attribute__ ((unused)),
-		       size_t key_size __attribute__ ((unused)))
+		       uintptr_t key_size __attribute__ ((unused)))
 {
   runtime_panicstring ("comparing uncomparable types");
 }

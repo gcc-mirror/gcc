@@ -38,6 +38,8 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int int_type_size,
     unique_prefix_(),
     unique_prefix_specified_(false),
     interface_types_(),
+    specific_type_functions_(),
+    specific_type_functions_are_written_(false),
     named_types_are_converted_(false)
 {
   const Location loc = Linemap::predeclared_location();
@@ -978,6 +980,16 @@ Gogo::declare_package_type(const std::string& name, Location location)
   return this->package_->bindings()->add_type_declaration(name, NULL, location);
 }
 
+// Declare a function at the package level.
+
+Named_object*
+Gogo::declare_package_function(const std::string& name, Function_type* type,
+			       Location location)
+{
+  return this->package_->bindings()->add_function_declaration(name, NULL, type,
+							      location);
+}
+
 // Define a type which was already declared.
 
 void
@@ -1114,6 +1126,46 @@ Gogo::clear_file_scope()
       package->clear_uses_sink_alias();
       package->clear_used();
     }
+}
+
+// Queue up a type specific function for later writing.  These are
+// written out in write_specific_type_functions, called after the
+// parse tree is lowered.
+
+void
+Gogo::queue_specific_type_function(Type* type, Named_type* name,
+				   const std::string& hash_name,
+				   Function_type* hash_fntype,
+				   const std::string& equal_name,
+				   Function_type* equal_fntype)
+{
+  go_assert(!this->specific_type_functions_are_written_);
+  go_assert(!this->in_global_scope());
+  Specific_type_function* tsf = new Specific_type_function(type, name,
+							   hash_name,
+							   hash_fntype,
+							   equal_name,
+							   equal_fntype);
+  this->specific_type_functions_.push_back(tsf);
+}
+
+// Write out type specific functions.
+
+void
+Gogo::write_specific_type_functions()
+{
+  while (!this->specific_type_functions_.empty())
+    {
+      Specific_type_function* tsf = this->specific_type_functions_.back();
+      this->specific_type_functions_.pop_back();
+      tsf->type->write_specific_type_functions(this, tsf->name,
+					       tsf->hash_name,
+					       tsf->hash_fntype,
+					       tsf->equal_name,
+					       tsf->equal_fntype);
+      delete tsf;
+    }
+  this->specific_type_functions_are_written_ = true;
 }
 
 // Traverse the tree.
@@ -1466,6 +1518,10 @@ Finalize_methods::type(Type* t)
 
     case Type::TYPE_STRUCT:
       t->struct_type()->finalize_methods(this->gogo_);
+      break;
+
+    case Type::TYPE_ARRAY:
+      t->array_type()->finalize_methods(this->gogo_);
       break;
 
     default:

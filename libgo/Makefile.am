@@ -460,8 +460,10 @@ runtime_files = \
 	runtime/go-strplus.c \
 	runtime/go-strslice.c \
 	runtime/go-trampoline.c \
+	runtime/go-type-complex.c \
 	runtime/go-type-eface.c \
 	runtime/go-type-error.c \
+	runtime/go-type-float.c \
 	runtime/go-type-identity.c \
 	runtime/go-type-interface.c \
 	runtime/go-type-string.c \

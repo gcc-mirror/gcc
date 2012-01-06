@@ -277,6 +277,11 @@ class Gogo
   Named_object*
   declare_function(const std::string&, Function_type*, Location);
 
+  // Declare a function at the package level.  This is used for
+  // functions generated for a type.
+  Named_object*
+  declare_package_function(const std::string&, Function_type*, Location);
+
   // Add a label.
   Label*
   add_label_definition(const std::string&, Location);
@@ -363,6 +368,20 @@ class Gogo
   // parsing a new file.
   void
   clear_file_scope();
+
+  // Queue up a type-specific function to be written out.  This is
+  // used when a type-specific function is needed when not at the top
+  // level.
+  void
+  queue_specific_type_function(Type* type, Named_type* name,
+			       const std::string& hash_name,
+			       Function_type* hash_fntype,
+			       const std::string& equal_name,
+			       Function_type* equal_fntype);
+
+  // Write out queued specific type functions.
+  void
+  write_specific_type_functions();
 
   // Traverse the tree.  See the Traverse class.
   void
@@ -603,6 +622,27 @@ class Gogo
   // Type used to map special names in the sys package.
   typedef std::map<std::string, std::string> Sys_names;
 
+  // Type used to queue writing a type specific function.
+  struct Specific_type_function
+  {
+    Type* type;
+    Named_type* name;
+    std::string hash_name;
+    Function_type* hash_fntype;
+    std::string equal_name;
+    Function_type* equal_fntype;
+
+    Specific_type_function(Type* atype, Named_type* aname,
+			   const std::string& ahash_name,
+			   Function_type* ahash_fntype,
+			   const std::string& aequal_name,
+			   Function_type* aequal_fntype)
+      : type(atype), name(aname), hash_name(ahash_name),
+	hash_fntype(ahash_fntype), equal_name(aequal_name),
+	equal_fntype(aequal_fntype)
+    { }
+  };
+
   // The backend generator.
   Backend* backend_;
   // The object used to keep track of file names and line numbers.
@@ -635,6 +675,10 @@ class Gogo
   bool unique_prefix_specified_;
   // A list of interface types defined while parsing.
   std::vector<Interface_type*> interface_types_;
+  // Type specific functions to write out.
+  std::vector<Specific_type_function*> specific_type_functions_;
+  // Whether we are done writing out specific type functions.
+  bool specific_type_functions_are_written_;
   // Whether named types have been converted.
   bool named_types_are_converted_;
 };

@@ -208,7 +208,8 @@ am__libgo_la_SOURCES_DIST = runtime/go-append.c runtime/go-assert.c \
 	runtime/go-string-to-byte-array.c \
 	runtime/go-string-to-int-array.c runtime/go-strplus.c \
 	runtime/go-strslice.c runtime/go-trampoline.c \
-	runtime/go-type-eface.c runtime/go-type-error.c \
+	runtime/go-type-complex.c runtime/go-type-eface.c \
+	runtime/go-type-error.c runtime/go-type-float.c \
 	runtime/go-type-identity.c runtime/go-type-interface.c \
 	runtime/go-type-string.c runtime/go-typedesc-equal.c \
 	runtime/go-typestring.c runtime/go-unreflect.c \
@@ -242,13 +243,14 @@ am__objects_4 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-reflect-map.lo go-rune.lo go-runtime-error.lo go-setenv.lo \
 	go-signal.lo go-strcmp.lo go-string-to-byte-array.lo \
 	go-string-to-int-array.lo go-strplus.lo go-strslice.lo \
-	go-trampoline.lo go-type-eface.lo go-type-error.lo \
-	go-type-identity.lo go-type-interface.lo go-type-string.lo \
-	go-typedesc-equal.lo go-typestring.lo go-unreflect.lo \
-	go-unsafe-new.lo go-unsafe-newarray.lo go-unsafe-pointer.lo \
-	go-unwind.lo chan.lo cpuprof.lo $(am__objects_1) mcache.lo \
-	mcentral.lo $(am__objects_2) mfinal.lo mfixalloc.lo mgc0.lo \
-	mheap.lo msize.lo proc.lo runtime.lo thread.lo yield.lo \
+	go-trampoline.lo go-type-complex.lo go-type-eface.lo \
+	go-type-error.lo go-type-float.lo go-type-identity.lo \
+	go-type-interface.lo go-type-string.lo go-typedesc-equal.lo \
+	go-typestring.lo go-unreflect.lo go-unsafe-new.lo \
+	go-unsafe-newarray.lo go-unsafe-pointer.lo go-unwind.lo \
+	chan.lo cpuprof.lo $(am__objects_1) mcache.lo mcentral.lo \
+	$(am__objects_2) mfinal.lo mfixalloc.lo mgc0.lo mheap.lo \
+	msize.lo proc.lo runtime.lo thread.lo yield.lo \
 	$(am__objects_3) iface.lo malloc.lo map.lo mprof.lo reflect.lo \
 	runtime1.lo sema.lo sigqueue.lo string.lo time.lo
 am_libgo_la_OBJECTS = $(am__objects_4)
@@ -881,8 +883,10 @@ runtime_files = \
 	runtime/go-strplus.c \
 	runtime/go-strslice.c \
 	runtime/go-trampoline.c \
+	runtime/go-type-complex.c \
 	runtime/go-type-eface.c \
 	runtime/go-type-error.c \
+	runtime/go-type-float.c \
 	runtime/go-type-identity.c \
 	runtime/go-type-interface.c \
 	runtime/go-type-string.c \
@@ -2523,8 +2527,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-strplus.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-strslice.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-trampoline.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-complex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-eface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-error.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-float.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-identity.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-interface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-string.Plo@am__quote@
@@ -2928,6 +2934,13 @@ go-trampoline.lo: runtime/go-trampoline.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-trampoline.lo `test -f 'runtime/go-trampoline.c' || echo '$(srcdir)/'`runtime/go-trampoline.c
 
+go-type-complex.lo: runtime/go-type-complex.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-type-complex.lo -MD -MP -MF $(DEPDIR)/go-type-complex.Tpo -c -o go-type-complex.lo `test -f 'runtime/go-type-complex.c' || echo '$(srcdir)/'`runtime/go-type-complex.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-type-complex.Tpo $(DEPDIR)/go-type-complex.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-type-complex.c' object='go-type-complex.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-type-complex.lo `test -f 'runtime/go-type-complex.c' || echo '$(srcdir)/'`runtime/go-type-complex.c
+
 go-type-eface.lo: runtime/go-type-eface.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-type-eface.lo -MD -MP -MF $(DEPDIR)/go-type-eface.Tpo -c -o go-type-eface.lo `test -f 'runtime/go-type-eface.c' || echo '$(srcdir)/'`runtime/go-type-eface.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-type-eface.Tpo $(DEPDIR)/go-type-eface.Plo
@@ -2941,6 +2954,13 @@ go-type-error.lo: runtime/go-type-error.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-type-error.c' object='go-type-error.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-type-error.lo `test -f 'runtime/go-type-error.c' || echo '$(srcdir)/'`runtime/go-type-error.c
+
+go-type-float.lo: runtime/go-type-float.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-type-float.lo -MD -MP -MF $(DEPDIR)/go-type-float.Tpo -c -o go-type-float.lo `test -f 'runtime/go-type-float.c' || echo '$(srcdir)/'`runtime/go-type-float.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-type-float.Tpo $(DEPDIR)/go-type-float.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-type-float.c' object='go-type-float.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-type-float.lo `test -f 'runtime/go-type-float.c' || echo '$(srcdir)/'`runtime/go-type-float.c
 
 go-type-identity.lo: runtime/go-type-identity.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-type-identity.lo -MD -MP -MF $(DEPDIR)/go-type-identity.Tpo -c -o go-type-identity.lo `test -f 'runtime/go-type-identity.c' || echo '$(srcdir)/'`runtime/go-type-identity.c

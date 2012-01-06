@@ -522,6 +522,21 @@ class Type
   static bool
   are_compatible_for_binop(const Type* t1, const Type* t2);
 
+  // Return true if two types are compatible for use with the
+  // comparison operator.  IS_EQUALITY_OP is true if this is an
+  // equality comparison, false if it is an ordered comparison.  This
+  // is an equivalence relation.  If this returns false, and REASON is
+  // not NULL, it sets *REASON.
+  static bool
+  are_compatible_for_comparison(bool is_equality_op, const Type *t1,
+				const Type *t2, std::string* reason);
+
+  // Return true if a type is comparable with itself.  This is true of
+  // most types, but false for, e.g., function types.
+  bool
+  is_comparable() const
+  { return Type::are_compatible_for_comparison(true, this, this, NULL); }
+
   // Return true if a value with type RHS is assignable to a variable
   // with type LHS.  This is not an equivalence relation.  If this
   // returns false, and REASON is not NULL, it sets *REASON.
@@ -548,6 +563,13 @@ class Type
   // WITHIN is not NULL if we are looking at fields in a named type.
   bool
   has_hidden_fields(const Named_type* within, std::string* reason) const;
+
+  // Return true if values of this type can be compared using an
+  // identity function which gets nothing but a pointer to the value
+  // and a size.
+  bool
+  compare_is_identity() const
+  { return this->do_compare_is_identity(); }
 
   // Return a hash code for this type for the method hash table.
   // Types which are equivalent according to are_identical will have
@@ -839,6 +861,20 @@ class Type
   std::string
   mangled_name(Gogo*) const;
 
+  // Get the hash and equality functions for a type.
+  void
+  type_functions(Gogo*, Named_type* name, Function_type* hash_fntype,
+		 Function_type* equal_fntype, Named_object** hash_fn,
+		 Named_object** equal_fn);
+
+  // Write the hash and equality type functions.
+  void
+  write_specific_type_functions(Gogo*, Named_type*,
+				const std::string& hash_name,
+				Function_type* hash_fntype,
+				const std::string& equal_name,
+				Function_type* equal_fntype);
+
   // Export the type.
   void
   export_type(Export* exp) const
@@ -866,6 +902,9 @@ class Type
   do_has_pointer() const
   { return false; }
 
+  virtual bool
+  do_compare_is_identity() const = 0;
+
   virtual unsigned int
   do_hash_for_method(Gogo*) const;
 
@@ -877,7 +916,6 @@ class Type
 
   virtual void
   do_reflection(Gogo*, std::string*) const = 0;
-
 
   virtual void
   do_mangled_name(Gogo*, std::string*) const = 0;
@@ -1002,18 +1040,24 @@ class Type
   void
   make_type_descriptor_var(Gogo*);
 
-  // Return the name of the type descriptor variable for an unnamed
-  // type.
+  // Return the name of the type descriptor variable.  If NAME is not
+  // NULL, it is the name to use.
   std::string
-  unnamed_type_descriptor_var_name(Gogo*);
+  type_descriptor_var_name(Gogo*, Named_type* name);
 
-  // Return the name of the type descriptor variable for a named type.
-  std::string
-  type_descriptor_var_name(Gogo*);
+  // Return true if the type descriptor for this type should be
+  // defined in some other package.  If NAME is not NULL, it is the
+  // name of this type.  If this returns true it sets *PACKAGE to the
+  // package where the type descriptor is defined.
+  bool
+  type_descriptor_defined_elsewhere(Named_type* name, const Package** package);
 
-  // Get the hash and equality functions for a type.
+  // Build the hash and equality type functions for a type which needs
+  // specific functions.
   void
-  type_functions(const char** hash_fn, const char** equal_fn) const;
+  specific_type_functions(Gogo*, Named_type*, Function_type* hash_fntype,
+			  Function_type* equal_fntype, Named_object** hash_fn,
+			  Named_object** equal_fn);
 
   // Build a composite literal for the uncommon type information.
   Expression*
@@ -1096,6 +1140,14 @@ class Type
 
   // A list of builtin named types.
   static std::vector<Named_type*> named_builtin_types;
+
+  // A map from types which need specific type functions to the type
+  // functions themselves.
+  typedef std::pair<Named_object*, Named_object*> Hash_equal_fn;
+  typedef Unordered_map_hash(const Type*, Hash_equal_fn, Type_hash_identical,
+			     Type_identical) Type_functions;
+
+  static Type_functions type_functions_table;
 
   // The type classification.
   Type_classification classification_;
@@ -1314,6 +1366,10 @@ class Integer_type : public Type
   is_identical(const Integer_type* t) const;
 
  protected:
+  bool
+  do_compare_is_identity() const
+  { return true; }
+
   unsigned int
   do_hash_for_method(Gogo*) const;
 
@@ -1383,6 +1439,10 @@ class Float_type : public Type
   is_identical(const Float_type* t) const;
 
  protected:
+  bool
+  do_compare_is_identity() const
+  { return false; }
+
   unsigned int
   do_hash_for_method(Gogo*) const;
 
@@ -1448,6 +1508,10 @@ class Complex_type : public Type
   is_identical(const Complex_type* t) const;
 
  protected:
+  bool
+  do_compare_is_identity() const
+  { return false; }
+
   unsigned int
   do_hash_for_method(Gogo*) const;
 
@@ -1503,6 +1567,10 @@ class String_type : public Type
   bool
   do_has_pointer() const
   { return true; }
+
+  bool
+  do_compare_is_identity() const
+  { return false; }
 
   Btype*
   do_get_backend(Gogo*);
@@ -1618,6 +1686,10 @@ class Function_type : public Type
   do_has_pointer() const
   { return true; }
 
+  bool
+  do_compare_is_identity() const
+  { return false; }
+
   unsigned int
   do_hash_for_method(Gogo*) const;
 
@@ -1697,6 +1769,10 @@ class Pointer_type : public Type
 
   bool
   do_has_pointer() const
+  { return true; }
+
+  bool
+  do_compare_is_identity() const
   { return true; }
 
   unsigned int
@@ -1944,6 +2020,14 @@ class Struct_type : public Type
   static Type*
   make_struct_type_descriptor_type();
 
+  // Write the hash function for this type.
+  void
+  write_hash_function(Gogo*, Named_type*, Function_type*, Function_type*);
+
+  // Write the equality function for this type.
+  void
+  write_equal_function(Gogo*, Named_type*);
+
  protected:
   int
   do_traverse(Traverse*);
@@ -1953,6 +2037,9 @@ class Struct_type : public Type
 
   bool
   do_has_pointer() const;
+
+  bool
+  do_compare_is_identity() const;
 
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -2022,6 +2109,10 @@ class Array_type : public Type
   array_has_hidden_fields(const Named_type* within, std::string* reason) const
   { return this->element_type_->has_hidden_fields(within, reason); }
 
+  // Build the hash and equality functions if necessary.
+  void
+  finalize_methods(Gogo*);
+
   // Return a tree for the pointer to the values in an array.
   tree
   value_pointer_tree(Gogo*, tree array) const;
@@ -2052,6 +2143,14 @@ class Array_type : public Type
   static Type*
   make_slice_type_descriptor_type();
 
+  // Write the hash function for this type.
+  void
+  write_hash_function(Gogo*, Named_type*, Function_type*, Function_type*);
+
+  // Write the equality function for this type.
+  void
+  write_equal_function(Gogo*, Named_type*);
+
  protected:
   int
   do_traverse(Traverse* traverse);
@@ -2063,6 +2162,13 @@ class Array_type : public Type
   do_has_pointer() const
   {
     return this->length_ == NULL || this->element_type_->has_pointer();
+  }
+
+  bool
+  do_compare_is_identity() const
+  {
+    return (this->length_ != NULL
+	    && this->element_type_->compare_is_identity());
   }
 
   unsigned int
@@ -2155,6 +2261,10 @@ class Map_type : public Type
   do_has_pointer() const
   { return true; }
 
+  bool
+  do_compare_is_identity() const
+  { return false; }
+
   unsigned int
   do_hash_for_method(Gogo*) const;
 
@@ -2235,6 +2345,10 @@ class Channel_type : public Type
 
   bool
   do_has_pointer() const
+  { return true; }
+
+  bool
+  do_compare_is_identity() const
   { return true; }
 
   unsigned int
@@ -2347,6 +2461,10 @@ class Interface_type : public Type
   bool
   do_has_pointer() const
   { return true; }
+
+  bool
+  do_compare_is_identity() const
+  { return false; }
 
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -2480,6 +2598,11 @@ class Named_type : public Type
   bool
   is_named_error_type() const;
 
+  // Return whether this type is comparable.  If REASON is not NULL,
+  // set *REASON when returning false.
+  bool
+  named_type_is_comparable(std::string* reason) const;
+
   // Add a method to this type.
   Named_object*
   add_method(const std::string& name, Function*);
@@ -2571,6 +2694,9 @@ class Named_type : public Type
 
   bool
   do_has_pointer() const;
+
+  bool
+  do_compare_is_identity() const;
 
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -2703,6 +2829,10 @@ class Forward_declaration_type : public Type
   bool
   do_has_pointer() const
   { return this->real_type()->has_pointer(); }
+
+  bool
+  do_compare_is_identity() const
+  { return this->real_type()->compare_is_identity(); }
 
   unsigned int
   do_hash_for_method(Gogo* gogo) const

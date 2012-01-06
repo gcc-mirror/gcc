@@ -106,6 +106,9 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   // form which is easier to use.
   ::gogo->lower_parse_tree();
 
+  // Write out queued up functions for hash and comparison of types.
+  ::gogo->write_specific_type_functions();
+
   // Now that we have seen all the names, verify that types are
   // correct.
   ::gogo->verify_types();
