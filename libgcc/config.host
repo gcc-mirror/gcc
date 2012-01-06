@@ -639,23 +639,23 @@ i[34567]86-*-interix3*)
 	;;
 ia64*-*-elf*)
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crtfastmath.o"
-	tmake_file="ia64/t-ia64 ia64/t-eh-ia64 t-crtfm"
+	tmake_file="ia64/t-ia64 ia64/t-ia64-elf ia64/t-eh-ia64 t-crtfm"
 	;;
 ia64*-*-freebsd*)
 	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="$tmake_file ia64/t-ia64 ia64/t-eh-ia64 t-crtfm"
+	tmake_file="$tmake_file ia64/t-ia64 ia64/t-ia64-elf ia64/t-eh-ia64 t-crtfm"
 	;;
 ia64*-*-linux*)
 	# Don't use crtbeginT.o from *-*-linux* default.
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
-	tmake_file="$tmake_file ia64/t-ia64 t-crtfm t-softfp-tf ia64/t-softfp t-softfp ia64/t-softfp-compat ia64/t-eh-ia64 t-libunwind ia64/t-linux"
+	tmake_file="$tmake_file ia64/t-ia64 ia64/t-ia64-elf t-crtfm t-softfp-tf ia64/t-softfp t-softfp ia64/t-softfp-compat ia64/t-eh-ia64 t-libunwind ia64/t-linux"
 	if test x$with_system_libunwind != xyes ; then
 		tmake_file="${tmake_file} t-libunwind-elf ia64/t-linux-libunwind"
 	fi
 	md_unwind_header=ia64/linux-unwind.h
 	;;
 ia64*-*-hpux*)
-	tmake_file="ia64/t-ia64 ia64/t-hpux t-slibgcc ia64/t-slibgcc-hpux t-slibgcc-hpux"
+	tmake_file="ia64/t-ia64 ia64/t-ia64-elf ia64/t-hpux t-slibgcc ia64/t-slibgcc-hpux t-slibgcc-hpux"
 	;;
 ia64-hp-*vms*)
 	tmake_file="$tmake_file ia64/t-ia64 ia64/t-eh-ia64 ia64/t-vms t-slibgcc-vms"

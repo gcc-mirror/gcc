@@ -1,3 +1,13 @@
+2012-01-06  Tristan Gingold  <gingold@adacore.com>
+
+	* config/ia64/t-ia64 (LIB1ASMFUNCS): Move backward
+	compatibility thunks...
+	(CUSTOM_CRTSTUFF, crtbegin.o, crtend.o)
+	(crtbeginS.o, crtendS.o): ... and these to ...
+	* config/ia64/t-ia64-elf: ... this new file.
+	* config.host (ia64*-*-elf*, ia64*-*-freebsd*, ia64*-*-linux*)
+	(ia64*-*-hpux*): Add ia64/t-ia64-elf in tmake_file.
+
 2012-01-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* configure: Regenerate.

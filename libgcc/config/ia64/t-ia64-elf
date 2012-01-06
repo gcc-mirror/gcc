@@ -1,0 +1,20 @@
+LIB1ASMFUNCS  += _fixtfdi _fixunstfdi _floatditf
+
+CUSTOM_CRTSTUFF = yes
+
+# Assemble startup files.
+# FIXME: -I$(gcc_objdir) is necessary to find auto-host.h.  Really?
+crtbegin.o: $(srcdir)/config/ia64/crtbegin.S
+	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp \
+		-o $@ $<
+crtend.o: $(srcdir)/config/ia64/crtend.S
+	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp \
+		-o $@ $<
+crtbeginS.o: $(srcdir)/config/ia64/crtbegin.S
+	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp \
+		-o $@ -DSHARED $<
+crtendS.o: $(srcdir)/config/ia64/crtend.S
+	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp \
+		-o $@ -DSHARED $<
+
+SHLIB_MAPFILES += $(srcdir)/config/ia64/libgcc-ia64.ver
