@@ -2194,6 +2194,8 @@ dump_expr (tree t, int flags)
 	}
       else
 	{
+	  if (!BRACE_ENCLOSED_INITIALIZER_P (t))
+	    dump_type (TREE_TYPE (t), 0);
 	  pp_cxx_left_brace (cxx_pp);
 	  dump_expr_init_vec (CONSTRUCTOR_ELTS (t), flags);
 	  pp_cxx_right_brace (cxx_pp);
