@@ -9932,6 +9932,9 @@ collect_source_ref_cb (tree decl)
     collect_source_ref (LOCATION_FILE (decl_sloc (decl, false)));
 }
 
+/* Preserve the external declarations scope across a garbage collect.  */
+static GTY(()) tree ext_block;
+
 /* Collect all references relevant to SOURCE_FILE.  */
 
 static void
@@ -9942,6 +9945,8 @@ collect_all_refs (const char *source_file)
 
   FOR_EACH_VEC_ELT (tree, all_translation_units, i, t)
     collect_ada_nodes (BLOCK_VARS (DECL_INITIAL (t)), source_file);
+
+  collect_ada_nodes (BLOCK_VARS (ext_block), source_file);
 }
 
 /* Iterate over all global declarations and call CALLBACK.  */
@@ -9960,10 +9965,10 @@ for_each_global_decl (void (*callback) (tree decl))
       for (decl = BLOCK_VARS (decls); decl; decl = TREE_CHAIN (decl))
 	callback (decl);
     }
-}
 
-/* Preserve the external declarations scope across a garbage collect.  */
-static GTY(()) tree ext_block;
+  for (decl = BLOCK_VARS (ext_block); decl; decl = TREE_CHAIN (decl))
+    callback (decl);
+}
 
 void
 c_write_global_declarations (void)

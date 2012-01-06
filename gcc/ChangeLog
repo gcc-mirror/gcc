@@ -1,3 +1,8 @@
+2012-01-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* c-decl.c (ext_block): Moved up.
+	(collect_all_refs, for_each_global_decl): Take ext_block into account.
+
 2012-01-06  Han Shen  <shenhan@google.com>
 
 	Translate built-in include paths for sysroot.
