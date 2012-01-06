@@ -1,3 +1,9 @@
+2012-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/50127
+	* bb-reorder.c (partition_hot_cold_basic_blocks): Call
+	clear_aux_for_blocks.
+
 2012-01-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/51746
