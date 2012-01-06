@@ -1335,6 +1335,12 @@ package Sinfo is
    --    conditions holds, and the flag is set, then the division or
    --    multiplication can be (and is) converted to a shift.
 
+   --  Is_Prefixed_Call (Flag17-Sem)
+   --    This flag is set in a selected component within a generic unit, if
+   --    it resolves to a prefixed call to a primitive operation. The flag
+   --    is used to prevent accidental overloadings in an instance, when a
+   --    primitive operation and a private record component may be homographs.
+
    --  Is_Protected_Subprogram_Body (Flag7-Sem)
    --    A flag set in a Subprogram_Body block to indicate that it is the
    --    implementation of a protected subprogram. Such a body needs cleanup
@@ -3249,6 +3255,7 @@ package Sinfo is
       --  Associated_Node (Node4-Sem)
       --  Do_Discriminant_Check (Flag13-Sem)
       --  Is_In_Discriminant_Check (Flag11-Sem)
+      --  Is_Prefixed_Call (Flag17-Sem)
       --  Atomic_Sync_Required (Flag14-Sem)
       --  plus fields for expression
 
@@ -8653,6 +8660,9 @@ package Sinfo is
    function Is_Power_Of_2_For_Shift
      (N : Node_Id) return Boolean;    -- Flag13
 
+   function Is_Prefixed_Call
+     (N : Node_Id) return Boolean;    -- Flag17
+
    function Is_Protected_Subprogram_Body
      (N : Node_Id) return Boolean;    -- Flag7
 
@@ -9630,6 +9640,9 @@ package Sinfo is
 
    procedure Set_Is_Power_Of_2_For_Shift
      (N : Node_Id; Val : Boolean := True);    -- Flag13
+
+   procedure Set_Is_Prefixed_Call
+     (N : Node_Id; Val : Boolean := True);    -- Flag17
 
    procedure Set_Is_Protected_Subprogram_Body
      (N : Node_Id; Val : Boolean := True);    -- Flag7
@@ -11971,6 +11984,7 @@ package Sinfo is
    pragma Inline (Is_Null_Loop);
    pragma Inline (Is_Overloaded);
    pragma Inline (Is_Power_Of_2_For_Shift);
+   pragma Inline (Is_Prefixed_Call);
    pragma Inline (Is_Protected_Subprogram_Body);
    pragma Inline (Is_Static_Coextension);
    pragma Inline (Is_Static_Expression);
@@ -12293,6 +12307,7 @@ package Sinfo is
    pragma Inline (Set_Is_Null_Loop);
    pragma Inline (Set_Is_Overloaded);
    pragma Inline (Set_Is_Power_Of_2_For_Shift);
+   pragma Inline (Set_Is_Prefixed_Call);
    pragma Inline (Set_Is_Protected_Subprogram_Body);
    pragma Inline (Set_Has_Self_Reference);
    pragma Inline (Set_Is_Static_Coextension);

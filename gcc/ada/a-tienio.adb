@@ -101,14 +101,10 @@ package body Ada.Text_IO.Enumeration_IO is
       --  checks suppressed, which includes instantiated generics.
 
       if not Item'Valid then
-         raise Constraint_Error;
+         raise Constraint_Error with "invalid enumeration value";
       end if;
 
-      declare
-         Image : constant String := Enum'Image (Item);
-      begin
-         Aux.Put (File, Image, Width, Set);
-      end;
+      Aux.Put (File, Enum'Image (Item), Width, Set);
    end Put;
 
    procedure Put
@@ -132,14 +128,10 @@ package body Ada.Text_IO.Enumeration_IO is
       --  checks suppressed, which includes instantiated generics.
 
       if not Item'Valid then
-         raise Constraint_Error;
+         raise Constraint_Error with "invalid enumeration value";
       end if;
 
-      declare
-         Image : constant String := Enum'Image (Item);
-      begin
-         Aux.Puts (To, Image, Set);
-      end;
+      Aux.Puts (To, Enum'Image (Item), Set);
    end Put;
 
 end Ada.Text_IO.Enumeration_IO;

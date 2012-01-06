@@ -3858,8 +3858,10 @@ package body Sem_Ch4 is
       elsif Is_Record_Type (Prefix_Type) then
 
          --  Find component with given name
+         --  In an instance, if the node is known as a prefixed call, do
+         --  not examine components whose visibility may be accidental.
 
-         while Present (Comp) loop
+         while Present (Comp) and then not Is_Prefixed_Call (N) loop
             if Chars (Comp) = Chars (Sel)
               and then Is_Visible_Component (Comp)
             then

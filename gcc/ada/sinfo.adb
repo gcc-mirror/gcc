@@ -1838,6 +1838,14 @@ package body Sinfo is
       return Flag13 (N);
    end Is_Power_Of_2_For_Shift;
 
+   function Is_Prefixed_Call
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Selected_Component);
+      return Flag17 (N);
+   end Is_Prefixed_Call;
+
    function Is_Protected_Subprogram_Body
       (N : Node_Id) return Boolean is
    begin
@@ -4909,6 +4917,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Op_Expon);
       Set_Flag13 (N, Val);
    end Set_Is_Power_Of_2_For_Shift;
+
+   procedure Set_Is_Prefixed_Call
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Selected_Component);
+      Set_Flag17 (N, Val);
+   end Set_Is_Prefixed_Call;
 
    procedure Set_Is_Protected_Subprogram_Body
       (N : Node_Id; Val : Boolean := True) is

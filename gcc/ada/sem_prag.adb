@@ -14501,7 +14501,7 @@ package body Sem_Prag is
                      --  the formal may be wrapped in a conversion if the
                      --  actual is a conversion. Retrieve the real entity name.
 
-                     if (In_Instance_Body or else In_Inlined_Body)
+                     if (In_Instance_Body or In_Inlined_Body)
                        and then Nkind (E_Id) = N_Unchecked_Type_Conversion
                      then
                         E_Id := Expression (E_Id);

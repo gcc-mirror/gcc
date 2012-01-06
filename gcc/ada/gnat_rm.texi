@@ -9608,6 +9608,14 @@ The following convention names are supported
 @table @code
 @item  Ada
 Ada
+@item Ada_Pass_By_Copy
+Allowed for any types except by-reference types such as limited
+records. Compatible with convention Ada, but causes any parameters
+with this convention to be passed by copy.
+@item Ada_Pass_By_Reference
+Allowed for any types except by-copy types such as scalars.
+Compatible with convention Ada, but causes any parameters
+with this convention to be passed by reference.
 @item Assembler
 Assembly language
 @item Asm
