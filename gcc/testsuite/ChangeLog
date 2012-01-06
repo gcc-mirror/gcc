@@ -1,8 +1,11 @@
+2012-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ada/acats/overflow.lst: Add cb20004.
+
 2012-01-05  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51541
 	* g++.dg/cpp0x/alias-decl-18.C: New test.
-
 
 2012-01-05  Eric Botcazou  <ebotcazou@adacore.com>
 
