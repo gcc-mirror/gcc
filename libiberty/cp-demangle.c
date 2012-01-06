@@ -1554,7 +1554,8 @@ d_identifier (struct d_info *di, int len)
 /* operator_name ::= many different two character encodings.
                  ::= cv <type>
                  ::= v <digit> <source-name>
-*/
+
+   This list is sorted for binary search.  */
 
 #define NL(s) s, (sizeof s) - 1
 
@@ -1566,6 +1567,8 @@ const struct demangle_operator_info cplus_demangle_operators[] =
   { "aa", NL ("&&"),        2 },
   { "ad", NL ("&"),         1 },
   { "an", NL ("&"),         2 },
+  { "at", NL ("alignof "),   1 },
+  { "az", NL ("alignof "),   1 },
   { "cl", NL ("()"),        2 },
   { "cm", NL (","),         2 },
   { "co", NL ("~"),         1 },
@@ -1611,8 +1614,6 @@ const struct demangle_operator_info cplus_demangle_operators[] =
   { "rs", NL (">>"),        2 },
   { "st", NL ("sizeof "),   1 },
   { "sz", NL ("sizeof "),   1 },
-  { "at", NL ("alignof "),   1 },
-  { "az", NL ("alignof "),   1 },
   { NULL, NULL, 0,          0 }
 };
 
@@ -2242,12 +2243,14 @@ cplus_demangle_type (struct d_info *di)
 			     d_expression (di), NULL);
 	  if (ret && d_next_char (di) != 'E')
 	    ret = NULL;
+	  can_subst = 1;
 	  break;
 	  
 	case 'p':
 	  /* Pack expansion.  */
 	  ret = d_make_comp (di, DEMANGLE_COMPONENT_PACK_EXPANSION,
 			     cplus_demangle_type (di), NULL);
+	  can_subst = 1;
 	  break;
 	  
 	case 'f':
@@ -2298,6 +2301,7 @@ cplus_demangle_type (struct d_info *di)
 
 	case 'v':
 	  ret = d_vector_type (di);
+	  can_subst = 1;
 	  break;
 
         case 'n':

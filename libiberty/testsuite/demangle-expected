@@ -4018,6 +4018,18 @@ K<1, &S::m>::f()
 --format=gnu-v3
 _ZSt10_ConstructI10CellBorderIS0_EEvPT_DpOT0_
 _ZSt10_ConstructI10CellBorderIS0_EEvPT_DpOT0_
+# A pack expansion is substitutable.
+--format=gnu-v3
+_Z1fIJiEiEv1AIJDpT_EET0_S4_
+void f<int, int>(A<int>, int, int)
+# So is decltype.
+--format=gnu-v3
+_Z1fIiiEDTcvT__EET0_S2_
+decltype ((int)()) f<int, int>(int, int)
+# And vector.
+--format=gnu-v3
+_Z1fDv4_iS_
+f(int __vector(4), int __vector(4))
 #
 # Ada (GNAT) tests.
 #
