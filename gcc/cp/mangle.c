@@ -3194,7 +3194,10 @@ mangle_decl (const tree decl)
   tree id = get_mangled_id (decl);
   SET_DECL_ASSEMBLER_NAME (decl, id);
 
-  if (G.need_abi_warning)
+  if (G.need_abi_warning
+      /* Don't do this for a fake symbol we aren't going to emit anyway.  */
+      && !DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)
+      && !DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl))
     {
 #ifdef ASM_OUTPUT_DEF
       /* If the mangling will change in the future, emit an alias with the
