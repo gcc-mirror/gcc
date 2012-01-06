@@ -1,5 +1,5 @@
 /* MPI implementation of GNU Fortran Coarray Library
-   Copyright (C) 2011
+   Copyright (C) 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Tobias Burnus <burnus@net-b.de>
 
@@ -119,7 +119,7 @@ _gfortran_caf_finalize (void)
 
 
 void *
-_gfortran_caf_register (ptrdiff_t size, caf_register_t type, void **token,
+_gfortran_caf_register (ptrdiff_t size, caf_register_t type, void ***token,
 			int *stat, char *errmsg, int errmsg_len)
 {
   void *local;
@@ -134,18 +134,19 @@ _gfortran_caf_register (ptrdiff_t size, caf_register_t type, void **token,
 
   /* Token contains only a list of pointers.  */
   local = malloc (size);
-  token = malloc (sizeof (void*) * caf_num_images);
+  *token = malloc (sizeof (void*) * caf_num_images);
 
-  if (unlikely (local == NULL || token == NULL))
+  if (unlikely (local == NULL || *token == NULL))
     goto error;
 
   /* token[img-1] is the address of the token in image "img".  */
-  err = MPI_Allgather (&local, sizeof (void*), MPI_BYTE, token,
+  err = MPI_Allgather (&local, sizeof (void*), MPI_BYTE, *token,
 		       sizeof (void*), MPI_BYTE, MPI_COMM_WORLD);
+
   if (unlikely (err))
     {
       free (local);
-      free (token);
+      free (*token);
       goto error;
     }
 
@@ -153,7 +154,7 @@ _gfortran_caf_register (ptrdiff_t size, caf_register_t type, void **token,
     {
       caf_static_t *tmp = malloc (sizeof (caf_static_t));
       tmp->prev  = caf_static_list;
-      tmp->token = token;
+      tmp->token = *token;
       caf_static_list = tmp;
     }
 
@@ -192,7 +193,7 @@ error:
 
 
 void
-_gfortran_caf_deregister (void **token, int *stat, char *errmsg, int errmsg_len)
+_gfortran_caf_deregister (void ***token, int *stat, char *errmsg, int errmsg_len)
 {
   if (unlikely (caf_is_finalized))
     {
@@ -220,8 +221,8 @@ _gfortran_caf_deregister (void **token, int *stat, char *errmsg, int errmsg_len)
   if (stat)
     *stat = 0;
 
-  free (token[caf_this_image-1]);
-  free (token);
+  free ((*token)[caf_this_image-1]);
+  free (*token);
 }
 
 

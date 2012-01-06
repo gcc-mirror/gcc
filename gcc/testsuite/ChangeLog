@@ -1,3 +1,13 @@
+2012-01-06  Tobias Burnus <burnus@net-b.de>
+
+	* gfortran.dg/deallocate_stat_2.f90: New.
+	* coarray/allocate_errgmsg.f90: New.
+	* gfortran.dg/coarray_lib_alloc_1.f90: New.
+	* gfortran.dg/coarray_lib_alloc_2.f90: New.
+	* coarray/subobject_1.f90: Fix for num_images > 1.
+	* gfortran.dg/deallocate_stat.f90: Update due to changed
+	stat= handling.
+
 2012-01-06  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gcc.target/arm/headmerge-2.c: Adjust scan pattern.

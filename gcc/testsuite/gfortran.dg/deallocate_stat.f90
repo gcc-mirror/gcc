@@ -69,9 +69,9 @@ program deallocate_stat
    i = 13
    deallocate(a1, stat=i) ;         if (i /= 0) call abort
    deallocate(a2, a1, stat=i) ;     if (i /= 1) call abort
-   deallocate(a1, a3, a2, stat=i) ; if (i /= 2) call abort
+   deallocate(a1, a3, a2, stat=i) ; if (i /= 1) call abort
    deallocate(b4, stat=i) ;         if (i /= 0) call abort
    deallocate(b4, b5, stat=i) ;     if (i /= 1) call abort
-   deallocate(b4, b5, b6, stat=i) ; if (i /= 2) call abort
+   deallocate(b4, b5, b6, stat=i) ; if (i /= 1) call abort
 
 end program deallocate_stat

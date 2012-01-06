@@ -1,5 +1,5 @@
 /* Common declarations for all of GNU Fortran libcaf implementations.
-   Copyright (C) 2011
+   Copyright (C) 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Tobias Burnus <burnus@net-b.de>
 
@@ -44,7 +44,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define STAT_UNLOCKED		0
 #define STAT_LOCKED		1
 #define STAT_LOCKED_OTHER_IMAGE	2
-#define STAT_STOPPED_IMAGE 	3
+#define STAT_STOPPED_IMAGE 	6000
 
 /* Describes what type of array we are registerring. Keep in sync with
    gcc/fortran/trans.h.  */
@@ -67,9 +67,9 @@ caf_static_t;
 void _gfortran_caf_init (int *, char ***, int *, int *);
 void _gfortran_caf_finalize (void);
 
-void * _gfortran_caf_register (ptrdiff_t, caf_register_t, void **, int *,
+void * _gfortran_caf_register (ptrdiff_t, caf_register_t, void ***, int *,
 			       char *, int);
-void _gfortran_caf_deregister (void **, int *, char *, int);
+void _gfortran_caf_deregister (void ***, int *, char *, int);
 
 
 void _gfortran_caf_sync_all (int *, char *, int);

@@ -1,5 +1,5 @@
 /* OpenMP directive translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
@@ -326,7 +326,7 @@ gfc_omp_clause_dtor (tree clause ATTRIBUTE_UNUSED, tree decl)
 
   /* Allocatable arrays in FIRSTPRIVATE/LASTPRIVATE etc. clauses need
      to be deallocated if they were allocated.  */
-  return gfc_trans_dealloc_allocated (decl);
+  return gfc_trans_dealloc_allocated (decl, false);
 }
 
 
@@ -708,7 +708,7 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
       gfc_start_block (&block);
       gfc_add_expr_to_block (&block, gfc_trans_assignment (e3, e4, false,
 			     true));
-      gfc_add_expr_to_block (&block, gfc_trans_dealloc_allocated (decl));
+      gfc_add_expr_to_block (&block, gfc_trans_dealloc_allocated (decl, false));
       stmt = gfc_finish_block (&block);
     }
   else

@@ -4938,7 +4938,7 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 
 bool
 gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
-		    tree errlen, gfc_expr *expr3)
+		    tree errlen, tree label_finish, gfc_expr *expr3)
 {
   tree tmp;
   tree pointer;
@@ -5064,7 +5064,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
   /* The allocatable variant takes the old pointer as first argument.  */
   if (allocatable)
     gfc_allocate_allocatable (&elseblock, pointer, size, token,
-			      status, errmsg, errlen, expr);
+			      status, errmsg, errlen, label_finish, expr);
   else
     gfc_allocate_using_malloc (&elseblock, pointer, size, status);
 
@@ -5127,24 +5127,40 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 /*GCC ARRAYS*/
 
 tree
-gfc_array_deallocate (tree descriptor, tree pstat, gfc_expr* expr)
+gfc_array_deallocate (tree descriptor, tree pstat, tree errmsg, tree errlen,
+		      tree label_finish, gfc_expr* expr)
 {
   tree var;
   tree tmp;
   stmtblock_t block;
+  bool coarray = gfc_is_coarray (expr);
 
   gfc_start_block (&block);
+
   /* Get a pointer to the data.  */
   var = gfc_conv_descriptor_data_get (descriptor);
   STRIP_NOPS (var);
 
   /* Parameter is the address of the data component.  */
-  tmp = gfc_deallocate_with_status (var, pstat, false, expr);
+  tmp = gfc_deallocate_with_status (coarray ? descriptor : var, pstat, errmsg,
+				    errlen, label_finish, false, expr, coarray);
   gfc_add_expr_to_block (&block, tmp);
 
-  /* Zero the data pointer.  */
+  /* Zero the data pointer; only for coarrays an error can occur and then
+     the allocation status may not be changed.  */
   tmp = fold_build2_loc (input_location, MODIFY_EXPR, void_type_node,
 			 var, build_int_cst (TREE_TYPE (var), 0));
+  if (pstat != NULL_TREE && coarray && gfc_option.coarray == GFC_FCOARRAY_LIB)
+    {
+      tree cond;
+      tree stat = build_fold_indirect_ref_loc (input_location, pstat);
+
+      cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+			      stat, build_int_cst (TREE_TYPE (stat), 0));
+      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+			     cond, tmp, build_empty_stmt (input_location));
+    }
+
   gfc_add_expr_to_block (&block, tmp);
 
   return gfc_finish_block (&block);
@@ -7055,7 +7071,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, bool g77,
 /* Generate code to deallocate an array, if it is allocated.  */
 
 tree
-gfc_trans_dealloc_allocated (tree descriptor)
+gfc_trans_dealloc_allocated (tree descriptor, bool coarray)
 { 
   tree tmp;
   tree var;
@@ -7069,7 +7085,9 @@ gfc_trans_dealloc_allocated (tree descriptor)
   /* Call array_deallocate with an int * present in the second argument.
      Although it is ignored here, it's presence ensures that arrays that
      are already deallocated are ignored.  */
-  tmp = gfc_deallocate_with_status (var, NULL_TREE, true, NULL);
+  tmp = gfc_deallocate_with_status (coarray ? descriptor : var, NULL_TREE,
+				    NULL_TREE, NULL_TREE, NULL_TREE, true,
+				    NULL, coarray);
   gfc_add_expr_to_block (&block, tmp);
 
   /* Zero the data pointer.  */
@@ -7358,7 +7376,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	    {
 	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
 				      decl, cdecl, NULL_TREE);
-	      tmp = gfc_trans_dealloc_allocated (comp);
+	      tmp = gfc_trans_dealloc_allocated (comp, c->attr.codimension);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
 	  else if (c->attr.allocatable)
@@ -7388,7 +7406,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 				      TREE_TYPE (tmp), comp, tmp, NULL_TREE);
 
 	      if (GFC_DESCRIPTOR_TYPE_P(TREE_TYPE (comp)))
-	        tmp = gfc_trans_dealloc_allocated (comp);
+	        tmp = gfc_trans_dealloc_allocated (comp,
+					CLASS_DATA (c)->attr.codimension);
 	      else
 		{
 		  tmp = gfc_deallocate_scalar_with_status (comp, NULL, true, NULL,
@@ -8094,7 +8113,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
   if (sym->attr.allocatable && (sym->attr.dimension || sym->attr.codimension)
       && !sym->attr.save && !sym->attr.result)
     {
-      tmp = gfc_trans_dealloc_allocated (sym->backend_decl);
+      tmp = gfc_trans_dealloc_allocated (sym->backend_decl,
+					 sym->attr.codimension);
       gfc_add_expr_to_block (&cleanup, tmp);
     }
 
