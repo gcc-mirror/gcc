@@ -44,15 +44,18 @@ const struct default_include cpp_include_defaults[]
 = {
 #ifdef GPLUSPLUS_INCLUDE_DIR
     /* Pick up GNU C++ generic include files.  */
-    { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1, 0, 0 },
+    { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1,
+      GPLUSPLUS_INCLUDE_DIR_ADD_SYSROOT, 0 },
 #endif
 #ifdef GPLUSPLUS_TOOL_INCLUDE_DIR
     /* Pick up GNU C++ target-dependent include files.  */
-    { GPLUSPLUS_TOOL_INCLUDE_DIR, "G++", 1, 1, 0, 1 },
+    { GPLUSPLUS_TOOL_INCLUDE_DIR, "G++", 1, 1,
+      GPLUSPLUS_INCLUDE_DIR_ADD_SYSROOT, 1 },
 #endif
 #ifdef GPLUSPLUS_BACKWARD_INCLUDE_DIR
     /* Pick up GNU C++ backward and deprecated include files.  */
-    { GPLUSPLUS_BACKWARD_INCLUDE_DIR, "G++", 1, 1, 0, 0 },
+    { GPLUSPLUS_BACKWARD_INCLUDE_DIR, "G++", 1, 1,
+      GPLUSPLUS_INCLUDE_DIR_ADD_SYSROOT, 0 },
 #endif
 #ifdef GCC_INCLUDE_DIR
     /* This is the dir for gcc's private headers.  */
