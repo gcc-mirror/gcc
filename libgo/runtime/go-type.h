@@ -86,11 +86,11 @@ struct __go_type_descriptor
      size of this type, and returns a hash code.  We pass the size
      explicitly becaues it means that we can share a single instance
      of this function for various different types.  */
-  size_t (*__hashfn) (const void *, size_t);
+  uintptr_t (*__hashfn) (const void *, uintptr_t);
 
   /* This function takes two pointers to values of this type, and the
      size of this type, and returns whether the values are equal.  */
-  _Bool (*__equalfn) (const void *, const void *, size_t);
+  _Bool (*__equalfn) (const void *, const void *, uintptr_t);
 
   /* A string describing this type.  This is only used for
      debugging.  */
@@ -317,13 +317,17 @@ extern _Bool
 __go_type_descriptors_equal(const struct __go_type_descriptor*,
 			    const struct __go_type_descriptor*);
 
-extern size_t __go_type_hash_identity (const void *, size_t);
-extern _Bool __go_type_equal_identity (const void *, const void *, size_t);
-extern size_t __go_type_hash_string (const void *, size_t);
-extern _Bool __go_type_equal_string (const void *, const void *, size_t);
-extern size_t __go_type_hash_interface (const void *, size_t);
-extern _Bool __go_type_equal_interface (const void *, const void *, size_t);
-extern size_t __go_type_hash_error (const void *, size_t);
-extern _Bool __go_type_equal_error (const void *, const void *, size_t);
+extern uintptr_t __go_type_hash_identity (const void *, uintptr_t);
+extern _Bool __go_type_equal_identity (const void *, const void *, uintptr_t);
+extern uintptr_t __go_type_hash_string (const void *, uintptr_t);
+extern _Bool __go_type_equal_string (const void *, const void *, uintptr_t);
+extern uintptr_t __go_type_hash_float (const void *, uintptr_t);
+extern _Bool __go_type_equal_float (const void *, const void *, uintptr_t);
+extern uintptr_t __go_type_hash_complex (const void *, uintptr_t);
+extern _Bool __go_type_equal_complex (const void *, const void *, uintptr_t);
+extern uintptr_t __go_type_hash_interface (const void *, uintptr_t);
+extern _Bool __go_type_equal_interface (const void *, const void *, uintptr_t);
+extern uintptr_t __go_type_hash_error (const void *, uintptr_t);
+extern _Bool __go_type_equal_error (const void *, const void *, uintptr_t);
 
 #endif /* !defined(LIBGO_GO_TYPE_H) */

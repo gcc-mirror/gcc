@@ -379,9 +379,9 @@ class Backend
   // must be a pointer to this struct type.
   // 
   // We must create the named structure before we know its
-  // initializer, because the initializer refer to its own address.
-  // After calling this the frontend will call
-  // set_immutable_struct_initializer.
+  // initializer, because the initializer may refer to its own
+  // address.  After calling this the frontend will call
+  // immutable_struct_set_init.
   virtual Bvariable*
   immutable_struct(const std::string& name, bool is_common, Btype* type,
 		   Location) = 0;
@@ -400,8 +400,8 @@ class Backend
 
   // Create a reference to a named immutable initialized data
   // structure defined in some other package.  This will be a
-  // structure created by a call to immutable_struct_expression with
-  // the same NAME and TYPE and with IS_COMMON passed as false.  This
+  // structure created by a call to immutable_struct with the same
+  // NAME and TYPE and with IS_COMMON passed as false.  This
   // corresponds to an extern const global variable in C.
   virtual Bvariable*
   immutable_struct_reference(const std::string& name, Btype* type,

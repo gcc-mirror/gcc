@@ -9,13 +9,13 @@
 
 /* A hash function for an interface.  */
 
-size_t
+uintptr_t
 __go_type_hash_interface (const void *vval,
-			  size_t key_size __attribute__ ((unused)))
+			  uintptr_t key_size __attribute__ ((unused)))
 {
   const struct __go_interface *val;
   const struct __go_type_descriptor *descriptor;
-  size_t size;
+  uintptr_t size;
 
   val = (const struct __go_interface *) vval;
   if (val->__methods == NULL)
@@ -32,7 +32,7 @@ __go_type_hash_interface (const void *vval,
 
 _Bool
 __go_type_equal_interface (const void *vv1, const void *vv2,
-			   size_t key_size __attribute__ ((unused)))
+			   uintptr_t key_size __attribute__ ((unused)))
 {
   const struct __go_interface *v1;
   const struct __go_interface *v2;

@@ -116,10 +116,10 @@ Gogo::define_builtin_function_trees()
 					  NULL_TREE),
 		 true);
 
-  // We use __builtin_memmove for the predeclared copy function.
-  define_builtin(BUILT_IN_MEMMOVE, "__builtin_memmove", "memmove",
-		 build_function_type_list(ptr_type_node,
-					  ptr_type_node,
+  // We use __builtin_memcmp for struct comparisons.
+  define_builtin(BUILT_IN_MEMCMP, "__builtin_memcmp", "memcmp",
+		 build_function_type_list(integer_type_node,
+					  const_ptr_type_node,
 					  const_ptr_type_node,
 					  size_type_node,
 					  NULL_TREE),
@@ -647,7 +647,8 @@ Gogo::write_globals()
   this->build_interface_method_tables();
 
   Bindings* bindings = this->current_bindings();
-  size_t count = bindings->size_definitions();
+  size_t count_definitions = bindings->size_definitions();
+  size_t count = count_definitions;
 
   tree* vec = new tree[count];
 
@@ -821,6 +822,10 @@ Gogo::write_globals()
       || this->need_init_fn_
       || this->is_main_package())
     this->write_initialization_function(init_fndecl, init_stmt_list);
+
+  // We should not have seen any new bindings created during the
+  // conversion.
+  go_assert(count_definitions == this->current_bindings()->size_definitions());
 
   // Pass everything back to the middle-end.
 
