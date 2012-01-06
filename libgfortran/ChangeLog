@@ -1,3 +1,11 @@
+2012-01-06  Tobias Burnus <burnus@net-b.de>
+
+	* caf/single.c (_gfortran_caf_register, _gfortran_caf_deregister):
+	Fix token handling.
+	* caf/mpi.c  (_gfortran_caf_register, _gfortran_caf_deregister): Ditto.
+	* caf/libcaf.h (STAT_STOPPED_IMAGE): Sync with libgfortran.h.
+	(_gfortran_caf_register, _gfortran_caf_deregister): Update prototype.
+
 2011-12-22  Janne Blomqvist  <jb@gcc.gnu.org>
 	Tobias Burnus  <burnus@net-b.de>
 

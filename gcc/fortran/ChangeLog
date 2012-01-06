@@ -1,3 +1,34 @@
+2012-01-06  Tobias Burnus <burnus@net-b.de>
+
+	* trans-openmp.c (gfc_omp_clause_dtor, gfc_trans_omp_array_reduction):
+	Update call to gfc_trans_dealloc_allocated.
+	* trans.c (gfc_allocate_using_malloc): Fix spacing.
+	(gfc_allocate_allocatable): For gfc_allocate_using_lib, jump to
+	label_finish when an error occurs.
+	(gfc_deallocate_with_status): Call caf_deregister for -fcoarray=lib.
+	* trans.h (gfc_allocate_allocatable, gfc_deallocate_with_status):
+	Update prototype.
+	(gfor_fndecl_caf_deregister): New tree symbol.
+	* trans-expr.c (gfc_conv_procedure_call): Update
+	gfc_deallocate_with_status and gfc_trans_dealloc_allocated calls.
+	* trans-array.c (gfc_array_allocate, gfc_trans_dealloc_allocated,
+	structure_alloc_comps, gfc_trans_deferred_array): Ditto.
+	(gfc_array_deallocate): Handle coarrays with -fcoarray=lib.
+	* trans-array.h (gfc_array_deallocate, gfc_array_allocate,
+	gfc_trans_dealloc_allocated): Update prototypes.
+	* trans-stmt.c (gfc_trans_sync): Fix indentation.
+	(gfc_trans_allocate): Fix errmsg padding and label handling.
+	(gfc_trans_deallocate): Ditto and handle -fcoarray=lib.
+	* expr.c (gfc_is_coarray): Fix algorithm for BT_CLASS.
+	* libgfortran.h (GFC_STAT_STOPPED_IMAGE): Use large value
+	to avoid other stats accidentally matching this one.
+	* trans-decl.c (gfor_fndecl_caf_deregister): New global var.
+	(gfc_build_builtin_function_decls): Fix prototype decl of caf_register
+	and add decl for caf_deregister.
+	(gfc_trans_deferred_vars): Handle CAF vars with -fcoarrays=lib.
+	* trans-intrinsic.c (conv_intrinsic_move_alloc): Update call to
+	gfc_deallocate_with_status.
+
 2012-01-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/PR48946
