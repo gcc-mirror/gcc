@@ -91,7 +91,7 @@ xgupc$(exeext): $(srcdir)/upc/gupc.c Makefile cc1upc$(exeext) $(LIBDEPS)
 	    "-DLIB_PATH=\"$${libdir}\"" \
 	    "-DINC_PATH=\"$${incdir}\"" \
 	    -c $(srcdir)/upc/gupc.c -o xgupc-tmp.o
-	$(CC) xgupc-tmp.o -o xgupc$(exeext) $(LIBS)
+	$(CC) $(ALL_LINKERFLAGS) $(LDFLAGS) xgupc-tmp.o -o xgupc$(exeext) $(LIBS)
 	rm -f xgupc-tmp.o
 
 gupc$(exeext): $(srcdir)/upc/gupc.c Makefile cc1upc$(exeext) $(LIBDEPS)
@@ -101,7 +101,7 @@ gupc$(exeext): $(srcdir)/upc/gupc.c Makefile cc1upc$(exeext) $(LIBDEPS)
 	    "-DCOMPILER=\"gcc\"" \
 	    "-DBIN_PATH=\"$(bindir)\"" \
 	    -c $(srcdir)/upc/gupc.c -o gupc-tmp.o
-	$(CC) gupc-tmp.o -o gupc$(exeext) $(LIBS)
+	$(CC) $(ALL_LINKERFLAGS) $(LDFLAGS) gupc-tmp.o -o gupc$(exeext) $(LIBS)
 	rm -f gupc-tmp.o
 
 #

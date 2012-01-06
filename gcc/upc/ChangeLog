@@ -1,3 +1,8 @@
+2012-01-06  Nenad Vukicevic <nenad@intrepid.com>
+
+	* Make-lang.in: Add appropriate linker flags when linking
+	gupc drivers.
+
 2011-12-31  Gary Funck  <gary@intrepid.com>
 
 	Fix gupc driver to avoid segfault when processing
