@@ -735,7 +735,7 @@ cgraph_first_defined_function (void)
   return NULL;
 }
 
-/* Return next reachable static variable with initializer after NODE.  */
+/* Return next function with body defined after NODE.  */
 static inline struct cgraph_node *
 cgraph_next_defined_function (struct cgraph_node *node)
 {
