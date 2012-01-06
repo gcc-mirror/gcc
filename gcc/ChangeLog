@@ -1,3 +1,17 @@
+2012-01-06  Han Shen  <shenhan@google.com>
+
+	Translate built-in include paths for sysroot.
+	* Makefile.in (gcc_gxx_include_dir_add_sysroot): New.
+	(PREPROCESSOR_DEFINES): Define GPLUSPLUS_INCLUDE_DIR_ADD_SYSROOT.
+
+	* cppdefault.c (cpp_include_defaults): Replace hard coded "0" with
+	GPLUSPLUS_INCLUDE_DIR_ADD_SYSROOT for "add_sysroot" field.
+
+	* configure.ac (AC_SUBST): Add gcc_gxx_include_dir_add_sysroot to
+	control whether sysroot should be prepended to gxx include dir.
+
+	* configure: Regenerate.
+
 2012-01-06  Torvald Riegel  <triegel@redhat.com>
 
 	PR rtl-optimization/51771
@@ -50,6 +64,7 @@
 	* cfgloopmanip.c (remove_path): Walk loop hiearchy upwards when
 	unlooping loops.
 
+>>>>>>> .r182937
 2012-01-05  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/50490
