@@ -1,3 +1,9 @@
+2012-01-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51504
+	* doc/xml/manual/debug.xml: Suggest using symbol interposition
+	to override symbols using annotation macros.
+
 2012-01-05  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h (_Hashtable_base<>::_M_eq()):
