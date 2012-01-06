@@ -12676,6 +12676,7 @@ package body Sem_Ch12 is
                   Save_Entity_Descendants (N);
 
                else
+                  Set_Is_Prefixed_Call (Parent (N));
                   Set_Associated_Node (N, Empty);
                   Set_Etype (N, Empty);
                end if;
@@ -12683,10 +12684,13 @@ package body Sem_Ch12 is
             --  In Ada 2005, X.F may be a call to a primitive operation,
             --  rewritten as F (X). This rewriting will be done again in an
             --  instance, so keep the original node. Global entities will be
-            --  captured as for other constructs.
+            --  captured as for other constructs. Indicate that this must
+            --  resolve as a call, to prevent accidental overloading in the
+            --  instance, if both a component and a primitive operation appear
+            --  as candidates.
 
             else
-               null;
+               Set_Is_Prefixed_Call (Parent (N));
             end if;
 
          --  Entity is local. Reset in generic unit, so that node is resolved

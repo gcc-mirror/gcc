@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2005-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2005-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,7 @@
 with System.UTF_32;
 
 package Ada.Wide_Characters.Unicode is
+   pragma Pure;
 
    --  The following type defines the categories from the unicode definitions.
    --  The one addition we make is Fe, which represents the characters FFFE

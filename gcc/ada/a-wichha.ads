@@ -14,6 +14,11 @@
 ------------------------------------------------------------------------------
 
 package Ada.Wide_Characters.Handling is
+   pragma Pure;
+   --  This package is clearly intended to be Pure, by analogy with the
+   --  base Ada.Characters.Handling package. The version in the RM does
+   --  not yet have this pragma, but that is a clear omission. This will
+   --  be fixed in a future version of AI05-0266-1.
 
    function Is_Control (Item : Wide_Character) return Boolean;
    pragma Inline (Is_Control);

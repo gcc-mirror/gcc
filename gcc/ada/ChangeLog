@@ -1,3 +1,42 @@
+2012-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* a-wichha.ads, a-wichun.ads, a-zchhan.ads, a-zchuni.ads,
+	s-utf_32.ads: Add pragma Pure
+	* s-utf_32.adb: Suppress warnings on non-static constants (now
+	that this is Pure).
+
+2012-01-06  Bob Duff  <duff@adacore.com>
+
+	* s-rpc.ads (Read, Write): Add overriding indicators.
+
+2012-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Add documentation for conventions
+	Ada_Pass_By_Copy and Ada_Pass_By_Reference.
+
+2012-01-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* a-tienio.adb (Put): Add exception message on
+	raise statements. Remove unneeded blocks and object declarations.
+
+2012-01-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+
+2012-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb (Has_Prefixed_Call): New flag to indicate
+	that a selected component within a generic unit has been resolved
+	as a prefixed call with local references.
+	* sem_ch3.adb (Is_Visible_Component): In an instance body a selected
+	component is always visible.
+	* sem_ch4.adb (Analyze_Selected_Component): If the node is a
+	prefixed call in an instance, do not look for visible components
+	of the type.
+	* sem_ch12.adb (Reset_Entity): If a selected component has resolved
+	to a prefixed call, mark the node accordingly when prefix and
+	selector are local references.
+
 2012-01-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatvsn.ads (Current_Year): Bump to 2012.
