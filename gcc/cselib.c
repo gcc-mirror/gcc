@@ -277,12 +277,27 @@ new_elt_loc_list (cselib_val *val, rtx loc)
 	    }
 	  el->next = val->locs;
 	  next = val->locs = CSELIB_VAL_PTR (loc)->locs;
-	  if (CSELIB_VAL_PTR (loc)->next_containing_mem != NULL
-	      && val->next_containing_mem == NULL)
-	    {
-	      val->next_containing_mem = first_containing_mem;
-	      first_containing_mem = val;
-	    }
+	}
+
+      if (CSELIB_VAL_PTR (loc)->addr_list)
+	{
+	  /* Bring in addr_list into canonical node.  */
+	  struct elt_list *last = CSELIB_VAL_PTR (loc)->addr_list;
+	  while (last->next)
+	    last = last->next;
+	  last->next = val->addr_list;
+	  val->addr_list = CSELIB_VAL_PTR (loc)->addr_list;
+	  CSELIB_VAL_PTR (loc)->addr_list = NULL;
+	}
+
+      if (CSELIB_VAL_PTR (loc)->next_containing_mem != NULL
+	  && val->next_containing_mem == NULL)
+	{
+	  /* Add VAL to the containing_mem list after LOC.  LOC will
+	     be removed when we notice it doesn't contain any
+	     MEMs.  */
+	  val->next_containing_mem = CSELIB_VAL_PTR (loc)->next_containing_mem;
+	  CSELIB_VAL_PTR (loc)->next_containing_mem = val;
 	}
 
       /* Chain LOC back to VAL.  */
@@ -641,7 +656,7 @@ remove_useless_values (void)
 
   p = &first_containing_mem;
   for (v = *p; v != &dummy_val; v = v->next_containing_mem)
-    if (v->locs)
+    if (v->locs && v == canonical_cselib_val (v))
       {
 	*p = v;
 	p = &(*p)->next_containing_mem;
@@ -1274,6 +1289,7 @@ add_mem_for_addr (cselib_val *addr_elt, cselib_val *mem_elt, rtx x)
 {
   struct elt_loc_list *l;
 
+  addr_elt = canonical_cselib_val (addr_elt);
   mem_elt = canonical_cselib_val (mem_elt);
 
   /* Avoid duplicates.  */
@@ -1322,6 +1338,7 @@ cselib_lookup_mem (rtx x, int create)
   if (! addr)
     return 0;
 
+  addr = canonical_cselib_val (addr);
   /* Find a value that describes a value of our mode at that address.  */
   for (l = addr->addr_list; l; l = l->next)
     if (GET_MODE (l->elt->val_rtx) == mode)
@@ -2218,14 +2235,21 @@ cselib_invalidate_mem (rtx mem_rtx)
 	  /* We must have a mapping from this MEM's address to the
 	     value (E).  Remove that, too.  */
 	  addr = cselib_lookup (XEXP (x, 0), VOIDmode, 0, GET_MODE (x));
+	  addr = canonical_cselib_val (addr);
+	  gcc_checking_assert (v == canonical_cselib_val (v));
 	  mem_chain = &addr->addr_list;
 	  for (;;)
 	    {
-	      if (canonical_cselib_val ((*mem_chain)->elt) == v)
+	      cselib_val *canon = canonical_cselib_val ((*mem_chain)->elt);
+
+	      if (canon == v)
 		{
 		  unchain_one_elt_list (mem_chain);
 		  break;
 		}
+
+	      /* Record canonicalized elt.  */
+	      (*mem_chain)->elt = canon;
 
 	      mem_chain = &(*mem_chain)->next;
 	    }
