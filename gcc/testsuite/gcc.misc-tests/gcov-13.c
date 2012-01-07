@@ -4,6 +4,7 @@
 /* { dg-require-weak "" } */
 /* { dg-do run { target native } } */
 /* { dg-additional-sources "gcovpart-13b.c" } */
+/* { dg-skip-if "weak ellision not supported" { { hppa*-*-hpux* } && { ! hppa*64*-*-* } } { "*" } { "" } } */
 
 int __attribute__ ((weak)) weak ()
 {
