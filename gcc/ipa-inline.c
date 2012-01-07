@@ -482,21 +482,13 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
           e->inline_failed = CIF_MAX_INLINE_INSNS_SINGLE_LIMIT;
 	  want_inline = false;
 	}
-      else if (!DECL_DECLARED_INLINE_P (callee->decl)
-	       && !flag_inline_functions)
-	{
-          e->inline_failed = CIF_NOT_DECLARED_INLINED;
-	  want_inline = false;
-	}
-      else if (!DECL_DECLARED_INLINE_P (callee->decl)
-	       && growth >= MAX_INLINE_INSNS_AUTO)
-	{
-          e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
-	  want_inline = false;
-	}
-      /* If call is cold, do not inline when function body would grow.
-	 Still inline when the overall unit size will shrink because the offline
-	 copy of function being eliminated.
+      /* Before giving up based on fact that caller size will grow, allow
+         functions that are called few times and eliminating the offline
+	 copy will lead to overall code size reduction.
+	 Not all of these will be handled by subsequent inlining of functions
+	 called once: in particular weak functions are not handled or funcitons
+	 that inline to multiple calls but a lot of bodies is optimized out.
+	 Finally we want to inline earlier to allow inlining of callbacks.
 
 	 This is slightly wrong on aggressive side:  it is entirely possible
 	 that function is called many times with a context where inlining
@@ -509,24 +501,39 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	 first, this situation is not a problem at all: after inlining all
 	 "good" calls, we will realize that keeping the function around is
 	 better.  */
-      else if (!cgraph_maybe_hot_edge_p (e)
-	       && (DECL_EXTERNAL (callee->decl)
+      else if (growth <= MAX_INLINE_INSNS_SINGLE
+	       /* Unlike for functions called once, we play unsafe with
+		  COMDATs.  We can allow that since we know functions
+		  in consideration are small (and thus risk is small) and
+		  moreover grow estimates already accounts that COMDAT
+		  functions may or may not disappear when eliminated from
+		  current unit. With good probability making aggressive
+		  choice in all units is going to make overall program
+		  smaller.
 
-		   /* Unlike for functions called once, we play unsafe with
-		      COMDATs.  We can allow that since we know functions
-		      in consideration are small (and thus risk is small) and
-		      moreover grow estimates already accounts that COMDAT
-		      functions may or may not disappear when eliminated from
-		      current unit. With good probability making aggressive
-		      choice in all units is going to make overall program
-		      smaller.
+		  Consequently we ask cgraph_can_remove_if_no_direct_calls_p
+		  instead of
+		  cgraph_will_be_removed_from_program_if_no_direct_calls  */
+	        && !DECL_EXTERNAL (callee->decl)
+		&& cgraph_can_remove_if_no_direct_calls_p (callee)
+		&& estimate_growth (callee) <= 0)
+	;
+      else if (!DECL_DECLARED_INLINE_P (callee->decl)
+	       && !flag_inline_functions)
+	{
+          e->inline_failed = CIF_NOT_DECLARED_INLINED;
+	  want_inline = false;
+	}
+      else if (!DECL_DECLARED_INLINE_P (callee->decl)
+	       && growth >= MAX_INLINE_INSNS_AUTO)
+	{
+          e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
+	  want_inline = false;
+	}
+      /* If call is cold, do not inline when function body would grow. */
+      else if (!cgraph_maybe_hot_edge_p (e))
 
-		      Consequently we ask cgraph_can_remove_if_no_direct_calls_p
-		      instead of
-		      cgraph_will_be_removed_from_program_if_no_direct_calls  */
 
-		   || !cgraph_can_remove_if_no_direct_calls_p (callee)
-		   || estimate_growth (callee) > 0))
 	{
           e->inline_failed = CIF_UNLIKELY_CALL;
 	  want_inline = false;

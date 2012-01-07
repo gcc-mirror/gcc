@@ -1,3 +1,9 @@
+2012-01-07  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/51680
+	* ipa-inline.c (want_inline_small_function_p): Be more lax on functions
+	whose inlining reduce unit size.
+
 2012-01-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR bootstrap/51725
