@@ -1,3 +1,10 @@
+2012-01-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR gcov-profile/51715
+	PR gcov-profile/51717
+	* gcc.misc-tests/gcov-13.c: Skip on 32-bit hppa*-*-hpux*.
+	* gcc.misc-tests/gcov-14.c: Likewise.
+ 
 2012-01-06  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/parse/new5.C: New.
