@@ -1,3 +1,14 @@
+2012-01-07  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR bootstrap/51725
+	* cselib.c (new_elt_loc_list): Promote addr_list to canonical node.
+	Add canonical node to containing_mem chain after the non-canonical
+	one, even if there weren't any locs to propagate.
+	(remove_useless_values): Keep only canonical values.
+	(add_mem_for_addr, cselib_lookup_mem): Canonicalize addr.
+	(cselib_invalidate_mem): Likewise.  Ensure v is canonical, and
+	canonicalize mem_chain elements that are not discarded.
+
 2012-01-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/47333
