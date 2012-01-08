@@ -1,3 +1,7 @@
+2012-01-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* cfgloop.c (cancel_loop): Add free() of bbs array.
+
 2012-01-07  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/51600
