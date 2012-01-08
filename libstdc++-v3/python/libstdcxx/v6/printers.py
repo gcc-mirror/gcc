@@ -687,6 +687,49 @@ class Tr1UnorderedMapPrinter:
     def display_hint (self):
         return 'map'
 
+class StdForwardListPrinter:
+    "Print a std::forward_list"
+
+    class _iterator:
+        def __init__(self, nodetype, head):
+            self.nodetype = nodetype
+            self.base = head['_M_next']
+            self.count = 0
+
+        def __iter__(self):
+            return self
+
+        def next(self):
+            if self.base == 0:
+                raise StopIteration
+            elt = self.base.cast(self.nodetype).dereference()
+            self.base = elt['_M_next']
+            count = self.count
+            self.count = self.count + 1
+            return ('[%d]' % count, elt['_M_value'])
+
+    def __init__(self, typename, val):
+        self.val = val
+        self.typename = typename
+
+    def children(self):
+        itype = self.val.type.template_argument(0)
+        # If the inferior program is compiled with -D_GLIBCXX_DEBUG
+        # some of the internal implementation details change.
+        if self.typename == "std::forward_list":
+            nodetype = gdb.lookup_type('std::_Fwd_list_node<%s>' % itype).pointer()
+        elif self.typename == "std::__debug::list":
+            nodetype = gdb.lookup_type('std::__norm::_Fwd_list_node<%s>' % itype).pointer()
+        else:
+            raise ValueError, "Cannot cast forward_list node for forward_list printer."
+        return self._iterator(nodetype, self.val['_M_impl']['_M_head'])
+
+    def to_string(self):
+        if self.val['_M_impl']['_M_head']['_M_next'] == 0:
+            return 'empty %s' % (self.typename)
+        return '%s' % (self.typename)
+
+
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
 class RxPrinter(object):
@@ -812,6 +855,7 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add('std::unordered_set', Tr1UnorderedSetPrinter)
     libstdcxx_printer.add('std::unordered_multimap', Tr1UnorderedMapPrinter)
     libstdcxx_printer.add('std::unordered_multiset', Tr1UnorderedSetPrinter)
+    libstdcxx_printer.add('std::forward_list', StdForwardListPrinter)
 
     libstdcxx_printer.add('std::tr1::shared_ptr', StdPointerPrinter)
     libstdcxx_printer.add('std::tr1::weak_ptr', StdPointerPrinter)
@@ -833,6 +877,8 @@ def build_libstdcxx_dictionary ():
                           Tr1UnorderedMapPrinter)
     libstdcxx_printer.add('std::__debug::unordered_multiset',
                           Tr1UnorderedSetPrinter)
+    libstdcxx_printer.add('std::__debug::forward_list',
+                          StdForwardListPrinter)
 
 
     # Extensions.
