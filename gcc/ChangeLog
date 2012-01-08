@@ -1,3 +1,8 @@
+2012-01-08  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/51694
+	* ipa-cp.c (ipa_get_indirect_edge_target): Add bounds checks.
+
 2012-01-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/cpp.texi (Predefined Macros): __STRICT_ANSI__ is defined
