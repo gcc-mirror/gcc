@@ -1,3 +1,8 @@
+2012-01-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/cpp.texi (Predefined Macros): __STRICT_ANSI__ is defined
+	for -std=c++98 and -std=c++11 too.
+
 2012-01-08  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* cfgloop.c (cancel_loop): Add free() of bbs array.
