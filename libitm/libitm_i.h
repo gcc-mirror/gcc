@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -93,9 +93,6 @@ struct gtm_alloc_action
   bool allocated;
 };
 
-// This type is private to local.c.
-struct gtm_undolog_entry;
-
 struct gtm_thread;
 
 // A transaction checkpoint: data that has to saved and restored when doing
@@ -119,6 +116,29 @@ struct gtm_transaction_cp
 
   void save(gtm_thread* tx);
   void commit(gtm_thread* tx);
+};
+
+// An undo log for writes.
+struct gtm_undolog
+{
+  vector<gtm_word> undolog;
+
+  // Log the previous value at a certain address.
+  // The easiest way to inline this is to just define this here.
+  void log(const void *ptr, size_t len)
+  {
+    size_t words = (len + sizeof(gtm_word) - 1) / sizeof(gtm_word);
+    gtm_word *undo = undolog.push(words + 2);
+    memcpy(undo, ptr, len);
+    undo[words] = len;
+    undo[words + 1] = (gtm_word) ptr;
+  }
+
+  void commit () { undolog.clear(); }
+  size_t size() const { return undolog.size(); }
+
+  // In local.cc
+  void rollback (size_t until_size = 0);
 };
 
 // Contains all thread-specific data required by the entire library.
@@ -148,7 +168,7 @@ struct gtm_thread
   gtm_jmpbuf jb;
 
   // Data used by local.c for the undo log for both local and shared memory.
-  vector<gtm_undolog_entry*> undolog;
+  gtm_undolog undolog;
 
   // Data used by alloc.c for the malloc/free undo log.
   aa_tree<uintptr_t, gtm_alloc_action> alloc_actions;
@@ -253,11 +273,6 @@ struct gtm_thread
 #endif
   // In eh_cpp.cc
   void revert_cpp_exceptions (gtm_transaction_cp *cp = 0);
-
-  // In local.cc
-  void commit_undolog (void);
-  void rollback_undolog (size_t until_size = 0);
-  void drop_references_undolog (const void *, size_t);
 
   // In retry.cc
   // Must be called outside of transactions (i.e., after rollback).

@@ -1,4 +1,4 @@
-/* Copyright (C) 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2011, 2012 Free Software Foundation, Inc.
    Contributed by Torvald Riegel <triegel@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -120,8 +120,7 @@ protected:
 	tx->shared_state.store(gl_mg::set_locked(now), memory_order_release);
       }
 
-    // TODO Ensure that this gets inlined: Use internal log interface and LTO.
-    GTM_LB(addr, len);
+    tx->undolog.log(addr, len);
   }
 
   static void validate()
@@ -181,7 +180,7 @@ protected:
   template <typename V> static void store(V* addr, const V value,
       ls_modifier mod)
   {
-    if (unlikely(mod != WaW))
+    if (likely(mod != WaW))
       pre_write(addr, sizeof(V));
     // FIXME We would need an atomic store here but we can't just forge an
     // atomic load for nonatomic data because this might not work on all
