@@ -1,5 +1,10 @@
 2012-01-07  Jan Hubicka  <jh@suse.cz>
 
+	PR tree-optimize/51694
+	* gcc.c-torture/compile/pr51694.c: new testcase.
+
+2012-01-07  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimization/51600
 	* g++.dg/torture/pr51600.C: New testcase.
 
