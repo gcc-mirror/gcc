@@ -1,5 +1,11 @@
 2012-01-08  Jan Hubicka  <jh@suse.cz>
 
+	PR tree-optimize/51680
+	* ipa-inline-analyss.c (evaluate_properties_for_edge): Fix conditoin on when
+	known_vals needs to be computed; cleanup.
+
+2012-01-08  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimize/51694
 	* ipa-cp.c (ipa_get_indirect_edge_target): Add bounds checks.
 
