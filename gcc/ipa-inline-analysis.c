@@ -2202,11 +2202,9 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
 			      VEC (tree, heap) *known_binfos)
 {
   tree target;
-  struct cgraph_node *callee;
-  struct inline_summary *isummary;
-  int edge_size = 0, edge_time = 0;
+  int time_diff, size_diff;
 
-  if (!known_vals || !known_binfos)
+  if (!known_vals && !known_binfos)
     return;
 
   target = ipa_get_indirect_edge_target (ie, known_vals, known_binfos);
@@ -2214,10 +2212,22 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
     return;
 
   /* Account for difference in cost between indirect and direct calls.  */
-  *size -= ((eni_size_weights.indirect_call_cost - eni_size_weights.call_cost)
-	    * INLINE_SIZE_SCALE);
-  *time -= ((eni_time_weights.indirect_call_cost - eni_time_weights.call_cost)
-	    * INLINE_TIME_SCALE * prob / REG_BR_PROB_BASE);
+  size_diff = ((eni_size_weights.indirect_call_cost - eni_size_weights.call_cost)
+	        * INLINE_SIZE_SCALE);
+  *size -= size_diff;
+  time_diff = ((eni_time_weights.indirect_call_cost - eni_time_weights.call_cost)
+	       * INLINE_TIME_SCALE * prob / REG_BR_PROB_BASE);
+  *time -= time_diff;
+
+  /* TODO: This code is trying to benefit indirect calls that will be inlined later.
+     The logic however do not belong into local size/time estimates and can not be
+     done here, or the accounting of changes will get wrong and we result with 
+     negative function body sizes.  We need to introduce infrastructure for independent
+     benefits to the inliner.  */
+#if 0
+  struct cgraph_node *callee;
+  struct inline_summary *isummary;
+  int edge_size, edge_time, time_diff, size_diff;
 
   callee = cgraph_get_node (target);
   if (!callee || !callee->analyzed)
@@ -2229,22 +2239,20 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
   estimate_edge_size_and_time (ie, &edge_size, &edge_time, prob);
 
   /* Count benefit only from functions that definitely will be inlined
-     if additional context from NODE's caller were available.  */
-  if (edge_size >= isummary->size * INLINE_SIZE_SCALE)
+     if additional context from NODE's caller were available. 
+
+     We just account overall size change by inlining.  TODO:
+     we really need to add sort of benefit metrics for these kind of
+     cases. */
+  if (edge_size - size_diff >= isummary->size * INLINE_SIZE_SCALE)
     {
       /* Subtract size and time that we added for edge IE.  */
-      *size -= edge_size;
-      *time -= edge_time;
+      *size -= edge_size - size_diff;
 
-      /* Subtract benefit from inlining devirtualized call.  */
-      *size -= edge_size - isummary->size * INLINE_SIZE_SCALE;
-      *time -= edge_time - (isummary->time * INLINE_TIME_SCALE * prob
-			    / REG_BR_PROB_BASE);
-
-      /* TODO: estimate benefit from optimizing CALLEE's body provided
-	 additional context from IE call site.
-	 For insipiration see ipa-cp.c: devirtualization_time_bonus().  */
+      /* Account inlined call.  */
+      *size += isummary->size * INLINE_SIZE_SCALE;
     }
+#endif
 }
 
 
