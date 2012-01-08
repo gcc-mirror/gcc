@@ -1,5 +1,15 @@
 2012-01-07  Jan Hubicka  <jh@suse.cz>
 
+	PR tree-optimization/51600
+	* ipa-inline-analysis.c (estimate_edge_devirt_benefit): Disable code
+	that benefits small functions.
+
+2012-01-07  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (want_inline_small_function_p): Fix formating.
+
+2012-01-07  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimization/51680
 	* ipa-inline.c (want_inline_small_function_p): Be more lax on functions
 	whose inlining reduce unit size.

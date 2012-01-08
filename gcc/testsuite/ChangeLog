@@ -1,3 +1,8 @@
+2012-01-07  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/51600
+	* g++.dg/torture/pr51600.C: New testcase.
+
 2012-01-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR gcov-profile/51715
