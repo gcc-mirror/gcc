@@ -718,7 +718,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 {
   struct cgraph_node *callee = cgraph_function_or_thunk_node (e->callee, NULL);
   struct inline_summary *info = inline_summary (callee);
-  int i;
+  VEC (tree, heap) *known_vals = NULL;
 
   if (clause_ptr)
     *clause_ptr = inline_p ? 0 : 1 << predicate_not_inlined_condition;
@@ -728,13 +728,13 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
     *known_binfos_ptr = NULL;
 
   if (ipa_node_params_vector
+      && !e->call_stmt_cannot_inline_p
       && ((clause_ptr && info->conds) || known_vals_ptr || known_binfos_ptr))
     {
       struct ipa_node_params *parms_info;
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
       struct inline_edge_summary *es = inline_edge_summary (e);
       int i, count = ipa_get_cs_argument_count (args);
-      VEC (tree, heap) *known_vals = NULL;
 
       if (e->caller->global.inlined_to)
         parms_info = IPA_NODE_REF (e->caller->global.inlined_to);
@@ -752,9 +752,9 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 					   ipa_get_ith_jump_func (args, i));
 	  if (cst)
 	    {
-	      if (info->conds && TREE_CODE (cst) != TREE_BINFO)
+	      if (known_vals && TREE_CODE (cst) != TREE_BINFO)
 		VEC_replace (tree, known_vals, i, cst);
-	      else if (known_binfos_ptr != NULL)
+	      else if (known_binfos_ptr != NULL && TREE_CODE (cst) == TREE_BINFO)
 		VEC_replace (tree, *known_binfos_ptr, i, cst);
 	    }
 	  else if (inline_p
@@ -763,20 +763,16 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 				  i)->change_prob)
 	    VEC_replace (tree, known_vals, i, error_mark_node);
 	}
-
-      if (clause_ptr && info->conds)
-	*clause_ptr = evaluate_conditions_for_known_args (callee, inline_p,
-							  known_vals);
-
-      if (known_vals_ptr)
-	*known_vals_ptr = known_vals;
-      else
-	VEC_free (tree, heap, known_vals);
     }
 
-  if (clause_ptr && !info->conds)
-    for (i = 0; i < (int)VEC_length (condition, info->conds); i++)
-      *clause_ptr |= 1 << (i + predicate_first_dynamic_condition);
+  if (clause_ptr)
+    *clause_ptr = evaluate_conditions_for_known_args (callee, inline_p,
+						      known_vals);
+
+  if (known_vals_ptr)
+    *known_vals_ptr = known_vals;
+  else
+    VEC_free (tree, heap, known_vals);
 }
 
 
