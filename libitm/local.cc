@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -26,29 +26,9 @@
 
 namespace GTM HIDDEN {
 
-struct gtm_undolog_entry
-{
-  void *addr;
-  size_t len;
-  char saved[];
-};
-
 
 void
-gtm_thread::commit_undolog ()
-{
-  size_t i, n = undolog.size();
-
-  if (n > 0)
-    {
-      for (i = 0; i < n; ++i)
-	free (undolog[i]);
-      this->undolog.clear();
-    }
-}
-
-void
-gtm_thread::rollback_undolog (size_t until_size)
+gtm_undolog::rollback (size_t until_size)
 {
   size_t i, n = undolog.size();
 
@@ -56,36 +36,11 @@ gtm_thread::rollback_undolog (size_t until_size)
     {
       for (i = n; i-- > until_size; )
 	{
-	  gtm_undolog_entry *u = *undolog.pop();
-	  if (u)
-	    {
-	      memcpy (u->addr, u->saved, u->len);
-	      free (u);
-	    }
-	}
-    }
-}
-
-/* Forget any references to PTR in the local log.  */
-
-void
-gtm_thread::drop_references_undolog (const void *ptr, size_t len)
-{
-  size_t i, n = undolog.size();
-
-  if (n > 0)
-    {
-      for (i = n; i > 0; i--)
-	{
-	  gtm_undolog_entry *u = undolog[i];
-	  /* ?? Do we need such granularity, or can we get away with
-	     just comparing PTR and LEN. ??  */
-	  if ((const char *)u->addr >= (const char *)ptr
-	      && ((const char *)u->addr + u->len <= (const char *)ptr + len))
-	    {
-	      free (u);
-	      undolog[i] = NULL;
-	    }
+          void *ptr = (void *) undolog[i--];
+          size_t len = undolog[i];
+          size_t words = (len + sizeof(gtm_word) - 1) / sizeof(gtm_word);
+          i -= words;
+          __builtin_memcpy (ptr, &undolog[i], len);
 	}
     }
 }
@@ -94,16 +49,7 @@ void ITM_REGPARM
 GTM_LB (const void *ptr, size_t len)
 {
   gtm_thread *tx = gtm_thr();
-  gtm_undolog_entry *undo;
-
-  undo = (gtm_undolog_entry *)
-      xmalloc (sizeof (struct gtm_undolog_entry) + len);
-  undo->addr = (void *) ptr;
-  undo->len = len;
-
-  tx->undolog.push()[0] = undo;
-
-  memcpy (undo->saved, ptr, len);
+  tx->undolog.log(ptr, len);
 }
 
 } // namespace GTM

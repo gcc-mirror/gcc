@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -107,8 +107,8 @@ class serial_dispatch : public abi_dispatch
 protected:
   static void log(const void *addr, size_t len)
   {
-    // TODO Ensure that this gets inlined: Use internal log interface and LTO.
-    GTM_LB(addr, len);
+    gtm_thread *tx = gtm_thr();
+    tx->undolog.log(addr, len);
   }
 
   template <typename V> static V load(const V* addr, ls_modifier mod)

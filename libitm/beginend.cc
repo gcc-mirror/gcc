@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -327,7 +327,7 @@ GTM::gtm_thread::rollback (gtm_transaction_cp *cp, bool aborting)
   // data. Because of the latter, we have to roll it back before any
   // dispatch-specific rollback (which handles synchronization with other
   // transactions).
-  rollback_undolog (cp ? cp->undolog_size : 0);
+  undolog.rollback (cp ? cp->undolog_size : 0);
 
   // Perform dispatch-specific rollback.
   abi_disp()->rollback (cp);
@@ -470,7 +470,7 @@ GTM::gtm_thread::trycommit ()
       // We can commit the undo log after dispatch-specific commit and after
       // making the transaction inactive because we only have to reset
       // gtm_thread state.
-      commit_undolog ();
+      undolog.commit ();
       // Reset further transaction state.
       cxa_catch_count = 0;
       cxa_unthrown = NULL;
