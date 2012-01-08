@@ -532,8 +532,6 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	}
       /* If call is cold, do not inline when function body would grow. */
       else if (!cgraph_maybe_hot_edge_p (e))
-
-
 	{
           e->inline_failed = CIF_UNLIKELY_CALL;
 	  want_inline = false;
