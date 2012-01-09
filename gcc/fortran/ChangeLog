@@ -1,3 +1,9 @@
+2012-01-09  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/51758
+	* trans-array.c (gfc_walk_elemental_function_args):
+	Skip over NULL() actual arguments.
+
 2012-01-09  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi: Bump copyright year.
