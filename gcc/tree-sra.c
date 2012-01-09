@@ -771,12 +771,13 @@ create_access (tree expr, gimple stmt, bool write)
 	  disqualify_candidate (base, "Encountered a variable sized access.");
 	  return NULL;
 	}
-      if ((offset % BITS_PER_UNIT) != 0 || (size % BITS_PER_UNIT) != 0)
+      if (TREE_CODE (expr) == COMPONENT_REF
+	  && DECL_BIT_FIELD (TREE_OPERAND (expr, 1)))
 	{
-	  disqualify_candidate (base,
-				"Encountered an acces not aligned to a byte.");
+	  disqualify_candidate (base, "Encountered a bit-field access.");
 	  return NULL;
 	}
+      gcc_assert ((offset % BITS_PER_UNIT) == 0);
 
       if (ptr)
 	mark_parm_dereference (base, offset + size, stmt);

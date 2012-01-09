@@ -1,3 +1,12 @@
+2012-01-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/51759
+	Backport from mainline
+	2010-09-15  Martin Jambor  <mjambor@suse.cz>
+
+        PR middle-end/45644
+        * tree-sra.c (create_access): Check for bit-fields directly.
+
 2012-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sol2-unwind.h (sparc64_is_sighandler): Check that the
