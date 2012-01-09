@@ -1,3 +1,12 @@
+2012-01-09  Harald Anlauf  <anlauf@gmx.de>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51197
+	* runtime/backtrace.c (show_backtrace): Modify wording written
+	before the backtrace.
+	* runtime/compile_options.c (show_signal): New function.
+	(backtrace_handler): Use it.
+
 2012-01-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.am (libgfortran_la_LDFLAGS): Add -Wc,-shared-libgcc.
