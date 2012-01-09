@@ -1,3 +1,16 @@
+2012-01-09  Kai Tietz  <ktietz@redhat.com>
+
+	PR libstc++/51673 part 2
+	* config/abi/pre/gnu-versioned-namespace.ver: Adjusted new/delete
+	operators signature for LLP64 size_t, and adjusted signatures for
+	mt-allocator using size_t.
+
+2012-01-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstc++/51673 part 1
+	* config/abi/pre/gnu-versioned-namespace.ver: Sync cxxabi symbols
+	with gnu.ver.
+
 2012-01-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* fragment.am (WARN_CXXFLAGS): Add -Wabi.
