@@ -1,6 +1,6 @@
 /* { dg-do compile }  */
 /* { dg-options "-O2" }  */
-/* { dg-final { scan-assembler-times "120" 1 } } */
+/* { dg-final { scan-assembler-times "120\n" 1 } } */
 
 extern void foo1 (int);
 extern void foo2 (int);

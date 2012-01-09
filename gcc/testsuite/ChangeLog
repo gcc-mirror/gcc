@@ -1,3 +1,11 @@
+2012-01-09  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+
+	2012-01-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/arm/headmerge-2.c: Adjust scan pattern.
+
 2012-01-06  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR middle-end/48660
