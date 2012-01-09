@@ -1,3 +1,8 @@
+2012-01-09  Martin Jambor  <mjambor@suse.cz>
+
+        PR tree-optimization/51759
+	* g++.dg/ipa/pr51759.C: New test.
+
 2012-01-09  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	Backport from mainline:
