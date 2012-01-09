@@ -2716,7 +2716,8 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
 	  if (!must_annul
 	      && (condition == const_true_rtx
 	          || (! insn_sets_resource_p (trial, &opposite_needed, true)
-		      && ! may_trap_or_fault_p (pat))))
+		      && ! may_trap_or_fault_p (pat)
+		      && ! RTX_FRAME_RELATED_P (trial))))
 	    {
 	      old_trial = trial;
 	      trial = try_split (pat, trial, 0);
