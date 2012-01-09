@@ -4411,7 +4411,9 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 		/* It's OK to use the target directly if it's being
 		   initialized. */
 		use_target = true;
-	      else if (!is_gimple_non_addressable (*to_p))
+	      else if (TREE_CODE (*to_p) != SSA_NAME
+		      && (!is_gimple_variable (*to_p)
+			  || needs_to_live_in_memory (*to_p)))
 		/* Don't use the original target if it's already addressable;
 		   if its address escapes, and the called function uses the
 		   NRV optimization, a conforming program could see *to_p
