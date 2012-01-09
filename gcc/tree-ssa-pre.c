@@ -4194,6 +4194,7 @@ eliminate (void)
 	      tree sprime = NULL;
 	      pre_expr lhsexpr = get_or_alloc_expr_for_name (lhs);
 	      pre_expr sprimeexpr;
+	      gimple orig_stmt = stmt;
 
 	      sprimeexpr = bitmap_find_leader (AVAIL_OUT (b),
 					       get_expr_value_id (lhsexpr),
@@ -4231,6 +4232,16 @@ eliminate (void)
 		  propagate_tree_value_into_stmt (&gsi, sprime);
 		  stmt = gsi_stmt (gsi);
 		  update_stmt (stmt);
+
+		  /* If we removed EH side-effects from the statement, clean
+		     its EH information.  */
+		  if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt))
+		    {
+		      bitmap_set_bit (need_eh_cleanup,
+				      gimple_bb (stmt)->index);
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			fprintf (dump_file, "  Removed EH side-effects.\n");
+		    }
 		  continue;
 		}
 
@@ -4286,7 +4297,7 @@ eliminate (void)
 
 		  /* If we removed EH side-effects from the statement, clean
 		     its EH information.  */
-		  if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
+		  if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt))
 		    {
 		      bitmap_set_bit (need_eh_cleanup,
 				      gimple_bb (stmt)->index);

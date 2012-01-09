@@ -1,3 +1,9 @@
+2012-01-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51775
+	* tree-ssa-sccvn.c (visit_use): Value-number throwing stmts.
+	* tree-ssa-pre.c (eliminate): Properly fixup EH info.
+
 2012-01-09  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	* config/arm/arm-cores.def (cortex-a15): Use cortex_a15_tune for
