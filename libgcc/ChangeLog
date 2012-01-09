@@ -1,3 +1,11 @@
+2012-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/41929
+	* config/sparc/sol2-unwind.h (sparc64_is_sighandler): Remove SAVPC and
+	add CFA.  Revert back to old code for Solaris 8+ multi-threaded.
+	(sparc_is_sighandler): Likewise.
+	(MD_FALLBACK_FRAME_STATE_FOR): Adjust call to IS_SIGHANDLER.
+
 2012-01-06  Tristan Gingold  <gingold@adacore.com>
 
 	* config/ia64/t-ia64 (LIB1ASMFUNCS): Move backward
