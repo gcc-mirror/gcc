@@ -1,8 +1,12 @@
+2012-01-09  Richard Guenther  <rguenther@suse.de>
+
+	* tree-streamer-out.c (write_ts_optimization): Fix spelling.
+
 2012-01-08  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimize/51680
-	* ipa-inline-analyss.c (evaluate_properties_for_edge): Fix conditoin on when
-	known_vals needs to be computed; cleanup.
+	* ipa-inline-analyss.c (evaluate_properties_for_edge): Fix condition
+	on when known_vals needs to be computed; cleanup.
 
 2012-01-08  Jan Hubicka  <jh@suse.cz>
 
