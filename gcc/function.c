@@ -5329,126 +5329,182 @@ requires_stack_frame_p (rtx insn, HARD_REG_SET prologue_used,
   return false;
 }
 
-/* Look for sets of call-saved registers in the first block of the
-   function, and move them down into successor blocks if the register
-   is used only on one path.  This exposes more opportunities for
-   shrink-wrapping.
-   These kinds of sets often occur when incoming argument registers are
-   moved to call-saved registers because their values are live across
-   one or more calls during the function.  */
+/* See whether BB has a single successor that uses [REGNO, END_REGNO),
+   and if BB is its only predecessor.  Return that block if so,
+   otherwise return null.  */
+
+static basic_block
+next_block_for_reg (basic_block bb, int regno, int end_regno)
+{
+  edge e, live_edge;
+  edge_iterator ei;
+  bitmap live;
+  int i;
+
+  live_edge = NULL;
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    {
+      live = df_get_live_in (e->dest);
+      for (i = regno; i < end_regno; i++)
+	if (REGNO_REG_SET_P (live, i))
+	  {
+	    if (live_edge && live_edge != e)
+	      return NULL;
+	    live_edge = e;
+	  }
+    }
+
+  /* We can sometimes encounter dead code.  Don't try to move it
+     into the exit block.  */
+  if (!live_edge || live_edge->dest == EXIT_BLOCK_PTR)
+    return NULL;
+
+  /* Reject targets of abnormal edges.  This is needed for correctness
+     on ports like Alpha and MIPS, whose pic_offset_table_rtx can die on
+     exception edges even though it is generally treated as call-saved
+     for the majority of the compilation.  Moving across abnormal edges
+     isn't going to be interesting for shrink-wrap usage anyway.  */
+  if (live_edge->flags & EDGE_ABNORMAL)
+    return NULL;
+
+  if (EDGE_COUNT (live_edge->dest->preds) > 1)
+    return NULL;
+
+  return live_edge->dest;
+}
+
+/* Try to move INSN from BB to a successor.  Return true on success.
+   USES and DEFS are the set of registers that are used and defined
+   after INSN in BB.  */
+
+static bool
+move_insn_for_shrink_wrap (basic_block bb, rtx insn,
+			   const HARD_REG_SET uses,
+			   const HARD_REG_SET defs)
+{
+  rtx set, src, dest;
+  bitmap live_out, live_in, bb_uses, bb_defs;
+  unsigned int i, dregno, end_dregno, sregno, end_sregno;
+  basic_block next_block;
+
+  /* Look for a simple register copy.  */
+  set = single_set (insn);
+  if (!set)
+    return false;
+  src = SET_SRC (set);
+  dest = SET_DEST (set);
+  if (!REG_P (dest) || !REG_P (src))
+    return false;
+
+  /* Make sure that the source register isn't defined later in BB.  */
+  sregno = REGNO (src);
+  end_sregno = END_REGNO (src);
+  if (overlaps_hard_reg_set_p (defs, GET_MODE (src), sregno))
+    return false;
+
+  /* Make sure that the destination register isn't referenced later in BB.  */
+  dregno = REGNO (dest);
+  end_dregno = END_REGNO (dest);
+  if (overlaps_hard_reg_set_p (uses, GET_MODE (dest), dregno)
+      || overlaps_hard_reg_set_p (defs, GET_MODE (dest), dregno))
+    return false;
+
+  /* See whether there is a successor block to which we could move INSN.  */
+  next_block = next_block_for_reg (bb, dregno, end_dregno);
+  if (!next_block)
+    return false;
+
+  /* At this point we are committed to moving INSN, but let's try to
+     move it as far as we can.  */
+  do
+    {
+      live_out = df_get_live_out (bb);
+      live_in = df_get_live_in (next_block);
+      bb = next_block;
+
+      /* Check whether BB uses DEST or clobbers DEST.  We need to add
+	 INSN to BB if so.  Either way, DEST is no longer live on entry,
+	 except for any part that overlaps SRC (next loop).  */
+      bb_uses = &DF_LR_BB_INFO (bb)->use;
+      bb_defs = &DF_LR_BB_INFO (bb)->def;
+      for (i = dregno; i < end_dregno; i++)
+	{
+	  if (REGNO_REG_SET_P (bb_uses, i) || REGNO_REG_SET_P (bb_defs, i))
+	    next_block = NULL;
+	  CLEAR_REGNO_REG_SET (live_out, i);
+	  CLEAR_REGNO_REG_SET (live_in, i);
+	}
+
+      /* Check whether BB clobbers SRC.  We need to add INSN to BB if so.
+	 Either way, SRC is now live on entry.  */
+      for (i = sregno; i < end_sregno; i++)
+	{
+	  if (REGNO_REG_SET_P (bb_defs, i))
+	    next_block = NULL;
+	  SET_REGNO_REG_SET (live_out, i);
+	  SET_REGNO_REG_SET (live_in, i);
+	}
+
+      /* If we don't need to add the move to BB, look for a single
+	 successor block.  */
+      if (next_block)
+	next_block = next_block_for_reg (next_block, dregno, end_dregno);
+    }
+  while (next_block);
+
+  /* BB now defines DEST.  It only uses the parts of DEST that overlap SRC
+     (next loop).  */
+  for (i = dregno; i < end_dregno; i++)
+    {
+      CLEAR_REGNO_REG_SET (bb_uses, i);
+      SET_REGNO_REG_SET (bb_defs, i);
+    }
+
+  /* BB now uses SRC.  */
+  for (i = sregno; i < end_sregno; i++)
+    SET_REGNO_REG_SET (bb_uses, i);
+
+  emit_insn_after (PATTERN (insn), bb_note (bb));
+  delete_insn (insn);
+  return true;
+}
+
+/* Look for register copies in the first block of the function, and move
+   them down into successor blocks if the register is used only on one
+   path.  This exposes more opportunities for shrink-wrapping.  These
+   kinds of sets often occur when incoming argument registers are moved
+   to call-saved registers because their values are live across one or
+   more calls during the function.  */
 
 static void
 prepare_shrink_wrap (basic_block entry_block)
 {
-  rtx insn, curr;
-  FOR_BB_INSNS_SAFE (entry_block, insn, curr)
-    {
-      basic_block next_bb;
-      edge e, live_edge;
-      edge_iterator ei;
-      rtx set, scan;
-      unsigned destreg, srcreg;
+  rtx insn, curr, x;
+  HARD_REG_SET uses, defs;
+  df_ref *ref;
 
-      if (!NONDEBUG_INSN_P (insn))
-	continue;
-      set = single_set (insn);
-      if (!set)
-	continue;
+  CLEAR_HARD_REG_SET (uses);
+  CLEAR_HARD_REG_SET (defs);
+  FOR_BB_INSNS_REVERSE_SAFE (entry_block, insn, curr)
+    if (NONDEBUG_INSN_P (insn)
+	&& !move_insn_for_shrink_wrap (entry_block, insn, uses, defs))
+      {
+	/* Add all defined registers to DEFs.  */
+	for (ref = DF_INSN_DEFS (insn); *ref; ref++)
+	  {
+	    x = DF_REF_REG (*ref);
+	    if (REG_P (x) && HARD_REGISTER_P (x))
+	      SET_HARD_REG_BIT (defs, REGNO (x));
+	  }
 
-      if (!REG_P (SET_SRC (set)) || !REG_P (SET_DEST (set)))
-	continue;
-      srcreg = REGNO (SET_SRC (set));
-      destreg = REGNO (SET_DEST (set));
-      if (hard_regno_nregs[srcreg][GET_MODE (SET_SRC (set))] > 1
-	  || hard_regno_nregs[destreg][GET_MODE (SET_DEST (set))] > 1)
-	continue;
-
-      next_bb = entry_block;
-      scan = insn;
-
-      for (;;)
-	{
-	  live_edge = NULL;
-	  /* Try to find a single edge across which the register is live.
-	     If we find one, we'll try to move the set across this edge.  */
-	  FOR_EACH_EDGE (e, ei, next_bb->succs)
-	    {
-	      if (REGNO_REG_SET_P (df_get_live_in (e->dest), destreg))
-		{
-		  if (live_edge)
-		    {
-		      live_edge = NULL;
-		      break;
-		    }
-		  live_edge = e;
-		}
-	    }
-	  if (!live_edge)
-	    break;
-	  /* We can sometimes encounter dead code.  Don't try to move it
-	     into the exit block.  */
-	  if (live_edge->dest == EXIT_BLOCK_PTR)
-	    break;
-	  if (EDGE_COUNT (live_edge->dest->preds) > 1)
-	    break;
-	  while (scan != BB_END (next_bb))
-	    {
-	      scan = NEXT_INSN (scan);
-	      if (NONDEBUG_INSN_P (scan))
-		{
-		  rtx link;
-		  HARD_REG_SET set_regs;
-
-		  CLEAR_HARD_REG_SET (set_regs);
-		  note_stores (PATTERN (scan), record_hard_reg_sets,
-			       &set_regs);
-		  if (CALL_P (scan))
-		    IOR_HARD_REG_SET (set_regs, call_used_reg_set);
-		  for (link = REG_NOTES (scan); link; link = XEXP (link, 1))
-		    if (REG_NOTE_KIND (link) == REG_INC)
-		      record_hard_reg_sets (XEXP (link, 0), NULL, &set_regs);
-
-		  if (TEST_HARD_REG_BIT (set_regs, srcreg)
-		      || reg_referenced_p (SET_DEST (set),
-					   PATTERN (scan)))
-		    {
-		      scan = NULL_RTX;
-		      break;
-		    }
-		  if (CALL_P (scan))
-		    {
-		      rtx link = CALL_INSN_FUNCTION_USAGE (scan);
-		      while (link)
-			{
-			  rtx tmp = XEXP (link, 0);
-			  if (GET_CODE (tmp) == USE
-			      && reg_referenced_p (SET_DEST (set), tmp))
-			    break;
-			  link = XEXP (link, 1);
-			}
-		      if (link)
-			{
-			  scan = NULL_RTX;
-			  break;
-			}
-		    }
-		}
-	    }
-	  if (!scan)
-	    break;
-	  next_bb = live_edge->dest;
-	}
-
-      if (next_bb != entry_block)
-	{
-	  rtx after = BB_HEAD (next_bb);
-	  while (!NOTE_P (after)
-		 || NOTE_KIND (after) != NOTE_INSN_BASIC_BLOCK)
-	    after = NEXT_INSN (after);
-	  emit_insn_after (PATTERN (insn), after);
-	  delete_insn (insn);
-	}
-    }
+	/* Add all used registers to USESs.  */
+	for (ref = DF_INSN_USES (insn); *ref; ref++)
+	  {
+	    x = DF_REF_REG (*ref);
+	    if (REG_P (x) && HARD_REGISTER_P (x))
+	      SET_HARD_REG_BIT (uses, REGNO (x));
+	  }
+      }
 }
 
 #endif

@@ -500,6 +500,20 @@ update_bb_for_insn (basic_block bb)
 }
 
 
+/* Return the NOTE_INSN_BASIC_BLOCK of BB.  */
+rtx
+bb_note (basic_block bb)
+{
+  rtx note;
+
+  note = BB_HEAD (bb);
+  if (LABEL_P (note))
+    note = NEXT_INSN (note);
+
+  gcc_assert (NOTE_INSN_BASIC_BLOCK_P (note));
+  return note;
+}
+
 /* Return the INSN immediately following the NOTE_INSN_BASIC_BLOCK
    note associated with the BLOCK.  */
 
