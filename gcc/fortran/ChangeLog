@@ -1,5 +1,11 @@
 2012-01-09  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.texi: Bump copyright year.
+	(Fortran 2003 Status): Update polymorphism item, add
+	item for generic interface with DT name.
+
+2012-01-09  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/51578
 	* gfortran.h (gfc_use_list):
 	* match.h (gfc_use_module): Rename to ...

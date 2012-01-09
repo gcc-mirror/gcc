@@ -1,7 +1,7 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gfortran.info
-@set copyrights-gfortran 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+@set copyrights-gfortran 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 
 @include gcc-common.texi
 
@@ -795,8 +795,13 @@ override type-bound procedures or to have deferred binding.
 
 @item Polymorphic entities (``@code{CLASS}'') for derived types -- including
 @code{SAME_TYPE_AS}, @code{EXTENDS_TYPE_OF} and @code{SELECT TYPE}.
-Note that the support for array-valued polymorphic entities is incomplete
-and unlimited polymophism is currently not supported.
+Note that unlimited polymophism is currently not supported.
+
+@item Generic interface name, which have the same name as derived types,
+are now supported. This allows one to write constructor functions.  Note
+that Fortran does not support static constructor functions.  For static
+variables, only default initialization or structure-constructor
+initialization are available.
 
 @item The @code{ASSOCIATE} construct.
 
