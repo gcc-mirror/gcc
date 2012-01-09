@@ -1,3 +1,7 @@
+2012-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (addressable_p) <COMPONENT_REF>: Fix thinko.
+
 2012-01-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatvsn.ads (Current_Year): Bump to 2011.
