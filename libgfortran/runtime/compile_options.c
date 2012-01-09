@@ -1,5 +1,6 @@
 /* Handling of compile-time options that influence the library.
-   Copyright (C) 2005, 2007, 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009, 2010, 2011, 2012
+   Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 
@@ -32,6 +33,52 @@ compile_options_t compile_options;
 
 volatile sig_atomic_t fatal_error_in_progress = 0;
 
+
+/* Helper function for backtrace_handler to write information about the
+   received signal to stderr before actually giving the backtrace.  */
+static void
+show_signal (int signum)
+{
+  const char * name = NULL, * desc = NULL;
+
+  switch (signum)
+    {
+#if defined(SIGSEGV)
+      case SIGSEGV:
+	name = "SIGSEGV";
+	desc = "Segmentation fault";
+	break;
+#endif
+
+#if defined(SIGBUS)
+      case SIGBUS:
+	name = "SIGBUS";
+	desc = "Bus error";
+	break;
+#endif
+
+#if defined(SIGILL)
+      case SIGILL:
+	name = "SIGILL";
+	desc = "Illegal instruction";
+	break;
+#endif
+
+#if defined(SIGFPE)
+      case SIGFPE:
+	name = "SIGFPE";
+	desc = "Floating-point exception";
+	break;
+#endif
+    }
+
+  if (name)
+    st_printf ("\nProgram received signal %d (%s): %s.\n", signum, name, desc);
+  else
+    st_printf ("\nProgram received signal %d.\n", signum);
+}
+
+
 /* A signal handler to allow us to output a backtrace.  */
 void
 backtrace_handler (int signum)
@@ -43,6 +90,7 @@ backtrace_handler (int signum)
     raise (signum);
   fatal_error_in_progress = 1;
 
+  show_signal (signum);
   show_backtrace();
 
   /* Now reraise the signal.  We reactivate the signal's

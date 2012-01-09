@@ -1,4 +1,4 @@
-/* Copyright (C) 2006, 2007, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2007, 2009, 2011, 2012 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -197,7 +197,7 @@ show_backtrace (void)
   state.frame_number = 0;
   state.error = 0;
 
-  estr_write ("\nA fatal error occurred! Backtrace for this error:\n");
+  estr_write ("\nBacktrace for this error:\n");
 
 #if CAN_PIPE
 
