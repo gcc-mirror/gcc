@@ -1,3 +1,8 @@
+2012-01-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46328
+	* gfortran.dg/typebound_operator_11.f90: New.
+
 2012-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/array18.adb: New test.
@@ -12,7 +17,7 @@
 
 2012-01-09  Martin Jambor  <mjambor@suse.cz>
 
-        PR tree-optimization/51759
+	PR tree-optimization/51759
 	* g++.dg/ipa/pr51759.C: New test.
 
 2012-01-09  Tobias Burnus  <burnus@net-b.de>
