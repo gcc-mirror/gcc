@@ -1,3 +1,8 @@
+2012-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array18.adb: New test.
+	* gnat.dg/array18_pkg.ads: New helper.
+
 2012-01-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/51791

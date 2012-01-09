@@ -1,5 +1,12 @@
 2012-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (call_to_gnu): Create the temporary for the
+	return value in the variable-sized return type case if the target is
+	an array with fixed size.  However, do not create it if this is the
+	expression of an object declaration.
+
+2012-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (addressable_p) <COMPONENT_REF>: Fix thinko.
 
 2012-01-06  Robert Dewar  <dewar@adacore.com>
