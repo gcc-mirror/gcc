@@ -99,7 +99,7 @@ case "$host" in
 	TARGET=X86_64; TARGETDIR=x86
 	;;
   i?86-*-*)
-	TARGET=X86; TARGETDIR=x86
+	TARGET=X86_64; TARGETDIR=x86
 	;;
 
   ia64*-*-*)
