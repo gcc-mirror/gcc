@@ -1,3 +1,8 @@
+2012-01-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am (libgfortran_la_LDFLAGS): Add -Wc,-shared-libgcc.
+	* Makefile.in: Regenerate.
+
 2012-01-06  Tobias Burnus <burnus@net-b.de>
 
 	* caf/single.c (_gfortran_caf_register, _gfortran_caf_deregister):
