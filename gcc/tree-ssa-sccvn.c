@@ -3178,8 +3178,7 @@ visit_use (tree use)
       if (gimple_code (stmt) == GIMPLE_PHI)
 	changed = visit_phi (stmt);
       else if (!gimple_has_lhs (stmt)
-	       || gimple_has_volatile_ops (stmt)
-	       || stmt_could_throw_p (stmt))
+	       || gimple_has_volatile_ops (stmt))
 	changed = defs_to_varying (stmt);
       else if (is_gimple_assign (stmt))
 	{
