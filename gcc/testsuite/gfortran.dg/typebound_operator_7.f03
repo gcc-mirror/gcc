@@ -90,7 +90,7 @@ program main
   class(i_field) ,allocatable :: u
   allocate (u, source = i_field (99))
 
-  u = u*2.
+  u = (u)*2.
   u = (u*2.0*4.0) + u*4.0
   u = u%multiply_real (2.0)*4.0
   u = i_multiply_real (u, 2.0) * 4.0

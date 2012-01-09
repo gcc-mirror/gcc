@@ -5887,7 +5887,7 @@ resolve_compcall (gfc_expr* e, const char **name)
 /* Resolve a typebound function, or 'method'. First separate all
    the non-CLASS references by calling resolve_compcall directly.  */
 
-gfc_try
+static gfc_try
 resolve_typebound_function (gfc_expr* e)
 {
   gfc_symbol *declared;
@@ -9208,8 +9208,9 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
      and coindexed; cf. F2008, 7.2.1.2 and PR 43366.  */
   if (lhs->ts.type == BT_CLASS)
     {
-      gfc_error ("Variable must not be polymorphic in assignment at %L",
-		 &lhs->where);
+      gfc_error ("Variable must not be polymorphic in assignment at %L "
+		 "- check that there is a matching specific subroutine "
+		 "for '=' operator", &lhs->where);
       return false;
     }
 

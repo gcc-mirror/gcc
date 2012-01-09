@@ -3168,9 +3168,13 @@ matching_typebound_op (gfc_expr** tb_base,
 	gfc_symbol* derived;
 	gfc_try result;
 
+	while (base->expr->expr_type == EXPR_OP
+	       && base->expr->value.op.op == INTRINSIC_PARENTHESES)
+	  base->expr = base->expr->value.op.op1;
+
 	if (base->expr->ts.type == BT_CLASS)
 	  {
-	    if (!gfc_expr_attr (base->expr).class_ok)
+	    if (CLASS_DATA (base->expr) == NULL)
 	      continue;
 	    derived = CLASS_DATA (base->expr)->ts.u.derived;
 	  }
