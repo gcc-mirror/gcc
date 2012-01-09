@@ -1,3 +1,9 @@
+2012-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sol2-unwind.h (sparc64_is_sighandler): Check that the
+	purported sigacthandler address isn't null before dereferencing it.
+	(sparc_is_sighandler): Likewise.
+
 2012-01-09  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	Backport from mainline

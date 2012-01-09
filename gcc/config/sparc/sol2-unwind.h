@@ -124,10 +124,9 @@ sparc64_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 	  /* This matches the call_user_handler pattern for Solaris 10.
 	     There are 2 cases so we look for the return address of the
 	     caller's caller frame in order to do more pattern matching.  */
-	  unsigned int sah_pattern
-	    = *(unsigned int *)(*(unsigned long *)(cfa + 176 + 15*8) - 4);
+	  unsigned long sah_address = *(unsigned long *)(cfa + 176 + 15*8);
 
-          if (sah_pattern == 0x92100019)
+          if (sah_address && *(unsigned int *)(sah_address - 4) == 0x92100019)
 	    /* This is the same setup as for Solaris 9, see below.  */
 	    *nframes = 3;
 	  else
@@ -293,10 +292,9 @@ sparc_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 	  /* This matches the call_user_handler pattern for Solaris 10.
 	     There are 2 cases so we look for the return address of the
 	     caller's caller frame in order to do more pattern matching.  */
-	  unsigned int sah_pattern
-	    = *(unsigned int *)(*(unsigned int *)(cfa + 96 + 15*4) - 4);
+	  unsigned int sah_address = *(unsigned int *)(cfa + 96 + 15*4);
 
-          if (sah_pattern == 0x92100019)
+          if (sah_address && *(unsigned int *)(sah_address - 4) == 0x92100019)
 	    /* This is the same setup as for Solaris 9, see below.  */
 	    *nframes = 3;
 	  else
