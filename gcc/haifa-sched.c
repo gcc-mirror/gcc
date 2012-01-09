@@ -6489,20 +6489,6 @@ add_jump_dependencies (rtx insn, rtx jump)
   gcc_assert (!sd_lists_empty_p (jump, SD_LIST_BACK));
 }
 
-/* Return the NOTE_INSN_BASIC_BLOCK of BB.  */
-rtx
-bb_note (basic_block bb)
-{
-  rtx note;
-
-  note = BB_HEAD (bb);
-  if (LABEL_P (note))
-    note = NEXT_INSN (note);
-
-  gcc_assert (NOTE_INSN_BASIC_BLOCK_P (note));
-  return note;
-}
-
 /* Extend data structures for logical insn UID.  */
 void
 sched_extend_luids (void)
