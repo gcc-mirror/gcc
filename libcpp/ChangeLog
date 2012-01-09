@@ -1,3 +1,7 @@
+2012-01-09  Richard Guenther  <rguenther@suse.de>
+
+	* macro.c (_cpp_builtin_macro_text): Remove unused variable map.
+
 2012-01-09  Gary Funck  <gary@intrepid.com>
 
 	PR preprocessor/33919
