@@ -1,3 +1,11 @@
+2012-01-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple.c (is_gimple_non_addressable): Remove.
+	* gimple.h: Remove is_gimple_non_addressable.
+	* gimplify.c (gimplify_modify_expr_rhs): Use is_gimple_reg instead of
+	is_gimple_non_addressable.
+	* trans-mem.c (expand_assign_tm): Same.
+
 2012-01-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51775

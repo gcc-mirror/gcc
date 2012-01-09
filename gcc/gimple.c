@@ -2963,17 +2963,6 @@ is_gimple_reg (tree t)
 }
 
 
-/* Return true if T is a GIMPLE variable whose address is not needed.  */
-
-bool
-is_gimple_non_addressable (tree t)
-{
-  if (TREE_CODE (t) == SSA_NAME)
-    t = SSA_NAME_VAR (t);
-
-  return (is_gimple_variable (t) && ! needs_to_live_in_memory (t));
-}
-
 /* Return true if T is a GIMPLE rvalue, i.e. an identifier or a constant.  */
 
 bool

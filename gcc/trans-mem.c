@@ -2184,7 +2184,7 @@ expand_assign_tm (struct tm_region *region, gimple_stmt_iterator *gsi)
       /* ??? Figure out if there's any possible overlap between the LHS
 	 and the RHS and if not, use MEMCPY.  */
 
-      if (load_p && is_gimple_non_addressable (lhs))
+      if (load_p && is_gimple_reg (lhs))
 	{
 	  tmp = create_tmp_var (TREE_TYPE (lhs), NULL);
 	  lhs_addr = build_fold_addr_expr (tmp);
