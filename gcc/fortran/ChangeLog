@@ -1,3 +1,17 @@
+2012-01-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/51791
+	* interface.c (matching_typebound_op): Drill down through
+	possible parentheses to obtain base expression. Do not test for
+	'class_ok' but, instead for the class structure components.
+	* resolve.c (resolve_ordinary_assign): Extend error message for
+	polymorphic assignment to advise checking for specific
+	subroutine.
+
+	PR fortran/51792
+	* resolve.c (resolve_typebound_function): Restore 'static' to
+	declaration.
+
 2012-01-09  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/51758

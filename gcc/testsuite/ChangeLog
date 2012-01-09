@@ -1,3 +1,10 @@
+2012-01-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/51791
+	* gfortran.dg/typebound_operator_7.f03: Insert parentheses
+	around base object in first assignment in main program.
+	* gfortran.dg/typebound_operator_10.f03: New test.
+
 2012-01-09  Martin Jambor  <mjambor@suse.cz>
 
         PR tree-optimization/51759
