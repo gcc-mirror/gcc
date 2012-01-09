@@ -1,3 +1,11 @@
+2012-01-09  Gary Funck  <gary@intrepid.com>
+
+	PR preprocessor/33919
+	* gcc.dg/pr33919.c: New test.
+	* gcc.dg/pr33919-0.h: New test header file.
+	* gcc.dg/pr33919-1.h: Ditto.
+	* gcc.dg/pr33919-2.h: Ditto.
+
 2012-01-07  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimize/51694

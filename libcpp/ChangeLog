@@ -1,3 +1,12 @@
+2012-01-09  Gary Funck  <gary@intrepid.com>
+
+	PR preprocessor/33919
+	* files.c (_cpp_get_file_name): New. Implement file name
+	access function.
+	* internal.h (_cpp_get_file_name): New prototype.
+	* macro.c (_cpp_builtin_macro_text): Call _cpp_get_file_name()
+	to use pfile->main_file in lieu of traversing INCLUDED_FROM chain.
+
 2012-01-03  Olivier Hainque  <hainque@adacore.com>
 
 	* system.h: Prior to #define, #undef fopen and freopen unconditionally.
