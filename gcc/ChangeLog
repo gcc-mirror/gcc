@@ -1,3 +1,9 @@
+2012-01-09  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* config/arm/arm-cores.def (cortex-a15): Use cortex_a15_tune for
+	tuning parameters.
+	* config/arm/arm.c (arm_cortex_a15_tune): New static variable.
+
 2012-01-09  Richard Guenther  <rguenther@suse.de>
 
 	* tree-streamer-out.c (write_ts_optimization): Fix spelling.
