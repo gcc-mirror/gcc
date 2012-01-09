@@ -1299,7 +1299,9 @@ gfc_use_rename;
 typedef struct gfc_use_list
 {
   const char *module_name;
-  int only_flag;
+  bool intrinsic;
+  bool non_intrinsic;
+  bool only_flag;
   struct gfc_use_rename *rename;
   locus where;
   /* Next USE statement.  */

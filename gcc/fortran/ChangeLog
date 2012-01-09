@@ -1,3 +1,31 @@
+2012-01-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51578
+	* gfortran.h (gfc_use_list):
+	* match.h (gfc_use_module): Rename to ...
+	(gfc_use_modules): ... this.
+	* module.c (use_locus, specified_nonint, specified_int): Remove
+	global variable.
+	(module_name): Change type to const char*, used with gfc_get_string.
+	(module_list): New global variable.
+	(free_rename): Free argument not global var.
+	(gfc_match_use): Save match to module_list.
+	(load_generic_interfaces, read_module): Don't free symtree.
+	(write_dt_extensions, gfc_dump_module): Fix module-name I/O due to the
+	type change of module_name.
+	(write_symbol0, write_generic): Optimize due to the type change.
+	(import_iso_c_binding_module, use_iso_fortran_env_module): Use
+	locus of rename->where.
+	(gfc_use_module): Take module_list as argument.
+	(gfc_use_modules): New function.
+	(gfc_module_init_2, gfc_module_done_2): Init module_list, rename_list.
+	* parse.c (last_was_use_stmt): New global variable.
+	(use_modules): New function.
+	(decode_specification_statement, decode_statement): Move USE match up
+	and call use_modules.
+	(next_free, next_fixed): Call use_modules.
+	(accept_statement): Don't call gfc_module_use.
+
 2012-01-06  Tobias Burnus <burnus@net-b.de>
 
 	* trans-openmp.c (gfc_omp_clause_dtor, gfc_trans_omp_array_reduction):

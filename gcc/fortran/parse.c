@@ -1,6 +1,6 @@
 /* Main parser.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010, 2011
+   2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -37,6 +37,7 @@ static locus label_locus;
 static jmp_buf eof_buf;
 
 gfc_state_data *gfc_state_stack;
+static bool last_was_use_stmt = false;
 
 /* TODO: Re-order functions to kill these forward decls.  */
 static void check_statement_label (gfc_statement);
@@ -74,6 +75,26 @@ match_word (const char *str, match (*subr) (void), locus *old_locus)
 }
 
 
+/* Load symbols from all USE statements encounted in this scoping unit.  */
+
+static void
+use_modules (void)
+{
+  gfc_error_buf old_error;
+
+  gfc_push_error (&old_error);
+  gfc_buffer_error (0);
+  gfc_use_modules ();
+  gfc_buffer_error (1);
+  gfc_pop_error (&old_error);
+  gfc_commit_symbols ();
+  gfc_warning_check ();
+  gfc_current_ns->old_cl_list = gfc_current_ns->cl_list;
+  gfc_current_ns->old_equiv = gfc_current_ns->equiv;
+  last_was_use_stmt = false;
+}
+
+
 /* Figure out what the next statement is, (mostly) regardless of
    proper ordering.  The do...while(0) is there to prevent if/else
    ambiguity.  */
@@ -108,8 +129,19 @@ decode_specification_statement (void)
 
   old_locus = gfc_current_locus;
 
+  if (match_word ("use", gfc_match_use, &old_locus) == MATCH_YES)
+    {
+      last_was_use_stmt = true;
+      return ST_USE;
+    }
+  else
+    {
+      undo_new_statement ();
+      if (last_was_use_stmt)
+	use_modules ();
+    }
+
   match ("import", gfc_match_import, ST_IMPORT);
-  match ("use", gfc_match_use, ST_USE);
 
   if (gfc_current_block ()->result->ts.type != BT_DERIVED)
     goto end_of_block;
@@ -252,6 +284,22 @@ decode_statement (void)
 
   old_locus = gfc_current_locus;
 
+  c = gfc_peek_ascii_char ();
+
+  if (c == 'u')
+    {
+      if (match_word ("use", gfc_match_use, &old_locus) == MATCH_YES)
+	{
+	  last_was_use_stmt = true;
+	  return ST_USE;
+	}
+      else
+	undo_new_statement ();
+    }
+
+  if (last_was_use_stmt)
+    use_modules ();
+
   /* Try matching a data declaration or function declaration. The
       input "REALFUNCTIONA(N)" can mean several things in different
       contexts, so it (and its relatives) get special treatment.  */
@@ -321,8 +369,6 @@ decode_statement (void)
   /* General statement matching: Instead of testing every possible
      statement, we eliminate most possibilities by peeking at the
      first character.  */
-
-  c = gfc_peek_ascii_char ();
 
   switch (c)
     {
@@ -454,7 +500,6 @@ decode_statement (void)
 
     case 'u':
       match ("unlock", gfc_match_unlock, ST_UNLOCK);
-      match ("use", gfc_match_use, ST_USE);
       break;
 
     case 'v':
@@ -713,6 +758,8 @@ next_free (void)
 
 	  gcc_assert (c == ' ' || c == '\t');
 	  gfc_gobble_whitespace ();
+	  if (last_was_use_stmt)
+	    use_modules ();
 	  return decode_omp_directive ();
 	}
 
@@ -801,7 +848,8 @@ next_fixed (void)
 		  gfc_error ("Bad continuation line at %C");
 		  return ST_NONE;
 		}
-
+	      if (last_was_use_stmt)
+		use_modules ();
 	      return decode_omp_directive ();
 	    }
 	  /* FALLTHROUGH */
@@ -1595,10 +1643,6 @@ accept_statement (gfc_statement st)
 {
   switch (st)
     {
-    case ST_USE:
-      gfc_use_module ();
-      break;
-
     case ST_IMPLICIT_NONE:
       gfc_set_implicit_none ();
       break;

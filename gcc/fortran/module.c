@@ -1,7 +1,7 @@
 /* Handle modules, which amounts to loading and saving symbols and
    their attendant structures.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010, 2011
+   2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -188,10 +188,8 @@ static FILE *module_fp;
 static struct md5_ctx ctx;
 
 /* The name of the module we're reading (USE'ing) or writing.  */
-static char module_name[GFC_MAX_SYMBOL_LEN + 1];
-
-/* The way the module we're reading was specified.  */
-static bool specified_nonint, specified_int;
+static const char *module_name;
+static gfc_use_list *module_list;
 
 static int module_line, module_column, only_flag;
 static int prev_module_line, prev_module_column, prev_character;
@@ -206,8 +204,6 @@ static int symbol_number;	/* Counter for assigning symbol numbers */
 
 /* Tells mio_expr_ref to make symbols for unused equivalence members.  */
 static bool in_load_equiv;
-
-static locus use_locus;
 
 
 
@@ -519,14 +515,14 @@ add_fixup (int integer, void *gp)
 /* Free the rename list left behind by a USE statement.  */
 
 static void
-free_rename (void)
+free_rename (gfc_use_rename *list)
 {
   gfc_use_rename *next;
 
-  for (; gfc_rename_list; gfc_rename_list = next)
+  for (; list; list = next)
     {
-      next = gfc_rename_list->next;
-      free (gfc_rename_list);
+      next = list->next;
+      free (list);
     }
 }
 
@@ -541,29 +537,29 @@ gfc_match_use (void)
   interface_type type, type2;
   gfc_intrinsic_op op;
   match m;
-
-  specified_int = false;
-  specified_nonint = false;
-
+  gfc_use_list *use_list;
+ 
+  use_list = gfc_get_use_list ();
+  
   if (gfc_match (" , ") == MATCH_YES)
     {
       if ((m = gfc_match (" %n ::", module_nature)) == MATCH_YES)
 	{
 	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: module "
 			      "nature in USE statement at %C") == FAILURE)
-	    return MATCH_ERROR;
+	    goto cleanup;
 
 	  if (strcmp (module_nature, "intrinsic") == 0)
-	    specified_int = true;
+	    use_list->intrinsic = true;
 	  else
 	    {
 	      if (strcmp (module_nature, "non_intrinsic") == 0)
-		specified_nonint = true;
+		use_list->non_intrinsic = true;
 	      else
 		{
 		  gfc_error ("Module nature in USE statement at %C shall "
 			     "be either INTRINSIC or NON_INTRINSIC");
-		  return MATCH_ERROR;
+		  goto cleanup;
 		}
 	    }
 	}
@@ -576,6 +572,7 @@ gfc_match_use (void)
 	      || strcmp (module_nature, "non_intrinsic") == 0)
 	    gfc_error ("\"::\" was expected after module nature at %C "
 		       "but was not found");
+	  free (use_list);
 	  return m;
 	}
     }
@@ -585,35 +582,41 @@ gfc_match_use (void)
       if (m == MATCH_YES &&
 	  gfc_notify_std (GFC_STD_F2003, "Fortran 2003: "
 			  "\"USE :: module\" at %C") == FAILURE)
-	return MATCH_ERROR;
+	goto cleanup;
 
       if (m != MATCH_YES)
 	{
 	  m = gfc_match ("% ");
 	  if (m != MATCH_YES)
-	    return m;
+	    {
+	      free (use_list);
+	      return m;
+	    }
 	}
     }
 
-  use_locus = gfc_current_locus;
+  use_list->where = gfc_current_locus;
 
-  m = gfc_match_name (module_name);
+  m = gfc_match_name (name);
   if (m != MATCH_YES)
-    return m;
+    {
+      free (use_list);
+      return m;
+    }
 
-  free_rename ();
-  only_flag = 0;
+  use_list->module_name = gfc_get_string (name);
 
   if (gfc_match_eos () == MATCH_YES)
-    return MATCH_YES;
+    goto done;
+
   if (gfc_match_char (',') != MATCH_YES)
     goto syntax;
 
   if (gfc_match (" only :") == MATCH_YES)
-    only_flag = 1;
+    use_list->only_flag = true;
 
   if (gfc_match_eos () == MATCH_YES)
-    return MATCH_YES;
+    goto done;
 
   for (;;)
     {
@@ -622,8 +625,8 @@ gfc_match_use (void)
       new_use->where = gfc_current_locus;
       new_use->found = 0;
 
-      if (gfc_rename_list == NULL)
-	gfc_rename_list = new_use;
+      if (use_list->rename == NULL)
+	use_list->rename = new_use;
       else
 	tail->next = new_use;
       tail = new_use;
@@ -653,7 +656,7 @@ gfc_match_use (void)
 	  if (type == INTERFACE_USER_OP)
 	    new_use->op = INTRINSIC_USER;
 
-	  if (only_flag)
+	  if (use_list->only_flag)
 	    {
 	      if (m != MATCH_YES)
 		strcpy (new_use->use_name, name);
@@ -684,11 +687,11 @@ gfc_match_use (void)
 		goto cleanup;
 	    }
 
-	  if (strcmp (new_use->use_name, module_name) == 0
-	      || strcmp (new_use->local_name, module_name) == 0)
+	  if (strcmp (new_use->use_name, use_list->module_name) == 0
+	      || strcmp (new_use->local_name, use_list->module_name) == 0)
 	    {
 	      gfc_error ("The name '%s' at %C has already been used as "
-			 "an external module name.", module_name);
+			 "an external module name.", use_list->module_name);
 	      goto cleanup;
 	    }
 	  break;
@@ -707,15 +710,27 @@ gfc_match_use (void)
 	goto syntax;
     }
 
+done:
+  if (module_list)
+    {
+      gfc_use_list *last = module_list;
+      while (last->next)
+	last = last->next;
+      last->next = use_list;
+    }
+  else
+    module_list = use_list;
+
   return MATCH_YES;
 
 syntax:
   gfc_syntax_error (ST_USE);
 
 cleanup:
-  free_rename ();
+  free_rename (use_list->rename);
+  free (use_list);
   return MATCH_ERROR;
- }
+}
 
 
 /* Given a name and a number, inst, return the inst name
@@ -4016,20 +4031,7 @@ load_generic_interfaces (void)
 
 	  if (!sym)
 	    {
-	      /* Make the symbol inaccessible if it has been added by a USE
-		 statement without an ONLY(11.3.2).  */
-	      if (st && only_flag
-		     && !st->n.sym->attr.use_only
-		     && !st->n.sym->attr.use_rename
-		     && strcmp (st->n.sym->module, module_name) == 0)
-		{
-		  sym = st->n.sym;
-		  gfc_delete_symtree (&gfc_current_ns->sym_root, name);
-		  st = gfc_get_unique_symtree (gfc_current_ns);
-		  st->n.sym = sym;
-		  sym = NULL;
-		}
-	      else if (st)
+	      if (st)
 		{
 		  sym = st->n.sym;
 		  if (strcmp (st->name, p) != 0)
@@ -4046,7 +4048,7 @@ load_generic_interfaces (void)
 		{
 		  gfc_get_symbol (p, NULL, &sym);
 		  sym->name = gfc_get_string (name);
-		  sym->module = gfc_get_string (module_name);
+		  sym->module = module_name;
 		  sym->attr.flavor = FL_PROCEDURE;
 		  sym->attr.generic = 1;
 		  sym->attr.use_assoc = 1;
@@ -4434,7 +4436,7 @@ check_for_ambiguous (gfc_symbol *st_sym, pointer_info *info)
      the new symbol is generic there can be no ambiguity.  */
   if (st_sym->attr.generic
 	&& st_sym->module
-	&& strcmp (st_sym->module, module_name))
+	&& st_sym->module != module_name)
     {
       /* The new symbol's attributes have not yet been read.  Since
 	 we need attr.generic, read it directly.  */
@@ -4609,16 +4611,6 @@ read_module (void)
 	    {
 	      st = gfc_find_symtree (gfc_current_ns->sym_root, name);
 
-	      /* Delete the symtree if the symbol has been added by a USE
-		 statement without an ONLY(11.3.2).  Remember that the rsym
-		 will be the same as the symbol found in the symtree, for
-		 this case.  */
-	      if (st && (only_flag || info->u.rsym.renamed)
-		     && !st->n.sym->attr.use_only
-		     && !st->n.sym->attr.use_rename
-		     && info->u.rsym.sym == st->n.sym)
-		gfc_delete_symtree (&gfc_current_ns->sym_root, name);
-
 	      /* Create a symtree node in the current namespace for this
 		 symbol.  */
 	      st = check_unique_name (p)
@@ -4649,9 +4641,6 @@ read_module (void)
 	      if (strcmp (name, p) != 0)
 		sym->attr.use_rename = 1;
 
-	      /* We need to set the only_flag here so that symbols from the
-		 same USE...ONLY but earlier are not deleted from the tree in
-		 the gfc_delete_symtree above.  */
 	      sym->attr.use_only = only_flag;
 
 	      /* Store the symtree pointing to this symbol.  */
@@ -4976,7 +4965,14 @@ write_dt_extensions (gfc_symtree *st)
   if (st->n.sym->module != NULL)
     mio_pool_string (&st->n.sym->module);
   else
-    mio_internal_string (module_name);
+    {
+      char name[GFC_MAX_SYMBOL_LEN + 1];
+      if (iomode == IO_OUTPUT)
+	strcpy (name, module_name);
+      mio_internal_string (name);
+      if (iomode == IO_INPUT)
+	module_name = gfc_get_string (name);
+    }
   mio_rparen ();
 }
 
@@ -5051,7 +5047,7 @@ write_symbol0 (gfc_symtree *st)
 
   sym = st->n.sym;
   if (sym->module == NULL)
-    sym->module = gfc_get_string (module_name);
+    sym->module = module_name;
 
   if (sym->attr.flavor == FL_PROCEDURE && sym->attr.generic
       && !sym->attr.subroutine && !sym->attr.function)
@@ -5142,7 +5138,7 @@ write_generic (gfc_symtree *st)
     return;
 
   if (sym->module == NULL)
-    sym->module = gfc_get_string (module_name);
+    sym->module = module_name;
 
   mio_symbol_interface (&st->name, &sym->module, &sym->generic);
 }
@@ -5378,7 +5374,7 @@ gfc_dump_module (const char *name, int dump_flag)
 
   /* Write the module itself.  */
   iomode = IO_OUTPUT;
-  strcpy (module_name, name);
+  module_name = gfc_get_string (name);
 
   init_pi_tree ();
 
@@ -5537,8 +5533,8 @@ import_iso_c_binding_module (void)
 
 	    if (not_in_std)
 	      {
-		gfc_error ("The symbol '%s', referenced at %C, is not "
-			   "in the selected standard", name);
+		gfc_error ("The symbol '%s', referenced at %L, is not "
+			   "in the selected standard", name, &u->where);
 		continue;
 	      }
 
@@ -5817,16 +5813,17 @@ use_iso_fortran_env_module (void)
 	      u->found = 1;
 
 	      if (gfc_notify_std (symbol[i].standard, "The symbol '%s', "
-				  "referenced at %C, is not in the selected "
-				  "standard", symbol[i].name) == FAILURE)
+				  "referenced at %L, is not in the selected "
+				  "standard", symbol[i].name,
+				  &u->where) == FAILURE)
 	        continue;
 
 	      if ((gfc_option.flag_default_integer || gfc_option.flag_default_real)
 		  && symbol[i].id == ISOFORTRANENV_NUMERIC_STORAGE_SIZE)
 		gfc_warning_now ("Use of the NUMERIC_STORAGE_SIZE named "
 				 "constant from intrinsic module "
-				 "ISO_FORTRAN_ENV at %C is incompatible with "
-				 "option %s",
+				 "ISO_FORTRAN_ENV at %L is incompatible with "
+				 "option %s", &u->where,
 				 gfc_option.flag_default_integer
 				   ? "-fdefault-integer-8"
 				   : "-fdefault-real-8");
@@ -5959,8 +5956,8 @@ use_iso_fortran_env_module (void)
 
 /* Process a USE directive.  */
 
-void
-gfc_use_module (void)
+static void
+gfc_use_module (gfc_use_list *module)
 {
   char *filename;
   gfc_state_data *p;
@@ -5969,22 +5966,25 @@ gfc_use_module (void)
   gfc_use_list *use_stmt;
   locus old_locus = gfc_current_locus;
 
-  gfc_current_locus = use_locus;
+  gfc_current_locus = module->where;
+  module_name = module->module_name;
+  gfc_rename_list = module->rename;
+  only_flag = module->only_flag;
 
-  filename = (char *) alloca (strlen (module_name) + strlen (MODULE_EXTENSION)
-			      + 1);
+  filename = XALLOCAVEC (char, strlen (module_name) + strlen (MODULE_EXTENSION)
+			       + 1);
   strcpy (filename, module_name);
   strcat (filename, MODULE_EXTENSION);
 
   /* First, try to find an non-intrinsic module, unless the USE statement
      specified that the module is intrinsic.  */
   module_fp = NULL;
-  if (!specified_int)
+  if (!module->intrinsic)
     module_fp = gfc_open_included_file (filename, true, true);
 
   /* Then, see if it's an intrinsic one, unless the USE statement
      specified that the module is non-intrinsic.  */
-  if (module_fp == NULL && !specified_nonint)
+  if (module_fp == NULL && !module->non_intrinsic)
     {
       if (strcmp (module_name, "iso_fortran_env") == 0
 	  && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ISO_FORTRAN_ENV "
@@ -5992,6 +5992,7 @@ gfc_use_module (void)
        {
 	 use_iso_fortran_env_module ();
 	 gfc_current_locus = old_locus;
+	 module->intrinsic = true;
 	 return;
        }
 
@@ -6001,12 +6002,13 @@ gfc_use_module (void)
 	{
 	  import_iso_c_binding_module();
 	  gfc_current_locus = old_locus;
+	  module->intrinsic = true;
 	  return;
 	}
 
       module_fp = gfc_open_intrinsic_module (filename);
 
-      if (module_fp == NULL && specified_int)
+      if (module_fp == NULL && module->intrinsic)
 	gfc_fatal_error ("Can't find an intrinsic module named '%s' at %C",
 			 module_name);
     }
@@ -6083,15 +6085,98 @@ gfc_use_module (void)
   fclose (module_fp);
 
   use_stmt = gfc_get_use_list ();
-  use_stmt->module_name = gfc_get_string (module_name);
-  use_stmt->only_flag = only_flag;
-  use_stmt->rename = gfc_rename_list;
-  use_stmt->where = use_locus;
-  gfc_rename_list = NULL;
+  *use_stmt = *module;
   use_stmt->next = gfc_current_ns->use_stmts;
   gfc_current_ns->use_stmts = use_stmt;
 
   gfc_current_locus = old_locus;
+}
+
+
+/* Process all USE directives.  */
+
+void
+gfc_use_modules (void)
+{
+  gfc_use_list *next, *seek, *last;
+
+  for (next = module_list; next; next = next->next)
+    {
+      bool non_intrinsic = next->non_intrinsic;
+      bool intrinsic = next->intrinsic;
+      bool neither = !non_intrinsic && !intrinsic;
+
+      for (seek = next->next; seek; seek = seek->next)
+	{
+	  if (next->module_name != seek->module_name)
+	    continue;
+
+	  if (seek->non_intrinsic)
+	    non_intrinsic = true;
+	  else if (seek->intrinsic)
+	    intrinsic = true;
+	  else
+	    neither = true;
+	}
+
+      if (intrinsic && neither && !non_intrinsic)
+	{
+	  char *filename;
+          FILE *fp;
+
+	  filename = XALLOCAVEC (char,
+				 strlen (next->module_name)
+				 + strlen (MODULE_EXTENSION) + 1);
+	  strcpy (filename, next->module_name);
+	  strcat (filename, MODULE_EXTENSION);
+	  fp = gfc_open_included_file (filename, true, true);
+	  if (fp != NULL)
+	    {
+	      non_intrinsic = true;
+	      fclose (fp);
+	    }
+	}
+
+      last = next;
+      for (seek = next->next; seek; seek = last->next)
+	{
+	  if (next->module_name != seek->module_name)
+	    {
+	      last = seek;
+	      continue;
+	    }
+
+	  if ((!next->intrinsic && !seek->intrinsic)
+	      || (next->intrinsic && seek->intrinsic)
+	      || !non_intrinsic)
+	    {
+	      if (!seek->only_flag)
+		next->only_flag = false;
+	      if (seek->rename)
+		{
+		  gfc_use_rename *r = seek->rename;
+		  while (r->next)
+		    r = r->next;
+		  r->next = next->rename;
+		  next->rename = seek->rename;
+		}
+	      last->next = seek->next; 
+	      free (seek);
+	    }
+	  else
+	    last = seek;
+	}
+    }
+
+  for (; module_list; module_list = next)
+    {
+      next = module_list->next;
+      gfc_use_module (module_list);
+      if (module_list->intrinsic)
+	free_rename (module_list->rename);
+      free (module_list);
+    }
+  gfc_rename_list = NULL;
 }
 
 
@@ -6118,11 +6203,14 @@ void
 gfc_module_init_2 (void)
 {
   last_atom = ATOM_LPAREN;
+  gfc_rename_list = NULL;
+  module_list = NULL;
 }
 
 
 void
 gfc_module_done_2 (void)
 {
-  free_rename ();
+  free_rename (gfc_rename_list);
+  gfc_rename_list = NULL;
 }
