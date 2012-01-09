@@ -1,6 +1,6 @@
 ## Linker script for GNU namespace versioning.
 ##
-## Copyright (C) 2002, 2003, 2004, 2005, 2007, 2009, 2011
+## Copyright (C) 2002, 2003, 2004, 2005, 2007, 2009, 2011, 2012
 ## Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
@@ -42,9 +42,9 @@ GLIBCXX_7.0 {
     __once_proxy;
 
     # operator new(size_t)
-    _Znw[jm];
+    _Znw[jmy];
     # operator new(size_t, std::nothrow_t const&)
-    _Znw[jm]RKSt9nothrow_t;
+    _Znw[jmy]RKSt9nothrow_t;
 
     # operator delete(void*)
     _ZdlPv;
@@ -52,9 +52,9 @@ GLIBCXX_7.0 {
     _ZdlPvRKSt9nothrow_t;
 
     # operator new[](size_t)
-    _Zna[jm];
+    _Zna[jmy];
     # operator new[](size_t, std::nothrow_t const&)
-    _Zna[jm]RKSt9nothrow_t;
+    _Zna[jmy]RKSt9nothrow_t;
 
     # operator delete[](void*)
     _ZdaPv;
@@ -93,16 +93,16 @@ GLIBCXX_7.0 {
 
     # __gnu_cxx::__pool
     _ZN9__gnu_cxx3__76__poolILb[01]EE13_M_initializeEv;
-    _ZN9__gnu_cxx3__76__poolILb[01]EE16_M_reserve_blockE[jm][jm];
-    _ZN9__gnu_cxx3__76__poolILb[01]EE16_M_reclaim_blockEPc[jm];
+    _ZN9__gnu_cxx3__76__poolILb[01]EE16_M_reserve_blockE[jmy][jmy];
+    _ZN9__gnu_cxx3__76__poolILb[01]EE16_M_reclaim_blockEPc[jmy];
     _ZN9__gnu_cxx3__76__poolILb[01]EE10_M_destroyEv;
     _ZN9__gnu_cxx3__76__poolILb1EE16_M_get_thread_idEv;
 
-    _ZN9__gnu_cxx3__717__pool_alloc_base9_M_refillE[jm];    
-    _ZN9__gnu_cxx3__717__pool_alloc_base16_M_get_free_listE[jm];
+    _ZN9__gnu_cxx3__717__pool_alloc_base9_M_refillE[jmy];    
+    _ZN9__gnu_cxx3__717__pool_alloc_base16_M_get_free_listE[jmy];
     _ZN9__gnu_cxx3__717__pool_alloc_base12_M_get_mutexEv;
 
-    _ZN9__gnu_cxx3__79free_list6_M_getE[jm];
+    _ZN9__gnu_cxx3__79free_list6_M_getE[jmy];
     _ZN9__gnu_cxx3__79free_list8_M_clearEv;
 
     # __gnu_cxx::stdio_sync_filebuf
@@ -145,16 +145,19 @@ CXXABI_2.0 {
 
   global:
     __cxa_allocate_exception;
+    __cxa_allocate_dependent_exception;
     __cxa_bad_cast;
     __cxa_bad_typeid;
     __cxa_begin_catch;
     __cxa_begin_cleanup;
     __cxa_call_unexpected;
     __cxa_current_exception_type;
+    __cxa_deleted_virtual;
     __cxa_demangle;
     __cxa_end_catch;
     __cxa_end_cleanup;
     __cxa_free_exception;
+    __cxa_free_dependent_exception;
     __cxa_get_exception_ptr;
     __cxa_get_globals;
     __cxa_get_globals_fast;
@@ -198,6 +201,11 @@ CXXABI_2.0 {
 
     _ZSt17current_exceptionv;
     _ZSt17rethrow_exceptionNSt15__exception_ptr13exception_ptrE;
+
+    # std::nested_exception
+    _ZNSt16nested_exceptionD*;
+    _ZTISt16nested_exception;
+    _ZTVSt16nested_exception;
 
     # std::bad_function_call.
     _ZNSt17bad_function_callD*;
@@ -286,6 +294,11 @@ CXXABI_2.0 {
     _ZTIDn;
     _ZTIPDn;
     _ZTIPKDn;
+
+    # typeinfo for __int128 and unsigned __int128
+    _ZTI[no];
+    _ZTIP[no];
+    _ZTIPK[no];
 
     # virtual table
     _ZTVN10__cxxabiv117__array_type_infoE;
