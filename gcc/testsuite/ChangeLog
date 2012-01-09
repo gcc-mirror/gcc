@@ -1,3 +1,11 @@
+2012-01-09  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	Backport from mainline:
+	2011-11-04  Jiangning Liu  <jiangning.liu@arm.com>
+
+	PR rtl-optimization/38644
+	* gcc.target/arm/stack-red-zone.c: New.
+
 2012-01-09  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:

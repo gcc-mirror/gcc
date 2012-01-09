@@ -20867,6 +20867,8 @@ thumb1_expand_epilogue (void)
   gcc_assert (amount >= 0);
   if (amount)
     {
+      emit_insn (gen_blockage ());
+
       if (amount < 512)
 	emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
 			       GEN_INT (amount)));

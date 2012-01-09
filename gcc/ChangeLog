@@ -1,3 +1,12 @@
+2012-01-09  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	Backport from mainline
+	2011-11-04  Jiangning Liu  <jiangning.liu@arm.com>
+
+	PR rtl-optimization/38644
+	* config/arm/arm.c (thumb1_expand_epilogue): Add memory barrier
+	for epilogue having stack adjustment.
+
 2012-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/41929
