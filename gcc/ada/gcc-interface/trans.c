@@ -7017,7 +7017,7 @@ addressable_p (tree gnu_expr, tree gnu_type)
 		    || DECL_ALIGN (TREE_OPERAND (gnu_expr, 1))
 		       >= TYPE_ALIGN (TREE_TYPE (gnu_expr))))
 	       /* The field of a padding record is always addressable.  */
-	       || TYPE_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_expr, 0))))
+	       || TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_expr, 0))))
 	      && addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE));
 
     case ARRAY_REF:  case ARRAY_RANGE_REF:
