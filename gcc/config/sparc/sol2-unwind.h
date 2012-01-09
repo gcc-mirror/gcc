@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for SPARC Solaris.
-   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,7 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define IS_SIGHANDLER sparc64_is_sighandler
 
 static int
-sparc64_is_sighandler (unsigned int *pc, unsigned int *savpc, int *nframes)
+sparc64_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 {
   if (/* Solaris 8 - single-threaded
 	----------------------------
@@ -110,38 +110,59 @@ sparc64_is_sighandler (unsigned int *pc, unsigned int *savpc, int *nframes)
       && pc[ 0] == 0x81c7e008
       && pc[ 1] == 0x81e80000)
     {
-      if (/* Solaris 8 /usr/lib/sparcv9/libthread.so.1
-	    ------------------------------------------
-	    Before patch 108827-08:
-	    <sigacthandler+1760>:     st  %g4, [ %i1 + 0x1c ]
+      /* We have observed different calling frames among different
+	 versions of the operating system, so that we need to
+	 discriminate using the upper frame.  We look for the return
+	 address of the caller frame (there is an offset of 15 double
+	 words between the frame address and the place where this return
+	 address is stored) in order to do some more pattern matching.  */
+      unsigned int cuh_pattern
+	= *(unsigned int *)(*(unsigned long *)(cfa + 15*8) - 4);
 
-	    Since patch 108827-08:
-	    <sigacthandler+1816>:     st  %l0, [ %i4 + 0x10 ]  */
-	        savpc[-1] == 0xc826601c
-	     || savpc[-1] == 0xe0272010)
+      if (cuh_pattern == 0xd25fa7ef)
 	{
-	  /* We need to move up three frames:
+	  /* This matches the call_user_handler pattern for Solaris 10.
+	     There are 2 cases so we look for the return address of the
+	     caller's caller frame in order to do more pattern matching.  */
+	  unsigned int sah_pattern
+	    = *(unsigned int *)(*(unsigned long *)(cfa + 176 + 15*8) - 4);
+
+          if (sah_pattern == 0x92100019)
+	    /* This is the same setup as for Solaris 9, see below.  */
+	    *nframes = 3;
+	  else
+	    /* The sigacthandler frame isn't present in the chain.
+	       We need to move up two frames:
 
 		<signal handler>	<-- context->cfa
 		__sighndlr
-		sigacthandler
+		call_user_handler frame
 		<kernel>
-	  */
-	  *nframes = 2;
+	    */
+	    *nframes = 2;
 	}
-      else /* Solaris 8 /usr/lib/lwp/sparcv9/libthread.so.1, Solaris 9+
-	     ----------------------------------------------------------  */
-	{
-	  /* We need to move up three frames:
+      else if (cuh_pattern == 0x9410001a || cuh_pattern == 0x94100013)
+	/* This matches the call_user_handler pattern for Solaris 9 and
+	   for Solaris 8 running inside Solaris Containers respectively
+	   We need to move up three frames:
 
 		<signal handler>	<-- context->cfa
 		__sighndlr
 		call_user_handler
 		sigacthandler
 		<kernel>
-	  */
-	  *nframes = 3;
-	}
+	*/
+	*nframes = 3;
+      else
+	/* This is the default Solaris 8 case.
+	   We need to move up two frames:
+
+		<signal handler>	<-- context->cfa
+		__sighndlr
+		sigacthandler
+		<kernel>
+	*/
+	*nframes = 2;
       return 1;
     }
 
@@ -172,7 +193,7 @@ sparc64_frob_update_context (struct _Unwind_Context *context,
 #define IS_SIGHANDLER sparc_is_sighandler
 
 static int
-sparc_is_sighandler (unsigned int *pc, unsigned int * savpc, int *nframes)
+sparc_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 {
   if (/* Solaris 8, 9 - single-threaded
         -------------------------------
@@ -200,7 +221,7 @@ sparc_is_sighandler (unsigned int *pc, unsigned int * savpc, int *nframes)
       && pc[-1] == 0x9410001a
       && pc[ 0] == 0x80a62008)
     {
-      /* Need to move up one frame:
+      /* We need to move up one frame:
 
 		<signal handler>	<-- context->cfa
 		sigacthandler
@@ -231,7 +252,7 @@ sparc_is_sighandler (unsigned int *pc, unsigned int * savpc, int *nframes)
       && pc[ 1] == 0x81e80000
       && pc[ 2] == 0x80a26000)
     {
-      /* Need to move up one frame:
+      /* We need to move up one frame:
 
 		<signal handler>	<-- context->cfa
 		__libthread_segvhdlr
@@ -258,33 +279,59 @@ sparc_is_sighandler (unsigned int *pc, unsigned int * savpc, int *nframes)
      && pc[ 0] == 0x81c7e008
      && pc[ 1] == 0x81e80000)
     {
-      if (/* Solaris 8 /usr/lib/libthread.so.1
-	    ----------------------------------
-	    <sigacthandler+1796>:     mov  %i0, %o0  */
-	  savpc[-1] == 0x90100018)
+      /* We have observed different calling frames among different
+	 versions of the operating system, so that we need to
+	 discriminate using the upper frame.  We look for the return
+	 address of the caller frame (there is an offset of 15 words
+	 between the frame address and the place where this return
+	 address is stored) in order to do some more pattern matching.  */
+      unsigned int cuh_pattern
+	= *(unsigned int *)(*(unsigned int *)(cfa + 15*4) - 4);
+
+      if (cuh_pattern == 0xd407a04c)
 	{
-	  /* We need to move up two frames:
+	  /* This matches the call_user_handler pattern for Solaris 10.
+	     There are 2 cases so we look for the return address of the
+	     caller's caller frame in order to do more pattern matching.  */
+	  unsigned int sah_pattern
+	    = *(unsigned int *)(*(unsigned int *)(cfa + 96 + 15*4) - 4);
+
+          if (sah_pattern == 0x92100019)
+	    /* This is the same setup as for Solaris 9, see below.  */
+	    *nframes = 3;
+	  else
+	    /* The sigacthandler frame isn't present in the chain.
+	       We need to move up two frames:
 
 		<signal handler>	<-- context->cfa
 		__sighndlr
-		sigacthandler
+		call_user_handler frame
 		<kernel>
-	  */
-	  *nframes = 2;
+	    */
+	    *nframes = 2;
 	}
-      else /* Solaris 8 /usr/lib/lwp/libthread.so.1, Solaris 9+
-	     --------------------------------------------------  */
-	{
-	  /* We need to move up three frames:
+      else if (cuh_pattern == 0x9410001a || cuh_pattern == 0x9410001b)
+	/* This matches the call_user_handler pattern for Solaris 9 and
+	   for Solaris 8 running inside Solaris Containers respectively.
+	   We need to move up three frames:
 
 		<signal handler>	<-- context->cfa
 		__sighndlr
 		call_user_handler
 		sigacthandler
 		<kernel>
-	  */
-	  *nframes = 3;
-	}
+	*/
+	*nframes = 3;
+      else
+	/* This is the default Solaris 8 case.
+	   We need to move up two frames:
+
+		<signal handler>	<-- context->cfa
+		__sighndlr
+		sigacthandler
+		<kernel>
+	*/
+	*nframes = 2;
       return 1;
     }
 
@@ -322,7 +369,7 @@ MD_FALLBACK_FRAME_STATE_FOR (struct _Unwind_Context *context,
       return _URC_NO_REASON;
     }
 
-  if (IS_SIGHANDLER (pc, (unsigned int *)fp->fr_savpc, &nframes))
+  if (IS_SIGHANDLER (pc, this_cfa, &nframes))
     {
       struct handler_args {
 	struct frame frwin;
