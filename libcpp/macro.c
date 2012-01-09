@@ -217,7 +217,6 @@ static const char * const monthnames[] =
 const uchar *
 _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 {
-  const struct line_map *map;
   const uchar *result = NULL;
   linenum_type number = 1;
 
@@ -300,7 +299,6 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
       break;
 
     case BT_SPECLINE:
-      map = LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table);
       /* If __LINE__ is embedded in a macro, it must expand to the
 	 line of the macro's invocation, not its definition.
 	 Otherwise things like assert() will not work properly.  */
