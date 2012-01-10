@@ -1,5 +1,11 @@
 2012-01-10  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/51652
+	* resolve.c (resolve_allocate_expr): For non-deferred char lengths,
+	check whether type-spec matches declaration.
+
+2012-01-10  Tobias Burnus  <burnus@net-b.de>
+
 	* resolve.c (resolve_ordinary_assign): Improve error wording.
 
 2012-01-09  Paul Thomas  <pault@gcc.gnu.org>
