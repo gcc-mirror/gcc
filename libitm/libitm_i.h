@@ -39,6 +39,10 @@
 #include "local_type_traits"
 #include "local_atomic"
 
+/* Don't require libgcc_s.so for exceptions.  */
+extern void _Unwind_DeleteException (_Unwind_Exception*) __attribute__((weak));
+
+
 #include "common.h"
 
 namespace GTM HIDDEN {
