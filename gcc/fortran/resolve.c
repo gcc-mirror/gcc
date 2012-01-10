@@ -9208,8 +9208,8 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
      and coindexed; cf. F2008, 7.2.1.2 and PR 43366.  */
   if (lhs->ts.type == BT_CLASS)
     {
-      gfc_error ("Variable must not be polymorphic in assignment at %L "
-		 "- check that there is a matching specific subroutine "
+      gfc_error ("Variable must not be polymorphic in intrinsic assignment at "
+		 "%L - check that there is a matching specific subroutine "
 		 "for '=' operator", &lhs->where);
       return false;
     }

@@ -1,3 +1,7 @@
+2012-01-10  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (resolve_ordinary_assign): Improve error wording.
+
 2012-01-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/51791
