@@ -150,8 +150,7 @@ package Ada.Containers.Indefinite_Hashed_Sets is
 
    function Constant_Reference
      (Container : aliased Set;
-      Position  : Cursor)
-   return Constant_Reference_Type;
+      Position  : Cursor) return Constant_Reference_Type;
 
    procedure Assign (Target : in out Set; Source : Set);
 
@@ -420,6 +419,10 @@ package Ada.Containers.Indefinite_Hashed_Sets is
         (Container : aliased in out Set;
          Position  : Cursor) return Reference_Type;
 
+      function Constant_Reference
+        (Container : aliased Set;
+         Key       : Key_Type) return Constant_Reference_Type;
+
       function Reference_Preserving_Key
         (Container : aliased in out Set;
          Key       : Key_Type) return Reference_Type;
@@ -427,6 +430,20 @@ package Ada.Containers.Indefinite_Hashed_Sets is
    private
       type Reference_Type (Element : not null access Element_Type)
          is null record;
+
+      use Ada.Streams;
+
+      procedure Read
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : out Reference_Type);
+
+      for Reference_Type'Read use Read;
+
+      procedure Write
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : Reference_Type);
+
+      for Reference_Type'Write use Write;
    end Generic_Keys;
 
 private

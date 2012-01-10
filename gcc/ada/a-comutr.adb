@@ -437,6 +437,36 @@ package body Ada.Containers.Multiway_Trees is
       pragma Assert (Children_Count = Container_Count);
    end Clear;
 
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : aliased Tree;
+      Position  : Cursor) return Constant_Reference_Type
+   is
+   begin
+      if Position.Container = null then
+         raise Constraint_Error with
+           "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with
+           "Position cursor designates wrong container";
+      end if;
+
+      if Position.Node = Root_Node (Container) then
+         raise Program_Error with "Position cursor designates root";
+      end if;
+
+      --  Implement Vet for multiway tree???
+      --  pragma Assert (Vet (Position),
+      --                 "Position cursor in Constant_Reference is bad");
+
+      return (Element => Position.Node.Element'Access);
+   end Constant_Reference;
+
    --------------
    -- Contains --
    --------------
@@ -2000,24 +2030,30 @@ package body Ada.Containers.Multiway_Trees is
    -- Reference --
    ---------------
 
-   function Constant_Reference
-     (Container : aliased Tree;
-      Position  : Cursor) return Constant_Reference_Type
-   is
-   begin
-      pragma Unreferenced (Container);
-
-      return (Element => Position.Node.Element'Unrestricted_Access);
-   end Constant_Reference;
-
    function Reference
-     (Container : aliased Tree;
+     (Container : aliased in out Tree;
       Position  : Cursor) return Reference_Type
    is
    begin
-      pragma Unreferenced (Container);
+      if Position.Container = null then
+         raise Constraint_Error with
+           "Position cursor has no element";
+      end if;
 
-      return (Element => Position.Node.Element'Unrestricted_Access);
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with
+           "Position cursor designates wrong container";
+      end if;
+
+      if Position.Node = Root_Node (Container) then
+         raise Program_Error with "Position cursor designates root";
+      end if;
+
+      --  Implement Vet for multiway tree???
+      --  pragma Assert (Vet (Position),
+      --                 "Position cursor in Constant_Reference is bad");
+
+      return (Element => Position.Node.Element'Access);
    end Reference;
 
    --------------------

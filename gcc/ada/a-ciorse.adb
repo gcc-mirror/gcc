@@ -372,6 +372,35 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       return Node.Color;
    end Color;
 
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : aliased Set;
+      Position  : Cursor) return Constant_Reference_Type
+   is
+   begin
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with
+           "Position cursor designates wrong container";
+      end if;
+
+      if Position.Node.Element = null then
+         raise Program_Error with "Node has no element";
+      end if;
+
+      pragma Assert
+        (Vet (Container.Tree, Position.Node),
+         "bad cursor in Constant_Reference");
+
+      return (Element => Position.Node.Element.all'Access);
+   end Constant_Reference;
+
    --------------
    -- Contains --
    --------------
@@ -733,6 +762,29 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
                  else Cursor'(Container'Unrestricted_Access, Node));
       end Ceiling;
 
+      ------------------------
+      -- Constant_Reference --
+      ------------------------
+
+      function Constant_Reference
+        (Container : aliased Set;
+         Key       : Key_Type) return Constant_Reference_Type
+      is
+         Node : constant Node_Access :=
+                  Key_Keys.Find (Container.Tree, Key);
+
+      begin
+         if Node = null then
+            raise Constraint_Error with "Key not in set";
+         end if;
+
+         if Node.Element = null then
+            raise Program_Error with "Node has no element";
+         end if;
+
+         return (Element => Node.Element.all'Access);
+      end Constant_Reference;
+
       --------------
       -- Contains --
       --------------
@@ -889,6 +941,74 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          Replace_Element (Container.Tree, Node, New_Item);
       end Replace;
 
+      ----------
+      -- Read --
+      ----------
+
+      procedure Read
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : out Reference_Type)
+      is
+      begin
+         raise Program_Error with "attempt to stream reference";
+      end Read;
+
+      ------------------------------
+      -- Reference_Preserving_Key --
+      ------------------------------
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Position  : Cursor) return Reference_Type
+      is
+      begin
+         if Position.Container = null then
+            raise Constraint_Error with "Position cursor has no element";
+         end if;
+
+         if Position.Container /= Container'Unrestricted_Access then
+            raise Program_Error with
+              "Position cursor designates wrong container";
+         end if;
+
+         if Position.Node.Element = null then
+            raise Program_Error with "Node has no element";
+         end if;
+
+         pragma Assert
+           (Vet (Container.Tree, Position.Node),
+            "bad cursor in function Reference_Preserving_Key");
+
+         --  Some form of finalization will be required in order to actually
+         --  check that the key-part of the element designated by Position has
+         --  not changed.  ???
+
+         return (Element => Position.Node.Element.all'Access);
+      end Reference_Preserving_Key;
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Key       : Key_Type) return Reference_Type
+      is
+         Node : constant Node_Access :=
+                  Key_Keys.Find (Container.Tree, Key);
+
+      begin
+         if Node = null then
+            raise Constraint_Error with "Key not in set";
+         end if;
+
+         if Node.Element = null then
+            raise Program_Error with "Node has no element";
+         end if;
+
+         --  Some form of finalization will be required in order to actually
+         --  check that the key-part of the element designated by Key has not
+         --  changed.  ???
+
+         return (Element => Node.Element.all'Access);
+      end Reference_Preserving_Key;
+
       -----------------------------------
       -- Update_Element_Preserving_Key --
       -----------------------------------
@@ -955,41 +1075,9 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          raise Program_Error with "key was modified";
       end Update_Element_Preserving_Key;
 
-      function Reference_Preserving_Key
-        (Container : aliased in out Set;
-         Key       : Key_Type) return Constant_Reference_Type
-      is
-         Position : constant Cursor := Find (Container, Key);
-
-      begin
-         if Position.Container = null then
-            raise Constraint_Error with "Position cursor has no element";
-         end if;
-
-         return (Element => Position.Node.Element);
-      end Reference_Preserving_Key;
-
-      function Reference_Preserving_Key
-        (Container : aliased in out Set;
-         Key       : Key_Type) return Reference_Type
-      is
-         Position : constant Cursor := Find (Container, Key);
-
-      begin
-         if Position.Container = null then
-            raise Constraint_Error with "Position cursor has no element";
-         end if;
-
-         return (Element => Position.Node.Element);
-      end Reference_Preserving_Key;
-
-      procedure Read
-        (Stream : not null access Root_Stream_Type'Class;
-         Item   : out Reference_Type)
-      is
-      begin
-         raise Program_Error with "attempt to stream reference";
-      end Read;
+      -----------
+      -- Write --
+      -----------
 
       procedure Write
         (Stream : not null access Root_Stream_Type'Class;
@@ -1652,22 +1740,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    begin
       raise Program_Error with "attempt to stream reference";
    end Read;
-
-   ---------------
-   -- Reference --
-   ---------------
-
-   function Constant_Reference (Container : Set; Position : Cursor)
-   return Constant_Reference_Type
-   is
-      pragma Unreferenced (Container);
-   begin
-      if Position.Container = null then
-         raise Constraint_Error with "Position cursor has no element";
-      end if;
-
-      return (Element => Position.Node.Element.all'Access);
-   end Constant_Reference;
 
    -------------
    -- Replace --

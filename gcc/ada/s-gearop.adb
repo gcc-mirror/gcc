@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2006-2011, Free Software Foundation, Inc.          --
+--         Copyright (C) 2006-2012, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -311,11 +311,23 @@ package body System.Generic_Array_Operations is
 
             if Max_Abs > 0.0 then
                Switch_Row (M, N, Row, Max_Row);
-               Divide_Row (M, N, Row, M (Row, J));
+
+               --  The temporaries below are necessary to force a copy of the
+               --  value and avoid improper aliasing.
+
+               declare
+                  Scale : constant Scalar := M (Row, J);
+               begin
+                  Divide_Row (M, N, Row, Scale);
+               end;
 
                for U in Row + 1 .. M'Last (1) loop
-                  Sub_Row (N, U, Row, M (U, J));
-                  Sub_Row (M, U, Row, M (U, J));
+                  declare
+                     Factor : constant Scalar := M (U, J);
+                  begin
+                     Sub_Row (N, U, Row, Factor);
+                     Sub_Row (M, U, Row, Factor);
+                  end;
                end loop;
 
                exit when Row >= M'Last (1);

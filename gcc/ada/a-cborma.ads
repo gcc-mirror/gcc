@@ -50,7 +50,7 @@ package Ada.Containers.Bounded_Ordered_Maps is
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
 
    type Map (Capacity : Count_Type) is tagged private with
-      constant_Indexing => Constant_Reference,
+      Constant_Indexing => Constant_Reference,
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type;
@@ -96,6 +96,55 @@ package Ada.Containers.Bounded_Ordered_Maps is
       Position  : Cursor;
       Process   : not null access
                     procedure (Key : Key_Type; Element : in out Element_Type));
+
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is private
+   with
+      Implicit_Dereference => Element;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type);
+
+   for Constant_Reference_Type'Read use Read;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type);
+
+   for Constant_Reference_Type'Write use Write;
+
+   type Reference_Type (Element : not null access Element_Type) is private
+   with
+      Implicit_Dereference => Element;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type);
+
+   for Reference_Type'Read use Read;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type);
+
+   for Reference_Type'Write use Write;
+
+   function Constant_Reference
+     (Container : aliased Map;
+      Position  : Cursor) return Constant_Reference_Type;
+
+   function Reference
+     (Container : aliased in out Map;
+      Position  : Cursor) return Reference_Type;
+
+   function Constant_Reference
+     (Container : aliased Map;
+      Key       : Key_Type) return Constant_Reference_Type;
+
+   function Reference
+     (Container : aliased in out Map;
+      Key       : Key_Type) return Reference_Type;
 
    procedure Assign (Target : in out Map; Source : Map);
 
@@ -183,46 +232,6 @@ package Ada.Containers.Bounded_Ordered_Maps is
 
    function ">" (Left : Key_Type; Right : Cursor) return Boolean;
 
-   type Constant_Reference_Type
-      (Element : not null access constant Element_Type) is private
-   with
-      Implicit_Dereference => Element;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Constant_Reference_Type);
-
-   for Constant_Reference_Type'Read use Read;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Constant_Reference_Type);
-
-   for Constant_Reference_Type'Write use Write;
-
-   type Reference_Type (Element : not null access Element_Type) is private
-   with
-      Implicit_Dereference => Element;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Reference_Type);
-
-   for Reference_Type'Read use Read;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Reference_Type);
-
-   for Reference_Type'Write use Write;
-
-   function Constant_Reference
-     (Container : Map;
-      Key       : Key_Type)    --  SHOULD BE ALIASED ???
-      return Constant_Reference_Type;
-
-   function Reference (Container : Map; Key : Key_Type) return Reference_Type;
-
    procedure Iterate
      (Container : Map;
       Process   : not null access procedure (Position : Cursor));
@@ -251,7 +260,7 @@ private
       Right   : Count_Type;
       Color   : Red_Black_Trees.Color_Type := Red_Black_Trees.Red;
       Key     : Key_Type;
-      Element : Element_Type;
+      Element : aliased Element_Type;
    end record;
 
    package Tree_Types is

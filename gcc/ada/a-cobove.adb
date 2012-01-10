@@ -378,6 +378,52 @@ package body Ada.Containers.Bounded_Vectors is
       Container.Last := No_Index;
    end Clear;
 
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : aliased Vector;
+      Position  : Cursor) return Constant_Reference_Type
+   is
+   begin
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with "Position cursor denotes wrong container";
+      end if;
+
+      if Position.Index > Position.Container.Last then
+         raise Constraint_Error with "Position cursor is out of range";
+      end if;
+
+      declare
+         A : Elements_Array renames Container.Elements;
+         I : constant Count_Type := To_Array_Index (Position.Index);
+      begin
+         return (Element => A (I)'Access);
+      end;
+   end Constant_Reference;
+
+   function Constant_Reference
+     (Container : aliased Vector;
+      Index     : Index_Type) return Constant_Reference_Type
+   is
+   begin
+      if Index > Container.Last then
+         raise Constraint_Error with "Index is out of range";
+      end if;
+
+      declare
+         A : Elements_Array renames Container.Elements;
+         I : constant Count_Type := To_Array_Index (Index);
+      begin
+         return (Element => A (I)'Access);
+      end;
+   end Constant_Reference;
+
    --------------
    -- Contains --
    --------------
@@ -2071,76 +2117,46 @@ package body Ada.Containers.Bounded_Vectors is
    -- Reference --
    ---------------
 
-   function Constant_Reference
-     (Container : Vector;
-      Position  : Cursor)    --  SHOULD BE ALIASED
-      return Constant_Reference_Type
-   is
-   begin
-      pragma Unreferenced (Container);
-
-      if Position.Container = null then
-         raise Constraint_Error with "Position cursor has no element";
-      end if;
-
-      if Position.Index > Position.Container.Last then
-         raise Constraint_Error with "Position cursor is out of range";
-      end if;
-
-      return
-       (Element =>
-          Position.Container.Elements
-            (To_Array_Index (Position.Index))'Access);
-   end Constant_Reference;
-
-   function Constant_Reference
-     (Container : Vector;
-      Position  : Index_Type)
-      return Constant_Reference_Type
-   is
-   begin
-      if (Position) > Container.Last then
-         raise Constraint_Error with "Index is out of range";
-      end if;
-
-      return (Element =>
-                Container.Elements (To_Array_Index (Position))'Access);
-   end Constant_Reference;
-
    function Reference
-     (Container : Vector;
-      Position  : Cursor)
-      return Reference_Type
+     (Container : aliased in out Vector;
+      Position  : Cursor) return Reference_Type
    is
    begin
-      pragma Unreferenced (Container);
-
       if Position.Container = null then
          raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with "Position cursor denotes wrong container";
       end if;
 
       if Position.Index > Position.Container.Last then
          raise Constraint_Error with "Position cursor is out of range";
       end if;
 
-      return
-        (Element =>
-           Position.Container.Elements
-             (To_Array_Index (Position.Index))'Access);
+      declare
+         A : Elements_Array renames Container.Elements;
+         I : constant Count_Type := To_Array_Index (Position.Index);
+      begin
+         return (Element => A (I)'Access);
+      end;
    end Reference;
 
    function Reference
-     (Container : Vector;
-      Position  : Index_Type)
-      return Reference_Type
+     (Container : aliased in out Vector;
+      Index     : Index_Type) return Reference_Type
    is
    begin
-      if Position > Container.Last then
+      if Index > Container.Last then
          raise Constraint_Error with "Index is out of range";
-      else
-         return (Element =>
-           Container.Elements (To_Array_Index (Position))'Unrestricted_Access);
       end if;
+
+      declare
+         A : Elements_Array renames Container.Elements;
+         I : constant Count_Type := To_Array_Index (Index);
+      begin
+         return (Element => A (I)'Access);
+      end;
    end Reference;
 
    ---------------------
