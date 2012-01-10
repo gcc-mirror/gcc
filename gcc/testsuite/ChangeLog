@@ -1,3 +1,8 @@
+2012-01-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c-torture/execute/doloop-1.c,
+	gcc.c-torture/execute/doloop-2.c: New tests.
+
 2012-01-09  Martin Jambor  <mjambor@suse.cz>
 
         PR tree-optimization/51759
