@@ -1,3 +1,8 @@
+2012-01-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51433
+	* g++.dg/cpp0x/constexpr-cache1.C: New.
+
 2012-01-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51801

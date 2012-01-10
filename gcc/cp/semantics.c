@@ -6576,7 +6576,7 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
   else
     {
       result = entry->result;
-      if (!result || (result == error_mark_node && !allow_non_constant))
+      if (!result || result == error_mark_node)
 	result = (cxx_eval_constant_expression
 		  (&new_call, new_call.fundef->body,
 		   allow_non_constant, addr,
