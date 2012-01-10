@@ -1,5 +1,6 @@
 2012-01-10  Tom de Vries  <tom@codesourcery.com>
 
+	PR rtl-optimization/51271
 	* dwarf2cfi.c (scan_trace): Save and restore cur_row->reg_save when
 	handling annulled branch.
 
@@ -93,6 +94,7 @@
 2012-01-09  Tom de Vries  <tom@codesourcery.com>
 	    Andrew Pinski  <apinski@cavium.com>
 
+	PR debug/51471
 	* reorg.c (fill_slots_from_thread): Don't speculate frame-related insns.
 
 2012-01-09  Richard Sandiford  <rdsandiford@googlemail.com>
