@@ -86,6 +86,7 @@ extern void neon_emit_pair_result_insn (enum machine_mode,
 					rtx (*) (rtx, rtx, rtx, rtx),
 					rtx, rtx, rtx);
 extern void neon_disambiguate_copy (rtx *, rtx *, rtx *, unsigned int);
+extern void neon_split_vcombine (rtx op[3]);
 extern enum reg_class coproc_secondary_reload_class (enum machine_mode, rtx,
 						     bool);
 extern bool arm_tls_referenced_p (rtx);
@@ -242,5 +243,8 @@ struct tune_params
 extern const struct tune_params *current_tune;
 extern int vfp3_const_double_for_fract_bits (rtx);
 #endif /* RTX_CODE */
+
+extern void arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
+extern bool arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
 
 #endif /* ! GCC_ARM_PROTOS_H */

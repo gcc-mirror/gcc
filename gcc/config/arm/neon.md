@@ -1,5 +1,6 @@
 ;; ARM NEON coprocessor Machine Description
-;; Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007, 2008, 2009, 2010, 2012
+;;   Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -35,6 +36,7 @@
   UNSPEC_VCGE
   UNSPEC_VCGT
   UNSPEC_VCLS
+  UNSPEC_VCONCAT
   UNSPEC_VCVT
   UNSPEC_VCVT_N
   UNSPEC_VEXT
@@ -2860,6 +2862,20 @@
   DONE;
 })
 
+; Disabled before reload because we don't want combine doing something silly,
+; but used by the post-reload expansion of neon_vcombine.
+(define_insn "*neon_vswp<mode>"
+  [(set (match_operand:VDQX 0 "s_register_operand" "+w")
+	(match_operand:VDQX 1 "s_register_operand" "+w"))
+   (set (match_dup 1) (match_dup 0))]
+  "TARGET_NEON && reload_completed"
+  "vswp\t%<V_reg>1, %<V_reg>2"
+  [(set (attr "neon_type")
+	(if_then_else (match_test "<Is_d_reg>")
+		      (const_string "neon_bp_simple")
+		      (const_string "neon_bp_2cycle")))]
+)
+
 ;; In this insn, operand 1 should be low, and operand 2 the high part of the
 ;; dest vector.
 ;; FIXME: A different implementation of this builtin could make it much
@@ -2867,48 +2883,19 @@
 ;; it so that the reg allocator puts things in the right places magically
 ;; instead). Lack of subregs for vectors makes that tricky though, I think.
 
-(define_insn "neon_vcombine<mode>"
+(define_insn_and_split "neon_vcombine<mode>"
   [(set (match_operand:<V_DOUBLE> 0 "s_register_operand" "=w")
-        (vec_concat:<V_DOUBLE> (match_operand:VDX 1 "s_register_operand" "w")
-			       (match_operand:VDX 2 "s_register_operand" "w")))]
+        (vec_concat:<V_DOUBLE>
+	  (match_operand:VDX 1 "s_register_operand" "w")
+	  (match_operand:VDX 2 "s_register_operand" "w")))]
   "TARGET_NEON"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
 {
-  int dest = REGNO (operands[0]);
-  int src1 = REGNO (operands[1]);
-  int src2 = REGNO (operands[2]);
-  rtx destlo;
-
-  if (src1 == dest && src2 == dest + 2)
-    return "";
-  else if (src2 == dest && src1 == dest + 2)
-    /* Special case of reversed high/low parts.  */
-    return "vswp\t%P1, %P2";
-
-  destlo = gen_rtx_REG (<MODE>mode, dest);
-
-  if (!reg_overlap_mentioned_p (operands[2], destlo))
-    {
-      /* Try to avoid unnecessary moves if part of the result is in the right
-         place already.  */
-      if (src1 != dest)
-        output_asm_insn ("vmov\t%e0, %P1", operands);
-      if (src2 != dest + 2)
-        output_asm_insn ("vmov\t%f0, %P2", operands);
-    }
-  else
-    {
-      if (src2 != dest + 2)
-        output_asm_insn ("vmov\t%f0, %P2", operands);
-      if (src1 != dest)
-        output_asm_insn ("vmov\t%e0, %P1", operands);
-    }
-
-  return "";
-}
-  ;; We set the neon_type attribute based on the vmov instructions above.
-  [(set_attr "length" "8")
-   (set_attr "neon_type" "neon_bp_simple")]
-)
+  neon_split_vcombine (operands);
+  DONE;
+})
 
 (define_expand "neon_vget_high<mode>"
   [(match_operand:<V_HALF> 0 "s_register_operand")
@@ -3919,6 +3906,83 @@
 }
   [(set_attr "neon_type" "neon_bp_3cycle")]
 )
+
+;; These three are used by the vec_perm infrastructure for V16QImode.
+(define_insn_and_split "neon_vtbl1v16qi"
+  [(set (match_operand:V16QI 0 "s_register_operand" "=&w")
+	(unspec:V16QI [(match_operand:V16QI 1 "s_register_operand" "w")
+		       (match_operand:V16QI 2 "s_register_operand" "w")]
+		      UNSPEC_VTBL))]
+  "TARGET_NEON"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx op0, op1, op2, part0, part2;
+  unsigned ofs;
+
+  op0 = operands[0];
+  op1 = gen_lowpart (TImode, operands[1]);
+  op2 = operands[2];
+
+  ofs = subreg_lowpart_offset (V8QImode, V16QImode);
+  part0 = simplify_subreg (V8QImode, op0, V16QImode, ofs);
+  part2 = simplify_subreg (V8QImode, op2, V16QImode, ofs);
+  emit_insn (gen_neon_vtbl2v8qi (part0, op1, part2));
+
+  ofs = subreg_highpart_offset (V8QImode, V16QImode);
+  part0 = simplify_subreg (V8QImode, op0, V16QImode, ofs);
+  part2 = simplify_subreg (V8QImode, op2, V16QImode, ofs);
+  emit_insn (gen_neon_vtbl2v8qi (part0, op1, part2));
+  DONE;
+})
+
+(define_insn_and_split "neon_vtbl2v16qi"
+  [(set (match_operand:V16QI 0 "s_register_operand" "=&w")
+	(unspec:V16QI [(match_operand:OI 1 "s_register_operand" "w")
+		       (match_operand:V16QI 2 "s_register_operand" "w")]
+		      UNSPEC_VTBL))]
+  "TARGET_NEON"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx op0, op1, op2, part0, part2;
+  unsigned ofs;
+
+  op0 = operands[0];
+  op1 = operands[1];
+  op2 = operands[2];
+
+  ofs = subreg_lowpart_offset (V8QImode, V16QImode);
+  part0 = simplify_subreg (V8QImode, op0, V16QImode, ofs);
+  part2 = simplify_subreg (V8QImode, op2, V16QImode, ofs);
+  emit_insn (gen_neon_vtbl2v8qi (part0, op1, part2));
+
+  ofs = subreg_highpart_offset (V8QImode, V16QImode);
+  part0 = simplify_subreg (V8QImode, op0, V16QImode, ofs);
+  part2 = simplify_subreg (V8QImode, op2, V16QImode, ofs);
+  emit_insn (gen_neon_vtbl2v8qi (part0, op1, part2));
+  DONE;
+})
+
+;; ??? Logically we should extend the regular neon_vcombine pattern to
+;; handle quad-word input modes, producing octa-word output modes.  But
+;; that requires us to add support for octa-word vector modes in moves.
+;; That seems overkill for this one use in vec_perm.
+(define_insn_and_split "neon_vcombinev16qi"
+  [(set (match_operand:OI 0 "s_register_operand" "=w")
+	(unspec:OI [(match_operand:V16QI 1 "s_register_operand" "w")
+		    (match_operand:V16QI 2 "s_register_operand" "w")]
+		   UNSPEC_VCONCAT))]
+  "TARGET_NEON"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  neon_split_vcombine (operands);
+  DONE;
+})
 
 (define_insn "neon_vtbx1v8qi"
   [(set (match_operand:V8QI 0 "s_register_operand" "=w")

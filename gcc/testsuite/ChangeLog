@@ -1,3 +1,9 @@
+2012-01-10  Richard Henderson  <rth@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_perm,
+	check_effective_target_vect_perm_byte,
+	check_effective_target_vect_perm_short): Enable for arm neon.
+
 2012-01-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46328

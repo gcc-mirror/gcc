@@ -1,5 +1,21 @@
 2012-01-10  Richard Henderson  <rth@redhat.com>
 
+	* config/arm/arm.c (arm_vectorize_vec_perm_const_ok, 
+	TARGET_VECTORIZE_VEC_PERM_CONST_OK, neon_split_vcombine, MAX_VECT_LEN,
+	struct expand_vec_perm_d, arm_expand_vec_perm_1, arm_expand_vec_perm,
+	arm_evpc_neon_vuzp, arm_evpc_neon_vzip, arm_evpc_neon_vrev,
+	arm_evpc_neon_vtrn, arm_evpc_neon_vtbl, arm_expand_vec_perm_const_1,
+	arm_expand_vec_perm_const): New.
+	* config/arm/arm-protos.h: Update.
+	* config/arm/neon.md (UNSPEC_VCONCAT): New.
+	(*neon_vswp<VDQX>): New.
+	(neon_vcombine<VDX>): Use neon_split_vcombine.
+	(neon_vtbl1v16qi, neon_vtbl2v16qi, neon_vcombinev16qi): New.
+	* config/arm/vec-common.md (vec_perm_const<VALL>): New.
+	(vec_perm<VE>): New.
+
+2012-01-10  Richard Henderson  <rth@redhat.com>
+
 	* config/arm/arm.c (arm_gen_compare_reg): Add scratch argument;
 	use it if reload_completed.
 	(arm_legitimize_sync_memory, arm_emit, arm_insn_count, arm_count,
