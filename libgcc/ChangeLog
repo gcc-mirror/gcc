@@ -1,3 +1,13 @@
+2012-01-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49868
+	Extend __pgmx semantics to linearize memory.
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _xload_1, _movmemx.
+	* config/avr/lib1funcs.S (__xload_1): New function.
+	(__movmemx_qi, __movmemx_hi): New functions.
+	(__xload_2, __xload_3, __xload_4): Rewrite to fit new __pgmx
+	semantics.
+	
 2012-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sol2-unwind.h (sparc64_is_sighandler): Check that the

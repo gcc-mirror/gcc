@@ -1,3 +1,29 @@
+2012-01-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49868
+	Extend __pgmx semantics to linearize memory.
+	* config/avr/avr.md (mov<mode>): Use avr_xload_libgcc_p to
+	determine if code comes inline or from libgcc.
+	(MOVMEM_r_d:HI): Add "w" to constraint for better preference.
+	(movmem_qi, movmem_qi): Set constraint #2 to "n".
+	(movmem_qi_elpm, movmem_hi_elpm): Remove insns.
+	(movmemx_qi, movmemx_hi): New insns.
+	(xload_<mode>_libgcc): Rewrite to new insn condition.
+	(xload_<mode>): Remove insns.
+	* config/avr/avr.c (avr_out_xload): Rewrite: Only need to handle
+	cases that don't satisfy avr_xload_libgcc_p().
+	(avr_addr_space_convert): Allow converting in any direction.
+	(avr_addr_space_subset_p): Return always true.
+	(avr_xload_libgcc_p): Rewrite to fit new __pgmx semantics.
+	(avr_emit_movmemhi): Ditto.
+	(avr_out_lpm): No need to handle ADDR_SPACE_PGMX any more.
+	(avr_out_movmem): Ditto.
+	(AVR_SYMBOL_FLAG_PROGMEM): New macro.
+	(AVR_SYMBOL_SET_ADDR_SPACE): New macro.
+	(AVR_SYMBOL_GET_ADDR_SPACE): New macro.
+	(avr_encode_section_info): Encode 'progmem' in symbol flags.
+	(output_reload_in_const): Don't zero-extend any 24-bit symbols.
+
 2012-01-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50913
