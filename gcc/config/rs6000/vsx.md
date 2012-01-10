@@ -1,5 +1,5 @@
 ;; VSX patterns.
-;; Copyright (C) 2009, 2010, 2011
+;; Copyright (C) 2009, 2010, 2011, 2012
 ;; Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 
@@ -919,7 +919,7 @@
   [(set (match_operand:DF 0 "vsx_register_operand" "=ws,?wa")
 	(unspec:DF [(match_operand:V4SF 1 "vsx_register_operand" "wa,wa")]
 		   UNSPEC_VSX_CVSPDP))]
-  "VECTOR_UNIT_VSX_P (DFmode)"
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
   "xscvspdp %x0,%x1"
   [(set_attr "type" "fp")])
 
@@ -929,7 +929,7 @@
   [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
 	(unspec:V4SF [(match_operand:SF 1 "vsx_register_operand" "f")]
 		     UNSPEC_VSX_CVSPDP))]
-  "VECTOR_UNIT_VSX_P (DFmode)"
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
   "xscvdpsp %x0,%x1"
   [(set_attr "type" "fp")])
 
@@ -938,7 +938,7 @@
   [(set (match_operand:SF 0 "vsx_register_operand" "=f")
 	(unspec:SF [(match_operand:V4SF 1 "vsx_register_operand" "wa")]
 		   UNSPEC_VSX_CVSPDP))]
-  "VECTOR_UNIT_VSX_P (DFmode)"
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
   "xscvspdp %x0,%x1"
   [(set_attr "type" "fp")])
 
