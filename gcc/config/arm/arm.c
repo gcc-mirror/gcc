@@ -269,6 +269,9 @@ static unsigned int arm_autovectorize_vector_sizes (void);
 static int arm_default_branch_cost (bool, bool);
 static int arm_cortex_a5_branch_cost (bool, bool);
 
+static bool arm_vectorize_vec_perm_const_ok (enum machine_mode vmode,
+					     const unsigned char *sel);
+
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -611,6 +614,10 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_PREFERRED_RENAME_CLASS
 #define TARGET_PREFERRED_RENAME_CLASS \
   arm_preferred_rename_class
+
+#undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
+#define TARGET_VECTORIZE_VEC_PERM_CONST_OK \
+  arm_vectorize_vec_perm_const_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -20915,6 +20922,53 @@ neon_disambiguate_copy (rtx *operands, rtx *dest, rtx *src, unsigned int count)
     }
 }
 
+/* Split operands into moves from op[1] + op[2] into op[0].  */
+
+void
+neon_split_vcombine (rtx operands[3])
+{
+  unsigned int dest = REGNO (operands[0]);
+  unsigned int src1 = REGNO (operands[1]);
+  unsigned int src2 = REGNO (operands[2]);
+  enum machine_mode halfmode = GET_MODE (operands[1]);
+  unsigned int halfregs = HARD_REGNO_NREGS (src1, halfmode);
+  rtx destlo, desthi;
+
+  if (src1 == dest && src2 == dest + halfregs)
+    return;
+
+  /* Preserve register attributes for variable tracking.  */
+  destlo = gen_rtx_REG_offset (operands[0], halfmode, dest, 0);
+  desthi = gen_rtx_REG_offset (operands[0], halfmode, dest + halfregs,
+			       GET_MODE_SIZE (halfmode));
+
+  /* Special case of reversed high/low parts.  Use VSWP.  */
+  if (src2 == dest && src1 == dest + halfregs)
+    {
+      rtx x = gen_rtx_SET (VOIDmode, destlo, operands[1]);
+      rtx y = gen_rtx_SET (VOIDmode, desthi, operands[2]);
+      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, x, y)));
+      return;
+    }
+
+  if (!reg_overlap_mentioned_p (operands[2], destlo))
+    {
+      /* Try to avoid unnecessary moves if part of the result
+	 is in the right place already.  */
+      if (src1 != dest)
+	emit_move_insn (destlo, operands[1]);
+      if (src2 != dest + halfregs)
+	emit_move_insn (desthi, operands[2]);
+    }
+  else
+    {
+      if (src2 != dest + halfregs)
+	emit_move_insn (desthi, operands[2]);
+      if (src1 != dest)
+	emit_move_insn (destlo, operands[1]);
+    }
+}
+
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
    (and in mode MODE if that's convenient).
@@ -24642,7 +24696,7 @@ vfp3_const_double_for_fract_bits (rtx operand)
     }
   return 0;
 }
-
+
 /* Emit a memory barrier around an atomic sequence according to MODEL.  */
 
 static void
@@ -24945,6 +24999,515 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
 
   arm_post_atomic_barrier (model);
 }
+
+#define MAX_VECT_LEN 16
 
+struct expand_vec_perm_d
+{
+  rtx target, op0, op1;
+  unsigned char perm[MAX_VECT_LEN];
+  enum machine_mode vmode;
+  unsigned char nelt;
+  bool one_vector_p;
+  bool testing_p;
+};
+
+/* Generate a variable permutation.  */
+
+static void
+arm_expand_vec_perm_1 (rtx target, rtx op0, rtx op1, rtx sel)
+{
+  enum machine_mode vmode = GET_MODE (target);
+  bool one_vector_p = rtx_equal_p (op0, op1);
+
+  gcc_checking_assert (vmode == V8QImode || vmode == V16QImode);
+  gcc_checking_assert (GET_MODE (op0) == vmode);
+  gcc_checking_assert (GET_MODE (op1) == vmode);
+  gcc_checking_assert (GET_MODE (sel) == vmode);
+  gcc_checking_assert (TARGET_NEON);
+
+  if (one_vector_p)
+    {
+      if (vmode == V8QImode)
+	emit_insn (gen_neon_vtbl1v8qi (target, op0, sel));
+      else
+	emit_insn (gen_neon_vtbl1v16qi (target, op0, sel));
+    }
+  else
+    {
+      rtx pair;
+
+      if (vmode == V8QImode)
+	{
+	  pair = gen_reg_rtx (V16QImode);
+	  emit_insn (gen_neon_vcombinev8qi (pair, op0, op1));
+	  pair = gen_lowpart (TImode, pair);
+	  emit_insn (gen_neon_vtbl2v8qi (target, pair, sel));
+	}
+      else
+	{
+	  pair = gen_reg_rtx (OImode);
+	  emit_insn (gen_neon_vcombinev16qi (pair, op0, op1));
+	  emit_insn (gen_neon_vtbl2v16qi (target, pair, sel));
+	}
+    }
+}
+
+void
+arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
+{
+  enum machine_mode vmode = GET_MODE (target);
+  unsigned int i, nelt = GET_MODE_NUNITS (vmode);
+  bool one_vector_p = rtx_equal_p (op0, op1);
+  rtx rmask[MAX_VECT_LEN], mask;
+
+  /* TODO: ARM's VTBL indexing is little-endian.  In order to handle GCC's
+     numbering of elements for big-endian, we must reverse the order.  */
+  gcc_checking_assert (!BYTES_BIG_ENDIAN);
+
+  /* The VTBL instruction does not use a modulo index, so we must take care
+     of that ourselves.  */
+  mask = GEN_INT (one_vector_p ? nelt - 1 : 2 * nelt - 1);
+  for (i = 0; i < nelt; ++i)
+    rmask[i] = mask;
+  mask = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (nelt, rmask));
+  sel = expand_simple_binop (vmode, AND, sel, mask, NULL, 0, OPTAB_LIB_WIDEN);
+
+  arm_expand_vec_perm_1 (target, op0, op1, sel);
+}
+
+/* Generate or test for an insn that supports a constant permutation.  */
+
+/* Recognize patterns for the VUZP insns.  */
+
+static bool
+arm_evpc_neon_vuzp (struct expand_vec_perm_d *d)
+{
+  unsigned int i, odd, mask, nelt = d->nelt;
+  rtx out0, out1, in0, in1, x;
+  rtx (*gen)(rtx, rtx, rtx, rtx);
+
+  if (GET_MODE_UNIT_SIZE (d->vmode) >= 8)
+    return false;
+
+  /* Note that these are little-endian tests.  Adjust for big-endian later.  */
+  if (d->perm[0] == 0)
+    odd = 0;
+  else if (d->perm[0] == 1)
+    odd = 1;
+  else
+    return false;
+  mask = (d->one_vector_p ? nelt - 1 : 2 * nelt - 1);
+
+  for (i = 0; i < nelt; i++)
+    {
+      unsigned elt = (i * 2 + odd) & mask;
+      if (d->perm[i] != elt)
+	return false;
+    }
+
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
+  switch (d->vmode)
+    {
+    case V16QImode: gen = gen_neon_vuzpv16qi_internal; break;
+    case V8QImode:  gen = gen_neon_vuzpv8qi_internal;  break;
+    case V8HImode:  gen = gen_neon_vuzpv8hi_internal;  break;
+    case V4HImode:  gen = gen_neon_vuzpv4hi_internal;  break;
+    case V4SImode:  gen = gen_neon_vuzpv4si_internal;  break;
+    case V2SImode:  gen = gen_neon_vuzpv2si_internal;  break;
+    case V2SFmode:  gen = gen_neon_vuzpv2sf_internal;  break;
+    case V4SFmode:  gen = gen_neon_vuzpv4sf_internal;  break;
+    default:
+      gcc_unreachable ();
+    }
+
+  in0 = d->op0;
+  in1 = d->op1;
+  if (BYTES_BIG_ENDIAN)
+    {
+      x = in0, in0 = in1, in1 = x;
+      odd = !odd;
+    }
+
+  out0 = d->target;
+  out1 = gen_reg_rtx (d->vmode);
+  if (odd)
+    x = out0, out0 = out1, out1 = x;
+
+  emit_insn (gen (out0, in0, in1, out1));
+  return true;
+}
+
+/* Recognize patterns for the VZIP insns.  */
+
+static bool
+arm_evpc_neon_vzip (struct expand_vec_perm_d *d)
+{
+  unsigned int i, high, mask, nelt = d->nelt;
+  rtx out0, out1, in0, in1, x;
+  rtx (*gen)(rtx, rtx, rtx, rtx);
+
+  if (GET_MODE_UNIT_SIZE (d->vmode) >= 8)
+    return false;
+
+  /* Note that these are little-endian tests.  Adjust for big-endian later.  */
+  high = nelt / 2;
+  if (d->perm[0] == high)
+    ;
+  else if (d->perm[0] == 0)
+    high = 0;
+  else
+    return false;
+  mask = (d->one_vector_p ? nelt - 1 : 2 * nelt - 1);
+
+  for (i = 0; i < nelt / 2; i++)
+    {
+      unsigned elt = (i + high) & mask;
+      if (d->perm[i * 2] != elt)
+	return false;
+      elt = (elt + nelt) & mask;
+      if (d->perm[i * 2 + 1] != elt)
+	return false;
+    }
+
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
+  switch (d->vmode)
+    {
+    case V16QImode: gen = gen_neon_vzipv16qi_internal; break;
+    case V8QImode:  gen = gen_neon_vzipv8qi_internal;  break;
+    case V8HImode:  gen = gen_neon_vzipv8hi_internal;  break;
+    case V4HImode:  gen = gen_neon_vzipv4hi_internal;  break;
+    case V4SImode:  gen = gen_neon_vzipv4si_internal;  break;
+    case V2SImode:  gen = gen_neon_vzipv2si_internal;  break;
+    case V2SFmode:  gen = gen_neon_vzipv2sf_internal;  break;
+    case V4SFmode:  gen = gen_neon_vzipv4sf_internal;  break;
+    default:
+      gcc_unreachable ();
+    }
+
+  in0 = d->op0;
+  in1 = d->op1;
+  if (BYTES_BIG_ENDIAN)
+    {
+      x = in0, in0 = in1, in1 = x;
+      high = !high;
+    }
+
+  out0 = d->target;
+  out1 = gen_reg_rtx (d->vmode);
+  if (high)
+    x = out0, out0 = out1, out1 = x;
+
+  emit_insn (gen (out0, in0, in1, out1));
+  return true;
+}
+
+/* Recognize patterns for the VREV insns.  */
+
+static bool
+arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
+{
+  unsigned int i, j, diff, nelt = d->nelt;
+  rtx (*gen)(rtx, rtx, rtx);
+
+  if (!d->one_vector_p)
+    return false;
+
+  diff = d->perm[0];
+  switch (diff)
+    {
+    case 7:
+      switch (d->vmode)
+	{
+	case V16QImode: gen = gen_neon_vrev64v16qi; break;
+	case V8QImode:  gen = gen_neon_vrev64v8qi;  break;
+	default:
+	  return false;
+	}
+      break;
+    case 3:
+      switch (d->vmode)
+	{
+	case V16QImode: gen = gen_neon_vrev32v16qi; break;
+	case V8QImode:  gen = gen_neon_vrev32v8qi;  break;
+	case V8HImode:  gen = gen_neon_vrev64v8hi;  break;
+	case V4HImode:  gen = gen_neon_vrev64v4hi;  break;
+	default:
+	  return false;
+	}
+      break;
+    case 1:
+      switch (d->vmode)
+	{
+	case V16QImode: gen = gen_neon_vrev16v16qi; break;
+	case V8QImode:  gen = gen_neon_vrev16v8qi;  break;
+	case V8HImode:  gen = gen_neon_vrev32v8hi;  break;
+	case V4HImode:  gen = gen_neon_vrev32v4hi;  break;
+	case V4SImode:  gen = gen_neon_vrev64v4si;  break;
+	case V2SImode:  gen = gen_neon_vrev64v2si;  break;
+	case V4SFmode:  gen = gen_neon_vrev64v4sf;  break;
+	case V2SFmode:  gen = gen_neon_vrev64v2sf;  break;
+	default:
+	  return false;
+	}
+      break;
+    default:
+      return false;
+    }
+
+  for (i = 0; i < nelt; i += diff)
+    for (j = 0; j <= diff; j += 1)
+      if (d->perm[i + j] != i + diff - j)
+	return false;
+
+  /* Success! */
+  if (d->testing_p)
+    return true;
+
+  /* ??? The third operand is an artifact of the builtin infrastructure
+     and is ignored by the actual instruction.  */
+  emit_insn (gen (d->target, d->op0, const0_rtx));
+  return true;
+}
+
+/* Recognize patterns for the VTRN insns.  */
+
+static bool
+arm_evpc_neon_vtrn (struct expand_vec_perm_d *d)
+{
+  unsigned int i, odd, mask, nelt = d->nelt;
+  rtx out0, out1, in0, in1, x;
+  rtx (*gen)(rtx, rtx, rtx, rtx);
+
+  if (GET_MODE_UNIT_SIZE (d->vmode) >= 8)
+    return false;
+
+  /* Note that these are little-endian tests.  Adjust for big-endian later.  */
+  if (d->perm[0] == 0)
+    odd = 0;
+  else if (d->perm[0] == 1)
+    odd = 1;
+  else
+    return false;
+  mask = (d->one_vector_p ? nelt - 1 : 2 * nelt - 1);
+
+  for (i = 0; i < nelt; i += 2)
+    {
+      if (d->perm[i] != i + odd)
+	return false;
+      if (d->perm[i + 1] != ((i + nelt + odd) & mask))
+	return false;
+    }
+
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
+  switch (d->vmode)
+    {
+    case V16QImode: gen = gen_neon_vtrnv16qi_internal; break;
+    case V8QImode:  gen = gen_neon_vtrnv8qi_internal;  break;
+    case V8HImode:  gen = gen_neon_vtrnv8hi_internal;  break;
+    case V4HImode:  gen = gen_neon_vtrnv4hi_internal;  break;
+    case V4SImode:  gen = gen_neon_vtrnv4si_internal;  break;
+    case V2SImode:  gen = gen_neon_vtrnv2si_internal;  break;
+    case V2SFmode:  gen = gen_neon_vtrnv2sf_internal;  break;
+    case V4SFmode:  gen = gen_neon_vtrnv4sf_internal;  break;
+    default:
+      gcc_unreachable ();
+    }
+
+  in0 = d->op0;
+  in1 = d->op1;
+  if (BYTES_BIG_ENDIAN)
+    {
+      x = in0, in0 = in1, in1 = x;
+      odd = !odd;
+    }
+
+  out0 = d->target;
+  out1 = gen_reg_rtx (d->vmode);
+  if (odd)
+    x = out0, out0 = out1, out1 = x;
+
+  emit_insn (gen (out0, in0, in1, out1));
+  return true;
+}
+
+/* The NEON VTBL instruction is a fully variable permuation that's even
+   stronger than what we expose via VEC_PERM_EXPR.  What it doesn't do
+   is mask the index operand as VEC_PERM_EXPR requires.  Therefore we
+   can do slightly better by expanding this as a constant where we don't
+   have to apply a mask.  */
+
+static bool
+arm_evpc_neon_vtbl (struct expand_vec_perm_d *d)
+{
+  rtx rperm[MAX_VECT_LEN], sel;
+  enum machine_mode vmode = d->vmode;
+  unsigned int i, nelt = d->nelt;
+
+  /* TODO: ARM's VTBL indexing is little-endian.  In order to handle GCC's
+     numbering of elements for big-endian, we must reverse the order.  */
+  if (BYTES_BIG_ENDIAN)
+    return false;
+
+  if (d->testing_p)
+    return true;
+
+  /* Generic code will try constant permutation twice.  Once with the
+     original mode and again with the elements lowered to QImode.
+     So wait and don't do the selector expansion ourselves.  */
+  if (vmode != V8QImode && vmode != V16QImode)
+    return false;
+
+  for (i = 0; i < nelt; ++i)
+    rperm[i] = GEN_INT (d->perm[i]);
+  sel = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (nelt, rperm));
+  sel = force_reg (vmode, sel);
+
+  arm_expand_vec_perm_1 (d->target, d->op0, d->op1, sel);
+  return true;
+}
+
+static bool
+arm_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
+{
+  /* The pattern matching functions above are written to look for a small
+     number to begin the sequence (0, 1, N/2).  If we begin with an index
+     from the second operand, we can swap the operands.  */
+  if (d->perm[0] >= d->nelt)
+    {
+      unsigned i, nelt = d->nelt;
+      rtx x;
+
+      for (i = 0; i < nelt; ++i)
+	d->perm[i] = (d->perm[i] + nelt) & (2 * nelt - 1);
+
+      x = d->op0;
+      d->op0 = d->op1;
+      d->op1 = x;
+    }
+
+  if (TARGET_NEON)
+    {
+      if (arm_evpc_neon_vuzp (d))
+	return true;
+      if (arm_evpc_neon_vzip (d))
+	return true;
+      if (arm_evpc_neon_vrev (d))
+	return true;
+      if (arm_evpc_neon_vtrn (d))
+	return true;
+      return arm_evpc_neon_vtbl (d);
+    }
+  return false;
+}
+
+/* Expand a vec_perm_const pattern.  */
+
+bool
+arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
+{
+  struct expand_vec_perm_d d;
+  int i, nelt, which;
+
+  d.target = target;
+  d.op0 = op0;
+  d.op1 = op1;
+
+  d.vmode = GET_MODE (target);
+  gcc_assert (VECTOR_MODE_P (d.vmode));
+  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
+  d.testing_p = false;
+
+  for (i = which = 0; i < nelt; ++i)
+    {
+      rtx e = XVECEXP (sel, 0, i);
+      int ei = INTVAL (e) & (2 * nelt - 1);
+      which |= (ei < nelt ? 1 : 2);
+      d.perm[i] = ei;
+    }
+
+  switch (which)
+    {
+    default:
+      gcc_unreachable();
+
+    case 3:
+      d.one_vector_p = false;
+      if (!rtx_equal_p (op0, op1))
+	break;
+
+      /* The elements of PERM do not suggest that only the first operand
+	 is used, but both operands are identical.  Allow easier matching
+	 of the permutation by folding the permutation into the single
+	 input vector.  */
+      /* FALLTHRU */
+    case 2:
+      for (i = 0; i < nelt; ++i)
+        d.perm[i] &= nelt - 1;
+      d.op0 = op1;
+      d.one_vector_p = true;
+      break;
+
+    case 1:
+      d.op1 = op0;
+      d.one_vector_p = true;
+      break;
+    }
+
+  return arm_expand_vec_perm_const_1 (&d);
+}
+
+/* Implement TARGET_VECTORIZE_VEC_PERM_CONST_OK.  */
+
+static bool
+arm_vectorize_vec_perm_const_ok (enum machine_mode vmode,
+				 const unsigned char *sel)
+{
+  struct expand_vec_perm_d d;
+  unsigned int i, nelt, which;
+  bool ret;
+
+  d.vmode = vmode;
+  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
+  d.testing_p = true;
+  memcpy (d.perm, sel, nelt);
+
+  /* Categorize the set of elements in the selector.  */
+  for (i = which = 0; i < nelt; ++i)
+    {
+      unsigned char e = d.perm[i];
+      gcc_assert (e < 2 * nelt);
+      which |= (e < nelt ? 1 : 2);
+    }
+
+  /* For all elements from second vector, fold the elements to first.  */
+  if (which == 2)
+    for (i = 0; i < nelt; ++i)
+      d.perm[i] -= nelt;
+
+  /* Check whether the mask can be applied to the vector type.  */
+  d.one_vector_p = (which != 3);
+
+  d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
+  d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
+  if (!d.one_vector_p)
+    d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
+
+  start_sequence ();
+  ret = arm_expand_vec_perm_const_1 (&d);
+  end_sequence ();
+
+  return ret;
+}
+
+
 #include "gt-arm.h"
-

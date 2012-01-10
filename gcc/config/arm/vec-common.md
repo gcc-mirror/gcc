@@ -1,5 +1,5 @@
 ;; Machine Description for shared bits common to IWMMXT and Neon.
-;; Copyright (C) 2006, 2007, 2010 Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007, 2010, 2012 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -107,4 +107,30 @@
   "TARGET_NEON
    || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
 {
+})
+
+(define_expand "vec_perm_const<mode>"
+  [(match_operand:VALL 0 "s_register_operand" "")
+   (match_operand:VALL 1 "s_register_operand" "")
+   (match_operand:VALL 2 "s_register_operand" "")
+   (match_operand:<V_cmp_result> 3 "" "")]
+  "TARGET_NEON
+   || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
+{
+  if (arm_expand_vec_perm_const (operands[0], operands[1],
+				 operands[2], operands[3]))
+    DONE;
+  else
+    FAIL;
+})
+
+(define_expand "vec_perm<mode>"
+  [(match_operand:VE 0 "s_register_operand" "")
+   (match_operand:VE 1 "s_register_operand" "")
+   (match_operand:VE 2 "s_register_operand" "")
+   (match_operand:VE 3 "s_register_operand" "")]
+  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+{
+  arm_expand_vec_perm (operands[0], operands[1], operands[2], operands[3]);
+  DONE;
 })
