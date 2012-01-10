@@ -1,3 +1,20 @@
+2012-01-10  Aldy Hernandez  <aldyh@redhat.com>
+	    Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR middle-end/51516
+	* trans-mem.c (get_cg_data): Traverse aliases if requested.
+	(ipa_tm_scan_calls_block): Update parameters to get_cg_data.
+	(ipa_tm_note_irrevocable): Same.
+	(ipa_tm_scan_irr_block): Same.
+	(ipa_tm_decrement_clone_counts): Same.
+	(ipa_tm_scan_irr_function): Same.
+	(ipa_tm_create_version_alias): Same.
+	(ipa_tm_create_version): Same.
+	(ipa_tm_transform_calls_redirect): Same.
+	(ipa_tm_transform_calls): Same.
+	(ipa_tm_transform_transaction): Same.
+	(ipa_tm_execute): Same.
+
 2012-01-10  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/51806
