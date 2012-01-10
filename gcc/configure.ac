@@ -2,7 +2,7 @@
 # Process this file with autoconf to generate a configuration script.
 
 # Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-# 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+# 2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -3674,15 +3674,25 @@ foo:	nop
 
     gcc_GAS_CHECK_FEATURE([R_386_TLS_GD_PLT reloc],
         gcc_cv_as_ix86_tlsgdplt,,,
-	[call    tls_gd@tlsgdplt],,
+	[call    tls_gd@tlsgdplt],
+	[if test x$gcc_cv_ld != x \
+	 && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
+	   gcc_cv_as_ix86_tlsgdplt=yes
+	 fi
+	 rm -f conftest],
       [AC_DEFINE(HAVE_AS_IX86_TLSGDPLT, 1,
-        [Define if your assembler supports @tlsgdplt.])])
+        [Define if your assembler and linker support @tlsgdplt.])])
 
     gcc_GAS_CHECK_FEATURE([R_386_TLS_LDM_PLT reloc],
         gcc_cv_as_ix86_tlsldmplt,,,
-	[call    tls_ld@tlsldmplt],,
+	[call    tls_ld@tlsldmplt],
+	[if test x$gcc_cv_ld != x \
+	 && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
+	   gcc_cv_as_ix86_tlsldmplt=yes
+	 fi
+	 rm -f conftest],
       [AC_DEFINE(HAVE_AS_IX86_TLSLDMPLT, 1,
-        [Define if your assembler supports @tlsldmplt.])])
+        [Define if your assembler and linker support @tlsldmplt.])])
 
     ;;
 

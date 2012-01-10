@@ -1,3 +1,12 @@
+2012-01-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_as_ix86_tlsgdplt): Check if linker
+	supports R_386_TLS_GD_PLT reloc.
+	(gcc_cv_as_ix86_tlsldmplt): Check if linker
+	supports R_386_TLS_LDM_PLT reloc.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2012-01-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/49868

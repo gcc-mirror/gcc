@@ -24823,7 +24823,11 @@ else
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; }
     then
-	gcc_cv_as_ix86_tlsgdplt=yes
+	if test x$gcc_cv_ld != x \
+	 && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
+	   gcc_cv_as_ix86_tlsgdplt=yes
+	 fi
+	 rm -f conftest
     else
       echo "configure: failed program was" >&5
       cat conftest.s >&5
@@ -24854,7 +24858,11 @@ else
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; }
     then
-	gcc_cv_as_ix86_tlsldmplt=yes
+	if test x$gcc_cv_ld != x \
+	 && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
+	   gcc_cv_as_ix86_tlsldmplt=yes
+	 fi
+	 rm -f conftest
     else
       echo "configure: failed program was" >&5
       cat conftest.s >&5
