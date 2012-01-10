@@ -2439,10 +2439,12 @@ scan_trace (dw_trace_info *trace)
 	      if (INSN_FROM_TARGET_P (elt))
 		{
 		  HOST_WIDE_INT restore_args_size;
+		  cfi_vec save_row_reg_save;
 
 		  add_cfi_insn = NULL;
 		  restore_args_size = cur_trace->end_true_args_size;
 		  cur_cfa = &cur_row->cfa;
+		  save_row_reg_save = VEC_copy (dw_cfi_ref, gc, cur_row->reg_save);
 
 		  scan_insn_after (elt);
 
@@ -2453,6 +2455,7 @@ scan_trace (dw_trace_info *trace)
 
 		  cur_trace->end_true_args_size = restore_args_size;
 		  cur_row->cfa = this_cfa;
+		  cur_row->reg_save = save_row_reg_save;
 		  cur_cfa = &this_cfa;
 		  continue;
 		}

@@ -1,3 +1,8 @@
+2012-01-10  Tom de Vries  <tom@codesourcery.com>
+
+	* dwarf2cfi.c (scan_trace): Save and restore cur_row->reg_save when
+	handling annulled branch.
+
 2012-01-10  Richard Henderson  <rth@redhat.com>
 
 	* config/arm/arm.c (arm_vectorize_vec_perm_const_ok, 
