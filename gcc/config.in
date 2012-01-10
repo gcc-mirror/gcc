@@ -357,13 +357,13 @@
 #endif
 
 
-/* Define if your assembler supports @tlsgdplt. */
+/* Define if your assembler and linker support @tlsgdplt. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_IX86_TLSGDPLT
 #endif
 
 
-/* Define if your assembler supports @tlsldmplt. */
+/* Define if your assembler and linker support @tlsldmplt. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_IX86_TLSLDMPLT
 #endif
