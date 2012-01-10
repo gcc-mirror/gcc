@@ -1,3 +1,9 @@
+2012-01-10  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/51806
+	* c-opts.c (c_common_handle_option): Move -Werror handling
+	to language independent code.
+
 2012-01-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/51764

@@ -1420,6 +1420,10 @@ common_handle_option (struct gcc_options *opts,
       /* Currently handled in a prescan.  */
       break;
 
+    case OPT_Werror:
+      dc->warning_as_error_requested = value;
+      break;
+
     case OPT_Werror_:
       if (lang_mask == CL_DRIVER)
 	break;

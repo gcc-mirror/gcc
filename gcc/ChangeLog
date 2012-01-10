@@ -1,3 +1,8 @@
+2012-01-10  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/51806
+	* opts.c (common_handle_option): Handle -Werror.
+
 2012-01-10  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/sync.md ("atomic_compare_and_swap<mode>_1"): Fix
