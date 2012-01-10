@@ -797,7 +797,7 @@ override type-bound procedures or to have deferred binding.
 @code{SAME_TYPE_AS}, @code{EXTENDS_TYPE_OF} and @code{SELECT TYPE}.
 Note that unlimited polymophism is currently not supported.
 
-@item Generic interface name, which have the same name as derived types,
+@item Generic interface names, which have the same name as derived types,
 are now supported. This allows one to write constructor functions.  Note
 that Fortran does not support static constructor functions.  For static
 variables, only default initialization or structure-constructor
