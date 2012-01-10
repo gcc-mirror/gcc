@@ -27,7 +27,8 @@ LIB1ASMFUNCS = \
 	_tablejump \
 	_tablejump_elpm \
 	_load_3 _load_4 \
-	_xload_2 _xload_3 _xload_4 \
+	_xload_1 _xload_2 _xload_3 _xload_4 \
+	_movmemx \
 	_copy_data \
 	_clear_bss \
 	_ctors \

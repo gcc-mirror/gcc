@@ -2061,19 +2061,14 @@ ENDF __load_4
 #endif /* L_load_3 || L_load_3 */
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Loading n bytes from Flash; n = 2,3,4
-;; R22... = Flash[R21:Z]
+;; Loading n bytes from Flash or RAM;  n = 1,2,3,4
+;; R22... = Flash[R21:Z] or RAM[Z] depending on R21.7
 ;; Clobbers: __tmp_reg__, R21, R30, R31
 
-#if (defined (L_xload_2)            \
+#if (defined (L_xload_1)            \
+     || defined (L_xload_2)         \
      || defined (L_xload_3)         \
-     || defined (L_xload_4))        \
-    && defined (__AVR_HAVE_ELPM__)  \
-    && !defined (__AVR_HAVE_ELPMX__)
-
-#if !defined (__AVR_HAVE_RAMPZ__)
-#error Need RAMPZ
-#endif /* have RAMPZ */
+     || defined (L_xload_4))
 
 ;; Destination
 #define D0  22
@@ -2086,6 +2081,9 @@ ENDF __load_4
 #define HHI8  21
 
 .macro  .xload dest, n
+#if defined (__AVR_HAVE_ELPMX__)
+    elpm    \dest, Z+
+#elif defined (__AVR_HAVE_ELPM__)
     elpm
     mov     \dest, r0
 .if \dest != D0+\n-1
@@ -2093,39 +2091,161 @@ ENDF __load_4
     adc     HHI8, __zero_reg__
     out     __RAMPZ__, HHI8
 .endif
-.endm
+#elif defined (__AVR_HAVE_LPMX__)
+    lpm     \dest, Z+
+#else
+    lpm
+    mov     \dest, r0
+.if \dest != D0+\n-1
+    adiw    r30, 1
+.endif
+#endif
+.endm ; .xload
+
+#if defined (L_xload_1)
+DEFUN __xload_1
+#if defined (__AVR_HAVE_LPMX__) && !defined (__AVR_HAVE_RAMPZ__)
+    ld      D0, Z
+    sbrs    HHI8, 7
+    lpm     D0, Z
+    ret
+#else
+    sbrc    HHI8, 7
+    rjmp    1f
+#if defined (__AVR_HAVE_RAMPZ__)
+    out     __RAMPZ__, HHI8
+#endif /* __AVR_HAVE_RAMPZ__ */
+    .xload  D0, 1
+    ret
+1:  ld      D0, Z
+    ret
+#endif /* LPMx && ! RAMPZ */
+ENDF __xload_1
+#endif /* L_xload_1 */
 
 #if defined (L_xload_2)
 DEFUN __xload_2
+    sbrc    HHI8, 7
+    rjmp    1f
+#if defined (__AVR_HAVE_RAMPZ__)
     out     __RAMPZ__, HHI8
-    .xload D0, 2
-    .xload D1, 2
+#endif /* __AVR_HAVE_RAMPZ__ */
+    .xload  D0, 2
+    .xload  D1, 2
+    ret
+1:  ld      D0, Z+
+    ld      D1, Z+
     ret
 ENDF __xload_2
 #endif /* L_xload_2 */
 
 #if defined (L_xload_3)
 DEFUN __xload_3
+    sbrc    HHI8, 7
+    rjmp    1f
+#if defined (__AVR_HAVE_RAMPZ__)
     out     __RAMPZ__, HHI8
-    .xload D0, 3
-    .xload D1, 3
-    .xload D2, 3
+#endif /* __AVR_HAVE_RAMPZ__ */
+    .xload  D0, 3
+    .xload  D1, 3
+    .xload  D2, 3
+    ret
+1:  ld      D0, Z+
+    ld      D1, Z+
+    ld      D2, Z+
     ret
 ENDF __xload_3
 #endif /* L_xload_3 */
 
 #if defined (L_xload_4)
 DEFUN __xload_4
+    sbrc    HHI8, 7
+    rjmp    1f
+#if defined (__AVR_HAVE_RAMPZ__)
     out     __RAMPZ__, HHI8
-    .xload D0, 4
-    .xload D1, 4
-    .xload D2, 4
-    .xload D3, 4
+#endif /* __AVR_HAVE_RAMPZ__ */
+    .xload  D0, 4
+    .xload  D1, 4
+    .xload  D2, 4
+    .xload  D3, 4
+    ret
+1:  ld      D0, Z+
+    ld      D1, Z+
+    ld      D2, Z+
+    ld      D3, Z+
     ret
 ENDF __xload_4
 #endif /* L_xload_4 */
 
-#endif /* L_xload_{2|3|4} && ELPM */
+#endif /* L_xload_{1|2|3|4} */
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; memcopy from Address Space __pgmx to RAM
+;; R23:Z = Source Address
+;; X     = Destination Address
+;; Clobbers: __tmp_reg__, R23, R24, R25, X, Z
+
+#if defined (L_movmemx)
+
+#define HHI8  23
+#define LOOP  24
+
+DEFUN __movmemx_qi
+    ;; #Bytes to copy fity in 8 Bits (1..255)
+    ;; Zero-extend Loop Counter
+    clr     LOOP+1
+    ;; FALLTHRU
+ENDF __movmemx_qi
+
+DEFUN __movmemx_hi
+
+;; Read from where?
+    sbrc    HHI8, 7
+    rjmp    1f
+
+;; Read from Flash
+
+#if defined (__AVR_HAVE_RAMPZ__)
+    out     __RAMPZ__, HHI8
+#endif
+
+0:  ;; Load 1 Byte from Flash...
+
+#if defined (__AVR_HAVE_ELPMX__)
+    elpm    r0, Z+
+#elif defined (__AVR_HAVE_ELPM__)
+    elpm
+    adiw    r30, 1
+    adc     HHI8, __zero_reg__
+    out     __RAMPZ__, HHI8
+#elif defined (__AVR_HAVE_LPMX__)
+    lpm     r0, Z+
+#else
+    lpm
+    adiw    r30, 1
+#endif
+
+    ;; ...and store that Byte to RAM Destination
+    st      X+, r0
+    sbiw    LOOP, 1
+    brne    0b
+    ret
+
+;; Read from RAM
+
+1:  ;; Read 1 Byte from RAM...
+    ld      r0, Z+
+    ;; and store that Byte to RAM Destination
+    st      X+, r0
+    sbiw    LOOP, 1
+    brne    0b
+    ret
+ENDF __movmemx_hi
+
+#undef HHI8
+#undef LOOP
+
+#endif /* L_movmemx */
 
 
 .section .text.libgcc.builtins, "ax", @progbits

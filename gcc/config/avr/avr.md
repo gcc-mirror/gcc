@@ -390,6 +390,7 @@
         (match_operand:QI 1 "memory_operand"    "m"))
    (clobber (reg:HI REG_Z))]
   "can_create_pseudo_p()
+   && !avr_xload_libgcc_p (QImode)
    && avr_mem_pgmx_p (operands[1])
    && REG_P (XEXP (operands[1], 0))"
   { gcc_unreachable(); }
@@ -414,8 +415,7 @@
         (match_operand:MOVMODE 1 "memory_operand"    "m"))
    (clobber (reg:QI 21))
    (clobber (reg:HI REG_Z))]
-  "QImode != <MODE>mode
-   && can_create_pseudo_p()
+  "can_create_pseudo_p()
    && avr_mem_pgmx_p (operands[1])
    && REG_P (XEXP (operands[1], 0))"
   { gcc_unreachable(); }
@@ -426,34 +426,18 @@
     rtx reg_z = gen_rtx_REG (HImode, REG_Z);
     rtx addr_hi8 = simplify_gen_subreg (QImode, addr, PSImode, 2);
     addr_space_t as = MEM_ADDR_SPACE (operands[1]);
-    rtx hi8, insn;
+    rtx insn;
 
+    /* Split the address to R21:Z */
     emit_move_insn (reg_z, simplify_gen_subreg (HImode, addr, PSImode, 0));
+    emit_move_insn (gen_rtx_REG (QImode, 21), addr_hi8);
 
-    if (avr_xload_libgcc_p (<MODE>mode))
-      {
-        emit_move_insn (gen_rtx_REG (QImode, 21), addr_hi8);
-        insn = emit_insn (gen_xload_<mode>_libgcc ());
-        emit_move_insn (operands[0], gen_rtx_REG (<MODE>mode, 22));
-      }
-    else if (avr_current_arch->n_segments == 1
-             && GET_MODE_SIZE (<MODE>mode) > 2
-             && !AVR_HAVE_LPMX)
-      {
-        rtx src = gen_rtx_MEM (<MODE>mode, reg_z);
-
-        as = ADDR_SPACE_PGM;
-        insn = emit_insn (gen_load_<mode>_libgcc (src));
-        emit_move_insn (operands[0], gen_rtx_REG (<MODE>mode, 22));
-      }
-    else
-      {
-        hi8 = gen_reg_rtx (QImode);
-        emit_move_insn (hi8, addr_hi8);
-        insn = emit_insn (gen_xload_<mode> (operands[0], hi8));
-      }
-
+    /* Load with code from libgcc */
+    insn = emit_insn (gen_xload_<mode>_libgcc ());
     set_mem_addr_space (SET_SRC (single_set (insn)), as);
+
+    /* Move to destination */
+    emit_move_insn (operands[0], gen_rtx_REG (<MODE>mode, 22));
 
     DONE;
   })
@@ -462,16 +446,19 @@
 ;; These insns must be prior to respective generic move insn.
 
 (define_insn "xload_8"
-  [(set (match_operand:QI 0 "register_operand"                    "=r")
-        (mem:QI (lo_sum:PSI (match_operand:QI 1 "register_operand" "r")
+  [(set (match_operand:QI 0 "register_operand"                   "=&r,r")
+        (mem:QI (lo_sum:PSI (match_operand:QI 1 "register_operand" "r,r")
                             (reg:HI REG_Z))))]
-  ""
+  "!avr_xload_libgcc_p (QImode)"
   {
     return avr_out_xload (insn, operands, NULL);
   }
-  [(set_attr "adjust_len" "xload")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "3,4")
+   (set_attr "adjust_len" "*,xload")
+   (set_attr "isa" "lpmx,lpm")
+   (set_attr "cc" "none")])
 
+;; "xload_qi_libgcc"
 ;; "xload_hi_libgcc"
 ;; "xload_psi_libgcc"
 ;; "xload_si_libgcc"
@@ -482,35 +469,14 @@
                                  (reg:HI REG_Z))))
    (clobber (reg:QI 21))
    (clobber (reg:HI REG_Z))]
-  "<MODE>mode != QImode
-   && avr_xload_libgcc_p (<MODE>mode)"
+  "avr_xload_libgcc_p (<MODE>mode)"
   {
     rtx x_bytes = GEN_INT (GET_MODE_SIZE (<MODE>mode));
 
-    /* Devices with ELPM* also have CALL.  */
-
-    output_asm_insn ("call __xload_%0", &x_bytes);
+    output_asm_insn ("%~call __xload_%0", &x_bytes);
     return "";
   }
-  [(set_attr "length" "2")
-   (set_attr "cc" "clobber")])
-
-;; "xload_hi"
-;; "xload_psi"
-;; "xload_si"
-;; "xload_sf"
-(define_insn "xload_<mode>"
-  [(set (match_operand:MOVMODE 0 "register_operand"                    "=r")
-        (mem:MOVMODE (lo_sum:PSI (match_operand:QI 1 "register_operand" "r")
-                                 (reg:HI REG_Z))))
-   (clobber (scratch:HI))
-   (clobber (reg:HI REG_Z))]
-  "<MODE>mode != QImode
-   && !avr_xload_libgcc_p (<MODE>mode)"
-  {
-    return avr_out_xload (insn, operands, NULL);
-  }
-  [(set_attr "adjust_len" "xload")
+  [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
 
@@ -521,7 +487,6 @@
 ;; "movsi"
 ;; "movsf"
 ;; "movpsi"
-
 (define_expand "mov<mode>"
   [(set (match_operand:MOVMODE 0 "nonimmediate_operand" "")
         (match_operand:MOVMODE 1 "general_operand" ""))]
@@ -548,7 +513,7 @@
       if (!REG_P (addr))
         src = replace_equiv_address (src, copy_to_mode_reg (PSImode, addr));
 
-      if (QImode == <MODE>mode)
+      if (!avr_xload_libgcc_p (<MODE>mode))
         emit_insn (gen_xload8_A (dest, src));
       else
         emit_insn (gen_xload<mode>_A (dest, src));
@@ -869,10 +834,10 @@
   })
 
 (define_mode_attr MOVMEM_r_d [(QI "r")
-                              (HI "d")])
+                              (HI "wd")])
 
-;; $0, $4 : & dest
-;; $1, $5 : & src
+;; $0, $4 : & dest (REG_X)
+;; $1, $5 : & src  (REG_Z)
 ;; $2     : Address Space
 ;; $3, $7 : Loop register
 ;; $6     : Scratch register
@@ -882,7 +847,7 @@
 (define_insn "movmem_<mode>"
   [(set (mem:BLK (match_operand:HI 0 "register_operand" "x"))
         (mem:BLK (match_operand:HI 1 "register_operand" "z")))
-   (unspec [(match_operand:QI 2 "const_int_operand"     "LP")]
+   (unspec [(match_operand:QI 2 "const_int_operand"     "n")]
            UNSPEC_MOVMEM)
    (use (match_operand:QIHI 3 "register_operand"       "<MOVMEM_r_d>"))
    (clobber (match_operand:HI 4 "register_operand"     "=0"))
@@ -897,29 +862,28 @@
    (set_attr "cc" "clobber")])
 
 ;; Ditto and
-;; $8, $9 : hh8 (& src)
+;; $3, $7 : Loop register = R24
+;; $8, $9 : hh8 (& src)   = R23
 ;; $10    : RAMPZ_ADDR
 
-;; "movmem_qi_elpm"
-;; "movmem_hi_elpm"
-(define_insn "movmem_<mode>_elpm"
+;; "movmemx_qi"
+;; "movmemx_hi"
+(define_insn "movmemx_<mode>"
   [(set (mem:BLK (match_operand:HI 0 "register_operand"             "x"))
         (mem:BLK (lo_sum:PSI (match_operand:QI 8 "register_operand" "r")
                              (match_operand:HI 1 "register_operand" "z"))))
    (unspec [(match_operand:QI 2 "const_int_operand"                 "n")]
            UNSPEC_MOVMEM)
-   (use (match_operand:QIHI 3 "register_operand"                   "<MOVMEM_r_d>"))
+   (use (match_operand:QIHI 3 "register_operand"                   "w"))
    (clobber (match_operand:HI 4 "register_operand"                 "=0"))
    (clobber (match_operand:HI 5 "register_operand"                 "=1"))
    (clobber (match_operand:QI 6 "register_operand"                 "=&r"))
-   (clobber (match_operand:QIHI 7 "register_operand"               "=3"))
+   (clobber (match_operand:HI 7 "register_operand"                 "=3"))
    (clobber (match_operand:QI 9 "register_operand"                 "=8"))
    (clobber (mem:QI (match_operand:QI 10 "io_address_operand"       "n")))]
   ""
-  {
-    return avr_out_movmem (insn, operands, NULL);
-  }
-  [(set_attr "adjust_len" "movmem")
+  "%~call __movmemx_<mode>"
+  [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
 
