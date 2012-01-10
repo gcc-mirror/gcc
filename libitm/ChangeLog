@@ -1,3 +1,9 @@
+2012-01-10  Richard Henderson  <rth@redhat.com>
+
+	* libitm_i.h (_Unwind_DeleteException): Declare weak.
+	* eh_cpp.cc (_Unwind_DeleteException): Define for
+	!HAVE_ELF_STYLE_WEAKREF.
+
 2012-01-08  Torvald Riegel  <triegel@redhat.com>
 
 	* local.cc (GTM_LB): Use GTM::gtm_undolog.
