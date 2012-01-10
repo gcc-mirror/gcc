@@ -1,3 +1,65 @@
+2012-01-10  Richard Henderson  <rth@redhat.com>
+
+	* config/arm/arm.c (arm_gen_compare_reg): Add scratch argument;
+	use it if reload_completed.
+	(arm_legitimize_sync_memory, arm_emit, arm_insn_count, arm_count,
+	arm_output_asm_insn, arm_process_output_memory_barrier,
+	arm_output_memory_barrier, arm_ldrex_suffix, arm_output_ldrex,
+	arm_output_strex, arm_output_it, arm_output_op2, arm_output_op3,
+	arm_output_sync_loop, arm_get_sync_operand, FETCH_SYNC_OPERAND,
+	arm_process_output_sync_insn, arm_output_sync_insn,
+	arm_sync_loop_insns, arm_call_generator, arm_expand_sync): Remove.
+	(arm_pre_atomic_barrier, arm_post_atomic_barrier): New.
+	(arm_emit_load_exclusive, arm_emit_store_exclusive): New.
+	(emit_unlikely_jump): New.
+	(arm_expand_compare_and_swap, arm_split_compare_and_swap): New.
+	(arm_split_atomic_op): New.
+	* config/arm/arm-protos.h: Update.
+	* config/arm/arm.h (enum arm_sync_generator_tag): Remove.
+	(struct arm_sync_generator): Remove.
+	* config/arm/arm.md (VUNSPEC_SYNC_COMPARE_AND_SWAP, VUNSPEC_SYNC_LOCK,
+	VUNSPEC_SYNC_OP, VUNSPEC_SYNC_NEW_OP, VUNSPEC_SYNC_OLD_OP): Remove.
+	(VUNSPEC_ATOMIC_CAS, VUNSPEC_ATOMIC_XCHG, VUNSPEC_ATOMIC_OP): New.
+	(VUNSPEC_LL, VUNSPEC_SC): New.
+	(sync_result, sync_memory, sync_required_value, sync_new_value,
+	sync_t1, sync_t2, sync_release_barrier, sync_op): Remove.
+	(attr length): Don't use arm_sync_loop_insns.
+	(cbranch_cc, cstore_cc): Update call to arm_gen_compare_reg.
+	(movsfcc, movdfcc): Likewise.
+	* config/arm/constraints.md (Ua): New.
+	* config/arm/prediates.md (mem_noofs_operand): New.
+	(sync_compare_and_swap<QHSD>, sync_lock_test_and_set<QHSD>): Remove.
+	(sync_clobber, sync_t2_reqd): Remove.
+	(sync_<syncop><QHSD>, sync_nand<QHSD>): Remove.
+	(sync_new_<syncop><QHSD>, sync_new_nand<QHSD>): Remove.
+	(sync_old_<syncop><QHSD>, sync_old_nand<QHSD>): Remove.
+	(arm_sync_compare_and_swap<SIDI>): Remove.
+	(arm_sync_compare_and_swap<NARROW>): Remove.
+	(arm_sync_lock_test_and_set<SIDI>): Remove.
+	(arm_sync_lock_test_and_set<NARROW>): Remove.
+	(arm_sync_new_<syncop><SIDI>): Remove.
+	(arm_sync_new_<syncop><NARROW>): Remove.
+	(arm_sync_new_nand<SIDI>): Remove.
+	(arm_sync_new_nand<NARROW>): Remove.
+	(arm_sync_old_<syncop><SIDI>): Remove.
+	(arm_sync_old_<syncop><NARROW>): Remove.
+	(arm_sync_old_nand<SIDI>): Remove.
+	(arm_sync_old_nand<NARROW>): Remove.
+	(*memory_barrier): Merge arm_output_memory_barrier.
+	(atomic_compare_and_swap<QHSD>): New.
+	(atomic_compare_and_swap<NARROW>_1): New.
+	(atomic_compare_and_swap<SIDI>_1): New.
+	(atomic_exchange<QHSD>): New.
+	(cas_cmp_operand, cas_cmp_str): New.
+	(atomic_op_operand, atomic_op_str): New.
+	(atomic_<syncop><QHSD>, atomic_nand<QHSD>): New.
+	(atomic_fetch_<syncop><QHSD>, atomic_fetch_nand<QHSD>): New.
+	(atomic_<syncop>_fetch<QHSD>, atomic_nand_fetch<QHSD>): New.
+	(arm_load_exclusive<NARROW>): New.
+	(arm_load_exclusivesi, arm_load_exclusivedi): New.
+	(arm_store_exclusive<QHSD>): New.
+
+2012-01-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Add DF
 	reload patterns if -mvsx-scalar-memory.

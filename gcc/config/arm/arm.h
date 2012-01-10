@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for ARM.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
@@ -122,24 +122,6 @@ enum target_cpus
 
 /* The processor for which instructions should be scheduled.  */
 extern enum processor_type arm_tune;
-
-enum arm_sync_generator_tag
-  {
-    arm_sync_generator_omn,
-    arm_sync_generator_omrn
-  };
-
-/* Wrapper to pass around a polymorphic pointer to a sync instruction
-   generator and.  */
-struct arm_sync_generator
-{
-  enum arm_sync_generator_tag op;
-  union
-  {
-    rtx (* omn) (rtx, rtx, rtx);
-    rtx (* omrn) (rtx, rtx, rtx, rtx);
-  } u;
-};
 
 typedef enum arm_cond_code
 {

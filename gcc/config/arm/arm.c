@@ -1,6 +1,6 @@
 /* Output routines for GCC for ARM.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
@@ -11730,7 +11730,7 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
    return the rtx for register 0 in the proper mode.  FP means this is a
    floating point compare: I don't think that it is needed on the arm.  */
 rtx
-arm_gen_compare_reg (enum rtx_code code, rtx x, rtx y)
+arm_gen_compare_reg (enum rtx_code code, rtx x, rtx y, rtx scratch)
 {
   enum machine_mode mode;
   rtx cc_reg;
@@ -11755,11 +11755,18 @@ arm_gen_compare_reg (enum rtx_code code, rtx x, rtx y)
 	 CC_CZmode is cheaper.  */
       if (mode == CC_Zmode && y != const0_rtx)
 	{
+	  gcc_assert (!reload_completed);
 	  x = expand_binop (DImode, xor_optab, x, y, NULL_RTX, 0, OPTAB_WIDEN);
 	  y = const0_rtx;
 	}
+
       /* A scratch register is required.  */
-      clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (SImode));
+      if (reload_completed)
+	gcc_assert (scratch != NULL && GET_MODE (scratch) == SImode);
+      else
+	scratch = gen_rtx_SCRATCH (SImode);
+
+      clobber = gen_rtx_CLOBBER (VOIDmode, scratch);
       set = gen_rtx_SET (VOIDmode, cc_reg, gen_rtx_COMPARE (mode, x, y));
       emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set, clobber)));
     }
@@ -24417,520 +24424,6 @@ arm_have_conditional_execution (void)
   return !TARGET_THUMB1;
 }
 
-/* Legitimize a memory reference for sync primitive implemented using
-   ldrex / strex.  We currently force the form of the reference to be
-   indirect without offset.  We do not yet support the indirect offset
-   addressing supported by some ARM targets for these
-   instructions.  */
-static rtx
-arm_legitimize_sync_memory (rtx memory)
-{
-  rtx addr = force_reg (Pmode, XEXP (memory, 0));
-  rtx legitimate_memory = gen_rtx_MEM (GET_MODE (memory), addr);
-
-  set_mem_alias_set (legitimate_memory, ALIAS_SET_MEMORY_BARRIER);
-  MEM_VOLATILE_P (legitimate_memory) = MEM_VOLATILE_P (memory);
-  return legitimate_memory;
-}
-
-/* An instruction emitter. */
-typedef void (* emit_f) (int label, const char *, rtx *);
-
-/* An instruction emitter that emits via the conventional
-   output_asm_insn.  */
-static void
-arm_emit (int label ATTRIBUTE_UNUSED, const char *pattern, rtx *operands)
-{
-  output_asm_insn (pattern, operands);
-}
-
-/* Count the number of emitted synchronization instructions.  */
-static unsigned arm_insn_count;
-
-/* An emitter that counts emitted instructions but does not actually
-   emit instruction into the instruction stream.  */
-static void
-arm_count (int label,
-	   const char *pattern ATTRIBUTE_UNUSED,
-	   rtx *operands ATTRIBUTE_UNUSED)
-{
-  if (! label)
-    ++ arm_insn_count;
-}
-
-/* Construct a pattern using conventional output formatting and feed
-   it to output_asm_insn.  Provides a mechanism to construct the
-   output pattern on the fly.  Note the hard limit on the pattern
-   buffer size.  */
-static void ATTRIBUTE_PRINTF_4
-arm_output_asm_insn (emit_f emit, int label, rtx *operands,
-		     const char *pattern, ...)
-{
-  va_list ap;
-  char buffer[256];
-
-  va_start (ap, pattern);
-  vsprintf (buffer, pattern, ap);
-  va_end (ap);
-  emit (label, buffer, operands);
-}
-
-/* Emit the memory barrier instruction, if any, provided by this
-   target to a specified emitter.  */
-static void
-arm_process_output_memory_barrier (emit_f emit, rtx *operands)
-{
-  if (TARGET_HAVE_DMB)
-    {
-      /* Note we issue a system level barrier. We should consider
-         issuing a inner shareabilty zone barrier here instead, ie.
-         "DMB ISH".  */
-      emit (0, "dmb\tsy", operands);
-      return;
-    }
-
-  if (TARGET_HAVE_DMB_MCR)
-    {
-      emit (0, "mcr\tp15, 0, r0, c7, c10, 5", operands);
-      return;
-    }
-
-  gcc_unreachable ();
-}
-
-/* Emit the memory barrier instruction, if any, provided by this
-   target.  */
-const char *
-arm_output_memory_barrier (rtx *operands)
-{
-  arm_process_output_memory_barrier (arm_emit, operands);
-  return "";
-}
-
-/* Helper to figure out the instruction suffix required on ldrex/strex
-   for operations on an object of the specified mode.  */
-static const char *
-arm_ldrex_suffix (enum machine_mode mode)
-{
-  switch (mode)
-    {
-    case QImode: return "b";
-    case HImode: return "h";
-    case SImode: return "";
-    case DImode: return "d";
-    default:
-      gcc_unreachable ();
-    }
-  return "";
-}
-
-/* Emit an ldrex{b,h,d, } instruction appropriate for the specified
-   mode.  */
-static void
-arm_output_ldrex (emit_f emit,
-		  enum machine_mode mode,
-		  rtx target,
-		  rtx memory)
-{
-  rtx operands[3];
-
-  operands[0] = target;
-  if (mode != DImode)
-    {
-      const char *suffix = arm_ldrex_suffix (mode);
-      operands[1] = memory;
-      arm_output_asm_insn (emit, 0, operands, "ldrex%s\t%%0, %%C1", suffix);
-    }
-  else
-    {
-      /* The restrictions on target registers in ARM mode are that the two
-	 registers are consecutive and the first one is even; Thumb is
-	 actually more flexible, but DI should give us this anyway.
-	 Note that the 1st register always gets the lowest word in memory.  */
-      gcc_assert ((REGNO (target) & 1) == 0);
-      operands[1] = gen_rtx_REG (SImode, REGNO (target) + 1);
-      operands[2] = memory;
-      arm_output_asm_insn (emit, 0, operands, "ldrexd\t%%0, %%1, %%C2");
-    }
-}
-
-/* Emit a strex{b,h,d, } instruction appropriate for the specified
-   mode.  */
-static void
-arm_output_strex (emit_f emit,
-		  enum machine_mode mode,
-		  const char *cc,
-		  rtx result,
-		  rtx value,
-		  rtx memory)
-{
-  rtx operands[4];
-
-  operands[0] = result;
-  operands[1] = value;
-  if (mode != DImode)
-    {
-      const char *suffix = arm_ldrex_suffix (mode);
-      operands[2] = memory;
-      arm_output_asm_insn (emit, 0, operands, "strex%s%s\t%%0, %%1, %%C2",
-			  suffix, cc);
-    }
-  else
-    {
-      /* The restrictions on target registers in ARM mode are that the two
-	 registers are consecutive and the first one is even; Thumb is
-	 actually more flexible, but DI should give us this anyway.
-	 Note that the 1st register always gets the lowest word in memory.  */
-      gcc_assert ((REGNO (value) & 1) == 0 || TARGET_THUMB2);
-      operands[2] = gen_rtx_REG (SImode, REGNO (value) + 1);
-      operands[3] = memory;
-      arm_output_asm_insn (emit, 0, operands, "strexd%s\t%%0, %%1, %%2, %%C3",
-			   cc);
-    }
-}
-
-/* Helper to emit an it instruction in Thumb2 mode only; although the assembler
-   will ignore it in ARM mode, emitting it will mess up instruction counts we
-   sometimes keep 'flags' are the extra t's and e's if it's more than one
-   instruction that is conditional.  */
-static void
-arm_output_it (emit_f emit, const char *flags, const char *cond)
-{
-  rtx operands[1]; /* Don't actually use the operand.  */
-  if (TARGET_THUMB2)
-    arm_output_asm_insn (emit, 0, operands, "it%s\t%s", flags, cond);
-}
-
-/* Helper to emit a two operand instruction.  */
-static void
-arm_output_op2 (emit_f emit, const char *mnemonic, rtx d, rtx s)
-{
-  rtx operands[2];
-
-  operands[0] = d;
-  operands[1] = s;
-  arm_output_asm_insn (emit, 0, operands, "%s\t%%0, %%1", mnemonic);
-}
-
-/* Helper to emit a three operand instruction.  */
-static void
-arm_output_op3 (emit_f emit, const char *mnemonic, rtx d, rtx a, rtx b)
-{
-  rtx operands[3];
-
-  operands[0] = d;
-  operands[1] = a;
-  operands[2] = b;
-  arm_output_asm_insn (emit, 0, operands, "%s\t%%0, %%1, %%2", mnemonic);
-}
-
-/* Emit a load store exclusive synchronization loop.
-
-   do
-     old_value = [mem]
-     if old_value != required_value
-       break;
-     t1 = sync_op (old_value, new_value)
-     [mem] = t1, t2 = [0|1]
-   while ! t2
-
-   Note:
-     t1 == t2 is not permitted
-     t1 == old_value is permitted
-
-   required_value:
-
-   RTX register representing the required old_value for
-   the modify to continue, if NULL no comparsion is performed.  */
-static void
-arm_output_sync_loop (emit_f emit,
-		      enum machine_mode mode,
-		      rtx old_value,
-		      rtx memory,
-		      rtx required_value,
-		      rtx new_value,
-		      rtx t1,
-		      rtx t2,
-		      enum attr_sync_op sync_op,
-		      int early_barrier_required)
-{
-  rtx operands[2];
-  /* We'll use the lo for the normal rtx in the none-DI case
-     as well as the least-sig word in the DI case.  */
-  rtx old_value_lo, required_value_lo, new_value_lo, t1_lo;
-  rtx old_value_hi, required_value_hi, new_value_hi, t1_hi;
-
-  bool is_di = mode == DImode;
-
-  gcc_assert (t1 != t2);
-
-  if (early_barrier_required)
-    arm_process_output_memory_barrier (emit, NULL);
-
-  arm_output_asm_insn (emit, 1, operands, "%sLSYT%%=:", LOCAL_LABEL_PREFIX);
-
-  arm_output_ldrex (emit, mode, old_value, memory);
-
-  if (is_di)
-    {
-      old_value_lo = gen_lowpart (SImode, old_value);
-      old_value_hi = gen_highpart (SImode, old_value);
-      if (required_value)
-	{
-	  required_value_lo = gen_lowpart (SImode, required_value);
-	  required_value_hi = gen_highpart (SImode, required_value);
-	}
-      else
-	{
-	  /* Silence false potentially unused warning.  */
-	  required_value_lo = NULL_RTX;
-	  required_value_hi = NULL_RTX;
-	}
-      new_value_lo = gen_lowpart (SImode, new_value);
-      new_value_hi = gen_highpart (SImode, new_value);
-      t1_lo = gen_lowpart (SImode, t1);
-      t1_hi = gen_highpart (SImode, t1);
-    }
-  else
-    {
-      old_value_lo = old_value;
-      new_value_lo = new_value;
-      required_value_lo = required_value;
-      t1_lo = t1;
-
-      /* Silence false potentially unused warning.  */
-      t1_hi = NULL_RTX;
-      new_value_hi = NULL_RTX;
-      required_value_hi = NULL_RTX;
-      old_value_hi = NULL_RTX;
-    }
-
-  if (required_value)
-    {
-      operands[0] = old_value_lo;
-      operands[1] = required_value_lo;
-
-      arm_output_asm_insn (emit, 0, operands, "cmp\t%%0, %%1");
-      if (is_di)
-        {
-          arm_output_it (emit, "", "eq");
-          arm_output_op2 (emit, "cmpeq", old_value_hi, required_value_hi);
-        }
-      arm_output_asm_insn (emit, 0, operands, "bne\t%sLSYB%%=", LOCAL_LABEL_PREFIX);
-    }
-
-  switch (sync_op)
-    {
-    case SYNC_OP_ADD:
-      arm_output_op3 (emit, is_di ? "adds" : "add",
-		      t1_lo, old_value_lo, new_value_lo);
-      if (is_di)
-	arm_output_op3 (emit, "adc", t1_hi, old_value_hi, new_value_hi);
-      break;
-
-    case SYNC_OP_SUB:
-      arm_output_op3 (emit, is_di ? "subs" : "sub",
-		      t1_lo, old_value_lo, new_value_lo);
-      if (is_di)
-	arm_output_op3 (emit, "sbc", t1_hi, old_value_hi, new_value_hi);
-      break;
-
-    case SYNC_OP_IOR:
-      arm_output_op3 (emit, "orr", t1_lo, old_value_lo, new_value_lo);
-      if (is_di)
-	arm_output_op3 (emit, "orr", t1_hi, old_value_hi, new_value_hi);
-      break;
-
-    case SYNC_OP_XOR:
-      arm_output_op3 (emit, "eor", t1_lo, old_value_lo, new_value_lo);
-      if (is_di)
-	arm_output_op3 (emit, "eor", t1_hi, old_value_hi, new_value_hi);
-      break;
-
-    case SYNC_OP_AND:
-      arm_output_op3 (emit,"and", t1_lo, old_value_lo, new_value_lo);
-      if (is_di)
-	arm_output_op3 (emit, "and", t1_hi, old_value_hi, new_value_hi);
-      break;
-
-    case SYNC_OP_NAND:
-      arm_output_op3 (emit, "and", t1_lo, old_value_lo, new_value_lo);
-      if (is_di)
-	arm_output_op3 (emit, "and", t1_hi, old_value_hi, new_value_hi);
-      arm_output_op2 (emit, "mvn", t1_lo, t1_lo);
-      if (is_di)
-	arm_output_op2 (emit, "mvn", t1_hi, t1_hi);
-      break;
-
-    case SYNC_OP_NONE:
-      t1 = new_value;
-      t1_lo = new_value_lo;
-      if (is_di)
-	t1_hi = new_value_hi;
-      break;
-    }
-
-  /* Note that the result of strex is a 0/1 flag that's always 1 register.  */
-  if (t2)
-    {
-      arm_output_strex (emit, mode, "", t2, t1, memory);
-      operands[0] = t2;
-      arm_output_asm_insn (emit, 0, operands, "teq\t%%0, #0");
-      arm_output_asm_insn (emit, 0, operands, "bne\t%sLSYT%%=",
-			   LOCAL_LABEL_PREFIX);
-    }
-  else
-    {
-      /* Use old_value for the return value because for some operations
-	 the old_value can easily be restored.  This saves one register.  */
-      arm_output_strex (emit, mode, "", old_value_lo, t1, memory);
-      operands[0] = old_value_lo;
-      arm_output_asm_insn (emit, 0, operands, "teq\t%%0, #0");
-      arm_output_asm_insn (emit, 0, operands, "bne\t%sLSYT%%=",
-			   LOCAL_LABEL_PREFIX);
-
-      /* Note that we only used the _lo half of old_value as a temporary
-	 so in DI we don't have to restore the _hi part.  */
-      switch (sync_op)
-	{
-	case SYNC_OP_ADD:
-	  arm_output_op3 (emit, "sub", old_value_lo, t1_lo, new_value_lo);
-	  break;
-
-	case SYNC_OP_SUB:
-	  arm_output_op3 (emit, "add", old_value_lo, t1_lo, new_value_lo);
-	  break;
-
-	case SYNC_OP_XOR:
-	  arm_output_op3 (emit, "eor", old_value_lo, t1_lo, new_value_lo);
-	  break;
-
-	case SYNC_OP_NONE:
-	  arm_output_op2 (emit, "mov", old_value_lo, required_value_lo);
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
-
-  /* Note: label is before barrier so that in cmp failure case we still get
-     a barrier to stop subsequent loads floating upwards past the ldrex
-     PR target/48126.  */
-  arm_output_asm_insn (emit, 1, operands, "%sLSYB%%=:", LOCAL_LABEL_PREFIX);
-  arm_process_output_memory_barrier (emit, NULL);
-}
-
-static rtx
-arm_get_sync_operand (rtx *operands, int index, rtx default_value)
-{
-  if (index > 0)
-    default_value = operands[index - 1];
-
-  return default_value;
-}
-
-#define FETCH_SYNC_OPERAND(NAME, DEFAULT) \
-  arm_get_sync_operand (operands, (int) get_attr_sync_##NAME (insn), DEFAULT);
-
-/* Extract the operands for a synchroniztion instruction from the
-   instructions attributes and emit the instruction.  */
-static void
-arm_process_output_sync_insn (emit_f emit, rtx insn, rtx *operands)
-{
-  rtx result, memory, required_value, new_value, t1, t2;
-  int early_barrier;
-  enum machine_mode mode;
-  enum attr_sync_op sync_op;
-
-  result = FETCH_SYNC_OPERAND(result, 0);
-  memory = FETCH_SYNC_OPERAND(memory, 0);
-  required_value = FETCH_SYNC_OPERAND(required_value, 0);
-  new_value = FETCH_SYNC_OPERAND(new_value, 0);
-  t1 = FETCH_SYNC_OPERAND(t1, 0);
-  t2 = FETCH_SYNC_OPERAND(t2, 0);
-  early_barrier =
-    get_attr_sync_release_barrier (insn) == SYNC_RELEASE_BARRIER_YES;
-  sync_op = get_attr_sync_op (insn);
-  mode = GET_MODE (memory);
-
-  arm_output_sync_loop (emit, mode, result, memory, required_value,
-			new_value, t1, t2, sync_op, early_barrier);
-}
-
-/* Emit a synchronization instruction loop.  */
-const char *
-arm_output_sync_insn (rtx insn, rtx *operands)
-{
-  arm_process_output_sync_insn (arm_emit, insn, operands);
-  return "";
-}
-
-/* Count the number of machine instruction that will be emitted for a
-   synchronization instruction.  Note that the emitter used does not
-   emit instructions, it just counts instructions being carefull not
-   to count labels.  */
-unsigned int
-arm_sync_loop_insns (rtx insn, rtx *operands)
-{
-  arm_insn_count = 0;
-  arm_process_output_sync_insn (arm_count, insn, operands);
-  return arm_insn_count;
-}
-
-/* Helper to call a target sync instruction generator, dealing with
-   the variation in operands required by the different generators.  */
-static rtx
-arm_call_generator (struct arm_sync_generator *generator, rtx old_value,
-  		    rtx memory, rtx required_value, rtx new_value)
-{
-  switch (generator->op)
-    {
-    case arm_sync_generator_omn:
-      gcc_assert (! required_value);
-      return generator->u.omn (old_value, memory, new_value);
-
-    case arm_sync_generator_omrn:
-      gcc_assert (required_value);
-      return generator->u.omrn (old_value, memory, required_value, new_value);
-    }
-
-  return NULL;
-}
-
-/* Expand a synchronization loop. The synchronization loop is expanded
-   as an opaque block of instructions in order to ensure that we do
-   not subsequently get extraneous memory accesses inserted within the
-   critical region. The exclusive access property of ldrex/strex is
-   only guaranteed in there are no intervening memory accesses. */
-void
-arm_expand_sync (enum machine_mode mode,
-		 struct arm_sync_generator *generator,
-		 rtx target, rtx memory, rtx required_value, rtx new_value)
-{
-  if (target == NULL)
-    target = gen_reg_rtx (mode);
-
-  memory = arm_legitimize_sync_memory (memory);
-  if (mode != SImode && mode != DImode)
-    {
-      rtx load_temp = gen_reg_rtx (SImode);
-
-      if (required_value)
-	required_value = convert_modes (SImode, mode, required_value, true);
-
-      new_value = convert_modes (SImode, mode, new_value, true);
-      emit_insn (arm_call_generator (generator, load_temp, memory,
-				     required_value, new_value));
-      emit_move_insn (target, gen_lowpart (mode, load_temp));
-    }
-  else
-    {
-      emit_insn (arm_call_generator (generator, target, memory, required_value,
-				     new_value));
-    }
-}
-
 static unsigned int
 arm_autovectorize_vector_sizes (void)
 {
@@ -25148,6 +24641,309 @@ vfp3_const_double_for_fract_bits (rtx operand)
 	}
     }
   return 0;
+}
+
+/* Emit a memory barrier around an atomic sequence according to MODEL.  */
+
+static void
+arm_pre_atomic_barrier (enum memmodel model)
+{
+  switch (model)
+    {
+    case MEMMODEL_RELAXED:
+    case MEMMODEL_CONSUME:
+    case MEMMODEL_ACQUIRE:
+      break;
+    case MEMMODEL_RELEASE:
+    case MEMMODEL_ACQ_REL:
+    case MEMMODEL_SEQ_CST:
+      emit_insn (gen_memory_barrier ());
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static void
+arm_post_atomic_barrier (enum memmodel model)
+{
+  switch (model)
+    {
+    case MEMMODEL_RELAXED:
+    case MEMMODEL_CONSUME:
+    case MEMMODEL_RELEASE:
+      break;
+    case MEMMODEL_ACQUIRE:
+    case MEMMODEL_ACQ_REL:
+    case MEMMODEL_SEQ_CST:
+      emit_insn (gen_memory_barrier ());
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Emit the load-exclusive and store-exclusive instructions.  */
+
+static void
+arm_emit_load_exclusive (enum machine_mode mode, rtx rval, rtx mem)
+{
+  rtx (*gen) (rtx, rtx);
+
+  switch (mode)
+    {
+    case QImode: gen = gen_arm_load_exclusiveqi; break;
+    case HImode: gen = gen_arm_load_exclusivehi; break;
+    case SImode: gen = gen_arm_load_exclusivesi; break;
+    case DImode: gen = gen_arm_load_exclusivedi; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (gen (rval, mem));
+}
+
+static void
+arm_emit_store_exclusive (enum machine_mode mode, rtx bval, rtx rval, rtx mem)
+{
+  rtx (*gen) (rtx, rtx, rtx);
+
+  switch (mode)
+    {
+    case QImode: gen = gen_arm_store_exclusiveqi; break;
+    case HImode: gen = gen_arm_store_exclusivehi; break;
+    case SImode: gen = gen_arm_store_exclusivesi; break;
+    case DImode: gen = gen_arm_store_exclusivedi; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (gen (bval, rval, mem));
+}
+
+/* Mark the previous jump instruction as unlikely.  */
+
+static void
+emit_unlikely_jump (rtx insn)
+{
+  rtx very_unlikely = GEN_INT (REG_BR_PROB_BASE / 100 - 1);
+
+  insn = emit_jump_insn (insn);
+  add_reg_note (insn, REG_BR_PROB, very_unlikely);
+}
+
+/* Expand a compare and swap pattern.  */
+
+void
+arm_expand_compare_and_swap (rtx operands[])
+{
+  rtx bval, rval, mem, oldval, newval, is_weak, mod_s, mod_f, x;
+  enum machine_mode mode;
+  rtx (*gen) (rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+
+  bval = operands[0];
+  rval = operands[1];
+  mem = operands[2];
+  oldval = operands[3];
+  newval = operands[4];
+  is_weak = operands[5];
+  mod_s = operands[6];
+  mod_f = operands[7];
+  mode = GET_MODE (mem);
+
+  switch (mode)
+    {
+    case QImode:
+    case HImode:
+      /* For narrow modes, we're going to perform the comparison in SImode,
+	 so do the zero-extension now.  */
+      rval = gen_reg_rtx (SImode);
+      oldval = convert_modes (SImode, mode, oldval, true);
+      /* FALLTHRU */
+
+    case SImode:
+      /* Force the value into a register if needed.  We waited until after
+	 the zero-extension above to do this properly.  */
+      if (!arm_add_operand (oldval, mode))
+	oldval = force_reg (mode, oldval);
+      break;
+
+    case DImode:
+      if (!cmpdi_operand (oldval, mode))
+	oldval = force_reg (mode, oldval);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  switch (mode)
+    {
+    case QImode: gen = gen_atomic_compare_and_swapqi_1; break;
+    case HImode: gen = gen_atomic_compare_and_swaphi_1; break;
+    case SImode: gen = gen_atomic_compare_and_swapsi_1; break;
+    case DImode: gen = gen_atomic_compare_and_swapdi_1; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (gen (rval, mem, oldval, newval, is_weak, mod_s, mod_f));
+
+  if (mode == QImode || mode == HImode)
+    emit_move_insn (operands[1], gen_lowpart (mode, rval));
+
+  /* In all cases, we arrange for success to be signaled by Z set.
+     This arrangement allows for the boolean result to be used directly
+     in a subsequent branch, post optimization.  */
+  x = gen_rtx_REG (CCmode, CC_REGNUM);
+  x = gen_rtx_EQ (SImode, x, const0_rtx);
+  emit_insn (gen_rtx_SET (VOIDmode, bval, x));
+}
+
+/* Split a compare and swap pattern.  It is IMPLEMENTATION DEFINED whether
+   another memory store between the load-exclusive and store-exclusive can
+   reset the monitor from Exclusive to Open state.  This means we must wait
+   until after reload to split the pattern, lest we get a register spill in
+   the middle of the atomic sequence.  */
+
+void
+arm_split_compare_and_swap (rtx operands[])
+{
+  rtx rval, mem, oldval, newval, scratch;
+  enum machine_mode mode;
+  enum memmodel mod_s, mod_f;
+  bool is_weak;
+  rtx label1, label2, x, cond;
+
+  rval = operands[0];
+  mem = operands[1];
+  oldval = operands[2];
+  newval = operands[3];
+  is_weak = (operands[4] != const0_rtx);
+  mod_s = (enum memmodel) INTVAL (operands[5]);
+  mod_f = (enum memmodel) INTVAL (operands[6]);
+  scratch = operands[7];
+  mode = GET_MODE (mem);
+
+  arm_pre_atomic_barrier (mod_s);
+
+  label1 = NULL_RTX;
+  if (!is_weak)
+    {
+      label1 = gen_label_rtx ();
+      emit_label (label1);
+    }
+  label2 = gen_label_rtx ();
+
+  arm_emit_load_exclusive (mode, rval, mem);
+
+  cond = arm_gen_compare_reg (NE, rval, oldval, scratch);
+  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
+			    gen_rtx_LABEL_REF (Pmode, label2), pc_rtx);
+  emit_unlikely_jump (gen_rtx_SET (VOIDmode, pc_rtx, x));
+
+  arm_emit_store_exclusive (mode, scratch, mem, newval);
+
+  /* Weak or strong, we want EQ to be true for success, so that we
+     match the flags that we got from the compare above.  */
+  cond = gen_rtx_REG (CCmode, CC_REGNUM);
+  x = gen_rtx_COMPARE (CCmode, scratch, const0_rtx);
+  emit_insn (gen_rtx_SET (VOIDmode, cond, x));
+
+  if (!is_weak)
+    {
+      x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+      x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
+				gen_rtx_LABEL_REF (Pmode, label1), pc_rtx);
+      emit_unlikely_jump (gen_rtx_SET (VOIDmode, pc_rtx, x));
+    }
+
+  if (mod_f != MEMMODEL_RELAXED)
+    emit_label (label2);
+
+  arm_post_atomic_barrier (mod_s);
+
+  if (mod_f == MEMMODEL_RELAXED)
+    emit_label (label2);
+}
+
+void
+arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
+		     rtx value, rtx model_rtx, rtx cond)
+{
+  enum memmodel model = (enum memmodel) INTVAL (model_rtx);
+  enum machine_mode mode = GET_MODE (mem);
+  enum machine_mode wmode = (mode == DImode ? DImode : SImode);
+  rtx label, x;
+
+  arm_pre_atomic_barrier (model);
+
+  label = gen_label_rtx ();
+  emit_label (label);
+
+  if (new_out)
+    new_out = gen_lowpart (wmode, new_out);
+  if (old_out)
+    old_out = gen_lowpart (wmode, old_out);
+  else
+    old_out = new_out;
+  value = simplify_gen_subreg (wmode, value, mode, 0);
+
+  arm_emit_load_exclusive (mode, old_out, mem);
+
+  switch (code)
+    {
+    case SET:
+      new_out = value;
+      break;
+
+    case NOT:
+      x = gen_rtx_AND (wmode, old_out, value);
+      emit_insn (gen_rtx_SET (VOIDmode, new_out, x));
+      x = gen_rtx_NOT (wmode, new_out);
+      emit_insn (gen_rtx_SET (VOIDmode, new_out, x));
+      break;
+
+    case MINUS:
+      if (CONST_INT_P (value))
+	{
+	  value = GEN_INT (-INTVAL (value));
+	  code = PLUS;
+	}
+      /* FALLTHRU */
+
+    case PLUS:
+      if (mode == DImode)
+	{
+	  /* DImode plus/minus need to clobber flags.  */
+	  /* The adddi3 and subdi3 patterns are incorrectly written so that
+	     they require matching operands, even when we could easily support
+	     three operands.  Thankfully, this can be fixed up post-splitting,
+	     as the individual add+adc patterns do accept three operands and
+	     post-reload cprop can make these moves go away.  */
+	  emit_move_insn (new_out, old_out);
+	  if (code == PLUS)
+	    x = gen_adddi3 (new_out, new_out, value);
+	  else
+	    x = gen_subdi3 (new_out, new_out, value);
+	  emit_insn (x);
+	  break;
+	}
+      /* FALLTHRU */
+
+    default:
+      x = gen_rtx_fmt_ee (code, wmode, old_out, value);
+      emit_insn (gen_rtx_SET (VOIDmode, new_out, x));
+      break;
+    }
+
+  arm_emit_store_exclusive (mode, cond, mem, gen_lowpart (mode, new_out));
+
+  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+  emit_unlikely_jump (gen_cbranchsi4 (x, cond, const0_rtx, label));
+
+  arm_post_atomic_barrier (model);
 }
 
 #include "gt-arm.h"
