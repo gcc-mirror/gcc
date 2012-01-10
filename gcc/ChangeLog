@@ -1,3 +1,8 @@
+2012-01-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraints.md ("L"): Return true for 0xffffffff.
+	* config/i386/i386.c (*anddi_1): Emit AND with 0xffffffff as MOV.
+
 2012-01-10  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/51271
@@ -6,7 +11,7 @@
 
 2012-01-10  Richard Henderson  <rth@redhat.com>
 
-	* config/arm/arm.c (arm_vectorize_vec_perm_const_ok, 
+	* config/arm/arm.c (arm_vectorize_vec_perm_const_ok,
 	TARGET_VECTORIZE_VEC_PERM_CONST_OK, neon_split_vcombine, MAX_VECT_LEN,
 	struct expand_vec_perm_d, arm_expand_vec_perm_1, arm_expand_vec_perm,
 	arm_evpc_neon_vuzp, arm_evpc_neon_vzip, arm_evpc_neon_vrev,
@@ -95,7 +100,8 @@
 	    Andrew Pinski  <apinski@cavium.com>
 
 	PR debug/51471
-	* reorg.c (fill_slots_from_thread): Don't speculate frame-related insns.
+	* reorg.c (fill_slots_from_thread): Don't speculate
+	frame-related insns.
 
 2012-01-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
@@ -215,8 +221,7 @@
 2012-01-06  Torvald Riegel  <triegel@redhat.com>
 
 	PR rtl-optimization/51771
-	* builtin-attrs.def (ATTR_RETURNS_TWICE, ATTR_TM_NOTHROW_RT_LIST):
-	New.
+	* builtin-attrs.def (ATTR_RETURNS_TWICE, ATTR_TM_NOTHROW_RT_LIST): New.
 	* gtm-builtins.def (BUILT_IN_TM_START): Add returns-twice attrib.
 
 2012-01-05  Eric Botcazou  <ebotcazou@adacore.com>
