@@ -1891,13 +1891,18 @@ The default is version 2.
 Version 3 corrects an error in mangling a constant address as a
 template argument.
 
-Version 4 implements a standard mangling for vector types.
+Version 4, which first appeared in G++ 4.5, implements a standard
+mangling for vector types.
 
-Version 5 corrects the mangling of attribute const/volatile on
-function pointer types, decltype of a plain decl, and use of a
-function parameter in the declaration of another parameter.
+Version 5, which first appeared in G++ 4.6, corrects the mangling of
+attribute const/volatile on function pointer types, decltype of a
+plain decl, and use of a function parameter in the declaration of
+another parameter.
 
-Version 6 corrects the promotion behavior of C++11 scoped enums.
+Version 6, which first appeared in G++ 4.7, corrects the promotion
+behavior of C++11 scoped enums and the mangling of template argument
+packs, const/static_cast, prefix ++ and --, and a class scope function
+used as a template argument.
 
 See also @option{-Wabi}.
 
