@@ -2977,8 +2977,15 @@ package body Prj.Nmsc is
                   "library directory { does not exist",
                   Lib_Dir.Location, Project);
 
-            elsif not Project.Externally_Built then
+            --  Checks for object/source directories
 
+            elsif not Project.Externally_Built
+
+              --  An aggregate library does not have sources or objects, so
+              --  these tests are not required in this case.
+
+              and then Project.Qualifier /= Aggregate_Library
+            then
                --  Library directory cannot be the same as Object directory
 
                if Project.Library_Dir.Name = Project.Object_Directory.Name then

@@ -68,28 +68,6 @@ package Ada.Containers.Ordered_Sets is
    package Set_Iterator_Interfaces is new
      Ada.Iterator_Interfaces (Cursor, Has_Element);
 
-   type Constant_Reference_Type
-      (Element : not null access constant Element_Type) is
-   private
-   with
-      Implicit_Dereference => Element;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Constant_Reference_Type);
-
-   for Constant_Reference_Type'Write use Write;
-
-   function Constant_Reference
-     (Container : Set; Position : Cursor)
-   return Constant_Reference_Type;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Constant_Reference_Type);
-
-   for Constant_Reference_Type'Read use Read;
-
    function "=" (Left, Right : Set) return Boolean;
 
    function Equivalent_Sets (Left, Right : Set) return Boolean;
@@ -112,6 +90,28 @@ package Ada.Containers.Ordered_Sets is
    procedure Query_Element
      (Position : Cursor;
       Process  : not null access procedure (Element : Element_Type));
+
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is
+   private
+   with
+      Implicit_Dereference => Element;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type);
+
+   for Constant_Reference_Type'Write use Write;
+
+   function Constant_Reference
+     (Container : aliased Set;
+      Position  : Cursor) return Constant_Reference_Type;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type);
+
+   for Constant_Reference_Type'Read use Read;
 
    procedure Assign (Target : in out Set; Source : Set);
 
@@ -278,6 +278,10 @@ package Ada.Containers.Ordered_Sets is
 
       function Reference_Preserving_Key
         (Container : aliased in out Set;
+         Position  : Cursor) return Reference_Type;
+
+      function Constant_Reference
+        (Container : aliased Set;
          Key       : Key_Type) return Constant_Reference_Type;
 
       function Reference_Preserving_Key

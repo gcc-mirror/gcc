@@ -52,7 +52,7 @@ package Ada.Containers.Hashed_Sets is
 
    type Set is tagged private
    with
-      constant_Indexing => Constant_Reference,
+      Constant_Indexing => Constant_Reference,
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type;
 
@@ -145,10 +145,6 @@ package Ada.Containers.Hashed_Sets is
    --  Calls Process with the element (having only a constant view) of the node
    --  designed by the cursor.
 
-   procedure Assign (Target : in out Set; Source : Set);
-
-   function Copy (Source : Set; Capacity : Count_Type := 0) return Set;
-
    type Constant_Reference_Type
      (Element : not null access constant Element_Type) is private
         with Implicit_Dereference => Element;
@@ -156,6 +152,10 @@ package Ada.Containers.Hashed_Sets is
    function Constant_Reference
      (Container : aliased Set;
       Position  : Cursor) return Constant_Reference_Type;
+
+   procedure Assign (Target : in out Set; Source : Set);
+
+   function Copy (Source : Set; Capacity : Count_Type := 0) return Set;
 
    procedure Move (Target : in out Set; Source : in out Set);
    --  Clears Target (if it's not empty), and then moves (not copies) the
@@ -422,13 +422,31 @@ package Ada.Containers.Hashed_Sets is
         (Container : aliased in out Set;
          Position  : Cursor) return Reference_Type;
 
+      function Constant_Reference
+        (Container : aliased Set;
+         Key       : Key_Type) return Constant_Reference_Type;
+
       function Reference_Preserving_Key
         (Container : aliased in out Set;
-         Key  : Key_Type) return Reference_Type;
+         Key       : Key_Type) return Reference_Type;
 
    private
       type Reference_Type (Element : not null access Element_Type)
          is null record;
+
+      use Ada.Streams;
+
+      procedure Read
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : out Reference_Type);
+
+      for Reference_Type'Read use Read;
+
+      procedure Write
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : Reference_Type);
+
+      for Reference_Type'Write use Write;
 
    end Generic_Keys;
 
@@ -439,7 +457,7 @@ private
    type Node_Access is access Node_Type;
 
    type Node_Type is limited record
-      Element : Element_Type;
+      Element : aliased Element_Type;
       Next    : Node_Access;
    end record;
 

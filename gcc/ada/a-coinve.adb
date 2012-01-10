@@ -673,34 +673,51 @@ package body Ada.Containers.Indefinite_Vectors is
    ------------------------
 
    function Constant_Reference
-     (Container : Vector;
+     (Container : aliased Vector;
       Position  : Cursor) return Constant_Reference_Type
    is
-   begin
-      pragma Unreferenced (Container);
+      E : Element_Access;
 
+   begin
       if Position.Container = null then
          raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with "Position cursor denotes wrong container";
       end if;
 
       if Position.Index > Position.Container.Last then
          raise Constraint_Error with "Position cursor is out of range";
       end if;
 
-      return
-       (Element => Position.Container.Elements.EA (Position.Index).all'Access);
+      E := Container.Elements.EA (Position.Index);
+
+      if E = null then
+         raise Constraint_Error with "element at Position is empty";
+      end if;
+
+      return (Element => E.all'Access);
    end Constant_Reference;
 
    function Constant_Reference
-     (Container : Vector;
-      Position  : Index_Type) return Constant_Reference_Type
+     (Container : aliased Vector;
+      Index     : Index_Type) return Constant_Reference_Type
    is
+      E : Element_Access;
+
    begin
-      if (Position) > Container.Last then
+      if Index > Container.Last then
          raise Constraint_Error with "Index is out of range";
       end if;
 
-      return (Element => Container.Elements.EA (Position).all'Access);
+      E := Container.Elements.EA (Index);
+
+      if E = null then
+         raise Constraint_Error with "element at Index is empty";
+      end if;
+
+      return (Element => E.all'Access);
    end Constant_Reference;
 
    --------------
@@ -2998,35 +3015,51 @@ package body Ada.Containers.Indefinite_Vectors is
    ---------------
 
    function Reference
-     (Container : Vector;
+     (Container : aliased in out Vector;
       Position  : Cursor) return Reference_Type
    is
-   begin
-      pragma Unreferenced (Container);
+      E : Element_Access;
 
+   begin
       if Position.Container = null then
          raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with "Position cursor denotes wrong container";
       end if;
 
       if Position.Index > Position.Container.Last then
          raise Constraint_Error with "Position cursor is out of range";
       end if;
 
-      return
-        (Element =>
-           Position.Container.Elements.EA (Position.Index).all'Access);
+      E := Container.Elements.EA (Position.Index);
+
+      if E = null then
+         raise Constraint_Error with "element at Position is empty";
+      end if;
+
+      return (Element => E.all'Access);
    end Reference;
 
    function Reference
-     (Container : Vector;
-      Position  : Index_Type) return Reference_Type
+     (Container : aliased in out Vector;
+      Index     : Index_Type) return Reference_Type
    is
+      E : Element_Access;
+
    begin
-      if Position > Container.Last then
+      if Index > Container.Last then
          raise Constraint_Error with "Index is out of range";
       end if;
 
-      return (Element => Container.Elements.EA (Position).all'Access);
+      E := Container.Elements.EA (Index);
+
+      if E = null then
+         raise Constraint_Error with "element at Index is empty";
+      end if;
+
+      return (Element => E.all'Access);
    end Reference;
 
    ---------------------

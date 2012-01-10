@@ -323,11 +323,38 @@ package body Ada.Containers.Ordered_Maps is
    ------------------------
 
    function Constant_Reference
+     (Container : aliased Map;
+      Position  : Cursor) return Constant_Reference_Type
+   is
+   begin
+      if Position.Container = null then
+         raise Constraint_Error with
+           "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with
+           "Position cursor designates wrong map";
+      end if;
+
+      pragma Assert (Vet (Container.Tree, Position.Node),
+                     "Position cursor in Constant_Reference is bad");
+
+      return (Element => Position.Node.Element'Access);
+   end Constant_Reference;
+
+   function Constant_Reference
      (Container : Map;
       Key       : Key_Type) return Constant_Reference_Type
    is
+      Node : constant Node_Access := Key_Ops.Find (Container.Tree, Key);
+
    begin
-      return (Element => Container.Element (Key)'Unrestricted_Access);
+      if Node = null then
+         raise Constraint_Error with "key not in map";
+      end if;
+
+      return (Element => Node.Element'Access);
    end Constant_Reference;
 
    --------------
@@ -1250,12 +1277,38 @@ package body Ada.Containers.Ordered_Maps is
    ---------------
 
    function Reference
-     (Container : Map;
-      Key       : Key_Type)
-      return Reference_Type
+     (Container : aliased in out Map;
+      Position  : Cursor) return Reference_Type
    is
    begin
-      return (Element => Container.Element (Key)'Unrestricted_Access);
+      if Position.Container = null then
+         raise Constraint_Error with
+           "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with
+           "Position cursor designates wrong map";
+      end if;
+
+      pragma Assert (Vet (Container.Tree, Position.Node),
+                     "Position cursor in function Reference is bad");
+
+      return (Element => Position.Node.Element'Access);
+   end Reference;
+
+   function Reference
+     (Container : aliased in out Map;
+      Key       : Key_Type) return Reference_Type
+   is
+      Node : constant Node_Access := Key_Ops.Find (Container.Tree, Key);
+
+   begin
+      if Node = null then
+         raise Constraint_Error with "key not in map";
+      end if;
+
+      return (Element => Node.Element'Access);
    end Reference;
 
    -------------

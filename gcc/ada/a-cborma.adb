@@ -402,6 +402,53 @@ package body Ada.Containers.Bounded_Ordered_Maps is
       return Node.Color;
    end Color;
 
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : aliased Map;
+      Position  : Cursor) return Constant_Reference_Type
+   is
+   begin
+      if Position.Container = null then
+         raise Constraint_Error with
+           "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with
+           "Position cursor designates wrong map";
+      end if;
+
+      pragma Assert (Vet (Container, Position.Node),
+                     "Position cursor in Constant_Reference is bad");
+
+      declare
+         N : Node_Type renames Container.Nodes (Position.Node);
+      begin
+         return (Element => N.Element'Access);
+      end;
+   end Constant_Reference;
+
+   function Constant_Reference
+     (Container : Map;
+      Key       : Key_Type) return Constant_Reference_Type
+   is
+      Node : constant Count_Type := Key_Ops.Find (Container, Key);
+
+   begin
+      if Node = 0 then
+         raise Constraint_Error with "key not in map";
+      end if;
+
+      declare
+         N : Node_Type renames Container.Nodes (Node);
+      begin
+         return (Element => N.Element'Access);
+      end;
+   end Constant_Reference;
+
    --------------
    -- Contains --
    --------------
@@ -1318,20 +1365,47 @@ package body Ada.Containers.Bounded_Ordered_Maps is
    -- Reference --
    ---------------
 
-   function Constant_Reference
-     (Container : Map;
-      Key       : Key_Type) return Constant_Reference_Type
+   function Reference
+     (Container : aliased in out Map;
+      Position  : Cursor) return Reference_Type
    is
    begin
-      return (Element => Container.Element (Key)'Unrestricted_Access);
-   end Constant_Reference;
+      if Position.Container = null then
+         raise Constraint_Error with
+           "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with
+           "Position cursor designates wrong map";
+      end if;
+
+      pragma Assert (Vet (Container, Position.Node),
+                     "Position cursor in function Reference is bad");
+
+      declare
+         N : Node_Type renames Container.Nodes (Position.Node);
+      begin
+         return (Element => N.Element'Access);
+      end;
+   end Reference;
 
    function Reference
-     (Container : Map;
+     (Container : aliased in out Map;
       Key       : Key_Type) return Reference_Type
    is
+      Node : constant Count_Type := Key_Ops.Find (Container, Key);
+
    begin
-      return (Element => Container.Element (Key)'Unrestricted_Access);
+      if Node = 0 then
+         raise Constraint_Error with "key not in map";
+      end if;
+
+      declare
+         N : Node_Type renames Container.Nodes (Node);
+      begin
+         return (Element => N.Element'Access);
+      end;
    end Reference;
 
    -------------

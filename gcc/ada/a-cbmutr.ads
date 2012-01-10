@@ -107,6 +107,14 @@ package Ada.Containers.Bounded_Multiway_Trees is
      (Element : not null access Element_Type) is private
         with Implicit_Dereference => Element;
 
+   function Constant_Reference
+     (Container : aliased Tree;
+      Position  : Cursor) return Constant_Reference_Type;
+
+   function Reference
+     (Container : aliased in out Tree;
+      Position  : Cursor) return Reference_Type;
+
    procedure Assign (Target : in out Tree; Source : Tree);
 
    function Copy (Source : Tree; Capacity : Count_Type := 0) return Tree;
@@ -375,6 +383,7 @@ private
 
    type Reference_Type
      (Element : not null access Element_Type) is null record;
+
    procedure Write
      (Stream : not null access Root_Stream_Type'Class;
       Item   : Reference_Type);
@@ -384,14 +393,6 @@ private
      (Stream : not null access Root_Stream_Type'Class;
       Item   : out Reference_Type);
    for Reference_Type'Read use Read;
-
-   function Constant_Reference
-     (Container : aliased Tree;
-      Position  : Cursor) return Constant_Reference_Type;
-
-   function Reference
-     (Container : aliased Tree;
-      Position  : Cursor) return Reference_Type;
 
    Empty_Tree : constant Tree := (Capacity => 0, others => <>);
 

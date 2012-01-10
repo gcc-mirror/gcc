@@ -65,16 +65,6 @@ package Ada.Containers.Bounded_Ordered_Sets is
    package Set_Iterator_Interfaces is new
      Ada.Iterator_Interfaces (Cursor, Has_Element);
 
-   type Constant_Reference_Type
-      (Element : not null access constant Element_Type) is
-   private
-   with
-      Implicit_Dereference => Element;
-
-   function Constant_Reference
-     (Container : Set; Position : Cursor)
-   return Constant_Reference_Type;
-
    function "=" (Left, Right : Set) return Boolean;
 
    function Equivalent_Sets (Left, Right : Set) return Boolean;
@@ -97,6 +87,16 @@ package Ada.Containers.Bounded_Ordered_Sets is
    procedure Query_Element
      (Position : Cursor;
       Process  : not null access procedure (Element : Element_Type));
+
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is
+   private
+   with
+      Implicit_Dereference => Element;
+
+   function Constant_Reference
+     (Container : aliased Set;
+      Position  : Cursor) return Constant_Reference_Type;
 
    procedure Assign (Target : in out Set; Source : Set);
 
@@ -263,6 +263,10 @@ package Ada.Containers.Bounded_Ordered_Sets is
 
       function Reference_Preserving_Key
         (Container : aliased in out Set;
+         Position  : Cursor) return Reference_Type;
+
+      function Constant_Reference
+        (Container : aliased Set;
          Key       : Key_Type) return Constant_Reference_Type;
 
       function Reference_Preserving_Key
@@ -297,7 +301,7 @@ private
       Left    : Count_Type;
       Right   : Count_Type;
       Color   : Red_Black_Trees.Color_Type := Red_Black_Trees.Red;
-      Element : Element_Type;
+      Element : aliased Element_Type;
    end record;
 
    package Tree_Types is

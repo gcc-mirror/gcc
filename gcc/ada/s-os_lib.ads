@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -888,9 +888,10 @@ package System.OS_Lib is
    --  If the parent is using tasking, and needs to spawn subprocesses at
    --  arbitrary times, one technique is for the parent to spawn (very early)
    --  a particular spawn-manager subprocess whose job is to spawn other
-   --  processes. The spawn-manager avoids tasking. The parent sends messages
-   --  to the spawn-manager requesting it to spawn processes, using whatever
-   --  inter-process communication mechanism you like, such as sockets.
+   --  processes. The spawn-manager must avoid tasking. The parent sends
+   --  messages to the spawn-manager requesting it to spawn processes, using
+   --  whatever inter-process communication mechanism you like, such as
+   --  sockets.
 
    --  In short, mixing spawning of subprocesses with tasking is a tricky
    --  business, and should be avoided if possible, but if it is necessary,

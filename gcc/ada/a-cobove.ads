@@ -142,6 +142,56 @@ package Ada.Containers.Bounded_Vectors is
       Position  : Cursor;
       Process   : not null access procedure (Element : in out Element_Type));
 
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is
+   private
+   with
+      Implicit_Dereference => Element;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type);
+
+   for Constant_Reference_Type'Read use Read;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type);
+
+   for Constant_Reference_Type'Write use Write;
+
+   type Reference_Type (Element : not null access Element_Type) is private
+   with
+      Implicit_Dereference => Element;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type);
+
+   for Reference_Type'Read use Read;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type);
+
+   for Reference_Type'Write use Write;
+
+   function Constant_Reference
+     (Container : aliased Vector;
+      Position  : Cursor) return Constant_Reference_Type;
+
+   function Reference
+     (Container : aliased in out Vector;
+      Position  : Cursor) return Reference_Type;
+
+   function Constant_Reference
+     (Container : aliased Vector;
+      Index     : Index_Type) return Constant_Reference_Type;
+
+   function Reference
+     (Container : aliased in out Vector;
+      Index     : Index_Type) return Reference_Type;
+
    procedure Assign (Target : in out Vector; Source : Vector);
 
    function Copy (Source : Vector; Capacity : Count_Type := 0) return Vector;
@@ -307,54 +357,6 @@ package Ada.Containers.Bounded_Vectors is
      (Container : Vector;
       Start     : Cursor)
       return Vector_Iterator_Interfaces.Reversible_Iterator'class;
-
-   type Constant_Reference_Type
-      (Element : not null access constant Element_Type) is
-   private
-   with
-      Implicit_Dereference => Element;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Constant_Reference_Type);
-
-   for Constant_Reference_Type'Read use Read;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Constant_Reference_Type);
-
-   for Constant_Reference_Type'Write use Write;
-
-   type Reference_Type (Element : not null access Element_Type) is private
-   with
-      Implicit_Dereference => Element;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Reference_Type);
-
-   for Reference_Type'Read use Read;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Reference_Type);
-
-   for Reference_Type'Write use Write;
-
-   function Constant_Reference
-     (Container : Vector; Position : Cursor)    --  SHOULD BE ALIASED
-   return Constant_Reference_Type;
-
-   function Constant_Reference
-     (Container : Vector; Position : Index_Type)
-   return Constant_Reference_Type;
-
-   function Reference (Container : Vector; Position : Cursor)
-   return Reference_Type;
-
-   function Reference (Container : Vector; Position : Index_Type)
-   return Reference_Type;
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;

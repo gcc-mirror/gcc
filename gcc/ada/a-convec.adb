@@ -478,6 +478,42 @@ package body Ada.Containers.Vectors is
       end if;
    end Clear;
 
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : aliased Vector;
+      Position  : Cursor) return Constant_Reference_Type
+   is
+   begin
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with "Position cursor denotes wrong container";
+      end if;
+
+      if Position.Index > Position.Container.Last then
+         raise Constraint_Error with "Position cursor is out of range";
+      end if;
+
+      return (Element => Container.Elements.EA (Position.Index)'Access);
+   end Constant_Reference;
+
+   function Constant_Reference
+     (Container : aliased Vector;
+      Index     : Index_Type) return Constant_Reference_Type
+   is
+   begin
+      if Index > Container.Last then
+         raise Constraint_Error with "Index is out of range";
+      else
+         return (Element => Container.Elements.EA (Index)'Access);
+      end if;
+   end Constant_Reference;
+
    --------------
    -- Contains --
    --------------
@@ -2538,64 +2574,35 @@ package body Ada.Containers.Vectors is
    -- Reference --
    ---------------
 
-   function Constant_Reference
-     (Container : Vector;
-      Position  : Cursor)    --  SHOULD BE ALIASED
-      return Constant_Reference_Type
+   function Reference
+     (Container : aliased in out Vector;
+      Position  : Cursor) return Reference_Type
    is
    begin
-      pragma Unreferenced (Container);
-
       if Position.Container = null then
          raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with "Position cursor denotes wrong container";
       end if;
 
       if Position.Index > Position.Container.Last then
          raise Constraint_Error with "Position cursor is out of range";
       end if;
 
-      return
-       (Element =>
-          Position.Container.Elements.EA (Position.Index)'Access);
-   end Constant_Reference;
-
-   function Constant_Reference
-     (Container : Vector;
-      Position  : Index_Type)
-      return Constant_Reference_Type
-   is
-   begin
-      if Position > Container.Last then
-         raise Constraint_Error with "Index is out of range";
-      else
-         return (Element => Container.Elements.EA (Position)'Access);
-      end if;
-   end Constant_Reference;
-
-   function Reference (Container : Vector; Position : Cursor)
-   return Reference_Type is
-   begin
-      pragma Unreferenced (Container);
-
-      if Position.Container = null then
-         raise Constraint_Error with "Position cursor has no element";
-      end if;
-
-      if Position.Index > Position.Container.Last then
-         raise Constraint_Error with "Position cursor is out of range";
-      end if;
-
-      return
-        (Element => Position.Container.Elements.EA (Position.Index)'Access);
+      return (Element => Container.Elements.EA (Position.Index)'Access);
    end Reference;
 
-   function Reference (Container : Vector; Position : Index_Type)
-   return Reference_Type is
+   function Reference
+     (Container : aliased in out Vector;
+      Index     : Index_Type) return Reference_Type
+   is
    begin
-      if Position > Container.Last then
+      if Index > Container.Last then
          raise Constraint_Error with "Index is out of range";
       else
-         return (Element => Container.Elements.EA (Position)'Access);
+         return (Element => Container.Elements.EA (Index)'Access);
       end if;
    end Reference;
 

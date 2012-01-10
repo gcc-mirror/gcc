@@ -296,6 +296,33 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       Free (Container, X);
    end Clear;
 
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : aliased List;
+      Position  : Cursor) return Constant_Reference_Type
+   is
+   begin
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with
+           "Position cursor designates wrong container";
+      end if;
+
+      pragma Assert (Vet (Position), "bad cursor in Constant_Reference");
+
+      declare
+         N : Node_Type renames Container.Nodes (Position.Node);
+      begin
+         return (Element => N.Element'Access);
+      end;
+   end Constant_Reference;
+
    --------------
    -- Contains --
    --------------
@@ -1537,34 +1564,27 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
    -- Reference --
    ---------------
 
-   function Constant_Reference
-     (Container : List;
-      Position  : Cursor) return Constant_Reference_Type
-   is
-   begin
-      pragma Unreferenced (Container);
-
-      if Position.Container = null then
-         raise Constraint_Error with "Position cursor has no element";
-      end if;
-
-      return (Element =>
-         Position.Container.Nodes (Position.Node).Element'Unrestricted_Access);
-   end Constant_Reference;
-
    function Reference
-     (Container : List;
+     (Container : aliased in out List;
       Position  : Cursor) return Reference_Type
    is
    begin
-      pragma Unreferenced (Container);
-
       if Position.Container = null then
          raise Constraint_Error with "Position cursor has no element";
       end if;
 
-      return (Element =>
-         Position.Container.Nodes (Position.Node).Element'Unrestricted_Access);
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with
+           "Position cursor designates wrong container";
+      end if;
+
+      pragma Assert (Vet (Position), "bad cursor in function Reference");
+
+      declare
+         N : Node_Type renames Container.Nodes (Position.Node);
+      begin
+         return (Element => N.Element'Access);
+      end;
    end Reference;
 
    ---------------------

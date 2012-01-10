@@ -1,3 +1,31 @@
+2012-01-10  Pascal Obry  <obry@adacore.com>
+
+	* prj-nmsc.adb (Check_Library_Attributes):
+	Kill check for object/source directories for aggregate libraries.
+
+2012-01-10  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cdlili.adb, a-cdlili.ads, a-cihama.adb, a-cihama.ads, a-coinve.adb,
+	a-coinve.ads, a-ciorse.adb, a-ciorse.ads, a-coorma.adb, a-coorma.ads,
+	a-cborma.adb, a-cborma.ads, a-cidlli.adb, a-cidlli.ads, a-cimutr.adb,
+	a-cimutr.ads, a-cihase.adb, a-cihase.ads, a-cohama.adb, a-cohama.ads,
+	a-coorse.adb, a-coorse.ads, a-cbhama.adb, a-cbhama.ads, a-cborse.adb,
+	a-cborse.ads, a-comutr.adb, a-comutr.ads, a-ciorma.adb, a-cobove.adb,
+	a-ciorma.ads, a-cobove.ads, a-convec.adb, a-convec.ads, a-cohase.adb,
+	a-cohase.ads, a-cbdlli.adb, a-cbdlli.ads, a-cbmutr.adb, a-cbmutr.ads,
+	a-cbhase.adb, a-cbhase.ads (Reference, Constant_Reference): Declare
+	container parameter as aliased in/in out.
+	Code clean ups.
+
+2012-01-10  Bob Duff  <duff@adacore.com>
+
+	* s-os_lib.ads: Improve comment.
+
+2012-01-10  Geert Bosch  <bosch@adacore.com>
+
+	* s-gearop.adb (Forward_Eliminate): Avoid improper aliasing
+	for complex Scalar.
+
 2012-01-10  Bob Duff  <duff@adacore.com>
 
 	* sem_intr.adb (Check_Shift): Use RM_Size instead of Esize, when
