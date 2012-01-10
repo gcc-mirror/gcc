@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 32
+#define N 64
 
 struct s{
   int m;
@@ -88,5 +88,6 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 4 "vect" { target { {! vect_aligned_arrays} && {vect_sizes_32B_16B} } } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { target { {vect_aligned_arrays} && {! vect_sizes_32B_16B} } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

@@ -122,4 +122,17 @@ package body System.OS_Interface is
       return 0;
    end sigaltstack;
 
+   -----------------------------------
+   -- pthread_rwlockattr_setkind_np --
+   -----------------------------------
+
+   function pthread_rwlockattr_setkind_np
+     (attr : access pthread_rwlockattr_t;
+      pref : int) return int is
+      pragma Unreferenced (attr);
+      pragma Unreferenced (pref);
+   begin
+      return 0;
+   end pthread_rwlockattr_setkind_np;
+
 end System.OS_Interface;

@@ -75,7 +75,9 @@ GNATRTL_TASKING_OBJS= \
   s-tpoben$(objext) \
   s-tpobop$(objext) \
   s-tposen$(objext) \
-  s-tratas$(objext) $(EXTRA_GNATRTL_TASKING_OBJS)
+  s-tratas$(objext) \
+  thread$(objext) \
+  $(EXTRA_GNATRTL_TASKING_OBJS)
 
 # Objects needed for non-tasking.
 GNATRTL_NONTASKING_OBJS= \
@@ -404,6 +406,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-except$(objext) \
   g-exctra$(objext) \
   g-expect$(objext) \
+  g-exptty$(objext) \
   g-flocon$(objext) \
   g-heasor$(objext) \
   g-hesora$(objext) \
@@ -450,6 +453,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-timsta$(objext) \
   g-traceb$(objext) \
   g-trasym$(objext) \
+  g-tty$(objext) \
   g-u3spch$(objext) \
   g-utf_32$(objext) \
   g-wispch$(objext) \
@@ -500,7 +504,12 @@ GNATRTL_NONTASKING_OBJS= \
   s-crc32$(objext)  \
   s-crtl$(objext)   \
   s-crtrun$(objext) \
+  s-diflio$(objext) \
+  s-diinio$(objext) \
+  s-dimkio$(objext) \
+  s-dimmks$(objext) \
   s-direio$(objext) \
+  s-dmotpr$(objext) \
   s-dsaser$(objext) \
   s-excdeb$(objext) \
   s-except$(objext) \
@@ -550,6 +559,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-imgwch$(objext) \
   s-imgwiu$(objext) \
   s-io$(objext)     \
+  s-llflex$(objext) \
   s-maccod$(objext) \
   s-mantis$(objext) \
   s-mastop$(objext) \

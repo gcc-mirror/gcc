@@ -3399,10 +3399,6 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
     case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
-    case VEC_EXTRACT_EVEN_EXPR:
-    case VEC_EXTRACT_ODD_EXPR:
-    case VEC_INTERLEAVE_HIGH_EXPR:
-    case VEC_INTERLEAVE_LOW_EXPR:
     case VEC_WIDEN_LSHIFT_HI_EXPR:
     case VEC_WIDEN_LSHIFT_LO_EXPR:
 
@@ -3482,6 +3478,9 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 	 likely be a real store, so the cost of the GIMPLE_ASSIGN is the cost
 	 of moving something into "a", which we compute using the function
 	 estimate_move_cost.  */
+      if (gimple_clobber_p (stmt))
+	return 0;	/* ={v} {CLOBBER} stmt expands to nothing.  */
+
       lhs = gimple_assign_lhs (stmt);
       rhs = gimple_assign_rhs1 (stmt);
 
@@ -4215,12 +4214,6 @@ optimize_inline_calls (tree fn)
   int last = n_basic_blocks;
   struct gimplify_ctx gctx;
   bool inlined_p = false;
-
-  /* There is no point in performing inlining if errors have already
-     occurred -- and we might crash if we try to inline invalid
-     code.  */
-  if (seen_error ())
-    return 0;
 
   /* Clear out ID.  */
   memset (&id, 0, sizeof (id));

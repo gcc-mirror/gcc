@@ -20,7 +20,7 @@ class B : public A {
 
 class C : private B {
   public:
-    B::func;
+    B::func; // { dg-warning "deprecated" }
 };
 
 class D {

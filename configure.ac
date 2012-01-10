@@ -528,6 +528,12 @@ case "${target}" in
   powerpc-*-aix* | rs6000-*-aix*)
     noconfigdirs="$noconfigdirs target-libssp"
     ;;
+  rl78-*-*)
+    # libssp uses a misaligned load to trigger a fault, but the RL78
+    # doesn't fault for those - instead, it gives a build-time error
+    # for explicit misaligned loads.
+    noconfigdirs="$noconfigdirs target-libssp"
+    ;;
 esac
 
 # Disable libstdc++-v3 for some systems.
@@ -2009,6 +2015,14 @@ AS_HELP_STRING(
      ;;
  esac
 ],[])
+
+# Disable libitm if we're not building C++
+case ,${enable_languages}, in
+  *,c++,*) ;;
+  *)
+    noconfigdirs="$noconfigdirs target-libitm"
+    ;;
+esac
 
 # Remove the entries in $skipdirs and $noconfigdirs from $configdirs,
 # $build_configdirs and $target_configdirs.

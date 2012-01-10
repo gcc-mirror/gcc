@@ -6,20 +6,9 @@
 
 package time
 
-import (
-	"os"
-	"syscall"
-)
-
-func sysSleep(t int64) os.Error {
-	errno := syscall.Sleep(t)
-	if errno != 0 && errno != syscall.EINTR {
-		return os.NewSyscallError("sleep", errno)
-	}
-	return nil
-}
+import "syscall"
 
 // for testing: whatever interrupts a sleep
 func interrupt() {
-	syscall.Kill(os.Getpid(), syscall.SIGCHLD)
+	syscall.Kill(syscall.Getpid(), syscall.SIGCHLD)
 }

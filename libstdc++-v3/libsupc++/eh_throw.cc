@@ -1,6 +1,6 @@
 // -*- C++ -*- Exception handling routines for throwing.
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-// Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+// 2011  Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -43,7 +43,7 @@ __gxx_exception_cleanup (_Unwind_Reason_Code code, _Unwind_Exception *exc)
   if (code != _URC_FOREIGN_EXCEPTION_CAUGHT && code != _URC_NO_REASON)
     __terminate (header->exc.terminateHandler);
 
-#ifdef _GLIBCXX_ATOMIC_BUILTINS_4
+#if ATOMIC_INT_LOCK_FREE > 1
   if (__sync_sub_and_fetch (&header->referenceCount, 1) == 0)
     {
 #endif
@@ -51,15 +51,15 @@ __gxx_exception_cleanup (_Unwind_Reason_Code code, _Unwind_Exception *exc)
 	header->exc.exceptionDestructor (header + 1);
 
       __cxa_free_exception (header + 1);
-#ifdef _GLIBCXX_ATOMIC_BUILTINS_4
+#if ATOMIC_INT_LOCK_FREE > 1
     }
 #endif
 }
 
 
 extern "C" void
-__cxxabiv1::__cxa_throw (void *obj, std::type_info *tinfo, 
-			 void (*dest) (void *))
+__cxxabiv1::__cxa_throw (void *obj, std::type_info *tinfo,
+			 void (_GLIBCXX_CDTOR_CALLABI *dest) (void *))
 {
   // Definitely a primary.
   __cxa_refcounted_exception *header

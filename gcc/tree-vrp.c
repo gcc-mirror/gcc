@@ -1693,8 +1693,13 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	  /* For LT_EXPR, we create the range [MIN, MAX - 1].  */
 	  if (cond_code == LT_EXPR)
 	    {
-	      tree one = build_int_cst (TREE_TYPE (max), 1);
-	      max = fold_build2 (MINUS_EXPR, TREE_TYPE (max), max, one);
+	      if (TYPE_PRECISION (TREE_TYPE (max)) == 1
+		  && !TYPE_UNSIGNED (TREE_TYPE (max)))
+		max = fold_build2 (PLUS_EXPR, TREE_TYPE (max), max,
+				   build_int_cst (TREE_TYPE (max), -1));
+	      else
+		max = fold_build2 (MINUS_EXPR, TREE_TYPE (max), max,
+				   build_int_cst (TREE_TYPE (max), 1));
 	      if (EXPR_P (max))
 		TREE_NO_WARNING (max) = 1;
 	    }
@@ -1728,8 +1733,13 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	  /* For GT_EXPR, we create the range [MIN + 1, MAX].  */
 	  if (cond_code == GT_EXPR)
 	    {
-	      tree one = build_int_cst (TREE_TYPE (min), 1);
-	      min = fold_build2 (PLUS_EXPR, TREE_TYPE (min), min, one);
+	      if (TYPE_PRECISION (TREE_TYPE (min)) == 1
+		  && !TYPE_UNSIGNED (TREE_TYPE (min)))
+		min = fold_build2 (MINUS_EXPR, TREE_TYPE (min), min,
+				   build_int_cst (TREE_TYPE (min), -1));
+	      else
+		min = fold_build2 (PLUS_EXPR, TREE_TYPE (min), min,
+				   build_int_cst (TREE_TYPE (min), 1));
 	      if (EXPR_P (min))
 		TREE_NO_WARNING (min) = 1;
 	    }
@@ -1915,9 +1925,19 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 		  min = positive_overflow_infinity (TREE_TYPE (var_vr->min));
 		}
 	      else if (!POINTER_TYPE_P (TREE_TYPE (var_vr->min)))
-		min = fold_build2 (PLUS_EXPR, TREE_TYPE (var_vr->min),
-				   anti_max,
-				   build_int_cst (TREE_TYPE (var_vr->min), 1));
+		{
+		  if (TYPE_PRECISION (TREE_TYPE (var_vr->min)) == 1
+		      && !TYPE_UNSIGNED (TREE_TYPE (var_vr->min)))
+		    min = fold_build2 (MINUS_EXPR, TREE_TYPE (var_vr->min),
+				       anti_max,
+				       build_int_cst (TREE_TYPE (var_vr->min),
+						      -1));
+		  else
+		    min = fold_build2 (PLUS_EXPR, TREE_TYPE (var_vr->min),
+				       anti_max,
+				       build_int_cst (TREE_TYPE (var_vr->min),
+						      1));
+		}
 	      else
 		min = fold_build_pointer_plus_hwi (anti_max, 1);
 	      max = real_max;
@@ -1942,9 +1962,19 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 		  max = negative_overflow_infinity (TREE_TYPE (var_vr->min));
 		}
 	      else if (!POINTER_TYPE_P (TREE_TYPE (var_vr->min)))
-		max = fold_build2 (MINUS_EXPR, TREE_TYPE (var_vr->min),
-				   anti_min,
-				   build_int_cst (TREE_TYPE (var_vr->min), 1));
+		{
+		  if (TYPE_PRECISION (TREE_TYPE (var_vr->min)) == 1
+		      && !TYPE_UNSIGNED (TREE_TYPE (var_vr->min)))
+		    max = fold_build2 (PLUS_EXPR, TREE_TYPE (var_vr->min),
+				       anti_min,
+				       build_int_cst (TREE_TYPE (var_vr->min),
+						      -1));
+		  else
+		    max = fold_build2 (MINUS_EXPR, TREE_TYPE (var_vr->min),
+				       anti_min,
+				       build_int_cst (TREE_TYPE (var_vr->min),
+						      1));
+		}
 	      else
 		max = fold_build_pointer_plus_hwi (anti_min, -1);
 	      min = real_min;
@@ -2549,17 +2579,13 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	 behavior from the shift operation.  We cannot even trust
 	 SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
 	 shifts, and the operation at the tree level may be widened.  */
-      if (code == RSHIFT_EXPR)
+      if (vr1.type != VR_RANGE
+	  || !value_range_nonnegative_p (&vr1)
+	  || TREE_CODE (vr1.max) != INTEGER_CST
+	  || compare_tree_int (vr1.max, TYPE_PRECISION (expr_type) - 1) == 1)
 	{
-	  if (vr1.type != VR_RANGE
-	      || !value_range_nonnegative_p (&vr1)
-	      || TREE_CODE (vr1.max) != INTEGER_CST
-	      || compare_tree_int (vr1.max,
-				   TYPE_PRECISION (expr_type) - 1) == 1)
-	    {
-	      set_value_range_to_varying (vr);
-	      return;
-	    }
+	  set_value_range_to_varying (vr);
+	  return;
 	}
 
       extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
@@ -2960,16 +2986,18 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
 		         size_int (TYPE_PRECISION (outer_type)))))))
 	{
 	  tree new_min, new_max;
-	  new_min = force_fit_type_double (outer_type,
-					   tree_to_double_int (vr0.min),
-					   0, false);
-	  new_max = force_fit_type_double (outer_type,
-					   tree_to_double_int (vr0.max),
-					   0, false);
 	  if (is_overflow_infinity (vr0.min))
 	    new_min = negative_overflow_infinity (outer_type);
+	  else
+	    new_min = force_fit_type_double (outer_type,
+					     tree_to_double_int (vr0.min),
+					     0, false);
 	  if (is_overflow_infinity (vr0.max))
 	    new_max = positive_overflow_infinity (outer_type);
+	  else
+	    new_max = force_fit_type_double (outer_type,
+					     tree_to_double_int (vr0.max),
+					     0, false);
 	  set_and_canonicalize_value_range (vr, vr0.type,
 					    new_min, new_max, NULL);
 	  return;
@@ -7254,7 +7282,9 @@ simplify_conversion_using_ranges (gimple stmt)
   tree innerop, middleop, finaltype;
   gimple def_stmt;
   value_range_t *innervr;
-  double_int innermin, innermax, middlemin, middlemax;
+  bool inner_unsigned_p, middle_unsigned_p, final_unsigned_p;
+  unsigned inner_prec, middle_prec, final_prec;
+  double_int innermin, innermed, innermax, middlemin, middlemed, middlemax;
 
   finaltype = TREE_TYPE (gimple_assign_lhs (stmt));
   if (!INTEGRAL_TYPE_P (finaltype))
@@ -7279,33 +7309,49 @@ simplify_conversion_using_ranges (gimple stmt)
      the middle conversion is removed.  */
   innermin = tree_to_double_int (innervr->min);
   innermax = tree_to_double_int (innervr->max);
-  middlemin = double_int_ext (innermin, TYPE_PRECISION (TREE_TYPE (middleop)),
-			      TYPE_UNSIGNED (TREE_TYPE (middleop)));
-  middlemax = double_int_ext (innermax, TYPE_PRECISION (TREE_TYPE (middleop)),
-			      TYPE_UNSIGNED (TREE_TYPE (middleop)));
-  /* If the middle values are not equal to the original values fail.
-     But only if the inner cast truncates (thus we ignore differences
-     in extension to handle the case going from a range to an anti-range
-     and back).  */
-  if ((TYPE_PRECISION (TREE_TYPE (innerop))
-       > TYPE_PRECISION (TREE_TYPE (middleop)))
-      && (!double_int_equal_p (innermin, middlemin)
-	  || !double_int_equal_p (innermax, middlemax)))
+
+  inner_prec = TYPE_PRECISION (TREE_TYPE (innerop));
+  middle_prec = TYPE_PRECISION (TREE_TYPE (middleop));
+  final_prec = TYPE_PRECISION (finaltype);
+
+  /* If the first conversion is not injective, the second must not
+     be widening.  */
+  if (double_int_cmp (double_int_sub (innermax, innermin),
+		      double_int_mask (middle_prec), true) > 0
+      && middle_prec < final_prec)
     return false;
+  /* We also want a medium value so that we can track the effect that
+     narrowing conversions with sign change have.  */
+  inner_unsigned_p = TYPE_UNSIGNED (TREE_TYPE (innerop));
+  if (inner_unsigned_p)
+    innermed = double_int_rshift (double_int_mask (inner_prec),
+				  1, inner_prec, false);
+  else
+    innermed = double_int_zero;
+  if (double_int_cmp (innermin, innermed, inner_unsigned_p) >= 0
+      || double_int_cmp (innermed, innermax, inner_unsigned_p) >= 0)
+    innermed = innermin;
+
+  middle_unsigned_p = TYPE_UNSIGNED (TREE_TYPE (middleop));
+  middlemin = double_int_ext (innermin, middle_prec, middle_unsigned_p);
+  middlemed = double_int_ext (innermed, middle_prec, middle_unsigned_p);
+  middlemax = double_int_ext (innermax, middle_prec, middle_unsigned_p);
+
   /* Require that the final conversion applied to both the original
      and the intermediate range produces the same result.  */
+  final_unsigned_p = TYPE_UNSIGNED (finaltype);
   if (!double_int_equal_p (double_int_ext (middlemin,
-					   TYPE_PRECISION (finaltype),
-					   TYPE_UNSIGNED (finaltype)),
+					   final_prec, final_unsigned_p),
 			   double_int_ext (innermin,
-					   TYPE_PRECISION (finaltype),
-					   TYPE_UNSIGNED (finaltype)))
+					   final_prec, final_unsigned_p))
+      || !double_int_equal_p (double_int_ext (middlemed,
+					      final_prec, final_unsigned_p),
+			      double_int_ext (innermed,
+					      final_prec, final_unsigned_p))
       || !double_int_equal_p (double_int_ext (middlemax,
-					      TYPE_PRECISION (finaltype),
-					      TYPE_UNSIGNED (finaltype)),
+					      final_prec, final_unsigned_p),
 			      double_int_ext (innermax,
-					      TYPE_PRECISION (finaltype),
-					      TYPE_UNSIGNED (finaltype))))
+					      final_prec, final_unsigned_p)))
     return false;
 
   gimple_assign_set_rhs1 (stmt, innerop);

@@ -5,9 +5,10 @@
 package sql
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -89,6 +90,8 @@ type fakeStmt struct {
 	cmd   string
 	table string
 
+	closed bool
+
 	colName      []string      // used by CREATE, INSERT, SELECT (selected columns)
 	colType      []string      // used by CREATE
 	colValue     []interface{} // used by INSERT (mix of strings and "?" for bound params)
@@ -108,7 +111,7 @@ func init() {
 // Supports dsn forms:
 //    <dbname>
 //    <dbname>;wipe
-func (d *fakeDriver) Open(dsn string) (driver.Conn, os.Error) {
+func (d *fakeDriver) Open(dsn string) (driver.Conn, error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	d.openCount++
@@ -117,7 +120,7 @@ func (d *fakeDriver) Open(dsn string) (driver.Conn, os.Error) {
 	}
 	parts := strings.Split(dsn, ";")
 	if len(parts) < 1 {
-		return nil, os.NewError("fakedb: no database name")
+		return nil, errors.New("fakedb: no database name")
 	}
 	name := parts[0]
 	db, ok := d.dbs[name]
@@ -134,7 +137,7 @@ func (db *fakeDB) wipe() {
 	db.tables = nil
 }
 
-func (db *fakeDB) createTable(name string, columnNames, columnTypes []string) os.Error {
+func (db *fakeDB) createTable(name string, columnNames, columnTypes []string) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	if db.tables == nil {
@@ -175,39 +178,65 @@ func (db *fakeDB) columnType(table, column string) (typ string, ok bool) {
 	return "", false
 }
 
-func (c *fakeConn) Begin() (driver.Tx, os.Error) {
+func (c *fakeConn) Begin() (driver.Tx, error) {
 	if c.currTx != nil {
-		return nil, os.NewError("already in a transaction")
+		return nil, errors.New("already in a transaction")
 	}
 	c.currTx = &fakeTx{c: c}
 	return c.currTx, nil
 }
 
-func (c *fakeConn) Close() os.Error {
+func (c *fakeConn) Close() error {
 	if c.currTx != nil {
-		return os.NewError("can't close; in a Transaction")
+		return errors.New("can't close; in a Transaction")
 	}
 	if c.db == nil {
-		return os.NewError("can't close; already closed")
+		return errors.New("can't close; already closed")
 	}
 	c.db = nil
 	return nil
 }
 
-func errf(msg string, args ...interface{}) os.Error {
-	return os.NewError("fakedb: " + fmt.Sprintf(msg, args...))
+func checkSubsetTypes(args []interface{}) error {
+	for n, arg := range args {
+		switch arg.(type) {
+		case int64, float64, bool, nil, []byte, string:
+		default:
+			return fmt.Errorf("fakedb_test: invalid argument #%d: %v, type %T", n+1, arg, arg)
+		}
+	}
+	return nil
+}
+
+func (c *fakeConn) Exec(query string, args []interface{}) (driver.Result, error) {
+	// This is an optional interface, but it's implemented here
+	// just to check that all the args of of the proper types.
+	// ErrSkip is returned so the caller acts as if we didn't
+	// implement this at all.
+	err := checkSubsetTypes(args)
+	if err != nil {
+		return nil, err
+	}
+	return nil, driver.ErrSkip
+}
+
+func errf(msg string, args ...interface{}) error {
+	return errors.New("fakedb: " + fmt.Sprintf(msg, args...))
 }
 
 // parts are table|selectCol1,selectCol2|whereCol=?,whereCol2=?
 // (note that where where columns must always contain ? marks,
 //  just a limitation for fakedb)
-func (c *fakeConn) prepareSelect(stmt *fakeStmt, parts []string) (driver.Stmt, os.Error) {
+func (c *fakeConn) prepareSelect(stmt *fakeStmt, parts []string) (driver.Stmt, error) {
 	if len(parts) != 3 {
 		return nil, errf("invalid SELECT syntax with %d parts; want 3", len(parts))
 	}
 	stmt.table = parts[0]
 	stmt.colName = strings.Split(parts[1], ",")
 	for n, colspec := range strings.Split(parts[2], ",") {
+		if colspec == "" {
+			continue
+		}
 		nameVal := strings.Split(colspec, "=")
 		if len(nameVal) != 2 {
 			return nil, errf("SELECT on table %q has invalid column spec of %q (index %d)", stmt.table, colspec, n)
@@ -228,7 +257,7 @@ func (c *fakeConn) prepareSelect(stmt *fakeStmt, parts []string) (driver.Stmt, o
 }
 
 // parts are table|col=type,col2=type2
-func (c *fakeConn) prepareCreate(stmt *fakeStmt, parts []string) (driver.Stmt, os.Error) {
+func (c *fakeConn) prepareCreate(stmt *fakeStmt, parts []string) (driver.Stmt, error) {
 	if len(parts) != 2 {
 		return nil, errf("invalid CREATE syntax with %d parts; want 2", len(parts))
 	}
@@ -245,7 +274,7 @@ func (c *fakeConn) prepareCreate(stmt *fakeStmt, parts []string) (driver.Stmt, o
 }
 
 // parts are table|col=?,col2=val
-func (c *fakeConn) prepareInsert(stmt *fakeStmt, parts []string) (driver.Stmt, os.Error) {
+func (c *fakeConn) prepareInsert(stmt *fakeStmt, parts []string) (driver.Stmt, error) {
 	if len(parts) != 2 {
 		return nil, errf("invalid INSERT syntax with %d parts; want 2", len(parts))
 	}
@@ -287,7 +316,7 @@ func (c *fakeConn) prepareInsert(stmt *fakeStmt, parts []string) (driver.Stmt, o
 	return stmt, nil
 }
 
-func (c *fakeConn) Prepare(query string) (driver.Stmt, os.Error) {
+func (c *fakeConn) Prepare(query string) (driver.Stmt, error) {
 	if c.db == nil {
 		panic("nil c.db; conn = " + fmt.Sprintf("%#v", c))
 	}
@@ -317,11 +346,22 @@ func (s *fakeStmt) ColumnConverter(idx int) driver.ValueConverter {
 	return s.placeholderConverter[idx]
 }
 
-func (s *fakeStmt) Close() os.Error {
+func (s *fakeStmt) Close() error {
+	s.closed = true
 	return nil
 }
 
-func (s *fakeStmt) Exec(args []interface{}) (driver.Result, os.Error) {
+var errClosed = errors.New("fakedb: statement has been closed")
+
+func (s *fakeStmt) Exec(args []interface{}) (driver.Result, error) {
+	if s.closed {
+		return nil, errClosed
+	}
+	err := checkSubsetTypes(args)
+	if err != nil {
+		return nil, err
+	}
+
 	db := s.c.db
 	switch s.cmd {
 	case "WIPE":
@@ -339,7 +379,7 @@ func (s *fakeStmt) Exec(args []interface{}) (driver.Result, os.Error) {
 	return nil, fmt.Errorf("unimplemented statement Exec command type of %q", s.cmd)
 }
 
-func (s *fakeStmt) execInsert(args []interface{}) (driver.Result, os.Error) {
+func (s *fakeStmt) execInsert(args []interface{}) (driver.Result, error) {
 	db := s.c.db
 	if len(args) != s.placeholders {
 		panic("error in pkg db; should only get here if size is correct")
@@ -375,7 +415,15 @@ func (s *fakeStmt) execInsert(args []interface{}) (driver.Result, os.Error) {
 	return driver.RowsAffected(1), nil
 }
 
-func (s *fakeStmt) Query(args []interface{}) (driver.Rows, os.Error) {
+func (s *fakeStmt) Query(args []interface{}) (driver.Rows, error) {
+	if s.closed {
+		return nil, errClosed
+	}
+	err := checkSubsetTypes(args)
+	if err != nil {
+		return nil, err
+	}
+
 	db := s.c.db
 	if len(args) != s.placeholders {
 		panic("error in pkg db; should only get here if size is correct")
@@ -438,12 +486,12 @@ func (s *fakeStmt) NumInput() int {
 	return s.placeholders
 }
 
-func (tx *fakeTx) Commit() os.Error {
+func (tx *fakeTx) Commit() error {
 	tx.c.currTx = nil
 	return nil
 }
 
-func (tx *fakeTx) Rollback() os.Error {
+func (tx *fakeTx) Rollback() error {
 	tx.c.currTx = nil
 	return nil
 }
@@ -455,7 +503,7 @@ type rowsCursor struct {
 	closed bool
 }
 
-func (rc *rowsCursor) Close() os.Error {
+func (rc *rowsCursor) Close() error {
 	rc.closed = true
 	return nil
 }
@@ -464,18 +512,18 @@ func (rc *rowsCursor) Columns() []string {
 	return rc.cols
 }
 
-func (rc *rowsCursor) Next(dest []interface{}) os.Error {
+func (rc *rowsCursor) Next(dest []interface{}) error {
 	if rc.closed {
-		return os.NewError("fakedb: cursor is closed")
+		return errors.New("fakedb: cursor is closed")
 	}
 	rc.pos++
 	if rc.pos >= len(rc.rows) {
-		return os.EOF // per interface spec
+		return io.EOF // per interface spec
 	}
 	for i, v := range rc.rows[rc.pos].cols {
 		// TODO(bradfitz): convert to subset types? naah, I
 		// think the subset types should only be input to
-		// driver, but the db package should be able to handle
+		// driver, but the sql package should be able to handle
 		// a wider range of types coming out of drivers. all
 		// for ease of drivers, and to prevent drivers from
 		// messing up conversions or doing them differently.

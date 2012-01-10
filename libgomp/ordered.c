@@ -207,8 +207,13 @@ gomp_ordered_sync (void)
      post to our release semaphore.  So the two cases are that we will
      either win the race an momentarily block on the semaphore, or lose
      the race and find the semaphore already unlocked and so not block.
-     Either way we get correct results.  */
+     Either way we get correct results.
+     However, there is an implicit flush on entry to an ordered region,
+     so we do need to have a barrier here.  If we were taking a lock
+     this could be MEMMODEL_RELEASE since the acquire would be coverd
+     by the lock.  */
 
+  __atomic_thread_fence (MEMMODEL_ACQ_REL);
   if (ws->ordered_owner != thr->ts.team_id)
     {
       gomp_sem_wait (team->ordered_release[thr->ts.team_id]);

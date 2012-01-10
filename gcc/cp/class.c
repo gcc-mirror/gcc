@@ -318,6 +318,19 @@ build_base_path (enum tree_code code,
       return expr;
     }
 
+  /* If we're in an NSDMI, we don't have the full constructor context yet
+     that we need for converting to a virtual base, so just build a stub
+     CONVERT_EXPR and expand it later in bot_replace.  */
+  if (virtual_access && fixed_type_p < 0
+      && current_scope () != current_function_decl)
+    {
+      expr = build1 (CONVERT_EXPR, ptr_target_type, expr);
+      CONVERT_EXPR_VBASE_PATH (expr) = true;
+      if (!want_pointer)
+	expr = build_indirect_ref (EXPR_LOCATION (expr), expr, RO_NULL);
+      return expr;
+    }
+
   /* Do we need to check for a null pointer?  */
   if (want_pointer && !nonnull)
     {
@@ -338,7 +351,7 @@ build_base_path (enum tree_code code,
   /* Now that we've saved expr, build the real null test.  */
   if (null_test)
     {
-      tree zero = cp_convert (TREE_TYPE (expr), integer_zero_node);
+      tree zero = cp_convert (TREE_TYPE (expr), nullptr_node);
       null_test = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
 			       expr, zero);
     }
@@ -471,7 +484,14 @@ build_simple_base_path (tree expr, tree binfo)
     /* Is this the base field created by build_base_field?  */
     if (TREE_CODE (field) == FIELD_DECL
 	&& DECL_FIELD_IS_BASE (field)
-	&& TREE_TYPE (field) == type)
+	&& TREE_TYPE (field) == type
+	/* If we're looking for a field in the most-derived class,
+	   also check the field offset; we can have two base fields
+	   of the same type if one is an indirect virtual base and one
+	   is a direct non-virtual base.  */
+	&& (BINFO_INHERITANCE_CHAIN (d_binfo)
+	    || tree_int_cst_equal (byte_position (field),
+				   BINFO_OFFSET (binfo))))
       {
 	/* We don't use build_class_member_access_expr here, as that
 	   has unnecessary checks, and more importantly results in
@@ -546,6 +566,10 @@ convert_to_base_statically (tree expr, tree base)
   expr_type = TREE_TYPE (expr);
   if (!SAME_BINFO_TYPE_P (BINFO_TYPE (base), expr_type))
     {
+      /* If this is a non-empty base, use a COMPONENT_REF.  */
+      if (!is_empty_class (BINFO_TYPE (base)))
+	return build_simple_base_path (expr, base);
+
       /* We use fold_build2 and fold_convert below to simplify the trees
 	 provided to the optimizers.  It is not safe to call these functions
 	 when processing a template because they do not handle C++-specific

@@ -4,7 +4,7 @@
    Use of this source code is governed by a BSD-style
    license that can be found in the LICENSE file.  */
 
-#include "go-panic.h"
+#include "runtime.h"
 
 /* The compiler generates calls to this function.  This enum values
    are known to the compiler and used by compiled code.  Any change
@@ -59,26 +59,26 @@ __go_runtime_error (int i)
     case SLICE_INDEX_OUT_OF_BOUNDS:
     case ARRAY_INDEX_OUT_OF_BOUNDS:
     case STRING_INDEX_OUT_OF_BOUNDS:
-      __go_panic_msg ("index out of range");
+      runtime_panicstring ("index out of range");
 
     case SLICE_SLICE_OUT_OF_BOUNDS:
     case ARRAY_SLICE_OUT_OF_BOUNDS:
     case STRING_SLICE_OUT_OF_BOUNDS:
-      __go_panic_msg ("slice bounds out of range");
+      runtime_panicstring ("slice bounds out of range");
 
     case NIL_DEREFERENCE:
-      __go_panic_msg ("nil pointer dereference");
+      runtime_panicstring ("nil pointer dereference");
 
     case MAKE_SLICE_OUT_OF_BOUNDS:
-      __go_panic_msg ("make slice len or cap out of range");
+      runtime_panicstring ("make slice len or cap out of range");
 
     case MAKE_MAP_OUT_OF_BOUNDS:
-      __go_panic_msg ("make map len out of range");
+      runtime_panicstring ("make map len out of range");
 
     case MAKE_CHAN_OUT_OF_BOUNDS:
-      __go_panic_msg ("make chan len out of range");
+      runtime_panicstring ("make chan len out of range");
 
     default:
-      __go_panic_msg ("unknown runtime error");
+      runtime_panicstring ("unknown runtime error");
     }
 }

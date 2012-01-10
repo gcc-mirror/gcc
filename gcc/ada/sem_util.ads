@@ -314,7 +314,9 @@ package Sem_Util is
    --  static accesssibility level of the object. In that case, the dynamic
    --  accessibility level of the object may take on values in a range. The low
    --  bound of of that range is returned by Type_Access_Level; this function
-   --  yields the high bound of that range.
+   --  yields the high bound of that range. Also differs from Type_Access_Level
+   --  in the case of a descendant of a generic formal type (returns Int'Last
+   --  instead of 0).
 
    function Defining_Entity (N : Node_Id) return Entity_Id;
    --  Given a declaration N, returns the associated defining entity. If the
@@ -775,8 +777,12 @@ package Sem_Util is
 
    function Is_Aliased_View (Obj : Node_Id) return Boolean;
    --  Determine if Obj is an aliased view, i.e. the name of an object to which
-   --  'Access or 'Unchecked_Access can apply. Note that the implementation
-   --  takes the No_Implicit_Aiasing restriction into account.
+   --  'Access or 'Unchecked_Access can apply. Note that this routine uses the
+   --  rules of the language, it does not take into account the restriction
+   --  No_Implicit_Aliasing, so it can return True if the restriction is active
+   --  and Obj violates the restriction. The caller is responsible for calling
+   --  Restrict.Check_No_Implicit_Aliasing if True is returned, but there is a
+   --  requirement for obeying the restriction in the call context.
 
    function Is_Ancestor_Package
      (E1 : Entity_Id;
@@ -1485,13 +1491,6 @@ package Sem_Util is
    function Unique_Name (E : Entity_Id) return String;
    --  Return a unique name for entity E, which could be used to identify E
    --  across compilation units.
-
-   function Unit_Declaration_Node (Unit_Id : Entity_Id) return Node_Id;
-   --  Unit_Id is the simple name of a program unit, this function returns the
-   --  corresponding xxx_Declaration node for the entity. Also applies to the
-   --  body entities for subprograms, tasks and protected units, in which case
-   --  it returns the subprogram, task or protected body node for it. The unit
-   --  may be a child unit with any number of ancestors.
 
    function Unit_Is_Visible (U : Entity_Id) return Boolean;
    --  Determine whether a compilation unit is visible in the current context,

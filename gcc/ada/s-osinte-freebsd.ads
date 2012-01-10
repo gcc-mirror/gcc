@@ -200,10 +200,7 @@ package System.OS_Interface is
    function nanosleep (rqtp, rmtp : access timespec)  return int;
    pragma Import (C, nanosleep, "nanosleep");
 
-   type clockid_t is private;
-
-   CLOCK_REALTIME  : constant clockid_t;
-   CLOCK_MONOTONIC : constant clockid_t;
+   type clockid_t is new int;
 
    function clock_gettime
      (clock_id : clockid_t;
@@ -642,13 +639,6 @@ private
       ts_nsec : long;
    end record;
    pragma Convention (C, timespec);
-
-   type clockid_t is new int;
-   CLOCK_REALTIME  : constant clockid_t := 0;
-   CLOCK_MONOTONIC : constant clockid_t := 0;
-   --  On FreeBSD, pthread_cond_timedwait assumes a CLOCK_REALTIME time by
-   --  default (unless pthread_condattr_setclock is used to set an alternate
-   --  clock).
 
    type pthread_t           is new System.Address;
    type pthread_attr_t      is new System.Address;

@@ -12,6 +12,7 @@ import (
 	"runtime" // for the malloc count test only
 	"strings"
 	"testing"
+	"time"
 )
 
 type (
@@ -47,8 +48,10 @@ func TestFmtInterface(t *testing.T) {
 const b32 uint32 = 1<<32 - 1
 const b64 uint64 = 1<<64 - 1
 
-var array = []int{1, 2, 3, 4, 5}
-var iarray = []interface{}{1, "hello", 2.5, nil}
+var array = [5]int{1, 2, 3, 4, 5}
+var iarray = [4]interface{}{1, "hello", 2.5, nil}
+var slice = array[:]
+var islice = iarray[:]
 
 type A struct {
 	i int
@@ -73,7 +76,7 @@ type C struct {
 
 type F int
 
-func (f F) Format(s State, c int) {
+func (f F) Format(s State, c rune) {
 	Fprintf(s, "<%c=F(%d)>", c, int(f))
 }
 
@@ -86,6 +89,10 @@ func (g G) GoString() string {
 type S struct {
 	F F // a struct field that Formats
 	G G // a struct field that GoStrings
+}
+
+type SI struct {
+	I interface{}
 }
 
 // A type with a String method with pointer receiver for testing %p
@@ -323,6 +330,12 @@ var fmttests = []struct {
 	{"%v", &array, "&[1 2 3 4 5]"},
 	{"%v", &iarray, "&[1 hello 2.5 <nil>]"},
 
+	// slices
+	{"%v", slice, "[1 2 3 4 5]"},
+	{"%v", islice, "[1 hello 2.5 <nil>]"},
+	{"%v", &slice, "&[1 2 3 4 5]"},
+	{"%v", &islice, "&[1 hello 2.5 <nil>]"},
+
 	// complexes with %v
 	{"%v", 1 + 2i, "(1+2i)"},
 	{"%v", complex64(1 + 2i), "(1+2i)"},
@@ -340,7 +353,7 @@ var fmttests = []struct {
 	{"%s", I(23), `<23>`},
 	{"%q", I(23), `"<23>"`},
 	{"%x", I(23), `3c32333e`},
-	{"%d", I(23), `%!d(string=<23>)`},
+	{"%d", I(23), `23`}, // Stringer applies only to string formats.
 
 	// go syntax
 	{"%#v", A{1, 2, "a", []int{1, 2}}, `fmt_test.A{i:1, j:0x2, s:"a", x:[]int{1, 2}}`},
@@ -349,9 +362,18 @@ var fmttests = []struct {
 	{"%#v", make(chan int), "(chan int)(0xPTR)"},
 	{"%#v", uint64(1<<64 - 1), "0xffffffffffffffff"},
 	{"%#v", 1000000000, "1000000000"},
-	{"%#v", map[string]int{"a": 1}, `map[string] int{"a":1}`},
-	{"%#v", map[string]B{"a": {1, 2}}, `map[string] fmt_test.B{"a":fmt_test.B{I:1, j:2}}`},
+	{"%#v", map[string]int{"a": 1}, `map[string]int{"a":1}`},
+	{"%#v", map[string]B{"a": {1, 2}}, `map[string]fmt_test.B{"a":fmt_test.B{I:1, j:2}}`},
 	{"%#v", []string{"a", "b"}, `[]string{"a", "b"}`},
+	{"%#v", SI{}, `fmt_test.SI{I:interface {}(nil)}`},
+	{"%#v", []int(nil), `[]int(nil)`},
+	{"%#v", []int{}, `[]int{}`},
+	{"%#v", array, `[5]int{1, 2, 3, 4, 5}`},
+	{"%#v", &array, `&[5]int{1, 2, 3, 4, 5}`},
+	{"%#v", iarray, `[4]interface {}{1, "hello", 2.5, interface {}(nil)}`},
+	{"%#v", &iarray, `&[4]interface {}{1, "hello", 2.5, interface {}(nil)}`},
+	{"%#v", map[int]byte(nil), `map[int]uint8(nil)`},
+	{"%#v", map[int]byte{}, `map[int]uint8{}`},
 
 	// slices with other formats
 	{"%#x", []int{1, 2, 15}, `[0x1 0x2 0xf]`},
@@ -408,6 +430,10 @@ var fmttests = []struct {
 	{"%p", make(map[int]int), "0xPTR"},
 	{"%p", make([]int, 1), "0xPTR"},
 	{"%p", 27, "%!p(int=27)"}, // not a pointer at all
+
+	// %d on Stringer should give integer if possible
+	{"%s", time.Time{}.Month(), "January"},
+	{"%d", time.Time{}.Month(), "1"},
 
 	// erroneous things
 	{"%s %", "hello", "hello %!(NOVERB)"},
@@ -474,74 +500,89 @@ func BenchmarkSprintfPrefixedInt(b *testing.B) {
 	}
 }
 
+func BenchmarkSprintfFloat(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Sprintf("%g", 5.23184)
+	}
+}
+
 func TestCountMallocs(t *testing.T) {
 	if testing.Short() {
 		return
 	}
+	const N = 100
 	runtime.UpdateMemStats()
 	mallocs := 0 - runtime.MemStats.Mallocs
-	for i := 0; i < 100; i++ {
+	for i := 0; i < N; i++ {
 		Sprintf("")
 	}
 	runtime.UpdateMemStats()
 	mallocs += runtime.MemStats.Mallocs
-	Printf("mallocs per Sprintf(\"\"): %d\n", mallocs/100)
+	Printf("mallocs per Sprintf(\"\"): %d\n", mallocs/N)
 	runtime.UpdateMemStats()
 	mallocs = 0 - runtime.MemStats.Mallocs
-	for i := 0; i < 100; i++ {
+	for i := 0; i < N; i++ {
 		Sprintf("xxx")
 	}
 	runtime.UpdateMemStats()
 	mallocs += runtime.MemStats.Mallocs
-	Printf("mallocs per Sprintf(\"xxx\"): %d\n", mallocs/100)
+	Printf("mallocs per Sprintf(\"xxx\"): %d\n", mallocs/N)
 	runtime.UpdateMemStats()
 	mallocs = 0 - runtime.MemStats.Mallocs
-	for i := 0; i < 100; i++ {
+	for i := 0; i < N; i++ {
 		Sprintf("%x", i)
 	}
 	runtime.UpdateMemStats()
 	mallocs += runtime.MemStats.Mallocs
-	Printf("mallocs per Sprintf(\"%%x\"): %d\n", mallocs/100)
+	Printf("mallocs per Sprintf(\"%%x\"): %d\n", mallocs/N)
 	runtime.UpdateMemStats()
 	mallocs = 0 - runtime.MemStats.Mallocs
-	for i := 0; i < 100; i++ {
+	for i := 0; i < N; i++ {
 		Sprintf("%s", "hello")
 	}
 	runtime.UpdateMemStats()
 	mallocs += runtime.MemStats.Mallocs
-	Printf("mallocs per Sprintf(\"%%s\"): %d\n", mallocs/100)
+	Printf("mallocs per Sprintf(\"%%s\"): %d\n", mallocs/N)
 	runtime.UpdateMemStats()
 	mallocs = 0 - runtime.MemStats.Mallocs
-	for i := 0; i < 100; i++ {
+	for i := 0; i < N; i++ {
 		Sprintf("%x %x", i, i)
 	}
 	runtime.UpdateMemStats()
 	mallocs += runtime.MemStats.Mallocs
-	Printf("mallocs per Sprintf(\"%%x %%x\"): %d\n", mallocs/100)
+	Printf("mallocs per Sprintf(\"%%x %%x\"): %d\n", mallocs/N)
+	runtime.UpdateMemStats()
+	mallocs = 0 - runtime.MemStats.Mallocs
+	for i := 0; i < N; i++ {
+		Sprintf("%g", 3.14159)
+	}
+	runtime.UpdateMemStats()
+	mallocs += runtime.MemStats.Mallocs
+	Printf("mallocs per Sprintf(\"%%g\"): %d\n", mallocs/N)
 	buf := new(bytes.Buffer)
 	runtime.UpdateMemStats()
 	mallocs = 0 - runtime.MemStats.Mallocs
-	for i := 0; i < 100; i++ {
+	for i := 0; i < N; i++ {
 		buf.Reset()
 		Fprintf(buf, "%x %x %x", i, i, i)
 	}
 	runtime.UpdateMemStats()
 	mallocs += runtime.MemStats.Mallocs
-	Printf("mallocs per Fprintf(buf, \"%%x %%x %%x\"): %d\n", mallocs/100)
+	Printf("mallocs per Fprintf(buf, \"%%x %%x %%x\"): %d\n", mallocs/N)
 	runtime.UpdateMemStats()
 	mallocs = 0 - runtime.MemStats.Mallocs
-	for i := 0; i < 100; i++ {
+	for i := 0; i < N; i++ {
 		buf.Reset()
 		Fprintf(buf, "%s", "hello")
 	}
 	runtime.UpdateMemStats()
 	mallocs += runtime.MemStats.Mallocs
-	Printf("mallocs per Fprintf(buf, \"%%s\"): %d\n", mallocs/100)
+	Printf("mallocs per Fprintf(buf, \"%%s\"): %d\n", mallocs/N)
 }
 
 type flagPrinter struct{}
 
-func (*flagPrinter) Format(f State, c int) {
+func (*flagPrinter) Format(f State, c rune) {
 	s := "%"
 	for i := 0; i < 128; i++ {
 		if f.Flag(i) {
@@ -741,7 +782,7 @@ type PanicF struct {
 }
 
 // Value receiver.
-func (p PanicF) Format(f State, c int) {
+func (p PanicF) Format(f State, c rune) {
 	panic(p.message)
 }
 
@@ -751,9 +792,9 @@ var panictests = []struct {
 	out string
 }{
 	// String
-	{"%d", (*Panic)(nil), "<nil>"}, // nil pointer special case
-	{"%d", Panic{io.ErrUnexpectedEOF}, "%d(PANIC=unexpected EOF)"},
-	{"%d", Panic{3}, "%d(PANIC=3)"},
+	{"%s", (*Panic)(nil), "<nil>"}, // nil pointer special case
+	{"%s", Panic{io.ErrUnexpectedEOF}, "%s(PANIC=unexpected EOF)"},
+	{"%s", Panic{3}, "%s(PANIC=3)"},
 	// GoString
 	{"%#v", (*Panic)(nil), "<nil>"}, // nil pointer special case
 	{"%#v", Panic{io.ErrUnexpectedEOF}, "%v(PANIC=unexpected EOF)"},

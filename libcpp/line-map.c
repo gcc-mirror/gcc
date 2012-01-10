@@ -1153,6 +1153,57 @@ linemap_expand_location (struct line_maps *set,
   return xloc;
 }
 
+
+/* Dump line map at index IX in line table SET to STREAM.  If STREAM
+   is NULL, use stderr.  IS_MACRO is true if the caller wants to
+   dump a macro map, false otherwise.  */
+
+void
+linemap_dump (FILE *stream, struct line_maps *set, unsigned ix, bool is_macro)
+{
+  const char *lc_reasons_v[LC_ENTER_MACRO + 1]
+      = { "LC_ENTER", "LC_LEAVE", "LC_RENAME", "LC_RENAME_VERBATIM",
+	  "LC_ENTER_MACRO" };
+  const char *reason;
+  struct line_map *map;
+
+  if (stream == NULL)
+    stream = stderr;
+
+  if (!is_macro)
+    map = LINEMAPS_ORDINARY_MAP_AT (set, ix);
+  else
+    map = LINEMAPS_MACRO_MAP_AT (set, ix);
+
+  reason = (map->reason <= LC_ENTER_MACRO) ? lc_reasons_v[map->reason] : "???";
+
+  fprintf (stream, "Map #%u [%p] - LOC: %u - REASON: %s - SYSP: %s\n",
+	   ix, (void *) map, map->start_location, reason,
+	   (!is_macro && ORDINARY_MAP_IN_SYSTEM_HEADER_P (map)) ? "yes" : "no");
+  if (!is_macro)
+    {
+      unsigned includer_ix;
+      struct line_map *includer_map;
+
+      includer_ix = ORDINARY_MAP_INCLUDER_FILE_INDEX (map);
+      includer_map = includer_ix < LINEMAPS_ORDINARY_USED (set)
+		     ? LINEMAPS_ORDINARY_MAP_AT (set, includer_ix)
+		     : NULL;
+
+      fprintf (stream, "File: %s:%d\n", ORDINARY_MAP_FILE_NAME (map),
+	       ORDINARY_MAP_STARTING_LINE_NUMBER (map));
+      fprintf (stream, "Included from: [%d] %s\n", includer_ix,
+	       includer_map ? ORDINARY_MAP_FILE_NAME (includer_map) : "None");
+    }
+  else
+    fprintf (stream, "Macro: %s (%u tokens)\n",
+	     linemap_map_get_macro_name (map),
+	     MACRO_MAP_NUM_MACRO_TOKENS (map));
+
+  fprintf (stream, "\n");
+}
+
+
 /* Dump debugging information about source location LOC into the file
    stream STREAM. SET is the line map set LOC comes from.  */
 
@@ -1253,4 +1304,43 @@ linemap_get_statistics (struct line_maps *set,
   s->macro_maps_used_size = macro_maps_used_size;
   s->duplicated_macro_maps_locations_size =
     duplicated_macro_maps_locations_size;
+}
+
+
+/* Dump line table SET to STREAM.  If STREAM is NULL, stderr is used.
+   NUM_ORDINARY specifies how many ordinary maps to dump.  NUM_MACRO
+   specifies how many macro maps to dump.  */
+
+void
+line_table_dump (FILE *stream, struct line_maps *set, unsigned int num_ordinary,
+		 unsigned int num_macro)
+{
+  unsigned int i;
+
+  if (set == NULL)
+    return;
+
+  if (stream == NULL)
+    stream = stderr;
+
+  fprintf (stream, "# of ordinary maps:  %d\n", LINEMAPS_ORDINARY_USED (set));
+  fprintf (stream, "# of macro maps:     %d\n", LINEMAPS_MACRO_USED (set));
+  fprintf (stream, "Include stack depth: %d\n", set->depth);
+  fprintf (stream, "Highest location:    %u\n", set->highest_location);
+
+  if (num_ordinary)
+    {
+      fprintf (stream, "\nOrdinary line maps\n");
+      for (i = 0; i < num_ordinary && i < LINEMAPS_ORDINARY_USED (set); i++)
+	linemap_dump (stream, set, i, false);
+      fprintf (stream, "\n");
+    }
+
+  if (num_macro)
+    {
+      fprintf (stream, "\nMacro line maps\n");
+      for (i = 0; i < num_macro && i < LINEMAPS_MACRO_USED (set); i++)
+	linemap_dump (stream, set, i, true);
+      fprintf (stream, "\n");
+    }
 }

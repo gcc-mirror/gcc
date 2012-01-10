@@ -5,7 +5,6 @@
 package strconv_test
 
 import (
-	"os"
 	. "strconv"
 	"testing"
 )
@@ -13,12 +12,12 @@ import (
 type atobTest struct {
 	in  string
 	out bool
-	err os.Error
+	err error
 }
 
 var atobtests = []atobTest{
-	{"", false, os.EINVAL},
-	{"asdf", false, os.EINVAL},
+	{"", false, ErrSyntax},
+	{"asdf", false, ErrSyntax},
 	{"0", false, nil},
 	{"f", false, nil},
 	{"F", false, nil},
@@ -33,16 +32,16 @@ var atobtests = []atobTest{
 	{"True", true, nil},
 }
 
-func TestAtob(t *testing.T) {
+func TestParseBool(t *testing.T) {
 	for _, test := range atobtests {
-		b, e := Atob(test.in)
+		b, e := ParseBool(test.in)
 		if test.err != nil {
 			// expect an error
 			if e == nil {
 				t.Errorf("%s: expected %s but got nil", test.in, test.err)
 			} else {
 				// NumError assertion must succeed; it's the only thing we return.
-				if test.err != e.(*NumError).Error {
+				if test.err != e.(*NumError).Err {
 					t.Errorf("%s: expected %s but got %s", test.in, test.err, e)
 				}
 			}

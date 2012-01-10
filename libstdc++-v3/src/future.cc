@@ -78,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   future_error::what() const noexcept { return _M_code.message().c_str(); }
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1) \
-  && defined(_GLIBCXX_ATOMIC_BUILTINS_4)
+  && (ATOMIC_INT_LOCK_FREE > 1)
   __future_base::_Result_base::_Result_base() = default;
 
   __future_base::_Result_base::~_Result_base() = default;

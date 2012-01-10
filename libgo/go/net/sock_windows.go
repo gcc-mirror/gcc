@@ -11,8 +11,12 @@ import (
 )
 
 func setKernelSpecificSockopt(s syscall.Handle, f int) {
-	// Allow reuse of recently-used addresses and ports.
-	syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1)
+	// Windows will reuse recently-used addresses by default.
+	// SO_REUSEADDR should not be used here, as it allows
+	// a socket to forcibly bind to a port in use by another socket.
+	// This could lead to a non-deterministic behavior, where
+	// connection requests over the port cannot be guaranteed
+	// to be handled by the correct socket.
 
 	// Allow broadcast.
 	syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_BROADCAST, 1)

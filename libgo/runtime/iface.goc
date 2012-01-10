@@ -3,12 +3,10 @@
 // license that can be found in the LICENSE file.
 
 package runtime
-#include "go-panic.h"
+#include "runtime.h"
 #include "go-type.h"
 #include "interface.h"
-#define nil NULL
 
-typedef _Bool bool;
 typedef struct __go_type_descriptor descriptor;
 typedef const struct __go_type_descriptor const_descriptor;
 typedef struct __go_interface interface;
@@ -35,7 +33,7 @@ func ifacetype(i interface) (d *const_descriptor) {
 // Convert an empty interface to an empty interface.
 func ifaceE2E2(e empty_interface) (ret empty_interface, ok bool) {
 	if(((uintptr_t)e.__type_descriptor&reflectFlags) != 0)
-		__go_panic_msg("invalid interface value");
+		runtime_panicstring("invalid interface value");
 	ret = e;
 	ok = ret.__type_descriptor != nil;
 }
@@ -56,7 +54,7 @@ func ifaceI2E2(i interface) (ret empty_interface, ok bool) {
 // Convert an empty interface to a non-empty interface.
 func ifaceE2I2(inter *descriptor, e empty_interface) (ret interface, ok bool) {
 	if(((uintptr_t)e.__type_descriptor&reflectFlags) != 0)
-		__go_panic_msg("invalid interface value");
+		runtime_panicstring("invalid interface value");
 	if (e.__type_descriptor == nil) {
 		ret.__methods = nil;
 		ret.__object = nil;
@@ -87,7 +85,7 @@ func ifaceI2I2(inter *descriptor, i interface) (ret interface, ok bool) {
 // Convert an empty interface to a pointer type.
 func ifaceE2T2P(inter *descriptor, e empty_interface) (ret *void, ok bool) {
 	if(((uintptr_t)e.__type_descriptor&reflectFlags) != 0)
-		__go_panic_msg("invalid interface value");
+		runtime_panicstring("invalid interface value");
 	if (!__go_type_descriptors_equal(inter, e.__type_descriptor)) {
 		ret = nil;
 		ok = 0;
@@ -112,7 +110,7 @@ func ifaceI2T2P(inter *descriptor, i interface) (ret *void, ok bool) {
 // Convert an empty interface to a non-pointer type.
 func ifaceE2T2(inter *descriptor, e empty_interface, ret *void) (ok bool) {
 	if(((uintptr_t)e.__type_descriptor&reflectFlags) != 0)
-		__go_panic_msg("invalid interface value");
+		runtime_panicstring("invalid interface value");
 	if (!__go_type_descriptors_equal(inter, e.__type_descriptor)) {
 		__builtin_memset(ret, 0, inter->__size);
 		ok = 0;

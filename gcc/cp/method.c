@@ -1063,7 +1063,8 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 	  /* For an implicitly-defined default constructor to be constexpr,
 	     every member must have a user-provided default constructor or
 	     an explicit initializer.  */
-	  if (constexpr_p && !CLASS_TYPE_P (mem_type))
+	  if (constexpr_p && !CLASS_TYPE_P (mem_type)
+	      && TREE_CODE (DECL_CONTEXT (field)) != UNION_TYPE)
 	    {
 	      *constexpr_p = false;
 	      if (msg)
@@ -1208,12 +1209,19 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
      resolution, so a constructor can be trivial even if it would otherwise
      call a non-trivial constructor.  */
   if (expected_trivial
-      && !diag
       && (!copy_arg_p || cxx_dialect < cxx0x))
     {
       if (constexpr_p && sfk == sfk_constructor)
-	*constexpr_p = trivial_default_constructor_is_constexpr (ctype);
-      return;
+	{
+	  bool cx = trivial_default_constructor_is_constexpr (ctype);
+	  *constexpr_p = cx;
+	  if (diag && !cx && TREE_CODE (ctype) == UNION_TYPE)
+	    /* A trivial constructor doesn't have any NSDMI.  */
+	    inform (input_location, "defaulted default constructor does "
+		    "not initialize any non-static data member");
+	}
+      if (!diag)
+	return;
     }
 
   ++cp_unevaluated_operand;

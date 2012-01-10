@@ -305,6 +305,13 @@ section names for mergeable constant data.  Define this macro to override\n\
 the string if a different section name should be used.",
  const char *, ".rodata")
 
+/* Return the section to be used for transactional memory clone tables.  */
+DEFHOOK
+(tm_clone_table_section,
+ "Return the section that should be used for transactional memory clone\
+  tables.",
+ section *, (void), default_clone_table_section)
+
 /* Output a constructor for a symbol with a given priority.  */
 DEFHOOK
 (constructor,
@@ -1811,6 +1818,15 @@ DEFHOOK
  "",
  const char *, (const void *data, size_t sz),
  default_pch_valid_p)
+
+DEFHOOK
+(prepare_pch_save,
+ "Called before writing out a PCH file.  If the target has some\n\
+garbage-collected data that needs to be in a particular state on PCH loads,\n\
+it can use this hook to enforce that state.  Very few targets need\n\
+to do anything here.",
+ void, (void),
+ hook_void_void)
 
 /* If nonnull, this function checks whether a PCH file with the
    given set of target flags can be used.  It returns NULL if so,

@@ -9,5 +9,5 @@ template<int> struct A
 {
   static auto k = 7;	// { dg-error "non-const" }
   static auto l;	// { dg-error "has no initializer" }
-  auto m;		// { dg-error "has no initializer" }
+  auto m;		// { dg-error "non-static data member declared" }
 };

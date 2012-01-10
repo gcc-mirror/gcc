@@ -1,8 +1,9 @@
 /* { dg-do run } */
-/* { dg-require-effective-target sync_longlong } */
+/* { dg-require-effective-target sync_long_long_runtime } */
 /* { dg-require-effective-target pthread_h } */
 /* { dg-require-effective-target pthread } */
 /* { dg-options "-pthread -std=gnu99" } */
+/* { dg-additional-options "-march=pentium" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 /* test of long long atomic ops performed in parallel in 3 pthreads
    david.gilbert@linaro.org */

@@ -1,6 +1,7 @@
 /* PR target/49621 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -maltivec" } */
+/* { dg-require-effective-target powerpc_altivec_ok } */
+/* { dg-options "-O2 -maltivec -mno-vsx" } */
 
 #include <altivec.h>
 

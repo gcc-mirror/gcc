@@ -85,9 +85,6 @@ extern bool bfin_longcall_p (rtx, int);
 extern bool bfin_dsp_memref_p (rtx);
 extern bool bfin_expand_movmem (rtx, rtx, rtx, rtx);
 
-extern int bfin_register_move_cost (enum machine_mode, enum reg_class,
-				    enum reg_class);
-extern int bfin_memory_move_cost (enum machine_mode, enum reg_class, int in);
 extern enum reg_class secondary_input_reload_class (enum reg_class,
 						    enum machine_mode,
 						    rtx);

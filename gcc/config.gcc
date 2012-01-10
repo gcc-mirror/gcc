@@ -909,13 +909,14 @@ arm*-wince-pe*)
 	extra_objs="pe.o"
 	;;
 avr-*-rtems*)
-	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
-	tmake_file="avr/t-avr t-rtems avr/t-rtems"
+	tm_file="elfos.h avr/elf.h avr/avr.h avr/multilib.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
+	tmake_file="avr/t-avr avr/t-multilib t-rtems avr/t-rtems"
 	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o avr-log.o"
 	;;
 avr-*-*)
-	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h newlib-stdint.h"
+	tm_file="elfos.h avr/elf.h avr/avr.h avr/multilib.h dbxelf.h newlib-stdint.h"
+	tmake_file="avr/t-avr avr/t-multilib"
 	use_gcc_stdint=wrap
 	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o avr-log.o"
@@ -2115,6 +2116,13 @@ rs6000-ibm-aix[6789].* | powerpc-ibm-aix[6789].*)
 	use_gcc_stdint=wrap
 	extra_headers=altivec.h
 	;;
+rl78-*-elf*)
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	target_has_targetm_common=no
+	c_target_objs="rl78-c.o"
+	cxx_target_objs="rl78-c.o"
+	tmake_file="${tmake_file} rl78/t-rl78"
+	;;
 rx-*-elf*)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	tmake_file="${tmake_file} rx/t-rx"
@@ -2350,7 +2358,7 @@ sparc-*-rtems*)
 	tmake_file="sparc/t-sparc sparc/t-elf t-rtems"
 	;;
 sparc-*-linux*)
-	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h"
+	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h sparc/tso.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	case ${target} in
 	    *-leon-*)
@@ -2377,7 +2385,7 @@ sparc-*-netbsdelf*)
 	tmake_file="${tmake_file} sparc/t-sparc"
 	;;
 sparc*-*-solaris2*)
-	tm_file="sparc/biarch64.h ${tm_file} ${sol2_tm_file} sol2-bi.h"
+	tm_file="sparc/biarch64.h ${tm_file} ${sol2_tm_file} sol2-bi.h sparc/tso.h"
 	case ${target} in
 	    sparc64-*-* | sparcv9-*-*)
 		tm_file="sparc/default-64.h ${tm_file}"
@@ -2403,7 +2411,7 @@ sparc64-*-rtems*)
 	tmake_file="${tmake_file} sparc/t-sparc t-rtems"
 	;;
 sparc64-*-linux*)
-	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h sparc/default-64.h sparc/linux64.h"
+	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h sparc/default-64.h sparc/linux64.h sparc/tso.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	tmake_file="${tmake_file} sparc/t-sparc sparc/t-linux64"
 	;;

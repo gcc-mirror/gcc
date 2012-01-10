@@ -33,7 +33,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options ATTRIBUTE_UN
   /* Systems which use the NeXT runtime by default should arrange
      for the shared libgcc to be used when -fgnu-runtime is passed
      through specs.  */
-#if defined(ENABLE_SHARED_LIBGCC) && ! defined(NEXT_OBJC_RUNTIME)
+#if defined(ENABLE_SHARED_LIBGCC) && ! NEXT_OBJC_RUNTIME
   unsigned int i;
 
   /* The new argument list will be contained in this.  */

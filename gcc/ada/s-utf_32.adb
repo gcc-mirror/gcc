@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2005-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2005-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,13 @@ pragma Compiler_Unit;
 
 pragma Style_Checks (Off);
 --  Allow long lines in this unit
+
+--  pragma Warnings (Off, "non-static constant in preelaborated unit");
+--  We need this to be pure, and the three constants in question are not a
+--  real problem, they are completely known at compile time. This pragma
+--  is commented out for now, because we still want to be able to bootstrap
+--  with old versions of the compiler that did not support this form. We
+--  have added additional pragma Warnings (Off/On) for now ???
 
 package body System.UTF_32 is
 
@@ -1849,6 +1856,9 @@ package body System.UTF_32 is
      (16#E0100#, 16#E01EF#),  -- (Mn)  VARIATION SELECTOR-17 .. VARIATION SELECTOR-256
      (16#F0000#, 16#FFFFD#),  -- (Co)  <Plane 15 Private Use, First> .. <Plane 15 Private Use, Last>
      (16#100000#, 16#10FFFD#));  -- (Co)  <Plane 16 Private Use, First> .. <Plane 16 Private Use, Last>
+
+   pragma Warnings (Off);
+   --  Temporary, until pragma at start can be activated ???
 
    --  The following array is parallel to the Unicode_Ranges table above. For
    --  each entry in the Unicode_Ranges table, there is a corresponding entry
@@ -6060,6 +6070,9 @@ package body System.UTF_32 is
         40,  -- DESERET CAPITAL LETTER LONG I .. DESERET CAPITAL LETTER EW
         32); -- TAG LATIN CAPITAL LETTER A .. TAG LATIN CAPITAL LETTER Z
 
+   pragma Warnings (On);
+   --  Temporary until pragma Warnings at start can be activated ???
+
    --  The following is a list of the 10646 names for CAPITAL LETTER entries
    --  that have no matching SMALL LETTER entry and are thus not folded
 
@@ -6182,6 +6195,7 @@ package body System.UTF_32 is
    function Is_UTF_32_Line_Terminator (U : UTF_32) return Boolean is
    begin
       return U in 10 .. 13     -- Ascii.LF Ascii.VT Ascii.FF Ascii.CR
+        or else U = 16#00085#  -- NEL
         or else U = 16#02028#  -- LINE SEPARATOR
         or else U = 16#02029#; -- PARAGRAPH SEPARATOR
    end Is_UTF_32_Line_Terminator;

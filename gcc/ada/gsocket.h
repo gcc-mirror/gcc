@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *         Copyright (C) 2004-2010, Free Software Foundation, Inc.          *
+ *         Copyright (C) 2004-2011, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -58,8 +58,11 @@
 /* For Tru64 */
 #endif
 
-#include <limits.h>
-#include <errno.h>
+/** No system header may be included prior to this point since on some targets
+ ** we need to redefine FD_SETSIZE.
+ **/
+
+/* Target-specific includes and definitions */
 
 #if defined(__vxworks)
 #include <vxWorks.h>
@@ -162,16 +165,22 @@
 #include <windows.h>
 
 #elif defined(VMS)
+/* Allow a large number of fds for select.  */
 #define FD_SETSIZE 4096
 #ifndef IN_RTS
-/* These DEC C headers are not available when building with GCC */
-#include <in.h>
+/* These DEC C headers are not available when building with GCC.  Order is
+   important.  */
+#include <time.h>
 #include <tcp.h>
+#include <in.h>
 #include <ioctl.h>
 #include <netdb.h>
 #endif
 
 #endif
+
+#include <limits.h>
+#include <errno.h>
 
 #if defined (__vxworks) && ! defined (__RTP__)
 #include <sys/times.h>
@@ -180,11 +189,11 @@
 #endif
 
 /*
- * RTEMS has these .h files but not until you have built and installed
- * RTEMS. When building a C/C++ toolset, you also build the newlib C library.
- * So the build procedure for an RTEMS GNAT toolset requires that
- * you build a C/C++ toolset, then build and install RTEMS with 
- * --enable-multilib, and finally build the Ada part of the toolset.
+ * RTEMS has these .h files but not until you have built and installed RTEMS.
+ * When building a C/C++ toolset, you also build the newlib C library, so the
+ * build procedure for an RTEMS GNAT toolset requires that you build a C/C++
+ * toolset, then build and install RTEMS with --enable-multilib, and finally
+ * build the Ada part of the toolset.
  */
 #if !(defined (VMS) || defined (__MINGW32__))
 #include <sys/socket.h>

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,5 +90,10 @@ private
    --  This procedure can be used after one or more calls to Pretty_Print to
    --  display what Project_Node_Kinds have not been exercised by the call(s)
    --  to Pretty_Print. It is used only for testing purposes.
+
+   procedure wpr
+     (Project : Prj.Tree.Project_Node_Id;
+      In_Tree : Prj.Tree.Project_Node_Tree_Ref);
+   --  Wrapper for use from gdb: call Pretty_Print with default parameters
 
 end Prj.PP;

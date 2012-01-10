@@ -392,8 +392,11 @@ The 1990 C standard, as amended in 1994.
 The revised ISO C standard, published in December 1999.  Before
 publication, this was known as C9X@.
 
-@item c1x
-The next version of the ISO C standard, still under development.
+@item iso9899:2011
+@itemx c11
+@itemx c1x
+The revised ISO C standard, published in December 2011.  Before
+publication, this was known as C1X@.
 
 @item gnu90
 @itemx gnu89
@@ -403,9 +406,9 @@ The 1990 C standard plus GNU extensions.  This is the default.
 @itemx gnu9x
 The 1999 C standard plus GNU extensions.
 
-@item gnu1x
-The next version of the ISO C standard, still under development, plus
-GNU extensions.
+@item gnu11
+@itemx gnu1x
+The 2011 C standard plus GNU extensions.
 
 @item c++98
 The 1998 ISO C++ standard plus amendments.

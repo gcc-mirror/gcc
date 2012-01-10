@@ -14,21 +14,21 @@ import (
 // If the ifindex is zero, interfaceMulticastAddrTable returns
 // addresses for all network interfaces.  Otherwise it returns
 // addresses for a specific interface.
-func interfaceMulticastAddrTable(ifindex int) ([]Addr, os.Error) {
+func interfaceMulticastAddrTable(ifindex int) ([]Addr, error) {
 	var (
 		tab   []byte
-		e     int
+		e     error
 		msgs  []syscall.RoutingMessage
 		ifmat []Addr
 	)
 
 	tab, e = syscall.RouteRIB(syscall.NET_RT_IFLIST2, ifindex)
-	if e != 0 {
+	if e != nil {
 		return nil, os.NewSyscallError("route rib", e)
 	}
 
 	msgs, e = syscall.ParseRoutingMessage(tab)
-	if e != 0 {
+	if e != nil {
 		return nil, os.NewSyscallError("route message", e)
 	}
 
@@ -48,11 +48,11 @@ func interfaceMulticastAddrTable(ifindex int) ([]Addr, os.Error) {
 	return ifmat, nil
 }
 
-func newMulticastAddr(m *syscall.InterfaceMulticastAddrMessage) ([]Addr, os.Error) {
+func newMulticastAddr(m *syscall.InterfaceMulticastAddrMessage) ([]Addr, error) {
 	var ifmat []Addr
 
 	sas, e := syscall.ParseRoutingSockaddr(m)
-	if e != 0 {
+	if e != nil {
 		return nil, os.NewSyscallError("route sockaddr", e)
 	}
 

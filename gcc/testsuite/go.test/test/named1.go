@@ -41,7 +41,6 @@ func main() {
 	asBool(i < j)  // ERROR "cannot use.*type bool.*as type Bool"
 
 	_, b = m[2] // ERROR "cannot .* bool.*type Bool"
-	m[2] = 1, b // ERROR "cannot use.*type Bool.*as type bool"
 
 	var inter interface{}
 	_, b = inter.(Map) // ERROR "cannot .* bool.*type Bool"
@@ -55,8 +54,8 @@ func main() {
 
 	_, bb := <-c
 	asBool(bb) // ERROR "cannot use.*type bool.*as type Bool"
-	_, b = <-c     // ERROR "cannot .* bool.*type Bool"
+	_, b = <-c // ERROR "cannot .* bool.*type Bool"
 	_ = b
 
-	asString(String(slice)) // ERROR "cannot .*type Slice.*type String"
+	asString(String(slice)) // ok
 }

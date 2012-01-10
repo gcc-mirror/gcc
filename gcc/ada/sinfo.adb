@@ -657,6 +657,7 @@ package body Sinfo is
       (N : Node_Id) return Node_Id is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Expression_Function
         or else NT (N).Nkind = N_Package_Body
         or else NT (N).Nkind = N_Protected_Body
         or else NT (N).Nkind = N_Subprogram_Body
@@ -1572,6 +1573,14 @@ package body Sinfo is
       return Flag13 (N);
    end Has_Wide_Wide_Character;
 
+   function Header_Size_Added
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Attribute_Reference);
+      return Flag11 (N);
+   end Header_Size_Added;
+
    function Hidden_By_Use_Clause
      (N : Node_Id) return Elist_Id is
    begin
@@ -1828,6 +1837,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Op_Expon);
       return Flag13 (N);
    end Is_Power_Of_2_For_Shift;
+
+   function Is_Prefixed_Call
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Selected_Component);
+      return Flag17 (N);
+   end Is_Prefixed_Call;
 
    function Is_Protected_Subprogram_Body
       (N : Node_Id) return Boolean is
@@ -3729,6 +3746,7 @@ package body Sinfo is
       (N : Node_Id; Val : Node_Id) is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Expression_Function
         or else NT (N).Nkind = N_Package_Body
         or else NT (N).Nkind = N_Protected_Body
         or else NT (N).Nkind = N_Subprogram_Body
@@ -4635,6 +4653,14 @@ package body Sinfo is
       Set_Flag13 (N, Val);
    end Set_Has_Wide_Wide_Character;
 
+   procedure Set_Header_Size_Added
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Attribute_Reference);
+      Set_Flag11 (N, Val);
+   end Set_Header_Size_Added;
+
    procedure Set_Hidden_By_Use_Clause
      (N : Node_Id; Val : Elist_Id) is
    begin
@@ -4891,6 +4917,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Op_Expon);
       Set_Flag13 (N, Val);
    end Set_Is_Power_Of_2_For_Shift;
+
+   procedure Set_Is_Prefixed_Call
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Selected_Component);
+      Set_Flag17 (N, Val);
+   end Set_Is_Prefixed_Call;
 
    procedure Set_Is_Protected_Subprogram_Body
       (N : Node_Id; Val : Boolean := True) is

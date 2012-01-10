@@ -1,5 +1,6 @@
 /* { dg-do compile } */   
 /* { dg-options "-fno-common" { target hppa*-*-hpux* } } */
+/* { dg-options "-mabi=altivec" { target { { powerpc*-*-linux* } && ilp32 } } } */
 
 /* Test if C_MAYBE_CONST are folded correctly when 
    creating VEC_COND_EXPR.  */

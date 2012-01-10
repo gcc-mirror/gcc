@@ -1,5 +1,5 @@
 ;; GCC machine description for SPARC synchronization instructions.
-;; Copyright (C) 2005, 2007, 2009, 2010
+;; Copyright (C) 2005, 2007, 2009, 2010, 2011
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -19,87 +19,184 @@
 ;; <http://www.gnu.org/licenses/>.
 
 (define_mode_iterator I12MODE [QI HI])
+(define_mode_iterator I124MODE [QI HI SI])
 (define_mode_iterator I24MODE [HI SI])
 (define_mode_iterator I48MODE [SI (DI "TARGET_ARCH64 || TARGET_V8PLUS")])
 (define_mode_attr modesuffix [(SI "") (DI "x")])
 
-(define_expand "memory_barrier"
-  [(set (match_dup 0)
-	(unspec:BLK [(match_dup 0)] UNSPEC_MEMBAR))]
+(define_expand "mem_thread_fence"
+  [(match_operand:SI 0 "const_int_operand")]
   "TARGET_V8 || TARGET_V9"
 {
-  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
-  MEM_VOLATILE_P (operands[0]) = 1;
+  enum memmodel model = (enum memmodel) INTVAL (operands[0]);
+  sparc_emit_membar_for_model (model, 3, 3);
+  DONE;
 })
 
-;; In V8, loads are blocking and ordered wrt earlier loads, i.e. every load
-;; is virtually followed by a load barrier (membar #LoadStore | #LoadLoad).
-;; In PSO, stbar orders the stores (membar #StoreStore).
-;; In TSO, ldstub orders the stores wrt subsequent loads (membar #StoreLoad).
-;; The combination of the three yields a full memory barrier in all cases.
+(define_expand "membar"
+  [(set (match_dup 1)
+	(unspec:BLK [(match_dup 1)
+		     (match_operand:SI 0 "const_int_operand")]
+		    UNSPEC_MEMBAR))]
+  "TARGET_V8 || TARGET_V9"
+{
+  operands[1] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[1]) = 1;
+})
+
+;; A compiler-only memory barrier.  Generic code, when checking for the
+;; existance of various named patterns, uses asm("":::"memory") when we
+;; don't need an actual instruction.  Here, it's easiest to pretend that
+;; membar 0 is such a barrier.  Further, this gives us a nice hook to 
+;; ignore all such barriers on Sparc V7.
+(define_insn "*membar_empty"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0) (match_operand:SI 1 "zero_or_v7_operand")]
+		    UNSPEC_MEMBAR))]
+  ""
+  ""
+  [(set_attr "type" "multi")
+   (set_attr "length" "0")])
+
+;; For V8, STBAR is exactly membar #StoreStore, by definition.
+(define_insn "*membar_storestore"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0) (const_int 8)] UNSPEC_MEMBAR))]
+  "TARGET_V8"
+  "stbar"
+  [(set_attr "type" "multi")])
+
+;; For V8, LDSTUB has the effect of membar #StoreLoad
+(define_insn "*membar_storeload"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0) (const_int 2)] UNSPEC_MEMBAR))]
+  "TARGET_V8"
+  "ldstub\t[%%sp-1], %%g0"
+  [(set_attr "type" "multi")])
+
+;; Put the two together, in combination with the fact that V8 implements PSO
+;; as its weakest memory model, means a full barrier.  Match all remaining
+;; instances of the membar pattern for Sparc V8.
 (define_insn "*membar_v8"
   [(set (match_operand:BLK 0 "" "")
-	(unspec:BLK [(match_dup 0)] UNSPEC_MEMBAR))]
+	(unspec:BLK [(match_dup 0) (match_operand:SI 1 "const_int_operand")]
+		    UNSPEC_MEMBAR))]
   "TARGET_V8"
   "stbar\n\tldstub\t[%%sp-1], %%g0"
   [(set_attr "type" "multi")
    (set_attr "length" "2")])
 
-;; membar #StoreStore | #LoadStore | #StoreLoad | #LoadLoad
+;; For V9, we have the full membar instruction.
 (define_insn "*membar"
   [(set (match_operand:BLK 0 "" "")
-	(unspec:BLK [(match_dup 0)] UNSPEC_MEMBAR))]
+	(unspec:BLK [(match_dup 0) (match_operand:SI 1 "const_int_operand")]
+		    UNSPEC_MEMBAR))]
   "TARGET_V9"
-  "membar\t15"
+  "membar\t%1"
   [(set_attr "type" "multi")])
 
-(define_expand "sync_compare_and_swap<mode>"
-  [(match_operand:I12MODE 0 "register_operand" "")
-   (match_operand:I12MODE 1 "memory_operand" "")
-   (match_operand:I12MODE 2 "register_operand" "")
-   (match_operand:I12MODE 3 "register_operand" "")]
-  "TARGET_V9"
+(define_expand "atomic_load<mode>"
+  [(match_operand:I 0 "register_operand" "")
+   (match_operand:I 1 "memory_operand" "")
+   (match_operand:SI 2 "const_int_operand" "")]
+  ""
 {
-  sparc_expand_compare_and_swap_12 (operands[0], operands[1],
-				    operands[2], operands[3]);
+  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+
+  sparc_emit_membar_for_model (model, 1, 1);
+
+  if (TARGET_ARCH64 || <MODE>mode != DImode)
+    emit_move_insn (operands[0], operands[1]);
+  else
+    emit_insn (gen_atomic_loaddi_1 (operands[0], operands[1]));
+
+  sparc_emit_membar_for_model (model, 1, 2);
   DONE;
 })
 
-(define_expand "sync_compare_and_swap<mode>"
+(define_insn "atomic_loaddi_1"
+  [(set (match_operand:DI 0 "register_operand" "=U,?*f")
+	(unspec:DI [(match_operand:DI 1 "memory_operand" "m,m")]
+		   UNSPEC_ATOMIC))]
+  "!TARGET_ARCH64"
+  "ldd\t%1, %0"
+  [(set_attr "type" "load,fpload")])
+
+(define_expand "atomic_store<mode>"
+  [(match_operand:I 0 "register_operand" "")
+   (match_operand:I 1 "memory_operand" "")
+   (match_operand:SI 2 "const_int_operand" "")]
+  ""
+{
+  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+
+  sparc_emit_membar_for_model (model, 2, 1);
+
+  if (TARGET_ARCH64 || <MODE>mode != DImode)
+    emit_move_insn (operands[0], operands[1]);
+  else
+    emit_insn (gen_atomic_storedi_1 (operands[0], operands[1]));
+
+  sparc_emit_membar_for_model (model, 2, 2);
+  DONE;
+})
+
+(define_insn "atomic_storedi_1"
+  [(set (match_operand:DI 0 "memory_operand" "=m,m,m")
+	(unspec:DI
+	  [(match_operand:DI 1 "register_or_v9_zero_operand" "J,U,?*f")]
+	  UNSPEC_ATOMIC))]
+  "!TARGET_ARCH64"
+  "@
+   stx\t%r1, %0
+   std\t%1, %0
+   std\t%1, %0"
+  [(set_attr "type" "store,store,fpstore")
+   (set_attr "cpu_feature" "v9,*,*")])
+
+(define_expand "atomic_compare_and_swap<mode>"
+  [(match_operand:SI 0 "register_operand" "")		;; bool output
+   (match_operand:I 1 "register_operand" "")		;; val output
+   (match_operand:I 2 "mem_noofs_operand" "")		;; memory
+   (match_operand:I 3 "register_operand" "")		;; expected
+   (match_operand:I 4 "register_operand" "")		;; desired
+   (match_operand:SI 5 "const_int_operand" "")		;; is_weak
+   (match_operand:SI 6 "const_int_operand" "")		;; mod_s
+   (match_operand:SI 7 "const_int_operand" "")]		;; mod_f
+  "TARGET_V9 && (<MODE>mode != DImode || TARGET_ARCH64 || TARGET_V8PLUS)"
+{
+  sparc_expand_compare_and_swap (operands);
+  DONE;
+})
+
+(define_expand "atomic_compare_and_swap<mode>_1"
   [(parallel
      [(set (match_operand:I48MODE 0 "register_operand" "")
-	   (match_operand:I48MODE 1 "memory_operand" ""))
+	   (match_operand:I48MODE 1 "mem_noofs_operand" ""))
       (set (match_dup 1)
 	   (unspec_volatile:I48MODE
 	     [(match_operand:I48MODE 2 "register_operand" "")
 	      (match_operand:I48MODE 3 "register_operand" "")]
 	     UNSPECV_CAS))])]
   "TARGET_V9"
-{
-  if (!REG_P (XEXP (operands[1], 0)))
-    {
-      rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
-      operands[1] = replace_equiv_address (operands[1], addr);
-    }
-  emit_insn (gen_memory_barrier ());
-})
+  "")
 
-(define_insn "*sync_compare_and_swap<mode>"
+(define_insn "*atomic_compare_and_swap<mode>_1"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
-	(mem:I48MODE (match_operand 1 "register_operand" "r")))
-   (set (mem:I48MODE (match_dup 1))
+	(match_operand:I48MODE 1 "mem_noofs_operand" "+w"))
+   (set (match_dup 1)
 	(unspec_volatile:I48MODE
 	  [(match_operand:I48MODE 2 "register_operand" "r")
 	   (match_operand:I48MODE 3 "register_operand" "0")]
 	  UNSPECV_CAS))]
   "TARGET_V9 && (<MODE>mode == SImode || TARGET_ARCH64)"
-  "cas<modesuffix>\t[%1], %2, %0"
+  "cas<modesuffix>\t%1, %2, %0"
   [(set_attr "type" "multi")])
 
-(define_insn "*sync_compare_and_swapdi_v8plus"
+(define_insn "*atomic_compare_and_swapdi_v8plus"
   [(set (match_operand:DI 0 "register_operand" "=h")
-	(mem:DI (match_operand 1 "register_operand" "r")))
-   (set (mem:DI (match_dup 1))
+	(match_operand:DI 1 "mem_noofs_operand" "+w"))
+   (set (match_dup 1)
 	(unspec_volatile:DI
 	  [(match_operand:DI 2 "register_operand" "h")
 	   (match_operand:DI 3 "register_operand" "0")]
@@ -114,50 +211,28 @@
     output_asm_insn ("srl\t%L2, 0, %L2", operands);
   output_asm_insn ("sllx\t%H2, 32, %H3", operands);
   output_asm_insn ("or\t%L2, %H3, %H3", operands);
-  output_asm_insn ("casx\t[%1], %H3, %L3", operands);
+  output_asm_insn ("casx\t%1, %H3, %L3", operands);
   return "srlx\t%L3, 32, %H3";
 }
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
-(define_expand "sync_lock_test_and_set<mode>"
-  [(match_operand:I12MODE 0 "register_operand" "")
-   (match_operand:I12MODE 1 "memory_operand" "")
-   (match_operand:I12MODE 2 "arith_operand" "")]
-  "!TARGET_V9"
+(define_expand "atomic_exchangesi"
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:SI 1 "memory_operand" "")
+   (match_operand:SI 2 "register_operand" "")
+   (match_operand:SI 3 "const_int_operand" "")]
+  "TARGET_V8 || TARGET_V9"
 {
-  if (operands[2] != const1_rtx)
-    FAIL;
-  if (TARGET_V8)
-    emit_insn (gen_memory_barrier ());
-  if (<MODE>mode != QImode)
-    operands[1] = adjust_address (operands[1], QImode, 0);
-  emit_insn (gen_ldstub<mode> (operands[0], operands[1]));
+  enum memmodel model = (enum memmodel) INTVAL (operands[3]);
+
+  sparc_emit_membar_for_model (model, 3, 1);
+  emit_insn (gen_swapsi (operands[0], operands[1], operands[2]));
+  sparc_emit_membar_for_model (model, 3, 2);
   DONE;
 })
 
-(define_expand "sync_lock_test_and_setsi"
-  [(parallel
-     [(set (match_operand:SI 0 "register_operand" "")
-	   (unspec_volatile:SI [(match_operand:SI 1 "memory_operand" "")]
-			       UNSPECV_SWAP))
-      (set (match_dup 1)
-	   (match_operand:SI 2 "arith_operand" ""))])]
-  ""
-{
-  if (! TARGET_V8 && ! TARGET_V9)
-    {
-      if (operands[2] != const1_rtx)
-	FAIL;
-      operands[1] = adjust_address (operands[1], QImode, 0);
-      emit_insn (gen_ldstubsi (operands[0], operands[1]));
-      DONE;
-    }
-  emit_insn (gen_memory_barrier ());
-  operands[2] = force_reg (SImode, operands[2]);
-})
-
-(define_insn "*swapsi"
+(define_insn "swapsi"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec_volatile:SI [(match_operand:SI 1 "memory_operand" "+m")]
 			    UNSPECV_SWAP))
@@ -167,24 +242,25 @@
   "swap\t%1, %0"
   [(set_attr "type" "multi")])
 
-(define_expand "ldstubqi"
-  [(parallel [(set (match_operand:QI 0 "register_operand" "")
-		   (unspec_volatile:QI [(match_operand:QI 1 "memory_operand" "")]
-				       UNSPECV_LDSTUB))
-	      (set (match_dup 1) (const_int -1))])]
+(define_expand "atomic_test_and_set<mode>"
+  [(match_operand:I124MODE 0 "register_operand" "")
+   (match_operand:I124MODE 1 "memory_operand" "")
+   (match_operand:SI 2 "const_int_operand" "")]
   ""
-  "")
+{
+  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
 
-(define_expand "ldstub<mode>"
-  [(parallel [(set (match_operand:I24MODE 0 "register_operand" "")
-		   (zero_extend:I24MODE
-		      (unspec_volatile:QI [(match_operand:QI 1 "memory_operand" "")]
-					  UNSPECV_LDSTUB)))
-	      (set (match_dup 1) (const_int -1))])]
-  ""
-  "")
+  sparc_emit_membar_for_model (model, 3, 1);
 
-(define_insn "*ldstubqi"
+  if (<MODE>mode != QImode)
+    operands[1] = adjust_address (operands[1], QImode, 0);
+  emit_insn (gen_ldstub<mode> (operands[0], operands[1]));
+
+  sparc_emit_membar_for_model (model, 3, 2);
+  DONE;
+})
+
+(define_insn "ldstubqi"
   [(set (match_operand:QI 0 "register_operand" "=r")
 	(unspec_volatile:QI [(match_operand:QI 1 "memory_operand" "+m")]
 			    UNSPECV_LDSTUB))
@@ -193,7 +269,7 @@
   "ldstub\t%1, %0"
   [(set_attr "type" "multi")])
 
-(define_insn "*ldstub<mode>"
+(define_insn "ldstub<mode>"
   [(set (match_operand:I24MODE 0 "register_operand" "=r")
 	(zero_extend:I24MODE
 	  (unspec_volatile:QI [(match_operand:QI 1 "memory_operand" "+m")]

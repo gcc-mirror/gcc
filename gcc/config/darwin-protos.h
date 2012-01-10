@@ -58,6 +58,7 @@ extern int machopic_reloc_rw_mask (void);
 extern section *machopic_select_section (tree, int, unsigned HOST_WIDE_INT);
 
 extern section *darwin_function_section (tree, enum node_frequency, bool, bool); 
+extern section *darwin_tm_clone_table_section (void);
 extern void darwin_function_switched_text_sections (FILE *, tree, bool);
 
 extern void darwin_unique_section (tree decl, int reloc);

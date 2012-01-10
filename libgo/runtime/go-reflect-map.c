@@ -7,9 +7,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include "runtime.h"
 #include "go-alloc.h"
 #include "go-assert.h"
-#include "go-panic.h"
 #include "go-type.h"
 #include "map.h"
 
@@ -90,7 +90,7 @@ mapassign (struct __go_map_type *mt, uintptr_t m, uintptr_t key_i,
   __go_assert (mt->__common.__code == GO_MAP);
 
   if (map == NULL)
-    __go_panic_msg ("assignment to entry in nil map");
+    runtime_panicstring ("assignment to entry in nil map");
 
   key_descriptor = mt->__key_type;
   if (__go_is_pointer_type (key_descriptor))

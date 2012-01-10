@@ -522,6 +522,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->frequency, 2);
   bp_pack_value (&bp, node->only_called_at_startup, 1);
   bp_pack_value (&bp, node->only_called_at_exit, 1);
+  bp_pack_value (&bp, node->tm_clone, 1);
   bp_pack_value (&bp, node->thunk.thunk_p && !boundary_p, 1);
   bp_pack_enum (&bp, ld_plugin_symbol_resolution,
 	        LDPR_NUM_KNOWN, node->resolution);
@@ -928,6 +929,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->frequency = (enum node_frequency)bp_unpack_value (bp, 2);
   node->only_called_at_startup = bp_unpack_value (bp, 1);
   node->only_called_at_exit = bp_unpack_value (bp, 1);
+  node->tm_clone = bp_unpack_value (bp, 1);
   node->thunk.thunk_p = bp_unpack_value (bp, 1);
   node->resolution = bp_unpack_enum (bp, ld_plugin_symbol_resolution,
 				     LDPR_NUM_KNOWN);
@@ -1687,9 +1689,9 @@ input_cgraph_opt_section (struct lto_file_decl_data *file_data,
 {
   const struct lto_function_header *header =
     (const struct lto_function_header *) data;
-  const int32_t cfg_offset = sizeof (struct lto_function_header);
-  const int32_t main_offset = cfg_offset + header->cfg_size;
-  const int32_t string_offset = main_offset + header->main_size;
+  const int cfg_offset = sizeof (struct lto_function_header);
+  const int main_offset = cfg_offset + header->cfg_size;
+  const int string_offset = main_offset + header->main_size;
   struct data_in *data_in;
   struct lto_input_block ib_main;
   unsigned int i;

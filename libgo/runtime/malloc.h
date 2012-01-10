@@ -405,7 +405,6 @@ enum
 	FlagNoGC = 1<<2,	// must not free or scan for pointers
 };
 
-void	runtime_Mprof_Init(void);
 void	runtime_MProf_Malloc(void*, uintptr);
 void	runtime_MProf_Free(void*, uintptr);
 void	runtime_MProf_Mark(void (*scan)(byte *, int64));
@@ -423,4 +422,4 @@ extern int32 runtime_malloc_profile;
 
 struct __go_func_type;
 bool	runtime_getfinalizer(void *p, bool del, void (**fn)(void*), const struct __go_func_type **ft);
-void	runtime_walkfintab(void (*fn)(void*), void (*scan)(byte*, int64));
+void	runtime_walkfintab(void (*fn)(void*), void (*scan)(byte *, int64));

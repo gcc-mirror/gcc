@@ -10,16 +10,17 @@ import (
 	"exp/norm"
 	"flag"
 	"fmt"
-	"http"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"path"
 	"regexp"
 	"runtime"
-	"strings"
 	"strconv"
+	"strings"
 	"time"
-	"utf8"
+	"unicode/utf8"
 )
 
 func main() {
@@ -103,7 +104,7 @@ type Test struct {
 	name   string
 	partnr int
 	number int
-	rune   int                 // used for character by character test
+	r      rune                // used for character by character test
 	cols   [cMaxColumns]string // Each has 5 entries, see below.
 }
 
@@ -141,7 +142,7 @@ func loadTestData() {
 	for {
 		line, err := input.ReadString('\n')
 		if err != nil {
-			if err == os.EOF {
+			if err == io.EOF {
 				break
 			}
 			logger.Fatal(err)
@@ -170,16 +171,16 @@ func loadTestData() {
 		counter++
 		for j := 1; j < len(m)-1; j++ {
 			for _, split := range strings.Split(m[j], " ") {
-				r, err := strconv.Btoui64(split, 16)
+				r, err := strconv.ParseUint(split, 16, 64)
 				if err != nil {
 					logger.Fatal(err)
 				}
-				if test.rune == 0 {
+				if test.r == 0 {
 					// save for CharacterByCharacterTests
-					test.rune = int(r)
+					test.r = int(r)
 				}
 				var buf [utf8.UTFMax]byte
-				sz := utf8.EncodeRune(buf[:], int(r))
+				sz := utf8.EncodeRune(buf[:], rune(r))
 				test.cols[j-1] += string(buf[:sz])
 			}
 		}
@@ -198,7 +199,7 @@ func cmpResult(t *Test, name string, f norm.Form, gold, test, result string) {
 		if errorCount > 20 {
 			return
 		}
-		st, sr, sg := []int(test), []int(result), []int(gold)
+		st, sr, sg := []rune(test), []rune(result), []rune(gold)
 		logger.Printf("%s:%s: %s(%X)=%X; want:%X: %s",
 			t.Name(), name, fstr[f], st, sr, sg, t.name)
 	}
@@ -210,7 +211,7 @@ func cmpIsNormal(t *Test, name string, f norm.Form, test string, result, want bo
 		if errorCount > 20 {
 			return
 		}
-		logger.Printf("%s:%s: %s(%X)=%v; want: %v", t.Name(), name, fstr[f], []int(test), result, want)
+		logger.Printf("%s:%s: %s(%X)=%v; want: %v", t.Name(), name, fstr[f], []rune(test), result, want)
 	}
 }
 
@@ -243,13 +244,13 @@ func CharacterByCharacterTests() {
 	tests := part[1].tests
 	last := 0
 	for i := 0; i <= len(tests); i++ { // last one is special case
-		var rune int
+		var r int
 		if i == len(tests) {
-			rune = 0x2FA1E // Don't have to go to 0x10FFFF
+			r = 0x2FA1E // Don't have to go to 0x10FFFF
 		} else {
-			rune = tests[i].rune
+			r = tests[i].r
 		}
-		for last++; last < rune; last++ {
+		for last++; last < r; last++ {
 			// Check all characters that were not explicitly listed in the test.
 			t := &Test{partnr: 1, number: -1}
 			char := string(last)

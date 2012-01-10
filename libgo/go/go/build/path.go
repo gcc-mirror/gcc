@@ -5,6 +5,7 @@
 package build
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -21,9 +22,9 @@ type Tree struct {
 	Goroot bool
 }
 
-func newTree(p string) (*Tree, os.Error) {
+func newTree(p string) (*Tree, error) {
 	if !filepath.IsAbs(p) {
-		return nil, os.NewError("must be absolute")
+		return nil, errors.New("must be absolute")
 	}
 	ep, err := filepath.EvalSymlinks(p)
 	if err != nil {
@@ -69,7 +70,7 @@ func (t *Tree) HasSrc(pkg string) bool {
 	if err != nil {
 		return false
 	}
-	return fi.IsDirectory()
+	return fi.IsDir()
 }
 
 // HasPkg returns whether the given package's
@@ -79,18 +80,18 @@ func (t *Tree) HasPkg(pkg string) bool {
 	if err != nil {
 		return false
 	}
-	return fi.IsRegular()
+	return !fi.IsDir()
 	// TODO(adg): check object version is consistent
 }
 
 var (
-	ErrNotFound     = os.NewError("go/build: package could not be found locally")
-	ErrTreeNotFound = os.NewError("go/build: no valid GOROOT or GOPATH could be found")
+	ErrNotFound     = errors.New("go/build: package could not be found locally")
+	ErrTreeNotFound = errors.New("go/build: no valid GOROOT or GOPATH could be found")
 )
 
 // FindTree takes an import or filesystem path and returns the
 // tree where the package source should be and the package import path.
-func FindTree(path string) (tree *Tree, pkg string, err os.Error) {
+func FindTree(path string) (tree *Tree, pkg string, err error) {
 	if isLocalPath(path) {
 		if path, err = filepath.Abs(path); err != nil {
 			return

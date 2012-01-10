@@ -370,7 +370,6 @@ gimple_build_call_from_tree (tree t)
   /* Carry all the CALL_EXPR flags to the new GIMPLE_CALL.  */
   gimple_call_set_chain (call, CALL_EXPR_STATIC_CHAIN (t));
   gimple_call_set_tail (call, CALL_EXPR_TAILCALL (t));
-  gimple_call_set_cannot_inline (call, CALL_CANNOT_INLINE_P (t));
   gimple_call_set_return_slot_opt (call, CALL_EXPR_RETURN_SLOT_OPT (t));
   if (fndecl
       && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
@@ -2485,69 +2484,6 @@ gimple_has_side_effects (const_gimple s)
   return false;
 }
 
-/* Return true if the RHS of statement S has side effects.
-   We may use it to determine if it is admissable to replace
-   an assignment or call with a copy of a previously-computed
-   value.  In such cases, side-effects due to the LHS are
-   preserved.  */
-
-bool
-gimple_rhs_has_side_effects (const_gimple s)
-{
-  unsigned i;
-
-  if (is_gimple_call (s))
-    {
-      unsigned nargs = gimple_call_num_args (s);
-      tree fn;
-
-      if (!(gimple_call_flags (s) & (ECF_CONST | ECF_PURE)))
-        return true;
-
-      /* We cannot use gimple_has_volatile_ops here,
-         because we must ignore a volatile LHS.  */
-      fn = gimple_call_fn (s);
-      if (fn && (TREE_SIDE_EFFECTS (fn) || TREE_THIS_VOLATILE (fn)))
-	{
-	  gcc_assert (gimple_has_volatile_ops (s));
-	  return true;
-	}
-
-      for (i = 0; i < nargs; i++)
-        if (TREE_SIDE_EFFECTS (gimple_call_arg (s, i))
-            || TREE_THIS_VOLATILE (gimple_call_arg (s, i)))
-          return true;
-
-      return false;
-    }
-  else if (is_gimple_assign (s))
-    {
-      /* Skip the first operand, the LHS. */
-      for (i = 1; i < gimple_num_ops (s); i++)
-	if (TREE_SIDE_EFFECTS (gimple_op (s, i))
-            || TREE_THIS_VOLATILE (gimple_op (s, i)))
-	  {
-	    gcc_assert (gimple_has_volatile_ops (s));
-	    return true;
-	  }
-    }
-  else if (is_gimple_debug (s))
-    return false;
-  else
-    {
-      /* For statements without an LHS, examine all arguments.  */
-      for (i = 0; i < gimple_num_ops (s); i++)
-	if (TREE_SIDE_EFFECTS (gimple_op (s, i))
-            || TREE_THIS_VOLATILE (gimple_op (s, i)))
-	  {
-	    gcc_assert (gimple_has_volatile_ops (s));
-	    return true;
-	  }
-    }
-
-  return false;
-}
-
 /* Helper for gimple_could_trap_p and gimple_assign_rhs_could_trap_p.
    Return true if S can trap.  When INCLUDE_MEM is true, check whether
    the memory operations could trap.  When INCLUDE_STORES is true and
@@ -3027,17 +2963,6 @@ is_gimple_reg (tree t)
 }
 
 
-/* Return true if T is a GIMPLE variable whose address is not needed.  */
-
-bool
-is_gimple_non_addressable (tree t)
-{
-  if (TREE_CODE (t) == SSA_NAME)
-    t = SSA_NAME_VAR (t);
-
-  return (is_gimple_variable (t) && ! needs_to_live_in_memory (t));
-}
-
 /* Return true if T is a GIMPLE rvalue, i.e. an identifier or a constant.  */
 
 bool
@@ -3382,11 +3307,21 @@ compare_type_names_p (tree t1, tree t2)
   tree name1 = TYPE_NAME (t1);
   tree name2 = TYPE_NAME (t2);
 
-  if (name1 && TREE_CODE (name1) == TYPE_DECL)
+  if ((name1 != NULL_TREE) != (name2 != NULL_TREE))
+    return false;
+
+  if (name1 == NULL_TREE)
+    return true;
+
+  /* Either both should be a TYPE_DECL or both an IDENTIFIER_NODE.  */
+  if (TREE_CODE (name1) != TREE_CODE (name2))
+    return false;
+
+  if (TREE_CODE (name1) == TYPE_DECL)
     name1 = DECL_NAME (name1);
   gcc_checking_assert (!name1 || TREE_CODE (name1) == IDENTIFIER_NODE);
 
-  if (name2 && TREE_CODE (name2) == TYPE_DECL)
+  if (TREE_CODE (name2) == TYPE_DECL)
     name2 = DECL_NAME (name2);
   gcc_checking_assert (!name2 || TREE_CODE (name2) == IDENTIFIER_NODE);
 
@@ -3600,6 +3535,19 @@ gimple_types_compatible_p_1 (tree t1, tree t2, type_pair_t p,
   /* The struct tags shall compare equal.  */
   if (!compare_type_names_p (t1, t2))
     goto different_types;
+
+  /* We may not merge typedef types to the same type in different
+     contexts.  */
+  if (TYPE_NAME (t1)
+      && TREE_CODE (TYPE_NAME (t1)) == TYPE_DECL
+      && DECL_CONTEXT (TYPE_NAME (t1))
+      && TYPE_P (DECL_CONTEXT (TYPE_NAME (t1))))
+    {
+      if (!gtc_visit (DECL_CONTEXT (TYPE_NAME (t1)),
+		      DECL_CONTEXT (TYPE_NAME (t2)),
+		      state, sccstack, sccstate, sccstate_obstack))
+	goto different_types;
+    }
 
   /* If their attributes are not the same they can't be the same type.  */
   if (!attribute_list_equal (TYPE_ATTRIBUTES (t1), TYPE_ATTRIBUTES (t2)))
@@ -4044,6 +3992,7 @@ iterative_hash_name (tree name, hashval_t v)
 {
   if (!name)
     return v;
+  v = iterative_hash_hashval_t (TREE_CODE (name), v);
   if (TREE_CODE (name) == TYPE_DECL)
     name = DECL_NAME (name);
   if (!name)
@@ -4110,6 +4059,12 @@ iterative_hash_gimple_type (tree type, hashval_t val,
      only existing types having the same features as the new type will be
      checked.  */
   v = iterative_hash_name (TYPE_NAME (type), 0);
+  if (TYPE_NAME (type)
+      && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+      && DECL_CONTEXT (TYPE_NAME (type))
+      && TYPE_P (DECL_CONTEXT (TYPE_NAME (type))))
+    v = visit (DECL_CONTEXT (TYPE_NAME (type)), state, v,
+	       sccstack, sccstate, sccstate_obstack);
   v = iterative_hash_hashval_t (TREE_CODE (type), v);
   v = iterative_hash_hashval_t (TYPE_QUALS (type), v);
   v = iterative_hash_hashval_t (TREE_ADDRESSABLE (type), v);
@@ -4736,7 +4691,7 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
 
 	/* For aggregate types, all the fields must be the same.  */
 	for (f1 = TYPE_FIELDS (t1), f2 = TYPE_FIELDS (t2);
-	     f1 && f2;
+	     f1 || f2;
 	     f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
 	  {
 	    /* Skip non-fields.  */

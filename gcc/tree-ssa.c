@@ -264,7 +264,12 @@ target_for_debug_bind (tree var)
     return NULL_TREE;
 
   if (!is_gimple_reg (var))
-    return NULL_TREE;
+    {
+      if (is_gimple_reg_type (TREE_TYPE (var))
+	  && referenced_var_lookup (cfun, DECL_UID (var)) == NULL_TREE)
+	return var;
+      return NULL_TREE;
+    }
 
   return var;
 }
@@ -933,6 +938,8 @@ verify_ssa (bool check_modified_stmt)
 	  gimple stmt;
 	  TREE_VISITED (name) = 0;
 
+	  verify_ssa_name (name, !is_gimple_reg (name));
+
 	  stmt = SSA_NAME_DEF_STMT (name);
 	  if (!gimple_nop_p (stmt))
 	    {
@@ -982,9 +989,6 @@ verify_ssa (bool check_modified_stmt)
 	{
 	  gimple stmt = gsi_stmt (gsi);
 	  use_operand_p use_p;
-	  bool has_err;
-	  int count;
-	  unsigned i;
 
 	  if (check_modified_stmt && gimple_modified_p (stmt))
 	    {
@@ -994,89 +998,15 @@ verify_ssa (bool check_modified_stmt)
 	      goto err;
 	    }
 
-	  if (is_gimple_assign (stmt)
-	      && TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
+	  if (verify_ssa_operands (stmt))
 	    {
-	      tree lhs, base_address;
-
-	      lhs = gimple_assign_lhs (stmt);
-	      base_address = get_base_address (lhs);
-
-	      if (base_address
-		  && SSA_VAR_P (base_address)
-		  && !gimple_vdef (stmt)
-		  && optimize > 0)
-		{
-		  error ("statement makes a memory store, but has no VDEFS");
-		  print_gimple_stmt (stderr, stmt, 0, TDF_VOPS);
-		  goto err;
-		}
-	    }
-	  else if (gimple_debug_bind_p (stmt)
-		   && !gimple_debug_bind_has_value_p (stmt))
-	    continue;
-
-	  /* Verify the single virtual operand and its constraints.  */
-	  has_err = false;
-	  if (gimple_vdef (stmt))
-	    {
-	      if (gimple_vdef_op (stmt) == NULL_DEF_OPERAND_P)
-		{
-		  error ("statement has VDEF operand not in defs list");
-		  has_err = true;
-		}
-	      if (!gimple_vuse (stmt))
-		{
-		  error ("statement has VDEF but no VUSE operand");
-		  has_err = true;
-		}
-	      else if (SSA_NAME_VAR (gimple_vdef (stmt))
-		       != SSA_NAME_VAR (gimple_vuse (stmt)))
-		{
-		  error ("VDEF and VUSE do not use the same symbol");
-		  has_err = true;
-		}
-	      has_err |= verify_ssa_name (gimple_vdef (stmt), true);
-	    }
-	  if (gimple_vuse (stmt))
-	    {
-	      if  (gimple_vuse_op (stmt) == NULL_USE_OPERAND_P)
-		{
-		  error ("statement has VUSE operand not in uses list");
-		  has_err = true;
-		}
-	      has_err |= verify_ssa_name (gimple_vuse (stmt), true);
-	    }
-	  if (has_err)
-	    {
-	      error ("in statement");
-	      print_gimple_stmt (stderr, stmt, 0, TDF_VOPS|TDF_MEMSYMS);
+	      print_gimple_stmt (stderr, stmt, 0, TDF_VOPS);
 	      goto err;
 	    }
 
-	  count = 0;
-	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE|SSA_OP_DEF)
-	    {
-	      if (verify_ssa_name (op, false))
-		{
-		  error ("in statement");
-		  print_gimple_stmt (stderr, stmt, 0, TDF_VOPS|TDF_MEMSYMS);
-		  goto err;
-		}
-	      count++;
-	    }
-
-	  for (i = 0; i < gimple_num_ops (stmt); i++)
-	    {
-	      op = gimple_op (stmt, i);
-	      if (op && TREE_CODE (op) == SSA_NAME && --count < 0)
-		{
-		  error ("number of operands and imm-links don%'t agree"
-			 " in statement");
-		  print_gimple_stmt (stderr, stmt, 0, TDF_VOPS|TDF_MEMSYMS);
-		  goto err;
-		}
-	    }
+	  if (gimple_debug_bind_p (stmt)
+	      && !gimple_debug_bind_has_value_p (stmt))
+	    continue;
 
 	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE|SSA_OP_VUSE)
 	    {
@@ -2131,7 +2061,7 @@ execute_update_addresses_taken (void)
   if (update_vops)
     {
       FOR_EACH_BB (bb)
-	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	  {
 	    gimple stmt = gsi_stmt (gsi);
 
@@ -2171,6 +2101,18 @@ execute_update_addresses_taken (void)
 
 		if (gimple_assign_lhs (stmt) != lhs)
 		  gimple_assign_set_lhs (stmt, lhs);
+
+		/* For var ={v} {CLOBBER}; where var lost
+		   TREE_ADDRESSABLE just remove the stmt.  */
+		if (DECL_P (lhs)
+		    && TREE_CLOBBER_P (rhs)
+		    && symbol_marked_for_renaming (lhs))
+		  {
+		    unlink_stmt_vdef (stmt);
+      		    gsi_remove (&gsi, true);
+		    release_defs (stmt);
+		    continue;
+		  }
 
 		if (gimple_assign_rhs1 (stmt) != rhs)
 		  {
@@ -2218,6 +2160,8 @@ execute_update_addresses_taken (void)
 	    if (gimple_references_memory_p (stmt)
 		|| is_gimple_debug (stmt))
 	      update_stmt (stmt);
+
+	    gsi_next (&gsi);
 	  }
 
       /* Update SSA form here, we are called as non-pass as well.  */

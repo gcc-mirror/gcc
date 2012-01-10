@@ -126,9 +126,6 @@ package body System.Task_Primitives.Operations is
    Foreign_Task_Elaborated : aliased Boolean := True;
    --  Used to identified fake tasks (i.e., non-Ada Threads)
 
-   Annex_D : Boolean := False;
-   --  Set to True if running with Annex-D semantics
-
    Null_Thread_Id : constant Thread_Id := 0;
    --  Constant to indicate that the thread identifier has not yet been
    --  initialized.
@@ -701,18 +698,17 @@ package body System.Task_Primitives.Operations is
 
    procedure Yield (Do_Yield : Boolean := True) is
    begin
+      --  Note: in a previous implementation if Do_Yield was False, then we
+      --  introduced a delay of 1 millisecond in an attempt to get closer to
+      --  annex D semantics, and in particular to make ACATS CXD8002 pass. But
+      --  this change introduced a huge performance regression evaluating the
+      --  Count attribute. So we decided to remove this processing.
+
+      --  Moreover, CXD8002 appears to pass on Windows (although we do not
+      --  guarantee full Annex D compliance on Windows in any case).
+
       if Do_Yield then
          SwitchToThread;
-
-      elsif Annex_D then
-         --  If running with Annex-D semantics we need a delay
-         --  above 0 milliseconds here otherwise processes give
-         --  enough time to the other tasks to have a chance to
-         --  run.
-         --
-         --  This makes cxd8002 ACATS pass on Windows.
-
-         Sleep (1);
       end if;
    end Yield;
 
@@ -1076,8 +1072,6 @@ package body System.Task_Primitives.Operations is
 
          Discard := OS_Interface.SetPriorityClass
                       (GetCurrentProcess, Realtime_Priority_Class);
-
-         Annex_D := True;
       end if;
 
       TlsIndex := TlsAlloc;

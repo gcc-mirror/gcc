@@ -7,9 +7,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "runtime.h"
 #include "go-alloc.h"
 #include "go-assert.h"
-#include "go-panic.h"
 #include "map.h"
 
 /* Delete the entry matching KEY from MAP.  */
@@ -27,7 +27,7 @@ __go_map_delete (struct __go_map *map, const void *key)
   void **pentry;
 
   if (map == NULL)
-    __go_panic_msg ("deletion of entry in nil map");
+    runtime_panicstring ("deletion of entry in nil map");
 
   descriptor = map->__descriptor;
 

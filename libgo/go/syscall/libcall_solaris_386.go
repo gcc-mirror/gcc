@@ -5,8 +5,8 @@
 package syscall
 
 // 32-bit Solaris 2/x86 needs to use _nuname internally, cf. <sys/utsname.h>.
-//sysnb	Uname(buf *Utsname) (errno int)
+//sysnb	Uname(buf *Utsname) (err error)
 //_nuname(buf *Utsname) int
 
-//sysnb raw_ptrace(request int, pid int, addr *byte, data *byte) (errno int)
+//sysnb raw_ptrace(request int, pid int, addr *byte, data *byte) (err Errno)
 //ptrace(request int, pid Pid_t, addr *byte, data *byte) _C_long

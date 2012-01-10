@@ -1063,6 +1063,25 @@ require_type (st_parameter_dt *dtp, bt expected, bt actual, const fnode *f)
 }
 
 
+static int
+require_numeric_type (st_parameter_dt *dtp, bt actual, const fnode *f)
+{
+#define BUFLEN 100
+  char buffer[BUFLEN];
+
+  if (actual == BT_INTEGER || actual == BT_REAL || actual == BT_COMPLEX)
+    return 0;
+
+  /* Adjust item_count before emitting error message.  */
+  snprintf (buffer, BUFLEN, 
+	    "Expected numeric type for item %d in formatted transfer, got %s",
+	    dtp->u.p.item_count - 1, type_name (actual));
+
+  format_error (dtp, f, buffer);
+  return 1;
+}
+
+
 /* This function is in the main loop for a formatted data transfer
    statement.  It would be natural to implement this as a coroutine
    with the user program, but C makes that awkward.  We loop,
@@ -1147,6 +1166,9 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	  if (n == 0)
 	    goto need_read_data;
 	  if (!(compile_options.allow_std & GFC_STD_GNU)
+	      && require_numeric_type (dtp, type, f))
+	    return;
+	  if (!(compile_options.allow_std & GFC_STD_F2008)
               && require_type (dtp, BT_INTEGER, type, f))
 	    return;
 	  read_radix (dtp, f, p, kind, 2);
@@ -1156,6 +1178,9 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	  if (n == 0)
 	    goto need_read_data; 
 	  if (!(compile_options.allow_std & GFC_STD_GNU)
+	      && require_numeric_type (dtp, type, f))
+	    return;
+	  if (!(compile_options.allow_std & GFC_STD_F2008)
               && require_type (dtp, BT_INTEGER, type, f))
 	    return;
 	  read_radix (dtp, f, p, kind, 8);
@@ -1165,6 +1190,9 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	  if (n == 0)
 	    goto need_read_data;
 	  if (!(compile_options.allow_std & GFC_STD_GNU)
+	      && require_numeric_type (dtp, type, f))
+	    return;
+	  if (!(compile_options.allow_std & GFC_STD_F2008)
               && require_type (dtp, BT_INTEGER, type, f))
 	    return;
 	  read_radix (dtp, f, p, kind, 16);
@@ -1548,6 +1576,9 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  if (n == 0)
 	    goto need_data;
 	  if (!(compile_options.allow_std & GFC_STD_GNU)
+	      && require_numeric_type (dtp, type, f))
+	    return;
+	  if (!(compile_options.allow_std & GFC_STD_F2008)
               && require_type (dtp, BT_INTEGER, type, f))
 	    return;
 	  write_b (dtp, f, p, kind);
@@ -1557,6 +1588,9 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  if (n == 0)
 	    goto need_data; 
 	  if (!(compile_options.allow_std & GFC_STD_GNU)
+	      && require_numeric_type (dtp, type, f))
+	    return;
+	  if (!(compile_options.allow_std & GFC_STD_F2008)
               && require_type (dtp, BT_INTEGER, type, f))
 	    return;
 	  write_o (dtp, f, p, kind);
@@ -1566,6 +1600,9 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  if (n == 0)
 	    goto need_data;
 	  if (!(compile_options.allow_std & GFC_STD_GNU)
+	      && require_numeric_type (dtp, type, f))
+	    return;
+	  if (!(compile_options.allow_std & GFC_STD_F2008)
               && require_type (dtp, BT_INTEGER, type, f))
 	    return;
 	  write_z (dtp, f, p, kind);

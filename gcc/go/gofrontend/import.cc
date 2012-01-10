@@ -59,7 +59,7 @@ const char* const Import::import_marker = "*imported*";
 // later in the search path.
 
 Import::Stream*
-Import::open_package(const std::string& filename, source_location location)
+Import::open_package(const std::string& filename, Location location)
 {
   if (!IS_ABSOLUTE_PATH(filename))
     {
@@ -88,7 +88,7 @@ Import::open_package(const std::string& filename, source_location location)
 
 Import::Stream*
 Import::try_package_in_directory(const std::string& filename,
-				 source_location location)
+				 Location location)
 {
   std::string found_filename = filename;
   int fd = open(found_filename.c_str(), O_RDONLY | O_BINARY);
@@ -175,7 +175,7 @@ Import::try_suffixes(std::string* pfilename)
 
 Import::Stream*
 Import::find_export_data(const std::string& filename, int fd,
-			 source_location location)
+			 Location location)
 {
   // See if we can read this as an object file.
   Import::Stream* stream = Import::find_object_export_data(filename, fd, 0,
@@ -213,48 +213,26 @@ Import::Stream*
 Import::find_object_export_data(const std::string& filename,
 				int fd,
 				off_t offset,
-				source_location location)
+				Location location)
 {
-  const char* errmsg;
+  char *buf;
+  size_t len;
   int err;
-  simple_object_read* sobj = simple_object_start_read(fd, offset,
-						      "__GNU_GO",
-						      &errmsg, &err);
-  if (sobj == NULL)
+  const char *errmsg = go_read_export_data(fd, offset, &buf, &len, &err);
+  if (errmsg != NULL)
+    {
+      if (err == 0)
+	error_at(location, "%s: %s", filename.c_str(), errmsg);
+      else
+	error_at(location, "%s: %s: %s", filename.c_str(), errmsg,
+		 xstrerror(err));
+      return NULL;
+    }
+
+  if (buf == NULL)
     return NULL;
 
-  off_t sec_offset;
-  off_t sec_length;
-  int found = simple_object_find_section(sobj, ".go_export", &sec_offset,
-					 &sec_length, &errmsg, &err);
-
-  simple_object_release_read(sobj);
-
-  if (!found)
-    return NULL;
-
-  if (lseek(fd, offset + sec_offset, SEEK_SET) < 0)
-    {
-      error_at(location, "lseek %s failed: %m", filename.c_str());
-      return NULL;
-    }
-
-  char* buf = new char[sec_length];
-  ssize_t c = read(fd, buf, sec_length);
-  if (c < 0)
-    {
-      error_at(location, "read %s failed: %m", filename.c_str());
-      delete[] buf;
-      return NULL;
-    }
-  if (c < sec_length)
-    {
-      error_at(location, "%s: short read", filename.c_str());
-      delete[] buf;
-      return NULL;
-    }
-
-  return new Stream_from_buffer(buf, sec_length);
+  return new Stream_from_buffer(buf, len);
 }
 
 // Class Import.
@@ -262,7 +240,7 @@ Import::find_object_export_data(const std::string& filename,
 // Construct an Import object.  We make the builtin_types_ vector
 // large enough to hold all the builtin types.
 
-Import::Import(Stream* stream, source_location location)
+Import::Import(Stream* stream, Location location)
   : gogo_(NULL), stream_(stream), location_(location), package_(NULL),
     add_to_globals_(false),
     builtin_types_((- SMALLEST_BUILTIN_CODE) + 1),
@@ -448,7 +426,7 @@ Import::import_func(Package* package)
   if (is_varargs)
     fntype->set_is_varargs();
 
-  source_location loc = this->location_;
+  Location loc = this->location_;
   Named_object* no;
   if (fntype->is_method())
     {
@@ -603,7 +581,7 @@ Import::read_type()
     package = this->package_;
   else
     package = this->gogo_->register_package(package_name, unique_prefix,
-					    UNKNOWN_LOCATION);
+					    Linemap::unknown_location());
 
   Named_object* no = package->bindings()->lookup(type_name);
   if (no == NULL)
@@ -706,6 +684,7 @@ Import::register_builtin_types(Gogo* gogo)
   this->register_builtin_type(gogo, "uintptr", BUILTIN_UINTPTR);
   this->register_builtin_type(gogo, "bool", BUILTIN_BOOL);
   this->register_builtin_type(gogo, "string", BUILTIN_STRING);
+  this->register_builtin_type(gogo, "error", BUILTIN_ERROR);
 }
 
 // Register a single builtin type.
@@ -798,7 +777,7 @@ Import::Stream::match_bytes(const char* bytes, size_t length)
 // Require that the next LENGTH bytes from the stream match BYTES.
 
 void
-Import::Stream::require_bytes(source_location location, const char* bytes,
+Import::Stream::require_bytes(Location location, const char* bytes,
 			      size_t length)
 {
   const char* read;

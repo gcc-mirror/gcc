@@ -36,8 +36,8 @@ lower-cased, and attributes are collected into a []Attribute. For example:
 
 	for {
 		if z.Next() == html.ErrorToken {
-			// Returning os.EOF indicates success.
-			return z.Error()
+			// Returning io.EOF indicates success.
+			return z.Err()
 		}
 		emitToken(z.Token())
 	}
@@ -51,7 +51,7 @@ call to Next. For example, to extract an HTML page's anchor text:
 		tt := z.Next()
 		switch tt {
 		case ErrorToken:
-			return z.Error()
+			return z.Err()
 		case TextToken:
 			if depth > 0 {
 				// emitBytes should copy the []byte it receives,
@@ -61,7 +61,7 @@ call to Next. For example, to extract an HTML page's anchor text:
 		case StartTagToken, EndTagToken:
 			tn, _ := z.TagName()
 			if len(tn) == 1 && tn[0] == 'a' {
-				if tt == StartTag {
+				if tt == StartTagToken {
 					depth++
 				} else {
 					depth--
@@ -69,9 +69,6 @@ call to Next. For example, to extract an HTML page's anchor text:
 			}
 		}
 	}
-
-A Tokenizer typically skips over HTML comments. To return comment tokens, set
-Tokenizer.ReturnComments to true before looping over calls to Next.
 
 Parsing is done by calling Parse with an io.Reader, which returns the root of
 the parse tree (the document element) as a *Node. It is the caller's

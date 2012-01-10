@@ -4,10 +4,7 @@
 
 package aes
 
-import (
-	"os"
-	"strconv"
-)
+import "strconv"
 
 // The AES block size in bytes.
 const BlockSize = 16
@@ -20,7 +17,7 @@ type Cipher struct {
 
 type KeySizeError int
 
-func (k KeySizeError) String() string {
+func (k KeySizeError) Error() string {
 	return "crypto/aes: invalid key size " + strconv.Itoa(int(k))
 }
 
@@ -28,7 +25,7 @@ func (k KeySizeError) String() string {
 // The key argument should be the AES key,
 // either 16, 24, or 32 bytes to select
 // AES-128, AES-192, or AES-256.
-func NewCipher(key []byte) (*Cipher, os.Error) {
+func NewCipher(key []byte) (*Cipher, error) {
 	k := len(key)
 	switch k {
 	default:
@@ -44,7 +41,7 @@ func NewCipher(key []byte) (*Cipher, os.Error) {
 }
 
 // BlockSize returns the AES block size, 16 bytes.
-// It is necessary to satisfy the Cipher interface in the
+// It is necessary to satisfy the Block interface in the
 // package "crypto/cipher".
 func (c *Cipher) BlockSize() int { return BlockSize }
 

@@ -29,7 +29,7 @@
 #endif
 
 static inline long
-sys_futex0 (int *addr, long op, long val)
+sys_futex0 (std::atomic<int> *addr, long op, long val)
 {
   register long sc_0 __asm__("$0");
   register long sc_16 __asm__("$16");

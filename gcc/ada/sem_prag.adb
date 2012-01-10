@@ -1314,34 +1314,6 @@ package body Sem_Prag is
                      Subtype_Indication (Component_Definition (Comp));
          Typ     : constant Entity_Id := Etype (Comp_Id);
 
-         function Inside_Generic_Body (Id : Entity_Id) return Boolean;
-         --  Determine whether entity Id appears inside a generic body.
-         --  Shouldn't this be in a more general place ???
-
-         -------------------------
-         -- Inside_Generic_Body --
-         -------------------------
-
-         function Inside_Generic_Body (Id : Entity_Id) return Boolean is
-            S : Entity_Id;
-
-         begin
-            S := Id;
-            while Present (S) and then S /= Standard_Standard loop
-               if Ekind (S) = E_Generic_Package
-                 and then In_Package_Body (S)
-               then
-                  return True;
-               end if;
-
-               S := Scope (S);
-            end loop;
-
-            return False;
-         end Inside_Generic_Body;
-
-      --  Start of processing for Check_Component
-
       begin
          --  Ada 2005 (AI-216): If a component subtype is subject to a per-
          --  object constraint, then the component type shall be an Unchecked_
@@ -1363,7 +1335,7 @@ package body Sem_Prag is
          --  the formal part of the generic unit.
 
          elsif Ada_Version >= Ada_2012
-           and then Inside_Generic_Body (UU_Typ)
+           and then In_Generic_Body (UU_Typ)
            and then In_Variant_Part
            and then Is_Private_Type (Typ)
            and then Is_Generic_Type (Typ)
@@ -2737,7 +2709,14 @@ package body Sem_Prag is
 
       procedure GNAT_Pragma is
       begin
-         Check_Restriction (No_Implementation_Pragmas, N);
+         --  We need to check the No_Implementation_Pragmas restriction for
+         --  the case of a pragma from source. Note that the case of aspects
+         --  generating corresponding pragmas marks these pragmas as not being
+         --  from source, so this test also catches that case.
+
+         if Comes_From_Source (N) then
+            Check_Restriction (No_Implementation_Pragmas, N);
+         end if;
       end GNAT_Pragma;
 
       --------------------------
@@ -3524,19 +3503,39 @@ package body Sem_Prag is
               ("second argument of pragma% must be a subprogram", Arg2);
          end if;
 
-         --  For Stdcall, a subprogram, variable or subprogram type is required
+         --  Stdcall case
 
-         if C = Convention_Stdcall
-           and then not Is_Subprogram (E)
-           and then not Is_Generic_Subprogram (E)
-           and then Ekind (E) /= E_Variable
-           and then not
-             (Is_Access_Type (E)
-               and then Ekind (Designated_Type (E)) = E_Subprogram_Type)
-         then
-            Error_Pragma_Arg
-              ("second argument of pragma% must be subprogram (type)",
-               Arg2);
+         if C = Convention_Stdcall then
+
+            --  A dispatching call is not allowed. A dispatching subprogram
+            --  cannot be used to interface to the Win32 API, so in fact this
+            --  check does not impose any effective restriction.
+
+            if Is_Dispatching_Operation (E) then
+
+               Error_Pragma
+                 ("dispatching subprograms cannot use Stdcall convention");
+
+            --  Subprogram is allowed, but not a generic subprogram, and not a
+            --  dispatching operation.
+
+            elsif not Is_Subprogram (E)
+              and then not Is_Generic_Subprogram (E)
+
+              --  A variable is OK
+
+              and then Ekind (E) /= E_Variable
+
+              --  An access to subprogram is also allowed
+
+              and then not
+                (Is_Access_Type (E)
+                  and then Ekind (Designated_Type (E)) = E_Subprogram_Type)
+            then
+               Error_Pragma_Arg
+                 ("second argument of pragma% must be subprogram (type)",
+                  Arg2);
+            end if;
          end if;
 
          if not Is_Subprogram (E)
@@ -4603,9 +4602,27 @@ package body Sem_Prag is
 
          --  Import a CPP class
 
-         elsif Is_Record_Type (Def_Id)
-           and then C = Convention_CPP
+         elsif C = Convention_CPP
+           and then (Is_Record_Type (Def_Id)
+                      or else Ekind (Def_Id) = E_Incomplete_Type)
          then
+            if Ekind (Def_Id) = E_Incomplete_Type then
+               if Present (Full_View (Def_Id)) then
+                  Def_Id := Full_View (Def_Id);
+
+               else
+                  Error_Msg_N
+                    ("cannot import 'C'P'P type before full declaration seen",
+                     Get_Pragma_Arg (Arg2));
+
+                  --  Although we have reported the error we decorate it as
+                  --  CPP_Class to avoid reporting spurious errors
+
+                  Set_Is_CPP_Class (Def_Id);
+                  return;
+               end if;
+            end if;
+
             --  Types treated as CPP classes must be declared limited (note:
             --  this used to be a warning but there is no real benefit to it
             --  since we did effectively intend to treat the type as limited
@@ -4629,38 +4646,13 @@ package body Sem_Prag is
                           (Declaration_Node (Def_Id))));
             end if;
 
-            --  Components of imported CPP types must not have default
-            --  expressions because the constructor (if any) is on the
-            --  C++ side.
+            --  Check that components of imported CPP types do not have default
+            --  expressions. For private types this check is performed when the
+            --  full view is analyzed (see Process_Full_View).
 
-            declare
-               Tdef  : constant Node_Id :=
-                         Type_Definition (Declaration_Node (Def_Id));
-               Clist : Node_Id;
-               Comp  : Node_Id;
-
-            begin
-               if Nkind (Tdef) = N_Record_Definition then
-                  Clist := Component_List (Tdef);
-
-               else
-                  pragma Assert (Nkind (Tdef) = N_Derived_Type_Definition);
-                  Clist := Component_List (Record_Extension_Part (Tdef));
-               end if;
-
-               if Present (Clist) then
-                  Comp := First (Component_Items (Clist));
-                  while Present (Comp) loop
-                     if Present (Expression (Comp)) then
-                        Error_Msg_N
-                          ("component of imported 'C'P'P type cannot have" &
-                           " default expression", Expression (Comp));
-                     end if;
-
-                     Next (Comp);
-                  end loop;
-               end if;
-            end;
+            if not Is_Private_Type (Def_Id) then
+               Check_CPP_Type_Has_No_Defaults (Def_Id);
+            end if;
 
          elsif Nkind (Parent (Def_Id)) = N_Incomplete_Type_Declaration then
             Check_No_Link_Name;
@@ -4671,8 +4663,8 @@ package body Sem_Prag is
 
          else
             Error_Pragma_Arg
-              ("second argument of pragma% must be object, subprogram" &
-               " or incomplete type",
+              ("second argument of pragma% must be object, subprogram "
+               & "or incomplete type",
                Arg2);
          end if;
 
@@ -5335,6 +5327,46 @@ package body Sem_Prag is
 
                if Implementation_Restriction (R_Id) then
                   Check_Restriction (No_Implementation_Restrictions, Arg);
+               end if;
+
+               --  Special processing for No_Elaboration_Code restriction
+
+               if R_Id = No_Elaboration_Code then
+
+                  --  Restriction is only recognized within a configuration
+                  --  pragma file, or within a unit of the main extended
+                  --  program. Note: the test for Main_Unit is needed to
+                  --  properly include the case of configuration pragma files.
+
+                  if not (Current_Sem_Unit = Main_Unit
+                           or else In_Extended_Main_Source_Unit (N))
+                  then
+                     return;
+
+                  --  Don't allow in a subunit unless already specified in
+                  --  body or spec.
+
+                  elsif Nkind (Parent (N)) = N_Compilation_Unit
+                    and then Nkind (Unit (Parent (N))) = N_Subunit
+                    and then not Restriction_Active (No_Elaboration_Code)
+                  then
+                     Error_Msg_N
+                       ("invalid specification of ""No_Elaboration_Code""",
+                        N);
+                     Error_Msg_N
+                       ("\restriction cannot be specified in a subunit", N);
+                     Error_Msg_N
+                       ("\unless also specified in body or spec", N);
+                     return;
+
+                  --  If we have a No_Elaboration_Code pragma that we
+                  --  accept, then it needs to be added to the configuration
+                  --  restrcition set so that we get proper application to
+                  --  other units in the main extended source as required.
+
+                  else
+                     Add_To_Config_Boolean_Restrictions (No_Elaboration_Code);
+                  end if;
                end if;
 
                --  If this is a warning, then set the warning unless we already
@@ -7590,8 +7622,8 @@ package body Sem_Prag is
                   Get_Pragma_Arg (Arg1));
             end if;
 
-            Set_Is_CPP_Class      (Typ);
-            Set_Convention        (Typ, Convention_CPP);
+            Set_Is_CPP_Class (Typ);
+            Set_Convention (Typ, Convention_CPP);
 
             --  Imported CPP types must not have discriminants (because C++
             --  classes do not have discriminants).
@@ -8022,24 +8054,6 @@ package body Sem_Prag is
             --  appropriate attributes of the access type.
 
             Default_Pool := Expression (Arg1);
-
-         ---------------
-         -- Dimension --
-         ---------------
-
-         when Pragma_Dimension =>
-            GNAT_Pragma;
-            Check_Arg_Count (4);
-            Check_No_Identifiers;
-            Check_Arg_Is_Local_Name (Arg1);
-
-            if not Is_Type (Arg1) then
-               Error_Pragma ("first argument for pragma% must be subtype");
-            end if;
-
-            Check_Arg_Is_Static_Expression (Arg2, Standard_Integer);
-            Check_Arg_Is_Static_Expression (Arg3, Standard_Integer);
-            Check_Arg_Is_Static_Expression (Arg4, Standard_Integer);
 
          ------------------------------------
          -- Disable_Atomic_Synchronization --
@@ -12647,6 +12661,47 @@ package body Sem_Prag is
             end if;
          end Pure_05;
 
+         -------------
+         -- Pure_12 --
+         -------------
+
+         --  pragma Pure_12 [(library_unit_NAME)];
+
+         --  This pragma is useable only in GNAT_Mode, where it is used like
+         --  pragma Pure but it is only effective in Ada 2012 mode (otherwise
+         --  it is ignored). It may be used after a pragma Preelaborate, in
+         --  which case it overrides the effect of the pragma Preelaborate.
+         --  This is used to implement AI05-0212 which recategorizes some
+         --  run-time packages in Ada 2012 mode.
+
+         when Pragma_Pure_12 => Pure_12 : declare
+            Ent : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_Valid_Library_Unit_Pragma;
+
+            if not GNAT_Mode then
+               Error_Pragma ("pragma% only available in GNAT mode");
+            end if;
+
+            if Nkind (N) = N_Null_Statement then
+               return;
+            end if;
+
+            --  This is one of the few cases where we need to test the value of
+            --  Ada_Version_Explicit rather than Ada_Version (which is always
+            --  set to Ada_2012 in a predefined unit), we need to know the
+            --  explicit version set to know if this pragma is active.
+
+            if Ada_Version_Explicit >= Ada_2012 then
+               Ent := Find_Lib_Unit_Name;
+               Set_Is_Preelaborated (Ent, False);
+               Set_Is_Pure (Ent);
+               Set_Suppress_Elaboration_Warnings (Ent);
+            end if;
+         end Pure_12;
+
          -------------------
          -- Pure_Function --
          -------------------
@@ -14427,7 +14482,7 @@ package body Sem_Prag is
                      end;
                   end if;
 
-                  --  Two or more arguments (must be two)
+               --  Two or more arguments (must be two)
 
                else
                   Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
@@ -14446,8 +14501,7 @@ package body Sem_Prag is
                      --  the formal may be wrapped in a conversion if the
                      --  actual is a conversion. Retrieve the real entity name.
 
-                     if (In_Instance_Body
-                          or else In_Inlined_Body)
+                     if (In_Instance_Body or In_Inlined_Body)
                        and then Nkind (E_Id) = N_Unchecked_Type_Conversion
                      then
                         E_Id := Expression (E_Id);
@@ -14511,10 +14565,21 @@ package body Sem_Prag is
                         --  In any other case, an error will be signalled (ON
                         --  with no matching OFF).
 
+                        --  Note: We set Used if we are inside a generic to
+                        --  disable the test that the non-config case actually
+                        --  cancels a warning. That's because we can't be sure
+                        --  there isn't an instantiation in some other unit
+                        --  where a warning is suppressed.
+
+                        --  We could do a little better here by checking if the
+                        --  generic unit we are inside is public, but for now
+                        --  we don't bother with that refinement.
+
                         if Chars (Argx) = Name_Off then
                            Set_Specific_Warning_Off
                              (Loc, Name_Buffer (1 .. Name_Len),
-                              Config => Is_Configuration_Pragma);
+                              Config => Is_Configuration_Pragma,
+                              Used   => Inside_A_Generic or else In_Instance);
 
                         elsif Chars (Argx) = Name_On then
                            Set_Specific_Warning_On
@@ -14815,7 +14880,8 @@ package body Sem_Prag is
    -----------------------------------------
 
    --  This function makes use of the following static table which indicates
-   --  whether a given pragma is significant.
+   --  whether appearance of some name in a given pragma is to be considered
+   --  as a reference for the purposes of warnings about unreferenced objects.
 
    --  -1  indicates that references in any argument position are significant
    --  0   indicates that appearance in any argument is not significant
@@ -14866,7 +14932,6 @@ package body Sem_Prag is
       Pragma_Debug_Policy                   =>  0,
       Pragma_Detect_Blocking                => -1,
       Pragma_Default_Storage_Pool           => -1,
-      Pragma_Dimension                      => -1,
       Pragma_Disable_Atomic_Synchronization => -1,
       Pragma_Discard_Names                  =>  0,
       Pragma_Dispatching_Domain             => -1,
@@ -14959,6 +15024,7 @@ package body Sem_Prag is
       Pragma_Psect_Object                   => -1,
       Pragma_Pure                           => -1,
       Pragma_Pure_05                        => -1,
+      Pragma_Pure_12                        => -1,
       Pragma_Pure_Function                  => -1,
       Pragma_Queuing_Policy                 => -1,
       Pragma_Ravenscar                      => -1,

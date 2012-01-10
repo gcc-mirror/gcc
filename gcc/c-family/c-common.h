@@ -109,7 +109,7 @@ enum rid
   RID_DFLOAT32, RID_DFLOAT64, RID_DFLOAT128,
   RID_FRACT, RID_ACCUM,
 
-  /* C1X */
+  /* C11 */
   RID_ALIGNAS,
 
   /* This means to warn that this is a C++ keyword, and then treat it
@@ -137,7 +137,7 @@ enum rid
   RID_CONSTCAST, RID_DYNCAST, RID_REINTCAST, RID_STATCAST,
 
   /* C++ extensions */
-  RID_BASES,                  RID_DIRECT_BASES,
+  RID_BASES,                   RID_DIRECT_BASES,
   RID_HAS_NOTHROW_ASSIGN,      RID_HAS_NOTHROW_CONSTRUCTOR,
   RID_HAS_NOTHROW_COPY,        RID_HAS_TRIVIAL_ASSIGN,
   RID_HAS_TRIVIAL_CONSTRUCTOR, RID_HAS_TRIVIAL_COPY,
@@ -145,12 +145,12 @@ enum rid
   RID_IS_ABSTRACT,             RID_IS_BASE_OF,
   RID_IS_CLASS,                RID_IS_CONVERTIBLE_TO,
   RID_IS_EMPTY,                RID_IS_ENUM,
-  RID_IS_LITERAL_TYPE,         RID_IS_POD,
-  RID_IS_POLYMORPHIC,          RID_IS_STD_LAYOUT,
-  RID_IS_TRIVIAL,              RID_IS_UNION,
-  RID_UNDERLYING_TYPE,
+  RID_IS_FINAL,                RID_IS_LITERAL_TYPE,
+  RID_IS_POD,                  RID_IS_POLYMORPHIC,
+  RID_IS_STD_LAYOUT,           RID_IS_TRIVIAL,
+  RID_IS_UNION,                RID_UNDERLYING_TYPE,
 
-  /* C++0x */
+  /* C++11 */
   RID_CONSTEXPR, RID_DECLTYPE, RID_NOEXCEPT, RID_NULLPTR, RID_STATIC_ASSERT,
 
   /* Objective-C ("AT" reserved words - they are only keywords when
@@ -499,17 +499,12 @@ struct GTY(()) stmt_tree_s {
   VEC(tree,gc) *x_cur_stmt_list;
 
   /* In C++, Nonzero if we should treat statements as full
-     expressions.  In particular, this variable is no-zero if at the
+     expressions.  In particular, this variable is non-zero if at the
      end of a statement we should destroy any temporaries created
      during that statement.  Similarly, if, at the end of a block, we
      should destroy any local variables in this block.  Normally, this
      variable is nonzero, since those are the normal semantics of
      C++.
-
-     However, in order to represent aggregate initialization code as
-     tree structure, we use statement-expressions.  The statements
-     within the statement expression should not result in cleanups
-     being run until the entire enclosing statement is complete.
 
      This flag has no effect in C.  */
   int stmts_are_full_exprs_p;
@@ -661,13 +656,13 @@ extern int flag_cond_mismatch;
 
 extern int flag_isoc94;
 
-/* Nonzero means use the ISO C99 (or C1X) dialect of C.  */
+/* Nonzero means use the ISO C99 (or C11) dialect of C.  */
 
 extern int flag_isoc99;
 
-/* Nonzero means use the ISO C1X dialect of C.  */
+/* Nonzero means use the ISO C11 dialect of C.  */
 
-extern int flag_isoc1x;
+extern int flag_isoc11;
 
 /* Nonzero means that we have builtin functions, and main is an int.  */
 

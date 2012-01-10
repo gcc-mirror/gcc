@@ -5086,10 +5086,21 @@ package body Exp_Ch9 is
 
    procedure Establish_Task_Master (N : Node_Id) is
       Call : Node_Id;
+
    begin
       if Restriction_Active (No_Task_Hierarchy) = False then
          Call := Build_Runtime_Call (Sloc (N), RE_Enter_Master);
-         Prepend_To (Declarations (N), Call);
+
+         --  The block may have no declarations, and nevertheless be a task
+         --  master, if it contains a call that may return an object that
+         --  contains tasks.
+
+         if No (Declarations (N)) then
+            Set_Declarations (N, New_List (Call));
+         else
+            Prepend_To (Declarations (N), Call);
+         end if;
+
          Analyze (Call);
       end if;
    end Establish_Task_Master;

@@ -6,29 +6,84 @@ package driver
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 	"strconv"
 )
 
 // ValueConverter is the interface providing the ConvertValue method.
+//
+// Various implementations of ValueConverter are provided by the
+// driver package to provide consistent implementations of conversions
+// between drivers.  The ValueConverters have several uses:
+//
+//  * converting from the subset types as provided by the sql package
+//    into a database table's specific column type and making sure it
+//    fits, such as making sure a particular int64 fits in a
+//    table's uint16 column.
+//
+//  * converting a value as given from the database into one of the
+//    subset types.
+//
+//  * by the sql package, for converting from a driver's subset type
+//    to a user's type in a scan.
 type ValueConverter interface {
 	// ConvertValue converts a value to a restricted subset type.
-	ConvertValue(v interface{}) (interface{}, os.Error)
+	ConvertValue(v interface{}) (interface{}, error)
 }
 
 // Bool is a ValueConverter that converts input values to bools.
 //
 // The conversion rules are:
-//  - .... TODO(bradfitz): TBD
+//  - booleans are returned unchanged
+//  - for integer types,
+//       1 is true
+//       0 is false,
+//       other integers are an error
+//  - for strings and []byte, same rules as strconv.Atob
+//  - all other types are an error
 var Bool boolType
 
 type boolType struct{}
 
 var _ ValueConverter = boolType{}
 
-func (boolType) ConvertValue(v interface{}) (interface{}, os.Error) {
-	return nil, fmt.Errorf("TODO(bradfitz): bool conversions")
+func (boolType) String() string { return "Bool" }
+
+func (boolType) ConvertValue(src interface{}) (interface{}, error) {
+	switch s := src.(type) {
+	case bool:
+		return s, nil
+	case string:
+		b, err := strconv.ParseBool(s)
+		if err != nil {
+			return nil, fmt.Errorf("sql/driver: couldn't convert %q into type bool", s)
+		}
+		return b, nil
+	case []byte:
+		b, err := strconv.ParseBool(string(s))
+		if err != nil {
+			return nil, fmt.Errorf("sql/driver: couldn't convert %q into type bool", s)
+		}
+		return b, nil
+	}
+
+	sv := reflect.ValueOf(src)
+	switch sv.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		iv := sv.Int()
+		if iv == 1 || iv == 0 {
+			return iv == 1, nil
+		}
+		return nil, fmt.Errorf("sql/driver: couldn't convert %d into type bool", iv)
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		uv := sv.Uint()
+		if uv == 1 || uv == 0 {
+			return uv == 1, nil
+		}
+		return nil, fmt.Errorf("sql/driver: couldn't convert %d into type bool", uv)
+	}
+
+	return nil, fmt.Errorf("sql/driver: couldn't convert %v (%T) into type bool", src, src)
 }
 
 // Int32 is a ValueConverter that converts input values to int64,
@@ -39,7 +94,7 @@ type int32Type struct{}
 
 var _ ValueConverter = int32Type{}
 
-func (int32Type) ConvertValue(v interface{}) (interface{}, os.Error) {
+func (int32Type) ConvertValue(v interface{}) (interface{}, error) {
 	rv := reflect.ValueOf(v)
 	switch rv.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -72,7 +127,7 @@ var String stringType
 
 type stringType struct{}
 
-func (stringType) ConvertValue(v interface{}) (interface{}, os.Error) {
+func (stringType) ConvertValue(v interface{}) (interface{}, error) {
 	switch v.(type) {
 	case string, []byte:
 		return v, nil
@@ -137,7 +192,7 @@ type defaultConverter struct{}
 
 var _ ValueConverter = defaultConverter{}
 
-func (defaultConverter) ConvertValue(v interface{}) (interface{}, os.Error) {
+func (defaultConverter) ConvertValue(v interface{}) (interface{}, error) {
 	if IsParameterSubsetType(v) {
 		return v, nil
 	}

@@ -577,14 +577,16 @@ package body Lib.Xref is
       --  doing in such cases. For example the calls in Ada.Characters.Handling
       --  to its own obsolescent subprograms are just fine.
 
-      --  In any case we do not generate warnings within the extended source
-      --  unit of the entity in question, since we assume the source unit
-      --  itself knows what is going on (and for sure we do not want silly
-      --  warnings, e.g. on the end line of an obsolescent procedure body).
+      --  In any case we only generate warnings if we are in the extended main
+      --  source unit, and the entity itself is not in the extended main source
+      --  unit, since we assume the source unit itself knows what is going on
+      --  (and for sure we do not want silly warnings, e.g. on the end line of
+      --  an obsolescent procedure body).
 
       if Is_Obsolescent (E)
         and then not GNAT_Mode
         and then not In_Extended_Main_Source_Unit (E)
+        and then In_Extended_Main_Source_Unit (N)
       then
          Check_Restriction (No_Obsolescent_Features, N);
 

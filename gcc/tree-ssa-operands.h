@@ -105,6 +105,7 @@ extern void fini_ssa_operands (void);
 extern void update_stmt_operands (gimple);
 extern void free_stmt_operands (gimple);
 extern bool verify_imm_links (FILE *f, tree var);
+extern bool verify_ssa_operands (gimple stmt);
 
 extern void dump_immediate_uses (FILE *file);
 extern void dump_immediate_uses_for (FILE *file, tree var);

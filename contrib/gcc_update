@@ -82,6 +82,8 @@ gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
 gcc/config/arm/arm-tune.md: gcc/config/arm/arm-cores.def gcc/config/arm/gentune.sh
 gcc/config/arm/arm-tables.opt: gcc/config/arm/arm-arches.def gcc/config/arm/arm-cores.def gcc/config/arm/arm-fpus.def gcc/config/arm/genopt.sh
 gcc/config/avr/avr-tables.opt: gcc/config/avr/avr-mcus.def gcc/config/avr/genopt.sh
+gcc/config/avr/t-multilib: gcc/config/avr/avr-mcus.def gcc/config/avr/genmultilib.awk
+gcc/config/avr/multilib.h: gcc/config/avr/avr-mcus.def gcc/config/avr/genmultilib.awk
 gcc/config/c6x/c6x-tables.opt: gcc/config/c6x/c6x-isas.def gcc/config/c6x/genopt.sh
 gcc/config/c6x/c6x-sched.md: gcc/config/c6x/c6x-sched.md.in gcc/config/c6x/gensched.sh
 gcc/config/c6x/c6x-mult.md: gcc/config/c6x/c6x-mult.md.in gcc/config/c6x/genmult.sh

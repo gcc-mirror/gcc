@@ -28,12 +28,12 @@
   char r0; char r1; char r2; char r3; char r4; char r5; char r6; char r7; char r8; char r9;
   char s0; char s1; char s2; char s3; char s4; char s5; char s6; char s7; char s8; char s9;
 
-  char x; /* { dg-error "conflicts" } */
+  char x; /* { dg-message "previous declaration" } */
   char x;
 
   char z; /* { dg-message "previous declaration" } */
   char k; /* { dg-message "previous declaration" } */
-}  /* { dg-error "declaration" } */
+}  /* { dg-error "redeclaration" } */
 @end
 
 @interface B : A
@@ -60,11 +60,11 @@
   char Br0; char Br1; char Br2; char Br3; char Br4; char Br5; char Br6; char Br7; char Br8; char Br9;
   char Bs0; char Bs1; char Bs2; char Bs3; char Bs4; char Bs5; char Bs6; char Bs7; char Bs8; char Bs9;
 
-  char y; /* { dg-message "conflicts" } */
+  char y; /* { dg-message "previous declaration" } */
   char y;
 
   char z; /* { dg-error "duplicate instance variable" } */
-} /* { dg-error "declaration" } */
+} /* { dg-error "redeclaration" } */
 @end
 
 @interface C : A
@@ -97,12 +97,12 @@
   char Dr0; char Dr1; char Dr2; char Dr3; char Dr4; char Dr5; char Dr6; char Dr7; char Dr8; char Dr9;
   char Ds0; char Ds1; char Ds2; char Ds3; char Ds4; char Ds5; char Ds6; char Ds7; char Ds8; char Ds9;
 
-  char y; /* { dg-message "conflicts" } */
+  char y; /* { dg-message "previous declaration" } */
   char y;
 
   char w; /* { dg-error "duplicate instance variable" } */
   char k; /* { dg-error "duplicate instance variable" } */
-}  /* { dg-error "declaration" } */
+}  /* { dg-error "redeclaration" } */
 @end
 
 /* Finally, make sure that anonymous instance variables don't trigger

@@ -1,6 +1,6 @@
 /* Prototypes for exported functions defined in arm.c and pe.c
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010 Free Software Foundation, Inc.
+   2009, 2010, 2012  Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@arm.com)
    Minor hacks by Nick Clifton (nickc@cygnus.com)
 
@@ -86,6 +86,7 @@ extern void neon_emit_pair_result_insn (enum machine_mode,
 					rtx (*) (rtx, rtx, rtx, rtx),
 					rtx, rtx, rtx);
 extern void neon_disambiguate_copy (rtx *, rtx *, rtx *, unsigned int);
+extern void neon_split_vcombine (rtx op[3]);
 extern enum reg_class coproc_secondary_reload_class (enum machine_mode, rtx,
 						     bool);
 extern bool arm_tls_referenced_p (rtx);
@@ -116,7 +117,7 @@ extern int arm_gen_movmemqi (rtx *);
 extern enum machine_mode arm_select_cc_mode (RTX_CODE, rtx, rtx);
 extern enum machine_mode arm_select_dominance_cc_mode (rtx, rtx,
 						       HOST_WIDE_INT);
-extern rtx arm_gen_compare_reg (RTX_CODE, rtx, rtx);
+extern rtx arm_gen_compare_reg (RTX_CODE, rtx, rtx, rtx);
 extern rtx arm_gen_return_addr_mask (void);
 extern void arm_reload_in_hi (rtx *);
 extern void arm_reload_out_hi (rtx *);
@@ -155,12 +156,11 @@ extern const char *vfp_output_fstmd (rtx *);
 extern void arm_set_return_address (rtx, rtx);
 extern int arm_eliminable_register (rtx);
 extern const char *arm_output_shift(rtx *, int);
-extern void arm_expand_sync (enum machine_mode, struct arm_sync_generator *,
- 			     rtx, rtx, rtx, rtx);
-extern const char *arm_output_memory_barrier (rtx *);
-extern const char *arm_output_sync_insn (rtx, rtx *);
 extern unsigned int arm_sync_loop_insns (rtx , rtx *);
 extern int arm_attr_length_push_multi(rtx, rtx);
+extern void arm_expand_compare_and_swap (rtx op[]);
+extern void arm_split_compare_and_swap (rtx op[]);
+extern void arm_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx, rtx);
 
 #if defined TREE_CODE
 extern void arm_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
@@ -168,7 +168,6 @@ extern bool arm_pad_arg_upward (enum machine_mode, const_tree);
 extern bool arm_pad_reg_upward (enum machine_mode, tree, int);
 #endif
 extern int arm_apply_result_size (void);
-extern rtx aapcs_libcall_value (enum machine_mode);
 
 #endif /* RTX_CODE */
 
@@ -242,6 +241,10 @@ struct tune_params
 };
 
 extern const struct tune_params *current_tune;
+extern int vfp3_const_double_for_fract_bits (rtx);
 #endif /* RTX_CODE */
+
+extern void arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
+extern bool arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
 
 #endif /* ! GCC_ARM_PROTOS_H */

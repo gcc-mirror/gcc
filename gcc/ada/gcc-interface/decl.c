@@ -1008,6 +1008,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			saved = true;
 			annotate_object (gnat_entity, gnu_type, NULL_TREE,
 					 false, false);
+			/* This assertion will fail if the renamed object
+			   isn't aligned enough as to make it possible to
+			   honor the alignment set on the renaming.  */
+			if (align)
+			  {
+			    unsigned int renamed_align
+			      = DECL_P (gnu_decl)
+				? DECL_ALIGN (gnu_decl)
+				: TYPE_ALIGN (TREE_TYPE (gnu_decl));
+			    gcc_assert (renamed_align >= align);
+			  }
 			break;
 		      }
 
@@ -5507,7 +5518,15 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 		   || (!foreign
 		       && default_pass_by_ref (gnu_param_type)))))
     {
+      /* We take advantage of 6.2(12) by considering that references built for
+	 parameters whose type isn't by-ref and for which the mechanism hasn't
+	 been forced to by-ref are restrict-qualified in the C sense.  */
+      bool restrict_p
+	= !TREE_ADDRESSABLE (gnu_param_type) && mech != By_Reference;
       gnu_param_type = build_reference_type (gnu_param_type);
+      if (restrict_p)
+	gnu_param_type
+	  = build_qualified_type (gnu_param_type, TYPE_QUAL_RESTRICT);
       by_ref = true;
 
       /* In some ABIs, e.g. SPARC 32-bit, fat pointer types are themselves
@@ -5568,6 +5587,10 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
   DECL_BY_COMPONENT_PTR_P (gnu_param) = by_component_ptr;
   DECL_BY_DESCRIPTOR_P (gnu_param) = (mech == By_Descriptor ||
                                       mech == By_Short_Descriptor);
+  /* Note that, in case of a parameter passed by double reference, the
+     DECL_POINTS_TO_READONLY_P flag is meant for the second reference.
+     The first reference always points to read-only, as it points to
+     the second reference, i.e. the reference to the actual parameter.  */
   DECL_POINTS_TO_READONLY_P (gnu_param)
     = (ro_param && (by_ref || by_component_ptr));
   DECL_CAN_NEVER_BE_NULL_P (gnu_param) = Can_Never_Be_Null (gnat_param);

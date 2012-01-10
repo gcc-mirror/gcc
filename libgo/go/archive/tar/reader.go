@@ -9,14 +9,16 @@ package tar
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"io/ioutil"
 	"os"
 	"strconv"
+	"time"
 )
 
 var (
-	HeaderError = os.NewError("invalid tar header")
+	HeaderError = errors.New("invalid tar header")
 )
 
 // A Reader provides sequential access to the contents of a tar archive.
@@ -28,7 +30,7 @@ var (
 //	tr := tar.NewReader(r)
 //	for {
 //		hdr, err := tr.Next()
-//		if err == os.EOF {
+//		if err == io.EOF {
 //			// end of tar archive
 //			break
 //		}
@@ -39,7 +41,7 @@ var (
 //	}
 type Reader struct {
 	r   io.Reader
-	err os.Error
+	err error
 	nb  int64 // number of unread bytes for current file entry
 	pad int64 // amount of padding (ignored) after current file entry
 }
@@ -48,7 +50,7 @@ type Reader struct {
 func NewReader(r io.Reader) *Reader { return &Reader{r: r} }
 
 // Next advances to the next entry in the tar archive.
-func (tr *Reader) Next() (*Header, os.Error) {
+func (tr *Reader) Next() (*Header, error) {
 	var hdr *Header
 	if tr.err == nil {
 		tr.skipUnread()
@@ -78,7 +80,7 @@ func (tr *Reader) octal(b []byte) int64 {
 	for len(b) > 0 && (b[len(b)-1] == ' ' || b[len(b)-1] == '\x00') {
 		b = b[0 : len(b)-1]
 	}
-	x, err := strconv.Btoui64(cString(b), 8)
+	x, err := strconv.ParseUint(cString(b), 8, 64)
 	if err != nil {
 		tr.err = err
 	}
@@ -119,7 +121,7 @@ func (tr *Reader) readHeader() *Header {
 			return nil
 		}
 		if bytes.Equal(header, zeroBlock[0:blockSize]) {
-			tr.err = os.EOF
+			tr.err = io.EOF
 		} else {
 			tr.err = HeaderError // zero block and then non-zero block
 		}
@@ -140,7 +142,7 @@ func (tr *Reader) readHeader() *Header {
 	hdr.Uid = int(tr.octal(s.next(8)))
 	hdr.Gid = int(tr.octal(s.next(8)))
 	hdr.Size = tr.octal(s.next(12))
-	hdr.Mtime = tr.octal(s.next(12))
+	hdr.ModTime = time.Unix(tr.octal(s.next(12)), 0)
 	s.next(8) // chksum
 	hdr.Typeflag = s.next(1)[0]
 	hdr.Linkname = cString(s.next(100))
@@ -177,8 +179,8 @@ func (tr *Reader) readHeader() *Header {
 			prefix = cString(s.next(155))
 		case "star":
 			prefix = cString(s.next(131))
-			hdr.Atime = tr.octal(s.next(12))
-			hdr.Ctime = tr.octal(s.next(12))
+			hdr.AccessTime = time.Unix(tr.octal(s.next(12)), 0)
+			hdr.ChangeTime = time.Unix(tr.octal(s.next(12)), 0)
 		}
 		if len(prefix) > 0 {
 			hdr.Name = prefix + "/" + hdr.Name
@@ -199,12 +201,12 @@ func (tr *Reader) readHeader() *Header {
 }
 
 // Read reads from the current entry in the tar archive.
-// It returns 0, os.EOF when it reaches the end of that entry,
+// It returns 0, io.EOF when it reaches the end of that entry,
 // until Next is called to advance to the next entry.
-func (tr *Reader) Read(b []byte) (n int, err os.Error) {
+func (tr *Reader) Read(b []byte) (n int, err error) {
 	if tr.nb == 0 {
 		// file consumed
-		return 0, os.EOF
+		return 0, io.EOF
 	}
 
 	if int64(len(b)) > tr.nb {
@@ -213,7 +215,7 @@ func (tr *Reader) Read(b []byte) (n int, err os.Error) {
 	n, err = tr.r.Read(b)
 	tr.nb -= int64(n)
 
-	if err == os.EOF && tr.nb > 0 {
+	if err == io.EOF && tr.nb > 0 {
 		err = io.ErrUnexpectedEOF
 	}
 	tr.err = err

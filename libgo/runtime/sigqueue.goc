@@ -81,9 +81,9 @@ __go_sigsend(int32 s)
 
 // Called to receive a bitmask of queued signals.
 func Sigrecv() (m uint32) {
-	// runtime·entersyscall();
+	runtime_entersyscall();
 	runtime_notesleep(&sig);
-	// runtime·exitsyscall();
+	runtime_exitsyscall();
 	runtime_noteclear(&sig);
 	for(;;) {
 		m = sig.mask;
@@ -110,5 +110,6 @@ func Signame(sig int32) (name String) {
 }
 
 func Siginit() {
+	runtime_initsig(SigQueue);
 	sig.inuse = true;	// enable reception of signals; cannot disable
 }

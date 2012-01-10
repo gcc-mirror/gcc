@@ -41,6 +41,14 @@ with GNAT.OS_Lib;          use GNAT.OS_Lib;
 
 package Prj is
 
+   procedure Add_Restricted_Language (Name : String);
+   --  Call by gprbuild for each language specify by switch
+   --  --restricted-to-languages=.
+
+   function Is_Allowed_Language (Name : Name_Id) return Boolean;
+   --  Returns True if --restricted-to-languages= is not used or if Name
+   --  is one of the restricted languages.
+
    All_Other_Names : constant Name_Id := Names_High_Bound;
    --  Name used to replace others as an index of an associative array
    --  attribute in situations where this is allowed.
@@ -1025,6 +1033,9 @@ package Prj is
       --  The level of library support. Specified in the configuration. Support
       --  is none, static libraries only or both static and shared libraries.
 
+      Lib_Encapsulated_Supported : Boolean := False;
+      --  True when building fully standalone libraries supported on the target
+
       Archive_Builder : Name_List_Index := No_Name_List;
       --  The name of the executable to build archives, with the minimum
       --  switches. Specified in the configuration.
@@ -1077,37 +1088,38 @@ package Prj is
    end record;
 
    Default_Project_Config : constant Project_Configuration :=
-                              (Target                        => No_Name,
-                               Run_Path_Option               => No_Name_List,
-                               Run_Path_Origin               => No_Name,
-                               Library_Install_Name_Option   => No_Name,
-                               Separate_Run_Path_Options     => False,
-                               Executable_Suffix             => No_Name,
-                               Linker                        => No_Path,
-                               Map_File_Option               => No_Name,
+                              (Target                         => No_Name,
+                               Run_Path_Option                => No_Name_List,
+                               Run_Path_Origin                => No_Name,
+                               Library_Install_Name_Option    => No_Name,
+                               Separate_Run_Path_Options      => False,
+                               Executable_Suffix              => No_Name,
+                               Linker                         => No_Path,
+                               Map_File_Option                => No_Name,
                                Trailing_Linker_Required_Switches =>
                                  No_Name_List,
-                               Linker_Executable_Option      => No_Name_List,
-                               Linker_Lib_Dir_Option         => No_Name,
-                               Linker_Lib_Name_Option        => No_Name,
-                               Library_Builder               => No_Path,
-                               Max_Command_Line_Length       => 0,
-                               Resp_File_Format              => None,
-                               Resp_File_Options             => No_Name_List,
-                               Lib_Support                   => None,
-                               Archive_Builder               => No_Name_List,
-                               Archive_Builder_Append_Option => No_Name_List,
-                               Archive_Indexer               => No_Name_List,
-                               Archive_Suffix                => No_File,
-                               Lib_Partial_Linker            => No_Name_List,
-                               Shared_Lib_Driver             => No_File,
-                               Shared_Lib_Prefix             => No_File,
-                               Shared_Lib_Suffix             => No_File,
-                               Shared_Lib_Min_Options        => No_Name_List,
-                               Lib_Version_Options           => No_Name_List,
-                               Symbolic_Link_Supported       => False,
-                               Lib_Maj_Min_Id_Supported      => False,
-                               Auto_Init_Supported           => False);
+                               Linker_Executable_Option       => No_Name_List,
+                               Linker_Lib_Dir_Option          => No_Name,
+                               Linker_Lib_Name_Option         => No_Name,
+                               Library_Builder                => No_Path,
+                               Max_Command_Line_Length        => 0,
+                               Resp_File_Format               => None,
+                               Resp_File_Options              => No_Name_List,
+                               Lib_Support                    => None,
+                               Lib_Encapsulated_Supported     => False,
+                               Archive_Builder                => No_Name_List,
+                               Archive_Builder_Append_Option  => No_Name_List,
+                               Archive_Indexer                => No_Name_List,
+                               Archive_Suffix                 => No_File,
+                               Lib_Partial_Linker             => No_Name_List,
+                               Shared_Lib_Driver              => No_File,
+                               Shared_Lib_Prefix              => No_File,
+                               Shared_Lib_Suffix              => No_File,
+                               Shared_Lib_Min_Options         => No_Name_List,
+                               Lib_Version_Options            => No_Name_List,
+                               Symbolic_Link_Supported        => False,
+                               Lib_Maj_Min_Id_Supported       => False,
+                               Auto_Init_Supported            => False);
 
    -------------------------
    -- Aggregated projects --
@@ -1138,6 +1150,8 @@ package Prj is
    ------------------
 
    --  The following record describes a project file representation
+
+   type Standalone is (No, Standard, Encapsulated);
 
    type Project_Data (Qualifier : Project_Qualifier := Unspecified) is record
 
@@ -1251,7 +1265,7 @@ package Prj is
       Lib_Internal_Name : Name_Id := No_Name;
       --  If a library project, internal name store inside the library
 
-      Standalone_Library : Boolean := False;
+      Standalone_Library : Standalone := No;
       --  Indicate that this is a Standalone Library Project File
 
       Lib_Interface_ALIs : String_List_Id := Nil_String;
@@ -1363,6 +1377,10 @@ package Prj is
      (Extending : Project_Id;
       Extended  : Project_Id) return Boolean;
    --  Return True if Extending is extending the Extended project
+
+   function Is_Ext
+     (Extending : Project_Id;
+      Extended  : Project_Id) return Boolean renames Is_Extending;
 
    function Has_Ada_Sources (Data : Project_Id) return Boolean;
    --  Return True if the project has Ada sources
@@ -1544,9 +1562,10 @@ package Prj is
    generic
       type State is limited private;
       with procedure Action
-        (Project    : Project_Id;
-         Tree       : Project_Tree_Ref;
-         With_State : in out State);
+        (Project          : Project_Id;
+         Tree             : Project_Tree_Ref;
+         In_Aggregate_Lib : Boolean;
+         With_State       : in out State);
    procedure For_Every_Project_Imported
      (By                 : Project_Id;
       Tree               : Project_Tree_Ref;
@@ -1571,7 +1590,9 @@ package Prj is
    --
    --  If Include_Aggregated is True, then an aggregate project will recurse
    --  into the projects it aggregates. Otherwise, the latter are never
-   --  returned
+   --  returned.
+   --
+   --  In_Aggregate_Lib is True if the project is in an aggregate library
    --
    --  The Tree argument passed to the callback is required in the case of
    --  aggregated projects, since they might not be using the same tree as 'By'

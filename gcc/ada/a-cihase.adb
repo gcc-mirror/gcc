@@ -37,14 +37,17 @@ pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Keys);
 
 with Ada.Containers.Prime_Numbers;
 
-with System;  use type System.Address;
+with System; use type System.Address;
 
 package body Ada.Containers.Indefinite_Hashed_Sets is
 
-   type Iterator is new Set_Iterator_Interfaces.Forward_Iterator with record
+   type Iterator is new Limited_Controlled and
+     Set_Iterator_Interfaces.Forward_Iterator with
+   record
       Container : Set_Access;
-      Position  : Cursor;
    end record;
+
+   overriding procedure Finalize (Object : in out Iterator);
 
    overriding function First (Object : Iterator) return Cursor;
 
@@ -200,6 +203,33 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    begin
       HT_Ops.Clear (Container.HT);
    end Clear;
+
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : aliased Set;
+      Position  : Cursor) return Constant_Reference_Type
+   is
+   begin
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with
+           "Position cursor designates wrong container";
+      end if;
+
+      if Position.Node.Element = null then
+         raise Program_Error with "Node has no element";
+      end if;
+
+      pragma Assert (Vet (Position), "bad cursor in Constant_Reference");
+
+      return (Element => Position.Node.Element.all'Access);
+   end Constant_Reference;
 
    --------------
    -- Contains --
@@ -569,6 +599,17 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       HT_Ops.Finalize (Container.HT);
    end Finalize;
 
+   procedure Finalize (Object : in out Iterator) is
+   begin
+      if Object.Container /= null then
+         declare
+            B : Natural renames Object.Container.all.HT.Busy;
+         begin
+            B := B - 1;
+         end;
+      end if;
+   end Finalize;
+
    ----------
    -- Find --
    ----------
@@ -649,10 +690,8 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    end First;
 
    function First (Object : Iterator) return Cursor is
-      Node : constant Node_Access := HT_Ops.First (Object.Container.HT);
    begin
-      return (if Node = null then No_Element
-              else Cursor'(Object.Container, Node));
+      return Object.Container.First;
    end First;
 
    ----------
@@ -990,7 +1029,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          Process (Cursor'(Container'Unrestricted_Access, Node));
       end Process_Node;
 
-      B : Natural renames Container'Unrestricted_Access.HT.Busy;
+      B : Natural renames Container'Unrestricted_Access.all.HT.Busy;
 
    --  Start of processing for Iterate
 
@@ -1009,9 +1048,16 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    end Iterate;
 
    function Iterate (Container : Set)
-     return Set_Iterator_Interfaces.Forward_Iterator'Class is
+     return Set_Iterator_Interfaces.Forward_Iterator'Class
+   is
+      B : Natural renames Container'Unrestricted_Access.all.HT.Busy;
    begin
-      return Iterator'(Container'Unrestricted_Access, First (Container));
+      return It : constant Iterator :=
+                    Iterator'(Limited_Controlled with
+                                Container => Container'Unrestricted_Access)
+      do
+         B := B + 1;
+      end return;
    end Iterate;
 
    ------------
@@ -1072,12 +1118,16 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       Position : Cursor) return Cursor
    is
    begin
-      if Position.Container /= Object.Container then
-         raise Program_Error with
-           "Position cursor designates wrong set";
+      if Position.Container = null then
+         return No_Element;
       end if;
 
-      return (if Position.Node = null then No_Element else Next (Position));
+      if Position.Container /= Object.Container then
+         raise Program_Error with
+           "Position cursor of Next designates wrong set";
+      end if;
+
+      return Next (Position);
    end Next;
 
    -------------
@@ -1196,19 +1246,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          Free_Element (X);
          raise;
    end Read_Node;
-
-   ---------------
-   -- Reference --
-   ---------------
-
-   function Constant_Reference
-     (Container : aliased Set;
-      Position  : Cursor) return Constant_Reference_Type
-   is
-      pragma Unreferenced (Container);
-   begin
-      return (Element => Position.Node.Element.all'Access);
-   end Constant_Reference;
 
    -------------
    -- Replace --
@@ -1869,6 +1906,29 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
            Hash      => Hash,
            Equivalent_Keys => Equivalent_Key_Node);
 
+      ------------------------
+      -- Constant_Reference --
+      ------------------------
+
+      function Constant_Reference
+        (Container : aliased Set;
+         Key       : Key_Type) return Constant_Reference_Type
+      is
+         Node : constant Node_Access :=
+                  Key_Keys.Find (Container.HT, Key);
+
+      begin
+         if Node = null then
+            raise Constraint_Error with "Key not in set";
+         end if;
+
+         if Node.Element = null then
+            raise Program_Error with "Node has no element";
+         end if;
+
+         return (Element => Node.Element.all'Access);
+      end Constant_Reference;
+
       --------------
       -- Contains --
       --------------
@@ -1895,7 +1955,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          Key_Keys.Delete_Key_Sans_Free (Container.HT, Key, X);
 
          if X = null then
-            raise Constraint_Error with "key not in map";
+            raise Constraint_Error with "key not in map";  --  ??? "set"
          end if;
 
          Free (X);
@@ -1913,7 +1973,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
       begin
          if Node = null then
-            raise Constraint_Error with "key not in map";
+            raise Constraint_Error with "key not in map";  --  ??? "set"
          end if;
 
          return Node.Element.all;
@@ -1978,6 +2038,74 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          return Key (Position.Node.Element.all);
       end Key;
 
+      ----------
+      -- Read --
+      ----------
+
+      procedure Read
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : out Reference_Type)
+      is
+      begin
+         raise Program_Error with "attempt to stream reference";
+      end Read;
+
+      ------------------------------
+      -- Reference_Preserving_Key --
+      ------------------------------
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Position  : Cursor) return Reference_Type
+      is
+      begin
+         if Position.Container = null then
+            raise Constraint_Error with "Position cursor has no element";
+         end if;
+
+         if Position.Container /= Container'Unrestricted_Access then
+            raise Program_Error with
+              "Position cursor designates wrong container";
+         end if;
+
+         if Position.Node.Element = null then
+            raise Program_Error with "Node has no element";
+         end if;
+
+         pragma Assert
+           (Vet (Position),
+            "bad cursor in function Reference_Preserving_Key");
+
+         --  Some form of finalization will be required in order to actually
+         --  check that the key-part of the element designated by Position has
+         --  not changed.  ???
+
+         return (Element => Position.Node.Element.all'Access);
+      end Reference_Preserving_Key;
+
+      function Reference_Preserving_Key
+        (Container : aliased in out Set;
+         Key       : Key_Type) return Reference_Type
+      is
+         Node : constant Node_Access :=
+                  Key_Keys.Find (Container.HT, Key);
+
+      begin
+         if Node = null then
+            raise Constraint_Error with "Key not in set";
+         end if;
+
+         if Node.Element = null then
+            raise Program_Error with "Node has no element";
+         end if;
+
+         --  Some form of finalization will be required in order to actually
+         --  check that the key-part of the element designated by Key has not
+         --  changed.  ???
+
+         return (Element => Node.Element.all'Access);
+      end Reference_Preserving_Key;
+
       -------------
       -- Replace --
       -------------
@@ -1998,6 +2126,10 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
          Replace_Element (Container.HT, Node, New_Item);
       end Replace;
+
+      -----------------------------------
+      -- Update_Element_Preserving_Key --
+      -----------------------------------
 
       procedure Update_Element_Preserving_Key
         (Container : in out Set;
@@ -2100,27 +2232,17 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          raise Program_Error with "key was modified";
       end Update_Element_Preserving_Key;
 
-      ------------------------------
-      -- Reference_Preserving_Key --
-      ------------------------------
+      -----------
+      -- Write --
+      -----------
 
-      function Reference_Preserving_Key
-        (Container : aliased in out Set;
-         Position  : Cursor) return Reference_Type
+      procedure Write
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : Reference_Type)
       is
-         pragma Unreferenced (Container);
       begin
-         return (Element => Position.Node.Element.all'Access);
-      end Reference_Preserving_Key;
-
-      function Reference_Preserving_Key
-        (Container : aliased in out Set;
-         Key       : Key_Type) return Reference_Type
-      is
-         Position : constant Cursor := Find (Container, Key);
-      begin
-         return (Element => Position.Node.Element.all'Access);
-      end Reference_Preserving_Key;
+         raise Program_Error with "attempt to stream reference";
+      end Write;
 
    end Generic_Keys;
 

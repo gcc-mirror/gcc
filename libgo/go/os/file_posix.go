@@ -8,11 +8,12 @@ package os
 
 import (
 	"syscall"
+	"time"
 )
 
 func sigpipe() // implemented in package runtime
 
-func epipecheck(file *File, e int) {
+func epipecheck(file *File, e error) {
 	if e == syscall.EPIPE {
 		file.nepipe++
 		if file.nepipe >= 10 {
@@ -24,17 +25,17 @@ func epipecheck(file *File, e int) {
 }
 
 // Remove removes the named file or directory.
-func Remove(name string) Error {
+func Remove(name string) error {
 	// System call interface forces us to know
 	// whether name is a file or directory.
 	// Try both: it is cheaper on average than
 	// doing a Stat plus the right one.
 	e := syscall.Unlink(name)
-	if !iserror(e) {
+	if e == nil {
 		return nil
 	}
 	e1 := syscall.Rmdir(name)
-	if !iserror(e1) {
+	if e1 == nil {
 		return nil
 	}
 
@@ -53,48 +54,48 @@ func Remove(name string) Error {
 	if e1 != syscall.ENOTDIR {
 		e = e1
 	}
-	return &PathError{"remove", name, Errno(e)}
+	return &PathError{"remove", name, e}
 }
 
 // LinkError records an error during a link or symlink or rename
 // system call and the paths that caused it.
 type LinkError struct {
-	Op    string
-	Old   string
-	New   string
-	Error Error
+	Op  string
+	Old string
+	New string
+	Err error
 }
 
-func (e *LinkError) String() string {
-	return e.Op + " " + e.Old + " " + e.New + ": " + e.Error.String()
+func (e *LinkError) Error() string {
+	return e.Op + " " + e.Old + " " + e.New + ": " + e.Err.Error()
 }
 
 // Link creates a hard link.
-func Link(oldname, newname string) Error {
+func Link(oldname, newname string) error {
 	e := syscall.Link(oldname, newname)
-	if iserror(e) {
-		return &LinkError{"link", oldname, newname, Errno(e)}
+	if e != nil {
+		return &LinkError{"link", oldname, newname, e}
 	}
 	return nil
 }
 
 // Symlink creates a symbolic link.
-func Symlink(oldname, newname string) Error {
+func Symlink(oldname, newname string) error {
 	e := syscall.Symlink(oldname, newname)
-	if iserror(e) {
-		return &LinkError{"symlink", oldname, newname, Errno(e)}
+	if e != nil {
+		return &LinkError{"symlink", oldname, newname, e}
 	}
 	return nil
 }
 
 // Readlink reads the contents of a symbolic link: the destination of
-// the link.  It returns the contents and an Error, if any.
-func Readlink(name string) (string, Error) {
+// the link.  It returns the contents and an error, if any.
+func Readlink(name string) (string, error) {
 	for len := 128; ; len *= 2 {
 		b := make([]byte, len)
 		n, e := syscall.Readlink(name, b)
-		if iserror(e) {
-			return "", &PathError{"readlink", name, Errno(e)}
+		if e != nil {
+			return "", &PathError{"readlink", name, e}
 		}
 		if n < len {
 			return string(b[0:n]), nil
@@ -105,62 +106,62 @@ func Readlink(name string) (string, Error) {
 }
 
 // Rename renames a file.
-func Rename(oldname, newname string) Error {
+func Rename(oldname, newname string) error {
 	e := syscall.Rename(oldname, newname)
-	if iserror(e) {
-		return &LinkError{"rename", oldname, newname, Errno(e)}
+	if e != nil {
+		return &LinkError{"rename", oldname, newname, e}
 	}
 	return nil
 }
 
 // Chmod changes the mode of the named file to mode.
 // If the file is a symbolic link, it changes the mode of the link's target.
-func Chmod(name string, mode uint32) Error {
-	if e := syscall.Chmod(name, mode); iserror(e) {
-		return &PathError{"chmod", name, Errno(e)}
+func Chmod(name string, mode uint32) error {
+	if e := syscall.Chmod(name, mode); e != nil {
+		return &PathError{"chmod", name, e}
 	}
 	return nil
 }
 
 // Chmod changes the mode of the file to mode.
-func (f *File) Chmod(mode uint32) Error {
-	if e := syscall.Fchmod(f.fd, mode); iserror(e) {
-		return &PathError{"chmod", f.name, Errno(e)}
+func (f *File) Chmod(mode uint32) error {
+	if e := syscall.Fchmod(f.fd, mode); e != nil {
+		return &PathError{"chmod", f.name, e}
 	}
 	return nil
 }
 
 // Chown changes the numeric uid and gid of the named file.
 // If the file is a symbolic link, it changes the uid and gid of the link's target.
-func Chown(name string, uid, gid int) Error {
-	if e := syscall.Chown(name, uid, gid); iserror(e) {
-		return &PathError{"chown", name, Errno(e)}
+func Chown(name string, uid, gid int) error {
+	if e := syscall.Chown(name, uid, gid); e != nil {
+		return &PathError{"chown", name, e}
 	}
 	return nil
 }
 
 // Lchown changes the numeric uid and gid of the named file.
 // If the file is a symbolic link, it changes the uid and gid of the link itself.
-func Lchown(name string, uid, gid int) Error {
-	if e := syscall.Lchown(name, uid, gid); iserror(e) {
-		return &PathError{"lchown", name, Errno(e)}
+func Lchown(name string, uid, gid int) error {
+	if e := syscall.Lchown(name, uid, gid); e != nil {
+		return &PathError{"lchown", name, e}
 	}
 	return nil
 }
 
 // Chown changes the numeric uid and gid of the named file.
-func (f *File) Chown(uid, gid int) Error {
-	if e := syscall.Fchown(f.fd, uid, gid); iserror(e) {
-		return &PathError{"chown", f.name, Errno(e)}
+func (f *File) Chown(uid, gid int) error {
+	if e := syscall.Fchown(f.fd, uid, gid); e != nil {
+		return &PathError{"chown", f.name, e}
 	}
 	return nil
 }
 
 // Truncate changes the size of the file.
 // It does not change the I/O offset.
-func (f *File) Truncate(size int64) Error {
-	if e := syscall.Ftruncate(f.fd, size); iserror(e) {
-		return &PathError{"truncate", f.name, Errno(e)}
+func (f *File) Truncate(size int64) error {
+	if e := syscall.Ftruncate(f.fd, size); e != nil {
+		return &PathError{"truncate", f.name, e}
 	}
 	return nil
 }
@@ -168,11 +169,11 @@ func (f *File) Truncate(size int64) Error {
 // Sync commits the current contents of the file to stable storage.
 // Typically, this means flushing the file system's in-memory copy
 // of recently written data to disk.
-func (file *File) Sync() (err Error) {
-	if file == nil {
+func (f *File) Sync() (err error) {
+	if f == nil {
 		return EINVAL
 	}
-	if e := syscall.Fsync(file.fd); iserror(e) {
+	if e := syscall.Fsync(f.fd); e != nil {
 		return NewSyscallError("fsync", e)
 	}
 	return nil
@@ -181,15 +182,16 @@ func (file *File) Sync() (err Error) {
 // Chtimes changes the access and modification times of the named
 // file, similar to the Unix utime() or utimes() functions.
 //
-// The argument times are in nanoseconds, although the underlying
-// filesystem may truncate or round the values to a more
-// coarse time unit.
-func Chtimes(name string, atime_ns int64, mtime_ns int64) Error {
+// The underlying filesystem may truncate or round the values to a
+// less precise time unit.
+func Chtimes(name string, atime time.Time, mtime time.Time) error {
 	var utimes [2]syscall.Timeval
+	atime_ns := atime.Unix()*1e9 + int64(atime.Nanosecond())
+	mtime_ns := mtime.Unix()*1e9 + int64(mtime.Nanosecond())
 	utimes[0] = syscall.NsecToTimeval(atime_ns)
 	utimes[1] = syscall.NsecToTimeval(mtime_ns)
-	if e := syscall.Utimes(name, utimes[0:]); iserror(e) {
-		return &PathError{"chtimes", name, Errno(e)}
+	if e := syscall.Utimes(name, utimes[0:]); e != nil {
+		return &PathError{"chtimes", name, e}
 	}
 	return nil
 }

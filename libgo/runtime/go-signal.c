@@ -6,186 +6,381 @@
 
 #include <signal.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/time.h>
 
+#include "runtime.h"
 #include "go-assert.h"
 #include "go-panic.h"
-#include "go-signal.h"
-
-#include "runtime.h"
 
 #ifndef SA_RESTART
   #define SA_RESTART 0
 #endif
 
-/* What to do for a signal.  */
+#ifdef USING_SPLIT_STACK
 
-struct sigtab
-{
-  /* Signal number.  */
-  int sig;
-  /* Nonzero if the signal should be ignored.  */
-  _Bool ignore;
-  /* Nonzero if we should restart system calls.  */
-  _Bool restart;
-};
+extern void __splitstack_getcontext(void *context[10]);
 
-/* What to do for signals.  */
+extern void __splitstack_setcontext(void *context[10]);
 
-static struct sigtab signals[] =
-{
-  { SIGHUP, 0, 1 },
-  { SIGINT, 0, 1 },
-  { SIGALRM, 1, 1 },
-  { SIGTERM, 0, 1 },
+#endif
+
+#define C SigCatch
+#define I SigIgnore
+#define R SigRestart
+#define Q SigQueue
+#define P SigPanic
+
+/* Signal actions.  This collects the sigtab tables for several
+   different targets from the master library.  SIGKILL, SIGCONT, and
+   SIGSTOP are not listed, as we don't want to set signal handlers for
+   them.  */
+
+SigTab runtime_sigtab[] = {
+#ifdef SIGHUP
+  { SIGHUP,	Q + R },
+#endif
+#ifdef SIGINT
+  { SIGINT, 	Q + R },
+#endif
+#ifdef SIGQUIT
+  { SIGQUIT, 	C },
+#endif
+#ifdef SIGILL
+  { SIGILL, 	C },
+#endif
+#ifdef SIGTRAP
+  { SIGTRAP, 	C },
+#endif
+#ifdef SIGABRT
+  { SIGABRT, 	C },
+#endif
 #ifdef SIGBUS
-  { SIGBUS, 0, 0 },
+  { SIGBUS, 	C + P },
 #endif
 #ifdef SIGFPE
-  { SIGFPE, 0, 0 },
+  { SIGFPE, 	C + P },
 #endif
 #ifdef SIGUSR1
-  { SIGUSR1, 1, 1 },
+  { SIGUSR1, 	Q + I + R },
 #endif
 #ifdef SIGSEGV
-  { SIGSEGV, 0, 0 },
+  { SIGSEGV, 	C + P },
 #endif
 #ifdef SIGUSR2
-  { SIGUSR2, 1, 1 },
+  { SIGUSR2, 	Q + I + R },
 #endif
 #ifdef SIGPIPE
-  { SIGPIPE, 1, 0 },
+  { SIGPIPE, 	I },
+#endif
+#ifdef SIGALRM
+  { SIGALRM, 	Q + I + R },
+#endif
+#ifdef SIGTERM
+  { SIGTERM, 	Q + R },
+#endif
+#ifdef SIGSTKFLT
+  { SIGSTKFLT, 	C },
 #endif
 #ifdef SIGCHLD
-  { SIGCHLD, 1, 1 },
+  { SIGCHLD, 	Q + I + R },
 #endif
 #ifdef SIGTSTP
-  { SIGTSTP, 1, 1 },
+  { SIGTSTP, 	Q + I + R },
 #endif
 #ifdef SIGTTIN
-  { SIGTTIN, 1, 1 },
+  { SIGTTIN, 	Q + I + R },
 #endif
 #ifdef SIGTTOU
-  { SIGTTOU, 1, 1 },
+  { SIGTTOU, 	Q + I + R },
 #endif
 #ifdef SIGURG
-  { SIGURG, 1, 1 },
+  { SIGURG, 	Q + I + R },
 #endif
 #ifdef SIGXCPU
-  { SIGXCPU, 1, 1 },
+  { SIGXCPU, 	Q + I + R },
 #endif
 #ifdef SIGXFSZ
-  { SIGXFSZ, 1, 1 },
+  { SIGXFSZ, 	Q + I + R },
 #endif
-#ifdef SIGVTARLM
-  { SIGVTALRM, 1, 1 },
+#ifdef SIGVTALRM
+  { SIGVTALRM, 	Q + I + R },
+#endif
+#ifdef SIGPROF
+  { SIGPROF, 	Q + I + R },
 #endif
 #ifdef SIGWINCH
-  { SIGWINCH, 1, 1 },
+  { SIGWINCH, 	Q + I + R },
 #endif
 #ifdef SIGIO
-  { SIGIO, 1, 1 },
+  { SIGIO, 	Q + I + R },
 #endif
 #ifdef SIGPWR
-  { SIGPWR, 1, 1 },
+  { SIGPWR, 	Q + I + R },
 #endif
-  { -1, 0, 0 }
+#ifdef SIGSYS
+  { SIGSYS, 	C },
+#endif
+#ifdef SIGEMT
+  { SIGEMT,	C },
+#endif
+#ifdef SIGINFO
+  { SIGINFO,	Q + I + R },
+#endif
+#ifdef SIGTHR
+  { SIGTHR,	Q + I + R },
+#endif
+  { -1,		0 }
 };
+#undef C
+#undef I
+#undef R
+#undef Q
+#undef P
 
-/* The Go signal handler.  */
+/* Handle a signal, for cases where we don't panic.  We can split the
+   stack here.  */
 
 static void
-sighandler (int sig)
+sig_handler (int sig)
 {
-  const char *msg;
   int i;
 
+#ifdef SIGPROF
   if (sig == SIGPROF)
     {
       /* FIXME.  */
-      runtime_sigprof (0, 0, nil);
+      runtime_sigprof (0, 0, nil, nil);
+      return;
+    }
+#endif
+
+  for (i = 0; runtime_sigtab[i].sig != -1; ++i)
+    {
+      struct sigaction sa;
+
+      if (runtime_sigtab[i].sig != sig)
+	continue;
+
+      if ((runtime_sigtab[i].flags & SigQueue) != 0)
+	{
+	  if (__go_sigsend (sig)
+	      || (runtime_sigtab[sig].flags & SigIgnore) != 0)
+	    return;
+	  runtime_exit (2);		// SIGINT, SIGTERM, etc
+	}
+
+      if (runtime_panicking)
+	runtime_exit (2);
+      runtime_panicking = 1;
+
+      /* We should do a stack backtrace here.  Until we can do that,
+	 we reraise the signal in order to get a slightly better
+	 report from the shell.  */
+
+      memset (&sa, 0, sizeof sa);
+
+      sa.sa_handler = SIG_DFL;
+
+      i = sigemptyset (&sa.sa_mask);
+      __go_assert (i == 0);
+
+      if (sigaction (sig, &sa, NULL) != 0)
+	abort ();
+
+      raise (sig);
+
+      runtime_exit (2);
+    }
+
+  __builtin_unreachable ();
+}
+
+/* The start of handling a signal which panics.  */
+
+static void
+sig_panic_leadin (int sig)
+{
+  int i;
+  sigset_t clear;
+
+  if (runtime_m ()->mallocing)
+    {
+      runtime_printf ("caught signal while mallocing: %d\n", sig);
+      runtime_throw ("caught signal while mallocing");
+    }
+
+  /* The signal handler blocked signals; unblock them.  */
+  i = sigfillset (&clear);
+  __go_assert (i == 0);
+  i = sigprocmask (SIG_UNBLOCK, &clear, NULL);
+  __go_assert (i == 0);
+}
+
+#ifdef SA_SIGINFO
+
+/* Signal dispatch for signals which panic, on systems which support
+   SA_SIGINFO.  This is called on the thread stack, and as such it is
+   permitted to split the stack.  */
+
+static void
+sig_panic_info_handler (int sig, siginfo_t *info,
+			void *context __attribute__ ((unused)))
+{
+  if (runtime_g () == NULL)
+    {
+      sig_handler (sig);
       return;
     }
 
-  /* FIXME: Should check siginfo for more information when
-     available.  */
-  msg = NULL;
+  sig_panic_leadin (sig);
+
   switch (sig)
     {
 #ifdef SIGBUS
     case SIGBUS:
-      msg = "invalid memory address or nil pointer dereference";
-      break;
-#endif
-
-#ifdef SIGFPE
-    case SIGFPE:
-      msg = "integer divide by zero or floating point error";
-      break;
+      if (info->si_code == BUS_ADRERR && (uintptr_t) info->si_addr < 0x1000)
+	runtime_panicstring ("invalid memory address or "
+			     "nil pointer dereference");
+      runtime_printf ("unexpected fault address %p\n", info->si_addr);
+      runtime_throw ("fault");
 #endif
 
 #ifdef SIGSEGV
     case SIGSEGV:
-      msg = "invalid memory address or nil pointer dereference";
-      break;
+      if ((info->si_code == 0
+	   || info->si_code == SEGV_MAPERR
+	   || info->si_code == SEGV_ACCERR)
+	  && (uintptr_t) info->si_addr < 0x1000)
+	runtime_panicstring ("invalid memory address or "
+			     "nil pointer dereference");
+      runtime_printf ("unexpected fault address %p\n", info->si_addr);
+      runtime_throw ("fault");
 #endif
 
-    default:
-      break;
-    }
-
-  if (msg != NULL)
-    {
-      sigset_t clear;
-
-      if (__sync_bool_compare_and_swap (&m->mallocing, 1, 1))
+#ifdef SIGFPE
+    case SIGFPE:
+      switch (info->si_code)
 	{
-	  fprintf (stderr, "caught signal while mallocing: %s\n", msg);
-	  __go_assert (0);
+	case FPE_INTDIV:
+	  runtime_panicstring ("integer divide by zero");
+	case FPE_INTOVF:
+	  runtime_panicstring ("integer overflow");
 	}
-
-      /* The signal handler blocked signals; unblock them.  */
-      i = sigfillset (&clear);
-      __go_assert (i == 0);
-      i = sigprocmask (SIG_UNBLOCK, &clear, NULL);
-      __go_assert (i == 0);
-
-      __go_panic_msg (msg);
+      runtime_panicstring ("floating point error");
+#endif
     }
 
-  if (__go_sigsend (sig))
-    return;
-  for (i = 0; signals[i].sig != -1; ++i)
+  /* All signals with SigPanic should be in cases above, and this
+     handler should only be invoked for those signals.  */
+  __builtin_unreachable ();
+}
+
+#else /* !defined (SA_SIGINFO) */
+
+static void
+sig_panic_handler (int sig)
+{
+  if (runtime_g () == NULL)
     {
-      if (signals[i].sig == sig)
-	{
-	  struct sigaction sa;
-
-	  if (signals[i].ignore)
-	    return;
-
-	  memset (&sa, 0, sizeof sa);
-
-	  sa.sa_handler = SIG_DFL;
-
-	  i = sigemptyset (&sa.sa_mask);
-	  __go_assert (i == 0);
-
-	  if (sigaction (sig, &sa, NULL) != 0)
-	    abort ();
-
-	  raise (sig);
-	  exit (2);
-	}
+      sig_handler (sig);
+      return;
     }
-  abort ();
+
+  sig_panic_leadin (sig);
+
+  switch (sig)
+    {
+#ifdef SIGBUS
+    case SIGBUS:
+      runtime_panicstring ("invalid memory address or "
+			   "nil pointer dereference");
+#endif
+
+#ifdef SIGSEGV
+    case SIGSEGV:
+      runtime_panicstring ("invalid memory address or "
+			   "nil pointer dereference");
+#endif
+
+#ifdef SIGFPE
+    case SIGFPE:
+      runtime_panicstring ("integer divide by zero or floating point error");
+#endif
+    }
+
+  /* All signals with SigPanic should be in cases above, and this
+     handler should only be invoked for those signals.  */
+  __builtin_unreachable ();
+}
+
+#endif /* !defined (SA_SIGINFO) */
+
+/* Ignore a signal.  This is called on the alternate signal stack so
+   it may not split the stack.  */
+
+static void sig_ignore (int) __attribute__ ((no_split_stack));
+
+static void
+sig_ignore (int sig __attribute__ ((unused)))
+{
+}
+
+/* A signal handler used for signals which are not going to panic.
+   This is called on the alternate signal stack so it may not split
+   the stack.  */
+
+static void
+sig_tramp (int) __attribute__ ((no_split_stack));
+
+static void
+sig_tramp (int sig)
+{
+  G *gp;
+  M *mp;
+
+  /* We are now running on the stack registered via sigaltstack.
+     (Actually there is a small span of time between runtime_siginit
+     and sigaltstack when the program starts.)  */
+  gp = runtime_g ();
+  mp = runtime_m ();
+
+  if (gp != NULL)
+    {
+#ifdef USING_SPLIT_STACK
+      __splitstack_getcontext (&gp->stack_context[0]);
+#endif
+    }
+
+  if (gp != NULL && mp->gsignal != NULL)
+    {
+      /* We are running on the signal stack.  Set the split stack
+	 context so that the stack guards are checked correctly.  */
+#ifdef USING_SPLIT_STACK
+      __splitstack_setcontext (&mp->gsignal->stack_context[0]);
+#endif
+    }
+
+  sig_handler (sig);
+
+  /* We are going to return back to the signal trampoline and then to
+     whatever we were doing before we got the signal.  Restore the
+     split stack context so that stack guards are checked
+     correctly.  */
+
+  if (gp != NULL)
+    {
+#ifdef USING_SPLIT_STACK
+      __splitstack_setcontext (&gp->stack_context[0]);
+#endif
+    }
 }
 
 /* Initialize signal handling for Go.  This is called when the program
    starts.  */
 
 void
-__initsig ()
+runtime_initsig (int32 queue)
 {
   struct sigaction sa;
   int i;
@@ -194,15 +389,44 @@ __initsig ()
 
   memset (&sa, 0, sizeof sa);
 
-  sa.sa_handler = sighandler;
-
   i = sigfillset (&sa.sa_mask);
   __go_assert (i == 0);
 
-  for (i = 0; signals[i].sig != -1; ++i)
+  for (i = 0; runtime_sigtab[i].sig != -1; ++i)
     {
-      sa.sa_flags = signals[i].restart ? SA_RESTART : 0;
-      if (sigaction (signals[i].sig, &sa, NULL) != 0)
+      if (runtime_sigtab[i].flags == 0)
+	continue;
+      if ((runtime_sigtab[i].flags & SigQueue) != queue)
+	continue;
+
+      if ((runtime_sigtab[i].flags & (SigCatch | SigQueue)) != 0)
+	{
+	  if ((runtime_sigtab[i].flags & SigPanic) == 0)
+	    {
+	      sa.sa_flags = SA_ONSTACK;
+	      sa.sa_handler = sig_tramp;
+	    }
+	  else
+	    {
+#ifdef SA_SIGINFO
+	      sa.sa_flags = SA_SIGINFO;
+	      sa.sa_sigaction = sig_panic_info_handler;
+#else
+	      sa.sa_flags = 0;
+	      sa.sa_handler = sig_panic_handler;
+#endif
+	    }
+	}
+      else
+	{
+	  sa.sa_flags = SA_ONSTACK;
+	  sa.sa_handler = sig_ignore;
+	}
+
+      if ((runtime_sigtab[i].flags & SigRestart) != 0)
+	sa.sa_flags |= SA_RESTART;
+
+      if (sigaction (runtime_sigtab[i].sig, &sa, NULL) != 0)
 	__go_assert (0);
     }
 }
@@ -210,6 +434,7 @@ __initsig ()
 void
 runtime_resetcpuprofiler(int32 hz)
 {
+#ifdef SIGPROF
   struct itimerval it;
   struct sigaction sa;
   int i;
@@ -231,7 +456,7 @@ runtime_resetcpuprofiler(int32 hz)
     }
   else
     {
-      sa.sa_handler = sighandler;
+      sa.sa_handler = sig_handler;
       sa.sa_flags = SA_RESTART;
       i = sigaction (SIGPROF, &sa, NULL);
       __go_assert (i == 0);
@@ -242,8 +467,9 @@ runtime_resetcpuprofiler(int32 hz)
       i = setitimer (ITIMER_PROF, &it, NULL);
       __go_assert (i == 0);
     }
+#endif
 
-  m->profilehz = hz;
+  runtime_m()->profilehz = hz;
 }
 
 /* Used by the os package to raise SIGPIPE.  */

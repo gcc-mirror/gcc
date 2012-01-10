@@ -259,19 +259,19 @@ type Node struct {
 var tree = &Node{
 	"testdata",
 	[]*Node{
-		&Node{"a", nil, 0},
-		&Node{"b", []*Node{}, 0},
-		&Node{"c", nil, 0},
-		&Node{
+		{"a", nil, 0},
+		{"b", []*Node{}, 0},
+		{"c", nil, 0},
+		{
 			"d",
 			[]*Node{
-				&Node{"x", nil, 0},
-				&Node{"y", []*Node{}, 0},
-				&Node{
+				{"x", nil, 0},
+				{"y", []*Node{}, 0},
+				{
 					"z",
 					[]*Node{
-						&Node{"u", nil, 0},
-						&Node{"v", nil, 0},
+						{"u", nil, 0},
+						{"v", nil, 0},
 					},
 					0,
 				},
@@ -317,7 +317,7 @@ func checkMarks(t *testing.T, report bool) {
 // Assumes that each node name is unique. Good enough for a test.
 // If clear is true, any incoming error is cleared before return. The errors
 // are always accumulated, though.
-func mark(path string, info *os.FileInfo, err os.Error, errors *[]os.Error, clear bool) os.Error {
+func mark(path string, info os.FileInfo, err error, errors *[]error, clear bool) error {
 	if err != nil {
 		*errors = append(*errors, err)
 		if clear {
@@ -325,8 +325,9 @@ func mark(path string, info *os.FileInfo, err os.Error, errors *[]os.Error, clea
 		}
 		return err
 	}
+	name := info.Name()
 	walkTree(tree, tree.name, func(path string, n *Node) {
-		if n.name == info.Name {
+		if n.name == name {
 			n.mark++
 		}
 	})
@@ -335,9 +336,9 @@ func mark(path string, info *os.FileInfo, err os.Error, errors *[]os.Error, clea
 
 func TestWalk(t *testing.T) {
 	makeTree(t)
-	errors := make([]os.Error, 0, 10)
+	errors := make([]error, 0, 10)
 	clear := true
-	markFn := func(path string, info *os.FileInfo, err os.Error) os.Error {
+	markFn := func(path string, info os.FileInfo, err error) error {
 		return mark(path, info, err, &errors, clear)
 	}
 	// Expect no errors.
@@ -522,7 +523,7 @@ func testEvalSymlinks(t *testing.T, tests []EvalSymlinksTest) {
 func TestEvalSymlinks(t *testing.T) {
 	defer os.RemoveAll("test")
 	for _, d := range EvalSymlinksTestDirs {
-		var err os.Error
+		var err error
 		if d.dest == "" {
 			err = os.Mkdir(d.path, 0755)
 		} else {
@@ -548,7 +549,7 @@ func TestEvalSymlinks(t *testing.T) {
 	// relative
 	testEvalSymlinks(t, tests)
 	// absolute
-/* These tests do not work in the gccgo test environment.
+	/* These tests do not work in the gccgo test environment.
 	goroot, err := filepath.EvalSymlinks(os.Getenv("GOROOT"))
 	if err != nil {
 		t.Fatalf("EvalSymlinks(%q) error: %v", os.Getenv("GOROOT"), err)
@@ -564,7 +565,7 @@ func TestEvalSymlinks(t *testing.T) {
 		}
 	}
 	testEvalSymlinks(t, tests)
-*/
+	*/
 }
 
 /* These tests do not work in the gccgo test environment.
@@ -585,7 +586,7 @@ var abstests = []string{
 func TestAbs(t *testing.T) {
 	oldwd, err := os.Getwd()
 	if err != nil {
-		t.Fatal("Getwd failed: " + err.String())
+		t.Fatal("Getwd failed: " + err.Error())
 	}
 	defer os.Chdir(oldwd)
 	goroot := os.Getenv("GOROOT")
@@ -603,7 +604,7 @@ func TestAbs(t *testing.T) {
 			t.Errorf("Abs(%q) error: %v", path, err)
 		}
 		absinfo, err := os.Stat(abspath)
-		if err != nil || absinfo.Ino != info.Ino {
+		if err != nil || !absinfo.(*os.FileStat).SameFile(info.(*os.FileStat)) {
 			t.Errorf("Abs(%q)=%q, not the same file", path, abspath)
 		}
 		if !filepath.IsAbs(abspath) {
@@ -634,6 +635,10 @@ var reltests = []RelTests{
 	{"a/b/../c", "a/b", "../b"},
 	{"a/b/c", "a/c/d", "../../c/d"},
 	{"a/b", "c/d", "../../c/d"},
+	{"a/b/c/d", "a/b", "../.."},
+	{"a/b/c/d", "a/b/", "../.."},
+	{"a/b/c/d/", "a/b", "../.."},
+	{"a/b/c/d/", "a/b/", "../.."},
 	{"../../a/b", "../../a/b/c/d", "c/d"},
 	{"/a/b", "/a/b", "."},
 	{"/a/b/.", "/a/b", "."},
@@ -645,6 +650,10 @@ var reltests = []RelTests{
 	{"/a/b/../c", "/a/b", "../b"},
 	{"/a/b/c", "/a/c/d", "../../c/d"},
 	{"/a/b", "/c/d", "../../c/d"},
+	{"/a/b/c/d", "/a/b", "../.."},
+	{"/a/b/c/d", "/a/b/", "../.."},
+	{"/a/b/c/d/", "/a/b", "../.."},
+	{"/a/b/c/d/", "/a/b/", "../.."},
 	{"/../../a/b", "/../../a/b/c/d", "c/d"},
 	{".", "a/b", "a/b"},
 	{".", "..", ".."},

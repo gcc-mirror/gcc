@@ -433,6 +433,10 @@ package Ada.Containers.Bounded_Hashed_Sets is
         (Container : aliased in out Set;
          Position  : Cursor) return Reference_Type;
 
+      function Constant_Reference
+        (Container : aliased Set;
+         Key       : Key_Type) return Constant_Reference_Type;
+
       function Reference_Preserving_Key
         (Container : aliased in out Set;
          Key       : Key_Type) return Reference_Type;
@@ -441,13 +445,27 @@ package Ada.Containers.Bounded_Hashed_Sets is
       type Reference_Type (Element : not null access Element_Type)
          is null record;
 
+      use Ada.Streams;
+
+      procedure Read
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : out Reference_Type);
+
+      for Reference_Type'Read use Read;
+
+      procedure Write
+        (Stream : not null access Root_Stream_Type'Class;
+         Item   : Reference_Type);
+
+      for Reference_Type'Write use Write;
+
    end Generic_Keys;
 
 private
    pragma Inline (Next);
 
    type Node_Type is record
-      Element : Element_Type;
+      Element : aliased Element_Type;
       Next    : Count_Type;
    end record;
 

@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
@@ -755,7 +756,30 @@ package body Exp_Util is
 
          Append_To (Actuals, New_Reference_To (Addr_Id, Loc));
          Append_To (Actuals, New_Reference_To (Size_Id, Loc));
-         Append_To (Actuals, New_Reference_To (Alig_Id, Loc));
+
+         if Is_Allocate or else not Is_Class_Wide_Type (Desig_Typ) then
+            Append_To (Actuals, New_Reference_To (Alig_Id, Loc));
+
+         --  For deallocation of class wide types we obtain the value of
+         --  alignment from the Type Specific Record of the deallocated object.
+         --  This is needed because the frontend expansion of class-wide types
+         --  into equivalent types confuses the backend.
+
+         else
+            --  Generate:
+            --     Obj.all'Alignment
+
+            --  ... because 'Alignment applied to class-wide types is expanded
+            --  into the code that reads the value of alignment from the TSD
+            --  (see Expand_N_Attribute_Reference)
+
+            Append_To (Actuals,
+              Unchecked_Convert_To (RTE (RE_Storage_Offset),
+                Make_Attribute_Reference (Loc,
+                  Prefix         =>
+                    Make_Explicit_Dereference (Loc, Relocate_Node (Expr)),
+                  Attribute_Name => Name_Alignment)));
+         end if;
 
          --  h) Is_Controlled
 
@@ -854,6 +878,7 @@ package body Exp_Util is
             else
                Append_To (Actuals, New_Reference_To (Standard_True, Loc));
             end if;
+
          else
             Append_To (Actuals, New_Reference_To (Standard_False, Loc));
          end if;
@@ -892,8 +917,7 @@ package body Exp_Util is
                   --  P : Root_Storage_Pool
 
                    Make_Parameter_Specification (Loc,
-                     Defining_Identifier =>
-                       Make_Temporary (Loc, 'P'),
+                     Defining_Identifier => Make_Temporary (Loc, 'P'),
                      Parameter_Type =>
                        New_Reference_To (RTE (RE_Root_Storage_Pool), Loc)),
 
@@ -901,22 +925,22 @@ package body Exp_Util is
 
                    Make_Parameter_Specification (Loc,
                      Defining_Identifier => Addr_Id,
-                     Out_Present => Is_Allocate,
-                     Parameter_Type =>
+                     Out_Present         => Is_Allocate,
+                     Parameter_Type      =>
                        New_Reference_To (RTE (RE_Address), Loc)),
 
                   --  S : Storage_Count
 
                    Make_Parameter_Specification (Loc,
                      Defining_Identifier => Size_Id,
-                     Parameter_Type =>
+                     Parameter_Type      =>
                        New_Reference_To (RTE (RE_Storage_Count), Loc)),
 
                   --  L : Storage_Count
 
                    Make_Parameter_Specification (Loc,
                      Defining_Identifier => Alig_Id,
-                     Parameter_Type =>
+                     Parameter_Type      =>
                        New_Reference_To (RTE (RE_Storage_Count), Loc)))),
 
              Declarations => No_List,
@@ -925,8 +949,7 @@ package body Exp_Util is
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (
                    Make_Procedure_Call_Statement (Loc,
-                     Name =>
-                       New_Reference_To (Proc_To_Call, Loc),
+                     Name => New_Reference_To (Proc_To_Call, Loc),
                      Parameter_Associations => Actuals)))));
 
          --  The newly generated Allocate / Deallocate becomes the default
@@ -3944,6 +3967,13 @@ package body Exp_Util is
       function Is_Allocated (Trans_Id : Entity_Id) return Boolean;
       --  Determine whether transient object Trans_Id is allocated on the heap
 
+      function Is_Iterated_Container
+        (Trans_Id   : Entity_Id;
+         First_Stmt : Node_Id) return Boolean;
+      --  Determine whether transient object Trans_Id denotes a container which
+      --  is in the process of being iterated in the statement list starting
+      --  from First_Stmt.
+
       ---------------------------
       -- Initialized_By_Access --
       ---------------------------
@@ -4158,6 +4188,90 @@ package body Exp_Util is
              and then Nkind (Expr) = N_Allocator;
       end Is_Allocated;
 
+      ---------------------------
+      -- Is_Iterated_Container --
+      ---------------------------
+
+      function Is_Iterated_Container
+        (Trans_Id   : Entity_Id;
+         First_Stmt : Node_Id) return Boolean
+      is
+         Aspect : Node_Id;
+         Call   : Node_Id;
+         Iter   : Entity_Id;
+         Param  : Node_Id;
+         Stmt   : Node_Id;
+         Typ    : Entity_Id;
+
+      begin
+         --  It is not possible to iterate over containers in non-Ada 2012 code
+
+         if Ada_Version < Ada_2012 then
+            return False;
+         end if;
+
+         Typ := Etype (Trans_Id);
+
+         --  Handle access type created for secondary stack use
+
+         if Is_Access_Type (Typ) then
+            Typ := Designated_Type (Typ);
+         end if;
+
+         --  Look for aspect Default_Iterator
+
+         if Has_Aspects (Parent (Typ)) then
+            Aspect := Find_Aspect (Typ, Aspect_Default_Iterator);
+
+            if Present (Aspect) then
+               Iter := Entity (Aspect);
+
+               --  Examine the statements following the container object and
+               --  look for a call to the default iterate routine where the
+               --  first parameter is the transient. Such a call appears as:
+
+               --     It : Access_To_CW_Iterator :=
+               --            Iterate (Tran_Id.all, ...)'reference;
+
+               Stmt := First_Stmt;
+               while Present (Stmt) loop
+
+                  --  Detect an object declaration which is initialized by a
+                  --  secondary stack function call.
+
+                  if Nkind (Stmt) = N_Object_Declaration
+                    and then Present (Expression (Stmt))
+                    and then Nkind (Expression (Stmt)) = N_Reference
+                    and then Nkind (Prefix (Expression (Stmt))) =
+                               N_Function_Call
+                  then
+                     Call := Prefix (Expression (Stmt));
+
+                     --  The call must invoke the default iterate routine of
+                     --  the container and the transient object must appear as
+                     --  the first actual parameter.
+
+                     if Entity (Name (Call)) = Iter
+                       and then Present (Parameter_Associations (Call))
+                     then
+                        Param := First (Parameter_Associations (Call));
+
+                        if Nkind (Param) = N_Explicit_Dereference
+                          and then Entity (Prefix (Param)) = Trans_Id
+                        then
+                           return True;
+                        end if;
+                     end if;
+                  end if;
+
+                  Next (Stmt);
+               end loop;
+            end if;
+         end if;
+
+         return False;
+      end Is_Iterated_Container;
+
    --  Start of processing for Is_Finalizable_Transient
 
    begin
@@ -4198,7 +4312,13 @@ package body Exp_Util is
 
           --  Do not consider conversions of tags to class-wide types
 
-          and then not Is_Tag_To_CW_Conversion (Obj_Id);
+          and then not Is_Tag_To_CW_Conversion (Obj_Id)
+
+          --  Do not consider containers in the context of iterator loops. Such
+          --  transient objects must exist for as long as the loop is around,
+          --  otherwise any operation carried out by the iterator will fail.
+
+          and then not Is_Iterated_Container (Obj_Id, Decl);
    end Is_Finalizable_Transient;
 
    ---------------------------------
@@ -6424,13 +6544,14 @@ package body Exp_Util is
 
       if not Expander_Active then
          return;
+      end if;
 
       --  Cannot generate temporaries if the invocation to remove side effects
       --  was issued too early and the type of the expression is not resolved
       --  (this happens because routines Duplicate_Subexpr_XX implicitly invoke
       --  Remove_Side_Effects).
 
-      elsif No (Exp_Type)
+      if No (Exp_Type)
         or else Ekind (Exp_Type) = E_Access_Attribute_Type
       then
          return;

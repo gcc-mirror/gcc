@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -107,8 +107,8 @@ class serial_dispatch : public abi_dispatch
 protected:
   static void log(const void *addr, size_t len)
   {
-    // TODO Ensure that this gets inlined: Use internal log interface and LTO.
-    GTM_LB(addr, len);
+    gtm_thread *tx = gtm_thr();
+    tx->undolog.log(addr, len);
   }
 
   template <typename V> static V load(const V* addr, ls_modifier mod)
@@ -239,7 +239,6 @@ void
 GTM::gtm_thread::serialirr_mode ()
 {
   struct abi_dispatch *disp = abi_disp ();
-  bool need_restart = true;
 
   if (this->state & STATE_SERIAL)
     {
@@ -254,7 +253,6 @@ GTM::gtm_thread::serialirr_mode ()
       bool ok = disp->trycommit (priv_time);
       // Given that we're already serial, the trycommit better work.
       assert (ok);
-      need_restart = false;
     }
   else if (serial_lock.write_upgrade (this))
     {
@@ -263,18 +261,18 @@ GTM::gtm_thread::serialirr_mode ()
       // would do for an outermost commit.
       // We have successfully upgraded to serial mode, so we don't need to
       // ensure privatization safety for other transactions here.
+      // However, we are still a reader (wrt. privatization safety) until we
+      // have either committed or restarted, so finish the upgrade after that.
       gtm_word priv_time = 0;
-      if (disp->trycommit (priv_time))
-	need_restart = false;
+      if (!disp->trycommit (priv_time))
+        restart (RESTART_SERIAL_IRR, true);
+      gtm_thread::serial_lock.write_upgrade_finish(this);
     }
-
-  if (need_restart)
-    restart (RESTART_SERIAL_IRR);
   else
-    {
-      this->state |= (STATE_SERIAL | STATE_IRREVOCABLE);
-      set_abi_disp (dispatch_serialirr ());
-    }
+    restart (RESTART_SERIAL_IRR, false);
+
+  this->state |= (STATE_SERIAL | STATE_IRREVOCABLE);
+  set_abi_disp (dispatch_serialirr ());
 }
 
 void ITM_REGPARM

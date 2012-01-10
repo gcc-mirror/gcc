@@ -1,5 +1,5 @@
 /* SLP - Basic Block Vectorization
-   Copyright (C) 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
@@ -1727,26 +1727,39 @@ static void
 vect_detect_hybrid_slp_stmts (slp_tree node)
 {
   int i;
-  gimple stmt;
+  VEC (gimple, heap) *stmts = SLP_TREE_SCALAR_STMTS (node);
+  gimple stmt = VEC_index (gimple, stmts, 0);
   imm_use_iterator imm_iter;
   gimple use_stmt;
-  stmt_vec_info stmt_vinfo; 
+  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   slp_void_p child;
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
+  struct loop *loop = NULL;
+  bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
+  basic_block bb = NULL;
 
   if (!node)
     return;
+
+  if (loop_vinfo)
+    loop = LOOP_VINFO_LOOP (loop_vinfo);
+  else
+    bb = BB_VINFO_BB (bb_vinfo);
 
   FOR_EACH_VEC_ELT (gimple, SLP_TREE_SCALAR_STMTS (node), i, stmt)
     if (PURE_SLP_STMT (vinfo_for_stmt (stmt))
 	&& TREE_CODE (gimple_op (stmt, 0)) == SSA_NAME)
       FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, gimple_op (stmt, 0))
-	if ((stmt_vinfo = vinfo_for_stmt (use_stmt))
+	if (gimple_bb (use_stmt)
+            && ((loop && flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
+		 || bb == gimple_bb (use_stmt))
+	    && (stmt_vinfo = vinfo_for_stmt (use_stmt))
 	    && !STMT_SLP_TYPE (stmt_vinfo)
             && (STMT_VINFO_RELEVANT (stmt_vinfo)
                 || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_vinfo)))
-            && !(gimple_code (use_stmt) == GIMPLE_PHI
-                 && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (use_stmt)) 
-                     == vect_reduction_def))
+	    && !(gimple_code (use_stmt) == GIMPLE_PHI
+                 && STMT_VINFO_DEF_TYPE (stmt_vinfo)
+                  == vect_reduction_def))
 	  vect_mark_slp_stmts (node, hybrid, i);
 
   FOR_EACH_VEC_ELT (slp_void_p, SLP_TREE_CHILDREN (node), i, child)
@@ -2885,6 +2898,8 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
       && REFERENCE_CLASS_P (gimple_get_lhs (stmt)))
     { 
       gimple last_store = vect_find_last_store_in_slp_instance (instance);
+      if (is_pattern_stmt_p (vinfo_for_stmt (last_store)))
+       last_store = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (last_store));
       si = gsi_for_stmt (last_store);
     }
 
@@ -2989,6 +3004,8 @@ vect_schedule_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
           if (!STMT_VINFO_DATA_REF (vinfo_for_stmt (store)))
             break;
 
+         if (is_pattern_stmt_p (vinfo_for_stmt (store)))
+           store = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (store));
           /* Free the attached stmt_vec_info and remove the stmt.  */
           gsi = gsi_for_stmt (store);
           gsi_remove (&gsi, true);

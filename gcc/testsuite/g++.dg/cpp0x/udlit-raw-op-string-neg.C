@@ -5,4 +5,4 @@
 int operator"" _embedraw(const char*)
 { return 41; };
 
-int k = "Boo!"_embedraw;  //  { dg-error "unable to find valid user-defined string literal operator" }
+int k = "Boo!"_embedraw;  //  { dg-error "unable to find string literal operator" }

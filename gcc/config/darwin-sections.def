@@ -76,7 +76,7 @@ DEF_SECTION (const_data_coal_section, SECTION_NO_ANCHOR,
 	     ".section __DATA,__const_coal,coalesced", 0)
 /* Place to put zero-sized to avoid issues with section anchors.  */
 DEF_SECTION (zobj_const_data_section, SECTION_NO_ANCHOR, 
-	     ".section\t__DATA,__zobj_const_data", 0)
+	     ".section\t__DATA,__zobj_cnst_data", 0)
 
 /* Strings and other literals.  */
 DEF_SECTION (cstring_section, SECTION_MERGE | SECTION_STRINGS, ".cstring", 0)

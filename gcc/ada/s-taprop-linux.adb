@@ -291,14 +291,10 @@ package body System.Task_Primitives.Operations is
 
       else
          declare
-            Mutex_Attr : aliased pthread_mutexattr_t;
-            Result     : Interfaces.C.int;
+            Result : Interfaces.C.int;
 
          begin
-            Result := pthread_mutexattr_init (Mutex_Attr'Access);
-            pragma Assert (Result = 0);
-
-            Result := pthread_mutex_init (L.WO'Access, Mutex_Attr'Access);
+            Result := pthread_mutex_init (L.WO'Access, null);
 
             pragma Assert (Result = 0 or else Result = ENOMEM);
 
@@ -315,14 +311,10 @@ package body System.Task_Primitives.Operations is
    is
       pragma Unreferenced (Level);
 
-      Mutex_Attr : aliased pthread_mutexattr_t;
-      Result     : Interfaces.C.int;
+      Result : Interfaces.C.int;
 
    begin
-      Result := pthread_mutexattr_init (Mutex_Attr'Access);
-      pragma Assert (Result = 0);
-
-      Result := pthread_mutex_init (L, Mutex_Attr'Access);
+      Result := pthread_mutex_init (L, null);
 
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
@@ -817,9 +809,8 @@ package body System.Task_Primitives.Operations is
    --------------------
 
    procedure Initialize_TCB (Self_ID : Task_Id; Succeeded : out Boolean) is
-      Mutex_Attr : aliased pthread_mutexattr_t;
-      Cond_Attr  : aliased pthread_condattr_t;
-      Result     : Interfaces.C.int;
+      Cond_Attr : aliased pthread_condattr_t;
+      Result    : Interfaces.C.int;
 
    begin
       --  Give the task a unique serial number
@@ -831,11 +822,8 @@ package body System.Task_Primitives.Operations is
       Self_ID.Common.LL.Thread := Null_Thread_Id;
 
       if not Single_Lock then
-         Result := pthread_mutexattr_init (Mutex_Attr'Access);
-         pragma Assert (Result = 0);
-
          Result :=
-           pthread_mutex_init (Self_ID.Common.LL.L'Access, Mutex_Attr'Access);
+           pthread_mutex_init (Self_ID.Common.LL.L'Access, null);
          pragma Assert (Result = 0 or else Result = ENOMEM);
 
          if Result /= 0 then
@@ -1002,11 +990,18 @@ package body System.Task_Primitives.Operations is
       --  do not need to manipulate caller's signal mask at this point.
       --  All tasks in RTS will have All_Tasks_Mask initially.
 
-      Result := pthread_create
-        (T.Common.LL.Thread'Access,
-         Attributes'Access,
-         Thread_Body_Access (Wrapper),
-         To_Address (T));
+      --  Note: the use of Unrestricted_Access in the following call is needed
+      --  because otherwise we have an error of getting a access-to-volatile
+      --  value which points to a non-volatile object. But in this case it is
+      --  safe to do this, since we know we have no problems with aliasing and
+      --  Unrestricted_Access bypasses this check.
+
+      Result :=
+        pthread_create
+          (T.Common.LL.Thread'Unrestricted_Access,
+           Attributes'Access,
+           Thread_Body_Access (Wrapper),
+           To_Address (T));
 
       pragma Assert
         (Result = 0 or else Result = EAGAIN or else Result = ENOMEM);
@@ -1081,9 +1076,7 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Initialize (S : in out Suspension_Object) is
-      Mutex_Attr : aliased pthread_mutexattr_t;
-      Cond_Attr  : aliased pthread_condattr_t;
-      Result     : Interfaces.C.int;
+      Result : Interfaces.C.int;
 
    begin
       --  Initialize internal state (always to False (RM D.10(6)))
@@ -1093,10 +1086,7 @@ package body System.Task_Primitives.Operations is
 
       --  Initialize internal mutex
 
-      Result := pthread_mutexattr_init (Mutex_Attr'Access);
-      pragma Assert (Result = 0);
-
-      Result := pthread_mutex_init (S.L'Access, Mutex_Attr'Access);
+      Result := pthread_mutex_init (S.L'Access, null);
 
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
@@ -1106,10 +1096,7 @@ package body System.Task_Primitives.Operations is
 
       --  Initialize internal condition variable
 
-      Result := pthread_condattr_init (Cond_Attr'Access);
-      pragma Assert (Result = 0);
-
-      Result := pthread_cond_init (S.CV'Access, Cond_Attr'Access);
+      Result := pthread_cond_init (S.CV'Access, null);
 
       pragma Assert (Result = 0 or else Result = ENOMEM);
 

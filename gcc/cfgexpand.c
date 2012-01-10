@@ -456,34 +456,14 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
   FOR_EACH_EDGE (e, ei, bb->preds)
     bitmap_ior_into (work, (bitmap)e->src->aux);
 
-  if (for_conflict)
-    {
-      /* We need to add conflicts for everything life at the start of
-         this block.  Unlike classical lifeness for named objects we can't
-	 rely on seeing a def/use of the names we're interested in.
-	 There might merely be indirect loads/stores.  We'd not add any
-	 conflicts for such partitions.  */
-      bitmap_iterator bi;
-      unsigned i;
-      EXECUTE_IF_SET_IN_BITMAP (work, 0, i, bi)
-	{
-	  unsigned j;
-	  bitmap_iterator bj;
-	  EXECUTE_IF_SET_IN_BITMAP (work, i, j, bj)
-	    add_stack_var_conflict (i, j);
-	}
-      visit = visit_conflict;
-    }
-  else
-    visit = visit_op;
+  visit = visit_op;
 
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple stmt = gsi_stmt (gsi);
-      if (!is_gimple_debug (stmt))
-	walk_stmt_load_store_addr_ops (stmt, work, visit, visit, visit);
+      walk_stmt_load_store_addr_ops (stmt, work, NULL, NULL, visit);
     }
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple stmt = gsi_stmt (gsi);
 
@@ -501,7 +481,29 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 	    bitmap_clear_bit (work, *v);
 	}
       else if (!is_gimple_debug (stmt))
-	walk_stmt_load_store_addr_ops (stmt, work, visit, visit, visit);
+	{
+	  if (for_conflict
+	      && visit == visit_op)
+	    {
+	      /* If this is the first real instruction in this BB we need
+	         to add conflicts for everything live at this point now.
+		 Unlike classical liveness for named objects we can't
+		 rely on seeing a def/use of the names we're interested in.
+		 There might merely be indirect loads/stores.  We'd not add any
+		 conflicts for such partitions.  */
+	      bitmap_iterator bi;
+	      unsigned i;
+	      EXECUTE_IF_SET_IN_BITMAP (work, 0, i, bi)
+		{
+		  unsigned j;
+		  bitmap_iterator bj;
+		  EXECUTE_IF_SET_IN_BITMAP (work, i + 1, j, bj)
+		    add_stack_var_conflict (i, j);
+		}
+	      visit = visit_conflict;
+	    }
+	  walk_stmt_load_store_addr_ops (stmt, work, visit, visit, visit);
+	}
     }
 }
 
@@ -515,7 +517,7 @@ add_scope_conflicts (void)
   bool changed;
   bitmap work = BITMAP_ALLOC (NULL);
 
-  /* We approximate the life range of a stack variable by taking the first
+  /* We approximate the live range of a stack variable by taking the first
      mention of its name as starting point(s), and by the end-of-scope
      death clobber added by gimplify as ending point(s) of the range.
      This overapproximates in the case we for instance moved an address-taken
@@ -523,7 +525,7 @@ add_scope_conflicts (void)
      But it's conservatively correct as a variable never can hold values
      before its name is mentioned at least once.
 
-     We then do a mostly classical bitmap lifeness algorithm.  */
+     We then do a mostly classical bitmap liveness algorithm.  */
 
   FOR_ALL_BB (bb)
     bb->aux = BITMAP_ALLOC (NULL);
@@ -2050,7 +2052,6 @@ expand_call_stmt (gimple stmt)
     CALL_ALLOCA_FOR_VAR_P (exp) = gimple_call_alloca_for_var_p (stmt);
   else
     CALL_FROM_THUNK_P (exp) = gimple_call_from_thunk_p (stmt);
-  CALL_CANNOT_INLINE_P (exp) = gimple_call_cannot_inline_p (stmt);
   CALL_EXPR_VA_ARG_PACK (exp) = gimple_call_va_arg_pack_p (stmt);
   SET_EXPR_LOCATION (exp, gimple_location (stmt));
   TREE_BLOCK (exp) = gimple_block (stmt);
@@ -3325,7 +3326,8 @@ expand_debug_expr (tree exp)
 	  if ((TREE_CODE (TREE_OPERAND (exp, 0)) == VAR_DECL
 	       || TREE_CODE (TREE_OPERAND (exp, 0)) == PARM_DECL
 	       || TREE_CODE (TREE_OPERAND (exp, 0)) == RESULT_DECL)
-	      && !TREE_ADDRESSABLE (TREE_OPERAND (exp, 0)))
+	      && (!TREE_ADDRESSABLE (TREE_OPERAND (exp, 0))
+		  || target_for_debug_bind (TREE_OPERAND (exp, 0))))
 	    return gen_rtx_DEBUG_IMPLICIT_PTR (mode, TREE_OPERAND (exp, 0));
 
 	  if (handled_component_p (TREE_OPERAND (exp, 0)))
@@ -3337,7 +3339,8 @@ expand_debug_expr (tree exp)
 	      if ((TREE_CODE (decl) == VAR_DECL
 		   || TREE_CODE (decl) == PARM_DECL
 		   || TREE_CODE (decl) == RESULT_DECL)
-		  && !TREE_ADDRESSABLE (decl)
+		  && (!TREE_ADDRESSABLE (decl)
+		      || target_for_debug_bind (decl))
 		  && (bitoffset % BITS_PER_UNIT) == 0
 		  && bitsize > 0
 		  && bitsize == maxsize)
@@ -3446,10 +3449,6 @@ expand_debug_expr (tree exp)
     case REDUC_MIN_EXPR:
     case REDUC_PLUS_EXPR:
     case VEC_COND_EXPR:
-    case VEC_EXTRACT_EVEN_EXPR:
-    case VEC_EXTRACT_ODD_EXPR:
-    case VEC_INTERLEAVE_HIGH_EXPR:
-    case VEC_INTERLEAVE_LOW_EXPR:
     case VEC_LSHIFT_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
@@ -3903,6 +3902,11 @@ expand_gimple_basic_block (basic_block bb)
 	      rtx val;
 	      enum machine_mode mode;
 
+	      if (TREE_CODE (var) != DEBUG_EXPR_DECL
+		  && TREE_CODE (var) != LABEL_DECL
+		  && !target_for_debug_bind (var))
+		goto delink_debug_stmt;
+
 	      if (gimple_debug_bind_has_value_p (stmt))
 		value = gimple_debug_bind_get_value (stmt);
 	      else
@@ -3932,6 +3936,7 @@ expand_gimple_basic_block (basic_block bb)
 		  PAT_VAR_LOCATION_LOC (val) = (rtx)value;
 		}
 
+	    delink_debug_stmt:
 	      /* In order not to generate too many debug temporaries,
 	         we delink all uses of debug statements we already expanded.
 		 Therefore debug statements between definition and real

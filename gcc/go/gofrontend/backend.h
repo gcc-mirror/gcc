@@ -46,14 +46,14 @@ class Backend
   {
     std::string name;
     Btype* btype;
-    source_location location;
+    Location location;
 
     Btyped_identifier()
       : name(), btype(NULL), location(UNKNOWN_LOCATION)
     { }
 
     Btyped_identifier(const std::string& a_name, Btype* a_btype,
-		     source_location a_location)
+		     Location a_location)
       : name(a_name), btype(a_btype), location(a_location)
     { }
   };
@@ -100,7 +100,7 @@ class Backend
   function_type(const Btyped_identifier& receiver,
 		const std::vector<Btyped_identifier>& parameters,
 		const std::vector<Btyped_identifier>& results,
-		source_location location) = 0;
+		Location location) = 0;
 
   // Get a struct type.
   virtual Btype*
@@ -121,7 +121,7 @@ class Backend
   // parameter to set_placeholder_pointer_type or
   // set_placeholder_function_type.
   virtual Btype*
-  placeholder_pointer_type(const std::string& name, source_location,
+  placeholder_pointer_type(const std::string& name, Location,
 			   bool for_function) = 0;
 
   // Fill in a placeholder pointer type as a pointer.  This takes a
@@ -141,7 +141,7 @@ class Backend
   // Create a placeholder struct type.  This is used for a named
   // struct type, as with placeholder_pointer_type.
   virtual Btype*
-  placeholder_struct_type(const std::string& name, source_location) = 0;
+  placeholder_struct_type(const std::string& name, Location) = 0;
 
   // Fill in a placeholder struct type.  This takes a type returned by
   // placeholder_struct_type and arranges for it to become a real
@@ -156,7 +156,7 @@ class Backend
   // type, as with placeholder_pointer_type, to handle cases like
   // type A []*A.
   virtual Btype*
-  placeholder_array_type(const std::string& name, source_location) = 0;
+  placeholder_array_type(const std::string& name, Location) = 0;
 
   // Fill in a placeholder array type.  This takes a type returned by
   // placeholder_array_type and arranges for it to become a real array
@@ -172,7 +172,7 @@ class Backend
   // placeholder_array_type..  (It may be called for a pointer,
   // struct, or array type in a case like "type P *byte; type Q P".)
   virtual Btype*
-  named_type(const std::string& name, Btype*, source_location) = 0;
+  named_type(const std::string& name, Btype*, Location) = 0;
 
   // Create a marker for a circular pointer type.  Go pointer and
   // function types can refer to themselves in ways that are not
@@ -227,18 +227,18 @@ class Backend
   // Create an assignment statement.
   virtual Bstatement*
   assignment_statement(Bexpression* lhs, Bexpression* rhs,
-		       source_location) = 0;
+		       Location) = 0;
 
   // Create a return statement, passing the representation of the
   // function and the list of values to return.
   virtual Bstatement*
   return_statement(Bfunction*, const std::vector<Bexpression*>&,
-		   source_location) = 0;
+		   Location) = 0;
 
   // Create an if statement.  ELSE_BLOCK may be NULL.
   virtual Bstatement*
   if_statement(Bexpression* condition, Bblock* then_block, Bblock* else_block,
-	       source_location) = 0;
+	       Location) = 0;
 
   // Create a switch statement where the case values are constants.
   // CASES and STATEMENTS must have the same number of entries.  If
@@ -251,7 +251,7 @@ class Backend
   switch_statement(Bexpression* value,
 		   const std::vector<std::vector<Bexpression*> >& cases,
 		   const std::vector<Bstatement*>& statements,
-		   source_location) = 0;
+		   Location) = 0;
 
   // Create a single statement from two statements.
   virtual Bstatement*
@@ -276,7 +276,7 @@ class Backend
   virtual Bblock*
   block(Bfunction* function, Bblock* enclosing,
 	const std::vector<Bvariable*>& vars,
-	source_location start_location, source_location end_location) = 0;
+	Location start_location, Location end_location) = 0;
 
   // Add the statements to a block.  The block is created first.  Then
   // the statements are created.  Then the statements are added to the
@@ -313,7 +313,7 @@ class Backend
 		  Btype* btype,
 		  bool is_external,
 		  bool is_hidden,
-		  source_location location) = 0;
+		  Location location) = 0;
 
   // A global variable will 1) be initialized to zero, or 2) be
   // initialized to a constant value, or 3) be initialized in the init
@@ -335,7 +335,7 @@ class Backend
   // init_statement to set the initial value.
   virtual Bvariable*
   local_variable(Bfunction* function, const std::string& name, Btype* type,
-		 bool is_address_taken, source_location location) = 0;
+		 bool is_address_taken, Location location) = 0;
 
   // Create a function parameter.  This is an incoming parameter, not
   // a result parameter (result parameters are treated as local
@@ -343,7 +343,7 @@ class Backend
   virtual Bvariable*
   parameter_variable(Bfunction* function, const std::string& name,
 		     Btype* type, bool is_address_taken,
-		     source_location location) = 0;
+		     Location location) = 0;
 
   // Create a temporary variable.  A temporary variable has no name,
   // just a type.  We pass in FUNCTION and BLOCK in case they are
@@ -358,7 +358,7 @@ class Backend
   // *PSTATEMENT to a statement which initializes the variable.
   virtual Bvariable*
   temporary_variable(Bfunction*, Bblock*, Btype*, Bexpression* init,
-		     bool address_is_taken, source_location location,
+		     bool address_is_taken, Location location,
 		     Bstatement** pstatement) = 0;
 
   // Create a named immutable initialized data structure.  This is
@@ -379,12 +379,12 @@ class Backend
   // must be a pointer to this struct type.
   // 
   // We must create the named structure before we know its
-  // initializer, because the initializer refer to its own address.
-  // After calling this the frontend will call
-  // set_immutable_struct_initializer.
+  // initializer, because the initializer may refer to its own
+  // address.  After calling this the frontend will call
+  // immutable_struct_set_init.
   virtual Bvariable*
   immutable_struct(const std::string& name, bool is_common, Btype* type,
-		   source_location) = 0;
+		   Location) = 0;
 
   // Set the initial value of a variable created by immutable_struct.
   // The NAME, IS_COMMON, TYPE, and location parameters are the same
@@ -395,17 +395,17 @@ class Backend
   // immutable_struct.
   virtual void
   immutable_struct_set_init(Bvariable*, const std::string& name,
-			    bool is_common, Btype* type, source_location,
+			    bool is_common, Btype* type, Location,
 			    Bexpression* initializer) = 0;
 
   // Create a reference to a named immutable initialized data
   // structure defined in some other package.  This will be a
-  // structure created by a call to immutable_struct_expression with
-  // the same NAME and TYPE and with IS_COMMON passed as false.  This
+  // structure created by a call to immutable_struct with the same
+  // NAME and TYPE and with IS_COMMON passed as false.  This
   // corresponds to an extern const global variable in C.
   virtual Bvariable*
   immutable_struct_reference(const std::string& name, Btype* type,
-			     source_location) = 0;
+			     Location) = 0;
 
   // Labels.
   
@@ -413,7 +413,7 @@ class Backend
   // created by the frontend for a loop construct.  The location is
   // where the the label is defined.
   virtual Blabel*
-  label(Bfunction*, const std::string& name, source_location) = 0;
+  label(Bfunction*, const std::string& name, Location) = 0;
 
   // Create a statement which defines a label.  This statement will be
   // put into the codestream at the point where the label should be
@@ -423,13 +423,13 @@ class Backend
 
   // Create a goto statement to a label.
   virtual Bstatement*
-  goto_statement(Blabel*, source_location) = 0;
+  goto_statement(Blabel*, Location) = 0;
 
   // Create an expression for the address of a label.  This is used to
   // get the return address of a deferred function which may call
   // recover.
   virtual Bexpression*
-  label_address(Blabel*, source_location) = 0;
+  label_address(Blabel*, Location) = 0;
 };
 
 // The backend interface has to define this function.

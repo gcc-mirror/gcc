@@ -6,14 +6,14 @@ package strings_test
 
 import (
 	"bytes"
-	"os"
+	"io"
 	"reflect"
 	"strconv"
 	. "strings"
 	"testing"
 	"unicode"
+	"unicode/utf8"
 	"unsafe"
-	"utf8"
 )
 
 func eq(a, b []string) bool {
@@ -122,7 +122,7 @@ func TestLastIndexAny(t *testing.T) { runIndexTests(t, LastIndexAny, "LastIndexA
 
 var indexRuneTests = []struct {
 	s    string
-	rune int
+	rune rune
 	out  int
 }{
 	{"a A x", 'A', 2},
@@ -312,7 +312,7 @@ var FieldsFuncTests = []FieldsTest{
 }
 
 func TestFieldsFunc(t *testing.T) {
-	pred := func(c int) bool { return c == 'X' }
+	pred := func(c rune) bool { return c == 'X' }
 	for _, tt := range FieldsFuncTests {
 		a := FieldsFunc(tt.s, pred)
 		if !eq(a, tt.a) {
@@ -374,31 +374,31 @@ var trimSpaceTests = []StringTest{
 	{"x ☺ ", "x ☺"},
 }
 
-func tenRunes(rune int) string {
-	r := make([]int, 10)
+func tenRunes(ch rune) string {
+	r := make([]rune, 10)
 	for i := range r {
-		r[i] = rune
+		r[i] = ch
 	}
 	return string(r)
 }
 
 // User-defined self-inverse mapping function
-func rot13(rune int) int {
-	step := 13
-	if rune >= 'a' && rune <= 'z' {
-		return ((rune - 'a' + step) % 26) + 'a'
+func rot13(r rune) rune {
+	step := rune(13)
+	if r >= 'a' && r <= 'z' {
+		return ((r - 'a' + step) % 26) + 'a'
 	}
-	if rune >= 'A' && rune <= 'Z' {
-		return ((rune - 'A' + step) % 26) + 'A'
+	if r >= 'A' && r <= 'Z' {
+		return ((r - 'A' + step) % 26) + 'A'
 	}
-	return rune
+	return r
 }
 
 func TestMap(t *testing.T) {
 	// Run a couple of awful growth/shrinkage tests
 	a := tenRunes('a')
 	// 1.  Grow.  This triggers two reallocations in Map.
-	maxRune := func(rune int) int { return unicode.MaxRune }
+	maxRune := func(rune) rune { return unicode.MaxRune }
 	m := Map(maxRune, a)
 	expect := tenRunes(unicode.MaxRune)
 	if m != expect {
@@ -406,7 +406,7 @@ func TestMap(t *testing.T) {
 	}
 
 	// 2. Shrink
-	minRune := func(rune int) int { return 'a' }
+	minRune := func(rune) rune { return 'a' }
 	m = Map(minRune, tenRunes(unicode.MaxRune))
 	expect = a
 	if m != expect {
@@ -428,9 +428,9 @@ func TestMap(t *testing.T) {
 	}
 
 	// 5. Drop
-	dropNotLatin := func(rune int) int {
-		if unicode.Is(unicode.Latin, rune) {
-			return rune
+	dropNotLatin := func(r rune) rune {
+		if unicode.Is(unicode.Latin, r) {
+			return r
 		}
 		return -1
 	}
@@ -441,8 +441,8 @@ func TestMap(t *testing.T) {
 	}
 
 	// 6. Identity
-	identity := func(rune int) int {
-		return rune
+	identity := func(r rune) rune {
+		return r
 	}
 	orig := "Input string that we expect not to be copied."
 	m = Map(identity, orig)
@@ -457,8 +457,8 @@ func TestToUpper(t *testing.T) { runStringTests(t, ToUpper, "ToUpper", upperTest
 func TestToLower(t *testing.T) { runStringTests(t, ToLower, "ToLower", lowerTests) }
 
 func BenchmarkMapNoChanges(b *testing.B) {
-	identity := func(rune int) int {
-		return rune
+	identity := func(r rune) rune {
+		return r
 	}
 	for i := 0; i < b.N; i++ {
 		Map(identity, "Some string that won't be modified.")
@@ -489,46 +489,47 @@ func TestSpecialCase(t *testing.T) {
 func TestTrimSpace(t *testing.T) { runStringTests(t, TrimSpace, "TrimSpace", trimSpaceTests) }
 
 var trimTests = []struct {
-	f               func(string, string) string
+	f               string
 	in, cutset, out string
 }{
-	{Trim, "abba", "a", "bb"},
-	{Trim, "abba", "ab", ""},
-	{TrimLeft, "abba", "ab", ""},
-	{TrimRight, "abba", "ab", ""},
-	{TrimLeft, "abba", "a", "bba"},
-	{TrimRight, "abba", "a", "abb"},
-	{Trim, "<tag>", "<>", "tag"},
-	{Trim, "* listitem", " *", "listitem"},
-	{Trim, `"quote"`, `"`, "quote"},
-	{Trim, "\u2C6F\u2C6F\u0250\u0250\u2C6F\u2C6F", "\u2C6F", "\u0250\u0250"},
+	{"Trim", "abba", "a", "bb"},
+	{"Trim", "abba", "ab", ""},
+	{"TrimLeft", "abba", "ab", ""},
+	{"TrimRight", "abba", "ab", ""},
+	{"TrimLeft", "abba", "a", "bba"},
+	{"TrimRight", "abba", "a", "abb"},
+	{"Trim", "<tag>", "<>", "tag"},
+	{"Trim", "* listitem", " *", "listitem"},
+	{"Trim", `"quote"`, `"`, "quote"},
+	{"Trim", "\u2C6F\u2C6F\u0250\u0250\u2C6F\u2C6F", "\u2C6F", "\u0250\u0250"},
 	//empty string tests
-	{Trim, "abba", "", "abba"},
-	{Trim, "", "123", ""},
-	{Trim, "", "", ""},
-	{TrimLeft, "abba", "", "abba"},
-	{TrimLeft, "", "123", ""},
-	{TrimLeft, "", "", ""},
-	{TrimRight, "abba", "", "abba"},
-	{TrimRight, "", "123", ""},
-	{TrimRight, "", "", ""},
-	{TrimRight, "☺\xc0", "☺", "☺\xc0"},
+	{"Trim", "abba", "", "abba"},
+	{"Trim", "", "123", ""},
+	{"Trim", "", "", ""},
+	{"TrimLeft", "abba", "", "abba"},
+	{"TrimLeft", "", "123", ""},
+	{"TrimLeft", "", "", ""},
+	{"TrimRight", "abba", "", "abba"},
+	{"TrimRight", "", "123", ""},
+	{"TrimRight", "", "", ""},
+	{"TrimRight", "☺\xc0", "☺", "☺\xc0"},
 }
 
 func TestTrim(t *testing.T) {
 	for _, tc := range trimTests {
-		actual := tc.f(tc.in, tc.cutset)
-		var name string
-		switch tc.f {
-		case Trim:
-			name = "Trim"
-		case TrimLeft:
-			name = "TrimLeft"
-		case TrimRight:
-			name = "TrimRight"
+		name := tc.f
+		var f func(string, string) string
+		switch name {
+		case "Trim":
+			f = Trim
+		case "TrimLeft":
+			f = TrimLeft
+		case "TrimRight":
+			f = TrimRight
 		default:
-			t.Error("Undefined trim function")
+			t.Errorf("Undefined trim function %s", name)
 		}
+		actual := f(tc.in, tc.cutset)
 		if actual != tc.out {
 			t.Errorf("%s(%q, %q) = %q; want %q", name, tc.in, tc.cutset, actual, tc.out)
 		}
@@ -536,7 +537,7 @@ func TestTrim(t *testing.T) {
 }
 
 type predicate struct {
-	f    func(r int) bool
+	f    func(rune) bool
 	name string
 }
 
@@ -544,7 +545,7 @@ var isSpace = predicate{unicode.IsSpace, "IsSpace"}
 var isDigit = predicate{unicode.IsDigit, "IsDigit"}
 var isUpper = predicate{unicode.IsUpper, "IsUpper"}
 var isValidRune = predicate{
-	func(r int) bool {
+	func(r rune) bool {
 		return r != utf8.RuneError
 	},
 	"IsValidRune",
@@ -552,7 +553,7 @@ var isValidRune = predicate{
 
 func not(p predicate) predicate {
 	return predicate{
-		func(r int) bool {
+		func(r rune) bool {
 			return !p.f(r)
 		},
 		"not " + p.name,
@@ -645,9 +646,9 @@ func TestCaseConsistency(t *testing.T) {
 	if testing.Short() {
 		numRunes = 1000
 	}
-	a := make([]int, numRunes)
+	a := make([]rune, numRunes)
 	for i := range a {
-		a[i] = i
+		a[i] = rune(i)
 	}
 	s := string(a)
 	// convert the cases.
@@ -706,7 +707,7 @@ func TestRepeat(t *testing.T) {
 	}
 }
 
-func runesEqual(a, b []int) bool {
+func runesEqual(a, b []rune) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -720,30 +721,30 @@ func runesEqual(a, b []int) bool {
 
 var RunesTests = []struct {
 	in    string
-	out   []int
+	out   []rune
 	lossy bool
 }{
-	{"", []int{}, false},
-	{" ", []int{32}, false},
-	{"ABC", []int{65, 66, 67}, false},
-	{"abc", []int{97, 98, 99}, false},
-	{"\u65e5\u672c\u8a9e", []int{26085, 26412, 35486}, false},
-	{"ab\x80c", []int{97, 98, 0xFFFD, 99}, true},
-	{"ab\xc0c", []int{97, 98, 0xFFFD, 99}, true},
+	{"", []rune{}, false},
+	{" ", []rune{32}, false},
+	{"ABC", []rune{65, 66, 67}, false},
+	{"abc", []rune{97, 98, 99}, false},
+	{"\u65e5\u672c\u8a9e", []rune{26085, 26412, 35486}, false},
+	{"ab\x80c", []rune{97, 98, 0xFFFD, 99}, true},
+	{"ab\xc0c", []rune{97, 98, 0xFFFD, 99}, true},
 }
 
 func TestRunes(t *testing.T) {
 	for _, tt := range RunesTests {
-		a := []int(tt.in)
+		a := []rune(tt.in)
 		if !runesEqual(a, tt.out) {
-			t.Errorf("[]int(%q) = %v; want %v", tt.in, a, tt.out)
+			t.Errorf("[]rune(%q) = %v; want %v", tt.in, a, tt.out)
 			continue
 		}
 		if !tt.lossy {
 			// can only test reassembly if we didn't lose information
 			s := string(a)
 			if s != tt.in {
-				t.Errorf("string([]int(%q)) = %x; want %x", tt.in, s, tt.in)
+				t.Errorf("string([]rune(%q)) = %x; want %x", tt.in, s, tt.in)
 			}
 		}
 	}
@@ -759,7 +760,7 @@ func TestReadByte(t *testing.T) {
 		var res bytes.Buffer
 		for {
 			b, e := reader.ReadByte()
-			if e == os.EOF {
+			if e == io.EOF {
 				break
 			}
 			if e != nil {
@@ -799,7 +800,7 @@ func TestReadRune(t *testing.T) {
 		res := ""
 		for {
 			r, z, e := reader.ReadRune()
-			if e == os.EOF {
+			if e == io.EOF {
 				break
 			}
 			if e != nil {
@@ -903,6 +904,56 @@ func TestContains(t *testing.T) {
 		if Contains(ct.str, ct.substr) != ct.expected {
 			t.Errorf("Contains(%s, %s) = %v, want %v",
 				ct.str, ct.substr, !ct.expected, ct.expected)
+		}
+	}
+}
+
+var ContainsAnyTests = []struct {
+	str, substr string
+	expected    bool
+}{
+	{"", "", false},
+	{"", "a", false},
+	{"", "abc", false},
+	{"a", "", false},
+	{"a", "a", true},
+	{"aaa", "a", true},
+	{"abc", "xyz", false},
+	{"abc", "xcz", true},
+	{"a☺b☻c☹d", "uvw☻xyz", true},
+	{"aRegExp*", ".(|)*+?^$[]", true},
+	{dots + dots + dots, " ", false},
+}
+
+func TestContainsAny(t *testing.T) {
+	for _, ct := range ContainsAnyTests {
+		if ContainsAny(ct.str, ct.substr) != ct.expected {
+			t.Errorf("ContainsAny(%s, %s) = %v, want %v",
+				ct.str, ct.substr, !ct.expected, ct.expected)
+		}
+	}
+}
+
+var ContainsRuneTests = []struct {
+	str      string
+	r        rune
+	expected bool
+}{
+	{"", 'a', false},
+	{"a", 'a', true},
+	{"aaa", 'a', true},
+	{"abc", 'y', false},
+	{"abc", 'c', true},
+	{"a☺b☻c☹d", 'x', false},
+	{"a☺b☻c☹d", '☻', true},
+	{"aRegExp*", '*', true},
+}
+
+func TestContainsRune(t *testing.T) {
+	for _, ct := range ContainsRuneTests {
+		if ContainsRune(ct.str, ct.r) != ct.expected {
+			t.Errorf("ContainsRune(%s, %s) = %v, want %v",
+				ct.str, ct.r, !ct.expected, ct.expected)
 		}
 	}
 }

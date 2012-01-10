@@ -1490,8 +1490,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef const_iterator                                  iterator;
       typedef typename std::iterator_traits<_Bi_iter>::difference_type
                                                               difference_type;
-      /* TODO: needs allocator_traits */
-      typedef typename _Allocator::size_type                  size_type;
+      typedef typename allocator_traits<_Allocator>::size_type
+                                                              size_type;
       typedef _Allocator                                      allocator_type;
       typedef typename std::iterator_traits<_Bi_iter>::value_type
                                                               char_type;
@@ -2223,7 +2223,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  regex_constants::match_flag_type __flags
 		  = regex_constants::match_default)
     {
-      std::string __result;
+      basic_string<_Ch_type> __result;
       regex_replace(std::back_inserter(__result),
 		    __s.begin(), __s.end(), __e, __fmt, __flags);
       return __result;

@@ -60,9 +60,10 @@ with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch12; use Sem_Ch12;
 with Sem_Ch13; use Sem_Ch13;
-with Sem_Eval; use Sem_Eval;
+with Sem_Dim;  use Sem_Dim;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
+with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
 with Sem_Res;  use Sem_Res;
 with Sem_SCIL; use Sem_SCIL;
@@ -1750,24 +1751,50 @@ package body Exp_Ch6 is
 
       if not Is_Empty_List (Post_Call) then
 
-         --  If call is not a list member, it must be the triggering statement
-         --  of a triggering alternative or an entry call alternative, and we
-         --  can add the post call stuff to the corresponding statement list.
+         --  Cases where the call is not a member of a statement list
 
          if not Is_List_Member (N) then
             declare
-               P : constant Node_Id := Parent (N);
+               P :  Node_Id := Parent (N);
 
             begin
-               pragma Assert (Nkind_In (P, N_Triggering_Alternative,
-                                           N_Entry_Call_Alternative));
+               --  In Ada 2012 the call may be a function call in an expression
+               --  (since OUT and IN OUT parameters are now allowed for such
+               --  calls. The write-back of (in)-out parameters is handled
+               --  by the back-end, but the constraint checks generated when
+               --  subtypes of formal and actual don't match must be inserted
+               --  in the form of assignments, at the nearest point after the
+               --  declaration or statement that contains the call.
 
-               if Is_Non_Empty_List (Statements (P)) then
-                  Insert_List_Before_And_Analyze
-                    (First (Statements (P)), Post_Call);
+               if Ada_Version >= Ada_2012
+                 and then Nkind (N) = N_Function_Call
+               then
+                  while Nkind (P) not in N_Declaration
+                    and then
+                      Nkind (P) not in N_Statement_Other_Than_Procedure_Call
+                  loop
+                     P := Parent (P);
+                  end loop;
+
+                  Insert_Actions_After (P, Post_Call);
+
+               --  If not the special Ada 2012 case of a function call, then
+               --  we must have the triggering statement of a triggering
+               --  alternative or an entry call alternative, and we can add
+               --  the post call stuff to the corresponding statement list.
+
                else
-                  Set_Statements (P, Post_Call);
+                  pragma Assert (Nkind_In (P, N_Triggering_Alternative,
+                                              N_Entry_Call_Alternative));
+
+                  if Is_Non_Empty_List (Statements (P)) then
+                     Insert_List_Before_And_Analyze
+                       (First (Statements (P)), Post_Call);
+                  else
+                     Set_Statements (P, Post_Call);
+                  end if;
                end if;
+
             end;
 
          --  Otherwise, normal case where N is in a statement sequence,
@@ -2077,6 +2104,20 @@ package body Exp_Ch6 is
    --  Start of processing for Expand_Call
 
    begin
+      --  Expand the procedure call if the first actual has a dimension and if
+      --  the procedure is Put (Ada 2012).
+
+      if Ada_Version >= Ada_2012
+        and then Nkind (Call_Node) = N_Procedure_Call_Statement
+        and then Present (Parameter_Associations (Call_Node))
+      then
+         Expand_Put_Call_With_Dimension_Symbol (Call_Node);
+      end if;
+
+      --  Remove the dimensions of every parameters in call
+
+      Remove_Dimension_In_Call (N);
+
       --  Ignore if previous error
 
       if Nkind (Call_Node) in N_Has_Etype
@@ -2764,7 +2805,7 @@ package body Exp_Ch6 is
          Next_Formal (Formal);
       end loop;
 
-      --  If we are calling an Ada2012 function which needs to have the
+      --  If we are calling an Ada 2012 function which needs to have the
       --  "accessibility level determined by the point of call" (AI05-0234)
       --  passed in to it, then pass it in.
 
@@ -6674,6 +6715,14 @@ package body Exp_Ch6 is
                  Make_Explicit_Dereference (Loc,
                  Prefix => New_Reference_To (Temp, Loc)));
 
+               --  Ada 2005 (AI-251): If the type of the returned object is
+               --  an interface then add an implicit type conversion to force
+               --  displacement of the "this" pointer.
+
+               if Is_Interface (R_Type) then
+                  Rewrite (Exp, Convert_To (R_Type, Relocate_Node (Exp)));
+               end if;
+
                Analyze_And_Resolve (Exp, R_Type);
             end;
 
@@ -7779,6 +7828,15 @@ package body Exp_Ch6 is
       --  to the object created by the allocator).
 
       Rewrite (Allocator, Make_Reference (Loc, Relocate_Node (Function_Call)));
+
+      --  Ada 2005 (AI-251): If the type of the allocator is an interface then
+      --  generate an implicit conversion to force displacement of the "this"
+      --  pointer.
+
+      if Is_Interface (Designated_Type (Acc_Type)) then
+         Rewrite (Allocator, Convert_To (Acc_Type, Relocate_Node (Allocator)));
+      end if;
+
       Analyze_And_Resolve (Allocator, Acc_Type);
    end Make_Build_In_Place_Call_In_Allocator;
 
@@ -8506,8 +8564,8 @@ package body Exp_Ch6 is
          return False;
 
       --  Handle a corner case, a cross-dialect subp renaming. For example,
-      --  an Ada2012 renaming of an Ada05 subprogram. This can occur when a
-      --  non-Ada2012 unit references predefined runtime units.
+      --  an Ada 2012 renaming of an Ada 2005 subprogram. This can occur when
+      --  an Ada 2005 (or earlier) unit references predefined run-time units.
 
       elsif Present (Alias (Func_Id)) then
 

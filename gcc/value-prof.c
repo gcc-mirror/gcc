@@ -1,5 +1,5 @@
 /* Transformations based on profile information for values.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1149,7 +1149,7 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
   tree optype = build_pointer_type (void_type_node);
   edge e_cd, e_ci, e_di, e_dj = NULL, e_ij;
   gimple_stmt_iterator gsi;
-  int lp_nr;
+  int lp_nr, dflags;
 
   cond_bb = gimple_bb (icall_stmt);
   gsi = gsi_for_stmt (icall_stmt);
@@ -1176,6 +1176,9 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
   update_stmt (icall_stmt);
   dcall_stmt = gimple_copy (icall_stmt);
   gimple_call_set_fndecl (dcall_stmt, direct_call->decl);
+  dflags = flags_from_decl_or_type (direct_call->decl);
+  if ((dflags & ECF_NORETURN) != 0)
+    gimple_call_set_lhs (dcall_stmt, NULL_TREE);
   gsi_insert_before (&gsi, dcall_stmt, GSI_SAME_STMT);
 
   /* Fix CFG. */
@@ -1220,17 +1223,23 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
 
   if (e_ij != NULL)
     {
-      e_dj = make_edge (dcall_bb, join_bb, EDGE_FALLTHRU);
-      e_dj->probability = REG_BR_PROB_BASE;
-      e_dj->count = count;
+      if ((dflags & ECF_NORETURN) != 0)
+	e_ij->count = all;
+      else
+	{
+	  e_dj = make_edge (dcall_bb, join_bb, EDGE_FALLTHRU);
+	  e_dj->probability = REG_BR_PROB_BASE;
+	  e_dj->count = count;
 
+	  e_ij->count = all - count;
+	}
       e_ij->probability = REG_BR_PROB_BASE;
-      e_ij->count = all - count;
     }
 
   /* Insert PHI node for the call result if necessary.  */
   if (gimple_call_lhs (icall_stmt)
-      && TREE_CODE (gimple_call_lhs (icall_stmt)) == SSA_NAME)
+      && TREE_CODE (gimple_call_lhs (icall_stmt)) == SSA_NAME
+      && (dflags & ECF_NORETURN) == 0)
     {
       tree result = gimple_call_lhs (icall_stmt);
       gimple phi = create_phi_node (result, join_bb);

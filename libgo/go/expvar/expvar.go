@@ -23,10 +23,10 @@ package expvar
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
-	"http"
-	"json"
 	"log"
+	"net/http"
 	"os"
 	"runtime"
 	"strconv"
@@ -44,7 +44,7 @@ type Int struct {
 	mu sync.Mutex
 }
 
-func (v *Int) String() string { return strconv.Itoa64(v.i) }
+func (v *Int) String() string { return strconv.FormatInt(v.i, 10) }
 
 func (v *Int) Add(delta int64) {
 	v.mu.Lock()
@@ -64,7 +64,7 @@ type Float struct {
 	mu sync.Mutex
 }
 
-func (v *Float) String() string { return strconv.Ftoa64(v.f, 'g', -1) }
+func (v *Float) String() string { return strconv.FormatFloat(v.f, 'g', -1, 64) }
 
 // Add adds delta to v.
 func (v *Float) Add(delta float64) {
@@ -102,7 +102,7 @@ func (v *Map) String() string {
 		if !first {
 			fmt.Fprintf(b, ", ")
 		}
-		fmt.Fprintf(b, "\"%s\": %v", key, val.String())
+		fmt.Fprintf(b, "\"%s\": %v", key, val)
 		first = false
 	}
 	fmt.Fprintf(b, "}")

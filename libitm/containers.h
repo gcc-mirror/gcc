@@ -1,4 +1,4 @@
-/* Copyright (C) 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2011, 2012 Free Software Foundation, Inc.
    Contributed by Torvald Riegel <triegel@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -70,17 +70,24 @@ class vector
   }
   ~vector<T, alloc_separate_cl>() { if (m_capacity) free(entries); }
 
-  void resize()
+  void resize(size_t additional_capacity)
   {
-    if (m_capacity >= default_resize_max)
-      m_capacity = m_capacity + default_resize_max;
+    size_t target = m_capacity + additional_capacity;
+    if (target > default_resize_max)
+      m_capacity = ((target - 1 + default_resize_max) / default_resize_max)
+        * default_resize_max;
     else
-      m_capacity = m_capacity * 2;
+      while (m_capacity < target)
+        m_capacity = m_capacity * 2;
     if (m_capacity < default_resize_min)
       m_capacity = default_resize_min;
     entries = (T*) xrealloc(entries, sizeof(T) * m_capacity, alloc_separate_cl);
   }
-  void resize_noinline() __attribute__((noinline)) { resize(); }
+  void resize_noinline() __attribute__((noinline)) { resize(1); }
+  void resize_noinline(size_t elements) __attribute__((noinline))
+  {
+    resize(elements);
+  }
 
   size_t size() const { return m_size; }
   size_t capacity() const { return this->capacity; }
@@ -91,6 +98,15 @@ class vector
     // We don't want inlining here since push() is often on the fast path.
     if (unlikely(m_size == m_capacity)) resize_noinline();
     return &entries[m_size++];
+  }
+
+  iterator push(size_t elements)
+  {
+    // We don't want inlining here since push() is often on the fast path.
+    if (unlikely(m_size + elements > m_capacity)) resize_noinline(elements);
+    iterator it = &entries[m_size];
+    m_size += elements;
+    return it;
   }
 
   iterator pop() {

@@ -5004,6 +5004,17 @@ set_unique_reg_note (rtx insn, enum reg_note kind, rtx datum)
 
   return REG_NOTES (insn);
 }
+
+/* Like set_unique_reg_note, but don't do anything unless INSN sets DST.  */
+rtx
+set_dst_reg_note (rtx insn, enum reg_note kind, rtx datum, rtx dst)
+{
+  rtx set = single_set (insn);
+
+  if (set && SET_DEST (set) == dst)
+    return set_unique_reg_note (insn, kind, datum);
+  return NULL_RTX;
+}
 
 /* Return an indication of which type of insn should have X as a body.
    The value is CODE_LABEL, INSN, CALL_INSN or JUMP_INSN.  */
@@ -5706,6 +5717,11 @@ init_emit_once (void)
        mode = GET_MODE_WIDER_MODE (mode))
     const_tiny_rtx[3][(int) mode] = constm1_rtx;
 
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_PARTIAL_INT);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    const_tiny_rtx[3][(int) mode] = constm1_rtx;
+      
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_COMPLEX_INT);
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))

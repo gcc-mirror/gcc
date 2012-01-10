@@ -116,7 +116,7 @@ package body Prj.Nmsc is
    end record;
 
    No_File_Found : constant File_Found :=
-     (No_File, No_File, 0, False, No_Location);
+                     (No_File, No_File, 0, False, No_Location);
 
    package Excluded_Sources_Htable is new GNAT.Dynamic_HTables.Simple_HTable
      (Header_Num => Header_Num,
@@ -151,9 +151,10 @@ package body Prj.Nmsc is
    --  be discarded as soon as we have finished processing the project
 
    type Tree_Processing_Data is record
-      Tree      : Project_Tree_Ref;
-      Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
-      Flags     : Prj.Processing_Flags;
+      Tree             : Project_Tree_Ref;
+      Node_Tree        : Prj.Tree.Project_Node_Tree_Ref;
+      Flags            : Prj.Processing_Flags;
+      In_Aggregate_Lib : Boolean;
    end record;
    --  Temporary data which is needed while parsing a project. It does not need
    --  to be kept in memory once a project has been fully loaded, but is
@@ -184,11 +185,6 @@ package body Prj.Nmsc is
 
    procedure Free (Data : in out Tree_Processing_Data);
    --  Free the memory occupied by Data
-
-   procedure Check
-     (Project : Project_Id;
-      Data    : in out Tree_Processing_Data);
-   --  Process the naming scheme for a single project
 
    procedure Initialize
      (Data    : in out Project_Processing_Data;
@@ -728,6 +724,7 @@ package body Prj.Nmsc is
          elsif Prev_Unit /= No_Unit_Index
            and then Prev_Unit.File_Names (Kind) /= null
            and then not Source.Locally_Removed
+           and then not Data.In_Aggregate_Lib
          then
             --  Path is set if this is a source we found on the disk, in which
             --  case we can provide more explicit error message. Path is unset
@@ -765,6 +762,7 @@ package body Prj.Nmsc is
            and then not Data.Flags.Allow_Duplicate_Basenames
            and then Lang_Id.Config.Kind = Unit_Based
            and then Source.Language.Config.Kind = Unit_Based
+           and then not Data.In_Aggregate_Lib
          then
             Error_Msg_File_1 := File_Name;
             Error_Msg_File_2 := File_Name_Type (Source.Project.Name);
@@ -924,9 +922,10 @@ package body Prj.Nmsc is
       Flags     : Processing_Flags)
    is
       Data : Tree_Processing_Data :=
-               (Tree      => Tree,
-                Node_Tree => Node_Tree,
-                Flags     => Flags);
+               (Tree             => Tree,
+                Node_Tree        => Node_Tree,
+                Flags            => Flags,
+                In_Aggregate_Lib => False);
 
       Project_Files : constant Prj.Variable_Value :=
                         Prj.Util.Value_Of
@@ -1011,76 +1010,6 @@ package body Prj.Nmsc is
 
       Free (Project_Path_For_Aggregate);
    end Process_Aggregated_Projects;
-
-   -----------
-   -- Check --
-   -----------
-
-   procedure Check
-     (Project : Project_Id;
-      Data    : in out Tree_Processing_Data)
-   is
-      Shared   : constant Shared_Project_Tree_Data_Access := Data.Tree.Shared;
-      Prj_Data : Project_Processing_Data;
-
-   begin
-      Debug_Increase_Indent ("check", Project.Name);
-
-      Initialize (Prj_Data, Project);
-
-      Check_If_Externally_Built (Project, Data);
-
-      case Project.Qualifier is
-         when Aggregate =>
-            null;
-
-         when Aggregate_Library =>
-            if Project.Object_Directory = No_Path_Information then
-               Project.Object_Directory := Project.Directory;
-            end if;
-
-         when others =>
-            Get_Directories (Project, Data);
-            Check_Programming_Languages (Project, Data);
-
-            if Current_Verbosity = High then
-               Show_Source_Dirs (Project, Shared);
-            end if;
-
-            if Project.Qualifier = Dry then
-               Check_Abstract_Project (Project, Data);
-            end if;
-      end case;
-
-      --  Check configuration. This must be done even for gnatmake (even though
-      --  no user configuration file was provided) since the default config we
-      --  generate indicates whether libraries are supported for instance.
-
-      Check_Configuration (Project, Data);
-
-      if Project.Qualifier /= Aggregate then
-         Check_Library_Attributes (Project, Data);
-         Check_Package_Naming (Project, Data);
-
-         --  An aggregate library has no source, no need to look for them
-
-         if Project.Qualifier /= Aggregate_Library then
-            Look_For_Sources (Prj_Data, Data);
-         end if;
-
-         Check_Interfaces (Project, Data);
-
-         if Project.Library then
-            Check_Stand_Alone_Library (Project, Data);
-         end if;
-
-         Get_Mains (Project, Data);
-      end if;
-
-      Free (Prj_Data);
-
-      Debug_Decrease_Indent ("done check");
-   end Check;
 
    ----------------------------
    -- Check_Abstract_Project --
@@ -2155,6 +2084,24 @@ package body Prj.Nmsc is
                            Attribute.Value.Location, Project);
                   end;
 
+               elsif
+                 Attribute.Name = Name_Library_Encapsulated_Supported
+               then
+                  declare
+                     pragma Unsuppress (All_Checks);
+                  begin
+                     Project.Config.Lib_Encapsulated_Supported :=
+                       Boolean'Value (Get_Name_String (Attribute.Value.Value));
+                  exception
+                     when Constraint_Error =>
+                        Error_Msg
+                          (Data.Flags,
+                           "invalid value """
+                             & Get_Name_String (Attribute.Value.Value)
+                             & """ for Library_Encapsulated_Supported",
+                           Attribute.Value.Location, Project);
+                  end;
+
                elsif Attribute.Name = Name_Shared_Library_Prefix then
                   Project.Config.Shared_Lib_Prefix :=
                     File_Name_Type (Attribute.Value.Value);
@@ -2778,36 +2725,39 @@ package body Prj.Nmsc is
    is
       Shared : constant Shared_Project_Tree_Data_Access := Data.Tree.Shared;
 
-      Attributes   : constant Prj.Variable_Id := Project.Decl.Attributes;
+      Attributes     : constant Prj.Variable_Id := Project.Decl.Attributes;
 
-      Lib_Dir      : constant Prj.Variable_Value :=
-                       Prj.Util.Value_Of
-                         (Snames.Name_Library_Dir, Attributes, Shared);
+      Lib_Dir        : constant Prj.Variable_Value :=
+                         Prj.Util.Value_Of
+                           (Snames.Name_Library_Dir, Attributes, Shared);
 
-      Lib_Name     : constant Prj.Variable_Value :=
-                       Prj.Util.Value_Of
-                         (Snames.Name_Library_Name, Attributes, Shared);
+      Lib_Name       : constant Prj.Variable_Value :=
+                         Prj.Util.Value_Of
+                           (Snames.Name_Library_Name, Attributes, Shared);
 
-      Lib_Version  : constant Prj.Variable_Value :=
-                       Prj.Util.Value_Of
-                         (Snames.Name_Library_Version, Attributes, Shared);
+      Lib_Standalone : constant Prj.Variable_Value :=
+                         Prj.Util.Value_Of
+                           (Snames.Name_Library_Standalone,
+                            Attributes, Shared);
 
-      Lib_ALI_Dir  : constant Prj.Variable_Value :=
-                       Prj.Util.Value_Of
-                         (Snames.Name_Library_Ali_Dir, Attributes, Shared);
+      Lib_Version    : constant Prj.Variable_Value :=
+                         Prj.Util.Value_Of
+                           (Snames.Name_Library_Version, Attributes, Shared);
 
-      Lib_GCC      : constant Prj.Variable_Value :=
-                       Prj.Util.Value_Of
-                         (Snames.Name_Library_GCC, Attributes, Shared);
+      Lib_ALI_Dir    : constant Prj.Variable_Value :=
+                         Prj.Util.Value_Of
+                           (Snames.Name_Library_Ali_Dir, Attributes, Shared);
 
-      The_Lib_Kind : constant Prj.Variable_Value :=
-                       Prj.Util.Value_Of
-                         (Snames.Name_Library_Kind, Attributes, Shared);
+      Lib_GCC        : constant Prj.Variable_Value :=
+                         Prj.Util.Value_Of
+                           (Snames.Name_Library_GCC, Attributes, Shared);
+
+      The_Lib_Kind   : constant Prj.Variable_Value :=
+                         Prj.Util.Value_Of
+                           (Snames.Name_Library_Kind, Attributes, Shared);
 
       Imported_Project_List : Project_List;
-
-      Continuation : String_Access := No_Continuation_String'Access;
-
+      Continuation          : String_Access := No_Continuation_String'Access;
       Support_For_Libraries : Library_Support;
 
       Library_Directory_Present : Boolean;
@@ -2855,8 +2805,8 @@ package body Prj.Nmsc is
                         Continuation := Continuation_String'Access;
                      end if;
 
-                  elsif (not Unchecked_Shared_Lib_Imports)
-                        and then Project.Library_Kind /= Static
+                  elsif not Unchecked_Shared_Lib_Imports
+                    and then Project.Library_Kind /= Static
                   then
                      Error_Msg
                        (Data.Flags,
@@ -2869,7 +2819,29 @@ package body Prj.Nmsc is
                end if;
 
             elsif Project.Library_Kind /= Static
+              and then not Lib_Standalone.Default
+              and then Get_Name_String (Lib_Standalone.Value) = "encapsulated"
+              and then Proj.Library_Kind /= Static
+            then
+               --  An encapsulated library must depend only on static libraries
+
+               Error_Msg_Name_1 := Project.Name;
+               Error_Msg_Name_2 := Proj.Name;
+
+               Error_Msg
+                 (Data.Flags,
+                  Continuation.all &
+                    "encapsulated library project %% cannot import shared " &
+                    "library project %%",
+                  Project.Location, Project);
+               Continuation := Continuation_String'Access;
+
+            elsif Project.Library_Kind /= Static
               and then Proj.Library_Kind = Static
+              and then
+                (Lib_Standalone.Default
+                  or else
+                    Get_Name_String (Lib_Standalone.Value) /= "encapsulated")
             then
                Error_Msg_Name_1 := Project.Name;
                Error_Msg_Name_2 := Proj.Name;
@@ -3005,8 +2977,15 @@ package body Prj.Nmsc is
                   "library directory { does not exist",
                   Lib_Dir.Location, Project);
 
-            elsif not Project.Externally_Built then
+            --  Checks for object/source directories
 
+            elsif not Project.Externally_Built
+
+              --  An aggregate library does not have sources or objects, so
+              --  these tests are not required in this case.
+
+              and then Project.Qualifier /= Aggregate_Library
+            then
                --  Library directory cannot be the same as Object directory
 
                if Project.Library_Dir.Name = Project.Object_Directory.Name then
@@ -3120,7 +3099,7 @@ package body Prj.Nmsc is
                      Lib_Name.Location, Project);
                end if;
 
-            when Library =>
+            when Library | Aggregate_Library =>
                if not Project.Library then
                   if Project.Library_Name = No_Name then
                      Error_Msg
@@ -3145,7 +3124,6 @@ package body Prj.Nmsc is
 
             when others =>
                null;
-
          end case;
       end if;
 
@@ -3405,7 +3383,6 @@ package body Prj.Nmsc is
                   Imported_Project_List := Imported_Project_List.Next;
                end loop;
             end if;
-
          end if;
       end if;
 
@@ -3482,7 +3459,7 @@ package body Prj.Nmsc is
          end loop;
       end if;
 
-      if Project.Library then
+      if Project.Library and not Data.In_Aggregate_Lib then
 
          --  Record the library name
 
@@ -4311,6 +4288,12 @@ package body Prj.Nmsc is
                                  Project.Decl.Attributes,
                                  Shared);
 
+      Lib_Standalone      : constant Prj.Variable_Value :=
+                              Prj.Util.Value_Of
+                                (Snames.Name_Library_Standalone,
+                                 Project.Decl.Attributes,
+                                 Shared);
+
       Lib_Auto_Init       : constant Prj.Variable_Value :=
                               Prj.Util.Value_Of
                                 (Snames.Name_Library_Auto_Init,
@@ -4355,8 +4338,17 @@ package body Prj.Nmsc is
       --  It is a stand-alone library project file if attribute
       --  Library_Interface is defined.
 
-      if not Lib_Interfaces.Default then
+      if Lib_Interfaces.Default then
+         if not Lib_Standalone.Default
+           and then Get_Name_String (Lib_Standalone.Value) /= "no"
+         then
+            Error_Msg
+              (Data.Flags,
+               "Library_Standalone valid only if Library_Interface is set",
+               Lib_Standalone.Location, Project);
+         end if;
 
+      else
          --  The name of a stand-alone library needs to have the syntax of an
          --  Ada identifier.
 
@@ -4402,7 +4394,34 @@ package body Prj.Nmsc is
             Unit           : Name_Id;
 
          begin
-            Project.Standalone_Library := True;
+            if Lib_Standalone.Default then
+               Project.Standalone_Library := Standard;
+
+            else
+               Get_Name_String (Lib_Standalone.Value);
+               To_Lower (Name_Buffer (1 .. Name_Len));
+
+               if Name_Buffer (1 .. Name_Len) = "standard" then
+                  Project.Standalone_Library := Standard;
+
+               elsif Name_Buffer (1 .. Name_Len) = "encapsulated" then
+                  Project.Standalone_Library := Encapsulated;
+
+               elsif Name_Buffer (1 .. Name_Len) = "no" then
+                  Project.Standalone_Library := No;
+                  Error_Msg
+                    (Data.Flags,
+                     "wrong value for Library_Standalone "
+                     & "when Library_Interface defined",
+                     Lib_Standalone.Location, Project);
+
+               else
+                  Error_Msg
+                    (Data.Flags,
+                     "invalid value for attribute Library_Standalone",
+                     Lib_Standalone.Location, Project);
+               end if;
+            end if;
 
             --  Library_Interface cannot be an empty list
 
@@ -4708,7 +4727,7 @@ package body Prj.Nmsc is
                            (Get_Name_String (Lib_Symbol_Policy.Value));
 
             begin
-               --  Symbol policy must hove one of a limited number of values
+               --  Symbol policy must have one of a limited number of values
 
                if Value = "autonomous" or else Value = "default" then
                   Project.Symbol_Data.Symbol_Policy := Autonomous;
@@ -5284,8 +5303,24 @@ package body Prj.Nmsc is
                "Object_Dir cannot be empty",
                Object_Dir.Location, Project);
 
-         elsif not No_Sources then
+         elsif Setup_Projects
+           and then No_Sources
+           and then Project.Extends = No_Project
+         then
+            --  Do not create an object directory for a non extending project
+            --  with no sources.
 
+            Locate_Directory
+              (Project,
+               File_Name_Type (Object_Dir.Value),
+               Path             => Project.Object_Directory,
+               Dir_Exists       => Dir_Exists,
+               Data             => Data,
+               Location         => Object_Dir.Location,
+               Must_Exist       => False,
+               Externally_Built => Project.Externally_Built);
+
+         else
             --  We check that the specified object directory does exist.
             --  However, even when it doesn't exist, we set it to a default
             --  value. This is for the benefit of tools that recover from
@@ -5355,8 +5390,23 @@ package body Prj.Nmsc is
                "Exec_Dir cannot be empty",
                Exec_Dir.Location, Project);
 
-         elsif not No_Sources then
+         elsif Setup_Projects
+           and then No_Sources
+           and then Project.Extends = No_Project
+         then
+            --  Do not create an exec directory for a non extending project
+            --  with no sources.
 
+            Locate_Directory
+              (Project,
+               File_Name_Type (Exec_Dir.Value),
+               Path             => Project.Exec_Directory,
+               Dir_Exists       => Dir_Exists,
+               Data             => Data,
+               Location         => Exec_Dir.Location,
+               Externally_Built => Project.Externally_Built);
+
+         else
             --  We check that the specified exec directory does exist
 
             Locate_Directory
@@ -8090,8 +8140,8 @@ package body Prj.Nmsc is
          when Warning | Error =>
             declare
                Msg : constant String :=
-                       "<there are no "
-                       & Lang_Name & " sources in this project";
+                      "<there are no "
+                      & Lang_Name & " sources in this project";
 
             begin
                Error_Msg_Warn := Data.Flags.When_No_Sources = Warning;
@@ -8143,20 +8193,163 @@ package body Prj.Nmsc is
       Node_Tree    : Prj.Tree.Project_Node_Tree_Ref;
       Flags        : Processing_Flags)
    is
+
+      procedure Check
+        (Project          : Project_Id;
+         In_Aggregate_Lib : Boolean;
+         Data             : in out Tree_Processing_Data);
+      --  Process the naming scheme for a single project
+
       procedure Recursive_Check
-        (Project  : Project_Id;
-         Prj_Tree : Project_Tree_Ref;
-         Data     : in out Tree_Processing_Data);
+        (Project          : Project_Id;
+         Prj_Tree         : Project_Tree_Ref;
+         In_Aggregate_Lib : Boolean;
+         Data             : in out Tree_Processing_Data);
       --  Check_Naming_Scheme for the project
+
+      -----------
+      -- Check --
+      -----------
+
+      procedure Check
+        (Project          : Project_Id;
+         In_Aggregate_Lib : Boolean;
+         Data             : in out Tree_Processing_Data)
+      is
+         procedure Check_Aggregate
+           (Project : Project_Id;
+            Data    : in out Tree_Processing_Data);
+         --  Check the aggregate project attributes, reject any not supported
+         --  attributes.
+
+         ---------------------
+         -- Check_Aggregate --
+         ---------------------
+
+         procedure Check_Aggregate
+           (Project : Project_Id;
+            Data    : in out Tree_Processing_Data)
+         is
+
+            procedure Check_Not_Defined (Name : Name_Id);
+            --  Report an error if Var is defined
+
+            -----------------------
+            -- Check_Not_Defined --
+            -----------------------
+
+            procedure Check_Not_Defined (Name : Name_Id) is
+               Var : constant Prj.Variable_Value :=
+                       Prj.Util.Value_Of
+                         (Name,
+                          Project.Decl.Attributes,
+                          Data.Tree.Shared);
+            begin
+               if not Var.Default then
+                  Error_Msg_Name_1 := Name;
+                  Error_Msg
+                    (Data.Flags, "wrong attribute %% in aggregate library",
+                     Var.Location, Project);
+               end if;
+            end Check_Not_Defined;
+
+         begin
+            Check_Not_Defined (Snames.Name_Library_Dir);
+            Check_Not_Defined (Snames.Name_Library_Interface);
+            Check_Not_Defined (Snames.Name_Library_Name);
+            Check_Not_Defined (Snames.Name_Library_Ali_Dir);
+            Check_Not_Defined (Snames.Name_Library_Src_Dir);
+            Check_Not_Defined (Snames.Name_Library_Options);
+            Check_Not_Defined (Snames.Name_Library_Standalone);
+            Check_Not_Defined (Snames.Name_Library_Kind);
+            Check_Not_Defined (Snames.Name_Leading_Library_Options);
+            Check_Not_Defined (Snames.Name_Library_Version);
+         end Check_Aggregate;
+
+         Shared   : constant Shared_Project_Tree_Data_Access :=
+                      Data.Tree.Shared;
+         Prj_Data : Project_Processing_Data;
+
+      --  Start of processing for Check
+
+      begin
+         Debug_Increase_Indent ("check", Project.Name);
+
+         Initialize (Prj_Data, Project);
+
+         Check_If_Externally_Built (Project, Data);
+
+         case Project.Qualifier is
+            when Aggregate =>
+               null;
+
+            when Aggregate_Library =>
+               if Project.Object_Directory = No_Path_Information then
+                  Project.Object_Directory := Project.Directory;
+               end if;
+
+            when others =>
+               Get_Directories (Project, Data);
+               Check_Programming_Languages (Project, Data);
+
+               if Current_Verbosity = High then
+                  Show_Source_Dirs (Project, Shared);
+               end if;
+
+               if Project.Qualifier = Dry then
+                  Check_Abstract_Project (Project, Data);
+               end if;
+         end case;
+
+         --  Check configuration. This must be done even for gnatmake (even
+         --  though no user configuration file was provided) since the default
+         --  config we generate indicates whether libraries are supported for
+         --  instance.
+
+         Check_Configuration (Project, Data);
+
+         --  For aggregate project check no library attributes are defined
+
+         if Project.Qualifier = Aggregate then
+            Check_Aggregate (Project, Data);
+
+         else
+            Check_Library_Attributes (Project, Data);
+            Check_Package_Naming (Project, Data);
+
+            --  An aggregate library has no source, no need to look for them
+
+            if Project.Qualifier /= Aggregate_Library then
+               Look_For_Sources (Prj_Data, Data);
+            end if;
+
+            Check_Interfaces (Project, Data);
+
+            --  If this library is part of an aggregated library don't check it
+            --  as it has no sources by itself and so interface won't be found.
+
+            if Project.Library and not In_Aggregate_Lib then
+               Check_Stand_Alone_Library (Project, Data);
+            end if;
+
+            Get_Mains (Project, Data);
+         end if;
+
+         Free (Prj_Data);
+
+         Debug_Decrease_Indent ("done check");
+      end Check;
 
       ---------------------
       -- Recursive_Check --
       ---------------------
 
       procedure Recursive_Check
-        (Project  : Project_Id;
-         Prj_Tree : Project_Tree_Ref;
-         Data     : in out Tree_Processing_Data) is
+        (Project          : Project_Id;
+         Prj_Tree         : Project_Tree_Ref;
+         In_Aggregate_Lib : Boolean;
+         Data             : in out Tree_Processing_Data)
+      is
       begin
          if Current_Verbosity = High then
             Debug_Increase_Indent
@@ -8164,7 +8357,9 @@ package body Prj.Nmsc is
          end if;
 
          Data.Tree := Prj_Tree;
-         Prj.Nmsc.Check (Project, Data);
+         Data.In_Aggregate_Lib := In_Aggregate_Lib;
+
+         Check (Project, In_Aggregate_Lib, Data);
 
          if Current_Verbosity = High then
             Debug_Decrease_Indent ("done Processing_Naming_Scheme");
@@ -8177,6 +8372,7 @@ package body Prj.Nmsc is
       Data : Tree_Processing_Data;
 
    --  Start of processing for Process_Naming_Scheme
+
    begin
       Lib_Data_Table.Init;
       Initialize (Data, Tree => Tree, Node_Tree => Node_Tree, Flags => Flags);

@@ -60,6 +60,7 @@
 package flag
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"sort"
@@ -67,7 +68,7 @@ import (
 )
 
 // ErrHelp is the error returned if the flag -help is invoked but no such flag is defined.
-var ErrHelp = os.NewError("flag: help requested")
+var ErrHelp = errors.New("flag: help requested")
 
 // -- Bool Value
 type boolValue bool
@@ -78,7 +79,7 @@ func newBoolValue(val bool, p *bool) *boolValue {
 }
 
 func (b *boolValue) Set(s string) bool {
-	v, err := strconv.Atob(s)
+	v, err := strconv.ParseBool(s)
 	*b = boolValue(v)
 	return err == nil
 }
@@ -94,7 +95,7 @@ func newIntValue(val int, p *int) *intValue {
 }
 
 func (i *intValue) Set(s string) bool {
-	v, err := strconv.Btoi64(s, 0)
+	v, err := strconv.ParseInt(s, 0, 64)
 	*i = intValue(v)
 	return err == nil
 }
@@ -110,7 +111,7 @@ func newInt64Value(val int64, p *int64) *int64Value {
 }
 
 func (i *int64Value) Set(s string) bool {
-	v, err := strconv.Btoi64(s, 0)
+	v, err := strconv.ParseInt(s, 0, 64)
 	*i = int64Value(v)
 	return err == nil
 }
@@ -126,7 +127,7 @@ func newUintValue(val uint, p *uint) *uintValue {
 }
 
 func (i *uintValue) Set(s string) bool {
-	v, err := strconv.Btoui64(s, 0)
+	v, err := strconv.ParseUint(s, 0, 64)
 	*i = uintValue(v)
 	return err == nil
 }
@@ -142,7 +143,7 @@ func newUint64Value(val uint64, p *uint64) *uint64Value {
 }
 
 func (i *uint64Value) Set(s string) bool {
-	v, err := strconv.Btoui64(s, 0)
+	v, err := strconv.ParseUint(s, 0, 64)
 	*i = uint64Value(v)
 	return err == nil
 }
@@ -173,7 +174,7 @@ func newFloat64Value(val float64, p *float64) *float64Value {
 }
 
 func (f *float64Value) Set(s string) bool {
-	v, err := strconv.Atof64(s)
+	v, err := strconv.ParseFloat(s, 64)
 	*f = float64Value(v)
 	return err == nil
 }
@@ -580,7 +581,7 @@ func Var(value Value, name string, usage string) {
 
 // failf prints to standard error a formatted error and usage message and
 // returns the error.
-func (f *FlagSet) failf(format string, a ...interface{}) os.Error {
+func (f *FlagSet) failf(format string, a ...interface{}) error {
 	err := fmt.Errorf(format, a...)
 	fmt.Fprintln(os.Stderr, err)
 	f.usage()
@@ -600,7 +601,7 @@ func (f *FlagSet) usage() {
 }
 
 // parseOne parses one flag. It returns whether a flag was seen.
-func (f *FlagSet) parseOne() (bool, os.Error) {
+func (f *FlagSet) parseOne() (bool, error) {
 	if len(f.args) == 0 {
 		return false, nil
 	}
@@ -676,7 +677,7 @@ func (f *FlagSet) parseOne() (bool, os.Error) {
 // include the command name.  Must be called after all flags in the FlagSet
 // are defined and before flags are accessed by the program.
 // The return value will be ErrHelp if -help was set but not defined.
-func (f *FlagSet) Parse(arguments []string) os.Error {
+func (f *FlagSet) Parse(arguments []string) error {
 	f.parsed = true
 	f.args = arguments
 	for {

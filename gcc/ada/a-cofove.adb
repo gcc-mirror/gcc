@@ -540,7 +540,6 @@ package body Ada.Containers.Formal_Vectors is
       Last : constant Index_Type := Last_Index (Container);
 
    begin
-
       K := Count_Type (Int (Index) - Int (No_Index));
       for Indx in Index .. Last loop
          if Get_Element (Container, K) = Item then
@@ -628,7 +627,6 @@ package body Ada.Containers.Formal_Vectors is
 
       procedure Merge (Target, Source : in out Vector) is
       begin
-
          declare
             TA : Elements_Array renames Target.Elements;
             SA : Elements_Array renames Source.Elements;
@@ -1326,7 +1324,6 @@ package body Ada.Containers.Formal_Vectors is
       N : constant Count_Type := Length (Source);
 
    begin
-
       if Target'Address = Source'Address then
          return;
       end if;
@@ -1543,7 +1540,6 @@ package body Ada.Containers.Formal_Vectors is
       New_Item  : Element_Type)
    is
    begin
-
       if Index > Container.Last then
          raise Constraint_Error with "Index is out of range";
       end if;
@@ -1568,7 +1564,6 @@ package body Ada.Containers.Formal_Vectors is
       New_Item  : Element_Type)
    is
    begin
-
       if not Position.Valid then
          raise Constraint_Error with "Position cursor has no element";
       end if;
@@ -1932,7 +1927,6 @@ package body Ada.Containers.Formal_Vectors is
       L : Natural renames Container.Lock;
 
    begin
-
       if Index > Container.Last then
          raise Constraint_Error with "Index is out of range";
       end if;

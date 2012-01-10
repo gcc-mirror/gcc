@@ -281,8 +281,9 @@ DEFTREECODE (EH_SPEC_BLOCK, "eh_spec_block", tcc_statement, 2)
 DEFTREECODE (HANDLER, "handler", tcc_statement, 2)
 
 /* A MUST_NOT_THROW_EXPR wraps an expression that may not
-   throw, and must call terminate if it does.  */
-DEFTREECODE (MUST_NOT_THROW_EXPR, "must_not_throw_expr", tcc_expression, 1)
+   throw, and must call terminate if it does.  The second argument
+   is a condition, used in templates to express noexcept (condition).  */
+DEFTREECODE (MUST_NOT_THROW_EXPR, "must_not_throw_expr", tcc_expression, 2)
 
 /* A CLEANUP_STMT marks the point at which a declaration is fully
    constructed.  The CLEANUP_EXPR is run on behalf of CLEANUP_DECL

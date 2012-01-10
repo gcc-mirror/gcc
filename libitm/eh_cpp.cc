@@ -1,4 +1,4 @@
-/* Copyright (C) 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2009, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -39,13 +39,14 @@ extern void *__cxa_begin_catch (void *) WEAK;
 extern void *__cxa_end_catch (void) WEAK;
 extern void __cxa_tm_cleanup (void *, void *, unsigned int) WEAK;
 
-#ifdef __osf__ /* Really: !HAVE_WEAKDEF  */
+#if !defined (HAVE_ELF_STYLE_WEAKREF)
 void *__cxa_allocate_exception (size_t) { return NULL; }
 void __cxa_throw (void *, void *, void *) { return; }
 void *__cxa_begin_catch (void *) { return NULL; }
 void *__cxa_end_catch (void) { return NULL; }
 void __cxa_tm_cleanup (void *, void *, unsigned int) { return; }
-#endif
+void _Unwind_DeleteException (_Unwind_Exception *) { return; }
+#endif /* HAVE_ELF_STYLE_WEAKREF */
 
 }
 

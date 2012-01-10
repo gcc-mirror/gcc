@@ -18,10 +18,8 @@ var F64toint = f64toint
 
 func entersyscall()
 func exitsyscall()
-
-/* Useless for gccgo.
+func golockedOSThread() bool
 
 var Entersyscall = entersyscall
 var Exitsyscall = exitsyscall
-
-*/
+var LockedOSThread = golockedOSThread

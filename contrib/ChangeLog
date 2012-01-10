@@ -1,3 +1,17 @@
+2012-01-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/51345
+	* gcc_update (files_and_dependencies): Add
+	gcc/config/avr/t-multilib, gcc/config/avr/multilib.h.
+
+2011-11-29  DJ Delorie  <dj@redhat.com>
+
+	* config-list.mk (LIST): Add rl78-elf.
+
+2011-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* make_sunver.pl: Convert '?' in glob patterns to '.'.
+
 2011-11-07  Richard Henderson  <rth@redhat.com>
 
 	Merged from transactional-memory.

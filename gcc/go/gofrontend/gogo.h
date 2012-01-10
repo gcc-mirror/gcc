@@ -7,6 +7,8 @@
 #ifndef GO_GOGO_H
 #define GO_GOGO_H
 
+#include "go-linemap.h"
+
 class Traverse;
 class Statement_inserter;
 class Type;
@@ -111,12 +113,17 @@ class Gogo
  public:
   // Create the IR, passing in the sizes of the types "int" and
   // "uintptr" in bits.
-  Gogo(Backend* backend, int int_type_size, int pointer_size);
+  Gogo(Backend* backend, Linemap *linemap, int int_type_size, int pointer_size);
 
   // Get the backend generator.
   Backend*
   backend()
   { return this->backend_; }
+
+  // Get the Location generator.
+  Linemap*
+  linemap()
+  { return this->linemap_; }
 
   // Get the package name.
   const std::string&
@@ -124,7 +131,7 @@ class Gogo
 
   // Set the package name.
   void
-  set_package_name(const std::string&, source_location);
+  set_package_name(const std::string&, Location);
 
   // Return whether this is the "main" package.
   bool
@@ -195,7 +202,7 @@ class Gogo
   // the declarations are added to the global scope.
   void
   import_package(const std::string& filename, const std::string& local_name,
-		 bool is_local_name_exported, source_location);
+		 bool is_local_name_exported, Location);
 
   // Whether we are the global binding level.
   bool
@@ -223,7 +230,7 @@ class Gogo
   add_imported_package(const std::string& real_name, const std::string& alias,
 		       bool is_alias_exported,
 		       const std::string& unique_prefix,
-		       source_location location,
+		       Location location,
 		       bool* padd_to_globals);
 
   // Register a package.  This package may or may not be imported.
@@ -231,17 +238,17 @@ class Gogo
   // it necessary.
   Package*
   register_package(const std::string& name, const std::string& unique_prefix,
-		   source_location);
+		   Location);
 
   // Start compiling a function.  ADD_METHOD_TO_TYPE is true if a
   // method function should be added to the type of its receiver.
   Named_object*
   start_function(const std::string& name, Function_type* type,
-		 bool add_method_to_type, source_location);
+		 bool add_method_to_type, Location);
 
   // Finish compiling a function.
   void
-  finish_function(source_location);
+  finish_function(Location);
 
   // Return the current function.
   Named_object*
@@ -254,36 +261,41 @@ class Gogo
   // Start a new block.  This is not initially associated with a
   // function.
   void
-  start_block(source_location);
+  start_block(Location);
 
   // Finish the current block and return it.
   Block*
-  finish_block(source_location);
+  finish_block(Location);
 
   // Declare an unknown name.  This is used while parsing.  The name
   // must be resolved by the end of the parse.  Unknown names are
   // always added at the package level.
   Named_object*
-  add_unknown_name(const std::string& name, source_location);
+  add_unknown_name(const std::string& name, Location);
 
   // Declare a function.
   Named_object*
-  declare_function(const std::string&, Function_type*, source_location);
+  declare_function(const std::string&, Function_type*, Location);
+
+  // Declare a function at the package level.  This is used for
+  // functions generated for a type.
+  Named_object*
+  declare_package_function(const std::string&, Function_type*, Location);
 
   // Add a label.
   Label*
-  add_label_definition(const std::string&, source_location);
+  add_label_definition(const std::string&, Location);
 
   // Add a label reference.  ISSUE_GOTO_ERRORS is true if we should
   // report errors for a goto from the current location to the label
   // location.
   Label*
-  add_label_reference(const std::string&, source_location,
+  add_label_reference(const std::string&, Location,
 		      bool issue_goto_errors);
 
   // Return a snapshot of the current binding state.
   Bindings_snapshot*
-  bindings_snapshot(source_location);
+  bindings_snapshot(Location);
 
   // Add a statement to the current block.
   void
@@ -291,7 +303,7 @@ class Gogo
 
   // Add a block to the current block.
   void
-  add_block(Block*, source_location);
+  add_block(Block*, Location);
 
   // Add a constant.
   Named_object*
@@ -299,7 +311,7 @@ class Gogo
 
   // Add a type.
   void
-  add_type(const std::string&, Type*, source_location);
+  add_type(const std::string&, Type*, Location);
 
   // Add a named type.  This is used for builtin types, and to add an
   // imported type to the global scope.
@@ -308,12 +320,12 @@ class Gogo
 
   // Declare a type.
   Named_object*
-  declare_type(const std::string&, source_location);
+  declare_type(const std::string&, Location);
 
   // Declare a type at the package level.  This is used when the
   // parser sees an unknown name where a type name is required.
   Named_object*
-  declare_package_type(const std::string&, source_location);
+  declare_package_type(const std::string&, Location);
 
   // Define a type which was already declared.
   void
@@ -356,6 +368,20 @@ class Gogo
   // parsing a new file.
   void
   clear_file_scope();
+
+  // Queue up a type-specific function to be written out.  This is
+  // used when a type-specific function is needed when not at the top
+  // level.
+  void
+  queue_specific_type_function(Type* type, Named_type* name,
+			       const std::string& hash_name,
+			       Function_type* hash_fntype,
+			       const std::string& equal_name,
+			       Function_type* equal_fntype);
+
+  // Write out queued specific type functions.
+  void
+  write_specific_type_functions();
 
   // Traverse the tree.  See the Traverse class.
   void
@@ -466,12 +492,12 @@ class Gogo
   // RETTYPE is the return type.  It is followed by NARGS pairs of
   // type and argument (both trees).
   static tree
-  call_builtin(tree* pdecl, source_location, const char* name, int nargs,
+  call_builtin(tree* pdecl, Location, const char* name, int nargs,
 	       tree rettype, ...);
 
   // Build a call to the runtime error function.
   static tree
-  runtime_error(int code, source_location);
+  runtime_error(int code, Location);
 
   // Build a builtin struct with a list of fields.
   static tree
@@ -503,7 +529,7 @@ class Gogo
   // Return a tree which allocate SIZE bytes to hold values of type
   // TYPE.
   tree
-  allocate_memory(Type *type, tree size, source_location);
+  allocate_memory(Type *type, tree size, Location);
 
   // Return a type to use for pointer to const char.
   static tree
@@ -520,17 +546,12 @@ class Gogo
 
   // Receive a value from a channel.
   static tree
-  receive_from_channel(tree type_tree, tree channel, bool for_select,
-		       source_location);
-
-  // Return a tree for receiving an integer on a channel.
-  static tree
-  receive_as_64bit_integer(tree type, tree channel, bool blocking,
-			   bool for_select);
+  receive_from_channel(tree type_tree, tree type_descriptor_tree, tree channel,
+		       Location);
 
   // Make a trampoline which calls FNADDR passing CLOSURE.
   tree
-  make_trampoline(tree fnaddr, tree closure, source_location);
+  make_trampoline(tree fnaddr, tree closure, Location);
 
  private:
   // During parsing, we keep a stack of functions.  Each function on
@@ -549,12 +570,12 @@ class Gogo
 
   // Set up the built-in unsafe package.
   void
-  import_unsafe(const std::string&, bool is_exported, source_location);
+  import_unsafe(const std::string&, bool is_exported, Location);
 
   // Add a new imported package.
   Named_object*
   add_package(const std::string& real_name, const std::string& alias,
-	      const std::string& unique_prefix, source_location location);
+	      const std::string& unique_prefix, Location location);
 
   // Return the current binding contour.
   Bindings*
@@ -601,8 +622,31 @@ class Gogo
   // Type used to map special names in the sys package.
   typedef std::map<std::string, std::string> Sys_names;
 
+  // Type used to queue writing a type specific function.
+  struct Specific_type_function
+  {
+    Type* type;
+    Named_type* name;
+    std::string hash_name;
+    Function_type* hash_fntype;
+    std::string equal_name;
+    Function_type* equal_fntype;
+
+    Specific_type_function(Type* atype, Named_type* aname,
+			   const std::string& ahash_name,
+			   Function_type* ahash_fntype,
+			   const std::string& aequal_name,
+			   Function_type* aequal_fntype)
+      : type(atype), name(aname), hash_name(ahash_name),
+	hash_fntype(ahash_fntype), equal_name(aequal_name),
+	equal_fntype(aequal_fntype)
+    { }
+  };
+
   // The backend generator.
   Backend* backend_;
+  // The object used to keep track of file names and line numbers.
+  Linemap* linemap_;
   // The package we are compiling.
   Package* package_;
   // The list of currently open functions during parsing.
@@ -631,6 +675,10 @@ class Gogo
   bool unique_prefix_specified_;
   // A list of interface types defined while parsing.
   std::vector<Interface_type*> interface_types_;
+  // Type specific functions to write out.
+  std::vector<Specific_type_function*> specific_type_functions_;
+  // Whether we are done writing out specific type functions.
+  bool specific_type_functions_are_written_;
   // Whether named types have been converted.
   bool named_types_are_converted_;
 };
@@ -640,7 +688,7 @@ class Gogo
 class Block
 {
  public:
-  Block(Block* enclosing, source_location);
+  Block(Block* enclosing, Location);
 
   // Return the enclosing block.
   const Block*
@@ -663,13 +711,13 @@ class Block
 
   // Return the start location.  This is normally the location of the
   // left curly brace which starts the block.
-  source_location
+  Location
   start_location() const
   { return this->start_location_; }
 
   // Return the end location.  This is normally the location of the
   // right curly brace which ends the block.
-  source_location
+  Location
   end_location() const
   { return this->end_location_; }
 
@@ -695,7 +743,7 @@ class Block
 
   // Set the end location of the block.
   void
-  set_end_location(source_location location)
+  set_end_location(Location location)
   { this->end_location_ = location; }
 
   // Traverse the tree.
@@ -735,9 +783,9 @@ class Block
   // Binding contour.
   Bindings* bindings_;
   // Location of start of block.
-  source_location start_location_;
+  Location start_location_;
   // Location of end of block.
-  source_location end_location_;
+  Location end_location_;
 };
 
 // A function.
@@ -745,7 +793,7 @@ class Block
 class Function
 {
  public:
-  Function(Function_type* type, Function*, Block*, source_location);
+  Function(Function_type* type, Function*, Block*, Location);
 
   // Return the function's type.
   Function_type*
@@ -790,7 +838,7 @@ class Function
 
   // Add a new field to the closure variable.
   void
-  add_closure_field(Named_object* var, source_location loc)
+  add_closure_field(Named_object* var, Location loc)
   { this->closure_fields_.push_back(std::make_pair(var, loc)); }
 
   // Whether this function needs a closure.
@@ -831,7 +879,7 @@ class Function
   { return this->block_; }
 
   // Get the location of the start of the function.
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -841,14 +889,14 @@ class Function
 
   // Add a label definition to the function.
   Label*
-  add_label_definition(Gogo*, const std::string& label_name, source_location);
+  add_label_definition(Gogo*, const std::string& label_name, Location);
 
   // Add a label reference to a function.  ISSUE_GOTO_ERRORS is true
   // if we should report errors for a goto from the current location
   // to the label location.
   Label*
   add_label_reference(Gogo*, const std::string& label_name,
-		      source_location, bool issue_goto_errors);
+		      Location, bool issue_goto_errors);
 
   // Warn about labels that are defined but not used.
   void
@@ -918,11 +966,11 @@ class Function
   // Get the value to return when not explicitly specified.  May also
   // add statements to execute first to STMT_LIST.
   tree
-  return_value(Gogo*, Named_object*, source_location, tree* stmt_list) const;
+  return_value(Gogo*, Named_object*, Location, tree* stmt_list) const;
 
   // Get a tree for the variable holding the defer stack.
   Expression*
-  defer_stack(source_location);
+  defer_stack(Location);
 
   // Export the function.
   void
@@ -953,7 +1001,7 @@ class Function
   build_defer_wrapper(Gogo*, Named_object*, tree*, tree*);
 
   typedef std::vector<std::pair<Named_object*,
-				source_location> > Closure_fields;
+				Location> > Closure_fields;
 
   // The function's type.
   Function_type* type_;
@@ -972,7 +1020,7 @@ class Function
   // The outer block of statements in the function.
   Block* block_;
   // The source location of the start of the function.
-  source_location location_;
+  Location location_;
   // Labels defined or referenced in the function.
   Labels labels_;
   // The function decl.
@@ -996,12 +1044,12 @@ class Function
 class Bindings_snapshot
 {
  public:
-  Bindings_snapshot(const Block*, source_location);
+  Bindings_snapshot(const Block*, Location);
 
   // Report any errors appropriate for a goto from the current binding
   // state of B to this one.
   void
-  check_goto_from(const Block* b, source_location);
+  check_goto_from(const Block* b, Location);
 
   // Report any errors appropriate for a goto from this binding state
   // to the current state of B.
@@ -1010,10 +1058,10 @@ class Bindings_snapshot
 
  private:
   bool
-  check_goto_block(source_location, const Block*, const Block*, size_t*);
+  check_goto_block(Location, const Block*, const Block*, size_t*);
 
   void
-  check_goto_defs(source_location, const Block*, size_t, size_t);
+  check_goto_defs(Location, const Block*, size_t, size_t);
 
   // The current block.
   const Block* block_;
@@ -1022,7 +1070,7 @@ class Bindings_snapshot
   // this->block_->enclosing(), etc.
   std::vector<size_t> counts_;
   // The location where this snapshot was taken.
-  source_location location_;
+  Location location_;
 };
 
 // A function declaration.
@@ -1030,7 +1078,7 @@ class Bindings_snapshot
 class Function_declaration
 {
  public:
-  Function_declaration(Function_type* fntype, source_location location)
+  Function_declaration(Function_type* fntype, Location location)
     : fntype_(fntype), location_(location), asm_name_(), fndecl_(NULL)
   { }
 
@@ -1038,7 +1086,7 @@ class Function_declaration
   type() const
   { return this->fntype_; }
 
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -1064,7 +1112,7 @@ class Function_declaration
   // The type of the function.
   Function_type* fntype_;
   // The location of the declaration.
-  source_location location_;
+  Location location_;
   // The assembler name: this is the name to use in references to the
   // function.  This is normally empty.
   std::string asm_name_;
@@ -1078,7 +1126,7 @@ class Variable
 {
  public:
   Variable(Type*, Expression*, bool is_global, bool is_parameter,
-	   bool is_receiver, source_location);
+	   bool is_receiver, Location);
 
   // Get the type of the variable.
   Type*
@@ -1172,7 +1220,7 @@ class Variable
   { this->is_non_escaping_address_taken_ = true; }
 
   // Get the source location of the variable's declaration.
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -1309,7 +1357,7 @@ class Variable
   // Statements to run before the init statement.
   Block* preinit_;
   // Location of variable definition.
-  source_location location_;
+  Location location_;
   // Backend representation.
   Bvariable* backend_;
   // Whether this is a global variable.
@@ -1352,7 +1400,7 @@ class Result_variable
 {
  public:
   Result_variable(Type* type, Function* function, int index,
-		  source_location location)
+		  Location location)
     : type_(type), function_(function), index_(index), location_(location),
       backend_(NULL), is_address_taken_(false),
       is_non_escaping_address_taken_(false)
@@ -1374,7 +1422,7 @@ class Result_variable
   { return this->index_; }
 
   // The location of the variable definition.
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -1422,7 +1470,7 @@ class Result_variable
   // Index in list of results.
   int index_;
   // Where the result variable is defined.
-  source_location location_;
+  Location location_;
   // Backend representation.
   Bvariable* backend_;
   // Whether something takes the address of this variable.
@@ -1439,7 +1487,7 @@ class Named_constant
 {
  public:
   Named_constant(Type* type, Expression* expr, int iota_value,
-		 source_location location)
+		 Location location)
     : type_(type), expr_(expr), iota_value_(iota_value), location_(location),
       lowering_(false)
   { }
@@ -1456,7 +1504,7 @@ class Named_constant
   iota_value() const
   { return this->iota_value_; }
 
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -1507,7 +1555,7 @@ class Named_constant
   // we lower.
   int iota_value_;
   // The location of the definition.
-  source_location location_;
+  Location location_;
   // Whether we are currently lowering this constant.
   bool lowering_;
 };
@@ -1517,13 +1565,13 @@ class Named_constant
 class Type_declaration
 {
  public:
-  Type_declaration(source_location location)
+  Type_declaration(Location location)
     : location_(location), in_function_(NULL), methods_(),
       issued_warning_(false)
   { }
 
   // Return the location.
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -1546,7 +1594,7 @@ class Type_declaration
   // Add a method declaration to this type.
   Named_object*
   add_method_declaration(const std::string& name, Function_type* type,
-			 source_location location);
+			 Location location);
 
   // Return whether any methods were defined.
   bool
@@ -1565,7 +1613,7 @@ class Type_declaration
   typedef std::vector<Named_object*> Methods;
 
   // The location of the type declaration.
-  source_location location_;
+  Location location_;
   // If this type is declared in a function, a pointer back to the
   // function in which it is defined.
   Named_object* in_function_;
@@ -1585,12 +1633,12 @@ class Type_declaration
 class Unknown_name
 {
  public:
-  Unknown_name(source_location location)
+  Unknown_name(Location location)
     : location_(location), real_named_object_(NULL)
   { }
 
   // Return the location where this name was first seen.
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -1606,7 +1654,7 @@ class Unknown_name
 
  private:
   // The location where this name was first seen.
-  source_location location_;
+  Location location_;
   // The real named object when it is known.
   Named_object*
   real_named_object_;
@@ -1697,17 +1745,17 @@ class Named_object
   // Creators.
 
   static Named_object*
-  make_unknown_name(const std::string& name, source_location);
+  make_unknown_name(const std::string& name, Location);
 
   static Named_object*
   make_constant(const Typed_identifier&, const Package*, Expression*,
 		int iota_value);
 
   static Named_object*
-  make_type(const std::string&, const Package*, Type*, source_location);
+  make_type(const std::string&, const Package*, Type*, Location);
 
   static Named_object*
-  make_type_declaration(const std::string&, const Package*, source_location);
+  make_type_declaration(const std::string&, const Package*, Location);
 
   static Named_object*
   make_variable(const std::string&, const Package*, Variable*);
@@ -1723,7 +1771,7 @@ class Named_object
 
   static Named_object*
   make_function_declaration(const std::string&, const Package*, Function_type*,
-			    source_location);
+			    Location);
 
   static Named_object*
   make_package(const std::string& alias, Package* package);
@@ -1899,7 +1947,7 @@ class Named_object
   }
 
   // The location where this object was defined or referenced.
-  source_location
+  Location
   location() const;
 
   // Convert a variable to the backend representation.
@@ -1969,7 +2017,7 @@ class Bindings
 
   // Add an unknown name.
   Named_object*
-  add_unknown_name(const std::string& name, source_location location)
+  add_unknown_name(const std::string& name, Location location)
   {
     return this->add_named_object(Named_object::make_unknown_name(name,
 								  location));
@@ -1988,7 +2036,7 @@ class Bindings
   // Add a type.
   Named_object*
   add_type(const std::string& name, const Package* package, Type* type,
-	   source_location location)
+	   Location location)
   {
     return this->add_named_object(Named_object::make_type(name, package, type,
 							  location));
@@ -2002,7 +2050,7 @@ class Bindings
   // Add a type declaration.
   Named_object*
   add_type_declaration(const std::string& name, const Package* package,
-		       source_location location)
+		       Location location)
   {
     Named_object* no = Named_object::make_type_declaration(name, package,
 							   location);
@@ -2033,7 +2081,7 @@ class Bindings
   // Add a function declaration.
   Named_object*
   add_function_declaration(const std::string& name, const Package* package,
-			   Function_type* type, source_location location);
+			   Function_type* type, Location location);
 
   // Add a package.  The location is the location of the import
   // statement.
@@ -2153,8 +2201,8 @@ class Label
 {
  public:
   Label(const std::string& name)
-    : name_(name), location_(0), snapshot_(NULL), refs_(), is_used_(false),
-      blabel_(NULL)
+    : name_(name), location_(Linemap::unknown_location()), snapshot_(NULL),
+      refs_(), is_used_(false), blabel_(NULL)
   { }
 
   // Return the label's name.
@@ -2165,7 +2213,7 @@ class Label
   // Return whether the label has been defined.
   bool
   is_defined() const
-  { return this->location_ != 0; }
+  { return !Linemap::is_unknown_location(this->location_); }
 
   // Return whether the label has been used.
   bool
@@ -2178,7 +2226,7 @@ class Label
   { this->is_used_ = true; }
 
   // Return the location of the definition.
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -2191,7 +2239,7 @@ class Label
   void
   add_snapshot_ref(Bindings_snapshot* snapshot)
   {
-    go_assert(this->location_ == 0);
+    go_assert(Linemap::is_unknown_location(this->location_));
     this->refs_.push_back(snapshot);
   }
 
@@ -2207,9 +2255,10 @@ class Label
 
   // Define the label at LOCATION with the given bindings snapshot.
   void
-  define(source_location location, Bindings_snapshot* snapshot)
+  define(Location location, Bindings_snapshot* snapshot)
   {
-    go_assert(this->location_ == 0 && this->snapshot_ == NULL);
+    go_assert(Linemap::is_unknown_location(this->location_)
+              && this->snapshot_ == NULL);
     this->location_ = location;
     this->snapshot_ = snapshot;
   }
@@ -2222,14 +2271,14 @@ class Label
   // to get the return address of a deferred function to see whether
   // the function may call recover.
   Bexpression*
-  get_addr(Translate_context*, source_location location);
+  get_addr(Translate_context*, Location location);
 
  private:
   // The name of the label.
   std::string name_;
   // The location of the definition.  This is 0 if the label has not
   // yet been defined.
-  source_location location_;
+  Location location_;
   // A snapshot of the set of bindings defined at this label, used to
   // issue errors about invalid goto statements.
   Bindings_snapshot* snapshot_;
@@ -2246,18 +2295,18 @@ class Label
 class Unnamed_label
 {
  public:
-  Unnamed_label(source_location location)
+  Unnamed_label(Location location)
     : location_(location), blabel_(NULL)
   { }
 
   // Get the location where the label is defined.
-  source_location
+  Location
   location() const
   { return this->location_; }
 
   // Set the location where the label is defined.
   void
-  set_location(source_location location)
+  set_location(Location location)
   { this->location_ = location; }
 
   // Return a statement which defines this label.
@@ -2266,7 +2315,7 @@ class Unnamed_label
 
   // Return a goto to this label from LOCATION.
   Bstatement*
-  get_goto(Translate_context*, source_location location);
+  get_goto(Translate_context*, Location location);
 
  private:
   // Return the backend representation.
@@ -2274,7 +2323,7 @@ class Unnamed_label
   get_blabel(Translate_context*);
 
   // The location where the label is defined.
-  source_location location_;
+  Location location_;
   // The backend representation of this label.
   Blabel* blabel_;
 };
@@ -2285,7 +2334,7 @@ class Package
 {
  public:
   Package(const std::string& name, const std::string& unique_prefix,
-	  source_location location);
+	  Location location);
 
   // The real name of this package.  This may be different from the
   // name in the associated Named_object if the import statement used
@@ -2295,7 +2344,7 @@ class Package
   { return this->name_; }
 
   // Return the location of the import statement.
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -2378,7 +2427,7 @@ class Package
   // Set the location of the package.  This is used if it is seen in a
   // different import before it is really imported.
   void
-  set_location(source_location location)
+  set_location(Location location)
   { this->location_ = location; }
 
   // Add a constant to the package.
@@ -2388,12 +2437,12 @@ class Package
 
   // Add a type to the package.
   Named_object*
-  add_type(const std::string& name, Type* type, source_location location)
+  add_type(const std::string& name, Type* type, Location location)
   { return this->bindings_->add_type(name, this, type, location); }
 
   // Add a type declaration to the package.
   Named_object*
-  add_type_declaration(const std::string& name, source_location location)
+  add_type_declaration(const std::string& name, Location location)
   { return this->bindings_->add_type_declaration(name, this, location); }
 
   // Add a variable to the package.
@@ -2404,7 +2453,7 @@ class Package
   // Add a function declaration to the package.
   Named_object*
   add_function_declaration(const std::string& name, Function_type* type,
-			   source_location loc)
+			   Location loc)
   { return this->bindings_->add_function_declaration(name, this, type, loc); }
 
   // Determine types of constants.
@@ -2423,7 +2472,7 @@ class Package
   // is used to run init functions in the right order.
   int priority_;
   // The location of the import statement.
-  source_location location_;
+  Location location_;
   // True if some name from this package was used.  This is mutable
   // because we can use a package even if we have a const pointer to
   // it.

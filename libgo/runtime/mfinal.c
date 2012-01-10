@@ -41,15 +41,6 @@ static struct {
 	uint8 pad[0 /* CacheLineSize - sizeof(Fintab) */];	
 } fintab[TABSZ];
 
-void
-runtime_initfintab()
-{
-	int32 i;
-
-	for(i=0; i<TABSZ; i++)
-		runtime_initlock(&fintab[i]);
-}
-
 static void
 addfintab(Fintab *t, void *k, void (*fn)(void*), const struct __go_func_type *ft)
 {
@@ -150,28 +141,24 @@ runtime_addfinalizer(void *p, void (*f)(void*), const struct __go_func_type *ft)
 {
 	Fintab *tab;
 	byte *base;
-	bool ret = false;
 	
 	if(debug) {
 		if(!runtime_mlookup(p, &base, nil, nil) || p != base)
 			runtime_throw("addfinalizer on invalid pointer");
 	}
 	
-	if(!__sync_bool_compare_and_swap(&m->holds_finlock, 0, 1))
-		runtime_throw("finalizer deadlock");
-
 	tab = TAB(p);
 	runtime_lock(tab);
 	if(f == nil) {
 		if(lookfintab(tab, p, true, nil))
 			runtime_setblockspecial(p, false);
-		ret = true;
-		goto unlock;
+		runtime_unlock(tab);
+		return true;
 	}
 
 	if(lookfintab(tab, p, false, nil)) {
-		ret = false;
-		goto unlock;
+		runtime_unlock(tab);
+		return false;
 	}
 
 	if(tab->nkey >= tab->max/2+tab->max/4) {
@@ -182,18 +169,8 @@ runtime_addfinalizer(void *p, void (*f)(void*), const struct __go_func_type *ft)
 
 	addfintab(tab, p, f, ft);
 	runtime_setblockspecial(p, true);
-	ret = true;
-
- unlock:
 	runtime_unlock(tab);
-
-	__sync_bool_compare_and_swap(&m->holds_finlock, 1, 0);
-
-	if(__sync_bool_compare_and_swap(&m->gcing_for_finlock, 1, 0)) {
-		__go_run_goroutine_gc(200);
-	}
-
-	return ret;
+	return true;
 }
 
 // get finalizer; if del, delete finalizer.
@@ -205,19 +182,10 @@ runtime_getfinalizer(void *p, bool del, void (**fn)(void*), const struct __go_fu
 	bool res;
 	Fin f;
 	
-	if(!__sync_bool_compare_and_swap(&m->holds_finlock, 0, 1))
-		runtime_throw("finalizer deadlock");
-
 	tab = TAB(p);
 	runtime_lock(tab);
 	res = lookfintab(tab, p, del, &f);
 	runtime_unlock(tab);
-
-	__sync_bool_compare_and_swap(&m->holds_finlock, 1, 0);
-	if(__sync_bool_compare_and_swap(&m->gcing_for_finlock, 1, 0)) {
-		__go_run_goroutine_gc(201);
-	}
-
 	if(res==false)
 		return false;
 	*fn = f.fn;
@@ -232,9 +200,6 @@ runtime_walkfintab(void (*fn)(void*), void (*scan)(byte *, int64))
 	void **ekey;
 	int32 i;
 
-	if(!__sync_bool_compare_and_swap(&m->holds_finlock, 0, 1))
-		runtime_throw("finalizer deadlock");
-
 	for(i=0; i<TABSZ; i++) {
 		runtime_lock(&fintab[i]);
 		key = fintab[i].fkey;
@@ -245,10 +210,5 @@ runtime_walkfintab(void (*fn)(void*), void (*scan)(byte *, int64))
 		scan((byte*)&fintab[i].fkey, sizeof(void*));
 		scan((byte*)&fintab[i].val, sizeof(void*));
 		runtime_unlock(&fintab[i]);
-	}
-
-	__sync_bool_compare_and_swap(&m->holds_finlock, 1, 0);
-	if(__sync_bool_compare_and_swap(&m->gcing_for_finlock, 1, 0)) {
-		runtime_throw("walkfintab not called from gc");
 	}
 }

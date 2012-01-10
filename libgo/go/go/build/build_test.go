@@ -5,7 +5,7 @@
 package build
 
 import (
-	"exec"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -28,7 +28,7 @@ var buildPkgs = []struct {
 			GoFiles:      []string{"pkgtest.go"},
 			SFiles:       []string{"sqrt_" + runtime.GOARCH + ".s"},
 			Package:      "pkgtest",
-			Imports:      []string{"os"},
+			Imports:      []string{"bytes"},
 			TestImports:  []string{"fmt", "pkgtest"},
 			TestGoFiles:  sortstr([]string{"sqrt_test.go", "sqrt_" + runtime.GOARCH + "_test.go"}),
 			XTestGoFiles: []string{"xsqrt_test.go"},
@@ -37,18 +37,20 @@ var buildPkgs = []struct {
 	{
 		"go/build/cmdtest",
 		&DirInfo{
-			GoFiles: []string{"main.go"},
-			Package: "main",
-			Imports: []string{"go/build/pkgtest"},
+			GoFiles:     []string{"main.go"},
+			Package:     "main",
+			Imports:     []string{"go/build/pkgtest"},
+			TestImports: []string{},
 		},
 	},
 	{
 		"go/build/cgotest",
 		&DirInfo{
-			CgoFiles: []string{"cgotest.go"},
-			CFiles:   []string{"cgotest.c"},
-			Imports:  []string{"C", "unsafe"},
-			Package:  "cgotest",
+			CgoFiles:    []string{"cgotest.go"},
+			CFiles:      []string{"cgotest.c"},
+			Imports:     []string{"C", "unsafe"},
+			TestImports: []string{},
+			Package:     "cgotest",
 		},
 	},
 }

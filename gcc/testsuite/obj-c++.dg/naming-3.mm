@@ -3,9 +3,9 @@
 
 @interface A 
 {
-  char x; /* { dg-error "conflicts" } */
+  char x; /* { dg-message "previous declaration" } */
   char x;
-} /* { dg-error "declaration" } */
+} /* { dg-error "redeclaration" } */
 @end
 
 @interface B : A

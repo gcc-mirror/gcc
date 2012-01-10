@@ -159,6 +159,7 @@ static unsigned int
 execute_cleanup_cfg_post_optimizing (void)
 {
   cleanup_tree_cfg ();
+  maybe_remove_unreachable_handlers ();
   cleanup_dead_labels ();
   group_case_labels ();
   if ((flag_compare_debug_opt || flag_compare_debug)

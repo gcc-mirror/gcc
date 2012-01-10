@@ -5,9 +5,9 @@
 package netchan
 
 import (
-	"gob"
+	"encoding/gob"
+	"errors"
 	"io"
-	"os"
 	"reflect"
 	"sync"
 	"time"
@@ -60,7 +60,7 @@ type request struct {
 }
 
 // Sent with a header to report an error.
-type error struct {
+type error_ struct {
 	Error string
 }
 
@@ -101,7 +101,7 @@ func newEncDec(conn io.ReadWriter) *encDec {
 }
 
 // Decode an item from the connection.
-func (ed *encDec) decode(value reflect.Value) os.Error {
+func (ed *encDec) decode(value reflect.Value) error {
 	ed.decLock.Lock()
 	err := ed.dec.DecodeValue(value)
 	if err != nil {
@@ -112,7 +112,7 @@ func (ed *encDec) decode(value reflect.Value) os.Error {
 }
 
 // Encode a header and payload onto the connection.
-func (ed *encDec) encode(hdr *header, payloadType int, payload interface{}) os.Error {
+func (ed *encDec) encode(hdr *header, payloadType int, payload interface{}) error {
 	ed.encLock.Lock()
 	hdr.PayloadType = payloadType
 	err := ed.enc.Encode(hdr)
@@ -129,8 +129,8 @@ func (ed *encDec) encode(hdr *header, payloadType int, payload interface{}) os.E
 }
 
 // See the comment for Exporter.Drain.
-func (cs *clientSet) drain(timeout int64) os.Error {
-	startTime := time.Nanoseconds()
+func (cs *clientSet) drain(timeout time.Duration) error {
+	deadline := time.Now().Add(timeout)
 	for {
 		pending := false
 		cs.mu.Lock()
@@ -152,8 +152,8 @@ func (cs *clientSet) drain(timeout int64) os.Error {
 		if !pending {
 			break
 		}
-		if timeout > 0 && time.Nanoseconds()-startTime >= timeout {
-			return os.NewError("timeout")
+		if timeout > 0 && time.Now().After(deadline) {
+			return errors.New("timeout")
 		}
 		time.Sleep(100 * 1e6) // 100 milliseconds
 	}
@@ -161,8 +161,8 @@ func (cs *clientSet) drain(timeout int64) os.Error {
 }
 
 // See the comment for Exporter.Sync.
-func (cs *clientSet) sync(timeout int64) os.Error {
-	startTime := time.Nanoseconds()
+func (cs *clientSet) sync(timeout time.Duration) error {
+	deadline := time.Now().Add(timeout)
 	// seq remembers the clients and their seqNum at point of entry.
 	seq := make(map[unackedCounter]int64)
 	for client := range cs.clients {
@@ -185,8 +185,8 @@ func (cs *clientSet) sync(timeout int64) os.Error {
 		if !pending {
 			break
 		}
-		if timeout > 0 && time.Nanoseconds()-startTime >= timeout {
-			return os.NewError("timeout")
+		if timeout > 0 && time.Now().After(deadline) {
+			return errors.New("timeout")
 		}
 		time.Sleep(100 * 1e6) // 100 milliseconds
 	}

@@ -1,5 +1,6 @@
 /* Handling of compile-time options that influence the library.
-   Copyright (C) 2005, 2007, 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009, 2010, 2011, 2012
+   Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 
@@ -32,6 +33,87 @@ compile_options_t compile_options;
 
 volatile sig_atomic_t fatal_error_in_progress = 0;
 
+
+/* Helper function for backtrace_handler to write information about the
+   received signal to stderr before actually giving the backtrace.  */
+static void
+show_signal (int signum)
+{
+  const char * name = NULL, * desc = NULL;
+
+  switch (signum)
+    {
+#if defined(SIGQUIT)
+      case SIGQUIT:
+	name = "SIGQUIT";
+	desc = "Terminal quit signal";
+	break;
+#endif
+
+      /* The following 4 signals are defined by C89.  */
+      case SIGILL:
+	name = "SIGILL";
+	desc = "Illegal instruction";
+	break;
+
+      case SIGABRT:
+	name = "SIGABRT";
+	desc = "Process abort signal";
+	break;
+
+      case SIGFPE:
+	name = "SIGFPE";
+	desc = "Floating-point exception - erroneous arithmetic operation";
+	break;
+
+      case SIGSEGV:
+	name = "SIGSEGV";
+	desc = "Segmentation fault - invalid memory reference";
+	break;
+
+#if defined(SIGBUS)
+      case SIGBUS:
+	name = "SIGBUS";
+	desc = "Access to an undefined portion of a memory object";
+	break;
+#endif
+
+#if defined(SIGSYS)
+      case SIGSYS:
+	name = "SIGSYS";
+	desc = "Bad system call";
+	break;
+#endif
+
+#if defined(SIGTRAP)
+      case SIGTRAP:
+	name = "SIGTRAP";
+	desc = "Trace/breakpoint trap";
+	break;
+#endif
+
+#if defined(SIGXCPU)
+      case SIGXCPU:
+	name = "SIGXCPU";
+	desc = "CPU time limit exceeded";
+	break;
+#endif
+
+#if defined(SIGXFSZ)
+      case SIGXFSZ:
+	name = "SIGXFSZ";
+	desc = "File size limit exceeded";
+	break;
+#endif
+    }
+
+  if (name)
+    st_printf ("\nProgram received signal %s: %s.\n", name, desc);
+  else
+    st_printf ("\nProgram received signal %d.\n", signum);
+}
+
+
 /* A signal handler to allow us to output a backtrace.  */
 void
 backtrace_handler (int signum)
@@ -43,6 +125,7 @@ backtrace_handler (int signum)
     raise (signum);
   fatal_error_in_progress = 1;
 
+  show_signal (signum);
   show_backtrace();
 
   /* Now reraise the signal.  We reactivate the signal's

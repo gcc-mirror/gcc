@@ -5501,7 +5501,9 @@ expand_omp_atomic (struct omp_region *region)
       unsigned int align = TYPE_ALIGN_UNIT (type);
 
       /* __sync builtins require strict data alignment.  */
-      if (exact_log2 (align) >= index)
+      /* ??? Assume BIGGEST_ALIGNMENT *is* aligned.  */
+      if (exact_log2 (align) >= index
+	  || align * BITS_PER_UNIT >= BIGGEST_ALIGNMENT)
 	{
 	  /* Atomic load.  */
 	  if (loaded_val == stored_val

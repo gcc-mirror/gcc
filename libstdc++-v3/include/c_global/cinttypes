@@ -1,6 +1,6 @@
 // <cinttypes> -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +37,7 @@
 
 #include <cstdint>
 
-// For 8.11.1/1 (see C99, Note 184)
+// For 27.9.2/3 (see C99, Note 184)
 #if _GLIBCXX_HAVE_INTTYPES_H
 # ifndef __STDC_FORMAT_MACROS
 #  define _UNDEF__STDC_FORMAT_MACROS
@@ -59,16 +59,10 @@ namespace std
 
   // functions
   using ::imaxabs;
-
-  // May collide with _Longlong abs(_Longlong), and is not described
-  // anywhere outside the synopsis.  Likely, a defect.
-  //
-  // intmax_t abs(intmax_t)
-
   using ::imaxdiv;
 
-  // Likewise, with lldiv_t div(_Longlong, _Longlong).
-  //
+  // GCC does not support extended integer types
+  // intmax_t abs(intmax_t)
   // imaxdiv_t div(intmax_t, intmax_t)
 
   using ::strtoimax;

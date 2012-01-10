@@ -394,6 +394,9 @@ endif
 
 LIB2ADD += enable-execute-stack.c
 
+# While emutls.c has nothing to do with EH, it is in LIB2ADDEH*
+# instead of LIB2ADD because that's the way to be sure on some targets
+# (e.g. *-*-darwin*) only one copy of it is linked.
 LIB2ADDEH += $(srcdir)/emutls.c
 LIB2ADDEHSTATIC += $(srcdir)/emutls.c
 LIB2ADDEHSHARED += $(srcdir)/emutls.c

@@ -1,7 +1,7 @@
 /* Part of CPP library.  (Macro and #define handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -128,13 +128,13 @@ static _cpp_buff *tokens_buff_new (cpp_reader *, size_t,
 				   source_location **);
 static size_t tokens_buff_count (_cpp_buff *);
 static const cpp_token **tokens_buff_last_token_ptr (_cpp_buff *);
-static const cpp_token **tokens_buff_put_token_to (const cpp_token **,
-						   source_location *, 
-						   const cpp_token *,
-						   source_location,
-						   source_location,
-						   const struct line_map *,
-						   unsigned int);
+static inline const cpp_token **tokens_buff_put_token_to (const cpp_token **,
+                                                          source_location *,
+                                                          const cpp_token *,
+                                                          source_location,
+                                                          source_location,
+                                                          const struct line_map *,
+                                                          unsigned int);
 
 static const cpp_token **tokens_buff_add_token (_cpp_buff *,
 						source_location *,
@@ -143,7 +143,7 @@ static const cpp_token **tokens_buff_add_token (_cpp_buff *,
 						source_location,
 						const struct line_map *,
 						unsigned int);
-static void tokens_buff_remove_last_token (_cpp_buff *);
+static inline void tokens_buff_remove_last_token (_cpp_buff *);
 static void replace_args (cpp_reader *, cpp_hashnode *, cpp_macro *,
 			  macro_arg *, source_location);
 static _cpp_buff *funlike_invocation_p (cpp_reader *, cpp_hashnode *,
@@ -217,7 +217,6 @@ static const char * const monthnames[] =
 const uchar *
 _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 {
-  const struct line_map *map;
   const uchar *result = NULL;
   linenum_type number = 1;
 
@@ -278,10 +277,9 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 						 pfile->line_table->highest_line);
 	else
 	  {
-	    map = linemap_lookup (pfile->line_table, pfile->line_table->highest_line);
-	    while (! MAIN_FILE_P (map))
-	      map = INCLUDED_FROM (pfile->line_table, map);
-	    name = ORDINARY_MAP_FILE_NAME (map);
+	    name = _cpp_get_file_name (pfile->main_file);
+	    if (!name)
+	      abort ();
 	  }
 	len = strlen (name);
 	buf = _cpp_unaligned_alloc (pfile, len * 2 + 3);
@@ -301,7 +299,6 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
       break;
 
     case BT_SPECLINE:
-      map = LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table);
       /* If __LINE__ is embedded in a macro, it must expand to the
 	 line of the macro's invocation, not its definition.
 	 Otherwise things like assert() will not work properly.  */

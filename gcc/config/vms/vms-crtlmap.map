@@ -63,6 +63,7 @@ ctermid       64
 ctime
 dup
 dup2
+environ       GLOBAL
 exit
 exp           FLOAT
 fabs          FLOAT
@@ -111,7 +112,7 @@ isupper
 kill
 localtime
 log           FLOAT
-log1          FLOAT
+log10         FLOAT
 lseek
 malloc        64 MALLOC
 mbstowcs      64

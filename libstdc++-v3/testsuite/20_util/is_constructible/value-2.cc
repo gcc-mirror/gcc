@@ -817,3 +817,5 @@ static_assert(!std::is_constructible<const int&, ExplicitTo<double&&>>::value,
 	      "Error");
 static_assert(!std::is_constructible<int&&, ExplicitTo<double&&>>::value,
 	      "Error");
+
+static_assert(std::is_constructible<void(&&)(), void(&)()>::value, "Error");

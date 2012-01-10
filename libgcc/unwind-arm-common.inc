@@ -21,7 +21,14 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#include "tconfig.h"
+#include "tsystem.h"
 #include "unwind.h"
+
+/* Used for SystemTap unwinder probe.  */
+#ifdef HAVE_SYS_SDT_H
+#include <sys/sdt.h>
+#endif
 
 /* We add a prototype for abort here to avoid creating a dependency on
    target headers.  */
@@ -104,6 +111,44 @@ extern __EIT_entry __exidx_end;
 static inline _uw selfrel_offset31 (const _uw *p);
 
 static _uw __gnu_unwind_get_pr_addr (int idx);
+
+static void _Unwind_DebugHook (void *, void *)
+  __attribute__ ((__noinline__, __used__, __noclone__));
+
+/* This function is called during unwinding.  It is intended as a hook
+   for a debugger to intercept exceptions.  CFA is the CFA of the
+   target frame.  HANDLER is the PC to which control will be
+   transferred.  */
+
+static void
+_Unwind_DebugHook (void *cfa __attribute__ ((__unused__)),
+		   void *handler __attribute__ ((__unused__)))
+{
+  /* We only want to use stap probes starting with v3.  Earlier
+     versions added too much startup cost.  */
+#if defined (HAVE_SYS_SDT_H) && defined (STAP_PROBE2) && _SDT_NOTE_TYPE >= 3
+  STAP_PROBE2 (libgcc, unwind, cfa, handler);
+#else
+  asm ("");
+#endif
+}
+
+/* This is a wrapper to be called when we need to restore core registers.
+   It will call `_Unwind_DebugHook' before restoring the registers, thus
+   making it possible to intercept and debug exceptions.
+
+   When calling `_Unwind_DebugHook', the first argument (the CFA) is zero
+   because we are not interested in it.  However, it must be there (even
+   being zero) because GDB expects to find it when using the probe.  */
+
+#define uw_restore_core_regs(TARGET, CORE)				      \
+  do									      \
+    {									      \
+      void *handler = __builtin_frob_return_addr ((void *) VRS_PC (TARGET));  \
+      _Unwind_DebugHook (0, handler);					      \
+      restore_core_regs (CORE);						      \
+    }									      \
+  while (0)
 
 /* Perform a binary search for RETURN_ADDRESS in TABLE.  The table contains
    NREC entries.  */
@@ -253,8 +298,8 @@ unwind_phase2 (_Unwind_Control_Block * ucbp, phase2_vrs * vrs)
   
   if (pr_result != _URC_INSTALL_CONTEXT)
     abort();
-  
-  restore_core_regs (&vrs->core);
+
+  uw_restore_core_regs (vrs, &vrs->core);
 }
 
 /* Perform phase2 forced unwinding.  */
@@ -339,7 +384,7 @@ unwind_phase2_forced (_Unwind_Control_Block *ucbp, phase2_vrs *entry_vrs,
       return _URC_FAILURE;
     }
 
-  restore_core_regs (&saved_vrs.core);
+  uw_restore_core_regs (&saved_vrs, &saved_vrs.core);
 }
 
 /* This is a very limited implementation of _Unwind_GetCFA.  It returns
@@ -450,7 +495,7 @@ __gnu_Unwind_Resume (_Unwind_Control_Block * ucbp, phase2_vrs * entry_vrs)
     {
     case _URC_INSTALL_CONTEXT:
       /* Upload the registers to enter the landing pad.  */
-      restore_core_regs (&entry_vrs->core);
+      uw_restore_core_regs (entry_vrs, &entry_vrs->core);
 
     case _URC_CONTINUE_UNWIND:
       /* Continue unwinding the next frame.  */

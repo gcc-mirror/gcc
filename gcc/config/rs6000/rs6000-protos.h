@@ -55,6 +55,10 @@ extern void rs6000_expand_vector_init (rtx, rtx);
 extern void paired_expand_vector_init (rtx, rtx);
 extern void rs6000_expand_vector_set (rtx, rtx, int);
 extern void rs6000_expand_vector_extract (rtx, rtx, int);
+extern bool altivec_expand_vec_perm_const (rtx op[4]);
+extern bool rs6000_expand_vec_perm_const (rtx op[4]);
+extern void rs6000_expand_extract_even (rtx, rtx, rtx);
+extern void rs6000_expand_interleave (rtx, rtx, rtx, bool);
 extern void build_mask64_2_operands (rtx, rtx *);
 extern int expand_block_clear (rtx[]);
 extern int expand_block_move (rtx[]);
@@ -170,6 +174,8 @@ extern const char * output_isel (rtx *);
 extern void rs6000_call_indirect_aix (rtx, rtx, rtx);
 extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
 extern void get_ppc476_thunk_name (char name[32]);
+extern bool rs6000_overloaded_builtin_p (enum rs6000_builtins);
+extern unsigned rs6000_builtin_mask_calculate (void);
 
 /* Declare functions in rs6000-c.c */
 
@@ -178,6 +184,8 @@ extern void rs6000_cpu_cpp_builtins (struct cpp_reader *);
 #ifdef TREE_CODE
 extern bool rs6000_pragma_target_parse (tree, tree);
 #endif
+extern void rs6000_target_modify_macros (bool, int, unsigned);
+extern void (*rs6000_target_modify_macros_ptr) (bool, int, unsigned);
 
 #if TARGET_MACHO
 char *output_call (rtx, rtx *, int, int);

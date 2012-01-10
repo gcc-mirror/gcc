@@ -1693,7 +1693,14 @@ find_costs_and_classes (FILE *dump_file)
 	      else if (i_costs[k] == best_cost)
 		best = ira_reg_class_subunion[best][rclass];
 	      if (pass == flag_expensive_optimizations
-		  && i_costs[k] < i_mem_cost
+		  /* We still prefer registers to memory even at this
+		     stage if their costs are the same.  We will make
+		     a final decision during assigning hard registers
+		     when we have all info including more accurate
+		     costs which might be affected by assigning hard
+		     registers to other pseudos because the pseudos
+		     involved in moves can be coalesced.  */
+		  && i_costs[k] <= i_mem_cost
 		  && (reg_class_size[reg_class_subunion[alt_class][rclass]]
 		      > reg_class_size[alt_class]))
 		alt_class = reg_class_subunion[alt_class][rclass];

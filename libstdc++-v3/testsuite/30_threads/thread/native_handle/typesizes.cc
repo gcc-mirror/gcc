@@ -1,5 +1,5 @@
-// { dg-do run { target *-*-linux* *-*-solaris* *-*-cygwin alpha*-*-osf* mips-sgi-irix6* } }
-// { dg-options " -std=gnu++0x -pthread" { target *-*-linux* alpha*-*-osf* mips-sgi-irix6* } }
+// { dg-do run { target *-*-linux* *-*-solaris* *-*-cygwin mips-sgi-irix6* } }
+// { dg-options " -std=gnu++0x -pthread" { target *-*-linux* mips-sgi-irix6* } }
 // { dg-options " -std=gnu++0x -pthreads" { target *-*-solaris* } }
 // { dg-options " -std=gnu++0x " { target *-*-cygwin } }
 // { dg-require-cstdint "" }

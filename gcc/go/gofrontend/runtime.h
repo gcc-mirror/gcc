@@ -32,7 +32,7 @@ class Runtime
 
   // Make a call to a runtime function.
   static Call_expression*
-  make_call(Function, source_location, int, ...);
+  make_call(Function, Location, int, ...);
 
   // Convert all the types used by runtime functions to the backend
   // representation.
@@ -42,11 +42,6 @@ class Runtime
   // Return the type used for iterations over maps.
   static Type*
   map_iteration_type();
-
-  // Return the type used to pass a list of general channels to the
-  // select runtime function.
-  static Type*
-  chanptr_type();
 
  private:
   static Named_object*

@@ -661,7 +661,13 @@ java::lang::Class::newInstance (void)
     throw new java::lang::InstantiationException (getName());
 
   jobject r = _Jv_AllocObject (this);
+  /* Class constructors/destructors have __thiscall calling
+     convention for 32-bit native Windows ABI.  */
+#if defined (__MINGW32__) && defined (__i386__)
+  ((void (__thiscall *) (jobject)) meth->ncode) (r);
+#else
   ((void (*) (jobject)) meth->ncode) (r);
+#endif
   return r;
 }
 

@@ -1,3 +1,73 @@
+2011-12-09  Alan Modra  <amodra@gmail.com>
+
+	PR libgomp/51376
+	* task.c (GOMP_taskwait): Don't access task->children outside of
+	task_lock mutex region.
+	(GOMP_task): Likewise.
+
+2011-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/51132
+	* testsuite/libgomp.graphite/force-parallel-1.c: Move large arrays
+	to file scope.
+	* testsuite/libgomp.graphite/force-parallel-3.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-6.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-7.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-8.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-9.c: Likewise.
+
+2011-12-02  Alan Modra  <amodra@gmail.com>
+
+	* config/linux/affinity.c: Use atomic rather than sync builtin.
+	* config/linux/lock.c: Likewise.
+	* config/linux/ptrlock.h: Likewise.
+	* config/linux/ptrlock.c: Likewise.
+	* config/linux/ptrlock.h (gomp_ptrlock_set): Always write here..
+	* config/linux/ptrlock.c (gomp_ptrlock_set_slow): ..not here.
+	* config/linux/futex.h (atomic_write_barrier): Delete unused function.
+	* config/linux/alpha/futex.h (atomic_write_barrier): Likewise.
+	* config/linux/ia64/futex.h (atomic_write_barrier): Likewise.
+	* config/linux/mips/futex.h (atomic_write_barrier): Likewise.
+	* config/linux/powerpc/futex.h (atomic_write_barrier): Likewise.
+	* config/linux/s390/futex.h (atomic_write_barrier): Likewise.
+	* config/linux/sparc/futex.h (atomic_write_barrier): Likewise.
+	* config/linux/x86/futex.h (atomic_write_barrier): Likewise.
+
+2011-11-30  Alan Modra  <amodra@gmail.com>
+
+	PR libgomp/51298
+	* config/linux/bar.h: Use atomic rather than sync builtins.
+	* config/linux/bar.c: Likewise.  Add missing acquire
+	synchronisation on generation field.
+	* task.c (gomp_barrier_handle_tasks): Regain lock so as to not
+	double unlock.
+
+2011-11-30  Alan Modra  <amodra@gmail.com>
+
+	* ordered.c (gomp_ordered_sync): Add MEMMODEL_ACQ_REL fence.
+	* critical.c (GOMP_critical_start): Add MEMMODEL_RELEASE fence.
+	* config/linux/mutex.h: Use atomic rather than sync builtins.
+	* config/linux/mutex.c: Likewise.  Comment.  Use -1 for waiting state.
+	* config/linux/omp-lock.h: Comment fix.
+	* config/linux/arm/mutex.h: Delete.
+	* config/linux/powerpc/mutex.h: Delete.
+	* config/linux/ia64/mutex.h: Delete.
+	* config/linux/mips/mutex.h: Delete.
+
+2011-11-30  Alan Modra  <amodra@gmail.com>
+
+	PR libgomp/51249
+	* config/linux/sem.h: Rewrite.
+	* config/linux/sem.c: Rewrite.
+
+2011-11-28  Richard Henderson  <rth@redhat.com>
+
+	* libgomp.h (enum memmodel): New.
+
+2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
+
+	* configure: Regenerate.
+
 2011-10-10  Matthias Klose  <doko@ubuntu.com>
 
 	* config/posix95: Remove empty directory.
@@ -308,7 +378,7 @@
 	    Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32049
-	* configure.ac: 
+	* configure.ac:
 	* configure: Regenerate.
 
 2010-10-06  Marcus Shawcroft  <marcus.shawcroft@arm.com>
@@ -1072,7 +1142,7 @@
 	(gomp_new_thread_pool, gomp_free_pool_helper, gomp_free_thread): New
 	functions.
 	(gomp_team_start): Create new pool if current thread doesn't have
-	one.  Use pool fields instead of global gomp_* variables. 
+	one.  Use pool fields instead of global gomp_* variables.
 	Initialize thread_pool field for new threads.  Clear single_count.
 	Change last argument from ws to team, don't create
 	new team, set ts.work_share to &team->work_shares[0] and clear
@@ -1304,7 +1374,7 @@
 	inlines.
 	* config/posix/bar.c (gomp_barrier_init): Clear generation field.
 	(gomp_barrier_wait_end): Change second argument to
-	gomp_barrier_state_t. 
+	gomp_barrier_state_t.
 	(gomp_team_barrier_wait, gomp_team_barrier_wait_end,
 	gomp_team_barrier_wake): New functions.
 	* config/linux/mutex.c: Include wait.h instead of libgomp.h and

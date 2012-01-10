@@ -1081,7 +1081,8 @@ package body Erroutc is
    procedure Set_Specific_Warning_Off
      (Loc    : Source_Ptr;
       Msg    : String;
-      Config : Boolean)
+      Config : Boolean;
+      Used   : Boolean := False)
    is
    begin
       Specific_Warnings.Append
@@ -1089,7 +1090,7 @@ package body Erroutc is
           Msg        => new String'(Msg),
           Stop       => Source_Last (Current_Source_File),
           Open       => True,
-          Used       => False,
+          Used       => Used,
           Config     => Config));
    end Set_Specific_Warning_Off;
 
@@ -1135,16 +1136,16 @@ package body Erroutc is
 
    procedure Set_Warnings_Mode_Off (Loc : Source_Ptr) is
    begin
-      --  Don't bother with entries from instantiation copies, since we
-      --  will already have a copy in the template, which is what matters
+      --  Don't bother with entries from instantiation copies, since we will
+      --  already have a copy in the template, which is what matters.
 
       if Instantiation (Get_Source_File_Index (Loc)) /= No_Location then
          return;
       end if;
 
-      --  If last entry in table already covers us, this is a redundant
-      --  pragma Warnings (Off) and can be ignored. This also handles the
-      --  case where all warnings are suppressed by command line switch.
+      --  If last entry in table already covers us, this is a redundant pragma
+      --  Warnings (Off) and can be ignored. This also handles the case where
+      --  all warnings are suppressed by command line switch.
 
       if Warnings.Last >= Warnings.First
         and then Warnings.Table (Warnings.Last).Start <= Loc
@@ -1152,9 +1153,9 @@ package body Erroutc is
       then
          return;
 
-      --  Otherwise establish a new entry, extending from the location of
-      --  the pragma to the end of the current source file. This ending
-      --  point will be adjusted by a subsequent pragma Warnings (On).
+      --  Otherwise establish a new entry, extending from the location of the
+      --  pragma to the end of the current source file. This ending point will
+      --  be adjusted by a subsequent pragma Warnings (On).
 
       else
          Warnings.Increment_Last;
@@ -1170,8 +1171,8 @@ package body Erroutc is
 
    procedure Set_Warnings_Mode_On (Loc : Source_Ptr) is
    begin
-      --  Don't bother with entries from instantiation copies, since we
-      --  will already have a copy in the template, which is what matters
+      --  Don't bother with entries from instantiation copies, since we will
+      --  already have a copy in the template, which is what matters.
 
       if Instantiation (Get_Source_File_Index (Loc)) /= No_Location then
          return;

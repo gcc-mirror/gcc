@@ -1,3 +1,64 @@
+2012-01-09  Richard Guenther  <rguenther@suse.de>
+
+	* macro.c (_cpp_builtin_macro_text): Remove unused variable map.
+
+2012-01-09  Gary Funck  <gary@intrepid.com>
+
+	PR preprocessor/33919
+	* files.c (_cpp_get_file_name): New. Implement file name
+	access function.
+	* internal.h (_cpp_get_file_name): New prototype.
+	* macro.c (_cpp_builtin_macro_text): Call _cpp_get_file_name()
+	to use pfile->main_file in lieu of traversing INCLUDED_FROM chain.
+
+2012-01-03  Olivier Hainque  <hainque@adacore.com>
+
+	* system.h: Prior to #define, #undef fopen and freopen unconditionally.
+
+2011-12-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (CLK_GNUC1X): Change to CLK_GNUC11.
+	(CLK_STDC1X): Change to CLK_STDC11.
+	* init.c (lang_defaults): Update comments.
+	(cpp_init_builtins): Update language tests.  Use 201112L for C11
+	__STDC_VERSION__.
+
+2011-12-20  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* configure: Regenerate.
+
+2011-12-19  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* configure: Regenerate.
+
+2011-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/50237
+	* internal.h (_cpp_init_lexer): New prototype.
+	* init.c (init_library): Call it.
+	* lex.c (init_vectorized_lexer): Remove constructor attribute,
+	add inline keyword.
+	(HAVE_init_vectorized_lexer): Define.
+	(_cpp_init_lexer): New function.
+
+2011-12-03  Dodji Seketeli  <dodji@redhat.com>
+
+	* macro.c (tokens_buff_remove_last_token)
+	(tokens_buff_put_token_to): Add an 'inline' function specifier to
+	the prototype.
+
+2011-11-22   Diego Novillo  <dnovillo@google.com>
+
+	* include/line-map.h (linemap_dump): Declare.
+	(line_table_dump): Declare.
+	* line-map.c (linemap_dump): New.
+	(line_table_dump): New.
+
+2011-11-21  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/50958
+	* expr.c (cpp_userdef_char_remove_type): Fix typo.
+
 2011-11-03  Michael Matz  <matz@suse.de>
 
 	PR bootstrap/50857

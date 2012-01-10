@@ -1,28 +1,35 @@
+2012-01-09  Gary Funck  <gary@intrepid.com>
+
+	* smp/upc_pgm_info.c (__upc_validate_pgm_info):  Ignore intervening
+	null bytes in the UPC program information section, to ensure that
+	all configuration information strings are processed.  Allow
+	static THREADS compilations to be mixed with dynamic THREADS
+	compilations as long as the static THREADS values all match.
+
 2011-12-19  Nenad Vukicevic <nenad@intrepid.com>
 
 	Improve handling of shared pointer vaddr field. Make sure
-	that upc_addrfield() always returns an offset of the shared variable 
+	that upc_addrfield() always returns an offset of the shared variable
 	from the beginning of the shared section.
-	
 	* smp/upc_pts.h (GUPCR_PTS_VADDR): Macro definition returns the
 	offset of the shared variable in the shared section.
 	(GUPCR_PTS_SET_VADDR): Macro definition accepts the offset of the
-	shared variable in the shared section and sets the value of the 
+	shared variable in the shared section and sets the value of the
 	vaddr: offset for packed pts rep, address for struct pts rep.
-	* smp/upc_main.c (__upc_init): Adjust the argument for setting of 
+	* smp/upc_main.c (__upc_init): Adjust the argument for setting of
 	pointer-to-shared vaddr field.
-	* smp/upc_alloc.upc: Adjust the argument for building a 
+	* smp/upc_alloc.upc: Adjust the argument for building a
 	pointer-to-shared to the offset of the shared variable in the
 	shared section.
 
 2011-12-17  Nenad Vukicevic <nenad@intrepid.com>
 
-	* configure.ac: Remove erroneous check for enable_shared. Build 
-	libgupc only as a static library as shared data sections from 
-	all the UPC compilations must be combined into a single 
+	* configure.ac: Remove erroneous check for enable_shared. Build
+	libgupc only as a static library as shared data sections from
+	all the UPC compilations must be combined into a single
 	contiguous section.
-	* configure.tgt: Always include the necessary libraries required by 
-	libgupc on the command line. This is necessary as we don't build 
+	* configure.tgt: Always include the necessary libraries required by
+	libgupc on the command line. This is necessary as we don't build
 	libgupc as a dynamic link library.
 	* configure: Re-generate.
 
@@ -34,11 +41,11 @@
 	* smp/upc_sysdep.c (__upc_atomic_cas): Implement as external
 	procedure only if builtin compare-and-swap is unavailable.
 	* smp/upc_sysdep.h (__upc_atomic_cas): Ditto.
- 
+
 2011-11-09  Nenad Vukicevic <nenad@intrepid.com>
 
 	* config/default/upc-crtstuff.mak (ALL_CRT_CFLAGS): Remove
-	$(INCLUDES) as it might contain relative include paths that 
+	$(INCLUDES) as it might contain relative include paths that
 	are not correct for current build directory.
 	(GCC_SRCDIR_INC): Rename from GCC_SRCDIR_CONF_INC.  Added necessary
 	include paths to build in the current libgupc build directory.
@@ -90,9 +97,9 @@
 	Fix support for large file support on 32-bit machines.
 
 	* smp/upc_config.h: Move inclusion of 'config.h' to the top
-	  of the include list. This allows all system include files
-	  to see definition of _FILE_OFFSET_BITS=64 that enables large
-	  file support.
+	of the include list. This allows all system include files
+	to see definition of _FILE_OFFSET_BITS=64 that enables large
+	file support.
 
 2011-10-02  Gary Funck  <gary@intrepid.com>
 
@@ -209,8 +216,8 @@
 	* config.h.in (GUPCR_PTS_THREAD_FIELD,
 	  GUPCR_PTS_PHASE_FIELD): Delete unused definitions
 	  and references.
- 
- 	* upc-crtstuff.c: Delete include of "upc-conf.h".
+
+	* upc-crtstuff.c: Delete include of "upc-conf.h".
 
 2011-05-03  Gary Funck  <gary@intrepid.com>
 
@@ -310,7 +317,7 @@
 	  and $(UPC_COLL_REDUCE_UPC) in MAINTAINER_MODE block.
 
         * Makefile.in, testsuite/Makefile.in: Regenerate with automake.
-	  
+
 	* smp/Make-defs, smp/Make-deps, smp/Make-rules: Remove.
 	  These Makefile fragments have not been used since libupc
 	  was re-worked to use automake (when the gupc branch

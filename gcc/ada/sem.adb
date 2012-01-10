@@ -35,7 +35,9 @@ with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
 with Nlists;   use Nlists;
 with Output;   use Output;
+with Restrict; use Restrict;
 with Sem_Attr; use Sem_Attr;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Ch2;  use Sem_Ch2;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch4;  use Sem_Ch4;
@@ -1361,6 +1363,11 @@ package body Sem is
       --  Variable used to save values of config switches while we analyze the
       --  new unit, to be restored on exit for proper recursive behavior.
 
+      Save_Cunit_Restrictions : Save_Cunit_Boolean_Restrictions;
+      --  Used to save non-partition wide restrictions before processing new
+      --  unit. All with'ed units are analyzed with config restrictions reset
+      --  and we need to restore these saved values at the end.
+
       procedure Do_Analyze;
       --  Procedure to analyze the compilation unit. This is called more than
       --  once when the high level optimizer is activated.
@@ -1442,10 +1449,26 @@ package body Sem is
       In_Spec_Expression := False;
 
       Set_Comes_From_Source_Default (False);
+
+      --  Save current config switches and reset then appropriately
+
       Save_Opt_Config_Switches (Save_Config_Switches);
       Set_Opt_Config_Switches
         (Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit)),
          Current_Sem_Unit = Main_Unit);
+
+      --  Save current non-partition-wide restrictions
+
+      Save_Cunit_Restrictions := Cunit_Boolean_Restrictions_Save;
+
+      --  For unit in main extended unit, we reset the configuration values
+      --  for the non-partition-wide restrictions. For other units reset them.
+
+      if In_Extended_Main_Source_Unit (Comp_Unit) then
+         Restore_Config_Cunit_Boolean_Restrictions;
+      else
+         Reset_Cunit_Boolean_Restrictions;
+      end if;
 
       --  Only do analysis of unit that has not already been analyzed
 
@@ -1511,6 +1534,11 @@ package body Sem is
       Outer_Generic_Scope  := S_Outer_Gen_Scope;
 
       Restore_Opt_Config_Switches (Save_Config_Switches);
+
+      --  Deal with restore of restrictions
+
+      Cunit_Boolean_Restrictions_Restore (Save_Cunit_Restrictions);
+
       Expander_Mode_Restore;
 
       if Debug_Unit_Walk then
@@ -1526,6 +1554,24 @@ package body Sem is
             Prefix => "<-- ");
       end if;
    end Semantics;
+
+   --------
+   -- ss --
+   --------
+
+   function ss (Index : Int) return Scope_Stack_Entry is
+   begin
+      return Scope_Stack.Table (Index);
+   end ss;
+
+   ---------
+   -- sst --
+   ---------
+
+   function sst return Scope_Stack_Entry is
+   begin
+      return ss (Scope_Stack.Last);
+   end sst;
 
    ------------------------
    -- Walk_Library_Items --
@@ -1574,7 +1620,7 @@ package body Sem is
       --  an instance spec, do the body last.
 
       procedure Do_Withed_Unit (Withed_Unit : Node_Id);
-      --  Apply Do_Unit_And_Dependents to a unit in a context clause.
+      --  Apply Do_Unit_And_Dependents to a unit in a context clause
 
       procedure Process_Bodies_In_Context (Comp : Node_Id);
       --  The main unit and its spec may depend on bodies that contain generics

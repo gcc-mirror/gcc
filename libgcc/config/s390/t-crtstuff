@@ -2,4 +2,4 @@
 # because then __FRAME_END__ might not be the last thing in .eh_frame
 # section.
 CRTSTUFF_T_CFLAGS += -fno-asynchronous-unwind-tables
-CRTSTUFF_T_CFLAGS_S += -fno-asynchronous-unwind-tables -fPIC
+CRTSTUFF_T_CFLAGS_S += -fno-asynchronous-unwind-tables

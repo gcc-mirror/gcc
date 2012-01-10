@@ -206,6 +206,14 @@ double_check (gfc_expr *d, int n)
 static gfc_try
 coarray_check (gfc_expr *e, int n)
 {
+  if (e->ts.type == BT_CLASS && gfc_expr_attr (e).class_ok
+	&& CLASS_DATA (e)->attr.codimension
+	&& CLASS_DATA (e)->as->corank)
+    {
+      gfc_add_class_array_ref (e);
+      return SUCCESS;
+    }
+
   if (!gfc_is_coarray (e))
     {
       gfc_error ("Expected coarray variable as '%s' argument to the %s "
@@ -240,6 +248,14 @@ logical_array_check (gfc_expr *array, int n)
 static gfc_try
 array_check (gfc_expr *e, int n)
 {
+  if (e->ts.type == BT_CLASS && gfc_expr_attr (e).class_ok
+	&& CLASS_DATA (e)->attr.dimension
+	&& CLASS_DATA (e)->as->rank)
+    {
+      gfc_add_class_array_ref (e);
+      return SUCCESS;
+    }
+
   if (e->rank != 0)
     return SUCCESS;
 
@@ -476,10 +492,31 @@ variable_check (gfc_expr *e, int n, bool allow_proc)
       && (gfc_current_intrinsic_arg[n]->intent == INTENT_OUT
 	  || gfc_current_intrinsic_arg[n]->intent == INTENT_INOUT))
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L cannot be INTENT(IN)",
-		 gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
-		 &e->where);
-      return FAILURE;
+      gfc_ref *ref;
+      bool pointer = e->symtree->n.sym->ts.type == BT_CLASS
+		     && CLASS_DATA (e->symtree->n.sym)
+		     ? CLASS_DATA (e->symtree->n.sym)->attr.class_pointer
+		     : e->symtree->n.sym->attr.pointer;
+
+      for (ref = e->ref; ref; ref = ref->next)
+	{
+	  if (pointer && ref->type == REF_COMPONENT)
+	    break;
+	  if (ref->type == REF_COMPONENT
+	      && ((ref->u.c.component->ts.type == BT_CLASS
+		   && CLASS_DATA (ref->u.c.component)->attr.class_pointer)
+		  || (ref->u.c.component->ts.type != BT_CLASS
+		      && ref->u.c.component->attr.pointer)))
+	    break;
+	} 
+
+      if (!ref)
+	{
+	  gfc_error ("'%s' argument of '%s' intrinsic at %L cannot be "
+		     "INTENT(IN)", gfc_current_intrinsic_arg[n]->name,
+		     gfc_current_intrinsic, &e->where);
+	  return FAILURE;
+	}
     }
 
   if (e->expr_type == EXPR_VARIABLE
@@ -533,6 +570,9 @@ dim_corank_check (gfc_expr *dim, gfc_expr *array)
 
   if (dim->expr_type != EXPR_CONSTANT)
     return SUCCESS;
+  
+  if (array->ts.type == BT_CLASS)
+    return SUCCESS;
 
   corank = gfc_get_corank (array);
 
@@ -564,6 +604,9 @@ dim_rank_check (gfc_expr *dim, gfc_expr *array, int allow_assumed)
     return SUCCESS;
 
   if (dim->expr_type != EXPR_CONSTANT)
+    return SUCCESS;
+
+  if (array->ts.type == BT_CLASS)
     return SUCCESS;
 
   if (array->expr_type == EXPR_FUNCTION && array->value.function.isym
@@ -2688,6 +2731,14 @@ gfc_check_move_alloc (gfc_expr *from, gfc_expr *to)
   if (allocatable_check (to, 1) == FAILURE)
     return FAILURE;
 
+  if (from->ts.type == BT_CLASS && to->ts.type == BT_DERIVED)
+    {
+      gfc_error ("The TO arguments in MOVE_ALLOC at %L must be "
+		 "polymorphic if FROM is polymorphic",
+		 &from->where);
+      return FAILURE;
+    }
+
   if (same_type_check (to, 1, from, 0) == FAILURE)
     return FAILURE;
 
@@ -2710,7 +2761,7 @@ gfc_check_move_alloc (gfc_expr *from, gfc_expr *to)
       return FAILURE;
     }
 
-  /* CLASS arguments: Make sure the vtab is present.  */
+  /* CLASS arguments: Make sure the vtab of from is present.  */
   if (to->ts.type == BT_CLASS)
     gfc_find_derived_vtab (from->ts.u.derived);
 

@@ -15,7 +15,7 @@ runtime_findnull(const byte *s)
 }
 
 String
-runtime_gostringnocopy(byte *str)
+runtime_gostringnocopy(const byte *str)
 {
 	String s;
 	

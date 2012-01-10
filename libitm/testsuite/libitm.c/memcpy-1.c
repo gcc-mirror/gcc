@@ -84,6 +84,12 @@ do_test (size_t align1, size_t align2, size_t len)
       }
 }
 
+#ifndef MAP_ANONYMOUS
+#  ifdef MAP_ANON
+#    define MAP_ANONYMOUS MAP_ANON
+#  endif
+#endif
+
 int main()
 {
   size_t i, j;

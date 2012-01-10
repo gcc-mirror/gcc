@@ -987,7 +987,17 @@ package body Lib.Writ is
 
             S := Specification (U);
 
-            if No (Parameter_Specifications (S)) then
+            --  A generic subprogram is never a main program
+
+            if Nkind (U) = N_Subprogram_Body
+              and then Present (Corresponding_Spec (U))
+              and then
+                Ekind_In (Corresponding_Spec (U),
+                  E_Generic_Procedure, E_Generic_Function)
+            then
+               null;
+
+            elsif No (Parameter_Specifications (S)) then
                if Nkind (S) = N_Procedure_Specification then
                   Write_Info_Initiate ('M');
                   Write_Info_Str (" P");

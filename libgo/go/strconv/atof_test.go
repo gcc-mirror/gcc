@@ -5,7 +5,6 @@
 package strconv_test
 
 import (
-	"os"
 	"reflect"
 	. "strconv"
 	"testing"
@@ -14,15 +13,15 @@ import (
 type atofTest struct {
 	in  string
 	out string
-	err os.Error
+	err error
 }
 
 var atoftests = []atofTest{
-	{"", "0", os.EINVAL},
+	{"", "0", ErrSyntax},
 	{"1", "1", nil},
 	{"+1", "1", nil},
-	{"1x", "0", os.EINVAL},
-	{"1.1.", "0", os.EINVAL},
+	{"1x", "0", ErrSyntax},
+	{"1.1.", "0", ErrSyntax},
 	{"1e23", "1e+23", nil},
 	{"1E23", "1e+23", nil},
 	{"100000000000000000000000", "1e+23", nil},
@@ -56,28 +55,28 @@ var atoftests = []atofTest{
 	{"1.7976931348623157e308", "1.7976931348623157e+308", nil},
 	{"-1.7976931348623157e308", "-1.7976931348623157e+308", nil},
 	// next float64 - too large
-	{"1.7976931348623159e308", "+Inf", os.ERANGE},
-	{"-1.7976931348623159e308", "-Inf", os.ERANGE},
+	{"1.7976931348623159e308", "+Inf", ErrRange},
+	{"-1.7976931348623159e308", "-Inf", ErrRange},
 	// the border is ...158079
 	// borderline - okay
 	{"1.7976931348623158e308", "1.7976931348623157e+308", nil},
 	{"-1.7976931348623158e308", "-1.7976931348623157e+308", nil},
 	// borderline - too large
-	{"1.797693134862315808e308", "+Inf", os.ERANGE},
-	{"-1.797693134862315808e308", "-Inf", os.ERANGE},
+	{"1.797693134862315808e308", "+Inf", ErrRange},
+	{"-1.797693134862315808e308", "-Inf", ErrRange},
 
 	// a little too large
 	{"1e308", "1e+308", nil},
-	{"2e308", "+Inf", os.ERANGE},
-	{"1e309", "+Inf", os.ERANGE},
+	{"2e308", "+Inf", ErrRange},
+	{"1e309", "+Inf", ErrRange},
 
 	// way too large
-	{"1e310", "+Inf", os.ERANGE},
-	{"-1e310", "-Inf", os.ERANGE},
-	{"1e400", "+Inf", os.ERANGE},
-	{"-1e400", "-Inf", os.ERANGE},
-	{"1e400000", "+Inf", os.ERANGE},
-	{"-1e400000", "-Inf", os.ERANGE},
+	{"1e310", "+Inf", ErrRange},
+	{"-1e310", "-Inf", ErrRange},
+	{"1e400", "+Inf", ErrRange},
+	{"-1e400", "-Inf", ErrRange},
+	{"1e400000", "+Inf", ErrRange},
+	{"-1e400000", "-Inf", ErrRange},
 
 	// denormalized
 	{"1e-305", "1e-305", nil},
@@ -99,14 +98,14 @@ var atoftests = []atofTest{
 
 	// try to overflow exponent
 	{"1e-4294967296", "0", nil},
-	{"1e+4294967296", "+Inf", os.ERANGE},
+	{"1e+4294967296", "+Inf", ErrRange},
 	{"1e-18446744073709551616", "0", nil},
-	{"1e+18446744073709551616", "+Inf", os.ERANGE},
+	{"1e+18446744073709551616", "+Inf", ErrRange},
 
 	// Parse errors
-	{"1e", "0", os.EINVAL},
-	{"1e-", "0", os.EINVAL},
-	{".e-1", "0", os.EINVAL},
+	{"1e", "0", ErrSyntax},
+	{"1e-", "0", ErrSyntax},
+	{".e-1", "0", ErrSyntax},
 
 	// http://www.exploringbinary.com/java-hangs-when-converting-2-2250738585072012e-308/
 	{"2.2250738585072012e-308", "2.2250738585072014e-308", nil},
@@ -129,33 +128,23 @@ func testAtof(t *testing.T, opt bool) {
 	oldopt := SetOptimize(opt)
 	for i := 0; i < len(atoftests); i++ {
 		test := &atoftests[i]
-		out, err := Atof64(test.in)
-		outs := Ftoa64(out, 'g', -1)
+		out, err := ParseFloat(test.in, 64)
+		outs := FormatFloat(out, 'g', -1, 64)
 		if outs != test.out || !reflect.DeepEqual(err, test.err) {
-			t.Errorf("Atof64(%v) = %v, %v want %v, %v",
-				test.in, out, err, test.out, test.err)
-		}
-
-		out, err = AtofN(test.in, 64)
-		outs = FtoaN(out, 'g', -1, 64)
-		if outs != test.out || !reflect.DeepEqual(err, test.err) {
-			t.Errorf("AtofN(%v, 64) = %v, %v want %v, %v",
+			t.Errorf("ParseFloat(%v, 64) = %v, %v want %v, %v",
 				test.in, out, err, test.out, test.err)
 		}
 
 		if float64(float32(out)) == out {
-			out32, err := Atof32(test.in)
-			outs := Ftoa32(out32, 'g', -1)
-			if outs != test.out || !reflect.DeepEqual(err, test.err) {
-				t.Errorf("Atof32(%v) = %v, %v want %v, %v  # %v",
-					test.in, out32, err, test.out, test.err, out)
+			out, err := ParseFloat(test.in, 32)
+			out32 := float32(out)
+			if float64(out32) != out {
+				t.Errorf("ParseFloat(%v, 32) = %v, not a float32 (closest is %v)", test.in, out, float64(out32))
+				continue
 			}
-
-			out, err := AtofN(test.in, 32)
-			out32 = float32(out)
-			outs = FtoaN(float64(out32), 'g', -1, 32)
+			outs := FormatFloat(float64(out32), 'g', -1, 32)
 			if outs != test.out || !reflect.DeepEqual(err, test.err) {
-				t.Errorf("AtofN(%v, 32) = %v, %v want %v, %v  # %v",
+				t.Errorf("ParseFloat(%v, 32) = %v, %v want %v, %v  # %v",
 					test.in, out32, err, test.out, test.err, out)
 			}
 		}
@@ -169,24 +158,24 @@ func TestAtofSlow(t *testing.T) { testAtof(t, false) }
 
 func BenchmarkAtof64Decimal(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Atof64("33909")
+		ParseFloat("33909", 64)
 	}
 }
 
 func BenchmarkAtof64Float(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Atof64("339.7784")
+		ParseFloat("339.7784", 64)
 	}
 }
 
 func BenchmarkAtof64FloatExp(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Atof64("-5.09e75")
+		ParseFloat("-5.09e75", 64)
 	}
 }
 
 func BenchmarkAtof64Big(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Atof64("123456789123456789123456789")
+		ParseFloat("123456789123456789123456789", 64)
 	}
 }

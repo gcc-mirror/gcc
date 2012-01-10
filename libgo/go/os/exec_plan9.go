@@ -5,13 +5,14 @@
 package os
 
 import (
+	"errors"
 	"runtime"
 	"syscall"
 )
 
 // StartProcess starts a new process with the program, arguments and attributes
 // specified by name, argv and attr.
-func StartProcess(name string, argv []string, attr *ProcAttr) (p *Process, err Error) {
+func StartProcess(name string, argv []string, attr *ProcAttr) (p *Process, err error) {
 	sysattr := &syscall.ProcAttr{
 		Dir: attr.Dir,
 		Env: attr.Env,
@@ -31,7 +32,7 @@ func StartProcess(name string, argv []string, attr *ProcAttr) (p *Process, err E
 	sysattr.Files = intfd
 
 	pid, h, e := syscall.StartProcess(name, argv, sysattr)
-	if iserror(e) {
+	if e != nil {
 		return nil, &PathError{"fork/exec", name, e}
 	}
 
@@ -45,13 +46,13 @@ func (note Plan9Note) String() string {
 	return string(note)
 }
 
-func (p *Process) Signal(sig Signal) Error {
+func (p *Process) Signal(sig Signal) error {
 	if p.done {
-		return NewError("os: process already finished")
+		return errors.New("os: process already finished")
 	}
 
 	f, e := OpenFile("/proc/"+itoa(p.Pid)+"/note", O_WRONLY, 0)
-	if iserror(e) {
+	if e != nil {
 		return NewSyscallError("signal", e)
 	}
 	defer f.Close()
@@ -60,9 +61,9 @@ func (p *Process) Signal(sig Signal) Error {
 }
 
 // Kill causes the Process to exit immediately.
-func (p *Process) Kill() Error {
+func (p *Process) Kill() error {
 	f, e := OpenFile("/proc/"+itoa(p.Pid)+"/ctl", O_WRONLY, 0)
-	if iserror(e) {
+	if e != nil {
 		return NewSyscallError("kill", e)
 	}
 	defer f.Close()
@@ -72,11 +73,11 @@ func (p *Process) Kill() Error {
 
 // Exec replaces the current process with an execution of the
 // named binary, with arguments argv and environment envv.
-// If successful, Exec never returns.  If it fails, it returns an Error.
+// If successful, Exec never returns.  If it fails, it returns an error.
 // ForkExec is almost always a better way to execute a program.
-func Exec(name string, argv []string, envv []string) Error {
+func Exec(name string, argv []string, envv []string) error {
 	e := syscall.Exec(name, argv, envv)
-	if iserror(e) {
+	if e != nil {
 		return &PathError{"exec", name, e}
 	}
 
@@ -89,9 +90,9 @@ type Waitmsg struct {
 }
 
 // Wait waits for the Process to exit or stop, and then returns a
-// Waitmsg describing its status and an Error, if any. The options
+// Waitmsg describing its status and an error, if any. The options
 // (WNOHANG etc.) affect the behavior of the Wait call.
-func (p *Process) Wait(options int) (w *Waitmsg, err Error) {
+func (p *Process) Wait(options int) (w *Waitmsg, err error) {
 	var waitmsg syscall.Waitmsg
 
 	if p.Pid == -1 {
@@ -101,7 +102,7 @@ func (p *Process) Wait(options int) (w *Waitmsg, err Error) {
 	for true {
 		err = syscall.Await(&waitmsg)
 
-		if iserror(err) {
+		if err != nil {
 			return nil, NewSyscallError("wait", err)
 		}
 
@@ -115,11 +116,11 @@ func (p *Process) Wait(options int) (w *Waitmsg, err Error) {
 }
 
 // Wait waits for process pid to exit or stop, and then returns a
-// Waitmsg describing its status and an Error, if any. The options
+// Waitmsg describing its status and an error, if any. The options
 // (WNOHANG etc.) affect the behavior of the Wait call.
 // Wait is equivalent to calling FindProcess and then Wait
 // and Release on the result.
-func Wait(pid int, options int) (w *Waitmsg, err Error) {
+func Wait(pid int, options int) (w *Waitmsg, err error) {
 	p, e := FindProcess(pid)
 	if e != nil {
 		return nil, e
@@ -129,7 +130,7 @@ func Wait(pid int, options int) (w *Waitmsg, err Error) {
 }
 
 // Release releases any resources associated with the Process.
-func (p *Process) Release() Error {
+func (p *Process) Release() error {
 	// NOOP for Plan 9.
 	p.Pid = -1
 	// no need for a finalizer anymore
@@ -140,7 +141,7 @@ func (p *Process) Release() Error {
 // FindProcess looks for a running process by its pid.
 // The Process it returns can be used to obtain information
 // about the underlying operating system process.
-func FindProcess(pid int) (p *Process, err Error) {
+func FindProcess(pid int) (p *Process, err error) {
 	// NOOP for Plan 9.
 	return newProcess(pid, 0), nil
 }

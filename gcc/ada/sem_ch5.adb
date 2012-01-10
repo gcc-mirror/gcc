@@ -47,6 +47,7 @@ with Sem_Case; use Sem_Case;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Dim;  use Sem_Dim;
 with Sem_Disp; use Sem_Disp;
 with Sem_Elab; use Sem_Elab;
 with Sem_Eval; use Sem_Eval;
@@ -74,6 +75,14 @@ package body Sem_Ch5 is
    --  CASE or block statement. This is used for the generation of warning
    --  messages. This variable is recursively saved on entry to processing the
    --  construct, and restored on exit.
+
+   procedure Pre_Analyze_Range (R_Copy : Node_Id);
+   --  Determine expected type of range or domain of iteration of Ada 2012
+   --  loop by analyzing separate copy. Do the analysis and resolution of the
+   --  copy of the bound(s) with expansion disabled, to prevent the generation
+   --  of finalization actions. This prevents memory leaks when the bounds
+   --  contain calls to functions returning controlled arrays or when the
+   --  domain of iteration is a container.
 
    ------------------------
    -- Analyze_Assignment --
@@ -818,7 +827,6 @@ package body Sem_Ch5 is
 
       declare
          Ent : constant Entity_Id := Get_Enclosing_Object (Lhs);
-
       begin
          if Present (Ent)
            and then Safe_To_Capture_Value (N, Ent)
@@ -831,6 +839,8 @@ package body Sem_Ch5 is
             Set_Last_Assignment (Ent, Lhs);
          end if;
       end;
+
+      Analyze_Dimension (N);
    end Analyze_Assignment;
 
    -----------------------------
@@ -1618,90 +1628,6 @@ package body Sem_Ch5 is
       --  calls that use the secondary stack, returning True if any such call
       --  is found, and False otherwise.
 
-      procedure Pre_Analyze_Range (R_Copy : Node_Id);
-      --  Determine expected type of range or domain of iteration of Ada 2012
-      --  loop by analyzing separate copy. Do the analysis and resolution of
-      --  the copy of the bound(s) with expansion disabled, to prevent the
-      --  generation of finalization actions. This prevents memory leaks when
-      --  the bounds contain calls to functions returning controlled arrays or
-      --  when the domain of iteration is a container.
-
-      -----------------------
-      -- Pre_Analyze_Range --
-      -----------------------
-
-      procedure Pre_Analyze_Range (R_Copy : Node_Id) is
-         Save_Analysis : Boolean;
-      begin
-         Save_Analysis := Full_Analysis;
-         Full_Analysis := False;
-         Expander_Mode_Save_And_Set (False);
-
-         Analyze (R_Copy);
-
-         if Nkind (R_Copy) in N_Subexpr
-           and then Is_Overloaded (R_Copy)
-         then
-
-            --  Apply preference rules for range of predefined integer types,
-            --  or diagnose true ambiguity.
-
-            declare
-               I     : Interp_Index;
-               It    : Interp;
-               Found : Entity_Id := Empty;
-
-            begin
-               Get_First_Interp (R_Copy, I, It);
-               while Present (It.Typ) loop
-                  if Is_Discrete_Type (It.Typ) then
-                     if No (Found) then
-                        Found := It.Typ;
-                     else
-                        if Scope (Found) = Standard_Standard then
-                           null;
-
-                        elsif Scope (It.Typ) = Standard_Standard then
-                           Found := It.Typ;
-
-                        else
-                           --  Both of them are user-defined
-
-                           Error_Msg_N
-                             ("ambiguous bounds in range of iteration",
-                               R_Copy);
-                           Error_Msg_N ("\possible interpretations:", R_Copy);
-                           Error_Msg_NE ("\\} ", R_Copy, Found);
-                           Error_Msg_NE ("\\} ", R_Copy, It.Typ);
-                           exit;
-                        end if;
-                     end if;
-                  end if;
-
-                  Get_Next_Interp (I, It);
-               end loop;
-            end;
-         end if;
-
-         if  Is_Entity_Name (R_Copy)
-           and then Is_Type (Entity (R_Copy))
-         then
-
-            --  Subtype mark in iteration scheme
-
-            null;
-
-         elsif Nkind (R_Copy) in N_Subexpr then
-
-            --  Expression in range, or Ada 2012 iterator
-
-            Resolve (R_Copy);
-         end if;
-
-         Expander_Mode_Restore;
-         Full_Analysis := Save_Analysis;
-      end Pre_Analyze_Range;
-
       --------------------
       -- Process_Bounds --
       --------------------
@@ -1855,7 +1781,7 @@ package body Sem_Ch5 is
          if New_Lo_Bound /= Lo
            and then Is_Static_Expression (New_Lo_Bound)
          then
-            Rewrite  (Low_Bound (R), New_Copy (New_Lo_Bound));
+            Rewrite (Low_Bound (R), New_Copy (New_Lo_Bound));
          end if;
 
          if New_Hi_Bound /= Hi
@@ -2034,7 +1960,7 @@ package body Sem_Ch5 is
                begin
                   if Present (H)
                     and then Enclosing_Dynamic_Scope (H) =
-                    Enclosing_Dynamic_Scope (Id)
+                               Enclosing_Dynamic_Scope (Id)
                     and then Ekind (H) = E_Variable
                     and then Is_Discrete_Type (Etype (H))
                   then
@@ -2059,7 +1985,7 @@ package body Sem_Ch5 is
                then
                   Process_Bounds (DS);
 
-               --  expander not active or else range of iteration is a subtype
+               --  Expander not active or else range of iteration is a subtype
                --  indication, an entity, or a function call that yields an
                --  aggregate or a container.
 
@@ -2331,11 +2257,17 @@ package body Sem_Ch5 is
          begin
             Typ := Etype (Iter_Name);
 
+            --  The name in the renaming declaration may be a function call.
+            --  Indicate that it does not come from source, to suppress
+            --  spurious warnings on renamings of parameterless functions,
+            --  a common enough idiom in user-defined iterators.
+
             Decl :=
               Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier => Id,
                 Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
-                Name                => Relocate_Node (Iter_Name));
+                Name                =>
+                  New_Copy_Tree (Iter_Name, New_Sloc => Loc));
 
             Insert_Actions (Parent (Parent (N)), New_List (Decl));
             Rewrite (Name (N), New_Occurrence_Of (Id, Loc));
@@ -2513,11 +2445,94 @@ package body Sem_Ch5 is
    ----------------------------
 
    procedure Analyze_Loop_Statement (N : Node_Id) is
-      Loop_Statement : constant Node_Id := N;
 
-      Id   : constant Node_Id := Identifier (Loop_Statement);
-      Iter : constant Node_Id := Iteration_Scheme (Loop_Statement);
+      function Is_Container_Iterator (Iter : Node_Id) return Boolean;
+      --  Given a loop iteration scheme, determine whether it is an Ada 2012
+      --  container iteration.
+
+      function Is_Wrapped_In_Block (N : Node_Id) return Boolean;
+      --  Determine whether node N is the sole statement of a block
+
+      ---------------------------
+      -- Is_Container_Iterator --
+      ---------------------------
+
+      function Is_Container_Iterator (Iter : Node_Id) return Boolean is
+      begin
+         --  Infinite loop
+
+         if No (Iter) then
+            return False;
+
+         --  While loop
+
+         elsif Present (Condition (Iter)) then
+            return False;
+
+         --  for Def_Id in [reverse] Name loop
+         --  for Def_Id [: Subtype_Indication] of [reverse] Name loop
+
+         elsif Present (Iterator_Specification (Iter)) then
+            declare
+               Nam : constant Node_Id := Name (Iterator_Specification (Iter));
+               Nam_Copy : Node_Id;
+
+            begin
+               Nam_Copy := New_Copy_Tree (Nam);
+               Set_Parent (Nam_Copy, Parent (Nam));
+               Pre_Analyze_Range (Nam_Copy);
+
+               --  The only two options here are iteration over a container or
+               --  an array.
+
+               return not Is_Array_Type (Etype (Nam_Copy));
+            end;
+
+         --  for Def_Id in [reverse] Discrete_Subtype_Definition loop
+
+         else
+            declare
+               LP : constant Node_Id := Loop_Parameter_Specification (Iter);
+               DS : constant Node_Id := Discrete_Subtype_Definition (LP);
+               DS_Copy : Node_Id;
+
+            begin
+               DS_Copy := New_Copy_Tree (DS);
+               Set_Parent (DS_Copy, Parent (DS));
+               Pre_Analyze_Range (DS_Copy);
+
+               --  Check for a call to Iterate ()
+
+               return
+                 Nkind (DS_Copy) = N_Function_Call
+                   and then Needs_Finalization (Etype (DS_Copy));
+            end;
+         end if;
+      end Is_Container_Iterator;
+
+      -------------------------
+      -- Is_Wrapped_In_Block --
+      -------------------------
+
+      function Is_Wrapped_In_Block (N : Node_Id) return Boolean is
+         HSS : constant Node_Id := Parent (N);
+
+      begin
+         return
+           Nkind (HSS) = N_Handled_Sequence_Of_Statements
+             and then Nkind (Parent (HSS)) = N_Block_Statement
+             and then First (Statements (HSS)) = N
+             and then No (Next (First (Statements (HSS))));
+      end Is_Wrapped_In_Block;
+
+      --  Local declarations
+
+      Id   : constant Node_Id := Identifier (N);
+      Iter : constant Node_Id := Iteration_Scheme (N);
+      Loc  : constant Source_Ptr := Sloc (N);
       Ent  : Entity_Id;
+
+   --  Start of processing for Analyze_Loop_Statement
 
    begin
       if Present (Id) then
@@ -2534,15 +2549,13 @@ package body Sem_Ch5 is
 
          if No (Ent) then
             if Total_Errors_Detected /= 0 then
-               Ent :=
-                 New_Internal_Entity
-                   (E_Loop, Current_Scope, Sloc (Loop_Statement), 'L');
+               Ent := New_Internal_Entity (E_Loop, Current_Scope, Loc, 'L');
             else
                raise Program_Error;
             end if;
 
          else
-            Generate_Reference  (Ent, Loop_Statement, ' ');
+            Generate_Reference (Ent, N, ' ');
             Generate_Definition (Ent);
 
             --  If we found a label, mark its type. If not, ignore it, since it
@@ -2555,7 +2568,7 @@ package body Sem_Ch5 is
                Set_Ekind (Ent, E_Loop);
 
                if Nkind (Parent (Ent)) = N_Implicit_Label_Declaration then
-                  Set_Label_Construct (Parent (Ent), Loop_Statement);
+                  Set_Label_Construct (Parent (Ent), N);
                end if;
             end if;
          end if;
@@ -2563,11 +2576,28 @@ package body Sem_Ch5 is
       --  Case of no identifier present
 
       else
-         Ent :=
-           New_Internal_Entity
-             (E_Loop, Current_Scope, Sloc (Loop_Statement), 'L');
-         Set_Etype (Ent,  Standard_Void_Type);
-         Set_Parent (Ent, Loop_Statement);
+         Ent := New_Internal_Entity (E_Loop, Current_Scope, Loc, 'L');
+         Set_Etype  (Ent, Standard_Void_Type);
+         Set_Parent (Ent, N);
+      end if;
+
+      --  Iteration over a container in Ada 2012 involves the creation of a
+      --  controlled iterator object. Wrap the loop in a block to ensure the
+      --  timely finalization of the iterator and release of container locks.
+
+      if Ada_Version >= Ada_2012
+        and then Is_Container_Iterator (Iter)
+        and then not Is_Wrapped_In_Block (N)
+      then
+         Rewrite (N,
+           Make_Block_Statement (Loc,
+             Declarations               => New_List,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (Relocate_Node (N)))));
+
+         Analyze (N);
+         return;
       end if;
 
       --  Kill current values on entry to loop, since statements in the body of
@@ -2610,7 +2640,7 @@ package body Sem_Ch5 is
             end;
          end if;
 
-         Analyze_Statements (Statements (Loop_Statement));
+         Analyze_Statements (Statements (N));
       end if;
 
       --  Finish up processing for the loop. We kill all current values, since
@@ -2619,7 +2649,7 @@ package body Sem_Ch5 is
       --  know will execute at least once, but it's not worth the trouble and
       --  the front end is not in the business of flow tracing.
 
-      Process_End_Label (Loop_Statement, 'e', Ent);
+      Process_End_Label (N, 'e', Ent);
       End_Scope;
       Kill_Current_Values;
 
@@ -2709,6 +2739,10 @@ package body Sem_Ch5 is
       S := First (L);
       while Present (S) loop
          Analyze (S);
+
+         --  Remove dimension in all statements
+
+         Remove_Dimension_In_Statement (S);
          Next (S);
       end loop;
 
@@ -2870,5 +2904,77 @@ package body Sem_Ch5 is
          end;
       end if;
    end Check_Unreachable_Code;
+
+   -----------------------
+   -- Pre_Analyze_Range --
+   -----------------------
+
+   procedure Pre_Analyze_Range (R_Copy : Node_Id) is
+      Save_Analysis : constant Boolean := Full_Analysis;
+
+   begin
+      Full_Analysis := False;
+      Expander_Mode_Save_And_Set (False);
+
+      Analyze (R_Copy);
+
+      if Nkind (R_Copy) in N_Subexpr
+        and then Is_Overloaded (R_Copy)
+      then
+         --  Apply preference rules for range of predefined integer types, or
+         --  diagnose true ambiguity.
+
+         declare
+            I     : Interp_Index;
+            It    : Interp;
+            Found : Entity_Id := Empty;
+
+         begin
+            Get_First_Interp (R_Copy, I, It);
+            while Present (It.Typ) loop
+               if Is_Discrete_Type (It.Typ) then
+                  if No (Found) then
+                     Found := It.Typ;
+                  else
+                     if Scope (Found) = Standard_Standard then
+                        null;
+
+                     elsif Scope (It.Typ) = Standard_Standard then
+                        Found := It.Typ;
+
+                     else
+                        --  Both of them are user-defined
+
+                        Error_Msg_N
+                          ("ambiguous bounds in range of iteration", R_Copy);
+                        Error_Msg_N ("\possible interpretations:", R_Copy);
+                        Error_Msg_NE ("\\} ", R_Copy, Found);
+                        Error_Msg_NE ("\\} ", R_Copy, It.Typ);
+                        exit;
+                     end if;
+                  end if;
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+         end;
+      end if;
+
+      --  Subtype mark in iteration scheme
+
+      if Is_Entity_Name (R_Copy)
+        and then Is_Type (Entity (R_Copy))
+      then
+         null;
+
+      --  Expression in range, or Ada 2012 iterator
+
+      elsif Nkind (R_Copy) in N_Subexpr then
+         Resolve (R_Copy);
+      end if;
+
+      Expander_Mode_Restore;
+      Full_Analysis := Save_Analysis;
+   end Pre_Analyze_Range;
 
 end Sem_Ch5;

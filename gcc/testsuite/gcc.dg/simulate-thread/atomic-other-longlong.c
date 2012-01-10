@@ -1,6 +1,7 @@
 /* { dg-do link } */
-/* { dg-require-effective-target sync_long_long } */
+/* { dg-require-effective-target sync_long_long_runtime } */
 /* { dg-options "" } */
+/* { dg-options "-march=pentium" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 /* { dg-final { simulate-thread } } */
 
 

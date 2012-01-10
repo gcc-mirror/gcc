@@ -8,10 +8,9 @@ package s2k
 
 import (
 	"crypto"
-	"crypto/openpgp/error"
+	error_ "crypto/openpgp/error"
 	"hash"
 	"io"
-	"os"
 	"strconv"
 )
 
@@ -27,6 +26,7 @@ var zero [1]byte
 // 4880, section 3.7.1.2) using the given hash, input passphrase and salt.
 func Salted(out []byte, h hash.Hash, in []byte, salt []byte) {
 	done := 0
+	var digest []byte
 
 	for i := 0; done < len(out); i++ {
 		h.Reset()
@@ -35,7 +35,8 @@ func Salted(out []byte, h hash.Hash, in []byte, salt []byte) {
 		}
 		h.Write(salt)
 		h.Write(in)
-		n := copy(out[done:], h.Sum())
+		digest = h.Sum(digest[:0])
+		n := copy(out[done:], digest)
 		done += n
 	}
 }
@@ -53,6 +54,7 @@ func Iterated(out []byte, h hash.Hash, in []byte, salt []byte, count int) {
 	}
 
 	done := 0
+	var digest []byte
 	for i := 0; done < len(out); i++ {
 		h.Reset()
 		for j := 0; j < i; j++ {
@@ -69,14 +71,15 @@ func Iterated(out []byte, h hash.Hash, in []byte, salt []byte, count int) {
 				written += len(combined)
 			}
 		}
-		n := copy(out[done:], h.Sum())
+		digest = h.Sum(digest[:0])
+		n := copy(out[done:], digest)
 		done += n
 	}
 }
 
 // Parse reads a binary specification for a string-to-key transformation from r
 // and returns a function which performs that transform.
-func Parse(r io.Reader) (f func(out, in []byte), err os.Error) {
+func Parse(r io.Reader) (f func(out, in []byte), err error) {
 	var buf [9]byte
 
 	_, err = io.ReadFull(r, buf[:2])
@@ -86,11 +89,11 @@ func Parse(r io.Reader) (f func(out, in []byte), err os.Error) {
 
 	hash, ok := HashIdToHash(buf[1])
 	if !ok {
-		return nil, error.UnsupportedError("hash for S2K function: " + strconv.Itoa(int(buf[1])))
+		return nil, error_.UnsupportedError("hash for S2K function: " + strconv.Itoa(int(buf[1])))
 	}
 	h := hash.New()
 	if h == nil {
-		return nil, error.UnsupportedError("hash not available: " + strconv.Itoa(int(hash)))
+		return nil, error_.UnsupportedError("hash not available: " + strconv.Itoa(int(hash)))
 	}
 
 	switch buf[0] {
@@ -120,12 +123,12 @@ func Parse(r io.Reader) (f func(out, in []byte), err os.Error) {
 		return f, nil
 	}
 
-	return nil, error.UnsupportedError("S2K function")
+	return nil, error_.UnsupportedError("S2K function")
 }
 
 // Serialize salts and stretches the given passphrase and writes the resulting
 // key into key. It also serializes an S2K descriptor to w.
-func Serialize(w io.Writer, key []byte, rand io.Reader, passphrase []byte) os.Error {
+func Serialize(w io.Writer, key []byte, rand io.Reader, passphrase []byte) error {
 	var buf [11]byte
 	buf[0] = 3 /* iterated and salted */
 	buf[1], _ = HashToHashId(crypto.SHA1)

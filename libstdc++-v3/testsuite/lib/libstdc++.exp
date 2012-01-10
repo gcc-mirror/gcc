@@ -1219,14 +1219,16 @@ proc check_v3_target_atomic_builtins { } {
 	set src atomic_builtins[pid].cc
 
 	set f [open $src "w"]
-	puts $f "#include <bits/c++config.h>"
-	puts $f "#ifndef _GLIBCXX_ATOMIC_BUILTINS_4"
-	puts $f "#  error No atomic builtins"
+	puts $f "#if __GCC_ATOMIC_BOOL_LOCK_FREE < 2"
+	puts $f "#  error No atomic bool"
+	puts $f "#endif"
+	puts $f "#if __GCC_ATOMIC_INT_LOCK_FREE < 2"
+	puts $f "#  error No atomic int"
 	puts $f "#endif"
 	close $f
 
 	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
+	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror -std=gnu++0x"
 
 	set lines [v3_target_compile $src /dev/null preprocess ""]
 	set cxxflags $cxxflags_saved

@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 1999, 2000, 2001,
-@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 @c Free Software Foundation, Inc.
 
 @c This is part of the GCC manual.
@@ -1220,11 +1220,12 @@ Fixed-point types are supported by the DWARF2 debug information format.
 
 As an extension, the GNU C compiler supports named address spaces as
 defined in the N1275 draft of ISO/IEC DTR 18037.  Support for named
-address spaces in GCC will evolve as the draft technical report changes.
-Calling conventions for any target might also change.  At present, only
-the SPU and M32C targets support other address spaces.  On the SPU target, for
-example, variables may be declared as belonging to another address space
-by qualifying the type with the @code{__ea} address space identifier:
+address spaces in GCC will evolve as the draft technical report
+changes.  Calling conventions for any target might also change.  At
+present, only the SPU, M32C, and RL78 targets support other address
+spaces.  On the SPU target, for example, variables may be declared as
+belonging to another address space by qualifying the type with the
+@code{__ea} address space identifier:
 
 @smallexample
 extern int __ea i;
@@ -1243,6 +1244,11 @@ On the M32C target, with the R8C and M16C cpu variants, variables
 qualified with @code{__far} are accessed using 32-bit addresses in
 order to access memory beyond the first 64k bytes.  If @code{__far} is
 used with the M32CM or M32C cpu variants, it has no effect.
+
+On the RL78 target, variables qualified with @code{__far} are accessed
+with 32-bit pointers (20-bit addresses) rather than the default 16-bit
+addresses.  Non-far variables are assumed to appear in the topmost 64
+kB of the address space.
 
 @node Zero Length
 @section Arrays of Length Zero
@@ -2553,7 +2559,7 @@ This attribute is ignored for R8C target.
 @item interrupt
 @cindex interrupt handler functions
 Use this attribute on the ARM, AVR, Epiphany, M32C, M32R/D, m68k, MeP, MIPS,
-RX and Xstormy16 ports to indicate that the specified function is an
+RL78, RX and Xstormy16 ports to indicate that the specified function is an
 interrupt handler.  The compiler will generate function entry and exit
 sequences suitable for use in an interrupt handler when this attribute
 is present.
@@ -2610,6 +2616,10 @@ void __attribute__ ((interrupt, use_shadow_register_set,
                      keep_interrupts_masked,
                      use_debug_exception_return)) v7 ();
 @end smallexample
+
+On RL78, use @code{brk_interrupt} instead of @code{interrupt} for
+handlers intended to be used with the @code{BRK} opcode (i.e.  those
+that must end with @code{RETB} instead of @code{RETI}).
 
 @item ifunc ("@var{resolver}")
 @cindex @code{ifunc} attribute
@@ -5288,8 +5298,8 @@ GCC implements three different semantics of declaring a function
 inline.  One is available with @option{-std=gnu89} or
 @option{-fgnu89-inline} or when @code{gnu_inline} attribute is present
 on all inline declarations, another when
-@option{-std=c99}, @option{-std=c1x},
-@option{-std=gnu99} or @option{-std=gnu1x}
+@option{-std=c99}, @option{-std=c11},
+@option{-std=gnu99} or @option{-std=gnu11}
 (without @option{-fgnu89-inline}), and the third
 is used when compiling C++.
 
@@ -6303,7 +6313,7 @@ a general-purpose header file that should be usable by all programs,
 including ISO C programs.  The keywords @code{asm}, @code{typeof} and
 @code{inline} are not available in programs compiled with
 @option{-ansi} or @option{-std} (although @code{inline} can be used in a
-program compiled with @option{-std=c99} or @option{-std=c1x}).  The
+program compiled with @option{-std=c99} or @option{-std=c11}).  The
 ISO C99 keyword
 @code{restrict} is only available when @option{-std=gnu99} (which will
 eventually be the default) or @option{-std=c99} (or the equivalent
@@ -7613,7 +7623,7 @@ be emitted.
 @opindex ansi
 @opindex std
 Outside strict ISO C mode (@option{-ansi}, @option{-std=c90},
-@option{-std=c99} or @option{-std=c1x}), the functions
+@option{-std=c99} or @option{-std=c11}), the functions
 @code{_exit}, @code{alloca}, @code{bcmp}, @code{bzero},
 @code{dcgettext}, @code{dgettext}, @code{dremf}, @code{dreml},
 @code{drem}, @code{exp10f}, @code{exp10l}, @code{exp10}, @code{ffsll},
@@ -7833,7 +7843,7 @@ future revisions.
 @deftypefn {Built-in Function} @var{type} __builtin_complex (@var{real}, @var{imag})
 
 The built-in function @code{__builtin_complex} is provided for use in
-implementing the ISO C1X macros @code{CMPLXF}, @code{CMPLX} and
+implementing the ISO C11 macros @code{CMPLXF}, @code{CMPLX} and
 @code{CMPLXL}.  @var{real} and @var{imag} must have the same type, a
 real binary floating-point type, and the result has the corresponding
 complex type with real and imaginary parts @var{real} and @var{imag}.
@@ -7922,7 +7932,7 @@ expressions for @var{exp}, you should use constructions such as
 
 @smallexample
 if (__builtin_expect (ptr != NULL, 1))
-  error ();
+  foo (*ptr);
 @end smallexample
 
 @noindent
@@ -8594,10 +8604,40 @@ implements
 void __builtin_avr_delay_cycles (unsigned long ticks)
 @end smallexample
 
+@noindent
 @code{ticks} is the number of ticks to delay execution. Note that this
 built-in does not take into account the effect of interrupts which
 might increase delay time. @code{ticks} must be a compile time
 integer constant; delays with a variable number of cycles are not supported.
+
+@smallexample
+     unsigned char __builtin_avr_map8 (unsigned long map, unsigned char val)
+@end smallexample
+
+@noindent
+Each bit of the result is copied from a specific bit of @code{val}.
+@code{map} is a compile time constant that represents a map composed
+of 8 nibbles (4-bit groups):
+The @var{n}-th nibble of @code{map} specifies which bit of @code{val}
+is to be moved to the @var{n}-th bit of the result.
+For example, @code{map = 0x76543210} represents identity: The MSB of
+the result is read from the 7-th bit of @code{val}, the LSB is
+read from the 0-th bit to @code{val}, etc.
+Two more examples: @code{0x01234567} reverses the bit order and
+@code{0x32107654} is equivalent to a @code{swap} instruction.
+
+@noindent
+One typical use case for this and the following built-in is adjusting input and
+output values to non-contiguous port layouts.
+
+@smallexample
+     unsigned int __builtin_avr_map16 (unsigned long long map, unsigned int val)
+@end smallexample
+
+@noindent
+Similar to the previous built-in except that it operates on @code{int}
+and thus 16 bits are involved.  Again, @code{map} must be a compile
+time constant.
 
 @node Blackfin Built-in Functions
 @subsection Blackfin Built-in Functions
@@ -10497,6 +10537,7 @@ i32 __builtin_mips_rddsp (imm0_63)
 i32 __builtin_mips_lbux (void *, i32)
 i32 __builtin_mips_lhx (void *, i32)
 i32 __builtin_mips_lwx (void *, i32)
+a64 __builtin_mips_ldx (void *, i32) [MIPS64 only]
 i32 __builtin_mips_bposge32 (void)
 a64 __builtin_mips_madd (a64, i32, i32);
 a64 __builtin_mips_maddu (a64, ui32, ui32);
@@ -14083,7 +14124,7 @@ versions earlier than 4.4.
 @cindex @code{struct}
 @cindex @code{union}
 
-As permitted by ISO C1X and for compatibility with other compilers,
+As permitted by ISO C11 and for compatibility with other compilers,
 GCC allows you to define
 a structure or union that contains, as fields, structures and unions
 without names.  For example:

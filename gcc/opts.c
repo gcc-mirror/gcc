@@ -663,6 +663,9 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_flag_toplevel_reorder = 0;
     }
 
+  if (opts->x_flag_tm && opts->x_flag_non_call_exceptions)
+    sorry ("transactional memory is not supported with non-call exceptions");
+
   /* -Wmissing-noreturn is alias for -Wsuggest-attribute=noreturn.  */
   if (opts->x_warn_missing_noreturn)
     opts->x_warn_suggest_attribute_noreturn = true;
@@ -784,8 +787,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 #endif
       if (!opts->x_flag_fat_lto_objects && !HAVE_LTO_PLUGIN)
         error_at (loc, "-fno-fat-lto-objects are supported only with linker plugin.");
-      if (opts->x_flag_tm)
-	error_at (loc, "LTO is currently not supported with transactional memory");
 }
   if ((opts->x_flag_lto_partition_balanced != 0) + (opts->x_flag_lto_partition_1to1 != 0)
        + (opts->x_flag_lto_partition_none != 0) >= 1)
@@ -1417,6 +1418,10 @@ common_handle_option (struct gcc_options *opts,
     case OPT_Os:
     case OPT_Ofast:
       /* Currently handled in a prescan.  */
+      break;
+
+    case OPT_Werror:
+      dc->warning_as_error_requested = value;
       break;
 
     case OPT_Werror_:

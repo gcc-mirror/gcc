@@ -811,9 +811,19 @@ cont:
 	      for (j = 1; new_argv[j] != NULL; ++j)
 		fprintf (mstream, " '%s'", new_argv[j]);
 	      fprintf (mstream, "\n");
+	      /* If we are not preserving the ltrans input files then
+	         truncate them as soon as we have processed it.  This
+		 reduces temporary disk-space usage.  */
+	      if (! debug)
+		fprintf (mstream, "\t@-touch -r %s %s.tem > /dev/null 2>&1 "
+			 "&& mv %s.tem %s\n",
+			 input_name, input_name, input_name, input_name); 
 	    }
 	  else
-	    fork_execute (CONST_CAST (char **, new_argv));
+	    {
+	      fork_execute (CONST_CAST (char **, new_argv));
+	      maybe_unlink_file (input_name);
+	    }
 
 	  output_names[i] = output_name;
 	}
@@ -851,12 +861,13 @@ cont:
 	  collect_wait (new_argv[0], pex);
 	  maybe_unlink_file (makefile);
 	  makefile = NULL;
+	  for (i = 0; i < nr; ++i)
+	    maybe_unlink_file (input_names[i]);
 	}
       for (i = 0; i < nr; ++i)
 	{
 	  fputs (output_names[i], stdout);
 	  putc ('\n', stdout);
-	  maybe_unlink_file (input_names[i]);
 	  free (input_names[i]);
 	}
       nr = 0;

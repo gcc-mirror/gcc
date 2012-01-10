@@ -1,5 +1,5 @@
 ;; GCC machine description for SSE instructions
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -17,6 +17,85 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
+
+(define_c_enum "unspec" [
+  ;; SSE
+  UNSPEC_MOVNT
+  UNSPEC_MOVU
+
+  ;; SSE3
+  UNSPEC_LDDQU
+
+  ;; SSSE3
+  UNSPEC_PSHUFB
+  UNSPEC_PSIGN
+  UNSPEC_PALIGNR
+
+  ;; For SSE4A support
+  UNSPEC_EXTRQI
+  UNSPEC_EXTRQ
+  UNSPEC_INSERTQI
+  UNSPEC_INSERTQ
+
+  ;; For SSE4.1 support
+  UNSPEC_BLENDV
+  UNSPEC_INSERTPS
+  UNSPEC_DP
+  UNSPEC_MOVNTDQA
+  UNSPEC_MPSADBW
+  UNSPEC_PHMINPOSUW
+  UNSPEC_PTEST
+
+  ;; For SSE4.2 support
+  UNSPEC_PCMPESTR
+  UNSPEC_PCMPISTR
+
+  ;; For FMA4 support
+  UNSPEC_FMADDSUB
+  UNSPEC_XOP_UNSIGNED_CMP
+  UNSPEC_XOP_TRUEFALSE
+  UNSPEC_XOP_PERMUTE
+  UNSPEC_FRCZ
+
+  ;; For AES support
+  UNSPEC_AESENC
+  UNSPEC_AESENCLAST
+  UNSPEC_AESDEC
+  UNSPEC_AESDECLAST
+  UNSPEC_AESIMC
+  UNSPEC_AESKEYGENASSIST
+
+  ;; For PCLMUL support
+  UNSPEC_PCLMUL
+
+  ;; For AVX support
+  UNSPEC_PCMP
+  UNSPEC_VPERMIL
+  UNSPEC_VPERMIL2
+  UNSPEC_VPERMIL2F128
+  UNSPEC_CAST
+  UNSPEC_VTESTP
+  UNSPEC_VCVTPH2PS
+  UNSPEC_VCVTPS2PH
+
+  ;; For AVX2 support
+  UNSPEC_VPERMSI
+  UNSPEC_VPERMDF
+  UNSPEC_VPERMSF
+  UNSPEC_VPERMTI
+  UNSPEC_GATHER
+  UNSPEC_VSIBADDR
+])
+
+(define_c_enum "unspecv" [
+  UNSPECV_LDMXCSR
+  UNSPECV_STMXCSR
+  UNSPECV_CLFLUSH
+  UNSPECV_MONITOR
+  UNSPECV_MWAIT
+  UNSPECV_VZEROALL
+  UNSPECV_VZEROUPPER
+])
 
 ;; All vector modes including V?TImode, used in move patterns.
 (define_mode_iterator V16
@@ -4987,7 +5066,24 @@
 					gen_lowpart (mulmode, t[3]))));
 
   /* Extract the even bytes and merge them back together.  */
-  ix86_expand_vec_extract_even_odd (operands[0], t[5], t[4], 0);
+  if (<MODE>mode == V16QImode)
+    ix86_expand_vec_extract_even_odd (operands[0], t[5], t[4], 0);
+  else
+    {
+      /* Since avx2_interleave_{low,high}v32qi used above aren't cross-lane,
+	 this can't be normal even extraction, but one where additionally
+	 the second and third quarter are swapped.  That is even one insn
+	 shorter than even extraction.  */
+      rtvec v = rtvec_alloc (32);
+      for (i = 0; i < 32; ++i)
+	RTVEC_ELT (v, i)
+	  = GEN_INT (i * 2 + ((i & 24) == 8 ? 16 : (i & 24) == 16 ? -16 : 0));
+      t[0] = operands[0];
+      t[1] = t[5];
+      t[2] = t[4];
+      t[3] = gen_rtx_CONST_VECTOR (<MODE>mode, v);
+      ix86_expand_vec_perm_const (t);
+    }
 
   set_unique_reg_note (get_last_insn (), REG_EQUAL,
 		       gen_rtx_MULT (<MODE>mode, operands[1], operands[2]));
@@ -6244,9 +6340,9 @@
 	(if_then_else:V_256
 	  (match_operator 3 ""
 	    [(match_operand:VI_256 4 "nonimmediate_operand" "")
-	     (match_operand:VI_256 5 "nonimmediate_operand" "")])
-	  (match_operand:V_256 1 "general_operand" "")
-	  (match_operand:V_256 2 "general_operand" "")))]
+	     (match_operand:VI_256 5 "general_operand" "")])
+	  (match_operand:V_256 1 "" "")
+	  (match_operand:V_256 2 "" "")))]
   "TARGET_AVX2
    && (GET_MODE_NUNITS (<V_256:MODE>mode)
        == GET_MODE_NUNITS (<VI_256:MODE>mode))"
@@ -6261,9 +6357,9 @@
 	(if_then_else:V_128
 	  (match_operator 3 ""
 	    [(match_operand:VI124_128 4 "nonimmediate_operand" "")
-	     (match_operand:VI124_128 5 "nonimmediate_operand" "")])
-	  (match_operand:V_128 1 "general_operand" "")
-	  (match_operand:V_128 2 "general_operand" "")))]
+	     (match_operand:VI124_128 5 "general_operand" "")])
+	  (match_operand:V_128 1 "" "")
+	  (match_operand:V_128 2 "" "")))]
   "TARGET_SSE2
    && (GET_MODE_NUNITS (<V_128:MODE>mode)
        == GET_MODE_NUNITS (<VI124_128:MODE>mode))"
@@ -6278,9 +6374,9 @@
 	(if_then_else:VI8F_128
 	  (match_operator 3 ""
 	    [(match_operand:V2DI 4 "nonimmediate_operand" "")
-	     (match_operand:V2DI 5 "nonimmediate_operand" "")])
-	  (match_operand:VI8F_128 1 "general_operand" "")
-	  (match_operand:VI8F_128 2 "general_operand" "")))]
+	     (match_operand:V2DI 5 "general_operand" "")])
+	  (match_operand:VI8F_128 1 "" "")
+	  (match_operand:VI8F_128 2 "" "")))]
   "TARGET_SSE4_2"
 {
   bool ok = ix86_expand_int_vcond (operands);
@@ -7537,16 +7633,6 @@
    (set_attr "prefix" "maybe_vex,orig,vex,maybe_vex,orig,orig")
    (set_attr "mode" "V2SF,TI,TI,TI,V4SF,V2SF")])
 
-(define_expand "vec_dupv4si"
-  [(set (match_operand:V4SI 0 "register_operand" "")
-	(vec_duplicate:V4SI
-	  (match_operand:SI 1 "nonimmediate_operand" "")))]
-  "TARGET_SSE"
-{
-  if (!TARGET_AVX)
-    operands[1] = force_reg (V4SImode, operands[1]);
-})
-
 (define_insn "*vec_dupv4si"
   [(set (match_operand:V4SI 0 "register_operand"     "=x,x,x")
 	(vec_duplicate:V4SI
@@ -7562,16 +7648,6 @@
    (set_attr "prefix_extra" "0,1,*")
    (set_attr "prefix" "maybe_vex,vex,orig")
    (set_attr "mode" "TI,V4SF,V4SF")])
-
-(define_expand "vec_dupv2di"
-  [(set (match_operand:V2DI 0 "register_operand" "")
-	(vec_duplicate:V2DI
-	  (match_operand:DI 1 "nonimmediate_operand" "")))]
-  "TARGET_SSE"
-{
-  if (!TARGET_AVX)
-    operands[1] = force_reg (V2DImode, operands[1]);
-})
 
 (define_insn "*vec_dupv2di"
   [(set (match_operand:V2DI 0 "register_operand"     "=x,x,x,x")
@@ -8041,25 +8117,6 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "memory" "store")])
 
-(define_expand "sse_sfence"
-  [(set (match_dup 0)
-	(unspec:BLK [(match_dup 0)] UNSPEC_SFENCE))]
-  "TARGET_SSE || TARGET_3DNOW_A"
-{
-  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
-  MEM_VOLATILE_P (operands[0]) = 1;
-})
-
-(define_insn "*sse_sfence"
-  [(set (match_operand:BLK 0 "" "")
-	(unspec:BLK [(match_dup 0)] UNSPEC_SFENCE))]
-  "TARGET_SSE || TARGET_3DNOW_A"
-  "sfence"
-  [(set_attr "type" "sse")
-   (set_attr "length_address" "0")
-   (set_attr "atom_sse_attr" "fence")
-   (set_attr "memory" "unknown")])
-
 (define_insn "sse2_clflush"
   [(unspec_volatile [(match_operand 0 "address_operand" "p")]
 		    UNSPECV_CLFLUSH)]
@@ -8069,43 +8126,6 @@
    (set_attr "atom_sse_attr" "fence")
    (set_attr "memory" "unknown")])
 
-(define_expand "sse2_mfence"
-  [(set (match_dup 0)
-	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))]
-  "TARGET_SSE2"
-{
-  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
-  MEM_VOLATILE_P (operands[0]) = 1;
-})
-
-(define_insn "*sse2_mfence"
-  [(set (match_operand:BLK 0 "" "")
-	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))]
-  "TARGET_64BIT || TARGET_SSE2"
-  "mfence"
-  [(set_attr "type" "sse")
-   (set_attr "length_address" "0")
-   (set_attr "atom_sse_attr" "fence")
-   (set_attr "memory" "unknown")])
-
-(define_expand "sse2_lfence"
-  [(set (match_dup 0)
-	(unspec:BLK [(match_dup 0)] UNSPEC_LFENCE))]
-  "TARGET_SSE2"
-{
-  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
-  MEM_VOLATILE_P (operands[0]) = 1;
-})
-
-(define_insn "*sse2_lfence"
-  [(set (match_operand:BLK 0 "" "")
-	(unspec:BLK [(match_dup 0)] UNSPEC_LFENCE))]
-  "TARGET_SSE2"
-  "lfence"
-  [(set_attr "type" "sse")
-   (set_attr "length_address" "0")
-   (set_attr "atom_sse_attr" "lfence")
-   (set_attr "memory" "unknown")])
 
 (define_insn "sse3_mwait"
   [(unspec_volatile [(match_operand:SI 0 "register_operand" "a")
@@ -12811,6 +12831,52 @@
     return "v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %x0|%x0, %6, %4}";
   return "v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %0|%0, %6, %4}";
 }
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "*avx2_gatherdi<mode>_3"
+  [(set (match_operand:<VEC_GATHER_SRCDI> 0 "register_operand" "=&x")
+	(vec_select:<VEC_GATHER_SRCDI>
+	  (unspec:VI4F_256
+	    [(match_operand:<VEC_GATHER_SRCDI> 2 "register_operand" "0")
+	     (match_operator:<ssescalarmode> 7 "vsib_mem_operator"
+	       [(unspec:P
+		  [(match_operand:P 3 "vsib_address_operand" "p")
+		   (match_operand:<VEC_GATHER_IDXDI> 4 "register_operand" "x")
+		   (match_operand:SI 6 "const1248_operand" "n")]
+		  UNSPEC_VSIBADDR)])
+	     (mem:BLK (scratch))
+	     (match_operand:<VEC_GATHER_SRCDI> 5 "register_operand" "1")]
+	     UNSPEC_GATHER)
+	  (parallel [(const_int 0) (const_int 1)
+		     (const_int 2) (const_int 3)])))
+   (clobber (match_scratch:VI4F_256 1 "=&x"))]
+  "TARGET_AVX2"
+  "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %7, %0|%0, %7, %5}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "*avx2_gatherdi<mode>_4"
+  [(set (match_operand:<VEC_GATHER_SRCDI> 0 "register_operand" "=&x")
+	(vec_select:<VEC_GATHER_SRCDI>
+	  (unspec:VI4F_256
+	    [(pc)
+	     (match_operator:<ssescalarmode> 6 "vsib_mem_operator"
+	       [(unspec:P
+		  [(match_operand:P 2 "vsib_address_operand" "p")
+		   (match_operand:<VEC_GATHER_IDXDI> 3 "register_operand" "x")
+		   (match_operand:SI 5 "const1248_operand" "n")]
+		  UNSPEC_VSIBADDR)])
+	     (mem:BLK (scratch))
+	     (match_operand:<VEC_GATHER_SRCDI> 4 "register_operand" "1")]
+	    UNSPEC_GATHER)
+	  (parallel [(const_int 0) (const_int 1)
+		     (const_int 2) (const_int 3)])))
+   (clobber (match_scratch:VI4F_256 1 "=&x"))]
+  "TARGET_AVX2"
+  "v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %0|%0, %6, %4}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])

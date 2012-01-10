@@ -4,12 +4,11 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fmodulo-sched -fdump-rtl-sms" } */
 
-
+int th, h, em, nlwm, nlwS, nlw, sy;
 void
 fun (nb)
      int nb;
 {
-  int th, h, em, nlwm, nlwS, nlw, sy;
 
   while (nb--)
     while (h--)
@@ -33,5 +32,5 @@ fun (nb)
       }
 }
 
-/* { dg-final { scan-rtl-dump-times "SMS succeeded" 1 "sms" { target spu-*-* powerpc*-*-* } } } */
+/* { dg-final { scan-rtl-dump-times "SMS loop many exits" 1 "sms" { target spu-*-* powerpc*-*-* } } } */
 /* { dg-final { cleanup-rtl-dump "sms" } } */

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -297,13 +297,6 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 
   type_annotate_only = (gigi_operating_mode == 1);
 
-  gcc_assert (Nkind (gnat_root) == N_Compilation_Unit);
-
-  /* Declare the name of the compilation unit as the first global
-     name in order to make the middle-end fully deterministic.  */
-  t = create_concat_name (Defining_Entity (Unit (gnat_root)), NULL);
-  first_global_object_name = ggc_strdup (IDENTIFIER_POINTER (t));
-
   for (i = 0; i < number_file; i++)
     {
       /* Use the identifier table to make a permanent copy of the filename as
@@ -327,6 +320,13 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
       linemap_position_for_column (line_table, 252 - 1);
       linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
     }
+
+  gcc_assert (Nkind (gnat_root) == N_Compilation_Unit);
+
+  /* Declare the name of the compilation unit as the first global
+     name in order to make the middle-end fully deterministic.  */
+  t = create_concat_name (Defining_Entity (Unit (gnat_root)), NULL);
+  first_global_object_name = ggc_strdup (IDENTIFIER_POINTER (t));
 
   /* Initialize ourselves.  */
   init_code_table ();
@@ -1038,8 +1038,9 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	  if (TREE_CODE (gnu_result) == INDIRECT_REF)
 	    TREE_THIS_NOTRAP (gnu_result) = 1;
 
-	  if (read_only)
-	    TREE_READONLY (gnu_result) = 1;
+	  /* The first reference, in case of a double reference, always points
+	     to read-only, see gnat_to_gnu_param for the rationale.  */
+	  TREE_READONLY (gnu_result) = 1;
 	}
 
       /* If it's a PARM_DECL to foreign convention subprogram, convert it.  */
@@ -3630,15 +3631,22 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
     }
 
   /* First, create the temporary for the return value if we need it: for a
-     variable-sized return type if there is no target or if this is slice,
-     because the gimplifier doesn't support these cases; or for a function
-     with copy-in/copy-out parameters if there is no target, because we'll
-     need to preserve the return value before copying back the parameters.
-     This must be done before we push a new binding level around the call
-     as we will pop it before copying the return value.  */
+     variable-sized return type if there is no target and this is not an
+     object declaration, or else there is a target and it is a slice or an
+     array with fixed size, as the gimplifier doesn't handle these cases;
+     otherwise for a function with copy-in/copy-out parameters if there is
+     no target, because we need to preserve the return value before copying
+     back the parameters.  This must be done before we push a binding level
+     around the call as we will pop it before copying the return value.  */
   if (function_call
       && ((TREE_CODE (TYPE_SIZE (gnu_result_type)) != INTEGER_CST
-	   && (!gnu_target || TREE_CODE (gnu_target) == ARRAY_RANGE_REF))
+	   && ((!gnu_target
+		&& Nkind (Parent (gnat_node)) != N_Object_Declaration)
+	       || (gnu_target
+		   && (TREE_CODE (gnu_target) == ARRAY_RANGE_REF
+		       || (TREE_CODE (TREE_TYPE (gnu_target)) == ARRAY_TYPE
+			   && TREE_CODE (TYPE_SIZE (TREE_TYPE (gnu_target)))
+			      == INTEGER_CST)))))
 	  || (!gnu_target && TYPE_CI_CO_LIST (gnu_subprog_type))))
     gnu_retval = create_temporary ("R", gnu_result_type);
 
@@ -8402,7 +8410,7 @@ addressable_p (tree gnu_expr, tree gnu_type)
 		    || DECL_ALIGN (TREE_OPERAND (gnu_expr, 1))
 		       >= TYPE_ALIGN (TREE_TYPE (gnu_expr))))
 	       /* The field of a padding record is always addressable.  */
-	       || TYPE_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_expr, 0))))
+	       || TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_expr, 0))))
 	      && addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE));
 
     case ARRAY_REF:  case ARRAY_RANGE_REF:

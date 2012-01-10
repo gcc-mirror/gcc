@@ -8,8 +8,7 @@ LIB1ASMSRC    = ia64/lib1funcs.S
 LIB1ASMFUNCS  = __divxf3 __divdf3 __divsf3 \
 	__divdi3 __moddi3 __udivdi3 __umoddi3 \
 	__divsi3 __modsi3 __udivsi3 __umodsi3 __save_stack_nonlocal \
-	__nonlocal_goto __restore_stack_nonlocal __trampoline \
-	_fixtfdi _fixunstfdi _floatditf
+	__nonlocal_goto __restore_stack_nonlocal __trampoline
 
 # ??? Hack to get -P option used when compiling lib1funcs.S, because Intel
 # assembler does not accept # line number as a comment.
@@ -17,20 +16,3 @@ LIB1ASMFUNCS  = __divxf3 __divdf3 __divsf3 \
 # C++ part of libgcc2, hence it had to be disabled.  Must find some other way
 # to support the Intel assembler.
 #LIBGCC2_DEBUG_CFLAGS = -g1 -P
-
-CUSTOM_CRTSTUFF = yes
-
-# Assemble startup files.
-# FIXME: -I$(gcc_objdir) is necessary to find auto-host.h.  Really?
-crtbegin.o: $(srcdir)/config/ia64/crtbegin.S
-	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp $<
-crtend.o: $(srcdir)/config/ia64/crtend.S
-	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp $<
-crtbeginS.o: $(srcdir)/config/ia64/crtbegin.S
-	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp \
-		-o $@ -DSHARED $<
-crtendS.o: $(srcdir)/config/ia64/crtend.S
-	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp \
-		-o $@ -DSHARED $<
-
-SHLIB_MAPFILES += $(srcdir)/config/ia64/libgcc-ia64.ver

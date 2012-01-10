@@ -99,12 +99,15 @@ package body Prj.Part is
    package Virtual_Hash is new GNAT.HTable.Simple_HTable
      (Header_Num => Header_Num,
       Element    => Project_Node_Id,
-      No_Element => Empty_Node,
+      No_Element => Project_Node_High_Bound,
       Key        => Project_Node_Id,
       Hash       => Prj.Tree.Hash,
       Equal      => "=");
-   --  Hash table to store the node id of the project for which a virtual
-   --  extending project need to be created.
+   --  Hash table to store the node ids of projects for which a virtual
+   --  extending project need to be created. The corresponding value is the
+   --  head of a list of WITH clauses corresponding to the context of the
+   --  enclosing EXTEND ALL projects. Note: Default_Element is Project_Node_
+   --  High_Bound because we want Empty_Node to be a possible value.
 
    package Processed_Hash is new GNAT.HTable.Simple_HTable
      (Header_Num => Header_Num,
@@ -148,11 +151,13 @@ package body Prj.Part is
    --  Check that an aggregate project only imports abstract projects
 
    procedure Create_Virtual_Extending_Project
-     (For_Project  : Project_Node_Id;
-      Main_Project : Project_Node_Id;
-      In_Tree      : Project_Node_Tree_Ref);
+     (For_Project     : Project_Node_Id;
+      Main_Project    : Project_Node_Id;
+      Extension_Withs : Project_Node_Id;
+      In_Tree         : Project_Node_Tree_Ref);
    --  Create a virtual extending project of For_Project. Main_Project is
-   --  the extending all project.
+   --  the extending all project. Extension_Withs is the head of a WITH clause
+   --  list to be added to the created virtual project.
    --
    --  The String_Value_Of is not set for the automatically added with
    --  clause and keeps the default value of No_Name. This enables Prj.PP
@@ -236,14 +241,45 @@ package body Prj.Part is
    --  Returns No_Name if the path name is invalid, because the corresponding
    --  project name does not have the syntax of an ada identifier.
 
+   function Copy_With_Clause
+     (With_Clause : Project_Node_Id;
+      In_Tree     : Project_Node_Tree_Ref;
+      Next_Clause : Project_Node_Id) return Project_Node_Id;
+   --  Return a copy of With_Clause in In_Tree, whose Next_With_Clause is the
+   --  indicated one.
+
+   ----------------------
+   -- Copy_With_Clause --
+   ----------------------
+
+   function Copy_With_Clause
+     (With_Clause : Project_Node_Id;
+      In_Tree     : Project_Node_Tree_Ref;
+      Next_Clause : Project_Node_Id) return Project_Node_Id
+   is
+      New_With_Clause : constant Project_Node_Id :=
+                          Default_Project_Node (In_Tree, N_With_Clause);
+   begin
+      Set_Name_Of (New_With_Clause, In_Tree,
+        Name_Of (With_Clause, In_Tree));
+      Set_Path_Name_Of (New_With_Clause, In_Tree,
+        Path_Name_Of (With_Clause, In_Tree));
+      Set_Project_Node_Of (New_With_Clause, In_Tree,
+        Project_Node_Of (With_Clause, In_Tree));
+      Set_Next_With_Clause_Of (New_With_Clause, In_Tree, Next_Clause);
+
+      return New_With_Clause;
+   end Copy_With_Clause;
+
    --------------------------------------
    -- Create_Virtual_Extending_Project --
    --------------------------------------
 
    procedure Create_Virtual_Extending_Project
-     (For_Project  : Project_Node_Id;
-      Main_Project : Project_Node_Id;
-      In_Tree      : Project_Node_Tree_Ref)
+     (For_Project     : Project_Node_Id;
+      Main_Project    : Project_Node_Id;
+      Extension_Withs : Project_Node_Id;
+      In_Tree         : Project_Node_Tree_Ref)
    is
 
       Virtual_Name : constant String :=
@@ -323,7 +359,8 @@ package body Prj.Part is
 
       Project_Declaration := Project_Declaration_Of (Virtual_Project, In_Tree);
 
-      --  With clause
+      --  Add a WITH clause to the main project to import the newly created
+      --  virtual extending project.
 
       Set_Name_Of (With_Clause, In_Tree, Virtual_Name_Id);
       Set_Path_Name_Of (With_Clause, In_Tree, Virtual_Path_Id);
@@ -331,6 +368,23 @@ package body Prj.Part is
       Set_Next_With_Clause_Of
         (With_Clause, In_Tree, First_With_Clause_Of (Main_Project, In_Tree));
       Set_First_With_Clause_Of (Main_Project, In_Tree, With_Clause);
+
+      --  Copy with clauses for projects imported by the extending-all project
+
+      declare
+         Org_With_Clause : Project_Node_Id := Extension_Withs;
+         New_With_Clause : Project_Node_Id := Empty_Node;
+
+      begin
+         while Present (Org_With_Clause) loop
+            New_With_Clause :=
+              Copy_With_Clause (Org_With_Clause, In_Tree, New_With_Clause);
+
+            Org_With_Clause := Next_With_Clause_Of (Org_With_Clause, In_Tree);
+         end loop;
+
+         Set_First_With_Clause_Of (Virtual_Project, In_Tree, New_With_Clause);
+      end;
 
       --  Virtual project node
 
@@ -371,6 +425,14 @@ package body Prj.Part is
    -- Look_For_Virtual_Projects_For --
    -----------------------------------
 
+   Extension_Withs : Project_Node_Id;
+   --  Head of the current EXTENDS ALL imports list. When creating virtual
+   --  projects for an EXTENDS ALL, we import in each virtual project all
+   --  of the projects that appear in WITH clauses of the extending projects.
+   --  This ensures that virtual projects share a consistent environment (in
+   --  particular if a project imported by one of the extending projects
+   --  replaces some runtime units).
+
    procedure Look_For_Virtual_Projects_For
      (Proj                : Project_Node_Id;
       In_Tree             : Project_Node_Tree_Ref;
@@ -382,17 +444,22 @@ package body Prj.Part is
       With_Clause : Project_Node_Id := Empty_Node;
       --  Node for a with clause of Proj
 
-      Imported    : Project_Node_Id := Empty_Node;
+      Imported : Project_Node_Id := Empty_Node;
       --  Node for a project imported by Proj
 
-      Extended    : Project_Node_Id := Empty_Node;
+      Extended : Project_Node_Id := Empty_Node;
       --  Node for the eventual project extended by Proj
 
+      Extends_All : Boolean := False;
+      --  Set True if Proj is an EXTENDS ALL project
+
+      Saved_Extension_Withs : constant Project_Node_Id := Extension_Withs;
+
    begin
-      --  Nothing to do if Proj is not defined or if it has already been
-      --  processed.
+      --  Nothing to do if Proj is undefined or has already been processed
 
       if Present (Proj) and then not Processed_Hash.Get (Proj) then
+
          --  Make sure the project will not be processed again
 
          Processed_Hash.Set (Proj, True);
@@ -401,25 +468,34 @@ package body Prj.Part is
 
          if Present (Declaration) then
             Extended := Extended_Project_Of (Declaration, In_Tree);
+            Extends_All := Is_Extending_All (Proj, In_Tree);
          end if;
 
          --  If this is a project that may need a virtual extending project
          --  and it is not itself an extending project, put it in the list.
 
          if Potentially_Virtual and then No (Extended) then
-            Virtual_Hash.Set (Proj, Proj);
+            Virtual_Hash.Set (Proj, Extension_Withs);
          end if;
 
          --  Now check the projects it imports
 
          With_Clause := First_With_Clause_Of (Proj, In_Tree);
-
          while Present (With_Clause) loop
             Imported := Project_Node_Of (With_Clause, In_Tree);
 
             if Present (Imported) then
                Look_For_Virtual_Projects_For
                  (Imported, In_Tree, Potentially_Virtual => True);
+            end if;
+
+            if Extends_All then
+
+               --  This is an EXTENDS ALL project: prepend each of its WITH
+               --  clauses to the currently active list of extension deps.
+
+               Extension_Withs :=
+                 Copy_With_Clause (With_Clause, In_Tree, Extension_Withs);
             end if;
 
             With_Clause := Next_With_Clause_Of (With_Clause, In_Tree);
@@ -431,6 +507,8 @@ package body Prj.Part is
 
          Look_For_Virtual_Projects_For
            (Extended, In_Tree, Potentially_Virtual => False);
+
+         Extension_Withs := Saved_Extension_Withs;
       end if;
    end Look_For_Virtual_Projects_For;
 
@@ -550,6 +628,7 @@ package body Prj.Part is
             Declaration : constant Project_Node_Id :=
                             Project_Declaration_Of (Project, In_Tree);
          begin
+            Extension_Withs := First_With_Clause_Of (Project, In_Tree);
             Look_For_Virtual_Projects_For
               (Extended_Project_Of (Declaration, In_Tree), In_Tree,
                Potentially_Virtual => False);
@@ -595,11 +674,14 @@ package body Prj.Part is
          --  Now create all the virtual extending projects
 
          declare
-            Proj : Project_Node_Id := Virtual_Hash.Get_First;
+            Proj  : Project_Node_Id := Empty_Node;
+            Withs : Project_Node_Id;
          begin
-            while Present (Proj) loop
-               Create_Virtual_Extending_Project (Proj, Project, In_Tree);
-               Proj := Virtual_Hash.Get_Next;
+            Virtual_Hash.Get_First (Proj, Withs);
+            while Withs /= Project_Node_High_Bound loop
+               Create_Virtual_Extending_Project
+                 (Proj, Project, Withs, In_Tree);
+               Virtual_Hash.Get_Next (Proj, Withs);
             end loop;
          end;
       end if;
@@ -678,7 +760,7 @@ package body Prj.Part is
          end if;
 
          if Limited_With then
-            Scan (In_Tree);  --  scan past LIMITED
+            Scan (In_Tree);  --  past LIMITED
             Expect (Tok_With, "WITH");
             exit With_Loop when Token /= Tok_With;
          end if;
@@ -722,7 +804,7 @@ package body Prj.Part is
 
                --  End of (possibly multiple) with clause;
 
-               Scan (In_Tree); -- past the semicolon
+               Scan (In_Tree); -- past semicolon
                exit Comma_Loop;
 
             elsif Token = Tok_Comma then

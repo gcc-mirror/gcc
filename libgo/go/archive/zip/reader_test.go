@@ -9,7 +9,6 @@ import (
 	"encoding/binary"
 	"io"
 	"io/ioutil"
-	"os"
 	"testing"
 	"time"
 )
@@ -18,7 +17,7 @@ type ZipTest struct {
 	Name    string
 	Comment string
 	File    []ZipTestFile
-	Error   os.Error // the error that Opening this file should return
+	Error   error // the error that Opening this file should return
 }
 
 type ZipTestFile struct {
@@ -99,7 +98,11 @@ func readTestZip(t *testing.T, zt ZipTest) {
 	if err == FormatError {
 		return
 	}
-	defer z.Close()
+	defer func() {
+		if err := z.Close(); err != nil {
+			t.Errorf("error %q when closing zip file", err)
+		}
+	}()
 
 	// bail here if no Files expected to be tested
 	// (there may actually be files in the zip, but we don't care)
@@ -161,8 +164,8 @@ func readTestFile(t *testing.T, ft ZipTestFile, f *File) {
 		t.Error(err)
 		return
 	}
-	if got, want := f.Mtime_ns()/1e9, mtime.Seconds(); got != want {
-		t.Errorf("%s: mtime=%s (%d); want %s (%d)", f.Name, time.SecondsToUTC(got), got, mtime, want)
+	if ft := f.ModTime(); !ft.Equal(mtime) {
+		t.Errorf("%s: mtime=%s, want %s", f.Name, ft, mtime)
 	}
 
 	testFileMode(t, f, ft.Mode)
@@ -245,7 +248,7 @@ func TestInvalidFiles(t *testing.T) {
 
 type sliceReaderAt []byte
 
-func (r sliceReaderAt) ReadAt(b []byte, off int64) (int, os.Error) {
+func (r sliceReaderAt) ReadAt(b []byte, off int64) (int, error) {
 	copy(b, r[int(off):int(off)+len(b)])
 	return len(b), nil
 }

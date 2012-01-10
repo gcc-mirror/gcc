@@ -16,10 +16,28 @@ type TCPConn struct {
 	plan9Conn
 }
 
+// CloseRead shuts down the reading side of the TCP connection.
+// Most callers should just use Close.
+func (c *TCPConn) CloseRead() error {
+	if !c.ok() {
+		return os.EINVAL
+	}
+	return os.EPLAN9
+}
+
+// CloseWrite shuts down the writing side of the TCP connection.
+// Most callers should just use Close.
+func (c *TCPConn) CloseWrite() error {
+	if !c.ok() {
+		return os.EINVAL
+	}
+	return os.EPLAN9
+}
+
 // DialTCP connects to the remote address raddr on the network net,
 // which must be "tcp", "tcp4", or "tcp6".  If laddr is not nil, it is used
 // as the local address for the connection.
-func DialTCP(net string, laddr, raddr *TCPAddr) (c *TCPConn, err os.Error) {
+func DialTCP(net string, laddr, raddr *TCPAddr) (c *TCPConn, err error) {
 	switch net {
 	case "tcp", "tcp4", "tcp6":
 	default:
@@ -46,7 +64,7 @@ type TCPListener struct {
 // Net must be "tcp", "tcp4", or "tcp6".
 // If laddr has a port of 0, it means to listen on some available port.
 // The caller can use l.Addr() to retrieve the chosen address.
-func ListenTCP(net string, laddr *TCPAddr) (l *TCPListener, err os.Error) {
+func ListenTCP(net string, laddr *TCPAddr) (l *TCPListener, err error) {
 	switch net {
 	case "tcp", "tcp4", "tcp6":
 	default:

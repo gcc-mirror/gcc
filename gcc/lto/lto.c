@@ -267,7 +267,7 @@ lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,
   uint32_t ix;
   tree decl;
   uint32_t i, j;
-  
+
   ix = *data++;
   decl = streamer_tree_cache_get (data_in->reader_cache, ix);
   if (TREE_CODE (decl) != FUNCTION_DECL)
@@ -306,13 +306,16 @@ remember_with_vars (tree t)
   *(tree *) htab_find_slot (tree_with_vars, t, INSERT) = t;
 }
 
+#define GIMPLE_REGISTER_TYPE(tt) \
+   (TREE_VISITED (tt) ? gimple_register_type (tt) : tt)
+
 #define LTO_FIXUP_TREE(tt) \
   do \
     { \
       if (tt) \
 	{ \
 	  if (TYPE_P (tt)) \
-	    (tt) = gimple_register_type (tt); \
+	    (tt) = GIMPLE_REGISTER_TYPE (tt); \
 	  if (VAR_OR_FUNCTION_DECL_P (tt) && TREE_PUBLIC (tt)) \
 	    remember_with_vars (t); \
 	} \
@@ -381,6 +384,13 @@ lto_ft_decl_non_common (tree t)
   LTO_FIXUP_TREE (DECL_ARGUMENT_FLD (t));
   LTO_FIXUP_TREE (DECL_RESULT_FLD (t));
   LTO_FIXUP_TREE (DECL_VINDEX (t));
+  /* The C frontends may create exact duplicates for DECL_ORIGINAL_TYPE
+     like for 'typedef enum foo foo'.  We have no way of avoiding to
+     merge them and dwarf2out.c cannot deal with this,
+     so fix this up by clearing DECL_ORIGINAL_TYPE in this case.  */
+  if (TREE_CODE (t) == TYPE_DECL
+      && DECL_ORIGINAL_TYPE (t) == TREE_TYPE (t))
+    DECL_ORIGINAL_TYPE (t) = NULL_TREE;
 }
 
 /* Fix up fields of a decl_non_common T.  */
@@ -724,7 +734,14 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
     {
       tree t = VEC_index (tree, cache->nodes, i);
       if (t && TYPE_P (t))
-	gimple_register_type (t);
+	{
+	  tree newt = gimple_register_type (t);
+	  /* Mark non-prevailing types so we fix them up.  No need
+	     to reset that flag afterwards - nothing that refers
+	     to those types is left and they are collected.  */
+	  if (newt != t)
+	    TREE_VISITED (t) = 1;
+	}
     }
 
   /* Second fixup all trees in the new cache entries.  */
@@ -742,7 +759,7 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 	continue;
 
       /* Now try to find a canonical variant of T itself.  */
-      t = gimple_register_type (t);
+      t = GIMPLE_REGISTER_TYPE (t);
 
       if (t == oldt)
 	{
@@ -764,7 +781,7 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 	    }
 
 	  /* Query our new main variant.  */
-	  mv = gimple_register_type (TYPE_MAIN_VARIANT (t));
+	  mv = GIMPLE_REGISTER_TYPE (TYPE_MAIN_VARIANT (t));
 
 	  /* If we were the variant leader and we get replaced ourselves drop
 	     all variants from our list.  */
@@ -864,6 +881,9 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 	lto_register_var_decl_in_symtab (data_in, t);
       else if (TREE_CODE (t) == FUNCTION_DECL && !DECL_BUILT_IN (t))
 	lto_register_function_decl_in_symtab (data_in, t);
+      else if (!flag_wpa
+	       && TREE_CODE (t) == TYPE_DECL)
+	debug_hooks->type_decl (t, !DECL_FILE_SCOPE_P (t));
       else if (TYPE_P (t) && !TYPE_CANONICAL (t))
 	TYPE_CANONICAL (t) = gimple_register_canonical_type (t);
     }
@@ -879,9 +899,9 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 		VEC(ld_plugin_symbol_resolution_t,heap) *resolutions)
 {
   const struct lto_decl_header *header = (const struct lto_decl_header *) data;
-  const int32_t decl_offset = sizeof (struct lto_decl_header);
-  const int32_t main_offset = decl_offset + header->decl_state_size;
-  const int32_t string_offset = main_offset + header->main_size;
+  const int decl_offset = sizeof (struct lto_decl_header);
+  const int main_offset = decl_offset + header->decl_state_size;
+  const int string_offset = main_offset + header->main_size;
   struct lto_input_block ib_main;
   struct data_in *data_in;
   unsigned int i;
@@ -893,6 +913,9 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 
   data_in = lto_data_in_create (decl_data, (const char *) data + string_offset,
 				header->string_size, resolutions);
+
+  /* We do not uniquify the pre-loaded cache entries, those are middle-end
+     internal types that should not be merged.  */
 
   /* Read the global declarations and types.  */
   while (ib_main.p < ib_main.len)
@@ -932,17 +955,20 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 
   if (data_ptr != data_end)
     internal_error ("bytecode stream: garbage at the end of symbols section");
-  
+
   /* Set the current decl state to be the global state. */
   decl_data->current_decl_state = decl_data->global_decl_state;
 
   lto_data_in_delete (data_in);
 }
 
-/* strtoll is not portable. */
-int64_t
-lto_parse_hex (const char *p) {
-  uint64_t ret = 0;
+/* Custom version of strtoll, which is not portable.  */
+
+static HOST_WIDEST_INT
+lto_parse_hex (const char *p)
+{
+  HOST_WIDEST_INT ret = 0;
+
   for (; *p != '\0'; ++p)
     {
       char c = *p;
@@ -958,6 +984,7 @@ lto_parse_hex (const char *p) {
         internal_error ("could not parse hex number");
       ret |= part;
     }
+
   return ret;
 }
 
@@ -993,7 +1020,7 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
     {
       int t;
       char offset_p[17];
-      int64_t offset;
+      HOST_WIDEST_INT offset;
       t = fscanf (resolution, "@0x%16s", offset_p);
       if (t != 1)
         internal_error ("could not parse file offset");

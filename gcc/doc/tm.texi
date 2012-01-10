@@ -5352,13 +5352,18 @@ void sincosl(long double x, long double *sin, long double *cos);
 @end defmac
 
 @defmac NEXT_OBJC_RUNTIME
-Define this macro to generate code for Objective-C message sending using
-the calling convention of the NeXT system.  This calling convention
-involves passing the object, the selector and the method arguments all
-at once to the method-lookup library function.
+Set this macro to 1 to use the "NeXT" Objective-C message sending conventions
+by default.  This calling convention involves passing the object, the selector
+and the method arguments all at once to the method-lookup library function.
+This is the usual setting when targeting Darwin/Mac OS X systems, which have
+the NeXT runtime installed.
 
-The default calling convention passes just the object and the selector
-to the lookup function, which returns a pointer to the method.
+If the macro is set to 0, the "GNU" Objective-C message sending convention
+will be used by default.  This convention passes just the object and the
+selector to the method-lookup function, which returns a pointer to the method.
+
+In either case, it remains possible to select code-generation for the alternate
+scheme, by means of compiler command line switches.
 @end defmac
 
 @node Addressing Modes
@@ -7090,6 +7095,10 @@ Usually, the compiler uses the prefix @code{".rodata"} to construct
 section names for mergeable constant data.  Define this macro to override
 the string if a different section name should be used.
 @end deftypevr
+
+@deftypefn {Target Hook} {section *} TARGET_ASM_TM_CLONE_TABLE_SECTION (void)
+Return the section that should be used for transactional memory clone  tables.
+@end deftypefn
 
 @deftypefn {Target Hook} {section *} TARGET_ASM_SELECT_RTX_SECTION (enum machine_mode @var{mode}, rtx @var{x}, unsigned HOST_WIDE_INT @var{align})
 Return the section into which a constant @var{x}, of mode @var{mode},
@@ -10069,6 +10078,13 @@ If this hook is nonnull, the default implementation of
 of @code{target_flags}.  @var{pch_flags} specifies the value that
 @code{target_flags} had when the PCH file was created.  The return
 value is the same as for @code{TARGET_PCH_VALID_P}.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_PREPARE_PCH_SAVE (void)
+Called before writing out a PCH file.  If the target has some
+garbage-collected data that needs to be in a particular state on PCH loads,
+it can use this hook to enforce that state.  Very few targets need
+to do anything here.
 @end deftypefn
 
 @node C++ ABI

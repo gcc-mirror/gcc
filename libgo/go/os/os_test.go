@@ -14,11 +14,12 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+	"time"
 )
 
 var dot = []string{
 	"dir_unix.go",
-	"env_unix.go",
+	"env.go",
 	"error.go",
 	"file.go",
 	"os_test.go",
@@ -75,7 +76,7 @@ func size(name string, t *testing.T) int64 {
 	for {
 		n, e := file.Read(buf[0:])
 		len += n
-		if e == EOF {
+		if e == io.EOF {
 			break
 		}
 		if e != nil {
@@ -119,12 +120,12 @@ func TestStat(t *testing.T) {
 	if err != nil {
 		t.Fatal("stat failed:", err)
 	}
-	if !equal(sfname, dir.Name) {
-		t.Error("name should be ", sfname, "; is", dir.Name)
+	if !equal(sfname, dir.Name()) {
+		t.Error("name should be ", sfname, "; is", dir.Name())
 	}
 	filesize := size(path, t)
-	if dir.Size != filesize {
-		t.Error("size should be", filesize, "; is", dir.Size)
+	if dir.Size() != filesize {
+		t.Error("size should be", filesize, "; is", dir.Size())
 	}
 }
 
@@ -139,12 +140,12 @@ func TestFstat(t *testing.T) {
 	if err2 != nil {
 		t.Fatal("fstat failed:", err2)
 	}
-	if !equal(sfname, dir.Name) {
-		t.Error("name should be ", sfname, "; is", dir.Name)
+	if !equal(sfname, dir.Name()) {
+		t.Error("name should be ", sfname, "; is", dir.Name())
 	}
 	filesize := size(path, t)
-	if dir.Size != filesize {
-		t.Error("size should be", filesize, "; is", dir.Size)
+	if dir.Size() != filesize {
+		t.Error("size should be", filesize, "; is", dir.Size())
 	}
 }
 
@@ -154,12 +155,33 @@ func TestLstat(t *testing.T) {
 	if err != nil {
 		t.Fatal("lstat failed:", err)
 	}
-	if !equal(sfname, dir.Name) {
-		t.Error("name should be ", sfname, "; is", dir.Name)
+	if !equal(sfname, dir.Name()) {
+		t.Error("name should be ", sfname, "; is", dir.Name())
 	}
 	filesize := size(path, t)
-	if dir.Size != filesize {
-		t.Error("size should be", filesize, "; is", dir.Size)
+	if dir.Size() != filesize {
+		t.Error("size should be", filesize, "; is", dir.Size())
+	}
+}
+
+// Read with length 0 should not return EOF.
+func TestRead0(t *testing.T) {
+	path := sfdir + "/" + sfname
+	f, err := Open(path)
+	if err != nil {
+		t.Fatal("open failed:", err)
+	}
+	defer f.Close()
+
+	b := make([]byte, 0)
+	n, err := f.Read(b)
+	if n != 0 || err != nil {
+		t.Errorf("Read(0) = %d, %v, want 0, nil", n, err)
+	}
+	b = make([]byte, 100)
+	n, err = f.Read(b)
+	if n <= 0 || err != nil {
+		t.Errorf("Read(100) = %d, %v, want >0, nil", n, err)
 	}
 }
 
@@ -205,7 +227,7 @@ func testReaddir(dir string, contents []string, t *testing.T) {
 	for _, m := range contents {
 		found := false
 		for _, n := range s {
-			if equal(m, n.Name) {
+			if equal(m, n.Name()) {
 				if found {
 					t.Error("present twice:", m)
 				}
@@ -234,7 +256,7 @@ func smallReaddirnames(file *File, length int, t *testing.T) []string {
 	count := 0
 	for {
 		d, err := file.Readdirnames(1)
-		if err == EOF {
+		if err == io.EOF {
 			break
 		}
 		if err != nil {
@@ -305,14 +327,14 @@ func TestReaddirNValues(t *testing.T) {
 
 	var d *File
 	openDir := func() {
-		var err Error
+		var err error
 		d, err = Open(dir)
 		if err != nil {
 			t.Fatalf("Open directory: %v", err)
 		}
 	}
 
-	readDirExpect := func(n, want int, wantErr Error) {
+	readDirExpect := func(n, want int, wantErr error) {
 		fi, err := d.Readdir(n)
 		if err != wantErr {
 			t.Fatalf("Readdir of %d got error %v, want %v", n, err, wantErr)
@@ -322,7 +344,7 @@ func TestReaddirNValues(t *testing.T) {
 		}
 	}
 
-	readDirNamesExpect := func(n, want int, wantErr Error) {
+	readDirNamesExpect := func(n, want int, wantErr error) {
 		fi, err := d.Readdirnames(n)
 		if err != wantErr {
 			t.Fatalf("Readdirnames of %d got error %v, want %v", n, err, wantErr)
@@ -332,7 +354,7 @@ func TestReaddirNValues(t *testing.T) {
 		}
 	}
 
-	for _, fn := range []func(int, int, Error){readDirExpect, readDirNamesExpect} {
+	for _, fn := range []func(int, int, error){readDirExpect, readDirNamesExpect} {
 		// Test the slurp case
 		openDir()
 		fn(0, 105, nil)
@@ -351,7 +373,7 @@ func TestReaddirNValues(t *testing.T) {
 		fn(1, 1, nil)
 		fn(2, 2, nil)
 		fn(105, 102, nil) // and tests buffer >100 case
-		fn(3, 0, EOF)
+		fn(3, 0, io.EOF)
 		d.Close()
 	}
 }
@@ -384,7 +406,7 @@ func TestHardLink(t *testing.T) {
 	if err != nil {
 		t.Fatalf("stat %q failed: %v", from, err)
 	}
-	if tostat.Dev != fromstat.Dev || tostat.Ino != fromstat.Ino {
+	if !tostat.(*FileStat).SameFile(fromstat.(*FileStat)) {
 		t.Errorf("link %q, %q did not create hard link", to, from)
 	}
 }
@@ -409,32 +431,32 @@ func TestSymLink(t *testing.T) {
 		t.Fatalf("symlink %q, %q failed: %v", to, from, err)
 	}
 	defer Remove(from)
-	tostat, err := Stat(to)
+	tostat, err := Lstat(to)
 	if err != nil {
 		t.Fatalf("stat %q failed: %v", to, err)
 	}
-	if tostat.FollowedSymlink {
-		t.Fatalf("stat %q claims to have followed a symlink", to)
+	if tostat.Mode()&ModeSymlink != 0 {
+		t.Fatalf("stat %q claims to have found a symlink", to)
 	}
 	fromstat, err := Stat(from)
 	if err != nil {
 		t.Fatalf("stat %q failed: %v", from, err)
 	}
-	if tostat.Dev != fromstat.Dev || tostat.Ino != fromstat.Ino {
+	if !tostat.(*FileStat).SameFile(fromstat.(*FileStat)) {
 		t.Errorf("symlink %q, %q did not create symlink", to, from)
 	}
 	fromstat, err = Lstat(from)
 	if err != nil {
 		t.Fatalf("lstat %q failed: %v", from, err)
 	}
-	if !fromstat.IsSymlink() {
+	if fromstat.Mode()&ModeSymlink == 0 {
 		t.Fatalf("symlink %q, %q did not create symlink", to, from)
 	}
 	fromstat, err = Stat(from)
 	if err != nil {
 		t.Fatalf("stat %q failed: %v", from, err)
 	}
-	if !fromstat.FollowedSymlink {
+	if fromstat.Mode()&ModeSymlink != 0 {
 		t.Fatalf("stat %q did not follow symlink", from)
 	}
 	s, err := Readlink(from)
@@ -542,13 +564,13 @@ func TestStartProcess(t *testing.T) {
 	exec(t, cmddir, cmdbase, args, filepath.Clean(cmddir)+le)
 }
 
-func checkMode(t *testing.T, path string, mode uint32) {
+func checkMode(t *testing.T, path string, mode FileMode) {
 	dir, err := Stat(path)
 	if err != nil {
 		t.Fatalf("Stat %q (looking for mode %#o): %s", path, mode, err)
 	}
-	if dir.Mode&0777 != mode {
-		t.Errorf("Stat %q: mode %#o want %#o", path, dir.Mode, mode)
+	if dir.Mode()&0777 != mode {
+		t.Errorf("Stat %q: mode %#o want %#o", path, dir.Mode(), mode)
 	}
 }
 
@@ -572,73 +594,13 @@ func TestChmod(t *testing.T) {
 	checkMode(t, f.Name(), 0123)
 }
 
-func checkUidGid(t *testing.T, path string, uid, gid int) {
-	dir, err := Stat(path)
-	if err != nil {
-		t.Fatalf("Stat %q (looking for uid/gid %d/%d): %s", path, uid, gid, err)
-	}
-	if dir.Uid != uid {
-		t.Errorf("Stat %q: uid %d want %d", path, dir.Uid, uid)
-	}
-	if dir.Gid != gid {
-		t.Errorf("Stat %q: gid %d want %d", path, dir.Gid, gid)
-	}
-}
-
-func TestChown(t *testing.T) {
-	// Chown is not supported under windows or Plan 9.
-	// Plan9 provides a native ChownPlan9 version instead.
-	if syscall.OS == "windows" || syscall.OS == "plan9" {
-		return
-	}
-	// Use TempDir() to make sure we're on a local file system,
-	// so that the group ids returned by Getgroups will be allowed
-	// on the file.  On NFS, the Getgroups groups are
-	// basically useless.
-	f := newFile("TestChown", t)
-	defer Remove(f.Name())
-	defer f.Close()
-	dir, err := f.Stat()
-	if err != nil {
-		t.Fatalf("stat %s: %s", f.Name(), err)
-	}
-
-	// Can't change uid unless root, but can try
-	// changing the group id.  First try our current group.
-	gid := Getgid()
-	t.Log("gid:", gid)
-	if err = Chown(f.Name(), -1, gid); err != nil {
-		t.Fatalf("chown %s -1 %d: %s", f.Name(), gid, err)
-	}
-	checkUidGid(t, f.Name(), dir.Uid, gid)
-
-	// Then try all the auxiliary groups.
-	groups, err := Getgroups()
-	if err != nil {
-		t.Fatalf("getgroups: %s", err)
-	}
-	t.Log("groups: ", groups)
-	for _, g := range groups {
-		if err = Chown(f.Name(), -1, g); err != nil {
-			t.Fatalf("chown %s -1 %d: %s", f.Name(), g, err)
-		}
-		checkUidGid(t, f.Name(), dir.Uid, g)
-
-		// change back to gid to test fd.Chown
-		if err = f.Chown(-1, gid); err != nil {
-			t.Fatalf("fchown %s -1 %d: %s", f.Name(), gid, err)
-		}
-		checkUidGid(t, f.Name(), dir.Uid, gid)
-	}
-}
-
 func checkSize(t *testing.T, f *File, size int64) {
 	dir, err := f.Stat()
 	if err != nil {
 		t.Fatalf("Stat %q (looking for size %d): %s", f.Name(), size, err)
 	}
-	if dir.Size != size {
-		t.Errorf("Stat %q: size %d want %d", f.Name(), dir.Size, size)
+	if dir.Size() != size {
+		t.Errorf("Stat %q: size %d want %d", f.Name(), dir.Size(), size)
 	}
 }
 
@@ -690,37 +652,38 @@ func TestChtimes(t *testing.T) {
 	f.Write([]byte("hello, world\n"))
 	f.Close()
 
-	preStat, err := Stat(f.Name())
+	st, err := Stat(f.Name())
 	if err != nil {
 		t.Fatalf("Stat %s: %s", f.Name(), err)
 	}
+	preStat := st.(*FileStat)
 
 	// Move access and modification time back a second
-	const OneSecond = 1e9 // in nanoseconds
-	err = Chtimes(f.Name(), preStat.Atime_ns-OneSecond, preStat.Mtime_ns-OneSecond)
+	at := Atime(preStat)
+	mt := preStat.ModTime()
+	err = Chtimes(f.Name(), at.Add(-time.Second), mt.Add(-time.Second))
 	if err != nil {
 		t.Fatalf("Chtimes %s: %s", f.Name(), err)
 	}
 
-	postStat, err := Stat(f.Name())
+	st, err = Stat(f.Name())
 	if err != nil {
 		t.Fatalf("second Stat %s: %s", f.Name(), err)
 	}
+	postStat := st.(*FileStat)
 
 	/* Plan 9:
 		Mtime is the time of the last change of content.  Similarly, atime is set whenever the
 	    contents are accessed; also, it is set whenever mtime is set.
 	*/
-	if postStat.Atime_ns >= preStat.Atime_ns && syscall.OS != "plan9" {
-		t.Errorf("Atime_ns didn't go backwards; was=%d, after=%d",
-			preStat.Atime_ns,
-			postStat.Atime_ns)
+	pat := Atime(postStat)
+	pmt := postStat.ModTime()
+	if !pat.Before(at) && syscall.OS != "plan9" {
+		t.Errorf("AccessTime didn't go backwards; was=%d, after=%d", at, pat)
 	}
 
-	if postStat.Mtime_ns >= preStat.Mtime_ns {
-		t.Errorf("Mtime_ns didn't go backwards; was=%d, after=%d",
-			preStat.Mtime_ns,
-			postStat.Mtime_ns)
+	if !pmt.Before(mt) {
+		t.Errorf("ModTime didn't go backwards; was=%d, after=%d", mt, pmt)
 	}
 }
 
@@ -818,7 +781,7 @@ func TestSeek(t *testing.T) {
 	for i, tt := range tests {
 		off, err := f.Seek(tt.in, tt.whence)
 		if off != tt.out || err != nil {
-			if e, ok := err.(*PathError); ok && e.Error == EINVAL && tt.out > 1<<32 {
+			if e, ok := err.(*PathError); ok && e.Err == EINVAL && tt.out > 1<<32 {
 				// Reiserfs rejects the big seeks.
 				// http://code.google.com/p/go/issues/detail?id=91
 				break
@@ -831,7 +794,7 @@ func TestSeek(t *testing.T) {
 type openErrorTest struct {
 	path  string
 	mode  int
-	error Error
+	error error
 }
 
 var openErrorTests = []openErrorTest{
@@ -862,19 +825,27 @@ func TestOpenError(t *testing.T) {
 		}
 		perr, ok := err.(*PathError)
 		if !ok {
-			t.Errorf("Open(%q, %d) returns error of %T type; want *os.PathError", tt.path, tt.mode, err)
+			t.Errorf("Open(%q, %d) returns error of %T type; want *PathError", tt.path, tt.mode, err)
 		}
-		if perr.Error != tt.error {
+		if perr.Err != tt.error {
 			if syscall.OS == "plan9" {
-				syscallErrStr := perr.Error.String()
-				expectedErrStr := strings.Replace(tt.error.String(), "file ", "", 1)
+				syscallErrStr := perr.Err.Error()
+				expectedErrStr := strings.Replace(tt.error.Error(), "file ", "", 1)
 				if !strings.HasSuffix(syscallErrStr, expectedErrStr) {
 					t.Errorf("Open(%q, %d) = _, %q; want suffix %q", tt.path, tt.mode, syscallErrStr, expectedErrStr)
 				}
 			} else {
-				t.Errorf("Open(%q, %d) = _, %q; want %q", tt.path, tt.mode, perr.Error.String(), tt.error.String())
+				t.Errorf("Open(%q, %d) = _, %q; want %q", tt.path, tt.mode, perr.Err.Error(), tt.error.Error())
 			}
 		}
+	}
+}
+
+func TestOpenNoName(t *testing.T) {
+	f, err := Open("")
+	if err == nil {
+		t.Fatal(`Open("") succeeded`)
+		f.Close()
 	}
 }
 
@@ -916,11 +887,6 @@ func TestHostname(t *testing.T) {
 	// There is no other way to fetch hostname on windows, but via winapi.
 	// On Plan 9 it is can be taken from #c/sysname as Hostname() does.
 	if syscall.OS == "windows" || syscall.OS == "plan9" {
-		return
-	}
-
-	// TODO(jsing): Fix nametomib() on OpenBSD
-	if syscall.OS == "openbsd" {
 		return
 	}
 

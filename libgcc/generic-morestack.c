@@ -115,6 +115,14 @@ extern void *
 __splitstack_makecontext (size_t, void *context[10], size_t *)
   __attribute__ ((visibility ("default")));
 
+extern void *
+__splitstack_resetcontext (void *context[10], size_t *)
+  __attribute__ ((visibility ("default")));
+
+extern void
+__splitstack_releasecontext (void *context[10])
+  __attribute__ ((visibility ("default")));
+
 extern void
 __splitstack_block_signals_context (void *context[10], int *, int *)
   __attribute__ ((visibility ("default")));
@@ -499,8 +507,8 @@ __generic_morestack_set_initial_sp (void *sp, size_t len)
   sigemptyset (&__morestack_initial_sp.mask);
 
   sigfillset (&__morestack_fullmask);
-#ifdef __linux__
-  /* On Linux, the first two real time signals are used by the NPTL
+#ifdef __GLIBC__
+  /* In glibc, the first two real time signals are used by the NPTL
      threading library.  By taking them out of the set of signals, we
      avoiding copying the signal mask in pthread_sigmask.  More
      importantly, pthread_sigmask uses less stack space on x86_64.  */
@@ -911,15 +919,23 @@ __splitstack_find (void *segment_arg, void *sp, size_t *len,
 
   nsp = (char *) segment->old_stack;
 
+  if (nsp == NULL)
+    {
+      /* We've reached the top of the stack.  */
+      *next_segment = (void *) (uintptr_type) 2;
+    }
+  else
+    {
 #if defined (__x86_64__)
-  nsp -= 12 * sizeof (void *);
+      nsp -= 12 * sizeof (void *);
 #elif defined (__i386__)
-  nsp -= 6 * sizeof (void *);
+      nsp -= 6 * sizeof (void *);
 #else
 #error "unrecognized target"
 #endif
 
-  *next_sp = (void *) nsp;
+      *next_sp = (void *) nsp;
+    }
 
 #ifdef STACK_GROWS_DOWNWARD
   *len = (char *) (segment + 1) + segment->size - (char *) sp;
@@ -1035,6 +1051,60 @@ __splitstack_makecontext (size_t stack_size, void *context[NUMBER_OFFSETS],
   context[INITIAL_SP_LEN] = 0;
   *size = segment->size;
   return (void *) (segment + 1);
+}
+
+/* Given an existing split stack context, reset it back to the start
+   of the stack.  Return the stack pointer and size, appropriate for
+   use with makecontext.  This may be used if a coroutine exits, in
+   order to reuse the stack segments for a new coroutine.  */
+
+void *
+__splitstack_resetcontext (void *context[10], size_t *size)
+{
+  struct stack_segment *segment;
+  void *initial_sp;
+  size_t initial_size;
+  void *ret;
+
+  /* Reset the context assuming that MORESTACK_SEGMENTS, INITIAL_SP
+     and INITIAL_SP_LEN are correct.  */
+
+  segment = context[MORESTACK_SEGMENTS];
+  context[CURRENT_SEGMENT] = segment;
+  context[CURRENT_STACK] = NULL;
+  if (segment == NULL)
+    {
+      initial_sp = context[INITIAL_SP];
+      initial_size = (uintptr_type) context[INITIAL_SP_LEN];
+      ret = initial_sp;
+#ifdef STACK_GROWS_DOWNWARD
+      ret = (void *) ((char *) ret - initial_size);
+#endif
+    }
+  else
+    {
+#ifdef STACK_GROWS_DOWNWARD
+      initial_sp = (void *) ((char *) (segment + 1) + segment->size);
+#else
+      initial_sp = (void *) (segment + 1);
+#endif
+      initial_size = segment->size;
+      ret = (void *) (segment + 1);
+    }
+  context[STACK_GUARD] = __morestack_make_guard (initial_sp, initial_size);
+  context[BLOCK_SIGNALS] = NULL;
+  *size = initial_size;
+  return ret;
+}
+
+/* Release all the memory associated with a splitstack context.  This
+   may be used if a coroutine exits and the associated stack should be
+   freed.  */
+
+void
+__splitstack_releasecontext (void *context[10])
+{
+  __morestack_release_segments (context[MORESTACK_SEGMENTS], 1);
 }
 
 /* Like __splitstack_block_signals, but operating on CONTEXT, rather

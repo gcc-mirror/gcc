@@ -16,8 +16,10 @@
 void
 __go_defer (_Bool *frame, void (*pfn) (void *), void *arg)
 {
+  G *g;
   struct __go_defer_stack *n;
 
+  g = runtime_g ();
   n = (struct __go_defer_stack *) __go_alloc (sizeof (struct __go_defer_stack));
   n->__next = g->defer;
   n->__frame = frame;
@@ -33,6 +35,9 @@ __go_defer (_Bool *frame, void (*pfn) (void *), void *arg)
 void
 __go_undefer (_Bool *frame)
 {
+  G *g;
+
+  g = runtime_g ();
   while (g->defer != NULL && g->defer->__frame == frame)
     {
       struct __go_defer_stack *d;
@@ -63,6 +68,9 @@ __go_undefer (_Bool *frame)
 _Bool
 __go_set_defer_retaddr (void *retaddr)
 {
+  G *g;
+
+  g = runtime_g ();
   if (g->defer != NULL)
     g->defer->__retaddr = retaddr;
   return 0;

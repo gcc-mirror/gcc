@@ -7,7 +7,6 @@ package html
 import (
 	"bytes"
 	"io"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -116,10 +115,6 @@ type span struct {
 
 // A Tokenizer returns a stream of HTML Tokens.
 type Tokenizer struct {
-	// If ReturnComments is set, Next returns comment tokens;
-	// otherwise it skips over comments (default).
-	ReturnComments bool
-
 	// r is the source of the HTML text.
 	r io.Reader
 	// tt is the TokenType of the current token.
@@ -128,10 +123,10 @@ type Tokenizer struct {
 	// for tt != Error && err != nil to hold: this means that Next returned a
 	// valid token but the subsequent Next call will return an error token.
 	// For example, if the HTML text input was just "plain", then the first
-	// Next call would set z.err to os.EOF but return a TextToken, and all
+	// Next call would set z.err to io.EOF but return a TextToken, and all
 	// subsequent Next calls would return an ErrorToken.
 	// err is never reset. Once it becomes non-nil, it stays non-nil.
-	err os.Error
+	err error
 	// buf[raw.start:raw.end] holds the raw bytes of the current token.
 	// buf[raw.end:] is buffered input that will yield future tokens.
 	raw span
@@ -154,9 +149,9 @@ type Tokenizer struct {
 	textIsRaw bool
 }
 
-// Error returns the error associated with the most recent ErrorToken token.
-// This is typically os.EOF, meaning the end of tokenization.
-func (z *Tokenizer) Error() os.Error {
+// Err returns the error associated with the most recent ErrorToken token.
+// This is typically io.EOF, meaning the end of tokenization.
+func (z *Tokenizer) Err() error {
 	if z.tt != ErrorToken {
 		return nil
 	}
@@ -294,7 +289,11 @@ func (z *Tokenizer) readComment() {
 	for dashCount := 2; ; {
 		c := z.readByte()
 		if z.err != nil {
-			z.data.end = z.raw.end
+			// Ignore up to two dashes at EOF.
+			if dashCount > 2 {
+				dashCount = 2
+			}
+			z.data.end = z.raw.end - dashCount
 			return
 		}
 		switch c {
@@ -380,6 +379,28 @@ func (z *Tokenizer) readMarkupDeclaration() TokenType {
 	return DoctypeToken
 }
 
+// startTagIn returns whether the start tag in z.buf[z.data.start:z.data.end]
+// case-insensitively matches any element of ss.
+func (z *Tokenizer) startTagIn(ss ...string) bool {
+loop:
+	for _, s := range ss {
+		if z.data.end-z.data.start != len(s) {
+			continue loop
+		}
+		for i := 0; i < len(s); i++ {
+			c := z.buf[z.data.start+i]
+			if 'A' <= c && c <= 'Z' {
+				c += 'a' - 'A'
+			}
+			if c != s[i] {
+				continue loop
+			}
+		}
+		return true
+	}
+	return false
+}
+
 // readStartTag reads the next start tag token. The opening "<a" has already
 // been consumed, where 'a' means anything in [A-Za-z].
 func (z *Tokenizer) readStartTag() TokenType {
@@ -406,17 +427,27 @@ func (z *Tokenizer) readStartTag() TokenType {
 			break
 		}
 	}
-	// Any "<noembed>", "<noframes>", "<noscript>", "<script>", "<style>",
-	// "<textarea>" or "<title>" tag flags the tokenizer's next token as raw.
-	// The tag name lengths of these special cases ranges in [5, 8].
-	if x := z.data.end - z.data.start; 5 <= x && x <= 8 {
-		switch z.buf[z.data.start] {
-		case 'n', 's', 't', 'N', 'S', 'T':
-			switch s := strings.ToLower(string(z.buf[z.data.start:z.data.end])); s {
-			case "noembed", "noframes", "noscript", "script", "style", "textarea", "title":
-				z.rawTag = s
-			}
-		}
+	// Several tags flag the tokenizer's next token as raw.
+	c, raw := z.buf[z.data.start], false
+	if 'A' <= c && c <= 'Z' {
+		c += 'a' - 'A'
+	}
+	switch c {
+	case 'i':
+		raw = z.startTagIn("iframe")
+	case 'n':
+		raw = z.startTagIn("noembed", "noframes", "noscript")
+	case 'p':
+		raw = z.startTagIn("plaintext")
+	case 's':
+		raw = z.startTagIn("script", "style")
+	case 't':
+		raw = z.startTagIn("textarea", "title")
+	case 'x':
+		raw = z.startTagIn("xmp")
+	}
+	if raw {
+		z.rawTag = strings.ToLower(string(z.buf[z.data.start:z.data.end]))
 	}
 	// Look for a self-closing token like "<br/>".
 	if z.err == nil && z.buf[z.raw.end-2] == '/' {
@@ -546,17 +577,29 @@ func (z *Tokenizer) readTagAttrVal() {
 	}
 }
 
-// next scans the next token and returns its type.
-func (z *Tokenizer) next() TokenType {
+// Next scans the next token and returns its type.
+func (z *Tokenizer) Next() TokenType {
 	if z.err != nil {
-		return ErrorToken
+		z.tt = ErrorToken
+		return z.tt
 	}
 	z.raw.start = z.raw.end
 	z.data.start = z.raw.end
 	z.data.end = z.raw.end
 	if z.rawTag != "" {
-		z.readRawOrRCDATA()
-		return TextToken
+		if z.rawTag == "plaintext" {
+			// Read everything up to EOF.
+			for z.err == nil {
+				z.readByte()
+			}
+			z.textIsRaw = true
+		} else {
+			z.readRawOrRCDATA()
+		}
+		if z.data.end > z.data.start {
+			z.tt = TextToken
+			return z.tt
+		}
 	}
 	z.textIsRaw = false
 
@@ -596,11 +639,13 @@ loop:
 		if x := z.raw.end - len("<a"); z.raw.start < x {
 			z.raw.end = x
 			z.data.end = x
-			return TextToken
+			z.tt = TextToken
+			return z.tt
 		}
 		switch tokenType {
 		case StartTagToken:
-			return z.readStartTag()
+			z.tt = z.readStartTag()
+			return z.tt
 		case EndTagToken:
 			c = z.readByte()
 			if z.err != nil {
@@ -616,39 +661,31 @@ loop:
 			}
 			if 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' {
 				z.readEndTag()
-				return EndTagToken
+				z.tt = EndTagToken
+				return z.tt
 			}
 			z.raw.end--
 			z.readUntilCloseAngle()
-			return CommentToken
+			z.tt = CommentToken
+			return z.tt
 		case CommentToken:
 			if c == '!' {
-				return z.readMarkupDeclaration()
+				z.tt = z.readMarkupDeclaration()
+				return z.tt
 			}
 			z.raw.end--
 			z.readUntilCloseAngle()
-			return CommentToken
+			z.tt = CommentToken
+			return z.tt
 		}
 	}
 	if z.raw.start < z.raw.end {
 		z.data.end = z.raw.end
-		return TextToken
-	}
-	return ErrorToken
-}
-
-// Next scans the next token and returns its type.
-func (z *Tokenizer) Next() TokenType {
-	for {
-		z.tt = z.next()
-		// TODO: remove the ReturnComments option. A tokenizer should
-		// always return comment tags.
-		if z.tt == CommentToken && !z.ReturnComments {
-			continue
-		}
+		z.tt = TextToken
 		return z.tt
 	}
-	panic("unreachable")
+	z.tt = ErrorToken
+	return z.tt
 }
 
 // Raw returns the unmodified text of the current token. Calling Next, Token,

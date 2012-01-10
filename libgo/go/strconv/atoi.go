@@ -4,24 +4,25 @@
 
 package strconv
 
-import "os"
+import "errors"
 
+// ErrRange indicates that a value is out of range for the target type.
+var ErrRange = errors.New("value out of range")
+
+// ErrSyntax indicates that a value does not have the right syntax for the target type.
+var ErrSyntax = errors.New("invalid syntax")
+
+// A NumError records a failed conversion.
 type NumError struct {
-	Num   string
-	Error os.Error
+	Num string // the input
+	Err error  // the reason the conversion failed (ErrRange, ErrSyntax)
 }
 
-func (e *NumError) String() string { return `parsing "` + e.Num + `": ` + e.Error.String() }
+func (e *NumError) Error() string { return `parsing "` + e.Num + `": ` + e.Err.Error() }
 
-func computeIntsize() uint {
-	siz := uint(8)
-	for 1<<siz != 0 {
-		siz *= 2
-	}
-	return siz
-}
+const intSize = 32 << uint(^uint(0)>>63)
 
-var IntSize = computeIntsize()
+const IntSize = intSize // number of bits in int, uint (32 or 64)
 
 // Return the first number n such that n*base >= 1<<64.
 func cutoff64(base int) uint64 {
@@ -31,22 +32,18 @@ func cutoff64(base int) uint64 {
 	return (1<<64-1)/uint64(base) + 1
 }
 
-// Btoui64 interprets a string s in an arbitrary base b (2 to 36)
-// and returns the corresponding value n.  If b == 0, the base
-// is taken from the string prefix: base 16 for "0x", base 8 for "0",
-// and base 10 otherwise.
-//
-// The errors that Btoui64 returns have concrete type *NumError
-// and include err.Num = s.  If s is empty or contains invalid
-// digits, err.Error = os.EINVAL; if the value corresponding
-// to s cannot be represented by a uint64, err.Error = os.ERANGE.
-func Btoui64(s string, b int) (n uint64, err os.Error) {
-	var cutoff uint64
+// ParseUint is like ParseInt but for unsigned numbers.
+func ParseUint(s string, b int, bitSize int) (n uint64, err error) {
+	var cutoff, maxVal uint64
+
+	if bitSize == 0 {
+		bitSize = int(IntSize)
+	}
 
 	s0 := s
 	switch {
 	case len(s) < 1:
-		err = os.EINVAL
+		err = ErrSyntax
 		goto Error
 
 	case 2 <= b && b <= 36:
@@ -59,7 +56,7 @@ func Btoui64(s string, b int) (n uint64, err os.Error) {
 			b = 16
 			s = s[2:]
 			if len(s) < 1 {
-				err = os.EINVAL
+				err = ErrSyntax
 				goto Error
 			}
 		case s[0] == '0':
@@ -69,12 +66,13 @@ func Btoui64(s string, b int) (n uint64, err os.Error) {
 		}
 
 	default:
-		err = os.NewError("invalid base " + Itoa(b))
+		err = errors.New("invalid base " + Itoa(b))
 		goto Error
 	}
 
 	n = 0
 	cutoff = cutoff64(b)
+	maxVal = 1<<uint(bitSize) - 1
 
 	for i := 0; i < len(s); i++ {
 		var v byte
@@ -88,28 +86,28 @@ func Btoui64(s string, b int) (n uint64, err os.Error) {
 			v = d - 'A' + 10
 		default:
 			n = 0
-			err = os.EINVAL
+			err = ErrSyntax
 			goto Error
 		}
 		if int(v) >= b {
 			n = 0
-			err = os.EINVAL
+			err = ErrSyntax
 			goto Error
 		}
 
 		if n >= cutoff {
 			// n*b overflows
 			n = 1<<64 - 1
-			err = os.ERANGE
+			err = ErrRange
 			goto Error
 		}
 		n *= uint64(b)
 
 		n1 := n + uint64(v)
-		if n1 < n {
+		if n1 < n || n1 > maxVal {
 			// n+v overflows
 			n = 1<<64 - 1
-			err = os.ERANGE
+			err = ErrRange
 			goto Error
 		}
 		n = n1
@@ -121,21 +119,28 @@ Error:
 	return n, &NumError{s0, err}
 }
 
-// Atoui64 interprets a string s as a decimal number and
-// returns the corresponding value n.
+// ParseInt interprets a string s in an arbitrary base b (2 to 36)
+// and returns the corresponding value n.  If b == 0, the base
+// is taken from the string prefix: base 16 for "0x", base 8 for "0",
+// and base 10 otherwise.
 //
-// Atoui64 returns err == os.EINVAL if s is empty or contains invalid digits.
-// It returns err == os.ERANGE if s cannot be represented by a uint64.
-func Atoui64(s string) (n uint64, err os.Error) {
-	return Btoui64(s, 10)
-}
+// The bitSize argument specifies the integer type
+// that the result must fit into.  Bit sizes 0, 8, 16, 32, and 64
+// correspond to int, int8, int16, int32, and int64.
+//
+// The errors that ParseInt returns have concrete type *NumError
+// and include err.Num = s.  If s is empty or contains invalid
+// digits, err.Error = ErrSyntax; if the value corresponding
+// to s cannot be represented by a signed integer of the
+// given size, err.Error = ErrRange.
+func ParseInt(s string, base int, bitSize int) (i int64, err error) {
+	if bitSize == 0 {
+		bitSize = int(IntSize)
+	}
 
-// Btoi64 is like Btoui64 but allows signed numbers and
-// returns its result in an int64.
-func Btoi64(s string, base int) (i int64, err os.Error) {
 	// Empty string bad.
 	if len(s) == 0 {
-		return 0, &NumError{s, os.EINVAL}
+		return 0, &NumError{s, ErrSyntax}
 	}
 
 	// Pick off leading sign.
@@ -150,16 +155,17 @@ func Btoi64(s string, base int) (i int64, err os.Error) {
 
 	// Convert unsigned and check range.
 	var un uint64
-	un, err = Btoui64(s, base)
-	if err != nil && err.(*NumError).Error != os.ERANGE {
+	un, err = ParseUint(s, base, bitSize)
+	if err != nil && err.(*NumError).Err != ErrRange {
 		err.(*NumError).Num = s0
 		return 0, err
 	}
-	if !neg && un >= 1<<63 {
-		return 1<<63 - 1, &NumError{s0, os.ERANGE}
+	cutoff := uint64(1 << uint(bitSize-1))
+	if !neg && un >= cutoff {
+		return int64(cutoff - 1), &NumError{s0, ErrRange}
 	}
-	if neg && un > 1<<63 {
-		return -1 << 63, &NumError{s0, os.ERANGE}
+	if neg && un > cutoff {
+		return -int64(cutoff), &NumError{s0, ErrRange}
 	}
 	n := int64(un)
 	if neg {
@@ -168,35 +174,8 @@ func Btoi64(s string, base int) (i int64, err os.Error) {
 	return n, nil
 }
 
-// Atoi64 is like Atoui64 but allows signed numbers and
-// returns its result in an int64.
-func Atoi64(s string) (i int64, err os.Error) { return Btoi64(s, 10) }
-
-// Atoui is like Atoui64 but returns its result as a uint.
-func Atoui(s string) (i uint, err os.Error) {
-	i1, e1 := Atoui64(s)
-	if e1 != nil && e1.(*NumError).Error != os.ERANGE {
-		return 0, e1
-	}
-	i = uint(i1)
-	if uint64(i) != i1 {
-		return ^uint(0), &NumError{s, os.ERANGE}
-	}
-	return i, nil
-}
-
-// Atoi is like Atoi64 but returns its result as an int.
-func Atoi(s string) (i int, err os.Error) {
-	i1, e1 := Atoi64(s)
-	if e1 != nil && e1.(*NumError).Error != os.ERANGE {
-		return 0, e1
-	}
-	i = int(i1)
-	if int64(i) != i1 {
-		if i1 < 0 {
-			return -1 << (IntSize - 1), &NumError{s, os.ERANGE}
-		}
-		return 1<<(IntSize-1) - 1, &NumError{s, os.ERANGE}
-	}
-	return i, nil
+// Atoi is shorthand for ParseInt(s, 10, 0).
+func Atoi(s string) (i int, err error) {
+	i64, err := ParseInt(s, 10, 0)
+	return int(i64), err
 }

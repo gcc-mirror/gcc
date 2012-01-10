@@ -14,8 +14,7 @@
     pair (const T1&amp; x, const T2&amp; y);
    </pre><p>does what you think it does, <code class="code">first</code> getting <code class="code">x</code>
       and <code class="code">second</code> getting <code class="code">y</code>.
-   </p><p>There is a copy constructor, but it requires that your compiler
-      handle member function templates:
+   </p><p>There is a constructor template for copying pairs of other types:
    </p><pre class="programlisting">
     template &lt;class U, class V&gt; pair (const pair&lt;U,V&gt;&amp; p);
    </pre><p>The compiler will convert as necessary from U to T1 and from

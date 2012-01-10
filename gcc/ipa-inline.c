@@ -343,14 +343,6 @@ can_inline_edge_p (struct cgraph_edge *e, bool report)
 	}
     }
 
-  /* Be sure that the cannot_inline_p flag is up to date.  */
-  gcc_checking_assert (!e->call_stmt
-		       || (gimple_call_cannot_inline_p (e->call_stmt)
-		           == e->call_stmt_cannot_inline_p)
-		       /* In -flto-partition=none mode we really keep things out of
-			  sync because call_stmt_cannot_inline_p is set at cgraph
-			  merging when function bodies are not there yet.  */
-		       || (in_lto_p && !gimple_call_cannot_inline_p (e->call_stmt)));
   if (!inlinable && report)
     report_inline_failed_reason (e);
   return inlinable;
@@ -490,21 +482,13 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
           e->inline_failed = CIF_MAX_INLINE_INSNS_SINGLE_LIMIT;
 	  want_inline = false;
 	}
-      else if (!DECL_DECLARED_INLINE_P (callee->decl)
-	       && !flag_inline_functions)
-	{
-          e->inline_failed = CIF_NOT_DECLARED_INLINED;
-	  want_inline = false;
-	}
-      else if (!DECL_DECLARED_INLINE_P (callee->decl)
-	       && growth >= MAX_INLINE_INSNS_AUTO)
-	{
-          e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
-	  want_inline = false;
-	}
-      /* If call is cold, do not inline when function body would grow.
-	 Still inline when the overall unit size will shrink because the offline
-	 copy of function being eliminated.
+      /* Before giving up based on fact that caller size will grow, allow
+         functions that are called few times and eliminating the offline
+	 copy will lead to overall code size reduction.
+	 Not all of these will be handled by subsequent inlining of functions
+	 called once: in particular weak functions are not handled or funcitons
+	 that inline to multiple calls but a lot of bodies is optimized out.
+	 Finally we want to inline earlier to allow inlining of callbacks.
 
 	 This is slightly wrong on aggressive side:  it is entirely possible
 	 that function is called many times with a context where inlining
@@ -517,24 +501,37 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	 first, this situation is not a problem at all: after inlining all
 	 "good" calls, we will realize that keeping the function around is
 	 better.  */
-      else if (!cgraph_maybe_hot_edge_p (e)
-	       && (DECL_EXTERNAL (callee->decl)
+      else if (growth <= MAX_INLINE_INSNS_SINGLE
+	       /* Unlike for functions called once, we play unsafe with
+		  COMDATs.  We can allow that since we know functions
+		  in consideration are small (and thus risk is small) and
+		  moreover grow estimates already accounts that COMDAT
+		  functions may or may not disappear when eliminated from
+		  current unit. With good probability making aggressive
+		  choice in all units is going to make overall program
+		  smaller.
 
-		   /* Unlike for functions called once, we play unsafe with
-		      COMDATs.  We can allow that since we know functions
-		      in consideration are small (and thus risk is small) and
-		      moreover grow estimates already accounts that COMDAT
-		      functions may or may not disappear when eliminated from
-		      current unit. With good probability making aggressive
-		      choice in all units is going to make overall program
-		      smaller.
-
-		      Consequently we ask cgraph_can_remove_if_no_direct_calls_p
-		      instead of
-		      cgraph_will_be_removed_from_program_if_no_direct_calls  */
-
-		   || !cgraph_can_remove_if_no_direct_calls_p (callee)
-		   || estimate_growth (callee) > 0))
+		  Consequently we ask cgraph_can_remove_if_no_direct_calls_p
+		  instead of
+		  cgraph_will_be_removed_from_program_if_no_direct_calls  */
+	        && !DECL_EXTERNAL (callee->decl)
+		&& cgraph_can_remove_if_no_direct_calls_p (callee)
+		&& estimate_growth (callee) <= 0)
+	;
+      else if (!DECL_DECLARED_INLINE_P (callee->decl)
+	       && !flag_inline_functions)
+	{
+          e->inline_failed = CIF_NOT_DECLARED_INLINED;
+	  want_inline = false;
+	}
+      else if (!DECL_DECLARED_INLINE_P (callee->decl)
+	       && growth >= MAX_INLINE_INSNS_AUTO)
+	{
+          e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
+	  want_inline = false;
+	}
+      /* If call is cold, do not inline when function body would grow. */
+      else if (!cgraph_maybe_hot_edge_p (e))
 	{
           e->inline_failed = CIF_UNLIKELY_CALL;
 	  want_inline = false;
@@ -816,7 +813,6 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   else if (flag_guess_branch_prob)
     {
       int div = edge->frequency * (1<<10) / CGRAPH_FREQ_MAX;
-      int growth_for_all;
 
       div = MAX (div, 1);
       gcc_checking_assert (edge->frequency <= CGRAPH_FREQ_MAX);
@@ -854,14 +850,12 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	  if (dump)
 	    fprintf (dump_file, "Badness overflow\n");
 	}
-      growth_for_all = estimate_growth (callee);
-      badness += growth_for_all;
       if (dump)
 	{
 	  fprintf (dump_file,
-		   "      %i: guessed profile. frequency %f, overall growth %i,"
+		   "      %i: guessed profile. frequency %f,"
 		   " benefit %f%%, divisor %i\n",
-		   (int) badness, (double)edge->frequency / CGRAPH_FREQ_BASE, growth_for_all,
+		   (int) badness, (double)edge->frequency / CGRAPH_FREQ_BASE,
 		   relative_time_benefit (callee_info, edge, time_growth) * 100 / 256.0, div);
 	}
     }
@@ -872,7 +866,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   else
     {
       int nest = MIN (inline_edge_summary (edge)->loop_depth, 8);
-      badness = estimate_growth (callee) * 256;
+      badness = growth * 256;
 
       /* Decrease badness if call is nested.  */
       if (badness > 0)
@@ -1957,8 +1951,10 @@ early_inliner (void)
 		= estimate_num_insns (edge->call_stmt, &eni_size_weights);
 	      es->call_stmt_time
 		= estimate_num_insns (edge->call_stmt, &eni_time_weights);
-	      edge->call_stmt_cannot_inline_p
-		= gimple_call_cannot_inline_p (edge->call_stmt);
+	      if (edge->callee->decl
+		  && !gimple_check_call_matching_types (edge->call_stmt,
+							edge->callee->decl))
+		edge->call_stmt_cannot_inline_p = true;
 	    }
 	  timevar_pop (TV_INTEGRATION);
 	  iterations++;

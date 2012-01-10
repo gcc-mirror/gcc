@@ -1035,8 +1035,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	                 : std::pow(complex<_Tp>(__x), __y);
     }
 
-  // 26.2.3  complex specializations
-  // complex<float> specialization
+  /// 26.2.3  complex specializations
+  /// complex<float> specialization
   template<>
     struct complex<float>
     {
@@ -1182,8 +1182,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _ComplexT _M_value;
     };
 
-  // 26.2.3  complex specializations
-  // complex<double> specialization
+  /// 26.2.3  complex specializations
+  /// complex<double> specialization
   template<>
     struct complex<double>
     {
@@ -1330,8 +1330,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _ComplexT _M_value;
     };
 
-  // 26.2.3  complex specializations
-  // complex<long double> specialization
+  /// 26.2.3  complex specializations
+  /// complex<long double> specialization
   template<>
     struct complex<long double>
     {

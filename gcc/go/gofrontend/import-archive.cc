@@ -66,7 +66,7 @@ Import::is_archive_magic(const char* bytes)
 class Archive_file
 {
  public:
-  Archive_file(const std::string& filename, int fd, source_location location)
+  Archive_file(const std::string& filename, int fd, Location location)
     : filename_(filename), fd_(fd), filesize_(-1), extended_names_(),
       is_thin_archive_(false), location_(location), nested_archives_()
   { }
@@ -91,7 +91,7 @@ class Archive_file
   { return this->is_thin_archive_; }
 
   // Return the location of the import statement.
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -133,7 +133,7 @@ class Archive_file
   // Whether this is a thin archive.
   bool is_thin_archive_;
   // The location of the import statements.
-  source_location location_;
+  Location location_;
   // Table of nested archives.
   Nested_archive_table nested_archives_;
 };
@@ -613,7 +613,7 @@ Stream_concatenate::do_advance(size_t skip)
 
 Import::Stream*
 Import::find_archive_export_data(const std::string& filename, int fd,
-				 source_location location)
+				 Location location)
 {
   Archive_file afile(filename, fd, location);
   if (!afile.initialize())

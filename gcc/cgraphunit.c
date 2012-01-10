@@ -1,6 +1,6 @@
 /* Callgraph based interprocedural optimizations.
    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011 Free Software Foundation, Inc.
+   2011, 2012 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1694,7 +1694,6 @@ assemble_thunk (struct cgraph_node *node)
         VEC_quick_push (tree, vargs, arg);
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
       VEC_free (tree, heap, vargs);
-      gimple_call_set_cannot_inline (call, true);
       gimple_call_set_from_thunk (call, true);
       if (restmp)
         gimple_call_set_lhs (call, restmp);
@@ -2188,6 +2187,7 @@ cgraph_optimize (void)
 #endif
   bitmap_obstack_release (NULL);
   cgraph_mark_functions_to_output ();
+  output_weakrefs ();
 
   cgraph_state = CGRAPH_STATE_EXPANSION;
   if (!flag_toplevel_reorder)
@@ -2202,7 +2202,6 @@ cgraph_optimize (void)
       varpool_assemble_pending_decls ();
     }
 
-  output_weakrefs ();
   cgraph_process_new_functions ();
   cgraph_state = CGRAPH_STATE_FINISHED;
 
@@ -2317,6 +2316,8 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
 	  version.  */
        cgraph_redirect_edge_callee (e, new_version);
      }
+
+   cgraph_call_node_duplication_hooks (old_version, new_version);
 
    return new_version;
  }

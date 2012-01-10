@@ -1,5 +1,5 @@
 /* All matcher functions.
-   Copyright (C) 2003, 2005, 2007, 2008, 2010
+   Copyright (C) 2003, 2005, 2007, 2008, 2010, 2012
    Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
@@ -249,7 +249,7 @@ match gfc_match_expr (gfc_expr **);
 
 /* module.c.  */
 match gfc_match_use (void);
-void gfc_use_module (void);
+void gfc_use_modules (void);
 
 #endif  /* GFC_MATCH_H  */
 

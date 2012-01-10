@@ -24,13 +24,13 @@ __printpanics (struct __go_panic_stack *p)
   if (p->__next != NULL)
     {
       __printpanics (p->__next);
-      printf ("\t");
+      fprintf (stderr, "\t");
     }
-  printf ("panic: ");
+  fprintf (stderr, "panic: ");
   printany (p->__arg);
   if (p->__was_recovered)
-    printf (" [recovered]");
-  putchar ('\n');
+    fprintf (stderr, " [recovered]");
+  fputc ('\n', stderr);
 }
 
 /* This implements __go_panic which is used for the panic
@@ -39,7 +39,10 @@ __printpanics (struct __go_panic_stack *p)
 void
 __go_panic (struct __go_empty_interface arg)
 {
+  G *g;
   struct __go_panic_stack *n;
+
+  g = runtime_g ();
 
   n = (struct __go_panic_stack *) __go_alloc (sizeof (struct __go_panic_stack));
   n->__arg = arg;
@@ -101,23 +104,4 @@ __go_panic (struct __go_empty_interface arg)
   runtime_startpanic ();
   __printpanics (g->panic);
   runtime_dopanic (0);
-}
-
-/* This is used by the runtime library.  */
-
-void
-__go_panic_msg (const char* msg)
-{
-  size_t len;
-  unsigned char *sdata;
-  struct __go_string s;
-  struct __go_empty_interface arg;
-
-  len = __builtin_strlen (msg);
-  sdata = runtime_mallocgc (len, FlagNoPointers, 0, 0);
-  __builtin_memcpy (sdata, msg, len);
-  s.__data = sdata;
-  s.__length = len;
-  newErrorString(s, &arg);
-  __go_panic (arg);
 }

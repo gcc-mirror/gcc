@@ -28,7 +28,7 @@
 # endif
 
 static inline long
-sys_futex0 (int *addr, long op, long val)
+sys_futex0 (std::atomic<int> *addr, long op, long val)
 {
   register long r10 __asm__("%r10") = 0;
   long res;
@@ -49,7 +49,7 @@ sys_futex0 (int *addr, long op, long val)
 # ifdef __PIC__
 
 static inline long
-sys_futex0 (int *addr, int op, int val)
+sys_futex0 (std::atomic<int> *addr, int op, int val)
 {
   long res;
 
@@ -66,7 +66,7 @@ sys_futex0 (int *addr, int op, int val)
 # else
 
 static inline long
-sys_futex0 (int *addr, int op, int val)
+sys_futex0 (std::atomic<int> *addr, int op, int val)
 {
   long res;
 

@@ -2553,6 +2553,11 @@ package body Ch4 is
       Node1  : Node_Id;
 
    begin
+      if Ada_Version < Ada_2012 then
+         Error_Msg_SC ("quantified expression is an Ada 2012 feature");
+         Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");
+      end if;
+
       Scan;  --  past FOR
 
       Node1 := New_Node (N_Quantified_Expression, Prev_Token_Ptr);

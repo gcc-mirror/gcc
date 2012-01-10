@@ -5093,6 +5093,7 @@ switch are
 @option{-gnatwh} (hiding),
 @option{-gnatw.h} (holes (gaps) in record layouts)
 @option{-gnatwl} (elaboration warnings),
+@option{-gnatw.l} (inherited aspects),
 @option{-gnatw.o} (warn on values set by out parameters ignored)
 and @option{-gnatwt} (tracking of deleted conditional code).
 All other optional warnings are turned on.
@@ -5242,7 +5243,12 @@ is the only -gnatw switch that affects the handling of style check messages.
 @cindex @option{-gnatw.e} (@command{gcc})
 @cindex Warnings, activate every optional warning
 This switch activates all optional warnings, including those which
-are not activated by @code{-gnatwa}.
+are not activated by @code{-gnatwa}. The use of this switch is not
+recommended for normal use. If you turn this switch on, it is almost
+certain that you will get large numbers of useless warnings. The
+warnings that are excluded from @code{-gnatwa} are typically highly
+specialized warnings that are suitable for use only in code that has
+been specifically designed according to specialized coding rules.
 
 @item -gnatwf
 @emph{Activate warnings on unreferenced formals.}
@@ -5418,6 +5424,19 @@ This warning is not automatically turned on by the use of @option{-gnatwa}.
 This switch suppresses warnings on missing Elaborate and Elaborate_All pragmas.
 See the section in this guide on elaboration checking for details on
 when such pragmas should be used.
+
+@item -gnatw.l
+@emph{List inherited aspects.}
+@cindex @option{-gnatw.l} (@command{gcc})
+This switch causes the compiler to list inherited invariants,
+preconditions, and postconditions from Invariant'Class, Pre'Class, and
+Post'Class aspects. Also list inherited subtype predicates.
+These messages are not automatically turned on by the use of @option{-gnatwa}.
+
+@item -gnatw.L
+@emph{Suppress listing of inherited aspects.}
+@cindex @option{-gnatw.L} (@command{gcc})
+This switch suppresses listing of inherited aspects.
 
 @item -gnatwm
 @emph{Activate warnings on modified but unreferenced variables.}
@@ -8660,6 +8679,9 @@ This is because in the default static elaboration mode, all necessary
 These implicit pragmas are still respected by the binder in
 @option{^-p^/PESSIMISTIC_ELABORATION^} mode, so a
 safe elaboration order is assured.
+
+Note that @option{^-p^/PESSIMISTIC_ELABORATION^} is not intended for
+production use; it is more for debugging/experimental use.
 @end table
 
 @node Output Control
@@ -11805,7 +11827,7 @@ recognized by GNAT:
 @section Handling of Configuration Pragmas
 
 Configuration pragmas may either appear at the start of a compilation
-unit, in which case they apply only to that unit, or they may apply to
+unit, or they can appear in a configuration pragma file to apply to
 all compilations performed in a given compilation environment.
 
 GNAT also provides the @code{gnatchop} utility to provide an automatic
@@ -11815,6 +11837,30 @@ See @ref{Operating gnatchop in Compilation Mode} for details.
 However, for most purposes, it will be more convenient to edit the
 @file{gnat.adc} file that contains configuration pragmas directly,
 as described in the following section.
+
+In the case of @code{Restrictions} pragmas appearing as configuration
+pragmas in individual compilation units, the exact handling depends on
+the type of restriction.
+
+Restrictions that require partition-wide consistency (like
+@code{No_Tasking}) are
+recognized wherever they appear
+and can be freely inherited, e.g. from a with'ed unit to the with'ing
+unit. This makes sense since the binder will in any case insist on seeing
+consistent use, so any unit not conforming to any restrictions that are
+anywhere in the partition will be rejected, and you might as well find
+that out at compile time rather than at bind time.
+
+For restrictions that do not require partition-wide consistency, e.g.
+SPARK or No_Implementation_Attributes, in general the restriction applies
+only to the unit in which the pragma appears, and not to any other units.
+
+The exception is No_Elaboration_Code which always applies to the entire
+object file from a compilation, i.e. to the body, spec, and all subunits.
+This restriction can be specified in a configuration pragma file, or it
+can be on the body and/or the spec (in eithe case it applies to all the
+relevant units). It can appear on a subunit only if it has previously
+appeared in the body of spec.
 
 @node The Configuration Pragmas Files
 @section The Configuration Pragmas Files
@@ -13164,6 +13210,24 @@ setting.
 Enumeration literals are in mixed case. Overrides ^-n^/NAME_CASING^ casing
 setting.
 
+@cindex @option{^-nt@var{x}^/TYPE_CASING^} (@command{gnatpp})
+@item ^-neD^/TYPE_CASING=AS_DECLARED^
+Names introduced by type and subtype declarations are always
+cased as they appear in the declaration in the source file.
+Overrides ^-n^/NAME_CASING^ casing setting.
+
+@item ^-ntU^/TYPE_CASING=UPPER_CASE^
+Names introduced by type and subtype declarations are always in
+upper case. Overrides ^-n^/NAME_CASING^ casing setting.
+
+@item ^-ntL^/TYPE_CASING=LOWER_CASE^
+Names introduced by type and subtype declarations are always in
+lower case. Overrides ^-n^/NAME_CASING^ casing setting.
+
+@item ^-ntM^/TYPE_CASING=MIXED_CASE^
+Names introduced by type and subtype declarations are always in
+mixed case. Overrides ^-n^/NAME_CASING^ casing setting.
+
 @cindex @option{^-p@var{x}^/PRAGMA_CASING^} (@command{gnatpp})
 @item ^-pL^/PRAGMA_CASING=LOWER_CASE^
 Pragma names are lower case
@@ -13364,6 +13428,19 @@ and variants if there are @var{nnn} or more (the default
 value is 10).
 If @var{nnn} is 0, an additional indentation level is
 used for @b{case} alternatives and variants regardless of their number.
+
+@item ^--call_threshold=@var{nnn}^/MAX_ACT=@var{nnn}^
+@cindex @option{^--call_threshold^/MAX_ACT^} (@command{gnatpp})
+If the number of parameter associations is greater than @var{nnn} and if at
+least one association uses named notation, start each association from
+a new line. If @var{nnn} is 0, no check for the number of associations
+is made, this is the default.
+
+@item ^--par_threshold=@var{nnn}^/MAX_PAR=@var{nnn}^
+@cindex @option{^--par_threshold^/MAX_PAR^} (@command{gnatpp})
+If the number of parameter specifications is greater than @var{nnn}
+(or equal to @var{nnn} in case of a function), start each specification from
+a new line. The default for @var{nnn} is 3.
 @end table
 
 @node Setting the Source Search Path
@@ -16282,6 +16359,28 @@ the Library Directory. As a consequence, only the Interface Units may be
 imported from Ada units outside of the library. If other units are imported,
 the binding phase will fail.
 
+@noindent
+It is also possible to build an encapsulated library where not only
+the code to elaborate and finalize the library is embedded but also
+ensuring that the library is linked only against static
+libraries. So an encapsulated library only depends on system
+libraries, all other code, including the GNAT runtime, is embedded. To
+build an encapsulated library the attribute
+@code{Library_Standalone} must be set to @code{encapsulated}:
+
+@smallexample @c projectfile
+@group
+   for Library_Dir use "lib_dir";
+   for Library_Name use "dummy";
+   for Library_Interface use ("int1", "int1.child");
+   for Library_Standalone use "encapsulated";
+@end group
+@end smallexample
+
+@noindent
+The default value for this attribute is @code{standard} in which case
+a stand-alone library is built.
+
 The attribute @code{Library_Src_Dir} may be specified for a
 Stand-Alone Library. @code{Library_Src_Dir} is a simple attribute that has a
 single string value. Its value must be the path (absolute or relative to the
@@ -17889,6 +17988,9 @@ gnatmake -P<harness-dir>/test_driver
 test_runner
 @end smallexample
 
+Note that you might need to specify the necessary values of scenario variables
+when you are not using the AUnit defaults.
+
 @item actual unit test stubs
 a test stub for each visible subprogram is created in a separate file, if it
 doesn't exist already. By default, those separate test files are located in a
@@ -17899,6 +18001,9 @@ file my_unit.ads in directory src contains a visible subprogram Proc, then
 the corresponding unit test will be found in file
 src/tests/my_unit-tests-proc_<code>.adb. <code> is a signature encoding used to
 differentiate test names in cases of overloading.
+
+Note that if the project already has both my_unit.ads and my_unit-tests.ads this
+will cause name a conflict with generated test package.
 @end itemize
 
 @node Switches for gnattest
@@ -17920,6 +18025,10 @@ manual tests to be added to the test suite.
 @item -r
 @cindex @option{-r} (@command{gnattest})
 Recursively consider all sources from all projects.
+
+@item -X@var{name=value}
+@cindex @option{-X} (@command{gnattest})
+Indicate that external variable @var{name} has the value @var{value}.
 
 @item -q
 @cindex @option{-q} (@command{gnattest})
@@ -18311,6 +18420,8 @@ The tool currently does not support following features:
 @item generic tests for generic packages and package instantiations
 @item tests for protected subprograms and entries
 @item aspects Precondition, Postcondition, and Test_Case
+@item generating test packages for code that is not conformant with ada 2005
+
 @end itemize
 
 @c *********************************
@@ -18419,7 +18530,7 @@ g++ -c -fdump-ada-spec -DXLIB_ILLEGAL_ACCESS -C /usr/include/X11/Xlib.h
 The above will generate more complete bindings than a straight call without
 the @option{-DXLIB_ILLEGAL_ACCESS} switch.
 
-In other cases, it is not possible to parse a header file in a stand alone
+In other cases, it is not possible to parse a header file in a stand-alone
 manner, because other include files need to be included first. In this
 case, the solution is to create a small header file including the needed
 @code{#include} and possible @code{#define} directives. For example, to
@@ -26304,7 +26415,7 @@ of the methodological principle known as the ``contract model'',
 the generic declaration explicitly indicates whether
 or not such instantiations are permitted.  If a generic formal parameter
 has explicit unknown discriminants, indicated by using @code{(<>)} after the
-type name, then it can be instantiated with indefinite types, but no
+subtype name, then it can be instantiated with indefinite types, but no
 stand-alone variables can be declared of this type.  Any attempt to declare
 such a variable will result in an illegality at the time the generic is
 declared.  If the @code{(<>)} notation is not used, then it is illegal

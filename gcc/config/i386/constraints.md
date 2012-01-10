@@ -149,9 +149,11 @@
        (match_test "IN_RANGE (ival, -128, 127)")))
 
 (define_constraint "L"
-  "@code{0xFF} or @code{0xFFFF}, for andsi as a zero-extending move."
+  "@code{0xFF}, @code{0xFFFF} or @code{0xFFFFFFFF}
+   for AND as a zero-extending move."
   (and (match_code "const_int")
-       (match_test "ival == 0xFF || ival == 0xFFFF")))
+       (match_test "ival == 0xff || ival == 0xffff
+		    || ival == (HOST_WIDE_INT) 0xffffffff")))
 
 (define_constraint "M"
   "0, 1, 2, or 3 (shifts for the @code{lea} instruction)."

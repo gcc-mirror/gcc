@@ -1,3 +1,40 @@
+2011-12-27  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::set_placeholder_struct_type): Use
+	build_distinct_type_copy rather than build_variant_type_copy.
+	(Gcc_backend::set_placeholder_array_type): Likewise.
+	(Gcc_backend::named_type): Add special handling for builtin
+	basic types.
+
+2011-12-22  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::set_placeholder_pointer_type): Arrange
+	for the type name to have a DECL_ORIGINAL_TYPE as gcc expects.
+	(Gcc_backend::set_placeholder_struct_type): Likewise.
+	(Gcc_backend::set_placeholder_array_type): Likewise.
+	(Gcc_backend::named_type): Set DECL_ORIGINAL_TYPE.
+
+2011-12-13  Ian Lance Taylor  <iant@google.com>
+
+	* go-backend.c: #include "simple-object.h" and "intl.h".
+	(GO_EXPORT_SEGMENT_NAME): Define if not defined.
+	(GO_EXPORT_SECTION_NAME): Likewise.
+	(go_write_export_data): Use GO_EXPORT_SECTION_NAME.
+	(go_read_export_data): New function.
+	* go-c.h (go_read_export_data): Declare.
+
+2011-11-29  Sanjoy Das  <thedigitalangel@gmail.com>
+	    Ian Lance Taylor  <iant@google.com>
+
+	* go-location.h: New file.
+	* go-linemap.cc: New file.
+	* go-gcc.cc: Change all uses of source_location to Location.
+	* Make-lang.in (GO_OBJS): Add go/go-linemap.o.
+	(GO_LINEMAP_H): New variable.
+	(GO_LEX_H): Use $(GO_LINEMAP_H).
+	(GO_GOGO_H, GO_TYPES_H, GO_IMPORT_H): Likewise.
+	(go/go-linemap.o): New target.
+
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Make-lang.in (gospec.o): Pass SHLIB instead of SHLIB_LINK.

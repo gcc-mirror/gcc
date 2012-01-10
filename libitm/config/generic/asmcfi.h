@@ -1,5 +1,4 @@
-
-/* Copyright (C) 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2011, 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -27,18 +26,28 @@
 
 #ifdef HAVE_AS_CFI_PSEUDO_OP
 
-#define cfi_startproc		.cfi_startproc
-#define cfi_endproc		.cfi_endproc
-#define cfi_def_cfa_offset(n)	.cfi_def_cfa_offset n
-#define cfi_def_cfa(r,n)	.cfi_def_cfa r, n
-#define cfi_register(o,n)	.cfi_register o, n
+#define cfi_startproc			.cfi_startproc
+#define cfi_endproc			.cfi_endproc
+#define cfi_adjust_cfa_offset(n)	.cfi_adjust_cfa_offset n
+#define cfi_def_cfa_offset(n)		.cfi_def_cfa_offset n
+#define cfi_def_cfa(r,n)		.cfi_def_cfa r, n
+#define cfi_rel_offset(r,o)		.cfi_rel_offset r, o
+#define cfi_register(o,n)		.cfi_register o, n
+#define cfi_offset(r,o)			.cfi_offset r, o
+#define cfi_restore(r)			.cfi_restore r
+#define cfi_undefined(r)		.cfi_undefined r
 
 #else
 
 #define cfi_startproc
 #define cfi_endproc
+#define cfi_adjust_cfa_offset(n)
 #define cfi_def_cfa_offset(n)
 #define cfi_def_cfa(r,n)
+#define cfi_rel_offset(r,o)
 #define cfi_register(o,n)
+#define cfi_offset(r,o)
+#define cfi_restore(r)
+#define cfi_undefined(r)
 
 #endif /* HAVE_AS_CFI_PSEUDO_OP */

@@ -17,9 +17,6 @@ package runtime
 #include "go-string.h"
 #include "interface.h"
 #include "go-type.h"
-typedef struct __go_empty_interface Eface;
-typedef struct __go_type_descriptor Type;
-typedef struct __go_func_type FuncType;
 
 MHeap runtime_mheap;
 extern MStats mstats;	// defined in extern.go
@@ -33,14 +30,25 @@ extern volatile int32 runtime_MemProfileRate
 void*
 runtime_mallocgc(uintptr size, uint32 flag, int32 dogc, int32 zeroed)
 {
+	M *m;
+	G *g;
 	int32 sizeclass, rate;
 	MCache *c;
 	uintptr npages;
 	MSpan *s;
 	void *v;
 
-	if(!__sync_bool_compare_and_swap(&m->mallocing, 0, 1))
+	m = runtime_m();
+	g = runtime_g();
+	if(g->status == Gsyscall)
+		dogc = 0;
+	if(runtime_gcwaiting && g != m->g0 && m->locks == 0 && g->status != Gsyscall) {
+		runtime_gosched();
+		m = runtime_m();
+	}
+	if(m->mallocing)
 		runtime_throw("malloc/free - deadlock");
+	m->mallocing = 1;
 	if(size == 0)
 		size = 1;
 
@@ -63,7 +71,7 @@ runtime_mallocgc(uintptr size, uint32 flag, int32 dogc, int32 zeroed)
 		npages = size >> PageShift;
 		if((size & PageMask) != 0)
 			npages++;
-		s = runtime_MHeap_Alloc(&runtime_mheap, npages, 0, 1);
+		s = runtime_MHeap_Alloc(&runtime_mheap, npages, 0, !(flag & FlagNoGC));
 		if(s == nil)
 			runtime_throw("out of memory");
 		size = npages<<PageShift;
@@ -77,18 +85,7 @@ runtime_mallocgc(uintptr size, uint32 flag, int32 dogc, int32 zeroed)
 	if(!(flag & FlagNoGC))
 		runtime_markallocated(v, size, (flag&FlagNoPointers) != 0);
 
-	__sync_bool_compare_and_swap(&m->mallocing, 1, 0);
-
-	if(__sync_bool_compare_and_swap(&m->gcing, 1, 0)) {
-		if(!(flag & FlagNoProfiling))
-			__go_run_goroutine_gc(0);
-		else {
-			// We are being called from the profiler.  Tell it
-			// to invoke the garbage collector when it is
-			// done.  No need to use a sync function here.
-			m->gcing_for_prof = 1;
-		}
-	}
+	m->mallocing = 0;
 
 	if(!(flag & FlagNoProfiling) && (rate = runtime_MemProfileRate) > 0) {
 		if(size >= (uint32) rate)
@@ -122,6 +119,7 @@ __go_alloc(uintptr size)
 void
 __go_free(void *v)
 {
+	M *m;
 	int32 sizeclass;
 	MSpan *s;
 	MCache *c;
@@ -134,8 +132,10 @@ __go_free(void *v)
 	// If you change this also change mgc0.c:/^sweepspan,
 	// which has a copy of the guts of free.
 
-	if(!__sync_bool_compare_and_swap(&m->mallocing, 0, 1))
+	m = runtime_m();
+	if(m->mallocing)
 		runtime_throw("malloc/free - deadlock");
+	m->mallocing = 1;
 
 	if(!runtime_mlookup(v, nil, nil, &s)) {
 		// runtime_printf("free %p: not an allocated block\n", v);
@@ -170,11 +170,7 @@ __go_free(void *v)
 	c->local_alloc -= size;
 	if(prof)
 		runtime_MProf_Free(v, size);
-
-	__sync_bool_compare_and_swap(&m->mallocing, 1, 0);
-
-	if(__sync_bool_compare_and_swap(&m->gcing, 1, 0))
-		__go_run_goroutine_gc(1);
+	m->mallocing = 0;
 }
 
 int32
@@ -184,7 +180,7 @@ runtime_mlookup(void *v, byte **base, uintptr *size, MSpan **sp)
 	byte *p;
 	MSpan *s;
 
-	m->mcache->local_nlookup++;
+	runtime_m()->mcache->local_nlookup++;
 	s = runtime_MHeap_LookupMaybe(&runtime_mheap, v);
 	if(sp)
 		*sp = s;
@@ -229,15 +225,8 @@ runtime_allocmcache(void)
 	int32 rate;
 	MCache *c;
 
-	if(!__sync_bool_compare_and_swap(&m->mallocing, 0, 1))
-		runtime_throw("allocmcache - deadlock");
-
 	runtime_lock(&runtime_mheap);
 	c = runtime_FixAlloc_Alloc(&runtime_mheap.cachealloc);
-
-	// Clear the free list used by FixAlloc; assume the rest is zeroed.
-	c->list[0].list = nil;
-
 	mstats.mcache_inuse = runtime_mheap.cachealloc.inuse;
 	mstats.mcache_sys = runtime_mheap.cachealloc.sys;
 	runtime_unlock(&runtime_mheap);
@@ -248,10 +237,6 @@ runtime_allocmcache(void)
 		rate = 0x3fffffff;
 	if(rate != 0)
 		c->next_sample = runtime_fastrand1() % (2*rate);
-
-	__sync_bool_compare_and_swap(&m->mallocing, 1, 0);
-	if(__sync_bool_compare_and_swap(&m->gcing, 1, 0))
-		__go_run_goroutine_gc(2);
 
 	return c;
 }
@@ -374,13 +359,7 @@ runtime_mallocinit(void)
 
 	// Initialize the rest of the allocator.	
 	runtime_MHeap_Init(&runtime_mheap, runtime_SysAlloc);
-	m->mcache = runtime_allocmcache();
-
-	// Initialize malloc profiling.
-	runtime_Mprof_Init();
-
-	// Initialize finalizer.
-	runtime_initfintab();
+	runtime_m()->mcache = runtime_allocmcache();
 
 	// See if it works.
 	runtime_free(runtime_malloc(1));

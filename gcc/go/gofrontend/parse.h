@@ -75,7 +75,7 @@ class Parse
     // The variable name.
     std::string name;
     // The location of the variable.
-    source_location location;
+    Location location;
     // The expression.
     Expression* expr;
 
@@ -147,7 +147,7 @@ class Parse
   unget_token(const Token&);
 
   // The location of the current token.
-  source_location
+  Location
   location();
 
   // For break and continue we keep a stack of statements with
@@ -169,12 +169,12 @@ class Parse
   Type* pointer_type();
   Type* channel_type();
   void check_signature_names(const Typed_identifier_list*, Names*);
-  Function_type* signature(Typed_identifier*, source_location);
+  Function_type* signature(Typed_identifier*, Location);
   bool parameters(Typed_identifier_list**, bool* is_varargs);
   Typed_identifier_list* parameter_list(bool* is_varargs);
   void parameter_decl(bool, Typed_identifier_list*, bool*, bool*);
   bool result(Typed_identifier_list**);
-  source_location block();
+  Location block();
   Type* interface_type();
   void method_spec(Typed_identifier_list*);
   void declaration();
@@ -188,30 +188,30 @@ class Parse
   void var_decl();
   void var_spec(void*);
   void init_vars(const Typed_identifier_list*, Type*, Expression_list*,
-		 bool is_coloneq, source_location);
+		 bool is_coloneq, Location);
   bool init_vars_from_call(const Typed_identifier_list*, Type*, Expression*,
-			   bool is_coloneq, source_location);
+			   bool is_coloneq, Location);
   bool init_vars_from_map(const Typed_identifier_list*, Type*, Expression*,
-			  bool is_coloneq, source_location);
+			  bool is_coloneq, Location);
   bool init_vars_from_receive(const Typed_identifier_list*, Type*,
-			      Expression*, bool is_coloneq, source_location);
+			      Expression*, bool is_coloneq, Location);
   bool init_vars_from_type_guard(const Typed_identifier_list*, Type*,
 				 Expression*, bool is_coloneq,
-				 source_location);
+				 Location);
   Named_object* init_var(const Typed_identifier&, Type*, Expression*,
 			 bool is_coloneq, bool type_from_init, bool* is_new);
-  Named_object* create_dummy_global(Type*, Expression*, source_location);
-  void simple_var_decl_or_assignment(const std::string&, source_location,
+  Named_object* create_dummy_global(Type*, Expression*, Location);
+  void simple_var_decl_or_assignment(const std::string&, Location,
 				     Range_clause*, Type_switch*);
   void function_decl();
   Typed_identifier* receiver();
   Expression* operand(bool may_be_sink);
   Expression* enclosing_var_reference(Named_object*, Named_object*,
-				      source_location);
-  Expression* composite_lit(Type*, int depth, source_location);
+				      Location);
+  Expression* composite_lit(Type*, int depth, Location);
   Expression* function_lit();
   Expression* create_closure(Named_object* function, Enclosing_vars*,
-			     source_location);
+			     Location);
   Expression* primary_expr(bool may_be_sink, bool may_be_composite_lit,
 			   bool* is_type_switch);
   Expression* selector(Expression*, bool* is_type_switch);
@@ -222,11 +222,11 @@ class Parse
   bool expression_may_start_here();
   Expression* unary_expr(bool may_be_sink, bool may_be_composite_lit,
 			 bool* is_type_switch);
-  Expression* qualified_expr(Expression*, source_location);
-  Expression* id_to_expression(const std::string&, source_location);
+  Expression* qualified_expr(Expression*, Location);
+  Expression* id_to_expression(const std::string&, Location);
   void statement(Label*);
   bool statement_may_start_here();
-  void labeled_stmt(const std::string&, source_location);
+  void labeled_stmt(const std::string&, Location);
   Expression* simple_stat(bool, bool*, Range_clause*, Type_switch*);
   bool simple_stat_may_start_here();
   void statement_list();
@@ -241,10 +241,10 @@ class Parse
   void return_stat();
   void if_stat();
   void switch_stat(Label*);
-  Statement* expr_switch_body(Label*, Expression*, source_location);
+  Statement* expr_switch_body(Label*, Expression*, Location);
   void expr_case_clause(Case_clauses*, bool* saw_default);
   Expression_list* expr_switch_case(bool*);
-  Statement* type_switch_body(Label*, const Type_switch&, source_location);
+  Statement* type_switch_body(Label*, const Type_switch&, Location);
   void type_case_clause(Named_object*, Type_case_clauses*, bool* saw_default);
   void type_switch_case(std::vector<Type*>*, bool*);
   void select_stat(Label*);

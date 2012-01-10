@@ -177,9 +177,7 @@ package System.OS_Interface is
 
    type timespec is private;
 
-   type clockid_t is private;
-
-   CLOCK_REALTIME : constant clockid_t;
+   type clockid_t is new int;
 
    function clock_gettime
      (clock_id : clockid_t;
@@ -515,9 +513,6 @@ private
       tv_nsec : long;
    end record;
    pragma Convention (C, timespec);
-
-   type clockid_t is new unsigned_char;
-   CLOCK_REALTIME : constant clockid_t := 0;
 
    type st_t is record
       stksize      : int;

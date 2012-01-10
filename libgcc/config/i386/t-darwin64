@@ -1,2 +1,0 @@
-LIB2_SIDITI_CONV_FUNCS = yes
-LIB2ADD = $(srcdir)/config/darwin-64.c

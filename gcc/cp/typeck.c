@@ -4056,6 +4056,13 @@ cp_build_binary_op (location_t location,
 					    delta0,
 				            integer_one_node,
 					    complain);
+	      
+	      if ((complain & tf_warning)
+		  && c_inhibit_evaluation_warnings == 0
+		  && !NULLPTR_TYPE_P (TREE_TYPE (op1)))
+		warning (OPT_Wzero_as_null_pointer_constant,
+			 "zero as null pointer constant");
+
 	      e2 = cp_build_binary_op (location,
 				       EQ_EXPR, e2, integer_zero_node,
 				       complain);
@@ -5510,8 +5517,10 @@ build_x_conditional_expr (tree ifexp, tree op1, tree op2,
     {
       tree min = build_min_non_dep (COND_EXPR, expr,
 				    orig_ifexp, orig_op1, orig_op2);
-      /* Remember that the result is an lvalue or xvalue.  */
-      if (lvalue_or_rvalue_with_address_p (expr)
+      /* In C++11, remember that the result is an lvalue or xvalue.
+         In C++98, lvalue_kind can just assume lvalue in a template.  */
+      if (cxx_dialect >= cxx0x
+	  && lvalue_or_rvalue_with_address_p (expr)
 	  && !lvalue_or_rvalue_with_address_p (min))
 	TREE_TYPE (min) = cp_build_reference_type (TREE_TYPE (min),
 						   !real_lvalue_p (expr));
@@ -5847,12 +5856,22 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
      cv2 T2 if cv2 T2 is reference-compatible with cv1 T1 (8.5.3)."  */
   if (TREE_CODE (type) == REFERENCE_TYPE
       && TYPE_REF_IS_RVALUE (type)
-      && lvalue_or_rvalue_with_address_p (expr)
+      && real_lvalue_p (expr)
       && reference_related_p (TREE_TYPE (type), intype)
       && (c_cast_p || at_least_as_qualified_p (TREE_TYPE (type), intype)))
     {
-      expr = build_typed_address (expr, type);
-      return convert_from_reference (expr);
+      /* Handle the lvalue case here by casting to lvalue reference and
+	 then changing it to an rvalue reference.  Casting an xvalue to
+	 rvalue reference will be handled by the main code path.  */
+      tree lref = cp_build_reference_type (TREE_TYPE (type), false);
+      result = (perform_direct_initialization_if_possible
+		(lref, expr, c_cast_p, complain));
+      result = cp_fold_convert (type, result);
+      /* Make sure we don't fold back down to a named rvalue reference,
+	 because that would be an lvalue.  */
+      if (DECL_P (result))
+	result = build1 (NON_LVALUE_EXPR, type, result);
+      return convert_from_reference (result);
     }
 
   /* Resolve overloaded address here rather than once in
@@ -6184,6 +6203,11 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
   else if (TYPE_PTR_P (type) && INTEGRAL_OR_ENUMERATION_TYPE_P (intype))
     /* OK */
     ;
+  else if ((INTEGRAL_OR_ENUMERATION_TYPE_P (type)
+	    || TYPE_PTR_P (type) || TYPE_PTR_TO_MEMBER_P (type))
+	   && same_type_p (type, intype))
+    /* DR 799 */
+    return fold_if_not_in_template (build_nop (type, expr));
   else if ((TYPE_PTRFN_P (type) && TYPE_PTRFN_P (intype))
 	   || (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype)))
     return fold_if_not_in_template (build_nop (type, expr));

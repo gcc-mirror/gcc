@@ -47,7 +47,8 @@ extern void ia64_expand_dot_prod_v8qi (rtx[], bool);
 extern void ia64_expand_call (rtx, rtx, rtx, int);
 extern void ia64_split_call (rtx, rtx, rtx, rtx, rtx, int, int);
 extern void ia64_reload_gp (void);
-extern void ia64_expand_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx);
+extern void ia64_expand_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx,
+				   enum memmodel);
 
 extern HOST_WIDE_INT ia64_initial_elimination_offset (int, int);
 extern void ia64_expand_prologue (void);
@@ -57,11 +58,13 @@ extern int ia64_direct_return (void);
 extern bool ia64_expand_load_address (rtx, rtx);
 extern int ia64_hard_regno_rename_ok (int, int);
 
-extern void ia64_print_operand_address (FILE *, rtx);
-extern void ia64_print_operand (FILE *, rtx, int);
 extern enum reg_class ia64_secondary_reload_class (enum reg_class,
 						   enum machine_mode, rtx);
 extern const char *get_bundle_name (int);
+
+extern void ia64_expand_vec_perm_even_odd (rtx, rtx, rtx, int);
+extern bool ia64_expand_vec_perm_const (rtx op[4]);
+extern void ia64_expand_vec_setv2sf (rtx op[3]);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE

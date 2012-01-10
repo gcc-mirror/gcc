@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -62,7 +62,10 @@ gomp_unset_lock_30 (omp_lock_t *lock)
 int
 gomp_test_lock_30 (omp_lock_t *lock)
 {
-  return __sync_bool_compare_and_swap (lock, 0, 1);
+  int oldval = 0;
+
+  return __atomic_compare_exchange_n (lock, &oldval, 1, false,
+				      MEMMODEL_ACQUIRE, MEMMODEL_RELAXED);
 }
 
 void
@@ -104,11 +107,14 @@ int
 gomp_test_nest_lock_30 (omp_nest_lock_t *lock)
 {
   void *me = gomp_icv (true);
+  int oldval;
 
   if (lock->owner == me)
     return ++lock->count;
 
-  if (__sync_bool_compare_and_swap (&lock->lock, 0, 1))
+  oldval = 0;
+  if (__atomic_compare_exchange_n (&lock->lock, &oldval, 1, false,
+				   MEMMODEL_ACQUIRE, MEMMODEL_RELAXED))
     {
       lock->owner = me;
       lock->count = 1;
@@ -184,8 +190,9 @@ gomp_set_nest_lock_25 (omp_nest_lock_25_t *lock)
 
   while (1)
     {
-      otid = __sync_val_compare_and_swap (&lock->owner, 0, tid);
-      if (otid == 0)
+      otid = 0;
+      if (__atomic_compare_exchange_n (&lock->owner, &otid, tid, false,
+				       MEMMODEL_ACQUIRE, MEMMODEL_RELAXED))
 	{
 	  lock->count = 1;
 	  return;
@@ -207,7 +214,7 @@ gomp_unset_nest_lock_25 (omp_nest_lock_25_t *lock)
 
   if (--lock->count == 0)
     {
-      __sync_lock_release (&lock->owner);
+      __atomic_store_n (&lock->owner, 0, MEMMODEL_RELEASE);
       futex_wake (&lock->owner, 1);
     }
 }
@@ -217,8 +224,9 @@ gomp_test_nest_lock_25 (omp_nest_lock_25_t *lock)
 {
   int otid, tid = gomp_tid ();
 
-  otid = __sync_val_compare_and_swap (&lock->owner, 0, tid);
-  if (otid == 0)
+  otid = 0;
+  if (__atomic_compare_exchange_n (&lock->owner, &otid, tid, false,
+				   MEMMODEL_ACQUIRE, MEMMODEL_RELAXED))
     {
       lock->count = 1;
       return 1;

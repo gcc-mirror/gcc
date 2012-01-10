@@ -34,6 +34,7 @@ with Snames;   use Snames;
 with Uintp;    use Uintp;
 
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
+with Ada.Containers.Ordered_Sets;
 with Ada.Unchecked_Deallocation;
 
 with GNAT.Case_Util;            use GNAT.Case_Util;
@@ -41,6 +42,17 @@ with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.HTable;
 
 package body Prj is
+
+   type Restricted_Lang;
+   type Restricted_Lang_Access is access Restricted_Lang;
+   type Restricted_Lang is record
+      Name : Name_Id;
+      Next : Restricted_Lang_Access;
+   end record;
+
+   Restricted_Languages : Restricted_Lang_Access := null;
+   --  When null, all languages are allowed, otherwise only the languages in
+   --  the list are allowed.
 
    Object_Suffix : constant String := Get_Target_Object_Suffix.all;
    --  File suffix for object files
@@ -85,6 +97,20 @@ package body Prj is
 
    function Contains_ALI_Files (Dir : Path_Name_Type) return Boolean;
    --  Return True if there is at least one ALI file in the directory Dir
+
+   -----------------------------
+   -- Add_Restricted_Language --
+   -----------------------------
+
+   procedure Add_Restricted_Language (Name : String) is
+      N : String (1 .. Name'Length) := Name;
+   begin
+      To_Lower (N);
+      Name_Len := 0;
+      Add_Str_To_Name_Buffer (N);
+      Restricted_Languages :=
+        new Restricted_Lang'(Name => Name_Find, Next => Restricted_Languages);
+   end Add_Restricted_Language;
 
    -------------------
    -- Add_To_Buffer --
@@ -360,6 +386,31 @@ package body Prj is
       return Name_Find;
    end Extend_Name;
 
+   -------------------------
+   -- Is_Allowed_Language --
+   -------------------------
+
+   function Is_Allowed_Language (Name : Name_Id) return Boolean is
+      R    : Restricted_Lang_Access := Restricted_Languages;
+      Lang : constant String := Get_Name_String (Name);
+
+   begin
+      if R = null then
+         return True;
+
+      else
+         while R /= null loop
+            if Get_Name_String (R.Name) = Lang then
+               return True;
+            end if;
+
+            R := R.Next;
+         end loop;
+
+         return False;
+      end if;
+   end Is_Allowed_Language;
+
    ---------------------
    -- Project_Changed --
    ---------------------
@@ -474,77 +525,127 @@ package body Prj is
       Imported_First     : Boolean := False)
    is
       use Project_Boolean_Htable;
-      Seen : Project_Boolean_Htable.Instance := Project_Boolean_Htable.Nil;
 
-      procedure Recursive_Check
-        (Project : Project_Id;
-         Tree    : Project_Tree_Ref);
-      --  Check if a project has already been seen. If not seen, mark it as
-      --  Seen, Call Action, and check all its imported projects.
+      procedure Recursive_Check_Context
+        (Project          : Project_Id;
+         Tree             : Project_Tree_Ref;
+         In_Aggregate_Lib : Boolean);
+      --  Recursively handle the project tree creating a new context for
+      --  keeping track about already handled projects.
 
-      ---------------------
-      -- Recursive_Check --
-      ---------------------
+      -----------------------------
+      -- Recursive_Check_Context --
+      -----------------------------
 
-      procedure Recursive_Check
-        (Project : Project_Id;
-         Tree    : Project_Tree_Ref)
+      procedure Recursive_Check_Context
+        (Project          : Project_Id;
+         Tree             : Project_Tree_Ref;
+         In_Aggregate_Lib : Boolean)
       is
-         List : Project_List;
+         package Name_Id_Set is
+           new Ada.Containers.Ordered_Sets (Element_Type => Name_Id);
+
+         Seen_Name : Name_Id_Set.Set;
+         --  This set is needed to ensure that we do not haandle the same
+         --  project twice in the context of aggregate libraries.
+
+         procedure Recursive_Check
+           (Project          : Project_Id;
+            Tree             : Project_Tree_Ref;
+            In_Aggregate_Lib : Boolean);
+         --  Check if project has already been seen. If not, mark it as Seen,
+         --  Call Action, and check all its imported and aggregated projects.
+
+         ---------------------
+         -- Recursive_Check --
+         ---------------------
+
+         procedure Recursive_Check
+           (Project          : Project_Id;
+            Tree             : Project_Tree_Ref;
+            In_Aggregate_Lib : Boolean)
+         is
+            List : Project_List;
+            T    : Project_Tree_Ref;
+
+         begin
+            if not Seen_Name.Contains (Project.Name) then
+
+               --  Even if a project is aggregated multiple times in an
+               --  aggregated library, we will only return it once.
+
+               Seen_Name.Include (Project.Name);
+
+               if not Imported_First then
+                  Action (Project, Tree, In_Aggregate_Lib, With_State);
+               end if;
+
+               --  Visit all extended projects
+
+               if Project.Extends /= No_Project then
+                  Recursive_Check (Project.Extends, Tree, In_Aggregate_Lib);
+               end if;
+
+               --  Visit all imported projects
+
+               List := Project.Imported_Projects;
+               while List /= null loop
+                  Recursive_Check (List.Project, Tree, In_Aggregate_Lib);
+                  List := List.Next;
+               end loop;
+
+               --  Visit all aggregated projects
+
+               if Include_Aggregated
+                 and then Project.Qualifier in Aggregate_Project
+               then
+                  declare
+                     Agg : Aggregated_Project_List;
+
+                  begin
+                     Agg := Project.Aggregated_Projects;
+                     while Agg /= null loop
+                        pragma Assert (Agg.Project /= No_Project);
+
+                        --  For aggregated libraries, the tree must be the one
+                        --  of the aggregate library.
+
+                        if Project.Qualifier = Aggregate_Library then
+                           T := Tree;
+                           Recursive_Check (Agg.Project, T, True);
+
+                        else
+                           T := Agg.Tree;
+
+                           --  Use a new context as we want to returns the same
+                           --  project in different project tree for aggregated
+                           --  projects.
+
+                           Recursive_Check_Context (Agg.Project, T, False);
+                        end if;
+
+                        Agg := Agg.Next;
+                     end loop;
+                  end;
+               end if;
+
+               if Imported_First then
+                  Action (Project, Tree, In_Aggregate_Lib, With_State);
+               end if;
+            end if;
+         end Recursive_Check;
+
+      --  Start of processing for Recursive_Check_Context
 
       begin
-         if not Get (Seen, Project) then
-            --  Even if a project is aggregated multiple times, we will only
-            --  return it once.
-
-            Set (Seen, Project, True);
-
-            if not Imported_First then
-               Action (Project, Tree, With_State);
-            end if;
-
-            --  Visit all extended projects
-
-            if Project.Extends /= No_Project then
-               Recursive_Check (Project.Extends, Tree);
-            end if;
-
-            --  Visit all imported projects
-
-            List := Project.Imported_Projects;
-            while List /= null loop
-               Recursive_Check (List.Project, Tree);
-               List := List.Next;
-            end loop;
-
-            --  Visit all aggregated projects
-
-            if Include_Aggregated
-              and then Project.Qualifier in Aggregate_Project
-            then
-               declare
-                  Agg : Aggregated_Project_List;
-               begin
-                  Agg := Project.Aggregated_Projects;
-                  while Agg /= null loop
-                     pragma Assert (Agg.Project /= No_Project);
-                     Recursive_Check (Agg.Project, Agg.Tree);
-                     Agg := Agg.Next;
-                  end loop;
-               end;
-            end if;
-
-            if Imported_First then
-               Action (Project, Tree, With_State);
-            end if;
-         end if;
-      end Recursive_Check;
+         Recursive_Check (Project, Tree, In_Aggregate_Lib);
+      end Recursive_Check_Context;
 
    --  Start of processing for For_Every_Project_Imported
 
    begin
-      Recursive_Check (Project => By, Tree => Tree);
-      Reset (Seen);
+      Recursive_Check_Context
+        (Project => By, Tree => Tree, In_Aggregate_Lib => False);
    end For_Every_Project_Imported;
 
    -----------------
@@ -562,9 +663,10 @@ package body Prj is
       Result : Source_Id  := No_Source;
 
       procedure Look_For_Sources
-        (Proj : Project_Id;
-         Tree : Project_Tree_Ref;
-         Src  : in out Source_Id);
+        (Proj         : Project_Id;
+         Tree         : Project_Tree_Ref;
+         In_Aggregate : Boolean;
+         Src          : in out Source_Id);
       --  Look for Base_Name in the sources of Proj
 
       ----------------------
@@ -572,10 +674,13 @@ package body Prj is
       ----------------------
 
       procedure Look_For_Sources
-        (Proj : Project_Id;
-         Tree : Project_Tree_Ref;
-         Src  : in out Source_Id)
+        (Proj         : Project_Id;
+         Tree         : Project_Tree_Ref;
+         In_Aggregate : Boolean;
+         Src          : in out Source_Id)
       is
+         pragma Unreferenced (In_Aggregate);
+
          Iterator : Source_Iterator;
 
       begin
@@ -610,14 +715,14 @@ package body Prj is
       if In_Extended_Only then
          Proj := Project;
          while Proj /= No_Project loop
-            Look_For_Sources (Proj, In_Tree, Result);
+            Look_For_Sources (Proj, In_Tree, False, Result);
             exit when Result /= No_Source;
 
             Proj := Proj.Extends;
          end loop;
 
       elsif In_Imported_Only then
-         Look_For_Sources (Project, In_Tree, Result);
+         Look_For_Sources (Project, In_Tree, False, Result);
 
          if Result = No_Source then
             For_Imported_Projects
@@ -628,7 +733,7 @@ package body Prj is
          end if;
 
       else
-         Look_For_Sources (No_Project, In_Tree, Result);
+         Look_For_Sources (No_Project, In_Tree, False, Result);
       end if;
 
       return Result;
@@ -1313,9 +1418,10 @@ package body Prj is
          Project : Project_Id;
 
          procedure Recursive_Add
-           (Prj   : Project_Id;
-            Tree  : Project_Tree_Ref;
-            Dummy : in out Boolean);
+           (Prj              : Project_Id;
+            Tree             : Project_Tree_Ref;
+            In_Aggregate_Lib : Boolean;
+            Dummy            : in out Boolean);
          --  Recursively add the projects imported by project Project, but not
          --  those that are extended.
 
@@ -1324,11 +1430,13 @@ package body Prj is
          -------------------
 
          procedure Recursive_Add
-           (Prj   : Project_Id;
-            Tree  : Project_Tree_Ref;
-            Dummy : in out Boolean)
+           (Prj              : Project_Id;
+            Tree             : Project_Tree_Ref;
+            In_Aggregate_Lib : Boolean;
+            Dummy            : in out Boolean)
          is
-            pragma Unreferenced (Dummy, Tree);
+            pragma Unreferenced (Dummy, Tree, In_Aggregate_Lib);
+
             List : Project_List;
             Prj2 : Project_Id;
 
@@ -1549,7 +1657,9 @@ package body Prj is
    procedure Debug_Output (Str : String) is
    begin
       if Current_Verbosity > Default then
+         Set_Standard_Error;
          Write_Line ((1 .. Debug_Level * 2 => ' ') & Str);
+         Set_Standard_Output;
       end if;
    end Debug_Output;
 
@@ -1560,7 +1670,9 @@ package body Prj is
    procedure Debug_Indent is
    begin
       if Current_Verbosity = High then
+         Set_Standard_Error;
          Write_Str ((1 .. Debug_Level * 2 => ' '));
+         Set_Standard_Output;
       end if;
    end Debug_Indent;
 
@@ -1572,6 +1684,7 @@ package body Prj is
    begin
       if Current_Verbosity = High then
          Debug_Indent;
+         Set_Standard_Error;
          Write_Str (Str);
 
          if Str2 = No_Name then
@@ -1579,6 +1692,8 @@ package body Prj is
          else
             Write_Line (" """ & Get_Name_String (Str2) & '"');
          end if;
+
+         Set_Standard_Output;
       end if;
    end Debug_Output;
 

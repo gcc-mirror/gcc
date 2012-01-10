@@ -8,10 +8,7 @@ package blowfish
 // The code is a port of Bruce Schneier's C implementation.
 // See http://www.schneier.com/blowfish.html.
 
-import (
-	"os"
-	"strconv"
-)
+import "strconv"
 
 // The Blowfish block size in bytes.
 const BlockSize = 8
@@ -24,13 +21,13 @@ type Cipher struct {
 
 type KeySizeError int
 
-func (k KeySizeError) String() string {
+func (k KeySizeError) Error() string {
 	return "crypto/blowfish: invalid key size " + strconv.Itoa(int(k))
 }
 
 // NewCipher creates and returns a Cipher.
 // The key argument should be the Blowfish key, 4 to 56 bytes.
-func NewCipher(key []byte) (*Cipher, os.Error) {
+func NewCipher(key []byte) (*Cipher, error) {
 	var result Cipher
 	k := len(key)
 	if k < 4 || k > 56 {
@@ -45,7 +42,7 @@ func NewCipher(key []byte) (*Cipher, os.Error) {
 // schedule. For most purposes, NewCipher, instead of NewSaltedCipher, is
 // sufficient and desirable. For bcrypt compatiblity, the key can be over 56
 // bytes.
-func NewSaltedCipher(key, salt []byte) (*Cipher, os.Error) {
+func NewSaltedCipher(key, salt []byte) (*Cipher, error) {
 	var result Cipher
 	k := len(key)
 	if k < 4 {
@@ -57,7 +54,7 @@ func NewSaltedCipher(key, salt []byte) (*Cipher, os.Error) {
 }
 
 // BlockSize returns the Blowfish block size, 8 bytes.
-// It is necessary to satisfy the Cipher interface in the
+// It is necessary to satisfy the Block interface in the
 // package "crypto/cipher".
 func (c *Cipher) BlockSize() int { return BlockSize }
 

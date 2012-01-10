@@ -117,6 +117,11 @@ fi
 AC_SUBST(LIBFFI)
 AC_SUBST(LIBFFIINCS)
 
+# Used to tell GNU make to include a file without telling automake to
+# include it.
+go_include="-include"
+AC_SUBST(go_include)
+
 is_darwin=no
 is_freebsd=no
 is_irix=no
@@ -272,23 +277,24 @@ AC_SUBST(GO_LIBCALL_OS_ARCH_FILE)
 AC_SUBST(GO_SYSCALL_OS_FILE)
 AC_SUBST(GO_SYSCALL_OS_ARCH_FILE)
 
-dnl Some targets need special flags to build sysinfo.go.
+dnl Special flags used to generate sysinfo.go.
+OSCFLAGS="-D_GNU_SOURCE -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
 case "$target" in
     mips-sgi-irix6.5*)
 	# IRIX 6 needs _XOPEN_SOURCE=500 for the XPG5 version of struct
 	# msghdr in <sys/socket.h>.
-	OSCFLAGS='-D_XOPEN_SOURCE=500'
+	OSCFLAGS="$OSCFLAGS -D_XOPEN_SOURCE=500"
 	;;
     *-*-solaris2.[[89]])
 	# Solaris 8/9 need this so struct msghdr gets the msg_control
 	# etc. fields in <sys/socket.h> (_XPG4_2).
-	OSCFLAGS='-D_XOPEN_SOURCE=500 -D_XOPEN_SOURCE_EXTENDED -D__EXTENSIONS__'
+	OSCFLAGS="$OSCFLAGS -D_XOPEN_SOURCE=500 -D_XOPEN_SOURCE_EXTENDED -D__EXTENSIONS__"
 	;;
     *-*-solaris2.1[[01]])
 	# Solaris 10+ needs this so struct msghdr gets the msg_control
-	# etc. fields in <sys/socket.h> (_XPG4_2).  _XOPEN_SOURCE=500 as
+	# etc. fields in <sys/socket.h> (_XPG4_2).  _XOPEN_SOURCE=600 as
 	# above doesn't work with C99.
-	OSCFLAGS='-D_XOPEN_SOURCE=600 -D__EXTENSIONS__'
+	OSCFLAGS="$OSCFLAGS -std=gnu99 -D_XOPEN_SOURCE=600 -D__EXTENSIONS__"
 	;;
 esac
 AC_SUBST(OSCFLAGS)
@@ -452,9 +458,17 @@ AC_CHECK_HEADERS([linux/filter.h linux/netlink.h linux/rtnetlink.h], [], [],
 
 AM_CONDITIONAL(HAVE_SYS_MMAN_H, test "$ac_cv_header_sys_mman_h" = yes)
 
-AC_CHECK_FUNCS(srandom random strerror_r strsignal wait4 mincore setenv)
+AC_CHECK_FUNCS(strerror_r strsignal wait4 mincore setenv)
 AM_CONDITIONAL(HAVE_STRERROR_R, test "$ac_cv_func_strerror_r" = yes)
 AM_CONDITIONAL(HAVE_WAIT4, test "$ac_cv_func_wait4" = yes)
+
+CFLAGS_hold="$CFLAGS"
+CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+LIBS_hold="$LIBS"
+LIBS="$LIBS $PTHREAD_LIBS"
+AC_CHECK_FUNCS(sem_timedwait)
+CFLAGS="$CFLAGS_hold"
+LIBS="$LIBS_hold"
 
 AC_CACHE_CHECK([for __sync_bool_compare_and_swap_4],
 [libgo_cv_func___sync_bool_compare_and_swap_4],

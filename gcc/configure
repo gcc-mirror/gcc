@@ -637,6 +637,7 @@ host_xm_defines
 host_xm_include_list
 host_xm_file_list
 host_exeext
+gcc_gxx_include_dir_add_sysroot
 gcc_gxx_include_dir
 gcc_config_arguments
 float_h_file
@@ -3333,6 +3334,15 @@ if test x${gcc_gxx_include_dir} = x; then
   fi
 fi
 
+gcc_gxx_include_dir_add_sysroot=0
+if test "${with_sysroot+set}" = set; then
+  gcc_gxx_without_sysroot=`expr "${gcc_gxx_include_dir}" : "${with_sysroot}"'\(.*\)'`
+  if test "${gcc_gxx_without_sysroot}"; then
+    gcc_gxx_include_dir="${gcc_gxx_without_sysroot}"
+    gcc_gxx_include_dir_add_sysroot=1
+  fi
+fi
+
 
 # Check whether --with-cpp_install_dir was given.
 if test "${with_cpp_install_dir+set}" = set; then :
@@ -4869,7 +4879,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_cc_gcc_supports_ada" >&5
 $as_echo "$acx_cv_cc_gcc_supports_ada" >&6; }
 
-if test x$GNATBIND != xno && test x$GNATMAKE != xno && test x$acx_cv_cc_gcc_supports_ada != xno; then
+if test "x$GNATBIND" != xno && test "x$GNATMAKE" != xno && test x$acx_cv_cc_gcc_supports_ada != xno; then
   have_gnat=yes
 else
   have_gnat=no
@@ -4943,9 +4953,6 @@ case "${target}" in
 	PICFLAG_FOR_TARGET=-fpic
 	;;
     m68k-*-*)
-	PICFLAG_FOR_TARGET=-fpic
-	;;
-    s390*-*-*)
 	PICFLAG_FOR_TARGET=-fpic
 	;;
     # FIXME: Override -fPIC default in libgcc only?
@@ -6420,7 +6427,13 @@ fi
 
 loose_warn=
 save_CFLAGS="$CFLAGS"
-for option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual; do
+for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual; do
+  # Do the check with the no- prefix removed since gcc silently
+  # accepts any -Wno-* option on purpose
+  case $real_option in
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
+    *) option=$real_option ;;
+  esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports $option" >&5
@@ -6452,14 +6465,20 @@ eval ac_res=\$$as_acx_Woption
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
   if test `eval 'as_val=${'$as_acx_Woption'};$as_echo "$as_val"'` = yes; then :
-  loose_warn="$loose_warn${loose_warn:+ }$option"
+  loose_warn="$loose_warn${loose_warn:+ }$real_option"
 fi
   done
 CFLAGS="$save_CFLAGS"
 
 c_loose_warn=
 save_CFLAGS="$CFLAGS"
-for option in -Wstrict-prototypes -Wmissing-prototypes; do
+for real_option in -Wstrict-prototypes -Wmissing-prototypes; do
+  # Do the check with the no- prefix removed since gcc silently
+  # accepts any -Wno-* option on purpose
+  case $real_option in
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
+    *) option=$real_option ;;
+  esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports $option" >&5
@@ -6491,14 +6510,20 @@ eval ac_res=\$$as_acx_Woption
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
   if test `eval 'as_val=${'$as_acx_Woption'};$as_echo "$as_val"'` = yes; then :
-  c_loose_warn="$c_loose_warn${c_loose_warn:+ }$option"
+  c_loose_warn="$c_loose_warn${c_loose_warn:+ }$real_option"
 fi
   done
 CFLAGS="$save_CFLAGS"
 
 strict_warn=
 save_CFLAGS="$CFLAGS"
-for option in -Wmissing-format-attribute; do
+for real_option in -Wmissing-format-attribute; do
+  # Do the check with the no- prefix removed since gcc silently
+  # accepts any -Wno-* option on purpose
+  case $real_option in
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
+    *) option=$real_option ;;
+  esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports $option" >&5
@@ -6530,14 +6555,20 @@ eval ac_res=\$$as_acx_Woption
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
   if test `eval 'as_val=${'$as_acx_Woption'};$as_echo "$as_val"'` = yes; then :
-  strict_warn="$strict_warn${strict_warn:+ }$option"
+  strict_warn="$strict_warn${strict_warn:+ }$real_option"
 fi
   done
 CFLAGS="$save_CFLAGS"
 
 c_strict_warn=
 save_CFLAGS="$CFLAGS"
-for option in -Wold-style-definition -Wc++-compat; do
+for real_option in -Wold-style-definition -Wc++-compat; do
+  # Do the check with the no- prefix removed since gcc silently
+  # accepts any -Wno-* option on purpose
+  case $real_option in
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
+    *) option=$real_option ;;
+  esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports $option" >&5
@@ -6569,19 +6600,21 @@ eval ac_res=\$$as_acx_Woption
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
   if test `eval 'as_val=${'$as_acx_Woption'};$as_echo "$as_val"'` = yes; then :
-  c_strict_warn="$c_strict_warn${c_strict_warn:+ }$option"
+  c_strict_warn="$c_strict_warn${c_strict_warn:+ }$real_option"
 fi
   done
 CFLAGS="$save_CFLAGS"
 
+# Do the check with the no- prefix removed from the warning options
+# since gcc silently accepts any -Wno-* option on purpose
 if test "$GCC" = yes; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports -pedantic -Wno-long-long -Wno-variadic-macros -Wno-overlength-strings" >&5
-$as_echo_n "checking whether $CC supports -pedantic -Wno-long-long -Wno-variadic-macros -Wno-overlength-strings... " >&6; }
-if test "${acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings+set}" = set; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports -pedantic -Wlong-long -Wvariadic-macros -Woverlength-strings" >&5
+$as_echo_n "checking whether $CC supports -pedantic -Wlong-long -Wvariadic-macros -Woverlength-strings... " >&6; }
+if test "${acx_cv_prog_cc_pedantic__Wlong_long__Wvariadic_macros__Woverlength_strings+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   save_CFLAGS="$CFLAGS"
-CFLAGS="-pedantic -Wno-long-long -Wno-variadic-macros -Wno-overlength-strings"
+CFLAGS="-pedantic -Wlong-long -Wvariadic-macros -Woverlength-strings"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -6594,16 +6627,16 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings=yes
+  acx_cv_prog_cc_pedantic__Wlong_long__Wvariadic_macros__Woverlength_strings=yes
 else
-  acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings=no
+  acx_cv_prog_cc_pedantic__Wlong_long__Wvariadic_macros__Woverlength_strings=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 CFLAGS="$save_CFLAGS"
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings" >&5
-$as_echo "$acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings" >&6; }
-if test $acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings = yes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_prog_cc_pedantic__Wlong_long__Wvariadic_macros__Woverlength_strings" >&5
+$as_echo "$acx_cv_prog_cc_pedantic__Wlong_long__Wvariadic_macros__Woverlength_strings" >&6; }
+if test $acx_cv_prog_cc_pedantic__Wlong_long__Wvariadic_macros__Woverlength_strings = yes; then :
   strict_warn="$strict_warn${strict_warn:+ }-pedantic -Wno-long-long -Wno-variadic-macros -Wno-overlength-strings"
 fi
 
@@ -6637,7 +6670,13 @@ fi
 # Disable exceptions and RTTI if building with g++
 noexception_flags=
 save_CFLAGS="$CFLAGS"
-for option in -fno-exceptions -fno-rtti; do
+for real_option in -fno-exceptions -fno-rtti; do
+  # Do the check with the no- prefix removed since gcc silently
+  # accepts any -Wno-* option on purpose
+  case $real_option in
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
+    *) option=$real_option ;;
+  esac
   as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports $option" >&5
@@ -6669,7 +6708,7 @@ eval ac_res=\$$as_acx_Woption
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
   if test `eval 'as_val=${'$as_acx_Woption'};$as_echo "$as_val"'` = yes; then :
-  noexception_flags="$noexception_flags${noexception_flags:+ }$option"
+  noexception_flags="$noexception_flags${noexception_flags:+ }$real_option"
 fi
   done
 CFLAGS="$save_CFLAGS"
@@ -16577,7 +16616,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
       ;;
 
     # Unfortunately, older versions of FreeBSD 2 do not have this feature.
-    freebsd2*)
+    freebsd2.*)
       archive_cmds='$LD -Bshareable -o $lib $libobjs $deplibs $linker_flags'
       hardcode_direct=yes
       hardcode_minus_L=yes
@@ -17490,7 +17529,7 @@ freebsd* | dragonfly*)
     objformat=`/usr/bin/objformat`
   else
     case $host_os in
-    freebsd[123]*) objformat=aout ;;
+    freebsd[23].*) objformat=aout ;;
     *) objformat=elf ;;
     esac
   fi
@@ -17508,7 +17547,7 @@ freebsd* | dragonfly*)
   esac
   shlibpath_var=LD_LIBRARY_PATH
   case $host_os in
-  freebsd2*)
+  freebsd2.*)
     shlibpath_overrides_runpath=yes
     ;;
   freebsd3.[01]* | freebsdelf3.[01]*)
@@ -18342,7 +18381,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18345 "configure"
+#line 18384 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18448,7 +18487,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18451 "configure"
+#line 18490 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19374,7 +19413,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
         esac
         ;;
 
-      freebsd[12]*)
+      freebsd2.*)
         # C++ shared libraries reported to be fairly broken before
 	# switch to ELF
         ld_shlibs_CXX=no
@@ -21149,7 +21188,7 @@ freebsd* | dragonfly*)
     objformat=`/usr/bin/objformat`
   else
     case $host_os in
-    freebsd[123]*) objformat=aout ;;
+    freebsd[23].*) objformat=aout ;;
     *) objformat=elf ;;
     esac
   fi
@@ -21167,7 +21206,7 @@ freebsd* | dragonfly*)
   esac
   shlibpath_var=LD_LIBRARY_PATH
   case $host_os in
-  freebsd2*)
+  freebsd2.*)
     shlibpath_overrides_runpath=yes
     ;;
   freebsd3.[01]* | freebsdelf3.[01]*)
@@ -25049,7 +25088,11 @@ else
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; }
     then
-	gcc_cv_as_ix86_tlsgdplt=yes
+	if test x$gcc_cv_ld != x \
+	 && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
+	   gcc_cv_as_ix86_tlsgdplt=yes
+	 fi
+	 rm -f conftest
     else
       echo "configure: failed program was" >&5
       cat conftest.s >&5
@@ -25080,7 +25123,11 @@ else
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; }
     then
-	gcc_cv_as_ix86_tlsldmplt=yes
+	if test x$gcc_cv_ld != x \
+	 && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
+	   gcc_cv_as_ix86_tlsldmplt=yes
+	 fi
+	 rm -f conftest
     else
       echo "configure: failed program was" >&5
       cat conftest.s >&5
@@ -27228,6 +27275,7 @@ fi
 
 
 # Substitute configuration variables
+
 
 
 

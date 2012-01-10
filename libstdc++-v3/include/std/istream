@@ -44,9 +44,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  // [27.6.1.1] Template class basic_istream
   /**
-   *  @brief  Controlling input.
+   *  @brief  Template class basic_istream.
    *  @ingroup io
    *
    *  This is the base class for all input streams.  It provides text
@@ -58,19 +57,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       // Types (inherited from basic_ios (27.4.4)):
-      typedef _CharT                     		char_type;
+      typedef _CharT			 		char_type;
       typedef typename _Traits::int_type 		int_type;
       typedef typename _Traits::pos_type 		pos_type;
       typedef typename _Traits::off_type 		off_type;
-      typedef _Traits                    		traits_type;
-      
+      typedef _Traits			 		traits_type;
+
       // Non-standard Types:
       typedef basic_streambuf<_CharT, _Traits> 		__streambuf_type;
       typedef basic_ios<_CharT, _Traits>		__ios_type;
       typedef basic_istream<_CharT, _Traits>		__istream_type;
-      typedef num_get<_CharT, istreambuf_iterator<_CharT, _Traits> >        
+      typedef num_get<_CharT, istreambuf_iterator<_CharT, _Traits> >
  							__num_get_type;
-      typedef ctype<_CharT>           			__ctype_type;
+      typedef ctype<_CharT>	      			__ctype_type;
 
     protected:
       // Data Members:
@@ -81,7 +80,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       streamsize 		_M_gcount;
 
     public:
-      // [27.6.1.1.1] constructor/destructor
       /**
        *  @brief  Base constructor.
        *
@@ -99,23 +97,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  This does very little apart from providing a virtual base dtor.
       */
-      virtual 
-      ~basic_istream() 
+      virtual
+      ~basic_istream()
       { _M_gcount = streamsize(0); }
 
-      // [27.6.1.1.2] prefix/suffix
+      /// Safe prefix/suffix operations.
       class sentry;
       friend class sentry;
 
-      // [27.6.1.2] formatted input
-      // [27.6.1.2.3] basic_istream::operator>>
       //@{
       /**
        *  @brief  Interface for manipulators.
        *
        *  Manipulators such as @c std::ws and @c std::dec use these
-       *  functions in constructs like 
-       *  <code>std::cin >> std::ws</code>. 
+       *  functions in constructs like
+       *  <code>std::cin >> std::ws</code>.
        *  For more information, see the iomanip header.
       */
       __istream_type&
@@ -124,7 +120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __istream_type&
       operator>>(__ios_type& (*__pf)(__ios_type&))
-      { 
+      {
 	__pf(*this);
 	return *this;
       }
@@ -136,10 +132,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
       //@}
-      
-      // [27.6.1.2.2] arithmetic extractors
+
+      //@{
       /**
-       *  @name Arithmetic Extractors
+       *  @name Extractors
        *
        *  All the @c operator>> functions (aka <em>formatted input
        *  functions</em>) have some common behavior.  Each starts by
@@ -156,64 +152,84 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  ios_base::failure to be thrown.  The original exception will then
        *  be rethrown.
       */
+
       //@{
       /**
-       *  @brief  Basic arithmetic extractors
-       *  @param  __n, __f, __p: A variable of builtin type.
+       *  @brief  Integer arithmetic extractors
+       *  @param  __n A variable of builtin integral type.
        *  @return  @c *this if successful
        *
        *  These functions use the stream's current locale (specifically, the
        *  @c num_get facet) to parse the input data.
       */
-      __istream_type& 
+      __istream_type&
       operator>>(bool& __n)
       { return _M_extract(__n); }
-      
-      __istream_type& 
+
+      __istream_type&
       operator>>(short& __n);
-      
-      __istream_type& 
+
+      __istream_type&
       operator>>(unsigned short& __n)
       { return _M_extract(__n); }
 
-      __istream_type& 
+      __istream_type&
       operator>>(int& __n);
-    
-      __istream_type& 
+
+      __istream_type&
       operator>>(unsigned int& __n)
       { return _M_extract(__n); }
 
-      __istream_type& 
+      __istream_type&
       operator>>(long& __n)
       { return _M_extract(__n); }
-      
-      __istream_type& 
+
+      __istream_type&
       operator>>(unsigned long& __n)
       { return _M_extract(__n); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
-      __istream_type& 
+      __istream_type&
       operator>>(long long& __n)
       { return _M_extract(__n); }
 
-      __istream_type& 
+      __istream_type&
       operator>>(unsigned long long& __n)
       { return _M_extract(__n); }
 #endif
+      //@}
 
-      __istream_type& 
+      //@{
+      /**
+       *  @brief  Floating point arithmetic extractors
+       *  @param  __f A variable of builtin floating point type.
+       *  @return  @c *this if successful
+       *
+       *  These functions use the stream's current locale (specifically, the
+       *  @c num_get facet) to parse the input data.
+      */
+      __istream_type&
       operator>>(float& __f)
       { return _M_extract(__f); }
 
-      __istream_type& 
+      __istream_type&
       operator>>(double& __f)
       { return _M_extract(__f); }
 
-      __istream_type& 
+      __istream_type&
       operator>>(long double& __f)
       { return _M_extract(__f); }
+      //@}
 
-      __istream_type& 
+      /**
+       *  @brief  Basic arithmetic extractors
+       *  @param  __p A variable of pointer type.
+       *  @return  @c *this if successful
+       *
+       *  These functions use the stream's current locale (specifically, the
+       *  @c num_get facet) to parse the input data.
+      */
+      __istream_type&
       operator>>(void*& __p)
       { return _M_extract(__p); }
 
@@ -225,10 +241,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  in that it also constructs a sentry object and has the same error
        *  handling behavior.
        *
-       *  If @a __sb is NULL, the stream will set failbit in its error state.
+       *  If @p __sb is NULL, the stream will set failbit in its error state.
        *
        *  Characters are extracted from this stream and inserted into the
-       *  @a sb streambuf until one of the following occurs:
+       *  @p __sb streambuf until one of the following occurs:
        *
        *  - the input stream reaches end-of-file,
        *  - insertion into the output buffer fails (in this case, the
@@ -237,20 +253,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  If the function inserts no characters, failbit is set.
       */
-      __istream_type& 
+      __istream_type&
       operator>>(__streambuf_type* __sb);
       //@}
-      
+
       // [27.6.1.3] unformatted input
       /**
        *  @brief  Character counting
        *  @return  The number of characters extracted by the previous
        *           unformatted input function dispatched for this stream.
       */
-      streamsize 
-      gcount() const 
+      streamsize
+      gcount() const
       { return _M_gcount; }
-      
+
+      //@{
       /**
        *  @name Unformatted Input Functions
        *
@@ -271,7 +288,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  ios_base::failure to be thrown.  The original exception will then
        *  be rethrown.
       */
-      //@{
+
       /**
        *  @brief  Simple extraction.
        *  @return  A character, or eof().
@@ -279,7 +296,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Tries to extract a character.  If none are available, sets failbit
        *  and returns traits::eof().
       */
-      int_type 
+      int_type
       get();
 
       /**
@@ -293,7 +310,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @note  This function is not overloaded on signed char and
        *         unsigned char.
       */
-      __istream_type& 
+      __istream_type&
       get(char_type& __c);
 
       /**
@@ -320,7 +337,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @note  This function is not overloaded on signed char and
        *         unsigned char.
       */
-      __istream_type& 
+      __istream_type&
       get(char_type* __s, streamsize __n, char_type __delim);
 
       /**
@@ -331,7 +348,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Returns @c get(__s,__n,widen(&apos;\\n&apos;)).
       */
-      __istream_type& 
+      __istream_type&
       get(char_type* __s, streamsize __n)
       { return this->get(__s, __n, this->widen('\n')); }
 
@@ -393,7 +410,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  In any case, a null character is stored in the next location in
        *  the array.
       */
-      __istream_type& 
+      __istream_type&
       getline(char_type* __s, streamsize __n, char_type __delim);
 
       /**
@@ -404,7 +421,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Returns @c getline(__s,__n,widen(&apos;\\n&apos;)).
       */
-      __istream_type& 
+      __istream_type&
       getline(char_type* __s, streamsize __n)
       { return this->getline(__s, __n, this->widen('\n')); }
 
@@ -428,13 +445,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  better performing implementation, while still conforming to
        *  the Standard.
       */
-      __istream_type& 
+      __istream_type&
       ignore(streamsize __n, int_type __delim);
 
-      __istream_type& 
+      __istream_type&
       ignore(streamsize __n);
 
-      __istream_type& 
+      __istream_type&
       ignore();
 
       /**
@@ -445,9 +462,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  returns @c traits::eof().  Otherwise reads but does not extract
        *  the next input character.
       */
-      int_type 
+      int_type
       peek();
-      
+
       /**
        *  @brief  Extraction without delimiters.
        *  @param  __s  A character array.
@@ -463,7 +480,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @note  This function is not overloaded on signed char and
        *         unsigned char.
       */
-      __istream_type& 
+      __istream_type&
       read(char_type* __s, streamsize __n);
 
       /**
@@ -482,9 +499,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  The goal is to empty the current buffer, and to not request any
        *  more from the external input sequence controlled by the streambuf.
       */
-      streamsize 
+      streamsize
       readsome(char_type* __s, streamsize __n);
-      
+
       /**
        *  @brief  Unextracting a single character.
        *  @param  __c  The character to push back into the input stream.
@@ -499,7 +516,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *         are extracted, the next call to @c gcount() will return 0,
        *         as required by DR 60.
       */
-      __istream_type& 
+      __istream_type&
       putback(char_type __c);
 
       /**
@@ -515,7 +532,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *         are extracted, the next call to @c gcount() will return 0,
        *         as required by DR 60.
       */
-      __istream_type& 
+      __istream_type&
       unget();
 
       /**
@@ -533,7 +550,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *         extracted, if any, and therefore does not affect the next
        *         call to @c gcount().
       */
-      int 
+      int
       sync();
 
       /**
@@ -579,7 +596,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *         number of characters extracted, if any, and therefore does
        *         not affect the next call to @c gcount().
       */
-      __istream_type& 
+      __istream_type&
       seekg(off_type, ios_base::seekdir);
       //@}
 
@@ -589,29 +606,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { this->init(0); }
 
       template<typename _ValueT>
-        __istream_type&
-        _M_extract(_ValueT& __v);
+	__istream_type&
+	_M_extract(_ValueT& __v);
     };
 
-  // Explicit specialization declarations, defined in src/istream.cc.
-  template<> 
-    basic_istream<char>& 
+  /// Explicit specialization declarations, defined in src/istream.cc.
+  template<>
+    basic_istream<char>&
     basic_istream<char>::
     getline(char_type* __s, streamsize __n, char_type __delim);
-  
+
   template<>
     basic_istream<char>&
     basic_istream<char>::
     ignore(streamsize __n);
-  
+
   template<>
     basic_istream<char>&
     basic_istream<char>::
     ignore(streamsize __n, int_type __delim);
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  template<> 
-    basic_istream<wchar_t>& 
+  template<>
+    basic_istream<wchar_t>&
     basic_istream<wchar_t>::
     getline(char_type* __s, streamsize __n, char_type __delim);
 
@@ -619,7 +636,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_istream<wchar_t>&
     basic_istream<wchar_t>::
     ignore(streamsize __n);
-  
+
   template<>
     basic_istream<wchar_t>&
     basic_istream<wchar_t>::
@@ -687,7 +704,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_ok; }
     };
 
-  // [27.6.1.2.3] character extraction templates
   //@{
   /**
    *  @brief  Character extractors
@@ -762,9 +778,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return (__in >> reinterpret_cast<char*>(__s)); }
   //@}
 
-  // 27.6.1.5 Template class basic_iostream
   /**
-   *  @brief  Merging istream and ostream capabilities.
+   *  @brief  Template class basic_iostream
    *  @ingroup io
    *
    *  This class multiply inherits from the input and output stream classes
@@ -772,18 +787,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _CharT, typename _Traits>
     class basic_iostream
-    : public basic_istream<_CharT, _Traits>, 
+    : public basic_istream<_CharT, _Traits>,
       public basic_ostream<_CharT, _Traits>
     {
     public:
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 271. basic_iostream missing typedefs
       // Types (inherited):
-      typedef _CharT                     		char_type;
+      typedef _CharT			 		char_type;
       typedef typename _Traits::int_type 		int_type;
       typedef typename _Traits::pos_type 		pos_type;
       typedef typename _Traits::off_type 		off_type;
-      typedef _Traits                    		traits_type;
+      typedef _Traits			 		traits_type;
 
       // Non-standard Types:
       typedef basic_istream<_CharT, _Traits>		__istream_type;
@@ -802,7 +817,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        *  @brief  Destructor does nothing.
       */
-      virtual 
+      virtual
       ~basic_iostream() { }
 
     protected:
@@ -810,7 +825,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : __istream_type(), __ostream_type() { }
     };
 
-  // [27.6.1.4] standard basic_istream manipulators
   /**
    *  @brief  Quick and easy way to eat whitespace
    *
@@ -832,7 +846,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  std::basic_istream::sentry inside your definition of operator>>.
   */
   template<typename _CharT, typename _Traits>
-    basic_istream<_CharT, _Traits>& 
+    basic_istream<_CharT, _Traits>&
     ws(basic_istream<_CharT, _Traits>& __is);
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__

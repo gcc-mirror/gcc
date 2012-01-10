@@ -1298,8 +1298,7 @@ experimental option which may become the default in a later release.
 @item --enable-build-poststage1-with-cxx
 When bootstrapping, build stages 2 and 3 of GCC using a C++ compiler
 rather than a C compiler.  Stage 1 is still built with a C compiler.
-This is an experimental option which may become the default in a later
-release.  This is enabled by default and may be disabled using
+This is enabled by default and may be disabled using
 @option{--disable-build-poststage1-with-cxx}.
 
 @item --enable-maintainer-mode
@@ -4137,6 +4136,13 @@ the PSIM simulator.
 @end html
 @heading @anchor{powerpcle-x-eabi}powerpcle-*-eabi
 Embedded PowerPC system in little endian mode.
+
+@html
+<hr />
+@end html
+@heading @anchor{rl78-x-elf}rl78-*-elf
+The Renesas RL78 processor.
+This configuration is intended for embedded systems.
 
 @html
 <hr />

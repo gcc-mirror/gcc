@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for ARM.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
@@ -122,24 +122,6 @@ enum target_cpus
 
 /* The processor for which instructions should be scheduled.  */
 extern enum processor_type arm_tune;
-
-enum arm_sync_generator_tag
-  {
-    arm_sync_generator_omn,
-    arm_sync_generator_omrn
-  };
-
-/* Wrapper to pass around a polymorphic pointer to a sync instruction
-   generator and.  */
-struct arm_sync_generator
-{
-  enum arm_sync_generator_tag op;
-  union
-  {
-    rtx (* omn) (rtx, rtx, rtx);
-    rtx (* omrn) (rtx, rtx, rtx, rtx);
-  } u;
-};
 
 typedef enum arm_cond_code
 {
@@ -1281,26 +1263,6 @@ do {									      \
 
 /* If defined, gives a class of registers that cannot be used as the
    operand of a SUBREG that changes the mode of the object illegally.  */
-
-/* Moves between FPA_REGS and GENERAL_REGS are two memory insns.
-   Moves between VFP_REGS and GENERAL_REGS are a single insn, but
-   it is typically more expensive than a single memory access.  We set
-   the cost to less than two memory accesses so that floating
-   point to integer conversion does not go through memory.  */
-#define REGISTER_MOVE_COST(MODE, FROM, TO)		\
-  (TARGET_32BIT ?						\
-   ((FROM) == FPA_REGS && (TO) != FPA_REGS ? 20 :	\
-    (FROM) != FPA_REGS && (TO) == FPA_REGS ? 20 :	\
-    IS_VFP_CLASS (FROM) && !IS_VFP_CLASS (TO) ? 15 :	\
-    !IS_VFP_CLASS (FROM) && IS_VFP_CLASS (TO) ? 15 :	\
-    (FROM) == IWMMXT_REGS && (TO) != IWMMXT_REGS ? 4 :  \
-    (FROM) != IWMMXT_REGS && (TO) == IWMMXT_REGS ? 4 :  \
-    (FROM) == IWMMXT_GR_REGS || (TO) == IWMMXT_GR_REGS ? 20 :  \
-    (FROM) == CIRRUS_REGS && (TO) != CIRRUS_REGS ? 20 :	\
-    (FROM) != CIRRUS_REGS && (TO) == CIRRUS_REGS ? 20 :	\
-   2)							\
-   :							\
-   ((FROM) == HI_REGS || (TO) == HI_REGS) ? 4 : 2)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -1347,32 +1309,6 @@ do {									      \
 
 /* Offset of first parameter from the argument pointer register value.  */
 #define FIRST_PARM_OFFSET(FNDECL)  (TARGET_ARM ? 4 : 0)
-
-/* Define how to find the value returned by a library function
-   assuming the value has mode MODE.  */
-#define LIBCALL_VALUE(MODE)  						\
-  (TARGET_AAPCS_BASED ? aapcs_libcall_value (MODE)			\
-   : (TARGET_32BIT && TARGET_HARD_FLOAT_ABI && TARGET_FPA		\
-      && GET_MODE_CLASS (MODE) == MODE_FLOAT)				\
-   ? gen_rtx_REG (MODE, FIRST_FPA_REGNUM)				\
-   : TARGET_32BIT && TARGET_HARD_FLOAT_ABI && TARGET_MAVERICK		\
-     && GET_MODE_CLASS (MODE) == MODE_FLOAT				\
-   ? gen_rtx_REG (MODE, FIRST_CIRRUS_FP_REGNUM) 			\
-   : TARGET_IWMMXT_ABI && arm_vector_mode_supported_p (MODE)    	\
-   ? gen_rtx_REG (MODE, FIRST_IWMMXT_REGNUM) 				\
-   : gen_rtx_REG (MODE, ARG_REGISTER (1)))
-
-/* 1 if REGNO is a possible register number for a function value.  */
-#define FUNCTION_VALUE_REGNO_P(REGNO)				\
-  ((REGNO) == ARG_REGISTER (1)					\
-   || (TARGET_AAPCS_BASED && TARGET_32BIT 			\
-       && TARGET_VFP && TARGET_HARD_FLOAT			\
-       && (REGNO) == FIRST_VFP_REGNUM)				\
-   || (TARGET_32BIT && ((REGNO) == FIRST_CIRRUS_FP_REGNUM)	\
-       && TARGET_HARD_FLOAT_ABI && TARGET_MAVERICK)		\
-   || ((REGNO) == FIRST_IWMMXT_REGNUM && TARGET_IWMMXT_ABI)	\
-   || (TARGET_32BIT && ((REGNO) == FIRST_FPA_REGNUM)		\
-       && TARGET_HARD_FLOAT_ABI && TARGET_FPA))
 
 /* Amount of memory needed for an untyped call to save all possible return
    registers.  */
@@ -1978,12 +1914,6 @@ typedef struct
 #define ARM_FRAME_RTX(X)					\
   (   (X) == frame_pointer_rtx || (X) == stack_pointer_rtx	\
    || (X) == arg_pointer_rtx)
-
-/* Moves to and from memory are quite expensive */
-#define MEMORY_MOVE_COST(M, CLASS, IN)			\
-  (TARGET_32BIT ? 10 :					\
-   ((GET_MODE_SIZE (M) < 4 ? 8 : 2 * GET_MODE_SIZE (M))	\
-    * (CLASS == LO_REGS ? 1 : 2)))
 
 /* Try to generate sequences that don't involve branches, we can then use
    conditional instructions */

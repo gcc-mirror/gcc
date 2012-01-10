@@ -843,22 +843,24 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     : public integral_constant<int, 0>
     { };
 
-  /// The type of placeholder objects defined by libstdc++.
+  /** @brief The type of placeholder objects defined by libstdc++.
+   *  @ingroup binders
+   */
   template<int _Num> struct _Placeholder { };
 
   _GLIBCXX_END_NAMESPACE_VERSION
 
   /** @namespace std::placeholders
-   *  @brief ISO C++ 0x entities sub namespace for functional.
+   *  @brief ISO C++11 entities sub-namespace for functional.
    *  @ingroup binders
-   *
-   *  Define a large number of placeholders. There is no way to
-   *  simplify this with variadic templates, because we're introducing
-   *  unique names for each.
    */
   namespace placeholders
   {
   _GLIBCXX_BEGIN_NAMESPACE_VERSION
+  /* Define a large number of placeholders. There is no way to
+   * simplify this with variadic templates, because we're introducing
+   * unique names for each.
+   */
     extern const _Placeholder<1> _1;
     extern const _Placeholder<2> _2;
     extern const _Placeholder<3> _3;
@@ -900,6 +902,11 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
    */
   template<int _Num>
     struct is_placeholder<_Placeholder<_Num> >
+    : public integral_constant<int, _Num>
+    { };
+
+  template<int _Num>
+    struct is_placeholder<const _Placeholder<_Num> >
     : public integral_constant<int, _Num>
     { };
 
@@ -1424,8 +1431,56 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
    *  @brief Class template _Bind is always a bind expression.
    *  @ingroup binders
    */
+  template<typename _Signature>
+    struct is_bind_expression<const _Bind<_Signature> >
+    : public true_type { };
+
+  /**
+   *  @brief Class template _Bind is always a bind expression.
+   *  @ingroup binders
+   */
+  template<typename _Signature>
+    struct is_bind_expression<volatile _Bind<_Signature> >
+    : public true_type { };
+
+  /**
+   *  @brief Class template _Bind is always a bind expression.
+   *  @ingroup binders
+   */
+  template<typename _Signature>
+    struct is_bind_expression<const volatile _Bind<_Signature>>
+    : public true_type { };
+
+  /**
+   *  @brief Class template _Bind_result is always a bind expression.
+   *  @ingroup binders
+   */
   template<typename _Result, typename _Signature>
-    struct is_bind_expression<_Bind_result<_Result, _Signature> >
+    struct is_bind_expression<_Bind_result<_Result, _Signature>>
+    : public true_type { };
+
+  /**
+   *  @brief Class template _Bind_result is always a bind expression.
+   *  @ingroup binders
+   */
+  template<typename _Result, typename _Signature>
+    struct is_bind_expression<const _Bind_result<_Result, _Signature>>
+    : public true_type { };
+
+  /**
+   *  @brief Class template _Bind_result is always a bind expression.
+   *  @ingroup binders
+   */
+  template<typename _Result, typename _Signature>
+    struct is_bind_expression<volatile _Bind_result<_Result, _Signature>>
+    : public true_type { };
+
+  /**
+   *  @brief Class template _Bind_result is always a bind expression.
+   *  @ingroup binders
+   */
+  template<typename _Result, typename _Signature>
+    struct is_bind_expression<const volatile _Bind_result<_Result, _Signature>>
     : public true_type { };
 
   // Trait type used to remove std::bind() from overload set via SFINAE
@@ -1578,7 +1633,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
   class bad_function_call : public std::exception
   {
   public:
-    virtual ~bad_function_call() throw();
+    virtual ~bad_function_call() noexcept;
   };
 
   /**

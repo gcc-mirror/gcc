@@ -738,10 +738,10 @@ public:
 
       /**
        *  @brief  Use a subset of a string.
-       *  @param  str  A string of '0' and '1' characters.
-       *  @param  pos  Index of the first character in @a s to use.
-       *  @param  n    The number of characters to copy.
-       *  @throw  std::out_of_range  If @a pos is bigger the size of @a s.
+       *  @param  __str  A string of '0' and '1' characters.
+       *  @param  __pos  Index of the first character in @p __str to use.
+       *  @param  __n    The number of characters to copy.
+       *  @throw  std::out_of_range  If @p __pos is bigger the size of @p __str.
        *  @throw  std::invalid_argument  If a character appears in the string
        *                                 which is neither '0' nor '1'.
        */
@@ -770,7 +770,7 @@ public:
 
       /**
        *  @brief  Construct from a string.
-       *  @param  str  A string of '0' and '1' characters.
+       *  @param  __str  A string of '0' and '1' characters.
        *  @throw  std::invalid_argument  If a character appears in the string
        *                                 which is neither '0' nor '1'.
        */
@@ -907,7 +907,7 @@ public:
       //@{
       /**
        *  @brief  Operations on dynamic_bitsets.
-       *  @param  rhs  A same-sized dynamic_bitset.
+       *  @param  __rhs  A same-sized dynamic_bitset.
        *
        *  These should be self-explanatory.
        */
@@ -950,7 +950,7 @@ public:
       //@{
       /**
        *  @brief  Operations on dynamic_bitsets.
-       *  @param  position  The number of places to shift.
+       *  @param  __pos The number of places to shift.
        *
        *  These should be self-explanatory.
        */
@@ -995,9 +995,9 @@ public:
 
       /**
        *  @brief Sets a given bit to a particular value.
-       *  @param  position  The index of the bit.
-       *  @param  val  Either true or false, defaults to true.
-       *  @throw  std::out_of_range  If @a pos is bigger the size of the %set.
+       *  @param  __pos  The index of the bit.
+       *  @param  __val  Either true or false, defaults to true.
+       *  @throw  std::out_of_range  If @a __pos is bigger the size of the %set.
        */
       dynamic_bitset<_WordT, _Alloc>&
       set(size_type __pos, bool __val = true)
@@ -1019,10 +1019,10 @@ public:
 
       /**
        *  @brief Sets a given bit to false.
-       *  @param  position  The index of the bit.
-       *  @throw  std::out_of_range  If @a pos is bigger the size of the %set.
+       *  @param  __pos  The index of the bit.
+       *  @throw  std::out_of_range  If @a __pos is bigger the size of the %set.
        *
-       *  Same as writing @c set(pos,false).
+       *  Same as writing @c set(__pos, false).
        */
       dynamic_bitset<_WordT, _Alloc>&
       reset(size_type __pos)
@@ -1045,8 +1045,8 @@ public:
 
       /**
        *  @brief Toggles a given bit to its opposite value.
-       *  @param  position  The index of the bit.
-       *  @throw  std::out_of_range  If @a pos is bigger the size of the %set.
+       *  @param  __pos  The index of the bit.
+       *  @throw  std::out_of_range  If @a __pos is bigger the size of the %set.
        */
       dynamic_bitset<_WordT, _Alloc>&
       flip(size_type __pos)
@@ -1064,7 +1064,7 @@ public:
       //@{
       /**
        *  @brief  Array-indexing support.
-       *  @param  position  Index into the %dynamic_bitset.
+       *  @param  __pos  Index into the %dynamic_bitset.
        *  @return A bool for a 'const %dynamic_bitset'.  For non-const
        *           bitsets, an instance of the reference proxy class.
        *  @note These operators do no range checking and throw no
@@ -1167,9 +1167,9 @@ public:
 
       /**
        *  @brief Tests the value of a bit.
-       *  @param  position  The index of a bit.
-       *  @return  The value at @a pos.
-       *  @throw  std::out_of_range  If @a pos is bigger the size of the %set.
+       *  @param  __pos  The index of a bit.
+       *  @return  The value at @a __pos.
+       *  @throw  std::out_of_range  If @a __pos is bigger the size of the %set.
        */
       bool
       test(size_type __pos) const
@@ -1226,7 +1226,7 @@ public:
       /**
        *  @brief  Finds the index of the next "on" bit after prev.
        *  @return  The index of the next bit set, or size() if not found.
-       *  @param  prev  Where to start searching.
+       *  @param  __prev  Where to start searching.
        *  @sa  find_first
        */
       size_type
@@ -1321,8 +1321,8 @@ public:
   //@{
   /**
    *  @brief  Global bitwise operations on bitsets.
-   *  @param  x  A bitset.
-   *  @param  y  A bitset of the same size as @a x.
+   *  @param  __x  A bitset.
+   *  @param  __y  A bitset of the same size as @a __x.
    *  @return  A new bitset.
    *
    *  These should be self-explanatory.

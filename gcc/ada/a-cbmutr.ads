@@ -107,6 +107,14 @@ package Ada.Containers.Bounded_Multiway_Trees is
      (Element : not null access Element_Type) is private
         with Implicit_Dereference => Element;
 
+   function Constant_Reference
+     (Container : aliased Tree;
+      Position  : Cursor) return Constant_Reference_Type;
+
+   function Reference
+     (Container : aliased in out Tree;
+      Position  : Cursor) return Reference_Type;
+
    procedure Assign (Target : in out Tree; Source : Tree);
 
    function Copy (Source : Tree; Capacity : Count_Type := 0) return Tree;
@@ -301,6 +309,11 @@ package Ada.Containers.Bounded_Multiway_Trees is
 private
    use Ada.Streams;
 
+   No_Node : constant Count_Type'Base := -1;
+   --  Need to document all global declarations such as this ???
+
+   --  Following decls also need much more documentation ???
+
    type Children_Type is record
       First : Count_Type'Base;
       Last  : Count_Type'Base;
@@ -319,7 +332,7 @@ private
    type Tree (Capacity : Count_Type) is tagged record
       Nodes    : Tree_Node_Array (0 .. Capacity) := (others => <>);
       Elements : Element_Array (1 .. Capacity) := (others => <>);
-      Free     : Count_Type'Base := -1;
+      Free     : Count_Type'Base := No_Node;
       Busy     : Integer := 0;
       Lock     : Integer := 0;
       Count    : Count_Type := 0;
@@ -342,7 +355,7 @@ private
 
    type Cursor is record
       Container : Tree_Access;
-      Node      : Count_Type'Base := -1;
+      Node      : Count_Type'Base := No_Node;
    end record;
 
    procedure  Read
@@ -370,6 +383,7 @@ private
 
    type Reference_Type
      (Element : not null access Element_Type) is null record;
+
    procedure Write
      (Stream : not null access Root_Stream_Type'Class;
       Item   : Reference_Type);
@@ -379,14 +393,6 @@ private
      (Stream : not null access Root_Stream_Type'Class;
       Item   : out Reference_Type);
    for Reference_Type'Read use Read;
-
-   function Constant_Reference
-     (Container : aliased Tree;
-      Position  : Cursor) return Constant_Reference_Type;
-
-   function Reference
-     (Container : aliased Tree;
-      Position  : Cursor) return Reference_Type;
 
    Empty_Tree : constant Tree := (Capacity => 0, others => <>);
 

@@ -196,11 +196,12 @@ in the following sections.
 -fno-default-inline  -fvisibility-inlines-hidden @gol
 -fvisibility-ms-compat @gol
 -Wabi  -Wconversion-null  -Wctor-dtor-privacy @gol
--Wnoexcept -Wnon-virtual-dtor  -Wreorder @gol
+-Wdelete-non-virtual-dtor -Wnarrowing -Wnoexcept @gol
+-Wnon-virtual-dtor  -Wreorder @gol
 -Weffc++  -Wstrict-null-sentinel @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
 -Woverloaded-virtual  -Wno-pmf-conversions @gol
--Wsign-promo -Wzero-as-null-pointer-constant}
+-Wsign-promo}
 
 @item Objective-C and Objective-C++ Language Options
 @xref{Objective-C and Objective-C++ Dialect Options,,Options Controlling
@@ -272,7 +273,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-unused-result -Wunused-value @gol -Wunused-variable @gol
 -Wunused-but-set-parameter -Wunused-but-set-variable @gol
 -Wvariadic-macros -Wvector-operation-performance -Wvla 
--Wvolatile-register-var  -Wwrite-strings}
+-Wvolatile-register-var  -Wwrite-strings -Wzero-as-null-pointer-constant}
 
 @item C and Objective-C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
@@ -385,7 +386,7 @@ Objective-C and Objective-C++ Dialects}.
 -fprofile-correction -fprofile-dir=@var{path} -fprofile-generate @gol
 -fprofile-generate=@var{path} @gol
 -fprofile-use -fprofile-use=@var{path} -fprofile-values @gol
--freciprocal-math -fregmove -frename-registers -freorder-blocks @gol
+-freciprocal-math -free -fregmove -frename-registers -freorder-blocks @gol
 -freorder-blocks-and-partition -freorder-functions @gol
 -frerun-cse-after-loop -freschedule-modulo-scheduled-loops @gol
 -frounding-math -fsched2-use-superblocks -fsched-pressure @gol
@@ -778,6 +779,9 @@ Objective-C and Objective-C++ Dialects}.
 @emph{PowerPC Options}
 See RS/6000 and PowerPC Options.
 
+@emph{RL78 Options}
+@gccoptlist{-msim -mmul=none -mmul=g13 -mmul=rl78}
+
 @emph{RS/6000 and PowerPC Options}
 @gccoptlist{-mcpu=@var{cpu-type} @gol
 -mtune=@var{cpu-type} @gol
@@ -874,7 +878,7 @@ See RS/6000 and PowerPC Options.
 -mprefergot  -musermode -multcost=@var{number} -mdiv=@var{strategy} @gol
 -mdivsi3_libfunc=@var{name} -mfixed-range=@var{register-range} @gol
 -madjust-unroll -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
--maccumulate-outgoing-args -minvalid-symbols}
+-maccumulate-outgoing-args -minvalid-symbols -msoft-atomic}
 
 @emph{Solaris 2 Options}
 @gccoptlist{-mimpure-text  -mno-impure-text @gol
@@ -884,6 +888,7 @@ See RS/6000 and PowerPC Options.
 @gccoptlist{-mcpu=@var{cpu-type} @gol
 -mtune=@var{cpu-type} @gol
 -mcmodel=@var{code-model} @gol
+-mmemory-model=@var{mem-model} @gol
 -m32  -m64  -mapp-regs  -mno-app-regs @gol
 -mfaster-structs  -mno-faster-structs  -mflat  -mno-flat @gol
 -mfpu  -mno-fpu  -mhard-float  -msoft-float @gol
@@ -1553,11 +1558,12 @@ ISO C99.  Note that this standard is not yet fully supported; see
 @w{@uref{http://gcc.gnu.org/c99status.html}} for more information.  The
 names @samp{c9x} and @samp{iso9899:199x} are deprecated.
 
-@item c1x
-ISO C1X, the draft of the next revision of the ISO C standard.
-Support is limited and experimental and features enabled by this
-option may be changed or removed if changed in or removed from the
-standard draft.
+@item c11
+@itemx c1x
+@itemx iso9899:2011
+ISO C11, the 2011 revision of the ISO C standard.
+Support is incomplete and experimental.  The name @samp{c1x} is
+deprecated.
 
 @item gnu90
 @itemx gnu89
@@ -1569,10 +1575,10 @@ is the default for C code.
 GNU dialect of ISO C99.  When ISO C99 is fully implemented in GCC,
 this will become the default.  The name @samp{gnu9x} is deprecated.
 
+@item gnu11
 @item gnu1x
-GNU dialect of ISO C1X.  Support is limited and experimental and
-features enabled by this option may be changed or removed if changed
-in or removed from the standard draft.
+GNU dialect of ISO C11.  Support is incomplete and experimental.  The
+name @samp{gnu1x} is deprecated.
 
 @item c++98
 The 1998 ISO C++ standard plus amendments. Same as @option{-ansi} for
@@ -1736,6 +1742,9 @@ For more information on GCC's support for transactional memory,
 @xref{Enabling libitm,,The GNU Transactional Memory Library,libitm,GNU
 Transactional Memory Library}.
 
+Note that the transactional memory feature is not supported with
+non-call exceptions (@option{-fnon-call-exceptions}).
+
 @item -fms-extensions
 @opindex fms-extensions
 Accept some non-standard constructs used in Microsoft header files.
@@ -1882,13 +1891,18 @@ The default is version 2.
 Version 3 corrects an error in mangling a constant address as a
 template argument.
 
-Version 4 implements a standard mangling for vector types.
+Version 4, which first appeared in G++ 4.5, implements a standard
+mangling for vector types.
 
-Version 5 corrects the mangling of attribute const/volatile on
-function pointer types, decltype of a plain decl, and use of a
-function parameter in the declaration of another parameter.
+Version 5, which first appeared in G++ 4.6, corrects the mangling of
+attribute const/volatile on function pointer types, decltype of a
+plain decl, and use of a function parameter in the declaration of
+another parameter.
 
-Version 6 corrects the promotion behavior of C++11 scoped enums.
+Version 6, which first appeared in G++ 4.7, corrects the promotion
+behavior of C++11 scoped enums and the mangling of template argument
+packs, const/static_cast, prefix ++ and --, and a class scope function
+used as a template argument.
 
 See also @option{-Wabi}.
 
@@ -6704,6 +6718,14 @@ Perform a number of minor optimizations that are relatively expensive.
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
+@item -free
+@opindex free
+Attempt to remove redundant extension instructions.  This is especially
+helpful for the x86-64 architecture which implicitly zero-extends in 64-bit
+registers after writing to their lower 32-bit half.
+
+Enabled for x86 at levels @option{-O2}, @option{-O3}.
+
 @item -foptimize-register-move
 @itemx -fregmove
 @opindex foptimize-register-move
@@ -6731,13 +6753,16 @@ rule generates a better code.
 Use specified regions for the integrated register allocator.  The
 @var{region} argument should be one of @code{all}, @code{mixed}, or
 @code{one}.  The first value means using all loops as register
-allocation regions, the second value which is the default means using
-all loops except for loops with small register pressure as the
-regions, and third one means using all function as a single region.
-The first value can give best result for machines with small size and
-irregular register set, the third one results in faster and generates
-decent code and the smallest size code, and the default value usually
-give the best results in most cases and for most architectures.
+allocation regions, the second value which is enabled by default when
+compiling with optimization for speed (@option{-O}, @option{-O2},
+@dots{}) means using all loops except for loops with small register
+pressure as the regions, and third one which is enabled by default for
+@option{-Os} or @option{-O0} means using all function as a single
+region.  The first value can give best result for machines with small
+size and irregular register set, the third one results in faster and
+generates decent code and the smallest size code, and the second value
+usually give the best results in most cases and for most
+architectures.
 
 @item -fira-loop-pressure
 @opindex fira-loop-pressure
@@ -7746,8 +7771,8 @@ file.  When the object files are linked together, all the function
 bodies are read from these ELF sections and instantiated as if they
 had been part of the same translation unit.
 
-To use the link-timer optimizer, @option{-flto} needs to be specified at
-compile time and during the final link.  For example,
+To use the link-time optimizer, @option{-flto} needs to be specified at
+compile time and during the final link.  For example:
 
 @smallexample
 gcc -c -O2 -flto foo.c
@@ -7755,25 +7780,25 @@ gcc -c -O2 -flto bar.c
 gcc -o myprog -flto -O2 foo.o bar.o
 @end smallexample
 
-The first two invocations to GCC will save a bytecode representation
+The first two invocations to GCC save a bytecode representation
 of GIMPLE into special ELF sections inside @file{foo.o} and
-@file{bar.o}.  The final invocation will read the GIMPLE bytecode from
-@file{foo.o} and @file{bar.o}, merge the two files into a single
-internal image, and compile the result as usual.  Since both
+@file{bar.o}.  The final invocation reads the GIMPLE bytecode from
+@file{foo.o} and @file{bar.o}, merges the two files into a single
+internal image, and compiles the result as usual.  Since both
 @file{foo.o} and @file{bar.o} are merged into a single image, this
-causes all the inter-procedural analyses and optimizations in GCC to
+causes all the interprocedural analyses and optimizations in GCC to
 work across the two files as if they were a single one.  This means,
-for example, that the inliner will be able to inline functions in
+for example, that the inliner is able to inline functions in
 @file{bar.o} into functions in @file{foo.o} and vice-versa.
 
-Another (simpler) way to enable link-time optimization is,
+Another (simpler) way to enable link-time optimization is:
 
 @smallexample
 gcc -o myprog -flto -O2 foo.c bar.c
 @end smallexample
 
-The above will generate bytecode for @file{foo.c} and @file{bar.c},
-merge them together into a single GIMPLE representation and optimize
+The above generates bytecode for @file{foo.c} and @file{bar.c},
+merges them together into a single GIMPLE representation and optimizes
 them as usual to produce @file{myprog}.
 
 The only important thing to keep in mind is that to enable link-time
@@ -7783,30 +7808,22 @@ compile and the link commands.
 To make whole program optimization effective, it is necessary to make
 certain whole program assumptions.  The compiler needs to know
 what functions and variables can be accessed by libraries and runtime
-outside of the link time optimized unit.  When supported by the linker,
-the linker plugin (see @option{-fuse-linker-plugin}) passes to the
-compiler information about used and externally visible symbols.  When
+outside of the link-time optimized unit.  When supported by the linker,
+the linker plugin (see @option{-fuse-linker-plugin}) passes information
+to the compiler about used and externally visible symbols.  When
 the linker plugin is not available, @option{-fwhole-program} should be
-used to allow the compiler to make these assumptions, which will lead
+used to allow the compiler to make these assumptions, which leads
 to more aggressive optimization decisions.
 
 Note that when a file is compiled with @option{-flto}, the generated
-object file will be larger than a regular object file because it will
-contain GIMPLE bytecodes and the usual final code.  This means that
-object files with LTO information can be linked as a normal object
-file.  So, in the previous example, if the final link is done with
-
-@smallexample
-gcc -o myprog foo.o bar.o
-@end smallexample
-
-The only difference will be that no inter-procedural optimizations
-will be applied to produce @file{myprog}.  The two object files
-@file{foo.o} and @file{bar.o} will be simply sent to the regular
-linker.
+object file is larger than a regular object file because it 
+contains GIMPLE bytecodes and the usual final code.  This means that
+object files with LTO information can be linked as normal object
+files; if @option{-flto} is not passed to the linker, no
+interprocedural optimizations are applied.
 
 Additionally, the optimization flags used to compile individual files
-are not necessarily related to those used at link-time.  For instance,
+are not necessarily related to those used at link time.  For instance,
 
 @smallexample
 gcc -c -O0 -flto foo.c
@@ -7814,37 +7831,42 @@ gcc -c -O0 -flto bar.c
 gcc -o myprog -flto -O3 foo.o bar.o
 @end smallexample
 
-This will produce individual object files with unoptimized assembler
-code, but the resulting binary @file{myprog} will be optimized at
-@option{-O3}.  Now, if the final binary is generated without
-@option{-flto}, then @file{myprog} will not be optimized.
+This produces individual object files with unoptimized assembler
+code, but the resulting binary @file{myprog} is optimized at
+@option{-O3}.  If, instead, the final binary is generated without
+@option{-flto}, then @file{myprog} is not optimized.
 
-When producing the final binary with @option{-flto}, GCC will only
-apply link-time optimizations to those files that contain bytecode.
+When producing the final binary with @option{-flto}, GCC only
+applies link-time optimizations to those files that contain bytecode.
 Therefore, you can mix and match object files and libraries with
-GIMPLE bytecodes and final object code.  GCC will automatically select
+GIMPLE bytecodes and final object code.  GCC automatically selects
 which files to optimize in LTO mode and which files to link without
 further processing.
 
-There are some code generation flags that GCC will preserve when
+There are some code generation flags that GCC preserves when
 generating bytecodes, as they need to be used during the final link
 stage.  Currently, the following options are saved into the GIMPLE
 bytecode files: @option{-fPIC}, @option{-fcommon} and all the
 @option{-m} target flags.
 
-At link time, these options are read-in and reapplied.  Note that the
-current implementation makes no attempt at recognizing conflicting
-values for these options.  If two or more files have a conflicting
-value (e.g., one file is compiled with @option{-fPIC} and another
-isn't), the compiler will simply use the last value read from the
-bytecode files.  It is recommended, then, that all the files
-participating in the same link be compiled with the same options.
+At link time, these options are read in and reapplied.  Note that the
+current implementation makes no attempt to recognize conflicting
+values for these options.  If different files have conflicting option
+values (e.g., one file is compiled with @option{-fPIC} and another
+isn't), the compiler simply uses the last value read from the
+bytecode files.  It is recommended, then, that you compile all the files
+participating in the same link with the same options.
+
+If LTO encounters objects with C linkage declared with incompatible
+types in separate translation units to be linked together (undefined
+behavior according to ISO C99 6.2.7), a non-fatal diagnostic may be
+issued.  The behavior is still undefined at runtime.
 
 Another feature of LTO is that it is possible to apply interprocedural
 optimizations on files written in different languages.  This requires
-some support in the language front end.  Currently, the C, C++ and
+support in the language front end.  Currently, the C, C++ and
 Fortran front ends are capable of emitting GIMPLE bytecodes, so
-something like this should work
+something like this should work:
 
 @smallexample
 gcc -c -flto foo.c
@@ -7856,49 +7878,43 @@ g++ -o myprog -flto -O3 foo.o bar.o baz.o -lgfortran
 Notice that the final link is done with @command{g++} to get the C++
 runtime libraries and @option{-lgfortran} is added to get the Fortran
 runtime libraries.  In general, when mixing languages in LTO mode, you
-should use the same link command used when mixing languages in a
-regular (non-LTO) compilation.  This means that if your build process
-was mixing languages before, all you need to add is @option{-flto} to
+should use the same link command options as when mixing languages in a
+regular (non-LTO) compilation; all you need to add is @option{-flto} to
 all the compile and link commands.
-
-If LTO encounters objects with C linkage declared with incompatible
-types in separate translation units to be linked together (undefined
-behavior according to ISO C99 6.2.7), a non-fatal diagnostic may be
-issued.  The behavior is still undefined at runtime.
 
 If object files containing GIMPLE bytecode are stored in a library archive, say
 @file{libfoo.a}, it is possible to extract and use them in an LTO link if you
-are using a linker with linker plugin support.  To enable this feature, use
-the flag @option{-fuse-linker-plugin} at link-time:
+are using a linker with plugin support.  To enable this feature, use
+the flag @option{-fuse-linker-plugin} at link time:
 
 @smallexample
 gcc -o myprog -O2 -flto -fuse-linker-plugin a.o b.o -lfoo
 @end smallexample
 
-With the linker plugin enabled, the linker will extract the needed
-GIMPLE files from @file{libfoo.a} and pass them on to the running GCC
+With the linker plugin enabled, the linker extracts the needed
+GIMPLE files from @file{libfoo.a} and passes them on to the running GCC
 to make them part of the aggregated GIMPLE image to be optimized.
 
-If you are not using a linker with linker plugin support and/or do not
-enable linker plugin then the objects inside @file{libfoo.a}
-will be extracted and linked as usual, but they will not participate
+If you are not using a linker with plugin support and/or do not
+enable the linker plugin, then the objects inside @file{libfoo.a}
+are extracted and linked as usual, but they do not participate
 in the LTO optimization process.
 
-Link time optimizations do not require the presence of the whole program to
+Link-time optimizations do not require the presence of the whole program to
 operate.  If the program does not require any symbols to be exported, it is
-possible to combine @option{-flto} and with @option{-fwhole-program} to allow
+possible to combine @option{-flto} and @option{-fwhole-program} to allow
 the interprocedural optimizers to use more aggressive assumptions which may
 lead to improved optimization opportunities.
 Use of @option{-fwhole-program} is not needed when linker plugin is
 active (see @option{-fuse-linker-plugin}).
 
-Regarding portability: the current implementation of LTO makes no
-attempt at generating bytecode that can be ported between different
+The current implementation of LTO makes no
+attempt to generate bytecode that is portable between different
 types of hosts.  The bytecode files are versioned and there is a
 strict version check, so bytecode files generated in one version of
 GCC will not work with an older/newer version of GCC.
 
-Link time optimization does not play well with generating debugging
+Link-time optimization does not work well with generation of debugging
 information.  Combining @option{-flto} with
 @option{-g} is currently experimental and expected to produce wrong
 results.
@@ -7912,15 +7928,15 @@ used.  The default value for @var{n} is 1.
 You can also specify @option{-flto=jobserver} to use GNU make's
 job server mode to determine the number of parallel jobs. This
 is useful when the Makefile calling GCC is already executing in parallel.
-The parent Makefile will need a @samp{+} prepended to the command recipe
-for this to work. This will likely only work if @env{MAKE} is
+You must prepend a @samp{+} to the command recipe in the parent Makefile
+for this to work.  This option likely only works if @env{MAKE} is
 GNU make.
 
-This option is disabled by default.
+This option is disabled by default
 
 @item -flto-partition=@var{alg}
 @opindex flto-partition
-Specify the partitioning algorithm used by the link time optimizer.
+Specify the partitioning algorithm used by the link-time optimizer.
 The value is either @code{1to1} to specify a partitioning mirroring
 the original source files or @code{balanced} to specify partitioning
 into equally sized chunks (whenever possible).  Specifying @code{none}
@@ -7937,35 +7953,36 @@ given, a default balanced compression setting is used.
 
 @item -flto-report
 Prints a report with internal details on the workings of the link-time
-optimizer.  The contents of this report vary from version to version,
-it is meant to be useful to GCC developers when processing object
+optimizer.  The contents of this report vary from version to version.
+It is meant to be useful to GCC developers when processing object
 files in LTO mode (via @option{-flto}).
 
 Disabled by default.
 
 @item -fuse-linker-plugin
-Enables the use of a linker plugin during link time optimization.  This
+Enables the use of a linker plugin during link-time optimization.  This
 option relies on plugin support in the linker, which is available in gold
 or in GNU ld 2.21 or newer.
 
 This option enables the extraction of object files with GIMPLE bytecode out
 of library archives. This improves the quality of optimization by exposing
-more code to the link time optimizer.  This information specifies what
+more code to the link-time optimizer.  This information specifies what
 symbols can be accessed externally (by non-LTO object or during dynamic
 linking).  Resulting code quality improvements on binaries (and shared
 libraries that use hidden visibility) are similar to @code{-fwhole-program}.
 See @option{-flto} for a description of the effect of this flag and how to
 use it.
 
-Enabled by default when LTO support in GCC is enabled and GCC was compiled
-with a linker supporting plugins (GNU ld 2.21 or newer or gold).
+This option is enabled by default when LTO support in GCC is enabled
+and GCC was configured for use with
+a linker supporting plugins (GNU ld 2.21 or newer or gold).
 
 @item -ffat-lto-objects
 @opindex ffat-lto-objects
 Fat LTO objects are object files that contain both the intermediate language
-and the object code. This makes them useable for both LTO linking and normal
-linking. This option makes effect only with @option{-flto} and is ignored 
-at linktime.
+and the object code. This makes them usable for both LTO linking and normal
+linking. This option is effective only when compiling with @option{-flto}
+and is ignored at link time.
 
 @option{-fno-fat-lto-objects} improves compilation time over plain LTO, but
 requires the complete toolchain to be aware of LTO. It requires a linker with
@@ -7976,6 +7993,7 @@ need to support linker plugins to allow a full-featured build environment
 The default is @option{-ffat-lto-objects} but this default is intended to
 change in future releases when linker plugin enabled environments become more
 common.
+
 @item -fcompare-elim
 @opindex fcompare-elim
 After register allocation and post-register allocation instruction splitting,
@@ -8152,7 +8170,7 @@ This violates the ISO C and C++ language standard by possibly changing
 computation result.  NOTE: re-ordering may change the sign of zero as
 well as ignore NaNs and inhibit or create underflow or overflow (and
 thus cannot be used on a code which relies on rounding behavior like
-@code{(x + 2**52) - 2**52)}.  May also reorder floating-point comparisons
+@code{(x + 2**52) - 2**52}.  May also reorder floating-point comparisons
 and thus may not be used when ordered comparisons are required.
 This option requires that both @option{-fno-signed-zeros} and
 @option{-fno-trapping-math} be in effect.  Moreover, it doesn't make
@@ -10300,6 +10318,7 @@ platform.
 * PDP-11 Options::
 * picoChip Options::
 * PowerPC Options::
+* RL78 Options::
 * RS/6000 and PowerPC Options::
 * RX Options::
 * S/390 and zSeries Options::
@@ -12830,8 +12849,10 @@ Embedded AMD CPU with MMX and 3DNow!@: instruction set support.
 
 While picking a specific @var{cpu-type} will schedule things appropriately
 for that particular chip, the compiler will not generate any code that
-does not run on the i386 without the @option{-march=@var{cpu-type}} option
-being used.
+does not run on the default machine type without the @option{-march=@var{cpu-type}}
+option being used. For example, if GCC is configured for i686-pc-linux-gnu
+then @option{-mtune=pentium4} will generate code that is tuned for Pentium4
+but will still run on i686 machines.
 
 @item -march=@var{cpu-type}
 @opindex march
@@ -14796,7 +14817,7 @@ The processor names are:
 @samp{1004kc}, @samp{1004kf2_1}, @samp{1004kf1_1},
 @samp{loongson2e}, @samp{loongson2f}, @samp{loongson3a},
 @samp{m4k},
-@samp{octeon},
+@samp{octeon}, @samp{octeon+}, @samp{octeon2},
 @samp{orion},
 @samp{r2000}, @samp{r3000}, @samp{r3900}, @samp{r4000}, @samp{r4400},
 @samp{r4600}, @samp{r4650}, @samp{r6000}, @samp{r8000},
@@ -15927,6 +15948,29 @@ the warning to be turned off.
 @cindex PowerPC options
 
 These are listed under @xref{RS/6000 and PowerPC Options}.
+
+@node RL78 Options
+@subsection RL78 Options
+@cindex RL78 Options
+
+@table @gcctabopt
+
+@item -msim
+@opindex msim
+Links in additional target libraries to support operation within a
+simulator.
+
+@item -mmul=none
+@itemx -mmul=g13
+@itemx -mmul=rl78
+@opindex mmul
+Specifies the type of hardware multiplication support to be used.  The
+default is @code{none}, which uses software multiplication functions.
+The @code{g13} option is for the hardware multiply/divide peripheral
+only on the RL78/G13 targets.  The @code{rl78} option is for the
+standard hardware multiplication defined in the RL78 software manual.
+
+@end table
 
 @node RS/6000 and PowerPC Options
 @subsection IBM RS/6000 and PowerPC Options
@@ -17516,6 +17560,11 @@ Dump instruction size and location in the assembly code.
 This option is deprecated.  It pads structures to multiple of 4 bytes,
 which is incompatible with the SH ABI@.
 
+@item -msoft-atomic
+@opindex msoft-atomic
+Generate software atomic sequences for the atomic operations.
+This is the default when the target is @code{sh-*-linux*}.
+
 @item -mspace
 @opindex mspace
 Optimize for space instead of speed.  Implied by @option{-Os}.
@@ -17808,13 +17857,22 @@ an architecture and not an implementation.  These are @samp{v7}, @samp{v8},
 Here is a list of each supported architecture and their supported
 implementations.
 
-@smallexample
-    v7:             cypress
-    v8:             supersparc, hypersparc, leon
-    sparclite:      f930, f934, sparclite86x
-    sparclet:       tsc701
-    v9:             ultrasparc, ultrasparc3, niagara, niagara2, niagara3, niagara4
-@end smallexample
+@table @asis
+@item v7
+cypress
+
+@item v8
+supersparc, hypersparc, leon
+
+@item sparclite
+f930, f934, sparclite86x
+
+@item sparclet
+tsc701
+
+@item v9
+ultrasparc, ultrasparc3, niagara, niagara2, niagara3, niagara4
+@end table
 
 By default (unless configured otherwise), GCC generates code for the V7
 variant of the SPARC architecture.  With @option{-mcpu=cypress}, the compiler
@@ -17949,33 +18007,59 @@ The 32-bit environment sets int, long and pointer to 32 bits.
 The 64-bit environment sets int to 32 bits and long and pointer
 to 64 bits.
 
-@item -mcmodel=medlow
-@opindex mcmodel=medlow
-Generate code for the Medium/Low code model: 64-bit addresses, programs
+@item -mcmodel=@var{which}
+@opindex mcmodel
+Set the code model to one of
+
+@table @samp
+@item medlow
+The Medium/Low code model: 64-bit addresses, programs
 must be linked in the low 32 bits of memory.  Programs can be statically
 or dynamically linked.
 
-@item -mcmodel=medmid
-@opindex mcmodel=medmid
-Generate code for the Medium/Middle code model: 64-bit addresses, programs
+@item medmid
+The Medium/Middle code model: 64-bit addresses, programs
 must be linked in the low 44 bits of memory, the text and data segments must
 be less than 2GB in size and the data segment must be located within 2GB of
 the text segment.
 
-@item -mcmodel=medany
-@opindex mcmodel=medany
-Generate code for the Medium/Anywhere code model: 64-bit addresses, programs
+@item medany
+The Medium/Anywhere code model: 64-bit addresses, programs
 may be linked anywhere in memory, the text and data segments must be less
 than 2GB in size and the data segment must be located within 2GB of the
 text segment.
 
-@item -mcmodel=embmedany
-@opindex mcmodel=embmedany
-Generate code for the Medium/Anywhere code model for embedded systems:
+@item embmedany
+The Medium/Anywhere code model for embedded systems:
 64-bit addresses, the text and data segments must be less than 2GB in
 size, both starting anywhere in memory (determined at link time).  The
 global register %g4 points to the base of the data segment.  Programs
 are statically linked and PIC is not supported.
+@end table
+
+@item -mmemory-model=@var{mem-model}
+@opindex mmemory-model
+Set the memory model in force on the processor to one of
+
+@table @samp
+@item default
+The default memory model for the processor and operating system.
+
+@item rmo
+Relaxed Memory Order
+
+@item pso
+Partial Store Order
+
+@item tso
+Total Store Order
+
+@item sc
+Sequential Consistency
+@end table
+
+These memory models are formally defined in Appendix D of the Sparc V9
+architecture manual, as set in the processor's @code{PSTATE.MM} field.
 
 @item -mstack-bias
 @itemx -mno-stack-bias

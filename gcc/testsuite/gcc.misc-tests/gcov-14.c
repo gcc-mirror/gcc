@@ -5,6 +5,7 @@
 /* { dg-additional-options "-flat_namespace -undefined suppress" { target *-*-darwin* }  } */
 /* { dg-require-weak "" } */
 /* { dg-do run { target native } } */
+/* { dg-skip-if "undefined weak not supported" { { hppa*-*-hpux* } && { ! hppa*64*-*-* } } { "*" } { "" } } */
 
 extern int __attribute__ ((weak)) Foo ();
 

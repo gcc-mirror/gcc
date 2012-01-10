@@ -442,7 +442,6 @@ ira_create_object (ira_allocno_t a, int subword)
   OBJECT_MIN (obj) = INT_MAX;
   OBJECT_MAX (obj) = -1;
   OBJECT_LIVE_RANGES (obj) = NULL;
-  OBJECT_ADD_DATA (obj) = NULL;
 
   VEC_safe_push (ira_object_t, heap, ira_object_id_map_vec, obj);
   ira_object_id_map

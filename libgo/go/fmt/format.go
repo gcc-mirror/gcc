@@ -8,7 +8,7 @@ import (
 	"bytes"
 	"strconv"
 	"unicode"
-	"utf8"
+	"unicode/utf8"
 )
 
 const (
@@ -242,8 +242,8 @@ func (f *fmt) integer(a int64, base uint64, signedness bool, digits string) {
 	}
 
 	// If we want a quoted char for %#U, move the data up to make room.
-	if f.unicode && f.uniQuote && a >= 0 && a <= unicode.MaxRune && unicode.IsPrint(int(a)) {
-		runeWidth := utf8.RuneLen(int(a))
+	if f.unicode && f.uniQuote && a >= 0 && a <= unicode.MaxRune && unicode.IsPrint(rune(a)) {
+		runeWidth := utf8.RuneLen(rune(a))
 		width := 1 + 1 + runeWidth + 1 // space, quote, rune, quote
 		copy(buf[i-width:], buf[i:])   // guaranteed to have enough room.
 		i -= width
@@ -253,7 +253,7 @@ func (f *fmt) integer(a int64, base uint64, signedness bool, digits string) {
 		j++
 		buf[j] = '\''
 		j++
-		utf8.EncodeRune(buf[j:], int(a))
+		utf8.EncodeRune(buf[j:], rune(a))
 		j += runeWidth
 		buf[j] = '\''
 	}
@@ -360,47 +360,47 @@ func (f *fmt) plusSpace(s string) {
 }
 
 // fmt_e64 formats a float64 in the form -1.23e+12.
-func (f *fmt) fmt_e64(v float64) { f.plusSpace(strconv.Ftoa64(v, 'e', doPrec(f, 6))) }
+func (f *fmt) fmt_e64(v float64) { f.plusSpace(strconv.FormatFloat(v, 'e', doPrec(f, 6), 64)) }
 
 // fmt_E64 formats a float64 in the form -1.23E+12.
-func (f *fmt) fmt_E64(v float64) { f.plusSpace(strconv.Ftoa64(v, 'E', doPrec(f, 6))) }
+func (f *fmt) fmt_E64(v float64) { f.plusSpace(strconv.FormatFloat(v, 'E', doPrec(f, 6), 64)) }
 
 // fmt_f64 formats a float64 in the form -1.23.
-func (f *fmt) fmt_f64(v float64) { f.plusSpace(strconv.Ftoa64(v, 'f', doPrec(f, 6))) }
+func (f *fmt) fmt_f64(v float64) { f.plusSpace(strconv.FormatFloat(v, 'f', doPrec(f, 6), 64)) }
 
 // fmt_g64 formats a float64 in the 'f' or 'e' form according to size.
-func (f *fmt) fmt_g64(v float64) { f.plusSpace(strconv.Ftoa64(v, 'g', doPrec(f, -1))) }
+func (f *fmt) fmt_g64(v float64) { f.plusSpace(strconv.FormatFloat(v, 'g', doPrec(f, -1), 64)) }
 
 // fmt_g64 formats a float64 in the 'f' or 'E' form according to size.
-func (f *fmt) fmt_G64(v float64) { f.plusSpace(strconv.Ftoa64(v, 'G', doPrec(f, -1))) }
+func (f *fmt) fmt_G64(v float64) { f.plusSpace(strconv.FormatFloat(v, 'G', doPrec(f, -1), 64)) }
 
 // fmt_fb64 formats a float64 in the form -123p3 (exponent is power of 2).
-func (f *fmt) fmt_fb64(v float64) { f.plusSpace(strconv.Ftoa64(v, 'b', 0)) }
+func (f *fmt) fmt_fb64(v float64) { f.plusSpace(strconv.FormatFloat(v, 'b', 0, 64)) }
 
 // float32
 // cannot defer to float64 versions
 // because it will get rounding wrong in corner cases.
 
 // fmt_e32 formats a float32 in the form -1.23e+12.
-func (f *fmt) fmt_e32(v float32) { f.plusSpace(strconv.Ftoa32(v, 'e', doPrec(f, 6))) }
+func (f *fmt) fmt_e32(v float32) { f.plusSpace(strconv.FormatFloat(float64(v), 'e', doPrec(f, 6), 32)) }
 
 // fmt_E32 formats a float32 in the form -1.23E+12.
-func (f *fmt) fmt_E32(v float32) { f.plusSpace(strconv.Ftoa32(v, 'E', doPrec(f, 6))) }
+func (f *fmt) fmt_E32(v float32) { f.plusSpace(strconv.FormatFloat(float64(v), 'E', doPrec(f, 6), 32)) }
 
 // fmt_f32 formats a float32 in the form -1.23.
-func (f *fmt) fmt_f32(v float32) { f.plusSpace(strconv.Ftoa32(v, 'f', doPrec(f, 6))) }
+func (f *fmt) fmt_f32(v float32) { f.plusSpace(strconv.FormatFloat(float64(v), 'f', doPrec(f, 6), 32)) }
 
 // fmt_g32 formats a float32 in the 'f' or 'e' form according to size.
-func (f *fmt) fmt_g32(v float32) { f.plusSpace(strconv.Ftoa32(v, 'g', doPrec(f, -1))) }
+func (f *fmt) fmt_g32(v float32) { f.plusSpace(strconv.FormatFloat(float64(v), 'g', doPrec(f, -1), 32)) }
 
 // fmt_G32 formats a float32 in the 'f' or 'E' form according to size.
-func (f *fmt) fmt_G32(v float32) { f.plusSpace(strconv.Ftoa32(v, 'G', doPrec(f, -1))) }
+func (f *fmt) fmt_G32(v float32) { f.plusSpace(strconv.FormatFloat(float64(v), 'G', doPrec(f, -1), 32)) }
 
 // fmt_fb32 formats a float32 in the form -123p3 (exponent is power of 2).
-func (f *fmt) fmt_fb32(v float32) { f.padString(strconv.Ftoa32(v, 'b', 0)) }
+func (f *fmt) fmt_fb32(v float32) { f.padString(strconv.FormatFloat(float64(v), 'b', 0, 32)) }
 
 // fmt_c64 formats a complex64 according to the verb.
-func (f *fmt) fmt_c64(v complex64, verb int) {
+func (f *fmt) fmt_c64(v complex64, verb rune) {
 	f.buf.WriteByte('(')
 	r := real(v)
 	for i := 0; ; i++ {
@@ -426,7 +426,7 @@ func (f *fmt) fmt_c64(v complex64, verb int) {
 }
 
 // fmt_c128 formats a complex128 according to the verb.
-func (f *fmt) fmt_c128(v complex128, verb int) {
+func (f *fmt) fmt_c128(v complex128, verb rune) {
 	f.buf.WriteByte('(')
 	r := real(v)
 	for i := 0; ; i++ {

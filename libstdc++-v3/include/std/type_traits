@@ -1,4 +1,4 @@
-// C++0x type_traits -*- C++ -*-
+// C++11 type_traits -*- C++ -*-
 
 // Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
@@ -42,7 +42,13 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
-   * @addtogroup metaprogramming
+   * @defgroup metaprogramming Metaprogramming and type traits
+   * @ingroup utilities
+   *
+   * Template utilities for compile-time introspection and modification,
+   * including type classification traits, type property inspection traits
+   * and type transformation traits.
+   *
    * @{
    */
 
@@ -56,10 +62,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr operator value_type() { return value; }
     };
   
-  /// typedef for true_type
+  /// The type used as a compile-time boolean with true value.
   typedef integral_constant<bool, true>     true_type;
 
-  /// typedef for false_type
+  /// The type used as a compile-time boolean with false value.
   typedef integral_constant<bool, false>    false_type;
 
   template<typename _Tp, _Tp __v>
@@ -451,7 +457,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_compound
     : public integral_constant<bool, !is_fundamental<_Tp>::value> { };
 
-  /// is_member_pointer
   template<typename _Tp>
     struct __is_member_pointer_helper
     : public false_type { };
@@ -460,6 +465,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_member_pointer_helper<_Tp _Cp::*>
     : public true_type { };
 
+  /// is_member_pointer
   template<typename _Tp>
     struct is_member_pointer
     : public integral_constant<bool, (__is_member_pointer_helper<
@@ -492,7 +498,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public integral_constant<bool, __is_trivial(_Tp)>
     { };
 
-  /// is_trivially_copyable (still unimplemented)
+  // is_trivially_copyable (still unimplemented)
 
   /// is_standard_layout
   template<typename _Tp>
@@ -564,6 +570,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename>
     struct add_rvalue_reference;
 
+  /**
+   *  @brief  Utility to simplify expressions used in unevaluated operands
+   *  @ingroup utilities
+   */
   template<typename _Tp>
     typename add_rvalue_reference<_Tp>::type declval() noexcept;
 
@@ -745,6 +755,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Implementation for non-reference types. To meet the proper
   // variable definition semantics, we also need to test for
   // is_destructible in this case.
+  // This form should be simplified by a single expression:
+  // ::delete ::new _Tp(declval<_Arg>()), see c++/51222.
   struct __do_is_direct_constructible_impl
   {
     template<typename _Tp, typename _Arg, typename
@@ -778,9 +790,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct remove_reference;
 
   template<typename _From, typename _To, bool
-           = is_reference<_From>::value>
+           = __not_<__or_<is_void<_From>, 
+                          is_function<_From>>>::value>
     struct __is_base_to_derived_ref;
 
+  // Detect whether we have a downcast situation during
+  // reference binding.
   template<typename _From, typename _To>
     struct __is_base_to_derived_ref<_From, _To, true>
     {
@@ -803,6 +818,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     is_rvalue_reference<_To>>::value>
     struct __is_lvalue_to_rvalue_ref;
 
+  // Detect whether we have an lvalue of non-function type
+  // bound to a reference-compatible rvalue-reference.
   template<typename _From, typename _To>
     struct __is_lvalue_to_rvalue_ref<_From, _To, true>
     {
@@ -810,8 +827,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         _From>::type>::type __src_t;
       typedef typename remove_cv<typename remove_reference<
         _To>::type>::type __dst_t;
-      typedef __or_<is_same<__src_t, __dst_t>,
-		    is_base_of<__dst_t, __src_t>> type;
+      typedef __and_<__not_<is_function<__src_t>>, 
+        __or_<is_same<__src_t, __dst_t>,
+		    is_base_of<__dst_t, __src_t>>> type;
       static constexpr bool value = type::value;
     };
 
@@ -823,9 +841,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Here we handle direct-initialization to a reference type as 
   // equivalent to a static_cast modulo overshooting conversions.
   // These are restricted to the following conversions:
-  //    a) A glvalue of a base class to a derived class reference
+  //    a) A base class value to a derived class reference
   //    b) An lvalue to an rvalue-reference of reference-compatible 
-  //       types
+  //       types that are not functions
   template<typename _Tp, typename _Arg>
     struct __is_direct_constructible_ref_cast
     : public __and_<__is_static_castable<_Arg, _Tp>,
@@ -850,7 +868,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Since default-construction and binary direct-initialization have
   // been handled separately, the implementation of the remaining
-  // n-ary construction cases is rather straightforward.
+  // n-ary construction cases is rather straightforward. We can use
+  // here a functional cast, because array types are excluded anyway
+  // and this form is never interpreted as a C cast.
   struct __do_is_nary_constructible_impl
   {
     template<typename _Tp, typename... _Args, typename
@@ -1692,9 +1712,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 
-  // Define a nested type if some predicate holds.
   // Primary template.
-  /// enable_if
+  /// Define a member typedef @c type only if a boolean constant is true.
   template<bool, typename _Tp = void>
     struct enable_if 
     { };
@@ -1705,9 +1724,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { typedef _Tp type; };
 
 
-  // A conditional expression, but for types. If true, first, if false, second.
   // Primary template.
-  /// conditional
+  /// Define a member typedef @c type to one of two argument types.
   template<bool _Cond, typename _Iftrue, typename _Iffalse>
     struct conditional
     { typedef _Iftrue type; };
@@ -1737,14 +1755,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         common_type<typename common_type<_Tp, _Up>::type, _Vp...>::type type;
     };
 
-  /// underlying_type
+  /// The underlying type of an enum.
   template<typename _Tp>
     struct underlying_type
     {
       typedef __underlying_type(_Tp) type;
     };
 
-  /// declval
   template<typename _Tp>
     struct __declval_protector
     {
@@ -1882,7 +1899,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			<typename remove_cv<_Tp>::type>::value>  \
     { };
 
-  // @} group metaprogramming
+  /// @} group metaprogramming
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

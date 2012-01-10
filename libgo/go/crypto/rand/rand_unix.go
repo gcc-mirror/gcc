@@ -30,7 +30,7 @@ type devReader struct {
 	mu   sync.Mutex
 }
 
-func (r *devReader) Read(b []byte) (n int, err os.Error) {
+func (r *devReader) Read(b []byte) (n int, err error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if r.f == nil {
@@ -71,7 +71,7 @@ type reader struct {
 	time, seed, dst, key [aes.BlockSize]byte
 }
 
-func (r *reader) Read(b []byte) (n int, err os.Error) {
+func (r *reader) Read(b []byte) (n int, err error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	n = len(b)
@@ -100,7 +100,7 @@ func (r *reader) Read(b []byte) (n int, err os.Error) {
 		// t = encrypt(time)
 		// dst = encrypt(t^seed)
 		// seed = encrypt(t^dst)
-		ns := time.Nanoseconds()
+		ns := time.Now().UnixNano()
 		r.time[0] = byte(ns >> 56)
 		r.time[1] = byte(ns >> 48)
 		r.time[2] = byte(ns >> 40)

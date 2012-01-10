@@ -1067,29 +1067,51 @@ disqualify_ops_if_throwing_stmt (gimple stmt, tree lhs, tree rhs)
   return false;
 }
 
-/* Return true iff type of EXP is not sufficiently aligned.  */
+/* Return true if EXP is a memory reference less aligned than ALIGN.  This is
+   invoked only on strict-alignment targets.  */
 
 static bool
-tree_non_mode_aligned_mem_p (tree exp)
+tree_non_aligned_mem_p (tree exp, unsigned int align)
 {
-  enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
-  unsigned int align;
+  unsigned int exp_align;
 
   if (TREE_CODE (exp) == VIEW_CONVERT_EXPR)
     exp = TREE_OPERAND (exp, 0);
 
-  if (TREE_CODE (exp) == SSA_NAME
-      || TREE_CODE (exp) == MEM_REF
-      || mode == BLKmode
-      || is_gimple_min_invariant (exp)
-      || !STRICT_ALIGNMENT)
+  if (TREE_CODE (exp) == SSA_NAME || is_gimple_min_invariant (exp))
     return false;
 
-  align = get_object_alignment (exp);
-  if (GET_MODE_ALIGNMENT (mode) > align)
+  /* get_object_alignment will fall back to BITS_PER_UNIT if it cannot
+     compute an explicit alignment.  Pretend that dereferenced pointers
+     are always aligned on strict-alignment targets.  */
+  if (TREE_CODE (exp) == MEM_REF || TREE_CODE (exp) == TARGET_MEM_REF)
+    exp_align = get_object_or_type_alignment (exp);
+  else
+    exp_align = get_object_alignment (exp);
+
+  if (exp_align < align)
     return true;
 
   return false;
+}
+
+/* Return true if EXP is a memory reference less aligned than what the access
+   ACC would require.  This is invoked only on strict-alignment targets.  */
+
+static bool
+tree_non_aligned_mem_for_access_p (tree exp, struct access *acc)
+{
+  unsigned int acc_align;
+
+  /* The alignment of the access is that of its expression.  However, it may
+     have been artificially increased, e.g. by a local alignment promotion,
+     so we cap it to the alignment of the type of the base, on the grounds
+     that valid sub-accesses cannot be more aligned than that.  */
+  acc_align = get_object_alignment (acc->expr);
+  if (acc->base && acc_align > TYPE_ALIGN (TREE_TYPE (acc->base)))
+    acc_align = TYPE_ALIGN (TREE_TYPE (acc->base));
+
+  return tree_non_aligned_mem_p (exp, acc_align);
 }
 
 /* Scan expressions occuring in STMT, create access structures for all accesses
@@ -1120,7 +1142,8 @@ build_accesses_from_assign (gimple stmt)
   if (lacc)
     {
       lacc->grp_assignment_write = 1;
-      lacc->grp_unscalarizable_region |= tree_non_mode_aligned_mem_p (rhs);
+      if (STRICT_ALIGNMENT && tree_non_aligned_mem_for_access_p (rhs, lacc))
+        lacc->grp_unscalarizable_region = 1;
     }
 
   if (racc)
@@ -1129,7 +1152,8 @@ build_accesses_from_assign (gimple stmt)
       if (should_scalarize_away_bitmap && !gimple_has_volatile_ops (stmt)
 	  && !is_gimple_reg_type (racc->type))
 	bitmap_set_bit (should_scalarize_away_bitmap, DECL_UID (racc->base));
-      racc->grp_unscalarizable_region |= tree_non_mode_aligned_mem_p (lhs);
+      if (STRICT_ALIGNMENT && tree_non_aligned_mem_for_access_p (lhs, racc))
+        racc->grp_unscalarizable_region = 1;
     }
 
   if (lacc && racc
@@ -1485,33 +1509,70 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
   return fold_build2_loc (loc, MEM_REF, exp_type, base, off);
 }
 
+DEF_VEC_ALLOC_P_STACK (tree);
+#define VEC_tree_stack_alloc(alloc) VEC_stack_alloc (tree, alloc)
+
 /* Construct a memory reference to a part of an aggregate BASE at the given
-   OFFSET and of the same type as MODEL.  In case this is a reference to a
-   component, the function will replicate the last COMPONENT_REF of model's
-   expr to access it.  GSI and INSERT_AFTER have the same meaning as in
-   build_ref_for_offset.  */
+   OFFSET and of the type of MODEL.  In case this is a chain of references
+   to component, the function will replicate the chain of COMPONENT_REFs of
+   the expression of MODEL to access it.  GSI and INSERT_AFTER have the same
+   meaning as in build_ref_for_offset.  */
 
 static tree
 build_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
 		     struct access *model, gimple_stmt_iterator *gsi,
 		     bool insert_after)
 {
+  tree type = model->type, t;
+  VEC(tree,stack) *cr_stack = NULL;
+
   if (TREE_CODE (model->expr) == COMPONENT_REF)
     {
-      tree t, exp_type, fld = TREE_OPERAND (model->expr, 1);
-      tree cr_offset = component_ref_field_offset (model->expr);
+      tree expr = model->expr;
 
-      gcc_assert (cr_offset && host_integerp (cr_offset, 1));
-      offset -= TREE_INT_CST_LOW (cr_offset) * BITS_PER_UNIT;
-      offset -= TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (fld));
-      exp_type = TREE_TYPE (TREE_OPERAND (model->expr, 0));
-      t = build_ref_for_offset (loc, base, offset, exp_type, gsi, insert_after);
-      return fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (fld), t, fld,
-			      TREE_OPERAND (model->expr, 2));
+      /* Create a stack of the COMPONENT_REFs so later we can walk them in
+	 order from inner to outer.  */
+      cr_stack = VEC_alloc (tree, stack, 6);
+
+      do {
+	tree field = TREE_OPERAND (expr, 1);
+	tree cr_offset = component_ref_field_offset (expr);
+	HOST_WIDE_INT bit_pos
+	  = tree_low_cst (cr_offset, 1) * BITS_PER_UNIT
+	      + TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (field));
+
+	/* We can be called with a model different from the one associated
+	   with BASE so we need to avoid going up the chain too far.  */
+	if (offset - bit_pos < 0)
+	  break;
+
+	offset -= bit_pos;
+	VEC_safe_push (tree, stack, cr_stack, expr);
+
+	expr = TREE_OPERAND (expr, 0);
+	type = TREE_TYPE (expr);
+      } while (TREE_CODE (expr) == COMPONENT_REF);
     }
-  else
-    return build_ref_for_offset (loc, base, offset, model->type,
-				 gsi, insert_after);
+
+  t = build_ref_for_offset (loc, base, offset, type, gsi, insert_after);
+
+  if (TREE_CODE (model->expr) == COMPONENT_REF)
+    {
+      unsigned i;
+      tree expr;
+
+      /* Now replicate the chain of COMPONENT_REFs from inner to outer.  */
+      FOR_EACH_VEC_ELT_REVERSE (tree, cr_stack, i, expr)
+	{
+	  tree field = TREE_OPERAND (expr, 1);
+	  t = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field), t, field,
+			       TREE_OPERAND (expr, 2));
+	}
+
+      VEC_free (tree, stack, cr_stack);
+    }
+
+  return t;
 }
 
 /* Construct a memory reference consisting of component_refs and array_refs to
@@ -2227,21 +2288,23 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       || racc->grp_unscalarizable_region)
     return false;
 
-  if (!lacc->first_child && !racc->first_child
-      && is_gimple_reg_type (racc->type))
+  if (is_gimple_reg_type (racc->type))
     {
-      tree t = lacc->base;
-
-      lacc->type = racc->type;
-      if (build_user_friendly_ref_for_offset (&t, TREE_TYPE (t), lacc->offset,
-					      racc->type))
-	lacc->expr = t;
-      else
+      if (!lacc->first_child && !racc->first_child)
 	{
-	  lacc->expr = build_ref_for_model (EXPR_LOCATION (lacc->base),
-					    lacc->base, lacc->offset,
-					    racc, NULL, false);
-	  lacc->grp_no_warning = true;
+	  tree t = lacc->base;
+
+	  lacc->type = racc->type;
+	  if (build_user_friendly_ref_for_offset (&t, TREE_TYPE (t),
+						  lacc->offset, racc->type))
+	    lacc->expr = t;
+	  else
+	    {
+	      lacc->expr = build_ref_for_model (EXPR_LOCATION (lacc->base),
+						lacc->base, lacc->offset,
+						racc, NULL, false);
+	      lacc->grp_no_warning = true;
+	    }
 	}
       return false;
     }
@@ -2692,6 +2755,10 @@ load_assign_lhs_subreplacements (struct access *lacc, struct access *top_racc,
 	      rhs = get_access_replacement (racc);
 	      if (!useless_type_conversion_p (lacc->type, racc->type))
 		rhs = fold_build1_loc (loc, VIEW_CONVERT_EXPR, lacc->type, rhs);
+
+	      if (racc->grp_partial_lhs && lacc->grp_partial_lhs)
+		rhs = force_gimple_operand_gsi (old_gsi, rhs, true, NULL_TREE,
+						true, GSI_SAME_STMT);
 	    }
 	  else
 	    {
@@ -2707,6 +2774,9 @@ load_assign_lhs_subreplacements (struct access *lacc, struct access *top_racc,
 	      else
 		rhs = build_ref_for_model (loc, top_racc->base, offset, lacc,
 					    new_gsi, true);
+	      if (lacc->grp_partial_lhs)
+		rhs = force_gimple_operand_gsi (new_gsi, rhs, true, NULL_TREE,
+						false, GSI_NEW_STMT);
 	    }
 
 	  stmt = gimple_build_assign (get_access_replacement (lacc), rhs);
@@ -3702,7 +3772,8 @@ access_precludes_ipa_sra_p (struct access *access)
 	  || gimple_code (access->stmt) == GIMPLE_ASM))
     return true;
 
-  if (tree_non_mode_aligned_mem_p (access->expr))
+  if (STRICT_ALIGNMENT
+      && tree_non_aligned_mem_p (access->expr, TYPE_ALIGN (access->type)))
     return true;
 
   return false;

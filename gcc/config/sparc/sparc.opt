@@ -215,3 +215,25 @@ Mask(V9)
 Mask(DEPRECATED_V8_INSNS)
 ;; Generate code that uses the V8 instructions deprecated
 ;; in the V9 architecture.
+
+mmemory-model=
+Target RejectNegative Joined Var(sparc_memory_model) Enum(sparc_memory_model) Init(SMM_DEFAULT)
+Specify the memory model in effect for the program.
+
+Enum
+Name(sparc_memory_model) Type(enum sparc_memory_model_type)
+
+EnumValue
+Enum(sparc_memory_model) String(default) Value(SMM_DEFAULT)
+
+EnumValue
+Enum(sparc_memory_model) String(rmo) Value(SMM_RMO)
+
+EnumValue
+Enum(sparc_memory_model) String(pso) Value(SMM_PSO)
+
+EnumValue
+Enum(sparc_memory_model) String(tso) Value(SMM_TSO)
+
+EnumValue
+Enum(sparc_memory_model) String(sc) Value(SMM_SC)

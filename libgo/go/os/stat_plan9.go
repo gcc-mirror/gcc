@@ -26,7 +26,7 @@ func fileInfoFromStat(fi *FileInfo, d *Dir) *FileInfo {
 }
 
 // arg is an open *File or a path string. 
-func dirstat(arg interface{}) (d *Dir, err Error) {
+func dirstat(arg interface{}) (d *Dir, err error) {
 	var name string
 	nd := syscall.STATFIXLEN + 16*4
 
@@ -34,7 +34,7 @@ func dirstat(arg interface{}) (d *Dir, err Error) {
 		buf := make([]byte, nd)
 
 		var n int
-		var e syscall.Error
+		var e error
 
 		switch syscallArg := arg.(type) {
 		case *File:
@@ -70,9 +70,9 @@ func dirstat(arg interface{}) (d *Dir, err Error) {
 }
 
 // Stat returns a FileInfo structure describing the named file and an error, if any.
-func Stat(name string) (fi *FileInfo, err Error) {
+func Stat(name string) (fi *FileInfo, err error) {
 	d, err := dirstat(name)
-	if iserror(err) {
+	if err != nil {
 		return nil, err
 	}
 	return fileInfoFromStat(new(FileInfo), d), err
@@ -81,9 +81,9 @@ func Stat(name string) (fi *FileInfo, err Error) {
 // Lstat returns the FileInfo structure describing the named file and an
 // error, if any.  If the file is a symbolic link (though Plan 9 does not have symbolic links), 
 // the returned FileInfo describes the symbolic link.  Lstat makes no attempt to follow the link.
-func Lstat(name string) (fi *FileInfo, err Error) {
+func Lstat(name string) (fi *FileInfo, err error) {
 	d, err := dirstat(name)
-	if iserror(err) {
+	if err != nil {
 		return nil, err
 	}
 	return fileInfoFromStat(new(FileInfo), d), err

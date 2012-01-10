@@ -109,6 +109,14 @@ package Ada.Containers.Indefinite_Multiway_Trees is
      (Element : not null access Element_Type) is private
         with Implicit_Dereference => Element;
 
+   function Constant_Reference
+     (Container : aliased Tree;
+      Position  : Cursor) return Constant_Reference_Type;
+
+   function Reference
+     (Container : aliased in out Tree;
+      Position  : Cursor) return Reference_Type;
+
    procedure Assign (Target : in out Tree; Source : Tree);
 
    function Copy (Source : Tree) return Tree;
@@ -327,8 +335,8 @@ private
 
    type Tree is new Controlled with record
       Root  : aliased Tree_Node_Type;
-      Busy  : Integer := 0;
-      Lock  : Integer := 0;
+      Busy  : Natural := 0;
+      Lock  : Natural := 0;
       Count : Count_Type := 0;
    end record;
 
@@ -399,14 +407,6 @@ private
       Item   : Reference_Type);
 
    for Reference_Type'Write use Write;
-
-   function Constant_Reference
-     (Container : aliased Tree;
-      Position  : Cursor) return Constant_Reference_Type;
-
-   function Reference
-     (Container : aliased Tree;
-      Position  : Cursor) return Reference_Type;
 
    Empty_Tree : constant Tree := (Controlled with others => <>);
 

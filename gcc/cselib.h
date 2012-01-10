@@ -96,5 +96,24 @@ extern void cselib_preserve_value (cselib_val *);
 extern bool cselib_preserved_value_p (cselib_val *);
 extern void cselib_preserve_only_values (void);
 extern void cselib_preserve_cfa_base_value (cselib_val *, unsigned int);
+extern void cselib_add_permanent_equiv (cselib_val *, rtx, rtx);
 
 extern void dump_cselib_table (FILE *);
+
+/* Return the canonical value for VAL, following the equivalence chain
+   towards the earliest (== lowest uid) equivalent value.  */
+
+static inline cselib_val *
+canonical_cselib_val (cselib_val *val)
+{
+  cselib_val *canon;
+
+  if (!val->locs || val->locs->next
+      || !val->locs->loc || GET_CODE (val->locs->loc) != VALUE
+      || val->uid < CSELIB_VAL_PTR (val->locs->loc)->uid)
+    return val;
+
+  canon = CSELIB_VAL_PTR (val->locs->loc);
+  gcc_checking_assert (canonical_cselib_val (canon) == canon);
+  return canon;
+}

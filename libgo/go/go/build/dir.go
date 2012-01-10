@@ -6,6 +6,7 @@ package build
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/doc"
@@ -37,32 +38,32 @@ type Context struct {
 	// format of the strings dir and file: they can be
 	// slash-separated, backslash-separated, even URLs.
 
-	// ReadDir returns a slice of *os.FileInfo, sorted by Name,
+	// ReadDir returns a slice of os.FileInfo, sorted by Name,
 	// describing the content of the named directory.
 	// The dir argument is the argument to ScanDir.
 	// If ReadDir is nil, ScanDir uses io.ReadDir.
-	ReadDir func(dir string) (fi []*os.FileInfo, err os.Error)
+	ReadDir func(dir string) (fi []os.FileInfo, err error)
 
 	// ReadFile returns the content of the file named file
 	// in the directory named dir.  The dir argument is the
 	// argument to ScanDir, and the file argument is the
-	// Name field from an *os.FileInfo returned by ReadDir.
+	// Name field from an os.FileInfo returned by ReadDir.
 	// The returned path is the full name of the file, to be
 	// used in error messages.
 	//
 	// If ReadFile is nil, ScanDir uses filepath.Join(dir, file)
 	// as the path and ioutil.ReadFile to read the data.
-	ReadFile func(dir, file string) (path string, content []byte, err os.Error)
+	ReadFile func(dir, file string) (path string, content []byte, err error)
 }
 
-func (ctxt *Context) readDir(dir string) ([]*os.FileInfo, os.Error) {
+func (ctxt *Context) readDir(dir string) ([]os.FileInfo, error) {
 	if f := ctxt.ReadDir; f != nil {
 		return f(dir)
 	}
 	return ioutil.ReadDir(dir)
 }
 
-func (ctxt *Context) readFile(dir, file string) (string, []byte, os.Error) {
+func (ctxt *Context) readFile(dir, file string) (string, []byte, error) {
 	if f := ctxt.ReadFile; f != nil {
 		return f(dir, file)
 	}
@@ -116,7 +117,7 @@ func (d *DirInfo) IsCommand() bool {
 }
 
 // ScanDir calls DefaultContext.ScanDir.
-func ScanDir(dir string) (info *DirInfo, err os.Error) {
+func ScanDir(dir string) (info *DirInfo, err error) {
 	return DefaultContext.ScanDir(dir)
 }
 
@@ -128,7 +129,7 @@ func ScanDir(dir string) (info *DirInfo, err os.Error) {
 //	- files ending in _test.go
 //	- files starting with _ or .
 //
-func (ctxt *Context) ScanDir(dir string) (info *DirInfo, err os.Error) {
+func (ctxt *Context) ScanDir(dir string) (info *DirInfo, err error) {
 	dirs, err := ctxt.readDir(dir)
 	if err != nil {
 		return nil, err
@@ -139,18 +140,19 @@ func (ctxt *Context) ScanDir(dir string) (info *DirInfo, err os.Error) {
 	testImported := make(map[string]bool)
 	fset := token.NewFileSet()
 	for _, d := range dirs {
-		if !d.IsRegular() {
+		if d.IsDir() {
 			continue
 		}
-		if strings.HasPrefix(d.Name, "_") ||
-			strings.HasPrefix(d.Name, ".") {
+		name := d.Name()
+		if strings.HasPrefix(name, "_") ||
+			strings.HasPrefix(name, ".") {
 			continue
 		}
-		if !ctxt.goodOSArchFile(d.Name) {
+		if !ctxt.goodOSArchFile(name) {
 			continue
 		}
 
-		ext := path.Ext(d.Name)
+		ext := path.Ext(name)
 		switch ext {
 		case ".go", ".c", ".s":
 			// tentatively okay
@@ -160,7 +162,7 @@ func (ctxt *Context) ScanDir(dir string) (info *DirInfo, err os.Error) {
 		}
 
 		// Look for +build comments to accept or reject the file.
-		filename, data, err := ctxt.readFile(dir, d.Name)
+		filename, data, err := ctxt.readFile(dir, name)
 		if err != nil {
 			return nil, err
 		}
@@ -171,10 +173,10 @@ func (ctxt *Context) ScanDir(dir string) (info *DirInfo, err os.Error) {
 		// Going to save the file.  For non-Go files, can stop here.
 		switch ext {
 		case ".c":
-			di.CFiles = append(di.CFiles, d.Name)
+			di.CFiles = append(di.CFiles, name)
 			continue
 		case ".s":
-			di.SFiles = append(di.SFiles, d.Name)
+			di.SFiles = append(di.SFiles, name)
 			continue
 		}
 
@@ -191,7 +193,7 @@ func (ctxt *Context) ScanDir(dir string) (info *DirInfo, err os.Error) {
 			continue
 		}
 
-		isTest := strings.HasSuffix(d.Name, "_test.go")
+		isTest := strings.HasSuffix(name, "_test.go")
 		if isTest && strings.HasSuffix(pkg, "_test") {
 			pkg = pkg[:len(pkg)-len("_test")]
 		}
@@ -254,15 +256,15 @@ func (ctxt *Context) ScanDir(dir string) (info *DirInfo, err os.Error) {
 			}
 		}
 		if isCgo {
-			di.CgoFiles = append(di.CgoFiles, d.Name)
+			di.CgoFiles = append(di.CgoFiles, name)
 		} else if isTest {
 			if pkg == string(pf.Name.Name) {
-				di.TestGoFiles = append(di.TestGoFiles, d.Name)
+				di.TestGoFiles = append(di.TestGoFiles, name)
 			} else {
-				di.XTestGoFiles = append(di.XTestGoFiles, d.Name)
+				di.XTestGoFiles = append(di.XTestGoFiles, name)
 			}
 		} else {
-			di.GoFiles = append(di.GoFiles, d.Name)
+			di.GoFiles = append(di.GoFiles, name)
 		}
 	}
 	if di.Package == "" {
@@ -364,7 +366,7 @@ func (ctxt *Context) shouldBuild(content []byte) bool {
 //
 // TODO(rsc): This duplicates code in cgo.
 // Once the dust settles, remove this code from cgo.
-func (ctxt *Context) saveCgo(filename string, di *DirInfo, cg *ast.CommentGroup) os.Error {
+func (ctxt *Context) saveCgo(filename string, di *DirInfo, cg *ast.CommentGroup) error {
 	text := doc.CommentText(cg)
 	for _, line := range strings.Split(text, "\n") {
 		orig := line
@@ -459,12 +461,12 @@ func safeName(s string) bool {
 //
 //     []string{"a", "b:c d", "ef", `g"`}
 //
-func splitQuoted(s string) (r []string, err os.Error) {
+func splitQuoted(s string) (r []string, err error) {
 	var args []string
-	arg := make([]int, len(s))
+	arg := make([]rune, len(s))
 	escaped := false
 	quoted := false
-	quote := 0
+	quote := rune(0)
 	i := 0
 	for _, rune := range s {
 		switch {
@@ -497,9 +499,9 @@ func splitQuoted(s string) (r []string, err os.Error) {
 		args = append(args, string(arg[:i]))
 	}
 	if quote != 0 {
-		err = os.NewError("unclosed quote")
+		err = errors.New("unclosed quote")
 	} else if escaped {
-		err = os.NewError("unfinished escaping")
+		err = errors.New("unfinished escaping")
 	}
 	return args, err
 }

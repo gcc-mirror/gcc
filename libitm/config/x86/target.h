@@ -66,20 +66,6 @@ cpu_relax (void)
   __asm volatile ("rep; nop" : : : "memory");
 }
 
-static inline void
-atomic_read_barrier (void)
-{
-  /* x86 is a strong memory ordering machine.  */
-  __asm volatile ("" : : : "memory");
-}
-
-static inline void
-atomic_write_barrier (void)
-{
-  /* x86 is a strong memory ordering machine.  */
-  __asm volatile ("" : : : "memory");
-}
-
 } // namespace GTM
 
 // We'll be using some of the cpu builtins, and their associated types.

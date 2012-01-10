@@ -4,5 +4,5 @@
 
 // PR c++/18471: ICE redeclaration of typedef as class template
 
-typedef int X;			// { dg-error "previous" }
+typedef int X;			// { dg-message "previous" }
 template<X> struct X {};	// { dg-error "typedef-name" }

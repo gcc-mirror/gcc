@@ -2437,6 +2437,12 @@ package body Sem_Util is
                          (Defining_Identifier
                            (Associated_Node_For_Itype (Typ))));
 
+      --  For generic formal type, return Int'Last (infinite).
+      --  See comment preceding Is_Generic_Type call in Type_Access_Level.
+
+      elsif Is_Generic_Type (Root_Type (Typ)) then
+         return UI_From_Int (Int'Last);
+
       else
          return Type_Access_Level (Typ);
       end if;
@@ -2461,7 +2467,8 @@ package body Sem_Util is
            N_Subprogram_Body_Stub                   |
            N_Generic_Subprogram_Declaration         |
            N_Generic_Package_Declaration            |
-           N_Formal_Subprogram_Declaration
+           N_Formal_Subprogram_Declaration          |
+           N_Expression_Function
          =>
             return Defining_Entity (Specification (N));
 
@@ -6583,10 +6590,6 @@ package body Sem_Util is
       if Is_Entity_Name (Obj) then
          E := Entity (Obj);
 
-         if Is_Object (E) and then not Is_Aliased (E) then
-            Check_Restriction (No_Implicit_Aliasing, Obj);
-         end if;
-
          return
            (Is_Object (E)
              and then
@@ -6943,8 +6946,9 @@ package body Sem_Util is
                   --  designated object is known to be constrained.
 
                   if Ekind (Prefix_Type) = E_Access_Type
-                    and then not Has_Constrained_Partial_View
-                                   (Designated_Type (Prefix_Type))
+                    and then not Effectively_Has_Constrained_Partial_View
+                                   (Typ  => Designated_Type (Prefix_Type),
+                                    Scop => Current_Scope)
                   then
                      return False;
 
@@ -8731,10 +8735,15 @@ package body Sem_Util is
       then
          return True;
 
-      elsif Nkind (N) = N_Indexed_Component
-        or else Nkind (N) = N_Selected_Component
+      elsif Nkind_In (N, N_Indexed_Component, N_Selected_Component)
+        and then Is_Volatile_Prefix (Prefix (N))
       then
-         return Is_Volatile_Prefix (Prefix (N));
+         return True;
+
+      elsif Nkind (N) = N_Selected_Component
+        and then Is_Volatile (Entity (Selector_Name (N)))
+      then
+         return True;
 
       else
          return False;
@@ -9322,7 +9331,6 @@ package body Sem_Util is
               and then Nkind (Expression (Expression (N))) = N_Op_Concat
             then
                Set_Is_Dynamic_Coextension (N);
-
             else
                Set_Is_Static_Coextension (N);
             end if;
@@ -9337,12 +9345,33 @@ package body Sem_Util is
 
    begin
       case Nkind (Context_Nod) is
-         when N_Assignment_Statement    |
-              N_Simple_Return_Statement =>
+
+         --  Comment here ???
+
+         when N_Assignment_Statement    =>
             Is_Dynamic := Nkind (Expression (Context_Nod)) = N_Allocator;
 
+         --  An allocator that is a component of a returned aggregate
+         --  must be dynamic.
+
+         when N_Simple_Return_Statement =>
+            declare
+               Expr : constant Node_Id := Expression (Context_Nod);
+            begin
+               Is_Dynamic :=
+                 Nkind (Expr) = N_Allocator
+                   or else
+                     (Nkind (Expr) = N_Qualified_Expression
+                       and then Nkind (Expression (Expr)) = N_Aggregate);
+            end;
+
+         --  An alloctor within an object declaration in an extended return
+         --  statement is of necessity dynamic.
+
          when N_Object_Declaration =>
-            Is_Dynamic := Nkind (Root_Nod) = N_Allocator;
+            Is_Dynamic := Nkind (Root_Nod) = N_Allocator
+              or else
+                Nkind (Parent (Context_Nod)) = N_Extended_Return_Statement;
 
          --  This routine should not be called for constructs which may not
          --  contain coextensions.
@@ -9362,9 +9391,9 @@ package body Sem_Util is
       Formal : Entity_Id;
 
    begin
-      if Ada_Version >= Ada_2005
-        and then Present (First_Formal (E))
-      then
+      --  Ada 2005 or later, and formals present
+
+      if Ada_Version >= Ada_2005 and then Present (First_Formal (E)) then
          Formal := Next_Formal (First_Formal (E));
          while Present (Formal) loop
             if No (Default_Value (Formal)) then
@@ -9375,6 +9404,8 @@ package body Sem_Util is
          end loop;
 
          return True;
+
+      --  Ada 83/95 or no formals
 
       else
          return False;
@@ -10837,9 +10868,7 @@ package body Sem_Util is
                --  source. This excludes, for example, calls to a dispatching
                --  assignment operation when the left-hand side is tagged.
 
-               if Modification_Comes_From_Source
-                 or else Alfa_Mode
-               then
+               if Modification_Comes_From_Source or else Alfa_Mode then
                   Generate_Reference (Ent, Exp, 'm');
 
                   --  If the target of the assignment is the bound variable
@@ -12204,8 +12233,16 @@ package body Sem_Util is
                end loop;
             end;
 
+            --  For a packed array type, we also need debug information for
+            --  the type used to represent the packed array. Conversely, we
+            --  also need it for the former if we need it for the latter.
+
             if Is_Packed (T) then
                Set_Debug_Info_Needed_If_Not_Set (Packed_Array_Type (T));
+            end if;
+
+            if Is_Packed_Array_Type (T) then
+               Set_Debug_Info_Needed_If_Not_Set (Original_Array_Type (T));
             end if;
 
          elsif Is_Access_Type (T) then
@@ -12715,6 +12752,25 @@ package body Sem_Util is
          end if;
       end if;
 
+      --  Return library level for a generic formal type. This is done because
+      --  RM(10.3.2) says that "The statically deeper relationship does not
+      --  apply to ... a descendant of a generic formal type". Rather than
+      --  checking at each point where a static accessibility check is
+      --  performed to see if we are dealing with a formal type, this rule is
+      --  implemented by having Type_Access_Level and Deepest_Type_Access_Level
+      --  return extreme values for a formal type; Deepest_Type_Access_Level
+      --  returns Int'Last. By calling the appropriate function from among the
+      --  two, we ensure that the static accessibility check will pass if we
+      --  happen to run into a formal type. More specifically, we should call
+      --  Deepest_Type_Access_Level instead of Type_Access_Level whenever the
+      --  call occurs as part of a static accessibility check and the error
+      --  case is the case where the type's level is too shallow (as opposed
+      --  to too deep).
+
+      if Is_Generic_Type (Root_Type (Btyp)) then
+         return Scope_Depth (Standard_Standard);
+      end if;
+
       return Scope_Depth (Enclosing_Dynamic_Scope (Btyp));
    end Type_Access_Level;
 
@@ -12831,7 +12887,12 @@ package body Sem_Util is
 
             if Nkind (P) = N_Subprogram_Body_Stub then
                if Present (Library_Unit (P)) then
-                  U := Get_Body_From_Stub (P);
+
+                  --  Get to the function or procedure (generic) entity through
+                  --  the body entity.
+
+                  U :=
+                    Unique_Entity (Defining_Entity (Get_Body_From_Stub (P)));
                end if;
             else
                U := Corresponding_Spec (P);
@@ -12855,6 +12916,11 @@ package body Sem_Util is
 
    function Unique_Name (E : Entity_Id) return String is
 
+      --  Names of E_Subprogram_Body or E_Package_Body entities are not
+      --  reliable, as they may not include the overloading suffix. Instead,
+      --  when looking for the name of E or one of its enclosing scope, we get
+      --  the name of the corresponding Unique_Entity.
+
       function Get_Scoped_Name (E : Entity_Id) return String;
       --  Return the name of E prefixed by all the names of the scopes to which
       --  E belongs, except for Standard.
@@ -12871,7 +12937,7 @@ package body Sem_Util is
          then
             return Name;
          else
-            return Get_Scoped_Name (Scope (E)) & "__" & Name;
+            return Get_Scoped_Name (Unique_Entity (Scope (E))) & "__" & Name;
          end if;
       end Get_Scoped_Name;
 
@@ -12891,58 +12957,9 @@ package body Sem_Util is
          return Unique_Name (Etype (E)) & "__" & Get_Name_String (Chars (E));
 
       else
-         return Get_Scoped_Name (E);
+         return Get_Scoped_Name (Unique_Entity (E));
       end if;
    end Unique_Name;
-
-   --------------------------
-   -- Unit_Declaration_Node --
-   --------------------------
-
-   function Unit_Declaration_Node (Unit_Id : Entity_Id) return Node_Id is
-      N : Node_Id := Parent (Unit_Id);
-
-   begin
-      --  Predefined operators do not have a full function declaration
-
-      if Ekind (Unit_Id) = E_Operator then
-         return N;
-      end if;
-
-      --  Isn't there some better way to express the following ???
-
-      while Nkind (N) /= N_Abstract_Subprogram_Declaration
-        and then Nkind (N) /= N_Formal_Package_Declaration
-        and then Nkind (N) /= N_Function_Instantiation
-        and then Nkind (N) /= N_Generic_Package_Declaration
-        and then Nkind (N) /= N_Generic_Subprogram_Declaration
-        and then Nkind (N) /= N_Package_Declaration
-        and then Nkind (N) /= N_Package_Body
-        and then Nkind (N) /= N_Package_Instantiation
-        and then Nkind (N) /= N_Package_Renaming_Declaration
-        and then Nkind (N) /= N_Procedure_Instantiation
-        and then Nkind (N) /= N_Protected_Body
-        and then Nkind (N) /= N_Subprogram_Declaration
-        and then Nkind (N) /= N_Subprogram_Body
-        and then Nkind (N) /= N_Subprogram_Body_Stub
-        and then Nkind (N) /= N_Subprogram_Renaming_Declaration
-        and then Nkind (N) /= N_Task_Body
-        and then Nkind (N) /= N_Task_Type_Declaration
-        and then Nkind (N) not in N_Formal_Subprogram_Declaration
-        and then Nkind (N) not in N_Generic_Renaming_Declaration
-      loop
-         N := Parent (N);
-
-         --  We don't use Assert here, because that causes an infinite loop
-         --  when assertions are turned off. Better to crash.
-
-         if No (N) then
-            raise Program_Error;
-         end if;
-      end loop;
-
-      return N;
-   end Unit_Declaration_Node;
 
    ---------------------
    -- Unit_Is_Visible --

@@ -2,10 +2,10 @@
 // the definition of C.
 
 struct A;
-typedef struct A B;		// { dg-error "previous declaration" }
+typedef struct A B;		// { dg-message "previous declaration" }
 struct B;			// { dg-error "using typedef-name" }
 
-typedef struct { int i; } C;	// { dg-error "previous declaration" }
+typedef struct { int i; } C;	// { dg-message "previous declaration" }
 struct C;			// { dg-error "using typedef-name" }
 
 struct D;

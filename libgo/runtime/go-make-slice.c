@@ -31,14 +31,14 @@ __go_make_slice2 (const struct __go_type_descriptor *td, uintptr_t len,
 
   ilen = (int) len;
   if (ilen < 0 || (uintptr_t) ilen != len)
-    __go_panic_msg ("makeslice: len out of range");
+    runtime_panicstring ("makeslice: len out of range");
 
   icap = (int) cap;
   if (cap < len
       || (uintptr_t) icap != cap
       || (std->__element_type->__size > 0
 	  && cap > (uintptr_t) -1U / std->__element_type->__size))
-    __go_panic_msg ("makeslice: cap out of range");
+    runtime_panicstring ("makeslice: cap out of range");
 
   ret.__count = ilen;
   ret.__capacity = icap;

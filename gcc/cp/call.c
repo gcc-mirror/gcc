@@ -111,12 +111,15 @@ struct conversion {
     /* The next conversion in the chain.  Since the conversions are
        arranged from outermost to innermost, the NEXT conversion will
        actually be performed before this conversion.  This variant is
-       used only when KIND is neither ck_identity nor ck_ambig.  */
+       used only when KIND is neither ck_identity, ck_ambig nor
+       ck_list.  Please use the next_conversion function instead
+       of using this field directly.  */
     conversion *next;
     /* The expression at the beginning of the conversion chain.  This
        variant is used only if KIND is ck_identity or ck_ambig.  */
     tree expr;
-    /* The array of conversions for an initializer_list.  */
+    /* The array of conversions for an initializer_list, so this
+       variant is used only when KIN D is ck_list.  */
     conversion **list;
   } u;
   /* The function candidate corresponding to this conversion
@@ -193,6 +196,7 @@ static conversion *standard_conversion (tree, tree, tree, bool, int);
 static conversion *reference_binding (tree, tree, tree, bool, int);
 static conversion *build_conv (conversion_kind, tree, conversion *);
 static conversion *build_list_conv (tree, tree, int);
+static conversion *next_conversion (conversion *);
 static bool is_subseq (conversion *, conversion *);
 static conversion *maybe_handle_ref_bind (conversion **);
 static void maybe_handle_implicit_object (conversion **);
@@ -549,10 +553,8 @@ null_ptr_cst_p (tree t)
     {
       /* Core issue 903 says only literal 0 is a null pointer constant.  */
       if (cxx_dialect < cxx0x)
-	{
-	  t = integral_constant_value (t);
-	  STRIP_NOPS (t);
-	}
+	t = integral_constant_value (t);
+      STRIP_NOPS (t);
       if (integer_zerop (t) && !TREE_OVERFLOW (t))
 	return true;
     }
@@ -833,6 +835,21 @@ build_list_conv (tree type, tree ctor, int flags)
     }
 
   return t;
+}
+
+/* Return the next conversion of the conversion chain (if applicable),
+   or NULL otherwise.  Please use this function instead of directly
+   accessing fields of struct conversion.  */
+
+static conversion *
+next_conversion (conversion *conv)
+{
+  if (conv == NULL
+      || conv->kind == ck_identity
+      || conv->kind == ck_ambig
+      || conv->kind == ck_list)
+    return NULL;
+  return conv->u.next;
 }
 
 /* Subroutine of build_aggr_conv: check whether CTOR, a braced-init-list,
@@ -1939,16 +1956,18 @@ add_function_candidate (struct z_candidate **candidates,
 	     to handle move constructors and template constructors as well;
 	     the standardese should soon be updated similarly.  */
 	  if (ctype && i == 0 && (len-skip == 1)
-	      && !(flags & LOOKUP_ONLYCONVERTING)
 	      && DECL_CONSTRUCTOR_P (fn)
 	      && parmtype != error_mark_node
 	      && (same_type_ignoring_top_level_qualifiers_p
 		  (non_reference (parmtype), ctype)))
 	    {
-	      lflags |= LOOKUP_COPY_PARM;
+	      if (!(flags & LOOKUP_ONLYCONVERTING))
+		lflags |= LOOKUP_COPY_PARM;
 	      /* We allow user-defined conversions within init-lists, but
-		 not for the copy constructor.  */
-	      if (flags & LOOKUP_NO_COPY_CTOR_CONVERSION)
+		 don't list-initialize the copy parm, as that would mean
+		 using two levels of braces for the same type.  */
+	      if ((flags & LOOKUP_LIST_INIT_CTOR)
+		  && BRACE_ENCLOSED_INITIALIZER_P (arg))
 		lflags |= LOOKUP_NO_CONVERSION;
 	    }
 	  else
@@ -3325,9 +3344,8 @@ add_list_candidates (tree fns, tree first_arg,
 
   gcc_assert (*candidates == NULL);
 
-  /* For list-initialization we consider explicit constructors, but
-     give an error if one is selected.  */
-  flags &= ~LOOKUP_ONLYCONVERTING;
+  /* We're looking for a ctor for list-initialization.  */
+  flags |= LOOKUP_LIST_INIT_CTOR;
   /* And we don't allow narrowing conversions.  We also use this flag to
      avoid the copy constructor call for copy-list-initialization.  */
   flags |= LOOKUP_NO_NARROWING;
@@ -3355,8 +3373,6 @@ add_list_candidates (tree fns, tree first_arg,
   flags &= ~LOOKUP_LIST_ONLY;
   /* We allow more user-defined conversions within an init-list.  */
   flags &= ~LOOKUP_NO_CONVERSION;
-  /* But not for the copy ctor.  */
-  flags |= LOOKUP_NO_COPY_CTOR_CONVERSION;
 
   add_candidates (fns, first_arg, args, NULL_TREE,
 		  explicit_targs, template_only, conversion_path,
@@ -3373,7 +3389,7 @@ static struct z_candidate *
 build_user_type_conversion_1 (tree totype, tree expr, int flags)
 {
   struct z_candidate *candidates, *cand;
-  tree fromtype = TREE_TYPE (expr);
+  tree fromtype;
   tree ctors = NULL_TREE;
   tree conv_fns = NULL_TREE;
   conversion *conv = NULL;
@@ -3381,6 +3397,11 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
   VEC(tree,gc) *args = NULL;
   bool any_viable_p;
   int convflags;
+
+  if (!expr)
+    return NULL;
+
+  fromtype = TREE_TYPE (expr);
 
   /* We represent conversion within a hierarchy using RVALUE_CONV and
      BASE_CONV, as specified by [over.best.ics]; these become plain
@@ -4777,7 +4798,11 @@ add_candidates (tree fns, tree first_arg, const VEC(tree,gc) *args,
       if (DECL_CONSTRUCTOR_P (fn))
 	{
 	  check_list_ctor = !!(flags & LOOKUP_LIST_ONLY);
-	  check_converting = !!(flags & LOOKUP_ONLYCONVERTING);
+	  /* For list-initialization we consider explicit constructors
+	     and complain if one is chosen.  */
+	  check_converting
+	    = ((flags & (LOOKUP_ONLYCONVERTING|LOOKUP_LIST_INIT_CTOR))
+	       == LOOKUP_ONLYCONVERTING);
 	}
       else
 	{
@@ -5600,7 +5625,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  && BRACE_ENCLOSED_INITIALIZER_P (CONSTRUCTOR_ELT (expr, 0)->value))
 	permerror (input_location, "too many braces around initializer for %qT", totype);
 
-      for (; t; t = t->u.next)
+      for (; t ; t = next_conversion (t))
 	{
 	  if (t->kind == ck_user && t->cand->reason)
 	    {
@@ -6975,8 +7000,10 @@ build_special_member_call (tree instance, tree name, VEC(tree,gc) **args,
 			    current_in_charge_parm, integer_zero_node),
 		    current_vtt_parm,
 		    vtt);
-      gcc_assert (BINFO_SUBVTT_INDEX (binfo));
-      sub_vtt = fold_build_pointer_plus (vtt, BINFO_SUBVTT_INDEX (binfo));
+      if (BINFO_SUBVTT_INDEX (binfo))
+	sub_vtt = fold_build_pointer_plus (vtt, BINFO_SUBVTT_INDEX (binfo));
+      else
+	sub_vtt = vtt;
 
       if (args == NULL)
 	{
@@ -7193,6 +7220,7 @@ build_new_method_call_1 (tree instance, tree fns, VEC(tree,gc) **args,
       && CONSTRUCTOR_IS_DIRECT_INIT (VEC_index (tree, *args, 0)))
     {
       tree init_list = VEC_index (tree, *args, 0);
+      tree init = NULL_TREE;
 
       gcc_assert (VEC_length (tree, *args) == 1
 		  && !(flags & LOOKUP_ONLYCONVERTING));
@@ -7204,8 +7232,16 @@ build_new_method_call_1 (tree instance, tree fns, VEC(tree,gc) **args,
       if (CONSTRUCTOR_NELTS (init_list) == 0
 	  && TYPE_HAS_DEFAULT_CONSTRUCTOR (basetype)
 	  && !processing_template_decl)
+	init = build_value_init (basetype, complain);
+
+      /* If BASETYPE is an aggregate, we need to do aggregate
+	 initialization.  */
+      else if (CP_AGGREGATE_TYPE_P (basetype))
+	init = digest_init (basetype, init_list, complain);
+
+      if (init)
 	{
-	  tree ob, init = build_value_init (basetype, complain);
+	  tree ob;
 	  if (integer_zerop (instance_ptr))
 	    return get_target_expr_sfinae (init, complain);
 	  ob = build_fold_indirect_ref (instance_ptr);
@@ -7214,6 +7250,7 @@ build_new_method_call_1 (tree instance, tree fns, VEC(tree,gc) **args,
 	  return init;
 	}
 
+      /* Otherwise go ahead with overload resolution.  */
       add_list_candidates (fns, first_mem_arg, init_list,
 			   basetype, explicit_targs, template_only,
 			   conversion_path, access_binfo, flags, &candidates);
@@ -8422,10 +8459,7 @@ perform_implicit_conversion_flags (tree type, tree expr, tsubst_flags_t complain
 	}
       expr = error_mark_node;
     }
-  else if (processing_template_decl
-	   /* As a kludge, we always perform conversions between scalar
-	      types, as IMPLICIT_CONV_EXPR confuses c_finish_omp_for.  */
-	   && !(SCALAR_TYPE_P (type) && SCALAR_TYPE_P (TREE_TYPE (expr))))
+  else if (processing_template_decl && conv->kind != ck_identity)
     {
       /* In a template, we are only concerned about determining the
 	 type of non-dependent expressions, so we do not have to

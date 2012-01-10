@@ -270,9 +270,16 @@ package body Exp_Prag is
 
    procedure Expand_Pragma_Check (N : Node_Id) is
       Cond : constant Node_Id    := Arg2 (N);
-      Loc  : constant Source_Ptr := Sloc (Cond);
       Nam  : constant Name_Id    := Chars (Arg1 (N));
       Msg  : Node_Id;
+
+      Loc  : constant Source_Ptr := Sloc (First_Node (Cond));
+      --  Source location used in the case of a failed assertion. Note that
+      --  the source location of the expression is not usually the best choice
+      --  here. For example, it gets located on the last AND keyword in a
+      --  chain of boolean expressiond AND'ed together. It is best to put the
+      --  message on the first character of the assertion, which is the effect
+      --  of the First_Node call here.
 
    begin
       --  We already know that this check is enabled, because otherwise the

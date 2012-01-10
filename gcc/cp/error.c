@@ -2194,6 +2194,8 @@ dump_expr (tree t, int flags)
 	}
       else
 	{
+	  if (!BRACE_ENCLOSED_INITIALIZER_P (t))
+	    dump_type (TREE_TYPE (t), 0);
 	  pp_cxx_left_brace (cxx_pp);
 	  dump_expr_init_vec (CONSTRUCTOR_ELTS (t), flags);
 	  pp_cxx_right_brace (cxx_pp);
@@ -3304,6 +3306,11 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
 		 "user-defined literals "
 		 "only available with -std=c++11 or -std=gnu++11");
 	break;
+      case CPP0X_DELEGATING_CTORS:
+	pedwarn (input_location, 0,
+		 "delegating constructors "
+		 "only available with -std=c++11 or -std=gnu++11");
+        break;
       default:
 	gcc_unreachable ();
       }

@@ -47,9 +47,14 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 /* Use the unlocked open routines from libiberty.  */
-#ifdef fopen /* fopen is a #define on VMS.  */
-#undef fopen
-#endif
+
+/* Some of these are #define on some systems, e.g. on AIX to redirect
+   the names to 64bit capable functions for LARGE_FILES support. These
+   redefs are pointless here so we can override them.  */
+
+#undef fopen 
+#undef freopen 
+
 #define fopen(PATH,MODE) fopen_unlocked(PATH,MODE)
 #define fdopen(FILDES,MODE) fdopen_unlocked(FILDES,MODE)
 #define freopen(PATH,MODE,STREAM) freopen_unlocked(PATH,MODE,STREAM)

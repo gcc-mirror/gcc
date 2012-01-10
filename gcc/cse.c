@@ -3055,6 +3055,12 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 	  if (! exp_equiv_p (p->exp, p->exp, 1, false))
 	    continue;
 
+	  /* If it's the same comparison we're already looking at, skip it.  */
+	  if (COMPARISON_P (p->exp)
+	      && XEXP (p->exp, 0) == arg1
+	      && XEXP (p->exp, 1) == arg2)
+	    continue;
+
 	  if (GET_CODE (p->exp) == COMPARE
 	      /* Another possibility is that this machine has a compare insn
 		 that includes the comparison code.  In that case, ARG1 would

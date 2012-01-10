@@ -10,7 +10,7 @@
 --                             $Revision: 1.2 $
 --                                                                          --
 --            Copyright (C) 1991-2003, Florida State University             --
---            Copyright (C) 2008, Free Software Foundation, Inc.            --
+--            Copyright (C) 2008-2011, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,8 +48,8 @@ package body Specific is
    --  The following gives the Ada run-time direct access to a variable
    --  context switched by RTEMS at the lowest level.
 
-   RTEMS_Ada_Self : System.Address;
-   pragma Import (C, RTEMS_Ada_Self, "rtems_ada_self");
+   ATCB_Key : System.Address;
+   pragma Import (C, ATCB_Key, "rtems_ada_self");
 
    ----------------
    -- Initialize --
@@ -59,8 +59,7 @@ package body Specific is
       pragma Warnings (Off, Environment_Task);
 
    begin
-      ATCB_Key := No_Key;
-      RTEMS_Ada_Self := To_Address (Environment_Task);
+      ATCB_Key := To_Address (Environment_Task);
    end Initialize;
 
    -------------------
@@ -69,7 +68,7 @@ package body Specific is
 
    function Is_Valid_Task return Boolean is
    begin
-      return RTEMS_Ada_Self /= System.Null_Address;
+      return ATCB_Key /= System.Null_Address;
    end Is_Valid_Task;
 
    ---------
@@ -78,7 +77,7 @@ package body Specific is
 
    procedure Set (Self_Id : Task_Id) is
    begin
-      RTEMS_Ada_Self := To_Address (Self_Id);
+      ATCB_Key := To_Address (Self_Id);
    end Set;
 
    ----------
@@ -102,7 +101,7 @@ package body Specific is
       Result : System.Address;
 
    begin
-      Result := RTEMS_Ada_Self;
+      Result := ATCB_Key;
 
       --  If the key value is Null, then it is a non-Ada task.
 

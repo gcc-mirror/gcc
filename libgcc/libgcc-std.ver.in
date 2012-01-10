@@ -1932,4 +1932,6 @@ GCC_4.7.0 {
   __splitstack_makecontext
   __splitstack_block_signals_context
   __splitstack_find_context
+  __splitstack_resetcontext
+  __splitstack_releasecontext
 }

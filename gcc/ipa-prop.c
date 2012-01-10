@@ -1905,13 +1905,10 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       if (new_direct_edge)
 	{
 	  new_direct_edge->indirect_inlining_edge = 1;
-	  if (new_direct_edge->call_stmt
-	      && !gimple_check_call_matching_types (new_direct_edge->call_stmt,
-						    new_direct_edge->callee->decl))
-	    {
-	      gimple_call_set_cannot_inline (new_direct_edge->call_stmt, true);
-	      new_direct_edge->call_stmt_cannot_inline_p = true;
-	    }
+	  if (new_direct_edge->call_stmt)
+	    new_direct_edge->call_stmt_cannot_inline_p
+	      = !gimple_check_call_matching_types (new_direct_edge->call_stmt,
+						   new_direct_edge->callee->decl);
 	  if (new_edges)
 	    {
 	      VEC_safe_push (cgraph_edge_p, heap, *new_edges,
@@ -2577,9 +2574,6 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
     gimple_set_location (new_stmt, gimple_location (stmt));
   gimple_call_set_chain (new_stmt, gimple_call_chain (stmt));
   gimple_call_copy_flags (new_stmt, stmt);
-  if (gimple_call_cannot_inline_p (stmt))
-    gimple_call_set_cannot_inline
-      (new_stmt, !gimple_check_call_matching_types (new_stmt, callee_decl));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -3009,9 +3003,9 @@ ipa_prop_read_section (struct lto_file_decl_data *file_data, const char *data,
 {
   const struct lto_function_header *header =
     (const struct lto_function_header *) data;
-  const int32_t cfg_offset = sizeof (struct lto_function_header);
-  const int32_t main_offset = cfg_offset + header->cfg_size;
-  const int32_t string_offset = main_offset + header->main_size;
+  const int cfg_offset = sizeof (struct lto_function_header);
+  const int main_offset = cfg_offset + header->cfg_size;
+  const int string_offset = main_offset + header->main_size;
   struct data_in *data_in;
   struct lto_input_block ib_main;
   unsigned int i;

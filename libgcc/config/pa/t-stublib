@@ -1,4 +1,5 @@
-LIBGCCSTUB_OBJS = rfi-stub.o dfi-stub.o jvrc-stub.o cxaf-stub.o \
+LIBGCCSTUB_OBJS = rfi-stub.o dfi-stub.o ritm-stub.o ditm-stub.o \
+	jvrc-stub.o cxaf-stub.o \
 	pthread_default_stacksize_np-stub.o \
 	pthread_mutex_lock-stub.o \
 	pthread_mutex_unlock-stub.o \
@@ -9,6 +10,12 @@ rfi-stub.o: $(srcdir)/config/pa/stublib.c
 
 dfi-stub.o: $(srcdir)/config/pa/stublib.c
 	$(gcc_compile) -c -O2 -DL_deregister_frame_info $<
+
+ritm-stub.o: $(srcdir)/config/pa/stublib.c
+	$(gcc_compile) -c -O2 -DL_ITM_registerTMCloneTable $<
+
+ditm-stub.o: $(srcdir)/config/pa/stublib.c
+	$(gcc_compile) -c -O2 -DL_ITM_deregisterTMCloneTable $<
 
 cxaf-stub.o: $(srcdir)/config/pa/stublib.c
 	$(gcc_compile) -c -O2 -DL_cxa_finalize $<

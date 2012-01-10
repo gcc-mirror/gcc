@@ -1,3 +1,40 @@
+2012-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/51774
+	* lto-lang.c (handle_returns_twice_attribute): New function.
+	(lto_attribute_table): Add returns_twice attribute.
+
+2011-12-21  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (GIMPLE_REGISTER_TYPE): New define.
+	(LTO_FIXUP_TREE): Use it.
+	(uniquify_nodes): Mark new non-prevailing types and avoid
+	calling gimple_register_type on others.
+	(lto_read_decls): Add comment.
+
+2011-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto.h (lto_parse_hex): Delete.
+	* lto.c (lto_read_decls): Use 'int' for offsets.
+	(lto_parse_hex): Make static and return proper 64-bit host type.
+	(lto_resolution_read): Use proper 64-bit host type.
+
+2011-12-13  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48354
+	* lto.c (lto_ft_decl_non_common): When we merged DECL_ORIGINAL_TYPE
+	with the type of the TYPE_DECL clear DECL_ORIGINAL_TYPE.
+
+2011-12-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lto-lang.c (lto_attribute_table): Handle *tm regparm.
+	(ignore_attribute): New.
+
+2011-11-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* lto-lang.c (lto_attribute_table): Handle transaction_pure.
+	(handle_transaction_pure_attribute): New.
+
 2011-11-03  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44965

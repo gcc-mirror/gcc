@@ -66,6 +66,10 @@ improved alias analysis, plus migrating GCC to Bugzilla.
 Geoff Berry for his Java object serialization work and various patches.
 
 @item
+David Binderman tests weekly snapshots of GCC trunk against Fedora Rawhide
+for several architectures.
+
+@item
 Uros Bizjak for the implementation of x87 math built-in functions and
 for various middle end and i386 back end improvements and bug fixes.
 
@@ -216,7 +220,7 @@ Mo DeJong for GCJ and libgcj bug fixes.
 
 @item
 DJ Delorie for the DJGPP port, build and libiberty maintenance,
-various bug fixes, and the M32C and MeP ports.
+various bug fixes, and the M32C, MeP, and RL78 ports.
 
 @item
 Arnaud Desitter for helping to debug GNU Fortran.

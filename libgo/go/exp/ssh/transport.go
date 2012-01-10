@@ -7,19 +7,21 @@ package ssh
 import (
 	"bufio"
 	"crypto"
-	"crypto/aes"
 	"crypto/cipher"
 	"crypto/hmac"
 	"crypto/subtle"
+	"errors"
 	"hash"
 	"io"
 	"net"
-	"os"
 	"sync"
 )
 
 const (
-	paddingMultiple = 16 // TODO(dfc) does this need to be configurable?
+	packetSizeMultiple = 16 // TODO(huin) this should be determined by the cipher.
+	minPacketSize      = 16
+	maxPacketSize      = 36000
+	minPaddingSize     = 4 // TODO(huin) should this be configurable?
 )
 
 // filteredConn reduces the set of methods exposed when embeddeding
@@ -27,7 +29,7 @@ const (
 // TODO(dfc) suggestions for a better name will be warmly received.
 type filteredConn interface {
 	// Close closes the connection.
-	Close() os.Error
+	Close() error
 
 	// LocalAddr returns the local network address.
 	LocalAddr() net.Addr
@@ -40,7 +42,7 @@ type filteredConn interface {
 // an SSH peer.
 type packetWriter interface {
 	// Encrypt and send a packet of data to the remote peer.
-	writePacket(packet []byte) os.Error
+	writePacket(packet []byte) error
 }
 
 // transport represents the SSH connection to the remote peer.
@@ -61,8 +63,7 @@ type reader struct {
 type writer struct {
 	*sync.Mutex // protects writer.Writer from concurrent writes
 	*bufio.Writer
-	paddingMultiple int
-	rand            io.Reader
+	rand io.Reader
 	common
 }
 
@@ -79,17 +80,14 @@ type common struct {
 }
 
 // Read and decrypt a single packet from the remote peer.
-func (r *reader) readOnePacket() ([]byte, os.Error) {
+func (r *reader) readOnePacket() ([]byte, error) {
 	var lengthBytes = make([]byte, 5)
 	var macSize uint32
-
 	if _, err := io.ReadFull(r, lengthBytes); err != nil {
 		return nil, err
 	}
 
-	if r.cipher != nil {
-		r.cipher.XORKeyStream(lengthBytes, lengthBytes)
-	}
+	r.cipher.XORKeyStream(lengthBytes, lengthBytes)
 
 	if r.mac != nil {
 		r.mac.Reset()
@@ -108,10 +106,10 @@ func (r *reader) readOnePacket() ([]byte, os.Error) {
 	paddingLength := uint32(lengthBytes[4])
 
 	if length <= paddingLength+1 {
-		return nil, os.NewError("invalid packet length")
+		return nil, errors.New("invalid packet length")
 	}
 	if length > maxPacketSize {
-		return nil, os.NewError("packet too large")
+		return nil, errors.New("packet too large")
 	}
 
 	packet := make([]byte, length-1+macSize)
@@ -125,8 +123,8 @@ func (r *reader) readOnePacket() ([]byte, os.Error) {
 
 	if r.mac != nil {
 		r.mac.Write(packet[:length-1])
-		if subtle.ConstantTimeCompare(r.mac.Sum(), mac) != 1 {
-			return nil, os.NewError("ssh: MAC failure")
+		if subtle.ConstantTimeCompare(r.mac.Sum(nil), mac) != 1 {
+			return nil, errors.New("ssh: MAC failure")
 		}
 	}
 
@@ -135,7 +133,7 @@ func (r *reader) readOnePacket() ([]byte, os.Error) {
 }
 
 // Read and decrypt next packet discarding debug and noop messages.
-func (t *transport) readPacket() ([]byte, os.Error) {
+func (t *transport) readPacket() ([]byte, error) {
 	for {
 		packet, err := t.readOnePacket()
 		if err != nil {
@@ -149,13 +147,13 @@ func (t *transport) readPacket() ([]byte, os.Error) {
 }
 
 // Encrypt and send a packet of data to the remote peer.
-func (w *writer) writePacket(packet []byte) os.Error {
+func (w *writer) writePacket(packet []byte) error {
 	w.Mutex.Lock()
 	defer w.Mutex.Unlock()
 
-	paddingLength := paddingMultiple - (5+len(packet))%paddingMultiple
+	paddingLength := packetSizeMultiple - (5+len(packet))%packetSizeMultiple
 	if paddingLength < 4 {
-		paddingLength += paddingMultiple
+		paddingLength += packetSizeMultiple
 	}
 
 	length := len(packet) + 1 + paddingLength
@@ -188,11 +186,9 @@ func (w *writer) writePacket(packet []byte) os.Error {
 
 	// TODO(dfc) lengthBytes, packet and padding should be
 	// subslices of a single buffer
-	if w.cipher != nil {
-		w.cipher.XORKeyStream(lengthBytes, lengthBytes)
-		w.cipher.XORKeyStream(packet, packet)
-		w.cipher.XORKeyStream(padding, padding)
-	}
+	w.cipher.XORKeyStream(lengthBytes, lengthBytes)
+	w.cipher.XORKeyStream(packet, packet)
+	w.cipher.XORKeyStream(padding, padding)
 
 	if _, err := w.Write(lengthBytes); err != nil {
 		return err
@@ -205,7 +201,7 @@ func (w *writer) writePacket(packet []byte) os.Error {
 	}
 
 	if w.mac != nil {
-		if _, err := w.Write(w.mac.Sum()); err != nil {
+		if _, err := w.Write(w.mac.Sum(nil)); err != nil {
 			return err
 		}
 	}
@@ -218,7 +214,7 @@ func (w *writer) writePacket(packet []byte) os.Error {
 }
 
 // Send a message to the remote peer
-func (t *transport) sendMessage(typ uint8, msg interface{}) os.Error {
+func (t *transport) sendMessage(typ uint8, msg interface{}) error {
 	packet := marshal(typ, msg)
 	return t.writePacket(packet)
 }
@@ -227,11 +223,17 @@ func newTransport(conn net.Conn, rand io.Reader) *transport {
 	return &transport{
 		reader: reader{
 			Reader: bufio.NewReader(conn),
+			common: common{
+				cipher: noneCipher{},
+			},
 		},
 		writer: writer{
 			Writer: bufio.NewWriter(conn),
 			rand:   rand,
 			Mutex:  new(sync.Mutex),
+			common: common{
+				cipher: noneCipher{},
+			},
 		},
 		filteredConn: conn,
 	}
@@ -249,29 +251,32 @@ var (
 	clientKeys = direction{[]byte{'A'}, []byte{'C'}, []byte{'E'}}
 )
 
-// setupKeys sets the cipher and MAC keys from K, H and sessionId, as
+// setupKeys sets the cipher and MAC keys from kex.K, kex.H and sessionId, as
 // described in RFC 4253, section 6.4. direction should either be serverKeys
 // (to setup server->client keys) or clientKeys (for client->server keys).
-func (c *common) setupKeys(d direction, K, H, sessionId []byte, hashFunc crypto.Hash) os.Error {
-	h := hashFunc.New()
+func (c *common) setupKeys(d direction, K, H, sessionId []byte, hashFunc crypto.Hash) error {
+	cipherMode := cipherModes[c.cipherAlgo]
 
-	blockSize := 16
-	keySize := 16
 	macKeySize := 20
 
-	iv := make([]byte, blockSize)
-	key := make([]byte, keySize)
+	iv := make([]byte, cipherMode.ivSize)
+	key := make([]byte, cipherMode.keySize)
 	macKey := make([]byte, macKeySize)
+
+	h := hashFunc.New()
 	generateKeyMaterial(iv, d.ivTag, K, H, sessionId, h)
 	generateKeyMaterial(key, d.keyTag, K, H, sessionId, h)
 	generateKeyMaterial(macKey, d.macKeyTag, K, H, sessionId, h)
 
 	c.mac = truncatingMAC{12, hmac.NewSHA1(macKey)}
-	aes, err := aes.NewCipher(key)
+
+	cipher, err := cipherMode.createCipher(key, iv)
 	if err != nil {
 		return err
 	}
-	c.cipher = cipher.NewCTR(aes, iv)
+
+	c.cipher = cipher
+
 	return nil
 }
 
@@ -292,7 +297,7 @@ func generateKeyMaterial(out, tag []byte, K, H, sessionId []byte, h hash.Hash) {
 			h.Write(digestsSoFar)
 		}
 
-		digest := h.Sum()
+		digest := h.Sum(nil)
 		n := copy(out, digest)
 		out = out[n:]
 		if len(out) > 0 {
@@ -308,13 +313,13 @@ type truncatingMAC struct {
 	hmac   hash.Hash
 }
 
-func (t truncatingMAC) Write(data []byte) (int, os.Error) {
+func (t truncatingMAC) Write(data []byte) (int, error) {
 	return t.hmac.Write(data)
 }
 
-func (t truncatingMAC) Sum() []byte {
-	digest := t.hmac.Sum()
-	return digest[:t.length]
+func (t truncatingMAC) Sum(in []byte) []byte {
+	out := t.hmac.Sum(in)
+	return out[:len(in)+t.length]
 }
 
 func (t truncatingMAC) Reset() {
@@ -332,16 +337,15 @@ func (t truncatingMAC) Size() int {
 const maxVersionStringBytes = 1024
 
 // Read version string as specified by RFC 4253, section 4.2.
-func readVersion(r io.Reader) (versionString []byte, ok bool) {
-	versionString = make([]byte, 0, 64)
-	seenCR := false
-
+func readVersion(r io.Reader) ([]byte, error) {
+	versionString := make([]byte, 0, 64)
+	var ok, seenCR bool
 	var buf [1]byte
 forEachByte:
 	for len(versionString) < maxVersionStringBytes {
 		_, err := io.ReadFull(r, buf[:])
 		if err != nil {
-			return
+			return nil, err
 		}
 		b := buf[0]
 
@@ -360,10 +364,10 @@ forEachByte:
 		versionString = append(versionString, b)
 	}
 
-	if ok {
-		// We need to remove the CR from versionString
-		versionString = versionString[:len(versionString)-1]
+	if !ok {
+		return nil, errors.New("failed to read version string")
 	}
 
-	return
+	// We need to remove the CR from versionString
+	return versionString[:len(versionString)-1], nil
 }

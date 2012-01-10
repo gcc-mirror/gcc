@@ -4505,7 +4505,8 @@ free_lang_data_in_type (tree type)
       member = TYPE_FIELDS (type);
       while (member)
 	{
-	  if (TREE_CODE (member) == FIELD_DECL)
+	  if (TREE_CODE (member) == FIELD_DECL
+	      || TREE_CODE (member) == TYPE_DECL)
 	    {
 	      if (prev)
 		TREE_CHAIN (prev) = member;
@@ -4549,9 +4550,6 @@ free_lang_data_in_type (tree type)
 	  && TREE_CODE (TYPE_CONTEXT (type)) != FUNCTION_DECL
 	  && TREE_CODE (TYPE_CONTEXT (type)) != NAMESPACE_DECL))
     TYPE_CONTEXT (type) = NULL_TREE;
-
-  if (debug_info_level < DINFO_LEVEL_TERSE)
-    TYPE_STUB_DECL (type) = NULL_TREE;
 }
 
 
@@ -4628,11 +4626,6 @@ free_lang_data_in_decl (tree decl)
   if (TREE_CODE (decl) == FIELD_DECL)
     free_lang_data_in_one_sizepos (&DECL_FIELD_OFFSET (decl));
 
- /* DECL_FCONTEXT is only used for debug info generation.  */
- if (TREE_CODE (decl) == FIELD_DECL
-     && debug_info_level < DINFO_LEVEL_TERSE)
-   DECL_FCONTEXT (decl) = NULL_TREE;
-
  if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       if (gimple_has_body_p (decl))
@@ -4679,7 +4672,8 @@ free_lang_data_in_decl (tree decl)
 	  || (decl_function_context (decl) && !TREE_STATIC (decl)))
 	DECL_INITIAL (decl) = NULL_TREE;
     }
-  else if (TREE_CODE (decl) == TYPE_DECL)
+  else if (TREE_CODE (decl) == TYPE_DECL
+	   || TREE_CODE (decl) == FIELD_DECL)
     DECL_INITIAL (decl) = NULL_TREE;
   else if (TREE_CODE (decl) == TRANSLATION_UNIT_DECL
            && DECL_INITIAL (decl)
@@ -4828,6 +4822,7 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	{
 	  fld_worklist_push (DECL_ARGUMENT_FLD (t), fld);
 	  fld_worklist_push (DECL_VINDEX (t), fld);
+	  fld_worklist_push (DECL_ORIGINAL_TYPE (t), fld);
 	}
       else if (TREE_CODE (t) == FIELD_DECL)
 	{
@@ -4906,13 +4901,14 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	  tem = TYPE_FIELDS (t);
 	  while (tem)
 	    {
-	      if (TREE_CODE (tem) == FIELD_DECL)
+	      if (TREE_CODE (tem) == FIELD_DECL
+		  || TREE_CODE (tem) == TYPE_DECL)
 		fld_worklist_push (tem, fld);
 	      tem = TREE_CHAIN (tem);
 	    }
 	}
 
-      fld_worklist_push (TREE_CHAIN (t), fld);
+      fld_worklist_push (TYPE_STUB_DECL (t), fld);
       *ws = 0;
     }
   else if (TREE_CODE (t) == BLOCK)
@@ -6589,6 +6585,17 @@ tree_low_cst (const_tree t, int pos)
   return TREE_INT_CST_LOW (t);
 }
 
+/* Return the HOST_WIDE_INT least significant bits of T, a sizetype
+   kind INTEGER_CST.  This makes sure to properly sign-extend the
+   constant.  */
+
+HOST_WIDE_INT
+size_low_cst (const_tree t)
+{
+  double_int d = tree_to_double_int (t);
+  return double_int_sext (d, TYPE_PRECISION (TREE_TYPE (t))).low;
+}
+
 /* Return the most significant (sign) bit of T.  */
 
 int
@@ -7070,7 +7077,6 @@ iterative_hash_expr (const_tree t, hashval_t val)
 	      val = iterative_hash_expr (TREE_OPERAND (t, i), val);
 	}
       return val;
-      break;
     }
 }
 
@@ -9528,6 +9534,7 @@ void
 build_common_builtin_nodes (void)
 {
   tree tmp, ftype;
+  int ecf_flags;
 
   if (!builtin_decl_explicit_p (BUILT_IN_MEMCPY)
       || !builtin_decl_explicit_p (BUILT_IN_MEMMOVE))
@@ -9680,9 +9687,12 @@ build_common_builtin_nodes (void)
      its value in the landing pad.  */
   ftype = build_function_type_list (ptr_type_node,
 				    integer_type_node, NULL_TREE);
+  ecf_flags = ECF_PURE | ECF_NOTHROW | ECF_LEAF;
+  /* Only use TM_PURE if we we have TM language support.  */
+  if (builtin_decl_explicit_p (BUILT_IN_TM_LOAD_1))
+    ecf_flags |= ECF_TM_PURE;
   local_define_builtin ("__builtin_eh_pointer", ftype, BUILT_IN_EH_POINTER,
-			"__builtin_eh_pointer",
-			ECF_PURE | ECF_NOTHROW | ECF_LEAF | ECF_TM_PURE);
+			"__builtin_eh_pointer", ecf_flags);
 
   tmp = lang_hooks.types.type_for_mode (targetm.eh_return_filter_mode (), 0);
   ftype = build_function_type_list (tmp, integer_type_node, NULL_TREE);

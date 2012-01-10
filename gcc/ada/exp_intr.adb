@@ -1123,6 +1123,10 @@ package body Exp_Intr is
                D_Type   : Entity_Id;
 
             begin
+               --  Perform minor decoration as it is needed by the side effect
+               --  removal mechanism.
+
+               Set_Etype  (Deref, Desig_T);
                Set_Parent (Deref, Free_Node);
                D_Subtyp := Make_Subtype_From_Expr (Deref, Desig_T);
 

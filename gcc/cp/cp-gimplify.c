@@ -475,10 +475,10 @@ gimplify_must_not_throw_expr (tree *expr_p, gimple_seq *pre_p)
 
   gimplify_and_add (body, &try_);
   mnt = gimple_build_eh_must_not_throw (terminate_node);
-  gimplify_seq_add_stmt (&catch_, mnt);
+  gimple_seq_add_stmt_without_update (&catch_, mnt);
   mnt = gimple_build_try (try_, catch_, GIMPLE_TRY_CATCH);
 
-  gimplify_seq_add_stmt (pre_p, mnt);
+  gimple_seq_add_stmt_without_update (pre_p, mnt);
   if (temp)
     {
       *expr_p = temp;
@@ -1100,6 +1100,8 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       wtd->omp_ctx = omp_ctx.outer;
       splay_tree_delete (omp_ctx.variables);
     }
+  else if (TREE_CODE (stmt) == CONVERT_EXPR)
+    gcc_assert (!CONVERT_EXPR_VBASE_PATH (stmt));
 
   pointer_set_insert (p_set, *stmt_p);
 

@@ -43,6 +43,7 @@ with Interfaces.C;
 with System.Multiprocessors;
 with System.Tasking.Debug;
 with System.Interrupt_Management;
+with System.OS_Constants;
 with System.OS_Primitives;
 with System.Task_Info;
 
@@ -58,6 +59,7 @@ with System.Soft_Links;
 
 package body System.Task_Primitives.Operations is
 
+   package OSC renames System.OS_Constants;
    package SSL renames System.Soft_Links;
 
    use System.Tasking.Debug;
@@ -773,7 +775,7 @@ package body System.Task_Primitives.Operations is
       TS     : aliased timespec;
       Result : Interfaces.C.int;
    begin
-      Result := clock_gettime (CLOCK_REALTIME, TS'Unchecked_Access);
+      Result := clock_gettime (OSC.CLOCK_RT_Ada, TS'Unchecked_Access);
       pragma Assert (Result = 0);
       return To_Duration (TS);
    end Monotonic_Clock;
@@ -1005,6 +1007,12 @@ package body System.Task_Primitives.Operations is
          Opts := THR_DETACHED + THR_BOUND;
       end if;
 
+      --  Note: the use of Unrestricted_Access in the following call is needed
+      --  because otherwise we have an error of getting a access-to-volatile
+      --  value which points to a non-volatile object. But in this case it is
+      --  safe to do this, since we know we have no problems with aliasing and
+      --  Unrestricted_Access bypasses this check.
+
       Result :=
         thr_create
           (System.Null_Address,
@@ -1012,7 +1020,7 @@ package body System.Task_Primitives.Operations is
            Thread_Body_Access (Wrapper),
            To_Address (T),
            Opts,
-           T.Common.LL.Thread'Access);
+           T.Common.LL.Thread'Unrestricted_Access);
 
       Succeeded := Result = 0;
       pragma Assert

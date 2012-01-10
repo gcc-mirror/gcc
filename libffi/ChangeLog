@@ -1,3 +1,17 @@
+2012-01-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (i?86-*-*): Set TARGET to X86_64.
+	* configure: Regenerate.
+
+2011-12-07  Andrew Pinski  <apinski@cavium.com>
+
+	PR libffi/50051
+	* src/mips/n32.S: Add ".set mips4".
+
+2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
+
+	* configure: Regenerate.
+
 2011-11-10  Richard Henderson  <rth@redhat.com>
 
 	* configure.ac (GCC_AS_CFI_PSEUDO_OP): Use it instead of inline check.

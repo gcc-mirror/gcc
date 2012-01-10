@@ -1,5 +1,5 @@
 /* Generic SSA value propagation engine.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
@@ -1056,6 +1056,12 @@ substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
 	  }
 	else if (is_gimple_call (def_stmt))
 	  {
+	    int flags = gimple_call_flags (def_stmt);
+
+	    /* Don't optimize away calls that have side-effects.  */
+	    if ((flags & (ECF_CONST|ECF_PURE)) == 0
+		|| (flags & ECF_LOOPING_CONST_OR_PURE))
+	      continue;
 	    if (update_call_from_tree (&gsi, val)
 		&& maybe_clean_or_replace_eh_stmt (def_stmt, gsi_stmt (gsi)))
 	      gimple_purge_dead_eh_edges (gimple_bb (gsi_stmt (gsi)));

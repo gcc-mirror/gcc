@@ -7,6 +7,6 @@
 template<class T> class smart_ptr2 {
     T* real_ptr;
  public:
-    typedef typename T::subT  td; // { dg-error "previous declaration" }
+    typedef typename T::subT  td; // { dg-message "previous declaration" }
     friend class td; // { dg-error "typedef|not name a class" }
 };

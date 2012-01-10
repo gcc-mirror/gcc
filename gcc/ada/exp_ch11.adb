@@ -1913,49 +1913,57 @@ package body Exp_Ch11 is
                H := First (Exception_Handlers (P));
                while Present (H) loop
 
-                  --  Loop through choices in one handler
+                  --  Guard against other constructs appearing in the list of
+                  --  exception handlers.
 
-                  C := First (Exception_Choices (H));
-                  while Present (C) loop
+                  if Nkind (H) = N_Exception_Handler then
 
-                     --  Deal with others case
+                     --  Loop through choices in one handler
 
-                     if Nkind (C) = N_Others_Choice then
+                     C := First (Exception_Choices (H));
+                     while Present (C) loop
 
-                        --  Matching others handler, but we need to ensure
-                        --  there is no choice parameter. If there is, then we
-                        --  don't have a local handler after all (since we do
-                        --  not allow choice parameters for local handlers).
+                        --  Deal with others case
 
-                        if No (Choice_Parameter (H)) then
-                           return H;
-                        else
-                           return Empty;
-                        end if;
+                        if Nkind (C) = N_Others_Choice then
 
-                     --  If not others must be entity name
+                           --  Matching others handler, but we need to ensure
+                           --  there is no choice parameter. If there is, then
+                           --  we don't have a local handler after all (since
+                           --  we do not allow choice parameters for local
+                           --  handlers).
 
-                     elsif Nkind (C) /= N_Others_Choice then
-                        pragma Assert (Is_Entity_Name (C));
-                        pragma Assert (Present (Entity (C)));
-
-                        --  Get exception being handled, dealing with renaming
-
-                        EHandle := Get_Renamed_Entity (Entity (C));
-
-                        --  If match, then check choice parameter
-
-                        if ERaise = EHandle then
                            if No (Choice_Parameter (H)) then
                               return H;
                            else
                               return Empty;
                            end if;
-                        end if;
-                     end if;
 
-                     Next (C);
-                  end loop;
+                        --  If not others must be entity name
+
+                        elsif Nkind (C) /= N_Others_Choice then
+                           pragma Assert (Is_Entity_Name (C));
+                           pragma Assert (Present (Entity (C)));
+
+                           --  Get exception being handled, dealing with
+                           --  renaming.
+
+                           EHandle := Get_Renamed_Entity (Entity (C));
+
+                           --  If match, then check choice parameter
+
+                           if ERaise = EHandle then
+                              if No (Choice_Parameter (H)) then
+                                 return H;
+                              else
+                                 return Empty;
+                              end if;
+                           end if;
+                        end if;
+
+                        Next (C);
+                     end loop;
+                  end if;
 
                   Next (H);
                end loop;

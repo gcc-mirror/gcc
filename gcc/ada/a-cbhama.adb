@@ -34,15 +34,19 @@ with Ada.Containers.Hash_Tables.Generic_Bounded_Keys;
 pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Bounded_Keys);
 
 with Ada.Containers.Prime_Numbers;  use Ada.Containers.Prime_Numbers;
+with Ada.Finalization;              use Ada.Finalization;
+
 with System;  use type System.Address;
 
 package body Ada.Containers.Bounded_Hashed_Maps is
 
-   type Iterator is new
-     Map_Iterator_Interfaces.Forward_Iterator with record
-        Container : Map_Access;
-        Node      : Count_Type;
-     end record;
+   type Iterator is new Limited_Controlled and
+     Map_Iterator_Interfaces.Forward_Iterator with
+   record
+      Container : Map_Access;
+   end record;
+
+   overriding procedure Finalize (Object : in out Iterator);
 
    overriding function First (Object : Iterator) return Cursor;
 
@@ -185,6 +189,53 @@ package body Ada.Containers.Bounded_Hashed_Maps is
    begin
       HT_Ops.Clear (Container);
    end Clear;
+
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : aliased Map;
+      Position  : Cursor) return Constant_Reference_Type
+   is
+   begin
+      if Position.Container = null then
+         raise Constraint_Error with
+           "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with
+           "Position cursor designates wrong map";
+      end if;
+
+      pragma Assert (Vet (Position),
+                     "Position cursor in Constant_Reference is bad");
+
+      declare
+         N : Node_Type renames Container.Nodes (Position.Node);
+      begin
+         return (Element => N.Element'Access);
+      end;
+   end Constant_Reference;
+
+   function Constant_Reference
+     (Container : Map;
+      Key       : Key_Type) return Constant_Reference_Type
+   is
+      Node : constant Count_Type := Key_Ops.Find (Container, Key);
+
+   begin
+      if Node = 0 then
+         raise Constraint_Error with "key not in map";
+      end if;
+
+      declare
+         N : Node_Type renames Container.Nodes (Node);
+      begin
+         return (Element => N.Element'Access);
+      end;
+   end Constant_Reference;
 
    --------------
    -- Contains --
@@ -393,19 +444,33 @@ package body Ada.Containers.Bounded_Hashed_Maps is
       HT_Ops.Free (Container, X);
    end Exclude;
 
+   --------------
+   -- Finalize --
+   --------------
+
+   procedure Finalize (Object : in out Iterator) is
+   begin
+      if Object.Container /= null then
+         declare
+            B : Natural renames Object.Container.all.Busy;
+         begin
+            B := B - 1;
+         end;
+      end if;
+   end Finalize;
+
    ----------
    -- Find --
    ----------
 
    function Find (Container : Map; Key : Key_Type) return Cursor is
       Node : constant Count_Type := Key_Ops.Find (Container, Key);
-
    begin
       if Node = 0 then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, Node);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, Node);
    end Find;
 
    -----------
@@ -414,24 +479,17 @@ package body Ada.Containers.Bounded_Hashed_Maps is
 
    function First (Container : Map) return Cursor is
       Node : constant Count_Type := HT_Ops.First (Container);
-
    begin
       if Node = 0 then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, Node);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, Node);
    end First;
 
    function First (Object : Iterator) return Cursor is
-      M : constant Map_Access := Object.Container;
-      N : constant Count_Type := HT_Ops.First (M.all);
    begin
-      if N = 0 then
-         return No_Element;
-      else
-         return Cursor'(Object.Container.all'Unchecked_Access, N);
-      end if;
+      return Object.Container.First;
    end First;
 
    -----------------
@@ -476,7 +534,6 @@ package body Ada.Containers.Bounded_Hashed_Maps is
 
          declare
             N : Node_Type renames Container.Nodes (Position.Node);
-
          begin
             N.Key := Key;
             N.Element := New_Item;
@@ -519,6 +576,7 @@ package body Ada.Containers.Bounded_Hashed_Maps is
          --  parameter.
 
          --  Node.Element := New_Item;
+         --  What is this deleted code about???
       end Assign_Key;
 
       --------------
@@ -656,7 +714,7 @@ package body Ada.Containers.Bounded_Hashed_Maps is
          Process (Cursor'(Container'Unrestricted_Access, Node));
       end Process_Node;
 
-      B : Natural renames Container'Unrestricted_Access.Busy;
+      B : Natural renames Container'Unrestricted_Access.all.Busy;
 
    --  Start of processing for Iterate
 
@@ -675,12 +733,17 @@ package body Ada.Containers.Bounded_Hashed_Maps is
    end Iterate;
 
    function Iterate
-     (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'class
+     (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'Class
    is
-      Node : constant Count_Type := HT_Ops.First (Container);
-      It   : constant Iterator   := (Container'Unrestricted_Access, Node);
+      B  : Natural renames Container'Unrestricted_Access.all.Busy;
+
    begin
-      return It;
+      return It : constant Iterator :=
+                    (Limited_Controlled with
+                       Container => Container'Unrestricted_Access)
+      do
+         B := B + 1;
+      end return;
    end Iterate;
 
    ---------
@@ -750,13 +813,12 @@ package body Ada.Containers.Bounded_Hashed_Maps is
       declare
          M    : Map renames Position.Container.all;
          Node : constant Count_Type := HT_Ops.Next (M, Position.Node);
-
       begin
          if Node = 0 then
             return No_Element;
+         else
+            return Cursor'(Position.Container, Node);
          end if;
-
-         return Cursor'(Position.Container, Node);
       end;
    end Next;
 
@@ -770,11 +832,16 @@ package body Ada.Containers.Bounded_Hashed_Maps is
       Position : Cursor) return Cursor
    is
    begin
-      if Position.Node = 0 then
+      if Position.Container = null then
          return No_Element;
-      else
-         return (Object.Container, Next (Position).Node);
       end if;
+
+      if Position.Container /= Object.Container then
+         raise Program_Error with
+           "Position cursor of Next designates wrong map";
+      end if;
+
+      return Next (Position);
    end Next;
 
    -------------------
@@ -896,16 +963,47 @@ package body Ada.Containers.Bounded_Hashed_Maps is
    -- Reference --
    ---------------
 
-   function Constant_Reference (Container : Map; Key : Key_Type)
-   return Constant_Reference_Type is
+   function Reference
+     (Container : aliased in out Map;
+      Position  : Cursor) return Reference_Type
+   is
    begin
-      return (Element => Container.Element (Key)'Unrestricted_Access);
-   end Constant_Reference;
+      if Position.Container = null then
+         raise Constraint_Error with
+           "Position cursor has no element";
+      end if;
 
-   function Reference (Container : Map; Key : Key_Type)
-   return Reference_Type is
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with
+           "Position cursor designates wrong map";
+      end if;
+
+      pragma Assert (Vet (Position),
+                     "Position cursor in function Reference is bad");
+
+      declare
+         N : Node_Type renames Container.Nodes (Position.Node);
+      begin
+         return (Element => N.Element'Access);
+      end;
+   end Reference;
+
+   function Reference
+     (Container : aliased in out Map;
+      Key       : Key_Type) return Reference_Type
+   is
+      Node : constant Count_Type := Key_Ops.Find (Container, Key);
+
    begin
-      return (Element => Container.Element (Key)'Unrestricted_Access);
+      if Node = 0 then
+         raise Constraint_Error with "key not in map";
+      end if;
+
+      declare
+         N : Node_Type renames Container.Nodes (Node);
+      begin
+         return (Element => N.Element'Access);
+      end;
    end Reference;
 
    -------------

@@ -5,16 +5,16 @@
 package x509
 
 import (
-	"asn1"
 	"bytes"
-	"big"
 	"crypto/dsa"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509/pkix"
+	"encoding/asn1"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/pem"
+	"math/big"
 	"testing"
 	"time"
 )
@@ -243,14 +243,15 @@ func TestCreateSelfSignedCertificate(t *testing.T) {
 		return
 	}
 
+	commonName := "test.example.com"
 	template := Certificate{
 		SerialNumber: big.NewInt(1),
 		Subject: pkix.Name{
-			CommonName:   "test.example.com",
+			CommonName:   commonName,
 			Organization: []string{"Acme Co"},
 		},
-		NotBefore: time.SecondsToUTC(1000),
-		NotAfter:  time.SecondsToUTC(100000),
+		NotBefore: time.Unix(1000, 0),
+		NotAfter:  time.Unix(100000, 0),
 
 		SubjectKeyId: []byte{1, 2, 3, 4},
 		KeyUsage:     KeyUsageCertSign,
@@ -281,6 +282,14 @@ func TestCreateSelfSignedCertificate(t *testing.T) {
 
 	if len(cert.PermittedDNSDomains) != 2 || cert.PermittedDNSDomains[0] != ".example.com" || cert.PermittedDNSDomains[1] != "example.com" {
 		t.Errorf("Failed to parse name constraints: %#v", cert.PermittedDNSDomains)
+	}
+
+	if cert.Subject.CommonName != commonName {
+		t.Errorf("Subject wasn't correctly copied from the template. Got %s, want %s", cert.Subject.CommonName, commonName)
+	}
+
+	if cert.Issuer.CommonName != commonName {
+		t.Errorf("Issuer wasn't correctly copied from the template. Got %s, want %s", cert.Issuer.CommonName, commonName)
 	}
 
 	err = cert.CheckSignatureFrom(cert)
@@ -387,8 +396,8 @@ func TestCRLCreation(t *testing.T) {
 	block, _ = pem.Decode([]byte(pemCertificate))
 	cert, _ := ParseCertificate(block.Bytes)
 
-	now := time.SecondsToUTC(1000)
-	expiry := time.SecondsToUTC(10000)
+	now := time.Unix(1000, 0)
+	expiry := time.Unix(10000, 0)
 
 	revokedCerts := []pkix.RevokedCertificate{
 		{
@@ -434,7 +443,7 @@ func TestParseDERCRL(t *testing.T) {
 		t.Errorf("bad number of revoked certificates. got: %d want: %d", numCerts, expected)
 	}
 
-	if certList.HasExpired(1302517272) {
+	if certList.HasExpired(time.Unix(1302517272, 0)) {
 		t.Errorf("CRL has expired (but shouldn't have)")
 	}
 
@@ -454,7 +463,7 @@ func TestParsePEMCRL(t *testing.T) {
 		t.Errorf("bad number of revoked certificates. got: %d want: %d", numCerts, expected)
 	}
 
-	if certList.HasExpired(1302517272) {
+	if certList.HasExpired(time.Unix(1302517272, 0)) {
 		t.Errorf("CRL has expired (but shouldn't have)")
 	}
 

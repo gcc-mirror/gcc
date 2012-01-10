@@ -303,6 +303,7 @@ static varinfo_t first_vi_for_offset (varinfo_t, unsigned HOST_WIDE_INT);
 static varinfo_t first_or_preceding_vi_for_offset (varinfo_t,
 						   unsigned HOST_WIDE_INT);
 static varinfo_t lookup_vi_for_tree (tree);
+static inline bool type_can_have_subvars (const_tree);
 
 /* Pool of variable info structures.  */
 static alloc_pool variable_info_pool;
@@ -3275,7 +3276,8 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p,
 		return;
 
 	      cs = *VEC_last (ce_s, *results);
-	      if (cs.type == DEREF)
+	      if (cs.type == DEREF
+		  && type_can_have_subvars (TREE_TYPE (t)))
 		{
 		  /* For dereferences this means we have to defer it
 		     to solving time.  */
@@ -4022,6 +4024,7 @@ find_func_aliases_for_builtin_call (gimple t)
       case BUILT_IN_MEMMOVE_CHK:
       case BUILT_IN_MEMPCPY_CHK:
       case BUILT_IN_STPCPY_CHK:
+      case BUILT_IN_STPNCPY_CHK:
       case BUILT_IN_STRCAT_CHK:
       case BUILT_IN_STRNCAT_CHK:
       case BUILT_IN_TM_MEMCPY:
@@ -4039,7 +4042,8 @@ find_func_aliases_for_builtin_call (gimple t)
 		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPCPY
 		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPNCPY
 		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMPCPY_CHK
-		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPCPY_CHK)
+		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPCPY_CHK
+		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPNCPY_CHK)
 		get_constraint_for_ptr_offset (dest, NULL_TREE, &rhsc);
 	      else
 		get_constraint_for (dest, &rhsc);
@@ -4757,6 +4761,7 @@ find_func_clobbers (gimple origt)
 	  case BUILT_IN_MEMMOVE_CHK:
 	  case BUILT_IN_MEMPCPY_CHK:
 	  case BUILT_IN_STPCPY_CHK:
+	  case BUILT_IN_STPNCPY_CHK:
 	  case BUILT_IN_STRCAT_CHK:
 	  case BUILT_IN_STRNCAT_CHK:
 	    {
@@ -5040,6 +5045,15 @@ sort_fieldstack (VEC(fieldoff_s,heap) *fieldstack)
   VEC_qsort (fieldoff_s, fieldstack, fieldoff_compare);
 }
 
+/* Return true if T is a type that can have subvars.  */
+
+static inline bool
+type_can_have_subvars (const_tree t)
+{
+  /* Aggregates without overlapping fields can have subvars.  */
+  return TREE_CODE (t) == RECORD_TYPE;
+}
+
 /* Return true if V is a tree that we can have subvars for.
    Normally, this is any aggregate type.  Also complex
    types which are not gimple registers can have subvars.  */
@@ -5055,11 +5069,7 @@ var_can_have_subvars (const_tree v)
   if (!DECL_P (v))
     return false;
 
-  /* Aggregates without overlapping fields can have subvars.  */
-  if (TREE_CODE (TREE_TYPE (v)) == RECORD_TYPE)
-    return true;
-
-  return false;
+  return type_can_have_subvars (TREE_TYPE (v));
 }
 
 /* Return true if T is a type that does contain pointers.  */

@@ -583,6 +583,13 @@ hard_reg_set_iter_next (hard_reg_set_iterator *iter, unsigned *regno)
 extern char global_regs[FIRST_PSEUDO_REGISTER];
 
 struct target_hard_regs {
+  /* The set of registers that actually exist on the current target.  */
+  HARD_REG_SET x_accessible_reg_set;
+
+  /* The set of registers that should be considered to be register
+     operands.  It is a subset of x_accessible_reg_set.  */
+  HARD_REG_SET x_operand_reg_set;
+
   /* Indexed by hard register number, contains 1 for registers
      that are fixed use (stack pointer, pc, frame pointer, etc.;.
      These are the registers that cannot be used to allocate
@@ -659,6 +666,10 @@ extern struct target_hard_regs *this_target_hard_regs;
 #define this_target_hard_regs (&default_target_hard_regs)
 #endif
 
+#define accessible_reg_set \
+  (this_target_hard_regs->x_accessible_reg_set)
+#define operand_reg_set \
+  (this_target_hard_regs->x_operand_reg_set)
 #define fixed_regs \
   (this_target_hard_regs->x_fixed_regs)
 #define fixed_reg_set \

@@ -11,14 +11,14 @@
 
 /* A string hash function for a map.  */
 
-size_t
+uintptr_t
 __go_type_hash_string (const void *vkey,
-		       size_t key_size __attribute__ ((unused)))
+		       uintptr_t key_size __attribute__ ((unused)))
 {
-  size_t ret;
+  uintptr_t ret;
   const struct __go_string *key;
-  size_t len;
-  size_t i;
+  int len;
+  int i;
   const unsigned char *p;
 
   ret = 5381;
@@ -33,7 +33,7 @@ __go_type_hash_string (const void *vkey,
 
 _Bool
 __go_type_equal_string (const void *vk1, const void *vk2,
-			size_t key_size __attribute__ ((unused)))
+			uintptr_t key_size __attribute__ ((unused)))
 {
   const struct __go_string *k1;
   const struct __go_string *k2;

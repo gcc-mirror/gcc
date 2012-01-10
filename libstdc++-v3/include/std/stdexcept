@@ -62,12 +62,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit 
     logic_error(const string& __arg);
 
-    virtual ~logic_error() throw();
+    virtual ~logic_error() _GLIBCXX_USE_NOEXCEPT;
 
     /** Returns a C-style character string describing the general cause of
      *  the current error (the same string passed to the ctor).  */
     virtual const char* 
-    what() const throw();
+    what() const _GLIBCXX_USE_NOEXCEPT;
   };
 
   /** Thrown by the library, or by you, to report domain errors (domain in
@@ -76,7 +76,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit domain_error(const string& __arg);
-    virtual ~domain_error() throw();
+    virtual ~domain_error() _GLIBCXX_USE_NOEXCEPT;
   };
 
   /** Thrown to report invalid arguments to functions.  */
@@ -84,7 +84,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit invalid_argument(const string& __arg);
-    virtual ~invalid_argument() throw();
+    virtual ~invalid_argument() _GLIBCXX_USE_NOEXCEPT;
   };
 
   /** Thrown when an object is constructed that would exceed its maximum
@@ -93,7 +93,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit length_error(const string& __arg);
-    virtual ~length_error() throw();
+    virtual ~length_error() _GLIBCXX_USE_NOEXCEPT;
   };
 
   /** This represents an argument whose value is not within the expected
@@ -102,7 +102,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit out_of_range(const string& __arg);
-    virtual ~out_of_range() throw();
+    virtual ~out_of_range() _GLIBCXX_USE_NOEXCEPT;
   };
 
   /** Runtime errors represent problems outside the scope of a program;
@@ -119,12 +119,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit 
     runtime_error(const string& __arg);
 
-    virtual ~runtime_error() throw();
+    virtual ~runtime_error() _GLIBCXX_USE_NOEXCEPT;
 
     /** Returns a C-style character string describing the general cause of
      *  the current error (the same string passed to the ctor).  */
     virtual const char* 
-    what() const throw();
+    what() const _GLIBCXX_USE_NOEXCEPT;
   };
 
   /** Thrown to indicate range errors in internal computations.  */
@@ -132,7 +132,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit range_error(const string& __arg);
-    virtual ~range_error() throw();
+    virtual ~range_error() _GLIBCXX_USE_NOEXCEPT;
   };
 
   /** Thrown to indicate arithmetic overflow.  */
@@ -140,7 +140,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit overflow_error(const string& __arg);
-    virtual ~overflow_error() throw();
+    virtual ~overflow_error() _GLIBCXX_USE_NOEXCEPT;
   };
 
   /** Thrown to indicate arithmetic underflow.  */
@@ -148,7 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit underflow_error(const string& __arg);
-    virtual ~underflow_error() throw();
+    virtual ~underflow_error() _GLIBCXX_USE_NOEXCEPT;
   };
 
   // @} group exceptions

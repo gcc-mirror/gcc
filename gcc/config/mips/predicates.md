@@ -73,8 +73,15 @@
 ;; This is used for indexing into vectors, and hence only accepts const_int.
 (define_predicate "const_0_or_1_operand"
   (and (match_code "const_int")
-       (ior (match_test "op == CONST0_RTX (GET_MODE (op))")
-	    (match_test "op == CONST1_RTX (GET_MODE (op))"))))
+       (match_test "IN_RANGE (INTVAL (op), 0, 1)")))
+
+(define_predicate "const_2_or_3_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 2, 3)")))
+
+(define_predicate "const_0_to_3_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 3)")))
 
 (define_predicate "qi_mask_operand"
   (and (match_code "const_int")
@@ -126,6 +133,11 @@
 (define_predicate "fcc_reload_operand"
   (and (match_code "reg,subreg")
        (match_test "ST_REG_P (true_regnum (op))")))
+
+(define_predicate "muldiv_target_operand"
+  (if_then_else (match_test "TARGET_MIPS16")
+		(match_operand 0 "hilo_operand")
+		(match_operand 0 "register_operand")))
 
 (define_special_predicate "pc_or_label_operand"
   (match_code "pc,label_ref"))
@@ -189,7 +201,9 @@
 })
 
 (define_predicate "move_operand"
-  (match_operand 0 "general_operand")
+  ;; Allow HI and LO to be used as the source of a MIPS16 move.
+  (ior (match_operand 0 "general_operand")
+       (match_operand 0 "hilo_operand"))
 {
   enum mips_symbol_type symbol_type;
 

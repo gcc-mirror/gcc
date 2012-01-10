@@ -226,7 +226,7 @@ set mips_option_groups {
     abi "-mabi=.*"
     addressing "addressing=.*"
     arch "-mips([1-5]|32.*|64.*)|-march=.*|isa(|_rev)(=|<=|>=).*"
-    debug "-g*"
+    debug "-g.*"
     dump_pattern "-dp"
     endianness "-E(L|B)|-me(l|b)"
     float "-m(hard|soft)-float"
@@ -241,6 +241,7 @@ set mips_option_groups {
     profiling "-pg"
     small-data "-G[0-9]+"
     warnings "-w"
+    dump "-fdump-.*"
 }
 
 # Add -mfoo/-mno-foo options to mips_option_groups.
@@ -834,6 +835,10 @@ proc mips-dg-finish {} {
 #            |                           |
 #         -mexplicit-relocs           -mno-explicit-relocs
 #            |                           |
+#         -mdspr2                     -mno-dspr2
+#            |                           |
+#         -mdsp                       -mno-dsp
+#            |                           |
 #            +-- gp, abi & arch ---------+
 #
 # For these purposes, the "gp", "abi" & "arch" option groups are treated
@@ -1136,7 +1141,6 @@ proc mips-dg-options { args } {
 		mips_make_test_option options "-mfp32"
 	    }
 	    mips_make_test_option options "-mno-dsp"
-	    mips_make_test_option options "-mno-dspr2"
 	}
 	unset arch
 	unset isa
@@ -1144,6 +1148,7 @@ proc mips-dg-options { args } {
     }
 
     # Handle dependencies between options on the right of the diagram.
+    mips_option_dependency options "-mno-dsp" "-mno-dspr2"
     mips_option_dependency options "-mno-explicit-relocs" "-mgpopt"
     switch -- [mips_test_option options small-data] {
 	"" -

@@ -133,7 +133,6 @@ along with GCC; see the file COPYING3.  If not see
     }								\
   while (0)
 
-/* Linux always uses gas.  */
 #undef TARGET_GAS
 #define TARGET_GAS 1
 

@@ -6,10 +6,10 @@ package bytes_test
 
 import (
 	. "bytes"
-	"os"
-	"rand"
+	"io"
+	"math/rand"
 	"testing"
-	"utf8"
+	"unicode/utf8"
 )
 
 const N = 10000  // make this bigger for a larger (and slower) test
@@ -264,7 +264,7 @@ func TestRuneIO(t *testing.T) {
 	b := make([]byte, utf8.UTFMax*NRune)
 	var buf Buffer
 	n := 0
-	for r := 0; r < NRune; r++ {
+	for r := rune(0); r < NRune; r++ {
 		size := utf8.EncodeRune(b[n:], r)
 		nbytes, err := buf.WriteRune(r)
 		if err != nil {
@@ -284,7 +284,7 @@ func TestRuneIO(t *testing.T) {
 
 	p := make([]byte, utf8.UTFMax)
 	// Read it back with ReadRune
-	for r := 0; r < NRune; r++ {
+	for r := rune(0); r < NRune; r++ {
 		size := utf8.EncodeRune(p, r)
 		nr, nbytes, err := buf.ReadRune()
 		if nr != r || nbytes != size || err != nil {
@@ -295,7 +295,7 @@ func TestRuneIO(t *testing.T) {
 	// Check that UnreadRune works
 	buf.Reset()
 	buf.Write(b)
-	for r := 0; r < NRune; r++ {
+	for r := rune(0); r < NRune; r++ {
 		r1, size, _ := buf.ReadRune()
 		if err := buf.UnreadRune(); err != nil {
 			t.Fatalf("UnreadRune(%U) got error %q", r, err)
@@ -344,21 +344,21 @@ var readBytesTests = []struct {
 	buffer   string
 	delim    byte
 	expected []string
-	err      os.Error
+	err      error
 }{
-	{"", 0, []string{""}, os.EOF},
+	{"", 0, []string{""}, io.EOF},
 	{"a\x00", 0, []string{"a\x00"}, nil},
 	{"abbbaaaba", 'b', []string{"ab", "b", "b", "aaab"}, nil},
 	{"hello\x01world", 1, []string{"hello\x01"}, nil},
-	{"foo\nbar", 0, []string{"foo\nbar"}, os.EOF},
+	{"foo\nbar", 0, []string{"foo\nbar"}, io.EOF},
 	{"alpha\nbeta\ngamma\n", '\n', []string{"alpha\n", "beta\n", "gamma\n"}, nil},
-	{"alpha\nbeta\ngamma", '\n', []string{"alpha\n", "beta\n", "gamma"}, os.EOF},
+	{"alpha\nbeta\ngamma", '\n', []string{"alpha\n", "beta\n", "gamma"}, io.EOF},
 }
 
 func TestReadBytes(t *testing.T) {
 	for _, test := range readBytesTests {
 		buf := NewBufferString(test.buffer)
-		var err os.Error
+		var err error
 		for _, expected := range test.expected {
 			var bytes []byte
 			bytes, err = buf.ReadBytes(test.delim)

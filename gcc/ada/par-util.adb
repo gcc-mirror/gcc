@@ -174,7 +174,7 @@ package body Util is
 
    procedure Check_Future_Keyword is
    begin
-      --  Ada 2005 (AI-284): Compiling in Ada95 mode we warn that INTERFACE,
+      --  Ada 2005 (AI-284): Compiling in Ada 95 mode we warn that INTERFACE,
       --  OVERRIDING, and SYNCHRONIZED are new reserved words.
 
       if Ada_Version = Ada_95

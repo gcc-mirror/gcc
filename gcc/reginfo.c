@@ -192,6 +192,9 @@ init_reg_sets (void)
   memcpy (reg_alloc_order, initial_reg_alloc_order, sizeof reg_alloc_order);
 #endif
   memcpy (reg_names, initial_reg_names, sizeof reg_names);
+
+  SET_HARD_REG_SET (accessible_reg_set);
+  SET_HARD_REG_SET (operand_reg_set);
 }
 
 /* Initialize may_move_cost and friends for mode M.  */
@@ -292,6 +295,8 @@ static char saved_call_used_regs[FIRST_PSEUDO_REGISTER];
 static char saved_call_really_used_regs[FIRST_PSEUDO_REGISTER];
 #endif
 static const char *saved_reg_names[FIRST_PSEUDO_REGISTER];
+static HARD_REG_SET saved_accessible_reg_set;
+static HARD_REG_SET saved_operand_reg_set;
 
 /* Save the register information.  */
 void
@@ -315,6 +320,8 @@ save_register_info (void)
   /* And similarly for reg_names.  */
   gcc_assert (sizeof reg_names == sizeof saved_reg_names);
   memcpy (saved_reg_names, reg_names, sizeof reg_names);
+  COPY_HARD_REG_SET (saved_accessible_reg_set, accessible_reg_set);
+  COPY_HARD_REG_SET (saved_operand_reg_set, operand_reg_set);
 }
 
 /* Restore the register information.  */
@@ -330,6 +337,8 @@ restore_register_info (void)
 #endif
 
   memcpy (reg_names, saved_reg_names, sizeof reg_names);
+  COPY_HARD_REG_SET (accessible_reg_set, saved_accessible_reg_set);
+  COPY_HARD_REG_SET (operand_reg_set, saved_operand_reg_set);
 }
 
 /* After switches have been processed, which perhaps alter
@@ -459,8 +468,27 @@ init_reg_sets_1 (void)
   else
     CLEAR_REG_SET (fixed_reg_set_regset);
 
+  AND_HARD_REG_SET (operand_reg_set, accessible_reg_set);
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
+      /* As a special exception, registers whose class is NO_REGS are
+	 not accepted by `register_operand'.  The reason for this change
+	 is to allow the representation of special architecture artifacts
+	 (such as a condition code register) without extending the rtl
+	 definitions.  Since registers of class NO_REGS cannot be used
+	 as registers in any case where register classes are examined,
+	 it is better to apply this exception in a target-independent way.  */
+      if (REGNO_REG_CLASS (i) == NO_REGS)
+	CLEAR_HARD_REG_BIT (operand_reg_set, i);
+
+      /* If a register is too limited to be treated as a register operand,
+	 then it should never be allocated to a pseudo.  */
+      if (!TEST_HARD_REG_BIT (operand_reg_set, i))
+	{
+	  fixed_regs[i] = 1;
+	  call_used_regs[i] = 1;
+	}
+
       /* call_used_regs must include fixed_regs.  */
       gcc_assert (!fixed_regs[i] || call_used_regs[i]);
 #ifdef CALL_REALLY_USED_REGISTERS

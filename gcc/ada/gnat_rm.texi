@@ -374,6 +374,7 @@ The GNAT Library
 * GNAT.Exception_Traces (g-exctra.ads)::
 * GNAT.Exceptions (g-except.ads)::
 * GNAT.Expect (g-expect.ads)::
+* GNAT.Expect.TTY (g-exptty.ads)::
 * GNAT.Float_Control (g-flocon.ads)::
 * GNAT.Heap_Sort (g-heasor.ads)::
 * GNAT.Heap_Sort_A (g-hesora.ads)::
@@ -4952,12 +4953,14 @@ with this pragma and others compiled in normal mode without it.
 Syntax:
 
 @smallexample @c ada
-pragma Suppress_Initialization ([Entity =>] type_Name);
+pragma Suppress_Initialization ([Entity =>] subtype_Name);
 @end smallexample
 
 @noindent
+Here subtype_Name is the name introduced by a type declaration
+or subtype declaration.
 This pragma suppresses any implicit or explicit initialization
-associated with the given type name for all variables of this type,
+for all variables of the given type or subtype,
 including initialization resulting from the use of pragmas
 Normalize_Scalars or Initialize_Scalars.
 
@@ -6372,12 +6375,11 @@ refer to the value of the prefix on entry. So for
 example if you have an argument of a record type X called Arg1,
 you can refer to Arg1.Field'Old which yields the value of
 Arg1.Field on entry. The implementation simply involves generating
-an object declaration which captures the value on entry. Any
-prefix is allowed except one of a limited type (since limited
-types cannot be copied to capture their values) or an expression
-which references a local variable
-(since local variables do not exist at subprogram entry time).
-
+an object declaration which captures the value on entry.
+The prefix must denote an object of a nonlimited type (since limited types
+cannot be copied to capture their values) and it must not reference a local
+variable (since local variables do not exist at subprogram entry time). Note
+that the variable introduced by a quantified expression is a local variable.
 The following example shows the use of 'Old to implement
 a test of a postcondition:
 
@@ -9606,6 +9608,14 @@ The following convention names are supported
 @table @code
 @item  Ada
 Ada
+@item Ada_Pass_By_Copy
+Allowed for any types except by-reference types such as limited
+records. Compatible with convention Ada, but causes any parameters
+with this convention to be passed by copy.
+@item Ada_Pass_By_Reference
+Allowed for any types except by-copy types such as scalars.
+Compatible with convention Ada, but causes any parameters
+with this convention to be passed by reference.
 @item Assembler
 Assembly language
 @item Asm
@@ -9633,7 +9643,8 @@ separate section on Intrinsic Subprograms.
 @item Stdcall
 Stdcall (used for Windows implementations only).  This convention correspond
 to the WINAPI (previously called Pascal convention) C/C++ convention under
-Windows.  A function with this convention cleans the stack before exit.
+Windows.  A routine with this convention cleans the stack before
+exit. This pragma cannot be applied to a dispatching call.
 @item DLL
 Synonym for Stdcall
 @item Win32
@@ -10374,11 +10385,7 @@ There are no restrictions on pragma @code{Restrictions}.
 * Exception_Name::
 * File::
 * Line::
-* Rotate_Left::
-* Rotate_Right::
-* Shift_Left::
-* Shift_Right::
-* Shift_Right_Arithmetic::
+* Shifts and Rotates::
 * Source_Location::
 @end menu
 
@@ -10495,61 +10502,35 @@ application program should simply call the function
 @code{GNAT.Source_Info.Line} to obtain the number of the current
 source line.
 
-@node Rotate_Left
-@section Rotate_Left
+@node Shifts and Rotates
+@section Shifts and Rotates
+@cindex Shift_Left
+@cindex Shift_Right
+@cindex Shift_Right_Arithmetic
 @cindex Rotate_Left
+@cindex Rotate_Right
 @noindent
-In standard Ada, the @code{Rotate_Left} function is available only
+In standard Ada, the shift and rotate functions are available only
 for the predefined modular types in package @code{Interfaces}.  However, in
-GNAT it is possible to define a Rotate_Left function for a user
-defined modular type or any signed integer type as in this example:
+GNAT it is possible to define these functions for any integer
+type (signed or modular), as in this example:
 
 @smallexample @c ada
    function Shift_Left
-     (Value  : My_Modular_Type;
+     (Value  : T;
       Amount : Natural)
-      return   My_Modular_Type;
+      return   T;
 @end smallexample
 
 @noindent
-The requirements are that the profile be exactly as in the example
-above.  The only modifications allowed are in the formal parameter
-names, and in the type of @code{Value} and the return type, which
-must be the same, and must be either a signed integer type, or
-a modular integer type with a binary modulus, and the size must
-be 8.  16, 32 or 64 bits.
-
-@node Rotate_Right
-@section Rotate_Right
-@cindex Rotate_Right
-@noindent
-A @code{Rotate_Right} function can be defined for any user defined
-binary modular integer type, or signed integer type, as described
-above for @code{Rotate_Left}.
-
-@node Shift_Left
-@section Shift_Left
-@cindex Shift_Left
-@noindent
-A @code{Shift_Left} function can be defined for any user defined
-binary modular integer type, or signed integer type, as described
-above for @code{Rotate_Left}.
-
-@node Shift_Right
-@section Shift_Right
-@cindex Shift_Right
-@noindent
-A @code{Shift_Right} function can be defined for any user defined
-binary modular integer type, or signed integer type, as described
-above for @code{Rotate_Left}.
-
-@node Shift_Right_Arithmetic
-@section Shift_Right_Arithmetic
-@cindex Shift_Right_Arithmetic
-@noindent
-A @code{Shift_Right_Arithmetic} function can be defined for any user
-defined binary modular integer type, or signed integer type, as described
-above for @code{Rotate_Left}.
+The function name must be one of
+Shift_Left, Shift_Right, Shift_Right_Arithmetic, Rotate_Left, or
+Rotate_Right. T must be an integer type. T'Size must be
+8, 16, 32 or 64 bits; if T is modular, the modulus
+must be 2**8, 2**16, 2**32 or 2**64.
+The result type must be the same as the type of @code{Value}.
+The shift amount must be Natural.
+The formal parameter names can be anything.
 
 @node Source_Location
 @section Source_Location
@@ -14187,6 +14168,7 @@ of GNAT, and will generate a warning message.
 * GNAT.Exception_Traces (g-exctra.ads)::
 * GNAT.Exceptions (g-except.ads)::
 * GNAT.Expect (g-expect.ads)::
+* GNAT.Expect.TTY (g-exptty.ads)::
 * GNAT.Float_Control (g-flocon.ads)::
 * GNAT.Heap_Sort (g-heasor.ads)::
 * GNAT.Heap_Sort_A (g-hesora.ads)::
@@ -15053,6 +15035,16 @@ with some expected regular expression. Currently @code{GNAT.Expect}
 is implemented on all native GNAT ports except for OpenVMS@.
 It is not implemented for cross ports, and in particular is not
 implemented for VxWorks or LynxOS@.
+
+@node GNAT.Expect.TTY (g-exptty.ads)
+@section @code{GNAT.Expect.TTY} (@file{g-exptty.ads})
+@cindex @code{GNAT.Expect.TTY} (@file{g-exptty.ads})
+
+@noindent
+As GNAT.Expect but using pseudo-terminal.
+Currently @code{GNAT.Expect.TTY} is implemented on all native GNAT
+ports except for OpenVMS@. It is not implemented for cross ports, and
+in particular is not implemented for VxWorks or LynxOS@.
 
 @node GNAT.Float_Control (g-flocon.ads)
 @section @code{GNAT.Float_Control} (@file{g-flocon.ads})

@@ -3,13 +3,9 @@
 // license that can be found in the LICENSE file.
 
 package runtime
+#include "runtime.h"
 #include "map.h"
-#define nil NULL
 
-typedef unsigned char byte;
-typedef _Bool bool;
-
-typedef struct __go_map_type MapType;
 typedef struct __go_map Hmap;
 typedef struct __go_hash_iter hiter;
 

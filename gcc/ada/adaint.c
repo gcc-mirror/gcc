@@ -2189,10 +2189,10 @@ __gnat_is_executable_file_attr (char* name, struct file_attributes* attr)
 
 	 /* look for last .exe */
 	 if (last)
-	   while (l = _tcsstr(last+1, _T(".exe"))) last = l;
+	   while ((l = _tcsstr(last+1, _T(".exe")))) last = l;
 
 	 attr->executable = GetFileAttributes (wname) != INVALID_FILE_ATTRIBUTES
-	   && last - wname == (int) (_tcslen (wname) - 4);
+	   && (last - wname) == (int) (_tcslen (wname) - 4);
        }
 #else
      __gnat_stat_to_attr (-1, name, attr);
@@ -2449,6 +2449,14 @@ __gnat_dup2 (int oldfd, int newfd)
   /* Not supported on VxWorks 5.x, but supported on VxWorks 6.0 when using
      RTPs.  */
   return -1;
+#elif defined (_WIN32)
+  /* Special case when oldfd and newfd are identical and are the standard
+     input, output or error as this makes Windows XP hangs. Note that we
+     do that only for standard file descriptors that are known to be valid. */
+  if (oldfd == newfd && newfd >= 0 && newfd <= 2)
+    return newfd;
+  else
+    return dup2 (oldfd, newfd);
 #else
   return dup2 (oldfd, newfd);
 #endif

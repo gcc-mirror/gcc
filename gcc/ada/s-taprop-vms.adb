@@ -809,9 +809,15 @@ package body System.Task_Primitives.Operations is
           (Attributes'Access, PTHREAD_EXPLICIT_SCHED);
       pragma Assert (Result = 0);
 
+      --  Note: the use of Unrestricted_Access in the following call is needed
+      --  because otherwise we have an error of getting a access-to-volatile
+      --  value which points to a non-volatile object. But in this case it is
+      --  safe to do this, since we know we have no problems with aliasing and
+      --  Unrestricted_Access bypasses this check.
+
       Result :=
         pthread_create
-          (T.Common.LL.Thread'Access,
+          (T.Common.LL.Thread'Unrestricted_Access,
            Attributes'Access,
            Thread_Body_Access (Wrapper),
            To_Address (T));

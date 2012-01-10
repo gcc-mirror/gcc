@@ -69,36 +69,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __add_r_ref<_Tp&>
     { typedef _Tp& type; };
 
-  // To work around c++/49225 aka c++/48322.
-  template<typename...>
-    struct __conv_types { };
-
-  template<typename _Tuple1, typename _Tuple2>
-    struct __one_by_one_convertible
-    : public false_type { };
-
-  template<typename _Tp, typename _Up>
-    struct __one_by_one_convertible<__conv_types<_Tp>, __conv_types<_Up>>
-    : public is_convertible<_Tp, _Up>::type { };
-
-  template<typename _T1, typename... _TR, typename _U1, typename... _UR>
-    struct __one_by_one_convertible<__conv_types<_T1, _TR...>,
-                                    __conv_types<_U1, _UR...>>
-    : public __and_<is_convertible<_T1, _U1>,
-                    __one_by_one_convertible<__conv_types<_TR...>,
-                                             __conv_types<_UR...>>>::type
-    { };
-
-  template<typename _Tuple1, typename _Tuple2>
-    struct __all_convertible;
-
-  template<typename... _TTypes, typename... _UTypes>
-    struct __all_convertible<__conv_types<_TTypes...>,
-                             __conv_types<_UTypes...>>
-    : public __one_by_one_convertible<__conv_types<_TTypes...>,
-                                      __conv_types<_UTypes...>>::type { };
-
-  template<std::size_t _Idx, typename _Head, bool _IsEmpty>
+  template<std::size_t _Idx, typename _Head, bool _IsEmptyNotFinal>
     struct _Head_base;
 
   template<std::size_t _Idx, typename _Head>
@@ -230,6 +201,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void _M_swap(_Tuple_impl&) noexcept { /* no-op */ }
     };
 
+  // Use the Empty Base-class Optimization for empty, non-final types.
+  template<typename _Tp>
+    using __empty_not_final
+      = typename conditional<__is_final(_Tp), false_type, is_empty<_Tp>>::type;
+
   /**
    * Recursive tuple implementation. Here we store the @c Head element
    * and derive from a @c Tuple_impl containing the remaining elements
@@ -238,12 +214,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<std::size_t _Idx, typename _Head, typename... _Tail>
     struct _Tuple_impl<_Idx, _Head, _Tail...>
     : public _Tuple_impl<_Idx + 1, _Tail...>,
-      private _Head_base<_Idx, _Head, std::is_empty<_Head>::value>
+      private _Head_base<_Idx, _Head, __empty_not_final<_Head>::value>
     {
       template<std::size_t, typename...> friend class _Tuple_impl;
 
       typedef _Tuple_impl<_Idx + 1, _Tail...> _Inherited;
-      typedef _Head_base<_Idx, _Head, std::is_empty<_Head>::value> _Base;
+      typedef _Head_base<_Idx, _Head, __empty_not_final<_Head>::value> _Base;
 
       static constexpr _Head&  
       _M_head(_Tuple_impl& __t) noexcept { return _Base::_M_head(__t); }
@@ -407,13 +383,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr tuple(const _Elements&... __elements)
       : _Inherited(__elements...) { }
 
-      template<typename... _UElements,
-	       typename = typename enable_if<sizeof...(_UElements)
-					     == sizeof...(_Elements)>::type,
-	       typename = typename
-	         enable_if<__all_convertible<__conv_types<_UElements...>,
-					     __conv_types<_Elements...> >::value
-			   >::type>
+      template<typename... _UElements, typename = typename
+        enable_if<__and_<is_convertible<_UElements,
+					_Elements>...>::value>::type>
 	explicit
         constexpr tuple(_UElements&&... __elements)
 	: _Inherited(std::forward<_UElements>(__elements)...) {	}
@@ -423,21 +395,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr tuple(tuple&&) = default; 
 
       template<typename... _UElements, typename = typename
-	enable_if<__and_<integral_constant<bool, sizeof...(_UElements)
-					   == sizeof...(_Elements)>,
-			 __all_convertible<__conv_types<const _UElements&...>,
-					   __conv_types<_Elements...>>
-                         >::value>::type>
+        enable_if<__and_<is_convertible<const _UElements&,
+					_Elements>...>::value>::type>
         constexpr tuple(const tuple<_UElements...>& __in)
         : _Inherited(static_cast<const _Tuple_impl<0, _UElements...>&>(__in))
         { }
 
       template<typename... _UElements, typename = typename
-	enable_if<__and_<integral_constant<bool, sizeof...(_UElements)
-					   == sizeof...(_Elements)>,
-			 __all_convertible<__conv_types<_UElements...>,
-					   __conv_types<_Elements...>>
-			 >::value>::type>
+        enable_if<__and_<is_convertible<_UElements,
+					_Elements>...>::value>::type>
         constexpr tuple(tuple<_UElements...>&& __in)
         : _Inherited(static_cast<_Tuple_impl<0, _UElements...>&&>(__in)) { }
 
@@ -1096,21 +1062,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // See stl_pair.h...
   template<class _T1, class _T2>
-    template<typename _Tp, typename... _Args>
-      inline _Tp
-      pair<_T1, _T2>::__cons(tuple<_Args...>&& __tuple)
-      {
-	typedef typename _Build_index_tuple<sizeof...(_Args)>::__type
-	  _Indexes;
-	return __do_cons<_Tp>(std::move(__tuple), _Indexes());
-      }
+    template<typename... _Args1, typename... _Args2>
+      inline
+      pair<_T1, _T2>::
+      pair(piecewise_construct_t,
+	   tuple<_Args1...> __first, tuple<_Args2...> __second)
+      : pair(__first, __second,
+	     typename _Build_index_tuple<sizeof...(_Args1)>::__type(),
+	     typename _Build_index_tuple<sizeof...(_Args2)>::__type())
+      { }
 
   template<class _T1, class _T2>
-    template<typename _Tp, typename... _Args, std::size_t... _Indexes>
-      inline _Tp
-      pair<_T1, _T2>::__do_cons(tuple<_Args...>&& __tuple,
-				const _Index_tuple<_Indexes...>&)
-      { return _Tp(std::forward<_Args>(get<_Indexes>(__tuple))...); }
+    template<typename... _Args1, std::size_t... _Indexes1,
+             typename... _Args2, std::size_t... _Indexes2>
+      inline
+      pair<_T1, _T2>::
+      pair(tuple<_Args1...>& __tuple1, tuple<_Args2...>& __tuple2,
+	   _Index_tuple<_Indexes1...>, _Index_tuple<_Indexes2...>)
+      : first(std::forward<_Args1>(std::get<_Indexes1>(__tuple1))...),
+        second(std::forward<_Args2>(std::get<_Indexes2>(__tuple2))...)
+      { }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

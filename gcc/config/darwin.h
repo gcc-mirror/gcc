@@ -112,7 +112,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Default to using the NeXT-style runtime, since that's what is
    pre-installed on Darwin systems.  */
 
-#define NEXT_OBJC_RUNTIME
+#define NEXT_OBJC_RUNTIME 1
 
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */
@@ -140,20 +140,8 @@ extern GTY(()) int darwin_ms_struct;
   } while (0)
 
 #define SUBTARGET_C_COMMON_OVERRIDE_OPTIONS do {                        \
-  /* Unless set, force ABI=2 for NeXT and m64, 0 otherwise.  */		\
-  if (!global_options_set.x_flag_objc_abi)				\
-    global_options.x_flag_objc_abi					\
-	= (flag_next_runtime && TARGET_64BIT) ? 2 : 0;			\
-  /* Objective-C family ABI 2 is only valid for next/m64 at present. */	\
-  if (global_options_set.x_flag_objc_abi && flag_next_runtime)		\
-    if (TARGET_64BIT && global_options.x_flag_objc_abi < 2)		\
-      error_at (UNKNOWN_LOCATION, "%<-fobjc-abi-version%> >= 2 is only"	\
-		" supported on %<-m64%> targets for"			\
-		" %<-fnext-runtime%>");					\
-  /* Sort out ObjC exceptions: If the runtime is NeXT we default to	\
-     sjlj for m32 only.  */						\
-  if (!global_options_set.x_flag_objc_sjlj_exceptions)			\
-    global_options.x_flag_objc_sjlj_exceptions = 			\
+    if (!global_options_set.x_flag_objc_sjlj_exceptions)		\
+      global_options.x_flag_objc_sjlj_exceptions = 			\
 				flag_next_runtime && !TARGET_64BIT;	\
     if (flag_mkernel || flag_apple_kext)				\
       {									\
@@ -362,8 +350,10 @@ extern GTY(()) int darwin_ms_struct;
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC							    \
-  "%{Zdynamiclib: %(darwin_dylib1) }					    \
-   %{!Zdynamiclib:%{Zbundle:%{!static:-lbundle1.o}}			    \
+  "%{Zdynamiclib: %(darwin_dylib1) %{fgnu-tm: -lcrttms.o}}		    \
+   %{!Zdynamiclib:%{Zbundle:%{!static:					    \
+	%:version-compare(< 10.6 mmacosx-version-min= -lbundle1.o)	    \
+	%{fgnu-tm: -lcrttms.o}}}					    \
      %{!Zbundle:%{pg:%{static:-lgcrt0.o}				    \
                      %{!static:%{object:-lgcrt0.o}			    \
                                %{!object:%{preload:-lgcrt0.o}		    \
@@ -375,10 +365,8 @@ extern GTY(()) int darwin_ms_struct;
 					      %(darwin_crt2)}}}}}}	    \
   %{shared-libgcc:%:version-compare(< 10.5 mmacosx-version-min= crt3.o%s)}"
 
-/* The native Darwin linker doesn't necessarily place files in the order
-   that they're specified on the link line.  Thus, it is pointless
-   to put anything in ENDFILE_SPEC.  */
-/* #define ENDFILE_SPEC "" */
+/* We want a destructor last in the list.  */
+#define ENDFILE_SPEC "%{fgnu-tm: -lcrttme.o}"
 
 #define DARWIN_EXTRA_SPECS						\
   { "darwin_crt1", DARWIN_CRT1_SPEC },					\
@@ -387,11 +375,13 @@ extern GTY(()) int darwin_ms_struct;
 
 #define DARWIN_DYLIB1_SPEC						\
   "%:version-compare(!> 10.5 mmacosx-version-min= -ldylib1.o)		\
-   %:version-compare(>= 10.5 mmacosx-version-min= -ldylib1.10.5.o)"
+   %:version-compare(>< 10.5 10.6 mmacosx-version-min= -ldylib1.10.5.o)"
 
 #define DARWIN_CRT1_SPEC						\
   "%:version-compare(!> 10.5 mmacosx-version-min= -lcrt1.o)		\
-   %:version-compare(>= 10.5 mmacosx-version-min= -lcrt1.10.5.o)"
+   %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lcrt1.10.5.o)	\
+   %:version-compare(>= 10.6 mmacosx-version-min= -lcrt1.10.6.o)	\
+   %{fgnu-tm: -lcrttms.o}"
 
 /* Default Darwin ASM_SPEC, very simple.  */
 #define ASM_SPEC "-arch %(darwin_arch) \
@@ -700,6 +690,10 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
 #define TARGET_ASM_UNIQUE_SECTION darwin_unique_section
 #undef  TARGET_ASM_FUNCTION_RODATA_SECTION
 #define TARGET_ASM_FUNCTION_RODATA_SECTION default_no_function_rodata_section
+
+#undef  TARGET_ASM_TM_CLONE_TABLE_SECTION
+#define TARGET_ASM_TM_CLONE_TABLE_SECTION darwin_tm_clone_table_section
+
 #undef  TARGET_ASM_RELOC_RW_MASK
 #define TARGET_ASM_RELOC_RW_MASK machopic_reloc_rw_mask
 

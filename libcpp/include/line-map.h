@@ -705,4 +705,14 @@ void linemap_get_statistics (struct line_maps *, struct linemap_stats *);
    stream STREAM. SET is the line map set LOC comes from.  */
 void linemap_dump_location (struct line_maps *, source_location, FILE *);
 
+/* Dump line map at index IX in line table SET to STREAM.  If STREAM
+   is NULL, use stderr.  IS_MACRO is true if the caller wants to
+   dump a macro map, false otherwise.  */
+void linemap_dump (FILE *, struct line_maps *, unsigned, bool);
+
+/* Dump line table SET to STREAM.  If STREAM is NULL, stderr is used.
+   NUM_ORDINARY specifies how many ordinary maps to dump.  NUM_MACRO
+   specifies how many macro maps to dump.  */
+void line_table_dump (FILE *, struct line_maps *, unsigned int, unsigned int);
+
 #endif /* !LIBCPP_LINE_MAP_H  */

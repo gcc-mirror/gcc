@@ -49,7 +49,7 @@ int main( int argc, char* argv[] )
   if (*f(&val3, 3 ) != 4)
     __builtin_abort ();
     
-  __builtin_memcpy(a, &val3, 16);
+  __builtin_memcpy (a, &val3, sizeof(a));
   for(i = 0; i < 4; i++)
     if (a[i] != i+1)
       __builtin_abort ();

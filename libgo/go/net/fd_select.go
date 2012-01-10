@@ -13,13 +13,13 @@ import (
 
 type pollster struct {
 	readFds, writeFds, repeatFds *syscall.FdSet
-	maxFd int
-	readyReadFds, readyWriteFds *syscall.FdSet
-	nReady int
-	lastFd int
+	maxFd                        int
+	readyReadFds, readyWriteFds  *syscall.FdSet
+	nReady                       int
+	lastFd                       int
 }
 
-func newpollster() (p *pollster, err os.Error) {
+func newpollster() (p *pollster, err error) {
 	p = new(pollster)
 	p.readFds = new(syscall.FdSet)
 	p.writeFds = new(syscall.FdSet)
@@ -32,7 +32,7 @@ func newpollster() (p *pollster, err os.Error) {
 	return p, nil
 }
 
-func (p *pollster) AddFD(fd int, mode int, repeat bool) (bool, os.Error) {
+func (p *pollster) AddFD(fd int, mode int, repeat bool) (bool, error) {
 	// pollServer is locked.
 
 	if mode == 'r' {
@@ -75,7 +75,7 @@ func (p *pollster) DelFD(fd int, mode int) {
 	// We don't worry about maxFd here.
 }
 
-func (p *pollster) WaitFD(s *pollServer, nsec int64) (fd int, mode int, err os.Error) {
+func (p *pollster) WaitFD(s *pollServer, nsec int64) (fd int, mode int, err error) {
 	if p.nReady == 0 {
 		var timeout *syscall.Timeval
 		var tv syscall.Timeval
@@ -85,7 +85,8 @@ func (p *pollster) WaitFD(s *pollServer, nsec int64) (fd int, mode int, err os.E
 			timeout = &tv
 		}
 
-		var n, e int
+		var n int
+		var e error
 		var tmpReadFds, tmpWriteFds syscall.FdSet
 		for {
 			// Temporary syscall.FdSet's into which the values are copied
@@ -94,14 +95,14 @@ func (p *pollster) WaitFD(s *pollServer, nsec int64) (fd int, mode int, err os.E
 			tmpWriteFds = *p.writeFds
 
 			s.Unlock()
-			n, e = syscall.Select(p.maxFd + 1, &tmpReadFds, &tmpWriteFds, nil, timeout)
+			n, e = syscall.Select(p.maxFd+1, &tmpReadFds, &tmpWriteFds, nil, timeout)
 			s.Lock()
 
 			if e != syscall.EINTR {
 				break
 			}
 		}
-		if e != 0 {
+		if e != nil {
 			return -1, 0, os.NewSyscallError("select", e)
 		}
 		if n == 0 {
@@ -115,7 +116,7 @@ func (p *pollster) WaitFD(s *pollServer, nsec int64) (fd int, mode int, err os.E
 	}
 
 	flag := false
-	for i := p.lastFd; i < p.maxFd + 1; i++ {
+	for i := p.lastFd; i < p.maxFd+1; i++ {
 		if syscall.FDIsSet(i, p.readyReadFds) {
 			flag = true
 			mode = 'r'
@@ -139,6 +140,6 @@ func (p *pollster) WaitFD(s *pollServer, nsec int64) (fd int, mode int, err os.E
 	return -1, 0, nil
 }
 
-func (p *pollster) Close() os.Error {
+func (p *pollster) Close() error {
 	return nil
 }

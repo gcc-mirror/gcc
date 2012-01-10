@@ -1,4 +1,4 @@
-/* { dg-do run { xfail *-*-* } }
+/* { dg-do run } */
 /* { dg-options "-pthread" } */
 
 /* Tests that new transactions can be started from both transaction_pure and
@@ -36,7 +36,7 @@ int __attribute__((transaction_unsafe)) unsafe(int i)
 static void *thread (void *dummy __attribute__((unused)))
 {
   __transaction_atomic {
-    pure(1);
+    pure(x);
   }
   __transaction_relaxed {
     unsafe(1);

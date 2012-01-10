@@ -434,7 +434,9 @@ func (p *parser) parseLhsList() []ast.Expr {
 	switch p.tok {
 	case token.DEFINE:
 		// lhs of a short variable declaration
-		p.shortVarDecl(p.makeIdentList(list))
+		// but doesn't enter scope until later:
+		// caller must call p.shortVarDecl(p.makeIdentList(list))
+		// at appropriate time.
 	case token.COLON:
 		// lhs of a label declaration or a communication clause of a select
 		// statement (parseLhsList is not called when parsing the case clause
@@ -1129,7 +1131,7 @@ func (p *parser) parseLiteralValue(typ ast.Expr) ast.Expr {
 
 // checkExpr checks that x is an expression (and not a type).
 func (p *parser) checkExpr(x ast.Expr) ast.Expr {
-	switch t := unparen(x).(type) {
+	switch unparen(x).(type) {
 	case *ast.BadExpr:
 	case *ast.Ident:
 	case *ast.BasicLit:
@@ -1397,6 +1399,9 @@ func (p *parser) parseSimpleStmt(mode int) (ast.Stmt, bool) {
 			isRange = true
 		} else {
 			y = p.parseRhsList()
+		}
+		if tok == token.DEFINE {
+			p.shortVarDecl(p.makeIdentList(x))
 		}
 		return &ast.AssignStmt{x, pos, tok, y}, isRange
 	}
@@ -1722,6 +1727,9 @@ func (p *parser) parseCommClause() *ast.CommClause {
 				}
 				p.next()
 				rhs = p.parseRhs()
+				if tok == token.DEFINE && lhs != nil {
+					p.shortVarDecl(p.makeIdentList(lhs))
+				}
 			} else {
 				// rhs must be single receive operation
 				if len(lhs) > 1 {
@@ -1909,7 +1917,7 @@ func parseImportSpec(p *parser, doc *ast.CommentGroup, _ int) ast.Spec {
 	p.expectSemi() // call before accessing p.linecomment
 
 	// collect imports
-	spec := &ast.ImportSpec{doc, ident, path, p.lineComment}
+	spec := &ast.ImportSpec{doc, ident, path, p.lineComment, token.NoPos}
 	p.imports = append(p.imports, spec)
 
 	return spec
@@ -2018,7 +2026,7 @@ func (p *parser) parseReceiver(scope *ast.Scope) *ast.FieldList {
 	// must have exactly one receiver
 	if par.NumFields() != 1 {
 		p.errorExpected(par.Opening, "exactly one receiver")
-		par.List = []*ast.Field{&ast.Field{Type: &ast.BadExpr{par.Opening, par.Closing + 1}}}
+		par.List = []*ast.Field{{Type: &ast.BadExpr{par.Opening, par.Closing + 1}}}
 		return par
 	}
 
@@ -2027,7 +2035,7 @@ func (p *parser) parseReceiver(scope *ast.Scope) *ast.FieldList {
 	base := deref(recv.Type)
 	if _, isIdent := base.(*ast.Ident); !isIdent {
 		p.errorExpected(base.Pos(), "(unqualified) identifier")
-		par.List = []*ast.Field{&ast.Field{Type: &ast.BadExpr{recv.Pos(), recv.End()}}}
+		par.List = []*ast.Field{{Type: &ast.BadExpr{recv.Pos(), recv.End()}}}
 	}
 
 	return par

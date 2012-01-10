@@ -39,15 +39,17 @@ with System; use type System.Address;
 
 package body Ada.Containers.Ordered_Maps is
 
-   type Iterator is new
-     Map_Iterator_Interfaces.Reversible_Iterator with record
-        Container : Map_Access;
-        Node      : Node_Access;
-     end record;
+   type Iterator is new Limited_Controlled and
+     Map_Iterator_Interfaces.Reversible_Iterator with
+   record
+      Container : Map_Access;
+      Node      : Node_Access;
+   end record;
+
+   overriding procedure Finalize (Object : in out Iterator);
 
    overriding function First (Object : Iterator) return Cursor;
-
-   overriding function Last (Object : Iterator) return Cursor;
+   overriding function Last  (Object : Iterator) return Cursor;
 
    overriding function Next
      (Object   : Iterator;
@@ -321,11 +323,38 @@ package body Ada.Containers.Ordered_Maps is
    ------------------------
 
    function Constant_Reference
+     (Container : aliased Map;
+      Position  : Cursor) return Constant_Reference_Type
+   is
+   begin
+      if Position.Container = null then
+         raise Constraint_Error with
+           "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with
+           "Position cursor designates wrong map";
+      end if;
+
+      pragma Assert (Vet (Container.Tree, Position.Node),
+                     "Position cursor in Constant_Reference is bad");
+
+      return (Element => Position.Node.Element'Access);
+   end Constant_Reference;
+
+   function Constant_Reference
      (Container : Map;
       Key       : Key_Type) return Constant_Reference_Type
    is
+      Node : constant Node_Access := Key_Ops.Find (Container.Tree, Key);
+
    begin
-      return (Element => Container.Element (Key)'Unrestricted_Access);
+      if Node = null then
+         raise Constraint_Error with "key not in map";
+      end if;
+
+      return (Element => Node.Element'Access);
    end Constant_Reference;
 
    --------------
@@ -488,19 +517,30 @@ package body Ada.Containers.Ordered_Maps is
       end if;
    end Exclude;
 
+   --------------
+   -- Finalize --
+   --------------
+
+   procedure Finalize (Object : in out Iterator) is
+   begin
+      if Object.Container /= null then
+         declare
+            B : Natural renames Object.Container.all.Tree.Busy;
+         begin
+            B := B - 1;
+         end;
+      end if;
+   end Finalize;
+
    ----------
    -- Find --
    ----------
 
    function Find (Container : Map; Key : Key_Type) return Cursor is
       Node : constant Node_Access := Key_Ops.Find (Container.Tree, Key);
-
    begin
-      if Node = null then
-         return No_Element;
-      end if;
-
-      return Cursor'(Container'Unrestricted_Access, Node);
+      return (if Node = null then No_Element
+                else Cursor'(Container'Unrestricted_Access, Node));
    end Find;
 
    -----------
@@ -518,13 +558,24 @@ package body Ada.Containers.Ordered_Maps is
    end First;
 
    function First (Object : Iterator) return Cursor is
-      M : constant Map_Access  := Object.Container;
-      N : constant Node_Access := M.Tree.First;
    begin
-      if N = null then
-         return No_Element;
+      --  The value of the iterator object's Node component influences the
+      --  behavior of the First (and Last) selector function.
+
+      --  When the Node component is null, this means the iterator object was
+      --  constructed without a start expression, in which case the (forward)
+      --  iteration starts from the (logical) beginning of the entire sequence
+      --  of items (corresponding to Container.First, for a forward iterator).
+
+      --  Otherwise, this is iteration over a partial sequence of items. When
+      --  the Node component is non-null, the iterator object was constructed
+      --  with a start expression, that specifies the position from which the
+      --  (forward) partial iteration begins.
+
+      if Object.Node = null then
+         return Object.Container.First;
       else
-         return Cursor'(Object.Container.all'Unchecked_Access, N);
+         return Cursor'(Object.Container, Object.Node);
       end if;
    end First;
 
@@ -534,7 +585,6 @@ package body Ada.Containers.Ordered_Maps is
 
    function First_Element (Container : Map) return Element_Type is
       T : Tree_Type renames Container.Tree;
-
    begin
       if T.First = null then
          raise Constraint_Error with "map is empty";
@@ -750,10 +800,8 @@ package body Ada.Containers.Ordered_Maps is
    begin
       if L.Key < R.Key then
          return False;
-
       elsif R.Key < L.Key then
          return False;
-
       else
          return L.Element = R.Element;
       end if;
@@ -827,21 +875,76 @@ package body Ada.Containers.Ordered_Maps is
    end Iterate;
 
    function Iterate
-     (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'class
+     (Container : Map) return Map_Iterator_Interfaces.Reversible_Iterator'Class
    is
-      Node : constant Node_Access := Container.Tree.First;
-      It   : constant Iterator := (Container'Unrestricted_Access, Node);
+      B  : Natural renames Container.Tree'Unrestricted_Access.all.Busy;
 
    begin
-      return It;
+      --  The value of the Node component influences the behavior of the First
+      --  and Last selector functions of the iterator object. When the Node
+      --  component is null (as is the case here), this means the iterator
+      --  object was constructed without a start expression. This is a
+      --  complete iterator, meaning that the iteration starts from the
+      --  (logical) beginning of the sequence of items.
+
+      --  Note: For a forward iterator, Container.First is the beginning, and
+      --  for a reverse iterator, Container.Last is the beginning.
+
+      return It : constant Iterator :=
+                    (Limited_Controlled with
+                       Container => Container'Unrestricted_Access,
+                       Node      => null)
+      do
+         B := B + 1;
+      end return;
    end Iterate;
 
    function Iterate (Container : Map; Start : Cursor)
-      return Map_Iterator_Interfaces.Reversible_Iterator'class
+      return Map_Iterator_Interfaces.Reversible_Iterator'Class
    is
-      It : constant Iterator := (Container'Unrestricted_Access, Start.Node);
+      B  : Natural renames Container.Tree'Unrestricted_Access.all.Busy;
+
    begin
-      return It;
+      --  It was formerly the case that when Start = No_Element, the partial
+      --  iterator was defined to behave the same as for a complete iterator,
+      --  and iterate over the entire sequence of items. However, those
+      --  semantics were unintuitive and arguably error-prone (it is too easy
+      --  to accidentally create an endless loop), and so they were changed,
+      --  per the ARG meeting in Denver on 2011/11. However, there was no
+      --  consensus about what positive meaning this corner case should have,
+      --  and so it was decided to simply raise an exception. This does imply,
+      --  however, that it is not possible to use a partial iterator to specify
+      --  an empty sequence of items.
+
+      if Start = No_Element then
+         raise Constraint_Error with
+           "Start position for iterator equals No_Element";
+      end if;
+
+      if Start.Container /= Container'Unrestricted_Access then
+         raise Program_Error with
+           "Start cursor of Iterate designates wrong map";
+      end if;
+
+      pragma Assert (Vet (Container.Tree, Start.Node),
+                     "Start cursor of Iterate is bad");
+
+      --  The value of the Node component influences the behavior of the First
+      --  and Last selector functions of the iterator object. When the Node
+      --  component is non-null (as is the case here), it means that this
+      --  is a partial iteration, over a subset of the complete sequence of
+      --  items. The iterator object was constructed with a start expression,
+      --  indicating the position from which the iteration begins. Note that
+      --  the start position has the same value irrespective of whether this
+      --  is a forward or reverse iteration.
+
+      return It : constant Iterator :=
+                    (Limited_Controlled with
+                       Container => Container'Unrestricted_Access,
+                       Node      => Start.Node)
+      do
+         B := B + 1;
+      end return;
    end Iterate;
 
    ---------
@@ -876,13 +979,24 @@ package body Ada.Containers.Ordered_Maps is
    end Last;
 
    function Last (Object : Iterator) return Cursor is
-      M : constant Map_Access  := Object.Container;
-      N : constant Node_Access := M.Tree.Last;
    begin
-      if N = null then
-         return No_Element;
+      --  The value of the iterator object's Node component influences the
+      --  behavior of the Last (and First) selector function.
+
+      --  When the Node component is null, this means the iterator object was
+      --  constructed without a start expression, in which case the (reverse)
+      --  iteration starts from the (logical) beginning of the entire sequence
+      --  (corresponding to Container.Last, for a reverse iterator).
+
+      --  Otherwise, this is iteration over a partial sequence of items. When
+      --  the Node component is non-null, the iterator object was constructed
+      --  with a start expression, that specifies the position from which the
+      --  (reverse) partial iteration begins.
+
+      if Object.Node = null then
+         return Object.Container.Last;
       else
-         return Cursor'(Object.Container.all'Unchecked_Access, N);
+         return Cursor'(Object.Container, Object.Node);
       end if;
    end Last;
 
@@ -980,11 +1094,16 @@ package body Ada.Containers.Ordered_Maps is
       Position : Cursor) return Cursor
    is
    begin
-      if Position.Node = null then
+      if Position.Container = null then
          return No_Element;
-      else
-         return (Object.Container, Tree_Operations.Next (Position.Node));
       end if;
+
+      if Position.Container /= Object.Container then
+         raise Program_Error with
+           "Position cursor of Next designates wrong map";
+      end if;
+
+      return Next (Position);
    end Next;
 
    ------------
@@ -1032,12 +1151,18 @@ package body Ada.Containers.Ordered_Maps is
       Position : Cursor) return Cursor
    is
    begin
-      if Position.Node = null then
+      if Position.Container = null then
          return No_Element;
-      else
-         return (Object.Container, Tree_Operations.Previous (Position.Node));
       end if;
+
+      if Position.Container /= Object.Container then
+         raise Program_Error with
+           "Position cursor of Previous designates wrong map";
+      end if;
+
+      return Previous (Position);
    end Previous;
+
    -------------------
    -- Query_Element --
    -------------------
@@ -1152,12 +1277,38 @@ package body Ada.Containers.Ordered_Maps is
    ---------------
 
    function Reference
-     (Container : Map;
-      Key       : Key_Type)
-      return Reference_Type
+     (Container : aliased in out Map;
+      Position  : Cursor) return Reference_Type
    is
    begin
-      return (Element => Container.Element (Key)'Unrestricted_Access);
+      if Position.Container = null then
+         raise Constraint_Error with
+           "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with
+           "Position cursor designates wrong map";
+      end if;
+
+      pragma Assert (Vet (Container.Tree, Position.Node),
+                     "Position cursor in function Reference is bad");
+
+      return (Element => Position.Node.Element'Access);
+   end Reference;
+
+   function Reference
+     (Container : aliased in out Map;
+      Key       : Key_Type) return Reference_Type
+   is
+      Node : constant Node_Access := Key_Ops.Find (Container.Tree, Key);
+
+   begin
+      if Node = null then
+         raise Constraint_Error with "key not in map";
+      end if;
+
+      return (Element => Node.Element'Access);
    end Reference;
 
    -------------

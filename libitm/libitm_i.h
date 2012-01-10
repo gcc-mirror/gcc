@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -37,6 +37,11 @@
 #include <string.h>
 #include <unwind.h>
 #include "local_type_traits"
+#include "local_atomic"
+
+/* Don't require libgcc_s.so for exceptions.  */
+extern void _Unwind_DeleteException (_Unwind_Exception*) __attribute__((weak));
+
 
 #include "common.h"
 
@@ -92,9 +97,6 @@ struct gtm_alloc_action
   bool allocated;
 };
 
-// This type is private to local.c.
-struct gtm_undolog_entry;
-
 struct gtm_thread;
 
 // A transaction checkpoint: data that has to saved and restored when doing
@@ -118,6 +120,29 @@ struct gtm_transaction_cp
 
   void save(gtm_thread* tx);
   void commit(gtm_thread* tx);
+};
+
+// An undo log for writes.
+struct gtm_undolog
+{
+  vector<gtm_word> undolog;
+
+  // Log the previous value at a certain address.
+  // The easiest way to inline this is to just define this here.
+  void log(const void *ptr, size_t len)
+  {
+    size_t words = (len + sizeof(gtm_word) - 1) / sizeof(gtm_word);
+    gtm_word *undo = undolog.push(words + 2);
+    memcpy(undo, ptr, len);
+    undo[words] = len;
+    undo[words + 1] = (gtm_word) ptr;
+  }
+
+  void commit () { undolog.clear(); }
+  size_t size() const { return undolog.size(); }
+
+  // In local.cc
+  void rollback (size_t until_size = 0);
 };
 
 // Contains all thread-specific data required by the entire library.
@@ -147,7 +172,7 @@ struct gtm_thread
   gtm_jmpbuf jb;
 
   // Data used by local.c for the undo log for both local and shared memory.
-  vector<gtm_undolog_entry*> undolog;
+  gtm_undolog undolog;
 
   // Data used by alloc.c for the malloc/free undo log.
   aa_tree<uintptr_t, gtm_alloc_action> alloc_actions;
@@ -206,7 +231,7 @@ struct gtm_thread
 
   // If this transaction is inactive, shared_state is ~0. Otherwise, this is
   // an active or serial transaction.
-  gtm_word shared_state;
+  atomic<gtm_word> shared_state;
 
   // The lock that provides access to serial mode.  Non-serialized
   // transactions acquire read locks; a serialized transaction aquires
@@ -230,7 +255,8 @@ struct gtm_thread
   // In beginend.cc
   void rollback (gtm_transaction_cp *cp = 0, bool aborting = false);
   bool trycommit ();
-  void restart (gtm_restart_reason) ITM_NORETURN;
+  void restart (gtm_restart_reason, bool finish_serial_upgrade = false)
+        ITM_NORETURN;
 
   gtm_thread();
   ~gtm_thread();
@@ -240,16 +266,17 @@ struct gtm_thread
 
   // Invoked from assembly language, thus the "asm" specifier on
   // the name, avoiding complex name mangling.
+#ifdef __USER_LABEL_PREFIX__
+#define UPFX1(t) UPFX(t)
+#define UPFX(t) #t
+  static uint32_t begin_transaction(uint32_t, const gtm_jmpbuf *)
+	__asm__(UPFX1(__USER_LABEL_PREFIX__) "GTM_begin_transaction") ITM_REGPARM;
+#else
   static uint32_t begin_transaction(uint32_t, const gtm_jmpbuf *)
 	__asm__("GTM_begin_transaction") ITM_REGPARM;
-
+#endif
   // In eh_cpp.cc
   void revert_cpp_exceptions (gtm_transaction_cp *cp = 0);
-
-  // In local.cc
-  void commit_undolog (void);
-  void rollback_undolog (size_t until_size = 0);
-  void drop_references_undolog (const void *, size_t);
 
   // In retry.cc
   // Must be called outside of transactions (i.e., after rollback).
@@ -279,7 +306,7 @@ namespace GTM HIDDEN {
 // are used.
 extern uint64_t gtm_spin_count_var;
 
-extern "C" uint32_t GTM_longjmp (const gtm_jmpbuf *, uint32_t, uint32_t)
+extern "C" uint32_t GTM_longjmp (uint32_t, const gtm_jmpbuf *, uint32_t)
 	ITM_NORETURN ITM_REGPARM;
 
 extern "C" void GTM_LB (const void *, size_t) ITM_REGPARM;

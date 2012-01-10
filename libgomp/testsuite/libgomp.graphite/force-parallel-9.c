@@ -2,11 +2,11 @@ void abort (void);
 
 #define N 500
 
+int Z[2*N+2][2*N+2], B[2*N+2][2*N+2];
+
 void foo(void)
 {
   int i,j;
-
-  int Z[2*N+2][2*N+2], B[2*N+2][2*N+2];
 
   for (i = 0; i < 2*N+2; i++)
     for (j = 0; j < 2*N+2; j++)

@@ -5,23 +5,27 @@
 package ssh
 
 import (
-	"big"
 	"bytes"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
-	_ "crypto/sha1"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
+	"io"
+	"math/big"
 	"net"
-	"os"
 	"sync"
 )
 
-// Server represents an SSH server. A Server may have several ServerConnections.
-type Server struct {
+type ServerConfig struct {
 	rsa           *rsa.PrivateKey
 	rsaSerialized []byte
+
+	// Rand provides the source of entropy for key exchange. If Rand is 
+	// nil, the cryptographic random reader in package crypto/rand will 
+	// be used.
+	Rand io.Reader
 
 	// NoClientAuth is true if clients are allowed to connect without
 	// authenticating.
@@ -36,18 +40,28 @@ type Server struct {
 	// key authentication. It must return true iff the given public key is
 	// valid for the given user.
 	PubKeyCallback func(user, algo string, pubkey []byte) bool
+
+	// Cryptographic-related configuration.
+	Crypto CryptoConfig
+}
+
+func (c *ServerConfig) rand() io.Reader {
+	if c.Rand == nil {
+		return rand.Reader
+	}
+	return c.Rand
 }
 
 // SetRSAPrivateKey sets the private key for a Server. A Server must have a
 // private key configured in order to accept connections. The private key must
 // be in the form of a PEM encoded, PKCS#1, RSA private key. The file "id_rsa"
 // typically contains such a key.
-func (s *Server) SetRSAPrivateKey(pemBytes []byte) os.Error {
+func (s *ServerConfig) SetRSAPrivateKey(pemBytes []byte) error {
 	block, _ := pem.Decode(pemBytes)
 	if block == nil {
-		return os.NewError("ssh: no key found")
+		return errors.New("ssh: no key found")
 	}
-	var err os.Error
+	var err error
 	s.rsa, err = x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
 		return err
@@ -109,7 +123,7 @@ func parseRSASig(in []byte) (sig []byte, ok bool) {
 }
 
 // cachedPubKey contains the results of querying whether a public key is
-// acceptable for a user. The cache only applies to a single ServerConnection.
+// acceptable for a user. The cache only applies to a single ServerConn.
 type cachedPubKey struct {
 	user, algo string
 	pubKey     []byte
@@ -118,11 +132,10 @@ type cachedPubKey struct {
 
 const maxCachedPubKeys = 16
 
-// ServerConnection represents an incomming connection to a Server.
-type ServerConnection struct {
-	Server *Server
-
+// A ServerConn represents an incomming connection.
+type ServerConn struct {
 	*transport
+	config *ServerConfig
 
 	channels   map[uint32]*channel
 	nextChanId uint32
@@ -130,7 +143,7 @@ type ServerConnection struct {
 	// lock protects err and also allows Channels to serialise their writes
 	// to out.
 	lock sync.RWMutex
-	err  os.Error
+	err  error
 
 	// cachedPubKeys contains the cache results of tests for public keys.
 	// Since SSH clients will query whether a public key is acceptable
@@ -139,9 +152,20 @@ type ServerConnection struct {
 	cachedPubKeys []cachedPubKey
 }
 
+// Server returns a new SSH server connection
+// using c as the underlying transport.
+func Server(c net.Conn, config *ServerConfig) *ServerConn {
+	conn := &ServerConn{
+		transport: newTransport(c, config.rand()),
+		channels:  make(map[uint32]*channel),
+		config:    config,
+	}
+	return conn
+}
+
 // kexDH performs Diffie-Hellman key agreement on a ServerConnection. The
 // returned values are given the same names as in RFC 4253, section 8.
-func (s *ServerConnection) kexDH(group *dhGroup, hashFunc crypto.Hash, magics *handshakeMagics, hostKeyAlgo string) (H, K []byte, err os.Error) {
+func (s *ServerConn) kexDH(group *dhGroup, hashFunc crypto.Hash, magics *handshakeMagics, hostKeyAlgo string) (H, K []byte, err error) {
 	packet, err := s.readPacket()
 	if err != nil {
 		return
@@ -152,10 +176,10 @@ func (s *ServerConnection) kexDH(group *dhGroup, hashFunc crypto.Hash, magics *h
 	}
 
 	if kexDHInit.X.Sign() == 0 || kexDHInit.X.Cmp(group.p) >= 0 {
-		return nil, nil, os.NewError("client DH parameter out of bounds")
+		return nil, nil, errors.New("client DH parameter out of bounds")
 	}
 
-	y, err := rand.Int(rand.Reader, group.p)
+	y, err := rand.Int(s.config.rand(), group.p)
 	if err != nil {
 		return
 	}
@@ -166,9 +190,9 @@ func (s *ServerConnection) kexDH(group *dhGroup, hashFunc crypto.Hash, magics *h
 	var serializedHostKey []byte
 	switch hostKeyAlgo {
 	case hostAlgoRSA:
-		serializedHostKey = s.Server.rsaSerialized
+		serializedHostKey = s.config.rsaSerialized
 	default:
-		return nil, nil, os.NewError("internal error")
+		return nil, nil, errors.New("internal error")
 	}
 
 	h := hashFunc.New()
@@ -183,24 +207,24 @@ func (s *ServerConnection) kexDH(group *dhGroup, hashFunc crypto.Hash, magics *h
 	marshalInt(K, kInt)
 	h.Write(K)
 
-	H = h.Sum()
+	H = h.Sum(nil)
 
 	h.Reset()
 	h.Write(H)
-	hh := h.Sum()
+	hh := h.Sum(nil)
 
 	var sig []byte
 	switch hostKeyAlgo {
 	case hostAlgoRSA:
-		sig, err = rsa.SignPKCS1v15(rand.Reader, s.Server.rsa, hashFunc, hh)
+		sig, err = rsa.SignPKCS1v15(s.config.rand(), s.config.rsa, hashFunc, hh)
 		if err != nil {
 			return
 		}
 	default:
-		return nil, nil, os.NewError("internal error")
+		return nil, nil, errors.New("internal error")
 	}
 
-	serializedSig := serializeRSASignature(sig)
+	serializedSig := serializeSignature(hostAlgoRSA, sig)
 
 	kexDHReply := kexDHReplyMsg{
 		HostKey:   serializedHostKey,
@@ -213,71 +237,31 @@ func (s *ServerConnection) kexDH(group *dhGroup, hashFunc crypto.Hash, magics *h
 	return
 }
 
-func serializeRSASignature(sig []byte) []byte {
-	length := stringLength([]byte(hostAlgoRSA))
-	length += stringLength(sig)
-
-	ret := make([]byte, length)
-	r := marshalString(ret, []byte(hostAlgoRSA))
-	r = marshalString(r, sig)
-
-	return ret
-}
-
 // serverVersion is the fixed identification string that Server will use.
 var serverVersion = []byte("SSH-2.0-Go\r\n")
 
-// buildDataSignedForAuth returns the data that is signed in order to prove
-// posession of a private key. See RFC 4252, section 7.
-func buildDataSignedForAuth(sessionId []byte, req userAuthRequestMsg, algo, pubKey []byte) []byte {
-	user := []byte(req.User)
-	service := []byte(req.Service)
-	method := []byte(req.Method)
-
-	length := stringLength(sessionId)
-	length += 1
-	length += stringLength(user)
-	length += stringLength(service)
-	length += stringLength(method)
-	length += 1
-	length += stringLength(algo)
-	length += stringLength(pubKey)
-
-	ret := make([]byte, length)
-	r := marshalString(ret, sessionId)
-	r[0] = msgUserAuthRequest
-	r = r[1:]
-	r = marshalString(r, user)
-	r = marshalString(r, service)
-	r = marshalString(r, method)
-	r[0] = 1
-	r = r[1:]
-	r = marshalString(r, algo)
-	r = marshalString(r, pubKey)
-	return ret
-}
-
-// Handshake performs an SSH transport and client authentication on the given ServerConnection.
-func (s *ServerConnection) Handshake(conn net.Conn) os.Error {
+// Handshake performs an SSH transport and client authentication on the given ServerConn.
+func (s *ServerConn) Handshake() error {
 	var magics handshakeMagics
-	s.transport = newTransport(conn, rand.Reader)
-
-	if _, err := conn.Write(serverVersion); err != nil {
+	if _, err := s.Write(serverVersion); err != nil {
+		return err
+	}
+	if err := s.Flush(); err != nil {
 		return err
 	}
 	magics.serverVersion = serverVersion[:len(serverVersion)-2]
 
-	version, ok := readVersion(s.transport)
-	if !ok {
-		return os.NewError("failed to read version string from client")
+	version, err := readVersion(s)
+	if err != nil {
+		return err
 	}
 	magics.clientVersion = version
 
 	serverKexInit := kexInitMsg{
 		KexAlgos:                supportedKexAlgos,
 		ServerHostKeyAlgos:      supportedHostKeyAlgos,
-		CiphersClientServer:     supportedCiphers,
-		CiphersServerClient:     supportedCiphers,
+		CiphersClientServer:     s.config.Crypto.ciphers(),
+		CiphersServerClient:     s.config.Crypto.ciphers(),
 		MACsClientServer:        supportedMACs,
 		MACsServerClient:        supportedMACs,
 		CompressionClientServer: supportedCompressions,
@@ -304,14 +288,13 @@ func (s *ServerConnection) Handshake(conn net.Conn) os.Error {
 
 	kexAlgo, hostKeyAlgo, ok := findAgreedAlgorithms(s.transport, &clientKexInit, &serverKexInit)
 	if !ok {
-		return os.NewError("ssh: no common algorithms")
+		return errors.New("ssh: no common algorithms")
 	}
 
 	if clientKexInit.FirstKexFollows && kexAlgo != clientKexInit.KexAlgos[0] {
 		// The client sent a Kex message for the wrong algorithm,
 		// which we have to ignore.
-		_, err := s.readPacket()
-		if err != nil {
+		if _, err := s.readPacket(); err != nil {
 			return err
 		}
 	}
@@ -324,32 +307,29 @@ func (s *ServerConnection) Handshake(conn net.Conn) os.Error {
 		dhGroup14Once.Do(initDHGroup14)
 		H, K, err = s.kexDH(dhGroup14, hashFunc, &magics, hostKeyAlgo)
 	default:
-		err = os.NewError("ssh: internal error")
+		err = errors.New("ssh: unexpected key exchange algorithm " + kexAlgo)
 	}
-
 	if err != nil {
 		return err
 	}
 
-	packet = []byte{msgNewKeys}
-	if err = s.writePacket(packet); err != nil {
+	if err = s.writePacket([]byte{msgNewKeys}); err != nil {
 		return err
 	}
 	if err = s.transport.writer.setupKeys(serverKeys, K, H, H, hashFunc); err != nil {
 		return err
 	}
-
 	if packet, err = s.readPacket(); err != nil {
 		return err
 	}
+
 	if packet[0] != msgNewKeys {
 		return UnexpectedMessageError{msgNewKeys, packet[0]}
 	}
-
-	s.transport.reader.setupKeys(clientKeys, K, H, H, hashFunc)
-
-	packet, err = s.readPacket()
-	if err != nil {
+	if err = s.transport.reader.setupKeys(clientKeys, K, H, H, hashFunc); err != nil {
+		return err
+	}
+	if packet, err = s.readPacket(); err != nil {
 		return err
 	}
 
@@ -358,22 +338,18 @@ func (s *ServerConnection) Handshake(conn net.Conn) os.Error {
 		return err
 	}
 	if serviceRequest.Service != serviceUserAuth {
-		return os.NewError("ssh: requested service '" + serviceRequest.Service + "' before authenticating")
+		return errors.New("ssh: requested service '" + serviceRequest.Service + "' before authenticating")
 	}
-
 	serviceAccept := serviceAcceptMsg{
 		Service: serviceUserAuth,
 	}
-	packet = marshal(msgServiceAccept, serviceAccept)
-	if err = s.writePacket(packet); err != nil {
+	if err = s.writePacket(marshal(msgServiceAccept, serviceAccept)); err != nil {
 		return err
 	}
 
 	if err = s.authenticate(H); err != nil {
 		return err
 	}
-
-	s.channels = make(map[uint32]*channel)
 	return nil
 }
 
@@ -382,8 +358,8 @@ func isAcceptableAlgo(algo string) bool {
 }
 
 // testPubKey returns true if the given public key is acceptable for the user.
-func (s *ServerConnection) testPubKey(user, algo string, pubKey []byte) bool {
-	if s.Server.PubKeyCallback == nil || !isAcceptableAlgo(algo) {
+func (s *ServerConn) testPubKey(user, algo string, pubKey []byte) bool {
+	if s.config.PubKeyCallback == nil || !isAcceptableAlgo(algo) {
 		return false
 	}
 
@@ -393,7 +369,7 @@ func (s *ServerConnection) testPubKey(user, algo string, pubKey []byte) bool {
 		}
 	}
 
-	result := s.Server.PubKeyCallback(user, algo, pubKey)
+	result := s.config.PubKeyCallback(user, algo, pubKey)
 	if len(s.cachedPubKeys) < maxCachedPubKeys {
 		c := cachedPubKey{
 			user:   user,
@@ -408,9 +384,9 @@ func (s *ServerConnection) testPubKey(user, algo string, pubKey []byte) bool {
 	return result
 }
 
-func (s *ServerConnection) authenticate(H []byte) os.Error {
+func (s *ServerConn) authenticate(H []byte) error {
 	var userAuthReq userAuthRequestMsg
-	var err os.Error
+	var err error
 	var packet []byte
 
 userAuthLoop:
@@ -423,16 +399,16 @@ userAuthLoop:
 		}
 
 		if userAuthReq.Service != serviceSSH {
-			return os.NewError("ssh: client attempted to negotiate for unknown service: " + userAuthReq.Service)
+			return errors.New("ssh: client attempted to negotiate for unknown service: " + userAuthReq.Service)
 		}
 
 		switch userAuthReq.Method {
 		case "none":
-			if s.Server.NoClientAuth {
+			if s.config.NoClientAuth {
 				break userAuthLoop
 			}
 		case "password":
-			if s.Server.PasswordCallback == nil {
+			if s.config.PasswordCallback == nil {
 				break
 			}
 			payload := userAuthReq.Payload
@@ -445,11 +421,11 @@ userAuthLoop:
 				return ParseError{msgUserAuthRequest}
 			}
 
-			if s.Server.PasswordCallback(userAuthReq.User, string(password)) {
+			if s.config.PasswordCallback(userAuthReq.User, string(password)) {
 				break userAuthLoop
 			}
 		case "publickey":
-			if s.Server.PubKeyCallback == nil {
+			if s.config.PubKeyCallback == nil {
 				break
 			}
 			payload := userAuthReq.Payload
@@ -502,7 +478,7 @@ userAuthLoop:
 					hashFunc := crypto.SHA1
 					h := hashFunc.New()
 					h.Write(signedData)
-					digest := h.Sum()
+					digest := h.Sum(nil)
 					rsaKey, ok := parseRSA(pubKey)
 					if !ok {
 						return ParseError{msgUserAuthRequest}
@@ -511,7 +487,7 @@ userAuthLoop:
 						return ParseError{msgUserAuthRequest}
 					}
 				default:
-					return os.NewError("ssh: isAcceptableAlgo incorrect")
+					return errors.New("ssh: isAcceptableAlgo incorrect")
 				}
 				if s.testPubKey(userAuthReq.User, algo, pubKey) {
 					break userAuthLoop
@@ -520,15 +496,15 @@ userAuthLoop:
 		}
 
 		var failureMsg userAuthFailureMsg
-		if s.Server.PasswordCallback != nil {
+		if s.config.PasswordCallback != nil {
 			failureMsg.Methods = append(failureMsg.Methods, "password")
 		}
-		if s.Server.PubKeyCallback != nil {
+		if s.config.PubKeyCallback != nil {
 			failureMsg.Methods = append(failureMsg.Methods, "publickey")
 		}
 
 		if len(failureMsg.Methods) == 0 {
-			return os.NewError("ssh: no authentication methods configured but NoClientAuth is also false")
+			return errors.New("ssh: no authentication methods configured but NoClientAuth is also false")
 		}
 
 		if err = s.writePacket(marshal(msgUserAuthFailure, failureMsg)); err != nil {
@@ -546,9 +522,9 @@ userAuthLoop:
 
 const defaultWindowSize = 32768
 
-// Accept reads and processes messages on a ServerConnection. It must be called
+// Accept reads and processes messages on a ServerConn. It must be called
 // in order to demultiplex messages to any resulting Channels.
-func (s *ServerConnection) Accept() (Channel, os.Error) {
+func (s *ServerConn) Accept() (Channel, error) {
 	if s.err != nil {
 		return nil, s.err
 	}
@@ -569,77 +545,132 @@ func (s *ServerConnection) Accept() (Channel, os.Error) {
 			return nil, err
 		}
 
-		switch msg := decode(packet).(type) {
-		case *channelOpenMsg:
-			c := new(channel)
-			c.chanType = msg.ChanType
-			c.theirId = msg.PeersId
-			c.theirWindow = msg.PeersWindow
-			c.maxPacketSize = msg.MaxPacketSize
-			c.extraData = msg.TypeSpecificData
-			c.myWindow = defaultWindowSize
-			c.serverConn = s
-			c.cond = sync.NewCond(&c.lock)
-			c.pendingData = make([]byte, c.myWindow)
-
+		switch packet[0] {
+		case msgChannelData:
+			if len(packet) < 9 {
+				// malformed data packet
+				return nil, ParseError{msgChannelData}
+			}
+			peersId := uint32(packet[1])<<24 | uint32(packet[2])<<16 | uint32(packet[3])<<8 | uint32(packet[4])
 			s.lock.Lock()
-			c.myId = s.nextChanId
-			s.nextChanId++
-			s.channels[c.myId] = c
-			s.lock.Unlock()
-			return c, nil
-
-		case *channelRequestMsg:
-			s.lock.Lock()
-			c, ok := s.channels[msg.PeersId]
+			c, ok := s.channels[peersId]
 			if !ok {
+				s.lock.Unlock()
 				continue
 			}
-			c.handlePacket(msg)
-			s.lock.Unlock()
-
-		case *channelData:
-			s.lock.Lock()
-			c, ok := s.channels[msg.PeersId]
-			if !ok {
-				continue
+			if length := int(packet[5])<<24 | int(packet[6])<<16 | int(packet[7])<<8 | int(packet[8]); length > 0 {
+				packet = packet[9:]
+				c.handleData(packet[:length])
 			}
-			c.handleData(msg.Payload)
 			s.lock.Unlock()
-
-		case *channelEOFMsg:
-			s.lock.Lock()
-			c, ok := s.channels[msg.PeersId]
-			if !ok {
-				continue
-			}
-			c.handlePacket(msg)
-			s.lock.Unlock()
-
-		case *channelCloseMsg:
-			s.lock.Lock()
-			c, ok := s.channels[msg.PeersId]
-			if !ok {
-				continue
-			}
-			c.handlePacket(msg)
-			s.lock.Unlock()
-
-		case *globalRequestMsg:
-			if msg.WantReply {
-				if err := s.writePacket([]byte{msgRequestFailure}); err != nil {
-					return nil, err
-				}
-			}
-
-		case UnexpectedMessageError:
-			return nil, msg
-		case *disconnectMsg:
-			return nil, os.EOF
 		default:
-			// Unknown message. Ignore.
+			switch msg := decode(packet).(type) {
+			case *channelOpenMsg:
+				c := new(channel)
+				c.chanType = msg.ChanType
+				c.theirId = msg.PeersId
+				c.theirWindow = msg.PeersWindow
+				c.maxPacketSize = msg.MaxPacketSize
+				c.extraData = msg.TypeSpecificData
+				c.myWindow = defaultWindowSize
+				c.serverConn = s
+				c.cond = sync.NewCond(&c.lock)
+				c.pendingData = make([]byte, c.myWindow)
+
+				s.lock.Lock()
+				c.myId = s.nextChanId
+				s.nextChanId++
+				s.channels[c.myId] = c
+				s.lock.Unlock()
+				return c, nil
+
+			case *channelRequestMsg:
+				s.lock.Lock()
+				c, ok := s.channels[msg.PeersId]
+				if !ok {
+					s.lock.Unlock()
+					continue
+				}
+				c.handlePacket(msg)
+				s.lock.Unlock()
+
+			case *channelEOFMsg:
+				s.lock.Lock()
+				c, ok := s.channels[msg.PeersId]
+				if !ok {
+					s.lock.Unlock()
+					continue
+				}
+				c.handlePacket(msg)
+				s.lock.Unlock()
+
+			case *channelCloseMsg:
+				s.lock.Lock()
+				c, ok := s.channels[msg.PeersId]
+				if !ok {
+					s.lock.Unlock()
+					continue
+				}
+				c.handlePacket(msg)
+				s.lock.Unlock()
+
+			case *globalRequestMsg:
+				if msg.WantReply {
+					if err := s.writePacket([]byte{msgRequestFailure}); err != nil {
+						return nil, err
+					}
+				}
+
+			case UnexpectedMessageError:
+				return nil, msg
+			case *disconnectMsg:
+				return nil, io.EOF
+			default:
+				// Unknown message. Ignore.
+			}
 		}
 	}
 
 	panic("unreachable")
+}
+
+// A Listener implements a network listener (net.Listener) for SSH connections.
+type Listener struct {
+	listener net.Listener
+	config   *ServerConfig
+}
+
+// Accept waits for and returns the next incoming SSH connection.
+// The receiver should call Handshake() in another goroutine 
+// to avoid blocking the accepter.
+func (l *Listener) Accept() (*ServerConn, error) {
+	c, err := l.listener.Accept()
+	if err != nil {
+		return nil, err
+	}
+	conn := Server(c, l.config)
+	return conn, nil
+}
+
+// Addr returns the listener's network address.
+func (l *Listener) Addr() net.Addr {
+	return l.listener.Addr()
+}
+
+// Close closes the listener.
+func (l *Listener) Close() error {
+	return l.listener.Close()
+}
+
+// Listen creates an SSH listener accepting connections on
+// the given network address using net.Listen.
+func Listen(network, addr string, config *ServerConfig) (*Listener, error) {
+	l, err := net.Listen(network, addr)
+	if err != nil {
+		return nil, err
+	}
+	return &Listener{
+		l,
+		config,
+	}, nil
 }

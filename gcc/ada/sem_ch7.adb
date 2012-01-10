@@ -638,7 +638,6 @@ package body Sem_Ch7 is
                   --  Processing for package bodies
 
                   elsif K = N_Package_Body
-                    and then not Has_Referencer_Except_For_Subprograms
                     and then Present (Corresponding_Spec (D))
                   then
                      E := Corresponding_Spec (D);
@@ -648,7 +647,10 @@ package body Sem_Ch7 is
                      --  exported, i.e. where the corresponding spec is the
                      --  spec of the current package, but because of nested
                      --  instantiations, a fully private generic body may
-                     --  export other private body entities.
+                     --  export other private body entities. Furthermore,
+                     --  regardless of whether there was a previous inlined
+                     --  subprogram, (an instantiation of) the generic package
+                     --  may reference any entity declared before it.
 
                      if Is_Generic_Unit (E) then
                         return True;
@@ -657,7 +659,9 @@ package body Sem_Ch7 is
                      --  this is an instance, we ignore instances since they
                      --  cannot have references that affect outer entities.
 
-                     elsif not Is_Generic_Instance (E) then
+                     elsif not Is_Generic_Instance (E)
+                       and then not Has_Referencer_Except_For_Subprograms
+                     then
                         if Has_Referencer
                              (Declarations (D), Outer => False)
                         then
@@ -1376,6 +1380,16 @@ package body Sem_Ch7 is
          then
             Error_Msg_N
               ("full view of & does not have preelaborable initialization", E);
+         end if;
+
+         --  An invariant may appear on a full view of a type
+
+         if Is_Type (E)
+           and then Has_Private_Declaration (E)
+           and then Nkind (Parent (E)) = N_Full_Type_Declaration
+           and then Has_Aspects (Parent (E))
+         then
+            Build_Invariant_Procedure (E, N);
          end if;
 
          Next_Entity (E);
@@ -2474,10 +2488,13 @@ package body Sem_Ch7 is
                        ("type& must be completed in the private part",
                          Parent (Subp), Id);
 
-                  --  The return type of an access_to_function cannot be a
-                  --  Taft-amendment type.
+                  --  The result type of an access-to-function type cannot be a
+                  --  Taft-amendment type, unless the version is Ada 2012 or
+                  --  later (see AI05-151).
 
-                  elsif Ekind (Subp) = E_Subprogram_Type then
+                  elsif Ada_Version < Ada_2012
+                    and then Ekind (Subp) = E_Subprogram_Type
+                  then
                      if Etype (Subp) = Id
                        or else
                          (Is_Class_Wide_Type (Etype (Subp))

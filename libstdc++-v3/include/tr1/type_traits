@@ -1,6 +1,6 @@
 // TR1 type_traits -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -41,10 +41,7 @@ namespace tr1
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
-   * @defgroup metaprogramming Type Traits
-   * @ingroup utilities
-   *
-   * Compile time type transformation and information.
+   * @addtogroup metaprogramming
    * @{
    */
 
@@ -681,6 +678,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #undef _DEFINE_SPEC_1_HELPER
 #undef _DEFINE_SPEC_2_HELPER
 #undef _DEFINE_SPEC
+
+  /// @} group metaprogramming
 
 _GLIBCXX_END_NAMESPACE_VERSION
 }

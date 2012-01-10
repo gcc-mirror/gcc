@@ -2,6 +2,6 @@ struct A {};
 
 struct B
 {
-  typedef A T; // { dg-error "previous declaration" }
+  typedef A T; // { dg-message "previous declaration" }
   friend struct T; // { dg-error "" }
 };

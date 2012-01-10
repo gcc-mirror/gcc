@@ -4,48 +4,33 @@
 
 package time
 
-import "os"
+import "syscall"
 
-// Seconds reports the number of seconds since the Unix epoch,
-// January 1, 1970 00:00:00 UTC.
-func Seconds() int64 {
-	sec, _, err := os.Time()
+// Sleep pauses the current goroutine for the duration d.
+func Sleep(d Duration)
+
+// readFile reads and returns the content of the named file.
+// It is a trivial implementation of ioutil.ReadFile, reimplemented
+// here to avoid depending on io/ioutil or os.
+func readFile(name string) ([]byte, error) {
+	f, err := syscall.Open(name, syscall.O_RDONLY, 0)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return sec
-}
-
-// Nanoseconds reports the number of nanoseconds since the Unix epoch,
-// January 1, 1970 00:00:00 UTC.
-func Nanoseconds() int64 {
-	sec, nsec, err := os.Time()
-	if err != nil {
-		panic(err)
-	}
-	return sec*1e9 + nsec
-}
-
-// Sleep pauses the current goroutine for at least ns nanoseconds.
-// Higher resolution sleeping may be provided by syscall.Nanosleep 
-// on some operating systems.
-func Sleep(ns int64) os.Error {
-	_, err := sleep(Nanoseconds(), ns)
-	return err
-}
-
-// sleep takes the current time and a duration,
-// pauses for at least ns nanoseconds, and
-// returns the current time and an error.
-func sleep(t, ns int64) (int64, os.Error) {
-	// TODO(cw): use monotonic-time once it's available
-	end := t + ns
-	for t < end {
-		err := sysSleep(end - t)
-		if err != nil {
-			return 0, err
+	defer syscall.Close(f)
+	var (
+		buf [4096]byte
+		ret []byte
+		n   int
+	)
+	for {
+		n, err = syscall.Read(f, buf[:])
+		if n > 0 {
+			ret = append(ret, buf[:n]...)
 		}
-		t = Nanoseconds()
+		if n == 0 || err != nil {
+			break
+		}
 	}
-	return t, nil
+	return ret, err
 }

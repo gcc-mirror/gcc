@@ -5,6 +5,7 @@
 package os
 
 import (
+	"io"
 	"syscall"
 	"unsafe"
 )
@@ -36,10 +37,10 @@ var elen int;
 // If n <= 0, Readdirnames returns all the names from the directory in
 // a single slice. In this case, if Readdirnames succeeds (reads all
 // the way to the end of the directory), it returns the slice and a
-// nil os.Error. If it encounters an error before the end of the
+// nil error. If it encounters an error before the end of the
 // directory, Readdirnames returns the names read until that point and
 // a non-nil error.
-func (file *File) Readdirnames(n int) (names []string, err Error) {
+func (file *File) Readdirnames(n int) (names []string, err error) {
 	if elen == 0 {
 		var dummy syscall.Dirent;
 		elen = (unsafe.Offsetof(dummy.Name) +
@@ -85,7 +86,7 @@ func (file *File) Readdirnames(n int) (names []string, err Error) {
 		n--
 	}
 	if n >= 0 && len(names) == 0 {
-		return names, EOF
+		return names, io.EOF
 	}
 	return names, nil
 }

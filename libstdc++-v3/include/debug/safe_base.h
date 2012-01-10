@@ -79,7 +79,7 @@ namespace __gnu_debug
     { }
 
     /** Initialize the iterator to reference the sequence pointed to
-     *  by @p__seq. @p __constant is true when we are initializing a
+     *  by @p __seq. @p __constant is true when we are initializing a
      *  constant iterator, and false if it is a mutable iterator. Note
      *  that @p __seq may be NULL, in which case the iterator will be
      *  singular. Otherwise, the iterator will reference @p __seq and

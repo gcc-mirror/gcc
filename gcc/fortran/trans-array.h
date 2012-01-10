@@ -1,5 +1,5 @@
 /* Header for array handling functions
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012
    Free Software Foundation, Inc.
    Contributed by Paul Brook
 
@@ -20,11 +20,12 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Generate code to free an array.  */
-tree gfc_array_deallocate (tree, tree, gfc_expr*);
+tree gfc_array_deallocate (tree, tree, tree, tree, tree, gfc_expr*);
 
-/* Generate code to initialize an allocate an array.  Statements are added to
+/* Generate code to initialize and allocate an array.  Statements are added to
    se, which should contain an expression for the array descriptor.  */
-bool gfc_array_allocate (gfc_se *, gfc_expr *, tree, tree, tree);
+bool gfc_array_allocate (gfc_se *, gfc_expr *, tree, tree, tree, tree,
+			 gfc_expr *);
 
 /* Allow the bounds of a loop to be set from a callee's array spec.  */
 void gfc_set_loop_bounds_from_array_spec (gfc_interface_mapping *,
@@ -42,7 +43,7 @@ void gfc_trans_dummy_array_bias (gfc_symbol *, tree, gfc_wrapped_block *);
 /* Generate entry and exit code for g77 calling convention arrays.  */
 void gfc_trans_g77_array (gfc_symbol *, gfc_wrapped_block *);
 /* Generate code to deallocate an array, if it is allocated.  */
-tree gfc_trans_dealloc_allocated (tree);
+tree gfc_trans_dealloc_allocated (tree, bool);
 
 tree gfc_duplicate_allocatable (tree dest, tree src, tree type, int rank);
 
@@ -73,7 +74,7 @@ gfc_ss *gfc_walk_subexpr (gfc_ss *, gfc_expr *);
 gfc_ss *gfc_walk_array_ref (gfc_ss *, gfc_expr *, gfc_ref * ref);
 /* Walk the arguments of an elemental function.  */
 gfc_ss *gfc_walk_elemental_function_args (gfc_ss *, gfc_actual_arglist *,
-					  gfc_ss_type);
+					  gfc_expr *, gfc_ss_type);
 /* Walk an intrinsic function.  */
 gfc_ss *gfc_walk_intrinsic_function (gfc_ss *, gfc_expr *,
 				     gfc_intrinsic_sym *);

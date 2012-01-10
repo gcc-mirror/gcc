@@ -1,6 +1,6 @@
 // Support for atomic operations -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006, 2008, 2009, 2010
+// Copyright (C) 2004, 2005, 2006, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -42,7 +42,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // To abstract locking primitives across all thread policies, use:
   // __exchange_and_add_dispatch
   // __atomic_add_dispatch
-#ifdef _GLIBCXX_ATOMIC_BUILTINS_4
+#ifdef _GLIBCXX_ATOMIC_BUILTINS
   static inline _Atomic_word 
   __exchange_and_add(volatile _Atomic_word* __mem, int __val)
   { return __sync_fetch_and_add(__mem, __val); }

@@ -5,6 +5,7 @@
 package main
 
 import (
+	"errors"
 	"exp/types"
 	"flag"
 	"fmt"
@@ -38,7 +39,7 @@ func usage() {
 	os.Exit(2)
 }
 
-func report(err os.Error) {
+func report(err error) {
 	scanner.PrintError(os.Stderr, err)
 	exitCode = 2
 }
@@ -111,7 +112,7 @@ func parseFiles(fset *token.FileSet, filenames []string) (files map[string]*ast.
 		}
 		if file := parse(fset, filename, src); file != nil {
 			if files[filename] != nil {
-				report(os.NewError(fmt.Sprintf("%q: duplicate file", filename)))
+				report(errors.New(fmt.Sprintf("%q: duplicate file", filename)))
 				continue
 			}
 			files[filename] = file
@@ -149,14 +150,14 @@ func processFiles(filenames []string, allFiles bool) {
 		switch info, err := os.Stat(filename); {
 		case err != nil:
 			report(err)
-		case info.IsRegular():
-			if allFiles || isGoFilename(info.Name) {
-				filenames[i] = filename
-				i++
-			}
-		case info.IsDirectory():
+		case info.IsDir():
 			if allFiles || *recursive {
 				processDirectory(filename)
+			}
+		default:
+			if allFiles || isGoFilename(info.Name()) {
+				filenames[i] = filename
+				i++
 			}
 		}
 	}

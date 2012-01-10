@@ -1,6 +1,7 @@
 /* Subroutines used for code generation on IBM RS/6000.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
+   2012
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -215,10 +216,7 @@ static GTY(()) section *toc_section;
 
 struct builtin_description
 {
-  /* mask is not const because we're going to alter it below.  This
-     nonsense will go away when we rewrite the -march infrastructure
-     to give us more target flag bits.  */
-  unsigned int mask;
+  const unsigned int mask;
   const enum insn_code icode;
   const char *const name;
   const enum rs6000_builtins code;
@@ -288,6 +286,11 @@ static struct
 
 /* 2 argument gen function typedef.  */
 typedef rtx (*gen_2arg_fn_t) (rtx, rtx, rtx);
+
+/* Pointer to function (in rs6000-c.c) that can define or undefine target
+   macros that have changed.  Languages that don't support the preprocessor
+   don't link in rs6000-c.c, so we can't call it directly.  */
+void (*rs6000_target_modify_macros_ptr) (bool, int, unsigned);
 
 
 /* Target cpu costs.  */
@@ -849,18 +852,69 @@ struct processor_costs ppca2_cost = {
 
 
 /* Table that classifies rs6000 builtin functions (pure, const, etc.).  */
-#undef RS6000_BUILTIN
-#undef RS6000_BUILTIN_EQUATE
-#define RS6000_BUILTIN(NAME, TYPE) TYPE,
-#define RS6000_BUILTIN_EQUATE(NAME, VALUE)
+#undef RS6000_BUILTIN_1
+#undef RS6000_BUILTIN_2
+#undef RS6000_BUILTIN_3
+#undef RS6000_BUILTIN_A
+#undef RS6000_BUILTIN_D
+#undef RS6000_BUILTIN_E
+#undef RS6000_BUILTIN_P
+#undef RS6000_BUILTIN_Q
+#undef RS6000_BUILTIN_S
+#undef RS6000_BUILTIN_X
 
-static const enum rs6000_btc builtin_classify[(int)RS6000_BUILTIN_COUNT] =
+#define RS6000_BUILTIN_1(ENUM, NAME, MASK, ATTR, ICODE) \
+  { NAME, ICODE, MASK, ATTR },
+
+#define RS6000_BUILTIN_2(ENUM, NAME, MASK, ATTR, ICODE)  \
+  { NAME, ICODE, MASK, ATTR },
+
+#define RS6000_BUILTIN_3(ENUM, NAME, MASK, ATTR, ICODE)  \
+  { NAME, ICODE, MASK, ATTR },
+
+#define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE)  \
+  { NAME, ICODE, MASK, ATTR },
+
+#define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE)  \
+  { NAME, ICODE, MASK, ATTR },
+
+#define RS6000_BUILTIN_E(ENUM, NAME, MASK, ATTR, ICODE)  \
+  { NAME, ICODE, MASK, ATTR },
+
+#define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)  \
+  { NAME, ICODE, MASK, ATTR },
+
+#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)  \
+  { NAME, ICODE, MASK, ATTR },
+
+#define RS6000_BUILTIN_S(ENUM, NAME, MASK, ATTR, ICODE)  \
+  { NAME, ICODE, MASK, ATTR },
+
+#define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)  \
+  { NAME, ICODE, MASK, ATTR },
+
+struct rs6000_builtin_info_type {
+  const char *name;
+  const enum insn_code icode;
+  const unsigned mask;
+  const unsigned attr;
+};
+
+static const struct rs6000_builtin_info_type rs6000_builtin_info[] =
 {
 #include "rs6000-builtin.def"
 };
 
-#undef RS6000_BUILTIN
-#undef RS6000_BUILTIN_EQUATE
+#undef RS6000_BUILTIN_1
+#undef RS6000_BUILTIN_2
+#undef RS6000_BUILTIN_3
+#undef RS6000_BUILTIN_A
+#undef RS6000_BUILTIN_D
+#undef RS6000_BUILTIN_E
+#undef RS6000_BUILTIN_P
+#undef RS6000_BUILTIN_Q
+#undef RS6000_BUILTIN_S
+#undef RS6000_BUILTIN_X
 
 /* Support for -mveclibabi=<xxx> to control which vector library to use.  */
 static tree (*rs6000_veclib_handler) (tree, tree, tree);
@@ -985,7 +1039,6 @@ static tree rs6000_builtin_reciprocal (unsigned int, bool, bool);
 static tree rs6000_builtin_mask_for_load (void);
 static tree rs6000_builtin_mul_widen_even (tree);
 static tree rs6000_builtin_mul_widen_odd (tree);
-static tree rs6000_builtin_conversion (unsigned int, tree, tree);
 static bool rs6000_builtin_support_vector_misalignment (enum
 							machine_mode,
 							const_tree,
@@ -994,7 +1047,7 @@ static int rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt,
                                               tree, int);
 static enum machine_mode rs6000_preferred_simd_mode (enum machine_mode);
 
-static void def_builtin (int, const char *, tree, int);
+static void def_builtin (const char *, tree, enum rs6000_builtins);
 static bool rs6000_vector_alignment_reachable (const_tree, bool);
 static void rs6000_init_builtins (void);
 static tree rs6000_builtin_decl (unsigned, bool);
@@ -1018,9 +1071,6 @@ static rtx paired_expand_lv_builtin (enum insn_code, tree, rtx);
 static rtx paired_expand_stv_builtin (enum insn_code, tree);
 static rtx paired_expand_predicate_builtin (enum insn_code, tree, rtx);
 
-static void enable_mask_for_builtins (struct builtin_description *, int,
-				      enum rs6000_builtins,
-				      enum rs6000_builtins);
 static void spe_init_builtins (void);
 static rtx spe_expand_builtin (tree, rtx, bool *);
 static rtx spe_expand_stv_builtin (enum insn_code, tree);
@@ -1403,8 +1453,6 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN rs6000_builtin_mul_widen_even
 #undef TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD
 #define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD rs6000_builtin_mul_widen_odd
-#undef TARGET_VECTORIZE_BUILTIN_CONVERSION
-#define TARGET_VECTORIZE_BUILTIN_CONVERSION rs6000_builtin_conversion
 #undef TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
 #define TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT		\
   rs6000_builtin_support_vector_misalignment
@@ -1614,6 +1662,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P rs6000_legitimate_constant_p
 
+#undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
+#define TARGET_VECTORIZE_VEC_PERM_CONST_OK rs6000_vectorize_vec_perm_const_ok
 
 
 /* Simplifications for entries below.  */
@@ -1876,6 +1926,7 @@ rs6000_debug_reg_print (int first_regno, int last_regno, const char *reg_name)
 }
 
 #define DEBUG_FMT_D "%-32s= %d\n"
+#define DEBUG_FMT_X "%-32s= 0x%x\n"
 #define DEBUG_FMT_S "%-32s= %s\n"
 
 /* Print various interesting information with -mdebug=reg.  */
@@ -2103,6 +2154,11 @@ rs6000_debug_reg_global (void)
 	   rs6000_long_double_type_size);
   fprintf (stderr, DEBUG_FMT_D, "sched_restricted_insns_priority",
 	   (int)rs6000_sched_restricted_insns_priority);
+  fprintf (stderr, DEBUG_FMT_D, "Number of standard builtins",
+	   (int)END_BUILTINS);
+  fprintf (stderr, DEBUG_FMT_D, "Number of rs6000 builtins",
+	   (int)RS6000_BUILTIN_COUNT);
+  fprintf (stderr, DEBUG_FMT_X, "Builtin mask", rs6000_builtin_mask);
 }
 
 /* Initialize the various global tables that are based on register size.  */
@@ -2277,6 +2333,11 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	  rs6000_vector_reload[V4SFmode][1]  = CODE_FOR_reload_v4sf_di_load;
 	  rs6000_vector_reload[V2DFmode][0]  = CODE_FOR_reload_v2df_di_store;
 	  rs6000_vector_reload[V2DFmode][1]  = CODE_FOR_reload_v2df_di_load;
+	  if (TARGET_VSX && TARGET_VSX_SCALAR_MEMORY)
+	    {
+	      rs6000_vector_reload[DFmode][0]  = CODE_FOR_reload_df_di_store;
+	      rs6000_vector_reload[DFmode][1]  = CODE_FOR_reload_df_di_load;
+	    }
 	}
       else
 	{
@@ -2292,6 +2353,11 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	  rs6000_vector_reload[V4SFmode][1]  = CODE_FOR_reload_v4sf_si_load;
 	  rs6000_vector_reload[V2DFmode][0]  = CODE_FOR_reload_v2df_si_store;
 	  rs6000_vector_reload[V2DFmode][1]  = CODE_FOR_reload_v2df_si_load;
+	  if (TARGET_VSX && TARGET_VSX_SCALAR_MEMORY)
+	    {
+	      rs6000_vector_reload[DFmode][0]  = CODE_FOR_reload_df_si_store;
+	      rs6000_vector_reload[DFmode][1]  = CODE_FOR_reload_df_si_load;
+	    }
 	}
     }
 
@@ -2449,6 +2515,7 @@ darwin_rs6000_override_options (void)
      off.  */
   rs6000_altivec_abi = 1;
   TARGET_ALTIVEC_VRSAVE = 1;
+  rs6000_current_abi = ABI_DARWIN;
 
   if (DEFAULT_ABI == ABI_DARWIN
       && TARGET_64BIT)
@@ -2492,6 +2559,27 @@ darwin_rs6000_override_options (void)
 #ifndef RS6000_DEFAULT_LONG_DOUBLE_SIZE
 #define RS6000_DEFAULT_LONG_DOUBLE_SIZE 64
 #endif
+
+/* Return the builtin mask of the various options used that could affect which
+   builtins were used.  In the past we used target_flags, but we've run out of
+   bits, and some options like SPE and PAIRED are no longer in
+   target_flags.  */
+
+unsigned
+rs6000_builtin_mask_calculate (void)
+{
+  return (((TARGET_ALTIVEC)		    ? RS6000_BTM_ALTIVEC  : 0)
+	  | ((TARGET_VSX)		    ? RS6000_BTM_VSX	  : 0)
+	  | ((TARGET_SPE)		    ? RS6000_BTM_SPE	  : 0)
+	  | ((TARGET_PAIRED_FLOAT)	    ? RS6000_BTM_PAIRED	  : 0)
+	  | ((TARGET_FRE)		    ? RS6000_BTM_FRE	  : 0)
+	  | ((TARGET_FRES)		    ? RS6000_BTM_FRES	  : 0)
+	  | ((TARGET_FRSQRTE)		    ? RS6000_BTM_FRSQRTE  : 0)
+	  | ((TARGET_FRSQRTES)		    ? RS6000_BTM_FRSQRTES : 0)
+	  | ((TARGET_POPCNTD)		    ? RS6000_BTM_POPCNTD  : 0)
+	  | ((TARGET_POWERPC)		    ? RS6000_BTM_POWERPC  : 0)
+	  | ((rs6000_cpu == PROCESSOR_CELL) ? RS6000_BTM_CELL     : 0));
+}
 
 /* Override command line options.  Mostly we process the processor type and
    sometimes adjust other TARGET_ options.  */
@@ -3232,6 +3320,19 @@ rs6000_option_override_internal (bool global_init_p)
 	}
     }
 
+  /* Set the builtin mask of the various options used that could affect which
+     builtins were used.  In the past we used target_flags, but we've run out
+     of bits, and some options like SPE and PAIRED are no longer in
+     target_flags.  */
+  rs6000_builtin_mask = rs6000_builtin_mask_calculate ();
+  if (TARGET_DEBUG_BUILTIN || TARGET_DEBUG_TARGET)
+    fprintf (stderr, "new builtin mask = 0x%x%s%s%s%s\n", rs6000_builtin_mask,
+	     (rs6000_builtin_mask & RS6000_BTM_ALTIVEC) ? ", altivec" : "",
+	     (rs6000_builtin_mask & RS6000_BTM_VSX)     ? ", vsx"     : "",
+	     (rs6000_builtin_mask & RS6000_BTM_PAIRED)  ? ", paired"  : "",
+	     (rs6000_builtin_mask & RS6000_BTM_SPE)     ? ", spe" : "");
+
+  /* Initialize all of the registers.  */
   rs6000_init_hard_regno_mode_ok (global_init_p);
 
   /* Save the initial options in case the user does function specific options */
@@ -3297,69 +3398,6 @@ static int
 rs6000_loop_align_max_skip (rtx label)
 {
   return (1 << rs6000_loop_align (label)) - 1;
-}
-
-/* Implement targetm.vectorize.builtin_conversion.
-   Returns a decl of a function that implements conversion of an integer vector
-   into a floating-point vector, or vice-versa.  DEST_TYPE is the
-   destination type and SRC_TYPE the source type of the conversion.
-   Return NULL_TREE if it is not available.  */
-static tree
-rs6000_builtin_conversion (unsigned int tcode, tree dest_type, tree src_type)
-{
-  enum tree_code code = (enum tree_code) tcode;
-
-  switch (code)
-    {
-    case FIX_TRUNC_EXPR:
-      switch (TYPE_MODE (dest_type))
-	{
-	case V2DImode:
-	  if (!VECTOR_UNIT_VSX_P (V2DFmode))
-	    return NULL_TREE;
-
-	  return TYPE_UNSIGNED (dest_type)
-	    ? rs6000_builtin_decls[VSX_BUILTIN_XVCVDPUXDS_UNS]
-	    : rs6000_builtin_decls[VSX_BUILTIN_XVCVDPSXDS];
-
-	case V4SImode:
-	  if (VECTOR_UNIT_NONE_P (V4SImode) || VECTOR_UNIT_NONE_P (V4SFmode))
-	    return NULL_TREE;
-
-	  return TYPE_UNSIGNED (dest_type)
-	    ? rs6000_builtin_decls[VECTOR_BUILTIN_FIXUNS_V4SF_V4SI]
-	    : rs6000_builtin_decls[VECTOR_BUILTIN_FIX_V4SF_V4SI];
-
-	default:
-	  return NULL_TREE;
-	}
-
-    case FLOAT_EXPR:
-      switch (TYPE_MODE (src_type))
-	{
-	case V2DImode:
-	  if (!VECTOR_UNIT_VSX_P (V2DFmode))
-	    return NULL_TREE;
-
-	  return TYPE_UNSIGNED (src_type)
-	    ? rs6000_builtin_decls[VSX_BUILTIN_XVCVUXDDP]
-	    : rs6000_builtin_decls[VSX_BUILTIN_XVCVSXDDP];
-
-	case V4SImode:
-	  if (VECTOR_UNIT_NONE_P (V4SImode) || VECTOR_UNIT_NONE_P (V4SFmode))
-	    return NULL_TREE;
-
-	  return TYPE_UNSIGNED (src_type)
-	    ? rs6000_builtin_decls[VECTOR_BUILTIN_UNSFLOAT_V4SI_V4SF]
-	    : rs6000_builtin_decls[VECTOR_BUILTIN_FLOAT_V4SI_V4SF];
-
-	default:
-	  return NULL_TREE;
-	}
-
-    default:
-      return NULL_TREE;
-    }
 }
 
 /* Implement targetm.vectorize.builtin_mul_widen_even.  */
@@ -3765,6 +3803,12 @@ rs6000_builtin_vectorized_function (tree fndecl, tree type_out,
   enum machine_mode in_mode, out_mode;
   int in_n, out_n;
 
+  if (TARGET_DEBUG_BUILTIN)
+    fprintf (stderr, "rs6000_builtin_vectorized_function (%s, %s, %s)\n",
+	     IDENTIFIER_POINTER (DECL_NAME (fndecl)),
+	     GET_MODE_NAME (TYPE_MODE (type_out)),
+	     GET_MODE_NAME (TYPE_MODE (type_in)));
+
   if (TREE_CODE (type_out) != VECTOR_TYPE
       || TREE_CODE (type_in) != VECTOR_TYPE
       || !TARGET_VECTORIZE_BUILTINS)
@@ -3917,7 +3961,7 @@ rs6000_builtin_vectorized_function (tree fndecl, tree type_out,
 	  if (VECTOR_UNIT_VSX_P (V2DFmode)
 	      && out_mode == DFmode && out_n == 2
 	      && in_mode == DFmode && in_n == 2)
-	    return rs6000_builtin_decls[VSX_BUILTIN_VEC_RSQRT_V2DF];
+	    return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_2DF];
 	  break;
 	case RS6000_BUILTIN_RECIPF:
 	  if (VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
@@ -4692,7 +4736,7 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 					  copy_to_reg (XVECEXP (vals, 0, 3))));
 	  emit_insn (gen_vsx_xvcvdpsp (flt_even, dbl_even));
 	  emit_insn (gen_vsx_xvcvdpsp (flt_odd, dbl_odd));
-	  emit_insn (gen_vec_extract_evenv4sf (target, flt_even, flt_odd));
+	  rs6000_expand_extract_even (target, flt_even, flt_odd);
 	}
       return;
     }
@@ -9358,930 +9402,360 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 /* Builtins.  */
 
 static void
-def_builtin (int mask, const char *name, tree type, int code)
+def_builtin (const char *name, tree type, enum rs6000_builtins code)
 {
-  if ((mask & target_flags) || TARGET_PAIRED_FLOAT)
+  tree t;
+  unsigned classify = rs6000_builtin_info[(int)code].attr;
+  const char *attr_string = "";
+
+  gcc_assert (name != NULL);
+  gcc_assert (IN_RANGE ((int)code, 0, (int)RS6000_BUILTIN_COUNT));
+
+  if (rs6000_builtin_decls[(int)code])
+    fatal_error ("internal error: builtin function %s already processed", name);
+
+  rs6000_builtin_decls[(int)code] = t =
+    add_builtin_function (name, type, (int)code, BUILT_IN_MD, NULL, NULL_TREE);
+
+  /* Set any special attributes.  */
+  if ((classify & RS6000_BTC_CONST) != 0)
     {
-      tree t;
-      if (rs6000_builtin_decls[code])
-	fatal_error ("internal error: builtin function to %s already processed",
-		     name);
-
-      rs6000_builtin_decls[code] = t =
-        add_builtin_function (name, type, code, BUILT_IN_MD,
-			      NULL, NULL_TREE);
-
-      gcc_assert (code >= 0 && code < (int)RS6000_BUILTIN_COUNT);
-      switch (builtin_classify[code])
+      /* const function, function only depends on the inputs.  */
+      TREE_READONLY (t) = 1;
+      TREE_NOTHROW (t) = 1;
+      attr_string = ", pure";
+    }
+  else if ((classify & RS6000_BTC_PURE) != 0)
+    {
+      /* pure function, function can read global memory, but does not set any
+	 external state.  */
+      DECL_PURE_P (t) = 1;
+      TREE_NOTHROW (t) = 1;
+      attr_string = ", const";
+    }
+  else if ((classify & RS6000_BTC_FP) != 0)
+    {
+      /* Function is a math function.  If rounding mode is on, then treat the
+	 function as not reading global memory, but it can have arbitrary side
+	 effects.  If it is off, then assume the function is a const function.
+	 This mimics the ATTR_MATHFN_FPROUNDING attribute in
+	 builtin-attribute.def that is used for the math functions. */
+      TREE_NOTHROW (t) = 1;
+      if (flag_rounding_math)
 	{
-	default:
-	  gcc_unreachable ();
-
-	  /* assume builtin can do anything.  */
-	case RS6000_BTC_MISC:
-	  break;
-
-	  /* const function, function only depends on the inputs.  */
-	case RS6000_BTC_CONST:
-	  TREE_READONLY (t) = 1;
-	  TREE_NOTHROW (t) = 1;
-	  break;
-
-	  /* pure function, function can read global memory.  */
-	case RS6000_BTC_PURE:
 	  DECL_PURE_P (t) = 1;
-	  TREE_NOTHROW (t) = 1;
-	  break;
-
-	  /* Function is a math function.  If rounding mode is on, then treat
-	     the function as not reading global memory, but it can have
-	     arbitrary side effects.  If it is off, then assume the function is
-	     a const function.  This mimics the ATTR_MATHFN_FPROUNDING
-	     attribute in builtin-attribute.def that is used for the math
-	     functions. */
-	case RS6000_BTC_FP_PURE:
-	  TREE_NOTHROW (t) = 1;
-	  if (flag_rounding_math)
-	    {
-	      DECL_PURE_P (t) = 1;
-	      DECL_IS_NOVOPS (t) = 1;
-	    }
-	  else
-	    TREE_READONLY (t) = 1;
-	  break;
+	  DECL_IS_NOVOPS (t) = 1;
+	  attr_string = ", fp, pure";
+	}
+      else
+	{
+	  TREE_READONLY (t) = 1;
+	  attr_string = ", fp, const";
 	}
     }
+  else if ((classify & RS6000_BTC_ATTR_MASK) != 0)
+    gcc_unreachable ();
+
+  if (TARGET_DEBUG_BUILTIN)
+    fprintf (stderr, "rs6000_builtin, code = %4d, %s%s\n",
+	     (int)code, name, attr_string);
 }
 
 /* Simple ternary operations: VECd = foo (VECa, VECb, VECc).  */
 
+#undef RS6000_BUILTIN_1
+#undef RS6000_BUILTIN_2
+#undef RS6000_BUILTIN_3
+#undef RS6000_BUILTIN_A
+#undef RS6000_BUILTIN_D
+#undef RS6000_BUILTIN_E
+#undef RS6000_BUILTIN_P
+#undef RS6000_BUILTIN_Q
+#undef RS6000_BUILTIN_S
+#undef RS6000_BUILTIN_X
+
+#define RS6000_BUILTIN_1(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_2(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_3(ENUM, NAME, MASK, ATTR, ICODE) \
+  { MASK, ICODE, NAME, ENUM },
+
+#define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_E(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_S(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
+
 static const struct builtin_description bdesc_3arg[] =
 {
-  { MASK_ALTIVEC, CODE_FOR_fmav4sf4, "__builtin_altivec_vmaddfp", ALTIVEC_BUILTIN_VMADDFP },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmhaddshs, "__builtin_altivec_vmhaddshs", ALTIVEC_BUILTIN_VMHADDSHS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmhraddshs, "__builtin_altivec_vmhraddshs", ALTIVEC_BUILTIN_VMHRADDSHS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmladduhm, "__builtin_altivec_vmladduhm", ALTIVEC_BUILTIN_VMLADDUHM},
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmsumubm, "__builtin_altivec_vmsumubm", ALTIVEC_BUILTIN_VMSUMUBM },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmsummbm, "__builtin_altivec_vmsummbm", ALTIVEC_BUILTIN_VMSUMMBM },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmsumuhm, "__builtin_altivec_vmsumuhm", ALTIVEC_BUILTIN_VMSUMUHM },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmsumshm, "__builtin_altivec_vmsumshm", ALTIVEC_BUILTIN_VMSUMSHM },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmsumuhs, "__builtin_altivec_vmsumuhs", ALTIVEC_BUILTIN_VMSUMUHS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmsumshs, "__builtin_altivec_vmsumshs", ALTIVEC_BUILTIN_VMSUMSHS },
-  { MASK_ALTIVEC, CODE_FOR_nfmsv4sf4, "__builtin_altivec_vnmsubfp", ALTIVEC_BUILTIN_VNMSUBFP },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vperm_v2df, "__builtin_altivec_vperm_2df", ALTIVEC_BUILTIN_VPERM_2DF },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vperm_v2di, "__builtin_altivec_vperm_2di", ALTIVEC_BUILTIN_VPERM_2DI },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vperm_v4sf, "__builtin_altivec_vperm_4sf", ALTIVEC_BUILTIN_VPERM_4SF },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vperm_v4si, "__builtin_altivec_vperm_4si", ALTIVEC_BUILTIN_VPERM_4SI },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vperm_v8hi, "__builtin_altivec_vperm_8hi", ALTIVEC_BUILTIN_VPERM_8HI },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vperm_v16qi_uns, "__builtin_altivec_vperm_16qi", ALTIVEC_BUILTIN_VPERM_16QI },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vperm_v2di_uns, "__builtin_altivec_vperm_2di_uns", ALTIVEC_BUILTIN_VPERM_2DI_UNS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vperm_v4si_uns, "__builtin_altivec_vperm_4si_uns", ALTIVEC_BUILTIN_VPERM_4SI_UNS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vperm_v8hi_uns, "__builtin_altivec_vperm_8hi_uns", ALTIVEC_BUILTIN_VPERM_8HI_UNS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vperm_v16qi_uns, "__builtin_altivec_vperm_16qi_uns", ALTIVEC_BUILTIN_VPERM_16QI_UNS },
-  { MASK_ALTIVEC, CODE_FOR_vector_select_v4sf, "__builtin_altivec_vsel_4sf", ALTIVEC_BUILTIN_VSEL_4SF },
-  { MASK_ALTIVEC, CODE_FOR_vector_select_v4si, "__builtin_altivec_vsel_4si", ALTIVEC_BUILTIN_VSEL_4SI },
-  { MASK_ALTIVEC, CODE_FOR_vector_select_v8hi, "__builtin_altivec_vsel_8hi", ALTIVEC_BUILTIN_VSEL_8HI },
-  { MASK_ALTIVEC, CODE_FOR_vector_select_v16qi, "__builtin_altivec_vsel_16qi", ALTIVEC_BUILTIN_VSEL_16QI },
-  { MASK_ALTIVEC, CODE_FOR_vector_select_v2df, "__builtin_altivec_vsel_2df", ALTIVEC_BUILTIN_VSEL_2DF },
-  { MASK_ALTIVEC, CODE_FOR_vector_select_v2di, "__builtin_altivec_vsel_2di", ALTIVEC_BUILTIN_VSEL_2DI },
-  { MASK_ALTIVEC, CODE_FOR_vector_select_v4si_uns, "__builtin_altivec_vsel_4si_uns", ALTIVEC_BUILTIN_VSEL_4SI_UNS },
-  { MASK_ALTIVEC, CODE_FOR_vector_select_v8hi_uns, "__builtin_altivec_vsel_8hi_uns", ALTIVEC_BUILTIN_VSEL_8HI_UNS },
-  { MASK_ALTIVEC, CODE_FOR_vector_select_v16qi_uns, "__builtin_altivec_vsel_16qi_uns", ALTIVEC_BUILTIN_VSEL_16QI_UNS },
-  { MASK_ALTIVEC, CODE_FOR_vector_select_v2di_uns, "__builtin_altivec_vsel_2di_uns", ALTIVEC_BUILTIN_VSEL_2DI_UNS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsldoi_v16qi, "__builtin_altivec_vsldoi_16qi", ALTIVEC_BUILTIN_VSLDOI_16QI },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsldoi_v8hi, "__builtin_altivec_vsldoi_8hi", ALTIVEC_BUILTIN_VSLDOI_8HI },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsldoi_v4si, "__builtin_altivec_vsldoi_4si", ALTIVEC_BUILTIN_VSLDOI_4SI },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsldoi_v4sf, "__builtin_altivec_vsldoi_4sf", ALTIVEC_BUILTIN_VSLDOI_4SF },
-
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_madd", ALTIVEC_BUILTIN_VEC_MADD },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_madds", ALTIVEC_BUILTIN_VEC_MADDS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_mladd", ALTIVEC_BUILTIN_VEC_MLADD },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_mradds", ALTIVEC_BUILTIN_VEC_MRADDS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_msum", ALTIVEC_BUILTIN_VEC_MSUM },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmsumshm", ALTIVEC_BUILTIN_VEC_VMSUMSHM },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmsumuhm", ALTIVEC_BUILTIN_VEC_VMSUMUHM },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmsummbm", ALTIVEC_BUILTIN_VEC_VMSUMMBM },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmsumubm", ALTIVEC_BUILTIN_VEC_VMSUMUBM },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_msums", ALTIVEC_BUILTIN_VEC_MSUMS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmsumshs", ALTIVEC_BUILTIN_VEC_VMSUMSHS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmsumuhs", ALTIVEC_BUILTIN_VEC_VMSUMUHS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_nmsub", ALTIVEC_BUILTIN_VEC_NMSUB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_perm", ALTIVEC_BUILTIN_VEC_PERM },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_sel", ALTIVEC_BUILTIN_VEC_SEL },
-
-  { MASK_VSX, CODE_FOR_fmav2df4, "__builtin_vsx_xvmadddp", VSX_BUILTIN_XVMADDDP },
-  { MASK_VSX, CODE_FOR_fmsv2df4, "__builtin_vsx_xvmsubdp", VSX_BUILTIN_XVMSUBDP },
-  { MASK_VSX, CODE_FOR_nfmav2df4, "__builtin_vsx_xvnmadddp", VSX_BUILTIN_XVNMADDDP },
-  { MASK_VSX, CODE_FOR_nfmsv2df4, "__builtin_vsx_xvnmsubdp", VSX_BUILTIN_XVNMSUBDP },
-
-  { MASK_VSX, CODE_FOR_fmav4sf4, "__builtin_vsx_xvmaddsp", VSX_BUILTIN_XVMADDSP },
-  { MASK_VSX, CODE_FOR_fmsv4sf4, "__builtin_vsx_xvmsubsp", VSX_BUILTIN_XVMSUBSP },
-  { MASK_VSX, CODE_FOR_nfmav4sf4, "__builtin_vsx_xvnmaddsp", VSX_BUILTIN_XVNMADDSP },
-  { MASK_VSX, CODE_FOR_nfmsv4sf4, "__builtin_vsx_xvnmsubsp", VSX_BUILTIN_XVNMSUBSP },
-
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_msub", VSX_BUILTIN_VEC_MSUB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_nmadd", VSX_BUILTIN_VEC_NMADD },
-
-  { MASK_VSX, CODE_FOR_vector_select_v2di, "__builtin_vsx_xxsel_2di", VSX_BUILTIN_XXSEL_2DI },
-  { MASK_VSX, CODE_FOR_vector_select_v2df, "__builtin_vsx_xxsel_2df", VSX_BUILTIN_XXSEL_2DF },
-  { MASK_VSX, CODE_FOR_vector_select_v4sf, "__builtin_vsx_xxsel_4sf", VSX_BUILTIN_XXSEL_4SF },
-  { MASK_VSX, CODE_FOR_vector_select_v4si, "__builtin_vsx_xxsel_4si", VSX_BUILTIN_XXSEL_4SI },
-  { MASK_VSX, CODE_FOR_vector_select_v8hi, "__builtin_vsx_xxsel_8hi", VSX_BUILTIN_XXSEL_8HI },
-  { MASK_VSX, CODE_FOR_vector_select_v16qi, "__builtin_vsx_xxsel_16qi", VSX_BUILTIN_XXSEL_16QI },
-  { MASK_VSX, CODE_FOR_vector_select_v2di_uns, "__builtin_vsx_xxsel_2di_uns", VSX_BUILTIN_XXSEL_2DI_UNS },
-  { MASK_VSX, CODE_FOR_vector_select_v4si_uns, "__builtin_vsx_xxsel_4si_uns", VSX_BUILTIN_XXSEL_4SI_UNS },
-  { MASK_VSX, CODE_FOR_vector_select_v8hi_uns, "__builtin_vsx_xxsel_8hi_uns", VSX_BUILTIN_XXSEL_8HI_UNS },
-  { MASK_VSX, CODE_FOR_vector_select_v16qi_uns, "__builtin_vsx_xxsel_16qi_uns", VSX_BUILTIN_XXSEL_16QI_UNS },
-
-  { MASK_VSX, CODE_FOR_altivec_vperm_v2di, "__builtin_vsx_vperm_2di", VSX_BUILTIN_VPERM_2DI },
-  { MASK_VSX, CODE_FOR_altivec_vperm_v2df, "__builtin_vsx_vperm_2df", VSX_BUILTIN_VPERM_2DF },
-  { MASK_VSX, CODE_FOR_altivec_vperm_v4sf, "__builtin_vsx_vperm_4sf", VSX_BUILTIN_VPERM_4SF },
-  { MASK_VSX, CODE_FOR_altivec_vperm_v4si, "__builtin_vsx_vperm_4si", VSX_BUILTIN_VPERM_4SI },
-  { MASK_VSX, CODE_FOR_altivec_vperm_v8hi, "__builtin_vsx_vperm_8hi", VSX_BUILTIN_VPERM_8HI },
-  { MASK_VSX, CODE_FOR_altivec_vperm_v16qi, "__builtin_vsx_vperm_16qi", VSX_BUILTIN_VPERM_16QI },
-  { MASK_VSX, CODE_FOR_altivec_vperm_v2di_uns, "__builtin_vsx_vperm_2di_uns", VSX_BUILTIN_VPERM_2DI_UNS },
-  { MASK_VSX, CODE_FOR_altivec_vperm_v4si_uns, "__builtin_vsx_vperm_4si_uns", VSX_BUILTIN_VPERM_4SI_UNS },
-  { MASK_VSX, CODE_FOR_altivec_vperm_v8hi_uns, "__builtin_vsx_vperm_8hi_uns", VSX_BUILTIN_VPERM_8HI_UNS },
-  { MASK_VSX, CODE_FOR_altivec_vperm_v16qi_uns, "__builtin_vsx_vperm_16qi_uns", VSX_BUILTIN_VPERM_16QI_UNS },
-
-  { MASK_VSX, CODE_FOR_vsx_xxpermdi_v2df, "__builtin_vsx_xxpermdi_2df", VSX_BUILTIN_XXPERMDI_2DF },
-  { MASK_VSX, CODE_FOR_vsx_xxpermdi_v2di, "__builtin_vsx_xxpermdi_2di", VSX_BUILTIN_XXPERMDI_2DI },
-  { MASK_VSX, CODE_FOR_vsx_xxpermdi_v4sf, "__builtin_vsx_xxpermdi_4sf", VSX_BUILTIN_XXPERMDI_4SF },
-  { MASK_VSX, CODE_FOR_vsx_xxpermdi_v4si, "__builtin_vsx_xxpermdi_4si", VSX_BUILTIN_XXPERMDI_4SI },
-  { MASK_VSX, CODE_FOR_vsx_xxpermdi_v8hi, "__builtin_vsx_xxpermdi_8hi", VSX_BUILTIN_XXPERMDI_8HI },
-  { MASK_VSX, CODE_FOR_vsx_xxpermdi_v16qi, "__builtin_vsx_xxpermdi_16qi", VSX_BUILTIN_XXPERMDI_16QI },
-  { MASK_VSX, CODE_FOR_nothing, "__builtin_vsx_xxpermdi", VSX_BUILTIN_VEC_XXPERMDI },
-  { MASK_VSX, CODE_FOR_vsx_set_v2df, "__builtin_vsx_set_2df", VSX_BUILTIN_SET_2DF },
-  { MASK_VSX, CODE_FOR_vsx_set_v2di, "__builtin_vsx_set_2di", VSX_BUILTIN_SET_2DI },
-
-  { MASK_VSX, CODE_FOR_vsx_xxsldwi_v2di, "__builtin_vsx_xxsldwi_2di", VSX_BUILTIN_XXSLDWI_2DI },
-  { MASK_VSX, CODE_FOR_vsx_xxsldwi_v2df, "__builtin_vsx_xxsldwi_2df", VSX_BUILTIN_XXSLDWI_2DF },
-  { MASK_VSX, CODE_FOR_vsx_xxsldwi_v4sf, "__builtin_vsx_xxsldwi_4sf", VSX_BUILTIN_XXSLDWI_4SF },
-  { MASK_VSX, CODE_FOR_vsx_xxsldwi_v4si, "__builtin_vsx_xxsldwi_4si", VSX_BUILTIN_XXSLDWI_4SI },
-  { MASK_VSX, CODE_FOR_vsx_xxsldwi_v8hi, "__builtin_vsx_xxsldwi_8hi", VSX_BUILTIN_XXSLDWI_8HI },
-  { MASK_VSX, CODE_FOR_vsx_xxsldwi_v16qi, "__builtin_vsx_xxsldwi_16qi", VSX_BUILTIN_XXSLDWI_16QI },
-  { MASK_VSX, CODE_FOR_nothing, "__builtin_vsx_xxsldwi", VSX_BUILTIN_VEC_XXSLDWI },
-
-  { 0, CODE_FOR_fmsv2sf4, "__builtin_paired_msub", PAIRED_BUILTIN_MSUB },
-  { 0, CODE_FOR_fmav2sf4, "__builtin_paired_madd", PAIRED_BUILTIN_MADD },
-  { 0, CODE_FOR_paired_madds0, "__builtin_paired_madds0", PAIRED_BUILTIN_MADDS0 },
-  { 0, CODE_FOR_paired_madds1, "__builtin_paired_madds1", PAIRED_BUILTIN_MADDS1 },
-  { 0, CODE_FOR_nfmsv2sf4, "__builtin_paired_nmsub", PAIRED_BUILTIN_NMSUB },
-  { 0, CODE_FOR_nfmav2sf4, "__builtin_paired_nmadd", PAIRED_BUILTIN_NMADD },
-  { 0, CODE_FOR_paired_sum0, "__builtin_paired_sum0", PAIRED_BUILTIN_SUM0 },
-  { 0, CODE_FOR_paired_sum1, "__builtin_paired_sum1", PAIRED_BUILTIN_SUM1 },
-  { 0, CODE_FOR_selv2sf4, "__builtin_paired_selv2sf4", PAIRED_BUILTIN_SELV2SF4 },
+#include "rs6000-builtin.def"
 };
 
 /* DST operations: void foo (void *, const int, const char).  */
 
+#undef RS6000_BUILTIN_1
+#undef RS6000_BUILTIN_2
+#undef RS6000_BUILTIN_3
+#undef RS6000_BUILTIN_A
+#undef RS6000_BUILTIN_D
+#undef RS6000_BUILTIN_E
+#undef RS6000_BUILTIN_P
+#undef RS6000_BUILTIN_Q
+#undef RS6000_BUILTIN_S
+#undef RS6000_BUILTIN_X
+
+#define RS6000_BUILTIN_1(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_2(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_3(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE) \
+  { MASK, ICODE, NAME, ENUM },
+
+#define RS6000_BUILTIN_E(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_S(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
+
 static const struct builtin_description bdesc_dst[] =
 {
-  { MASK_ALTIVEC, CODE_FOR_altivec_dst, "__builtin_altivec_dst", ALTIVEC_BUILTIN_DST },
-  { MASK_ALTIVEC, CODE_FOR_altivec_dstt, "__builtin_altivec_dstt", ALTIVEC_BUILTIN_DSTT },
-  { MASK_ALTIVEC, CODE_FOR_altivec_dstst, "__builtin_altivec_dstst", ALTIVEC_BUILTIN_DSTST },
-  { MASK_ALTIVEC, CODE_FOR_altivec_dststt, "__builtin_altivec_dststt", ALTIVEC_BUILTIN_DSTSTT },
-
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_dst", ALTIVEC_BUILTIN_VEC_DST },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_dstt", ALTIVEC_BUILTIN_VEC_DSTT },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_dstst", ALTIVEC_BUILTIN_VEC_DSTST },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_dststt", ALTIVEC_BUILTIN_VEC_DSTSTT }
+#include "rs6000-builtin.def"
 };
 
 /* Simple binary operations: VECc = foo (VECa, VECb).  */
 
-static struct builtin_description bdesc_2arg[] =
+#undef RS6000_BUILTIN_1
+#undef RS6000_BUILTIN_2
+#undef RS6000_BUILTIN_3
+#undef RS6000_BUILTIN_A
+#undef RS6000_BUILTIN_D
+#undef RS6000_BUILTIN_E
+#undef RS6000_BUILTIN_P
+#undef RS6000_BUILTIN_Q
+#undef RS6000_BUILTIN_S
+#undef RS6000_BUILTIN_X
+
+#define RS6000_BUILTIN_1(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_2(ENUM, NAME, MASK, ATTR, ICODE) \
+  { MASK, ICODE, NAME, ENUM },
+
+#define RS6000_BUILTIN_3(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_E(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_S(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
+
+static const struct builtin_description bdesc_2arg[] =
 {
-  { MASK_ALTIVEC, CODE_FOR_addv16qi3, "__builtin_altivec_vaddubm", ALTIVEC_BUILTIN_VADDUBM },
-  { MASK_ALTIVEC, CODE_FOR_addv8hi3, "__builtin_altivec_vadduhm", ALTIVEC_BUILTIN_VADDUHM },
-  { MASK_ALTIVEC, CODE_FOR_addv4si3, "__builtin_altivec_vadduwm", ALTIVEC_BUILTIN_VADDUWM },
-  { MASK_ALTIVEC, CODE_FOR_addv4sf3, "__builtin_altivec_vaddfp", ALTIVEC_BUILTIN_VADDFP },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vaddcuw, "__builtin_altivec_vaddcuw", ALTIVEC_BUILTIN_VADDCUW },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vaddubs, "__builtin_altivec_vaddubs", ALTIVEC_BUILTIN_VADDUBS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vaddsbs, "__builtin_altivec_vaddsbs", ALTIVEC_BUILTIN_VADDSBS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vadduhs, "__builtin_altivec_vadduhs", ALTIVEC_BUILTIN_VADDUHS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vaddshs, "__builtin_altivec_vaddshs", ALTIVEC_BUILTIN_VADDSHS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vadduws, "__builtin_altivec_vadduws", ALTIVEC_BUILTIN_VADDUWS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vaddsws, "__builtin_altivec_vaddsws", ALTIVEC_BUILTIN_VADDSWS },
-  { MASK_ALTIVEC, CODE_FOR_andv4si3, "__builtin_altivec_vand", ALTIVEC_BUILTIN_VAND },
-  { MASK_ALTIVEC, CODE_FOR_andcv4si3, "__builtin_altivec_vandc", ALTIVEC_BUILTIN_VANDC },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vavgub, "__builtin_altivec_vavgub", ALTIVEC_BUILTIN_VAVGUB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vavgsb, "__builtin_altivec_vavgsb", ALTIVEC_BUILTIN_VAVGSB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vavguh, "__builtin_altivec_vavguh", ALTIVEC_BUILTIN_VAVGUH },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vavgsh, "__builtin_altivec_vavgsh", ALTIVEC_BUILTIN_VAVGSH },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vavguw, "__builtin_altivec_vavguw", ALTIVEC_BUILTIN_VAVGUW },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vavgsw, "__builtin_altivec_vavgsw", ALTIVEC_BUILTIN_VAVGSW },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vcfux, "__builtin_altivec_vcfux", ALTIVEC_BUILTIN_VCFUX },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vcfsx, "__builtin_altivec_vcfsx", ALTIVEC_BUILTIN_VCFSX },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vcmpbfp, "__builtin_altivec_vcmpbfp", ALTIVEC_BUILTIN_VCMPBFP },
-  { MASK_ALTIVEC, CODE_FOR_vector_eqv16qi, "__builtin_altivec_vcmpequb", ALTIVEC_BUILTIN_VCMPEQUB },
-  { MASK_ALTIVEC, CODE_FOR_vector_eqv8hi, "__builtin_altivec_vcmpequh", ALTIVEC_BUILTIN_VCMPEQUH },
-  { MASK_ALTIVEC, CODE_FOR_vector_eqv4si, "__builtin_altivec_vcmpequw", ALTIVEC_BUILTIN_VCMPEQUW },
-  { MASK_ALTIVEC, CODE_FOR_vector_eqv4sf, "__builtin_altivec_vcmpeqfp", ALTIVEC_BUILTIN_VCMPEQFP },
-  { MASK_ALTIVEC, CODE_FOR_vector_gev4sf, "__builtin_altivec_vcmpgefp", ALTIVEC_BUILTIN_VCMPGEFP },
-  { MASK_ALTIVEC, CODE_FOR_vector_gtuv16qi, "__builtin_altivec_vcmpgtub", ALTIVEC_BUILTIN_VCMPGTUB },
-  { MASK_ALTIVEC, CODE_FOR_vector_gtv16qi, "__builtin_altivec_vcmpgtsb", ALTIVEC_BUILTIN_VCMPGTSB },
-  { MASK_ALTIVEC, CODE_FOR_vector_gtuv8hi, "__builtin_altivec_vcmpgtuh", ALTIVEC_BUILTIN_VCMPGTUH },
-  { MASK_ALTIVEC, CODE_FOR_vector_gtv8hi, "__builtin_altivec_vcmpgtsh", ALTIVEC_BUILTIN_VCMPGTSH },
-  { MASK_ALTIVEC, CODE_FOR_vector_gtuv4si, "__builtin_altivec_vcmpgtuw", ALTIVEC_BUILTIN_VCMPGTUW },
-  { MASK_ALTIVEC, CODE_FOR_vector_gtv4si, "__builtin_altivec_vcmpgtsw", ALTIVEC_BUILTIN_VCMPGTSW },
-  { MASK_ALTIVEC, CODE_FOR_vector_gtv4sf, "__builtin_altivec_vcmpgtfp", ALTIVEC_BUILTIN_VCMPGTFP },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vctsxs, "__builtin_altivec_vctsxs", ALTIVEC_BUILTIN_VCTSXS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vctuxs, "__builtin_altivec_vctuxs", ALTIVEC_BUILTIN_VCTUXS },
-  { MASK_ALTIVEC, CODE_FOR_umaxv16qi3, "__builtin_altivec_vmaxub", ALTIVEC_BUILTIN_VMAXUB },
-  { MASK_ALTIVEC, CODE_FOR_smaxv16qi3, "__builtin_altivec_vmaxsb", ALTIVEC_BUILTIN_VMAXSB },
-  { MASK_ALTIVEC, CODE_FOR_umaxv8hi3, "__builtin_altivec_vmaxuh", ALTIVEC_BUILTIN_VMAXUH },
-  { MASK_ALTIVEC, CODE_FOR_smaxv8hi3, "__builtin_altivec_vmaxsh", ALTIVEC_BUILTIN_VMAXSH },
-  { MASK_ALTIVEC, CODE_FOR_umaxv4si3, "__builtin_altivec_vmaxuw", ALTIVEC_BUILTIN_VMAXUW },
-  { MASK_ALTIVEC, CODE_FOR_smaxv4si3, "__builtin_altivec_vmaxsw", ALTIVEC_BUILTIN_VMAXSW },
-  { MASK_ALTIVEC, CODE_FOR_smaxv4sf3, "__builtin_altivec_vmaxfp", ALTIVEC_BUILTIN_VMAXFP },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmrghb, "__builtin_altivec_vmrghb", ALTIVEC_BUILTIN_VMRGHB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmrghh, "__builtin_altivec_vmrghh", ALTIVEC_BUILTIN_VMRGHH },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmrghw, "__builtin_altivec_vmrghw", ALTIVEC_BUILTIN_VMRGHW },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmrglb, "__builtin_altivec_vmrglb", ALTIVEC_BUILTIN_VMRGLB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmrglh, "__builtin_altivec_vmrglh", ALTIVEC_BUILTIN_VMRGLH },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmrglw, "__builtin_altivec_vmrglw", ALTIVEC_BUILTIN_VMRGLW },
-  { MASK_ALTIVEC, CODE_FOR_uminv16qi3, "__builtin_altivec_vminub", ALTIVEC_BUILTIN_VMINUB },
-  { MASK_ALTIVEC, CODE_FOR_sminv16qi3, "__builtin_altivec_vminsb", ALTIVEC_BUILTIN_VMINSB },
-  { MASK_ALTIVEC, CODE_FOR_uminv8hi3, "__builtin_altivec_vminuh", ALTIVEC_BUILTIN_VMINUH },
-  { MASK_ALTIVEC, CODE_FOR_sminv8hi3, "__builtin_altivec_vminsh", ALTIVEC_BUILTIN_VMINSH },
-  { MASK_ALTIVEC, CODE_FOR_uminv4si3, "__builtin_altivec_vminuw", ALTIVEC_BUILTIN_VMINUW },
-  { MASK_ALTIVEC, CODE_FOR_sminv4si3, "__builtin_altivec_vminsw", ALTIVEC_BUILTIN_VMINSW },
-  { MASK_ALTIVEC, CODE_FOR_sminv4sf3, "__builtin_altivec_vminfp", ALTIVEC_BUILTIN_VMINFP },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmuleub, "__builtin_altivec_vmuleub", ALTIVEC_BUILTIN_VMULEUB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmuleub, "__builtin_altivec_vmuleub_uns", ALTIVEC_BUILTIN_VMULEUB_UNS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmulesb, "__builtin_altivec_vmulesb", ALTIVEC_BUILTIN_VMULESB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmuleuh, "__builtin_altivec_vmuleuh", ALTIVEC_BUILTIN_VMULEUH },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmuleuh, "__builtin_altivec_vmuleuh_uns", ALTIVEC_BUILTIN_VMULEUH_UNS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmulesh, "__builtin_altivec_vmulesh", ALTIVEC_BUILTIN_VMULESH },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmuloub, "__builtin_altivec_vmuloub", ALTIVEC_BUILTIN_VMULOUB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmuloub, "__builtin_altivec_vmuloub_uns", ALTIVEC_BUILTIN_VMULOUB_UNS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmulosb, "__builtin_altivec_vmulosb", ALTIVEC_BUILTIN_VMULOSB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmulouh, "__builtin_altivec_vmulouh", ALTIVEC_BUILTIN_VMULOUH },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmulouh, "__builtin_altivec_vmulouh_uns", ALTIVEC_BUILTIN_VMULOUH_UNS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmulosh, "__builtin_altivec_vmulosh", ALTIVEC_BUILTIN_VMULOSH },
-  { MASK_ALTIVEC, CODE_FOR_norv4si3, "__builtin_altivec_vnor", ALTIVEC_BUILTIN_VNOR },
-  { MASK_ALTIVEC, CODE_FOR_iorv4si3, "__builtin_altivec_vor", ALTIVEC_BUILTIN_VOR },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vpkuhum, "__builtin_altivec_vpkuhum", ALTIVEC_BUILTIN_VPKUHUM },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vpkuwum, "__builtin_altivec_vpkuwum", ALTIVEC_BUILTIN_VPKUWUM },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vpkpx, "__builtin_altivec_vpkpx", ALTIVEC_BUILTIN_VPKPX },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vpkshss, "__builtin_altivec_vpkshss", ALTIVEC_BUILTIN_VPKSHSS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vpkswss, "__builtin_altivec_vpkswss", ALTIVEC_BUILTIN_VPKSWSS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vpkuhus, "__builtin_altivec_vpkuhus", ALTIVEC_BUILTIN_VPKUHUS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vpkshus, "__builtin_altivec_vpkshus", ALTIVEC_BUILTIN_VPKSHUS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vpkuwus, "__builtin_altivec_vpkuwus", ALTIVEC_BUILTIN_VPKUWUS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vpkswus, "__builtin_altivec_vpkswus", ALTIVEC_BUILTIN_VPKSWUS },
-  { MASK_ALTIVEC, CODE_FOR_recipv4sf3, "__builtin_altivec_vrecipdivfp", ALTIVEC_BUILTIN_VRECIPFP },
-  { MASK_ALTIVEC, CODE_FOR_vrotlv16qi3, "__builtin_altivec_vrlb", ALTIVEC_BUILTIN_VRLB },
-  { MASK_ALTIVEC, CODE_FOR_vrotlv8hi3, "__builtin_altivec_vrlh", ALTIVEC_BUILTIN_VRLH },
-  { MASK_ALTIVEC, CODE_FOR_vrotlv4si3, "__builtin_altivec_vrlw", ALTIVEC_BUILTIN_VRLW },
-  { MASK_ALTIVEC, CODE_FOR_vashlv16qi3, "__builtin_altivec_vslb", ALTIVEC_BUILTIN_VSLB },
-  { MASK_ALTIVEC, CODE_FOR_vashlv8hi3, "__builtin_altivec_vslh", ALTIVEC_BUILTIN_VSLH },
-  { MASK_ALTIVEC, CODE_FOR_vashlv4si3, "__builtin_altivec_vslw", ALTIVEC_BUILTIN_VSLW },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsl, "__builtin_altivec_vsl", ALTIVEC_BUILTIN_VSL },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vslo, "__builtin_altivec_vslo", ALTIVEC_BUILTIN_VSLO },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vspltb, "__builtin_altivec_vspltb", ALTIVEC_BUILTIN_VSPLTB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsplth, "__builtin_altivec_vsplth", ALTIVEC_BUILTIN_VSPLTH },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vspltw, "__builtin_altivec_vspltw", ALTIVEC_BUILTIN_VSPLTW },
-  { MASK_ALTIVEC, CODE_FOR_vlshrv16qi3, "__builtin_altivec_vsrb", ALTIVEC_BUILTIN_VSRB },
-  { MASK_ALTIVEC, CODE_FOR_vlshrv8hi3, "__builtin_altivec_vsrh", ALTIVEC_BUILTIN_VSRH },
-  { MASK_ALTIVEC, CODE_FOR_vlshrv4si3, "__builtin_altivec_vsrw", ALTIVEC_BUILTIN_VSRW },
-  { MASK_ALTIVEC, CODE_FOR_vashrv16qi3, "__builtin_altivec_vsrab", ALTIVEC_BUILTIN_VSRAB },
-  { MASK_ALTIVEC, CODE_FOR_vashrv8hi3, "__builtin_altivec_vsrah", ALTIVEC_BUILTIN_VSRAH },
-  { MASK_ALTIVEC, CODE_FOR_vashrv4si3, "__builtin_altivec_vsraw", ALTIVEC_BUILTIN_VSRAW },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsr, "__builtin_altivec_vsr", ALTIVEC_BUILTIN_VSR },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsro, "__builtin_altivec_vsro", ALTIVEC_BUILTIN_VSRO },
-  { MASK_ALTIVEC, CODE_FOR_subv16qi3, "__builtin_altivec_vsububm", ALTIVEC_BUILTIN_VSUBUBM },
-  { MASK_ALTIVEC, CODE_FOR_subv8hi3, "__builtin_altivec_vsubuhm", ALTIVEC_BUILTIN_VSUBUHM },
-  { MASK_ALTIVEC, CODE_FOR_subv4si3, "__builtin_altivec_vsubuwm", ALTIVEC_BUILTIN_VSUBUWM },
-  { MASK_ALTIVEC, CODE_FOR_subv4sf3, "__builtin_altivec_vsubfp", ALTIVEC_BUILTIN_VSUBFP },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsubcuw, "__builtin_altivec_vsubcuw", ALTIVEC_BUILTIN_VSUBCUW },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsububs, "__builtin_altivec_vsububs", ALTIVEC_BUILTIN_VSUBUBS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsubsbs, "__builtin_altivec_vsubsbs", ALTIVEC_BUILTIN_VSUBSBS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsubuhs, "__builtin_altivec_vsubuhs", ALTIVEC_BUILTIN_VSUBUHS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsubshs, "__builtin_altivec_vsubshs", ALTIVEC_BUILTIN_VSUBSHS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsubuws, "__builtin_altivec_vsubuws", ALTIVEC_BUILTIN_VSUBUWS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsubsws, "__builtin_altivec_vsubsws", ALTIVEC_BUILTIN_VSUBSWS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsum4ubs, "__builtin_altivec_vsum4ubs", ALTIVEC_BUILTIN_VSUM4UBS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsum4sbs, "__builtin_altivec_vsum4sbs", ALTIVEC_BUILTIN_VSUM4SBS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsum4shs, "__builtin_altivec_vsum4shs", ALTIVEC_BUILTIN_VSUM4SHS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsum2sws, "__builtin_altivec_vsum2sws", ALTIVEC_BUILTIN_VSUM2SWS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsumsws, "__builtin_altivec_vsumsws", ALTIVEC_BUILTIN_VSUMSWS },
-  { MASK_ALTIVEC, CODE_FOR_xorv4si3, "__builtin_altivec_vxor", ALTIVEC_BUILTIN_VXOR },
-  { MASK_ALTIVEC, CODE_FOR_vector_copysignv4sf3, "__builtin_altivec_copysignfp", ALTIVEC_BUILTIN_COPYSIGN_V4SF },
-
-  { MASK_VSX, CODE_FOR_addv2df3, "__builtin_vsx_xvadddp", VSX_BUILTIN_XVADDDP },
-  { MASK_VSX, CODE_FOR_subv2df3, "__builtin_vsx_xvsubdp", VSX_BUILTIN_XVSUBDP },
-  { MASK_VSX, CODE_FOR_mulv2df3, "__builtin_vsx_xvmuldp", VSX_BUILTIN_XVMULDP },
-  { MASK_VSX, CODE_FOR_divv2df3, "__builtin_vsx_xvdivdp", VSX_BUILTIN_XVDIVDP },
-  { MASK_VSX, CODE_FOR_recipv2df3, "__builtin_vsx_xvrecipdivdp", VSX_BUILTIN_RECIP_V2DF },
-  { MASK_VSX, CODE_FOR_sminv2df3, "__builtin_vsx_xvmindp", VSX_BUILTIN_XVMINDP },
-  { MASK_VSX, CODE_FOR_smaxv2df3, "__builtin_vsx_xvmaxdp", VSX_BUILTIN_XVMAXDP },
-  { MASK_VSX, CODE_FOR_vsx_tdivv2df3_fe, "__builtin_vsx_xvtdivdp_fe", VSX_BUILTIN_XVTDIVDP_FE },
-  { MASK_VSX, CODE_FOR_vsx_tdivv2df3_fg, "__builtin_vsx_xvtdivdp_fg", VSX_BUILTIN_XVTDIVDP_FG },
-  { MASK_VSX, CODE_FOR_vector_eqv2df, "__builtin_vsx_xvcmpeqdp", VSX_BUILTIN_XVCMPEQDP },
-  { MASK_VSX, CODE_FOR_vector_gtv2df, "__builtin_vsx_xvcmpgtdp", VSX_BUILTIN_XVCMPGTDP },
-  { MASK_VSX, CODE_FOR_vector_gev2df, "__builtin_vsx_xvcmpgedp", VSX_BUILTIN_XVCMPGEDP },
-
-  { MASK_VSX, CODE_FOR_addv4sf3, "__builtin_vsx_xvaddsp", VSX_BUILTIN_XVADDSP },
-  { MASK_VSX, CODE_FOR_subv4sf3, "__builtin_vsx_xvsubsp", VSX_BUILTIN_XVSUBSP },
-  { MASK_VSX, CODE_FOR_mulv4sf3, "__builtin_vsx_xvmulsp", VSX_BUILTIN_XVMULSP },
-  { MASK_VSX, CODE_FOR_divv4sf3, "__builtin_vsx_xvdivsp", VSX_BUILTIN_XVDIVSP },
-  { MASK_VSX, CODE_FOR_recipv4sf3, "__builtin_vsx_xvrecipdivsp", VSX_BUILTIN_RECIP_V4SF },
-  { MASK_VSX, CODE_FOR_sminv4sf3, "__builtin_vsx_xvminsp", VSX_BUILTIN_XVMINSP },
-  { MASK_VSX, CODE_FOR_smaxv4sf3, "__builtin_vsx_xvmaxsp", VSX_BUILTIN_XVMAXSP },
-  { MASK_VSX, CODE_FOR_vsx_tdivv4sf3_fe, "__builtin_vsx_xvtdivsp_fe", VSX_BUILTIN_XVTDIVSP_FE },
-  { MASK_VSX, CODE_FOR_vsx_tdivv4sf3_fg, "__builtin_vsx_xvtdivsp_fg", VSX_BUILTIN_XVTDIVSP_FG },
-  { MASK_VSX, CODE_FOR_vector_eqv4sf, "__builtin_vsx_xvcmpeqsp", VSX_BUILTIN_XVCMPEQSP },
-  { MASK_VSX, CODE_FOR_vector_gtv4sf, "__builtin_vsx_xvcmpgtsp", VSX_BUILTIN_XVCMPGTSP },
-  { MASK_VSX, CODE_FOR_vector_gev4sf, "__builtin_vsx_xvcmpgesp", VSX_BUILTIN_XVCMPGESP },
-
-  { MASK_VSX, CODE_FOR_smindf3, "__builtin_vsx_xsmindp", VSX_BUILTIN_XSMINDP },
-  { MASK_VSX, CODE_FOR_smaxdf3, "__builtin_vsx_xsmaxdp", VSX_BUILTIN_XSMAXDP },
-  { MASK_VSX, CODE_FOR_vsx_tdivdf3_fe, "__builtin_vsx_xstdivdp_fe", VSX_BUILTIN_XSTDIVDP_FE },
-  { MASK_VSX, CODE_FOR_vsx_tdivdf3_fg, "__builtin_vsx_xstdivdp_fg", VSX_BUILTIN_XSTDIVDP_FG },
-  { MASK_VSX, CODE_FOR_vector_copysignv2df3, "__builtin_vsx_cpsgndp", VSX_BUILTIN_CPSGNDP },
-  { MASK_VSX, CODE_FOR_vector_copysignv4sf3, "__builtin_vsx_cpsgnsp", VSX_BUILTIN_CPSGNSP },
-
-  { MASK_VSX, CODE_FOR_vsx_concat_v2df, "__builtin_vsx_concat_2df", VSX_BUILTIN_CONCAT_2DF },
-  { MASK_VSX, CODE_FOR_vsx_concat_v2di, "__builtin_vsx_concat_2di", VSX_BUILTIN_CONCAT_2DI },
-  { MASK_VSX, CODE_FOR_vsx_splat_v2df, "__builtin_vsx_splat_2df", VSX_BUILTIN_SPLAT_2DF },
-  { MASK_VSX, CODE_FOR_vsx_splat_v2di, "__builtin_vsx_splat_2di", VSX_BUILTIN_SPLAT_2DI },
-  { MASK_VSX, CODE_FOR_vsx_xxmrghw_v4sf, "__builtin_vsx_xxmrghw", VSX_BUILTIN_XXMRGHW_4SF },
-  { MASK_VSX, CODE_FOR_vsx_xxmrghw_v4si, "__builtin_vsx_xxmrghw_4si", VSX_BUILTIN_XXMRGHW_4SI },
-  { MASK_VSX, CODE_FOR_vsx_xxmrglw_v4sf, "__builtin_vsx_xxmrglw", VSX_BUILTIN_XXMRGLW_4SF },
-  { MASK_VSX, CODE_FOR_vsx_xxmrglw_v4si, "__builtin_vsx_xxmrglw_4si", VSX_BUILTIN_XXMRGLW_4SI },
-  { MASK_VSX, CODE_FOR_vec_interleave_lowv2df, "__builtin_vsx_mergel_2df", VSX_BUILTIN_VEC_MERGEL_V2DF },
-  { MASK_VSX, CODE_FOR_vec_interleave_lowv2di, "__builtin_vsx_mergel_2di", VSX_BUILTIN_VEC_MERGEL_V2DI },
-  { MASK_VSX, CODE_FOR_vec_interleave_highv2df, "__builtin_vsx_mergeh_2df", VSX_BUILTIN_VEC_MERGEH_V2DF },
-  { MASK_VSX, CODE_FOR_vec_interleave_highv2di, "__builtin_vsx_mergeh_2di", VSX_BUILTIN_VEC_MERGEH_V2DI },
-
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_add", ALTIVEC_BUILTIN_VEC_ADD },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_vaddfp", ALTIVEC_BUILTIN_VEC_VADDFP },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vadduwm", ALTIVEC_BUILTIN_VEC_VADDUWM },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vadduhm", ALTIVEC_BUILTIN_VEC_VADDUHM },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vaddubm", ALTIVEC_BUILTIN_VEC_VADDUBM },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_addc", ALTIVEC_BUILTIN_VEC_ADDC },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_adds", ALTIVEC_BUILTIN_VEC_ADDS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vaddsws", ALTIVEC_BUILTIN_VEC_VADDSWS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vadduws", ALTIVEC_BUILTIN_VEC_VADDUWS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vaddshs", ALTIVEC_BUILTIN_VEC_VADDSHS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vadduhs", ALTIVEC_BUILTIN_VEC_VADDUHS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vaddsbs", ALTIVEC_BUILTIN_VEC_VADDSBS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vaddubs", ALTIVEC_BUILTIN_VEC_VADDUBS },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_and", ALTIVEC_BUILTIN_VEC_AND },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_andc", ALTIVEC_BUILTIN_VEC_ANDC },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_avg", ALTIVEC_BUILTIN_VEC_AVG },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vavgsw", ALTIVEC_BUILTIN_VEC_VAVGSW },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vavguw", ALTIVEC_BUILTIN_VEC_VAVGUW },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vavgsh", ALTIVEC_BUILTIN_VEC_VAVGSH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vavguh", ALTIVEC_BUILTIN_VEC_VAVGUH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vavgsb", ALTIVEC_BUILTIN_VEC_VAVGSB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vavgub", ALTIVEC_BUILTIN_VEC_VAVGUB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_cmpb", ALTIVEC_BUILTIN_VEC_CMPB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_cmpeq", ALTIVEC_BUILTIN_VEC_CMPEQ },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vcmpeqfp", ALTIVEC_BUILTIN_VEC_VCMPEQFP },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vcmpequw", ALTIVEC_BUILTIN_VEC_VCMPEQUW },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vcmpequh", ALTIVEC_BUILTIN_VEC_VCMPEQUH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vcmpequb", ALTIVEC_BUILTIN_VEC_VCMPEQUB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_cmpge", ALTIVEC_BUILTIN_VEC_CMPGE },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_cmpgt", ALTIVEC_BUILTIN_VEC_CMPGT },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vcmpgtfp", ALTIVEC_BUILTIN_VEC_VCMPGTFP },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vcmpgtsw", ALTIVEC_BUILTIN_VEC_VCMPGTSW },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vcmpgtuw", ALTIVEC_BUILTIN_VEC_VCMPGTUW },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vcmpgtsh", ALTIVEC_BUILTIN_VEC_VCMPGTSH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vcmpgtuh", ALTIVEC_BUILTIN_VEC_VCMPGTUH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vcmpgtsb", ALTIVEC_BUILTIN_VEC_VCMPGTSB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vcmpgtub", ALTIVEC_BUILTIN_VEC_VCMPGTUB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_cmple", ALTIVEC_BUILTIN_VEC_CMPLE },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_cmplt", ALTIVEC_BUILTIN_VEC_CMPLT },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_copysign", ALTIVEC_BUILTIN_VEC_COPYSIGN },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_max", ALTIVEC_BUILTIN_VEC_MAX },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_vmaxfp", ALTIVEC_BUILTIN_VEC_VMAXFP },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmaxsw", ALTIVEC_BUILTIN_VEC_VMAXSW },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmaxuw", ALTIVEC_BUILTIN_VEC_VMAXUW },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmaxsh", ALTIVEC_BUILTIN_VEC_VMAXSH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmaxuh", ALTIVEC_BUILTIN_VEC_VMAXUH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmaxsb", ALTIVEC_BUILTIN_VEC_VMAXSB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmaxub", ALTIVEC_BUILTIN_VEC_VMAXUB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_mergeh", ALTIVEC_BUILTIN_VEC_MERGEH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmrghw", ALTIVEC_BUILTIN_VEC_VMRGHW },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmrghh", ALTIVEC_BUILTIN_VEC_VMRGHH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmrghb", ALTIVEC_BUILTIN_VEC_VMRGHB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_mergel", ALTIVEC_BUILTIN_VEC_MERGEL },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmrglw", ALTIVEC_BUILTIN_VEC_VMRGLW },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmrglh", ALTIVEC_BUILTIN_VEC_VMRGLH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmrglb", ALTIVEC_BUILTIN_VEC_VMRGLB },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_min", ALTIVEC_BUILTIN_VEC_MIN },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_vminfp", ALTIVEC_BUILTIN_VEC_VMINFP },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vminsw", ALTIVEC_BUILTIN_VEC_VMINSW },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vminuw", ALTIVEC_BUILTIN_VEC_VMINUW },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vminsh", ALTIVEC_BUILTIN_VEC_VMINSH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vminuh", ALTIVEC_BUILTIN_VEC_VMINUH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vminsb", ALTIVEC_BUILTIN_VEC_VMINSB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vminub", ALTIVEC_BUILTIN_VEC_VMINUB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_mule", ALTIVEC_BUILTIN_VEC_MULE },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmuleub", ALTIVEC_BUILTIN_VEC_VMULEUB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmulesb", ALTIVEC_BUILTIN_VEC_VMULESB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmuleuh", ALTIVEC_BUILTIN_VEC_VMULEUH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmulesh", ALTIVEC_BUILTIN_VEC_VMULESH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_mulo", ALTIVEC_BUILTIN_VEC_MULO },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmulosh", ALTIVEC_BUILTIN_VEC_VMULOSH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmulouh", ALTIVEC_BUILTIN_VEC_VMULOUH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmulosb", ALTIVEC_BUILTIN_VEC_VMULOSB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vmuloub", ALTIVEC_BUILTIN_VEC_VMULOUB },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_nor", ALTIVEC_BUILTIN_VEC_NOR },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_or", ALTIVEC_BUILTIN_VEC_OR },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_pack", ALTIVEC_BUILTIN_VEC_PACK },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vpkuwum", ALTIVEC_BUILTIN_VEC_VPKUWUM },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vpkuhum", ALTIVEC_BUILTIN_VEC_VPKUHUM },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_packpx", ALTIVEC_BUILTIN_VEC_PACKPX },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_packs", ALTIVEC_BUILTIN_VEC_PACKS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vpkswss", ALTIVEC_BUILTIN_VEC_VPKSWSS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vpkuwus", ALTIVEC_BUILTIN_VEC_VPKUWUS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vpkshss", ALTIVEC_BUILTIN_VEC_VPKSHSS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vpkuhus", ALTIVEC_BUILTIN_VEC_VPKUHUS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_packsu", ALTIVEC_BUILTIN_VEC_PACKSU },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vpkswus", ALTIVEC_BUILTIN_VEC_VPKSWUS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vpkshus", ALTIVEC_BUILTIN_VEC_VPKSHUS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_recipdiv", ALTIVEC_BUILTIN_VEC_RECIP },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_rl", ALTIVEC_BUILTIN_VEC_RL },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vrlw", ALTIVEC_BUILTIN_VEC_VRLW },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vrlh", ALTIVEC_BUILTIN_VEC_VRLH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vrlb", ALTIVEC_BUILTIN_VEC_VRLB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_sl", ALTIVEC_BUILTIN_VEC_SL },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vslw", ALTIVEC_BUILTIN_VEC_VSLW },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vslh", ALTIVEC_BUILTIN_VEC_VSLH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vslb", ALTIVEC_BUILTIN_VEC_VSLB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_sll", ALTIVEC_BUILTIN_VEC_SLL },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_slo", ALTIVEC_BUILTIN_VEC_SLO },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_sr", ALTIVEC_BUILTIN_VEC_SR },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsrw", ALTIVEC_BUILTIN_VEC_VSRW },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsrh", ALTIVEC_BUILTIN_VEC_VSRH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsrb", ALTIVEC_BUILTIN_VEC_VSRB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_sra", ALTIVEC_BUILTIN_VEC_SRA },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsraw", ALTIVEC_BUILTIN_VEC_VSRAW },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsrah", ALTIVEC_BUILTIN_VEC_VSRAH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsrab", ALTIVEC_BUILTIN_VEC_VSRAB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_srl", ALTIVEC_BUILTIN_VEC_SRL },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_sro", ALTIVEC_BUILTIN_VEC_SRO },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_sub", ALTIVEC_BUILTIN_VEC_SUB },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_vsubfp", ALTIVEC_BUILTIN_VEC_VSUBFP },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsubuwm", ALTIVEC_BUILTIN_VEC_VSUBUWM },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsubuhm", ALTIVEC_BUILTIN_VEC_VSUBUHM },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsububm", ALTIVEC_BUILTIN_VEC_VSUBUBM },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_subc", ALTIVEC_BUILTIN_VEC_SUBC },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_subs", ALTIVEC_BUILTIN_VEC_SUBS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsubsws", ALTIVEC_BUILTIN_VEC_VSUBSWS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsubuws", ALTIVEC_BUILTIN_VEC_VSUBUWS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsubshs", ALTIVEC_BUILTIN_VEC_VSUBSHS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsubuhs", ALTIVEC_BUILTIN_VEC_VSUBUHS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsubsbs", ALTIVEC_BUILTIN_VEC_VSUBSBS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsububs", ALTIVEC_BUILTIN_VEC_VSUBUBS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_sum4s", ALTIVEC_BUILTIN_VEC_SUM4S },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsum4shs", ALTIVEC_BUILTIN_VEC_VSUM4SHS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsum4sbs", ALTIVEC_BUILTIN_VEC_VSUM4SBS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vsum4ubs", ALTIVEC_BUILTIN_VEC_VSUM4UBS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_sum2s", ALTIVEC_BUILTIN_VEC_SUM2S },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_sums", ALTIVEC_BUILTIN_VEC_SUMS },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_xor", ALTIVEC_BUILTIN_VEC_XOR },
-
-  { MASK_VSX, CODE_FOR_nothing, "__builtin_vec_mul", VSX_BUILTIN_VEC_MUL },
-  { MASK_VSX, CODE_FOR_nothing, "__builtin_vec_div", VSX_BUILTIN_VEC_DIV },
-
-  { 0, CODE_FOR_paired_divv2sf3, "__builtin_paired_divv2sf3", PAIRED_BUILTIN_DIVV2SF3 },
-  { 0, CODE_FOR_paired_addv2sf3, "__builtin_paired_addv2sf3", PAIRED_BUILTIN_ADDV2SF3 },
-  { 0, CODE_FOR_paired_subv2sf3, "__builtin_paired_subv2sf3", PAIRED_BUILTIN_SUBV2SF3 },
-  { 0, CODE_FOR_paired_mulv2sf3, "__builtin_paired_mulv2sf3", PAIRED_BUILTIN_MULV2SF3 },
-  { 0, CODE_FOR_paired_muls0, "__builtin_paired_muls0", PAIRED_BUILTIN_MULS0 },
-  { 0, CODE_FOR_paired_muls1, "__builtin_paired_muls1", PAIRED_BUILTIN_MULS1 },
-  { 0, CODE_FOR_paired_merge00, "__builtin_paired_merge00", PAIRED_BUILTIN_MERGE00 },
-  { 0, CODE_FOR_paired_merge01, "__builtin_paired_merge01", PAIRED_BUILTIN_MERGE01 },
-  { 0, CODE_FOR_paired_merge10, "__builtin_paired_merge10", PAIRED_BUILTIN_MERGE10 },
-  { 0, CODE_FOR_paired_merge11, "__builtin_paired_merge11", PAIRED_BUILTIN_MERGE11 },
-
-  /* Place holder, leave as first spe builtin.  */
-  { 0, CODE_FOR_addv2si3, "__builtin_spe_evaddw", SPE_BUILTIN_EVADDW },
-  { 0, CODE_FOR_andv2si3, "__builtin_spe_evand", SPE_BUILTIN_EVAND },
-  { 0, CODE_FOR_spe_evandc, "__builtin_spe_evandc", SPE_BUILTIN_EVANDC },
-  { 0, CODE_FOR_divv2si3, "__builtin_spe_evdivws", SPE_BUILTIN_EVDIVWS },
-  { 0, CODE_FOR_spe_evdivwu, "__builtin_spe_evdivwu", SPE_BUILTIN_EVDIVWU },
-  { 0, CODE_FOR_spe_eveqv, "__builtin_spe_eveqv", SPE_BUILTIN_EVEQV },
-  { 0, CODE_FOR_spe_evfsadd, "__builtin_spe_evfsadd", SPE_BUILTIN_EVFSADD },
-  { 0, CODE_FOR_spe_evfsdiv, "__builtin_spe_evfsdiv", SPE_BUILTIN_EVFSDIV },
-  { 0, CODE_FOR_spe_evfsmul, "__builtin_spe_evfsmul", SPE_BUILTIN_EVFSMUL },
-  { 0, CODE_FOR_spe_evfssub, "__builtin_spe_evfssub", SPE_BUILTIN_EVFSSUB },
-  { 0, CODE_FOR_spe_evmergehi, "__builtin_spe_evmergehi", SPE_BUILTIN_EVMERGEHI },
-  { 0, CODE_FOR_spe_evmergehilo, "__builtin_spe_evmergehilo", SPE_BUILTIN_EVMERGEHILO },
-  { 0, CODE_FOR_spe_evmergelo, "__builtin_spe_evmergelo", SPE_BUILTIN_EVMERGELO },
-  { 0, CODE_FOR_spe_evmergelohi, "__builtin_spe_evmergelohi", SPE_BUILTIN_EVMERGELOHI },
-  { 0, CODE_FOR_spe_evmhegsmfaa, "__builtin_spe_evmhegsmfaa", SPE_BUILTIN_EVMHEGSMFAA },
-  { 0, CODE_FOR_spe_evmhegsmfan, "__builtin_spe_evmhegsmfan", SPE_BUILTIN_EVMHEGSMFAN },
-  { 0, CODE_FOR_spe_evmhegsmiaa, "__builtin_spe_evmhegsmiaa", SPE_BUILTIN_EVMHEGSMIAA },
-  { 0, CODE_FOR_spe_evmhegsmian, "__builtin_spe_evmhegsmian", SPE_BUILTIN_EVMHEGSMIAN },
-  { 0, CODE_FOR_spe_evmhegumiaa, "__builtin_spe_evmhegumiaa", SPE_BUILTIN_EVMHEGUMIAA },
-  { 0, CODE_FOR_spe_evmhegumian, "__builtin_spe_evmhegumian", SPE_BUILTIN_EVMHEGUMIAN },
-  { 0, CODE_FOR_spe_evmhesmf, "__builtin_spe_evmhesmf", SPE_BUILTIN_EVMHESMF },
-  { 0, CODE_FOR_spe_evmhesmfa, "__builtin_spe_evmhesmfa", SPE_BUILTIN_EVMHESMFA },
-  { 0, CODE_FOR_spe_evmhesmfaaw, "__builtin_spe_evmhesmfaaw", SPE_BUILTIN_EVMHESMFAAW },
-  { 0, CODE_FOR_spe_evmhesmfanw, "__builtin_spe_evmhesmfanw", SPE_BUILTIN_EVMHESMFANW },
-  { 0, CODE_FOR_spe_evmhesmi, "__builtin_spe_evmhesmi", SPE_BUILTIN_EVMHESMI },
-  { 0, CODE_FOR_spe_evmhesmia, "__builtin_spe_evmhesmia", SPE_BUILTIN_EVMHESMIA },
-  { 0, CODE_FOR_spe_evmhesmiaaw, "__builtin_spe_evmhesmiaaw", SPE_BUILTIN_EVMHESMIAAW },
-  { 0, CODE_FOR_spe_evmhesmianw, "__builtin_spe_evmhesmianw", SPE_BUILTIN_EVMHESMIANW },
-  { 0, CODE_FOR_spe_evmhessf, "__builtin_spe_evmhessf", SPE_BUILTIN_EVMHESSF },
-  { 0, CODE_FOR_spe_evmhessfa, "__builtin_spe_evmhessfa", SPE_BUILTIN_EVMHESSFA },
-  { 0, CODE_FOR_spe_evmhessfaaw, "__builtin_spe_evmhessfaaw", SPE_BUILTIN_EVMHESSFAAW },
-  { 0, CODE_FOR_spe_evmhessfanw, "__builtin_spe_evmhessfanw", SPE_BUILTIN_EVMHESSFANW },
-  { 0, CODE_FOR_spe_evmhessiaaw, "__builtin_spe_evmhessiaaw", SPE_BUILTIN_EVMHESSIAAW },
-  { 0, CODE_FOR_spe_evmhessianw, "__builtin_spe_evmhessianw", SPE_BUILTIN_EVMHESSIANW },
-  { 0, CODE_FOR_spe_evmheumi, "__builtin_spe_evmheumi", SPE_BUILTIN_EVMHEUMI },
-  { 0, CODE_FOR_spe_evmheumia, "__builtin_spe_evmheumia", SPE_BUILTIN_EVMHEUMIA },
-  { 0, CODE_FOR_spe_evmheumiaaw, "__builtin_spe_evmheumiaaw", SPE_BUILTIN_EVMHEUMIAAW },
-  { 0, CODE_FOR_spe_evmheumianw, "__builtin_spe_evmheumianw", SPE_BUILTIN_EVMHEUMIANW },
-  { 0, CODE_FOR_spe_evmheusiaaw, "__builtin_spe_evmheusiaaw", SPE_BUILTIN_EVMHEUSIAAW },
-  { 0, CODE_FOR_spe_evmheusianw, "__builtin_spe_evmheusianw", SPE_BUILTIN_EVMHEUSIANW },
-  { 0, CODE_FOR_spe_evmhogsmfaa, "__builtin_spe_evmhogsmfaa", SPE_BUILTIN_EVMHOGSMFAA },
-  { 0, CODE_FOR_spe_evmhogsmfan, "__builtin_spe_evmhogsmfan", SPE_BUILTIN_EVMHOGSMFAN },
-  { 0, CODE_FOR_spe_evmhogsmiaa, "__builtin_spe_evmhogsmiaa", SPE_BUILTIN_EVMHOGSMIAA },
-  { 0, CODE_FOR_spe_evmhogsmian, "__builtin_spe_evmhogsmian", SPE_BUILTIN_EVMHOGSMIAN },
-  { 0, CODE_FOR_spe_evmhogumiaa, "__builtin_spe_evmhogumiaa", SPE_BUILTIN_EVMHOGUMIAA },
-  { 0, CODE_FOR_spe_evmhogumian, "__builtin_spe_evmhogumian", SPE_BUILTIN_EVMHOGUMIAN },
-  { 0, CODE_FOR_spe_evmhosmf, "__builtin_spe_evmhosmf", SPE_BUILTIN_EVMHOSMF },
-  { 0, CODE_FOR_spe_evmhosmfa, "__builtin_spe_evmhosmfa", SPE_BUILTIN_EVMHOSMFA },
-  { 0, CODE_FOR_spe_evmhosmfaaw, "__builtin_spe_evmhosmfaaw", SPE_BUILTIN_EVMHOSMFAAW },
-  { 0, CODE_FOR_spe_evmhosmfanw, "__builtin_spe_evmhosmfanw", SPE_BUILTIN_EVMHOSMFANW },
-  { 0, CODE_FOR_spe_evmhosmi, "__builtin_spe_evmhosmi", SPE_BUILTIN_EVMHOSMI },
-  { 0, CODE_FOR_spe_evmhosmia, "__builtin_spe_evmhosmia", SPE_BUILTIN_EVMHOSMIA },
-  { 0, CODE_FOR_spe_evmhosmiaaw, "__builtin_spe_evmhosmiaaw", SPE_BUILTIN_EVMHOSMIAAW },
-  { 0, CODE_FOR_spe_evmhosmianw, "__builtin_spe_evmhosmianw", SPE_BUILTIN_EVMHOSMIANW },
-  { 0, CODE_FOR_spe_evmhossf, "__builtin_spe_evmhossf", SPE_BUILTIN_EVMHOSSF },
-  { 0, CODE_FOR_spe_evmhossfa, "__builtin_spe_evmhossfa", SPE_BUILTIN_EVMHOSSFA },
-  { 0, CODE_FOR_spe_evmhossfaaw, "__builtin_spe_evmhossfaaw", SPE_BUILTIN_EVMHOSSFAAW },
-  { 0, CODE_FOR_spe_evmhossfanw, "__builtin_spe_evmhossfanw", SPE_BUILTIN_EVMHOSSFANW },
-  { 0, CODE_FOR_spe_evmhossiaaw, "__builtin_spe_evmhossiaaw", SPE_BUILTIN_EVMHOSSIAAW },
-  { 0, CODE_FOR_spe_evmhossianw, "__builtin_spe_evmhossianw", SPE_BUILTIN_EVMHOSSIANW },
-  { 0, CODE_FOR_spe_evmhoumi, "__builtin_spe_evmhoumi", SPE_BUILTIN_EVMHOUMI },
-  { 0, CODE_FOR_spe_evmhoumia, "__builtin_spe_evmhoumia", SPE_BUILTIN_EVMHOUMIA },
-  { 0, CODE_FOR_spe_evmhoumiaaw, "__builtin_spe_evmhoumiaaw", SPE_BUILTIN_EVMHOUMIAAW },
-  { 0, CODE_FOR_spe_evmhoumianw, "__builtin_spe_evmhoumianw", SPE_BUILTIN_EVMHOUMIANW },
-  { 0, CODE_FOR_spe_evmhousiaaw, "__builtin_spe_evmhousiaaw", SPE_BUILTIN_EVMHOUSIAAW },
-  { 0, CODE_FOR_spe_evmhousianw, "__builtin_spe_evmhousianw", SPE_BUILTIN_EVMHOUSIANW },
-  { 0, CODE_FOR_spe_evmwhsmf, "__builtin_spe_evmwhsmf", SPE_BUILTIN_EVMWHSMF },
-  { 0, CODE_FOR_spe_evmwhsmfa, "__builtin_spe_evmwhsmfa", SPE_BUILTIN_EVMWHSMFA },
-  { 0, CODE_FOR_spe_evmwhsmi, "__builtin_spe_evmwhsmi", SPE_BUILTIN_EVMWHSMI },
-  { 0, CODE_FOR_spe_evmwhsmia, "__builtin_spe_evmwhsmia", SPE_BUILTIN_EVMWHSMIA },
-  { 0, CODE_FOR_spe_evmwhssf, "__builtin_spe_evmwhssf", SPE_BUILTIN_EVMWHSSF },
-  { 0, CODE_FOR_spe_evmwhssfa, "__builtin_spe_evmwhssfa", SPE_BUILTIN_EVMWHSSFA },
-  { 0, CODE_FOR_spe_evmwhumi, "__builtin_spe_evmwhumi", SPE_BUILTIN_EVMWHUMI },
-  { 0, CODE_FOR_spe_evmwhumia, "__builtin_spe_evmwhumia", SPE_BUILTIN_EVMWHUMIA },
-  { 0, CODE_FOR_spe_evmwlsmiaaw, "__builtin_spe_evmwlsmiaaw", SPE_BUILTIN_EVMWLSMIAAW },
-  { 0, CODE_FOR_spe_evmwlsmianw, "__builtin_spe_evmwlsmianw", SPE_BUILTIN_EVMWLSMIANW },
-  { 0, CODE_FOR_spe_evmwlssiaaw, "__builtin_spe_evmwlssiaaw", SPE_BUILTIN_EVMWLSSIAAW },
-  { 0, CODE_FOR_spe_evmwlssianw, "__builtin_spe_evmwlssianw", SPE_BUILTIN_EVMWLSSIANW },
-  { 0, CODE_FOR_spe_evmwlumi, "__builtin_spe_evmwlumi", SPE_BUILTIN_EVMWLUMI },
-  { 0, CODE_FOR_spe_evmwlumia, "__builtin_spe_evmwlumia", SPE_BUILTIN_EVMWLUMIA },
-  { 0, CODE_FOR_spe_evmwlumiaaw, "__builtin_spe_evmwlumiaaw", SPE_BUILTIN_EVMWLUMIAAW },
-  { 0, CODE_FOR_spe_evmwlumianw, "__builtin_spe_evmwlumianw", SPE_BUILTIN_EVMWLUMIANW },
-  { 0, CODE_FOR_spe_evmwlusiaaw, "__builtin_spe_evmwlusiaaw", SPE_BUILTIN_EVMWLUSIAAW },
-  { 0, CODE_FOR_spe_evmwlusianw, "__builtin_spe_evmwlusianw", SPE_BUILTIN_EVMWLUSIANW },
-  { 0, CODE_FOR_spe_evmwsmf, "__builtin_spe_evmwsmf", SPE_BUILTIN_EVMWSMF },
-  { 0, CODE_FOR_spe_evmwsmfa, "__builtin_spe_evmwsmfa", SPE_BUILTIN_EVMWSMFA },
-  { 0, CODE_FOR_spe_evmwsmfaa, "__builtin_spe_evmwsmfaa", SPE_BUILTIN_EVMWSMFAA },
-  { 0, CODE_FOR_spe_evmwsmfan, "__builtin_spe_evmwsmfan", SPE_BUILTIN_EVMWSMFAN },
-  { 0, CODE_FOR_spe_evmwsmi, "__builtin_spe_evmwsmi", SPE_BUILTIN_EVMWSMI },
-  { 0, CODE_FOR_spe_evmwsmia, "__builtin_spe_evmwsmia", SPE_BUILTIN_EVMWSMIA },
-  { 0, CODE_FOR_spe_evmwsmiaa, "__builtin_spe_evmwsmiaa", SPE_BUILTIN_EVMWSMIAA },
-  { 0, CODE_FOR_spe_evmwsmian, "__builtin_spe_evmwsmian", SPE_BUILTIN_EVMWSMIAN },
-  { 0, CODE_FOR_spe_evmwssf, "__builtin_spe_evmwssf", SPE_BUILTIN_EVMWSSF },
-  { 0, CODE_FOR_spe_evmwssfa, "__builtin_spe_evmwssfa", SPE_BUILTIN_EVMWSSFA },
-  { 0, CODE_FOR_spe_evmwssfaa, "__builtin_spe_evmwssfaa", SPE_BUILTIN_EVMWSSFAA },
-  { 0, CODE_FOR_spe_evmwssfan, "__builtin_spe_evmwssfan", SPE_BUILTIN_EVMWSSFAN },
-  { 0, CODE_FOR_spe_evmwumi, "__builtin_spe_evmwumi", SPE_BUILTIN_EVMWUMI },
-  { 0, CODE_FOR_spe_evmwumia, "__builtin_spe_evmwumia", SPE_BUILTIN_EVMWUMIA },
-  { 0, CODE_FOR_spe_evmwumiaa, "__builtin_spe_evmwumiaa", SPE_BUILTIN_EVMWUMIAA },
-  { 0, CODE_FOR_spe_evmwumian, "__builtin_spe_evmwumian", SPE_BUILTIN_EVMWUMIAN },
-  { 0, CODE_FOR_spe_evnand, "__builtin_spe_evnand", SPE_BUILTIN_EVNAND },
-  { 0, CODE_FOR_spe_evnor, "__builtin_spe_evnor", SPE_BUILTIN_EVNOR },
-  { 0, CODE_FOR_spe_evor, "__builtin_spe_evor", SPE_BUILTIN_EVOR },
-  { 0, CODE_FOR_spe_evorc, "__builtin_spe_evorc", SPE_BUILTIN_EVORC },
-  { 0, CODE_FOR_spe_evrlw, "__builtin_spe_evrlw", SPE_BUILTIN_EVRLW },
-  { 0, CODE_FOR_spe_evslw, "__builtin_spe_evslw", SPE_BUILTIN_EVSLW },
-  { 0, CODE_FOR_spe_evsrws, "__builtin_spe_evsrws", SPE_BUILTIN_EVSRWS },
-  { 0, CODE_FOR_spe_evsrwu, "__builtin_spe_evsrwu", SPE_BUILTIN_EVSRWU },
-  { 0, CODE_FOR_subv2si3, "__builtin_spe_evsubfw", SPE_BUILTIN_EVSUBFW },
-
-  /* SPE binary operations expecting a 5-bit unsigned literal.  */
-  { 0, CODE_FOR_spe_evaddiw, "__builtin_spe_evaddiw", SPE_BUILTIN_EVADDIW },
-
-  { 0, CODE_FOR_spe_evrlwi, "__builtin_spe_evrlwi", SPE_BUILTIN_EVRLWI },
-  { 0, CODE_FOR_spe_evslwi, "__builtin_spe_evslwi", SPE_BUILTIN_EVSLWI },
-  { 0, CODE_FOR_spe_evsrwis, "__builtin_spe_evsrwis", SPE_BUILTIN_EVSRWIS },
-  { 0, CODE_FOR_spe_evsrwiu, "__builtin_spe_evsrwiu", SPE_BUILTIN_EVSRWIU },
-  { 0, CODE_FOR_spe_evsubifw, "__builtin_spe_evsubifw", SPE_BUILTIN_EVSUBIFW },
-  { 0, CODE_FOR_spe_evmwhssfaa, "__builtin_spe_evmwhssfaa", SPE_BUILTIN_EVMWHSSFAA },
-  { 0, CODE_FOR_spe_evmwhssmaa, "__builtin_spe_evmwhssmaa", SPE_BUILTIN_EVMWHSSMAA },
-  { 0, CODE_FOR_spe_evmwhsmfaa, "__builtin_spe_evmwhsmfaa", SPE_BUILTIN_EVMWHSMFAA },
-  { 0, CODE_FOR_spe_evmwhsmiaa, "__builtin_spe_evmwhsmiaa", SPE_BUILTIN_EVMWHSMIAA },
-  { 0, CODE_FOR_spe_evmwhusiaa, "__builtin_spe_evmwhusiaa", SPE_BUILTIN_EVMWHUSIAA },
-  { 0, CODE_FOR_spe_evmwhumiaa, "__builtin_spe_evmwhumiaa", SPE_BUILTIN_EVMWHUMIAA },
-  { 0, CODE_FOR_spe_evmwhssfan, "__builtin_spe_evmwhssfan", SPE_BUILTIN_EVMWHSSFAN },
-  { 0, CODE_FOR_spe_evmwhssian, "__builtin_spe_evmwhssian", SPE_BUILTIN_EVMWHSSIAN },
-  { 0, CODE_FOR_spe_evmwhsmfan, "__builtin_spe_evmwhsmfan", SPE_BUILTIN_EVMWHSMFAN },
-  { 0, CODE_FOR_spe_evmwhsmian, "__builtin_spe_evmwhsmian", SPE_BUILTIN_EVMWHSMIAN },
-  { 0, CODE_FOR_spe_evmwhusian, "__builtin_spe_evmwhusian", SPE_BUILTIN_EVMWHUSIAN },
-  { 0, CODE_FOR_spe_evmwhumian, "__builtin_spe_evmwhumian", SPE_BUILTIN_EVMWHUMIAN },
-  { 0, CODE_FOR_spe_evmwhgssfaa, "__builtin_spe_evmwhgssfaa", SPE_BUILTIN_EVMWHGSSFAA },
-  { 0, CODE_FOR_spe_evmwhgsmfaa, "__builtin_spe_evmwhgsmfaa", SPE_BUILTIN_EVMWHGSMFAA },
-  { 0, CODE_FOR_spe_evmwhgsmiaa, "__builtin_spe_evmwhgsmiaa", SPE_BUILTIN_EVMWHGSMIAA },
-  { 0, CODE_FOR_spe_evmwhgumiaa, "__builtin_spe_evmwhgumiaa", SPE_BUILTIN_EVMWHGUMIAA },
-  { 0, CODE_FOR_spe_evmwhgssfan, "__builtin_spe_evmwhgssfan", SPE_BUILTIN_EVMWHGSSFAN },
-  { 0, CODE_FOR_spe_evmwhgsmfan, "__builtin_spe_evmwhgsmfan", SPE_BUILTIN_EVMWHGSMFAN },
-  { 0, CODE_FOR_spe_evmwhgsmian, "__builtin_spe_evmwhgsmian", SPE_BUILTIN_EVMWHGSMIAN },
-  { 0, CODE_FOR_spe_evmwhgumian, "__builtin_spe_evmwhgumian", SPE_BUILTIN_EVMWHGUMIAN },
-  { 0, CODE_FOR_spe_brinc, "__builtin_spe_brinc", SPE_BUILTIN_BRINC },
-
-  /* Place-holder.  Leave as last binary SPE builtin.  */
-  { 0, CODE_FOR_xorv2si3, "__builtin_spe_evxor", SPE_BUILTIN_EVXOR }
+#include "rs6000-builtin.def"
 };
+
+#undef RS6000_BUILTIN_1
+#undef RS6000_BUILTIN_2
+#undef RS6000_BUILTIN_3
+#undef RS6000_BUILTIN_A
+#undef RS6000_BUILTIN_D
+#undef RS6000_BUILTIN_E
+#undef RS6000_BUILTIN_P
+#undef RS6000_BUILTIN_Q
+#undef RS6000_BUILTIN_S
+#undef RS6000_BUILTIN_X
+
+#define RS6000_BUILTIN_1(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_2(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_3(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_E(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE) \
+  { MASK, ICODE, NAME, ENUM },
+
+#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_S(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
 
 /* AltiVec predicates.  */
 
-struct builtin_description_predicates
+static const struct builtin_description bdesc_altivec_preds[] =
 {
-  const unsigned int mask;
-  const enum insn_code icode;
-  const char *const name;
-  const enum rs6000_builtins code;
-};
-
-static const struct builtin_description_predicates bdesc_altivec_preds[] =
-{
-  { MASK_ALTIVEC, CODE_FOR_altivec_vcmpbfp_p, "__builtin_altivec_vcmpbfp_p",
-    ALTIVEC_BUILTIN_VCMPBFP_P },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_vector_eq_v4sf_p,
-    "__builtin_altivec_vcmpeqfp_p", ALTIVEC_BUILTIN_VCMPEQFP_P },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_vector_ge_v4sf_p,
-    "__builtin_altivec_vcmpgefp_p", ALTIVEC_BUILTIN_VCMPGEFP_P },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_vector_gt_v4sf_p,
-    "__builtin_altivec_vcmpgtfp_p", ALTIVEC_BUILTIN_VCMPGTFP_P },
-  { MASK_ALTIVEC, CODE_FOR_vector_eq_v4si_p, "__builtin_altivec_vcmpequw_p",
-    ALTIVEC_BUILTIN_VCMPEQUW_P },
-  { MASK_ALTIVEC, CODE_FOR_vector_gt_v4si_p, "__builtin_altivec_vcmpgtsw_p",
-    ALTIVEC_BUILTIN_VCMPGTSW_P },
-  { MASK_ALTIVEC, CODE_FOR_vector_gtu_v4si_p, "__builtin_altivec_vcmpgtuw_p",
-    ALTIVEC_BUILTIN_VCMPGTUW_P },
-  { MASK_ALTIVEC, CODE_FOR_vector_eq_v8hi_p, "__builtin_altivec_vcmpequh_p",
-    ALTIVEC_BUILTIN_VCMPEQUH_P },
-  { MASK_ALTIVEC, CODE_FOR_vector_gt_v8hi_p, "__builtin_altivec_vcmpgtsh_p",
-    ALTIVEC_BUILTIN_VCMPGTSH_P },
-  { MASK_ALTIVEC, CODE_FOR_vector_gtu_v8hi_p, "__builtin_altivec_vcmpgtuh_p",
-    ALTIVEC_BUILTIN_VCMPGTUH_P },
-  { MASK_ALTIVEC, CODE_FOR_vector_eq_v16qi_p, "__builtin_altivec_vcmpequb_p",
-    ALTIVEC_BUILTIN_VCMPEQUB_P },
-  { MASK_ALTIVEC, CODE_FOR_vector_gt_v16qi_p, "__builtin_altivec_vcmpgtsb_p",
-    ALTIVEC_BUILTIN_VCMPGTSB_P },
-  { MASK_ALTIVEC, CODE_FOR_vector_gtu_v16qi_p, "__builtin_altivec_vcmpgtub_p",
-    ALTIVEC_BUILTIN_VCMPGTUB_P },
-
-  { MASK_VSX, CODE_FOR_vector_eq_v4sf_p, "__builtin_vsx_xvcmpeqsp_p",
-    VSX_BUILTIN_XVCMPEQSP_P },
-  { MASK_VSX, CODE_FOR_vector_ge_v4sf_p, "__builtin_vsx_xvcmpgesp_p",
-    VSX_BUILTIN_XVCMPGESP_P },
-  { MASK_VSX, CODE_FOR_vector_gt_v4sf_p, "__builtin_vsx_xvcmpgtsp_p",
-    VSX_BUILTIN_XVCMPGTSP_P },
-  { MASK_VSX, CODE_FOR_vector_eq_v2df_p, "__builtin_vsx_xvcmpeqdp_p",
-    VSX_BUILTIN_XVCMPEQDP_P },
-  { MASK_VSX, CODE_FOR_vector_ge_v2df_p, "__builtin_vsx_xvcmpgedp_p",
-    VSX_BUILTIN_XVCMPGEDP_P },
-  { MASK_VSX, CODE_FOR_vector_gt_v2df_p, "__builtin_vsx_xvcmpgtdp_p",
-    VSX_BUILTIN_XVCMPGTDP_P },
-
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_vcmpeq_p",
-    ALTIVEC_BUILTIN_VCMPEQ_P },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_vcmpgt_p",
-    ALTIVEC_BUILTIN_VCMPGT_P },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_vcmpge_p",
-    ALTIVEC_BUILTIN_VCMPGE_P }
+#include "rs6000-builtin.def"
 };
 
 /* SPE predicates.  */
-static struct builtin_description bdesc_spe_predicates[] =
+#undef RS6000_BUILTIN_1
+#undef RS6000_BUILTIN_2
+#undef RS6000_BUILTIN_3
+#undef RS6000_BUILTIN_A
+#undef RS6000_BUILTIN_D
+#undef RS6000_BUILTIN_E
+#undef RS6000_BUILTIN_P
+#undef RS6000_BUILTIN_Q
+#undef RS6000_BUILTIN_S
+#undef RS6000_BUILTIN_X
+
+#define RS6000_BUILTIN_1(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_2(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_3(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_E(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_S(ENUM, NAME, MASK, ATTR, ICODE) \
+  { MASK, ICODE, NAME, ENUM },
+
+#define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
+
+static const struct builtin_description bdesc_spe_predicates[] =
 {
-  /* Place-holder.  Leave as first.  */
-  { 0, CODE_FOR_spe_evcmpeq, "__builtin_spe_evcmpeq", SPE_BUILTIN_EVCMPEQ },
-  { 0, CODE_FOR_spe_evcmpgts, "__builtin_spe_evcmpgts", SPE_BUILTIN_EVCMPGTS },
-  { 0, CODE_FOR_spe_evcmpgtu, "__builtin_spe_evcmpgtu", SPE_BUILTIN_EVCMPGTU },
-  { 0, CODE_FOR_spe_evcmplts, "__builtin_spe_evcmplts", SPE_BUILTIN_EVCMPLTS },
-  { 0, CODE_FOR_spe_evcmpltu, "__builtin_spe_evcmpltu", SPE_BUILTIN_EVCMPLTU },
-  { 0, CODE_FOR_spe_evfscmpeq, "__builtin_spe_evfscmpeq", SPE_BUILTIN_EVFSCMPEQ },
-  { 0, CODE_FOR_spe_evfscmpgt, "__builtin_spe_evfscmpgt", SPE_BUILTIN_EVFSCMPGT },
-  { 0, CODE_FOR_spe_evfscmplt, "__builtin_spe_evfscmplt", SPE_BUILTIN_EVFSCMPLT },
-  { 0, CODE_FOR_spe_evfststeq, "__builtin_spe_evfststeq", SPE_BUILTIN_EVFSTSTEQ },
-  { 0, CODE_FOR_spe_evfststgt, "__builtin_spe_evfststgt", SPE_BUILTIN_EVFSTSTGT },
-  /* Place-holder.  Leave as last.  */
-  { 0, CODE_FOR_spe_evfststlt, "__builtin_spe_evfststlt", SPE_BUILTIN_EVFSTSTLT },
+#include "rs6000-builtin.def"
 };
 
 /* SPE evsel predicates.  */
-static struct builtin_description bdesc_spe_evsel[] =
+#undef RS6000_BUILTIN_1
+#undef RS6000_BUILTIN_2
+#undef RS6000_BUILTIN_3
+#undef RS6000_BUILTIN_A
+#undef RS6000_BUILTIN_D
+#undef RS6000_BUILTIN_E
+#undef RS6000_BUILTIN_P
+#undef RS6000_BUILTIN_Q
+#undef RS6000_BUILTIN_S
+#undef RS6000_BUILTIN_X
+
+#define RS6000_BUILTIN_1(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_2(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_3(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_E(ENUM, NAME, MASK, ATTR, ICODE) \
+  { MASK, ICODE, NAME, ENUM },
+
+#define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_S(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
+
+static const struct builtin_description bdesc_spe_evsel[] =
 {
-  /* Place-holder.  Leave as first.  */
-  { 0, CODE_FOR_spe_evcmpgts, "__builtin_spe_evsel_gts", SPE_BUILTIN_EVSEL_CMPGTS },
-  { 0, CODE_FOR_spe_evcmpgtu, "__builtin_spe_evsel_gtu", SPE_BUILTIN_EVSEL_CMPGTU },
-  { 0, CODE_FOR_spe_evcmplts, "__builtin_spe_evsel_lts", SPE_BUILTIN_EVSEL_CMPLTS },
-  { 0, CODE_FOR_spe_evcmpltu, "__builtin_spe_evsel_ltu", SPE_BUILTIN_EVSEL_CMPLTU },
-  { 0, CODE_FOR_spe_evcmpeq, "__builtin_spe_evsel_eq", SPE_BUILTIN_EVSEL_CMPEQ },
-  { 0, CODE_FOR_spe_evfscmpgt, "__builtin_spe_evsel_fsgt", SPE_BUILTIN_EVSEL_FSCMPGT },
-  { 0, CODE_FOR_spe_evfscmplt, "__builtin_spe_evsel_fslt", SPE_BUILTIN_EVSEL_FSCMPLT },
-  { 0, CODE_FOR_spe_evfscmpeq, "__builtin_spe_evsel_fseq", SPE_BUILTIN_EVSEL_FSCMPEQ },
-  { 0, CODE_FOR_spe_evfststgt, "__builtin_spe_evsel_fststgt", SPE_BUILTIN_EVSEL_FSTSTGT },
-  { 0, CODE_FOR_spe_evfststlt, "__builtin_spe_evsel_fststlt", SPE_BUILTIN_EVSEL_FSTSTLT },
-  /* Place-holder.  Leave as last.  */
-  { 0, CODE_FOR_spe_evfststeq, "__builtin_spe_evsel_fststeq", SPE_BUILTIN_EVSEL_FSTSTEQ },
+#include "rs6000-builtin.def"
 };
 
 /* PAIRED predicates.  */
+#undef RS6000_BUILTIN_1
+#undef RS6000_BUILTIN_2
+#undef RS6000_BUILTIN_3
+#undef RS6000_BUILTIN_A
+#undef RS6000_BUILTIN_D
+#undef RS6000_BUILTIN_E
+#undef RS6000_BUILTIN_P
+#undef RS6000_BUILTIN_Q
+#undef RS6000_BUILTIN_S
+#undef RS6000_BUILTIN_X
+
+#define RS6000_BUILTIN_1(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_2(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_3(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_E(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE) \
+  { MASK, ICODE, NAME, ENUM },
+
+#define RS6000_BUILTIN_S(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
+
 static const struct builtin_description bdesc_paired_preds[] =
 {
-  /* Place-holder.  Leave as first.  */
-  { 0, CODE_FOR_paired_cmpu0, "__builtin_paired_cmpu0", PAIRED_BUILTIN_CMPU0 },
-  /* Place-holder.  Leave as last.  */
-  { 0, CODE_FOR_paired_cmpu1, "__builtin_paired_cmpu1", PAIRED_BUILTIN_CMPU1 },
+#include "rs6000-builtin.def"
 };
 
 /* ABS* operations.  */
 
+#undef RS6000_BUILTIN_1
+#undef RS6000_BUILTIN_2
+#undef RS6000_BUILTIN_3
+#undef RS6000_BUILTIN_A
+#undef RS6000_BUILTIN_D
+#undef RS6000_BUILTIN_E
+#undef RS6000_BUILTIN_P
+#undef RS6000_BUILTIN_Q
+#undef RS6000_BUILTIN_S
+#undef RS6000_BUILTIN_X
+
+#define RS6000_BUILTIN_1(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_2(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_3(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE) \
+  { MASK, ICODE, NAME, ENUM },
+
+#define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_E(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_S(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
+
 static const struct builtin_description bdesc_abs[] =
 {
-  { MASK_ALTIVEC, CODE_FOR_absv4si2, "__builtin_altivec_abs_v4si", ALTIVEC_BUILTIN_ABS_V4SI },
-  { MASK_ALTIVEC, CODE_FOR_absv8hi2, "__builtin_altivec_abs_v8hi", ALTIVEC_BUILTIN_ABS_V8HI },
-  { MASK_ALTIVEC, CODE_FOR_absv4sf2, "__builtin_altivec_abs_v4sf", ALTIVEC_BUILTIN_ABS_V4SF },
-  { MASK_ALTIVEC, CODE_FOR_absv16qi2, "__builtin_altivec_abs_v16qi", ALTIVEC_BUILTIN_ABS_V16QI },
-  { MASK_ALTIVEC, CODE_FOR_altivec_abss_v4si, "__builtin_altivec_abss_v4si", ALTIVEC_BUILTIN_ABSS_V4SI },
-  { MASK_ALTIVEC, CODE_FOR_altivec_abss_v8hi, "__builtin_altivec_abss_v8hi", ALTIVEC_BUILTIN_ABSS_V8HI },
-  { MASK_ALTIVEC, CODE_FOR_altivec_abss_v16qi, "__builtin_altivec_abss_v16qi", ALTIVEC_BUILTIN_ABSS_V16QI },
-  { MASK_VSX, CODE_FOR_absv2df2, "__builtin_vsx_xvabsdp", VSX_BUILTIN_XVABSDP },
-  { MASK_VSX, CODE_FOR_vsx_nabsv2df2, "__builtin_vsx_xvnabsdp", VSX_BUILTIN_XVNABSDP },
-  { MASK_VSX, CODE_FOR_absv4sf2, "__builtin_vsx_xvabssp", VSX_BUILTIN_XVABSSP },
-  { MASK_VSX, CODE_FOR_vsx_nabsv4sf2, "__builtin_vsx_xvnabssp", VSX_BUILTIN_XVNABSSP },
+#include "rs6000-builtin.def"
 };
 
 /* Simple unary operations: VECb = foo (unsigned literal) or VECb =
    foo (VECa).  */
 
-static struct builtin_description bdesc_1arg[] =
+#undef RS6000_BUILTIN_1
+#undef RS6000_BUILTIN_2
+#undef RS6000_BUILTIN_3
+#undef RS6000_BUILTIN_A
+#undef RS6000_BUILTIN_E
+#undef RS6000_BUILTIN_D
+#undef RS6000_BUILTIN_P
+#undef RS6000_BUILTIN_Q
+#undef RS6000_BUILTIN_S
+#undef RS6000_BUILTIN_X
+
+#define RS6000_BUILTIN_1(ENUM, NAME, MASK, ATTR, ICODE) \
+  { MASK, ICODE, NAME, ENUM },
+
+#define RS6000_BUILTIN_2(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_3(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_E(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_S(ENUM, NAME, MASK, ATTR, ICODE)
+#define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
+
+static const struct builtin_description bdesc_1arg[] =
 {
-  { MASK_ALTIVEC, CODE_FOR_altivec_vexptefp, "__builtin_altivec_vexptefp", ALTIVEC_BUILTIN_VEXPTEFP },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vlogefp, "__builtin_altivec_vlogefp", ALTIVEC_BUILTIN_VLOGEFP },
-  { MASK_ALTIVEC, CODE_FOR_rev4sf2, "__builtin_altivec_vrefp", ALTIVEC_BUILTIN_VREFP },
-  { MASK_ALTIVEC, CODE_FOR_vector_floorv4sf2, "__builtin_altivec_vrfim", ALTIVEC_BUILTIN_VRFIM },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vrfin, "__builtin_altivec_vrfin", ALTIVEC_BUILTIN_VRFIN },
-  { MASK_ALTIVEC, CODE_FOR_vector_ceilv4sf2, "__builtin_altivec_vrfip", ALTIVEC_BUILTIN_VRFIP },
-  { MASK_ALTIVEC, CODE_FOR_vector_btruncv4sf2, "__builtin_altivec_vrfiz", ALTIVEC_BUILTIN_VRFIZ },
-  { MASK_ALTIVEC, CODE_FOR_rsqrtv4sf2, "__builtin_altivec_vrsqrtfp", ALTIVEC_BUILTIN_VRSQRTFP },
-  { MASK_ALTIVEC, CODE_FOR_rsqrtev4sf2, "__builtin_altivec_vrsqrtefp", ALTIVEC_BUILTIN_VRSQRTEFP },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vspltisb, "__builtin_altivec_vspltisb", ALTIVEC_BUILTIN_VSPLTISB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vspltish, "__builtin_altivec_vspltish", ALTIVEC_BUILTIN_VSPLTISH },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vspltisw, "__builtin_altivec_vspltisw", ALTIVEC_BUILTIN_VSPLTISW },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vupkhsb, "__builtin_altivec_vupkhsb", ALTIVEC_BUILTIN_VUPKHSB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vupkhpx, "__builtin_altivec_vupkhpx", ALTIVEC_BUILTIN_VUPKHPX },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vupkhsh, "__builtin_altivec_vupkhsh", ALTIVEC_BUILTIN_VUPKHSH },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vupklsb, "__builtin_altivec_vupklsb", ALTIVEC_BUILTIN_VUPKLSB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vupklpx, "__builtin_altivec_vupklpx", ALTIVEC_BUILTIN_VUPKLPX },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vupklsh, "__builtin_altivec_vupklsh", ALTIVEC_BUILTIN_VUPKLSH },
-
-  { MASK_VSX, CODE_FOR_negv2df2, "__builtin_vsx_xvnegdp", VSX_BUILTIN_XVNEGDP },
-  { MASK_VSX, CODE_FOR_sqrtv2df2, "__builtin_vsx_xvsqrtdp", VSX_BUILTIN_XVSQRTDP },
-  { MASK_VSX, CODE_FOR_rsqrtv2df2, "__builtin_vsx_xvrsqrtdp", VSX_BUILTIN_VEC_RSQRT_V2DF },
-  { MASK_VSX, CODE_FOR_rsqrtev2df2, "__builtin_vsx_xvrsqrtedp", VSX_BUILTIN_XVRSQRTEDP },
-  { MASK_VSX, CODE_FOR_vsx_tsqrtv2df2_fe, "__builtin_vsx_xvtsqrtdp_fe", VSX_BUILTIN_XVTSQRTDP_FE },
-  { MASK_VSX, CODE_FOR_vsx_tsqrtv2df2_fg, "__builtin_vsx_xvtsqrtdp_fg", VSX_BUILTIN_XVTSQRTDP_FG },
-  { MASK_VSX, CODE_FOR_vsx_frev2df2, "__builtin_vsx_xvredp", VSX_BUILTIN_XVREDP },
-
-  { MASK_VSX, CODE_FOR_negv4sf2, "__builtin_vsx_xvnegsp", VSX_BUILTIN_XVNEGSP },
-  { MASK_VSX, CODE_FOR_sqrtv4sf2, "__builtin_vsx_xvsqrtsp", VSX_BUILTIN_XVSQRTSP },
-  { MASK_VSX, CODE_FOR_rsqrtv4sf2, "__builtin_vsx_xvrsqrtsp", VSX_BUILTIN_VEC_RSQRT_V4SF },
-  { MASK_VSX, CODE_FOR_rsqrtev4sf2, "__builtin_vsx_xvrsqrtesp", VSX_BUILTIN_XVRSQRTESP },
-  { MASK_VSX, CODE_FOR_vsx_tsqrtv4sf2_fe, "__builtin_vsx_xvtsqrtsp_fe", VSX_BUILTIN_XVTSQRTSP_FE },
-  { MASK_VSX, CODE_FOR_vsx_tsqrtv4sf2_fg, "__builtin_vsx_xvtsqrtsp_fg", VSX_BUILTIN_XVTSQRTSP_FG },
-  { MASK_VSX, CODE_FOR_vsx_frev4sf2, "__builtin_vsx_xvresp", VSX_BUILTIN_XVRESP },
-
-  { MASK_VSX, CODE_FOR_vsx_xscvdpsp, "__builtin_vsx_xscvdpsp", VSX_BUILTIN_XSCVDPSP },
-  { MASK_VSX, CODE_FOR_vsx_xscvdpsp, "__builtin_vsx_xscvspdp", VSX_BUILTIN_XSCVSPDP },
-  { MASK_VSX, CODE_FOR_vsx_xvcvdpsp, "__builtin_vsx_xvcvdpsp", VSX_BUILTIN_XVCVDPSP },
-  { MASK_VSX, CODE_FOR_vsx_xvcvspdp, "__builtin_vsx_xvcvspdp", VSX_BUILTIN_XVCVSPDP },
-  { MASK_VSX, CODE_FOR_vsx_tsqrtdf2_fe, "__builtin_vsx_xstsqrtdp_fe", VSX_BUILTIN_XSTSQRTDP_FE },
-  { MASK_VSX, CODE_FOR_vsx_tsqrtdf2_fg, "__builtin_vsx_xstsqrtdp_fg", VSX_BUILTIN_XSTSQRTDP_FG },
-
-  { MASK_VSX, CODE_FOR_vsx_fix_truncv2dfv2di2, "__builtin_vsx_xvcvdpsxds", VSX_BUILTIN_XVCVDPSXDS },
-  { MASK_VSX, CODE_FOR_vsx_fixuns_truncv2dfv2di2, "__builtin_vsx_xvcvdpuxds", VSX_BUILTIN_XVCVDPUXDS },
-  { MASK_VSX, CODE_FOR_vsx_fixuns_truncv2dfv2di2, "__builtin_vsx_xvcvdpuxds_uns", VSX_BUILTIN_XVCVDPUXDS_UNS },
-  { MASK_VSX, CODE_FOR_vsx_floatv2div2df2, "__builtin_vsx_xvcvsxddp", VSX_BUILTIN_XVCVSXDDP },
-  { MASK_VSX, CODE_FOR_vsx_floatunsv2div2df2, "__builtin_vsx_xvcvuxddp", VSX_BUILTIN_XVCVUXDDP },
-  { MASK_VSX, CODE_FOR_vsx_floatunsv2div2df2, "__builtin_vsx_xvcvuxddp_uns", VSX_BUILTIN_XVCVUXDDP_UNS },
-
-  { MASK_VSX, CODE_FOR_vsx_fix_truncv4sfv4si2, "__builtin_vsx_xvcvspsxws", VSX_BUILTIN_XVCVSPSXWS },
-  { MASK_VSX, CODE_FOR_vsx_fixuns_truncv4sfv4si2, "__builtin_vsx_xvcvspuxws", VSX_BUILTIN_XVCVSPUXWS },
-  { MASK_VSX, CODE_FOR_vsx_floatv4siv4sf2, "__builtin_vsx_xvcvsxwsp", VSX_BUILTIN_XVCVSXWSP },
-  { MASK_VSX, CODE_FOR_vsx_floatunsv4siv4sf2, "__builtin_vsx_xvcvuxwsp", VSX_BUILTIN_XVCVUXWSP },
-
-  { MASK_VSX, CODE_FOR_vsx_xvcvdpsxws, "__builtin_vsx_xvcvdpsxws", VSX_BUILTIN_XVCVDPSXWS },
-  { MASK_VSX, CODE_FOR_vsx_xvcvdpuxws, "__builtin_vsx_xvcvdpuxws", VSX_BUILTIN_XVCVDPUXWS },
-  { MASK_VSX, CODE_FOR_vsx_xvcvsxwdp, "__builtin_vsx_xvcvsxwdp", VSX_BUILTIN_XVCVSXWDP },
-  { MASK_VSX, CODE_FOR_vsx_xvcvuxwdp, "__builtin_vsx_xvcvuxwdp", VSX_BUILTIN_XVCVUXWDP },
-  { MASK_VSX, CODE_FOR_vsx_xvrdpi, "__builtin_vsx_xvrdpi", VSX_BUILTIN_XVRDPI },
-  { MASK_VSX, CODE_FOR_vsx_xvrdpic, "__builtin_vsx_xvrdpic", VSX_BUILTIN_XVRDPIC },
-  { MASK_VSX, CODE_FOR_vsx_floorv2df2, "__builtin_vsx_xvrdpim", VSX_BUILTIN_XVRDPIM },
-  { MASK_VSX, CODE_FOR_vsx_ceilv2df2, "__builtin_vsx_xvrdpip", VSX_BUILTIN_XVRDPIP },
-  { MASK_VSX, CODE_FOR_vsx_btruncv2df2, "__builtin_vsx_xvrdpiz", VSX_BUILTIN_XVRDPIZ },
-
-  { MASK_VSX, CODE_FOR_vsx_xvcvspsxds, "__builtin_vsx_xvcvspsxds", VSX_BUILTIN_XVCVSPSXDS },
-  { MASK_VSX, CODE_FOR_vsx_xvcvspuxds, "__builtin_vsx_xvcvspuxds", VSX_BUILTIN_XVCVSPUXDS },
-  { MASK_VSX, CODE_FOR_vsx_xvcvsxdsp, "__builtin_vsx_xvcvsxdsp", VSX_BUILTIN_XVCVSXDSP },
-  { MASK_VSX, CODE_FOR_vsx_xvcvuxdsp, "__builtin_vsx_xvcvuxdsp", VSX_BUILTIN_XVCVUXDSP },
-  { MASK_VSX, CODE_FOR_vsx_xvrspi, "__builtin_vsx_xvrspi", VSX_BUILTIN_XVRSPI },
-  { MASK_VSX, CODE_FOR_vsx_xvrspic, "__builtin_vsx_xvrspic", VSX_BUILTIN_XVRSPIC },
-  { MASK_VSX, CODE_FOR_vsx_floorv4sf2, "__builtin_vsx_xvrspim", VSX_BUILTIN_XVRSPIM },
-  { MASK_VSX, CODE_FOR_vsx_ceilv4sf2, "__builtin_vsx_xvrspip", VSX_BUILTIN_XVRSPIP },
-  { MASK_VSX, CODE_FOR_vsx_btruncv4sf2, "__builtin_vsx_xvrspiz", VSX_BUILTIN_XVRSPIZ },
-
-  { MASK_VSX, CODE_FOR_vsx_xsrdpi, "__builtin_vsx_xsrdpi", VSX_BUILTIN_XSRDPI },
-  { MASK_VSX, CODE_FOR_vsx_xsrdpic, "__builtin_vsx_xsrdpic", VSX_BUILTIN_XSRDPIC },
-  { MASK_VSX, CODE_FOR_vsx_floordf2, "__builtin_vsx_xsrdpim", VSX_BUILTIN_XSRDPIM },
-  { MASK_VSX, CODE_FOR_vsx_ceildf2, "__builtin_vsx_xsrdpip", VSX_BUILTIN_XSRDPIP },
-  { MASK_VSX, CODE_FOR_vsx_btruncdf2, "__builtin_vsx_xsrdpiz", VSX_BUILTIN_XSRDPIZ },
-
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_abs", ALTIVEC_BUILTIN_VEC_ABS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_abss", ALTIVEC_BUILTIN_VEC_ABSS },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_ceil", ALTIVEC_BUILTIN_VEC_CEIL },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_expte", ALTIVEC_BUILTIN_VEC_EXPTE },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_floor", ALTIVEC_BUILTIN_VEC_FLOOR },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_loge", ALTIVEC_BUILTIN_VEC_LOGE },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_mtvscr", ALTIVEC_BUILTIN_VEC_MTVSCR },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_re", ALTIVEC_BUILTIN_VEC_RE },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_round", ALTIVEC_BUILTIN_VEC_ROUND },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_rsqrt", ALTIVEC_BUILTIN_VEC_RSQRT },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_rsqrte", ALTIVEC_BUILTIN_VEC_RSQRTE },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_trunc", ALTIVEC_BUILTIN_VEC_TRUNC },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_unpackh", ALTIVEC_BUILTIN_VEC_UNPACKH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vupkhsh", ALTIVEC_BUILTIN_VEC_VUPKHSH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vupkhpx", ALTIVEC_BUILTIN_VEC_VUPKHPX },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vupkhsb", ALTIVEC_BUILTIN_VEC_VUPKHSB },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_unpackl", ALTIVEC_BUILTIN_VEC_UNPACKL },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vupklpx", ALTIVEC_BUILTIN_VEC_VUPKLPX },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vupklsh", ALTIVEC_BUILTIN_VEC_VUPKLSH },
-  { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_vupklsb", ALTIVEC_BUILTIN_VEC_VUPKLSB },
-
-  { MASK_VSX, CODE_FOR_nothing, "__builtin_vec_nearbyint", ALTIVEC_BUILTIN_VEC_NEARBYINT },
-  { MASK_VSX, CODE_FOR_nothing, "__builtin_vec_rint", ALTIVEC_BUILTIN_VEC_RINT },
-  { MASK_VSX, CODE_FOR_nothing, "__builtin_vec_sqrt", ALTIVEC_BUILTIN_VEC_SQRT },
-
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_floatv4siv4sf2, "__builtin_vec_float_sisf", VECTOR_BUILTIN_FLOAT_V4SI_V4SF },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_unsigned_floatv4siv4sf2, "__builtin_vec_uns_float_sisf", VECTOR_BUILTIN_UNSFLOAT_V4SI_V4SF },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_fix_truncv4sfv4si2, "__builtin_vec_fix_sfsi", VECTOR_BUILTIN_FIX_V4SF_V4SI },
-  { MASK_ALTIVEC|MASK_VSX, CODE_FOR_fixuns_truncv4sfv4si2, "__builtin_vec_fixuns_sfsi", VECTOR_BUILTIN_FIXUNS_V4SF_V4SI },
-
-  /* The SPE unary builtins must start with SPE_BUILTIN_EVABS and
-     end with SPE_BUILTIN_EVSUBFUSIAAW.  */
-  { 0, CODE_FOR_absv2si2, "__builtin_spe_evabs", SPE_BUILTIN_EVABS },
-  { 0, CODE_FOR_spe_evaddsmiaaw, "__builtin_spe_evaddsmiaaw", SPE_BUILTIN_EVADDSMIAAW },
-  { 0, CODE_FOR_spe_evaddssiaaw, "__builtin_spe_evaddssiaaw", SPE_BUILTIN_EVADDSSIAAW },
-  { 0, CODE_FOR_spe_evaddumiaaw, "__builtin_spe_evaddumiaaw", SPE_BUILTIN_EVADDUMIAAW },
-  { 0, CODE_FOR_spe_evaddusiaaw, "__builtin_spe_evaddusiaaw", SPE_BUILTIN_EVADDUSIAAW },
-  { 0, CODE_FOR_spe_evcntlsw, "__builtin_spe_evcntlsw", SPE_BUILTIN_EVCNTLSW },
-  { 0, CODE_FOR_spe_evcntlzw, "__builtin_spe_evcntlzw", SPE_BUILTIN_EVCNTLZW },
-  { 0, CODE_FOR_spe_evextsb, "__builtin_spe_evextsb", SPE_BUILTIN_EVEXTSB },
-  { 0, CODE_FOR_spe_evextsh, "__builtin_spe_evextsh", SPE_BUILTIN_EVEXTSH },
-  { 0, CODE_FOR_spe_evfsabs, "__builtin_spe_evfsabs", SPE_BUILTIN_EVFSABS },
-  { 0, CODE_FOR_spe_evfscfsf, "__builtin_spe_evfscfsf", SPE_BUILTIN_EVFSCFSF },
-  { 0, CODE_FOR_spe_evfscfsi, "__builtin_spe_evfscfsi", SPE_BUILTIN_EVFSCFSI },
-  { 0, CODE_FOR_spe_evfscfuf, "__builtin_spe_evfscfuf", SPE_BUILTIN_EVFSCFUF },
-  { 0, CODE_FOR_spe_evfscfui, "__builtin_spe_evfscfui", SPE_BUILTIN_EVFSCFUI },
-  { 0, CODE_FOR_spe_evfsctsf, "__builtin_spe_evfsctsf", SPE_BUILTIN_EVFSCTSF },
-  { 0, CODE_FOR_spe_evfsctsi, "__builtin_spe_evfsctsi", SPE_BUILTIN_EVFSCTSI },
-  { 0, CODE_FOR_spe_evfsctsiz, "__builtin_spe_evfsctsiz", SPE_BUILTIN_EVFSCTSIZ },
-  { 0, CODE_FOR_spe_evfsctuf, "__builtin_spe_evfsctuf", SPE_BUILTIN_EVFSCTUF },
-  { 0, CODE_FOR_spe_evfsctui, "__builtin_spe_evfsctui", SPE_BUILTIN_EVFSCTUI },
-  { 0, CODE_FOR_spe_evfsctuiz, "__builtin_spe_evfsctuiz", SPE_BUILTIN_EVFSCTUIZ },
-  { 0, CODE_FOR_spe_evfsnabs, "__builtin_spe_evfsnabs", SPE_BUILTIN_EVFSNABS },
-  { 0, CODE_FOR_spe_evfsneg, "__builtin_spe_evfsneg", SPE_BUILTIN_EVFSNEG },
-  { 0, CODE_FOR_spe_evmra, "__builtin_spe_evmra", SPE_BUILTIN_EVMRA },
-  { 0, CODE_FOR_negv2si2, "__builtin_spe_evneg", SPE_BUILTIN_EVNEG },
-  { 0, CODE_FOR_spe_evrndw, "__builtin_spe_evrndw", SPE_BUILTIN_EVRNDW },
-  { 0, CODE_FOR_spe_evsubfsmiaaw, "__builtin_spe_evsubfsmiaaw", SPE_BUILTIN_EVSUBFSMIAAW },
-  { 0, CODE_FOR_spe_evsubfssiaaw, "__builtin_spe_evsubfssiaaw", SPE_BUILTIN_EVSUBFSSIAAW },
-  { 0, CODE_FOR_spe_evsubfumiaaw, "__builtin_spe_evsubfumiaaw", SPE_BUILTIN_EVSUBFUMIAAW },
-
-  /* Place-holder.  Leave as last unary SPE builtin.  */
-  { 0, CODE_FOR_spe_evsubfusiaaw, "__builtin_spe_evsubfusiaaw", SPE_BUILTIN_EVSUBFUSIAAW },
-
-  { 0, CODE_FOR_paired_absv2sf2, "__builtin_paired_absv2sf2", PAIRED_BUILTIN_ABSV2SF2 },
-  { 0, CODE_FOR_nabsv2sf2, "__builtin_paired_nabsv2sf2", PAIRED_BUILTIN_NABSV2SF2 },
-  { 0, CODE_FOR_paired_negv2sf2, "__builtin_paired_negv2sf2", PAIRED_BUILTIN_NEGV2SF2 },
-  { 0, CODE_FOR_sqrtv2sf2, "__builtin_paired_sqrtv2sf2", PAIRED_BUILTIN_SQRTV2SF2 },
-  { 0, CODE_FOR_resv2sf2, "__builtin_paired_resv2sf2", PAIRED_BUILTIN_RESV2SF2 }
+#include "rs6000-builtin.def"
 };
+
+#undef RS6000_BUILTIN_1
+#undef RS6000_BUILTIN_2
+#undef RS6000_BUILTIN_3
+#undef RS6000_BUILTIN_A
+#undef RS6000_BUILTIN_D
+#undef RS6000_BUILTIN_E
+#undef RS6000_BUILTIN_P
+#undef RS6000_BUILTIN_Q
+#undef RS6000_BUILTIN_S
+#undef RS6000_BUILTIN_X
+
+/* Return true if a builtin function is overloaded.  */
+bool
+rs6000_overloaded_builtin_p (enum rs6000_builtins fncode)
+{
+  return (rs6000_builtin_info[(int)fncode].attr & RS6000_BTC_OVERLOADED) != 0;
+}
+
 
 static rtx
 rs6000_expand_unop_builtin (enum insn_code icode, tree exp, rtx target)
@@ -11104,23 +10578,22 @@ static rtx
 altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 {
   const struct builtin_description *d;
-  const struct builtin_description_predicates *dp;
   size_t i;
   enum insn_code icode;
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   tree arg0;
   rtx op0, pat;
   enum machine_mode tmode, mode0;
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  enum rs6000_builtins fcode
+    = (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
 
-  if ((fcode >= ALTIVEC_BUILTIN_OVERLOADED_FIRST
-       && fcode <= ALTIVEC_BUILTIN_OVERLOADED_LAST)
-      || (fcode >= VSX_BUILTIN_OVERLOADED_FIRST
-	  && fcode <= VSX_BUILTIN_OVERLOADED_LAST))
+  if (rs6000_overloaded_builtin_p (fcode))
     {
       *expandedp = true;
       error ("unresolved overload for Altivec builtin %qF", fndecl);
-      return const0_rtx;
+
+      /* Given it is invalid, just generate a normal call.  */
+      return expand_call (exp, target, false);
     }
 
   target = altivec_expand_ld_builtin (exp, target, expandedp);
@@ -11269,10 +10742,10 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
       return altivec_expand_abs_builtin (d->icode, exp, target);
 
   /* Expand the AltiVec predicates.  */
-  dp = bdesc_altivec_preds;
-  for (i = 0; i < ARRAY_SIZE (bdesc_altivec_preds); i++, dp++)
-    if (dp->code == fcode)
-      return altivec_expand_predicate_builtin (dp->icode, exp, target);
+  d = bdesc_altivec_preds;
+  for (i = 0; i < ARRAY_SIZE (bdesc_altivec_preds); i++, d++)
+    if (d->code == fcode)
+      return altivec_expand_predicate_builtin (d->icode, exp, target);
 
   /* LV* are funky.  We initialized them differently.  */
   switch (fcode)
@@ -11373,30 +10846,30 @@ paired_expand_builtin (tree exp, rtx target, bool * expandedp)
 
 /* Binops that need to be initialized manually, but can be expanded
    automagically by rs6000_expand_binop_builtin.  */
-static struct builtin_description bdesc_2arg_spe[] =
+static const struct builtin_description bdesc_2arg_spe[] =
 {
-  { 0, CODE_FOR_spe_evlddx, "__builtin_spe_evlddx", SPE_BUILTIN_EVLDDX },
-  { 0, CODE_FOR_spe_evldwx, "__builtin_spe_evldwx", SPE_BUILTIN_EVLDWX },
-  { 0, CODE_FOR_spe_evldhx, "__builtin_spe_evldhx", SPE_BUILTIN_EVLDHX },
-  { 0, CODE_FOR_spe_evlwhex, "__builtin_spe_evlwhex", SPE_BUILTIN_EVLWHEX },
-  { 0, CODE_FOR_spe_evlwhoux, "__builtin_spe_evlwhoux", SPE_BUILTIN_EVLWHOUX },
-  { 0, CODE_FOR_spe_evlwhosx, "__builtin_spe_evlwhosx", SPE_BUILTIN_EVLWHOSX },
-  { 0, CODE_FOR_spe_evlwwsplatx, "__builtin_spe_evlwwsplatx", SPE_BUILTIN_EVLWWSPLATX },
-  { 0, CODE_FOR_spe_evlwhsplatx, "__builtin_spe_evlwhsplatx", SPE_BUILTIN_EVLWHSPLATX },
-  { 0, CODE_FOR_spe_evlhhesplatx, "__builtin_spe_evlhhesplatx", SPE_BUILTIN_EVLHHESPLATX },
-  { 0, CODE_FOR_spe_evlhhousplatx, "__builtin_spe_evlhhousplatx", SPE_BUILTIN_EVLHHOUSPLATX },
-  { 0, CODE_FOR_spe_evlhhossplatx, "__builtin_spe_evlhhossplatx", SPE_BUILTIN_EVLHHOSSPLATX },
-  { 0, CODE_FOR_spe_evldd, "__builtin_spe_evldd", SPE_BUILTIN_EVLDD },
-  { 0, CODE_FOR_spe_evldw, "__builtin_spe_evldw", SPE_BUILTIN_EVLDW },
-  { 0, CODE_FOR_spe_evldh, "__builtin_spe_evldh", SPE_BUILTIN_EVLDH },
-  { 0, CODE_FOR_spe_evlwhe, "__builtin_spe_evlwhe", SPE_BUILTIN_EVLWHE },
-  { 0, CODE_FOR_spe_evlwhou, "__builtin_spe_evlwhou", SPE_BUILTIN_EVLWHOU },
-  { 0, CODE_FOR_spe_evlwhos, "__builtin_spe_evlwhos", SPE_BUILTIN_EVLWHOS },
-  { 0, CODE_FOR_spe_evlwwsplat, "__builtin_spe_evlwwsplat", SPE_BUILTIN_EVLWWSPLAT },
-  { 0, CODE_FOR_spe_evlwhsplat, "__builtin_spe_evlwhsplat", SPE_BUILTIN_EVLWHSPLAT },
-  { 0, CODE_FOR_spe_evlhhesplat, "__builtin_spe_evlhhesplat", SPE_BUILTIN_EVLHHESPLAT },
-  { 0, CODE_FOR_spe_evlhhousplat, "__builtin_spe_evlhhousplat", SPE_BUILTIN_EVLHHOUSPLAT },
-  { 0, CODE_FOR_spe_evlhhossplat, "__builtin_spe_evlhhossplat", SPE_BUILTIN_EVLHHOSSPLAT }
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlddx, "__builtin_spe_evlddx", SPE_BUILTIN_EVLDDX },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evldwx, "__builtin_spe_evldwx", SPE_BUILTIN_EVLDWX },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evldhx, "__builtin_spe_evldhx", SPE_BUILTIN_EVLDHX },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlwhex, "__builtin_spe_evlwhex", SPE_BUILTIN_EVLWHEX },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlwhoux, "__builtin_spe_evlwhoux", SPE_BUILTIN_EVLWHOUX },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlwhosx, "__builtin_spe_evlwhosx", SPE_BUILTIN_EVLWHOSX },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlwwsplatx, "__builtin_spe_evlwwsplatx", SPE_BUILTIN_EVLWWSPLATX },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlwhsplatx, "__builtin_spe_evlwhsplatx", SPE_BUILTIN_EVLWHSPLATX },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlhhesplatx, "__builtin_spe_evlhhesplatx", SPE_BUILTIN_EVLHHESPLATX },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlhhousplatx, "__builtin_spe_evlhhousplatx", SPE_BUILTIN_EVLHHOUSPLATX },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlhhossplatx, "__builtin_spe_evlhhossplatx", SPE_BUILTIN_EVLHHOSSPLATX },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evldd, "__builtin_spe_evldd", SPE_BUILTIN_EVLDD },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evldw, "__builtin_spe_evldw", SPE_BUILTIN_EVLDW },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evldh, "__builtin_spe_evldh", SPE_BUILTIN_EVLDH },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlwhe, "__builtin_spe_evlwhe", SPE_BUILTIN_EVLWHE },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlwhou, "__builtin_spe_evlwhou", SPE_BUILTIN_EVLWHOU },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlwhos, "__builtin_spe_evlwhos", SPE_BUILTIN_EVLWHOS },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlwwsplat, "__builtin_spe_evlwwsplat", SPE_BUILTIN_EVLWWSPLAT },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlwhsplat, "__builtin_spe_evlwhsplat", SPE_BUILTIN_EVLWHSPLAT },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlhhesplat, "__builtin_spe_evlhhesplat", SPE_BUILTIN_EVLHHESPLAT },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlhhousplat, "__builtin_spe_evlhhousplat", SPE_BUILTIN_EVLHHOUSPLAT },
+  { RS6000_BTM_SPE, CODE_FOR_spe_evlhhossplat, "__builtin_spe_evlhhossplat", SPE_BUILTIN_EVLHHOSSPLAT }
 };
 
 /* Expand the builtin in EXP and store the result in TARGET.  Store
@@ -11413,7 +10886,7 @@ spe_expand_builtin (tree exp, rtx target, bool *expandedp)
   enum insn_code icode;
   enum machine_mode tmode, mode0;
   rtx pat, op0;
-  struct builtin_description *d;
+  const struct builtin_description *d;
   size_t i;
 
   *expandedp = true;
@@ -11453,17 +10926,17 @@ spe_expand_builtin (tree exp, rtx target, bool *expandedp)
       break;
     }
 
-  d = (struct builtin_description *) bdesc_2arg_spe;
+  d = bdesc_2arg_spe;
   for (i = 0; i < ARRAY_SIZE (bdesc_2arg_spe); ++i, ++d)
     if (d->code == fcode)
       return rs6000_expand_binop_builtin (d->icode, exp, target);
 
-  d = (struct builtin_description *) bdesc_spe_predicates;
+  d = bdesc_spe_predicates;
   for (i = 0; i < ARRAY_SIZE (bdesc_spe_predicates); ++i, ++d)
     if (d->code == fcode)
       return spe_expand_predicate_builtin (d->icode, exp, target);
 
-  d = (struct builtin_description *) bdesc_spe_evsel;
+  d = bdesc_spe_evsel;
   for (i = 0; i < ARRAY_SIZE (bdesc_spe_evsel); ++i, ++d)
     if (d->code == fcode)
       return spe_expand_evsel_builtin (d->icode, exp, target);
@@ -11766,6 +11239,32 @@ spe_expand_evsel_builtin (enum insn_code icode, tree exp, rtx target)
   return target;
 }
 
+/* Raise an error message for a builtin function that is called without the
+   appropriate target options being set.  */
+
+static void
+rs6000_invalid_builtin (enum rs6000_builtins fncode)
+{
+  size_t uns_fncode = (size_t)fncode;
+  const char *name = rs6000_builtin_info[uns_fncode].name;
+  unsigned fnmask = rs6000_builtin_info[uns_fncode].mask;
+
+  gcc_assert (name != NULL);
+  if ((fnmask & RS6000_BTM_CELL) != 0)
+    error ("Builtin function %s is only valid for the cell processor", name);
+  else if ((fnmask & RS6000_BTM_VSX) != 0)
+    error ("Builtin function %s requires the -mvsx option", name);
+  else if ((fnmask & RS6000_BTM_ALTIVEC) != 0)
+    error ("Builtin function %s requires the -maltivec option", name);
+  else if ((fnmask & RS6000_BTM_PAIRED) != 0)
+    error ("Builtin function %s requires the -mpaired option", name);
+  else if ((fnmask & RS6000_BTM_SPE) != 0)
+    error ("Builtin function %s requires the -mspe option", name);
+  else
+    error ("Builtin function %s is not supported with the current options",
+	   name);
+}
+
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
    (and in mode MODE if that's convenient).
@@ -11778,11 +11277,54 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 		       int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  enum rs6000_builtins fcode
+    = (enum rs6000_builtins)DECL_FUNCTION_CODE (fndecl);
+  size_t uns_fcode = (size_t)fcode;
   const struct builtin_description *d;
   size_t i;
   rtx ret;
   bool success;
+  unsigned mask = rs6000_builtin_info[uns_fcode].mask;
+  bool func_valid_p = ((rs6000_builtin_mask & mask) == mask);
+
+  if (TARGET_DEBUG_BUILTIN)
+    {
+      enum insn_code icode = rs6000_builtin_info[uns_fcode].icode;
+      const char *name1 = rs6000_builtin_info[uns_fcode].name;
+      const char *name2 = ((icode != CODE_FOR_nothing)
+			   ? get_insn_name ((int)icode)
+			   : "nothing");
+      const char *name3;
+
+      switch (rs6000_builtin_info[uns_fcode].attr & RS6000_BTC_TYPE_MASK)
+	{
+	default:		   name3 = "unknown";	break;
+	case RS6000_BTC_SPECIAL:   name3 = "special";	break;
+	case RS6000_BTC_UNARY:	   name3 = "unary";	break;
+	case RS6000_BTC_BINARY:	   name3 = "binary";	break;
+	case RS6000_BTC_TERNARY:   name3 = "ternary";	break;
+	case RS6000_BTC_PREDICATE: name3 = "predicate";	break;
+	case RS6000_BTC_ABS:	   name3 = "abs";	break;
+	case RS6000_BTC_EVSEL:	   name3 = "evsel";	break;
+	case RS6000_BTC_DST:	   name3 = "dst";	break;
+	}
+
+
+      fprintf (stderr,
+	       "rs6000_expand_builtin, %s (%d), insn = %s (%d), type=%s%s\n",
+	       (name1) ? name1 : "---", fcode,
+	       (name2) ? name2 : "---", (int)icode,
+	       name3,
+	       func_valid_p ? "" : ", not valid");
+    }	     
+
+  if (!func_valid_p)
+    {
+      rs6000_invalid_builtin (fcode);
+
+      /* Given it is invalid, just generate a normal call.  */
+      return expand_call (exp, target, ignore);
+    }
 
   switch (fcode)
     {
@@ -11888,13 +11430,13 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   gcc_assert (TARGET_ALTIVEC || TARGET_VSX || TARGET_SPE || TARGET_PAIRED_FLOAT);
 
   /* Handle simple unary operations.  */
-  d = (struct builtin_description *) bdesc_1arg;
+  d = bdesc_1arg;
   for (i = 0; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
     if (d->code == fcode)
       return rs6000_expand_unop_builtin (d->icode, exp, target);
 
   /* Handle simple binary operations.  */
-  d = (struct builtin_description *) bdesc_2arg;
+  d = bdesc_2arg;
   for (i = 0; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
     if (d->code == fcode)
       return rs6000_expand_binop_builtin (d->icode, exp, target);
@@ -11913,6 +11455,14 @@ rs6000_init_builtins (void)
 {
   tree tdecl;
   tree ftype;
+  enum machine_mode mode;
+
+  if (TARGET_DEBUG_BUILTIN)
+    fprintf (stderr, "rs6000_init_builtins%s%s%s%s\n",
+	     (TARGET_PAIRED_FLOAT) ? ", paired"	 : "",
+	     (TARGET_SPE)	   ? ", spe"	 : "",
+	     (TARGET_ALTIVEC)	   ? ", altivec" : "",
+	     (TARGET_VSX)	   ? ", vsx"	 : "");
 
   V2SI_type_node = build_vector_type (intSI_type_node, 2);
   V2SF_type_node = build_vector_type (float_type_node, 2);
@@ -12069,91 +11619,70 @@ rs6000_init_builtins (void)
   TYPE_NAME (pixel_V8HI_type_node) = tdecl;
   (*lang_hooks.decls.pushdecl) (tdecl);
 
-  if (TARGET_VSX)
-    {
-      tdecl = build_decl (BUILTINS_LOCATION,
-			  TYPE_DECL, get_identifier ("__vector double"),
-			  V2DF_type_node);
-      TYPE_NAME (V2DF_type_node) = tdecl;
-      (*lang_hooks.decls.pushdecl) (tdecl);
+  tdecl = build_decl (BUILTINS_LOCATION,
+		      TYPE_DECL, get_identifier ("__vector double"),
+		      V2DF_type_node);
+  TYPE_NAME (V2DF_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
 
-      tdecl = build_decl (BUILTINS_LOCATION,
-			  TYPE_DECL, get_identifier ("__vector long"),
-			  V2DI_type_node);
-      TYPE_NAME (V2DI_type_node) = tdecl;
-      (*lang_hooks.decls.pushdecl) (tdecl);
+  tdecl = build_decl (BUILTINS_LOCATION,
+		      TYPE_DECL, get_identifier ("__vector long"),
+		      V2DI_type_node);
+  TYPE_NAME (V2DI_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
 
-      tdecl = build_decl (BUILTINS_LOCATION,
-			  TYPE_DECL, get_identifier ("__vector unsigned long"),
-			  unsigned_V2DI_type_node);
-      TYPE_NAME (unsigned_V2DI_type_node) = tdecl;
-      (*lang_hooks.decls.pushdecl) (tdecl);
+  tdecl = build_decl (BUILTINS_LOCATION,
+		      TYPE_DECL, get_identifier ("__vector unsigned long"),
+		      unsigned_V2DI_type_node);
+  TYPE_NAME (unsigned_V2DI_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
 
-      tdecl = build_decl (BUILTINS_LOCATION,
-			  TYPE_DECL, get_identifier ("__vector __bool long"),
-			  bool_V2DI_type_node);
-      TYPE_NAME (bool_V2DI_type_node) = tdecl;
-      (*lang_hooks.decls.pushdecl) (tdecl);
-    }
+  tdecl = build_decl (BUILTINS_LOCATION,
+		      TYPE_DECL, get_identifier ("__vector __bool long"),
+		      bool_V2DI_type_node);
+  TYPE_NAME (bool_V2DI_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
 
+  /* Paired and SPE builtins are only available if you build a compiler with
+     the appropriate options, so only create those builtins with the
+     appropriate compiler option.  Create Altivec and VSX builtins on machines
+     with at least the general purpose extensions (970 and newer) to allow the
+     use of the target attribute.  */
   if (TARGET_PAIRED_FLOAT)
     paired_init_builtins ();
   if (TARGET_SPE)
     spe_init_builtins ();
-  if (TARGET_ALTIVEC)
+  if (TARGET_EXTRA_BUILTINS)
     altivec_init_builtins ();
-  if (TARGET_ALTIVEC || TARGET_SPE || TARGET_PAIRED_FLOAT || TARGET_VSX)
+  if (TARGET_EXTRA_BUILTINS || TARGET_SPE || TARGET_PAIRED_FLOAT)
     rs6000_common_init_builtins ();
-  if (TARGET_FRE)
-    {
-      ftype = builtin_function_type (DFmode, DFmode, DFmode, VOIDmode,
-				     RS6000_BUILTIN_RECIP,
-				     "__builtin_recipdiv");
-      def_builtin (MASK_POPCNTB, "__builtin_recipdiv", ftype,
-		   RS6000_BUILTIN_RECIP);
-    }
-  if (TARGET_FRES)
-    {
-      ftype = builtin_function_type (SFmode, SFmode, SFmode, VOIDmode,
-				     RS6000_BUILTIN_RECIPF,
-				     "__builtin_recipdivf");
-      def_builtin (MASK_PPC_GFXOPT, "__builtin_recipdivf", ftype,
-		   RS6000_BUILTIN_RECIPF);
-    }
-  if (TARGET_FRSQRTE)
-    {
-      ftype = builtin_function_type (DFmode, DFmode, VOIDmode, VOIDmode,
-				     RS6000_BUILTIN_RSQRT,
-				     "__builtin_rsqrt");
-      def_builtin (MASK_PPC_GFXOPT, "__builtin_rsqrt", ftype,
-		   RS6000_BUILTIN_RSQRT);
-    }
-  if (TARGET_FRSQRTES)
-    {
-      ftype = builtin_function_type (SFmode, SFmode, VOIDmode, VOIDmode,
-				     RS6000_BUILTIN_RSQRTF,
-				     "__builtin_rsqrtf");
-      def_builtin (MASK_PPC_GFXOPT, "__builtin_rsqrtf", ftype,
-		   RS6000_BUILTIN_RSQRTF);
-    }
-  if (TARGET_POPCNTD)
-    {
-      enum machine_mode mode = (TARGET_64BIT) ? DImode : SImode;
-      tree ftype = builtin_function_type (mode, mode, mode, VOIDmode,
-					  POWER7_BUILTIN_BPERMD,
-					  "__builtin_bpermd");
-      def_builtin (MASK_POPCNTD, "__builtin_bpermd", ftype,
-		   POWER7_BUILTIN_BPERMD);
-    }
-  if (TARGET_POWERPC)
-    {
+
+  ftype = builtin_function_type (DFmode, DFmode, DFmode, VOIDmode,
+				 RS6000_BUILTIN_RECIP, "__builtin_recipdiv");
+  def_builtin ("__builtin_recipdiv", ftype, RS6000_BUILTIN_RECIP);
+
+  ftype = builtin_function_type (SFmode, SFmode, SFmode, VOIDmode,
+				 RS6000_BUILTIN_RECIPF, "__builtin_recipdivf");
+  def_builtin ("__builtin_recipdivf", ftype, RS6000_BUILTIN_RECIPF);
+
+  ftype = builtin_function_type (DFmode, DFmode, VOIDmode, VOIDmode,
+				 RS6000_BUILTIN_RSQRT, "__builtin_rsqrt");
+  def_builtin ("__builtin_rsqrt", ftype, RS6000_BUILTIN_RSQRT);
+
+  ftype = builtin_function_type (SFmode, SFmode, VOIDmode, VOIDmode,
+				 RS6000_BUILTIN_RSQRTF, "__builtin_rsqrtf");
+  def_builtin ("__builtin_rsqrtf", ftype, RS6000_BUILTIN_RSQRTF);
+
+  mode = (TARGET_64BIT) ? DImode : SImode;
+  ftype = builtin_function_type (mode, mode, mode, VOIDmode,
+				 POWER7_BUILTIN_BPERMD, "__builtin_bpermd");
+  def_builtin ("__builtin_bpermd", ftype, POWER7_BUILTIN_BPERMD);
+
       /* Don't use builtin_function_type here, as it maps HI/QI to SI.  */
-      tree ftype = build_function_type_list (unsigned_intHI_type_node,
-					     unsigned_intHI_type_node,
-					     NULL_TREE);
-      def_builtin (MASK_POWERPC, "__builtin_bswap16", ftype,
-		   RS6000_BUILTIN_BSWAP_HI);
-    }
+  ftype = build_function_type_list (unsigned_intHI_type_node,
+				    unsigned_intHI_type_node,
+				    NULL_TREE);
+  def_builtin ("__builtin_bswap16", ftype, RS6000_BUILTIN_BSWAP_HI);
 
 #if TARGET_XCOFF
   /* AIX libm provides clog as __clog.  */
@@ -12171,38 +11700,19 @@ rs6000_init_builtins (void)
 static tree
 rs6000_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
 {
+  unsigned fnmask;
+
   if (code >= RS6000_BUILTIN_COUNT)
     return error_mark_node;
 
-  return rs6000_builtin_decls[code];
-}
-
-/* Search through a set of builtins and enable the mask bits.
-   DESC is an array of builtins.
-   SIZE is the total number of builtins.
-   START is the builtin enum at which to start.
-   END is the builtin enum at which to end.  */
-static void
-enable_mask_for_builtins (struct builtin_description *desc, int size,
-			  enum rs6000_builtins start,
-			  enum rs6000_builtins end)
-{
-  int i;
-
-  for (i = 0; i < size; ++i)
-    if (desc[i].code == start)
-      break;
-
-  if (i == size)
-    return;
-
-  for (; i < size; ++i)
+  fnmask = rs6000_builtin_info[code].mask;
+  if ((fnmask & rs6000_builtin_mask) != fnmask)
     {
-      /* Flip all the bits on.  */
-      desc[i].mask = target_flags;
-      if (desc[i].code == end)
-	break;
+      rs6000_invalid_builtin ((enum rs6000_builtins)code);
+      return error_mark_node;
     }
+
+  return rs6000_builtin_decls[code];
 }
 
 static void
@@ -12210,7 +11720,7 @@ spe_init_builtins (void)
 {
   tree puint_type_node = build_pointer_type (unsigned_type_node);
   tree pushort_type_node = build_pointer_type (short_unsigned_type_node);
-  struct builtin_description *d;
+  const struct builtin_description *d;
   size_t i;
 
   tree v2si_ftype_4_v2si
@@ -12300,28 +11810,6 @@ spe_init_builtins (void)
                                 signed_char_type_node,
                                 NULL_TREE);
 
-  /* The initialization of the simple binary and unary builtins is
-     done in rs6000_common_init_builtins, but we have to enable the
-     mask bits here manually because we have run out of `target_flags'
-     bits.  We really need to redesign this mask business.  */
-
-  enable_mask_for_builtins ((struct builtin_description *) bdesc_2arg,
-			    ARRAY_SIZE (bdesc_2arg),
-			    SPE_BUILTIN_EVADDW,
-			    SPE_BUILTIN_EVXOR);
-  enable_mask_for_builtins ((struct builtin_description *) bdesc_1arg,
-			    ARRAY_SIZE (bdesc_1arg),
-			    SPE_BUILTIN_EVABS,
-			    SPE_BUILTIN_EVSUBFUSIAAW);
-  enable_mask_for_builtins ((struct builtin_description *) bdesc_spe_predicates,
-			    ARRAY_SIZE (bdesc_spe_predicates),
-			    SPE_BUILTIN_EVCMPEQ,
-			    SPE_BUILTIN_EVFSTSTLT);
-  enable_mask_for_builtins ((struct builtin_description *) bdesc_spe_evsel,
-			    ARRAY_SIZE (bdesc_spe_evsel),
-			    SPE_BUILTIN_EVSEL_CMPGTS,
-			    SPE_BUILTIN_EVSEL_FSTSTEQ);
-
   (*lang_hooks.decls.pushdecl)
     (build_decl (BUILTINS_LOCATION, TYPE_DECL,
 		 get_identifier ("__ev64_opaque__"),
@@ -12329,51 +11817,51 @@ spe_init_builtins (void)
 
   /* Initialize irregular SPE builtins.  */
 
-  def_builtin (target_flags, "__builtin_spe_mtspefscr", void_ftype_int, SPE_BUILTIN_MTSPEFSCR);
-  def_builtin (target_flags, "__builtin_spe_mfspefscr", int_ftype_void, SPE_BUILTIN_MFSPEFSCR);
-  def_builtin (target_flags, "__builtin_spe_evstddx", void_ftype_v2si_pv2si_int, SPE_BUILTIN_EVSTDDX);
-  def_builtin (target_flags, "__builtin_spe_evstdhx", void_ftype_v2si_pv2si_int, SPE_BUILTIN_EVSTDHX);
-  def_builtin (target_flags, "__builtin_spe_evstdwx", void_ftype_v2si_pv2si_int, SPE_BUILTIN_EVSTDWX);
-  def_builtin (target_flags, "__builtin_spe_evstwhex", void_ftype_v2si_puint_int, SPE_BUILTIN_EVSTWHEX);
-  def_builtin (target_flags, "__builtin_spe_evstwhox", void_ftype_v2si_puint_int, SPE_BUILTIN_EVSTWHOX);
-  def_builtin (target_flags, "__builtin_spe_evstwwex", void_ftype_v2si_puint_int, SPE_BUILTIN_EVSTWWEX);
-  def_builtin (target_flags, "__builtin_spe_evstwwox", void_ftype_v2si_puint_int, SPE_BUILTIN_EVSTWWOX);
-  def_builtin (target_flags, "__builtin_spe_evstdd", void_ftype_v2si_pv2si_char, SPE_BUILTIN_EVSTDD);
-  def_builtin (target_flags, "__builtin_spe_evstdh", void_ftype_v2si_pv2si_char, SPE_BUILTIN_EVSTDH);
-  def_builtin (target_flags, "__builtin_spe_evstdw", void_ftype_v2si_pv2si_char, SPE_BUILTIN_EVSTDW);
-  def_builtin (target_flags, "__builtin_spe_evstwhe", void_ftype_v2si_puint_char, SPE_BUILTIN_EVSTWHE);
-  def_builtin (target_flags, "__builtin_spe_evstwho", void_ftype_v2si_puint_char, SPE_BUILTIN_EVSTWHO);
-  def_builtin (target_flags, "__builtin_spe_evstwwe", void_ftype_v2si_puint_char, SPE_BUILTIN_EVSTWWE);
-  def_builtin (target_flags, "__builtin_spe_evstwwo", void_ftype_v2si_puint_char, SPE_BUILTIN_EVSTWWO);
-  def_builtin (target_flags, "__builtin_spe_evsplatfi", v2si_ftype_signed_char, SPE_BUILTIN_EVSPLATFI);
-  def_builtin (target_flags, "__builtin_spe_evsplati", v2si_ftype_signed_char, SPE_BUILTIN_EVSPLATI);
+  def_builtin ("__builtin_spe_mtspefscr", void_ftype_int, SPE_BUILTIN_MTSPEFSCR);
+  def_builtin ("__builtin_spe_mfspefscr", int_ftype_void, SPE_BUILTIN_MFSPEFSCR);
+  def_builtin ("__builtin_spe_evstddx", void_ftype_v2si_pv2si_int, SPE_BUILTIN_EVSTDDX);
+  def_builtin ("__builtin_spe_evstdhx", void_ftype_v2si_pv2si_int, SPE_BUILTIN_EVSTDHX);
+  def_builtin ("__builtin_spe_evstdwx", void_ftype_v2si_pv2si_int, SPE_BUILTIN_EVSTDWX);
+  def_builtin ("__builtin_spe_evstwhex", void_ftype_v2si_puint_int, SPE_BUILTIN_EVSTWHEX);
+  def_builtin ("__builtin_spe_evstwhox", void_ftype_v2si_puint_int, SPE_BUILTIN_EVSTWHOX);
+  def_builtin ("__builtin_spe_evstwwex", void_ftype_v2si_puint_int, SPE_BUILTIN_EVSTWWEX);
+  def_builtin ("__builtin_spe_evstwwox", void_ftype_v2si_puint_int, SPE_BUILTIN_EVSTWWOX);
+  def_builtin ("__builtin_spe_evstdd", void_ftype_v2si_pv2si_char, SPE_BUILTIN_EVSTDD);
+  def_builtin ("__builtin_spe_evstdh", void_ftype_v2si_pv2si_char, SPE_BUILTIN_EVSTDH);
+  def_builtin ("__builtin_spe_evstdw", void_ftype_v2si_pv2si_char, SPE_BUILTIN_EVSTDW);
+  def_builtin ("__builtin_spe_evstwhe", void_ftype_v2si_puint_char, SPE_BUILTIN_EVSTWHE);
+  def_builtin ("__builtin_spe_evstwho", void_ftype_v2si_puint_char, SPE_BUILTIN_EVSTWHO);
+  def_builtin ("__builtin_spe_evstwwe", void_ftype_v2si_puint_char, SPE_BUILTIN_EVSTWWE);
+  def_builtin ("__builtin_spe_evstwwo", void_ftype_v2si_puint_char, SPE_BUILTIN_EVSTWWO);
+  def_builtin ("__builtin_spe_evsplatfi", v2si_ftype_signed_char, SPE_BUILTIN_EVSPLATFI);
+  def_builtin ("__builtin_spe_evsplati", v2si_ftype_signed_char, SPE_BUILTIN_EVSPLATI);
 
   /* Loads.  */
-  def_builtin (target_flags, "__builtin_spe_evlddx", v2si_ftype_pv2si_int, SPE_BUILTIN_EVLDDX);
-  def_builtin (target_flags, "__builtin_spe_evldwx", v2si_ftype_pv2si_int, SPE_BUILTIN_EVLDWX);
-  def_builtin (target_flags, "__builtin_spe_evldhx", v2si_ftype_pv2si_int, SPE_BUILTIN_EVLDHX);
-  def_builtin (target_flags, "__builtin_spe_evlwhex", v2si_ftype_puint_int, SPE_BUILTIN_EVLWHEX);
-  def_builtin (target_flags, "__builtin_spe_evlwhoux", v2si_ftype_puint_int, SPE_BUILTIN_EVLWHOUX);
-  def_builtin (target_flags, "__builtin_spe_evlwhosx", v2si_ftype_puint_int, SPE_BUILTIN_EVLWHOSX);
-  def_builtin (target_flags, "__builtin_spe_evlwwsplatx", v2si_ftype_puint_int, SPE_BUILTIN_EVLWWSPLATX);
-  def_builtin (target_flags, "__builtin_spe_evlwhsplatx", v2si_ftype_puint_int, SPE_BUILTIN_EVLWHSPLATX);
-  def_builtin (target_flags, "__builtin_spe_evlhhesplatx", v2si_ftype_pushort_int, SPE_BUILTIN_EVLHHESPLATX);
-  def_builtin (target_flags, "__builtin_spe_evlhhousplatx", v2si_ftype_pushort_int, SPE_BUILTIN_EVLHHOUSPLATX);
-  def_builtin (target_flags, "__builtin_spe_evlhhossplatx", v2si_ftype_pushort_int, SPE_BUILTIN_EVLHHOSSPLATX);
-  def_builtin (target_flags, "__builtin_spe_evldd", v2si_ftype_pv2si_int, SPE_BUILTIN_EVLDD);
-  def_builtin (target_flags, "__builtin_spe_evldw", v2si_ftype_pv2si_int, SPE_BUILTIN_EVLDW);
-  def_builtin (target_flags, "__builtin_spe_evldh", v2si_ftype_pv2si_int, SPE_BUILTIN_EVLDH);
-  def_builtin (target_flags, "__builtin_spe_evlhhesplat", v2si_ftype_pushort_int, SPE_BUILTIN_EVLHHESPLAT);
-  def_builtin (target_flags, "__builtin_spe_evlhhossplat", v2si_ftype_pushort_int, SPE_BUILTIN_EVLHHOSSPLAT);
-  def_builtin (target_flags, "__builtin_spe_evlhhousplat", v2si_ftype_pushort_int, SPE_BUILTIN_EVLHHOUSPLAT);
-  def_builtin (target_flags, "__builtin_spe_evlwhe", v2si_ftype_puint_int, SPE_BUILTIN_EVLWHE);
-  def_builtin (target_flags, "__builtin_spe_evlwhos", v2si_ftype_puint_int, SPE_BUILTIN_EVLWHOS);
-  def_builtin (target_flags, "__builtin_spe_evlwhou", v2si_ftype_puint_int, SPE_BUILTIN_EVLWHOU);
-  def_builtin (target_flags, "__builtin_spe_evlwhsplat", v2si_ftype_puint_int, SPE_BUILTIN_EVLWHSPLAT);
-  def_builtin (target_flags, "__builtin_spe_evlwwsplat", v2si_ftype_puint_int, SPE_BUILTIN_EVLWWSPLAT);
+  def_builtin ("__builtin_spe_evlddx", v2si_ftype_pv2si_int, SPE_BUILTIN_EVLDDX);
+  def_builtin ("__builtin_spe_evldwx", v2si_ftype_pv2si_int, SPE_BUILTIN_EVLDWX);
+  def_builtin ("__builtin_spe_evldhx", v2si_ftype_pv2si_int, SPE_BUILTIN_EVLDHX);
+  def_builtin ("__builtin_spe_evlwhex", v2si_ftype_puint_int, SPE_BUILTIN_EVLWHEX);
+  def_builtin ("__builtin_spe_evlwhoux", v2si_ftype_puint_int, SPE_BUILTIN_EVLWHOUX);
+  def_builtin ("__builtin_spe_evlwhosx", v2si_ftype_puint_int, SPE_BUILTIN_EVLWHOSX);
+  def_builtin ("__builtin_spe_evlwwsplatx", v2si_ftype_puint_int, SPE_BUILTIN_EVLWWSPLATX);
+  def_builtin ("__builtin_spe_evlwhsplatx", v2si_ftype_puint_int, SPE_BUILTIN_EVLWHSPLATX);
+  def_builtin ("__builtin_spe_evlhhesplatx", v2si_ftype_pushort_int, SPE_BUILTIN_EVLHHESPLATX);
+  def_builtin ("__builtin_spe_evlhhousplatx", v2si_ftype_pushort_int, SPE_BUILTIN_EVLHHOUSPLATX);
+  def_builtin ("__builtin_spe_evlhhossplatx", v2si_ftype_pushort_int, SPE_BUILTIN_EVLHHOSSPLATX);
+  def_builtin ("__builtin_spe_evldd", v2si_ftype_pv2si_int, SPE_BUILTIN_EVLDD);
+  def_builtin ("__builtin_spe_evldw", v2si_ftype_pv2si_int, SPE_BUILTIN_EVLDW);
+  def_builtin ("__builtin_spe_evldh", v2si_ftype_pv2si_int, SPE_BUILTIN_EVLDH);
+  def_builtin ("__builtin_spe_evlhhesplat", v2si_ftype_pushort_int, SPE_BUILTIN_EVLHHESPLAT);
+  def_builtin ("__builtin_spe_evlhhossplat", v2si_ftype_pushort_int, SPE_BUILTIN_EVLHHOSSPLAT);
+  def_builtin ("__builtin_spe_evlhhousplat", v2si_ftype_pushort_int, SPE_BUILTIN_EVLHHOUSPLAT);
+  def_builtin ("__builtin_spe_evlwhe", v2si_ftype_puint_int, SPE_BUILTIN_EVLWHE);
+  def_builtin ("__builtin_spe_evlwhos", v2si_ftype_puint_int, SPE_BUILTIN_EVLWHOS);
+  def_builtin ("__builtin_spe_evlwhou", v2si_ftype_puint_int, SPE_BUILTIN_EVLWHOU);
+  def_builtin ("__builtin_spe_evlwhsplat", v2si_ftype_puint_int, SPE_BUILTIN_EVLWHSPLAT);
+  def_builtin ("__builtin_spe_evlwwsplat", v2si_ftype_puint_int, SPE_BUILTIN_EVLWWSPLAT);
 
   /* Predicates.  */
-  d = (struct builtin_description *) bdesc_spe_predicates;
+  d = bdesc_spe_predicates;
   for (i = 0; i < ARRAY_SIZE (bdesc_spe_predicates); ++i, d++)
     {
       tree type;
@@ -12390,11 +11878,11 @@ spe_init_builtins (void)
 	  gcc_unreachable ();
 	}
 
-      def_builtin (d->mask, d->name, type, d->code);
+      def_builtin (d->name, type, d->code);
     }
 
   /* Evsel predicates.  */
-  d = (struct builtin_description *) bdesc_spe_evsel;
+  d = bdesc_spe_evsel;
   for (i = 0; i < ARRAY_SIZE (bdesc_spe_evsel); ++i, d++)
     {
       tree type;
@@ -12411,7 +11899,7 @@ spe_init_builtins (void)
 	  gcc_unreachable ();
 	}
 
-      def_builtin (d->mask, d->name, type, d->code);
+      def_builtin (d->name, type, d->code);
     }
 }
 
@@ -12443,11 +11931,11 @@ paired_init_builtins (void)
 			      NULL_TREE);
 
 
-  def_builtin (0, "__builtin_paired_lx", v2sf_ftype_long_pcfloat,
+  def_builtin ("__builtin_paired_lx", v2sf_ftype_long_pcfloat,
 	       PAIRED_BUILTIN_LX);
 
 
-  def_builtin (0, "__builtin_paired_stx", void_ftype_v2sf_long_pcfloat,
+  def_builtin ("__builtin_paired_stx", void_ftype_v2sf_long_pcfloat,
 	       PAIRED_BUILTIN_STX);
 
   /* Predicates.  */
@@ -12455,6 +11943,11 @@ paired_init_builtins (void)
   for (i = 0; i < ARRAY_SIZE (bdesc_paired_preds); ++i, d++)
     {
       tree type;
+
+      if (TARGET_DEBUG_BUILTIN)
+	fprintf (stderr, "paired pred #%d, insn = %s [%d], mode = %s\n",
+		 (int)i, get_insn_name (d->icode), (int)d->icode,
+		 GET_MODE_NAME (insn_data[d->icode].operand[1].mode));
 
       switch (insn_data[d->icode].operand[1].mode)
 	{
@@ -12465,7 +11958,7 @@ paired_init_builtins (void)
 	  gcc_unreachable ();
 	}
 
-      def_builtin (d->mask, d->name, type, d->code);
+      def_builtin (d->name, type, d->code);
     }
 }
 
@@ -12473,9 +11966,9 @@ static void
 altivec_init_builtins (void)
 {
   const struct builtin_description *d;
-  const struct builtin_description_predicates *dp;
   size_t i;
   tree ftype;
+  tree decl;
 
   tree pvoid_type_node = build_pointer_type (void_type_node);
 
@@ -12600,125 +12093,120 @@ altivec_init_builtins (void)
 				pcvoid_type_node, integer_type_node,
 				integer_type_node, NULL_TREE);
 
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_mtvscr", void_ftype_v4si, ALTIVEC_BUILTIN_MTVSCR);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_mfvscr", v8hi_ftype_void, ALTIVEC_BUILTIN_MFVSCR);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_dssall", void_ftype_void, ALTIVEC_BUILTIN_DSSALL);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_dss", void_ftype_int, ALTIVEC_BUILTIN_DSS);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_lvsl", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVSL);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_lvsr", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVSR);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_lvebx", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVEBX);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_lvehx", v8hi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVEHX);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_lvewx", v4si_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVEWX);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_lvxl", v4si_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVXL);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_lvx", v4si_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVX);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_stvx", void_ftype_v4si_long_pvoid, ALTIVEC_BUILTIN_STVX);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_stvewx", void_ftype_v4si_long_pvoid, ALTIVEC_BUILTIN_STVEWX);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_stvxl", void_ftype_v4si_long_pvoid, ALTIVEC_BUILTIN_STVXL);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_stvebx", void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_STVEBX);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_stvehx", void_ftype_v8hi_long_pvoid, ALTIVEC_BUILTIN_STVEHX);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_ld", opaque_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LD);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_lde", opaque_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LDE);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_ldl", opaque_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LDL);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_lvsl", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVSL);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_lvsr", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVSR);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_lvebx", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVEBX);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_lvehx", v8hi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVEHX);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_lvewx", v4si_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVEWX);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_st", void_ftype_opaque_long_pvoid, ALTIVEC_BUILTIN_VEC_ST);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_ste", void_ftype_opaque_long_pvoid, ALTIVEC_BUILTIN_VEC_STE);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_stl", void_ftype_opaque_long_pvoid, ALTIVEC_BUILTIN_VEC_STL);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_stvewx", void_ftype_opaque_long_pvoid, ALTIVEC_BUILTIN_VEC_STVEWX);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_stvebx", void_ftype_opaque_long_pvoid, ALTIVEC_BUILTIN_VEC_STVEBX);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_stvehx", void_ftype_opaque_long_pvoid, ALTIVEC_BUILTIN_VEC_STVEHX);
+  def_builtin ("__builtin_altivec_mtvscr", void_ftype_v4si, ALTIVEC_BUILTIN_MTVSCR);
+  def_builtin ("__builtin_altivec_mfvscr", v8hi_ftype_void, ALTIVEC_BUILTIN_MFVSCR);
+  def_builtin ("__builtin_altivec_dssall", void_ftype_void, ALTIVEC_BUILTIN_DSSALL);
+  def_builtin ("__builtin_altivec_dss", void_ftype_int, ALTIVEC_BUILTIN_DSS);
+  def_builtin ("__builtin_altivec_lvsl", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVSL);
+  def_builtin ("__builtin_altivec_lvsr", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVSR);
+  def_builtin ("__builtin_altivec_lvebx", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVEBX);
+  def_builtin ("__builtin_altivec_lvehx", v8hi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVEHX);
+  def_builtin ("__builtin_altivec_lvewx", v4si_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVEWX);
+  def_builtin ("__builtin_altivec_lvxl", v4si_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVXL);
+  def_builtin ("__builtin_altivec_lvx", v4si_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVX);
+  def_builtin ("__builtin_altivec_stvx", void_ftype_v4si_long_pvoid, ALTIVEC_BUILTIN_STVX);
+  def_builtin ("__builtin_altivec_stvewx", void_ftype_v4si_long_pvoid, ALTIVEC_BUILTIN_STVEWX);
+  def_builtin ("__builtin_altivec_stvxl", void_ftype_v4si_long_pvoid, ALTIVEC_BUILTIN_STVXL);
+  def_builtin ("__builtin_altivec_stvebx", void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_STVEBX);
+  def_builtin ("__builtin_altivec_stvehx", void_ftype_v8hi_long_pvoid, ALTIVEC_BUILTIN_STVEHX);
+  def_builtin ("__builtin_vec_ld", opaque_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LD);
+  def_builtin ("__builtin_vec_lde", opaque_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LDE);
+  def_builtin ("__builtin_vec_ldl", opaque_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LDL);
+  def_builtin ("__builtin_vec_lvsl", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVSL);
+  def_builtin ("__builtin_vec_lvsr", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVSR);
+  def_builtin ("__builtin_vec_lvebx", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVEBX);
+  def_builtin ("__builtin_vec_lvehx", v8hi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVEHX);
+  def_builtin ("__builtin_vec_lvewx", v4si_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVEWX);
+  def_builtin ("__builtin_vec_st", void_ftype_opaque_long_pvoid, ALTIVEC_BUILTIN_VEC_ST);
+  def_builtin ("__builtin_vec_ste", void_ftype_opaque_long_pvoid, ALTIVEC_BUILTIN_VEC_STE);
+  def_builtin ("__builtin_vec_stl", void_ftype_opaque_long_pvoid, ALTIVEC_BUILTIN_VEC_STL);
+  def_builtin ("__builtin_vec_stvewx", void_ftype_opaque_long_pvoid, ALTIVEC_BUILTIN_VEC_STVEWX);
+  def_builtin ("__builtin_vec_stvebx", void_ftype_opaque_long_pvoid, ALTIVEC_BUILTIN_VEC_STVEBX);
+  def_builtin ("__builtin_vec_stvehx", void_ftype_opaque_long_pvoid, ALTIVEC_BUILTIN_VEC_STVEHX);
 
-  def_builtin (MASK_VSX, "__builtin_vsx_lxvd2x_v2df", v2df_ftype_long_pcvoid,
+  def_builtin ("__builtin_vsx_lxvd2x_v2df", v2df_ftype_long_pcvoid,
 	       VSX_BUILTIN_LXVD2X_V2DF);
-  def_builtin (MASK_VSX, "__builtin_vsx_lxvd2x_v2di", v2di_ftype_long_pcvoid,
+  def_builtin ("__builtin_vsx_lxvd2x_v2di", v2di_ftype_long_pcvoid,
 	       VSX_BUILTIN_LXVD2X_V2DI);
-  def_builtin (MASK_VSX, "__builtin_vsx_lxvw4x_v4sf", v4sf_ftype_long_pcvoid,
+  def_builtin ("__builtin_vsx_lxvw4x_v4sf", v4sf_ftype_long_pcvoid,
 	       VSX_BUILTIN_LXVW4X_V4SF);
-  def_builtin (MASK_VSX, "__builtin_vsx_lxvw4x_v4si", v4si_ftype_long_pcvoid,
+  def_builtin ("__builtin_vsx_lxvw4x_v4si", v4si_ftype_long_pcvoid,
 	       VSX_BUILTIN_LXVW4X_V4SI);
-  def_builtin (MASK_VSX, "__builtin_vsx_lxvw4x_v8hi",
-	       v8hi_ftype_long_pcvoid, VSX_BUILTIN_LXVW4X_V8HI);
-  def_builtin (MASK_VSX, "__builtin_vsx_lxvw4x_v16qi",
-	       v16qi_ftype_long_pcvoid, VSX_BUILTIN_LXVW4X_V16QI);
-  def_builtin (MASK_VSX, "__builtin_vsx_stxvd2x_v2df",
-	       void_ftype_v2df_long_pvoid, VSX_BUILTIN_STXVD2X_V2DF);
-  def_builtin (MASK_VSX, "__builtin_vsx_stxvd2x_v2di",
-	       void_ftype_v2di_long_pvoid, VSX_BUILTIN_STXVD2X_V2DI);
-  def_builtin (MASK_VSX, "__builtin_vsx_stxvw4x_v4sf",
-	       void_ftype_v4sf_long_pvoid, VSX_BUILTIN_STXVW4X_V4SF);
-  def_builtin (MASK_VSX, "__builtin_vsx_stxvw4x_v4si",
-	       void_ftype_v4si_long_pvoid, VSX_BUILTIN_STXVW4X_V4SI);
-  def_builtin (MASK_VSX, "__builtin_vsx_stxvw4x_v8hi",
-	       void_ftype_v8hi_long_pvoid, VSX_BUILTIN_STXVW4X_V8HI);
-  def_builtin (MASK_VSX, "__builtin_vsx_stxvw4x_v16qi",
-	       void_ftype_v16qi_long_pvoid, VSX_BUILTIN_STXVW4X_V16QI);
-  def_builtin (MASK_VSX, "__builtin_vec_vsx_ld", opaque_ftype_long_pcvoid,
+  def_builtin ("__builtin_vsx_lxvw4x_v8hi", v8hi_ftype_long_pcvoid,
+	       VSX_BUILTIN_LXVW4X_V8HI);
+  def_builtin ("__builtin_vsx_lxvw4x_v16qi", v16qi_ftype_long_pcvoid,
+	       VSX_BUILTIN_LXVW4X_V16QI);
+  def_builtin ("__builtin_vsx_stxvd2x_v2df", void_ftype_v2df_long_pvoid,
+	       VSX_BUILTIN_STXVD2X_V2DF);
+  def_builtin ("__builtin_vsx_stxvd2x_v2di", void_ftype_v2di_long_pvoid,
+	       VSX_BUILTIN_STXVD2X_V2DI);
+  def_builtin ("__builtin_vsx_stxvw4x_v4sf", void_ftype_v4sf_long_pvoid,
+	       VSX_BUILTIN_STXVW4X_V4SF);
+  def_builtin ("__builtin_vsx_stxvw4x_v4si", void_ftype_v4si_long_pvoid,
+	       VSX_BUILTIN_STXVW4X_V4SI);
+  def_builtin ("__builtin_vsx_stxvw4x_v8hi", void_ftype_v8hi_long_pvoid,
+	       VSX_BUILTIN_STXVW4X_V8HI);
+  def_builtin ("__builtin_vsx_stxvw4x_v16qi", void_ftype_v16qi_long_pvoid,
+	       VSX_BUILTIN_STXVW4X_V16QI);
+  def_builtin ("__builtin_vec_vsx_ld", opaque_ftype_long_pcvoid,
 	       VSX_BUILTIN_VEC_LD);
-  def_builtin (MASK_VSX, "__builtin_vec_vsx_st", void_ftype_opaque_long_pvoid,
+  def_builtin ("__builtin_vec_vsx_st", void_ftype_opaque_long_pvoid,
 	       VSX_BUILTIN_VEC_ST);
 
-  if (rs6000_cpu == PROCESSOR_CELL)
-    {
-      def_builtin (MASK_ALTIVEC, "__builtin_altivec_lvlx",  v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVLX);
-      def_builtin (MASK_ALTIVEC, "__builtin_altivec_lvlxl", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVLXL);
-      def_builtin (MASK_ALTIVEC, "__builtin_altivec_lvrx",  v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVRX);
-      def_builtin (MASK_ALTIVEC, "__builtin_altivec_lvrxl", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVRXL);
+  def_builtin ("__builtin_vec_step", int_ftype_opaque, ALTIVEC_BUILTIN_VEC_STEP);
+  def_builtin ("__builtin_vec_splats", opaque_ftype_opaque, ALTIVEC_BUILTIN_VEC_SPLATS);
+  def_builtin ("__builtin_vec_promote", opaque_ftype_opaque, ALTIVEC_BUILTIN_VEC_PROMOTE);
 
-      def_builtin (MASK_ALTIVEC, "__builtin_vec_lvlx",  v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVLX);
-      def_builtin (MASK_ALTIVEC, "__builtin_vec_lvlxl", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVLXL);
-      def_builtin (MASK_ALTIVEC, "__builtin_vec_lvrx",  v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVRX);
-      def_builtin (MASK_ALTIVEC, "__builtin_vec_lvrxl", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVRXL);
+  def_builtin ("__builtin_vec_sld", opaque_ftype_opaque_opaque_int, ALTIVEC_BUILTIN_VEC_SLD);
+  def_builtin ("__builtin_vec_splat", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_SPLAT);
+  def_builtin ("__builtin_vec_extract", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_EXTRACT);
+  def_builtin ("__builtin_vec_insert", opaque_ftype_opaque_opaque_int, ALTIVEC_BUILTIN_VEC_INSERT);
+  def_builtin ("__builtin_vec_vspltw", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_VSPLTW);
+  def_builtin ("__builtin_vec_vsplth", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_VSPLTH);
+  def_builtin ("__builtin_vec_vspltb", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_VSPLTB);
+  def_builtin ("__builtin_vec_ctf", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_CTF);
+  def_builtin ("__builtin_vec_vcfsx", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_VCFSX);
+  def_builtin ("__builtin_vec_vcfux", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_VCFUX);
+  def_builtin ("__builtin_vec_cts", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_CTS);
+  def_builtin ("__builtin_vec_ctu", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_CTU);
 
-      def_builtin (MASK_ALTIVEC, "__builtin_altivec_stvlx",  void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_STVLX);
-      def_builtin (MASK_ALTIVEC, "__builtin_altivec_stvlxl", void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_STVLXL);
-      def_builtin (MASK_ALTIVEC, "__builtin_altivec_stvrx",  void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_STVRX);
-      def_builtin (MASK_ALTIVEC, "__builtin_altivec_stvrxl", void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_STVRXL);
+  /* Cell builtins.  */
+  def_builtin ("__builtin_altivec_lvlx",  v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVLX);
+  def_builtin ("__builtin_altivec_lvlxl", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVLXL);
+  def_builtin ("__builtin_altivec_lvrx",  v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVRX);
+  def_builtin ("__builtin_altivec_lvrxl", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVRXL);
 
-      def_builtin (MASK_ALTIVEC, "__builtin_vec_stvlx",  void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_VEC_STVLX);
-      def_builtin (MASK_ALTIVEC, "__builtin_vec_stvlxl", void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_VEC_STVLXL);
-      def_builtin (MASK_ALTIVEC, "__builtin_vec_stvrx",  void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_VEC_STVRX);
-      def_builtin (MASK_ALTIVEC, "__builtin_vec_stvrxl", void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_VEC_STVRXL);
-    }
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_step", int_ftype_opaque, ALTIVEC_BUILTIN_VEC_STEP);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_splats", opaque_ftype_opaque, ALTIVEC_BUILTIN_VEC_SPLATS);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_promote", opaque_ftype_opaque, ALTIVEC_BUILTIN_VEC_PROMOTE);
+  def_builtin ("__builtin_vec_lvlx",  v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVLX);
+  def_builtin ("__builtin_vec_lvlxl", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVLXL);
+  def_builtin ("__builtin_vec_lvrx",  v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVRX);
+  def_builtin ("__builtin_vec_lvrxl", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVRXL);
 
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_sld", opaque_ftype_opaque_opaque_int, ALTIVEC_BUILTIN_VEC_SLD);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_splat", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_SPLAT);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_extract", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_EXTRACT);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_insert", opaque_ftype_opaque_opaque_int, ALTIVEC_BUILTIN_VEC_INSERT);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_vspltw", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_VSPLTW);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_vsplth", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_VSPLTH);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_vspltb", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_VSPLTB);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_ctf", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_CTF);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_vcfsx", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_VCFSX);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_vcfux", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_VCFUX);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_cts", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_CTS);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_ctu", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_CTU);
+  def_builtin ("__builtin_altivec_stvlx",  void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_STVLX);
+  def_builtin ("__builtin_altivec_stvlxl", void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_STVLXL);
+  def_builtin ("__builtin_altivec_stvrx",  void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_STVRX);
+  def_builtin ("__builtin_altivec_stvrxl", void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_STVRXL);
+
+  def_builtin ("__builtin_vec_stvlx",  void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_VEC_STVLX);
+  def_builtin ("__builtin_vec_stvlxl", void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_VEC_STVLXL);
+  def_builtin ("__builtin_vec_stvrx",  void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_VEC_STVRX);
+  def_builtin ("__builtin_vec_stvrxl", void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_VEC_STVRXL);
 
   /* Add the DST variants.  */
   d = bdesc_dst;
   for (i = 0; i < ARRAY_SIZE (bdesc_dst); i++, d++)
-    def_builtin (d->mask, d->name, void_ftype_pcvoid_int_int, d->code);
+    def_builtin (d->name, void_ftype_pcvoid_int_int, d->code);
 
   /* Initialize the predicates.  */
-  dp = bdesc_altivec_preds;
-  for (i = 0; i < ARRAY_SIZE (bdesc_altivec_preds); i++, dp++)
+  d = bdesc_altivec_preds;
+  for (i = 0; i < ARRAY_SIZE (bdesc_altivec_preds); i++, d++)
     {
       enum machine_mode mode1;
       tree type;
-      bool is_overloaded = ((dp->code >= ALTIVEC_BUILTIN_OVERLOADED_FIRST
-			     && dp->code <= ALTIVEC_BUILTIN_OVERLOADED_LAST)
-			    || (dp->code >= VSX_BUILTIN_OVERLOADED_FIRST
-				&& dp->code <= VSX_BUILTIN_OVERLOADED_LAST));
 
-      if (is_overloaded)
+      if (rs6000_overloaded_builtin_p (d->code))
 	mode1 = VOIDmode;
       else
-	mode1 = insn_data[dp->icode].operand[1].mode;
+	mode1 = insn_data[d->icode].operand[1].mode;
 
       switch (mode1)
 	{
@@ -12744,7 +12232,7 @@ altivec_init_builtins (void)
 	  gcc_unreachable ();
 	}
 
-      def_builtin (dp->mask, dp->name, type, dp->code);
+      def_builtin (d->name, type, d->code);
     }
 
   /* Initialize the abs* operators.  */
@@ -12777,31 +12265,25 @@ altivec_init_builtins (void)
 	  gcc_unreachable ();
 	}
 
-      def_builtin (d->mask, d->name, type, d->code);
+      def_builtin (d->name, type, d->code);
     }
 
-  if (TARGET_ALTIVEC)
-    {
-      tree decl;
+  /* Initialize target builtin that implements
+     targetm.vectorize.builtin_mask_for_load.  */
 
-      /* Initialize target builtin that implements
-         targetm.vectorize.builtin_mask_for_load.  */
-
-      decl = add_builtin_function ("__builtin_altivec_mask_for_load",
-				   v16qi_ftype_long_pcvoid,
-				   ALTIVEC_BUILTIN_MASK_FOR_LOAD,
-				   BUILT_IN_MD, NULL, NULL_TREE);
-      TREE_READONLY (decl) = 1;
-      /* Record the decl. Will be used by rs6000_builtin_mask_for_load.  */
-      altivec_builtin_mask_for_load = decl;
-    }
+  decl = add_builtin_function ("__builtin_altivec_mask_for_load",
+			       v16qi_ftype_long_pcvoid,
+			       ALTIVEC_BUILTIN_MASK_FOR_LOAD,
+			       BUILT_IN_MD, NULL, NULL_TREE);
+  TREE_READONLY (decl) = 1;
+  /* Record the decl. Will be used by rs6000_builtin_mask_for_load.  */
+  altivec_builtin_mask_for_load = decl;
 
   /* Access to the vec_init patterns.  */
   ftype = build_function_type_list (V4SI_type_node, integer_type_node,
 				    integer_type_node, integer_type_node,
 				    integer_type_node, NULL_TREE);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_init_v4si", ftype,
-	       ALTIVEC_BUILTIN_VEC_INIT_V4SI);
+  def_builtin ("__builtin_vec_init_v4si", ftype, ALTIVEC_BUILTIN_VEC_INIT_V4SI);
 
   ftype = build_function_type_list (V8HI_type_node, short_integer_type_node,
 				    short_integer_type_node,
@@ -12811,8 +12293,7 @@ altivec_init_builtins (void)
 				    short_integer_type_node,
 				    short_integer_type_node,
 				    short_integer_type_node, NULL_TREE);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_init_v8hi", ftype,
-	       ALTIVEC_BUILTIN_VEC_INIT_V8HI);
+  def_builtin ("__builtin_vec_init_v8hi", ftype, ALTIVEC_BUILTIN_VEC_INIT_V8HI);
 
   ftype = build_function_type_list (V16QI_type_node, char_type_node,
 				    char_type_node, char_type_node,
@@ -12823,101 +12304,78 @@ altivec_init_builtins (void)
 				    char_type_node, char_type_node,
 				    char_type_node, char_type_node,
 				    char_type_node, NULL_TREE);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_init_v16qi", ftype,
+  def_builtin ("__builtin_vec_init_v16qi", ftype,
 	       ALTIVEC_BUILTIN_VEC_INIT_V16QI);
 
   ftype = build_function_type_list (V4SF_type_node, float_type_node,
 				    float_type_node, float_type_node,
 				    float_type_node, NULL_TREE);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_init_v4sf", ftype,
-	       ALTIVEC_BUILTIN_VEC_INIT_V4SF);
+  def_builtin ("__builtin_vec_init_v4sf", ftype, ALTIVEC_BUILTIN_VEC_INIT_V4SF);
 
-  if (TARGET_VSX)
-    {
-      ftype = build_function_type_list (V2DF_type_node, double_type_node,
-					double_type_node, NULL_TREE);
-      def_builtin (MASK_VSX, "__builtin_vec_init_v2df", ftype,
-		   VSX_BUILTIN_VEC_INIT_V2DF);
+  /* VSX builtins.  */
+  ftype = build_function_type_list (V2DF_type_node, double_type_node,
+				    double_type_node, NULL_TREE);
+  def_builtin ("__builtin_vec_init_v2df", ftype, VSX_BUILTIN_VEC_INIT_V2DF);
 
-      ftype = build_function_type_list (V2DI_type_node, intDI_type_node,
-					intDI_type_node, NULL_TREE);
-      def_builtin (MASK_VSX, "__builtin_vec_init_v2di", ftype,
-		   VSX_BUILTIN_VEC_INIT_V2DI);
-    }
+  ftype = build_function_type_list (V2DI_type_node, intDI_type_node,
+				    intDI_type_node, NULL_TREE);
+  def_builtin ("__builtin_vec_init_v2di", ftype, VSX_BUILTIN_VEC_INIT_V2DI);
 
   /* Access to the vec_set patterns.  */
   ftype = build_function_type_list (V4SI_type_node, V4SI_type_node,
 				    intSI_type_node,
 				    integer_type_node, NULL_TREE);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_set_v4si", ftype,
-	       ALTIVEC_BUILTIN_VEC_SET_V4SI);
+  def_builtin ("__builtin_vec_set_v4si", ftype, ALTIVEC_BUILTIN_VEC_SET_V4SI);
 
   ftype = build_function_type_list (V8HI_type_node, V8HI_type_node,
 				    intHI_type_node,
 				    integer_type_node, NULL_TREE);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_set_v8hi", ftype,
-	       ALTIVEC_BUILTIN_VEC_SET_V8HI);
+  def_builtin ("__builtin_vec_set_v8hi", ftype, ALTIVEC_BUILTIN_VEC_SET_V8HI);
 
   ftype = build_function_type_list (V16QI_type_node, V16QI_type_node,
 				    intQI_type_node,
 				    integer_type_node, NULL_TREE);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_set_v16qi", ftype,
-	       ALTIVEC_BUILTIN_VEC_SET_V16QI);
+  def_builtin ("__builtin_vec_set_v16qi", ftype, ALTIVEC_BUILTIN_VEC_SET_V16QI);
 
   ftype = build_function_type_list (V4SF_type_node, V4SF_type_node,
 				    float_type_node,
 				    integer_type_node, NULL_TREE);
-  def_builtin (MASK_ALTIVEC|MASK_VSX, "__builtin_vec_set_v4sf", ftype,
-	       ALTIVEC_BUILTIN_VEC_SET_V4SF);
+  def_builtin ("__builtin_vec_set_v4sf", ftype, ALTIVEC_BUILTIN_VEC_SET_V4SF);
 
-  if (TARGET_VSX)
-    {
-      ftype = build_function_type_list (V2DF_type_node, V2DF_type_node,
-					double_type_node,
-					integer_type_node, NULL_TREE);
-      def_builtin (MASK_VSX, "__builtin_vec_set_v2df", ftype,
-		   VSX_BUILTIN_VEC_SET_V2DF);
+  ftype = build_function_type_list (V2DF_type_node, V2DF_type_node,
+				    double_type_node,
+				    integer_type_node, NULL_TREE);
+  def_builtin ("__builtin_vec_set_v2df", ftype, VSX_BUILTIN_VEC_SET_V2DF);
 
-      ftype = build_function_type_list (V2DI_type_node, V2DI_type_node,
-					intDI_type_node,
-					integer_type_node, NULL_TREE);
-      def_builtin (MASK_VSX, "__builtin_vec_set_v2di", ftype,
-		   VSX_BUILTIN_VEC_SET_V2DI);
-    }
+  ftype = build_function_type_list (V2DI_type_node, V2DI_type_node,
+				    intDI_type_node,
+				    integer_type_node, NULL_TREE);
+  def_builtin ("__builtin_vec_set_v2di", ftype, VSX_BUILTIN_VEC_SET_V2DI);
 
   /* Access to the vec_extract patterns.  */
   ftype = build_function_type_list (intSI_type_node, V4SI_type_node,
 				    integer_type_node, NULL_TREE);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_ext_v4si", ftype,
-	       ALTIVEC_BUILTIN_VEC_EXT_V4SI);
+  def_builtin ("__builtin_vec_ext_v4si", ftype, ALTIVEC_BUILTIN_VEC_EXT_V4SI);
 
   ftype = build_function_type_list (intHI_type_node, V8HI_type_node,
 				    integer_type_node, NULL_TREE);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_ext_v8hi", ftype,
-	       ALTIVEC_BUILTIN_VEC_EXT_V8HI);
+  def_builtin ("__builtin_vec_ext_v8hi", ftype, ALTIVEC_BUILTIN_VEC_EXT_V8HI);
 
   ftype = build_function_type_list (intQI_type_node, V16QI_type_node,
 				    integer_type_node, NULL_TREE);
-  def_builtin (MASK_ALTIVEC, "__builtin_vec_ext_v16qi", ftype,
-	       ALTIVEC_BUILTIN_VEC_EXT_V16QI);
+  def_builtin ("__builtin_vec_ext_v16qi", ftype, ALTIVEC_BUILTIN_VEC_EXT_V16QI);
 
   ftype = build_function_type_list (float_type_node, V4SF_type_node,
 				    integer_type_node, NULL_TREE);
-  def_builtin (MASK_ALTIVEC|MASK_VSX, "__builtin_vec_ext_v4sf", ftype,
-	       ALTIVEC_BUILTIN_VEC_EXT_V4SF);
+  def_builtin ("__builtin_vec_ext_v4sf", ftype, ALTIVEC_BUILTIN_VEC_EXT_V4SF);
 
-  if (TARGET_VSX)
-    {
-      ftype = build_function_type_list (double_type_node, V2DF_type_node,
-					integer_type_node, NULL_TREE);
-      def_builtin (MASK_VSX, "__builtin_vec_ext_v2df", ftype,
-		   VSX_BUILTIN_VEC_EXT_V2DF);
+  ftype = build_function_type_list (double_type_node, V2DF_type_node,
+				    integer_type_node, NULL_TREE);
+  def_builtin ("__builtin_vec_ext_v2df", ftype, VSX_BUILTIN_VEC_EXT_V2DF);
 
-      ftype = build_function_type_list (intDI_type_node, V2DI_type_node,
-					integer_type_node, NULL_TREE);
-      def_builtin (MASK_VSX, "__builtin_vec_ext_v2di", ftype,
-		   VSX_BUILTIN_VEC_EXT_V2DI);
-    }
+  ftype = build_function_type_list (intDI_type_node, V2DI_type_node,
+				    integer_type_node, NULL_TREE);
+  def_builtin ("__builtin_vec_ext_v2di", ftype, VSX_BUILTIN_VEC_EXT_V2DI);
 }
 
 /* Hash function for builtin functions with up to 3 arguments and a return
@@ -13044,13 +12502,13 @@ builtin_function_type (enum machine_mode mode_ret, enum machine_mode mode_arg0,
 
       /* unsigned args, signed return.  */
     case VSX_BUILTIN_XVCVUXDDP_UNS:
-    case VECTOR_BUILTIN_UNSFLOAT_V4SI_V4SF:
+    case ALTIVEC_BUILTIN_UNSFLOAT_V4SI_V4SF:
       h.uns_p[1] = 1;
       break;
 
       /* signed args, unsigned return.  */
     case VSX_BUILTIN_XVCVDPUXDS_UNS:
-    case VECTOR_BUILTIN_FIXUNS_V4SF_V4SI:
+    case ALTIVEC_BUILTIN_FIXUNS_V4SF_V4SI:
       h.uns_p[0] = 1;
       break;
 
@@ -13117,6 +12575,7 @@ rs6000_common_init_builtins (void)
   tree v2si_ftype_qi = NULL_TREE;
   tree v2si_ftype_v2si_qi = NULL_TREE;
   tree v2si_ftype_int_qi = NULL_TREE;
+  unsigned builtin_mask = rs6000_builtin_mask;
 
   if (!TARGET_PAIRED_FLOAT)
     {
@@ -13124,21 +12583,30 @@ rs6000_common_init_builtins (void)
       builtin_mode_to_type[V2SFmode][0] = opaque_V2SF_type_node;
     }
 
+  /* Paired and SPE builtins are only available if you build a compiler with
+     the appropriate options, so only create those builtins with the
+     appropriate compiler option.  Create Altivec and VSX builtins on machines
+     with at least the general purpose extensions (970 and newer) to allow the
+     use of the target attribute..  */
+
+  if (TARGET_EXTRA_BUILTINS)
+    builtin_mask |= RS6000_BTM_COMMON;
+
   /* Add the ternary operators.  */
   d = bdesc_3arg;
   for (i = 0; i < ARRAY_SIZE (bdesc_3arg); i++, d++)
     {
       tree type;
-      int mask = d->mask;
+      unsigned mask = d->mask;
 
-      if ((mask != 0 && (mask & target_flags) == 0)
-	  || (mask == 0 && !TARGET_PAIRED_FLOAT))
-	continue;
+      if ((mask & builtin_mask) != mask)
+	{
+	  if (TARGET_DEBUG_BUILTIN)
+	    fprintf (stderr, "rs6000_builtin, skip ternary %s\n", d->name);
+	  continue;
+	}
 
-      if ((d->code >= ALTIVEC_BUILTIN_OVERLOADED_FIRST
-	   && d->code <= ALTIVEC_BUILTIN_OVERLOADED_LAST)
-	  || (d->code >= VSX_BUILTIN_OVERLOADED_FIRST
-	      && d->code <= VSX_BUILTIN_OVERLOADED_LAST))
+      if (rs6000_overloaded_builtin_p (d->code))
 	{
 	  if (! (type = opaque_ftype_opaque_opaque_opaque))
 	    type = opaque_ftype_opaque_opaque_opaque
@@ -13161,7 +12629,7 @@ rs6000_common_init_builtins (void)
 					d->code, d->name);
 	}
 
-      def_builtin (d->mask, d->name, type, d->code);
+      def_builtin (d->name, type, d->code);
     }
 
   /* Add the binary operators.  */
@@ -13170,16 +12638,16 @@ rs6000_common_init_builtins (void)
     {
       enum machine_mode mode0, mode1, mode2;
       tree type;
-      int mask = d->mask;
+      unsigned mask = d->mask;
 
-      if ((mask != 0 && (mask & target_flags) == 0)
-	  || (mask == 0 && !TARGET_PAIRED_FLOAT))
-	continue;
+      if ((mask & builtin_mask) != mask)
+	{
+	  if (TARGET_DEBUG_BUILTIN)
+	    fprintf (stderr, "rs6000_builtin, skip binary %s\n", d->name);
+	  continue;
+	}
 
-      if ((d->code >= ALTIVEC_BUILTIN_OVERLOADED_FIRST
-	   && d->code <= ALTIVEC_BUILTIN_OVERLOADED_LAST)
-	  || (d->code >= VSX_BUILTIN_OVERLOADED_FIRST
-	      && d->code <= VSX_BUILTIN_OVERLOADED_LAST))
+      if (rs6000_overloaded_builtin_p (d->code))
 	{
 	  if (! (type = opaque_ftype_opaque_opaque))
 	    type = opaque_ftype_opaque_opaque
@@ -13224,25 +12692,25 @@ rs6000_common_init_builtins (void)
 					  d->code, d->name);
 	}
 
-      def_builtin (d->mask, d->name, type, d->code);
+      def_builtin (d->name, type, d->code);
     }
 
   /* Add the simple unary operators.  */
-  d = (struct builtin_description *) bdesc_1arg;
+  d = bdesc_1arg;
   for (i = 0; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
     {
       enum machine_mode mode0, mode1;
       tree type;
-      int mask = d->mask;
+      unsigned mask = d->mask;
 
-      if ((mask != 0 && (mask & target_flags) == 0)
-	  || (mask == 0 && !TARGET_PAIRED_FLOAT))
-	continue;
+      if ((mask & builtin_mask) != mask)
+	{
+	  if (TARGET_DEBUG_BUILTIN)
+	    fprintf (stderr, "rs6000_builtin, skip unary %s\n", d->name);
+	  continue;
+	}
 
-      if ((d->code >= ALTIVEC_BUILTIN_OVERLOADED_FIRST
-	   && d->code <= ALTIVEC_BUILTIN_OVERLOADED_LAST)
-	  || (d->code >= VSX_BUILTIN_OVERLOADED_FIRST
-	      && d->code <= VSX_BUILTIN_OVERLOADED_LAST))
+      if (rs6000_overloaded_builtin_p (d->code))
 	{
 	  if (! (type = opaque_ftype_opaque))
 	    type = opaque_ftype_opaque
@@ -13273,7 +12741,7 @@ rs6000_common_init_builtins (void)
 					  d->code, d->name);
 	}
 
-      def_builtin (d->mask, d->name, type, d->code);
+      def_builtin (d->name, type, d->code);
     }
 }
 
@@ -15999,12 +15467,13 @@ rs6000_assemble_integer (rtx x, unsigned int size, int aligned_p)
     {
       static int recurse = 0;
 
-      /* For -mrelocatable, we mark all addresses that need to be fixed up
-	 in the .fixup section.  */
+      /* For -mrelocatable, we mark all addresses that need to be fixed up in
+	 the .fixup section.  Since the TOC section is already relocated, we
+	 don't need to mark it here.  We used to skip the text section, but it
+	 should never be valid for relocated addresses to be placed in the text
+	 section.  */
       if (TARGET_RELOCATABLE
 	  && in_section != toc_section
-	  && in_section != text_section
-	  && !unlikely_text_section_p (in_section)
 	  && !recurse
 	  && GET_CODE (x) != CONST_INT
 	  && GET_CODE (x) != CONST_DOUBLE
@@ -17352,10 +16821,10 @@ rs6000_expand_atomic_compare_and_swap (rtx operands[])
       retval = gen_reg_rtx (SImode);
       mode = SImode;
     }
+  else if (reg_overlap_mentioned_p (retval, oldval))
+    oldval = copy_to_reg (oldval);
 
   rs6000_pre_atomic_barrier (mod_s);
-
-  emit_move_insn (boolval, const0_rtx);
 
   label1 = NULL_RTX;
   if (!is_weak)
@@ -17374,28 +16843,23 @@ rs6000_expand_atomic_compare_and_swap (rtx operands[])
 			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
     }
 
-  x = gen_rtx_NE (VOIDmode, x, oldval);
-  x = rs6000_generate_compare (x, mode);
+  cond = gen_reg_rtx (CCmode);
+  x = gen_rtx_COMPARE (CCmode, x, oldval);
+  emit_insn (gen_rtx_SET (VOIDmode, cond, x));
+
+  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
   emit_unlikely_jump (x, label2);
 
   x = newval;
   if (mask)
     x = rs6000_mask_atomic_subword (retval, newval, mask);
 
-  cond = gen_reg_rtx (CCmode);
   emit_store_conditional (mode, cond, mem, x);
 
-  if (is_weak)
-    {
-      /* ??? It's either this or an unlikely jump over (set bool 1).  */
-      x = gen_rtx_EQ (SImode, cond, const0_rtx);
-      emit_insn (gen_rtx_SET (VOIDmode, boolval, x));
-    }
-  else
+  if (!is_weak)
     {
       x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
       emit_unlikely_jump (x, label1);
-      emit_move_insn (boolval, const1_rtx);
     }
 
   if (mod_f != MEMMODEL_RELAXED)
@@ -17408,6 +16872,10 @@ rs6000_expand_atomic_compare_and_swap (rtx operands[])
 
   if (shift)
     rs6000_finish_atomic_subword (operands[1], retval, shift);
+
+  /* In all cases, CR0 contains EQ on success, and NE on failure.  */
+  x = gen_rtx_EQ (SImode, cond, const0_rtx);
+  emit_insn (gen_rtx_SET (VOIDmode, boolval, x));
 }
 
 /* Expand an atomic exchange operation.  */
@@ -20102,56 +19570,52 @@ rs6000_emit_prologue (void)
     {
       int i;
       rtx spe_save_area_ptr;
- 
+      int save_ptr_to_sp;
+      int ool_adjust = 0;
+
       /* Determine whether we can address all of the registers that need
-	 to be saved with an offset from the stack pointer that fits in
+	 to be saved with an offset from frame_reg_rtx that fits in
 	 the small const field for SPE memory instructions.  */
-      int spe_regs_addressable_via_sp
-	= (SPE_CONST_OFFSET_OK(info->spe_gp_save_offset + sp_offset
-			       + (32 - info->first_gp_reg_save - 1) * reg_size)
+      int spe_regs_addressable
+	= (SPE_CONST_OFFSET_OK (info->spe_gp_save_offset + sp_offset
+				+ reg_size * (32 - info->first_gp_reg_save - 1))
 	   && saving_GPRs_inline);
       int spe_offset;
- 
-      if (spe_regs_addressable_via_sp)
+
+      if (spe_regs_addressable)
 	{
 	  spe_save_area_ptr = frame_reg_rtx;
+	  save_ptr_to_sp = info->total_size - sp_offset;
 	  spe_offset = info->spe_gp_save_offset + sp_offset;
 	}
       else
 	{
 	  /* Make r11 point to the start of the SPE save area.  We need
 	     to be careful here if r11 is holding the static chain.  If
-	     it is, then temporarily save it in r0.  We would use r0 as
-	     our base register here, but using r0 as a base register in
-	     loads and stores means something different from what we
-	     would like.  */
-	  int ool_adjust = (saving_GPRs_inline
-			    ? 0
-			    : (info->first_gp_reg_save
-			       - (FIRST_SAVRES_REGISTER+1))*8);
-	  HOST_WIDE_INT offset = (info->spe_gp_save_offset
-				  + sp_offset - ool_adjust);
+	     it is, then temporarily save it in r0.  */
+	  int offset;
+
+	  if (!saving_GPRs_inline)
+	    ool_adjust = 8 * (info->first_gp_reg_save
+			      - (FIRST_SAVRES_REGISTER + 1));
+	  offset = info->spe_gp_save_offset + sp_offset - ool_adjust;
+	  spe_save_area_ptr = gen_rtx_REG (Pmode, 11);
+	  save_ptr_to_sp = info->total_size - sp_offset + offset;
+	  spe_offset = 0;
 
 	  if (using_static_chain_p)
 	    {
 	      rtx r0 = gen_rtx_REG (Pmode, 0);
 	      gcc_assert (info->first_gp_reg_save > 11);
- 
-	      emit_move_insn (r0, gen_rtx_REG (Pmode, 11));
+
+	      emit_move_insn (r0, spe_save_area_ptr);
 	    }
- 
-	  spe_save_area_ptr = gen_rtx_REG (Pmode, 11);
-	  insn = emit_insn (gen_addsi3 (spe_save_area_ptr,
-					frame_reg_rtx,
-					GEN_INT (offset)));
-	  /* We need to make sure the move to r11 gets noted for
-	     properly outputting unwind information.  */
-	  if (!saving_GPRs_inline)
-	    rs6000_frame_related (insn, frame_reg_rtx, offset,
-				  NULL_RTX, NULL_RTX);
-	  spe_offset = 0;
+	  emit_insn (gen_addsi3 (spe_save_area_ptr,
+				 frame_reg_rtx, GEN_INT (offset)));
+	  if (REGNO (frame_reg_rtx) == 11)
+	    sp_offset = -info->spe_gp_save_offset + ool_adjust;
 	}
- 
+
       if (saving_GPRs_inline)
 	{
 	  for (i = 0; i < 32 - info->first_gp_reg_save; i++)
@@ -20163,58 +19627,65 @@ rs6000_emit_prologue (void)
 		/* We're doing all this to ensure that the offset fits into
 		   the immediate offset of 'evstdd'.  */
 		gcc_assert (SPE_CONST_OFFSET_OK (reg_size * i + spe_offset));
- 
+
 		offset = GEN_INT (reg_size * i + spe_offset);
 		addr = gen_rtx_PLUS (Pmode, spe_save_area_ptr, offset);
 		mem = gen_rtx_MEM (V2SImode, addr);
-  
+
 		insn = emit_move_insn (mem, reg);
-	   
-		rs6000_frame_related (insn, spe_save_area_ptr,
-				      info->spe_gp_save_offset
-				      + sp_offset + reg_size * i,
-				      offset, const0_rtx);
+
+		rs6000_frame_related (insn,
+				      spe_save_area_ptr, save_ptr_to_sp,
+				      NULL_RTX, NULL_RTX);
 	      }
 	}
       else
 	{
-	  insn = rs6000_emit_savres_rtx (info, gen_rtx_REG (Pmode, 11),
-					 0, reg_mode,
+	  insn = rs6000_emit_savres_rtx (info, spe_save_area_ptr,
+					 ool_adjust, reg_mode,
 					 /*savep=*/true, /*gpr=*/true,
 					 /*lr=*/false);
-	  rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
+
+	  rs6000_frame_related (insn, spe_save_area_ptr, save_ptr_to_sp,
 				NULL_RTX, NULL_RTX);
 	}
-					
- 
+
       /* Move the static chain pointer back.  */
-      if (using_static_chain_p && !spe_regs_addressable_via_sp)
-	emit_move_insn (gen_rtx_REG (Pmode, 11), gen_rtx_REG (Pmode, 0));
+      if (using_static_chain_p && !spe_regs_addressable)
+	emit_move_insn (spe_save_area_ptr, gen_rtx_REG (Pmode, 0));
     }
   else if (!WORLD_SAVE_P (info) && !saving_GPRs_inline)
     {
       if (DEFAULT_ABI == ABI_DARWIN)
 	{
-	  rtx dest_reg = gen_rtx_REG (reg_mode, 11);
+	  rtx dest_reg = gen_rtx_REG (Pmode, 11);
 	  if (info->first_fp_reg_save == 64)
-	    /* we only need a copy, no fprs were saved.  */
-	    emit_move_insn (dest_reg, frame_reg_rtx);
+	    {
+	      /* we only need a copy, no fprs were saved.  */
+	      if (dest_reg != frame_reg_rtx)
+		emit_move_insn (dest_reg, frame_reg_rtx);
+	    }
 	  else
 	    {
-	      rtx offset = GEN_INT (sp_offset
-				    + (-8 * (64-info->first_fp_reg_save)));
+	      int save_off = 8 * (64 - info->first_fp_reg_save);
+	      rtx offset = GEN_INT (sp_offset - save_off);
+
+	      if (REGNO (dest_reg) == REGNO (frame_reg_rtx))
+		sp_offset = save_off;
 	      emit_insn (gen_add3_insn (dest_reg, frame_reg_rtx, offset));
 	    }
 	}
       /* Need to adjust r11 (r12) if we saved any FPRs.  */
       else if (info->first_fp_reg_save != 64)
-        {
-	  rtx dest_reg = gen_rtx_REG (reg_mode, DEFAULT_ABI == ABI_AIX
-				      ? 12 : 11);
-	  rtx offset = GEN_INT (sp_offset
-                                + (-8 * (64-info->first_fp_reg_save)));
+	{
+	  rtx dest_reg = gen_rtx_REG (Pmode, DEFAULT_ABI == ABI_AIX ? 12 : 11);
+	  int save_off = 8 * (64 - info->first_fp_reg_save);
+	  rtx offset = GEN_INT (sp_offset - save_off);
+
+	  if (REGNO (dest_reg) == REGNO (frame_reg_rtx))
+	    sp_offset = save_off;
 	  emit_insn (gen_add3_insn (dest_reg, frame_reg_rtx, offset));
-        }
+	}
 
       insn = rs6000_emit_savres_rtx (info, frame_reg_rtx,
 				     info->gp_save_offset + sp_offset,
@@ -20450,7 +19921,9 @@ rs6000_emit_prologue (void)
      used in this function, and do the corresponding magic in the
      epilogue.  */
 
-  if (TARGET_ALTIVEC && TARGET_ALTIVEC_VRSAVE
+  if (!WORLD_SAVE_P (info)
+      && TARGET_ALTIVEC
+      && TARGET_ALTIVEC_VRSAVE
       && info->vrsave_mask != 0)
     {
       rtx reg, mem, vrsave;
@@ -20466,15 +19939,12 @@ rs6000_emit_prologue (void)
       else
         emit_insn (gen_rtx_SET (VOIDmode, reg, vrsave));
 
-      if (!WORLD_SAVE_P (info))
-        {
-          /* Save VRSAVE.  */
-          offset = info->vrsave_save_offset + sp_offset;
-          mem = gen_frame_mem (SImode,
-                               gen_rtx_PLUS (Pmode, frame_reg_rtx,
-                                             GEN_INT (offset)));
-          insn = emit_move_insn (mem, reg);
-        }
+      /* Save VRSAVE.  */
+      offset = info->vrsave_save_offset + sp_offset;
+      mem = gen_frame_mem (SImode,
+			   gen_rtx_PLUS (Pmode, frame_reg_rtx, 
+					 GEN_INT (offset)));
+      insn = emit_move_insn (mem, reg);
 
       /* Include the registers in the mask.  */
       emit_insn (gen_iorsi3 (reg, reg, GEN_INT ((int) info->vrsave_mask)));
@@ -21128,40 +20598,39 @@ rs6000_emit_epilogue (int sibcall)
       && info->first_gp_reg_save != 32)
     {
       /* Determine whether we can address all of the registers that need
-         to be saved with an offset from the stack pointer that fits in
-         the small const field for SPE memory instructions.  */
-      int spe_regs_addressable_via_sp
-	= (SPE_CONST_OFFSET_OK(info->spe_gp_save_offset + sp_offset
-			       + (32 - info->first_gp_reg_save - 1) * reg_size)
+	 to be saved with an offset from frame_reg_rtx that fits in
+	 the small const field for SPE memory instructions.  */
+      int spe_regs_addressable
+	= (SPE_CONST_OFFSET_OK (info->spe_gp_save_offset + sp_offset
+				+ reg_size * (32 - info->first_gp_reg_save - 1))
 	   && restoring_GPRs_inline);
       int spe_offset;
+      int ool_adjust = 0;
 
-      if (spe_regs_addressable_via_sp)
+      if (spe_regs_addressable)
 	spe_offset = info->spe_gp_save_offset + sp_offset;
       else
-        {
+	{
 	  rtx old_frame_reg_rtx = frame_reg_rtx;
-          /* Make r11 point to the start of the SPE save area.  We worried about
-             not clobbering it when we were saving registers in the prologue.
-             There's no need to worry here because the static chain is passed
-             anew to every function.  */
-	  int ool_adjust = (restoring_GPRs_inline
-			    ? 0
-			    : (info->first_gp_reg_save
-			       - (FIRST_SAVRES_REGISTER + 1)) * 8);
+	  /* Make r11 point to the start of the SPE save area.  We worried about
+	     not clobbering it when we were saving registers in the prologue.
+	     There's no need to worry here because the static chain is passed
+	     anew to every function.  */
 
-	  if (frame_reg_rtx == sp_reg_rtx)
-	    frame_reg_rtx = gen_rtx_REG (Pmode, 11);
-          emit_insn (gen_addsi3 (frame_reg_rtx, old_frame_reg_rtx,
+	  if (!restoring_GPRs_inline)
+	    ool_adjust = 8 * (info->first_gp_reg_save
+			      - (FIRST_SAVRES_REGISTER + 1));
+	  frame_reg_rtx = gen_rtx_REG (Pmode, 11);
+	  emit_insn (gen_addsi3 (frame_reg_rtx, old_frame_reg_rtx,
 				 GEN_INT (info->spe_gp_save_offset
 					  + sp_offset
 					  - ool_adjust)));
 	  /* Keep the invariant that frame_reg_rtx + sp_offset points
 	     at the top of the stack frame.  */
-	  sp_offset = -info->spe_gp_save_offset;
+	  sp_offset = -info->spe_gp_save_offset + ool_adjust;
 
-          spe_offset = 0;
-        }
+	  spe_offset = 0;
+	}
 
       if (restoring_GPRs_inline)
 	{
@@ -21183,8 +20652,8 @@ rs6000_emit_epilogue (int sibcall)
 	      }
 	}
       else
-	rs6000_emit_savres_rtx (info, gen_rtx_REG (Pmode, 11),
-				0, reg_mode,
+	rs6000_emit_savres_rtx (info, frame_reg_rtx,
+				ool_adjust, reg_mode,
 				/*savep=*/false, /*gpr=*/true,
 				/*lr=*/true);
     }
@@ -21197,22 +20666,22 @@ rs6000_emit_epilogue (int sibcall)
       if (can_use_exit)
 	{
 	  rs6000_emit_stack_reset (info, sp_reg_rtx, frame_reg_rtx,
-				 sp_offset, can_use_exit);
+				   sp_offset, can_use_exit);
 	  if (DEFAULT_ABI == ABI_DARWIN)
 	    /* we only need a copy, no fprs were saved.  */
-	    emit_move_insn (gen_rtx_REG (reg_mode, 11), frame_reg_rtx);
+	    emit_move_insn (gen_rtx_REG (Pmode, 11), frame_reg_rtx);
 
 	  if (info->cr_save_p)
 	    rs6000_restore_saved_cr (cr_save_reg, using_mtcr_multiple);
 	}
       else
 	{
-	  emit_insn (gen_add3_insn (gen_rtx_REG (Pmode, DEFAULT_ABI == ABI_AIX
-							? 12 : 11),
-				    frame_reg_rtx,
+	  rtx src_reg = gen_rtx_REG (Pmode, DEFAULT_ABI == ABI_AIX ? 12 : 11);
+
+	  emit_insn (gen_add3_insn (src_reg, frame_reg_rtx,
 				    GEN_INT (sp_offset - info->fp_size)));
-	  if (REGNO (frame_reg_rtx) == 11)
-	    sp_offset += info->fp_size;
+	  if (REGNO (frame_reg_rtx) == REGNO (src_reg))
+	    sp_offset = info->fp_size;
 	}
 
       rs6000_emit_savres_rtx (info, frame_reg_rtx,
@@ -26348,13 +25817,13 @@ rs6000_builtin_reciprocal (unsigned int fn, bool md_fn,
 	if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))
 	  return NULL_TREE;
 
-	return rs6000_builtin_decls[VSX_BUILTIN_VEC_RSQRT_V2DF];
+	return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_2DF];
 
       case VSX_BUILTIN_XVSQRTSP:
 	if (!RS6000_RECIP_AUTO_RSQRTE_P (V4SFmode))
 	  return NULL_TREE;
 
-	return rs6000_builtin_decls[VSX_BUILTIN_VEC_RSQRT_V4SF];
+	return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_4SF];
 
       default:
 	return NULL_TREE;
@@ -26749,6 +26218,327 @@ rs6000_emit_parity (rtx dst, rtx src)
         rs6000_emit_popcount (tmp, src);
       emit_insn (gen_anddi3 (dst, tmp, const1_rtx));
     }
+}
+
+/* Expand an Altivec constant permutation.  Return true if we match
+   an efficient implementation; false to fall back to VPERM.  */
+
+bool
+altivec_expand_vec_perm_const (rtx operands[4])
+{
+  struct altivec_perm_insn {
+    enum insn_code impl;
+    unsigned char perm[16];
+  };
+  static const struct altivec_perm_insn patterns[] = {
+    { CODE_FOR_altivec_vpkuhum,
+      {  1,  3,  5,  7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31 } },
+    { CODE_FOR_altivec_vpkuwum,
+      {  2,  3,  6,  7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31 } },
+    { CODE_FOR_altivec_vmrghb,
+      {  0, 16,  1, 17,  2, 18,  3, 19,  4, 20,  5, 21,  6, 22,  7, 23 } },
+    { CODE_FOR_altivec_vmrghh,
+      {  0,  1, 16, 17,  2,  3, 18, 19,  4,  5, 20, 21,  6,  7, 22, 23 } },
+    { CODE_FOR_altivec_vmrghw,
+      {  0,  1,  2,  3, 16, 17, 18, 19,  4,  5,  6,  7, 20, 21, 22, 23 } },
+    { CODE_FOR_altivec_vmrglb,
+      {  8, 24,  9, 25, 10, 26, 11, 27, 12, 28, 13, 29, 14, 30, 15, 31 } },
+    { CODE_FOR_altivec_vmrglh,
+      {  8,  9, 24, 25, 10, 11, 26, 27, 12, 13, 28, 29, 14, 15, 30, 31 } },
+    { CODE_FOR_altivec_vmrglw,
+      {  8,  9, 10, 11, 24, 25, 26, 27, 12, 13, 14, 15, 28, 29, 30, 31 } }
+  };
+
+  unsigned int i, j, elt, which;
+  unsigned char perm[16];
+  rtx target, op0, op1, sel, x;
+  bool one_vec;
+
+  target = operands[0];
+  op0 = operands[1];
+  op1 = operands[2];
+  sel = operands[3];
+
+  /* Unpack the constant selector.  */
+  for (i = which = 0; i < 16; ++i)
+    {
+      rtx e = XVECEXP (sel, 0, i);
+      elt = INTVAL (e) & 31;
+      which |= (elt < 16 ? 1 : 2);
+      perm[i] = elt;
+    }
+
+  /* Simplify the constant selector based on operands.  */
+  switch (which)
+    {
+    default:
+      gcc_unreachable ();
+
+    case 3:
+      one_vec = false;
+      if (!rtx_equal_p (op0, op1))
+	break;
+      /* FALLTHRU */
+
+    case 2:
+      for (i = 0; i < 16; ++i)
+	perm[i] &= 15;
+      op0 = op1;
+      one_vec = true;
+      break;
+
+    case 1:
+      op1 = op0;
+      one_vec = true;
+      break;
+    }
+ 
+  /* Look for splat patterns.  */
+  if (one_vec)
+    {
+      elt = perm[0];
+
+      for (i = 0; i < 16; ++i)
+	if (perm[i] != elt)
+	  break;
+      if (i == 16)
+	{
+	  emit_insn (gen_altivec_vspltb (target, op0, GEN_INT (elt)));
+	  return true;
+	}
+
+      if (elt % 2 == 0)
+	{
+	  for (i = 0; i < 16; i += 2)
+	    if (perm[i] != elt || perm[i + 1] != elt + 1)
+	      break;
+	  if (i == 16)
+	    {
+	      x = gen_reg_rtx (V8HImode);
+	      emit_insn (gen_altivec_vsplth (x, gen_lowpart (V8HImode, op0),
+					     GEN_INT (elt / 2)));
+	      emit_move_insn (target, gen_lowpart (V16QImode, x));
+	      return true;
+	    }
+	}
+
+      if (elt % 4 == 0)
+	{
+	  for (i = 0; i < 16; i += 4)
+	    if (perm[i] != elt
+		|| perm[i + 1] != elt + 1
+		|| perm[i + 2] != elt + 2
+		|| perm[i + 3] != elt + 3)
+	      break;
+	  if (i == 16)
+	    {
+	      x = gen_reg_rtx (V4SImode);
+	      emit_insn (gen_altivec_vspltw (x, gen_lowpart (V4SImode, op0),
+					     GEN_INT (elt / 4)));
+	      emit_move_insn (target, gen_lowpart (V16QImode, x));
+	      return true;
+	    }
+	}
+    }
+
+  /* Look for merge and pack patterns.  */
+  for (j = 0; j < ARRAY_SIZE (patterns); ++j)
+    {
+      bool swapped;
+
+      elt = patterns[j].perm[0];
+      if (perm[0] == elt)
+	swapped = false;
+      else if (perm[0] == elt + 16)
+	swapped = true;
+      else
+	continue;
+      for (i = 1; i < 16; ++i)
+	{
+	  elt = patterns[j].perm[i];
+	  if (swapped)
+	    elt = (elt >= 16 ? elt - 16 : elt + 16);
+	  else if (one_vec && elt >= 16)
+	    elt -= 16;
+	  if (perm[i] != elt)
+	    break;
+	}
+      if (i == 16)
+	{
+	  enum insn_code icode = patterns[j].impl;
+	  enum machine_mode omode = insn_data[icode].operand[0].mode;
+	  enum machine_mode imode = insn_data[icode].operand[1].mode;
+
+	  if (swapped)
+	    x = op0, op0 = op1, op1 = x;
+	  if (imode != V16QImode)
+	    {
+	      op0 = gen_lowpart (imode, op0);
+	      op1 = gen_lowpart (imode, op1);
+	    }
+	  if (omode == V16QImode)
+	    x = target;
+	  else
+	    x = gen_reg_rtx (omode);
+	  emit_insn (GEN_FCN (icode) (x, op0, op1));
+	  if (omode != V16QImode)
+	    emit_move_insn (target, gen_lowpart (V16QImode, x));
+	  return true;
+	}
+    }
+
+  return false;
+}
+
+/* Expand a Paired Single, VSX Permute Doubleword, or SPE constant permutation.
+   Return true if we match an efficient implementation.  */
+
+static bool
+rs6000_expand_vec_perm_const_1 (rtx target, rtx op0, rtx op1,
+				unsigned char perm0, unsigned char perm1)
+{
+  rtx x;
+
+  /* If both selectors come from the same operand, fold to single op.  */
+  if ((perm0 & 2) == (perm1 & 2))
+    {
+      if (perm0 & 2)
+	op0 = op1;
+      else
+	op1 = op0;
+    }
+  /* If both operands are equal, fold to simpler permutation.  */
+  if (rtx_equal_p (op0, op1))
+    {
+      perm0 = perm0 & 1;
+      perm1 = (perm1 & 1) + 2;
+    }
+  /* If the first selector comes from the second operand, swap.  */
+  else if (perm0 & 2)
+    {
+      if (perm1 & 2)
+	return false;
+      perm0 -= 2;
+      perm1 += 2;
+      x = op0, op0 = op1, op1 = x;
+    }
+  /* If the second selector does not come from the second operand, fail.  */
+  else if ((perm1 & 2) == 0)
+    return false;
+
+  /* Success! */
+  if (target != NULL)
+    {
+      enum machine_mode vmode, dmode;
+      rtvec v;
+
+      vmode = GET_MODE (target);
+      gcc_assert (GET_MODE_NUNITS (vmode) == 2);
+      dmode = mode_for_vector (GET_MODE_INNER (vmode), 4);
+
+      x = gen_rtx_VEC_CONCAT (dmode, op0, op1);
+      v = gen_rtvec (2, GEN_INT (perm0), GEN_INT (perm1));
+      x = gen_rtx_VEC_SELECT (vmode, x, gen_rtx_PARALLEL (VOIDmode, v));
+      emit_insn (gen_rtx_SET (VOIDmode, target, x));
+    }
+  return true;
+}
+
+bool
+rs6000_expand_vec_perm_const (rtx operands[4])
+{
+  rtx target, op0, op1, sel;
+  unsigned char perm0, perm1;
+
+  target = operands[0];
+  op0 = operands[1];
+  op1 = operands[2];
+  sel = operands[3];
+
+  /* Unpack the constant selector.  */
+  perm0 = INTVAL (XVECEXP (sel, 0, 0)) & 3;
+  perm1 = INTVAL (XVECEXP (sel, 0, 1)) & 3;
+
+  return rs6000_expand_vec_perm_const_1 (target, op0, op1, perm0, perm1);
+}
+
+/* Test whether a constant permutation is supported.  */
+
+static bool
+rs6000_vectorize_vec_perm_const_ok (enum machine_mode vmode,
+				    const unsigned char *sel)
+{
+  /* AltiVec (and thus VSX) can handle arbitrary permutations.  */
+  if (TARGET_ALTIVEC)
+    return true;
+
+  /* Check for ps_merge* or evmerge* insns.  */
+  if ((TARGET_PAIRED_FLOAT && vmode == V2SFmode)
+      || (TARGET_SPE && vmode == V2SImode))
+    {
+      rtx op0 = gen_raw_REG (vmode, LAST_VIRTUAL_REGISTER + 1);
+      rtx op1 = gen_raw_REG (vmode, LAST_VIRTUAL_REGISTER + 2);
+      return rs6000_expand_vec_perm_const_1 (NULL, op0, op1, sel[0], sel[1]);
+    }
+
+  return false;
+}
+
+/* A subroutine for rs6000_expand_extract_even & rs6000_expand_interleave.  */
+
+static void
+rs6000_do_expand_vec_perm (rtx target, rtx op0, rtx op1,
+			   enum machine_mode vmode, unsigned nelt, rtx perm[])
+{
+  enum machine_mode imode;
+  rtx x;
+
+  imode = vmode;
+  if (GET_MODE_CLASS (vmode) != MODE_VECTOR_INT)
+    {
+      imode = GET_MODE_INNER (vmode);
+      imode = mode_for_size (GET_MODE_BITSIZE (imode), MODE_INT, 0);
+      imode = mode_for_vector (imode, nelt);
+    }
+
+  x = gen_rtx_CONST_VECTOR (imode, gen_rtvec_v (nelt, perm));
+  x = expand_vec_perm (vmode, op0, op1, x, target);
+  if (x != target)
+    emit_move_insn (target, x);
+}
+
+/* Expand an extract even operation.  */
+
+void
+rs6000_expand_extract_even (rtx target, rtx op0, rtx op1)
+{
+  enum machine_mode vmode = GET_MODE (target);
+  unsigned i, nelt = GET_MODE_NUNITS (vmode);
+  rtx perm[16];
+
+  for (i = 0; i < nelt; i++)
+    perm[i] = GEN_INT (i * 2);
+
+  rs6000_do_expand_vec_perm (target, op0, op1, vmode, nelt, perm);
+}
+
+/* Expand a vector interleave operation.  */
+
+void
+rs6000_expand_interleave (rtx target, rtx op0, rtx op1, bool highp)
+{
+  enum machine_mode vmode = GET_MODE (target);
+  unsigned i, high, nelt = GET_MODE_NUNITS (vmode);
+  rtx perm[16];
+
+  high = (highp == BYTES_BIG_ENDIAN ? 0 : nelt / 2);
+  for (i = 0; i < nelt / 2; i++)
+    {
+      perm[i * 2] = GEN_INT (i + high);
+      perm[i * 2 + 1] = GEN_INT (i + nelt + high);
+    }
+
+  rs6000_do_expand_vec_perm (target, op0, op1, vmode, nelt, perm);
 }
 
 /* Return an RTX representing where to find the function value of a
@@ -27227,6 +27017,22 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "string",		MASK_STRING,		false, false },
 };
 
+/* Builtin mask mapping for printing the flags.  */
+static struct rs6000_opt_mask const rs6000_builtin_mask_names[] =
+{
+  { "altivec",		 RS6000_BTM_ALTIVEC,	false, false },
+  { "vsx",		 RS6000_BTM_VSX,	false, false },
+  { "spe",		 RS6000_BTM_SPE,	false, false },
+  { "paired",		 RS6000_BTM_PAIRED,	false, false },
+  { "fre",		 RS6000_BTM_FRE,	false, false },
+  { "fres",		 RS6000_BTM_FRES,	false, false },
+  { "frsqrte",		 RS6000_BTM_FRSQRTE,	false, false },
+  { "frsqrtes",		 RS6000_BTM_FRSQRTES,	false, false },
+  { "popcntd",		 RS6000_BTM_POPCNTD,	false, false },
+  { "powerpc",		 RS6000_BTM_POWERPC,	false, false },
+  { "cell",		 RS6000_BTM_CELL,	false, false },
+};
+
 /* Option variables that we want to support inside attribute((target)) and
    #pragma GCC target operations.  */
 
@@ -27322,6 +27128,11 @@ rs6000_inner_target_options (tree args, bool attr_p)
 			error_p = false;
 			target_flags_explicit |= mask;
 
+			/* VSX needs altivec, so -mvsx automagically sets
+			   altivec.  */
+			if (mask == MASK_VSX && !invert)
+			  mask |= MASK_ALTIVEC;
+
 			if (rs6000_opt_masks[i].invert)
 			  invert = !invert;
 
@@ -27339,7 +27150,7 @@ rs6000_inner_target_options (tree args, bool attr_p)
 		    if (strcmp (r, rs6000_opt_vars[i].name) == 0)
 		      {
 			size_t j = rs6000_opt_vars[i].global_offset;
-			((int *) &global_options)[j] = !invert;
+			*((int *) ((char *)&global_options + j)) = !invert;
 			error_p = false;
 			break;
 		      }
@@ -27529,8 +27340,11 @@ rs6000_valid_attribute_p (tree fndecl,
 bool
 rs6000_pragma_target_parse (tree args, tree pop_target)
 {
+  tree prev_tree = build_target_option_node ();
   tree cur_tree;
-  bool ret;
+  struct cl_target_option *prev_opt, *cur_opt;
+  unsigned prev_bumask, cur_bumask, diff_bumask;
+  int prev_flags, cur_flags, diff_flags;
 
   if (TARGET_DEBUG_TARGET)
     {
@@ -27552,7 +27366,6 @@ rs6000_pragma_target_parse (tree args, tree pop_target)
 
   if (! args)
     {
-      ret = true;
       cur_tree = ((pop_target)
 		  ? pop_target
 		  : target_option_default_node);
@@ -27562,17 +27375,49 @@ rs6000_pragma_target_parse (tree args, tree pop_target)
   else
     {
       rs6000_cpu_index = rs6000_tune_index = -1;
-      ret = rs6000_inner_target_options (args, false);
-      cur_tree = build_target_option_node ();
+      if (!rs6000_inner_target_options (args, false)
+	  || !rs6000_option_override_internal (false)
+	  || (cur_tree = build_target_option_node ()) == NULL_TREE)
+	{
+	  if (TARGET_DEBUG_BUILTIN || TARGET_DEBUG_TARGET)
+	    fprintf (stderr, "invalid pragma\n");
 
-      if (!cur_tree)
-	ret = false;
+	  return false;
+	}
     }
 
-  if (cur_tree)
-    target_option_current_node = cur_tree;
+  target_option_current_node = cur_tree;
 
-  return ret;
+  /* If we have the preprocessor linked in (i.e. C or C++ languages), possibly
+     change the macros that are defined.  */
+  if (rs6000_target_modify_macros_ptr)
+    {
+      prev_opt    = TREE_TARGET_OPTION (prev_tree);
+      prev_bumask = prev_opt->x_rs6000_builtin_mask;
+      prev_flags  = prev_opt->x_target_flags;
+
+      cur_opt     = TREE_TARGET_OPTION (cur_tree);
+      cur_flags   = cur_opt->x_target_flags;
+      cur_bumask  = cur_opt->x_rs6000_builtin_mask;
+
+      diff_bumask = (prev_bumask ^ cur_bumask);
+      diff_flags  = (prev_flags  ^ cur_flags);
+
+      if ((diff_flags != 0) || (diff_bumask != 0))
+	{
+	  /* Delete old macros.  */
+	  rs6000_target_modify_macros_ptr (false,
+					   prev_flags & diff_flags,
+					   prev_bumask & diff_bumask);
+
+	  /* Define new macros.  */
+	  rs6000_target_modify_macros_ptr (true,
+					   cur_flags & diff_flags,
+					   cur_bumask & diff_bumask);
+	}
+    }
+
+  return true;
 }
 
 
@@ -27679,6 +27524,7 @@ rs6000_function_specific_print (FILE *file, int indent,
 {
   size_t i;
   int flags = ptr->x_target_flags;
+  unsigned bu_mask = ptr->x_rs6000_builtin_mask;
 
   /* Print the various mask options.  */
   for (i = 0; i < ARRAY_SIZE (rs6000_opt_masks); i++)
@@ -27698,6 +27544,15 @@ rs6000_function_specific_print (FILE *file, int indent,
 	fprintf (file, "%*s-m%s\n", indent, "",
 		 rs6000_opt_vars[i].name);
     }
+
+  /* Print the various builtin flags.  */
+  fprintf (file, "%*sbuiltin mask = 0x%x\n", indent, "", bu_mask);
+  for (i = 0; i < ARRAY_SIZE (rs6000_builtin_mask_names); i++)
+    if ((bu_mask & rs6000_builtin_mask_names[i].mask) != 0)
+      {
+	fprintf (file, "%*s%s builtins supported\n", indent, "",
+		 rs6000_builtin_mask_names[i].name);
+      }
 }
 
 

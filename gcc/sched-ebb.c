@@ -191,8 +191,13 @@ begin_move_insn (rtx insn, rtx last)
 	  gcc_assert (NOTE_INSN_BASIC_BLOCK_P (BB_END (bb)));
 	}
       else
-	/* Create an empty unreachable block after the INSN.  */
-	bb = create_basic_block (NEXT_INSN (insn), NULL_RTX, last_bb);
+	{
+	  /* Create an empty unreachable block after the INSN.  */
+	  rtx next = NEXT_INSN (insn);
+	  if (next && BARRIER_P (next))
+	    next = NEXT_INSN (next);
+	  bb = create_basic_block (next, NULL_RTX, last_bb);
+	}
 
       /* split_edge () creates BB before E->DEST.  Keep in mind, that
 	 this operation extends scheduling region till the end of BB.

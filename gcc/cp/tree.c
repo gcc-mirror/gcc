@@ -564,7 +564,7 @@ diagnose_non_constexpr_vec_init (tree expr)
   tree type = TREE_TYPE (VEC_INIT_EXPR_SLOT (expr));
   tree init, elt_init;
   if (VEC_INIT_EXPR_VALUE_INIT (expr))
-    init = void_zero_node;
+    init = void_type_node;
   else
     init = VEC_INIT_EXPR_INIT (expr);
 
@@ -1457,12 +1457,14 @@ is_overloaded_fn (tree x)
    (14.6.2), return the IDENTIFIER_NODE for that name.  Otherwise, return
    NULL_TREE.  */
 
-static tree
+tree
 dependent_name (tree x)
 {
   if (TREE_CODE (x) == IDENTIFIER_NODE)
     return x;
   if (TREE_CODE (x) != COMPONENT_REF
+      && TREE_CODE (x) != OFFSET_REF
+      && TREE_CODE (x) != BASELINK
       && is_overloaded_fn (x))
     return DECL_NAME (get_first_fn (x));
   return NULL_TREE;
@@ -1943,6 +1945,20 @@ bot_replace (tree* t,
       /* In an NSDMI we need to replace the 'this' parameter we used for
 	 parsing with the real one for this function.  */
       *t = current_class_ptr;
+    }
+  else if (TREE_CODE (*t) == CONVERT_EXPR
+	   && CONVERT_EXPR_VBASE_PATH (*t))
+    {
+      /* In an NSDMI build_base_path defers building conversions to virtual
+	 bases, and we handle it here.  */
+      tree basetype = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (*t)));
+      VEC(tree,gc) *vbases = CLASSTYPE_VBASECLASSES (current_class_type);
+      int i; tree binfo;
+      FOR_EACH_VEC_ELT (tree, vbases, i, binfo)
+	if (BINFO_TYPE (binfo) == basetype)
+	  break;
+      *t = build_base_path (PLUS_EXPR, TREE_OPERAND (*t, 0), binfo, true,
+			    tf_warning_or_error);
     }
 
   return NULL_TREE;
@@ -3337,6 +3353,7 @@ stabilize_init (tree init, tree *initp)
 
   if (TREE_CODE (t) == INIT_EXPR
       && TREE_CODE (TREE_OPERAND (t, 1)) != TARGET_EXPR
+      && TREE_CODE (TREE_OPERAND (t, 1)) != CONSTRUCTOR
       && TREE_CODE (TREE_OPERAND (t, 1)) != AGGR_INIT_EXPR)
     {
       TREE_OPERAND (t, 1) = stabilize_expr (TREE_OPERAND (t, 1), initp);
@@ -3477,17 +3494,6 @@ cp_free_lang_data (tree t)
 	 in this TU.  So make it an external reference.  */
       DECL_EXTERNAL (t) = 1;
       TREE_STATIC (t) = 0;
-    }
-  if (CP_AGGREGATE_TYPE_P (t)
-      && TYPE_NAME (t))
-    {
-      tree name = TYPE_NAME (t);
-      if (TREE_CODE (name) == TYPE_DECL)
-	name = DECL_NAME (name);
-      /* Drop anonymous names.  */
-      if (name != NULL_TREE
-	  && ANON_AGGRNAME_P (name))
-	TYPE_NAME (t) = NULL_TREE;
     }
   if (TREE_CODE (t) == NAMESPACE_DECL)
     {

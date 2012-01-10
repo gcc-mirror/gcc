@@ -94,10 +94,10 @@ main ()
   for (i = 0; i < N; i++)
     {
       asm ("");
-      c[i] = (random () << 1) | (random () & 1);
+      c[i] = (rand () << 1) | (rand () & 1);
       b[i] = (i * 85) & (sizeof (TYPE1) * __CHAR_BIT__ - 1);
       a[i] = c[i];
-      d[i] = (random () << 1) | (random () & 1);
+      d[i] = (rand () << 1) | (rand () & 1);
       d[i] |= (unsigned long long) c[i] << 32;
       e[i] = (i * 85) & (sizeof (TYPE2) * __CHAR_BIT__ - 1);
       f[i] = d[i];

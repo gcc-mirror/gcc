@@ -13,7 +13,6 @@ import (
 	"crypto/sha1"
 	"crypto/x509"
 	"hash"
-	"os"
 )
 
 // a keyAgreement implements the client and server side of a TLS key agreement
@@ -24,20 +23,21 @@ type keyAgreement interface {
 	// In the case that the key agreement protocol doesn't use a
 	// ServerKeyExchange message, generateServerKeyExchange can return nil,
 	// nil.
-	generateServerKeyExchange(*Config, *clientHelloMsg, *serverHelloMsg) (*serverKeyExchangeMsg, os.Error)
-	processClientKeyExchange(*Config, *clientKeyExchangeMsg, uint16) ([]byte, os.Error)
+	generateServerKeyExchange(*Config, *clientHelloMsg, *serverHelloMsg) (*serverKeyExchangeMsg, error)
+	processClientKeyExchange(*Config, *clientKeyExchangeMsg, uint16) ([]byte, error)
 
 	// On the client side, the next two methods are called in order.
 
 	// This method may not be called if the server doesn't send a
 	// ServerKeyExchange message.
-	processServerKeyExchange(*Config, *clientHelloMsg, *serverHelloMsg, *x509.Certificate, *serverKeyExchangeMsg) os.Error
-	generateClientKeyExchange(*Config, *clientHelloMsg, *x509.Certificate) ([]byte, *clientKeyExchangeMsg, os.Error)
+	processServerKeyExchange(*Config, *clientHelloMsg, *serverHelloMsg, *x509.Certificate, *serverKeyExchangeMsg) error
+	generateClientKeyExchange(*Config, *clientHelloMsg, *x509.Certificate) ([]byte, *clientKeyExchangeMsg, error)
 }
 
 // A cipherSuite is a specific combination of key agreement, cipher and MAC
 // function. All cipher suites currently assume RSA key agreement.
 type cipherSuite struct {
+	id uint16
 	// the lengths, in bytes, of the key material needed for each component.
 	keyLen int
 	macLen int
@@ -51,13 +51,13 @@ type cipherSuite struct {
 	mac      func(version uint16, macKey []byte) macFunction
 }
 
-var cipherSuites = map[uint16]*cipherSuite{
-	TLS_RSA_WITH_RC4_128_SHA:            &cipherSuite{16, 20, 0, rsaKA, false, cipherRC4, macSHA1},
-	TLS_RSA_WITH_3DES_EDE_CBC_SHA:       &cipherSuite{24, 20, 8, rsaKA, false, cipher3DES, macSHA1},
-	TLS_RSA_WITH_AES_128_CBC_SHA:        &cipherSuite{16, 20, 16, rsaKA, false, cipherAES, macSHA1},
-	TLS_ECDHE_RSA_WITH_RC4_128_SHA:      &cipherSuite{16, 20, 0, ecdheRSAKA, true, cipherRC4, macSHA1},
-	TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA: &cipherSuite{24, 20, 8, ecdheRSAKA, true, cipher3DES, macSHA1},
-	TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA:  &cipherSuite{16, 20, 16, ecdheRSAKA, true, cipherAES, macSHA1},
+var cipherSuites = []*cipherSuite{
+	{TLS_RSA_WITH_RC4_128_SHA, 16, 20, 0, rsaKA, false, cipherRC4, macSHA1},
+	{TLS_RSA_WITH_3DES_EDE_CBC_SHA, 24, 20, 8, rsaKA, false, cipher3DES, macSHA1},
+	{TLS_RSA_WITH_AES_128_CBC_SHA, 16, 20, 16, rsaKA, false, cipherAES, macSHA1},
+	{TLS_ECDHE_RSA_WITH_RC4_128_SHA, 16, 20, 0, ecdheRSAKA, true, cipherRC4, macSHA1},
+	{TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA, 24, 20, 8, ecdheRSAKA, true, cipher3DES, macSHA1},
+	{TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, 16, 20, 16, ecdheRSAKA, true, cipherAES, macSHA1},
 }
 
 func cipherRC4(key, iv []byte, isRead bool) interface{} {
@@ -96,7 +96,7 @@ func macSHA1(version uint16, key []byte) macFunction {
 
 type macFunction interface {
 	Size() int
-	MAC(seq, data []byte) []byte
+	MAC(digestBuf, seq, data []byte) []byte
 }
 
 // ssl30MAC implements the SSLv3 MAC function, as defined in
@@ -114,7 +114,7 @@ var ssl30Pad1 = [48]byte{0x36, 0x36, 0x36, 0x36, 0x36, 0x36, 0x36, 0x36, 0x36, 0
 
 var ssl30Pad2 = [48]byte{0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c, 0x5c}
 
-func (s ssl30MAC) MAC(seq, record []byte) []byte {
+func (s ssl30MAC) MAC(digestBuf, seq, record []byte) []byte {
 	padLength := 48
 	if s.h.Size() == 20 {
 		padLength = 40
@@ -127,13 +127,13 @@ func (s ssl30MAC) MAC(seq, record []byte) []byte {
 	s.h.Write(record[:1])
 	s.h.Write(record[3:5])
 	s.h.Write(record[recordHeaderLen:])
-	digest := s.h.Sum()
+	digestBuf = s.h.Sum(digestBuf[:0])
 
 	s.h.Reset()
 	s.h.Write(s.key)
 	s.h.Write(ssl30Pad2[:padLength])
-	s.h.Write(digest)
-	return s.h.Sum()
+	s.h.Write(digestBuf)
+	return s.h.Sum(digestBuf[:0])
 }
 
 // tls10MAC implements the TLS 1.0 MAC function. RFC 2246, section 6.2.3.
@@ -145,11 +145,11 @@ func (s tls10MAC) Size() int {
 	return s.h.Size()
 }
 
-func (s tls10MAC) MAC(seq, record []byte) []byte {
+func (s tls10MAC) MAC(digestBuf, seq, record []byte) []byte {
 	s.h.Reset()
 	s.h.Write(seq)
 	s.h.Write(record)
-	return s.h.Sum()
+	return s.h.Sum(digestBuf[:0])
 }
 
 func rsaKA() keyAgreement {
@@ -160,15 +160,20 @@ func ecdheRSAKA() keyAgreement {
 	return new(ecdheRSAKeyAgreement)
 }
 
-// mutualCipherSuite returns a cipherSuite and its id given a list of supported
+// mutualCipherSuite returns a cipherSuite given a list of supported
 // ciphersuites and the id requested by the peer.
-func mutualCipherSuite(have []uint16, want uint16) (suite *cipherSuite, id uint16) {
+func mutualCipherSuite(have []uint16, want uint16) *cipherSuite {
 	for _, id := range have {
 		if id == want {
-			return cipherSuites[id], id
+			for _, suite := range cipherSuites {
+				if suite.id == want {
+					return suite
+				}
+			}
+			return nil
 		}
 	}
-	return
+	return nil
 }
 
 // A list of the possible cipher suite ids. Taken from

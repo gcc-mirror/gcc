@@ -313,10 +313,11 @@ package System.Task_Primitives.Operations is
 
    procedure Yield (Do_Yield : Boolean := True);
    pragma Inline (Yield);
-   --  Yield the processor. Add the calling task to the tail of the ready
-   --  queue for its active_priority. The Do_Yield argument is only used in
-   --  some very rare cases very a yield should have an effect on a specific
-   --  target and not on regular ones.
+   --  Yield the processor. Add the calling task to the tail of the ready queue
+   --  for its active_priority. On most platforms, Yield is a no-op if Do_Yield
+   --  is False. But on some platforms (notably VxWorks), Do_Yield is ignored.
+   --  This is only used in some very rare cases where a Yield should have an
+   --  effect on a specific target and not on regular ones.
 
    procedure Set_Priority
      (T : ST.Task_Id;

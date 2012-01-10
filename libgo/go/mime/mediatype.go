@@ -6,8 +6,8 @@ package mime
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"unicode"
 )
@@ -57,23 +57,23 @@ func FormatMediaType(t, sub string, param map[string]string) string {
 	return b.String()
 }
 
-func checkMediaTypeDisposition(s string) os.Error {
+func checkMediaTypeDisposition(s string) error {
 	typ, rest := consumeToken(s)
 	if typ == "" {
-		return os.NewError("mime: no media type")
+		return errors.New("mime: no media type")
 	}
 	if rest == "" {
 		return nil
 	}
 	if !strings.HasPrefix(rest, "/") {
-		return os.NewError("mime: expected slash after first token")
+		return errors.New("mime: expected slash after first token")
 	}
 	subtype, rest := consumeToken(rest[1:])
 	if subtype == "" {
-		return os.NewError("mime: expected token after slash")
+		return errors.New("mime: expected token after slash")
 	}
 	if rest != "" {
-		return os.NewError("mime: unexpected content after media subtype")
+		return errors.New("mime: unexpected content after media subtype")
 	}
 	return nil
 }
@@ -85,7 +85,7 @@ func checkMediaTypeDisposition(s string) os.Error {
 // to lowercase and trimmed of white space and a non-nil map.
 // The returned map, params, maps from the lowercase
 // attribute to the attribute value with its case preserved.
-func ParseMediaType(v string) (mediatype string, params map[string]string, err os.Error) {
+func ParseMediaType(v string) (mediatype string, params map[string]string, err error) {
 	i := strings.Index(v, ";")
 	if i == -1 {
 		i = len(v)
@@ -118,7 +118,7 @@ func ParseMediaType(v string) (mediatype string, params map[string]string, err o
 				return
 			}
 			// Parse error.
-			return "", nil, os.NewError("mime: invalid media parameter")
+			return "", nil, errors.New("mime: invalid media parameter")
 		}
 
 		pmap := params
@@ -135,7 +135,7 @@ func ParseMediaType(v string) (mediatype string, params map[string]string, err o
 		}
 		if _, exists := pmap[key]; exists {
 			// Duplicate parameter name is bogus.
-			return "", nil, os.NewError("mime: duplicate parameter name")
+			return "", nil, errors.New("mime: duplicate parameter name")
 		}
 		pmap[key] = value
 		v = rest
@@ -199,8 +199,8 @@ func decode2231Enc(v string) string {
 	return encv
 }
 
-func isNotTokenChar(rune int) bool {
-	return !IsTokenChar(rune)
+func isNotTokenChar(r rune) bool {
+	return !IsTokenChar(r)
 }
 
 // consumeToken consumes a token from the beginning of provided
@@ -228,24 +228,25 @@ func consumeValue(v string) (value, rest string) {
 		return consumeToken(v)
 	}
 
-	leadQuote := int(v[0])
+	leadQuote := rune(v[0])
 
 	// parse a quoted-string
 	rest = v[1:] // consume the leading quote
 	buffer := new(bytes.Buffer)
-	var idx, rune int
+	var idx int
+	var r rune
 	var nextIsLiteral bool
-	for idx, rune = range rest {
+	for idx, r = range rest {
 		switch {
 		case nextIsLiteral:
-			buffer.WriteRune(rune)
+			buffer.WriteRune(r)
 			nextIsLiteral = false
-		case rune == leadQuote:
+		case r == leadQuote:
 			return buffer.String(), rest[idx+1:]
-		case rune == '\\':
+		case r == '\\':
 			nextIsLiteral = true
-		case rune != '\r' && rune != '\n':
-			buffer.WriteRune(rune)
+		case r != '\r' && r != '\n':
+			buffer.WriteRune(r)
 		default:
 			return "", v
 		}
@@ -280,7 +281,7 @@ func consumeMediaParam(v string) (param, value, rest string) {
 	return param, value, rest
 }
 
-func percentHexUnescape(s string) (string, os.Error) {
+func percentHexUnescape(s string) (string, error) {
 	// Count %, check that they're well-formed.
 	percents := 0
 	for i := 0; i < len(s); {

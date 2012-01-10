@@ -11,10 +11,17 @@ import (
 	"io"
 	"os"
 	. "reflect"
-/*	"runtime" */
+	/*	"runtime" */
 	"testing"
 	"unsafe"
 )
+
+func TestBool(t *testing.T) {
+	v := ValueOf(true)
+	if v.Bool() != true {
+		t.Fatal("ValueOf(true).Bool() = false")
+	}
+}
 
 type integer int
 type T struct {
@@ -57,7 +64,7 @@ var typeTests = []pair{
 	{struct{ x (**integer) }{}, "**reflect_test.integer"},
 	{struct{ x ([32]int32) }{}, "[32]int32"},
 	{struct{ x ([]int8) }{}, "[]int8"},
-	{struct{ x (map[string]int32) }{}, "map[string] int32"},
+	{struct{ x (map[string]int32) }{}, "map[string]int32"},
 	{struct{ x (chan<- string) }{}, "chan<- string"},
 	{struct {
 		x struct {
@@ -173,7 +180,7 @@ var valueTests = []pair{
 	{new(**int8), "**int8(0)"},
 	{new([5]int32), "[5]int32{0, 0, 0, 0, 0}"},
 	{new(**integer), "**reflect_test.integer(0)"},
-	{new(map[string]int32), "map[string] int32{<can't iterate on maps>}"},
+	{new(map[string]int32), "map[string]int32{<can't iterate on maps>}"},
 	{new(chan<- string), "chan<- string"},
 	{new(func(a int8, b int32)), "func(int8, int32)(0)"},
 	{new(struct {
@@ -215,7 +222,8 @@ func TestTypes(t *testing.T) {
 
 func TestSet(t *testing.T) {
 	for i, tt := range valueTests {
-		v := ValueOf(tt.i).Elem()
+		v := ValueOf(tt.i)
+		v = v.Elem()
 		switch v.Kind() {
 		case Int:
 			v.SetInt(132)
@@ -411,7 +419,7 @@ func TestAll(t *testing.T) {
 	testType(t, 8, typ.Elem(), "int32")
 
 	typ = TypeOf((map[string]*int32)(nil))
-	testType(t, 9, typ, "map[string] *int32")
+	testType(t, 9, typ, "map[string]*int32")
 	mtyp := typ
 	testType(t, 10, mtyp.Key(), "string")
 	testType(t, 11, mtyp.Elem(), "*int32")
@@ -434,7 +442,7 @@ func TestInterfaceGet(t *testing.T) {
 	inter.E = 123.456
 	v1 := ValueOf(&inter)
 	v2 := v1.Elem().Field(0)
-	assert(t, v2.Type().String(), "interface { }")
+	assert(t, v2.Type().String(), "interface {}")
 	i2 := v2.Interface()
 	v3 := ValueOf(i2)
 	assert(t, v3.Type().String(), "float64")
@@ -447,7 +455,7 @@ func TestInterfaceValue(t *testing.T) {
 	inter.E = 123.456
 	v1 := ValueOf(&inter)
 	v2 := v1.Elem().Field(0)
-	assert(t, v2.Type().String(), "interface { }")
+	assert(t, v2.Type().String(), "interface {}")
 	v3 := v2.Elem()
 	assert(t, v3.Type().String(), "float64")
 
@@ -460,8 +468,8 @@ func TestInterfaceValue(t *testing.T) {
 func TestFunctionValue(t *testing.T) {
 	var x interface{} = func() {}
 	v := ValueOf(x)
-	if v.Interface() != v.Interface() || v.Interface() != x {
-		t.Fatalf("TestFunction != itself")
+	if fmt.Sprint(v.Interface()) != fmt.Sprint(x) {
+		t.Fatalf("TestFunction returned wrong pointer")
 	}
 	assert(t, v.Type().String(), "func()")
 }
@@ -631,7 +639,7 @@ var deepEqualTests = []DeepEqualTest{
 	{make([]int, 10), make([]int, 10), true},
 	{&[3]int{1, 2, 3}, &[3]int{1, 2, 3}, true},
 	{Basic{1, 0.5}, Basic{1, 0.5}, true},
-	{os.Error(nil), os.Error(nil), true},
+	{error(nil), error(nil), true},
 	{map[int]string{1: "one", 2: "two"}, map[int]string{2: "two", 1: "one"}, true},
 
 	// Inequalities
@@ -650,6 +658,14 @@ var deepEqualTests = []DeepEqualTest{
 	{map[int]string{2: "two", 1: "one"}, map[int]string{1: "one"}, false},
 	{nil, 1, false},
 	{1, nil, false},
+
+	// Nil vs empty: not the same.
+	{[]int{}, []int(nil), false},
+	{[]int{}, []int{}, true},
+	{[]int(nil), []int(nil), true},
+	{map[int]int{}, map[int]int(nil), false},
+	{map[int]int{}, map[int]int{}, true},
+	{map[int]int(nil), map[int]int(nil), true},
 
 	// Mismatched types
 	{1, 1.0, false},
@@ -1092,21 +1108,38 @@ func TestMethod(t *testing.T) {
 	}
 
 	// Curried method of value.
-	i = ValueOf(p).Method(1).Call([]Value{ValueOf(10)})[0].Int()
+	tfunc := TypeOf(func(int) int(nil))
+	v := ValueOf(p).Method(1)
+	if tt := v.Type(); tt != tfunc {
+		t.Errorf("Value Method Type is %s; want %s", tt, tfunc)
+	}
+	i = v.Call([]Value{ValueOf(10)})[0].Int()
 	if i != 250 {
 		t.Errorf("Value Method returned %d; want 250", i)
 	}
-	i = ValueOf(p).MethodByName("Dist").Call([]Value{ValueOf(10)})[0].Int()
+	v = ValueOf(p).MethodByName("Dist")
+	if tt := v.Type(); tt != tfunc {
+		t.Errorf("Value MethodByName Type is %s; want %s", tt, tfunc)
+	}
+	i = v.Call([]Value{ValueOf(10)})[0].Int()
 	if i != 250 {
 		t.Errorf("Value MethodByName returned %d; want 250", i)
 	}
 
 	// Curried method of pointer.
-	i = ValueOf(&p).Method(1).Call([]Value{ValueOf(10)})[0].Int()
+	v = ValueOf(&p).Method(1)
+	if tt := v.Type(); tt != tfunc {
+		t.Errorf("Pointer Value Method Type is %s; want %s", tt, tfunc)
+	}
+	i = v.Call([]Value{ValueOf(10)})[0].Int()
 	if i != 250 {
 		t.Errorf("Pointer Value Method returned %d; want 250", i)
 	}
-	i = ValueOf(&p).MethodByName("Dist").Call([]Value{ValueOf(10)})[0].Int()
+	v = ValueOf(&p).MethodByName("Dist")
+	if tt := v.Type(); tt != tfunc {
+		t.Errorf("Pointer Value MethodByName Type is %s; want %s", tt, tfunc)
+	}
+	i = v.Call([]Value{ValueOf(10)})[0].Int()
 	if i != 250 {
 		t.Errorf("Pointer Value MethodByName returned %d; want 250", i)
 	}
@@ -1121,11 +1154,19 @@ func TestMethod(t *testing.T) {
 		}
 	}{p}
 	pv := ValueOf(s).Field(0)
-	i = pv.Method(0).Call([]Value{ValueOf(10)})[0].Int()
+	v = pv.Method(0)
+	if tt := v.Type(); tt != tfunc {
+		t.Errorf("Interface Method Type is %s; want %s", tt, tfunc)
+	}
+	i = v.Call([]Value{ValueOf(10)})[0].Int()
 	if i != 250 {
 		t.Errorf("Interface Method returned %d; want 250", i)
 	}
-	i = pv.MethodByName("Dist").Call([]Value{ValueOf(10)})[0].Int()
+	v = pv.MethodByName("Dist")
+	if tt := v.Type(); tt != tfunc {
+		t.Errorf("Interface MethodByName Type is %s; want %s", tt, tfunc)
+	}
+	i = v.Call([]Value{ValueOf(10)})[0].Int()
 	if i != 250 {
 		t.Errorf("Interface MethodByName returned %d; want 250", i)
 	}

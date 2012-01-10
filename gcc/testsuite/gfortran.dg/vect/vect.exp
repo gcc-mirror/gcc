@@ -90,6 +90,12 @@ lappend DEFAULT_VECTCFLAGS "-Ofast"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/Ofast-*.\[fF\]{,90,95,03,08} ]]  \
         "" $DEFAULT_VECTCFLAGS
 
+# With -fno-tree-copy-prop -fno-tree-fre -O3
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "-fno-tree-copy-prop" "-fno-tree-fre" "-O3"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-fre-no-copy-prop-O3-*.\[fF\]{,90,95,03,08} ]]  \
+        "" $DEFAULT_VECTCFLAGS
+
 # Clean up.
 set dg-do-what-default ${save-dg-do-what-default}
 

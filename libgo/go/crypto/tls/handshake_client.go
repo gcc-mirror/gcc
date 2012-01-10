@@ -9,11 +9,11 @@ import (
 	"crypto/rsa"
 	"crypto/subtle"
 	"crypto/x509"
+	"errors"
 	"io"
-	"os"
 )
 
-func (c *Conn) clientHandshake() os.Error {
+func (c *Conn) clientHandshake() error {
 	finishedHash := newFinishedHash(versionTLS10)
 
 	if c.config == nil {
@@ -32,7 +32,7 @@ func (c *Conn) clientHandshake() os.Error {
 		nextProtoNeg:       len(c.config.NextProtos) > 0,
 	}
 
-	t := uint32(c.config.time())
+	t := uint32(c.config.time().Unix())
 	hello.random[0] = byte(t >> 24)
 	hello.random[1] = byte(t >> 16)
 	hello.random[2] = byte(t >> 8)
@@ -40,7 +40,7 @@ func (c *Conn) clientHandshake() os.Error {
 	_, err := io.ReadFull(c.config.rand(), hello.random[4:])
 	if err != nil {
 		c.sendAlert(alertInternalError)
-		return os.NewError("short read from Rand")
+		return errors.New("short read from Rand")
 	}
 
 	finishedHash.Write(hello.marshal())
@@ -69,10 +69,10 @@ func (c *Conn) clientHandshake() os.Error {
 
 	if !hello.nextProtoNeg && serverHello.nextProtoNeg {
 		c.sendAlert(alertHandshakeFailure)
-		return os.NewError("server advertised unrequested NPN")
+		return errors.New("server advertised unrequested NPN")
 	}
 
-	suite, suiteId := mutualCipherSuite(c.config.cipherSuites(), serverHello.cipherSuite)
+	suite := mutualCipherSuite(c.config.cipherSuites(), serverHello.cipherSuite)
 	if suite == nil {
 		return c.sendAlert(alertHandshakeFailure)
 	}
@@ -92,7 +92,7 @@ func (c *Conn) clientHandshake() os.Error {
 		cert, err := x509.ParseCertificate(asn1Data)
 		if err != nil {
 			c.sendAlert(alertBadCertificate)
-			return os.NewError("failed to parse certificate from server: " + err.String())
+			return errors.New("failed to parse certificate from server: " + err.Error())
 		}
 		certs[i] = cert
 	}
@@ -231,10 +231,10 @@ func (c *Conn) clientHandshake() os.Error {
 
 	if cert != nil {
 		certVerify := new(certificateVerifyMsg)
-		var digest [36]byte
-		copy(digest[0:16], finishedHash.serverMD5.Sum())
-		copy(digest[16:36], finishedHash.serverSHA1.Sum())
-		signed, err := rsa.SignPKCS1v15(c.config.rand(), c.config.Certificates[0].PrivateKey, crypto.MD5SHA1, digest[0:])
+		digest := make([]byte, 0, 36)
+		digest = finishedHash.serverMD5.Sum(digest)
+		digest = finishedHash.serverSHA1.Sum(digest)
+		signed, err := rsa.SignPKCS1v15(c.config.rand(), c.config.Certificates[0].PrivateKey, crypto.MD5SHA1, digest)
 		if err != nil {
 			return c.sendAlert(alertInternalError)
 		}
@@ -292,7 +292,7 @@ func (c *Conn) clientHandshake() os.Error {
 	}
 
 	c.handshakeComplete = true
-	c.cipherSuite = suiteId
+	c.cipherSuite = suite.id
 	return nil
 }
 

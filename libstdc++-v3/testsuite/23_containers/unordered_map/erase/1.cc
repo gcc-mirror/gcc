@@ -23,6 +23,18 @@
 #include <string>
 #include <testsuite_hooks.h>
 
+namespace
+{
+  std::size_t
+  get_nb_bucket_elems(const std::unordered_map<std::string, int>& us)
+  {
+    std::size_t nb = 0;
+    for (std::size_t b = 0; b != us.bucket_count(); ++b)
+      nb += us.bucket_size(b);
+    return nb;
+  }
+}
+
 void test01()
 {
   bool test __attribute__((unused)) = true;
@@ -33,7 +45,7 @@ void test01()
   typedef Map::value_type     value_type;
 
   Map m1;
-
+ 
   m1.insert(value_type("because to why", 1));
   m1.insert(value_type("the stockholm syndrome", 2));
   m1.insert(value_type("a cereous night", 3));
@@ -45,14 +57,20 @@ void test01()
   m1.insert(value_type("belonging (no longer mix)", 9));
   m1.insert(value_type("one line behind", 10));
   VERIFY( m1.size() == 10 );
+  VERIFY( get_nb_bucket_elems(m1) == m1.size() );
+  VERIFY( distance(m1.begin(), m1.end()) == m1.size() );
 
   VERIFY( m1.erase("eeilo") == 1 );
   VERIFY( m1.size() == 9 );
+  VERIFY( get_nb_bucket_elems(m1) == m1.size() );
+  VERIFY( distance(m1.begin(), m1.end()) == m1.size() );
   iterator it1 = m1.find("eeilo");
   VERIFY( it1 == m1.end() );
 
   VERIFY( m1.erase("tillsammans") == 1 );
   VERIFY( m1.size() == 8 );
+  VERIFY( get_nb_bucket_elems(m1) == m1.size() );
+  VERIFY( distance(m1.begin(), m1.end()) == m1.size() );
   iterator it2 = m1.find("tillsammans");
   VERIFY( it2 == m1.end() );
 
@@ -61,17 +79,23 @@ void test01()
   VERIFY( it3 != m1.end() );
   VERIFY( m1.erase(it3->first) == 1 );
   VERIFY( m1.size() == 7 );
+  VERIFY( get_nb_bucket_elems(m1) == m1.size() );
+  VERIFY( distance(m1.begin(), m1.end()) == m1.size() );
   it3 = m1.find("belonging (no longer mix)");
   VERIFY( it3 == m1.end() );
 
   VERIFY( !m1.erase("abra") );
   VERIFY( m1.size() == 7 );
+  VERIFY( get_nb_bucket_elems(m1) == m1.size() );
+  VERIFY( distance(m1.begin(), m1.end()) == m1.size() );
 
   VERIFY( !m1.erase("eeilo") );
   VERIFY( m1.size() == 7 );
 
   VERIFY( m1.erase("because to why") == 1 );
   VERIFY( m1.size() == 6 );
+  VERIFY( get_nb_bucket_elems(m1) == m1.size() );
+  VERIFY( distance(m1.begin(), m1.end()) == m1.size() );
   iterator it4 = m1.find("because to why");
   VERIFY( it4 == m1.end() );
 
@@ -87,11 +111,15 @@ void test01()
 
   VERIFY( m1.erase(it5->first) == 1 );
   VERIFY( m1.size() == 5 );
+  VERIFY( get_nb_bucket_elems(m1) == m1.size() );
+  VERIFY( distance(m1.begin(), m1.end()) == m1.size() );
   it5 = m1.find("umbra/penumbra");
   VERIFY( it5 == m1.end() );
 
   VERIFY( m1.erase(it6->first) == 1 );
   VERIFY( m1.size() == 4 );
+  VERIFY( get_nb_bucket_elems(m1) == m1.size() );
+  VERIFY( distance(m1.begin(), m1.end()) == m1.size() );
   it6 = m1.find("one line behind");
   VERIFY( it6 == m1.end() );
 
@@ -103,6 +131,8 @@ void test01()
 
   VERIFY( m1.erase(it8->first) == 1 );
   VERIFY( m1.size() == 3 );
+  VERIFY( get_nb_bucket_elems(m1) == m1.size() );
+  VERIFY( distance(m1.begin(), m1.end()) == m1.size() );
   VERIFY( ++it7 == it9 );
 
   iterator it10 = it9;
@@ -110,15 +140,21 @@ void test01()
   iterator it11 = it10;
 
   VERIFY( m1.erase(it9->first) == 1 );
+  VERIFY( get_nb_bucket_elems(m1) == m1.size() );
+  VERIFY( distance(m1.begin(), m1.end()) == m1.size() );
   VERIFY( m1.size() == 2 );
   VERIFY( ++it10 == m1.end() );
 
   VERIFY( m1.erase(m1.begin()) != m1.end() );  
   VERIFY( m1.size() == 1 );
+  VERIFY( get_nb_bucket_elems(m1) == m1.size() );
+  VERIFY( distance(m1.begin(), m1.end()) == m1.size() );
   VERIFY( m1.begin() == it11 );
 
   VERIFY( m1.erase(m1.begin()->first) == 1 );  
   VERIFY( m1.size() == 0 );
+  VERIFY( get_nb_bucket_elems(m1) == m1.size() );
+  VERIFY( distance(m1.begin(), m1.end()) == m1.size() );
   VERIFY( m1.begin() == m1.end() );
 }
 

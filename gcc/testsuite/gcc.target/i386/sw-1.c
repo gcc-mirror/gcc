@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fshrink-wrap -fdump-rtl-pro_and_epilogue -mstringop-strategy=rep_byte" } */
+/* { dg-options "-O2 -fshrink-wrap -fdump-rtl-pro_and_epilogue" } */
 
 #include <string.h>
 

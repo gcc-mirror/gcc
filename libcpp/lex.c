@@ -477,7 +477,8 @@ search_line_sse42 (const uchar *s, const uchar *end)
 typedef const uchar * (*search_line_fast_type) (const uchar *, const uchar *);
 static search_line_fast_type search_line_fast;
 
-static void __attribute__((constructor))
+#define HAVE_init_vectorized_lexer 1
+static inline void
 init_vectorized_lexer (void)
 {
   unsigned dummy, ecx = 0, edx = 0;
@@ -637,6 +638,16 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 #define search_line_fast  search_line_acc_char
 
 #endif
+
+/* Initialize the lexer if needed.  */
+
+void
+_cpp_init_lexer (void)
+{
+#ifdef HAVE_init_vectorized_lexer
+  init_vectorized_lexer ();
+#endif
+}
 
 /* Returns with a logical line that contains no escaped newlines or
    trigraphs.  This is a time-critical inner loop.  */

@@ -1,5 +1,5 @@
 /* Definitions of prototypes for MIPS built-in functions.  -*- C -*-
-   Copyright (C) 2007, 2008
+   Copyright (C) 2007, 2008, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -53,6 +53,7 @@ DEF_MIPS_FTYPE (4, (INT, V2SF, V2SF, V2SF, V2SF))
 
 DEF_MIPS_FTYPE (2, (SI, DI, SI))
 DEF_MIPS_FTYPE (2, (SI, POINTER, SI))
+DEF_MIPS_FTYPE (2, (DI, POINTER, SI))
 DEF_MIPS_FTYPE (1, (SI, SI))
 DEF_MIPS_FTYPE (2, (SI, SI, SI))
 DEF_MIPS_FTYPE (3, (SI, SI, SI, SI))

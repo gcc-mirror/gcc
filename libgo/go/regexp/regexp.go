@@ -1,7 +1,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package regexp implements a simple regular expression library.
+// Package regexp implements regular expression search.
 //
 // The syntax of the regular expressions accepted is the same
 // general syntax used by Perl, Python, and other languages.
@@ -56,12 +56,11 @@ package regexp
 import (
 	"bytes"
 	"io"
-	"os"
 	"regexp/syntax"
 	"strconv"
 	"strings"
 	"sync"
-	"utf8"
+	"unicode/utf8"
 )
 
 var debug = false
@@ -69,7 +68,7 @@ var debug = false
 // Error is the local type for a parsing error.
 type Error string
 
-func (e Error) String() string {
+func (e Error) Error() string {
 	return string(e)
 }
 
@@ -83,7 +82,7 @@ type Regexp struct {
 	prefix         string         // required prefix in unanchored matches
 	prefixBytes    []byte         // prefix, as a []byte
 	prefixComplete bool           // prefix is the entire regexp
-	prefixRune     int            // first rune in prefix
+	prefixRune     rune           // first rune in prefix
 	cond           syntax.EmptyOp // empty-width conditions required at start of match
 	numSubexp      int
 	longest        bool
@@ -108,7 +107,7 @@ func (re *Regexp) String() string {
 // that Perl, Python, and other implementations use, although this
 // package implements it without the expense of backtracking.
 // For POSIX leftmost-longest matching, see CompilePOSIX.
-func Compile(expr string) (*Regexp, os.Error) {
+func Compile(expr string) (*Regexp, error) {
 	return compile(expr, syntax.Perl, false)
 }
 
@@ -131,11 +130,11 @@ func Compile(expr string) (*Regexp, os.Error) {
 // subexpression, then the second, and so on from left to right.
 // The POSIX rule is computationally prohibitive and not even well-defined.
 // See http://swtch.com/~rsc/regexp/regexp2.html#posix for details.
-func CompilePOSIX(expr string) (*Regexp, os.Error) {
+func CompilePOSIX(expr string) (*Regexp, error) {
 	return compile(expr, syntax.POSIX, true)
 }
 
-func compile(expr string, mode syntax.Flags, longest bool) (*Regexp, os.Error) {
+func compile(expr string, mode syntax.Flags, longest bool) (*Regexp, error) {
 	re, err := syntax.Parse(expr, mode)
 	if err != nil {
 		return nil, err
@@ -196,7 +195,7 @@ func (re *Regexp) put(z *machine) {
 func MustCompile(str string) *Regexp {
 	regexp, error := Compile(str)
 	if error != nil {
-		panic(`regexp: Compile(` + quote(str) + `): ` + error.String())
+		panic(`regexp: Compile(` + quote(str) + `): ` + error.Error())
 	}
 	return regexp
 }
@@ -207,7 +206,7 @@ func MustCompile(str string) *Regexp {
 func MustCompilePOSIX(str string) *Regexp {
 	regexp, error := CompilePOSIX(str)
 	if error != nil {
-		panic(`regexp: CompilePOSIX(` + quote(str) + `): ` + error.String())
+		panic(`regexp: CompilePOSIX(` + quote(str) + `): ` + error.Error())
 	}
 	return regexp
 }
@@ -224,13 +223,13 @@ func (re *Regexp) NumSubexp() int {
 	return re.numSubexp
 }
 
-const endOfText = -1
+const endOfText rune = -1
 
 // input abstracts different representations of the input text. It provides
 // one-character lookahead.
 type input interface {
-	step(pos int) (rune int, width int) // advance one rune
-	canCheckPrefix() bool               // can we look ahead without losing info?
+	step(pos int) (r rune, width int) // advance one rune
+	canCheckPrefix() bool             // can we look ahead without losing info?
 	hasPrefix(re *Regexp) bool
 	index(re *Regexp, pos int) int
 	context(pos int) syntax.EmptyOp
@@ -245,11 +244,11 @@ func newInputString(str string) *inputString {
 	return &inputString{str: str}
 }
 
-func (i *inputString) step(pos int) (int, int) {
+func (i *inputString) step(pos int) (rune, int) {
 	if pos < len(i.str) {
 		c := i.str[pos]
 		if c < utf8.RuneSelf {
-			return int(c), 1
+			return rune(c), 1
 		}
 		return utf8.DecodeRuneInString(i.str[pos:])
 	}
@@ -269,7 +268,7 @@ func (i *inputString) index(re *Regexp, pos int) int {
 }
 
 func (i *inputString) context(pos int) syntax.EmptyOp {
-	r1, r2 := -1, -1
+	r1, r2 := endOfText, endOfText
 	if pos > 0 && pos <= len(i.str) {
 		r1, _ = utf8.DecodeLastRuneInString(i.str[:pos])
 	}
@@ -288,11 +287,11 @@ func newInputBytes(str []byte) *inputBytes {
 	return &inputBytes{str: str}
 }
 
-func (i *inputBytes) step(pos int) (int, int) {
+func (i *inputBytes) step(pos int) (rune, int) {
 	if pos < len(i.str) {
 		c := i.str[pos]
 		if c < utf8.RuneSelf {
-			return int(c), 1
+			return rune(c), 1
 		}
 		return utf8.DecodeRune(i.str[pos:])
 	}
@@ -312,7 +311,7 @@ func (i *inputBytes) index(re *Regexp, pos int) int {
 }
 
 func (i *inputBytes) context(pos int) syntax.EmptyOp {
-	r1, r2 := -1, -1
+	r1, r2 := endOfText, endOfText
 	if pos > 0 && pos <= len(i.str) {
 		r1, _ = utf8.DecodeLastRune(i.str[:pos])
 	}
@@ -333,7 +332,7 @@ func newInputReader(r io.RuneReader) *inputReader {
 	return &inputReader{r: r}
 }
 
-func (i *inputReader) step(pos int) (int, int) {
+func (i *inputReader) step(pos int) (rune, int) {
 	if !i.atEOT && pos != i.pos {
 		return endOfText, 0
 
@@ -392,7 +391,7 @@ func (re *Regexp) Match(b []byte) bool {
 // MatchReader checks whether a textual regular expression matches the text
 // read by the RuneReader.  More complicated queries need to use Compile and
 // the full Regexp interface.
-func MatchReader(pattern string, r io.RuneReader) (matched bool, error os.Error) {
+func MatchReader(pattern string, r io.RuneReader) (matched bool, error error) {
 	re, err := Compile(pattern)
 	if err != nil {
 		return false, err
@@ -403,7 +402,7 @@ func MatchReader(pattern string, r io.RuneReader) (matched bool, error os.Error)
 // MatchString checks whether a textual regular expression
 // matches a string.  More complicated queries need
 // to use Compile and the full Regexp interface.
-func MatchString(pattern string, s string) (matched bool, error os.Error) {
+func MatchString(pattern string, s string) (matched bool, error error) {
 	re, err := Compile(pattern)
 	if err != nil {
 		return false, err
@@ -414,7 +413,7 @@ func MatchString(pattern string, s string) (matched bool, error os.Error) {
 // Match checks whether a textual regular expression
 // matches a byte slice.  More complicated queries need
 // to use Compile and the full Regexp interface.
-func Match(pattern string, b []byte) (matched bool, error os.Error) {
+func Match(pattern string, b []byte) (matched bool, error error) {
 	re, err := Compile(pattern)
 	if err != nil {
 		return false, err

@@ -100,9 +100,9 @@ main ()
   for (i = 0; i < N; i++)
     {
       asm ("");
-      c[i] = (random () << 1) | (random () & 1);
+      c[i] = (rand () << 1) | (rand () & 1);
       a[i] = c[i];
-      d[i] = (random () << 1) | (random () & 1);
+      d[i] = (rand () << 1) | (rand () & 1);
       d[i] |= (unsigned long long) c[i] << 32;
       f[i] = d[i];
     }

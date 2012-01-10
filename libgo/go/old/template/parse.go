@@ -10,12 +10,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"unicode"
-	"utf8"
+	"unicode/utf8"
 )
 
 // Errors returned during parsing and execution.  Users may extract the information and reformat
@@ -25,11 +24,11 @@ type Error struct {
 	Msg  string
 }
 
-func (e *Error) String() string { return fmt.Sprintf("line %d: %s", e.Line, e.Msg) }
+func (e *Error) Error() string { return fmt.Sprintf("line %d: %s", e.Line, e.Msg) }
 
 // checkError is a deferred function to turn a panic with type *Error into a plain error return.
 // Other panics are unexpected and so are re-enabled.
-func checkError(error *os.Error) {
+func checkError(error *error) {
 	if v := recover(); v != nil {
 		if e, ok := v.(*Error); ok {
 			*error = e
@@ -146,8 +145,8 @@ func (t *Template) parseError(err string, args ...interface{}) {
 
 // Is this an exported - upper case - name?
 func isExported(name string) bool {
-	rune, _ := utf8.DecodeRuneInString(name)
-	return unicode.IsUpper(rune)
+	r, _ := utf8.DecodeRuneInString(name)
+	return unicode.IsUpper(r)
 }
 
 // -- Lexical analysis
@@ -414,22 +413,22 @@ func (t *Template) newVariable(words []string) *variableElement {
 
 	// Build argument list, processing any literals
 	for i, word := range words {
-		var lerr os.Error
+		var lerr error
 		switch word[0] {
 		case '"', '`', '\'':
 			v, err := strconv.Unquote(word)
 			if err == nil && word[0] == '\'' {
-				args[i] = []int(v)[0]
+				args[i], _ = utf8.DecodeRuneInString(v)
 			} else {
 				args[i], lerr = v, err
 			}
 
 		case '.', '+', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-			v, err := strconv.Btoi64(word, 0)
+			v, err := strconv.ParseInt(word, 0, 64)
 			if err == nil {
 				args[i] = v
 			} else {
-				v, err := strconv.Atof64(word)
+				v, err := strconv.ParseFloat(word, 64)
 				args[i], lerr = v, err
 			}
 
@@ -650,7 +649,7 @@ func (t *Template) parse() {
 // Parse initializes a Template by parsing its definition.  The string
 // s contains the template text.  If any errors occur, Parse returns
 // the error.
-func (t *Template) Parse(s string) (err os.Error) {
+func (t *Template) Parse(s string) (err error) {
 	if t.elems == nil {
 		return &Error{1, "template not allocated with New"}
 	}
@@ -667,7 +666,7 @@ func (t *Template) Parse(s string) (err os.Error) {
 
 // ParseFile is like Parse but reads the template definition from the
 // named file.
-func (t *Template) ParseFile(filename string) (err os.Error) {
+func (t *Template) ParseFile(filename string) (err error) {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return err
@@ -677,7 +676,7 @@ func (t *Template) ParseFile(filename string) (err os.Error) {
 
 // Execute applies a parsed template to the specified data object,
 // generating output to wr.
-func (t *Template) Execute(wr io.Writer, data interface{}) (err os.Error) {
+func (t *Template) Execute(wr io.Writer, data interface{}) (err error) {
 	// Extract the driver data.
 	val := reflect.ValueOf(data)
 	defer checkError(&err)
@@ -701,7 +700,7 @@ func (t *Template) SetDelims(left, right string) {
 // the formatter map fmap, which may be nil, defines auxiliary functions
 // for formatting variables.  The template is returned. If any errors
 // occur, err will be non-nil.
-func Parse(s string, fmap FormatterMap) (t *Template, err os.Error) {
+func Parse(s string, fmap FormatterMap) (t *Template, err error) {
 	t = New(fmap)
 	err = t.Parse(s)
 	if err != nil {
@@ -715,7 +714,7 @@ func Parse(s string, fmap FormatterMap) (t *Template, err os.Error) {
 // a file containing the template text, while the formatter map fmap, which
 // may be nil, defines auxiliary functions for formatting variables.
 // The template is returned. If any errors occur, err will be non-nil.
-func ParseFile(filename string, fmap FormatterMap) (t *Template, err os.Error) {
+func ParseFile(filename string, fmap FormatterMap) (t *Template, err error) {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
@@ -727,7 +726,7 @@ func ParseFile(filename string, fmap FormatterMap) (t *Template, err os.Error) {
 func MustParse(s string, fmap FormatterMap) *Template {
 	t, err := Parse(s, fmap)
 	if err != nil {
-		panic("template.MustParse error: " + err.String())
+		panic("template.MustParse error: " + err.Error())
 	}
 	return t
 }
@@ -737,7 +736,7 @@ func MustParse(s string, fmap FormatterMap) *Template {
 func MustParseFile(filename string, fmap FormatterMap) *Template {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
-		panic("template.MustParseFile error: " + err.String())
+		panic("template.MustParseFile error: " + err.Error())
 	}
 	return MustParse(string(b), fmap)
 }

@@ -3,7 +3,8 @@
 
 /* Since the non TM version of new_node() gets optimized away, it
    shouldn't appear in the clone table either.  */
-/* { dg-final { scan-assembler-not "tm_clone_table" } } */
+/* { dg-final { scan-assembler-not "tm_clone_table" { target { ! *-*-darwin*  } } } } */
+/* { dg-final { scan-assembler-not "__DATA,__tm_clone_table" { target *-*-darwin*  } } } */
 
 #define NULL 0
 extern void *malloc (__SIZE_TYPE__);

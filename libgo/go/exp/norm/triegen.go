@@ -14,7 +14,7 @@ import (
 	"fmt"
 	"hash/crc32"
 	"log"
-	"utf8"
+	"unicode/utf8"
 )
 
 const blockSize = 64
@@ -94,9 +94,9 @@ func (n trieNode) countSparseEntries() int {
 	return count
 }
 
-func (n *trieNode) insert(rune int, value uint16) {
+func (n *trieNode) insert(r rune, value uint16) {
 	var p [utf8.UTFMax]byte
-	sz := utf8.EncodeRune(p[:], rune)
+	sz := utf8.EncodeRune(p[:], r)
 
 	for i := 0; i < sz; i++ {
 		if n.leaf {

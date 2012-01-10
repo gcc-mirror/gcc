@@ -1,6 +1,6 @@
 /* Basic block reordering routines for the GNU compiler.
-   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011,
+   2012 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -2253,6 +2253,9 @@ partition_hot_cold_basic_blocks (void)
     fix_crossing_unconditional_branches ();
 
   add_reg_crossing_jump_notes ();
+
+  /* Clear bb->aux fields that the above routines were using.  */
+  clear_aux_for_blocks ();
 
   VEC_free (edge, heap, crossing_edges);
 

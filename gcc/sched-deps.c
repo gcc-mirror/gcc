@@ -2812,8 +2812,14 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
      during prologue generation and avoid marking the frame pointer setup
      as frame-related at all.  */
   if (RTX_FRAME_RELATED_P (insn))
-    deps->sched_before_next_jump
-      = alloc_INSN_LIST (insn, deps->sched_before_next_jump);
+    {
+      /* Make sure prologue insn is scheduled before next jump.  */
+      deps->sched_before_next_jump
+	= alloc_INSN_LIST (insn, deps->sched_before_next_jump);
+
+      /* Make sure epilogue insn is scheduled after preceding jumps.  */
+      add_dependence_list (insn, deps->pending_jump_insns, 1, REG_DEP_ANTI);
+    }
 
   if (code == COND_EXEC)
     {
@@ -2867,7 +2873,11 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
 	  else
 	    sched_analyze_2 (deps, XEXP (link, 0), insn);
 	}
-      if (find_reg_note (insn, REG_SETJMP, NULL))
+      /* Don't schedule anything after a tail call, tail call needs
+	 to use at least all call-saved registers.  */
+      if (SIBLING_CALL_P (insn))
+	reg_pending_barrier = TRUE_BARRIER;
+      else if (find_reg_note (insn, REG_SETJMP, NULL))
 	reg_pending_barrier = MOVE_BARRIER;
     }
 

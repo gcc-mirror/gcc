@@ -1,6 +1,6 @@
 /* Gimple IR definitions.
 
-   Copyright 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright 2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -97,14 +97,13 @@ enum gimple_rhs_class
 enum gf_mask {
     GF_ASM_INPUT		= 1 << 0,
     GF_ASM_VOLATILE		= 1 << 1,
-    GF_CALL_CANNOT_INLINE	= 1 << 0,
-    GF_CALL_FROM_THUNK		= 1 << 1,
-    GF_CALL_RETURN_SLOT_OPT	= 1 << 2,
-    GF_CALL_TAILCALL		= 1 << 3,
-    GF_CALL_VA_ARG_PACK		= 1 << 4,
-    GF_CALL_NOTHROW		= 1 << 5,
-    GF_CALL_ALLOCA_FOR_VAR	= 1 << 6,
-    GF_CALL_INTERNAL		= 1 << 7,
+    GF_CALL_FROM_THUNK		= 1 << 0,
+    GF_CALL_RETURN_SLOT_OPT	= 1 << 1,
+    GF_CALL_TAILCALL		= 1 << 2,
+    GF_CALL_VA_ARG_PACK		= 1 << 3,
+    GF_CALL_NOTHROW		= 1 << 4,
+    GF_CALL_ALLOCA_FOR_VAR	= 1 << 5,
+    GF_CALL_INTERNAL		= 1 << 6,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
 
     /* True on an GIMPLE_OMP_RETURN statement if the return does not require
@@ -227,7 +226,7 @@ void gimple_seq_add_stmt (gimple_seq *, gimple);
    similar to gimple_seq_add_stmt, but does not scan the operands.
    During gimplification, we need to manipulate statement sequences
    before the def/use vectors have been constructed.  */
-void gimplify_seq_add_stmt (gimple_seq *, gimple);
+void gimple_seq_add_stmt_without_update (gimple_seq *, gimple);
 
 /* Allocate a new sequence and initialize its first element with STMT.  */
 
@@ -949,7 +948,6 @@ void gimple_cond_get_ops_from_tree (tree, enum tree_code *, tree *, tree *);
 gimple gimple_build_cond_from_tree (tree, tree, tree);
 void gimple_cond_set_condition_from_tree (gimple, tree);
 bool gimple_has_side_effects (const_gimple);
-bool gimple_rhs_has_side_effects (const_gimple);
 bool gimple_could_trap_p (gimple);
 bool gimple_could_trap_p_1 (gimple, bool, bool);
 bool gimple_assign_rhs_could_trap_p (gimple);
@@ -1007,9 +1005,6 @@ extern bool is_gimple_mem_rhs (tree);
 
 /* Returns true iff T is a valid if-statement condition.  */
 extern bool is_gimple_condexpr (tree);
-
-/* Returns true iff T is a variable that does not need to live in memory.  */
-extern bool is_gimple_non_addressable (tree t);
 
 /* Returns true iff T is a valid call address expression.  */
 extern bool is_gimple_call_addr (tree);
@@ -1094,6 +1089,7 @@ struct gimplify_ctx
   bool save_stack;
   bool into_ssa;
   bool allow_rhs_cond_expr;
+  bool in_cleanup_point_expr;
 };
 
 extern enum gimplify_status gimplify_expr (tree *, gimple_seq *, gimple_seq *,
@@ -2341,29 +2337,6 @@ gimple_call_tail_p (gimple s)
 {
   GIMPLE_CHECK (s, GIMPLE_CALL);
   return (s->gsbase.subcode & GF_CALL_TAILCALL) != 0;
-}
-
-
-/* Set the inlinable status of GIMPLE_CALL S to INLINABLE_P.  */
-
-static inline void
-gimple_call_set_cannot_inline (gimple s, bool inlinable_p)
-{
-  GIMPLE_CHECK (s, GIMPLE_CALL);
-  if (inlinable_p)
-    s->gsbase.subcode |= GF_CALL_CANNOT_INLINE;
-  else
-    s->gsbase.subcode &= ~GF_CALL_CANNOT_INLINE;
-}
-
-
-/* Return true if GIMPLE_CALL S cannot be inlined.  */
-
-static inline bool
-gimple_call_cannot_inline_p (gimple s)
-{
-  GIMPLE_CHECK (s, GIMPLE_CALL);
-  return (s->gsbase.subcode & GF_CALL_CANNOT_INLINE) != 0;
 }
 
 

@@ -607,10 +607,16 @@ ARCH_X86_AVX_FALSE
 ARCH_X86_AVX_TRUE
 ARCH_X86_FALSE
 ARCH_X86_TRUE
+ARCH_ARM_FALSE
+ARCH_ARM_TRUE
 link_itm
 XLDFLAGS
 XCFLAGS
 config_path
+LIBITM_BUILD_VERSIONED_SHLIB_SUN_FALSE
+LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE
+LIBITM_BUILD_VERSIONED_SHLIB_GNU_FALSE
+LIBITM_BUILD_VERSIONED_SHLIB_GNU_TRUE
 LIBITM_BUILD_VERSIONED_SHLIB_FALSE
 LIBITM_BUILD_VERSIONED_SHLIB_TRUE
 OPT_LDFLAGS
@@ -9951,7 +9957,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
       ;;
 
     # Unfortunately, older versions of FreeBSD 2 do not have this feature.
-    freebsd2*)
+    freebsd2.*)
       archive_cmds='$LD -Bshareable -o $lib $libobjs $deplibs $linker_flags'
       hardcode_direct=yes
       hardcode_minus_L=yes
@@ -10864,7 +10870,7 @@ freebsd* | dragonfly*)
     objformat=`/usr/bin/objformat`
   else
     case $host_os in
-    freebsd[123]*) objformat=aout ;;
+    freebsd[23].*) objformat=aout ;;
     *) objformat=elf ;;
     esac
   fi
@@ -10882,7 +10888,7 @@ freebsd* | dragonfly*)
   esac
   shlibpath_var=LD_LIBRARY_PATH
   case $host_os in
-  freebsd2*)
+  freebsd2.*)
     shlibpath_overrides_runpath=yes
     ;;
   freebsd3.[01]* | freebsdelf3.[01]*)
@@ -11716,7 +11722,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11719 "configure"
+#line 11725 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11822,7 +11828,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11825 "configure"
+#line 11831 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12748,7 +12754,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
         esac
         ;;
 
-      freebsd[12]*)
+      freebsd2.*)
         # C++ shared libraries reported to be fairly broken before
 	# switch to ELF
         ld_shlibs_CXX=no
@@ -14523,7 +14529,7 @@ freebsd* | dragonfly*)
     objformat=`/usr/bin/objformat`
   else
     case $host_os in
-    freebsd[123]*) objformat=aout ;;
+    freebsd[23].*) objformat=aout ;;
     *) objformat=elf ;;
     esac
   fi
@@ -14541,7 +14547,7 @@ freebsd* | dragonfly*)
   esac
   shlibpath_var=LD_LIBRARY_PATH
   case $host_os in
-  freebsd2*)
+  freebsd2.*)
     shlibpath_overrides_runpath=yes
     ;;
   freebsd3.[01]* | freebsdelf3.[01]*)
@@ -16688,9 +16694,13 @@ with_gnu_ld=$lt_cv_prog_gnu_ld
 
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
+  libitm_ld_is_gold=no
+  if $LD --version 2>/dev/null | grep 'GNU gold'> /dev/null 2>&1; then
+    libitm_ld_is_gold=yes
+  fi
 
-  ldver=`$LD --version 2>/dev/null | head -1 | \
-         sed -e 's/GNU ld \(version \)\{0,1\}\(([^)]*) \)\{0,1\}\([0-9.][0-9.]*\).*/\3/'`
+  ldver=`$LD --version 2>/dev/null |
+         sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
 
   libitm_gnu_ld_version=`echo $ldver | \
          $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
@@ -16764,7 +16774,7 @@ $as_echo "$ac_sectionLDflags" >&6; }
 if test "${enable_symvers+set}" = set; then :
   enableval=$enable_symvers;
       case "$enableval" in
-       yes|no|gnu) ;;
+       yes|no|gnu*|sun) ;;
        *) as_fn_error "Unknown argument to enable/disable symvers" "$LINENO" 5 ;;
                           esac
 
@@ -16777,11 +16787,44 @@ fi
 # If we never went through the LIBITM_CHECK_LINKER_FEATURES macro, then we
 # don't know enough about $LD to do tricks...
 
-# FIXME  The following test is too strict, in theory.
-if test $enable_shared = no ||
-        test "x$LD" = x ||
-        test x$libitm_gnu_ld_version = x; then
-  enable_symvers=no
+
+# Turn a 'yes' into a suitable default.
+if test x$enable_symvers = xyes ; then
+  # FIXME  The following test is too strict, in theory.
+  if test $enable_shared = no || test "x$LD" = x; then
+    enable_symvers=no
+  else
+    if test $with_gnu_ld = yes ; then
+      enable_symvers=gnu
+    else
+      case ${target_os} in
+        # Sun symbol versioning exists since Solaris 2.5.
+        solaris2.[5-9]* | solaris2.1[0-9]*)
+          enable_symvers=sun ;;
+        *)
+          enable_symvers=no ;;
+      esac
+    fi
+  fi
+fi
+
+# Check if 'sun' was requested on non-Solaris 2 platforms.
+if test x$enable_symvers = xsun ; then
+  case ${target_os} in
+    solaris2*)
+      # All fine.
+      ;;
+    *)
+      # Unlikely to work.
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === You have requested Sun symbol versioning, but" >&5
+$as_echo "$as_me: WARNING: === You have requested Sun symbol versioning, but" >&2;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === you are not targetting Solaris 2." >&5
+$as_echo "$as_me: WARNING: === you are not targetting Solaris 2." >&2;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === Symbol versioning will be disabled." >&5
+$as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
+      enable_symvers=no
+      ;;
+  esac
 fi
 
 # Check to see if libgcc_s exists, indicating that shared libgcc is possible.
@@ -16850,11 +16893,11 @@ libitm_min_gnu_ld_version=21400
 
 # Check to see if unspecified "yes" value can win, given results above.
 # Change "yes" into either "no" or a style name.
-if test $enable_symvers = yes; then
-  if test $with_gnu_ld = yes &&
-     test $libitm_shared_libgcc = yes;
-  then
+if test $enable_symvers != no && test $libitm_shared_libgcc = yes; then
+  if test $with_gnu_ld = yes; then
     if test $libitm_gnu_ld_version -ge $libitm_min_gnu_ld_version ; then
+      enable_symvers=gnu
+    elif test $libitm_ld_is_gold = yes ; then
       enable_symvers=gnu
     else
       # The right tools, the right setup, but too old.  Fallbacks?
@@ -16878,6 +16921,8 @@ $as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
         enable_symvers=no
       fi
     fi
+  elif test $enable_symvers = sun; then
+    : All interesting versions of Sun ld support sun style symbol versioning.
   else
     # just fail for now
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === You have requested some kind of symbol versioning, but" >&5
@@ -16898,6 +16943,22 @@ fi
 else
   LIBITM_BUILD_VERSIONED_SHLIB_TRUE='#'
   LIBITM_BUILD_VERSIONED_SHLIB_FALSE=
+fi
+
+ if test $enable_symvers = gnu; then
+  LIBITM_BUILD_VERSIONED_SHLIB_GNU_TRUE=
+  LIBITM_BUILD_VERSIONED_SHLIB_GNU_FALSE='#'
+else
+  LIBITM_BUILD_VERSIONED_SHLIB_GNU_TRUE='#'
+  LIBITM_BUILD_VERSIONED_SHLIB_GNU_FALSE=
+fi
+
+ if test $enable_symvers = sun; then
+  LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE=
+  LIBITM_BUILD_VERSIONED_SHLIB_SUN_FALSE='#'
+else
+  LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE='#'
+  LIBITM_BUILD_VERSIONED_SHLIB_SUN_FALSE=
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: versioning on shared library symbols is $enable_symvers" >&5
@@ -17154,6 +17215,57 @@ $as_echo "#define HAVE_AS_AVX 1" >>confdefs.h
   ;;
 esac
 
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether weak refs work like ELF" >&5
+$as_echo_n "checking whether weak refs work like ELF... " >&6; }
+if test "${ac_cv_have_elf_style_weakref+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  weakref_m4_saved_CFLAGS="$CFLAGS"
+  case "${host}" in
+    *-apple-darwin*) CFLAGS="$CFLAGS -Wl,-undefined,dynamic_lookup" ;;
+    *) ;;
+  esac
+  if test "$cross_compiling" = yes; then :
+
+case "${host}" in
+  alpha*-dec-osf*) ac_cv_have_elf_style_weakref=no ;;
+  *-apple-darwin[89]*) ac_cv_have_elf_style_weakref=no ;;
+  *) ac_cv_have_elf_style_weakref=yes;;
+esac
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+extern void fNotToBeFound(void) __attribute__((weak));
+int main ()
+{
+  if (fNotToBeFound)
+    return 1;
+  else
+    return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  ac_cv_have_elf_style_weakref=yes
+else
+  ac_cv_have_elf_style_weakref=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+CFLAGS="$weakref_m4_saved_CFLAGS"
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_have_elf_style_weakref" >&5
+$as_echo "$ac_cv_have_elf_style_weakref" >&6; }
+if test x"$ac_cv_have_elf_style_weakref" = xyes; then
+
+$as_echo "#define HAVE_ELF_STYLE_WEAKREF 1" >>confdefs.h
+
+fi
+
 # Cleanup and exit.
 CFLAGS="$save_CFLAGS"
 cat >confcache <<\_ACEOF
@@ -17258,6 +17370,14 @@ else
   link_itm="-litm $LIBS"
 fi
 
+
+ if test "$ARCH" = arm; then
+  ARCH_ARM_TRUE=
+  ARCH_ARM_FALSE='#'
+else
+  ARCH_ARM_TRUE='#'
+  ARCH_ARM_FALSE=
+fi
 
  if test "$ARCH" = x86; then
   ARCH_X86_TRUE=
@@ -17422,6 +17542,18 @@ fi
 
 if test -z "${LIBITM_BUILD_VERSIONED_SHLIB_TRUE}" && test -z "${LIBITM_BUILD_VERSIONED_SHLIB_FALSE}"; then
   as_fn_error "conditional \"LIBITM_BUILD_VERSIONED_SHLIB\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBITM_BUILD_VERSIONED_SHLIB_GNU_TRUE}" && test -z "${LIBITM_BUILD_VERSIONED_SHLIB_GNU_FALSE}"; then
+  as_fn_error "conditional \"LIBITM_BUILD_VERSIONED_SHLIB_GNU\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE}" && test -z "${LIBITM_BUILD_VERSIONED_SHLIB_SUN_FALSE}"; then
+  as_fn_error "conditional \"LIBITM_BUILD_VERSIONED_SHLIB_SUN\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ARCH_ARM_TRUE}" && test -z "${ARCH_ARM_FALSE}"; then
+  as_fn_error "conditional \"ARCH_ARM\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ARCH_X86_TRUE}" && test -z "${ARCH_X86_FALSE}"; then

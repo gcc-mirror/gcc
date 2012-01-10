@@ -7,5 +7,5 @@ struct B {
 template <typename T> class I : public B {}; 
  
 template <typename T> class D : private I<T> { 
-  I<T>::B::foo; 
+  I<T>::B::foo; // { dg-warning "deprecated" } 
 }; 

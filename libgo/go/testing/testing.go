@@ -75,8 +75,25 @@ func Short() bool {
 	return *short
 }
 
-// Insert final newline if needed and tabs after internal newlines.
-func tabify(s string) string {
+// decorate inserts the a final newline if needed and indentation tabs for formatting.
+// If addFileLine is true, it also prefixes the string with the file and line of the call site.
+func decorate(s string, addFileLine bool) string {
+	if addFileLine {
+		_, file, line, ok := runtime.Caller(3) // decorate + log + public function.
+		if ok {
+			// Truncate file name at last file name separator.
+			if index := strings.LastIndex(file, "/"); index >= 0 {
+				file = file[index+1:]
+			} else if index = strings.LastIndex(file, "\\"); index >= 0 {
+				file = file[index+1:]
+			}
+		} else {
+			file = "???"
+			line = 1
+		}
+		s = fmt.Sprintf("%s:%d: %s", file, line, s)
+	}
+	s = "\t" + s // Every line is indented at least one tab.
 	n := len(s)
 	if n > 0 && s[n-1] != '\n' {
 		s += "\n"
@@ -84,7 +101,8 @@ func tabify(s string) string {
 	}
 	for i := 0; i < n-1; i++ { // -1 to avoid final newline
 		if s[i] == '\n' {
-			return s[0:i+1] + "\t" + tabify(s[i+1:n])
+			// Second and subsequent lines are indented an extra tab.
+			return s[0:i+1] + "\t" + decorate(s[i+1:n], false)
 		}
 	}
 	return s
@@ -93,12 +111,13 @@ func tabify(s string) string {
 // T is a type passed to Test functions to manage test state and support formatted test logs.
 // Logs are accumulated during execution and dumped to standard error when done.
 type T struct {
-	name          string    // Name of test.
-	errors        string    // Error string from test.
-	failed        bool      // Test has failed.
-	ch            chan *T   // Output for serial tests.
-	startParallel chan bool // Parallel tests will wait on this.
-	ns            int64     // Duration of test in nanoseconds.
+	name          string        // Name of test.
+	errors        string        // Error string from test.
+	failed        bool          // Test has failed.
+	ch            chan *T       // Output for serial tests.
+	startParallel chan bool     // Parallel tests will wait on this.
+	start         time.Time     // Time test started
+	dt            time.Duration // Length of test
 }
 
 // Fail marks the Test function as having failed but continues execution.
@@ -110,43 +129,44 @@ func (t *T) Failed() bool { return t.failed }
 // FailNow marks the Test function as having failed and stops its execution.
 // Execution will continue at the next Test.
 func (t *T) FailNow() {
-	t.ns = time.Nanoseconds() - t.ns
+	t.dt = time.Now().Sub(t.start)
 	t.Fail()
 	t.ch <- t
 	runtime.Goexit()
 }
 
+// log generates the output. It's always at the same stack depth.
+func (t *T) log(s string) { t.errors += decorate(s, true) }
+
 // Log formats its arguments using default formatting, analogous to Print(),
 // and records the text in the error log.
-func (t *T) Log(args ...interface{}) { t.errors += "\t" + tabify(fmt.Sprintln(args...)) }
+func (t *T) Log(args ...interface{}) { t.log(fmt.Sprintln(args...)) }
 
 // Logf formats its arguments according to the format, analogous to Printf(),
 // and records the text in the error log.
-func (t *T) Logf(format string, args ...interface{}) {
-	t.errors += "\t" + tabify(fmt.Sprintf(format, args...))
-}
+func (t *T) Logf(format string, args ...interface{}) { t.log(fmt.Sprintf(format, args...)) }
 
 // Error is equivalent to Log() followed by Fail().
 func (t *T) Error(args ...interface{}) {
-	t.Log(args...)
+	t.log(fmt.Sprintln(args...))
 	t.Fail()
 }
 
 // Errorf is equivalent to Logf() followed by Fail().
 func (t *T) Errorf(format string, args ...interface{}) {
-	t.Logf(format, args...)
+	t.log(fmt.Sprintf(format, args...))
 	t.Fail()
 }
 
 // Fatal is equivalent to Log() followed by FailNow().
 func (t *T) Fatal(args ...interface{}) {
-	t.Log(args...)
+	t.log(fmt.Sprintln(args...))
 	t.FailNow()
 }
 
 // Fatalf is equivalent to Logf() followed by FailNow().
 func (t *T) Fatalf(format string, args ...interface{}) {
-	t.Logf(format, args...)
+	t.log(fmt.Sprintf(format, args...))
 	t.FailNow()
 }
 
@@ -165,15 +185,15 @@ type InternalTest struct {
 }
 
 func tRunner(t *T, test *InternalTest) {
-	t.ns = time.Nanoseconds()
+	t.start = time.Now()
 	test.F(t)
-	t.ns = time.Nanoseconds() - t.ns
+	t.dt = time.Now().Sub(t.start)
 	t.ch <- t
 }
 
 // An internal function but exported because it is cross-package; part of the implementation
 // of gotest.
-func Main(matchString func(pat, str string) (bool, os.Error), tests []InternalTest, benchmarks []InternalBenchmark, examples []InternalExample) {
+func Main(matchString func(pat, str string) (bool, error), tests []InternalTest, benchmarks []InternalBenchmark, examples []InternalExample) {
 	flag.Parse()
 	parseCpuList()
 
@@ -182,26 +202,26 @@ func Main(matchString func(pat, str string) (bool, os.Error), tests []InternalTe
 	testOk := RunTests(matchString, tests)
 	exampleOk := RunExamples(examples)
 	if !testOk || !exampleOk {
-		fmt.Fprintln(os.Stderr, "FAIL")
+		fmt.Println("FAIL")
 		os.Exit(1)
 	}
-	fmt.Fprintln(os.Stderr, "PASS")
+	fmt.Println("PASS")
 	stopAlarm()
 	RunBenchmarks(matchString, benchmarks)
 	after()
 }
 
 func report(t *T) {
-	tstr := fmt.Sprintf("(%.2f seconds)", float64(t.ns)/1e9)
+	tstr := fmt.Sprintf("(%.2f seconds)", t.dt.Seconds())
 	format := "--- %s: %s %s\n%s"
 	if t.failed {
-		fmt.Fprintf(os.Stderr, format, "FAIL", t.name, tstr, t.errors)
+		fmt.Printf(format, "FAIL", t.name, tstr, t.errors)
 	} else if *chatty {
-		fmt.Fprintf(os.Stderr, format, "PASS", t.name, tstr, t.errors)
+		fmt.Printf(format, "PASS", t.name, tstr, t.errors)
 	}
 }
 
-func RunTests(matchString func(pat, str string) (bool, os.Error), tests []InternalTest) (ok bool) {
+func RunTests(matchString func(pat, str string) (bool, error), tests []InternalTest) (ok bool) {
 	ok = true
 	if len(tests) == 0 {
 		fmt.Fprintln(os.Stderr, "testing: warning: no tests to run")
@@ -217,7 +237,7 @@ func RunTests(matchString func(pat, str string) (bool, os.Error), tests []Intern
 		for i := 0; i < len(tests); i++ {
 			matched, err := matchString(*match, tests[i].Name)
 			if err != nil {
-				println("invalid regexp for -test.run:", err.String())
+				fmt.Fprintf(os.Stderr, "testing: invalid regexp for -test.run: %s\n", err)
 				os.Exit(1)
 			}
 			if !matched {
@@ -229,7 +249,7 @@ func RunTests(matchString func(pat, str string) (bool, os.Error), tests []Intern
 			}
 			t := &T{ch: ch, name: testName, startParallel: startParallel}
 			if *chatty {
-				println("=== RUN", t.name)
+				fmt.Printf("=== RUN %s\n", t.name)
 			}
 			go tRunner(t, &tests[i])
 			out := <-t.ch
@@ -325,7 +345,7 @@ func parseCpuList() {
 		for _, val := range strings.Split(*cpuListStr, ",") {
 			cpu, err := strconv.Atoi(val)
 			if err != nil || cpu <= 0 {
-				println("invalid value for -test.cpu")
+				fmt.Fprintf(os.Stderr, "testing: invalid value %q for -test.cpu", val)
 				os.Exit(1)
 			}
 			cpuList = append(cpuList, cpu)

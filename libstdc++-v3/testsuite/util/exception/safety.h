@@ -826,6 +826,110 @@ namespace __gnu_test
 	operator()(_Tp&, _Tp&) { }
       };
 
+    template<typename _Tp,
+	     bool = traits<_Tp>::has_emplace::value>
+      struct emplace;
+
+    // Specialization for most containers.
+    template<typename _Tp>
+      struct emplace<_Tp, true>
+      {
+	typedef _Tp					container_type;
+	typedef typename container_type::value_type	value_type;
+	typedef typename container_type::size_type	size_type;
+
+	void
+	operator()(_Tp& __test)
+	{
+	  try
+	    {
+	      const value_type cv = generate_unique<value_type>();
+	      __test.emplace(cv);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+	}
+
+	// Assumes containers start out equivalent.
+	void
+	operator()(_Tp& __control, _Tp& __test)
+	{
+	  try
+	    {
+	      const value_type cv = generate_unique<value_type>();
+	      __test.emplace(cv);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+ 	}
+      };
+
+    // Specialization, empty.
+    template<typename _Tp>
+      struct emplace<_Tp, false>
+      {
+	void
+	operator()(_Tp&) { }
+
+	void
+	operator()(_Tp&, _Tp&) { }
+      };
+
+    template<typename _Tp,
+	     bool = traits<_Tp>::has_emplace::value>
+      struct emplace_hint;
+
+    // Specialization for most containers.
+    template<typename _Tp>
+      struct emplace_hint<_Tp, true>
+      {
+	typedef _Tp 				       	container_type;
+	typedef typename container_type::value_type 	value_type;
+
+	void
+	operator()(_Tp& __test)
+	{
+	  try
+	    {
+	      const value_type cv = generate_unique<value_type>();
+	      const size_type sz = std::distance(__test.begin(), __test.end());
+	      size_type s = generate(sz);
+	      auto i = __test.begin();
+	      std::advance(i, s);
+	      __test.emplace_hint(i, cv);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+	}
+
+	// Assumes containers start out equivalent.
+	void
+	operator()(_Tp& __control, _Tp& __test)
+	{
+	  try
+	    {
+	      const value_type cv = generate_unique<value_type>();
+	      const size_type sz = std::distance(__test.begin(), __test.end());
+	      size_type s = generate(sz);
+	      auto i = __test.begin();
+	      std::advance(i, s);
+	      __test.emplace_hint(i, cv);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+ 	}
+      };
+
+    // Specialization, empty.
+    template<typename _Tp>
+      struct emplace_hint<_Tp, false>
+      {
+	void
+	operator()(_Tp&) { }
+
+	void
+	operator()(_Tp&, _Tp&) { }
+      };
 
     template<typename _Tp, bool = traits<_Tp>::is_associative::value
 				  || traits<_Tp>::is_unordered::value>
@@ -1023,6 +1127,8 @@ namespace __gnu_test
       typedef erase_point<container_type> 	       	erase_point;
       typedef erase_range<container_type> 	       	erase_range;
       typedef insert_point<container_type> 	       	insert_point;
+      typedef emplace<container_type>			emplace;
+      typedef emplace_hint<container_type>		emplace_hint;
       typedef pop_front<container_type> 	       	pop_front;
       typedef pop_back<container_type> 			pop_back;
       typedef push_front<container_type> 	       	push_front;
@@ -1039,6 +1145,8 @@ namespace __gnu_test
       erase_point		_M_erasep;
       erase_range		_M_eraser;
       insert_point		_M_insertp;
+      emplace			_M_emplace;
+      emplace_hint		_M_emplaceh;
       pop_front			_M_popf;
       pop_back			_M_popb;
       push_front	       	_M_pushf;
@@ -1098,6 +1206,8 @@ namespace __gnu_test
 	_M_functions.push_back(function_type(base_type::_M_erasep));
 	_M_functions.push_back(function_type(base_type::_M_eraser));
 	_M_functions.push_back(function_type(base_type::_M_insertp));
+	_M_functions.push_back(function_type(base_type::_M_emplace));
+	_M_functions.push_back(function_type(base_type::_M_emplaceh));
 	_M_functions.push_back(function_type(base_type::_M_popf));
 	_M_functions.push_back(function_type(base_type::_M_popb));
 	_M_functions.push_back(function_type(base_type::_M_pushf));

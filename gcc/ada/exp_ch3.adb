@@ -250,7 +250,6 @@ package body Exp_Ch3 is
    --  Dispatching is required in general, since the result of the attribute
    --  will vary with the actual object subtype.
    --
-   --     _alignment     provides result of 'Alignment attribute
    --     _size          provides result of 'Size attribute
    --     typSR          provides result of 'Read attribute
    --     typSW          provides result of 'Write attribute
@@ -8156,18 +8155,6 @@ package body Exp_Ch3 is
 
         Ret_Type => Standard_Long_Long_Integer));
 
-      --  Spec of _Alignment
-
-      Append_To (Res, Predef_Spec_Or_Body (Loc,
-        Tag_Typ => Tag_Typ,
-        Name    => Name_uAlignment,
-        Profile => New_List (
-          Make_Parameter_Specification (Loc,
-            Defining_Identifier => Make_Defining_Identifier (Loc, Name_X),
-            Parameter_Type      => New_Reference_To (Tag_Typ, Loc))),
-
-        Ret_Type => Standard_Integer));
-
       --  Specs for dispatching stream attributes
 
       declare
@@ -8739,29 +8726,6 @@ package body Exp_Ch3 is
             Next_Elmt (Prim);
          end loop;
       end if;
-
-      --  Body of _Alignment
-
-      Decl := Predef_Spec_Or_Body (Loc,
-        Tag_Typ => Tag_Typ,
-        Name    => Name_uAlignment,
-        Profile => New_List (
-          Make_Parameter_Specification (Loc,
-            Defining_Identifier => Make_Defining_Identifier (Loc, Name_X),
-            Parameter_Type      => New_Reference_To (Tag_Typ, Loc))),
-
-        Ret_Type => Standard_Integer,
-        For_Body => True);
-
-      Set_Handled_Statement_Sequence (Decl,
-        Make_Handled_Sequence_Of_Statements (Loc, New_List (
-          Make_Simple_Return_Statement (Loc,
-            Expression =>
-              Make_Attribute_Reference (Loc,
-                Prefix          => Make_Identifier (Loc, Name_X),
-                Attribute_Name  => Name_Alignment)))));
-
-      Append_To (Res, Decl);
 
       --  Body of _Size
 

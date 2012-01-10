@@ -12,6 +12,13 @@ package body Vect5 is
       return R;
    end;
 
+   procedure Add (X : Varray; Y : Long_Float; R : out Varray) is
+   begin
+      for I in X'Range loop
+         R(I) := X(I) + Y;
+      end loop;
+   end;
+
    procedure Add (X : not null access Varray; Y : Long_Float; R : not null access Varray) is
    begin
       for I in X'Range loop
@@ -27,6 +34,13 @@ package body Vect5 is
          R(I) := X(I) + Y;
       end loop;
       return R;
+   end;
+
+   procedure Add (X : Sarray; Y : Long_Float; R : out Sarray) is
+   begin
+      for I in Sarray'Range loop
+         R(I) := X(I) + Y;
+      end loop;
    end;
 
    procedure Add (X : not null access Sarray; Y : Long_Float; R : not null access Sarray) is
@@ -46,6 +60,13 @@ package body Vect5 is
       return R;
    end;
 
+   procedure Add (X : Darray1; Y : Long_Float; R : out Darray1) is
+   begin
+      for I in Darray1'Range loop
+         R(I) := X(I) + Y;
+      end loop;
+   end;
+
    procedure Add (X : not null access Darray1; Y : Long_Float; R : not null access Darray1) is
    begin
       for I in Darray1'Range loop
@@ -61,6 +82,13 @@ package body Vect5 is
          R(I) := X(I) + Y;
       end loop;
       return R;
+   end;
+
+   procedure Add (X : Darray2; Y : Long_Float; R : out Darray2) is
+   begin
+      for I in Darray2'Range loop
+         R(I) := X(I) + Y;
+      end loop;
    end;
 
    procedure Add (X : not null access Darray2; Y : Long_Float; R : not null access Darray2) is
@@ -80,6 +108,13 @@ package body Vect5 is
       return R;
    end;
 
+   procedure Add (X : Darray3; Y : Long_Float; R : out Darray3) is
+   begin
+      for I in Darray3'Range loop
+         R(I) := X(I) + Y;
+      end loop;
+   end;
+
    procedure Add (X : not null access Darray3; Y : Long_Float; R : not null access Darray3) is
    begin
       for I in Darray3'Range loop
@@ -89,5 +124,5 @@ package body Vect5 is
 
 end Vect5;
 
--- { dg-final { scan-tree-dump-times "vectorized 1 loops" 10 "vect"  } }
+-- { dg-final { scan-tree-dump-times "vectorized 1 loops" 15 "vect"  } }
 -- { dg-final { cleanup-tree-dump "vect" } }

@@ -58,16 +58,8 @@ gfc_clear_ts (gfc_typespec *ts)
 FILE *
 gfc_open_file (const char *name)
 {
-  struct stat statbuf;
-
   if (!*name)
     return stdin;
-
-  if (stat (name, &statbuf) < 0)
-    return NULL;
-
-  if (!S_ISREG (statbuf.st_mode))
-    return NULL;
 
   return fopen (name, "r");
 }

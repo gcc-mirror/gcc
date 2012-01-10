@@ -1,6 +1,9 @@
 /* { dg-do compile { target { { powerpc*-*-* } && { ! powerpc*-apple-darwin* } } } } */
-/* { dg-require-effective-target powerpc_fprs } */
-/* { dg-options "-O2 -ffast-math -mcpu=power6" } */
+/* Check for VSX here, even though we don't use VSX to eliminate SPE, PAIRED
+   and other ppc floating point varients.  However, we need to also eliminate
+   Darwin, since it doesn't like -mcpu=power6.  */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-O2 -ffast-math -mcpu=power6 -mno-vsx -mno-altivec" } */
 /* { dg-final { scan-assembler-times "fsqrt" 3 } } */
 /* { dg-final { scan-assembler-times "fmul" 1 } } */
 /* { dg-final { scan-assembler-times "bl? pow" 1 } } */

@@ -8,6 +8,7 @@
 #define GO_IMPORT_H
 
 #include "export.h"
+#include "go-linemap.h"
 
 class Gogo;
 class Package;
@@ -78,13 +79,13 @@ class Import
     // Give an error if the next bytes do not match STR.  Advance the
     // read position by the length of STR.
     void
-    require_c_string(source_location location, const char* str)
+    require_c_string(Location location, const char* str)
     { this->require_bytes(location, str, strlen(str)); }
 
     // Given an error if the next LENGTH bytes do not match BYTES.
     // Advance the read position by LENGTH.
     void
-    require_bytes(source_location, const char* bytes, size_t length);
+    require_bytes(Location, const char* bytes, size_t length);
 
     // Advance the read position by SKIP bytes.
     void
@@ -124,10 +125,10 @@ class Import
   // returns a pointer to a Stream object to read the data that it
   // exports.  LOCATION is the location of the import statement.
   static Stream*
-  open_package(const std::string& filename, source_location location);
+  open_package(const std::string& filename, Location location);
 
   // Constructor.
-  Import(Stream*, source_location);
+  Import(Stream*, Location);
 
   // Register the builtin types.
   void
@@ -142,7 +143,7 @@ class Import
   import(Gogo*, const std::string& local_name, bool is_local_name_exported);
 
   // The location of the import statement.
-  source_location
+  Location
   location() const
   { return this->location_; }
 
@@ -190,17 +191,17 @@ class Import
 
  private:
   static Stream*
-  try_package_in_directory(const std::string&, source_location);
+  try_package_in_directory(const std::string&, Location);
 
   static int
   try_suffixes(std::string*);
 
   static Stream*
-  find_export_data(const std::string& filename, int fd, source_location);
+  find_export_data(const std::string& filename, int fd, Location);
 
   static Stream*
   find_object_export_data(const std::string& filename, int fd,
-			  off_t offset, source_location);
+			  off_t offset, Location);
 
   static const int archive_magic_len = 8;
 
@@ -209,7 +210,7 @@ class Import
 
   static Stream*
   find_archive_export_data(const std::string& filename, int fd,
-			   source_location);
+			   Location);
 
   // Read the import control functions.
   void
@@ -244,7 +245,7 @@ class Import
   // The stream from which to read import data.
   Stream* stream_;
   // The location of the import statement we are processing.
-  source_location location_;
+  Location location_;
   // The package we are importing.
   Package* package_;
   // Whether to add new objects to the global scope, rather than to a
@@ -286,7 +287,7 @@ class Stream_from_string : public Import::Stream
   size_t pos_;
 };
 
-// Read import data from an allocated buffer.
+// Read import data from a buffer allocated using malloc.
 
 class Stream_from_buffer : public Import::Stream
 {
@@ -296,7 +297,7 @@ class Stream_from_buffer : public Import::Stream
   { }
 
   ~Stream_from_buffer()
-  { delete[] this->buf_; }
+  { free(this->buf_); }
 
  protected:
   bool

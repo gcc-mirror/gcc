@@ -70,21 +70,17 @@ package System.Storage_Pools.Subpools is
       Storage_Address          : out System.Address;
       Size_In_Storage_Elements : System.Storage_Elements.Storage_Count;
       Alignment                : System.Storage_Elements.Storage_Count;
-      Subpool                  : not null Subpool_Handle)
-   is abstract;
+      Subpool                  : not null Subpool_Handle) is abstract;
 
    --  ??? This precondition causes errors in simple tests, disabled for now
 
---     with Pre'Class => Pool_Of_Subpool (Subpool) = Pool'Access;
+   --      with Pre'Class => Pool_Of_Subpool (Subpool) = Pool'Access;
    --  This routine requires implementation. Allocate an object described by
    --  Size_In_Storage_Elements and Alignment on a subpool.
 
    function Create_Subpool
-     (Pool         : in out Root_Storage_Pool_With_Subpools;
-      Storage_Size : Storage_Elements.Storage_Count :=
-                     Storage_Elements.Storage_Count'Last)
-   return not null Subpool_Handle
-   is abstract;
+     (Pool : in out Root_Storage_Pool_With_Subpools)
+      return not null Subpool_Handle is abstract;
    --  This routine requires implementation. Create a subpool within the given
    --  pool_with_subpools.
 
@@ -102,29 +98,34 @@ package System.Storage_Pools.Subpools is
 
    --  ??? This precondition causes errors in simple tests, disabled for now
 
---     with Pre'Class => Pool_Of_Subpool (Subpool) = Pool'Access;
+   --      with Pre'Class => Pool_Of_Subpool (Subpool) = Pool'Access;
    --  This routine requires implementation. Reclaim the storage a particular
    --  subpool occupies in a pool_with_subpools. This routine is called by
    --  Ada.Unchecked_Deallocate_Subpool.
 
    function Default_Subpool_For_Pool
-     (Pool : Root_Storage_Pool_With_Subpools)
-   return not null Subpool_Handle
-   is abstract;
-   --  This routine requires implementation. Returns a common subpool used for
-   --  allocations without Subpool_Handle_name in the allocator.
+     (Pool : Root_Storage_Pool_With_Subpools) return not null Subpool_Handle;
+   --  Return a common subpool which is used for object allocations without a
+   --  Subpool_Handle_name in the allocator. The default implementation of this
+   --  routine raises Program_Error.
 
    function Pool_Of_Subpool
      (Subpool : not null Subpool_Handle)
-   return access Root_Storage_Pool_With_Subpools'Class;
+      return access Root_Storage_Pool_With_Subpools'Class;
    --  Return the owner of the subpool
 
    procedure Set_Pool_Of_Subpool
      (Subpool : not null Subpool_Handle;
-      Pool    : in out Root_Storage_Pool_With_Subpools'Class);
+      To      : in out Root_Storage_Pool_With_Subpools'Class);
    --  Set the owner of the subpool. This is intended to be called from
    --  Create_Subpool or similar subpool constructors. Raises Program_Error
    --  if the subpool already belongs to a pool.
+
+   overriding function Storage_Size
+     (Pool : Root_Storage_Pool_With_Subpools)
+      return System.Storage_Elements.Storage_Count
+   is
+      (System.Storage_Elements.Storage_Count'Last);
 
 private
    --  Model
@@ -328,6 +329,13 @@ private
    --  Finalize all controlled objects chained on Subpool's master. Remove the
    --  subpool from its owner's list. Deallocate the associated doubly linked
    --  list node.
+
+   function Header_Size_With_Padding
+     (Alignment : System.Storage_Elements.Storage_Count)
+      return System.Storage_Elements.Storage_Count;
+   --  Given an arbitrary alignment, calculate the size of the header which
+   --  precedes a controlled object as the nearest multiple rounded up of the
+   --  alignment.
 
    overriding procedure Initialize (Controller : in out Pool_Controller);
    --  Buffer routine, calls Initialize_Pool

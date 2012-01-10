@@ -46,6 +46,7 @@ with System.Multiprocessors;
 with System.Tasking.Debug;
 with System.Interrupt_Management;
 with System.Float_Control;
+with System.OS_Constants;
 
 with System.Soft_Links;
 --  We use System.Soft_Links instead of System.Tasking.Initialization
@@ -58,6 +59,7 @@ with System.VxWorks.Ext;
 
 package body System.Task_Primitives.Operations is
 
+   package OSC renames System.OS_Constants;
    package SSL renames System.Soft_Links;
 
    use System.Tasking.Debug;
@@ -718,7 +720,7 @@ package body System.Task_Primitives.Operations is
       TS     : aliased timespec;
       Result : int;
    begin
-      Result := clock_gettime (CLOCK_REALTIME, TS'Unchecked_Access);
+      Result := clock_gettime (OSC.CLOCK_RT_Ada, TS'Unchecked_Access);
       pragma Assert (Result = 0);
       return To_Duration (TS);
    end Monotonic_Clock;

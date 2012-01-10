@@ -86,6 +86,9 @@ typedef struct ao_ref_s
 
   /* The alias set of the base object or -1 if not yet computed.  */
   alias_set_type base_alias_set;
+
+  /* Whether the memory is considered a volatile access.  */
+  bool volatile_p;
 } ao_ref;
 
 

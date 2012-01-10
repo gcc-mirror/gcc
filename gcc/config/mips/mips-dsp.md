@@ -1,4 +1,5 @@
-;; Copyright (C) 2005, 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007, 2008, 2010, 2011, 2012
+;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -1105,20 +1106,21 @@
   "ISA_HAS_DSP"
 {
   operands[2] = convert_to_mode (Pmode, operands[2], false);
-  emit_insn (PMODE_INSN (gen_mips_lbux,
+  emit_insn (PMODE_INSN (gen_mips_lbux_extsi,
 			 (operands[0], operands[1], operands[2])));
   DONE;
 })
 
-(define_insn "mips_lbux_<mode>"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-   	(zero_extend:SI
-	  (mem:QI (plus:P (match_operand:P 1 "register_operand" "d")
-			  (match_operand:P 2 "register_operand" "d")))))]
-  "ISA_HAS_DSP"
-  "lbux\t%0,%2(%1)"
+(define_insn "mips_l<SHORT:size><u>x_ext<GPR:mode>_<P:mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+   	(any_extend:GPR
+	  (mem:SHORT (plus:P (match_operand:P 1 "register_operand" "d")
+			     (match_operand:P 2 "register_operand" "d")))))]
+  "ISA_HAS_L<SHORT:SIZE><U>X"
+  "l<SHORT:size><u>x\t%0,%2(%1)"
   [(set_attr "type"	"load")
-   (set_attr "mode"	"SI")])
+   (set_attr "mode"	"<GPR:MODE>")
+   (set_attr "length"	"4")])
 
 (define_expand "mips_lhx"
   [(match_operand:SI 0 "register_operand")
@@ -1127,41 +1129,43 @@
   "ISA_HAS_DSP"
 {
   operands[2] = convert_to_mode (Pmode, operands[2], false);
-  emit_insn (PMODE_INSN (gen_mips_lhx,
+  emit_insn (PMODE_INSN (gen_mips_lhx_extsi,
 			 (operands[0], operands[1], operands[2])));
   DONE;
 })
 
-(define_insn "mips_lhx_<mode>"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(sign_extend:SI
-	  (mem:HI (plus:P (match_operand:P 1 "register_operand" "d")
-			  (match_operand:P 2 "register_operand" "d")))))]
-  "ISA_HAS_DSP"
-  "lhx\t%0,%2(%1)"
-  [(set_attr "type"	"load")
-   (set_attr "mode"	"SI")])
-
-(define_expand "mips_lwx"
-  [(match_operand:SI 0 "register_operand")
+(define_expand "mips_l<size>x"
+  [(match_operand:GPR 0 "register_operand")
    (match_operand 1 "pmode_register_operand")
    (match_operand:SI 2 "register_operand")]
   "ISA_HAS_DSP"
 {
   operands[2] = convert_to_mode (Pmode, operands[2], false);
-  emit_insn (PMODE_INSN (gen_mips_lwx,
+  emit_insn (PMODE_INSN (gen_mips_l<size>x,
 			 (operands[0], operands[1], operands[2])));
   DONE;
 })
 
-(define_insn "mips_lwx_<mode>"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(mem:SI (plus:P (match_operand:P 1 "register_operand" "d")
-	    		(match_operand:P 2 "register_operand" "d"))))]
-  "ISA_HAS_DSP"
-  "lwx\t%0,%2(%1)"
+(define_insn "mips_l<GPR:size>x_<P:mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(mem:GPR (plus:P (match_operand:P 1 "register_operand" "d")
+			 (match_operand:P 2 "register_operand" "d"))))]
+  "ISA_HAS_L<GPR:SIZE>X"
+  "l<GPR:size>x\t%0,%2(%1)"
   [(set_attr "type"	"load")
-   (set_attr "mode"	"SI")])
+   (set_attr "mode"	"<GPR:MODE>")
+   (set_attr "length"	"4")])
+
+(define_insn "*mips_lw<u>x_<P:mode>_ext"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+   	(any_extend:DI
+	  (mem:SI (plus:P (match_operand:P 1 "register_operand" "d")
+			     (match_operand:P 2 "register_operand" "d")))))]
+  "ISA_HAS_LW<U>X && TARGET_64BIT"
+  "lw<u>x\t%0,%2(%1)"
+  [(set_attr "type"	"load")
+   (set_attr "mode"	"DI")
+   (set_attr "length"	"4")])
 
 ;; Table 2-8. MIPS DSP ASE Instructions: Branch
 ;; BPOSGE32

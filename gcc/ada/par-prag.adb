@@ -1126,7 +1126,6 @@ begin
            Pragma_Debug_Policy                   |
            Pragma_Detect_Blocking                |
            Pragma_Default_Storage_Pool           |
-           Pragma_Dimension                      |
            Pragma_Disable_Atomic_Synchronization |
            Pragma_Discard_Names                  |
            Pragma_Dispatching_Domain             |
@@ -1216,6 +1215,7 @@ begin
            Pragma_Psect_Object                   |
            Pragma_Pure                           |
            Pragma_Pure_05                        |
+           Pragma_Pure_12                        |
            Pragma_Pure_Function                  |
            Pragma_Queuing_Policy                 |
            Pragma_Relative_Deadline              |

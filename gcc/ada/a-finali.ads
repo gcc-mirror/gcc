@@ -34,14 +34,16 @@
 ------------------------------------------------------------------------------
 
 pragma Warnings (Off);
---  System.Finalization_Root does not have category Remote_Types, but we
---  allow it anyway.
 with System.Finalization_Root;
 pragma Warnings (On);
 
 package Ada.Finalization is
+   pragma Pure_12;
+   --  Ada.Finalization is declared pure in Ada 2012 (AI05-0212)
+
    pragma Preelaborate;
    pragma Remote_Types;
+   --  The above apply in versions of Ada before Ada 2012
 
    type Controlled is abstract tagged private;
    pragma Preelaborable_Initialization (Controlled);

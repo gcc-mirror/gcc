@@ -202,6 +202,8 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 	    mask = MASK_DEBUG_COST;
 	  else if (! strcmp (q, "target"))
 	    mask = MASK_DEBUG_TARGET;
+	  else if (! strcmp (q, "builtin"))
+	    mask = MASK_DEBUG_BUILTIN;
 	  else
 	    error_at (loc, "unknown -mdebug-%s switch", q);
 

@@ -7,6 +7,7 @@
 package os
 
 import (
+	"io"
 	"syscall"
 )
 
@@ -18,15 +19,15 @@ const (
 //
 // If n > 0, Readdirnames returns at most n names. In this case, if
 // Readdirnames returns an empty slice, it will return a non-nil error
-// explaining why. At the end of a directory, the error is os.EOF.
+// explaining why. At the end of a directory, the error is io.EOF.
 //
 // If n <= 0, Readdirnames returns all the names from the directory in
 // a single slice. In this case, if Readdirnames succeeds (reads all
 // the way to the end of the directory), it returns the slice and a
-// nil os.Error. If it encounters an error before the end of the
+// nil error. If it encounters an error before the end of the
 // directory, Readdirnames returns the names read until that point and
 // a non-nil error.
-func (f *File) Readdirnames(n int) (names []string, err Error) {
+func (f *File) Readdirnames(n int) (names []string, err error) {
 	// If this file has no dirinfo, create one.
 	if f.dirinfo == nil {
 		f.dirinfo = new(dirInfo)
@@ -46,9 +47,9 @@ func (f *File) Readdirnames(n int) (names []string, err Error) {
 		// Refill the buffer if necessary
 		if d.bufp >= d.nbuf {
 			d.bufp = 0
-			var errno int
+			var errno error
 			d.nbuf, errno = syscall.ReadDirent(f.fd, d.buf)
-			if errno != 0 {
+			if errno != nil {
 				return names, NewSyscallError("readdirent", errno)
 			}
 			if d.nbuf <= 0 {
@@ -63,7 +64,7 @@ func (f *File) Readdirnames(n int) (names []string, err Error) {
 		n -= nc
 	}
 	if n >= 0 && len(names) == 0 {
-		return names, EOF
+		return names, io.EOF
 	}
 	return names, nil
 }

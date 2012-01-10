@@ -225,11 +225,19 @@ __upc_validate_pgm_info (char *pgm)
 {
    upc_compiled_thread_info_p p;
    char *info;
+   int nthreads = -1;
+   int npthreads = -1;
+   /* Process all the strings within the program information section.
+      (Ignore intervening null bytes.)  */
    for (info = GUPCR_PGM_INFO_SECTION_START;
-        info < GUPCR_PGM_INFO_SECTION_END && *info;
-	info += strlen(info) + 1)
+        info < GUPCR_PGM_INFO_SECTION_END;
+	++info)
      {
-       __upc_parse_program_info (info);
+       if (*info)
+         {
+	   __upc_parse_program_info (info);
+	   info += strlen(info);
+         }
      }
    if (!__upc_compiled_thread_info)
      {
@@ -240,9 +248,19 @@ __upc_validate_pgm_info (char *pgm)
      }
    for (p = __upc_compiled_thread_info->next; p; p = p->next)
      {
-        if ((p->nthreads != __upc_compiled_thread_info->nthreads)
-	    || (p->threads_model != __upc_compiled_thread_info->threads_model)
-	    || (p->npthreads != __upc_compiled_thread_info->npthreads))
+        if (p->nthreads > 0 && nthreads <= 0)
+	  nthreads = p->nthreads;
+        if (p->npthreads > 0 && npthreads <= 0)
+	  npthreads = p->npthreads;
+        /* Static thread/pthread compilations can be intermixed
+	   with dynamic threads compilations, but static values must agree.  */
+        if (((p->nthreads != nthreads)
+	     && (p->nthreads > 0)
+	     && (nthreads > 0))
+	    || ((p->npthreads != npthreads)
+	     && (p->npthreads > 0)
+	     && (npthreads > 0))
+	    || (p->threads_model != __upc_compiled_thread_info->threads_model))
 	  {
 	    fprintf (stderr, "%s: UPC error: The UPC source files in this"
 			     " program were not compiled with the same value"
@@ -274,9 +292,9 @@ __upc_validate_pgm_info (char *pgm)
     }
 #endif /* !GUPCR_USE_PTHREADS */
 
-  THREADS = __upc_compiled_thread_info->nthreads;
+  THREADS = nthreads;
 #ifdef GUPCR_USE_PTHREADS
-  UPC_PTHREADS = __upc_compiled_thread_info->npthreads;
+  UPC_PTHREADS = npthreads;
   if (UPC_PTHREADS == -1)
     {
       UPC_PTHREADS = THREADS;

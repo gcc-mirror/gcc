@@ -31,9 +31,9 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
-with Ada.Iterator_Interfaces;
 private with Ada.Containers.Red_Black_Trees;
 with Ada.Streams; use Ada.Streams;
+with Ada.Iterator_Interfaces;
 
 generic
    type Element_Type is private;
@@ -62,18 +62,8 @@ package Ada.Containers.Bounded_Ordered_Sets is
    No_Element : constant Cursor;
    function Has_Element (Position : Cursor) return Boolean;
 
-   package Ordered_Set_Iterator_Interfaces is new
+   package Set_Iterator_Interfaces is new
      Ada.Iterator_Interfaces (Cursor, Has_Element);
-
-   type Constant_Reference_Type
-      (Element : not null access constant Element_Type) is
-   private
-   with
-      Implicit_Dereference => Element;
-
-   function Constant_Reference
-     (Container : Set; Position : Cursor)
-   return Constant_Reference_Type;
 
    function "=" (Left, Right : Set) return Boolean;
 
@@ -97,6 +87,16 @@ package Ada.Containers.Bounded_Ordered_Sets is
    procedure Query_Element
      (Position : Cursor;
       Process  : not null access procedure (Element : Element_Type));
+
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is
+   private
+   with
+      Implicit_Dereference => Element;
+
+   function Constant_Reference
+     (Container : aliased Set;
+      Position  : Cursor) return Constant_Reference_Type;
 
    procedure Assign (Target : in out Set; Source : Set);
 
@@ -212,12 +212,12 @@ package Ada.Containers.Bounded_Ordered_Sets is
 
    function Iterate
      (Container : Set)
-      return Ordered_Set_Iterator_Interfaces.Reversible_Iterator'class;
+      return Set_Iterator_Interfaces.Reversible_Iterator'class;
 
    function Iterate
      (Container : Set;
       Start     : Cursor)
-      return Ordered_Set_Iterator_Interfaces.Reversible_Iterator'class;
+      return Set_Iterator_Interfaces.Reversible_Iterator'class;
 
    generic
       type Key_Type (<>) is private;
@@ -263,6 +263,10 @@ package Ada.Containers.Bounded_Ordered_Sets is
 
       function Reference_Preserving_Key
         (Container : aliased in out Set;
+         Position  : Cursor) return Reference_Type;
+
+      function Constant_Reference
+        (Container : aliased Set;
          Key       : Key_Type) return Constant_Reference_Type;
 
       function Reference_Preserving_Key
@@ -297,7 +301,7 @@ private
       Left    : Count_Type;
       Right   : Count_Type;
       Color   : Red_Black_Trees.Color_Type := Red_Black_Trees.Red;
-      Element : Element_Type;
+      Element : aliased Element_Type;
    end record;
 
    package Tree_Types is

@@ -140,7 +140,9 @@ initialize_vtbl_ptrs (tree addr)
    zero-initialization does not simply mean filling the storage with
    zero bytes.  FIELD_SIZE, if non-NULL, is the bit size of the field,
    subfields with bit positions at or above that bit size shouldn't
-   be added.  */
+   be added.  Note that this only works when the result is assigned
+   to a base COMPONENT_REF; if we only have a pointer to the base subobject,
+   expand_assignment will end up clearing the full size of TYPE.  */
 
 static tree
 build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
@@ -333,7 +335,8 @@ build_value_init (tree type, tsubst_flags_t complain)
      constructor.  */
 
   /* The AGGR_INIT_EXPR tweaking below breaks in templates.  */
-  gcc_assert (!processing_template_decl || SCALAR_TYPE_P (type));
+  gcc_assert (!processing_template_decl
+	      || (SCALAR_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE));
 
   if (CLASS_TYPE_P (type))
     {
@@ -359,11 +362,9 @@ build_value_init (tree type, tsubst_flags_t complain)
 	  tree ctor = build_special_member_call
 	    (NULL_TREE, complete_ctor_identifier,
 	     NULL, type, LOOKUP_NORMAL, complain);
+	  ctor = build_aggr_init_expr (type, ctor, complain);
 	  if (ctor != error_mark_node)
-	    {
-	      ctor = build_aggr_init_expr (type, ctor, complain);
-	      AGGR_INIT_ZERO_FIRST (ctor) = 1;
-	    }
+	    AGGR_INIT_ZERO_FIRST (ctor) = 1;
 	  return ctor;
 	}
     }
@@ -376,6 +377,12 @@ build_value_init (tree type, tsubst_flags_t complain)
 tree
 build_value_init_noctor (tree type, tsubst_flags_t complain)
 {
+  if (!COMPLETE_TYPE_P (type))
+    {
+      if (complain & tf_error)
+	error ("value-initialization of incomplete type %qT", type);
+      return error_mark_node;
+    }
   /* FIXME the class and array cases should just use digest_init once it is
      SFINAE-enabled.  */
   if (CLASS_TYPE_P (type))
@@ -485,6 +492,30 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
   return build_zero_init (type, NULL_TREE, /*static_storage_p=*/false);
 }
 
+/* Initialize current class with INIT, a TREE_LIST of
+   arguments for a target constructor. If TREE_LIST is void_type_node,
+   an empty initializer list was given.  */
+
+static void
+perform_target_ctor (tree init)
+{
+  tree decl = current_class_ref;
+  tree type = current_class_type;
+
+  finish_expr_stmt (build_aggr_init (decl, init, LOOKUP_NORMAL,
+                                     tf_warning_or_error));
+  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+    {
+      tree expr = build_delete (type, decl, sfk_complete_destructor,
+				LOOKUP_NORMAL
+				|LOOKUP_NONVIRTUAL
+				|LOOKUP_DESTRUCTOR,
+				0, tf_warning_or_error);
+      if (expr != error_mark_node)
+	finish_eh_cleanup (expr);
+    }
+}
+
 /* Initialize MEMBER, a FIELD_DECL, with INIT, a TREE_LIST of
    arguments.  If TREE_LIST is void_type_node, an empty initializer
    list was given; if NULL_TREE no initializer was given.  */
@@ -517,6 +548,9 @@ perform_member_init (tree member, tree init)
 	  init = break_out_target_exprs (init);
 	}
     }
+
+  if (init == error_mark_node)
+    return;
 
   /* Effective C++ rule 12 requires that all data members be
      initialized.  */
@@ -598,7 +632,9 @@ perform_member_init (tree member, tree init)
 	init = digest_init (type, init, tf_warning_or_error);
       if (init == error_mark_node)
 	return;
-      /* Use 'this' as the decl, as it has the lifetime we want.  */
+      /* A FIELD_DECL doesn't really have a suitable lifetime, but
+	 make_temporary_var_for_ref_to_temp will treat it as automatic and
+	 set_up_extended_ref_temp wants to use the decl in a warning.  */
       init = extend_ref_init_temps (member, init, &cleanups);
       if (TREE_CODE (type) == ARRAY_TYPE
 	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (type)))
@@ -986,6 +1022,16 @@ emit_mem_initializers (tree mem_inits)
   if (!COMPLETE_TYPE_P (current_class_type))
     return;
 
+  if (mem_inits
+      && TYPE_P (TREE_PURPOSE (mem_inits))
+      && same_type_p (TREE_PURPOSE (mem_inits), current_class_type))
+    {
+      /* Delegating constructor. */
+      gcc_assert (TREE_CHAIN (mem_inits) == NULL_TREE);
+      perform_target_ctor (TREE_VALUE (mem_inits));
+      return;
+    }
+
   if (DECL_DEFAULTED_FN (current_function_decl))
     flags |= LOOKUP_DEFAULTED;
 
@@ -1316,8 +1362,9 @@ expand_member_init (tree name)
       tree virtual_binfo;
       int i;
 
-      if (current_template_parms)
-	return basetype;
+      if (same_type_p (basetype, current_class_type)
+	  || current_template_parms)
+	  return basetype;
 
       class_binfo = TYPE_BINFO (current_class_type);
       direct_binfo = NULL_TREE;
@@ -1576,13 +1623,46 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
   else
     parms = make_tree_vector_single (init);
 
-  if (true_exp == exp)
-    ctor_name = complete_ctor_identifier;
-  else
-    ctor_name = base_ctor_identifier;
+  if (exp == current_class_ref && current_function_decl
+      && DECL_HAS_IN_CHARGE_PARM_P (current_function_decl))
+    {
+      /* Delegating constructor. */
+      tree complete;
+      tree base;
+      tree elt; unsigned i;
 
-  rval = build_special_member_call (exp, ctor_name, &parms, binfo, flags,
-                                    complain);
+      /* Unshare the arguments for the second call.  */
+      VEC(tree,gc) *parms2 = make_tree_vector ();
+      FOR_EACH_VEC_ELT (tree, parms, i, elt)
+	{
+	  elt = break_out_target_exprs (elt);
+	  VEC_safe_push (tree, gc, parms2, elt);
+	}
+      complete = build_special_member_call (exp, complete_ctor_identifier,
+					    &parms2, binfo, flags,
+					    complain);
+      complete = fold_build_cleanup_point_expr (void_type_node, complete);
+      release_tree_vector (parms2);
+
+      base = build_special_member_call (exp, base_ctor_identifier,
+					&parms, binfo, flags,
+					complain);
+      base = fold_build_cleanup_point_expr (void_type_node, base);
+      rval = build3 (COND_EXPR, void_type_node,
+		     build2 (EQ_EXPR, boolean_type_node,
+			     current_in_charge_parm, integer_zero_node),
+		     base,
+		     complete);
+    }
+   else
+    {
+      if (true_exp == exp)
+	ctor_name = complete_ctor_identifier;
+      else
+	ctor_name = base_ctor_identifier;
+      rval = build_special_member_call (exp, ctor_name, &parms, binfo, flags,
+					complain);
+  }
 
   if (parms != NULL)
     release_tree_vector (parms);

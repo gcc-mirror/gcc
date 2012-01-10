@@ -1,6 +1,6 @@
 /* gfortran header file
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010, 2011
+   2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -1299,7 +1299,9 @@ gfc_use_rename;
 typedef struct gfc_use_list
 {
   const char *module_name;
-  int only_flag;
+  bool intrinsic;
+  bool non_intrinsic;
+  bool only_flag;
   struct gfc_use_rename *rename;
   locus where;
   /* Next USE statement.  */
@@ -1696,6 +1698,10 @@ typedef struct gfc_expr
   gfc_ref *ref;
 
   locus where;
+
+  /* Used to store the base expression in component calls, when the expression
+     is not a variable.  */
+  struct gfc_expr *base_expr;
 
   /* is_boz is true if the integer is regarded as BOZ bitpatten and is_snan
      denotes a signalling not-a-number.  */
@@ -2911,11 +2917,14 @@ gfc_try gfc_calculate_transfer_sizes (gfc_expr*, gfc_expr*, gfc_expr*,
 
 /* class.c */
 void gfc_add_component_ref (gfc_expr *, const char *);
+void gfc_add_class_array_ref (gfc_expr *);
 #define gfc_add_data_component(e)     gfc_add_component_ref(e,"_data")
 #define gfc_add_vptr_component(e)     gfc_add_component_ref(e,"_vptr")
 #define gfc_add_hash_component(e)     gfc_add_component_ref(e,"_hash")
 #define gfc_add_size_component(e)     gfc_add_component_ref(e,"_size")
 #define gfc_add_def_init_component(e) gfc_add_component_ref(e,"_def_init")
+bool gfc_is_class_array_ref (gfc_expr *, bool *);
+bool gfc_is_class_scalar_expr (gfc_expr *);
 gfc_expr *gfc_class_null_initializer (gfc_typespec *);
 unsigned int gfc_hash_value (gfc_symbol *);
 gfc_try gfc_build_class_symbol (gfc_typespec *, symbol_attribute *,

@@ -24,6 +24,8 @@
  * <http://www.gnu.org/licenses/>.
  */ 
 
+#ifndef __ppc64__
+
 	.machine ppc7400
 .data
 	.align 2
@@ -33,12 +35,7 @@
 .non_lazy_symbol_pointer
 L_has_vec$non_lazy_ptr:
 	.indirect_symbol __cpu_has_altivec
-#ifdef __ppc64__
-	.quad	0
-#else
 	.long	0
-#endif
-
 #else
 
 /* For static, "pretend" we have a non-lazy-pointer.  */
@@ -57,12 +54,11 @@ L_has_vec$non_lazy_ptr:
    provided by the System Framework to determine this.)
 
    SAVE_WORLD takes R0 (the caller`s caller`s return address) and R11
-   (the stack frame size) as parameters.  It returns VRsave in R0 if
-   we`re on a CPU with vector regs.
+   (the stack frame size) as parameters.  It returns the updated VRsave
+   in R0 if we`re on a CPU with vector regs.
 
-   With gcc3, we now need to save and restore CR as well, since gcc3's
-   scheduled prologs can cause comparisons to be moved before calls to
-   save_world!
+   For gcc3 onward, we need to save and restore CR as well, since scheduled
+   prologs can cause comparisons to be moved before calls to save_world.
 
    USES: R0 R11 R12  */
 
@@ -143,69 +139,62 @@ L$saveVMX:
 	stvx v30,r11,r12
 	mfspr r0,VRsave
 	li r11,-16
-	stvx v31,r11,r12
-				/* VRsave lives at -224(R1)  */
-	stw r0,0(r12)
+	stvx v31,r11,r12	
+	stw r0,0(r12)		/* VRsave lives at -224(R1).  */
+	ori r0,r0,0xfff		/* We just saved these.  */
+	mtspr VRsave,r0
 	blr
 
+/* rest_world  is jumped to, not called, so no need to worry about LR.
+   clobbers R0, R7, R11 and R12.  This just undoes the work done above.  */
+
+	.private_extern rest_world
+rest_world:
+				
+	lwz r11, 0(r1)		/* Pickup previous SP  */
+	li r7, 0		/* Stack offset is zero, r10 is ignored.  */
+	b Lrest_world_eh_r7
 
 /* eh_rest_world_r10 is jumped to, not called, so no need to worry about LR.
    R10 is the C++ EH stack adjust parameter, we return to the caller`s caller.
 
-   USES: R0 R10 R11 R12   and R7 R8
-   RETURNS: C++ EH Data registers (R3 - R6.)
+   clobbers: R0, R7, R11 and R12
+   uses    : R10
+   RETURNS : C++ EH Data registers (R3 - R6).  */
 
-   We now set up R7/R8 and jump to rest_world_eh_r7r8.
-
-   rest_world doesn't use the R10 stack adjust parameter, nor does it
-   pick up the R3-R6 exception handling stuff.  */
-
-.private_extern rest_world
-rest_world:
-				/* Pickup previous SP  */
-	lwz r11, 0(r1)
-	li r7, 0
-	lwz r8, 8(r11)
-	li r10, 0
-	b rest_world_eh_r7r8
-
-.private_extern eh_rest_world_r10
+	.private_extern eh_rest_world_r10
 eh_rest_world_r10:
-				/* Pickup previous SP  */
-	lwz r11, 0(r1)
-	mr  r7,r10
-	lwz r8, 8(r11)
-			/* pickup the C++ EH data regs (R3 - R6.)  */
+				
+	lwz r11, 0(r1)		/* Pickup previous SP  */
+	mr  r7,r10		/* Stack offset.  */
+	
+	/* pickup the C++ EH data regs (R3 - R6.)  */
 	lwz r6,-420(r11)
 	lwz r5,-424(r11)
 	lwz r4,-428(r11)
 	lwz r3,-432(r11)
 
-	b rest_world_eh_r7r8
+	/* Fall through to Lrest_world_eh_r7.  */
 
-/* rest_world_eh_r7r8 is jumped to -- not called! -- when we're doing
-   the exception-handling epilog.  R7 contains the offset to add to
-   the SP, and R8 contains the 'real' return address.
+/* When we are doing the exception-handling epilog, R7 contains the offset to
+   add to the SP.
 
-   USES: R0 R11 R12  [R7/R8]
-   RETURNS: C++ EH Data registers (R3 - R6.)  */
+   clobbers: R0, R11 and R12
+   uses    : R7.  */
 
-rest_world_eh_r7r8:
-	bcl 20,31,Lr7r8$pb
-Lr7r8$pb: mflr r12
-	lwz r11,0(r1)
-				/* R11 := previous SP  */
-	addis r12,r12,ha16(L_has_vec$non_lazy_ptr-Lr7r8$pb)
-	lwz r12,lo16(L_has_vec$non_lazy_ptr-Lr7r8$pb)(r12)
-	lwz r0,4(r11)
-				/* R0 := old CR  */
-	lwz r12,0(r12)
-				/* R12 := HAS_VEC  */
-	mtcr r0	
+Lrest_world_eh_r7:
+	/* See if we have Altivec.  */
+	bcl 20,31,Lr7$pb
+Lr7$pb: mflr r12
+
+	addis r12,r12,ha16(L_has_vec$non_lazy_ptr-Lr7$pb)
+	lwz r12,lo16(L_has_vec$non_lazy_ptr-Lr7$pb)(r12)
+	lwz r12,0(r12)		/* R12 := HAS_VEC  */
 	cmpwi r12,0
 	lmw r13,-220(r11)
 	beq L.rest_world_fp_eh
-				/* restore VRsave and V20..V31  */
+
+	/* We have Altivec, restore VRsave and V20..V31  */
 	lwz r0,-224(r11)
 	li r12,-416
 	mtspr VRsave,r0
@@ -234,6 +223,7 @@ Lr7r8$pb: mflr r12
 	lvx v31,r11,r12
 
 L.rest_world_fp_eh:
+	lwz r0,4(r11)		/* recover saved CR  */
 	lfd f14,-144(r11)
 	lfd f15,-136(r11)
 	lfd f16,-128(r11)
@@ -251,9 +241,12 @@ L.rest_world_fp_eh:
 	lfd f28,-32(r11)
 	lfd f29,-24(r11)
 	lfd f30,-16(r11)
-			/* R8 is the exception-handler's address  */
-	mtctr r8
-	lfd f31,-8(r11)
-			/* set SP to original value + R7 offset  */
-	add r1,r11,r7
+	mtcr r0			/* restore the saved cr.  */
+	lwz r0, 8(r11)		/* Pick up the 'real' return address.  */
+	lfd f31,-8(r11)		
+	mtctr r0		/* exception-handler ret. address  */
+	add r1,r11,r7		/* set SP to original value + R7 offset  */
 	bctr
+#endif
+/* we should never be called on ppc64 for this ... */
+/* Done.  */

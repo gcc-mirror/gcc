@@ -2,5 +2,6 @@ LIB2_SIDITI_CONV_FUNCS = yes
 
 LIB2ADD = $(srcdir)/config/rs6000/darwin-tramp.S \
 	  $(srcdir)/config/darwin-64.c \
+	  $(srcdir)/config/rs6000/darwin-fpsave.S \
+	  $(srcdir)/config/rs6000/darwin-gpsave.S \
 	  $(srcdir)/config/rs6000/darwin-world.S
-

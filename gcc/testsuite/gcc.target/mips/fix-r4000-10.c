@@ -4,5 +4,5 @@
 /* { dg-options "-mips3 -mfix-r4000 -mgp64 -O2 -fno-split-wide-types -dp -EL" } */
 typedef unsigned long long uint64_t;
 typedef unsigned int uint128_t __attribute__((mode(TI)));
-uint128_t foo (uint64_t x, uint64_t y) { return (uint128_t) x * y; }
+NOMIPS16 uint128_t foo (uint64_t x, uint64_t y) { return (uint128_t) x * y; }
 /* { dg-final { scan-assembler "[concat {\tdmultu\t\$[45],\$[45][^\n]+umulditi3_r4000[^\n]+\n\tmflo\t\$2\n\tmfhi\t\$3\n}]" } } */

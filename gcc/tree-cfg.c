@@ -1,6 +1,6 @@
 /* Control flow functions for trees.
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011  Free Software Foundation, Inc.
+   2010, 2011, 2012  Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -1592,7 +1592,7 @@ replace_uses_by (tree name, tree val)
 		  /* This can only occur for virtual operands, since
 		     for the real ones SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
 		     would prevent replacement.  */
-		  gcc_assert (!is_gimple_reg (name));
+		  gcc_checking_assert (!is_gimple_reg (name));
 		  SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val) = 1;
 		}
 	    }
@@ -1601,30 +1601,40 @@ replace_uses_by (tree name, tree val)
       if (gimple_code (stmt) != GIMPLE_PHI)
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	  gimple orig_stmt = stmt;
 	  size_t i;
 
-	  fold_stmt (&gsi);
-	  stmt = gsi_stmt (gsi);
-	  if (cfgcleanup_altered_bbs && !is_gimple_debug (stmt))
+	  /* Mark the block if we changed the last stmt in it.  */
+	  if (cfgcleanup_altered_bbs
+	      && stmt_ends_bb_p (stmt))
 	    bitmap_set_bit (cfgcleanup_altered_bbs, gimple_bb (stmt)->index);
 
-	  /* FIXME.  This should go in update_stmt.  */
-	  for (i = 0; i < gimple_num_ops (stmt); i++)
-	    {
-	      tree op = gimple_op (stmt, i);
-              /* Operands may be empty here.  For example, the labels
-                 of a GIMPLE_COND are nulled out following the creation
-                 of the corresponding CFG edges.  */
-	      if (op && TREE_CODE (op) == ADDR_EXPR)
-		recompute_tree_invariant_for_addr_expr (op);
-	    }
+	  /* FIXME.  It shouldn't be required to keep TREE_CONSTANT
+	     on ADDR_EXPRs up-to-date on GIMPLE.  Propagation will
+	     only change sth from non-invariant to invariant, and only
+	     when propagating constants.  */
+	  if (is_gimple_min_invariant (val))
+	    for (i = 0; i < gimple_num_ops (stmt); i++)
+	      {
+		tree op = gimple_op (stmt, i);
+		/* Operands may be empty here.  For example, the labels
+		   of a GIMPLE_COND are nulled out following the creation
+		   of the corresponding CFG edges.  */
+		if (op && TREE_CODE (op) == ADDR_EXPR)
+		  recompute_tree_invariant_for_addr_expr (op);
+	      }
 
-	  maybe_clean_or_replace_eh_stmt (stmt, stmt);
+	  if (fold_stmt (&gsi))
+	    stmt = gsi_stmt (gsi);
+
+	  if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt))
+	    gimple_purge_dead_eh_edges (gimple_bb (stmt));
+
 	  update_stmt (stmt);
 	}
     }
 
-  gcc_assert (has_zero_uses (name));
+  gcc_checking_assert (has_zero_uses (name));
 
   /* Also update the trees stored in loop structures.  */
   if (current_loops)
@@ -3701,10 +3711,6 @@ do_pointer_plus_expr_check:
     case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
-    case VEC_EXTRACT_EVEN_EXPR:
-    case VEC_EXTRACT_ODD_EXPR:
-    case VEC_INTERLEAVE_HIGH_EXPR:
-    case VEC_INTERLEAVE_LOW_EXPR:
       /* FIXME.  */
       return false;
 
@@ -6876,9 +6882,20 @@ need_fake_edge_p (gimple t)
 	   && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FORK))
     return false;
 
-  if (is_gimple_call (t)
-      && !(call_flags & ECF_NORETURN))
-    return true;
+  if (is_gimple_call (t))
+    {
+      edge_iterator ei;
+      edge e;
+      basic_block bb;
+
+      if (!(call_flags & ECF_NORETURN))
+	return true;
+
+      bb = gimple_bb (t);
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if ((e->flags & EDGE_FAKE) == 0)
+	  return true;
+    }
 
   if (gimple_code (t) == GIMPLE_ASM
        && (gimple_asm_volatile_p (t) || gimple_asm_input_p (t)))
@@ -6889,9 +6906,10 @@ need_fake_edge_p (gimple t)
 
 
 /* Add fake edges to the function exit for any non constant and non
-   noreturn calls, volatile inline assembly in the bitmap of blocks
-   specified by BLOCKS or to the whole CFG if BLOCKS is zero.  Return
-   the number of blocks that were split.
+   noreturn calls (or noreturn calls with EH/abnormal edges),
+   volatile inline assembly in the bitmap of blocks specified by BLOCKS
+   or to the whole CFG if BLOCKS is zero.  Return the number of blocks
+   that were split.
 
    The goal is to expose cases in which entering a basic block does
    not imply that all subsequent instructions must be executed.  */

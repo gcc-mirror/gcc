@@ -1,6 +1,8 @@
 /* { dg-do run } */
-/* { dg-require-effective-target sync_longlong } */
+/* { dg-require-effective-target sync_long_long_runtime } */
 /* { dg-options "-std=gnu99" } */
+/* { dg-additional-options "-march=pentium" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
+
 /* { dg-message "note: '__sync_fetch_and_nand' changed semantics in GCC 4.4" "" { target *-*-* } 0 } */
 /* { dg-message "note: '__sync_nand_and_fetch' changed semantics in GCC 4.4" "" { target *-*-* } 0 } */
 

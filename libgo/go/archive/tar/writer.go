@@ -8,15 +8,15 @@ package tar
 // - catch more errors (no first header, write after close, etc.)
 
 import (
+	"errors"
 	"io"
-	"os"
 	"strconv"
 )
 
 var (
-	ErrWriteTooLong    = os.NewError("write too long")
-	ErrFieldTooLong    = os.NewError("header field too long")
-	ErrWriteAfterClose = os.NewError("write after close")
+	ErrWriteTooLong    = errors.New("write too long")
+	ErrFieldTooLong    = errors.New("header field too long")
+	ErrWriteAfterClose = errors.New("write after close")
 )
 
 // A Writer provides sequential writing of a tar archive in POSIX.1 format.
@@ -36,7 +36,7 @@ var (
 //	tw.Close()
 type Writer struct {
 	w          io.Writer
-	err        os.Error
+	err        error
 	nb         int64 // number of unwritten bytes for current file entry
 	pad        int64 // amount of padding to write after current file entry
 	closed     bool
@@ -47,7 +47,7 @@ type Writer struct {
 func NewWriter(w io.Writer) *Writer { return &Writer{w: w} }
 
 // Flush finishes writing the current file (optional).
-func (tw *Writer) Flush() os.Error {
+func (tw *Writer) Flush() error {
 	n := tw.nb + tw.pad
 	for n > 0 && tw.err == nil {
 		nr := n
@@ -79,7 +79,7 @@ func (tw *Writer) cString(b []byte, s string) {
 
 // Encode x as an octal ASCII string and write it into b with leading zeros.
 func (tw *Writer) octal(b []byte, x int64) {
-	s := strconv.Itob64(x, 8)
+	s := strconv.FormatInt(x, 8)
 	// leading zeros, but leave room for a NUL.
 	for len(s)+1 < len(b) {
 		s = "0" + s
@@ -90,7 +90,7 @@ func (tw *Writer) octal(b []byte, x int64) {
 // Write x into b, either as octal or as binary (GNUtar/star extension).
 func (tw *Writer) numeric(b []byte, x int64) {
 	// Try octal first.
-	s := strconv.Itob64(x, 8)
+	s := strconv.FormatInt(x, 8)
 	if len(s) < len(b) {
 		tw.octal(b, x)
 		return
@@ -107,7 +107,7 @@ func (tw *Writer) numeric(b []byte, x int64) {
 // WriteHeader writes hdr and prepares to accept the file's contents.
 // WriteHeader calls Flush if it is not the first header.
 // Calling after a Close will return ErrWriteAfterClose.
-func (tw *Writer) WriteHeader(hdr *Header) os.Error {
+func (tw *Writer) WriteHeader(hdr *Header) error {
 	if tw.closed {
 		return ErrWriteAfterClose
 	}
@@ -127,19 +127,19 @@ func (tw *Writer) WriteHeader(hdr *Header) os.Error {
 	// TODO(dsymonds): handle names longer than 100 chars
 	copy(s.next(100), []byte(hdr.Name))
 
-	tw.octal(s.next(8), hdr.Mode)          // 100:108
-	tw.numeric(s.next(8), int64(hdr.Uid))  // 108:116
-	tw.numeric(s.next(8), int64(hdr.Gid))  // 116:124
-	tw.numeric(s.next(12), hdr.Size)       // 124:136
-	tw.numeric(s.next(12), hdr.Mtime)      // 136:148
-	s.next(8)                              // chksum (148:156)
-	s.next(1)[0] = hdr.Typeflag            // 156:157
-	tw.cString(s.next(100), hdr.Linkname)  // linkname (157:257)
-	copy(s.next(8), []byte("ustar\x0000")) // 257:265
-	tw.cString(s.next(32), hdr.Uname)      // 265:297
-	tw.cString(s.next(32), hdr.Gname)      // 297:329
-	tw.numeric(s.next(8), hdr.Devmajor)    // 329:337
-	tw.numeric(s.next(8), hdr.Devminor)    // 337:345
+	tw.octal(s.next(8), hdr.Mode)              // 100:108
+	tw.numeric(s.next(8), int64(hdr.Uid))      // 108:116
+	tw.numeric(s.next(8), int64(hdr.Gid))      // 116:124
+	tw.numeric(s.next(12), hdr.Size)           // 124:136
+	tw.numeric(s.next(12), hdr.ModTime.Unix()) // 136:148
+	s.next(8)                                  // chksum (148:156)
+	s.next(1)[0] = hdr.Typeflag                // 156:157
+	tw.cString(s.next(100), hdr.Linkname)      // linkname (157:257)
+	copy(s.next(8), []byte("ustar\x0000"))     // 257:265
+	tw.cString(s.next(32), hdr.Uname)          // 265:297
+	tw.cString(s.next(32), hdr.Gname)          // 297:329
+	tw.numeric(s.next(8), hdr.Devmajor)        // 329:337
+	tw.numeric(s.next(8), hdr.Devminor)        // 337:345
 
 	// Use the GNU magic instead of POSIX magic if we used any GNU extensions.
 	if tw.usedBinary {
@@ -165,7 +165,7 @@ func (tw *Writer) WriteHeader(hdr *Header) os.Error {
 // Write writes to the current entry in the tar archive.
 // Write returns the error ErrWriteTooLong if more than
 // hdr.Size bytes are written after WriteHeader.
-func (tw *Writer) Write(b []byte) (n int, err os.Error) {
+func (tw *Writer) Write(b []byte) (n int, err error) {
 	if tw.closed {
 		err = ErrWriteTooLong
 		return
@@ -187,7 +187,7 @@ func (tw *Writer) Write(b []byte) (n int, err os.Error) {
 
 // Close closes the tar archive, flushing any unwritten
 // data to the underlying writer.
-func (tw *Writer) Close() os.Error {
+func (tw *Writer) Close() error {
 	if tw.err != nil || tw.closed {
 		return tw.err
 	}

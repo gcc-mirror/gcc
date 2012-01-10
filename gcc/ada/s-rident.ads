@@ -124,7 +124,15 @@ package System.Rident is
 
       No_Default_Initialization,               -- GNAT
 
-      --  The following cases do not require consistency checking
+      --  The following cases do not require consistency checking and if used
+      --  as a configuration pragma within a specific unit, apply only to that
+      --  unit (e.g. if used in the package spec, do not apply to the body)
+
+      --  Note: No_Elaboration_Code is handled specially. Like the other
+      --  non-partition-wide restrictions, it can only be set in a unit that
+      --  is part of the extended main source unit (body/spec/subunits). But
+      --  it is sticky, in that if it is found anywhere within any of these
+      --  units, it applies to all units in this extended main source.
 
       Immediate_Reclamation,                   -- (RM H.4(10))
       No_Implementation_Aspect_Specifications, -- Ada 2012 AI-241
@@ -202,7 +210,7 @@ package System.Rident is
    --  Boolean restrictions that are not checked for partition consistency
    --  and that thus apply only to the current unit. Note that for these
    --  restrictions, the compiler does not apply restrictions found in
-   --  with'ed units, parent specs etc. to the main unit.
+   --  with'ed units, parent specs etc. to the main unit, and vice versa.
 
    subtype All_Parameter_Restrictions is
      Restriction_Id range

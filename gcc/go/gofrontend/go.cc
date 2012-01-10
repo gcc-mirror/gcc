@@ -28,7 +28,8 @@ void
 go_create_gogo(int int_type_size, int pointer_size)
 {
   go_assert(::gogo == NULL);
-  ::gogo = new Gogo(go_get_backend(), int_type_size, pointer_size);
+  Linemap* linemap = go_get_linemap();
+  ::gogo = new Gogo(go_get_backend(), linemap, int_type_size, pointer_size);
   if (!unique_prefix.empty())
     ::gogo->set_unique_prefix(unique_prefix);
 
@@ -64,6 +65,7 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
 		     bool only_check_syntax, bool require_return_statement)
 {
   go_assert(filename_count > 0);
+
   for (unsigned int i = 0; i < filename_count; ++i)
     {
       if (i > 0)
@@ -80,7 +82,7 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
 	    fatal_error("cannot open %s: %m", filename);
 	}
 
-      Lex lexer(filename, file);
+      Lex lexer(filename, file, ::gogo->linemap());
 
       Parse parse(&lexer, ::gogo);
       parse.program();
@@ -88,6 +90,8 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
       if (strcmp(filename, "-") != 0)
 	fclose(file);
     }
+
+  ::gogo->linemap()->stop();
 
   ::gogo->clear_file_scope();
 
@@ -101,6 +105,9 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   // Now that we have seen all the names, lower the parse tree into a
   // form which is easier to use.
   ::gogo->lower_parse_tree();
+
+  // Write out queued up functions for hash and comparison of types.
+  ::gogo->write_specific_type_functions();
 
   // Now that we have seen all the names, verify that types are
   // correct.

@@ -56,6 +56,7 @@ extern const char *avr_out_tstsi (rtx, rtx*, int*);
 extern const char *avr_out_tsthi (rtx, rtx*, int*);
 extern const char *avr_out_tstpsi (rtx, rtx*, int*);
 extern const char *avr_out_compare (rtx, rtx*, int*);
+extern const char *avr_out_compare64 (rtx, rtx*, int*);
 extern const char *ret_cond_branch (rtx x, int len, int reverse);
 extern const char *avr_out_movpsi (rtx, rtx*, int*);
 
@@ -89,9 +90,11 @@ extern const char *avr_out_sbxx_branch (rtx insn, rtx operands[]);
 extern const char* avr_out_bitop (rtx, rtx*, int*);
 extern const char* avr_out_plus (rtx*, int*, int*);
 extern const char* avr_out_plus_noclobber (rtx*, int*, int*);
+extern const char* avr_out_plus64 (rtx, int*);
 extern const char* avr_out_addto_sp (rtx*, int*);
 extern const char* avr_out_xload (rtx, rtx*, int*);
 extern const char* avr_out_movmem (rtx, rtx*, int*);
+extern const char* avr_out_map_bits (rtx, rtx*, int*);
 extern bool avr_popcount_each_byte (rtx, int, int);
 
 extern int extra_constraint_Q (rtx x);
@@ -100,8 +103,6 @@ extern const char* output_reload_inhi (rtx*, rtx, int*);
 extern const char* output_reload_insisf (rtx*, rtx, int*);
 extern const char* avr_out_reload_inpsi (rtx*, rtx, int*);
 extern void notice_update_cc (rtx body, rtx insn);
-extern void print_operand (FILE *file, rtx x, int code);
-extern void print_operand_address (FILE *file, rtx addr);
 extern int reg_unused_after (rtx insn, rtx reg);
 extern int _reg_unused_after (rtx insn, rtx reg);
 extern int avr_jump_mode (rtx x, rtx insn);
@@ -129,6 +130,8 @@ extern bool avr_xload_libgcc_p (enum machine_mode);
 extern void asm_output_float (FILE *file, REAL_VALUE_TYPE n);
 #endif
 
+extern bool avr_have_dimode;
+
 /* From avr-log.c */
 
 #define avr_edump (avr_log_set_caller_e (__FUNCTION__))
@@ -142,6 +145,7 @@ extern void avr_log_set_avr_log (void);
 typedef struct
 {
   unsigned address_cost :1;
+  unsigned builtin :1;
   unsigned constraints :1;
   unsigned legitimate_address_p :1;
   unsigned legitimize_address :1;

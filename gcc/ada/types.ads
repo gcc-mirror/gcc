@@ -102,12 +102,8 @@ package Types is
    --  Graphic characters, as defined in ARM
 
    subtype Line_Terminator is Character range ASCII.LF .. ASCII.CR;
-   --  Line terminator characters (LF, VT, FF, CR)
-   --
-   --  This definition is dubious now that we have two more wide character
-   --  sequences that constitute a line terminator. Every reference to this
-   --  subtype needs checking to make sure the wide character case is handled
-   --  appropriately. ???
+   --  Line terminator characters (LF, VT, FF, CR). For further details,
+   --  see the extensive discussion of line termination in the Sinput spec.
 
    subtype Upper_Half_Character is
      Character range Character'Val (16#80#) .. Character'Val (16#FF#);

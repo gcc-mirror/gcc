@@ -252,7 +252,6 @@ TOOLS_LIBS = targext.o link.o ../../libcommon-target.a ../../libcommon.a \
 # Convert the target variable into a space separated list of architecture,
 # manufacturer, and operating system and assign each of those to its own
 # variable.
-
 host:=$(subst -, ,$(host_canonical))
 targ:=$(subst -, ,$(target))
 arch:=$(word 1,$(targ))
@@ -268,19 +267,21 @@ endif
 # Both . and srcdir are used, in that order,
 # so that tm.h and config.h will be found in the compilation
 # subdirectory rather than in the source directory.
-INCLUDES = -I- -I. -I.. -I$(srcdir)/ada -I$(srcdir) -I$(srcdir)/config \
-	-I$(srcdir)/../include
+INCLUDES = -I- -I. -I.. -I$(srcdir)/ada -I$(srcdir) -I$(srcdir)/../include
 
 ADA_INCLUDES = -I- -I. -I$(srcdir)/ada
 
-INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. -iquote $(fsrcdir)/ada \
-	-I$(fsrcdir)/../include
-
-ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
-  # On Windows native the tconfig.h files used by C runtime files needs to have
-  # the gcc source dir in its include dir list
-  INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. -iquote $(fsrcdir)/ada \
-        -I$(fsrcdir)/../include -I$(fsrcdir)
+# Likewise, but valid for subdirectories of the current dir.
+# FIXME: for VxWorks, we cannot add $(fsrcdir) because the regs.h file in
+# that directory conflicts with a system header file.
+ifneq ($(findstring vxworks,$(osys)),)
+  INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
+			-iquote $(fsrcdir)/ada \
+			-I$(fsrcdir)/../include
+else
+  INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
+			-iquote $(fsrcdir)/ada -iquote $(fsrcdir) \
+			-I$(fsrcdir)/../include
 endif
 
 ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
@@ -1101,9 +1102,21 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
   a-exetim.ads<a-exetim-default.ads \
   s-linux.ads<s-linux.ads \
   s-osinte.adb<s-osinte-posix.adb \
-  system.ads<system-linux-x86.ads \
-  $(ATOMICS_TARGET_PAIRS) \
-  $(X86_TARGET_PAIRS)
+  $(ATOMICS_TARGET_PAIRS)
+
+  LIBGNAT_TARGET_PAIRS_32 = \
+  $(X86_TARGET_PAIRS) \
+  system.ads<system-linux-x86.ads
+
+  LIBGNAT_TARGET_PAIRS_64 = \
+  $(X86_64_TARGET_PAIRS) \
+  system.ads<system-linux-x86_64.ads
+
+  ifeq ($(strip $(MULTISUBDIR)),/64)
+    LIBGNAT_TARGET_PAIRS += $(LIBGNAT_TARGET_PAIRS_64)
+  else
+    LIBGNAT_TARGET_PAIRS += $(LIBGNAT_TARGET_PAIRS_32)
+  endif
 
   ifeq ($(strip $(filter-out xenomai,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS += \
@@ -1162,6 +1175,7 @@ ifeq ($(strip $(filter-out %86 kfreebsd%,$(arch) $(osys))),)
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
+  MISCLIB = -lutil
 endif
 
 ifeq ($(strip $(filter-out x86_64 kfreebsd%,$(arch) $(osys))),)
@@ -1215,6 +1229,7 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(arch) $(osys))),)
   THREADSLIB= -lpthread
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
+  MISCLIB = -lutil
 endif
 
 ifeq ($(strip $(filter-out %86_64 freebsd%,$(arch) $(osys))),)
@@ -1241,6 +1256,7 @@ ifeq ($(strip $(filter-out %86_64 freebsd%,$(arch) $(osys))),)
   THREADSLIB= -lpthread
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
+  MISCLIB = -lutil
 endif
 
 ifeq ($(strip $(filter-out s390% linux%,$(arch) $(osys))),)
@@ -1576,18 +1592,32 @@ ifeq ($(strip $(filter-out avr none powerpc% eabispe leon% erc32% unknown elf,$(
   indepsw.adb<indepsw-gnu.adb
 endif
 
-ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
-  LIBGNAT_TARGET_PAIRS = \
+ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(osys))),)
+  # Cygwin provides a full Posix environment, and so we use the default
+  # versions of s-memory and g-socthi rather than the Windows-specific
+  # MinGW versions.  Ideally we would use all the default versions for
+  # Cygwin and none of the MinGW versions, but for historical reasons
+  # the Cygwin port has always been a CygMing frankenhybrid and it is
+  # a long-term project to disentangle them.
+  ifeq ($(strip $(filter-out cygwin%,$(osys))),)
+    LIBGNAT_TARGET_PAIRS = \
+    s-memory.adb<s-memory.adb \
+    g-socthi.ads<g-socthi.ads \
+    g-socthi.adb<g-socthi.adb
+  else
+    LIBGNAT_TARGET_PAIRS = \
+    s-memory.adb<s-memory-mingw.adb \
+    g-socthi.ads<g-socthi-mingw.ads \
+    g-socthi.adb<g-socthi-mingw.adb
+  endif
+  LIBGNAT_TARGET_PAIRS += \
   a-dirval.adb<a-dirval-mingw.adb \
   a-excpol.adb<a-excpol-abort.adb \
   s-gloloc.adb<s-gloloc-mingw.adb \
   s-inmaop.adb<s-inmaop-dummy.adb \
-  s-memory.adb<s-memory-mingw.adb \
   s-taspri.ads<s-taspri-mingw.ads \
   s-tasinf.adb<s-tasinf-mingw.adb \
   s-tasinf.ads<s-tasinf-mingw.ads \
-  g-socthi.ads<g-socthi-mingw.ads \
-  g-socthi.adb<g-socthi-mingw.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
   g-soliop.ads<g-soliop-mingw.ads \
   $(ATOMICS_TARGET_PAIRS)
@@ -2219,12 +2249,13 @@ LIBGNAT_SRCS = adadecode.c adadecode.h adaint.c adaint.h	\
   argv.c cio.c cstreams.c errno.c exit.c cal.c ctrl_c.c env.c env.h	\
   arit64.c raise.h raise.c sysdep.c aux-io.c init.c initialize.c	\
   locales.c seh_init.c final.c tracebak.c tb-alvms.c tb-alvxw.c         \
-  tb-gcc.c expect.c mkdir.c socket.c gsocket.h targext.c $(EXTRA_LIBGNAT_SRCS)
+  tb-gcc.c expect.c mkdir.c socket.c gsocket.h targext.c terminals.c	\
+  thread.c $(EXTRA_LIBGNAT_SRCS)
 
 LIBGNAT_OBJS = adadecode.o adaint.o argv.o cio.o cstreams.o ctrl_c.o	\
   errno.o exit.o env.o raise.o sysdep.o aux-io.o init.o initialize.o	\
   locales.o seh_init.o cal.o arit64.o final.o tracebak.o expect.o       \
-  mkdir.o socket.o targext.o $(EXTRA_LIBGNAT_OBJS)
+  mkdir.o socket.o targext.o terminals.o $(EXTRA_LIBGNAT_OBJS)
 
 # NOTE ??? - when the -I option for compiling Ada code is made to work,
 #  the library installation will change and there will be a
@@ -2865,6 +2896,7 @@ socket.o  : socket.c gsocket.h
 sysdep.o  : sysdep.c
 raise.o   : raise.c raise.h
 sigtramp-ppcvxw.o : sigtramp-ppcvxw.c sigtramp.h
+terminals.o : terminals.c
 vx_stack_info.o : vx_stack_info.c
 
 raise-gcc.o : raise-gcc.c raise.h

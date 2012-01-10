@@ -24,7 +24,7 @@ class B {
 
 
 int main() {
-  B<char> objB; // { dg-message "required" }
+  B<char> objB;
 
   return 0;
 }

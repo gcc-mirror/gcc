@@ -176,7 +176,8 @@ namespace __gnu_debug
     ", \"%2.name;\" shall be before and not equal to \"%3.name;\"",
     // std::unordered_container::local_iterator
     "attempt to compare local iterators from different unordered container"
-    " buckets"
+    " buckets",
+    "function requires a non-empty iterator range [%1.name;, %2.name;)"
   };
 
   void

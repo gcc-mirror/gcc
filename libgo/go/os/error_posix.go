@@ -8,85 +8,67 @@ package os
 
 import syscall "syscall"
 
-// Errno is the Unix error number.  Names such as EINVAL are simple
-// wrappers to convert the error number into an Error.
-type Errno int64
-
-func (e Errno) String() string { return syscall.Errstr(int(e)) }
-
-func (e Errno) Temporary() bool {
-	return e == Errno(syscall.EINTR) || e == Errno(syscall.EMFILE) || e.Timeout()
-}
-
-func (e Errno) Timeout() bool {
-	return e == Errno(syscall.EAGAIN) || e == Errno(syscall.EWOULDBLOCK) || e == Errno(syscall.ETIMEDOUT)
-}
-
 // Commonly known Unix errors.
 var (
-	EPERM        Error = Errno(syscall.EPERM)
-	ENOENT       Error = Errno(syscall.ENOENT)
-	ESRCH        Error = Errno(syscall.ESRCH)
-	EINTR        Error = Errno(syscall.EINTR)
-	EIO          Error = Errno(syscall.EIO)
-	ENXIO        Error = Errno(syscall.ENXIO)
-	E2BIG        Error = Errno(syscall.E2BIG)
-	ENOEXEC      Error = Errno(syscall.ENOEXEC)
-	EBADF        Error = Errno(syscall.EBADF)
-	ECHILD       Error = Errno(syscall.ECHILD)
-	EDEADLK      Error = Errno(syscall.EDEADLK)
-	ENOMEM       Error = Errno(syscall.ENOMEM)
-	EACCES       Error = Errno(syscall.EACCES)
-	EFAULT       Error = Errno(syscall.EFAULT)
-	EBUSY        Error = Errno(syscall.EBUSY)
-	EEXIST       Error = Errno(syscall.EEXIST)
-	EXDEV        Error = Errno(syscall.EXDEV)
-	ENODEV       Error = Errno(syscall.ENODEV)
-	ENOTDIR      Error = Errno(syscall.ENOTDIR)
-	EISDIR       Error = Errno(syscall.EISDIR)
-	EINVAL       Error = Errno(syscall.EINVAL)
-	ENFILE       Error = Errno(syscall.ENFILE)
-	EMFILE       Error = Errno(syscall.EMFILE)
-	ENOTTY       Error = Errno(syscall.ENOTTY)
-	EFBIG        Error = Errno(syscall.EFBIG)
-	ENOSPC       Error = Errno(syscall.ENOSPC)
-	ESPIPE       Error = Errno(syscall.ESPIPE)
-	EROFS        Error = Errno(syscall.EROFS)
-	EMLINK       Error = Errno(syscall.EMLINK)
-	EPIPE        Error = Errno(syscall.EPIPE)
-	EAGAIN       Error = Errno(syscall.EAGAIN)
-	EDOM         Error = Errno(syscall.EDOM)
-	ERANGE       Error = Errno(syscall.ERANGE)
-	EADDRINUSE   Error = Errno(syscall.EADDRINUSE)
-	ECONNREFUSED Error = Errno(syscall.ECONNREFUSED)
-	ENAMETOOLONG Error = Errno(syscall.ENAMETOOLONG)
-	EAFNOSUPPORT Error = Errno(syscall.EAFNOSUPPORT)
-	ETIMEDOUT    Error = Errno(syscall.ETIMEDOUT)
-	ENOTCONN     Error = Errno(syscall.ENOTCONN)
+	EPERM        error = syscall.EPERM
+	ENOENT       error = syscall.ENOENT
+	ESRCH        error = syscall.ESRCH
+	EINTR        error = syscall.EINTR
+	EIO          error = syscall.EIO
+	ENXIO        error = syscall.ENXIO
+	E2BIG        error = syscall.E2BIG
+	ENOEXEC      error = syscall.ENOEXEC
+	EBADF        error = syscall.EBADF
+	ECHILD       error = syscall.ECHILD
+	EDEADLK      error = syscall.EDEADLK
+	ENOMEM       error = syscall.ENOMEM
+	EACCES       error = syscall.EACCES
+	EFAULT       error = syscall.EFAULT
+	EBUSY        error = syscall.EBUSY
+	EEXIST       error = syscall.EEXIST
+	EXDEV        error = syscall.EXDEV
+	ENODEV       error = syscall.ENODEV
+	ENOTDIR      error = syscall.ENOTDIR
+	EISDIR       error = syscall.EISDIR
+	EINVAL       error = syscall.EINVAL
+	ENFILE       error = syscall.ENFILE
+	EMFILE       error = syscall.EMFILE
+	ENOTTY       error = syscall.ENOTTY
+	EFBIG        error = syscall.EFBIG
+	ENOSPC       error = syscall.ENOSPC
+	ESPIPE       error = syscall.ESPIPE
+	EROFS        error = syscall.EROFS
+	EMLINK       error = syscall.EMLINK
+	EPIPE        error = syscall.EPIPE
+	EAGAIN       error = syscall.EAGAIN
+	EDOM         error = syscall.EDOM
+	ERANGE       error = syscall.ERANGE
+	EADDRINUSE   error = syscall.EADDRINUSE
+	ECONNREFUSED error = syscall.ECONNREFUSED
+	ENAMETOOLONG error = syscall.ENAMETOOLONG
+	EAFNOSUPPORT error = syscall.EAFNOSUPPORT
+	ETIMEDOUT    error = syscall.ETIMEDOUT
+	ENOTCONN     error = syscall.ENOTCONN
 )
 
 // SyscallError records an error from a specific system call.
 type SyscallError struct {
 	Syscall string
-	Errno   Errno
+	Errno   error
 }
 
-func (e *SyscallError) String() string { return e.Syscall + ": " + e.Errno.String() }
+func (e *SyscallError) Error() string { return e.Syscall + ": " + e.Errno.Error() }
 
 // Note: If the name of the function NewSyscallError changes,
 // pkg/go/doc/doc.go should be adjusted since it hardwires
 // this name in a heuristic.
 
-// NewSyscallError returns, as an Error, a new SyscallError
+// NewSyscallError returns, as an error, a new SyscallError
 // with the given system call name and error details.
-// As a convenience, if errno is 0, NewSyscallError returns nil.
-func NewSyscallError(syscall string, errno int) Error {
-	if errno == 0 {
+// As a convenience, if err is nil, NewSyscallError returns nil.
+func NewSyscallError(syscall string, err error) error {
+	if err == nil {
 		return nil
 	}
-	return &SyscallError{syscall, Errno(errno)}
-}
-
-func iserror(errno int) bool {
-	return errno != 0
+	return &SyscallError{syscall, err}
 }

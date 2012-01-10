@@ -245,7 +245,9 @@ upc_expand_put (location_t loc, tree dest, tree src, int want_value)
   int local_copy = want_value
     || (op_mode == BLKmode
 	&& !(is_src_shared && INDIRECT_REF_P (src))
-	&& (!is_gimple_addressable (src) || is_gimple_non_addressable (src)));
+	&& (!is_gimple_addressable (src)
+	    || !is_gimple_variable (src)
+	    || needs_to_live_in_memory (src)));
   int is_shared_copy = !local_copy && (op_mode == BLKmode) && is_src_shared;
   const char *libfunc_name;
   tree dest_addr, libfunc, lib_args, src_tmp_init_expr, result;

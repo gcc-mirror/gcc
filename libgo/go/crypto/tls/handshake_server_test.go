@@ -5,22 +5,22 @@
 package tls
 
 import (
-	"big"
 	"bytes"
 	"crypto/rsa"
 	"encoding/hex"
 	"flag"
 	"io"
+	"math/big"
 	"net"
-	"os"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 type zeroSource struct{}
 
-func (zeroSource) Read(b []byte) (n int, err os.Error) {
+func (zeroSource) Read(b []byte) (n int, err error) {
 	for i := range b {
 		b[i] = 0
 	}
@@ -32,7 +32,7 @@ var testConfig *Config
 
 func init() {
 	testConfig = new(Config)
-	testConfig.Time = func() int64 { return 0 }
+	testConfig.Time = func() time.Time { return time.Unix(0, 0) }
 	testConfig.Rand = zeroSource{}
 	testConfig.Certificates = make([]Certificate, 1)
 	testConfig.Certificates[0].Certificate = [][]byte{testCertificate}
@@ -41,7 +41,7 @@ func init() {
 	testConfig.InsecureSkipVerify = true
 }
 
-func testClientHelloFailure(t *testing.T, m handshakeMessage, expected os.Error) {
+func testClientHelloFailure(t *testing.T, m handshakeMessage, expected error) {
 	// Create in-memory network connection,
 	// send message to server.  Should return
 	// expected error.
@@ -56,7 +56,7 @@ func testClientHelloFailure(t *testing.T, m handshakeMessage, expected os.Error)
 	}()
 	err := Server(s, testConfig).Handshake()
 	s.Close()
-	if e, ok := err.(*net.OpError); !ok || e.Error != expected {
+	if e, ok := err.(*net.OpError); !ok || e.Err != expected {
 		t.Errorf("Got error: %s; expected: %s", err, expected)
 	}
 }
@@ -93,7 +93,7 @@ func TestAlertForwarding(t *testing.T) {
 
 	err := Server(s, testConfig).Handshake()
 	s.Close()
-	if e, ok := err.(*net.OpError); !ok || e.Error != os.Error(alertUnknownCA) {
+	if e, ok := err.(*net.OpError); !ok || e.Err != error(alertUnknownCA) {
 		t.Errorf("Got error: %s; expected: %s", err, alertUnknownCA)
 	}
 }
@@ -104,8 +104,8 @@ func TestClose(t *testing.T) {
 
 	err := Server(s, testConfig).Handshake()
 	s.Close()
-	if err != os.EOF {
-		t.Errorf("Got error: %s; expected: %s", err, os.EOF)
+	if err != io.EOF {
+		t.Errorf("Got error: %s; expected: %s", err, io.EOF)
 	}
 }
 
@@ -159,7 +159,7 @@ func TestHandshakeServerSSLv3(t *testing.T) {
 
 var serve = flag.Bool("serve", false, "run a TLS server on :10443")
 var testCipherSuites = flag.String("ciphersuites",
-	"0x"+strconv.Itob(int(TLS_RSA_WITH_RC4_128_SHA), 16),
+	"0x"+strconv.FormatInt(int64(TLS_RSA_WITH_RC4_128_SHA), 16),
 	"cipher suites to accept in serving mode")
 
 func TestRunServer(t *testing.T) {
@@ -170,7 +170,7 @@ func TestRunServer(t *testing.T) {
 	suites := strings.Split(*testCipherSuites, ",")
 	testConfig.CipherSuites = make([]uint16, len(suites))
 	for i := range suites {
-		suite, err := strconv.Btoui64(suites[i], 0)
+		suite, err := strconv.ParseUint(suites[i], 0, 64)
 		if err != nil {
 			panic(err)
 		}

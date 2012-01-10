@@ -4647,7 +4647,7 @@ package body Make is
       Proj1 := Project_Tree.Projects;
       while Proj1 /= null loop
          if Proj1.Project.Extended_By = No_Project then
-            if Proj1.Project.Standalone_Library then
+            if Proj1.Project.Standalone_Library /= No then
                Stand_Alone_Libraries := True;
             end if;
 
@@ -5791,7 +5791,7 @@ package body Make is
       if Osint.Number_Of_Files = 0 then
          if Main_Project /= No_Project and then Main_Project.Library then
             if Do_Bind_Step
-              and then not Main_Project.Standalone_Library
+              and then Main_Project.Standalone_Library = No
             then
                Make_Failed ("only stand-alone libraries may be bound");
             end if;
@@ -7842,7 +7842,12 @@ package body Make is
             Operating_Mode           := Check_Semantics;
             Check_Object_Consistency := False;
 
-            --  Comment needed here, what is going on???
+            --  Except in CodePeer mode, where we do want to call bind/link
+            --  in CodePeer mode (-P switch).
+
+            --  This is testing for -gnatcC, what is that??? Also why do we
+            --  want to call bind/link in the codepeer case with -gnatc
+            --  specified, seems odd.
 
             if Argv'Last >= 7 and then Argv (7) = 'C' then
                CodePeer_Mode := True;

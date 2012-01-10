@@ -1,5 +1,5 @@
 /* Loop Vectorization
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com> and
    Ira Rosen <irar@il.ibm.com>
@@ -181,8 +181,10 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
   stmt_vec_info stmt_info;
   int i;
   HOST_WIDE_INT dummy;
-  gimple stmt, pattern_stmt = NULL, pattern_def_stmt = NULL;
-  bool analyze_pattern_stmt = false, pattern_def = false;
+  gimple stmt, pattern_stmt = NULL;
+  gimple_seq pattern_def_seq = NULL;
+  gimple_stmt_iterator pattern_def_si = gsi_start (NULL);
+  bool analyze_pattern_stmt = false;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_determine_vectorization_factor ===");
@@ -248,10 +250,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
           tree vf_vectype;
 
           if (analyze_pattern_stmt)
-            {
-              stmt = pattern_stmt;
-              analyze_pattern_stmt = false;
-            }
+	    stmt = pattern_stmt;
           else
             stmt = gsi_stmt (si);
 
@@ -296,28 +295,54 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
                        || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_stmt))))
             analyze_pattern_stmt = true;
 
-          /* If a pattern statement has a def stmt, analyze it too.  */
-          if (is_pattern_stmt_p (stmt_info)
-              && (pattern_def_stmt = STMT_VINFO_PATTERN_DEF_STMT (stmt_info))
-              && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_def_stmt))
-                  || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_def_stmt))))
-            {
-              if (pattern_def)
-                pattern_def = false;
-              else
-                {
-                  if (vect_print_dump_info (REPORT_DETAILS))
-                    {
-                      fprintf (vect_dump, "==> examining pattern def stmt: ");
-                      print_gimple_stmt (vect_dump, pattern_def_stmt, 0,
-                                         TDF_SLIM);
-                    }
+	  /* If a pattern statement has def stmts, analyze them too.  */
+	  if (is_pattern_stmt_p (stmt_info))
+	    {
+	      if (pattern_def_seq == NULL)
+		{
+		  pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
+		  pattern_def_si = gsi_start (pattern_def_seq);
+		}
+	      else if (!gsi_end_p (pattern_def_si))
+		gsi_next (&pattern_def_si);
+	      if (pattern_def_seq != NULL)
+		{
+		  gimple pattern_def_stmt = NULL;
+		  stmt_vec_info pattern_def_stmt_info = NULL;
 
-                  pattern_def = true;
-                  stmt = pattern_def_stmt;
-                  stmt_info = vinfo_for_stmt (stmt);
-                }
-            }
+		  while (!gsi_end_p (pattern_def_si))
+		    {
+		      pattern_def_stmt = gsi_stmt (pattern_def_si);
+		      pattern_def_stmt_info
+			= vinfo_for_stmt (pattern_def_stmt);
+		      if (STMT_VINFO_RELEVANT_P (pattern_def_stmt_info)
+			  || STMT_VINFO_LIVE_P (pattern_def_stmt_info))
+			break;
+		      gsi_next (&pattern_def_si);
+		    }
+
+		  if (!gsi_end_p (pattern_def_si))
+		    {
+		      if (vect_print_dump_info (REPORT_DETAILS))
+			{
+			  fprintf (vect_dump,
+				   "==> examining pattern def stmt: ");
+			  print_gimple_stmt (vect_dump, pattern_def_stmt, 0,
+					     TDF_SLIM);
+			}
+
+		      stmt = pattern_def_stmt;
+		      stmt_info = pattern_def_stmt_info;
+		    }
+		  else
+		    {
+		      pattern_def_si = gsi_start (NULL);
+		      analyze_pattern_stmt = false;
+		    }
+		}
+	      else
+		analyze_pattern_stmt = false;
+	    }
 
 	  if (gimple_get_lhs (stmt) == NULL_TREE)
 	    {
@@ -347,7 +372,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 		 idiom).  */
 	      gcc_assert (STMT_VINFO_DATA_REF (stmt_info)
 			  || is_pattern_stmt_p (stmt_info)
-			  || pattern_def);
+			  || !gsi_end_p (pattern_def_si));
 	      vectype = STMT_VINFO_VECTYPE (stmt_info);
 	    }
 	  else
@@ -425,8 +450,11 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	      || (nunits > vectorization_factor))
 	    vectorization_factor = nunits;
 
-          if (!analyze_pattern_stmt && !pattern_def)
-            gsi_next (&si);
+	  if (!analyze_pattern_stmt && gsi_end_p (pattern_def_si))
+	    {
+	      pattern_def_seq = NULL;
+	      gsi_next (&si);
+	    }
         }
     }
 
@@ -3462,6 +3490,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
   gimple use_stmt, orig_stmt, reduction_phi = NULL;
   bool nested_in_vect_loop = false;
   VEC (gimple, heap) *new_phis = NULL;
+  VEC (gimple, heap) *inner_phis = NULL;
   enum vect_def_type dt = vect_unknown_def_type;
   int j, i;
   VEC (tree, heap) *scalar_results = NULL;
@@ -3470,6 +3499,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
   VEC (gimple, heap) *phis;
   bool slp_reduc = false;
   tree new_phi_result;
+  gimple inner_phi = NULL;
 
   if (slp_node)
     group_size = VEC_length (gimple, SLP_TREE_SCALAR_STMTS (slp_node)); 
@@ -3626,11 +3656,36 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
     }
 
   /* The epilogue is created for the outer-loop, i.e., for the loop being
-     vectorized.  */
+     vectorized.  Create exit phis for the outer loop.  */
   if (double_reduc)
     {
       loop = outer_loop;
       exit_bb = single_exit (loop)->dest;
+      inner_phis = VEC_alloc (gimple, heap, VEC_length (tree, vect_defs));
+      FOR_EACH_VEC_ELT (gimple, new_phis, i, phi)
+	{
+	  gimple outer_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (phi)),
+					      exit_bb);
+	  SET_PHI_ARG_DEF (outer_phi, single_exit (loop)->dest_idx,
+			   PHI_RESULT (phi));
+	  set_vinfo_for_stmt (outer_phi, new_stmt_vec_info (outer_phi,
+							    loop_vinfo, NULL));
+	  VEC_quick_push (gimple, inner_phis, phi);
+	  VEC_replace (gimple, new_phis, i, outer_phi);
+	  prev_phi_info = vinfo_for_stmt (outer_phi);
+          while (STMT_VINFO_RELATED_STMT (vinfo_for_stmt (phi)))
+            {
+	      phi = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (phi));
+	      outer_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (phi)),
+					   exit_bb);
+	      SET_PHI_ARG_DEF (outer_phi, single_exit (loop)->dest_idx,
+			       PHI_RESULT (phi));
+	      set_vinfo_for_stmt (outer_phi, new_stmt_vec_info (outer_phi,
+							loop_vinfo, NULL));
+	      STMT_VINFO_RELATED_STMT (prev_phi_info) = outer_phi;
+	      prev_phi_info = vinfo_for_stmt (outer_phi);
+	    }
+	}
     }
 
   exit_gsi = gsi_after_labels (exit_bb);
@@ -4040,6 +4095,8 @@ vect_finalize_reduction:
         {
           epilog_stmt = VEC_index (gimple, new_phis, k / ratio);
           reduction_phi = VEC_index (gimple, reduction_phis, k / ratio);
+	  if (double_reduc)
+	    inner_phi = VEC_index (gimple, inner_phis, k / ratio);
         }
 
       if (slp_reduc)
@@ -4123,7 +4180,7 @@ vect_finalize_reduction:
                      vs1 was created previously in this function by a call to
                        vect_get_vec_def_for_operand and is stored in
                        vec_initial_def;
-                     vs2 is defined by EPILOG_STMT, the vectorized EXIT_PHI;
+                     vs2 is defined by INNER_PHI, the vectorized EXIT_PHI;
                      vs0 is created here.  */
 
                   /* Create vector phi node.  */
@@ -4144,7 +4201,7 @@ vect_finalize_reduction:
                   add_phi_arg (vect_phi, vect_phi_init,
                                loop_preheader_edge (outer_loop),
                                UNKNOWN_LOCATION);
-                  add_phi_arg (vect_phi, PHI_RESULT (epilog_stmt),
+                  add_phi_arg (vect_phi, PHI_RESULT (inner_phi),
                                loop_latch_edge (outer_loop), UNKNOWN_LOCATION);
                   if (vect_print_dump_info (REPORT_DETAILS))
                     {
@@ -5121,8 +5178,10 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   tree cond_expr = NULL_TREE;
   gimple_seq cond_expr_stmt_list = NULL;
   bool do_peeling_for_loop_bound;
-  gimple stmt, pattern_stmt, pattern_def_stmt;
-  bool transform_pattern_stmt = false, pattern_def = false;
+  gimple stmt, pattern_stmt;
+  gimple_seq pattern_def_seq = NULL;
+  gimple_stmt_iterator pattern_def_si = gsi_start (NULL);
+  bool transform_pattern_stmt = false;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vec_transform_loop ===");
@@ -5216,10 +5275,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	  bool is_store;
 
           if (transform_pattern_stmt)
-            {
-              stmt = pattern_stmt;
-              transform_pattern_stmt = false;
-            }
+	    stmt = pattern_stmt;
           else
             stmt = gsi_stmt (si);
 
@@ -5266,28 +5322,53 @@ vect_transform_loop (loop_vec_info loop_vinfo)
                        || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_stmt))))
             transform_pattern_stmt = true;
 
-          /* If pattern statement has a def stmt, vectorize it too.  */
-          if (is_pattern_stmt_p (stmt_info)
-              && (pattern_def_stmt = STMT_VINFO_PATTERN_DEF_STMT (stmt_info))
-              && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_def_stmt))
-                  || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_def_stmt))))
-            {
-              if (pattern_def)
-                pattern_def = false;
-              else
-                {
-                  if (vect_print_dump_info (REPORT_DETAILS))
-                    {
-                      fprintf (vect_dump, "==> vectorizing pattern def"
-                                          " stmt: ");
-                      print_gimple_stmt (vect_dump, pattern_def_stmt, 0,
-                                         TDF_SLIM);
-                    }
+	  /* If pattern statement has def stmts, vectorize them too.  */
+	  if (is_pattern_stmt_p (stmt_info))
+	    {
+	      if (pattern_def_seq == NULL)
+		{
+		  pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
+		  pattern_def_si = gsi_start (pattern_def_seq);
+		}
+	      else if (!gsi_end_p (pattern_def_si))
+		gsi_next (&pattern_def_si);
+	      if (pattern_def_seq != NULL)
+		{
+		  gimple pattern_def_stmt = NULL;
+		  stmt_vec_info pattern_def_stmt_info = NULL;
 
-                  pattern_def = true;
-                  stmt = pattern_def_stmt;
-                  stmt_info = vinfo_for_stmt (stmt);
-                }
+		  while (!gsi_end_p (pattern_def_si))
+		    {
+		      pattern_def_stmt = gsi_stmt (pattern_def_si);
+		      pattern_def_stmt_info
+			= vinfo_for_stmt (pattern_def_stmt);
+		      if (STMT_VINFO_RELEVANT_P (pattern_def_stmt_info)
+			  || STMT_VINFO_LIVE_P (pattern_def_stmt_info))
+			break;
+		      gsi_next (&pattern_def_si);
+		    }
+
+		  if (!gsi_end_p (pattern_def_si))
+		    {
+		      if (vect_print_dump_info (REPORT_DETAILS))
+			{
+			  fprintf (vect_dump, "==> vectorizing pattern def"
+					      " stmt: ");
+			  print_gimple_stmt (vect_dump, pattern_def_stmt, 0,
+					     TDF_SLIM);
+			}
+
+		      stmt = pattern_def_stmt;
+		      stmt_info = pattern_def_stmt_info;
+		    }
+		  else
+		    {
+		      pattern_def_si = gsi_start (NULL);
+		      transform_pattern_stmt = false;
+		    }
+		}
+	      else
+		transform_pattern_stmt = false;
             }
 
 	  gcc_assert (STMT_VINFO_VECTYPE (stmt_info));
@@ -5317,9 +5398,12 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	      /* Hybrid SLP stmts must be vectorized in addition to SLP.  */
 	      if (!vinfo_for_stmt (stmt) || PURE_SLP_STMT (stmt_info))
 		{
-                  if (!transform_pattern_stmt && !pattern_def)
- 		    gsi_next (&si);
-  		  continue;
+		  if (!transform_pattern_stmt && gsi_end_p (pattern_def_si))
+		    {
+		      pattern_def_seq = NULL;
+		      gsi_next (&si);
+		    }
+		  continue;
 		}
 	    }
 
@@ -5349,8 +5433,11 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		}
 	    }
 
-          if (!transform_pattern_stmt && !pattern_def)
- 	    gsi_next (&si);
+	  if (!transform_pattern_stmt && gsi_end_p (pattern_def_si))
+	    {
+	      pattern_def_seq = NULL;
+	      gsi_next (&si);
+	    }
 	}		        /* stmts in BB */
     }				/* BBs in loop */
 

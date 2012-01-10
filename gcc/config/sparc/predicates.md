@@ -111,6 +111,10 @@
 (define_predicate "const_double_or_vector_operand"
   (match_code "const_double,const_vector"))
 
+;; Return true if OP is Zero, or if the target is V7.
+(define_predicate "zero_or_v7_operand"
+  (ior (match_test "op == const0_rtx")
+       (match_test "!TARGET_V8 && !TARGET_V9")))
 
 ;; Predicates for symbolic constants.
 
@@ -234,6 +238,11 @@
 (define_predicate "register_or_zero_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "const_zero_operand")))
+
+(define_predicate "register_or_v9_zero_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_test "TARGET_V9")
+	    (match_operand 0 "const_zero_operand"))))
 
 ;; Return true if OP is either the zero constant, the all-ones
 ;; constant, or a register.
@@ -461,6 +470,10 @@
   (and (match_code "mem")
        (match_test "call_address_operand (XEXP (op, 0), mode)")))
 
+
+(define_predicate "mem_noofs_operand"
+  (and (match_code "mem")
+       (match_code "reg" "0")))
 
 ;; Predicates for operators.
 

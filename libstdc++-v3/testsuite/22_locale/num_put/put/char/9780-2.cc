@@ -1,7 +1,7 @@
 // { dg-require-namedlocale "de_DE" }
 // { dg-require-namedlocale "es_ES" }
 
-// Copyright (C) 2004, 2005, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,23 +22,60 @@
 #include <locale>
 #include <testsuite_hooks.h>
 
-int main()
-{
-  using namespace std;
+// Make sure that formatted output uses the locale in the output stream.
+using namespace std;
+locale l1 = locale("de_DE");
+const num_put<char>& np = use_facet<num_put<char> >(l1);
+const numpunct<char>& npunct = use_facet<numpunct<char> >(l1);
 
+void test01()
+{
   bool test __attribute__((unused)) = true;
-  locale l1 = locale("de_DE");
-  locale l2 = locale("es_ES");
-  
-  const num_put<char>& np = use_facet<num_put<char> >(l1);  
+
+  locale l2 = locale("C");
+  const numpunct<char>& npunct2 = use_facet<numpunct<char> >(l2);
+  char c = npunct2.thousands_sep();
+  string s = npunct2.grouping();
+
   ostringstream oss;
   oss.imbue(l2);
 
   long l = 1234567890;
-  np.put(oss.rdbuf(), oss, ' ', l); // 1234567890
+  np.put(oss.rdbuf(), oss, ' ', l);
   string res = oss.str();
-  
-  VERIFY( res == "1234567890" );
 
+  VERIFY( res == "1234567890" );
+}
+
+void test02()
+{
+  bool test __attribute__((unused)) = true;
+
+  locale l2 = locale("es_ES");
+  const numpunct<char>& npunct3 = use_facet<numpunct<char> >(l2);
+  char c = npunct3.thousands_sep();
+  string s = npunct3.grouping();
+
+  ostringstream oss;
+  oss.imbue(l2);
+
+  long l = 1234567890;
+  np.put(oss.rdbuf(), oss, ' ', l);
+  string res = oss.str();
+
+  if (!s.empty())
+    VERIFY( res == "1.234.567.890" );
+  else
+    VERIFY( res == "1234567890" );
+}
+
+int main()
+{
+  // Sanity check.
+  char c = npunct.thousands_sep();
+  string s = npunct.grouping();
+
+  test01();
+  test02();
   return 0;
 }

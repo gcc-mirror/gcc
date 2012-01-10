@@ -18,9 +18,12 @@
 _Bool
 __go_can_recover (const void* retaddr)
 {
+  G *g;
   struct __go_defer_stack *d;
   const char* ret;
   const char* dret;
+
+  g = runtime_g ();
 
   d = g->defer;
   if (d == NULL)
@@ -50,7 +53,10 @@ __go_can_recover (const void* retaddr)
 struct __go_empty_interface
 __go_recover ()
 {
+  G *g;
   struct __go_panic_stack *p;
+
+  g = runtime_g ();
 
   if (g->panic == NULL || g->panic->__was_recovered)
     {

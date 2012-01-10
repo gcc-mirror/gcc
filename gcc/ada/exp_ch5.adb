@@ -3003,7 +3003,7 @@ package body Exp_Ch5 is
          --    Cursor : Cursor_type := First (Iter);
          --    while Has_Element (Iter) loop
          --       declare
-         --       --  the block is added when Element_Type is controlled
+         --       --  The block is added when Element_Type is controlled
 
          --          Obj : Pack.Element_Type := Element (Cursor);
          --          --  for the "of" loop form
@@ -3049,14 +3049,10 @@ package body Exp_Ch5 is
 
             Iter_Type := Etype (Name (I_Spec));
 
-            if Is_Iterator (Iter_Type) then
-               Pack := Scope (Pack);
-            end if;
-
             --  The "of" case uses an internally generated cursor whose type
             --  is found in the container package. The domain of iteration
             --  is expanded into a call to the default Iterator function, but
-            --  this expansion does not take place in a quantifier expressions
+            --  this expansion does not take place in quantified expressions
             --  that are analyzed with expansion disabled, and in that case the
             --  type of the iterator must be obtained from the aspect.
 
@@ -3074,41 +3070,41 @@ package body Exp_Ch5 is
                begin
                   Cursor := Make_Temporary (Loc, 'I');
 
-                  if Is_Iterator (Iter_Type) then
-                     null;
+                  --  For an container element iterator, the iterator type
+                  --  is obtained from the corresponding aspect.
+
+                  Iter_Type := Etype (Default_Iter);
+                  Pack := Scope (Iter_Type);
+
+                  --  Rewrite domain of iteration as a call to the default
+                  --  iterator for the container type. If the container is
+                  --  a derived type and the aspect is inherited, convert
+                  --  container to parent type. The Cursor type is also
+                  --  inherited from the scope of the parent.
+
+                  if Base_Type (Etype (Container)) =
+                     Base_Type (Etype (First_Formal (Default_Iter)))
+                  then
+                     Container_Arg := New_Copy_Tree (Container);
 
                   else
-                     Iter_Type := Etype (Default_Iter);
-
-                     --  Rewrite domain of iteration as a call to the default
-                     --  iterator for the container type. If the container is
-                     --  a derived type and the aspect is inherited, convert
-                     --  container to parent type. The Cursor type is also
-                     --  inherited from the scope of the parent.
-
-                     if Base_Type (Etype (Container)) =
-                        Base_Type (Etype (First_Formal (Default_Iter)))
-                     then
-                        Container_Arg := New_Copy_Tree (Container);
-
-                     else
-                        Container_Arg :=
-                          Make_Type_Conversion (Loc,
-                            Subtype_Mark =>
-                              New_Occurrence_Of
-                                (Etype (First_Formal (Default_Iter)), Loc),
-                            Expression => New_Copy_Tree (Container));
-                     end if;
-
-                     Rewrite (Name (I_Spec),
-                       Make_Function_Call (Loc,
-                         Name => New_Occurrence_Of (Default_Iter, Loc),
-                         Parameter_Associations =>
-                           New_List (Container_Arg)));
-                     Analyze_And_Resolve (Name (I_Spec));
+                     Container_Arg :=
+                       Make_Type_Conversion (Loc,
+                         Subtype_Mark =>
+                           New_Occurrence_Of
+                             (Etype (First_Formal (Default_Iter)), Loc),
+                         Expression => New_Copy_Tree (Container));
                   end if;
 
-                  --  Find cursor type in proper container package.
+                  Rewrite (Name (I_Spec),
+                    Make_Function_Call (Loc,
+                      Name => New_Occurrence_Of (Default_Iter, Loc),
+                      Parameter_Associations =>
+                        New_List (Container_Arg)));
+                  Analyze_And_Resolve (Name (I_Spec));
+
+                  --  Find cursor type in proper iterator package, which is an
+                  --  instantiation of Iterator_Interfaces.
 
                   Ent := First_Entity (Pack);
                   while Present (Ent) loop
@@ -3145,7 +3141,7 @@ package body Exp_Ch5 is
 
                      --  Generate:
                      --    declare
-                     --       Id : Element_Type := Pack.Element (curosr);
+                     --       Id : Element_Type := Element (curosr);
                      --    begin
                      --       <original loop statements>
                      --    end;
@@ -3178,11 +3174,13 @@ package body Exp_Ch5 is
             --  Determine the advancement and initialization steps for the
             --  cursor.
 
-            --  Must verify that the container has a reverse iterator ???
+            --  Analysis of the expanded loop will verify that the container
+            --  has a reverse iterator.
 
             if Reverse_Present (I_Spec) then
                Name_Init := Name_Last;
                Name_Step := Name_Previous;
+
             else
                Name_Init := Name_First;
                Name_Step := Name_Next;
@@ -3221,6 +3219,8 @@ package body Exp_Ch5 is
             --       <Stats>
             --    end loop;
 
+            --   Has_Element is the second actual in the iterator package
+
             New_Loop :=
               Make_Loop_Statement (Loc,
                 Iteration_Scheme =>
@@ -3228,40 +3228,37 @@ package body Exp_Ch5 is
                     Condition =>
                       Make_Function_Call (Loc,
                         Name                   =>
-                          Make_Selected_Component (Loc,
-                           Prefix => New_Occurrence_Of (Pack, Loc),
-                           Selector_Name =>
-                             Make_Identifier (Loc,  Name_Has_Element)),
-
+                          New_Occurrence_Of (
+                           Next_Entity (First_Entity (Pack)), Loc),
                         Parameter_Associations =>
                           New_List (
                             New_Reference_To (Cursor, Loc)))),
+
                 Statements => Stats,
                 End_Label  => Empty);
 
-            --  Create the declarations for Iterator and cursor and insert then
+            --  Create the declarations for Iterator and cursor and insert them
             --  before the source loop. Given that the domain of iteration is
             --  already an entity, the iterator is just a renaming of that
             --  entity. Possible optimization ???
             --  Generate:
 
             --    I : Iterator_Type renames Container;
-            --    C : Pack.Cursor_Type := Container.[First | Last];
+            --    C : Cursor_Type := Container.[First | Last];
+
+            Insert_Action (N,
+              Make_Object_Renaming_Declaration (Loc,
+                Defining_Identifier => Iterator,
+                Subtype_Mark  => New_Occurrence_Of (Iter_Type, Loc),
+                Name          => Relocate_Node (Name (I_Spec))));
+
+            --  Create declaration for cursor
 
             declare
-               Decl1 : Node_Id;
-               Decl2 : Node_Id;
+               Decl : Node_Id;
 
             begin
-               Decl1 :=
-                 Make_Object_Renaming_Declaration (Loc,
-                   Defining_Identifier => Iterator,
-                   Subtype_Mark  => New_Occurrence_Of (Iter_Type, Loc),
-                   Name          => Relocate_Node (Name (I_Spec)));
-
-               --  Create declaration for cursor
-
-               Decl2 :=
+               Decl :=
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Cursor,
                    Object_Definition   =>
@@ -3272,18 +3269,15 @@ package body Exp_Ch5 is
                        Selector_Name =>
                          Make_Identifier (Loc, Name_Init)));
 
-               Set_Assignment_OK (Decl2);
+               --  The cursor is only modified in expanded code, so it appears
+               --  as unassigned to the warning machinery. We must suppress
+               --  this spurious warning explicitly.
 
-               Insert_Actions (N, New_List (Decl1, Decl2));
+               Set_Warnings_Off (Cursor);
+               Set_Assignment_OK (Decl);
+
+               Insert_Action (N, Decl);
             end;
-
-            --  The Iterator is not modified in the source, but of course will
-            --  be updated in the generated code. Indicate that it is actually
-            --  set to prevent spurious warnings. Ditto for the Cursor, which
-            --  is modified indirectly in generated code.
-
-            Set_Never_Set_In_Source (Iterator, False);
-            Set_Never_Set_In_Source (Cursor, False);
 
             --  If the range of iteration is given by a function call that
             --  returns a container, the finalization actions have been saved

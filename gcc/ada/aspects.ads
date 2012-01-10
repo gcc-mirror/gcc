@@ -54,6 +54,8 @@ package Aspects is
       Aspect_Default_Component_Value,
       Aspect_Default_Iterator,
       Aspect_Default_Value,
+      Aspect_Dimension,                     -- GNAT
+      Aspect_Dimension_System,              -- GNAT
       Aspect_Dispatching_Domain,
       Aspect_Dynamic_Predicate,
       Aspect_External_Tag,
@@ -96,6 +98,7 @@ package Aspects is
       Aspect_Preelaborate_05,               -- GNAT
       Aspect_Pure,
       Aspect_Pure_05,                       -- GNAT
+      Aspect_Pure_12,                       -- GNAT
       Aspect_Remote_Call_Interface,
       Aspect_Remote_Types,
       Aspect_Shared_Passive,
@@ -144,29 +147,50 @@ package Aspects is
                         Aspect_Post          => True,
                         others               => False);
 
+   --  The following array indicates aspects that a subtype inherits from
+   --  its base type. True means that the subtype inherits the aspect from
+   --  its base type. False means it is not inherited.
+
+   Base_Aspect : constant array (Aspect_Id) of Boolean :=
+                   (Aspect_Atomic                  => True,
+                    Aspect_Atomic_Components       => True,
+                    Aspect_Discard_Names           => True,
+                    Aspect_Independent_Components  => True,
+                    Aspect_Iterator_Element        => True,
+                    Aspect_Constant_Indexing       => True,
+                    Aspect_Default_Iterator        => True,
+                    Aspect_Type_Invariant          => True,
+                    Aspect_Unchecked_Union         => True,
+                    Aspect_Variable_Indexing       => True,
+                    Aspect_Volatile                => True,
+                    others                         => False);
+
    --  The following array identifies all implementation defined aspects
 
    Impl_Defined_Aspects : constant array (Aspect_Id) of Boolean :=
-                            (Aspect_Object_Size          => True,
-                             Aspect_Predicate            => True,
-                             Aspect_Test_Case            => True,
-                             Aspect_Value_Size           => True,
-                             Aspect_Compiler_Unit        => True,
-                             Aspect_Preelaborate_05      => True,
-                             Aspect_Pure_05              => True,
-                             Aspect_Universal_Data       => True,
-                             Aspect_Ada_2005             => True,
+                            (Aspect_Ada_2005             => True,
                              Aspect_Ada_2012             => True,
+                             Aspect_Compiler_Unit        => True,
+                             Aspect_Dimension            => True,
+                             Aspect_Dimension_System     => True,
                              Aspect_Favor_Top_Level      => True,
                              Aspect_Inline_Always        => True,
+                             Aspect_Object_Size          => True,
                              Aspect_Persistent_BSS       => True,
+                             Aspect_Predicate            => True,
+                             Aspect_Preelaborate_05      => True,
+                             Aspect_Pure_05              => True,
+                             Aspect_Pure_12              => True,
                              Aspect_Pure_Function        => True,
                              Aspect_Shared               => True,
                              Aspect_Suppress_Debug_Info  => True,
+                             Aspect_Test_Case            => True,
+                             Aspect_Universal_Data       => True,
                              Aspect_Universal_Aliasing   => True,
                              Aspect_Unmodified           => True,
                              Aspect_Unreferenced         => True,
                              Aspect_Unreferenced_Objects => True,
+                             Aspect_Value_Size           => True,
                              others                      => False);
 
    --  The following array indicates aspects for which multiple occurrences of
@@ -230,6 +254,8 @@ package Aspects is
                         Aspect_Default_Component_Value => Expression,
                         Aspect_Default_Iterator        => Name,
                         Aspect_Default_Value           => Expression,
+                        Aspect_Dimension               => Expression,
+                        Aspect_Dimension_System        => Expression,
                         Aspect_Dispatching_Domain      => Expression,
                         Aspect_Dynamic_Predicate       => Expression,
                         Aspect_External_Tag            => Expression,
@@ -291,6 +317,8 @@ package Aspects is
      Aspect_Default_Iterator             => Name_Default_Iterator,
      Aspect_Default_Value                => Name_Default_Value,
      Aspect_Default_Component_Value      => Name_Default_Component_Value,
+     Aspect_Dimension                    => Name_Dimension,
+     Aspect_Dimension_System             => Name_Dimension_System,
      Aspect_Discard_Names                => Name_Discard_Names,
      Aspect_Dispatching_Domain           => Name_Dispatching_Domain,
      Aspect_Dynamic_Predicate            => Name_Dynamic_Predicate,
@@ -324,6 +352,7 @@ package Aspects is
      Aspect_Priority                     => Name_Priority,
      Aspect_Pure                         => Name_Pure,
      Aspect_Pure_05                      => Name_Pure_05,
+     Aspect_Pure_12                      => Name_Pure_12,
      Aspect_Pure_Function                => Name_Pure_Function,
      Aspect_Read                         => Name_Read,
      Aspect_Remote_Call_Interface        => Name_Remote_Call_Interface,

@@ -71,9 +71,8 @@ package regexp
 import (
 	"bytes"
 	"io"
-	"os"
 	"strings"
-	"utf8"
+	"unicode/utf8"
 )
 
 var debug = false
@@ -81,7 +80,7 @@ var debug = false
 // Error is the local type for a parsing error.
 type Error string
 
-func (e Error) String() string {
+func (e Error) Error() string {
 	return string(e)
 }
 
@@ -119,7 +118,7 @@ type instr struct {
 	index int    // used only in debugging; could be eliminated
 	next  *instr // the instruction to execute after this one
 	// Special fields valid only for some items.
-	char   int        // iChar
+	char   rune       // iChar
 	braNum int        // iBra, iEbra
 	cclass *charClass // iCharClass
 	left   *instr     // iAlt, other branch
@@ -172,8 +171,8 @@ type Regexp struct {
 type charClass struct {
 	negate bool // is character class negated? ([^a-z])
 	// slice of int, stored pairwise: [a-z] is (a,z); x is (x,x):
-	ranges     []int
-	cmin, cmax int
+	ranges     []rune
+	cmin, cmax rune
 }
 
 func (cclass *charClass) print() {
@@ -192,7 +191,7 @@ func (cclass *charClass) print() {
 	}
 }
 
-func (cclass *charClass) addRange(a, b int) {
+func (cclass *charClass) addRange(a, b rune) {
 	// range is a through b inclusive
 	cclass.ranges = append(cclass.ranges, a, b)
 	if a < cclass.cmin {
@@ -203,7 +202,7 @@ func (cclass *charClass) addRange(a, b int) {
 	}
 }
 
-func (cclass *charClass) matches(c int) bool {
+func (cclass *charClass) matches(c rune) bool {
 	if c < cclass.cmin || c > cclass.cmax {
 		return cclass.negate
 	}
@@ -219,7 +218,7 @@ func (cclass *charClass) matches(c int) bool {
 func newCharClass() *instr {
 	i := &instr{kind: iCharClass}
 	i.cclass = new(charClass)
-	i.cclass.ranges = make([]int, 0, 4)
+	i.cclass.ranges = make([]rune, 0, 4)
 	i.cclass.cmin = 0x10FFFF + 1 // MaxRune + 1
 	i.cclass.cmax = -1
 	return i
@@ -235,7 +234,7 @@ type parser struct {
 	re    *Regexp
 	nlpar int // number of unclosed lpars
 	pos   int
-	ch    int
+	ch    rune
 }
 
 func (p *parser) error(err Error) {
@@ -244,9 +243,9 @@ func (p *parser) error(err Error) {
 
 const endOfText = -1
 
-func (p *parser) c() int { return p.ch }
+func (p *parser) c() rune { return p.ch }
 
-func (p *parser) nextc() int {
+func (p *parser) nextc() rune {
 	if p.pos >= len(p.re.expr) {
 		p.ch = endOfText
 	} else {
@@ -264,7 +263,7 @@ func newParser(re *Regexp) *parser {
 	return p
 }
 
-func special(c int) bool {
+func special(c rune) bool {
 	for _, r := range `\.+*?()|[]^$` {
 		if c == r {
 			return true
@@ -273,7 +272,7 @@ func special(c int) bool {
 	return false
 }
 
-func ispunct(c int) bool {
+func ispunct(c rune) bool {
 	for _, r := range "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~" {
 		if c == r {
 			return true
@@ -285,16 +284,16 @@ func ispunct(c int) bool {
 var escapes = []byte("abfnrtv")
 var escaped = []byte("\a\b\f\n\r\t\v")
 
-func escape(c int) int {
+func escape(c rune) int {
 	for i, b := range escapes {
-		if int(b) == c {
+		if rune(b) == c {
 			return i
 		}
 	}
 	return -1
 }
 
-func (p *parser) checkBackslash() int {
+func (p *parser) checkBackslash() rune {
 	c := p.c()
 	if c == '\\' {
 		c = p.nextc()
@@ -304,7 +303,7 @@ func (p *parser) checkBackslash() int {
 		case ispunct(c):
 			// c is as delivered
 		case escape(c) >= 0:
-			c = int(escaped[escape(c)])
+			c = rune(escaped[escape(c)])
 		default:
 			p.error(ErrBadBackslash)
 		}
@@ -319,7 +318,7 @@ func (p *parser) charClass() *instr {
 		cc.negate = true
 		p.nextc()
 	}
-	left := -1
+	left := rune(-1)
 	for {
 		switch c := p.c(); c {
 		case ']', endOfText:
@@ -616,7 +615,7 @@ func (re *Regexp) String() string {
 
 // Compile parses a regular expression and returns, if successful, a Regexp
 // object that can be used to match against text.
-func Compile(str string) (regexp *Regexp, error os.Error) {
+func Compile(str string) (regexp *Regexp, error error) {
 	regexp = new(Regexp)
 	// doParse will panic if there is a parse error.
 	defer func() {
@@ -637,7 +636,7 @@ func Compile(str string) (regexp *Regexp, error os.Error) {
 func MustCompile(str string) *Regexp {
 	regexp, error := Compile(str)
 	if error != nil {
-		panic(`regexp: compiling "` + str + `": ` + error.String())
+		panic(`regexp: compiling "` + str + `": ` + error.Error())
 	}
 	return regexp
 }
@@ -751,8 +750,8 @@ func (a *matchArena) addState(s []state, inst *instr, prefixed bool, match *matc
 // input abstracts different representations of the input text. It provides
 // one-character lookahead.
 type input interface {
-	step(pos int) (rune int, width int) // advance one rune
-	canCheckPrefix() bool               // can we look ahead without losing info?
+	step(pos int) (r rune, width int) // advance one rune
+	canCheckPrefix() bool             // can we look ahead without losing info?
 	hasPrefix(re *Regexp) bool
 	index(re *Regexp, pos int) int
 }
@@ -766,7 +765,7 @@ func newInputString(str string) *inputString {
 	return &inputString{str: str}
 }
 
-func (i *inputString) step(pos int) (int, int) {
+func (i *inputString) step(pos int) (rune, int) {
 	if pos < len(i.str) {
 		return utf8.DecodeRuneInString(i.str[pos:len(i.str)])
 	}
@@ -794,7 +793,7 @@ func newInputBytes(str []byte) *inputBytes {
 	return &inputBytes{str: str}
 }
 
-func (i *inputBytes) step(pos int) (int, int) {
+func (i *inputBytes) step(pos int) (rune, int) {
 	if pos < len(i.str) {
 		return utf8.DecodeRune(i.str[pos:len(i.str)])
 	}
@@ -824,7 +823,7 @@ func newInputReader(r io.RuneReader) *inputReader {
 	return &inputReader{r: r}
 }
 
-func (i *inputReader) step(pos int) (int, int) {
+func (i *inputReader) step(pos int) (rune, int) {
 	if !i.atEOT && pos != i.pos {
 		return endOfText, 0
 
@@ -886,7 +885,7 @@ func (re *Regexp) doExecute(i input, pos int) []int {
 		atBOT: pos == 0,
 		atEOT: nextChar == endOfText,
 	}
-	for c, startPos := 0, pos; c != endOfText; {
+	for c, startPos := rune(0), pos; c != endOfText; {
 		if !found && (pos == startPos || !anchored) {
 			// prime the pump if we haven't seen a match yet
 			match := arena.noMatch()
@@ -966,7 +965,7 @@ func (re *Regexp) doExecute(i input, pos int) []int {
 // of the regular expression re.  It returns the boolean true if the
 // literal string comprises the entire regular expression.
 func (re *Regexp) LiteralPrefix() (prefix string, complete bool) {
-	c := make([]int, len(re.inst)-2) // minus start and end.
+	c := make([]rune, len(re.inst)-2) // minus start and end.
 	// First instruction is start; skip that.
 	i := 0
 	for inst := re.inst[0].next; inst.kind != iEnd; inst = inst.next {
@@ -998,7 +997,7 @@ func (re *Regexp) Match(b []byte) bool { return len(re.doExecute(newInputBytes(b
 // MatchReader checks whether a textual regular expression matches the text
 // read by the RuneReader.  More complicated queries need to use Compile and
 // the full Regexp interface.
-func MatchReader(pattern string, r io.RuneReader) (matched bool, error os.Error) {
+func MatchReader(pattern string, r io.RuneReader) (matched bool, error error) {
 	re, err := Compile(pattern)
 	if err != nil {
 		return false, err
@@ -1009,7 +1008,7 @@ func MatchReader(pattern string, r io.RuneReader) (matched bool, error os.Error)
 // MatchString checks whether a textual regular expression
 // matches a string.  More complicated queries need
 // to use Compile and the full Regexp interface.
-func MatchString(pattern string, s string) (matched bool, error os.Error) {
+func MatchString(pattern string, s string) (matched bool, error error) {
 	re, err := Compile(pattern)
 	if err != nil {
 		return false, err
@@ -1020,7 +1019,7 @@ func MatchString(pattern string, s string) (matched bool, error os.Error) {
 // Match checks whether a textual regular expression
 // matches a byte slice.  More complicated queries need
 // to use Compile and the full Regexp interface.
-func Match(pattern string, b []byte) (matched bool, error os.Error) {
+func Match(pattern string, b []byte) (matched bool, error error) {
 	re, err := Compile(pattern)
 	if err != nil {
 		return false, err
@@ -1141,7 +1140,7 @@ func QuoteMeta(s string) string {
 	// A byte loop is correct because all metacharacters are ASCII.
 	j := 0
 	for i := 0; i < len(s); i++ {
-		if special(int(s[i])) {
+		if special(rune(s[i])) {
 			b[j] = '\\'
 			j++
 		}

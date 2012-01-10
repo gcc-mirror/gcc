@@ -156,7 +156,7 @@ class Gcc_backend : public Backend
   function_type(const Btyped_identifier&,
 		const std::vector<Btyped_identifier>&,
 		const std::vector<Btyped_identifier>&,
-		source_location);
+		const Location);
 
   Btype*
   struct_type(const std::vector<Btyped_identifier>&);
@@ -165,7 +165,7 @@ class Gcc_backend : public Backend
   array_type(Btype*, Bexpression*);
 
   Btype*
-  placeholder_pointer_type(const std::string&, source_location, bool);
+  placeholder_pointer_type(const std::string&, Location, bool);
 
   bool
   set_placeholder_pointer_type(Btype*, Btype*);
@@ -174,20 +174,20 @@ class Gcc_backend : public Backend
   set_placeholder_function_type(Btype*, Btype*);
 
   Btype*
-  placeholder_struct_type(const std::string&, source_location);
+  placeholder_struct_type(const std::string&, Location);
 
   bool
   set_placeholder_struct_type(Btype* placeholder,
 			      const std::vector<Btyped_identifier>&);
 
   Btype*
-  placeholder_array_type(const std::string&, source_location);
+  placeholder_array_type(const std::string&, Location);
 
   bool
   set_placeholder_array_type(Btype*, Btype*, Bexpression*);
 
   Btype*
-  named_type(const std::string&, Btype*, source_location);
+  named_type(const std::string&, Btype*, Location);
 
   Btype*
   circular_pointer_type(Btype*, bool);
@@ -213,21 +213,21 @@ class Gcc_backend : public Backend
   init_statement(Bvariable* var, Bexpression* init);
 
   Bstatement*
-  assignment_statement(Bexpression* lhs, Bexpression* rhs, source_location);
+  assignment_statement(Bexpression* lhs, Bexpression* rhs, Location);
 
   Bstatement*
   return_statement(Bfunction*, const std::vector<Bexpression*>&,
-		   source_location);
+		   Location);
 
   Bstatement*
   if_statement(Bexpression* condition, Bblock* then_block, Bblock* else_block,
-	       source_location);
+	       Location);
 
   Bstatement*
   switch_statement(Bexpression* value,
 		   const std::vector<std::vector<Bexpression*> >& cases,
 		   const std::vector<Bstatement*>& statements,
-		   source_location);
+		   Location);
 
   Bstatement*
   compound_statement(Bstatement*, Bstatement*);
@@ -239,7 +239,7 @@ class Gcc_backend : public Backend
 
   Bblock*
   block(Bfunction*, Bblock*, const std::vector<Bvariable*>&,
-	source_location, source_location);
+	Location, Location);
 
   void
   block_add_statements(Bblock*, const std::vector<Bstatement*>&);
@@ -260,46 +260,46 @@ class Gcc_backend : public Backend
 		  Btype* btype,
 		  bool is_external,
 		  bool is_hidden,
-		  source_location location);
+		  Location location);
 
   void
   global_variable_set_init(Bvariable*, Bexpression*);
 
   Bvariable*
   local_variable(Bfunction*, const std::string&, Btype*, bool,
-		 source_location);
+		 Location);
 
   Bvariable*
   parameter_variable(Bfunction*, const std::string&, Btype*, bool,
-		     source_location);
+		     Location);
 
   Bvariable*
   temporary_variable(Bfunction*, Bblock*, Btype*, Bexpression*, bool,
-		     source_location, Bstatement**);
+		     Location, Bstatement**);
 
   Bvariable*
-  immutable_struct(const std::string&, bool, Btype*, source_location);
+  immutable_struct(const std::string&, bool, Btype*, Location);
 
   void
   immutable_struct_set_init(Bvariable*, const std::string&, bool, Btype*,
-			    source_location, Bexpression*);
+			    Location, Bexpression*);
 
   Bvariable*
-  immutable_struct_reference(const std::string&, Btype*, source_location);
+  immutable_struct_reference(const std::string&, Btype*, Location);
 
   // Labels.
 
   Blabel*
-  label(Bfunction*, const std::string& name, source_location);
+  label(Bfunction*, const std::string& name, Location);
 
   Bstatement*
   label_definition_statement(Blabel*);
 
   Bstatement*
-  goto_statement(Blabel*, source_location);
+  goto_statement(Blabel*, Location);
 
   Bexpression*
-  label_address(Blabel*, source_location);
+  label_address(Blabel*, Location);
 
  private:
   // Make a Bexpression from a tree.
@@ -432,7 +432,7 @@ Btype*
 Gcc_backend::function_type(const Btyped_identifier& receiver,
 			   const std::vector<Btyped_identifier>& parameters,
 			   const std::vector<Btyped_identifier>& results,
-			   source_location location)
+			   Location location)
 {
   tree args = NULL_TREE;
   tree* pp = &args;
@@ -482,8 +482,8 @@ Gcc_backend::function_type(const Btyped_identifier& receiver,
 	  if (field_type_tree == error_mark_node)
 	    return this->error_type();
 	  gcc_assert(TYPE_SIZE(field_type_tree) != NULL_TREE);
-	  tree field = build_decl(location, FIELD_DECL, name_tree,
-				  field_type_tree);
+	  tree field = build_decl(location.gcc_location(), FIELD_DECL,
+                                  name_tree, field_type_tree);
 	  DECL_CONTEXT(field) = result;
 	  *pp = field;
 	  pp = &DECL_CHAIN(field);
@@ -526,7 +526,8 @@ Gcc_backend::fill_in_struct(Btype* fill,
       tree type_tree = p->btype->get_tree();
       if (type_tree == error_mark_node)
 	return this->error_type();
-      tree field = build_decl(p->location, FIELD_DECL, name_tree, type_tree);
+      tree field = build_decl(p->location.gcc_location(), FIELD_DECL, name_tree,
+                              type_tree);
       DECL_CONTEXT(field) = fill_tree;
       *pp = field;
       pp = &DECL_CHAIN(field);
@@ -587,12 +588,12 @@ Gcc_backend::fill_in_array(Btype* fill, Btype* element_type,
 
 Btype*
 Gcc_backend::placeholder_pointer_type(const std::string& name,
-				      source_location location, bool)
+				      Location location, bool)
 {
   tree ret = build_variant_type_copy(ptr_type_node);
   if (!name.empty())
     {
-      tree decl = build_decl(location, TYPE_DECL,
+      tree decl = build_decl(location.gcc_location(), TYPE_DECL,
 			     get_identifier_from_string(name),
 			     ret);
       TYPE_NAME(ret) = decl;
@@ -618,6 +619,13 @@ Gcc_backend::set_placeholder_pointer_type(Btype* placeholder,
     }
   gcc_assert(TREE_CODE(tt) == POINTER_TYPE);
   TREE_TYPE(pt) = TREE_TYPE(tt);
+  if (TYPE_NAME(pt) != NULL_TREE)
+    {
+      // Build the data structure gcc wants to see for a typedef.
+      tree copy = build_variant_type_copy(pt);
+      TYPE_NAME(copy) = NULL_TREE;
+      DECL_ORIGINAL_TYPE(TYPE_NAME(pt)) = copy;
+    }
   return true;
 }
 
@@ -633,10 +641,10 @@ Gcc_backend::set_placeholder_function_type(Btype* placeholder, Btype* ft)
 
 Btype*
 Gcc_backend::placeholder_struct_type(const std::string& name,
-				     source_location location)
+				     Location location)
 {
   tree ret = make_node(RECORD_TYPE);
-  tree decl = build_decl(location, TYPE_DECL,
+  tree decl = build_decl(location.gcc_location(), TYPE_DECL,
 			 get_identifier_from_string(name),
 			 ret);
   TYPE_NAME(ret) = decl;
@@ -653,6 +661,12 @@ Gcc_backend::set_placeholder_struct_type(
   tree t = placeholder->get_tree();
   gcc_assert(TREE_CODE(t) == RECORD_TYPE && TYPE_FIELDS(t) == NULL_TREE);
   Btype* r = this->fill_in_struct(placeholder, fields);
+
+  // Build the data structure gcc wants to see for a typedef.
+  tree copy = build_distinct_type_copy(t);
+  TYPE_NAME(copy) = NULL_TREE;
+  DECL_ORIGINAL_TYPE(TYPE_NAME(t)) = copy;
+
   return r->get_tree() != error_mark_node;
 }
 
@@ -660,10 +674,10 @@ Gcc_backend::set_placeholder_struct_type(
 
 Btype*
 Gcc_backend::placeholder_array_type(const std::string& name,
-				    source_location location)
+				    Location location)
 {
   tree ret = make_node(ARRAY_TYPE);
-  tree decl = build_decl(location, TYPE_DECL,
+  tree decl = build_decl(location.gcc_location(), TYPE_DECL,
 			 get_identifier_from_string(name),
 			 ret);
   TYPE_NAME(ret) = decl;
@@ -680,6 +694,12 @@ Gcc_backend::set_placeholder_array_type(Btype* placeholder,
   tree t = placeholder->get_tree();
   gcc_assert(TREE_CODE(t) == ARRAY_TYPE && TREE_TYPE(t) == NULL_TREE);
   Btype* r = this->fill_in_array(placeholder, element_btype, length);
+
+  // Build the data structure gcc wants to see for a typedef.
+  tree copy = build_distinct_type_copy(t);
+  TYPE_NAME(copy) = NULL_TREE;
+  DECL_ORIGINAL_TYPE(TYPE_NAME(t)) = copy;
+
   return r->get_tree() != error_mark_node;
 }
 
@@ -687,17 +707,36 @@ Gcc_backend::set_placeholder_array_type(Btype* placeholder,
 
 Btype*
 Gcc_backend::named_type(const std::string& name, Btype* btype,
-			source_location location)
+			Location location)
 {
   tree type = btype->get_tree();
   if (type == error_mark_node)
     return this->error_type();
-  type = build_variant_type_copy(type);
-  tree decl = build_decl(location, TYPE_DECL,
+
+  // The middle-end expects a basic type to have a name.  In Go every
+  // basic type will have a name.  The first time we see a basic type,
+  // give it whatever Go name we have at this point.
+  if (TYPE_NAME(type) == NULL_TREE
+      && location.gcc_location() == BUILTINS_LOCATION
+      && (TREE_CODE(type) == INTEGER_TYPE
+	  || TREE_CODE(type) == REAL_TYPE
+	  || TREE_CODE(type) == COMPLEX_TYPE
+	  || TREE_CODE(type) == BOOLEAN_TYPE))
+    {
+      tree decl = build_decl(BUILTINS_LOCATION, TYPE_DECL,
+			     get_identifier_from_string(name),
+			     type);
+      TYPE_NAME(type) = decl;
+      return this->make_type(type);
+    }
+
+  tree copy = build_variant_type_copy(type);
+  tree decl = build_decl(location.gcc_location(), TYPE_DECL,
 			 get_identifier_from_string(name),
-			 type);
-  TYPE_NAME(type) = decl;
-  return this->make_type(type);
+			 copy);
+  DECL_ORIGINAL_TYPE(decl) = type;
+  TYPE_NAME(copy) = decl;
+  return this->make_type(copy);
 }
 
 // Return a pointer type used as a marker for a circular type.
@@ -757,13 +796,14 @@ Gcc_backend::init_statement(Bvariable* var, Bexpression* init)
 
 Bstatement*
 Gcc_backend::assignment_statement(Bexpression* lhs, Bexpression* rhs,
-				  source_location location)
+				  Location location)
 {
   tree lhs_tree = lhs->get_tree();
   tree rhs_tree = rhs->get_tree();
   if (lhs_tree == error_mark_node || rhs_tree == error_mark_node)
     return this->error_statement();
-  return this->make_statement(fold_build2_loc(location, MODIFY_EXPR,
+  return this->make_statement(fold_build2_loc(location.gcc_location(),
+                                              MODIFY_EXPR,
 					      void_type_node,
 					      lhs_tree, rhs_tree));
 }
@@ -773,7 +813,7 @@ Gcc_backend::assignment_statement(Bexpression* lhs, Bexpression* rhs,
 Bstatement*
 Gcc_backend::return_statement(Bfunction* bfunction,
 			      const std::vector<Bexpression*>& vals,
-			      source_location location)
+			      Location location)
 {
   tree fntree = bfunction->get_tree();
   if (fntree == error_mark_node)
@@ -783,15 +823,18 @@ Gcc_backend::return_statement(Bfunction* bfunction,
     return this->error_statement();
   tree ret;
   if (vals.empty())
-    ret = fold_build1_loc(location, RETURN_EXPR, void_type_node, NULL_TREE);
+    ret = fold_build1_loc(location.gcc_location(), RETURN_EXPR, void_type_node,
+                          NULL_TREE);
   else if (vals.size() == 1)
     {
       tree val = vals.front()->get_tree();
       if (val == error_mark_node)
 	return this->error_statement();
-      tree set = fold_build2_loc(location, MODIFY_EXPR, void_type_node,
-				 result, vals.front()->get_tree());
-      ret = fold_build1_loc(location, RETURN_EXPR, void_type_node, set);
+      tree set = fold_build2_loc(location.gcc_location(), MODIFY_EXPR,
+                                 void_type_node, result,
+                                 vals.front()->get_tree());
+      ret = fold_build1_loc(location.gcc_location(), RETURN_EXPR,
+                            void_type_node, set);
     }
   else
     {
@@ -808,20 +851,23 @@ Gcc_backend::return_statement(Bfunction* bfunction,
 	   p++, field = DECL_CHAIN(field))
 	{
 	  gcc_assert(field != NULL_TREE);
-	  tree ref = fold_build3_loc(location, COMPONENT_REF, TREE_TYPE(field),
-				     rettmp, field, NULL_TREE);
+	  tree ref = fold_build3_loc(location.gcc_location(), COMPONENT_REF,
+                                     TREE_TYPE(field), rettmp, field,
+                                     NULL_TREE);
 	  tree val = (*p)->get_tree();
 	  if (val == error_mark_node)
 	    return this->error_statement();
-	  tree set = fold_build2_loc(location, MODIFY_EXPR, void_type_node,
+	  tree set = fold_build2_loc(location.gcc_location(), MODIFY_EXPR,
+                                     void_type_node,
 				     ref, (*p)->get_tree());
 	  append_to_statement_list(set, &stmt_list);
 	}
       gcc_assert(field == NULL_TREE);
-      tree set = fold_build2_loc(location, MODIFY_EXPR, void_type_node,
+      tree set = fold_build2_loc(location.gcc_location(), MODIFY_EXPR,
+                                 void_type_node,
 				 result, rettmp);
-      tree ret_expr = fold_build1_loc(location, RETURN_EXPR, void_type_node,
-				      set);
+      tree ret_expr = fold_build1_loc(location.gcc_location(), RETURN_EXPR,
+                                      void_type_node, set);
       append_to_statement_list(ret_expr, &stmt_list);
       ret = stmt_list;
     }
@@ -832,7 +878,7 @@ Gcc_backend::return_statement(Bfunction* bfunction,
 
 Bstatement*
 Gcc_backend::if_statement(Bexpression* condition, Bblock* then_block,
-			  Bblock* else_block, source_location location)
+			  Bblock* else_block, Location location)
 {
   tree cond_tree = condition->get_tree();
   tree then_tree = then_block->get_tree();
@@ -841,8 +887,8 @@ Gcc_backend::if_statement(Bexpression* condition, Bblock* then_block,
       || then_tree == error_mark_node
       || else_tree == error_mark_node)
     return this->error_statement();
-  tree ret = build3_loc(location, COND_EXPR, void_type_node, cond_tree,
-			then_tree, else_tree);
+  tree ret = build3_loc(location.gcc_location(), COND_EXPR, void_type_node,
+                        cond_tree, then_tree, else_tree);
   return this->make_statement(ret);
 }
 
@@ -853,7 +899,7 @@ Gcc_backend::switch_statement(
     Bexpression* value,
     const std::vector<std::vector<Bexpression*> >& cases,
     const std::vector<Bstatement*>& statements,
-    source_location switch_location)
+    Location switch_location)
 {
   gcc_assert(cases.size() == statements.size());
 
@@ -866,8 +912,8 @@ Gcc_backend::switch_statement(
       if (pc->empty())
 	{
 	  source_location loc = (*ps != NULL
-				 ? EXPR_LOCATION((*ps)->get_tree())
-				 : UNKNOWN_LOCATION);
+                                 ? EXPR_LOCATION((*ps)->get_tree())
+                                 : UNKNOWN_LOCATION);
 	  tree label = create_artificial_label(loc);
 	  tree c = build_case_label(NULL_TREE, NULL_TREE, label);
 	  append_to_statement_list(c, &stmt_list);
@@ -900,8 +946,8 @@ Gcc_backend::switch_statement(
   tree tv = value->get_tree();
   if (tv == error_mark_node)
     return this->error_statement();
-  tree t = build3_loc(switch_location, SWITCH_EXPR, void_type_node,
-		      tv, stmt_list, NULL_TREE);
+  tree t = build3_loc(switch_location.gcc_location(), SWITCH_EXPR,
+                      void_type_node, tv, stmt_list, NULL_TREE);
   return this->make_statement(t);
 }
 
@@ -948,8 +994,8 @@ Gcc_backend::statement_list(const std::vector<Bstatement*>& statements)
 Bblock*
 Gcc_backend::block(Bfunction* function, Bblock* enclosing,
 		   const std::vector<Bvariable*>& vars,
-		   source_location start_location,
-		   source_location)
+		   Location start_location,
+		   Location)
 {
   tree block_tree = make_node(BLOCK);
   if (enclosing == NULL)
@@ -1010,8 +1056,9 @@ Gcc_backend::block(Bfunction* function, Bblock* enclosing,
 
   TREE_USED(block_tree) = 1;
 
-  tree bind_tree = build3_loc(start_location, BIND_EXPR, void_type_node,
-			      BLOCK_VARS(block_tree), NULL_TREE, block_tree);
+  tree bind_tree = build3_loc(start_location.gcc_location(), BIND_EXPR,
+                              void_type_node, BLOCK_VARS(block_tree),
+                              NULL_TREE, block_tree);
   TREE_SIDE_EFFECTS(bind_tree) = 1;
 
   return new Bblock(bind_tree);
@@ -1057,7 +1104,7 @@ Gcc_backend::global_variable(const std::string& package_name,
 			     Btype* btype,
 			     bool is_external,
 			     bool is_hidden,
-			     source_location location)
+			     Location location)
 {
   tree type_tree = btype->get_tree();
   if (type_tree == error_mark_node)
@@ -1066,7 +1113,7 @@ Gcc_backend::global_variable(const std::string& package_name,
   std::string var_name(package_name);
   var_name.push_back('.');
   var_name.append(name);
-  tree decl = build_decl(location, VAR_DECL,
+  tree decl = build_decl(location.gcc_location(), VAR_DECL,
 			 get_identifier_from_string(var_name),
 			 type_tree);
   if (is_external)
@@ -1109,12 +1156,12 @@ Gcc_backend::global_variable_set_init(Bvariable* var, Bexpression* expr)
 Bvariable*
 Gcc_backend::local_variable(Bfunction* function, const std::string& name,
 			    Btype* btype, bool is_address_taken,
-			    source_location location)
+			    Location location)
 {
   tree type_tree = btype->get_tree();
   if (type_tree == error_mark_node)
     return this->error_variable();
-  tree decl = build_decl(location, VAR_DECL,
+  tree decl = build_decl(location.gcc_location(), VAR_DECL,
 			 get_identifier_from_string(name),
 			 type_tree);
   DECL_CONTEXT(decl) = function->get_tree();
@@ -1130,12 +1177,12 @@ Gcc_backend::local_variable(Bfunction* function, const std::string& name,
 Bvariable*
 Gcc_backend::parameter_variable(Bfunction* function, const std::string& name,
 				Btype* btype, bool is_address_taken,
-				source_location location)
+				Location location)
 {
   tree type_tree = btype->get_tree();
   if (type_tree == error_mark_node)
     return this->error_variable();
-  tree decl = build_decl(location, PARM_DECL,
+  tree decl = build_decl(location.gcc_location(), PARM_DECL,
 			 get_identifier_from_string(name),
 			 type_tree);
   DECL_CONTEXT(decl) = function->get_tree();
@@ -1153,7 +1200,7 @@ Bvariable*
 Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
 				Btype* btype, Bexpression* binit,
 				bool is_address_taken,
-				source_location location,
+				Location location,
 				Bstatement** pstatement)
 {
   tree type_tree = btype->get_tree();
@@ -1171,7 +1218,7 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
   else
     {
       gcc_assert(bblock != NULL);
-      var = build_decl(location, VAR_DECL,
+      var = build_decl(location.gcc_location(), VAR_DECL,
 		       create_tmp_var_name("GOTMP"),
 		       type_tree);
       DECL_ARTIFICIAL(var) = 1;
@@ -1199,12 +1246,14 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
     }
 
   if (init_tree != NULL_TREE)
-    DECL_INITIAL(var) = fold_convert_loc(location, type_tree, init_tree);
+    DECL_INITIAL(var) = fold_convert_loc(location.gcc_location(), type_tree,
+                                         init_tree);
 
   if (is_address_taken)
     TREE_ADDRESSABLE(var) = 1;
 
-  *pstatement = this->make_statement(build1_loc(location, DECL_EXPR,
+  *pstatement = this->make_statement(build1_loc(location.gcc_location(),
+                                                DECL_EXPR,
 						void_type_node, var));
   return new Bvariable(var);
 }
@@ -1213,13 +1262,13 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
 
 Bvariable*
 Gcc_backend::immutable_struct(const std::string& name, bool, Btype* btype,
-			      source_location location)
+			      Location location)
 {
   tree type_tree = btype->get_tree();
   if (type_tree == error_mark_node)
     return this->error_variable();
   gcc_assert(TREE_CODE(type_tree) == RECORD_TYPE);
-  tree decl = build_decl(location, VAR_DECL,
+  tree decl = build_decl(location.gcc_location(), VAR_DECL,
 			 get_identifier_from_string(name),
 			 build_qualified_type(type_tree, TYPE_QUAL_CONST));
   TREE_STATIC(decl) = 1;
@@ -1241,7 +1290,7 @@ Gcc_backend::immutable_struct(const std::string& name, bool, Btype* btype,
 void
 Gcc_backend::immutable_struct_set_init(Bvariable* var, const std::string&,
 				       bool is_common, Btype*,
-				       source_location,
+				       Location,
 				       Bexpression* initializer)
 {
   tree decl = var->get_tree();
@@ -1268,13 +1317,13 @@ Gcc_backend::immutable_struct_set_init(Bvariable* var, const std::string&,
 
 Bvariable*
 Gcc_backend::immutable_struct_reference(const std::string& name, Btype* btype,
-					source_location location)
+					Location location)
 {
   tree type_tree = btype->get_tree();
   if (type_tree == error_mark_node)
     return this->error_variable();
   gcc_assert(TREE_CODE(type_tree) == RECORD_TYPE);
-  tree decl = build_decl(location, VAR_DECL,
+  tree decl = build_decl(location.gcc_location(), VAR_DECL,
 			 get_identifier_from_string(name),
 			 build_qualified_type(type_tree, TYPE_QUAL_CONST));
   TREE_READONLY(decl) = 1;
@@ -1290,15 +1339,16 @@ Gcc_backend::immutable_struct_reference(const std::string& name, Btype* btype,
 
 Blabel*
 Gcc_backend::label(Bfunction* function, const std::string& name,
-		   source_location location)
+		   Location location)
 {
   tree decl;
   if (name.empty())
-    decl = create_artificial_label(location);
+    decl = create_artificial_label(location.gcc_location());
   else
     {
       tree id = get_identifier_from_string(name);
-      decl = build_decl(location, LABEL_DECL, id, void_type_node);
+      decl = build_decl(location.gcc_location(), LABEL_DECL, id,
+                        void_type_node);
       DECL_CONTEXT(decl) = function->get_tree();
     }
   return new Blabel(decl);
@@ -1318,23 +1368,25 @@ Gcc_backend::label_definition_statement(Blabel* label)
 // Make a goto statement.
 
 Bstatement*
-Gcc_backend::goto_statement(Blabel* label, source_location location)
+Gcc_backend::goto_statement(Blabel* label, Location location)
 {
   tree lab = label->get_tree();
-  tree ret = fold_build1_loc(location, GOTO_EXPR, void_type_node, lab);
+  tree ret = fold_build1_loc(location.gcc_location(), GOTO_EXPR, void_type_node,
+                             lab);
   return this->make_statement(ret);
 }
 
 // Get the address of a label.
 
 Bexpression*
-Gcc_backend::label_address(Blabel* label, source_location location)
+Gcc_backend::label_address(Blabel* label, Location location)
 {
   tree lab = label->get_tree();
   TREE_USED(lab) = 1;
   TREE_ADDRESSABLE(lab) = 1;
-  tree ret = fold_convert_loc(location, ptr_type_node,
-			      build_fold_addr_expr_loc(location, lab));
+  tree ret = fold_convert_loc(location.gcc_location(), ptr_type_node,
+			      build_fold_addr_expr_loc(location.gcc_location(),
+                                                       lab));
   return this->make_expression(ret);
 }
 

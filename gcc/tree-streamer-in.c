@@ -602,6 +602,8 @@ lto_input_ts_decl_non_common_tree_pointers (struct lto_input_block *ib,
       DECL_ARGUMENTS (expr) = stream_read_tree (ib, data_in);
       DECL_RESULT (expr) = stream_read_tree (ib, data_in);
     }
+  else if (TREE_CODE (expr) == TYPE_DECL)
+    DECL_ORIGINAL_TYPE (expr) = stream_read_tree (ib, data_in);
   DECL_VINDEX (expr) = stream_read_tree (ib, data_in);
 }
 
@@ -641,7 +643,6 @@ lto_input_ts_field_decl_tree_pointers (struct lto_input_block *ib,
   DECL_QUALIFIER (expr) = stream_read_tree (ib, data_in);
   DECL_FIELD_BIT_OFFSET (expr) = stream_read_tree (ib, data_in);
   DECL_FCONTEXT (expr) = stream_read_tree (ib, data_in);
-  TREE_CHAIN (expr) = streamer_read_chain (ib, data_in);
 }
 
 
@@ -704,7 +705,7 @@ lto_input_ts_type_non_common_tree_pointers (struct lto_input_block *ib,
   else if (TREE_CODE (expr) == ARRAY_TYPE)
     TYPE_DOMAIN (expr) = stream_read_tree (ib, data_in);
   else if (RECORD_OR_UNION_TYPE_P (expr))
-    TYPE_FIELDS (expr) = stream_read_tree (ib, data_in);
+    TYPE_FIELDS (expr) = streamer_read_chain (ib, data_in);
   else if (TREE_CODE (expr) == FUNCTION_TYPE
 	   || TREE_CODE (expr) == METHOD_TYPE)
     TYPE_ARG_TYPES (expr) = stream_read_tree (ib, data_in);
@@ -902,6 +903,23 @@ lto_input_ts_target_option (struct lto_input_block *ib, tree expr)
     fatal_error ("cl_target_option size mismatch in LTO reader and writer");
 }
 
+/* Input a TS_OPTIMIZATION tree from IB into EXPR.  */
+
+static void
+lto_input_ts_optimization (struct lto_input_block *ib, tree expr)
+{
+  unsigned i, len;
+  struct bitpack_d bp;
+  struct cl_optimization *t = TREE_OPTIMIZATION (expr);
+
+  bp = streamer_read_bitpack (ib);
+  len = sizeof (struct cl_optimization);
+  for (i = 0; i < len; i++)
+    ((unsigned char *)t)[i] = bp_unpack_value (&bp, 8);
+  if (bp_unpack_value (&bp, 32) != 0x12345678)
+    fatal_error ("cl_optimization size mismatch in LTO reader and writer");
+}
+
 /* Input a TS_TRANSLATION_UNIT_DECL tree from IB and DATA_IN into EXPR.  */
 
 static void
@@ -977,6 +995,9 @@ streamer_read_tree_body (struct lto_input_block *ib, struct data_in *data_in,
 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
     lto_input_ts_target_option (ib, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
+    lto_input_ts_optimization (ib, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
     lto_input_ts_translation_unit_decl_tree_pointers (ib, data_in, expr);

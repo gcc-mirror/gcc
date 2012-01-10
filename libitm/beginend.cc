@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -37,12 +37,18 @@ gtm_thread *GTM::gtm_thread::list_of_threads = 0;
 unsigned GTM::gtm_thread::number_of_threads = 0;
 
 gtm_stmlock GTM::gtm_stmlock_array[LOCK_ARRAY_SIZE];
-gtm_version GTM::gtm_clock;
+atomic<gtm_version> GTM::gtm_clock;
 
 /* ??? Move elsewhere when we figure out library initialization.  */
 uint64_t GTM::gtm_spin_count_var = 1000;
 
+#ifdef HAVE_64BIT_SYNC_BUILTINS
+static atomic<_ITM_transactionId_t> global_tid;
+#else
 static _ITM_transactionId_t global_tid;
+static pthread_mutex_t global_tid_lock = PTHREAD_MUTEX_INITIALIZER;
+#endif
+
 
 // Provides a on-thread-exit callback used to release per-thread data.
 static pthread_key_t thr_release_key;
@@ -114,7 +120,7 @@ GTM::gtm_thread::gtm_thread ()
   // This object's memory has been set to zero by operator new, so no need
   // to initialize any of the other primitive-type members that do not have
   // constructors.
-  shared_state = ~(typeof shared_state)0;
+  shared_state.store(-1, memory_order_relaxed);
 
   // Register this transaction with the list of all threads' transactions.
   serial_lock.write_lock ();
@@ -132,13 +138,8 @@ GTM::gtm_thread::gtm_thread ()
     GTM_fatal("Setting thread release TLS key failed.");
 }
 
-
-
-#ifndef HAVE_64BIT_SYNC_BUILTINS
-static pthread_mutex_t global_tid_lock = PTHREAD_MUTEX_INITIALIZER;
-#endif
-
-static inline uint32_t choose_code_path(uint32_t prop, abi_dispatch *disp)
+static inline uint32_t
+choose_code_path(uint32_t prop, abi_dispatch *disp)
 {
   if ((prop & pr_uninstrumentedCode) && disp->can_run_uninstrumented_code())
     return a_runUninstrumentedCode;
@@ -258,7 +259,10 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
   else
     {
 #ifdef HAVE_64BIT_SYNC_BUILTINS
-      tx->id = __sync_add_and_fetch (&global_tid, tid_block_size);
+      // We don't really care which block of TIDs we get but only that we
+      // acquire one atomically; therefore, relaxed memory order is
+      // sufficient.
+      tx->id = global_tid.fetch_add(tid_block_size, memory_order_relaxed);
       tx->local_tid = tx->id + 1;
 #else
       pthread_mutex_lock (&global_tid_lock);
@@ -323,7 +327,7 @@ GTM::gtm_thread::rollback (gtm_transaction_cp *cp, bool aborting)
   // data. Because of the latter, we have to roll it back before any
   // dispatch-specific rollback (which handles synchronization with other
   // transactions).
-  rollback_undolog (cp ? cp->undolog_size : 0);
+  undolog.rollback (cp ? cp->undolog_size : 0);
 
   // Perform dispatch-specific rollback.
   abi_disp()->rollback (cp);
@@ -404,8 +408,8 @@ _ITM_abortTransaction (_ITM_abortReason reason)
       tx->rollback (cp, true);
 
       // Jump to nested transaction (use the saved jump buffer).
-      GTM_longjmp (&longjmp_jb, a_abortTransaction | a_restoreLiveVariables,
-	  longjmp_prop);
+      GTM_longjmp (a_abortTransaction | a_restoreLiveVariables,
+		   &longjmp_jb, longjmp_prop);
     }
   else
     {
@@ -421,8 +425,8 @@ _ITM_abortTransaction (_ITM_abortReason reason)
 	gtm_thread::serial_lock.read_unlock (tx);
       tx->state = 0;
 
-      GTM_longjmp (&tx->jb, a_abortTransaction | a_restoreLiveVariables,
-	  tx->prop);
+      GTM_longjmp (a_abortTransaction | a_restoreLiveVariables,
+		   &tx->jb, tx->prop);
     }
 }
 
@@ -453,7 +457,12 @@ GTM::gtm_thread::trycommit ()
       // The transaction is now inactive. Everything that we still have to do
       // will not synchronize with other transactions anymore.
       if (state & gtm_thread::STATE_SERIAL)
-	gtm_thread::serial_lock.write_unlock ();
+        {
+          gtm_thread::serial_lock.write_unlock ();
+          // There are no other active transactions, so there's no need to
+          // enforce privatization safety.
+          priv_time = 0;
+        }
       else
 	gtm_thread::serial_lock.read_unlock (this);
       state = 0;
@@ -461,7 +470,7 @@ GTM::gtm_thread::trycommit ()
       // We can commit the undo log after dispatch-specific commit and after
       // making the transaction inactive because we only have to reset
       // gtm_thread state.
-      commit_undolog ();
+      undolog.commit ();
       // Reset further transaction state.
       cxa_catch_count = 0;
       cxa_unthrown = NULL;
@@ -470,17 +479,28 @@ GTM::gtm_thread::trycommit ()
       // Ensure privatization safety, if necessary.
       if (priv_time)
 	{
+          // There must be a seq_cst fence between the following loads of the
+          // other transactions' shared_state and the dispatch-specific stores
+          // that signal updates by this transaction (e.g., lock
+          // acquisitions).  This ensures that if we read prior to other
+          // reader transactions setting their shared_state to 0, then those
+          // readers will observe our updates.  We can reuse the seq_cst fence
+          // in serial_lock.read_unlock() however, so we don't need another
+          // one here.
 	  // TODO Don't just spin but also block using cond vars / futexes
 	  // here. Should probably be integrated with the serial lock code.
-	  // TODO For C++0x atomics, the loads of other threads' shared_state
-	  // should have acquire semantics (together with releases for the
-	  // respective updates). But is this unnecessary overhead because
-	  // weaker barriers are sufficient?
 	  for (gtm_thread *it = gtm_thread::list_of_threads; it != 0;
 	      it = it->next_thread)
 	    {
 	      if (it == this) continue;
-	      while (it->shared_state < priv_time)
+	      // We need to load other threads' shared_state using acquire
+	      // semantics (matching the release semantics of the respective
+	      // updates).  This is necessary to ensure that the other
+	      // threads' memory accesses happen before our actions that
+	      // assume privatization safety.
+	      // TODO Are there any platform-specific optimizations (e.g.,
+	      // merging barriers)?
+	      while (it->shared_state.load(memory_order_acquire) < priv_time)
 		cpu_relax();
 	    }
 	}
@@ -496,11 +516,19 @@ GTM::gtm_thread::trycommit ()
 }
 
 void ITM_NORETURN
-GTM::gtm_thread::restart (gtm_restart_reason r)
+GTM::gtm_thread::restart (gtm_restart_reason r, bool finish_serial_upgrade)
 {
   // Roll back to outermost transaction. Do not reset transaction state because
   // we will continue executing this transaction.
   rollback ();
+
+  // If we have to restart while an upgrade of the serial lock is happening,
+  // we need to finish this here, after rollback (to ensure privatization
+  // safety despite undo writes) and before deciding about the retry strategy
+  // (which could switch to/from serial mode).
+  if (finish_serial_upgrade)
+    gtm_thread::serial_lock.write_upgrade_finish(this);
+
   decide_retry_strategy (r);
 
   // Run dispatch-specific restart code. Retry until we succeed.
@@ -512,8 +540,8 @@ GTM::gtm_thread::restart (gtm_restart_reason r)
       disp = abi_disp();
     }
 
-  GTM_longjmp (&jb,
-      choose_code_path(prop, disp) | a_restoreLiveVariables, prop);
+  GTM_longjmp (choose_code_path(prop, disp) | a_restoreLiveVariables,
+	       &jb, prop);
 }
 
 void ITM_REGPARM

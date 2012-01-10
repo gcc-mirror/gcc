@@ -145,7 +145,9 @@ package Err_Vars is
    --  Used if current message contains a < insertion character to indicate
    --  if the current message is a warning message. Must be set appropriately
    --  before any call to Error_Msg_xxx with a < insertion character present.
-   --  Setting is irrelevant if no < insertion character is present.
+   --  Setting is irrelevant if no < insertion character is present. Note
+   --  that it is not necessary to reset this after using it, since the proper
+   --  procedure is always to set it before issuing such a message.
 
    Error_Msg_String : String (1 .. 4096);
    Error_Msg_Strlen : Natural;

@@ -5,7 +5,6 @@
 package strconv_test
 
 import (
-	"os"
 	"reflect"
 	. "strconv"
 	"testing"
@@ -14,51 +13,51 @@ import (
 type atoui64Test struct {
 	in  string
 	out uint64
-	err os.Error
+	err error
 }
 
 var atoui64tests = []atoui64Test{
-	{"", 0, os.EINVAL},
+	{"", 0, ErrSyntax},
 	{"0", 0, nil},
 	{"1", 1, nil},
 	{"12345", 12345, nil},
 	{"012345", 12345, nil},
-	{"12345x", 0, os.EINVAL},
+	{"12345x", 0, ErrSyntax},
 	{"98765432100", 98765432100, nil},
 	{"18446744073709551615", 1<<64 - 1, nil},
-	{"18446744073709551616", 1<<64 - 1, os.ERANGE},
-	{"18446744073709551620", 1<<64 - 1, os.ERANGE},
+	{"18446744073709551616", 1<<64 - 1, ErrRange},
+	{"18446744073709551620", 1<<64 - 1, ErrRange},
 }
 
 var btoui64tests = []atoui64Test{
-	{"", 0, os.EINVAL},
+	{"", 0, ErrSyntax},
 	{"0", 0, nil},
 	{"1", 1, nil},
 	{"12345", 12345, nil},
 	{"012345", 012345, nil},
 	{"0x12345", 0x12345, nil},
 	{"0X12345", 0x12345, nil},
-	{"12345x", 0, os.EINVAL},
+	{"12345x", 0, ErrSyntax},
 	{"98765432100", 98765432100, nil},
 	{"18446744073709551615", 1<<64 - 1, nil},
-	{"18446744073709551616", 1<<64 - 1, os.ERANGE},
-	{"18446744073709551620", 1<<64 - 1, os.ERANGE},
+	{"18446744073709551616", 1<<64 - 1, ErrRange},
+	{"18446744073709551620", 1<<64 - 1, ErrRange},
 	{"0xFFFFFFFFFFFFFFFF", 1<<64 - 1, nil},
-	{"0x10000000000000000", 1<<64 - 1, os.ERANGE},
+	{"0x10000000000000000", 1<<64 - 1, ErrRange},
 	{"01777777777777777777777", 1<<64 - 1, nil},
-	{"01777777777777777777778", 0, os.EINVAL},
-	{"02000000000000000000000", 1<<64 - 1, os.ERANGE},
+	{"01777777777777777777778", 0, ErrSyntax},
+	{"02000000000000000000000", 1<<64 - 1, ErrRange},
 	{"0200000000000000000000", 1 << 61, nil},
 }
 
 type atoi64Test struct {
 	in  string
 	out int64
-	err os.Error
+	err error
 }
 
 var atoi64tests = []atoi64Test{
-	{"", 0, os.EINVAL},
+	{"", 0, ErrSyntax},
 	{"0", 0, nil},
 	{"-0", 0, nil},
 	{"1", 1, nil},
@@ -71,14 +70,14 @@ var atoi64tests = []atoi64Test{
 	{"-98765432100", -98765432100, nil},
 	{"9223372036854775807", 1<<63 - 1, nil},
 	{"-9223372036854775807", -(1<<63 - 1), nil},
-	{"9223372036854775808", 1<<63 - 1, os.ERANGE},
+	{"9223372036854775808", 1<<63 - 1, ErrRange},
 	{"-9223372036854775808", -1 << 63, nil},
-	{"9223372036854775809", 1<<63 - 1, os.ERANGE},
-	{"-9223372036854775809", -1 << 63, os.ERANGE},
+	{"9223372036854775809", 1<<63 - 1, ErrRange},
+	{"-9223372036854775809", -1 << 63, ErrRange},
 }
 
 var btoi64tests = []atoi64Test{
-	{"", 0, os.EINVAL},
+	{"", 0, ErrSyntax},
 	{"0", 0, nil},
 	{"-0", 0, nil},
 	{"1", 1, nil},
@@ -89,44 +88,44 @@ var btoi64tests = []atoi64Test{
 	{"-012345", -012345, nil},
 	{"0x12345", 0x12345, nil},
 	{"-0X12345", -0x12345, nil},
-	{"12345x", 0, os.EINVAL},
-	{"-12345x", 0, os.EINVAL},
+	{"12345x", 0, ErrSyntax},
+	{"-12345x", 0, ErrSyntax},
 	{"98765432100", 98765432100, nil},
 	{"-98765432100", -98765432100, nil},
 	{"9223372036854775807", 1<<63 - 1, nil},
 	{"-9223372036854775807", -(1<<63 - 1), nil},
-	{"9223372036854775808", 1<<63 - 1, os.ERANGE},
+	{"9223372036854775808", 1<<63 - 1, ErrRange},
 	{"-9223372036854775808", -1 << 63, nil},
-	{"9223372036854775809", 1<<63 - 1, os.ERANGE},
-	{"-9223372036854775809", -1 << 63, os.ERANGE},
+	{"9223372036854775809", 1<<63 - 1, ErrRange},
+	{"-9223372036854775809", -1 << 63, ErrRange},
 }
 
 type atoui32Test struct {
 	in  string
 	out uint32
-	err os.Error
+	err error
 }
 
 var atoui32tests = []atoui32Test{
-	{"", 0, os.EINVAL},
+	{"", 0, ErrSyntax},
 	{"0", 0, nil},
 	{"1", 1, nil},
 	{"12345", 12345, nil},
 	{"012345", 12345, nil},
-	{"12345x", 0, os.EINVAL},
+	{"12345x", 0, ErrSyntax},
 	{"987654321", 987654321, nil},
 	{"4294967295", 1<<32 - 1, nil},
-	{"4294967296", 1<<32 - 1, os.ERANGE},
+	{"4294967296", 1<<32 - 1, ErrRange},
 }
 
 type atoi32Test struct {
 	in  string
 	out int32
-	err os.Error
+	err error
 }
 
 var atoi32tests = []atoi32Test{
-	{"", 0, os.EINVAL},
+	{"", 0, ErrSyntax},
 	{"0", 0, nil},
 	{"-0", 0, nil},
 	{"1", 1, nil},
@@ -135,16 +134,16 @@ var atoi32tests = []atoi32Test{
 	{"-12345", -12345, nil},
 	{"012345", 12345, nil},
 	{"-012345", -12345, nil},
-	{"12345x", 0, os.EINVAL},
-	{"-12345x", 0, os.EINVAL},
+	{"12345x", 0, ErrSyntax},
+	{"-12345x", 0, ErrSyntax},
 	{"987654321", 987654321, nil},
 	{"-987654321", -987654321, nil},
 	{"2147483647", 1<<31 - 1, nil},
 	{"-2147483647", -(1<<31 - 1), nil},
-	{"2147483648", 1<<31 - 1, os.ERANGE},
+	{"2147483648", 1<<31 - 1, ErrRange},
 	{"-2147483648", -1 << 31, nil},
-	{"2147483649", 1<<31 - 1, os.ERANGE},
-	{"-2147483649", -1 << 31, os.ERANGE},
+	{"2147483649", 1<<31 - 1, ErrRange},
+	{"-2147483649", -1 << 31, ErrRange},
 }
 
 func init() {
@@ -188,10 +187,10 @@ func init() {
 	}
 }
 
-func TestAtoui64(t *testing.T) {
+func TestParseUint64(t *testing.T) {
 	for i := range atoui64tests {
 		test := &atoui64tests[i]
-		out, err := Atoui64(test.in)
+		out, err := ParseUint(test.in, 10, 64)
 		if test.out != out || !reflect.DeepEqual(test.err, err) {
 			t.Errorf("Atoui64(%q) = %v, %v want %v, %v",
 				test.in, out, err, test.out, test.err)
@@ -199,21 +198,21 @@ func TestAtoui64(t *testing.T) {
 	}
 }
 
-func TestBtoui64(t *testing.T) {
+func TestParseUint64Base(t *testing.T) {
 	for i := range btoui64tests {
 		test := &btoui64tests[i]
-		out, err := Btoui64(test.in, 0)
+		out, err := ParseUint(test.in, 0, 64)
 		if test.out != out || !reflect.DeepEqual(test.err, err) {
-			t.Errorf("Btoui64(%q) = %v, %v want %v, %v",
+			t.Errorf("ParseUint(%q) = %v, %v want %v, %v",
 				test.in, out, err, test.out, test.err)
 		}
 	}
 }
 
-func TestAtoi64(t *testing.T) {
+func TestParseInt64(t *testing.T) {
 	for i := range atoi64tests {
 		test := &atoi64tests[i]
-		out, err := Atoi64(test.in)
+		out, err := ParseInt(test.in, 10, 64)
 		if test.out != out || !reflect.DeepEqual(test.err, err) {
 			t.Errorf("Atoi64(%q) = %v, %v want %v, %v",
 				test.in, out, err, test.out, test.err)
@@ -221,23 +220,23 @@ func TestAtoi64(t *testing.T) {
 	}
 }
 
-func TestBtoi64(t *testing.T) {
+func TestParseInt64Base(t *testing.T) {
 	for i := range btoi64tests {
 		test := &btoi64tests[i]
-		out, err := Btoi64(test.in, 0)
+		out, err := ParseInt(test.in, 0, 64)
 		if test.out != out || !reflect.DeepEqual(test.err, err) {
-			t.Errorf("Btoi64(%q) = %v, %v want %v, %v",
+			t.Errorf("ParseInt(%q) = %v, %v want %v, %v",
 				test.in, out, err, test.out, test.err)
 		}
 	}
 }
 
-func TestAtoui(t *testing.T) {
+func TestParseUint(t *testing.T) {
 	switch IntSize {
 	case 32:
 		for i := range atoui32tests {
 			test := &atoui32tests[i]
-			out, err := Atoui(test.in)
+			out, err := ParseUint(test.in, 10, 0)
 			if test.out != uint32(out) || !reflect.DeepEqual(test.err, err) {
 				t.Errorf("Atoui(%q) = %v, %v want %v, %v",
 					test.in, out, err, test.out, test.err)
@@ -246,7 +245,7 @@ func TestAtoui(t *testing.T) {
 	case 64:
 		for i := range atoui64tests {
 			test := &atoui64tests[i]
-			out, err := Atoui(test.in)
+			out, err := ParseUint(test.in, 10, 0)
 			if test.out != uint64(out) || !reflect.DeepEqual(test.err, err) {
 				t.Errorf("Atoui(%q) = %v, %v want %v, %v",
 					test.in, out, err, test.out, test.err)
@@ -255,12 +254,12 @@ func TestAtoui(t *testing.T) {
 	}
 }
 
-func TestAtoi(t *testing.T) {
+func TestParseInt(t *testing.T) {
 	switch IntSize {
 	case 32:
 		for i := range atoi32tests {
 			test := &atoi32tests[i]
-			out, err := Atoi(test.in)
+			out, err := ParseInt(test.in, 10, 0)
 			if test.out != int32(out) || !reflect.DeepEqual(test.err, err) {
 				t.Errorf("Atoi(%q) = %v, %v want %v, %v",
 					test.in, out, err, test.out, test.err)
@@ -269,7 +268,7 @@ func TestAtoi(t *testing.T) {
 	case 64:
 		for i := range atoi64tests {
 			test := &atoi64tests[i]
-			out, err := Atoi(test.in)
+			out, err := ParseInt(test.in, 10, 0)
 			if test.out != int64(out) || !reflect.DeepEqual(test.err, err) {
 				t.Errorf("Atoi(%q) = %v, %v want %v, %v",
 					test.in, out, err, test.out, test.err)
@@ -280,24 +279,24 @@ func TestAtoi(t *testing.T) {
 
 func BenchmarkAtoi(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Atoi("12345678")
+		ParseInt("12345678", 10, 0)
 	}
 }
 
 func BenchmarkAtoiNeg(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Atoi("-12345678")
+		ParseInt("-12345678", 10, 0)
 	}
 }
 
 func BenchmarkAtoi64(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Atoi64("12345678901234")
+		ParseInt("12345678901234", 10, 64)
 	}
 }
 
 func BenchmarkAtoi64Neg(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Atoi64("-12345678901234")
+		ParseInt("-12345678901234", 10, 64)
 	}
 }

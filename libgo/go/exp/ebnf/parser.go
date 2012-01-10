@@ -6,16 +6,15 @@ package ebnf
 
 import (
 	"io"
-	"os"
-	"scanner"
 	"strconv"
+	"text/scanner"
 )
 
 type parser struct {
 	errors  errorList
 	scanner scanner.Scanner
 	pos     scanner.Position // token position
-	tok     int              // one token look-ahead
+	tok     rune             // one token look-ahead
 	lit     string           // token literal
 }
 
@@ -42,7 +41,7 @@ func (p *parser) errorExpected(pos scanner.Position, msg string) {
 	p.error(pos, msg)
 }
 
-func (p *parser) expect(tok int) scanner.Position {
+func (p *parser) expect(tok rune) scanner.Position {
 	pos := p.pos
 	if p.tok != tok {
 		p.errorExpected(pos, scanner.TokenString(tok))
@@ -184,8 +183,8 @@ func (p *parser) parse(filename string, src io.Reader) Grammar {
 // more than once; the filename is used only for error
 // positions.
 //
-func Parse(filename string, src io.Reader) (Grammar, os.Error) {
+func Parse(filename string, src io.Reader) (Grammar, error) {
 	var p parser
 	grammar := p.parse(filename, src)
-	return grammar, p.errors.Error()
+	return grammar, p.errors.Err()
 }

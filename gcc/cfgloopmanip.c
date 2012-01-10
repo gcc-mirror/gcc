@@ -290,6 +290,8 @@ remove_path (edge e)
   int i, nrem, n_bord_bbs;
   sbitmap seen;
   bool irred_invalidated = false;
+  edge_iterator ei;
+  struct loop *l, *f;
 
   if (!can_remove_branch_p (e))
     return false;
@@ -313,10 +315,12 @@ remove_path (edge e)
      we belong to.  In this case first unloop the loops, then proceed
      normally.   We may assume that e->dest is not a header of any loop,
      as it now has exactly one predecessor.  */
-  while (loop_outer (e->src->loop_father)
-	 && dominated_by_p (CDI_DOMINATORS,
-			    e->src->loop_father->latch, e->dest))
-    unloop (e->src->loop_father, &irred_invalidated);
+  for (l = e->src->loop_father; loop_outer (l); l = f)
+    {
+      f = loop_outer (l);
+      if (dominated_by_p (CDI_DOMINATORS, l->latch, e->dest))
+        unloop (l, &irred_invalidated);
+    }
 
   /* Identify the path.  */
   nrem = find_path (e, &rem_bbs);
@@ -329,9 +333,13 @@ remove_path (edge e)
   /* Find "border" hexes -- i.e. those with predecessor in removed path.  */
   for (i = 0; i < nrem; i++)
     SET_BIT (seen, rem_bbs[i]->index);
+  if (!irred_invalidated)
+    FOR_EACH_EDGE (ae, ei, e->src->succs)
+      if (ae != e && ae->dest != EXIT_BLOCK_PTR && !TEST_BIT (seen, ae->dest->index)
+	  && ae->flags & EDGE_IRREDUCIBLE_LOOP)
+	irred_invalidated = true;
   for (i = 0; i < nrem; i++)
     {
-      edge_iterator ei;
       bb = rem_bbs[i];
       FOR_EACH_EDGE (ae, ei, rem_bbs[i]->succs)
 	if (ae->dest != EXIT_BLOCK_PTR && !TEST_BIT (seen, ae->dest->index))

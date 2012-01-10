@@ -56,12 +56,6 @@ package body System.Storage_Pools.Subpools is
    procedure Detach (N : not null SP_Node_Ptr);
    --  Unhook a subpool node from an arbitrary subpool list
 
-   function Nearest_Multiple_Rounded_Up
-     (Size      : Storage_Count;
-      Alignment : Storage_Count) return Storage_Count;
-   --  Given arbitrary values of storage size and alignment, calculate the
-   --  nearest multiple of the alignment rounded up where size can fit.
-
    --------------
    -- Allocate --
    --------------
@@ -218,10 +212,7 @@ package body System.Storage_Pools.Subpools is
          --  Account for possible padding space before the header due to a
          --  larger alignment.
 
-         Header_And_Padding :=
-           Nearest_Multiple_Rounded_Up
-             (Size      => Header_Size,
-              Alignment => Alignment);
+         Header_And_Padding := Header_Size_With_Padding (Alignment);
 
          N_Size := Storage_Size + Header_And_Padding;
 
@@ -388,10 +379,7 @@ package body System.Storage_Pools.Subpools is
          --  Account for possible padding space before the header due to a
          --  larger alignment.
 
-         Header_And_Padding :=
-           Nearest_Multiple_Rounded_Up
-             (Size      => Header_Size,
-              Alignment => Alignment);
+         Header_And_Padding := Header_Size_With_Padding (Alignment);
 
          --    N_Addr  N_Ptr           Addr (from input)
          --    |       |               |
@@ -442,6 +430,18 @@ package body System.Storage_Pools.Subpools is
 
       Deallocate (Pool, N_Addr, N_Size, Alignment);
    end Deallocate_Any_Controlled;
+
+   ------------------------------
+   -- Default_Subpool_For_Pool --
+   ------------------------------
+
+   function Default_Subpool_For_Pool
+     (Pool : Root_Storage_Pool_With_Subpools) return not null Subpool_Handle
+   is
+   begin
+      raise Program_Error;
+      return Pool.Subpools.Subpool;
+   end Default_Subpool_For_Pool;
 
    ------------
    -- Detach --
@@ -551,9 +551,7 @@ package body System.Storage_Pools.Subpools is
    begin
       --  Do nothing if the subpool was never used
 
-      if Subpool.Owner = null
-        or else Subpool.Node = null
-      then
+      if Subpool.Owner = null or else Subpool.Node = null then
          return;
       end if;
 
@@ -570,6 +568,28 @@ package body System.Storage_Pools.Subpools is
 
       Free (Subpool.Node);
    end Finalize_Subpool;
+
+   ------------------------------
+   -- Header_Size_With_Padding --
+   ------------------------------
+
+   function Header_Size_With_Padding
+     (Alignment : System.Storage_Elements.Storage_Count)
+      return System.Storage_Elements.Storage_Count
+   is
+      Size : constant Storage_Count := Header_Size;
+
+   begin
+      if Size mod Alignment = 0 then
+         return Size;
+
+      --  Add enough padding to reach the nearest multiple of the alignment
+      --  rounding up.
+
+      else
+         return ((Size + Alignment - 1) / Alignment) * Alignment;
+      end if;
+   end Header_Size_With_Padding;
 
    ----------------
    -- Initialize --
@@ -592,32 +612,14 @@ package body System.Storage_Pools.Subpools is
       Pool.Subpools.Prev := Pool.Subpools'Unchecked_Access;
    end Initialize_Pool;
 
-   ---------------------------------
-   -- Nearest_Multiple_Rounded_Up --
-   ---------------------------------
-
-   function Nearest_Multiple_Rounded_Up
-     (Size      : Storage_Count;
-      Alignment : Storage_Count) return Storage_Count
-   is
-   begin
-      if Size mod Alignment = 0 then
-         return Size;
-
-      --  Add enough padding to reach the nearest multiple of the alignment
-      --  rounding up.
-
-      else
-         return ((Size + Alignment - 1) / Alignment) * Alignment;
-      end if;
-   end Nearest_Multiple_Rounded_Up;
-
    ---------------------
    -- Pool_Of_Subpool --
    ---------------------
 
-   function Pool_Of_Subpool (Subpool : not null Subpool_Handle)
-     return access Root_Storage_Pool_With_Subpools'Class is
+   function Pool_Of_Subpool
+     (Subpool : not null Subpool_Handle)
+      return access Root_Storage_Pool_With_Subpools'Class
+   is
    begin
       return Subpool.Owner;
    end Pool_Of_Subpool;
@@ -772,7 +774,7 @@ package body System.Storage_Pools.Subpools is
 
    procedure Set_Pool_Of_Subpool
      (Subpool : not null Subpool_Handle;
-      Pool    : in out Root_Storage_Pool_With_Subpools'Class)
+      To      : in out Root_Storage_Pool_With_Subpools'Class)
    is
       N_Ptr : SP_Node_Ptr;
 
@@ -787,12 +789,12 @@ package body System.Storage_Pools.Subpools is
       --  Prevent the creation of a new subpool while the owner is being
       --  finalized. This is a serious error.
 
-      if Pool.Finalization_Started then
+      if To.Finalization_Started then
          raise Program_Error
            with "subpool creation after finalization started";
       end if;
 
-      Subpool.Owner := Pool'Unchecked_Access;
+      Subpool.Owner := To'Unchecked_Access;
 
       --  Create a subpool node and decorate it. Since this node is not
       --  allocated on the owner's pool, it must be explicitly destroyed by
@@ -802,7 +804,7 @@ package body System.Storage_Pools.Subpools is
       N_Ptr.Subpool := Subpool;
       Subpool.Node := N_Ptr;
 
-      Attach (N_Ptr, Pool.Subpools'Unchecked_Access);
+      Attach (N_Ptr, To.Subpools'Unchecked_Access);
 
       --  Mark the subpool's master as being a heterogeneous collection of
       --  controlled objects.

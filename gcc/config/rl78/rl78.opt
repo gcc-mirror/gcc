@@ -1,0 +1,43 @@
+; Command line options for the Renesas RL78 port of GCC.
+; Copyright (C) 2011 Free Software Foundation, Inc.
+; Contributed by Red Hat.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+;---------------------------------------------------
+
+HeaderInclude
+config/rl78/rl78-opts.h
+
+msim
+Target
+Use the simulator runtime.
+
+mmul=
+Target RejectNegative Joined Var(rl78_mul_type) Report Tolower Enum(rl78_mul_types) Init(MUL_NONE)
+Select hardware or software multiplication support.
+
+Enum
+Name(rl78_mul_types) Type(enum rl78_mul_types)
+
+EnumValue
+Enum(rl78_mul_types) String(none) Value(MUL_NONE)
+
+EnumValue
+Enum(rl78_mul_types) String(rl78) Value(MUL_RL78)
+
+EnumValue
+Enum(rl78_mul_types) String(g13) Value(MUL_G13)

@@ -8,6 +8,16 @@
 #include "arch.h"
 #include "malloc.h"
 
+#ifdef USING_SPLIT_STACK
+
+extern void * __splitstack_find (void *, void *, size_t *, void **, void **,
+				 void **);
+
+extern void * __splitstack_find_context (void *context[10], size_t *, void **,
+					 void **, void **);
+
+#endif
+
 enum {
 	Debug = 0,
 	PtrSize = sizeof(void*),
@@ -85,9 +95,8 @@ struct FinBlock
 	Finalizer fin[1];
 };
 
-static bool finstarted;
-static pthread_mutex_t finqlock = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t finqcond = PTHREAD_COND_INITIALIZER;
+
+static G *fing;
 static FinBlock *finq; // list of finalizers that are to be executed
 static FinBlock *finc; // cache of free blocks
 static FinBlock *allfin; // list of all blocks
@@ -590,6 +599,79 @@ handoff(Workbuf *b)
 	return b1;
 }
 
+// Scanstack calls scanblock on each of gp's stack segments.
+static void
+scanstack(void (*scanblock)(byte*, int64), G *gp)
+{
+#ifdef USING_SPLIT_STACK
+	M *mp;
+	void* sp;
+	size_t spsize;
+	void* next_segment;
+	void* next_sp;
+	void* initial_sp;
+
+	if(gp == runtime_g()) {
+		// Scanning our own stack.
+		sp = __splitstack_find(nil, nil, &spsize, &next_segment,
+				       &next_sp, &initial_sp);
+	} else if((mp = gp->m) != nil && mp->helpgc) {
+		// gchelper's stack is in active use and has no interesting pointers.
+		return;
+	} else {
+		// Scanning another goroutine's stack.
+		// The goroutine is usually asleep (the world is stopped).
+
+		// The exception is that if the goroutine is about to enter or might
+		// have just exited a system call, it may be executing code such
+		// as schedlock and may have needed to start a new stack segment.
+		// Use the stack segment and stack pointer at the time of
+		// the system call instead, since that won't change underfoot.
+		if(gp->gcstack != nil) {
+			sp = gp->gcstack;
+			spsize = gp->gcstack_size;
+			next_segment = gp->gcnext_segment;
+			next_sp = gp->gcnext_sp;
+			initial_sp = gp->gcinitial_sp;
+		} else {
+			sp = __splitstack_find_context(&gp->stack_context[0],
+						       &spsize, &next_segment,
+						       &next_sp, &initial_sp);
+		}
+	}
+	if(sp != nil) {
+		scanblock(sp, spsize);
+		while((sp = __splitstack_find(next_segment, next_sp,
+					      &spsize, &next_segment,
+					      &next_sp, &initial_sp)) != nil)
+			scanblock(sp, spsize);
+	}
+#else
+	M *mp;
+	byte* bottom;
+	byte* top;
+
+	if(gp == runtime_g()) {
+		// Scanning our own stack.
+		bottom = (byte*)&gp;
+	} else if((mp = gp->m) != nil && mp->helpgc) {
+		// gchelper's stack is in active use and has no interesting pointers.
+		return;
+	} else {
+		// Scanning another goroutine's stack.
+		// The goroutine is usually asleep (the world is stopped).
+		bottom = (byte*)gp->gcnext_sp;
+		if(bottom == nil)
+			return;
+	}
+	top = (byte*)gp->gcinitial_sp + gp->gcstack_size;
+	if(top > bottom)
+		scanblock(bottom, top - bottom);
+	else
+		scanblock(top, bottom - top);
+#endif
+}
+
 // Markfin calls scanblock on the blocks that have finalizers:
 // the things pointed at cannot be freed until the finalizers have run.
 static void
@@ -639,8 +721,10 @@ static void
 mark(void (*scan)(byte*, int64))
 {
 	struct root_list *pl;
+	G *gp;
 	FinBlock *fb;
 
+	// mark data+bss.
 	for(pl = roots; pl != nil; pl = pl->next) {
 		struct root* pr = &pl->roots[0];
 		while(1) {
@@ -654,11 +738,31 @@ mark(void (*scan)(byte*, int64))
 
 	scan((byte*)&runtime_m0, sizeof runtime_m0);
 	scan((byte*)&runtime_g0, sizeof runtime_g0);
-	scan((byte*)&finq, sizeof finq);
+	scan((byte*)&runtime_allg, sizeof runtime_allg);
+	scan((byte*)&runtime_allm, sizeof runtime_allm);
 	runtime_MProf_Mark(scan);
+	runtime_time_scan(scan);
 
 	// mark stacks
-	__go_scanstacks(scan);
+	for(gp=runtime_allg; gp!=nil; gp=gp->alllink) {
+		switch(gp->status){
+		default:
+			runtime_printf("unexpected G.status %d\n", gp->status);
+			runtime_throw("mark - bad status");
+		case Gdead:
+			break;
+		case Grunning:
+			if(gp != runtime_g())
+				runtime_throw("mark - world not stopped");
+			scanstack(scan, gp);
+			break;
+		case Grunnable:
+		case Gsyscall:
+		case Gwaiting:
+			scanstack(scan, gp);
+			break;
+		}
+	}
 
 	// mark things pointed at by objects with finalizers
 	if(scan == debug_scanblock)
@@ -714,6 +818,7 @@ handlespecial(byte *p, uintptr size)
 static void
 sweep(void)
 {
+	M *m;
 	MSpan *s;
 	int32 cl, n, npages;
 	uintptr size;
@@ -721,6 +826,7 @@ sweep(void)
 	MCache *c;
 	byte *arena_start;
 
+	m = runtime_m();
 	arena_start = runtime_mheap.arena_start;
 
 	for(;;) {
@@ -799,8 +905,6 @@ sweep(void)
 	}
 }
 
-static pthread_mutex_t gcsema = PTHREAD_MUTEX_INITIALIZER;
-
 void
 runtime_gchelper(void)
 {
@@ -818,6 +922,11 @@ runtime_gchelper(void)
 		runtime_notewakeup(&work.alldone);
 }
 
+// Semaphore, not Lock, so that the goroutine
+// reschedules when there is contention rather
+// than spinning.
+static uint32 gcsema = 1;
+
 // Initialized from $GOGC.  GOGC=off means no gc.
 //
 // Next gc is after we've allocated an extra amount of
@@ -829,9 +938,46 @@ runtime_gchelper(void)
 // extra memory used).
 static int32 gcpercent = -2;
 
-void
-runtime_gc(int32 force __attribute__ ((unused)))
+static void
+stealcache(void)
 {
+	M *m;
+
+	for(m=runtime_allm; m; m=m->alllink)
+		runtime_MCache_ReleaseAll(m->mcache);
+}
+
+static void
+cachestats(void)
+{
+	M *m;
+	MCache *c;
+	uint32 i;
+	uint64 stacks_inuse;
+	uint64 stacks_sys;
+
+	stacks_inuse = 0;
+	stacks_sys = 0;
+	for(m=runtime_allm; m; m=m->alllink) {
+		runtime_purgecachedstats(m);
+		// stacks_inuse += m->stackalloc->inuse;
+		// stacks_sys += m->stackalloc->sys;
+		c = m->mcache;
+		for(i=0; i<nelem(c->local_by_size); i++) {
+			mstats.by_size[i].nmalloc += c->local_by_size[i].nmalloc;
+			c->local_by_size[i].nmalloc = 0;
+			mstats.by_size[i].nfree += c->local_by_size[i].nfree;
+			c->local_by_size[i].nfree = 0;
+		}
+	}
+	mstats.stacks_inuse = stacks_inuse;
+	mstats.stacks_sys = stacks_sys;
+}
+
+void
+runtime_gc(int32 force)
+{
+	M *m;
 	int64 t0, t1, t2, t3;
 	uint64 heap0, heap1, obj0, obj1;
 	const byte *p;
@@ -845,7 +991,8 @@ runtime_gc(int32 force __attribute__ ((unused)))
 	// problems, don't bother trying to run gc
 	// while holding a lock.  The next mallocgc
 	// without a lock will do the gc instead.
-	if(!mstats.enablegc || m->locks > 0 /* || runtime_panicking */)
+	m = runtime_m();
+	if(!mstats.enablegc || m->locks > 0 || runtime_panicking)
 		return;
 
 	if(gcpercent == -2) {	// first time through
@@ -860,21 +1007,13 @@ runtime_gc(int32 force __attribute__ ((unused)))
 		p = runtime_getenv("GOGCTRACE");
 		if(p != nil)
 			gctrace = runtime_atoi(p);
-
-		runtime_initlock(&work.fmu);
-		runtime_initlock(&work.emu);
-		runtime_initlock(&work.markgate);
-		runtime_initlock(&work.sweepgate);
-		runtime_initlock(&work.Lock);
 	}
 	if(gcpercent < 0)
 		return;
 
-	pthread_mutex_lock(&finqlock);
-	pthread_mutex_lock(&gcsema);
+	runtime_semacquire(&gcsema);
 	if(!force && mstats.heap_alloc < mstats.next_gc) {
-		pthread_mutex_unlock(&gcsema);
-		pthread_mutex_unlock(&finqlock);
+		runtime_semrelease(&gcsema);
 		return;
 	}
 
@@ -887,7 +1026,7 @@ runtime_gc(int32 force __attribute__ ((unused)))
 	m->gcing = 1;
 	runtime_stoptheworld();
 
-	__go_cachestats();
+	cachestats();
 	heap0 = mstats.heap_alloc;
 	obj0 = mstats.nmalloc - mstats.nfree;
 
@@ -896,12 +1035,10 @@ runtime_gc(int32 force __attribute__ ((unused)))
 
 	extra = false;
 	work.nproc = 1;
-#if 0
 	if(runtime_gomaxprocs > 1 && runtime_ncpu > 1) {
 		runtime_noteclear(&work.alldone);
 		work.nproc += runtime_helpgc(&extra);
 	}
-#endif
 	work.nwait = 0;
 	work.ndone = 0;
 
@@ -918,14 +1055,25 @@ runtime_gc(int32 force __attribute__ ((unused)))
 		runtime_notesleep(&work.alldone);
 	t2 = runtime_nanotime();
 
-	__go_stealcache();
-	__go_cachestats();
+	stealcache();
+	cachestats();
 
 	mstats.next_gc = mstats.heap_alloc+mstats.heap_alloc*gcpercent/100;
 	m->gcing = 0;
 
 	m->locks++;	// disable gc during the mallocs in newproc
+	if(finq != nil) {
+		// kick off or wake up goroutine to run queued finalizers
+		if(fing == nil)
+			fing = __go_go(runfinq, nil);
+		else if(fingwait) {
+			fingwait = 0;
+			runtime_ready(fing);
+		}
+	}
+	m->locks--;
 
+	cachestats();
 	heap1 = mstats.heap_alloc;
 	obj1 = mstats.nmalloc - mstats.nfree;
 
@@ -944,7 +1092,7 @@ runtime_gc(int32 force __attribute__ ((unused)))
 			(unsigned long long)nlookup, (unsigned long long)nsizelookup, (unsigned long long)naddrlookup, (unsigned long long) nhandoff);
 	}
 
-	pthread_mutex_unlock(&gcsema);
+	runtime_semrelease(&gcsema);
 
 	// If we could have used another helper proc, start one now,
 	// in the hope that it will be available next time.
@@ -955,20 +1103,9 @@ runtime_gc(int32 force __attribute__ ((unused)))
 	// the maximum number of procs.
 	runtime_starttheworld(extra);
 
-	// finqlock is still held.
-	if(finq != nil) {
-		// kick off or wake up goroutine to run queued finalizers
-		if(!finstarted) {
-			__go_go(runfinq, nil);
-			finstarted = 1;
-		}
-		else if(fingwait) {
-			fingwait = 0;
-			pthread_cond_signal(&finqcond);
-		}
-	}
-	m->locks--;
-	pthread_mutex_unlock(&finqlock);
+	// give the queued finalizers, if any, a chance to run	
+	if(finq != nil)	
+		runtime_gosched();
 
 	if(gctrace > 1 && !force)
 		runtime_gc(1);
@@ -980,39 +1117,47 @@ void runtime_UpdateMemStats(void)
 void
 runtime_UpdateMemStats(void)
 {
+	M *m;
+
 	// Have to acquire gcsema to stop the world,
 	// because stoptheworld can only be used by
 	// one goroutine at a time, and there might be
 	// a pending garbage collection already calling it.
-	pthread_mutex_lock(&gcsema);
+	runtime_semacquire(&gcsema);
+	m = runtime_m();
 	m->gcing = 1;
 	runtime_stoptheworld();
-	__go_cachestats();
+	cachestats();
 	m->gcing = 0;
-	pthread_mutex_unlock(&gcsema);
+	runtime_semrelease(&gcsema);
 	runtime_starttheworld(false);
 }
 
 static void
-runfinq(void* dummy)
+runfinq(void* dummy __attribute__ ((unused)))
 {
+	G* gp;
 	Finalizer *f;
 	FinBlock *fb, *next;
 	uint32 i;
 
-	USED(dummy);
-
+	gp = runtime_g();
 	for(;;) {
-		pthread_mutex_lock(&finqlock);
+		// There's no need for a lock in this section
+		// because it only conflicts with the garbage
+		// collector, and the garbage collector only
+		// runs when everyone else is stopped, and
+		// runfinq only stops at the gosched() or
+		// during the calls in the for loop.
 		fb = finq;
 		finq = nil;
 		if(fb == nil) {
 			fingwait = 1;
-			pthread_cond_wait(&finqcond, &finqlock);
-			pthread_mutex_unlock(&finqlock);
+			gp->status = Gwaiting;
+			gp->waitreason = "finalizer wait";
+			runtime_gosched();
 			continue;
 		}
-		pthread_mutex_unlock(&finqlock);
 		for(; fb; fb=next) {
 			next = fb->next;
 			for(i=0; i<(uint32)fb->cnt; i++) {
@@ -1032,8 +1177,6 @@ runfinq(void* dummy)
 		runtime_gc(1);	// trigger another gc to clean up the finalized objects, if possible
 	}
 }
-
-#define runtime_singleproc 0
 
 // mark the block at v of size n as allocated.
 // If noptr is true, mark it as having no pointers.
@@ -1236,10 +1379,4 @@ runtime_MHeap_MapBits(MHeap *h)
 
 	runtime_SysMap(h->arena_start - n, n - h->bitmap_mapped);
 	h->bitmap_mapped = n;
-}
-
-void
-__go_enable_gc()
-{
-  mstats.enablegc = 1;
 }

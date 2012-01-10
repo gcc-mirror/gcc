@@ -1,3 +1,75 @@
+2012-01-10  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/51806
+	* c-opts.c (c_common_handle_option): Move -Werror handling
+	to language independent code.
+
+2012-01-05  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/51764
+	* c.opt (Wmudflap, fmudflap, fmudflapth, fmudflapir): Move here
+	from common.opt.
+
+2011-12-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51316
+	* c-common.c (c_sizeof_or_alignof_type): In C++ allow for alignof
+	of array types with an unknown bound.
+
+2011-12-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (flag_isoc99): Update comment to refer to C11.
+	(flag_isoc1x): Change to flag_isoc11.
+	* c-common.h (flag_isoc99): Update comment to refer to C11.
+	(flag_isoc1x): Change to flag_isoc11.
+	* c-cppbuiltin.c (cpp_atomic_builtins): Change comment to refer to
+	C11.
+	* c-opts.c (set_std_c1x): Change to set_std_c11.
+	(c_common_handle_option): Handle OPT_std_c11 and OPT_std_gnu11.
+	Call set_std_c11.
+	(set_std_c89, set_std_c99, set_std_c11): Use flag_isoc11.
+	(set_std_c1): Use CLK_STDC11 and CLK_GNUC11.
+	* c.opt (std=c1x): Change to std=c11.  Document as non-draft
+	standard.
+	(std=c1x, std=iso9899:2011): Add as aliases of std=c11.
+	(std=gnu1x): Change to std=gnu11.  Refer to non-draft standard.
+	(std=gnu1x): Make alias of std=gnu11.
+
+2011-12-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51228
+	* c-common.c (handle_transparent_union_attribute): Check the first
+	field if the type is complete.
+
+2011-12-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51365
+	* c-common.c (RID_IS_FINAL): Add.
+	* c-common.h (RID_IS_FINAL): Add.
+
+2011-11-30  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* c.opt (fgnu-runtime): Provide full description.
+	(fnext-runtime): Likewise.
+	* c-opts.c (OPT_fgnu_runtime, OPT_fnext_runtime) Remove.
+
+2011-11-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-cpp-builtin.c (cpp_atomic_builtins):New.  Emit all atomic
+	predefines in one place.  Add LOCK_FREE predefines.
+	(c_cpp_builtins): Move Legacy HAVE_SYNC predefines to
+	new func.
+
+2011-11-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR c/51256
+	* c-common.c (get_atomic_generic_size): Check for various error 
+	conditions
+	(resolve_overloaded_atomic_exchange, 
+	resolve_overloaded_atomic_compare_exchange, 
+	resolve_overloaded_atomic_load, resolve_overloaded_atomic_store): Return
+	error_mark_node for error conditions.
+	
 2011-11-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/51010

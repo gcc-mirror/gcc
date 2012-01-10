@@ -10,11 +10,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 	"strings"
 	"testing"
 	"testing/iotest"
-	"utf8"
+	"unicode/utf8"
 )
 
 // Reads from a reader and rot13s the result.
@@ -28,7 +27,7 @@ func newRot13Reader(r io.Reader) *rot13Reader {
 	return r13
 }
 
-func (r13 *rot13Reader) Read(p []byte) (int, os.Error) {
+func (r13 *rot13Reader) Read(p []byte) (int, error) {
 	n, e := r13.r.Read(p)
 	if e != nil {
 		return n, e
@@ -50,14 +49,14 @@ func readBytes(buf *Reader) string {
 	nb := 0
 	for {
 		c, e := buf.ReadByte()
-		if e == os.EOF {
+		if e == io.EOF {
 			break
 		}
 		if e == nil {
 			b[nb] = c
 			nb++
 		} else if e != iotest.ErrTimeout {
-			panic("Data: " + e.String())
+			panic("Data: " + e.Error())
 		}
 	}
 	return string(b[0:nb])
@@ -95,11 +94,11 @@ func readLines(b *Reader) string {
 	s := ""
 	for {
 		s1, e := b.ReadString('\n')
-		if e == os.EOF {
+		if e == io.EOF {
 			break
 		}
 		if e != nil && e != iotest.ErrTimeout {
-			panic("GetLines: " + e.String())
+			panic("GetLines: " + e.Error())
 		}
 		s += s1
 	}
@@ -113,7 +112,7 @@ func reads(buf *Reader, m int) string {
 	for {
 		n, e := buf.Read(b[nb : nb+m])
 		nb += n
-		if e == os.EOF {
+		if e == io.EOF {
 			break
 		}
 	}
@@ -179,13 +178,13 @@ type StringReader struct {
 	step int
 }
 
-func (r *StringReader) Read(p []byte) (n int, err os.Error) {
+func (r *StringReader) Read(p []byte) (n int, err error) {
 	if r.step < len(r.data) {
 		s := r.data[r.step]
 		n = copy(p, s)
 		r.step++
 	} else {
-		err = os.EOF
+		err = io.EOF
 	}
 	return
 }
@@ -195,14 +194,14 @@ func readRuneSegments(t *testing.T, segments []string) {
 	want := strings.Join(segments, "")
 	r := NewReader(&StringReader{data: segments})
 	for {
-		rune, _, err := r.ReadRune()
+		r, _, err := r.ReadRune()
 		if err != nil {
-			if err != os.EOF {
+			if err != io.EOF {
 				return
 			}
 			break
 		}
-		got += string(rune)
+		got += string(r)
 	}
 	if got != want {
 		t.Errorf("segments=%v got=%s want=%s", segments, got, want)
@@ -233,24 +232,24 @@ func TestUnreadRune(t *testing.T) {
 	r := NewReader(&StringReader{data: segments})
 	// Normal execution.
 	for {
-		rune, _, err := r.ReadRune()
+		r1, _, err := r.ReadRune()
 		if err != nil {
-			if err != os.EOF {
+			if err != io.EOF {
 				t.Error("unexpected EOF")
 			}
 			break
 		}
-		got += string(rune)
+		got += string(r1)
 		// Put it back and read it again
 		if err = r.UnreadRune(); err != nil {
 			t.Error("unexpected error on UnreadRune:", err)
 		}
-		rune1, _, err := r.ReadRune()
+		r2, _, err := r.ReadRune()
 		if err != nil {
 			t.Error("unexpected error reading after unreading:", err)
 		}
-		if rune != rune1 {
-			t.Errorf("incorrect rune after unread: got %c wanted %c", rune1, rune)
+		if r1 != r2 {
+			t.Errorf("incorrect rune after unread: got %c wanted %c", r1, r2)
 		}
 	}
 	if got != data {
@@ -328,7 +327,7 @@ func TestUnreadRuneAtEOF(t *testing.T) {
 	_, _, err := r.ReadRune()
 	if err == nil {
 		t.Error("expected error at EOF")
-	} else if err != os.EOF {
+	} else if err != io.EOF {
 		t.Error("expected EOF; got", err)
 	}
 }
@@ -339,25 +338,25 @@ func TestReadWriteRune(t *testing.T) {
 	w := NewWriter(byteBuf)
 	// Write the runes out using WriteRune
 	buf := make([]byte, utf8.UTFMax)
-	for rune := 0; rune < NRune; rune++ {
-		size := utf8.EncodeRune(buf, rune)
-		nbytes, err := w.WriteRune(rune)
+	for r := rune(0); r < NRune; r++ {
+		size := utf8.EncodeRune(buf, r)
+		nbytes, err := w.WriteRune(r)
 		if err != nil {
-			t.Fatalf("WriteRune(0x%x) error: %s", rune, err)
+			t.Fatalf("WriteRune(0x%x) error: %s", r, err)
 		}
 		if nbytes != size {
-			t.Fatalf("WriteRune(0x%x) expected %d, got %d", rune, size, nbytes)
+			t.Fatalf("WriteRune(0x%x) expected %d, got %d", r, size, nbytes)
 		}
 	}
 	w.Flush()
 
 	r := NewReader(byteBuf)
 	// Read them back with ReadRune
-	for rune := 0; rune < NRune; rune++ {
-		size := utf8.EncodeRune(buf, rune)
+	for r1 := rune(0); r1 < NRune; r1++ {
+		size := utf8.EncodeRune(buf, r1)
 		nr, nbytes, err := r.ReadRune()
-		if nr != rune || nbytes != size || err != nil {
-			t.Fatalf("ReadRune(0x%x) got 0x%x,%d not 0x%x,%d (err=%s)", r, nr, nbytes, r, size, err)
+		if nr != r1 || nbytes != size || err != nil {
+			t.Fatalf("ReadRune(0x%x) got 0x%x,%d not 0x%x,%d (err=%s)", r1, nr, nbytes, r1, size, err)
 		}
 	}
 }
@@ -413,11 +412,11 @@ func TestWriter(t *testing.T) {
 
 type errorWriterTest struct {
 	n, m   int
-	err    os.Error
-	expect os.Error
+	err    error
+	expect error
 }
 
-func (w errorWriterTest) Write(p []byte) (int, os.Error) {
+func (w errorWriterTest) Write(p []byte) (int, error) {
 	return len(p) * w.n / w.m, w.err
 }
 
@@ -425,9 +424,9 @@ var errorWriterTests = []errorWriterTest{
 	{0, 1, nil, io.ErrShortWrite},
 	{1, 2, nil, io.ErrShortWrite},
 	{1, 1, nil, nil},
-	{0, 1, os.EPIPE, os.EPIPE},
-	{1, 2, os.EPIPE, os.EPIPE},
-	{1, 1, os.EPIPE, os.EPIPE},
+	{0, 1, io.ErrClosedPipe, io.ErrClosedPipe},
+	{1, 2, io.ErrClosedPipe, io.ErrClosedPipe},
+	{1, 1, io.ErrClosedPipe, io.ErrClosedPipe},
 }
 
 func TestWriteErrors(t *testing.T) {
@@ -559,7 +558,7 @@ func TestPeek(t *testing.T) {
 	if s, err := buf.Peek(0); string(s) != "" || err != nil {
 		t.Fatalf("want %q got %q, err=%v", "", string(s), err)
 	}
-	if _, err := buf.Peek(1); err != os.EOF {
+	if _, err := buf.Peek(1); err != io.EOF {
 		t.Fatalf("want EOF got %v", err)
 	}
 }
@@ -583,7 +582,7 @@ type testReader struct {
 	stride int
 }
 
-func (t *testReader) Read(buf []byte) (n int, err os.Error) {
+func (t *testReader) Read(buf []byte) (n int, err error) {
 	n = t.stride
 	if n > len(t.data) {
 		n = len(t.data)
@@ -594,7 +593,7 @@ func (t *testReader) Read(buf []byte) (n int, err os.Error) {
 	copy(buf, t.data)
 	t.data = t.data[n:]
 	if len(t.data) == 0 {
-		err = os.EOF
+		err = io.EOF
 	}
 	return
 }
@@ -614,7 +613,7 @@ func testReadLine(t *testing.T, input []byte) {
 				t.Errorf("ReadLine returned prefix")
 			}
 			if err != nil {
-				if err != os.EOF {
+				if err != io.EOF {
 					t.Fatalf("Got unknown error: %s", err)
 				}
 				break
@@ -679,7 +678,7 @@ func TestReadAfterLines(t *testing.T) {
 func TestReadEmptyBuffer(t *testing.T) {
 	l, _ := NewReaderSize(bytes.NewBuffer(nil), 10)
 	line, isPrefix, err := l.ReadLine()
-	if err != os.EOF {
+	if err != io.EOF {
 		t.Errorf("expected EOF from ReadLine, got '%s' %t %s", line, isPrefix, err)
 	}
 }
@@ -693,15 +692,26 @@ func TestLinesAfterRead(t *testing.T) {
 	}
 
 	line, isPrefix, err := l.ReadLine()
-	if err != os.EOF {
+	if err != io.EOF {
 		t.Errorf("expected EOF from ReadLine, got '%s' %t %s", line, isPrefix, err)
+	}
+}
+
+func TestReadLineNonNilLineOrError(t *testing.T) {
+	r := NewReader(strings.NewReader("line 1\n"))
+	for i := 0; i < 2; i++ {
+		l, _, err := r.ReadLine()
+		if l != nil && err != nil {
+			t.Fatalf("on line %d/2; ReadLine=%#v, %v; want non-nil line or Error, but not both",
+				i+1, l, err)
+		}
 	}
 }
 
 type readLineResult struct {
 	line     []byte
 	isPrefix bool
-	err      os.Error
+	err      error
 }
 
 var readLineNewlinesTests = []struct {
@@ -714,27 +724,27 @@ var readLineNewlinesTests = []struct {
 		{nil, false, nil},
 		{[]byte("b"), true, nil},
 		{nil, false, nil},
-		{nil, false, os.EOF},
+		{nil, false, io.EOF},
 	}},
 	{"hello\r\nworld\r\n", 6, []readLineResult{
 		{[]byte("hello"), true, nil},
 		{nil, false, nil},
 		{[]byte("world"), true, nil},
 		{nil, false, nil},
-		{nil, false, os.EOF},
+		{nil, false, io.EOF},
 	}},
 	{"hello\rworld\r", 6, []readLineResult{
 		{[]byte("hello"), true, nil},
 		{[]byte("\rworld"), true, nil},
 		{[]byte("\r"), false, nil},
-		{nil, false, os.EOF},
+		{nil, false, io.EOF},
 	}},
 	{"h\ri\r\n\r", 2, []readLineResult{
 		{[]byte("h"), true, nil},
 		{[]byte("\ri"), true, nil},
 		{nil, false, nil},
 		{[]byte("\r"), false, nil},
-		{nil, false, os.EOF},
+		{nil, false, io.EOF},
 	}},
 }
 

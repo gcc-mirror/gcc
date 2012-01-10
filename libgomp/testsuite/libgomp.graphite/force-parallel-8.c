@@ -1,9 +1,10 @@
 #define N 1500
 
+int x[N][N], y[N];
+
 int foo(void)
 {
   int i, j;
-  int x[N][N], y[N];
 
   for (i = 0; i < N; i++)
     {

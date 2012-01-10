@@ -26,9 +26,15 @@ RESET_FLOAT_FORMAT (DF, mips_double_format);
 FLOAT_MODE (TF, 16, mips_quad_format);
 
 /* Vector modes.  */
-VECTOR_MODES (INT, 8);        /*       V8QI V4HI V2SI */
-VECTOR_MODES (FLOAT, 8);      /*            V4HF V2SF */
-VECTOR_MODES (INT, 4);        /*            V4QI V2HI */
+VECTOR_MODES (INT, 4);        /* V4QI  V2HI      */
+VECTOR_MODES (INT, 8);        /* V8QI  V4HI V2SI */
+VECTOR_MODES (FLOAT, 8);      /*       V4HF V2SF */
+
+/* Double-sized vector modes for vec_concat.  */
+VECTOR_MODE (INT, QI, 16);    /* V16QI           */
+VECTOR_MODE (INT, HI, 8);     /*       V8HI      */
+VECTOR_MODE (INT, SI, 4);     /*            V4SI */
+VECTOR_MODE (FLOAT, SF, 4);   /*            V4SF */
 
 VECTOR_MODES (FRACT, 4);	/* V4QQ  V2HQ */
 VECTOR_MODES (UFRACT, 4);	/* V4UQQ V2UHQ */

@@ -116,10 +116,11 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	}
       else
 	fn (data);
-      if (task.children)
+      if (team != NULL)
 	{
 	  gomp_mutex_lock (&team->task_lock);
-	  gomp_clear_parent (task.children);
+	  if (task.children != NULL)
+	    gomp_clear_parent (task.children);
 	  gomp_mutex_unlock (&team->task_lock);
 	}
       gomp_end_task ();
@@ -273,6 +274,7 @@ gomp_barrier_handle_tasks (gomp_barrier_state_t state)
 	      gomp_team_barrier_done (&team->barrier, state);
 	      gomp_mutex_unlock (&team->task_lock);
 	      gomp_team_barrier_wake (&team->barrier, 0);
+	      gomp_mutex_lock (&team->task_lock);
 	    }
 	}
     }
@@ -289,8 +291,9 @@ GOMP_taskwait (void)
   struct gomp_task *child_task = NULL;
   struct gomp_task *to_free = NULL;
 
-  if (task == NULL || task->children == NULL)
+  if (task == NULL || team == NULL)
     return;
+
   gomp_mutex_lock (&team->task_lock);
   while (1)
     {

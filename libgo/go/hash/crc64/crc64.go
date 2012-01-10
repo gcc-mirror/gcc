@@ -7,10 +7,7 @@
 // information.
 package crc64
 
-import (
-	"hash"
-	"os"
-)
+import "hash"
 
 // The size of a CRC-64 checksum in bytes.
 const Size = 8
@@ -71,25 +68,24 @@ func Update(crc uint64, tab *Table, p []byte) uint64 {
 	return update(crc, tab, p)
 }
 
-func (d *digest) Write(p []byte) (n int, err os.Error) {
+func (d *digest) Write(p []byte) (n int, err error) {
 	d.crc = update(d.crc, d.tab, p)
 	return len(p), nil
 }
 
 func (d *digest) Sum64() uint64 { return d.crc }
 
-func (d *digest) Sum() []byte {
-	p := make([]byte, 8)
+func (d *digest) Sum(in []byte) []byte {
 	s := d.Sum64()
-	p[0] = byte(s >> 56)
-	p[1] = byte(s >> 48)
-	p[2] = byte(s >> 40)
-	p[3] = byte(s >> 32)
-	p[4] = byte(s >> 24)
-	p[5] = byte(s >> 16)
-	p[6] = byte(s >> 8)
-	p[7] = byte(s)
-	return p
+	in = append(in, byte(s>>56))
+	in = append(in, byte(s>>48))
+	in = append(in, byte(s>>40))
+	in = append(in, byte(s>>32))
+	in = append(in, byte(s>>24))
+	in = append(in, byte(s>>16))
+	in = append(in, byte(s>>8))
+	in = append(in, byte(s))
+	return in
 }
 
 // Checksum returns the CRC-64 checksum of data

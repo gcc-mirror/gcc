@@ -243,9 +243,7 @@ package System.OS_Interface is
    end record;
    pragma Convention (C, timespec);
 
-   type clockid_t is private;
-
-   CLOCK_REALTIME : constant clockid_t;   --  System wide realtime clock
+   type clockid_t is new int;
 
    function To_Duration (TS : timespec) return Duration;
    pragma Inline (To_Duration);
@@ -510,9 +508,6 @@ private
    type pid_t is new int;
 
    ERROR_PID : constant pid_t := -1;
-
-   type clockid_t is new int;
-   CLOCK_REALTIME : constant clockid_t := 0;
 
    type sigset_t is new System.VxWorks.Ext.sigset_t;
 end System.OS_Interface;

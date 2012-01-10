@@ -2149,12 +2149,11 @@ bfin_vector_mode_supported_p (enum machine_mode mode)
   return mode == V2HImode;
 }
 
-/* Return the cost of moving data from a register in class CLASS1 to
-   one in class CLASS2.  A cost of 2 is the default.  */
+/* Worker function for TARGET_REGISTER_MOVE_COST.  */
 
-int
+static int
 bfin_register_move_cost (enum machine_mode mode,
-			 enum reg_class class1, enum reg_class class2)
+			 reg_class_t class1, reg_class_t class2)
 {
   /* These need secondary reloads, so they're more expensive.  */
   if ((class1 == CCREGS && !reg_class_subset_p (class2, DREGS))
@@ -2177,18 +2176,16 @@ bfin_register_move_cost (enum machine_mode mode,
   return 2;
 }
 
-/* Return the cost of moving data of mode M between a
-   register and memory.  A value of 2 is the default; this cost is
-   relative to those in `REGISTER_MOVE_COST'.
+/* Worker function for TARGET_MEMORY_MOVE_COST.
 
    ??? In theory L1 memory has single-cycle latency.  We should add a switch
    that tells the compiler whether we expect to use only L1 memory for the
    program; it'll make the costs more accurate.  */
 
-int
+static int
 bfin_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
-		       enum reg_class rclass,
-		       int in ATTRIBUTE_UNUSED)
+		       reg_class_t rclass,
+		       bool in ATTRIBUTE_UNUSED)
 {
   /* Make memory accesses slightly more expensive than any register-register
      move.  Also, penalize non-DP registers, since they need secondary
@@ -5702,6 +5699,12 @@ bfin_conditional_register_usage (void)
 
 #undef  TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST bfin_address_cost
+
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST bfin_register_move_cost
+
+#undef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST bfin_memory_move_cost
 
 #undef  TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER bfin_assemble_integer

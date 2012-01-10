@@ -189,18 +189,20 @@ package Ada.Containers.Vectors is
    for Reference_Type'Read use Read;
 
    function Constant_Reference
-     (Container : Vector; Position : Cursor)    --  SHOULD BE ALIASED
-   return Constant_Reference_Type;
+     (Container : aliased Vector;
+      Position  : Cursor) return Constant_Reference_Type;
+
+   function Reference
+     (Container : aliased in out Vector;
+      Position  : Cursor) return Reference_Type;
 
    function Constant_Reference
-     (Container : Vector; Position : Index_Type)
-   return Constant_Reference_Type;
+     (Container : aliased Vector;
+      Index     : Index_Type) return Constant_Reference_Type;
 
-   function Reference (Container : Vector; Position : Cursor)
-   return Reference_Type;
-
-   function Reference (Container : Vector; Position : Index_Type)
-   return Reference_Type;
+   function Reference
+     (Container : aliased in out Vector;
+      Index     : Index_Type) return Reference_Type;
 
    procedure Assign (Target : in out Vector; Source : Vector);
 
@@ -410,7 +412,7 @@ private
       Lock     : Natural := 0;
    end record;
 
-   type Vector_Access is access constant Vector;
+   type Vector_Access is access all Vector;
    for Vector_Access'Storage_Size use 0;
 
    type Cursor is record

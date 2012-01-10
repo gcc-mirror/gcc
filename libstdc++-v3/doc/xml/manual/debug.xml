@@ -207,14 +207,24 @@
   redefining them will only affect inline functions and template
   instantiations which are compiled in user code. This allows annotation
   of templates such as <code>shared_ptr</code>, but not code which is
-  only instantiated in the library.
-  In order to annotate <code>basic_string</code> reference counting it
-  is necessary to disable extern templates (by defining 
-  <code>_GLIBCXX_EXTERN_TEMPLATE=-1</code>) or to rebuild the 
-  <code>.so</code> file.
+  only instantiated in the library.  Code which is only instantiated in
+  the library needs to be recompiled with the annotation macros defined.
+  That can be done by rebuilding the entire
+  <filename class="libraryfile">libstdc++.so</filename> file but a simpler
+  alternative exists for ELF platforms such as GNU/Linux, because ELF
+  symbol interposition allows symbols defined in the shared library to be
+  overridden by symbols with the same name that appear earlier in the
+  runtime search path. This means you only need to recompile the functions
+  that are affected by the annotation macros, which can be done by
+  recompiling individual files.
+  Annotating <code>std::string</code> and <code>std::wstring</code>
+  reference counting can be done by disabling extern templates (by defining 
+  <code>_GLIBCXX_EXTERN_TEMPLATE=-1</code>) or by rebuilding the 
+  <filename>src/string-inst.cc</filename> file.
   Annotating the remaining atomic operations (at the time of writing these
-  are in <code>ios_base::Init::~Init</code>, <code>locale::_Impl</code> and
-  <code>locale::facet</code>) requires rebuilding the <code>.so</code> file.
+  are in <code>ios_base::Init::~Init</code>, <code>locale::_Impl</code>,
+  <code>locale::facet</code> and <code>thread::_M_start_thread</code>)
+  requires rebuilding the relevant source files.
 </para>
 
 <para>

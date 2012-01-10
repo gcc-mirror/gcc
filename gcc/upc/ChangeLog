@@ -1,3 +1,13 @@
+2012-01-09  Gary Funck  <gary@intrepid.com>
+
+	* upc-genericize.c (upc_expand_put): Use is_gimple_reg instead of
+	is_gimple_non_addressable.
+
+2012-01-06  Nenad Vukicevic <nenad@intrepid.com>
+
+	* Make-lang.in: Add appropriate linker flags when linking
+	gupc drivers.
+
 2012-01-06  Nenad Vukicevic <nenad@intrepid.com>
 
 	* Make-lang.in: Add appropriate linker flags when linking
@@ -31,7 +41,7 @@
 
 	* config-lang.in: Remove checks for supported targets.
 	This is now done at a higher level.
- 
+
 2011-10-26  Gary Funck  <gary@intrepid.com>
 
 	Rename "GCC/UPC" to "GNU UPC", "UPC" to "GUPC", and
@@ -57,7 +67,7 @@
 	upc_genericize_walk().
 	(upc_genericize_array_ref): expand the newly constructed
 	indirect reference by calling upc_genericize_indirect_ref().
- 
+
 2011-10-10  Gary Funck  <gary@intrepid.com>
 
 	* upc-genericize.c (upc_simplify_shared_ref): When simplifying
@@ -222,7 +232,7 @@
 	  (upc_genericize_compound_expr): Add a WANT_VALUE argument.
 	  (upc_genericize_cond_expr): New.
 	  (upc_genericize_decl_expr): New.
-          (upc_genericize_stmt): New.
+	  (upc_genericize_stmt): New.
 	  (upc_copy_value_to_tmp_var, upc_expand_get): Adjust call
 	  to upc_create_tmp_var().
 	  (upc_genericize_expr): Change the handling
@@ -387,7 +397,7 @@
 	  The -nostartfiles switch is now handled by the linker spec.
 
 	* ChangeLog: Spell check.
-	
+
 2011-05-06  Gary Funck  <gary@intrepid.com>
 
 	Upgrade c-family source files to conform with modularity
@@ -415,7 +425,7 @@
 	* upc-act.c: Add #include of c-family/c-upc.h.
 	  (upc_blocksize, upc_elemsizeof, upc_localsizeof):
 	  Make external so that it can be called from c-parser.c.
-	  (upc_blocksizeof_expr, upc_blocksizeof_type, 
+	  (upc_blocksizeof_expr, upc_blocksizeof_type,
 	  upc_elemsizeof_expr, upc_elemsizeof_type,
 	  upc_localsizeof_expr, upc_localsizeof_type):
 	  Move from upc/upc-act.c to c-parser.c.
@@ -428,7 +438,7 @@
 	* upc-gimplify.c (upc_gimplify_lval, upc_gimplify_expr):
 	  refer to renamed build_upc_unshared_type function.
 	  upc-act.c (create_unshared_var): Ditto.
-         
+
 2011-05-03  Gary Funck  <gary@intrepid.com>
 
 	* upc-lang.c: Remove extraneous FIXME/TODO comments.

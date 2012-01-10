@@ -1,5 +1,5 @@
 // PR c++/48424
-// { dg-options -std=c++0x }
+// { dg-options "-std=c++0x -fabi-version=0" }
 
 template<typename... Args1>
 struct S
@@ -16,4 +16,4 @@ int main()
   s.f(1,2.0,false,'a');
 }
 
-// { dg-final { scan-assembler "_ZN1SIIidEE1fIIbcEEEvidDpOT_" } }
+// { dg-final { scan-assembler "_ZN1SIJidEE1fIJbcEEEvidDpOT_" } }

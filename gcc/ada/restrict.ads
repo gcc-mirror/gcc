@@ -71,10 +71,6 @@ package Restrict is
    --  set if Restriction_Warnings is set, so this does not look like a
    --  restriction to the binder.
 
-   type Save_Cunit_Boolean_Restrictions is private;
-   --  Type used for saving and restoring compilation unit restrictions.
-   --  See Cunit_Boolean_Restrictions_[Save|Restore] subprograms.
-
    --  The following declarations establish a mapping between restriction
    --  identifiers, and the names of corresponding restriction library units.
 
@@ -279,6 +275,13 @@ package Restrict is
    --  Same as Check_SPARK_Restriction except there is a continuation message
    --  Msg2 following the initial message Msg1.
 
+   procedure Check_No_Implicit_Aliasing (Obj : Node_Id);
+   --  Obj is a node for which Is_Aliased_View is True, which is being used in
+   --  a context (e.g. 'Access) where no implicit aliasing is allowed if the
+   --  restriction No_Implicit_Aliasing is set. This procedure checks for the
+   --  case where the restriction is active and Obj does not meet the required
+   --  rules for avoiding implicit aliases, and issues a restriction message.
+
    procedure Check_Implicit_Dynamic_Code_Allowed (N : Node_Id);
    --  Tests to see if dynamic code generation (dynamically generated
    --  trampolines, in particular) is allowed by the current restrictions
@@ -304,22 +307,6 @@ package Restrict is
    --  and if so, if N Comes_From_Source, and the root type of E is one of
    --  [Wide_]Wide_Character or [Wide_]Wide_String, then the restriction
    --  violation is recorded, and an appropriate message given.
-
-   function Cunit_Boolean_Restrictions_Save
-     return Save_Cunit_Boolean_Restrictions;
-   --  This function saves the compilation unit restriction settings, and
-   --  resets them to False. This is used e.g. when compiling a with'ed
-   --  unit to avoid incorrectly propagating restrictions. Note that it
-   --  would not be wrong to also save and reset the partition restrictions,
-   --  since the binder would catch inconsistencies, but actually it is a
-   --  good thing to acquire restrictions from with'ed units if they are
-   --  required to be partition wide, because it allows the restriction
-   --  violation message to be given at compile time instead of link time.
-
-   procedure Cunit_Boolean_Restrictions_Restore
-     (R : Save_Cunit_Boolean_Restrictions);
-   --  This is the corresponding restore procedure to restore restrictions
-   --  previously saved by Cunit_Boolean_Restrictions_Save.
 
    function Get_Restriction_Id
      (N : Name_Id) return Restriction_Id;
@@ -427,6 +414,71 @@ package Restrict is
    pragma Inline (Tasking_Allowed);
    --  Tests if tasking operations are allowed by the current restrictions
    --  settings. For tasking to be allowed Max_Tasks must be non-zero.
+
+   ----------------------------------------------
+   -- Handling of Boolean Compilation Switches --
+   ----------------------------------------------
+
+   --  The following declarations are used for proper saving and restoring of
+   --  restrictions for separate compilation units. There are two cases:
+
+   --    For partition-wide restrictions, we just let the restrictions pragmas
+   --    pile up, and we never reset them. We might as well detect what we can
+   --    at compile time. If e.g. a with'ed unit has a restriction for one of
+   --    the partition-wide restrictions, then the binder will enforce it on
+   --    all units in the partition, including the unit with the WITH. Although
+   --    it would not be wrong to leave this till bind time, we might as well
+   --    flag it earlier at compile time.
+
+   --    For non-partition-wide restrictions, we have quite a different state
+   --    of affairs. Here it would be quite wrong to carry a restriction from
+   --    a with'ed unit to another with'ed unit, or from a package spec to the
+   --    package body. This means that we have to reset these non-partition
+   --    wide restrictions at the start of each separate compilation unit. For
+   --    units in the extended main program, we need to reset them all to the
+   --    values set by the configuration pragma file(s). For units not in the
+   --    extended main program, e.g. with'ed units, we might as well reset all
+   --    of these restrictions to off (False). The actual initial values will
+   --    be taken from the config files active when those units are compiled
+   --    as main units.
+
+   type Save_Cunit_Boolean_Restrictions is private;
+   --  Type used for saving and restoring compilation unit restrictions.
+
+   function Cunit_Boolean_Restrictions_Save
+     return Save_Cunit_Boolean_Restrictions;
+   --  This function saves the compilation unit restriction settings, leaving
+   --  then unchanged. This is used e.g. at the start of processing a context
+   --  clause, so that the main unit restrictions can be restored after all
+   --  the with'ed units have been processed.
+
+   procedure Cunit_Boolean_Restrictions_Restore
+     (R : Save_Cunit_Boolean_Restrictions);
+   --  This is the corresponding restore procedure to restore restrictions
+   --  previously saved by Cunit_Boolean_Restrictions_Save. However it does
+   --  not reset No_Elaboration_Code, this stays set if it was set before
+   --  the call, and also if it is set before the call, then the Config
+   --  setting is also updated to include this restriction. This is what
+   --  implements the special handling of No_Elaboration_Code.
+
+   procedure Save_Config_Cunit_Boolean_Restrictions;
+   --  This saves the current compilation unit restrictions in an internal
+   --  variable, and leaves them unchanged. This is called immediately after
+   --  processing the configuration file pragmas, to record the restrictions
+   --  set by these configuration file pragmas.
+
+   procedure Restore_Config_Cunit_Boolean_Restrictions;
+   --  This restores the value saved by the previous call to save config values
+   --  saved by Save_Config_Cunit_Boolean_Restrictions. It is called at the
+   --  start of processing a new unit that is part of the main sources (e.g.
+   --  a package spec when the main unit is a package body).
+
+   procedure Reset_Cunit_Boolean_Restrictions;
+   --  Turns off all non-partition-wide boolean restrictions
+
+   procedure Add_To_Config_Boolean_Restrictions (R : Restriction_Id);
+   --  Add specified restriction to stored configuration boolean restrictions.
+   --  This is used for handling the special case of No_Elaboration_Code.
 
 private
    type Save_Cunit_Boolean_Restrictions is

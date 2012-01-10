@@ -895,7 +895,12 @@ emit_inc_dec_insn_before (rtx mem ATTRIBUTE_UNUSED,
   /* We can reuse all operands without copying, because we are about
      to delete the insn that contained it.  */
   if (srcoff)
-    new_insn = gen_add3_insn (dest, src, srcoff);
+    {
+      start_sequence ();
+      emit_insn (gen_add3_insn (dest, src, srcoff));
+      new_insn = get_insns ();
+      end_sequence ();
+    }
   else
     new_insn = gen_move_insn (dest, src);
   info.first = new_insn;
@@ -1945,7 +1950,7 @@ get_stored_val (store_info_t store_info, enum machine_mode read_mode,
 	      c |= (c << shift);
 	      shift <<= 1;
 	    }
-	  read_reg = GEN_INT (trunc_int_for_mode (c, store_mode));
+	  read_reg = gen_int_mode (c, store_mode);
 	  read_reg = extract_low_bits (read_mode, store_mode, read_reg);
 	}
     }
@@ -2454,7 +2459,7 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
 	{
 	  if (!tmp || !CONST_INT_P (tmp))
 	    return false;
-	  tmp = GEN_INT (trunc_int_for_mode (INTVAL (tmp), mode));
+	  tmp = gen_int_mode (INTVAL (tmp), mode);
 	}
       if (tmp)
 	args[idx] = tmp;

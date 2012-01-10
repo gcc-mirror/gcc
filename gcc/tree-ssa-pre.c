@@ -4161,27 +4161,40 @@ eliminate (void)
     {
       for (gsi = gsi_start_bb (b); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
+	  tree lhs = NULL_TREE;
+	  tree rhs = NULL_TREE;
+
 	  stmt = gsi_stmt (gsi);
+
+	  if (gimple_has_lhs (stmt))
+	    lhs = gimple_get_lhs (stmt);
+
+	  if (gimple_assign_single_p (stmt))
+	    rhs = gimple_assign_rhs1 (stmt);
 
 	  /* Lookup the RHS of the expression, see if we have an
 	     available computation for it.  If so, replace the RHS with
-	     the available computation.  */
+	     the available computation.
+
+	     See PR43491.
+	     We don't replace global register variable when it is a the RHS of
+	     a single assign. We do replace local register variable since gcc
+	     does not guarantee local variable will be allocated in register.  */
 	  if (gimple_has_lhs (stmt)
-	      && TREE_CODE (gimple_get_lhs (stmt)) == SSA_NAME
+	      && TREE_CODE (lhs) == SSA_NAME
 	      && !gimple_assign_ssa_name_copy_p (stmt)
 	      && (!gimple_assign_single_p (stmt)
-		  || !is_gimple_min_invariant (gimple_assign_rhs1 (stmt)))
+		  || (!is_gimple_min_invariant (rhs)
+                      && (gimple_assign_rhs_code (stmt) != VAR_DECL
+                          || !is_global_var (rhs)
+                          || !DECL_HARD_REGISTER (rhs))))
 	      && !gimple_has_volatile_ops  (stmt)
-	      && !has_zero_uses (gimple_get_lhs (stmt)))
+	      && !has_zero_uses (lhs))
 	    {
-	      tree lhs = gimple_get_lhs (stmt);
-	      tree rhs = NULL_TREE;
 	      tree sprime = NULL;
 	      pre_expr lhsexpr = get_or_alloc_expr_for_name (lhs);
 	      pre_expr sprimeexpr;
-
-	      if (gimple_assign_single_p (stmt))
-		rhs = gimple_assign_rhs1 (stmt);
+	      gimple orig_stmt = stmt;
 
 	      sprimeexpr = bitmap_find_leader (AVAIL_OUT (b),
 					       get_expr_value_id (lhsexpr),
@@ -4219,6 +4232,16 @@ eliminate (void)
 		  propagate_tree_value_into_stmt (&gsi, sprime);
 		  stmt = gsi_stmt (gsi);
 		  update_stmt (stmt);
+
+		  /* If we removed EH side-effects from the statement, clean
+		     its EH information.  */
+		  if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt))
+		    {
+		      bitmap_set_bit (need_eh_cleanup,
+				      gimple_bb (stmt)->index);
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			fprintf (dump_file, "  Removed EH side-effects.\n");
+		    }
 		  continue;
 		}
 
@@ -4274,7 +4297,7 @@ eliminate (void)
 
 		  /* If we removed EH side-effects from the statement, clean
 		     its EH information.  */
-		  if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
+		  if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt))
 		    {
 		      bitmap_set_bit (need_eh_cleanup,
 				      gimple_bb (stmt)->index);
@@ -4298,10 +4321,9 @@ eliminate (void)
 	     dead.  */
 	  else if (gimple_assign_single_p (stmt)
 		   && !is_gimple_reg (gimple_assign_lhs (stmt))
-		   && (TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
-		       || is_gimple_min_invariant (gimple_assign_rhs1 (stmt))))
+		   && (TREE_CODE (rhs) == SSA_NAME
+		       || is_gimple_min_invariant (rhs)))
 	    {
-	      tree rhs = gimple_assign_rhs1 (stmt);
 	      tree val;
 	      val = vn_reference_lookup (gimple_assign_lhs (stmt),
 					 gimple_vuse (stmt), VN_WALK, NULL);

@@ -10,9 +10,9 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"io/ioutil"
 	"net"
-	"os"
 	"strings"
 )
 
@@ -41,7 +41,7 @@ type Listener struct {
 
 // Accept waits for and returns the next incoming TLS connection.
 // The returned connection c is a *tls.Conn.
-func (l *Listener) Accept() (c net.Conn, err os.Error) {
+func (l *Listener) Accept() (c net.Conn, err error) {
 	c, err = l.listener.Accept()
 	if err != nil {
 		return
@@ -51,7 +51,7 @@ func (l *Listener) Accept() (c net.Conn, err os.Error) {
 }
 
 // Close closes the listener.
-func (l *Listener) Close() os.Error { return l.listener.Close() }
+func (l *Listener) Close() error { return l.listener.Close() }
 
 // Addr returns the listener's network address.
 func (l *Listener) Addr() net.Addr { return l.listener.Addr() }
@@ -71,9 +71,9 @@ func NewListener(listener net.Listener, config *Config) (l *Listener) {
 // given network address using net.Listen.
 // The configuration config must be non-nil and must have
 // at least one certificate.
-func Listen(network, laddr string, config *Config) (*Listener, os.Error) {
+func Listen(network, laddr string, config *Config) (*Listener, error) {
 	if config == nil || len(config.Certificates) == 0 {
-		return nil, os.NewError("tls.Listen: no certificates in configuration")
+		return nil, errors.New("tls.Listen: no certificates in configuration")
 	}
 	l, err := net.Listen(network, laddr)
 	if err != nil {
@@ -88,7 +88,7 @@ func Listen(network, laddr string, config *Config) (*Listener, os.Error) {
 // Dial interprets a nil configuration as equivalent to
 // the zero configuration; see the documentation of Config
 // for the defaults.
-func Dial(network, addr string, config *Config) (*Conn, os.Error) {
+func Dial(network, addr string, config *Config) (*Conn, error) {
 	raddr := addr
 	c, err := net.Dial(network, raddr)
 	if err != nil {
@@ -120,7 +120,7 @@ func Dial(network, addr string, config *Config) (*Conn, os.Error) {
 
 // LoadX509KeyPair reads and parses a public/private key pair from a pair of
 // files. The files must contain PEM encoded data.
-func LoadX509KeyPair(certFile string, keyFile string) (cert Certificate, err os.Error) {
+func LoadX509KeyPair(certFile string, keyFile string) (cert Certificate, err error) {
 	certPEMBlock, err := ioutil.ReadFile(certFile)
 	if err != nil {
 		return
@@ -134,7 +134,7 @@ func LoadX509KeyPair(certFile string, keyFile string) (cert Certificate, err os.
 
 // X509KeyPair parses a public/private key pair from a pair of
 // PEM encoded data.
-func X509KeyPair(certPEMBlock, keyPEMBlock []byte) (cert Certificate, err os.Error) {
+func X509KeyPair(certPEMBlock, keyPEMBlock []byte) (cert Certificate, err error) {
 	var certDERBlock *pem.Block
 	for {
 		certDERBlock, certPEMBlock = pem.Decode(certPEMBlock)
@@ -147,20 +147,31 @@ func X509KeyPair(certPEMBlock, keyPEMBlock []byte) (cert Certificate, err os.Err
 	}
 
 	if len(cert.Certificate) == 0 {
-		err = os.NewError("crypto/tls: failed to parse certificate PEM data")
+		err = errors.New("crypto/tls: failed to parse certificate PEM data")
 		return
 	}
 
 	keyDERBlock, _ := pem.Decode(keyPEMBlock)
 	if keyDERBlock == nil {
-		err = os.NewError("crypto/tls: failed to parse key PEM data")
+		err = errors.New("crypto/tls: failed to parse key PEM data")
 		return
 	}
 
-	key, err := x509.ParsePKCS1PrivateKey(keyDERBlock.Bytes)
-	if err != nil {
-		err = os.NewError("crypto/tls: failed to parse key: " + err.String())
-		return
+	// OpenSSL 0.9.8 generates PKCS#1 private keys by default, while
+	// OpenSSL 1.0.0 generates PKCS#8 keys. We try both.
+	var key *rsa.PrivateKey
+	if key, err = x509.ParsePKCS1PrivateKey(keyDERBlock.Bytes); err != nil {
+		var privKey interface{}
+		if privKey, err = x509.ParsePKCS8PrivateKey(keyDERBlock.Bytes); err != nil {
+			err = errors.New("crypto/tls: failed to parse key: " + err.Error())
+			return
+		}
+
+		var ok bool
+		if key, ok = privKey.(*rsa.PrivateKey); !ok {
+			err = errors.New("crypto/tls: found non-RSA private key in PKCS#8 wrapping")
+			return
+		}
 	}
 
 	cert.PrivateKey = key
@@ -173,7 +184,7 @@ func X509KeyPair(certPEMBlock, keyPEMBlock []byte) (cert Certificate, err os.Err
 	}
 
 	if x509Cert.PublicKeyAlgorithm != x509.RSA || x509Cert.PublicKey.(*rsa.PublicKey).N.Cmp(key.PublicKey.N) != 0 {
-		err = os.NewError("crypto/tls: private key does not match public key")
+		err = errors.New("crypto/tls: private key does not match public key")
 		return
 	}
 

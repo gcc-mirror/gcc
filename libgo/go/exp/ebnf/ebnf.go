@@ -23,37 +23,37 @@
 package ebnf
 
 import (
+	"errors"
 	"fmt"
-	"os"
-	"scanner"
+	"text/scanner"
 	"unicode"
-	"utf8"
+	"unicode/utf8"
 )
 
 // ----------------------------------------------------------------------------
 // Error handling
 
-type errorList []os.Error
+type errorList []error
 
-func (list errorList) Error() os.Error {
+func (list errorList) Err() error {
 	if len(list) == 0 {
 		return nil
 	}
 	return list
 }
 
-func (list errorList) String() string {
+func (list errorList) Error() string {
 	switch len(list) {
 	case 0:
 		return "no errors"
 	case 1:
-		return list[0].String()
+		return list[0].Error()
 	}
 	return fmt.Sprintf("%s (and %d more errors)", list[0], len(list)-1)
 }
 
-func newError(pos scanner.Position, msg string) os.Error {
-	return os.NewError(fmt.Sprintf("%s: %s", pos, msg))
+func newError(pos scanner.Position, msg string) error {
+	return errors.New(fmt.Sprintf("%s: %s", pos, msg))
 }
 
 // ----------------------------------------------------------------------------
@@ -163,7 +163,7 @@ func (v *verifier) push(prod *Production) {
 	}
 }
 
-func (v *verifier) verifyChar(x *Token) int {
+func (v *verifier) verifyChar(x *Token) rune {
 	s := x.String
 	if utf8.RuneCountInString(s) != 1 {
 		v.error(x.Pos(), "single char expected, found "+s)
@@ -262,8 +262,8 @@ func (v *verifier) verify(grammar Grammar, start string) {
 //
 // Position information is interpreted relative to the file set fset.
 //
-func Verify(grammar Grammar, start string) os.Error {
+func Verify(grammar Grammar, start string) error {
 	var v verifier
 	v.verify(grammar, start)
-	return v.errors.Error()
+	return v.errors.Err()
 }

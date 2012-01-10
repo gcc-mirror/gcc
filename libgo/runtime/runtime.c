@@ -14,14 +14,11 @@ uint32	runtime_panicking;
 static Lock paniclk;
 
 void
-runtime_initpanic(void)
-{
-	runtime_initlock(&paniclk);
-}
-
-void
 runtime_startpanic(void)
 {
+	M *m;
+
+	m = runtime_m();
 	if(m->dying) {
 		runtime_printf("panic during panic\n");
 		runtime_exit(3);
@@ -56,7 +53,6 @@ runtime_dopanic(int32 unused __attribute__ ((unused)))
 		// Wait forever without chewing up cpu.
 		// It will exit when it's done.
 		static Lock deadlock;
-		runtime_initlock(&deadlock);
 		runtime_lock(&deadlock);
 		runtime_lock(&deadlock);
 	}
@@ -74,11 +70,24 @@ runtime_throw(const char *s)
 	runtime_exit(1);	// even more not reached
 }
 
+void
+runtime_panicstring(const char *s)
+{
+	Eface err;
+	
+	if(runtime_m()->gcing) {
+		runtime_printf("panic: %s\n", s);
+		runtime_throw("panic during gc");
+	}
+	runtime_newErrorString(runtime_gostringnocopy((const byte*)s), &err);
+	runtime_panic(err);
+}
+
 static int32	argc;
 static byte**	argv;
 
 extern Slice os_Args asm ("libgo_os.os.Args");
-extern Slice os_Envs asm ("libgo_os.os.Envs");
+extern Slice syscall_Envs asm ("libgo_syscall.syscall.Envs");
 
 void
 runtime_args(int32 c, byte **v)
@@ -99,7 +108,7 @@ runtime_goargs(void)
 
 	s = runtime_malloc(argc*sizeof s[0]);
 	for(i=0; i<argc; i++)
-		s[i] = runtime_gostringnocopy((byte*)argv[i]);
+		s[i] = runtime_gostringnocopy((const byte*)argv[i]);
 	os_Args.__values = (void*)s;
 	os_Args.__count = argc;
 	os_Args.__capacity = argc;
@@ -117,9 +126,9 @@ runtime_goenvs(void)
 	s = runtime_malloc(n*sizeof s[0]);
 	for(i=0; i<n; i++)
 		s[i] = runtime_gostringnocopy(argv[argc+1+i]);
-	os_Envs.__values = (void*)s;
-	os_Envs.__count = n;
-	os_Envs.__capacity = n;
+	syscall_Envs.__values = (void*)s;
+	syscall_Envs.__count = n;
+	syscall_Envs.__capacity = n;
 }
 
 const byte*
@@ -132,8 +141,8 @@ runtime_getenv(const char *s)
 
 	bs = (const byte*)s;
 	len = runtime_findnull(bs);
-	envv = (String*)os_Envs.__values;
-	envc = os_Envs.__count;
+	envv = (String*)syscall_Envs.__values;
+	envc = syscall_Envs.__count;
 	for(i=0; i<envc; i++){
 		if(envv[i].__length <= len)
 			continue;
@@ -163,8 +172,10 @@ runtime_atoi(const byte *p)
 uint32
 runtime_fastrand1(void)
 {
+	M *m;
 	uint32 x;
 
+	m = runtime_m();
 	x = m->fastrand;
 	x += x;
 	if(x & 0x80000000L)

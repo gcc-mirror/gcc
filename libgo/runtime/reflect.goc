@@ -8,10 +8,6 @@ package reflect
 #include "runtime.h"
 #include "go-panic.h"
 
-typedef struct __go_type_descriptor Type;
-typedef struct __go_interface Iface;
-typedef struct __go_empty_interface Eface;
-
 func ifaceE2I(inter *Type, e Eface, ret *Iface) {
 	const Type *t;
 	Eface err;

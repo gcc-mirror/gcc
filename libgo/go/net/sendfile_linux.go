@@ -21,7 +21,7 @@ const maxSendfileSize int = 4 << 20
 // non-EOF error.
 //
 // if handled == false, sendFile performed no work.
-func sendFile(c *netFD, r io.Reader) (written int64, err os.Error, handled bool) {
+func sendFile(c *netFD, r io.Reader) (written int64, err error, handled bool) {
 	var remain int64 = 1 << 62 // by default, copy until EOF
 
 	lr, ok := r.(*io.LimitedReader)
@@ -62,18 +62,18 @@ func sendFile(c *netFD, r io.Reader) (written int64, err os.Error, handled bool)
 			written += int64(n)
 			remain -= int64(n)
 		}
-		if n == 0 && errno == 0 {
+		if n == 0 && errno == nil {
 			break
 		}
 		if errno == syscall.EAGAIN && c.wdeadline >= 0 {
 			pollserver.WaitWrite(c)
 			continue
 		}
-		if errno != 0 {
+		if errno != nil {
 			// This includes syscall.ENOSYS (no kernel
 			// support) and syscall.EINVAL (fd types which
 			// don't implement sendfile together)
-			err = &OpError{"sendfile", c.net, c.raddr, os.Errno(errno)}
+			err = &OpError{"sendfile", c.net, c.raddr, errno}
 			break
 		}
 	}

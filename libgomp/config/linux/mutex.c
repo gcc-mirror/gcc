@@ -34,25 +34,32 @@ long int gomp_futex_wait = FUTEX_WAIT | FUTEX_PRIVATE_FLAG;
 void
 gomp_mutex_lock_slow (gomp_mutex_t *mutex, int oldval)
 {
+  /* First loop spins a while.  */
   while (oldval == 1)
     {
       if (do_spin (mutex, 1))
 	{
-	  oldval = __sync_lock_test_and_set (mutex, 2);
+	  /* Spin timeout, nothing changed.  Set waiting flag.  */
+	  oldval = __atomic_exchange_n (mutex, -1, MEMMODEL_ACQUIRE);
 	  if (oldval == 0)
 	    return;
-	  futex_wait (mutex, 2);
+	  futex_wait (mutex, -1);
 	  break;
 	}
       else
 	{
-	  oldval = __sync_val_compare_and_swap (mutex, 0, 1);
-	  if (oldval == 0)
+	  /* Something changed.  If now unlocked, we're good to go.  */
+	  oldval = 0;
+	  if (__atomic_compare_exchange_n (mutex, &oldval, 1, false,
+					   MEMMODEL_ACQUIRE, MEMMODEL_RELAXED))
 	    return;
 	}
     }
-  while ((oldval = __sync_lock_test_and_set (mutex, 2)))
-    do_wait (mutex, 2);
+
+  /* Second loop waits until mutex is unlocked.  We always exit this
+     loop with wait flag set, so next unlock will awaken a thread.  */
+  while ((oldval = __atomic_exchange_n (mutex, -1, MEMMODEL_ACQUIRE)))
+    do_wait (mutex, -1);
 }
 
 void

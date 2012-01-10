@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,7 @@
 --    described in RM 2.2 (13). Any of the characters FF, LF, CR or VT or any
 --    wide character that is a Line or Paragraph Separator acts as an end of
 --    logical line in this sense, and it is essentially irrelevant whether one
---    or more appears in sequence (since if sequence of such characters is
+--    or more appears in sequence (since if a sequence of such characters is
 --    regarded as separate ends of line, then the intervening logical lines
 --    are null in any case).
 
@@ -450,6 +450,75 @@ package Sinput is
    Internal_Source_Ptr : constant Source_Buffer_Ptr :=
                            Internal_Source'Unrestricted_Access;
    --  Pointer to internal source buffer
+
+   -----------------------------------------
+   -- Handling of Source Line Terminators --
+   -----------------------------------------
+
+   --  In this section we discuss in detail the issue of terminators used to
+   --  terminate source lines. The RM says that one or more format effectors
+   --  (other than horizontal tab) end a source line, and defines the set of
+   --  such format effectors, but does not talk about exactly how they are
+   --  represented in the source program (since in general the RM is not in
+   --  the business of specifying source program formats).
+
+   --  The type Types.Line_Terminator is defined as a subtype of Character
+   --  that includes CR/LF/VT/FF. The most common line enders in practice
+   --  are CR (some MAC systems), LF (Unix systems), and CR/LF (DOS/Windows
+   --  systems). Any of these sequences is recognized as ending a physical
+   --  source line, and if multiple such terminators appear (e.g. LF/LF),
+   --  then we consider we have an extra blank line.
+
+   --  VT and FF are recognized as terminating source lines, but they are
+   --  considered to end a logical line instead of a physical line, so that
+   --  the line numbering ignores such terminators. The use of VT and FF is
+   --  mandated by the standard, and correctly handled in a conforming manner
+   --  by GNAT, but their use is not recommended.
+
+   --  In addition to the set of characters defined by the type in Types, in
+   --  wide character encoding, then the codes returning True for a call to
+   --  System.UTF_32.Is_UTF_32_Line_Terminator are also recognized as ending a
+   --  source line. This includes the standard codes defined above in addition
+   --  to NEL (NEXT LINE), LINE SEPARATOR and PARAGRAPH SEPARATOR. Again, as in
+   --  the case of VT and FF, the standard requires we recognize these as line
+   --  terminators, but we consider them to be logical line terminators. The
+   --  only physical line terminators recognized are the standard ones (CR,
+   --  LF, or CR/LF).
+
+   --  However, we do not recognize the NEL (16#85#) character as having the
+   --  significance of an end of line character when operating in normal 8-bit
+   --  Latin-n input mode for the compiler. Instead the rule in this mode is
+   --  that all upper half control codes (16#80# .. 16#9F#) are illegal if they
+   --  occur in program text, and are ignored if they appear in comments.
+
+   --  First, note that this behavior is fully conforming with the standard.
+   --  The standard has nothing whatever to say about source representation
+   --  and implementations are completely free to make there own rules. In
+   --  this case, in 8-bit mode, GNAT decides that the 16#0085# character is
+   --  not a representation of the NEL character, even though it looks like it.
+   --  If you have NEL's in your program, which you expect to be treated as
+   --  end of line characters, you must use a wide character encoding such as
+   --  UTF-8 for this code to be recognized.
+
+   --  Second, an explanation of why we take this slightly surprising choice.
+   --  We have never encountered anyone actually using the NEL character to
+   --  end lines. One user raised the issue as a result of some experiments,
+   --  but no one has ever submitted a program encoded this way, in any of
+   --  the possible encodings. It seems that even when using wide character
+   --  codes extensively, the normal approach is to use standard line enders
+   --  (LF or CR/LF). So the failure to recognize NEL in this mode seems to
+   --  have no practical downside.
+
+   --  Moreover, what we have seen in a significant number of programs from
+   --  multiple sources is the practice of writing all program text in lower
+   --  half (ASCII) form, but using UTF-8 encoded wide characters freely in
+   --  comments, where the comments are terminated by normal line endings
+   --  (LF or CR/LF). The comments do not contain NEL codes, but they can and
+   --  do contain other UTF-8 encoding sequences where one of the bytes is the
+   --  NEL code. Now such programs can of course be compiled in UTF-8 mode,
+   --  but in practice they also compile fine in standard 8-bit mode without
+   --  specifying a character encoding. Since this is common practice, it would
+   --  be a signficant upwards incompatibility to recognize NEL in 8-bit mode.
 
    -----------------
    -- Subprograms --

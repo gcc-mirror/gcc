@@ -41,6 +41,9 @@ with Uname;    use Uname;
 
 package body Restrict is
 
+   Config_Cunit_Boolean_Restrictions : Save_Cunit_Boolean_Restrictions;
+   --  Save compilation unit restrictions set by config pragma files
+
    Restricted_Profile_Result : Boolean := False;
    --  This switch memoizes the result of Restricted_Profile function calls for
    --  improved efficiency. Valid only if Restricted_Profile_Cached is True.
@@ -99,6 +102,17 @@ package body Restrict is
          return True;
       end if;
    end Abort_Allowed;
+
+   ----------------------------------------
+   -- Add_To_Config_Boolean_Restrictions --
+   ----------------------------------------
+
+   procedure Add_To_Config_Boolean_Restrictions (R : Restriction_Id) is
+   begin
+      Config_Cunit_Boolean_Restrictions (R) := True;
+   end Add_To_Config_Boolean_Restrictions;
+   --  Add specified restriction to stored configuration boolean restrictions.
+   --  This is used for handling the special case of No_Elaboration_Code.
 
    -------------------------
    -- Check_Compiler_Unit --
@@ -182,6 +196,78 @@ package body Restrict is
          end if;
       end if;
    end Check_SPARK_Restriction;
+
+   --------------------------------
+   -- Check_No_Implicit_Aliasing --
+   --------------------------------
+
+   procedure Check_No_Implicit_Aliasing (Obj : Node_Id) is
+      E : Entity_Id;
+
+   begin
+      --  If restriction not active, nothing to check
+
+      if not Restriction_Active (No_Implicit_Aliasing) then
+         return;
+      end if;
+
+      --  If we have an entity name, check entity
+
+      if Is_Entity_Name (Obj) then
+         E := Entity (Obj);
+
+         --  Restriction applies to entities that are objects
+
+         if Is_Object (E) then
+            if Is_Aliased (E) then
+               return;
+
+            elsif Present (Renamed_Object (E)) then
+               Check_No_Implicit_Aliasing (Renamed_Object (E));
+               return;
+            end if;
+
+         --  If we don't have an object, then it's OK
+
+         else
+            return;
+         end if;
+
+      --  For selected component, check selector
+
+      elsif Nkind (Obj) = N_Selected_Component then
+         Check_No_Implicit_Aliasing (Selector_Name (Obj));
+         return;
+
+      --  Indexed component is OK if aliased components
+
+      elsif Nkind (Obj) = N_Indexed_Component then
+         if Has_Aliased_Components (Etype (Prefix (Obj)))
+           or else
+             (Is_Access_Type (Etype (Prefix (Obj)))
+               and then Has_Aliased_Components
+                          (Designated_Type (Etype (Prefix (Obj)))))
+         then
+            return;
+         end if;
+
+      --  For type conversion, check converted expression
+
+      elsif Nkind_In (Obj, N_Unchecked_Type_Conversion, N_Type_Conversion) then
+         Check_No_Implicit_Aliasing (Expression (Obj));
+         return;
+
+      --  Explicit dereference is always OK
+
+      elsif Nkind (Obj) = N_Explicit_Dereference then
+         return;
+      end if;
+
+      --  If we fall through, then we have an aliased view that does not meet
+      --  the rules for being explicitly aliased, so issue restriction msg.
+
+      Check_Restriction (No_Implicit_Aliasing, Obj);
+   end Check_No_Implicit_Aliasing;
 
    -----------------------------------------
    -- Check_Implicit_Dynamic_Code_Allowed --
@@ -426,7 +512,9 @@ package body Restrict is
 
       Update_Restrictions (Restrictions);
 
-      --  If in main extended unit, update main restrictions as well
+      --  If in main extended unit, update main restrictions as well. Note
+      --  that as usual we check for Main_Unit explicitly to deal with the
+      --  case of configuration pragma files.
 
       if Current_Sem_Unit = Main_Unit
         or else In_Extended_Main_Source_Unit (N)
@@ -570,6 +658,16 @@ package body Restrict is
       for J in Cunit_Boolean_Restrictions loop
          Restrictions.Set (J) := R (J);
       end loop;
+
+      --  If No_Elaboration_Code set in configuration restrictions, and we
+      --  in the main extended source, then set it here now. This is part of
+      --  the special processing for No_Elaboration_Code.
+
+      if In_Extended_Main_Source_Unit (Cunit_Entity (Current_Sem_Unit))
+        and then Config_Cunit_Boolean_Restrictions (No_Elaboration_Code)
+      then
+         Restrictions.Set (No_Elaboration_Code) := True;
+      end if;
    end Cunit_Boolean_Restrictions_Restore;
 
    -------------------------------------
@@ -584,7 +682,6 @@ package body Restrict is
    begin
       for J in Cunit_Boolean_Restrictions loop
          R (J) := Restrictions.Set (J);
-         Restrictions.Set (J) := False;
       end loop;
 
       return R;
@@ -699,6 +796,26 @@ package body Restrict is
 
       return New_Name;
    end Process_Restriction_Synonyms;
+
+   --------------------------------------
+   -- Reset_Cunit_Boolean_Restrictions --
+   --------------------------------------
+
+   procedure Reset_Cunit_Boolean_Restrictions is
+   begin
+      for J in Cunit_Boolean_Restrictions loop
+         Restrictions.Set (J) := False;
+      end loop;
+   end Reset_Cunit_Boolean_Restrictions;
+
+   -----------------------------------------------
+   -- Restore_Config_Cunit_Boolean_Restrictions --
+   -----------------------------------------------
+
+   procedure Restore_Config_Cunit_Boolean_Restrictions is
+   begin
+      Cunit_Boolean_Restrictions_Restore (Config_Cunit_Boolean_Restrictions);
+   end Restore_Config_Cunit_Boolean_Restrictions;
 
    ------------------------
    -- Restricted_Profile --
@@ -932,6 +1049,15 @@ package body Restrict is
       end if;
    end Same_Unit;
 
+   --------------------------------------------
+   -- Save_Config_Cunit_Boolean_Restrictions --
+   --------------------------------------------
+
+   procedure Save_Config_Cunit_Boolean_Restrictions is
+   begin
+      Config_Cunit_Boolean_Restrictions := Cunit_Boolean_Restrictions_Save;
+   end Save_Config_Cunit_Boolean_Restrictions;
+
    ------------------------------
    -- Set_Hidden_Part_In_SPARK --
    ------------------------------
@@ -998,23 +1124,6 @@ package body Restrict is
       N : Node_Id)
    is
    begin
-      --  Restriction No_Elaboration_Code must be enforced on a unit by unit
-      --  basis. Hence, we avoid setting the restriction when processing an
-      --  unit which is not the main one being compiled (or its corresponding
-      --  spec). It can happen, for example, when processing an inlined body
-      --  (the package containing the inlined subprogram is analyzed,
-      --  including its pragma Restrictions).
-
-      --  This seems like a very nasty kludge??? This is not the only per unit
-      --  restriction why is this treated specially ???
-
-      if R = No_Elaboration_Code
-        and then Current_Sem_Unit /= Main_Unit
-        and then Cunit (Current_Sem_Unit) /= Library_Unit (Cunit (Main_Unit))
-      then
-         return;
-      end if;
-
       Restrictions.Set (R) := True;
 
       if Restricted_Profile_Cached and Restricted_Profile_Result then
