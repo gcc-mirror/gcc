@@ -1,3 +1,24 @@
+2012-01-10  Bob Duff  <duff@adacore.com>
+
+	* sem_intr.adb (Check_Shift): Use RM_Size instead of Esize, when
+	checking that the 'Size is correct. If the type is "mod 2**12",
+	for example, it's illegal, but Esize is the 'Object_Size, which
+	will be something like 16 or 32, so the error ('Size = 12) was
+	not detected.
+	* gnat_rm.texi: Improve documentation of shift
+	and rotate intrinsics.
+
+2012-01-10  Pascal Obry  <obry@adacore.com>
+
+	* prj.adb (For_Every_Project_Imported): Fix
+	implementation to make sure we return each project only once
+	for aggragte libraries. It is fine to return a project twice for
+	aggregate projects, this was the case as a Project_Id is different
+	in each project tree. The new implementation use a table based on
+	the project name to ensure proper detection of duplicate project
+	in aggregate library. A new context is then created to continue
+	retrurning duplicate project for aggregate libraries.
+
 2012-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (call_to_gnu): Create the temporary for the

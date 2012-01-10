@@ -10385,11 +10385,7 @@ There are no restrictions on pragma @code{Restrictions}.
 * Exception_Name::
 * File::
 * Line::
-* Rotate_Left::
-* Rotate_Right::
-* Shift_Left::
-* Shift_Right::
-* Shift_Right_Arithmetic::
+* Shifts and Rotates::
 * Source_Location::
 @end menu
 
@@ -10506,61 +10502,35 @@ application program should simply call the function
 @code{GNAT.Source_Info.Line} to obtain the number of the current
 source line.
 
-@node Rotate_Left
-@section Rotate_Left
+@node Shifts and Rotates
+@section Shifts and Rotates
+@cindex Shift_Left
+@cindex Shift_Right
+@cindex Shift_Right_Arithmetic
 @cindex Rotate_Left
+@cindex Rotate_Right
 @noindent
-In standard Ada, the @code{Rotate_Left} function is available only
+In standard Ada, the shift and rotate functions are available only
 for the predefined modular types in package @code{Interfaces}.  However, in
-GNAT it is possible to define a Rotate_Left function for a user
-defined modular type or any signed integer type as in this example:
+GNAT it is possible to define these functions for any integer
+type (signed or modular), as in this example:
 
 @smallexample @c ada
    function Shift_Left
-     (Value  : My_Modular_Type;
+     (Value  : T;
       Amount : Natural)
-      return   My_Modular_Type;
+      return   T;
 @end smallexample
 
 @noindent
-The requirements are that the profile be exactly as in the example
-above.  The only modifications allowed are in the formal parameter
-names, and in the type of @code{Value} and the return type, which
-must be the same, and must be either a signed integer type, or
-a modular integer type with a binary modulus, and the size must
-be 8.  16, 32 or 64 bits.
-
-@node Rotate_Right
-@section Rotate_Right
-@cindex Rotate_Right
-@noindent
-A @code{Rotate_Right} function can be defined for any user defined
-binary modular integer type, or signed integer type, as described
-above for @code{Rotate_Left}.
-
-@node Shift_Left
-@section Shift_Left
-@cindex Shift_Left
-@noindent
-A @code{Shift_Left} function can be defined for any user defined
-binary modular integer type, or signed integer type, as described
-above for @code{Rotate_Left}.
-
-@node Shift_Right
-@section Shift_Right
-@cindex Shift_Right
-@noindent
-A @code{Shift_Right} function can be defined for any user defined
-binary modular integer type, or signed integer type, as described
-above for @code{Rotate_Left}.
-
-@node Shift_Right_Arithmetic
-@section Shift_Right_Arithmetic
-@cindex Shift_Right_Arithmetic
-@noindent
-A @code{Shift_Right_Arithmetic} function can be defined for any user
-defined binary modular integer type, or signed integer type, as described
-above for @code{Rotate_Left}.
+The function name must be one of
+Shift_Left, Shift_Right, Shift_Right_Arithmetic, Rotate_Left, or
+Rotate_Right. T must be an integer type. T'Size must be
+8, 16, 32 or 64 bits; if T is modular, the modulus
+must be 2**8, 2**16, 2**32 or 2**64.
+The result type must be the same as the type of @code{Value}.
+The shift amount must be Natural.
+The formal parameter names can be anything.
 
 @node Source_Location
 @section Source_Location
