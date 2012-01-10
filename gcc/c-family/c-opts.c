@@ -449,10 +449,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       cpp_opts->warn_endif_labels = value;
       break;
 
-    case OPT_Werror:
-      global_dc->warning_as_error_requested = value;
-      break;
-
     case OPT_Wformat:
       set_Wformat (value);
       break;
