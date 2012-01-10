@@ -1,3 +1,8 @@
+2012-01-10  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/sync.md ("atomic_compare_and_swap<mode>_1"): Fix
+	operand number.
+
 2012-01-10  Jason Merrill  <jason@redhat.com>
 
 	* doc/invoke.texi (C++ Dialect Options): Update -fabi-version=6

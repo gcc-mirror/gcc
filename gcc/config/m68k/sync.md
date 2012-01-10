@@ -1,5 +1,5 @@
 ;; GCC machine description for m68k synchronization instructions.
-;; Copyright (C) 2011
+;; Copyright (C) 2011, 2012
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -41,7 +41,7 @@
   [(set (match_operand:I 1 "register_operand" "=d")
 	(unspec_volatile:I
 	  [(match_operand:I 2 "memory_operand" "+m")
-	   (match_operand:I 3 "register_operand" "0")
+	   (match_operand:I 3 "register_operand" "1")
 	   (match_operand:I 4 "register_operand" "d")]
 	  UNSPECV_CAS_1))
    (set (match_dup 2)
