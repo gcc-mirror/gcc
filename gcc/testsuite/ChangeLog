@@ -1,5 +1,10 @@
 2012-01-10  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/51652
+	* gfortran.dg/allocate_with_typespec_5.f90: New.
+
+2012-01-10  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/class_39.f03: Update dg-error string.
 
 2012-01-10  Richard Guenther  <rguenther@suse.de>
