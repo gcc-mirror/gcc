@@ -769,3 +769,7 @@
 
 (define_special_predicate "add_operator"
   (match_code "plus"))
+
+(define_predicate "mem_noofs_operand"
+  (and (match_code "mem")
+       (match_code "reg" "0")))

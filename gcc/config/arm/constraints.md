@@ -297,6 +297,11 @@
   (and (match_code "const_double")
        (match_test "TARGET_32BIT && TARGET_VFP && vfp3_const_double_for_fract_bits (op)")))
 
+(define_memory_constraint "Ua"
+ "@internal
+  An address valid for loading/storing register exclusive"
+ (match_operand 0 "mem_noofs_operand"))
+
 (define_memory_constraint "Ut"
  "@internal
   In ARM/Thumb-2 state an address valid for loading/storing opaque structure
