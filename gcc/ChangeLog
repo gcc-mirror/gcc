@@ -1,3 +1,10 @@
+2012-01-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50913
+	* graphite-scop-detection.c (stmt_has_simple_data_refs_p):
+	Require data-refs to be representable by Graphite with respect
+	to any loop nest.
+
 2012-01-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/constraints.md ("L"): Return true for 0xffffffff.

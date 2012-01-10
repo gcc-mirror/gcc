@@ -258,25 +258,33 @@ graphite_can_represent_expr (basic_block scop_entry, loop_p loop,
    Graphite.  */
 
 static bool
-stmt_has_simple_data_refs_p (loop_p outermost_loop, gimple stmt)
+stmt_has_simple_data_refs_p (loop_p outermost_loop ATTRIBUTE_UNUSED,
+			     gimple stmt)
 {
   data_reference_p dr;
   unsigned i;
   int j;
   bool res = true;
-  VEC (data_reference_p, heap) *drs = VEC_alloc (data_reference_p, heap, 5);
+  VEC (data_reference_p, heap) *drs = NULL;
+  loop_p outer;
 
-  graphite_find_data_references_in_stmt (outermost_loop,
-					 loop_containing_stmt (stmt),
-					 stmt, &drs);
+  for (outer = loop_containing_stmt (stmt); outer; outer = loop_outer (outer))
+    {
+      graphite_find_data_references_in_stmt (outer,
+					     loop_containing_stmt (stmt),
+					     stmt, &drs);
 
-  FOR_EACH_VEC_ELT (data_reference_p, drs, j, dr)
-    for (i = 0; i < DR_NUM_DIMENSIONS (dr); i++)
-      if (!graphite_can_represent_scev (DR_ACCESS_FN (dr, i)))
-	{
-	  res = false;
-	  goto done;
-	}
+      FOR_EACH_VEC_ELT (data_reference_p, drs, j, dr)
+	for (i = 0; i < DR_NUM_DIMENSIONS (dr); i++)
+	  if (!graphite_can_represent_scev (DR_ACCESS_FN (dr, i)))
+	    {
+	      res = false;
+	      goto done;
+	    }
+
+      free_data_refs (drs);
+      drs = NULL;
+    }
 
  done:
   free_data_refs (drs);
