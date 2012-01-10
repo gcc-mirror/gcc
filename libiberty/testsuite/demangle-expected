@@ -4058,6 +4058,9 @@ decltype ((::delete {parm#1}),(+{parm#1})) f<int>(int*)
 _Z1fIiEDTcmdafp_psfp_EPT_
 decltype ((delete[] {parm#1}),(+{parm#1})) f<int>(int*)
 --format=gnu-v3
+_ZN1AdlEPv
+A::operator delete(void*)
+--format=gnu-v3
 _Z2f1IiEDTppfp_ET_
 decltype ({parm#1}++) f1<int>(int)
 --format=gnu-v3

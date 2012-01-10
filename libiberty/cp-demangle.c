@@ -4357,14 +4357,17 @@ d_print_comp (struct d_print_info *dpi, int options,
 
     case DEMANGLE_COMPONENT_OPERATOR:
       {
-	char c;
+	const struct demangle_operator_info *op = dc->u.s_operator.op;
+	int len = op->len;
 
 	d_append_string (dpi, "operator");
-	c = dc->u.s_operator.op->name[0];
-	if (IS_LOWER (c))
+	/* Add a space before new/delete.  */
+	if (IS_LOWER (op->name[0]))
 	  d_append_char (dpi, ' ');
-	d_append_buffer (dpi, dc->u.s_operator.op->name,
-			 dc->u.s_operator.op->len);
+	/* Omit a trailing space.  */
+	if (op->name[len-1] == ' ')
+	  --len;
+	d_append_buffer (dpi, op->name, len);
 	return;
       }
 
