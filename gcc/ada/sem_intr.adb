@@ -455,12 +455,14 @@ package body Sem_Intr is
          return;
       end if;
 
-      Size := UI_To_Int (Esize (Typ1));
+      --  type'Size (not 'Object_Size!) must be one of the allowed values
 
-      if Size /= 8
-        and then Size /= 16
-        and then Size /= 32
-        and then Size /= 64
+      Size := UI_To_Int (RM_Size (Typ1));
+
+      if Size /= 8  and then
+         Size /= 16 and then
+         Size /= 32 and then
+         Size /= 64
       then
          Errint
            ("first argument for shift must have size 8, 16, 32 or 64",
@@ -469,8 +471,7 @@ package body Sem_Intr is
 
       elsif Non_Binary_Modulus (Typ1) then
          Errint
-           ("shifts not allowed for non-binary modular types",
-            Ptyp1, N);
+           ("shifts not allowed for non-binary modular types", Ptyp1, N);
 
       elsif Etype (Arg1) /= Etype (E) then
          Errint

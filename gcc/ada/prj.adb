@@ -34,6 +34,7 @@ with Snames;   use Snames;
 with Uintp;    use Uintp;
 
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
+with Ada.Containers.Ordered_Sets;
 with Ada.Unchecked_Deallocation;
 
 with GNAT.Case_Util;            use GNAT.Case_Util;
@@ -523,101 +524,128 @@ package body Prj is
       Include_Aggregated : Boolean := True;
       Imported_First     : Boolean := False)
    is
-
       use Project_Boolean_Htable;
-      Seen : Project_Boolean_Htable.Instance := Project_Boolean_Htable.Nil;
 
-      procedure Recursive_Check
+      procedure Recursive_Check_Context
         (Project          : Project_Id;
          Tree             : Project_Tree_Ref;
          In_Aggregate_Lib : Boolean);
-      --  Check if a project has already been seen. If not seen, mark it
-      --  as Seen, Call Action, and check all its imported and aggregated
-      --  projects.
+      --  Recursively handle the project tree creating a new context for
+      --  keeping track about already handled projects.
 
-      ---------------------
-      -- Recursive_Check --
-      ---------------------
+      -----------------------------
+      -- Recursive_Check_Context --
+      -----------------------------
 
-      procedure Recursive_Check
+      procedure Recursive_Check_Context
         (Project          : Project_Id;
          Tree             : Project_Tree_Ref;
          In_Aggregate_Lib : Boolean)
       is
-         List : Project_List;
-         T    : Project_Tree_Ref;
+         package Name_Id_Set is
+           new Ada.Containers.Ordered_Sets (Element_Type => Name_Id);
 
-      begin
-         if not Get (Seen, Project) then
+         Seen_Name : Name_Id_Set.Set;
+         --  This set is needed to ensure that we do not haandle the same
+         --  project twice in the context of aggregate libraries.
 
-            --  Even if a project is aggregated multiple times, we will only
-            --  return it once.
+         procedure Recursive_Check
+           (Project          : Project_Id;
+            Tree             : Project_Tree_Ref;
+            In_Aggregate_Lib : Boolean);
+         --  Check if project has already been seen. If not, mark it as Seen,
+         --  Call Action, and check all its imported and aggregated projects.
 
-            Set (Seen, Project, True);
+         ---------------------
+         -- Recursive_Check --
+         ---------------------
 
-            if not Imported_First then
-               Action (Project, Tree, In_Aggregate_Lib, With_State);
-            end if;
+         procedure Recursive_Check
+           (Project          : Project_Id;
+            Tree             : Project_Tree_Ref;
+            In_Aggregate_Lib : Boolean)
+         is
+            List : Project_List;
+            T    : Project_Tree_Ref;
 
-            --  Visit all extended projects
+         begin
+            if not Seen_Name.Contains (Project.Name) then
 
-            if Project.Extends /= No_Project then
-               Recursive_Check (Project.Extends, Tree, In_Aggregate_Lib);
-            end if;
+               --  Even if a project is aggregated multiple times in an
+               --  aggregated library, we will only return it once.
 
-            --  Visit all imported projects if needed. This is not needed
-            --  for an aggregate library as imported libraries are just
-            --  there for dependency support.
+               Seen_Name.Include (Project.Name);
 
-            if Project.Qualifier /= Aggregate_Library
-              or else not Include_Aggregated
-            then
+               if not Imported_First then
+                  Action (Project, Tree, In_Aggregate_Lib, With_State);
+               end if;
+
+               --  Visit all extended projects
+
+               if Project.Extends /= No_Project then
+                  Recursive_Check (Project.Extends, Tree, In_Aggregate_Lib);
+               end if;
+
+               --  Visit all imported projects
+
                List := Project.Imported_Projects;
                while List /= null loop
                   Recursive_Check (List.Project, Tree, In_Aggregate_Lib);
                   List := List.Next;
                end loop;
+
+               --  Visit all aggregated projects
+
+               if Include_Aggregated
+                 and then Project.Qualifier in Aggregate_Project
+               then
+                  declare
+                     Agg : Aggregated_Project_List;
+
+                  begin
+                     Agg := Project.Aggregated_Projects;
+                     while Agg /= null loop
+                        pragma Assert (Agg.Project /= No_Project);
+
+                        --  For aggregated libraries, the tree must be the one
+                        --  of the aggregate library.
+
+                        if Project.Qualifier = Aggregate_Library then
+                           T := Tree;
+                           Recursive_Check (Agg.Project, T, True);
+
+                        else
+                           T := Agg.Tree;
+
+                           --  Use a new context as we want to returns the same
+                           --  project in different project tree for aggregated
+                           --  projects.
+
+                           Recursive_Check_Context (Agg.Project, T, False);
+                        end if;
+
+                        Agg := Agg.Next;
+                     end loop;
+                  end;
+               end if;
+
+               if Imported_First then
+                  Action (Project, Tree, In_Aggregate_Lib, With_State);
+               end if;
             end if;
+         end Recursive_Check;
 
-            --  Visit all aggregated projects
+      --  Start of processing for Recursive_Check_Context
 
-            if Include_Aggregated
-              and then Project.Qualifier in Aggregate_Project
-            then
-               declare
-                  Agg : Aggregated_Project_List;
-               begin
-                  Agg := Project.Aggregated_Projects;
-                  while Agg /= null loop
-                     pragma Assert (Agg.Project /= No_Project);
-
-                     --  For aggregated libraries, the tree must be the one
-                     --  of the aggregate library.
-
-                     if Project.Qualifier = Aggregate_Library then
-                        T := Tree;
-                     else
-                        T := Agg.Tree;
-                     end if;
-
-                     Recursive_Check
-                       (Agg.Project, T, Project.Qualifier = Aggregate_Library);
-                     Agg := Agg.Next;
-                  end loop;
-               end;
-            end if;
-
-            if Imported_First then
-               Action (Project, Tree, In_Aggregate_Lib, With_State);
-            end if;
-         end if;
-      end Recursive_Check;
+      begin
+         Recursive_Check (Project, Tree, In_Aggregate_Lib);
+      end Recursive_Check_Context;
 
    --  Start of processing for For_Every_Project_Imported
 
    begin
-      Recursive_Check (Project => By, Tree => Tree, In_Aggregate_Lib => False);
-      Reset (Seen);
+      Recursive_Check_Context
+        (Project => By, Tree => Tree, In_Aggregate_Lib => False);
    end For_Every_Project_Imported;
 
    -----------------
