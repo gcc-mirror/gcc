@@ -1,3 +1,12 @@
+2012-01-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50913
+	* gcc.dg/graphite/interchange-16.c: New testcase.
+	* gcc.dg/graphite/scop-20.c: XFAIL.
+	* gfortran.dg/graphite/interchange-1.f: Likewise.
+	* gfortran.dg/graphite/block-1.f90: Likewise.
+	* gfortran.dg/graphite/block-2.f: Likewise.
+
 2012-01-10  Richard Henderson  <rth@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_perm,
