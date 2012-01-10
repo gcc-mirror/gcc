@@ -1,3 +1,9 @@
+2012-01-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51197
+	* runtime/compile_options.c (show_signal): List
+	more signals.
+
 2012-01-09  Harald Anlauf  <anlauf@gmx.de>
 	    Tobias Burnus  <burnus@net-b.de>
 
