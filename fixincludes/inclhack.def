@@ -1028,6 +1028,22 @@ fix = {
     test_text = '#define  vfscanf	__svfscanf';
 };
 
+/*
+ * 'g++ -std=c++11' defines __cplusplus to 201103L, which suggests
+ * that it conforms to ISO/IEC 14882:2011.  Until G++ fully conforms,
+ * it should not set __cplusplus to that value.  It currently does
+ * not support the [[noreturn]] procedure attribute.
+ * When it does, this hack should be removed.
+ * SEE:  gcc.gnu.org/bugzilla/show_bug.cgi?id=51776
+ */
+fix = {
+    hackname  = cdef_cplusplus;
+    files     = sys/cdefs.h;
+    select    = '\[\[noreturn\]\]';
+    c_fix     = format;
+    c_fix_arg = '__attribute__((__noreturn__))';
+    test_text = "#define _Noreturn	[[noreturn]]";
+};
 
 /*
  *  Fix various macros used to define ioctl numbers.
