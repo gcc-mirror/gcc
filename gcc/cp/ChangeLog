@@ -1,3 +1,9 @@
+2012-01-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51613
+	* pt.c (resolve_overloaded_unification): Compare types with
+	same_type_p, not decls_match.
+
 2012-01-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51614

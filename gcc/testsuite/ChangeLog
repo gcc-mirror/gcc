@@ -1,3 +1,8 @@
+2012-01-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51613
+	* g++.dg/template/explicit-args5.C: New.
+
 2012-01-11  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	* gcc.c-torture/execute/20120110-1.c: New testcase.
