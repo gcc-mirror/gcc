@@ -1,3 +1,7 @@
+2012-01-11  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* gcc.c-torture/execute/20120110-1.c: New testcase.
+
 2012-01-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51614

@@ -1,3 +1,7 @@
+2012-01-11  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* config/arm/arm.md (mov_notscc): Use MVN for false condition.
+
 2012-01-11  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.md (return): Define pattern.
