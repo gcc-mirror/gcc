@@ -1,3 +1,27 @@
+2012-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.h (build_function_decl_skip_args): Add boolean parameter.
+	(build_function_type_skip_args): Delete.
+	* tree.c (build_function_type_skip_args): Make static and add
+	SKIP_RETURN parameter.  Fix thinko in the handling of variants.
+	(build_function_decl_skip_args): Add SKIP_RETURN parameter and
+	pass it to build_function_type_skip_args.
+	* cgraph.h (cgraph_function_versioning): Add boolean parameter.
+	(tree_function_versioning): Likewise.
+	* cgraph.c (cgraph_create_virtual_clone): Adjust call to
+	build_function_decl_skip_args.
+	* cgraphunit.c (cgraph_function_versioning): Add SKIP_RETURN parameter
+	and pass it to build_function_decl_skip_args/tree_function_versioning.
+	(cgraph_materialize_clone): Adjust call to tree_function_versioning.
+	* ipa-inline-transform.c (save_inline_function_body): Likewise.
+	* trans-mem.c (ipa_tm_create_version): Likewise.
+	* tree-sra.c (modify_function): Ditto for cgraph_function_versioning.
+	* tree-inline.c (declare_return_variable): Remove always-true test.
+	(tree_function_versioning): Add SKIP_RETURN parameter.  If the function
+	returns non-void and SKIP_RETURN, create a void-typed RESULT_DECL.
+	* ipa-split.c (split_function): Skip the return value for the split
+	part if it doesn't return.
+
 2012-01-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/49642

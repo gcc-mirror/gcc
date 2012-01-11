@@ -4700,7 +4700,7 @@ modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
   current_function_decl = NULL_TREE;
 
   new_node = cgraph_function_versioning (node, redirect_callers, NULL, NULL,
-					 NULL, NULL, "isra");
+					 false, NULL, NULL, "isra");
   current_function_decl = new_node->decl;
   push_cfun (DECL_STRUCT_FUNCTION (new_node->decl));
 

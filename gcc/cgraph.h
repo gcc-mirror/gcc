@@ -580,10 +580,10 @@ struct cgraph_node * cgraph_copy_node_for_versioning (struct cgraph_node *,
 struct cgraph_node *cgraph_function_versioning (struct cgraph_node *,
 						VEC(cgraph_edge_p,heap)*,
 						VEC(ipa_replace_map_p,gc)*,
-						bitmap, bitmap, basic_block,
-						const char *);
-void tree_function_versioning (tree, tree, VEC (ipa_replace_map_p,gc)*, bool, bitmap,
-			       bitmap, basic_block);
+						bitmap, bool, bitmap,
+						basic_block, const char *);
+void tree_function_versioning (tree, tree, VEC (ipa_replace_map_p,gc)*,
+			       bool, bitmap, bool, bitmap, basic_block);
 void record_references_in_initializer (tree, bool);
 bool cgraph_process_new_functions (void);
 void cgraph_process_same_body_aliases (void);

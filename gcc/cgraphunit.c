@@ -2333,17 +2333,21 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
     TREE_MAP is a mapping of tree nodes we want to replace with
     new ones (according to results of prior analysis).
     OLD_VERSION_NODE is the node that is versioned.
-    It returns the new version's cgraph node.
+
     If non-NULL ARGS_TO_SKIP determine function parameters to remove
     from new version.
+    If SKIP_RETURN is true, the new version will return void.
     If non-NULL BLOCK_TO_COPY determine what basic blocks to copy.
-    If non_NULL NEW_ENTRY determine new entry BB of the clone.  */
+    If non_NULL NEW_ENTRY determine new entry BB of the clone.
+
+    Return the new version's cgraph node.  */
 
 struct cgraph_node *
 cgraph_function_versioning (struct cgraph_node *old_version_node,
 			    VEC(cgraph_edge_p,heap) *redirect_callers,
 			    VEC (ipa_replace_map_p,gc)* tree_map,
 			    bitmap args_to_skip,
+			    bool skip_return,
 			    bitmap bbs_to_copy,
 			    basic_block new_entry_block,
 			    const char *clone_name)
@@ -2357,12 +2361,12 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
 
   gcc_assert (old_version_node->local.can_change_signature || !args_to_skip);
 
-  /* Make a new FUNCTION_DECL tree node for the
-     new version. */
-  if (!args_to_skip)
+  /* Make a new FUNCTION_DECL tree node for the new version. */
+  if (!args_to_skip && !skip_return)
     new_decl = copy_node (old_decl);
   else
-    new_decl = build_function_decl_skip_args (old_decl, args_to_skip);
+    new_decl
+      = build_function_decl_skip_args (old_decl, args_to_skip, skip_return);
 
   /* Generate a new name for the new version. */
   DECL_NAME (new_decl) = clone_function_name (old_decl, clone_name);
@@ -2381,7 +2385,7 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
 
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
   tree_function_versioning (old_decl, new_decl, tree_map, false, args_to_skip,
-			    bbs_to_copy, new_entry_block);
+			    skip_return, bbs_to_copy, new_entry_block);
 
   /* Update the new version's properties.
      Make The new version visible only within this translation unit.  Make sure
@@ -2412,7 +2416,8 @@ cgraph_materialize_clone (struct cgraph_node *node)
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
   tree_function_versioning (node->clone_of->decl, node->decl,
   			    node->clone.tree_map, true,
-			    node->clone.args_to_skip, NULL, NULL);
+			    node->clone.args_to_skip, false,
+			    NULL, NULL);
   if (cgraph_dump_file)
     {
       dump_function_to_file (node->clone_of->decl, cgraph_dump_file, dump_flags);

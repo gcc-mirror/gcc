@@ -1191,6 +1191,7 @@ split_function (struct split_point *split_point)
   /* Now create the actual clone.  */
   rebuild_cgraph_edges ();
   node = cgraph_function_versioning (cur_node, NULL, NULL, args_to_skip,
+				     !split_part_return_p,
 				     split_point->split_bbs,
 				     split_point->entry_bb, "part");
   /* For usual cloning it is enough to clear builtin only when signature
