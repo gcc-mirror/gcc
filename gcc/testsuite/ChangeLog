@@ -1,3 +1,8 @@
+2012-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/51796
+	* gcc.dg/pr51796.c: New test.
+
 2012-01-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51818

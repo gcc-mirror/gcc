@@ -1,7 +1,7 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
+   2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3642,9 +3642,11 @@ mem_autoinc_base (rtx mem)
      (1) One or more auto-inc style memory references (aka pushes),
      (2) One or more addition/subtraction with the SP as destination,
      (3) A single move insn with the SP as destination,
-     (4) A call_pop insn.
+     (4) A call_pop insn,
+     (5) Noreturn call insns if !ACCUMULATE_OUTGOING_ARGS.
 
-   Insns in the sequence that do not modify the SP are ignored.
+   Insns in the sequence that do not modify the SP are ignored,
+   except for noreturn calls.
 
    The return value is the amount of adjustment that can be trivially
    verified, via immediate operand or auto-inc.  If the adjustment
@@ -3789,7 +3791,12 @@ fixup_args_size_notes (rtx prev, rtx last, int end_args_size)
 
       this_delta = find_args_size_adjust (insn);
       if (this_delta == 0)
-	continue;
+	{
+	  if (!CALL_P (insn)
+	      || ACCUMULATE_OUTGOING_ARGS
+	      || find_reg_note (insn, REG_NORETURN, NULL_RTX) == NULL_RTX)
+	    continue;
+	}
 
       gcc_assert (!saw_unknown);
       if (this_delta == HOST_WIDE_INT_MIN)

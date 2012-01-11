@@ -1,7 +1,7 @@
 /* Optimize by combining instructions for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011 Free Software Foundation, Inc.
+   2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -13281,8 +13281,28 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 	  if (!noop_move_p (i3))
 	    {
 	      int old_size, args_size = INTVAL (XEXP (note, 0));
+	      /* fixup_args_size_notes looks at REG_NORETURN note,
+		 so ensure the note is placed there first.  */
+	      if (CALL_P (i3))
+		{
+		  rtx *np;
+		  for (np = &next_note; *np; np = &XEXP (*np, 1))
+		    if (REG_NOTE_KIND (*np) == REG_NORETURN)
+		      {
+			rtx n = *np;
+			*np = XEXP (n, 1);
+			XEXP (n, 1) = REG_NOTES (i3);
+			REG_NOTES (i3) = n;
+			break;
+		      }
+		}
 	      old_size = fixup_args_size_notes (PREV_INSN (i3), i3, args_size);
-	      gcc_assert (old_size != args_size);
+	      /* emit_call_1 adds for !ACCUMULATE_OUTGOING_ARGS
+		 REG_ARGS_SIZE note to all noreturn calls, allow that here.  */
+	      gcc_assert (old_size != args_size
+			  || (CALL_P (i3)
+			      && !ACCUMULATE_OUTGOING_ARGS
+			      && find_reg_note (i3, REG_NORETURN, NULL_RTX)));
 	    }
 	  break;
 
