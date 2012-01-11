@@ -2,7 +2,7 @@
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 	    Andreas Tobler  <andreast@fgznet.ch>
 
-	PR bootstrap/57105
+	PR bootstrap/51705
 	PR preprocessor/51776
 	* inclhack.def (cdef_cplusplus): Add a replacement for [[noreturn]].
 	* fixincl.x: Regenerate.
