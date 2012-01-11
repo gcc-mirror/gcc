@@ -1,3 +1,15 @@
+2012-01-11  Bruce Korb <bkorb@gnu.org>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Andreas Tobler  <andreast@fgznet.ch>
+
+	PR bootstrap/57105
+	PR preprocessor/51776
+	* inclhack.def (cdef_cplusplus): Add a replacement for [[noreturn]].
+	* fixincl.x: Regenerate.
+	* tests/base/sys/cdefs.h: Update.
+
+	* genfixes: Remove the 'Ver.' from the version check.
+
 2011-12-20  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* configure: Regenerate.
