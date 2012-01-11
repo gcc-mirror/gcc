@@ -4311,7 +4311,7 @@ ipa_tm_create_version (struct cgraph_node *old_node)
 	  DECL_WEAK (new_decl) = 0;
 	}
 
-      tree_function_versioning (old_decl, new_decl, NULL, false, NULL,
+      tree_function_versioning (old_decl, new_decl, NULL, false, NULL, false,
 				NULL, NULL);
     }
 

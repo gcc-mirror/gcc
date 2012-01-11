@@ -2809,9 +2809,8 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
   else
     caller_type = TREE_TYPE (TREE_TYPE (callee));
 
-  /* We don't need to do anything for functions that don't return
-     anything.  */
-  if (!result || VOID_TYPE_P (callee_type))
+  /* We don't need to do anything for functions that don't return anything.  */
+  if (VOID_TYPE_P (callee_type))
     return NULL_TREE;
 
   /* If there was a return slot, then the return value is the
@@ -5040,6 +5039,7 @@ update_clone_info (copy_body_data * id)
 
    If non-NULL ARGS_TO_SKIP determine function parameters to remove
    from new version.
+   If SKIP_RETURN is true, the new version will return void.
    If non-NULL BLOCK_TO_COPY determine what basic blocks to copy.
    If non_NULL NEW_ENTRY determine new entry BB of the clone.
 */
@@ -5047,7 +5047,8 @@ void
 tree_function_versioning (tree old_decl, tree new_decl,
 			  VEC(ipa_replace_map_p,gc)* tree_map,
 			  bool update_clones, bitmap args_to_skip,
-			  bitmap blocks_to_copy, basic_block new_entry)
+			  bool skip_return, bitmap blocks_to_copy,
+			  basic_block new_entry)
 {
   struct cgraph_node *old_version_node;
   struct cgraph_node *new_version_node;
@@ -5200,7 +5201,18 @@ tree_function_versioning (tree old_decl, tree new_decl,
     /* Add local vars.  */
     add_local_variables (DECL_STRUCT_FUNCTION (old_decl), cfun, &id, false);
 
-  if (DECL_RESULT (old_decl) != NULL_TREE)
+  if (VOID_TYPE_P (TREE_TYPE (DECL_RESULT (old_decl))))
+    ;
+  else if (skip_return)
+    {
+      DECL_RESULT (new_decl)
+	= build_decl (DECL_SOURCE_LOCATION (DECL_RESULT (old_decl)),
+		      RESULT_DECL, NULL_TREE, void_type_node);
+      DECL_CONTEXT (DECL_RESULT (new_decl)) = new_decl;
+      cfun->returns_struct = 0;
+      cfun->returns_pcc_struct = 0;
+    }
+  else
     {
       tree old_name;
       DECL_RESULT (new_decl) = remap_decl (DECL_RESULT (old_decl), &id);

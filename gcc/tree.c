@@ -7567,10 +7567,12 @@ build_function_type (tree value_type, tree arg_types)
   return t;
 }
 
-/* Build variant of function type ORIG_TYPE skipping ARGS_TO_SKIP.  */
+/* Build variant of function type ORIG_TYPE skipping ARGS_TO_SKIP and the
+   return value if SKIP_RETURN is true.  */
 
-tree
-build_function_type_skip_args (tree orig_type, bitmap args_to_skip)
+static tree
+build_function_type_skip_args (tree orig_type, bitmap args_to_skip,
+			       bool skip_return)
 {
   tree new_type = NULL;
   tree args, new_args = NULL, t;
@@ -7579,7 +7581,7 @@ build_function_type_skip_args (tree orig_type, bitmap args_to_skip)
 
   for (args = TYPE_ARG_TYPES (orig_type); args && args != void_list_node;
        args = TREE_CHAIN (args), i++)
-    if (!bitmap_bit_p (args_to_skip, i))
+    if (!args_to_skip || !bitmap_bit_p (args_to_skip, i))
       new_args = tree_cons (NULL_TREE, TREE_VALUE (args), new_args);
 
   new_reversed = nreverse (new_args);
@@ -7597,6 +7599,7 @@ build_function_type_skip_args (tree orig_type, bitmap args_to_skip)
      When we are asked to remove it, we need to build new FUNCTION_TYPE
      instead.  */
   if (TREE_CODE (orig_type) != METHOD_TYPE
+      || !args_to_skip
       || !bitmap_bit_p (args_to_skip, 0))
     {
       new_type = build_distinct_type_copy (orig_type);
@@ -7610,11 +7613,15 @@ build_function_type_skip_args (tree orig_type, bitmap args_to_skip)
       TYPE_CONTEXT (new_type) = TYPE_CONTEXT (orig_type);
     }
 
+  if (skip_return)
+    TREE_TYPE (new_type) = void_type_node;
+
   /* This is a new type, not a copy of an old type.  Need to reassociate
      variants.  We can handle everything except the main variant lazily.  */
   t = TYPE_MAIN_VARIANT (orig_type);
-  if (orig_type != t)
+  if (t != orig_type)
     {
+      t = build_function_type_skip_args (t, args_to_skip, skip_return);
       TYPE_MAIN_VARIANT (new_type) = t;
       TYPE_NEXT_VARIANT (new_type) = TYPE_NEXT_VARIANT (t);
       TYPE_NEXT_VARIANT (t) = new_type;
@@ -7624,33 +7631,40 @@ build_function_type_skip_args (tree orig_type, bitmap args_to_skip)
       TYPE_MAIN_VARIANT (new_type) = new_type;
       TYPE_NEXT_VARIANT (new_type) = NULL;
     }
+
   return new_type;
 }
 
-/* Build variant of function type ORIG_TYPE skipping ARGS_TO_SKIP.
+/* Build variant of function decl ORIG_DECL skipping ARGS_TO_SKIP and the
+   return value if SKIP_RETURN is true.
 
    Arguments from DECL_ARGUMENTS list can't be removed now, since they are
    linked by TREE_CHAIN directly.  The caller is responsible for eliminating
    them when they are being duplicated (i.e. copy_arguments_for_versioning).  */
 
 tree
-build_function_decl_skip_args (tree orig_decl, bitmap args_to_skip)
+build_function_decl_skip_args (tree orig_decl, bitmap args_to_skip,
+			       bool skip_return)
 {
   tree new_decl = copy_node (orig_decl);
   tree new_type;
 
   new_type = TREE_TYPE (orig_decl);
-  if (prototype_p (new_type))
-    new_type = build_function_type_skip_args (new_type, args_to_skip);
+  if (prototype_p (new_type)
+      || (skip_return && !VOID_TYPE_P (TREE_TYPE (new_type))))
+    new_type
+      = build_function_type_skip_args (new_type, args_to_skip, skip_return);
   TREE_TYPE (new_decl) = new_type;
 
   /* For declarations setting DECL_VINDEX (i.e. methods)
      we expect first argument to be THIS pointer.   */
-  if (bitmap_bit_p (args_to_skip, 0))
+  if (args_to_skip && bitmap_bit_p (args_to_skip, 0))
     DECL_VINDEX (new_decl) = NULL_TREE;
 
   /* When signature changes, we need to clear builtin info.  */
-  if (DECL_BUILT_IN (new_decl) && !bitmap_empty_p (args_to_skip))
+  if (DECL_BUILT_IN (new_decl)
+      && args_to_skip
+      && !bitmap_empty_p (args_to_skip))
     {
       DECL_BUILT_IN_CLASS (new_decl) = NOT_BUILT_IN;
       DECL_FUNCTION_CODE (new_decl) = (enum built_in_function) 0;
