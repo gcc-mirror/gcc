@@ -615,7 +615,7 @@ find_substitution (tree node)
       /* NODE is a matched to a candidate if it's the same decl node or
 	 if it's the same type.  */
       if (decl == candidate
-	  || (TYPE_P (candidate) && type && TYPE_P (type)
+	  || (TYPE_P (candidate) && type && TYPE_P (node)
 	      && same_type_p (type, candidate))
 	  || NESTED_TEMPLATE_MATCH (node, candidate))
 	{
@@ -949,7 +949,7 @@ write_nested_name (const tree decl)
   else
     {
       /* No, just use <prefix>  */
-      write_prefix (CP_DECL_CONTEXT (decl));
+      write_prefix (decl_mangling_context (decl));
       write_unqualified_name (decl);
     }
   write_char ('E');
