@@ -1,3 +1,9 @@
+2012-01-11  Janne Blomqvist  <jb@gcc.gnu.org>
+            Mike Stump  <mikestump@comcast.net>
+	PR libfortran/51803
+	* runtime/main.c (store_exe_path): Handle getcwd failure and lack
+	of the function better.
+
 2012-01-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51197
