@@ -88,10 +88,12 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int int_type_size,
   // to the same Named_object.
   Named_object* byte_type = this->declare_type("byte", loc);
   byte_type->set_type_value(uint8_type);
+  uint8_type->integer_type()->set_is_byte();
 
   // "rune" is an alias for "int".
   Named_object* rune_type = this->declare_type("rune", loc);
   rune_type->set_type_value(int_type);
+  int_type->integer_type()->set_is_rune();
 
   this->add_named_type(Type::make_integer_type("uintptr", true,
 					       pointer_size,

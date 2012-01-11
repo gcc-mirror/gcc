@@ -1386,7 +1386,27 @@ class Integer_type : public Type
   bool
   is_identical(const Integer_type* t) const;
 
- protected:
+  // Whether this is the type "byte" or another name for "byte".
+  bool
+  is_byte() const
+  { return this->is_byte_; }
+
+  // Mark this as the "byte" type.
+  void
+  set_is_byte()
+  { this->is_byte_ = true; }
+
+  // Whether this is the type "rune" or another name for "rune".
+  bool
+  is_rune() const
+  { return this->is_rune_; }
+
+  // Mark this as the "rune" type.
+  void
+  set_is_rune()
+  { this->is_rune_ = true; }
+
+protected:
   bool
   do_compare_is_identity(Gogo*) const
   { return true; }
@@ -1410,8 +1430,8 @@ class Integer_type : public Type
   Integer_type(bool is_abstract, bool is_unsigned, int bits,
 	       int runtime_type_kind)
     : Type(TYPE_INTEGER),
-      is_abstract_(is_abstract), is_unsigned_(is_unsigned), bits_(bits),
-      runtime_type_kind_(runtime_type_kind)
+      is_abstract_(is_abstract), is_unsigned_(is_unsigned), is_byte_(false),
+      is_rune_(false), bits_(bits), runtime_type_kind_(runtime_type_kind)
   { }
 
   // Map names of integer types to the types themselves.
@@ -1422,6 +1442,10 @@ class Integer_type : public Type
   bool is_abstract_;
   // True if this is an unsigned type.
   bool is_unsigned_;
+  // True if this is the byte type.
+  bool is_byte_;
+  // True if this is the rune type.
+  bool is_rune_;
   // The number of bits.
   int bits_;
   // The runtime type code used in the type descriptor for this type.
