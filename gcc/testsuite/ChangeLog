@@ -1,3 +1,8 @@
+2012-01-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51818
+	* g++.dg/cpp0x/lambda/lambda-mangle3.C: New.
+
 2012-01-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/array19.ad[sb]: New test.

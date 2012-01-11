@@ -1,5 +1,10 @@
 2012-01-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51818
+	* mangle.c (find_substitution): A type is only a substitution
+	match if we're looking for a type.
+	(write_nested_name): Use decl_mangling_context.
+
 	* decl.c (decls_match): Assert that the arguments are decls.
 
 	PR c++/51613
