@@ -952,6 +952,8 @@ decls_match (tree newdecl, tree olddecl)
        interested in their types.  */
     return 0;
 
+  gcc_assert (DECL_P (newdecl));
+
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
       tree f1 = TREE_TYPE (newdecl);
