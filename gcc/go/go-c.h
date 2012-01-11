@@ -1,5 +1,5 @@
 /* go-c.h -- Header file for go frontend gcc C interface.
-   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -58,8 +58,6 @@ extern tree go_type_for_mode (enum machine_mode, int unsignedp);
 extern void go_preserve_from_gc (tree);
 
 extern const char *go_localize_identifier (const char*);
-
-extern unsigned int go_type_alignment (tree);
 
 extern unsigned int go_field_alignment (tree);
 

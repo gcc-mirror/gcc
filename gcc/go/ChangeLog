@@ -1,3 +1,12 @@
+2012-01-10  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::type_size): New function.
+	(Gcc_backend::type_alignment): New function.
+	(Gcc_backend::type_field_alignment): New function.
+	(Gcc_backend::type_field_offset): New function.
+	* go-backend.c (go_type_alignment): Remove.
+	* go-c.h (go_type_alignment): Don't declare.
+
 2011-12-27  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::set_placeholder_struct_type): Use

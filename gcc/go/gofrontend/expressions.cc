@@ -7979,35 +7979,32 @@ Builtin_call_expression::do_integer_constant_value(bool iota_is_constant,
 	return false;
       if (arg_type->named_type() != NULL)
 	arg_type->named_type()->convert(this->gogo_);
-      tree arg_type_tree = type_to_tree(arg_type->get_backend(this->gogo_));
-      if (arg_type_tree == error_mark_node)
-	return false;
-      unsigned long val_long;
+
+      unsigned int ret;
       if (this->code_ == BUILTIN_SIZEOF)
 	{
-	  tree type_size = TYPE_SIZE_UNIT(arg_type_tree);
-	  go_assert(TREE_CODE(type_size) == INTEGER_CST);
-	  if (TREE_INT_CST_HIGH(type_size) != 0)
-	    return false;
-	  unsigned HOST_WIDE_INT val_wide = TREE_INT_CST_LOW(type_size);
-	  val_long = static_cast<unsigned long>(val_wide);
-	  if (val_long != val_wide)
+	  if (!arg_type->backend_type_size(this->gogo_, &ret))
 	    return false;
 	}
       else if (this->code_ == BUILTIN_ALIGNOF)
 	{
 	  if (arg->field_reference_expression() == NULL)
-	    val_long = go_type_alignment(arg_type_tree);
+	    {
+	      if (!arg_type->backend_type_align(this->gogo_, &ret))
+		return false;
+	    }
 	  else
 	    {
 	      // Calling unsafe.Alignof(s.f) returns the alignment of
 	      // the type of f when it is used as a field in a struct.
-	      val_long = go_field_alignment(arg_type_tree);
+	      if (!arg_type->backend_type_field_align(this->gogo_, &ret))
+		return false;
 	    }
 	}
       else
 	go_unreachable();
-      mpz_set_ui(val, val_long);
+
+      mpz_set_ui(val, ret);
       *ptype = NULL;
       return true;
     }
@@ -8025,21 +8022,12 @@ Builtin_call_expression::do_integer_constant_value(bool iota_is_constant,
 	return false;
       if (st->named_type() != NULL)
 	st->named_type()->convert(this->gogo_);
-      tree struct_tree = type_to_tree(st->get_backend(this->gogo_));
-      go_assert(TREE_CODE(struct_tree) == RECORD_TYPE);
-      tree field = TYPE_FIELDS(struct_tree);
-      for (unsigned int index = farg->field_index(); index > 0; --index)
-	{
-	  field = DECL_CHAIN(field);
-	  go_assert(field != NULL_TREE);
-	}
-      HOST_WIDE_INT offset_wide = int_byte_position (field);
-      if (offset_wide < 0)
+      unsigned int offset;
+      if (!st->struct_type()->backend_field_offset(this->gogo_,
+						   farg->field_index(),
+						   &offset))
 	return false;
-      unsigned long offset_long = static_cast<unsigned long>(offset_wide);
-      if (offset_long != static_cast<unsigned HOST_WIDE_INT>(offset_wide))
-	return false;
-      mpz_set_ui(val, offset_long);
+      mpz_set_ui(val, offset);
       return true;
     }
   return false;
@@ -13939,25 +13927,26 @@ Type_info_expression::do_type()
 tree
 Type_info_expression::do_get_tree(Translate_context* context)
 {
-  tree type_tree = type_to_tree(this->type_->get_backend(context->gogo()));
-  if (type_tree == error_mark_node)
-    return error_mark_node;
-
-  tree val_type_tree = type_to_tree(this->type()->get_backend(context->gogo()));
-  go_assert(val_type_tree != error_mark_node);
-
-  if (this->type_info_ == TYPE_INFO_SIZE)
-    return fold_convert_loc(BUILTINS_LOCATION, val_type_tree,
-			    TYPE_SIZE_UNIT(type_tree));
-  else
+  Btype* btype = this->type_->get_backend(context->gogo());
+  Gogo* gogo = context->gogo();
+  size_t val;
+  switch (this->type_info_)
     {
-      unsigned int val;
-      if (this->type_info_ == TYPE_INFO_ALIGNMENT)
-	val = go_type_alignment(type_tree);
-      else
-	val = go_field_alignment(type_tree);
-      return build_int_cstu(val_type_tree, val);
+    case TYPE_INFO_SIZE:
+      val = gogo->backend()->type_size(btype);
+      break;
+    case TYPE_INFO_ALIGNMENT:
+      val = gogo->backend()->type_alignment(btype);
+      break;
+    case TYPE_INFO_FIELD_ALIGNMENT:
+      val = gogo->backend()->type_field_alignment(btype);
+      break;
+    default:
+      go_unreachable();
     }
+  tree val_type_tree = type_to_tree(this->type()->get_backend(gogo));
+  go_assert(val_type_tree != error_mark_node);
+  return build_int_cstu(val_type_tree, val);
 }
 
 // Dump ast representation for a type info expression.

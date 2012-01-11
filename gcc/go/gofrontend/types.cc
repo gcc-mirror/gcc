@@ -1950,6 +1950,126 @@ Type::mangled_name(Gogo* gogo) const
   return ret;
 }
 
+// Return whether the backend size of the type is known.
+
+bool
+Type::is_backend_type_size_known(Gogo* gogo) const
+{
+  switch (this->classification_)
+    {
+    case TYPE_ERROR:
+    case TYPE_VOID:
+    case TYPE_BOOLEAN:
+    case TYPE_INTEGER:
+    case TYPE_FLOAT:
+    case TYPE_COMPLEX:
+    case TYPE_STRING:
+    case TYPE_FUNCTION:
+    case TYPE_POINTER:
+    case TYPE_NIL:
+    case TYPE_MAP:
+    case TYPE_CHANNEL:
+    case TYPE_INTERFACE:
+      return true;
+
+    case TYPE_STRUCT:
+      {
+	const Struct_field_list* fields = this->struct_type()->fields();
+	for (Struct_field_list::const_iterator pf = fields->begin();
+	     pf != fields->end();
+	     ++pf)
+	  if (!pf->type()->is_backend_type_size_known(gogo))
+	    return false;
+	return true;
+      }
+
+    case TYPE_ARRAY:
+      {
+	const Array_type* at = this->array_type();
+	if (at->length() == NULL)
+	  return true;
+	else
+	  {
+	    mpz_t ival;
+	    mpz_init(ival);
+	    Type* dummy;
+	    bool length_known = at->length()->integer_constant_value(true,
+								     ival,
+								     &dummy);
+	    mpz_clear(ival);
+	    if (!length_known)
+	      return false;
+	    return at->element_type()->is_backend_type_size_known(gogo);
+	  }
+      }
+
+    case TYPE_NAMED:
+      return this->named_type()->is_named_backend_type_size_known();
+
+    case TYPE_FORWARD:
+      {
+	const Forward_declaration_type* fdt = this->forward_declaration_type();
+	return fdt->real_type()->is_backend_type_size_known(gogo);
+      }
+
+    case TYPE_SINK:
+    case TYPE_CALL_MULTIPLE_RESULT:
+      go_unreachable();
+
+    default:
+      go_unreachable();
+    }
+}
+
+// If the size of the type can be determined, set *PSIZE to the size
+// in bytes and return true.  Otherwise, return false.  This queries
+// the backend.
+
+bool
+Type::backend_type_size(Gogo* gogo, unsigned int *psize)
+{
+  Btype* btype = this->get_backend(gogo);
+  if (!this->is_backend_type_size_known(gogo))
+    return false;
+  size_t size = gogo->backend()->type_size(btype);
+  *psize = static_cast<unsigned int>(size);
+  if (*psize != size)
+    return false;
+  return true;
+}
+
+// If the alignment of the type can be determined, set *PALIGN to
+// the alignment in bytes and return true.  Otherwise, return false.
+
+bool
+Type::backend_type_align(Gogo* gogo, unsigned int *palign)
+{
+  Btype* btype = this->get_backend(gogo);
+  if (!this->is_backend_type_size_known(gogo))
+    return false;
+  size_t align = gogo->backend()->type_alignment(btype);
+  *palign = static_cast<unsigned int>(align);
+  if (*palign != align)
+    return false;
+  return true;
+}
+
+// Like backend_type_align, but return the alignment when used as a
+// field.
+
+bool
+Type::backend_type_field_align(Gogo* gogo, unsigned int *palign)
+{
+  Btype* btype = this->get_backend(gogo);
+  if (!this->is_backend_type_size_known(gogo))
+    return false;
+  size_t a = gogo->backend()->type_field_alignment(btype);
+  *palign = static_cast<unsigned int>(a);
+  if (*palign != a)
+    return false;
+  return true;
+}
+
 // Default function to export a type.
 
 void
@@ -4587,6 +4707,24 @@ Struct_type::do_mangled_name(Gogo* gogo, std::string* ret) const
     }
 
   ret->push_back('e');
+}
+
+// If the offset of field INDEX in the backend implementation can be
+// determined, set *POFFSET to the offset in bytes and return true.
+// Otherwise, return false.
+
+bool
+Struct_type::backend_field_offset(Gogo* gogo, unsigned int index,
+				  unsigned int* poffset)
+{
+  Btype* btype = this->get_backend(gogo);
+  if (!this->is_backend_type_size_known(gogo))
+    return false;
+  size_t offset = gogo->backend()->type_field_offset(btype, index);
+  *poffset = static_cast<unsigned int>(offset);
+  if (*poffset != offset)
+    return false;
+  return true;
 }
 
 // Export.
@@ -7518,6 +7656,7 @@ Named_type::convert(Gogo* gogo)
 
   this->named_btype_ = bt;
   this->is_converted_ = true;
+  this->is_placeholder_ = false;
 }
 
 // Create the placeholder for a named type.  This is the first step in
@@ -7578,6 +7717,7 @@ Named_type::create_placeholder(Gogo* gogo)
     case TYPE_STRUCT:
       bt = gogo->backend()->placeholder_struct_type(this->name(),
 						    this->location_);
+      this->is_placeholder_ = true;
       set_name = false;
       break;
 
@@ -7586,8 +7726,11 @@ Named_type::create_placeholder(Gogo* gogo)
 	bt = gogo->backend()->placeholder_struct_type(this->name(),
 						      this->location_);
       else
-	bt = gogo->backend()->placeholder_array_type(this->name(),
-						     this->location_);
+	{
+	  bt = gogo->backend()->placeholder_array_type(this->name(),
+						       this->location_);
+	  this->is_placeholder_ = true;
+	}
       set_name = false;
       break;
 

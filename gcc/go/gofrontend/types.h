@@ -861,6 +861,27 @@ class Type
   std::string
   mangled_name(Gogo*) const;
 
+  // If the size of the type can be determined, set *PSIZE to the size
+  // in bytes and return true.  Otherwise, return false.  This queries
+  // the backend.
+  bool
+  backend_type_size(Gogo*, unsigned int* psize);
+
+  // If the alignment of the type can be determined, set *PALIGN to
+  // the alignment in bytes and return true.  Otherwise, return false.
+  bool
+  backend_type_align(Gogo*, unsigned int* palign);
+
+  // If the alignment of a struct field of this type can be
+  // determined, set *PALIGN to the alignment in bytes and return
+  // true.  Otherwise, return false.
+  bool
+  backend_type_field_align(Gogo*, unsigned int* palign);
+
+  // Whether the backend size is known.
+  bool
+  is_backend_type_size_known(Gogo*) const;
+
   // Get the hash and equality functions for a type.
   void
   type_functions(Gogo*, Named_type* name, Function_type* hash_fntype,
@@ -2013,6 +2034,12 @@ class Struct_type : public Type
   traverse_field_types(Traverse* traverse)
   { return this->do_traverse(traverse); }
 
+  // If the offset of field INDEX in the backend implementation can be
+  // determined, set *POFFSET to the offset in bytes and return true.
+  // Otherwise, return false.
+  bool
+  backend_field_offset(Gogo*, unsigned int index, unsigned int* poffset);
+
   // Import a struct type.
   static Struct_type*
   do_import(Import*);
@@ -2507,8 +2534,9 @@ class Named_type : public Type
       local_methods_(NULL), all_methods_(NULL),
       interface_method_tables_(NULL), pointer_interface_method_tables_(NULL),
       location_(location), named_btype_(NULL), dependencies_(),
-      is_visible_(true), is_error_(false), is_converted_(false),
-      is_circular_(false), seen_(false), seen_in_get_backend_(false)
+      is_visible_(true), is_error_(false), is_placeholder_(false),
+      is_converted_(false), is_circular_(false), seen_(false),
+      seen_in_get_backend_(false)
   { }
 
   // Return the associated Named_object.  This holds the actual name.
@@ -2672,6 +2700,13 @@ class Named_type : public Type
   add_dependency(Named_type* nt)
   { this->dependencies_.push_back(nt); }
 
+  // Return true if the size and alignment of the backend
+  // representation of this type is known.  This is always true after
+  // types have been converted, but may be false beforehand.
+  bool
+  is_named_backend_type_size_known() const
+  { return this->named_btype_ != NULL && !this->is_placeholder_; }
+
   // Export the type.
   void
   export_named_type(Export*, const std::string& name) const;
@@ -2766,8 +2801,11 @@ class Named_type : public Type
   bool is_visible_;
   // Whether this type is erroneous.
   bool is_error_;
+  // Whether the current value of named_btype_ is a placeholder for
+  // which the final size of the type is not known.
+  bool is_placeholder_;
   // Whether this type has been converted to the backend
-  // representation.
+  // representation.  Implies that is_placeholder_ is false.
   bool is_converted_;
   // Whether this is a pointer or function type which refers to the
   // type itself.
