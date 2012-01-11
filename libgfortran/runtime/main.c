@@ -86,7 +86,8 @@ store_exe_path (const char * argv0)
 #define DIR_SEPARATOR '/'
 #endif
 
-  char buf[PATH_MAX], *cwd, *path;
+  char buf[PATH_MAX], *path;
+  const char *cwd;
 
   /* This can only happen if store_exe_path is called multiple times.  */
   if (please_free_exe_path_when_done)
@@ -105,15 +106,22 @@ store_exe_path (const char * argv0)
     }
 #endif
 
-  /* On the simulator argv is not set.  */
-  if (argv0 == NULL || argv0[0] == '/')
+  /* If the path is absolute or on a simulator where argv is not set.  */
+#ifdef __MINGW32__
+  if (argv0 == NULL
+      || ('A' <= argv0[0] && argv0[0] <= 'Z' && argv0[1] == ':')
+      || ('a' <= argv0[0] && argv0[0] <= 'z' && argv0[1] == ':')
+      || (argv0[0] == '/' && argv0[1] == '/')
+      || (argv0[0] == '\\' && argv0[1] == '\\'))
+#else
+  if (argv0 == NULL || argv0[0] == DIR_SEPARATOR)
+#endif
     {
       exe_path = argv0;
       please_free_exe_path_when_done = 0;
       return;
     }
 
-  memset (buf, 0, sizeof (buf));
 #ifdef HAVE_GETCWD
   cwd = getcwd (buf, sizeof (buf));
   if (!cwd)
