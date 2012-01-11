@@ -1504,7 +1504,17 @@ Type::specific_type_functions(Gogo* gogo, Named_type* name,
 
   std::string base_name;
   if (name == NULL)
-    base_name = gogo->pack_hidden_name(this->mangled_name(gogo), false);
+    {
+      // Mangled names can have '.' if they happen to refer to named
+      // types in some way.  That's fine if this is simply a named
+      // type, but otherwise it will confuse the code that builds
+      // function identifiers.  Remove '.' when necessary.
+      base_name = this->mangled_name(gogo);
+      size_t i;
+      while ((i = base_name.find('.')) != std::string::npos)
+	base_name[i] = '$';
+      base_name = gogo->pack_hidden_name(base_name, false);
+    }
   else
     {
       // This name is already hidden or not as appropriate.
