@@ -1,5 +1,5 @@
 // go-gcc.cc -- Go frontend to gcc IR.
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 // Contributed by Ian Lance Taylor, Google.
 
 // This file is part of GCC.
@@ -194,6 +194,18 @@ class Gcc_backend : public Backend
 
   bool
   is_circular_pointer_type(Btype*);
+
+  size_t
+  type_size(Btype*);
+
+  size_t
+  type_alignment(Btype*);
+
+  size_t
+  type_field_alignment(Btype*);
+
+  size_t
+  type_field_offset(Btype*, size_t index);
 
   // Expressions.
 
@@ -753,6 +765,56 @@ bool
 Gcc_backend::is_circular_pointer_type(Btype* btype)
 {
   return btype->get_tree() == ptr_type_node;
+}
+
+// Return the size of a type.
+
+size_t
+Gcc_backend::type_size(Btype* btype)
+{
+  tree t = TYPE_SIZE_UNIT(btype->get_tree());
+  gcc_assert(TREE_CODE(t) == INTEGER_CST);
+  gcc_assert(TREE_INT_CST_HIGH(t) == 0);
+  unsigned HOST_WIDE_INT val_wide = TREE_INT_CST_LOW(t);
+  size_t ret = static_cast<size_t>(val_wide);
+  gcc_assert(ret == val_wide);
+  return ret;
+}
+
+// Return the alignment of a type.
+
+size_t
+Gcc_backend::type_alignment(Btype* btype)
+{
+  return TYPE_ALIGN_UNIT(btype->get_tree());
+}
+
+// Return the alignment of a struct field of type BTYPE.
+
+size_t
+Gcc_backend::type_field_alignment(Btype* btype)
+{
+  return go_field_alignment(btype->get_tree());
+}
+
+// Return the offset of a field in a struct.
+
+size_t
+Gcc_backend::type_field_offset(Btype* btype, size_t index)
+{
+  tree struct_tree = btype->get_tree();
+  gcc_assert(TREE_CODE(struct_tree) == RECORD_TYPE);
+  tree field = TYPE_FIELDS(struct_tree);
+  for (; index > 0; --index)
+    {
+      field = DECL_CHAIN(field);
+      gcc_assert(field != NULL_TREE);
+    }
+  HOST_WIDE_INT offset_wide = int_byte_position(field);
+  gcc_assert(offset_wide >= 0);
+  size_t ret = static_cast<size_t>(offset_wide);
+  gcc_assert(ret == static_cast<unsigned HOST_WIDE_INT>(offset_wide));
+  return ret;
 }
 
 // Return the zero value for a type.
