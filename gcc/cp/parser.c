@@ -15724,8 +15724,7 @@ cp_parser_init_declarator (cp_parser* parser,
 	{
 	  /* We want to record the extra mangling scope for in-class
 	     initializers of class members and initializers of static data
-	     member templates.  The former is a C++0x feature which isn't
-	     implemented yet, and I expect it will involve deferring
+	     member templates.  The former involves deferring
 	     parsing of the initializer until end of class as with default
 	     arguments.  So right here we only handle the latter.  */
 	  if (!member_p && processing_template_decl)
