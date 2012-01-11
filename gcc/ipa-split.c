@@ -131,6 +131,10 @@ struct split_point
 
 struct split_point best_split_point;
 
+/* Set of basic blocks that are not allowed to dominate a split point.  */
+
+static bitmap forbidden_dominators;
+
 static tree find_retval (basic_block return_bb);
 
 /* Callback for walk_stmt_load_store_addr_ops.  If T is non-SSA automatic
@@ -270,6 +274,83 @@ done:
   BITMAP_FREE (seen);
   VEC_free (basic_block, heap, worklist);
   return ok;
+}
+
+/* If STMT is a call, check the callee against a list of forbidden
+   predicate functions.  If a match is found, look for uses of the
+   call result in condition statements that compare against zero.
+   For each such use, find the block targeted by the condition
+   statement for the nonzero result, and set the bit for this block
+   in the forbidden dominators bitmap.  The purpose of this is to avoid
+   selecting a split point where we are likely to lose the chance
+   to optimize away an unused function call.  */
+
+static void
+check_forbidden_calls (gimple stmt)
+{
+  imm_use_iterator use_iter;
+  use_operand_p use_p;
+  tree lhs;
+
+  /* At the moment, __builtin_constant_p is the only forbidden
+     predicate function call (see PR49642).  */
+  if (!gimple_call_builtin_p (stmt, BUILT_IN_CONSTANT_P))
+    return;
+
+  lhs = gimple_call_lhs (stmt);
+
+  if (!lhs || TREE_CODE (lhs) != SSA_NAME)
+    return;
+
+  FOR_EACH_IMM_USE_FAST (use_p, use_iter, lhs)
+    {
+      tree op1;
+      basic_block use_bb, forbidden_bb;
+      enum tree_code code;
+      edge true_edge, false_edge;
+      gimple use_stmt = USE_STMT (use_p);
+
+      if (gimple_code (use_stmt) != GIMPLE_COND)
+	continue;
+
+      /* Assuming canonical form for GIMPLE_COND here, with constant
+	 in second position.  */
+      op1 = gimple_cond_rhs (use_stmt);
+      code = gimple_cond_code (use_stmt);
+      use_bb = gimple_bb (use_stmt);
+
+      extract_true_false_edges_from_block (use_bb, &true_edge, &false_edge);
+
+      /* We're only interested in comparisons that distinguish
+	 unambiguously from zero.  */
+      if (!integer_zerop (op1) || code == LE_EXPR || code == GE_EXPR)
+	continue;
+
+      if (code == EQ_EXPR)
+	forbidden_bb = false_edge->dest;
+      else
+	forbidden_bb = true_edge->dest;
+
+      bitmap_set_bit (forbidden_dominators, forbidden_bb->index);
+    }
+}
+
+/* If BB is dominated by any block in the forbidden dominators set,
+   return TRUE; else FALSE.  */
+
+static bool
+dominated_by_forbidden (basic_block bb)
+{
+  unsigned dom_bb;
+  bitmap_iterator bi;
+
+  EXECUTE_IF_SET_IN_BITMAP (forbidden_dominators, 1, dom_bb, bi)
+    {
+      if (dominated_by_p (CDI_DOMINATORS, bb, BASIC_BLOCK (dom_bb)))
+	return true;
+    }
+
+  return false;
 }
 
 /* We found an split_point CURRENT.  NON_SSA_VARS is bitmap of all non ssa
@@ -413,6 +494,18 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
 		 "  Refused: split part has non-ssa uses\n");
       return;
     }
+
+  /* If the split point is dominated by a forbidden block, reject
+     the split.  */
+  if (!bitmap_empty_p (forbidden_dominators)
+      && dominated_by_forbidden (current->entry_bb))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "  Refused: split point dominated by forbidden block\n");
+      return;
+    }
+
   /* See if retval used by return bb is computed by header or split part.
      When it is computed by split part, we need to produce return statement
      in the split part and add code to header to pass it around.
@@ -1372,6 +1465,10 @@ execute_split_functions (void)
       return 0;
     }
 
+  /* Initialize bitmap to track forbidden calls.  */
+  forbidden_dominators = BITMAP_ALLOC (NULL);
+  calculate_dominance_info (CDI_DOMINATORS);
+
   /* Compute local info about basic blocks and determine function size/time.  */
   VEC_safe_grow_cleared (bb_info, heap, bb_info_vec, last_basic_block + 1);
   memset (&best_split_point, 0, sizeof (best_split_point));
@@ -1393,6 +1490,7 @@ execute_split_functions (void)
 	  this_time = estimate_num_insns (stmt, &eni_time_weights) * freq;
 	  size += this_size;
 	  time += this_time;
+	  check_forbidden_calls (stmt);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -1414,6 +1512,7 @@ execute_split_functions (void)
       BITMAP_FREE (best_split_point.split_bbs);
       todo = TODO_update_ssa | TODO_cleanup_cfg;
     }
+  BITMAP_FREE (forbidden_dominators);
   VEC_free (bb_info, heap, bb_info_vec);
   bb_info_vec = NULL;
   return todo;
