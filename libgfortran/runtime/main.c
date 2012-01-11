@@ -116,8 +116,10 @@ store_exe_path (const char * argv0)
   memset (buf, 0, sizeof (buf));
 #ifdef HAVE_GETCWD
   cwd = getcwd (buf, sizeof (buf));
+  if (!cwd)
+    cwd = ".";
 #else
-  cwd = "";
+  cwd = ".";
 #endif
 
   /* exe_path will be cwd + "/" + argv[0] + "\0".  This will not work
