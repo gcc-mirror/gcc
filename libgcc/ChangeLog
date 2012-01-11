@@ -1,3 +1,7 @@
+2012-01-11  Nathan Sidwell  <nathan@acm.org>
+
+	* libgcov.c (__gcov_init): Ignore objects with no functions.
+
 2012-01-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/49868

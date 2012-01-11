@@ -686,7 +686,7 @@ gcov_exit (void)
 void
 __gcov_init (struct gcov_info *info)
 {
-  if (!info->version)
+  if (!info->version || !info->n_functions)
     return;
   if (gcov_version (info, info->version, 0))
     {
