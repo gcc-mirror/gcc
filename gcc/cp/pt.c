@@ -15471,7 +15471,7 @@ resolve_overloaded_unification (tree tparms,
 	      elem = tsubst (TREE_TYPE (fn), subargs, tf_none, NULL_TREE);
 	      if (try_one_overload (tparms, targs, tempargs, parm,
 				    elem, strict, sub_strict, addr_p, explain_p)
-		  && (!goodfn || !decls_match (goodfn, elem)))
+		  && (!goodfn || !same_type_p (goodfn, elem)))
 		{
 		  goodfn = elem;
 		  ++good;
