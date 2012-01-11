@@ -1030,8 +1030,7 @@ fix = {
 
 /*
  * 'g++ -std=c++11' defines __cplusplus to 201103L, which suggests
- * that it conforms to ISO/IEC 14882:2011.  Until G++ fully conforms,
- * it should not set __cplusplus to that value.  It currently does
+ * that it conforms to ISO/IEC 14882:2011.  It currently does
  * not support the [[noreturn]] procedure attribute.
  * When it does, this hack should be removed.
  * SEE:  gcc.gnu.org/bugzilla/show_bug.cgi?id=51776
