@@ -64,8 +64,6 @@ along with Gcov; see the file COPYING3.  If not see
 
 /* This is the size of the buffer used to read in source file lines.  */
 
-#define STRING_SIZE 200
-
 struct function_info;
 struct block_info;
 struct source_info;
@@ -708,24 +706,33 @@ generate_results (const char *file_name)
       function_summary (&src->coverage, "File");
       total_lines += src->coverage.lines;
       total_executed += src->coverage.lines_executed;
-      if (flag_gcov_file && src->coverage.lines)
+      if (flag_gcov_file)
 	{
 	  char *gcov_file_name
 	    = make_gcov_file_name (file_name, src->coverage.name);
-	  FILE *gcov_file = fopen (gcov_file_name, "w");
 
-	  if (gcov_file)
+	  if (src->coverage.lines)
 	    {
-	      fnotice (stdout, "Creating '%s'\n", gcov_file_name);
-	      output_lines (gcov_file, src);
-	      if (ferror (gcov_file))
+	      FILE *gcov_file = fopen (gcov_file_name, "w");
+
+	      if (gcov_file)
+		{
+		  fnotice (stdout, "Creating '%s'\n", gcov_file_name);
+		  output_lines (gcov_file, src);
+		  if (ferror (gcov_file))
 		    fnotice (stderr, "Error writing output file '%s'\n",
 			     gcov_file_name);
-	      fclose (gcov_file);
+		  fclose (gcov_file);
+		}
+	      else
+		fnotice (stderr, "Could not open output file '%s'\n",
+			 gcov_file_name);
 	    }
 	  else
-	    fnotice (stderr, "Could not open output file '%s'\n",
-		     gcov_file_name);
+	    {
+	      unlink (gcov_file_name);
+	      fnotice (stdout, "Removing '%s'\n", gcov_file_name);
+	    }
 	  free (gcov_file_name);
 	}
       fnotice (stdout, "\n");
@@ -2188,6 +2195,44 @@ output_branch_count (FILE *gcov_file, int ix, const arc_t *arc)
 
 }
 
+static const char *
+read_line (FILE *file)
+{
+  static char *string;
+  static size_t string_len;
+  size_t pos = 0;
+  char *ptr;
+
+  if (!string_len)
+    {
+      string_len = 200;
+      string = XNEWVEC (char, string_len);
+    }
+
+  while ((ptr = fgets (string + pos, string_len - pos, file)))
+    {
+      size_t len = strlen (string + pos);
+
+      if (string[pos + len - 1] == '\n')
+	{
+	  string[pos + len - 1] = 0;
+	  return string;
+	}
+      pos += len;
+      ptr = XNEWVEC (char, string_len * 2);
+      if (ptr)
+	{
+	  memcpy (ptr, string, pos);
+	  string = ptr;
+	  string_len += 2;
+	}
+      else
+	pos = 0;
+    }
+      
+  return pos ? string : NULL;
+}
+
 /* Read in the source file one line at a time, and output that line to
    the gcov file preceded by its execution count and other
    information.  */
@@ -2198,8 +2243,7 @@ output_lines (FILE *gcov_file, const source_t *src)
   FILE *source_file;
   unsigned line_num;	/* current line number.  */
   const line_t *line;           /* current line info ptr.  */
-  char string[STRING_SIZE];     /* line buffer.  */
-  char const *retval = "";	/* status of source file reading.  */
+  const char *retval = "";	/* status of source file reading.  */
   function_t *fn = NULL;
 
   fprintf (gcov_file, "%9s:%5d:Source:%s\n", "-", 0, src->coverage.name);
@@ -2246,31 +2290,20 @@ output_lines (FILE *gcov_file, const source_t *src)
 	  fprintf (gcov_file, "\n");
 	}
 
+      if (retval)
+	retval = read_line (source_file);
+
       /* For lines which don't exist in the .bb file, print '-' before
 	 the source line.  For lines which exist but were never
-	 executed, print '#####' before the source line.  Otherwise,
-	 print the execution count before the source line.  There are
-	 16 spaces of indentation added before the source line so that
-	 tabs won't be messed up.  */
-      fprintf (gcov_file, "%9s:%5u:",
+	 executed, print '#####' or '=====' before the source line.
+	 Otherwise, print the execution count before the source line.
+	 There are 16 spaces of indentation added before the source
+	 line so that tabs won't be messed up.  */
+      fprintf (gcov_file, "%9s:%5u:%s\n",
 	       !line->exists ? "-" : line->count
 	       ? format_gcov (line->count, 0, -1)
-	       : line->unexceptional ? "#####" : "=====", line_num);
-
-      if (retval)
-	{
-	  /* Copy source line.  */
-	  do
-	    {
-	      retval = fgets (string, STRING_SIZE, source_file);
-	      if (!retval)
-		break;
-	      fputs (retval, gcov_file);
-	    }
-	  while (!retval[0] || retval[strlen (retval) - 1] != '\n');
-	}
-      if (!retval)
-	fputs ("/*EOF*/\n", gcov_file);
+	       : line->unexceptional ? "#####" : "=====", line_num,
+	       retval ? retval : "/*EOF*/");
 
       if (flag_all_blocks)
 	{
@@ -2306,18 +2339,8 @@ output_lines (FILE *gcov_file, const source_t *src)
      last line of code.  */
   if (retval)
     {
-      for (; (retval = fgets (string, STRING_SIZE, source_file)); line_num++)
-	{
-	  fprintf (gcov_file, "%9s:%5u:%s", "-", line_num, retval);
-
-	  while (!retval[0] || retval[strlen (retval) - 1] != '\n')
-	    {
-	      retval = fgets (string, STRING_SIZE, source_file);
-	      if (!retval)
-		break;
-	      fputs (retval, gcov_file);
-	    }
-	}
+      for (; (retval = read_line (source_file)); line_num++)
+	fprintf (gcov_file, "%9s:%5u:%s\n", "-", line_num, retval);
     }
 
   if (source_file)
