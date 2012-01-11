@@ -1,3 +1,8 @@
+2012-01-11  Richard Guenther  <rguenther@suse.de>
+
+	* doc/extend.texi (malloc attribute): Adjust according to
+	implementation.
+
 2012-01-10  Aldy Hernandez  <aldyh@redhat.com>
 	    Patrick Marlier  <patrick.marlier@gmail.com>
 

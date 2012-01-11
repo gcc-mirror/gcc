@@ -2771,13 +2771,12 @@ efficient @code{jal} instruction.
 @cindex @code{malloc} attribute
 The @code{malloc} attribute is used to tell the compiler that a function
 may be treated as if any non-@code{NULL} pointer it returns cannot
-alias any other pointer valid when the function returns.
+alias any other pointer valid when the function returns and that the memory
+has undefined content.
 This will often improve optimization.
 Standard functions with this property include @code{malloc} and
-@code{calloc}.  @code{realloc}-like functions have this property as
-long as the old pointer is never referred to (including comparing it
-to the new pointer) after the function returns a non-@code{NULL}
-value.
+@code{calloc}.  @code{realloc}-like functions do not have this
+property as the memory pointed to does not have undefined content.
 
 @item mips16/nomips16
 @cindex @code{mips16} attribute
