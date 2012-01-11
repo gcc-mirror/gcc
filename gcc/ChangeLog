@@ -1,3 +1,11 @@
+2012-01-11  Nathan Sidwell  <nathan@acm.org>
+
+	* gcov.c (STRING_SIZE): Remove.
+	(generate_results): Erase annotations for source files with no
+	coverage information.
+	(read_line): New.
+	(output_lines): Use it.
+
 2012-01-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple.h (gimplify_body): Remove first argument.
