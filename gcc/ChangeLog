@@ -1,5 +1,17 @@
 2012-01-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gimple.h (gimplify_body): Remove first argument.
+	* gimplify.c (copy_if_shared): Add DATA argument.  Do not create the
+	pointer set here, instead just pass DATA to walk_tree.
+	(unshare_body): Remove BODY_P argument and adjust.  Create the pointer
+	set here and invoke copy_if_shared on the size trees of DECL_RESULT.
+	(unvisit_body): Likewise, but with unmark_visited.
+	(gimplify_body): Remove BODY_P argument and adjust.
+	(gimplify_function_tree): Adjust call to gimplify_body.
+	* omp-low.c (finalize_task_copyfn): Likewise.
+
+2012-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* tree.h (build_function_decl_skip_args): Add boolean parameter.
 	(build_function_type_skip_args): Delete.
 	* tree.c (build_function_type_skip_args): Make static and add
