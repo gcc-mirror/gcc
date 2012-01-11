@@ -3382,9 +3382,11 @@ Type_conversion_expression::do_lower(Gogo*, Named_object*,
   if (type->is_slice_type())
     {
       Type* element_type = type->array_type()->element_type()->forwarded();
-      bool is_byte = element_type == Type::lookup_integer_type("uint8");
-      bool is_int = element_type == Type::lookup_integer_type("int");
-      if (is_byte || is_int)
+      bool is_byte = (element_type->integer_type() != NULL
+		      && element_type->integer_type()->is_byte());
+      bool is_rune = (element_type->integer_type() != NULL
+		      && element_type->integer_type()->is_rune());
+      if (is_byte || is_rune)
 	{
 	  std::string s;
 	  if (val->string_constant_value(&s))
@@ -3690,8 +3692,7 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
       tree len = a->length_tree(gogo, expr_tree);
       len = fold_convert_loc(this->location().gcc_location(), integer_type_node,
                              len);
-      if (e->integer_type()->is_unsigned()
-	  && e->integer_type()->bits() == 8)
+      if (e->integer_type()->is_byte())
 	{
 	  static tree byte_array_to_string_fndecl;
 	  ret = Gogo::call_builtin(&byte_array_to_string_fndecl,
@@ -3706,7 +3707,7 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
 	}
       else
 	{
-	  go_assert(e == Type::lookup_integer_type("int"));
+	  go_assert(e->integer_type()->is_rune());
 	  static tree int_array_to_string_fndecl;
 	  ret = Gogo::call_builtin(&int_array_to_string_fndecl,
 				   this->location(),
@@ -3723,8 +3724,7 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
     {
       Type* e = type->array_type()->element_type()->forwarded();
       go_assert(e->integer_type() != NULL);
-      if (e->integer_type()->is_unsigned()
-	  && e->integer_type()->bits() == 8)
+      if (e->integer_type()->is_byte())
 	{
 	  tree string_to_byte_array_fndecl = NULL_TREE;
 	  ret = Gogo::call_builtin(&string_to_byte_array_fndecl,
@@ -3737,7 +3737,7 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
 	}
       else
 	{
-	  go_assert(e == Type::lookup_integer_type("int"));
+	  go_assert(e->integer_type()->is_rune());
 	  tree string_to_int_array_fndecl = NULL_TREE;
 	  ret = Gogo::call_builtin(&string_to_int_array_fndecl,
 				   this->location(),
@@ -8506,19 +8506,19 @@ Builtin_call_expression::do_check_types(Gogo*)
 	    break;
 	  }
 
-	Type* e2;
 	if (arg2_type->is_slice_type())
-	  e2 = arg2_type->array_type()->element_type();
-	else if (arg2_type->is_string_type())
-	  e2 = Type::lookup_integer_type("uint8");
-	else
 	  {
-	    this->report_error(_("right argument must be a slice or a string"));
-	    break;
+	    Type* e2 = arg2_type->array_type()->element_type();
+	    if (!Type::are_identical(e1, e2, true, NULL))
+	      this->report_error(_("element types must be the same"));
 	  }
-
-	if (!Type::are_identical(e1, e2, true, NULL))
-	  this->report_error(_("element types must be the same"));
+	else if (arg2_type->is_string_type())
+	  {
+	    if (e1->integer_type() == NULL || !e1->integer_type()->is_byte())
+	      this->report_error(_("first argument must be []byte"));
+	  }
+	else
+	    this->report_error(_("second argument must be slice or string"));
       }
       break;
 
@@ -8542,7 +8542,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	  {
 	    const Array_type* at = args->front()->type()->array_type();
 	    const Type* e = at->element_type()->forwarded();
-	    if (e == Type::lookup_integer_type("uint8"))
+	    if (e->integer_type() != NULL && e->integer_type()->is_byte())
 	      break;
 	  }
 
@@ -9100,7 +9100,8 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	tree arg2_len;
 	tree element_size;
 	if (arg2->type()->is_string_type()
-	    && element_type == Type::lookup_integer_type("uint8"))
+	    && element_type->integer_type() != NULL
+	    && element_type->integer_type()->is_byte())
 	  {
 	    arg2_tree = save_expr(arg2_tree);
 	    arg2_val = String_type::bytes_tree(gogo, arg2_tree);

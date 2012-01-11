@@ -767,7 +767,7 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
   if (lhs->complex_type() != NULL && rhs->complex_type() != NULL)
     return true;
 
-  // An integer, or []byte, or []int, may be converted to a string.
+  // An integer, or []byte, or []rune, may be converted to a string.
   if (lhs->is_string_type())
     {
       if (rhs->integer_type() != NULL)
@@ -776,19 +776,18 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
 	{
 	  const Type* e = rhs->array_type()->element_type()->forwarded();
 	  if (e->integer_type() != NULL
-	      && (e == Type::lookup_integer_type("uint8")
-		  || e == Type::lookup_integer_type("int")))
+	      && (e->integer_type()->is_byte()
+		  || e->integer_type()->is_rune()))
 	    return true;
 	}
     }
 
-  // A string may be converted to []byte or []int.
+  // A string may be converted to []byte or []rune.
   if (rhs->is_string_type() && lhs->is_slice_type())
     {
       const Type* e = lhs->array_type()->element_type()->forwarded();
       if (e->integer_type() != NULL
-	  && (e == Type::lookup_integer_type("uint8")
-	      || e == Type::lookup_integer_type("int")))
+	  && (e->integer_type()->is_byte() || e->integer_type()->is_rune()))
 	return true;
     }
 
