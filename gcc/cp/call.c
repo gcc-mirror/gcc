@@ -526,7 +526,7 @@ struct z_candidate {
   tree access_path;
   /* If FN is a non-static member function, the binfo indicating the
      subobject to which the `this' pointer should be converted if FN
-     is selected by overload resolution.  The type pointed to the by
+     is selected by overload resolution.  The type pointed to by
      the `this' pointer must correspond to the most derived class
      indicated by the CONVERSION_PATH.  */
   tree conversion_path;
