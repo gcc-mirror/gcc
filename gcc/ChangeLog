@@ -1,3 +1,13 @@
+2012-01-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/49642
+	* ipa-split.c (forbidden_dominators): New variable.
+	(check_forbidden_calls): New function.
+	(dominated_by_forbidden): Likewise.
+	(consider_split): Check for forbidden dominators.
+	(execute_split_functions): Initialize and free forbidden
+	dominators info; call check_forbidden_calls.
+
 2012-01-11  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	* config/arm/arm.md (mov_notscc): Use MVN for false condition.
