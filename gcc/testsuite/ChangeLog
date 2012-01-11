@@ -1,5 +1,9 @@
 2012-01-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/array19.ad[sb]: New test.
+
+2012-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/opt23.ad[sb]: New test.
 	* gnat.dg/opt23_pkg.ad[sb]: New helper.
 	* gnat.dg/opt24.ad[sb]: New test.
