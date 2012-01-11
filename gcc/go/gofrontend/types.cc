@@ -571,7 +571,8 @@ Type::are_compatible_for_comparison(bool is_equality_op, const Type *t1,
 	}
       else if (t1->array_type() != NULL)
 	{
-	  if (!t1->array_type()->element_type()->is_comparable())
+	  if (t1->array_type()->length()->is_nil_expression()
+	      || !t1->array_type()->element_type()->is_comparable())
 	    {
 	      if (reason != NULL)
 		*reason = _("invalid comparison of non-comparable array");
@@ -1372,7 +1373,7 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 
   const char* hash_fnname;
   const char* equal_fnname;
-  if (this->compare_is_identity())
+  if (this->compare_is_identity(gogo))
     {
       hash_fnname = "__go_type_hash_identity";
       equal_fnname = "__go_type_equal_identity";
@@ -1963,7 +1964,7 @@ Type::mangled_name(Gogo* gogo) const
 // Return whether the backend size of the type is known.
 
 bool
-Type::is_backend_type_size_known(Gogo* gogo) const
+Type::is_backend_type_size_known(Gogo* gogo)
 {
   switch (this->classification_)
     {
@@ -2014,11 +2015,14 @@ Type::is_backend_type_size_known(Gogo* gogo) const
       }
 
     case TYPE_NAMED:
+      // Begin converting this type to the backend representation.
+      // This will create a placeholder if necessary.
+      this->get_backend(gogo);
       return this->named_type()->is_named_backend_type_size_known();
 
     case TYPE_FORWARD:
       {
-	const Forward_declaration_type* fdt = this->forward_declaration_type();
+	Forward_declaration_type* fdt = this->forward_declaration_type();
 	return fdt->real_type()->is_backend_type_size_known(gogo);
       }
 
@@ -2038,10 +2042,9 @@ Type::is_backend_type_size_known(Gogo* gogo) const
 bool
 Type::backend_type_size(Gogo* gogo, unsigned int *psize)
 {
-  Btype* btype = this->get_backend(gogo);
   if (!this->is_backend_type_size_known(gogo))
     return false;
-  size_t size = gogo->backend()->type_size(btype);
+  size_t size = gogo->backend()->type_size(this->get_backend(gogo));
   *psize = static_cast<unsigned int>(size);
   if (*psize != size)
     return false;
@@ -2054,10 +2057,9 @@ Type::backend_type_size(Gogo* gogo, unsigned int *psize)
 bool
 Type::backend_type_align(Gogo* gogo, unsigned int *palign)
 {
-  Btype* btype = this->get_backend(gogo);
   if (!this->is_backend_type_size_known(gogo))
     return false;
-  size_t align = gogo->backend()->type_alignment(btype);
+  size_t align = gogo->backend()->type_alignment(this->get_backend(gogo));
   *palign = static_cast<unsigned int>(align);
   if (*palign != align)
     return false;
@@ -2070,10 +2072,9 @@ Type::backend_type_align(Gogo* gogo, unsigned int *palign)
 bool
 Type::backend_type_field_align(Gogo* gogo, unsigned int *palign)
 {
-  Btype* btype = this->get_backend(gogo);
   if (!this->is_backend_type_size_known(gogo))
     return false;
-  size_t a = gogo->backend()->type_field_alignment(btype);
+  size_t a = gogo->backend()->type_field_alignment(this->get_backend(gogo));
   *palign = static_cast<unsigned int>(a);
   if (*palign != a)
     return false;
@@ -2126,7 +2127,7 @@ class Error_type : public Type
 
  protected:
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   Btype*
@@ -2164,7 +2165,7 @@ class Void_type : public Type
 
  protected:
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   Btype*
@@ -2202,7 +2203,7 @@ class Boolean_type : public Type
 
  protected:
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return true; }
 
   Btype*
@@ -2793,7 +2794,7 @@ class Sink_type : public Type
 
  protected:
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   Btype*
@@ -3705,7 +3706,7 @@ class Nil_type : public Type
 
  protected:
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   Btype*
@@ -3756,7 +3757,7 @@ class Call_multiple_result_type : public Type
   }
 
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   Btype*
@@ -4037,16 +4038,35 @@ Struct_type::struct_has_hidden_fields(const Named_type* within,
 // comparisons.
 
 bool
-Struct_type::do_compare_is_identity() const
+Struct_type::do_compare_is_identity(Gogo* gogo) const
 {
   const Struct_field_list* fields = this->fields_;
   if (fields == NULL)
     return true;
+  unsigned int offset = 0;
   for (Struct_field_list::const_iterator pf = fields->begin();
        pf != fields->end();
        ++pf)
-    if (!pf->type()->compare_is_identity())
-      return false;
+    {
+      if (!pf->type()->compare_is_identity(gogo))
+	return false;
+
+      unsigned int field_align;
+      if (!pf->type()->backend_type_align(gogo, &field_align))
+	return false;
+      if ((offset & (field_align - 1)) != 0)
+	{
+	  // This struct has padding.  We don't guarantee that that
+	  // padding is zero-initialized for a stack variable, so we
+	  // can't use memcmp to compare struct values.
+	  return false;
+	}
+
+      unsigned int field_size;
+      if (!pf->type()->backend_type_size(gogo, &field_size))
+	return false;
+      offset += field_size;
+    }
   return true;
 }
 
@@ -4231,7 +4251,7 @@ Struct_type::total_field_count() const
        pf != this->fields_->end();
        ++pf)
     {
-      if (!pf->is_anonymous() || pf->type()->deref()->struct_type() == NULL)
+      if (!pf->is_anonymous() || pf->type()->struct_type() == NULL)
 	++ret;
       else
 	ret += pf->type()->struct_type()->total_field_count();
@@ -4267,17 +4287,6 @@ Struct_type::is_unexported_local_field(Gogo* gogo,
 void
 Struct_type::finalize_methods(Gogo* gogo)
 {
-  // If this type needs explicit comparison and hash functions, create
-  // them now.  It would be a bit better to do this only if the
-  // functions are needed, but they will be static so the backend can
-  // discard them if they are not used.
-  if (!this->compare_is_identity() && this->is_comparable())
-    {
-      Named_object* hash_fn;
-      Named_object* equal_fn;
-      this->type_functions(gogo, NULL, NULL, NULL, &hash_fn, &equal_fn);
-    }
-
   if (this->all_methods_ != NULL)
     return;
   Type::finalize_methods(gogo, this, this->location_, &this->all_methods_);
@@ -4727,10 +4736,10 @@ bool
 Struct_type::backend_field_offset(Gogo* gogo, unsigned int index,
 				  unsigned int* poffset)
 {
-  Btype* btype = this->get_backend(gogo);
   if (!this->is_backend_type_size_known(gogo))
     return false;
-  size_t offset = gogo->backend()->type_field_offset(btype, index);
+  size_t offset = gogo->backend()->type_field_offset(this->get_backend(gogo),
+						     index);
   *poffset = static_cast<unsigned int>(offset);
   if (*poffset != offset)
     return false;
@@ -4871,25 +4880,6 @@ Array_type::is_identical(const Array_type* t, bool errors_are_identical) const
   return false;
 }
 
-// If this type needs explicit comparison and hash functions, create
-// them now.  It would be a bit better to do this only if the
-// functions are needed, but they will be static so the backend can
-// discard them if they are not used.
-
-void
-Array_type::finalize_methods(Gogo* gogo)
-{
-  if (this->length_ != NULL
-      && !this->length_->is_nil_expression()
-      && !this->compare_is_identity()
-      && this->is_comparable())
-    {
-      Named_object* hash_fn;
-      Named_object* equal_fn;
-      this->type_functions(gogo, NULL, NULL, NULL, &hash_fn, &equal_fn);
-    }
-}
-
 // Traversal.
 
 int
@@ -4985,6 +4975,33 @@ Array_type::do_verify()
       this->length_ = Expression::make_error(this->length_->location());
       return false;
     }
+  return true;
+}
+
+// Whether we can use memcmp to compare this array.
+
+bool
+Array_type::do_compare_is_identity(Gogo* gogo) const
+{
+  if (this->length_ == NULL)
+    return false;
+
+  // Check for [...], which indicates that this is not a real type.
+  if (this->length_->is_nil_expression())
+    return false;
+
+  if (!this->element_type_->compare_is_identity(gogo))
+    return false;
+
+  // If there is any padding, then we can't use memcmp.
+  unsigned int size;
+  unsigned int align;
+  if (!this->element_type_->backend_type_size(gogo, &size)
+      || !this->element_type_->backend_type_align(gogo, &align))
+    return false;
+  if ((size & (align - 1)) != 0)
+    return false;
+
   return true;
 }
 
@@ -7272,20 +7289,6 @@ Named_type::is_unexported_local_method(Gogo* gogo,
 void
 Named_type::finalize_methods(Gogo* gogo)
 {
-  // If this type needs explicit comparison and hash functions, create
-  // them now.  It would be a bit better to do this only if the
-  // functions are needed, but they will be static so the backend can
-  // discard them if they are not used.
-  if ((this->struct_type() != NULL
-       || (this->array_type() != NULL && !this->is_slice_type()))
-      && !this->compare_is_identity()
-      && this->is_comparable())
-    {
-      Named_object* hash_fn;
-      Named_object* equal_fn;
-      this->type_functions(gogo, this, NULL, NULL, &hash_fn, &equal_fn);
-    }
-
   if (this->all_methods_ != NULL)
     return;
 
@@ -7539,13 +7542,15 @@ Named_type::do_has_pointer() const
 // function.
 
 bool
-Named_type::do_compare_is_identity() const
+Named_type::do_compare_is_identity(Gogo* gogo) const
 {
-  if (this->seen_)
+  // We don't use this->seen_ here because compare_is_identity may
+  // call base() later, and that will mess up if seen_ is set here.
+  if (this->seen_in_compare_is_identity_)
     return false;
-  this->seen_ = true;
-  bool ret = this->type_->compare_is_identity();
-  this->seen_ = false;
+  this->seen_in_compare_is_identity_ = true;
+  bool ret = this->type_->compare_is_identity(gogo);
+  this->seen_in_compare_is_identity_ = false;
   return ret;
 }
 

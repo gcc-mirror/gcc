@@ -568,8 +568,8 @@ class Type
   // identity function which gets nothing but a pointer to the value
   // and a size.
   bool
-  compare_is_identity() const
-  { return this->do_compare_is_identity(); }
+  compare_is_identity(Gogo* gogo) const
+  { return this->do_compare_is_identity(gogo); }
 
   // Return a hash code for this type for the method hash table.
   // Types which are equivalent according to are_identical will have
@@ -880,7 +880,7 @@ class Type
 
   // Whether the backend size is known.
   bool
-  is_backend_type_size_known(Gogo*) const;
+  is_backend_type_size_known(Gogo*);
 
   // Get the hash and equality functions for a type.
   void
@@ -924,7 +924,7 @@ class Type
   { return false; }
 
   virtual bool
-  do_compare_is_identity() const = 0;
+  do_compare_is_identity(Gogo*) const = 0;
 
   virtual unsigned int
   do_hash_for_method(Gogo*) const;
@@ -1388,7 +1388,7 @@ class Integer_type : public Type
 
  protected:
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return true; }
 
   unsigned int
@@ -1461,7 +1461,7 @@ class Float_type : public Type
 
  protected:
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   unsigned int
@@ -1530,7 +1530,7 @@ class Complex_type : public Type
 
  protected:
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   unsigned int
@@ -1590,7 +1590,7 @@ class String_type : public Type
   { return true; }
 
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   Btype*
@@ -1708,7 +1708,7 @@ class Function_type : public Type
   { return true; }
 
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   unsigned int
@@ -1793,7 +1793,7 @@ class Pointer_type : public Type
   { return true; }
 
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return true; }
 
   unsigned int
@@ -1985,7 +1985,7 @@ class Struct_type : public Type
 		  Location) const;
 
   // Return the total number of fields, including embedded fields.
-  // This is the number of values which can appear in a conversion to
+  // This is the number of values that can appear in a conversion to
   // this type.
   unsigned int
   total_field_count() const;
@@ -2066,7 +2066,7 @@ class Struct_type : public Type
   do_has_pointer() const;
 
   bool
-  do_compare_is_identity() const;
+  do_compare_is_identity(Gogo*) const;
 
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -2136,10 +2136,6 @@ class Array_type : public Type
   array_has_hidden_fields(const Named_type* within, std::string* reason) const
   { return this->element_type_->has_hidden_fields(within, reason); }
 
-  // Build the hash and equality functions if necessary.
-  void
-  finalize_methods(Gogo*);
-
   // Return a tree for the pointer to the values in an array.
   tree
   value_pointer_tree(Gogo*, tree array) const;
@@ -2192,11 +2188,7 @@ class Array_type : public Type
   }
 
   bool
-  do_compare_is_identity() const
-  {
-    return (this->length_ != NULL
-	    && this->element_type_->compare_is_identity());
-  }
+  do_compare_is_identity(Gogo*) const;
 
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -2289,7 +2281,7 @@ class Map_type : public Type
   { return true; }
 
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   unsigned int
@@ -2375,7 +2367,7 @@ class Channel_type : public Type
   { return true; }
 
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return true; }
 
   unsigned int
@@ -2490,7 +2482,7 @@ class Interface_type : public Type
   { return true; }
 
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   unsigned int
@@ -2536,7 +2528,7 @@ class Named_type : public Type
       location_(location), named_btype_(NULL), dependencies_(),
       is_visible_(true), is_error_(false), is_placeholder_(false),
       is_converted_(false), is_circular_(false), seen_(false),
-      seen_in_get_backend_(false)
+      seen_in_compare_is_identity_(false), seen_in_get_backend_(false)
   { }
 
   // Return the associated Named_object.  This holds the actual name.
@@ -2731,7 +2723,7 @@ class Named_type : public Type
   do_has_pointer() const;
 
   bool
-  do_compare_is_identity() const;
+  do_compare_is_identity(Gogo*) const;
 
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -2815,6 +2807,8 @@ class Named_type : public Type
   // This is mutable because it is always reset to false when the
   // function exits.
   mutable bool seen_;
+  // Like seen_, but used only by do_compare_is_identity.
+  mutable bool seen_in_compare_is_identity_;
   // Like seen_, but used only by do_get_backend.
   bool seen_in_get_backend_;
 };
@@ -2869,8 +2863,8 @@ class Forward_declaration_type : public Type
   { return this->real_type()->has_pointer(); }
 
   bool
-  do_compare_is_identity() const
-  { return this->real_type()->compare_is_identity(); }
+  do_compare_is_identity(Gogo* gogo) const
+  { return this->real_type()->compare_is_identity(gogo); }
 
   unsigned int
   do_hash_for_method(Gogo* gogo) const
