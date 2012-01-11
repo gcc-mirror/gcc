@@ -266,10 +266,25 @@ build_base_path (enum tree_code code,
   if (want_pointer)
     probe = TYPE_MAIN_VARIANT (TREE_TYPE (probe));
 
+  if (code == PLUS_EXPR
+      && !SAME_BINFO_TYPE_P (BINFO_TYPE (d_binfo), probe))
+    {
+      /* This can happen when adjust_result_of_qualified_name_lookup can't
+	 find a unique base binfo in a call to a member function.  We
+	 couldn't give the diagnostic then since we might have been calling
+	 a static member function, so we do it now.  */
+      if (complain & tf_error)
+	{
+	  tree base = lookup_base (probe, BINFO_TYPE (d_binfo),
+				   ba_unique, NULL);
+	  gcc_assert (base == error_mark_node);
+	}
+      return error_mark_node;
+    }
+
   gcc_assert ((code == MINUS_EXPR
 	       && SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), probe))
-	      || (code == PLUS_EXPR
-		  && SAME_BINFO_TYPE_P (BINFO_TYPE (d_binfo), probe)));
+	      || code == PLUS_EXPR);
 
   if (binfo == d_binfo)
     /* Nothing to do.  */

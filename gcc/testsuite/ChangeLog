@@ -1,5 +1,8 @@
 2012-01-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51614
+	* g++.dg/inherit/ambig1.C: New.
+
 	PR c++/51433
 	* g++.dg/cpp0x/constexpr-cache1.C: New.
 

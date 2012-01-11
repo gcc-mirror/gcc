@@ -1,5 +1,8 @@
 2012-01-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51614
+	* class.c (build_base_path): Diagnose ambiguous base.
+
 	PR c++/51433
 	* semantics.c (cxx_eval_call_expression): Always retry previously
 	non-constant expressions.
