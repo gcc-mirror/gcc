@@ -1,3 +1,7 @@
+2012-01-11  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md (return): Define pattern.
+
 2012-01-11  Richard Guenther  <rguenther@suse.de>
 
 	* doc/extend.texi (malloc attribute): Adjust according to
