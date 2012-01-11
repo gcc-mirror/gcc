@@ -340,6 +340,12 @@
    (set_attr "length" "2")]
 )
 
+(define_expand "return"
+  [(return)]
+  ""
+  "rx_expand_epilogue (false); DONE;"
+)
+
 (define_insn "simple_return"
   [(return)]
   ""
