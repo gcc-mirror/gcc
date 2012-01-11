@@ -5844,7 +5844,7 @@ Binary_expression::lower_struct_comparison(Gogo* gogo,
   // See if we can compare using memcmp.  As a heuristic, we use
   // memcmp rather than field references and comparisons if there are
   // more than two fields.
-  if (st->compare_is_identity() && st->total_field_count() > 2)
+  if (st->compare_is_identity(gogo) && st->total_field_count() > 2)
     return this->lower_compare_to_memcmp(gogo, inserter);
 
   Location loc = this->location();
@@ -5919,7 +5919,7 @@ Binary_expression::lower_array_comparison(Gogo* gogo,
 
   // Call memcmp directly if possible.  This may let the middle-end
   // optimize the call.
-  if (at->compare_is_identity())
+  if (at->compare_is_identity(gogo))
     return this->lower_compare_to_memcmp(gogo, inserter);
 
   // Call the array comparison function.
@@ -12966,10 +12966,10 @@ class Composite_literal_expression : public Parser_expression
   lower_struct(Gogo*, Type*);
 
   Expression*
-  lower_array(Gogo*, Type*);
+  lower_array(Type*);
 
   Expression*
-  make_array(Gogo*, Type*, Expression_list*);
+  make_array(Type*, Expression_list*);
 
   Expression*
   lower_map(Gogo*, Named_object*, Statement_inserter*, Type*);
@@ -13036,7 +13036,7 @@ Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function,
   else if (type->struct_type() != NULL)
     ret = this->lower_struct(gogo, type);
   else if (type->array_type() != NULL)
-    ret = this->lower_array(gogo, type);
+    ret = this->lower_array(type);
   else if (type->map_type() != NULL)
     ret = this->lower_map(gogo, function, inserter, type);
   else
@@ -13249,11 +13249,11 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 // Lower an array composite literal.
 
 Expression*
-Composite_literal_expression::lower_array(Gogo* gogo, Type* type)
+Composite_literal_expression::lower_array(Type* type)
 {
   Location location = this->location();
   if (this->vals_ == NULL || !this->has_keys_)
-    return this->make_array(gogo, type, this->vals_);
+    return this->make_array(type, this->vals_);
 
   std::vector<Expression*> vals;
   vals.reserve(this->vals_->size());
@@ -13353,15 +13353,14 @@ Composite_literal_expression::lower_array(Gogo* gogo, Type* type)
   for (size_t i = 0; i < size; ++i)
     list->push_back(vals[i]);
 
-  return this->make_array(gogo, type, list);
+  return this->make_array(type, list);
 }
 
 // Actually build the array composite literal. This handles
 // [...]{...}.
 
 Expression*
-Composite_literal_expression::make_array(Gogo* gogo, Type* type,
-					 Expression_list* vals)
+Composite_literal_expression::make_array(Type* type, Expression_list* vals)
 {
   Location location = this->location();
   Array_type* at = type->array_type();
@@ -13373,10 +13372,6 @@ Composite_literal_expression::make_array(Gogo* gogo, Type* type,
       Expression* elen = Expression::make_integer(&vlen, NULL, location);
       mpz_clear(vlen);
       at = Type::make_array_type(at->element_type(), elen);
-
-      // This is after the finalize_methods pass, so run that now.
-      at->finalize_methods(gogo);
-
       type = at;
     }
   if (at->length() != NULL)
