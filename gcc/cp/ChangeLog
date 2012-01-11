@@ -1,5 +1,7 @@
 2012-01-11  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (decls_match): Assert that the arguments are decls.
+
 	PR c++/51613
 	* pt.c (resolve_overloaded_unification): Compare types with
 	same_type_p, not decls_match.
