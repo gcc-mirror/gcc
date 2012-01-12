@@ -5930,6 +5930,8 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
 	    break;
 	}
     }
+  else if (EXPR_P (body))
+    ok = build_data_member_initialization (body, &vec);
   else
     gcc_assert (errorcount > 0);
   if (ok)
