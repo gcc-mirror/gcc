@@ -16272,6 +16272,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       idx = TEMPLATE_TYPE_IDX (parm);
       targ = TREE_VEC_ELT (INNERMOST_TEMPLATE_ARGS (targs), idx);
       tparm = TREE_VALUE (TREE_VEC_ELT (tparms, idx));
+      if (tparm == error_mark_node)
+	return unify_invalid (explain_p);
 
       /* Check for mixed types and values.  */
       if ((TREE_CODE (parm) == TEMPLATE_TYPE_PARM
