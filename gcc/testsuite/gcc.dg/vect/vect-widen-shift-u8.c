@@ -59,7 +59,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vect_recog_widen_shift_pattern: detected" 1 "vect" { target vect_widen_shift } } } */
+/* { dg-final { scan-tree-dump-times "vect_recog_widen_shift_pattern: detected" 2 "vect" { target vect_widen_shift } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
-

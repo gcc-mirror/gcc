@@ -1,3 +1,10 @@
+2012-01-12  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/51799
+	* gcc.dg/vect/pr51799.c: New test.
+	* gcc.dg/vect/vect-widen-shift-u8.c: Expect two widening shift
+	patterns.
+
 2012-01-12  Dominique d'Humieres  <dominiq@lps.ens.fr>
 	    Tobias Burnus  <burnus@net-b.de>
 

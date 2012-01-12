@@ -1186,12 +1186,14 @@ vect_recog_over_widening_pattern (VEC (gimple, heap) **stmts,
     {
       use_lhs = gimple_assign_lhs (use_stmt);
       use_type = TREE_TYPE (use_lhs);
-      /* Support only type promotion or signedess change.  Check that USE_TYPE
-	 is not bigger than the original type.  */
+      /* Support only type demotion or signedess change.  */
       if (!INTEGRAL_TYPE_P (use_type)
-          || TYPE_PRECISION (new_type) > TYPE_PRECISION (use_type)
-	  || TYPE_PRECISION (type) < TYPE_PRECISION (use_type))
+	  || TYPE_PRECISION (type) <= TYPE_PRECISION (use_type))
         return NULL;
+
+      /* Check that NEW_TYPE is not bigger than the conversion result.  */
+      if (TYPE_PRECISION (new_type) > TYPE_PRECISION (use_type))
+	return NULL;
 
       if (TYPE_UNSIGNED (new_type) != TYPE_UNSIGNED (use_type)
           || TYPE_PRECISION (new_type) != TYPE_PRECISION (use_type))
