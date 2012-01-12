@@ -1,5 +1,5 @@
 @ignore
-Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2012
 Free Software Foundation, Inc.
 This is part of the GNU Fortran manual.   
 For copying conditions, see the file gfortran.texi.
@@ -2665,8 +2665,7 @@ END PROGRAM
 
 @table @asis
 @item @emph{Description}:
-@code{CHMOD} changes the permissions of a file. This function invokes
-@code{/bin/chmod} and might therefore not work on all platforms.
+@code{CHMOD} changes the permissions of a file.
 
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
@@ -2692,8 +2691,9 @@ file name. Trailing blanks are ignored unless the character
 @code{achar(0)} are used as the file name.
 
 @item @var{MODE} @tab Scalar @code{CHARACTER} of default kind giving the
-file permission. @var{MODE} uses the same syntax as the @var{MODE}
-argument of @code{/bin/chmod}.
+file permission. @var{MODE} uses the same syntax as the @code{chmod} utility
+as defined by the POSIX standard. The argument shall either be a string of
+a nonnegative octal number or a symbolic mode.
 
 @item @var{STATUS} @tab (optional) scalar @code{INTEGER}, which is
 @code{0} on success and nonzero otherwise.

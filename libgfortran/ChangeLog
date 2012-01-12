@@ -1,3 +1,8 @@
+2012-01-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36755
+	* intrinsics/chmod.c (chmod_func): Replace call to /bin/chmod
+
 2012-01-12  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* configure.ac: Remove check for fdopen.
