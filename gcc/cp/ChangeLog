@@ -1,5 +1,14 @@
 2012-01-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48051
+	* mangle.c (write_expression): Mangle BASELINK scope if
+	BASELINK_QUALIFIED_P.
+	* search.c (adjust_result_of_qualified_name_lookup): Set
+	BASELINK_QUALIFIED_P.
+	* tree.c (cp_tree_equal) [BASELINK]: Compare BASELINK_QUALIFIED_P.
+	* parser.c (cp_parser_postfix_dot_deref_expression): Don't call
+	adjust_result_of_qualified_name_lookup for non-qualified names.
+
 	PR c++/51403
 	* pt.c (unify): Handle error_mark_node.
 

@@ -1,5 +1,9 @@
 2012-01-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48051
+	* g++.dg/abi/mangle48.C: Test qualified-names, too.
+	* g++.dg/abi/mangle58.C: Likewise.
+
 	PR c++/51403
 	* g++.dg/template/arg8.C: New.
 

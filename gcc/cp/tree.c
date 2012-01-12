@@ -2320,6 +2320,7 @@ cp_tree_equal (tree t1, tree t2)
     case BASELINK:
       return (BASELINK_BINFO (t1) == BASELINK_BINFO (t2)
 	      && BASELINK_ACCESS_BINFO (t1) == BASELINK_ACCESS_BINFO (t2)
+	      && BASELINK_QUALIFIED_P (t1) == BASELINK_QUALIFIED_P (t2)
 	      && cp_tree_equal (BASELINK_FUNCTIONS (t1),
 				BASELINK_FUNCTIONS (t2)));
 

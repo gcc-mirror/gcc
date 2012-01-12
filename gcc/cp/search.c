@@ -1550,6 +1550,9 @@ adjust_result_of_qualified_name_lookup (tree decl,
 	}
     }
 
+  if (BASELINK_P (decl))
+    BASELINK_QUALIFIED_P (decl) = true;
+
   return decl;
 }
 

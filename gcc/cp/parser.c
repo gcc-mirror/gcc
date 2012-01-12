@@ -6045,9 +6045,9 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	      parser->qualifying_scope = NULL_TREE;
 	      parser->object_scope = NULL_TREE;
 	    }
-	  if (scope && name && BASELINK_P (name))
+	  if (parser->scope && name && BASELINK_P (name))
 	    adjust_result_of_qualified_name_lookup
-	      (name, BINFO_TYPE (BASELINK_ACCESS_BINFO (name)), scope);
+	      (name, parser->scope, scope);
 	  postfix_expression
 	    = finish_class_member_access_expr (postfix_expression, name,
 					       template_p, 
