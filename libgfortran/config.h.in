@@ -363,9 +363,6 @@
 /* libm includes fabsl */
 #undef HAVE_FABSL
 
-/* Define to 1 if you have the `fdopen' function. */
-#undef HAVE_FDOPEN
-
 /* libm includes feenableexcept */
 #undef HAVE_FEENABLEEXCEPT
 

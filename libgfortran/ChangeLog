@@ -1,4 +1,12 @@
 2012-01-12  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure.ac: Remove check for fdopen.
+	* runtime/backtrace.c (CAN_PIPE): Fix comment, remove check for
+	fdopen.
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+
+2012-01-12  Janne Blomqvist  <jb@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
 	PR libfortran/51803

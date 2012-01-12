@@ -40,13 +40,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "unwind.h"
 
 
-/* Macros for common sets of capabilities: can we fork and exec, can
-   we use glibc-style backtrace functions, and can we use pipes.  */
+/* Macros for common sets of capabilities: can we fork and exec, and
+   can we use pipes to communicate with the subprocess.  */
 #define CAN_FORK (defined(HAVE_FORK) && defined(HAVE_EXECVE) \
 		  && defined(HAVE_WAIT))
 #define CAN_PIPE (CAN_FORK && defined(HAVE_PIPE) \
-		  && defined(HAVE_DUP2) && defined(HAVE_FDOPEN) \
-		  && defined(HAVE_CLOSE))
+		  && defined(HAVE_DUP2) && defined(HAVE_CLOSE))
 
 #ifndef PATH_MAX
 #define PATH_MAX 4096
