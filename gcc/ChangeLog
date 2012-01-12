@@ -1,3 +1,9 @@
+2012-01-12  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/51799
+	* tree-vect-patterns.c (vect_recog_over_widening_pattern): Check
+	that the last operation is a type demotion.
+
 2012-01-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*zero_extendsidi2_rex64): Correct movl template.
