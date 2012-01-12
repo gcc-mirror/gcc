@@ -88,6 +88,9 @@ go_langhook_init (void)
 {
   build_common_tree_nodes (false, false);
 
+  /* I don't know why this has to be done explicitly.  */
+  void_list_node = build_tree_list (NULL_TREE, void_type_node);
+
   /* We must create the gogo IR after calling build_common_tree_nodes
      (because Gogo::define_builtin_function_trees refers indirectly
      to, e.g., unsigned_char_type_node) but before calling
@@ -96,9 +99,6 @@ go_langhook_init (void)
   go_create_gogo (INT_TYPE_SIZE, POINTER_SIZE);
 
   build_common_builtin_nodes ();
-
-  /* I don't know why this is not done by any of the above.  */
-  void_list_node = build_tree_list (NULL_TREE, void_type_node);
 
   /* The default precision for floating point numbers.  This is used
      for floating point constants with abstract type.  This may
