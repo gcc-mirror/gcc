@@ -1,3 +1,28 @@
+2012-01-09  Richard Henderson  <rth@redhat.com>
+	    Denis Chertykov  <chertykov@gmail.com>
+
+	PR target/50925
+	* config/avr/avr-protos.h (avr_hard_regno_nregs): Declare.
+	* config/avr/avr.c (avr_can_eliminate): Simplify.
+	(avr_initial_elimination_offset): Likewise.
+	(avr_prologue_setup_frame): Use hard_frame_pointer_rtx.
+	(expand_epilogue): Likewise.
+	(avr_legitimize_address): Gut.
+	(avr_legitimize_reload_address): Use hard_frame_pointer_rtx.
+	(avr_hard_regno_nregs): New.
+	(avr_hard_regno_ok): Allow only Pmode for arg and frame_pointers.
+	(avr_regno_mode_code_ok_for_base_b): Handle arg and frame pointers.
+	* config/avr/avr.h (FIXED_REGISTERS): Adjust arg pointer,
+	add soft frame pointer.
+	(CALL_USED_REGISTERS): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(REGISTER_NAMES): Likewise.
+	(HARD_REGNO_NREGS): Use avr_hard_regno_nregs.
+	(HARD_FRAME_POINTER_REGNUM): New.
+	(FRAME_POINTER_REGNUM): Use soft frame pointer.
+	(ELIMINABLE_REGS): Eliminate from the soft frame pointer,
+	remove the HARD_FRAME_POINTER self-elimination.
+
 2012-01-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/51756
