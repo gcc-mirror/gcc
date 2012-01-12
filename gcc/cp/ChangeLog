@@ -1,3 +1,13 @@
+2012-01-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/51633
+	* semantics.c (cp_parser_ctor_initializer_opt_and_function_body):
+	Set the pointer to the last block of the constructor to the
+	current statement.
+	(build_constexpr_constructor_member_initializers): Get
+	build_data_member_initialization a chance to deal with more
+	statements before we choke.
+
 2012-01-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48051

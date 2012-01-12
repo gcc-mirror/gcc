@@ -17424,11 +17424,8 @@ cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser)
      cp_parser_function_body changed its state.  */
   if (check_body_p)
     {
-      list = body;
-      if (TREE_CODE (list) == BIND_EXPR)
-	list = BIND_EXPR_BODY (list);
-      if (TREE_CODE (list) == STATEMENT_LIST
-	  && STATEMENT_LIST_TAIL (list) != NULL)
+      list = cur_stmt_list;
+      if (STATEMENT_LIST_TAIL (list))
 	last = STATEMENT_LIST_TAIL (list)->stmt;
     }
   /* Parse the function-body.  */
