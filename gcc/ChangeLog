@@ -1,4 +1,4 @@
-2012-01-10  Georg-Johann Lay  <avr@gjlay.de>
+2012-01-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/51756
 	* config/avr/avr.c (avr_encode_section_info): Test for absence of
