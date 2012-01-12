@@ -1,4 +1,11 @@
-2012-01-12  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+2012-01-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from mainline r183129
+	PR target/51756
+	* config/avr/avr.c (avr_encode_section_info): Test for absence of
+	DECL_EXTERNAL when checking for initializers of progmem variables.
+
+22012-01-12  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	Backport from mainline
 	2012-01-11  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
