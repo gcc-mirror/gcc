@@ -1,3 +1,12 @@
+2012-01-12  Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51057
+	PR fortran/51616
+	* lib/target-supports.exp
+	(check_effective_target_fortran_largest_fp_has_sqrt): New.
+	* gfortran.dg/quad_2.f90: Use it, add pattern for IBM's real(16).
+
 2012-01-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51565

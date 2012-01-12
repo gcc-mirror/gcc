@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-require-effective-target fortran_largest_fp_has_sqrt }
 !
 ! This test checks whether the largest possible
 ! floating-point number works.
@@ -40,22 +41,36 @@ program test_qp
        if (str2 /= "1.0000000000000000") call abort()
        if (str3 /= "   1.4142135623730951") call abort()
        if (str4 /= "1.4142135623730951") call abort()
+
      case (10)
        if (str1 /= "   1.00000000000000000000") call abort()
        if (str2 /= "1.00000000000000000000") call abort()
        if (str3 /= "   1.41421356237309504876") call abort()
        if (str4 /= "1.41421356237309504876") call abort()
+
      case (16)
        if (str1 /= "   1.00000000000000000000000000000000000") call abort()
        if (str2 /= "1.00000000000000000000000000000000000") call abort()
-       if (str3 /= "   1.41421356237309504880168872420969798") call abort()
-       if (str4 /= "1.41421356237309504880168872420969798") call abort()
+
+       if (digits(1.0_qp) == 113) then
+         ! IEEE 754 binary 128 format
+         ! e.g. libquadmath/__float128 on i686/x86_64/ia64
+         if (str3 /= "   1.41421356237309504880168872420969798") call abort()
+         if (str4 /= "1.41421356237309504880168872420969798") call abort()
+       else if (digits(1.0_qp) == 106) then
+         ! IBM binary 128 format
+         if (str3(1:37) /= "   1.41421356237309504880168872420969") call abort()
+         if (str4(1:34) /= "1.41421356237309504880168872420969") call abort()
+       end if
+
+       ! Do a libm run-time test
        block
          real(qp), volatile :: fp2a
          fp2a = 2.0_qp
          fp2a = sqrt (fp2a)
          if (abs (fp2a - fp2) > sqrt(2.0_qp)-nearest(sqrt(2.0_qp),-1.0_qp)) call abort()
        end block
+
      case default
        call abort()
    end select
