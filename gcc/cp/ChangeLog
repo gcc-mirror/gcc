@@ -1,3 +1,8 @@
+2012-01-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51403
+	* pt.c (unify): Handle error_mark_node.
+
 2012-01-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51565
