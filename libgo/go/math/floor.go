@@ -7,9 +7,15 @@ package math
 // Floor returns the greatest integer value less than or equal to x.
 //
 // Special cases are:
+//	Floor(±0) = ±0
 //	Floor(±Inf) = ±Inf
 //	Floor(NaN) = NaN
+func libc_floor(float64) float64 __asm__("floor")
 func Floor(x float64) float64 {
+	return libc_floor(x)
+}
+
+func floor(x float64) float64 {
 	// TODO(rsc): Remove manual inlining of IsNaN, IsInf
 	// when compiler does it for us
 	if x == 0 || x != x || x > MaxFloat64 || x < -MaxFloat64 { // x == 0 || IsNaN(x) || IsInf(x, 0)
@@ -29,16 +35,30 @@ func Floor(x float64) float64 {
 // Ceil returns the least integer value greater than or equal to x.
 //
 // Special cases are:
+//	Ceil(±0) = ±0
 //	Ceil(±Inf) = ±Inf
 //	Ceil(NaN) = NaN
-func Ceil(x float64) float64 { return -Floor(-x) }
+func libc_ceil(float64) float64 __asm__("ceil")
+func Ceil(x float64) float64 {
+	return libc_ceil(x)
+}
+
+func ceil(x float64) float64 {
+	return -Floor(-x)
+}
 
 // Trunc returns the integer value of x.
 //
 // Special cases are:
+//	Trunc(±0) = ±0
 //	Trunc(±Inf) = ±Inf
 //	Trunc(NaN) = NaN
+func libc_trunc(float64) float64 __asm__("trunc")
 func Trunc(x float64) float64 {
+	return libc_trunc(x)
+}
+
+func trunc(x float64) float64 {
 	// TODO(rsc): Remove manual inlining of IsNaN, IsInf
 	// when compiler does it for us
 	if x == 0 || x != x || x > MaxFloat64 || x < -MaxFloat64 { // x == 0 || IsNaN(x) || IsInf(x, 0)

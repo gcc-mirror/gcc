@@ -69,9 +69,9 @@ runtime_SysAlloc(uintptr n)
 void
 runtime_SysUnused(void *v, uintptr n)
 {
-	USED(v);
-	USED(n);
-	// TODO(rsc): call madvise MADV_DONTNEED
+#ifdef MADV_DONTNEED
+	runtime_madvise(v, n, MADV_DONTNEED);
+#endif
 }
 
 void

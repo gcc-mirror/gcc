@@ -51,7 +51,12 @@ func satan(arg float64) float64 {
 // Special cases are:
 //	Atan(±0) = ±0
 //	Atan(±Inf) = ±Pi/2
+func libc_atan(float64) float64 __asm__("atan")
 func Atan(x float64) float64 {
+	return libc_atan(x)
+}
+
+func atan(x float64) float64 {
 	if x == 0 {
 		return x
 	}

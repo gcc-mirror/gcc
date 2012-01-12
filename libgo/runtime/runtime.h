@@ -353,7 +353,8 @@ void	free(void *v);
 struct __go_func_type;
 bool	runtime_addfinalizer(void*, void(*fn)(void*), const struct __go_func_type *);
 #define runtime_mmap mmap
-#define runtime_munmap(p, s) munmap((p), (s))
+#define runtime_munmap munmap
+#define runtime_madvise madvise
 #define runtime_cas(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 #define runtime_casp(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 #define runtime_xadd(p, v) __sync_add_and_fetch (p, v)

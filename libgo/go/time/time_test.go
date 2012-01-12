@@ -5,6 +5,8 @@
 package time_test
 
 import (
+	"bytes"
+	"encoding/gob"
 	"strconv"
 	"strings"
 	"testing"
@@ -628,6 +630,108 @@ func TestDate(t *testing.T) {
 			t.Errorf("Date(%d, %d, %d, %d, %d, %d, %d, %s) = %v, want %v",
 				tt.year, tt.month, tt.day, tt.hour, tt.min, tt.sec, tt.nsec, tt.z,
 				time, want)
+		}
+	}
+}
+
+var daysInTests = []struct {
+	year, month, di int
+}{
+	{2011, 1, 31},  // January, first month, 31 days
+	{2011, 2, 28},  // February, non-leap year, 28 days
+	{2012, 2, 29},  // February, leap year, 29 days
+	{2011, 6, 30},  // June, 30 days
+	{2011, 12, 31}, // December, last month, 31 days
+}
+
+func TestDaysIn(t *testing.T) {
+	// The daysIn function is not exported.
+	// Test the daysIn function via the `var DaysIn = daysIn`
+	// statement in the internal_test.go file.
+	for _, tt := range daysInTests {
+		di := DaysIn(Month(tt.month), tt.year)
+		if di != tt.di {
+			t.Errorf("got %d; expected %d for %d-%02d",
+				di, tt.di, tt.year, tt.month)
+		}
+	}
+}
+
+func TestAddToExactSecond(t *testing.T) {
+	// Add an amount to the current time to round it up to the next exact second.
+	// This test checks that the nsec field still lies within the range [0, 999999999].
+	t1 := Now()
+	t2 := t1.Add(Second - Duration(t1.Nanosecond()))
+	sec := (t1.Second() + 1) % 60
+	if t2.Second() != sec || t2.Nanosecond() != 0 {
+		t.Errorf("sec = %d, nsec = %d, want sec = %d, nsec = 0", t2.Second(), t2.Nanosecond(), sec)
+	}
+}
+
+var gobTests = []Time{
+	Date(0, 1, 2, 3, 4, 5, 6, UTC),
+	Date(7, 8, 9, 10, 11, 12, 13, FixedZone("", 0)),
+	Unix(81985467080890095, 0x76543210), // Time.sec: 0x0123456789ABCDEF
+	Time{},                              // nil location
+	Date(1, 2, 3, 4, 5, 6, 7, FixedZone("", 32767*60)),
+	Date(1, 2, 3, 4, 5, 6, 7, FixedZone("", -32768*60)),
+}
+
+func TestTimeGob(t *testing.T) {
+	var b bytes.Buffer
+	enc := gob.NewEncoder(&b)
+	dec := gob.NewDecoder(&b)
+	for _, tt := range gobTests {
+		var gobtt Time
+		if err := enc.Encode(&tt); err != nil {
+			t.Errorf("%v gob Encode error = %q, want nil", tt, err)
+		} else if err := dec.Decode(&gobtt); err != nil {
+			t.Errorf("%v gob Decode error = %q, want nil", tt, err)
+		} else {
+			gobname, goboffset := gobtt.Zone()
+			name, offset := tt.Zone()
+			if !gobtt.Equal(tt) || goboffset != offset || gobname != name {
+				t.Errorf("Decoded time = %v, want %v", gobtt, tt)
+			}
+		}
+		b.Reset()
+	}
+}
+
+var invalidEncodingTests = []struct {
+	bytes []byte
+	want  string
+}{
+	{[]byte{}, "Time.GobDecode: no data"},
+	{[]byte{0, 2, 3}, "Time.GobDecode: unsupported version"},
+	{[]byte{1, 2, 3}, "Time.GobDecode: invalid length"},
+}
+
+func TestInvalidTimeGob(t *testing.T) {
+	for _, tt := range invalidEncodingTests {
+		var ignored Time
+		err := ignored.GobDecode(tt.bytes)
+		if err == nil || err.Error() != tt.want {
+			t.Errorf("time.GobDecode(%#v) error = %v, want %v", tt.bytes, err, tt.want)
+		}
+	}
+}
+
+var notEncodableTimes = []struct {
+	time Time
+	want string
+}{
+	{Date(0, 1, 2, 3, 4, 5, 6, FixedZone("", 1)), "Time.GobEncode: zone offset has fractional minute"},
+	{Date(0, 1, 2, 3, 4, 5, 6, FixedZone("", -1*60)), "Time.GobEncode: unexpected zone offset"},
+	{Date(0, 1, 2, 3, 4, 5, 6, FixedZone("", -32769*60)), "Time.GobEncode: unexpected zone offset"},
+	{Date(0, 1, 2, 3, 4, 5, 6, FixedZone("", 32768*60)), "Time.GobEncode: unexpected zone offset"},
+}
+
+func TestNotGobEncodableTime(t *testing.T) {
+	for _, tt := range notEncodableTimes {
+		_, err := tt.time.GobEncode()
+		if err == nil || err.Error() != tt.want {
+			t.Errorf("%v GobEncode error = %v, want %v", tt.time, err, tt.want)
 		}
 	}
 }

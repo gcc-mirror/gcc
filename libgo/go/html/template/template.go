@@ -49,20 +49,28 @@ func (t *Template) Execute(wr io.Writer, data interface{}) (err error) {
 
 // ExecuteTemplate applies the template associated with t that has the given
 // name to the specified data object and writes the output to wr.
-func (t *Template) ExecuteTemplate(wr io.Writer, name string, data interface{}) (err error) {
+func (t *Template) ExecuteTemplate(wr io.Writer, name string, data interface{}) error {
+	tmpl, err := t.lookupAndEscapeTemplate(wr, name)
+	if err != nil {
+		return err
+	}
+	return tmpl.text.Execute(wr, data)
+}
+
+// lookupAndEscapeTemplate guarantees that the template with the given name
+// is escaped, or returns an error if it cannot be. It returns the named
+// template.
+func (t *Template) lookupAndEscapeTemplate(wr io.Writer, name string) (tmpl *Template, err error) {
 	t.nameSpace.mu.Lock()
-	tmpl := t.set[name]
+	defer t.nameSpace.mu.Unlock()
+	tmpl = t.set[name]
 	if (tmpl == nil) != (t.text.Lookup(name) == nil) {
 		panic("html/template internal error: template escaping out of sync")
 	}
 	if tmpl != nil && !tmpl.escaped {
 		err = escapeTemplates(tmpl, name)
 	}
-	t.nameSpace.mu.Unlock()
-	if err != nil {
-		return
-	}
-	return t.text.ExecuteTemplate(wr, name, data)
+	return tmpl, err
 }
 
 // Parse parses a string into a template. Nested template definitions
@@ -146,12 +154,20 @@ func (t *Template) Name() string {
 	return t.text.Name()
 }
 
+// FuncMap is the type of the map defining the mapping from names to
+// functions. Each function must have either a single return value, or two
+// return values of which the second has type error. In that case, if the
+// second (error) argument evaluates to non-nil during execution, execution
+// terminates and Execute returns that error. FuncMap has the same base type
+// as template.FuncMap, copied here so clients need not import "text/template".
+type FuncMap map[string]interface{}
+
 // Funcs adds the elements of the argument map to the template's function map.
 // It panics if a value in the map is not a function with appropriate return
 // type. However, it is legal to overwrite elements of the map. The return
 // value is the template, so calls can be chained.
-func (t *Template) Funcs(funcMap template.FuncMap) *Template {
-	t.text.Funcs(funcMap)
+func (t *Template) Funcs(funcMap FuncMap) *Template {
+	t.text.Funcs(template.FuncMap(funcMap))
 	return t
 }
 
@@ -175,7 +191,9 @@ func (t *Template) Lookup(name string) *Template {
 
 // Must panics if err is non-nil in the same way as template.Must.
 func Must(t *Template, err error) *Template {
-	t.text = template.Must(t.text, err)
+	if err != nil {
+		panic(err)
+	}
 	return t
 }
 

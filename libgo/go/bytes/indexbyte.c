@@ -26,3 +26,17 @@ IndexByte (struct __go_open_array s, char b)
     return -1;
   return p - (char *) s.__values;
 }
+
+/* Comparison.  */
+
+_Bool Equal (struct __go_open_array a, struct __go_open_array b)
+  asm ("libgo_bytes.bytes.Equal")
+  __attribute__ ((no_split_stack));
+
+_Bool
+Equal (struct __go_open_array a, struct __go_open_array b)
+{
+  if (a.__count != b.__count)
+    return 0;
+  return __builtin_memcmp (a.__values, b.__values, a.__count) == 0;
+}
