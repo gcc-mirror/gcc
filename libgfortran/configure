@@ -2569,7 +2569,6 @@ as_fn_append ac_func_list " execve"
 as_fn_append ac_func_list " pipe"
 as_fn_append ac_func_list " dup2"
 as_fn_append ac_func_list " close"
-as_fn_append ac_func_list " fdopen"
 as_fn_append ac_func_list " strcasestr"
 as_fn_append ac_func_list " getrlimit"
 as_fn_append ac_func_list " gettimeofday"
@@ -12318,7 +12317,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12321 "configure"
+#line 12320 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12424,7 +12423,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12427 "configure"
+#line 12426 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16434,8 +16433,6 @@ _ACEOF
 
 fi
 done
-
-
 
 
 
