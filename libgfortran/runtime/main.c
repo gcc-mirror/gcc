@@ -124,11 +124,16 @@ store_exe_path (const char * argv0)
 
 #ifdef HAVE_GETCWD
   cwd = getcwd (buf, sizeof (buf));
-  if (!cwd)
-    cwd = ".";
 #else
-  cwd = ".";
+  cwd = NULL;
 #endif
+
+  if (!cwd)
+    {
+      exe_path = argv0;
+      please_free_exe_path_when_done = 0;
+      return;
+    }
 
   /* exe_path will be cwd + "/" + argv[0] + "\0".  This will not work
      if the executable is not in the cwd, but at this point we're out
