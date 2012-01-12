@@ -1,3 +1,8 @@
+2012-01-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*zero_extendsidi2_rex64): Correct movl template.
+	(x86_shift<mode>_adj_1): Remove operand constraint from operand 3.
+
 2012-01-10  Joseph Myers  <joseph@codesourcery.com>
 
 	Revert:
@@ -19,8 +24,7 @@
 
 2012-01-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
-	* config/mips/mips.md (loadgp_newabi_<mode>): Add missing
-	earlyclobber.
+	* config/mips/mips.md (loadgp_newabi_<mode>): Add missing earlyclobber.
 
 2012-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -80,8 +84,7 @@
 	PR tree-optimization/49651
 	* tree-ssa-structalias.c (type_can_have_subvars): New function.
 	(var_can_have_subvars): Use it.
-	(get_constraint_for_1): Only consider subfields if there
-	can be any.
+	(get_constraint_for_1): Only consider subfields if there can be any.
 
 2012-01-03  Sandra Loosemore  <sandra@codesourcery.com>
 
