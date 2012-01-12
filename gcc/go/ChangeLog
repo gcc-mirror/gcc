@@ -1,3 +1,8 @@
+2012-01-11  Ian Lance Taylor  <iant@google.com>
+
+	* go-lang.c (go_langhook_init): Initialize void_list_node before
+	calling go_create_gogo.
+
 2012-01-10  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::type_size): New function.
