@@ -1,3 +1,9 @@
+2012-01-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36755
+	* intrinsic.texi (CHMOD): Extend a bit and remove statement
+	that /bin/chmod is called.
+
 2012-01-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gfortran.texi (Fortran 2003 Status): Fix grammar.

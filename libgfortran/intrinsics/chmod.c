@@ -1,8 +1,8 @@
 /* Implementation of the CHMOD intrinsic.
-   Copyright (C) 2006, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2009, 2012 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert <coudert@clipper.ens.fr>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -25,20 +25,39 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 
-#include <errno.h>
-#include <string.h>
+#if defined(HAVE_SYS_STAT_H)
 
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#ifdef  HAVE_SYS_WAIT_H
-#include <sys/wait.h>
-#endif
+#include <stdbool.h>
+#include <string.h>	/* For memcpy. */
+#include <sys/stat.h>	/* For stat, chmod and umask.  */
 
-/* INTEGER FUNCTION ACCESS(NAME, MODE)
-   CHARACTER(len=*), INTENT(IN) :: NAME, MODE  */
 
-#if defined(HAVE_FORK) && defined(HAVE_EXECL) && defined(HAVE_WAIT)
+/* INTEGER FUNCTION CHMOD (NAME, MODE)
+   CHARACTER(len=*), INTENT(IN) :: NAME, MODE
+
+   Sets the file permission "chmod" using a mode string.
+
+   The mode string allows for the same arguments as POSIX's chmod utility.
+   a) string containing an octal number.
+   b) Comma separated list of clauses of the form:
+      [<who-list>]<op>[<perm-list>|<permcopy>][<op>[<perm-list>|<permcopy>],...]
+      <who> - 'u', 'g', 'o', 'a'
+      <op>  - '+', '-', '='
+      <perm> - 'r', 'w', 'x', 'X', 's', t'
+   If <op> is not followed by a perm-list or permcopy, '-' and '+' do not
+   change the mode while '=' clears all file mode bits. 'u' stands for the
+   user permissions, 'g' for the group and 'o' for the permissions for others.
+   'a' is equivalent to 'ugo'. '+' sets the given permission in addition to
+   the ones of the file, '-' unsets the given permissions of the file, while
+   '=' sets the file to that mode. 'r' sets the read, 'w' the write, and
+   'x' the execute mode. 'X' sets the execute bit if the file is a directory
+   or if the user, group or other executable bit is set. 't' sets the sticky
+   bit, 's' (un)sets the and/or S_ISUID/S_ISGID bit.
+
+   Note that if <who> is omitted, the permissions are filtered by the umask.
+
+   A return value of 0 indicates success, -1 an error of chmod() while 1
+   indicates a mode parsing error.  */
 
 extern int chmod_func (char *, char *, gfc_charlen_type, gfc_charlen_type);
 export_proto(chmod_func);
@@ -47,41 +66,379 @@ int
 chmod_func (char *name, char *mode, gfc_charlen_type name_len,
 	    gfc_charlen_type mode_len)
 {
-  char * file, * m;
-  pid_t pid;
-  int status;
+  char * file;
+  int i;
+  bool ugo[3];
+  bool rwxXstugo[9];
+  int set_mode, part;
+  bool is_dir, honor_umask, continue_clause = false;
+  mode_t mode_mask, file_mode, new_mode;
+  struct stat stat_buf;
 
-  /* Trim trailing spaces.  */
+  /* Trim trailing spaces of the file name.  */
   while (name_len > 0 && name[name_len - 1] == ' ')
     name_len--;
-  while (mode_len > 0 && mode[mode_len - 1] == ' ')
-    mode_len--;
 
-  /* Make a null terminated copy of the strings.  */
+  /* Make a null terminated copy of the file name.  */
   file = gfc_alloca (name_len + 1);
   memcpy (file, name, name_len);
   file[name_len] = '\0';
 
-  m = gfc_alloca (mode_len + 1);
-  memcpy (m, mode, mode_len);
-  m[mode_len]= '\0';
+  if (mode_len == 0)
+    return 1;
 
-  /* Execute /bin/chmod.  */
-  if ((pid = fork()) < 0)
-    return errno;
-  if (pid == 0)
+  if (mode[0] >= '0' && mode[0] <= '9')
     {
-      /* Child process.  */
-      execl ("/bin/chmod", "chmod", m, file, (char *) NULL);
-      return errno;
+      if (sscanf (mode, "%o", &file_mode) != 1)
+	return 1;
+      return chmod (file, file_mode);
     }
-  else
-    wait (&status);
 
-  if (WIFEXITED(status))
-    return WEXITSTATUS(status);
-  else
-    return -1;
+  /* Read the current file mode. */
+  if (stat (file, &stat_buf))
+    return 1;
+
+  file_mode = stat_buf.st_mode & ~S_IFMT;
+  is_dir = stat_buf.st_mode & S_IFDIR;
+
+  /* Obtain the umask without distroying the setting.  */
+  mode_mask = 0;
+  mode_mask = umask (mode_mask);
+  (void) umask (mode_mask);
+
+  for (i = 0; i < mode_len; i++)
+    {
+      if (!continue_clause)
+	{
+	  ugo[0] = false;
+	  ugo[1] = false;
+	  ugo[2] = false;
+	  honor_umask = true;
+	}
+      continue_clause = false; 
+      rwxXstugo[0] = false;
+      rwxXstugo[1] = false;
+      rwxXstugo[2] = false;
+      rwxXstugo[3] = false;
+      rwxXstugo[4] = false;
+      rwxXstugo[5] = false;
+      rwxXstugo[6] = false;
+      rwxXstugo[7] = false;
+      rwxXstugo[8] = false;
+      rwxXstugo[9] = false;
+      part = 0;
+      set_mode = -1;
+      for (; i < mode_len; i++)
+	{
+	  switch (mode[i])
+	    {
+	    /* User setting: a[ll]/u[ser]/g[roup]/o[ther].  */
+	    case 'a':
+	      if (part > 1)
+		return 1;
+	      ugo[0] = true;
+	      ugo[1] = true;
+	      ugo[2] = true;
+	      part = 1;
+	      honor_umask = false;
+	      break;
+	    case 'u':
+	      if (part == 2)
+		{
+		  rwxXstugo[6] = true; 
+		  part = 4;
+		  break; 
+		}
+	      if (part > 1)
+		return 1;
+	      ugo[0] = true;
+	      part = 1;
+	      honor_umask = false;
+	      break;
+	    case 'g':
+	      if (part == 2)
+		{
+		  rwxXstugo[7] = true; 
+		  part = 4;
+		  break; 
+		}
+	      if (part > 1)
+		return 1;
+       	      ugo[1] = true;
+	      part = 1;
+	      honor_umask = false;
+	      break;
+	    case 'o':
+	      if (part == 2)
+		{
+		  rwxXstugo[8] = true; 
+		  part = 4;
+		  break; 
+		}
+	      if (part > 1)
+		return 1;
+	      ugo[2] = true;
+	      part = 1;
+	      honor_umask = false;
+	      break;
+
+	    /* Mode setting: =+-.  */
+	    case '=':
+	      if (part > 2)
+		{
+		  continue_clause = true;
+		  i--;
+		  part = 2;
+		  goto clause_done;
+		}
+	      set_mode = 1;
+	      part = 2;
+	      break;
+
+	    case '-':
+	      if (part > 2)
+		{
+		  continue_clause = true;
+		  i--;
+		  part = 2;
+		  goto clause_done;
+		}
+	      set_mode = 2;
+	      part = 2;
+	      break;
+
+	    case '+':
+	      if (part > 2)
+		{
+		  continue_clause = true;
+		  i--;
+		  part = 2;
+		  goto clause_done;
+		}
+	      set_mode = 3;
+	      part = 2;
+	      break;
+
+	    /* Permissions: rwxXst - for ugo see above.  */
+	    case 'r':
+	      if (part != 2 && part != 3)
+		return 1;
+	      rwxXstugo[0] = true;
+	      part = 3;
+	      break;
+
+	    case 'w':
+	      if (part != 2 && part != 3)
+		return 1;
+	      rwxXstugo[1] = true;
+	      part = 3;
+	      break;
+
+	    case 'x':
+	      if (part != 2 && part != 3)
+		return 1;
+	      rwxXstugo[2] = true;
+	      part = 3;
+	      break;
+
+	    case 'X':
+	      if (part != 2 && part != 3)
+		return 1;
+	      rwxXstugo[3] = true;
+	      part = 3;
+	      break;
+
+	    case 's':
+	      if (part != 2 && part != 3)
+		return 1;
+	      rwxXstugo[4] = true;
+	      part = 3;
+	      break;
+
+	    case 't':
+	      if (part != 2 && part != 3)
+		return 1;
+	      rwxXstugo[5] = true;
+	      part = 3;
+	      break;
+
+	    /* Tailing blanks are valid in Fortran.  */
+	    case ' ':
+	      for (i++; i < mode_len; i++)
+		if (mode[i] != ' ')
+		  break;
+	      if (i != mode_len)
+		return 1;
+	      goto clause_done;
+
+	    case ',':
+	      goto clause_done;
+
+	    default:
+	      return 1;
+	    }
+	}
+
+clause_done:
+      if (part < 2)
+	return 1;
+
+      new_mode = 0;
+
+      /* Read. */
+      if (rwxXstugo[0])
+	{
+	  if (ugo[0] || honor_umask)
+	    new_mode |= S_IRUSR;
+	  if (ugo[1] || honor_umask)
+	    new_mode |= S_IRGRP;
+	  if (ugo[2] || honor_umask)
+	    new_mode |= S_IROTH;
+	}
+
+      /* Write.  */
+      if (rwxXstugo[1])
+	{
+	  if (ugo[0] || honor_umask)
+	    new_mode |= S_IWUSR;
+	  if (ugo[1] || honor_umask)
+	    new_mode |= S_IWGRP;
+	  if (ugo[2] || honor_umask)
+	    new_mode |= S_IWOTH;
+	}
+
+      /* Execute. */
+      if (rwxXstugo[2])
+	{
+	  if (ugo[0] || honor_umask)
+	    new_mode |= S_IXUSR;
+	  if (ugo[1] || honor_umask)
+	    new_mode |= S_IXGRP;
+	  if (ugo[2] || honor_umask)
+	    new_mode |= S_IXOTH;
+	}
+
+      /* 'X' execute.  */
+      if (rwxXstugo[3]
+	  && (is_dir || (file_mode & (S_IXUSR | S_IXGRP | S_IXOTH))))
+	new_mode |= (S_IXUSR | S_IXGRP | S_IXOTH);
+
+      /* 's'.  */
+      if (rwxXstugo[4])
+	{
+	  if (ugo[0] || honor_umask)
+	    new_mode |= S_ISUID;
+	  if (ugo[1] || honor_umask)
+	    new_mode |= S_ISGID;
+	}
+
+      /* As original 'u'.  */
+      if (rwxXstugo[6])
+	{
+	  if (ugo[1] || honor_umask)
+	    {
+	      if (file_mode & S_IRUSR)
+		new_mode |= S_IRGRP;
+	      if (file_mode & S_IWUSR)
+		new_mode |= S_IWGRP;
+	      if (file_mode & S_IXUSR)
+		new_mode |= S_IXGRP;
+	    }
+	  if (ugo[2] || honor_umask)
+	    {
+	      if (file_mode & S_IRUSR)
+		new_mode |= S_IROTH;
+	      if (file_mode & S_IWUSR)
+		new_mode |= S_IWOTH;
+	      if (file_mode & S_IXUSR)
+		new_mode |= S_IXOTH;
+	    }
+	}
+
+      /* As original 'g'.  */
+      if (rwxXstugo[7])
+	{
+	  if (ugo[0] || honor_umask)
+	    {
+	      if (file_mode & S_IRGRP)
+		new_mode |= S_IRUSR;
+	      if (file_mode & S_IWGRP)
+		new_mode |= S_IWUSR;
+	      if (file_mode & S_IXGRP)
+		new_mode |= S_IXUSR;
+	    }
+	  if (ugo[2] || honor_umask)
+	    {
+	      if (file_mode & S_IRGRP)
+		new_mode |= S_IROTH;
+	      if (file_mode & S_IWGRP)
+		new_mode |= S_IWOTH;
+	      if (file_mode & S_IXGRP)
+		new_mode |= S_IXOTH;
+	    }
+	}
+
+      /* As original 'o'.  */
+      if (rwxXstugo[8])
+	{
+	  if (ugo[0] || honor_umask)
+	    {
+	      if (file_mode & S_IROTH)
+		new_mode |= S_IRUSR;
+	      if (file_mode & S_IWOTH)
+		new_mode |= S_IWUSR;
+	      if (file_mode & S_IXOTH)
+		new_mode |= S_IXUSR;
+	    }
+	  if (ugo[1] || honor_umask)
+	    {
+	      if (file_mode & S_IROTH)
+		new_mode |= S_IRGRP;
+	      if (file_mode & S_IWOTH)
+		new_mode |= S_IWGRP;
+	      if (file_mode & S_IXOTH)
+		new_mode |= S_IXGRP;
+	    }
+	}
+
+    if (honor_umask)
+      new_mode &= ~mode_mask;
+
+    if (set_mode == 1)
+      {
+	/* Set '='.  */
+	if ((ugo[0] || honor_umask) && !rwxXstugo[6])
+	  file_mode = (file_mode & ~(S_ISUID | S_IRUSR | S_IWUSR | S_IXUSR))
+		      | (new_mode & (S_ISUID | S_IRUSR | S_IWUSR | S_IXUSR));
+	if ((ugo[1] || honor_umask) && !rwxXstugo[7])
+	  file_mode = (file_mode & ~(S_ISGID | S_IRGRP | S_IWGRP | S_IXGRP))
+		      | (new_mode & (S_ISGID | S_IRGRP | S_IWGRP | S_IXGRP));
+	if ((ugo[2] || honor_umask) && !rwxXstugo[8])
+	  file_mode = (file_mode & ~(S_IROTH | S_IWOTH | S_IXOTH))
+		      | (new_mode & (S_IROTH | S_IWOTH | S_IXOTH));
+	if (is_dir && rwxXstugo[5])
+	  file_mode |= S_ISVTX;
+	else if (!is_dir)
+	  file_mode &= ~S_ISVTX;
+      }
+    else if (set_mode == 2)
+      {
+	/* Clear '-'.  */
+	file_mode &= ~new_mode;
+	if (rwxXstugo[5] || !is_dir)
+	  file_mode &= ~S_ISVTX;
+      }
+    else if (set_mode == 3)
+      {
+	file_mode |= new_mode;
+	if (rwxXstugo[5] && is_dir)
+	  file_mode |= S_ISVTX;
+	else if (!is_dir)
+	  file_mode &= ~S_ISVTX;
+      }
+  }
+
+  return chmod (file, file_mode);
 }
 
 
