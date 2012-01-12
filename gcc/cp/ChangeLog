@@ -1,5 +1,9 @@
 2012-01-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51565
+	* call.c (standard_conversion): For ptrmemfuncs, compare the
+	static_fn_types.
+
 	PR c++/51818
 	* mangle.c (find_substitution): A type is only a substitution
 	match if we're looking for a type.
