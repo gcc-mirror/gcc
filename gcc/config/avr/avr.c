@@ -7222,6 +7222,7 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
   if (new_decl_p
       && decl && DECL_P (decl)
       && NULL_TREE == DECL_INITIAL (decl)
+      && !DECL_EXTERNAL (decl)
       && avr_progmem_p (decl, DECL_ATTRIBUTES (decl)))
     {
       warning (OPT_Wuninitialized,
