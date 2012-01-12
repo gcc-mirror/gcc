@@ -125,17 +125,108 @@ Gogo::define_builtin_function_trees()
 					  NULL_TREE),
 		 false);
 
-  // We provide sqrt for the math library.
-  define_builtin(BUILT_IN_SQRT, "__builtin_sqrt", "sqrt",
+  // We provide some functions for the math library.
+  tree math_function_type = build_function_type_list(double_type_node,
+						     double_type_node,
+						     NULL_TREE);
+  tree math_function_type_long =
+    build_function_type_list(long_double_type_node, long_double_type_node,
+			     long_double_type_node, NULL_TREE);
+  tree math_function_type_two = build_function_type_list(double_type_node,
+							 double_type_node,
+							 double_type_node,
+							 NULL_TREE);
+  tree math_function_type_long_two =
+    build_function_type_list(long_double_type_node, long_double_type_node,
+			     long_double_type_node, NULL_TREE);
+  define_builtin(BUILT_IN_ACOS, "__builtin_acos", "acos",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_ACOSL, "__builtin_acosl", "acosl",
+		 math_function_type_long, true);
+  define_builtin(BUILT_IN_ASIN, "__builtin_asin", "asin",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_ASINL, "__builtin_asinl", "asinl",
+		 math_function_type_long, true);
+  define_builtin(BUILT_IN_ATAN, "__builtin_atan", "atan",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_ATANL, "__builtin_atanl", "atanl",
+		 math_function_type_long, true);
+  define_builtin(BUILT_IN_ATAN2, "__builtin_atan2", "atan2",
+		 math_function_type_two, true);
+  define_builtin(BUILT_IN_ATAN2L, "__builtin_atan2l", "atan2l",
+		 math_function_type_long_two, true);
+  define_builtin(BUILT_IN_CEIL, "__builtin_ceil", "ceil",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_CEILL, "__builtin_ceill", "ceill",
+		 math_function_type_long, true);
+  define_builtin(BUILT_IN_COS, "__builtin_cos", "cos",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_COSL, "__builtin_cosl", "cosl",
+		 math_function_type_long, true);
+  define_builtin(BUILT_IN_EXP, "__builtin_exp", "exp",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_EXPL, "__builtin_expl", "expl",
+		 math_function_type_long, true);
+  define_builtin(BUILT_IN_EXPM1, "__builtin_expm1", "expm1",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_EXPM1L, "__builtin_expm1l", "expm1l",
+		 math_function_type_long, true);
+  define_builtin(BUILT_IN_FABS, "__builtin_fabs", "fabs",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_FABSL, "__builtin_fabsl", "fabsl",
+		 math_function_type_long, true);
+  define_builtin(BUILT_IN_FLOOR, "__builtin_floor", "floor",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_FLOORL, "__builtin_floorl", "floorl",
+		 math_function_type_long, true);
+  define_builtin(BUILT_IN_FMOD, "__builtin_fmod", "fmod",
+		 math_function_type_two, true);
+  define_builtin(BUILT_IN_FMODL, "__builtin_fmodl", "fmodl",
+		 math_function_type_long_two, true);
+  define_builtin(BUILT_IN_LDEXP, "__builtin_ldexp", "ldexp",
 		 build_function_type_list(double_type_node,
 					  double_type_node,
+					  integer_type_node,
 					  NULL_TREE),
 		 true);
-  define_builtin(BUILT_IN_SQRTL, "__builtin_sqrtl", "sqrtl",
+  define_builtin(BUILT_IN_LDEXPL, "__builtin_ldexpl", "ldexpl",
 		 build_function_type_list(long_double_type_node,
 					  long_double_type_node,
+					  integer_type_node,
 					  NULL_TREE),
 		 true);
+  define_builtin(BUILT_IN_LOG, "__builtin_log", "log",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_LOGL, "__builtin_logl", "logl",
+		 math_function_type_long, true);
+  define_builtin(BUILT_IN_LOG1P, "__builtin_log1p", "log1p",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_LOG1PL, "__builtin_log1pl", "log1pl",
+		 math_function_type_long, true);
+  define_builtin(BUILT_IN_LOG10, "__builtin_log10", "log10",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_LOG10L, "__builtin_log10l", "log10l",
+		 math_function_type_long, true);
+  define_builtin(BUILT_IN_LOG2, "__builtin_log2", "log2",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_LOG2L, "__builtin_log2l", "log2l",
+		 math_function_type_long, true);
+  define_builtin(BUILT_IN_SIN, "__builtin_sin", "sin",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_SINL, "__builtin_sinl", "sinl",
+		 math_function_type_long, true);
+  define_builtin(BUILT_IN_SQRT, "__builtin_sqrt", "sqrt",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_SQRTL, "__builtin_sqrtl", "sqrtl",
+		 math_function_type_long, true);
+  define_builtin(BUILT_IN_TAN, "__builtin_tan", "tan",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_TANL, "__builtin_tanl", "tanl",
+		 math_function_type_long, true);
+  define_builtin(BUILT_IN_TRUNC, "__builtin_trunc", "trunc",
+		 math_function_type, true);
+  define_builtin(BUILT_IN_TRUNCL, "__builtin_truncl", "truncl",
+		 math_function_type_long, true);
 
   // We use __builtin_return_address in the thunk we build for
   // functions which call recover.

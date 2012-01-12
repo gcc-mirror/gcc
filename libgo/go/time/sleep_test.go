@@ -39,7 +39,7 @@ func TestAfterFunc(t *testing.T) {
 		i--
 		if i >= 0 {
 			AfterFunc(0, f)
-			Sleep(1e9)
+			Sleep(1 * Second)
 		} else {
 			c <- true
 		}
@@ -91,7 +91,7 @@ func BenchmarkAfter(b *testing.B) {
 
 func BenchmarkStop(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		NewTimer(1e9).Stop()
+		NewTimer(1 * Second).Stop()
 	}
 }
 
@@ -119,19 +119,17 @@ func TestAfterTick(t *testing.T) {
 	t1 := Now()
 	d := t1.Sub(t0)
 	target := Delta * Count
-	slop := target * 2 / 10
-	if d < target-slop || d > target+slop {
+	if d < target*9/10 || d > target*30/10 {
 		t.Fatalf("%d ticks of %s took %s, expected %s", Count, Delta, d, target)
 	}
 }
 
 func TestAfterStop(t *testing.T) {
-	const msec = 1e6
-	AfterFunc(100*msec, func() {})
-	t0 := NewTimer(50 * msec)
+	AfterFunc(100*Millisecond, func() {})
+	t0 := NewTimer(50 * Millisecond)
 	c1 := make(chan bool, 1)
-	t1 := AfterFunc(150*msec, func() { c1 <- true })
-	c2 := After(200 * msec)
+	t1 := AfterFunc(150*Millisecond, func() { c1 <- true })
+	c2 := After(200 * Millisecond)
 	if !t0.Stop() {
 		t.Fatalf("failed to stop event 0")
 	}
@@ -199,9 +197,8 @@ func testAfterQueuing(t *testing.T) error {
 		}
 		dt := r.t.Sub(t0)
 		target := Duration(slot) * Delta
-		slop := Delta / 4
-		if dt < target-slop || dt > target+slop {
-			return fmt.Errorf("After(%s) arrived at %s, expected [%s,%s]", target, dt, target-slop, target+slop)
+		if dt < target-Delta/2 || dt > target+Delta*10 {
+			return fmt.Errorf("After(%s) arrived at %s, expected [%s,%s]", target, dt, target-Delta/2, target+Delta*10)
 		}
 	}
 	return nil
@@ -213,12 +210,12 @@ func TestTimerStopStress(t *testing.T) {
 	}
 	for i := 0; i < 100; i++ {
 		go func(i int) {
-			timer := AfterFunc(2e9, func() {
+			timer := AfterFunc(2*Second, func() {
 				t.Fatalf("timer %d was not stopped", i)
 			})
-			Sleep(1e9)
+			Sleep(1 * Second)
 			timer.Stop()
 		}(i)
 	}
-	Sleep(3e9)
+	Sleep(3 * Second)
 }

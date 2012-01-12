@@ -35,7 +35,11 @@ func AppendUint(dst []byte, i uint64, base int) []byte {
 	return dst
 }
 
-const digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+const (
+	digits   = "0123456789abcdefghijklmnopqrstuvwxyz"
+	digits01 = "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
+	digits10 = "0000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889999999999"
+)
 
 var shifts = [len(digits) + 1]uint{
 	1 << 1: 1,
@@ -46,32 +50,42 @@ var shifts = [len(digits) + 1]uint{
 }
 
 // formatBits computes the string representation of u in the given base.
-// If negative is set, u is treated as negative int64 value. If append_
-// is set, the string is appended to dst and the resulting byte slice is
+// If neg is set, u is treated as negative int64 value. If append_ is
+// set, the string is appended to dst and the resulting byte slice is
 // returned as the first result value; otherwise the string is returned
 // as the second result value.
 //
-func formatBits(dst []byte, u uint64, base int, negative, append_ bool) (d []byte, s string) {
+func formatBits(dst []byte, u uint64, base int, neg, append_ bool) (d []byte, s string) {
 	if base < 2 || base > len(digits) {
-		panic("invalid base")
+		panic("strconv: illegal AppendInt/FormatInt base")
 	}
 	// 2 <= base && base <= len(digits)
 
 	var a [64 + 1]byte // +1 for sign of 64bit value in base 2
 	i := len(a)
 
-	if negative {
+	if neg {
 		u = -u
 	}
 
 	// convert bits
 	if base == 10 {
-		// common case: use constant 10 for / and % because
-		// the compiler can optimize it into a multiply+shift
-		for u >= 10 {
+		// common case: use constants for / and % because
+		// the compiler can optimize it into a multiply+shift,
+		// and unroll loop
+		for u >= 100 {
+			i -= 2
+			q := u / 100
+			j := uintptr(u - q*100)
+			a[i+1] = digits01[j]
+			a[i+0] = digits10[j]
+			u = q
+		}
+		if u >= 10 {
 			i--
-			a[i] = digits[u%10]
-			u /= 10
+			q := u / 10
+			a[i] = digits[uintptr(u-q*10)]
+			u = q
 		}
 
 	} else if s := shifts[base]; s > 0 {
@@ -89,7 +103,7 @@ func formatBits(dst []byte, u uint64, base int, negative, append_ bool) (d []byt
 		b := uint64(base)
 		for u >= b {
 			i--
-			a[i] = digits[u%b]
+			a[i] = digits[uintptr(u%b)]
 			u /= b
 		}
 	}
@@ -99,7 +113,7 @@ func formatBits(dst []byte, u uint64, base int, negative, append_ bool) (d []byt
 	a[i] = digits[uintptr(u)]
 
 	// add sign, if any
-	if negative {
+	if neg {
 		i--
 		a[i] = '-'
 	}

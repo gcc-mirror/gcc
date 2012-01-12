@@ -576,6 +576,7 @@ go_html_files = \
 	go/html/doctype.go \
 	go/html/entity.go \
 	go/html/escape.go \
+	go/html/foreign.go \
 	go/html/node.go \
 	go/html/parse.go \
 	go/html/render.go \
@@ -610,14 +611,11 @@ go_math_files = \
 	go/math/dim.go \
 	go/math/erf.go \
 	go/math/exp.go \
-	go/math/exp_port.go \
-	go/math/exp2.go \
 	go/math/expm1.go \
 	go/math/floor.go \
 	go/math/frexp.go \
 	go/math/gamma.go \
 	go/math/hypot.go \
-	go/math/hypot_port.go \
 	go/math/j0.go \
 	go/math/j1.go \
 	go/math/jn.go \
@@ -638,7 +636,6 @@ go_math_files = \
 	go/math/sincos.go \
 	go/math/sinh.go \
 	go/math/sqrt.go \
-	go/math/sqrt_port.go \
 	go/math/tan.go \
 	go/math/tanh.go \
 	go/math/unsafe.go
@@ -888,7 +885,6 @@ go_testing_files = \
 go_time_files = \
 	go/time/format.go \
 	go/time/sleep.go \
-	go/time/sys.go \
 	go/time/sys_unix.go \
 	go/time/tick.go \
 	go/time/time.go \

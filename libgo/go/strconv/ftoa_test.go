@@ -149,26 +149,75 @@ func TestFtoa(t *testing.T) {
 	}
 }
 
-func BenchmarkFtoa64Decimal(b *testing.B) {
+/* This test relies on escape analysis which gccgo does not yet do.
+
+func TestAppendFloatDoesntAllocate(t *testing.T) {
+	n := numAllocations(func() {
+		var buf [64]byte
+		AppendFloat(buf[:0], 1.23, 'g', 5, 64)
+	})
+	want := 1 // TODO(bradfitz): this might be 0, once escape analysis is better
+	if n != want {
+		t.Errorf("with local buffer, did %d allocations, want %d", n, want)
+	}
+	n = numAllocations(func() {
+		AppendFloat(globalBuf[:0], 1.23, 'g', 5, 64)
+	})
+	if n != 0 {
+		t.Errorf("with reused buffer, did %d allocations, want 0", n)
+	}
+}
+
+*/
+
+func BenchmarkFormatFloatDecimal(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		FormatFloat(33909, 'g', -1, 64)
 	}
 }
 
-func BenchmarkFtoa64Float(b *testing.B) {
+func BenchmarkFormatFloat(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		FormatFloat(339.7784, 'g', -1, 64)
 	}
 }
 
-func BenchmarkFtoa64FloatExp(b *testing.B) {
+func BenchmarkFormatFloatExp(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		FormatFloat(-5.09e75, 'g', -1, 64)
 	}
 }
 
-func BenchmarkFtoa64Big(b *testing.B) {
+func BenchmarkFormatFloatBig(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		FormatFloat(123456789123456789123456789, 'g', -1, 64)
+	}
+}
+
+func BenchmarkAppendFloatDecimal(b *testing.B) {
+	dst := make([]byte, 0, 30)
+	for i := 0; i < b.N; i++ {
+		AppendFloat(dst, 33909, 'g', -1, 64)
+	}
+}
+
+func BenchmarkAppendFloat(b *testing.B) {
+	dst := make([]byte, 0, 30)
+	for i := 0; i < b.N; i++ {
+		AppendFloat(dst, 339.7784, 'g', -1, 64)
+	}
+}
+
+func BenchmarkAppendFloatExp(b *testing.B) {
+	dst := make([]byte, 0, 30)
+	for i := 0; i < b.N; i++ {
+		AppendFloat(dst, -5.09e75, 'g', -1, 64)
+	}
+}
+
+func BenchmarkAppendFloatBig(b *testing.B) {
+	dst := make([]byte, 0, 30)
+	for i := 0; i < b.N; i++ {
+		AppendFloat(dst, 123456789123456789123456789, 'g', -1, 64)
 	}
 }

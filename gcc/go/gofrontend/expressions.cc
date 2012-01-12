@@ -9943,7 +9943,11 @@ Call_expression::do_get_tree(Translate_context* context)
 	      fn = build_fold_addr_expr_loc(location.gcc_location(),
                                             excess_fndecl);
 	      for (int i = 0; i < nargs; ++i)
-		args[i] = ::convert(excess_type, args[i]);
+		{
+		  if (SCALAR_FLOAT_TYPE_P(TREE_TYPE(args[i]))
+		      || COMPLEX_FLOAT_TYPE_P(TREE_TYPE(args[i])))
+		    args[i] = ::convert(excess_type, args[i]);
+		}
 	    }
 	}
     }

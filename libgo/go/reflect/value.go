@@ -1349,7 +1349,7 @@ func (v Value) Slice(beg, end int) Value {
 	s := (*SliceHeader)(unsafe.Pointer(&x))
 	s.Data = uintptr(base) + uintptr(beg)*toCommonType(typ.elem).Size()
 	s.Len = end - beg
-	s.Cap = end - beg
+	s.Cap = cap - beg
 
 	fl := v.flag&flagRO | flagIndir | flag(Slice)<<flagKindShift
 	return Value{typ.common(), unsafe.Pointer(&x), fl}

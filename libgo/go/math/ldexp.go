@@ -11,7 +11,12 @@ package math
 //	Ldexp(±0, exp) = ±0
 //	Ldexp(±Inf, exp) = ±Inf
 //	Ldexp(NaN, exp) = NaN
+func libc_ldexp(float64, int) float64 __asm__("ldexp")
 func Ldexp(frac float64, exp int) float64 {
+	return libc_ldexp(frac, exp)
+}
+
+func ldexp(frac float64, exp int) float64 {
 	// TODO(rsc): Remove manual inlining of IsNaN, IsInf
 	// when compiler does it for us
 	// special cases

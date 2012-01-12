@@ -75,7 +75,7 @@ func Short() bool {
 	return *short
 }
 
-// decorate inserts the a final newline if needed and indentation tabs for formatting.
+// decorate inserts the final newline if needed and indentation tabs for formatting.
 // If addFileLine is true, it also prefixes the string with the file and line of the call site.
 func decorate(s string, addFileLine bool) string {
 	if addFileLine {
@@ -322,7 +322,7 @@ var timer *time.Timer
 // startAlarm starts an alarm if requested.
 func startAlarm() {
 	if *timeout > 0 {
-		timer = time.AfterFunc(*timeout*1e9, alarm)
+		timer = time.AfterFunc(time.Duration(*timeout)*time.Second, alarm)
 	}
 }
 
