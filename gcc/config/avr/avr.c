@@ -686,31 +686,28 @@ avr_regs_to_save (HARD_REG_SET *set)
 /* Return true if register FROM can be eliminated via register TO.  */
 
 static bool
-avr_can_eliminate (const int from, const int to)
+avr_can_eliminate (int from ATTRIBUTE_UNUSED, int to)
 {
-  return ((from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
-          || (frame_pointer_needed && to == FRAME_POINTER_REGNUM)
-          || ((from == FRAME_POINTER_REGNUM 
-               || from == FRAME_POINTER_REGNUM + 1)
-              && !frame_pointer_needed));
+  return to == HARD_FRAME_POINTER_REGNUM;
 }
 
 /* Compute offset between arg_pointer and frame_pointer.  */
 
 int
-avr_initial_elimination_offset (int from, int to)
+avr_initial_elimination_offset (int from, int to ATTRIBUTE_UNUSED)
 {
-  if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-    return 0;
-  else
+  int offset = 0;
+
+  if (from == ARG_POINTER_REGNUM)
     {
-      int offset = frame_pointer_needed ? 2 : 0;
-      int avr_pc_size = AVR_HAVE_EIJMP_EICALL ? 3 : 2;
-      
+      offset += AVR_HAVE_EIJMP_EICALL ? 3 : 2;
+      offset += frame_pointer_needed ? 2 : 0;
       offset += avr_regs_to_save (NULL);
-      return (get_frame_size () + avr_outgoing_args_size()
-              + avr_pc_size + 1 + offset);
+      offset += get_frame_size ();
+      offset += 1; /* post-dec stack space */
     }
+
+  return offset;
 }
 
 /* Actual start of frame is virtual_stack_vars_rtx this is offset from 
@@ -902,12 +899,12 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
          notes to the front.  Thus we build them in the reverse order of
          how we want dwarf2out to process them.  */
 
-      /* The function does always set frame_pointer_rtx, but whether that
+      /* The function does always set hard_frame_pointer_rtx, but whether that
          is going to be permanent in the function is frame_pointer_needed.  */
 
       add_reg_note (insn, REG_CFA_ADJUST_CFA,
                     gen_rtx_SET (VOIDmode, (frame_pointer_needed
-                                            ? frame_pointer_rtx
+                                            ? hard_frame_pointer_rtx
                                             : stack_pointer_rtx),
                                  plus_constant (stack_pointer_rtx,
                                                 -(size + live_seq))));
@@ -952,7 +949,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
       if (frame_pointer_needed
           && size == 0)
         {
-          insn = emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
+          insn = emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
           RTX_FRAME_RELATED_P (insn) = 1;
         }
       
@@ -987,7 +984,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
                       || !current_function_is_leaf);
           
           fp = my_fp = (frame_pointer_needed
-                        ? frame_pointer_rtx
+                        ? hard_frame_pointer_rtx
                         : gen_rtx_REG (Pmode, REG_X));
           
           if (AVR_HAVE_8BIT_SP)
@@ -995,7 +992,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               /* The high byte (r29) does not change:
                  Prefer SUBI (1 cycle) over ABIW (2 cycles, same size).  */
 
-              my_fp = all_regs_rtx[FRAME_POINTER_REGNUM];
+              my_fp = all_regs_rtx[HARD_FRAME_POINTER_REGNUM];
             }
 
           /************  Method 1: Adjust frame pointer  ************/
@@ -1260,13 +1257,13 @@ expand_epilogue (bool sibcall_p)
       
       if (!frame_pointer_needed)
         {
-          emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
+          emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
         }
 
       if (size)
         {
-          emit_move_insn (frame_pointer_rtx,
-                          plus_constant (frame_pointer_rtx, size));
+          emit_move_insn (hard_frame_pointer_rtx,
+                          plus_constant (hard_frame_pointer_rtx, size));
         }
         
       emit_insn (gen_epilogue_restores (gen_int_mode (live_seq, HImode)));
@@ -1285,7 +1282,7 @@ expand_epilogue (bool sibcall_p)
                   || !current_function_is_leaf);
       
       fp = my_fp = (frame_pointer_needed
-                    ? frame_pointer_rtx
+                    ? hard_frame_pointer_rtx
                     : gen_rtx_REG (Pmode, REG_X));
 
       if (AVR_HAVE_8BIT_SP)
@@ -1293,7 +1290,7 @@ expand_epilogue (bool sibcall_p)
           /* The high byte (r29) does not change:
              Prefer SUBI (1 cycle) over SBIW (2 cycles).  */
                   
-          my_fp = all_regs_rtx[FRAME_POINTER_REGNUM];
+          my_fp = all_regs_rtx[HARD_FRAME_POINTER_REGNUM];
         }
               
       /********** Method 1: Adjust fp register  **********/
@@ -1534,37 +1531,8 @@ avr_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
    memory address for an operand of mode MODE  */
 
 static rtx
-avr_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
+avr_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED, enum machine_mode mode)
 {
-  bool big_offset_p = false;
-  
-  x = oldx;
-  
-  if (GET_CODE (oldx) == PLUS
-      && REG_P (XEXP (oldx, 0)))
-    {
-      if (REG_P (XEXP (oldx, 1)))
-        x = force_reg (GET_MODE (oldx), oldx);
-      else if (CONST_INT_P (XEXP (oldx, 1)))
-        {
-	  int offs = INTVAL (XEXP (oldx, 1));
-          if (frame_pointer_rtx != XEXP (oldx, 0)
-              && offs > MAX_LD_OFFSET (mode))
-            {
-              big_offset_p = true;
-              x = force_reg (GET_MODE (oldx), oldx);
-            }
-        }
-    }
-  
-  if (avr_log.legitimize_address)
-    {
-      avr_edump ("\n%?: mode=%m\n %r\n", mode, oldx);
-
-      if (x != oldx)
-        avr_edump (" %s --> %r\n", big_offset_p ? "(big offset)" : "", x);
-    }
-
   return x;
 }
 
@@ -1634,7 +1602,7 @@ avr_legitimize_reload_address (rtx *px, enum machine_mode mode,
             }
         }
       else if (! (frame_pointer_needed
-                  && XEXP (x, 0) == frame_pointer_rtx))
+                  && XEXP (x, 0) == hard_frame_pointer_rtx))
         {
           push_reload (x, NULL_RTX, px, NULL,
                        POINTER_REGS, GET_MODE (x), VOIDmode, 0, 0,
@@ -8366,6 +8334,19 @@ extra_constraint_Q (rtx x)
   return ok;
 }
 
+/* Returns the number of registers required to hold a value of MODE.  */
+
+int
+avr_hard_regno_nregs (int regno, enum machine_mode mode)
+{
+  /* The fake registers are designed to hold exactly a pointer.  */
+  if (regno == ARG_POINTER_REGNUM || regno == FRAME_POINTER_REGNUM)
+    return 1;
+
+  return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+}
+
+
 /* Convert condition code CONDITION to the valid AVR condition code.  */
 
 RTX_CODE
@@ -8789,6 +8770,10 @@ jump_over_one_insn_p (rtx insn, rtx dest)
 int
 avr_hard_regno_mode_ok (int regno, enum machine_mode mode)
 {
+  /* The fake registers are designed to hold exactly a pointer.  */
+  if (regno == ARG_POINTER_REGNUM || regno == FRAME_POINTER_REGNUM)
+    return mode == Pmode;
+
   /* NOTE: 8-bit values must not be disallowed for R28 or R29.
         Disallowing QI et al. in these regs might lead to code like
             (set (subreg:QI (reg:HI 28) n) ...)
@@ -8812,7 +8797,6 @@ avr_hard_regno_mode_ok (int regno, enum machine_mode mode)
     return 0;
 
   /* All modes larger than 8 bits should start in an even register.  */
-  
   return !(regno & 1);
 }
 
@@ -8872,7 +8856,8 @@ avr_regno_mode_code_ok_for_base_p (int regno,
       && (regno == REG_X
           || regno == REG_Y
           || regno == REG_Z
-          || regno == ARG_POINTER_REGNUM))
+          || regno == ARG_POINTER_REGNUM
+	  || regno == FRAME_POINTER_REGNUM))
     {
       ok = true;
     }
@@ -8883,7 +8868,8 @@ avr_regno_mode_code_ok_for_base_p (int regno,
       if (regno == REG_X
           || regno == REG_Y
           || regno == REG_Z
-          || regno == ARG_POINTER_REGNUM)
+          || regno == ARG_POINTER_REGNUM
+	  || regno == FRAME_POINTER_REGNUM)
         {
           ok = true;
         }
