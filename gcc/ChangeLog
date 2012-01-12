@@ -1,3 +1,8 @@
+2012-01-12  DJ Delorie  <dj@redhat.com>
+
+	* cfgexpand.c (convert_debug_memory_address): Allow any valid
+	pointer type, not just the default pointer type.
+
 2012-01-09  Richard Henderson  <rth@redhat.com>
 	    Denis Chertykov  <chertykov@gmail.com>
 

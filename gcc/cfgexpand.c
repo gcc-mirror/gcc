@@ -2493,10 +2493,8 @@ convert_debug_memory_address (enum machine_mode mode, rtx x,
   gcc_assert (xmode == mode || xmode == VOIDmode);
 #else
   rtx temp;
-  enum machine_mode address_mode = targetm.addr_space.address_mode (as);
-  enum machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
 
-  gcc_assert (mode == address_mode || mode == pointer_mode);
+  gcc_assert (targetm.addr_space.valid_pointer_mode (mode, as));
 
   if (GET_MODE (x) == mode || GET_MODE (x) == VOIDmode)
     return x;
