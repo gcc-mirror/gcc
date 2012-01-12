@@ -1274,10 +1274,8 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
       tree tbase = class_of_this_parm (tofn);
 
       if (!DERIVED_FROM_P (fbase, tbase)
-	  || !same_type_p (TREE_TYPE (fromfn), TREE_TYPE (tofn))
-	  || !compparms (TREE_CHAIN (TYPE_ARG_TYPES (fromfn)),
-			 TREE_CHAIN (TYPE_ARG_TYPES (tofn)))
-	  || cp_type_quals (fbase) != cp_type_quals (tbase))
+	  || !same_type_p (static_fn_type (fromfn),
+			   static_fn_type (tofn)))
 	return NULL;
 
       from = build_memfn_type (fromfn, tbase, cp_type_quals (tbase));
