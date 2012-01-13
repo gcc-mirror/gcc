@@ -1,5 +1,11 @@
 2012-01-14  Torvald Riegel  <triegel@redhat.com>
 
+	* local.cc (GTM::gtm_undolog::rollback): Truncate undo log after
+	rolling back.
+	* containers.h (GTM::vector::set_size): New.
+
+2012-01-14  Torvald Riegel  <triegel@redhat.com>
+
 	PR libitm/51855
 	* config/generic/tls.h (GTM::mask_stack_top): New.
 	(GTM::mask_stack_bottom): Declare.
