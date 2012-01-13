@@ -1,3 +1,10 @@
+2012-01-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51842
+	* fortran/trans-types.c (gfc_init_kinds): Use PTRDIFF_TYPE
+	instead of a signed int of size POINTER_SIZE for
+	gfc_index_integer_kind.
+
 2012-01-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36755
