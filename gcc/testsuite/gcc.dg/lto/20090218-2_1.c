@@ -4,8 +4,8 @@ int main(void)
 {
   return 0;
 }
-void *malloc(unsigned long size);
-void *memcpy(void *dest, const void *src, unsigned long n);
+void *malloc(__SIZE_TYPE__ size);
+void *memcpy(void *dest, const void *src, __SIZE_TYPE__ n);
 static mem_attrs * get_mem_attrs () {
   void **slot;
   *slot = malloc (3);

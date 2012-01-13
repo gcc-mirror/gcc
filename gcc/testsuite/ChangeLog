@@ -1,3 +1,15 @@
+2012-01-13  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.c-torture/execute/20120111-1.c: Fix wrong int = int32_t
+	assumption.
+	* g++.dg/ipa/pr51759.C: Fix assumption sizeof(int) > 2.
+	* gcc.dg/cpp/warn-multichar.c: Fix to work on int=16 platforms.
+	* gcc.dg/cpp/warn-multichar-2.c: Ditto.
+	* gcc.dg/debug/dwarf2/pr49871.c: Add dg-require-effective-target
+	int32plus because of big array needed.
+	* gcc.dg/pr50527.c: Don't FAIL if sizeof(void*) = 2
+	* gcc.dg/lto/20090218-2_1.c: Fix prototype of malloc, memcpy.
+	
 2012-01-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51813
