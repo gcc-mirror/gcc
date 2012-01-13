@@ -61,6 +61,7 @@ gtm_undolog::rollback (gtm_thread* tx, size_t until_size)
           if (likely(ptr > top || (uint8_t*)ptr + len <= bot))
             __builtin_memcpy (ptr, &undolog[i], len);
 	}
+      undolog.set_size(until_size);
     }
 }
 
