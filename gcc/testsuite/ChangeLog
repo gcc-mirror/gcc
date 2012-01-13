@@ -1,3 +1,8 @@
+2012-01-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/20681
+	* g++.dg/warn/Wreturn-type-7.C: New.
+
 2012-01-13  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.c-torture/execute/20120111-1.c: Fix wrong int = int32_t
