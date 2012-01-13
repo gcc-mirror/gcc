@@ -1112,7 +1112,7 @@ ipa_get_indirect_edge_target (struct cgraph_edge *ie,
 
   if (!ie->indirect_info->polymorphic)
     {
-      tree t = (VEC_length (tree, known_vals) > param_index
+      tree t = (VEC_length (tree, known_vals) > (unsigned int) param_index
 	        ? VEC_index (tree, known_vals, param_index) : NULL);
       if (t &&
 	  TREE_CODE (t) == ADDR_EXPR
@@ -1127,7 +1127,8 @@ ipa_get_indirect_edge_target (struct cgraph_edge *ie,
   otr_type = ie->indirect_info->otr_type;
 
   t = VEC_index (tree, known_vals, param_index);
-  if (!t && known_binfos && VEC_length (tree, known_binfos) > param_index)
+  if (!t && known_binfos
+      && VEC_length (tree, known_binfos) > (unsigned int) param_index)
     t = VEC_index (tree, known_binfos, param_index);
   if (!t)
     return NULL_TREE;

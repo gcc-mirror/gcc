@@ -1,3 +1,8 @@
+2012-01-13  Ian Lance Taylor  <iant@google.com>
+
+	* ipa-cp.c (ipa_get_indirect_edge_target): Add typecasts when
+	comparing param_index to VEC_length result.
+
 2012-01-13  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* c-decl.c: Do not include tree-mudflap.h
