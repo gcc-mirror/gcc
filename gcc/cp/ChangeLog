@@ -1,3 +1,9 @@
+2012-01-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51714
+	* pt.c (value_dependent_expression_p): Treat STMT_EXPR as
+	value-dependent.
+
 2012-01-13  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/51633
