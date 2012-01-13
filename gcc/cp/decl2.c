@@ -1984,6 +1984,8 @@ constrain_visibility (tree decl, int visibility, bool tmpl)
 	   && (tmpl || !DECL_VISIBILITY_SPECIFIED (decl)))
     {
       DECL_VISIBILITY (decl) = (enum symbol_visibility) visibility;
+      /* This visibility was not specified.  */
+      DECL_VISIBILITY_SPECIFIED (decl) = false;
     }
 }
 

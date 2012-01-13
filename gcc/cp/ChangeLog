@@ -1,5 +1,9 @@
 2012-01-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51813
+	* decl2.c (constrain_visibility): Clear DECL_VISIBILITY_SPECIFIED
+	when reducing the visibility.
+
 	PR c++/51620
 	* class.c (build_vtbl_initializer): Use __cxa_deleted_virtual.
 

@@ -1,5 +1,8 @@
 2012-01-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51813
+	* g++.dg/ext/visibility/template9.C: New.
+
 	PR c++/51620
 	* g++.dg/cpp0x/defaulted34.C: New.
 	* g++.dg/template/virtual3.C: New.
