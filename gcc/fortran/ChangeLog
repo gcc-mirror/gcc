@@ -1,3 +1,12 @@
+2012-01-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/48351
+	* trans-array.c (structure_alloc_comps): Suppress interative
+	call to self, when current component is deallocated using
+	gfc_trans_dealloc_allocated.
+	* class.c (gfc_build_class_symbol): Copy the 'alloc_comp'
+	attribute from the declared type to the class structure.
+
 2012-01-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51842

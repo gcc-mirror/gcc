@@ -7238,6 +7238,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
   gfc_loopinfo loop;
   stmtblock_t fnblock;
   stmtblock_t loopbody;
+  stmtblock_t tmpblock;
   tree decl_type;
   tree tmp;
   tree comp;
@@ -7249,6 +7250,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
   tree ctype;
   tree vref, dref;
   tree null_cond = NULL_TREE;
+  bool called_dealloc_with_status;
 
   gfc_init_block (&fnblock);
 
@@ -7359,17 +7361,12 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
       switch (purpose)
 	{
 	case DEALLOCATE_ALLOC_COMP:
-	  if (cmp_has_alloc_comps && !c->attr.pointer)
-	    {
-	      /* Do not deallocate the components of ultimate pointer
-		 components.  */
-	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
-				      decl, cdecl, NULL_TREE);
-	      rank = c->as ? c->as->rank : 0;
-	      tmp = structure_alloc_comps (c->ts.u.derived, comp, NULL_TREE,
-					   rank, purpose);
-	      gfc_add_expr_to_block (&fnblock, tmp);
-	    }
+
+	  /* gfc_deallocate_scalar_with_status calls gfc_deallocate_alloc_comp
+	     (ie. this function) so generate all the calls and suppress the
+	     recursion from here, if necessary.  */
+	  called_dealloc_with_status = false;
+	  gfc_init_block (&tmpblock);
 
 	  if (c->attr.allocatable
 	      && (c->attr.dimension || c->attr.codimension))
@@ -7377,7 +7374,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
 				      decl, cdecl, NULL_TREE);
 	      tmp = gfc_trans_dealloc_allocated (comp, c->attr.codimension);
-	      gfc_add_expr_to_block (&fnblock, tmp);
+	      gfc_add_expr_to_block (&tmpblock, tmp);
 	    }
 	  else if (c->attr.allocatable)
 	    {
@@ -7387,12 +7384,13 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
 	      tmp = gfc_deallocate_scalar_with_status (comp, NULL, true, NULL,
 						       c->ts);
-	      gfc_add_expr_to_block (&fnblock, tmp);
+	      gfc_add_expr_to_block (&tmpblock, tmp);
+	      called_dealloc_with_status = true;
 
 	      tmp = fold_build2_loc (input_location, MODIFY_EXPR,
 				     void_type_node, comp,
 				     build_int_cst (TREE_TYPE (comp), 0));
-	      gfc_add_expr_to_block (&fnblock, tmp);
+	      gfc_add_expr_to_block (&tmpblock, tmp);
 	    }
 	  else if (c->ts.type == BT_CLASS && CLASS_DATA (c)->attr.allocatable)
 	    {
@@ -7412,14 +7410,33 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 		{
 		  tmp = gfc_deallocate_scalar_with_status (comp, NULL, true, NULL,
 							   CLASS_DATA (c)->ts);
-		  gfc_add_expr_to_block (&fnblock, tmp);
+		  gfc_add_expr_to_block (&tmpblock, tmp);
+		  called_dealloc_with_status = true;
 
 		  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
 					 void_type_node, comp,
 					 build_int_cst (TREE_TYPE (comp), 0));
 		}
+	      gfc_add_expr_to_block (&tmpblock, tmp);
+	    }
+
+	  if (cmp_has_alloc_comps
+		&& !c->attr.pointer
+		&& !called_dealloc_with_status)
+	    {
+	      /* Do not deallocate the components of ultimate pointer
+		 components or iteratively call self if call has been made
+		 to gfc_trans_dealloc_allocated  */
+	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
+				      decl, cdecl, NULL_TREE);
+	      rank = c->as ? c->as->rank : 0;
+	      tmp = structure_alloc_comps (c->ts.u.derived, comp, NULL_TREE,
+					   rank, purpose);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
+
+	  /* Now add the deallocation of this component.  */
+	  gfc_add_block_to_block (&fnblock, &tmpblock);
 	  break;
 
 	case NULLIFY_ALLOC_COMP:
