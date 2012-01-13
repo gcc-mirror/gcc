@@ -1,3 +1,8 @@
+2012-01-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51620
+	* class.c (build_vtbl_initializer): Use __cxa_deleted_virtual.
+
 2012-01-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51714
