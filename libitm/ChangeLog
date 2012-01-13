@@ -1,3 +1,15 @@
+2012-01-14  Torvald Riegel  <triegel@redhat.com>
+
+	PR libitm/51855
+	* config/generic/tls.h (GTM::mask_stack_top): New.
+	(GTM::mask_stack_bottom): Declare.
+	* config/generic/tls.c (GTM::mask_stack_bottom): New.
+	* local.cc (gtm_undolog::rollback): Filter out any updates that
+	overlap the libitm stack.  Add current transaction as parameter.
+	* libitm_i.h (GTM::gtm_undolog::rollback): Adapt.
+	* beginend.cc (GTM::gtm_thread::rollback): Adapt.
+	* testsuite/libitm.c/stackundo.c: New test.
+
 2012-01-10  Richard Henderson  <rth@redhat.com>
 
 	* libitm_i.h (_Unwind_DeleteException): Declare weak.

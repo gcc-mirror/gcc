@@ -60,6 +60,23 @@ static inline abi_dispatch * abi_disp() { return _gtm_thr_tls.disp; }
 static inline void set_abi_disp(abi_dispatch *x) { _gtm_thr_tls.disp = x; }
 #endif
 
+#ifndef HAVE_ARCH_GTM_MASK_STACK
+// To filter out any updates that overlap the libitm stack, we define
+// gtm_mask_stack_top to the entry point to the library and
+// gtm_mask_stack_bottom to below the calling function (enforced with the
+// noinline attribute).  This definition should be fine for all
+// stack-grows-down architectures.
+// FIXME We fake the bottom to be lower so that we are safe even if we might
+// call further functions (compared to where we called gtm_mask_stack_bottom
+// in the call hierarchy) to actually undo or redo writes (e.g., memcpy).
+// This is a completely arbitrary value; can we instead ensure that there are
+// no such calls, or can we determine a future-proof value otherwise?
+static inline void *
+mask_stack_top(gtm_thread *tx) { return tx->jb.cfa; }
+void * __attribute__((noinline))
+mask_stack_bottom(gtm_thread *tx);
+#endif
+
 } // namespace GTM
 
 #endif // LIBITM_TLS_H
