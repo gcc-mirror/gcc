@@ -6,7 +6,7 @@ uint32_t f0a (uint64_t arg2) __attribute__((noinline));
 uint32_t
 f0a (uint64_t arg)
 {
-  return ~(arg > -3);
+  return ~((unsigned) (arg > -3));
 }
 
 int main() {

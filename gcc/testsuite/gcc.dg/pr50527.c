@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-Os --param large-stack-frame=30" } */
+/* { dg-options "-Os --param large-stack-frame=30 -Wno-pointer-to-int-cast" } */
 
 extern void abort (void);
 

@@ -1,6 +1,10 @@
 /* { dg-do run } */
 /* { dg-options "-O2"  } */
 
+#if __SIZEOF_INT__ == 2 && __SIZEOF_LONG__ == 4
+#define unsigned unsigned long
+#endif
+
 extern "C" void abort (void);
 struct S
 {
