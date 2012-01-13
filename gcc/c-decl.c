@@ -50,7 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-pragma.h"
 #include "c-lang.h"
 #include "langhooks.h"
-#include "tree-mudflap.h"
 #include "tree-iterator.h"
 #include "diagnostic-core.h"
 #include "tree-dump.h"

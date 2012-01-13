@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "cgraph.h"
 #include "tree-inline.h"
-#include "tree-mudflap.h"
 #include "tree-pass.h"
 #include "ggc.h"
 #include "cgraph.h"

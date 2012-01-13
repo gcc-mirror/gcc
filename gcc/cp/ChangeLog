@@ -1,3 +1,8 @@
+2012-01-13  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* decl2.c: Do not include tree-mudflap.h
+	* semantics.c: Likewise.
+
 2012-01-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/20681
