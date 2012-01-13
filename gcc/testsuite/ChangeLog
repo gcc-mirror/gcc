@@ -1,3 +1,7 @@
+2012-01-13  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/pr46309.c: Set branch cost to greater 1 for avr.
+
 2012-01-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51714
