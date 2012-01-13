@@ -193,9 +193,12 @@ grep '^const __PC' gen-sysinfo.go |
 # epoll constants.
 grep '^const _EPOLL' gen-sysinfo.go |
   sed -e 's/^\(const \)_\(EPOLL[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
-# Make sure EPOLLRDHUP is defined.
+# Make sure EPOLLRDHUP and EPOLL_CLOEXEC are defined.
 if ! grep '^const EPOLLRDHUP' ${OUT} >/dev/null 2>&1; then
   echo "const EPOLLRDHUP = 0x2000" >> ${OUT}
+fi
+if ! grep '^const EPOLL_CLOEXEC' ${OUT} >/dev/null 2>&1; then
+  echo "const EPOLL_CLOEXEC = 02000000" >> ${OUT}
 fi
 
 # Ptrace constants.
