@@ -19526,6 +19526,11 @@ value_dependent_expression_p (tree expression)
 	return false;
       }
 
+    case STMT_EXPR:
+      /* Treat a GNU statement expression as dependent to avoid crashing
+	 under fold_non_dependent_expr; it can't be constant.  */
+      return true;
+
     default:
       /* A constant expression is value-dependent if any subexpression is
 	 value-dependent.  */
