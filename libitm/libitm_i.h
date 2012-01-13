@@ -142,7 +142,7 @@ struct gtm_undolog
   size_t size() const { return undolog.size(); }
 
   // In local.cc
-  void rollback (size_t until_size = 0);
+  void rollback (gtm_thread* tx, size_t until_size = 0);
 };
 
 // Contains all thread-specific data required by the entire library.

@@ -26,11 +26,20 @@
 
 namespace GTM HIDDEN {
 
-
-void
-gtm_undolog::rollback (size_t until_size)
+// This function needs to be noinline because we need to prevent that it gets
+// inlined into another function that calls further functions. This could
+// break our assumption that we only call memcpy and thus only need to
+// additionally protect the memcpy stack (see the hack in mask_stack_bottom()).
+// Even if that isn't an issue because those other calls don't happen during
+// copying, we still need mask_stack_bottom() to be called "close" to the
+// memcpy in terms of stack frames, so just ensure that for now using the
+// noinline.
+void __attribute__((noinline))
+gtm_undolog::rollback (gtm_thread* tx, size_t until_size)
 {
   size_t i, n = undolog.size();
+  void *top = mask_stack_top(tx);
+  void *bot = mask_stack_bottom(tx);
 
   if (n > 0)
     {
@@ -40,7 +49,17 @@ gtm_undolog::rollback (size_t until_size)
           size_t len = undolog[i];
           size_t words = (len + sizeof(gtm_word) - 1) / sizeof(gtm_word);
           i -= words;
-          __builtin_memcpy (ptr, &undolog[i], len);
+          // Filter out any updates that overlap the libitm stack.  We don't
+          // bother filtering out just the overlapping bytes because we don't
+          // merge writes and thus any overlapping write is either bogus or
+          // would restore data on stack frames that are not in use anymore.
+          // FIXME The memcpy can/will end up as another call but we
+          // calculated BOT based on the current function.  Can we inline or
+          // reimplement this without too much trouble due to unaligned calls
+          // and still have good performance, so that we can remove the hack
+          // in mask_stack_bottom()?
+          if (likely(ptr > top || (uint8_t*)ptr + len <= bot))
+            __builtin_memcpy (ptr, &undolog[i], len);
 	}
     }
 }
