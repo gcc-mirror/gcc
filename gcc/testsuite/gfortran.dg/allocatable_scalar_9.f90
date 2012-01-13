@@ -49,7 +49,7 @@ if(allocated(na3%b3)) call abort()
 if(allocated(na4%b4)) call abort()
 end
 
-! { dg-final { scan-tree-dump-times "__builtin_free" 38 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 32 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
 
 ! { dg-final { cleanup-modules "m" } }

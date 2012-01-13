@@ -1,3 +1,10 @@
+2012-01-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/48351
+	* gfortran.dg/alloc_comp_assign.f03: New.
+	* gfortran.dg/allocatable_scalar_9.f90: Reduce count of
+	__BUILTIN_FREE from 38 to 32.
+
 2012-01-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/20681
