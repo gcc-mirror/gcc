@@ -657,6 +657,8 @@ LIBGO_IS_SOLARIS_FALSE
 LIBGO_IS_SOLARIS_TRUE
 LIBGO_IS_RTEMS_FALSE
 LIBGO_IS_RTEMS_TRUE
+LIBGO_IS_NETBSD_FALSE
+LIBGO_IS_NETBSD_TRUE
 LIBGO_IS_LINUX_FALSE
 LIBGO_IS_LINUX_TRUE
 LIBGO_IS_IRIX_FALSE
@@ -11097,7 +11099,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11100 "configure"
+#line 11102 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11203,7 +11205,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11206 "configure"
+#line 11208 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13473,6 +13475,7 @@ case ${host} in
   *-*-freebsd*)  is_freebsd=yes; GOOS=freebsd ;;
   *-*-irix6*)    is_irix=yes;    GOOS=irix ;;
   *-*-linux*)    is_linux=yes;   GOOS=linux ;;
+  *-*-netbsd*)	 is_netbsd=yes;  GOOS=netbsd ;;
   *-*-rtems*)    is_rtems=yes;   GOOS=rtems ;;
   *-*-solaris2*) is_solaris=yes; GOOS=solaris ;;
 esac
@@ -13506,6 +13509,14 @@ fi
 else
   LIBGO_IS_LINUX_TRUE='#'
   LIBGO_IS_LINUX_FALSE=
+fi
+
+ if test $is_netbsd = yes; then
+  LIBGO_IS_NETBSD_TRUE=
+  LIBGO_IS_NETBSD_FALSE='#'
+else
+  LIBGO_IS_NETBSD_TRUE='#'
+  LIBGO_IS_NETBSD_FALSE=
 fi
 
  if test $is_rtems = yes; then
@@ -14936,6 +14947,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_LINUX_TRUE}" && test -z "${LIBGO_IS_LINUX_FALSE}"; then
   as_fn_error "conditional \"LIBGO_IS_LINUX\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_NETBSD_TRUE}" && test -z "${LIBGO_IS_NETBSD_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_NETBSD\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_RTEMS_TRUE}" && test -z "${LIBGO_IS_RTEMS_FALSE}"; then

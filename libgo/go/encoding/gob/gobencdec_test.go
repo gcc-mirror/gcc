@@ -13,6 +13,7 @@ import (
 	"io"
 	"strings"
 	"testing"
+	"time"
 )
 
 // Types that implement the GobEncoder/Decoder interfaces.
@@ -524,5 +525,52 @@ func TestGobEncoderExtraIndirect(t *testing.T) {
 	}
 	if got.foo != gdb.foo || got.bar != gdb.bar {
 		t.Errorf("got = %q, want %q", got, gdb)
+	}
+}
+
+// Another bug: this caused a crash with the new Go1 Time type.
+// We throw in a gob-encoding array, to test another case of isZero
+
+type isZeroBug struct {
+	T time.Time
+	S string
+	I int
+	A isZeroBugArray
+}
+
+type isZeroBugArray [2]uint8
+
+// Receiver is value, not pointer, to test isZero of array.
+func (a isZeroBugArray) GobEncode() (b []byte, e error) {
+	b = append(b, a[:]...)
+	return b, nil
+}
+
+func (a *isZeroBugArray) GobDecode(data []byte) error {
+	println("DECODE")
+	if len(data) != len(a) {
+		return io.EOF
+	}
+	a[0] = data[0]
+	a[1] = data[1]
+	return nil
+}
+
+func TestGobEncodeIsZero(t *testing.T) {
+	x := isZeroBug{time.Now(), "hello", -55, isZeroBugArray{1, 2}}
+	b := new(bytes.Buffer)
+	enc := NewEncoder(b)
+	err := enc.Encode(x)
+	if err != nil {
+		t.Fatal("encode:", err)
+	}
+	var y isZeroBug
+	dec := NewDecoder(b)
+	err = dec.Decode(&y)
+	if err != nil {
+		t.Fatal("decode:", err)
+	}
+	if x != y {
+		t.Fatalf("%v != %v", x, y)
 	}
 }

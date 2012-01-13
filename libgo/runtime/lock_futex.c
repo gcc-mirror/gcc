@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build freebsd linux
+
 #include "runtime.h"
 
 // This implementation depends on OS-specific implementations of
 //
-//	runtime.futexsleep(uint32 *addr, uint32 val, int64 ns)
+//	runtime_futexsleep(uint32 *addr, uint32 val, int64 ns)
 //		Atomically,
 //			if(*addr == val) sleep
 //		Might be woken up spuriously; that's allowed.
 //		Don't sleep longer than ns; ns < 0 means forever.
 //
-//	runtime.futexwakeup(uint32 *addr, uint32 cnt)
+//	runtime_futexwakeup(uint32 *addr, uint32 cnt)
 //		If any procs are sleeping on addr, wake up at most cnt.
 
 enum

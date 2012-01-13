@@ -5,9 +5,12 @@
 package strconv_test
 
 import (
+	"math"
+	"math/rand"
 	"reflect"
 	. "strconv"
 	"testing"
+	"time"
 )
 
 type atofTest struct {
@@ -111,7 +114,21 @@ var atoftests = []atofTest{
 	{"2.2250738585072012e-308", "2.2250738585072014e-308", nil},
 	// http://www.exploringbinary.com/php-hangs-on-numeric-value-2-2250738585072011e-308/
 	{"2.2250738585072011e-308", "2.225073858507201e-308", nil},
+
+	// A very large number (initially wrongly parsed by the fast algorithm).
+	{"4.630813248087435e+307", "4.630813248087435e+307", nil},
 }
+
+type atofSimpleTest struct {
+	x float64
+	s string
+}
+
+var (
+	atofRandomTests        []atofSimpleTest
+	benchmarksRandomBits   [1024]string
+	benchmarksRandomNormal [1024]string
+)
 
 func init() {
 	// The atof routines return NumErrors wrapping
@@ -121,6 +138,31 @@ func init() {
 		if test.err != nil {
 			test.err = &NumError{"ParseFloat", test.in, test.err}
 		}
+	}
+
+	// Generate random inputs for tests and benchmarks
+	rand.Seed(time.Now().UnixNano())
+	if testing.Short() {
+		atofRandomTests = make([]atofSimpleTest, 100)
+	} else {
+		atofRandomTests = make([]atofSimpleTest, 10000)
+	}
+	for i := range atofRandomTests {
+		n := uint64(rand.Uint32())<<32 | uint64(rand.Uint32())
+		x := math.Float64frombits(n)
+		s := FormatFloat(x, 'g', -1, 64)
+		atofRandomTests[i] = atofSimpleTest{x, s}
+	}
+
+	for i := range benchmarksRandomBits {
+		bits := uint64(rand.Uint32())<<32 | uint64(rand.Uint32())
+		x := math.Float64frombits(bits)
+		benchmarksRandomBits[i] = FormatFloat(x, 'g', -1, 64)
+	}
+
+	for i := range benchmarksRandomNormal {
+		x := rand.NormFloat64()
+		benchmarksRandomNormal[i] = FormatFloat(x, 'g', -1, 64)
 	}
 }
 
@@ -156,6 +198,19 @@ func TestAtof(t *testing.T) { testAtof(t, true) }
 
 func TestAtofSlow(t *testing.T) { testAtof(t, false) }
 
+func TestAtofRandom(t *testing.T) {
+	for _, test := range atofRandomTests {
+		x, _ := ParseFloat(test.s, 64)
+		switch {
+		default:
+			t.Errorf("number %s badly parsed as %b (expected %b)", test.s, x, test.x)
+		case x == test.x:
+		case math.IsNaN(test.x) && math.IsNaN(x):
+		}
+	}
+	t.Logf("tested %d random numbers", len(atofRandomTests))
+}
+
 func BenchmarkAtof64Decimal(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		ParseFloat("33909", 64)
@@ -177,5 +232,17 @@ func BenchmarkAtof64FloatExp(b *testing.B) {
 func BenchmarkAtof64Big(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		ParseFloat("123456789123456789123456789", 64)
+	}
+}
+
+func BenchmarkAtof64RandomBits(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		ParseFloat(benchmarksRandomBits[i%1024], 64)
+	}
+}
+
+func BenchmarkAtof64RandomFloats(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		ParseFloat(benchmarksRandomNormal[i%1024], 64)
 	}
 }

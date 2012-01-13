@@ -167,20 +167,19 @@ am__DEPENDENCIES_2 = bufio/bufio.lo bytes/bytes.lo bytes/index.lo \
 	hash/fnv.lo net/http/cgi.lo net/http/fcgi.lo \
 	net/http/httptest.lo net/http/httputil.lo net/http/pprof.lo \
 	image/bmp.lo image/color.lo image/draw.lo image/gif.lo \
-	image/jpeg.lo image/png.lo image/tiff.lo image/ycbcr.lo \
-	index/suffixarray.lo io/ioutil.lo log/syslog.lo \
-	log/syslog/syslog_c.lo math/big.lo math/cmplx.lo math/rand.lo \
-	mime/mime.lo mime/multipart.lo net/dict.lo net/http.lo \
-	net/mail.lo net/rpc.lo net/smtp.lo net/textproto.lo net/url.lo \
-	old/netchan.lo old/regexp.lo old/template.lo \
-	$(am__DEPENDENCIES_1) os/user.lo os/signal.lo path/filepath.lo \
-	regexp/syntax.lo net/rpc/jsonrpc.lo runtime/debug.lo \
-	runtime/pprof.lo sync/atomic.lo sync/atomic_c.lo \
-	syscall/syscall.lo syscall/errno.lo syscall/wait.lo \
-	text/scanner.lo text/tabwriter.lo text/template.lo \
-	text/template/parse.lo testing/testing.lo testing/iotest.lo \
-	testing/quick.lo testing/script.lo unicode/utf16.lo \
-	unicode/utf8.lo
+	image/jpeg.lo image/png.lo image/tiff.lo index/suffixarray.lo \
+	io/ioutil.lo log/syslog.lo log/syslog/syslog_c.lo math/big.lo \
+	math/cmplx.lo math/rand.lo mime/mime.lo mime/multipart.lo \
+	net/dict.lo net/http.lo net/mail.lo net/rpc.lo net/smtp.lo \
+	net/textproto.lo net/url.lo old/netchan.lo old/regexp.lo \
+	old/template.lo $(am__DEPENDENCIES_1) os/user.lo os/signal.lo \
+	path/filepath.lo regexp/syntax.lo net/rpc/jsonrpc.lo \
+	runtime/debug.lo runtime/pprof.lo sync/atomic.lo \
+	sync/atomic_c.lo syscall/syscall.lo syscall/errno.lo \
+	syscall/wait.lo text/scanner.lo text/tabwriter.lo \
+	text/template.lo text/template/parse.lo testing/testing.lo \
+	testing/iotest.lo testing/quick.lo testing/script.lo \
+	unicode/utf16.lo unicode/utf8.lo
 libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
@@ -732,8 +731,7 @@ toolexeclibgoimage_DATA = \
 	image/gif.gox \
 	image/jpeg.gox \
 	image/png.gox \
-	image/tiff.gox \
-	image/ycbcr.gox
+	image/tiff.gox
 
 toolexeclibgoindexdir = $(toolexeclibgodir)/index
 toolexeclibgoindex_DATA = \
@@ -972,7 +970,8 @@ go_image_files = \
 	go/image/format.go \
 	go/image/geom.go \
 	go/image/image.go \
-	go/image/names.go
+	go/image/names.go \
+	go/image/ycbcr.go
 
 go_io_files = \
 	go/io/multi.go \
@@ -1034,10 +1033,12 @@ go_mime_files = \
 
 # By default use select with pipes.  Most systems should have
 # something better.
-@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_RTEMS_FALSE@go_net_fd_os_file = go/net/fd_select.go
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_RTEMS_FALSE@go_net_fd_os_file = go/net/fd_select.go
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@@LIBGO_IS_RTEMS_FALSE@go_net_fd_os_file = go/net/fd_netbsd.go
 @LIBGO_IS_LINUX_TRUE@@LIBGO_IS_RTEMS_FALSE@go_net_fd_os_file = go/net/fd_linux.go
 @LIBGO_IS_RTEMS_TRUE@go_net_fd_os_file = go/net/fd_select.go
-@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_RTEMS_FALSE@go_net_newpollserver_file = go/net/newpollserver.go
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_RTEMS_FALSE@go_net_newpollserver_file = go/net/newpollserver.go
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@@LIBGO_IS_RTEMS_FALSE@go_net_newpollserver_file = go/net/newpollserver.go
 @LIBGO_IS_LINUX_TRUE@@LIBGO_IS_RTEMS_FALSE@go_net_newpollserver_file = go/net/newpollserver.go
 @LIBGO_IS_RTEMS_TRUE@go_net_newpollserver_file = go/net/newpollserver_rtems.go
 @LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_net_cgo_file = go/net/cgo_bsd.go
@@ -1050,7 +1051,8 @@ go_mime_files = \
 @LIBGO_IS_LINUX_TRUE@go_net_sock_file = go/net/sock_linux.go
 @LIBGO_IS_LINUX_FALSE@go_net_sendfile_file = go/net/sendfile_stub.go
 @LIBGO_IS_LINUX_TRUE@go_net_sendfile_file = go/net/sendfile_linux.go
-@LIBGO_IS_LINUX_FALSE@go_net_interface_file = go/net/interface_stub.go
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@go_net_interface_file = go/net/interface_stub.go
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@go_net_interface_file = go/net/interface_netbsd.go
 @LIBGO_IS_LINUX_TRUE@go_net_interface_file = go/net/interface_linux.go
 go_net_files = \
 	go/net/cgo_unix.go \
@@ -1165,6 +1167,7 @@ go_strconv_files = \
 	go/strconv/atof.go \
 	go/strconv/atoi.go \
 	go/strconv/decimal.go \
+	go/strconv/extfloat.go \
 	go/strconv/ftoa.go \
 	go/strconv/itoa.go \
 	go/strconv/quote.go
@@ -1194,7 +1197,8 @@ go_syslog_c_files = \
 go_testing_files = \
 	go/testing/benchmark.go \
 	go/testing/example.go \
-	go/testing/testing.go
+	go/testing/testing.go \
+	go/testing/wrapper.go
 
 go_time_files = \
 	go/time/format.go \
@@ -1563,7 +1567,9 @@ go_go_build_files = \
 go_go_doc_files = \
 	go/go/doc/comment.go \
 	go/go/doc/doc.go \
-	go/go/doc/example.go
+	go/go/doc/example.go \
+	go/go/doc/exports.go \
+	go/go/doc/filter.go
 
 go_go_parser_files = \
 	go/go/parser/interface.go \
@@ -1614,7 +1620,8 @@ go_image_bmp_files = \
 	go/image/bmp/reader.go
 
 go_image_color_files = \
-	go/image/color/color.go
+	go/image/color/color.go \
+	go/image/color/ycbcr.go
 
 go_image_draw_files = \
 	go/image/draw/draw.go
@@ -1638,9 +1645,6 @@ go_image_tiff_files = \
 	go/image/tiff/compress.go \
 	go/image/tiff/consts.go \
 	go/image/tiff/reader.go
-
-go_image_ycbcr_files = \
-	go/image/ycbcr/ycbcr.go
 
 go_index_suffixarray_files = \
 	go/index/suffixarray/qsufsort.go \
@@ -1694,6 +1698,7 @@ go_net_http_files = \
 	go/net/http/filetransport.go \
 	go/net/http/fs.go \
 	go/net/http/header.go \
+	go/net/http/jar.go \
 	go/net/http/lex.go \
 	go/net/http/request.go \
 	go/net/http/response.go \
@@ -2043,7 +2048,6 @@ libgo_go_objs = \
 	image/jpeg.lo \
 	image/png.lo \
 	image/tiff.lo \
-	image/ycbcr.lo \
 	index/suffixarray.lo \
 	io/ioutil.lo \
 	log/syslog.lo \
@@ -2299,11 +2303,11 @@ TEST_PACKAGES = \
 	hash/crc32/check \
 	hash/crc64/check \
 	hash/fnv/check \
+	image/color/check \
 	image/draw/check \
 	image/jpeg/check \
 	image/png/check \
 	image/tiff/check \
-	image/ycbcr/check \
 	index/suffixarray/check \
 	io/ioutil/check \
 	log/syslog/check \
@@ -5657,16 +5661,6 @@ image/tiff/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: image/tiff/check
 
-@go_include@ image/ycbcr.lo.dep
-image/ycbcr.lo.dep: $(go_image_ycbcr_files)
-	$(BUILDDEPS)
-image/ycbcr.lo: $(go_image_ycbcr_files)
-	$(BUILDPACKAGE)
-image/ycbcr/check: $(CHECK_DEPS)
-	@$(MKDIR_P) image/ycbcr
-	@$(CHECK)
-.PHONY: image/ycbcr/check
-
 @go_include@ index/suffixarray.lo.dep
 index/suffixarray.lo.dep: $(go_index_suffixarray_files)
 	$(BUILDDEPS)
@@ -6313,8 +6307,6 @@ image/jpeg.gox: image/jpeg.lo
 image/png.gox: image/png.lo
 	$(BUILDGOX)
 image/tiff.gox: image/tiff.lo
-	$(BUILDGOX)
-image/ycbcr.gox: image/ycbcr.lo
 	$(BUILDGOX)
 
 index/suffixarray.gox: index/suffixarray.lo

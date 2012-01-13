@@ -134,6 +134,7 @@ case ${host} in
   *-*-freebsd*)  is_freebsd=yes; GOOS=freebsd ;;
   *-*-irix6*)    is_irix=yes;    GOOS=irix ;;
   *-*-linux*)    is_linux=yes;   GOOS=linux ;;
+  *-*-netbsd*)	 is_netbsd=yes;  GOOS=netbsd ;;
   *-*-rtems*)    is_rtems=yes;   GOOS=rtems ;;
   *-*-solaris2*) is_solaris=yes; GOOS=solaris ;;
 esac
@@ -141,6 +142,7 @@ AM_CONDITIONAL(LIBGO_IS_DARWIN, test $is_darwin = yes)
 AM_CONDITIONAL(LIBGO_IS_FREEBSD, test $is_freebsd = yes)
 AM_CONDITIONAL(LIBGO_IS_IRIX, test $is_irix = yes)
 AM_CONDITIONAL(LIBGO_IS_LINUX, test $is_linux = yes)
+AM_CONDITIONAL(LIBGO_IS_NETBSD, test $is_netbsd = yes)
 AM_CONDITIONAL(LIBGO_IS_RTEMS, test $is_rtems = yes)
 AM_CONDITIONAL(LIBGO_IS_SOLARIS, test $is_solaris = yes)
 AC_SUBST(GOOS)
