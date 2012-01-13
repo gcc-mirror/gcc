@@ -1,3 +1,9 @@
+2012-01-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51620
+	* g++.dg/cpp0x/defaulted34.C: New.
+	* g++.dg/template/virtual3.C: New.
+
 2012-01-13  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/8081
