@@ -1,3 +1,9 @@
+2012-01-13  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/8081
+	* gimplify.c (gimplify_modify_expr_rhs): For calls with a
+	variable-sized result always use RSO.
+
 2012-01-12  DJ Delorie  <dj@redhat.com>
 
 	* cfgexpand.c (convert_debug_memory_address): Allow any valid

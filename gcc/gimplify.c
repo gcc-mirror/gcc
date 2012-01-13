@@ -4417,6 +4417,11 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 		/* It's OK to use the target directly if it's being
 		   initialized. */
 		use_target = true;
+	      else if (variably_modified_type_p (TREE_TYPE (*to_p), NULL_TREE))
+		/* Always use the target and thus RSO for variable-sized types.
+		   GIMPLE cannot deal with a variable-sized assignment
+		   embedded in a call statement.  */
+		use_target = true;
 	      else if (TREE_CODE (*to_p) != SSA_NAME
 		      && (!is_gimple_variable (*to_p)
 			  || needs_to_live_in_memory (*to_p)))
