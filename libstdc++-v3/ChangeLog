@@ -1,3 +1,12 @@
+2012-01-13  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Hash_node_base): New, use it as
+	base class of ...
+	(_Hash_node<Value, true>, _Hash_node<Value, false>): ... those.
+	* include/bits/hashtable.h (_Hashtable): Replace _M_begin_bucket_index
+	by _M_before_begin. Review implementation so that we do not need to
+	look for previous non-empty bucket when inserting nodes.
+
 2012-01-09  Kai Tietz  <ktietz@redhat.com>
 
 	PR libstc++/51673 part 2

@@ -73,32 +73,44 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // template parameter of class template _Hashtable controls whether
   // nodes also store a hash code. In some cases (e.g. strings) this
   // may be a performance win.
+  struct _Hash_node_base
+  {
+    _Hash_node_base* _M_nxt;
+
+    _Hash_node_base()
+      : _M_nxt() { }
+    _Hash_node_base(_Hash_node_base* __next)
+      : _M_nxt(__next) { }
+  };
+
   template<typename _Value, bool __cache_hash_code>
     struct _Hash_node;
 
   template<typename _Value>
-    struct _Hash_node<_Value, true>
+    struct _Hash_node<_Value, true> : _Hash_node_base
     {
       _Value       _M_v;
       std::size_t  _M_hash_code;
-      _Hash_node*  _M_next;
 
       template<typename... _Args>
 	_Hash_node(_Args&&... __args)
-	: _M_v(std::forward<_Args>(__args)...),
-	  _M_hash_code(), _M_next() { }
+	: _M_v(std::forward<_Args>(__args)...), _M_hash_code() { }
+
+      _Hash_node* _M_next() const
+      { return static_cast<_Hash_node*>(_M_nxt); }
     };
 
   template<typename _Value>
-    struct _Hash_node<_Value, false>
+    struct _Hash_node<_Value, false> : _Hash_node_base
     {
       _Value       _M_v;
-      _Hash_node*  _M_next;
 
       template<typename... _Args>
 	_Hash_node(_Args&&... __args)
-	: _M_v(std::forward<_Args>(__args)...),
-	  _M_next() { }
+	: _M_v(std::forward<_Args>(__args)...) { }
+
+      _Hash_node* _M_next() const
+      { return static_cast<_Hash_node*>(_M_nxt); }
     };
 
   // Node iterators, used to iterate through all the hashtable.
@@ -110,7 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       _M_incr()
-      { _M_cur = _M_cur->_M_next; }
+      { _M_cur = _M_cur->_M_next(); }
 
       _Hash_node<_Value, __cache>*  _M_cur;
     };
@@ -904,7 +916,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_incr()
       {
-	_M_cur = _M_cur->_M_next;
+	_M_cur = _M_cur->_M_next();
 	if (_M_cur)
 	  {
 	    std::size_t __bkt = _M_h2()(_M_cur->_M_hash_code, _M_bucket_count);
@@ -936,7 +948,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_incr()
       {
-	_M_cur = _M_cur->_M_next;
+	_M_cur = _M_cur->_M_next();
 	if (_M_cur)
 	  {
 	    std::size_t __bkt = this->_M_bucket_index(_M_cur, _M_bucket_count);
