@@ -12,8 +12,6 @@ package runtime
 #include "defs.h"
 #include "go-type.h"
 
-typedef struct __go_open_array Slice;
-
 // NOTE(rsc): Everything here could use cas if contention became an issue.
 static Lock proflock;
 

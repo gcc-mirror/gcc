@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux openbsd
+// +build darwin freebsd linux netbsd openbsd
 
 package os
 
@@ -67,8 +67,13 @@ func OpenFile(name string, flag int, perm uint32) (file *File, err error) {
 	}
 
 	// There's a race here with fork/exec, which we are
-	// content to live with.  See ../syscall/exec.go
-	if syscall.O_CLOEXEC == 0 { // O_CLOEXEC not supported
+	// content to live with.  See ../syscall/exec_unix.go.
+	// On OS X 10.6, the O_CLOEXEC flag is not respected.
+	// On OS X 10.7, the O_CLOEXEC flag works.
+	// Without a cheap & reliable way to detect 10.6 vs 10.7 at
+	// runtime, we just always call syscall.CloseOnExec on Darwin.
+	// Once >=10.7 is prevalent, this extra call can removed.
+	if syscall.O_CLOEXEC == 0 || runtime.GOOS == "darwin" { // O_CLOEXEC not supported
 		syscall.CloseOnExec(r)
 	}
 
@@ -214,6 +219,36 @@ func Truncate(name string, size int64) error {
 		return &PathError{"truncate", name, e}
 	}
 	return nil
+}
+
+// Remove removes the named file or directory.
+func Remove(name string) error {
+	// System call interface forces us to know
+	// whether name is a file or directory.
+	// Try both: it is cheaper on average than
+	// doing a Stat plus the right one.
+	e := syscall.Unlink(name)
+	if e == nil {
+		return nil
+	}
+	e1 := syscall.Rmdir(name)
+	if e1 == nil {
+		return nil
+	}
+
+	// Both failed: figure out which error to return.
+	// OS X and Linux differ on whether unlink(dir)
+	// returns EISDIR, so can't use that.  However,
+	// both agree that rmdir(file) returns ENOTDIR,
+	// so we can use that to decide which error is real.
+	// Rmdir might also return ENOTDIR if given a bad
+	// file path, like /etc/passwd/foo, but in that case,
+	// both errors will be ENOTDIR, so it's okay to
+	// use the error from unlink.
+	if e1 != syscall.ENOTDIR {
+		e = e1
+	}
+	return &PathError{"remove", name, e}
 }
 
 // basename removes trailing slashes and the leading directory name from path name

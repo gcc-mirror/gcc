@@ -202,8 +202,8 @@ func validateTestMultipartContents(t *testing.T, req *Request, allMem bool) {
 	if g, e := req.FormValue("texta"), textaValue; g != e {
 		t.Errorf("texta value = %q, want %q", g, e)
 	}
-	if g, e := req.FormValue("texta"), textaValue; g != e {
-		t.Errorf("texta value = %q, want %q", g, e)
+	if g, e := req.FormValue("textb"), textbValue; g != e {
+		t.Errorf("textb value = %q, want %q", g, e)
 	}
 	if g := req.FormValue("missing"); g != "" {
 		t.Errorf("missing value = %q, want empty string", g)
@@ -214,14 +214,16 @@ func validateTestMultipartContents(t *testing.T, req *Request, allMem bool) {
 			t.Error(n, " is *os.File, should not be")
 		}
 	}
-	fd := testMultipartFile(t, req, "filea", "filea.txt", fileaContents)
-	assertMem("filea", fd)
-	fd = testMultipartFile(t, req, "fileb", "fileb.txt", filebContents)
+	fda := testMultipartFile(t, req, "filea", "filea.txt", fileaContents)
+	defer fda.Close()
+	assertMem("filea", fda)
+	fdb := testMultipartFile(t, req, "fileb", "fileb.txt", filebContents)
+	defer fdb.Close()
 	if allMem {
-		assertMem("fileb", fd)
+		assertMem("fileb", fdb)
 	} else {
-		if _, ok := fd.(*os.File); !ok {
-			t.Errorf("fileb has unexpected underlying type %T", fd)
+		if _, ok := fdb.(*os.File); !ok {
+			t.Errorf("fileb has unexpected underlying type %T", fdb)
 		}
 	}
 

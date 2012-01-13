@@ -4,6 +4,9 @@
 
 package runtime
 #include "runtime.h"
+#include "arch.h"
+#include "malloc.h"
+
 #define charntorune(pv, str, len) __go_get_rune(str, len, pv)
 
 int32

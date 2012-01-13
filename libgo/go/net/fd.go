@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux openbsd
+// +build darwin freebsd linux netbsd openbsd
 
 package net
 
@@ -376,14 +376,6 @@ func (fd *netFD) CloseRead() error {
 func (fd *netFD) CloseWrite() error {
 	return fd.shutdown(syscall.SHUT_WR)
 }
-
-type timeoutError struct{}
-
-func (e *timeoutError) Error() string   { return "i/o timeout" }
-func (e *timeoutError) Timeout() bool   { return true }
-func (e *timeoutError) Temporary() bool { return true }
-
-var errTimeout error = &timeoutError{}
 
 func (fd *netFD) Read(p []byte) (n int, err error) {
 	if fd == nil {

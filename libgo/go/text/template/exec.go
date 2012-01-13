@@ -107,7 +107,7 @@ func (t *Template) Execute(wr io.Writer, data interface{}) (err error) {
 		vars: []variable{{"$", value}},
 	}
 	if t.Tree == nil || t.Root == nil {
-		state.errorf("must be parsed before execution")
+		state.errorf("%q is an incomplete or empty template", t.name)
 	}
 	state.walk(value, t.Root)
 	return
@@ -497,7 +497,13 @@ func (s *state) evalCall(dot, fun reflect.Value, name string, args []parse.Node,
 // validateType guarantees that the value is valid and assignable to the type.
 func (s *state) validateType(value reflect.Value, typ reflect.Type) reflect.Value {
 	if !value.IsValid() {
-		s.errorf("invalid value; expected %s", typ)
+		switch typ.Kind() {
+		case reflect.Interface, reflect.Ptr, reflect.Chan, reflect.Map, reflect.Slice, reflect.Func:
+			// An untyped nil interface{}. Accept as a proper nil value.
+			value = reflect.Zero(typ)
+		default:
+			s.errorf("invalid value; expected %s", typ)
+		}
 	}
 	if !value.Type().AssignableTo(typ) {
 		// Does one dereference or indirection work? We could do more, as we

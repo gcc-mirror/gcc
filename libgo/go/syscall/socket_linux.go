@@ -167,6 +167,9 @@ func anyToSockaddrOS(rsa *RawSockaddrAny) (Sockaddr, error) {
 //sysnb	EpollCreate(size int) (fd int, err error)
 //epoll_create(size int) int
 
+//sysnb EpollCreate1(flags int) (fd int, err error)
+//epoll_create1(flags int) int
+
 //sysnb	EpollCtl(epfd int, op int, fd int, event *EpollEvent) (err error)
 //epoll_ctl(epfd int, op int, fd int, event *EpollEvent) int
 

@@ -422,10 +422,73 @@ var basetests = []PathTest{
 	{"a/b/c.x", "c.x"},
 }
 
+var winbasetests = []PathTest{
+	{`c:\`, `\`},
+	{`c:.`, `.`},
+	{`c:\a\b`, `b`},
+	{`c:a\b`, `b`},
+	{`c:a\b\c`, `c`},
+	{`\\host\share\`, `\`},
+	{`\\host\share\a`, `a`},
+	{`\\host\share\a\b`, `b`},
+}
+
 func TestBase(t *testing.T) {
-	for _, test := range basetests {
-		if s := filepath.ToSlash(filepath.Base(test.path)); s != test.result {
+	tests := basetests
+	if runtime.GOOS == "windows" {
+		// make unix tests work on windows
+		for i, _ := range tests {
+			tests[i].result = filepath.Clean(tests[i].result)
+		}
+		// add windows specific tests
+		tests = append(tests, winbasetests...)
+	}
+	for _, test := range tests {
+		if s := filepath.Base(test.path); s != test.result {
 			t.Errorf("Base(%q) = %q, want %q", test.path, s, test.result)
+		}
+	}
+}
+
+var dirtests = []PathTest{
+	{"", "."},
+	{".", "."},
+	{"/.", "/"},
+	{"/", "/"},
+	{"////", "/"},
+	{"/foo", "/"},
+	{"x/", "x"},
+	{"abc", "."},
+	{"abc/def", "abc"},
+	{"a/b/.x", "a/b"},
+	{"a/b/c.", "a/b"},
+	{"a/b/c.x", "a/b"},
+}
+
+var windirtests = []PathTest{
+	{`c:\`, `c:\`},
+	{`c:.`, `c:.`},
+	{`c:\a\b`, `c:\a`},
+	{`c:a\b`, `c:a`},
+	{`c:a\b\c`, `c:a\b`},
+	{`\\host\share\`, `\\host\share\`},
+	{`\\host\share\a`, `\\host\share\`},
+	{`\\host\share\a\b`, `\\host\share\a`},
+}
+
+func TestDir(t *testing.T) {
+	tests := dirtests
+	if runtime.GOOS == "windows" {
+		// make unix tests work on windows
+		for i, _ := range tests {
+			tests[i].result = filepath.Clean(tests[i].result)
+		}
+		// add windows specific tests
+		tests = append(tests, windirtests...)
+	}
+	for _, test := range tests {
+		if s := filepath.Dir(test.path); s != test.result {
+			t.Errorf("Dir(%q) = %q, want %q", test.path, s, test.result)
 		}
 	}
 }
