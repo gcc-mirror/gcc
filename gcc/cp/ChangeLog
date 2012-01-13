@@ -1,5 +1,9 @@
 2012-01-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/20681
+	* semantics.c (finish_break_stmt): Avoid adding an unreachable
+	BREAK_STMT.
+
 	PR c++/51813
 	* decl2.c (constrain_visibility): Clear DECL_VISIBILITY_SPECIFIED
 	when reducing the visibility.
