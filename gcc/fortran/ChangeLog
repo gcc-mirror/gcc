@@ -1,3 +1,9 @@
+2012-01-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51800
+	* resolve.c (build_default_init_expr): Also initialize
+	nonconstant-length strings with -finit-character=<n>.
+
 2011-01-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51816
