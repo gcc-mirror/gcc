@@ -1,3 +1,9 @@
+2012-01-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51800
+	* gfortran.dg/init_flag_8.f90: New.
+	* gfortran.dg/init_flag_9.f90: New.
+
 2011-01-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51816
