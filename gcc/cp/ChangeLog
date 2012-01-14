@@ -1,3 +1,12 @@
+2012-01-13  Ian Lance Taylor  <iant@google.com>
+
+	PR c++/50012
+	* typeck.c (enum_cast_to_int): New static function.
+	(cp_build_binary_op): When handling warn_sign_compare, don't test
+	for TREE_NO_WARNING.  Do call enum_cast_to_int.
+	* call.c (avoid_sign_compare_warnings): Remove static function.
+	(build_new_op_1): Don't call avoid_sign_compare_warnings.
+
 2012-01-13  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* decl2.c: Do not include tree-mudflap.h

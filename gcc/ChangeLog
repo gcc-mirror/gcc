@@ -1,5 +1,11 @@
 2012-01-13  Ian Lance Taylor  <iant@google.com>
 
+	PR c++/50012
+	* tree.h (TYPE_QUALS): Add cast to int.
+	(TYPE_QUALS_NO_ADDR_SPACE): Likewise.
+
+2012-01-13  Ian Lance Taylor  <iant@google.com>
+
 	* ipa-cp.c (ipa_get_indirect_edge_target): Add typecasts when
 	comparing param_index to VEC_length result.
 
