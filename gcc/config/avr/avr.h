@@ -231,47 +231,45 @@ enum
 
 #define FIRST_PSEUDO_REGISTER 36
 
-#define FIXED_REGISTERS {			\
-  1,1,/* r0 r1 */				\
-  0,0,/* r2 r3 */				\
-  0,0,/* r4 r5 */				\
-  0,0,/* r6 r7 */				\
-  0,0,/* r8 r9 */				\
-  0,0,/* r10 r11 */				\
-  0,0,/* r12 r13 */				\
-  0,0,/* r14 r15 */				\
-  0,0,/* r16 r17 */				\
-  0,0,/* r18 r19 */				\
-  0,0,/* r20 r21 */				\
-  0,0,/* r22 r23 */				\
-  0,0,/* r24 r25 */				\
-  0,0,/* r26 r27 */				\
-  0,0,/* r28 r29 */				\
-  0,0,/* r30 r31 */				\
-  1,1,/*  STACK */				\
-  1,  /* arg pointer */				\
-  1   /* frame pointer */ }
+#define FIXED_REGISTERS {\
+  1,1,/* r0 r1 */\
+  0,0,/* r2 r3 */\
+  0,0,/* r4 r5 */\
+  0,0,/* r6 r7 */\
+  0,0,/* r8 r9 */\
+  0,0,/* r10 r11 */\
+  0,0,/* r12 r13 */\
+  0,0,/* r14 r15 */\
+  0,0,/* r16 r17 */\
+  0,0,/* r18 r19 */\
+  0,0,/* r20 r21 */\
+  0,0,/* r22 r23 */\
+  0,0,/* r24 r25 */\
+  0,0,/* r26 r27 */\
+  0,0,/* r28 r29 */\
+  0,0,/* r30 r31 */\
+  1,1,/*  STACK */\
+  1,1 /* arg pointer */  }
 
 #define CALL_USED_REGISTERS {			\
   1,1,/* r0 r1 */				\
-  0,0,/* r2 r3 */				\
-  0,0,/* r4 r5 */				\
-  0,0,/* r6 r7 */				\
-  0,0,/* r8 r9 */				\
-  0,0,/* r10 r11 */				\
-  0,0,/* r12 r13 */				\
-  0,0,/* r14 r15 */				\
-  0,0,/* r16 r17 */				\
-  1,1,/* r18 r19 */				\
-  1,1,/* r20 r21 */				\
-  1,1,/* r22 r23 */				\
-  1,1,/* r24 r25 */				\
-  1,1,/* r26 r27 */				\
-  0,0,/* r28 r29 */				\
-  1,1,/* r30 r31 */				\
-  1,1,/*  STACK */				\
-  1,  /* arg pointer */				\
-  1   /* frame pointer */ }
+    0,0,/* r2 r3 */				\
+    0,0,/* r4 r5 */				\
+    0,0,/* r6 r7 */				\
+    0,0,/* r8 r9 */				\
+    0,0,/* r10 r11 */				\
+    0,0,/* r12 r13 */				\
+    0,0,/* r14 r15 */				\
+    0,0,/* r16 r17 */				\
+    1,1,/* r18 r19 */				\
+    1,1,/* r20 r21 */				\
+    1,1,/* r22 r23 */				\
+    1,1,/* r24 r25 */				\
+    1,1,/* r26 r27 */				\
+    0,0,/* r28 r29 */				\
+    1,1,/* r30 r31 */				\
+    1,1,/*  STACK */				\
+    1,1 /* arg pointer */  }
 
 #define REG_ALLOC_ORDER {			\
     24,25,					\
@@ -289,7 +287,7 @@ enum
 #define ADJUST_REG_ALLOC_ORDER order_regs_for_local_alloc ()
 
 
-#define HARD_REGNO_NREGS(REGNO, MODE) avr_hard_regno_nregs(REGNO, MODE)
+#define HARD_REGNO_NREGS(REGNO, MODE) ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) avr_hard_regno_mode_ok(REGNO, MODE)
 
@@ -339,17 +337,17 @@ enum reg_class {
   {3 << REG_Z,0x00000000},      /* POINTER_Z_REGS, r30 - r31 */		\
   {0x00000000,0x00000003},	/* STACK_REG, STACK */			\
   {(3 << REG_Y) | (3 << REG_Z),						\
-     0x0000000c},		/* BASE_POINTER_REGS, r28 - r31,ap,fp */ \
+     0x00000000},		/* BASE_POINTER_REGS, r28 - r31 */	\
   {(3 << REG_X) | (3 << REG_Y) | (3 << REG_Z),				\
-     0x0000000c},		/* POINTER_REGS, r26 - r31 */		\
+     0x00000000},		/* POINTER_REGS, r26 - r31 */		\
   {(3 << REG_X) | (3 << REG_Y) | (3 << REG_Z) | (3 << REG_W),		\
      0x00000000},		/* ADDW_REGS, r24 - r31 */		\
   {0x00ff0000,0x00000000},	/* SIMPLE_LD_REGS r16 - r23 */          \
   {(3 << REG_X)|(3 << REG_Y)|(3 << REG_Z)|(3 << REG_W)|(0xff << 16),	\
-     0x0000000c},	/* LD_REGS, r16 - r31 */			\
+     0x00000000},	/* LD_REGS, r16 - r31 */			\
   {0x0000ffff,0x00000000},	/* NO_LD_REGS  r0 - r15 */              \
-  {0xffffffff,0x0000000c},	/* GENERAL_REGS, r0 - r31 */		\
-  {0xffffffff,0x0000000f}	/* ALL_REGS */				\
+  {0xffffffff,0x00000000},	/* GENERAL_REGS, r0 - r31 */		\
+  {0xffffffff,0x00000003}	/* ALL_REGS */				\
 }
 
 #define REGNO_REG_CLASS(R) avr_regno_reg_class(R)
@@ -380,20 +378,18 @@ enum reg_class {
 
 #define STACK_POINTER_REGNUM 32
 
-#define HARD_FRAME_POINTER_REGNUM REG_Y
+#define FRAME_POINTER_REGNUM REG_Y
 
 #define ARG_POINTER_REGNUM 34
-#define FRAME_POINTER_REGNUM 35
 
 #define STATIC_CHAIN_REGNUM 2
 
 #define ELIMINABLE_REGS {					\
-     { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM },		\
-     { ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM },		\
-     { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM },		\
-     { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM }}
+      {ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},		\
+	{FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}		\
+       ,{FRAME_POINTER_REGNUM+1,STACK_POINTER_REGNUM+1}}
 
-#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)	\
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
   OFFSET = avr_initial_elimination_offset (FROM, TO)
 
 #define RETURN_ADDR_RTX(count, tem) avr_return_addr_rtx (count, tem)
@@ -497,7 +493,7 @@ typedef struct avr_args {
     "r8","r9","r10","r11","r12","r13","r14","r15",	\
     "r16","r17","r18","r19","r20","r21","r22","r23",	\
     "r24","r25","r26","r27","r28","r29","r30","r31",	\
-    "__SP_L__","__SP_H__","ap","fp"}
+    "__SP_L__","__SP_H__","argL","argH"}
 
 #define FINAL_PRESCAN_INSN(insn, operand, nop) final_prescan_insn (insn, operand,nop)
 
