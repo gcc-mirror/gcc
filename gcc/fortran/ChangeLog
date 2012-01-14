@@ -1,3 +1,11 @@
+2011-01-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51816
+	* module.c (read_module): Don't make nonexisting
+	intrinsic operators as found.
+	(rename_list_remove_duplicate): New function.
+	(gfc_use_modules): Use it.
+
 2012-01-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/48351

@@ -4465,7 +4465,7 @@ read_module (void)
   int i;
   int ambiguous, j, nuse, symbol;
   pointer_info *info, *q;
-  gfc_use_rename *u;
+  gfc_use_rename *u = NULL;
   gfc_symtree *st;
   gfc_symbol *sym;
 
@@ -4678,6 +4678,8 @@ read_module (void)
 	}
 
       mio_interface (&gfc_current_ns->op[i]);
+      if (u && !gfc_current_ns->op[i])
+	u->found = 0;
     }
 
   mio_rparen ();
@@ -6093,6 +6095,31 @@ gfc_use_module (gfc_use_list *module)
 }
 
 
+/* Remove duplicated intrinsic operators from the rename list. */
+
+static void
+rename_list_remove_duplicate (gfc_use_rename *list)
+{
+  gfc_use_rename *seek, *last;
+
+  for (; list; list = list->next)
+    if (list->op != INTRINSIC_USER && list->op != INTRINSIC_NONE)
+      {
+	last = list;
+	for (seek = list->next; seek; seek = last->next)
+	  {
+	    if (list->op == seek->op)
+	      {
+		last->next = seek->next;
+		free (seek);
+	      }
+	    else
+	      last = seek;
+	  }
+      }
+}
+
+
 /* Process all USE directives.  */
 
 void
@@ -6171,6 +6198,7 @@ gfc_use_modules (void)
   for (; module_list; module_list = next)
     {
       next = module_list->next;
+      rename_list_remove_duplicate (module_list->rename);
       gfc_use_module (module_list);
       if (module_list->intrinsic)
 	free_rename (module_list->rename);
