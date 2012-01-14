@@ -1,3 +1,8 @@
+2012-01-13  Ian Lance Taylor  <iant@google.com>
+
+	PR c++/50012
+	* g++.dg/warn/Wsign-compare-4.C: New.
+
 2012-01-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/48351
@@ -21,7 +26,7 @@
 	int32plus because of big array needed.
 	* gcc.dg/pr50527.c: Don't FAIL if sizeof(void*) = 2
 	* gcc.dg/lto/20090218-2_1.c: Fix prototype of malloc, memcpy.
-	
+
 2012-01-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51813
