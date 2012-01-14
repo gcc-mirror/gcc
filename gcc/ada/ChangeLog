@@ -1,3 +1,8 @@
+2012-01-14  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc-interface/Makefile.in (OSCONS_EXTRACT): Add
+	$(GNATLIBCFLAGS).
+
 2012-01-10  Pascal Obry  <obry@adacore.com>
 
 	* prj-nmsc.adb (Check_Library_Attributes):

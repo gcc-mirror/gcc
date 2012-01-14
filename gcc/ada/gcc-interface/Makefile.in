@@ -1,5 +1,5 @@
 # Makefile for GNU Ada Compiler (GNAT).
-#   Copyright (C) 1994-2011 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2012 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -2546,7 +2546,7 @@ OSCONS_CC=`echo "$(GCC_FOR_TARGET)" \
   | sed -e 's^\./xgcc^../../xgcc^' -e 's^-B./^-B../../^'`
 OSCONS_CPP=$(OSCONS_CC) $(GNATLIBCFLAGS) -E -C \
   -DTARGET=\"$(target)\" $(fsrcpfx)ada/s-oscons-tmplt.c > s-oscons-tmplt.i
-OSCONS_EXTRACT=$(OSCONS_CC) -S s-oscons-tmplt.i
+OSCONS_EXTRACT=$(OSCONS_CC) $(GNATLIBCFLAGS) -S s-oscons-tmplt.i
 endif
 
 ./bldtools/oscons/xoscons: xoscons.adb xutil.ads xutil.adb
