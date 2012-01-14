@@ -1,3 +1,7 @@
+2012-01-14  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* g++.dg/cpp0x/constexpr-rom.C: Add -G0 where applicable.
+
 2012-01-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51800
@@ -225,7 +229,7 @@
 	PR gcov-profile/51717
 	* gcc.misc-tests/gcov-13.c: Skip on 32-bit hppa*-*-hpux*.
 	* gcc.misc-tests/gcov-14.c: Likewise.
- 
+
 2012-01-06  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/parse/new5.C: New.
@@ -234,7 +238,7 @@
 
 	PR testsuite/51655
 	* c-c++-common/tm/memcpy-1.c: Declare memcpy instead of
-	including <string.h>. 
+	including <string.h>.
 
 2012-01-06  Jason Merrill  <jason@redhat.com>
 
