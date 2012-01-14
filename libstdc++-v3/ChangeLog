@@ -1,3 +1,7 @@
+2012-01-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/stl_iterator.h (reverse_iterator): Doxygen comments.
+
 2012-01-13  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h (_Hash_node_base): New, use it as
