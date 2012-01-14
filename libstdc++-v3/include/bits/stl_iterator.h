@@ -1,7 +1,7 @@
 // Iterators -*- C++ -*-
 
 // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-// 2010, 2011
+// 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -114,7 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename __traits_type::reference		reference;
 
       /**
-       *  The default constructor default-initializes member @p current.
+       *  The default constructor value-initializes member @p current.
        *  If it is a pointer, that means it is zero-initialized.
       */
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -134,8 +134,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : current(__x.current) { }
 
       /**
-       *  A reverse_iterator across other types can be copied in the normal
-       *  fashion.
+       *  A %reverse_iterator across other types can be copied if the
+       *  underlying %iterator can be converted to the type of @c current.
       */
       template<typename _Iter>
         reverse_iterator(const reverse_iterator<_Iter>& __x)
@@ -149,9 +149,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return current; }
 
       /**
-       *  @return  TODO
+       *  @return  A reference to the value at @c --current
        *
-       *  @doctodo
+       *  This requires that @c --current is dereferenceable.
+       *
+       *  @warning This implementation requires that for an iterator of the
+       *           underlying iterator type, @c x, a reference obtained by
+       *           @c *x remains valid after @c x has been modified or
+       *           destroyed. This is a bug: http://gcc.gnu.org/PR51823
       */
       reference
       operator*() const
@@ -161,18 +166,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       /**
-       *  @return  TODO
+       *  @return  A pointer to the value at @c --current
        *
-       *  @doctodo
+       *  This requires that @c --current is dereferenceable.
       */
       pointer
       operator->() const
       { return &(operator*()); }
 
       /**
-       *  @return  TODO
+       *  @return  @c *this
        *
-       *  @doctodo
+       *  Decrements the underlying iterator.
       */
       reverse_iterator&
       operator++()
@@ -182,9 +187,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       /**
-       *  @return  TODO
+       *  @return  The original value of @c *this
        *
-       *  @doctodo
+       *  Decrements the underlying iterator.
       */
       reverse_iterator
       operator++(int)
@@ -195,9 +200,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       /**
-       *  @return  TODO
+       *  @return  @c *this
        *
-       *  @doctodo
+       *  Increments the underlying iterator.
       */
       reverse_iterator&
       operator--()
@@ -207,9 +212,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       /**
-       *  @return  TODO
+       *  @return  A reverse_iterator with the previous value of @c *this
        *
-       *  @doctodo
+       *  Increments the underlying iterator.
       */
       reverse_iterator
       operator--(int)
@@ -220,18 +225,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       /**
-       *  @return  TODO
+       *  @return  A reverse_iterator that refers to @c current - @a __n
        *
-       *  @doctodo
+       *  The underlying iterator must be a Random Access Iterator.
       */
       reverse_iterator
       operator+(difference_type __n) const
       { return reverse_iterator(current - __n); }
 
       /**
-       *  @return  TODO
+       *  @return  *this
        *
-       *  @doctodo
+       *  Moves the underlying iterator backwards @a __n steps.
+       *  The underlying iterator must be a Random Access Iterator.
       */
       reverse_iterator&
       operator+=(difference_type __n)
@@ -241,18 +247,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       /**
-       *  @return  TODO
+       *  @return  A reverse_iterator that refers to @c current - @a __n
        *
-       *  @doctodo
+       *  The underlying iterator must be a Random Access Iterator.
       */
       reverse_iterator
       operator-(difference_type __n) const
       { return reverse_iterator(current + __n); }
 
       /**
-       *  @return  TODO
+       *  @return  *this
        *
-       *  @doctodo
+       *  Moves the underlying iterator forwards @a __n steps.
+       *  The underlying iterator must be a Random Access Iterator.
       */
       reverse_iterator&
       operator-=(difference_type __n)
@@ -262,9 +269,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       /**
-       *  @return  TODO
+       *  @return  The value at @c current - @a __n - 1
        *
-       *  @doctodo
+       *  The underlying iterator must be a Random Access Iterator.
       */
       reference
       operator[](difference_type __n) const
