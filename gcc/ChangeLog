@@ -1,3 +1,10 @@
+2012-01-14  Denis Chertykov  <chertykov@gmail.com>
+
+	PR target/50925
+	* config/avr/avr-protos.h: Revert change of 2012-01-09.
+	* config/avr/avr.c: Likewise.
+	* config/avr/avr.h: Likewise.
+
 2012-01-13  Ian Lance Taylor  <iant@google.com>
 
 	PR c++/50012
