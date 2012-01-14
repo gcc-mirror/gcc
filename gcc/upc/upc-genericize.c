@@ -169,6 +169,9 @@ upc_expand_get (location_t loc, tree src, int want_stable_value)
   enum machine_mode mode = TYPE_MODE (type);
   enum machine_mode op_mode = (mode == TImode) ? BLKmode : mode;
   rtx lib_op = optab_libfunc (get_op, op_mode);
+  expanded_location s = expand_location (loc);
+  const char *src_filename = s.file;
+  const int src_line = s.line;
   const char *libfunc_name;
   tree src_addr, result, result_tmp, libfunc, lib_args, lib_call;
   src_addr = upc_shared_addr_rep (loc, src);
@@ -193,7 +196,7 @@ upc_expand_get (location_t loc, tree src, int want_stable_value)
 						  NULL_TREE)));
       if (doprofcall)
 	lib_args = upc_gasp_add_src_args (lib_args,
-					  input_filename, input_line);
+					  src_filename, src_line);
       lib_call = build_function_call (loc, libfunc, lib_args);
       result = build2 (COMPOUND_EXPR, result_type, lib_call, result_tmp);
     }
@@ -202,7 +205,7 @@ upc_expand_get (location_t loc, tree src, int want_stable_value)
       lib_args = tree_cons (NULL_TREE, src_addr, NULL_TREE);
       if (doprofcall)
 	lib_args = upc_gasp_add_src_args (lib_args,
-					  input_filename, input_line);
+					  src_filename, src_line);
       lib_call = build_function_call (loc, libfunc, lib_args);
       if (!lang_hooks.types_compatible_p (result_type, TREE_TYPE (lib_call)))
 	lib_call = build1 (NOP_EXPR, result_type, lib_call);
@@ -249,6 +252,9 @@ upc_expand_put (location_t loc, tree dest, tree src, int want_value)
 	    || !is_gimple_variable (src)
 	    || needs_to_live_in_memory (src)));
   int is_shared_copy = !local_copy && (op_mode == BLKmode) && is_src_shared;
+  expanded_location s = expand_location (loc);
+  const char *src_filename = s.file;
+  const int src_line = s.line;
   const char *libfunc_name;
   tree dest_addr, libfunc, lib_args, src_tmp_init_expr, result;
   dest_addr = upc_shared_addr_rep (loc, dest);
@@ -283,8 +289,7 @@ upc_expand_put (location_t loc, tree dest, tree src, int want_value)
 			  tree_cons (NULL_TREE, src_addr,
 				     tree_cons (NULL_TREE, size, NULL_TREE)));
       if (doprofcall)
-	lib_args = upc_gasp_add_src_args (lib_args, input_filename,
-					  input_line);
+	lib_args = upc_gasp_add_src_args (lib_args, src_filename, src_line);
     }
   else
     {
@@ -302,8 +307,7 @@ upc_expand_put (location_t loc, tree dest, tree src, int want_value)
 		      ? VIEW_CONVERT_EXPR : NOP_EXPR, src_type, src);
       lib_args = chainon (lib_args, tree_cons (NULL_TREE, src, NULL_TREE));
       if (doprofcall)
-	lib_args = upc_gasp_add_src_args (lib_args,
-					  input_filename, input_line);
+	lib_args = upc_gasp_add_src_args (lib_args, src_filename, src_line);
     }
   result = build_function_call (loc, libfunc, lib_args);
   if (want_value)
@@ -983,7 +987,6 @@ upc_genericize_expr (tree *expr_p, int *walk_subtrees, void *data)
 {
   const walk_data_p wdata = (walk_data_p) data;
   const tree expr = *expr_p;
-  const location_t loc = EXPR_LOCATION (expr);
   const enum tree_code code = TREE_CODE (expr);
   const tree type = CODE_CONTAINS_STRUCT (code, TS_TYPED)
                     ? TREE_TYPE (expr) : NULL;
@@ -995,6 +998,11 @@ upc_genericize_expr (tree *expr_p, int *walk_subtrees, void *data)
   tree op1 = (TREE_CODE_LENGTH (code) >= 2)
              ? TREE_OPERAND (expr, 1) : NULL_TREE;
   tree type1 = (op1 != NULL_TREE) ? TREE_TYPE (op1) : NULL_TREE;
+  location_t saved_location = input_location;
+  location_t loc;
+  if (EXPR_HAS_LOCATION (expr))
+    input_location = EXPR_LOCATION (expr);
+  loc = input_location;
   switch (code)
     {
     case UPC_FORALL_STMT:
@@ -1178,6 +1186,9 @@ upc_genericize_expr (tree *expr_p, int *walk_subtrees, void *data)
       gcc_assert (!TREE_SHARED (expr));
       break;
     }
+
+  /* Restore the input location.  */
+  input_location = saved_location;
 
   /* After evaluating the current node, assert the
      want_value flag so that all subtrees of this root node

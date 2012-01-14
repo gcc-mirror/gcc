@@ -1,3 +1,10 @@
+2012-01-14  Gary Funck  <gary@intrepid.com>
+
+	* upc-genericize.c (upc_genericize_expr): Update input_location
+	while traversing the program tree.
+	(upc_expand_get, upc_expand_put): For profiling,  derive
+	the source code location from the incoming 'loc' parameter.
+
 2012-01-09  Gary Funck  <gary@intrepid.com>
 
 	* upc-genericize.c (upc_expand_put): Use is_gimple_reg instead of
