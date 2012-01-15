@@ -16,11 +16,11 @@ main (int argc, char **argv)
     {
       return *(block *) &b;
     }
-  b.val[0] = -1;
-  b.val[9] = -2;
+  b.val[0] = 1;
+  b.val[9] = 2;
   a=retframe_block ();
-  if (a.val[0] != -1
-      || a.val[9] != -2)
+  if (a.val[0] != 1
+      || a.val[9] != 2)
     abort ();
   return 0;
 }
