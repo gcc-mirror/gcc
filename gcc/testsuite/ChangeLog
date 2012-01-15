@@ -1,7 +1,11 @@
+2012-01-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/51821
+	* gcc.dg/pr51821.c: New test.
+
 2011-12-09  Kazu Hirata  <kazu@codesourcery.com>
 
 	Backport from mainline:
-
 	2011-12-05  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR target/51408
