@@ -6172,6 +6172,13 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
   if (mips16_stub_function_p (fn))
     return NULL_RTX;
 
+  /* If we're calling a locally-defined MIPS16 function, we know that
+     it will return values in both the "soft-float" and "hard-float"
+     registers.  There is no need to use a stub to move the latter
+     to the former.  */
+  if (fp_code == 0 && mips16_local_function_p (fn))
+    return NULL_RTX;
+
   /* This code will only work for o32 and o64 abis.  The other ABI's
      require more sophisticated support.  */
   gcc_assert (TARGET_OLDABI);
