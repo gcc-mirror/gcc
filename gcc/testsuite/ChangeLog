@@ -1,3 +1,8 @@
+2012-01-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/51821
+	* gcc.dg/pr51821.c: New test.
+
 2012-01-12  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	Backport from mainline:
@@ -13,7 +18,7 @@
 2012-01-09  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/51759
-        * gcc.dg/ipa/pr45644.c: New test.
+	* gcc.dg/ipa/pr45644.c: New test.
 	* g++.dg/ipa/pr51759.C: Likewise.
 
 2012-01-06  Richard Sandiford  <richard.sandiford@linaro.org>

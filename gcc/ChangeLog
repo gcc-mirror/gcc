@@ -1,3 +1,9 @@
+2012-01-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/51821
+	* recog.c (peep2_find_free_register): Determine clobbered registers
+	from insn pattern.
+
 2012-01-12  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	Backport from mainline:
@@ -35,8 +41,8 @@
 	Backport from mainline
 	2010-09-15  Martin Jambor  <mjambor@suse.cz>
 
-        PR middle-end/45644
-        * tree-sra.c (create_access): Check for bit-fields directly.
+	PR middle-end/45644
+	* tree-sra.c (create_access): Check for bit-fields directly.
 
 2012-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -90,7 +96,7 @@
 	CAST_RESTRICT.
 
 2012-01-03  Richard Guenther  <rguenther@suse.de>
- 
+
 	Backport from mainline
 	2011-08-23  Richard Guenther  <rguenther@suse.de>
 
@@ -225,7 +231,8 @@
 2011-10-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/50691
-	* config/pa/pa.c (emit_move_sequence): Legitimize TLS symbol references.
+	* config/pa/pa.c (emit_move_sequence): Legitimize TLS symbol
+	references.
 	* config/pa/pa.h (LEGITIMATE_CONSTANT_P): Return false for
 	TLS_MODEL_GLOBAL_DYNAMIC and TLS_MODEL_LOCAL_DYNAMIC symbol references.
 
