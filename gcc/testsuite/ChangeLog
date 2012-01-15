@@ -1,5 +1,9 @@
 2012-01-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Expect 4 threaded edges for MIPS.
+
+2012-01-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.target/mips/code-readable-2.c: Allow the jump table address
 	to be loaded from the constant pool, rather than via %hi and %lo.
 
