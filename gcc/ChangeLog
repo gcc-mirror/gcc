@@ -1,3 +1,9 @@
+2012-01-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips16_build_call_stub): Don't use a stub
+	for calls to locally-binding MIPS16 functions if only the return
+	type uses float regs.
+
 2012-01-15  Chung-Lin Tang  <cltang@codesourcery.com>
 	    Richard Sandiford  <rdsandiford@googlemail.com>
 
