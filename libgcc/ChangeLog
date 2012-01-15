@@ -1,3 +1,10 @@
+2012-01-15  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/libgcc-mips16.ver (__mips16_rdhwr): Add.
+	* config/mips/mips16.S (__mips16_rdhwr): New function.
+	* config/mips/t-mips16 (LIB1ASMFUNCS): Add _m16rdhwr.
+
 2012-01-11  Nathan Sidwell  <nathan@acm.org>
 
 	* libgcov.c (__gcov_init): Ignore objects with no functions.
