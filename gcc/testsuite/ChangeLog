@@ -1,3 +1,7 @@
+2012-01-15  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.dg/torture/pr8081.c: Fix char signedness assumption.
+
 2012-01-14  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* g++.dg/cpp0x/constexpr-rom.C: Add -G0 where applicable.
