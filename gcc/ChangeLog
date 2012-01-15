@@ -1,3 +1,37 @@
+2012-01-15  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips-protos.h (SYMBOL_FORCE_TO_MEM): Delete.
+	(SYMBOL_32_HIGH): Likewise.
+	(mips_output_tls_reloc_directive): Declare.
+	* config/mips/mips.h (PIC_FUNCTION_ADDR_REGNUM): Move to mips.md.
+	(mips_use_pcrel_pool_p, mips_lo_relocs, mips_hi_relocs): Declare.
+	* config/mips/mips.c (mips_use_pcrel_pool_p): New variable.
+	(mips_lo_relocs, mips_hi_relocs): Make extern.
+	(mips16_stub_function): Move up file.
+	(mips_classify_symbol): Remove SYMBOL_FORCE_TO_MEM handling.
+	(mips_symbolic_constant_p): Likewise.  Remove SYMBOL_32_HIGH too.
+	(mips_symbol_insns_1): Likewise.  Check mips_use_pcrel_pool_p.
+	(mips_cannot_force_const_mem): Use mips_use_pcrel_pool_p instead
+	of SYMBOL_FORCE_TO_MEM.  Only check mips_tls_symbol_ref_1
+	if it's false.
+	(mips_get_tp): Add MIPS16 support.
+	(mips_legitimize_tls_address): Remove MIPS16 sorry().
+	Generalize DTPREL and TPREL handling.
+	(mips_init_relocs): Initialize mips_use_pcrel_pool_p.
+	Add MIPS16 TLS support.
+	(mips_output_tls_reloc_directive): New function.
+	(mips16_rewrite_pool_refs): Ignore UNSPEC_TLS_GET_TPs.
+	* config/mips/predicates.md (symbolic_operand_with_high)
+	(tls_reloc_operand): New predicates.
+	(force_to_mem_operand): Use mips_use_pcrel_pool_p.
+	* config/mips/mips.md (UNSPEC_UNSHIFTED_HIGH): New unspec.
+	(PIC_FUNCTION_ADDR_REGNUM): Moved from mips.h.
+	(*unshifted_high): New instruction.  Use it for MIPS16
+	high splitter.
+	(consttable_tls_reloc, tls_get_tp_mips16_<mode>): New patterns.
+	(*tls_get_tp_mips16_call_<mode>): Likewise.
+
 2012-01-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/51821

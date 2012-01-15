@@ -573,13 +573,17 @@ bool mips_split_p[NUM_SYMBOL_TYPES];
    can be split by mips_split_symbol.  */
 bool mips_split_hi_p[NUM_SYMBOL_TYPES];
 
+/* mips_use_pcrel_pool_p[X] is true if symbols of type X should be
+   forced into a PC-relative constant pool.  */
+bool mips_use_pcrel_pool_p[NUM_SYMBOL_TYPES];
+
 /* mips_lo_relocs[X] is the relocation to use when a symbol of type X
    appears in a LO_SUM.  It can be null if such LO_SUMs aren't valid or
    if they are matched by a special .md file pattern.  */
-static const char *mips_lo_relocs[NUM_SYMBOL_TYPES];
+const char *mips_lo_relocs[NUM_SYMBOL_TYPES];
 
 /* Likewise for HIGHs.  */
-static const char *mips_hi_relocs[NUM_SYMBOL_TYPES];
+const char *mips_hi_relocs[NUM_SYMBOL_TYPES];
 
 /* Target state for MIPS16.  */
 struct target_globals *mips16_globals;
@@ -1440,6 +1444,18 @@ mips_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
   return mips_const_insns (x) > 0;
 }
 
+/* Return a SYMBOL_REF for a MIPS16 function called NAME.  */
+
+static rtx
+mips16_stub_function (const char *name)
+{
+  rtx x;
+
+  x = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
+  SYMBOL_REF_FLAGS (x) |= (SYMBOL_FLAG_EXTERNAL | SYMBOL_FLAG_FUNCTION);
+  return x;
+}
+
 /* Return true if symbols of type TYPE require a GOT access.  */
 
 static bool
@@ -1644,9 +1660,6 @@ mips_classify_symbol (const_rtx x, enum mips_symbol_context context)
       return SYMBOL_GOT_PAGE_OFST;
     }
 
-  if (TARGET_MIPS16_PCREL_LOADS && context != SYMBOL_CONTEXT_CALL)
-    return SYMBOL_FORCE_TO_MEM;
-
   return SYMBOL_ABSOLUTE;
 }
 
@@ -1709,8 +1722,6 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_context context,
   switch (*symbol_type)
     {
     case SYMBOL_ABSOLUTE:
-    case SYMBOL_FORCE_TO_MEM:
-    case SYMBOL_32_HIGH:
     case SYMBOL_64_HIGH:
     case SYMBOL_64_MID:
     case SYMBOL_64_LOW:
@@ -1776,6 +1787,17 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_context context,
 static int
 mips_symbol_insns_1 (enum mips_symbol_type type, enum machine_mode mode)
 {
+  if (mips_use_pcrel_pool_p[(int) type])
+    {
+      if (mode == MAX_MACHINE_MODE)
+	/* LEAs will be converted into constant-pool references by
+	   mips_reorg.  */
+	type = SYMBOL_PC_RELATIVE;
+      else
+	/* The constant must be loaded and then dereferenced.  */
+	return 0;
+    }
+
   switch (type)
     {
     case SYMBOL_ABSOLUTE:
@@ -1807,15 +1829,6 @@ mips_symbol_insns_1 (enum mips_symbol_type type, enum machine_mode mode)
 	return 1;
 
       /* The constant must be loaded using ADDIUPC or DADDIUPC first.  */
-      return 0;
-
-    case SYMBOL_FORCE_TO_MEM:
-      /* LEAs will be converted into constant-pool references by
-	 mips_reorg.  */
-      if (mode == MAX_MACHINE_MODE)
-	return 1;
-
-      /* The constant must be loaded and then dereferenced.  */
       return 0;
 
     case SYMBOL_GOT_DISP:
@@ -1850,7 +1863,6 @@ mips_symbol_insns_1 (enum mips_symbol_type type, enum machine_mode mode)
     case SYMBOL_GOTOFF_DISP:
     case SYMBOL_GOTOFF_CALL:
     case SYMBOL_GOTOFF_LOADGP:
-    case SYMBOL_32_HIGH:
     case SYMBOL_64_HIGH:
     case SYMBOL_64_MID:
     case SYMBOL_64_LOW:
@@ -1925,9 +1937,12 @@ mips_cannot_force_const_mem (enum machine_mode mode, rtx x)
     return true;
 
   split_const (x, &base, &offset);
-  if (mips_symbolic_constant_p (base, SYMBOL_CONTEXT_LEA, &type)
-      && type != SYMBOL_FORCE_TO_MEM)
+  if (mips_symbolic_constant_p (base, SYMBOL_CONTEXT_LEA, &type))
     {
+      /* See whether we explicitly want these symbols in the pool.  */
+      if (mips_use_pcrel_pool_p[(int) type])
+	return false;
+
       /* The same optimization as for CONST_INT.  */
       if (SMALL_INT (offset) && mips_symbol_insns (type, MAX_MACHINE_MODE) > 0)
 	return true;
@@ -2822,13 +2837,18 @@ mips_call_tls_get_addr (rtx sym, enum mips_symbol_type type, rtx v0)
 static rtx
 mips_get_tp (void)
 {
-  rtx tp;
+  rtx tp, fn;
 
   tp = gen_reg_rtx (Pmode);
-  if (Pmode == DImode)
-    emit_insn (gen_tls_get_tp_di (tp));
+  if (TARGET_MIPS16)
+    {
+      fn = mips16_stub_function ("__mips16_rdhwr");
+      if (!call_insn_operand (fn, VOIDmode))
+	fn = force_reg (Pmode, fn);
+      emit_insn (PMODE_INSN (gen_tls_get_tp_mips16, (tp, fn)));
+    }
   else
-    emit_insn (gen_tls_get_tp_si (tp));
+    emit_insn (PMODE_INSN (gen_tls_get_tp, (tp)));
   return tp;
 }
 
@@ -2839,14 +2859,8 @@ mips_get_tp (void)
 static rtx
 mips_legitimize_tls_address (rtx loc)
 {
-  rtx dest, insn, v0, tp, tmp1, tmp2, eqv;
+  rtx dest, insn, v0, tp, tmp1, tmp2, eqv, offset;
   enum tls_model model;
-
-  if (TARGET_MIPS16)
-    {
-      sorry ("MIPS16 TLS");
-      return gen_reg_rtx (Pmode);
-    }
 
   model = SYMBOL_REF_TLS_MODEL (loc);
   /* Only TARGET_ABICALLS code can have more than one module; other
@@ -2875,9 +2889,15 @@ mips_legitimize_tls_address (rtx loc)
 			    UNSPEC_TLS_LDM);
       emit_libcall_block (insn, tmp1, v0, eqv);
 
-      tmp2 = mips_unspec_offset_high (NULL, tmp1, loc, SYMBOL_DTPREL);
-      dest = gen_rtx_LO_SUM (Pmode, tmp2,
-			     mips_unspec_address (loc, SYMBOL_DTPREL));
+      offset = mips_unspec_address (loc, SYMBOL_DTPREL);
+      if (mips_split_p[SYMBOL_DTPREL])
+	{
+	  tmp2 = mips_unspec_offset_high (NULL, tmp1, loc, SYMBOL_DTPREL);
+	  dest = gen_rtx_LO_SUM (Pmode, tmp2, offset);
+	}
+      else
+	dest = expand_binop (Pmode, add_optab, tmp1, offset,
+			     0, 0, OPTAB_DIRECT);
       break;
 
     case TLS_MODEL_INITIAL_EXEC:
@@ -2893,10 +2913,16 @@ mips_legitimize_tls_address (rtx loc)
       break;
 
     case TLS_MODEL_LOCAL_EXEC:
-      tp = mips_get_tp ();
-      tmp1 = mips_unspec_offset_high (NULL, tp, loc, SYMBOL_TPREL);
-      dest = gen_rtx_LO_SUM (Pmode, tmp1,
-			     mips_unspec_address (loc, SYMBOL_TPREL));
+      tmp1 = mips_get_tp ();
+      offset = mips_unspec_address (loc, SYMBOL_TPREL);
+      if (mips_split_p[SYMBOL_TPREL])
+	{
+	  tmp2 = mips_unspec_offset_high (NULL, tmp1, loc, SYMBOL_TPREL);
+	  dest = gen_rtx_LO_SUM (Pmode, tmp2, offset);
+	}
+      else
+	dest = expand_binop (Pmode, add_optab, tmp1, offset,
+			     0, 0, OPTAB_DIRECT);
       break;
 
     default:
@@ -5866,18 +5892,6 @@ struct mips16_stub {
 };
 static struct mips16_stub *mips16_stubs;
 
-/* Return a SYMBOL_REF for a MIPS16 function called NAME.  */
-
-static rtx
-mips16_stub_function (const char *name)
-{
-  rtx x;
-
-  x = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
-  SYMBOL_REF_FLAGS (x) |= (SYMBOL_FLAG_EXTERNAL | SYMBOL_FLAG_FUNCTION);
-  return x;
-}
-
 /* Return the two-character string that identifies floating-point
    return mode MODE in the name of a MIPS16 function stub.  */
 
@@ -7192,38 +7206,44 @@ mips_init_relocs (void)
 {
   memset (mips_split_p, '\0', sizeof (mips_split_p));
   memset (mips_split_hi_p, '\0', sizeof (mips_split_hi_p));
+  memset (mips_use_pcrel_pool_p, '\0', sizeof (mips_use_pcrel_pool_p));
   memset (mips_hi_relocs, '\0', sizeof (mips_hi_relocs));
   memset (mips_lo_relocs, '\0', sizeof (mips_lo_relocs));
 
-  if (ABI_HAS_64BIT_SYMBOLS)
-    {
-      if (TARGET_EXPLICIT_RELOCS)
-	{
-	  mips_split_p[SYMBOL_64_HIGH] = true;
-	  mips_hi_relocs[SYMBOL_64_HIGH] = "%highest(";
-	  mips_lo_relocs[SYMBOL_64_HIGH] = "%higher(";
-
-	  mips_split_p[SYMBOL_64_MID] = true;
-	  mips_hi_relocs[SYMBOL_64_MID] = "%higher(";
-	  mips_lo_relocs[SYMBOL_64_MID] = "%hi(";
-
-	  mips_split_p[SYMBOL_64_LOW] = true;
-	  mips_hi_relocs[SYMBOL_64_LOW] = "%hi(";
-	  mips_lo_relocs[SYMBOL_64_LOW] = "%lo(";
-
-	  mips_split_p[SYMBOL_ABSOLUTE] = true;
-	  mips_lo_relocs[SYMBOL_ABSOLUTE] = "%lo(";
-	}
-    }
+  if (TARGET_MIPS16_PCREL_LOADS)
+    mips_use_pcrel_pool_p[SYMBOL_ABSOLUTE] = true;
   else
     {
-      if (TARGET_EXPLICIT_RELOCS || mips_split_addresses_p () || TARGET_MIPS16)
+      if (ABI_HAS_64BIT_SYMBOLS)
 	{
-	  mips_split_p[SYMBOL_ABSOLUTE] = true;
-	  mips_hi_relocs[SYMBOL_ABSOLUTE] = "%hi(";
-	  mips_lo_relocs[SYMBOL_ABSOLUTE] = "%lo(";
+	  if (TARGET_EXPLICIT_RELOCS)
+	    {
+	      mips_split_p[SYMBOL_64_HIGH] = true;
+	      mips_hi_relocs[SYMBOL_64_HIGH] = "%highest(";
+	      mips_lo_relocs[SYMBOL_64_HIGH] = "%higher(";
 
-	  mips_lo_relocs[SYMBOL_32_HIGH] = "%hi(";
+	      mips_split_p[SYMBOL_64_MID] = true;
+	      mips_hi_relocs[SYMBOL_64_MID] = "%higher(";
+	      mips_lo_relocs[SYMBOL_64_MID] = "%hi(";
+
+	      mips_split_p[SYMBOL_64_LOW] = true;
+	      mips_hi_relocs[SYMBOL_64_LOW] = "%hi(";
+	      mips_lo_relocs[SYMBOL_64_LOW] = "%lo(";
+
+	      mips_split_p[SYMBOL_ABSOLUTE] = true;
+	      mips_lo_relocs[SYMBOL_ABSOLUTE] = "%lo(";
+	    }
+	}
+      else
+	{
+	  if (TARGET_EXPLICIT_RELOCS
+	      || mips_split_addresses_p ()
+	      || TARGET_MIPS16)
+	    {
+	      mips_split_p[SYMBOL_ABSOLUTE] = true;
+	      mips_hi_relocs[SYMBOL_ABSOLUTE] = "%hi(";
+	      mips_lo_relocs[SYMBOL_ABSOLUTE] = "%lo(";
+	    }
 	}
     }
 
@@ -7291,16 +7311,23 @@ mips_init_relocs (void)
   mips_lo_relocs[SYMBOL_TLSGD] = "%tlsgd(";
   mips_lo_relocs[SYMBOL_TLSLDM] = "%tlsldm(";
 
-  mips_split_p[SYMBOL_DTPREL] = true;
-  mips_hi_relocs[SYMBOL_DTPREL] = "%dtprel_hi(";
-  mips_lo_relocs[SYMBOL_DTPREL] = "%dtprel_lo(";
+  if (TARGET_MIPS16_PCREL_LOADS)
+    {
+      mips_use_pcrel_pool_p[SYMBOL_DTPREL] = true;
+      mips_use_pcrel_pool_p[SYMBOL_TPREL] = true;
+    }
+  else
+    {
+      mips_split_p[SYMBOL_DTPREL] = true;
+      mips_hi_relocs[SYMBOL_DTPREL] = "%dtprel_hi(";
+      mips_lo_relocs[SYMBOL_DTPREL] = "%dtprel_lo(";
+
+      mips_split_p[SYMBOL_TPREL] = true;
+      mips_hi_relocs[SYMBOL_TPREL] = "%tprel_hi(";
+      mips_lo_relocs[SYMBOL_TPREL] = "%tprel_lo(";
+    }
 
   mips_lo_relocs[SYMBOL_GOTTPREL] = "%gottprel(";
-
-  mips_split_p[SYMBOL_TPREL] = true;
-  mips_hi_relocs[SYMBOL_TPREL] = "%tprel_hi(";
-  mips_lo_relocs[SYMBOL_TPREL] = "%tprel_lo(";
-
   mips_lo_relocs[SYMBOL_HALF] = "%half(";
 }
 
@@ -8080,6 +8107,29 @@ mips_output_ascii (FILE *stream, const char *string, size_t len)
 	}
     }
   fprintf (stream, "\"\n");
+}
+
+/* Return the pseudo-op for full SYMBOL_(D)TPREL address *ADDR.
+   Update *ADDR with the operand that should be printed.  */
+
+const char *
+mips_output_tls_reloc_directive (rtx *addr)
+{
+  enum mips_symbol_type type;
+
+  type = mips_classify_symbolic_expression (*addr, SYMBOL_CONTEXT_LEA);
+  *addr = mips_strip_unspec_address (*addr);
+  switch (type)
+    {
+    case SYMBOL_DTPREL:
+      return Pmode == SImode ? ".dtprelword\t%0" : ".dtpreldword\t%0";
+
+    case SYMBOL_TPREL:
+      return Pmode == SImode ? ".tprelword\t%0" : ".tpreldword\t%0";
+
+    default:
+      gcc_unreachable ();
+    }
 }
 
 /* Emit either a label, .comm, or .lcomm directive.  When using assembler
@@ -13782,6 +13832,10 @@ mips16_rewrite_pool_refs (rtx *x, void *data)
       mips16_rewrite_pool_constant (info->pool, &XEXP (*x, 0));
       return -1;
     }
+
+  /* Don't rewrite the __mips16_rdwr symbol.  */
+  if (GET_CODE (*x) == UNSPEC && XINT (*x, 1) == UNSPEC_TLS_GET_TP)
+    return -1;
 
   if (TARGET_MIPS16_TEXT_LOADS)
     mips16_rewrite_pool_constant (info->pool, x);

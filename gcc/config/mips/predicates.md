@@ -288,12 +288,20 @@
 	  && type == SYMBOL_ABSOLUTE);
 })
 
+(define_predicate "symbolic_operand_with_high"
+  (match_code "const,symbol_ref,label_ref")
+{
+  enum mips_symbol_type type;
+  return (mips_symbolic_constant_p (op, SYMBOL_CONTEXT_LEA, &type)
+	  && mips_hi_relocs[(int) type]);
+})
+
 (define_predicate "force_to_mem_operand"
   (match_code "const,symbol_ref,label_ref")
 {
   enum mips_symbol_type symbol_type;
   return (mips_symbolic_constant_p (op, SYMBOL_CONTEXT_LEA, &symbol_type)
-	  && symbol_type == SYMBOL_FORCE_TO_MEM);
+	  && mips_use_pcrel_pool_p[(int) symbol_type]);
 })
 
 (define_predicate "got_disp_operand"
@@ -310,6 +318,14 @@
   enum mips_symbol_type type;
   return (mips_symbolic_constant_p (op, SYMBOL_CONTEXT_LEA, &type)
 	  && type == SYMBOL_GOT_PAGE_OFST);
+})
+
+(define_predicate "tls_reloc_operand"
+  (match_code "const,symbol_ref,label_ref")
+{
+  enum mips_symbol_type type;
+  return (mips_symbolic_constant_p (op, SYMBOL_CONTEXT_LEA, &type)
+	  && (type == SYMBOL_DTPREL || type == SYMBOL_TPREL));
 })
 
 (define_predicate "symbol_ref_operand"
