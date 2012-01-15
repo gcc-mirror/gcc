@@ -1,3 +1,9 @@
+2012-01-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/51821
+	* recog.c (peep2_find_free_register): Determine clobbered registers
+	from insn pattern.
+
 2012-01-14  Denis Chertykov  <chertykov@gmail.com>
 
 	PR target/50925
