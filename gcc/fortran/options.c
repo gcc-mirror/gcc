@@ -1,6 +1,6 @@
 /* Parse and display command line options.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010, 2011
+   2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -116,6 +116,9 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.flag_default_double = 0;
   gfc_option.flag_default_integer = 0;
   gfc_option.flag_default_real = 0;
+  gfc_option.flag_integer4_kind = 0;
+  gfc_option.flag_real4_kind = 0;
+  gfc_option.flag_real8_kind = 0;
   gfc_option.flag_dollar_ok = 0;
   gfc_option.flag_underscoring = 1;
   gfc_option.flag_whole_file = 1;
@@ -847,6 +850,34 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fdefault_double_8:
       gfc_option.flag_default_double = value;
+      break;
+
+    case OPT_finteger_4_integer_8:
+      gfc_option.flag_integer4_kind = 8;
+      break;
+
+    case OPT_freal_4_real_8:
+      gfc_option.flag_real4_kind = 8;
+      break;
+
+    case OPT_freal_4_real_10:
+      gfc_option.flag_real4_kind = 10;
+      break;
+
+    case OPT_freal_4_real_16:
+      gfc_option.flag_real4_kind = 16;
+      break;
+
+    case OPT_freal_8_real_4:
+      gfc_option.flag_real8_kind = 4;
+      break;
+
+    case OPT_freal_8_real_10:
+      gfc_option.flag_real8_kind = 10;
+      break;
+
+    case OPT_freal_8_real_16:
+      gfc_option.flag_real8_kind = 16;
       break;
 
     case OPT_finit_local_zero:

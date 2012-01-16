@@ -2221,6 +2221,9 @@ typedef struct
   int flag_default_double;
   int flag_default_integer;
   int flag_default_real;
+  int flag_integer4_kind;
+  int flag_real4_kind;
+  int flag_real8_kind;
   int flag_dollar_ok;
   int flag_underscoring;
   int flag_second_underscore;

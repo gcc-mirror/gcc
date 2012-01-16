@@ -1,5 +1,6 @@
 /* Primary expression subroutines
-   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -223,6 +224,9 @@ match_integer_constant (gfc_expr **result, int signflag)
     kind = gfc_default_integer_kind;
   if (kind == -1)
     return MATCH_ERROR;
+
+  if (kind == 4 && gfc_option.flag_integer4_kind == 8)
+    kind = 8;
 
   if (gfc_validate_kind (BT_INTEGER, kind, true) < 0)
     {
@@ -636,6 +640,26 @@ done:
 	  goto cleanup;
 	}
       kind = gfc_default_double_kind;
+
+      if (kind == 4)
+	{
+	  if (gfc_option.flag_real4_kind == 8)
+	    kind = 8;
+	  if (gfc_option.flag_real4_kind == 10)
+	    kind = 10;
+	  if (gfc_option.flag_real4_kind == 16)
+	    kind = 16;
+	}
+
+      if (kind == 8)
+	{
+	  if (gfc_option.flag_real8_kind == 4)
+	    kind = 4;
+	  if (gfc_option.flag_real8_kind == 10)
+	    kind = 10;
+	  if (gfc_option.flag_real8_kind == 16)
+	    kind = 16;
+	}
       break;
 
     case 'q':
@@ -665,6 +689,26 @@ done:
     default:
       if (kind == -2)
 	kind = gfc_default_real_kind;
+
+      if (kind == 4)
+	{
+	  if (gfc_option.flag_real4_kind == 8)
+	    kind = 8;
+	  if (gfc_option.flag_real4_kind == 10)
+	    kind = 10;
+	  if (gfc_option.flag_real4_kind == 16)
+	    kind = 16;
+	}
+
+      if (kind == 8)
+	{
+	  if (gfc_option.flag_real8_kind == 4)
+	    kind = 4;
+	  if (gfc_option.flag_real8_kind == 10)
+	    kind = 10;
+	  if (gfc_option.flag_real8_kind == 16)
+	    kind = 16;
+	}
 
       if (gfc_validate_kind (BT_REAL, kind, true) < 0)
 	{
