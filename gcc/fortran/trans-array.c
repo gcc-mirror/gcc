@@ -971,6 +971,11 @@ get_array_ref_dim_for_loop_dim (gfc_ss *ss, int loop_dim)
    fields of info if known.  Returns the size of the array, or NULL for a
    callee allocated array.
 
+   'eltype' == NULL signals that the temporary should be a class object.
+   The 'initial' expression is used to obtain the size of the dynamic
+   type; otehrwise the allocation and initialisation proceeds as for any
+   other expression
+
    PRE, POST, INITIAL, DYNAMIC and DEALLOC are as for
    gfc_trans_allocate_array_storage.  */
 
@@ -990,8 +995,22 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
   tree nelem;
   tree cond;
   tree or_expr;
+  tree class_expr = NULL_TREE;
   int n, dim, tmp_dim;
   int total_dim = 0;
+
+  /* This signals a class array for which we need the size of the
+     dynamic type.  Generate an eltype and then the class expression.  */
+  if (eltype == NULL_TREE && initial)
+    {
+      if (POINTER_TYPE_P (TREE_TYPE (initial)))
+	class_expr = build_fold_indirect_ref_loc (input_location, initial);
+      eltype = TREE_TYPE (class_expr);
+      eltype = gfc_get_element_type (eltype);
+      /* Obtain the structure (class) expression.  */
+      class_expr = TREE_OPERAND (class_expr, 0);
+      gcc_assert (class_expr);
+    }
 
   memset (from, 0, sizeof (from));
   memset (to, 0, sizeof (to));
@@ -1133,16 +1152,21 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
   /* Get the size of the array.  */
   if (size && !callee_alloc)
     {
+      tree elemsize;
       /* If or_expr is true, then the extent in at least one
 	 dimension is zero and the size is set to zero.  */
       size = fold_build3_loc (input_location, COND_EXPR, gfc_array_index_type,
 			      or_expr, gfc_index_zero_node, size);
 
       nelem = size;
+      if (class_expr == NULL_TREE)
+	elemsize = fold_convert (gfc_array_index_type,
+			TYPE_SIZE_UNIT (gfc_get_element_type (type)));
+      else
+	elemsize = gfc_vtable_size_get (class_expr);
+
       size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
-		size,
-		fold_convert (gfc_array_index_type,
-			      TYPE_SIZE_UNIT (gfc_get_element_type (type))));
+			      size, elemsize);
     }
   else
     {
@@ -5083,9 +5107,9 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
   if (expr->ts.type == BT_CLASS && expr3)
     {
       tmp = build_int_cst (unsigned_char_type_node, 0);
-      /* For class objects we need to nullify the memory in case they have
-	 allocatable components; the reason is that _copy, which is used for
-	 initialization, first frees the destination.  */
+      /* With class objects, it is best to play safe and null the 
+	 memory because we cannot know if dynamic types have allocatable
+	 components or not.  */
       tmp = build_call_expr_loc (input_location,
 				 builtin_decl_explicit (BUILT_IN_MEMSET),
 				 3, pointer, tmp,  size);

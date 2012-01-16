@@ -1,3 +1,8 @@
+2012-01-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/class_array_3.f03: Remove the explicit loop in
+	subroutine 'qsort' and use index array to assign the result.
+
 2012-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51865
