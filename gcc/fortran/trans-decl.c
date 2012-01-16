@@ -1485,7 +1485,10 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 
   if (sym->attr.vtab
       || (sym->name[0] == '_' && strncmp ("__def_init", sym->name, 10) == 0))
-    GFC_DECL_PUSH_TOPLEVEL (decl) = 1;
+    {
+      TREE_READONLY (decl) = 1;
+      GFC_DECL_PUSH_TOPLEVEL (decl) = 1;
+    }
 
   return decl;
 }

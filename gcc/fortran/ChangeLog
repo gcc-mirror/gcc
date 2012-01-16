@@ -1,3 +1,14 @@
+2012-01-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51809
+	* class.c (gfc_find_derived_vtab): Mark __vtab and
+	__def_init as FL_VARIABLE not as FL_PARAMETER.
+	* expr.c (gfc_simplify_expr): Remove special
+	handling of __vtab.
+	* resolve.c (resolve_values): Ditto.
+	* trans-decl.c (gfc_get_symbol_decl): Mark __vtab
+	and __def_init as TREE_READONLY.
+
 2012-01-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	* trans-array.c (gfc_trans_create_temp_array): In the case of a

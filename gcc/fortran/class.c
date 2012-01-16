@@ -588,7 +588,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	{
 	  gfc_get_symbol (name, ns, &vtab);
 	  vtab->ts.type = BT_DERIVED;
-	  if (gfc_add_flavor (&vtab->attr, FL_PARAMETER, NULL,
+	  if (gfc_add_flavor (&vtab->attr, FL_VARIABLE, NULL,
 	                      &gfc_current_locus) == FAILURE)
 	    goto cleanup;
 	  vtab->attr.target = 1;
@@ -682,7 +682,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  def_init->attr.target = 1;
 		  def_init->attr.save = SAVE_IMPLICIT;
 		  def_init->attr.access = ACCESS_PUBLIC;
-		  def_init->attr.flavor = FL_PARAMETER;
+		  def_init->attr.flavor = FL_VARIABLE;
 		  gfc_set_sym_referenced (def_init);
 		  def_init->ts.type = BT_DERIVED;
 		  def_init->ts.u.derived = derived;
