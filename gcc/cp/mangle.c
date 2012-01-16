@@ -3330,7 +3330,21 @@ get_mangled_id (tree decl)
 void
 mangle_decl (const tree decl)
 {
-  tree id = get_mangled_id (decl);
+  tree id;
+  bool dep;
+
+  /* Don't bother mangling uninstantiated templates.  */
+  ++processing_template_decl;
+  if (TREE_CODE (decl) == TYPE_DECL)
+    dep = dependent_type_p (TREE_TYPE (decl));
+  else
+    dep = (DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)
+	   && any_dependent_template_arguments_p (DECL_TI_ARGS (decl)));
+  --processing_template_decl;
+  if (dep)
+    return;
+
+  id = get_mangled_id (decl);
   SET_DECL_ASSEMBLER_NAME (decl, id);
 
   if (G.need_abi_warning

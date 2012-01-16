@@ -1,3 +1,8 @@
+2012-01-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51827
+	* g++.dg/pch/mangle1.{C,Hs}: New.
+
 2012-01-16  Mikael Morin  <mikael@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 

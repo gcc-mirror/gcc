@@ -1,5 +1,8 @@
 2012-01-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51827
+	* mangle.c (mangle_decl): Don't mangle uninstantiated templates.
+
 	PR c++/51868
 	* typeck.c (build_static_cast_1): Handle bit-fields properly.
 
