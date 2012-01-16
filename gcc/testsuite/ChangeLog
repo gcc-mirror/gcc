@@ -1,3 +1,9 @@
+2012-01-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51868
+	* g++.dg/cpp0x/rv-bitfield.C: New.
+	* g++.dg/cpp0x/rv-bitfield2.C: New.
+
 2012-01-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/51821
