@@ -1,5 +1,13 @@
 2012-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/51860
+	* config/s390/s390.c (s390_chunkify_start): Don't skip
+	call insns followed by NOTE_INSN_CALL_ARG_LOCATION note.  Skip
+	NOTE_INSN_VAR_LOCATION and NOTE_INSN_CALL_ARG_LOCATION notes.
+	If insn is followed by NOTE_INSN_VAR_LOCATION or
+	NOTE_INSN_CALL_ARG_LOCATION notes, insert jump after all those notes.
+	Don't use location of note insns.
+
 	PR tree-optimization/51865
 	* tree-inline.c (tree_function_versioning): Call remap_decl
 	on DECL_RESULT whenever it has VOID_TYPE_P type.
