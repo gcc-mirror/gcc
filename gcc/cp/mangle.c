@@ -2770,7 +2770,8 @@ write_template_arg_literal (const tree value)
       break;
 
     default:
-      gcc_unreachable ();
+      sorry ("mangling %C", TREE_CODE (value));
+      break;
     }
 
   write_char ('E');
