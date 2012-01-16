@@ -1,5 +1,8 @@
 2012-01-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51854
+	* g++.dg/abi/mangle60.C: New.
+
 	PR c++/51827
 	* g++.dg/pch/mangle1.{C,Hs}: New.
 

@@ -1,3 +1,8 @@
+2012-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/51854
+	* mangle.c (write_template_arg_literal): Handle complex.
+
 2012-01-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51827
