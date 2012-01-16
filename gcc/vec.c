@@ -221,6 +221,7 @@ vec_gc_o_reserve_1 (void *vec, int reserve, size_t vec_offset, size_t elt_size,
 {
   struct vec_prefix *pfx = (struct vec_prefix *) vec;
   unsigned alloc = calculate_allocation (pfx, reserve, exact);
+  size_t size;
 
   if (!alloc)
     {
@@ -229,7 +230,17 @@ vec_gc_o_reserve_1 (void *vec, int reserve, size_t vec_offset, size_t elt_size,
       return NULL;
     }
 
-  vec = ggc_realloc_stat (vec, vec_offset + alloc * elt_size PASS_MEM_STAT);
+  /* Calculate the amount of space we want.  */
+  size = vec_offset + alloc * elt_size;
+  /* Ask the allocator how much space it will really give us.  */
+  size = ggc_round_alloc_size (size);
+  /* Adjust the number of slots accordingly.  */
+  alloc = (size - vec_offset) / elt_size;
+  /* And finally, recalculate the amount of space we ask for.  */
+  size = vec_offset + alloc * elt_size;
+
+  vec = ggc_realloc_stat (vec, size PASS_MEM_STAT);
+
   ((struct vec_prefix *)vec)->alloc = alloc;
   if (!pfx)
     ((struct vec_prefix *)vec)->num = 0;
