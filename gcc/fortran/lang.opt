@@ -1,5 +1,5 @@
 ; Options for the Fortran 95 front end.
-; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 ; Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
@@ -394,6 +394,10 @@ ffixed-form
 Fortran RejectNegative
 Assume that the source file is fixed form
 
+finteger-4-integer-8
+Fortran RejectNegative
+Interpret any INTEGER(4) as an INTEGER(8)
+
 fintrinsic-modules-path
 Fortran RejectNegative Joined Separate
 Specify where to find the compiled intrinsic modules
@@ -493,6 +497,30 @@ Protect parentheses in expressions
 frange-check
 Fortran
 Enable range checking during compilation
+
+freal-4-real-8
+Fortran RejectNegative
+Interpret any REAl(4) as a REAL(8)
+
+freal-4-real-10
+Fortran RejectNegative
+Interpret any REAL(4) as a REAL(10)
+
+freal-4-real-16
+Fortran RejectNegative
+Interpret any REAL(4) as a REAl(16)
+
+freal-8-real-4
+Fortran RejectNegative
+Interpret any REAL(8) as a REAL(4)
+
+freal-8-real-10
+Fortran RejectNegative
+Interpret any REAL(8) as a REAL(10)
+
+freal-8-real-16
+Fortran RejectNegative
+Interpret any REAL(8) as a REAl(16)
 
 frealloc-lhs
 Fortran

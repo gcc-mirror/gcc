@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -1572,7 +1572,8 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 
   /* Should this ever get more complicated, combine with similar section
      in add_init_expr_to_sym into a separate function.  */
-  if (c->ts.type == BT_CHARACTER && !c->attr.pointer && c->initializer && c->ts.u.cl
+  if (c->ts.type == BT_CHARACTER && !c->attr.pointer && c->initializer
+      && c->ts.u.cl
       && c->ts.u.cl->length && c->ts.u.cl->length->expr_type == EXPR_CONSTANT)
     {
       int len;
@@ -2101,6 +2102,33 @@ gfc_match_old_kind_spec (gfc_typespec *ts)
 	  return MATCH_ERROR;
 	}
       ts->kind /= 2;
+
+    }
+
+  if (ts->type == BT_INTEGER && ts->kind == 4 && gfc_option.flag_integer4_kind == 8)
+    ts->kind = 8;
+
+  if (ts->type == BT_REAL || ts->type == BT_COMPLEX)
+    {
+      if (ts->kind == 4)
+	{
+	  if (gfc_option.flag_real4_kind == 8)
+	    ts->kind =  8;
+	  if (gfc_option.flag_real4_kind == 10)
+	    ts->kind = 10;
+	  if (gfc_option.flag_real4_kind == 16)
+	    ts->kind = 16;
+	}
+
+      if (ts->kind == 8)
+	{
+	  if (gfc_option.flag_real8_kind == 4)
+	    ts->kind = 4;
+	  if (gfc_option.flag_real8_kind == 10)
+	    ts->kind = 10;
+	  if (gfc_option.flag_real8_kind == 16)
+	    ts->kind = 16;
+	}
     }
 
   if (gfc_validate_kind (ts->type, ts->kind, true) < 0)
@@ -2246,7 +2274,33 @@ kind_expr:
 
   if(m == MATCH_ERROR)
      gfc_current_locus = where;
-  
+
+  if (ts->type == BT_INTEGER && ts->kind == 4 && gfc_option.flag_integer4_kind == 8)
+    ts->kind =  8;
+
+  if (ts->type == BT_REAL || ts->type == BT_COMPLEX)
+    {
+      if (ts->kind == 4)
+	{
+	  if (gfc_option.flag_real4_kind == 8)
+	    ts->kind =  8;
+	  if (gfc_option.flag_real4_kind == 10)
+	    ts->kind = 10;
+	  if (gfc_option.flag_real4_kind == 16)
+	    ts->kind = 16;
+	}
+
+      if (ts->kind == 8)
+	{
+	  if (gfc_option.flag_real8_kind == 4)
+	    ts->kind = 4;
+	  if (gfc_option.flag_real8_kind == 10)
+	    ts->kind = 10;
+	  if (gfc_option.flag_real8_kind == 16)
+	    ts->kind = 16;
+	}
+    }
+
   /* Return what we know from the test(s).  */
   return m;
 

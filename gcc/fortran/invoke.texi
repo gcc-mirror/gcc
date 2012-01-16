@@ -1,4 +1,4 @@
-@c Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+@c Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 @c Free Software Foundation, Inc.
 @c This is part of the GNU Fortran manual.   
 @c For copying conditions, see the file gfortran.texi.
@@ -66,7 +66,8 @@ GNU Fortran.
 @c man begin DESCRIPTION
 
 The @command{gfortran} command supports all the options supported by the
-@command{gcc} command.  Only options specific to GNU Fortran are documented here.
+@command{gcc} command.  Only options specific to GNU Fortran are documented
+here.
 
 @xref{Invoking GCC,,GCC Command Options,gcc,Using the GNU Compiler
 Collection (GCC)}, for information
@@ -115,37 +116,46 @@ by type.  Explanations are in the following sections.
 @table @emph
 @item Fortran Language Options
 @xref{Fortran Dialect Options,,Options controlling Fortran dialect}.
-@gccoptlist{-fall-intrinsics  -ffree-form  -fno-fixed-form @gol
--fdollar-ok  -fimplicit-none  -fmax-identifier-length @gol
--std=@var{std} -fd-lines-as-code  -fd-lines-as-comments @gol
--ffixed-line-length-@var{n}  -ffixed-line-length-none @gol
--ffree-line-length-@var{n}  -ffree-line-length-none @gol
--fdefault-double-8  -fdefault-integer-8  -fdefault-real-8 @gol
--fcray-pointer  -fopenmp  -fno-range-check -fbackslash -fmodule-private}
+@gccoptlist{-fall-intrinsics -fbackslash -fcray-pointer -fd-lines-as-code @gol
+-fd-lines-as-comments -fdefault-double-8 -fdefault-integer-8 @gol
+-fdefault-real-8 -fdollar-ok -ffixed-line-length-@var{n} @gol
+-ffixed-line-length-none -ffree-form -ffree-line-length-@var{n} @gol
+-ffree-line-length-none -fimplicit-none -finteger-4-integer-8 @gol
+-fmax-identifier-length -fmodule-private -fno-fixed-form -fno-range-check @gol
+-fopenmp -freal-4-real-10 -freal-4-real-16 -freal-4-real-8 @gol
+-freal-8-real-10 -freal-8-real-16 -freal-8-real-4 -std=@var{std}
+}
 
 @item Preprocessing Options
 @xref{Preprocessing Options,,Enable and customize preprocessing}.
-@gccoptlist{-cpp -dD -dI -dM -dN -dU -fworking-directory @gol
--imultilib @var{dir} -iprefix @var{file} -isysroot @var{dir} @gol
--iquote -isystem @var{dir} -nocpp -nostdinc -undef @gol
--A@var{question}=@var{answer} -A-@var{question}@r{[}=@var{answer}@r{]} @gol
--C -CC -D@var{macro}@r{[}=@var{defn}@r{]} -U@var{macro} -H -P}
+@gccoptlist{-A-@var{question}@r{[}=@var{answer}@r{]}
+-A@var{question}=@var{answer} -C -CC -D@var{macro}@r{[}=@var{defn}@r{]}
+-H -P @gol
+-U@var{macro} -cpp -dD -dI -dM -dN -dU -fworking-directory
+-imultilib @var{dir} @gol
+-iprefix @var{file} -iquote -isysroot @var{dir} -isystem @var{dir} -nocpp 
+-nostdinc @gol
+-undef
+}
 
 @item Error and Warning Options
 @xref{Error and Warning Options,,Options to request or suppress errors
 and warnings}.
-@gccoptlist{-fmax-errors=@var{n}
--fsyntax-only -pedantic -pedantic-errors -Wall @gol
--Waliasing -Wampersand -Warray-bounds -Wcharacter-truncation @gol
--Wconversion -Wimplicit-interface -Wimplicit-procedure -Wline-truncation @gol
--Wintrinsics-std -Wreal-q-constant -Wsurprising -Wno-tabs -Wunderflow @gol
--Wunused-parameter -Wintrinsic-shadow -Wno-align-commons @gol
--Wfunction-elimination}
+@gccoptlist{-Waliasing -Wall -Wampersand -Warray-bounds
+-Wcharacter-truncation @gol
+-Wconversion -Wfunction-elimination -Wimplicit-interface @gol
+-Wimplicit-procedure -Wintrinsic-shadow -Wintrinsics-std @gol
+-Wline-truncation -Wno-align-commons -Wno-tabs -Wreal-q-constant @gol
+-Wsurprising -Wunderflow -Wunused-parameter -fmax-errors=@var{n}
+-fsyntax-only @gol
+-pedantic -pedantic-errors
+}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for debugging your program or GNU Fortran}.
-@gccoptlist{-fdump-fortran-original  -fdump-fortran-optimized @gol
--ffpe-trap=@var{list} -fbacktrace -fdump-parse-tree}
+@gccoptlist{-fbacktrace -fdump-fortran-optimized -fdump-fortran-original @gol
+-fdump-parse-tree -ffpe-trap=@var{list}
+}
 
 @item Directory Options
 @xref{Directory Options,,Options for directory search}.
@@ -157,38 +167,28 @@ and warnings}.
 
 @item Runtime Options
 @xref{Runtime Options,,Options for influencing runtime behavior}.
-@gccoptlist{-fconvert=@var{conversion}  -fno-range-check
--frecord-marker=@var{length} @gol  -fmax-subrecord-length=@var{length}
--fsign-zero}
+@gccoptlist{-fconvert=@var{conversion} -fmax-subrecord-length=@var{length}
+-fno-range-check @gol
+-frecord-marker=@var{length} -fsign-zero
+}
 
 @item Code Generation Options
 @xref{Code Gen Options,,Options for code generation conventions}.
-@gccoptlist{-fno-automatic  -ff2c  -fno-underscoring @gol
--fno-whole-file -fsecond-underscore @gol
--fbounds-check -fcheck-array-temporaries  -fmax-array-constructor =@var{n} @gol
+@gccoptlist{-faggressive-function-elimination -fblas-matmul-limit=@var{n} @gol
+-fbounds-check -fcheck-array-temporaries @gol
 -fcheck=@var{<all|array-temps|bounds|do|mem|pointer|recursion>} @gol
--fcoarray=@var{<none|single|lib>} -fmax-stack-var-size=@var{n} @gol
--fstack-arrays @gol
--fpack-derived  -frepack-arrays  -fshort-enums  -fexternal-blas @gol
--fblas-matmul-limit=@var{n} -frecursive -finit-local-zero @gol
--finit-integer=@var{n} -finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
--finit-logical=@var{<true|false>} -finit-character=@var{n} @gol
--fno-align-commons -fno-protect-parens -frealloc-lhs @gol
--faggressive-function-elimination -ffrontend-optimize}
+-fcoarray=@var{<none|single|lib>} -fexternal-blas -ff2c
+-ffrontend-optimize @gol
+-finit-character=@var{n} -finit-integer=@var{n} -finit-local-zero @gol
+-finit-logical=@var{<true|false>}
+-finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
+-fmax-array-constructor=@var{n} -fmax-stack-var-size=@var{n}
+-fno-align-commons @gol
+-fno-automatic -fno-protect-parens -fno-underscoring -fno-whole-file @gol
+-fsecond-underscore -fpack-derived -frealloc-lhs -frecursive @gol
+-frepack-arrays -fshort-enums -fstack-arrays
+}
 @end table
-
-@menu
-* Fortran Dialect Options::  Controlling the variant of Fortran language
-                             compiled.
-* Preprocessing Options::  Enable and customize preprocessing.
-* Error and Warning Options::     How picky should the compiler be?
-* Debugging Options::   Symbol tables, measurements, and debugging dumps.
-* Directory Options::   Where to find module files
-* Link Options ::       Influencing the linking step
-* Runtime Options::     Influencing runtime behavior
-* Code Gen Options::    Specifying conventions for function calls, data layout
-                        and register usage.
-@end menu
 
 @node Fortran Dialect Options
 @section Options controlling Fortran dialect
@@ -324,6 +324,17 @@ Specify that no implicit typing is allowed, unless overridden by explicit
 @code{IMPLICIT} statements.  This is the equivalent of adding
 @code{implicit none} to the start of every procedure.
 
+@item -finteger-4-integer-8
+@opindex @code{finteger-4-integer-8}
+Promote all @code{INTEGER(KIND=4)} entities to an @code{INTEGER(KIND=8)}
+entities.  If @code{KIND=8} is unavailable, then an error will be issued.
+This option should be used with care and may not be suitable for your codes.
+Areas of possible concern include calls to external procedures,
+alignment in @code{EQUIVALENCE} and/or @code{COMMON}, generic interfaces,
+BOZ literal constant conversion, and I/O.  Inspection of the intermediate
+representation of the translated Fortran code, produced by
+@option{-fdump-tree-original}, is suggested.
+
 @item -fcray-pointer
 @opindex @code{fcray-pointer}
 Enable the Cray pointer extension, which provides C-like pointer
@@ -353,6 +364,28 @@ as appropriate.
 Similarly, @code{DATA i/Z'FFFFFFFF'/} will result in an integer overflow
 on most systems, but with @option{-fno-range-check} the value will
 ``wrap around'' and @code{i} will be initialized to @math{-1} instead.
+
+@item  -freal-4-real-8
+@itemx -freal-4-real-10
+@itemx -freal-8-real-4
+@itemx -freal-8-real-10
+@itemx -freal-8-real-16
+@opindex @code{freal-4-real-8}
+@opindex @code{freal-4-real-10}
+@opindex @code{freal-4-real-16}
+@opindex @code{freal-8-real-4}
+@opindex @code{freal-8-real-10}
+@opindex @code{freal-8-real-16}
+@cindex options, real kind type promotion
+Promote all @code{REAL(KIND=M)} entities to @code{REAL(KIND=N)} entities.
+If @code{REAL(KIND=N)} is unavailable, then an error will be issued.
+All other real kind types are unaffected by this option.
+These options should be used with care and may not be suitable for your
+codes.  Areas of possible concern include calls to external procedures,
+alignment in @code{EQUIVALENCE} and/or @code{COMMON}, generic interfaces,
+BOZ literal constant conversion, and I/O.  Inspection of the intermediate
+representation of the translated Fortran code, produced by
+@option{-fdump-tree-original}, is suggested.
 
 @item -std=@var{std}
 @opindex @code{std=}@var{std} option
