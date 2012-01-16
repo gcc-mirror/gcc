@@ -860,6 +860,10 @@ convert_to_integer (tree type, tree expr)
 	  break;
 	}
 
+      /* When parsing long initializers, we might end up with a lot of casts.
+	 Shortcut this.  */
+      if (TREE_CODE (expr) == INTEGER_CST)
+	return fold_convert (type, expr);
       return build1 (CONVERT_EXPR, type, expr);
 
     case REAL_TYPE:

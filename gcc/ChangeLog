@@ -1,3 +1,10 @@
+2012-01-16  Jan Hubicka  <jh@suse.cz>
+
+	PR c/12245
+	PR c++/14179
+	* convert.c (convert_to_integer): Use fold_convert for
+	converting an INTEGER_CST to integer type.
+
 2012-01-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/14179
