@@ -2927,6 +2927,25 @@ write_template_arg_literal (const tree value)
 	write_real_cst (value);
 	break;
 
+      case COMPLEX_CST:
+	if (TREE_CODE (TREE_REALPART (value)) == INTEGER_CST
+	    && TREE_CODE (TREE_IMAGPART (value)) == INTEGER_CST)
+	  {
+	    write_integer_cst (TREE_REALPART (value));
+	    write_char ('_');
+	    write_integer_cst (TREE_IMAGPART (value));
+	  }
+	else if (TREE_CODE (TREE_REALPART (value)) == REAL_CST
+		 && TREE_CODE (TREE_IMAGPART (value)) == REAL_CST)
+	  {
+	    write_real_cst (TREE_REALPART (value));
+	    write_char ('_');
+	    write_real_cst (TREE_IMAGPART (value));
+	  }
+	else
+	  gcc_unreachable ();
+	break;
+
       case STRING_CST:
 	sorry ("string literal in function template signature");
 	break;
