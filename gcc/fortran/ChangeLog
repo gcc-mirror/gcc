@@ -1,3 +1,13 @@
+2012-01-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_create_temp_array): In the case of a
+	class array temporary, detect a null 'eltype' on entry and use 
+	'initial' to provde the class reference and so, through the
+	vtable, the element size for the dynamic type.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): For class
+	expressions, set 'eltype' to null and pass the values via the
+	'initial' expression.
+
 2012-01-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51800

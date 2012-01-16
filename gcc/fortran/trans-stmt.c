@@ -282,19 +282,31 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 		|| (fsym->ts.type ==BT_DERIVED
 		      && fsym->attr.intent == INTENT_OUT))
 	    initial = parmse.expr;
+	  /* For class expressions, we always initialize with the copy of
+	     the values.  */
+	  else if (e->ts.type == BT_CLASS)
+	    initial = parmse.expr;
 	  else
 	    initial = NULL_TREE;
 
-	  /* Find the type of the temporary to create; we don't use the type
-	     of e itself as this breaks for subcomponent-references in e (where
-	     the type of e is that of the final reference, but parmse.expr's
-	     type corresponds to the full derived-type).  */
-	  /* TODO: Fix this somehow so we don't need a temporary of the whole
-	     array but instead only the components referenced.  */
-	  temptype = TREE_TYPE (parmse.expr); /* Pointer to descriptor.  */
-	  gcc_assert (TREE_CODE (temptype) == POINTER_TYPE);
-	  temptype = TREE_TYPE (temptype);
-	  temptype = gfc_get_element_type (temptype);
+	  if (e->ts.type != BT_CLASS)
+	    {
+	     /* Find the type of the temporary to create; we don't use the type
+		of e itself as this breaks for subcomponent-references in e
+		(where the type of e is that of the final reference, but
+		parmse.expr's type corresponds to the full derived-type).  */
+	     /* TODO: Fix this somehow so we don't need a temporary of the whole
+		array but instead only the components referenced.  */
+	      temptype = TREE_TYPE (parmse.expr); /* Pointer to descriptor.  */
+	      gcc_assert (TREE_CODE (temptype) == POINTER_TYPE);
+	      temptype = TREE_TYPE (temptype);
+	      temptype = gfc_get_element_type (temptype);
+	    }
+
+	  else
+	    /* For class arrays signal that the size of the dynamic type has to
+	       be obtained from the vtable, using the 'initial' expression.  */
+	    temptype = NULL_TREE;
 
 	  /* Generate the temporary.  Cleaning up the temporary should be the
 	     very last thing done, so we add the code to a new block and add it
@@ -312,9 +324,20 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	  /* Update other ss' delta.  */
 	  gfc_set_delta (loopse->loop);
 
-	  /* Copy the result back using unpack.  */
-	  tmp = build_call_expr_loc (input_location,
-				 gfor_fndecl_in_unpack, 2, parmse.expr, data);
+	  /* Copy the result back using unpack.....  */
+	  if (e->ts.type != BT_CLASS)
+	    tmp = build_call_expr_loc (input_location,
+			gfor_fndecl_in_unpack, 2, parmse.expr, data);
+	  else
+	    {
+	      /* ... except for class results where the copy is
+		 unconditional.  */
+	      tmp = build_fold_indirect_ref_loc (input_location, parmse.expr);
+	      tmp = gfc_conv_descriptor_data_get (tmp);
+	      tmp = build_call_expr_loc (input_location,
+					 builtin_decl_explicit (BUILT_IN_MEMCPY),
+					 3, tmp, data, size);
+	    }
 	  gfc_add_expr_to_block (&se->post, tmp);
 
 	  /* parmse.pre is already added above.  */

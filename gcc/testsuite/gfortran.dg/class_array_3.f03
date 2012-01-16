@@ -45,10 +45,7 @@ contains
    allocate (tmp(size (a, 1)), source = a)
    index_array = [(i, i = 1, size (a, 1))]
    call internal_qsort (tmp, index_array)   ! Do not move class elements around until end
-   do i = 1, size (a, 1)                    ! Since they can be of arbitrary size.
-     a(i) = tmp(index_array(i))             ! Vector index array would be neater
-   end do
-!    a = tmp(index_array)                    ! Like this - TODO: fixme
+   a = tmp(index_array)
  end subroutine qsort
 
  recursive subroutine internal_qsort (x, iarray)
