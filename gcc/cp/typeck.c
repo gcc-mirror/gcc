@@ -5812,11 +5812,12 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 {
   tree intype;
   tree result;
+  cp_lvalue_kind clk;
 
   /* Assume the cast is valid.  */
   *valid_p = true;
 
-  intype = TREE_TYPE (expr);
+  intype = unlowered_expr_type (expr);
 
   /* Save casted types in the function's used types hash table.  */
   used_types_insert (type);
@@ -5882,22 +5883,29 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
      cv2 T2 if cv2 T2 is reference-compatible with cv1 T1 (8.5.3)."  */
   if (TREE_CODE (type) == REFERENCE_TYPE
       && TYPE_REF_IS_RVALUE (type)
-      && real_lvalue_p (expr)
+      && (clk = real_lvalue_p (expr))
       && reference_related_p (TREE_TYPE (type), intype)
       && (c_cast_p || at_least_as_qualified_p (TREE_TYPE (type), intype)))
     {
-      /* Handle the lvalue case here by casting to lvalue reference and
-	 then changing it to an rvalue reference.  Casting an xvalue to
-	 rvalue reference will be handled by the main code path.  */
-      tree lref = cp_build_reference_type (TREE_TYPE (type), false);
-      result = (perform_direct_initialization_if_possible
-		(lref, expr, c_cast_p, complain));
-      result = cp_fold_convert (type, result);
-      /* Make sure we don't fold back down to a named rvalue reference,
-	 because that would be an lvalue.  */
-      if (DECL_P (result))
-	result = build1 (NON_LVALUE_EXPR, type, result);
-      return convert_from_reference (result);
+      if (clk == clk_ordinary)
+	{
+	  /* Handle the (non-bit-field) lvalue case here by casting to
+	     lvalue reference and then changing it to an rvalue reference.
+	     Casting an xvalue to rvalue reference will be handled by the
+	     main code path.  */
+	  tree lref = cp_build_reference_type (TREE_TYPE (type), false);
+	  result = (perform_direct_initialization_if_possible
+		    (lref, expr, c_cast_p, complain));
+	  result = cp_fold_convert (type, result);
+	  /* Make sure we don't fold back down to a named rvalue reference,
+	     because that would be an lvalue.  */
+	  if (DECL_P (result))
+	    result = build1 (NON_LVALUE_EXPR, type, result);
+	  return convert_from_reference (result);
+	}
+      else
+	/* For a bit-field or packed field, bind to a temporary.  */
+	expr = rvalue (expr);
     }
 
   /* Resolve overloaded address here rather than once in

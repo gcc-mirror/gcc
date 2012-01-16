@@ -1,3 +1,9 @@
+2012-01-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51868
+	* g++.dg/cpp0x/rv-bitfield.C: New.
+	* g++.dg/cpp0x/rv-bitfield2.C: New.
+
 2012-01-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	* gfortran.dg/class_array_3.f03: Remove the explicit loop in
