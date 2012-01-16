@@ -1,6 +1,6 @@
 /* Tree inlining.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
+   2012 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -5201,9 +5201,9 @@ tree_function_versioning (tree old_decl, tree new_decl,
     /* Add local vars.  */
     add_local_variables (DECL_STRUCT_FUNCTION (old_decl), cfun, &id, false);
 
-  if (VOID_TYPE_P (TREE_TYPE (DECL_RESULT (old_decl))))
+  if (DECL_RESULT (old_decl) == NULL_TREE)
     ;
-  else if (skip_return)
+  else if (skip_return && !VOID_TYPE_P (TREE_TYPE (DECL_RESULT (old_decl))))
     {
       DECL_RESULT (new_decl)
 	= build_decl (DECL_SOURCE_LOCATION (DECL_RESULT (old_decl)),
