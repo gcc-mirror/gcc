@@ -8423,9 +8423,10 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
 
 	  if (dummy_arg != NULL
 	      && dummy_arg->sym->attr.optional
-	      && arg->expr->symtree
-	      && arg->expr->symtree->n.sym->attr.optional
-	      && arg->expr->ref == NULL)
+	      && arg->expr->expr_type == EXPR_VARIABLE
+	      && (gfc_expr_attr (arg->expr).optional
+		  || gfc_expr_attr (arg->expr).allocatable
+		  || gfc_expr_attr (arg->expr).pointer))
 	    newss->info->data.scalar.can_be_null_ref = true;
 	}
       else
