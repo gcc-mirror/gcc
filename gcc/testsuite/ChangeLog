@@ -1,3 +1,8 @@
+2012-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51865
+	* gcc.dg/pr51865.c: New test.
+
 2012-01-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Expect 4 threaded edges for MIPS.

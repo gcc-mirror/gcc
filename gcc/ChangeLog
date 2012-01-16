@@ -1,3 +1,9 @@
+2012-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51865
+	* tree-inline.c (tree_function_versioning): Call remap_decl
+	on DECL_RESULT whenever it has VOID_TYPE_P type.
+
 2012-01-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips16_build_call_stub): Don't use a stub
