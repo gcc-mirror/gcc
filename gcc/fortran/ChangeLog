@@ -1,3 +1,10 @@
+2012-01-16  Mikael Morin  <mikael@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50981
+	* trans-array.c (gfc_walk_elemental_function_args): Fix
+	passing of deallocated allocatables/pointers as absent argument. 
+
 2012-01-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51809
