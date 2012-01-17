@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-pthread" } */
-/* { dg-xfail-if "" { *-*-* } { "*" } { "" } } */
+/* { dg-skip-if "PR libitm/51822" { *-*-* } } */
 /* Tests static constructors inside of transactional code.  */
 
 #include <pthread.h>
