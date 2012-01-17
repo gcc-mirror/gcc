@@ -114,7 +114,7 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { xfail { {! vector_alignment_reachable} || { ! vect_aligned_arrays} } } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { xfail { {! vector_alignment_reachable} || { vect_sizes_32B_16B} } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" { target { {! vector_alignment_reachable} && {! vect_hw_misalign} } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { target { {! vector_alignment_reachable} && {! vect_hw_misalign} } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
