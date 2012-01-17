@@ -1007,6 +1007,12 @@ gfc_init_builtin_functions (void)
 		      "malloc", ATTR_NOTHROW_LEAF_LIST);
   DECL_IS_MALLOC (builtin_decl_explicit (BUILT_IN_MALLOC)) = 1;
 
+  ftype = build_function_type_list (pvoid_type_node, size_type_node,
+				    size_type_node, NULL_TREE);
+  gfc_define_builtin ("__builtin_calloc", ftype, BUILT_IN_CALLOC,
+		      "calloc", ATTR_NOTHROW_LEAF_LIST);
+  DECL_IS_MALLOC (builtin_decl_explicit (BUILT_IN_CALLOC)) = 1;
+
   ftype = build_function_type_list (pvoid_type_node,
                                     size_type_node, pvoid_type_node,
                                     NULL_TREE);
