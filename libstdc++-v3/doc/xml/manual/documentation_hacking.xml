@@ -611,6 +611,12 @@
       <entry>info output</entry>
     </row>
 
+    <row>
+      <entry>epub3 stylesheets</entry>
+      <entry>b3</entry>
+      <entry>epub output</entry>
+    </row>
+
   </tbody>
 </tgroup>
 </table>
@@ -674,6 +680,10 @@
       <para>
 	For Texinfo output, something that transforms valid Docbook
 	XML to Texinfo is required. The default choice is <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://docbook2x.sourceforge.net/">docbook2X</link>.
+      </para>
+
+      <para>
+	For epub output, the <link xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:href="http://sourceforge.net/projects/docbook/files/epub3/">stylesheets</link> for EPUB3 are required. These stylesheets are still in development. To validate the created file, <link xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:href="https://code.google.com/p/epubcheck/">epubcheck</link> is necessary.
       </para>
     </section>
 

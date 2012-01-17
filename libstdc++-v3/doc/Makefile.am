@@ -467,10 +467,11 @@ XSLT_PARAM = --param toc.section.depth 4
 XSL_FO_STYLE = $(XSL_STYLE_DIR)/fo/docbook.xsl
 XSL_HTML_STYLE = $(XSL_STYLE_DIR)/xhtml-1_1/chunk.xsl
 XSL_HTML_SINGLE_STYLE = $(XSL_STYLE_DIR)/xhtml-1_1/docbook.xsl
-XSL_EPUB_STYLE = $(XSL_STYLE_DIR)/epub/docbook.xsl
+XSL_EPUB_STYLE = $(XSL_STYLE_DIR)/epub3/chunk.xsl
 
 ${docbook_outdir}/epub:
 	mkdir -p ${docbook_outdir}/epub
+	mkdir -p ${docbook_outdir}/epub/OEBPS/images
 
 ${docbook_outdir}/fo:
 	mkdir -p ${docbook_outdir}/fo
@@ -592,19 +593,24 @@ doc-texinfo-docbook: stamp-texinfo-docbook
 
 doc-info-docbook: stamp-info-docbook
 
-# EPUB, via ruby + dbtoepub
-# Can verify document with: epubcheck
+# EPUB version 3
+# http://sourceforge.net/projects/docbook/files/epub3/
+# Can verify document with epubcheck
 manual_epub = ${docbook_outdir}/epub/libstdc++-manual.epub
 stamp-epub-docbook: stamp-xml-single-docbook ${docbook_outdir}/epub
 	@echo "Generating epub files..."
 	if [ ! -d "${docbook_outdir}/images" ]; then \
 	  $(LN_S) ${top_srcdir}/doc/xml/images ${docbook_outdir}/; \
 	fi
-	${XSL_STYLE_DIR}/epub/bin/dbtoepub -v -d -o ${manual_epub} ${set_xml}
+	$(XSLTPROC) $(XSLT_PARAM) $(XSLT_FLAGS) \
+	--stringparam base.dir "${docbook_outdir}/epub/OEBPS/" \
+	$(XSL_EPUB_STYLE) ${top_srcdir}/doc/xml/spine.xml
+	$(INSTALL_DATA)	$(xml_images) ${docbook_outdir}/epub/OEBPS/images
+	zip -X0 ${manual_epub} ${docbook_outdir}/epub/mimetype
+	zip -r -X9 ${manual_epub} ${docbook_outdir}/epub/META-INF ${docbook_outdir}/epub/OEBPS
 	$(STAMP) stamp-epub-docbook
 
 doc-epub-docbook: stamp-epub-docbook
-
 
 # Performance doc and graph configuration.
 # Assumes pychart, beautiful soup installed.

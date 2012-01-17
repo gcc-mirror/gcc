@@ -1,3 +1,19 @@
+2012-01-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.ac (BUILD_EPUB): Adjust for epub3.
+	* configure: Regenerate.
+	* Makefile.in: Same.
+	* doc/Makefile.am (stamp-epub-docbook): Update for epub3.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Same.
+	* libsupc++/Makefile.in: Same.
+	* po/Makefile.in: Same.
+	* python/Makefile.in: Same.
+	* src/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+
+	* doc/xml/manual/documentation_hacking.xml: Update.
+
 2012-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/47852
