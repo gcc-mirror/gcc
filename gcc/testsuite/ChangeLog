@@ -1,3 +1,8 @@
+2012-01-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51869
+	* gfortran.dg/realloc_on_assign_9.f90: New.
+
 2012-01-17  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR other/51165

@@ -1,3 +1,11 @@
+2012-01-17  Tobias Burnus  <burnus@net-b.de>
+	    Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/51869
+	* trans-expr.c (alloc_scalar_allocatable_for_assignment): Nullify
+	LHS after allocation, if it has allocatable components.
+	* f95-lang.c (gfc_init_builtin_functions): Add BUILT_IN_CALLOC.
+
 2012-01-16  Mikael Morin  <mikael@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
