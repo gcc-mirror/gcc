@@ -3722,7 +3722,7 @@ do_reload (void)
   basic_block bb;
   bool need_dce;
 
-  if (flag_ira_verbose < 10 && dump_file)
+  if (flag_ira_verbose < 10)
     ira_dump_file = dump_file;
 
   df_set_flags (DF_NO_INSN_RESCAN);
