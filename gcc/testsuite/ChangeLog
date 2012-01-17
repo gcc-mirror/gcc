@@ -1,3 +1,10 @@
+2012-01-17  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* gcc.dg/vect/no-section-anchors-vect-69.c: Change
+	{!vect_align_arrays} to vect_sizes_32B_16B.
+	* gcc.dg/vect/vect-multitypes-1.c: Ditto.
+	* gcc.dg/vect/vect-peel-3.c: Ditto.
+
 2012-01-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51854
