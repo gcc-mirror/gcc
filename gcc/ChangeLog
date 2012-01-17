@@ -1,3 +1,12 @@
+2012-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51877
+	* tree-ssa-tail-merge.c (gimple_equal_p): Don't return true whenever
+	call arguments and fndecls compare equal, instead return false if they
+	don't.  Return true only if lhs1 and lhs2 are either both NULL, or
+	both SSA_NAMEs that are valueized the same, or they satisfy
+	operand_equal_p.
+
 2012-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_target_dl_iterate_phdr): Only check on
