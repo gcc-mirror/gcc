@@ -258,6 +258,10 @@ case "${host_os}" in
     os_include_dir="os/irix/irix6.5"
     atomicity_dir=os/irix
     atomic_word_dir=os/irix
+    # libstdc++.so relies on emutls on IRIX, which only works with the
+    # real functions implemented in libpthread.so, not with the stubs in
+    # libc, so always pass -lpthread.
+    OPT_LDFLAGS="${OPT_LDFLAGS} -lpthread"
     ;;
   mingw32*)
     case "$host" in
