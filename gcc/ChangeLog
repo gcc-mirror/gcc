@@ -1,3 +1,14 @@
+2012-01-17  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/50325
+	PR middle-end/51192
+	* optabs.h (simplify_expand_binop): Declare.
+	* optabs.c (simplify_expand_binop): Make global.
+	* expmed.c (store_bit_field_1): Use simplify_expand_binop on big
+	endian targets if the source cannot be exactly covered by word
+	mode chunks.
+
 2012-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/51872

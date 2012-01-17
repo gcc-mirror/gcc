@@ -859,6 +859,10 @@ extern rtx expand_ternary_op (enum machine_mode mode, optab ternary_optab,
 extern rtx expand_binop (enum machine_mode, optab, rtx, rtx, rtx, int,
 			 enum optab_methods);
 
+extern rtx simplify_expand_binop (enum machine_mode mode, optab binoptab,
+				  rtx op0, rtx op1, rtx target, int unsignedp,
+				  enum optab_methods methods);
+
 extern bool force_expand_binop (enum machine_mode, optab, rtx, rtx, rtx, int,
 				enum optab_methods);
 

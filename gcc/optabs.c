@@ -659,7 +659,7 @@ expand_ternary_op (enum machine_mode mode, optab ternary_optab, rtx op0,
    calculated at compile time.  The arguments and return value are
    otherwise the same as for expand_binop.  */
 
-static rtx
+rtx
 simplify_expand_binop (enum machine_mode mode, optab binoptab,
 		       rtx op0, rtx op1, rtx target, int unsignedp,
 		       enum optab_methods methods)
