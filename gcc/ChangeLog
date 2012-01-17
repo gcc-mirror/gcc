@@ -1,3 +1,9 @@
+2012-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_target_dl_iterate_phdr): Only check on
+	Solaris 11+.
+	* configure: Regenerate.
+
 2012-01-16  Jan Hubicka  <jh@suse.cz>
 
 	PR c/12245
