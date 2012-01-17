@@ -1,3 +1,7 @@
+/* Defining _XOPEN_SOURCE hides the declaration of madvise() on Solaris <
+   11 and the MADV_DONTNEED definition on IRIX 6.5.  */
+#undef _XOPEN_SOURCE
+
 #include <errno.h>
 #include <unistd.h>
 
@@ -67,7 +71,7 @@ runtime_SysAlloc(uintptr n)
 }
 
 void
-runtime_SysUnused(void *v, uintptr n)
+runtime_SysUnused(void *v __attribute__ ((unused)), uintptr n __attribute__ ((unused)))
 {
 #ifdef MADV_DONTNEED
 	runtime_madvise(v, n, MADV_DONTNEED);

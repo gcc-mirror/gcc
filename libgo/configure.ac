@@ -126,6 +126,7 @@ is_darwin=no
 is_freebsd=no
 is_irix=no
 is_linux=no
+is_netbsd=no
 is_rtems=no
 is_solaris=no
 GOOS=unknown

@@ -20,7 +20,7 @@ __go_map_delete (struct __go_map *map, const void *key)
   const struct __go_map_descriptor *descriptor;
   const struct __go_type_descriptor *key_descriptor;
   uintptr_t key_offset;
-  _Bool (*equalfn) (const void*, const void*, size_t);
+  _Bool (*equalfn) (const void*, const void*, uintptr_t);
   size_t key_hash;
   size_t key_size;
   size_t bucket_index;
