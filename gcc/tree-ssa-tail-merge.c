@@ -1,5 +1,5 @@
 /* Tail merging for gimple.
-   Copyright (C) 2011 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
    Contributed by Tom de Vries (tom@codesourcery.com)
 
 This file is part of GCC.
@@ -1071,14 +1071,18 @@ gimple_equal_p (same_succ same_succ, gimple s1, gimple s2)
 	  equal = false;
 	  break;
 	}
-      if (equal)
-	return true;
+      if (!equal)
+	return false;
 
       lhs1 = gimple_get_lhs (s1);
       lhs2 = gimple_get_lhs (s2);
-      return (lhs1 != NULL_TREE && lhs2 != NULL_TREE
-	      && TREE_CODE (lhs1) == SSA_NAME && TREE_CODE (lhs2) == SSA_NAME
-	      && vn_valueize (lhs1) == vn_valueize (lhs2));
+      if (lhs1 == NULL_TREE && lhs2 == NULL_TREE)
+	return true;
+      if (lhs1 == NULL_TREE || lhs2 == NULL_TREE)
+	return false;
+      if (TREE_CODE (lhs1) == SSA_NAME && TREE_CODE (lhs2) == SSA_NAME)
+	return vn_valueize (lhs1) == vn_valueize (lhs2);
+      return operand_equal_p (lhs1, lhs2, 0);
 
     case GIMPLE_ASSIGN:
       lhs1 = gimple_get_lhs (s1);
