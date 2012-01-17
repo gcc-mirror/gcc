@@ -910,8 +910,10 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
     ? TYPE_CANONICAL (TREE_TYPE (i))
     : TREE_TYPE (i);
 
-  if (TREE_INT_CST_HIGH (i) == 0)
+  if (host_integerp (i, 0))
     pp_wide_integer (pp, TREE_INT_CST_LOW (i));
+  else if (host_integerp (i, 1))
+    pp_unsigned_wide_integer (pp, TREE_INT_CST_LOW (i));
   else
     {
       unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (i);
