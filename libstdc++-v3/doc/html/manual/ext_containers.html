@@ -19,7 +19,7 @@
 </p><p>There are
    versions of single-bit test, set, reset, and flip member functions which
    do no range-checking.  If we call them member functions of an instantiation
-   of "bitset&lt;N&gt;," then their names and signatures are:
+   of <code class="code">bitset&lt;N&gt;</code>, then their names and signatures are:
 </p><pre class="programlisting">
    bitset&lt;N&gt;&amp;   _Unchecked_set   (size_t pos);
    bitset&lt;N&gt;&amp;   _Unchecked_set   (size_t pos, int val);
@@ -29,14 +29,10 @@
    </pre><p>Note that these may in fact be removed in the future, although we have
    no present plans to do so (and there doesn't seem to be any immediate
    reason to).
-</p><p>The semantics of member function <code class="code">operator[]</code> are not specified
-   in the C++ standard.  A long-standing defect report calls for sensible
-   obvious semantics, which are already implemented here:  <code class="code">op[]</code>
-   on a const bitset returns a bool, and for a non-const bitset returns a
-   <code class="code">reference</code> (a nested type).  However, this implementation does
-   no range-checking on the index argument, which is in keeping with other
-   containers' <code class="code">op[]</code> requirements.  The defect report's proposed
-   resolution calls for range-checking to be done.  We'll just wait and see...
+</p><p>The member function <code class="code">operator[]</code> on a const bitset returns
+   a bool, and for a non-const bitset returns a <code class="code">reference</code> (a
+   nested type).  No range-checking is done on the index argument, in keeping
+   with other containers' <code class="code">operator[]</code> requirements.
 </p><p>Finally, two additional searching functions have been added.  They return
    the index of the first "on" bit, and the index of the first
    "on" bit that is after <code class="code">prev</code>, respectively:
