@@ -1,6 +1,6 @@
 /* Data structure definitions for a generic GCC target.
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011
+   2011, 2012
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -92,6 +92,7 @@ extern bool target_default_pointer_address_modes_p (void);
 
 struct stdarg_info;
 struct spec_info_def;
+struct hard_reg_set_container;
 
 /* The struct used by the secondary_reload target hook.  */
 typedef struct secondary_reload_info

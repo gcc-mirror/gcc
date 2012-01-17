@@ -1,6 +1,6 @@
 /* Sets (bit vectors) of hard registers, and operations on them.
    Copyright (C) 1987, 1992, 1994, 2000, 2003, 2004, 2005, 2007, 2008, 2009,
-   2010 Free Software Foundation, Inc.
+   2010, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC
 
@@ -53,6 +53,14 @@ typedef unsigned HOST_WIDEST_FAST_INT HARD_REG_ELT_TYPE;
 typedef HARD_REG_ELT_TYPE HARD_REG_SET[HARD_REG_SET_LONGS];
 
 #endif
+
+/* HARD_REG_SET wrapped into a structure, to make it possible to
+   use HARD_REG_SET even in APIs that should not include
+   hard-reg-set.h.  */
+struct hard_reg_set_container
+{
+  HARD_REG_SET set;
+};
 
 /* HARD_CONST is used to cast a constant to the appropriate type
    for use with a HARD_REG_SET.  */

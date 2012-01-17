@@ -1227,6 +1227,7 @@ static bool rs6000_cannot_force_const_mem (enum machine_mode, rtx);
 static bool rs6000_legitimate_constant_p (enum machine_mode, rtx);
 static bool rs6000_save_toc_in_prologue_p (void);
 static void rs6000_code_end (void) ATTRIBUTE_UNUSED;
+static void rs6000_set_up_by_prologue (struct hard_reg_set_container *);
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
@@ -1391,6 +1392,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_ASM_ASSEMBLE_VISIBILITY
 #define TARGET_ASM_ASSEMBLE_VISIBILITY rs6000_assemble_visibility
 #endif
+
+#undef TARGET_SET_UP_BY_PROLOGUE
+#define TARGET_SET_UP_BY_PROLOGUE rs6000_set_up_by_prologue
 
 #undef TARGET_HAVE_TLS
 #define TARGET_HAVE_TLS HAVE_AS_TLS
@@ -27901,6 +27905,19 @@ rs6000_code_end (void)
   free_after_compilation (cfun);
   set_cfun (NULL);
   current_function_decl = NULL;
+}
+
+/* Add r30 to hard reg set if the prologue sets it up and it is not
+   pic_offset_table_rtx.  */
+
+static void
+rs6000_set_up_by_prologue (struct hard_reg_set_container *set)
+{
+  if (!TARGET_SINGLE_PIC_BASE
+      && TARGET_TOC
+      && TARGET_MINIMAL_TOC
+      && get_pool_size () != 0)
+    add_to_hard_reg_set (&set->set, Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM);
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;
