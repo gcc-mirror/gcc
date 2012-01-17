@@ -1,5 +1,9 @@
 2012-01-17  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* doc/html/*: Regenerate.
+
+2012-01-17  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* configure.ac (BUILD_EPUB): Adjust for epub3.
 	* configure: Regenerate.
 	* Makefile.in: Same.

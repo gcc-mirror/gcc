@@ -3,18 +3,22 @@
 <html xmlns="http://www.w3.org/1999/xhtml"><head><title>Chapter 26. Numerics</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    "/><link rel="home" href="../index.html" title="The GNU C++ Library"/><link rel="up" href="extensions.html" title="Part III.  Extensions"/><link rel="prev" href="ext_algorithms.html" title="Chapter 25. Algorithms"/><link rel="next" href="ext_iterators.html" title="Chapter 27. Iterators"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 26. Numerics</th></tr><tr><td align="left"><a accesskey="p" href="ext_algorithms.html">Prev</a> </td><th width="60%" align="center">Part III. 
   Extensions
   
-</th><td align="right"> <a accesskey="n" href="ext_iterators.html">Next</a></td></tr></table><hr/></div><div class="chapter" title="Chapter 26. Numerics"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.numerics"/>Chapter 26. Numerics</h2></div></div></div><p>26.4, the generalized numeric operations such as accumulate, are extended
-   with the following functions:
+</th><td align="right"> <a accesskey="n" href="ext_iterators.html">Next</a></td></tr></table><hr/></div><div class="chapter" title="Chapter 26. Numerics"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.numerics"/>Chapter 26. Numerics</h2></div></div></div><p>26.4, the generalized numeric operations such as <code class="code">accumulate</code>,
+   are extended with the following functions:
 </p><pre class="programlisting">
    power (x, n);
-   power (x, n, moniod_operation);</pre><p>Returns, in FORTRAN syntax, "x ** n" where n&gt;=0.  In the
-   case of n == 0, returns the identity element for the
+   power (x, n, monoid_operation);</pre><p>Returns, in FORTRAN syntax, "<code class="code">x ** n</code>" where
+   <code class="code">n &gt;= 0</code>.  In the
+   case of <code class="code">n == 0</code>, returns the identity element for the
    monoid operation.  The two-argument signature uses multiplication (for
    a true "power" implementation), but addition is supported as well.
    The operation functor must be associative.
 </p><p>The <code class="code">iota</code> function wins the award for Extension With the
-   Coolest Name.  It "assigns sequentially increasing values to a range.
-   That is, it assigns value to *first, value + 1 to *(first + 1) and so
-   on."  Quoted from SGI documentation.
+   Coolest Name (the name comes from Ken Iverson's APL language.)  As
+   described in the <a class="link" href="http://www.sgi.com/tech/stl/iota.html">SGI
+   documentation</a>, it "assigns sequentially increasing values to a range.
+   That is, it assigns <code class="code">value</code> to <code class="code">*first</code>,
+   <code class="code">value + 1</code> to<code class="code"> *(first + 1)</code> and so on."
 </p><pre class="programlisting">
-   void iota(_ForwardIter first, _ForwardIter last, _Tp value);</pre></div><div class="navfooter"><hr/><table width="100%" summary="Navigation footer"><tr><td align="left"><a accesskey="p" href="ext_algorithms.html">Prev</a> </td><td align="center"><a accesskey="u" href="extensions.html">Up</a></td><td align="right"> <a accesskey="n" href="ext_iterators.html">Next</a></td></tr><tr><td align="left" valign="top">Chapter 25. Algorithms </td><td align="center"><a accesskey="h" href="../index.html">Home</a></td><td align="right" valign="top"> Chapter 27. Iterators</td></tr></table></div></body></html>
+   void iota(_ForwardIter first, _ForwardIter last, _Tp value);</pre><p>The <code class="code">iota</code> function is included in the ISO C++ 2011 standard.
+</p></div><div class="navfooter"><hr/><table width="100%" summary="Navigation footer"><tr><td align="left"><a accesskey="p" href="ext_algorithms.html">Prev</a> </td><td align="center"><a accesskey="u" href="extensions.html">Up</a></td><td align="right"> <a accesskey="n" href="ext_iterators.html">Next</a></td></tr><tr><td align="left" valign="top">Chapter 25. Algorithms </td><td align="center"><a accesskey="h" href="../index.html">Home</a></td><td align="right" valign="top"> Chapter 27. Iterators</td></tr></table></div></body></html>
