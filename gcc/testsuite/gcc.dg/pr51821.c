@@ -1,5 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -msse" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-options "-std=c99 -O2" } */
+/* { dg-additional-options "-msse" { target { i?86-*-* x86_64-*-* } } } */
 /* { dg-require-effective-target sse_runtime { target { i?86-*-* x86_64-*-* } } } */
 
 extern void abort (void);
