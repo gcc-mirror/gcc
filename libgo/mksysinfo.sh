@@ -538,7 +538,7 @@ grep '^const _TIOC' gen-sysinfo.go | \
 # We need TIOCGWINSZ.
 if ! grep '^const TIOCGWINSZ' ${OUT} >/dev/null 2>&1; then
   if grep '^const _TIOCGWINSZ_val' ${OUT} >/dev/null 2>&1; then
-    echo 'const TIOCGWINSZ = TIOCGWINSZ_val' >> ${OUT}
+    echo 'const TIOCGWINSZ = _TIOCGWINSZ_val' >> ${OUT}
   fi
 fi
 
