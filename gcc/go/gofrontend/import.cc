@@ -42,8 +42,8 @@ const char* const Import::import_marker = "*imported*";
 // returns a pointer to a Stream object to read the data that it
 // exports.  If the file is not found, it returns NULL.
 
-// When FILENAME is not an absolute path, we use the search path
-// provided by -I and -L options.
+// When FILENAME is not an absolute path and does not start with ./ or
+// ../, we use the search path provided by -I and -L options.
 
 // When FILENAME does not exist, we try modifying FILENAME to find the
 // file.  We use the first of these which exists:
@@ -61,7 +61,18 @@ const char* const Import::import_marker = "*imported*";
 Import::Stream*
 Import::open_package(const std::string& filename, Location location)
 {
-  if (!IS_ABSOLUTE_PATH(filename))
+  bool is_local;
+  if (IS_ABSOLUTE_PATH(filename))
+    is_local = true;
+  else if (filename[0] == '.' && IS_DIR_SEPARATOR(filename[1]))
+    is_local = true;
+  else if (filename[0] == '.'
+	   && filename[1] == '.'
+	   && IS_DIR_SEPARATOR(filename[2]))
+    is_local = true;
+  else
+    is_local = false;
+  if (!is_local)
     {
       for (std::vector<std::string>::const_iterator p = search_path.begin();
 	   p != search_path.end();
