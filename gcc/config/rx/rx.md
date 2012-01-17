@@ -1,5 +1,6 @@
 ;;  Machine Description for Renesas RX processors
-;;  Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+;;  Copyright (C) 2008, 2009, 2010, 2011, 2012
+;;  Free Software Foundation, Inc.
 ;;  Contributed by Red Hat.
 
 ;; This file is part of GCC.
@@ -342,7 +343,7 @@
 
 (define_expand "return"
   [(return)]
-  ""
+  "rx_can_use_simple_return ()"
   "rx_expand_epilogue (false); DONE;"
 )
 
