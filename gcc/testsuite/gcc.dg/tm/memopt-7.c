@@ -17,6 +17,6 @@ int f()
   return lala.x[asdf];
 }
 
-/* { dg-final { scan-tree-dump-times "tm_save.\[0-9_\]+ = lala" 1 "tmedge" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "lala = tm_save" 1 "tmedge" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "tm_save.\[0-9_\]+ = lala" 1 "tmedge" } } */
+/* { dg-final { scan-tree-dump-times "lala = tm_save" 1 "tmedge" } } */
 /* { dg-final { cleanup-tree-dump "tmedge" } } */
