@@ -1,3 +1,11 @@
+2012-01-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR other/51165
+	* gcc.dg/tm/memopt-3.c: Remove xfail.
+	* gcc.dg/tm/memopt-4.c: Remove xfail.
+	* gcc.dg/tm/memopt-5.c: Remove xfail.
+	* gcc.dg/tm/memopt-7.c: Remove xfail.
+
 2012-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51877

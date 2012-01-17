@@ -1,3 +1,8 @@
+2012-01-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR other/51165
+	* trans-mem.c (requires_barrier): Call may_be_aliased.
+
 2012-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51877

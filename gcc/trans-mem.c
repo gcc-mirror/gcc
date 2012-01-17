@@ -1498,7 +1498,7 @@ requires_barrier (basic_block entry_block, tree x, gimple stmt)
 	     lower_sequence_tm altogether.  */
 	  needs_to_live_in_memory (x)
 	  /* X escapes.  */
-	  || ptr_deref_may_alias_global_p (x))
+	  || is_global_var (x))
 	return true;
       else
 	{
