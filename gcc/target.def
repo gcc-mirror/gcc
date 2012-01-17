@@ -1,6 +1,6 @@
 /* Target hook definitions.
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011
+   2011, 2012
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -2643,6 +2643,14 @@ DEFHOOK
  "",
  void, (bitmap regs),
  hook_void_bitmap)
+
+/* Fill in additional registers set up by prologue into a regset.  */
+DEFHOOK
+(set_up_by_prologue,
+ "This hook should add additional registers that are computed by the prologue\
+ to the hard regset for shrink-wrapping optimization purposes.",
+ void, (struct hard_reg_set_container *),
+ NULL)
 
 /* Determine the type of unwind info to emit for debugging.  */
 DEFHOOK

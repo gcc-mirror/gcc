@@ -1,3 +1,17 @@
+2012-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/51872
+	* hard-reg-set.h (struct hard_reg_set_container): New type.
+	* target.h (struct hard_reg_set_container): Forward declare.
+	* target.def (set_up_by_prologue): New target hook.
+	* doc/tm.texi.in (TARGET_SET_UP_BY_PROLOGUE): Document it.
+	* doc/tm.texi: Regenerated.
+	* function.c (thread_prologue_and_epilogue_insns): Change
+	set_up_by_prologue HARD_REG_SET into struct hard_reg_set_container.
+	Call targetm.set_up_by_prologue on it.
+	* config/rs6000/rs6000.c (rs6000_set_up_by_prologue): New function.
+	(TARGET_SET_UP_BY_PROLOGUE): Redefine to it.
+
 2012-01-17  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.c (rx_can_use_simple_return): New function.

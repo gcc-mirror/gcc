@@ -1,5 +1,5 @@
 @c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,
-@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -4905,6 +4905,8 @@ registers, STATIC_CHAIN_INCOMING_REGNUM, STATIC_CHAIN_REGNUM,
 TARGET_STRUCT_VALUE_RTX, FRAME_POINTER_REGNUM, EH_USES,
 FRAME_POINTER_REGNUM, ARG_POINTER_REGNUM, and the PIC_OFFSET_TABLE_REGNUM.
 @end deftypefn
+
+@hook TARGET_SET_UP_BY_PROLOGUE
 
 @node Stack Smashing Protection
 @subsection Stack smashing protection
