@@ -1199,10 +1199,6 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
       if (TYPE_ADDR_SPACE (TREE_TYPE (outer_type))
 	  != TYPE_ADDR_SPACE (TREE_TYPE (inner_type)))
 	return false;
-
-      /* If the outer type is (void *), the conversion is not necessary.  */
-      if (VOID_TYPE_P (TREE_TYPE (outer_type)))
-	return true;
     }
 
   /* From now on qualifiers on value types do not matter.  */
