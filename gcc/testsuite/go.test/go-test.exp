@@ -1,4 +1,4 @@
-#   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+#   Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 #   Written by Ian Lance Taylor <iant@google.com>.
 
 # This program is free software; you can redistribute it and/or modify
@@ -467,6 +467,9 @@ proc go-gc-tests { } {
 			       $test_line] \
 		       || [string match \
 			       "// \$G \$D/\$F.dir/b.go && \$G \$D/\$F.dir/a.go" \
+			       $test_line] \
+		       || [string match \
+			       "// \$G \$D/\$F.dir/io.go && errchk \$G -e \$D/\$F.dir/main.go" \
 			       $test_line] } {
 	    if { [string match \
 		      "// \$G \$D/\$F.dir/bug0.go && errchk \$G \$D/\$F.dir/bug1.go" \
@@ -474,13 +477,20 @@ proc go-gc-tests { } {
 		set name1 "bug0.go"
 		set name2 "bug1.go"
 	    } elseif { [string match \
-		      "// \$G \$D/\$F.dir/p1.go && \$G \$D/\$F.dir/p2.go" \
-		      $test_line] } {
+			    "// \$G \$D/\$F.dir/p1.go && \$G \$D/\$F.dir/p2.go" \
+			    $test_line] } {
 		set name1 "p1.go"
 		set name2 "p2.go"
-	    } else {
+	    } elseif { [string match \
+			    "// \$G \$D/\$F.dir/b.go && \$G \$D/\$F.dir/a.go" \
+			    $test_line] } {
 		set name1 "b.go"
 		set name2 "a.go"
+	    } elseif { [string match \
+			    "// \$G \$D/\$F.dir/io.go && errchk \$G -e \$D/\$F.dir/main.go" \
+			    $test_line] } {
+		set name1 "io.go"
+		set name2 "main.go"
 	    }
 	    set hold_runtests $runtests
 	    set runtests "go-test.exp"
@@ -489,6 +499,17 @@ proc go-gc-tests { } {
 	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
 	    regsub "\\.go$" $test ".dir/$name2" file2
 	    errchk $file2 ""
+	    file delete "[file rootname [file tail $file1]].o"
+	    set runtests $hold_runtests
+	} elseif { [string match \
+			"// \$G \$D/\${F}1.go && errchk \$G \$D/\$F.go" \
+			$test_line ] } {
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "assemble"
+	    regsub "\\.go$" $test "1.go" file1
+	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
+	    errchk $test ""
 	    file delete "[file rootname [file tail $file1]].o"
 	    set runtests $hold_runtests
 	} elseif { [string match \
@@ -537,14 +558,28 @@ proc go-gc-tests { } {
 	    set runtests $hold_runtests
 	} elseif { [string match \
 			"// \$G \$D/bug160.dir/x.go && \$G \$D/bug160.dir/y.go && \$L y.\$A && ./\$A.out" \
-			$test_line] } {
+			$test_line] \
+		       || [string match \
+			       "// \$G \$D/\$F.dir/p.go && \$G \$D/\$F.dir/main.go && \$L main.\$A && ./\$A.out" \
+			       $test_line] } {
+	    if { [string match \
+			"// \$G \$D/bug160.dir/x.go && \$G \$D/bug160.dir/y.go && \$L y.\$A && ./\$A.out" \
+		      $test_line] } {
+		set name1 "x.go"
+		set name2 "y.go"
+	    } elseif { [string match \
+			   "// \$G \$D/\$F.dir/p.go && \$G \$D/\$F.dir/main.go && \$L main.\$A && ./\$A.out" \
+			    $test_line] } {
+		set name1 "p.go"
+		set name2 "main.go"
+	    }
 	    set hold_runtests $runtests
 	    set runtests "go-test.exp"
 	    set dg-do-what-default "assemble"
-	    regsub "\\.go$" $test ".dir/x.go" file1
+	    regsub "\\.go$" $test ".dir/$name1" file1
 	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
 	    set ofile1 "[file rootname [file tail $file1]].o"
-	    regsub "\\.go$" $test ".dir/y.go" file2
+	    regsub "\\.go$" $test ".dir/$name2" file2
 	    dg-test -keep-output $file2 "-O" "-w $DEFAULT_GOCFLAGS"
 	    set ofile2 "[file rootname [file tail $file2]].o"
 	    set dg-do-what-default "link"
