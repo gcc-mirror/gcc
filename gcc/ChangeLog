@@ -1,3 +1,8 @@
+2012-01-18  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.md (call_value_indirect_aix32): Fix typo
+	in mode of operand[4].
+
 2012-01-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/51821
