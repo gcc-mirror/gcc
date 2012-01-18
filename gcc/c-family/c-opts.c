@@ -1058,6 +1058,13 @@ c_common_post_options (const char **pfilename)
       && flag_preprocess_only && !flag_no_line_commands)
     pp_dir_change (parse_in, get_src_pwd ());
 
+  /* Disable LTO output when outputting a precompiled header.  */
+  if (pch_file && flag_lto)
+    {
+      flag_lto = 0;
+      flag_generate_lto = 0;
+    }
+
   return flag_preprocess_only;
 }
 
