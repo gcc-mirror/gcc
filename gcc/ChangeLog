@@ -1,3 +1,8 @@
+2012-01-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa.c (useless_type_conversion_p): Remove special-casing
+	of conversions to void *.
+
 2012-01-17  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 	    Richard Sandiford  <rdsandiford@googlemail.com>
 
