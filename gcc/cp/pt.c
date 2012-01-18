@@ -5807,6 +5807,9 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	  if (complain & tf_error)
 	    {
 	      int errs = errorcount, warns = warningcount;
+	      if (processing_template_decl
+		  && !require_potential_constant_expression (expr))
+		return NULL_TREE;
 	      expr = cxx_constant_value (expr);
 	      if (errorcount > errs || warningcount > warns)
 		inform (EXPR_LOC_OR_HERE (expr),
