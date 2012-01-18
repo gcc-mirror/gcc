@@ -24,6 +24,26 @@
 	* trans-decl.c (gfc_get_symbol_decl): Mark __vtab
 	and __def_init as TREE_READONLY.
 
+2012-01-16  Zydrunas Gimbutas  <gimbutas@cims.nyu.edu>
+	Andreas Kloeckner  <kloeckner@cims.nyu.edu>
+	Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/48426
+	* gfortran.h (gfc_option_t): Add members flag_*_kind to store kind.
+	* lang.opt: Add options -freal-4-real-8, -freal-4-real-10,
+	-freal-4-real-16, -freal-8-real-4, -freal-8-real-10, -freal-8-real-16
+	and -finteger-4-integer-8. User-desired type conversion information.
+	* decl.c (gfc_match_old_kind_spec,kind_expr): Type conversions
+	in declaration parsing.
+	* trans-types.c (gfc_init_kinds): User-specified type conversion
+	checked for current backend.
+	* primary.c (match_integer_constant,match_real_constant): Implement
+	type conversion in constant parsing.
+	* options.c (gfc_init_options,gfc_handle_option): Translate input
+	options to flags in internal options data structure.
+	* invoke.texi: Document new options.  Re-order options in Options
+	summary section.
+
 2012-01-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	* trans-array.c (gfc_trans_create_temp_array): In the case of a
