@@ -380,15 +380,6 @@ AM_CONDITIONAL(BUILD_PDF,
 	       test $ac_cv_prog_DBLATEX = "yes" &&
 	       test $ac_cv_prog_PDFLATEX = "yes")
 
-# Check for epub dependencies.
-AC_CHECK_FILE(/usr/share/xml/docbook/stylesheet/docbook-xsl-ns/epub3/chunk.xsl,
-	      ac_cv_file_epub3_a=yes, ac_cv_file_epub3_a=no)
-AC_CHECK_FILE(/usr/share/sgml/docbook/xsl-ns-stylesheets/epub3/chunk.xsl,
-	      ac_cv_file_epub3_b=yes, ac_cv_file_epub3_b=no)
-AM_CONDITIONAL(BUILD_EPUB,
-	       test $ac_cv_file_epub3_a = "yes" ||
-	       test $ac_cv_file_epub3_b = "yes")
-
 
 # Propagate the target-specific source directories through the build chain.
 ATOMICITY_SRCDIR=config/${atomicity_dir}
