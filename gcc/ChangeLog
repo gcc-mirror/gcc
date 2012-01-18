@@ -1,3 +1,13 @@
+2012-01-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/49642
+	* ipa-split.c (forbidden_dominators): New variable.
+	(check_forbidden_calls): New function.
+	(dominated_by_forbidden): Likewise.
+	(consider_split): Check for forbidden dominators.
+	(execute_split_functions): Initialize and free forbidden
+	dominators info; call check_forbidden_calls.
+
 2012-01-18  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.md (call_value_indirect_aix32): Fix typo
