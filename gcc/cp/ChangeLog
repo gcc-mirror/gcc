@@ -1,3 +1,10 @@
+2012-01-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51225
+	* typeck2.c (store_init_value): Within a template guard
+	cxx_constant_value with require_potential_constant_expression.
+	* pt.c (convert_nontype_argument): Likewise.
+
 2012-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/51854
