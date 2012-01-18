@@ -1,3 +1,9 @@
+2012-01-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/51634
+	* gfortran.dg/typebound_operator_12.f03: New.
+	* gfortran.dg/typebound_operator_13.f03: New.
+
 2012-01-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51225

@@ -1,3 +1,9 @@
+2012-01-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/51634
+	* trans-expr.c (gfc_conv_procedure_call): Deallocate allocatable
+	components of temporary class arguments.
+
 2012-01-17  Tobias Burnus  <burnus@net-b.de>
 	    Janne Blomqvist  <jb@gcc.gnu.org>
 
