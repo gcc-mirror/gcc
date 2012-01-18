@@ -18,7 +18,7 @@
 	(__movmemx_qi, __movmemx_hi): New functions.
 	(__xload_2, __xload_3, __xload_4): Rewrite to fit new __pgmx
 	semantics.
-	
+
 2012-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sol2-unwind.h (sparc64_is_sighandler): Check that the
@@ -81,6 +81,10 @@
 2011-12-21  Tristan Gingold  <gingold@adacore.com>
 
 	* config/ia64/fde-vms.c (UNW_IVMS_MODE): Define.
+
+2011-12-21  Ian Lance Taylor  <iant@google.com>
+
+	* config/i386/morestack.S: Simplify CFI opcodes throughout.
 
 2011-12-20  Ian Lance Taylor  <iant@google.com>
 
