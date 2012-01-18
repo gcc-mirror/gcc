@@ -1,3 +1,7 @@
+2012-01-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-mem.c (requires_barrier): Remove call to is_global_var.
+
 2012-01-18  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa.c (useless_type_conversion_p): Remove special-casing
