@@ -1227,7 +1227,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      = this->_M_hash_code(__k);
 	    this->_M_store_code(__new_node, __code);
 
-	    // Second,  do rehash if necessary.
+	    // Second, do rehash if necessary.
 	    if (__do_rehash.first)
 		_M_rehash(__do_rehash.second, __saved_state);
 
@@ -1347,21 +1347,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  = _M_rehash_policy._M_need_rehash(_M_bucket_count,
 					    _M_element_count, 1);
 
-	const key_type& __k = this->_M_extract()(__v);
-	typename _Hashtable::_Hash_code_type __code = this->_M_hash_code(__k);
+	// First compute the hash code so that we don't do anything if it throws.
+	typename _Hashtable::_Hash_code_type __code
+	  = this->_M_hash_code(this->_M_extract()(__v));
 
 	_Node* __new_node = nullptr;
 	__try
 	  {
-	    // First allocate new node so that we don't rehash if it throws.
+	    // Second allocate new node so that we don't rehash if it throws.
 	    __new_node = _M_allocate_node(std::forward<_Arg>(__v));
 	    this->_M_store_code(__new_node, __code);
 	    if (__do_rehash.first)
 		_M_rehash(__do_rehash.second, __saved_state);
 
-	    // Second, find the node before an equivalent one.
-	    size_type __n = _M_bucket_index(__k, __code);
-	    _BaseNode* __prev = _M_find_before_node(__n, __k, __code);
+	    // Third, find the node before an equivalent one.
+	    size_type __bkt = _M_bucket_index(__new_node);
+	    _BaseNode* __prev
+	      = _M_find_before_node(__bkt, this->_M_extract()(__new_node->_M_v),
+				    __code);
 	    if (__prev)
 	      {
 		// Insert after the node before the equivalent one.
@@ -1372,7 +1375,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      // The inserted node has no equivalent in the hashtable. We must
 	      // insert the new node at the beginning of the bucket to preserve
 	      // equivalent elements relative positions.
-	      _M_insert_bucket_begin(__n, __new_node);
+	      _M_insert_bucket_begin(__bkt, __new_node);
 	    ++_M_element_count;
 	    return iterator(__new_node);
 	  }

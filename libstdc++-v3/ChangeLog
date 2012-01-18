@@ -1,3 +1,12 @@
+2012-01-18  François Dumont  <fdumont@gcc.gnu.org>
+	    Roman Kononov  <roman@binarylife.net>
+
+	PR libstdc++/51866
+	* include/bits/hashtable.h (_Hashtable<>::_M_insert(_Arg, false_type)):
+	Do not keep a reference to a potentially moved instance.
+	* testsuite/23_containers/unordered_multiset/insert/51866.cc: New.
+	* testsuite/23_containers/unordered_multimap/insert/51866.cc: New.
+
 2012-01-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/html/*: Regenerate.
