@@ -1,5 +1,9 @@
 2012-01-18  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* acinclude (GLIBCXX_CONFIGURE_DOCBOOK): Fix quoting.
+
+2012-01-18  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* configure.ac: Move epub checks...
 	* acinclude (GLIBCXX_CONFIGURE_DOCBOOK): ...here, use
 	test -f instead of AC_CHECK_FILES.

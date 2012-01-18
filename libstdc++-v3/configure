@@ -65791,13 +65791,13 @@ fi
 $as_echo_n "checking for epub3 stylesheets for documentation creation... " >&6; }
 glibcxx_epub_stylesheets=no
 if test x"$glibcxx_local_stylesheets" = x"yes"; then
-   if test -f ${XSL_STYLE_DIR}/epub3/chunk.xsl; then
+   if test -f "$XSL_STYLE_DIR/epub3/chunk.xsl"; then
       glibcxx_epub_stylesheets=yes
    fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_epub_stylesheets" >&5
 $as_echo "$glibcxx_epub_stylesheets" >&6; }
- if test $glibcxx_epub_stylesheets= "yes"; then
+ if test x"$glibcxx_epub_stylesheets" = x"yes"; then
   BUILD_EPUB_TRUE=
   BUILD_EPUB_FALSE='#'
 else

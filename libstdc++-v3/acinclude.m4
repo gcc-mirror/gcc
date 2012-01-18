@@ -674,12 +674,12 @@ fi
 AC_MSG_CHECKING([for epub3 stylesheets for documentation creation])
 glibcxx_epub_stylesheets=no
 if test x"$glibcxx_local_stylesheets" = x"yes"; then
-   if test -f ${XSL_STYLE_DIR}/epub3/chunk.xsl; then
+   if test -f "$XSL_STYLE_DIR/epub3/chunk.xsl"; then
       glibcxx_epub_stylesheets=yes
    fi
 fi
 AC_MSG_RESULT($glibcxx_epub_stylesheets)
-AM_CONDITIONAL(BUILD_EPUB, test $glibcxx_epub_stylesheets= "yes")
+AM_CONDITIONAL(BUILD_EPUB, test x"$glibcxx_epub_stylesheets" = x"yes")
 
 ])
 
