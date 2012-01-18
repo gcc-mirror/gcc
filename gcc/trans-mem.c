@@ -1496,9 +1496,7 @@ requires_barrier (basic_block entry_block, tree x, gimple stmt)
 	     during lower_sequence_tm/gimplification, leave the call
 	     to needs_to_live_in_memory until we eliminate
 	     lower_sequence_tm altogether.  */
-	  needs_to_live_in_memory (x)
-	  /* X escapes.  */
-	  || is_global_var (x))
+	  needs_to_live_in_memory (x))
 	return true;
       else
 	{
