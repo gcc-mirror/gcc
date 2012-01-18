@@ -618,8 +618,6 @@ CPU_DEFINES_SRCDIR
 ATOMIC_FLAGS
 ATOMIC_WORD_SRCDIR
 ATOMICITY_SRCDIR
-BUILD_EPUB_FALSE
-BUILD_EPUB_TRUE
 BUILD_PDF_FALSE
 BUILD_PDF_TRUE
 PDFLATEX
@@ -630,6 +628,8 @@ BUILD_HTML_FALSE
 BUILD_HTML_TRUE
 BUILD_XML_FALSE
 BUILD_XML_TRUE
+BUILD_EPUB_FALSE
+BUILD_EPUB_TRUE
 XSL_STYLE_DIR
 XMLLINT
 XSLTPROC
@@ -65753,8 +65753,8 @@ fi
 
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for stylesheets used in generation of documentation" >&5
-$as_echo_n "checking for stylesheets used in generation of documentation... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for docbook stylesheets for documentation creation" >&5
+$as_echo_n "checking for docbook stylesheets for documentation creation... " >&6; }
 glibcxx_stylesheets=no
 if test x${XSLTPROC} = xyes && echo '<title/>' | xsltproc --noout --nonet --xinclude http://docbook.sourceforge.net/release/xsl-ns/current/xhtml-1_1/docbook.xsl - 2>/dev/null; then
   glibcxx_stylesheets=yes
@@ -65785,6 +65785,27 @@ $as_echo "$as_me: $XSL_STYLE_DIR" >&6;}
 else
   glibcxx_stylesheets=no
 fi
+
+# Check for epub3 dependencies.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for epub3 stylesheets for documentation creation" >&5
+$as_echo_n "checking for epub3 stylesheets for documentation creation... " >&6; }
+glibcxx_epub_stylesheets=no
+if test x"$glibcxx_local_stylesheets" = x"yes"; then
+   if test -f ${XSL_STYLE_DIR}/epub3/chunk.xsl; then
+      glibcxx_epub_stylesheets=yes
+   fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_epub_stylesheets" >&5
+$as_echo "$glibcxx_epub_stylesheets" >&6; }
+ if test $glibcxx_epub_stylesheets= "yes"; then
+  BUILD_EPUB_TRUE=
+  BUILD_EPUB_FALSE='#'
+else
+  BUILD_EPUB_TRUE='#'
+  BUILD_EPUB_FALSE=
+fi
+
+
 
 
 # Check for xml/html dependencies.
@@ -65909,59 +65930,6 @@ fi
 else
   BUILD_PDF_TRUE='#'
   BUILD_PDF_FALSE=
-fi
-
-
-# Check for epub dependencies.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for /usr/share/xml/docbook/stylesheet/docbook-xsl-ns/epub3/chunk.xsl" >&5
-$as_echo_n "checking for /usr/share/xml/docbook/stylesheet/docbook-xsl-ns/epub3/chunk.xsl... " >&6; }
-if test "${ac_cv_file__usr_share_xml_docbook_stylesheet_docbook_xsl_ns_epub3_chunk_xsl+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  test "$cross_compiling" = yes &&
-  as_fn_error "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "/usr/share/xml/docbook/stylesheet/docbook-xsl-ns/epub3/chunk.xsl"; then
-  ac_cv_file__usr_share_xml_docbook_stylesheet_docbook_xsl_ns_epub3_chunk_xsl=yes
-else
-  ac_cv_file__usr_share_xml_docbook_stylesheet_docbook_xsl_ns_epub3_chunk_xsl=no
-fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_file__usr_share_xml_docbook_stylesheet_docbook_xsl_ns_epub3_chunk_xsl" >&5
-$as_echo "$ac_cv_file__usr_share_xml_docbook_stylesheet_docbook_xsl_ns_epub3_chunk_xsl" >&6; }
-if test "x$ac_cv_file__usr_share_xml_docbook_stylesheet_docbook_xsl_ns_epub3_chunk_xsl" = x""yes; then :
-  ac_cv_file_epub3_a=yes
-else
-  ac_cv_file_epub3_a=no
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for /usr/share/sgml/docbook/xsl-ns-stylesheets/epub3/chunk.xsl" >&5
-$as_echo_n "checking for /usr/share/sgml/docbook/xsl-ns-stylesheets/epub3/chunk.xsl... " >&6; }
-if test "${ac_cv_file__usr_share_sgml_docbook_xsl_ns_stylesheets_epub3_chunk_xsl+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  test "$cross_compiling" = yes &&
-  as_fn_error "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "/usr/share/sgml/docbook/xsl-ns-stylesheets/epub3/chunk.xsl"; then
-  ac_cv_file__usr_share_sgml_docbook_xsl_ns_stylesheets_epub3_chunk_xsl=yes
-else
-  ac_cv_file__usr_share_sgml_docbook_xsl_ns_stylesheets_epub3_chunk_xsl=no
-fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_file__usr_share_sgml_docbook_xsl_ns_stylesheets_epub3_chunk_xsl" >&5
-$as_echo "$ac_cv_file__usr_share_sgml_docbook_xsl_ns_stylesheets_epub3_chunk_xsl" >&6; }
-if test "x$ac_cv_file__usr_share_sgml_docbook_xsl_ns_stylesheets_epub3_chunk_xsl" = x""yes; then :
-  ac_cv_file_epub3_b=yes
-else
-  ac_cv_file_epub3_b=no
-fi
-
- if test $ac_cv_file_epub3_a = "yes" ||
-	       test $ac_cv_file_epub3_b = "yes"; then
-  BUILD_EPUB_TRUE=
-  BUILD_EPUB_FALSE='#'
-else
-  BUILD_EPUB_TRUE='#'
-  BUILD_EPUB_FALSE=
 fi
 
 
@@ -66556,6 +66524,10 @@ if test -z "${BUILD_INFO_TRUE}" && test -z "${BUILD_INFO_FALSE}"; then
   as_fn_error "conditional \"BUILD_INFO\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${BUILD_EPUB_TRUE}" && test -z "${BUILD_EPUB_FALSE}"; then
+  as_fn_error "conditional \"BUILD_EPUB\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${BUILD_XML_TRUE}" && test -z "${BUILD_XML_FALSE}"; then
   as_fn_error "conditional \"BUILD_XML\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -66570,10 +66542,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_PDF_TRUE}" && test -z "${BUILD_PDF_FALSE}"; then
   as_fn_error "conditional \"BUILD_PDF\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${BUILD_EPUB_TRUE}" && test -z "${BUILD_EPUB_FALSE}"; then
-  as_fn_error "conditional \"BUILD_EPUB\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
