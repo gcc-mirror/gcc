@@ -376,119 +376,85 @@ AC_DEFUN([gcc_AC_INITFINI_ARRAY],
 AC_CACHE_CHECK(for .preinit_array/.init_array/.fini_array support,
 		 gcc_cv_initfini_array, [dnl
   if test "x${build}" = "x${target}" && test "x${build}" = "x${host}"; then
-    AC_RUN_IFELSE([AC_LANG_SOURCE([
+    case "${target}" in
+      ia64-*)
+	AC_RUN_IFELSE([AC_LANG_SOURCE([
 #ifndef __ELF__
 #error Not an ELF OS
 #endif
-#ifdef __ia64__
 /* We turn on .preinit_array/.init_array/.fini_array support for ia64
    if it can be used.  */
 static int x = -1;
 int main (void) { return x; }
 int foo (void) { x = 0; }
 int (*fp) (void) __attribute__ ((section (".init_array"))) = foo;
-#else
-extern void abort ();
-static int count;
-
-static void
-init1005 ()
-{
-  if (count != 0)
-    abort ();
-  count = 1005;
-}
-void (*const init_array1005[]) ()
-  __attribute__ ((section (".init_array.01005"), aligned (sizeof (void *))))
-  = { init1005 };
-static void
-fini1005 ()
-{
-  if (count != 1005)
-    abort ();
-}
-void (*const fini_array1005[]) ()
-  __attribute__ ((section (".fini_array.01005"), aligned (sizeof (void *))))
-  = { fini1005 };
-
-static void
-ctor1007 ()
-{
-  if (count != 1005)
-    abort ();
-  count = 1007;
-}
-void (*const ctors1007[]) ()
-  __attribute__ ((section (".ctors.64528"), aligned (sizeof (void *))))
-  = { ctor1007 };
-static void
-dtor1007 ()
-{
-  if (count != 1007)
-    abort ();
-  count = 1005;
-}
-void (*const dtors1007[]) ()
-  __attribute__ ((section (".dtors.64528"), aligned (sizeof (void *))))
-  = { dtor1007 };
-
-static void
-init65530 ()
-{
-  if (count != 1007)
-    abort ();
-  count = 65530;
-}
-void (*const init_array65530[]) ()
-  __attribute__ ((section (".init_array.65530"), aligned (sizeof (void *))))
-  = { init65530 };
-static void
-fini65530 ()
-{
-  if (count != 65530)
-    abort ();
-  count = 1007;
-}
-void (*const fini_array65530[]) ()
-  __attribute__ ((section (".fini_array.65530"), aligned (sizeof (void *))))
-  = { fini65530 };
-
-static void
-ctor65535 ()
-{
-  if (count != 65530)
-    abort ();
-  count = 65535;
-}
-void (*const ctors65535[]) ()
-  __attribute__ ((section (".ctors"), aligned (sizeof (void *))))
-  = { ctor65535 };
-static void
-dtor65535 ()
-{
-  if (count != 65535)
-    abort ();
-  count = 65530;
-}
-void (*const dtors65535[]) ()
-  __attribute__ ((section (".dtors"), aligned (sizeof (void *))))
-  = { dtor65535 };
-
-int
-main ()
-{
-  if (count != 65535)
-    abort ();
-  return 0;
-}
-#endif
 ])],
 	     [gcc_cv_initfini_array=yes], [gcc_cv_initfini_array=no],
-	     [gcc_cv_initfini_array=no])
-   else
-     AC_MSG_CHECKING(cross compile... guessing)
-     gcc_cv_initfini_array=no
-   fi])
+	     [gcc_cv_initfini_array=no]);;
+      *)
+	gcc_cv_initfini_array=no
+	if test $in_tree_ld = yes ; then
+	  if test "$gcc_cv_gld_major_version" -eq 2 \
+	     -a "$gcc_cv_gld_minor_version" -ge 22 \
+	     -o "$gcc_cv_gld_major_version" -gt 2 \
+	     && test $in_tree_ld_is_elf = yes; then
+	    gcc_cv_initfini_array=yes
+	  fi
+	elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
+	  cat > conftest.s <<\EOF
+.section .dtors,"a",%progbits
+.balign 4
+.byte 'A', 'A', 'A', 'A'
+.section .ctors,"a",%progbits
+.balign 4
+.byte 'B', 'B', 'B', 'B'
+.section .fini_array.65530,"a",%progbits
+.balign 4
+.byte 'C', 'C', 'C', 'C'
+.section .init_array.65530,"a",%progbits
+.balign 4
+.byte 'D', 'D', 'D', 'D'
+.section .dtors.64528,"a",%progbits
+.balign 4
+.byte 'E', 'E', 'E', 'E'
+.section .ctors.64528,"a",%progbits
+.balign 4
+.byte 'F', 'F', 'F', 'F'
+.section .fini_array.01005,"a",%progbits
+.balign 4
+.byte 'G', 'G', 'G', 'G'
+.section .init_array.01005,"a",%progbits
+.balign 4
+.byte 'H', 'H', 'H', 'H'
+.text
+EOF
+	  if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
+	     && $gcc_cv_ld -e 0 -o conftest conftest.o > /dev/null 2>&1 \
+	     && $gcc_cv_objdump -s -j .init_array conftest \
+		| grep HHHHFFFFDDDDBBBB > /dev/null 2>&1 \
+	     && $gcc_cv_objdump -s -j .fini_array conftest \
+		| grep GGGGEEEECCCCAAAA > /dev/null 2>&1; then
+	    gcc_cv_initfini_array=yes
+	  fi
+changequote(,)dnl
+	  rm -f conftest conftest.*
+changequote([,])dnl
+	fi
+	AC_PREPROC_IFELSE([AC_LANG_SOURCE([
+#ifndef __ELF__
+#error Not an ELF OS
+#endif
+#include <stdlib.h>
+#if defined __GLIBC_PREREQ && __GLIBC_PREREQ (2, 4)
+#else
+#error The C library not known to support .init_array/.fini_array
+#endif
+])],, [gcc_cv_initfini_array=no]);;
+    esac
+  else
+    AC_MSG_CHECKING(cross compile... guessing)
+    gcc_cv_initfini_array=no
+  fi])
   enable_initfini_array=$gcc_cv_initfini_array
 ])
 if test $enable_initfini_array = yes; then
