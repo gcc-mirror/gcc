@@ -1,3 +1,9 @@
+2012-01-19  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/51344
+	* decl2.c (save_template_attributes): Use merge_attributes
+	instead of chaining up via TREE_CHAIN.
+
 2012-01-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51889

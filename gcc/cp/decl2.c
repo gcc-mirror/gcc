@@ -1199,9 +1199,9 @@ save_template_attributes (tree *attr_p, tree *decl_p)
 
   old_attrs = *q;
 
-  /* Place the late attributes at the beginning of the attribute
+  /* Merge the late attributes at the beginning with the attribute
      list.  */
-  TREE_CHAIN (tree_last (late_attrs)) = *q;
+  late_attrs = merge_attributes (late_attrs, *q);
   *q = late_attrs;
 
   if (!DECL_P (*decl_p) && *decl_p == TYPE_MAIN_VARIANT (*decl_p))
