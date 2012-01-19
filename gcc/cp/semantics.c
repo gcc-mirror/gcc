@@ -2671,20 +2671,6 @@ finish_member_declaration (tree decl)
     {
       if (TREE_CODE (decl) == USING_DECL)
 	{
-	  /* We need to add the target functions to the
-	     CLASSTYPE_METHOD_VEC if an enclosing scope is a template
-	     class, so that this function be found by lookup_fnfields_1
-	     when the using declaration is not instantiated yet.  */
-
-	  tree target_decl = strip_using_decl (decl);
-	  if (dependent_type_p (current_class_type)
-	      && is_overloaded_fn (target_decl))
-	    {
-	      tree t = target_decl;
-	      for (; t; t = OVL_NEXT (t))
-		add_method (current_class_type, OVL_CURRENT (t), decl);
-	    }
-
 	  /* For now, ignore class-scope USING_DECLS, so that
 	     debugging backends do not see them. */
 	  DECL_IGNORED_P (decl) = 1;

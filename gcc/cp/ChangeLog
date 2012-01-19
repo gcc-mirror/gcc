@@ -1,3 +1,9 @@
+2012-01-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51889
+	* class.c (finish_struct): Call add_method here for function usings.
+	* semantics.c (finish_member_declaration): Not here.
+
 2012-01-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51225
