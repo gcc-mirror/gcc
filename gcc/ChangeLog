@@ -1,3 +1,52 @@
+2012-01-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/40761
+	* ira-int.h (struct ira_loop_tree_node): Add comment for member
+	loop.  Add new member loop_num.
+	(IRA_LOOP_NODE_BY_INDEX): Modify the check.
+	(ira_build): Remove the parameter.
+
+	* ira.c (ira_print_disposition): Use loop_num instead of
+	loop->num.
+	(ira.c): Do not build CFG loops for one region allocation.  Remove
+	argument from ira_build call.
+
+	* ira-build.c (init_loop_tree_node): New function.
+	(create_loop_tree_nodes): Use it.  Separate the case when CFG
+	loops are not built.
+	(more_one_region_p): Check current_loops.
+	(finish_loop_tree_nodes): Separate the case when CFG loops are not
+	built.
+	(add_loop_to_tree): Process loop equal to NULL too.
+	(form_loop_tree): Separate the case when CFG loops are not built.
+	Use explicitly number for the root.
+	(rebuild_regno_allocno_maps, create_loop_tree_node_allocnos): Add
+	an assertion.
+	(ira_print_expanded_allocno, loop_compare_func): Use loop_num
+	instead of loop->num.
+	(mark_loops_for_removal): Ditto.  Use loop_num instead of
+	loop->num.
+	(mark_all_loops_for_removal): Ditto.
+	(remove_unnecessary_regions): Separate the case when CFG loops
+	are not built.
+	(ira_build): Remove the parameter.  Use explicit number of regions
+	when CFG loops are not built.
+
+	* ira-color.c (print_loop_title): Separate the case for the root
+	node.  Use loop_num instead of loop->num.
+	(move_spill_restore): Use loop_num instead of loop->num.
+
+	* ira-emit.c (setup_entered_from_non_parent_p): Add an assertion.
+	(change_loop): Ditto.
+	(change_loop): Use loop_num instead of loop->num.
+
+	* ira-lives.c (process_bb_node_lives): Ditto.
+
+	* ira-costs.c (print_allocno_costs, find_costs_and_classes):
+	Ditto.
+
+	* ira-conflicts.c (print_allocno_conflicts): Ditto.
+
 2012-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libmudflap/40778

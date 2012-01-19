@@ -438,6 +438,7 @@ setup_entered_from_non_parent_p (void)
   unsigned int i;
   loop_p loop;
 
+  ira_assert (current_loops != NULL);
   FOR_EACH_VEC_ELT (loop_p, ira_loops.larray, i, loop)
     if (ira_loop_nodes[i].regno_allocno_map != NULL)
       ira_loop_nodes[i].entered_from_non_parent_p
@@ -565,7 +566,8 @@ change_loop (ira_loop_tree_node_t node)
 
   if (node != ira_loop_tree_root)
     {
-
+      ira_assert (current_loops != NULL);
+      
       if (node->bb != NULL)
 	{
 	  FOR_BB_INSNS (node->bb, insn)
@@ -580,7 +582,7 @@ change_loop (ira_loop_tree_node_t node)
       if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
 	fprintf (ira_dump_file,
 		 "      Changing RTL for loop %d (header bb%d)\n",
-		 node->loop->num, node->loop->header->index);
+		 node->loop_num, node->loop->header->index);
 
       parent = ira_curr_loop_tree_node->parent;
       map = parent->regno_allocno_map;
