@@ -2869,7 +2869,7 @@
 	(match_operand:VDQX 1 "s_register_operand" "+w"))
    (set (match_dup 1) (match_dup 0))]
   "TARGET_NEON && reload_completed"
-  "vswp\t%<V_reg>1, %<V_reg>2"
+  "vswp\t%<V_reg>0, %<V_reg>1"
   [(set (attr "neon_type")
 	(if_then_else (match_test "<Is_d_reg>")
 		      (const_string "neon_bp_simple")
