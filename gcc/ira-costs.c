@@ -1391,7 +1391,7 @@ print_allocno_costs (FILE *f)
       if ((bb = ALLOCNO_LOOP_TREE_NODE (a)->bb) != NULL)
 	fprintf (f, "b%d", bb->index);
       else
-	fprintf (f, "l%d", ALLOCNO_LOOP_TREE_NODE (a)->loop->num);
+	fprintf (f, "l%d", ALLOCNO_LOOP_TREE_NODE (a)->loop_num);
       fprintf (f, ") costs:");
       for (k = 0; k < cost_classes_ptr->num; k++)
 	{
@@ -1789,7 +1789,7 @@ find_costs_and_classes (FILE *dump_file)
 		    fprintf (dump_file, "b%d", bb->index);
 		  else
 		    fprintf (dump_file, "l%d",
-			     ALLOCNO_LOOP_TREE_NODE (a)->loop->num);
+			     ALLOCNO_LOOP_TREE_NODE (a)->loop_num);
 		  fprintf (dump_file, ") best %s, allocno %s\n",
 			   reg_class_names[best],
 			   reg_class_names[regno_aclass[i]]);

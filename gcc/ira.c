@@ -718,7 +718,7 @@ ira_print_disposition (FILE *f)
 	if ((bb = ALLOCNO_LOOP_TREE_NODE (a)->bb) != NULL)
 	  fprintf (f, "b%-3d", bb->index);
 	else
-	  fprintf (f, "l%-3d", ALLOCNO_LOOP_TREE_NODE (a)->loop->num);
+	  fprintf (f, "l%-3d", ALLOCNO_LOOP_TREE_NODE (a)->loop_num);
 	if (ALLOCNO_HARD_REGNO (a) >= 0)
 	  fprintf (f, " %3d", ALLOCNO_HARD_REGNO (a));
 	else
@@ -3614,14 +3614,16 @@ ira (FILE *f)
   ira_move_loops_num = ira_additional_jumps_num = 0;
 
   ira_assert (current_loops == NULL);
-  flow_loops_find (&ira_loops);
-  record_loop_exits ();
-  current_loops = &ira_loops;
+  if (flag_ira_region == IRA_REGION_ALL || flag_ira_region == IRA_REGION_MIXED)
+    {
+      flow_loops_find (&ira_loops);
+      record_loop_exits ();
+      current_loops = &ira_loops;
+    }
 
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
     fprintf (ira_dump_file, "Building IRA IR\n");
-  loops_p = ira_build (flag_ira_region == IRA_REGION_ALL
-		       || flag_ira_region == IRA_REGION_MIXED);
+  loops_p = ira_build ();
 
   ira_assert (ira_conflicts_p || !loops_p);
 
@@ -3745,8 +3747,11 @@ do_reload (void)
 
   flag_ira_share_spill_slots = saved_flag_ira_share_spill_slots;
 
-  flow_loops_free (&ira_loops);
-  free_dominance_info (CDI_DOMINATORS);
+  if (current_loops != NULL)
+    {
+      flow_loops_free (&ira_loops);
+      free_dominance_info (CDI_DOMINATORS);
+    }
   FOR_ALL_BB (bb)
     bb->loop_father = NULL;
   current_loops = NULL;

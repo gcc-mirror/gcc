@@ -1123,7 +1123,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 
 	  if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
 	    fprintf (ira_dump_file, "   Insn %u(l%d): point = %d\n",
-		     INSN_UID (insn), loop_tree_node->parent->loop->num,
+		     INSN_UID (insn), loop_tree_node->parent->loop_num,
 		     curr_point);
 
 	  /* Mark each defined value as live.  We need to do this for
