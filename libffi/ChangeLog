@@ -1,3 +1,8 @@
+2012-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/48496
+	* src/ia64/ffi.c (ffi_call): Fix up aliasing violations.
+
 2012-01-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (i?86-*-*): Set TARGET to X86_64.

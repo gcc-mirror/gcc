@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1998, 2007, 2008 Red Hat, Inc.
+   ffi.c - Copyright (c) 1998, 2007, 2008, 2012 Red Hat, Inc.
 	   Copyright (c) 2000 Hewlett Packard Company
    
    IA64 Foreign Function Interface 
@@ -324,13 +324,17 @@ ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 	case FFI_TYPE_FLOAT:
 	  if (gpcount < 8 && fpcount < 8)
 	    stf_spill (&stack->fp_regs[fpcount++], *(float *)avalue[i]);
-	  stack->gp_regs[gpcount++] = *(UINT32 *)avalue[i];
+	  {
+	    UINT32 tmp;
+	    memcpy (&tmp, avalue[i], sizeof (UINT32));
+	    stack->gp_regs[gpcount++] = tmp;
+	  }
 	  break;
 
 	case FFI_TYPE_DOUBLE:
 	  if (gpcount < 8 && fpcount < 8)
 	    stf_spill (&stack->fp_regs[fpcount++], *(double *)avalue[i]);
-	  stack->gp_regs[gpcount++] = *(UINT64 *)avalue[i];
+	  memcpy (&stack->gp_regs[gpcount++], avalue[i], sizeof (UINT64));
 	  break;
 
 	case FFI_TYPE_LONGDOUBLE:
