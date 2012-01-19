@@ -1,3 +1,12 @@
+2012-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/51845
+	* include/bits/hashtable.h
+	(_Hashtable<>::erase(const_iterator, const_iterator)): Also update
+	_M_buckets[__n_bkt] if __is_bucket_begin.
+	* testsuite/23_containers/unordered_multimap/erase/51845-multimap.cc:
+	New test.
+
 2012-01-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude (GLIBCXX_CONFIGURE_DOCBOOK): Fix quoting.
