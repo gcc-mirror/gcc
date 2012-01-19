@@ -441,11 +441,12 @@ visit_conflict (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
 
 /* Helper routine for add_scope_conflicts, calculating the active partitions
    at the end of BB, leaving the result in WORK.  We're called to generate
-   conflicts when FOR_CONFLICT is true, otherwise we're just tracking
-   liveness.  */
+   conflicts when OLD_CONFLICTS is non-null, otherwise we're just tracking
+   liveness.  If we generate conflicts then OLD_CONFLICTS stores the bits
+   for which we generated conflicts already.  */
 
 static void
-add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
+add_scope_conflicts_1 (basic_block bb, bitmap work, bitmap old_conflicts)
 {
   edge e;
   edge_iterator ei;
@@ -482,7 +483,7 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 	}
       else if (!is_gimple_debug (stmt))
 	{
-	  if (for_conflict
+	  if (old_conflicts
 	      && visit == visit_op)
 	    {
 	      /* If this is the first real instruction in this BB we need
@@ -490,16 +491,27 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 		 Unlike classical liveness for named objects we can't
 		 rely on seeing a def/use of the names we're interested in.
 		 There might merely be indirect loads/stores.  We'd not add any
-		 conflicts for such partitions.  */
+		 conflicts for such partitions.  We know that we generated
+		 conflicts between all partitions in old_conflicts already,
+		 so we need to generate only the new ones, avoiding to
+		 repeatedly pay the O(N^2) cost for each basic block.  */
 	      bitmap_iterator bi;
 	      unsigned i;
-	      EXECUTE_IF_SET_IN_BITMAP (work, 0, i, bi)
+
+	      EXECUTE_IF_AND_COMPL_IN_BITMAP (work, old_conflicts, 0, i, bi)
 		{
 		  unsigned j;
 		  bitmap_iterator bj;
-		  EXECUTE_IF_SET_IN_BITMAP (work, i + 1, j, bj)
+		  /* First the conflicts between new and old_conflicts.  */
+		  EXECUTE_IF_SET_IN_BITMAP (old_conflicts, 0, j, bj)
+		    add_stack_var_conflict (i, j);
+		  /* Then the conflicts between only the new members.  */
+		  EXECUTE_IF_AND_COMPL_IN_BITMAP (work, old_conflicts, i + 1,
+						  j, bj)
 		    add_stack_var_conflict (i, j);
 		}
+	      /* And remember for the next basic block.  */
+	      bitmap_ior_into (old_conflicts, work);
 	      visit = visit_conflict;
 	    }
 	  walk_stmt_load_store_addr_ops (stmt, work, visit, visit, visit);
@@ -516,6 +528,7 @@ add_scope_conflicts (void)
   basic_block bb;
   bool changed;
   bitmap work = BITMAP_ALLOC (NULL);
+  bitmap old_conflicts;
 
   /* We approximate the live range of a stack variable by taking the first
      mention of its name as starting point(s), and by the end-of-scope
@@ -537,15 +550,18 @@ add_scope_conflicts (void)
       FOR_EACH_BB (bb)
 	{
 	  bitmap active = (bitmap)bb->aux;
-	  add_scope_conflicts_1 (bb, work, false);
+	  add_scope_conflicts_1 (bb, work, NULL);
 	  if (bitmap_ior_into (active, work))
 	    changed = true;
 	}
     }
 
-  FOR_EACH_BB (bb)
-    add_scope_conflicts_1 (bb, work, true);
+  old_conflicts = BITMAP_ALLOC (NULL);
 
+  FOR_EACH_BB (bb)
+    add_scope_conflicts_1 (bb, work, old_conflicts);
+
+  BITMAP_FREE (old_conflicts);
   BITMAP_FREE (work);
   FOR_ALL_BB (bb)
     BITMAP_FREE (bb->aux);
