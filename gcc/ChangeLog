@@ -1,3 +1,10 @@
+2012-01-19 Andrey Belevantsev <abel@ispras.ru>
+
+	PR rtl-optimization/51505
+	* df-problems.c (df_kill_notes): New parameter live. Update comment.
+	Remove REG_EQUAL/REG_EQUIV notes referring to dead registers.
+	(df_note_bb_compute): Update the call to df_kill_notes. 
+
 2012-01-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	* trans-mem.c (requires_barrier): Remove call to is_global_var.
