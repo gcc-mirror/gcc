@@ -1,3 +1,8 @@
+2012-01-19 Andrey Belevantsev <abel@ispras.ru>
+
+	PR rtl-optimization/51505
+	* gcc.dg/pr51505.c: New test.
+
 2012-01-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/51634
