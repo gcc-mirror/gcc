@@ -1,3 +1,8 @@
+2012-01-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51889
+	* g++.dg/inherit/using7.C: New.
+
 2012-01-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37997
