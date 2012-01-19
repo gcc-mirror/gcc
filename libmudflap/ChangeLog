@@ -1,3 +1,8 @@
+2012-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libmudflap/40778
+	* testsuite/libmudflap.c/fail68-frag.c: New test.
+
 2012-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* mf-runtime.c (__mf_usage): Update copyright notice dates.
