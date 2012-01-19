@@ -1,6 +1,6 @@
 /* Definitions for ELF systems with .init_array/.fini_array section
    support.
-   Copyright (C) 2011
+   Copyright (C) 2011, 2012
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -19,6 +19,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#ifdef HAVE_INITFINI_ARRAY
+
 #define USE_INITFINI_ARRAY
 
 #undef INIT_SECTION_ASM_OP
@@ -35,3 +37,5 @@
 #define TARGET_ASM_CONSTRUCTOR default_elf_init_array_asm_out_constructor
 #undef TARGET_ASM_DESTRUCTOR
 #define TARGET_ASM_DESTRUCTOR default_elf_fini_array_asm_out_destructor
+
+#endif

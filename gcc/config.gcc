@@ -2941,11 +2941,6 @@ if test x$with_schedule = x; then
 	esac
 fi
 
-# Support --enable-initfini-array.
-if test x$enable_initfini_array = xyes; then
-  tm_file="${tm_file} initfini-array.h"
-fi
-
 # Validate and mark as valid any --with options supported
 # by this target.  In order to use a particular --with option
 # you must list it in supported_defaults; validating the value

@@ -1,4 +1,16 @@
-2012-01-19 Andrey Belevantsev <abel@ispras.ru>
+2012-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/50237
+	* config/initfini-array.h: Guard content of the header
+	with #ifdef HAVE_INITFINI_ARRAY.
+	* configure.ac: Move gcc_AC_INITFINI_ARRAY much later into the file.
+	Add initfini-array.h to tm_file here.
+	* acinclude.m4 (gcc_AC_INITFINI_ARRAY): For non-ia64 do a linker
+	test.
+	* config.gcc: Don't add initfini-array.h to tm_file here.
+	* configure: Regenerated.
+
+2012-01-19  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/51505
 	* df-problems.c (df_kill_notes): New parameter live. Update comment.
