@@ -1,3 +1,9 @@
+2012-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/51876
+	* config/arm/neon.md (*neon_vswp<mode>): Fix up operand
+	numbers in the insn pattern.
+
 2012-01-19  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/46590
