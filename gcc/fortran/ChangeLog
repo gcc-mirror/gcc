@@ -1,3 +1,8 @@
+2012-01-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51904
+	* expr.c (gfc_build_intrinsic_call): Also set the symtree.
+
 2012-01-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/51634
