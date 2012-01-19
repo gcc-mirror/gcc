@@ -1,3 +1,11 @@
+2012-01-19  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/46590
+	* cfgexpand.c (add_scope_conflicts_1): New old_conflicts argument,
+	use it in remembering which conflicts we already created.
+	(add_scope_conflicts): Adjust call to above, (de)allocate helper
+	bitmap.
+
 2012-01-19  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR lto/51280
