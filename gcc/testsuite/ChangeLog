@@ -1,3 +1,8 @@
+2012-01-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37997
+	* gcc.dg/tree-ssa/ssa-pre-28.c: New testcase.
+
 2012-01-19 Andrey Belevantsev <abel@ispras.ru>
 
 	PR rtl-optimization/51505
