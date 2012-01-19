@@ -1,5 +1,10 @@
 2012-01-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR libmudflap/40778
+	* tree-mudflap.c (mf_artificial): New function.
+	(execute_mudflap_function_ops, execute_mudflap_function_decls,
+	mx_register_decls, mudflap_enqueue_decl): Use it.
+
 	PR target/51876
 	* config/arm/neon.md (*neon_vswp<mode>): Fix up operand
 	numbers in the insn pattern.
