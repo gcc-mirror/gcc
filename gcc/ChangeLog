@@ -1,3 +1,9 @@
+2012-01-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR lto/51280
+	* lto-wrapper.c (run_gcc): Pass -fgnu_tm on.
+	(merge_and_complain): Same.
+
 2012-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/50237
