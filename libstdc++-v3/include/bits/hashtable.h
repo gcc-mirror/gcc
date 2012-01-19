@@ -1544,7 +1544,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __bkt = __n_bkt;
 	}
 
-      if (__n && __n_bkt != __bkt)
+      if (__n && (__n_bkt != __bkt || __is_bucket_begin))
 	_M_buckets[__n_bkt] = __prev_n;
       __prev_n->_M_nxt = __n;
       return iterator(__n);
