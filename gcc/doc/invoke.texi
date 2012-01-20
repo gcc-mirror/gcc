@@ -495,8 +495,9 @@ Objective-C and Objective-C++ Dialects}.
 -mfix-cortex-m3-ldrd}
 
 @emph{AVR Options}
-@gccoptlist{-mmcu=@var{mcu}  -mno-interrupts @gol
--mcall-prologues  -mtiny-stack  -mint8  -mstrict-X}
+@gccoptlist{-mmcu=@var{mcu} -maccumulate-args -mbranch-cost=@var{cost} @gol
+-mcall-prologues -mint8 -mno-interrupts -mrelax -mshort-calls @gol
+-mstrict-X -mtiny-stack}
 
 @emph{Blackfin Options}
 @gccoptlist{-mcpu=@var{cpu}@r{[}-@var{sirevision}@r{]} @gol
@@ -10897,40 +10898,98 @@ These options are defined for AVR implementations:
 @table @gcctabopt
 @item -mmcu=@var{mcu}
 @opindex mmcu
-Specify ATMEL AVR instruction set or MCU type.
+Specify Atmel AVR instruction set architectures (ISA) or MCU type.
 
-Instruction set avr1 is for the minimal AVR core, not supported by the C
-compiler, only for assembler programs (MCU types: at90s1200, attiny10,
-attiny11, attiny12, attiny15, attiny28).
+For a complete list of @var{mcu} values that are supported by avr-gcc,
+see the compiler output when called with the @code{--help=target}
+command line option.
+The default for this option is@tie{}@code{avr2}.
 
-Instruction set avr2 (default) is for the classic AVR core with up to
-8K program memory space (MCU types: at90s2313, at90s2323, attiny22,
-at90s2333, at90s2343, at90s4414, at90s4433, at90s4434, at90s8515,
-at90c8534, at90s8535).
+avr-gcc supports the following AVR devices and ISAs:
 
-Instruction set avr3 is for the classic AVR core with up to 128K program
-memory space (MCU types: atmega103, atmega603, at43usb320, at76c711).
+@table @code
 
-Instruction set avr4 is for the enhanced AVR core with up to 8K program
-memory space (MCU types: atmega8, atmega83, atmega85).
+@item avr1
+This ISA is implemented by the minimal AVR core and supported
+for assembler only.
+@*@var{mcu}@tie{}= @code{at90s1200},
+@code{attiny10}, @code{attiny11}, @code{attiny12}, @code{attiny15},
+@code{attiny28}.
 
-Instruction set avr5 is for the enhanced AVR core with up to 128K program
-memory space (MCU types: atmega16, atmega161, atmega163, atmega32, atmega323,
-atmega64, atmega128, at43usb355, at94k).
+@item avr2
+``Classic'' devices with up to 8@tie{}KiB of program memory.
+@*@var{mcu}@tie{}= @code{at90s2313}, @code{attiny26}, @code{at90c8534},
+@dots{}
 
-@item -mno-interrupts
-@opindex mno-interrupts
-Generated code is not compatible with hardware interrupts.
-Code size will be smaller.
+@item avr25
+``Classic'' devices with up to 8@tie{}KiB of program memory and with
+the @code{MOVW} instruction.
+@*@var{mcu}@tie{}= @code{attiny2313}, @code{attiny261}, @code{attiny24},
+@dots{}
+
+@item avr3
+``Classic'' devices with 16@tie{}KiB up to 64@tie{}KiB of program memory.
+@*@var{mcu}@tie{}= @code{at43usb355}, @code{at76c711}.
+
+@item avr31
+``Classic'' devices with 128@tie{}KiB of program memory.
+@*@var{mcu}@tie{}= @code{atmega103}, @code{at43usb320}.
+
+@item avr35
+``Classic'' devices with 16@tie{}KiB up to 64@tie{}KiB of program
+memory and with the @code{MOVW} instruction.
+@*@var{mcu}@tie{}= @code{at90usb162}, @code{atmega8u2},
+@code{attiny167}, @dots{}
+
+@item avr4
+``Enhanced'' devices with up to 8@tie{}KiB of program memory.
+@*@var{mcu}@tie{}= @code{atmega8}, @code{atmega88}, @code{at90pwm81},
+@dots{}
+
+@item avr5
+``Enhanced'' devices with 16@tie{}KiB up to 64@tie{}KiB of program memory.
+@*@var{mcu}@tie{}= @code{atmega16}, @code{atmega6490}, @code{at90can64},
+@dots{}
+
+@item avr51
+``Enhanced'' devices with 128@tie{}KiB of program memory.
+@*@var{mcu}@tie{}= @code{atmega128}, @code{at90can128}, @code{at90usb1287},
+@dots{}
+
+@item avr6
+``Enhanced'' devices with 3-byte PC, i.e.@: with at least 256@tie{}KiB
+of program memory.
+@*@var{mcu}@tie{}= @code{atmega2560}, @code{atmega2561}.
+
+@end table
+
+
+@item -maccumulate-args
+@opindex maccumulate-args
+Accumulate outgoing function arguments and acquire/release the needed
+stack space for outgoing function arguments once in function
+prologue/epilogue.  Without this option, outgoing arguments are pushed
+before calling a function and popped afterwards.
+
+Popping the arguments after the function call can be expensive on
+AVR so that accumulating the stack space might lead to smaller
+executables because areguments need not to be removed from the
+stack after such a function call.
+
+This option can lead to reduced code size for functions that get
+their arguments on the stack like functions that perform several
+calls to printf-like functions.
+
+@item -mbranch-cost=@var{cost}
+@opindex mbranch-cost
+Set the branch costs for conditional branch instructions to
+@var{cost}.  Reasonable values for @var{cost} are small, non-negative
+integers. The default branch cost is 0.
 
 @item -mcall-prologues
 @opindex mcall-prologues
 Functions prologues/epilogues expanded as call to appropriate
 subroutines.  Code size will be smaller.
-
-@item -mtiny-stack
-@opindex mtiny-stack
-Change only the low 8 bits of the stack pointer.
 
 @item -mint8
 @opindex mint8
@@ -10940,9 +10999,33 @@ and long long will be 4 bytes.  Please note that this option does not
 comply to the C standards, but it will provide you with smaller code
 size.
 
+@item -mno-interrupts
+@opindex mno-interrupts
+Generated code is not compatible with hardware interrupts.
+Code size will be smaller.
+
+@item -mrelax
+@opindex mrelax
+Try to replace @code{CALL} resp.@: @code{JMP} instruction by the shorter
+@code{RCALL} resp.@: @code{RJMP} instruction if applicable.
+Setting @code{-mrelax} just adds the @code{--relax} option to the
+linker command line when the linker is called.
+
+Jump relaxing is performed by the linker because jump offsets are not
+known before code is located. Therefore, the assembler code generated by the
+compiler will be the same, but the instructions in the executable may
+differ from instructions in the assembler code.
+
+@item -mshort-calls
+@opindex mshort-calls
+Use @code{RCALL}/@code{RJMP} instructions even on devices with
+16@tie{}KiB or more of program memory, i.e.@: on devices that
+have the @code{CALL} and @code{JMP} instructions.
+See also the @code{-mrelax} command line option.
+
 @item -mstrict-X
 @opindex mstrict-X
-Use register @code{X} in a way proposed by the hardware.  This means
+Use address register @code{X} in a way proposed by the hardware.  This means
 that @code{X} will only be used in indirect, post-increment or
 pre-decrement addressing.
 
@@ -10950,28 +11033,35 @@ Without this option, the @code{X} register may be used in the same way
 as @code{Y} or @code{Z} which then is emulated by additional
 instructions.  
 For example, loading a value with @code{X+const} addressing with a
-small @code{const <= 63} to a register @var{Rn} will be printed as
+small non-negative @code{const < 64} to a register @var{Rn} will be
+performed as
+
 @example
-adiw r26, const
-ld   @var{Rn}, X
-sbiw r26, const
+adiw r26, const   ; X += const
+ld   @var{Rn}, X        ; @var{Rn} = *X
+sbiw r26, const   ; X -= const
 @end example
+
+@item -mtiny-stack
+@opindex mtiny-stack
+Only use the lower 8@tie{}bits of the stack pointer and assume that the high
+byte of SP is always zero.
 @end table
 
-@subsubsection @code{EIND} and Devices with more than 128k Bytes of Flash
+@subsubsection @code{EIND} and Devices with more than 128 Ki Bytes of Flash
 
-Pointers in the implementation are 16 bits wide.
+Pointers in the implementation are 16@tie{}bits wide.
 The address of a function or label is represented as word address so
-that indirect jumps and calls can address any code address in the
-range of 64k words.
+that indirect jumps and calls can target any code address in the
+range of 64@tie{}Ki words.
 
-In order to faciliate indirect jump on devices with more than 128k
+In order to facilitate indirect jump on devices with more than 128@tie{}Ki
 bytes of program memory space, there is a special function register called
 @code{EIND} that serves as most significant part of the target address
 when @code{EICALL} or @code{EIJMP} instructions are used.
 
-Indirect jumps and calls on these devices are handled as follows and
-are subject to some limitations:
+Indirect jumps and calls on these devices are handled as follows by
+the compiler and are subject to some limitations:
 
 @itemize @bullet
 
@@ -10986,19 +11076,20 @@ For the impact of avr-libc on @code{EIND}, see the
 
 @item
 The compiler uses @code{EIND} implicitely in @code{EICALL}/@code{EIJMP}
-instructions or might read @code{EIND} directly.
+instructions or might read @code{EIND} directly in order to emulate an
+indirect call/jump by means of a @code{RET} instruction.
 
 @item
 The compiler assumes that @code{EIND} never changes during the startup
-code or run of the application. In particular, @code{EIND} is not
+code or during the application. In particular, @code{EIND} is not
 saved/restored in function or interrupt service routine
 prologue/epilogue.
 
 @item
 It is legitimate for user-specific startup code to set up @code{EIND}
 early, for example by means of initialization code located in
-section @code{.init3}, and thus prior to general startup code that
-initializes RAM and calls constructors.
+section @code{.init3}. Such code runs prior to general startup code
+that initializes RAM and calls constructors.
 
 @item
 For indirect calls to functions and computed goto, the linker will
@@ -11053,7 +11144,8 @@ int main (void)
 @}
 @end example
 
-Instead, a stub has to be set up:
+Instead, a stub has to be set up, i.e.@: the function has to be called
+through a symbol (@code{func_4} in the example):
 
 @example
 int main (void)
@@ -11068,6 +11160,92 @@ int main (void)
 and the application be linked with @code{-Wl,--defsym,func_4=0x4}.
 Alternatively, @code{func_4} can be defined in the linker script.
 @end itemize
+
+@subsubsection AVR Built-in Macros
+
+avr-gcc defines several built-in macros so that the user code can test
+for presence of absence of features.  Almost any of the following
+built-in macros are deduced from device capabilities and thus
+triggered by the @code{-mmcu=} command line option.
+
+For even more AVR-specific built-in macros see
+@ref{AVR Named Address Spaces} and @ref{AVR Built-in Functions}.
+
+@table @code
+
+@item __AVR_@var{Device}__
+Setting @code{-mmcu=@var{device}} defines this built-in macro that reflects
+the device's name. For example, @code{-mmcu=atmega8} will define the
+built-in macro @code{__AVR_ATmega8__}, @code{-mmcu=attiny261a} defines
+@code{__AVR_ATtiny261A__}, etc.
+
+The built-in macros' names follow
+the scheme @code{__AVR_@var{Device}__} where @var{Device} is
+the device name as from the AVR user manual. The difference between
+@var{Device} in the built-in macro and @var{device} in
+@code{-mmcu=@var{device}} is that the latter is always lower case.
+
+@item __AVR_HAVE_RAMPZ__
+@item __AVR_HAVE_ELPM__
+The device has the @code{RAMPZ} special function register and thus the
+@code{ELPM} instruction.
+
+@item __AVR_HAVE_ELPMX__
+The device has the @code{ELPM R@var{n},Z} and @code{ELPM
+R@var{n},Z+} instructions.
+
+@item __AVR_HAVE_MOVW__
+The device has the @code{MOVW} instruction to perform 16-bit
+register-register moves.
+
+@item __AVR_HAVE_LPMX__
+The device has the @code{LPM R@var{n},Z} and @code{LPM
+R@var{n},Z+} instructions.
+
+@item __AVR_HAVE_MUL__
+The device has a hardware multiplier. 
+
+@item __AVR_HAVE_JMP_CALL__
+The device has the @code{JMP} and @code{CALL} instructions.
+This is the case for devices with at least 16@tie{}KiB of program
+memory and if @code{-mshort-calls} is not set.
+
+@item __AVR_HAVE_EIJMP_EICALL__
+@item __AVR_3_BYTE_PC__
+The device has the @code{EIJMP} and @code{EICALL} instructions.
+This is the case for devices with at least 256@tie{}KiB of program memory.
+This also means that the program counter
+(PC) is 3@tie{}bytes wide.
+
+@item __AVR_2_BYTE_PC__
+The program counter (PC) is 2@tie{}bytes wide. This is the case for devices
+with up to 128@tie{}KiB of program memory.
+
+@item __AVR_HAVE_8BIT_SP__
+@item __AVR_HAVE_16BIT_SP__
+The stack pointer (SP) is 8@tie{}bits resp. 16@tie{}bits wide.
+The definition of these macros is affected by @code{-mtiny-stack}.
+
+@item __NO_INTERRUPTS__
+This macro reflects the @code{-mno-interrupts} command line option.
+
+@item __AVR_ERRATA_SKIP__
+@item __AVR_ERRATA_SKIP_JMP_CALL__
+Some AVR devices (AT90S8515, ATmega103) must not skip 32-bit
+instructions because of a hardware erratum.  Skip instructions are
+@code{SBRS}, @code{SBRC}, @code{SBIS}, @code{SBIC} and @code{CPSE}.
+The second macro is only defined if @code{__AVR_HAVE_JMP_CALL__} is also
+set.
+
+@item __AVR_SFR_OFFSET__=@var{offset}
+Instructions that can address I/O special function registers directly
+like @code{IN}, @code{OUT}, @code{SBI}, etc.@: may use a different
+address as if addressed by an instruction to access RAM like @code{LD}
+or @code{STS}. This offset depends on the device architecture and has
+to be subtracted from the RAM address in order to get the
+respective I/O@tie{}address.
+
+@end table
 
 @node Blackfin Options
 @subsection Blackfin Options
