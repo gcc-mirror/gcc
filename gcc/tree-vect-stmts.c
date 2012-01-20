@@ -1,5 +1,5 @@
 /* Statement Analysis and Transformation for Vectorization
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
@@ -2420,7 +2420,9 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
      from supportable_*_operation, and store them in the correct order
      for future use in vect_create_vectorized_*_stmts ().  */
   vec_dsts = VEC_alloc (tree, heap, multi_step_cvt + 1);
-  vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
+  vec_dest = vect_create_destination_var (scalar_dest,
+					  (cvt_type && modifier == WIDEN)
+					  ? cvt_type : vectype_out);
   VEC_quick_push (tree, vec_dsts, vec_dest);
 
   if (multi_step_cvt)
@@ -2435,7 +2437,9 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
     }
 
   if (cvt_type)
-    vec_dest = vect_create_destination_var (scalar_dest, cvt_type);
+    vec_dest = vect_create_destination_var (scalar_dest,
+					    modifier == WIDEN
+					    ? vectype_out : cvt_type);
 
   if (!slp_node)
     {
