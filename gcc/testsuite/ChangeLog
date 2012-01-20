@@ -1,3 +1,7 @@
+2012-01-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/ext/visibility/template9.C: Add dg-require-visibility.
+
 2012-01-20  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.c-torture/compile/pr51856.c: New testcase.
