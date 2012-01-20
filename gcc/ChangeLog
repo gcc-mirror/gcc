@@ -1,3 +1,9 @@
+2012-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/51915
+	* config/arm/arm.c (arm_count_output_move_double_insns): Call
+	output_move_double on a copy of operands array.
+
 2012-01-20   Cary Coutant  <ccoutant@google.com>
 	     Dodji Seketeli  <dodji@redhat.com>
 

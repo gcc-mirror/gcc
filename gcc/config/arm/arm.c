@@ -24664,7 +24664,12 @@ int
 arm_count_output_move_double_insns (rtx *operands)
 {
   int count;
-  output_move_double (operands, false, &count);
+  rtx ops[2];
+  /* output_move_double may modify the operands array, so call it
+     here on a copy of the array.  */
+  ops[0] = operands[0];
+  ops[1] = operands[1];
+  output_move_double (ops, false, &count);
   return count;
 }
 
