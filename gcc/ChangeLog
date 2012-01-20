@@ -1,3 +1,9 @@
+2012-01-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR target/51819
+	* config/arm/arm.c (arm_print_operand): Correct output of alignment
+	hints for neon loads and stores.
+
 2012-01-20  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/49868
