@@ -1,3 +1,9 @@
+2012-01-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51402
+	* pt.c (lookup_template_class_1): Check context returned by
+	tsubst for error_mark_node.
+
 2012-01-19  Kai Tietz  <ktietz@redhat.com>
 
 	PR c++/51344

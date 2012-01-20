@@ -1,3 +1,8 @@
+2012-01-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51402
+	* g++.dg/template/crash110.C: New.
+
 2012-01-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.misc-tests/gcov-14.c: Skip on alpha*-dec-osf*.
