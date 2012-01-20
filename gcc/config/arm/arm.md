@@ -116,6 +116,7 @@
 			; unaligned locations, on architectures which support
 			; that.
   UNSPEC_UNALIGNED_STORE ; Same for str/strh.
+  UNSPEC_PIC_UNIFIED    ; Create a common pic addressing form.
 ])
 
 ;; UNSPEC_VOLATILE Usage:
@@ -5611,6 +5612,30 @@
   [(set (match_dup 3) (unspec:SI [(match_dup 2)] UNSPEC_PIC_SYM))
    (set (match_dup 0) (mem:SI (plus:SI (match_dup 1) (match_dup 3))))]
   "operands[3] = can_create_pseudo_p () ? gen_reg_rtx (SImode) : operands[0];"
+)
+
+;; operand1 is the memory address to go into 
+;; pic_load_addr_32bit.
+;; operand2 is the PIC label to be emitted 
+;; from pic_add_dot_plus_eight.
+;; We do this to allow hoisting of the entire insn.
+(define_insn_and_split "pic_load_addr_unified"
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r,l")
+	(unspec:SI [(match_operand:SI 1 "" "mX,mX,mX") 
+		    (match_operand:SI 2 "" "")] 
+		    UNSPEC_PIC_UNIFIED))]
+ "flag_pic"
+ "#"
+ "&& reload_completed"
+ [(set (match_dup 0) (unspec:SI [(match_dup 1)] UNSPEC_PIC_SYM))
+  (set (match_dup 0) (unspec:SI [(match_dup 0) (match_dup 3)
+       		     		 (match_dup 2)] UNSPEC_PIC_BASE))]
+ "operands[3] = TARGET_THUMB ? GEN_INT (4) : GEN_INT (8);"
+ [(set_attr "type" "load1,load1,load1")
+  (set_attr "pool_range" "4096,4096,1024")
+  (set_attr "neg_pool_range" "4084,0,0")
+  (set_attr "arch"  "a,t2,t1")    
+  (set_attr "length" "8,6,4")]
 )
 
 ;; The rather odd constraints on the following are to force reload to leave
