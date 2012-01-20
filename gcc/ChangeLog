@@ -1,3 +1,15 @@
+2012-01-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR target/50313
+	* config/arm/arm.c (arm_load_pic_register): Use
+	gen_pic_load_addr_unified. Delete calls to gen_pic_load_addr_32bit
+	, gen_pic_add_dot_plus_eight and gen_pic_add_dot_plus_four.
+	(arm_pic_static_addr): Likewise.
+	(arm_rtx_costs_1): Adjust cost for UNSPEC_PIC_UNIFIED.
+	(arm_note_pic_base): Handle UNSPEC_PIC_UNIFIED.
+	* config/arm/arm.md (UNSPEC_PIC_UNIFIED): Define.
+	(pic_load_addr_unified): New.
+
 2012-01-20  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR target/51106
