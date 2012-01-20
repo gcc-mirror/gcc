@@ -783,6 +783,9 @@
 /* Define to 1 if the system has the type `uintptr_t'. */
 #undef HAVE_UINTPTR_T
 
+/* Define to 1 if you have the `umask' function. */
+#undef HAVE_UMASK
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 

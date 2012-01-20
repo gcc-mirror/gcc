@@ -1,3 +1,11 @@
+2012-01-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR libgfortran/51899
+	* configure.ac: Check whether umask is available.
+	* intrinsics/chmod.c (chmod_func): Make compile with MinGW.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2012-01-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36755

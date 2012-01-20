@@ -2591,6 +2591,7 @@ as_fn_append ac_func_list " getpid"
 as_fn_append ac_func_list " getppid"
 as_fn_append ac_func_list " getuid"
 as_fn_append ac_func_list " geteuid"
+as_fn_append ac_func_list " umask"
 # Check that the precious variables saved in the cache have kept the same
 # value.
 ac_cache_corrupted=false
@@ -12317,7 +12318,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12320 "configure"
+#line 12321 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12423,7 +12424,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12426 "configure"
+#line 12427 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16433,6 +16434,8 @@ _ACEOF
 
 fi
 done
+
+
 
 
 
