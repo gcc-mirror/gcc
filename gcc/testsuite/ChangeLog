@@ -1,3 +1,8 @@
+2012-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/51915
+	* gcc.target/arm/pr51915.c: New test.
+
 2012-01-20   Cary Coutant  <ccoutant@google.com>
 	     Dodji Seketeli  <dodji@redhat.com>
 
