@@ -1,5 +1,10 @@
 2012-01-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51919
+	* g++.dg/pch/mangle1.{C,Hs}: Remove.
+
+2012-01-20  Jason Merrill  <jason@redhat.com>
+
 	PR c++/51922
 	* g++.dg/ext/attrib42.C: Require ilp32.
 
