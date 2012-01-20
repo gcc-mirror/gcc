@@ -1,3 +1,8 @@
+2012-01-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* go.test/go-test.exp (go-gc-tests): Pass correctly formatted
+	options to go_target_compile.
+
 2012-01-20  Kai Tietz  <ktietz@redhat.com>
 
 	* g++.dg/torture/pr51344.C: Fix typo.
@@ -57,8 +62,7 @@
 2012-01-17  Ian Lance Taylor  <iant@google.com>
 
 	PR go/50656
-	* go.test/go-test.exp (go-gc-tests): Recognize some more test
-	lines.
+	* go.test/go-test.exp (go-gc-tests): Recognize some more test lines.
 
 2012-01-17  Tobias Burnus  <burnus@net-b.de>
 
