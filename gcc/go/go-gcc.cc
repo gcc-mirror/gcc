@@ -656,10 +656,13 @@ Gcc_backend::placeholder_struct_type(const std::string& name,
 				     Location location)
 {
   tree ret = make_node(RECORD_TYPE);
-  tree decl = build_decl(location.gcc_location(), TYPE_DECL,
-			 get_identifier_from_string(name),
-			 ret);
-  TYPE_NAME(ret) = decl;
+  if (!name.empty())
+    {
+      tree decl = build_decl(location.gcc_location(), TYPE_DECL,
+			     get_identifier_from_string(name),
+			     ret);
+      TYPE_NAME(ret) = decl;
+    }
   return this->make_type(ret);
 }
 
@@ -674,10 +677,13 @@ Gcc_backend::set_placeholder_struct_type(
   gcc_assert(TREE_CODE(t) == RECORD_TYPE && TYPE_FIELDS(t) == NULL_TREE);
   Btype* r = this->fill_in_struct(placeholder, fields);
 
-  // Build the data structure gcc wants to see for a typedef.
-  tree copy = build_distinct_type_copy(t);
-  TYPE_NAME(copy) = NULL_TREE;
-  DECL_ORIGINAL_TYPE(TYPE_NAME(t)) = copy;
+  if (TYPE_NAME(t) != NULL_TREE)
+    {
+      // Build the data structure gcc wants to see for a typedef.
+      tree copy = build_distinct_type_copy(t);
+      TYPE_NAME(copy) = NULL_TREE;
+      DECL_ORIGINAL_TYPE(TYPE_NAME(t)) = copy;
+    }
 
   return r->get_tree() != error_mark_node;
 }

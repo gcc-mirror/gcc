@@ -139,7 +139,8 @@ class Backend
   set_placeholder_function_type(Btype* placeholder, Btype* ft) = 0;
 
   // Create a placeholder struct type.  This is used for a named
-  // struct type, as with placeholder_pointer_type.
+  // struct type, as with placeholder_pointer_type.  It is also used
+  // for interface types, in which case NAME will be the empty string.
   virtual Btype*
   placeholder_struct_type(const std::string& name, Location) = 0;
 

@@ -485,6 +485,9 @@ class Type
   static Interface_type*
   make_interface_type(Typed_identifier_list* methods, Location);
 
+  static Interface_type*
+  make_empty_interface_type(Location);
+
   static Type*
   make_type_descriptor_type();
 
@@ -1318,6 +1321,10 @@ class Typed_identifier_list
     this->entries_.resize(c, Typed_identifier("", NULL,
                                               Linemap::unknown_location()));
   }
+
+  void
+  reserve(size_t c)
+  { this->entries_.reserve(c); }
 
   // Iterators.
 
@@ -2429,7 +2436,9 @@ class Interface_type : public Type
  public:
   Interface_type(Typed_identifier_list* methods, Location location)
     : Type(TYPE_INTERFACE),
-      methods_(methods), location_(location)
+      parse_methods_(methods), all_methods_(NULL), location_(location),
+      interface_btype_(NULL), assume_identical_(NULL),
+      methods_are_finalized_(false), seen_(false)
   { go_assert(methods == NULL || !methods->empty()); }
 
   // The location where the interface type was defined.
@@ -2440,18 +2449,27 @@ class Interface_type : public Type
   // Return whether this is an empty interface.
   bool
   is_empty() const
-  { return this->methods_ == NULL; }
+  {
+    go_assert(this->methods_are_finalized_);
+    return this->all_methods_ == NULL;
+  }
 
   // Return the list of methods.  This will return NULL for an empty
   // interface.
   const Typed_identifier_list*
   methods() const
-  { return this->methods_; }
+  {
+    go_assert(this->methods_are_finalized_);
+    return this->all_methods_;
+  }
 
   // Return the number of methods.
   size_t
   method_count() const
-  { return this->methods_ == NULL ? 0 : this->methods_->size(); }
+  {
+    go_assert(this->methods_are_finalized_);
+    return this->all_methods_ == NULL ? 0 : this->all_methods_->size();
+  }
 
   // Return the method NAME, or NULL.
   const Typed_identifier*
@@ -2461,7 +2479,8 @@ class Interface_type : public Type
   size_t
   method_index(const std::string& name) const;
 
-  // Finalize the methods.  This handles interface inheritance.
+  // Finalize the methods.  This sets all_methods_.  This handles
+  // interface inheritance.
   void
   finalize_methods();
 
@@ -2528,11 +2547,41 @@ class Interface_type : public Type
   do_export(Export*) const;
 
  private:
-  // The list of methods associated with the interface.  This will be
-  // NULL for the empty interface.
-  Typed_identifier_list* methods_;
+  // This type guards against infinite recursion when comparing
+  // interface types.  We keep a list of interface types assumed to be
+  // identical during comparison.  We just keep the list on the stack.
+  // This permits us to compare cases like
+  // type I1 interface { F() interface{I1} }
+  // type I2 interface { F() interface{I2} }
+  struct Assume_identical
+  {
+    Assume_identical* next;
+    const Interface_type* t1;
+    const Interface_type* t2;
+  };
+
+  bool
+  assume_identical(const Interface_type*, const Interface_type*) const;
+
+  // The list of methods associated with the interface from the
+  // parser.  This will be NULL for the empty interface.  This may
+  // include unnamed interface types.
+  Typed_identifier_list* parse_methods_;
+  // The list of all methods associated with the interface.  This
+  // expands any interface types listed in methods_.  It is set by
+  // finalize_methods.  This will be NULL for the empty interface.
+  Typed_identifier_list* all_methods_;
   // The location where the interface was defined.
   Location location_;
+  // The backend representation of this type during backend conversion.
+  Btype* interface_btype_;
+  // A list of interface types assumed to be identical during
+  // interface comparison.
+  mutable Assume_identical* assume_identical_;
+  // Whether the methods have been finalized.
+  bool methods_are_finalized_;
+  // Used to avoid endless recursion in do_mangled_name.
+  mutable bool seen_;
 };
 
 // The value we keep for a named type.  This lets us get the right

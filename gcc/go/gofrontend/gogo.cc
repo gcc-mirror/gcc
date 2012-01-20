@@ -110,7 +110,8 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int int_type_size,
     results->push_back(Typed_identifier("", Type::lookup_string_type(), loc));
     Type *method_type = Type::make_function_type(NULL, NULL, results, loc);
     methods->push_back(Typed_identifier("Error", method_type, loc));
-    Type *error_iface = Type::make_interface_type(methods, loc);
+    Interface_type *error_iface = Type::make_interface_type(methods, loc);
+    error_iface->finalize_methods();
     Named_type *error_type = Named_object::make_type("error", NULL, error_iface, loc)->type_value();
     this->add_named_type(error_type);
   }
@@ -175,7 +176,7 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int int_type_size,
   print_type->set_is_builtin();
   this->globals_->add_function_declaration("println", NULL, print_type, loc);
 
-  Type *empty = Type::make_interface_type(NULL, loc);
+  Type *empty = Type::make_empty_interface_type(loc);
   Typed_identifier_list* panic_parms = new Typed_identifier_list();
   panic_parms->push_back(Typed_identifier("e", empty, loc));
   Function_type *panic_type = Type::make_function_type(NULL, panic_parms,
@@ -1564,7 +1565,8 @@ Finalize_methods::type(Type* t)
 	// finalize the methods of the field types, not of the struct
 	// type itself.  We don't want to add methods to the struct,
 	// since it has a name.
-	Type* rt = t->named_type()->real_type();
+	Named_type* nt = t->named_type();
+	Type* rt = nt->real_type();
 	if (rt->classification() != Type::TYPE_STRUCT)
 	  {
 	    if (Type::traverse(rt, this) == TRAVERSE_EXIT)
@@ -1576,7 +1578,21 @@ Finalize_methods::type(Type* t)
 	      return TRAVERSE_EXIT;
 	  }
 
-	t->named_type()->finalize_methods(this->gogo_);
+	nt->finalize_methods(this->gogo_);
+
+	// If this type is defined in a different package, then finalize the
+	// types of all the methods, since we won't see them otherwise.
+	if (nt->named_object()->package() != NULL && nt->has_any_methods())
+	  {
+	    const Methods* methods = nt->methods();
+	    for (Methods::const_iterator p = methods->begin();
+		 p != methods->end();
+		 ++p)
+	      {
+		if (Type::traverse(p->second->type(), this) == TRAVERSE_EXIT)
+		  return TRAVERSE_EXIT;
+	      }
+	  }
 
 	return TRAVERSE_SKIP_COMPONENTS;
       }
@@ -2622,6 +2638,9 @@ class Build_method_tables : public Traverse
 void
 Gogo::build_interface_method_tables()
 {
+  if (saw_errors())
+    return;
+
   std::vector<Interface_type*> hidden_interfaces;
   hidden_interfaces.reserve(this->interface_types_.size());
   for (std::vector<Interface_type*>::const_iterator pi =
@@ -4922,10 +4941,7 @@ Bindings::traverse(Traverse* traverse, bool is_global)
 		     | Traverse::traverse_statements
 		     | Traverse::traverse_expressions
 		     | Traverse::traverse_types)) != 0)
-	    {
-	      if (p->func_value()->traverse(traverse) == TRAVERSE_EXIT)
-		return TRAVERSE_EXIT;
-	    }
+	    t = p->func_value()->traverse(traverse);
 	  break;
 
 	case Named_object::NAMED_OBJECT_PACKAGE:
@@ -4950,6 +4966,26 @@ Bindings::traverse(Traverse* traverse, bool is_global)
 
       if (t == TRAVERSE_EXIT)
 	return TRAVERSE_EXIT;
+    }
+
+  // If we need to traverse types, check the function declarations,
+  // which have types.  We don't need to check the type declarations,
+  // as those are just names.
+  if ((traverse_mask & e_or_t) != 0)
+    {
+      for (Bindings::const_declarations_iterator p =
+	     this->begin_declarations();
+	   p != this->end_declarations();
+	   ++p)
+	{
+	  if (p->second->is_function_declaration())
+	    {
+	      if (Type::traverse(p->second->func_declaration_value()->type(),
+				 traverse)
+		  == TRAVERSE_EXIT)
+		return TRAVERSE_EXIT;
+	    }
+	}
     }
 
   return TRAVERSE_CONTINUE;
@@ -5090,9 +5126,12 @@ Traverse::remember_type(const Type* type)
     return true;
   go_assert((this->traverse_mask() & traverse_types) != 0
 	     || (this->traverse_mask() & traverse_expressions) != 0);
-  // We only have to remember named types, as they are the only ones
-  // we can see multiple times in a traversal.
-  if (type->classification() != Type::TYPE_NAMED)
+  // We mostly only have to remember named types.  But it turns out
+  // that an interface type can refer to itself without using a name
+  // by relying on interface inheritance, as in
+  // type I interface { F() interface{I} }
+  if (type->classification() != Type::TYPE_NAMED
+      && type->classification() != Type::TYPE_INTERFACE)
     return false;
   if (this->types_seen_ == NULL)
     this->types_seen_ = new Types_seen();
