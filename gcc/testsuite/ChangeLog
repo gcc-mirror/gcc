@@ -1,3 +1,9 @@
+2012-01-20   Cary Coutant  <ccoutant@google.com>
+	     Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/45682
+	* g++.dg/debug/dwarf2/nested-3.C: New test.
+
 2012-01-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51402

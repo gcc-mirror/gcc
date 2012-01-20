@@ -3302,11 +3302,12 @@ static int should_move_die_to_comdat (dw_die_ref);
 static dw_die_ref clone_as_declaration (dw_die_ref);
 static dw_die_ref clone_die (dw_die_ref);
 static dw_die_ref clone_tree (dw_die_ref);
-static void copy_declaration_context (dw_die_ref, dw_die_ref);
+static dw_die_ref copy_declaration_context (dw_die_ref, dw_die_ref);
 static void generate_skeleton_ancestor_tree (skeleton_chain_node *);
 static void generate_skeleton_bottom_up (skeleton_chain_node *);
 static dw_die_ref generate_skeleton (dw_die_ref);
 static dw_die_ref remove_child_or_replace_with_skeleton (dw_die_ref,
+                                                         dw_die_ref,
                                                          dw_die_ref);
 static void break_out_comdat_types (dw_die_ref);
 static dw_die_ref copy_ancestor_tree (dw_die_ref, dw_die_ref, htab_t);
@@ -7070,16 +7071,18 @@ clone_as_declaration (dw_die_ref die)
   return clone;
 }
 
-/* Copy the declaration context to the new compile unit DIE.  This includes
+/* Copy the declaration context to the new type unit DIE.  This includes
    any surrounding namespace or type declarations.  If the DIE has an
    AT_specification attribute, it also includes attributes and children
-   attached to the specification.  */
+   attached to the specification, and returns a pointer to the original
+   parent of the declaration DIE.  Returns NULL otherwise.  */
 
-static void
+static dw_die_ref
 copy_declaration_context (dw_die_ref unit, dw_die_ref die)
 {
   dw_die_ref decl;
   dw_die_ref new_decl;
+  dw_die_ref orig_parent = NULL;
 
   decl = get_AT_ref (die, DW_AT_specification);
   if (decl == NULL)
@@ -7089,6 +7092,10 @@ copy_declaration_context (dw_die_ref unit, dw_die_ref die)
       unsigned ix;
       dw_die_ref c;
       dw_attr_ref a;
+
+      /* The original DIE will be changed to a declaration, and must
+         be moved to be a child of the original declaration DIE.  */
+      orig_parent = decl->die_parent;
 
       /* Copy the type node pointer from the new DIE to the original
          declaration DIE so we can forward references later.  */
@@ -7118,6 +7125,8 @@ copy_declaration_context (dw_die_ref unit, dw_die_ref die)
           add_AT_specification (die, new_decl);
         }
     }
+
+  return orig_parent;
 }
 
 /* Generate the skeleton ancestor tree for the given NODE, then clone
@@ -7201,17 +7210,23 @@ generate_skeleton (dw_die_ref die)
   return node.new_die;
 }
 
-/* Remove the DIE from its parent, possibly replacing it with a cloned
-   declaration.  The original DIE will be moved to a new compile unit
-   so that existing references to it follow it to the new location.  If
-   any of the original DIE's descendants is a declaration, we need to
-   replace the original DIE with a skeleton tree and move the
-   declarations back into the skeleton tree.  */
+/* Remove the CHILD DIE from its parent, possibly replacing it with a cloned
+   declaration.  The original DIE is moved to a new compile unit so that
+   existing references to it follow it to the new location.  If any of the
+   original DIE's descendants is a declaration, we need to replace the
+   original DIE with a skeleton tree and move the declarations back into the
+   skeleton tree.  */
 
 static dw_die_ref
-remove_child_or_replace_with_skeleton (dw_die_ref child, dw_die_ref prev)
+remove_child_or_replace_with_skeleton (dw_die_ref unit, dw_die_ref child,
+				       dw_die_ref prev)
 {
-  dw_die_ref skeleton;
+  dw_die_ref skeleton, orig_parent;
+
+  /* Copy the declaration context to the type unit DIE.  If the returned
+     ORIG_PARENT is not NULL, the skeleton needs to be added as a child of
+     that DIE.  */
+  orig_parent = copy_declaration_context (unit, child);
 
   skeleton = generate_skeleton (child);
   if (skeleton == NULL)
@@ -7219,7 +7234,19 @@ remove_child_or_replace_with_skeleton (dw_die_ref child, dw_die_ref prev)
   else
     {
       skeleton->die_id.die_type_node = child->die_id.die_type_node;
-      replace_child (child, skeleton, prev);
+
+      /* If the original DIE was a specification, we need to put
+         the skeleton under the parent DIE of the declaration.
+	 This leaves the original declaration in the tree, but
+	 it will be pruned later since there are no longer any
+	 references to it.  */
+      if (orig_parent != NULL)
+	{
+	  remove_child_with_prev (child, prev);
+	  add_child_die (orig_parent, skeleton);
+	}
+      else
+	replace_child (child, skeleton, prev);
     }
 
   return skeleton;
@@ -7264,11 +7291,9 @@ break_out_comdat_types (dw_die_ref die)
         generate_type_signature (c, type_node);
 
         /* Copy the declaration context, attributes, and children of the
-           declaration into the new compile unit DIE.  */
-	copy_declaration_context (unit, c);
-
-        /* Remove this DIE from the main CU.  */
-	replacement = remove_child_or_replace_with_skeleton (c, prev);
+           declaration into the new type unit DIE, then remove this DIE
+	   from the main CU (or replace it with a skeleton if necessary).  */
+	replacement = remove_child_or_replace_with_skeleton (unit, c, prev);
 
         /* Break out nested types into their own type units.  */
         break_out_comdat_types (c);

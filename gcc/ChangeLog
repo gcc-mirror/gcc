@@ -1,3 +1,14 @@
+2012-01-20   Cary Coutant  <ccoutant@google.com>
+	     Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/45682
+	* dwarf2out.c (copy_declaration_context): Return ref to parent
+	of declaration DIE, if necessary.
+	(remove_child_or_replace_with_skeleton): Add new parameter; update
+	caller.  Place skeleton DIE under parent DIE of original declaration.
+	Move call to copy_declaration_context to here ...
+	(break_out_comdat_types): ... from here.
+
 2012-01-20  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR rtl-optimization/51856
