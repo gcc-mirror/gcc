@@ -1,3 +1,8 @@
+2012-01-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51922
+	* g++.dg/ext/attrib42.C: Require ilp32.
+
 2012-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/51915
