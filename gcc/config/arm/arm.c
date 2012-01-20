@@ -17711,9 +17711,9 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	/* Only certain alignment specifiers are supported by the hardware.  */
 	if (memsize == 16 && (align % 32) == 0)
 	  align_bits = 256;
-	else if ((memsize == 8 || memsize == 16) && (align % 16) == 0)
+	else if (memsize == 16 && (align % 16) == 0)
 	  align_bits = 128;
-	else if ((align % 8) == 0)
+	else if (memsize >= 8 && (align % 8) == 0)
 	  align_bits = 64;
 	else
 	  align_bits = 0;
