@@ -6231,8 +6231,8 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 	    }
 	}
     }
-  if (reloaded && address_reloaded)
-    *address_reloaded = 1;
+  if (address_reloaded)
+    *address_reloaded = reloaded;
 
   return x;
 }

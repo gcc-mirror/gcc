@@ -1,3 +1,7 @@
+2012-01-20  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.c-torture/compile/pr51856.c: New testcase.
+
 2012-01-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* go.test/go-test.exp (go-gc-tests): Pass correctly formatted
