@@ -208,6 +208,9 @@ proc go-gc-tests { } {
 	set DEFAULT_GOCFLAGS " -pedantic-errors"
     }
 
+    set options ""
+    lappend options "additional_flags=$DEFAULT_GOCFLAGS"
+
     # Set GOARCH for tests that need it.
     go-set-goarch
 
@@ -585,7 +588,7 @@ proc go-gc-tests { } {
 	    set dg-do-what-default "link"
 	    set output_file "./[file rootname [file tail $test]].exe"
 	    set comp_output [go_target_compile "$ofile1 $ofile2" \
-				 $output_file "executable" "$DEFAULT_GOCFLAGS"]
+				 $output_file "executable" "$options"]
 	    set comp_output [go-dg-prune $target_triplet $comp_output]
 	    verbose -log $comp_output
 	    set result [go_load "$output_file" "" ""]
@@ -610,7 +613,7 @@ proc go-gc-tests { } {
 	    set dg-do-what-default "link"
 	    set output_file "./[file rootname [file tail $test]].exe"
 	    set comp_output [go_target_compile "$ofile1 $ofile2 $ofile3" \
-				 $output_file "executable" "$DEFAULT_GOCFLAGS"]
+				 $output_file "executable" "$options"]
 	    set comp_output [go-dg-prune $target_triplet $comp_output]
 	    if [string match "" $comp_output] {
 		pass $name
@@ -633,7 +636,7 @@ proc go-gc-tests { } {
 	    set ofile2 "[file rootname [file tail $test]].o"
 	    set output_file "./[file rootname [file tail $test]].exe"
 	    set comp_output [go_target_compile "$ofile1 $ofile2" \
-				 $output_file "executable" "$DEFAULT_GOCFLAGS"]
+				 $output_file "executable" "$options"]
 	    set comp_output [go-dg-prune $target_triplet $comp_output]
 	    if [string match "" $comp_output] {
 		set result [go_load "$output_file" "" ""]
@@ -660,7 +663,7 @@ proc go-gc-tests { } {
 	    set dg-do-what-default "link"
 	    set output_file "./[file rootname [file tail $file2]].exe"
 	    set comp_output [go_target_compile "$ofile1 $ofile2" \
-				 $output_file "executable" "$DEFAULT_GOCFLAGS"]
+				 $output_file "executable" "$options"]
 	    set comp_output [go-dg-prune $target_triplet $comp_output]
 	    if [string match "" $comp_output] {
 		set result [go_load "$output_file" "" ""]
@@ -726,7 +729,7 @@ proc go-gc-tests { } {
 	    errchk $file3 ""
 	    set output_file "./[file rootname [file tail $test]].exe"
 	    set comp_output [go_target_compile "$ofile0 $ofile1 $ofile2" \
-				 $output_file "executable" "$DEFAULT_GOCFLAGS"]
+				 $output_file "executable" "$options"]
 	    set comp-output [go-dg-prune $target_triplet $comp_output]
 	    if [string match "" $comp_output] {
 		set result [go_load "$output_file" "" ""]
@@ -759,7 +762,7 @@ proc go-gc-tests { } {
 	    set ofile2 "[file rootname [file tail $test]].o"
 	    set output_file "./[file rootname [file tail $test]].exe"
 	    set comp_output [go_target_compile "$ofile1 $ofile2" \
-				 $output_file "executable" "$DEFAULT_GOCFLAGS"]
+				 $output_file "executable" "$options"]
 	    set comp_output [go-dg-prune $target_triplet $comp_output]
 	    if [string match "" $comp_output] {
 		set result [go_load "$output_file" "" ""]
@@ -775,7 +778,7 @@ proc go-gc-tests { } {
 	    regsub "/\[^/\]*$" $test "/cmplxdivide1.go" test2
 	    set output_file "./[file rootname [file tail $test]].o"
 	    set comp_output [go_target_compile "$test $test2" \
-			     $output_file "executable" "$DEFAULT_GOCFLAGS"]
+				 $output_file "executable" "$options"]
 	    set comp_output [go-dg-prune $target_triplet $comp_output]
 	    if [string match "" $comp_output] {
 		set result [go_load "$output_file" "" ""]
@@ -853,7 +856,7 @@ proc go-gc-tests { } {
 	    set ofile2 "[file rootname [file tail $file2]].o"
 	    set output_file "./[file rootname [file tail $test]].exe"
 	    set comp_output [go_target_compile "$ofile1 $ofile2" \
-				 $output_file "executable" "$DEFAULT_GOCFLAGS"]
+				 $output_file "executable" "$options"]
 	    set comp_output [go-dg-prune $target_triplet $comp_output]
 	    if [string match "" $comp_output] {
 		setup_xfail "*-*-*"
