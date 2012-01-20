@@ -1,3 +1,11 @@
+2012-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51914
+	* tree-vect-stmts.c (vectorizable_conversion): For
+	cvt_type && modifier == WIDEN, put temporary with cvt_type
+	at the beginning of vec_dsts and set vec_dest to temporary
+	with vectype_out.
+
 2012-01-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgrtl.c (rtl_dump_bb): Do not dump insns for {ENTRY|EXIT}_BLOCK.
