@@ -4541,8 +4541,10 @@ eliminate (void)
 	  gsi = gsi_for_stmt (stmt);
 	  unlink_stmt_vdef (stmt);
 	  gsi_remove (&gsi, true);
-	  if (gimple_purge_dead_eh_edges (bb))
-	    todo |= TODO_cleanup_cfg;
+	  /* ???  gsi_remove doesn't tell us whether the stmt was
+	     in EH tables and thus whether we need to purge EH edges.
+	     Simply schedule the block for a cleanup.  */
+	  bitmap_set_bit (need_eh_cleanup, bb->index);
 	  if (TREE_CODE (lhs) == SSA_NAME)
 	    bitmap_clear_bit (inserted_exprs, SSA_NAME_VERSION (lhs));
 	  release_defs (stmt);

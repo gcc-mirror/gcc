@@ -1,3 +1,8 @@
+2012-01-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51903
+	* g++.dg/torture/pr51903.C: New testcase.
+
 2012-01-20  Tobias Burnus  <burnus@net-b.de>
 	    Janus Weil  <janus@gcc.gnu.org>
 
