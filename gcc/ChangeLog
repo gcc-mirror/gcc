@@ -1,3 +1,9 @@
+2012-01-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51903
+	* tree-ssa-pre.c (eliminate): Properly purging of EH edges
+	when removing stmts.
+
 2012-01-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	PR target/50313
