@@ -1768,14 +1768,8 @@ Constant integer 1
 @item G
 A floating point constant 0.0
 
-@item R
-Integer constant in the range @minus{}6 @dots{} 5.
-
 @item Q
 A memory address based on Y or Z pointer with displacement.
-
-@item C04
-Constant integer 4
 @end table
 
 @item Epiphany---@file{config/epiphany/constraints.md}

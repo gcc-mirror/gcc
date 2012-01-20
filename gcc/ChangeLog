@@ -1,3 +1,20 @@
+2012-01-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49868
+	PR target/50887
+	* doc/extend.texi (Named Address Spaces): Split into subsections.
+	(AVR Named Address Spaces): New subsection.
+	(M32C Named Address Spaces): New subsection.
+	(RL78 Named Address Spaces): New subsection.
+	(SPU Named Address Spaces): New subsection.
+	(Variable Attributes): New anchor "AVR Variable Attributes".
+	(AVR Variable Attributes): Rewrite and avoid wording
+	"address space" in this context.
+	* doc/invoke.texi (AVR Options): Rewrite and add documentation
+	for -maccumulate-args, -mbranch-cost=, -mrelax, -mshort-calls.
+	(AVR Built-in Macros): New subsubsection therein.
+	* doc/md.texi (AVR constraints): Remove "C04", "R".
+
 2012-01-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51903
