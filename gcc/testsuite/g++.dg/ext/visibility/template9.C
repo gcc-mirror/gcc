@@ -1,4 +1,5 @@
 // PR c++/51813
+// { dg-require-visibility "" }
 // { dg-options -fvisibility=hidden }
 // { dg-final { scan-assembler-not "hidden\\s+_ZN1N1fI1AEEvT" } }
 
