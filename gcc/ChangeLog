@@ -1,3 +1,7 @@
+2012-01-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgrtl.c (rtl_dump_bb): Do not dump insns for {ENTRY|EXIT}_BLOCK.
+
 2011-01-20  Tijl Coosemans  <tijl@coosemans.org>
 
 	* config/i386/i386.c: Fix checks for !TARGET_MACHO.

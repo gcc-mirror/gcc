@@ -1674,9 +1674,10 @@ rtl_dump_bb (basic_block bb, FILE *outf, int indent, int flags ATTRIBUTE_UNUSED)
       putc ('\n', outf);
     }
 
-  for (insn = BB_HEAD (bb), last = NEXT_INSN (BB_END (bb)); insn != last;
-       insn = NEXT_INSN (insn))
-    print_rtl_single (outf, insn);
+  if (bb->index != ENTRY_BLOCK && bb->index != EXIT_BLOCK)
+    for (insn = BB_HEAD (bb), last = NEXT_INSN (BB_END (bb)); insn != last;
+	 insn = NEXT_INSN (insn))
+      print_rtl_single (outf, insn);
 
   if (df)
     {
