@@ -7566,7 +7566,7 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
 	{
 	  // Calling recover outside of a function always returns the
 	  // nil empty interface.
-	  Type* eface = Type::make_interface_type(NULL, loc);
+	  Type* eface = Type::make_empty_interface_type(loc);
 	  return Expression::make_cast(eface, Expression::make_nil(loc), loc);
 	}
       break;
@@ -8189,7 +8189,7 @@ Builtin_call_expression::do_type()
       return Type::make_void_type();
 
     case BUILTIN_RECOVER:
-      return Type::make_interface_type(NULL, Linemap::predeclared_location());
+      return Type::make_empty_interface_type(Linemap::predeclared_location());
 
     case BUILTIN_APPEND:
       {
@@ -8883,7 +8883,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	if (arg_tree == error_mark_node)
 	  return error_mark_node;
 	Type *empty =
-	  Type::make_interface_type(NULL, Linemap::predeclared_location());
+	  Type::make_empty_interface_type(Linemap::predeclared_location());
 	arg_tree = Expression::convert_for_assignment(context, empty,
 						      arg->type(),
 						      arg_tree, location);
@@ -8916,7 +8916,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	  return error_mark_node;
 
 	Type *empty =
-	  Type::make_interface_type(NULL, Linemap::predeclared_location());
+	  Type::make_empty_interface_type(Linemap::predeclared_location());
 	tree empty_tree = type_to_tree(empty->get_backend(context->gogo()));
 
 	Type* nil_type = Type::make_nil_type();

@@ -1,3 +1,9 @@
+2012-01-20  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::placeholder_struct_type): Permit name to
+	be empty.
+	(Gcc_backend::set_placeholder_struct_type): Likewise.
+
 2012-01-17  Ian Lance Taylor  <iant@google.com>
 
 	* gospec.c (lang_specific_driver): If we see -S without -o, add -o

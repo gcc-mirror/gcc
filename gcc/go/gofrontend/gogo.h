@@ -2578,8 +2578,13 @@ class Traverse
   type(Type*);
 
  private:
-  typedef Unordered_set_hash(const Type*, Type_hash_identical,
-			     Type_identical) Types_seen;
+  // A hash table for types we have seen during this traversal.  Note
+  // that this uses the default hash functions for pointers rather
+  // than Type_hash_identical and Type_identical.  This is because for
+  // traversal we care about seeing a specific type structure.  If
+  // there are two separate instances of identical types, we want to
+  // traverse both.
+  typedef Unordered_set(const Type*) Types_seen;
 
   typedef Unordered_set(const Expression*) Expressions_seen;
 

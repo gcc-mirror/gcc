@@ -151,12 +151,14 @@ runtime_function_type(Runtime_function_type bft)
 	    Typed_identifier_list* methods = new Typed_identifier_list();
 	    Type* mtype = Type::make_function_type(NULL, NULL, NULL, bloc);
 	    methods->push_back(Typed_identifier("x", mtype, bloc));
-	    t = Type::make_interface_type(methods, bloc);
+	    Interface_type* it = Type::make_interface_type(methods, bloc);
+	    it->finalize_methods();
+	    t = it;
 	  }
 	  break;
 
 	case RFT_EFACE:
-	  t = Type::make_interface_type(NULL, bloc);
+	  t = Type::make_empty_interface_type(bloc);
 	  break;
 
 	case RFT_FUNC_PTR:
