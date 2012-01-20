@@ -1,3 +1,8 @@
+2011-01-20  Tijl Coosemans  <tijl@coosemans.org>
+
+	* config/i386/i386.c: Fix checks for !TARGET_MACHO.
+	* config/rs6000/rs6000.c: Likewise.
+
 2012-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/51915

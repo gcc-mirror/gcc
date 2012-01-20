@@ -939,7 +939,7 @@ static bool legitimate_lo_sum_address_p (enum machine_mode, rtx, int);
 static struct machine_function * rs6000_init_machine_status (void);
 static bool rs6000_assemble_integer (rtx, unsigned int, int);
 static bool no_global_regs_above (int, bool);
-#if defined (HAVE_GAS_HIDDEN) && !defined (TARGET_MACHO)
+#if defined (HAVE_GAS_HIDDEN) && !TARGET_MACHO
 static void rs6000_assemble_visibility (tree, int);
 #endif
 static int rs6000_ra_ever_killed (void);
@@ -1388,7 +1388,7 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER rs6000_assemble_integer
 
-#if defined (HAVE_GAS_HIDDEN) && !defined (TARGET_MACHO)
+#if defined (HAVE_GAS_HIDDEN) && !TARGET_MACHO
 #undef TARGET_ASM_ASSEMBLE_VISIBILITY
 #define TARGET_ASM_ASSEMBLE_VISIBILITY rs6000_assemble_visibility
 #endif
@@ -1580,7 +1580,7 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
   rs6000_builtin_vectorized_function
 
-#ifndef TARGET_MACHO
+#if !TARGET_MACHO
 #undef TARGET_STACK_PROTECT_FAIL
 #define TARGET_STACK_PROTECT_FAIL rs6000_stack_protect_fail
 #endif
@@ -15519,7 +15519,7 @@ rs6000_assemble_integer (rtx x, unsigned int size, int aligned_p)
   return default_assemble_integer (x, size, aligned_p);
 }
 
-#if defined (HAVE_GAS_HIDDEN) && !defined (TARGET_MACHO)
+#if defined (HAVE_GAS_HIDDEN) && !TARGET_MACHO
 /* Emit an assembler directive to set symbol visibility for DECL to
    VISIBILITY_TYPE.  */
 
