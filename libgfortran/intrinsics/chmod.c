@@ -37,6 +37,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
    Sets the file permission "chmod" using a mode string.
 
+   For MinGW, only _S_IWRITE and _S_IREAD are supported. To set those,
+   only the user attributes are used.
+
    The mode string allows for the same arguments as POSIX's chmod utility.
    a) string containing an octal number.
    b) Comma separated list of clauses of the form:
@@ -89,8 +92,15 @@ chmod_func (char *name, char *mode, gfc_charlen_type name_len,
 
   if (mode[0] >= '0' && mode[0] <= '9')
     {
+#ifdef __MINGW32__
+      unsigned mode;
+      if (sscanf (mode, "%o", &mode) != 1)
+	return 1;
+      file_mode = (mode_t) mode;
+#else
       if (sscanf (mode, "%o", &file_mode) != 1)
 	return 1;
+#endif
       return chmod (file, file_mode);
     }
 
@@ -101,10 +111,14 @@ chmod_func (char *name, char *mode, gfc_charlen_type name_len,
   file_mode = stat_buf.st_mode & ~S_IFMT;
   is_dir = stat_buf.st_mode & S_IFDIR;
 
+#ifdef HAVE_UMASK
   /* Obtain the umask without distroying the setting.  */
   mode_mask = 0;
   mode_mask = umask (mode_mask);
   (void) umask (mode_mask);
+#else
+  honor_umask = false;
+#endif
 
   for (i = 0; i < mode_len; i++)
     {
@@ -113,7 +127,9 @@ chmod_func (char *name, char *mode, gfc_charlen_type name_len,
 	  ugo[0] = false;
 	  ugo[1] = false;
 	  ugo[2] = false;
+#ifdef HAVE_UMASK
 	  honor_umask = true;
+#endif
 	}
       continue_clause = false; 
       rwxXstugo[0] = false;
@@ -140,7 +156,9 @@ chmod_func (char *name, char *mode, gfc_charlen_type name_len,
 	      ugo[1] = true;
 	      ugo[2] = true;
 	      part = 1;
+#ifdef HAVE_UMASK
 	      honor_umask = false;
+#endif
 	      break;
 	    case 'u':
 	      if (part == 2)
@@ -153,7 +171,9 @@ chmod_func (char *name, char *mode, gfc_charlen_type name_len,
 		return 1;
 	      ugo[0] = true;
 	      part = 1;
+#ifdef HAVE_UMASK
 	      honor_umask = false;
+#endif
 	      break;
 	    case 'g':
 	      if (part == 2)
@@ -166,7 +186,9 @@ chmod_func (char *name, char *mode, gfc_charlen_type name_len,
 		return 1;
        	      ugo[1] = true;
 	      part = 1;
+#ifdef HAVE_UMASK
 	      honor_umask = false;
+#endif
 	      break;
 	    case 'o':
 	      if (part == 2)
@@ -179,7 +201,9 @@ chmod_func (char *name, char *mode, gfc_charlen_type name_len,
 		return 1;
 	      ugo[2] = true;
 	      part = 1;
+#ifdef HAVE_UMASK
 	      honor_umask = false;
+#endif
 	      break;
 
 	    /* Mode setting: =+-.  */
@@ -284,6 +308,18 @@ clause_done:
 	return 1;
 
       new_mode = 0;
+
+#ifdef __MINGW32__
+
+      /* Read. */
+      if (rwxXstugo[0] && (ugo[0] || honor_umask))
+	new_mode |= _S_IREAD;
+
+      /* Write. */
+      if (rwxXstugo[1] && (ugo[0] || honor_umask))
+	new_mode |= _S_IWRITE;
+
+#else
 
       /* Read. */
       if (rwxXstugo[0])
@@ -400,12 +436,20 @@ clause_done:
 		new_mode |= S_IXGRP;
 	    }
 	}
+#endif  /* __MINGW32__ */
 
+#ifdef HAVE_UMASK
     if (honor_umask)
       new_mode &= ~mode_mask;
+#endif
 
     if (set_mode == 1)
       {
+#ifdef __MINGW32__
+	if (ugo[0] || honor_umask)
+	  file_mode = (file_mode & ~(_S_IWRITE | _S_IREAD))
+		      | (new_mode & (_S_IWRITE | _S_IREAD));
+#else
 	/* Set '='.  */
 	if ((ugo[0] || honor_umask) && !rwxXstugo[6])
 	  file_mode = (file_mode & ~(S_ISUID | S_IRUSR | S_IWUSR | S_IXUSR))
@@ -420,27 +464,31 @@ clause_done:
 	  file_mode |= S_ISVTX;
 	else if (!is_dir)
 	  file_mode &= ~S_ISVTX;
+#endif
       }
     else if (set_mode == 2)
       {
 	/* Clear '-'.  */
 	file_mode &= ~new_mode;
+#ifndef __MINGW32__
 	if (rwxXstugo[5] || !is_dir)
 	  file_mode &= ~S_ISVTX;
+#endif
       }
     else if (set_mode == 3)
       {
 	file_mode |= new_mode;
+#ifndef __MINGW32__
 	if (rwxXstugo[5] && is_dir)
 	  file_mode |= S_ISVTX;
 	else if (!is_dir)
 	  file_mode &= ~S_ISVTX;
+#endif
       }
   }
 
   return chmod (file, file_mode);
 }
-
 
 
 extern void chmod_i4_sub (char *, char *, GFC_INTEGER_4 *,
