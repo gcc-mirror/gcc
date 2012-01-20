@@ -1,6 +1,6 @@
 /* Handle parameterized types (templates) for GNU C++.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
+   2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Rewritten by Jason Merrill (jason@cygnus.com).
@@ -7466,6 +7466,9 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 
       context = tsubst (DECL_CONTEXT (gen_tmpl), arglist,
 			complain, in_decl);
+      if (context == error_mark_node)
+	return error_mark_node;
+
       if (!context)
 	context = global_namespace;
 
