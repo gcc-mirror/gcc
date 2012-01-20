@@ -637,7 +637,8 @@ Gogo::start_function(const std::string& name, Function_type* type,
 	  ++count;
 	  name = buf;
 	}
-      block->bindings()->add_variable(name, NULL, this_param);
+      if (!Gogo::is_sink_name(name))
+	block->bindings()->add_variable(name, NULL, this_param);
     }
 
   const Typed_identifier_list* parameters = type->parameters();
