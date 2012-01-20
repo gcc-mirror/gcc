@@ -1,3 +1,9 @@
+2012-01-20  Tobias Burnus  <burnus@net-b.de>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/51056
+	* gfortran.dg/use_21.f90: New.
+
 2012-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/51106

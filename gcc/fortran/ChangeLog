@@ -1,3 +1,10 @@
+2012-01-20  Tobias Burnus  <burnus@net-b.de>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/51056
+	* module.c (load_needed, read_module): Don't mark __vtab etc.
+	as use_only.
+
 2012-01-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51904
