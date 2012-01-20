@@ -1,3 +1,7 @@
+2012-01-20  Kai Tietz  <ktietz@redhat.com>
+
+	* g++.dg/torture/pr51344.C: Fix typo.
+
 2012-01-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51903
