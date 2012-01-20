@@ -1,3 +1,7 @@
+2012-01-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgrtl.c (rtl_dump_bb): Do not dump insns for {ENTRY|EXIT}_BLOCK.
+
 2012-01-19  Quentin Neill  <quentin.neill@amd.com>
 
 	PR target/48743
