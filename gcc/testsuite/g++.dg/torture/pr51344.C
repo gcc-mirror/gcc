@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+class A;
+
 template <class T>
 class B
 {
