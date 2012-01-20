@@ -4351,7 +4351,11 @@ load_needed (pointer_info *p)
 
   mio_symbol (sym);
   sym->attr.use_assoc = 1;
-  if (only_flag)
+
+  /* Mark as only or rename for later diagnosis for explicitly imported
+     but not used warnings; don't mark internal symbols such as __vtab,
+     __def_init etc.  */
+  if (only_flag && sym->name[0] != '_' && sym->name[1] != '_')
     sym->attr.use_only = 1;
   if (p->u.rsym.renamed)
     sym->attr.use_rename = 1;
@@ -4574,8 +4578,9 @@ read_module (void)
 	    p = name;
 
 	  /* Exception: Always import vtabs & vtypes.  */
-	  if (p == NULL && (strncmp (name, "__vtab_", 5) == 0
-			    || strncmp (name, "__vtype_", 6) == 0))
+	  if (p == NULL && name[0] == '_'
+	      && (strncmp (name, "__vtab_", 5) == 0
+		  || strncmp (name, "__vtype_", 6) == 0))
 	    p = name;
 
 	  /* Skip symtree nodes not in an ONLY clause, unless there
@@ -4641,7 +4646,10 @@ read_module (void)
 	      if (strcmp (name, p) != 0)
 		sym->attr.use_rename = 1;
 
-	      sym->attr.use_only = only_flag;
+	      if (name[0] != '_'
+		  || (strncmp (name, "__vtab_", 5) != 0
+		      && strncmp (name, "__vtype_", 6) != 0))
+		sym->attr.use_only = only_flag;
 
 	      /* Store the symtree pointing to this symbol.  */
 	      info->u.rsym.symtree = st;
