@@ -1,3 +1,9 @@
+2012-01-20  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR target/51106
+	* function.c (instantiate_virtual_regs_in_insn): Use
+	delete_insn_and_edges when removing a wrong asm insn.
+
 2012-01-19  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/40761
