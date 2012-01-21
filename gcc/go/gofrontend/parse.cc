@@ -2391,6 +2391,12 @@ Parse::operand(bool may_be_sink)
       this->advance_token();
       return ret;
 
+    case Token::TOKEN_CHARACTER:
+      ret = Expression::make_character(token->character_value(), NULL,
+				       token->location());
+      this->advance_token();
+      return ret;
+
     case Token::TOKEN_INTEGER:
       ret = Expression::make_integer(token->integer_value(), NULL,
 				     token->location());
@@ -3168,6 +3174,7 @@ Parse::expression_may_start_here()
 	default:
 	  return false;
 	}
+    case Token::TOKEN_CHARACTER:
     case Token::TOKEN_INTEGER:
     case Token::TOKEN_FLOAT:
     case Token::TOKEN_IMAGINARY:
@@ -3330,6 +3337,7 @@ Parse::statement(Label* label)
       break;
 
     case Token::TOKEN_STRING:
+    case Token::TOKEN_CHARACTER:
     case Token::TOKEN_INTEGER:
     case Token::TOKEN_FLOAT:
     case Token::TOKEN_IMAGINARY:
@@ -3389,6 +3397,7 @@ Parse::statement_may_start_here()
 	return this->expression_may_start_here();
 
     case Token::TOKEN_STRING:
+    case Token::TOKEN_CHARACTER:
     case Token::TOKEN_INTEGER:
     case Token::TOKEN_FLOAT:
     case Token::TOKEN_IMAGINARY:

@@ -1740,9 +1740,10 @@ Expression::make_string(const std::string& val, Location location)
 class Integer_expression : public Expression
 {
  public:
-  Integer_expression(const mpz_t* val, Type* type, Location location)
+  Integer_expression(const mpz_t* val, Type* type, bool is_character_constant,
+		     Location location)
     : Expression(EXPRESSION_INTEGER, location),
-      type_(type)
+      type_(type), is_character_constant_(is_character_constant)
   { mpz_init_set(this->val_, *val); }
 
   static Expression*
@@ -1782,8 +1783,14 @@ class Integer_expression : public Expression
 
   Expression*
   do_copy()
-  { return Expression::make_integer(&this->val_, this->type_,
-				    this->location()); }
+  {
+    if (this->is_character_constant_)
+      return Expression::make_character(&this->val_, this->type_,
+					this->location());
+    else
+      return Expression::make_integer(&this->val_, this->type_,
+				      this->location());
+  }
 
   void
   do_export(Export*) const;
@@ -1796,6 +1803,8 @@ class Integer_expression : public Expression
   mpz_t val_;
   // The type so far.
   Type* type_;
+  // Whether this is a character constant.
+  bool is_character_constant_;
 };
 
 // Return an integer constant value.
@@ -1817,7 +1826,12 @@ Type*
 Integer_expression::do_type()
 {
   if (this->type_ == NULL)
-    this->type_ = Type::make_abstract_integer_type();
+    {
+      if (this->is_character_constant_)
+	this->type_ = Type::make_abstract_character_type();
+      else
+	this->type_ = Type::make_abstract_integer_type();
+    }
   return this->type_;
 }
 
@@ -1835,7 +1849,12 @@ Integer_expression::do_determine_type(const Type_context* context)
 	       || context->type->complex_type() != NULL))
     this->type_ = context->type;
   else if (!context->may_be_abstract)
-    this->type_ = Type::lookup_integer_type("int");
+    {
+      if (this->is_character_constant_)
+	this->type_ = Type::lookup_integer_type("int32");
+      else
+	this->type_ = Type::lookup_integer_type("int");
+    }
 }
 
 // Return true if the integer VAL fits in the range of the type TYPE.
@@ -1950,6 +1969,8 @@ void
 Integer_expression::do_export(Export* exp) const
 {
   Integer_expression::export_integer(exp, this->val_);
+  if (this->is_character_constant_)
+    exp->write_c_string("'");
   // A trailing space lets us reliably identify the end of the number.
   exp->write_c_string(" ");
 }
@@ -2013,6 +2034,10 @@ Integer_expression::do_import(Import* imp)
   else if (num.find('.') == std::string::npos
 	   && num.find('E') == std::string::npos)
     {
+      bool is_character_constant = (!num.empty()
+				    && num[num.length() - 1] == '\'');
+      if (is_character_constant)
+	num = num.substr(0, num.length() - 1);
       mpz_t val;
       if (mpz_init_set_str(val, num.c_str(), 10) != 0)
 	{
@@ -2020,7 +2045,11 @@ Integer_expression::do_import(Import* imp)
 		   num.c_str());
 	  return Expression::make_error(imp->location());
 	}
-      Expression* ret = Expression::make_integer(&val, NULL, imp->location());
+      Expression* ret;
+      if (is_character_constant)
+	ret = Expression::make_character(&val, NULL, imp->location());
+      else
+	ret = Expression::make_integer(&val, NULL, imp->location());
       mpz_clear(val);
       return ret;
     }
@@ -2043,16 +2072,27 @@ Integer_expression::do_import(Import* imp)
 void
 Integer_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
+  if (this->is_character_constant_)
+    ast_dump_context->ostream() << '\'';
   Integer_expression::export_integer(ast_dump_context, this->val_);
+  if (this->is_character_constant_)
+    ast_dump_context->ostream() << '\'';
 }
 
 // Build a new integer value.
 
 Expression*
-Expression::make_integer(const mpz_t* val, Type* type,
-			 Location location)
+Expression::make_integer(const mpz_t* val, Type* type, Location location)
 {
-  return new Integer_expression(val, type, location);
+  return new Integer_expression(val, type, false, location);
+}
+
+// Build a new character constant value.
+
+Expression*
+Expression::make_character(const mpz_t* val, Type* type, Location location)
+{
+  return new Integer_expression(val, type, true, location);
 }
 
 // Floats.

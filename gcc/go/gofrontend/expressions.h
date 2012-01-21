@@ -164,6 +164,11 @@ class Expression
   static Expression*
   make_string(const std::string&, Location);
 
+  // Make a character constant expression.  TYPE should be NULL for an
+  // abstract type.
+  static Expression*
+  make_character(const mpz_t*, Type*, Location);
+
   // Make a constant integer expression.  TYPE should be NULL for an
   // abstract type.
   static Expression*
