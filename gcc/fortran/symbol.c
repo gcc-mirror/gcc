@@ -444,12 +444,15 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
             a1 = gfc_code2string (flavors, attr->flavor);
             a2 = save;
 	    goto conflict;
-
+	  case FL_NAMELIST:
+	    gfc_error ("Namelist group name at %L cannot have the "
+		       "SAVE attribute", where);
+	    return FAILURE; 
+	    break;
 	  case FL_PROCEDURE:
 	    /* Conflicts between SAVE and PROCEDURE will be checked at
 	       resolution stage, see "resolve_fl_procedure".  */
 	  case FL_VARIABLE:
-	  case FL_NAMELIST:
 	  default:
 	    break;
 	}

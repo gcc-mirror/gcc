@@ -1,4 +1,11 @@
 2012-01-21  Tobias Burnus  <burnus@net-b.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/50556
+	* symbol.c (check_conflict): namelist-group-name cannot have the SAVE
+	attribure.
+
+2012-01-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51913
 	* interface.c (compare_parameter): Fix CLASS comparison.

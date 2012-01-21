@@ -16,7 +16,6 @@ subroutine process(string)
  integer :: i=1,j=2,k=3
  integer ios
  namelist /cmd/ i,j,k
- save cmd
  lines(1)='&cmd'
  lines(2)=string
  lines(3)='/'
