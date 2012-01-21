@@ -1,3 +1,9 @@
+2012-01-21  Robert Millan  <rmh@gnu.org>
+	    Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config/kfreebsd-gnu.h (GNU_USER_DYNAMIC_LINKERX32): New macro.
+	(GNU_USER_DYNAMIC_LINKER): Adjust indentation.
+
 2012-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51914
