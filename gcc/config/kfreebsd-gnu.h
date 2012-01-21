@@ -1,5 +1,5 @@
 /* Definitions for kFreeBSD-based GNU systems with ELF format
-   Copyright (C) 2004, 2006, 2007, 2011
+   Copyright (C) 2004, 2006, 2007, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Robert Millan.
 
@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
-#define GNU_USER_DYNAMIC_LINKER                GLIBC_DYNAMIC_LINKER
+#define GNU_USER_DYNAMIC_LINKER        GLIBC_DYNAMIC_LINKER
 #define GNU_USER_DYNAMIC_LINKER32      GLIBC_DYNAMIC_LINKER32
 #define GNU_USER_DYNAMIC_LINKER64      GLIBC_DYNAMIC_LINKER64
+#define GNU_USER_DYNAMIC_LINKERX32     GLIBC_DYNAMIC_LINKERX32
