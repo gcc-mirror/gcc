@@ -9163,7 +9163,7 @@ Forward_declaration_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 {
   Location ploc = Linemap::predeclared_location();
   if (!this->is_defined())
-    return Expression::make_nil(ploc);
+    return Expression::make_error(ploc);
   else
     {
       Type* t = this->real_type();
