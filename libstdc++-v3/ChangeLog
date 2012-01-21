@@ -1,3 +1,8 @@
+2012-01-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/50982
+	* testsuite/30_threads/*: Add powerpc-ibm-aix* to target selectors.
+
 2012-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/51845
