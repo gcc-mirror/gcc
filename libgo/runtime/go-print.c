@@ -4,6 +4,7 @@
    Use of this source code is governed by a BSD-style
    license that can be found in the LICENSE file.  */
 
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -46,20 +47,95 @@ __go_print_int64 (int64_t val)
 }
 
 void
-__go_print_double (double val)
+__go_print_double (double v)
 {
-  fprintf (stderr, "%.24g", val);
+  char buf[20];
+  int e, s, i, n;
+  double h;
+
+  if (isnan (v))
+    {
+      fputs ("NaN", stderr);
+      return;
+    }
+  if (isinf (v))
+    {
+      putc (v < 0 ? '-' : '+', stderr);
+      fputs ("Inf", stderr);
+      return;
+    }
+
+  /* The number of digits printed.  */
+  n = 7;
+  /* The exponent.  */
+  e = 0;
+  /* The sign.  */
+  s = 0;
+  if (v != 0)
+    {
+      if (v < 0)
+	{
+	  v = -v;
+	  s = 1;
+	}
+
+      /* Normalize.  */
+      while (v >= 10)
+	{
+	  ++e;
+	  v /= 10;
+	}
+      while (v < 1)
+	{
+	  --e;
+	  v *= 10;
+	}
+
+      /* Round.  */
+      h = 5;
+      for (i = 0; i < n; ++i)
+	h /= 10;
+
+      v += h;
+      if (v >= 10)
+	{
+	  ++e;
+	  v /= 10;
+	}
+    }
+
+  /* The format is +d.dddd+edd.  */
+  buf[0] = s ? '-' : '+';
+  for (i = 0; i < n; ++i)
+    {
+      int d;
+
+      d = v;
+      buf[i + 2] = d + '0';
+      v -= d;
+      v *= 10;
+    }
+  buf[1] = buf[2];
+  buf[2] = '.';
+
+  buf[n + 2] = 'e';
+  buf[n + 3] = e < 0 ? '-' : '+';
+  if (e < 0)
+    e = - e;
+  buf[n + 4] = e / 100 + '0';
+  buf[n + 5] = (e / 10) % 10 + '0';
+  buf[n + 6] = e % 10 + '0';
+  buf[n + 7] = '\0';
+  fputs (buf, stderr);
 }
 
 void
 __go_print_complex (__complex double val)
 {
-  fprintf (stderr, "(%.24g%s%.24gi)",
-	  __builtin_creal (val),
-	  (__builtin_cimag (val) >= 0 || __builtin_isnan (__builtin_cimag(val))
-	   ? "+"
-	   : ""),
-	  __builtin_cimag (val));
+  putc ('(', stderr);
+  __go_print_double (__builtin_creal (val));
+  __go_print_double (__builtin_cimag (val));
+  fputs ("i)", stderr);
 }
 
 void
@@ -71,7 +147,7 @@ __go_print_bool (_Bool val)
 void
 __go_print_pointer (void *val)
 {
-  fprintf (stderr, "%p", val);
+  fprintf (stderr, "0x%lx", (unsigned long) (uintptr_t) val);
 }
 
 void
@@ -89,5 +165,6 @@ __go_print_interface (struct __go_interface i)
 void
 __go_print_slice (struct __go_open_array val)
 {
-  fprintf (stderr, "[%d/%d]%p", val.__count, val.__capacity, val.__values);
+  fprintf (stderr, "[%d/%d]", val.__count, val.__capacity);
+  __go_print_pointer (val.__values);
 }
