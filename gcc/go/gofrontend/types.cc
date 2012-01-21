@@ -8605,6 +8605,7 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 
   // If this is a pointer to a pointer, then it is possible that the
   // pointed-to type has methods.
+  bool dereferenced = false;
   if (nt == NULL
       && st == NULL
       && it == NULL
@@ -8617,6 +8618,7 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 	return Expression::make_error(location);
       nt = type->points_to()->named_type();
       st = type->points_to()->struct_type();
+      dereferenced = true;
     }
 
   bool receiver_can_be_pointer = (expr->type()->points_to() != NULL
@@ -8656,6 +8658,12 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 	  else
 	    go_unreachable();
 	  go_assert(m != NULL);
+	  if (dereferenced && m->is_value_method())
+	    {
+	      error_at(location,
+		       "calling value method requires explicit dereference");
+	      return Expression::make_error(location);
+	    }
 	  if (!m->is_value_method() && expr->type()->points_to() == NULL)
 	    expr = Expression::make_unary(OPERATOR_AND, expr, location);
 	  ret = m->bind_method(expr, location);
