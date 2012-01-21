@@ -1,3 +1,8 @@
+2012-01-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51913
+	* interface.c (compare_parameter): Fix CLASS comparison.
+
 2012-01-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51904
