@@ -1,3 +1,9 @@
+2012-01-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/50556
+	* gfortran.dg/namelist_74.f90: New test.
+	* gfortran.dg/namelist_59.f90: Remove SAVE attribute.
+
 2012-01-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51913
