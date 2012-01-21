@@ -1706,7 +1706,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       return 0;
     }
     
-  /* F2003, 12.5.2.5.  */
+  /* F2008, 12.5.2.5.  */
   if (formal->ts.type == BT_CLASS
       && (CLASS_DATA (formal)->attr.class_pointer
           || CLASS_DATA (formal)->attr.allocatable))
@@ -1718,8 +1718,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 			formal->name, &actual->where);
 	  return 0;
 	}
-      if (CLASS_DATA (actual)->ts.u.derived
-	  != CLASS_DATA (formal)->ts.u.derived)
+      if (!gfc_compare_derived_types (CLASS_DATA (actual)->ts.u.derived,
+				      CLASS_DATA (formal)->ts.u.derived))
 	{
 	  if (where)
 	    gfc_error ("Actual argument to '%s' at %L must have the same "
