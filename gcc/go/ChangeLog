@@ -1,3 +1,10 @@
+2012-01-21  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::type_size): Check for error_mark_node.
+	(Gcc_backend::type_alignment): Likewise.
+	(Gcc_backend::type_field_alignment): Likewise.
+	(Gcc_backend::type_field_offset): Likewise.
+
 2012-01-20  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::placeholder_struct_type): Permit name to
