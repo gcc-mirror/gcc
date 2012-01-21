@@ -338,6 +338,8 @@ Export::register_builtin_types(Gogo* gogo)
   this->register_builtin_type(gogo, "bool", BUILTIN_BOOL);
   this->register_builtin_type(gogo, "string", BUILTIN_STRING);
   this->register_builtin_type(gogo, "error", BUILTIN_ERROR);
+  this->register_builtin_type(gogo, "byte", BUILTIN_BYTE);
+  this->register_builtin_type(gogo, "rune", BUILTIN_RUNE);
 }
 
 // Register one builtin type in the export table.
@@ -352,10 +354,14 @@ Export::register_builtin_type(Gogo* gogo, const char* name, Builtin_code code)
   go_assert(ins.second);
 
   // We also insert the underlying type.  We can see the underlying
-  // type at least for string and bool.
-  Type* real_type = named_object->type_value()->real_type();
-  ins = this->type_refs_.insert(std::make_pair(real_type, code));
-  go_assert(ins.second);
+  // type at least for string and bool.  We skip the type aliases byte
+  // and rune here.
+  if (code != BUILTIN_BYTE && code != BUILTIN_RUNE)
+    {
+      Type* real_type = named_object->type_value()->real_type();
+      ins = this->type_refs_.insert(std::make_pair(real_type, code));
+      go_assert(ins.second);
+    }
 }
 
 // Class Export::Stream.

@@ -58,8 +58,9 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int int_type_size,
 					       RUNTIME_TYPE_KIND_INT8));
   this->add_named_type(Type::make_integer_type("int16", false,  16,
 					       RUNTIME_TYPE_KIND_INT16));
-  this->add_named_type(Type::make_integer_type("int32", false,  32,
-					       RUNTIME_TYPE_KIND_INT32));
+  Named_type* int32_type = Type::make_integer_type("int32", false,  32,
+						   RUNTIME_TYPE_KIND_INT32);
+  this->add_named_type(int32_type);
   this->add_named_type(Type::make_integer_type("int64", false,  64,
 					       RUNTIME_TYPE_KIND_INT64));
 
@@ -82,22 +83,21 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int int_type_size,
 						 RUNTIME_TYPE_KIND_INT);
   this->add_named_type(int_type);
 
-  // "byte" is an alias for "uint8".  Construct a Named_object which
-  // points to UINT8_TYPE.  Note that this breaks the normal pairing
-  // in which a Named_object points to a Named_type which points back
-  // to the same Named_object.
-  Named_object* byte_type = this->declare_type("byte", loc);
-  byte_type->set_type_value(uint8_type);
-  uint8_type->integer_type()->set_is_byte();
-
-  // "rune" is an alias for "int".
-  Named_object* rune_type = this->declare_type("rune", loc);
-  rune_type->set_type_value(int_type);
-  int_type->integer_type()->set_is_rune();
-
   this->add_named_type(Type::make_integer_type("uintptr", true,
 					       pointer_size,
 					       RUNTIME_TYPE_KIND_UINTPTR));
+
+  // "byte" is an alias for "uint8".
+  uint8_type->integer_type()->set_is_byte();
+  Named_object* byte_type = Named_object::make_type("byte", NULL, uint8_type,
+						    loc);
+  this->add_named_type(byte_type->type_value());
+
+  // "rune" is an alias for "int32".
+  int32_type->integer_type()->set_is_rune();
+  Named_object* rune_type = Named_object::make_type("rune", NULL, int32_type,
+						    loc);
+  this->add_named_type(rune_type->type_value());
 
   this->add_named_type(Type::make_named_bool_type());
 
@@ -3830,7 +3830,12 @@ Variable::type_from_range(Expression* expr, bool get_index_type,
 	return t->deref()->array_type()->element_type();
     }
   else if (t->is_string_type())
-    return Type::lookup_integer_type("int");
+    {
+      if (get_index_type)
+	return Type::lookup_integer_type("int");
+      else
+	return Type::lookup_integer_type("int32");
+    }
   else if (t->map_type() != NULL)
     {
       if (get_index_type)

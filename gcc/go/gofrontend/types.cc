@@ -192,7 +192,10 @@ Type::make_non_abstract_type()
   switch (this->classification())
     {
     case TYPE_INTEGER:
-      return Type::lookup_integer_type("int");
+      if (this->integer_type()->is_rune())
+	return Type::lookup_integer_type("int32");
+      else
+	return Type::lookup_integer_type("int");
     case TYPE_FLOAT:
       return Type::lookup_float_type("float64");
     case TYPE_COMPLEX:
@@ -319,6 +322,12 @@ Type::are_identical(const Type* t1, const Type* t2, bool errors_are_identical,
   // Skip defined forward declarations.
   t1 = t1->forwarded();
   t2 = t2->forwarded();
+
+  // Ignore aliases for purposes of type identity.
+  if (t1->named_type() != NULL && t1->named_type()->is_alias())
+    t1 = t1->named_type()->real_type();
+  if (t2->named_type() != NULL && t2->named_type()->is_alias())
+    t2 = t2->named_type()->real_type();
 
   if (t1 == t2)
     return true;
@@ -963,6 +972,8 @@ tree
 Type::type_descriptor_pointer(Gogo* gogo, Location location)
 {
   Type* t = this->forwarded();
+  if (t->named_type() != NULL && t->named_type()->is_alias())
+    t = t->named_type()->real_type();
   if (t->type_descriptor_var_ == NULL)
     {
       t->make_type_descriptor_var(gogo);
@@ -2317,6 +2328,21 @@ Integer_type::create_abstract_integer_type()
   return abstract_type;
 }
 
+// Create a new abstract character type.
+
+Integer_type*
+Integer_type::create_abstract_character_type()
+{
+  static Integer_type* abstract_type;
+  if (abstract_type == NULL)
+    {
+      abstract_type = new Integer_type(true, false, 32,
+				       RUNTIME_TYPE_KIND_INT32);
+      abstract_type->set_is_rune();
+    }
+  return abstract_type;
+}
+
 // Integer type compatibility.
 
 bool
@@ -2397,6 +2423,14 @@ Integer_type*
 Type::make_abstract_integer_type()
 {
   return Integer_type::create_abstract_integer_type();
+}
+
+// Make an abstract character type.
+
+Integer_type*
+Type::make_abstract_character_type()
+{
+  return Integer_type::create_abstract_character_type();
 }
 
 // Look up an integer type.
@@ -7215,6 +7249,18 @@ Named_type::message_name() const
   return this->named_object_->message_name();
 }
 
+// Whether this is an alias.  There are currently only two aliases so
+// we just recognize them by name.
+
+bool
+Named_type::is_alias() const
+{
+  if (!this->is_builtin())
+    return false;
+  const std::string& name(this->name());
+  return name == "byte" || name == "rune";
+}
+
 // Return the base type for this type.  We have to be careful about
 // circular type definitions, which are invalid but may be seen here.
 
@@ -7615,6 +7661,9 @@ Named_type::do_compare_is_identity(Gogo* gogo) const
 unsigned int
 Named_type::do_hash_for_method(Gogo* gogo) const
 {
+  if (this->is_alias())
+    return this->type_->named_type()->do_hash_for_method(gogo);
+
   const std::string& name(this->named_object()->name());
   unsigned int ret = Type::hash_string(name, 0);
 
@@ -7959,6 +8008,9 @@ Named_type::do_get_backend(Gogo* gogo)
 Expression*
 Named_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 {
+  if (name == NULL && this->is_alias())
+    return this->type_->type_descriptor(gogo, this->type_);
+
   // If NAME is not NULL, then we don't really want the type
   // descriptor for this type; we want the descriptor for the
   // underlying type, giving it the name NAME.
@@ -7973,7 +8025,12 @@ Named_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 void
 Named_type::do_reflection(Gogo* gogo, std::string* ret) const
 {
-  if (!Linemap::is_predeclared_location(this->location()))
+  if (this->is_alias())
+    {
+      this->append_reflection(this->type_, gogo, ret);
+      return;
+    }
+  if (!this->is_builtin())
     {
       const Package* package = this->named_object_->package();
       if (package != NULL)
@@ -7995,9 +8052,14 @@ Named_type::do_reflection(Gogo* gogo, std::string* ret) const
 void
 Named_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 {
+  if (this->is_alias())
+    {
+      this->append_mangled_name(this->type_, gogo, ret);
+      return;
+    }
   Named_object* no = this->named_object_;
   std::string name;
-  if (Linemap::is_predeclared_location(this->location()))
+  if (this->is_builtin())
     go_assert(this->in_function_ == NULL);
   else
     {

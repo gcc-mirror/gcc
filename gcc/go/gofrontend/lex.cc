@@ -163,7 +163,8 @@ Token::~Token()
 void
 Token::clear()
 {
-  if (this->classification_ == TOKEN_INTEGER)
+  if (this->classification_ == TOKEN_INTEGER
+      || this->classification_ == TOKEN_CHARACTER)
     mpz_clear(this->u_.integer_value);
   else if (this->classification_ == TOKEN_FLOAT
 	   || this->classification_ == TOKEN_IMAGINARY)
@@ -190,6 +191,7 @@ Token::Token(const Token& tok)
     case TOKEN_OPERATOR:
       this->u_.op = tok.u_.op;
       break;
+    case TOKEN_CHARACTER:
     case TOKEN_INTEGER:
       mpz_init_set(this->u_.integer_value, tok.u_.integer_value);
       break;
@@ -229,6 +231,7 @@ Token::operator=(const Token& tok)
     case TOKEN_OPERATOR:
       this->u_.op = tok.u_.op;
       break;
+    case TOKEN_CHARACTER:
     case TOKEN_INTEGER:
       mpz_init_set(this->u_.integer_value, tok.u_.integer_value);
       break;
@@ -263,6 +266,10 @@ Token::print(FILE* file) const
       break;
     case TOKEN_STRING:
       fprintf(file, "quoted string \"%s\"", this->u_.string_value->c_str());
+      break;
+    case TOKEN_CHARACTER:
+      fprintf(file, "character ");
+      mpz_out_str(file, 10, this->u_.integer_value);
       break;
     case TOKEN_INTEGER:
       fprintf(file, "integer ");
@@ -1320,7 +1327,7 @@ Lex::gather_character()
 
   Location location = this->location();
   this->lineoff_ = p + 1 - this->linebuf_;
-  Token ret = Token::make_integer_token(val, location);
+  Token ret = Token::make_character_token(val, location);
   mpz_clear(val);
   return ret;
 }

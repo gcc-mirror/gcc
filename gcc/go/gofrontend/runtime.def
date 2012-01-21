@@ -36,7 +36,7 @@ DEF_GO_RUNTIME(STRINGITER, "runtime.stringiter", P2(STRING, INT), R1(INT))
 
 // Range over a string, returning the next index and character.
 DEF_GO_RUNTIME(STRINGITER2, "runtime.stringiter2", P2(STRING, INT),
-	       R2(INT, INT))
+	       R2(INT, RUNE))
 
 // Concatenate two strings.
 DEF_GO_RUNTIME(STRING_PLUS, "__go_string_plus", P2(STRING, STRING), R1(STRING))
