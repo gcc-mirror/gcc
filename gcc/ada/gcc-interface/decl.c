@@ -1051,6 +1051,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		   entity is always accessed indirectly through it.  */
 		else
 		  {
+		    /* We need to preserve the volatileness of the renamed
+		       object through the indirection.  */
+		    if (TREE_THIS_VOLATILE (gnu_expr)
+			&& !TYPE_VOLATILE (gnu_type))
+		      gnu_type
+			= build_qualified_type (gnu_type,
+						(TYPE_QUALS (gnu_type)
+						 | TYPE_QUAL_VOLATILE));
 		    gnu_type = build_reference_type (gnu_type);
 		    inner_const_flag = TREE_READONLY (gnu_expr);
 		    const_flag = true;

@@ -1,3 +1,7 @@
+2012-01-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/renaming5.ad[sb]: New test.
+
 2012-01-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51919

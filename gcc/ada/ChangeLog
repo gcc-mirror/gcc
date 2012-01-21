@@ -1,3 +1,9 @@
+2012-01-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/46192
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: In the case of a
+	renaming, preserve the volatileness through the indirection, if any.
+
 2012-01-14  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* gcc-interface/Makefile.in (OSCONS_EXTRACT): Add
