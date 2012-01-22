@@ -1,3 +1,12 @@
+2012-01-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/51924
+	* ree.c (combine_set_extension): Improve debugging message.
+	(combine_reaching_defs): Likewise.
+	(get_defs): Rename confusingly named variable.
+	(find_and_remove_re): Skip a candidate if the extension expression has
+	been modified.
+
 2012-01-21  Robert Millan  <rmh@gnu.org>
 	    Gerald Pfeifer  <gerald@pfeifer.com>
 
