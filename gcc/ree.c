@@ -346,7 +346,8 @@ combine_set_extension (ext_cand *cand, rtx curr_insn, rtx *orig_set)
     {
       if (dump_file)
         {
-          fprintf (dump_file, "Merged instruction with extension:\n");
+          fprintf (dump_file,
+		   "Tentatively merged extension with definition:\n");
           print_rtl_single (dump_file, curr_insn);
         }
       return true;
@@ -407,21 +408,21 @@ transform_ifelse (ext_cand *cand, rtx def_insn)
 static struct df_link *
 get_defs (rtx insn, rtx reg, VEC (rtx,heap) **dest)
 {
-  df_ref reg_info, *defs;
+  df_ref reg_info, *uses;
   struct df_link *ref_chain, *ref_link;
 
   reg_info = NULL;
 
-  for (defs = DF_INSN_USES (insn); *defs; defs++)
+  for (uses = DF_INSN_USES (insn); *uses; uses++)
     {
-      reg_info = *defs;
+      reg_info = *uses;
       if (GET_CODE (DF_REF_REG (reg_info)) == SUBREG)
         return NULL;
       if (REGNO (DF_REF_REG (reg_info)) == REGNO (reg))
         break;
     }
 
-  gcc_assert (reg_info != NULL && defs != NULL);
+  gcc_assert (reg_info != NULL && uses != NULL);
 
   ref_chain = DF_REF_CHAIN (reg_info);
 
@@ -686,11 +687,10 @@ combine_reaching_defs (ext_cand *cand, rtx set_pat)
              purposes.  This extension cannot be deleted.  */
           if (dump_file)
             {
-              FOR_EACH_VEC_ELT (rtx, vec, i, def_insn)
-                {
-                  fprintf (dump_file, "Non-mergeable definitions:\n");
-                  print_rtl_single (dump_file, def_insn);
-                }
+	      fprintf (dump_file,
+		       "Merge cancelled, non-mergeable definitions:\n");
+	      FOR_EACH_VEC_ELT (rtx, vec, i, def_insn)
+	        print_rtl_single (dump_file, def_insn);
             }
         }
     }
@@ -842,6 +842,12 @@ find_and_remove_re (void)
   FOR_EACH_VEC_ELT (ext_cand, reinsn_list, i, curr_cand)
     {
       num_re_opportunities++;
+
+      /* If the candidate insn is itself a definition insn for another
+         candidate, it may have been modified and the UD chain broken.
+         FIXME: the handling of successive extensions can be improved.  */
+      if (!reg_mentioned_p (curr_cand->expr, PATTERN (curr_cand->insn)))
+	continue;
 
       /* Try to combine the extension with the definition.  */
       if (dump_file)
