@@ -26,6 +26,10 @@
         muchcode; muchcode; muchcode; muchcode; muchcode; muchcode; \
         muchcode; muchcode; muchcode; muchcode; muchcode; muchcode
 
+#ifdef __mips
+/* See PR 51931.  */
+__attribute__((nomips16))
+#endif
 int
 main (int argc, char **argv)
 {
