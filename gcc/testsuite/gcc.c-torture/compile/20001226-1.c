@@ -21,6 +21,10 @@
 #define C1024(x,y) C256(x,y) C256(x+16,y) C256(x+32,y) C256(x+48,y)
 #define C4096(x,y) C1024(x,y) C1024(x,y+16) C1024(x,y+32) C1024(x,y+48)
 
+#ifdef __mips
+/* See PR 51931.  */
+__attribute__((nomips16))
+#endif
 unsigned foo(int x[64], int y[64])
 {
   C4096(x,y);

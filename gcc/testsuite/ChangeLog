@@ -1,5 +1,11 @@
 2012-01-22  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR target/51931
+	* gcc.c-torture/compile/20001226-1.c: Add nomips16 attribute.
+	* g++.dg/opt/longbranch1.C: Likewise.
+
+2012-01-22  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* g++.old-deja/g++.pt/ptrmem6.C: xfail a test for ARM and MIPS
 	in C++11 mode.
 
