@@ -1,3 +1,10 @@
+2012-01-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51832
+	* g++.dg/lto/pr51832.h: New.
+	* g++.dg/lto/pr51832_0.C: New.
+	* g++.dg/lto/pr51832_1.C: New.
+
 2012-01-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/ext-elim-1.c: New test.

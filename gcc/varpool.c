@@ -484,6 +484,7 @@ varpool_analyze_pending_decls (void)
 	    {
 	      DECL_WEAK (node->decl) = DECL_WEAK (node->alias_of);
 	      TREE_PUBLIC (node->decl) = TREE_PUBLIC (node->alias_of);
+	      DECL_EXTERNAL (node->decl) = DECL_EXTERNAL (node->alias_of);
 	      DECL_VISIBILITY (node->decl) = DECL_VISIBILITY (node->alias_of);
 	      if (TREE_PUBLIC (node->decl))
 		{
