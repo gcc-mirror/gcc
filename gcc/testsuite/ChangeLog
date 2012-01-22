@@ -1,3 +1,8 @@
+2012-01-22  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* g++.old-deja/g++.pt/ptrmem6.C: xfail a test for ARM and MIPS
+	in C++11 mode.
+
 2012-01-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/50556

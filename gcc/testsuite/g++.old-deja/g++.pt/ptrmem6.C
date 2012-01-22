@@ -25,7 +25,7 @@ int main() {
   h<&B::j>(); // { dg-error "" } 
   g<(void (A::*)()) &A::f>(); // { dg-error "" "" { xfail c++11 } }
   h<(int A::*) &A::i>(); // { dg-error "" "" { xfail c++11 } }
-  g<(void (A::*)()) &B::f>(); // { dg-error "" } 
+  g<(void (A::*)()) &B::f>(); // { dg-error "" "" { xfail { c++11 && { arm*-*-* mips*-*-* } } } }
   h<(int A::*) &B::j>(); // { dg-error "" } 
   g<(void (A::*)()) 0>(); // { dg-error "" "" { target c++98 } }
   h<(int A::*) 0>(); // { dg-error "" "" { target c++98 } }
