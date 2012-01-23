@@ -1,6 +1,6 @@
 # GCC target-specific configuration file.
 # Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-# 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+# 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -243,7 +243,6 @@ md_file=
 # Obsolete configurations.
 case ${target} in
    alpha*-dec-osf5.1*			\
- | i[34567]86-*-interix3*		\
  | mips-sgi-irix6.5			\
  | mips*-*-openbsd*			\
  | score-*				\
@@ -1473,11 +1472,11 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 			;;
 	esac
 	;;
-i[34567]86-*-interix3*)
-	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/i386-interix.h i386/i386-interix3.h interix.h interix3.h"
+i[34567]86-*-interix[3-9]*)
+	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/i386-interix.h"
 	tmake_file="${tmake_file} i386/t-interix"
-	extra_options="${extra_options} rpath.opt interix.opt"
-	extra_objs=winnt.o
+	extra_options="${extra_options} rpath.opt i386/interix.opt"
+	extra_objs="winnt.o winnt-stubs.o"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	if test x$enable_threads = xyes ; then
 		thread_file='posix'

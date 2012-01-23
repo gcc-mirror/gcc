@@ -3670,9 +3670,6 @@ fi
   *-mingw*)
     host_makefile_frag="config/mh-mingw"
     ;;
-  *-interix*)
-    host_makefile_frag="config/mh-interix"
-    ;;
   hppa*-hp-hpux10*)
     host_makefile_frag="config/mh-pa-hpux10"
     ;;

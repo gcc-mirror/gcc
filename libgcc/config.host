@@ -1,6 +1,6 @@
 # libgcc host-specific configuration file.
 # Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-# 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+# 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -634,7 +634,7 @@ x86_64-*-mingw*)
 	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-mingw32 t-dfprules i386/t-crtfm i386/t-chkstk"
 	extra_parts="$extra_parts crtfastmath.o"
 	;;
-i[34567]86-*-interix3*)
+i[34567]86-*-interix[3-9]*)
 	tmake_file="$tmake_file i386/t-interix i386/t-chkstk"
 	;;
 ia64*-*-elf*)

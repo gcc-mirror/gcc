@@ -1,3 +1,8 @@
+2012-01-22  Douglas B Rupp  <rupp@ngnat.com>
+
+	* configure.ac: Remove reference to mh-interix.
+	* configure: Regenerate.
+
 2012-01-05  Richard Henderson  <rth@redhat.com>
 
 	PR bootstrap/51072
