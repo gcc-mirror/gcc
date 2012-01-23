@@ -1,3 +1,18 @@
+2012-01-23  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.ads, sem_prag.adb: Minor reformatting.
+
+2012-01-23  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Check for
+	language defined aspect applied to renaming or formal type
+	declaration (not permitted)
+
+2012-01-23  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cdlili.adb, a-cidlli.adb, a-cbdlli.adb (Vet): Replaced
+	comment with pragma Assert.
+
 2012-01-23  Vincent Pucci  <pucci@adacore.com>
 
 	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration): Call

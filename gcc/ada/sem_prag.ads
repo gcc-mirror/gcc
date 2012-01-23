@@ -113,9 +113,8 @@ package Sem_Prag is
    procedure Make_Aspect_For_PPC_In_Gen_Sub_Decl (Decl : Node_Id);
    --  This routine makes aspects from precondition or postcondition pragmas
    --  that appear within a generic subprogram declaration. Decl is the generic
-   --  subprogram declaration node.
-   --  Note that the aspects are attached to the generic copy and also to the
-   --  orginal tree.
+   --  subprogram declaration node. Note that the aspects are attached to the
+   --  generic copy and also to the orginal tree.
 
    procedure Process_Compilation_Unit_Pragmas (N : Node_Id);
    --  Called at the start of processing compilation unit N to deal with any
