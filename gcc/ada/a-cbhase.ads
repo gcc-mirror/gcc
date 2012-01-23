@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -32,6 +32,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Iterator_Interfaces;
+
 private with Ada.Containers.Hash_Tables;
 private with Ada.Streams;
 
@@ -478,6 +479,18 @@ private
    use HT_Types;
    use Ada.Streams;
 
+   procedure Write
+     (Stream    : not null access Root_Stream_Type'Class;
+      Container : Set);
+
+   for Set'Write use Write;
+
+   procedure Read
+     (Stream    : not null access Root_Stream_Type'Class;
+      Container : out Set);
+
+   for Set'Read use Read;
+
    type Set_Access is access all Set;
    for Set_Access'Storage_Size use 0;
 
@@ -504,20 +517,6 @@ private
 
    for Cursor'Read use Read;
 
-   No_Element : constant Cursor := (Container => null, Node => 0);
-
-   procedure Write
-     (Stream    : not null access Root_Stream_Type'Class;
-      Container : Set);
-
-   for Set'Write use Write;
-
-   procedure Read
-     (Stream    : not null access Root_Stream_Type'Class;
-      Container : out Set);
-
-   for Set'Read use Read;
-
    type Constant_Reference_Type
      (Element : not null access constant Element_Type) is null record;
 
@@ -535,5 +534,7 @@ private
 
    Empty_Set : constant Set :=
                  (Hash_Table_Type with Capacity => 0, Modulus => 0);
+
+   No_Element : constant Cursor := (Container => null, Node => 0);
 
 end Ada.Containers.Bounded_Hashed_Sets;

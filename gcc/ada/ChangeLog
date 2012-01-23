@@ -1,3 +1,13 @@
+2012-01-23  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cohase.ads, a-cihase.ads, a-cbhase.ads, a-coorse.ads,
+	a-ciorse.ads, a-cborse.ads, a-cohama.ads, a-cihama.ads, a-cbhama.ads,
+	a-coorma.ads, a-ciorma.ads, a-cborma.ads, a-cdlili.ads, a-cidlli.ads,
+	a-cbdlli.ads, a-convec.ads, a-coinve.ads, a-cobove.ads (Cursor'Read,
+	Cursor'Write): Declare in private part.
+	(Reference_Type'Read, Reference_Type'Write): Ditto.
+	(Constant_Reference_Type'Read, Constant_Reference_Type'Write): Ditto.
+
 2012-01-23  Robert Dewar  <dewar@adacore.com>
 
 	* a-catizo.ads, a-calend.adb, a-calend.ads, par-ch13.adb: Minor

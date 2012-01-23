@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -31,8 +31,9 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
-with Ada.Streams; use Ada.Streams;
 with Ada.Iterator_Interfaces;
+
+private with Ada.Streams;
 
 generic
    type Index_Type is range <>;
@@ -64,6 +65,7 @@ package Ada.Containers.Bounded_Vectors is
    Empty_Vector : constant Vector;
 
    No_Element : constant Cursor;
+
    function Has_Element (Position : Cursor) return Boolean;
 
    package Vector_Iterator_Interfaces is new
@@ -148,33 +150,9 @@ package Ada.Containers.Bounded_Vectors is
    with
       Implicit_Dereference => Element;
 
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Constant_Reference_Type);
-
-   for Constant_Reference_Type'Read use Read;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Constant_Reference_Type);
-
-   for Constant_Reference_Type'Write use Write;
-
    type Reference_Type (Element : not null access Element_Type) is private
    with
       Implicit_Dereference => Element;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Reference_Type);
-
-   for Reference_Type'Read use Read;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Reference_Type);
-
-   for Reference_Type'Write use Write;
 
    function Constant_Reference
      (Container : aliased Vector;
@@ -385,6 +363,8 @@ private
    pragma Inline (Next);
    pragma Inline (Previous);
 
+   use Ada.Streams;
+
    type Elements_Array is array (Count_Type range <>) of aliased Element_Type;
    function "=" (L, R : Elements_Array) return Boolean is abstract;
 
@@ -430,8 +410,32 @@ private
    type Constant_Reference_Type
       (Element : not null access constant Element_Type) is null record;
 
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type);
+
+   for Constant_Reference_Type'Read use Read;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type);
+
+   for Constant_Reference_Type'Write use Write;
+
    type Reference_Type
       (Element : not null access Element_Type) is null record;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type);
+
+   for Reference_Type'Read use Read;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type);
+
+   for Reference_Type'Write use Write;
 
    Empty_Vector : constant Vector := (Capacity => 0, others => <>);
 
