@@ -1,5 +1,20 @@
 2012-01-23  Robert Dewar  <dewar@adacore.com>
 
+	* a-calend.adb: Minor reformatting.
+
+2012-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb, sem_ch9.adb: Handle array of access to synchronized
+	interface in requeue statement.
+
+2012-01-23  Cyrille Comar  <comar@adacore.com>
+
+	* projects.texi: Remove references to main units and replace
+	with references to main programs to be coherent with the
+	documentation.
+
+2012-01-23  Robert Dewar  <dewar@adacore.com>
+
 	* s-utf_32.adb: Minor reformatting.
 
 2012-01-23  Vincent Celier  <celier@adacore.com>

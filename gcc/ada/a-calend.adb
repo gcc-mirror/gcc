@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,12 +132,10 @@ package body Ada.Calendar is
    pragma Import (C, Flag, "__gl_leap_seconds_support");
    --  This imported value is used to determine whether the compilation had
    --  binder flag "-y" present which enables leap seconds. A value of zero
-   --  signifies no leap seconds support while a value of one enables the
-   --  support.
+   --  signifies no leap seconds support while a value of one enables support.
 
-   Leap_Support : constant Boolean := Flag = 1;
-   --  The above flag controls the usage of leap seconds in all Ada.Calendar
-   --  routines.
+   Leap_Support : constant Boolean := (Flag = 1);
+   --  Flag to controls the usage of leap seconds in all Ada.Calendar routines
 
    Leap_Seconds_Count : constant Natural := 24;
 
@@ -172,8 +170,8 @@ package body Ada.Calendar is
    Start_Of_Time : constant Time_Rep :=
                      Ada_Low - Time_Rep (3) * Nanos_In_Day;
 
-   --  The Unix lower time bound expressed as nanoseconds since the
-   --  start of Ada time in UTC.
+   --  The Unix lower time bound expressed as nanoseconds since the start of
+   --  Ada time in UTC.
 
    Unix_Min : constant Time_Rep :=
                 Ada_Low + Time_Rep (17 * 366 + 52 * 365) * Nanos_In_Day;
@@ -187,7 +185,8 @@ package body Ada.Calendar is
        (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334);
 
    --  The following table contains the hard time values of all existing leap
-   --  seconds. The values are produced by the utility program xleaps.adb.
+   --  seconds. The values are produced by the utility program xleaps.adb. This
+   --  must be updated when additional leap second times are defined.
 
    Leap_Second_Times : constant array (1 .. Leap_Seconds_Count) of Time_Rep :=
      (-5601484800000000000,
@@ -251,10 +250,9 @@ package body Ada.Calendar is
    function "-" (Left : Time; Right : Time) return Duration is
       pragma Unsuppress (Overflow_Check);
 
-      --  The bounds of type Duration expressed as time representations
-
       Dur_Low  : constant Time_Rep := Duration_To_Time_Rep (Duration'First);
       Dur_High : constant Time_Rep := Duration_To_Time_Rep (Duration'Last);
+      --  The bounds of type Duration expressed as time representations
 
       Res_N : Time_Rep;
 
@@ -266,13 +264,12 @@ package body Ada.Calendar is
       --  the generation of bogus values by the Unchecked_Conversion, we apply
       --  the following check.
 
-      if Res_N < Dur_Low
-        or else Res_N > Dur_High
-      then
+      if Res_N < Dur_Low or else Res_N > Dur_High then
          raise Time_Error;
       end if;
 
       return Time_Rep_To_Duration (Res_N);
+
    exception
       when Constraint_Error =>
          raise Time_Error;
@@ -344,8 +341,7 @@ package body Ada.Calendar is
       --  by adding the number of nanoseconds between the two origins.
 
       Res_N : Time_Rep :=
-                Duration_To_Time_Rep (System.OS_Primitives.Clock) +
-                  Unix_Min;
+                Duration_To_Time_Rep (System.OS_Primitives.Clock) + Unix_Min;
 
    begin
       --  If the target supports leap seconds, determine the number of leap
@@ -572,10 +568,10 @@ package body Ada.Calendar is
 
       --  Validity checks
 
-      if not Year'Valid
-        or else not Month'Valid
-        or else not Day'Valid
-        or else not Seconds'Valid
+      if not Year'Valid    or else
+         not Month'Valid   or else
+         not Day'Valid     or else
+         not Seconds'Valid
       then
          raise Time_Error;
       end if;
@@ -603,10 +599,10 @@ package body Ada.Calendar is
    begin
       --  Validity checks
 
-      if not Year'Valid
-        or else not Month'Valid
-        or else not Day'Valid
-        or else not Seconds'Valid
+      if not Year'Valid    or else
+         not Month'Valid   or else
+         not Day'Valid     or else
+         not Seconds'Valid
       then
          raise Time_Error;
       end if;
@@ -815,12 +811,10 @@ package body Ada.Calendar is
 
          --  Step 1: Validity checks of input values
 
-         if not Year'Valid
-           or else not Month'Valid
-           or else not Day'Valid
-           or else tm_hour not in 0 .. 24
-           or else tm_min not in 0 .. 59
-           or else tm_sec not in 0 .. 60
+         if not Year'Valid or else not Month'Valid or else not Day'Valid
+           or else tm_hour  not in 0 .. 24
+           or else tm_min   not in 0 .. 59
+           or else tm_sec   not in 0 .. 60
            or else tm_isdst not in -1 .. 1
          then
             raise Time_Error;
@@ -1032,7 +1026,6 @@ package body Ada.Calendar is
          Date_N    : constant Time_Rep := Time_Rep (Date);
          Time_Zone : constant Long_Integer :=
                        Time_Zones_Operations.UTC_Time_Offset (Date);
-
          Ada_Low_N : Time_Rep;
          Day_Count : Long_Integer;
          Day_Dur   : Time_Dur;
@@ -1133,7 +1126,7 @@ package body Ada.Calendar is
          Date_N := Date_N - Time_Rep (Elapsed_Leaps) * Nano;
 
          --  Step 2: Time zone processing. This action converts the input date
-         --  from GMT to the requested time zone.
+         --  from GMT to the requested time zone. Applies from Ada 2005 on.
 
          if Is_Ada_05 then
             if Time_Zone /= 0 then
@@ -1289,6 +1282,7 @@ package body Ada.Calendar is
          --  the input date.
 
          Count := (Year - Year_Number'First) / 4;
+
          for Four_Year_Segments in 1 .. Count loop
             Res_N := Res_N + Nanos_In_Four_Years;
          end loop;
@@ -1388,9 +1382,7 @@ package body Ada.Calendar is
             --  An Ada 2005 caller requesting an explicit leap second or an
             --  Ada 95 caller accounting for an invisible leap second.
 
-            if Leap_Sec
-              or else Res_N >= Next_Leap_N
-            then
+            if Leap_Sec or else Res_N >= Next_Leap_N then
                Res_N := Res_N + Time_Rep (1) * Nano;
             end if;
 
