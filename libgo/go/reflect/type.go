@@ -243,7 +243,7 @@ type commonType struct {
 	align      int8
 	fieldAlign uint8
 	size       uintptr
-	hash	   uint32
+	hash       uint32
 	hashfn     func(unsafe.Pointer, uintptr)
 	equalfn    func(unsafe.Pointer, unsafe.Pointer, uintptr)
 	string     *string
@@ -464,7 +464,7 @@ func (t *uncommonType) Method(i int) (m Method) {
 	m.Type = mt.toType()
 	x := new(unsafe.Pointer)
 	*x = p.tfn
-	m.Func = Value{mt, unsafe.Pointer(x), fl|flagIndir}
+	m.Func = Value{mt, unsafe.Pointer(x), fl | flagIndir}
 	m.Index = i
 	return
 }
@@ -999,10 +999,8 @@ func (ct *commonType) ptrTo() *commonType {
 		return &p.commonType
 	}
 
-	rt := (*runtime.Type)(unsafe.Pointer(ct))
-
 	rp := new(runtime.PtrType)
-	
+
 	// initialize p using *byte's ptrType as a prototype.
 	// have to do assignment as ptrType, not runtime.PtrType,
 	// in order to write to unexported fields.
