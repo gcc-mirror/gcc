@@ -1,3 +1,9 @@
+2012-01-23  Dodji Seketeli  <dodji@redhat.com>
+
+	PR testsuite/51941
+	* g++.dg/debug/dwarf2/nested-3.C:  Accept multiple lines between
+	the DW_TAG_class_type and DW_AT_name: "Executor".
+
 2012-01-23  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	* lib/target-supports.exp
