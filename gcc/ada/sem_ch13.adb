@@ -890,6 +890,28 @@ package body Sem_Ch13 is
                end loop;
             end if;
 
+            --  Check some general restrictions on language defined aspects
+
+            if not Impl_Defined_Aspects (A_Id) then
+               Error_Msg_Name_1 := Nam;
+
+               --  Not allowed for renaming declarations
+
+               if Nkind (N) in N_Renaming_Declaration then
+                  Error_Msg_N
+                    ("aspect % not allowed for renaming declaration",
+                     Aspect);
+               end if;
+
+               --  Not allowed for formal type declarations
+
+               if Nkind (N) = N_Formal_Type_Declaration then
+                  Error_Msg_N
+                    ("aspect % not allowed for formal type declaration",
+                     Aspect);
+               end if;
+            end if;
+
             --  Copy expression for later processing by the procedures
             --  Check_Aspect_At_[Freeze_Point | End_Of_Declarations]
 

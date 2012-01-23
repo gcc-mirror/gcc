@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,6 +65,11 @@ package body Ada.Containers.Doubly_Linked_Lists is
       New_Node  : Node_Access);
 
    function Vet (Position : Cursor) return Boolean;
+   --  Checks invariants of the cursor and its designated container, as a
+   --  simple way of detecting dangling references (see operation Free for a
+   --  description of the detection mechanism), returning True if all checks
+   --  pass. Invocations of Vet are used here as the argument of pragma Assert,
+   --  so the checks are performed only when assertions are enabled.
 
    ---------
    -- "=" --
@@ -528,8 +533,23 @@ package body Ada.Containers.Doubly_Linked_Lists is
       procedure Deallocate is
          new Ada.Unchecked_Deallocation (Node_Type, Node_Access);
    begin
+      --  While a node is in use, as an active link in a list, its Previous and
+      --  Next components must be null, or designate a different node; this is
+      --  a node invariant. Before actually deallocating the node, we set both
+      --  access value components of the node to point to the node itself, thus
+      --  falsifying the node invariant. Subprogram Vet inspects the value of
+      --  the node components when interrogating the node, in order to detect
+      --  whether the cursor's node access value is dangling.
+
+      --  Note that we have no guarantee that the storage for the node isn't
+      --  modified when it is deallocated, but there are other tests that Vet
+      --  does if node invariants appear to be satisifed. However, in practice
+      --  this simple test works well enough, detecting dangling references
+      --  immediately, without needing further interrogation.
+
       X.Prev := X;
       X.Next := X;
+
       Deallocate (X);
    end Free;
 
@@ -1966,6 +1986,13 @@ package body Ada.Containers.Doubly_Linked_Lists is
          return False;
       end if;
 
+      --  An invariant of a node is that its Previous and Next components can
+      --  be null, or designate a different node. Operation Free sets the
+      --  access value components of the node to designate the node itself
+      --  before actually deallocating the node, thus deliberately violating
+      --  the node invariant. This gives us a simple way to detect a dangling
+      --  reference to a node.
+
       if Position.Node.Next = Position.Node then
          return False;
       end if;
@@ -1973,6 +2000,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
       if Position.Node.Prev = Position.Node then
          return False;
       end if;
+
+      --  In practice the tests above will detect most instances of a dangling
+      --  reference. If we get here, it means that the invariants of the
+      --  designated node are satisfied (they at least appear to be satisfied),
+      --  so we perform some more tests, to determine whether invariants of the
+      --  designated list are satisfied too.
 
       declare
          L : List renames Position.Container.all;
@@ -2003,8 +2036,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
             return False;
          end if;
 
-         --  If we get here, we know that this disjunction is true:
-         --  Position.Node.Prev /= null or else Position.Node = L.First
+         pragma Assert (Position.Node.Prev /= null
+                          or else Position.Node = L.First);
 
          if Position.Node.Next = null
            and then Position.Node /= L.Last
@@ -2012,8 +2045,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
             return False;
          end if;
 
-         --  If we get here, we know that this disjunction is true:
-         --  Position.Node.Next /= null or else Position.Node = L.Last
+         pragma Assert (Position.Node.Next /= null
+                          or else Position.Node = L.Last);
 
          if L.Length = 1 then
             return L.First = L.Last;
@@ -2059,23 +2092,17 @@ package body Ada.Containers.Doubly_Linked_Lists is
             return False;
          end if;
 
-         --  Eliminate earlier disjunct
-
-         if Position.Node = L.First then
+         if Position.Node = L.First then  -- eliminates earlier disjunct
             return True;
          end if;
 
-         --  If we get here, we know (disjunctive syllogism) that this
-         --  predicate is true: Position.Node.Prev /= null
+         pragma Assert (Position.Node.Prev /= null);
 
-         --  Eliminate earlier disjunct
-
-         if Position.Node = L.Last then
+         if Position.Node = L.Last then  -- eliminates earlier disjunct
             return True;
          end if;
 
-         --  If we get here, we know (disjunctive syllogism) that this
-         --  predicate is true: Position.Node.Next /= null
+         pragma Assert (Position.Node.Next /= null);
 
          if Position.Node.Next.Prev /= Position.Node then
             return False;

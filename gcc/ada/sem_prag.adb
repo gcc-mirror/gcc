@@ -15247,27 +15247,24 @@ package body Sem_Prag is
    -- Make_Aspect_For_PPC_In_Gen_Sub_Decl --
    -----------------------------------------
 
-   --  Convert any PPC and pragmas that appear within a generic subprogram
-   --  declaration into aspect.
-
    procedure Make_Aspect_For_PPC_In_Gen_Sub_Decl (Decl : Node_Id) is
-      Aspects          : constant List_Id := New_List;
-      Loc              : constant Source_Ptr := Sloc (Decl);
-      Or_Decl          : constant Node_Id := Original_Node (Decl);
-      Aspect           : Node_Id;
+      Aspects : constant List_Id := New_List;
+      Loc     : constant Source_Ptr := Sloc (Decl);
+      Or_Decl : constant Node_Id := Original_Node (Decl);
+      Aspect  : Node_Id;
+
       Original_Aspects : List_Id;
       --  To capture global references, a copy of the created aspects must be
       --  inserted in the original tree.
 
-      Prag             : Node_Id;
-      Prag_Arg_Ass     : Node_Id;
-      Prag_Id          : Pragma_Id;
+      Prag         : Node_Id;
+      Prag_Arg_Ass : Node_Id;
+      Prag_Id      : Pragma_Id;
 
    begin
-      Prag := Next (Decl);
-
       --  Check for any PPC pragmas that appear within Decl
 
+      Prag := Next (Decl);
       while Nkind (Prag) = N_Pragma loop
          Prag_Id := Get_Pragma_Id (Chars (Pragma_Identifier (Prag)));
 
@@ -15298,18 +15295,20 @@ package body Sem_Prag is
       --  Set all new aspects into the generic declaration node
 
       if Is_Non_Empty_List (Aspects) then
-         --  Create the list of aspects which will be inserted in the original
-         --  tree.
+
+         --  Create the list of aspects to be inserted in the original tree
 
          Original_Aspects := Copy_Separate_List (Aspects);
 
          --  Check if Decl already has aspects
+
          --  Attach the new lists of aspects to both the generic copy and the
          --  original tree.
 
          if Has_Aspects (Decl) then
             Append_List (Aspects, Aspect_Specifications (Decl));
             Append_List (Original_Aspects, Aspect_Specifications (Or_Decl));
+
          else
             Set_Parent (Aspects, Decl);
             Set_Aspect_Specifications (Decl, Aspects);
@@ -15335,9 +15334,7 @@ package body Sem_Prag is
          --  In ASIS mode, for a pragma generated from a source aspect, also
          --  analyze the original aspect expression.
 
-         if ASIS_Mode
-           and then Present (Corresponding_Aspect (N))
-         then
+         if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
             Preanalyze_Spec_Expression
               (Original_Node (Get_Pragma_Arg (Arg_Req)), Standard_Boolean);
          end if;
@@ -15350,9 +15347,7 @@ package body Sem_Prag is
          --  In ASIS mode, for a pragma generated from a source aspect, also
          --  analyze the original aspect expression.
 
-         if ASIS_Mode
-           and then Present (Corresponding_Aspect (N))
-         then
+         if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
             Preanalyze_Spec_Expression
               (Original_Node (Get_Pragma_Arg (Arg_Ens)), Standard_Boolean);
          end if;
