@@ -1,7 +1,7 @@
 @set gprconfig GPRconfig
 
 @c ------ projects.texi
-@c Copyright (C) 2002-2011, Free Software Foundation, Inc.
+@c Copyright (C) 2002-2012, Free Software Foundation, Inc.
 @c This file is shared between the GNAT user's guide and gprbuild. It is not
 @c compilable on its own, you should instead compile the other two manuals.
 @c For that reason, there is no toplevel @menu
@@ -2160,7 +2160,7 @@ using standard projects. This section will go over a few of these use
 cases to try and explain what you can use aggregate projects for.
 
 @menu
-* Building all main units from a single project tree::
+* Building all main programs from a single project tree::
 * Building a set of projects with a single command::
 * Define a build environment::
 * Performance improvements in builder::
@@ -2169,8 +2169,8 @@ cases to try and explain what you can use aggregate projects for.
 @end menu
 
 @c -----------------------------------------------------------
-@node Building all main units from a single project tree
-@subsection Building all main units from a single project tree
+@node Building all main programs from a single project tree
+@subsection Building all main programs from a single project tree
 @c -----------------------------------------------------------
 
 Most often, an application is organized into modules and submodules,
@@ -2189,7 +2189,7 @@ a syntax similar to
    gprbuild -PA.gpr
 @end smallexample
 
-this will only rebuild the main units of project A, not those of the
+this will only rebuild the main programs of project A, not those of the
 imported projects B and C. Therefore you have to spawn several
 gnatmake commands, one per project, to build all executables.
 This is a little inconvenient, but more importantly is inefficient
@@ -2206,7 +2206,7 @@ and C. Then, when you build with
     gprbuild -PAgg.gpr
 @end smallexample
 
-this will build all main units from A, B and C.
+this will build all mains from A, B and C.
 
 @smallexample @c projectfile
    aggregate project Agg is
@@ -2214,14 +2214,14 @@ this will build all main units from A, B and C.
    end Agg;
 @end smallexample
 
-If B or C do not define any main unit (through their Main
+If B or C do not define any main program (through their Main
 attribute), all their sources are build. When you do not group them
 in the aggregate project, only those sources that are needed by A
 will be build.
 
-If you add a main unit to a project P not already explicitly referenced in the
+If you add a main to a project P not already explicitly referenced in the
 aggregate project, you will need to add "p.gpr" in the list of project
-files for the aggregate project, or the main unit will not be built when
+files for the aggregate project, or the main will not be built when
 building the aggregate project.
 
 @c ---------------------------------------------------------
@@ -2402,7 +2402,7 @@ grouping standard projects, you can have both the root of a project tree
 within the tree.
 
 Basically, the idea is to specify all those projects that have
-main units you want to build and link, or libraries you want to
+main programs you want to build and link, or libraries you want to
 build. You can even specify projects that do not use the Main
 attribute nor the @code{Library_*} attributes, and the result will be to
 build all their source files (not just the ones needed by other
@@ -2665,7 +2665,7 @@ Projects can locally add to those by using the
 
 For projects that are build through the aggregate, the package Builder
 is ignored, except for the Executable attribute which specifies the
-name of the executables resulting from the link of the main units, and
+name of the executables resulting from the link of the main programs, and
 for the Executable_Suffix.
 
 @c ---------------------------------------------
@@ -4125,7 +4125,7 @@ with one or several main subprograms, by specifying their source files on the
 command line.
 
 @smallexample
-    gnatmake ^-P^/PROJECT_FILE=^prj main1 main2 main3
+    gnatmake ^-P^/PROJECT_FILE=^prj main1.adb main2.adb main3.adb
 @end smallexample
 
 @noindent
@@ -4161,7 +4161,7 @@ Example:
 @smallexample @c projectfile
 @group
    project Prj is
-      for Main use ("main1", "main2", "main3");
+      for Main use ("main1.adb", "main2.adb", "main3.adb");
    end Prj;
 @end group
 @end smallexample
@@ -4169,7 +4169,7 @@ Example:
 @noindent
 With this project file, @code{"gnatmake ^-Pprj^/PROJECT_FILE=PRJ^"}
 is equivalent to
-@code{"gnatmake ^-Pprj^/PROJECT_FILE=PRJ^ main1 main2 main3"}.
+@code{"gnatmake ^-Pprj^/PROJECT_FILE=PRJ^ main1.adb main2.adb main3.adb"}.
 
 When the project attribute @code{Main} is not specified, or is specified
 as an empty string list, or when the switch @option{-u} is used on the command

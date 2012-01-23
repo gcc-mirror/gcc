@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -9090,10 +9090,26 @@ package body Exp_Ch9 is
          --  Generate:
          --    _Disp_Requeue (<Params>);
 
-         return
-           Make_Procedure_Call_Statement (Loc,
-             Name => Make_Identifier (Loc, Name_uDisp_Requeue),
-             Parameter_Associations => Params);
+         --  Find entity for Disp_Requeue operation, which belongs to
+         --  the type and may not be directly visible.
+
+         declare
+            Elmt : Elmt_Id;
+            Op   : Entity_Id;
+
+         begin
+            Elmt := First_Elmt (Primitive_Operations (Etype (Conc_Typ)));
+            while Present (Elmt) loop
+               Op := Node (Elmt);
+               exit when Chars (Op) = Name_uDisp_Requeue;
+               Next_Elmt (Elmt);
+            end loop;
+
+            return
+              Make_Procedure_Call_Statement (Loc,
+                Name                   => New_Occurrence_Of (Op, Loc),
+                Parameter_Associations => Params);
+         end;
       end Build_Dispatching_Requeue;
 
       --------------------------------------
@@ -9365,6 +9381,16 @@ package body Exp_Ch9 is
 
       Extract_Entry (N, Concval, Ename, Index);
       Conc_Typ := Etype (Concval);
+
+      --  If the prefix is an access to class-wide type, dereference to get
+      --  object and entry type.
+
+      if Is_Access_Type (Conc_Typ) then
+         Conc_Typ := Designated_Type (Conc_Typ);
+         Rewrite (Concval,
+           Make_Explicit_Dereference (Loc, Relocate_Node (Concval)));
+         Analyze_And_Resolve (Concval, Conc_Typ);
+      end if;
 
       --  Examine the scope stack in order to find nearest enclosing protected
       --  or task type. This will constitute our invocation source.
