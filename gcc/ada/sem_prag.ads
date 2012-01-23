@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,6 +109,13 @@ package Sem_Prag is
    --  concatenations) and places it in Name_Buffer, setting Name_Len to its
    --  length, and then returns True. If it is not of the correct form, then an
    --  appropriate error message is posted, and False is returned.
+
+   procedure Make_Aspect_For_PPC_In_Gen_Sub_Decl (Decl : Node_Id);
+   --  This routine makes aspects from precondition or postcondition pragmas
+   --  that appear within a generic subprogram declaration. Decl is the generic
+   --  subprogram declaration node.
+   --  Note that the aspects are attached to the generic copy and also to the
+   --  orginal tree.
 
    procedure Process_Compilation_Unit_Pragmas (N : Node_Id);
    --  Called at the start of processing compilation unit N to deal with any

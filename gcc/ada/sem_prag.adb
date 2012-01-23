@@ -7991,8 +7991,9 @@ package body Sem_Prag is
             --  Normally the analysis that follows will freeze the subprogram
             --  being called. However, if the call is to a null procedure,
             --  we want to freeze it before creating the block, because the
-            --  analysis that follows may be done with expansion disabled, and
-            --  and the body will not be generated, leading to spurious errors.
+            --  analysis that follows may be done with expansion disabled, in
+            --  which case the body will not be generated, leading to spurious
+            --  errors.
 
             if Nkind (Call) = N_Procedure_Call_Statement
               and then Is_Entity_Name (Name (Call))
@@ -15241,6 +15242,82 @@ package body Sem_Prag is
          return False;
       end if;
    end Is_Pragma_String_Literal;
+
+   -----------------------------------------
+   -- Make_Aspect_For_PPC_In_Gen_Sub_Decl --
+   -----------------------------------------
+
+   --  Convert any PPC and pragmas that appear within a generic subprogram
+   --  declaration into aspect.
+
+   procedure Make_Aspect_For_PPC_In_Gen_Sub_Decl (Decl : Node_Id) is
+      Aspects          : constant List_Id := New_List;
+      Loc              : constant Source_Ptr := Sloc (Decl);
+      Or_Decl          : constant Node_Id := Original_Node (Decl);
+      Aspect           : Node_Id;
+      Original_Aspects : List_Id;
+      --  To capture global references, a copy of the created aspects must be
+      --  inserted in the original tree.
+
+      Prag             : Node_Id;
+      Prag_Arg_Ass     : Node_Id;
+      Prag_Id          : Pragma_Id;
+
+   begin
+      Prag := Next (Decl);
+
+      --  Check for any PPC pragmas that appear within Decl
+
+      while Nkind (Prag) = N_Pragma loop
+         Prag_Id := Get_Pragma_Id (Chars (Pragma_Identifier (Prag)));
+
+         case Prag_Id is
+            when Pragma_Postcondition | Pragma_Precondition =>
+               Prag_Arg_Ass := First (Pragma_Argument_Associations (Prag));
+
+               --  Make an aspect from any PPC pragma
+
+               Aspect :=
+                 Make_Aspect_Specification (Loc,
+                   Identifier =>
+                     Make_Identifier (Loc, Chars (Pragma_Identifier (Prag))),
+                   Expression => Expression (Prag_Arg_Ass));
+
+               Append (Aspect, Aspects);
+
+               --  Set the pragma node analyzed to avoid any further analysis
+
+               Set_Analyzed (Prag, True);
+
+            when others => null;
+         end case;
+
+         Next (Prag);
+      end loop;
+
+      --  Set all new aspects into the generic declaration node
+
+      if Is_Non_Empty_List (Aspects) then
+         --  Create the list of aspects which will be inserted in the original
+         --  tree.
+
+         Original_Aspects := Copy_Separate_List (Aspects);
+
+         --  Check if Decl already has aspects
+         --  Attach the new lists of aspects to both the generic copy and the
+         --  original tree.
+
+         if Has_Aspects (Decl) then
+            Append_List (Aspects, Aspect_Specifications (Decl));
+            Append_List (Original_Aspects, Aspect_Specifications (Or_Decl));
+         else
+            Set_Parent (Aspects, Decl);
+            Set_Aspect_Specifications (Decl, Aspects);
+            Set_Parent (Original_Aspects, Or_Decl);
+            Set_Aspect_Specifications (Or_Decl, Original_Aspects);
+         end if;
+      end if;
+   end Make_Aspect_For_PPC_In_Gen_Sub_Decl;
 
    ------------------------
    -- Preanalyze_TC_Args --

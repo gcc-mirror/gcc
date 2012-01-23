@@ -59,6 +59,7 @@ with Sem_Disp; use Sem_Disp;
 with Sem_Elab; use Sem_Elab;
 with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
+with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
@@ -3082,6 +3083,15 @@ package body Sem_Ch12 is
          end;
       end if;
 
+      --  For ASIS purposes, convert any postcondition, precondition pragmas
+      --  into aspects, if N is not a compilation unit by itself, in order to
+      --  enable the analysis of expressions inside the corresponding PPC
+      --  pragmas.
+
+      if ASIS_Mode and then Is_List_Member (N) then
+         Make_Aspect_For_PPC_In_Gen_Sub_Decl (N);
+      end if;
+
       Spec := Specification (N);
       Id := Defining_Entity (Spec);
       Generate_Definition (Id);
@@ -4662,7 +4672,8 @@ package body Sem_Ch12 is
          end if;
 
          Generate_Definition (Act_Decl_Id);
-         Set_Contract (Anon_Id, Make_Contract (Sloc (Anon_Id))); -- ??? needed?
+         --  Set_Contract (Anon_Id, Make_Contract (Sloc (Anon_Id)));
+         --  ??? needed?
          Set_Contract (Act_Decl_Id, Make_Contract (Sloc (Act_Decl_Id)));
 
          --  Inherit all inlining-related flags which apply to the generic in
