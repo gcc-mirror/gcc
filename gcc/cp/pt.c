@@ -8157,6 +8157,9 @@ parameter_of_template_p (tree parm, tree templ)
   for (i = 0; i < TREE_VEC_LENGTH (parms); ++i)
     {
       tree p = TREE_VALUE (TREE_VEC_ELT (parms, i));
+      if (p == error_mark_node)
+	continue;
+
       if (parm == p
 	  || (DECL_INITIAL (parm)
 	      && DECL_INITIAL (parm) == DECL_INITIAL (p)))
