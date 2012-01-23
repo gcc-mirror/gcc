@@ -1,3 +1,8 @@
+2012-01-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51398
+	* pt.c (parameter_of_template_p): Skip error_mark_node parameters.
+
 2012-01-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51925
