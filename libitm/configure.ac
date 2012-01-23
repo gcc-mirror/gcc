@@ -1,5 +1,5 @@
 # Process this file with autoreconf to produce a configure script.
-#   Copyright (C) 2011 Free Software Foundation, Inc.
+#   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -208,12 +208,17 @@ GCC_LINUX_FUTEX(:)
 # See if we support thread-local storage.
 GCC_CHECK_TLS
 
-# See what sort of export controls are availible.
+# See what sort of export controls are available.
 LIBITM_CHECK_ATTRIBUTE_VISIBILITY
 LIBITM_CHECK_ATTRIBUTE_DLLEXPORT
 LIBITM_CHECK_ATTRIBUTE_ALIAS
-LIBITM_ENABLE_SYMVERS
 
+# Check linker hardware capability support.
+LIBITM_CHECK_LINKER_HWCAP
+# If defaulting to -mavx, don't clear hwcaps.
+AC_CHECK_DECL([__AVX__], [HWCAP_LDFLAGS=''])
+
+LIBITM_ENABLE_SYMVERS
 if test $enable_symvers = gnu; then
   AC_DEFINE(LIBITM_GNU_SYMBOL_VERSIONING, 1,
 	    [Define to 1 if GNU symbol versioning is used for libitm.])
