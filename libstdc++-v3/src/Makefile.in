@@ -88,48 +88,35 @@ am__base_list = \
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
-	ctype_configure_char.lo ctype_members.lo messages_members.lo \
-	monetary_members.lo numeric_members.lo time_members.lo
-@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_2 = allocator-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	concept-inst.lo ext-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	fstream-inst.lo ios-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	iostream-inst.lo istream-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	locale-inst.lo misc-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	ostream-inst.lo sstream-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	streambuf-inst.lo string-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	wlocale-inst.lo wstring-inst.lo
-@GLIBCXX_LDBL_COMPAT_TRUE@am__objects_3 = compatibility-ldbl.lo
-@ENABLE_PARALLEL_TRUE@am__objects_4 = parallel_settings.lo \
-@ENABLE_PARALLEL_TRUE@	compatibility-parallel_list.lo \
-@ENABLE_PARALLEL_TRUE@	compatibility-parallel_list-2.lo
-am__objects_5 = basic_file.lo c++locale.lo $(am__objects_2) \
-	$(am__objects_3) $(am__objects_4)
-am__objects_6 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
-	codecvt.lo compatibility.lo compatibility-c++0x.lo \
-	compatibility-atomic-c++0x.lo compatibility-debug_list.lo \
-	compatibility-debug_list-2.lo compatibility-list.lo \
-	compatibility-list-2.lo complex_io.lo ctype.lo debug.lo \
-	functexcept.lo functional.lo globals_io.lo hash_c++0x.lo \
-	hash_tr1.lo hashtable_c++0x.lo hashtable_tr1.lo ios.lo \
-	ios_failure.lo ios_init.lo ios_locale.lo limits.lo list.lo \
-	locale.lo locale_init.lo locale_facets.lo localename.lo \
-	math_stubs_float.lo math_stubs_long_double.lo stdexcept.lo \
-	strstream.lo system_error.lo tree.lo istream.lo \
-	placeholders.lo regex.lo shared_ptr.lo streambuf.lo mutex.lo \
-	condition_variable.lo chrono.lo thread.lo future.lo \
-	valarray.lo $(am__objects_1) $(am__objects_5)
-am_libstdc___la_OBJECTS = $(am__objects_6)
+am_libstdc___la_OBJECTS =
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp =
 am__depfiles_maybe =
-CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-CXXLD = $(CXX)
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
 SOURCES = $(libstdc___la_SOURCES)
+RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
+	html-recursive info-recursive install-data-recursive \
+	install-dvi-recursive install-exec-recursive \
+	install-html-recursive install-info-recursive \
+	install-pdf-recursive install-ps-recursive install-recursive \
+	installcheck-recursive installdirs-recursive pdf-recursive \
+	ps-recursive uninstall-recursive
+RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
+  distclean-recursive maintainer-clean-recursive
+AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
+	$(RECURSIVE_CLEAN_TARGETS:-recursive=) tags TAGS ctags CTAGS
 ETAGS = etags
 CTAGS = ctags
+DIST_SUBDIRS = $(SUBDIRS)
 ABI_TWEAKS_SRCDIR = @ABI_TWEAKS_SRCDIR@
 ACLOCAL = @ACLOCAL@
 ALLOCATOR_H = @ALLOCATOR_H@
@@ -198,7 +185,6 @@ LDFLAGS = @LDFLAGS@
 LIBICONV = @LIBICONV@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
-LIBSUPCXX_PICFLAGS = @LIBSUPCXX_PICFLAGS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -225,6 +211,7 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PDFLATEX = @PDFLATEX@
+PIC_CXXFLAGS = @PIC_CXXFLAGS@
 RANLIB = @RANLIB@
 SECTION_FLAGS = @SECTION_FLAGS@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
@@ -337,145 +324,27 @@ WARN_CXXFLAGS = \
 
 # -I/-D flags to pass when compiling.
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
+SUBDIRS = c++98 c++11
 
 # Cross compiler support.
 toolexeclib_LTLIBRARIES = libstdc++.la
-@ENABLE_SYMVERS_TRUE@CLEANFILES = libstdc++-symbols.ver $(version_dep)
-@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,-exported_symbols_list,libstdc++-symbols.explist
-@ENABLE_SYMVERS_FALSE@version_arg = 
-@ENABLE_SYMVERS_GNU_NAMESPACE_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,--version-script=libstdc++-symbols.ver
-@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_FALSE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,--version-script=libstdc++-symbols.ver
-@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,--version-script,libstdc++-symbols.ver-sol2
-@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,-M,libstdc++-symbols.ver-sun
-@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.explist
-@ENABLE_SYMVERS_FALSE@version_dep = 
-@ENABLE_SYMVERS_GNU_NAMESPACE_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver
-@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_FALSE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver
-@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver-sol2
-@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver-sun
-
-# Source files linked in via configuration/make substitution for a
-# particular host.
-host_sources = \
-	atomicity.cc \
-	codecvt_members.cc \
-	collate_members.cc \
-	ctype_configure_char.cc \
-	ctype_members.cc \
-	messages_members.cc \
-	monetary_members.cc \
-	numeric_members.cc \
-	time_members.cc
-
-atomicity_file = ${glibcxx_srcdir}/$(ATOMICITY_SRCDIR)/atomicity.h
-
-# Source files linked in via configuration/make substitution for a
-# particular host, but with ad hoc naming rules.
-host_sources_extra = \
-	basic_file.cc c++locale.cc \
-	${inst_sources} ${ldbl_compat_sources} ${parallel_sources}
-
-@ENABLE_PARALLEL_FALSE@parallel_sources = 
-@ENABLE_PARALLEL_TRUE@parallel_sources = parallel_settings.cc \
-@ENABLE_PARALLEL_TRUE@		   compatibility-parallel_list.cc \
-@ENABLE_PARALLEL_TRUE@		   compatibility-parallel_list-2.cc
-
-@GLIBCXX_LDBL_COMPAT_FALSE@ldbl_compat_sources = 
-@GLIBCXX_LDBL_COMPAT_TRUE@ldbl_compat_sources = compatibility-ldbl.cc
-@ENABLE_EXTERN_TEMPLATE_FALSE@XTEMPLATE_FLAGS = 
-@ENABLE_EXTERN_TEMPLATE_TRUE@XTEMPLATE_FLAGS = -fno-implicit-templates
-@ENABLE_EXTERN_TEMPLATE_FALSE@inst_sources = 
-@ENABLE_EXTERN_TEMPLATE_TRUE@inst_sources = \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	allocator-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	concept-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	ext-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	fstream-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	ios-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	iostream-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	istream-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	locale-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	misc-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	ostream-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	sstream-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	streambuf-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	string-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	wlocale-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-inst.cc
-
-
-# Sources present in the src directory, always present.
-sources = \
-	bitmap_allocator.cc \
-	pool_allocator.cc \
-	mt_allocator.cc \
-	codecvt.cc \
-	compatibility.cc \
-	compatibility-c++0x.cc \
-	compatibility-atomic-c++0x.cc \
-	compatibility-debug_list.cc \
-	compatibility-debug_list-2.cc \
-	compatibility-list.cc \
-	compatibility-list-2.cc \
-	complex_io.cc \
-	ctype.cc \
-	debug.cc \
-	functexcept.cc \
-	functional.cc \
-	globals_io.cc \
-	hash_c++0x.cc \
-	hash_tr1.cc \
-	hashtable_c++0x.cc \
-	hashtable_tr1.cc \
-	ios.cc \
-	ios_failure.cc \
-	ios_init.cc \
-	ios_locale.cc \
-	limits.cc \
-	list.cc \
-	locale.cc \
-	locale_init.cc \
-	locale_facets.cc \
-	localename.cc \
-	math_stubs_float.cc \
-	math_stubs_long_double.cc \
-	stdexcept.cc \
-	strstream.cc \
-	system_error.cc \
-	tree.cc \
-	istream.cc \
-	placeholders.cc \
-	regex.cc \
-	shared_ptr.cc \
-	streambuf.cc \
-	mutex.cc \
-	condition_variable.cc \
-	chrono.cc \
-	thread.cc \
-	future.cc \
-	valarray.cc \
-	${host_sources} \
-	${host_sources_extra}
-
-libstdc___la_SOURCES = $(sources)
+libstdc___la_SOURCES = 
 libstdc___la_LIBADD = \
 	$(GLIBCXX_LIBS) \
-	$(top_builddir)/libsupc++/libsupc++convenience.la
+	$(top_builddir)/libsupc++/libsupc++convenience.la \
+	$(top_builddir)/src/c++98/libc++98convenience.la \
+	$(top_builddir)/src/c++11/libc++11convenience.la
 
 libstdc___la_DEPENDENCIES = \
 	${version_dep} \
-	$(top_builddir)/libsupc++/libsupc++convenience.la
+	$(top_builddir)/libsupc++/libsupc++convenience.la \
+	$(top_builddir)/src/c++98/libc++98convenience.la \
+	$(top_builddir)/src/c++11/libc++11convenience.la
 
 libstdc___la_LDFLAGS = \
 	-version-info $(libtool_VERSION) ${version_arg} -lm
 
 libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS)
-
-# Use special rules for the deprecated source files so that they find
-# deprecated include files.
-GLIBCXX_INCLUDE_DIR = $(glibcxx_builddir)/include
-
-# Use special rules for parallel mode compilation.
-PARALLEL_FLAGS = -fopenmp -D_GLIBCXX_PARALLEL -I$(glibcxx_builddir)/../libgomp
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
@@ -523,11 +392,23 @@ LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 CXXLINK = $(LIBTOOL) --tag CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	  $(CXX) $(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(LTLDFLAGS) -o $@
 
+@ENABLE_SYMVERS_TRUE@CLEANFILES = libstdc++-symbols.ver $(version_dep)
+@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,-exported_symbols_list,libstdc++-symbols.explist
+@ENABLE_SYMVERS_FALSE@version_arg = 
+@ENABLE_SYMVERS_GNU_NAMESPACE_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,--version-script=libstdc++-symbols.ver
+@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_FALSE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,--version-script=libstdc++-symbols.ver
+@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,--version-script,libstdc++-symbols.ver-sol2
+@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,-M,libstdc++-symbols.ver-sun
+@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.explist
+@ENABLE_SYMVERS_FALSE@version_dep = 
+@ENABLE_SYMVERS_GNU_NAMESPACE_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver
+@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_FALSE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver
+@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver-sol2
+@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver-sun
 debugdir = debug
-all: all-am
+all: all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .cc .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/fragment.am $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -598,20 +479,81 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-.cc.o:
-	$(CXXCOMPILE) -c -o $@ $<
-
-.cc.obj:
-	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-
-.cc.lo:
-	$(LTCXXCOMPILE) -c -o $@ $<
-
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
+
+# This directory's subdirectories are mostly independent; you can cd
+# into them and run `make' without going through this Makefile.
+# To change the values of `make' variables: instead of editing Makefiles,
+# (1) if the variable is set in `config.status', edit `config.status'
+#     (which will cause the Makefiles to be regenerated when you run `make');
+# (2) otherwise, pass the desired values on the `make' command line.
+$(RECURSIVE_TARGETS):
+	@fail= failcom='exit 1'; \
+	for f in x $$MAKEFLAGS; do \
+	  case $$f in \
+	    *=* | --[!k]*);; \
+	    *k*) failcom='fail=yes';; \
+	  esac; \
+	done; \
+	dot_seen=no; \
+	target=`echo $@ | sed s/-recursive//`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    dot_seen=yes; \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  ($(am__cd) $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	  || eval $$failcom; \
+	done; \
+	if test "$$dot_seen" = "no"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+	fi; test -z "$$fail"
+
+$(RECURSIVE_CLEAN_TARGETS):
+	@fail= failcom='exit 1'; \
+	for f in x $$MAKEFLAGS; do \
+	  case $$f in \
+	    *=* | --[!k]*);; \
+	    *k*) failcom='fail=yes';; \
+	  esac; \
+	done; \
+	dot_seen=no; \
+	case "$@" in \
+	  distclean-* | maintainer-clean-*) list='$(DIST_SUBDIRS)' ;; \
+	  *) list='$(SUBDIRS)' ;; \
+	esac; \
+	rev=''; for subdir in $$list; do \
+	  if test "$$subdir" = "."; then :; else \
+	    rev="$$subdir $$rev"; \
+	  fi; \
+	done; \
+	rev="$$rev ."; \
+	target=`echo $@ | sed s/-recursive//`; \
+	for subdir in $$rev; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  ($(am__cd) $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	  || eval $$failcom; \
+	done && test -z "$$fail"
+tags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || ($(am__cd) $$subdir && $(MAKE) $(AM_MAKEFLAGS) tags); \
+	done
+ctags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || ($(am__cd) $$subdir && $(MAKE) $(AM_MAKEFLAGS) ctags); \
+	done
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -623,10 +565,23 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	mkid -fID $$unique
 tags: TAGS
 
-TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	set x; \
 	here=`pwd`; \
+	if ($(ETAGS) --etags-include --version) >/dev/null 2>&1; then \
+	  include_option=--etags-include; \
+	  empty_fix=.; \
+	else \
+	  include_option=--include; \
+	  empty_fix=; \
+	fi; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  if test "$$subdir" = .; then :; else \
+	    test ! -f $$subdir/TAGS || \
+	      set "$$@" "$$include_option=$$here/$$subdir/TAGS"; \
+	  fi; \
+	done; \
 	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
@@ -645,7 +600,7 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 	  fi; \
 	fi
 ctags: CTAGS
-CTAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+CTAGS: ctags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
@@ -665,21 +620,22 @@ GTAGS:
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 check-am: all-am
-check: check-am
+check: check-recursive
 all-am: Makefile $(LTLIBRARIES) all-local
-installdirs:
+installdirs: installdirs-recursive
+installdirs-am:
 	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-am
-install-exec: install-exec-am
-install-data: install-data-am
-uninstall: uninstall-am
+install: install-recursive
+install-exec: install-exec-recursive
+install-data: install-data-recursive
+uninstall: uninstall-recursive
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 
-installcheck: installcheck-am
+installcheck: installcheck-recursive
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" \
 	  install_sh_PROGRAM="$(INSTALL_STRIP_PROGRAM)" INSTALL_STRIP_FLAG=-s \
@@ -697,80 +653,82 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-clean: clean-am
+clean: clean-recursive
 
 clean-am: clean-generic clean-libtool clean-toolexeclibLTLIBRARIES \
 	mostlyclean-am
 
-distclean: distclean-am
+distclean: distclean-recursive
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
 
-dvi: dvi-am
+dvi: dvi-recursive
 
 dvi-am:
 
-html: html-am
+html: html-recursive
 
 html-am:
 
-info: info-am
+info: info-recursive
 
 info-am:
 
 install-data-am: install-data-local
 
-install-dvi: install-dvi-am
+install-dvi: install-dvi-recursive
 
 install-dvi-am:
 
 install-exec-am: install-toolexeclibLTLIBRARIES
 
-install-html: install-html-am
+install-html: install-html-recursive
 
 install-html-am:
 
-install-info: install-info-am
+install-info: install-info-recursive
 
 install-info-am:
 
 install-man:
 
-install-pdf: install-pdf-am
+install-pdf: install-pdf-recursive
 
 install-pdf-am:
 
-install-ps: install-ps-am
+install-ps: install-ps-recursive
 
 install-ps-am:
 
 installcheck-am:
 
-maintainer-clean: maintainer-clean-am
+maintainer-clean: maintainer-clean-recursive
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
-mostlyclean: mostlyclean-am
+mostlyclean: mostlyclean-recursive
 
 mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool
 
-pdf: pdf-am
+pdf: pdf-recursive
 
 pdf-am:
 
-ps: ps-am
+ps: ps-recursive
 
 ps-am:
 
 uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
-.MAKE: install-am install-strip
+.MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) ctags-recursive \
+	install-am install-strip tags-recursive
 
-.PHONY: CTAGS GTAGS all all-am all-local check check-am clean \
-	clean-generic clean-libtool clean-toolexeclibLTLIBRARIES ctags \
-	distclean distclean-compile distclean-generic \
+.PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
+	all all-am all-local check check-am clean clean-generic \
+	clean-libtool clean-toolexeclibLTLIBRARIES ctags \
+	ctags-recursive distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags dvi dvi-am html html-am info \
 	info-am install install-am install-data install-data-am \
 	install-data-local install-dvi install-dvi-am install-exec \
@@ -778,11 +736,15 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 	install-info-am install-man install-pdf install-pdf-am \
 	install-ps install-ps-am install-strip \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-toolexeclibLTLIBRARIES
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-recursive uninstall uninstall-am \
+	uninstall-toolexeclibLTLIBRARIES
 
+
+vpath % $(top_srcdir)/src
+vpath % $(top_srcdir)
 
 # Symbol versioning for shared libraries.
 @ENABLE_SYMVERS_TRUE@libstdc++-symbols.ver:  ${glibcxx_srcdir}/$(SYMVER_FILE) \
@@ -823,180 +785,22 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 @ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
 @ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 
-codecvt_members.cc: ${glibcxx_srcdir}/$(CCODECVT_CC)
-	$(LN_S) ${glibcxx_srcdir}/$(CCODECVT_CC) . || true
-
-collate_members.cc: ${glibcxx_srcdir}/$(CCOLLATE_CC)
-	$(LN_S) ${glibcxx_srcdir}/$(CCOLLATE_CC) . || true
-
-ctype_configure_char.cc: ${glibcxx_srcdir}/$(OS_INC_SRCDIR)/ctype_configure_char.cc
-	$(LN_S) ${glibcxx_srcdir}/$(OS_INC_SRCDIR)/ctype_configure_char.cc . || true
-
-ctype_members.cc: ${glibcxx_srcdir}/$(CCTYPE_CC)
-	$(LN_S) ${glibcxx_srcdir}/$(CCTYPE_CC) . || true
-
-messages_members.cc: ${glibcxx_srcdir}/$(CMESSAGES_CC)
-	$(LN_S) ${glibcxx_srcdir}/$(CMESSAGES_CC) . || true
-
-monetary_members.cc: ${glibcxx_srcdir}/$(CMONEY_CC)
-	$(LN_S) ${glibcxx_srcdir}/$(CMONEY_CC) . || true
-
-numeric_members.cc: ${glibcxx_srcdir}/$(CNUMERIC_CC)
-	$(LN_S) ${glibcxx_srcdir}/$(CNUMERIC_CC) . || true
-
-time_members.cc: ${glibcxx_srcdir}/$(CTIME_CC)
-	$(LN_S) ${glibcxx_srcdir}/$(CTIME_CC) . || true
-atomicity.cc: ${atomicity_file}
-	$(LN_S) ${atomicity_file} ./atomicity.cc || true
-
-c++locale.cc: ${glibcxx_srcdir}/$(CLOCALE_CC)
-	$(LN_S) ${glibcxx_srcdir}/$(CLOCALE_CC) ./$@ || true
-
-basic_file.cc: ${glibcxx_srcdir}/$(BASIC_FILE_CC)
-	$(LN_S) ${glibcxx_srcdir}/$(BASIC_FILE_CC) ./$@ || true
-
-vpath % $(top_srcdir)/src
-vpath % $(top_srcdir)
-strstream.lo: strstream.cc
-	$(LTCXXCOMPILE) -I$(GLIBCXX_INCLUDE_DIR)/backward -Wno-deprecated -c $<
-strstream.o: strstream.cc
-	$(CXXCOMPILE) -I$(GLIBCXX_INCLUDE_DIR)/backward -Wno-deprecated -c $<
-
-# Use special rules for the concept-checking instantiations so that all
-# the generated template functions are also instantiated.  Force the checks
-# to be on so that the instantiations are actually seen.
-concept-inst.lo: concept-inst.cc
-	$(LTCXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
-concept-inst.o: concept-inst.cc
-	$(CXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
-parallel_settings.lo: parallel_settings.cc
-	$(LTCXXCOMPILE) $(PARALLEL_FLAGS) -c $<
-parallel_settings.o: parallel_settings.cc
-	$(CXXCOMPILE) $(PARALLEL_FLAGS) -c $<
-
-compatibility-parallel_list.lo: compatibility-parallel_list.cc
-	$(LTCXXCOMPILE) -c $<
-compatibility-parallel_list.o: compatibility-parallel_list.cc
-	$(CXXCOMPILE) -c $<
-
-compatibility-parallel_list-2.lo: compatibility-parallel_list-2.cc
-	$(LTCXXCOMPILE) -c $<
-compatibility-parallel_list-2.o: compatibility-parallel_list-2.cc
-	$(CXXCOMPILE) -c $<
-
-# Use special rules for the C++0x sources so that the proper flags are passed.
-functexcept.lo: functexcept.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-functexcept.o: functexcept.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-shared_ptr.lo: shared_ptr.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-shared_ptr.o: shared_ptr.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-system_error.lo: system_error.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-system_error.o: system_error.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-mutex.lo: mutex.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-mutex.o: mutex.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-condition_variable.lo: condition_variable.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-condition_variable.o: condition_variable.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-compatibility-c++0x.lo: compatibility-c++0x.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-compatibility-c++0x.o: compatibility-c++0x.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-compatibility-atomic-c++0x.lo: compatibility-atomic-c++0x.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-compatibility-atomic-c++0x.o: compatibility-atomic-c++0x.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-functional.lo: functional.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-functional.o: functional.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-hash_c++0x.lo: hash_c++0x.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-hash_c++0x.o: hash_c++0x.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-hashtable_c++0x.lo: hashtable_c++0x.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-hashtable_c++0x.o: hashtable_c++0x.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-limits.lo: limits.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-limits.o: limits.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-fstream-inst.lo: fstream-inst.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-fstream-inst.o: fstream-inst.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-string-inst.lo: string-inst.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-string-inst.o: string-inst.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-wstring-inst.lo: wstring-inst.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-wstring-inst.o: wstring-inst.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-chrono.lo: chrono.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-chrono.o: chrono.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-thread.lo: thread.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-thread.o: thread.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-future.lo: future.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-future.o: future.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-regex.lo: regex.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-regex.o: regex.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-debug.lo: debug.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-debug.o: debug.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-placeholders.lo: placeholders.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-placeholders.o: placeholders.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-# Use special rules for compatibility-ldbl.cc compilation, as we need to
-# pass -mlong-double-64.
-@GLIBCXX_LDBL_COMPAT_TRUE@compatibility-ldbl.lo: compatibility-ldbl.cc
-@GLIBCXX_LDBL_COMPAT_TRUE@	$(LTCXXCOMPILE) -mlong-double-64 -c $<
-@GLIBCXX_LDBL_COMPAT_TRUE@compatibility-ldbl.o: compatibility-ldbl.cc
-@GLIBCXX_LDBL_COMPAT_TRUE@	$(CXXCOMPILE) -mlong-double-64 -c $<
-
-# Added bits to build debug library.
-@GLIBCXX_BUILD_DEBUG_TRUE@all-local: build_debug
+# Added rules.
+# 1 debug library
+# 2 supra-convenience library
+@GLIBCXX_BUILD_DEBUG_TRUE@all-local: libstdc++convenience.la build_debug
 @GLIBCXX_BUILD_DEBUG_TRUE@install-data-local: install_debug
-@GLIBCXX_BUILD_DEBUG_FALSE@all-local:
+@GLIBCXX_BUILD_DEBUG_FALSE@all-local: libstdc++convenience.la
 @GLIBCXX_BUILD_DEBUG_FALSE@install-data-local:
+
+# Make a non-installed convenience library, so that --disable-static
+# may work.
+libstdc++convenience.la: $(toolexeclib_LTLIBRARIES)
+	$(CXXLINK) $(libstdc___la_LIBADD) $(LIBS); \
+	if test ! -f .libs/libstdc++.a; then \
+	  $(LN_S) .libs/libstdc++convenience.a .libs/libstdc++.a; \
+	  stamp-libstdc++convenience; \
+	fi;
 
 # Build a set of debug objects here.
 # Take care to fix all possibly-relative paths.
