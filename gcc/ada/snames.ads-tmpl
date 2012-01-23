@@ -145,6 +145,7 @@ package Snames is
    Name_Post                           : constant Name_Id := N + $;
    Name_Pre                            : constant Name_Id := N + $;
    Name_Static_Predicate               : constant Name_Id := N + $;
+   Name_Synchronization                : constant Name_Id := N + $;
    Name_Type_Invariant                 : constant Name_Id := N + $;
 
    --  Some special names used by the expander. Note that the lower case u's
@@ -1161,7 +1162,7 @@ package Snames is
    Name_Library_Partial_Linker             : constant Name_Id := N + $;
    Name_Library_Reference_Symbol_File      : constant Name_Id := N + $;
    Name_Library_Standalone                 : constant Name_Id := N + $;
-   Name_Library_Encapsulated_Options       : constant Name_Id := N + $;
+   Name_Library_Encapsulated_Options       : constant Name_Id := N + $; -- GB
    Name_Library_Encapsulated_Supported     : constant Name_Id := N + $; -- GB
    Name_Library_Src_Dir                    : constant Name_Id := N + $;
    Name_Library_Support                    : constant Name_Id := N + $;
@@ -1227,7 +1228,6 @@ package Snames is
    Name_Switches                           : constant Name_Id := N + $;
    Name_Symbolic_Link_Supported            : constant Name_Id := N + $;
    Name_Synchronize                        : constant Name_Id := N + $;
-   Name_Synchronization                    : constant Name_Id := N + $;
    Name_Toolchain_Description              : constant Name_Id := N + $;
    Name_Toolchain_Version                  : constant Name_Id := N + $;
    Name_Trailing_Required_Switches         : constant Name_Id := N + $;
