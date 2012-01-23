@@ -1,3 +1,9 @@
+2012-01-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* ada/acats/tests/cxh/cxh1001.a: Removed, test not suitable on all
+	configurations.
+	* ada/acats/run_all.sh: Simplify by removing cxh1001 special case.
+
 2012-01-23  Dodji Seketeli  <dodji@redhat.com>
 
 	PR testsuite/51941
