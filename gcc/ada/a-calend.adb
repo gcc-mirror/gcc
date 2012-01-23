@@ -30,7 +30,9 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Conversion;
+
 with Interfaces.C;
+
 with System.OS_Primitives;
 
 package body Ada.Calendar is
@@ -115,11 +117,12 @@ package body Ada.Calendar is
    --  This routine acts as an Ada wrapper around __gnat_localtime_tzoff which
    --  in turn utilizes various OS-dependent mechanisms to calculate the time
    --  zone offset of a date. Formal parameter Date represents an arbitrary
-   --  time stamp, either in the past, now, or in the future. If flag
+   --  time stamp, either in the past, now, or in the future. If the flag
    --  Is_Historic is set, this routine would try to calculate to the best of
    --  the OS's abilities the time zone offset that was or will be in effect
    --  on Date. If the flag is set to False, the routine returns the current
    --  time zone with Date effectively set to Clock.
+   --
    --  NOTE: Targets which support localtime_r will aways return a historic
    --  time zone even if flag Is_Historic is set to False because this is how
    --  localtime_r operates.
@@ -191,7 +194,7 @@ package body Ada.Calendar is
    Unix_Min : constant Time_Rep :=
                 Ada_Low + Time_Rep (17 * 366 + 52 * 365) * Nanos_In_Day;
 
-   --  The Unix upper time bound expressed as nonoseconds since the start of
+   --  The Unix upper time bound expressed as nanoseconds since the start of
    --  Ada time in UTC.
 
    Unix_Max : constant Time_Rep :=

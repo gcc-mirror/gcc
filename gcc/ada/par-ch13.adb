@@ -514,14 +514,11 @@ package body Ch13 is
 
             if Token = Tok_Comma
               or else Token = Tok_Semicolon
-
             then
-               --  or else (not Semicolon and then Token /= Tok_Arrow)
                if Aspect_Argument (A_Id) /= Optional then
                   Error_Msg_Node_1 := Identifier (Aspect);
                   Error_Msg_AP ("aspect& requires an aspect definition");
                   OK := False;
-
                end if;
 
             elsif not Semicolon and then Token /= Tok_Arrow then
