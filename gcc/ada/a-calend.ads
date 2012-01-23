@@ -193,6 +193,35 @@ private
    --  of year - 4 to year + 4. Internally, routines Split and Time_Of add or
    --  subtract a "fake" February 29 to facilitate the arithmetic involved.
 
+   ------------------------------------
+   -- Time zones and UTC_Time_Offset --
+   ------------------------------------
+
+   --  The implementation-defined time zone of Ada.Calendar routines is the
+   --  local time zone. The term "local time zone" can be interpreted in two
+   --  different ways - either the offset from UTC of the "now" or the offset
+   --  from UTC of some input date.
+
+   --  For efficency reasons, Split and Time_Of take the first approach. Since
+   --  the Ada Reference Manual does not mandate that Split and Time_Of should
+   --  be concious of historic time zones, this interpretation is acceptable
+   --  and efficent in terms of performance. Split and Time_Of localize their
+   --  respective input regardless of whether it represent a past or a future
+   --  date.
+
+   --  UTC_Time_Offset on the other hand must be knowledgeable of historic time
+   --  zones. To achieve this, the implementation relies on various operating
+   --  system routines. Note that not all operating systems support time zones.
+   --  UTC_Time_Offset calculates the offset from UTC as it occurred or will
+   --  occur on the input date relative to the local time zone. Example:
+
+   --     Date         Offset    Reason
+   --     2012-01-11   -300
+   --     2011-03-12   -300
+   --     2011-03-14   -240      Daylight savings is in effect
+
+   --  Local declarations
+
    --  The underlying type of Time has been chosen to be a 64 bit signed
    --  integer number since it allows for easier processing of sub seconds
    --  and arithmetic.
@@ -351,7 +380,7 @@ private
    package Time_Zones_Operations is
 
       function UTC_Time_Offset (Date : Time) return Long_Integer;
-      --  Return (in seconds), the difference between the local time zone and
+      --  Return (in seconds) the difference between the local time zone and
       --  UTC time at a specific historic date.
 
    end Time_Zones_Operations;

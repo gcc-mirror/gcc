@@ -1,3 +1,8 @@
+2012-01-23  Robert Dewar  <dewar@adacore.com>
+
+	* a-catizo.ads, a-calend.adb, a-calend.ads, par-ch13.adb: Minor
+	reformatting.
+
 2012-01-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Declaration): Do not set the
