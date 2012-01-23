@@ -1,3 +1,9 @@
+2012-01-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51925
+	* g++.dg/template/using20.C: New.
+	* g++.dg/template/template-id-2.C: Adjust diagnostic.
+
 2012-01-23  Jason Merrill  <jason@redhat.com>
 
 	PR target/51934

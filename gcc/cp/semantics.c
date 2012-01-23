@@ -2807,23 +2807,20 @@ finish_base_specifier (tree base, tree access, bool virtual_p)
 tree
 baselink_for_fns (tree fns)
 {
-  tree fn;
+  tree scope;
   tree cl;
 
   if (BASELINK_P (fns) 
       || error_operand_p (fns))
     return fns;
-  
-  fn = fns;
-  if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
-    fn = TREE_OPERAND (fn, 0);
-  fn = get_first_fn (fn);
-  if (!DECL_FUNCTION_MEMBER_P (fn))
+
+  scope = ovl_scope (fns);
+  if (!CLASS_TYPE_P (scope))
     return fns;
 
-  cl = currently_open_derived_class (DECL_CONTEXT (fn));
+  cl = currently_open_derived_class (scope);
   if (!cl)
-    cl = DECL_CONTEXT (fn);
+    cl = scope;
   cl = TYPE_BINFO (cl);
   return build_baselink (cl, cl, fns, /*optype=*/NULL_TREE);
 }

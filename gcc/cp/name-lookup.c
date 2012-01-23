@@ -2853,7 +2853,7 @@ set_inherited_value_binding_p (cxx_binding *binding, tree decl,
       tree context;
 
       if (TREE_CODE (decl) == OVERLOAD)
-	context = CP_DECL_CONTEXT (OVL_CURRENT (decl));
+	context = ovl_scope (decl);
       else
 	{
 	  gcc_assert (DECL_P (decl));
