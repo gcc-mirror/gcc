@@ -1,3 +1,8 @@
+2012-01-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-mem.c (ipa_tm_create_version): Set externally_visible.
+	(ipa_tm_create_version_alias): Same.
+
 2012-01-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR libitm/51830
