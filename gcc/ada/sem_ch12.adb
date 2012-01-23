@@ -8106,6 +8106,19 @@ package body Sem_Ch12 is
                           (Corresponding_Stub (Parent (Parent (N))),
                            Freeze_Node (Enclosing));
 
+                     --  The enclosing context is a package with a stub body
+                     --  which has already been replaced by the real body.
+                     --  Insert the freeze node after the actual body.
+
+                     elsif Ekind (Enclosing) = E_Package
+                       and then Present (Body_Entity (Enclosing))
+                       and then Was_Originally_Stub
+                                  (Parent (Body_Entity (Enclosing)))
+                     then
+                        Insert_Freeze_Node_For_Instance
+                          (Parent (Body_Entity (Enclosing)),
+                           Freeze_Node (Enclosing));
+
                      --  The parent instance has been frozen before the body of
                      --  the enclosing package, insert the freeze node after
                      --  the body.

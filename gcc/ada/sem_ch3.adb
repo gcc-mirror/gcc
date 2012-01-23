@@ -2993,6 +2993,8 @@ package body Sem_Ch3 is
          end if;
       end if;
 
+      --  Object is marked pure if it is in a pure scope
+
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
 
       --  If deferred constant, make sure context is appropriate. We detect
@@ -3546,6 +3548,14 @@ package body Sem_Ch3 is
       --  Now we can set the type of the object
 
       Set_Etype (Id, Act_T);
+
+      --  Object is marked to be treated as volatile if type is volatile and
+      --  we clear the Current_Value setting that may have been set above.
+
+      if Treat_As_Volatile (Etype (Id)) then
+         Set_Treat_As_Volatile (Id);
+         Set_Current_Value (Id, Empty);
+      end if;
 
       --  Deal with controlled types
 
