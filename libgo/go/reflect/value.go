@@ -215,8 +215,8 @@ type emptyInterface struct {
 type nonEmptyInterface struct {
 	// see ../runtime/iface.c:/Itab
 	itab *struct {
-		typ    *runtime.Type // dynamic concrete type
-		fun    [100000]unsafe.Pointer // method table
+		typ *runtime.Type          // dynamic concrete type
+		fun [100000]unsafe.Pointer // method table
 	}
 	word iword
 }
@@ -448,7 +448,6 @@ func (v Value) call(method string, in []Value) []Value {
 		nin++
 	}
 	params := make([]unsafe.Pointer, nin)
-	delta := 0
 	off := 0
 	if v.flag&flagMethod != 0 {
 		// Hard-wired first argument.
@@ -517,7 +516,7 @@ func isMethod(t *commonType) bool {
 			params++
 		} else if c == ')' {
 			parens--
-		} else if parens == 0 && c == ' ' && s[i + 1] != '(' && !sawRet {
+		} else if parens == 0 && c == ' ' && s[i+1] != '(' && !sawRet {
 			params++
 			sawRet = true
 		}
@@ -1627,7 +1626,7 @@ func MakeChan(typ Type, buffer int) Value {
 		panic("reflect.MakeChan: unidirectional channel type")
 	}
 	ch := makechan(typ.runtimeType(), uint32(buffer))
-	return Value{typ.common(), unsafe.Pointer(ch), flagIndir | (flag(Chan)<<flagKindShift)}
+	return Value{typ.common(), unsafe.Pointer(ch), flagIndir | (flag(Chan) << flagKindShift)}
 }
 
 // MakeMap creates a new map of the specified type.
@@ -1636,7 +1635,7 @@ func MakeMap(typ Type) Value {
 		panic("reflect.MakeMap of non-map type")
 	}
 	m := makemap(typ.runtimeType())
-	return Value{typ.common(), unsafe.Pointer(m), flagIndir | (flag(Map)<<flagKindShift)}
+	return Value{typ.common(), unsafe.Pointer(m), flagIndir | (flag(Map) << flagKindShift)}
 }
 
 // Indirect returns the value that v points to.

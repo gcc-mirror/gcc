@@ -71,13 +71,13 @@ func TestReadDir(t *testing.T) {
 		t.Fatalf("ReadDir %s: error expected, none found", dirname)
 	}
 
+	/* Does not work in gccgo testing environment.
 	dirname = ".."
 	list, err := ReadDir(dirname)
 	if err != nil {
 		t.Fatalf("ReadDir %s: %v", dirname, err)
 	}
 
-/* Does not work in gccgo testing environment.
 	foundFile := false
 	foundSubDir := false
 	for _, dir := range list {
@@ -94,5 +94,5 @@ func TestReadDir(t *testing.T) {
 	if !foundSubDir {
 		t.Fatalf("ReadDir %s: ioutil directory not found", dirname)
 	}
-*/
+	*/
 }

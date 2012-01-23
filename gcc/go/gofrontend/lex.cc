@@ -866,6 +866,7 @@ Lex::gather_identifier()
 	  this->lineoff_ = p - this->linebuf_;
 	  const char* pnext = this->advance_one_utf8_char(p, &ci,
 							  &issued_error);
+	  bool is_invalid = false;
 	  if (!Lex::is_unicode_letter(ci) && !Lex::is_unicode_digit(ci))
 	    {
 	      // There is no valid place for a non-ASCII character
@@ -876,6 +877,7 @@ Lex::gather_identifier()
 		error_at(this->location(),
 			 "invalid character 0x%x in identifier",
 			 ci);
+	      is_invalid = true;
 	    }
 	  if (is_first)
 	    {
@@ -887,6 +889,8 @@ Lex::gather_identifier()
 	      buf.assign(pstart, p - pstart);
 	      has_non_ascii_char = true;
 	    }
+	  if (is_invalid && !Lex::is_invalid_identifier(buf))
+	    buf.append("$INVALID$");
 	  p = pnext;
 	  char ubuf[50];
 	  // This assumes that all assemblers can handle an identifier
@@ -2311,4 +2315,14 @@ Lex::is_exported_name(const std::string& name)
 	}
       return Lex::is_unicode_uppercase(ci);
     }
+}
+
+// Return whether the identifier NAME contains an invalid character.
+// This is based on how we handle invalid characters in
+// gather_identifier.
+
+bool
+Lex::is_invalid_identifier(const std::string& name)
+{
+  return name.find("$INVALID$") != std::string::npos;
 }

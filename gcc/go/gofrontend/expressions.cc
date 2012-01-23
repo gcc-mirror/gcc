@@ -1472,6 +1472,7 @@ Unknown_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 	       real->message_name().c_str());
       return Expression::make_error(location);
     case Named_object::NAMED_OBJECT_VAR:
+      real->var_value()->set_is_used();
       return Expression::make_var_reference(real, location);
     case Named_object::NAMED_OBJECT_FUNC:
     case Named_object::NAMED_OBJECT_FUNC_DECLARATION:

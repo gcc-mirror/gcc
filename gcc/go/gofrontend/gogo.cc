@@ -1036,6 +1036,23 @@ Gogo::add_named_object(Named_object* no)
   this->current_bindings()->add_named_object(no);
 }
 
+// Mark all local variables used.  This is used when some types of
+// parse error occur.
+
+void
+Gogo::mark_locals_used()
+{
+  for (Open_functions::iterator pf = this->functions_.begin();
+       pf != this->functions_.end();
+       ++pf)
+    {
+      for (std::vector<Block*>::iterator pb = pf->blocks.begin();
+	   pb != pf->blocks.end();
+	   ++pb)
+	(*pb)->bindings()->mark_locals_used();
+    }
+}
+
 // Record that we've seen an interface type.
 
 void
@@ -1731,6 +1748,15 @@ Check_types_traverse::variable(Named_object* named_object)
 		     reason.c_str());
 	  var->clear_init();
 	}
+      else if (!var->is_used()
+	       && !var->is_global()
+	       && !var->is_parameter()
+	       && !var->is_receiver()
+	       && !var->type()->is_error()
+	       && (init == NULL || !init->is_error_expression())
+	       && !Lex::is_invalid_identifier(named_object->name()))
+	error_at(var->location(), "%qs declared and not used",
+		 named_object->message_name().c_str());
     }
   return TRAVERSE_CONTINUE;
 }
@@ -2973,6 +2999,7 @@ Function::closure_var()
       Type* struct_type = Type::make_struct_type(sfl, loc);
       Variable* var = new Variable(Type::make_pointer_type(struct_type),
 				   NULL, false, true, false, loc);
+      var->set_is_used();
       this->closure_var_ = Named_object::make_variable("closure", NULL, var);
       // Note that the new variable is not in any binding contour.
     }
@@ -3693,7 +3720,7 @@ Variable::Variable(Type* type, Expression* init, bool is_global,
 		   Location location)
   : type_(type), init_(init), preinit_(NULL), location_(location),
     backend_(NULL), is_global_(is_global), is_parameter_(is_parameter),
-    is_receiver_(is_receiver), is_varargs_parameter_(false),
+    is_receiver_(is_receiver), is_varargs_parameter_(false), is_used_(false),
     is_address_taken_(false), is_non_escaping_address_taken_(false),
     seen_(false), init_is_lowered_(false), type_from_init_tuple_(false),
     type_from_range_index_(false), type_from_range_value_(false),
@@ -4875,6 +4902,19 @@ Bindings::define_type(Named_object* no, Named_type* type)
 {
   no->set_type_value(type);
   this->named_objects_.push_back(no);
+}
+
+// Mark all local variables as used.  This is used for some types of
+// parse error.
+
+void
+Bindings::mark_locals_used()
+{
+  for (std::vector<Named_object*>::iterator p = this->named_objects_.begin();
+       p != this->named_objects_.end();
+       ++p)
+    if ((*p)->is_variable())
+      (*p)->var_value()->set_is_used();
 }
 
 // Traverse bindings.

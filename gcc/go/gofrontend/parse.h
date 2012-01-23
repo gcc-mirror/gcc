@@ -155,6 +155,11 @@ class Parse
   // break or continue statement with no label.
   typedef std::vector<std::pair<Statement*, Label*> > Bc_stack;
 
+  // Map from type switch variables to the variables they mask, so
+  // that a use of the type switch variable can become a use of the
+  // real variable.
+  typedef Unordered_map(Named_object*, Named_object*) Type_switch_vars;
+
   // Parser nonterminals.
   void identifier_list(Typed_identifier_list*);
   Expression_list* expression_list(Expression*, bool may_be_sink);
@@ -288,6 +293,10 @@ class Parse
   Statement*
   find_bc_statement(const Bc_stack*, const std::string&) const;
 
+  // Mark a variable as used.
+  void
+  mark_var_used(Named_object*);
+
   // The lexer output we are parsing.
   Lex* lex_;
   // The current token.
@@ -307,6 +316,8 @@ class Parse
   // References from the local function to variables defined in
   // enclosing functions.
   Enclosing_vars enclosing_vars_;
+  // Map from type switch variables to real variables.
+  Type_switch_vars type_switch_vars_;
 };
 
 

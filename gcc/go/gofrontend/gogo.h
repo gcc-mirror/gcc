@@ -344,6 +344,11 @@ class Gogo
   void
   add_named_object(Named_object*);
 
+  // Mark all local variables in current bindings as used.  This is
+  // used when there is a parse error to avoid useless errors.
+  void
+  mark_locals_used();
+
   // Return a name to use for a thunk function.  A thunk function is
   // one we create during the compilation, for a go statement or a
   // defer statement or a method expression.
@@ -1232,6 +1237,16 @@ class Variable
     this->is_varargs_parameter_ = true;
   }
 
+  // Return whether the variable has been used.
+  bool
+  is_used() const
+  { return this->is_used_; }
+
+  // Mark that the variable has been used.
+  void
+  set_is_used()
+  { this->is_used_ = true; }
+
   // Clear the initial value; used for error handling.
   void
   clear_init()
@@ -1368,6 +1383,8 @@ class Variable
   bool is_receiver_ : 1;
   // Whether this is the varargs parameter of a function.
   bool is_varargs_parameter_ : 1;
+  // Whether this variable is ever referenced.
+  bool is_used_ : 1;
   // Whether something takes the address of this variable.  For a
   // local variable this implies that the variable has to be on the
   // heap.
@@ -2123,6 +2140,11 @@ class Bindings
   // Remove a name.
   void
   remove_binding(Named_object*);
+
+  // Mark all variables as used.  This is used for some types of parse
+  // error.
+  void
+  mark_locals_used();
 
   // Traverse the tree.  See the Traverse class.
   int

@@ -349,6 +349,13 @@ class Lex
   static bool
   is_exported_name(const std::string& name);
 
+  // Return whether the identifier NAME is invalid.  When we see an
+  // invalid character we still build an identifier, but we use a
+  // magic string to indicate that the identifier is invalid.  We then
+  // use this to avoid knockon errors.
+  static bool
+  is_invalid_identifier(const std::string& name);
+
   // A helper function.  Append V to STR.  IS_CHARACTER is true if V
   // is a Unicode character which should be converted into UTF-8,
   // false if it is a byte value to be appended directly.  The
