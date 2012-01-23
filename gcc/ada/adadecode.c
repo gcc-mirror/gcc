@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 2001-2011, Free Software Foundation, Inc.        *
+ *           Copyright (C) 2001-2012, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -42,7 +42,7 @@
 #include <stdio.h>
 #include <ctype.h>
 
-#include "adaint.h"
+#include "adaint.h"  /* for a macro version of xstrdup.  */
 
 #ifndef ISDIGIT
 #define ISDIGIT(c) isdigit(c)
@@ -162,8 +162,20 @@ __gnat_decode (const char *coded_name, char *ada_name, int verbose)
   int in_task = 0;
   int body_nested = 0;
 
+  /* Deal with empty input early.  This allows assuming non-null length
+     later on, simplifying coding.  In principle, it should be our callers
+     business not to call here for empty inputs.  It is easy enough to
+     allow it, however, and might allow simplifications upstream so is not
+     a bad thing per se.  We need a guard in any case.  */
+
+  if (*coded_name == '\0')
+    {
+      *ada_name = '\0';
+      return;
+    }
+
   /* Check for library level subprogram.  */
-  if (has_prefix (coded_name, "_ada_"))
+  else if (has_prefix (coded_name, "_ada_"))
     {
       strcpy (ada_name, coded_name + 5);
       lib_subprog = 1;

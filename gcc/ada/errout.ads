@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -445,7 +445,7 @@ package Errout is
 
    Error_Msg_Qual_Level : Int renames Err_Vars.Error_Msg_Qual_Level;
    --  Number of levels of qualification required for type name (see the
-   --  description of the } insertion character. Note that this value does
+   --  description of the } insertion character). Note that this value does
    --  note get reset by any Error_Msg call, so the caller is responsible
    --  for resetting it.
 
