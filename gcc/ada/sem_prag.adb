@@ -473,6 +473,9 @@ package body Sem_Prag is
          N1, N2, N3         : Name_Id);
       procedure Check_Arg_Is_One_Of
         (Arg                : Node_Id;
+         N1, N2, N3, N4     : Name_Id);
+      procedure Check_Arg_Is_One_Of
+        (Arg                : Node_Id;
          N1, N2, N3, N4, N5 : Name_Id);
       --  Check the specified argument Arg to make sure that it is an
       --  identifier whose name matches either N1 or N2 (or N3, N4, N5 if
@@ -1171,6 +1174,24 @@ package body Sem_Prag is
          if Chars (Argx) /= N1
            and then Chars (Argx) /= N2
            and then Chars (Argx) /= N3
+         then
+            Error_Pragma_Arg ("invalid argument for pragma%", Argx);
+         end if;
+      end Check_Arg_Is_One_Of;
+
+      procedure Check_Arg_Is_One_Of
+        (Arg                : Node_Id;
+         N1, N2, N3, N4     : Name_Id)
+      is
+         Argx : constant Node_Id := Get_Pragma_Arg (Arg);
+
+      begin
+         Check_Arg_Is_Identifier (Argx);
+
+         if Chars (Argx) /= N1
+           and then Chars (Argx) /= N2
+           and then Chars (Argx) /= N3
+           and then Chars (Argx) /= N4
          then
             Error_Pragma_Arg ("invalid argument for pragma%", Argx);
          end if;
@@ -9325,7 +9346,11 @@ package body Sem_Prag is
          -----------------
 
          --  pragma Implemented (procedure_LOCAL_NAME, implementation_kind);
-         --  implementation_kind ::= By_Entry | By_Protected_Procedure | By_Any
+         --  implementation_kind ::=
+         --    By_Entry | By_Protected_Procedure | By_Any | Optional
+
+         --  "By_Any" and "Optional" are treated as synonyms in order to
+         --  support Ada 2012 aspect Synchronization.
 
          when Pragma_Implemented => Implemented : declare
             Proc_Id : Entity_Id;
@@ -9337,8 +9362,11 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Check_Arg_Is_Identifier (Arg1);
             Check_Arg_Is_Local_Name (Arg1);
-            Check_Arg_Is_One_Of
-              (Arg2, Name_By_Any, Name_By_Entry, Name_By_Protected_Procedure);
+            Check_Arg_Is_One_Of (Arg2,
+              Name_By_Any,
+              Name_By_Entry,
+              Name_By_Protected_Procedure,
+              Name_Optional);
 
             --  Extract the name of the local procedure
 

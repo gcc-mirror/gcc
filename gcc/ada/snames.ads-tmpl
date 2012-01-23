@@ -678,6 +678,7 @@ package Snames is
    Name_No_Task_Attributes_Package     : constant Name_Id := N + $;
    Name_Nominal                        : constant Name_Id := N + $;
    Name_On                             : constant Name_Id := N + $;
+   Name_Optional                       : constant Name_Id := N + $;
    Name_Policy                         : constant Name_Id := N + $;
    Name_Parameter_Types                : constant Name_Id := N + $;
    Name_Reference                      : constant Name_Id := N + $;

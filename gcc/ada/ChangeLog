@@ -1,3 +1,45 @@
+2012-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Declaration): Do not set the
+	Corresponding_Body on a defaulted null formal subprogram.
+	* sem_ch12.adb (Check_Formal_Package_Instance): No check needed
+	on a defaulted formal subprogram that is a null procedure.
+
+2012-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch9.adb: Update the comments involving pragma Implemented.
+	* sem_ch3.adb (Check_Pragma_Implemented (Entity_Id)): Add local
+	constant Subp_Alias and local variable Impl_Subp. Properly
+	handle aliases of synchronized wrappers. Code cleanup.
+	(Check_Pragma_Implemented (Entity_Id; Entity_Id)): Add
+	Name_Optional as part of the condition.
+	* sem_prag.adb (Analyze_Pragma): Add "Optional" as one of the
+	valid choices of implementation kind.
+	(Check_Arg_Is_One_Of): New routine.
+	* snames.ads-tmlp: Add Name_Optional.
+
+2012-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch13.adb: Better error recovery in illegal aspect
+	specification.
+
+2012-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-calend.adb: Add with clause for Interfaces.C. Add constant
+	Unix_Max.
+	(Day_Of_Week): Call the internal UTC_Time_Offset.
+	(Split): Call the internal UTC_Time_Offset.
+	(Time_Of): Call the internal UTC_Time_Offset.
+	(Time_Zone_Operations.UTC_Time_Offset): Call internal UTC_Time_Offset.
+	(UTC_Time_Offset): New library-level routine.
+	* a-calend.ads (UTC_Time_Offset): Remove parameter
+	Is_Historic. Update related comment on usage.
+	* a-catizo.adb (UTC_Time_Offset): Removed.
+	(UTC_Time_Offset (Time)): Call Time_Zone_Operations.UTC_Time_Offset.
+	* a-caltizo.ads (UTC_Time_Offset): Removed.
+	(UTC_Time_Offset (Time)): Add back the default expression of parameter
+	Date.
+
 2012-01-23  Robert Dewar  <dewar@adacore.com>
 
 	* sprint.ads, sprint.adb (Sprint_Node_List): Add New_Lines parameter

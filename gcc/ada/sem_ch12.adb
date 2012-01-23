@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5101,6 +5101,15 @@ package body Sem_Ch12 is
             elsif Nkind (Unit_Declaration_Node (E2)) in
                     N_Formal_Subprogram_Declaration
               and then Box_Present (Unit_Declaration_Node (E2))
+            then
+               null;
+
+            --  No check needed if subprogram is a defaulted null procedure
+
+            elsif No (Alias (E2))
+              and then Ekind (E2) = E_Procedure
+              and then
+                Null_Present (Specification (Unit_Declaration_Node (E2)))
             then
                null;
 
