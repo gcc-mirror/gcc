@@ -1,5 +1,10 @@
 2012-01-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* libitm.h (_ITM_getThreadnum): Remove.
+	* libitm.map (_ITM_getThreadnum): Remove from LIBITM_1.0.
+
+2012-01-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* clearcap.map: New file.
 	* acinclude.m4 (LIBITM_CHECK_LINKER_HWCAP): New test.
 	* configure.ac: Call it.
