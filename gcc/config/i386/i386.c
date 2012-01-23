@@ -13231,10 +13231,10 @@ ix86_delegitimize_address (rtx x)
 	  || GET_CODE (XEXP (x, 0)) != UNSPEC
 	  || (XINT (XEXP (x, 0), 1) != UNSPEC_GOTPCREL
 	      && XINT (XEXP (x, 0), 1) != UNSPEC_PCREL)
-	  || !MEM_P (orig_x))
+	  || (!MEM_P (orig_x) && XINT (XEXP (x, 0), 1) != UNSPEC_PCREL))
 	return ix86_delegitimize_tls_address (orig_x);
       x = XVECEXP (XEXP (x, 0), 0, 0);
-      if (GET_MODE (orig_x) != GET_MODE (x))
+      if (GET_MODE (orig_x) != GET_MODE (x) && MEM_P (orig_x))
 	{
 	  x = simplify_gen_subreg (GET_MODE (orig_x), x,
 				   GET_MODE (x), 0);

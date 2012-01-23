@@ -410,6 +410,7 @@
 	  || (GET_CODE (op) == UNSPEC
 	      && (XINT (op, 1) == UNSPEC_GOT
 		  || XINT (op, 1) == UNSPEC_GOTOFF
+		  || XINT (op, 1) == UNSPEC_PCREL
 		  || XINT (op, 1) == UNSPEC_GOTPCREL)))
 	return true;
       if (GET_CODE (op) != PLUS
