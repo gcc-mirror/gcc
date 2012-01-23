@@ -1,4 +1,13 @@
+2012-01-23  Aldy Hernandez  <aldyh@redhat.com>
+	    Patrick Marlier  <patrick.marlier@gmail.com>
+	    Iain Sandoe  <developer@sandoe-acoustics.co.uk>
+
+	PR lto/51916
+	* lto-wrapper.c (run_gcc): Pass the LTO section name to
+	simple_object_start_read.
+
 2012-01-23  Richard Guenther  <rguenther@suse.de>
+
 
 	PR tree-optimization/51895
 	* tree-sra.c (decide_one_param_reduction): Avoid sub-optimal

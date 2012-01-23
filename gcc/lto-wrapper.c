@@ -479,7 +479,8 @@ run_gcc (unsigned argc, char *argv[])
       fd = open (argv[i], O_RDONLY);
       if (fd == -1)
 	continue;
-      sobj = simple_object_start_read (fd, file_offset, NULL, &errmsg, &err);
+      sobj = simple_object_start_read (fd, file_offset, "__GNU_LTO", 
+	  			       &errmsg, &err);
       if (!sobj)
 	{
 	  close (fd);
