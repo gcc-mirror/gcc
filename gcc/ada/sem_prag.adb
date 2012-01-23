@@ -7988,6 +7988,19 @@ package body Sem_Prag is
             --  use of the secondary stack does not generate execution overhead
             --  for suppressed conditions.
 
+            --  Normally the analysis that follows will freeze the subprogram
+            --  being called. However, if the call is to a null procedure,
+            --  we want to freeze it before creating the block, because the
+            --  analysis that follows may be done with expansion disabled, and
+            --  and the body will not be generated, leading to spurious errors.
+
+            if Nkind (Call) = N_Procedure_Call_Statement
+              and then Is_Entity_Name (Name (Call))
+            then
+               Analyze (Name (Call));
+               Freeze_Before (N, Entity (Name (Call)));
+            end if;
+
             Rewrite (N, Make_Implicit_If_Statement (N,
               Condition => Cond,
                  Then_Statements => New_List (

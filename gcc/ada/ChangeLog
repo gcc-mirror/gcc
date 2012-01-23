@@ -1,3 +1,24 @@
+2012-01-23  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Properly
+	handle Current_Value for volatile variables (also propagate
+	Treat_As_Volatile from type to object).
+
+2012-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb (Install_Body): Detect the case
+	where the enclosing context is a package with a stub body that
+	has already been replaced by the actual body. In such cases,
+	the freeze node for the enclosing context must be inserted after
+	the real body.
+
+2012-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Debug): Freeze the called
+	subprogram before expanding the pragma into an if-statement with
+	a block, to ensure that when the subprogram is null its body is
+	properly generated before expansion.
+
 2012-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch12.adb (Analyze_Associations): Alphabetize local variables and
