@@ -143,9 +143,9 @@ package body Errout is
    --  parameter Suffix, (spec) or (body) is appended after the unit name.
 
    procedure Set_Msg_Node (Node : Node_Id);
-   --  Add the sequence of characters for the name associated with the
-   --  given node to the current message. For N_Designator, N_Defining_Program_
-   --  Unit_Name, N_Selected_Component, and N_Expanded_Name, the Prefix is
+   --  Add the sequence of characters for the name associated with the given
+   --  node to the current message. For N_Designator, N_Selected_Component,
+   --  N_Defining_Program_Unit_Name, and N_Expanded_Name, the Prefix is
    --  included as well.
 
    procedure Set_Msg_Text (Text : String; Flag : Source_Ptr);

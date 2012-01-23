@@ -1,3 +1,13 @@
+2012-01-23  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch10.adb, errout.adb: Minor reformatting.
+
+2012-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): An actual in a call to an
+	Ada 2012 Reference function does not lead to a dangerous order
+	dependence.
+
 2012-01-23  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_util.adb (Is_Iterated_Container): Test
