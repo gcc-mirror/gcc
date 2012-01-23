@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -514,12 +514,24 @@ package body Ch13 is
 
             if Token = Tok_Comma
               or else Token = Tok_Semicolon
-              or else (not Semicolon and then Token /= Tok_Arrow)
+
             then
+               --  or else (not Semicolon and then Token /= Tok_Arrow)
                if Aspect_Argument (A_Id) /= Optional then
-                  Error_Msg_Node_1 := Aspect;
+                  Error_Msg_Node_1 := Identifier (Aspect);
                   Error_Msg_AP ("aspect& requires an aspect definition");
                   OK := False;
+
+               end if;
+
+            elsif not Semicolon and then Token /= Tok_Arrow then
+               if Aspect_Argument (A_Id) /= Optional then
+
+                  --  The name or expression may be there, but the arrow is
+                  --  missing. Skip to the end of the declaration.
+
+                  T_Arrow;
+                  Resync_To_Semicolon;
                end if;
 
             --  Here we have an aspect definition

@@ -350,12 +350,9 @@ private
 
    package Time_Zones_Operations is
 
-      function UTC_Time_Offset
-        (Date        : Time;
-         Is_Historic : Boolean := True) return Long_Integer;
-      --  Return the offset in seconds from UTC of an arbitrary date. If flag
-      --  Is_Historic is set to False, then return the local time zone offset
-      --  regardless of what Date designates.
+      function UTC_Time_Offset (Date : Time) return Long_Integer;
+      --  Return (in seconds), the difference between the local time zone and
+      --  UTC time at a specific historic date.
 
    end Time_Zones_Operations;
 

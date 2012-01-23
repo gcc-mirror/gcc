@@ -8878,7 +8878,8 @@ package body Exp_Ch9 is
    --    Target.Primitive (Param1, ..., ParamN);
 
    --  Ada 2012 (AI05-0030): Dispatching requeue to an interface primitive
-   --  marked by pragma Implemented (XXX, By_Any) or not marked at all.
+   --  marked by pragma Implemented (XXX, By_Any | Optional) or not marked
+   --  at all.
 
    --    declare
    --       S : constant Offset_Index :=
@@ -8923,9 +8924,9 @@ package body Exp_Ch9 is
       function Build_Dispatching_Requeue_To_Any return Node_Id;
       --  Ada 2012 (AI05-0030): N denotes a dispatching requeue statement of
       --  the form Concval.Ename. Ename is either marked by pragma Implemented
-      --  (XXX, By_Any) or not marked at all. Create a block which determines
-      --  at runtime whether Ename denotes an entry or a procedure and perform
-      --  the appropriate kind of dispatching select.
+      --  (XXX, By_Any | Optional) or not marked at all. Create a block which
+      --  determines at runtime whether Ename denotes an entry or a procedure
+      --  and perform the appropriate kind of dispatching select.
 
       function Build_Normal_Requeue return Node_Id;
       --  N denotes a non-dispatching requeue statement to either a task or a
@@ -9445,9 +9446,10 @@ package body Exp_Ch9 is
                Analyze (N);
 
             --  The procedure_or_entry_NAME's implementation kind is either
-            --  By_Any or pragma Implemented was not applied at all. In this
-            --  case a runtime test determines whether Ename denotes an entry
-            --  or a protected procedure and performs the appropriate call.
+            --  By_Any, Optional, or pragma Implemented was not applied at all.
+            --  In this case a runtime test determines whether Ename denotes an
+            --  entry or a protected procedure and performs the appropriate
+            --  call.
 
             else
                Rewrite (N, Build_Dispatching_Requeue_To_Any);

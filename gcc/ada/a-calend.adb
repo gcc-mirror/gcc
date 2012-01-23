@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Conversion;
-
+with Interfaces.C;
 with System.OS_Primitives;
 
 package body Ada.Calendar is
@@ -109,6 +109,21 @@ package body Ada.Calendar is
      new Ada.Unchecked_Conversion (Time_Rep, Duration);
    --  Convert a time representation value into a duration value
 
+   function UTC_Time_Offset
+     (Date        : Time;
+      Is_Historic : Boolean) return Long_Integer;
+   --  This routine acts as an Ada wrapper around __gnat_localtime_tzoff which
+   --  in turn utilizes various OS-dependent mechanisms to calculate the time
+   --  zone offset of a date. Formal parameter Date represents an arbitrary
+   --  time stamp, either in the past, now, or in the future. If flag
+   --  Is_Historic is set, this routine would try to calculate to the best of
+   --  the OS's abilities the time zone offset that was or will be in effect
+   --  on Date. If the flag is set to False, the routine returns the current
+   --  time zone with Date effectively set to Clock.
+   --  NOTE: Targets which support localtime_r will aways return a historic
+   --  time zone even if flag Is_Historic is set to False because this is how
+   --  localtime_r operates.
+
    -----------------
    -- Local Types --
    -----------------
@@ -175,6 +190,13 @@ package body Ada.Calendar is
 
    Unix_Min : constant Time_Rep :=
                 Ada_Low + Time_Rep (17 * 366 + 52 * 365) * Nanos_In_Day;
+
+   --  The Unix upper time bound expressed as nonoseconds since the start of
+   --  Ada time in UTC.
+
+   Unix_Max : constant Time_Rep :=
+                Ada_Low + Time_Rep (34 * 366 + 102 * 365) * Nanos_In_Day +
+                          Time_Rep (Leap_Seconds_Count) * Nano;
 
    Epoch_Offset : constant Time_Rep := (136 * 365 + 44 * 366) * Nanos_In_Day;
    --  The difference between 2150-1-1 UTC and 1970-1-1 UTC expressed in
@@ -626,6 +648,110 @@ package body Ada.Calendar is
            Time_Zone    => 0);
    end Time_Of;
 
+   ---------------------
+   -- UTC_Time_Offset --
+   ---------------------
+
+   function UTC_Time_Offset
+     (Date        : Time;
+      Is_Historic : Boolean) return Long_Integer
+   is
+      --  The following constants denote February 28 during non-leap centennial
+      --  years, the units are nanoseconds.
+
+      T_2100_2_28 : constant Time_Rep := Ada_Low +
+                      (Time_Rep (49 * 366 + 150 * 365 + 59) * Secs_In_Day +
+                       Time_Rep (Leap_Seconds_Count)) * Nano;
+
+      T_2200_2_28 : constant Time_Rep := Ada_Low +
+                      (Time_Rep (73 * 366 + 226 * 365 + 59) * Secs_In_Day +
+                       Time_Rep (Leap_Seconds_Count)) * Nano;
+
+      T_2300_2_28 : constant Time_Rep := Ada_Low +
+                      (Time_Rep (97 * 366 + 302 * 365 + 59) * Secs_In_Day +
+                       Time_Rep (Leap_Seconds_Count)) * Nano;
+
+      --  56 years (14 leap years + 42 non-leap years) in nanoseconds:
+
+      Nanos_In_56_Years : constant := (14 * 366 + 42 * 365) * Nanos_In_Day;
+
+      type int_Pointer  is access all Interfaces.C.int;
+      type long_Pointer is access all Interfaces.C.long;
+
+      type time_t is
+        range -(2 ** (Standard'Address_Size - Integer'(1))) ..
+              +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
+      type time_t_Pointer is access all time_t;
+
+      procedure localtime_tzoff
+        (timer       : time_t_Pointer;
+         is_historic : int_Pointer;
+         off         : long_Pointer);
+      pragma Import (C, localtime_tzoff, "__gnat_localtime_tzoff");
+      --  This routine is a interfacing wrapper around the library function
+      --  __gnat_localtime_tzoff. Parameter 'timer' represents a Unix-based
+      --  time equivalent of the input date. If flag 'is_historic' is set, this
+      --  routine would try to calculate to the best of the OS's abilities the
+      --  time zone offset that was or will be in effect on 'timer'. If the
+      --  flag is set to False, the routine returns the current time zone
+      --  regardless of what 'timer' designates. Parameter 'off' captures the
+      --  UTC offset of 'timer'.
+
+      Adj_Cent : Integer;
+      Date_N   : Time_Rep;
+      Flag     : aliased Interfaces.C.int;
+      Offset   : aliased Interfaces.C.long;
+      Secs_T   : aliased time_t;
+
+   --  Start of processing for UTC_Time_Offset
+
+   begin
+      Date_N := Time_Rep (Date);
+
+      --  Dates which are 56 years apart fall on the same day, day light saving
+      --  and so on. Non-leap centennial years violate this rule by one day and
+      --  as a consequence, special adjustment is needed.
+
+      Adj_Cent :=
+        (if    Date_N <= T_2100_2_28 then 0
+         elsif Date_N <= T_2200_2_28 then 1
+         elsif Date_N <= T_2300_2_28 then 2
+         else                             3);
+
+      if Adj_Cent > 0 then
+         Date_N := Date_N - Time_Rep (Adj_Cent) * Nanos_In_Day;
+      end if;
+
+      --  Shift the date within bounds of Unix time
+
+      while Date_N < Unix_Min loop
+         Date_N := Date_N + Nanos_In_56_Years;
+      end loop;
+
+      while Date_N >= Unix_Max loop
+         Date_N := Date_N - Nanos_In_56_Years;
+      end loop;
+
+      --  Perform a shift in origins from Ada to Unix
+
+      Date_N := Date_N - Unix_Min;
+
+      --  Convert the date into seconds
+
+      Secs_T := time_t (Date_N / Nano);
+
+      --  Determine whether to treat the input date as historical or not
+
+      Flag := (if Is_Historic then 1 else 0);
+
+      localtime_tzoff
+        (Secs_T'Unchecked_Access,
+         Flag'Unchecked_Access,
+         Offset'Unchecked_Access);
+
+      return Long_Integer (Offset);
+   end UTC_Time_Offset;
+
    ----------
    -- Year --
    ----------
@@ -1024,11 +1150,7 @@ package body Ada.Calendar is
 
       function Day_Of_Week (Date : Time) return Integer is
          Date_N    : constant Time_Rep := Time_Rep (Date);
-         Time_Zone : constant Long_Integer :=
-                       Time_Zones_Operations.UTC_Time_Offset
-                         (Date        => Date,
-                          Is_Historic => False);
-
+         Time_Zone : constant Long_Integer := UTC_Time_Offset (Date, True);
          Ada_Low_N : Time_Rep;
          Day_Count : Long_Integer;
          Day_Dur   : Time_Dur;
@@ -1141,9 +1263,8 @@ package body Ada.Calendar is
          else
             declare
                Off : constant Long_Integer :=
-                       Time_Zones_Operations.UTC_Time_Offset
-                         (Date        => Time (Date_N),
-                          Is_Historic => False);
+                       UTC_Time_Offset (Time (Date_N), False);
+
             begin
                Date_N := Date_N + Time_Rep (Off) * Nano;
             end;
@@ -1364,15 +1485,12 @@ package body Ada.Calendar is
          else
             declare
                Current_Off   : constant Long_Integer :=
-                                 Time_Zones_Operations.UTC_Time_Offset
-                                   (Date        => Time (Res_N),
-                                    Is_Historic => False);
+                                 UTC_Time_Offset (Time (Res_N), False);
                Current_Res_N : constant Time_Rep :=
                                  Res_N - Time_Rep (Current_Off) * Nano;
                Off           : constant Long_Integer :=
-                                 Time_Zones_Operations.UTC_Time_Offset
-                                   (Date        => Time (Current_Res_N),
-                                    Is_Historic => False);
+                                 UTC_Time_Offset (Time (Current_Res_N), False);
+
             begin
                Res_N := Res_N - Time_Rep (Off) * Nano;
             end;
@@ -1416,115 +1534,13 @@ package body Ada.Calendar is
 
    package body Time_Zones_Operations is
 
-      --  The Unix time bounds in nanoseconds: 1970/1/1 .. 2037/1/1
-
-      Unix_Min : constant Time_Rep := Ada_Low +
-                   Time_Rep (17 * 366 +  52 * 365) * Nanos_In_Day;
-
-      Unix_Max : constant Time_Rep := Ada_Low +
-                   Time_Rep (34 * 366 + 102 * 365) * Nanos_In_Day +
-                   Time_Rep (Leap_Seconds_Count) * Nano;
-
-      --  The following constants denote February 28 during non-leap
-      --  centennial years, the units are nanoseconds.
-
-      T_2100_2_28 : constant Time_Rep := Ada_Low +
-                      (Time_Rep (49 * 366 + 150 * 365 + 59) * Secs_In_Day +
-                       Time_Rep (Leap_Seconds_Count)) * Nano;
-
-      T_2200_2_28 : constant Time_Rep := Ada_Low +
-                      (Time_Rep (73 * 366 + 226 * 365 + 59) * Secs_In_Day +
-                       Time_Rep (Leap_Seconds_Count)) * Nano;
-
-      T_2300_2_28 : constant Time_Rep := Ada_Low +
-                      (Time_Rep (97 * 366 + 302 * 365 + 59) * Secs_In_Day +
-                       Time_Rep (Leap_Seconds_Count)) * Nano;
-
-      --  56 years (14 leap years + 42 non leap years) in nanoseconds:
-
-      Nanos_In_56_Years : constant := (14 * 366 + 42 * 365) * Nanos_In_Day;
-
-      subtype long is Long_Integer;
-      subtype int  is Integer;
-      type long_Pointer is access all long;
-      type int_Pointer  is access all int;
-
-      type time_t is
-        range -(2 ** (Standard'Address_Size - Integer'(1))) ..
-              +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
-      type time_t_Pointer is access all time_t;
-
-      procedure localtime_tzoff
-        (timer       : time_t_Pointer;
-         is_historic : int_Pointer;
-         off         : long_Pointer);
-      pragma Import (C, localtime_tzoff, "__gnat_localtime_tzoff");
-      --  This is a lightweight wrapper around the system library function
-      --  localtime_r. Parameter 'off' captures the UTC offset which is either
-      --  retrieved from the tm struct or calculated from the 'timezone' extern
-      --  and the tm_isdst flag in the tm struct. Flag 'is_historic' denotes
-      --  whether 'timer' is a historical time stamp. If this is not the case,
-      --  the routine returns the offset of the local time zone.
-
       ---------------------
       -- UTC_Time_Offset --
       ---------------------
 
-      function UTC_Time_Offset
-        (Date        : Time;
-         Is_Historic : Boolean := True) return Long_Integer
-      is
-         Adj_Cent : Integer;
-         Date_N   : Time_Rep;
-         Flag     : aliased int;
-         Offset   : aliased long;
-         Secs_T   : aliased time_t;
-
+      function UTC_Time_Offset (Date : Time) return Long_Integer is
       begin
-         Date_N := Time_Rep (Date);
-
-         --  Dates which are 56 years apart fall on the same day, day light
-         --  saving and so on. Non-leap centennial years violate this rule by
-         --  one day and as a consequence, special adjustment is needed.
-
-         Adj_Cent :=
-           (if    Date_N <= T_2100_2_28 then 0
-            elsif Date_N <= T_2200_2_28 then 1
-            elsif Date_N <= T_2300_2_28 then 2
-            else                             3);
-
-         if Adj_Cent > 0 then
-            Date_N := Date_N - Time_Rep (Adj_Cent) * Nanos_In_Day;
-         end if;
-
-         --  Shift the date within bounds of Unix time
-
-         while Date_N < Unix_Min loop
-            Date_N := Date_N + Nanos_In_56_Years;
-         end loop;
-
-         while Date_N >= Unix_Max loop
-            Date_N := Date_N - Nanos_In_56_Years;
-         end loop;
-
-         --  Perform a shift in origins from Ada to Unix
-
-         Date_N := Date_N - Unix_Min;
-
-         --  Convert the date into seconds
-
-         Secs_T := time_t (Date_N / Nano);
-
-         --  Determine whether to treat the input date as historical or not
-
-         Flag := (if Is_Historic then 1 else 0);
-
-         localtime_tzoff
-           (Secs_T'Unchecked_Access,
-            Flag'Unchecked_Access,
-            Offset'Unchecked_Access);
-
-         return Offset;
+         return UTC_Time_Offset (Date, True);
       end UTC_Time_Offset;
 
    end Time_Zones_Operations;
