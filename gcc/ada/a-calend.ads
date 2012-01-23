@@ -147,7 +147,7 @@ private
    --  00:00:00.0 UTC - 2399-12-31-23:59:59.999999999 UTC).
 
    ------------------
-   -- Leap seconds --
+   -- Leap Seconds --
    ------------------
 
    --  Due to Earth's slowdown, the astronomical time is not as precise as the
@@ -185,7 +185,7 @@ private
    --  modification.
 
    ------------------------------
-   -- Non-leap centennial years --
+   -- Non-leap Centennial Years --
    ------------------------------
 
    --  Over the range of Ada time, centennial years 2100, 2200 and 2300 are
@@ -194,7 +194,7 @@ private
    --  subtract a "fake" February 29 to facilitate the arithmetic involved.
 
    ------------------------------------
-   -- Time zones and UTC_Time_Offset --
+   -- Time Zones and UTC_Time_Offset --
    ------------------------------------
 
    --  The implementation-defined time zone of Ada.Calendar routines is the
@@ -220,17 +220,19 @@ private
    --     2011-03-12   -300
    --     2011-03-14   -240      Daylight savings is in effect
 
-   --  Local declarations
+   ------------------------
+   -- Local Declarations --
+   ------------------------
 
+   type Time_Rep is range -2 ** 63 .. +2 ** 63 - 1;
+   type Time is new Time_Rep;
    --  The underlying type of Time has been chosen to be a 64 bit signed
    --  integer number since it allows for easier processing of sub seconds
    --  and arithmetic.
 
-   type Time_Rep is range -2 ** 63 .. +2 ** 63 - 1;
-   type Time is new Time_Rep;
-
    Days_In_Month : constant array (Month_Number) of Day_Number :=
                      (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
+   --  Days in month for non-leap year, leap year case is adjusted in code
 
    Invalid_Time_Zone_Offset : Long_Integer;
    pragma Import (C, Invalid_Time_Zone_Offset, "__gnat_invalid_tzoff");
@@ -238,7 +240,11 @@ private
    function Is_Leap (Year : Year_Number) return Boolean;
    --  Determine whether a given year is leap
 
-   --  The following packages provide a target independent interface to the
+   ----------------------------------------------------------
+   -- Target-Independent Interface to Children of Calendar --
+   ----------------------------------------------------------
+
+   --  The following packages provide a target-independent interface to the
    --  children of Calendar - Arithmetic, Conversions, Delays, Formatting and
    --  Time_Zones.
 
