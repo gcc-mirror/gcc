@@ -1,3 +1,8 @@
+2012-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR target/51934
+	* g++.dg/torture/pr51344.C: Use noreturn instead of cdecl.
+
 2012-01-23  Greta Yorsh  <Greta.Yorsh@arm.com>
 	* c-c++-common/tm/omp.c: Require target with pthread support.
 
