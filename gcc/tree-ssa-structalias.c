@@ -5664,7 +5664,8 @@ intra_create_variable_infos (void)
 	 Treat restrict qualified references the same.  */
       if (TYPE_RESTRICT (TREE_TYPE (t))
 	  && ((DECL_BY_REFERENCE (t) && POINTER_TYPE_P (TREE_TYPE (t)))
-	      || TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE))
+	      || TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE)
+	  && !type_contains_placeholder_p (TREE_TYPE (TREE_TYPE (t))))
 	{
 	  struct constraint_expr lhsc, rhsc;
 	  varinfo_t vi;

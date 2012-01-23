@@ -1,3 +1,9 @@
+2012-01-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-structalias.c (intra_create_variable_infos): Do not create
+	fake variables for restrict-qualified pointers whose pointed-to type
+	contains a placeholder.
+
 2012-01-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51949
