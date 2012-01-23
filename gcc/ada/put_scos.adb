@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -139,12 +139,6 @@ begin
                      Ctr := 0;
                      Continuation := False;
                      loop
-                        if SCO_Pragma_Disabled
-                             (SCO_Table.Table (Start).Pragma_Sloc)
-                        then
-                           goto Next_Statement;
-                        end if;
-
                         if Ctr = 0 then
                            Write_SCO_Initiate (U);
                            if not Continuation then
@@ -169,7 +163,7 @@ begin
                               Write_Info_Char (Sent.C2);
 
                               if Sent.C1 = 'S'
-                                and then Sent.C2 = 'P'
+                                and then (Sent.C2 = 'P' or else Sent.C2 = 'p')
                                 and then Sent.Pragma_Name /= Unknown_Pragma
                               then
                                  --  Strip leading "PRAGMA_"
@@ -205,7 +199,6 @@ begin
                            Ctr := 0;
                         end if;
 
-                     <<Next_Statement>>
                         exit when SCO_Table.Table (Start).Last;
                         Start := Start + 1;
                      end loop;

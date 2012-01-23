@@ -1,3 +1,30 @@
+2012-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb (Analyze_Associations): Alphabetize local variables and
+	constants. Rename Actual_Types to Actuals_To_Freeze. Rename Next_Formal
+	to Saved_Formal.
+	Freeze all eligible subprograms which appear as actuals in
+	the instantiation.
+	(Has_Fully_Defined_Profile): New routine.
+	(Renames_Standard_Subprogram): New routine.
+	(Earlier): Add local variable N. Comment update. Do not use source
+	locations when trying to determine whether one node precedes another.
+
+2012-01-23  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): In the case
+	where the result of a concatentation can be null, set the to
+	result have both the low and high bounds of the right operand (not
+	just the high bound, as was the case prior to this fix). Also,
+	fix the saved high bound setting (Last_Opnd_High_Bound) in the
+	empty string literal case (should have been low bound minus one,
+	rather than plus one).
+
+2012-01-23  Thomas Quinot  <quinot@adacore.com>
+
+	* scos.ads, put_scos.adb, get_scos.adb (Get_SCOs, Put_SCOs): Do not
+	omit statement SCOs for disabled pragmas.
+
 2012-01-23  Matthew Heaney  <heaney@adacore.com>
 
 	* a-cohase.ads, a-cihase.ads, a-cbhase.ads, a-coorse.ads,
