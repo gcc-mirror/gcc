@@ -1,3 +1,32 @@
+2012-01-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/49829
+	Add libc++98convenience.la, libc++11convenience.la.
+	* src/c++98: New directory.
+	* src/c++11: New directory.
+	* acinclude.m4: (GLIBCXX_CONFIGURE): Add src-c++98, src-c++11.
+	* configure: Regenerated.
+	* Makefile.am (hosted_source): Add src-c++98, src-c++11 to SUBDIRS.
+	* Makefile.in: Regenerate.
+	* libsupc++/Makefile.am (AM_CXXFLAGS): USe XTEMPLATE_FLAGS for
+	-fno-implicit-templates.
+	* libsupc++/Makefile.in: Regenerate.
+	* src/Makefile.am (inst_sources): Move... C++11 files into
+	separate directory for libstdc++11convenience.la. Files are:
+	fstream-inst.cc, string-inst.cc, wlocale-inst.cc, wstring-inst.cc).
+	(sources): Move C++11 files. Files are: compatibility-c++0x.cc,
+	compatibility-atomic-c++0x.cc, debug.cc, functexcept.cc,
+	functional.cc, hash_c++0x.cc, hashtable_c++0x.cc, limits.cc,
+	system_error.cc, placeholders.cc, regex.cc, shared_ptr.cc,
+	mutex.cc, condition_variable.cc, chrono.cc, thread.cc, future.cc.
+	(libstdc++convenience.la): Add new target.
+	(SUBDIRS): Add c++11, c++98.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.am: New.
+	* src/c++11/Makefile.in: Generate.
+	* src/c++98/Makefile.am: New, C++98 files.
+	* src/c++98/Makefile.in: Generate.
+
 2012-01-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	libstdc++-v3:

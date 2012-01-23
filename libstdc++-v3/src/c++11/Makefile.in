@@ -15,7 +15,6 @@
 
 @SET_MAKE@
 
-
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -37,8 +36,8 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 DIST_COMMON = $(top_srcdir)/fragment.am $(srcdir)/Makefile.in \
-	$(srcdir)/Makefile.am $(bits_HEADERS) $(std_HEADERS)
-subdir = libsupc++
+	$(srcdir)/Makefile.am
+subdir = src/c++11
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/enable.m4 \
@@ -86,44 +85,28 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bitsdir)" \
-	"$(DESTDIR)$(stddir)"
+am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
-libsupc___la_LIBADD =
-am__objects_1 = array_type_info.lo atexit_arm.lo bad_alloc.lo \
-	bad_cast.lo bad_typeid.lo class_type_info.lo del_op.lo \
-	del_opnt.lo del_opv.lo del_opvnt.lo dyncast.lo eh_alloc.lo \
-	eh_arm.lo eh_aux_runtime.lo eh_call.lo eh_catch.lo \
-	eh_exception.lo eh_globals.lo eh_personality.lo eh_ptr.lo \
-	eh_term_handler.lo eh_terminate.lo eh_tm.lo eh_throw.lo \
-	eh_type.lo eh_unex_handler.lo enum_type_info.lo \
-	function_type_info.lo fundamental_type_info.lo guard.lo \
-	guard_error.lo hash_bytes.lo nested_exception.lo \
-	new_handler.lo new_op.lo new_opnt.lo new_opv.lo new_opvnt.lo \
-	pbase_type_info.lo pmem_type_info.lo pointer_type_info.lo \
-	pure.lo si_class_type_info.lo tinfo.lo tinfo2.lo vec.lo \
-	vmi_class_type_info.lo vterminate.lo
-@GLIBCXX_HOSTED_TRUE@am__objects_2 = cp-demangle.lo
-am_libsupc___la_OBJECTS = $(am__objects_1) $(am__objects_2)
-libsupc___la_OBJECTS = $(am_libsupc___la_OBJECTS)
-libsupc__convenience_la_LIBADD =
-am_libsupc__convenience_la_OBJECTS = $(am__objects_1) $(am__objects_2)
-libsupc__convenience_la_OBJECTS =  \
-	$(am_libsupc__convenience_la_OBJECTS)
+libc__11_la_LIBADD =
+am__objects_1 = chrono.lo condition_variable.lo compatibility-c++0x.lo \
+	compatibility-atomic-c++0x.lo debug.lo functexcept.lo \
+	functional.lo future.lo hash_c++0x.lo hashtable_c++0x.lo \
+	limits.lo mutex.lo placeholders.lo regex.lo shared_ptr.lo \
+	system_error.lo thread.lo
+@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_2 = fstream-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	string-inst.lo wstring-inst.lo
+am_libc__11_la_OBJECTS = $(am__objects_1) $(am__objects_2)
+libc__11_la_OBJECTS = $(am_libc__11_la_OBJECTS)
+libc__11convenience_la_LIBADD =
+am_libc__11convenience_la_OBJECTS = $(am__objects_1) $(am__objects_2)
+libc__11convenience_la_OBJECTS = $(am_libc__11convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp =
 am__depfiles_maybe =
-COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-CCLD = $(CC)
-LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
-SOURCES = $(libsupc___la_SOURCES) $(libsupc__convenience_la_SOURCES)
-HEADERS = $(bits_HEADERS) $(std_HEADERS)
+SOURCES = $(libc__11_la_SOURCES) $(libc__11convenience_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 ABI_TWEAKS_SRCDIR = @ABI_TWEAKS_SRCDIR@
@@ -334,105 +317,54 @@ WARN_CXXFLAGS = \
 # -I/-D flags to pass when compiling.
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 
-# Need this library to both be part of libstdc++.a, and installed
-# separately too.
-# 1) separate libsupc++.la
-toolexeclib_LTLIBRARIES = libsupc++.la
-# 2) integrated libsupc++convenience.la that is to be a part of libstdc++.a
-noinst_LTLIBRARIES = libsupc++convenience.la
-std_HEADERS = \
-	cxxabi.h exception initializer_list new typeinfo 
-
-bits_HEADERS = \
-	atomic_lockfree_defines.h cxxabi_forced.h \
-	exception_defines.h exception_ptr.h hash_bytes.h nested_exception.h 
-
-headers = $(std_HEADERS) $(bits_HEADERS)
-@GLIBCXX_HOSTED_TRUE@c_sources = \
-@GLIBCXX_HOSTED_TRUE@	cp-demangle.c 
-
+# Convenience library for C++11 runtime.
+toolexeclib_LTLIBRARIES = libc++11.la
+noinst_LTLIBRARIES = libc++11convenience.la
+headers = 
 sources = \
-	array_type_info.cc \
-	atexit_arm.cc \
-	bad_alloc.cc \
-	bad_cast.cc \
-	bad_typeid.cc \
-	class_type_info.cc \
-	del_op.cc \
-	del_opnt.cc \
-	del_opv.cc \
-	del_opvnt.cc \
-	dyncast.cc \
-	eh_alloc.cc \
-	eh_arm.cc \
-	eh_aux_runtime.cc \
-	eh_call.cc \
-	eh_catch.cc \
-	eh_exception.cc \
-	eh_globals.cc \
-	eh_personality.cc \
-	eh_ptr.cc \
-	eh_term_handler.cc \
-	eh_terminate.cc \
-	eh_tm.cc \
-	eh_throw.cc \
-	eh_type.cc \
-	eh_unex_handler.cc \
-	enum_type_info.cc \
-	function_type_info.cc \
-	fundamental_type_info.cc \
-	guard.cc \
-	guard_error.cc \
-	hash_bytes.cc \
-	nested_exception.cc \
-	new_handler.cc \
-	new_op.cc \
-	new_opnt.cc \
-	new_opv.cc \
-	new_opvnt.cc \
-	pbase_type_info.cc \
-	pmem_type_info.cc \
-	pointer_type_info.cc \
-	pure.cc \
-	si_class_type_info.cc \
-	tinfo.cc \
-	tinfo2.cc \
-	vec.cc \
-	vmi_class_type_info.cc \
-	vterminate.cc
+	chrono.cc \
+	condition_variable.cc \
+	compatibility-c++0x.cc \
+	compatibility-atomic-c++0x.cc \
+	debug.cc \
+	functexcept.cc \
+	functional.cc \
+	future.cc \
+	hash_c++0x.cc \
+	hashtable_c++0x.cc \
+	limits.cc \
+	mutex.cc \
+	placeholders.cc \
+	regex.cc  \
+	shared_ptr.cc \
+	system_error.cc \
+	thread.cc
 
-libsupc___la_SOURCES = $(sources) $(c_sources) 
-libsupc__convenience_la_SOURCES = $(sources) $(c_sources)
+@ENABLE_EXTERN_TEMPLATE_FALSE@XTEMPLATE_FLAGS = 
+@ENABLE_EXTERN_TEMPLATE_TRUE@XTEMPLATE_FLAGS = -fno-implicit-templates
+@ENABLE_EXTERN_TEMPLATE_FALSE@inst_sources = 
+@ENABLE_EXTERN_TEMPLATE_TRUE@inst_sources = \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	fstream-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	string-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-inst.cc
+
+libc__11_la_SOURCES = $(sources) $(inst_sources)
+libc__11convenience_la_SOURCES = $(sources)  $(inst_sources)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
 # set this option because CONFIG_CXXFLAGS has to be after
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
-# as the occasion call for it.
+# as the occasion calls for it.
 AM_CXXFLAGS = \
 	$(PIC_CXXFLAGS) \
 	$(XTEMPLATE_FLAGS) \
 	$(WARN_CXXFLAGS) \
 	$(OPTIMIZE_CXXFLAGS) \
-	$(CONFIG_CXXFLAGS)
+	$(CONFIG_CXXFLAGS) -std=gnu++11
 
 AM_MAKEFLAGS = \
 	"gxx_include_dir=$(gxx_include_dir)"
-
-
-# Use special rules for pulling things out of libiberty.  These
-# objects should be compiled with the "C" compiler, not the C++
-# compiler, and also should not use the C++ includes.
-C_INCLUDES = -I.. -I$(toplevel_srcdir)/libiberty -I$(toplevel_srcdir)/include
-C_COMPILE = \
-	$(CC) $(DEFS) $(C_INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-
-
-# LTCOMPILE is copied from LTCXXCOMPILE below.
-LTCOMPILE = $(LIBTOOL) --tag CC --tag disable-shared $(LIBTOOLFLAGS) --mode=compile \
-	    $(CC) $(DEFS) $(C_INCLUDES) $(PIC_CXXFLAGS) \
-            $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 
 
 # Libtool notes
@@ -453,12 +385,11 @@ LTCOMPILE = $(LIBTOOL) --tag CC --tag disable-shared $(LIBTOOLFLAGS) --mode=comp
 # correct solution is to add `--tag CXX' to LTCXXCOMPILE and maybe
 # CXXLINK, just after $(LIBTOOL), so that libtool doesn't have to
 # attempt to infer which configuration to use.
-#
 # We have to put --tag disable-shared after --tag CXX lest things
 # CXX undo the affect of disable-shared.
 LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared $(LIBTOOLFLAGS) \
 	       --mode=compile $(CXX) $(TOPLEVEL_INCLUDES) \
-	       $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) 
+	       $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 
@@ -472,16 +403,10 @@ CXXLINK = $(LIBTOOL) --tag CXX --tag disable-shared $(LIBTOOLFLAGS) \
 	  --mode=link $(CXX) \
 	  $(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(LTLDFLAGS) -o $@
 
-
-# Install notes
-# We have to have rules modified from the default to counteract SUN make
-# prepending each of $(*_HEADERS) with VPATH below.
-stddir = $(gxx_include_dir)
-bitsdir = $(gxx_include_dir)/bits
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .cc .lo .o .obj
+.SUFFIXES: .cc .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/fragment.am $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -491,9 +416,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign --ignore-deps libsupc++/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign --ignore-deps src/c++11/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign --ignore-deps libsupc++/Makefile
+	  $(AUTOMAKE) --foreign --ignore-deps src/c++11/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -552,25 +477,16 @@ clean-toolexeclibLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-libsupc++.la: $(libsupc___la_OBJECTS) $(libsupc___la_DEPENDENCIES) 
-	$(CXXLINK) -rpath $(toolexeclibdir) $(libsupc___la_OBJECTS) $(libsupc___la_LIBADD) $(LIBS)
-libsupc++convenience.la: $(libsupc__convenience_la_OBJECTS) $(libsupc__convenience_la_DEPENDENCIES) 
-	$(CXXLINK)  $(libsupc__convenience_la_OBJECTS) $(libsupc__convenience_la_LIBADD) $(LIBS)
+libc++11.la: $(libc__11_la_OBJECTS) $(libc__11_la_DEPENDENCIES) 
+	$(CXXLINK) -rpath $(toolexeclibdir) $(libc__11_la_OBJECTS) $(libc__11_la_LIBADD) $(LIBS)
+libc++11convenience.la: $(libc__11convenience_la_OBJECTS) $(libc__11convenience_la_DEPENDENCIES) 
+	$(CXXLINK)  $(libc__11convenience_la_OBJECTS) $(libc__11convenience_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
-
-.c.o:
-	$(COMPILE) -c $<
-
-.c.obj:
-	$(COMPILE) -c `$(CYGPATH_W) '$<'`
-
-.c.lo:
-	$(LTCOMPILE) -c -o $@ $<
 
 .cc.o:
 	$(CXXCOMPILE) -c -o $@ $<
@@ -640,9 +556,9 @@ distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES) $(HEADERS)
+all-am: Makefile $(LTLIBRARIES)
 installdirs:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bitsdir)" "$(DESTDIR)$(stddir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -692,7 +608,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-bitsHEADERS install-stdHEADERS
+install-data-am:
 
 install-dvi: install-dvi-am
 
@@ -737,8 +653,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-bitsHEADERS uninstall-stdHEADERS \
-	uninstall-toolexeclibLTLIBRARIES
+uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
 .MAKE: install-am install-strip
 
@@ -746,82 +661,20 @@ uninstall-am: uninstall-bitsHEADERS uninstall-stdHEADERS \
 	clean-libtool clean-noinstLTLIBRARIES \
 	clean-toolexeclibLTLIBRARIES ctags distclean distclean-compile \
 	distclean-generic distclean-libtool distclean-tags dvi dvi-am \
-	html html-am info info-am install install-am \
-	install-bitsHEADERS install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-stdHEADERS install-strip \
+	html html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	mostlyclean mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-bitsHEADERS uninstall-stdHEADERS \
-	uninstall-toolexeclibLTLIBRARIES
+	uninstall-am uninstall-toolexeclibLTLIBRARIES
 
 
-cp-demangle.c:
-	rm -f $@
-	$(LN_S) $(toplevel_srcdir)/libiberty/cp-demangle.c $@
-cp-demangle.lo: cp-demangle.c
-	$(LTCOMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
-cp-demangle.o: cp-demangle.c
-	$(C_COMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
-
-# Use special rules for the C++0x sources so that the proper flags are passed.
-eh_ptr.lo: eh_ptr.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-eh_ptr.o: eh_ptr.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-eh_throw.lo: eh_throw.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-eh_throw.o: eh_throw.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-guard.lo: guard.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-guard.o: guard.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-nested_exception.lo: nested_exception.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-nested_exception.o: nested_exception.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-install-stdHEADERS: $(std_HEADERS)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(stddir)
-	@list='$(std_HEADERS)'; for p in $$list; do \
-	  q=`echo $$p | sed -e 's,.*/,,'`; \
-	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
-	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(stddir)/$$q"; \
-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(stddir)/$$q; \
-	done
-
-install-bitsHEADERS: $(bits_HEADERS)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(bitsdir)
-	@list='$(bits_HEADERS)'; for p in $$list; do \
-	  q=`echo $$p | sed -e 's,.*/,,'`; \
-	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
-	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(bitsdir)/$$q"; \
-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(bitsdir)/$$q; \
-	done
-
-uninstall-stdHEADERS:
-	@$(NORMAL_UNINSTALL)
-	list='$(std_HEADERS)'; for p in $$list; do \
-	  q=`echo $$p | sed -e 's,.*/,,'`; \
-	  rm -f $(DESTDIR)$(stddir)/$$q; \
-	done
-
-uninstall-bitsHEADERS:
-	@$(NORMAL_UNINSTALL)
-	list='$(bits_HEADERS)'; for p in $$list; do \
-	  q=`echo $$p | sed -e 's,.*/,,'`; \
-	  rm -f $(DESTDIR)$(bitsdir)/$$q; \
-	done
+vpath % $(top_srcdir)/src/c++11
+vpath % $(top_srcdir)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -24,11 +24,10 @@
 
 #include <bits/c++config.h>
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-# error "hashtable_c++0x.cc must be compiled with -std=gnu++0x"
-#endif
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-#include "hashtable-aux.cc"
-} // namespace // namespace std
+  namespace tr1 
+  {
+#include "../shared/hashtable-aux.cc"
+  }
+}
