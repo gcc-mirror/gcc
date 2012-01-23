@@ -1,3 +1,9 @@
+2012-01-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR libitm/51830
+	* builtin-types.def (BT_FN_UINT_UINT_VAR): New.
+	* gtm-builtins.def (BUILT_IN_TM_START): Declare as BT_FN_UINT_UINT_VAR.
+
 2012-01-23  Aldy Hernandez  <aldyh@redhat.com>
 	    Patrick Marlier  <patrick.marlier@gmail.com>
 	    Iain Sandoe  <developer@sandoe-acoustics.co.uk>
@@ -22,8 +28,7 @@
 2012-01-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51949
-	* ipa-split.c (execute_split_functions): Do not split malloc
-	functions.
+	* ipa-split.c (execute_split_functions): Do not split malloc functions.
 
 2012-01-23  Jakub Jelinek  <jakub@redhat.com>
 
@@ -34,18 +39,15 @@
 	(make_defs_and_copies_lists): Remove defs_list and copies_list
 	arguments, add state argument, just truncate state->work_list
 	instead of always allocating and freeing the vector.  Assert that
-	get_defs succeeds instead of returning 2.  Changed return type to
-	bool.
+	get_defs succeeds instead of returning 2.  Changed return type to bool.
 	(merge_def_and_ext): Add state argument.  If SET_DEST doesn't
 	have ext_src_mode, see if it has been modified already with the
 	right kind of extension and has been extended before from the
 	ext_src_mode.  If SET_DEST is already wider or equal to cand->mode,
-	just return true.  Remember the original mode in state->modified
-	array.
+	just return true.  Remember the original mode in state->modified array.
 	(combine_reaching_defs): Add state argument.  Don't allocate and
 	free here def_list, copied_list and vec vectors, instead just
-	VEC_truncate the vectors in *state.  Don't handle outcome == 2
-	here.
+	VEC_truncate the vectors in *state.  Don't handle outcome == 2 here.
 	(find_and_remove_re): Set DF_DEFER_INSN_RESCAN df flag.
 	Add state variable, clear vectors in it, initialize state.modified
 	if needed.  Free all the vectors at the end and state.modified too.
@@ -133,8 +135,8 @@
 	* config/arm/arm.c (arm_count_output_move_double_insns): Call
 	output_move_double on a copy of operands array.
 
-2012-01-20   Cary Coutant  <ccoutant@google.com>
-	     Dodji Seketeli  <dodji@redhat.com>
+2012-01-20  Cary Coutant  <ccoutant@google.com>
+	    Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/45682
 	* dwarf2out.c (copy_declaration_context): Return ref to parent
@@ -200,13 +202,12 @@
 2012-01-19  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/40761
-	* ira-int.h (struct ira_loop_tree_node): Add comment for member
-	loop.  Add new member loop_num.
+	* ira-int.h (struct ira_loop_tree_node): Add comment for member loop.
+	Add new member loop_num.
 	(IRA_LOOP_NODE_BY_INDEX): Modify the check.
 	(ira_build): Remove the parameter.
 
-	* ira.c (ira_print_disposition): Use loop_num instead of
-	loop->num.
+	* ira.c (ira_print_disposition): Use loop_num instead of loop->num.
 	(ira.c): Do not build CFG loops for one region allocation.  Remove
 	argument from ira_build call.
 
@@ -223,16 +224,15 @@
 	an assertion.
 	(ira_print_expanded_allocno, loop_compare_func): Use loop_num
 	instead of loop->num.
-	(mark_loops_for_removal): Ditto.  Use loop_num instead of
-	loop->num.
+	(mark_loops_for_removal): Ditto.  Use loop_num instead of loop->num.
 	(mark_all_loops_for_removal): Ditto.
 	(remove_unnecessary_regions): Separate the case when CFG loops
 	are not built.
 	(ira_build): Remove the parameter.  Use explicit number of regions
 	when CFG loops are not built.
 
-	* ira-color.c (print_loop_title): Separate the case for the root
-	node.  Use loop_num instead of loop->num.
+	* ira-color.c (print_loop_title): Separate the case for the root node.
+	Use loop_num instead of loop->num.
 	(move_spill_restore): Use loop_num instead of loop->num.
 
 	* ira-emit.c (setup_entered_from_non_parent_p): Add an assertion.
@@ -241,8 +241,7 @@
 
 	* ira-lives.c (process_bb_node_lives): Ditto.
 
-	* ira-costs.c (print_allocno_costs, find_costs_and_classes):
-	Ditto.
+	* ira-costs.c (print_allocno_costs, find_costs_and_classes): Ditto.
 
 	* ira-conflicts.c (print_allocno_conflicts): Ditto.
 
@@ -278,8 +277,7 @@
 	with #ifdef HAVE_INITFINI_ARRAY.
 	* configure.ac: Move gcc_AC_INITFINI_ARRAY much later into the file.
 	Add initfini-array.h to tm_file here.
-	* acinclude.m4 (gcc_AC_INITFINI_ARRAY): For non-ia64 do a linker
-	test.
+	* acinclude.m4 (gcc_AC_INITFINI_ARRAY): For non-ia64 do a linker test.
 	* config.gcc: Don't add initfini-array.h to tm_file here.
 	* configure: Regenerated.
 
@@ -288,7 +286,7 @@
 	PR rtl-optimization/51505
 	* df-problems.c (df_kill_notes): New parameter live. Update comment.
 	Remove REG_EQUAL/REG_EQUIV notes referring to dead registers.
-	(df_note_bb_compute): Update the call to df_kill_notes. 
+	(df_note_bb_compute): Update the call to df_kill_notes.
 
 2012-01-18  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -408,9 +406,8 @@
 	(mips_classify_symbol): Remove SYMBOL_FORCE_TO_MEM handling.
 	(mips_symbolic_constant_p): Likewise.  Remove SYMBOL_32_HIGH too.
 	(mips_symbol_insns_1): Likewise.  Check mips_use_pcrel_pool_p.
-	(mips_cannot_force_const_mem): Use mips_use_pcrel_pool_p instead
-	of SYMBOL_FORCE_TO_MEM.  Only check mips_tls_symbol_ref_1
-	if it's false.
+	(mips_cannot_force_const_mem): Use mips_use_pcrel_pool_p instead of
+	SYMBOL_FORCE_TO_MEM.  Only check mips_tls_symbol_ref_1 if it's false.
 	(mips_get_tp): Add MIPS16 support.
 	(mips_legitimize_tls_address): Remove MIPS16 sorry().
 	Generalize DTPREL and TPREL handling.
@@ -423,8 +420,7 @@
 	(force_to_mem_operand): Use mips_use_pcrel_pool_p.
 	* config/mips/mips.md (UNSPEC_UNSHIFTED_HIGH): New unspec.
 	(PIC_FUNCTION_ADDR_REGNUM): Moved from mips.h.
-	(*unshifted_high): New instruction.  Use it for MIPS16
-	high splitter.
+	(*unshifted_high): New instruction.  Use it for MIPS16 high splitter.
 	(consttable_tls_reloc, tls_get_tp_mips16_<mode>): New patterns.
 	(*tls_get_tp_mips16_call_<mode>): Likewise.
 

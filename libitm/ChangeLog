@@ -1,3 +1,9 @@
+2012-01-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR libitm/51830
+	* config/x86/sjlj.S (_ITM_beginTransaction) [!__x86_64__]: Load
+	the first function argument to %eax.
+
 2012-01-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* libitm.h (_ITM_getThreadnum): Remove.
