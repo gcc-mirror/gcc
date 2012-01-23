@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fgnu-tm -fopenmp" } */
+/* { dg-require-effective-target pthread } */
 
 __attribute__ ((transaction_pure))
 unsigned long rdtsc();

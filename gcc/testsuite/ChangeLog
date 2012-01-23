@@ -1,3 +1,6 @@
+2012-01-23  Greta Yorsh  <Greta.Yorsh@arm.com>
+	* c-c++-common/tm/omp.c: Require target with pthread support.
+
 2012-01-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/51949
