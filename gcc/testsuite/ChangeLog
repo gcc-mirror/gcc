@@ -1,3 +1,8 @@
+2012-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51930
+	* g++.dg/ext/visibility/template10.C: New.
+
 2012-01-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51948
