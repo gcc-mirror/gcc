@@ -32,7 +32,8 @@
 pragma Compiler_Unit;
 
 pragma Style_Checks (Off);
---  Allow long lines in this unit
+--  Allow long lines in this unit. Note this could be more specific, but we
+--  keep this simple form because of bootstrap constraints ???
 
 --  pragma Warnings (Off, "non-static constant in preelaborated unit");
 --  We need this to be pure, and the three constants in question are not a

@@ -1,5 +1,14 @@
 2012-01-23  Robert Dewar  <dewar@adacore.com>
 
+	* s-utf_32.adb: Minor reformatting.
+
+2012-01-23  Vincent Celier  <celier@adacore.com>
+
+	* snames.ads-tmpl: Minor comment addition Indicate that
+	Name_Library_Encapsulated_Options is only used in gprbuild.
+
+2012-01-23  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch10.adb (Analyze_Subunit): Properly save/restore cunit
 	restrictions.
 
