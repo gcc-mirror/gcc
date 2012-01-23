@@ -2177,8 +2177,14 @@ determine_visibility (tree decl)
 		    ? TYPE_TEMPLATE_INFO (TREE_TYPE (decl))
 		    : DECL_TEMPLATE_INFO (decl));
       tree args = TI_ARGS (tinfo);
+      tree attribs = (TREE_CODE (decl) == TYPE_DECL
+		      ? TYPE_ATTRIBUTES (TREE_TYPE (decl))
+		      : DECL_ATTRIBUTES (decl));
       
-      if (args != error_mark_node)
+      if (args != error_mark_node
+	  /* Template argument visibility outweighs #pragma or namespace
+	     visibility, but not an explicit attribute.  */
+	  && !lookup_attribute ("visibility", attribs))
 	{
 	  int depth = TMPL_ARGS_DEPTH (args);
 	  tree pattern = DECL_TEMPLATE_RESULT (TI_TEMPLATE (tinfo));
