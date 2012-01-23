@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 2005-2008, Free Software Foundation, Inc.          --
+--         Copyright (C) 2005-2012, Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT.  In accordance with the copyright of that document, you can freely --
@@ -26,7 +26,12 @@ package Ada.Calendar.Time_Zones is
 
    Unknown_Zone_Error : exception;
 
-   function UTC_Time_Offset (Date : Time := Clock) return Time_Offset;
+   function UTC_Time_Offset return Time_Offset;
+   --  Returns (in minutes), the difference between the implementation-defined
+   --  time zone of Calendar, and UTC time. If the time zone of the Calendar
+   --  implementation is unknown, raises Unknown_Zone_Error.
+
+   function UTC_Time_Offset (Date : Time) return Time_Offset;
    --  Returns (in minutes), the difference between the implementation-defined
    --  time zone of Calendar, and UTC time, at the time Date. If the time zone
    --  of the Calendar implementation is unknown, raises Unknown_Zone_Error.

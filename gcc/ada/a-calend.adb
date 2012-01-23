@@ -1025,7 +1025,10 @@ package body Ada.Calendar is
       function Day_Of_Week (Date : Time) return Integer is
          Date_N    : constant Time_Rep := Time_Rep (Date);
          Time_Zone : constant Long_Integer :=
-                       Time_Zones_Operations.UTC_Time_Offset (Date);
+                       Time_Zones_Operations.UTC_Time_Offset
+                         (Date        => Date,
+                          Is_Historic => False);
+
          Ada_Low_N : Time_Rep;
          Day_Count : Long_Integer;
          Day_Dur   : Time_Dur;
@@ -1138,7 +1141,9 @@ package body Ada.Calendar is
          else
             declare
                Off : constant Long_Integer :=
-                       Time_Zones_Operations.UTC_Time_Offset (Time (Date_N));
+                       Time_Zones_Operations.UTC_Time_Offset
+                         (Date        => Time (Date_N),
+                          Is_Historic => False);
             begin
                Date_N := Date_N + Time_Rep (Off) * Nano;
             end;
@@ -1360,12 +1365,14 @@ package body Ada.Calendar is
             declare
                Current_Off   : constant Long_Integer :=
                                  Time_Zones_Operations.UTC_Time_Offset
-                                   (Time (Res_N));
+                                   (Date        => Time (Res_N),
+                                    Is_Historic => False);
                Current_Res_N : constant Time_Rep :=
                                  Res_N - Time_Rep (Current_Off) * Nano;
                Off           : constant Long_Integer :=
                                  Time_Zones_Operations.UTC_Time_Offset
-                                   (Time (Current_Res_N));
+                                   (Date        => Time (Current_Res_N),
+                                    Is_Historic => False);
             begin
                Res_N := Res_N - Time_Rep (Off) * Nano;
             end;
@@ -1438,7 +1445,9 @@ package body Ada.Calendar is
       Nanos_In_56_Years : constant := (14 * 366 + 42 * 365) * Nanos_In_Day;
 
       subtype long is Long_Integer;
+      subtype int  is Integer;
       type long_Pointer is access all long;
+      type int_Pointer  is access all int;
 
       type time_t is
         range -(2 ** (Standard'Address_Size - Integer'(1))) ..
@@ -1446,21 +1455,28 @@ package body Ada.Calendar is
       type time_t_Pointer is access all time_t;
 
       procedure localtime_tzoff
-       (timer : time_t_Pointer;
-        off   : long_Pointer);
+        (timer       : time_t_Pointer;
+         is_historic : int_Pointer;
+         off         : long_Pointer);
       pragma Import (C, localtime_tzoff, "__gnat_localtime_tzoff");
       --  This is a lightweight wrapper around the system library function
       --  localtime_r. Parameter 'off' captures the UTC offset which is either
       --  retrieved from the tm struct or calculated from the 'timezone' extern
-      --  and the tm_isdst flag in the tm struct.
+      --  and the tm_isdst flag in the tm struct. Flag 'is_historic' denotes
+      --  whether 'timer' is a historical time stamp. If this is not the case,
+      --  the routine returns the offset of the local time zone.
 
       ---------------------
       -- UTC_Time_Offset --
       ---------------------
 
-      function UTC_Time_Offset (Date : Time) return Long_Integer is
+      function UTC_Time_Offset
+        (Date        : Time;
+         Is_Historic : Boolean := True) return Long_Integer
+      is
          Adj_Cent : Integer;
          Date_N   : Time_Rep;
+         Flag     : aliased int;
          Offset   : aliased long;
          Secs_T   : aliased time_t;
 
@@ -1499,8 +1515,13 @@ package body Ada.Calendar is
 
          Secs_T := time_t (Date_N / Nano);
 
+         --  Determine whether to treat the input date as historical or not
+
+         Flag := (if Is_Historic then 1 else 0);
+
          localtime_tzoff
            (Secs_T'Unchecked_Access,
+            Flag'Unchecked_Access,
             Offset'Unchecked_Access);
 
          return Offset;
@@ -1512,4 +1533,5 @@ package body Ada.Calendar is
 
 begin
    System.OS_Primitives.Initialize;
+
 end Ada.Calendar;

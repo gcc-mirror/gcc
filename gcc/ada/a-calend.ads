@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -350,8 +350,12 @@ private
 
    package Time_Zones_Operations is
 
-      function UTC_Time_Offset (Date : Time) return Long_Integer;
-      --  Return the offset in seconds from UTC
+      function UTC_Time_Offset
+        (Date        : Time;
+         Is_Historic : Boolean := True) return Long_Integer;
+      --  Return the offset in seconds from UTC of an arbitrary date. If flag
+      --  Is_Historic is set to False, then return the local time zone offset
+      --  regardless of what Date designates.
 
    end Time_Zones_Operations;
 

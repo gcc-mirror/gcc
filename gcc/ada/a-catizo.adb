@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2009, Free Software Foundation, Inc.            --
+--         Copyright (C) 2009-2012, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,9 +42,41 @@ package body Ada.Calendar.Time_Zones is
    -- UTC_Time_Offset --
    ---------------------
 
-   function UTC_Time_Offset (Date : Time := Clock) return Time_Offset is
+   function UTC_Time_Offset return Time_Offset is
       Offset_L : constant Long_Integer :=
-                   Time_Zones_Operations.UTC_Time_Offset (Date);
+                   Time_Zones_Operations.UTC_Time_Offset
+                     (Date        => Clock,
+                      Is_Historic => False);
+      Offset   : Time_Offset;
+
+   begin
+      if Offset_L = Invalid_Time_Zone_Offset then
+         raise Unknown_Zone_Error;
+      end if;
+
+      --  The offset returned by Time_Zones_Operations.UTC_Time_Offset is in
+      --  seconds, the returned value needs to be in minutes.
+
+      Offset := Time_Offset (Offset_L / 60);
+
+      --  Validity checks
+
+      if not Offset'Valid then
+         raise Unknown_Zone_Error;
+      end if;
+
+      return Offset;
+   end UTC_Time_Offset;
+
+   ---------------------
+   -- UTC_Time_Offset --
+   ---------------------
+
+   function UTC_Time_Offset (Date : Time) return Time_Offset is
+      Offset_L : constant Long_Integer :=
+                   Time_Zones_Operations.UTC_Time_Offset
+                     (Date        => Date,
+                      Is_Historic => True);
       Offset   : Time_Offset;
 
    begin

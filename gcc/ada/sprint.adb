@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -420,7 +420,7 @@ package body Sprint is
       Current_Source_File := No_Source_File;
 
       if Arg in List_Range then
-         Sprint_Node_List (List_Id (Arg));
+         Sprint_Node_List (List_Id (Arg), New_Lines => True);
 
       elsif Arg in Node_Range then
          Sprint_Node (Node_Id (Arg));
@@ -443,7 +443,7 @@ package body Sprint is
       Current_Source_File := No_Source_File;
 
       if Arg in List_Range then
-         Sprint_Node_List (List_Id (Arg));
+         Sprint_Node_List (List_Id (Arg), New_Lines => True);
 
       elsif Arg in Node_Range then
          Sprint_Node (Node_Id (Arg));
@@ -490,7 +490,7 @@ package body Sprint is
       Current_Source_File := No_Source_File;
 
       if Arg in List_Range then
-         Sprint_Node_List (List_Id (Arg));
+         Sprint_Node_List (List_Id (Arg), New_Lines => True);
 
       elsif Arg in Node_Range then
          Sprint_Node (Node_Id (Arg));
@@ -3263,7 +3263,7 @@ package body Sprint is
    -- Sprint_Node_List --
    ----------------------
 
-   procedure Sprint_Node_List (List : List_Id) is
+   procedure Sprint_Node_List (List : List_Id; New_Lines : Boolean := False) is
       Node : Node_Id;
 
    begin
@@ -3275,6 +3275,10 @@ package body Sprint is
             Next (Node);
             exit when Node = Empty;
          end loop;
+      end if;
+
+      if New_Lines and then Column /= 1 then
+         Write_Eol;
       end if;
    end Sprint_Node_List;
 
