@@ -1,3 +1,10 @@
+2012-01-23  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_extract_even_odd): Handle
+	ARM neon.
+	(check_effective_target_vect_interleave): Likewise.
+
 2012-01-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51925
