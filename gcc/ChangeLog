@@ -1,3 +1,29 @@
+2012-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/51933
+	* ree.c (transform_ifelse): Return true right away if dstreg is
+	already wider or equal to cand->mode.
+	(enum ext_modified_kind, struct ext_modified, ext_state): New types.
+	(make_defs_and_copies_lists): Remove defs_list and copies_list
+	arguments, add state argument, just truncate state->work_list
+	instead of always allocating and freeing the vector.  Assert that
+	get_defs succeeds instead of returning 2.  Changed return type to
+	bool.
+	(merge_def_and_ext): Add state argument.  If SET_DEST doesn't
+	have ext_src_mode, see if it has been modified already with the
+	right kind of extension and has been extended before from the
+	ext_src_mode.  If SET_DEST is already wider or equal to cand->mode,
+	just return true.  Remember the original mode in state->modified
+	array.
+	(combine_reaching_defs): Add state argument.  Don't allocate and
+	free here def_list, copied_list and vec vectors, instead just
+	VEC_truncate the vectors in *state.  Don't handle outcome == 2
+	here.
+	(find_and_remove_re): Set DF_DEFER_INSN_RESCAN df flag.
+	Add state variable, clear vectors in it, initialize state.modified
+	if needed.  Free all the vectors at the end and state.modified too.
+	Don't skip a candidate if the extension expression has been modified.
+
 2012-01-22  Douglas B Rupp  <rupp@gnat.com>
 
 	PR target/47096
