@@ -1,3 +1,12 @@
+2012-01-23  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration): Call
+	to Make_Aspect_For_PPC_In_Gen_Sub_Decl added in ASIS mode.
+	* sem_prag.adb, sem_prag.ads (Make_Aspect_For_PPC_In_Gen_Sub_Decl): New
+	routine. In ASIS mode, convert any PPC pragmas into aspects in generic
+	subprogram declaration in order to enable the analysis of PPC boolean
+	expressions.
+
 2012-01-23  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb (Analyze_Object_Declaration): Properly
