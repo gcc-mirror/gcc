@@ -1,3 +1,8 @@
+2012-01-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51948
+	* gfortran.dg/move_alloc_12.f90: New.
+
 2012-01-23  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	PR middle-end/45416

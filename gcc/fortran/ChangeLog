@@ -1,3 +1,9 @@
+2012-01-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51948
+	* check.c (variable_check): Fix checking for
+	 variables and deeply nested BLOCKs.
+
 2012-01-21  Tobias Burnus  <burnus@net-b.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
