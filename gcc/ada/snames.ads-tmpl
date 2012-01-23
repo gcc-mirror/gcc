@@ -6,7 +6,7 @@
 --                                                                          --
 --                             T e m p l a t e                              --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1086,6 +1086,7 @@ package Snames is
 
    --  Additional reserved words and identifiers used in GNAT Project Files
    --  Note that Name_External is already previously declared.
+
    --  The names with the -- GB annotation are only used in gprbuild.
 
    Name_Aggregate                          : constant Name_Id := N + $;
@@ -1226,6 +1227,7 @@ package Snames is
    Name_Switches                           : constant Name_Id := N + $;
    Name_Symbolic_Link_Supported            : constant Name_Id := N + $;
    Name_Synchronize                        : constant Name_Id := N + $;
+   Name_Synchronization                    : constant Name_Id := N + $;
    Name_Toolchain_Description              : constant Name_Id := N + $;
    Name_Toolchain_Version                  : constant Name_Id := N + $;
    Name_Trailing_Required_Switches         : constant Name_Id := N + $;

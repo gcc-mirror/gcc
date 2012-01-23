@@ -1,5 +1,21 @@
 2012-01-23  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch10.adb (Analyze_Subunit): Properly save/restore cunit
+	restrictions.
+
+2012-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* snames.ads-tmpl: Add Name_Synchronization.
+	* aspects.ads, aspects.adb: Add Aspect_Synchronization to
+	enumeration type and related maps.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Handle Aspect
+	Synchronization, build corresponding pragma Implemented.
+	* sem_util.adb (Implementation_Kind): Handle both explicit and
+	implicit pragma_argument association to retrieve the given
+	synchronization mode.
+
+2012-01-23  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch10.adb, errout.adb: Minor reformatting.
 
 2012-01-23  Ed Schonberg  <schonberg@adacore.com>

@@ -1962,6 +1962,12 @@ package body Sem_Ch10 is
       Enclosing_Child : Entity_Id := Empty;
       Svg             : constant Suppress_Array := Scope_Suppress;
 
+      Save_Cunit_Restrictions : constant Save_Cunit_Boolean_Restrictions :=
+                                  Cunit_Boolean_Restrictions_Save;
+      --  Save non-partition wide restrictions before processing the subunit.
+      --  All subunits are analyzed with config restrictions reset and we need
+      --  to restore these saved values at the end.
+
       procedure Analyze_Subunit_Context;
       --  Capture names in use clauses of the subunit. This must be done before
       --  re-installing parent declarations, because items in the context must
@@ -2175,6 +2181,15 @@ package body Sem_Ch10 is
    --  Start of processing for Analyze_Subunit
 
    begin
+      --  For subunit in main extended unit, we reset the configuration values
+      --  for the non-partition-wide restrictions. For other units reset them.
+
+      if In_Extended_Main_Source_Unit (N) then
+         Restore_Config_Cunit_Boolean_Restrictions;
+      else
+         Reset_Cunit_Boolean_Restrictions;
+      end if;
+
       if Style_Check then
          declare
             Nam : Node_Id := Name (Unit (N));
@@ -2280,6 +2295,10 @@ package body Sem_Ch10 is
             end loop;
          end;
       end if;
+
+      --  Deal with restore of restrictions
+
+      Cunit_Boolean_Restrictions_Restore (Save_Cunit_Restrictions);
    end Analyze_Subunit;
 
    ----------------------------

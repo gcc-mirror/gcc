@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1100,6 +1100,21 @@ package body Sem_Ch13 is
 
                   --  We don't have to play the delay game here, since the only
                   --  values are check names which don't get analyzed anyway.
+
+                  pragma Assert (not Delay_Required);
+
+               when Aspect_Synchronization =>
+
+                  --  The aspect corresponds to pragma Implemented.
+                  --  Construct the pragma
+
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Argument_Associations => New_List (
+                        New_Occurrence_Of (E, Loc),
+                        Relocate_Node (Expr)),
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Name_Implemented));
 
                   pragma Assert (not Delay_Required);
 
@@ -6115,11 +6130,12 @@ package body Sem_Ch13 is
             Analyze (Expression (ASN));
             return;
 
-         --  Suppress/Unsuppress/Warnings should never be delayed
+         --  Suppress/Unsuppress/Synchronization/Warnings should not be delayed
 
-         when Aspect_Suppress   |
-              Aspect_Unsuppress |
-              Aspect_Warnings   =>
+         when Aspect_Suppress        |
+              Aspect_Unsuppress      |
+              Aspect_Synchronization |
+              Aspect_Warnings        =>
             raise Program_Error;
 
          --  Pre/Post/Invariant/Predicate take boolean expressions
