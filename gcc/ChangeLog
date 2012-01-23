@@ -1,3 +1,12 @@
+2012-01-23  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/51900
+	* config/i386/predicates.md (symbolic_operand): Allow
+	UNSPEC_PCREL as PIC expression for lea.
+	* config/i386/winnt.c (i386_pe_binds_local_p): Reworked.
+	* config/i386/i386.c (ix86_delegitimize_address): Handle
+	UNSPEC_PCREL for none-MEM, too.
+
 2012-01-23  Aldy Hernandez  <aldyh@redhat.com>
 
 	* trans-mem.c (ipa_tm_create_version): Set externally_visible.
