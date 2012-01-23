@@ -1,3 +1,20 @@
+2012-01-23  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb (Is_Iterated_Container): Test
+	Is_Entity_Name when searching for calls to the default iterator,
+	to avoid blowing up on indirect calls which have an explicit
+	dereference as the call name.
+
+2012-01-23  Thomas Quinot  <quinot@adacore.com>
+
+	* errout.adb (Set_Msg_Node): For an N_Expanded_Name, output
+	the complete expanded name, rather than just its Selector_Name.
+
+2012-01-23  Thomas Quinot  <quinot@adacore.com>
+
+	* a-textio.adb (Put): Rewrite one-parameter Character version to
+	just call the two-parameter one with Current_Out.
+
 2012-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* freeze.adb (Check_Current_Instance): Issue an
