@@ -644,9 +644,7 @@ package body Sem_Ch10 is
       --  up not analyzed, it means that the parent did not contain a stub for
       --  it, or that there errors were detected in some ancestor.
 
-      if Nkind (Unit_Node) = N_Subunit
-        and then not Analyzed (Lib_Unit)
-      then
+      if Nkind (Unit_Node) = N_Subunit and then not Analyzed (Lib_Unit) then
          Semantics (Lib_Unit);
 
          if not Analyzed (Proper_Body (Unit_Node)) then

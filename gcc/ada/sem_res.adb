@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3739,7 +3739,16 @@ package body Sem_Res is
             --  Save actual for subsequent check on order dependence, and
             --  indicate whether actual is modifiable. For AI05-0144-2.
 
-            Save_Actual (A, Ekind (F) /= E_In_Parameter);
+            --  If this is a call to a reference function that is the result
+            --  of expansion, as in element iterator loops, this does not lead
+            --  to a dangerous order dependence: only subsequent use of the
+            --  denoted element might, in some enclosing call.
+
+            if not Has_Implicit_Dereference (Etype (Nam))
+              or else Comes_From_Source (N)
+            then
+               Save_Actual (A, Ekind (F) /= E_In_Parameter);
+            end if;
 
             --  For mode IN, if actual is an entity, and the type of the formal
             --  has warnings suppressed, then we reset Never_Set_In_Source for
