@@ -1,5 +1,31 @@
 2012-01-23  Robert Dewar  <dewar@adacore.com>
 
+	* sprint.ads, sprint.adb (Sprint_Node_List): Add New_Lines parameter
+	(pg,po,ps): Make sure each entry starts on new line.
+
+2012-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-calend.ads, a-calend.adb: Define types int and int_Pointer. Update
+	the parameter profile of procedure localtime_tzoff and its associated
+	comment.
+	(Day_Of_Week): Do not treat the input date as historical
+	with respect to time zones.
+	(Split): Do not treat the input
+	date as historical with respect to time zones.	(Time_Of): Do
+	not treat the input constituents as forming a historical date
+	with respect to time zones.
+	(UTC_Time_Offset): Add new formal
+	parameter Is_Historic. Add local variable Flag. Update the call
+	to localtime_tzoff.
+	* a-catizo.ads, a-catizo.adb (UTC_Time_Offset): New routine.
+	(UTC_Time_Offset (Time)): Update the call to
+	Time_Zone_Operations.UTC_Time_Offset.
+	* sysdep.c (__gnat_localtime_tzoff): Update parameter
+	profile. Split the processing of offsets on Windows into two - one
+	part of historic time stamps and the other for the current time.
+
+2012-01-23  Robert Dewar  <dewar@adacore.com>
+
 	* a-calend.adb: Minor reformatting.
 
 2012-01-23  Ed Schonberg  <schonberg@adacore.com>

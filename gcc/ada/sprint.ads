@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -118,11 +118,13 @@ package Sprint is
    --  blank is output if List is non-empty, and nothing at all is printed it
    --  the argument is No_List.
 
-   procedure Sprint_Node_List (List : List_Id);
+   procedure Sprint_Node_List (List : List_Id; New_Lines : Boolean := False);
    --  Prints the nodes in a list with no separating characters. This is used
    --  in the case of lists of items which are printed on separate lines using
-   --  the current indentation amount. Note that Sprint_Node_List itself
-   --  does not generate any New_Line calls.
+   --  the current indentation amount. New_Lines controls the generation of
+   --  New_Line calls. If False, no New_Line calls are generated. If True,
+   --  then New_Line calls are generated as needed to ensure that each list
+   --  item starts at the beginning of a line.
 
    procedure Sprint_Opt_Node_List (List : List_Id);
    --  Like Sprint_Node_List, but prints nothing if List = No_List
@@ -151,11 +153,13 @@ package Sprint is
    procedure po (Arg : Union_Id);
    pragma Export (Ada, po);
    --  Like pg, but prints original source for the argument (like -gnatdo
-   --  output). Intended only for use from gdb for debugging purposes.
+   --  output). Intended only for use from gdb for debugging purposes. In
+   --  the list case, an end of line is output to separate list elements.
 
    procedure ps (Arg : Union_Id);
    pragma Export (Ada, ps);
    --  Like pg, but prints generated and original source for the argument (like
    --  -gnatds output). Intended only for use from gdb for debugging purposes.
+   --  In the list case, an end of line is output to separate list elements.
 
 end Sprint;
