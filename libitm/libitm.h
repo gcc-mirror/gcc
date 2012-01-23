@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -148,8 +148,6 @@ extern void _ITM_addUserCommitAction(_ITM_userCommitFunction,
 				     _ITM_transactionId_t, void *) ITM_REGPARM;
 
 extern void _ITM_addUserUndoAction(_ITM_userUndoFunction, void *) ITM_REGPARM;
-
-extern int _ITM_getThreadnum(void) ITM_REGPARM;
 
 extern void _ITM_dropReferences (void *, size_t) ITM_REGPARM ITM_PURE;
 

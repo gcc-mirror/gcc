@@ -8,7 +8,6 @@ LIBITM_1.0 {
 	_ITM_commitTransaction;
 	_ITM_commitTransactionEH;
 	_ITM_error;
-	_ITM_getThreadnum;
 	_ITM_getTransactionId;
 	_ITM_inTransaction;
 	_ITM_libraryVersion;
