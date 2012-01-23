@@ -621,6 +621,9 @@ LIBITM_BUILD_VERSIONED_SHLIB_FALSE
 LIBITM_BUILD_VERSIONED_SHLIB_TRUE
 OPT_LDFLAGS
 SECTION_LDFLAGS
+HAVE_HWCAP_FALSE
+HAVE_HWCAP_TRUE
+HWCAP_LDFLAGS
 libtool_VERSION
 MAINT
 MAINTAINER_MODE_FALSE
@@ -2225,6 +2228,51 @@ rm -f conftest.val
   return $ac_retval
 
 } # ac_fn_c_compute_int
+
+# ac_fn_c_check_decl LINENO SYMBOL VAR
+# ------------------------------------
+# Tests whether SYMBOL is declared, setting cache variable VAR accordingly.
+ac_fn_c_check_decl ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  as_decl_name=`echo $2|sed 's/ *(.*//'`
+  as_decl_use=`echo $2|sed -e 's/(/((/' -e 's/)/) 0&/' -e 's/,/) 0& (/g'`
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $as_decl_name is declared" >&5
+$as_echo_n "checking whether $as_decl_name is declared... " >&6; }
+if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main ()
+{
+#ifndef $as_decl_name
+#ifdef __cplusplus
+  (void) $as_decl_use;
+#else
+  (void) $as_decl_name;
+#endif
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$3=yes"
+else
+  eval "$3=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
+
+} # ac_fn_c_check_decl
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -11722,7 +11770,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11725 "configure"
+#line 11773 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11828,7 +11876,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11831 "configure"
+#line 11879 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16452,7 +16500,7 @@ $as_echo "#define HAVE_TLS 1" >>confdefs.h
 
   fi
 
-# See what sort of export controls are availible.
+# See what sort of export controls are available.
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the target supports hidden visibility" >&5
 $as_echo_n "checking whether the target supports hidden visibility... " >&6; }
@@ -16558,6 +16606,8 @@ $as_echo "$libitm_cv_have_attribute_alias" >&6; }
 $as_echo "#define HAVE_ATTRIBUTE_ALIAS 1" >>confdefs.h
 
   fi
+
+# Check linker hardware capability support.
 
 
 # Check whether --with-gnu-ld was given.
@@ -16666,6 +16716,59 @@ with_gnu_ld=$lt_cv_prog_gnu_ld
 
 
 
+
+
+
+  test -z "$HWCAP_LDFLAGS" && HWCAP_LDFLAGS=''
+
+
+  ac_save_LDFLAGS="$LDFLAGS"
+  LDFLAGS="$LFLAGS -Wl,-M,$srcdir/clearcap.map"
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-M,mapfile" >&5
+$as_echo_n "checking for ld that supports -Wl,-M,mapfile... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_hwcap_ldflags=yes
+else
+  ac_hwcap_ldflags=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  if test "$ac_hwcap_ldflags" = "yes"; then
+    HWCAP_LDFLAGS="-Wl,-M,$srcdir/clearcap.map $HWCAP_LDFLAGS"
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_hwcap_ldflags" >&5
+$as_echo "$ac_hwcap_ldflags" >&6; }
+
+  LDFLAGS="$ac_save_LDFLAGS"
+
+
+
+   if test $ac_hwcap_ldflags != no; then
+  HAVE_HWCAP_TRUE=
+  HAVE_HWCAP_FALSE='#'
+else
+  HAVE_HWCAP_TRUE='#'
+  HAVE_HWCAP_FALSE=
+fi
+
+
+# If defaulting to -mavx, don't clear hwcaps.
+ac_fn_c_check_decl "$LINENO" "__AVX__" "ac_cv_have_decl___AVX__" "$ac_includes_default"
+if test "x$ac_cv_have_decl___AVX__" = x""yes; then :
+  HWCAP_LDFLAGS=''
+fi
 
 
 
@@ -16963,7 +17066,6 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: versioning on shared library symbols is $enable_symvers" >&5
 $as_echo "$as_me: versioning on shared library symbols is $enable_symvers" >&6;}
-
 
 if test $enable_symvers = gnu; then
 
@@ -17540,6 +17642,10 @@ if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
+if test -z "${HAVE_HWCAP_TRUE}" && test -z "${HAVE_HWCAP_FALSE}"; then
+  as_fn_error "conditional \"HAVE_HWCAP\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${LIBITM_BUILD_VERSIONED_SHLIB_TRUE}" && test -z "${LIBITM_BUILD_VERSIONED_SHLIB_FALSE}"; then
   as_fn_error "conditional \"LIBITM_BUILD_VERSIONED_SHLIB\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5

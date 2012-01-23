@@ -1,0 +1,14 @@
+# Clear hardware capabilities emitted by Sun as: calls to the x86_avx.c
+# functions are only emitted with -mavx.
+#
+# The v1 mapfile syntax has no support for clearing specific capabilities,
+# so clear everything.
+#
+hwcap_1 = V0x0 OVERRIDE;
+#
+# If we can assume mapfile v2 syntax, we can specificially clear AVX.
+#
+#$mapfile_version 2
+#CAPABILITY {
+#	HW -= AVX;
+#};

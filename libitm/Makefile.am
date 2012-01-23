@@ -21,7 +21,7 @@ AM_CFLAGS = $(XCFLAGS)
 AM_CXXFLAGS = $(XCFLAGS) -std=gnu++0x -funwind-tables -fno-exceptions \
 	-fno-rtti $(abi_version)
 AM_CCASFLAGS = $(XCFLAGS)
-AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
+AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS) $(HWCAP_LDFLAGS)
 
 toolexeclib_LTLIBRARIES = libitm.la
 nodist_toolexeclib_HEADERS = libitm.spec
