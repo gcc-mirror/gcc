@@ -1,3 +1,8 @@
+2012-01-23  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* lang.c (java_init_options_struct): Set
+	frontend_set_flag_trapping_math.
+
 2011-10-26  Release Manager
 
 	* GCC 4.6.2 released.
