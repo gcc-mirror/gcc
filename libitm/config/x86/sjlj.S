@@ -79,6 +79,7 @@ SYM(_ITM_beginTransaction):
 	ret
 #else
 	leal	4(%esp), %ecx
+	movl	4(%esp), %eax
 	subl	$28, %esp
 	cfi_def_cfa_offset(32)
 	movl	%ecx, 8(%esp)
