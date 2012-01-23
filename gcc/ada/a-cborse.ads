@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -31,9 +31,10 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
-private with Ada.Containers.Red_Black_Trees;
-with Ada.Streams; use Ada.Streams;
 with Ada.Iterator_Interfaces;
+
+private with Ada.Containers.Red_Black_Trees;
+private with Ada.Streams;
 
 generic
    type Element_Type is private;
@@ -60,6 +61,7 @@ package Ada.Containers.Bounded_Ordered_Sets is
    Empty_Set : constant Set;
 
    No_Element : constant Cursor;
+
    function Has_Element (Position : Cursor) return Boolean;
 
    package Set_Iterator_Interfaces is new
@@ -277,6 +279,8 @@ package Ada.Containers.Bounded_Ordered_Sets is
       type Reference_Type
          (Element : not null access Element_Type) is null record;
 
+      use Ada.Streams;
+
       procedure Read
         (Stream : not null access Root_Stream_Type'Class;
          Item   : out Reference_Type);
@@ -310,6 +314,21 @@ private
    type Set (Capacity : Count_Type) is
      new Tree_Types.Tree_Type (Capacity) with null record;
 
+   use Tree_Types;
+   use Ada.Streams;
+
+   procedure Write
+     (Stream    : not null access Root_Stream_Type'Class;
+      Container : Set);
+
+   for Set'Write use Write;
+
+   procedure Read
+     (Stream    : not null access Root_Stream_Type'Class;
+      Container : out Set);
+
+   for Set'Read use Read;
+
    type Set_Access is access all Set;
    for Set_Access'Storage_Size use 0;
 
@@ -324,8 +343,6 @@ private
       Node      : Count_Type := 0;
    end record;
 
-   use Tree_Types;
-
    procedure Write
      (Stream : not null access Root_Stream_Type'Class;
       Item   : Cursor);
@@ -337,20 +354,6 @@ private
       Item   : out Cursor);
 
    for Cursor'Read use Read;
-
-   No_Element : constant Cursor := Cursor'(null, 0);
-
-   procedure Write
-     (Stream    : not null access Root_Stream_Type'Class;
-      Container : Set);
-
-   for Set'Write use Write;
-
-   procedure Read
-     (Stream    : not null access Root_Stream_Type'Class;
-      Container : out Set);
-
-   for Set'Read use Read;
 
    type Constant_Reference_Type
       (Element : not null access constant Element_Type) is null record;
@@ -368,5 +371,7 @@ private
    for Constant_Reference_Type'Write use Write;
 
    Empty_Set : constant Set := Set'(Tree_Type with Capacity => 0);
+
+   No_Element : constant Cursor := Cursor'(null, 0);
 
 end Ada.Containers.Bounded_Ordered_Sets;

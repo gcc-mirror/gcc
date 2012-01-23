@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -31,10 +31,10 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
-private with Ada.Finalization;
-
-with Ada.Streams; use Ada.Streams;
 with Ada.Iterator_Interfaces;
+
+private with Ada.Finalization;
+private with Ada.Streams;
 
 generic
    type Element_Type is private;
@@ -61,6 +61,7 @@ package Ada.Containers.Doubly_Linked_Lists is
    Empty_List : constant List;
 
    No_Element : constant Cursor;
+
    function Has_Element (Position : Cursor) return Boolean;
 
    package List_Iterator_Interfaces is new
@@ -95,34 +96,10 @@ package Ada.Containers.Doubly_Linked_Lists is
    with
       Implicit_Dereference => Element;
 
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Constant_Reference_Type);
-
-   for Constant_Reference_Type'Write use Write;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Constant_Reference_Type);
-
-   for Constant_Reference_Type'Read use Read;
-
    type Reference_Type
      (Element : not null access Element_Type) is private
    with
       Implicit_Dereference => Element;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Reference_Type);
-
-   for Reference_Type'Write use Write;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Reference_Type);
-
-   for Reference_Type'Read use Read;
 
    function Constant_Reference
      (Container : aliased List;
@@ -280,6 +257,7 @@ private
       end record;
 
    use Ada.Finalization;
+   use Ada.Streams;
 
    type List is
      new Controlled with record
@@ -330,8 +308,32 @@ private
    type Constant_Reference_Type
       (Element : not null access constant Element_Type) is null record;
 
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type);
+
+   for Constant_Reference_Type'Write use Write;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type);
+
+   for Constant_Reference_Type'Read use Read;
+
    type Reference_Type
       (Element : not null access Element_Type) is null record;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type);
+
+   for Reference_Type'Write use Write;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type);
+
+   for Reference_Type'Read use Read;
 
    Empty_List : constant List := (Controlled with null, null, 0, 0, 0);
 
