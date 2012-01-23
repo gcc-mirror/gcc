@@ -4219,7 +4219,7 @@ struct create_version_alias_info
   tree new_decl;
 };
 
-/* A subrontine of ipa_tm_create_version, called via
+/* A subroutine of ipa_tm_create_version, called via
    cgraph_for_node_and_aliases.  Create new tm clones for each of
    the existing aliases.  */
 static bool
@@ -4259,6 +4259,7 @@ ipa_tm_create_version_alias (struct cgraph_node *node, void *data)
 
   new_node = cgraph_same_body_alias (NULL, new_decl, info->new_decl);
   new_node->tm_clone = true;
+  new_node->local.externally_visible = info->old_node->local.externally_visible;
   /* ?? Do not traverse aliases here.  */
   get_cg_data (&node, false)->clone = new_node;
 
@@ -4294,6 +4295,7 @@ ipa_tm_create_version (struct cgraph_node *old_node)
     DECL_COMDAT_GROUP (new_decl) = tm_mangle (DECL_COMDAT_GROUP (old_decl));
 
   new_node = cgraph_copy_node_for_versioning (old_node, new_decl, NULL, NULL);
+  new_node->local.externally_visible = old_node->local.externally_visible;
   new_node->lowered = true;
   new_node->tm_clone = 1;
   get_cg_data (&old_node, true)->clone = new_node;
