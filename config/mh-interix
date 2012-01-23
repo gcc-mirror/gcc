@@ -1,2 +1,0 @@
-# The shell may not be in /bin. 
-SHELL = sh

@@ -1,3 +1,9 @@
+2012-01-22  Douglas B Rupp  <rupp@gnat.com>
+
+	* config.host (i[34567]86-*-interix3*):
+         Change triplet to i[34567]86-*-interix[3-9]*.
+	* configure: Regenerate.
+
 2012-01-15  Chung-Lin Tang  <cltang@codesourcery.com>
 	    Richard Sandiford  <rdsandiford@googlemail.com>
 

@@ -1,3 +1,41 @@
+2012-01-22  Douglas B Rupp  <rupp@gnat.com>
+
+	PR target/47096
+	* config.gcc: (i[34567]86-*-interix3*): Remove from obsolete
+	 configurations. Change triplet to i[34567]86-*-interix[3-9]*.
+	(extra_options) interix.opt -> i386/interix.opt"
+	(extra_objs):Add winnt-stubs.o
+	* configure.ac: Add interix to target_os .comm on PE check.
+	* configure: Regenerate.
+	* config/interix3.h: Delete and move bits to..
+	* config/interix.h: Delete and move bits to..
+	* config/i386/i386-interix3.h: Delete and move bits to..
+	* config/i386/i386-interix.h: ..here.
+	(TARGET_CPU_DEFAULT): Remove redefinition.
+	(TARGET_ASM_CONSTRUCTOR): Undefine.
+	(SUBTARGET_SWITCHES): Define for ms-bitfields.
+	(TARGET_OS_CPP_BUILTINS): Remove __OPENNT. Add __declspec.
+	(PTRDIFF_TYPE): Define.
+	(LONG_DOUBLE_TYPE_SIZE): Define.
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Define.
+	(SUBTARGET_OVERRIDE_OPTIONS): Remove.
+	(TARGET_SECTION_TYPE_FLAGS): Define.
+	(ASM_DECLARE_FUNCTION_NAME): Define.
+	(ASM_OUTPUT_EXTERNAL): Define.
+	(ASM_OUTPUT_EXTERNAL_LIBCALL): Define.
+	(ASM_OUTPUT_ALIGNED_BSS): Define.
+	(PCC_BITFIELD_TYPE_MATTERS): Define.
+	(USE_CONST_SECTION): Define.
+	(SUBTARGET_ENCODE_SECTION_INFO): Remove.
+	(TARGET_ASM_FUNCTION_RODATA_SECTION): Remove.
+	(SUPPORTS_ONE_ONLY): Remove.
+	(I386_PE_STRIP_ENCODING): Define.
+	* config/interix.opt: Delete and move bits to..
+	* config/i386/interix.opt: ..here. New.
+	(mpe-aligned-commons): Add.
+	* config/i386/t-interix: Add copyright header.
+	(winnt-stubs.o): Add rule.
+
 2012-01-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51832
