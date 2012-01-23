@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1592,13 +1592,92 @@ package body Freeze is
 
       procedure Check_Current_Instance (Comp_Decl : Node_Id) is
 
-         Rec_Type : constant Entity_Id :=
-                      Scope (Defining_Identifier (Comp_Decl));
-
-         Decl : constant Node_Id := Parent (Rec_Type);
+         function Is_Aliased_View_Of_Type (Typ : Entity_Id) return Boolean;
+         --  Determine whether Typ is compatible with the rules for aliased
+         --  views of types as defined in RM 3.10 in the various dialects.
 
          function Process (N : Node_Id) return Traverse_Result;
          --  Process routine to apply check to given node
+
+         -----------------------------
+         -- Is_Aliased_View_Of_Type --
+         -----------------------------
+
+         function Is_Aliased_View_Of_Type (Typ : Entity_Id) return Boolean is
+            Typ_Decl : constant Node_Id := Parent (Typ);
+
+         begin
+            --  Common case
+
+            if Nkind (Typ_Decl) = N_Full_Type_Declaration
+              and then Limited_Present (Type_Definition (Typ_Decl))
+            then
+               return True;
+
+            --  The following paragraphs describe what a legal aliased view of
+            --  a type is in the various dialects of Ada.
+
+            --  Ada 95
+
+            --  The current instance of a limited type, and a formal parameter
+            --  or generic formal object of a tagged type.
+
+            --  Ada 95 limited type
+            --    * Type with reserved word "limited"
+            --    * A protected or task type
+            --    * A composite type with limited component
+
+            elsif Ada_Version <= Ada_95 then
+               return Is_Limited_Type (Typ);
+
+            --  Ada 2005
+
+            --  The current instance of a limited tagged type, a protected
+            --  type, a task type, or a type that has the reserved word
+            --  "limited" in its full definition ... a formal parameter or
+            --  generic formal object of a tagged type.
+
+            --  Ada 2005 limited type
+            --    * Type with reserved word "limited", "synchronized", "task"
+            --      or "protected"
+            --    * A composite type with limited component
+            --    * A derived type whose parent is a non-interface limited type
+
+            elsif Ada_Version = Ada_2005 then
+               return
+                 (Is_Limited_Type (Typ) and then Is_Tagged_Type (Typ))
+                   or else
+                     (Is_Derived_Type (Typ)
+                       and then not Is_Interface (Etype (Typ))
+                       and then Is_Limited_Type (Etype (Typ)));
+
+            --  Ada 2012 and beyond
+
+            --  The current instance of an immutably limited type ... a formal
+            --  parameter or generic formal object of a tagged type.
+
+            --  Ada 2012 limited type
+            --    * Type with reserved word "limited", "synchronized", "task"
+            --      or "protected"
+            --    * A composite type with limited component
+            --    * A derived type whose parent is a non-interface limited type
+            --    * An incomplete view
+
+            --  Ada 2012 immutably limited type
+            --    * Explicitly limited record type
+            --    * Record extension with "limited" present
+            --    * Non-formal limited private type that is either tagged
+            --      or has at least one access discriminant with a default
+            --      expression
+            --    * Task type, protected type or synchronized interface
+            --    * Type derived from immutably limited type
+
+            else
+               return
+                 Is_Immutably_Limited_Type (Typ)
+                   or else Is_Incomplete_Type (Typ);
+            end if;
+         end Is_Aliased_View_Of_Type;
 
          -------------
          -- Process --
@@ -1628,24 +1707,15 @@ package body Freeze is
 
          procedure Traverse is new Traverse_Proc (Process);
 
+         --  Local variables
+
+         Rec_Type : constant Entity_Id :=
+                      Scope (Defining_Identifier (Comp_Decl));
+
       --  Start of processing for Check_Current_Instance
 
       begin
-         --  In Ada 95, the (imprecise) rule is that the current instance
-         --  of a limited type is aliased. In Ada 2005, limitedness must be
-         --  explicit: either a tagged type, or a limited record.
-
-         if Is_Limited_Type (Rec_Type)
-           and then (Ada_Version < Ada_2005 or else Is_Tagged_Type (Rec_Type))
-         then
-            return;
-
-         elsif Nkind (Decl) = N_Full_Type_Declaration
-           and then Limited_Present (Type_Definition (Decl))
-         then
-            return;
-
-         else
+         if not Is_Aliased_View_Of_Type (Rec_Type) then
             Traverse (Comp_Decl);
          end if;
       end Check_Current_Instance;
@@ -2158,18 +2228,16 @@ package body Freeze is
                                           (Etype (Comp)))))
                then
                   Set_Has_Controlled_Component (Rec);
-                  exit;
                end if;
 
                if Has_Unchecked_Union (Etype (Comp)) then
                   Set_Has_Unchecked_Union (Rec);
                end if;
 
+               --  Scan component declaration for likely misuses of current
+               --  instance, either in a constraint or a default expression.
+
                if Has_Per_Object_Constraint (Comp) then
-
-                  --  Scan component declaration for likely misuses of current
-                  --  instance, either in a constraint or a default expression.
-
                   Check_Current_Instance (Parent (Comp));
                end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3339,7 +3339,7 @@ package body Sem_Ch10 is
                   procedure License_Error is
                   begin
                      Error_Msg_N
-                       ("?license of with'ed unit & may be inconsistent",
+                       ("?license of withed unit & may be inconsistent",
                         Name (Item));
                   end License_Error;
 

@@ -1,3 +1,27 @@
+2012-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Check_Current_Instance): Issue an
+	error when the prefix of 'Unchecked_Access or 'Access does not
+	denote a legal aliased view of a type.
+	(Freeze_Record_Type): Do not halt the processing of record components
+	once the Has_Controlled_Component is set as this bypasses the remaining
+	checks.
+	(Is_Aliased_View_Of_Type): New routine.
+
+2012-01-23  Thomas Quinot  <quinot@adacore.com>
+
+	* errout.ads, freeze.adb: Minor reformatting.
+
+2012-01-23  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch10.adb, sem_prag.adb: Remove redundant apostrophes in error
+	messages.
+
+2012-01-23  Olivier Hainque  <hainque@adacore.com>
+
+	* adadecode.c (__gnat_decode): Deal with empty input early,
+	preventing potential erroneous memory access later on.
+
 2012-01-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/46192

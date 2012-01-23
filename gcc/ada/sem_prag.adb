@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -8256,7 +8256,7 @@ package body Sem_Prag is
 
                if Citem = N then
                   Error_Pragma_Arg
-                    ("argument of pragma% is not with'ed unit", Arg);
+                    ("argument of pragma% is not withed unit", Arg);
                end if;
 
                Next (Arg);
@@ -8334,7 +8334,7 @@ package body Sem_Prag is
                if Citem = N then
                   Set_Error_Posted (N);
                   Error_Pragma_Arg
-                    ("argument of pragma% is not with'ed unit", Arg);
+                    ("argument of pragma% is not withed unit", Arg);
                end if;
 
                Next (Arg);
@@ -14203,7 +14203,7 @@ package body Sem_Prag is
 
                   if Citem = N then
                      Error_Pragma_Arg
-                       ("argument of pragma% is not with'ed unit", Arg_Node);
+                       ("argument of pragma% is not withed unit", Arg_Node);
                   end if;
 
                   Next (Arg_Node);
