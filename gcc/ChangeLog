@@ -1,3 +1,9 @@
+2012-01-23  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51949
+	* ipa-split.c (execute_split_functions): Do not split malloc
+	functions.
+
 2012-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/51933
