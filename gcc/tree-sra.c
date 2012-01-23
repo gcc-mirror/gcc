@@ -3914,6 +3914,13 @@ decide_one_param_reduction (struct access *repr)
       if (by_ref && repr->non_addressable)
 	return 0;
 
+      /* Do not decompose a non-BLKmode param in a way that would
+         create BLKmode params.  Especially for by-reference passing
+	 (thus, pointer-type param) this is hardly worthwhile.  */
+      if (DECL_MODE (parm) != BLKmode
+	  && TYPE_MODE (repr->type) == BLKmode)
+	return 0;
+
       if (!by_ref || (!repr->grp_maybe_modified
 		      && !repr->grp_not_necessarilly_dereferenced))
 	total_size += repr->size;
