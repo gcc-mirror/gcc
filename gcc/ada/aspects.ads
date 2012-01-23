@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 2010-2011, Free Software Foundation, Inc.          --
+--         Copyright (C) 2010-2012, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,6 +81,7 @@ package Aspects is
       Aspect_Storage_Size,
       Aspect_Stream_Size,
       Aspect_Suppress,
+      Aspect_Synchronization,
       Aspect_Test_Case,                     -- GNAT
       Aspect_Type_Invariant,
       Aspect_Unsuppress,
@@ -281,6 +282,7 @@ package Aspects is
                         Aspect_Storage_Size            => Expression,
                         Aspect_Stream_Size             => Expression,
                         Aspect_Suppress                => Name,
+                        Aspect_Synchronization         => Name,
                         Aspect_Test_Case               => Expression,
                         Aspect_Type_Invariant          => Expression,
                         Aspect_Unsuppress              => Name,
@@ -367,6 +369,7 @@ package Aspects is
      Aspect_Stream_Size                  => Name_Stream_Size,
      Aspect_Suppress                     => Name_Suppress,
      Aspect_Suppress_Debug_Info          => Name_Suppress_Debug_Info,
+     Aspect_Synchronization              => Name_Synchronization,
      Aspect_Test_Case                    => Name_Test_Case,
      Aspect_Type_Invariant               => Name_Type_Invariant,
      Aspect_Unchecked_Union              => Name_Unchecked_Union,
