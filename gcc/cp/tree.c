@@ -1525,6 +1525,24 @@ build_overload (tree decl, tree chain)
   return ovl_cons (decl, chain);
 }
 
+/* Return the scope where the overloaded functions OVL were found.  */
+
+tree
+ovl_scope (tree ovl)
+{
+  if (TREE_CODE (ovl) == OFFSET_REF
+      || TREE_CODE (ovl) == COMPONENT_REF)
+    ovl = TREE_OPERAND (ovl, 1);
+  if (TREE_CODE (ovl) == BASELINK)
+    return BINFO_TYPE (BASELINK_BINFO (ovl));
+  if (TREE_CODE (ovl) == TEMPLATE_ID_EXPR)
+    ovl = TREE_OPERAND (ovl, 0);
+  /* Skip using-declarations.  */
+  while (TREE_CODE (ovl) == OVERLOAD && OVL_USED (ovl) && OVL_CHAIN (ovl))
+    ovl = OVL_CHAIN (ovl);
+  return CP_DECL_CONTEXT (OVL_CURRENT (ovl));
+}
+
 /* Return TRUE if FN is a non-static member function, FALSE otherwise.
    This function looks into BASELINK and OVERLOAD nodes.  */
 

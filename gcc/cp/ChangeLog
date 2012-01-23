@@ -1,3 +1,13 @@
+2012-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51925
+	* class.c (add_method): Set OVL_USED for using-decls.
+	* tree.c (ovl_scope): New.
+	* cp-tree.h: Declare it.
+	* parser.c (cp_parser_template_name): Use it.
+	* semantics.c (baselink_for_fns): Likewise.
+	* name-lookup.c (set_inherited_value_binding_p): Likewise.
+
 2012-01-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51402

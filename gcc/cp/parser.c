@@ -12722,7 +12722,7 @@ cp_parser_template_name (cp_parser* parser,
      its name; we will look it up again during template instantiation.  */
   if (DECL_FUNCTION_TEMPLATE_P (decl) || !DECL_P (decl))
     {
-      tree scope = CP_DECL_CONTEXT (get_first_fn (decl));
+      tree scope = ovl_scope (decl);
       if (TYPE_P (scope) && dependent_type_p (scope))
 	return identifier;
     }
