@@ -1395,10 +1395,11 @@ execute_split_functions (void)
   int todo = 0;
   struct cgraph_node *node = cgraph_get_node (current_function_decl);
 
-  if (flags_from_decl_or_type (current_function_decl) & ECF_NORETURN)
+  if (flags_from_decl_or_type (current_function_decl)
+      & (ECF_NORETURN|ECF_MALLOC))
     {
       if (dump_file)
-	fprintf (dump_file, "Not splitting: noreturn function.\n");
+	fprintf (dump_file, "Not splitting: noreturn/malloc function.\n");
       return 0;
     }
   if (MAIN_NAME_P (DECL_NAME (current_function_decl)))
