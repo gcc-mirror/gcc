@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4249,9 +4249,11 @@ package body Exp_Util is
 
                      --  The call must invoke the default iterate routine of
                      --  the container and the transient object must appear as
-                     --  the first actual parameter.
+                     --  the first actual parameter. Skip any calls whose names
+                     --  are not entities.
 
-                     if Entity (Name (Call)) = Iter
+                     if Is_Entity_Name (Name (Call))
+                       and then Entity (Name (Call)) = Iter
                        and then Present (Parameter_Associations (Call))
                      then
                         Param := First (Parameter_Associations (Call));

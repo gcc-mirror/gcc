@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -144,7 +144,9 @@ package body Errout is
 
    procedure Set_Msg_Node (Node : Node_Id);
    --  Add the sequence of characters for the name associated with the
-   --  given node to the current message.
+   --  given node to the current message. For N_Designator, N_Defining_Program_
+   --  Unit_Name, N_Selected_Component, and N_Expanded_Name, the Prefix is
+   --  included as well.
 
    procedure Set_Msg_Text (Text : String; Flag : Source_Ptr);
    --  Add a sequence of characters to the current message. The characters may
@@ -2499,24 +2501,28 @@ package body Errout is
       Nam : Name_Id;
 
    begin
-      if Nkind (Node) = N_Designator then
-         Set_Msg_Node (Name (Node));
-         Set_Msg_Char ('.');
-         Set_Msg_Node (Identifier (Node));
-         return;
+      case Nkind (Node) is
+         when N_Designator =>
+            Set_Msg_Node (Name (Node));
+            Set_Msg_Char ('.');
+            Set_Msg_Node (Identifier (Node));
+            return;
 
-      elsif Nkind (Node) = N_Defining_Program_Unit_Name then
-         Set_Msg_Node (Name (Node));
-         Set_Msg_Char ('.');
-         Set_Msg_Node (Defining_Identifier (Node));
-         return;
+         when N_Defining_Program_Unit_Name =>
+            Set_Msg_Node (Name (Node));
+            Set_Msg_Char ('.');
+            Set_Msg_Node (Defining_Identifier (Node));
+            return;
 
-      elsif Nkind (Node) = N_Selected_Component then
-         Set_Msg_Node (Prefix (Node));
-         Set_Msg_Char ('.');
-         Set_Msg_Node (Selector_Name (Node));
-         return;
-      end if;
+         when N_Selected_Component | N_Expanded_Name =>
+            Set_Msg_Node (Prefix (Node));
+            Set_Msg_Char ('.');
+            Set_Msg_Node (Selector_Name (Node));
+            return;
+
+         when others =>
+            null;
+      end case;
 
       --  The only remaining possibilities are identifiers, defining
       --  identifiers, pragmas, and pragma argument associations.
