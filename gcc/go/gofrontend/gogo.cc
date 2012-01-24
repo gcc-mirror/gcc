@@ -37,6 +37,7 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int int_type_size,
     imported_init_fns_(),
     unique_prefix_(),
     unique_prefix_specified_(false),
+    verify_types_(),
     interface_types_(),
     specific_type_functions_(),
     specific_type_functions_are_written_(false),
@@ -1282,6 +1283,15 @@ Gogo::traverse(Traverse* traverse)
     }
 }
 
+// Add a type to verify.  This is used for types of sink variables, in
+// order to give appropriate error messages.
+
+void
+Gogo::add_type_to_verify(Type* type)
+{
+  this->verify_types_.push_back(type);
+}
+
 // Traversal class used to verify types.
 
 class Verify_types : public Traverse
@@ -1312,6 +1322,12 @@ Gogo::verify_types()
 {
   Verify_types traverse;
   this->traverse(&traverse);
+
+  for (std::vector<Type*>::iterator p = this->verify_types_.begin();
+       p != this->verify_types_.end();
+       ++p)
+    (*p)->verify();
+  this->verify_types_.clear();
 }
 
 // Traversal class used to lower parse tree.

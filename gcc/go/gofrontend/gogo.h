@@ -344,6 +344,11 @@ class Gogo
   Named_object*
   add_sink();
 
+  // Add a type which needs to be verified.  This is used for sink
+  // types, just to give appropriate error messages.
+  void
+  add_type_to_verify(Type* type);
+
   // Add a named object to the current namespace.  This is used for
   // import . "package".
   void
@@ -683,6 +688,8 @@ class Gogo
   std::string unique_prefix_;
   // Whether an explicit unique prefix was set by -fgo-prefix.
   bool unique_prefix_specified_;
+  // A list of types to verify.
+  std::vector<Type*> verify_types_;
   // A list of interface types defined while parsing.
   std::vector<Interface_type*> interface_types_;
   // Type specific functions to write out.

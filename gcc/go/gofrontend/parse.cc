@@ -1911,6 +1911,8 @@ Parse::init_var(const Typed_identifier& tid, Type* type, Expression* init,
 	      return this->gogo_->add_variable(buf, var);
 	    }
 	}
+      if (type != NULL)
+	this->gogo_->add_type_to_verify(type);
       return this->gogo_->add_sink();
     }
 
