@@ -1106,6 +1106,7 @@ static rtx rs6000_debug_legitimize_address (rtx, rtx, enum machine_mode);
 static rtx rs6000_legitimize_tls_address (rtx, enum tls_model);
 static void rs6000_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static rtx rs6000_delegitimize_address (rtx);
+static bool rs6000_const_not_ok_for_debug_p (rtx);
 static rtx rs6000_tls_get_addr (void);
 static rtx rs6000_got_sym (void);
 static int rs6000_tls_symbol_ref_1 (rtx *, void *);
@@ -1404,6 +1405,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_DELEGITIMIZE_ADDRESS
 #define TARGET_DELEGITIMIZE_ADDRESS rs6000_delegitimize_address
+
+#undef TARGET_CONST_NOT_OK_FOR_DEBUG_P
+#define TARGET_CONST_NOT_OK_FOR_DEBUG_P rs6000_const_not_ok_for_debug_p
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE rs6000_output_function_prologue
@@ -5813,6 +5817,25 @@ rs6000_delegitimize_address (rtx orig_x)
     }
 
   return orig_x;
+}
+
+/* Return true if X shouldn't be emitted into the debug info.
+   The linker doesn't like .toc section references from
+   .debug_* sections, so reject .toc section symbols.  */
+
+static bool
+rs6000_const_not_ok_for_debug_p (rtx x)
+{
+  if (GET_CODE (x) == SYMBOL_REF
+      && CONSTANT_POOL_ADDRESS_P (x))
+    {
+      rtx c = get_pool_constant (x);
+      enum machine_mode cmode = get_pool_mode (x);
+      if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (c, cmode))
+	return true;
+    }
+
+  return false;
 }
 
 /* Construct the SYMBOL_REF for the tls_get_addr function.  */

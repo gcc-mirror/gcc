@@ -1382,6 +1382,14 @@ DEFHOOK
  rtx, (rtx x),
  delegitimize_mem_from_attrs)
 
+/* Given an RTX, return true if it is not ok to emit it into debug info
+   section.  */
+DEFHOOK
+(const_not_ok_for_debug_p,
+ "",
+ bool, (rtx x),
+ hook_bool_rtx_false)
+
 /* Given an address RTX, say whether it is valid.  */
 DEFHOOK
 (legitimate_address_p,

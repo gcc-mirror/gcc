@@ -1,3 +1,10 @@
+2012-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/51957
+	* gcc.dg/pr51957-1.c: New test.
+	* gcc.dg/pr51957-1.h: New file.
+	* gcc.dg/pr51957-2.c: New test.
+
 2012-01-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51930

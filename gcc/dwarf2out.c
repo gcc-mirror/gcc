@@ -10683,6 +10683,13 @@ const_ok_for_output_1 (rtx *rtlp, void *data ATTRIBUTE_UNUSED)
       return 1;
     }
 
+  if (targetm.const_not_ok_for_debug_p (rtl))
+    {
+      expansion_failed (NULL_TREE, rtl,
+			"Expression rejected for debug by the backend.\n");
+      return 1;
+    }
+
   if (GET_CODE (rtl) != SYMBOL_REF)
     return 0;
 
