@@ -1682,7 +1682,7 @@ record_store (rtx body, bb_info_t bb_info)
 	  if (canon_true_dependence (s_info->mem,
 				     GET_MODE (s_info->mem),
 				     s_info->mem_addr,
-				     mem, mem_addr, rtx_varies_p))
+				     mem, mem_addr))
 	    {
 	      s_info->rhs = NULL;
 	      s_info->const_rhs = NULL;
@@ -2279,7 +2279,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 	      = canon_true_dependence (store_info->mem,
 				       GET_MODE (store_info->mem),
 				       store_info->mem_addr,
-				       mem, mem_addr, rtx_varies_p);
+				       mem, mem_addr);
 
 	  else if (group_id == store_info->group_id)
 	    {
@@ -2290,7 +2290,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 		  = canon_true_dependence (store_info->mem,
 					   GET_MODE (store_info->mem),
 					   store_info->mem_addr,
-					   mem, mem_addr, rtx_varies_p);
+					   mem, mem_addr);
 
 	      /* If this read is just reading back something that we just
 		 stored, rewrite the read.  */
@@ -2377,7 +2377,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 	    remove = canon_true_dependence (store_info->mem,
 					    GET_MODE (store_info->mem),
 					    store_info->mem_addr,
-					    mem, mem_addr, rtx_varies_p);
+					    mem, mem_addr);
 
 	  if (remove)
 	    {
@@ -3276,8 +3276,7 @@ scan_reads_nospill (insn_info_t insn_info, bitmap gen, bitmap kill)
 		      && canon_true_dependence (group->base_mem,
 						GET_MODE (group->base_mem),
 						group->canon_base_addr,
-						read_info->mem, NULL_RTX,
-						rtx_varies_p))
+						read_info->mem, NULL_RTX))
 		    {
 		      if (kill)
 			bitmap_ior_into (kill, group->group_kill);

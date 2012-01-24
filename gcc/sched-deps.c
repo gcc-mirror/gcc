@@ -2636,8 +2636,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx insn)
 	    pending_mem = deps->pending_write_mems;
 	    while (pending)
 	      {
-		if (true_dependence (XEXP (pending_mem, 0), VOIDmode,
-				     t, rtx_varies_p)
+		if (true_dependence (XEXP (pending_mem, 0), VOIDmode, t)
 		    && ! sched_insns_conditions_mutex_p (insn,
 							 XEXP (pending, 0)))
 		  note_mem_dep (t, XEXP (pending_mem, 0), XEXP (pending, 0),

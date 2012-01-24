@@ -309,8 +309,7 @@ load_kills_store (const_rtx x, const_rtx store_pattern, int after)
   if (after)
     return anti_dependence (x, store_pattern);
   else
-    return true_dependence (store_pattern, GET_MODE (store_pattern), x,
-			    rtx_addr_varies_p);
+    return true_dependence (store_pattern, GET_MODE (store_pattern), x);
 }
 
 /* Go through the entire rtx X, looking for any loads which might alias

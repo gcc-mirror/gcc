@@ -2172,20 +2172,6 @@ cselib_invalidate_regno (unsigned int regno, enum machine_mode mode)
     }
 }
 
-/* Return 1 if X has a value that can vary even between two
-   executions of the program.  0 means X can be compared reliably
-   against certain constants or near-constants.  */
-
-static bool
-cselib_rtx_varies_p (const_rtx x ATTRIBUTE_UNUSED, bool from_alias ATTRIBUTE_UNUSED)
-{
-  /* We actually don't need to verify very hard.  This is because
-     if X has actually changed, we invalidate the memory anyway,
-     so assume that all common memory addresses are
-     invariant.  */
-  return 0;
-}
-
 /* Invalidate any locations in the table which are changed because of a
    store to MEM_RTX.  If this is called because of a non-const call
    instruction, MEM_RTX is (mem:BLK const0_rtx).  */
@@ -2222,8 +2208,8 @@ cselib_invalidate_mem (rtx mem_rtx)
 	      continue;
 	    }
 	  if (num_mems < PARAM_VALUE (PARAM_MAX_CSELIB_MEMORY_LOCATIONS)
-	      && ! canon_true_dependence (mem_rtx, GET_MODE (mem_rtx), mem_addr,
-		      			  x, NULL_RTX, cselib_rtx_varies_p))
+	      && ! canon_true_dependence (mem_rtx, GET_MODE (mem_rtx),
+					  mem_addr, x, NULL_RTX))
 	    {
 	      has_mem = true;
 	      num_mems++;
