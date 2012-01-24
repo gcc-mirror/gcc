@@ -184,9 +184,9 @@ endif
 libstdc++convenience.la: $(toolexeclib_LTLIBRARIES)
 	$(CXXLINK) $(libstdc___la_LIBADD) $(LIBS); \
 	if test ! -f .libs/libstdc++.a; then \
-	  $(LN_S) .libs/libstdc++convenience.a .libs/libstdc++.a; \
-	  stamp-libstdc++convenience; \
-	fi;
+	  cp .libs/libstdc++convenience.a .libs/libstdc++.a; \
+	fi; \
+	echo `date` > stamp-libstdc++convenience;
 
 debugdir = debug
 

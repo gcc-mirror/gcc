@@ -1,5 +1,10 @@
 2012-01-23  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* src/Makefile.am (libstdc++convenience.la): Correct stamp rule, copy.
+	* src/Makefile.in: Regenerate.
+
+2012-01-23  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/49829
 	Add libc++98convenience.la, libc++11convenience.la.
 	* src/c++98: New directory.
