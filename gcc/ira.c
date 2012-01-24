@@ -2335,7 +2335,7 @@ validate_equiv_mem_from_store (rtx dest, const_rtx set ATTRIBUTE_UNUSED,
   if ((REG_P (dest)
        && reg_overlap_mentioned_p (dest, equiv_mem))
       || (MEM_P (dest)
-	  && true_dependence (dest, VOIDmode, equiv_mem, rtx_varies_p)))
+	  && true_dependence (dest, VOIDmode, equiv_mem)))
     equiv_mem_modified = 1;
 }
 
@@ -2589,7 +2589,7 @@ memref_referenced_p (rtx memref, rtx x)
 				      reg_equiv[REGNO (x)].replacement));
 
     case MEM:
-      if (true_dependence (memref, VOIDmode, x, rtx_varies_p))
+      if (true_dependence (memref, VOIDmode, x))
 	return 1;
       break;
 

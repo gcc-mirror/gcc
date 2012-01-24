@@ -968,7 +968,7 @@ mems_conflict_for_gcse_p (rtx dest, const_rtx setter ATTRIBUTE_UNUSED,
       return;
     }
 
-  if (true_dependence (dest, GET_MODE (dest), mci->mem, rtx_addr_varies_p))
+  if (true_dependence (dest, GET_MODE (dest), mci->mem))
     mci->conflict = true;
 }
 
@@ -1682,8 +1682,8 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap)
 		    rtx dest = pair->dest;
 		    rtx dest_addr = pair->dest_addr;
 
-		    if (canon_true_dependence (dest, GET_MODE (dest), dest_addr,
-					       x, NULL_RTX, rtx_addr_varies_p))
+		    if (canon_true_dependence (dest, GET_MODE (dest),
+					       dest_addr, x, NULL_RTX))
 		      RESET_BIT (bmap[bb_index], indx);
 	          }
 	      }

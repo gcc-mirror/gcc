@@ -589,8 +589,7 @@ find_mem_conflicts (rtx dest, const_rtx setter ATTRIBUTE_UNUSED,
   if (! MEM_P (dest))
     return;
 
-  if (true_dependence (dest, GET_MODE (dest), mem_op,
-		       rtx_addr_varies_p))
+  if (true_dependence (dest, GET_MODE (dest), mem_op))
     mems_conflict_p = 1;
 }
 
