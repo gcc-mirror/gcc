@@ -1,0 +1,13 @@
+// PR c++/51973
+// { dg-options -std=c++0x }
+
+template <class T>
+void f(T t) { };
+
+template <class T> decltype(f<T>(0)) g();
+template <class T> decltype(f<T*>(0)) g();
+
+int main()
+{
+  g<void>();
+}

@@ -1,3 +1,8 @@
+2012-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51973
+	* g++.dg/cpp0x/sfinae31.C: New.
+
 2012-01-24  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.dg/memcpy-4.c: Don't expect /s on MEMs.
