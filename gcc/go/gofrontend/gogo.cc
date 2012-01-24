@@ -626,8 +626,8 @@ Gogo::start_function(const std::string& name, Function_type* type,
       const Typed_identifier* receiver = type->receiver();
       Variable* this_param = new Variable(receiver->type(), NULL, false,
 					  true, true, location);
-      std::string name = receiver->name();
-      if (name.empty())
+      std::string rname = receiver->name();
+      if (rname.empty())
 	{
 	  // We need to give receivers a name since they wind up in
 	  // DECL_ARGUMENTS.  FIXME.
@@ -635,10 +635,10 @@ Gogo::start_function(const std::string& name, Function_type* type,
 	  char buf[50];
 	  snprintf(buf, sizeof buf, "r.%u", count);
 	  ++count;
-	  name = buf;
+	  rname = buf;
 	}
-      if (!Gogo::is_sink_name(name))
-	block->bindings()->add_variable(name, NULL, this_param);
+      if (!Gogo::is_sink_name(rname))
+	block->bindings()->add_variable(rname, NULL, this_param);
     }
 
   const Typed_identifier_list* parameters = type->parameters();
@@ -654,8 +654,8 @@ Gogo::start_function(const std::string& name, Function_type* type,
 	  if (is_varargs && p + 1 == parameters->end())
 	    param->set_is_varargs_parameter();
 
-	  std::string name = p->name();
-	  if (name.empty() || Gogo::is_sink_name(name))
+	  std::string pname = p->name();
+	  if (pname.empty() || Gogo::is_sink_name(pname))
 	    {
 	      // We need to give parameters a name since they wind up
 	      // in DECL_ARGUMENTS.  FIXME.
@@ -663,9 +663,9 @@ Gogo::start_function(const std::string& name, Function_type* type,
 	      char buf[50];
 	      snprintf(buf, sizeof buf, "p.%u", count);
 	      ++count;
-	      name = buf;
+	      pname = buf;
 	    }
-	  block->bindings()->add_variable(name, NULL, param);
+	  block->bindings()->add_variable(pname, NULL, param);
 	}
     }
 
@@ -832,6 +832,14 @@ Gogo::finish_block(Location location)
   this->functions_.back().blocks.pop_back();
   block->set_end_location(location);
   return block;
+}
+
+// Add an erroneous name.
+
+Named_object*
+Gogo::add_erroneous_name(const std::string& name)
+{
+  return this->package_->bindings()->add_erroneous_name(name);
 }
 
 // Add an unknown name.
@@ -3522,6 +3530,7 @@ Block::traverse(Traverse* traverse)
 
 	    case Named_object::NAMED_OBJECT_TYPE_DECLARATION:
 	    case Named_object::NAMED_OBJECT_UNKNOWN:
+	    case Named_object::NAMED_OBJECT_ERRONEOUS:
 	      break;
 
 	    case Named_object::NAMED_OBJECT_PACKAGE:
@@ -4521,6 +4530,9 @@ Named_object::location() const
     case NAMED_OBJECT_UNINITIALIZED:
       go_unreachable();
 
+    case NAMED_OBJECT_ERRONEOUS:
+      return Linemap::unknown_location();
+
     case NAMED_OBJECT_UNKNOWN:
       return this->unknown_value()->location();
 
@@ -4564,6 +4576,9 @@ Named_object::export_named_object(Export* exp) const
     case NAMED_OBJECT_UNINITIALIZED:
     case NAMED_OBJECT_UNKNOWN:
       go_unreachable();
+
+    case NAMED_OBJECT_ERRONEOUS:
+      break;
 
     case NAMED_OBJECT_CONST:
       this->const_value()->export_const(exp, this->name_);
@@ -4751,12 +4766,18 @@ Bindings::add_named_object_to_contour(Contour* contour,
 Named_object*
 Bindings::new_definition(Named_object* old_object, Named_object* new_object)
 {
+  if (new_object->is_erroneous() && !old_object->is_erroneous())
+    return new_object;
+
   std::string reason;
   switch (old_object->classification())
     {
     default:
     case Named_object::NAMED_OBJECT_UNINITIALIZED:
       go_unreachable();
+
+    case Named_object::NAMED_OBJECT_ERRONEOUS:
+      return old_object;
 
     case Named_object::NAMED_OBJECT_UNKNOWN:
       {
@@ -5003,6 +5024,7 @@ Bindings::traverse(Traverse* traverse, bool is_global)
 	case Named_object::NAMED_OBJECT_TYPE_DECLARATION:
 	case Named_object::NAMED_OBJECT_FUNC_DECLARATION:
 	case Named_object::NAMED_OBJECT_UNKNOWN:
+	case Named_object::NAMED_OBJECT_ERRONEOUS:
 	  break;
 
 	case Named_object::NAMED_OBJECT_SINK:

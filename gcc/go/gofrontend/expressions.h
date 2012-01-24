@@ -153,7 +153,7 @@ class Expression
 
   // Make a reference to an unknown name.  In a correct program this
   // will always be lowered to a real const/var/func reference.
-  static Expression*
+  static Unknown_expression*
   make_unknown_reference(Named_object*, Location);
 
   // Make a constant bool expression.
@@ -1554,7 +1554,8 @@ class Unknown_expression : public Parser_expression
  public:
   Unknown_expression(Named_object* named_object, Location location)
     : Parser_expression(EXPRESSION_UNKNOWN_REFERENCE, location),
-      named_object_(named_object), is_composite_literal_key_(false)
+      named_object_(named_object), no_error_message_(false),
+      is_composite_literal_key_(false)
   { }
 
   // The associated named object.
@@ -1565,6 +1566,13 @@ class Unknown_expression : public Parser_expression
   // The name of the identifier which was unknown.
   const std::string&
   name() const;
+
+  // Call this to indicate that we should not give an error if this
+  // name is never defined.  This is used to avoid knock-on errors
+  // during an erroneous parse.
+  void
+  set_no_error_message()
+  { this->no_error_message_ = true; }
 
   // Note that this expression is being used as the key in a composite
   // literal, so it may be OK if it is not resolved.
@@ -1592,6 +1600,9 @@ class Unknown_expression : public Parser_expression
  private:
   // The unknown name.
   Named_object* named_object_;
+  // True if we should not give errors if this is undefined.  This is
+  // used if there was a parse failure.
+  bool no_error_message_;
   // True if this is the key in a composite literal.
   bool is_composite_literal_key_;
 };
