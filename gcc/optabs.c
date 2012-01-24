@@ -1,7 +1,7 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011  Free Software Foundation, Inc.
+   2011, 2012  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -7330,7 +7330,13 @@ maybe_emit_atomic_test_and_set (rtx target, rtx mem, enum memmodel model)
   /* ??? We only support test-and-set on single bytes at the moment.
      We'd have to change the builtin to allow wider memories.  */
   gcc_checking_assert (id->operand[1].mode == QImode);
-  gcc_checking_assert (GET_MODE (mem) == QImode);
+
+  /* While we always get QImode from __atomic_test_and_set, we get
+     other memory modes from __sync_lock_test_and_set.  Note that we
+     use no endian adjustment here.  This matches the 4.6 behavior
+     in the Sparc backend.  */
+  if (GET_MODE (mem) != QImode)
+    mem = adjust_address_nv (mem, QImode, 0);
 
   if (target == NULL || GET_MODE (target) != pat_bool_mode)
     target = gen_reg_rtx (pat_bool_mode);
