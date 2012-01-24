@@ -1,3 +1,12 @@
+2012-01-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/x86/target.h (gtm_jmpbuf) [__x86_64__]: Move rip to the
+	end of structure.
+	* config/x86/sjlj.S (_ITM_beginTransaction) [__x86_64__]: Update
+	offset values.  Do not copy return address.  Decrement stack
+	by 56 bytes only.
+	(GTM_longjump) [__x86_64__]: Update offset values.
+
 2012-01-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR libitm/51830
