@@ -1,3 +1,9 @@
+2012-01-24  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* smp/upc_pgm_info.c (__upc_validate_pgm_info): Fix the error
+	where the very first entry on the compiled thread info list is
+	not checked.
+
 2012-01-09  Gary Funck  <gary@intrepid.com>
 
 	* smp/upc_pgm_info.c (__upc_validate_pgm_info):  Ignore intervening
@@ -6,7 +12,7 @@
 	static THREADS compilations to be mixed with dynamic THREADS
 	compilations as long as the static THREADS values all match.
 
-2011-12-19  Nenad Vukicevic <nenad@intrepid.com>
+2011-12-19  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Improve handling of shared pointer vaddr field. Make sure
 	that upc_addrfield() always returns an offset of the shared variable
@@ -22,7 +28,7 @@
 	pointer-to-shared to the offset of the shared variable in the
 	shared section.
 
-2011-12-17  Nenad Vukicevic <nenad@intrepid.com>
+2011-12-17  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* configure.ac: Remove erroneous check for enable_shared. Build
 	libgupc only as a static library as shared data sections from
@@ -42,7 +48,7 @@
 	procedure only if builtin compare-and-swap is unavailable.
 	* smp/upc_sysdep.h (__upc_atomic_cas): Ditto.
 
-2011-11-09  Nenad Vukicevic <nenad@intrepid.com>
+2011-11-09  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* config/default/upc-crtstuff.mak (ALL_CRT_CFLAGS): Remove
 	$(INCLUDES) as it might contain relative include paths that
@@ -50,14 +56,14 @@
 	(GCC_SRCDIR_INC): Rename from GCC_SRCDIR_CONF_INC.  Added necessary
 	include paths to build in the current libgupc build directory.
 
-2011-10-27  Nenad Vukicevic <nenad@intrepid.com>
+2011-10-27  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* smp/upc_sup.h (__upc_sptr_to_addr): Fixed the warning where
 	  'void *' type was used in arithmetic.
 	* smp/upc_mem.h (__upc_memget): Ditto.
 	* (__upc_memput): Ditto.
 
-2011-10-27  Nenad Vukicevic <nenad@intrepid.com>
+2011-10-27  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* upc-crtstuff.c: Remove unnecessary includes that caused
 	multiple defined warnings.
@@ -92,7 +98,7 @@
 	* testsuite/lib/libgupc.exp: Re-name from libupc.a.
 	* testsuite/libgupc.upc: Re-name from libupc.upc.
 
-2011-10-18  Nenad Vukicevic <nenad@intrepid.com>
+2011-10-18  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Fix support for large file support on 32-bit machines.
 
@@ -161,7 +167,7 @@
 	* config.h.in: Re-generate.
 	* configure: Re-generate.
 
-2011-08-23  Nenad Vukicevic <nenad@intrepid.com>
+2011-08-23  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* configure.ac: Enable detection of large file support on
 	  32-bit machines.
@@ -198,7 +204,7 @@
 	  the same as AM_CFLAGS.
 	* configure, Makefile.in: Re-generate.
 
-2011-06-06  Nenad Vukicevic <nenad@intrepid.com>
+2011-06-06  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* smp/upc_config.h: Change default scheduling policy.
 	  Allow the kernel to schedule UPC threads on its own.

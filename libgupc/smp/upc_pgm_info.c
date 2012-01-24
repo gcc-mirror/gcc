@@ -246,7 +246,7 @@ __upc_validate_pgm_info (char *pgm)
 			" or <upc.h> was not included?\n", pgm);
        return;
      }
-   for (p = __upc_compiled_thread_info->next; p; p = p->next)
+   for (p = __upc_compiled_thread_info; p; p = p->next)
      {
         if (p->nthreads > 0 && nthreads <= 0)
 	  nthreads = p->nthreads;
