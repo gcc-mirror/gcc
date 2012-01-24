@@ -1328,7 +1328,8 @@ Func_expression::get_tree_without_closure(Gogo* gogo)
   // can't take their address.
   if (fntype->is_builtin())
     {
-      error_at(this->location(), "invalid use of special builtin function %qs",
+      error_at(this->location(),
+	       "invalid use of special builtin function %qs; must be called",
 	       this->function_->name().c_str());
       return error_mark_node;
     }
