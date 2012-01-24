@@ -1,3 +1,9 @@
+2012-01-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51223
+	* call.c (build_over_call): Check for error_mark_node as
+	TREE_VALUE when default arguments are processed.
+
 2012-01-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51930
