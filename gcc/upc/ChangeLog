@@ -1,3 +1,8 @@
+2012-01-24  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* upc-lang.c (upc_init_options): Disable section anchors 
+	for UPC language.
+
 2012-01-14  Gary Funck  <gary@intrepid.com>
 
 	* upc-genericize.c (upc_genericize_expr): Update input_location

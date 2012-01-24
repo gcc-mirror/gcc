@@ -172,6 +172,10 @@ upc_init_options (unsigned int decoded_options_count,
      inlining, otherwise use the user specified flag for unconditional 
      enable/disable of inlining (0 - disable, 1 - enable) */
   flag_upc_inline_lib = -1;
+  /* Disable section anchors. The presence of an unshared equivalent of the
+     shared variables causes a double definition of the symbol names in the
+     assembly code. */
+  flag_section_anchors = 0;
 }
 
 static bool upc_post_options (const char **pfilename)
