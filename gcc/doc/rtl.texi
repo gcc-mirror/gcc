@@ -669,17 +669,6 @@ In @code{label_ref} and @code{reg_label} expressions, nonzero if this is
 a reference to a non-local label.
 Stored in the @code{volatil} field and printed as @samp{/v}.
 
-@findex MEM_IN_STRUCT_P
-@cindex @code{mem} and @samp{/s}
-@cindex @code{in_struct}, in @code{mem}
-@item MEM_IN_STRUCT_P (@var{x})
-In @code{mem} expressions, nonzero for reference to an entire structure,
-union or array, or to a component of one.  Zero for references to a
-scalar variable or through a pointer to a scalar.  If both this flag and
-@code{MEM_SCALAR_P} are clear, then we don't know whether this @code{mem}
-is in a structure or not.  Both flags should never be simultaneously set.
-Stored in the @code{in_struct} field and printed as @samp{/s}.
-
 @findex MEM_KEEP_ALIAS_SET_P
 @cindex @code{mem} and @samp{/j}
 @cindex @code{jump}, in @code{mem}
@@ -688,18 +677,6 @@ In @code{mem} expressions, 1 if we should keep the alias set for this
 mem unchanged when we access a component.  Set to 1, for example, when we
 are already in a non-addressable component of an aggregate.
 Stored in the @code{jump} field and printed as @samp{/j}.
-
-@findex MEM_SCALAR_P
-@cindex @code{mem} and @samp{/i}
-@cindex @code{return_val}, in @code{mem}
-@item MEM_SCALAR_P (@var{x})
-In @code{mem} expressions, nonzero for reference to a scalar known not
-to be a member of a structure, union, or array.  Zero for such
-references and for indirections through pointers, even pointers pointing
-to scalar types.  If both this flag and @code{MEM_IN_STRUCT_P} are clear,
-then we don't know whether this @code{mem} is in a structure or not.
-Both flags should never be simultaneously set.
-Stored in the @code{return_val} field and printed as @samp{/i}.
 
 @findex MEM_VOLATILE_P
 @cindex @code{mem} and @samp{/v}
@@ -944,12 +921,6 @@ In an RTL dump, this flag is represented as @samp{/f}.
 @findex in_struct
 @cindex @samp{/s} in RTL dump
 @item in_struct
-In @code{mem} expressions, it is 1 if the memory datum referred to is
-all or part of a structure or array; 0 if it is (or might be) a scalar
-variable.  A reference through a C pointer has 0 because the pointer
-might point to a scalar variable.  This information allows the compiler
-to determine something about possible cases of aliasing.
-
 In @code{reg} expressions, it is 1 if the register has its entire life
 contained within the test expression of some loop.
 
@@ -985,9 +956,6 @@ the value to be returned by the current function.  On
 machines that pass parameters in registers, the same register number
 may be used for parameters as well, but this flag is not set on such
 uses.
-
-In @code{mem} expressions, 1 means the memory reference is to a scalar
-known not to be a member of a structure, union, or array.
 
 In @code{symbol_ref} expressions, 1 means the referenced symbol is weak.
 
