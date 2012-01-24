@@ -7202,11 +7202,12 @@ All memory models are valid.
 
 @end deftypefn
 
-@deftypefn {Built-in Function} bool __atomic_test_and_set (bool *ptr, int memmodel)
+@deftypefn {Built-in Function} bool __atomic_test_and_set (void *ptr, int memmodel)
 
 This built-in function performs an atomic test-and-set operation on
-@code{*@var{ptr}}.  @code{*@var{ptr}} is set to the value 1 and
-the previous contents are returned.
+the byte at @code{*@var{ptr}}.  The byte is set to some implementation
+defined non-zero "set" value and the return value is @code{true} if and only
+if the previous contents were "set".
 
 All memory models are valid.
 

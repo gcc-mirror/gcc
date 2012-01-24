@@ -1,5 +1,15 @@
 2012-01-25  Richard Henderson  <rth@redhat.com>
 
+	* optabs.c (CODE_FOR_atomic_test_and_set): Provide default.
+	(maybe_emit_atomic_test_and_set): New.
+	(expand_sync_lock_test_and_set): Use it.
+	(expand_atomic_test_and_set): Likewise.
+	* doc/extend.texi (__atomic_test_and_set): Adjust the docs to match
+	the implementation; clarify implementation defined details.
+	* doc/md.texi (atomic_test_and_set): Document.
+
+2012-01-25  Richard Henderson  <rth@redhat.com>
+
 	* config/sparc/predicates.md (zero_or_v7_operand): Use match_code.
 
 2012-01-25  Richard Henderson  <rth@redhat.com>
