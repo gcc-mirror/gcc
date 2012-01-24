@@ -10973,11 +10973,11 @@ before calling a function and popped afterwards.
 
 Popping the arguments after the function call can be expensive on
 AVR so that accumulating the stack space might lead to smaller
-executables because areguments need not to be removed from the
+executables because arguments need not to be removed from the
 stack after such a function call.
 
-This option can lead to reduced code size for functions that get
-their arguments on the stack like functions that perform several
+This option can lead to reduced code size for functions that perform
+several calls to functions which get their arguments on the stack like
 calls to printf-like functions.
 
 @item -mbranch-cost=@var{cost}
