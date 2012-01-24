@@ -1,3 +1,13 @@
+2012-01-24  Richard Guenther  <rguenther@suse.de>
+
+	Forward-port to trunk
+	2010-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/45678
+	* expr.c (expand_expr_real_1) <case VIEW_CONVERT_EXPR>: If
+	op0 isn't sufficiently aligned and there is movmisalignM
+	insn for mode, use it to load op0 into a temporary register.
+
 2012-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/51957
