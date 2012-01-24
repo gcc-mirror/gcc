@@ -366,7 +366,7 @@
 	(unspec:V2SF [(match_operand:V2SF 1 "register_operand" "f")
 		      (match_operand:V2SF 2 "register_operand" "f")]
 		     UNSPEC_ADDR_PS))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_MIPS3D"
   "addr.ps\t%0,%1,%2"
   [(set_attr "type" "fadd")
    (set_attr "mode" "SF")])
@@ -376,7 +376,7 @@
 	(unspec:V2SF [(match_operand:V2SF 1 "register_operand" "f")
 		      (match_dup 1)]
 		     UNSPEC_ADDR_PS))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_MIPS3D"
   "")
 
 ; cvt.pw.ps - Floating Point Convert Paired Single to Paired Word
@@ -384,7 +384,7 @@
   [(set (match_operand:V2SF 0 "register_operand" "=f")
 	(unspec:V2SF [(match_operand:V2SF 1 "register_operand" "f")]
 		     UNSPEC_CVT_PW_PS))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_MIPS3D"
   "cvt.pw.ps\t%0,%1"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "SF")])
@@ -394,7 +394,7 @@
   [(set (match_operand:V2SF 0 "register_operand" "=f")
 	(unspec:V2SF [(match_operand:V2SF 1 "register_operand" "f")]
 		     UNSPEC_CVT_PS_PW))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_MIPS3D"
   "cvt.ps.pw\t%0,%1"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "SF")])
@@ -405,7 +405,7 @@
 	(unspec:V2SF [(match_operand:V2SF 1 "register_operand" "f")
 		      (match_operand:V2SF 2 "register_operand" "f")]
 		     UNSPEC_MULR_PS))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_MIPS3D"
   "mulr.ps\t%0,%1,%2"
   [(set_attr "type" "fmul")
    (set_attr "mode" "SF")])
@@ -445,7 +445,7 @@
 		    (match_operand:SCALARF 2 "register_operand" "f")
 		    (match_operand 3 "const_int_operand" "")]
 		   UNSPEC_CABS))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_MIPS3D"
   "cabs.%Y3.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "FPSW")])
@@ -492,7 +492,7 @@
 		      (match_operand:V2SF 4 "register_operand" "f")
 		      (match_operand 5 "const_int_operand" "")]
 		     UNSPEC_CABS))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_MIPS3D"
   "#"
   "&& reload_completed"
   [(set (match_dup 6)
@@ -535,7 +535,7 @@
 		      (match_operand:V2SF 2 "register_operand" "f")
 		      (match_operand 3 "const_int_operand" "")]
 		     UNSPEC_CABS))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_MIPS3D"
   "cabs.%Y3.ps\t%0,%1,%2"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "FPSW")])
@@ -578,7 +578,7 @@
 			  (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_MIPS3D"
   "%*bc1any4t\t%1,%0%/"
   [(set_attr "type" "branch")])
 
@@ -589,7 +589,7 @@
 			  (const_int -1))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_MIPS3D"
   "%*bc1any4f\t%1,%0%/"
   [(set_attr "type" "branch")])
 
@@ -600,7 +600,7 @@
 			  (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_MIPS3D"
   "%*bc1any2t\t%1,%0%/"
   [(set_attr "type" "branch")])
 
@@ -611,7 +611,7 @@
 			  (const_int -1))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_MIPS3D"
   "%*bc1any2f\t%1,%0%/"
   [(set_attr "type" "branch")])
 
@@ -674,7 +674,7 @@
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")]
 		     UNSPEC_RSQRT1))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_MIPS3D"
   "rsqrt1.<fmt>\t%0,%1"
   [(set_attr "type" "frsqrt1")
    (set_attr "mode" "<UNITMODE>")])
@@ -684,7 +684,7 @@
 	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")
 		      (match_operand:ANYF 2 "register_operand" "f")]
 		     UNSPEC_RSQRT2))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_MIPS3D"
   "rsqrt2.<fmt>\t%0,%1,%2"
   [(set_attr "type" "frsqrt2")
    (set_attr "mode" "<UNITMODE>")])
@@ -693,7 +693,7 @@
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")]
 		     UNSPEC_RECIP1))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_MIPS3D"
   "recip1.<fmt>\t%0,%1"
   [(set_attr "type" "frdiv1")
    (set_attr "mode" "<UNITMODE>")])
@@ -703,7 +703,7 @@
 	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")
 		      (match_operand:ANYF 2 "register_operand" "f")]
 		     UNSPEC_RECIP2))]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_MIPS3D"
   "recip2.<fmt>\t%0,%1,%2"
   [(set_attr "type" "frdiv2")
    (set_attr "mode" "<UNITMODE>")])
