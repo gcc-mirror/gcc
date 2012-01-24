@@ -5556,7 +5556,9 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
 	Expression* ret = NULL;
 	if (left_type != right_type
 	    && left_type != NULL
+	    && !left_type->is_abstract()
 	    && right_type != NULL
+	    && !right_type->is_abstract()
 	    && left_type->base() != right_type->base()
 	    && op != OPERATOR_LSHIFT
 	    && op != OPERATOR_RSHIFT)
@@ -5608,7 +5610,27 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
 		  type = right_type;
 		else
 		  type = left_type;
-		ret = Expression::make_integer(&val, type, location);
+
+		bool is_character = false;
+		if (type == NULL)
+		  {
+		    Type* t = this->left_->type();
+		    if (t->integer_type() != NULL
+			&& t->integer_type()->is_rune())
+		      is_character = true;
+		    else if (op != OPERATOR_LSHIFT && op != OPERATOR_RSHIFT)
+		      {
+			t = this->right_->type();
+			if (t->integer_type() != NULL
+			    && t->integer_type()->is_rune())
+			  is_character = true;
+		      }
+		  }
+
+		if (is_character)
+		  ret = Expression::make_character(&val, type, location);
+		else
+		  ret = Expression::make_integer(&val, type, location);
 	      }
 
 	    mpz_clear(val);
@@ -6251,6 +6273,12 @@ Binary_expression::do_type()
 	else if (left_type->float_type() != NULL)
 	  return left_type;
 	else if (right_type->float_type() != NULL)
+	  return right_type;
+	else if (left_type->integer_type() != NULL
+		 && left_type->integer_type()->is_rune())
+	  return left_type;
+	else if (right_type->integer_type() != NULL
+		 && right_type->integer_type()->is_rune())
 	  return right_type;
 	else
 	  return left_type;
