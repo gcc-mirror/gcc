@@ -1,3 +1,8 @@
+2012-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51812
+	* g++.dg/inherit/covariant20.C: New.
+
 2012-01-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51223
