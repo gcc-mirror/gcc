@@ -1,3 +1,9 @@
+2012-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51973
+	* tree.c (called_fns_equal): Check template args.
+	(cp_tree_equal): Call it.
+
 2012-01-24  Aldy Hernandez  <aldyh@redhat.com>
 	    Patrick Marlier  <patrick.marlier@gmail.com>
 
