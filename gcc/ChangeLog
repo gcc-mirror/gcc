@@ -1,3 +1,10 @@
+2012-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/47249
+	* common.opt (-pie, -shared, pie, shared): Change from Common to
+	Driver.
+	* gcc.c (display_help): Display help for -pie and -shared.
+
 2012-01-24  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/49868

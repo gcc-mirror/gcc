@@ -2988,6 +2988,8 @@ display_help (void)
   fputs (_("  -S                       Compile only; do not assemble or link\n"), stdout);
   fputs (_("  -c                       Compile and assemble, but do not link\n"), stdout);
   fputs (_("  -o <file>                Place the output into <file>\n"), stdout);
+  fputs (_("  -pie                     Create a position independent executable\n"), stdout);
+  fputs (_("  -shared                  Create a shared library\n"), stdout);
   fputs (_("\
   -x <language>            Specify the language of the following input files\n\
                            Permissible languages include: c c++ assembler none\n\
