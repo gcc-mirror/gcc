@@ -5567,6 +5567,11 @@ the semantics of these opaque @code{UNSPEC}s by converting them back
 into their original form.
 @end deftypefn
 
+@hook TARGET_CONST_NOT_OK_FOR_DEBUG_P
+This hook should return true if @var{x} should not be emitted into
+debug sections.
+@end deftypefn
+
 @hook TARGET_CANNOT_FORCE_CONST_MEM
 This hook should return true if @var{x} is of a form that cannot (or
 should not) be spilled to the constant pool.  @var{mode} is the mode

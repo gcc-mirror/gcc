@@ -1,3 +1,16 @@
+2012-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/51957
+	* target.def (const_not_ok_for_debug_p): New hook.
+	* doc/tm.texi.in (TARGET_CONST_NOT_OK_FOR_DEBUG_P): New hook
+	documentation.
+	* doc/tm.texi: Regenerated.
+	* dwarf2out.c (const_ok_for_output_1): If
+	targetm.const_not_ok_for_debug_p returns true, fail.
+	* config/rs6000/rs6000.c (rs6000_const_not_ok_for_debug_p): New
+	function.
+	(TARGET_CONST_NOT_OK_FOR_DEBUG_P): Redefine.
+
 2012-01-23  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/51900
