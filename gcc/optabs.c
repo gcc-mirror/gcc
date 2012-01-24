@@ -7311,7 +7311,8 @@ maybe_emit_compare_and_swap_exchange_loop (rtx target, rtx mem, rtx val)
 #ifndef HAVE_atomic_test_and_set
 #define HAVE_atomic_test_and_set 0
 #define CODE_FOR_atomic_test_and_set CODE_FOR_nothing
-#define gen_atomic_test_and_set(x,y,z)  (gcc_unreachable (), NULL_RTX)
+#define gen_atomic_test_and_set(x,y,z) \
+  (gcc_unreachable (), (void) (0 && (x) && (y) && (z)), NULL_RTX)
 #endif
 
 static rtx
