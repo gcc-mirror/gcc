@@ -1,3 +1,10 @@
+2012-01-24  Aldy Hernandez  <aldyh@redhat.com>
+	    Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR c++/51928
+	* class.c (set_method_tm_attributes): Use TARGET_THUNK instead of
+	thunk for set_one_vmethod_tm_attributes.
+
 2012-01-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51223
