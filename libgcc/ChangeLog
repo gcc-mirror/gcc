@@ -1,7 +1,13 @@
+2012-01-25  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/t-linux64: Delete.  Move..
+	* config/rs6000/t-ppc64-fp: ..softfp_wrap defines to here..
+	* config/rs6000/t-linux: ..and libgcc flags to here.
+
 2012-01-22  Douglas B Rupp  <rupp@gnat.com>
 
 	* config.host (i[34567]86-*-interix3*):
-         Change triplet to i[34567]86-*-interix[3-9]*.
+	Change triplet to i[34567]86-*-interix[3-9]*.
 	* configure: Regenerate.
 
 2012-01-15  Chung-Lin Tang  <cltang@codesourcery.com>
