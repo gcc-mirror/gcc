@@ -3940,7 +3940,8 @@ Type_case_clauses::Type_case_clause::traverse(Traverse* traverse)
 // statements.
 
 void
-Type_case_clauses::Type_case_clause::lower(Block* b,
+Type_case_clauses::Type_case_clause::lower(Type* switch_val_type,
+					   Block* b,
 					   Temporary_statement* descriptor_temp,
 					   Unnamed_label* break_label,
 					   Unnamed_label** stmts_label) const
@@ -3951,6 +3952,20 @@ Type_case_clauses::Type_case_clause::lower(Block* b,
   if (!this->is_default_)
     {
       Type* type = this->type_;
+
+      std::string reason;
+      if (switch_val_type->interface_type() != NULL
+	  && !type->is_nil_constant_as_type()
+	  && type->interface_type() == NULL
+	  && !switch_val_type->interface_type()->implements_interface(type,
+								      &reason))
+	{
+	  if (reason.empty())
+	    error_at(this->location_, "impossible type switch case");
+	  else
+	    error_at(this->location_, "impossible type switch case (%s)",
+		     reason.c_str());
+	}
 
       Expression* ref = Expression::make_temporary_reference(descriptor_temp,
 							     loc);
@@ -4102,7 +4117,8 @@ Type_case_clauses::check_duplicates() const
 // BREAK_LABEL is the label at the end of the type switch.
 
 void
-Type_case_clauses::lower(Block* b, Temporary_statement* descriptor_temp,
+Type_case_clauses::lower(Type* switch_val_type, Block* b,
+			 Temporary_statement* descriptor_temp,
 			 Unnamed_label* break_label) const
 {
   const Type_case_clause* default_case = NULL;
@@ -4113,7 +4129,8 @@ Type_case_clauses::lower(Block* b, Temporary_statement* descriptor_temp,
        ++p)
     {
       if (!p->is_default())
-	p->lower(b, descriptor_temp, break_label, &stmts_label);
+	p->lower(switch_val_type, b, descriptor_temp, break_label,
+		 &stmts_label);
       else
 	{
 	  // We are generating a series of tests, which means that we
@@ -4124,7 +4141,8 @@ Type_case_clauses::lower(Block* b, Temporary_statement* descriptor_temp,
   go_assert(stmts_label == NULL);
 
   if (default_case != NULL)
-    default_case->lower(b, descriptor_temp, break_label, NULL);
+    default_case->lower(switch_val_type, b, descriptor_temp, break_label,
+			NULL);
 }
 
 // Dump the AST representation for case clauses (from a switch statement)
@@ -4222,7 +4240,7 @@ Type_switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
     }
 
   if (this->clauses_ != NULL)
-    this->clauses_->lower(b, descriptor_temp, this->break_label());
+    this->clauses_->lower(val_type, b, descriptor_temp, this->break_label());
 
   Statement* s = Statement::make_unnamed_label_statement(this->break_label_);
   b->add_statement(s);
