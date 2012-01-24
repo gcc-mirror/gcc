@@ -1,3 +1,8 @@
+2012-01-24  Torvald Riegel  <triegel@redhat.com>
+
+	* config/linux/rwlock.cc (GTM::gtm_rwlock::write_unlock): Fix reader
+	wake-up.
+
 2012-01-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/x86/target.h (gtm_jmpbuf) [__x86_64__]: Move rip to the

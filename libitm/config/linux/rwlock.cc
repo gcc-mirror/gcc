@@ -231,10 +231,13 @@ gtm_rwlock::write_unlock ()
 	  // last writer (this can happen because write_lock_generic()
 	  // exchanges 0 or 1 to 2 and thus might go to contended mode even if
 	  // no other thread holds the write lock currently). Therefore, we
-	  // have to wake up readers here as well.
-	  futex_wake(&readers, INT_MAX);
+	  // have to wake up readers here as well.  Execute a barrier after
+	  // the previous relaxed reset of writers (Dekker-style), and fall
+	  // through to the normal reader wake-up code.
+	  atomic_thread_fence (memory_order_seq_cst);
 	}
-      return;
+      else
+	return;
     }
   // No waiting writers, so wake up all waiting readers.
   // Because the fetch_and_sub is a full barrier already, we don't need
