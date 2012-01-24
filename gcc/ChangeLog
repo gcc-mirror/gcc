@@ -1,3 +1,9 @@
+2012-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51812
+	* cgraphunit.c (cgraph_decide_is_function_needed): Don't always
+	output static aliases.
+
 2012-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR driver/47249

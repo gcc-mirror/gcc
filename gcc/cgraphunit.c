@@ -195,6 +195,7 @@ cgraph_decide_is_function_needed (struct cgraph_node *node, tree decl)
      to change the behavior here.  */
   if (((TREE_PUBLIC (decl)
 	|| (!optimize
+	    && !node->same_body_alias
 	    && !DECL_DISREGARD_INLINE_LIMITS (decl)
 	    && !DECL_DECLARED_INLINE_P (decl)
 	    && !(DECL_CONTEXT (decl)
