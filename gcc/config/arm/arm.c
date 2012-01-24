@@ -20928,7 +20928,11 @@ neon_split_vcombine (rtx operands[3])
   rtx destlo, desthi;
 
   if (src1 == dest && src2 == dest + halfregs)
-    return;
+    {
+      /* No-op move.  Can't split to nothing; emit something.  */
+      emit_note (NOTE_INSN_DELETED);
+      return;
+    }
 
   /* Preserve register attributes for variable tracking.  */
   destlo = gen_rtx_REG_offset (operands[0], halfmode, dest, 0);
