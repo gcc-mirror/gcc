@@ -5893,6 +5893,19 @@ the operation followed by the arithmetic operation required to produce the
 result.  If none of these are available a compare-and-swap loop will be
 used.
 
+@cindex @code{atomic_test_and_set} instruction pattern
+@item @samp{atomic_test_and_set}
+
+This pattern emits code for @code{__builtin_atomic_test_and_set}.
+Operand 0 is an output operand which is set to true if the previous
+previous contents of the byte was "set", and false otherwise.  Operand 1
+is the @code{QImode} memory to be modified.  Operand 2 is the memory
+model to be used.
+
+The specific value that defines "set" is implementation defined, and
+is normally based on what is performed by the native atomic test and set
+instruction.
+
 @cindex @code{mem_thread_fence@var{mode}} instruction pattern
 @item @samp{mem_thread_fence@var{mode}}
 This pattern emits code required to implement a thread fence with

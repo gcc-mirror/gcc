@@ -7304,10 +7304,40 @@ maybe_emit_compare_and_swap_exchange_loop (rtx target, rtx mem, rtx val)
   return NULL_RTX;
 }
 
+/* This function tries to implement an atomic test-and-set operation
+   using the atomic_test_and_set instruction pattern.  A boolean value
+   is returned from the operation, using TARGET if possible.  */
+
 #ifndef HAVE_atomic_test_and_set
 #define HAVE_atomic_test_and_set 0
+#define CODE_FOR_atomic_test_and_set CODE_FOR_nothing
 #define gen_atomic_test_and_set(x,y,z)  (gcc_unreachable (), NULL_RTX)
 #endif
+
+static rtx
+maybe_emit_atomic_test_and_set (rtx target, rtx mem, enum memmodel model)
+{
+  enum machine_mode pat_bool_mode;
+  const struct insn_data_d *id;
+
+  if (!HAVE_atomic_test_and_set)
+    return NULL_RTX;
+
+  id = &insn_data[CODE_FOR_atomic_test_and_set];
+  pat_bool_mode = id->operand[0].mode;
+
+  /* ??? We only support test-and-set on single bytes at the moment.
+     We'd have to change the builtin to allow wider memories.  */
+  gcc_checking_assert (id->operand[1].mode == QImode);
+  gcc_checking_assert (GET_MODE (mem) == QImode);
+
+  if (target == NULL || GET_MODE (target) != pat_bool_mode)
+    target = gen_reg_rtx (pat_bool_mode);
+
+  emit_insn (gen_atomic_test_and_set (target, mem, GEN_INT (model)));
+
+  return target;
+}
 
 /* This function expands the legacy _sync_lock test_and_set operation which is
    generally an atomic exchange.  Some limited targets only allow the
@@ -7323,20 +7353,21 @@ expand_sync_lock_test_and_set (rtx target, rtx mem, rtx val)
 
   /* Try an atomic_exchange first.  */
   ret = maybe_emit_atomic_exchange (target, mem, val, MEMMODEL_ACQUIRE);
+  if (ret)
+    return ret;
 
-  if (!ret)
-    ret = maybe_emit_sync_lock_test_and_set (target, mem, val,
-					     MEMMODEL_ACQUIRE);
-  if (!ret)
-    ret = maybe_emit_compare_and_swap_exchange_loop (target, mem, val);
+  ret = maybe_emit_sync_lock_test_and_set (target, mem, val, MEMMODEL_ACQUIRE);
+  if (ret)
+    return ret;
+
+  ret = maybe_emit_compare_and_swap_exchange_loop (target, mem, val);
+  if (ret)
+    return ret;
 
   /* If there are no other options, try atomic_test_and_set if the value
      being stored is 1.  */
-  if (!ret && val == const1_rtx && HAVE_atomic_test_and_set)
-    {
-      ret = gen_atomic_test_and_set (target, mem, GEN_INT (MEMMODEL_ACQUIRE));
-      emit_insn (ret);
-    }
+  if (val == const1_rtx)
+    ret = maybe_emit_atomic_test_and_set (target, mem, MEMMODEL_ACQUIRE);
 
   return ret;
 }
@@ -7351,28 +7382,26 @@ rtx
 expand_atomic_test_and_set (rtx target, rtx mem, enum memmodel model)
 {
   enum machine_mode mode = GET_MODE (mem);
-  rtx ret = NULL_RTX;
+  rtx ret;
+
+  ret = maybe_emit_atomic_test_and_set (target, mem, model);
+  if (ret)
+    return ret;
 
   if (target == NULL_RTX)
     target = gen_reg_rtx (mode);
 
-  if (HAVE_atomic_test_and_set)
-    {
-      ret = gen_atomic_test_and_set (target, mem, GEN_INT (MEMMODEL_ACQUIRE));
-      emit_insn (ret);
-      return ret;
-    }
-
   /* If there is no test and set, try exchange, then a compare_and_swap loop,
      then __sync_test_and_set.  */
   ret = maybe_emit_atomic_exchange (target, mem, const1_rtx, model);
+  if (ret)
+    return ret;
 
-  if (!ret)
-    ret = maybe_emit_compare_and_swap_exchange_loop (target, mem, const1_rtx);
+  ret = maybe_emit_compare_and_swap_exchange_loop (target, mem, const1_rtx);
+  if (ret)
+    return ret;
 
-  if (!ret)
-    ret = maybe_emit_sync_lock_test_and_set (target, mem, const1_rtx, model);
-
+  ret = maybe_emit_sync_lock_test_and_set (target, mem, const1_rtx, model);
   if (ret)
     return ret;
 
