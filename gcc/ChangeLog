@@ -1,3 +1,12 @@
+2012-01-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49868
+	* doc/extend.texi (AVR Named Address Spaces): Move sample code up.
+	Remove note on size/offset limitation.
+	(AVR Variable Attributes): Add example how to read data located
+	with progmem.  Refer to named address spaces.
+	* doc/invoke.texi (AVR Options): Fix typo.
+
 2012-01-24  Richard Guenther  <rguenther@suse.de>
 
 	Forward-port to trunk

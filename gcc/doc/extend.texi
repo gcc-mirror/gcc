@@ -1237,9 +1237,10 @@ in order to put read-only data into the flash memory and access that
 data by means of the special instructions @code{LPM} or @code{ELPM}
 needed to read from flash.
 
-Per default, any data including read-only data is located in RAM so
-that address spaces are needed to locate read-only data in flash memory
-@emph{and} to generate the right instructions to access the data
+Per default, any data including read-only data is located in RAM
+(the generic address space) so that non-generic address spaces are
+needed to locate read-only data in flash memory
+@emph{and} to generate the right instructions to access this data
 without using (inline) assembler code.
 
 @table @code
@@ -1265,9 +1266,9 @@ address space @code{__pgm@var{N}}.
 The compiler will set the @code{RAMPZ} segment register approptiately 
 before reading data by means of the @code{ELPM} instruction.
 
-On devices with less 64kiB flash segments as indicated by the address
+On devices with less 64@tie{}kiB flash segments as indicated by the address
 space, the compiler will cut down the segment number to a number the
-device actually supports. Counting starts at @code{0}
+device actually supports. Counting starts at@tie{}@code{0}
 for space @code{__pgm}. For example, if you access address space
 @code{__pgm3} on an ATmega128 device with two 64@tie{}kiB flash segments,
 the compiler will generate a read from @code{__pgm1}, i.e.@: it
@@ -1283,6 +1284,31 @@ with @code{RAMPZ} set according to the high byte of the address.
 
 Objects in this address space will be located in @code{.progmem.data}.
 @end table
+
+@b{Example}
+
+@example
+char my_read (const __pgm char ** p)
+@{
+    /* p is a pointer to RAM that points to a pointer to flash.
+       The first indirection of p will read that flash pointer
+       from RAM and the second indirection reads a char from this
+       flash address.  */
+
+    return **p;
+@}
+
+/* Locate array[] in flash memory */
+const __pgm int array[] = @{ 3, 5, 7, 11, 13, 17, 19 @};
+
+int i = 1;
+
+int main (void)
+@{
+   /* Return 17 by reading from flash memory */
+   return array[array[i]];
+@}
+@end example
 
 For each named address space supported by avr-gcc there is an equally
 named but uppercase built-in macro defined. 
@@ -1311,8 +1337,9 @@ int read_i (void)
 
 Notice that attribute @ref{AVR Variable Attributes,@code{progmem}}
 locates data in flash but
-accesses to these data will be to generic address space, i.e.@: RAM,
-so that you need special access functions like @code{pgm_read_byte}
+accesses to these data will read from generic address space, i.e.@:
+from RAM,
+so that you need special accessors like @code{pgm_read_byte}
 from @w{@uref{http://nongnu.org/avr-libc/user-manual,avr-libc}}.
 
 @b{Limitations and caveats}
@@ -1331,10 +1358,10 @@ you will have to arrange your linker skript to locate the
 @code{.progmem@var{N}.data} sections according to your needs.
 
 @item
-Any data or pointers to the AVR address spaces spaces must
-also be qualified as @code{const}, i.e.@: as read-only data.
+Any data or pointers to the non-generic address spaces must
+be qualified as @code{const}, i.e.@: as read-only data.
 This still applies if the data in one of these address
-spaces like software version number or lookup tables are intended to
+spaces like software version number or calibration lookup table are intended to
 be changed after load time by, say, a boot loader. In this case
 the right qualification is @code{const} @code{volatile} so that the compiler
 must not optimize away known values or insert them
@@ -1349,51 +1376,11 @@ extern const __pgmx char foo;
 const __pgmx void *pfoo = &foo;
 @end example
 The code will throw an assembler warning and the high byte of
-@code{pfoo} will be initialized with @code{0}, i.e.@: the
+@code{pfoo} will be initialized with@tie{}@code{0}, i.e.@: the
 initialization will be as if @code{foo} was located in the first
 64@tie{}KiB chunk of flash.
 
-@item
-Address arithmetic for the @code{__pgmx} address space is carried out
-as 16-bit signed integer arithmetic. This means that in the following
-code array positions with offsets @code{idx}@tie{}>@tie{}8191 are
-inaccessible.
-
-@example
-extern const __pgmx long lookup[];
-
-long read_lookup (unsigned idx)
-@{
-    return lookup[idx];
-@}
-@end example
-
 @end itemize
-
-@b{Example}
-
-@example
-char my_read (const __pgm ** p)
-@{
-    /* p is a pointer to RAM that points to a pointer to flash.
-       The first indirection of p will read that flash pointer
-       from RAM and the second indirection reads a char from this
-       flash address.  */
-
-    return **p;
-@}
-
-/* Locate array[] in flash memory */
-const __pgm int array[] = @{ 3, 5, 7, 11, 13, 17, 19 @};
-
-int i = 1;
-
-int main (void)
-@{
-   /* Return 17 by reading from flash memory */
-   return array[array[i]];
-@}
-@end example
 
 @subsection M32C Named Address Spaces
 @cindex @code{__far} M32C Named Address Spaces
@@ -3235,7 +3222,7 @@ is entered like for, e@.g@. task functions in a multi-threading operating
 system. In that case, changing the stack pointer register will be
 guarded by save/clear/restore of the global interrupt enable flag.
 
-The differences to the @code{naked} function attrubute are:
+The differences to the @code{naked} function attribute are:
 @itemize @bullet
 @item @code{naked} functions do not have a return instruction whereas 
 @code{OS_main} and @code{OS_task} functions will have a @code{RET} or
@@ -4752,13 +4739,32 @@ data in the non-volatile program memory (flash). The @code{progmem}
 attribute accomplishes this by putting respective variables into a
 section whose name starts with @code{.progmem}.
 
-This attrubute wirks similar to the @code{section} attribute
+This attribute works similar to the @code{section} attribute
 but adds additional checking. Notice that just like the
 @code{section} attribute, @code{progmem} affects the location
 of the data but not how this data is accessed.
 
+In order to read data located with the @code{progmem} attribute
+(inline) assembler must be used.
+@example
+/* Use custom macros from @w{@uref{http://nongnu.org/avr-libc/user-manual,avr-libc}} */
+#include <avr/pgmspace.h> 
+
+/* Locate var in flash memory */
+const int var[2] PROGMEM = @{ 1, 2 @};
+
+int read_var (int i)
+@{
+    /* Access var[] by accessor macro from avr/pgmspace.h */
+    return (int) pgm_read_word (& var[i]);
+@}
+@end example
+
 AVR is a Harvard architecture processor and data and read-only data
 normally resides in the data memory (RAM).
+
+See also the @ref{AVR Named Address Spaces} section for
+an alternate way to locate and access data in flash memory.
 @end table
 
 @subsection Blackfin Variable Attributes
