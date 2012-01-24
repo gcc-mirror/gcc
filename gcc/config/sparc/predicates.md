@@ -1,5 +1,5 @@
 ;; Predicate definitions for SPARC.
-;; Copyright (C) 2005, 2007, 2008, 2010 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2007, 2008, 2010, 2012 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -113,8 +113,9 @@
 
 ;; Return true if OP is Zero, or if the target is V7.
 (define_predicate "zero_or_v7_operand"
-  (ior (match_test "op == const0_rtx")
-       (match_test "!TARGET_V8 && !TARGET_V9")))
+  (and (match_code "const_int")
+       (ior (match_test "INTVAL (op) == 0")
+	    (match_test "!TARGET_V8 && !TARGET_V9"))))
 
 ;; Predicates for symbolic constants.
 
