@@ -10593,7 +10593,7 @@ Array_index_expression::do_check_types(Gogo*)
   if (this->end_ != NULL && !array_type->is_slice_type())
     {
       if (!this->array_->is_addressable())
-	this->report_error(_("array is not addressable"));
+	this->report_error(_("slice of unaddressable value"));
       else
 	this->array_->address_taken(true);
     }
@@ -10834,13 +10834,6 @@ Expression*
 Expression::make_array_index(Expression* array, Expression* start,
 			     Expression* end, Location location)
 {
-  // Taking a slice of a composite literal requires moving the literal
-  // onto the heap.
-  if (end != NULL && array->is_composite_literal())
-    {
-      array = Expression::make_heap_composite(array, location);
-      array = Expression::make_unary(OPERATOR_MULT, array, location);
-    }
   return new Array_index_expression(array, start, end, location);
 }
 
@@ -11954,10 +11947,6 @@ class Struct_construction_expression : public Expression
 					      this->location());
   }
 
-  bool
-  do_is_addressable() const
-  { return true; }
-
   tree
   do_get_tree(Translate_context*);
 
@@ -12238,10 +12227,6 @@ protected:
 
   void
   do_check_types(Gogo*);
-
-  bool
-  do_is_addressable() const
-  { return true; }
 
   void
   do_export(Export*) const;
