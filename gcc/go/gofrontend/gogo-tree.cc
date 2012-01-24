@@ -1108,6 +1108,10 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
       }
       break;
 
+    case NAMED_OBJECT_ERRONEOUS:
+      decl = error_mark_node;
+      break;
+
     default:
       go_unreachable();
     }

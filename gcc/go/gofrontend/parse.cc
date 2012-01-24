@@ -45,6 +45,7 @@ Parse::Parse(Lex* lex, Gogo* gogo)
     token_(Token::make_invalid_token(Linemap::unknown_location())),
     unget_token_(Token::make_invalid_token(Linemap::unknown_location())),
     unget_token_valid_(false),
+    is_erroneous_function_(false),
     gogo_(gogo),
     break_stack_(NULL),
     continue_stack_(NULL),
@@ -2123,8 +2124,6 @@ Parse::function_decl()
   this->advance_token();
 
   Function_type* fntype = this->signature(rec, this->location());
-  if (fntype == NULL)
-    return;
 
   Named_object* named_object = NULL;
 
@@ -2171,13 +2170,28 @@ Parse::function_decl()
   if (!this->peek_token()->is_op(OPERATOR_LCURLY))
     {
       if (named_object == NULL && !Gogo::is_sink_name(name))
-	this->gogo_->declare_function(name, fntype, location);
+	{
+	  if (fntype != NULL)
+	    this->gogo_->declare_function(name, fntype, location);
+	  else
+	    this->gogo_->add_erroneous_name(name);
+	}
     }
   else
     {
+      bool hold_is_erroneous_function = this->is_erroneous_function_;
+      if (fntype == NULL)
+	{
+	  fntype = Type::make_function_type(NULL, NULL, NULL, location);
+	  this->is_erroneous_function_ = true;
+	  if (!Gogo::is_sink_name(name))
+	    this->gogo_->add_erroneous_name(name);
+	  name = this->gogo_->pack_hidden_name("_", false);
+	}
       this->gogo_->start_function(name, fntype, true, location);
       Location end_loc = this->block();
       this->gogo_->finish_function(end_loc);
+      this->is_erroneous_function_ = hold_is_erroneous_function;
     }
 }
 
@@ -2392,7 +2406,15 @@ Parse::operand(bool may_be_sink)
 	    return Expression::make_func_reference(named_object, NULL,
 						   location);
 	  case Named_object::NAMED_OBJECT_UNKNOWN:
-	    return Expression::make_unknown_reference(named_object, location);
+	    {
+	      Unknown_expression* ue =
+		Expression::make_unknown_reference(named_object, location);
+	      if (this->is_erroneous_function_)
+		ue->set_no_error_message();
+	      return ue;
+	    }
+	  case Named_object::NAMED_OBJECT_ERRONEOUS:
+	    return Expression::make_error(location);
 	  default:
 	    go_unreachable();
 	  }
@@ -2698,13 +2720,21 @@ Parse::function_lit()
   hold_enclosing_vars.swap(this->enclosing_vars_);
 
   Function_type* type = this->signature(NULL, location);
+  bool fntype_is_error = false;
   if (type == NULL)
-    type = Type::make_function_type(NULL, NULL, NULL, location);
+    {
+      type = Type::make_function_type(NULL, NULL, NULL, location);
+      fntype_is_error = true;
+    }
 
   // For a function literal, the next token must be a '{'.  If we
   // don't see that, then we may have a type expression.
   if (!this->peek_token()->is_op(OPERATOR_LCURLY))
     return Expression::make_type(type, location);
+
+  bool hold_is_erroneous_function = this->is_erroneous_function_;
+  if (fntype_is_error)
+    this->is_erroneous_function_ = true;
 
   Bc_stack* hold_break_stack = this->break_stack_;
   Bc_stack* hold_continue_stack = this->continue_stack_;
@@ -2723,6 +2753,8 @@ Parse::function_lit()
     delete this->continue_stack_;
   this->break_stack_ = hold_break_stack;
   this->continue_stack_ = hold_continue_stack;
+
+  this->is_erroneous_function_ = hold_is_erroneous_function;
 
   hold_enclosing_vars.swap(this->enclosing_vars_);
 
@@ -3043,13 +3075,27 @@ Parse::id_to_expression(const std::string& name, Location location)
     case Named_object::NAMED_OBJECT_FUNC_DECLARATION:
       return Expression::make_func_reference(named_object, NULL, location);
     case Named_object::NAMED_OBJECT_UNKNOWN:
-      return Expression::make_unknown_reference(named_object, location);
+      {
+	Unknown_expression* ue =
+	  Expression::make_unknown_reference(named_object, location);
+	if (this->is_erroneous_function_)
+	  ue->set_no_error_message();
+	return ue;
+      }
     case Named_object::NAMED_OBJECT_PACKAGE:
     case Named_object::NAMED_OBJECT_TYPE:
     case Named_object::NAMED_OBJECT_TYPE_DECLARATION:
-      // These cases can arise for a field name in a composite
-      // literal.
-      return Expression::make_unknown_reference(named_object, location);
+      {
+	// These cases can arise for a field name in a composite
+	// literal.
+	Unknown_expression* ue =
+	  Expression::make_unknown_reference(named_object, location);
+	if (this->is_erroneous_function_)
+	  ue->set_no_error_message();
+	return ue;
+      }
+    case Named_object::NAMED_OBJECT_ERRONEOUS:
+      return Expression::make_error(location);
     default:
       error_at(this->location(), "unexpected type of identifier");
       return Expression::make_error(location);

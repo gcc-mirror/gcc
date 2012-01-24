@@ -1455,8 +1455,9 @@ Unknown_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 	{
 	  if (this->is_composite_literal_key_)
 	    return this;
-	  error_at(location, "reference to undefined name %qs",
-		   this->named_object_->message_name().c_str());
+	  if (!this->no_error_message_)
+	    error_at(location, "reference to undefined name %qs",
+		     this->named_object_->message_name().c_str());
 	  return Expression::make_error(location);
 	}
     }
@@ -1469,8 +1470,9 @@ Unknown_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
     case Named_object::NAMED_OBJECT_TYPE_DECLARATION:
       if (this->is_composite_literal_key_)
 	return this;
-      error_at(location, "reference to undefined type %qs",
-	       real->message_name().c_str());
+      if (!this->no_error_message_)
+	error_at(location, "reference to undefined type %qs",
+		 real->message_name().c_str());
       return Expression::make_error(location);
     case Named_object::NAMED_OBJECT_VAR:
       real->var_value()->set_is_used();
@@ -1481,7 +1483,8 @@ Unknown_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
     case Named_object::NAMED_OBJECT_PACKAGE:
       if (this->is_composite_literal_key_)
 	return this;
-      error_at(location, "unexpected reference to package");
+      if (!this->no_error_message_)
+	error_at(location, "unexpected reference to package");
       return Expression::make_error(location);
     default:
       go_unreachable();
@@ -1499,7 +1502,7 @@ Unknown_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 
 // Make a reference to an unknown name.
 
-Expression*
+Unknown_expression*
 Expression::make_unknown_reference(Named_object* no, Location location)
 {
   return new Unknown_expression(no, location);
@@ -8483,6 +8486,11 @@ Builtin_call_expression::do_check_types(Gogo*)
 		    || type->function_type() != NULL
 		    || type->is_slice_type())
 		  ;
+		else if ((*p)->is_type_expression())
+		  {
+		    // If this is a type expression it's going to give
+		    // an error anyhow, so we don't need one here.
+		  }
 		else
 		  this->report_error(_("unsupported argument type to "
 				       "builtin function"));

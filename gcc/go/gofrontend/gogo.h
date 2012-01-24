@@ -267,6 +267,11 @@ class Gogo
   Block*
   finish_block(Location);
 
+  // Declare an erroneous name.  This is used to avoid knock-on errors
+  // after a parsing error.
+  Named_object*
+  add_erroneous_name(const std::string& name);
+
   // Declare an unknown name.  This is used while parsing.  The name
   // must be resolved by the end of the parse.  Unknown names are
   // always added at the package level.
@@ -1688,6 +1693,9 @@ class Named_object
   {
     // An uninitialized Named_object.  We should never see this.
     NAMED_OBJECT_UNINITIALIZED,
+    // An erroneous name.  This indicates a parse error, to avoid
+    // later errors about undefined references.
+    NAMED_OBJECT_ERRONEOUS,
     // An unknown name.  This is used for forward references.  In a
     // correct program, these will all be resolved by the end of the
     // parse.
@@ -1718,6 +1726,10 @@ class Named_object
   { return this->classification_; }
 
   // Classifiers.
+
+  bool
+  is_erroneous() const
+  { return this->classification_ == NAMED_OBJECT_ERRONEOUS; }
 
   bool
   is_unknown() const
@@ -1760,6 +1772,10 @@ class Named_object
   { return this->classification_ == NAMED_OBJECT_PACKAGE; }
 
   // Creators.
+
+  static Named_object*
+  make_erroneous_name(const std::string& name)
+  { return new Named_object(name, NULL, NAMED_OBJECT_ERRONEOUS); }
 
   static Named_object*
   make_unknown_name(const std::string& name, Location);
@@ -2031,6 +2047,11 @@ class Bindings
   typedef Unordered_map(std::string, Named_object*) Contour;
 
   Bindings(Bindings* enclosing);
+
+  // Add an erroneous name.
+  Named_object*
+  add_erroneous_name(const std::string& name)
+  { return this->add_named_object(Named_object::make_erroneous_name(name)); }
 
   // Add an unknown name.
   Named_object*

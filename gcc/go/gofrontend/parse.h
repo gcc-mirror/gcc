@@ -305,6 +305,8 @@ class Parse
   Token unget_token_;
   // Whether unget_token_ is valid.
   bool unget_token_valid_;
+  // Whether the function we are parsing had errors in the signature.
+  bool is_erroneous_function_;
   // The code we are generating.
   Gogo* gogo_;
   // A stack of statements for which break may be used.
