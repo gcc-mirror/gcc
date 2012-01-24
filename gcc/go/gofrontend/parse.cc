@@ -4057,6 +4057,7 @@ Parse::switch_stat(Label* label)
   Expression* switch_val = NULL;
   bool saw_send_stmt;
   Type_switch type_switch;
+  bool have_type_switch_block = false;
   if (this->simple_stat_may_start_here())
     {
       switch_val = this->simple_stat(false, &saw_send_stmt, NULL,
@@ -4099,7 +4100,14 @@ Parse::switch_stat(Label* label)
 							     id_loc));
 	      if (is_coloneq)
 		{
-		  // This must be a TypeSwitchGuard.
+		  // This must be a TypeSwitchGuard.  It is in a
+		  // different block from any initial SimpleStat.
+		  if (saw_simple_stat)
+		    {
+		      this->gogo_->start_block(id_loc);
+		      have_type_switch_block = true;
+		    }
+
 		  switch_val = this->simple_stat(false, &saw_send_stmt, NULL,
 						 &type_switch);
 		  if (!type_switch.found)
@@ -4142,13 +4150,23 @@ Parse::switch_stat(Label* label)
 	  if (this->peek_token()->is_op(OPERATOR_SEMICOLON))
 	    this->advance_token();
 	  if (!this->peek_token()->is_op(OPERATOR_LCURLY))
-	    return;
+	    {
+	      if (have_type_switch_block)
+		this->gogo_->add_block(this->gogo_->finish_block(location),
+				       location);
+	      this->gogo_->add_block(this->gogo_->finish_block(location),
+				     location);
+	      return;
+	    }
 	  if (type_switch.found)
 	    type_switch.expr = Expression::make_error(location);
 	}
       else
 	{
 	  error_at(this->location(), "expected %<{%>");
+	  if (have_type_switch_block)
+	    this->gogo_->add_block(this->gogo_->finish_block(this->location()),
+				   location);
 	  this->gogo_->add_block(this->gogo_->finish_block(this->location()),
 				 location);
 	  return;
@@ -4164,6 +4182,10 @@ Parse::switch_stat(Label* label)
 
   if (statement != NULL)
     this->gogo_->add_statement(statement);
+
+  if (have_type_switch_block)
+    this->gogo_->add_block(this->gogo_->finish_block(this->location()),
+			   location);
 
   this->gogo_->add_block(this->gogo_->finish_block(this->location()),
 			 location);
