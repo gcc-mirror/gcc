@@ -1,5 +1,12 @@
 2012-01-24  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* lib/target-supports.exp (proc check_effective_target_vect_perm)
+	(check_effective_target_vect_extract_even_odd)
+	(check_effective_target_vect_interleave): Return true for MIPS
+	paired-single.
+
+2012-01-24  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.c-torture/execute/scal-to-vec1.c (one): New volatile variable.
 	(main): Use it instead of argc.
 
