@@ -1,5 +1,14 @@
 2012-01-24  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips-ps-3d.md (mips_addr_ps, reduc_splus_v2sf)
+	(mips_cvt_pw_ps, mips_cvt_ps_pw, mips_mulr_ps, mips_cabs_cond_<fmt>)
+	(mips_cabs_cond_4s, mips_cabs_cond_ps, bc1any4t, bc1any4f, bc1any2t)
+	(bc1any2f, mips_rsqrt1_<fmt>, mips_rsqrt2_<fmt>, mips_recip1_<fmt>)
+	(mips_recip2_<fmt>): Require TARGET_MIPS3D rather than
+	TARGET_PAIRED_SINGLE_FLOAT.
+
+2012-01-24  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* doc/rtl.texi (MEM_IN_STRUCT_P, MEM_SCALAR_P): Delete.
 	(in_struct, return_val): Remove MEM documentation.
 	* rtl.h (rtx_def): Remove MEM meanings from in_struct and return_val.
