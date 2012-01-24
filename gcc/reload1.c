@@ -1111,10 +1111,7 @@ reload (rtx first, int global)
 	      if (reg_equiv_memory_loc (i))
 		MEM_COPY_ATTRIBUTES (reg, reg_equiv_memory_loc (i));
 	      else
-		{
-		  MEM_IN_STRUCT_P (reg) = MEM_SCALAR_P (reg) = 0;
-		  MEM_ATTRS (reg) = 0;
-		}
+		MEM_ATTRS (reg) = 0;
 	      MEM_NOTRAP_P (reg) = 1;
 	    }
 	  else if (reg_equiv_mem (i))

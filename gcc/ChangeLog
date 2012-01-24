@@ -1,5 +1,23 @@
 2012-01-24  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* doc/rtl.texi (MEM_IN_STRUCT_P, MEM_SCALAR_P): Delete.
+	(in_struct, return_val): Remove MEM documentation.
+	* rtl.h (rtx_def): Remove MEM meanings from in_struct and return_val.
+	(MEM_IN_STRUCT_P, MEM_SCALAR_P): Delete.
+	(MEM_COPY_ATTRIBUTES): Remove references to MEM_IN_STRUCT_P
+	and MEM_SCALAR.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Likewise.
+	* cfgexpand.c (add_alias_set_conflicts): Likewise.
+	* expr.c (store_field): Likewise.
+	* function.c (assign_stack_temp_for_type): Likewise.
+	* ifcvt.c (noce_try_cmove_arith): Likewise.
+	* reload1.c (reload): Likewise.
+	* config/alpha/alpha.c (alpha_set_memflags_1): Likewise.
+	(alpha_set_memflags): Likewise.
+	* config/m32c/m32c.c (m32c_immd_dbl_mov): Nullify.
+
+2012-01-24  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* rtl.h (true_dependence, canon_true_dependence): Remove varies
 	parameter.
 	* alias.c (fixed_scalar_and_varying_struct_p): Delete.

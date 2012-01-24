@@ -357,8 +357,7 @@ aggregate_contains_union_type (tree type)
    and due to type based aliasing rules decides that for two overlapping
    union temporaries { short s; int i; } accesses to the same mem through
    different types may not alias and happily reorders stores across
-   life-time boundaries of the temporaries (See PR25654).
-   We also have to mind MEM_IN_STRUCT_P and MEM_SCALAR_P.  */
+   life-time boundaries of the temporaries (See PR25654).  */
 
 static void
 add_alias_set_conflicts (void)

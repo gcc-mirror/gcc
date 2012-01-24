@@ -296,10 +296,7 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
      barrier.
      1 in a CONCAT is VAL_NEEDS_RESOLUTION in var-tracking.c.  */
   unsigned int volatil : 1;
-  /* 1 in a MEM referring to a field of an aggregate.
-     0 if the MEM was a variable or the result of a * operator in C;
-     1 if it was the result of a . or -> operator (on a struct) in C.
-     1 in a REG if the register is used only in exit code a loop.
+  /* 1 in a REG if the register is used only in exit code a loop.
      1 in a SUBREG expression if was generated from a variable with a
      promoted mode.
      1 in a CODE_LABEL if the label is used for nonlocal gotos
@@ -308,7 +305,10 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
      together with the preceding insn.  Valid only within sched.
      1 in an INSN, JUMP_INSN, or CALL_INSN if insn is in a delay slot and
      from the target of a branch.  Valid from reorg until end of compilation;
-     cleared before used.  */
+     cleared before used.
+
+     The name of the field is historical.  It used to be used in MEMs
+     to record whether the MEM accessed part of a structure.  */
   unsigned int in_struct : 1;
   /* At the end of RTL generation, 1 if this rtx is used.  This is used for
      copying shared structure.  See `unshare_all_rtl'.
@@ -328,7 +328,6 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
      1 in a VALUE is VALUE_CHANGED in var-tracking.c.  */
   unsigned frame_related : 1;
   /* 1 in a REG or PARALLEL that is the current function's return value.
-     1 in a MEM if it refers to a scalar.
      1 in a SYMBOL_REF for a weak symbol.
      1 in a CALL_INSN logically equivalent to ECF_PURE and DECL_PURE_P.
      1 in a CONCAT is VAL_EXPR_HAS_REVERSE in var-tracking.c.
@@ -1335,17 +1334,6 @@ do {									\
   (RTL_FLAG_CHECK3("MEM_VOLATILE_P", (RTX), MEM, ASM_OPERANDS,		\
 		   ASM_INPUT)->volatil)
 
-/* 1 if RTX is a mem that refers to an aggregate, either to the
-   aggregate itself or to a field of the aggregate.  If zero, RTX may
-   or may not be such a reference.  */
-#define MEM_IN_STRUCT_P(RTX)						\
-  (RTL_FLAG_CHECK1("MEM_IN_STRUCT_P", (RTX), MEM)->in_struct)
-
-/* 1 if RTX is a MEM that refers to a scalar.  If zero, RTX may or may
-   not refer to a scalar.  */
-#define MEM_SCALAR_P(RTX)						\
-  (RTL_FLAG_CHECK1("MEM_SCALAR_P", (RTX), MEM)->return_val)
-
 /* 1 if RTX is a mem that cannot trap.  */
 #define MEM_NOTRAP_P(RTX) \
   (RTL_FLAG_CHECK1("MEM_NOTRAP_P", (RTX), MEM)->call)
@@ -1404,8 +1392,6 @@ do {									\
 /* Copy the attributes that apply to memory locations from RHS to LHS.  */
 #define MEM_COPY_ATTRIBUTES(LHS, RHS)				\
   (MEM_VOLATILE_P (LHS) = MEM_VOLATILE_P (RHS),			\
-   MEM_IN_STRUCT_P (LHS) = MEM_IN_STRUCT_P (RHS),		\
-   MEM_SCALAR_P (LHS) = MEM_SCALAR_P (RHS),			\
    MEM_NOTRAP_P (LHS) = MEM_NOTRAP_P (RHS),			\
    MEM_READONLY_P (LHS) = MEM_READONLY_P (RHS),			\
    MEM_KEEP_ALIAS_SET_P (LHS) = MEM_KEEP_ALIAS_SET_P (RHS),	\

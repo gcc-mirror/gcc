@@ -1667,10 +1667,6 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
       /* Copy over flags as appropriate.  */
       if (MEM_VOLATILE_P (if_info->a) || MEM_VOLATILE_P (if_info->b))
 	MEM_VOLATILE_P (tmp) = 1;
-      if (MEM_IN_STRUCT_P (if_info->a) && MEM_IN_STRUCT_P (if_info->b))
-	MEM_IN_STRUCT_P (tmp) = 1;
-      if (MEM_SCALAR_P (if_info->a) && MEM_SCALAR_P (if_info->b))
-	MEM_SCALAR_P (tmp) = 1;
       if (MEM_ALIAS_SET (if_info->a) == MEM_ALIAS_SET (if_info->b))
 	set_mem_alias_set (tmp, MEM_ALIAS_SET (if_info->a));
       set_mem_align (tmp,
