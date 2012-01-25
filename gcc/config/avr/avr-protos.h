@@ -120,8 +120,8 @@ extern reg_class_t avr_mode_code_base_reg_class (enum machine_mode, addr_space_t
 extern bool avr_regno_mode_code_ok_for_base_p (int, enum machine_mode, addr_space_t, RTX_CODE, RTX_CODE);
 extern rtx avr_incoming_return_addr_rtx (void);
 extern rtx avr_legitimize_reload_address (rtx*, enum machine_mode, int, int, int, int, rtx (*)(rtx,int));
-extern bool avr_mem_pgm_p (rtx);
-extern bool avr_mem_pgmx_p (rtx);
+extern bool avr_mem_flash_p (rtx);
+extern bool avr_mem_memx_p (rtx);
 extern bool avr_load_libgcc_p (rtx);
 extern bool avr_xload_libgcc_p (enum machine_mode);
 #endif /* RTX_CODE */

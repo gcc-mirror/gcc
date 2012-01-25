@@ -1,3 +1,35 @@
+2012-01-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49868
+	Rename __pgm to __flash.
+	Rename __pgm1 to __flash1.
+	Rename __pgm2 to __flash2.
+	Rename __pgm3 to __flash3.
+	Rename __pgm4 to __flash4.
+	Rename __pgm5 to __flash5.
+	Rename __pgmx to __memx.
+	* doc/extend.texi (AVR Named Address Spaces)
+	Rename address space names as indicated above.
+	* config/avr/avr.c (avr_addrspace): Ditto.
+
+	* config/avr/avr-protos.h
+	(avr_mem_pgmx_p): Rename to avr_mem_memx_p.
+	(avr_mem_pgm_p): Rename to avr_mem_flash_p.
+	* config/avr/predicates.md: Ditto.
+	* config/avr/avr.c Ditto, and
+	(avr_decl_pgmx_p): Rename to avr_decl_memx_p.
+	(avr_decl_pgm_p): Rename to avr_decl_flash_p.
+
+	* config/avr/avr.h (ADDR_SPACE_PGM): Rename to ADDR_SPACE_FLASH.
+	(ADDR_SPACE_PGM1): Rename to ADDR_SPACE_FLASH1.
+	(ADDR_SPACE_PGM2): Rename to ADDR_SPACE_FLASH2.
+	(ADDR_SPACE_PGM3): Rename to ADDR_SPACE_FLASH3.
+	(ADDR_SPACE_PGM4): Rename to ADDR_SPACE_FLASH4.
+	(ADDR_SPACE_PGM5): Rename to ADDR_SPACE_FLASH5.
+	(ADDR_SPACE_PGMX): Rename to ADDR_SPACE_MEMX.
+	* config/avr/avr.c: Ditto.
+	* config/avr/avr.md: Ditto.
+
 2012-01-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51992
