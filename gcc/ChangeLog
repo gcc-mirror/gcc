@@ -1,3 +1,9 @@
+2012-01-25  Andrey Belevantsev  <abel@ispras.ru>
+
+	* tree-predcom.c (tree_predictive_commoning_loop): Bail out when
+	compute_data_dependences_for_loop returns false.
+	* tree-parloops.c (loop_parallel_p): Likewise.
+
 2012-01-25  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (get_pointer_alignment_1): Declare.
