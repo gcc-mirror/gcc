@@ -1,4 +1,4 @@
-# Copyright (C) 2009 Free Software Foundation, Inc.
+# Copyright (C) 2009, 2011, 2012 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -138,6 +138,7 @@ proc go-torture-execute { src } {
     global tool
     global compiler_conditional_xfail_data
     global TORTURE_OPTIONS
+    global go_compile_args
     global go_execute_args
 
     # Check for alternate driver.
@@ -156,6 +157,9 @@ proc go-torture-execute { src } {
     set executable $tmpdir/[file tail [file rootname $src].x]
     regsub "(?q)$srcdir/" $src "" testcase
 
+    if { ! [info exists go_compile_args] } {
+	set go_compile_args ""
+    }
     if { ! [info exists go_execute_args] } {
 	set go_execute_args ""
     }
@@ -193,6 +197,9 @@ proc go-torture-execute { src } {
 	lappend options "additional_flags=-w $option"
 	if { $additional_flags != "" } {
 	    lappend options "additional_flags=$additional_flags"
+	}
+	if { $go_compile_args != "" } {
+	    lappend options "additional_flags=$go_compile_args"
 	}
 	set comp_output [go_target_compile "$src" "$executable" executable $options]
 
