@@ -15,7 +15,7 @@ type Package struct {
 	Doc        string
 	Name       string
 	ImportPath string
-	Imports    []string // TODO(gri) this field is not computed at the moment
+	Imports    []string
 	Filenames  []string
 	Consts     []*Value
 	Types      []*Type
@@ -36,8 +36,8 @@ type Value struct {
 type Method struct {
 	*Func
 	// TODO(gri) The following fields are not set at the moment. 
-	Recv  *Type // original receiver base type
-	Level int   // embedding level; 0 means Func is not embedded
+	Origin *Type // original receiver base type
+	Level  int   // embedding level; 0 means Func is not embedded
 }
 
 // Type is the documentation for type declaration.

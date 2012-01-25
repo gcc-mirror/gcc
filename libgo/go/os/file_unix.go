@@ -60,8 +60,8 @@ const DevNull = "/dev/null"
 // (O_RDONLY etc.) and perm, (0666 etc.) if applicable.  If successful,
 // methods on the returned File can be used for I/O.
 // It returns the File and an error, if any.
-func OpenFile(name string, flag int, perm uint32) (file *File, err error) {
-	r, e := syscall.Open(name, flag|syscall.O_CLOEXEC, perm)
+func OpenFile(name string, flag int, perm FileMode) (file *File, err error) {
+	r, e := syscall.Open(name, flag|syscall.O_CLOEXEC, syscallMode(perm))
 	if e != nil {
 		return nil, &PathError{"open", name, e}
 	}
@@ -145,22 +145,7 @@ func Lstat(name string) (fi FileInfo, err error) {
 	return fileInfoFromStat(&stat, name), nil
 }
 
-// Readdir reads the contents of the directory associated with file and
-// returns an array of up to n FileInfo values, as would be returned
-// by Lstat, in directory order. Subsequent calls on the same file will yield
-// further FileInfos.
-//
-// If n > 0, Readdir returns at most n FileInfo structures. In this case, if
-// Readdir returns an empty slice, it will return a non-nil error
-// explaining why. At the end of a directory, the error is io.EOF.
-//
-// If n <= 0, Readdir returns all the FileInfo from the directory in
-// a single slice. In this case, if Readdir succeeds (reads all
-// the way to the end of the directory), it returns the slice and a
-// nil error. If it encounters an error before the end of the
-// directory, Readdir returns the FileInfo read until that point
-// and a non-nil error.
-func (f *File) Readdir(n int) (fi []FileInfo, err error) {
+func (f *File) readdir(n int) (fi []FileInfo, err error) {
 	dirname := f.name
 	if dirname == "" {
 		dirname = "."

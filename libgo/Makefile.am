@@ -197,6 +197,16 @@ toolexeclibgocryptox509dir = $(toolexeclibgocryptodir)/x509
 toolexeclibgocryptox509_DATA = \
 	crypto/x509/pkix.gox
 
+toolexeclibgodatabasedir = $(toolexeclibgodir)/database
+
+toolexeclibgodatabase_DATA = \
+	database/sql.gox
+
+toolexeclibgodatabasesqldir = $(toolexeclibgodatabasedir)/sql
+
+toolexeclibgodatabasesql_DATA = \
+	database/sql/driver.gox
+
 toolexeclibgodebugdir = $(toolexeclibgodir)/debug
 
 toolexeclibgodebug_DATA = \
@@ -237,15 +247,10 @@ toolexeclibgoexp_DATA = \
 	exp/norm.gox \
 	exp/proxy.gox \
 	exp/spdy.gox \
-	exp/sql.gox \
 	exp/ssh.gox \
 	exp/terminal.gox \
-	exp/types.gox
-
-toolexeclibgoexpsqldir = $(toolexeclibgoexpdir)/sql
-
-toolexeclibgoexpsql_DATA = \
-	exp/sql/driver.gox
+	exp/types.gox \
+	exp/utf8string.gox
 
 toolexeclibgogodir = $(toolexeclibgodir)/go
 
@@ -717,6 +722,7 @@ go_net_files = \
 	go/net/dnsclient_unix.go \
 	go/net/dnsconfig.go \
 	go/net/dnsmsg.go \
+	go/net/doc.go \
 	$(go_net_newpollserver_file) \
 	go/net/fd.go \
 	$(go_net_fd_os_file) \
@@ -793,6 +799,7 @@ endif
 go_os_files = \
 	$(go_os_dir_file) \
 	go/os/dir.go \
+	go/os/doc.go \
 	go/os/env.go \
 	go/os/error.go \
 	go/os/error_posix.go \
@@ -1005,7 +1012,8 @@ go_crypto_dsa_files = \
 go_crypto_ecdsa_files = \
 	go/crypto/ecdsa/ecdsa.go
 go_crypto_elliptic_files = \
-	go/crypto/elliptic/elliptic.go
+	go/crypto/elliptic/elliptic.go \
+	go/crypto/elliptic/p224.go
 go_crypto_hmac_files = \
 	go/crypto/hmac/hmac.go
 go_crypto_md4_files = \
@@ -1094,6 +1102,14 @@ go_crypto_openpgp_s2k_files = \
 go_crypto_x509_pkix_files = \
 	go/crypto/x509/pkix/pkix.go
 
+go_database_sql_files = \
+	go/database/sql/convert.go \
+	go/database/sql/sql.go
+
+go_database_sql_driver_files = \
+	go/database/sql/driver/driver.go \
+	go/database/sql/driver/types.go
+
 go_debug_dwarf_files = \
 	go/debug/dwarf/buf.go \
 	go/debug/dwarf/const.go \
@@ -1179,9 +1195,6 @@ go_exp_spdy_files = \
 	go/exp/spdy/read.go \
 	go/exp/spdy/types.go \
 	go/exp/spdy/write.go
-go_exp_sql_files = \
-	go/exp/sql/convert.go \
-	go/exp/sql/sql.go
 go_exp_ssh_files = \
 	go/exp/ssh/channel.go \
 	go/exp/ssh/cipher.go \
@@ -1205,10 +1218,8 @@ go_exp_types_files = \
 	go/exp/types/gcimporter.go \
 	go/exp/types/types.go \
 	go/exp/types/universe.go
-
-go_exp_sql_driver_files = \
-	go/exp/sql/driver/driver.go \
-	go/exp/sql/driver/types.go
+go_exp_utf8string_files = \
+	go/exp/utf8string/string.go
 
 go_go_ast_files = \
 	go/go/ast/ast.go \
@@ -1467,7 +1478,6 @@ go_text_scanner_files = \
 go_unicode_utf16_files = \
 	go/unicode/utf16/utf16.go
 go_unicode_utf8_files = \
-	go/unicode/utf8/string.go \
 	go/unicode/utf8/utf8.go
 
 # Define Syscall and Syscall6.
@@ -1751,6 +1761,8 @@ libgo_go_objs = \
 	crypto/openpgp/packet.lo \
 	crypto/openpgp/s2k.lo \
 	crypto/x509/pkix.lo \
+	database/sql.lo \
+	database/sql/driver.lo \
 	debug/dwarf.lo \
 	debug/elf.lo \
 	debug/gosym.lo \
@@ -1772,11 +1784,10 @@ libgo_go_objs = \
 	exp/norm.lo \
 	exp/proxy.lo \
 	exp/spdy.lo \
-	exp/sql.lo \
 	exp/ssh.lo \
 	exp/terminal.lo \
 	exp/types.lo \
-	exp/sql/driver.lo \
+	exp/utf8string.lo \
 	html/template.lo \
 	go/ast.lo \
 	go/build.lo \
@@ -2646,6 +2657,26 @@ crypto/x509/pkix/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: crypto/x509/pkix/check
 
+@go_include@ database/sql.lo.dep
+database/sql.lo.dep: $(go_database_sql_files)
+	$(BUILDDEPS)
+database/sql.lo: $(go_database_sql_files)
+	$(BUILDPACKAGE)
+database/sql/check: $(CHECK_DEPS)
+	@$(MKDIR_P) database/sql
+	@$(CHECK)
+.PHONY: database/sql/check
+
+@go_include@ database/sql/driver.lo.dep
+database/sql/driver.lo.dep: $(go_database_sql_driver_files)
+	$(BUILDDEPS)
+database/sql/driver.lo: $(go_database_sql_driver_files)
+	$(BUILDPACKAGE)
+database/sql/driver/check: $(CHECK_DEPS)
+	@$(MKDIR_P) database/sql/driver
+	@$(CHECK)
+.PHONY: database/sql/driver/check
+
 @go_include@ debug/dwarf.lo.dep
 debug/dwarf.lo.dep: $(go_debug_dwarf_files)
 	$(BUILDDEPS)
@@ -2856,16 +2887,6 @@ exp/spdy/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: exp/spdy/check
 
-@go_include@ exp/sql.lo.dep
-exp/sql.lo.dep: $(go_exp_sql_files)
-	$(BUILDDEPS)
-exp/sql.lo: $(go_exp_sql_files)
-	$(BUILDPACKAGE)
-exp/sql/check: $(CHECK_DEPS)
-	@$(MKDIR_P) exp/sql
-	@$(CHECK)
-.PHONY: exp/sql/check
-
 @go_include@ exp/ssh.lo.dep
 exp/ssh.lo.dep: $(go_exp_ssh_files)
 	$(BUILDDEPS)
@@ -2896,6 +2917,16 @@ exp/types/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: exp/types/check
 
+@go_include@ exp/utf8string.lo.dep
+exp/utf8string.lo.dep: $(go_exp_utf8string_files)
+	$(BUILDDEPS)
+exp/utf8string.lo: $(go_exp_utf8string_files)
+	$(BUILDPACKAGE)
+exp/utf8string/check: $(CHECK_DEPS)
+	@$(MKDIR_P) exp/utf8string
+	@$(CHECK)
+.PHONY: exp/utf8string/check
+
 @go_include@ exp/inotify.lo.dep
 exp/inotify.lo.dep: $(go_exp_inotify_files)
 	$(BUILDDEPS)
@@ -2905,16 +2936,6 @@ exp/inotify/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/inotify
 	@$(CHECK)
 .PHONY: exp/inotify/check
-
-@go_include@ exp/sql/driver.lo.dep
-exp/sql/driver.lo.dep: $(go_exp_sql_driver_files)
-	$(BUILDDEPS)
-exp/sql/driver.lo: $(go_exp_sql_driver_files)
-	$(BUILDPACKAGE)
-exp/sql/driver/check: $(CHECK_DEPS)
-	@$(MKDIR_P) exp/sql/driver
-	@$(CHECK)
-.PHONY: exp/sql/driver/check
 
 @go_include@ html/template.lo.dep
 html/template.lo.dep: $(go_html_template_files)
@@ -3670,6 +3691,12 @@ crypto/openpgp/s2k.gox: crypto/openpgp/s2k.lo
 crypto/x509/pkix.gox: crypto/x509/pkix.lo
 	$(BUILDGOX)
 
+database/sql.gox: database/sql.lo
+	$(BUILDGOX)
+
+database/sql/driver.gox: database/sql/driver.lo
+	$(BUILDGOX)
+
 debug/dwarf.gox: debug/dwarf.lo
 	$(BUILDGOX)
 debug/elf.gox: debug/elf.lo
@@ -3716,16 +3743,13 @@ exp/proxy.gox: exp/proxy.lo
 	$(BUILDGOX)
 exp/spdy.gox: exp/spdy.lo
 	$(BUILDGOX)
-exp/sql.gox: exp/sql.lo
-	$(BUILDGOX)
 exp/ssh.gox: exp/ssh.lo
 	$(BUILDGOX)
 exp/terminal.gox: exp/terminal.lo
 	$(BUILDGOX)
 exp/types.gox: exp/types.lo
 	$(BUILDGOX)
-
-exp/sql/driver.gox: exp/sql/driver.lo
+exp/utf8string.gox: exp/utf8string.lo	
 	$(BUILDGOX)
 
 html/template.gox: html/template.lo
@@ -3941,6 +3965,8 @@ TEST_PACKAGES = \
 	crypto/openpgp/elgamal/check \
 	crypto/openpgp/packet/check \
 	crypto/openpgp/s2k/check \
+	database/sql/check \
+	database/sql/driver/check \
 	debug/dwarf/check \
 	debug/elf/check \
 	debug/macho/check \
@@ -3962,9 +3988,9 @@ TEST_PACKAGES = \
 	exp/norm/check \
 	exp/proxy/check \
 	exp/spdy/check \
-	exp/sql/check \
 	exp/ssh/check \
 	exp/terminal/check \
+	exp/utf8string/check \
 	html/template/check \
 	go/ast/check \
 	$(go_build_check_omitted_since_it_calls_6g) \

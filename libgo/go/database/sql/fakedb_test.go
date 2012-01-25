@@ -5,6 +5,7 @@
 package sql
 
 import (
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"io"
@@ -13,8 +14,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"exp/sql/driver"
 )
 
 var _ = log.Printf
@@ -589,7 +588,9 @@ func converterForType(typ string) driver.ValueConverter {
 	case "int32":
 		return driver.Int32
 	case "string":
-		return driver.String
+		return driver.NotNull{driver.String}
+	case "nullstring":
+		return driver.Null{driver.String}
 	case "datetime":
 		return driver.DefaultParameterConverter
 	}

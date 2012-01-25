@@ -13,6 +13,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // One of the copies, say from b to r2, could be avoided by using a more
@@ -36,12 +37,12 @@ type dumpConn struct {
 	io.Reader
 }
 
-func (c *dumpConn) Close() error                     { return nil }
-func (c *dumpConn) LocalAddr() net.Addr              { return nil }
-func (c *dumpConn) RemoteAddr() net.Addr             { return nil }
-func (c *dumpConn) SetTimeout(nsec int64) error      { return nil }
-func (c *dumpConn) SetReadTimeout(nsec int64) error  { return nil }
-func (c *dumpConn) SetWriteTimeout(nsec int64) error { return nil }
+func (c *dumpConn) Close() error                       { return nil }
+func (c *dumpConn) LocalAddr() net.Addr                { return nil }
+func (c *dumpConn) RemoteAddr() net.Addr               { return nil }
+func (c *dumpConn) SetDeadline(t time.Time) error      { return nil }
+func (c *dumpConn) SetReadDeadline(t time.Time) error  { return nil }
+func (c *dumpConn) SetWriteDeadline(t time.Time) error { return nil }
 
 // DumpRequestOut is like DumpRequest but includes
 // headers that the standard http.Transport adds,
@@ -124,16 +125,8 @@ func DumpRequest(req *http.Request, body bool) (dump []byte, err error) {
 
 	var b bytes.Buffer
 
-	urlStr := req.URL.Raw
-	if urlStr == "" {
-		urlStr = valueOrDefault(req.URL.EncodedPath(), "/")
-		if req.URL.RawQuery != "" {
-			urlStr += "?" + req.URL.RawQuery
-		}
-	}
-
-	fmt.Fprintf(&b, "%s %s HTTP/%d.%d\r\n", valueOrDefault(req.Method, "GET"), urlStr,
-		req.ProtoMajor, req.ProtoMinor)
+	fmt.Fprintf(&b, "%s %s HTTP/%d.%d\r\n", valueOrDefault(req.Method, "GET"),
+		req.URL.RequestURI(), req.ProtoMajor, req.ProtoMinor)
 
 	host := req.Host
 	if host == "" && req.URL != nil {
