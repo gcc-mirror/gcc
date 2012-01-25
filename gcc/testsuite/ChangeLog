@@ -1,3 +1,7 @@
+2012-01-25  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* gcc.dg/pr50908-2.c (dg-options): Add -fno-short-enums.
+
 2012-01-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51966
