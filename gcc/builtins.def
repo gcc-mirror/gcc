@@ -147,7 +147,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef DEF_TM_BUILTIN
 #define DEF_TM_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
-	       false, true, true, ATTRS, false, flag_tm)
+	       true, true, true, ATTRS, false, flag_tm)
 
 /* Define an attribute list for math functions that are normally
    "impure" because some of them may write into global memory for

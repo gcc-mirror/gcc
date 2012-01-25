@@ -1,9 +1,10 @@
-#define dummy(func) \
-  __attribute__((noinline,noclone,used)) void func() { asm (""); }
+#include <stdint.h>
 
-dummy(_ITM_beginTransaction)
-dummy(_ITM_commitTransaction)
-dummy(_ITM_WU4)
-dummy(_ITM_WU8)
-dummy(_ITM_registerTMCloneTable)
-dummy(_ITM_deregisterTMCloneTable)
+#define noinline __attribute__((noinline,noclone,used))
+
+noinline uint32_t _ITM_beginTransaction(uint32_t a, ...) { asm(""); }
+noinline void _ITM_commitTransaction (void) { asm(""); }
+noinline void _ITM_WU4 (void *a, uint32_t b) { asm(""); }
+noinline void _ITM_WU8 (void *a, uint64_t b) { asm(""); }
+noinline void _ITM_registerTMCloneTable (void) { asm(""); }
+noinline void _ITM_deregisterTMCloneTable (void) { asm(""); }
