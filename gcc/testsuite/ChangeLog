@@ -1,3 +1,8 @@
+2012-01-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51995
+	* gfortran.dg/typebound_proc_25.f90: New.
+
 2012-01-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51992
@@ -21,7 +26,7 @@
 
 	* gcc.dg/pr50908-2.c (dg-options): Add -fno-short-enums.
 
-2012-01-24  Tobias Burnus  <burnus@net-b.de>
+2012-01-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51966
 	* gfortran.dg/derived_constructor_char_3.f90: New.
