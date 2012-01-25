@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-tail-merge" } */
+/* { dg-options "-O2 -ftree-tail-merge -fno-short-enums" } */
 
 typedef struct rtx_def *rtx;
 enum debug_info_levels
