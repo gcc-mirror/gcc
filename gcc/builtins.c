@@ -477,6 +477,35 @@ get_object_or_type_alignment (tree exp)
   return align;
 }
 
+/* For a pointer valued expression EXP compute values M and N such that
+   M divides (EXP - N) and such that N < M.  Store N in *BITPOSP and return M.
+
+   If EXP is not a pointer, 0 is returned.  */
+
+unsigned int
+get_pointer_alignment_1 (tree exp, unsigned HOST_WIDE_INT *bitposp)
+{
+  STRIP_NOPS (exp);
+
+  if (TREE_CODE (exp) == ADDR_EXPR)
+    return get_object_alignment_1 (TREE_OPERAND (exp, 0), bitposp);
+  else if (TREE_CODE (exp) == SSA_NAME
+	   && POINTER_TYPE_P (TREE_TYPE (exp)))
+    {
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (exp);
+      if (!pi)
+	{
+	  *bitposp = 0;
+	  return BITS_PER_UNIT;
+	}
+      *bitposp = pi->misalign * BITS_PER_UNIT;
+      return pi->align * BITS_PER_UNIT;
+    }
+
+  *bitposp = 0;
+  return POINTER_TYPE_P (TREE_TYPE (exp)) ? BITS_PER_UNIT : 0;
+}
+
 /* Return the alignment in bits of EXP, a pointer valued expression.
    The alignment returned is, by default, the alignment of the thing that
    EXP points to.  If it is not a POINTER_TYPE, 0 is returned.
@@ -487,25 +516,18 @@ get_object_or_type_alignment (tree exp)
 unsigned int
 get_pointer_alignment (tree exp)
 {
-  STRIP_NOPS (exp);
+  unsigned HOST_WIDE_INT bitpos = 0;
+  unsigned int align;
+  
+  align = get_pointer_alignment_1 (exp, &bitpos);
 
-  if (TREE_CODE (exp) == ADDR_EXPR)
-    return get_object_alignment (TREE_OPERAND (exp, 0));
-  else if (TREE_CODE (exp) == SSA_NAME
-	   && POINTER_TYPE_P (TREE_TYPE (exp)))
-    {
-      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (exp);
-      unsigned align;
-      if (!pi)
-	return BITS_PER_UNIT;
-      if (pi->misalign != 0)
-	align = (pi->misalign & -pi->misalign);
-      else
-	align = pi->align;
-      return align * BITS_PER_UNIT;
-    }
+  /* align and bitpos now specify known low bits of the pointer.
+     ptr & (align - 1) == bitpos.  */
 
-  return POINTER_TYPE_P (TREE_TYPE (exp)) ? BITS_PER_UNIT : 0;
+  if (bitpos != 0)
+    align = (bitpos & -bitpos);
+
+  return align;
 }
 
 /* Compute the length of a C string.  TREE_STRING_LENGTH is not the right

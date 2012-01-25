@@ -5450,6 +5450,7 @@ extern bool is_builtin_fn (tree);
 extern unsigned int get_object_alignment_1 (tree, unsigned HOST_WIDE_INT *);
 extern unsigned int get_object_alignment (tree);
 extern unsigned int get_object_or_type_alignment (tree);
+extern unsigned int get_pointer_alignment_1 (tree, unsigned HOST_WIDE_INT *);
 extern unsigned int get_pointer_alignment (tree);
 extern tree fold_call_stmt (gimple, bool);
 extern tree gimple_fold_builtin_snprintf_chk (gimple, tree, enum built_in_function);
