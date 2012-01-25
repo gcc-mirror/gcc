@@ -1,3 +1,8 @@
+2012-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51987
+	* gcc.target/i386/pr51987.c: New test.
+
 2012-01-25  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* gcc.dg/tm/lto-1.c: Require lto support in target.

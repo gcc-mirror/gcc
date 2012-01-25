@@ -1,3 +1,9 @@
+2012-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51987
+	* tree-data-ref.c (get_references_in_stmt): Handle references in
+	non-volatile GIMPLE_ASM.
+
 2012-01-25  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (vn_reference_eq): Also compare if both

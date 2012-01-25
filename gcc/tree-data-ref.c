@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
@@ -4185,7 +4185,7 @@ get_references_in_stmt (gimple stmt, VEC (data_ref_loc, heap) **references)
   if ((stmt_code == GIMPLE_CALL
        && !(gimple_call_flags (stmt) & (ECF_CONST | ECF_PURE)))
       || (stmt_code == GIMPLE_ASM
-	  && gimple_asm_volatile_p (stmt)))
+	  && (gimple_asm_volatile_p (stmt) || gimple_vuse (stmt))))
     clobbers_memory = true;
 
   if (!gimple_vuse (stmt))
