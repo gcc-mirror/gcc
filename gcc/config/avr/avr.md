@@ -367,7 +367,7 @@
     operands[3] = gen_rtx_REG (HImode, REG_Z);
     operands[2] = force_operand (XEXP (operands[1], 0), NULL_RTX);
     operands[1] = replace_equiv_address (operands[1], operands[3]);
-    set_mem_addr_space (operands[1], ADDR_SPACE_PGM);
+    set_mem_addr_space (operands[1], ADDR_SPACE_FLASH);
   })
     
 (define_insn "load_<mode>_libgcc"
@@ -391,7 +391,7 @@
    (clobber (reg:HI REG_Z))]
   "can_create_pseudo_p()
    && !avr_xload_libgcc_p (QImode)
-   && avr_mem_pgmx_p (operands[1])
+   && avr_mem_memx_p (operands[1])
    && REG_P (XEXP (operands[1], 0))"
   { gcc_unreachable(); }
   "&& 1"
@@ -416,7 +416,7 @@
    (clobber (reg:QI 21))
    (clobber (reg:HI REG_Z))]
   "can_create_pseudo_p()
-   && avr_mem_pgmx_p (operands[1])
+   && avr_mem_memx_p (operands[1])
    && REG_P (XEXP (operands[1], 0))"
   { gcc_unreachable(); }
   "&& 1"
@@ -442,7 +442,7 @@
     DONE;
   })
 
-;; Move value from address space pgmx to a register
+;; Move value from address space memx to a register
 ;; These insns must be prior to respective generic move insn.
 
 (define_insn "xload_8"
@@ -495,7 +495,7 @@
     rtx dest = operands[0];
     rtx src  = operands[1]; 
     
-    if (avr_mem_pgm_p (dest))
+    if (avr_mem_flash_p (dest))
       DONE;
   
     /* One of the operands has to be in a register.  */
@@ -506,7 +506,7 @@
         operands[1] = src = copy_to_mode_reg (<MODE>mode, src);
       }
 
-  if (avr_mem_pgmx_p (src))
+  if (avr_mem_memx_p (src))
     {
       rtx addr = XEXP (src, 0);
 
@@ -682,7 +682,7 @@
   {
      rtx addr = XEXP (operands[1], 0);
 
-     if (!avr_mem_pgm_p (operands[1])
+     if (!avr_mem_flash_p (operands[1])
          || !REG_P (addr)
          || reg_overlap_mentioned_p (addr, operands[0]))
        {

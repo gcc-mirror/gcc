@@ -1244,38 +1244,38 @@ needed to locate read-only data in flash memory
 without using (inline) assembler code.
 
 @table @code
-@item __pgm
-@cindex @code{__pgm} AVR Named Address Spaces
-The @code{__pgm} qualifier will locate data in the
+@item __flash
+@cindex @code{__flash} AVR Named Address Spaces
+The @code{__flash} qualifier will locate data in the
 @code{.progmem.data} section. Data will be read using the @code{LPM}
 instruction. Pointers to this address space are 16 bits wide.
 
-@item __pgm1
-@item __pgm2
-@item __pgm3
-@item __pgm4
-@item __pgm5
-@cindex @code{__pgm1} AVR Named Address Spaces
-@cindex @code{__pgm2} AVR Named Address Spaces
-@cindex @code{__pgm3} AVR Named Address Spaces
-@cindex @code{__pgm4} AVR Named Address Spaces
-@cindex @code{__pgm5} AVR Named Address Spaces
+@item __flash1
+@item __flash2
+@item __flash3
+@item __flash4
+@item __flash5
+@cindex @code{__flash1} AVR Named Address Spaces
+@cindex @code{__flash2} AVR Named Address Spaces
+@cindex @code{__flash3} AVR Named Address Spaces
+@cindex @code{__flash4} AVR Named Address Spaces
+@cindex @code{__flash5} AVR Named Address Spaces
 These are 16-bit address spaces locating data in section
 @code{.progmem@var{N}.data} where @var{N} refers to
-address space @code{__pgm@var{N}}.
+address space @code{__flash@var{N}}.
 The compiler will set the @code{RAMPZ} segment register approptiately 
 before reading data by means of the @code{ELPM} instruction.
 
 On devices with less 64@tie{}kiB flash segments as indicated by the address
 space, the compiler will cut down the segment number to a number the
 device actually supports. Counting starts at@tie{}@code{0}
-for space @code{__pgm}. For example, if you access address space
-@code{__pgm3} on an ATmega128 device with two 64@tie{}kiB flash segments,
-the compiler will generate a read from @code{__pgm1}, i.e.@: it
+for space @code{__flash}. For example, if you access address space
+@code{__flash3} on an ATmega128 device with two 64@tie{}kiB flash segments,
+the compiler will generate a read from @code{__flash1}, i.e.@: it
 will load @code{RAMPZ} with@tie{}@code{1} before reading.
 
-@item __pgmx
-@cindex @code{__pgmx} AVR Named Address Spaces
+@item __memx
+@cindex @code{__memx} AVR Named Address Spaces
 This is a 24-bit address space that linearizes flash and RAM:
 If the high bit of the address is set, data is read from
 RAM using the lower two bytes as RAM address.
@@ -1288,7 +1288,7 @@ Objects in this address space will be located in @code{.progmem.data}.
 @b{Example}
 
 @example
-char my_read (const __pgm char ** p)
+char my_read (const __flash char ** p)
 @{
     /* p is a pointer to RAM that points to a pointer to flash.
        The first indirection of p will read that flash pointer
@@ -1299,7 +1299,7 @@ char my_read (const __pgm char ** p)
 @}
 
 /* Locate array[] in flash memory */
-const __pgm int array[] = @{ 3, 5, 7, 11, 13, 17, 19 @};
+const __flash int array[] = @{ 3, 5, 7, 11, 13, 17, 19 @};
 
 int i = 1;
 
@@ -1316,8 +1316,8 @@ The purpose is to facilitate testing if respective address space
 support is available or not:
 
 @example
-#ifdef __PGM
-const __pgm int var = 1;
+#ifdef __FLASH
+const __flash int var = 1;
 
 int read_i (void)
 @{
@@ -1332,7 +1332,7 @@ int read_i (void)
 @{
     return (int) pgm_read_word (&i);
 @}
-#endif /* __PGM */
+#endif /* __FLASH */
 @end example
 
 Notice that attribute @ref{AVR Variable Attributes,@code{progmem}}
@@ -1347,13 +1347,13 @@ from @w{@uref{http://nongnu.org/avr-libc/user-manual,avr-libc}}.
 @itemize
 @item
 Reading across the 64@tie{}KiB section boundary of
-the @code{__pgm} or @code{__pgm@var{N}} address spaces
+the @code{__flash} or @code{__flash@var{N}} address spaces
 will show undefined behaviour. The only address space that
 supports reading across the 64@tie{}KiB flash segment boundaries is
-@code{__pgmx}.
+@code{__memx}.
 
 @item
-If you use one if the @code{__pgm@var{N}} address spaces
+If you use one if the @code{__flash@var{N}} address spaces
 you will have to arrange your linker skript to locate the
 @code{.progmem@var{N}.data} sections according to your needs.
 
@@ -1372,8 +1372,8 @@ Code like the following is not yet supported because of missing
 support in avr-binutils,
 see @w{@uref{http://sourceware.org/PR13503,PR13503}}.
 @example
-extern const __pgmx char foo;
-const __pgmx void *pfoo = &foo;
+extern const __memx char foo;
+const __memx void *pfoo = &foo;
 @end example
 The code will throw an assembler warning and the high byte of
 @code{pfoo} will be initialized with@tie{}@code{0}, i.e.@: the

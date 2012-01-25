@@ -83,13 +83,13 @@
 const avr_addrspace_t avr_addrspace[] =
 {
     { ADDR_SPACE_RAM,  0, 2, ""     ,   0 },
-    { ADDR_SPACE_PGM,  1, 2, "__pgm",   0 },
-    { ADDR_SPACE_PGM1, 1, 2, "__pgm1",  1 },
-    { ADDR_SPACE_PGM2, 1, 2, "__pgm2",  2 },
-    { ADDR_SPACE_PGM3, 1, 2, "__pgm3",  3 },
-    { ADDR_SPACE_PGM4, 1, 2, "__pgm4",  4 },
-    { ADDR_SPACE_PGM5, 1, 2, "__pgm5",  5 },
-    { ADDR_SPACE_PGMX, 1, 3, "__pgmx",  0 },
+    { ADDR_SPACE_FLASH,  1, 2, "__flash",   0 },
+    { ADDR_SPACE_FLASH1, 1, 2, "__flash1",  1 },
+    { ADDR_SPACE_FLASH2, 1, 2, "__flash2",  2 },
+    { ADDR_SPACE_FLASH3, 1, 2, "__flash3",  3 },
+    { ADDR_SPACE_FLASH4, 1, 2, "__flash4",  4 },
+    { ADDR_SPACE_FLASH5, 1, 2, "__flash5",  5 },
+    { ADDR_SPACE_MEMX, 1, 3, "__memx",  0 },
     { 0              , 0, 0, NULL,      0 }
 };
 
@@ -177,7 +177,7 @@ const struct mcu_type_s *avr_current_device;
 static GTY(()) section *progmem_swtable_section;
 
 /* Unnamed sections associated to __attribute__((progmem)) aka. PROGMEM
-   or to address space __pgm*.  */
+   or to address space __flash*.  */
 static GTY(()) section *progmem_section[6];
 
 /* Condition for insns/expanders from avr-dimode.md.  */
@@ -485,7 +485,7 @@ avr_scalar_mode_supported_p (enum machine_mode mode)
 /* Return TRUE if DECL is a VAR_DECL located in Flash and FALSE, otherwise.  */
 
 static bool
-avr_decl_pgm_p (tree decl)
+avr_decl_flash_p (tree decl)
 {
   if (TREE_CODE (decl) != VAR_DECL
       || TREE_TYPE (decl) == error_mark_node)
@@ -501,7 +501,7 @@ avr_decl_pgm_p (tree decl)
    address space and FALSE, otherwise.  */
  
 static bool
-avr_decl_pgmx_p (tree decl)
+avr_decl_memx_p (tree decl)
 {
   if (TREE_CODE (decl) != VAR_DECL
       || TREE_TYPE (decl) == error_mark_node)
@@ -509,14 +509,14 @@ avr_decl_pgmx_p (tree decl)
       return false;
     }
 
-  return (ADDR_SPACE_PGMX == TYPE_ADDR_SPACE (TREE_TYPE (decl)));
+  return (ADDR_SPACE_MEMX == TYPE_ADDR_SPACE (TREE_TYPE (decl)));
 }
 
 
 /* Return TRUE if X is a MEM rtx located in Flash and FALSE, otherwise.  */
 
 bool
-avr_mem_pgm_p (rtx x)
+avr_mem_flash_p (rtx x)
 {
   return (MEM_P (x)
           && !ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (x)));
@@ -527,10 +527,10 @@ avr_mem_pgm_p (rtx x)
    address space and FALSE, otherwise.  */
 
 bool
-avr_mem_pgmx_p (rtx x)
+avr_mem_memx_p (rtx x)
 {
   return (MEM_P (x)
-          && ADDR_SPACE_PGMX == MEM_ADDR_SPACE (x));
+          && ADDR_SPACE_MEMX == MEM_ADDR_SPACE (x));
 }
 
 
@@ -2432,7 +2432,7 @@ avr_load_libgcc_p (rtx op)
         
   return (n_bytes > 2
           && !AVR_HAVE_LPMX
-          && avr_mem_pgm_p (op));
+          && avr_mem_flash_p (op));
 }
 
 /* Return true if a value of mode MODE is read by __xload_* function.  */
@@ -2802,8 +2802,8 @@ output_movqi (rtx insn, rtx operands[], int *l)
   rtx src = operands[1];
   int *real_l = l;
   
-  if (avr_mem_pgm_p (src)
-      || avr_mem_pgm_p (dest))
+  if (avr_mem_flash_p (src)
+      || avr_mem_flash_p (dest))
     {
       return avr_out_lpm (insn, operands, real_l);
     }
@@ -2853,8 +2853,8 @@ output_movhi (rtx insn, rtx xop[], int *plen)
 
   gcc_assert (GET_MODE_SIZE (GET_MODE (dest)) == 2);
   
-  if (avr_mem_pgm_p (src)
-      || avr_mem_pgm_p (dest))
+  if (avr_mem_flash_p (src)
+      || avr_mem_flash_p (dest))
     {
       return avr_out_lpm (insn, xop, plen);
     }
@@ -3424,8 +3424,8 @@ output_movsisf (rtx insn, rtx operands[], int *l)
   rtx src = operands[1];
   int *real_l = l;
   
-  if (avr_mem_pgm_p (src)
-      || avr_mem_pgm_p (dest))
+  if (avr_mem_flash_p (src)
+      || avr_mem_flash_p (dest))
     {
       return avr_out_lpm (insn, operands, real_l);
     }
@@ -3725,8 +3725,8 @@ avr_out_movpsi (rtx insn, rtx *op, int *plen)
   rtx dest = op[0];
   rtx src = op[1];
   
-  if (avr_mem_pgm_p (src)
-      || avr_mem_pgm_p (dest))
+  if (avr_mem_flash_p (src)
+      || avr_mem_flash_p (dest))
     {
       return avr_out_lpm (insn, op, plen);
     }
@@ -6810,10 +6810,10 @@ avr_progmem_p (tree decl, tree attributes)
   if (TREE_CODE (decl) != VAR_DECL)
     return 0;
 
-  if (avr_decl_pgmx_p (decl))
+  if (avr_decl_memx_p (decl))
     return 2;
 
-  if (avr_decl_pgm_p (decl))
+  if (avr_decl_flash_p (decl))
     return 1;
 
   if (NULL_TREE
@@ -6878,8 +6878,8 @@ avr_nonconst_pointer_addrspace (tree typ)
 }
 
 
-/* Sanity check NODE so that all pointers targeting address space AS1
-   go along with CONST qualifier.  Writing to this address space should
+/* Sanity check NODE so that all pointers targeting non-generic addres spaces
+   go along with CONST qualifier.  Writing to these address spaces should
    be detected and complained about as early as possible.  */
 
 static bool
@@ -7195,11 +7195,11 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
       addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (decl));
 
       /* Attribute progmem puts data in generic address space.
-         Set section flags as if it was in __pgm to get the right
+         Set section flags as if it was in __flash to get the right
          section prefix in the remainder.  */
 
       if (ADDR_SPACE_GENERIC_P (as))
-        as = ADDR_SPACE_PGM;
+        as = ADDR_SPACE_FLASH;
 
       flags |= as * SECTION_MACH_DEP;
       flags &= ~SECTION_WRITE;
@@ -7244,7 +7244,7 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
          patch address space.  */
       
       if (-1 == avr_progmem_p (decl, DECL_ATTRIBUTES (decl)))
-        as = ADDR_SPACE_PGM;
+        as = ADDR_SPACE_FLASH;
 
       AVR_SYMBOL_SET_ADDR_SPACE (sym, as);
     }
@@ -9469,12 +9469,12 @@ avr_addr_space_legitimate_address_p (enum machine_mode mode, rtx x,
     case ADDR_SPACE_GENERIC:
       return avr_legitimate_address_p (mode, x, strict);
 
-    case ADDR_SPACE_PGM:
-    case ADDR_SPACE_PGM1:
-    case ADDR_SPACE_PGM2:
-    case ADDR_SPACE_PGM3:
-    case ADDR_SPACE_PGM4:
-    case ADDR_SPACE_PGM5:
+    case ADDR_SPACE_FLASH:
+    case ADDR_SPACE_FLASH1:
+    case ADDR_SPACE_FLASH2:
+    case ADDR_SPACE_FLASH3:
+    case ADDR_SPACE_FLASH4:
+    case ADDR_SPACE_FLASH5:
 
       switch (GET_CODE (x))
         {
@@ -9490,9 +9490,9 @@ avr_addr_space_legitimate_address_p (enum machine_mode mode, rtx x,
           break;
         }
 
-      break; /* PGM */
+      break; /* FLASH */
       
-    case ADDR_SPACE_PGMX:
+    case ADDR_SPACE_MEMX:
       if (REG_P (x))
         ok = (!strict
               && can_create_pseudo_p());
@@ -9508,7 +9508,7 @@ avr_addr_space_legitimate_address_p (enum machine_mode mode, rtx x,
                 && REGNO (lo) == REG_Z);
         }
       
-      break; /* PGMX */
+      break; /* MEMX */
     }
 
   if (avr_log.legitimate_address_p)
@@ -9567,8 +9567,8 @@ avr_addr_space_convert (rtx src, tree type_from, tree type_to)
 
   /* Up-casting from 16-bit to 24-bit pointer.  */
   
-  if (as_from != ADDR_SPACE_PGMX
-      && as_to == ADDR_SPACE_PGMX)
+  if (as_from != ADDR_SPACE_MEMX
+      && as_to == ADDR_SPACE_MEMX)
     {
       int msb;
       rtx sym = src;
@@ -9584,9 +9584,9 @@ avr_addr_space_convert (rtx src, tree type_from, tree type_to)
          address space.  */
 
       if (SYMBOL_REF == GET_CODE (sym)
-          && ADDR_SPACE_PGM == AVR_SYMBOL_GET_ADDR_SPACE (sym))
+          && ADDR_SPACE_FLASH == AVR_SYMBOL_GET_ADDR_SPACE (sym))
         {
-          as_from = ADDR_SPACE_PGM;
+          as_from = ADDR_SPACE_FLASH;
         }
 
       /* Linearize memory: RAM has bit 23 set.  */
@@ -9606,8 +9606,8 @@ avr_addr_space_convert (rtx src, tree type_from, tree type_to)
 
   /* Down-casting from 24-bit to 16-bit throws away the high byte.  */
 
-  if (as_from == ADDR_SPACE_PGMX
-      && as_to != ADDR_SPACE_PGMX)
+  if (as_from == ADDR_SPACE_MEMX
+      && as_to != ADDR_SPACE_MEMX)
     {
       rtx new_src = gen_reg_rtx (Pmode);
 
@@ -9651,7 +9651,7 @@ avr_emit_movmemhi (rtx *xop)
   rtx loop_reg, addr0, addr1, a_src, a_dest, insn, xas, reg_x;
   rtx a_hi8 = NULL_RTX;
 
-  if (avr_mem_pgm_p (xop[0]))
+  if (avr_mem_flash_p (xop[0]))
     return false;
 
   if (!CONST_INT_P (xop[2]))
@@ -9666,7 +9666,7 @@ avr_emit_movmemhi (rtx *xop)
 
   if (PSImode == GET_MODE (a_src))
     {
-      gcc_assert (as == ADDR_SPACE_PGMX);
+      gcc_assert (as == ADDR_SPACE_MEMX);
 
       loop_mode = (count < 0x100) ? QImode : HImode;
       loop_reg = gen_rtx_REG (loop_mode, 24);
@@ -9687,7 +9687,7 @@ avr_emit_movmemhi (rtx *xop)
         }
       else if (!ADDR_SPACE_GENERIC_P (as))
         {
-          as = ADDR_SPACE_PGM;
+          as = ADDR_SPACE_FLASH;
         }
       
       addr1 = a_src;
@@ -9718,7 +9718,7 @@ avr_emit_movmemhi (rtx *xop)
 
   gcc_assert (TMP_REGNO == LPM_REGNO);
 
-  if (as != ADDR_SPACE_PGMX)
+  if (as != ADDR_SPACE_MEMX)
     {
       /* Load instruction ([E]LPM or LD) is known at compile time:
          Do the copy-loop inline.  */
@@ -9792,7 +9792,7 @@ avr_out_movmem (rtx insn ATTRIBUTE_UNUSED, rtx *xop, int *plen)
       avr_asm_len ("ld %6,%a1+", xop, plen, 1);
       break;
       
-    case ADDR_SPACE_PGM:
+    case ADDR_SPACE_FLASH:
 
       if (AVR_HAVE_LPMX)
         avr_asm_len ("lpm %6,%a1+", xop, plen, 1);
@@ -9801,11 +9801,11 @@ avr_out_movmem (rtx insn ATTRIBUTE_UNUSED, rtx *xop, int *plen)
                      "adiw %1,1", xop, plen, 2);
       break;
       
-    case ADDR_SPACE_PGM1:
-    case ADDR_SPACE_PGM2:
-    case ADDR_SPACE_PGM3:
-    case ADDR_SPACE_PGM4:
-    case ADDR_SPACE_PGM5:
+    case ADDR_SPACE_FLASH1:
+    case ADDR_SPACE_FLASH2:
+    case ADDR_SPACE_FLASH3:
+    case ADDR_SPACE_FLASH4:
+    case ADDR_SPACE_FLASH5:
 
       if (AVR_HAVE_ELPMX)
         avr_asm_len ("elpm %6,%a1+", xop, plen, 1);
