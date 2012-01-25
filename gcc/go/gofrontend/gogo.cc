@@ -1520,6 +1520,8 @@ Lower_parse_tree::expression(Expression** pexpr)
 				  &this->inserter_, this->iota_value_);
       if (enew == e)
 	break;
+      if (enew->traverse_subexpressions(this) == TRAVERSE_EXIT)
+	return TRAVERSE_EXIT;
       *pexpr = enew;
     }
   return TRAVERSE_SKIP_COMPONENTS;
