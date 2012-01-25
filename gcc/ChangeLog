@@ -1,5 +1,10 @@
 2012-01-25  Andrey Belevantsev  <abel@ispras.ru>
 
+	PR rtl-optimization/48374
+	* sel-sched-ir.h (get_all_loop_exits): Check for zero successors. 
+
+2012-01-25  Andrey Belevantsev  <abel@ispras.ru>
+
 	* tree-predcom.c (tree_predictive_commoning_loop): Bail out when
 	compute_data_dependences_for_loop returns false.
 	* tree-parloops.c (loop_parallel_p): Likewise.
