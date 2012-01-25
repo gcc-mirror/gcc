@@ -3089,7 +3089,8 @@ c_common_type_for_mode (enum machine_mode mode, int unsignedp)
     }
 
   for (t = registered_builtin_types; t; t = TREE_CHAIN (t))
-    if (TYPE_MODE (TREE_VALUE (t)) == mode)
+    if (TYPE_MODE (TREE_VALUE (t)) == mode
+	&& !!unsignedp == !!TYPE_UNSIGNED (TREE_VALUE (t)))
       return TREE_VALUE (t);
 
   return 0;
