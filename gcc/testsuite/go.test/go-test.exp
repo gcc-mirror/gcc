@@ -448,6 +448,7 @@ proc go-gc-tests { } {
 	    go-torture-execute $test
 	    file delete core [glob -nocomplain core.*]
 	} elseif { $test_line == "// \$G \$D/\$F.go && \$L \$F.\$A && ./\$A.out 2>&1 | cmp - \$D/\$F.out" \
+		       || $test_line == "// \$G \$F.go && \$L \$F.\$A && ./\$A.out 2>&1 | cmp - \$D/\$F.out" \
 		       || $test_line == "// (\$G \$D/\$F.go && \$L \$F.\$A && ./\$A.out 2>&1 | cmp - \$D/\$F.out)" } {
 	    # This is an execution test for which we need to check the
 	    # program output.
@@ -493,7 +494,8 @@ proc go-gc-tests { } {
 		   || [string match "// \$G \$F.go || echo BUG*" \
 			   $test_line] \
 		   || [string match "// ! \$G \$D/\$F.go && echo BUG*" \
-			   $test_line] } {
+			   $test_line] \
+		   || $test_line == "// echo bug395 is broken  # takes 90+ seconds to break" } {
 	    # This is a vanilla compile test.
 	    set dg-do-what-default "assemble"
 	    go-dg-runtest $test "-w $DEFAULT_GOCFLAGS"
@@ -854,11 +856,17 @@ proc go-gc-tests { } {
 	    }
 	    file delete $ofile0 $ofile1 $ofile2 $output_file
 	    set runtests $hold_runtests
-	} elseif { $test_line == "// \$G \$D/import2.go && \$G \$D/\$F\.go" } {
+	} elseif { $test_line == "// \$G \$D/import2.go && \$G \$D/\$F\.go" \
+		       || $test_line == "// \$G \$D/recursive1.go && \$G \$D/\$F.go" } {
+	    if { $test_line == "// \$G \$D/import2.go && \$G \$D/\$F\.go" } {
+		set name1 "import2.go"
+	    } elseif { $test_line == "// \$G \$D/recursive1.go && \$G \$D/\$F.go" } {
+		set name1 "recursive1.go"
+	    }
 	    set hold_runtests $runtests
 	    set runtests "go-test.exp"
 	    set dg-do-what-default "assemble"
-	    regsub "/\[^/\]*$" $test "/import2.go" file1
+	    regsub "/\[^/\]*$" $test "/${name1}" file1
 	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
 	    set ofile1 "[file rootname [file tail $file1]].o"
 	    dg-test $test "-O" "-w $DEFAULT_GOCFLAGS"

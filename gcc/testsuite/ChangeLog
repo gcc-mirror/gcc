@@ -1,3 +1,8 @@
+2012-01-25  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (go-gc-tests): Handle a few more test
+	lines.
+
 2012-01-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51995
