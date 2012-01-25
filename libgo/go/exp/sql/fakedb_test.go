@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"exp/sql/driver"
 )
@@ -77,6 +78,17 @@ type fakeConn struct {
 	db *fakeDB // where to return ourselves to
 
 	currTx *fakeTx
+
+	// Stats for tests:
+	mu          sync.Mutex
+	stmtsMade   int
+	stmtsClosed int
+}
+
+func (c *fakeConn) incrStat(v *int) {
+	c.mu.Lock()
+	*v++
+	c.mu.Unlock()
 }
 
 type fakeTx struct {
@@ -110,25 +122,34 @@ func init() {
 
 // Supports dsn forms:
 //    <dbname>
-//    <dbname>;wipe
+//    <dbname>;<opts>  (no currently supported options)
 func (d *fakeDriver) Open(dsn string) (driver.Conn, error) {
-	d.mu.Lock()
-	defer d.mu.Unlock()
-	d.openCount++
-	if d.dbs == nil {
-		d.dbs = make(map[string]*fakeDB)
-	}
 	parts := strings.Split(dsn, ";")
 	if len(parts) < 1 {
 		return nil, errors.New("fakedb: no database name")
 	}
 	name := parts[0]
+
+	db := d.getDB(name)
+
+	d.mu.Lock()
+	d.openCount++
+	d.mu.Unlock()
+	return &fakeConn{db: db}, nil
+}
+
+func (d *fakeDriver) getDB(name string) *fakeDB {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.dbs == nil {
+		d.dbs = make(map[string]*fakeDB)
+	}
 	db, ok := d.dbs[name]
 	if !ok {
 		db = &fakeDB{name: name}
 		d.dbs[name] = db
 	}
-	return &fakeConn{db: db}, nil
+	return db
 }
 
 func (db *fakeDB) wipe() {
@@ -200,7 +221,7 @@ func (c *fakeConn) Close() error {
 func checkSubsetTypes(args []interface{}) error {
 	for n, arg := range args {
 		switch arg.(type) {
-		case int64, float64, bool, nil, []byte, string:
+		case int64, float64, bool, nil, []byte, string, time.Time:
 		default:
 			return fmt.Errorf("fakedb_test: invalid argument #%d: %v, type %T", n+1, arg, arg)
 		}
@@ -297,6 +318,8 @@ func (c *fakeConn) prepareInsert(stmt *fakeStmt, parts []string) (driver.Stmt, e
 			switch ctype {
 			case "string":
 				subsetVal = []byte(value)
+			case "blob":
+				subsetVal = []byte(value)
 			case "int32":
 				i, err := strconv.Atoi(value)
 				if err != nil {
@@ -327,6 +350,7 @@ func (c *fakeConn) Prepare(query string) (driver.Stmt, error) {
 	cmd := parts[0]
 	parts = parts[1:]
 	stmt := &fakeStmt{q: query, c: c, cmd: cmd}
+	c.incrStat(&c.stmtsMade)
 	switch cmd {
 	case "WIPE":
 		// Nothing
@@ -347,7 +371,10 @@ func (s *fakeStmt) ColumnConverter(idx int) driver.ValueConverter {
 }
 
 func (s *fakeStmt) Close() error {
-	s.closed = true
+	if !s.closed {
+		s.c.incrStat(&s.c.stmtsClosed)
+		s.closed = true
+	}
 	return nil
 }
 
@@ -501,9 +528,19 @@ type rowsCursor struct {
 	pos    int
 	rows   []*row
 	closed bool
+
+	// a clone of slices to give out to clients, indexed by the
+	// the original slice's first byte address.  we clone them
+	// just so we're able to corrupt them on close.
+	bytesClone map[*byte][]byte
 }
 
 func (rc *rowsCursor) Close() error {
+	if !rc.closed {
+		for _, bs := range rc.bytesClone {
+			bs[0] = 255 // first byte corrupted
+		}
+	}
 	rc.closed = true
 	return nil
 }
@@ -528,6 +565,19 @@ func (rc *rowsCursor) Next(dest []interface{}) error {
 		// for ease of drivers, and to prevent drivers from
 		// messing up conversions or doing them differently.
 		dest[i] = v
+
+		if bs, ok := v.([]byte); ok {
+			if rc.bytesClone == nil {
+				rc.bytesClone = make(map[*byte][]byte)
+			}
+			clone, ok := rc.bytesClone[&bs[0]]
+			if !ok {
+				clone = make([]byte, len(bs))
+				copy(clone, bs)
+				rc.bytesClone[&bs[0]] = clone
+			}
+			dest[i] = clone
+		}
 	}
 	return nil
 }
@@ -540,6 +590,8 @@ func converterForType(typ string) driver.ValueConverter {
 		return driver.Int32
 	case "string":
 		return driver.String
+	case "datetime":
+		return driver.DefaultParameterConverter
 	}
 	panic("invalid fakedb column type of " + typ)
 }

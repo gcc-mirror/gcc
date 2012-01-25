@@ -2214,8 +2214,8 @@ func TestLogb(t *testing.T) {
 		}
 	}
 	for i := 0; i < len(vffrexpBC); i++ {
-		if e := Logb(vffrexpBC[i]); !alike(logbBC[i], e) {
-			t.Errorf("Ilogb(%g) = %g, want %g", vffrexpBC[i], e, logbBC[i])
+		if f := Logb(vffrexpBC[i]); !alike(logbBC[i], f) {
+			t.Errorf("Logb(%g) = %g, want %g", vffrexpBC[i], f, logbBC[i])
 		}
 	}
 }
@@ -2536,7 +2536,7 @@ func TestLargeTan(t *testing.T) {
 }
 
 // Check that math constants are accepted by compiler
-// and have right value (assumes strconv.Atof works).
+// and have right value (assumes strconv.ParseFloat works).
 // http://code.google.com/p/go/issues/detail?id=201
 
 type floatTest struct {

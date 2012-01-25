@@ -1,4 +1,4 @@
-// Copyright 2011 The Go Authors.  All rights reserved.
+// Copyright 2009 The Go Authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -9,25 +9,25 @@
 package net
 
 import (
+	"runtime"
 	"syscall"
 )
 
-func setKernelSpecificSockopt(s, f int) {
-	// Allow reuse of recently-used addresses.
-	syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1)
-
-	// Allow reuse of recently-used ports.
-	// This option is supported only in descendants of 4.4BSD,
-	// to make an effective multicast application and an application
-	// that requires quick draw possible.
-	syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_REUSEPORT, 1)
-
-	// Allow broadcast.
-	syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_BROADCAST, 1)
-
-	if f == syscall.AF_INET6 {
-		// using ip, tcp, udp, etc.
-		// allow both protocols even if the OS default is otherwise.
-		syscall.SetsockoptInt(s, syscall.IPPROTO_IPV6, syscall.IPV6_V6ONLY, 0)
+func maxListenerBacklog() int {
+	var (
+		n   uint32
+		err error
+	)
+	switch runtime.GOOS {
+	case "darwin", "freebsd":
+		n, err = syscall.SysctlUint32("kern.ipc.somaxconn")
+	case "netbsd":
+		// NOTE: NetBSD has no somaxconn-like kernel state so far
+	case "openbsd":
+		n, err = syscall.SysctlUint32("kern.somaxconn")
 	}
+	if n == 0 || err != nil {
+		return syscall.SOMAXCONN
+	}
+	return int(n)
 }

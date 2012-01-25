@@ -243,8 +243,13 @@ func (db *DB) Query(query string, args ...interface{}) (*Rows, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer stmt.Close()
-	return stmt.Query(args...)
+	rows, err := stmt.Query(args...)
+	if err != nil {
+		stmt.Close()
+		return nil, err
+	}
+	rows.closeStmt = stmt
+	return rows, nil
 }
 
 // QueryRow executes a query that is expected to return at most one row.
@@ -549,8 +554,8 @@ func (s *Stmt) Exec(args ...interface{}) (Result, error) {
 // statement, a function to call to release the connection, and a
 // statement bound to that connection.
 func (s *Stmt) connStmt() (ci driver.Conn, releaseConn func(), si driver.Stmt, err error) {
-	if s.stickyErr != nil {
-		return nil, nil, nil, s.stickyErr
+	if err = s.stickyErr; err != nil {
+		return
 	}
 	s.mu.Lock()
 	if s.closed {
@@ -706,9 +711,10 @@ type Rows struct {
 	releaseConn func()
 	rowsi       driver.Rows
 
-	closed   bool
-	lastcols []interface{}
-	lasterr  error
+	closed    bool
+	lastcols  []interface{}
+	lasterr   error
+	closeStmt *Stmt // if non-nil, statement to Close on close
 }
 
 // Next prepares the next result row for reading with the Scan method.
@@ -726,6 +732,9 @@ func (rs *Rows) Next() bool {
 		rs.lastcols = make([]interface{}, len(rs.rowsi.Columns()))
 	}
 	rs.lasterr = rs.rowsi.Next(rs.lastcols)
+	if rs.lasterr == io.EOF {
+		rs.Close()
+	}
 	return rs.lasterr == nil
 }
 
@@ -786,6 +795,9 @@ func (rs *Rows) Close() error {
 	rs.closed = true
 	err := rs.rowsi.Close()
 	rs.releaseConn()
+	if rs.closeStmt != nil {
+		rs.closeStmt.Close()
+	}
 	return err
 }
 
@@ -800,10 +812,6 @@ type Row struct {
 // pointed at by dest.  If more than one row matches the query,
 // Scan uses the first row and discards the rest.  If no row matches
 // the query, Scan returns ErrNoRows.
-//
-// If dest contains pointers to []byte, the slices should not be
-// modified and should only be considered valid until the next call to
-// Next or Scan.
 func (r *Row) Scan(dest ...interface{}) error {
 	if r.err != nil {
 		return r.err
@@ -812,7 +820,33 @@ func (r *Row) Scan(dest ...interface{}) error {
 	if !r.rows.Next() {
 		return ErrNoRows
 	}
-	return r.rows.Scan(dest...)
+	err := r.rows.Scan(dest...)
+	if err != nil {
+		return err
+	}
+
+	// TODO(bradfitz): for now we need to defensively clone all
+	// []byte that the driver returned, since we're about to close
+	// the Rows in our defer, when we return from this function.
+	// the contract with the driver.Next(...) interface is that it
+	// can return slices into read-only temporary memory that's
+	// only valid until the next Scan/Close.  But the TODO is that
+	// for a lot of drivers, this copy will be unnecessary.  We
+	// should provide an optional interface for drivers to
+	// implement to say, "don't worry, the []bytes that I return
+	// from Next will not be modified again." (for instance, if
+	// they were obtained from the network anyway) But for now we
+	// don't care.
+	for _, dp := range dest {
+		b, ok := dp.(*[]byte)
+		if !ok {
+			continue
+		}
+		clone := make([]byte, len(*b))
+		copy(clone, *b)
+		*b = clone
+	}
+	return nil
 }
 
 // A Result summarizes an executed SQL command.

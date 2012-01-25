@@ -273,8 +273,18 @@ esac
 
 # Split $gofiles into external gofiles (those in *_test packages)
 # and internal ones (those in the main package).
-xgofiles=$(echo $(grep '^package[ 	]' $gofiles /dev/null | grep ':.*_test' | sed 's/:.*//'))
-gofiles=$(echo $(grep '^package[ 	]' $gofiles /dev/null | grep -v ':.*_test' | sed 's/:.*//'))
+for f in $gofiles; do
+    package=`grep '^package[ 	]' $f | sed 1q`
+    case "$package" in
+    *_test)
+	xgofiles="$xgofiles $f"
+	;;
+    *)
+	ngofiles="$ngofiles $f"
+	;;
+    esac
+done
+gofiles=$ngofiles
 
 # External $O file
 xofile=""
@@ -413,9 +423,9 @@ xno)
 	${GL} *.o ${GOLIBS}
 
 	if test "$trace" = "true"; then
-	    echo ./a.out -test.short -test.timeout=$timeout "$@"
+	    echo ./a.out -test.short -test.timeout=${timeout}s "$@"
 	fi
-	./a.out -test.short -test.timeout=$timeout "$@" &
+	./a.out -test.short -test.timeout=${timeout}s "$@" &
 	pid=$!
 	(sleep `expr $timeout + 10`
 	    echo > gotest-timeout

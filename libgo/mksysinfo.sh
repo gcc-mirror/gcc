@@ -55,6 +55,9 @@ cat > sysinfo.c <<EOF
 #if defined(HAVE_SYS_MMAN_H)
 #include <sys/mman.h>
 #endif
+#if defined(HAVE_SYS_PRCTL_H)
+#include <sys/prctl.h>
+#endif
 #if defined(HAVE_SYS_PTRACE_H)
 #include <sys/ptrace.h>
 #endif
@@ -209,6 +212,10 @@ fi
 if ! grep '^const EPOLL_CLOEXEC' ${OUT} >/dev/null 2>&1; then
   echo "const EPOLL_CLOEXEC = 02000000" >> ${OUT}
 fi
+
+# Prctl constants.
+grep '^const _PR_' gen-sysinfo.go |
+  sed -e 's/^\(const \)_\(PR_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
 # Ptrace constants.
 grep '^const _PTRACE' gen-sysinfo.go |
@@ -504,6 +511,26 @@ grep '^type _ipv6_mreq ' gen-sysinfo.go | \
 if ! grep 'type IPv6Mreq ' ${OUT} >/dev/null 2>&1; then
   echo 'type IPv6Mreq struct { Multiaddr [16]byte; Interface uint32; }' >> ${OUT}
 fi
+
+# The size of the ipv6_mreq struct.
+echo 'var SizeofIPv6Mreq = int(unsafe.Sizeof(IPv6Mreq{}))' >> ${OUT}
+
+# The ip_mreqn struct.
+grep '^type _ip_mreqn ' gen-sysinfo.go | \
+    sed -e 's/_ip_mreqn/IPMreqn/' \
+      -e 's/imr_multiaddr/Multiaddr/' \
+      -e 's/imr_address/Address/' \
+      -e 's/imr_ifindex/Ifindex/' \
+      -e 's/_in_addr/[4]byte/g' \
+    >> ${OUT}
+
+# We need IPMreq to compile the net package.
+if ! grep 'type IPMreqn ' ${OUT} >/dev/null 2>&1; then
+  echo 'type IPMreqn struct { Multiaddr [4]byte; Interface [4]byte; Ifindex int32 }' >> ${OUT}
+fi
+
+# The size of the ip_mreqn struct.
+echo 'var SizeofIPMreqn = int(unsafe.Sizeof(IPMreqn{}))' >> ${OUT}
 
 # Try to guess the type to use for fd_set.
 fd_set=`grep '^type _fd_set ' gen-sysinfo.go || true`

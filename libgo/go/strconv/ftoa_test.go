@@ -6,6 +6,7 @@ package strconv_test
 
 import (
 	"math"
+	"math/rand"
 	. "strconv"
 	"testing"
 )
@@ -123,6 +124,10 @@ var ftoatests = []ftoaTest{
 	{2.2250738585072012e-308, 'g', -1, "2.2250738585072014e-308"},
 	// http://www.exploringbinary.com/php-hangs-on-numeric-value-2-2250738585072011e-308/
 	{2.2250738585072011e-308, 'g', -1, "2.225073858507201e-308"},
+
+	// Issue 2625.
+	{383260575764816448, 'f', 0, "383260575764816448"},
+	{383260575764816448, 'g', -1, "3.8326057576481645e+17"},
 }
 
 func TestFtoa(t *testing.T) {
@@ -145,6 +150,25 @@ func TestFtoa(t *testing.T) {
 			if string(x) != "abc"+test.s {
 				t.Error("AppendFloat testN=32", test.f, string(test.fmt), test.prec, "want", "abc"+test.s, "got", string(x))
 			}
+		}
+	}
+}
+
+func TestFtoaRandom(t *testing.T) {
+	N := int(1e4)
+	if testing.Short() {
+		N = 100
+	}
+	t.Logf("testing %d random numbers with fast and slow FormatFloat", N)
+	for i := 0; i < N; i++ {
+		bits := uint64(rand.Uint32())<<32 | uint64(rand.Uint32())
+		x := math.Float64frombits(bits)
+		shortFast := FormatFloat(x, 'g', -1, 64)
+		SetOptimize(false)
+		shortSlow := FormatFloat(x, 'g', -1, 64)
+		SetOptimize(true)
+		if shortSlow != shortFast {
+			t.Errorf("%b printed as %s, want %s", x, shortFast, shortSlow)
 		}
 	}
 }
@@ -188,6 +212,12 @@ func BenchmarkFormatFloatExp(b *testing.B) {
 	}
 }
 
+func BenchmarkFormatFloatNegExp(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		FormatFloat(-5.11e-95, 'g', -1, 64)
+	}
+}
+
 func BenchmarkFormatFloatBig(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		FormatFloat(123456789123456789123456789, 'g', -1, 64)
@@ -212,6 +242,13 @@ func BenchmarkAppendFloatExp(b *testing.B) {
 	dst := make([]byte, 0, 30)
 	for i := 0; i < b.N; i++ {
 		AppendFloat(dst, -5.09e75, 'g', -1, 64)
+	}
+}
+
+func BenchmarkAppendFloatNegExp(b *testing.B) {
+	dst := make([]byte, 0, 30)
+	for i := 0; i < b.N; i++ {
+		AppendFloat(dst, -5.11e-95, 'g', -1, 64)
 	}
 }
 

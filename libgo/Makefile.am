@@ -188,7 +188,7 @@ toolexeclibgocryptoopenpgpdir = $(toolexeclibgocryptodir)/openpgp
 toolexeclibgocryptoopenpgp_DATA = \
 	crypto/openpgp/armor.gox \
 	crypto/openpgp/elgamal.gox \
-	crypto/openpgp/error.gox \
+	crypto/openpgp/errors.gox \
 	crypto/openpgp/packet.gox \
 	crypto/openpgp/s2k.gox
 
@@ -235,6 +235,7 @@ toolexeclibgoexp_DATA = \
 	exp/ebnf.gox \
 	$(exp_inotify_gox) \
 	exp/norm.gox \
+	exp/proxy.gox \
 	exp/spdy.gox \
 	exp/sql.gox \
 	exp/ssh.gox \
@@ -669,17 +670,25 @@ endif # !LIBGO_IS_RTEMS
 if LIBGO_IS_LINUX
 go_net_cgo_file = go/net/cgo_linux.go
 go_net_sock_file = go/net/sock_linux.go
+go_net_sockopt_file = go/net/sockopt_linux.go
+go_net_sockoptip_file = go/net/sockoptip_linux.go
 else
 if LIBGO_IS_IRIX
 go_net_cgo_file = go/net/cgo_linux.go
 go_net_sock_file = go/net/sock_linux.go
+go_net_sockopt_file = go/net/sockopt_linux.go
+go_net_sockoptip_file = go/net/sockoptip_linux.go
 else
 if LIBGO_IS_SOLARIS
 go_net_cgo_file = go/net/cgo_linux.go
 go_net_sock_file = go/net/sock_linux.go
+go_net_sockopt_file = go/net/sockopt_linux.go
+go_net_sockoptip_file = go/net/sockoptip_linux.go
 else
 go_net_cgo_file = go/net/cgo_bsd.go
 go_net_sock_file = go/net/sock_bsd.go
+go_net_sockopt_file = go/net/sockopt_bsd.go
+go_net_sockoptip_file = go/net/sockoptip_bsd.go
 endif
 endif
 endif
@@ -728,6 +737,10 @@ go_net_files = \
 	$(go_net_sendfile_file) \
 	go/net/sock.go \
 	$(go_net_sock_file) \
+	go/net/sockopt.go \
+	$(go_net_sockopt_file) \
+	go/net/sockoptip.go \
+	$(go_net_sockoptip_file) \
 	go/net/tcpsock.go \
 	go/net/tcpsock_posix.go \
 	go/net/udpsock.go \
@@ -890,8 +903,7 @@ go_syslog_c_files = \
 go_testing_files = \
 	go/testing/benchmark.go \
 	go/testing/example.go \
-	go/testing/testing.go \
-	go/testing/wrapper.go
+	go/testing/testing.go
 
 go_time_files = \
 	go/time/format.go \
@@ -1061,8 +1073,8 @@ go_crypto_openpgp_armor_files = \
 	go/crypto/openpgp/armor/encode.go
 go_crypto_openpgp_elgamal_files = \
 	go/crypto/openpgp/elgamal/elgamal.go
-go_crypto_openpgp_error_files = \
-	go/crypto/openpgp/error/error.go
+go_crypto_openpgp_errors_files = \
+	go/crypto/openpgp/errors/errors.go
 go_crypto_openpgp_packet_files = \
 	go/crypto/openpgp/packet/compressed.go \
 	go/crypto/openpgp/packet/encrypted_key.go \
@@ -1142,6 +1154,7 @@ go_encoding_pem_files = \
 go_encoding_xml_files = \
 	go/encoding/xml/marshal.go \
 	go/encoding/xml/read.go \
+	go/encoding/xml/typeinfo.go \
 	go/encoding/xml/xml.go
 
 go_exp_ebnf_files = \
@@ -1157,6 +1170,11 @@ go_exp_norm_files = \
 	go/exp/norm/readwriter.go \
 	go/exp/norm/tables.go \
 	go/exp/norm/trie.go
+go_exp_proxy_files = \
+	go/exp/proxy/direct.go \
+	go/exp/proxy/per_host.go \
+	go/exp/proxy/proxy.go \
+	go/exp/proxy/socks5.go
 go_exp_spdy_files = \
 	go/exp/spdy/read.go \
 	go/exp/spdy/types.go \
@@ -1173,7 +1191,7 @@ go_exp_ssh_files = \
 	go/exp/ssh/doc.go \
 	go/exp/ssh/messages.go \
 	go/exp/ssh/server.go \
-	go/exp/ssh/server_shell.go \
+	go/exp/ssh/server_terminal.go \
 	go/exp/ssh/session.go \
 	go/exp/ssh/tcpip.go \
 	go/exp/ssh/transport.go
@@ -1210,7 +1228,8 @@ go_go_doc_files = \
 	go/go/doc/doc.go \
 	go/go/doc/example.go \
 	go/go/doc/exports.go \
-	go/go/doc/filter.go
+	go/go/doc/filter.go \
+	go/go/doc/reader.go
 go_go_parser_files = \
 	go/go/parser/interface.go \
 	go/go/parser/parser.go
@@ -1461,8 +1480,15 @@ endif
 # Define ForkExec and Exec.
 if LIBGO_IS_RTEMS
 syscall_exec_file = go/syscall/exec_stubs.go
+syscall_exec_os_file =
+else
+if LIBGO_IS_LINUX
+syscall_exec_file = go/syscall/exec_unix.go
+syscall_exec_os_file = go/syscall/exec_linux.go
 else
 syscall_exec_file = go/syscall/exec_unix.go
+syscall_exec_os_file = go/syscall/exec_bsd.go
+endif
 endif
 
 # Define Wait4.
@@ -1573,6 +1599,7 @@ go_base_syscall_files = \
 	go/syscall/syscall.go \
 	$(syscall_syscall_file) \
 	$(syscall_exec_file) \
+	$(syscall_exec_os_file) \
 	$(syscall_wait_file) \
 	$(syscall_sleep_file) \
 	$(syscall_errstr_file) \
@@ -1720,7 +1747,7 @@ libgo_go_objs = \
 	crypto/xtea.lo \
 	crypto/openpgp/armor.lo \
 	crypto/openpgp/elgamal.lo \
-	crypto/openpgp/error.lo \
+	crypto/openpgp/errors.lo \
 	crypto/openpgp/packet.lo \
 	crypto/openpgp/s2k.lo \
 	crypto/x509/pkix.lo \
@@ -1743,6 +1770,7 @@ libgo_go_objs = \
 	encoding/xml.lo \
 	exp/ebnf.lo \
 	exp/norm.lo \
+	exp/proxy.lo \
 	exp/spdy.lo \
 	exp/sql.lo \
 	exp/ssh.lo \
@@ -2578,15 +2606,15 @@ crypto/openpgp/elgamal/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: crypto/openpgp/elgamal/check
 
-@go_include@ crypto/openpgp/error.lo.dep
-crypto/openpgp/error.lo.dep: $(go_crypto_openpgp_error_files)
+@go_include@ crypto/openpgp/errors.lo.dep
+crypto/openpgp/errors.lo.dep: $(go_crypto_openpgp_errors_files)
 	$(BUILDDEPS)
-crypto/openpgp/error.lo: $(go_crypto_openpgp_error_files)
+crypto/openpgp/errors.lo: $(go_crypto_openpgp_errors_files)
 	$(BUILDPACKAGE)
-crypto/openpgp/error/check: $(CHECK_DEPS)
-	@$(MKDIR_P) crypto/openpgp/error
+crypto/openpgp/errors/check: $(CHECK_DEPS)
+	@$(MKDIR_P) crypto/openpgp/errors
 	@$(CHECK)
-.PHONY: crypto/openpgp/error/check
+.PHONY: crypto/openpgp/errors/check
 
 @go_include@ crypto/openpgp/packet.lo.dep
 crypto/openpgp/packet.lo.dep: $(go_crypto_openpgp_packet_files)
@@ -2807,6 +2835,16 @@ exp/norm/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/norm
 	@$(CHECK)
 .PHONY: exp/norm/check
+
+@go_include@ exp/proxy.lo.dep
+exp/proxy.lo.dep: $(go_exp_proxy_files)
+	$(BUILDDEPS)
+exp/proxy.lo: $(go_exp_proxy_files)
+	$(BUILDPACKAGE)
+exp/proxy/check: $(CHECK_DEPS)
+	@$(MKDIR_P) exp/proxy
+	@$(CHECK)
+.PHONY: exp/proxy/check
 
 @go_include@ exp/spdy.lo.dep
 exp/spdy.lo.dep: $(go_exp_spdy_files)
@@ -3622,7 +3660,7 @@ crypto/openpgp/armor.gox: crypto/openpgp/armor.lo
 	$(BUILDGOX)
 crypto/openpgp/elgamal.gox: crypto/openpgp/elgamal.lo
 	$(BUILDGOX)
-crypto/openpgp/error.gox: crypto/openpgp/error.lo
+crypto/openpgp/errors.gox: crypto/openpgp/errors.lo
 	$(BUILDGOX)
 crypto/openpgp/packet.gox: crypto/openpgp/packet.lo
 	$(BUILDGOX)
@@ -3673,6 +3711,8 @@ exp/ebnf.gox: exp/ebnf.lo
 exp/inotify.gox: exp/inotify.lo
 	$(BUILDGOX)
 exp/norm.gox: exp/norm.lo
+	$(BUILDGOX)
+exp/proxy.gox: exp/proxy.lo
 	$(BUILDGOX)
 exp/spdy.gox: exp/spdy.lo
 	$(BUILDGOX)
@@ -3920,6 +3960,7 @@ TEST_PACKAGES = \
 	exp/ebnf/check \
 	$(exp_inotify_check) \
 	exp/norm/check \
+	exp/proxy/check \
 	exp/spdy/check \
 	exp/sql/check \
 	exp/ssh/check \

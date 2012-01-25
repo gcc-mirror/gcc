@@ -153,33 +153,34 @@ am__DEPENDENCIES_2 = bufio/bufio.lo bytes/bytes.lo bytes/index.lo \
 	crypto/sha256.lo crypto/sha512.lo crypto/subtle.lo \
 	crypto/tls.lo crypto/twofish.lo crypto/x509.lo crypto/xtea.lo \
 	crypto/openpgp/armor.lo crypto/openpgp/elgamal.lo \
-	crypto/openpgp/error.lo crypto/openpgp/packet.lo \
+	crypto/openpgp/errors.lo crypto/openpgp/packet.lo \
 	crypto/openpgp/s2k.lo crypto/x509/pkix.lo debug/dwarf.lo \
 	debug/elf.lo debug/gosym.lo debug/macho.lo debug/pe.lo \
 	encoding/ascii85.lo encoding/asn1.lo encoding/base32.lo \
 	encoding/base64.lo encoding/binary.lo encoding/csv.lo \
 	encoding/git85.lo encoding/gob.lo encoding/hex.lo \
 	encoding/json.lo encoding/pem.lo encoding/xml.lo exp/ebnf.lo \
-	exp/norm.lo exp/spdy.lo exp/sql.lo exp/ssh.lo exp/terminal.lo \
-	exp/types.lo exp/sql/driver.lo html/template.lo go/ast.lo \
-	go/build.lo go/doc.lo go/parser.lo go/printer.lo go/scanner.lo \
-	go/token.lo hash/adler32.lo hash/crc32.lo hash/crc64.lo \
-	hash/fnv.lo net/http/cgi.lo net/http/fcgi.lo \
-	net/http/httptest.lo net/http/httputil.lo net/http/pprof.lo \
-	image/bmp.lo image/color.lo image/draw.lo image/gif.lo \
-	image/jpeg.lo image/png.lo image/tiff.lo index/suffixarray.lo \
-	io/ioutil.lo log/syslog.lo log/syslog/syslog_c.lo math/big.lo \
-	math/cmplx.lo math/rand.lo mime/mime.lo mime/multipart.lo \
-	net/dict.lo net/http.lo net/mail.lo net/rpc.lo net/smtp.lo \
-	net/textproto.lo net/url.lo old/netchan.lo old/regexp.lo \
-	old/template.lo $(am__DEPENDENCIES_1) os/user.lo os/signal.lo \
-	path/filepath.lo regexp/syntax.lo net/rpc/jsonrpc.lo \
-	runtime/debug.lo runtime/pprof.lo sync/atomic.lo \
-	sync/atomic_c.lo syscall/syscall.lo syscall/errno.lo \
-	syscall/wait.lo text/scanner.lo text/tabwriter.lo \
-	text/template.lo text/template/parse.lo testing/testing.lo \
-	testing/iotest.lo testing/quick.lo testing/script.lo \
-	unicode/utf16.lo unicode/utf8.lo
+	exp/norm.lo exp/proxy.lo exp/spdy.lo exp/sql.lo exp/ssh.lo \
+	exp/terminal.lo exp/types.lo exp/sql/driver.lo \
+	html/template.lo go/ast.lo go/build.lo go/doc.lo go/parser.lo \
+	go/printer.lo go/scanner.lo go/token.lo hash/adler32.lo \
+	hash/crc32.lo hash/crc64.lo hash/fnv.lo net/http/cgi.lo \
+	net/http/fcgi.lo net/http/httptest.lo net/http/httputil.lo \
+	net/http/pprof.lo image/bmp.lo image/color.lo image/draw.lo \
+	image/gif.lo image/jpeg.lo image/png.lo image/tiff.lo \
+	index/suffixarray.lo io/ioutil.lo log/syslog.lo \
+	log/syslog/syslog_c.lo math/big.lo math/cmplx.lo math/rand.lo \
+	mime/mime.lo mime/multipart.lo net/dict.lo net/http.lo \
+	net/mail.lo net/rpc.lo net/smtp.lo net/textproto.lo net/url.lo \
+	old/netchan.lo old/regexp.lo old/template.lo \
+	$(am__DEPENDENCIES_1) os/user.lo os/signal.lo path/filepath.lo \
+	regexp/syntax.lo net/rpc/jsonrpc.lo runtime/debug.lo \
+	runtime/pprof.lo sync/atomic.lo sync/atomic_c.lo \
+	syscall/syscall.lo syscall/errno.lo syscall/wait.lo \
+	text/scanner.lo text/tabwriter.lo text/template.lo \
+	text/template/parse.lo testing/testing.lo testing/iotest.lo \
+	testing/quick.lo testing/script.lo unicode/utf16.lo \
+	unicode/utf8.lo
 libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
@@ -652,7 +653,7 @@ toolexeclibgocryptoopenpgpdir = $(toolexeclibgocryptodir)/openpgp
 toolexeclibgocryptoopenpgp_DATA = \
 	crypto/openpgp/armor.gox \
 	crypto/openpgp/elgamal.gox \
-	crypto/openpgp/error.gox \
+	crypto/openpgp/errors.gox \
 	crypto/openpgp/packet.gox \
 	crypto/openpgp/s2k.gox
 
@@ -692,6 +693,7 @@ toolexeclibgoexp_DATA = \
 	exp/ebnf.gox \
 	$(exp_inotify_gox) \
 	exp/norm.gox \
+	exp/proxy.gox \
 	exp/spdy.gox \
 	exp/sql.gox \
 	exp/ssh.gox \
@@ -1049,6 +1051,14 @@ go_mime_files = \
 @LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@go_net_sock_file = go/net/sock_linux.go
 @LIBGO_IS_IRIX_TRUE@@LIBGO_IS_LINUX_FALSE@go_net_sock_file = go/net/sock_linux.go
 @LIBGO_IS_LINUX_TRUE@go_net_sock_file = go/net/sock_linux.go
+@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_net_sockopt_file = go/net/sockopt_bsd.go
+@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@go_net_sockopt_file = go/net/sockopt_linux.go
+@LIBGO_IS_IRIX_TRUE@@LIBGO_IS_LINUX_FALSE@go_net_sockopt_file = go/net/sockopt_linux.go
+@LIBGO_IS_LINUX_TRUE@go_net_sockopt_file = go/net/sockopt_linux.go
+@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_net_sockoptip_file = go/net/sockoptip_bsd.go
+@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@go_net_sockoptip_file = go/net/sockoptip_linux.go
+@LIBGO_IS_IRIX_TRUE@@LIBGO_IS_LINUX_FALSE@go_net_sockoptip_file = go/net/sockoptip_linux.go
+@LIBGO_IS_LINUX_TRUE@go_net_sockoptip_file = go/net/sockoptip_linux.go
 @LIBGO_IS_LINUX_FALSE@go_net_sendfile_file = go/net/sendfile_stub.go
 @LIBGO_IS_LINUX_TRUE@go_net_sendfile_file = go/net/sendfile_linux.go
 @LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@go_net_interface_file = go/net/interface_stub.go
@@ -1082,6 +1092,10 @@ go_net_files = \
 	$(go_net_sendfile_file) \
 	go/net/sock.go \
 	$(go_net_sock_file) \
+	go/net/sockopt.go \
+	$(go_net_sockopt_file) \
+	go/net/sockoptip.go \
+	$(go_net_sockoptip_file) \
 	go/net/tcpsock.go \
 	go/net/tcpsock_posix.go \
 	go/net/udpsock.go \
@@ -1197,8 +1211,7 @@ go_syslog_c_files = \
 go_testing_files = \
 	go/testing/benchmark.go \
 	go/testing/example.go \
-	go/testing/testing.go \
-	go/testing/wrapper.go
+	go/testing/testing.go
 
 go_time_files = \
 	go/time/format.go \
@@ -1394,8 +1407,8 @@ go_crypto_openpgp_armor_files = \
 go_crypto_openpgp_elgamal_files = \
 	go/crypto/openpgp/elgamal/elgamal.go
 
-go_crypto_openpgp_error_files = \
-	go/crypto/openpgp/error/error.go
+go_crypto_openpgp_errors_files = \
+	go/crypto/openpgp/errors/errors.go
 
 go_crypto_openpgp_packet_files = \
 	go/crypto/openpgp/packet/compressed.go \
@@ -1492,6 +1505,7 @@ go_encoding_pem_files = \
 go_encoding_xml_files = \
 	go/encoding/xml/marshal.go \
 	go/encoding/xml/read.go \
+	go/encoding/xml/typeinfo.go \
 	go/encoding/xml/xml.go
 
 go_exp_ebnf_files = \
@@ -1509,6 +1523,12 @@ go_exp_norm_files = \
 	go/exp/norm/readwriter.go \
 	go/exp/norm/tables.go \
 	go/exp/norm/trie.go
+
+go_exp_proxy_files = \
+	go/exp/proxy/direct.go \
+	go/exp/proxy/per_host.go \
+	go/exp/proxy/proxy.go \
+	go/exp/proxy/socks5.go
 
 go_exp_spdy_files = \
 	go/exp/spdy/read.go \
@@ -1528,7 +1548,7 @@ go_exp_ssh_files = \
 	go/exp/ssh/doc.go \
 	go/exp/ssh/messages.go \
 	go/exp/ssh/server.go \
-	go/exp/ssh/server_shell.go \
+	go/exp/ssh/server_terminal.go \
 	go/exp/ssh/session.go \
 	go/exp/ssh/tcpip.go \
 	go/exp/ssh/transport.go
@@ -1569,7 +1589,8 @@ go_go_doc_files = \
 	go/go/doc/doc.go \
 	go/go/doc/example.go \
 	go/go/doc/exports.go \
-	go/go/doc/filter.go
+	go/go/doc/filter.go \
+	go/go/doc/reader.go
 
 go_go_parser_files = \
 	go/go/parser/interface.go \
@@ -1840,10 +1861,14 @@ go_unicode_utf8_files = \
 
 # Define Syscall and Syscall6.
 @LIBGO_IS_RTEMS_TRUE@syscall_syscall_file = go/syscall/syscall_stubs.go
-@LIBGO_IS_RTEMS_FALSE@syscall_exec_file = go/syscall/exec_unix.go
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_RTEMS_FALSE@syscall_exec_file = go/syscall/exec_unix.go
+@LIBGO_IS_LINUX_TRUE@@LIBGO_IS_RTEMS_FALSE@syscall_exec_file = go/syscall/exec_unix.go
 
 # Define ForkExec and Exec.
 @LIBGO_IS_RTEMS_TRUE@syscall_exec_file = go/syscall/exec_stubs.go
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_RTEMS_FALSE@syscall_exec_os_file = go/syscall/exec_bsd.go
+@LIBGO_IS_LINUX_TRUE@@LIBGO_IS_RTEMS_FALSE@syscall_exec_os_file = go/syscall/exec_linux.go
+@LIBGO_IS_RTEMS_TRUE@syscall_exec_os_file = 
 @HAVE_WAIT4_FALSE@@LIBGO_IS_RTEMS_FALSE@syscall_wait_file = go/syscall/libcall_waitpid.go
 @HAVE_WAIT4_TRUE@@LIBGO_IS_RTEMS_FALSE@syscall_wait_file = go/syscall/libcall_wait4.go
 
@@ -1901,6 +1926,7 @@ go_base_syscall_files = \
 	go/syscall/syscall.go \
 	$(syscall_syscall_file) \
 	$(syscall_exec_file) \
+	$(syscall_exec_os_file) \
 	$(syscall_wait_file) \
 	$(syscall_sleep_file) \
 	$(syscall_errstr_file) \
@@ -1995,7 +2021,7 @@ libgo_go_objs = \
 	crypto/xtea.lo \
 	crypto/openpgp/armor.lo \
 	crypto/openpgp/elgamal.lo \
-	crypto/openpgp/error.lo \
+	crypto/openpgp/errors.lo \
 	crypto/openpgp/packet.lo \
 	crypto/openpgp/s2k.lo \
 	crypto/x509/pkix.lo \
@@ -2018,6 +2044,7 @@ libgo_go_objs = \
 	encoding/xml.lo \
 	exp/ebnf.lo \
 	exp/norm.lo \
+	exp/proxy.lo \
 	exp/spdy.lo \
 	exp/sql.lo \
 	exp/ssh.lo \
@@ -2286,6 +2313,7 @@ TEST_PACKAGES = \
 	exp/ebnf/check \
 	$(exp_inotify_check) \
 	exp/norm/check \
+	exp/proxy/check \
 	exp/spdy/check \
 	exp/sql/check \
 	exp/ssh/check \
@@ -5162,15 +5190,15 @@ crypto/openpgp/elgamal/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: crypto/openpgp/elgamal/check
 
-@go_include@ crypto/openpgp/error.lo.dep
-crypto/openpgp/error.lo.dep: $(go_crypto_openpgp_error_files)
+@go_include@ crypto/openpgp/errors.lo.dep
+crypto/openpgp/errors.lo.dep: $(go_crypto_openpgp_errors_files)
 	$(BUILDDEPS)
-crypto/openpgp/error.lo: $(go_crypto_openpgp_error_files)
+crypto/openpgp/errors.lo: $(go_crypto_openpgp_errors_files)
 	$(BUILDPACKAGE)
-crypto/openpgp/error/check: $(CHECK_DEPS)
-	@$(MKDIR_P) crypto/openpgp/error
+crypto/openpgp/errors/check: $(CHECK_DEPS)
+	@$(MKDIR_P) crypto/openpgp/errors
 	@$(CHECK)
-.PHONY: crypto/openpgp/error/check
+.PHONY: crypto/openpgp/errors/check
 
 @go_include@ crypto/openpgp/packet.lo.dep
 crypto/openpgp/packet.lo.dep: $(go_crypto_openpgp_packet_files)
@@ -5391,6 +5419,16 @@ exp/norm/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/norm
 	@$(CHECK)
 .PHONY: exp/norm/check
+
+@go_include@ exp/proxy.lo.dep
+exp/proxy.lo.dep: $(go_exp_proxy_files)
+	$(BUILDDEPS)
+exp/proxy.lo: $(go_exp_proxy_files)
+	$(BUILDPACKAGE)
+exp/proxy/check: $(CHECK_DEPS)
+	@$(MKDIR_P) exp/proxy
+	@$(CHECK)
+.PHONY: exp/proxy/check
 
 @go_include@ exp/spdy.lo.dep
 exp/spdy.lo.dep: $(go_exp_spdy_files)
@@ -6201,7 +6239,7 @@ crypto/openpgp/armor.gox: crypto/openpgp/armor.lo
 	$(BUILDGOX)
 crypto/openpgp/elgamal.gox: crypto/openpgp/elgamal.lo
 	$(BUILDGOX)
-crypto/openpgp/error.gox: crypto/openpgp/error.lo
+crypto/openpgp/errors.gox: crypto/openpgp/errors.lo
 	$(BUILDGOX)
 crypto/openpgp/packet.gox: crypto/openpgp/packet.lo
 	$(BUILDGOX)
@@ -6252,6 +6290,8 @@ exp/ebnf.gox: exp/ebnf.lo
 exp/inotify.gox: exp/inotify.lo
 	$(BUILDGOX)
 exp/norm.gox: exp/norm.lo
+	$(BUILDGOX)
+exp/proxy.gox: exp/proxy.lo
 	$(BUILDGOX)
 exp/spdy.gox: exp/spdy.lo
 	$(BUILDGOX)
