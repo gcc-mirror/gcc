@@ -1,3 +1,9 @@
+2012-01-25  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (get_pointer_alignment_1): Declare.
+	* builtins.c (get_pointer_alignment_1): New function.
+	(get_pointer_alignment): Use it.
+
 2012-01-25  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	PR rtl-optimization/48308
