@@ -3101,7 +3101,10 @@ mips_small_data_pattern_1 (rtx *loc, void *data)
 {
   enum mips_symbol_context context;
 
-  if (GET_CODE (*loc) == LO_SUM)
+  /* Ignore things like "g" constraints in asms.  We make no particular
+     guarantee about which symbolic constants are acceptable as asm operands
+     versus which must be forced into a GPR.  */
+  if (GET_CODE (*loc) == LO_SUM || GET_CODE (*loc) == ASM_OPERANDS)
     return -1;
 
   if (MEM_P (*loc))

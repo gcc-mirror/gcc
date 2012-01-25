@@ -1,3 +1,7 @@
+2012-01-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c: Don't process ASM_OPERANDS.
+
 2012-01-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/49868
