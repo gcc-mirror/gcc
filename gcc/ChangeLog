@@ -1,3 +1,8 @@
+2012-01-25  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_reference_eq): Also compare if both
+	bases are dereferenced.
+
 2012-01-25  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/48374

@@ -556,6 +556,7 @@ vn_reference_eq (const void *p1, const void *p2)
 	  tem1.type = TREE_TYPE (tem1.op0);
 	  tem1.opcode = TREE_CODE (tem1.op0);
 	  vro1 = &tem1;
+	  deref1 = false;
 	}
       if (deref2 && vro2->opcode == ADDR_EXPR)
 	{
@@ -564,7 +565,10 @@ vn_reference_eq (const void *p1, const void *p2)
 	  tem2.type = TREE_TYPE (tem2.op0);
 	  tem2.opcode = TREE_CODE (tem2.op0);
 	  vro2 = &tem2;
+	  deref2 = false;
 	}
+      if (deref1 != deref2)
+	return false;
       if (!vn_reference_op_eq (vro1, vro2))
 	return false;
       ++j;
