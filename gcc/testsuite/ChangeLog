@@ -1,3 +1,7 @@
+2012-01-25    Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/int24-mul.c: Rename __pgm to __flash.
+
 2012-01-25  Ian Lance Taylor  <iant@google.com>
 
 	* go.test/go-test.exp (go-gc-tests): Handle a few more test
