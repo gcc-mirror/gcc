@@ -1,3 +1,8 @@
+2012-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51992
+	* tree.c (find_decls_types_in_node): Walk gimple_call_fntype.
+
 2012-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51987

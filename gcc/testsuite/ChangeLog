@@ -1,3 +1,8 @@
+2012-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51992
+	* g++.dg/lto/pr51992_0.C: New.
+
 2012-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51987
