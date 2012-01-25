@@ -1,3 +1,8 @@
+2012-01-24  Mike Stump  <mikestump@comcast.net>
+
+	* c-common.c (c_common_type_for_mode): Match signed/unsigned types
+	exactly.
+
 2012-01-18  Richard Guenther  <rguenther@suse.de>
 
 	* c-opts.c (c_common_post_options): Reset LTO flags if
