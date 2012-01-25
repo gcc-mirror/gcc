@@ -1,3 +1,8 @@
+2012-01-25  Matthias Klose  <doko@ubuntu.com>
+
+	* testsuite/30_threads/condition_variable_any/requirements: Remove
+	empty directory.
+
 2012-01-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/Makefile.am (libstdc++convenience.la): Correct stamp rule, copy.
