@@ -1,3 +1,7 @@
+2012-01-25  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* gcc.dg/tm/lto-1.c: Require lto support in target.
+
 2012-01-25  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/48374
