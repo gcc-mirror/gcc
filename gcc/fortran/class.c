@@ -421,6 +421,8 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
       c->attr.access = ACCESS_PRIVATE;
       c->attr.pointer = 1;
     }
+  else if (!fclass->f2k_derived)
+    fclass->f2k_derived = fclass->components->ts.u.derived->f2k_derived;
 
   /* Since the extension field is 8 bit wide, we can only have
      up to 255 extension levels.  */

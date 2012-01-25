@@ -1,4 +1,10 @@
-2012-01-24  Tobias Burnus  <burnus@net-b.de>
+2012-01-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51995
+	* class.c (gfc_build_class_symbol): Ensure that
+	fclass->f2k_derived is set.
+
+2012-01-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51966
 	* resolve.c (resolve_structure_cons): Only create an
