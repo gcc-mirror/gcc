@@ -32,7 +32,7 @@ if test $enable_linux_futex = yes; then
 	;;
 
     arm*-*-linux*)
-	config_path="linux/arm linux posix"
+	config_path="linux posix"
 	;;
 
     ia64*-*-linux*)

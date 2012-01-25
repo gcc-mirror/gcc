@@ -1,3 +1,8 @@
+2012-01-25  Matthias Klose  <doko@ubuntu.com>
+
+	* config/linux/arm: Remove empty directory.
+	* configure.tgt (config_path): Remove linux-arm for arm*-*-linux*.
+
 2011-12-09  Alan Modra  <amodra@gmail.com>
 
 	PR libgomp/51376
