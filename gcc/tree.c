@@ -5037,6 +5037,9 @@ find_decls_types_in_node (struct cgraph_node *n, struct free_lang_data_d *fld)
 	{
 	  gimple stmt = gsi_stmt (si);
 
+	  if (is_gimple_call (stmt))
+	    find_decls_types (gimple_call_fntype (stmt), fld);
+
 	  for (i = 0; i < gimple_num_ops (stmt); i++)
 	    {
 	      tree arg = gimple_op (stmt, i);
