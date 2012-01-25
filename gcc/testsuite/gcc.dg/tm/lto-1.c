@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target lto } */
 /* { dg-options "-fgnu-tm -flto" } */
 
 __attribute__((transaction_safe))
