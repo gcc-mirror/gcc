@@ -1,3 +1,17 @@
+2012-01-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR lto/51698
+	* gcc.dg/lto/trans-mem-4_0.c: New.
+	* gcc.dg/lto/trans-mem-4_1.c: New.
+	* gcc.dg/lto/trans-mem-2_0.c: Provide correct argument types for
+	TM builtins.
+	* gcc.dg/lto/trans-mem-1_0.c: Require stdint_types.
+	* gcc.dg/lto/trans-mem-1_1.c: Provide correct argument types for
+	TM builtins.
+	* gcc.dg/lto/trans-mem-3_0.c: Require stdint_types.
+	* gcc.dg/lto/trans-mem-3_1.c: Provide correct argument types for
+	TM builtins.
+
 2012-01-25    Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.target/avr/torture/int24-mul.c: Rename __pgm to __flash.

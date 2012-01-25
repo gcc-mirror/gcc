@@ -2,12 +2,11 @@
 /* { dg-lto-do link } */
 /* { dg-require-effective-target stdint_types } */
 
-int i;
+extern void foo() __attribute__((transaction_safe));
 
-main()
+int main()
 {
-  __transaction_atomic
-    {
-      i = 0;
-    }
+  __transaction_atomic {
+      foo();
+  }
 }

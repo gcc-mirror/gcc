@@ -165,6 +165,30 @@
 	to effect no-op split.
 
 2012-01-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR lto/51698
+	* builtin-types.def: (BT_CONST_DOUBLE_PTR): New.
+	(BT_FN_VOID_PTR_CONST_PTR_SIZE): New.
+	(BT_FN_VOID_PTR_INT_SIZE): New.
+	(BT_FN_UINT_UINT_VAR): Remove.
+	(BT_FN_UINT32_UINT32_VAR): New.
+	(BT_FN_DOUBLE_VPTR): Remove.
+	(BT_FN_DOUBLE_CONST_DOUBLE_PTR): New.
+
+	* gtm-builtins.def (_ITM_abortTransaction): Set return type to
+	void.
+	(_ITM_changeTransactionMode): Same.
+	(_ITM_memmoveRtWt): Change return type to void.
+	(_ITM_memcpyRtWt): Same.
+	(_ITM_memsetW): Same.
+	(_ITM_RaRD): Change types to double.
+	(_ITM_RD): Same.
+	(_ITM_RaWD): Same.
+	(_ITM_RfWD): Same.
+
+	* builtins.def (DEF_TM_BUILTIN): Set BOTH_P to true.
+
+2012-01-24  Aldy Hernandez  <aldyh@redhat.com>
 	    Patrick Marlier  <patrick.marlier@gmail.com>
 
 	* trans-mem.c (requires_barrier): Do not instrument thread local
