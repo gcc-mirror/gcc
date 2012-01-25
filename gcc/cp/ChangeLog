@@ -1,5 +1,8 @@
 2012-01-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51917
+	* decl.c (xref_basetypes): Check VEC_length instead of VEC_space.
+
 	PR c++/51973
 	* tree.c (called_fns_equal): Check template args.
 	(cp_tree_equal): Call it.

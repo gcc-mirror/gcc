@@ -11916,8 +11916,8 @@ xref_basetypes (tree ref, tree base_list)
       BINFO_BASE_ACCESS_APPEND (binfo, access);
     }
 
-  if (VEC_space (tree, CLASSTYPE_VBASECLASSES (ref), 1))
-    /* If we have space in the vbase vector, we must have shared at
+  if (VEC_length (tree, CLASSTYPE_VBASECLASSES (ref)) < max_vbases)
+    /* If we didn't get max_vbases vbases, we must have shared at
        least one of them, and are therefore diamond shaped.  */
     CLASSTYPE_DIAMOND_SHAPED_P (ref) = 1;
 
