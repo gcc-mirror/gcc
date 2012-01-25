@@ -1119,7 +1119,8 @@ get_all_loop_exits (basic_block bb)
   /* If bb is empty, and we're skipping to loop exits, then
      consider bb as a possible gate to the inner loop now.  */
   while (sel_bb_empty_or_nop_p (bb)
-	 && in_current_region_p (bb))
+	 && in_current_region_p (bb)
+	 && EDGE_COUNT (bb->succs) > 0)
     {
       bb = single_succ (bb);
 

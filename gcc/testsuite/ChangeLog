@@ -1,3 +1,8 @@
+2012-01-25  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/48374
+	* gcc.dg/pr48374.c: New test.
+
 2012-01-25  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* gcc.dg/pr50908-2.c (dg-options): Add -fno-short-enums.
