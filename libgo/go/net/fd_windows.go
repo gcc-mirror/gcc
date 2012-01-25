@@ -150,12 +150,13 @@ func (s *ioSrv) ProcessRemoteIO() {
 }
 
 // ExecIO executes a single io operation. It either executes it
-// inline, or, if timeouts are employed, passes the request onto
+// inline, or, if a deadline is employed, passes the request onto
 // a special goroutine and waits for completion or cancels request.
-func (s *ioSrv) ExecIO(oi anOpIface, deadline_delta int64) (n int, err error) {
+// deadline is unix nanos.
+func (s *ioSrv) ExecIO(oi anOpIface, deadline int64) (n int, err error) {
 	var e error
 	o := oi.Op()
-	if deadline_delta > 0 {
+	if deadline != 0 {
 		// Send request to a special dedicated thread,
 		// so it can stop the io with CancelIO later.
 		s.submchan <- oi
@@ -172,12 +173,17 @@ func (s *ioSrv) ExecIO(oi anOpIface, deadline_delta int64) (n int, err error) {
 		return 0, &OpError{oi.Name(), o.fd.net, o.fd.laddr, e}
 	}
 	// Wait for our request to complete.
-	// TODO(rsc): This should stop the timer.
 	var r ioResult
-	if deadline_delta > 0 {
+	if deadline != 0 {
+		dt := deadline - time.Now().UnixNano()
+		if dt < 1 {
+			dt = 1
+		}
+		timer := time.NewTimer(time.Duration(dt) * time.Nanosecond)
+		defer timer.Stop()
 		select {
 		case r = <-o.resultc:
-		case <-time.After(time.Duration(deadline_delta) * time.Nanosecond):
+		case <-timer.C:
 			s.canchan <- oi
 			<-o.errnoc
 			r = <-o.resultc
@@ -224,7 +230,7 @@ type netFD struct {
 	// immutable until Close
 	sysfd   syscall.Handle
 	family  int
-	proto   int
+	sotype  int
 	net     string
 	laddr   Addr
 	raddr   Addr
@@ -232,19 +238,17 @@ type netFD struct {
 	errnoc  [2]chan error    // read/write submit or cancel operation errors
 
 	// owned by client
-	rdeadline_delta int64
-	rdeadline       int64
-	rio             sync.Mutex
-	wdeadline_delta int64
-	wdeadline       int64
-	wio             sync.Mutex
+	rdeadline int64
+	rio       sync.Mutex
+	wdeadline int64
+	wio       sync.Mutex
 }
 
-func allocFD(fd syscall.Handle, family, proto int, net string) (f *netFD) {
+func allocFD(fd syscall.Handle, family, sotype int, net string) (f *netFD) {
 	f = &netFD{
 		sysfd:  fd,
 		family: family,
-		proto:  proto,
+		sotype: sotype,
 		net:    net,
 	}
 	runtime.SetFinalizer(f, (*netFD).Close)
@@ -357,7 +361,7 @@ func (fd *netFD) Read(buf []byte) (n int, err error) {
 	}
 	var o readOp
 	o.Init(fd, buf, 'r')
-	n, err = iosrv.ExecIO(&o, fd.rdeadline_delta)
+	n, err = iosrv.ExecIO(&o, fd.rdeadline)
 	if err == nil && n == 0 {
 		err = io.EOF
 	}
@@ -398,7 +402,7 @@ func (fd *netFD) ReadFrom(buf []byte) (n int, sa syscall.Sockaddr, err error) {
 	var o readFromOp
 	o.Init(fd, buf, 'r')
 	o.rsan = int32(unsafe.Sizeof(o.rsa))
-	n, err = iosrv.ExecIO(&o, fd.rdeadline_delta)
+	n, err = iosrv.ExecIO(&o, fd.rdeadline)
 	if err != nil {
 		return 0, nil, err
 	}
@@ -434,7 +438,7 @@ func (fd *netFD) Write(buf []byte) (n int, err error) {
 	}
 	var o writeOp
 	o.Init(fd, buf, 'w')
-	return iosrv.ExecIO(&o, fd.wdeadline_delta)
+	return iosrv.ExecIO(&o, fd.wdeadline)
 }
 
 // WriteTo to network.
@@ -470,7 +474,7 @@ func (fd *netFD) WriteTo(buf []byte, sa syscall.Sockaddr) (n int, err error) {
 	var o writeToOp
 	o.Init(fd, buf, 'w')
 	o.sa = sa
-	return iosrv.ExecIO(&o, fd.wdeadline_delta)
+	return iosrv.ExecIO(&o, fd.wdeadline)
 }
 
 // Accept new network connections.
@@ -502,7 +506,7 @@ func (fd *netFD) accept(toAddr func(syscall.Sockaddr) Addr) (nfd *netFD, err err
 	// Get new socket.
 	// See ../syscall/exec.go for description of ForkLock.
 	syscall.ForkLock.RLock()
-	s, e := syscall.Socket(fd.family, fd.proto, 0)
+	s, e := syscall.Socket(fd.family, fd.sotype, 0)
 	if e != nil {
 		syscall.ForkLock.RUnlock()
 		return nil, e
@@ -542,7 +546,7 @@ func (fd *netFD) accept(toAddr func(syscall.Sockaddr) Addr) (nfd *netFD, err err
 	lsa, _ := lrsa.Sockaddr()
 	rsa, _ := rrsa.Sockaddr()
 
-	nfd = allocFD(s, fd.family, fd.proto, fd.net)
+	nfd = allocFD(s, fd.family, fd.sotype, fd.net)
 	nfd.setAddr(toAddr(lsa), toAddr(rsa))
 	return nfd, nil
 }

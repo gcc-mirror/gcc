@@ -9,7 +9,7 @@ import (
 )
 
 type basicLatin2xTag struct {
-	V string `json:"$-"`
+	V string `json:"$%-/"`
 }
 
 type basicLatin3xTag struct {
@@ -36,6 +36,10 @@ type miscPlaneTag struct {
 	V string `json:"色は匂へど"`
 }
 
+type percentSlashTag struct {
+	V string `json:"text/html%"` // http://golang.org/issue/2718
+}
+
 type emptyTag struct {
 	W string
 }
@@ -49,7 +53,7 @@ type badFormatTag struct {
 }
 
 type badCodeTag struct {
-	Z string `json:" !\"#%&'()*+,./"`
+	Z string `json:" !\"#&'()*+,."`
 }
 
 var structTagObjectKeyTests = []struct {
@@ -57,7 +61,7 @@ var structTagObjectKeyTests = []struct {
 	value string
 	key   string
 }{
-	{basicLatin2xTag{"2x"}, "2x", "$-"},
+	{basicLatin2xTag{"2x"}, "2x", "$%-/"},
 	{basicLatin3xTag{"3x"}, "3x", "0123456789"},
 	{basicLatin4xTag{"4x"}, "4x", "ABCDEFGHIJKLMO"},
 	{basicLatin5xTag{"5x"}, "5x", "PQRSTUVWXYZ_"},
@@ -68,6 +72,7 @@ var structTagObjectKeyTests = []struct {
 	{misnamedTag{"Animal Kingdom"}, "Animal Kingdom", "X"},
 	{badFormatTag{"Orfevre"}, "Orfevre", "Y"},
 	{badCodeTag{"Reliable Man"}, "Reliable Man", "Z"},
+	{percentSlashTag{"brut"}, "brut", "text/html%"},
 }
 
 func TestStructTagObjectKey(t *testing.T) {
@@ -88,7 +93,7 @@ func TestStructTagObjectKey(t *testing.T) {
 					t.Fatalf("Unexpected value: %#q, want %v", s, tt.value)
 				}
 			default:
-				t.Fatalf("Unexpected key: %#q", i)
+				t.Fatalf("Unexpected key: %#q, from %#q", i, b)
 			}
 		}
 	}

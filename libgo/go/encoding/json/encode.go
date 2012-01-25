@@ -39,6 +39,8 @@ import (
 //
 // String values encode as JSON strings, with each invalid UTF-8 sequence
 // replaced by the encoding of the Unicode replacement character U+FFFD.
+// The angle brackets "<" and ">" are escaped to "\u003c" and "\u003e"
+// to keep some browsers from misinterpreting JSON output as HTML.
 //
 // Array and slice values encode as JSON arrays, except that
 // []byte encodes as a base64-encoded string.
@@ -77,7 +79,8 @@ import (
 //    Int64String int64 `json:",string"`
 //
 // The key name will be used if it's a non-empty string consisting of
-// only Unicode letters, digits, dollar signs, hyphens, and underscores.
+// only Unicode letters, digits, dollar signs, percent signs, hyphens,
+// underscores and slashes.
 //
 // Map values encode as JSON objects.
 // The map's key type must be string; the object keys are used directly
@@ -417,8 +420,13 @@ func isValidTag(s string) bool {
 		return false
 	}
 	for _, c := range s {
-		if c != '$' && c != '-' && c != '_' && !unicode.IsLetter(c) && !unicode.IsDigit(c) {
-			return false
+		switch c {
+		case '$', '-', '_', '/', '%':
+			// Acceptable
+		default:
+			if !unicode.IsLetter(c) && !unicode.IsDigit(c) {
+				return false
+			}
 		}
 	}
 	return true

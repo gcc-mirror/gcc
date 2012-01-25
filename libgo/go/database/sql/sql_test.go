@@ -76,13 +76,50 @@ func TestQuery(t *testing.T) {
 		{age: 3, name: "Chris"},
 	}
 	if !reflect.DeepEqual(got, want) {
-		t.Logf(" got: %#v\nwant: %#v", got, want)
+		t.Errorf("mismatch.\n got: %#v\nwant: %#v", got, want)
 	}
 
 	// And verify that the final rows.Next() call, which hit EOF,
 	// also closed the rows connection.
 	if n := len(db.freeConn); n != 1 {
 		t.Errorf("free conns after query hitting EOF = %d; want 1", n)
+	}
+}
+
+func TestByteOwnership(t *testing.T) {
+	db := newTestDB(t, "people")
+	defer closeDB(t, db)
+	rows, err := db.Query("SELECT|people|name,photo|")
+	if err != nil {
+		t.Fatalf("Query: %v", err)
+	}
+	type row struct {
+		name  []byte
+		photo RawBytes
+	}
+	got := []row{}
+	for rows.Next() {
+		var r row
+		err = rows.Scan(&r.name, &r.photo)
+		if err != nil {
+			t.Fatalf("Scan: %v", err)
+		}
+		got = append(got, r)
+	}
+	corruptMemory := []byte("\xffPHOTO")
+	want := []row{
+		{name: []byte("Alice"), photo: corruptMemory},
+		{name: []byte("Bob"), photo: corruptMemory},
+		{name: []byte("Chris"), photo: corruptMemory},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("mismatch.\n got: %#v\nwant: %#v", got, want)
+	}
+
+	var photo RawBytes
+	err = db.QueryRow("SELECT|people|photo|name=?", "Alice").Scan(&photo)
+	if err == nil {
+		t.Error("want error scanning into RawBytes from QueryRow")
 	}
 }
 
@@ -300,6 +337,68 @@ func TestQueryRowClosingStmt(t *testing.T) {
 	}
 	fakeConn := db.freeConn[0].(*fakeConn)
 	if made, closed := fakeConn.stmtsMade, fakeConn.stmtsClosed; made != closed {
-		t.Logf("statement close mismatch: made %d, closed %d", made, closed)
+		t.Errorf("statement close mismatch: made %d, closed %d", made, closed)
+	}
+}
+
+func TestNullStringParam(t *testing.T) {
+	db := newTestDB(t, "")
+	defer closeDB(t, db)
+	exec(t, db, "CREATE|t|id=int32,name=string,favcolor=nullstring")
+
+	// Inserts with db.Exec:
+	exec(t, db, "INSERT|t|id=?,name=?,favcolor=?", 1, "alice", NullString{"aqua", true})
+	exec(t, db, "INSERT|t|id=?,name=?,favcolor=?", 2, "bob", NullString{"brown", false})
+
+	_, err := db.Exec("INSERT|t|id=?,name=?,favcolor=?", 999, nil, nil)
+	if err == nil {
+		// TODO: this test fails, but it's just because
+		// fakeConn implements the optional Execer interface,
+		// so arguably this is the correct behavior.  But
+		// maybe I should flesh out the fakeConn.Exec
+		// implementation so this properly fails.
+		// t.Errorf("expected error inserting nil name with Exec")
+	}
+
+	// Inserts with a prepared statement:
+	stmt, err := db.Prepare("INSERT|t|id=?,name=?,favcolor=?")
+	if err != nil {
+		t.Fatalf("prepare: %v", err)
+	}
+	if _, err := stmt.Exec(3, "chris", "chartreuse"); err != nil {
+		t.Errorf("exec insert chris: %v", err)
+	}
+	if _, err := stmt.Exec(4, "dave", NullString{"darkred", true}); err != nil {
+		t.Errorf("exec insert dave: %v", err)
+	}
+	if _, err := stmt.Exec(5, "eleanor", NullString{"eel", false}); err != nil {
+		t.Errorf("exec insert dave: %v", err)
+	}
+
+	// Can't put null name into non-nullstring column,
+	if _, err := stmt.Exec(5, NullString{"", false}, nil); err == nil {
+		t.Errorf("expected error inserting nil name with prepared statement Exec")
+	}
+
+	type nameColor struct {
+		name     string
+		favColor NullString
+	}
+
+	wantMap := map[int]nameColor{
+		1: nameColor{"alice", NullString{"aqua", true}},
+		2: nameColor{"bob", NullString{"", false}},
+		3: nameColor{"chris", NullString{"chartreuse", true}},
+		4: nameColor{"dave", NullString{"darkred", true}},
+		5: nameColor{"eleanor", NullString{"", false}},
+	}
+	for id, want := range wantMap {
+		var got nameColor
+		if err := db.QueryRow("SELECT|t|name,favcolor|id=?", id).Scan(&got.name, &got.favColor); err != nil {
+			t.Errorf("id=%d Scan: %v", id, err)
+		}
+		if got != want {
+			t.Errorf("id=%d got %#v, want %#v", id, got, want)
+		}
 	}
 }

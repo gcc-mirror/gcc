@@ -7,12 +7,11 @@
 package sql
 
 import (
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"io"
 	"sync"
-
-	"exp/sql/driver"
 )
 
 var drivers = make(map[string]driver.Driver)
@@ -30,11 +29,16 @@ func Register(name string, driver driver.Driver) {
 	drivers[name] = driver
 }
 
-// NullableString represents a string that may be null.
-// NullableString implements the ScannerInto interface so
+// RawBytes is a byte slice that holds a reference to memory owned by
+// the database itself. After a Scan into a RawBytes, the slice is only
+// valid until the next call to Next, Scan, or Close.
+type RawBytes []byte
+
+// NullString represents a string that may be null.
+// NullString implements the ScannerInto interface so
 // it can be used as a scan destination:
 //
-//  var s NullableString
+//  var s NullString
 //  err := db.QueryRow("SELECT name FROM foo WHERE id=?", id).Scan(&s)
 //  ...
 //  if s.Valid {
@@ -44,19 +48,27 @@ func Register(name string, driver driver.Driver) {
 //  }
 //
 // TODO(bradfitz): add other types.
-type NullableString struct {
+type NullString struct {
 	String string
 	Valid  bool // Valid is true if String is not NULL
 }
 
 // ScanInto implements the ScannerInto interface.
-func (ms *NullableString) ScanInto(value interface{}) error {
+func (ns *NullString) ScanInto(value interface{}) error {
 	if value == nil {
-		ms.String, ms.Valid = "", false
+		ns.String, ns.Valid = "", false
 		return nil
 	}
-	ms.Valid = true
-	return convertAssign(&ms.String, value)
+	ns.Valid = true
+	return convertAssign(&ns.String, value)
+}
+
+// SubsetValue implements the driver SubsetValuer interface.
+func (ns NullString) SubsetValue() (interface{}, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return ns.String, nil
 }
 
 // ScannerInto is an interface used by Scan.
@@ -525,6 +537,27 @@ func (s *Stmt) Exec(args ...interface{}) (Result, error) {
 	// Convert args to subset types.
 	if cc, ok := si.(driver.ColumnConverter); ok {
 		for n, arg := range args {
+			// First, see if the value itself knows how to convert
+			// itself to a driver type.  For example, a NullString
+			// struct changing into a string or nil.
+			if svi, ok := arg.(driver.SubsetValuer); ok {
+				sv, err := svi.SubsetValue()
+				if err != nil {
+					return nil, fmt.Errorf("sql: argument index %d from SubsetValue: %v", n, err)
+				}
+				if !driver.IsParameterSubsetType(sv) {
+					return nil, fmt.Errorf("sql: argument index %d: non-subset type %T returned from SubsetValue", n, sv)
+				}
+				arg = sv
+			}
+
+			// Second, ask the column to sanity check itself. For
+			// example, drivers might use this to make sure that
+			// an int64 values being inserted into a 16-bit
+			// integer field is in range (before getting
+			// truncated), or that a nil can't go into a NOT NULL
+			// column before going across the network to get the
+			// same error.
 			args[n], err = cc.ColumnConverter(n).ConvertValue(arg)
 			if err != nil {
 				return nil, fmt.Errorf("sql: converting Exec argument #%d's type: %v", n, err)
@@ -760,9 +793,13 @@ func (rs *Rows) Columns() ([]string, error) {
 }
 
 // Scan copies the columns in the current row into the values pointed
-// at by dest. If dest contains pointers to []byte, the slices should
-// not be modified and should only be considered valid until the next
-// call to Next or Scan.
+// at by dest.
+//
+// If an argument has type *[]byte, Scan saves in that argument a copy
+// of the corresponding data. The copy is owned by the caller and can
+// be modified and held indefinitely. The copy can be avoided by using
+// an argument of type *RawBytes instead; see the documentation for
+// RawBytes for restrictions on its use.
 func (rs *Rows) Scan(dest ...interface{}) error {
 	if rs.closed {
 		return errors.New("sql: Rows closed")
@@ -781,6 +818,18 @@ func (rs *Rows) Scan(dest ...interface{}) error {
 		if err != nil {
 			return fmt.Errorf("sql: Scan error on column index %d: %v", i, err)
 		}
+	}
+	for _, dp := range dest {
+		b, ok := dp.(*[]byte)
+		if !ok {
+			continue
+		}
+		if _, ok = dp.(*RawBytes); ok {
+			continue
+		}
+		clone := make([]byte, len(*b))
+		copy(clone, *b)
+		*b = clone
 	}
 	return nil
 }
@@ -838,6 +887,9 @@ func (r *Row) Scan(dest ...interface{}) error {
 	// they were obtained from the network anyway) But for now we
 	// don't care.
 	for _, dp := range dest {
+		if _, ok := dp.(*RawBytes); ok {
+			return errors.New("sql: RawBytes isn't allowed on Row.Scan")
+		}
 		b, ok := dp.(*[]byte)
 		if !ok {
 			continue

@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 )
 
 // Do not test empty datagrams by default.
@@ -63,7 +64,7 @@ func connect(t *testing.T, network, addr string, isEmpty bool) {
 	if err != nil {
 		t.Fatalf("net.Dial(%q, %q) = _, %v", network, addr, err)
 	}
-	fd.SetReadTimeout(1e9) // 1s
+	fd.SetReadDeadline(time.Now().Add(1 * time.Second))
 
 	var b []byte
 	if !isEmpty {
@@ -91,7 +92,7 @@ func connect(t *testing.T, network, addr string, isEmpty bool) {
 }
 
 func doTest(t *testing.T, network, listenaddr, dialaddr string) {
-	t.Logf("Test %q %q %q\n", network, listenaddr, dialaddr)
+	t.Logf("Test %q %q %q", network, listenaddr, dialaddr)
 	switch listenaddr {
 	case "", "0.0.0.0", "[::]", "[::ffff:0.0.0.0]":
 		if testing.Short() || avoidMacFirewall {
@@ -169,10 +170,10 @@ func runPacket(t *testing.T, network, addr string, listening chan<- string, done
 		t.Fatalf("net.ListenPacket(%q, %q) = _, %v", network, addr, err)
 	}
 	listening <- c.LocalAddr().String()
-	c.SetReadTimeout(10e6) // 10ms
 	var buf [1000]byte
 Run:
 	for {
+		c.SetReadDeadline(time.Now().Add(10 * time.Millisecond))
 		n, addr, err := c.ReadFrom(buf[0:])
 		if e, ok := err.(Error); ok && e.Timeout() {
 			select {
@@ -194,7 +195,7 @@ Run:
 }
 
 func doTestPacket(t *testing.T, network, listenaddr, dialaddr string, isEmpty bool) {
-	t.Logf("TestPacket %s %s %s\n", network, listenaddr, dialaddr)
+	t.Logf("TestPacket %q %q %q", network, listenaddr, dialaddr)
 	listening := make(chan string)
 	done := make(chan int)
 	if network == "udp" {
