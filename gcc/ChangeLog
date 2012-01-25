@@ -1,3 +1,9 @@
+2012-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/51986
+	* sched-deps.c (sched_get_condition_with_rev_uncached): Don't test
+	for pat == 0.
+
 2012-01-25  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_small_data_pattern_1): Don't process
