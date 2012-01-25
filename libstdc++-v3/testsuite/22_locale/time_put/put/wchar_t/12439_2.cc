@@ -15,6 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-require-time "" }
+
 // 22.2.5.3.1 time_put members
 
 #include <locale>

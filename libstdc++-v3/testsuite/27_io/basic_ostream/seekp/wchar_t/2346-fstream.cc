@@ -15,6 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-require-fileio "" }
+
 // 27.6.2.4  basic_ostream seek members  [lib.ostream.seeks]
 // @require@ %-*.tst %-*.txt
 // @diff@ %-*.tst %-*.txt

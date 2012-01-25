@@ -15,6 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-require-fileio "" }
+
 // 27.6.1.3 unformatted input functions
 // NB: ostream has a particular "seeks" category. Adopt this for istreams too.
 // @require@ %-*.tst %-*.txt
