@@ -1,5 +1,5 @@
 /* Passes for transactional memory support.
-   Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1488,18 +1488,7 @@ requires_barrier (basic_block entry_block, tree x, gimple stmt)
 	}
 
       if (is_global_var (x))
-	{
-	  if (DECL_THREAD_LOCAL_P (x))
-	    goto thread_local;
-	  if (DECL_HAS_VALUE_EXPR_P (x))
-	    {
-	      tree value = get_base_address (DECL_VALUE_EXPR (x));
-
-	      if (value && DECL_P (value) && DECL_THREAD_LOCAL_P (value))
-		goto thread_local;
-	    }
-	  return !TREE_READONLY (x);
-	}
+	return !TREE_READONLY (x);
       if (/* FIXME: This condition should actually go below in the
 	     tm_log_add() call, however is_call_clobbered() depends on
 	     aliasing info which is not available during
@@ -1509,14 +1498,17 @@ requires_barrier (basic_block entry_block, tree x, gimple stmt)
 	     lower_sequence_tm altogether.  */
 	  needs_to_live_in_memory (x))
 	return true;
-    thread_local:
-      /* For local memory that doesn't escape (aka thread private memory), 
-	 we can either save the value at the beginning of the transaction and
-	 restore on restart, or call a tm function to dynamically save and
-	 restore on restart (ITM_L*). */
-      if (stmt)
-	tm_log_add (entry_block, orig, stmt);
-      return false;
+      else
+	{
+	  /* For local memory that doesn't escape (aka thread private
+	     memory), we can either save the value at the beginning of
+	     the transaction and restore on restart, or call a tm
+	     function to dynamically save and restore on restart
+	     (ITM_L*).  */
+	  if (stmt)
+	    tm_log_add (entry_block, orig, stmt);
+	  return false;
+	}
 
     default:
       return false;
