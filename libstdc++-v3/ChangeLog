@@ -1,3 +1,18 @@
+2012-01-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* testsuite/20_util/system_clock/1.cc: Add dg-require-time.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_2.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_3.cc: Likewise.
+	* testsuite/27_io/basic_istream/readsome/wchar_t/6746-2.cc: Add
+	dg-require-fileio.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/fstream.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/fstream.cc: Likewise.
+	* testsuite/27_io/basic_ostream/seekp/wchar_t/2346-fstream.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/tellp/wchar_t/1.cc: Likewise.
+
 2012-01-25  Matthias Klose  <doko@ubuntu.com>
 
 	* testsuite/30_threads/condition_variable_any/requirements: Remove
