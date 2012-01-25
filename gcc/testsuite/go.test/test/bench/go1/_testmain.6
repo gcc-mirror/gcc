@@ -1,0 +1,261 @@
+go object linux amd64 weekly.2012-01-15 11312+ X:none
+  exports automatically generated from
+  _testmain.go in package "main"
+
+$$  // exports
+    package main
+	import runtime "runtime"
+	import go1 "go1"
+	import testing "testing"
+	import regexp "regexp"
+	import time "time" // indirect
+	type @"time".zone struct { @"time".name string; @"time".offset int; @"time".isDST bool }
+	type @"time".zoneTrans struct { @"time".when int64; @"time".index uint8; @"time".isstd bool; @"time".isutc bool }
+	type @"time".Location struct { @"time".name string; @"time".zone []@"time".zone; @"time".tx []@"time".zoneTrans; @"time".cacheStart int64; @"time".cacheEnd int64; @"time".cacheZone *@"time".zone }
+	func (@"time".l *@"time".Location) String() (? string)
+	func (@"time".l *@"time".Location) @"time".get() (? *@"time".Location)
+	func (@"time".l *@"time".Location) @"time".lookup(@"time".sec int64) (@"time".name string, @"time".offset int, @"time".isDST bool, @"time".start int64, @"time".end int64)
+	func (@"time".l *@"time".Location) @"time".lookupName(@"time".name string "noescape") (@"time".offset int, @"time".isDST bool, @"time".ok bool)
+	func (@"time".l *@"time".Location) @"time".lookupOffset(@"time".offset int) (@"time".name string, @"time".isDST bool, @"time".ok bool)
+	type @"time".Duration int64
+	func (@"time".d @"time".Duration) Hours() (? float64)
+	func (@"time".d @"time".Duration) Minutes() (? float64)
+	func (@"time".d @"time".Duration) Nanoseconds() (? int64) { return int64(@"time".d) }
+	func (@"time".d @"time".Duration) Seconds() (? float64)
+	func (@"time".d @"time".Duration) String() (? string)
+	type @"time".Month int
+	func (@"time".m @"time".Month) String() (? string) { return @"time".months[@"time".m - @"time".Month(1)] }
+	type @"time".Weekday int
+	func (@"time".d @"time".Weekday) String() (? string) { return @"time".days[@"time".d] }
+	type @"time".Time struct { @"time".sec int64; @"time".nsec int32; @"time".loc *@"time".Location }
+	func (@"time".t @"time".Time) Add(@"time".d @"time".Duration) (? @"time".Time)
+	func (@"time".t @"time".Time) AddDate(@"time".years int, @"time".months int, @"time".days int) (? @"time".Time)
+	func (@"time".t @"time".Time "noescape") After(@"time".u @"time".Time "noescape") (? bool) { return @"time".t.@"time".sec > @"time".u.@"time".sec || @"time".t.@"time".sec == @"time".u.@"time".sec && @"time".t.@"time".nsec > @"time".u.@"time".nsec }
+	func (@"time".t @"time".Time "noescape") Before(@"time".u @"time".Time "noescape") (? bool) { return @"time".t.@"time".sec < @"time".u.@"time".sec || @"time".t.@"time".sec == @"time".u.@"time".sec && @"time".t.@"time".nsec < @"time".u.@"time".nsec }
+	func (@"time".t @"time".Time) Clock() (@"time".hour int, @"time".min int, @"time".sec int)
+	func (@"time".t @"time".Time) Date() (@"time".year int, @"time".month @"time".Month, @"time".day int)
+	func (@"time".t @"time".Time) Day() (? int)
+	func (@"time".t @"time".Time "noescape") Equal(@"time".u @"time".Time "noescape") (? bool) { return @"time".t.@"time".sec == @"time".u.@"time".sec && @"time".t.@"time".nsec == @"time".u.@"time".nsec }
+	func (@"time".t @"time".Time) Format(@"time".layout string) (? string)
+	func (@"time".t *@"time".Time "noescape") GobDecode(@"time".buf []byte "noescape") (? error)
+	func (@"time".t @"time".Time) GobEncode() (? []byte, ? error)
+	func (@"time".t @"time".Time) Hour() (? int)
+	func (@"time".t @"time".Time) ISOWeek() (@"time".year int, @"time".week int)
+	func (@"time".t @"time".Time) In(@"time".loc *@"time".Location) (? @"time".Time)
+	func (@"time".t @"time".Time "noescape") IsZero() (? bool) { return @"time".t.@"time".sec == 0 && @"time".t.@"time".nsec == 0 }
+	func (@"time".t @"time".Time) Local() (? @"time".Time)
+	func (@"time".t @"time".Time) Location() (? *@"time".Location)
+	func (@"time".t @"time".Time) MarshalJSON() (? []byte, ? error)
+	func (@"time".t @"time".Time) Minute() (? int)
+	func (@"time".t @"time".Time) Month() (? @"time".Month)
+	func (@"time".t @"time".Time "noescape") Nanosecond() (? int) { return int(@"time".t.@"time".nsec) }
+	func (@"time".t @"time".Time) Second() (? int)
+	func (@"time".t @"time".Time) String() (? string)
+	func (@"time".t @"time".Time "noescape") Sub(@"time".u @"time".Time "noescape") (? @"time".Duration) { return @"time".Duration(@"time".t.@"time".sec - @"time".u.@"time".sec) * @"time".Duration(1000000000) + @"time".Duration(@"time".t.@"time".nsec - @"time".u.@"time".nsec) }
+	func (@"time".t @"time".Time) UTC() (? @"time".Time)
+	func (@"time".t @"time".Time "noescape") Unix() (? int64) { return @"time".t.@"time".sec + -62135596800 }
+	func (@"time".t @"time".Time "noescape") UnixNano() (? int64) { return (@"time".t.@"time".sec + -62135596800) * 1000000000 + int64(@"time".t.@"time".nsec) }
+	func (@"time".t *@"time".Time "noescape") UnmarshalJSON(@"time".data []byte "noescape") (@"time".err error)
+	func (@"time".t @"time".Time) Weekday() (? @"time".Weekday)
+	func (@"time".t @"time".Time) Year() (? int)
+	func (@"time".t @"time".Time) Zone() (@"time".name string, @"time".offset int)
+	func (@"time".t @"time".Time) @"time".abs() (? uint64)
+	func (@"time".t @"time".Time) @"time".date(@"time".full bool) (@"time".year int, @"time".month @"time".Month, @"time".day int, @"time".yday int)
+	type @"testing".common struct { @"testing".output []byte; @"testing".failed bool; @"testing".start @"time".Time; @"testing".duration @"time".Duration; @"testing".self interface {}; @"testing".signal chan interface {} }
+	func (@"testing".c *@"testing".common "noescape") Error(@"testing".args ...interface {} "noescape")
+	func (@"testing".c *@"testing".common "noescape") Errorf(@"testing".format string "noescape", @"testing".args ...interface {} "noescape")
+	func (@"testing".c *@"testing".common "noescape") Fail() { @"testing".c.@"testing".failed = true }
+	func (@"testing".c *@"testing".common "noescape") FailNow()
+	func (@"testing".c *@"testing".common "noescape") Failed() (? bool) { return @"testing".c.@"testing".failed }
+	func (@"testing".c *@"testing".common "noescape") Fatal(@"testing".args ...interface {} "noescape")
+	func (@"testing".c *@"testing".common "noescape") Fatalf(@"testing".format string "noescape", @"testing".args ...interface {} "noescape")
+	func (@"testing".c *@"testing".common "noescape") Log(@"testing".args ...interface {} "noescape")
+	func (@"testing".c *@"testing".common "noescape") Logf(@"testing".format string "noescape", @"testing".args ...interface {} "noescape")
+	func (@"testing".c *@"testing".common "noescape") @"testing".log(@"testing".s string)
+	type @"testing".T struct { ? @"testing".common; @"testing".name string; @"testing".startParallel chan bool }
+	func (@"testing".t *@"testing".T "noescape") Parallel()
+	func (@"testing".t *@"testing".T "noescape") @"testing".report()
+	type @"testing".InternalTest struct { Name string; F func(? *@"testing".T) }
+	var @"".tests []@"testing".InternalTest
+	type @"testing".BenchmarkResult struct { N int; T @"time".Duration; Bytes int64 }
+	func (@"testing".r @"testing".BenchmarkResult) NsPerOp() (? int64)
+	func (@"testing".r @"testing".BenchmarkResult) String() (? string)
+	func (@"testing".r @"testing".BenchmarkResult) @"testing".mbPerSec() (? float64)
+	type @"testing".B struct { ? @"testing".common; N int; @"testing".benchmark @"testing".InternalBenchmark; @"testing".bytes int64; @"testing".timerOn bool; @"testing".result @"testing".BenchmarkResult }
+	func (@"testing".b *@"testing".B "noescape") ResetTimer()
+	func (@"testing".b *@"testing".B "noescape") SetBytes(@"testing".n int64) { @"testing".b.@"testing".bytes = @"testing".n }
+	func (@"testing".b *@"testing".B "noescape") StartTimer()
+	func (@"testing".b *@"testing".B "noescape") StopTimer()
+	func (@"testing".b *@"testing".B) @"testing".launch()
+	func (@"testing".b *@"testing".B "noescape") @"testing".nsPerOp() (? int64)
+	func (@"testing".b *@"testing".B) @"testing".run() (? @"testing".BenchmarkResult)
+	func (@"testing".b *@"testing".B) @"testing".runN(@"testing".n int)
+	func (@"testing".b *@"testing".B "noescape") @"testing".trimOutput()
+	type @"testing".InternalBenchmark struct { Name string; F func(@"testing".b *@"testing".B) }
+	var @"".benchmarks []@"testing".InternalBenchmark
+	type @"testing".InternalExample struct { Name string; F func(); Output string }
+	var @"".examples []@"testing".InternalExample
+	var @"".matchPat string
+	import syntax "regexp/syntax" // indirect
+	type @"regexp/syntax".InstOp uint8
+	type @"regexp/syntax".Inst struct { Op @"regexp/syntax".InstOp; Out uint32; Arg uint32; Rune []rune }
+	func (@"regexp/syntax".i *@"regexp/syntax".Inst "noescape") MatchEmptyWidth(@"regexp/syntax".before rune, @"regexp/syntax".after rune) (? bool)
+	func (@"regexp/syntax".i *@"regexp/syntax".Inst "noescape") MatchRune(@"regexp/syntax".r rune) (? bool)
+	func (@"regexp/syntax".i *@"regexp/syntax".Inst "noescape") String() (? string)
+	func (@"regexp/syntax".i *@"regexp/syntax".Inst "noescape") @"regexp/syntax".op() (? @"regexp/syntax".InstOp)
+	type @"regexp/syntax".EmptyOp uint8
+	type @"regexp/syntax".Prog struct { Inst []@"regexp/syntax".Inst; Start int; NumCap int }
+	func (@"regexp/syntax".p *@"regexp/syntax".Prog "noescape") Prefix() (@"regexp/syntax".prefix string, @"regexp/syntax".complete bool)
+	func (@"regexp/syntax".p *@"regexp/syntax".Prog "noescape") StartCond() (? @"regexp/syntax".EmptyOp)
+	func (@"regexp/syntax".p *@"regexp/syntax".Prog "noescape") String() (? string)
+	func (@"regexp/syntax".p *@"regexp/syntax".Prog "noescape") @"regexp/syntax".skipNop(@"regexp/syntax".pc uint32) (? *@"regexp/syntax".Inst)
+	import sync "sync" // indirect
+	type @"sync".Mutex struct { @"sync".state int32; @"sync".sema uint32 }
+	func (@"sync".m *@"sync".Mutex) Lock()
+	func (@"sync".m *@"sync".Mutex) Unlock()
+	type @"regexp".thread struct { @"regexp".inst *@"regexp/syntax".Inst; @"regexp".cap []int }
+	type @"regexp".entry struct { @"regexp".pc uint32; @"regexp".t *@"regexp".thread }
+	type @"regexp".queue struct { @"regexp".sparse []uint32; @"regexp".dense []@"regexp".entry }
+	type @"regexp".inputBytes struct { @"regexp".str []byte }
+	func (@"regexp".i *@"regexp".inputBytes "noescape") @"regexp".canCheckPrefix() (? bool) { return true }
+	func (@"regexp".i *@"regexp".inputBytes "noescape") @"regexp".context(@"regexp".pos int) (? @"regexp/syntax".EmptyOp)
+	func (@"regexp".i *@"regexp".inputBytes "noescape") @"regexp".hasPrefix(@"regexp".re *@"regexp".Regexp "noescape") (? bool)
+	func (@"regexp".i *@"regexp".inputBytes "noescape") @"regexp".index(@"regexp".re *@"regexp".Regexp "noescape", @"regexp".pos int) (? int)
+	func (@"regexp".i *@"regexp".inputBytes "noescape") @"regexp".step(@"regexp".pos int) (? rune, ? int)
+	type @"regexp".inputString struct { @"regexp".str string }
+	func (@"regexp".i *@"regexp".inputString "noescape") @"regexp".canCheckPrefix() (? bool) { return true }
+	func (@"regexp".i *@"regexp".inputString "noescape") @"regexp".context(@"regexp".pos int) (? @"regexp/syntax".EmptyOp)
+	func (@"regexp".i *@"regexp".inputString "noescape") @"regexp".hasPrefix(@"regexp".re *@"regexp".Regexp "noescape") (? bool)
+	func (@"regexp".i *@"regexp".inputString "noescape") @"regexp".index(@"regexp".re *@"regexp".Regexp "noescape", @"regexp".pos int) (? int)
+	func (@"regexp".i *@"regexp".inputString "noescape") @"regexp".step(@"regexp".pos int) (? rune, ? int)
+	import io "io" // indirect
+	type @"io".RuneReader interface { ReadRune() (@"io".r rune, @"io".size int, @"io".err error) }
+	type @"regexp".inputReader struct { @"regexp".r @"io".RuneReader; @"regexp".atEOT bool; @"regexp".pos int }
+	func (@"regexp".i *@"regexp".inputReader "noescape") @"regexp".canCheckPrefix() (? bool) { return false }
+	func (@"regexp".i *@"regexp".inputReader "noescape") @"regexp".context(@"regexp".pos int) (? @"regexp/syntax".EmptyOp) { return @"regexp/syntax".EmptyOp(0) }
+	func (@"regexp".i *@"regexp".inputReader "noescape") @"regexp".hasPrefix(@"regexp".re *@"regexp".Regexp "noescape") (? bool) { return false }
+	func (@"regexp".i *@"regexp".inputReader "noescape") @"regexp".index(@"regexp".re *@"regexp".Regexp "noescape", @"regexp".pos int) (? int) { return -1 }
+	func (@"regexp".i *@"regexp".inputReader "noescape") @"regexp".step(@"regexp".pos int) (? rune, ? int)
+	type @"regexp".input interface { @"regexp".step(@"regexp".pos int) (@"regexp".r rune, @"regexp".width int); @"regexp".canCheckPrefix() (? bool); @"regexp".hasPrefix(@"regexp".re *@"regexp".Regexp) (? bool); @"regexp".index(@"regexp".re *@"regexp".Regexp, @"regexp".pos int) (? int); @"regexp".context(@"regexp".pos int) (? @"regexp/syntax".EmptyOp) }
+	type @"regexp".machine struct { @"regexp".re *@"regexp".Regexp; @"regexp".p *@"regexp/syntax".Prog; @"regexp".q0 @"regexp".queue; @"regexp".q1 @"regexp".queue; @"regexp".pool []*@"regexp".thread; @"regexp".matched bool; @"regexp".matchcap []int; @"regexp".inputBytes @"regexp".inputBytes; @"regexp".inputString @"regexp".inputString; @"regexp".inputReader @"regexp".inputReader }
+	func (@"regexp".m *@"regexp".machine "noescape") @"regexp".add(@"regexp".q *@"regexp".queue "noescape", @"regexp".pc uint32, @"regexp".pos int, @"regexp".cap []int "noescape", @"regexp".cond @"regexp/syntax".EmptyOp, @"regexp".t *@"regexp".thread) (? *@"regexp".thread)
+	func (@"regexp".m *@"regexp".machine "noescape") @"regexp".alloc(@"regexp".i *@"regexp/syntax".Inst) (? *@"regexp".thread)
+	func (@"regexp".m *@"regexp".machine "noescape") @"regexp".clear(@"regexp".q *@"regexp".queue "noescape")
+	func (@"regexp".m *@"regexp".machine "noescape") @"regexp".free(@"regexp".t *@"regexp".thread)
+	func (@"regexp".m *@"regexp".machine "noescape") @"regexp".init(@"regexp".ncap int)
+	func (@"regexp".m *@"regexp".machine "noescape") @"regexp".match(@"regexp".i @"regexp".input, @"regexp".pos int) (? bool)
+	func (@"regexp".m *@"regexp".machine) @"regexp".newInputBytes(@"regexp".b []byte) (? @"regexp".input)
+	func (@"regexp".m *@"regexp".machine) @"regexp".newInputReader(@"regexp".r @"io".RuneReader) (? @"regexp".input)
+	func (@"regexp".m *@"regexp".machine) @"regexp".newInputString(@"regexp".s string) (? @"regexp".input)
+	func (@"regexp".m *@"regexp".machine "noescape") @"regexp".step(@"regexp".runq *@"regexp".queue "noescape", @"regexp".nextq *@"regexp".queue "noescape", @"regexp".pos int, @"regexp".nextPos int, @"regexp".c rune, @"regexp".nextCond @"regexp/syntax".EmptyOp)
+	type @"regexp".Regexp struct { @"regexp".expr string; @"regexp".prog *@"regexp/syntax".Prog; @"regexp".prefix string; @"regexp".prefixBytes []byte; @"regexp".prefixComplete bool; @"regexp".prefixRune rune; @"regexp".cond @"regexp/syntax".EmptyOp; @"regexp".numSubexp int; @"regexp".longest bool; @"regexp".mu @"sync".Mutex; @"regexp".machine []*@"regexp".machine }
+	func (@"regexp".re *@"regexp".Regexp) Find(@"regexp".b []byte) (? []byte)
+	func (@"regexp".re *@"regexp".Regexp) FindAll(@"regexp".b []byte, @"regexp".n int) (? [][]byte)
+	func (@"regexp".re *@"regexp".Regexp) FindAllIndex(@"regexp".b []byte, @"regexp".n int) (? [][]int)
+	func (@"regexp".re *@"regexp".Regexp) FindAllString(@"regexp".s string, @"regexp".n int) (? []string)
+	func (@"regexp".re *@"regexp".Regexp) FindAllStringIndex(@"regexp".s string, @"regexp".n int) (? [][]int)
+	func (@"regexp".re *@"regexp".Regexp) FindAllStringSubmatch(@"regexp".s string, @"regexp".n int) (? [][]string)
+	func (@"regexp".re *@"regexp".Regexp) FindAllStringSubmatchIndex(@"regexp".s string, @"regexp".n int) (? [][]int)
+	func (@"regexp".re *@"regexp".Regexp) FindAllSubmatch(@"regexp".b []byte, @"regexp".n int) (? [][][]byte)
+	func (@"regexp".re *@"regexp".Regexp) FindAllSubmatchIndex(@"regexp".b []byte, @"regexp".n int) (? [][]int)
+	func (@"regexp".re *@"regexp".Regexp) FindIndex(@"regexp".b []byte) (@"regexp".loc []int)
+	func (@"regexp".re *@"regexp".Regexp) FindReaderIndex(@"regexp".r @"io".RuneReader) (? []int)
+	func (@"regexp".re *@"regexp".Regexp) FindReaderSubmatchIndex(@"regexp".r @"io".RuneReader) (? []int)
+	func (@"regexp".re *@"regexp".Regexp) FindString(@"regexp".s string) (? string)
+	func (@"regexp".re *@"regexp".Regexp) FindStringIndex(@"regexp".s string) (? []int)
+	func (@"regexp".re *@"regexp".Regexp) FindStringSubmatch(@"regexp".s string) (? []string)
+	func (@"regexp".re *@"regexp".Regexp) FindStringSubmatchIndex(@"regexp".s string) (? []int)
+	func (@"regexp".re *@"regexp".Regexp) FindSubmatch(@"regexp".b []byte) (? [][]byte)
+	func (@"regexp".re *@"regexp".Regexp) FindSubmatchIndex(@"regexp".b []byte) (? []int)
+	func (@"regexp".re *@"regexp".Regexp "noescape") LiteralPrefix() (@"regexp".prefix string, @"regexp".complete bool) { return @"regexp".re.@"regexp".prefix, @"regexp".re.@"regexp".prefixComplete }
+	func (@"regexp".re *@"regexp".Regexp) Match(@"regexp".b []byte) (? bool)
+	func (@"regexp".re *@"regexp".Regexp) MatchReader(@"regexp".r @"io".RuneReader) (? bool)
+	func (@"regexp".re *@"regexp".Regexp) MatchString(@"regexp".s string) (? bool)
+	func (@"regexp".re *@"regexp".Regexp "noescape") NumSubexp() (? int) { return @"regexp".re.@"regexp".numSubexp }
+	func (@"regexp".re *@"regexp".Regexp) ReplaceAll(@"regexp".src []byte, @"regexp".repl []byte "noescape") (? []byte)
+	func (@"regexp".re *@"regexp".Regexp) ReplaceAllFunc(@"regexp".src []byte, @"regexp".repl func(? []byte) (? []byte) "noescape") (? []byte)
+	func (@"regexp".re *@"regexp".Regexp) ReplaceAllString(@"regexp".src string, @"regexp".repl string "noescape") (? string)
+	func (@"regexp".re *@"regexp".Regexp) ReplaceAllStringFunc(@"regexp".src string, @"regexp".repl func(? string) (? string) "noescape") (? string)
+	func (@"regexp".re *@"regexp".Regexp "noescape") String() (? string) { return @"regexp".re.@"regexp".expr }
+	func (@"regexp".re *@"regexp".Regexp) @"regexp".allMatches(@"regexp".s string, @"regexp".b []byte, @"regexp".n int, @"regexp".deliver func(? []int) "noescape")
+	func (@"regexp".re *@"regexp".Regexp) @"regexp".doExecute(@"regexp".r @"io".RuneReader, @"regexp".b []byte, @"regexp".s string, @"regexp".pos int, @"regexp".ncap int) (? []int)
+	func (@"regexp".re *@"regexp".Regexp) @"regexp".get() (? *@"regexp".machine)
+	func (@"regexp".re *@"regexp".Regexp "noescape") @"regexp".pad(@"regexp".a []int) (? []int)
+	func (@"regexp".re *@"regexp".Regexp) @"regexp".put(@"regexp".z *@"regexp".machine)
+	var @"".matchRe *@"regexp".Regexp
+	func @"".matchString(@"".pat string, @"".str string) (@"".result bool, @"".err error)
+	func @"".main()
+	var @"".statictmp_0001 [0]@"testing".InternalTest
+	var @"".statictmp_0002 [10]@"testing".InternalBenchmark
+	var @"".statictmp_0003 [0]@"testing".InternalExample
+	var @"".initdoneÂ· uint8
+	func @"".init()
+	var @"time".months [12]string
+	var @"time".days [7]string
+
+$$  // local types
+
+$$
+
+!
+„ y</ „ y<home „ y<iant „ y<go „ y<test „ y<bench „ y<go1 „ y<_testmain.go 8      „ y<go1.a 8     ÿÿÿÿu„ y<testing.a 8     ÿÿÿÿu„ y<regexp.a 8     ÿÿÿÿu8 *     „ q"".matchString „ qtype.func(string, string) (bool, error) ã    ‘qE(   8   u„ q"".matchPat „ qtype.string r    •   q„ t"".pat r    •   t„ t"".err „ qtype.error ®   u•(   t®   u•0   t„ qtype.bool q    u„ t	"".result q        	t„ q
+"".matchRe „ qtype.*regexp.Regexp ®   ‘
+q®   u¢   Q        p&    Z        p«   ®   ‘q®   r       «      ®   ‘t®   r       „ qruntime.cmpstring „ qtype.func(string, string) int      ‘qr    •   tr        &    uZ        pY     -   p®   ‘t„ regexp.expr «   ®   ‘q®   Žr    •   qr       Ž„ qregexp.Compile „ qtype.func(string) (*regexp.Regexp, error)      ‘q®      ®   ‘
+q«      ®   Ž®   •(   t®      Ž®   •0   t«   •(   t¢   ŽuQ     -   pª       ®#   ‘
+q„ regexp.re ®#   „ regexp.s «#      „ t"".str ®#   •   t®#   Žr #   •   tr #      Ž„ qregexp.(*Regexp).MatchString  #    qq #      q #   q #   q #   •    	t®#   u•(   t®#   u•0   tª #     „ q"".main „ qtype.func() ã &   ‘q8   u®'   “q x„ testing.matchString ®'   „ testing.tests «'      „ q"".tests „ qtype.[]testing.InternalTest ®'   ‘q®'   Žr '   •   qr '      Žr '   •   qr '      Ž„ testing.benchmarks «'      „ q"".benchmarks „ qtype.[]testing.InternalBenchmark ®'   ‘q®'   Žr '   •   qr '      Žr '   •   qr '      Ž„ testing.examples «'   (   „ q"".examples „ q type.[]testing.InternalExample ®'   ‘q ®'   Žr '   •   q r '      Žr '   •   q r '      Ž„ q!testing.Main „ q"type.func(func(string, string) (bool, error), []testing.InternalTest, []testing.InternalBenchmark, []testing.InternalExample)  '    ‘!q"ª (     „ q#"".init ã (   ‘#qu„ q$"".initdoneÂ· „ q%type.uint8 q (   ‘$q%q (   %% (   uQ (    `   pq (   %% (      uZ (    _   pª (     „ q&runtime.throwinit  (    ‘&qq (      u‘$q%„ q'regexp.init  (    ‘'q„ q(testing.init  (    ‘(q„ q)go1.init  (    ‘)q„ q*go1.BenchmarkBinaryTree17 „ q+type.func(*testing.B) ®   “q *x+„ q,"".statictmp_0002 ®      ,q„ q-go1.BenchmarkFannkuch11 ®   “q -x+®   (   ,q„ q.go1.BenchmarkGobDecode ®   “q .x+®   @   ,q„ q/go1.BenchmarkGobEncode ®   “q /x+®   X   ,q„ q0go1.BenchmarkGzip ®   “q 0x+®   p   ,q„ q1go1.BenchmarkGunzip ®   “q 1x+®   ˆ   ,q„ qgo1.BenchmarkJSONEncode ®   “q x+®       ,q„ qgo1.BenchmarkJSONDecode ®   “q x+®   ¸   ,q„ qgo1.BenchmarkRevcomp25M ®   “q x+®   Ð   ,q„ qgo1.BenchmarkTemplate ®   “q x+®   è   ,qq (      u‘$q%ª (     „ q"".statictmp_0001 -    “oqq x-    —o   qu-    —o   qu-    “oqq ,x-    —o   q
+   u-    —o   q
+   u„ qgo.string."go1.BenchmarkBinaryTree17" -    o,qq    x-    oqq    x-    o   q   u-    o   q go1.Benc-    o   q hmarkBin-    o   q aryTree1-    o$   q 7       -    o%   qu6    o
+q(   u-    o   ,q   u„ qgo.string."go1.BenchmarkFannkuch11" -    o   ,qq    x-    oqq    x-    o   q   u-    o   q go1.Benc-    o   q hmarkFan-    o   q nkuch11 -    o#   qu6    o
+q(   u-    o    ,q   u„ qgo.string."go1.BenchmarkGobDecode" -    o0   ,qq    x-    oqq    x-    o   q   u-    o   q go1.Benc-    o   q hmarkGob-    o   q Decode  -    o"   qu6    o
+q(   u-    o8   ,q   u„ q	go.string."go1.BenchmarkGobEncode" -    oH   ,qq    	x-    o	qq    	x-    o   	q   u-    o   	q go1.Benc-    o   	q hmarkGob-    o   	q Encode  -    o"   	qu6    o
+	q(   u-    oP   ,q   u„ q
+go.string."go1.BenchmarkGzip" -    o`   ,qq    
+x-    o
+qq    
+x-    o   
+q   u-    o   
+q go1.Benc-    o   
+q hmarkGzi-    o   
+q p       -    o   
+qu6    o
+
+q    u-    oh   ,q   u„ qgo.string."go1.BenchmarkGunzip" -    ox   ,qq    x-    oqq    x-    o   q   u-    o   q go1.Benc-    o   q hmarkGun-    o   q zip     -    o   qu6    o
+q    u-    o€   ,q   u„ qgo.string."go1.BenchmarkJSONEncode" -    o   ,qq    x-    oqq    x-    o   q   u-    o   q go1.Benc-    o   q hmarkJSO-    o   q NEncode -    o#   qu6    o
+q(   u-    o˜   ,q   u„ qgo.string."go1.BenchmarkJSONDecode" -    o¨   ,qq    x-    oqq    x-    o   q   u-    o   q go1.Benc-    o   q hmarkJSO-    o   q NDecode -    o#   qu6    o
+q(   u-    o°   ,q   u„ qgo.string."go1.BenchmarkRevcomp25M" -    oÀ   ,qq    x-    oqq    x-    o   q   u-    o   q go1.Benc-    o   q hmarkRev-    o   q comp25M -    o#   qu6    o
+q(   u-    oÈ   ,q   u„ qgo.string."go1.BenchmarkTemplate" -    oØ   ,qq    x-    oqq    x-    o   q   u-    o   q go1.Benc-    o   q hmarkTem-    o   q plate   -    o!   qu6    o
+q(   u-    oà   ,q   u„ q"".statictmp_0003 -    “oq q x-    —o   q u-    —o   q u6    ‘q     u6    ‘q     u6    ‘q      u„ q"".matchPat „ qtype.string 6    ‘q     u„ q"".matchRe „ qtype.*regexp.Regexp 6    ‘q     u6    q  u6    ,q  ð   u6    q  u6 (   ‘$q%     u„ qtype.func(string, string) (bool, error) „ qtype.*runtime.FuncType - (   oqq x- (   o   qq    x- (   o   q   u- (   o   qB€7#u- (   o   qu- (   o   q   u- (   o   q   u- (   o   q   u„ qruntime.algarray - (   o    qq @  x„ qgo.string."func(string, string) (bool, error)" - (   o(   qq x- (   oqq    x- (   o   q"   u- (   o   q func(str- (   o   q ing, str- (   o   q ing) (bo- (   o$   q ol, erro- (   o,   q r)      - (   o.   qu6 (   o
+q0   u„ qweak.type.*func(string, string) (bool, error) - (   o8   qq x- (   o@   qu- (   oH   qq h   x- (   oP   q   u- (   oT   q   u- (   oX   qq x   x- (   o`   q   u- (   od   q   u- (   oh   qq x- (   op   qq x„ qtype.bool - (   ox   qq x„ qtype.error - (   o€   qq x6 (   o
+qˆ   u„ qtype.func(string, string) int - (   oqq x- (   o   qq    x- (   o   q   u- (   o   qE6Ì    u- (   o   qu- (   o   q   u- (   o   q   u- (   o   q   u- (   o    qq @  x„ qgo.string."func(string, string) int" - (   o(   qq x- (   oqq    x- (   o   q   u- (   o   q func(str- (   o   q ing, str- (   o   q ing) int- (   o$   qu6 (   o
+q(   u„ qweak.type.*func(string, string) int - (   o8   qq x- (   o@   qu- (   oH   qq h   x- (   oP   q   u- (   oT   q   u- (   oX   qq x   x- (   o`   q   u- (   od   q   u- (   oh   qq x- (   op   qq x„ qtype.int - (   ox   qq x6 (   o
+q€   u„ q type.func(string) (*regexp.Regexp, error) - (   o qq x- (   o    qq     x- (   o    q   u- (   o    qEN4Bé    u- (   o    qu- (   o    q   u- (   o    q   u- (   o    q   u- (   o     qq @  x„ q!go.string."func(string) (*regexp.Regexp, error)" - (   o(    qq !x- (   o!qq    !x- (   o   !q$   u- (   o   !q func(str- (   o   !q ing) (*r- (   o   !q egexp.Re- (   o$   !q gexp, er- (   o,   !q ror)    - (   o0   !qu6 (   o
+!q8   u„ q"weak.type.*func(string) (*regexp.Regexp, error) - (   o8    qq "x- (   o@    qu- (   oH    qq h    x- (   oP    q   u- (   oT    q   u- (   oX    qq p    x- (   o`    q   u- (   od    q   u- (   oh    qq x- (   op    qq x- (   ox    qq x6 (   o
+ q€   u„ q#type.func() - (   o#qq x- (   o   #qq    #x- (   o   #q   u- (   o   #qEö¼‚ö    u- (   o   #qu- (   o   #q   u- (   o   #q   u- (   o   #q   u- (   o    #qq @  x„ q$go.string."func()" - (   o(   #qq $x- (   o$qq    $x- (   o   $q   u- (   o   $q func()  - (   o   $qu6 (   o
+$q   u„ q%weak.type.*func() - (   o8   #qq %x- (   o@   #qu- (   oH   #qq h   #x- (   oP   #qu- (   oT   #qu- (   oX   #qq h   #x- (   o`   #qu- (   od   #qu6 (   o
+#qh   u„ q&type.[]testing.InternalTest „ q'type.*runtime.SliceType - (   o&qq 'x- (   o   &qq    &x- (   o   &q   u- (   o   &q›…ÑXu- (   o   &qu- (   o   &q   u- (   o   &q   u- (   o   &q   u- (   o    &qq à  x„ q(go.string."[]testing.InternalTest" - (   o(   &qq (x- (   o(qq    (x- (   o   (q   u- (   o   (q []testin- (   o   (q g.Intern- (   o   (q alTest  - (   o"   (qu6 (   o
+(q(   u„ q)weak.type.*[]testing.InternalTest - (   o8   &qq )x„ q*type.testing.InternalTest - (   o@   &qq *x6 (   o
+&qH   u„ q+type.[]testing.InternalBenchmark - (   o+qq 'x- (   o   +qq    +x- (   o   +q   u- (   o   +q'À(Vu- (   o   +qu- (   o   +q   u- (   o   +q   u- (   o   +q   u- (   o    +qq à  x„ q,go.string."[]testing.InternalBenchmark" - (   o(   +qq ,x- (   o,qq    ,x- (   o   ,q   u- (   o   ,q []testin- (   o   ,q g.Intern- (   o   ,q alBenchm- (   o$   ,q ark     - (   o'   ,qu6 (   o
+,q(   u„ q-weak.type.*[]testing.InternalBenchmark - (   o8   +qq -x„ q.type.testing.InternalBenchmark - (   o@   +qq .x6 (   o
++qH   u„ q/type.[]testing.InternalExample - (   o/qq 'x- (   o   /qq    /x- (   o   /q   u- (   o   /qoÁ£Ju- (   o   /qu- (   o   /q   u- (   o   /q   u- (   o   /q   u- (   o    /qq à  x„ q0go.string."[]testing.InternalExample" - (   o(   /qq 0x- (   o0qq    0x- (   o   0q   u- (   o   0q []testin- (   o   0q g.Intern- (   o   0q alExampl- (   o$   0q e       - (   o%   0qu6 (   o
+0q(   u„ q1weak.type.*[]testing.InternalExample - (   o8   /qq 1x„ qtype.testing.InternalExample - (   o@   /qq x6 (   o
+/qH   u„ qtype.func(func(string, string) (bool, error), []testing.InternalTest, []testing.InternalBenchmark, []testing.InternalExample) - (   oqq x- (   o   qq    x- (   o   q   u- (   o   qEÍŒ    u- (   o   qu- (   o   q   u- (   o   q   u- (   o   q   u- (   o    qq @  x„ q""..gostring.1 - (   o(   qq x- (   oqq    x- (   o   qx   u- (   o   q func(fun- (   o   q c(string- (   o   q , string- (   o$   q ) (bool,- (   o,   q  error),- (   o4   q  []testi- (   o<   q ng.Inter- (   oD   q nalTest,- (   oL   q  []testi- (   oT   q ng.Inter- (   o\   q nalBench- (   od   q mark, []- (   ol   q testing.- (   ot   q Internal- (   o|   q Example)- (   o„   qu6 (   o
+qˆ   u„ qweak.type.*func(func(string, string) (bool, error), []testing.InternalTest, []testing.InternalBenchmark, []testing.InternalExample) - (   o8   qq x- (   o@   qu- (   oH   qq h   x- (   oP   q   u- (   oT   q   u- (   oX   qq ˆ   x- (   o`   qu- (   od   qu- (   oh   qq x- (   op   qq &x- (   ox   qq +x- (   o€   qq /x6 (   o
+qˆ   u„ qtype.func(*testing.B) - (   oqq x- (   o   qq    x- (   o   q   u- (   o   qEúrÀ    u- (   o   qu- (   o   q   u- (   o   q   u- (   o   q   u- (   o    qq À   x„ qgo.string."func(*testing.B)" - (   o(   qq x- (   oqq    x- (   o   q   u- (   o   q func(*te- (   o   q sting.B)- (   o   qu6 (   o
+q    u„ qweak.type.*func(*testing.B) - (   o8   qq x- (   o@   qu- (   oH   qq h   x- (   oP   q   u- (   oT   q   u- (   oX   qq p   x- (   o`   qu- (   od   qu„ qtype.*testing.B - (   oh   qq x6 (   o
+qp   u„ q	go.importpath.runtime. „ q
+go.string."runtime" - (   o	qq    
+x- (   o
+qq    
+x- (   o   
+q   u- (   o   
+q runtime - (   o   
+qu6 (   o
+
+q   u- (   o   	q   u6 (   o
+	q   u„ qgo.importpath.go1. „ qgo.string."go1" - (   oqq    x- (   oqq    x- (   o   q   u- (   o   q go1     - (   o   qu6 (   o
+q   u- (   o   q   u6 (   o
+q   u„ qgo.importpath.testing. „ qgo.string."testing" - (   oqq    x- (   oqq    x- (   o   q   u- (   o   q testing - (   o   qu6 (   o
+q   u- (   o   q   u6 (   o
+q   u„ qgo.importpath.regexp. „ qgo.string."regexp" - (   oqq    x- (   oqq    x- (   o   q   u- (   o   q regexp  - (   o   qu6 (   o
+q   u- (   o   q   u6 (   o
+q   uP      
