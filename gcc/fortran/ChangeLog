@@ -1,3 +1,9 @@
+2012-01-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51966
+	* resolve.c (resolve_structure_cons): Only create an
+	array constructors for nonscalars.
+
 2012-01-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51948
