@@ -237,8 +237,6 @@ func GetsockoptIPMreq(fd, level, opt int) (*IPMreq, error) {
 	return &value, err
 }
 
-/* FIXME: mksysinfo needs to support IPMreqn.
-
 func GetsockoptIPMreqn(fd, level, opt int) (*IPMreqn, error) {
 	var value IPMreqn
 	vallen := Socklen_t(SizeofIPMreqn)
@@ -246,18 +244,12 @@ func GetsockoptIPMreqn(fd, level, opt int) (*IPMreqn, error) {
 	return &value, err
 }
 
-*/
-
-/* FIXME: mksysinfo needs to support IPv6Mreq.
-
 func GetsockoptIPv6Mreq(fd, level, opt int) (*IPv6Mreq, error) {
 	var value IPv6Mreq
 	vallen := Socklen_t(SizeofIPv6Mreq)
 	err := getsockopt(fd, level, opt, uintptr(unsafe.Pointer(&value)), &vallen)
 	return &value, err
 }
-
-*/
 
 //sys	setsockopt(s int, level int, name int, val *byte, vallen Socklen_t) (err error)
 //setsockopt(s int, level int, optname int, val *byte, vallen Socklen_t) int
@@ -288,13 +280,9 @@ func SetsockoptIPMreq(fd, level, opt int, mreq *IPMreq) (err error) {
 	return setsockopt(fd, level, opt, (*byte)(unsafe.Pointer(mreq)), Socklen_t(unsafe.Sizeof(*mreq)))
 }
 
-/* FIXME: mksysinfo needs to support IMPreqn.
-
 func SetsockoptIPMreqn(fd, level, opt int, mreq *IPMreqn) (err error) {
 	return setsockopt(fd, level, opt, (*byte)(unsafe.Pointer(mreq)), Socklen_t(unsafe.Sizeof(*mreq)))
 }
-
-*/
 
 func SetsockoptIPv6Mreq(fd, level, opt int, mreq *IPv6Mreq) (err error) {
 	return setsockopt(fd, level, opt, (*byte)(unsafe.Pointer(mreq)), Socklen_t(unsafe.Sizeof(*mreq)))

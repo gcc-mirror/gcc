@@ -9,6 +9,7 @@
 package syscall
 
 import (
+	"runtime"
 	"sync"
 	"unsafe"
 )
@@ -126,211 +127,6 @@ func SetNonblock(fd int, nonblocking bool) (err error) {
 	return err
 }
 
-// Fork, dup fd onto 0..len(fd), and exec(argv0, argvv, envv) in child.
-// If a dup or exec fails, write the errno error to pipe.
-// (Pipe is close-on-exec so if exec succeeds, it will be closed.)
-// In the child, this function must not acquire any locks, because
-// they might have been locked at the time of the fork.  This means
-// no rescheduling, no malloc calls, and no new stack segments.
-// The calls to RawSyscall are okay because they are assembly
-// functions that do not grow the stack.
-func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr *ProcAttr, sys *SysProcAttr, pipe int) (pid int, err Errno) {
-	// Declare all variables at top in case any
-	// declarations require heap allocation (e.g., err1).
-	var (
-		r1 Pid_t
-		err1 Errno
-		nextfd int
-		i int
-	)
-
-	// guard against side effects of shuffling fds below.
-	fd := append([]int(nil), attr.Files...)
-
-	// About to call fork.
-	// No more allocation or calls of non-assembly functions.
-	r1, err1 = raw_fork()
-	if err1 != 0 {
-		return 0, err1
-	}
-
-	if r1 != 0 {
-		// parent; return PID
-		return int(r1), 0
-	}
-
-	// Fork succeeded, now in child.
-
-	// Enable tracing if requested.
-	if sys.Ptrace {
-		err1 = raw_ptrace(_PTRACE_TRACEME, 0, nil, nil)
-		if err1 != 0 {
-			goto childerror
-		}
-	}
-
-	// Session ID
-	if sys.Setsid {
-		err1 = raw_setsid()
-		if err1 != 0 {
-			goto childerror
-		}
-	}
-
-	// Set process group
-	if sys.Setpgid {
-		err1 = raw_setpgid(0, 0)
-		if err1 != 0 {
-			goto childerror
-		}
-	}
-
-	// Chroot
-	if chroot != nil {
-		err1 = raw_chroot(chroot)
-		if err1 != 0 {
-			goto childerror
-		}
-	}
-
-	// User and groups
-	if cred := sys.Credential; cred != nil {
-		ngroups := len(cred.Groups)
-		if ngroups == 0 {
-			err2 := setgroups(0, nil)
-			if err2 == nil {
-				err1 = 0
-			} else {
-				err1 = err2.(Errno)
-			}
-		} else {
-			groups := make([]Gid_t, ngroups)
-			for i, v := range cred.Groups {
-				groups[i] = Gid_t(v)
-			}
-			err2 := setgroups(ngroups, &groups[0])
-			if err2 == nil {
-				err1 = 0
-			} else {
-				err1 = err2.(Errno)
-			}
-		}
-		if err1 != 0 {
-			goto childerror
-		}
-		err2 := Setgid(int(cred.Gid))
-		if err2 != nil {
-			err1 = err2.(Errno)
-			goto childerror
-		}
-		err2 = Setuid(int(cred.Uid))
-		if err2 != nil {
-			err1 = err2.(Errno)
-			goto childerror
-		}
-	}
-
-	// Chdir
-	if dir != nil {
-		err1 = raw_chdir(dir)
-		if err1 != 0 {
-			goto childerror
-		}
-	}
-
-	// Pass 1: look for fd[i] < i and move those up above len(fd)
-	// so that pass 2 won't stomp on an fd it needs later.
-	nextfd = int(len(fd))
-	if pipe < nextfd {
-		_, err2 := Dup2(pipe, nextfd)
-		if err2 != nil {
-			err1 = err2.(Errno)
-			goto childerror
-		}
-		raw_fcntl(nextfd, F_SETFD, FD_CLOEXEC)
-		pipe = nextfd
-		nextfd++
-	}
-	for i = 0; i < len(fd); i++ {
-		if fd[i] >= 0 && fd[i] < int(i) {
-			_, err2 := Dup2(fd[i], nextfd)
-			if err2 != nil {
-				err1 = err2.(Errno)
-				goto childerror
-			}
-			raw_fcntl(nextfd, F_SETFD, FD_CLOEXEC)
-			fd[i] = nextfd
-			nextfd++
-			if nextfd == pipe { // don't stomp on pipe
-				nextfd++
-			}
-		}
-	}
-
-	// Pass 2: dup fd[i] down onto i.
-	for i = 0; i < len(fd); i++ {
-		if fd[i] == -1 {
-			raw_close(i)
-			continue
-		}
-		if fd[i] == int(i) {
-			// Dup2(i, i) won't clear close-on-exec flag on
-			// GNU/Linux, probably not elsewhere either.
-			_, err1 = raw_fcntl(fd[i], F_SETFD, 0)
-			if err1 != 0 {
-				goto childerror
-			}
-			continue
-		}
-		// The new fd is created NOT close-on-exec,
-		// which is exactly what we want.
-		_, err2 := Dup2(fd[i], i)
-		if err2 != nil {
-			err1 = err2.(Errno)
-			goto childerror
-		}
-	}
-
-	// By convention, we don't close-on-exec the fds we are
-	// started with, so if len(fd) < 3, close 0, 1, 2 as needed.
-	// Programs that know they inherit fds >= 3 will need
-	// to set them close-on-exec.
-	for i = len(fd); i < 3; i++ {
-		raw_close(i)
-	}
-
-	// Detach fd 0 from tty
-	if sys.Noctty {
-		_, err1 = raw_ioctl(0, TIOCNOTTY, 0)
-		if err1 != 0 {
-			goto childerror
-		}
-	}
-
-	// Make fd 0 the tty
-	if sys.Setctty {
-		_, err1 = raw_ioctl(0, TIOCSCTTY, 0)
-		if err1 != 0 {
-			goto childerror
-		}
-	}
-
-	// Time to exec.
-	err1 = raw_execve(argv0, &argv[0], &envv[0])
-
-childerror:
-	// send error code on pipe
-	raw_write(pipe, (*byte)(unsafe.Pointer(&err1)), int(unsafe.Sizeof(err1)))
-	for {
-		raw_exit(253)
-	}
-
-	// Calling panic is not actually safe,
-	// but the for loop above won't break
-	// and this shuts up the compiler.
-	panic("unreached")
-}
-
 // Credential holds user and group identities to be assumed
 // by a child process started by StartProcess.
 type Credential struct {
@@ -346,16 +142,6 @@ type ProcAttr struct {
 	Env   []string // Environment.
 	Files []int    // File descriptors.
 	Sys   *SysProcAttr
-}
-
-type SysProcAttr struct {
-	Chroot     string      // Chroot.
-	Credential *Credential // Credential.
-	Ptrace     bool        // Enable tracing.
-	Setsid     bool        // Create session.
-	Setpgid    bool        // Set process group ID to new pid (SYSV setpgrp)
-	Setctty    bool        // Set controlling terminal to fd 0
-	Noctty     bool        // Detach fd 0 from controlling terminal
 }
 
 var zeroProcAttr ProcAttr
@@ -383,7 +169,7 @@ func forkExec(argv0 string, argv []string, attr *ProcAttr) (pid int, err error) 
 	argvp := StringSlicePtr(argv)
 	envvp := StringSlicePtr(attr.Env)
 
-	if OS == "freebsd" && len(argv[0]) > len(argv0) {
+	if runtime.GOOS == "freebsd" && len(argv[0]) > len(argv0) {
 		argvp[0] = argv0p
 	}
 

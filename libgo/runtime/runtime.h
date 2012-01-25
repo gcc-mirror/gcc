@@ -266,6 +266,7 @@ void	runtime_args(int32, byte**);
 void	runtime_osinit();
 void	runtime_goargs(void);
 void	runtime_goenvs(void);
+void	runtime_goenvs_unix(void);
 void	runtime_throw(const char*) __attribute__ ((noreturn));
 void	runtime_panicstring(const char*) __attribute__ ((noreturn));
 void*	runtime_mal(uintptr);

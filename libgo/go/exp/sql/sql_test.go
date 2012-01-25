@@ -8,10 +8,15 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
+const fakeDBName = "foo"
+
+var chrisBirthday = time.Unix(123456789, 0)
+
 func newTestDB(t *testing.T, name string) *DB {
-	db, err := Open("test", "foo")
+	db, err := Open("test", fakeDBName)
 	if err != nil {
 		t.Fatalf("Open: %v", err)
 	}
@@ -19,10 +24,10 @@ func newTestDB(t *testing.T, name string) *DB {
 		t.Fatalf("exec wipe: %v", err)
 	}
 	if name == "people" {
-		exec(t, db, "CREATE|people|name=string,age=int32,dead=bool")
-		exec(t, db, "INSERT|people|name=Alice,age=?", 1)
-		exec(t, db, "INSERT|people|name=Bob,age=?", 2)
-		exec(t, db, "INSERT|people|name=Chris,age=?", 3)
+		exec(t, db, "CREATE|people|name=string,age=int32,photo=blob,dead=bool,bdate=datetime")
+		exec(t, db, "INSERT|people|name=Alice,age=?,photo=APHOTO", 1)
+		exec(t, db, "INSERT|people|name=Bob,age=?,photo=BPHOTO", 2)
+		exec(t, db, "INSERT|people|name=Chris,age=?,photo=CPHOTO,bdate=?", 3, chrisBirthday)
 	}
 	return db
 }
@@ -73,6 +78,12 @@ func TestQuery(t *testing.T) {
 	if !reflect.DeepEqual(got, want) {
 		t.Logf(" got: %#v\nwant: %#v", got, want)
 	}
+
+	// And verify that the final rows.Next() call, which hit EOF,
+	// also closed the rows connection.
+	if n := len(db.freeConn); n != 1 {
+		t.Errorf("free conns after query hitting EOF = %d; want 1", n)
+	}
 }
 
 func TestRowsColumns(t *testing.T) {
@@ -97,10 +108,16 @@ func TestQueryRow(t *testing.T) {
 	defer closeDB(t, db)
 	var name string
 	var age int
+	var birthday time.Time
 
 	err := db.QueryRow("SELECT|people|age,name|age=?", 3).Scan(&age)
 	if err == nil || !strings.Contains(err.Error(), "expected 2 destination arguments") {
 		t.Errorf("expected error from wrong number of arguments; actually got: %v", err)
+	}
+
+	err = db.QueryRow("SELECT|people|bdate|age=?", 3).Scan(&birthday)
+	if err != nil || !birthday.Equal(chrisBirthday) {
+		t.Errorf("chris birthday = %v, err = %v; want %v", birthday, err, chrisBirthday)
 	}
 
 	err = db.QueryRow("SELECT|people|age,name|age=?", 2).Scan(&age, &name)
@@ -123,6 +140,16 @@ func TestQueryRow(t *testing.T) {
 	}
 	if age != 1 {
 		t.Errorf("expected age 1, got %d", age)
+	}
+
+	var photo []byte
+	err = db.QueryRow("SELECT|people|photo|name=?", "Alice").Scan(&photo)
+	if err != nil {
+		t.Fatalf("photo QueryRow+Scan: %v", err)
+	}
+	want := []byte("APHOTO")
+	if !reflect.DeepEqual(photo, want) {
+		t.Errorf("photo = %q; want %q", photo, want)
 	}
 }
 
@@ -256,5 +283,23 @@ func TestIssue2542Deadlock(t *testing.T) {
 		if err == nil {
 			t.Fatalf("expected error")
 		}
+	}
+}
+
+func TestQueryRowClosingStmt(t *testing.T) {
+	db := newTestDB(t, "people")
+	defer closeDB(t, db)
+	var name string
+	var age int
+	err := db.QueryRow("SELECT|people|age,name|age=?", 3).Scan(&age, &name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(db.freeConn) != 1 {
+		t.Fatalf("expected 1 free conn")
+	}
+	fakeConn := db.freeConn[0].(*fakeConn)
+	if made, closed := fakeConn.stmtsMade, fakeConn.stmtsClosed; made != closed {
+		t.Logf("statement close mismatch: made %d, closed %d", made, closed)
 	}
 }

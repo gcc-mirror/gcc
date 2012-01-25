@@ -302,7 +302,7 @@ func TestEscape(t *testing.T) {
 		},
 		{
 			"styleObfuscatedExpressionBlocked",
-			`<p style="width: {{"  e\78preS\0Sio/**/n(alert(1337))"}}">`,
+			`<p style="width: {{"  e\\78preS\x00Sio/**/n(alert(1337))"}}">`,
 			`<p style="width: ZgotmplZ">`,
 		},
 		{
@@ -312,7 +312,7 @@ func TestEscape(t *testing.T) {
 		},
 		{
 			"styleObfuscatedMozBindingBlocked",
-			`<p style="{{"  -mo\7a-B\0I/**/nding(alert(1337))"}}: ...">`,
+			`<p style="{{"  -mo\\7a-B\x00I/**/nding(alert(1337))"}}: ...">`,
 			`<p style="ZgotmplZ: ...">`,
 		},
 		{

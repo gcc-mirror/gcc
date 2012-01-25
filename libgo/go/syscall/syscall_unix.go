@@ -7,6 +7,7 @@
 package syscall
 
 import (
+	"runtime"
 	"sync"
 	"unsafe"
 )
@@ -19,6 +20,8 @@ var (
 
 func c_syscall32(trap int32, a1, a2, a3, a4, a5, a6 int32) int32 __asm__ ("syscall");
 func c_syscall64(trap int64, a1, a2, a3, a4, a5, a6 int64) int64 __asm__ ("syscall");
+
+const darwinAMD64 = runtime.GOOS == "darwin" && runtime.GOARCH == "amd64"
 
 // Do a system call.  We look at the size of uintptr to see how to pass
 // the arguments, so that we don't pass a 64-bit value when the function

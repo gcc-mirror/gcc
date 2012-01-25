@@ -224,8 +224,8 @@ func splitNetProto(netProto string) (net string, proto int, err error) {
 	return net, proto, nil
 }
 
-// DialIP connects to the remote address raddr on the network net,
-// which must be "ip", "ip4", or "ip6".
+// DialIP connects to the remote address raddr on the network protocol netProto,
+// which must be "ip", "ip4", or "ip6" followed by a colon and a protocol number or name.
 func DialIP(netProto string, laddr, raddr *IPAddr) (c *IPConn, err error) {
 	net, proto, err := splitNetProto(netProto)
 	if err != nil {
@@ -260,7 +260,7 @@ func ListenIP(netProto string, laddr *IPAddr) (c *IPConn, err error) {
 	default:
 		return nil, UnknownNetworkError(net)
 	}
-	fd, e := internetSocket(net, laddr.toAddr(), nil, syscall.SOCK_RAW, proto, "dial", sockaddrToIP)
+	fd, e := internetSocket(net, laddr.toAddr(), nil, syscall.SOCK_RAW, proto, "listen", sockaddrToIP)
 	if e != nil {
 		return nil, e
 	}
