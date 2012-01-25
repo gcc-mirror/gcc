@@ -1,6 +1,12 @@
 2012-01-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51995
+	* class.c (gfc_build_class_symbol): Fix invalid freeing
+	issue with fclass->f2k_derived.
+
+2012-01-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51995
 	* class.c (gfc_build_class_symbol): Ensure that
 	fclass->f2k_derived is set.
 
