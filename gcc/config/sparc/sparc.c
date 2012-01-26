@@ -779,6 +779,10 @@ char sparc_hard_reg_printed[8];
 #undef TARGET_PRINT_OPERAND_ADDRESS
 #define TARGET_PRINT_OPERAND_ADDRESS sparc_print_operand_address
 
+/* The value stored by LDSTUB.  */
+#undef TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
+#define TARGET_ATOMIC_TEST_AND_SET_TRUEVAL 0xff
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 static void
