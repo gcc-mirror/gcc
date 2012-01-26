@@ -449,6 +449,7 @@ runtime_files = \
 	runtime/go-now.c \
 	runtime/go-new-map.c \
 	runtime/go-new.c \
+	runtime/go-nosys.c \
 	runtime/go-panic.c \
 	runtime/go-print.c \
 	runtime/go-recover.c \

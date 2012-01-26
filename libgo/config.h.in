@@ -6,8 +6,32 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
+/* Define to 1 if you have the `epoll_create1' function. */
+#undef HAVE_EPOLL_CREATE1
+
+/* Define to 1 if you have the `faccessat' function. */
+#undef HAVE_FACCESSAT
+
+/* Define to 1 if you have the `fchmodat' function. */
+#undef HAVE_FCHMODAT
+
+/* Define to 1 if you have the `fchownat' function. */
+#undef HAVE_FCHOWNAT
+
+/* Define to 1 if you have the `futimesat' function. */
+#undef HAVE_FUTIMESAT
+
 /* Define if _Unwind_GetIPInfo is available. */
 #undef HAVE_GETIPINFO
+
+/* Define to 1 if you have the `inotify_add_watch' function. */
+#undef HAVE_INOTIFY_ADD_WATCH
+
+/* Define to 1 if you have the `inotify_init' function. */
+#undef HAVE_INOTIFY_INIT
+
+/* Define to 1 if you have the `inotify_rm_watch' function. */
+#undef HAVE_INOTIFY_RM_WATCH
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -21,11 +45,20 @@
 /* Define to 1 if you have the <linux/rtnetlink.h> header file. */
 #undef HAVE_LINUX_RTNETLINK_H
 
+/* Define to 1 if the system has the type `loff_t'. */
+#undef HAVE_LOFF_T
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
 /* Define to 1 if you have the `mincore' function. */
 #undef HAVE_MINCORE
+
+/* Define to 1 if you have the `mkdirat' function. */
+#undef HAVE_MKDIRAT
+
+/* Define to 1 if you have the `mknodat' function. */
+#undef HAVE_MKNODAT
 
 /* Define to 1 if you have the <net/if.h> header file. */
 #undef HAVE_NET_IF_H
@@ -33,11 +66,20 @@
 /* Define to 1 if the system has the type `off64_t'. */
 #undef HAVE_OFF64_T
 
+/* Define to 1 if you have the `openat' function. */
+#undef HAVE_OPENAT
+
+/* Define to 1 if you have the `renameat' function. */
+#undef HAVE_RENAMEAT
+
 /* Define to 1 if you have the `sem_timedwait' function. */
 #undef HAVE_SEM_TIMEDWAIT
 
 /* Define to 1 if you have the `setenv' function. */
 #undef HAVE_SETENV
+
+/* Define to 1 if you have the `splice' function. */
+#undef HAVE_SPLICE
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
@@ -101,8 +143,17 @@
 /* Define to 1 if you have the <sys/utsname.h> header file. */
 #undef HAVE_SYS_UTSNAME_H
 
+/* Define to 1 if you have the `tee' function. */
+#undef HAVE_TEE
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the `unlinkat' function. */
+#undef HAVE_UNLINKAT
+
+/* Define to 1 if you have the `unshare' function. */
+#undef HAVE_UNSHARE
 
 /* Define to 1 if you have the `wait4' function. */
 #undef HAVE_WAIT4

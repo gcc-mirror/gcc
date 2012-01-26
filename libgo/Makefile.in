@@ -201,8 +201,8 @@ am__libgo_la_SOURCES_DIST = runtime/go-append.c runtime/go-assert.c \
 	runtime/go-map-delete.c runtime/go-map-index.c \
 	runtime/go-map-len.c runtime/go-map-range.c \
 	runtime/go-nanotime.c runtime/go-now.c runtime/go-new-map.c \
-	runtime/go-new.c runtime/go-panic.c runtime/go-print.c \
-	runtime/go-recover.c runtime/go-reflect.c \
+	runtime/go-new.c runtime/go-nosys.c runtime/go-panic.c \
+	runtime/go-print.c runtime/go-recover.c runtime/go-reflect.c \
 	runtime/go-reflect-call.c runtime/go-reflect-map.c \
 	runtime/go-rune.c runtime/go-runtime-error.c \
 	runtime/go-setenv.c runtime/go-signal.c runtime/go-strcmp.c \
@@ -239,8 +239,8 @@ am__objects_4 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-interface-compare.lo go-interface-eface-compare.lo \
 	go-interface-val-compare.lo go-make-slice.lo go-map-delete.lo \
 	go-map-index.lo go-map-len.lo go-map-range.lo go-nanotime.lo \
-	go-now.lo go-new-map.lo go-new.lo go-panic.lo go-print.lo \
-	go-recover.lo go-reflect.lo go-reflect-call.lo \
+	go-now.lo go-new-map.lo go-new.lo go-nosys.lo go-panic.lo \
+	go-print.lo go-recover.lo go-reflect.lo go-reflect-call.lo \
 	go-reflect-map.lo go-rune.lo go-runtime-error.lo go-setenv.lo \
 	go-signal.lo go-strcmp.lo go-string-to-byte-array.lo \
 	go-string-to-int-array.lo go-strplus.lo go-strslice.lo \
@@ -872,6 +872,7 @@ runtime_files = \
 	runtime/go-now.c \
 	runtime/go-new-map.c \
 	runtime/go-new.c \
+	runtime/go-nosys.c \
 	runtime/go-panic.c \
 	runtime/go-print.c \
 	runtime/go-recover.c \
@@ -2551,6 +2552,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-nanotime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-new-map.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-new.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-nosys.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-now.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-panic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-print.Plo@am__quote@
@@ -2862,6 +2864,13 @@ go-new.lo: runtime/go-new.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-new.c' object='go-new.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-new.lo `test -f 'runtime/go-new.c' || echo '$(srcdir)/'`runtime/go-new.c
+
+go-nosys.lo: runtime/go-nosys.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-nosys.lo -MD -MP -MF $(DEPDIR)/go-nosys.Tpo -c -o go-nosys.lo `test -f 'runtime/go-nosys.c' || echo '$(srcdir)/'`runtime/go-nosys.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-nosys.Tpo $(DEPDIR)/go-nosys.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-nosys.c' object='go-nosys.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-nosys.lo `test -f 'runtime/go-nosys.c' || echo '$(srcdir)/'`runtime/go-nosys.c
 
 go-panic.lo: runtime/go-panic.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-panic.lo -MD -MP -MF $(DEPDIR)/go-panic.Tpo -c -o go-panic.lo `test -f 'runtime/go-panic.c' || echo '$(srcdir)/'`runtime/go-panic.c
