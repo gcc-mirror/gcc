@@ -1,3 +1,9 @@
+2012-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/51895
+	* expr.c (expand_expr_real_1): Handle BLKmode MEM_REF of
+	non-addressable non-BLKmode base correctly.
+
 2012-01-26  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/48794
