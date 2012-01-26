@@ -1,3 +1,8 @@
+2012-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* make-relative-prefix.c (make_relative_prefix_1): Avoid warning
+	about using preprocessor directives inside of macro arguments.
+
 2012-01-22  Douglas B Rupp  <rupp@gnat.com>
 
 	* configure: Regenerate.
