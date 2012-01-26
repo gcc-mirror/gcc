@@ -1,3 +1,12 @@
+2012-01-26  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/46590
+	* cfgexpand.c: Revert last change (r183305).
+	* gimplify.c (gimplify_bind_expr): Add clobbers for all non-gimple
+	regs.
+	* tree-eh.c (cleanup_empty_eh): Try to optimize clobbers before
+	checking for emptiness.
+
 2012-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/51895
