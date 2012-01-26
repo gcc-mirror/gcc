@@ -1,5 +1,12 @@
 2012-01-27  Richard Henderson  <rth@redhat.com>
 
+	* config/sparc/sparc.c (TARGET_ATOMIC_TEST_AND_SET_TRUEVAL): New.
+	* config/sparc/sync.md (atomic_test_and_set): Only handle QImode.
+	(ldstub): Rename from ldstubqi.
+	(ldstub<I24MODE>): Remove.
+
+2012-01-27  Richard Henderson  <rth@redhat.com>
+
 	* target.def (TARGET_ATOMIC_TEST_AND_SET_TRUEVAL): New.
 	* c-cppbuiltin.c (cpp_atomic_builtins): Define
 	__GCC_ATOMIC_TEST_AND_SET_TRUEVAL.
