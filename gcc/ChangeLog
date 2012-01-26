@@ -1,3 +1,9 @@
+2012-01-27  Matthias Klose  <doko@ubuntu.com>
+
+	* gcc.c (add_sysrooted_prefix): Remove trailing dir separator from
+	  system root.
+	* incpath.c (add_standard_paths): Likewise.
+
 2012-01-27  Richard Henderson  <rth@redhat.com>
 
 	* config/m68k/m68k.c (TARGET_ATOMIC_TEST_AND_SET_TRUEVAL): New.

@@ -1,6 +1,6 @@
 /* Set up combined include path chain for the preprocessor.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2012
    Free Software Foundation, Inc.
 
    Broken out of cppinit.c and cppfiles.c and rewritten Mar 2003.
@@ -166,7 +166,15 @@ add_standard_paths (const char *sysroot, const char *iprefix,
 
 	  /* Should this directory start with the sysroot?  */
 	  if (sysroot && p->add_sysroot)
-	    str = concat (sysroot, p->fname, NULL);
+	    {
+	      char *sysroot_no_trailing_dir_separator = xstrdup (sysroot);
+	      size_t sysroot_len = strlen (sysroot);
+
+	      if (sysroot_len > 0 && sysroot[sysroot_len - 1] == DIR_SEPARATOR)
+		sysroot_no_trailing_dir_separator[sysroot_len - 1] = '\0';
+	      str = concat (sysroot_no_trailing_dir_separator, p->fname, NULL);
+	      free (sysroot_no_trailing_dir_separator);
+	    }
 	  else if (!p->add_sysroot && relocated
 		   && !filename_ncmp (p->fname, cpp_PREFIX, cpp_PREFIX_len))
 	    {
