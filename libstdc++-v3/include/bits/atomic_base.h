@@ -227,12 +227,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   struct __atomic_flag_base
   {
+    /* The target's "set" value for test-and-set may not be exactly 1.  */
+#if __GCC_ATOMIC_TEST_AND_SET_TRUEVAL == 1
     bool _M_i;
+#else
+    unsigned char _M_i;
+#endif
   };
 
   _GLIBCXX_END_EXTERN_C
 
-#define ATOMIC_FLAG_INIT { false }
+#define ATOMIC_FLAG_INIT { 0 }
 
   /// atomic_flag
   struct atomic_flag : public __atomic_flag_base
@@ -244,7 +249,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     atomic_flag& operator=(const atomic_flag&) volatile = delete;
 
     // Conversion to ATOMIC_FLAG_INIT.
-    atomic_flag(bool __i) noexcept : __atomic_flag_base({ __i }) { }
+    constexpr atomic_flag(bool __i) noexcept
+      : __atomic_flag_base({ __i ? __GCC_ATOMIC_TEST_AND_SET_TRUEVAL : 0 })
+    { }
 
     bool
     test_and_set(memory_order __m = memory_order_seq_cst) noexcept
