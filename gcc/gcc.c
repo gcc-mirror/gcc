@@ -2445,9 +2445,17 @@ add_sysrooted_prefix (struct path_prefix *pprefix, const char *prefix,
 
   if (target_system_root)
     {
+      char *sysroot_no_trailing_dir_separator = xstrdup (target_system_root);
+      size_t sysroot_len = strlen (target_system_root);
+
+      if (sysroot_len > 0
+	  && target_system_root[sysroot_len - 1] == DIR_SEPARATOR)
+	sysroot_no_trailing_dir_separator[sysroot_len - 1] = '\0';
+
       if (target_sysroot_suffix)
 	  prefix = concat (target_sysroot_suffix, prefix, NULL);
-      prefix = concat (target_system_root, prefix, NULL);
+      prefix = concat (sysroot_no_trailing_dir_separator, prefix, NULL);
+      free (sysroot_no_trailing_dir_separator);
 
       /* We have to override this because GCC's notion of sysroot
 	 moves along with GCC.  */
