@@ -523,7 +523,7 @@ typedef struct ext_state
    success.  */
 
 static bool
-make_defs_and_copies_lists (rtx extend_insn, rtx set_pat,
+make_defs_and_copies_lists (rtx extend_insn, const_rtx set_pat,
 			    ext_state *state)
 {
   rtx src_reg = XEXP (SET_SRC (set_pat), 0);
@@ -651,7 +651,7 @@ merge_def_and_ext (ext_cand *cand, rtx def_insn, ext_state *state)
    and false upon failure.  */
 
 static bool
-combine_reaching_defs (ext_cand *cand, rtx set_pat, ext_state *state)
+combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 {
   rtx def_insn;
   bool merge_successful = true;
@@ -742,27 +742,13 @@ combine_reaching_defs (ext_cand *cand, rtx set_pat, ext_state *state)
   return false;
 }
 
-/* This structure holds information while walking the RTL stream.  */
-
-struct re_info
-{
-  /* The current insn.  */
-  rtx insn;
-
-  /* The list of candidates.  */
-  VEC (ext_cand, heap) *insn_list;
-
-  /* The map of definition instructions to candidates.  */
-  ext_cand **def_map;
-};
-
-/* Add an extension pattern that could be eliminated.  This is called via
-   note_stores from find_removable_extensions.  */
+/* Add an extension pattern that could be eliminated.  */
 
 static void
-add_removable_extension (rtx x ATTRIBUTE_UNUSED, const_rtx expr, void *data)
+add_removable_extension (const_rtx expr, rtx insn,
+			 VEC (ext_cand, heap) **insn_list,
+			 ext_cand **def_map)
 {
-  struct re_info *rei = (struct re_info *)data;
   enum rtx_code code;
   enum machine_mode mode;
   rtx src, dest;
@@ -785,13 +771,13 @@ add_removable_extension (rtx x ATTRIBUTE_UNUSED, const_rtx expr, void *data)
       ext_cand *cand;
 
       /* First, make sure we can get all the reaching definitions.  */
-      defs = get_defs (rei->insn, XEXP (src, 0), NULL);
+      defs = get_defs (insn, XEXP (src, 0), NULL);
       if (!defs)
 	{
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "Cannot eliminate extension:\n");
-	      print_rtl_single (dump_file, rei->insn);
+	      print_rtl_single (dump_file, insn);
 	      fprintf (dump_file, " because of missing definition(s)\n");
 	    }
 	  return;
@@ -800,13 +786,13 @@ add_removable_extension (rtx x ATTRIBUTE_UNUSED, const_rtx expr, void *data)
       /* Second, make sure the reaching definitions don't feed another and
 	 different extension.  FIXME: this obviously can be improved.  */
       for (def = defs; def; def = def->next)
-	if ((cand = rei->def_map[INSN_UID(DF_REF_INSN (def->ref))])
+	if ((cand = def_map[INSN_UID(DF_REF_INSN (def->ref))])
 	    && (cand->code != code || cand->mode != mode))
 	  {
 	    if (dump_file)
 	      {
 	        fprintf (dump_file, "Cannot eliminate extension:\n");
-	        print_rtl_single (dump_file, rei->insn);
+		print_rtl_single (dump_file, insn);
 	        fprintf (dump_file, " because of other extension\n");
 	      }
 	    return;
@@ -814,14 +800,14 @@ add_removable_extension (rtx x ATTRIBUTE_UNUSED, const_rtx expr, void *data)
 
       /* Then add the candidate to the list and insert the reaching definitions
          into the definition map.  */
-      cand = VEC_safe_push (ext_cand, heap, rei->insn_list, NULL);
+      cand = VEC_safe_push (ext_cand, heap, *insn_list, NULL);
       cand->expr = expr;
       cand->code = code;
       cand->mode = mode;
-      cand->insn = rei->insn;
+      cand->insn = insn;
 
       for (def = defs; def; def = def->next)
-	rei->def_map[INSN_UID(DF_REF_INSN (def->ref))] = cand;
+	def_map[INSN_UID(DF_REF_INSN (def->ref))] = cand;
     }
 }
 
@@ -831,12 +817,10 @@ add_removable_extension (rtx x ATTRIBUTE_UNUSED, const_rtx expr, void *data)
 static VEC (ext_cand, heap)*
 find_removable_extensions (void)
 {
-  struct re_info rei;
+  VEC (ext_cand, heap) *insn_list = NULL;
   basic_block bb;
-  rtx insn;
-
-  rei.insn_list = VEC_alloc (ext_cand, heap, 8);
-  rei.def_map = XCNEWVEC (ext_cand *, max_insn_uid);
+  rtx insn, set;
+  ext_cand **def_map = XCNEWVEC (ext_cand *, max_insn_uid);
 
   FOR_EACH_BB (bb)
     FOR_BB_INSNS (bb, insn)
@@ -844,13 +828,15 @@ find_removable_extensions (void)
 	if (!NONDEBUG_INSN_P (insn))
 	  continue;
 
-	rei.insn = insn;
-	note_stores (PATTERN (insn), add_removable_extension, &rei);
+	set = single_set (insn);
+	if (set == NULL_RTX)
+	  continue;
+	add_removable_extension (set, insn, &insn_list, def_map);
       }
 
-  XDELETEVEC (rei.def_map);
+  XDELETEVEC (def_map);
 
-  return rei.insn_list;
+  return insn_list;
 }
 
 /* This is the main function that checks the insn stream for redundant
@@ -895,7 +881,7 @@ find_and_remove_re (void)
           print_rtl_single (dump_file, curr_cand->insn);
         }
 
-      if (combine_reaching_defs (curr_cand, PATTERN (curr_cand->insn), &state))
+      if (combine_reaching_defs (curr_cand, curr_cand->expr, &state))
         {
           if (dump_file)
             fprintf (dump_file, "Eliminated the extension.\n");
