@@ -7311,39 +7311,34 @@ maybe_emit_compare_and_swap_exchange_loop (rtx target, rtx mem, rtx val)
 #ifndef HAVE_atomic_test_and_set
 #define HAVE_atomic_test_and_set 0
 #define CODE_FOR_atomic_test_and_set CODE_FOR_nothing
-#define gen_atomic_test_and_set(x,y,z) \
-  (gcc_unreachable (), (void) (0 && (x) && (y) && (z)), NULL_RTX)
 #endif
 
 static rtx
 maybe_emit_atomic_test_and_set (rtx target, rtx mem, enum memmodel model)
 {
   enum machine_mode pat_bool_mode;
-  const struct insn_data_d *id;
+  struct expand_operand ops[3];
 
   if (!HAVE_atomic_test_and_set)
     return NULL_RTX;
-
-  id = &insn_data[CODE_FOR_atomic_test_and_set];
-  pat_bool_mode = id->operand[0].mode;
-
-  /* ??? We only support test-and-set on single bytes at the moment.
-     We'd have to change the builtin to allow wider memories.  */
-  gcc_checking_assert (id->operand[1].mode == QImode);
 
   /* While we always get QImode from __atomic_test_and_set, we get
      other memory modes from __sync_lock_test_and_set.  Note that we
      use no endian adjustment here.  This matches the 4.6 behavior
      in the Sparc backend.  */
+  gcc_checking_assert
+    (insn_data[CODE_FOR_atomic_test_and_set].operand[1].mode == QImode);
   if (GET_MODE (mem) != QImode)
     mem = adjust_address_nv (mem, QImode, 0);
 
-  if (target == NULL || GET_MODE (target) != pat_bool_mode)
-    target = gen_reg_rtx (pat_bool_mode);
+  pat_bool_mode = insn_data[CODE_FOR_atomic_test_and_set].operand[0].mode;
+  create_output_operand (&ops[0], target, pat_bool_mode);
+  create_fixed_operand (&ops[1], mem);
+  create_integer_operand (&ops[2], model);
 
-  emit_insn (gen_atomic_test_and_set (target, mem, GEN_INT (model)));
-
-  return target;
+  if (maybe_expand_insn (CODE_FOR_atomic_test_and_set, 3, ops))
+    return ops[0].value;
+  return NULL_RTX;
 }
 
 /* This function expands the legacy _sync_lock test_and_set operation which is

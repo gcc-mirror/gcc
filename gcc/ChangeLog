@@ -1,3 +1,8 @@
+2012-01-27  Richard Henderson  <rth@redhat.com>
+
+	* optabs.c (gen_atomic_test_and_set): Remove default.
+	(maybe_emit_atomic_test_and_set): Use maybe_expand_insn.
+
 2012-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/51978
