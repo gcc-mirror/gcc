@@ -114,10 +114,10 @@ am__objects_6 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
 	math_stubs_long_double.lo stdexcept.lo strstream.lo tree.lo \
 	istream.lo streambuf.lo valarray.lo $(am__objects_1) \
 	$(am__objects_5)
-am_libc__98_la_OBJECTS = $(am__objects_6) $(am__objects_2)
+am_libc__98_la_OBJECTS = $(am__objects_6)
 libc__98_la_OBJECTS = $(am_libc__98_la_OBJECTS)
 libc__98convenience_la_LIBADD =
-am_libc__98convenience_la_OBJECTS = $(am__objects_6) $(am__objects_2)
+am_libc__98convenience_la_OBJECTS = $(am__objects_6)
 libc__98convenience_la_OBJECTS = $(am_libc__98convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp =
@@ -423,8 +423,8 @@ sources = \
 	${host_sources} \
 	${host_sources_extra}
 
-libc__98_la_SOURCES = $(sources) $(inst_sources)
-libc__98convenience_la_SOURCES = $(sources)  $(inst_sources)
+libc__98_la_SOURCES = $(sources)
+libc__98convenience_la_SOURCES = $(sources)
 
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.

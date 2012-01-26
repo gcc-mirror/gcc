@@ -156,8 +156,8 @@ sources = \
 vpath % $(top_srcdir)/src/c++98
 vpath % $(top_srcdir)
 
-libc__98_la_SOURCES = $(sources) $(inst_sources)
-libc__98convenience_la_SOURCES = $(sources)  $(inst_sources)
+libc__98_la_SOURCES = $(sources)
+libc__98convenience_la_SOURCES = $(sources)
 
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.
