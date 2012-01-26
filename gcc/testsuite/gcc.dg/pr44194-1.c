@@ -1,4 +1,4 @@
-/* { dg-do compile { target { { { i?86-*-* x86_64-*-* } && x32 } || lp64 } } } */
+/* { dg-do compile { target { { { { i?86-*-* x86_64-*-* } && x32 } || lp64 } && { ! s390*-*-* } } } } */
 /* { dg-options "-O2 -fdump-rtl-dse1" } */
 /* Restricting to 64-bit targets since 32-bit targets return
    structures in memory.  */
