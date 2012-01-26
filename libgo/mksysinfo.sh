@@ -250,7 +250,7 @@ if ! grep '^const PTRACE_O_MASK' ${OUT} > /dev/null 2>&1; then
   echo "const PTRACE_O_MASK = 0x7f" >> ${OUT}
 fi
 if ! grep '^const _PTRACE_GETEVENTMSG' ${OUT} > /dev/null 2>&1; then
-  echo "const _PTRACE_GETEVENTMSG = 0x4201" >> ${OUT}
+  echo "const PTRACE_GETEVENTMSG = 0x4201" >> ${OUT}
 fi
 if ! grep '^const PTRACE_EVENT_FORK' ${OUT} > /dev/null 2>&1; then
   echo "const PTRACE_EVENT_FORK = 1" >> ${OUT}
