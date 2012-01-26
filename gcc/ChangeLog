@@ -1,5 +1,13 @@
 2012-01-27  Richard Henderson  <rth@redhat.com>
 
+	* target.def (TARGET_ATOMIC_TEST_AND_SET_TRUEVAL): New.
+	* c-cppbuiltin.c (cpp_atomic_builtins): Define
+	__GCC_ATOMIC_TEST_AND_SET_TRUEVAL.
+	* doc/tm.texi.in (TARGET_ATOMIC_TEST_AND_SET_TRUEVAL): Add doc hook.
+	* doc/tm.texi: Rebuild.
+
+2012-01-27  Richard Henderson  <rth@redhat.com>
+
 	* optabs.c (gen_atomic_test_and_set): Remove default.
 	(maybe_emit_atomic_test_and_set): Use maybe_expand_insn.
 

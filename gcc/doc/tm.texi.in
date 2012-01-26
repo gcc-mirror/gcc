@@ -11237,3 +11237,5 @@ value of @code{TARGET_CONST_ANCHOR} is a power of 2.  For example, on
 MIPS, where add-immediate takes a 16-bit signed value,
 @code{TARGET_CONST_ANCHOR} is set to @samp{0x8000}.  The default value
 is zero, which disables this optimization.  @end deftypevr
+
+@hook TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
