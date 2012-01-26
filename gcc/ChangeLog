@@ -1,3 +1,20 @@
+2012-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/51978
+	* ree.c (make_defs_and_copies_lists): Change set_pat type
+	to const_rtx.
+	(combine_reaching_defs): Likewise.
+	(struct re_info): Remove.
+	(add_removable_extension): Remove x and data arguments,
+	add insn, insn_list and def_map.  Use the arguments directly
+	instead of using struct re_info.
+	(find_removable_extensions): Don't call add_removable_extension
+	through note_stores, instead just call it with single_set
+	result if non-NULL.
+	(find_and_remove_re): Pass curr_cand->expr instead of
+	PATTERN (curr_cand->insn) as set_pat argument to
+	combine_reaching_defs.
+
 2012-01-26  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/46590
