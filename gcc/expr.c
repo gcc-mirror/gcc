@@ -9327,6 +9327,16 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		bftype = TREE_TYPE (base);
 		if (TYPE_MODE (TREE_TYPE (exp)) != BLKmode)
 		  bftype = TREE_TYPE (exp);
+		else
+		  {
+		    temp = assign_stack_temp (DECL_MODE (base),
+					      GET_MODE_SIZE (DECL_MODE (base)),
+					      0);
+		    store_expr (base, temp, 0, false);
+		    temp = adjust_address (temp, BLKmode, offset);
+		    set_mem_size (temp, int_size_in_bytes (TREE_TYPE (exp)));
+		    return temp;
+		  }
 		return expand_expr (build3 (BIT_FIELD_REF, bftype,
 					    base,
 					    TYPE_SIZE (TREE_TYPE (exp)),

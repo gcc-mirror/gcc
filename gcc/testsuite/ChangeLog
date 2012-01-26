@@ -1,3 +1,8 @@
+2012-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/51895
+	* g++.dg/opt/pr51895.C: New test.
+
 2012-01-26  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/48794
