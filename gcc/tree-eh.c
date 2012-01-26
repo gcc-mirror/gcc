@@ -3617,14 +3617,40 @@ remove_unreachable_handlers_no_lp (void)
 {
   eh_region r;
   int i;
+  sbitmap r_reachable;
+  basic_block bb;
+
+  r_reachable = sbitmap_alloc (VEC_length (eh_region, cfun->eh->region_array));
+  sbitmap_zero (r_reachable);
+
+  FOR_EACH_BB (bb)
+    {
+      gimple stmt = last_stmt (bb);
+      if (stmt)
+	/* Avoid removing regions referenced from RESX/EH_DISPATCH.  */
+	switch (gimple_code (stmt))
+	  {
+	  case GIMPLE_RESX:
+	    SET_BIT (r_reachable, gimple_resx_region (stmt));
+	    break;
+	  case GIMPLE_EH_DISPATCH:
+	    SET_BIT (r_reachable, gimple_eh_dispatch_region (stmt));
+	    break;
+	  default:
+	    break;
+	  }
+    }
 
   for (i = 1; VEC_iterate (eh_region, cfun->eh->region_array, i, r); ++i)
-    if (r && r->landing_pads == NULL && r->type != ERT_MUST_NOT_THROW)
+    if (r && r->landing_pads == NULL && r->type != ERT_MUST_NOT_THROW
+	&& !TEST_BIT (r_reachable, i))
       {
 	if (dump_file)
 	  fprintf (dump_file, "Removing unreachable region %d\n", i);
 	remove_eh_handler (r);
       }
+
+  sbitmap_free (r_reachable);
 }
 
 /* Undo critical edge splitting on an EH landing pad.  Earlier, we

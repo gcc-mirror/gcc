@@ -1,3 +1,9 @@
+2012-01-26  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/48794
+	* tree-eh.c (remove_unreachable_handlers_no_lp): Don't remove
+	regions referenced from RESX/EH_DISPATCH.
+
 2012-01-26  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.h: Make BRANCH_COST an option.

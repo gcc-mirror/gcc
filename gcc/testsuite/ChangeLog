@@ -1,7 +1,12 @@
+2012-01-26  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/48794
+	* gfortran.dg/gomp/pr48794-2.f90: New testcase.
+
 2012-01-26  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.dg/ssa-dom-thread-4.c: Set -mbranch-cost=2 for s390 and
-          s390x.
+	s390x.
 
 2012-01-26  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
