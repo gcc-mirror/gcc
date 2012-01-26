@@ -4,7 +4,7 @@
 /* The transformation depends on BRANCH_COST being greater than 1
    (see the notes in the PR), so try to force that.  */
 /* { dg-additional-options "-mtune=octeon2" { target mips*-*-* } } */
-/* { dg-additional-options "-mbranch-cost=2" { target avr*-*-* } } */
+/* { dg-additional-options "-mbranch-cost=2" { target avr*-*-* s390*-*-* } } */
 
 int
 f1 (int a)

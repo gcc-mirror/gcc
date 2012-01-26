@@ -1,3 +1,11 @@
+2012-01-26  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/pr46309.c: Set branch-cost to 2 for s390 and s390x.
+	* gcc.dg/pr44194-1.c: Disable since s390 returns structs always in
+	memory.
+	* gfortran.dg/reassoc_4.f: Force max-completely-peeled-insns to
+	the default value for s390 and s390x.
+
 2012-01-25  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR lto/51698
