@@ -1205,13 +1205,13 @@ Specific_type_functions::type(Type* t)
     {
     case Type::TYPE_NAMED:
       {
+	Named_type* nt = t->named_type();
 	if (!t->compare_is_identity(this->gogo_) && t->is_comparable())
-	  t->type_functions(this->gogo_, t->named_type(), NULL, NULL, &hash_fn,
-			    &equal_fn);
+	  t->type_functions(this->gogo_, nt, NULL, NULL, &hash_fn, &equal_fn);
 
 	// If this is a struct type, we don't want to make functions
 	// for the unnamed struct.
-	Type* rt = t->named_type()->real_type();
+	Type* rt = nt->real_type();
 	if (rt->struct_type() == NULL)
 	  {
 	    if (Type::traverse(rt, this) == TRAVERSE_EXIT)
@@ -1219,8 +1219,20 @@ Specific_type_functions::type(Type* t)
 	  }
 	else
 	  {
-	    if (rt->struct_type()->traverse_field_types(this) == TRAVERSE_EXIT)
-	      return TRAVERSE_EXIT;
+	    // If this type is defined in another package, then we don't
+	    // need to worry about the unexported fields.
+	    bool is_defined_elsewhere = nt->named_object()->package() != NULL;
+	    const Struct_field_list* fields = rt->struct_type()->fields();
+	    for (Struct_field_list::const_iterator p = fields->begin();
+		 p != fields->end();
+		 ++p)
+	      {
+		if (is_defined_elsewhere
+		    && Gogo::is_hidden_name(p->field_name()))
+		  continue;
+		if (Type::traverse(p->type(), this) == TRAVERSE_EXIT)
+		  return TRAVERSE_EXIT;
+	      }
 	  }
 
 	return TRAVERSE_SKIP_COMPONENTS;
