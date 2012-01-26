@@ -2667,6 +2667,13 @@ DEFHOOK
  enum unwind_info_type, (void),
  default_debug_unwind_info)
 
+DEFHOOKPOD
+(atomic_test_and_set_trueval,
+ "This value should be set if the result written by\
+ @code{atomic_test_and_set} is not exactly 1, i.e. the\
+ @code{bool} @code{true}.",
+ unsigned char, 1)
+ 
 /* Leave the boolean fields at the end.  */
 
 /* True if we can create zeroed data by switching to a BSS section

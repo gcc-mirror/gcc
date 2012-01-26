@@ -670,6 +670,11 @@ cpp_atomic_builtins (cpp_reader *pfile)
   builtin_define_with_int_value ("__GCC_ATOMIC_LLONG_LOCK_FREE", 
 		(have_swap[SWAP_INDEX (long_long_integer_type_node)]? 2 : 1));
 
+  /* If we're dealing with a "set" value that doesn't exactly correspond
+     to a boolean truth value, let the library work around that.  */
+  builtin_define_with_int_value ("__GCC_ATOMIC_TEST_AND_SET_TRUEVAL",
+				 targetm.atomic_test_and_set_trueval);
+
   /* ptr_type_node can't be used here since ptr_mode is only set when
      toplev calls backend_init which is not done with -E  or pch.  */
   psize = POINTER_SIZE / BITS_PER_UNIT;
