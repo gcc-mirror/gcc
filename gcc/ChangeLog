@@ -1,5 +1,10 @@
 2012-01-27  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/52020
+	* tree-sra.c (sra_modify_assign): Do not transform clobbers.
+
+2012-01-27  Richard Guenther  <rguenther@suse.de>
+
 	* ipa-pure-const.c (check_stmt): Clobbers do not make a
 	function non-const/pure.
 

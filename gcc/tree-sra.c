@@ -2836,6 +2836,20 @@ sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
   if (!acc)
     return SRA_AM_NONE;
 
+  if (gimple_clobber_p (*stmt))
+    {
+      /* Remove clobbers of fully scalarized variables, otherwise
+	 do nothing.  */
+      if (acc->grp_covered)
+	{
+	  unlink_stmt_vdef (*stmt);
+	  gsi_remove (gsi, true);
+	  return SRA_AM_REMOVED;
+	}
+      else
+	return SRA_AM_NONE;
+    }
+
   loc = gimple_location (*stmt);
   if (VEC_length (constructor_elt,
 		  CONSTRUCTOR_ELTS (gimple_assign_rhs1 (*stmt))) > 0)
