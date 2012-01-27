@@ -1,3 +1,12 @@
+2012-01-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-protos.h (lpm_reg_rtx, lpm_addr_reg_rtx,
+	tmp_reg_rtx, zero_reg_rtx, all_regs_rtx, rampz_rtx): Make global.
+	* config/avr/avr.c: Ditto.
+	(avr_regnames): Remove because unused.
+	* config/avr/avr.md (*cpse.ne): New peephole.
+	(*cpse.eq): New peephole from former cpse peepholes.
+
 2012-01-27  Michael Eager  <eager@eagercon.com>
 
 	* config/microblaze.c (microblaze_emit_compare): Correct

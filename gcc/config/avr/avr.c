@@ -140,29 +140,32 @@ static bool avr_rtx_costs (rtx, int, int, int, int *, bool);
 #define FIRST_CUM_REG 26
 
 /* Implicit target register of LPM instruction (R0) */
-static GTY(()) rtx lpm_reg_rtx;
+extern GTY(()) rtx lpm_reg_rtx;
+rtx lpm_reg_rtx;
 
 /* (Implicit) address register of LPM instruction (R31:R30 = Z) */
-static GTY(()) rtx lpm_addr_reg_rtx;
+extern GTY(()) rtx lpm_addr_reg_rtx;
+rtx lpm_addr_reg_rtx;
 
-/* Temporary register RTX (gen_rtx_REG (QImode, TMP_REGNO)) */
-static GTY(()) rtx tmp_reg_rtx;
+/* Temporary register RTX (reg:QI TMP_REGNO) */
+extern GTY(()) rtx tmp_reg_rtx;
+rtx tmp_reg_rtx;
 
-/* Zeroed register RTX (gen_rtx_REG (QImode, ZERO_REGNO)) */
-static GTY(()) rtx zero_reg_rtx;
+/* Zeroed register RTX (reg:QI ZERO_REGNO) */
+extern GTY(()) rtx zero_reg_rtx;
+rtx zero_reg_rtx;
+
+/* RTXs for all general purpose registers as QImode */
+extern GTY(()) rtx all_regs_rtx[32];
+rtx all_regs_rtx[32];
 
 /* RAMPZ special function register */
-static GTY(()) rtx rampz_rtx;
+extern GTY(()) rtx rampz_rtx;
+rtx rampz_rtx;
 
 /* RTX containing the strings "" and "e", respectively */
 static GTY(()) rtx xstring_empty;
 static GTY(()) rtx xstring_e;
-
-/* RTXs for all general purpose registers as QImode */
-static GTY(()) rtx all_regs_rtx[32];
-
-/* AVR register names {"r0", "r1", ..., "r31"} */
-static const char *const avr_regnames[] = REGISTER_NAMES;
 
 /* Preprocessor macros to define depending on MCU type.  */
 const char *avr_extra_arch_macro;
