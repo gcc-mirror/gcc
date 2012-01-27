@@ -136,6 +136,12 @@ runtime_semawakeup (M *mp)
 }
 
 void
-runtime_osinit(void)
+runtime_osinit (void)
 {
+}
+
+void
+runtime_goenvs (void)
+{
+  runtime_goenvs_unix ();
 }

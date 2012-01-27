@@ -58,7 +58,7 @@ __go_print_double (double v)
       fputs ("NaN", stderr);
       return;
     }
-  if (isinf (v))
+  if (__builtin_isinf (v))
     {
       putc (v < 0 ? '-' : '+', stderr);
       fputs ("Inf", stderr);

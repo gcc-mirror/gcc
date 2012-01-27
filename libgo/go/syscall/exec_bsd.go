@@ -7,7 +7,6 @@
 package syscall
 
 import (
-	"runtime"
 	"unsafe"
 )
 
@@ -58,7 +57,7 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 
 	// Enable tracing if requested.
 	if sys.Ptrace {
-		err1 = raw_trace(_PTRACE_TRACEME, 0, nil, nil)
+		err1 = raw_ptrace(_PTRACE_TRACEME, 0, nil, nil)
 		if err1 != 0 {
 			goto childerror
 		}
@@ -153,7 +152,7 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 				err1 = err2.(Errno)
 				goto childerror
 			}
-			raw_fcntl(nextfd, F_SETFD, F_CLOEXEC)
+			raw_fcntl(nextfd, F_SETFD, FD_CLOEXEC)
 			fd[i] = nextfd
 			nextfd++
 			if nextfd == pipe { // don't stomp on pipe
@@ -196,7 +195,7 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 
 	// Detach fd 0 from tty
 	if sys.Noctty {
-		_, err1 = raw_ioctl(0, IOTCNOTTY, 0)
+		_, err1 = raw_ioctl(0, TIOCNOTTY, 0)
 		if err1 != 0 {
 			goto childerror
 		}
@@ -204,7 +203,7 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 
 	// Make fd 0 the tty
 	if sys.Setctty {
-		_, err1 = raw_ioctl(TIOCSCTTY, 0)
+		_, err1 = raw_ioctl(0, TIOCSCTTY, 0)
 		if err1 != 0 {
 			goto childerror
 		}
