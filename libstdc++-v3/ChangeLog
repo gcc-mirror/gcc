@@ -1,3 +1,12 @@
+2012-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/51798
+	* config/cpu/generic/atomicity_builtins/atomicity.h
+	(__exchange_and_add, __atomic_add): Use __atomic_fetch_add
+	with __ATOMIC_ACQ_REL semantics instead of __sync_fetch_and_add.
+	* include/ext/atomicity.h (__exchange_and_add, __atomic_add):
+	Likewise.
+
 2011-01-27  Rafael Avila de Espindola  <rafael.espindola@gmail.com>
 
 	* libsupc++/typeinfo: Correctly match #pragma GCC visibility

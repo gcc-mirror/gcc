@@ -1,6 +1,6 @@
 // Support for atomic operations -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006, 2008, 2009, 2010, 2011
+// Copyright (C) 2004, 2005, 2006, 2008, 2009, 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -45,11 +45,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_ATOMIC_BUILTINS
   static inline _Atomic_word 
   __exchange_and_add(volatile _Atomic_word* __mem, int __val)
-  { return __sync_fetch_and_add(__mem, __val); }
+  { return __atomic_fetch_add(__mem, __val, __ATOMIC_ACQ_REL); }
 
   static inline void
   __atomic_add(volatile _Atomic_word* __mem, int __val)
-  { __sync_fetch_and_add(__mem, __val); }
+  { __atomic_fetch_add(__mem, __val, __ATOMIC_ACQ_REL); }
 #else
   _Atomic_word
   __attribute__ ((__unused__))
