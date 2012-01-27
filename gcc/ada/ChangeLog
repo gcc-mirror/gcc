@@ -1,5 +1,12 @@
 2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (get_minimal_subprog_decl): Declare.
+	* gcc-interface/decl.c (get_minimal_subprog_decl): New function.
+	* gcc-interface/trans.c (Attribute_to_gnu): Use it for the prefix of an
+	Access-like attribute in a dispatch table if the subprogram is public.
+
+2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (create_label_decl): Adjust.
 	* gcc-interface/utils.c (create_label_decl): Add GNAT_NODE parameter
 	and invoke gnat_pushdecl on it.  Remove obsolete settings.

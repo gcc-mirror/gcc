@@ -3769,7 +3769,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    break;
 	  }
 
-	/* If we have not done it yet, build the pointer type the usual way.  */
+	/* If we haven't done it yet, build the pointer type the usual way.  */
 	if (!gnu_type)
 	  {
 	    /* Modify the designated type if we are pointing only to constant
@@ -5229,6 +5229,42 @@ get_unpadded_type (Entity_Id gnat_entity)
 
   return type;
 }
+
+/* Return the DECL associated with the public subprogram GNAT_ENTITY but whose
+   type has been changed to that of the parameterless procedure, except if an
+   alias is already present, in which case it is returned instead.  */
+
+tree
+get_minimal_subprog_decl (Entity_Id gnat_entity)
+{
+  tree gnu_entity_name, gnu_ext_name;
+  struct attrib *attr_list = NULL;
+
+  /* See the E_Function/E_Procedure case of gnat_to_gnu_entity for the model
+     of the handling applied here.  */
+
+  while (Present (Alias (gnat_entity)))
+    {
+      gnat_entity = Alias (gnat_entity);
+      if (present_gnu_tree (gnat_entity))
+	return get_gnu_tree (gnat_entity);
+    }
+
+  gnu_entity_name = get_entity_name (gnat_entity);
+  gnu_ext_name = create_concat_name (gnat_entity, NULL);
+
+  if (Has_Stdcall_Convention (gnat_entity))
+    prepend_one_attribute_to (&attr_list, ATTR_MACHINE_ATTRIBUTE,
+			      get_identifier ("stdcall"), NULL_TREE,
+			      gnat_entity);
+
+  if (No (Interface_Name (gnat_entity)) && gnu_ext_name == gnu_entity_name)
+    gnu_ext_name = NULL_TREE;
+
+  return
+    create_subprog_decl (gnu_entity_name, gnu_ext_name, void_ftype, NULL_TREE,
+			 false, true, true, true, attr_list, gnat_entity);
+}
 
 /* Wrap up compilation of DECL, a TYPE_DECL, possibly deferring it.
    Every TYPE_DECL generated for a type definition must be passed
@@ -5333,6 +5369,7 @@ Gigi_Equivalent_Type (Entity_Id gnat_entity)
     }
 
   gcc_assert (Present (gnat_equiv) || type_annotate_only);
+
   return gnat_equiv;
 }
 
