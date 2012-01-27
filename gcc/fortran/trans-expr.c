@@ -3662,7 +3662,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			  || (fsym->attr.proc_pointer
 			      && e->expr_type == EXPR_VARIABLE
 			      && gfc_is_proc_ptr_comp (e, NULL))
-			  || fsym->attr.allocatable))
+			  || (fsym->attr.allocatable
+			      && fsym->attr.flavor != FL_PROCEDURE)))
 		    {
 		      /* Scalar pointer dummy args require an extra level of
 			 indirection. The null pointer already contains

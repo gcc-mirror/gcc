@@ -1,5 +1,11 @@
 2012-01-27  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/52022
+	* trans-expr.c (gfc_conv_procedure_call): Fix passing
+	of functions, which return allocatables.
+
+2012-01-27  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/52016
 	* resolve.c (resolve_formal_arglist): Fix elemental
 	constraint checks for polymorphic dummies also for
