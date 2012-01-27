@@ -2964,7 +2964,8 @@ rs6000_option_override_internal (bool global_init_p)
 			&& rs6000_cpu != PROCESSOR_POWER6
 			&& rs6000_cpu != PROCESSOR_POWER7
 			&& rs6000_cpu != PROCESSOR_PPCA2
-			&& rs6000_cpu != PROCESSOR_CELL);
+			&& rs6000_cpu != PROCESSOR_CELL
+			&& rs6000_cpu != PROCESSOR_PPC476);
   rs6000_sched_groups = (rs6000_cpu == PROCESSOR_POWER4
 			 || rs6000_cpu == PROCESSOR_POWER5
 			 || rs6000_cpu == PROCESSOR_POWER7);

@@ -1,3 +1,8 @@
+2012-01-27  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Set rs6000_always_hint to false for 476.
+
 2012-01-27  Matthias Klose  <doko@ubuntu.com>
 
 	* gcc.c (add_sysrooted_prefix): Remove trailing dir separator from
