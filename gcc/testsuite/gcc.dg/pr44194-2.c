@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-rtl-dse1" } */
-#include <stdint.h>
 
 struct ints { int a, b, c; } foo();
 void bar(int a, int b);
