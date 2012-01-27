@@ -1755,13 +1755,17 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
     got_variable:
       e->expr_type = EXPR_VARIABLE;
       e->ts = sym->ts;
-      if (sym->as != NULL)
+      if ((sym->as != NULL && sym->ts.type != BT_CLASS)
+	  || (sym->ts.type == BT_CLASS && sym->attr.class_ok
+	      && CLASS_DATA (sym)->as))
 	{
-	  e->rank = sym->as->rank;
+	  e->rank = sym->ts.type == BT_CLASS
+		    ? CLASS_DATA (sym)->as->rank : sym->as->rank;
 	  e->ref = gfc_get_ref ();
 	  e->ref->type = REF_ARRAY;
 	  e->ref->u.ar.type = AR_FULL;
-	  e->ref->u.ar.as = sym->as;
+	  e->ref->u.ar.as = sym->ts.type == BT_CLASS
+			    ? CLASS_DATA (sym)->as : sym->as;
 	}
 
       /* Expressions are assigned a default ts.type of BT_PROCEDURE in
@@ -7945,13 +7949,8 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       sym->attr.asynchronous = tsym->attr.asynchronous;
       sym->attr.volatile_ = tsym->attr.volatile_;
 
-      if (tsym->ts.type == BT_CLASS)
-	sym->attr.target = tsym->attr.target || CLASS_DATA (tsym)->attr.pointer;
-      else
-	sym->attr.target = tsym->attr.target || tsym->attr.pointer;
-
-      if (sym->ts.type == BT_DERIVED && tsym->ts.type == BT_CLASS)
-	target->rank = sym->as ? sym->as->rank : 0;
+      sym->attr.target = tsym->attr.target
+			 || gfc_expr_attr (target).pointer;
     }
 
   /* Get type if this was not already set.  Note that it can be
@@ -7966,10 +7965,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 			  && !gfc_has_vector_subscript (target));
 
   /* Finally resolve if this is an array or not.  */
-  if (sym->attr.dimension
-	&& (target->ts.type == BT_CLASS
-	      ? !CLASS_DATA (target)->attr.dimension
-	      : target->rank == 0))
+  if (sym->attr.dimension && target->rank == 0)
     {
       gfc_error ("Associate-name '%s' at %L is used as array",
 		 sym->name, &sym->declared_at);

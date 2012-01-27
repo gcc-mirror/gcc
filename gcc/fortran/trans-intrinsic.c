@@ -7237,10 +7237,11 @@ conv_intrinsic_move_alloc (gfc_code *code)
   gfc_init_se (&from_se, NULL);
   gfc_init_se (&to_se, NULL);
 
+  gcc_assert (from_expr->ts.type != BT_CLASS
+	      || to_expr->ts.type == BT_CLASS);
+
   if (from_expr->rank == 0)
     {
-      gcc_assert (from_expr->ts.type != BT_CLASS
-		  || to_expr->ts.type == BT_CLASS);
       if (from_expr->ts.type != BT_CLASS)
 	from_expr2 = from_expr;
       else

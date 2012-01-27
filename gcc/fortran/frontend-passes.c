@@ -328,7 +328,8 @@ create_var (gfc_expr * e)
       result->ref->type = REF_ARRAY;
       result->ref->u.ar.type = AR_FULL;
       result->ref->u.ar.where = e->where;
-      result->ref->u.ar.as = symbol->as;
+      result->ref->u.ar.as = symbol->ts.type == BT_CLASS
+			     ? CLASS_DATA (symbol)->as : symbol->as;
       if (gfc_option.warn_array_temp)
 	gfc_warning ("Creating array temporary at %L", &(e->where));
     }

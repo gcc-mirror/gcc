@@ -1,5 +1,20 @@
 2012-01-27  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/51970
+	PR fortran/51977
+	* primary.c (gfc_match_varspec. gfc_match_rvalue): Set
+	handle array spec for BT_CLASS.
+	* expr.c (gfc_get_variable_expr, gfc_lval_expr_from_sym)
+	* frontend-passes.c (create_var): Ditto.
+	* resolve.c (resolve_actual_arglist, resolve_assoc_var): Ditto.
+	* trans-decl.c (gfc_trans_deferred_vars): Use class_pointer
+	instead of attr.pointer.
+	(gfc_generate_function_code): Use CLASS_DATA (sym) for BT_CLASS.
+	* trans-intrinsic.c (conv_intrinsic_move_alloc): Move assert.
+	* trans-stmt.c (trans_associate_var): Ask for the descriptor.
+
+2012-01-27  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/51953
 	* match.c (gfc_match_allocate): Allow more than allocate
 	object with SOURCE=.

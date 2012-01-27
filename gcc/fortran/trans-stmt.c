@@ -1175,6 +1175,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       gfc_se se;
 
       gfc_init_se (&se, NULL);
+      se.descriptor_only = 1;
       gfc_conv_expr (&se, e);
 
       gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr)));

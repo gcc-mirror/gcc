@@ -3687,7 +3687,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	}
       else if ((!sym->attr.dummy || sym->ts.deferred)
 		&& (sym->ts.type == BT_CLASS
-		&& CLASS_DATA (sym)->attr.pointer))
+		&& CLASS_DATA (sym)->attr.class_pointer))
 	continue;
       else if ((!sym->attr.dummy || sym->ts.deferred)
 		&& (sym->attr.allocatable
@@ -5341,7 +5341,8 @@ gfc_generate_function_code (gfc_namespace * ns)
 							 null_pointer_node));
 	  else if (sym->ts.type == BT_CLASS
 		   && CLASS_DATA (sym)->attr.allocatable
-		   && sym->attr.dimension == 0 && sym->result == sym)
+		   && CLASS_DATA (sym)->attr.dimension == 0
+		   && sym->result == sym)
 	    {
 	      tmp = CLASS_DATA (sym)->backend_decl;
 	      tmp = fold_build3_loc (input_location, COMPONENT_REF,
