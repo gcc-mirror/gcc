@@ -1,3 +1,9 @@
+2012-01-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52016
+	* resolve.c (resolve_formal_arglist): Fix elemental
+	constraint checks for polymorphic dummies.
+
 2012-01-27  Paul Thomas  <pault@gcc.gnu.org>
 	    Tobias Burnus <burnus@gcc.gnu.org>
 
@@ -24,7 +30,11 @@
 	gfc_copy_class_to_clasfc_cs, to copy to the allocated data.
 	* trans.h : Prototypes for gfc_get_class_array_ref,
 	gfc_copy_class_to_class and gfc_conv_class_to_class.
-  
+
+2012-01-25  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (symbol_as): Check also for attr.class_ok.
+
 2012-01-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51995

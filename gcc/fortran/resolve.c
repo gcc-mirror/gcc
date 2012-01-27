@@ -374,21 +374,26 @@ resolve_formal_arglist (gfc_symbol *proc)
       if (gfc_elemental (proc))
 	{
 	  /* F08:C1289.  */
-	  if (sym->attr.codimension)
+	  if (sym->attr.codimension
+	      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
+		  && CLASS_DATA (sym)->attr.codimension))
 	    {
 	      gfc_error ("Coarray dummy argument '%s' at %L to elemental "
 			 "procedure", sym->name, &sym->declared_at);
 	      continue;
 	    }
 
-	  if (sym->as != NULL)
+	  if (sym->as || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
+			  && CLASS_DATA (sym)->as))
 	    {
 	      gfc_error ("Argument '%s' of elemental procedure at %L must "
 			 "be scalar", sym->name, &sym->declared_at);
 	      continue;
 	    }
 
-	  if (sym->attr.allocatable)
+	  if (sym->attr.allocatable
+	      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
+		  && CLASS_DATA (sym)->attr.allocatable))
 	    {
 	      gfc_error ("Argument '%s' of elemental procedure at %L cannot "
 			 "have the ALLOCATABLE attribute", sym->name,
@@ -1572,6 +1577,16 @@ resolve_procedure_expression (gfc_expr* expr)
 		 " -frecursive", sym->name, &expr->where);
   
   return SUCCESS;
+}
+
+
+gfc_array_spec *
+symbol_as (gfc_symbol *sym)
+{
+  if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
+    return CLASS_DATA (sym)->as;
+  else
+    return sym->as;
 }
 
 
