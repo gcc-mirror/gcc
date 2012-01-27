@@ -1,3 +1,8 @@
+2012-01-27  Michael Eager  <eager@eagercon.com>
+
+	* config/microblaze.c (microblaze_emit_compare): Correct
+	test after pcmp instruction.
+
 2012-01-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52020
