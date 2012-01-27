@@ -401,7 +401,9 @@ resolve_formal_arglist (gfc_symbol *proc)
 	      continue;
 	    }
 
-	  if (sym->attr.pointer)
+	  if (sym->attr.pointer
+	      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
+		  && CLASS_DATA (sym)->attr.class_pointer))
 	    {
 	      gfc_error ("Argument '%s' of elemental procedure at %L cannot "
 			 "have the POINTER attribute", sym->name,
