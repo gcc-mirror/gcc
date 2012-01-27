@@ -1,5 +1,10 @@
 2012-01-27  Richard Guenther  <rguenther@suse.de>
 
+	* ipa-pure-const.c (check_stmt): Clobbers do not make a
+	function non-const/pure.
+
+2012-01-27  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/50444
 	* tree-sra.c (build_ref_for_offset): Properly adjust the
 	MEM_REF type for unaligned accesses.
