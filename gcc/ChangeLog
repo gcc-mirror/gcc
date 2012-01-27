@@ -1,3 +1,13 @@
+2012-01-27  Ian Lance Taylor  <iant@google.com>
+
+	PR go/47656
+	* builtins.def (BUILT_IN_INIT_HEAP_TRAMPOLINE): Define.
+	* builtins.c (expand_builtin_init_trampoline): Add onstack
+	parameter.  Change caller.
+	(expand_builtin): Handle BUILT_IN_INIT_HEAP_TRAMPOLINE.
+	* tree.c (build_common_builtin_nodes): Declare
+	__builtin_init_heap_trampoline.
+
 2012-01-27  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-protos.h (lpm_reg_rtx, lpm_addr_reg_rtx,

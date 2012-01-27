@@ -1,7 +1,7 @@
 /* Expand builtin functions.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
+   2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4854,7 +4854,7 @@ round_trampoline_addr (rtx tramp)
 }
 
 static rtx
-expand_builtin_init_trampoline (tree exp)
+expand_builtin_init_trampoline (tree exp, bool onstack)
 {
   tree t_tramp, t_func, t_chain;
   rtx m_tramp, r_tramp, r_chain, tmp;
@@ -4871,13 +4871,16 @@ expand_builtin_init_trampoline (tree exp)
   m_tramp = gen_rtx_MEM (BLKmode, r_tramp);
   MEM_NOTRAP_P (m_tramp) = 1;
 
-  /* The TRAMP argument should be the address of a field within the
-     local function's FRAME decl.  Let's see if we can fill in the
-     to fill in the MEM_ATTRs for this memory.  */
+  /* If ONSTACK, the TRAMP argument should be the address of a field
+     within the local function's FRAME decl.  Either way, let's see if
+     we can fill in the MEM_ATTRs for this memory.  */
   if (TREE_CODE (t_tramp) == ADDR_EXPR)
     set_mem_attributes_minus_bitpos (m_tramp, TREE_OPERAND (t_tramp, 0),
 				     true, 0);
 
+  /* Creator of a heap trampoline is responsible for making sure the
+     address is aligned to at least STACK_BOUNDARY.  Normally malloc
+     will ensure this anyhow.  */
   tmp = round_trampoline_addr (r_tramp);
   if (tmp != r_tramp)
     {
@@ -4897,10 +4900,13 @@ expand_builtin_init_trampoline (tree exp)
   /* Generate insns to initialize the trampoline.  */
   targetm.calls.trampoline_init (m_tramp, t_func, r_chain);
 
-  trampolines_created = 1;
+  if (onstack)
+    {
+      trampolines_created = 1;
 
-  warning_at (DECL_SOURCE_LOCATION (t_func), OPT_Wtrampolines,
-              "trampoline generated for nested function %qD", t_func);
+      warning_at (DECL_SOURCE_LOCATION (t_func), OPT_Wtrampolines,
+		  "trampoline generated for nested function %qD", t_func);
+    }
 
   return const0_rtx;
 }
@@ -6325,7 +6331,9 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       return const0_rtx;
 
     case BUILT_IN_INIT_TRAMPOLINE:
-      return expand_builtin_init_trampoline (exp);
+      return expand_builtin_init_trampoline (exp, true);
+    case BUILT_IN_INIT_HEAP_TRAMPOLINE:
+      return expand_builtin_init_trampoline (exp, false);
     case BUILT_IN_ADJUST_TRAMPOLINE:
       return expand_builtin_adjust_trampoline (exp);
 

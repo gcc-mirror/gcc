@@ -2422,8 +2422,8 @@ Gogo::make_trampoline(tree fnaddr, tree closure, Location location)
   x = save_expr(x);
 
   // Initialize the trampoline.
-  tree ini = build_call_expr(builtin_decl_implicit(BUILT_IN_INIT_TRAMPOLINE),
-			     3, x, fnaddr, closure);
+  tree calldecl = builtin_decl_implicit(BUILT_IN_INIT_HEAP_TRAMPOLINE);
+  tree ini = build_call_expr(calldecl, 3, x, fnaddr, closure);
 
   // On some targets the trampoline address needs to be adjusted.  For
   // example, when compiling in Thumb mode on the ARM, the address

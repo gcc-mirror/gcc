@@ -1,7 +1,7 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011 Free Software Foundation, Inc.
+   2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -9527,6 +9527,10 @@ build_common_builtin_nodes (void)
   local_define_builtin ("__builtin_init_trampoline", ftype,
 			BUILT_IN_INIT_TRAMPOLINE,
 			"__builtin_init_trampoline", ECF_NOTHROW | ECF_LEAF);
+  local_define_builtin ("__builtin_init_heap_trampoline", ftype,
+			BUILT_IN_INIT_HEAP_TRAMPOLINE,
+			"__builtin_init_heap_trampoline",
+			ECF_NOTHROW | ECF_LEAF);
 
   ftype = build_function_type_list (ptr_type_node, ptr_type_node, NULL_TREE);
   local_define_builtin ("__builtin_adjust_trampoline", ftype,
