@@ -1,3 +1,13 @@
+2012-01-27  Benjamin Kosnik  <bkoz@redhat.com>
+	    Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac (GLIBCXX_ENABLE_DEBUG_FLAGS): Use -gdwarf-4 -g3 -O0.
+	* configure.in: Regenerated.
+	* src/Makefile.am (all-once, install-data-once): New rules.
+	(all-local, install-data-local): Use them.
+	(build-debug, install-debug): Tweak.
+	* src/Makefile.in: Regenerate.
+
 2012-01-27  Richard Henderson  <rth@redhat.com>
 
 	* include/bits/atomic_base.h (__atomic_flag_base): Define _M_i

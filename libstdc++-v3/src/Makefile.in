@@ -405,7 +405,20 @@ CXXLINK = $(LIBTOOL) --tag CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 @ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_FALSE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver
 @ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver-sol2
 @ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver-sun
-debugdir = debug
+@GLIBCXX_BUILD_DEBUG_FALSE@STAMP_DEBUG = 
+
+# Added rules.
+# 1 debug library
+# 2 supra-convenience library
+@GLIBCXX_BUILD_DEBUG_TRUE@STAMP_DEBUG = build-debug
+@GLIBCXX_BUILD_DEBUG_FALSE@STAMP_INSTALL_DEBUG = 
+@GLIBCXX_BUILD_DEBUG_TRUE@STAMP_INSTALL_DEBUG = install-debug
+@GLIBCXX_BUILD_DEBUG_FALSE@CLEAN_DEBUG = 
+@GLIBCXX_BUILD_DEBUG_TRUE@CLEAN_DEBUG = debug
+
+# Build a debug variant.
+# Take care to fix all possibly-relative paths.
+debugdir = ${glibcxx_builddir}/src/debug
 all: all-recursive
 
 .SUFFIXES:
@@ -655,8 +668,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-recursive
 
-clean-am: clean-generic clean-libtool clean-toolexeclibLTLIBRARIES \
-	mostlyclean-am
+clean-am: clean-generic clean-libtool clean-local \
+	clean-toolexeclibLTLIBRARIES mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -f Makefile
@@ -727,7 +740,7 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am all-local check check-am clean clean-generic \
-	clean-libtool clean-toolexeclibLTLIBRARIES ctags \
+	clean-libtool clean-local clean-toolexeclibLTLIBRARIES ctags \
 	ctags-recursive distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags dvi dvi-am html html-am info \
 	info-am install install-am install-data install-data-am \
@@ -785,13 +798,15 @@ vpath % $(top_srcdir)
 @ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
 @ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 
-# Added rules.
-# 1 debug library
-# 2 supra-convenience library
-@GLIBCXX_BUILD_DEBUG_TRUE@all-local: libstdc++convenience.la build_debug
-@GLIBCXX_BUILD_DEBUG_TRUE@install-data-local: install_debug
-@GLIBCXX_BUILD_DEBUG_FALSE@all-local: libstdc++convenience.la
-@GLIBCXX_BUILD_DEBUG_FALSE@install-data-local:
+# Control additional build primary rules.
+# EXTRA_LTLIBRARIES =
+all-once: libstdc++convenience.la $(STAMP_DEBUG)
+install-data-once: $(STAMP_INSTALL_DEBUG)
+
+all-local: all-once
+install-data-local: install-data-once
+clean-local:
+	rm -rf libstdc++convenience.la stamp* $(CLEAN_DEBUG)
 
 # Make a non-installed convenience library, so that --disable-static
 # may work.
@@ -801,12 +816,10 @@ libstdc++convenience.la: $(toolexeclib_LTLIBRARIES)
 	  cp .libs/libstdc++convenience.a .libs/libstdc++.a; \
 	fi; \
 	echo `date` > stamp-libstdc++convenience;
-
-# Build a set of debug objects here.
-# Take care to fix all possibly-relative paths.
 stamp-debug:
 	if test ! -d ${debugdir}; then \
 	  mkdir -p ${debugdir}; \
+	  for d in $(SUBDIRS); do mkdir -p  ${debugdir}/$$d; done; \
 	  (cd ${debugdir}; \
 	  sed -e 's/top_builddir = \.\./top_builddir = ..\/../' \
 	      -e 's/top_build_prefix = \.\./top_build_prefix = ..\/../' \
@@ -814,19 +827,33 @@ stamp-debug:
 	      -e 's/VPATH = \.\./VPATH = ..\/../' \
 	      -e 's/glibcxx_basedir = \.\./glibcxx_basedir = ..\/../' \
 	      -e 's/MKDIR_P = \.\./MKDIR_P = ..\/../' \
-	      -e 's/all-local: build_debug/all-local:/' \
-	      -e 's/install-data-local: install_debug/install-data-local:/' \
-	  < ../Makefile > Makefile) ; \
+	  < ../Makefile > Makefile ; \
+	  for d in . $(SUBDIRS); do \
+	  sed -e 's/top_builddir = \.\./top_builddir = ..\/../' \
+	      -e 's/top_build_prefix = \.\./top_build_prefix = ..\/../' \
+	      -e 's/srcdir = \.\./srcdir = ..\/../' \
+	      -e 's/VPATH = \.\./VPATH = ..\/../' \
+	      -e 's/glibcxx_basedir = \.\./glibcxx_basedir = ..\/../' \
+	      -e 's/MKDIR_P = \.\./MKDIR_P = ..\/../' \
+	  < ../$$d/Makefile > $$d/Makefile ; \
+	  done) ; \
 	fi; \
 	echo `date` > stamp-debug;
 
-build_debug: stamp-debug
-	(cd ${debugdir} && $(MAKE) CXXFLAGS='$(DEBUG_FLAGS)' all)
+build-debug: stamp-debug
+	  (cd ${debugdir}; \
+	  mv Makefile Makefile.tmp; \
+	  sed -e 's,all-local: all-once,all-local:,' \
+	      -e 's,install-data-local: install-data-once,install-data-local:,' \
+	      -e 's,src/c,src/debug/c,' \
+	  < Makefile.tmp > Makefile ; \
+	  $(MAKE) CXXFLAGS='$(DEBUG_FLAGS)' \
+	  toolexeclibdir=$(glibcxx_toolexeclibdir)/debug all) ;
 
-# Install debug library here.
-install_debug:
-	(cd ${debugdir} && $(MAKE) \
-	toolexeclibdir=$(glibcxx_toolexeclibdir)/debug install)
+# Install debug library.
+install-debug: build-debug
+	(cd ${debugdir} && $(MAKE) CXXFLAGS='$(DEBUG_FLAGS)' \
+	toolexeclibdir=$(glibcxx_toolexeclibdir)/debug install) ;
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
