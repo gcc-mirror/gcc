@@ -1,5 +1,12 @@
 2012-01-27  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/52016
+	* resolve.c (resolve_formal_arglist): Fix elemental
+	constraint checks for polymorphic dummies also for
+	pointers.
+	
+2012-01-27  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/51970
 	PR fortran/51977
 	* primary.c (gfc_match_varspec. gfc_match_rvalue): Set
