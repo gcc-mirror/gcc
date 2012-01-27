@@ -3660,12 +3660,11 @@ alloc_opt_list:
 	      goto cleanup;
 	    }
 
-	  if (head->next)
-	    {
- 	      gfc_error ("SOURCE tag at %L requires only a single entity in "
-			 "the allocation-list", &tmp->where);
-	      goto cleanup;
-            }
+	  if (head->next
+	      && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: SOURCE tag at %L"
+				 " with more than a single allocate objects",
+				 &tmp->where) == FAILURE)
+	    goto cleanup;
 
 	  source = tmp;
 	  tmp = NULL;

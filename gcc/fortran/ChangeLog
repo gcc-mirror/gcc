@@ -1,5 +1,11 @@
 2012-01-27  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/51953
+	* match.c (gfc_match_allocate): Allow more than allocate
+	object with SOURCE=.
+
+2012-01-27  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/52016
 	* resolve.c (resolve_formal_arglist): Fix elemental
 	constraint checks for polymorphic dummies.
