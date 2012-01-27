@@ -4305,7 +4305,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 		    gnu_return_type = gnu_new_ret_type;
 		    TYPE_NAME (gnu_return_type) = get_identifier ("RETURN");
-		    /* Set a default alignment to speed up accesses.  */
+		    /* Set a default alignment to speed up accesses.  But we
+		       shouldn't increase the size of the structure too much,
+		       lest it doesn't fit in return registers anymore.  */
 		    TYPE_ALIGN (gnu_return_type)
 		      = get_mode_alignment (ptr_mode);
 		  }
@@ -4314,9 +4316,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  = create_field_decl (gnu_param_name, gnu_param_type,
 				       gnu_return_type, NULL_TREE, NULL_TREE,
 				       0, 0);
-		/* Set a minimum alignment to speed up accesses.  */
-		if (DECL_ALIGN (gnu_field) < TYPE_ALIGN (gnu_return_type))
-		  DECL_ALIGN (gnu_field) = TYPE_ALIGN (gnu_return_type);
 		Sloc_to_locus (Sloc (gnat_param),
 			       &DECL_SOURCE_LOCATION (gnu_field));
 		DECL_CHAIN (gnu_field) = gnu_field_list;
