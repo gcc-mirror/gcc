@@ -1,3 +1,11 @@
+2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/stack_usage1.adb: New test.
+	* gnat.dg/stack_usage1_pkg.ad[sb]: New helper.
+
+	* gcc.dg/pr44194-1.c: Remove superfluous include directive.
+	* gcc.dg/pr44194-2.c: Likewise.
+
 2012-01-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51370

@@ -3,8 +3,6 @@
 /* Restricting to 64-bit targets since 32-bit targets return
    structures in memory.  */
 
-#include <stdint.h>
-
 struct ints { int a, b, c; } foo();
 void bar(int a, int b);
 
