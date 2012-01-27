@@ -85,6 +85,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "langhooks.h"
 #include "tree-affine.h"
+#include "params.h"
 
 static struct datadep_stats
 {
@@ -4134,9 +4135,10 @@ compute_affine_dependence (struct data_dependence_relation *ddr,
 /* Compute in DEPENDENCE_RELATIONS the data dependence graph for all
    the data references in DATAREFS, in the LOOP_NEST.  When
    COMPUTE_SELF_AND_RR is FALSE, don't compute read-read and self
-   relations.  */
+   relations.  Return true when successful, i.e. data references number
+   is small enough to be handled.  */
 
-void
+bool
 compute_all_dependences (VEC (data_reference_p, heap) *datarefs,
 			 VEC (ddr_p, heap) **dependence_relations,
 			 VEC (loop_p, heap) *loop_nest,
@@ -4145,6 +4147,18 @@ compute_all_dependences (VEC (data_reference_p, heap) *datarefs,
   struct data_dependence_relation *ddr;
   struct data_reference *a, *b;
   unsigned int i, j;
+
+  if ((int) VEC_length (data_reference_p, datarefs)
+      > PARAM_VALUE (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS))
+    {
+      struct data_dependence_relation *ddr;
+
+      /* Insert a single relation into dependence_relations:
+	 chrec_dont_know.  */
+      ddr = initialize_data_dependence_relation (NULL, NULL, loop_nest);
+      VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
+      return false;
+    }
 
   FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, a)
     for (j = i + 1; VEC_iterate (data_reference_p, datarefs, j, b); j++)
@@ -4164,6 +4178,8 @@ compute_all_dependences (VEC (data_reference_p, heap) *datarefs,
         if (loop_nest)
    	  compute_affine_dependence (ddr, VEC_index (loop_p, loop_nest, 0));
       }
+
+  return true;
 }
 
 /* Stores the locations of memory references in STMT to REFERENCES.  Returns
@@ -4338,7 +4354,7 @@ find_data_references_in_bb (struct loop *loop, basic_block bb,
    TODO: This function should be made smarter so that it can handle address
    arithmetic as if they were array accesses, etc.  */
 
-tree
+static tree
 find_data_references_in_loop (struct loop *loop,
 			      VEC (data_reference_p, heap) **datarefs)
 {
@@ -4427,19 +4443,10 @@ compute_data_dependences_for_loop (struct loop *loop,
      dependences.  */
   if (!loop
       || !find_loop_nest (loop, loop_nest)
-      || find_data_references_in_loop (loop, datarefs) == chrec_dont_know)
-    {
-      struct data_dependence_relation *ddr;
-
-      /* Insert a single relation into dependence_relations:
-	 chrec_dont_know.  */
-      ddr = initialize_data_dependence_relation (NULL, NULL, *loop_nest);
-      VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
-      res = false;
-    }
-  else
-    compute_all_dependences (*datarefs, dependence_relations, *loop_nest,
-			     compute_self_and_read_read_dependences);
+      || find_data_references_in_loop (loop, datarefs) == chrec_dont_know
+      || !compute_all_dependences (*datarefs, dependence_relations, *loop_nest,
+				   compute_self_and_read_read_dependences))
+    res = false;
 
   if (dump_file && (dump_flags & TDF_STATS))
     {
@@ -4507,9 +4514,8 @@ compute_data_dependences_for_bb (basic_block bb,
   if (find_data_references_in_bb (NULL, bb, datarefs) == chrec_dont_know)
     return false;
 
-  compute_all_dependences (*datarefs, dependence_relations, NULL,
-                           compute_self_and_read_read_dependences);
-  return true;
+  return compute_all_dependences (*datarefs, dependence_relations, NULL,
+				  compute_self_and_read_read_dependences);
 }
 
 /* Entry point (for testing only).  Analyze all the data references
