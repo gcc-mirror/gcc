@@ -1461,6 +1461,8 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
   tree prev_base = base;
   tree off;
   HOST_WIDE_INT base_offset;
+  unsigned HOST_WIDE_INT misalign;
+  unsigned int align;
 
   gcc_checking_assert (offset % BITS_PER_UNIT == 0);
 
@@ -1505,6 +1507,23 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
 			   base_offset + offset / BITS_PER_UNIT);
       base = build_fold_addr_expr (unshare_expr (base));
     }
+
+  /* If prev_base were always an originally performed access
+     we can extract more optimistic alignment information
+     by looking at the access mode.  That would constrain the
+     alignment of base + base_offset which we would need to
+     adjust according to offset.
+     ???  But it is not at all clear that prev_base is an access
+     that was in the IL that way, so be conservative for now.  */
+  align = get_pointer_alignment_1 (base, &misalign);
+  misalign += (double_int_sext (tree_to_double_int (off),
+				TYPE_PRECISION (TREE_TYPE (off))).low
+	       * BITS_PER_UNIT);
+  misalign = misalign & (align - 1);
+  if (misalign != 0)
+    align = (misalign & -misalign);
+  if (align < TYPE_ALIGN (exp_type))
+    exp_type = build_aligned_type (exp_type, align);
 
   return fold_build2_loc (loc, MEM_REF, exp_type, base, off);
 }

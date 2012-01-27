@@ -1,6 +1,12 @@
 2012-01-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50444
+	* tree-sra.c (build_ref_for_offset): Properly adjust the
+	MEM_REF type for unaligned accesses.
+
+2012-01-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50444
 	* expr.c (mem_ref_refers_to_non_mem_p): New function.
 	(expand_assignment): Use it.  Properly handle misaligned
 	bases when expanding stores to component references.
