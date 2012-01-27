@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -173,6 +173,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "substituting _UIntType not an unsigned integral type");
       static_assert(__m == 0u || (__a < __m && __c < __m),
 		    "template argument substituting __m out of bounds");
+
+      // XXX FIXME:
+      // _Mod::__calc should handle correctly __m % __a >= __m / __a too.
+      static_assert(__m % __a < __m / __a,
+		    "sorry, not implemented yet: try a smaller 'a' constant");
 
     public:
       /** The type of the generated random value. */
