@@ -1,5 +1,10 @@
 2012-01-27  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* doc/invoke.texi: Correct usage of "command line" (noun)
+	vs "command-line" (adjective) throughout.
+
+2012-01-27  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* doc/invoke.texi (Language Independent Options): Move
 	-Wcoverage-mismatch blurb from here....
 	(Warning Options): ...to here.
