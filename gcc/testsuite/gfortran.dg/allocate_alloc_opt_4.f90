@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-std=f2003" }
 program a
 
   implicit none
@@ -16,7 +17,7 @@ program a
 
   allocate(integer(4) :: i(4), source=n) ! { dg-error "conflicts with the typespec" }
 
-  allocate(i(4), j(n), source=n) ! { dg-error "requires only a single entity" }
+  allocate(i(4), j(n), source=n) ! { dg-error "Fortran 2008: SOURCE tag at .1. with more than a single allocate objects" }
 
   allocate(x(4), source=n) ! { dg-error "type incompatible with" }
 

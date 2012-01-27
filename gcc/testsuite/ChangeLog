@@ -1,5 +1,12 @@
 2012-01-27  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/51953
+	* gfortran.dg/allocate_alloc_opt_13.f90: New.
+	* gfortran.dg/allocate_alloc_opt_4.f90: Add -std=f2003
+	and change dg-error string.
+
+2012-01-27  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/52016
 	* gfortran.dg/elemental_args_check_5.f90: New.
 
