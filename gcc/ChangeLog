@@ -1,3 +1,9 @@
+2012-01-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Language Independent Options): Move
+	-Wcoverage-mismatch blurb from here....
+	(Warning Options): ...to here.
+
 2012-01-27  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal):
