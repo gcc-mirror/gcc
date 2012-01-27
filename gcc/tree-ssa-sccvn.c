@@ -628,6 +628,10 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 
       switch (temp.opcode)
 	{
+	case WITH_SIZE_EXPR:
+	  temp.op0 = TREE_OPERAND (ref, 1);
+	  temp.off = 0;
+	  break;
 	case MEM_REF:
 	  /* The base address gets its own vn_reference_op_s structure.  */
 	  temp.op0 = TREE_OPERAND (ref, 1);
@@ -744,6 +748,7 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
       VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
 
       if (REFERENCE_CLASS_P (ref)
+	  || TREE_CODE (ref) == WITH_SIZE_EXPR
 	  || (TREE_CODE (ref) == ADDR_EXPR
 	      && !is_gimple_min_invariant (ref)))
 	ref = TREE_OPERAND (ref, 0);

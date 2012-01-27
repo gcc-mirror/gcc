@@ -1,3 +1,9 @@
+2012-01-27  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/51990
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Handle WITH_SIZE_EXPR.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Same.
+
 2012-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/52001
