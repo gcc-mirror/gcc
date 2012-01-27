@@ -1,5 +1,15 @@
 2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (create_label_decl): Adjust.
+	* gcc-interface/utils.c (create_label_decl): Add GNAT_NODE parameter
+	and invoke gnat_pushdecl on it.  Remove obsolete settings.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Label>: Adjust call to
+	create_label_decl.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Null): Likewise.  Ignore the
+	label for debugging purposes.
+
+2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: For an aliased
 	object with an unconstrained nominal subtype and if optimization isn't
 	enabled, create a special VAR_DECL for debugging purposes.

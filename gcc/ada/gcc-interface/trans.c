@@ -5881,7 +5881,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	 the next statement that the middle-end knows how to preserve.  */
       if (!optimize && Comes_From_Source (gnat_node))
 	{
-	  tree stmt, label = create_label_decl (NULL_TREE);
+	  tree stmt, label = create_label_decl (NULL_TREE, gnat_node);
+	  DECL_IGNORED_P (label) = 1;
 	  start_stmt_group ();
 	  stmt = build1 (GOTO_EXPR, void_type_node, label);
 	  set_expr_location_from_node (stmt, gnat_node);

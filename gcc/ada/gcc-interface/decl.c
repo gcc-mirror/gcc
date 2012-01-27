@@ -4619,7 +4619,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       break;
 
     case E_Label:
-      gnu_decl = create_label_decl (gnu_entity_name);
+      gnu_decl = create_label_decl (gnu_entity_name, gnat_entity);
       break;
 
     case E_Block:
