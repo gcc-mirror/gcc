@@ -83,7 +83,7 @@ options control the assembler and linker; most of these are not
 documented here, since you rarely need to use any of them.
 
 @cindex C compilation options
-Most of the command line options that you can use with GCC are useful
+Most of the command-line options that you can use with GCC are useful
 for C programs; when an option is only useful with another language
 (usually C++), the explanation says so explicitly.  If the description
 for a particular option does not mention a source language, you can use
@@ -1247,22 +1247,22 @@ no trouble.
 
 @item --help
 @opindex help
-Print (on the standard output) a description of the command line options
+Print (on the standard output) a description of the command-line options
 understood by @command{gcc}.  If the @option{-v} option is also specified
 then @option{--help} will also be passed on to the various processes
-invoked by @command{gcc}, so that they can display the command line options
+invoked by @command{gcc}, so that they can display the command-line options
 they accept.  If the @option{-Wextra} option has also been specified
-(prior to the @option{--help} option), then command line options which
+(prior to the @option{--help} option), then command-line options which
 have no documentation associated with them will also be displayed.
 
 @item --target-help
 @opindex target-help
-Print (on the standard output) a description of target-specific command
-line options for each tool.  For some targets extra target-specific
+Print (on the standard output) a description of target-specific command-line
+options for each tool.  For some targets extra target-specific
 information may also be printed.
 
 @item --help=@{@var{class}@r{|[}^@r{]}@var{qualifier}@}@r{[},@dots{}@r{]}
-Print (on the standard output) a description of the command line
+Print (on the standard output) a description of the command-line
 options understood by the compiler that fit into all specified classes
 and qualifiers.  These are the supported classes:
 
@@ -1360,7 +1360,7 @@ Here is a truncated example from the ARM port of @command{gcc}:
   -mapcs                                [disabled]
 @end smallexample
 
-The output is sensitive to the effects of previous command line
+The output is sensitive to the effects of previous command-line
 options, so for example it is possible to find out which optimizations
 are enabled at @option{-O2} by using:
 
@@ -1858,7 +1858,7 @@ basic integer types such as @code{int} are signed types.
 @section Options Controlling C++ Dialect
 
 @cindex compiler options, C++
-@cindex C++ options, command line
+@cindex C++ options, command-line
 @cindex options, C++
 This section describes the command-line options that are only meaningful
 for C++ programs; but you can also use most of the GNU compiler options
@@ -2595,7 +2595,7 @@ In this example, G++ will synthesize a default @samp{A& operator =
 @section Options Controlling Objective-C and Objective-C++ Dialects
 
 @cindex compiler options, Objective-C and Objective-C++
-@cindex Objective-C and Objective-C++ options, command line
+@cindex Objective-C and Objective-C++ options, command-line
 @cindex options, Objective-C and Objective-C++
 (NOTE: This manual does not describe the Objective-C and Objective-C++
 languages themselves.  @xref{Standards,,Language Standards
@@ -2754,7 +2754,7 @@ suppresses this behavior and causes calls to @code{objc_getClass("@dots{}")}
 to be retained.  This is useful in Zero-Link debugging mode, since it allows
 for individual class implementations to be modified during program execution.
 The GNU runtime currently always retains calls to @code{objc_get_class("@dots{}")}
-regardless of command line options.
+regardless of command-line options.
 
 @item -gen-decls
 @opindex gen-decls
@@ -2865,7 +2865,7 @@ a message which is too long to fit on a single line.
 @opindex fno-diagnostics-show-option
 @opindex fdiagnostics-show-option
 By default, each diagnostic emitted includes text which indicates the
-command line option that directly controls the diagnostic (if such an
+command-line option that directly controls the diagnostic (if such an
 option is known to the diagnostic machinery).  Specifying the
 @option{-fno-diagnostics-show-option} flag suppresses that behavior.
 
@@ -3688,9 +3688,9 @@ This warning is enabled by @option{-Wall} or @option{-Wextra}.
 @cindex unknown pragmas, warning
 @cindex pragmas, warning of unknown
 Warn when a #pragma directive is encountered which is not understood by
-GCC@.  If this command line option is used, warnings will even be issued
+GCC@.  If this command-line option is used, warnings will even be issued
 for unknown pragmas in system header files.  This is not the case if
-the warnings were only enabled by the @option{-Wall} command line option.
+the warnings were only enabled by the @option{-Wall} command-line option.
 
 @item -Wno-pragmas
 @opindex Wno-pragmas
@@ -3846,7 +3846,7 @@ obtaining infinities and NaNs.
 Print warning messages for constructs found in system header files.
 Warnings from system headers are normally suppressed, on the assumption
 that they usually do not indicate real problems and would only make the
-compiler output harder to read.  Using this command line option tells
+compiler output harder to read.  Using this command-line option tells
 GCC to emit warnings from system headers as if they occurred in user
 code.  However, note that using @option{-Wall} in conjunction with this
 option will @emph{not} warn about unknown pragmas in system
@@ -4787,7 +4787,7 @@ for maximum benefit.
 
 @item -grecord-gcc-switches
 @opindex grecord-gcc-switches
-This switch causes the command line options, that were used to invoke the
+This switch causes the command-line options, that were used to invoke the
 compiler and may affect code generation, to be appended to the
 DW_AT_producer attribute in DWARF debugging information.  The options
 are concatenated with spaces separating them from each other and from
@@ -4796,7 +4796,7 @@ way of storing compiler options into the object file.
 
 @item -gno-record-gcc-switches
 @opindex gno-record-gcc-switches
-Disallow appending command line options to the DW_AT_producer attribute
+Disallow appending command-line options to the DW_AT_producer attribute
 in DWARF debugging information.  This is the default.
 
 @item -gstrict-dwarf
@@ -5617,7 +5617,7 @@ Dump after function inlining.
 @item -fdump-passes
 @opindex fdump-passes
 Dump the list of optimization passes that are turned on and off by
-the current command line options.
+the current command-line options.
 
 @item -fdump-statistics-@var{option}
 @opindex fdump-statistics
@@ -5895,7 +5895,7 @@ compiling @file{foo.c} with @samp{-c -save-temps} would produce files
 preprocessed @file{foo.i} output file even though the compiler now
 normally uses an integrated preprocessor.
 
-When used in combination with the @option{-x} command line option,
+When used in combination with the @option{-x} command-line option,
 @option{-save-temps} is sensible enough to avoid over writing an
 input source file with the same extension as an intermediate file.
 The corresponding intermediate file may be obtained by renaming the
@@ -8247,7 +8247,7 @@ The default is @option{-fno-rounding-math}.
 This option is experimental and does not currently guarantee to
 disable all GCC optimizations that are affected by rounding mode.
 Future versions of GCC may provide finer control of this setting
-using C99's @code{FENV_ACCESS} pragma.  This command line option
+using C99's @code{FENV_ACCESS} pragma.  This command-line option
 will be used to specify the default state for @code{FENV_ACCESS}.
 
 @item -fsignaling-nans
@@ -8481,7 +8481,7 @@ Not all targets support this option.
 In some places, GCC uses various constants to control the amount of
 optimization that is done.  For example, GCC will not inline functions
 that contain more that a certain number of instructions.  You can
-control some of these constants on the command-line using the
+control some of these constants on the command line using the
 @option{--param} option.
 
 The names of specific parameters, and the meaning of the values, are
@@ -10139,7 +10139,7 @@ If that switch was not specified, this substitutes nothing.  Note that
 the leading dash is omitted when specifying this option, and it is
 automatically inserted if the substitution is performed.  Thus the spec
 string @samp{%@{foo@}} would match the command-line option @option{-foo}
-and would output the command line option @option{-foo}.
+and would output the command-line option @option{-foo}.
 
 @item %W@{@code{S}@}
 Like %@{@code{S}@} but mark last argument supplied within as a file to be
@@ -11119,9 +11119,9 @@ following situations:
 @item Taking address of a function or code label.
 @item Computed goto.
 @item If prologue-save function is used, see @option{-mcall-prologues}
-command line option.
+command-line option.
 @item Switch/case dispatch tables. If you do not want such dispatch
-tables you can specify the @option{-fno-jump-tables} command line option.
+tables you can specify the @option{-fno-jump-tables} command-line option.
 @item C and C++ constructors/destructors called during startup/shutdown.
 @item If the tools hit a @code{gs()} modifier explained above.
 @end itemize
@@ -11166,7 +11166,7 @@ Alternatively, @code{func_4} can be defined in the linker script.
 avr-gcc defines several built-in macros so that the user code can test
 for presence of absence of features.  Almost any of the following
 built-in macros are deduced from device capabilities and thus
-triggered by the @code{-mmcu=} command line option.
+triggered by the @code{-mmcu=} command-line option.
 
 For even more AVR-specific built-in macros see
 @ref{AVR Named Address Spaces} and @ref{AVR Built-in Functions}.
@@ -14753,7 +14753,7 @@ one or more modules in it; each module has a core CPU and a variety of
 coprocessors, optional instructions, and peripherals.  The
 @code{MeP-Integrator} tool, not part of GCC, provides these
 configurations through this option; using this option is the same as
-using all the corresponding command line options.  The default
+using all the corresponding command-line options.  The default
 configuration is @code{default}.
 
 @item -mcop
@@ -17155,7 +17155,7 @@ pointer.  The @option{-mno-save-toc-indirect} option is the default.
 @subsection RX Options
 @cindex RX Options
 
-These command line options are defined for RX targets:
+These command-line options are defined for RX targets:
 
 @table @gcctabopt
 @item -m64bit-doubles
@@ -17301,7 +17301,7 @@ larger code, especially in complicated functions.
 
 The actual register chosen to hold the constant data base address
 depends upon whether the @option{-msmall-data-limit} and/or the
-@option{-mint-register} command line options are enabled.  Starting
+@option{-mint-register} command-line options are enabled.  Starting
 with register @code{r13} and proceeding downwards, registers are
 allocated first to satisfy the requirements of @option{-mint-register},
 then @option{-mpid} and finally @option{-msmall-data-limit}.  Thus it
@@ -17310,18 +17310,18 @@ is possible for the small data area register to be @code{r8} if both
 command line.
 
 By default this feature is not enabled.  The default can be restored
-via the @option{-mno-pid} command line option.
+via the @option{-mno-pid} command-line option.
 
 @end table
 
-@emph{Note:} The generic GCC command line @option{-ffixed-@var{reg}}
+@emph{Note:} The generic GCC command-line option @option{-ffixed-@var{reg}}
 has special significance to the RX port when used with the
 @code{interrupt} function attribute.  This attribute indicates a
 function intended to process fast interrupts.  GCC will will ensure
 that it only uses the registers @code{r10}, @code{r11}, @code{r12}
 and/or @code{r13} and only provided that the normal use of the
 corresponding registers have been restricted via the
-@option{-ffixed-@var{reg}} or @option{-mint-register} command line
+@option{-ffixed-@var{reg}} or @option{-mint-register} command-line
 options.
 
 @node S/390 and zSeries Options
