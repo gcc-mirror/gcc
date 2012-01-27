@@ -1,3 +1,8 @@
+2012-01-27  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* g++.dg/cpp0x/constexpr-rom.C: Don't add -G0 on *-*-darwin*
+	*-*-aix* alpha*-*-osf* alpha*-*-*vms*.
+
 2012-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/51852
