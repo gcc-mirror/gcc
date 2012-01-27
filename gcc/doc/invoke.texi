@@ -2869,21 +2869,6 @@ command line option that directly controls the diagnostic (if such an
 option is known to the diagnostic machinery).  Specifying the
 @option{-fno-diagnostics-show-option} flag suppresses that behavior.
 
-@item -Wcoverage-mismatch
-@opindex Wcoverage-mismatch
-Warn if feedback profiles do not match when using the
-@option{-fprofile-use} option.
-If a source file was changed between @option{-fprofile-gen} and
-@option{-fprofile-use}, the files with the profile feedback can fail
-to match the source file and GCC can not use the profile feedback
-information.  By default, this warning is enabled and is treated as an
-error.  @option{-Wno-coverage-mismatch} can be used to disable the
-warning or @option{-Wno-error=coverage-mismatch} can be used to
-disable the error.  Disable the error for this warning can result in
-poorly optimized code, so disabling the error is useful only in the
-case of very minor changes such as bug fixes to an existing code-base.
-Completely disabling the warning is not recommended.
-
 @end table
 
 @node Warning Options
@@ -3135,6 +3120,21 @@ This warning is enabled by @option{-Wall}.
 Warn whenever a comment-start sequence @samp{/*} appears in a @samp{/*}
 comment, or whenever a Backslash-Newline appears in a @samp{//} comment.
 This warning is enabled by @option{-Wall}.
+
+@item -Wno-coverage-mismatch
+@opindex Wno-coverage-mismatch
+Warn if feedback profiles do not match when using the
+@option{-fprofile-use} option.
+If a source file was changed between @option{-fprofile-gen} and
+@option{-fprofile-use}, the files with the profile feedback can fail
+to match the source file and GCC cannot use the profile feedback
+information.  By default, this warning is enabled and is treated as an
+error.  @option{-Wno-coverage-mismatch} can be used to disable the
+warning or @option{-Wno-error=coverage-mismatch} can be used to
+disable the error.  Disabling the error for this warning can result in
+poorly optimized code and is useful only in the
+case of very minor changes such as bug fixes to an existing code-base.
+Completely disabling the warning is not recommended.
 
 @item -Wno-cpp
 @r{(C, Objective-C, C++, Objective-C++ and Fortran only)}
