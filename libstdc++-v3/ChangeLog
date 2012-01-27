@@ -1,3 +1,8 @@
+2011-01-27  Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+
+	* libsupc++/typeinfo: Correctly match #pragma GCC visibility
+	pop with #pragma GCC visibility push.
+
 2012-01-27  Benjamin Kosnik  <bkoz@redhat.com>
 	    Matthias Klose  <doko@ubuntu.com>
 
