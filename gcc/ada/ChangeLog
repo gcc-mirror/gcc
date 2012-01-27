@@ -1,5 +1,21 @@
 2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/ada-tree.h (DECL_ALIASED_P): New flag.
+	* gcc-interface/decl.c (is_variable_size): Rename to...
+	(type_has_variable_size): ...this.
+	(adjust_packed): Adjust to above renaming.
+	(gnat_to_gnu_field): Set DECL_ALIASED_P on the field.
+	(field_is_artificial): New predicate.
+	(field_is_aliased): Likewise.
+	(field_has_self_size): Likewise.
+	(field_has_variable_size): Likewise.
+	(components_to_record): Record information for the final layout during
+	the first pass on fields.
+	If there is an aliased field placed after a field whose length depends
+	on discriminants, put all the fields of the latter sort, last.
+
+2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (get_minimal_subprog_decl): Declare.
 	* gcc-interface/decl.c (get_minimal_subprog_decl): New function.
 	* gcc-interface/trans.c (Attribute_to_gnu): Use it for the prefix of an
