@@ -1,3 +1,7 @@
+2012-01-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
 2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* EXCLUDES (gthr-aix.h, gthr-dce.h, gthr-posix.c, gthr-posix.h)
