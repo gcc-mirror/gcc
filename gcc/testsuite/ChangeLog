@@ -1,3 +1,9 @@
+2012-01-27  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/51990
+	* gcc.dg/pr51990.c: New test.
+	* gcc.dg/pr51990-2.c: Same.
+
 2012-01-27  Paul Thomas  <pault@gcc.gnu.org>
 	    Tobias Burnus <burnus@gcc.gnu.org>
 
