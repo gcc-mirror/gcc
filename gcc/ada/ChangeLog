@@ -1,8 +1,13 @@
 2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Procedure>: Do not set
+	an alignment on fields of the RETURN type built for the CICO mechanism.
+
+2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu): Avoid making a SAVE_EXPR for
 	a call to a function that returns an unconstrained type with default
-	discriminant.  Similarly, avoid doing the conversion to the nominal
+	discriminant.  Similarly, avoid doing the conversion to the nominal
 	result type in this case.
 
 2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
