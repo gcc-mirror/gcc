@@ -1,7 +1,7 @@
 // Low-level functions for atomic operations: version for CPUs providing
 // atomic builtins -*- C++ -*-
 
-// Copyright (C) 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2009, 2010, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,12 +33,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   _Atomic_word 
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val) throw ()
-  { return __sync_fetch_and_add(__mem, __val); }
+  { return __atomic_fetch_add(__mem, __val, __ATOMIC_ACQ_REL); }
 
   void
   __attribute__ ((__unused__))
   __atomic_add(volatile _Atomic_word* __mem, int __val) throw ()
-  { __sync_fetch_and_add(__mem, __val); }
+  { __atomic_fetch_add(__mem, __val, __ATOMIC_ACQ_REL); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
