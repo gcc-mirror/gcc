@@ -8,7 +8,7 @@ package os
 
 import "syscall"
 
-func Hostname() (name string, err error) {
+func hostname() (name string, err error) {
 	var u syscall.Utsname
 	if errno := syscall.Uname(&u); errno != nil {
 		return "", NewSyscallError("uname", errno)
