@@ -4740,6 +4740,10 @@ gfc_trans_allocate (gfc_code * code)
   stmtblock_t post;
   gfc_expr *sz;
   gfc_se se_sz;
+  tree class_expr;
+  tree nelems;
+  tree memsize = NULL_TREE;
+  tree classexpr = NULL_TREE;
 
   if (!code->ext.alloc.list)
     return NULL_TREE;
@@ -4794,13 +4798,39 @@ gfc_trans_allocate (gfc_code * code)
       se.descriptor_only = 1;
       gfc_conv_expr (&se, expr);
 
+      /* Evaluate expr3 just once if not a variable.  */
+      if (al == code->ext.alloc.list
+	    && al->expr->ts.type == BT_CLASS
+	    && code->expr3
+	    && code->expr3->ts.type == BT_CLASS
+	    && code->expr3->expr_type != EXPR_VARIABLE)
+	{
+	  gfc_init_se (&se_sz, NULL);
+	  gfc_conv_expr_reference (&se_sz, code->expr3);
+	  gfc_conv_class_to_class (&se_sz, code->expr3,
+				   code->expr3->ts, false);
+	  gfc_add_block_to_block (&se.pre, &se_sz.pre);
+	  gfc_add_block_to_block (&se.post, &se_sz.post);
+	  classexpr = build_fold_indirect_ref_loc (input_location,
+						   se_sz.expr);
+	  classexpr = gfc_evaluate_now (classexpr, &se.pre);
+	  memsize = gfc_vtable_size_get (classexpr);
+	  memsize = fold_convert (sizetype, memsize);
+	}
+
+      memsz = memsize;
+      class_expr = classexpr;
+
+      nelems = NULL_TREE;
       if (!gfc_array_allocate (&se, expr, stat, errmsg, errlen, label_finish,
-			       code->expr3))
+			       memsz, &nelems, code->expr3))
 	{
 	  /* A scalar or derived type.  */
 
 	  /* Determine allocate size.  */
-	  if (al->expr->ts.type == BT_CLASS && code->expr3)
+	  if (al->expr->ts.type == BT_CLASS
+		&& code->expr3
+		&& memsz == NULL_TREE)
 	    {
 	      if (code->expr3->ts.type == BT_CLASS)
 		{
@@ -4897,7 +4927,7 @@ gfc_trans_allocate (gfc_code * code)
 	    }
 	  else if (code->ext.alloc.ts.type != BT_UNKNOWN)
 	    memsz = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->ext.alloc.ts));
-	  else
+	  else if (memsz == NULL_TREE)
 	    memsz = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (se.expr)));
 
 	  if (expr->ts.type == BT_CHARACTER && memsz == NULL_TREE)
@@ -4956,13 +4986,23 @@ gfc_trans_allocate (gfc_code * code)
       e = gfc_copy_expr (al->expr);
       if (e->ts.type == BT_CLASS)
 	{
-	  gfc_expr *lhs,*rhs;
+	  gfc_expr *lhs, *rhs;
 	  gfc_se lse;
 
 	  lhs = gfc_expr_to_initialize (e);
 	  gfc_add_vptr_component (lhs);
-	  rhs = NULL;
-	  if (code->expr3 && code->expr3->ts.type == BT_CLASS)
+
+	  if (class_expr != NULL_TREE)
+	    {
+	      /* Polymorphic SOURCE: VPTR must be determined at run time.  */
+	      gfc_init_se (&lse, NULL);
+	      lse.want_pointer = 1;
+	      gfc_conv_expr (&lse, lhs);
+	      tmp = gfc_class_vptr_get (class_expr);
+	      gfc_add_modify (&block, lse.expr,
+			fold_convert (TREE_TYPE (lse.expr), tmp));
+	    }
+	  else if (code->expr3 && code->expr3->ts.type == BT_CLASS)
 	    {
 	      /* Polymorphic SOURCE: VPTR must be determined at run time.  */
 	      rhs = gfc_copy_expr (code->expr3);
@@ -5011,7 +5051,14 @@ gfc_trans_allocate (gfc_code * code)
 	  /* Initialization via SOURCE block
 	     (or static default initializer).  */
 	  gfc_expr *rhs = gfc_copy_expr (code->expr3);
-	  if (al->expr->ts.type == BT_CLASS)
+	  if (class_expr != NULL_TREE)
+	    {
+	      tree to;
+	      to = TREE_OPERAND (se.expr, 0);
+
+	      tmp = gfc_copy_class_to_class (class_expr, to, nelems);
+	    }
+	  else if (al->expr->ts.type == BT_CLASS)
 	    {
 	      gfc_actual_arglist *actual;
 	      gfc_expr *ppc;
@@ -5098,25 +5145,18 @@ gfc_trans_allocate (gfc_code * code)
 	  gfc_free_expr (rhs);
 	  gfc_add_expr_to_block (&block, tmp);
 	}
-      else if (code->expr3 && code->expr3->mold
+     else if (code->expr3 && code->expr3->mold
 	    && code->expr3->ts.type == BT_CLASS)
 	{
-	  /* Default-initialization via MOLD (polymorphic).  */
-	  gfc_expr *rhs = gfc_copy_expr (code->expr3);
-	  gfc_se dst,src;
-	  gfc_add_vptr_component (rhs);
-	  gfc_add_def_init_component (rhs);
-	  gfc_init_se (&dst, NULL);
-	  gfc_init_se (&src, NULL);
-	  gfc_conv_expr (&dst, expr);
-	  gfc_conv_expr (&src, rhs);
-	  gfc_add_block_to_block (&block, &src.pre);
-	  tmp = gfc_build_memcpy_call (dst.expr, src.expr, memsz);
+	  /* Since the _vptr has already been assigned to the allocate
+	     object, we can use gfc_copy_class_to_class in its
+	     initialization mode.  */
+	  tmp = TREE_OPERAND (se.expr, 0);
+	  tmp = gfc_copy_class_to_class (NULL_TREE, tmp, nelems);
 	  gfc_add_expr_to_block (&block, tmp);
-	  gfc_free_expr (rhs);
 	}
 
-      gfc_free_expr (expr);
+       gfc_free_expr (expr);
     }
 
   /* STAT.  */

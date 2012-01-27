@@ -4719,7 +4719,7 @@ static tree
 gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 		     gfc_expr ** lower, gfc_expr ** upper, stmtblock_t * pblock,
 		     stmtblock_t * descriptor_block, tree * overflow,
-		     gfc_expr *expr3)
+		     tree expr3_elem_size, tree *nelems, gfc_expr *expr3)
 {
   tree type;
   tree tmp;
@@ -4876,7 +4876,9 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
   /* The stride is the number of elements in the array, so multiply by the
      size of an element to get the total size.  Obviously, if there ia a
      SOURCE expression (expr3) we must use its element size.  */
-  if (expr3 != NULL)
+  if (expr3_elem_size != NULL_TREE)
+    tmp = expr3_elem_size;
+  else if (expr3 != NULL)
     {
       if (expr3->ts.type == BT_CLASS)
 	{
@@ -4904,6 +4906,7 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
   if (rank == 0)
     return element_size;
 
+  *nelems = gfc_evaluate_now (stride, pblock);
   stride = fold_convert (size_type_node, stride);
 
   /* First check for overflow. Since an array of type character can
@@ -4962,7 +4965,8 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 
 bool
 gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
-		    tree errlen, tree label_finish, gfc_expr *expr3)
+		    tree errlen, tree label_finish, tree expr3_elem_size,
+		    tree *nelems, gfc_expr *expr3)
 {
   tree tmp;
   tree pointer;
@@ -5047,7 +5051,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
   size = gfc_array_init_size (se->expr, ref->u.ar.as->rank,
 			      ref->u.ar.as->corank, &offset, lower, upper,
 			      &se->pre, &set_descriptor_block, &overflow,
-			      expr3);
+			      expr3_elem_size, nelems, expr3);
 
   if (dimension)
     {
@@ -5078,6 +5082,9 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
   gfc_start_block (&elseblock);
 
   /* Allocate memory to store the data.  */
+  if (POINTER_TYPE_P (TREE_TYPE (se->expr)))
+    se->expr = build_fold_indirect_ref_loc (input_location, se->expr);
+
   pointer = gfc_conv_descriptor_data_get (se->expr);
   STRIP_NOPS (pointer);
 
@@ -5104,7 +5111,8 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 
   gfc_add_expr_to_block (&se->pre, tmp);
 
-  if (expr->ts.type == BT_CLASS && expr3)
+  if (expr->ts.type == BT_CLASS
+	&& (expr3_elem_size != NULL_TREE || expr3))
     {
       tmp = build_int_cst (unsigned_char_type_node, 0);
       /* With class objects, it is best to play safe and null the 

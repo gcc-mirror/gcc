@@ -215,7 +215,7 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
    OOP-TODO: This could be improved by adding code that branched on
    the dynamic type being the same as the declared type. In this case
    the original class expression can be passed directly.  */ 
-static void
+void
 gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e,
 			 gfc_typespec class_ts, bool elemental)
 {
@@ -302,6 +302,109 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e,
   parmse->expr = gfc_build_addr_expr (NULL_TREE, var);
 }
 
+
+/* Given a class array declaration and an index, returns the address
+   of the referenced element.  */
+
+tree
+gfc_get_class_array_ref (tree index, tree class_decl)
+{
+  tree data = gfc_class_data_get (class_decl);
+  tree size = gfc_vtable_size_get (class_decl);
+  tree offset = fold_build2_loc (input_location, MULT_EXPR,
+				 gfc_array_index_type,
+				 index, size);
+  tree ptr;
+  data = gfc_conv_descriptor_data_get (data);
+  ptr = fold_convert (pvoid_type_node, data);
+  ptr = fold_build_pointer_plus_loc (input_location, ptr, offset);
+  return fold_convert (TREE_TYPE (data), ptr);
+}
+
+
+/* Copies one class expression to another, assuming that if either
+   'to' or 'from' are arrays they are packed.  Should 'from' be
+   NULL_TREE, the inialization expression for 'to' is used, assuming
+   that the _vptr is set.  */
+
+tree
+gfc_copy_class_to_class (tree from, tree to, tree nelems)
+{
+  tree fcn;
+  tree fcn_type;
+  tree from_data;
+  tree to_data;
+  tree to_ref;
+  tree from_ref;
+  VEC(tree,gc) *args;
+  tree tmp;
+  tree index;
+  stmtblock_t loopbody;
+  stmtblock_t body;
+  gfc_loopinfo loop;
+
+  args = NULL;
+
+  if (from != NULL_TREE)
+    fcn = gfc_vtable_copy_get (from);
+  else
+    fcn = gfc_vtable_copy_get (to);
+
+  fcn_type = TREE_TYPE (TREE_TYPE (fcn));
+
+  if (from != NULL_TREE)
+    from_data = gfc_class_data_get (from);
+  else
+    from_data = gfc_vtable_def_init_get (to);
+
+  to_data = gfc_class_data_get (to);
+
+  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (to_data)))
+    {
+      gfc_init_block (&body);
+      tmp = fold_build2_loc (input_location, MINUS_EXPR,
+			     gfc_array_index_type, nelems,
+			     gfc_index_one_node);
+      nelems = gfc_evaluate_now (tmp, &body);
+      index = gfc_create_var (gfc_array_index_type, "S");
+
+      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (from_data)))
+	{
+	  from_ref = gfc_get_class_array_ref (index, from);
+	  VEC_safe_push (tree, gc, args, from_ref);
+	}
+      else
+        VEC_safe_push (tree, gc, args, from_data);
+
+      to_ref = gfc_get_class_array_ref (index, to);
+      VEC_safe_push (tree, gc, args, to_ref);
+
+      tmp = build_call_vec (fcn_type, fcn, args);
+
+      /* Build the body of the loop.  */
+      gfc_init_block (&loopbody);
+      gfc_add_expr_to_block (&loopbody, tmp);
+
+      /* Build the loop and return.  */
+      gfc_init_loopinfo (&loop);
+      loop.dimen = 1;
+      loop.from[0] = gfc_index_zero_node;
+      loop.loopvar[0] = index;
+      loop.to[0] = nelems;
+      gfc_trans_scalarizing_loops (&loop, &loopbody);
+      gfc_add_block_to_block (&body, &loop.pre);
+      tmp = gfc_finish_block (&body);
+    }
+  else
+    {
+      gcc_assert (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (from_data)));
+      VEC_safe_push (tree, gc, args, from_data);
+      VEC_safe_push (tree, gc, args, to_data);
+      tmp = build_call_vec (fcn_type, fcn, args);
+    }
+
+  return tmp;
+}
 
 static tree
 gfc_trans_class_array_init_assign (gfc_expr *rhs, gfc_expr *lhs, gfc_expr *obj)
