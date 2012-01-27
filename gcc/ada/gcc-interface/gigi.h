@@ -672,8 +672,9 @@ extern tree create_field_decl (tree field_name, tree field_type,
 extern tree create_param_decl (tree param_name, tree param_type,
                                bool readonly);
 
-/* Return a LABEL_DECL node for LABEL_NAME.  */
-extern tree create_label_decl (tree label_name);
+/* Return a LABEL_DECL with LABEL_NAME.  GNAT_NODE is used for the position
+   of the decl.  */
+extern tree create_label_decl (tree, Node_Id);
 
 /* Return a FUNCTION_DECL node.  SUBPROG_NAME is the name of the subprogram,
    ASM_NAME is its assembler name, SUBPROG_TYPE is its type (a FUNCTION_TYPE
