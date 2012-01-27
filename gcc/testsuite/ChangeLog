@@ -1,3 +1,8 @@
+2012-01-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51370
+	* g++.dg/template/crash112.C: New.
+
 2012-01-27  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/atomic-flag.c: Adjust for __GCC_ATOMIC_TEST_AND_SET_TRUEVAL.
