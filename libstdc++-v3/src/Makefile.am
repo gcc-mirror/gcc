@@ -168,16 +168,16 @@ version_arg =
 version_dep =
 endif
 
-# Added rules.
-# 1 debug library
-# 2 supra-convenience library
-if GLIBCXX_BUILD_DEBUG
-all-local: libstdc++convenience.la build_debug
-install-data-local: install_debug
-else
-all-local: libstdc++convenience.la
-install-data-local:
-endif
+
+# Control additional build primary rules.
+# EXTRA_LTLIBRARIES =
+all-once: libstdc++convenience.la $(STAMP_DEBUG)
+install-data-once: $(STAMP_INSTALL_DEBUG)
+
+all-local: all-once
+install-data-local: install-data-once
+clean-local:
+	rm -rf libstdc++convenience.la stamp* $(CLEAN_DEBUG)
 
 # Make a non-installed convenience library, so that --disable-static
 # may work.
@@ -188,13 +188,26 @@ libstdc++convenience.la: $(toolexeclib_LTLIBRARIES)
 	fi; \
 	echo `date` > stamp-libstdc++convenience;
 
-debugdir = debug
+# Added rules.
+# 1 debug library
+# 2 supra-convenience library
+if GLIBCXX_BUILD_DEBUG
+STAMP_DEBUG = build-debug
+STAMP_INSTALL_DEBUG = install-debug
+CLEAN_DEBUG = debug
+else
+STAMP_DEBUG =
+STAMP_INSTALL_DEBUG =
+CLEAN_DEBUG =
+endif
 
-# Build a set of debug objects here.
+# Build a debug variant.
 # Take care to fix all possibly-relative paths.
+debugdir = ${glibcxx_builddir}/src/debug
 stamp-debug:
 	if test ! -d ${debugdir}; then \
 	  mkdir -p ${debugdir}; \
+	  for d in $(SUBDIRS); do mkdir -p  ${debugdir}/$$d; done; \
 	  (cd ${debugdir}; \
 	  sed -e 's/top_builddir = \.\./top_builddir = ..\/../' \
 	      -e 's/top_build_prefix = \.\./top_build_prefix = ..\/../' \
@@ -202,16 +215,30 @@ stamp-debug:
 	      -e 's/VPATH = \.\./VPATH = ..\/../' \
 	      -e 's/glibcxx_basedir = \.\./glibcxx_basedir = ..\/../' \
 	      -e 's/MKDIR_P = \.\./MKDIR_P = ..\/../' \
-	      -e 's/all-local: build_debug/all-local:/' \
-	      -e 's/install-data-local: install_debug/install-data-local:/' \
-	  < ../Makefile > Makefile) ; \
+	  < ../Makefile > Makefile ; \
+	  for d in . $(SUBDIRS); do \
+	  sed -e 's/top_builddir = \.\./top_builddir = ..\/../' \
+	      -e 's/top_build_prefix = \.\./top_build_prefix = ..\/../' \
+	      -e 's/srcdir = \.\./srcdir = ..\/../' \
+	      -e 's/VPATH = \.\./VPATH = ..\/../' \
+	      -e 's/glibcxx_basedir = \.\./glibcxx_basedir = ..\/../' \
+	      -e 's/MKDIR_P = \.\./MKDIR_P = ..\/../' \
+	  < ../$$d/Makefile > $$d/Makefile ; \
+	  done) ; \
 	fi; \
 	echo `date` > stamp-debug;
 
-build_debug: stamp-debug
-	(cd ${debugdir} && $(MAKE) CXXFLAGS='$(DEBUG_FLAGS)' all)
+build-debug: stamp-debug
+	  (cd ${debugdir}; \
+	  mv Makefile Makefile.tmp; \
+	  sed -e 's,all-local: all-once,all-local:,' \
+	      -e 's,install-data-local: install-data-once,install-data-local:,' \
+	      -e 's,src/c,src/debug/c,' \
+	  < Makefile.tmp > Makefile ; \
+	  $(MAKE) CXXFLAGS='$(DEBUG_FLAGS)' \
+	  toolexeclibdir=$(glibcxx_toolexeclibdir)/debug all) ;
 
-# Install debug library here.
-install_debug:
-	(cd ${debugdir} && $(MAKE) \
-	toolexeclibdir=$(glibcxx_toolexeclibdir)/debug install)
+# Install debug library.
+install-debug: build-debug
+	(cd ${debugdir} && $(MAKE) CXXFLAGS='$(DEBUG_FLAGS)' \
+	toolexeclibdir=$(glibcxx_toolexeclibdir)/debug install) ;
