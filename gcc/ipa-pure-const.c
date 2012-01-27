@@ -652,7 +652,8 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
       print_gimple_stmt (dump_file, stmt, 0, 0);
     }
 
-  if (gimple_has_volatile_ops (stmt))
+  if (gimple_has_volatile_ops (stmt)
+      && !gimple_clobber_p (stmt))
     {
       local->pure_const_state = IPA_NEITHER;
       if (dump_file)
