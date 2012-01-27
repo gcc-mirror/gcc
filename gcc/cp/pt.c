@@ -9582,7 +9582,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
         }
     }
 
-  if (saved_local_specializations)
+  if (need_local_specializations)
     {
       htab_delete (local_specializations);
       local_specializations = saved_local_specializations;
