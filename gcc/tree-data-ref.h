@@ -394,8 +394,6 @@ extern bool compute_data_dependences_for_loop (struct loop *, bool,
 extern bool compute_data_dependences_for_bb (basic_block, bool,
                                              VEC (data_reference_p, heap) **,
                                              VEC (ddr_p, heap) **);
-extern tree find_data_references_in_loop (struct loop *,
-                                          VEC (data_reference_p, heap) **);
 extern void print_direction_vector (FILE *, lambda_vector, int);
 extern void print_dir_vectors (FILE *, VEC (lambda_vector, heap) *, int);
 extern void print_dist_vectors (FILE *, VEC (lambda_vector, heap) *, int);
@@ -426,7 +424,7 @@ extern bool find_loop_nest (struct loop *, VEC (loop_p, heap) **);
 extern struct data_dependence_relation *initialize_data_dependence_relation
      (struct data_reference *, struct data_reference *, VEC (loop_p, heap) *); 
 extern void compute_self_dependence (struct data_dependence_relation *);
-extern void compute_all_dependences (VEC (data_reference_p, heap) *,
+extern bool compute_all_dependences (VEC (data_reference_p, heap) *,
 				     VEC (ddr_p, heap) **, VEC (loop_p, heap) *,
 				     bool);
 extern tree find_data_references_in_bb (struct loop *, basic_block,

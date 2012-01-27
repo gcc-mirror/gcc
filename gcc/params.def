@@ -820,6 +820,12 @@ DEFPARAM (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION,
 	  "maximum number of basic blocks per function to be analyzed by Graphite",
 	  100, 0, 0)
 
+/* Avoid data dependence analysis on very large loops.  */
+DEFPARAM (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS,
+	  "loop-max-datarefs-for-datadeps",
+	  "Maximum number of datarefs in loop for building loop data dependencies",
+	  1000, 0, 0)
+
 /* Avoid doing loop invariant motion on very large loops.  */
 
 DEFPARAM (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP,

@@ -1,3 +1,18 @@
+2012-01-27  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR middle-end/51389
+	* Makefile.in (tree-data-ref.o): Depend on $(PARAMS_H).
+	* tree-data-ref.h (find_data_references_in_loop): Remove declaration.
+	* tree-data-ref.c (find_data_references_in_loop): Make static.
+	(compute_all_dependences): Change return type to bool.  Bail out
+	for too many datarefs in a loop.  Move the hunk resetting the data
+	dependences vector from ...
+	(compute_data_dependences_for_loop): ... here.  Account for
+	compute_all_dependences returning false.
+	(compute_data_dependences_for_bb): Likewise.
+	* params.def (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS): New param.
+	* doc/invoke.texi (loop-max-datarefs-for-datadeps): Document it.
+
 2012-01-27  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/51959

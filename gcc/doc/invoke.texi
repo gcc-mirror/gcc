@@ -9115,6 +9115,13 @@ with more basic blocks than this parameter won't have loop invariant
 motion optimization performed on them.  The default value of the
 parameter is 1000 for -O1 and 10000 for -O2 and above.
 
+@item loop-max-datarefs-for-datadeps
+Building data dapendencies is expensive for very large loops.  This
+parameter limits the number of data references in loops that are
+considered for data dependence analysis.  These large loops will not
+be handled then by the optimizations using loop data dependencies.
+The default value is 1000.
+
 @item max-vartrack-size
 Sets a maximum number of hash table slots to use during variable
 tracking dataflow analysis of any function.  If this limit is exceeded
