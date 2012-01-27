@@ -1,5 +1,10 @@
 2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/discr34.adb: New test.
+	* gnat.dg/discr34_pkg.ads: New helper.
+
+2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/discr33.adb: New test.
 
 2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>

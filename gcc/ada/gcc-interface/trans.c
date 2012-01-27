@@ -6869,10 +6869,14 @@ gnat_to_gnu (Node_Id gnat_node)
 				    N_Raise_Constraint_Error));
     }
 
-  /* If our result has side-effects and is of an unconstrained type,
-     make a SAVE_EXPR so that we can be sure it will only be referenced
-     once.  Note we must do this before any conversions.  */
+  /* If the result has side-effects and is of an unconstrained type, make a
+     SAVE_EXPR so that we can be sure it will only be referenced once.  But
+     this is useless for a call to a function that returns an unconstrained
+     type with default discriminant, as we cannot compute the size of the
+     actual returned object.  We must do this before any conversions.  */
   if (TREE_SIDE_EFFECTS (gnu_result)
+      && !(TREE_CODE (gnu_result) == CALL_EXPR
+	   && TYPE_IS_PADDING_P (TREE_TYPE (gnu_result)))
       && (TREE_CODE (gnu_result_type) == UNCONSTRAINED_ARRAY_TYPE
 	  || CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_result_type))))
     gnu_result = gnat_stabilize_reference (gnu_result, false, NULL);
@@ -6898,7 +6902,11 @@ gnat_to_gnu (Node_Id gnat_node)
        3. If the type is void or if we have no result, return error_mark_node
 	  to show we have no result.
 
-       4. Finally, if the type of the result is already correct.  */
+       4. If this a call to a function that returns an unconstrained type with
+	  default discriminant, return the call expression unmodified since we
+	  cannot compute the size of the actual returned object.
+
+       5. Finally, if the type of the result is already correct.  */
 
   if (Present (Parent (gnat_node))
       && (lhs_or_actual_p (gnat_node)
@@ -6949,7 +6957,19 @@ gnat_to_gnu (Node_Id gnat_node)
   else if (gnu_result == error_mark_node || gnu_result_type == void_type_node)
     gnu_result = error_mark_node;
 
-  else if (gnu_result_type != TREE_TYPE (gnu_result))
+  else if (TREE_CODE (gnu_result) == CALL_EXPR
+	   && TYPE_IS_PADDING_P (TREE_TYPE (gnu_result))
+	   && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_result_type)))
+    {
+      /* ??? We need to convert if the padded type has fixed size because
+	 gnat_types_compatible_p will say that padded types are compatible
+	 but the gimplifier will not and, therefore, will ultimately choke
+	 if there isn't a conversion added early.  */
+      if (TREE_CODE (TYPE_SIZE (TREE_TYPE (gnu_result))) == INTEGER_CST)
+	gnu_result = convert (gnu_result_type, gnu_result);
+    }
+
+  else if (TREE_TYPE (gnu_result) != gnu_result_type)
     gnu_result = convert (gnu_result_type, gnu_result);
 
   /* We don't need any NOP_EXPR or NON_LVALUE_EXPR on the result.  */
