@@ -1,3 +1,17 @@
+2012-01-27  Paul Thomas  <pault@gcc.gnu.org>
+	    Tobias Burnus <burnus@gcc.gnu.org>
+
+	PR fortran/48705
+	* gfortran.dg/class_allocate_11.f03: New.
+
+	PR fortran/51870
+	PR fortran/51943
+	PR fortran/51946
+	* gfortran.dg/class_allocate_7.f03: New.
+	* gfortran.dg/class_allocate_8.f03: New.
+	* gfortran.dg/class_allocate_9.f03: New.
+	* gfortran.dg/class_allocate_10.f03: New.
+
 2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr34.adb: New test.

@@ -1,3 +1,30 @@
+2012-01-27  Paul Thomas  <pault@gcc.gnu.org>
+	    Tobias Burnus <burnus@gcc.gnu.org>
+
+	PR fortran/48705
+	PR fortran/51870
+	PR fortran/51943
+	PR fortran/51946
+	* trans-array.c (gfc_array_init_size): Add two extra arguments
+	to convey the dynamic element size of a calls object and to
+	return the number of elements that have been allocated.
+	(gfc_array_allocate): Add the same arguments and use them to
+	call gfc_array_init_size.  Before the allocation dereference
+	the data pointer, if necessary. Set the allocated array to zero
+	if the class element size or expr3 are non-null.
+	* trans-expr.c (gfc_conv_class_to_class): Give this function
+	global scope.
+	(get_class_array_ref): New function.
+	(gfc_copy_class_to_class): New function.
+	* trans-array.h : Update prototype for gfc_array_allocate.
+	* trans-stmt.c (gfc_trans_allocate): For non-variable class
+	STATUS expressions extract the class object and the dynamic
+	element size. Use the latter to call gfc_array_allocate and
+	the former for setting the vptr and, via
+	gfc_copy_class_to_clasfc_cs, to copy to the allocated data.
+	* trans.h : Prototypes for gfc_get_class_array_ref,
+	gfc_copy_class_to_class and gfc_conv_class_to_class.
+  
 2012-01-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51995
