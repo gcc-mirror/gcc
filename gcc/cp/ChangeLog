@@ -1,3 +1,9 @@
+2012-01-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51370
+	* error.c (dump_decl, [TEMPLATE_ID_EXPR]): Handle error_mark_node
+	as TREE_OPERAND (t, 1).
+
 2012-01-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51917
