@@ -1,3 +1,9 @@
+2012-01-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/51959
+	* expr.c (store_field): Use the alias-set of the scratch memory
+	for storing to it.
+
 2012-01-27  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/51990

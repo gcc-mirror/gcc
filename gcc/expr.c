@@ -6299,7 +6299,7 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 
       store_field (blk_object, bitsize, bitpos,
 		   bitregion_start, bitregion_end,
-		   mode, exp, type, alias_set, nontemporal);
+		   mode, exp, type, MEM_ALIAS_SET (blk_object), nontemporal);
 
       emit_move_insn (target, object);
 
