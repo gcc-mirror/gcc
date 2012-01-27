@@ -5010,27 +5010,61 @@
           AS1 (jmp,%1));
 }")
 
-(define_peephole
-  [(set (cc0)
-	(compare (match_operand:QI 0 "register_operand" "")
-		 (const_int 0)))
-   (set (pc)
-	(if_then_else (eq (cc0) (const_int 0))
-		      (label_ref (match_operand 1 "" ""))
-		      (pc)))]
-  "jump_over_one_insn_p (insn, operands[1])"
-  "cpse %0,__zero_reg__")
 
-(define_peephole
+(define_peephole ; "*cpse.eq"
   [(set (cc0)
-        (compare (match_operand:QI 0 "register_operand" "")
-		 (match_operand:QI 1 "register_operand" "")))
+        (compare (match_operand:QI 1 "register_operand" "r,r")
+                 (match_operand:QI 2 "reg_or_0_operand" "r,L")))
    (set (pc)
-	(if_then_else (eq (cc0) (const_int 0))
-		      (label_ref (match_operand 2 "" ""))
+        (if_then_else (eq (cc0)
+                          (const_int 0))
+                      (label_ref (match_operand 0 "" ""))
+                      (pc)))]
+  "jump_over_one_insn_p (insn, operands[0])"
+  "@
+	cpse %1,%2
+	cpse %1,__zero_reg__")
+
+;; This peephole avoids code like
+;;
+;;     TST   Rn     ; *cmpqi
+;;     BREQ  .+2    ; branch
+;;     RJMP  .Lm
+;;
+;; Notice that the peephole is always shorter than cmpqi + branch.
+;; The reason to write it as peephole is that sequences like
+;;     
+;;     AND   Rm, Rn
+;;     BRNE  .La
+;;
+;; shall not be superseeded.  With a respective combine pattern
+;; the latter sequence would be 
+;;     
+;;     AND   Rm, Rn
+;;     CPSE  Rm, __zero_reg__
+;;     RJMP  .La
+;;
+;; and thus longer and slower and not easy to be rolled back.
+
+(define_peephole ; "*cpse.ne"
+  [(set (cc0)
+        (compare (match_operand:QI 1 "register_operand" "")
+                 (match_operand:QI 2 "reg_or_0_operand" "")))
+   (set (pc)
+        (if_then_else (ne (cc0)
+                          (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
-  "jump_over_one_insn_p (insn, operands[2])"
-  "cpse %0,%1")
+  "!AVR_HAVE_JMP_CALL
+   || !avr_current_device->errata_skip"
+  {
+    if (operands[2] == const0_rtx)
+      operands[2] = zero_reg_rtx;
+
+    return 3 == avr_jump_mode (operands[0], insn)
+      ? "cpse %1,%2\;jmp %0"
+      : "cpse %1,%2\;rjmp %0";
+  })
 
 ;;pppppppppppppppppppppppppppppppppppppppppppppppppppp
 ;;prologue/epilogue support instructions

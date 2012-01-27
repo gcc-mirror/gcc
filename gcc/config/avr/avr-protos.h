@@ -124,6 +124,14 @@ extern bool avr_mem_flash_p (rtx);
 extern bool avr_mem_memx_p (rtx);
 extern bool avr_load_libgcc_p (rtx);
 extern bool avr_xload_libgcc_p (enum machine_mode);
+
+extern rtx lpm_reg_rtx;
+extern rtx lpm_addr_reg_rtx;
+extern rtx tmp_reg_rtx;
+extern rtx zero_reg_rtx;
+extern rtx all_regs_rtx[32];
+extern rtx rampz_rtx;
+
 #endif /* RTX_CODE */
 
 #ifdef REAL_VALUE_TYPE
