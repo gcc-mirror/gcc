@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -889,10 +889,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && Is_Array_Type (Etype (gnat_entity))
 	    && !type_annotate_only)
 	  {
-	    tree gnu_fat
-	      = TREE_TYPE (gnat_to_gnu_type (Base_Type (Etype (gnat_entity))));
+	    tree gnu_array
+	      = gnat_to_gnu_type (Base_Type (Etype (gnat_entity)));
 	    gnu_type
-	      = build_unc_object_type_from_ptr (gnu_fat, gnu_type,
+	      = build_unc_object_type_from_ptr (TREE_TYPE (gnu_array),
+						gnu_type,
 						concat_name (gnu_entity_name,
 							     "UNC"),
 						debug_info_p);
@@ -1466,6 +1467,41 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		DECL_RENAMING_GLOBAL_P (gnu_decl) = 1;
 		record_global_renaming_pointer (gnu_decl);
 	      }
+	  }
+
+	/* If this is an aliased object with an unconstrained nominal subtype
+	   and optimization isn't enabled, create a VAR_DECL for debugging
+	   purposes whose type is a thin reference (the reference counterpart
+	   of a thin pointer), so that it will be directly initialized to the
+	   address of the array part.  */
+	else if (Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
+		 && Is_Array_Type (Etype (gnat_entity))
+		 && !type_annotate_only
+		 && !optimize
+		 && debug_info_p)
+	  {
+	    tree gnu_array
+	      = gnat_to_gnu_type (Base_Type (Etype (gnat_entity)));
+	    tree gnu_thin_type
+	      = build_reference_type (TYPE_OBJECT_RECORD_TYPE (gnu_array));
+	    tree gnu_ref, gnu_debug_decl;
+
+	    /* In case the object with the template has already been indirectly
+	       allocated, we have nothing to do here.  */
+	    if (TYPE_IS_THIN_POINTER_P (gnu_type))
+	      gnu_ref = gnu_decl;
+	    else
+	      gnu_ref = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_decl);
+	    gnu_ref = convert (gnu_thin_type, gnu_ref);
+
+	    gnu_debug_decl
+	      = create_var_decl (gnu_entity_name, gnu_ext_name,
+				 gnu_thin_type, NULL_TREE, const_flag,
+				 Is_Public (gnat_entity), !definition,
+				 static_p, attr_list, gnat_entity);
+	    SET_DECL_VALUE_EXPR (gnu_debug_decl, gnu_ref);
+	    DECL_HAS_VALUE_EXPR_P (gnu_debug_decl) = 1;
+	    DECL_IGNORED_P (gnu_decl) = 1;
 	  }
 
 	/* If this is a constant and we are defining it or it generates a real
