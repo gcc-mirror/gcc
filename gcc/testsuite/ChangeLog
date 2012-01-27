@@ -1,5 +1,9 @@
 2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/discr33.adb: New test.
+
+2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/limited_with3.ad[sb): New test.
 	* gnat.dg/limited_with3_pkg1.ad[sb]: New helper.
 	* gnat.dg/limited_with3_pkg2.ads: Likewise.

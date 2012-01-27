@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -343,6 +343,9 @@ do {						   \
 /* Nonzero in a PARM_DECL if it is always used by double reference, i.e. a
    pair of INDIRECT_REFs is needed to access the object.  */
 #define DECL_BY_DOUBLE_REF_P(NODE) DECL_LANG_FLAG_0 (PARM_DECL_CHECK (NODE))
+
+/* Nonzero in a FIELD_DECL if it is declared as aliased.  */
+#define DECL_ALIASED_P(NODE) DECL_LANG_FLAG_0 (FIELD_DECL_CHECK (NODE))
 
 /* Nonzero in a TYPE_DECL if this is the declaration of a Taft amendment type
    in the main unit, i.e. the full declaration is available.  */
