@@ -1868,18 +1868,24 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  && (CLASS_DATA (sym)->attr.dimension
 	      || CLASS_DATA (sym)->attr.codimension)))
     {
-      /* In EQUIVALENCE, we don't know yet whether we are seeing
-	 an array, character variable or array of character
-	 variables.  We'll leave the decision till resolve time.  */
+      gfc_array_spec *as;
+
       tail = extend_ref (primary, tail);
       tail->type = REF_ARRAY;
 
-      m = gfc_match_array_ref (&tail->u.ar, equiv_flag ? NULL : sym->as,
-			       equiv_flag,
-			       sym->ts.type == BT_CLASS && CLASS_DATA (sym)
-			       ? (CLASS_DATA (sym)->as
-				  ? CLASS_DATA (sym)->as->corank : 0)
-			       : (sym->as ? sym->as->corank : 0));
+      /* In EQUIVALENCE, we don't know yet whether we are seeing
+	 an array, character variable or array of character
+	 variables.  We'll leave the decision till resolve time.  */
+
+      if (equiv_flag)
+	as = NULL;
+      else if (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
+	as = CLASS_DATA (sym)->as;
+      else
+	as = sym->as;
+
+      m = gfc_match_array_ref (&tail->u.ar, as, equiv_flag,
+			       as ? as->corank : 0);
       if (m != MATCH_YES)
 	return m;
 
@@ -2893,7 +2899,10 @@ gfc_match_rvalue (gfc_expr **result)
       e->value.function.actual = actual_arglist;
       e->where = gfc_current_locus;
 
-      if (sym->as != NULL)
+      if (sym->ts.type == BT_CLASS && sym->attr.class_ok
+	  && CLASS_DATA (sym)->as)
+	e->rank = CLASS_DATA (sym)->as->rank;
+      else if (sym->as != NULL)
 	e->rank = sym->as->rank;
 
       if (!sym->attr.function
