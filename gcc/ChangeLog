@@ -1,3 +1,9 @@
+2012-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/52001
+	* var-tracking.c (reverse_op): Don't add any reverse operation
+	if V already has any constant locations.
+
 2012-01-27  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi: Correct usage of "command line" (noun)
