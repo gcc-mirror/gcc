@@ -1232,10 +1232,23 @@ Pragma_to_gnu (Node_Id gnat_node)
 static tree
 Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 {
-  tree gnu_prefix = gnat_to_gnu (Prefix (gnat_node));
-  tree gnu_type = TREE_TYPE (gnu_prefix);
-  tree gnu_expr, gnu_result_type, gnu_result = error_mark_node;
+  tree gnu_prefix, gnu_type, gnu_expr;
+  tree gnu_result_type, gnu_result = error_mark_node;
   bool prefix_unused = false;
+
+  /* ??? If this is an access attribute for a public subprogram to be used in
+     a dispatch table, do not translate its type as it's useless there and the
+     parameter types might be incomplete types coming from a limited with.  */
+  if (Ekind (Etype (gnat_node)) == E_Access_Subprogram_Type
+      && Is_Dispatch_Table_Entity (Etype (gnat_node))
+      && Nkind (Prefix (gnat_node)) == N_Identifier
+      && Is_Subprogram (Entity (Prefix (gnat_node)))
+      && Is_Public (Entity (Prefix (gnat_node)))
+      && !present_gnu_tree (Entity (Prefix (gnat_node))))
+    gnu_prefix = get_minimal_subprog_decl (Entity (Prefix (gnat_node)));
+  else
+    gnu_prefix = gnat_to_gnu (Prefix (gnat_node));
+  gnu_type = TREE_TYPE (gnu_prefix);
 
   /* If the input is a NULL_EXPR, make a new one.  */
   if (TREE_CODE (gnu_prefix) == NULL_EXPR)

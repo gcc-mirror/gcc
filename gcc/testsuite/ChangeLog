@@ -1,5 +1,12 @@
 2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/limited_with3.ad[sb): New test.
+	* gnat.dg/limited_with3_pkg1.ad[sb]: New helper.
+	* gnat.dg/limited_with3_pkg2.ads: Likewise.
+	* gnat.dg/limited_with3_pkg3.ads: Likewise.
+
+2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/stack_usage1.adb: New test.
 	* gnat.dg/stack_usage1_pkg.ad[sb]: New helper.
 
