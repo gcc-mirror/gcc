@@ -1,3 +1,10 @@
+2012-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/52006
+	* config/arm/arm.md (pic_add_dot_plus_eight peephole2): Use
+	arm_general_register_operand predicate for operand 2 instead of
+	register_operand.
+
 2012-01-27  Ian Lance Taylor  <iant@google.com>
 
 	PR go/47656
