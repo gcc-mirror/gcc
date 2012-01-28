@@ -1,3 +1,7 @@
+2012-01-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/torture/pr50444.c: Fix dg directives.
+
 2012-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52006
