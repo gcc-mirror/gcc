@@ -4950,7 +4950,8 @@ gfc_trans_allocate (gfc_code * code)
 	  else
 	    gfc_allocate_using_malloc (&se.pre, se.expr, memsz, stat);
 
-	  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived->attr.alloc_comp)
+	  if (al->expr->ts.type == BT_DERIVED
+	      && expr->ts.u.derived->attr.alloc_comp)
 	    {
 	      tmp = build_fold_indirect_ref_loc (input_location, se.expr);
 	      tmp = gfc_nullify_alloc_comp (expr->ts.u.derived, tmp, 0);

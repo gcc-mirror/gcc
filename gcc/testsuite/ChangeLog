@@ -1,3 +1,8 @@
+2012-01-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51972
+	* gfortran.dg/class_allocate_12.f90: New.
+
 2012-01-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/torture/pr50444.c: Fix dg directives.
