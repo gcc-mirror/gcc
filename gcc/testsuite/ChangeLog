@@ -1,3 +1,8 @@
+2012-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/52006
+	* gcc.target/arm/pr52006.c: New test.
+
 2012-01-27  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR testsuite/52011
