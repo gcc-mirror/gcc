@@ -1,3 +1,9 @@
+2012-01-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51972
+	* trans-stmt.c (gfc_trans_allocate): Properly check whether
+	we have a BT_CLASS which needs to be memset.
+
 2012-01-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52022
