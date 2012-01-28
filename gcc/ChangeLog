@@ -1,3 +1,9 @@
+2012-01-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/51871
+	* config/pa/pa.c (pa_return_addr_rtx): Add support for PA2.0 export
+	stubs.
+
 2012-01-28  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi: Correct hyphenation of "floating point",
