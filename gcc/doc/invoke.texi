@@ -3835,7 +3835,7 @@ that are always out of bounds. This warning is enabled by @option{-Wall}.
 @item -Wno-div-by-zero
 @opindex Wno-div-by-zero
 @opindex Wdiv-by-zero
-Do not warn about compile-time integer division by zero.  Floating point
+Do not warn about compile-time integer division by zero.  Floating-point
 division by zero is not warned about, as it can be a legitimate way of
 obtaining infinities and NaNs.
 
@@ -3868,7 +3868,7 @@ headers---for that, @option{-Wunknown-pragmas} must also be used.
 @item -Wfloat-equal
 @opindex Wfloat-equal
 @opindex Wno-float-equal
-Warn if floating point values are used in equality comparisons.
+Warn if floating-point values are used in equality comparisons.
 
 The idea behind this is that sometimes it is convenient (for the
 programmer) to consider floating-point values as approximations to
@@ -3912,7 +3912,7 @@ A function-like macro that appears without arguments.
 The unary plus operator.
 
 @item
-The @samp{U} integer constant suffix, or the @samp{F} or @samp{L} floating point
+The @samp{U} integer constant suffix, or the @samp{F} or @samp{L} floating-point
 constant suffixes.  (Traditional C does support the @samp{L} suffix on integer
 constants.)  Note, these suffixes appear in macros defined in the system
 headers of most modern systems, e.g.@: the @samp{_MIN}/@samp{_MAX} macros in @code{<limits.h>}.
@@ -3955,7 +3955,7 @@ initializer warnings and relies on default initialization to zero in the
 traditional C case.
 
 @item
-Conversions by prototypes between fixed/floating point values and vice
+Conversions by prototypes between fixed/floating-point values and vice
 versa.  The absence of these prototypes when compiling with traditional
 C would cause serious problems.  This is a subset of the possible
 conversion warnings, for the full set use @option{-Wtraditional-conversion}.
@@ -3976,7 +3976,7 @@ traditional C compatibility.
 Warn if a prototype causes a type conversion that is different from what
 would happen to the same argument in the absence of a prototype.  This
 includes conversions of fixed point to floating and vice versa, and
-conversions changing the width or signedness of a fixed point argument
+conversions changing the width or signedness of a fixed-point argument
 except when the same as the default promotion.
 
 @item -Wdeclaration-after-statement @r{(C and Objective-C only)}
@@ -6451,7 +6451,7 @@ optimization is turned on, use the @option{-fno-keep-static-consts} option.
 
 @item -fmerge-constants
 @opindex fmerge-constants
-Attempt to merge identical constants (string constants and floating point
+Attempt to merge identical constants (string constants and floating-point
 constants) across compilation units.
 
 This option is the default for optimized compilation if the assembler and
@@ -6466,7 +6466,7 @@ Attempt to merge identical constants and identical variables.
 
 This option implies @option{-fmerge-constants}.  In addition to
 @option{-fmerge-constants} this considers e.g.@: even constant initialized
-arrays or initialized constant variables with integral or floating point
+arrays or initialized constant variables with integral or floating-point
 types.  Languages like C or C++ require each variable, including multiple
 instances of the same variable in recursive calls, to have distinct locations,
 so using this option will result in non-conforming
@@ -6808,7 +6808,7 @@ If supported for the target machine, attempt to reorder instructions to
 eliminate execution stalls due to required data being unavailable.  This
 helps machines that have slow floating point or memory load instructions
 by allowing other instructions to be issued until the result of the load
-or floating point instruction is required.
+or floating-point instruction is required.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
@@ -8066,18 +8066,18 @@ If @var{path} is specified, GCC will look at the @var{path} to find
 the profile feedback data files. See @option{-fprofile-dir}.
 @end table
 
-The following options control compiler behavior regarding floating
-point arithmetic.  These options trade off between speed and
+The following options control compiler behavior regarding floating-point 
+arithmetic.  These options trade off between speed and
 correctness.  All must be specifically enabled.
 
 @table @gcctabopt
 @item -ffloat-store
 @opindex ffloat-store
-Do not store floating point variables in registers, and inhibit other
-options that might change whether a floating point value is taken from a
+Do not store floating-point variables in registers, and inhibit other
+options that might change whether a floating-point value is taken from a
 register or memory.
 
-@cindex floating point precision
+@cindex floating-point precision
 This option prevents undesirable excess precision on machines such as
 the 68000 where the floating registers (of the 68881) keep more
 precision than a @code{double} is supposed to have.  Similarly for the
@@ -8208,7 +8208,7 @@ The default is @option{-fno-finite-math-only}.
 
 @item -fno-signed-zeros
 @opindex fno-signed-zeros
-Allow optimizations for floating point arithmetic that ignore the
+Allow optimizations for floating-point arithmetic that ignore the
 signedness of zero.  IEEE arithmetic specifies the behavior of
 distinct +0.0 and @minus{}0.0 values, which then prohibits simplification
 of expressions such as x+0.0 or 0.0*x (even with @option{-ffinite-math-only}).
@@ -8233,13 +8233,13 @@ The default is @option{-ftrapping-math}.
 
 @item -frounding-math
 @opindex frounding-math
-Disable transformations and optimizations that assume default floating
-point rounding behavior.  This is round-to-zero for all floating point
+Disable transformations and optimizations that assume default floating-point
+rounding behavior.  This is round-to-zero for all floating point
 to integer conversions, and round-to-nearest for all other arithmetic
 truncations.  This option should be specified for programs that change
 the FP rounding mode dynamically, or that may be executed with a
 non-default rounding mode.  This option disables constant folding of
-floating point expressions at compile-time (which may be affected by
+floating-point expressions at compile time (which may be affected by
 rounding mode) and arithmetic transformations that are unsafe in the
 presence of sign-dependent rounding modes.
 
@@ -8268,8 +8268,8 @@ disable all GCC optimizations that affect signaling NaN behavior.
 
 @item -fsingle-precision-constant
 @opindex fsingle-precision-constant
-Treat floating point constant as single precision constant instead of
-implicitly converting it to double precision constant.
+Treat floating-point constants as single precision instead of
+implicitly converting them to double-precision constants.
 
 @item -fcx-limited-range
 @opindex fcx-limited-range
@@ -10379,7 +10379,7 @@ Emit @var{num} nops before every other generated instruction.
 
 @item -mno-soft-cmpsf
 @opindex mno-soft-cmpsf
-For single-precision floating point comparisons, emit an fsub instruction
+For single-precision floating-point comparisons, emit an fsub instruction
 and test the flags.  This is faster than a software comparison, but can
 get incorrect results in the presence of NaNs, or when two different small
 numbers are compared such that their difference is calculated as zero.
@@ -10426,8 +10426,8 @@ are in effect.
 
 @item -mfp-mode=@var{mode}
 @opindex mfp-mode
-Set the prevailing mode of the floating point unit.
-This determines the floating point mode that is provided and expected
+Set the prevailing mode of the floating-point unit.
+This determines the floating-point mode that is provided and expected
 at function call and return time.  Making this mode match the mode you
 predominantly need at function start can make your programs smaller and
 faster by avoiding unnecessary mode switches.
@@ -10446,12 +10446,12 @@ mode switching that might be needed, compared with what would be needed
 with a more specific choice of prevailing FPU mode.
 
 @item truncate
-This is the mode used for floating point calculations with
+This is the mode used for floating-point calculations with
 truncating (i.e.@: round towards zero) rounding mode.  That includes
 conversion from floating point to integer.
 
 @item round-nearest
-This is the mode used for floating point calculations with
+This is the mode used for floating-point calculations with
 round-to-nearest-or-even rounding mode.
 
 @item int
@@ -10541,9 +10541,9 @@ system is required to provide these functions.  The default is
 @c not currently implemented
 @item -mapcs-float
 @opindex mapcs-float
-Pass floating point arguments using the float point registers.  This is
+Pass floating-point arguments using the floating-point registers.  This is
 one of the variants of the APCS@.  This option is recommended if the
-target hardware has a floating point unit or if a lot of floating point
+target hardware has a floating-point unit or if a lot of floating-point
 arithmetic is going to be performed by the code.  The default is
 @option{-mno-apcs-float}, since integer only code is slightly increased in
 size if @option{-mapcs-float} is used.
@@ -10697,7 +10697,7 @@ unsuccessful the option has no effect.
 @opindex mfpu
 @opindex mfpe
 @opindex mfp
-This specifies what floating point hardware (or hardware emulation) is
+This specifies what floating-point hardware (or hardware emulation) is
 available on the target.  Permissible names are: @samp{fpa}, @samp{fpe2},
 @samp{fpe3}, @samp{maverick}, @samp{vfp}, @samp{vfpv3}, @samp{vfpv3-fp16},
 @samp{vfpv3-d16}, @samp{vfpv3-d16-fp16}, @samp{vfpv3xd}, @samp{vfpv3xd-fp16},
@@ -10708,7 +10708,7 @@ available on the target.  Permissible names are: @samp{fpa}, @samp{fpe2},
 of GCC@.
 
 If @option{-msoft-float} is specified this specifies the format of
-floating point values.
+floating-point values.
 
 If the selected floating-point hardware includes the NEON extension
 (e.g. @option{-mfpu}=@samp{neon}), note that floating-point
@@ -10791,8 +10791,8 @@ unless stack-checking is enabled, when R9 is used.
 Insert NOPs into the instruction stream to in order to work around
 problems with invalid Maverick instruction combinations.  This option
 is only valid if the @option{-mcpu=ep9312} option has been used to
-enable generation of instructions for the Cirrus Maverick floating
-point co-processor.  This option is not enabled by default, since the
+enable generation of instructions for the Cirrus Maverick floating-point
+co-processor.  This option is not enabled by default, since the
 problem is only present in older Maverick implementations.  The default
 can be re-enabled by use of the @option{-mno-cirrus-fix-invalid-insns}
 switch.
@@ -11939,7 +11939,7 @@ required to have floating-point registers.
 @opindex mno-fp-regs
 Generate code that uses (does not use) the floating-point register set.
 @option{-mno-fp-regs} implies @option{-msoft-float}.  If the floating-point
-register set is not used, floating point operands are passed in integer
+register set is not used, floating-point operands are passed in integer
 registers as if they were integers and floating-point results are passed
 in @code{$0} instead of @code{$f0}.  This is a non-standard calling sequence,
 so any function with a floating-point argument or return value called by code
@@ -11952,9 +11952,9 @@ and hence need not save and restore, any floating-point registers.
 @item -mieee
 @opindex mieee
 The Alpha architecture implements floating-point hardware optimized for
-maximum performance.  It is mostly compliant with the IEEE floating
-point standard.  However, for full compliance, software assistance is
-required.  This option generates code fully IEEE compliant code
+maximum performance.  It is mostly compliant with the IEEE floating-point
+standard.  However, for full compliance, software assistance is
+required.  This option generates code fully IEEE-compliant code
 @emph{except} that the @var{inexact-flag} is not maintained (see below).
 If this option is turned on, the preprocessor macro @code{_IEEE_FP} is
 defined during compilation.  The resulting code is less efficient but is
@@ -12006,7 +12006,7 @@ of:
 
 @table @samp
 @item n
-Normal IEEE rounding mode.  Floating point numbers are rounded towards
+Normal IEEE rounding mode.  Floating-point numbers are rounded towards
 the nearest machine number or towards the even machine number in case
 of a tie.
 
@@ -12014,10 +12014,10 @@ of a tie.
 Round towards minus infinity.
 
 @item c
-Chopped rounding mode.  Floating point numbers are rounded towards zero.
+Chopped rounding mode.  Floating-point numbers are rounded towards zero.
 
 @item d
-Dynamic rounding mode.  A field in the floating point control register
+Dynamic rounding mode.  A field in the floating-point control register
 (@var{fpcr}, see Alpha architecture reference manual) controls the
 rounding mode in effect.  The C library initializes this register for
 rounding towards plus infinity.  Thus, unless your program modifies the
@@ -12026,26 +12026,26 @@ rounding towards plus infinity.  Thus, unless your program modifies the
 
 @item -mtrap-precision=@var{trap-precision}
 @opindex mtrap-precision
-In the Alpha architecture, floating point traps are imprecise.  This
+In the Alpha architecture, floating-point traps are imprecise.  This
 means without software assistance it is impossible to recover from a
 floating trap and program execution normally needs to be terminated.
 GCC can generate code that can assist operating system trap handlers
-in determining the exact location that caused a floating point trap.
+in determining the exact location that caused a floating-point trap.
 Depending on the requirements of an application, different levels of
 precisions can be selected:
 
 @table @samp
 @item p
 Program precision.  This option is the default and means a trap handler
-can only identify which program caused a floating point exception.
+can only identify which program caused a floating-point exception.
 
 @item f
 Function precision.  The trap handler can determine the function that
-caused a floating point exception.
+caused a floating-point exception.
 
 @item i
 Instruction precision.  The trap handler can determine the exact
-instruction that caused a floating point exception.
+instruction that caused a floating-point exception.
 @end table
 
 Other Alpha compilers provide the equivalent options called
@@ -12106,7 +12106,7 @@ of the CPU on which GCC was built if none was specified.
 @itemx -mfloat-ieee
 @opindex mfloat-vax
 @opindex mfloat-ieee
-Generate code that uses (does not use) VAX F and G floating point
+Generate code that uses (does not use) VAX F and G floating-point
 arithmetic instead of IEEE single and double precision.
 
 @item -mexplicit-relocs
@@ -12285,32 +12285,32 @@ command line.
 @item -mgpr-32
 @opindex mgpr-32
 
-Only use the first 32 general purpose registers.
+Only use the first 32 general-purpose registers.
 
 @item -mgpr-64
 @opindex mgpr-64
 
-Use all 64 general purpose registers.
+Use all 64 general-purpose registers.
 
 @item -mfpr-32
 @opindex mfpr-32
 
-Use only the first 32 floating point registers.
+Use only the first 32 floating-point registers.
 
 @item -mfpr-64
 @opindex mfpr-64
 
-Use all 64 floating point registers
+Use all 64 floating-point registers.
 
 @item -mhard-float
 @opindex mhard-float
 
-Use hardware instructions for floating point operations.
+Use hardware instructions for floating-point operations.
 
 @item -msoft-float
 @opindex msoft-float
 
-Use library routines for floating point operations.
+Use library routines for floating-point operations.
 
 @item -malloc-cc
 @opindex malloc-cc
@@ -12336,12 +12336,12 @@ Do not use double word instructions.
 @item -mdouble
 @opindex mdouble
 
-Use floating point double instructions.
+Use floating-point double instructions.
 
 @item -mno-double
 @opindex mno-double
 
-Do not use floating point double instructions.
+Do not use floating-point double instructions.
 
 @item -mmedia
 @opindex mmedia
@@ -12715,10 +12715,10 @@ of the conditional jump.
 
 @item -mdisable-fpregs
 @opindex mdisable-fpregs
-Prevent floating point registers from being used in any manner.  This is
-necessary for compiling kernels which perform lazy context switching of
-floating point registers.  If you use this option and attempt to perform
-floating point operations, the compiler will abort.
+Prevent floating-point registers from being used in any manner.  This is
+necessary for compiling kernels that perform lazy context switching of
+floating-point registers.  If you use this option and attempt to perform
+floating-point operations, the compiler aborts.
 
 @item -mdisable-indexing
 @opindex mdisable-indexing
@@ -13052,27 +13052,27 @@ A deprecated synonym for @option{-mtune}.
 
 @item -mfpmath=@var{unit}
 @opindex mfpmath
-Generate floating point arithmetics for selected unit @var{unit}.  The choices
+Generate floating-point arithmetic for selected unit @var{unit}.  The choices
 for @var{unit} are:
 
 @table @samp
 @item 387
-Use the standard 387 floating point coprocessor present majority of chips and
-emulated otherwise.  Code compiled with this option will run almost everywhere.
-The temporary results are computed in 80bit precision instead of precision
-specified by the type resulting in slightly different results compared to most
+Use the standard 387 floating-point coprocessor present on the majority of chips and
+emulated otherwise.  Code compiled with this option runs almost everywhere.
+The temporary results are computed in 80-bit precision instead of the precision
+specified by the type, resulting in slightly different results compared to most
 of other chips.  See @option{-ffloat-store} for more detailed description.
 
 This is the default choice for i386 compiler.
 
 @item sse
-Use scalar floating point instructions present in the SSE instruction set.
+Use scalar floating-point instructions present in the SSE instruction set.
 This instruction set is supported by Pentium3 and newer chips, in the AMD line
 by Athlon-4, Athlon-xp and Athlon-mp chips.  The earlier version of SSE
-instruction set supports only single precision arithmetics, thus the double and
-extended precision arithmetics is still done using 387.  Later version, present
-only in Pentium4 and the future AMD x86-64 chips supports double precision
-arithmetics too.
+instruction set supports only single-precision arithmetic, thus the double and
+extended-precision arithmetic are still done using 387.  A later version, present
+only in Pentium4 and the future AMD x86-64 chips, supports double-precision
+arithmetic too.
 
 For the i386 compiler, you need to use @option{-march=@var{cpu-type}}, @option{-msse}
 or @option{-msse2} switches to enable SSE extensions and make this option
@@ -13104,7 +13104,7 @@ not support @samp{intel}.
 @itemx -mno-ieee-fp
 @opindex mieee-fp
 @opindex mno-ieee-fp
-Control whether or not the compiler uses IEEE floating point
+Control whether or not the compiler uses IEEE floating-point
 comparisons.  These handle correctly the case where the result of a
 comparison is unordered.
 
@@ -13117,8 +13117,8 @@ this can't be done directly in cross-compilation.  You must make your
 own arrangements to provide suitable library functions for
 cross-compilation.
 
-On machines where a function returns floating point results in the 80387
-register stack, some floating point opcodes may be emitted even if
+On machines where a function returns floating-point results in the 80387
+register stack, some floating-point opcodes may be emitted even if
 @option{-msoft-float} is used.
 
 @item -mno-fp-ret-in-387
@@ -13274,7 +13274,7 @@ control word explicitly.
 
 Setting the rounding of floating-point operations to less than the default
 80 bits can speed some programs by 2% or more.  Note that some mathematical
-libraries assume that extended precision (80 bit) floating-point operations
+libraries assume that extended-precision (80-bit) floating-point operations
 are enabled by default; routines in such libraries could suffer significant
 loss of accuracy, typically through so-called "catastrophic cancellation",
 when this option is used to set the precision to less than extended precision.
@@ -13459,7 +13459,7 @@ This option will enable built-in functions, @code{__builtin_ia32_crc32qi},
 This option will enable GCC to use RCPSS and RSQRTSS instructions (and their
 vectorized variants RCPPS and RSQRTPS) with an additional Newton-Raphson step
 to increase precision instead of DIVSS and SQRTSS (and their vectorized
-variants) for single precision floating point arguments.  These instructions
+variants) for single-precision floating-point arguments.  These instructions
 are generated only when @option{-funsafe-math-optimizations} is enabled
 together with @option{-finite-math-only} and @option{-fno-trapping-math}.
 Note that while the throughput of the sequence is higher than the throughput
@@ -13471,7 +13471,7 @@ Note that GCC implements @code{1.0f/sqrtf(@var{x})} in terms of RSQRTSS
 combination), and doesn't need @option{-mrecip}.
 
 Also note that GCC emits the above sequence with additional Newton-Raphson step
-for vectorized single float division and vectorized @code{sqrtf(@var{x})}
+for vectorized single-float division and vectorized @code{sqrtf(@var{x})}
 already with @option{-ffast-math} (or the above option combination), and
 doesn't need @option{-mrecip}.
 
@@ -13830,17 +13830,17 @@ This is useful when compiling firmware code.
 
 @item -minline-float-divide-min-latency
 @opindex minline-float-divide-min-latency
-Generate code for inline divides of floating point values
+Generate code for inline divides of floating-point values
 using the minimum latency algorithm.
 
 @item -minline-float-divide-max-throughput
 @opindex minline-float-divide-max-throughput
-Generate code for inline divides of floating point values
+Generate code for inline divides of floating-point values
 using the maximum throughput algorithm.
 
 @item -mno-inline-float-divide
 @opindex mno-inline-float-divide
-Do not generate inline code for divides of floating point values.
+Do not generate inline code for divides of floating-point values.
 
 @item -minline-int-divide-min-latency
 @opindex minline-int-divide-min-latency
@@ -14438,7 +14438,7 @@ in favor of the equivalent @option{-mcpu=5407}.
 @item -mcfv4e
 @opindex mcfv4e
 Generate output for a ColdFire V4e family CPU (e.g.@: 547x/548x).
-This includes use of hardware floating point instructions.
+This includes use of hardware floating-point instructions.
 The option is equivalent to @option{-mcpu=547x}, and is now
 deprecated in favor of that option.
 
@@ -14883,7 +14883,7 @@ Use software emulation for floating point (default).
 
 @item -mhard-float
 @opindex mhard-float
-Use hardware floating point instructions.
+Use hardware floating-point instructions.
 
 @item -mmemcpy
 @opindex mmemcpy
@@ -14935,11 +14935,11 @@ Use multiply high instructions for high part of 32x32 multiply.
 
 @item -mxl-float-convert
 @opindex mxl-float-convert
-Use hardware floating point conversion instructions.
+Use hardware floating-point conversion instructions.
 
 @item -mxl-float-sqrt
 @opindex mxl-float-sqrt
-Use hardware floating point square root instruction.
+Use hardware floating-point square root instruction.
 
 @item -mxl-mode-@var{app-model}
 Select application model @var{app-model}.  Valid models are
@@ -15541,7 +15541,7 @@ instructions, as provided by the R4650 ISA@.
 @itemx -mno-fused-madd
 @opindex mfused-madd
 @opindex mno-fused-madd
-Enable (disable) use of the floating point multiply-accumulate
+Enable (disable) use of the floating-point multiply-accumulate
 instructions, when they are available.  The default is
 @option{-mfused-madd}.
 
@@ -15637,7 +15637,7 @@ instructions are available instead.
 @opindex mfix-sb1
 Work around certain SB-1 CPU core errata.
 (This flag currently works around the SB-1 revision 2
-``F1'' and ``F2'' floating point errata.)
+``F1'' and ``F2'' floating-point errata.)
 
 @item -mr10k-cache-barrier=@var{setting}
 @opindex mr10k-cache-barrier
@@ -16257,7 +16257,7 @@ condition register field instruction implemented on the POWER4
 processor and other processors that support the PowerPC V2.01
 architecture.
 The @option{-mpopcntb} option allows GCC to generate the popcount and
-double precision FP reciprocal estimate instruction implemented on the
+double-precision FP reciprocal estimate instruction implemented on the
 POWER5 processor and other processors that support the PowerPC V2.02
 architecture.
 The @option{-mpopcntd} option allows GCC to generate the popcount
@@ -16270,11 +16270,11 @@ The @option{-mcmpb} option allows GCC to generate the compare bytes
 instruction implemented on the POWER6 processor and other processors
 that support the PowerPC V2.05 architecture.
 The @option{-mmfpgpr} option allows GCC to generate the FP move to/from
-general purpose register instructions implemented on the POWER6X
+general-purpose register instructions implemented on the POWER6X
 processor and other processors that support the extended PowerPC V2.05
 architecture.
-The @option{-mhard-dfp} option allows GCC to generate the decimal floating
-point instructions implemented on some POWER processors.
+The @option{-mhard-dfp} option allows GCC to generate the decimal
+floating-point instructions implemented on some POWER processors.
 
 The @option{-mpowerpc64} option allows GCC to generate the additional
 64-bit instructions that are found in the full PowerPC64 architecture
@@ -16460,18 +16460,18 @@ more direct access to the VSX instruction set.
 @item -mfloat-gprs=@var{yes/single/double/no}
 @itemx -mfloat-gprs
 @opindex mfloat-gprs
-This switch enables or disables the generation of floating point
-operations on the general purpose registers for architectures that
+This switch enables or disables the generation of floating-point
+operations on the general-purpose registers for architectures that
 support it.
 
 The argument @var{yes} or @var{single} enables the use of
-single-precision floating point operations.
+single-precision floating-point operations.
 
 The argument @var{double} enables the use of single and
-double-precision floating point operations.
+double-precision floating-point operations.
 
-The argument @var{no} disables floating point operations on the
-general purpose registers.
+The argument @var{no} disables floating-point operations on the
+general-purpose registers.
 
 This option is currently only available on the MPC854x.
 
@@ -16543,7 +16543,7 @@ support routines.
 The AIX calling convention was extended but not initially documented to
 handle an obscure K&R C case of calling a function that takes the
 address of its arguments with fewer arguments than declared.  IBM XL
-compilers access floating point arguments which do not fit in the
+compilers access floating-point arguments that do not fit in the
 RSA from the stack when a subroutine is compiled without
 optimization.  Because always storing floating-point arguments on the
 stack is inefficient and rarely needed, this option is not enabled by
@@ -16579,30 +16579,30 @@ is not supported.
 @opindex msoft-float
 @opindex mhard-float
 Generate code that does not use (uses) the floating-point register set.
-Software floating point emulation is provided if you use the
+Software floating-point emulation is provided if you use the
 @option{-msoft-float} option, and pass the option to GCC when linking.
 
 @item -msingle-float
 @itemx -mdouble-float
 @opindex msingle-float
 @opindex mdouble-float
-Generate code for single or double-precision floating point operations.
+Generate code for single- or double-precision floating-point operations.
 @option{-mdouble-float} implies @option{-msingle-float}.
 
 @item -msimple-fpu
 @opindex msimple-fpu
-Do not generate sqrt and div instructions for hardware floating point unit.
+Do not generate sqrt and div instructions for hardware floating-point unit.
 
 @item -mfpu
 @opindex mfpu
-Specify type of floating point unit.  Valid values are @var{sp_lite}
+Specify type of floating-point unit.  Valid values are @var{sp_lite}
 (equivalent to -msingle-float -msimple-fpu), @var{dp_lite} (equivalent
 to -mdouble-float -msimple-fpu), @var{sp_full} (equivalent to -msingle-float),
 and @var{dp_full} (equivalent to -mdouble-float).
 
 @item -mxilinx-fpu
 @opindex mxilinx-fpu
-Perform optimizations for floating point unit on Xilinx PPC 405/440.
+Perform optimizations for the floating-point unit on Xilinx PPC 405/440.
 
 @item -mmultiple
 @itemx -mno-multiple
@@ -16655,10 +16655,10 @@ is enabled by default when targetting Power6 and disabled otherwise.
 @itemx -mno-fused-madd
 @opindex mfused-madd
 @opindex mno-fused-madd
-Generate code that uses (does not use) the floating point multiply and
+Generate code that uses (does not use) the floating-point multiply and
 accumulate instructions.  These instructions are generated by default
-if hardware floating point is used.  The machine dependent
-@option{-mfused-madd} option is now mapped to the machine independent
+if hardware floating point is used.  The machine-dependent
+@option{-mfused-madd} option is now mapped to the machine-independent
 @option{-ffp-contract=fast} option, and @option{-mno-fused-madd} is
 mapped to @option{-ffp-contract=off}.
 
@@ -16864,12 +16864,12 @@ Disable Booke SPE ABI extensions for the current ABI@.
 
 @item -mabi=ibmlongdouble
 @opindex mabi=ibmlongdouble
-Change the current ABI to use IBM extended precision long double.
+Change the current ABI to use IBM extended-precision long double.
 This is a PowerPC 32-bit SYSV ABI option.
 
 @item -mabi=ieeelongdouble
 @opindex mabi=ieeelongdouble
-Change the current ABI to use IEEE extended precision long double.
+Change the current ABI to use IEEE extended-precision long double.
 This is a PowerPC 32-bit Linux ABI option.
 
 @item -mprototype
@@ -16880,8 +16880,8 @@ On System V.4 and embedded PowerPC systems assume that all calls to
 variable argument functions are properly prototyped.  Otherwise, the
 compiler must insert an instruction before every non prototyped call to
 set or clear bit 6 of the condition code register (@var{CR}) to
-indicate whether floating point values were passed in the floating point
-registers in case the function takes a variable arguments.  With
+indicate whether floating-point values were passed in the floating-point
+registers in case the function takes variable arguments.  With
 @option{-mprototype}, only calls to prototyped variable argument functions
 will set or clear the bit.
 
@@ -17062,7 +17062,7 @@ This option sets flags for both the preprocessor and linker.
 This option will enable GCC to use the reciprocal estimate and
 reciprocal square root estimate instructions with additional
 Newton-Raphson steps to increase precision instead of doing a divide or
-square root and divide for floating point arguments.  You should use
+square root and divide for floating-point arguments.  You should use
 the @option{-ffast-math} option when using @option{-mrecip} (or at
 least @option{-funsafe-math-optimizations},
 @option{-finite-math-only}, @option{-freciprocal-math} and
@@ -17081,26 +17081,26 @@ be preceded by a @code{!} to invert the option:
 @code{default}: enable the default instructions, equivalent to @option{-mrecip},
 @code{none}: disable all estimate instructions, equivalent to @option{-mno-recip};
 @code{div}: enable the reciprocal approximation instructions for both single and double precision;
-@code{divf}: enable the single precision reciprocal approximation instructions;
-@code{divd}: enable the double precision reciprocal approximation instructions;
+@code{divf}: enable the single-precision reciprocal approximation instructions;
+@code{divd}: enable the double-precision reciprocal approximation instructions;
 @code{rsqrt}: enable the reciprocal square root approximation instructions for both single and double precision;
-@code{rsqrtf}: enable the single precision reciprocal square root approximation instructions;
-@code{rsqrtd}: enable the double precision reciprocal square root approximation instructions;
+@code{rsqrtf}: enable the single-precision reciprocal square root approximation instructions;
+@code{rsqrtd}: enable the double-precision reciprocal square root approximation instructions;
 
 So for example, @option{-mrecip=all,!rsqrtd} would enable the
 all of the reciprocal estimate instructions, except for the
 @code{FRSQRTE}, @code{XSRSQRTEDP}, and @code{XVRSQRTEDP} instructions
-which handle the double precision reciprocal square root calculations.
+which handle the double-precision reciprocal square root calculations.
 
 @item -mrecip-precision
 @itemx -mno-recip-precision
 @opindex mrecip-precision
 Assume (do not assume) that the reciprocal estimate instructions
-provide higher precision estimates than is mandated by the powerpc
+provide higher-precision estimates than is mandated by the PowerPC
 ABI.  Selecting @option{-mcpu=power6} or @option{-mcpu=power7}
-automatically selects @option{-mrecip-precision}.  The double
-precision square root estimate instructions are not generated by
-default on low precision machines, since they do not provide an
+automatically selects @option{-mrecip-precision}.  The double-precision 
+square root estimate instructions are not generated by
+default on low-precision machines, since they do not provide an
 estimate that converges after three steps.
 
 @item -mveclibabi=@var{type}
@@ -17132,9 +17132,9 @@ libraries will have to be specified at link time.
 @opindex mfriz
 Generate (do not generate) the @code{friz} instruction when the
 @option{-funsafe-math-optimizations} option is used to optimize
-rounding a floating point value to 64-bit integer and back to floating
+rounding of floating-point values to 64-bit integer and back to floating
 point.  The @code{friz} instruction does not return the same value if
-the floating point number is too large to fit in an integer.
+the floating-point number is too large to fit in an integer.
 
 @item -mpointers-to-nested-functions
 @itemx -mno-pointers-to-nested-functions
@@ -17170,9 +17170,9 @@ These command-line options are defined for RX targets:
 @itemx -m32bit-doubles
 @opindex m64bit-doubles
 @opindex m32bit-doubles
-Make the @code{double} data type be 64-bits (@option{-m64bit-doubles})
-or 32-bits (@option{-m32bit-doubles}) in size.  The default is
-@option{-m32bit-doubles}.  @emph{Note} RX floating point hardware only
+Make the @code{double} data type be 64 bits (@option{-m64bit-doubles})
+or 32 bits (@option{-m32bit-doubles}) in size.  The default is
+@option{-m32bit-doubles}.  @emph{Note} RX floating-point hardware only
 works on 32-bit values, which is why the default is
 @option{-m32bit-doubles}.
 
@@ -17181,11 +17181,11 @@ works on 32-bit values, which is why the default is
 @opindex fpu
 @opindex nofpu
 Enables (@option{-fpu}) or disables (@option{-nofpu}) the use of RX
-floating point hardware.  The default is enabled for the @var{RX600}
+floating-point hardware.  The default is enabled for the @var{RX600}
 series and disabled for the @var{RX200} series.
 
-Floating point instructions will only be generated for 32-bit floating
-point values however, so if the @option{-m64bit-doubles} option is in
+Floating-point instructions will only be generated for 32-bit floating-point 
+values however, so if the @option{-m64bit-doubles} option is in
 use then the FPU hardware will not be used for doubles.
 
 @emph{Note} If the @option{-fpu} option is enabled then
@@ -17201,7 +17201,7 @@ the specific @var{RX610} CPU.  The default is @var{RX600}.
 The only difference between @var{RX600} and @var{RX610} is that the
 @var{RX610} does not support the @code{MVTIPL} instruction.
 
-The @var{RX200} series does not have a hardware floating point unit
+The @var{RX200} series does not have a hardware floating-point unit
 and so @option{-nofpu} is enabled by default when this type is
 selected.
 
@@ -17495,7 +17495,7 @@ when compiling for the TPF OS@.
 @itemx -mno-fused-madd
 @opindex mfused-madd
 @opindex mno-fused-madd
-Generate code that uses (does not use) the floating point multiply and
+Generate code that uses (does not use) the floating-point multiply and
 accumulate instructions.  These instructions are generated by default if
 hardware floating point is used.
 
@@ -17600,7 +17600,7 @@ that the floating-point unit is not used.
 @item -m2a-single-only
 @opindex m2a-single-only
 Generate code for the SH2a-FPU, in such a way that no double-precision
-floating point operations are used.
+floating-point operations are used.
 
 @item -m2a-single
 @opindex m2a-single
@@ -17646,7 +17646,7 @@ floating-point unit is not used.
 @item -m4a-single-only
 @opindex m4a-single-only
 Generate code for the SH4a, in such a way that no double-precision
-floating point operations are used.
+floating-point operations are used.
 
 @item -m4a-single
 @opindex m4a-single
@@ -17717,11 +17717,11 @@ Mark the @code{MAC} register as call-clobbered, even if
 
 @item -mieee
 @opindex mieee
-Increase IEEE-compliance of floating-point code.
+Increase IEEE compliance of floating-point code.
 At the moment, this is equivalent to @option{-fno-finite-math-only}.
 When generating 16 bit SH opcodes, getting IEEE-conforming results for
 comparisons of NANs / infinities incurs extra overhead in every
-floating point comparison, therefore the default is set to
+floating-point comparison, therefore the default is set to
 @option{-ffinite-math-only}.
 
 @item -minline-ic_invalidate
@@ -17777,9 +17777,9 @@ one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call,
 inv:call2, inv:fp .
 "fp" performs the operation in floating point.  This has a very high latency,
 but needs only a few instructions, so it might be a good choice if
-your code has enough easily exploitable ILP to allow the compiler to
-schedule the floating point instructions together with other instructions.
-Division by zero causes a floating point exception.
+your code has enough easily-exploitable ILP to allow the compiler to
+schedule the floating-point instructions together with other instructions.
+Division by zero causes a floating-point exception.
 "inv" uses integer operations to calculate the inverse of the divisor,
 and then multiplies the dividend with the inverse.  This strategy allows
 cse and hoisting of the inverse calculation.  Division by zero calculates
@@ -17956,7 +17956,7 @@ instructions (except for leaf functions).  This is the normal operating mode.
 @itemx -mhard-float
 @opindex mfpu
 @opindex mhard-float
-Generate output containing floating point instructions.  This is the
+Generate output containing floating-point instructions.  This is the
 default.
 
 @item -mno-fpu
@@ -17969,7 +17969,7 @@ targets.  Normally the facilities of the machine's usual C compiler are
 used, but this cannot be done directly in cross-compilation.  You must make
 your own arrangements to provide suitable library functions for
 cross-compilation.  The embedded targets @samp{sparc-*-aout} and
-@samp{sparclite-*-*} do provide software floating point support.
+@samp{sparclite-*-*} do provide software floating-point support.
 
 @option{-msoft-float} changes the calling convention in the output file;
 therefore, it is only useful if you compile @emph{all} of a program with
@@ -17979,17 +17979,17 @@ this to work.
 
 @item -mhard-quad-float
 @opindex mhard-quad-float
-Generate output containing quad-word (long double) floating point
+Generate output containing quad-word (long double) floating-point
 instructions.
 
 @item -msoft-quad-float
 @opindex msoft-quad-float
 Generate output containing library calls for quad-word (long double)
-floating point instructions.  The functions called are those specified
+floating-point instructions.  The functions called are those specified
 in the SPARC ABI@.  This is the default.
 
 As of this writing, there are no SPARC implementations that have hardware
-support for the quad-word floating point instructions.  They all invoke
+support for the quad-word floating-point instructions.  They all invoke
 a trap handler for one of these instructions, and then the trap handler
 emulates the effect of the instruction.  Because of the trap handler overhead,
 this is much slower than calling the ABI library routines.  Thus the
@@ -18006,7 +18006,7 @@ alignment only if they are contained in another type, or if they have an
 absolute address.  Otherwise, it assumes they have 4 byte alignment.
 Specifying this option avoids some rare compatibility problems with code
 generated by other compilers.  It is not the default because it results
-in a performance loss, especially for floating point code.
+in a performance loss, especially for floating-point code.
 
 @item -mno-faster-structs
 @itemx -mfaster-structs
@@ -18565,7 +18565,7 @@ will assemble with the GNU assembler.
 
 @item -mg
 @opindex mg
-Output code for g-format floating point numbers instead of d-format.
+Output code for G-format floating-point numbers instead of D-format.
 @end table
 
 @node VxWorks Options
@@ -18785,8 +18785,8 @@ use exception handling.
 Generate code that allows trapping instructions to throw exceptions.
 Note that this requires platform-specific runtime support that does
 not exist everywhere.  Moreover, it only allows @emph{trapping}
-instructions to throw exceptions, i.e.@: memory references or floating
-point instructions.  It does not allow exceptions to be thrown from
+instructions to throw exceptions, i.e.@: memory references or floating-point
+instructions.  It does not allow exceptions to be thrown from
 arbitrary signal handlers such as @code{SIGALRM}.
 
 @item -funwind-tables
