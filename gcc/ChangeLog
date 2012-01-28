@@ -1,3 +1,8 @@
+2011-01-29  Tijl Coosemans  <tijl@coosemans.org>
+
+	* config/freebsd-spec.h [TARGET_LIBC_PROVIDES_SSP]
+	(LINK_SSP_SPEC): Define.
+
 2012-01-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/51871
