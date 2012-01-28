@@ -4501,7 +4501,7 @@ pa_return_addr_rtx (int count, rtx frameaddr)
   rtx saved_rp;
   rtx ins;
 
-  /* Instruction stream at the normal return address for the export stub:
+  /* The instruction stream at the return address of a PA1.X export stub is:
 
 	0x4bc23fd1 | stub+8:   ldw -18(sr0,sp),rp
 	0x004010a1 | stub+12:  ldsid (sr0,rp),r1
@@ -4509,10 +4509,16 @@ pa_return_addr_rtx (int count, rtx frameaddr)
 	0xe0400002 | stub+20:  be,n 0(sr0,rp)
 
      0xe0400002 must be specified as -532676606 so that it won't be
-     rejected as an invalid immediate operand on 64-bit hosts.  */
+     rejected as an invalid immediate operand on 64-bit hosts.
 
-  HOST_WIDE_INT insns[4] = {0x4bc23fd1, 0x004010a1, 0x00011820, -532676606};
-  int i;
+     The instruction stream at the return address of a PA2.0 export stub is:
+
+	0x4bc23fd1 | stub+8:   ldw -18(sr0,sp),rp
+	0xe840d002 | stub+12:  bve,n (rp)
+  */
+
+  HOST_WIDE_INT insns[4];
+  int i, len;
 
   if (count != 0)
     return NULL_RTX;
@@ -4535,11 +4541,26 @@ pa_return_addr_rtx (int count, rtx frameaddr)
   ins = copy_to_reg (gen_rtx_AND (Pmode, rp, MASK_RETURN_ADDR));
   label = gen_label_rtx ();
 
+  if (TARGET_PA_20)
+    {
+      insns[0] = 0x4bc23fd1;
+      insns[1] = -398405630;
+      len = 2;
+    }
+  else
+    {
+      insns[0] = 0x4bc23fd1;
+      insns[1] = 0x004010a1;
+      insns[2] = 0x00011820;
+      insns[3] = -532676606;
+      len = 4;
+    }
+
   /* Check the instruction stream at the normal return address for the
      export stub.  If it is an export stub, than our return address is
      really in -24[frameaddr].  */
 
-  for (i = 0; i < 3; i++)
+  for (i = 0; i < len; i++)
     {
       rtx op0 = gen_rtx_MEM (SImode, plus_constant (ins, i * 4)); 
       rtx op1 = GEN_INT (insns[i]);
