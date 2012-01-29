@@ -1,3 +1,8 @@
+2012-01-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_option_overrride): Default to
+	full IEEE compliance mode for Go language.
+
 2011-01-29  Tijl Coosemans  <tijl@coosemans.org>
 
 	* config/freebsd-spec.h [TARGET_LIBC_PROVIDES_SSP]
@@ -94,7 +99,8 @@
 2012-01-27  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/51990
-	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Handle WITH_SIZE_EXPR.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Handle
+	WITH_SIZE_EXPR.
 	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Same.
 
 2012-01-27  Jakub Jelinek  <jakub@redhat.com>
@@ -156,8 +162,7 @@
 2012-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/51978
-	* ree.c (make_defs_and_copies_lists): Change set_pat type
-	to const_rtx.
+	* ree.c (make_defs_and_copies_lists): Change set_pat type to const_rtx.
 	(combine_reaching_defs): Likewise.
 	(struct re_info): Remove.
 	(add_removable_extension): Remove x and data arguments,
@@ -167,8 +172,7 @@
 	through note_stores, instead just call it with single_set
 	result if non-NULL.
 	(find_and_remove_re): Pass curr_cand->expr instead of
-	PATTERN (curr_cand->insn) as set_pat argument to
-	combine_reaching_defs.
+	PATTERN (curr_cand->insn) as set_pat argument to combine_reaching_defs.
 
 2012-01-26  Michael Matz  <matz@suse.de>
 
@@ -264,7 +268,7 @@
 2012-01-25  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/48374
-	* sel-sched-ir.h (get_all_loop_exits): Check for zero successors. 
+	* sel-sched-ir.h (get_all_loop_exits): Check for zero successors.
 
 2012-01-25  Andrey Belevantsev  <abel@ispras.ru>
 
@@ -379,8 +383,7 @@
 	(BT_FN_DOUBLE_VPTR): Remove.
 	(BT_FN_DOUBLE_CONST_DOUBLE_PTR): New.
 
-	* gtm-builtins.def (_ITM_abortTransaction): Set return type to
-	void.
+	* gtm-builtins.def (_ITM_abortTransaction): Set return type to void.
 	(_ITM_changeTransactionMode): Same.
 	(_ITM_memmoveRtWt): Change return type to void.
 	(_ITM_memcpyRtWt): Same.
@@ -457,7 +460,7 @@
 	* trans-mem.c (ipa_tm_create_version): Set externally_visible.
 	(ipa_tm_create_version_alias): Same.
 
-2012-01-18  Uros Bizjak  <ubizjak@gmail.com>
+2012-01-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR libitm/51830
 	* builtin-types.def (BT_FN_UINT_UINT_VAR): New.

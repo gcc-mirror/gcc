@@ -250,6 +250,11 @@ alpha_option_override (void)
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
+  /* Default to full IEEE compliance mode for Go language.  */
+  if (strcmp (lang_hooks.name, "GNU Go") == 0
+      && !(target_flags_explicit & MASK_IEEE))
+    target_flags |= MASK_IEEE;
+
   alpha_fprm = ALPHA_FPRM_NORM;
   alpha_tp = ALPHA_TP_PROG;
   alpha_fptm = ALPHA_FPTM_N;
