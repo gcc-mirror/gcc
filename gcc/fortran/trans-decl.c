@@ -326,9 +326,8 @@ gfc_sym_mangled_identifier (gfc_symbol * sym)
 
   /* Prevent the mangling of identifiers that have an assigned
      binding label (mainly those that are bind(c)).  */
-  if (sym->attr.is_bind_c == 1
-      && sym->binding_label[0] != '\0')
-    return get_identifier(sym->binding_label);
+  if (sym->attr.is_bind_c == 1 && sym->binding_label)
+    return get_identifier (sym->binding_label);
   
   if (sym->module == NULL)
     return gfc_sym_identifier (sym);
@@ -352,7 +351,7 @@ gfc_sym_mangled_function_id (gfc_symbol * sym)
      provided, and remove the other checks.  Then we could use it
      for other things if we wished.  */
   if ((sym->attr.is_bind_c == 1 || sym->attr.is_iso_c == 1) &&
-      sym->binding_label[0] != '\0')
+      sym->binding_label)
     /* use the binding label rather than the mangled name */
     return get_identifier (sym->binding_label);
 

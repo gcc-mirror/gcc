@@ -52,7 +52,7 @@ match gfc_match_label (void);
 match gfc_match_small_int (int *);
 match gfc_match_small_int_expr (int *, gfc_expr **);
 match gfc_match_name (char *);
-match gfc_match_name_C (char *buffer);
+match gfc_match_name_C (char **buffer);
 match gfc_match_symbol (gfc_symbol **, int);
 match gfc_match_sym_tree (gfc_symtree **, int);
 match gfc_match_intrinsic_op (gfc_intrinsic_op *);
@@ -196,7 +196,6 @@ match gfc_match_volatile (void);
 /* Fortran 2003 c interop.
    TODO: some of these should be moved to another file rather than decl.c */
 void set_com_block_bind_c (gfc_common_head *, int);
-gfc_try set_binding_label (char *, const char *, int);
 gfc_try set_verify_bind_c_sym (gfc_symbol *, int);
 gfc_try set_verify_bind_c_com_block (gfc_common_head *, int);
 gfc_try get_bind_c_idents (void);

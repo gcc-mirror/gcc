@@ -1,3 +1,55 @@
+2012-01-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/51808
+	* decl.c (set_binding_label): Move prototype from match.h to here.
+	(curr_binding_label): Make a pointer rather than static array.
+	(build_sym): Check sym->binding_label pointer rather than array,
+	update set_binding_label call, handle curr_binding_label changes.
+	(set_binding_label): Handle new curr_binding_label, dest_label
+	double ptr, and sym->binding_label.
+	(verify_bind_c_sym): Handle sym->binding_label being a pointer.
+	(set_verify_bind_c_sym): Check sym->binding_label pointer rather
+	than array, update set_binding_label call.
+	(gfc_match_bind_c_stmt): Handle curr_binding_label change.
+	(match_procedure_decl): Update set_binding_label call.
+	(gfc_match_bind_c): Change binding_label to pointer, update
+	gfc_match_name_C call.
+	* gfortran.h (GFC_MAX_BINDING_LABEL_LEN): Remove macro.
+	(gfc_symbol): Make binding_label a pointer.
+	(gfc_common_head): Likewise.
+	* match.c (gfc_match_name_C): Heap allocate bind(C) name.
+	* match.h (gfc_match_name_C): Change prototype argument.
+	(set_binding_label): Move prototype to decl.c.
+	* module.c (struct pointer_info): Make binding_label a pointer.
+	(free_pi_tree): Free unused binding_label.
+	(mio_read_string): New function.
+	(mio_write_string): New function.
+	(load_commons): Redo reading of binding_label.
+	(read_module): Likewise.
+	(write_common_0): Change to write empty string instead of name if
+	no binding_label.
+	(write_blank_common): Write empty string for binding label.
+	(write_symbol): Change to write empty string instead of name if no
+	binding_label.
+	* resolve.c (gfc_iso_c_func_interface): Don't set binding_label.
+	(set_name_and_label): Make binding_label double pointer, use
+	asprintf.
+	(gfc_iso_c_sub_interface): Make binding_label a pointer.
+	(resolve_bind_c_comms): Handle cases if
+	gfc_common_head->binding_label is NULL.
+	(gfc_verify_binding_labels): sym->binding_label is a pointer.
+	* symbol.c (gfc_free_symbol): Free binding_label.
+	(gfc_new_symbol): Rely on XCNEW zero init for binding_label.
+	(gen_special_c_interop_ptr): Don't set binding label.
+	(generate_isocbinding_symbol): Insert binding_label into symbol
+	table.
+	(get_iso_c_sym): Use pointer assignment instead of strcpy.
+	* trans-common.c (gfc_sym_mangled_common_id): Handle
+	com->binding_label being a pointer.
+	* trans-decl.c (gfc_sym_mangled_identifier): Handle
+	sym->binding_label being a pointer.
+	(gfc_sym_mangled_function_id): Likewise.
+
 2012-01-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52038
@@ -22,7 +74,7 @@
 	* resolve.c (resolve_formal_arglist): Fix elemental
 	constraint checks for polymorphic dummies also for
 	pointers.
-	
+
 2012-01-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51970

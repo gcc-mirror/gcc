@@ -2722,7 +2722,6 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
                           gfc_symbol **new_sym)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
-  char binding_label[GFC_MAX_BINDING_LABEL_LEN + 1];
   int optional_arg = 0;
   gfc_try retval = SUCCESS;
   gfc_symbol *args_sym;
@@ -2756,26 +2755,23 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
 	{
 	  /* two args.  */
 	  sprintf (name, "%s_2", sym->name);
-	  sprintf (binding_label, "%s_2", sym->binding_label);
 	  optional_arg = 1;
 	}
       else
 	{
 	  /* one arg.  */
 	  sprintf (name, "%s_1", sym->name);
-	  sprintf (binding_label, "%s_1", sym->binding_label);
 	  optional_arg = 0;
 	}
 
       /* Get a new symbol for the version of c_associated that
 	 will get called.  */
-      *new_sym = get_iso_c_sym (sym, name, binding_label, optional_arg);
+      *new_sym = get_iso_c_sym (sym, name, NULL, optional_arg);
     }
   else if (sym->intmod_sym_id == ISOCBINDING_LOC
 	   || sym->intmod_sym_id == ISOCBINDING_FUNLOC)
     {
       sprintf (name, "%s", sym->name);
-      sprintf (binding_label, "%s", sym->binding_label);
 
       /* Error check the call.  */
       if (args->next != NULL)
@@ -3360,7 +3356,7 @@ generic:
 
 static void
 set_name_and_label (gfc_code *c, gfc_symbol *sym,
-                    char *name, char *binding_label)
+                    char *name, char **binding_label)
 {
   gfc_expr *arg = NULL;
   char type;
@@ -3393,7 +3389,8 @@ set_name_and_label (gfc_code *c, gfc_symbol *sym,
       sprintf (name, "%s_%c%d", sym->name, type, kind);
       /* Set up the binding label as the given symbol's label plus
          the type and kind.  */
-      sprintf (binding_label, "%s_%c%d", sym->binding_label, type, kind);
+      *binding_label = gfc_get_string ("%s_%c%d", sym->binding_label, type, 
+				       kind);
     }
   else
     {
@@ -3401,7 +3398,7 @@ set_name_and_label (gfc_code *c, gfc_symbol *sym,
          was, cause it should at least be found, and the missing
          arg error will be caught by compare_parameters().  */
       sprintf (name, "%s", sym->name);
-      sprintf (binding_label, "%s", sym->binding_label);
+      *binding_label = sym->binding_label;
     }
    
   return;
@@ -3423,7 +3420,7 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
   gfc_symbol *new_sym;
   /* this is fine, since we know the names won't use the max */
   char name[GFC_MAX_SYMBOL_LEN + 1];
-  char binding_label[GFC_MAX_BINDING_LABEL_LEN + 1];
+  char* binding_label;
   /* default to success; will override if find error */
   match m = MATCH_YES;
 
@@ -3434,7 +3431,7 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
   if ((sym->intmod_sym_id == ISOCBINDING_F_POINTER) ||
       (sym->intmod_sym_id == ISOCBINDING_F_PROCPOINTER))
     {
-      set_name_and_label (c, sym, name, binding_label);
+      set_name_and_label (c, sym, name, &binding_label);
       
       if (sym->intmod_sym_id == ISOCBINDING_F_POINTER)
 	{
@@ -9668,6 +9665,8 @@ resolve_bind_c_comms (gfc_symtree *comm_block_tree)
     {
       gfc_gsymbol *binding_label_gsym;
       gfc_gsymbol *comm_name_gsym;
+      const char * bind_label = comm_block_tree->n.common->binding_label 
+	? comm_block_tree->n.common->binding_label : "";
 
       /* See if a global symbol exists by the common block's name.  It may
          be NULL if the common block is use-associated.  */
@@ -9676,7 +9675,7 @@ resolve_bind_c_comms (gfc_symtree *comm_block_tree)
       if (comm_name_gsym != NULL && comm_name_gsym->type != GSYM_COMMON)
         gfc_error ("Binding label '%s' for common block '%s' at %L collides "
                    "with the global entity '%s' at %L",
-                   comm_block_tree->n.common->binding_label,
+                   bind_label,
                    comm_block_tree->n.common->name,
                    &(comm_block_tree->n.common->where),
                    comm_name_gsym->name, &(comm_name_gsym->where));
@@ -9688,17 +9687,14 @@ resolve_bind_c_comms (gfc_symtree *comm_block_tree)
              as expected.  */
           if (comm_name_gsym->binding_label == NULL)
             /* No binding label for common block stored yet; save this one.  */
-            comm_name_gsym->binding_label =
-              comm_block_tree->n.common->binding_label;
-          else
-            if (strcmp (comm_name_gsym->binding_label,
-                        comm_block_tree->n.common->binding_label) != 0)
+            comm_name_gsym->binding_label = bind_label;
+          else if (strcmp (comm_name_gsym->binding_label, bind_label) != 0)
               {
                 /* Common block names match but binding labels do not.  */
                 gfc_error ("Binding label '%s' for common block '%s' at %L "
                            "does not match the binding label '%s' for common "
                            "block '%s' at %L",
-                           comm_block_tree->n.common->binding_label,
+                           bind_label,
                            comm_block_tree->n.common->name,
                            &(comm_block_tree->n.common->where),
                            comm_name_gsym->binding_label,
@@ -9710,7 +9706,7 @@ resolve_bind_c_comms (gfc_symtree *comm_block_tree)
 
       /* There is no binding label (NAME="") so we have nothing further to
          check and nothing to add as a global symbol for the label.  */
-      if (comm_block_tree->n.common->binding_label[0] == '\0' )
+      if (!comm_block_tree->n.common->binding_label)
         return;
       
       binding_label_gsym =
@@ -9777,7 +9773,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
   int has_error = 0;
   
   if (sym != NULL && sym->attr.is_bind_c && sym->attr.is_iso_c == 0 
-      && sym->attr.flavor != FL_DERIVED && sym->binding_label[0] != '\0')
+      && sym->attr.flavor != FL_DERIVED && sym->binding_label)
     {
       gfc_gsymbol *bind_c_sym;
 
@@ -9828,8 +9824,8 @@ gfc_verify_binding_labels (gfc_symbol *sym)
               }
 
           if (has_error != 0)
-            /* Clear the binding label to prevent checking multiple times.  */
-            sym->binding_label[0] = '\0';
+	    /* Clear the binding label to prevent checking multiple times.  */
+	    sym->binding_label = NULL;
         }
       else if (bind_c_sym == NULL)
 	{
