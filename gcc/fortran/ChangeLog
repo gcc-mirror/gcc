@@ -1,3 +1,9 @@
+2012-01-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52038
+	* resolve.c (symbol_as): Remove unused, accidentally
+	added function.
+
 2012-01-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51972
