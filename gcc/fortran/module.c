@@ -155,13 +155,12 @@ typedef struct pointer_info
     struct
     {
       gfc_symbol *sym;
-      char true_name[GFC_MAX_SYMBOL_LEN + 1], module[GFC_MAX_SYMBOL_LEN + 1];
+      char *true_name, *module, *binding_label;
+      fixup_t *stfixup;
+      gfc_symtree *symtree;
       enum gfc_rsym_state state;
       int ns, referenced, renamed;
       module_locus where;
-      fixup_t *stfixup;
-      gfc_symtree *symtree;
-      char* binding_label;
     }
     rsym;
 
@@ -229,7 +228,11 @@ free_pi_tree (pointer_info *p)
   free_pi_tree (p->right);
 
   if (iomode == IO_INPUT)
-    XDELETEVEC (p->u.rsym.binding_label);
+    {
+      XDELETEVEC (p->u.rsym.true_name);
+      XDELETEVEC (p->u.rsym.module);
+      XDELETEVEC (p->u.rsym.binding_label);
+    }
 
   free (p);
 }
@@ -1442,6 +1445,19 @@ find_enum (const mstring *m)
 }
 
 
+/* Read a string. The caller is responsible for freeing.  */
+
+static char*
+read_string (void)
+{
+  char* p;
+  require_atom (ATOM_STRING);
+  p = atom_string;
+  atom_string = NULL;
+  return p;
+}
+
+
 /**************** Module output subroutines ***************************/
 
 /* Output a character to a module file.  */
@@ -1813,27 +1829,6 @@ mio_internal_string (char *string)
       strcpy (string, atom_string);
       free (atom_string);
     }
-}
-
-
-/* Read a string. The caller is responsible for freeing.  */
-
-static char*
-mio_read_string (void)
-{
-  char* p;
-  require_atom (ATOM_STRING);
-  p = atom_string;
-  atom_string = NULL;
-  return p;
-}
-
-
-/* Write a string.  */
-static void
-mio_write_string (const char* string)
-{
-  write_atom (ATOM_STRING, string);
 }
 
 
@@ -4168,7 +4163,7 @@ load_commons (void)
       /* Get whether this was a bind(c) common or not.  */
       mio_integer (&p->is_bind_c);
       /* Get the binding label.  */
-      label = mio_read_string ();
+      label = read_string ();
       if (strlen (label))
 	p->binding_label = IDENTIFIER_POINTER (get_identifier (label));
       XDELETEVEC (label);
@@ -4531,9 +4526,9 @@ read_module (void)
       info->type = P_SYMBOL;
       info->u.rsym.state = UNUSED;
 
-      mio_internal_string (info->u.rsym.true_name);
-      mio_internal_string (info->u.rsym.module);
-      bind_label = mio_read_string ();
+      info->u.rsym.true_name = read_string ();
+      info->u.rsym.module = read_string ();
+      bind_label = read_string ();
       if (strlen (bind_label))
 	info->u.rsym.binding_label = bind_label;
       else
@@ -4960,7 +4955,7 @@ write_blank_common (void)
   mio_integer (&is_bind_c);
 
   /* Write out an empty binding label.  */
-  mio_write_string ("");
+  write_atom (ATOM_STRING, "");
 
   mio_rparen ();
 }
@@ -5064,7 +5059,7 @@ write_symbol (int n, gfc_symbol *sym)
       mio_pool_string (&label);
     }
   else
-    mio_write_string ("");
+    write_atom (ATOM_STRING, "");
 
   mio_pointer_ref (&sym->ns);
 
