@@ -38,8 +38,8 @@
 	(resolve_bind_c_comms): Handle cases if
 	gfc_common_head->binding_label is NULL.
 	(gfc_verify_binding_labels): sym->binding_label is a pointer.
-	* symbol.c (gfc_free_symbol): Free binding_label.
-	(gfc_new_symbol): Rely on XCNEW zero init for binding_label.
+	* symbol.c (gfc_new_symbol): Rely on XCNEW zero init for
+	binding_label.
 	(gen_special_c_interop_ptr): Don't set binding label.
 	(generate_isocbinding_symbol): Insert binding_label into symbol
 	table.
