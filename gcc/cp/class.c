@@ -4910,7 +4910,27 @@ explain_non_literal_class (tree t)
 	      "is not a copy or move constructor", t);
       if (TYPE_HAS_DEFAULT_CONSTRUCTOR (t)
 	  && !type_has_user_provided_default_constructor (t))
-	explain_invalid_constexpr_fn (locate_ctor (t));
+	{
+	  /* Note that we can't simply call locate_ctor because when the
+	     constructor is deleted it just returns NULL_TREE.  */
+	  tree fns;
+	  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+	    {
+	      tree fn = OVL_CURRENT (fns);
+	      tree parms = TYPE_ARG_TYPES (TREE_TYPE (fn));
+
+	      parms = skip_artificial_parms_for (fn, parms);
+
+	      if (sufficient_parms_p (parms))
+		{
+		  if (DECL_DELETED_FN (fn))
+		    maybe_explain_implicit_delete (fn);
+		  else
+		    explain_invalid_constexpr_fn (fn);
+		  break;
+		}
+	    }
+	}
     }
   else
     {
