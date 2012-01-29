@@ -1,6 +1,6 @@
 /* Maintain binary trees of symbols.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010, 2011
+   2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -2556,8 +2556,6 @@ gfc_new_symbol (const char *name, gfc_namespace *ns)
   /* Make sure flags for symbol being C bound are clear initially.  */
   p->attr.is_bind_c = 0;
   p->attr.is_iso_c = 0;
-  /* Make sure the binding label field has a Nul char to start.  */
-  p->binding_label[0] = '\0';
 
   /* Clear the ptrs we may need.  */
   p->common_block = NULL;
@@ -3805,8 +3803,8 @@ gen_special_c_interop_ptr (int ptr_id, const char *ptr_name,
   
   tmp_sym->attr.use_assoc = 1;
   tmp_sym->attr.is_bind_c = 1;
-  /* Set the binding_label.  */
-  sprintf (tmp_sym->binding_label, "%s_%s", module_name, tmp_sym->name);
+  /* Since we never generate a call to this symbol, don't set the
+     binding_label.  */
   
   /* Set the c_address field of c_null_ptr and c_null_funptr to
      the value of NULL.	 */
@@ -4588,8 +4586,9 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 
         /* Use the procedure's name as it is in the iso_c_binding module for
            setting the binding label in case the user renamed the symbol.  */
-	sprintf (tmp_sym->binding_label, "%s_%s", mod_name,
-                 c_interop_kinds_table[s].name);
+	tmp_sym->binding_label = 
+	  gfc_get_string ("%s_%s", mod_name, 
+			  c_interop_kinds_table[s].name);
 	tmp_sym->attr.is_iso_c = 1;
 	if (s == ISOCBINDING_F_POINTER || s == ISOCBINDING_F_PROCPOINTER)
 	  tmp_sym->attr.subroutine = 1;
@@ -4702,7 +4701,7 @@ get_iso_c_sym (gfc_symbol *old_sym, char *new_name,
 			"symtree for '%s'", new_name);
 
   /* Now fill in the fields of the resolved symbol with the old sym.  */
-  strcpy (new_symtree->n.sym->binding_label, new_binding_label);
+  new_symtree->n.sym->binding_label = new_binding_label;
   new_symtree->n.sym->attr = old_sym->attr;
   new_symtree->n.sym->ts = old_sym->ts;
   new_symtree->n.sym->module = gfc_get_string (old_sym->module);

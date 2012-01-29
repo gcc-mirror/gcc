@@ -244,7 +244,7 @@ gfc_sym_mangled_common_id (gfc_common_head *com)
   strcpy (name, com->name);
 
   /* If we're suppose to do a bind(c).  */
-  if (com->is_bind_c == 1 && com->binding_label[0] != '\0')
+  if (com->is_bind_c == 1 && com->binding_label)
     return get_identifier (com->binding_label);
 
   if (strcmp (name, BLANK_COMMON_NAME) == 0)

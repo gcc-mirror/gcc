@@ -1,6 +1,6 @@
 /* Matching subroutines in all sizes, shapes and colors.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010, 2011
+   2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "match.h"
 #include "parse.h"
+#include "tree.h"
 
 int gfc_matching_ptr_assignment = 0;
 int gfc_matching_procptr_assignment = 0;
@@ -571,22 +572,22 @@ gfc_match_name (char *buffer)
 /* Match a valid name for C, which is almost the same as for Fortran,
    except that you can start with an underscore, etc..  It could have
    been done by modifying the gfc_match_name, but this way other
-   things C allows can be added, such as no limits on the length.
-   Right now, the length is limited to the same thing as Fortran..
+   things C allows can be done, such as no limits on the length.
    Also, by rewriting it, we use the gfc_next_char_C() to prevent the
    input characters from being automatically lower cased, since C is
    case sensitive.  The parameter, buffer, is used to return the name
-   that is matched.  Return MATCH_ERROR if the name is too long
-   (though this is a self-imposed limit), MATCH_NO if what we're
-   seeing isn't a name, and MATCH_YES if we successfully match a C
-   name.  */
+   that is matched.  Return MATCH_ERROR if the name is not a valid C
+   name, MATCH_NO if what we're seeing isn't a name, and MATCH_YES if
+   we successfully match a C name.  */
 
 match
-gfc_match_name_C (char *buffer)
+gfc_match_name_C (char **buffer)
 {
   locus old_loc;
-  int i = 0;
+  size_t i = 0;
   gfc_char_t c;
+  char* buf;
+  size_t cursz = 16; 
 
   old_loc = gfc_current_locus;
   gfc_gobble_whitespace ();
@@ -600,7 +601,6 @@ gfc_match_name_C (char *buffer)
      symbol name, all lowercase.  */
   if (c == '"' || c == '\'')
     {
-      buffer[0] = '\0';
       gfc_current_locus = old_loc;
       return MATCH_YES;
     }
@@ -611,24 +611,19 @@ gfc_match_name_C (char *buffer)
       return MATCH_ERROR;
     }
 
+  buf = XNEWVEC (char, cursz);
   /* Continue to read valid variable name characters.  */
   do
     {
       gcc_assert (gfc_wide_fits_in_byte (c));
 
-      buffer[i++] = (unsigned char) c;
-      
-    /* C does not define a maximum length of variable names, to my
-       knowledge, but the compiler typically places a limit on them.
-       For now, i'll use the same as the fortran limit for simplicity,
-       but this may need to be changed to a dynamic buffer that can
-       be realloc'ed here if necessary, or more likely, a larger
-       upper-bound set.  */
-      if (i > gfc_option.max_identifier_length)
-        {
-          gfc_error ("Name at %C is too long");
-          return MATCH_ERROR;
-        }
+      buf[i++] = (unsigned char) c;
+
+      if (i >= cursz)
+	{
+	  cursz *= 2;
+	  buf = XRESIZEVEC (char, buf, cursz);
+	}
       
       old_loc = gfc_current_locus;
       
@@ -636,7 +631,11 @@ gfc_match_name_C (char *buffer)
       c = gfc_next_char_literal (INSTRING_WARN);
     } while (ISALNUM (c) || c == '_');
 
-  buffer[i] = '\0';
+  /* The binding label will be needed later anyway, so just insert it
+     into the symbol table.  */
+  buf[i] = '\0';
+  *buffer = IDENTIFIER_POINTER (get_identifier (buf));
+  XDELETEVEC (buf);
   gfc_current_locus = old_loc;
 
   /* See if we stopped because of whitespace.  */

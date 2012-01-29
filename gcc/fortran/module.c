@@ -75,6 +75,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "md5.h"
 #include "constructor.h"
 #include "cpp.h"
+#include "tree.h"
 
 #define MODULE_EXTENSION ".mod"
 
@@ -160,7 +161,7 @@ typedef struct pointer_info
       module_locus where;
       fixup_t *stfixup;
       gfc_symtree *symtree;
-      char binding_label[GFC_MAX_SYMBOL_LEN + 1];
+      char* binding_label;
     }
     rsym;
 
@@ -226,6 +227,9 @@ free_pi_tree (pointer_info *p)
 
   free_pi_tree (p->left);
   free_pi_tree (p->right);
+
+  if (iomode == IO_INPUT)
+    XDELETEVEC (p->u.rsym.binding_label);
 
   free (p);
 }
@@ -1809,6 +1813,27 @@ mio_internal_string (char *string)
       strcpy (string, atom_string);
       free (atom_string);
     }
+}
+
+
+/* Read a string. The caller is responsible for freeing.  */
+
+static char*
+mio_read_string (void)
+{
+  char* p;
+  require_atom (ATOM_STRING);
+  p = atom_string;
+  atom_string = NULL;
+  return p;
+}
+
+
+/* Write a string.  */
+static void
+mio_write_string (const char* string)
+{
+  write_atom (ATOM_STRING, string);
 }
 
 
@@ -4126,6 +4151,7 @@ load_commons (void)
   while (peek_atom () != ATOM_RPAREN)
     {
       int flags;
+      char* label;
       mio_lparen ();
       mio_internal_string (name);
 
@@ -4142,7 +4168,10 @@ load_commons (void)
       /* Get whether this was a bind(c) common or not.  */
       mio_integer (&p->is_bind_c);
       /* Get the binding label.  */
-      mio_internal_string (p->binding_label);
+      label = mio_read_string ();
+      if (strlen (label))
+	p->binding_label = IDENTIFIER_POINTER (get_identifier (label));
+      XDELETEVEC (label);
       
       mio_rparen ();
     }
@@ -4344,7 +4373,9 @@ load_needed (pointer_info *p)
       sym = gfc_new_symbol (p->u.rsym.true_name, ns);
       sym->name = dt_lower_string (p->u.rsym.true_name);
       sym->module = gfc_get_string (p->u.rsym.module);
-      strcpy (sym->binding_label, p->u.rsym.binding_label);
+      if (p->u.rsym.binding_label)
+	sym->binding_label = IDENTIFIER_POINTER (get_identifier 
+						 (p->u.rsym.binding_label));
 
       associate_integer_pointer (p, sym);
     }
@@ -4493,6 +4524,7 @@ read_module (void)
 
   while (peek_atom () != ATOM_RPAREN)
     {
+      char* bind_label;
       require_atom (ATOM_INTEGER);
       info = get_integer (atom_int);
 
@@ -4501,8 +4533,11 @@ read_module (void)
 
       mio_internal_string (info->u.rsym.true_name);
       mio_internal_string (info->u.rsym.module);
-      mio_internal_string (info->u.rsym.binding_label);
-
+      bind_label = mio_read_string ();
+      if (strlen (bind_label))
+	info->u.rsym.binding_label = bind_label;
+      else
+	XDELETEVEC (bind_label);
       
       require_atom (ATOM_INTEGER);
       info->u.rsym.ns = atom_int;
@@ -4634,10 +4669,10 @@ read_module (void)
 		  sym = info->u.rsym.sym;
 		  sym->module = gfc_get_string (info->u.rsym.module);
 
-		  /* TODO: hmm, can we test this?  Do we know it will be
-		     initialized to zeros?  */
-		  if (info->u.rsym.binding_label[0] != '\0')
-		    strcpy (sym->binding_label, info->u.rsym.binding_label);
+		  if (info->u.rsym.binding_label)
+		    sym->binding_label = 
+		      IDENTIFIER_POINTER (get_identifier 
+					  (info->u.rsym.binding_label));
 		}
 
 	      st->n.sym = sym;
@@ -4836,10 +4871,10 @@ write_common_0 (gfc_symtree *st, bool this_module)
 
   write_common_0 (st->left, this_module);
 
-  /* We will write out the binding label, or the name if no label given.  */
+  /* We will write out the binding label, or "" if no label given.  */
   name = st->n.common->name;
   p = st->n.common;
-  label = p->is_bind_c ? p->binding_label : p->name;
+  label = (p->is_bind_c && p->binding_label) ? p->binding_label : "";
 
   /* Check if we've already output this common.  */
   w = written_commons;
@@ -4924,9 +4959,8 @@ write_blank_common (void)
   /* Write out whether the common block is bind(c) or not.  */
   mio_integer (&is_bind_c);
 
-  /* Write out the binding label, which is BLANK_COMMON_NAME, though
-     it doesn't matter because the label isn't used.  */
-  mio_pool_string (&name);
+  /* Write out an empty binding label.  */
+  mio_write_string ("");
 
   mio_rparen ();
 }
@@ -5024,13 +5058,13 @@ write_symbol (int n, gfc_symbol *sym)
     mio_pool_string (&sym->name);
 
   mio_pool_string (&sym->module);
-  if (sym->attr.is_bind_c || sym->attr.is_iso_c)
+  if ((sym->attr.is_bind_c || sym->attr.is_iso_c) && sym->binding_label)
     {
       label = sym->binding_label;
       mio_pool_string (&label);
     }
   else
-    mio_pool_string (&sym->name);
+    mio_write_string ("");
 
   mio_pointer_ref (&sym->ns);
 

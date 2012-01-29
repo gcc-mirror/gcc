@@ -1,3 +1,8 @@
+2012-01-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/51808
+	* gfortran.dg/module_md5_1.f90: Update MD5 sum.
+
 2012-01-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51972
