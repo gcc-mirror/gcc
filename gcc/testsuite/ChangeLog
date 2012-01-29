@@ -1,3 +1,7 @@
+2012-01-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/tm/pr51472.c: Add -fno-common option on hppa-*-hpux*.
+
 2012-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51327
