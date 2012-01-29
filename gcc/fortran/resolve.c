@@ -1582,16 +1582,6 @@ resolve_procedure_expression (gfc_expr* expr)
 }
 
 
-gfc_array_spec *
-symbol_as (gfc_symbol *sym)
-{
-  if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
-    return CLASS_DATA (sym)->as;
-  else
-    return sym->as;
-}
-
-
 /* Resolve an actual argument list.  Most of the time, this is just
    resolving the expressions in the list.
    The exception is that we sometimes have to decide whether arguments
