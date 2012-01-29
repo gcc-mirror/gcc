@@ -1,5 +1,8 @@
 2012-01-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR testsuite/51875
+	* gfortran.dg/guality/pr41558.f90: Skip on 32-bit hppa*-*-hpux*.
+
 	* g++.dg/ext/visibility/template10.C: Fix typo.
 
 	* gcc.dg/tm/pr51472.c: Add -fno-common option on hppa-*-hpux*.
