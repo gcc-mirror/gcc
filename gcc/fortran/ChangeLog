@@ -1,3 +1,15 @@
+2012-01-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* module.c (pointer_info): Make true_name and module pointers
+	rather than arrays, order pointers before other fields.
+	(free_pi_tree): free true_name and module as well.
+	(mio_read_string): Rename to read_string.
+	(mio_write_string): Remove.
+	(load_commons): Use read_string.
+	(read_module): Use read_string rather than mio_internal_string.
+	(write_blank_common): Call write_atom directly.
+	(write_symbol): Likewise.
+
 2012-01-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51972
