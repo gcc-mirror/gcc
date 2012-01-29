@@ -52,7 +52,7 @@ match gfc_match_label (void);
 match gfc_match_small_int (int *);
 match gfc_match_small_int_expr (int *, gfc_expr **);
 match gfc_match_name (char *);
-match gfc_match_name_C (char **buffer);
+match gfc_match_name_C (const char **buffer);
 match gfc_match_symbol (gfc_symbol **, int);
 match gfc_match_sym_tree (gfc_symtree **, int);
 match gfc_match_intrinsic_op (gfc_intrinsic_op *);

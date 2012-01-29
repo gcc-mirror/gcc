@@ -3356,7 +3356,7 @@ generic:
 
 static void
 set_name_and_label (gfc_code *c, gfc_symbol *sym,
-                    char *name, char **binding_label)
+                    char *name, const char **binding_label)
 {
   gfc_expr *arg = NULL;
   char type;
@@ -3420,7 +3420,7 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
   gfc_symbol *new_sym;
   /* this is fine, since we know the names won't use the max */
   char name[GFC_MAX_SYMBOL_LEN + 1];
-  char* binding_label;
+  const char* binding_label;
   /* default to success; will override if find error */
   match m = MATCH_YES;
 

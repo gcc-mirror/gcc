@@ -1237,7 +1237,7 @@ typedef struct gfc_symbol
 
   /* This may be repetitive, since the typespec now has a binding
      label field.  */
-  char* binding_label;
+  const char* binding_label;
   /* Store a reference to the common_block, if this symbol is in one.  */
   struct gfc_common_head *common_block;
 
@@ -1254,7 +1254,7 @@ typedef struct gfc_common_head
   char use_assoc, saved, threadprivate;
   char name[GFC_MAX_SYMBOL_LEN + 1];
   struct gfc_symbol *head;
-  char* binding_label;
+  const char* binding_label;
   int is_bind_c;
 }
 gfc_common_head;
@@ -2595,7 +2595,7 @@ gfc_try verify_bind_c_sym (gfc_symbol *, gfc_typespec *, int, gfc_common_head *)
 gfc_try verify_bind_c_derived_type (gfc_symbol *);
 gfc_try verify_com_block_vars_c_interop (gfc_common_head *);
 void generate_isocbinding_symbol (const char *, iso_c_binding_symbol, const char *);
-gfc_symbol *get_iso_c_sym (gfc_symbol *, char *, char *, int);
+gfc_symbol *get_iso_c_sym (gfc_symbol *, char *, const char *, int);
 int gfc_get_sym_tree (const char *, gfc_namespace *, gfc_symtree **, bool);
 int gfc_get_ha_symbol (const char *, gfc_symbol **);
 int gfc_get_ha_sym_tree (const char *, gfc_symtree **);

@@ -1,6 +1,20 @@
 2012-01-29  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/51808
+	* decl.c (set_binding_label): Make binding_label argument const.
+	(curr_binding_label): Constify.
+	* gfortran.h (gfc_symbol): Constify binding_label.
+	(gfc_common_head): Likewise.
+	(get_iso_c_sym): Likewise.
+	* match.c (gfc_match_name_C): Constify buffer argument.
+	* match.h (gfc_match_name_C): Likewise.
+	* resolve.c (set_name_and_label): Constify binding_label argument.
+	(gfc_iso_c_sub_interface): Constify binding_label variable.
+	* symbol.c (get_iso_c_sym): Constify binding_label argument.
+
+2012-01-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/51808
 	* decl.c (set_binding_label): Move prototype from match.h to here.
 	(curr_binding_label): Make a pointer rather than static array.
 	(build_sym): Check sym->binding_label pointer rather than array,
