@@ -1,5 +1,5 @@
 // PR c++/51930
-// { dg-require-visibility }
+// { dg-require-visibility "" }
 // { dg-options -fvisibility=hidden }
 // { dg-final { scan-not-hidden "_Z8testfuncI3fooEvv" } }
 
