@@ -12,6 +12,12 @@
 
 2012-01-29  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/41600
+	* expr.c (gfc_default_initializer): Convert the values if
+	the type does not match.
+
+2012-01-29  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/51972
 	* trans-array.c (structure_alloc_comps): Fix assignment of
 	polymorphic components (polymorphic deep copying).
@@ -194,7 +200,7 @@
 
 	PR fortran/50556
 	* symbol.c (check_conflict): namelist-group-name cannot have the SAVE
-	attribure.
+	attribute.
 
 2012-01-21  Tobias Burnus  <burnus@net-b.de>
 
