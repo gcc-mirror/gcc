@@ -1,3 +1,22 @@
+2012-01-28  Kai Tietz  <ktietz@redhat.com>
+
+	* src/libffi/src/x86/ffi.c (ffi_call_win32): Add new
+	argument to prototype for specify calling-convention.
+	(ffi_call): Add support for stdcall/thiscall convention.
+	(ffi_prep_args): Likewise.
+	(ffi_raw_call): Likewise.
+	* src/x86/ffitarget.h (ffi_abi): Add FFI_THISCALL and
+	FFI_FASTCALL.
+	* src/x86/win32.S (_ffi_call_win32): Add support for
+	fastcall/thiscall calling-convention calls.
+	* testsuite/libffi.call/fastthis1_win32.c: New test.
+	* testsuite/libffi.call/fastthis2_win32.c: New test.
+	* testsuite/libffi.call/fastthis3_win32.c: New test.
+	* testsuite/libffi.call/strlen2_win32.c: New test.
+	* testsuite/libffi.call/many2_win32.c: New test.
+	* testsuite/libffi.call/struct1_win32.c: New test.
+	* testsuite/libffi.call/struct2_win32.c: New test.
+
 2012-01-23  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* src/m68k/sysv.S (ffi_call_SYSV): Properly test for plain
