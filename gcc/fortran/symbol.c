@@ -4683,7 +4683,7 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 
 gfc_symbol *
 get_iso_c_sym (gfc_symbol *old_sym, char *new_name,
-               char *new_binding_label, int add_optional_arg)
+               const char *new_binding_label, int add_optional_arg)
 {
   gfc_symtree *new_symtree = NULL;
 

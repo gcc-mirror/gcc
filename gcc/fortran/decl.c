@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #define gfc_get_data() XCNEW (gfc_data)
 
 
-static gfc_try set_binding_label (char **, const char *, int);
+static gfc_try set_binding_label (const char **, const char *, int);
 
 
 /* This flag is set if an old-style length selector is matched
@@ -55,7 +55,7 @@ static gfc_array_spec *current_as;
 static int colon_seen;
 
 /* The current binding label (if any).  */
-static char* curr_binding_label;
+static const char* curr_binding_label;
 /* Need to know how many identifiers are on the current data declaration
    line in case we're given the BIND(C) attribute with a NAME= specifier.  */
 static int num_idents_on_line;
@@ -3808,7 +3808,8 @@ cleanup:
    there is more than one argument (num_idents), it is an error.  */
 
 static gfc_try
-set_binding_label (char **dest_label, const char *sym_name, int num_idents)
+set_binding_label (const char **dest_label, const char *sym_name, 
+		   int num_idents)
 {
   if (num_idents > 1 && has_name_equals)
     {
@@ -5713,7 +5714,7 @@ match
 gfc_match_bind_c (gfc_symbol *sym, bool allow_binding_name)
 {
   /* binding label, if exists */   
-  char* binding_label = NULL;
+  const char* binding_label = NULL;
   match double_quote;
   match single_quote;
 

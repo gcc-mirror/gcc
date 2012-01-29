@@ -581,7 +581,7 @@ gfc_match_name (char *buffer)
    we successfully match a C name.  */
 
 match
-gfc_match_name_C (char **buffer)
+gfc_match_name_C (const char **buffer)
 {
   locus old_loc;
   size_t i = 0;
