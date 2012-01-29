@@ -1,3 +1,9 @@
+2012-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51327
+	* class.c (explain_non_literal_class): Correctly handle implicitly
+	deleted constructors.
+
 2012-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/51852
