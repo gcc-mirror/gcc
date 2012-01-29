@@ -1,3 +1,9 @@
+2012-01-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51972
+	* trans-array.c (structure_alloc_comps): Fix assignment of
+	polymorphic components (polymorphic deep copying).
+
 2012-01-29  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/51808

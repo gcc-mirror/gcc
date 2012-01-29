@@ -7532,6 +7532,57 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 				  cdecl, NULL_TREE);
 	  dcmp = fold_convert (TREE_TYPE (comp), dcmp);
 
+	  if (c->ts.type == BT_CLASS && CLASS_DATA (c)->attr.allocatable)
+	    {
+	      tree ftn_tree;
+	      tree size;
+	      tree dst_data;
+	      tree src_data;
+	      tree null_data;
+
+	      dst_data = gfc_class_data_get (dcmp);
+	      src_data = gfc_class_data_get (comp);
+	      size = fold_convert (size_type_node, gfc_vtable_size_get (comp));
+
+	      if (CLASS_DATA (c)->attr.dimension)
+		{
+		  nelems = gfc_conv_descriptor_size (src_data,
+						     CLASS_DATA (c)->as->rank);
+		  src_data = gfc_conv_descriptor_data_get (src_data);
+		  dst_data = gfc_conv_descriptor_data_get (dst_data);
+		}
+	      else
+		nelems = build_int_cst (size_type_node, 1);
+
+	      gfc_init_block (&tmpblock);
+
+	      /* We need to use CALLOC as _copy might try to free allocatable
+		 components of the destination.  */
+	      ftn_tree = builtin_decl_explicit (BUILT_IN_CALLOC);
+              tmp = build_call_expr_loc (input_location, ftn_tree, 2, nelems,
+					 size);
+	      gfc_add_modify (&tmpblock, dst_data,
+			      fold_convert (TREE_TYPE (dst_data), tmp));
+
+	      tmp = gfc_copy_class_to_class (comp, dcmp, nelems);
+	      gfc_add_expr_to_block (&tmpblock, tmp);
+	      tmp = gfc_finish_block (&tmpblock);
+
+	      gfc_init_block (&tmpblock);
+	      gfc_add_modify (&tmpblock, dst_data,
+			      fold_convert (TREE_TYPE (dst_data),
+					    null_pointer_node));
+	      null_data = gfc_finish_block (&tmpblock);
+
+	      null_cond = fold_build2_loc (input_location, NE_EXPR,
+					   boolean_type_node, src_data,
+				           null_pointer_node); 	
+
+	      gfc_add_expr_to_block (&fnblock, build3_v (COND_EXPR, null_cond,
+							 tmp, null_data));
+	      continue;
+	    }
+
 	  if (c->attr.allocatable && !cmp_has_alloc_comps)
 	    {
 	      rank = c->as ? c->as->rank : 0;

@@ -4,10 +4,6 @@
 !
 ! Contributed by Damian Rouson
 !
-! TODO: Remove the STOP line below after fixing
-!       The remaining issue of the PR
-!
-
 module surrogate_module
   type ,abstract :: surrogate
   end type
@@ -78,7 +74,6 @@ contains
       class is (integrand)
         allocate (this_half, source=this)
     end select
-    STOP 'SUCESS!' ! See TODO above
   end subroutine
 end module 
 
