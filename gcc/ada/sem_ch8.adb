@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2665,7 +2665,10 @@ package body Sem_Ch8 is
          if not Is_Actual
            and then (Old_S = New_S
                       or else (Nkind (Nam) /= N_Expanded_Name
-                        and then  Chars (Old_S) = Chars (New_S)))
+                        and then Chars (Old_S) = Chars (New_S))
+                      or else (Nkind (Nam) = N_Expanded_Name
+                        and then Entity (Prefix (Nam)) = Current_Scope
+                        and then Chars (Selector_Name (Nam)) = Chars (New_S)))
          then
             Error_Msg_N ("subprogram cannot rename itself", N);
          end if;
