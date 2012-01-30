@@ -1,3 +1,31 @@
+2012-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* a-cdlili.adb, a-cidlli.adb, a-cbdlli.adb: Minor reformatting.
+
+2012-01-30  Olivier Hainque  <hainque@adacore.com>
+
+	* sigtramp-ppcvxw.c (CFI_COMMON_REGS): Add rule for r1 back +
+	comments.
+
+2012-01-30  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi, sem_dist.adb, sem_dist.ads, einfo.ads, sem_prag.adb,
+	sem_ch12.adb, sem_attr.adb, aspects.adb, aspects.ads, par-prag.adb,
+	sem_cat.adb, snames.ads-tmpl (Sem_Dist.Is_Valid_Remote_Object_Type):
+	New subprogram (extracted from
+	Sem_Cat.Validate_Remote_Access_Object_Type_Declaration).
+	(Einfo.Is_Remote_Types): Now applies to generic types. Update
+	documentation accordingly.
+	(Sem_Ch12.Analyze_Associations): A RACW type is acceptable as
+	actual for a formal type to which a pragma Remote_Access_Type
+	applies.
+	(Aspects, Par.Prag, Sem_Prag): Support for new pramga/aspect
+	Remote_Access_Type.
+	(Sem_Attr.Analyze_Attribute, case Stub_Type): Attribute can
+	be applied to a generic type if pragma Remote_Access_Type
+	applies, in which case the type of the attribute is
+	System.Partition_Interface.RACW_Stub_Type.
+
 2012-01-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Procedure>: Do not set

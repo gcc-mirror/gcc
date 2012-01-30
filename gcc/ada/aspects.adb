@@ -295,6 +295,7 @@ package body Aspects is
     Aspect_Preelaborable_Initialization => Aspect_Preelaborable_Initialization,
     Aspect_Priority                     => Aspect_Priority,
     Aspect_Pure_Function                => Aspect_Pure_Function,
+    Aspect_Remote_Access_Type           => Aspect_Remote_Access_Type,
     Aspect_Read                         => Aspect_Read,
     Aspect_Shared                       => Aspect_Atomic,
     Aspect_Size                         => Aspect_Size,
