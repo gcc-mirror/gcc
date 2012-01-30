@@ -2843,7 +2843,7 @@ package body Exp_Ch7 is
       --  Determine whether N denotes the protected version of a subprogram
       --  which belongs to a protected type.
 
-      Loc : constant Source_Ptr := No_Location;
+      Loc : constant Source_Ptr := Sloc (N);
       HSS : Node_Id;
 
    begin

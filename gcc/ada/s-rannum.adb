@@ -690,4 +690,5 @@ package body System.Random_Numbers is
    begin
       return State_Val'Value (S (Start .. Start + Image_Numeral_Length - 1));
    end Extract_Value;
+
 end System.Random_Numbers;
