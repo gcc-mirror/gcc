@@ -1,3 +1,33 @@
+2012-01-30  Tom Tromey  <tromey@redhat.com>
+
+	PR libstdc++/51649:
+	* testsuite/libstdc++-prettyprinters/debug.cc: New file.
+	* testsuite/lib/gdb-test.exp (regexp-test): New proc.
+	(note-test): Update.
+	(gdb-test): Handle regexp tests.  Add some logging.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Compile with -O0.
+	(placeholder, use): Remove.
+	(main): Add tests for deque, list, map, and set iterators.  Add
+	tests for slist and slist iterator.
+	* testsuite/libstdc++-prettyprinters/48362.cc (main): Handle __7
+	namespace.
+	* python/libstdcxx/v6/printers.py (StdListPrinter.children): Use
+	the type's _Node typedef.
+	(StdListIteratorPrinter.to_string): Change how node type is
+	computed.
+	(StdSlistPrinter.children): Use the type's _Node typedef.
+	(StdSlistIteratorPrinter.to_string): Likewise.
+	(StdRbtreeIteratorPrinter.to_string): Use the type's _Link_type
+	typedef.
+	(StdMapPrinter.children): Change how the node's type is computed.
+	(StdSetPrinter.children): Likewise.
+	(StdForwardListPrinter.children): Use the type's _Node typedef.
+	(Printer.add_version): New method.
+	(Printer.add_container): New method.
+	(build_libstdcxx_dictionary): Handle __7 and __cxx1998
+	namespaces.
+	(find_type): New function.
+
 2012-01-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/51795

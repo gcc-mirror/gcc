@@ -1,5 +1,3 @@
-// If you modify this, please update debug.cc as well.
-
 // { dg-do run }
 // { dg-options "-g -O0" }
 
@@ -19,6 +17,8 @@
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
+
+#define _GLIBCXX_DEBUG
 
 #include <string>
 #include <deque>
@@ -40,12 +40,12 @@ main()
   bs[0] = 1;
   bs[5] = 1;
   bs[7] = 1;
-// { dg-final { note-test bs {std::bitset = {[0] = 1, [5] = 1, [7] = 1}} } }
+// { dg-final { note-test bs {std::__debug::bitset = {[0] = 1, [5] = 1, [7] = 1}} } }
 
   std::deque<std::string> deq;
   deq.push_back("one");
   deq.push_back("two");
-// { dg-final { note-test deq {std::deque with 2 elements = {"one", "two"}} } }
+// { dg-final { note-test deq {std::__debug::deque with 2 elements = {"one", "two"}} } }
 
   std::deque<std::string>::iterator deqiter = deq.begin();
 // { dg-final { note-test deqiter {"one"} } }
@@ -53,7 +53,7 @@ main()
   std::list<std::string> lst;
   lst.push_back("one");
   lst.push_back("two");
-// { dg-final { note-test lst {std::list = {[0] = "one", [1] = "two"}} } }
+// { dg-final { note-test lst {std::__debug::list = {[0] = "one", [1] = "two"}} } }
 
   std::list<std::string>::iterator lstiter = lst.begin();
   tem = *lstiter;
@@ -65,7 +65,7 @@ main()
 
   std::map<std::string, int> mp;
   mp["zardoz"] = 23;
-// { dg-final { note-test mp {std::map with 1 elements = {["zardoz"] = 23}} } }
+// { dg-final { note-test mp {std::__debug::map with 1 elements = {["zardoz"] = 23}} } }
 
   std::map<std::string, int>::iterator mpiter = mp.begin();
 // { dg-final { note-test mpiter {{first = "zardoz", second = 23}} } }
@@ -73,7 +73,7 @@ main()
   std::set<std::string> sp;
   sp.insert("clownfish");
   sp.insert("barrel");
-// { dg-final { note-test sp {std::set with 2 elements = {[0] = "barrel", [1] = "clownfish"}} } }
+// { dg-final { note-test sp {std::__debug::set with 2 elements = {[0] = "barrel", [1] = "clownfish"}} } }
 
   std::set<std::string>::const_iterator spciter = sp.begin();
 // { dg-final { note-test spciter {"barrel"} } }
