@@ -1177,7 +1177,8 @@ dwarf2out_switch_text_section (void)
 
   var_location_switch_text_section ();
 
-  set_cur_line_info_table (sect);
+  if (cold_text_section != NULL)
+    set_cur_line_info_table (sect);
 }
 
 /* And now, the subset of the debugging information support code necessary
