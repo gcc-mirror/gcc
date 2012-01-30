@@ -2556,6 +2556,8 @@ package body Prj.Nmsc is
 
       Interface_ALIs : String_List_Id := Nil_String;
 
+      Unit_Found : Boolean;
+
    begin
       if not Interfaces.Default then
 
@@ -2583,7 +2585,15 @@ package body Prj.Nmsc is
             Project_2 := Project;
             Big_Loop :
             while Project_2 /= No_Project loop
-               Iter := For_Each_Source (Data.Tree, Project_2);
+               if Project.Qualifier = Aggregate_Library then
+                  --  For an aggregate library we want to consider sources of
+                  --  all aggregated projects.
+
+                  Iter := For_Each_Source (Data.Tree);
+
+               else
+                  Iter := For_Each_Source (Data.Tree, Project_2);
+               end if;
 
                loop
                   Source := Prj.Element (Iter);
@@ -2680,11 +2690,20 @@ package body Prj.Nmsc is
             Get_Name_String (Element.Value);
             To_Lower (Name_Buffer (1 .. Name_Len));
             Name := Name_Find;
+            Unit_Found := False;
 
             Project_2 := Project;
             Big_Loop_2 :
             while Project_2 /= No_Project loop
-               Iter := For_Each_Source (Data.Tree, Project_2);
+               if Project.Qualifier = Aggregate_Library then
+                  --  For an aggregate library we want to consider sources of
+                  --  all aggregated projects.
+
+                  Iter := For_Each_Source (Data.Tree);
+
+               else
+                  Iter := For_Each_Source (Data.Tree, Project_2);
+               end if;
 
                loop
                   Source := Prj.Element (Iter);
@@ -2731,6 +2750,7 @@ package body Prj.Nmsc is
                           String_Element_Table.Last (Shared.String_Elements);
                      end if;
 
+                     Unit_Found := True;
                      exit Big_Loop_2;
                   end if;
 
@@ -2739,6 +2759,15 @@ package body Prj.Nmsc is
 
                Project_2 := Project_2.Extends;
             end loop Big_Loop_2;
+
+            if not Unit_Found then
+               Error_Msg_Name_1 := Name_Id (Name);
+
+               Error_Msg
+                 (Data.Flags,
+                  "%% is not a unit of this project",
+                  Element.Location, Project);
+            end if;
 
             List := Element.Next;
          end loop;

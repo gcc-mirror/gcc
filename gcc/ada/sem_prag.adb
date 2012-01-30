@@ -15286,7 +15286,6 @@ package body Sem_Prag is
       Aspects : constant List_Id := New_List;
       Loc     : constant Source_Ptr := Sloc (Decl);
       Or_Decl : constant Node_Id := Original_Node (Decl);
-      Aspect  : Node_Id;
 
       Original_Aspects : List_Id;
       --  To capture global references, a copy of the created aspects must be
@@ -15309,16 +15308,19 @@ package body Sem_Prag is
 
                --  Make an aspect from any PPC pragma
 
-               Aspect :=
+               Append (
                  Make_Aspect_Specification (Loc,
                    Identifier =>
                      Make_Identifier (Loc, Chars (Pragma_Identifier (Prag))),
-                   Expression => Expression (Prag_Arg_Ass));
+                   Expression =>
+                     Copy_Separate_Tree (Expression (Prag_Arg_Ass))),
+                 Aspects);
 
-               Append (Aspect, Aspects);
+               --  Generate the analysis information in the pragma expression
+               --  and then set the pragma node analyzed to avoid any further
+               --  analysis.
 
-               --  Set the pragma node analyzed to avoid any further analysis
-
+               Analyze (Expression (Prag_Arg_Ass));
                Set_Analyzed (Prag, True);
 
             when others => null;

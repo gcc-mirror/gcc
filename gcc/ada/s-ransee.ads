@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---               Copyright (C) 2011, Free Software Foundation, Inc.         --
+--            Copyright (C) 2011-2012, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@
 --  o  one based on Ada.Calendar
 --  o  one based on Ada.Real_Time
 
---  This is required because Ada.Calendar cannot be used on ravenscar, but
+--  This is required because Ada.Calendar cannot be used on Ravenscar, but
 --  Ada.Real_Time drags in the whole tasking runtime on regular platforms.
 
 package System.Random_Seed is

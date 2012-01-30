@@ -1,3 +1,18 @@
+2012-01-30  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_Interfaces): Report an error when a
+	unit from Library_Interface is not a unit of the project.
+
+2012-01-30  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_prag.adb (Make_Aspect_For_PPC_In_Gen_Sub_Decl): Parent
+	links fixed inside PPC pragmas.
+	* sem_ch12.adb: Move call to Make_Aspect_For_PPC_In_Gen_Sub_Decl.
+
+2012-01-30  Thomas Quinot  <quinot@adacore.com>
+
+	* s-ransee.ads: Minor reformatting.
+
 2012-01-30  Pascal Obry  <obry@adacore.com>
 
 	* prj.ads, prj.adb (For_Each_Source): Add support for skipping
