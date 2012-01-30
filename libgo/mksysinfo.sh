@@ -483,6 +483,43 @@ echo $msghdr | \
       -e 's/msg_flags/Flags/' \
     >> ${OUT}
 
+# The MSG_ flags for Msghdr.
+grep '^const _MSG_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(MSG_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+# The cmsghdr struct.
+cmsghdr=`grep '^type _cmsghdr ' gen-sysinfo.go`
+if test -n "$cmsghdr"; then
+  cmsghdr_len=`echo $cmsghdr | sed -n -e 's/^.*cmsg_len \([^ ]*\);.*$/\1/p'`
+  echo "type Cmsghdr_len_t $cmsghdr_len" >> ${OUT}
+  echo "$cmsghdr" | \
+      sed -e 's/_cmsghdr/Cmsghdr/' \
+        -e 's/cmsg_len *[a-zA-Z0-9_]*/Len Cmsghdr_len_t/' \
+        -e 's/cmsg_level/Level/' \
+        -e 's/cmsg_type/Type/' \
+      >> ${OUT}
+
+  # The size of the cmsghdr struct.
+  echo 'var SizeofCmsghdr = int(unsafe.Sizeof(Cmsghdr{}))' >> ${OUT}
+fi
+
+# The SCM_ flags for Cmsghdr.
+grep '^const _SCM_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(SCM_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+# The ucred struct.
+grep '^type _ucred ' gen-sysinfo.go | \
+    sed -e 's/_ucred/Ucred/' \
+      -e 's/pid/Pid/' \
+      -e 's/uid/Uid/' \
+      -e 's/gid/Gid/' \
+    >> ${OUT}
+
+# The size of the ucred struct.
+if grep 'type Ucred ' ${OUT} >/dev/null 2>&1; then
+  echo 'var SizeofUcred = int(unsafe.Sizeof(Ucred{}))' >> ${OUT}
+fi  
+
 # The ip_mreq struct.
 grep '^type _ip_mreq ' gen-sysinfo.go | \
     sed -e 's/_ip_mreq/IPMreq/' \
