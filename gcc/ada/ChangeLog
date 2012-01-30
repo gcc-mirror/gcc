@@ -1,3 +1,11 @@
+2012-01-30  Thomas Quinot  <quinot@adacore.com>
+
+	* a-strhas.ads: Document risk of collision attack.
+
+2012-01-30  Yannick Moy  <moy@adacore.com>
+
+	* gnat_ugn.texi: Minor update wrt warning switches.
+
 2012-01-30  Vincent Celier  <celier@adacore.com>
 
 	* prj-nmsc.adb (Check_Interfaces): Report an error when a
