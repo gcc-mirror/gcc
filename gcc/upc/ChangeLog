@@ -5,6 +5,9 @@
 	suffixes and GUPC driver execs the gcc with the right
 	suffix.
 
+	Also, prevented install of gupc/upc executables with the version 
+	number in its name (same as other languages).
+
 2012-01-24  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* upc-lang.c (upc_init_options): Disable section anchors 
