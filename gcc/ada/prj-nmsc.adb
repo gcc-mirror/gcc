@@ -2554,6 +2554,8 @@ package body Prj.Nmsc is
       Project_2 : Project_Id;
       Other     : Source_Id;
 
+      Interface_ALIs : String_List_Id := Nil_String;
+
    begin
       if not Interfaces.Default then
 
@@ -2599,6 +2601,31 @@ package body Prj.Nmsc is
                            Other.Declared_In_Interfaces := True;
                         end if;
 
+                        if Source.Language.Config.Kind = Unit_Based then
+                           if Source.Kind = Spec
+                             and then Other_Part (Source) /= No_Source
+                           then
+                              Source := Other_Part (Source);
+                           end if;
+
+                           String_Element_Table.Increment_Last
+                             (Shared.String_Elements);
+
+                           Shared.String_Elements.Table
+                             (String_Element_Table.Last
+                                (Shared.String_Elements)) :=
+                             (Value         => Name_Id (Source.Dep_Name),
+                              Index         => 0,
+                              Display_Value => Name_Id (Source.Dep_Name),
+                              Location      => No_Location,
+                              Flag          => False,
+                              Next          => Interface_ALIs);
+
+                           Interface_ALIs :=
+                             String_Element_Table.Last
+                               (Shared.String_Elements);
+                        end if;
+
                         Debug_Output
                           ("interface: ", Name_Id (Source.Path.Name));
                      end if;
@@ -2627,6 +2654,7 @@ package body Prj.Nmsc is
          end loop;
 
          Project.Interfaces_Defined := True;
+         Project.Lib_Interface_ALIs := Interface_ALIs;
 
       elsif Project.Library and then not Library_Interface.Default then
 
@@ -2668,6 +2696,7 @@ package body Prj.Nmsc is
                      if not Source.Locally_Removed then
                         Source.In_Interfaces := True;
                         Source.Declared_In_Interfaces := True;
+                        Project.Interfaces_Defined := True;
 
                         Other := Other_Part (Source);
 
@@ -2678,6 +2707,28 @@ package body Prj.Nmsc is
 
                         Debug_Output
                           ("interface: ", Name_Id (Source.Path.Name));
+
+                        if Source.Kind = Spec
+                          and then Other_Part (Source) /= No_Source
+                        then
+                           Source := Other_Part (Source);
+                        end if;
+
+                        String_Element_Table.Increment_Last
+                          (Shared.String_Elements);
+
+                        Shared.String_Elements.Table
+                          (String_Element_Table.Last
+                             (Shared.String_Elements)) :=
+                          (Value         => Name_Id (Source.Dep_Name),
+                           Index         => 0,
+                           Display_Value => Name_Id (Source.Dep_Name),
+                           Location      => No_Location,
+                           Flag          => False,
+                           Next          => Interface_ALIs);
+
+                        Interface_ALIs :=
+                          String_Element_Table.Last (Shared.String_Elements);
                      end if;
 
                      exit Big_Loop_2;
@@ -2692,7 +2743,7 @@ package body Prj.Nmsc is
             List := Element.Next;
          end loop;
 
-         Project.Interfaces_Defined := True;
+         Project.Lib_Interface_ALIs := Interface_ALIs;
 
       elsif Project.Extends /= No_Project
         and then Project.Extends.Interfaces_Defined
@@ -2710,6 +2761,8 @@ package body Prj.Nmsc is
 
             Next (Iter);
          end loop;
+
+         Project.Lib_Interface_ALIs := Project.Extends.Lib_Interface_ALIs;
       end if;
    end Check_Interfaces;
 
@@ -4282,12 +4335,6 @@ package body Prj.Nmsc is
                                 Project.Decl.Attributes,
                                 Shared);
 
-      Lib_Interfaces      : constant Prj.Variable_Value :=
-                              Prj.Util.Value_Of
-                                (Snames.Name_Library_Interface,
-                                 Project.Decl.Attributes,
-                                 Shared);
-
       Lib_Standalone      : constant Prj.Variable_Value :=
                               Prj.Util.Value_Of
                                 (Snames.Name_Library_Standalone,
@@ -4326,19 +4373,14 @@ package body Prj.Nmsc is
 
       Auto_Init_Supported : Boolean;
       OK                  : Boolean := True;
-      Source              : Source_Id;
-      Next_Proj           : Project_Id;
-      Iter                : Source_Iterator;
 
    begin
       Auto_Init_Supported := Project.Config.Auto_Init_Supported;
 
-      pragma Assert (Lib_Interfaces.Kind = List);
+      --  It is a stand-alone library project file if there is at least one
+      --  unit in the declared or inherited interface.
 
-      --  It is a stand-alone library project file if attribute
-      --  Library_Interface is defined.
-
-      if Lib_Interfaces.Default then
+      if Project.Lib_Interface_ALIs = Nil_String then
          if not Lib_Standalone.Default
            and then Get_Name_String (Lib_Standalone.Value) /= "no"
          then
@@ -4349,6 +4391,10 @@ package body Prj.Nmsc is
          end if;
 
       else
+         if Project.Standalone_Library = No then
+            Project.Standalone_Library := Standard;
+         end if;
+
          --  The name of a stand-alone library needs to have the syntax of an
          --  Ada identifier.
 
@@ -4388,198 +4434,74 @@ package body Prj.Nmsc is
             end if;
          end;
 
-         declare
-            Interfaces     : String_List_Id := Lib_Interfaces.Values;
-            Interface_ALIs : String_List_Id := Nil_String;
-            Unit           : Name_Id;
+         if Lib_Standalone.Default then
+            Project.Standalone_Library := Standard;
 
-         begin
-            if Lib_Standalone.Default then
+         else
+            Get_Name_String (Lib_Standalone.Value);
+            To_Lower (Name_Buffer (1 .. Name_Len));
+
+            if Name_Buffer (1 .. Name_Len) = "standard" then
                Project.Standalone_Library := Standard;
 
-            else
-               Get_Name_String (Lib_Standalone.Value);
-               To_Lower (Name_Buffer (1 .. Name_Len));
+            elsif Name_Buffer (1 .. Name_Len) = "encapsulated" then
+               Project.Standalone_Library := Encapsulated;
 
-               if Name_Buffer (1 .. Name_Len) = "standard" then
-                  Project.Standalone_Library := Standard;
-
-               elsif Name_Buffer (1 .. Name_Len) = "encapsulated" then
-                  Project.Standalone_Library := Encapsulated;
-
-               elsif Name_Buffer (1 .. Name_Len) = "no" then
-                  Project.Standalone_Library := No;
-                  Error_Msg
-                    (Data.Flags,
-                     "wrong value for Library_Standalone "
-                     & "when Library_Interface defined",
-                     Lib_Standalone.Location, Project);
-
-               else
-                  Error_Msg
-                    (Data.Flags,
-                     "invalid value for attribute Library_Standalone",
-                     Lib_Standalone.Location, Project);
-               end if;
-            end if;
-
-            --  Library_Interface cannot be an empty list
-
-            if Interfaces = Nil_String then
+            elsif Name_Buffer (1 .. Name_Len) = "no" then
+               Project.Standalone_Library := No;
                Error_Msg
                  (Data.Flags,
-                  "Library_Interface cannot be an empty list",
-                  Lib_Interfaces.Location, Project);
-            end if;
-
-            --  Process each unit name specified in the attribute
-            --  Library_Interface.
-
-            while Interfaces /= Nil_String loop
-               Get_Name_String
-                 (Shared.String_Elements.Table (Interfaces).Value);
-               To_Lower (Name_Buffer (1 .. Name_Len));
-
-               if Name_Len = 0 then
-                  Error_Msg
-                    (Data.Flags,
-                     "an interface cannot be an empty string",
-                     Shared.String_Elements.Table (Interfaces).Location,
-                     Project);
-
-               else
-                  Unit := Name_Find;
-                  Error_Msg_Name_1 := Unit;
-
-                  Next_Proj := Project.Extends;
-
-                  if Project.Qualifier = Aggregate_Library then
-
-                     --  For an aggregate library we want to consider sources
-                     --  of all aggregated projects.
-
-                     Iter := For_Each_Source (Data.Tree);
-
-                  else
-                     Iter := For_Each_Source (Data.Tree, Project);
-                  end if;
-
-                  loop
-                     while Prj.Element (Iter) /= No_Source
-                       and then
-                         (Prj.Element (Iter).Unit = null
-                           or else Prj.Element (Iter).Unit.Name /= Unit)
-                     loop
-                        Next (Iter);
-                     end loop;
-
-                     Source := Prj.Element (Iter);
-                     exit when Source /= No_Source
-                       or else Next_Proj = No_Project;
-
-                     Iter := For_Each_Source (Data.Tree, Next_Proj);
-                     Next_Proj := Next_Proj.Extends;
-                  end loop;
-
-                  if Source /= No_Source then
-                     if Source.Kind = Sep then
-                        Source := No_Source;
-
-                     elsif Source.Kind = Spec
-                       and then Other_Part (Source) /= No_Source
-                     then
-                        Source := Other_Part (Source);
-                     end if;
-                  end if;
-
-                  if Source /= No_Source then
-                     if Source.Project /= Project
-                       and then not Is_Extending (Project, Source.Project)
-                       and then Project.Qualifier /= Aggregate_Library
-                     then
-                        Source := No_Source;
-                     end if;
-                  end if;
-
-                  if Source = No_Source then
-                     Error_Msg
-                       (Data.Flags,
-                        "%% is not a unit of this project",
-                        Shared.String_Elements.Table (Interfaces).Location,
-                        Project);
-
-                  else
-                     if Source.Kind = Spec
-                       and then Other_Part (Source) /= No_Source
-                     then
-                        Source := Other_Part (Source);
-                     end if;
-
-                     String_Element_Table.Increment_Last
-                       (Shared.String_Elements);
-
-                     Shared.String_Elements.Table
-                       (String_Element_Table.Last (Shared.String_Elements)) :=
-                         (Value         => Name_Id (Source.Dep_Name),
-                          Index         => 0,
-                          Display_Value => Name_Id (Source.Dep_Name),
-                          Location      =>
-                            Shared.String_Elements.Table (Interfaces).Location,
-                          Flag          => False,
-                          Next          => Interface_ALIs);
-
-                     Interface_ALIs :=
-                       String_Element_Table.Last (Shared.String_Elements);
-                  end if;
-               end if;
-
-               Interfaces := Shared.String_Elements.Table (Interfaces).Next;
-            end loop;
-
-            --  Put the list of Interface ALIs in the project data
-
-            Project.Lib_Interface_ALIs := Interface_ALIs;
-
-            --  Check value of attribute Library_Auto_Init and set
-            --  Lib_Auto_Init accordingly.
-
-            if Lib_Auto_Init.Default then
-
-               --  If no attribute Library_Auto_Init is declared, then set auto
-               --  init only if it is supported.
-
-               Project.Lib_Auto_Init := Auto_Init_Supported;
+                  "wrong value for Library_Standalone "
+                  & "when Library_Interface defined",
+                  Lib_Standalone.Location, Project);
 
             else
-               Get_Name_String (Lib_Auto_Init.Value);
-               To_Lower (Name_Buffer (1 .. Name_Len));
+               Error_Msg
+                 (Data.Flags,
+                  "invalid value for attribute Library_Standalone",
+                  Lib_Standalone.Location, Project);
+            end if;
+         end if;
 
-               if Name_Buffer (1 .. Name_Len) = "false" then
-                  Project.Lib_Auto_Init := False;
+         --  Check value of attribute Library_Auto_Init and set
+         --  Lib_Auto_Init accordingly.
 
-               elsif Name_Buffer (1 .. Name_Len) = "true" then
-                  if Auto_Init_Supported then
-                     Project.Lib_Auto_Init := True;
+         if Lib_Auto_Init.Default then
 
-                  else
-                     --  Library_Auto_Init cannot be "true" if auto init is not
-                     --  supported.
+            --  If no attribute Library_Auto_Init is declared, then set auto
+            --  init only if it is supported.
 
-                     Error_Msg
-                       (Data.Flags,
-                        "library auto init not supported " &
-                        "on this platform",
-                        Lib_Auto_Init.Location, Project);
-                  end if;
+            Project.Lib_Auto_Init := Auto_Init_Supported;
+
+         else
+            Get_Name_String (Lib_Auto_Init.Value);
+            To_Lower (Name_Buffer (1 .. Name_Len));
+
+            if Name_Buffer (1 .. Name_Len) = "false" then
+               Project.Lib_Auto_Init := False;
+
+            elsif Name_Buffer (1 .. Name_Len) = "true" then
+               if Auto_Init_Supported then
+                  Project.Lib_Auto_Init := True;
 
                else
+                  --  Library_Auto_Init cannot be "true" if auto init is not
+                  --  supported.
+
                   Error_Msg
                     (Data.Flags,
-                     "invalid value for attribute Library_Auto_Init",
+                     "library auto init not supported " &
+                     "on this platform",
                      Lib_Auto_Init.Location, Project);
                end if;
+
+            else
+               Error_Msg
+                 (Data.Flags,
+                  "invalid value for attribute Library_Auto_Init",
+                  Lib_Auto_Init.Location, Project);
             end if;
-         end;
+         end if;
 
          --  If attribute Library_Src_Dir is defined and not the empty string,
          --  check if the directory exist and is not the object directory or

@@ -18180,7 +18180,7 @@ package body Sem_Ch3 is
 
       if Has_Predicates (Priv_T) then
          Set_Predicate_Function (Priv_T, Predicate_Function (Full_T));
-         Set_Has_Predicates (Priv_T);
+         Set_Has_Predicates (Full_T);
       end if;
    end Process_Full_View;
 

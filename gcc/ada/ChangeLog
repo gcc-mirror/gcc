@@ -1,5 +1,27 @@
 2012-01-30  Pascal Obry  <obry@adacore.com>
 
+	* prj.ads, prj.adb (For_Each_Source): Add support for skipping
+	sources coming from an encapsulated library.
+
+2012-01-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Process-Full_View): fix typo.
+	* sem_ch13.adb (Aalyze_Aspect_Specifications): if predicates
+	appear on a private type and the full view is available, ensure
+	existence of freeze node for full view.
+	(Build_Predicate_Function): Attach predicate function to both
+	views of a private type.
+
+2012-01-30  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_Interfaces): Compute the Lib_Interface_ALIs
+	for the project if either attribute Library_Interface or
+	Interfaces is declared.
+	(Check_Stand_Alone_Library): Use Lib_Interface_ALIs computed in
+	Check_Interfaces.
+
+2012-01-30  Pascal Obry  <obry@adacore.com>
+
 	* prj-proc.adb (Recursive_Process): Set From_Encapsulated_Lib
 	boolean value to true in the process list created by this routine.
 	* prj.ads (Project_List_Element): New field From_Encapsulated_Lib.

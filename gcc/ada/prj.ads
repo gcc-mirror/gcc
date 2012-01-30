@@ -1180,7 +1180,8 @@ package Prj is
       --  True for virtual extending projects
 
       Location : Source_Ptr := No_Location;
-      --  The location in the project file source of the reserved word project
+      --  The location in the project file source of the project name that
+      --  immediately follows the reserved word "project".
 
       ---------------
       -- Languages --
@@ -1405,11 +1406,13 @@ package Prj is
    type Source_Iterator is private;
 
    function For_Each_Source
-     (In_Tree  : Project_Tree_Ref;
-      Project  : Project_Id := No_Project;
-      Language : Name_Id := No_Name) return Source_Iterator;
+     (In_Tree           : Project_Tree_Ref;
+      Project           : Project_Id := No_Project;
+      Language          : Name_Id := No_Name;
+      Encapsulated_Libs : Boolean := True) return Source_Iterator;
    --  Returns an iterator for all the sources of a project tree, or a specific
-   --  project, or a specific language.
+   --  project, or a specific language. Include sources from aggregated libs if
+   --  Aggregated_Libs is True.
 
    function Element (Iter : Source_Iterator) return Source_Id;
    --  Return the current source (or No_Source if there are no more sources)
@@ -1847,7 +1850,10 @@ private
       Language_Name : Name_Id;
       --  Only sources of this language will be returned (or all if No_Name)
 
-      Current : Source_Id;
+      Current      : Source_Id;
+
+      Encapsulated_Libs : Boolean;
+      --  True if we want to include the sources from encapsulated libs
    end record;
 
    procedure Add_To_Buffer
