@@ -1,3 +1,10 @@
+2012-01-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md: Resolve all AS1 and AS2 macros.
+	Transform all "* quoted-c-code" to { c-code }.
+	Remove redundant test for "optimize" in combine patterns.
+	Move (include "avr-dimode.md") to end of file.
+
 2012-01-30  Bin Cheng  <bin.cheng@arm.com>
 
 	PR target/51835
