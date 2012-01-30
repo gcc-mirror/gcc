@@ -3838,10 +3838,10 @@ out_movqi_mr_r (rtx insn, rtx op[], int *plen)
           return "";
         }
       
-      return avr_asm_len ("std %0,%1", op, plen, 1);
+      return avr_asm_len ("std %0,%1", op, plen, -1);
     }
   
-  return avr_asm_len ("st %0,%1", op, plen, 1);
+  return avr_asm_len ("st %0,%1", op, plen, -2);
 }
 
 static const char*
