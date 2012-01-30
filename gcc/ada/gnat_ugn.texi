@@ -7,7 +7,7 @@
 @c                                                                            o
 @c                             G N A T _ U G N                                o
 @c                                                                            o
-@c           Copyright (C) 1992-2011, Free Software Foundation, Inc.          o
+@c           Copyright (C) 1992-2012, Free Software Foundation, Inc.          o
 @c                                                                            o
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
@@ -5092,10 +5092,12 @@ switch are
 @option{-gnatwd} (implicit dereferencing),
 @option{-gnatwh} (hiding),
 @option{-gnatw.h} (holes (gaps) in record layouts)
+@option{-gnatw.i} (overlapping actuals),
 @option{-gnatwl} (elaboration warnings),
 @option{-gnatw.l} (inherited aspects),
-@option{-gnatw.o} (warn on values set by out parameters ignored)
-and @option{-gnatwt} (tracking of deleted conditional code).
+@option{-gnatw.o} (warn on values set by out parameters ignored),
+@option{-gnatwt} (tracking of deleted conditional code)
+and @option{-gnatw.u} (unordered enumeration),
 All other optional warnings are turned on.
 
 @item -gnatwA
@@ -5670,6 +5672,21 @@ useful for detecting deactivated code in certified applications.
 @emph{Suppress warnings for tracking of deleted conditional code.}
 @cindex @option{-gnatwT} (@command{gcc})
 This switch suppresses warnings for tracking of deleted conditional code.
+
+@item -gnatw.t
+@emph{Activate warnings on suspicious contracts.}
+@cindex @option{-gnatw.t} (@command{gcc})
+This switch activates warnings on suspicious postconditions (whether a
+pragma @code{Postcondition} or a @code{Post} aspect in Ada 2012). A
+function postcondition is suspicious when it does not mention the result
+of the function. A procedure postcondition is suspicious when it only
+refers to the pre-state of the procedure, because in that case it should
+rather be expressed as a precondition.
+
+@item -gnatw.T
+@emph{Suppress warnings on suspicious contracts.}
+@cindex @option{-gnatw.T} (@command{gcc})
+This switch suppresses warnings on suspicious postconditions.
 
 @item -gnatwu
 @emph{Activate warnings on unused entities.}

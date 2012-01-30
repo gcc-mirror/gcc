@@ -18,5 +18,8 @@ pragma Compiler_Unit;
 with Ada.Containers;
 
 function Ada.Strings.Hash (Key : String) return Containers.Hash_Type;
+--  Note: this hash function has predictable collisions and is subject
+--  to equivalent substring attacks. It is not suitable to construct a hash
+--  table keyed on possibly malicious user input.
 
 pragma Pure (Ada.Strings.Hash);
