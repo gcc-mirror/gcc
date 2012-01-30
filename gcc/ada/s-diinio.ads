@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2011, Free Software Foundation, Inc.            --
+--          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,23 +47,23 @@ package System.Dim_Integer_IO is
    Default_Base  : Number_Base := 10;
 
    procedure Put
-     (File  : File_Type;
-      Item  : Num_Dim_Integer;
-      Unit  : String      := "";
-      Width : Field       := Default_Width;
-      Base  : Number_Base := Default_Base);
+     (File    : File_Type;
+      Item    : Num_Dim_Integer;
+      Width   : Field       := Default_Width;
+      Base    : Number_Base := Default_Base;
+      Symbols : String      := "");
 
    procedure Put
-     (Item  : Num_Dim_Integer;
-      Unit  : String      := "";
-      Width : Field       := Default_Width;
-      Base  : Number_Base := Default_Base);
+     (Item    : Num_Dim_Integer;
+      Width   : Field       := Default_Width;
+      Base    : Number_Base := Default_Base;
+      Symbols : String      := "");
 
    procedure Put
-     (To    : out String;
-      Item  : Num_Dim_Integer;
-      Unit  : String      := "";
-      Base  : Number_Base := Default_Base);
+     (To      : out String;
+      Item    : Num_Dim_Integer;
+      Base    : Number_Base := Default_Base;
+      Symbols : String      := "");
 
    pragma Inline (Put);
 

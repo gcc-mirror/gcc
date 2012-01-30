@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2011, Free Software Foundation, Inc.            --
+--          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2160,20 +2160,62 @@ package body Sem_Dim is
       Actuals        : constant List_Id := Parameter_Associations (N);
       Loc            : constant Source_Ptr := Sloc (N);
       Name_Call      : constant Node_Id := Name (N);
+      New_Actuals    : constant List_Id := New_List;
       Actual         : Node_Id;
-      Base_Typ       : Node_Id;
       Dims_Of_Actual : Dimension_Type;
       Etyp           : Entity_Id;
-      First_Actual   : Node_Id;
-      New_Actuals    : List_Id;
-      New_Str_Lit    : Node_Id;
+      New_Str_Lit    : Node_Id := Empty;
       Package_Name   : Name_Id;
       System         : System_Type;
+
+      function Has_Dimension_Symbols return Boolean;
+      --  Return True if the current Put call already has a parameter
+      --  association for parameter "Symbols" with the correct string of
+      --  symbols.
 
       function Is_Procedure_Put_Call return Boolean;
       --  Return True if the current call is a call of an instantiation of a
       --  procedure Put defined in the package System.Dim_Float_IO and
       --  System.Dim_Integer_IO.
+
+      function Item_Actual return Node_Id;
+      --  Return the item actual parameter node in the put call
+
+      ---------------------------
+      -- Has_Dimension_Symbols --
+      ---------------------------
+
+      function Has_Dimension_Symbols return Boolean is
+         Actual : Node_Id;
+
+      begin
+         Actual := First (Actuals);
+
+         --  Look for a symbols parameter association in the list of actuals
+
+         while Present (Actual) loop
+            if Nkind (Actual) = N_Parameter_Association
+              and then Chars (Selector_Name (Actual)) = Name_Symbols
+            then
+
+               --  return True if the actual comes from source or if the string
+               --  of symbols doesn't have the default value (i.e "").
+
+               return Comes_From_Source (Actual)
+                        or else String_Length
+                                  (Strval
+                                    (Explicit_Actual_Parameter (Actual))) /= 0;
+            end if;
+
+            Next (Actual);
+         end loop;
+
+         --  At this point, the call has no parameter association
+         --  Look to the last actual since the symbols parameter is the last
+         --  one.
+
+         return Nkind (Last (Actuals)) = N_String_Literal;
+      end Has_Dimension_Symbols;
 
       ---------------------------
       -- Is_Procedure_Put_Call --
@@ -2214,100 +2256,116 @@ package body Sem_Dim is
          return False;
       end Is_Procedure_Put_Call;
 
+      -----------------
+      -- Item_Actual --
+      -----------------
+
+      function Item_Actual return Node_Id is
+         Actual            : Node_Id;
+
+      begin
+         Actual := First (Actuals);
+
+         --  Look for the item actual as a parameter association
+
+         while Present (Actual) loop
+            if Nkind (Actual) = N_Parameter_Association
+              and then Chars (Selector_Name (Actual)) = Name_Item
+            then
+               return Explicit_Actual_Parameter (Actual);
+            end if;
+
+            Next (Actual);
+         end loop;
+
+         --  Case where the item has been defined without an association
+
+         Actual := First (Actuals);
+
+         --  Depending on the procedure Put, Item actual could be first or
+         --  second in the list of actuals.
+
+         if Has_Dimension_System (Base_Type (Etype (Actual))) then
+            return Actual;
+         else
+            return Next (Actual);
+         end if;
+      end Item_Actual;
+
    --  Start of processing for Expand_Put_Call_With_Dimension_Symbol
 
    begin
-      if Is_Procedure_Put_Call then
+      if Is_Procedure_Put_Call
+        and then not Has_Dimension_Symbols
+      then
+         Actual := Item_Actual;
+         Dims_Of_Actual := Dimensions_Of (Actual);
+         Etyp := Etype (Actual);
 
-         --  Get the first parameter
+         --  Add the symbol as a suffix of the value if the subtype has a
+         --  dimension symbol or if the parameter is not dimensionless.
 
-         First_Actual := First (Actuals);
+         if Symbol_Of (Etyp) /= No_String then
+            Start_String;
 
-         --  Case when the Put routine has four (System.Dim_Integer_IO) or five
-         --  (System.Dim_Float_IO) parameters.
+            --  Put a space between the value and the dimension
 
-         if List_Length (Actuals) = 5
-           or else List_Length (Actuals) = 4
-         then
-            Actual := Next (First_Actual);
+            Store_String_Char (' ');
+            Store_String_Chars (Symbol_Of (Etyp));
+            New_Str_Lit := Make_String_Literal (Loc, End_String);
 
-            if Nkind (Actual) = N_Parameter_Association then
+         --  Check that the item is not dimensionless
+         --  Create the new String_Literal with the new String_Id generated by
+         --  the routine From_Dimension_To_String.
 
-               --  Get the dimensions and the corresponding dimension system
-               --  from the first actual.
-
-               Actual := First_Actual;
-            end if;
-
-         --  Case when the Put routine has six parameters
-
-         else
-            Actual := Next (First_Actual);
+         elsif Exists (Dims_Of_Actual) then
+            System := System_Of (Base_Type (Etyp));
+            New_Str_Lit :=
+              Make_String_Literal (Loc,
+                From_Dimension_To_String_Of_Symbols (Dims_Of_Actual, System));
          end if;
 
-         Base_Typ := Base_Type (Etype (Actual));
-         System := System_Of (Base_Typ);
+         if Present (New_Str_Lit) then
+            --  Insert all actuals in New_Actuals
 
-         --  Check the base type of Actual is a dimensioned type
+            Actual := First (Actuals);
 
-         if Exists (System) then
-            Dims_Of_Actual := Dimensions_Of (Actual);
-            Etyp := Etype (Actual);
+            while Present (Actual) loop
+               --  Copy every comes from source actuals in New_Actuals
 
-            --  Add the symbol as a suffix of the value if the subtype has a
-            --  dimension symbol or if the parameter is not dimensionless.
-
-            if Exists (Dims_Of_Actual)
-              or else Symbol_Of (Etyp) /= No_String
-            then
-               New_Actuals := New_List;
-
-               --  Add to the list First_Actual and Actual if they differ
-
-               if Actual /= First_Actual then
-                  Append (New_Copy (First_Actual), New_Actuals);
+               if Comes_From_Source (Actual) then
+                  if Nkind (Actual) = N_Parameter_Association then
+                     Append (
+                        Make_Parameter_Association (Loc,
+                           Selector_Name => New_Copy (Selector_Name (Actual)),
+                           Explicit_Actual_Parameter =>
+                              New_Copy (Explicit_Actual_Parameter (Actual))),
+                        New_Actuals);
+                  else
+                     Append (New_Copy (Actual), New_Actuals);
+                  end if;
                end if;
-
-               Append (New_Copy (Actual), New_Actuals);
-
-               --  Look to the next parameter
 
                Next (Actual);
+            end loop;
 
-               --  Check if the type of N is a subtype that has a symbol of
-               --  dimensions in Aspect_Dimension_String_Id_Hash_Table.
+            --  Create the new Symbols parameter association and append it in
+            --  New_Actuals.
 
-               if Symbol_Of (Etyp) /= No_String then
-                  Start_String;
+            Append (
+              Make_Parameter_Association (Loc,
+                Selector_Name => Make_Identifier (Loc, Name_Symbols),
+                Explicit_Actual_Parameter => New_Str_Lit),
+              New_Actuals);
 
-                  --  Put a space between the value and the dimension
+            --  Rewrite and analyze the procedure call
 
-                  Store_String_Char (' ');
-                  Store_String_Chars (Symbol_Of (Etyp));
-                  New_Str_Lit := Make_String_Literal (Loc, End_String);
+            Rewrite (N,
+              Make_Procedure_Call_Statement (Loc,
+                Name =>                   New_Copy (Name_Call),
+                Parameter_Associations => New_Actuals));
 
-               --  Rewrite the String_Literal of the second actual with the
-               --  new String_Id created by the routine
-               --  From_Dimension_To_String.
-
-               else
-                  New_Str_Lit :=
-                    Make_String_Literal (Loc,
-                      From_Dimension_To_String_Of_Symbols (Dims_Of_Actual,
-                        System));
-               end if;
-
-               Append (New_Str_Lit, New_Actuals);
-
-               --  Rewrite the procedure call with the new list of parameters
-
-               Rewrite (N,
-                 Make_Procedure_Call_Statement (Loc,
-                   Name =>                   New_Copy (Name_Call),
-                   Parameter_Associations => New_Actuals));
-
-               Analyze (N);
-            end if;
+            Analyze (N);
          end if;
       end if;
    end Expand_Put_Call_With_Dimension_Symbol;

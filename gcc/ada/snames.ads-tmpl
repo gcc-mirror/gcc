@@ -228,7 +228,9 @@ package Snames is
    Name_Dim_Float_IO                 : constant Name_Id := N + $; -- Ada 12
    Name_Dim_Integer_IO               : constant Name_Id := N + $; -- Ada 12
    Name_Generic_Elementary_Functions : constant Name_Id := N + $; -- Ada 12
+   Name_Item                         : constant Name_Id := N + $; -- Ada 12
    Name_Sqrt                         : constant Name_Id := N + $; -- Ada 12
+   Name_Symbols                      : constant Name_Id := N + $; -- Ada 12
 
    --  Some miscellaneous names used for error detection/recovery
 

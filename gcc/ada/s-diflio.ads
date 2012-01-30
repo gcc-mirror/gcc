@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2011, Free Software Foundation, Inc.            --
+--          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,26 +48,26 @@ package System.Dim_Float_IO is
    Default_Exp  : Field := 3;
 
    procedure Put
-     (File : File_Type;
-      Item : Num_Dim_Float;
-      Unit : String := "";
-      Fore : Field  := Default_Fore;
-      Aft  : Field  := Default_Aft;
-      Exp  : Field  := Default_Exp);
+     (File    : File_Type;
+      Item    : Num_Dim_Float;
+      Fore    : Field  := Default_Fore;
+      Aft     : Field  := Default_Aft;
+      Exp     : Field  := Default_Exp;
+      Symbols : String      := "");
 
    procedure Put
-     (Item : Num_Dim_Float;
-      Unit : String := "";
-      Fore : Field  := Default_Fore;
-      Aft  : Field  := Default_Aft;
-      Exp  : Field  := Default_Exp);
+     (Item    : Num_Dim_Float;
+      Fore    : Field  := Default_Fore;
+      Aft     : Field  := Default_Aft;
+      Exp     : Field  := Default_Exp;
+      Symbols : String := "");
 
    procedure Put
-     (To   : out String;
-      Item : Num_Dim_Float;
-      Unit : String := "";
-      Aft  : Field  := Default_Aft;
-      Exp  : Field  := Default_Exp);
+     (To      : out String;
+      Item    : Num_Dim_Float;
+      Aft     : Field  := Default_Aft;
+      Exp     : Field  := Default_Exp;
+      Symbols : String := "");
 
    pragma Inline (Put);
 

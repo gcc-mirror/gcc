@@ -1,3 +1,24 @@
+2012-01-30  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_aggr.adb (Expand_Record_Aggregate): After creating the
+	_parent aggregate for an extension aggregate, check whether it
+	requires delayed (top-down) expansion.
+
+2012-01-30  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_dim.adb (Expand_Put_Call_With_Dimension_Symbol): Rewritten.
+	* snames.ads-tmpl: Name_Item and Name_Symbols added.
+	* s-diflio.adb, s-diflio.ads, s-diinio.adb, s-diinio.ads: Rename
+	and change the position of parameter Symbols in every Put routine.
+	* s-dimmks.ads: Convert long float type Mks_Type into long
+	long float.
+	* s-llflex.ads: Modifications in comments.
+
+2012-01-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb (Earlier): Do not use the
+	top level source locations of the two input nodes.
+
 2012-01-30  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.ads, sem_prag.adb, sem_attr.adb, aspects.ads,
