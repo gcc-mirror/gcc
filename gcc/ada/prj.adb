@@ -1477,9 +1477,10 @@ package body Prj is
          Project : Project_Id;
 
          procedure Recursive_Add
-           (Prj   : Project_Id;
-            Tree  : Project_Tree_Ref;
-            Dummy : in out Boolean);
+           (Prj     : Project_Id;
+            Tree    : Project_Tree_Ref;
+            Context : Project_Context;
+            Dummy   : in out Boolean);
          --  Recursively add the projects imported by project Project, but not
          --  those that are extended.
 
@@ -1488,9 +1489,10 @@ package body Prj is
          -------------------
 
          procedure Recursive_Add
-           (Prj   : Project_Id;
-            Tree  : Project_Tree_Ref;
-            Dummy : in out Boolean)
+           (Prj     : Project_Id;
+            Tree    : Project_Tree_Ref;
+            Context : Project_Context;
+            Dummy   : in out Boolean)
          is
             pragma Unreferenced (Dummy, Tree);
 
@@ -1521,13 +1523,14 @@ package body Prj is
 
                Project.All_Imported_Projects :=
                  new Project_List_Element'
-                   (Project => Prj2,
-                    Next    => Project.All_Imported_Projects);
+                   (Project               => Prj2,
+                    From_Encapsulated_Lib => Context.From_Encapsulated_Lib,
+                    Next                  => Project.All_Imported_Projects);
             end if;
          end Recursive_Add;
 
          procedure For_All_Projects is
-           new For_Every_Project_Imported (Boolean, Recursive_Add);
+           new For_Every_Project_Imported_Context (Boolean, Recursive_Add);
 
          Dummy : Boolean := False;
          List  : Project_List;

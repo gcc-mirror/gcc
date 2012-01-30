@@ -938,8 +938,9 @@ package Prj is
    type Project_List_Element;
    type Project_List is access all Project_List_Element;
    type Project_List_Element is record
-      Project : Project_Id   := No_Project;
-      Next    : Project_List := null;
+      Project               : Project_Id := No_Project;
+      From_Encapsulated_Lib : Boolean := False;
+      Next                  : Project_List := null;
    end record;
    --  A list of projects
 
