@@ -53,7 +53,7 @@ package System.Dim_Float_IO is
       Fore    : Field  := Default_Fore;
       Aft     : Field  := Default_Aft;
       Exp     : Field  := Default_Exp;
-      Symbols : String      := "");
+      Symbols : String := "");
 
    procedure Put
      (Item    : Num_Dim_Float;

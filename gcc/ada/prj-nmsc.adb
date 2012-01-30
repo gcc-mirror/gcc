@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -8201,10 +8201,10 @@ package body Prj.Nmsc is
       --  Process the naming scheme for a single project
 
       procedure Recursive_Check
-        (Project          : Project_Id;
-         Prj_Tree         : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         Data             : in out Tree_Processing_Data);
+        (Project  : Project_Id;
+         Prj_Tree : Project_Tree_Ref;
+         Context  : Project_Context;
+         Data     : in out Tree_Processing_Data);
       --  Check_Naming_Scheme for the project
 
       -----------
@@ -8345,10 +8345,10 @@ package body Prj.Nmsc is
       ---------------------
 
       procedure Recursive_Check
-        (Project          : Project_Id;
-         Prj_Tree         : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         Data             : in out Tree_Processing_Data)
+        (Project  : Project_Id;
+         Prj_Tree : Project_Tree_Ref;
+         Context  : Project_Context;
+         Data     : in out Tree_Processing_Data)
       is
       begin
          if Current_Verbosity = High then
@@ -8357,17 +8357,17 @@ package body Prj.Nmsc is
          end if;
 
          Data.Tree := Prj_Tree;
-         Data.In_Aggregate_Lib := In_Aggregate_Lib;
+         Data.In_Aggregate_Lib := Context.In_Aggregate_Lib;
 
-         Check (Project, In_Aggregate_Lib, Data);
+         Check (Project, Context.In_Aggregate_Lib, Data);
 
          if Current_Verbosity = High then
             Debug_Decrease_Indent ("done Processing_Naming_Scheme");
          end if;
       end Recursive_Check;
 
-      procedure Check_All_Projects is new
-        For_Every_Project_Imported (Tree_Processing_Data, Recursive_Check);
+      procedure Check_All_Projects is new For_Every_Project_Imported_Context
+        (Tree_Processing_Data, Recursive_Check);
 
       Data : Tree_Processing_Data;
 

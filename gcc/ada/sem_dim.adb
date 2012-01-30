@@ -2331,19 +2331,21 @@ package body Sem_Dim is
             Actual := First (Actuals);
 
             while Present (Actual) loop
-               --  Copy every comes from source actuals in New_Actuals
+               --  Copy every actuals in New_Actuals except the Symbols
+               --  parameter association.
 
-               if Comes_From_Source (Actual) then
-                  if Nkind (Actual) = N_Parameter_Association then
-                     Append (
-                        Make_Parameter_Association (Loc,
-                           Selector_Name => New_Copy (Selector_Name (Actual)),
-                           Explicit_Actual_Parameter =>
-                              New_Copy (Explicit_Actual_Parameter (Actual))),
-                        New_Actuals);
-                  else
-                     Append (New_Copy (Actual), New_Actuals);
-                  end if;
+               if Nkind (Actual) = N_Parameter_Association
+                 and then Chars (Selector_Name (Actual)) /= Name_Symbols
+               then
+                  Append (
+                     Make_Parameter_Association (Loc,
+                        Selector_Name => New_Copy (Selector_Name (Actual)),
+                        Explicit_Actual_Parameter =>
+                           New_Copy (Explicit_Actual_Parameter (Actual))),
+                     New_Actuals);
+
+               elsif Nkind (Actual) /= N_Parameter_Association then
+                  Append (New_Copy (Actual), New_Actuals);
                end if;
 
                Next (Actual);

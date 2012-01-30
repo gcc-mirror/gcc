@@ -1,3 +1,30 @@
+2012-01-30  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_dim.adb (Expand_Put_Call_With_Dimension_Symbol): Minor
+	code clean up.
+	* s-diflio.ads: Minor change.
+
+2012-01-30  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch9.adb (Build_Dispatching_Requeue): Add missing call
+	to Get_Entry_Index.  Required to generate code which provides
+	the correct value of Entry_Index in the target entry.
+
+2012-01-30  Nicolas Roche  <roche@adacore.com>
+
+	* system-vxworks-ppc.ads: Add pragma Linker_Options -crtbe to
+	fix issue with zcx on VxWorks5.
+
+2012-01-30  Pascal Obry  <obry@adacore.com>
+
+	* prj.ads, prj.adb (For_Every_Project_Imported): Remove
+	In_Aggregate_Lib.
+	(For_Every_Project_Imported_Context): New generic routine with
+	a context parameter.
+	* prj-nmsc.adb: Revert to use For_Every_Project_Imported Avoid
+	distributed complexity.
+	* prj-env.adb, prj-conf.adb, makeutl.adb, gnatcmd.adb: Ditto.
+
 2012-01-30  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_aggr.adb (Expand_Record_Aggregate): After creating the
