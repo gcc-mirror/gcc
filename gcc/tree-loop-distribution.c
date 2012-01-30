@@ -1143,7 +1143,8 @@ ldist_gen (struct loop *loop, struct graph *rdg,
       goto ldist_done;
 
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
-  update_ssa (TODO_update_ssa_only_virtuals | TODO_update_ssa);
+  mark_sym_for_renaming (gimple_vop (cfun));
+  update_ssa (TODO_update_ssa_only_virtuals);
 
  ldist_done:
 
