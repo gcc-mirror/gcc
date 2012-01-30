@@ -5658,6 +5658,13 @@ package body Exp_Aggr is
 
                   Expand_Record_Aggregate
                     (Parent_Aggr, Tag_Value, Parent_Expr);
+
+                  --  The ancestor part may be a nested aggregate that has
+                  --  delayed expansion: recheck now.
+
+                  if Component_Not_OK_For_Backend then
+                     Convert_To_Assignments (N, Typ);
+                  end if;
                end;
 
             --  For a root type, the tag component is added (unless compiling
