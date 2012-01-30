@@ -23,5 +23,5 @@
 ! GCC should apply memset zero loop distribution and it should not ICE.
 
 ! { dg-final { scan-tree-dump "distributed: split to 9 loops" "ldist" } }
-! { dg-final { scan-tree-dump-times "__builtin_memset" 18 "ldist" } }
+! { dg-final { scan-tree-dump-times "generated memset zero" 9 "ldist" } }
 ! { dg-final { cleanup-tree-dump "ldist" } }

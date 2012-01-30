@@ -1,3 +1,12 @@
+2012-01-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52028
+	* gcc.dg/torture/pr52028.c: New testcase.
+	* gfortran.dg/ldist-pr45199.f: Adjust.
+	* gcc.dg/tree-ssa/ldist-16.c: Likewise.
+	* gcc.dg/tree-ssa/ldist-17.c: Likewise.
+	* gcc.dg/tree-ssa/ldist-pr45948.c: Likewise.
+
 2012-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/52027
