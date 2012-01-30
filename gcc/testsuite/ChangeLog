@@ -1,3 +1,8 @@
+2012-01-30  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+        * gcc.target/arm/di-longlong64-sync-withldrexd.c: Accept
+        new code generated for __sync_lock_release.
+
 2012-01-30  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.dg/dfp/fe-convert-2.c: Force use of soft dfp on s390 and

@@ -10,8 +10,8 @@
 #include "../../gcc.dg/di-longlong64-sync-1.c"
 
 /* We should be using ldrexd, strexd and no helpers or shorter ldrex.  */
-/* { dg-final { scan-assembler-times "\tldrexd" 46 } } */
-/* { dg-final { scan-assembler-times "\tstrexd" 46 } } */
+/* { dg-final { scan-assembler-times "\tldrexd" 48 } } */
+/* { dg-final { scan-assembler-times "\tstrexd" 48 } } */
 /* { dg-final { scan-assembler-not "__sync_" } } */
 /* { dg-final { scan-assembler-not "ldrex\t" } } */
 /* { dg-final { scan-assembler-not "strex\t" } } */
