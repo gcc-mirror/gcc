@@ -3112,15 +3112,6 @@ package body Sem_Ch12 is
          end;
       end if;
 
-      --  For ASIS purposes, convert any postcondition, precondition pragmas
-      --  into aspects, if N is not a compilation unit by itself, in order to
-      --  enable the analysis of expressions inside the corresponding PPC
-      --  pragmas.
-
-      if ASIS_Mode and then Is_List_Member (N) then
-         Make_Aspect_For_PPC_In_Gen_Sub_Decl (N);
-      end if;
-
       Spec := Specification (N);
       Id := Defining_Entity (Spec);
       Generate_Definition (Id);
@@ -3215,6 +3206,15 @@ package body Sem_Ch12 is
       Validate_Categorization_Dependency (N, Id);
 
       Save_Global_References (Original_Node (N));
+
+      --  For ASIS purposes, convert any postcondition, precondition pragmas
+      --  into aspects, if N is not a compilation unit by itself, in order to
+      --  enable the analysis of expressions inside the corresponding PPC
+      --  pragmas.
+
+      if ASIS_Mode and then Is_List_Member (N) then
+         Make_Aspect_For_PPC_In_Gen_Sub_Decl (N);
+      end if;
 
       --  To capture global references, analyze the expressions of aspects,
       --  and propagate information to original tree. Note that in this case
