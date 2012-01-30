@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.5-b20100204\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2011-06-21 10:26+0000\n"
+"POT-Creation-Date: 2012-01-27 16:12+0000\n"
 "PO-Revision-Date: 2010-02-05 19:00+0700\n"
 "Last-Translator: Arif E. Nugroho <arif_endro@yahoo.com>\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
@@ -72,7 +72,7 @@ msgstr "nama karakter universal %.*s tidak lengkap"
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s bukan sebuah karakter universal yang valid"
 
-#: charset.c:1056 lex.c:1041
+#: charset.c:1056 lex.c:1052
 msgid "'$' in identifier or number"
 msgstr "'$' dalam identifier atau angka"
 
@@ -265,139 +265,139 @@ msgstr "\"%s\" bukan sebuah nama berkas yang valid"
 msgid "\"%s\" after # is not a positive integer"
 msgstr "\"%s\" setelah # bukan sebuah integer positif"
 
-#: directives.c:1065 directives.c:1067 directives.c:1069
+#: directives.c:1067 directives.c:1069 directives.c:1071
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.c:1093
+#: directives.c:1095
 #, c-format
 msgid "invalid #%s directive"
 msgstr "direktif #%s tidak valid"
 
-#: directives.c:1156
+#: directives.c:1158
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr "mendaftarkan pragma dalam ruang-nama \"%s\" dengan ekspansi nama yang tidak cocok"
 
-#: directives.c:1165
+#: directives.c:1167
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr "mendaftarkan pragma \"%s\" dengan ekspansi nama dan tidak ada ruang-nama"
 
-#: directives.c:1183
+#: directives.c:1185
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr "mendaftarkan \"%s\" sebagai baik sebuah pragma dan sebuah ruang-nama"
 
-#: directives.c:1186
+#: directives.c:1188
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "#pragma %s %s telah terdaftar"
 
-#: directives.c:1189
+#: directives.c:1191
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr "#pragma %s telah terdaftar"
 
-#: directives.c:1219
+#: directives.c:1221
 msgid "registering pragma with NULL handler"
 msgstr "mendaftarkan pragma dengan penanganan KOSONG"
 
-#: directives.c:1431
+#: directives.c:1462
 msgid "#pragma once in main file"
 msgstr "#pragma sekali dalam berkas utama"
 
-#: directives.c:1454
+#: directives.c:1485
 msgid "invalid #pragma push_macro directive"
 msgstr "#pragma push_macro direktif tidak valid"
 
-#: directives.c:1509
+#: directives.c:1540
 msgid "invalid #pragma pop_macro directive"
 msgstr "#pragma pop_macro direktif tidak valid"
 
-#: directives.c:1564
+#: directives.c:1595
 msgid "invalid #pragma GCC poison directive"
 msgstr "#pragma GCC tidak valid merusak direktif"
 
-#: directives.c:1573
+#: directives.c:1604
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "merusak makro \"%s\" yang sudah ada"
 
-#: directives.c:1592
+#: directives.c:1623
 msgid "#pragma system_header ignored outside include file"
 msgstr "#pragma system_header diabaikan diluar berkas include"
 
-#: directives.c:1617
+#: directives.c:1648
 #, c-format
 msgid "cannot find source file %s"
 msgstr "tidak dapat menemukan berkas sumber %s"
 
-#: directives.c:1621
+#: directives.c:1652
 #, c-format
 msgid "current file is older than %s"
 msgstr "berkas ini lebih lama daripada %s"
 
-#: directives.c:1806
+#: directives.c:1837
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma mengambil sebuah string literal tanda kurung"
 
-#: directives.c:1927
+#: directives.c:1958
 msgid "#else without #if"
 msgstr "#else tanpa #if"
 
-#: directives.c:1932
+#: directives.c:1963
 msgid "#else after #else"
 msgstr "#else setelah #else"
 
-#: directives.c:1934 directives.c:1967
+#: directives.c:1965 directives.c:1998
 msgid "the conditional began here"
 msgstr "kondisional berawal disini"
 
-#: directives.c:1960
+#: directives.c:1991
 msgid "#elif without #if"
 msgstr "#elif tanpa #if"
 
-#: directives.c:1965
+#: directives.c:1996
 msgid "#elif after #else"
 msgstr "#elif setelah #else"
 
-#: directives.c:2003
+#: directives.c:2034
 msgid "#endif without #if"
 msgstr "#endif tanpa #if"
 
-#: directives.c:2083
+#: directives.c:2114
 msgid "missing '(' after predicate"
 msgstr "hilang '(' setelah predikat"
 
-#: directives.c:2098
+#: directives.c:2129
 msgid "missing ')' to complete answer"
 msgstr "hilang ')' untuk melengkapi jawaban"
 
-#: directives.c:2118
+#: directives.c:2149
 msgid "predicate's answer is empty"
 msgstr "jawaban predikat kosong"
 
-#: directives.c:2145
+#: directives.c:2176
 msgid "assertion without predicate"
 msgstr "assertion tanpa predikat"
 
-#: directives.c:2148
+#: directives.c:2179
 msgid "predicate must be an identifier"
 msgstr "predikat harus berupa sebuah pengidentifikasi"
 
-#: directives.c:2234
+#: directives.c:2265
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "\"%s\" re-asserted"
 
-#: directives.c:2525
+#: directives.c:2556
 #, c-format
 msgid "unterminated #%s"
 msgstr "tidak terakhiri #%s"
 
-#: directives-only.c:222 lex.c:2077 traditional.c:163
+#: directives-only.c:222 lex.c:2133 traditional.c:163
 msgid "unterminated comment"
 msgstr "komentar tidak terakhiri"
 
@@ -410,214 +410,220 @@ msgstr "stdout"
 msgid "%s: %s"
 msgstr "%s: %s"
 
-#: expr.c:282
+#: expr.c:424
 msgid "too many decimal points in number"
 msgstr "terlalu banyak titik desimal dalam angka"
 
-#: expr.c:311 expr.c:396
+#: expr.c:453 expr.c:547
 msgid "fixed-point constants are a GCC extension"
 msgstr "konstanta titik-tetap adalah sebuah ekstensi GCC"
 
-#: expr.c:324
+#: expr.c:466
 #, c-format
 msgid "invalid digit \"%c\" in binary constant"
 msgstr "angka \"%c\" tidak valid dalam konstanta binari"
 
-#: expr.c:326
+#: expr.c:468
 #, c-format
 msgid "invalid digit \"%c\" in octal constant"
 msgstr "angka \"%c\" tidak valid dalam konstanta oktal"
 
-#: expr.c:334
+#: expr.c:476
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "awalan \"0b\" tidak valid untuk konstanta pecahan"
 
-#: expr.c:339
+#: expr.c:481
 msgid "no digits in hexadecimal floating constant"
 msgstr "tidak ada angka dalam konstanta pecahan heksa desimal"
 
-#: expr.c:343
+#: expr.c:485
 msgid "use of C99 hexadecimal floating constant"
 msgstr "penggunaan dari konstanta pecahan heksa desimal C99"
 
-#: expr.c:352
+#: expr.c:494
 msgid "exponent has no digits"
 msgstr "eksponen tidak memiliki digits"
 
-#: expr.c:359
+#: expr.c:501
 msgid "hexadecimal floating constants require an exponent"
 msgstr "konstanta pecahan heksa desimal membutuhkan sebuah eksponen"
 
-#: expr.c:365
+#: expr.c:515
 #, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr "akhiran \"%.*s\" tidak valid dalam konstanta pecahan"
 
-#: expr.c:375 expr.c:425
+#: expr.c:526 expr.c:585
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "dalam tradisi C menolak akhiran \"%.*s\""
 
-#: expr.c:383
+#: expr.c:534
 msgid "suffix for double constant is a GCC extension"
 msgstr "akhiran untuk konstanta ganda adalah sebuah ekstensi GCC"
 
-#: expr.c:389
+#: expr.c:540
 #, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "akhiran \"%.*s\" tidak valid dengan konstanta pecahan heksa desimal"
 
-#: expr.c:400
+#: expr.c:551
 msgid "decimal float constants are a GCC extension"
 msgstr "konstanta pecahan desimal adalah sebuah ekstensi GCC"
 
-#: expr.c:410
+#: expr.c:569
 #, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "akhiran \"%.*s\" tidak valid dalam konstanta integer"
 
-#: expr.c:433
+#: expr.c:593
 msgid "use of C++0x long long integer constant"
 msgstr "penggunaan dari konstanta integer long long C++0x"
 
-#: expr.c:434
+#: expr.c:594
 #, fuzzy
 #| msgid "use of C++0x long long integer constant"
 msgid "use of C99 long long integer constant"
 msgstr "penggunaan dari konstanta integer long long C++0x"
 
-#: expr.c:448
+#: expr.c:608
 msgid "imaginary constants are a GCC extension"
 msgstr "konstanta imaginari adalah sebuah ekstensi GCC"
 
-#: expr.c:451
+#: expr.c:611
 msgid "binary constants are a GCC extension"
 msgstr "konstanta binari adalah sebuah ekstensi GCC"
 
-#: expr.c:544
+#: expr.c:704
 msgid "integer constant is too large for its type"
 msgstr "konstanta integer terlalu besar untuk tipenya"
 
-#: expr.c:575
+#: expr.c:735
 msgid "integer constant is so large that it is unsigned"
 msgstr "konstanta integer terlalu besar yang itu unsigned"
 
-#: expr.c:670
+#: expr.c:830
 msgid "missing ')' after \"defined\""
 msgstr "hilang ')' setelah \"defined\""
 
-#: expr.c:677
+#: expr.c:837
 msgid "operator \"defined\" requires an identifier"
 msgstr "operator \"defined\" membutuhkan sebuah pengidentifikasi"
 
-#: expr.c:685
+#: expr.c:845
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr "(\"%s\" adalah sebuah tanda alternatif untuk \"%s\" dalam C++)"
 
-#: expr.c:695
+#: expr.c:855
 msgid "this use of \"defined\" may not be portable"
 msgstr "penggunaan ini dari \"defined\" mungkin tidak portabel"
 
-#: expr.c:756
+#: expr.c:914
+#, fuzzy
+#| msgid "integer overflow in preprocessor expression"
+msgid "user-defined literal in preprocessor expression"
+msgstr "integer overflow dalam ekspresi preprosesor"
+
+#: expr.c:919
 msgid "floating constant in preprocessor expression"
 msgstr "konstanta pecahan dalam ekspresi preprosesor"
 
-#: expr.c:762
+#: expr.c:925
 msgid "imaginary number in preprocessor expression"
 msgstr "angka imaginari dalam ekspresi preprosesor"
 
-#: expr.c:809
+#: expr.c:972
 #, c-format
 msgid "\"%s\" is not defined"
 msgstr "\"%s\" tidak didefinisikan"
 
-#: expr.c:821
+#: expr.c:984
 msgid "assertions are a GCC extension"
 msgstr "assertions adalah sebuah ekstensi GCC"
 
-#: expr.c:824
+#: expr.c:987
 msgid "assertions are a deprecated extension"
 msgstr "assertions adalah sebuah ekstensi yang sudah ditinggalkan"
 
-#: expr.c:957 expr.c:986
+#: expr.c:1120 expr.c:1149
 #, c-format
 msgid "missing binary operator before token \"%s\""
 msgstr "hilang operator binari sebelum tanda \"%s\""
 
-#: expr.c:977
+#: expr.c:1140
 #, c-format
 msgid "token \"%s\" is not valid in preprocessor expressions"
 msgstr "tanda \"%s\" bukan sebuah ekspresi preprosesor yang valid"
 
-#: expr.c:994
+#: expr.c:1157
 msgid "missing expression between '(' and ')'"
 msgstr "hilang ekspresi diantara '(' dan ')'"
 
-#: expr.c:997
+#: expr.c:1160
 #, c-format
 msgid "%s with no expression"
 msgstr "%s dengan tanpa ekspresi"
 
-#: expr.c:1000
+#: expr.c:1163
 #, c-format
 msgid "operator '%s' has no right operand"
 msgstr "operator '%s' tidak memiliki operan kanan"
 
-#: expr.c:1005
+#: expr.c:1168
 #, c-format
 msgid "operator '%s' has no left operand"
 msgstr "operator '%s' tidak memiliki operan kiri"
 
-#: expr.c:1031
+#: expr.c:1194
 msgid " ':' without preceding '?'"
 msgstr " ':' tanpa awalan '?'"
 
-#: expr.c:1059
+#: expr.c:1222
 #, c-format
 msgid "unbalanced stack in %s"
 msgstr "stack dalam %s tidak seimbang"
 
-#: expr.c:1079
+#: expr.c:1242
 #, c-format
 msgid "impossible operator '%u'"
 msgstr "operator '%u' tidak mungkin"
 
-#: expr.c:1180
+#: expr.c:1343
 msgid "missing ')' in expression"
 msgstr "hilang ')' dalam ekspresi"
 
-#: expr.c:1209
+#: expr.c:1372
 msgid "'?' without following ':'"
 msgstr "'?' tanpa diikuti ':'"
 
-#: expr.c:1219
+#: expr.c:1382
 msgid "integer overflow in preprocessor expression"
 msgstr "integer overflow dalam ekspresi preprosesor"
 
-#: expr.c:1224
+#: expr.c:1387
 msgid "missing '(' in expression"
 msgstr "hilang '(' dalam ekspresi"
 
-#: expr.c:1256
+#: expr.c:1419
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr "operan kiri dari \"%s\" berubah tanda ketika dipromosikan"
 
-#: expr.c:1261
+#: expr.c:1424
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr "operan kanan dari \"%s\" berubah tanda ketika dipromosikan"
 
-#: expr.c:1520
+#: expr.c:1683
 msgid "traditional C rejects the unary plus operator"
 msgstr "tradisional C menolak operator unary plus"
 
-#: expr.c:1603
+#: expr.c:1766
 msgid "comma operator in operand of #if"
 msgstr "operator koma dalam operator dari #if"
 
-#: expr.c:1739
+#: expr.c:1902
 msgid "division by zero in #if"
 msgstr "pembagian oleh nol dalam #if"
 
@@ -653,259 +659,259 @@ msgstr "%s lebih pendek dari yang diduga"
 msgid "no include path in which to search for %s"
 msgstr "tidak ada jalur include yang biasa digunakan untuk pencarian untuk %s"
 
-#: files.c:1307
+#: files.c:1305
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Multiple include guards mungkin berguna untuk:\n"
 
-#: init.c:489
+#: init.c:512
 msgid "cppchar_t must be an unsigned type"
 msgstr "cppchar_t harus berupa sebuah tipe unsigned"
 
-#: init.c:493
+#: init.c:516
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr "aritmetik preprosesor memiliki presisi maksimal dari %lu bits; target membutuhkan%lu bits"
 
-#: init.c:500
+#: init.c:523
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr "aritmetik CPP harus paling tidak sama tepatnya dengan sebuah target int"
 
-#: init.c:503
+#: init.c:526
 msgid "target char is less than 8 bits wide"
 msgstr "target char lebih kecil dari 8 bits wide"
 
-#: init.c:507
+#: init.c:530
 msgid "target wchar_t is narrower than target char"
 msgstr "target wchar_t lebih kecil dari target char"
 
-#: init.c:511
+#: init.c:534
 msgid "target int is narrower than target char"
 msgstr "target int lebih kecil dari target char"
 
-#: init.c:516
+#: init.c:539
 msgid "CPP half-integer narrower than CPP character"
 msgstr "CPP integer-setengah lebih kecil dari karakter CPP"
 
-#: init.c:520
+#: init.c:543
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "CPP di host ini tidak dapat menangani konstanta karakter lebar diatas %lu bits, tetapi target membutuhkan %lu bits"
 
-#: lex.c:835
+#: lex.c:846
 msgid "backslash and newline separated by space"
 msgstr "backslash dan baris baru dipisahkan dengan spasi"
 
-#: lex.c:840
+#: lex.c:851
 msgid "backslash-newline at end of file"
 msgstr "backslash baris baru diakhir dari berkas"
 
-#: lex.c:856
+#: lex.c:867
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr "trigraph ??%c diubah ke %c"
 
-#: lex.c:864
+#: lex.c:875
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "trigraph ??%c diabaikan, gunakan -trigraph untuk mengaktifkan"
 
-#: lex.c:913
+#: lex.c:924
 msgid "\"/*\" within comment"
 msgstr "\"/*\" di dalam komentar"
 
-#: lex.c:971
+#: lex.c:982
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "%s dalam direktif preprosesing"
 
-#: lex.c:980
+#: lex.c:991
 msgid "null character(s) ignored"
 msgstr "karakter kosong diabaikan"
 
-#: lex.c:1017
+#: lex.c:1028
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "`%.*s' tidak dalam NFKC"
 
-#: lex.c:1020
+#: lex.c:1031
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "`%.*s' tidak dalam NFC"
 
-#: lex.c:1088 lex.c:1165
+#: lex.c:1099 lex.c:1176
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "mencoba untuk menggunakan terusak \"%s\""
 
-#: lex.c:1096 lex.c:1173
+#: lex.c:1107 lex.c:1184
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ hanya dapat muncul dalam ekspansi dari sebuah variadik makro C99"
 
-#: lex.c:1102 lex.c:1179
+#: lex.c:1113 lex.c:1190
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "pengidentifikasi \"%s\" adalah nama operator spesial dalam C++"
 
-#: lex.c:1324
+#: lex.c:1334
 msgid "raw string delimiter longer than 16 characters"
 msgstr "pembatas mentah string lebih panjang dari 16 karakter"
 
-#: lex.c:1327
+#: lex.c:1337
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "karakter '%c' tidak valid dalam pembatas mentah string"
 
-#: lex.c:1450 lex.c:1472
+#: lex.c:1460 lex.c:1482
 msgid "unterminated raw string"
 msgstr "tidak terselesaikan raw string"
 
-#: lex.c:1487 lex.c:1586
+#: lex.c:1601
 msgid "null character(s) preserved in literal"
 msgstr "karakter kosong dijaga dalam literal"
 
-#: lex.c:1589
+#: lex.c:1604
 #, c-format
 msgid "missing terminating %c character"
 msgstr "hilang karakter pengakhir %c"
 
-#: lex.c:2088
+#: lex.c:2144
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "komentar gaya C++ tidak diijinkan dalam ISO C90"
 
-#: lex.c:2090
+#: lex.c:2146
 msgid "(this will be reported only once per input file)"
 msgstr "(ini hanya akan dilaporkan sekali setiap berkas masukan)"
 
-#: lex.c:2095
+#: lex.c:2151
 msgid "multi-line comment"
 msgstr "komentar multi baris"
 
-#: lex.c:2415
+#: lex.c:2471
 #, c-format
 msgid "unspellable token %s"
 msgstr "tanda %s tidak dapat disebutkan"
 
-#: macro.c:87
+#: macro.c:188
 #, c-format
 msgid "macro \"%s\" is not used"
 msgstr "makro \"%s\" tidak digunakan"
 
-#: macro.c:126 macro.c:321
+#: macro.c:226 macro.c:423
 #, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr "makro bawaan \"%s\" tidak valid"
 
-#: macro.c:160
+#: macro.c:260
 msgid "could not determine file timestamp"
 msgstr "tidak dapat menentukan berkas timestamp"
 
-#: macro.c:256
+#: macro.c:358
 msgid "could not determine date and time"
 msgstr "tidak dapat menentukan tanggal dan waktu"
 
-#: macro.c:272
+#: macro.c:374
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
 msgstr "__COUNTER__ diekspans didalam direktif dengan -fdirectives-only"
 
-#: macro.c:430
+#: macro.c:532
 msgid "invalid string literal, ignoring final '\\'"
 msgstr "string literal tidak valid, mengabaikan final '\\'"
 
-#: macro.c:490
+#: macro.c:592
 #, c-format
 msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
 msgstr "pasting \"%s\" dan \"%s\" tidak memberikan sebuah tanda preprosesing valid"
 
-#: macro.c:565
+#: macro.c:682
 msgid "ISO C99 requires rest arguments to be used"
 msgstr "ISO C99 membutuhkan argumen rest untuk digunakan"
 
-#: macro.c:570
+#: macro.c:687
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr "makro \"%s\" membutuhkan %u argumen, tetapi hanya %u diberikan"
 
-#: macro.c:575
+#: macro.c:692
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "makro \"%s\" melewatkan %u argumen, tetapi hanya mengambil %u"
 
-#: macro.c:734 traditional.c:681
+#: macro.c:886 traditional.c:681
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "daftar argumen tidak terselesaikan memanggil makro \"%s\""
 
-#: macro.c:866
+#: macro.c:1026
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "makro \"%s\" seperti fungsi harus digunakan dengan argumen dalam tradisional C"
 
-#: macro.c:1040
+#: macro.c:1694
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
 msgstr "memanggil makro %s argumen %d: argumen makro kosong tidak didefinisikan dalam ISO C90 dan ISO C++98"
 
-#: macro.c:1507
+#: macro.c:2596
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "duplikasi parameter makro \"%s\""
 
-#: macro.c:1553
+#: macro.c:2642
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr "\"%s\" mungkin tidak muncul dalam daftar parameter makro"
 
-#: macro.c:1561
+#: macro.c:2650
 msgid "macro parameters must be comma-separated"
 msgstr "parameter makro yang berupa koma dipisahkan"
 
-#: macro.c:1578
+#: macro.c:2667
 msgid "parameter name missing"
 msgstr "nama parameter hilang"
 
-#: macro.c:1596
+#: macro.c:2685
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "anonymous variadik makro diperkenalkan dalam C99"
 
-#: macro.c:1601
+#: macro.c:2690
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO C tidak mengijinkan makro variadik bernama"
 
-#: macro.c:1610
+#: macro.c:2699
 msgid "missing ')' in macro parameter list"
 msgstr "hilang ')' dalam daftar parameter makro"
 
-#: macro.c:1659
+#: macro.c:2748
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "'##' tidak dapat muncul baik diakhir dari sebuah ekspansi makro"
 
-#: macro.c:1694
+#: macro.c:2783
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "ISO C99 membutuhkan whitespace setelah nama makro"
 
-#: macro.c:1718
+#: macro.c:2807
 msgid "missing whitespace after the macro name"
 msgstr "kurang spasi setelah nama makro"
 
-#: macro.c:1752
+#: macro.c:2841
 msgid "'#' is not followed by a macro parameter"
 msgstr "'#' tidak diikuti dengan sebuah parameter makro"
 
-#: macro.c:1910
+#: macro.c:2999
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "\"%s\" redefinisi"
 
-#: macro.c:1916
+#: macro.c:3005
 msgid "this is the location of the previous definition"
 msgstr "ini adalah lokasi dari definisi sebelumnya"
 
-#: macro.c:1977
+#: macro.c:3066
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "argumen makro \"%s\" akan stringified dalam tradisional C"
 
-#: macro.c:2004
+#: macro.c:3093
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr "tipe hash %d tidak valid dalam cpp_macro_definition"
@@ -939,7 +945,7 @@ msgstr "%s: tidak digunakan karena `%s' didefinisikan"
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr "%s: tidak digunakan karena `__COUNTER__' tidak valid"
 
-#: pch.c:712 pch.c:891
+#: pch.c:712 pch.c:888
 msgid "while reading precompiled header"
 msgstr "ketika membaca precompiled header"
 
