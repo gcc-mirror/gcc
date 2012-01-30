@@ -1,3 +1,8 @@
+2012-01-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52045
+	* gcc.dg/pr52045.c: New testcase.
+
 2012-01-30  Greta Yorsh  <Greta.Yorsh@arm.com>
 
         * gcc.target/arm/di-longlong64-sync-withldrexd.c: Accept
