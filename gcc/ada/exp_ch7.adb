@@ -2844,7 +2844,7 @@ package body Exp_Ch7 is
       --  which belongs to a protected type.
 
       Loc : constant Source_Ptr := No_Location;
-      HSS : Node_Id := Handled_Statement_Sequence (N);
+      HSS : Node_Id;
 
    begin
       --  Do not perform this expansion in Alfa mode because we do not create
@@ -2856,6 +2856,7 @@ package body Exp_Ch7 is
 
       --  The At_End handler should have been assimilated by the finalizer
 
+      HSS := Handled_Statement_Sequence (N);
       pragma Assert (No (At_End_Proc (HSS)));
 
       --  If the construct to be cleaned up is a protected subprogram body, the

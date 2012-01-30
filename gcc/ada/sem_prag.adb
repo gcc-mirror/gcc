@@ -7084,7 +7084,7 @@ package body Sem_Prag is
                Check_Interrupt_Or_Attach_Handler;
 
                --  The expression that designates the attribute may depend on a
-               --  discriminant, and is therefore a per- object expression, to
+               --  discriminant, and is therefore a per-object expression, to
                --  be expanded in the init proc. If expansion is enabled, then
                --  perform semantic checks on a copy only.
 
@@ -15308,13 +15308,12 @@ package body Sem_Prag is
 
                --  Make an aspect from any PPC pragma
 
-               Append (
+               Append_To (Aspects,
                  Make_Aspect_Specification (Loc,
                    Identifier =>
                      Make_Identifier (Loc, Chars (Pragma_Identifier (Prag))),
                    Expression =>
-                     Copy_Separate_Tree (Expression (Prag_Arg_Ass))),
-                 Aspects);
+                     Copy_Separate_Tree (Expression (Prag_Arg_Ass))));
 
                --  Generate the analysis information in the pragma expression
                --  and then set the pragma node analyzed to avoid any further

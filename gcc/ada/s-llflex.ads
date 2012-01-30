@@ -29,8 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains an instantiation of the exponentiation between two
---  long long floats.
+--  This package contains an instantiation of the exponentiation operator
+--  between two long long floats.
 
 with Ada.Numerics.Long_Long_Elementary_Functions;
 

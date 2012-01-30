@@ -1,3 +1,10 @@
+2012-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* a-strhas.ads, einfo.adb, einfo.ads, exp_ch7.adb, exp_ch9.adb,
+	freeze.adb, prj.adb, prj.ads, prj-nmsc.adb, prj-proc.adb, s-llflex.ads,
+	s-ransee.adb, s-ransee.ads, sem_ch13.adb, sem_dim.adb, sem_prag.adb:
+	Minor reformatting/code reorganization.
+
 2012-01-30  Thomas Quinot  <quinot@adacore.com>
 
 	* s-rannum.adb, s-ransee.adb, s-ransee.ads (Get_Seed): Return

@@ -1429,6 +1429,7 @@ package body Sem_Ch13 is
                   --  Make sure we have a freeze node (it might otherwise be
                   --  missing in cases like subtype X is Y, and we would not
                   --  have a place to build the predicate function).
+
                   --  If the type is private, indicate that its completion
                   --  has a freeze node, because that is the one that will be
                   --  visible at freeze time.
@@ -5068,9 +5069,7 @@ package body Sem_Ch13 is
 
          --  The predicate function is shared between views of a type.
 
-         if Is_Private_Type (Typ)
-           and then Present (Full_View (Typ))
-         then
+         if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
             Set_Predicate_Function (Full_View (Typ), SId);
          end if;
 
@@ -6036,7 +6035,8 @@ package body Sem_Ch13 is
          --  partial view is visible. The expression must be scalar, so use
          --  the full view to resolve.
 
-         elsif (A_Id = Aspect_Default_Value or else
+         elsif (A_Id = Aspect_Default_Value
+                  or else
                 A_Id = Aspect_Default_Component_Value)
             and then Is_Private_Type (T)
          then
