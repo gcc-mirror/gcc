@@ -1,3 +1,10 @@
+2012-01-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR go/48501
+	* lib/go.exp (go_target_compile): Append timeout= to options.
+	* go.test/go-test.exp (go-gc-tests): Add dg-timeout-factor for
+	select5-out.go test on alpha*-*-* targets.
+
 2012-01-30  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/extend-1.c (TEST_CHAR): Use signed char.
@@ -42,13 +49,12 @@
 
 2012-01-30  Greta Yorsh  <Greta.Yorsh@arm.com>
 
-        * gcc.target/arm/di-longlong64-sync-withldrexd.c: Accept
-        new code generated for __sync_lock_release.
+	* gcc.target/arm/di-longlong64-sync-withldrexd.c: Accept
+	new code generated for __sync_lock_release.
 
 2012-01-30  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
-	* gcc.dg/dfp/fe-convert-2.c: Force use of soft dfp on s390 and
-          s390x.
+	* gcc.dg/dfp/fe-convert-2.c: Force use of soft dfp on s390 and s390x.
 
 2012-01-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
@@ -215,8 +221,7 @@
 
 2012-01-26  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
-	* gcc.dg/ssa-dom-thread-4.c: Set -mbranch-cost=2 for s390 and
-	s390x.
+	* gcc.dg/ssa-dom-thread-4.c: Set -mbranch-cost=2 for s390 and s390x.
 
 2012-01-26  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
@@ -246,8 +251,7 @@
 
 2012-01-25  Ian Lance Taylor  <iant@google.com>
 
-	* go.test/go-test.exp (go-gc-tests): Handle a few more test
-	lines.
+	* go.test/go-test.exp (go-gc-tests): Handle a few more test lines.
 
 2012-01-25  Tobias Burnus  <burnus@net-b.de>
 
@@ -363,8 +367,7 @@
 2012-01-23  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	* lib/target-supports.exp
-	(check_effective_target_vect_extract_even_odd): Handle
-	ARM neon.
+	(check_effective_target_vect_extract_even_odd): Handle ARM neon.
 	(check_effective_target_vect_interleave): Likewise.
 
 2012-01-22  Jason Merrill  <jason@redhat.com>
@@ -379,6 +382,7 @@
 	* g++.dg/torture/pr51344.C: Limit to x86.
 
 2012-01-23  Greta Yorsh  <Greta.Yorsh@arm.com>
+
 	* c-c++-common/tm/omp.c: Require target with pthread support.
 
 2012-01-23  Richard Guenther  <rguenther@suse.de>
@@ -448,8 +452,8 @@
 	PR target/51915
 	* gcc.target/arm/pr51915.c: New test.
 
-2012-01-20   Cary Coutant  <ccoutant@google.com>
-	     Dodji Seketeli  <dodji@redhat.com>
+2012-01-20  Cary Coutant  <ccoutant@google.com>
+	    Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/45682
 	* g++.dg/debug/dwarf2/nested-3.C: New test.
