@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4636,9 +4636,29 @@ package body Sem_Attr is
          Check_Type;
          Check_E0;
 
-         if Is_Remote_Access_To_Class_Wide_Type (P_Type) then
-            Rewrite (N,
-              New_Occurrence_Of (Corresponding_Stub_Type (P_Type), Loc));
+         if Is_Remote_Access_To_Class_Wide_Type (Base_Type (P_Type)) then
+
+            if not Is_Generic_Type (P_Type) then
+               --  For a real RACW [sub]type, use corresponding stub type
+
+               Rewrite (N,
+                 New_Occurrence_Of
+                   (Corresponding_Stub_Type (Base_Type (P_Type)), Loc));
+
+            else
+               --  For a generic type (that has been marked as an RACW using
+               --  the Remote_Access_Type aspect or pragma), use a generic RACW
+               --  stub type. Note that if the actual is not a remote access
+               --  type, the instantiation will fail.
+
+               --  Note: we go to the underlying type here because the view
+               --  returned by RTE (RE_RACW_Stub_Type) might be incomplete.
+
+               Rewrite (N,
+                 New_Occurrence_Of
+                   (Underlying_Type (RTE (RE_RACW_Stub_Type)), Loc));
+            end if;
+
          else
             Error_Attr_P
               ("prefix of% attribute must be remote access to classwide");

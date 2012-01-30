@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,7 @@ with Opt;      use Opt;
 with Sem;      use Sem;
 with Sem_Attr; use Sem_Attr;
 with Sem_Aux;  use Sem_Aux;
+with Sem_Dist; use Sem_Dist;
 with Sem_Eval; use Sem_Eval;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -1661,62 +1662,8 @@ package body Sem_Cat is
    ----------------------------------------------------
 
    procedure Validate_Remote_Access_Object_Type_Declaration (T : Entity_Id) is
-
-      function Is_Valid_Remote_Object_Type (E : Entity_Id) return Boolean;
-      --  True if tagged type E is a valid candidate as the root type of the
-      --  designated type for a RACW, i.e. a tagged limited private type, or a
-      --  limited interface type, or a private extension of such a type.
-
-      ---------------------------------
-      -- Is_Valid_Remote_Object_Type --
-      ---------------------------------
-
-      function Is_Valid_Remote_Object_Type (E : Entity_Id) return Boolean is
-         P : constant Node_Id := Parent (E);
-
-      begin
-         pragma Assert (Is_Tagged_Type (E));
-
-         --  Simple case: a limited private type
-
-         if Nkind (P) = N_Private_Type_Declaration
-           and then Is_Limited_Record (E)
-         then
-            return True;
-
-         --  AI05-0060 (Binding Interpretation): A limited interface is a legal
-         --  ancestor for the designated type of an RACW type.
-
-         elsif Is_Limited_Record (E) and then Is_Limited_Interface (E) then
-            return True;
-
-         --  A generic tagged limited type is a valid candidate. Limitedness
-         --  will be checked again on the actual at instantiation point.
-
-         elsif Nkind (P) = N_Formal_Type_Declaration
-           and then Ekind (E) = E_Record_Type_With_Private
-           and then Is_Generic_Type (E)
-           and then Is_Limited_Record (E)
-         then
-            return True;
-
-         --  A private extension declaration is a valid candidate if its parent
-         --  type is.
-
-         elsif Nkind (P) = N_Private_Extension_Declaration then
-            return Is_Valid_Remote_Object_Type (Etype (E));
-
-         else
-            return False;
-         end if;
-      end Is_Valid_Remote_Object_Type;
-
-      --  Local variables
-
       Direct_Designated_Type : Entity_Id;
       Desig_Type             : Entity_Id;
-
-   --  Start of processing for Validate_Remote_Access_Object_Type_Declaration
 
    begin
       --  We are called from Analyze_Full_Type_Declaration, and the Nkind of
@@ -1793,18 +1740,16 @@ package body Sem_Cat is
       --    The actual parameter of generic instantiation must not be such a
       --    type if the formal parameter is of an access type.
 
-      --  On entry, there are five cases
+      --  On entry, there are several cases:
 
       --    1. called from sem_attr Analyze_Attribute where attribute name is
       --       either Storage_Pool or Storage_Size.
 
       --    2. called from exp_ch4 Expand_N_Allocator
 
-      --    3. called from sem_ch12 Analyze_Associations
+      --    3. called from sem_ch4 Analyze_Explicit_Dereference
 
-      --    4. called from sem_ch4 Analyze_Explicit_Dereference
-
-      --    5. called from sem_res Resolve_Actuals
+      --    4. called from sem_res Resolve_Actuals
 
       if K = N_Attribute_Reference then
          E := Etype (Prefix (N));
@@ -1819,14 +1764,6 @@ package body Sem_Cat is
 
          if Is_Remote_Access_To_Class_Wide_Type (E) then
             Error_Msg_N ("incorrect expected remote type of allocator", N);
-            return;
-         end if;
-
-      elsif K in N_Has_Entity then
-         E := Entity (N);
-
-         if Is_Remote_Access_To_Class_Wide_Type (E) then
-            Error_Msg_N ("incorrect remote type generic actual", N);
             return;
          end if;
 

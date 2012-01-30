@@ -2275,13 +2275,17 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
             return False;
          end if;
 
-         if Position.Node = L.First then  -- eliminates earlier disjunct
+         --  Eliminate earlier possibility
+
+         if Position.Node = L.First then
             return True;
          end if;
 
          pragma Assert (N (Position.Node).Prev /= 0);
 
-         if Position.Node = L.Last then  -- eliminates earlier disjunct
+         --  ELiminate another possibility
+
+         if Position.Node = L.Last then
             return True;
          end if;
 

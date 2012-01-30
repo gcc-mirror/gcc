@@ -2009,6 +2009,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
       declare
          L : List renames Position.Container.all;
+
       begin
          if L.Length = 0 then
             return False;
@@ -2030,23 +2031,21 @@ package body Ada.Containers.Doubly_Linked_Lists is
             return False;
          end if;
 
-         if Position.Node.Prev = null
-           and then Position.Node /= L.First
-         then
+         if Position.Node.Prev = null and then Position.Node /= L.First then
             return False;
          end if;
 
-         pragma Assert (Position.Node.Prev /= null
-                          or else Position.Node = L.First);
+         pragma Assert
+           (Position.Node.Prev /= null
+             or else Position.Node = L.First);
 
-         if Position.Node.Next = null
-           and then Position.Node /= L.Last
-         then
+         if Position.Node.Next = null and then Position.Node /= L.Last then
             return False;
          end if;
 
-         pragma Assert (Position.Node.Next /= null
-                          or else Position.Node = L.Last);
+         pragma Assert
+           (Position.Node.Next /= null
+             or else Position.Node = L.Last);
 
          if L.Length = 1 then
             return L.First = L.Last;
@@ -2075,13 +2074,11 @@ package body Ada.Containers.Doubly_Linked_Lists is
          if L.Length = 2 then
             if L.First.Next /= L.Last then
                return False;
-            end if;
-
-            if L.Last.Prev /= L.First then
+            elsif L.Last.Prev /= L.First then
                return False;
+            else
+               return True;
             end if;
-
-            return True;
          end if;
 
          if L.First.Next = L.Last then
@@ -2092,13 +2089,17 @@ package body Ada.Containers.Doubly_Linked_Lists is
             return False;
          end if;
 
-         if Position.Node = L.First then  -- eliminates earlier disjunct
+         --  Eliminate earlier possibility
+
+         if Position.Node = L.First then
             return True;
          end if;
 
          pragma Assert (Position.Node.Prev /= null);
 
-         if Position.Node = L.Last then  -- eliminates earlier disjunct
+         --  Eliminate earlier possibility
+
+         if Position.Node = L.Last then
             return True;
          end if;
 
@@ -2115,9 +2116,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
          if L.Length = 3 then
             if L.First.Next /= Position.Node then
                return False;
-            end if;
-
-            if L.Last.Prev /= Position.Node then
+            elsif L.Last.Prev /= Position.Node then
                return False;
             end if;
          end if;
@@ -2134,11 +2133,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
      (Stream : not null access Root_Stream_Type'Class;
       Item   : List)
    is
-      Node : Node_Access := Item.First;
+      Node : Node_Access;
 
    begin
       Count_Type'Base'Write (Stream, Item.Length);
 
+      Node := Item.First;
       while Node /= null loop
          Element_Type'Write (Stream, Node.Element);
          Node := Node.Next;

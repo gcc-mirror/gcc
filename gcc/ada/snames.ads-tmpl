@@ -535,6 +535,7 @@ package Snames is
    Name_Pure_12                        : constant Name_Id := N + $; -- GNAT
    Name_Pure_Function                  : constant Name_Id := N + $; -- GNAT
    Name_Relative_Deadline              : constant Name_Id := N + $; -- Ada 05
+   Name_Remote_Access_Type             : constant Name_Id := N + $; -- GNAT
    Name_Remote_Call_Interface          : constant Name_Id := N + $;
    Name_Remote_Types                   : constant Name_Id := N + $;
    Name_Share_Generic                  : constant Name_Id := N + $; -- GNAT
@@ -1687,6 +1688,7 @@ package Snames is
       Pragma_Pure_12,
       Pragma_Pure_Function,
       Pragma_Relative_Deadline,
+      Pragma_Remote_Access_Type,
       Pragma_Remote_Call_Interface,
       Pragma_Remote_Types,
       Pragma_Share_Generic,

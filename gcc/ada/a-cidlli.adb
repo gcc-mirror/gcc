@@ -2098,6 +2098,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
       declare
          L : List renames Position.Container.all;
+
       begin
          if L.Length = 0 then
             return False;
@@ -2119,15 +2120,11 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
             return False;
          end if;
 
-         if Position.Node.Prev = null
-           and then Position.Node /= L.First
-         then
+         if Position.Node.Prev = null and then Position.Node /= L.First then
             return False;
          end if;
 
-         if Position.Node.Next = null
-           and then Position.Node /= L.Last
-         then
+         if Position.Node.Next = null and then Position.Node /= L.Last then
             return False;
          end if;
 

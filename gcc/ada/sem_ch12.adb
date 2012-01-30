@@ -1442,14 +1442,43 @@ package body Sem_Ch12 is
                   end if;
 
                   --  A remote access-to-class-wide type is not a legal actual
-                  --  for a generic formal of an access type (E.2.2(17)).
+                  --  for a generic formal of an access type (E.2.2(17/2)).
+                  --  In GNAT an exception to this rule is introduced when
+                  --  the formal is marked as remote using implementation
+                  --  defined aspect/pragma Remote_Access_Type. In that case
+                  --  the actual must be remote as well.
 
                   if Nkind (Analyzed_Formal) = N_Formal_Type_Declaration
                     and then
                       Nkind (Formal_Type_Definition (Analyzed_Formal)) =
                                             N_Access_To_Object_Definition
                   then
-                     Validate_Remote_Access_To_Class_Wide_Type (Match);
+                     declare
+                        Formal_Ent : constant Entity_Id :=
+                                        Defining_Identifier (Analyzed_Formal);
+                     begin
+                        if Is_Remote_Access_To_Class_Wide_Type (Entity (Match))
+                             = Is_Remote_Types (Formal_Ent)
+                        then
+                           --  Remoteness of formal and actual match
+
+                           null;
+
+                        elsif Is_Remote_Types (Formal_Ent) then
+
+                           --  Remote formal, non-remote actual
+
+                           Error_Msg_NE
+                             ("actual for& must be remote", Match, Formal_Ent);
+
+                        else
+                           --  Non-remote formal, remote actual
+
+                           Error_Msg_NE
+                             ("actual for& may not be remote",
+                              Match, Formal_Ent);
+                        end if;
+                     end;
                   end if;
 
                when N_Formal_Subprogram_Declaration =>
