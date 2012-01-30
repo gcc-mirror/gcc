@@ -293,7 +293,31 @@ package body Sem_Ch6 is
       --  determine whether this is possible.
 
       Inline_Processing_Required := True;
-      New_Spec := Copy_Separate_Tree (Spec);
+
+      --  Create a specification for the generated body. Types and defauts in
+      --  the profile are copies of the spec, but new entities must be created
+      --  for the unit name and the formals.
+
+      New_Spec := New_Copy_Tree (Spec);
+      Set_Defining_Unit_Name (New_Spec,
+        Make_Defining_Identifier (Sloc (Defining_Unit_Name (Spec)),
+          Chars (Defining_Unit_Name (Spec))));
+
+      if Present (Parameter_Specifications (New_Spec)) then
+         declare
+            Formal_Spec : Node_Id;
+         begin
+            Formal_Spec := First (Parameter_Specifications (New_Spec));
+            while Present (Formal_Spec) loop
+               Set_Defining_Identifier
+                 (Formal_Spec,
+                  Make_Defining_Identifier (Sloc (Formal_Spec),
+                    Chars => Chars (Defining_Identifier (Formal_Spec))));
+               Next (Formal_Spec);
+            end loop;
+         end;
+      end if;
+
       Prev     := Current_Entity_In_Scope (Defining_Entity (Spec));
 
       --  If there are previous overloadable entities with the same name,

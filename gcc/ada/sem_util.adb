@@ -7134,14 +7134,23 @@ package body Sem_Util is
 
    function Is_Fully_Initialized_Type (Typ : Entity_Id) return Boolean is
    begin
+      --  In Ada2012, a scalar type with an aspect Default_Value
+      --  is fully initialized.
+
       if Is_Scalar_Type (Typ) then
-         return False;
+         return
+           Ada_Version >= Ada_2012
+             and then Has_Default_Aspect (Typ);
 
       elsif Is_Access_Type (Typ) then
          return True;
 
       elsif Is_Array_Type (Typ) then
-         if Is_Fully_Initialized_Type (Component_Type (Typ)) then
+         if Is_Fully_Initialized_Type (Component_Type (Typ))
+           or else
+             (Ada_Version >= Ada_2012
+                and then Has_Default_Aspect (Typ))
+         then
             return True;
          end if;
 

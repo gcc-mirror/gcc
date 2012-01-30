@@ -1,3 +1,42 @@
+2012-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem.adb (Analyze): Call Analyze_Mod for N_Op_Mod mode.
+	* sem_ch3.adb (Modular_Type_Declaration): Warn on mod value of
+	form 2 * small-literal.
+	* sem_ch4.adb (Analyze_Mod): New procedure (warn on suspicious
+	mod value).
+	* sem_ch4.ads (Analyze_Mod): New procedure.
+
+2012-01-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: sem_ch6.adb (Analyze_Expression_Function): Copy
+	types and return expression when building spec for implicit
+	body, to preserve global references that may be present in an
+	instantiation.
+
+2012-01-30  Matthew Heaney  <heaney@adacore.com>
+
+	* a-convec.adb, a-coinve.adb, a-cobove.adb (Sort,
+	Reverse_Elements): Check for cursor tampering.
+
+2012-01-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Fully_Initialized_Type): In Ada 2012, a
+	type with aspect Default_Value or Default_Component_Value is
+	fully initialized, and use of variables of such types do not
+	generate warnings.
+
+2012-01-30  Javier Miranda  <miranda@adacore.com>
+
+PR ada/15846
+	* sem_ch8.adb (Analyze_Subprogram_Renaming):
+	Handle self-renaming when the renamed entity is referenced using
+	its expanded name.
+
+2012-01-30  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Add documentation for attribute Interfaces.
+
 2012-01-30  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Build_Finalizer_Call): Set loc again.
