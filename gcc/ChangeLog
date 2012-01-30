@@ -1,5 +1,9 @@
 2012-01-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/52027
+	* dwarf2out.c (dwarf2out_switch_text_section): Don't call
+	set_cur_line_info_table if not emitting debug info.
+
 	PR tree-optimization/52046
 	* tree-vect-patterns.c (check_bool_pattern): Give up if
 	a comparison could throw.
