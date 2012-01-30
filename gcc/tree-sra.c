@@ -2991,6 +2991,16 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	force_gimple_rhs = true;
       sra_stats.exprs++;
     }
+  else if (racc
+	   && !access_has_children_p (racc)
+	   && !racc->grp_to_be_replaced
+	   && !racc->grp_unscalarized_data
+	   && TREE_CODE (lhs) == SSA_NAME)
+    {
+      rhs = get_repl_default_def_ssa_name (racc);
+      modify_this_stmt = true;
+      sra_stats.exprs++;
+    }
 
   if (modify_this_stmt)
     {
@@ -3067,6 +3077,21 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	generate_subtree_copies (lacc->first_child, lacc->base, 0, 0, 0,
 				 gsi, true, true, loc);
       sra_stats.separate_lhs_rhs_handling++;
+
+      /* This gimplification must be done after generate_subtree_copies,
+	 lest we insert the subtree copies in the middle of the gimplified
+	 sequence.  */
+      if (force_gimple_rhs)
+	rhs = force_gimple_operand_gsi (&orig_gsi, rhs, true, NULL_TREE,
+					true, GSI_SAME_STMT);
+      if (gimple_assign_rhs1 (*stmt) != rhs)
+	{
+	  modify_this_stmt = true;
+	  gimple_assign_set_rhs_from_tree (&orig_gsi, rhs);
+	  gcc_assert (*stmt == gsi_stmt (orig_gsi));
+	}
+
+      return modify_this_stmt ? SRA_AM_MODIFIED : SRA_AM_NONE;
     }
   else
     {
@@ -3093,61 +3118,33 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	}
       else
 	{
-	  if (racc)
+	  if (access_has_children_p (racc)
+	      && !racc->grp_unscalarized_data)
 	    {
-	      if (!racc->grp_to_be_replaced && !racc->grp_unscalarized_data)
+	      if (dump_file)
 		{
-		  if (dump_file)
-		    {
-		      fprintf (dump_file, "Removing load: ");
-		      print_gimple_stmt (dump_file, *stmt, 0, 0);
-		    }
-
-		  if (TREE_CODE (lhs) == SSA_NAME)
-		    {
-		      rhs = get_repl_default_def_ssa_name (racc);
-		      if (!useless_type_conversion_p (TREE_TYPE (lhs),
-						      TREE_TYPE (rhs)))
-			rhs = fold_build1_loc (loc, VIEW_CONVERT_EXPR,
-					       TREE_TYPE (lhs), rhs);
-		    }
-		  else
-		    {
-		      if (racc->first_child)
-			generate_subtree_copies (racc->first_child, lhs,
-						 racc->offset, 0, 0, gsi,
-						 false, false, loc);
-
-		      gcc_assert (*stmt == gsi_stmt (*gsi));
-		      unlink_stmt_vdef (*stmt);
-		      gsi_remove (gsi, true);
-		      sra_stats.deleted++;
-		      return SRA_AM_REMOVED;
-		    }
+		  fprintf (dump_file, "Removing load: ");
+		  print_gimple_stmt (dump_file, *stmt, 0, 0);
 		}
-	      else if (racc->first_child)
-		generate_subtree_copies (racc->first_child, lhs, racc->offset,
-					 0, 0, gsi, false, true, loc);
+	      generate_subtree_copies (racc->first_child, lhs,
+				       racc->offset, 0, 0, gsi,
+				       false, false, loc);
+	      gcc_assert (*stmt == gsi_stmt (*gsi));
+	      unlink_stmt_vdef (*stmt);
+	      gsi_remove (gsi, true);
+	      sra_stats.deleted++;
+	      return SRA_AM_REMOVED;
 	    }
+	  if (access_has_children_p (racc))
+	    generate_subtree_copies (racc->first_child, lhs, racc->offset,
+				     0, 0, gsi, false, true, loc);
 	  if (access_has_children_p (lacc))
 	    generate_subtree_copies (lacc->first_child, rhs, lacc->offset,
 				     0, 0, gsi, true, true, loc);
 	}
-    }
 
-  /* This gimplification must be done after generate_subtree_copies, lest we
-     insert the subtree copies in the middle of the gimplified sequence.  */
-  if (force_gimple_rhs)
-    rhs = force_gimple_operand_gsi (&orig_gsi, rhs, true, NULL_TREE,
-				    true, GSI_SAME_STMT);
-  if (gimple_assign_rhs1 (*stmt) != rhs)
-    {
-      modify_this_stmt = true;
-      gimple_assign_set_rhs_from_tree (&orig_gsi, rhs);
-      gcc_assert (*stmt == gsi_stmt (orig_gsi));
+      return SRA_AM_NONE;
     }
-
-  return modify_this_stmt ? SRA_AM_MODIFIED : SRA_AM_NONE;
 }
 
 /* Traverse the function body and all modifications as decided in
