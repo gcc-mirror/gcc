@@ -1005,7 +1005,10 @@ proc go-gc-tests { } {
 		} else {
 		    pass "$name execution"
 		    file delete $base-out.x
+		    # This testcase takes long time to compile.
+		    dg-timeout-factor list 4 { target alpha*-*-* }
 		    go-torture-execute "./$base-out.go"
+		    unset_timeout_vars
 		}
 		file delete $base-out.go
 	    }
