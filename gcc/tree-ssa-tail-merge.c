@@ -371,6 +371,8 @@ local_def (tree val)
   res = true;
   FOR_EACH_IMM_USE_STMT (stmt, iter, val)
     {
+      if (is_gimple_debug (stmt))
+	continue;
       bb = gimple_bb (stmt);
       if (bb == def_bb)
 	continue;
