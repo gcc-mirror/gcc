@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -161,9 +161,10 @@ package body Einfo is
 
    --    Body_Entity                     Node19
    --    Corresponding_Discriminant      Node19
+   --    Default_Aspect_Value            Node19
+   --    Default_Aspect_Component_Value  Node19
    --    Extra_Accessibility_Of_Result   Node19
    --    Parent_Subtype                  Node19
-   --    Related_Array_Object            Node19
    --    Size_Check_Code                 Node19
    --    Spec_Entity                     Node19
    --    Underlying_Full_View            Node19
@@ -217,6 +218,7 @@ package body Einfo is
    --    Debug_Renaming_Link             Node25
    --    DT_Offset_To_Top_Func           Node25
    --    PPC_Wrapper                     Node25
+   --    Related_Array_Object            Node25
    --    Static_Predicate                List25
    --    Task_Body_Procedure             Node25
 
@@ -772,6 +774,18 @@ package body Einfo is
    begin
       return Node25 (Id);
    end Debug_Renaming_Link;
+
+   function Default_Aspect_Value (Id : E) return N is
+   begin
+      pragma Assert (Is_Scalar_Type (Id));
+      return Node19 (Id);
+   end Default_Aspect_Value;
+
+   function Default_Aspect_Component_Value (Id : E) return N is
+   begin
+      pragma Assert (Is_Array_Type (Id));
+      return Node19 (Id);
+   end Default_Aspect_Component_Value;
 
    function Default_Expr_Function (Id : E) return E is
    begin
@@ -2528,7 +2542,7 @@ package body Einfo is
    function Related_Array_Object (Id : E) return E is
    begin
       pragma Assert (Is_Array_Type (Id));
-      return Node19 (Id);
+      return Node25 (Id);
    end Related_Array_Object;
 
    function Related_Expression (Id : E) return N is
@@ -3261,6 +3275,18 @@ package body Einfo is
    begin
       Set_Node25 (Id, V);
    end Set_Debug_Renaming_Link;
+
+   procedure Set_Default_Aspect_Value (Id : E; V : E) is
+   begin
+      pragma Assert (Is_Scalar_Type (Id));
+      Set_Node19 (Id, V);
+   end Set_Default_Aspect_Value;
+
+   procedure Set_Default_Aspect_Component_Value (Id : E; V : E) is
+   begin
+      pragma Assert (Is_Array_Type (Id));
+      Set_Node19 (Id, V);
+   end Set_Default_Aspect_Component_Value;
 
    procedure Set_Default_Expr_Function (Id : E; V : E) is
    begin
@@ -5083,7 +5109,7 @@ package body Einfo is
    procedure Set_Related_Array_Object (Id : E; V : E) is
    begin
       pragma Assert (Is_Array_Type (Id));
-      Set_Node19 (Id, V);
+      Set_Node25 (Id, V);
    end Set_Related_Array_Object;
 
    procedure Set_Related_Expression (Id : E; V : N) is
@@ -8317,12 +8343,14 @@ package body Einfo is
          when E_Discriminant                               =>
             Write_Str ("Corresponding_Discriminant");
 
+         when Scalar_Kind                                  =>
+            Write_Str ("Default_Value");
+
+         when E_Array_Type                                 =>
+            Write_Str ("Default_Component_Value");
+
          when E_Record_Type                                =>
             Write_Str ("Parent_Subtype");
-
-         when E_Array_Type                                 |
-              E_Array_Subtype                              =>
-            Write_Str ("Related_Array_Object");
 
          when E_Constant                                   |
               E_Variable                                   =>
@@ -8618,6 +8646,10 @@ package body Einfo is
               E_Record_Type_With_Private                   |
               E_Record_Subtype_With_Private                =>
             Write_Str ("Interfaces");
+
+         when E_Array_Type                                 |
+              E_Array_Subtype                              =>
+            Write_Str ("Related_Array_Object");
 
          when Task_Kind                                    =>
             Write_Str ("Task_Body_Procedure");

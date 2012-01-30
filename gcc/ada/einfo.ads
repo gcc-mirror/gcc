@@ -748,6 +748,14 @@ package Einfo is
 --       default expressions (see Freeze.Process_Default_Expressions), which
 --       would not only waste time, but also generate false error messages.
 
+--    Default_Aspect_Value (Node19)
+--       Present in scalar types. Holds the static value specified in a
+--       default_value aspect specification for the type.
+
+--    Default_Aspect_Component_Value (Node19)
+--       Present in array types. Holds the static value specified in a
+--       default_component_value aspect specification for the array type.
+
 --    Default_Value (Node20)
 --       Present in formal parameters. Points to the node representing the
 --       expression for the default value for the parameter. Empty if the
@@ -3449,7 +3457,7 @@ package Einfo is
 --       register call to make appropriate entries in the special tables
 --       used for handling these pragmas at runtime.
 
---    Related_Array_Object (Node19)
+--    Related_Array_Object (Node25)
 --       Present in array types and subtypes. Used only for the base type
 --       and subtype created for an anonymous array object. Set to point
 --       to the entity of the corresponding array object. Currently used
@@ -5016,11 +5024,12 @@ package Einfo is
    --  E_Array_Type
    --  E_Array_Subtype
    --    First_Index                         (Node17)
-   --    Related_Array_Object                (Node19)
+   --    Default_Aspect_Component_Value      (Node19)
    --    Component_Type                      (Node20)   (base type only)
    --    Original_Array_Type                 (Node21)
    --    Component_Size                      (Uint22)   (base type only)
    --    Packed_Array_Type                   (Node23)
+   --    Related_Array_Object                (Node25)
    --    Component_Alignment                 (special)  (base type only)
    --    Has_Component_Size_Clause           (Flag68)   (base type only)
    --    Has_Pragma_Pack                     (Flag121)  (impl base type only)
@@ -5195,6 +5204,7 @@ package Einfo is
    --    Lit_Indexes                         (Node15)   (root type only)
    --    Lit_Strings                         (Node16)   (root type only)
    --    First_Literal                       (Node17)
+   --    Default_Aspect_Value                (Node19)
    --    Scalar_Range                        (Node20)
    --    Enum_Pos_To_Rep                     (Node23)   (type only)
    --    Static_Predicate                    (List25)
@@ -5226,6 +5236,7 @@ package Einfo is
    --  E_Floating_Point_Subtype
    --    Digits_Value                        (Uint17)
    --    Float_Rep                           (Uint10)   (Float_Rep_Kind)
+   --    Default_Aspect_Value                (Node19)
    --    Scalar_Range                        (Node20)
    --    Machine_Emax_Value                  (synth)
    --    Machine_Emin_Value                  (synth)
@@ -5397,6 +5408,7 @@ package Einfo is
    --  E_Modular_Integer_Type
    --  E_Modular_Integer_Subtype
    --    Modulus                             (Uint17)   (base type only)
+   --    Default_Aspect_Value                (Node19)
    --    Original_Array_Type                 (Node21)
    --    Scalar_Range                        (Node20)
    --    Static_Predicate                    (List25)
@@ -5431,6 +5443,7 @@ package Einfo is
    --  E_Ordinary_Fixed_Point_Type
    --  E_Ordinary_Fixed_Point_Subtype
    --    Delta_Value                         (Ureal18)
+   --    Default_Aspect_Value                (Node19)
    --    Scalar_Range                        (Node20)
    --    Small_Value                         (Ureal21)
    --    Has_Small_Clause                    (Flag67)
@@ -5672,6 +5685,7 @@ package Einfo is
 
    --  E_Signed_Integer_Type
    --  E_Signed_Integer_Subtype
+   --    Default_Aspect_Value                (Node19)
    --    Scalar_Range                        (Node20)
    --    Static_Predicate                    (List25)
    --    Has_Biased_Representation           (Flag139)
@@ -6058,6 +6072,8 @@ package Einfo is
    function DT_Position                         (Id : E) return U;
    function Default_Expr_Function               (Id : E) return E;
    function Default_Expressions_Processed       (Id : E) return B;
+   function Default_Aspect_Value                (Id : E) return N;
+   function Default_Aspect_Component_Value      (Id : E) return N;
    function Default_Value                       (Id : E) return N;
    function Delay_Cleanups                      (Id : E) return B;
    function Delay_Subprogram_Descriptors        (Id : E) return B;
@@ -6649,6 +6665,8 @@ package Einfo is
    procedure Set_DT_Position                     (Id : E; V : U);
    procedure Set_Default_Expr_Function           (Id : E; V : E);
    procedure Set_Default_Expressions_Processed   (Id : E; V : B := True);
+   procedure Set_Default_Aspect_Value            (Id : E; V : N);
+   procedure Set_Default_Aspect_Component_Value  (Id : E; V : N);
    procedure Set_Default_Value                   (Id : E; V : N);
    procedure Set_Delay_Cleanups                  (Id : E; V : B := True);
    procedure Set_Delay_Subprogram_Descriptors    (Id : E; V : B := True);
@@ -7354,6 +7372,8 @@ package Einfo is
    pragma Inline (Default_Expr_Function);
    pragma Inline (Default_Expressions_Processed);
    pragma Inline (Default_Value);
+   pragma Inline (Default_Aspect_Value);
+   pragma Inline (Default_Aspect_Component_Value);
    pragma Inline (Delay_Cleanups);
    pragma Inline (Delay_Subprogram_Descriptors);
    pragma Inline (Delta_Value);
