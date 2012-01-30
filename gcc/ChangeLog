@@ -1,3 +1,8 @@
+2012-01-29  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi: Make usage of "compile time" and
+	"run time"/"runtime" consistent throughout the file.
+
 2012-01-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_option_overrride): Default to

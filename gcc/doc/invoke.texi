@@ -1927,7 +1927,7 @@ exhaustion is signalled by throwing @code{std::bad_alloc}.  See also
 
 @item -fconserve-space
 @opindex fconserve-space
-Put uninitialized or runtime-initialized global variables into the
+Put uninitialized or run-time-initialized global variables into the
 common segment, as C does.  This saves space in the executable at the
 cost of not diagnosing duplicate definitions.  If you compile with this
 flag and your program mysteriously crashes after @code{main()} has
@@ -1990,7 +1990,7 @@ call the copy constructor in all cases.
 @item -fno-enforce-eh-specs
 @opindex fno-enforce-eh-specs
 Don't generate code to check for violation of exception specifications
-at runtime.  This option violates the C++ standard, but may be useful
+at run time.  This option violates the C++ standard, but may be useful
 for reducing code size in production builds, much like defining
 @samp{NDEBUG}.  This does not give user code permission to throw
 exceptions in violation of the exception specifications; the compiler
@@ -2100,12 +2100,12 @@ Instantiation}, for more information.
 @item -fno-rtti
 @opindex fno-rtti
 Disable generation of information about every class with virtual
-functions for use by the C++ runtime type identification features
+functions for use by the C++ run-time type identification features
 (@samp{dynamic_cast} and @samp{typeid}).  If you don't use those parts
 of the language, you can save some space by using this flag.  Note that
 exception handling uses the same information, but it will generate it as
 needed. The @samp{dynamic_cast} operator can still be used for casts that
-do not require runtime type information, i.e.@: casts to @code{void *} or to
+do not require run-time type information, i.e.@: casts to @code{void *} or to
 unambiguous base classes.
 
 @item -fstats
@@ -3637,7 +3637,7 @@ For an automatic variable, if there exists a path from the function
 entry to a use of the variable that is initialized, but there exist
 some other paths the variable is not initialized, the compiler will
 emit a warning if it can not prove the uninitialized paths do not
-happen at runtime. These warnings are made optional because GCC is
+happen at run time. These warnings are made optional because GCC is
 not smart enough to see all the reasons why the code might be correct
 despite appearing to have an error.  Here is one example of how
 this can happen:
@@ -5066,10 +5066,10 @@ The qualifier @code{dynamic} means that the function manipulates the stack
 dynamically: in addition to the static allocation described above, stack
 adjustments are made in the body of the function, for example to push/pop
 arguments around function calls.  If the qualifier @code{bounded} is also
-present, the amount of these adjustments is bounded at compile-time and
+present, the amount of these adjustments is bounded at compile time and
 the second field is an upper bound of the total amount of stack used by
 the function.  If it is not present, the amount of these adjustments is
-not bounded at compile-time and the second field only represents the
+not bounded at compile time and the second field only represents the
 bounded part.
 
 @item -fprofile-arcs
@@ -6599,7 +6599,7 @@ Perform a global common subexpression elimination pass.
 This pass also performs global constant and copy propagation.
 
 @emph{Note:} When compiling a program using computed gotos, a GCC
-extension, you may get better runtime performance if you disable
+extension, you may get better run-time performance if you disable
 the global common subexpression elimination pass by adding
 @option{-fno-gcse} to the command line.
 
@@ -7112,7 +7112,8 @@ at @option{-O2} and higher.
 @item -ftree-tail-merge
 Look for identical code sequences.  When found, replace one with a jump to the
 other.  This optimization is known as tail merging or cross jumping.  This flag
-is enabled by default at @option{-O2} and higher.  The run time of this pass can
+is enabled by default at @option{-O2} and higher.  The compilation time
+in this pass can
 be limited using @option{max-tail-merge-comparisons} parameter and
 @option{max-tail-merge-iterations} parameter.
 
@@ -7416,8 +7417,8 @@ Perform basic block vectorization on trees. This flag is enabled by default at
 @opindex ftree-vect-loop-version
 Perform loop versioning when doing loop vectorization on trees.  When a loop
 appears to be vectorizable except that data alignment or data dependence cannot
-be determined at compile time then vectorized and non-vectorized versions of
-the loop are generated along with runtime checks for alignment or dependence
+be determined at compile time, then vectorized and non-vectorized versions of
+the loop are generated along with run-time checks for alignment or dependence
 to control which version is executed.  This option is enabled by default
 except at level @option{-Os} where it is disabled.
 
@@ -7862,7 +7863,7 @@ participating in the same link with the same options.
 If LTO encounters objects with C linkage declared with incompatible
 types in separate translation units to be linked together (undefined
 behavior according to ISO C99 6.2.7), a non-fatal diagnostic may be
-issued.  The behavior is still undefined at runtime.
+issued.  The behavior is still undefined at run time.
 
 Another feature of LTO is that it is possible to apply interprocedural
 optimizations on files written in different languages.  This requires
@@ -8501,7 +8502,7 @@ When branch is predicted to be taken with probability lower than this threshold
 The maximum number of incoming edges to consider for crossjumping.
 The algorithm used by @option{-fcrossjumping} is @math{O(N^2)} in
 the number of edges incoming to each block.  Increasing values mean
-more aggressive optimization, making the compile time increase with
+more aggressive optimization, making the compilation time increase with
 probably small improvement in executable size.
 
 @item min-crossjump-insns
@@ -8528,14 +8529,14 @@ The maximum number of instructions to consider when looking for an
 instruction to fill a delay slot.  If more than this arbitrary number of
 instructions is searched, the time savings from filling the delay slot
 will be minimal so stop searching.  Increasing values mean more
-aggressive optimization, making the compile time increase with probably
-small improvement in executable run time.
+aggressive optimization, making the compilation time increase with probably
+small improvement in execution time.
 
 @item max-delay-slot-live-search
 When trying to fill delay slots, the maximum number of instructions to
 consider when searching for a block with valid live register
 information.  Increasing this arbitrarily chosen value means more
-aggressive optimization, increasing the compile time.  This parameter
+aggressive optimization, increasing the compilation time.  This parameter
 should be removed when the delay slot code is rewritten to maintain the
 control-flow graph.
 
@@ -8559,7 +8560,7 @@ needlessly consume memory and resources.
 @item max-modulo-backtrack-attempts
 The maximum number of backtrack attempts the scheduler should make
 when modulo scheduling a loop.  Larger values can exponentially increase
-compile time.
+compilation time.
 
 @item max-inline-insns-single
 Several parameters control the tree inliner used in gcc.
@@ -8703,7 +8704,7 @@ avoid quadratic behaviour in tree tail merging.  The default value is 10.
 
 @item max-tail-merge-iterations
 The maximum amount of iterations of the pass over the function.  This is used to
-limit run time in tree tail merging.  The default value is 2.
+limit compilation time in tree tail merging.  The default value is 2.
 
 @item max-unrolled-insns
 The maximum number of instructions that a loop should have if that loop
@@ -8796,12 +8797,12 @@ When set to 1, use expensive methods to eliminate all redundant
 constraints.  The default value is 0.
 
 @item vect-max-version-for-alignment-checks
-The maximum number of runtime checks that can be performed when
+The maximum number of run-time checks that can be performed when
 doing loop versioning for alignment in the vectorizer.  See option
 ftree-vect-loop-version for more information.
 
 @item vect-max-version-for-alias-checks
-The maximum number of runtime checks that can be performed when
+The maximum number of run-time checks that can be performed when
 doing loop versioning for alias in the vectorizer.  See option
 ftree-vect-loop-version for more information.
 
@@ -8912,12 +8913,12 @@ to occur at every opportunity.
 @item max-reload-search-insns
 The maximum number of instruction reload should look backward for equivalent
 register.  Increasing values mean more aggressive optimization, making the
-compile time increase with probably slightly better performance.  The default
-value is 100.
+compilation time increase with probably slightly better performance.
+The default value is 100.
 
 @item max-cselib-memory-locations
 The maximum number of memory locations cselib should take into account.
-Increasing values mean more aggressive optimization, making the compile time
+Increasing values mean more aggressive optimization, making the compilation time
 increase with probably slightly better performance.  The default value is 500.
 
 @item reorder-blocks-duplicate
@@ -9110,8 +9111,8 @@ minimal number of registers needed for execution of typical
 instruction.  This value is the best found from numerous experiments.
 
 @item loop-invariant-max-bbs-in-loop
-Loop invariant motion can be very expensive, both in compile time and
-in amount of needed compile time memory, with very large loops.  Loops
+Loop invariant motion can be very expensive, both in compilation time and
+in amount of needed compile-time memory, with very large loops.  Loops
 with more basic blocks than this parameter won't have loop invariant
 motion optimization performed on them.  The default value of the
 parameter is 1000 for -O1 and 10000 for -O2 and above.
@@ -9135,7 +9136,7 @@ the parameter to zero makes it unlimited.
 @item max-vartrack-expr-depth
 Sets a maximum number of recursion levels when attempting to map
 variable names or debug temporaries to value expressions.  This trades
-compile time for more complete debug information.  If this is set too
+compilation time for more complete debug information.  If this is set too
 low, value expressions that are available and could be represented in
 debug information may end up not being used; setting this higher may
 enable the compiler to find more complex debug expressions, but compile
@@ -9164,7 +9165,7 @@ sequence pairs.  This option only applies when using
 To avoid exponential effects in the Graphite loop transforms, the
 number of parameters in a Static Control Part (SCoP) is bounded.  The
 default value is 10 parameters.  A variable whose value is unknown at
-compile time and defined outside a SCoP is a parameter of the SCoP.
+compilation time and defined outside a SCoP is a parameter of the SCoP.
 
 @item graphite-max-bbs-per-function
 To avoid exponential effects in the detection of SCoPs, the size of
@@ -9633,7 +9634,7 @@ includes files in the preprocessor, because the compiler translates these
 options into @option{-isystem} options for the preprocessor.  In this case,
 the compiler appends @samp{include} to the prefix.
 
-The run-time support file @file{libgcc.a} can also be searched for using
+The runtime support file @file{libgcc.a} can also be searched for using
 the @option{-B} prefix, if needed.  If it is not found there, the two
 standard prefixes above are tried, and that is all.  The file is left
 out of the link if it is not found by those means.
@@ -10534,7 +10535,7 @@ Generate code to check the amount of stack space available upon entry to
 every function (that actually uses some stack space).  If there is
 insufficient space available then either the function
 @samp{__rt_stkovf_split_small} or @samp{__rt_stkovf_split_big} will be
-called, depending upon the amount of stack space required.  The run time
+called, depending upon the amount of stack space required.  The runtime
 system is required to provide these functions.  The default is
 @option{-mno-apcs-stack-check}, since this produces smaller code.
 
@@ -10776,7 +10777,7 @@ pointers.
 @item -msingle-pic-base
 @opindex msingle-pic-base
 Treat the register used for PIC addressing as read-only, rather than
-loading it in the prologue for each function.  The run-time system is
+loading it in the prologue for each function.  The runtime system is
 responsible for initializing this register with an appropriate value
 before execution begins.
 
@@ -11448,7 +11449,7 @@ into SDRAM. This option defines @code{__BFIN_SDRAM}.
 
 @item -micplb
 @opindex micplb
-Assume that ICPLBs are enabled at runtime.  This has an effect on certain
+Assume that ICPLBs are enabled at run time.  This has an effect on certain
 anomaly workarounds.  For Linux targets, the default is to assume ICPLBs
 are enabled; for standalone applications the default is off.
 @end table
@@ -12065,7 +12066,7 @@ IEEE-conformant math library routines will be linked in.
 Normally GCC examines a 32- or 64-bit integer constant to
 see if it can construct it from smaller constants in two or three
 instructions.  If it cannot, it will output the constant as a literal and
-generate code to load it from the data segment at runtime.
+generate code to load it from the data segment at run time.
 
 Use this option to require GCC to construct @emph{all} integer constants
 using code, even if it takes more instructions (the maximum is six).
@@ -12271,7 +12272,7 @@ it does assume that all symbolic values and addresses will fit into a
 
 @item -mno-lsim
 @opindex mno-lsim
-Assume that run-time support has been provided and so there is no need
+Assume that runtime support has been provided and so there is no need
 to include the simulator library (@file{libsim.a}) on the linker
 command line.
 
@@ -13283,7 +13284,7 @@ when this option is used to set the precision to less than extended precision.
 @opindex mstackrealign
 Realign the stack at entry.  On the Intel x86, the @option{-mstackrealign}
 option will generate an alternate prologue and epilogue that realigns the
-runtime stack if necessary.  This supports mixing legacy codes that keep
+run-time stack if necessary.  This supports mixing legacy codes that keep
 a 4-byte aligned stack with modern codes that keep a 16-byte stack for
 SSE compatibility.  See also the attribute @code{force_align_arg_pointer},
 applicable to individual functions.
@@ -13399,7 +13400,7 @@ when needed.
 
 These options will enable GCC to use these extended instructions in
 generated code, even without @option{-mfpmath=sse}.  Applications which
-perform runtime CPU detection must compile separate files for each
+perform run-time CPU detection must compile separate files for each
 supported architecture, using the appropriate flags.  In particular,
 the file containing the CPU detection code should be compiled without
 these options.
@@ -13572,8 +13573,8 @@ and memset for short lengths.
 
 @item -minline-stringops-dynamically
 @opindex minline-stringops-dynamically
-For string operation of unknown size, inline runtime checks so for small
-blocks inline code is used, while for large blocks library call is used.
+For string operations of unknown size, use run-time checks with
+inline code for small blocks and a library call for large blocks.
 
 @item -mstringop-strategy=@var{alg}
 @opindex mstringop-strategy=@var{alg}
@@ -13619,11 +13620,11 @@ isn't possible at the moment for @option{-mfentry} and @option{-pg}.
 @item -m8bit-idiv
 @itemx -mno-8bit-idiv
 @opindex 8bit-idiv
-On some processors, like Intel Atom, 8bit unsigned integer divide is
-much faster than 32bit/64bit integer divide.  This option will generate a
-runt-time check.  If both dividend and divisor are within range of 0
-to 255, 8bit unsigned integer divide will be used instead of
-32bit/64bit integer divide.
+On some processors, like Intel Atom, 8-bit unsigned integer divide is
+much faster than 32-bit/64-bit integer divide.  This option generates a
+run-time check.  If both dividend and divisor are within range of 0
+to 255, 8-bit unsigned integer divide is used instead of
+32-bit/64-bit integer divide.
 
 @item -mavx256-split-unaligned-load
 @item -mavx256-split-unaligned-store
@@ -14695,7 +14696,7 @@ Generate code for the 210 processor.
 
 @item -mno-lsim
 @opindex mno-lsim
-Assume that run-time support has been provided and so omit the
+Assume that runtime support has been provided and so omit the
 simulator library (@file{libsim.a)} from the linker command line.
 
 @item -mstack-increment=@var{size}
@@ -16507,7 +16508,7 @@ with the @option{-mno-fp-in-toc} and @option{-mno-sum-in-toc} options.
 @option{-mno-fp-in-toc} prevents GCC from putting floating-point
 constants in the TOC and @option{-mno-sum-in-toc} forces GCC to
 generate code to calculate the sum of an address and a constant at
-run-time instead of putting that sum into the TOC@.  You may specify one
+run time instead of putting that sum into the TOC@.  You may specify one
 or both of these options.  Each causes GCC to produce very slightly
 slower and larger code at the expense of conserving TOC space.
 
@@ -16705,7 +16706,7 @@ unaligned memory references will be handled by the system.
 @opindex mrelocatable
 @opindex mno-relocatable
 Generate code that allows (does not allow) a static executable to be
-relocated to a different address at runtime.  A simple embedded
+relocated to a different address at run time.  A simple embedded
 PowerPC system loader should relocate the entire contents of
 @code{.got2} and 4-byte locations listed in the @code{.fixup} section,
 a table of 32-bit addresses generated by this option.  For this to
@@ -16719,7 +16720,7 @@ work, all objects linked together must be compiled with
 @opindex mno-relocatable-lib
 Like @option{-mrelocatable}, @option{-mrelocatable-lib} generates a
 @code{.fixup} section to allow static executables to be relocated at
-runtime, but @option{-mrelocatable-lib} does not use the smaller stack
+run time, but @option{-mrelocatable-lib} does not use the smaller stack
 alignment of @option{-mrelocatable}.  Objects compiled with
 @option{-mrelocatable-lib} may be linked with objects compiled with
 any combination of the @option{-mrelocatable} options.
@@ -16758,7 +16759,7 @@ libraries.
 @item -msingle-pic-base
 @opindex msingle-pic-base
 Treat the register used for PIC addressing as read-only, rather than
-loading it in the prologue for each function.  The run-time system is
+loading it in the prologue for each function.  The runtime system is
 responsible for initializing this register with an appropriate value
 before execution begins.
 
@@ -17298,7 +17299,7 @@ makes the interrupt handlers faster.
 Enables the generation of position independent data.  When enabled any
 access to constant data will done via an offset from a base address
 held in a register.  This allows the location of constant data to be
-determined at run-time without requiring the executable to be
+determined at run time without requiring the executable to be
 relocated, which is a benefit to embedded applications with tight
 memory constraints.  Data that can be modified is not affected by this
 option.
@@ -17502,7 +17503,7 @@ hardware floating point is used.
 @item -mwarn-framesize=@var{framesize}
 @opindex mwarn-framesize
 Emit a warning if the current function exceeds the given frame size.  Because
-this is a compile time check it doesn't need to be a real problem when the program
+this is a compile-time check it doesn't need to be a real problem when the program
 runs.  It is intended to identify functions which most probably cause
 a stack overflow.  It is useful to be used in an environment with limited stack
 size e.g.@: the linux kernel.
