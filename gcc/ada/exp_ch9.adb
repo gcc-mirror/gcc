@@ -9022,42 +9022,68 @@ package body Exp_Ch9 is
          --  Process the entry wrapper's position in the primary dispatch
          --  table parameter. Generate:
 
-         --    Ada.Tags.Get_Offset_Index
-         --      (Ada.Tags.Tag (Concval),
-         --       <interface dispatch table position of Ename>)
+         --    Ada.Tags.Get_Entry_Index
+         --      (T => To_Tag_Ptr (Obj'Address).all,
+         --       Position => Ada.Tags.Get_Offset_Index
+         --                    (Ada.Tags.Tag (Concval),
+         --         i           <interface dispatch table position of Ename>));
+
+         --  Note that Obj'Address is recursively expanded into a call to
+         --  Base_Address (Obj)
 
          if Tagged_Type_Expansion then
             Prepend_To (Params,
               Make_Function_Call (Loc,
-                Name => New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
+                Name => New_Reference_To (RTE (RE_Get_Entry_Index), Loc),
                 Parameter_Associations => New_List (
-                  Unchecked_Convert_To (RTE (RE_Tag), Concval),
-                  Make_Integer_Literal (Loc, DT_Position (Entity (Ename))))));
+
+                  Make_Explicit_Dereference (Loc,
+                    Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                      Make_Attribute_Reference (Loc,
+                        Prefix => New_Copy_Tree (Concval),
+                        Attribute_Name => Name_Address))),
+
+                  Make_Function_Call (Loc,
+                    Name => New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
+                    Parameter_Associations => New_List (
+                      Unchecked_Convert_To (RTE (RE_Tag), Concval),
+                      Make_Integer_Literal (Loc,
+                        DT_Position (Entity (Ename))))))));
 
          --  VM targets
 
          else
             Prepend_To (Params,
+
               Make_Function_Call (Loc,
-                Name => New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
-
+                Name => New_Reference_To (RTE (RE_Get_Entry_Index), Loc),
                 Parameter_Associations => New_List (
-
-                  --  Obj_Typ
 
                   Make_Attribute_Reference (Loc,
                     Prefix         => Concval,
                     Attribute_Name => Name_Tag),
 
-                  --  Tag_Typ
+                  Make_Function_Call (Loc,
+                    Name => New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
 
-                  Make_Attribute_Reference (Loc,
-                    Prefix         => New_Reference_To (Etype (Concval), Loc),
-                    Attribute_Name => Name_Tag),
+                    Parameter_Associations => New_List (
 
-                  --  Position
+                      --  Obj_Tag
 
-                  Make_Integer_Literal (Loc, DT_Position (Entity (Ename))))));
+                      Make_Attribute_Reference (Loc,
+                        Prefix => Concval,
+                        Attribute_Name => Name_Tag),
+
+                      --  Tag_Typ
+
+                      Make_Attribute_Reference (Loc,
+                        Prefix => New_Reference_To (Etype (Concval), Loc),
+                        Attribute_Name => Name_Tag),
+
+                      --  Position
+
+                      Make_Integer_Literal (Loc,
+                        DT_Position (Entity (Ename))))))));
          end if;
 
          --  Specific actuals for protected to XXX requeue

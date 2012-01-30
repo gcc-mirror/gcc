@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1562,10 +1562,9 @@ package Prj is
    generic
       type State is limited private;
       with procedure Action
-        (Project          : Project_Id;
-         Tree             : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         With_State       : in out State);
+        (Project    : Project_Id;
+         Tree       : Project_Tree_Ref;
+         With_State : in out State);
    procedure For_Every_Project_Imported
      (By                 : Project_Id;
       Tree               : Project_Tree_Ref;
@@ -1596,6 +1595,27 @@ package Prj is
    --
    --  The Tree argument passed to the callback is required in the case of
    --  aggregated projects, since they might not be using the same tree as 'By'
+
+   type Project_Context is record
+      In_Aggregate_Lib      : Boolean;
+      --  True if the project is part of an aggregate library
+      From_Encapsulated_Lib : Boolean;
+      --  True if the project is imported from an encapsulated library
+   end record;
+
+   generic
+      type State is limited private;
+      with procedure Action
+        (Project    : Project_Id;
+         Tree       : Project_Tree_Ref;
+         Context    : Project_Context;
+         With_State : in out State);
+   procedure For_Every_Project_Imported_Context
+     (By                 : Project_Id;
+      Tree               : Project_Tree_Ref;
+      With_State         : in out State;
+      Include_Aggregated : Boolean := True;
+      Imported_First     : Boolean := False);
 
    function Extend_Name
      (File        : File_Name_Type;

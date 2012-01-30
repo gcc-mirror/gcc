@@ -5,9 +5,9 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                    (VxWorks 5 and MILS Version PPC)                      --
+--                         (VxWorks 5 Version PPC)                          --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -114,6 +114,9 @@ package System is
    Default_Priority : constant Priority := 122;
 
 private
+
+   pragma Linker_Options ("-crtbe");
+   --  Required by ZCX on VxWorks kernel
 
    type Address is mod Memory_Size;
    Null_Address : constant Address := 0;

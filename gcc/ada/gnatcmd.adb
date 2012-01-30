@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -264,7 +264,6 @@ procedure GNATCmd is
    procedure Set_Library_For
      (Project           : Project_Id;
       Tree              : Project_Tree_Ref;
-      In_Aggregate_Lib  : Boolean;
       Libraries_Present : in out Boolean);
    --  If Project is a library project, add the correct -L and -l switches to
    --  the linker invocation.
@@ -1265,10 +1264,9 @@ procedure GNATCmd is
    procedure Set_Library_For
      (Project           : Project_Id;
       Tree              : Project_Tree_Ref;
-      In_Aggregate_Lib  : Boolean;
       Libraries_Present : in out Boolean)
    is
-      pragma Unreferenced (Tree, In_Aggregate_Lib);
+      pragma Unreferenced (Tree);
 
       Path_Option : constant String_Access :=
                       MLib.Linker_Library_Path_Option;
