@@ -1,3 +1,15 @@
+2012-01-30  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/extend-1.c (TEST_CHAR): Use signed char.
+	(TEST_SHORT): Reformat in the same way.
+	* gcc.target/mips/octeon-exts-6.c (TEST_CHAR): Use signed char.
+	(TEST_SHORT): Reformat in the same way.
+	* gcc.target/mips/octeon2-lx-1.c (TEST): Make sign explicit.
+	* gcc.target/mips/pr37362.c: Skip for mips-sde-elf.
+	* gcc.target/mips/mmcount-ra-address-1.c (bazl): Add NOMIPS16.
+	* gcc.target/mips/mmcount-ra-address-2.c (bar): Likewise.
+	* gcc.target/mips/mmcount-ra-address-3.c (bar): Likewise.
+
 2012-01-30  Bin Cheng  <bin.cheng@arm.com>
 
 	PR target/51835
