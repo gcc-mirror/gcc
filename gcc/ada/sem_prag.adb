@@ -12904,6 +12904,7 @@ package body Sem_Prag is
             Check_Arg_Count (1);
             Check_Optional_Identifier (Arg1, Name_Entity);
             Check_Arg_Is_Local_Name (Arg1);
+
             E := Entity (Get_Pragma_Arg (Arg1));
 
             if Nkind (Parent (E)) = N_Formal_Type_Declaration

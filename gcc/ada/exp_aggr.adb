@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -244,8 +244,8 @@ package body Exp_Aggr is
       Target : Node_Id) return List_Id;
    --  This routine implements top-down expansion of nested aggregates. In
    --  doing so, it avoids the generation of temporaries at each level. N is a
-   --  nested (record or array) aggregate that has been marked with 'Delay_
-   --  Expansion'. Typ is the expected type of the aggregate. Target is a
+   --  nested (record or array) aggregate that has been marked with Expansion_
+   --  Delayed. Typ is the expected type of the aggregate. Target is a
    --  (duplicable) expression that will hold the result of the aggregate
    --  expansion.
 
@@ -5297,7 +5297,7 @@ package body Exp_Aggr is
 
       --  Ada 2005 (AI-318-2): We need to convert to assignments if components
       --  are build-in-place function calls. The assignments will each turn
-      --  into a build-in-place function call.  If components are all static,
+      --  into a build-in-place function call. If components are all static,
       --  we can pass the aggregate to the backend regardless of limitedness.
 
       --  Extension aggregates, aggregates in extended return statements, and
@@ -5547,16 +5547,16 @@ package body Exp_Aggr is
 
          if Is_Tagged_Type (Typ) then
 
-            --  The tagged case, _parent and _tag component must be created
+            --  In the tagged case, _parent and _tag component must be created
 
-            --  Reset null_present unconditionally. tagged records always have
-            --  at least one field (the tag or the parent)
+            --  Reset Null_Present unconditionally. Tagged records always have
+            --  at least one field (the tag or the parent).
 
             Set_Null_Record_Present (N, False);
 
             --  When the current aggregate comes from the expansion of an
             --  extension aggregate, the parent expr is replaced by an
-            --  aggregate formed by selected components of this expr
+            --  aggregate formed by selected components of this expr.
 
             if Present (Parent_Expr)
               and then Is_Empty_List (Comps)
@@ -5596,12 +5596,14 @@ package body Exp_Aggr is
 
             --  Compute the value for the Tag now, if the type is a root it
             --  will be included in the aggregate right away, otherwise it will
-            --  be propagated to the parent aggregate
+            --  be propagated to the parent aggregate.
 
             if Present (Orig_Tag) then
                Tag_Value := Orig_Tag;
+
             elsif not Tagged_Type_Expansion then
                Tag_Value := Empty;
+
             else
                Tag_Value :=
                  New_Occurrence_Of
@@ -5657,8 +5659,8 @@ package body Exp_Aggr is
 
                   --  Expand recursively the parent propagating the right Tag
 
-                  Expand_Record_Aggregate (
-                    Parent_Aggr, Tag_Value, Parent_Expr);
+                  Expand_Record_Aggregate
+                    (Parent_Aggr, Tag_Value, Parent_Expr);
                end;
 
             --  For a root type, the tag component is added (unless compiling

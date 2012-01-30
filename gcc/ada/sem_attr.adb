@@ -4638,19 +4638,19 @@ package body Sem_Attr is
 
          if Is_Remote_Access_To_Class_Wide_Type (Base_Type (P_Type)) then
 
-            if not Is_Generic_Type (P_Type) then
-               --  For a real RACW [sub]type, use corresponding stub type
+            --  For a real RACW [sub]type, use corresponding stub type
 
+            if not Is_Generic_Type (P_Type) then
                Rewrite (N,
                  New_Occurrence_Of
                    (Corresponding_Stub_Type (Base_Type (P_Type)), Loc));
 
-            else
-               --  For a generic type (that has been marked as an RACW using
-               --  the Remote_Access_Type aspect or pragma), use a generic RACW
-               --  stub type. Note that if the actual is not a remote access
-               --  type, the instantiation will fail.
+            --  For a generic type (that has been marked as an RACW using the
+            --  Remote_Access_Type aspect or pragma), use a generic RACW stub
+            --  type. Note that if the actual is not a remote access type, the
+            --  instantiation will fail.
 
+            else
                --  Note: we go to the underlying type here because the view
                --  returned by RTE (RE_RACW_Stub_Type) might be incomplete.
 

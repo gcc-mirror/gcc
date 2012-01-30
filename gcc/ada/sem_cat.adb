@@ -161,7 +161,7 @@ package body Sem_Cat is
 
          if Is_Pure (E)
            and then not
-             (Has_Pragma_Pure_Function (E) and not Has_Pragma_Pure (E))
+            (Has_Pragma_Pure_Function (E) and not Has_Pragma_Pure (E))
          then
             return Pure;
 
@@ -214,7 +214,7 @@ package body Sem_Cat is
          --  to WITH anything in the package body, per (RM E.2(5)).
 
          if (Unit_Category = Remote_Types
-               or else Unit_Category = Remote_Call_Interface)
+              or else Unit_Category = Remote_Call_Interface)
            and then In_Package_Body (Unit_Entity)
          then
             null;
@@ -409,10 +409,10 @@ package body Sem_Cat is
    function Has_Read_Write_Attributes (E : Entity_Id) return Boolean is
    begin
       return True
-        and then Has_Stream_Attribute_Definition (E,
-                   TSS_Stream_Read,  At_Any_Place => True)
-        and then Has_Stream_Attribute_Definition (E,
-                   TSS_Stream_Write, At_Any_Place => True);
+        and then Has_Stream_Attribute_Definition
+                   (E, TSS_Stream_Read,  At_Any_Place => True)
+        and then Has_Stream_Attribute_Definition
+                   (E, TSS_Stream_Write, At_Any_Place => True);
    end Has_Read_Write_Attributes;
 
    -------------------------------------
@@ -500,7 +500,7 @@ package body Sem_Cat is
                     or else Is_Shared_Passive (Unit_Entity)
                     or else
                       ((Is_Remote_Types (Unit_Entity)
-                               or else Is_Remote_Call_Interface (Unit_Entity))
+                          or else Is_Remote_Call_Interface (Unit_Entity))
                          and then Ekind (Unit_Entity) = E_Package
                          and then Unit_Kind /= N_Package_Body
                          and then not In_Package_Body (Unit_Entity)
@@ -533,8 +533,8 @@ package body Sem_Cat is
         and then Is_Package_Or_Generic_Package (Unit_Entity)
         and then Unit_Kind /= N_Package_Body
         and then List_Containing (N) =
-                  Visible_Declarations
-                    (Specification (Unit_Declaration_Node (Unit_Entity)))
+                   Visible_Declarations
+                     (Specification (Unit_Declaration_Node (Unit_Entity)))
         and then not In_Package_Body (Unit_Entity)
         and then not In_Instance;
 
@@ -695,9 +695,7 @@ package body Sem_Cat is
          PN : Node_Id;
 
       begin
-         if Is_Child_Unit (S)
-           and then Is_Generic_Instance (S)
-         then
+         if Is_Child_Unit (S) and then Is_Generic_Instance (S) then
             Set_Parents (True);
          end if;
 
@@ -722,9 +720,7 @@ package body Sem_Cat is
             Next (PN);
          end loop;
 
-         if Is_Child_Unit (S)
-           and then Is_Generic_Instance (S)
-         then
+         if Is_Child_Unit (S) and then Is_Generic_Instance (S) then
             Set_Parents (False);
          end if;
       end;
@@ -739,24 +735,23 @@ package body Sem_Cat is
       Specification : Node_Id := Empty;
 
    begin
-      Set_Is_Pure (E,
-        Is_Pure (Scop) and then Is_Library_Level_Entity (E));
+      Set_Is_Pure
+        (E, Is_Pure (Scop) and then Is_Library_Level_Entity (E));
 
       if not Is_Remote_Call_Interface (E) then
          if Ekind (E) in Subprogram_Kind then
             Declaration := Unit_Declaration_Node (E);
 
-            if Nkind (Declaration) = N_Subprogram_Body
-                 or else
-               Nkind (Declaration) = N_Subprogram_Renaming_Declaration
+            if Nkind_In (Declaration, N_Subprogram_Body,
+                                      N_Subprogram_Renaming_Declaration)
             then
                Specification := Corresponding_Spec (Declaration);
             end if;
          end if;
 
-         --  A subprogram body or renaming-as-body is a remote call
-         --  interface if it serves as the completion of a subprogram
-         --  declaration that is a remote call interface.
+         --  A subprogram body or renaming-as-body is a remote call interface
+         --  if it serves as the completion of a subprogram declaration that
+         --  is a remote call interface.
 
          if Nkind (Specification) in N_Entity then
             Set_Is_Remote_Call_Interface
@@ -770,14 +765,14 @@ package body Sem_Cat is
             Set_Is_Remote_Call_Interface
               (E, Is_Remote_Call_Interface (Scop)
                     and then not (In_Private_Part (Scop)
-                                    or else In_Package_Body (Scop)));
+                                   or else In_Package_Body (Scop)));
          end if;
       end if;
 
       Set_Is_Remote_Types
         (E, Is_Remote_Types (Scop)
               and then not (In_Private_Part (Scop)
-                              or else In_Package_Body (Scop)));
+                             or else In_Package_Body (Scop)));
    end Set_Categorization_From_Scope;
 
    ------------------------------
@@ -875,7 +870,7 @@ package body Sem_Cat is
 
       if Comes_From_Source (T)
         and then not (In_Package_Body (Scope (T))
-                        or else In_Private_Part (Scope (T)))
+                       or else In_Private_Part (Scope (T)))
       then
          Set_Is_Remote_Call_Interface
            (T, Is_Remote_Call_Interface (Scope (T)));
@@ -956,8 +951,7 @@ package body Sem_Cat is
       --  Body of RCI unit does not need validation
 
       if Is_Remote_Call_Interface (E)
-        and then (Nkind (N) = N_Package_Body
-                   or else Nkind (N) = N_Subprogram_Body)
+        and then Nkind_In (N, N_Package_Body, N_Subprogram_Body)
       then
          return;
       end if;
@@ -973,16 +967,16 @@ package body Sem_Cat is
          while Present (Item) loop
             if Nkind (Item) = N_With_Clause
               and then not (Implicit_With (Item)
-                              or else Limited_Present (Item)
+                             or else Limited_Present (Item)
 
-                              --  Skip if error already posted on the WITH
-                              --  clause (in which case the Name attribute
-                              --  may be invalid). In particular, this fixes
-                              --  the problem of hanging in the presence of a
-                              --  WITH clause on a child that is an illegal
-                              --  generic instantiation.
+                             --  Skip if error already posted on the WITH
+                             --  clause (in which case the Name attribute
+                             --  may be invalid). In particular, this fixes
+                             --  the problem of hanging in the presence of a
+                             --  WITH clause on a child that is an illegal
+                             --  generic instantiation.
 
-                              or else Error_Posted (Item))
+                             or else Error_Posted (Item))
             then
                Entity_Of_Withed := Entity (Name (Item));
                Check_Categorization_Dependencies
@@ -1298,9 +1292,7 @@ package body Sem_Cat is
                PEE : Node_Id;
 
             begin
-               if Has_Discriminants (ET)
-                 and then Present (EE)
-               then
+               if Has_Discriminants (ET) and then Present (EE) then
                   PEE := Parent (EE);
 
                   if Nkind (PEE) = N_Full_Type_Declaration
@@ -1425,7 +1417,7 @@ package body Sem_Cat is
          --  Check that the return type supports external streaming
 
          elsif No_External_Streaming (Rtyp)
-                 and then not Error_Posted (Rtyp)
+           and then not Error_Posted (Rtyp)
          then
             Illegal_Remote_Subp ("return type containing non-remote access "
               & "must have Read and Write attributes",
@@ -1671,7 +1663,7 @@ package body Sem_Cat is
 
       if not Comes_From_Source (T)
         or else (not In_RCI_Declaration (Parent (T))
-                   and then not In_RT_Declaration)
+                  and then not In_RT_Declaration)
       then
          return;
       end if;
@@ -1791,9 +1783,7 @@ package body Sem_Cat is
          --  If we have a true dereference that comes from source and that
          --  is a controlling argument for a dispatching call, accept it.
 
-         if Is_Actual_Parameter (N)
-           and then Is_Controlling_Actual (N)
-         then
+         if Is_Actual_Parameter (N) and then Is_Controlling_Actual (N) then
             return;
          end if;
 
@@ -1803,8 +1793,7 @@ package body Sem_Cat is
          --  apply in the case of dereference that is the prefix of a selected
          --  component, which can be a call given in prefixed form.
 
-         if (Is_Actual_Parameter (N)
-              or else PK = N_Selected_Component)
+         if (Is_Actual_Parameter (N) or else PK = N_Selected_Component)
            and then not Analyzed (N)
          then
             return;
@@ -1922,9 +1911,8 @@ package body Sem_Cat is
             --  partition (E.2.2(8)).
 
             if (Ada_Version < Ada_2005 and then Has_Non_Remote_Access (U_Typ))
-                 or else
-               (Stream_Attributes_Available (Typ)
-                  and then No_External_Streaming (U_Typ))
+                 or else (Stream_Attributes_Available (Typ)
+                           and then No_External_Streaming (U_Typ))
             then
                if Is_Non_Remote_Access_Type (Typ) then
                   Error_Msg_N ("error in non-remote access type", U_Typ);
@@ -1958,8 +1946,8 @@ package body Sem_Cat is
       Direct_Designated_Type : Entity_Id;
 
       function Has_Entry_Declarations (E : Entity_Id) return Boolean;
-      --  Return true if the protected type designated by T has
-      --  entry declarations.
+      --  Return true if the protected type designated by T has entry
+      --  declarations.
 
       ----------------------------
       -- Has_Entry_Declarations --
@@ -2134,16 +2122,15 @@ package body Sem_Cat is
               and then
                 Enclosing_Lib_Unit_Node (N) /= Enclosing_Lib_Unit_Node (E)
               and then (Is_Preelaborated (Scope (E))
-                          or else Is_Pure (Scope (E))
-                          or else (Present (Renamed_Object (E))
-                                     and then
-                                       Is_Entity_Name (Renamed_Object (E))
-                                     and then
-                                       (Is_Preelaborated
-                                         (Scope (Renamed_Object (E)))
-                                            or else
-                                              Is_Pure (Scope
-                                                (Renamed_Object (E))))))
+                         or else Is_Pure (Scope (E))
+                         or else (Present (Renamed_Object (E))
+                                   and then Is_Entity_Name (Renamed_Object (E))
+                                   and then
+                                     (Is_Preelaborated
+                                       (Scope (Renamed_Object (E)))
+                                         or else
+                                           Is_Pure (Scope
+                                             (Renamed_Object (E))))))
             then
                null;
 
