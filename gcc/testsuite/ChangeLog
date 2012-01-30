@@ -1,3 +1,8 @@
+2012-01-30  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/dfp/fe-convert-2.c: Force use of soft dfp on s390 and
+          s390x.
+
 2012-01-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/51875
