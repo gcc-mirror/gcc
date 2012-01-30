@@ -1,3 +1,8 @@
+2012-01-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	* df-problems.c (df_kill_notes): Check that the use refers
+	to the note under examination.
+
 2012-01-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/51920
