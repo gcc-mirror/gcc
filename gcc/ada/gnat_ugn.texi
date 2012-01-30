@@ -5681,7 +5681,8 @@ pragma @code{Postcondition} or a @code{Post} aspect in Ada 2012). A
 function postcondition is suspicious when it does not mention the result
 of the function. A procedure postcondition is suspicious when it only
 refers to the pre-state of the procedure, because in that case it should
-rather be expressed as a precondition.
+rather be expressed as a precondition. The default is that such warnings
+are not generated. This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatw.T
 @emph{Suppress warnings on suspicious contracts.}
@@ -5728,6 +5729,8 @@ ordered. (A @emph{client} is defined as a unit that is other than the unit in
 which the type is declared, or its body or subunits.) Please refer to
 the description of pragma @code{Ordered} in the
 @cite{@value{EDITION} Reference Manual} for further details.
+The default is that such warnings are not generated.
+This warning is not automatically turned on by the use of @option{-gnatwa}.
 
 @item -gnatw.U
 @emph{Deactivate warnings on unordered enumeration types.}
@@ -5918,35 +5921,53 @@ The use of this switch also sets the default front end warning mode to
 A string of warning parameters can be used in the same parameter. For example:
 
 @smallexample
--gnatwaLe
+-gnatwaGe
 @end smallexample
 
 @noindent
-will turn on all optional warnings except for elaboration pragma warnings,
+will turn on all optional warnings except for unrecognized pragma warnings,
 and also specify that warnings should be treated as errors.
 @end ifclear
+
 When no switch @option{^-gnatw^/WARNINGS^} is used, this is equivalent to:
 
 @table @option
 @c !sort!
+@item -gnatwB
+@item -gnatw.b
 @item -gnatwC
+@item -gnatw.C
 @item -gnatwD
 @item -gnatwF
 @item -gnatwg
 @item -gnatwH
 @item -gnatwi
+@item -gnatw.I
 @item -gnatwJ
 @item -gnatwK
 @item -gnatwL
+@item -gnatw.L
 @item -gnatwM
+@item -gnatw.m
 @item -gnatwn
 @item -gnatwo
+@item -gnatw.O
 @item -gnatwP
+@item -gnatw.P
+@item -gnatwq
 @item -gnatwR
+@item -gnatw.R
+@item -gnatw.S
+@item -gnatwT
+@item -gnatw.T
 @item -gnatwU
 @item -gnatwv
-@item -gnatwz
+@item -gnatww
+@item -gnatw.W
 @item -gnatwx
+@item -gnatw.X
+@item -gnatwy
+@item -gnatwz
 
 @end table
 
@@ -6316,9 +6337,10 @@ for the use of blanks to separate source tokens.
 @emph{Check Boolean operators.}
 The use of AND/OR operators is not permitted except in the cases of modular
 operands, array operands, and simple stand-alone boolean variables or
-boolean constants. In all other cases AND THEN/OR ELSE are required.
+boolean constants. In all other cases @code{and then}/@code{or else} are
+required.
 
-@item ^c^COMMENTS^ (double space)
+@item ^c^COMMENTS^
 @emph{Check comments, double space.}
 Comments must meet the following set of rules:
 
@@ -6370,7 +6392,7 @@ example:
 @end smallexample
 @end itemize
 
-@item ^C^COMMENTS1^ (single space)
+@item ^C^COMMENTS1^
 @emph{Check comments, single space.}
 This is identical to @code{^c^COMMENTS^} except that only one space
 is required following the @code{--} of a comment instead of two.
@@ -6392,7 +6414,7 @@ Neither form feeds nor vertical tab characters are permitted
 in the source text.
 
 @item ^g^GNAT^
-@emph{GNAT style mode}
+@emph{GNAT style mode.}
 The set of style check switches is set to match that used by the GNAT sources.
 This may be useful when developing code that is eventually intended to be
 incorporated into GNAT. For further details, see GNAT sources.
@@ -6412,7 +6434,7 @@ up under the @code{if} with at least one non-blank line in between
 containing all or part of the condition to be tested.
 
 @item ^I^IN_MODE^
-@emph{check mode IN keywords}
+@emph{check mode IN keywords.}
 Mode @code{in} (the default mode) is not
 allowed to be given explicitly. @code{in out} is fine,
 but not @code{in} on its own.
@@ -6501,7 +6523,7 @@ Clear :
 @end smallexample
 
 @item ^Lnnn^MAX_NESTING=nnn^
-@emph{Set maximum nesting level}
+@emph{Set maximum nesting level.}
 The maximum level of nesting of constructs (including subprograms, loops,
 blocks, packages, and conditionals) may not exceed the given value
 @option{nnn}. A value of zero disconnects this style check.
@@ -6528,7 +6550,7 @@ to match the presentation in the Ada Reference Manual (for example,
 @code{Integer} and @code{ASCII.NUL}).
 
 @item ^N^NONE^
-@emph{Turn off all style checks}
+@emph{Turn off all style checks.}
 All style check options are turned off.
 
 @item ^o^ORDERED_SUBPROGRAMS^
@@ -6558,13 +6580,6 @@ corresponding declaration. No specific casing style is imposed on
 identifiers. The only requirement is for consistency of references
 with declarations.
 
-@item ^S^STATEMENTS_AFTER_THEN_ELSE^
-@emph{Check no statements after THEN/ELSE.}
-No statements are allowed
-on the same line as a THEN or ELSE keyword following the
-keyword in an IF statement. OR ELSE and AND THEN are not affected,
-and a special exception allows a pragma to appear after ELSE.
-
 @item ^s^SPECS^
 @emph{Check separate specs.}
 Separate declarations (``specs'') are required for subprograms (a
@@ -6573,6 +6588,13 @@ exception is that parameterless library level procedures are
 not required to have a separate declaration. This exception covers
 the most frequent form of main program procedures.
 
+@item ^S^STATEMENTS_AFTER_THEN_ELSE^
+@emph{Check no statements after @code{then}/@code{else}.}
+No statements are allowed
+on the same line as a @code{then} or @code{else} keyword following the
+keyword in an @code{if} statement. @code{or else} and @code{and then} are not
+affected, and a special exception allows a pragma to appear after @code{else}.
+
 @item ^t^TOKEN^
 @emph{Check token spacing.}
 The following token spacing rules are enforced:
@@ -6580,7 +6602,7 @@ The following token spacing rules are enforced:
 @itemize @bullet
 
 @item
-The keywords @code{@b{abs}} and @code{@b{not}} must be followed by a space.
+The keywords @code{abs} and @code{not} must be followed by a space.
 
 @item
 The token @code{=>} must be surrounded by spaces.
@@ -6641,9 +6663,9 @@ around conditions in @code{if} statements, @code{while} statements and
 @item ^y^ALL_BUILTIN^
 @emph{Set all standard style check options}
 This is equivalent to @code{gnaty3aAbcefhiklmnprst}, that is all checking
-options enabled with the exception of @option{-gnatyo}, @option{-gnatyI},
-@option{-gnatyS}, @option{-gnatyLnnn},
-@option{-gnatyd}, @option{-gnatyu}, and @option{-gnatyx}.
+options enabled with the exception of @option{-gnatyB}, @option{-gnatyd},
+@option{-gnatyI}, @option{-gnatyLnnn}, @option{-gnatyo}, @option{-gnatyO},
+@option{-gnatyS}, @option{-gnatyu}, and @option{-gnatyx}.
 
 @ifclear vms
 @item -
@@ -6691,8 +6713,8 @@ including style messages, as fatal errors.
 The switch
 @ifclear vms
 @option{-gnaty} on its own (that is not
-followed by any letters or digits), then the effect is equivalent
-to the use of @option{-gnatyy}, as described above, that is all
+followed by any letters or digits) is equivalent
+to the use of @option{-gnatyy} as described above, that is all
 built-in standard style check options are enabled.
 
 @end ifclear

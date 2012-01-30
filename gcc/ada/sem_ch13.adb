@@ -1201,6 +1201,12 @@ package body Sem_Ch13 is
                   Set_Is_Delayed_Aspect (Aspect);
                   Set_Has_Default_Aspect (Base_Type (Entity (Ent)));
 
+                  if Is_Scalar_Type (E) then
+                     Set_Default_Aspect_Value (Entity (Ent), Expr);
+                  else
+                     Set_Default_Aspect_Component_Value (Entity (Ent), Expr);
+                  end if;
+
                when Aspect_Attach_Handler =>
                   Aitem :=
                     Make_Pragma (Loc,
@@ -6024,6 +6030,17 @@ package body Sem_Ch13 is
          if No (T) then
             Check_Aspect_At_Freeze_Point (ASN);
             return;
+
+         --  The default values attributes may be defined in the private part,
+         --  and the analysis of the expression may take place when only the
+         --  partial view is visible. The expression must be scalar, so use
+         --  the full view to resolve.
+
+         elsif (A_Id = Aspect_Default_Value or else
+                A_Id = Aspect_Default_Component_Value)
+            and then Is_Private_Type (T)
+         then
+            Preanalyze_Spec_Expression (End_Decl_Expr, Full_View (T));
          else
             Preanalyze_Spec_Expression (End_Decl_Expr, T);
          end if;

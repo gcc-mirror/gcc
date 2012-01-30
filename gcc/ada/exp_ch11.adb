@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1033,16 +1033,17 @@ package body Exp_Ch11 is
                      Save :=
                        Make_Procedure_Call_Statement (No_Location,
                          Name =>
-                           New_Occurrence_Of (RTE (RE_Save_Occurrence),
-                                              No_Location),
+                           New_Occurrence_Of
+                             (RTE (RE_Save_Occurrence), No_Location),
                          Parameter_Associations => New_List (
-                           New_Occurrence_Of (Cparm, Cloc),
+                           New_Occurrence_Of (Cparm, No_Location),
                            Make_Explicit_Dereference (No_Location,
                              Make_Function_Call (No_Location,
-                               Name => Make_Explicit_Dereference (No_Location,
-                                 New_Occurrence_Of
-                                   (RTE (RE_Get_Current_Excep),
-                                    No_Location))))));
+                               Name =>
+                                 Make_Explicit_Dereference (No_Location,
+                                   New_Occurrence_Of
+                                     (RTE (RE_Get_Current_Excep),
+                                      No_Location))))));
 
                      Mark_Rewrite_Insertion (Save);
                      Prepend (Save, Statements (Handler));

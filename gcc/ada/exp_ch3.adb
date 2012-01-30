@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -549,10 +549,7 @@ package body Exp_Ch3 is
                 Name       => Comp,
                 Expression =>
                   Convert_To (Comp_Type,
-                    Expression
-                      (Get_Rep_Item_For_Entity
-                        (First_Subtype (A_Type),
-                         Name_Default_Component_Value)))));
+                    Default_Aspect_Component_Value (First_Subtype (A_Type)))));
 
          elsif Needs_Simple_Initialization (Comp_Type) then
             Set_Assignment_OK (Comp);
@@ -6853,14 +6850,17 @@ package body Exp_Ch3 is
 
          return Result;
 
-      --  Scalars with Default_Value aspect
+      --  Scalars with Default_Value aspect. The first subtype may now be
+      --   private, so retrieve value from underlying type.
 
       elsif Is_Scalar_Type (T) and then Has_Default_Aspect (T) then
-         return
-           Convert_To (T,
-             Expression
-               (Get_Rep_Item_For_Entity
-                 (First_Subtype (T), Name_Default_Value)));
+         if Is_Private_Type (First_Subtype (T)) then
+            return Unchecked_Convert_To (T,
+              Default_Aspect_Value (Full_View (First_Subtype (T))));
+         else
+            return
+              Convert_To (T, Default_Aspect_Value (First_Subtype (T)));
+         end if;
 
       --  Otherwise, for scalars, we must have normalize/initialize scalars
       --  case, or if the node N is an 'Invalid_Value attribute node.

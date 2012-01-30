@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2837,14 +2837,14 @@ package body Exp_Ch7 is
    --------------------------
 
    procedure Build_Finalizer_Call (N : Node_Id; Fin_Id : Entity_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
-      HSS : Node_Id := Handled_Statement_Sequence (N);
-
       Is_Prot_Body : constant Boolean :=
                        Nkind (N) = N_Subprogram_Body
                          and then Is_Protected_Subprogram_Body (N);
       --  Determine whether N denotes the protected version of a subprogram
       --  which belongs to a protected type.
+
+      Loc : constant Source_Ptr := No_Location;
+      HSS : Node_Id := Handled_Statement_Sequence (N);
 
    begin
       --  Do not perform this expansion in Alfa mode because we do not create

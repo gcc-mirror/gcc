@@ -1,3 +1,37 @@
+2012-01-30  Yannick Moy  <moy@adacore.com>
+
+	* gnat_ugn.texi: Minor correction of GNAT UG, to take into
+	account changes to -gnatwa and more recent warnings.
+
+2012-01-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Build_Finalizer_Call): Do not provide a source
+	location when creating a call to a finalizer.
+	* exp_ch11.adb (Expand_Exception_Handlers): Do not provide
+	a source location for the first actual of Save_Occurrence for
+	consistency sake.
+
+2012-01-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo,adb: New attribute on scalar types:
+	Default_Aspect_Value New attribute on  array types:
+	Default_Aspect_Component_Value Move attribute Related_Array_Object
+	to a different position to accomodate new aspect attributes.
+	* freeze.adb (Freeze_Entity): Use new attributes to retrieve value
+	of defaults set with an aspect specification, rather than using
+	the list of aspects attached to the type, to prevent issues with
+	partial views.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): For aspects
+	Default_Value and Default_Component _Value, store corresponding
+	expression in type entity.
+	(Check_Aspect_At_End_Of_Declaration): If the default aspects
+	are declared on the full view, use the full view to resolve the
+	correseponding expression.
+	* exp_ch3.adb (Init_Component): Use attribute
+	Default_Aspect_Component_Value to perform default initialization,
+	rather than relying on the rep item list for the type.
+	(Get_Simple_Init_Val): Ditto.
+
 2012-01-30  Thomas Quinot  <quinot@adacore.com>
 
 	* a-strhas.ads: Document risk of collision attack.
