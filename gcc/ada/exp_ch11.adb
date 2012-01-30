@@ -101,9 +101,16 @@ package body Exp_Ch11 is
 
    procedure Expand_At_End_Handler (HSS : Node_Id; Block : Node_Id) is
       Clean   : constant Entity_Id  := Entity (At_End_Proc (HSS));
-      Loc     : constant Source_Ptr := Sloc (Clean);
       Ohandle : Node_Id;
       Stmnts  : List_Id;
+
+      Loc : constant Source_Ptr := No_Location;
+      --  Location used for expansion. We quite deliberately do not set a
+      --  specific source location for the expanded handler. This makes
+      --  sense since really the handler is not associated with specific
+      --  source. We used to set this to Sloc (Clean), but that caused
+      --  useless and annoying bouncing around of line numbers in the
+      --  debugger in some circumstances.
 
    begin
       pragma Assert (Present (Clean));

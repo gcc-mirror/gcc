@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -126,7 +126,7 @@ package body Ada.Calendar is
    --  The above flag controls the usage of leap seconds in all Ada.Calendar
    --  routines.
 
-   Leap_Seconds_Count : constant Natural := 24;
+   Leap_Seconds_Count : constant Natural := 25;
 
    ---------------------
    -- Local Constants --
@@ -177,7 +177,8 @@ package body Ada.Calendar is
       43744320200000000,
       44218656210000000,
       46427904220000000,
-      47374848230000000);
+      47374848230000000,
+      48478176240000000);
 
    ---------
    -- "+" --

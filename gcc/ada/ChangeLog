@@ -1,3 +1,19 @@
+2012-01-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Build_Finalizer_Call): Set loc again.
+	* exp_ch11.adb (Expand_At_End_Handler): Do not provide a source
+	location for the wrapped call to the original AT_END routine
+	and the subsequent return statement.
+
+2012-01-30  Pascal Obry  <obry@adacore.com>
+
+	* s-rannum.adb: Minor reformatting.
+
+2012-01-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-calend-vms.adb, a-calend.adb: Increment the number of leap seconds
+	to 25 and add the hard time value for 2012-06-30.
+
 2012-01-30  Robert Dewar  <dewar@adacore.com>
 
 	* a-strhas.ads, einfo.adb, einfo.ads, exp_ch7.adb, exp_ch9.adb,
