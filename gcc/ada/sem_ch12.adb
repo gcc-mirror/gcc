@@ -9410,7 +9410,7 @@ package body Sem_Ch12 is
 
          Set_Corresponding_Generic_Association (Decl_Node, Act_Assoc);
 
-         --  The analysis of the actual may produce insert_action nodes, so
+         --  The analysis of the actual may produce Insert_Action nodes, so
          --  the declaration must have a context in which to attach them.
 
          Append (Decl_Node, List);

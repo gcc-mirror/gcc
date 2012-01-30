@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---               Copyright (C) 2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,16 +32,24 @@
 --  Version used on all systems except Ravenscar where Calendar is unavailable
 
 with Ada.Calendar; use Ada.Calendar;
+with Ada.Unchecked_Conversion;
 
 package body System.Random_Seed is
 
    Y2K : constant Time :=
            Time_Of (Year => 2000, Month => 1, Day => 1, Seconds => 0.0);
-   --  First day of Year 2000, to get a duration.
+   --  First day of Year 2000, to get a duration
 
-   function Get_Seed return Duration is
+   function To_U64 is
+     new Ada.Unchecked_Conversion (Duration, Interfaces.Unsigned_64);
+
+   --------------
+   -- Get_Seed --
+   --------------
+
+   function Get_Seed return Interfaces.Unsigned_64 is
    begin
-      return Clock - Y2K;
+      return To_U64 (Clock - Y2K);
    end Get_Seed;
 
 end System.Random_Seed;

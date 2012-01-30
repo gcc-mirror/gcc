@@ -491,8 +491,8 @@ package body Sem_Cat is
                       Nkind (Unit (Cunit (Current_Sem_Unit)));
 
    begin
-      --  There are no constraints on body of remote_call_interface or
-      --  remote_types packages.
+      --  There are no constraints on the body of Remote_Call_Interface or
+      --  Remote_Types packages.
 
       return (Unit_Entity /= Standard_Standard)
         and then (Is_Preelaborated (Unit_Entity)

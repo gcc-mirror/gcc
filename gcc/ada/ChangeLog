@@ -1,3 +1,14 @@
+2012-01-30  Thomas Quinot  <quinot@adacore.com>
+
+	* s-rannum.adb, s-ransee.adb, s-ransee.ads (Get_Seed): Return
+	Unsigned_64 rather than Duration.
+	(System.Random_Numbers.Reset): Use full value of seed
+	(do not truncate sub-second bits).
+
+2012-01-30  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_cat.adb, sem_ch12.adb: Minor reformatting.
+
 2012-01-30  Yannick Moy  <moy@adacore.com>
 
 	* gnat_ugn.texi: Minor correction of GNAT UG, to take into
