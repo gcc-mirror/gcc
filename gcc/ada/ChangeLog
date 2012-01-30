@@ -1,3 +1,12 @@
+2012-01-30  Pascal Obry  <obry@adacore.com>
+
+	* prj-proc.adb (Recursive_Process): Set From_Encapsulated_Lib
+	boolean value to true in the process list created by this routine.
+	* prj.ads (Project_List_Element): New field From_Encapsulated_Lib.
+	Continued work for KA06-021.
+	* prj.adb (Compute_All_Imported_Projects): Set
+	From_Encapsulated_Lib boolean flag.
+
 2012-01-30  Vincent Pucci  <pucci@adacore.com>
 
 	* sem_dim.adb (Expand_Put_Call_With_Dimension_Symbol): Minor

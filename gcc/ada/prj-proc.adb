@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@ with Prj.Env;
 with Prj.Err;  use Prj.Err;
 with Prj.Ext;  use Prj.Ext;
 with Prj.Nmsc; use Prj.Nmsc;
+with Prj.Util;
 with Prj.Part;
 with Snames;
 
@@ -149,7 +150,8 @@ package body Prj.Proc is
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Env                    : in out Prj.Tree.Environment;
-      Extended_By            : Project_Id);
+      Extended_By            : Project_Id;
+      From_Encapsulated_Lib  : Boolean);
    --  Process project with node From_Project_Node in the tree. Do nothing if
    --  From_Project_Node is Empty_Node. If project has already been processed,
    --  simply return its project id. Otherwise create a new project id, mark it
@@ -161,6 +163,9 @@ package body Prj.Proc is
    --  explicitly loaded. In the context of aggregate projects, only that
    --  project is allowed to modify the environment that will be used to load
    --  projects (Child_Env).
+   --
+   --  From_Encapsulated_Lib is true if we are parsing a project from
+   --  encapsulated library dependencies.
 
    function Get_Attribute_Index
      (Tree  : Project_Node_Tree_Ref;
@@ -2357,7 +2362,8 @@ package body Prj.Proc is
          From_Project_Node      => From_Project_Node,
          From_Project_Node_Tree => From_Project_Node_Tree,
          Env                    => Env,
-         Extended_By            => No_Project);
+         Extended_By            => No_Project,
+         From_Encapsulated_Lib  => False);
 
       Success :=
         Total_Errors_Detected = 0
@@ -2491,7 +2497,8 @@ package body Prj.Proc is
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Env                    : in out Prj.Tree.Environment;
-      Extended_By            : Project_Id)
+      Extended_By            : Project_Id;
+      From_Encapsulated_Lib  : Boolean)
    is
       Shared : constant Shared_Project_Tree_Data_Access := In_Tree.Shared;
 
@@ -2550,21 +2557,20 @@ package body Prj.Proc is
                     Project_Node_Of (With_Clause, From_Project_Node_Tree),
                   From_Project_Node_Tree => From_Project_Node_Tree,
                   Env                    => Env,
-                  Extended_By            => No_Project);
-
-               --  Imported is the id of the last imported project. If
-               --  it is nil, then this imported project is our first.
+                  Extended_By            => No_Project,
+                  From_Encapsulated_Lib  => From_Encapsulated_Lib);
 
                if Imported = null then
-                  Project.Imported_Projects :=
-                    new Project_List_Element'
-                      (Project => New_Project,
-                       Next    => null);
+                  Project.Imported_Projects := new Project_List_Element'
+                    (Project               => New_Project,
+                     From_Encapsulated_Lib => False,
+                     Next                  => null);
                   Imported := Project.Imported_Projects;
                else
                   Imported.Next := new Project_List_Element'
-                    (Project => New_Project,
-                     Next    => null);
+                    (Project               => New_Project,
+                     From_Encapsulated_Lib => False,
+                     Next                  => null);
                   Imported := Imported.Next;
                end if;
             end if;
@@ -2762,7 +2768,7 @@ package body Prj.Proc is
 
       else
          declare
-            Imported         : Project_List;
+            Imported, Mark   : Project_List;
             Declaration_Node : Project_Node_Id  := Empty_Node;
 
             Name : constant Name_Id :=
@@ -2795,10 +2801,18 @@ package body Prj.Proc is
                   (Project_Qualifier_Of
                     (From_Project_Node, From_Project_Node_Tree)));
 
+            --  Note that at this point we do not know yet if the project has
+            --  been withed from an encapsulated library or not.
+
             In_Tree.Projects :=
               new Project_List_Element'
-                    (Project => Project,
-                     Next    => In_Tree.Projects);
+             (Project               => Project,
+              From_Encapsulated_Lib => False,
+              Next                  => In_Tree.Projects);
+
+            --  Keep track of this point
+
+            Mark := In_Tree.Projects;
 
             Processed_Projects.Set (Name, Project);
 
@@ -2874,7 +2888,8 @@ package body Prj.Proc is
                    (Declaration_Node, From_Project_Node_Tree),
                From_Project_Node_Tree => From_Project_Node_Tree,
                Env                    => Env,
-               Extended_By            => Project);
+               Extended_By            => Project,
+               From_Encapsulated_Lib  => From_Encapsulated_Lib);
 
             Process_Declarative_Items
               (Project                => Project,
@@ -2893,29 +2908,57 @@ package body Prj.Proc is
 
             Process_Imported_Projects (Imported, Limited_With => True);
 
-            if Err_Vars.Total_Errors_Detected = 0 then
-               Process_Aggregated_Projects;
+            --  At this point (after Process_Declarative_Items) we have the
+            --  attribute values set, we can backtrace In_Tree.Project and
+            --  set the From_Encapsulated_Library status.
 
-               --  For an aggregate library we add the aggregated projects as
-               --  imported ones. This is necessary to give visibility to all
-               --  sources from the aggregates from the aggregated library
-               --  projects.
+            declare
+               Lib_Standalone  : constant Prj.Variable_Value :=
+                                   Prj.Util.Value_Of
+                                     (Snames.Name_Library_Standalone,
+                                      Project.Decl.Attributes,
+                                      Shared);
+               List            : Project_List := In_Tree.Projects;
+               Is_Encapsulated : Boolean;
+            begin
+               Get_Name_String (Lib_Standalone.Value);
+               To_Lower (Name_Buffer (1 .. Name_Len));
 
-               if Project.Qualifier = Aggregate_Library then
-                  declare
-                     L : Aggregated_Project_List;
-                  begin
-                     L := Project.Aggregated_Projects;
-                     while L /= null loop
-                        Project.Imported_Projects :=
-                          new Project_List_Element'
-                            (Project => L.Project,
-                             Next    => Project.Imported_Projects);
-                        L := L.Next;
-                     end loop;
-                  end;
+               Is_Encapsulated := Name_Buffer (1 .. Name_Len) = "encapsulated";
+
+               if Is_Encapsulated then
+                  while List /= null and then List /= Mark loop
+                     List.From_Encapsulated_Lib := Is_Encapsulated;
+                     List := List.Next;
+                  end loop;
                end if;
-            end if;
+
+               if Err_Vars.Total_Errors_Detected = 0 then
+                  Process_Aggregated_Projects;
+
+                  --  For an aggregate library we add the aggregated projects
+                  --  as imported ones. This is necessary to give visibility
+                  --  to all sources from the aggregates from the aggregated
+                  --  library projects.
+
+                  if Project.Qualifier = Aggregate_Library then
+                     declare
+                        L : Aggregated_Project_List;
+                     begin
+                        L := Project.Aggregated_Projects;
+                        while L /= null loop
+                           Project.Imported_Projects :=
+                             new Project_List_Element'
+                               (Project               => L.Project,
+                                From_Encapsulated_Lib => Is_Encapsulated,
+                                Next                  =>
+                                  Project.Imported_Projects);
+                           L := L.Next;
+                        end loop;
+                     end;
+                  end if;
+               end if;
+            end;
 
             if Project.Qualifier = Aggregate and then In_Tree.Is_Root_Tree then
                Free (Child_Env);
