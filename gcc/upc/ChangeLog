@@ -1,3 +1,10 @@
+2012-01-30  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* Make-lang.in: Fix the --program-suffix configuration
+	option. GUPC executables are installed with appropriate
+	suffixes and GUPC driver execs the gcc with the right
+	suffix.
+
 2012-01-24  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* upc-lang.c (upc_init_options): Disable section anchors 

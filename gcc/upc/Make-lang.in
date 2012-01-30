@@ -45,7 +45,12 @@
 
 UPC_EXE = cc1upc$(exeext) xgupc$(exeext) gupc$(exeext)
 
-#
+# Installation name.
+
+GUPC_INSTALL_NAME := $(shell echo gupc|sed '$(program_transform_name)')
+UPC_INSTALL_NAME := $(shell echo upc|sed '$(program_transform_name)')
+GUPC_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gupc|sed '$(program_transform_name)')
+
 # Define the names for selecting UPC in LANGUAGES.
 UPC Upc upc: $(UPC_EXE)
 
@@ -98,7 +103,7 @@ gupc$(exeext): $(srcdir)/upc/gupc.c Makefile cc1upc$(exeext) $(LIBDEPS)
 	thisdir=`pwd` ; \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	    $(DRIVER_DEFINES) \
-	    "-DCOMPILER=\"gcc\"" \
+	    "-DCOMPILER=\"$(GCC_INSTALL_NAME)\"" \
 	    "-DBIN_PATH=\"$(bindir)\"" \
 	    -c $(srcdir)/upc/gupc.c -o gupc-tmp.o
 	$(CC) $(ALL_LINKERFLAGS) $(LDFLAGS) gupc-tmp.o -o gupc$(exeext) $(LIBS)
@@ -184,16 +189,13 @@ lang_checks += check-upc
 upc.install-normal:
 
 upc.install-common: cc1upc$(exeext) gupc$(exeext) installdirs
-	-rm -f $(DESTDIR)$(bindir)/gupc$(exeext)
-	$(INSTALL_PROGRAM) -m 755 gupc$(exeext) $(DESTDIR)$(bindir)
-	-rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gupc$(exeext)
+	-rm -f $(DESTDIR)$(bindir)/$(GUPC_INSTALL_NAME)$(exeext)
+	$(INSTALL_PROGRAM) -m 755 gupc$(exeext) $(DESTDIR)$(bindir)/$(GUPC_INSTALL_NAME)$(exeext)
+	-rm -f $(DESTDIR)$(bindir)/$(GUPC_TARGET_INSTALL_NAME)$(exeext)
 	cd $(DESTDIR)$(bindir) && \
-	   $(LN) gupc$(exeext) $(target_noncanonical)-gupc$(exeext) 
-	-rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gupc-$(version)$(exeext)
-	cd $(DESTDIR)$(bindir) && \
-	   $(LN) gupc$(exeext) $(target_noncanonical)-gupc-$(version)$(exeext)
+	   $(LN) $(GUPC_INSTALL_NAME)$(exeext) $(GUPC_TARGET_INSTALL_NAME)$(exeext)
 	-rm -f $(DESTDIR)$(bindir)/upc$(exeext)
-	cd $(DESTDIR)$(bindir) && $(LN_S) gupc$(exeext) upc$(exeext)
+	cd $(DESTDIR)$(bindir) && $(LN_S) $(GUPC_INSTALL_NAME)$(exeext) $(UPC_INSTALL_NAME)$(exeext)
 
 
 .PHONY: upc.pdf upc.html
