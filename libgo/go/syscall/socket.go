@@ -17,12 +17,12 @@ import "unsafe"
 var SocketDisableIPv6 bool
 
 type Sockaddr interface {
-	sockaddr() (ptr *RawSockaddrAny, len Socklen_t, err error)	// lowercase; only we can define Sockaddrs
+	sockaddr() (ptr *RawSockaddrAny, len Socklen_t, err error) // lowercase; only we can define Sockaddrs
 }
 
 type RawSockaddrAny struct {
 	Addr RawSockaddr
-	Pad [12]int8
+	Pad  [12]int8
 }
 
 const SizeofSockaddrAny = 0x1c
@@ -30,7 +30,7 @@ const SizeofSockaddrAny = 0x1c
 type SockaddrInet4 struct {
 	Port int
 	Addr [4]byte
-	raw RawSockaddrInet4
+	raw  RawSockaddrInet4
 }
 
 func (sa *SockaddrInet4) sockaddr() (*RawSockaddrAny, Socklen_t, error) {
@@ -40,7 +40,7 @@ func (sa *SockaddrInet4) sockaddr() (*RawSockaddrAny, Socklen_t, error) {
 	sa.raw.Family = AF_INET
 	n := sa.raw.setLen()
 	p := (*[2]byte)(unsafe.Pointer(&sa.raw.Port))
-	p[0] = byte(sa.Port>>8)
+	p[0] = byte(sa.Port >> 8)
 	p[1] = byte(sa.Port)
 	for i := 0; i < len(sa.Addr); i++ {
 		sa.raw.Addr[i] = sa.Addr[i]
@@ -49,10 +49,10 @@ func (sa *SockaddrInet4) sockaddr() (*RawSockaddrAny, Socklen_t, error) {
 }
 
 type SockaddrInet6 struct {
-	Port int
+	Port   int
 	ZoneId uint32
-	Addr [16]byte
-	raw RawSockaddrInet6
+	Addr   [16]byte
+	raw    RawSockaddrInet6
 }
 
 func (sa *SockaddrInet6) sockaddr() (*RawSockaddrAny, Socklen_t, error) {
@@ -62,7 +62,7 @@ func (sa *SockaddrInet6) sockaddr() (*RawSockaddrAny, Socklen_t, error) {
 	sa.raw.Family = AF_INET6
 	n := sa.raw.setLen()
 	p := (*[2]byte)(unsafe.Pointer(&sa.raw.Port))
-	p[0] = byte(sa.Port>>8)
+	p[0] = byte(sa.Port >> 8)
 	p[1] = byte(sa.Port)
 	sa.raw.Scope_id = sa.ZoneId
 	for i := 0; i < len(sa.Addr); i++ {
@@ -73,7 +73,7 @@ func (sa *SockaddrInet6) sockaddr() (*RawSockaddrAny, Socklen_t, error) {
 
 type SockaddrUnix struct {
 	Name string
-	raw RawSockaddrUnix
+	raw  RawSockaddrUnix
 }
 
 func (sa *SockaddrUnix) sockaddr() (*RawSockaddrAny, Socklen_t, error) {
@@ -268,12 +268,12 @@ func SetsockoptTimeval(fd, level, opt int, tv *Timeval) (err error) {
 }
 
 type Linger struct {
-	Onoff int32;
-	Linger int32;
+	Onoff  int32
+	Linger int32
 }
 
 func SetsockoptLinger(fd, level, opt int, l *Linger) (err error) {
-	return setsockopt(fd, level, opt, (*byte)(unsafe.Pointer(l)), Socklen_t(unsafe.Sizeof(*l)));
+	return setsockopt(fd, level, opt, (*byte)(unsafe.Pointer(l)), Socklen_t(unsafe.Sizeof(*l)))
 }
 
 func SetsockoptIPMreq(fd, level, opt int, mreq *IPMreq) (err error) {
@@ -404,4 +404,8 @@ func (iov *Iovec) SetLen(length int) {
 
 func (msghdr *Msghdr) SetControllen(length int) {
 	msghdr.Controllen = Msghdr_controllen_t(length)
+}
+
+func (cmsg *Cmsghdr) SetLen(length int) {
+	cmsg.Len = Cmsghdr_len_t(length)
 }

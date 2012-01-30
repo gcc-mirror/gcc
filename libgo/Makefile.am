@@ -1593,6 +1593,13 @@ else # !LIBGO_IS_SOLARIS
 syscall_uname_file = go/syscall/libcall_uname.go
 endif
 
+# GNU/Linux specific socket control messages.
+if LIBGO_IS_LINUX
+syscall_sockcmsg_file = go/syscall/sockcmsg_linux.go
+else
+syscall_sockcmsg_file =
+endif
+
 # Support for netlink sockets and messages.
 if LIBGO_IS_LINUX
 syscall_netlink_file = go/syscall/netlink_linux.go
@@ -1606,8 +1613,10 @@ go_base_syscall_files = \
 	go/syscall/libcall_support.go \
 	go/syscall/libcall_posix.go \
 	go/syscall/socket.go \
+	go/syscall/sockcmsg_unix.go \
 	go/syscall/str.go \
 	go/syscall/syscall.go \
+	$(syscall_sockcmsg_file) \
 	$(syscall_syscall_file) \
 	$(syscall_exec_file) \
 	$(syscall_exec_os_file) \

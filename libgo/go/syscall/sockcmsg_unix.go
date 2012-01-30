@@ -14,7 +14,7 @@ import (
 
 // Round the length of a raw sockaddr up to align it propery.
 func cmsgAlignOf(salen int) int {
-	salign := sizeofPtr
+	salign := int(sizeofPtr)
 	// NOTE: It seems like 64-bit Darwin kernel still requires 32-bit
 	// aligned access to BSD subsystem.
 	if darwinAMD64 {
@@ -39,7 +39,7 @@ func CmsgSpace(datalen int) int {
 }
 
 func cmsgData(cmsg *Cmsghdr) unsafe.Pointer {
-	return unsafe.Pointer(uintptr(unsafe.Pointer(cmsg)) + SizeofCmsghdr)
+	return unsafe.Pointer(uintptr(unsafe.Pointer(cmsg)) + uintptr(SizeofCmsghdr))
 }
 
 type SocketControlMessage struct {
@@ -72,7 +72,7 @@ func ParseSocketControlMessage(buf []byte) ([]SocketControlMessage, error) {
 
 func socketControlMessageHeaderAndData(buf []byte) (*Cmsghdr, []byte, error) {
 	h := (*Cmsghdr)(unsafe.Pointer(&buf[0]))
-	if h.Len < SizeofCmsghdr || int(h.Len) > len(buf) {
+	if int(h.Len) < SizeofCmsghdr || int(h.Len) > len(buf) {
 		return nil, nil, EINVAL
 	}
 	return h, buf[cmsgAlignOf(SizeofCmsghdr):], nil

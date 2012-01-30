@@ -1923,6 +1923,10 @@ go_unicode_utf8_files = \
 # 32-bit Solaris 2/x86 needs _nuname, handled in libcall_solaris_386.go.
 @LIBGO_IS_386_TRUE@@LIBGO_IS_SOLARIS_TRUE@syscall_uname_file = 
 @LIBGO_IS_SOLARIS_FALSE@syscall_uname_file = go/syscall/libcall_uname.go
+@LIBGO_IS_LINUX_FALSE@syscall_sockcmsg_file = 
+
+# GNU/Linux specific socket control messages.
+@LIBGO_IS_LINUX_TRUE@syscall_sockcmsg_file = go/syscall/sockcmsg_linux.go
 @LIBGO_IS_LINUX_FALSE@syscall_netlink_file = 
 
 # Support for netlink sockets and messages.
@@ -1933,8 +1937,10 @@ go_base_syscall_files = \
 	go/syscall/libcall_support.go \
 	go/syscall/libcall_posix.go \
 	go/syscall/socket.go \
+	go/syscall/sockcmsg_unix.go \
 	go/syscall/str.go \
 	go/syscall/syscall.go \
+	$(syscall_sockcmsg_file) \
 	$(syscall_syscall_file) \
 	$(syscall_exec_file) \
 	$(syscall_exec_os_file) \
