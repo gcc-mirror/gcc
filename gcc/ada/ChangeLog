@@ -1,3 +1,10 @@
+2012-01-30  Nicolas Roche  <roche@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+	* gcc-interface/Makefile.in: Use system-vxworks-system-ppc-mils.ads
+	when needed.
+	Remove Linker_Options -crtbe when building sjlj run-time.
+
 2012-01-30  Robert Dewar  <dewar@adacore.com>
 
 	* sem.adb (Analyze): Call Analyze_Mod for N_Op_Mod mode.
