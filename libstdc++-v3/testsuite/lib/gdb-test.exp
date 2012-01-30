@@ -1,4 +1,4 @@
-#   Copyright (C) 2009, 2011 Free Software Foundation, Inc.
+#   Copyright (C) 2009, 2011, 2012 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,11 +55,20 @@ proc get_line_number {filename marker} {
 proc note-test {var result} {
     global gdb_tests
 
-    lappend gdb_tests $var $result
+    lappend gdb_tests $var $result 0
+}
+
+# A test that uses a regular expression.  This is like note-test, but
+# the result is a regular expression that is matched against the
+# output.
+proc regexp-test {var result} {
+    global gdb_tests
+
+    lappend gdb_tests $var $result 1
 }
 
 # Utility for testing variable values using gdb, invoked via dg-final.
-# Tests all tests indicated by note-test.
+# Tests all tests indicated by note-test and regexp-test.
 #
 # Argument 0 is the marker on which to put a breakpoint
 # Argument 2 handles expected failures and the like
@@ -100,11 +109,12 @@ proc gdb-test { marker {selector {}} } {
     puts $fd "run"
 
     set count 0
-    foreach {var result} $gdb_tests {
+    foreach {var result is_regexp} $gdb_tests {
 	puts $fd "print $var"
 	incr count
 	set gdb_var($count) $var
 	set gdb_expected($count) $result
+	set gdb_is_regexp($count) $is_regexp
     }
     set gdb_tests {}
 
@@ -120,9 +130,18 @@ proc gdb-test { marker {selector {}} } {
 
     remote_expect target [timeout_value] {
 	-re {^\$([0-9]+) = ([^\n\r]*)[\n\r]+} {
+	    send_log "got: $expect_out(buffer)"
+
 	    set num $expect_out(1,string)
 	    set first $expect_out(2,string)
-	    if { ![string compare $first $gdb_expected($num)] } {
+
+	    if {$gdb_is_regexp($num)} {
+		set match [regexp -- $gdb_expected($num) $first]
+	    } else {
+		set match [expr {![string compare $first $gdb_expected($num)]}]
+	    }
+
+	    if {$match} {
 		pass "$testname print $gdb_var($num)"
 	    } else {
 		fail "$testname print $gdb_var($num)"
@@ -145,7 +164,7 @@ proc gdb-test { marker {selector {}} } {
 	}
 
 	-re {^[^$][^\n\r]*[\n\r]+} {
-	    verbose "skipping: $expect_out(buffer)"
+	    send_log "skipping: $expect_out(buffer)"
 	    exp_continue
 	}
 
