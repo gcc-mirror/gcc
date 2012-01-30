@@ -2920,6 +2920,7 @@ package body Prj.Proc is
                                       Shared);
                List            : Project_List := In_Tree.Projects;
                Is_Encapsulated : Boolean;
+
             begin
                Get_Name_String (Lib_Standalone.Value);
                To_Lower (Name_Buffer (1 .. Name_Len));

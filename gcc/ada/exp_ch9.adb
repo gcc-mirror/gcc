@@ -9023,13 +9023,14 @@ package body Exp_Ch9 is
          --  table parameter. Generate:
 
          --    Ada.Tags.Get_Entry_Index
-         --      (T => To_Tag_Ptr (Obj'Address).all,
-         --       Position => Ada.Tags.Get_Offset_Index
-         --                    (Ada.Tags.Tag (Concval),
-         --         i           <interface dispatch table position of Ename>));
+         --      (T        => To_Tag_Ptr (Obj'Address).all,
+         --       Position =>
+         --         Ada.Tags.Get_Offset_Index
+         --           (Ada.Tags.Tag (Concval),
+         --            <interface dispatch table position of Ename>));
 
          --  Note that Obj'Address is recursively expanded into a call to
-         --  Base_Address (Obj)
+         --  Base_Address (Obj).
 
          if Tagged_Type_Expansion then
             Prepend_To (Params,
@@ -9054,7 +9055,6 @@ package body Exp_Ch9 is
 
          else
             Prepend_To (Params,
-
               Make_Function_Call (Loc,
                 Name => New_Reference_To (RTE (RE_Get_Entry_Index), Loc),
                 Parameter_Associations => New_List (

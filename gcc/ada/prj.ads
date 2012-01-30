@@ -938,8 +938,8 @@ package Prj is
    type Project_List_Element;
    type Project_List is access all Project_List_Element;
    type Project_List_Element is record
-      Project               : Project_Id := No_Project;
-      From_Encapsulated_Lib : Boolean := False;
+      Project               : Project_Id   := No_Project;
+      From_Encapsulated_Lib : Boolean      := False;
       Next                  : Project_List := null;
    end record;
    --  A list of projects
@@ -1408,8 +1408,8 @@ package Prj is
    function For_Each_Source
      (In_Tree           : Project_Tree_Ref;
       Project           : Project_Id := No_Project;
-      Language          : Name_Id := No_Name;
-      Encapsulated_Libs : Boolean := True) return Source_Iterator;
+      Language          : Name_Id    := No_Name;
+      Encapsulated_Libs : Boolean    := True) return Source_Iterator;
    --  Returns an iterator for all the sources of a project tree, or a specific
    --  project, or a specific language. Include sources from aggregated libs if
    --  Aggregated_Libs is True.
@@ -1601,8 +1601,9 @@ package Prj is
    --  aggregated projects, since they might not be using the same tree as 'By'
 
    type Project_Context is record
-      In_Aggregate_Lib      : Boolean;
+      In_Aggregate_Lib : Boolean;
       --  True if the project is part of an aggregate library
+
       From_Encapsulated_Lib : Boolean;
       --  True if the project is imported from an encapsulated library
    end record;
@@ -1850,7 +1851,7 @@ private
       Language_Name : Name_Id;
       --  Only sources of this language will be returned (or all if No_Name)
 
-      Current      : Source_Id;
+      Current : Source_Id;
 
       Encapsulated_Libs : Boolean;
       --  True if we want to include the sources from encapsulated libs

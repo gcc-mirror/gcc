@@ -161,8 +161,8 @@ package body Einfo is
 
    --    Body_Entity                     Node19
    --    Corresponding_Discriminant      Node19
-   --    Default_Aspect_Value            Node19
    --    Default_Aspect_Component_Value  Node19
+   --    Default_Aspect_Value            Node19
    --    Extra_Accessibility_Of_Result   Node19
    --    Parent_Subtype                  Node19
    --    Size_Check_Code                 Node19
@@ -775,17 +775,17 @@ package body Einfo is
       return Node25 (Id);
    end Debug_Renaming_Link;
 
-   function Default_Aspect_Value (Id : E) return N is
-   begin
-      pragma Assert (Is_Scalar_Type (Id));
-      return Node19 (Id);
-   end Default_Aspect_Value;
-
    function Default_Aspect_Component_Value (Id : E) return N is
    begin
       pragma Assert (Is_Array_Type (Id));
       return Node19 (Id);
    end Default_Aspect_Component_Value;
+
+   function Default_Aspect_Value (Id : E) return N is
+   begin
+      pragma Assert (Is_Scalar_Type (Id));
+      return Node19 (Id);
+   end Default_Aspect_Value;
 
    function Default_Expr_Function (Id : E) return E is
    begin
@@ -3276,17 +3276,17 @@ package body Einfo is
       Set_Node25 (Id, V);
    end Set_Debug_Renaming_Link;
 
-   procedure Set_Default_Aspect_Value (Id : E; V : E) is
-   begin
-      pragma Assert (Is_Scalar_Type (Id));
-      Set_Node19 (Id, V);
-   end Set_Default_Aspect_Value;
-
    procedure Set_Default_Aspect_Component_Value (Id : E; V : E) is
    begin
       pragma Assert (Is_Array_Type (Id));
       Set_Node19 (Id, V);
    end Set_Default_Aspect_Component_Value;
+
+   procedure Set_Default_Aspect_Value (Id : E; V : E) is
+   begin
+      pragma Assert (Is_Scalar_Type (Id));
+      Set_Node19 (Id, V);
+   end Set_Default_Aspect_Value;
 
    procedure Set_Default_Expr_Function (Id : E; V : E) is
    begin

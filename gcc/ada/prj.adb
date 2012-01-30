@@ -619,7 +619,7 @@ package body Prj is
                     (List.Project, Tree,
                      In_Aggregate_Lib,
                      From_Encapsulated_Lib
-                       or (Project.Standalone_Library = Encapsulated));
+                       or else Project.Standalone_Library = Encapsulated);
                   List := List.Next;
                end loop;
 
@@ -644,8 +644,9 @@ package body Prj is
                            Recursive_Check
                              (Agg.Project, T,
                               True,
-                              From_Encapsulated_Lib or
-                                Project.Standalone_Library = Encapsulated);
+                              From_Encapsulated_Lib
+                                or else
+                                  Project.Standalone_Library = Encapsulated);
 
                         else
                            T := Agg.Tree;

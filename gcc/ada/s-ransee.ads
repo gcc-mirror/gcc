@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                  S Y S T E M . R A N D O M _ S E E D                     --
+--                   S Y S T E M . R A N D O M _ S E E D                    --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --

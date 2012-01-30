@@ -2546,17 +2546,16 @@ package body Prj.Nmsc is
                                Project.Decl.Attributes,
                                Shared);
 
-      List      : String_List_Id;
-      Element   : String_Element;
-      Name      : File_Name_Type;
-      Iter      : Source_Iterator;
-      Source    : Source_Id;
-      Project_2 : Project_Id;
-      Other     : Source_Id;
+      List       : String_List_Id;
+      Element    : String_Element;
+      Name       : File_Name_Type;
+      Iter       : Source_Iterator;
+      Source     : Source_Id;
+      Project_2  : Project_Id;
+      Other      : Source_Id;
+      Unit_Found : Boolean;
 
       Interface_ALIs : String_List_Id := Nil_String;
-
-      Unit_Found : Boolean;
 
    begin
       if not Interfaces.Default then
@@ -2583,9 +2582,9 @@ package body Prj.Nmsc is
             Name := Canonical_Case_File_Name (Element.Value);
 
             Project_2 := Project;
-            Big_Loop :
-            while Project_2 /= No_Project loop
+            Big_Loop : while Project_2 /= No_Project loop
                if Project.Qualifier = Aggregate_Library then
+
                   --  For an aggregate library we want to consider sources of
                   --  all aggregated projects.
 
@@ -2693,9 +2692,9 @@ package body Prj.Nmsc is
             Unit_Found := False;
 
             Project_2 := Project;
-            Big_Loop_2 :
-            while Project_2 /= No_Project loop
+            Big_Loop_2 : while Project_2 /= No_Project loop
                if Project.Qualifier = Aggregate_Library then
+
                   --  For an aggregate library we want to consider sources of
                   --  all aggregated projects.
 
@@ -4492,8 +4491,8 @@ package body Prj.Nmsc is
             end if;
          end if;
 
-         --  Check value of attribute Library_Auto_Init and set
-         --  Lib_Auto_Init accordingly.
+         --  Check value of attribute Library_Auto_Init and set Lib_Auto_Init
+         --  accordingly.
 
          if Lib_Auto_Init.Default then
 
