@@ -1,5 +1,5 @@
 /* Analysis Utilities for Loop Vectorization.
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Dorit Nuzman <dorit@il.ibm.com>
 
@@ -1966,6 +1966,11 @@ check_bool_pattern (tree var, loop_vec_info loop_vinfo)
       if (TREE_CODE_CLASS (rhs_code) == tcc_comparison)
 	{
 	  tree vecitype, comp_vectype;
+
+	  /* If the comparison can throw, then is_gimple_condexpr will be
+	     false and we can't make a COND_EXPR/VEC_COND_EXPR out of it.  */
+	  if (stmt_could_throw_p (def_stmt))
+	    return false;
 
 	  comp_vectype = get_vectype_for_scalar_type (TREE_TYPE (rhs1));
 	  if (comp_vectype == NULL_TREE)
