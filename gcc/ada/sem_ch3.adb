@@ -16808,6 +16808,21 @@ package body Sem_Ch3 is
    --  Start of processing for Modular_Type_Declaration
 
    begin
+      --  If the mod expression is (exactly) 2 * literal, where literal is
+      --  64 or less,then almost certainly the * was meant to be **. Warn!
+
+      if Warn_On_Suspicious_Modulus_Value
+        and then Nkind (Mod_Expr) = N_Op_Multiply
+        and then Nkind (Left_Opnd (Mod_Expr)) = N_Integer_Literal
+        and then Intval (Left_Opnd (Mod_Expr)) = Uint_2
+        and then Nkind (Right_Opnd (Mod_Expr)) = N_Integer_Literal
+        and then Intval (Right_Opnd (Mod_Expr)) <= Uint_64
+      then
+         Error_Msg_N ("suspicious MOD value, was '*'* intended'??", Mod_Expr);
+      end if;
+
+      --  Proceed with analysis of mod expression
+
       Analyze_And_Resolve (Mod_Expr, Any_Integer);
       Set_Etype (T, T);
       Set_Ekind (T, E_Modular_Integer_Type);

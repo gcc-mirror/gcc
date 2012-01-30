@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1039,8 +1039,7 @@ package body Ada.Containers.Vectors is
       -- Sort --
       ----------
 
-      procedure Sort (Container : in out Vector)
-      is
+      procedure Sort (Container : in out Vector) is
          procedure Sort is
             new Generic_Array_Sort
              (Index_Type   => Index_Type,
@@ -1048,14 +1047,27 @@ package body Ada.Containers.Vectors is
               Array_Type   => Elements_Array,
               "<"          => "<");
 
+      --  Start of processing for Sort
+
       begin
          if Container.Last <= Index_Type'First then
             return;
          end if;
 
-         if Container.Lock > 0 then
+         --  The exception behavior for the vector container must match that
+         --  for the list container, so we check for cursor tampering here
+         --  (which will catch more things) instead of for element tampering
+         --  (which will catch fewer things). It's true that the elements of
+         --  this vector container could be safely moved around while (say) an
+         --  iteration is taking place (iteration only increments the busy
+         --  counter), and so technically all we would need here is a test for
+         --  element tampering (indicated by the lock counter), that's simply
+         --  an artifact of our array-based implementation. Logically Sort
+         --  requires a check for cursor tampering.
+
+         if Container.Busy > 0 then
             raise Program_Error with
-              "attempt to tamper with elements (vector is locked)";
+              "attempt to tamper with cursors (vector is busy)";
          end if;
 
          Sort (Container.Elements.EA (Index_Type'First .. Container.Last));
@@ -2977,9 +2989,20 @@ package body Ada.Containers.Vectors is
          return;
       end if;
 
-      if Container.Lock > 0 then
+      --  The exception behavior for the vector container must match that for
+      --  the list container, so we check for cursor tampering here (which will
+      --  catch more things) instead of for element tampering (which will catch
+      --  fewer things). It's true that the elements of this vector container
+      --  could be safely moved around while (say) an iteration is taking place
+      --  (iteration only increments the busy counter), and so technically all
+      --  we would need here is a test for element tampering (indicated by the
+      --  lock counter), that's simply an artifact of our array-based
+      --  implementation. Logically Reverse_Elements requires a check for
+      --  cursor tampering.
+
+      if Container.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (vector is locked)";
+           "attempt to tamper with cursors (vector is busy)";
       end if;
 
       declare

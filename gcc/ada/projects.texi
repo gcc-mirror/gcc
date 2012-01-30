@@ -1757,9 +1757,12 @@ The name of a stand-alone library, specified with attribute
 The most prominent characteristic of a stand-alone library is that it offers a
 distinction between interface units and implementation units. Only the former
 are visible to units outside the library. A stand-alone library project is thus
-characterised by a third attribute, @b{Library_Interface}, in addition to the
-two attributes that make a project a Library Project (@code{Library_Name} and
-@code{Library_Dir}).
+characterised by a third attribute, usually @b{Library_Interface}, in addition
+to the two attributes that make a project a Library Project
+(@code{Library_Name} and @code{Library_Dir}). This third attribute may also be
+@b{Interfaces}. @b{Library_Interface} only works when the interface is in Ada
+and takes a list of units as parameter. @b{Interfaces} works for any supported
+language and takes a list of sources as parameter.
 
 @table @asis
 @item @b{Library_Interface}:
@@ -1776,6 +1779,13 @@ two attributes that make a project a Library Project (@code{Library_Name} and
      for Library_Interface use ("lib1", "lib2");  --  unit names
 @end group
 @end smallexample
+
+@item @b{Interfaces}
+  This attribute defnes an explicit subset of the source files of a project.
+  It may be used as a replacement for attribute @code{Library_Interface}. For
+  multi-language library projects, it is the only way to make the project a
+  Stand-Alone Library project and at the same time to reduce the non Ada
+  interfacing sources.
 
 @item @b{Library_Standalone}:
 @cindex @code{Library_Standalone}
