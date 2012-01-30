@@ -1,3 +1,9 @@
+2012-01-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51528
+	* tree-sra.c (sra_modify_assign): Re-factor in preparation
+	for PR51528 fix.
+
 2012-01-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	* df-problems.c (df_kill_notes): Check that the use refers
