@@ -1,3 +1,12 @@
+2012-01-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/51920
+	* config/sparc/sparc.c (vector_init_fpmerge): Remove INNER_MODE
+	parameter and use short-lived pseudos.
+	(vector_init_faligndata): Remove INNER_MODE parameter and use loop.
+	(sparc_expand_vector_init): Const-ify local variables and adjust
+	calls to above functions.
+
 2012-01-30  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (out_movqi_mr_r): Fix length computation.
