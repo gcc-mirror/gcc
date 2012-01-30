@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3185,14 +3185,18 @@ package body Sem_Aggr is
          --  dynamic-sized aggregate in the code, something that gigi cannot
          --  handle.
 
-         Relocate  : Boolean;
-         --  Set to True if the resolved Expr node needs to be relocated
-         --  when attached to the newly created association list. This node
-         --  need not be relocated if its parent pointer is not set.
-         --  In fact in this case Expr is the output of a New_Copy_Tree call.
-         --  if Relocate is True then we have analyzed the expression node
-         --  in the original aggregate and hence it needs to be relocated
-         --  when moved over the new association list.
+         Relocate : Boolean;
+         --  Set to True if the resolved Expr node needs to be relocated when
+         --  attached to the newly created association list. This node need not
+         --  be relocated if its parent pointer is not set. In fact in this
+         --  case Expr is the output of a New_Copy_Tree call. If Relocate is
+         --  True then we have analyzed the expression node in the original
+         --  aggregate and hence it needs to be relocated when moved over to
+         --  the new association list.
+
+         ---------------------------
+         -- Has_Expansion_Delayed --
+         ---------------------------
 
          function Has_Expansion_Delayed (Expr : Node_Id) return Boolean is
             Kind : constant Node_Kind := Nkind (Expr);
@@ -3205,7 +3209,7 @@ package body Sem_Aggr is
                         and then Has_Expansion_Delayed (Expression (Expr)));
          end Has_Expansion_Delayed;
 
-      --  Start of processing for  Resolve_Aggr_Expr
+      --  Start of processing for Resolve_Aggr_Expr
 
       begin
          --  If the type of the component is elementary or the type of the
@@ -3315,8 +3319,8 @@ package body Sem_Aggr is
             Set_Raises_Constraint_Error (N);
          end if;
 
-         --  If the expression has been marked as requiring a range check,
-         --  then generate it here.
+         --  If the expression has been marked as requiring a range check, then
+         --  generate it here.
 
          if Do_Range_Check (Expr) then
             Set_Do_Range_Check (Expr, False);
@@ -3396,10 +3400,10 @@ package body Sem_Aggr is
 
       --  If the type has no components, then the aggregate should either
       --  have "null record", or in Ada 2005 it could instead have a single
-      --  component association given by "others => <>". For Ada 95 we flag
-      --  an error at this point, but for Ada 2005 we proceed with checking
-      --  the associations below, which will catch the case where it's not
-      --  an aggregate with "others => <>". Note that the legality of a <>
+      --  component association given by "others => <>". For Ada 95 we flag an
+      --  error at this point, but for Ada 2005 we proceed with checking the
+      --  associations below, which will catch the case where it's not an
+      --  aggregate with "others => <>". Note that the legality of a <>
       --  aggregate for a null record type was established by AI05-016.
 
       elsif No (First_Entity (Typ))

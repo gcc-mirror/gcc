@@ -2272,7 +2272,7 @@ package Einfo is
 --    Is_Generic_Type (Flag13)
 --       Present in all entities. Set for types which are generic formal types.
 --       Such types have an Ekind that corresponds to their classification, so
---       the Ekind cannot be used to identify generic types.
+--       the Ekind cannot be used to identify generic formal types.
 
 --    Is_Generic_Unit (synthesized)
 --       Applies to all entities. Yields True for a generic unit (generic
@@ -2721,8 +2721,8 @@ package Einfo is
 --       Present in all entities. Set in E_Package and E_Generic_Package
 --       entities to which a pragma Remote_Types is applied, and also on
 --       entities declared in the visible part of the spec of such a package.
---       Also set for generic formal types to which pragma Remote_Access_Type
---       applies.
+--       Also set for types which are generic formal types to which the
+--       pragma Remote_Access_Type applies.
 
 --    Is_Renaming_Of_Object (Flag112)
 --       Present in all entities, set only for a variable or constant for

@@ -1,5 +1,10 @@
 2012-01-30  Robert Dewar  <dewar@adacore.com>
 
+	* einfo.ads, sem_prag.adb, sem_attr.adb, aspects.ads,
+	sem_cat.adb, sem_aggr.adb, exp_aggr.adb: Minor reformatting.
+
+2012-01-30  Robert Dewar  <dewar@adacore.com>
+
 	* a-cdlili.adb, a-cidlli.adb, a-cbdlli.adb: Minor reformatting.
 
 2012-01-30  Olivier Hainque  <hainque@adacore.com>

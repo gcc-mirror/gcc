@@ -301,7 +301,6 @@ package Aspects is
    -----------------------------------------
 
    --  Table linking aspect names and id's
-   --  Shouldn't this be automatically generated in Snames???
 
    Aspect_Names : constant array (Aspect_Id) of Name_Id := (
      No_Aspect                           => No_Name,
