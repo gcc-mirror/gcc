@@ -1,3 +1,11 @@
+2012-01-30  Bin Cheng  <bin.cheng@arm.com>
+
+	Backport from mainline.
+	2012-01-30  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/51835
+	* gcc.target/arm/pr51835.c: New testcase.
+
 2012-01-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52022
