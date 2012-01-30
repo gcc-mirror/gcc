@@ -157,7 +157,9 @@ struct gimple_opt_pass pass_all_early_optimizations =
 static unsigned int
 execute_cleanup_cfg_post_optimizing (void)
 {
-  cleanup_tree_cfg ();
+  unsigned int todo = 0;
+  if (cleanup_tree_cfg ())
+    todo |= TODO_update_ssa;
   maybe_remove_unreachable_handlers ();
   cleanup_dead_labels ();
   group_case_labels ();
@@ -190,7 +192,7 @@ execute_cleanup_cfg_post_optimizing (void)
 	    }
 	}
     }
-  return 0;
+  return todo;
 }
 
 struct gimple_opt_pass pass_cleanup_cfg_post_optimizing =
