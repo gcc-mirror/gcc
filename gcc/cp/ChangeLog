@@ -1,14 +1,3 @@
-2012-01-30  Dodji Seketeli  <dodji@redhat.com>
-
-	PR c++/51641
-	* cp-tree.h (template_type_parameter_p): Declare new function.
-    	(parameter_of_template_p): Remove
-    	* pt.c (template_type_parameter_p): Define new function.
-    	(parameter_of_template_p): Remove.
-    	* name-lookup.c (binding_to_template_parms_of_scope_p): Don't rely
-    	on parameter_of_template_p anymore.  Compare the level of the
-    	template parameter to the depth of the template.
-
 2012-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51327
