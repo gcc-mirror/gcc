@@ -243,20 +243,19 @@ package body Exp_Aggr is
       Typ    : Entity_Id;
       Target : Node_Id) return List_Id;
    --  This routine implements top-down expansion of nested aggregates. In
-   --  doing so, it avoids the generation of temporaries at each level. N is a
-   --  nested (record or array) aggregate that has been marked with Expansion_
-   --  Delayed. Typ is the expected type of the aggregate. Target is a
-   --  (duplicable) expression that will hold the result of the aggregate
-   --  expansion.
+   --  doing so, it avoids the generation of temporaries at each level. N is
+   --  a nested record or array aggregate with the Expansion_Delayed flag.
+   --  Typ is the expected type of the aggregate. Target is a (duplicatable)
+   --  expression that will hold the result of the aggregate expansion.
 
    function Make_OK_Assignment_Statement
      (Sloc       : Source_Ptr;
       Name       : Node_Id;
       Expression : Node_Id) return Node_Id;
    --  This is like Make_Assignment_Statement, except that Assignment_OK
-   --  is set in the left operand. All assignments built by this unit
-   --  use this routine. This is needed to deal with assignments to
-   --  initialized constants that are done in place.
+   --  is set in the left operand. All assignments built by this unit use
+   --  this routine. This is needed to deal with assignments to initialized
+   --  constants that are done in place.
 
    function Number_Of_Choices (N : Node_Id) return Nat;
    --  Returns the number of discrete choices (not including the others choice
@@ -267,9 +266,9 @@ package body Exp_Aggr is
    --  array aggregate with all constant values, where the aggregate can be
    --  evaluated at compile time. If this is possible, then N is rewritten
    --  to be its proper compile time value with all the components properly
-   --  assembled. The expression is analyzed and resolved and True is
-   --  returned. If this transformation is not possible, N is unchanged
-   --  and False is returned
+   --  assembled. The expression is analyzed and resolved and True is returned.
+   --  If this transformation is not possible, N is unchanged and False is
+   --  returned.
 
    function Safe_Slice_Assignment (N : Node_Id) return Boolean;
    --  If a slice assignment has an aggregate with a single others_choice,
@@ -339,7 +338,7 @@ package body Exp_Aggr is
                Hi : constant Node_Id :=
                       Type_High_Bound (Etype (First_Index (T)));
 
-               Siz  : constant Int := Component_Count (Component_Type (T));
+               Siz : constant Int := Component_Count (Component_Type (T));
 
             begin
                if not Compile_Time_Known_Value (Lo)
@@ -5353,8 +5352,8 @@ package body Exp_Aggr is
       elsif Component_Not_OK_For_Backend then
          Convert_To_Assignments (N, Typ);
 
-      --  If an ancestor is private, some components are not inherited and
-      --  we cannot expand into a record aggregate
+      --  If an ancestor is private, some components are not inherited and we
+      --  cannot expand into a record aggregate.
 
       elsif Has_Visible_Private_Ancestor (Typ) then
          Convert_To_Assignments (N, Typ);
@@ -5413,7 +5412,7 @@ package body Exp_Aggr is
 
          elsif Is_Derived_Type (Typ) then
 
-            --  For untagged types,  non-stored discriminants are replaced
+            --  For untagged types, non-stored discriminants are replaced
             --  with stored discriminants, which are the ones that gigi uses
             --  to describe the type and its components.
 
@@ -5600,10 +5599,8 @@ package body Exp_Aggr is
 
             if Present (Orig_Tag) then
                Tag_Value := Orig_Tag;
-
             elsif not Tagged_Type_Expansion then
                Tag_Value := Empty;
-
             else
                Tag_Value :=
                  New_Occurrence_Of

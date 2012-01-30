@@ -3534,7 +3534,7 @@ package body Sem_Aggr is
             Next_Discriminant (Discrim);
          end loop;
 
-         --  Find remaining discriminant values, if any, among named components
+         --  Find remaining discriminant values if any among named components
 
          while Present (Discrim) loop
             Expr := Get_Value (Discrim, Component_Associations (N), True);
@@ -3575,12 +3575,12 @@ package body Sem_Aggr is
       --  maintenance nightmare.
 
       --  ??? Performance WARNING. The current implementation creates a new
-      --  itype for all aggregates whose base type is discriminated.
-      --  This means that for record aggregates nested inside an array
-      --  aggregate we will create a new itype for each record aggregate
-      --  if the array component type has discriminants. For large aggregates
-      --  this may be a problem. What should be done in this case is
-      --  to reuse itypes as much as possible.
+      --  itype for all aggregates whose base type is discriminated. This means
+      --  that for record aggregates nested inside an array aggregate we will
+      --  create a new itype for each record aggregate if the array component
+      --  type has discriminants. For large aggregates this may be a problem.
+      --  What should be done in this case is to reuse itypes as much as
+      --  possible.
 
       if Has_Discriminants (Typ)
         or else (Has_Unknown_Discriminants (Typ)
@@ -3905,9 +3905,9 @@ package body Sem_Aggr is
                --  If the component has discriminants, their values must
                --  be taken from their subtype. This is indispensable for
                --  constraints that are given by the current instance of an
-               --  enclosing type, to allow the expansion of the aggregate
-               --  to replace the reference to the current instance by the
-               --  target object of the aggregate.
+               --  enclosing type, to allow the expansion of the aggregate to
+               --  replace the reference to the current instance by the target
+               --  object of the aggregate.
 
                if Present (Parent (Component))
                  and then
