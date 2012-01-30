@@ -1,3 +1,7 @@
+2012-01-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (out_movqi_mr_r): Fix length computation.
+
 2012-01-29  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi: Make usage of "compile time" and
