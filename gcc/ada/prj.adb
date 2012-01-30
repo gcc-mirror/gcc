@@ -443,7 +443,13 @@ package body Prj is
 
       if Iter.Language = No_Language_Index then
          if Iter.All_Projects then
-            Iter.Project := Iter.Project.Next;
+            loop
+               Iter.Project := Iter.Project.Next;
+               exit when Iter.Project = null
+                 or else Iter.Encapsulated_Libs
+                 or else not Iter.Project.From_Encapsulated_Lib;
+            end loop;
+
             Project_Changed (Iter);
          else
             Iter.Project := null;
@@ -464,23 +470,32 @@ package body Prj is
    ---------------------
 
    function For_Each_Source
-     (In_Tree  : Project_Tree_Ref;
-      Project  : Project_Id := No_Project;
-      Language : Name_Id := No_Name) return Source_Iterator
+     (In_Tree           : Project_Tree_Ref;
+      Project           : Project_Id := No_Project;
+      Language          : Name_Id := No_Name;
+      Encapsulated_Libs : Boolean := True) return Source_Iterator
    is
       Iter : Source_Iterator;
    begin
       Iter := Source_Iterator'
-        (In_Tree       => In_Tree,
-         Project       => In_Tree.Projects,
-         All_Projects  => Project = No_Project,
-         Language_Name => Language,
-         Language      => No_Language_Index,
-         Current       => No_Source);
+        (In_Tree           => In_Tree,
+         Project           => In_Tree.Projects,
+         All_Projects      => Project = No_Project,
+         Language_Name     => Language,
+         Language          => No_Language_Index,
+         Current           => No_Source,
+         Encapsulated_Libs => Encapsulated_Libs);
 
       if Project /= null then
          while Iter.Project /= null
            and then Iter.Project.Project /= Project
+         loop
+            Iter.Project := Iter.Project.Next;
+         end loop;
+
+      else
+         while not Iter.Encapsulated_Libs
+           and then Iter.Project.From_Encapsulated_Lib
          loop
             Iter.Project := Iter.Project.Next;
          end loop;

@@ -1423,6 +1423,9 @@ package body Sem_Ch13 is
                   --  Make sure we have a freeze node (it might otherwise be
                   --  missing in cases like subtype X is Y, and we would not
                   --  have a place to build the predicate function).
+                  --  If the type is private, indicate that its completion
+                  --  has a freeze node, because that is the one that will be
+                  --  visible at freeze time.
 
                   Set_Has_Predicates (E);
 
@@ -1431,6 +1434,7 @@ package body Sem_Ch13 is
                   then
                      Set_Has_Predicates (Full_View (E));
                      Set_Has_Delayed_Aspects (Full_View (E));
+                     Ensure_Freeze_Node (Full_View (E));
                   end if;
 
                   Ensure_Freeze_Node (E);
@@ -5055,6 +5059,14 @@ package body Sem_Ch13 is
              Chars => New_External_Name (Chars (Typ), "Predicate"));
          Set_Has_Predicates (SId);
          Set_Predicate_Function (Typ, SId);
+
+         --  The predicate function is shared between views of a type.
+
+         if Is_Private_Type (Typ)
+           and then Present (Full_View (Typ))
+         then
+            Set_Predicate_Function (Full_View (Typ), SId);
+         end if;
 
          Spec :=
            Make_Function_Specification (Loc,
