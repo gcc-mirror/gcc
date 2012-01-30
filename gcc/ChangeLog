@@ -1,5 +1,9 @@
 2012-01-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/52046
+	* tree-vect-patterns.c (check_bool_pattern): Give up if
+	a comparison could throw.
+
 	PR debug/52048
 	* tree-ssa-tail-merge.c (local_def): Ignore debug uses.
 

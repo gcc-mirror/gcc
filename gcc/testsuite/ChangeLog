@@ -1,5 +1,8 @@
 2012-01-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/52046
+	* gcc.dg/pr52046.c: New test.
+
 	PR debug/52048
 	* g++.dg/other/pr52048.C: New test.
 
