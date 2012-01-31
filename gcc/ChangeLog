@@ -1,3 +1,11 @@
+2012-01-31  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	Backport from mainline:
+	2012-01-31  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	config/arm/thumb2.md (thumb2_mov_notscc): Use MVN for true
+	condition.
+
 2012-01-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgrtl.c (rtl_dump_bb): Do not dump insns for {ENTRY|EXIT}_BLOCK.
