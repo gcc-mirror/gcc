@@ -195,9 +195,10 @@ func PtraceDetach(pid int) (err error) { return ptrace(PTRACE_DETACH, pid, 0, 0)
 // //sys	Fstatfs(fd int, buf *Statfs_t) (err error)
 // //fstatfs(fd int, buf *Statfs_t) int
 
-// FIXME: Only available as a syscall.
-// //sysnb	Gettid() (tid int)
-// //gettid() Pid_t
+func Gettid() (tid int) {
+	r1, _, _ := Syscall(SYS_GETTID, 0, 0, 0)
+	return int(r1)
+}
 
 // FIXME: mksysinfo linux_dirent
 //    Or just abandon this function.
