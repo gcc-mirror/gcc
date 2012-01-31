@@ -1,3 +1,9 @@
+2012-01-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52013
+	* class.c (get_unique_hashed_string): Adapt trim length.
+	(gfc_build_class_symbol) Encode also corank in the container name.
+
 2012-01-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/52012

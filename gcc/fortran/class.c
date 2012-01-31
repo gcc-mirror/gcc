@@ -294,8 +294,10 @@ get_unique_hashed_string (char *string, gfc_symbol *derived)
   char tmp[2*GFC_MAX_SYMBOL_LEN+2];
   get_unique_type_string (&tmp[0], derived);
   /* If string is too long, use hash value in hex representation (allow for
-     extra decoration, cf. gfc_build_class_symbol & gfc_find_derived_vtab).  */
-  if (strlen (tmp) > GFC_MAX_SYMBOL_LEN - 11)
+     extra decoration, cf. gfc_build_class_symbol & gfc_find_derived_vtab).
+     We need space to for 15 characters "__class_" + symbol name + "_%d_%da",
+     where %d is the (co)rank which can be up to n = 15.  */
+  if (strlen (tmp) > GFC_MAX_SYMBOL_LEN - 15)
     {
       int h = gfc_hash_value (derived);
       sprintf (string, "%X", h);
@@ -360,10 +362,10 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 
   /* Determine the name of the encapsulating type.  */
   get_unique_hashed_string (tname, ts->u.derived);
-  if ((*as) && (*as)->rank && attr->allocatable)
-    sprintf (name, "__class_%s_%d_a", tname, (*as)->rank);
-  else if ((*as) && (*as)->rank)
-    sprintf (name, "__class_%s_%d", tname, (*as)->rank);
+  if ((*as) && attr->allocatable)
+    sprintf (name, "__class_%s_%d_%da", tname, (*as)->rank, (*as)->corank);
+  else if ((*as))
+    sprintf (name, "__class_%s_%d_%d", tname, (*as)->rank, (*as)->corank);
   else if (attr->pointer)
     sprintf (name, "__class_%s_p", tname);
   else if (attr->allocatable)

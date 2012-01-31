@@ -1,3 +1,8 @@
+2012-01-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52013
+	* gfortran.dg/elemental_args_check_6.f90: New.
+
 2012-01-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52043
