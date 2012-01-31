@@ -1,5 +1,5 @@
 /* go-backend.c -- Go frontend interface to gcc backend.
-   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -47,14 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This file holds all the cases where the Go frontend needs
    information from gcc's backend.  */
-
-/* Return the alignment in bytes of a value of type T.  */
-
-unsigned int
-go_type_alignment (tree t)
-{
-  return TYPE_ALIGN_UNIT (t);
-}
 
 /* Return the alignment in bytes of a struct field of type T.  */
 

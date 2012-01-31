@@ -263,10 +263,10 @@ AC_CHECK_MEMBERS([struct stat.st_blksize, struct stat.st_blocks, struct stat.st_
 # Check for library functions.
 AC_CHECK_FUNCS_ONCE(getrusage times mkstemp strtof strtold snprintf \
 ftruncate chsize chdir getlogin gethostname kill link symlink sleep ttyname \
-alarm access fork execl wait setmode execve pipe dup2 close fdopen \
+alarm access fork execl wait setmode execve pipe dup2 close \
 strcasestr getrlimit gettimeofday stat fstat lstat getpwuid vsnprintf dup \
 getcwd localtime_r gmtime_r strerror_r getpwuid_r ttyname_r clock_gettime \
-readlink getgid getpid getppid getuid geteuid)
+readlink getgid getpid getppid getuid geteuid umask)
 
 # Check for C99 (and other IEEE) math functions
 AC_CHECK_LIB([m],[acosf],[AC_DEFINE([HAVE_ACOSF],[1],[libm includes acosf])])

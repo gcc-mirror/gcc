@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -301,7 +301,7 @@ begin
 
                      when others =>
                         Skipc;
-                        if Typ = 'P' then
+                        if Typ = 'P' or else Typ = 'p' then
                            if Nextc not in '1' .. '9' then
                               N := 1;
                               loop

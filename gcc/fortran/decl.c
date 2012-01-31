@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -26,12 +26,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "parse.h"
 #include "flags.h"
 #include "constructor.h"
+#include "tree.h"
 
 /* Macros to access allocate memory for gfc_data_variable,
    gfc_data_value and gfc_data.  */
 #define gfc_get_data_variable() XCNEW (gfc_data_variable)
 #define gfc_get_data_value() XCNEW (gfc_data_value)
 #define gfc_get_data() XCNEW (gfc_data)
+
+
+static gfc_try set_binding_label (const char **, const char *, int);
 
 
 /* This flag is set if an old-style length selector is matched
@@ -51,7 +55,7 @@ static gfc_array_spec *current_as;
 static int colon_seen;
 
 /* The current binding label (if any).  */
-static char curr_binding_label[GFC_MAX_BINDING_LABEL_LEN + 1];
+static const char* curr_binding_label;
 /* Need to know how many identifiers are on the current data declaration
    line in case we're given the BIND(C) attribute with a NAME= specifier.  */
 static int num_idents_on_line;
@@ -1164,11 +1168,11 @@ build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
      with a bind(c) and make sure the binding label is set correctly.  */
   if (sym->attr.is_bind_c == 1)
     {
-      if (sym->binding_label[0] == '\0')
+      if (!sym->binding_label)
         {
 	  /* Set the binding label and verify that if a NAME= was specified
 	     then only one identifier was in the entity-decl-list.  */
-	  if (set_binding_label (sym->binding_label, sym->name,
+	  if (set_binding_label (&sym->binding_label, sym->name,
 				 num_idents_on_line) == FAILURE)
             return FAILURE;
         }
@@ -1572,7 +1576,8 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 
   /* Should this ever get more complicated, combine with similar section
      in add_init_expr_to_sym into a separate function.  */
-  if (c->ts.type == BT_CHARACTER && !c->attr.pointer && c->initializer && c->ts.u.cl
+  if (c->ts.type == BT_CHARACTER && !c->attr.pointer && c->initializer
+      && c->ts.u.cl
       && c->ts.u.cl->length && c->ts.u.cl->length->expr_type == EXPR_CONSTANT)
     {
       int len;
@@ -2101,6 +2106,33 @@ gfc_match_old_kind_spec (gfc_typespec *ts)
 	  return MATCH_ERROR;
 	}
       ts->kind /= 2;
+
+    }
+
+  if (ts->type == BT_INTEGER && ts->kind == 4 && gfc_option.flag_integer4_kind == 8)
+    ts->kind = 8;
+
+  if (ts->type == BT_REAL || ts->type == BT_COMPLEX)
+    {
+      if (ts->kind == 4)
+	{
+	  if (gfc_option.flag_real4_kind == 8)
+	    ts->kind =  8;
+	  if (gfc_option.flag_real4_kind == 10)
+	    ts->kind = 10;
+	  if (gfc_option.flag_real4_kind == 16)
+	    ts->kind = 16;
+	}
+
+      if (ts->kind == 8)
+	{
+	  if (gfc_option.flag_real8_kind == 4)
+	    ts->kind = 4;
+	  if (gfc_option.flag_real8_kind == 10)
+	    ts->kind = 10;
+	  if (gfc_option.flag_real8_kind == 16)
+	    ts->kind = 16;
+	}
     }
 
   if (gfc_validate_kind (ts->type, ts->kind, true) < 0)
@@ -2246,7 +2278,33 @@ kind_expr:
 
   if(m == MATCH_ERROR)
      gfc_current_locus = where;
-  
+
+  if (ts->type == BT_INTEGER && ts->kind == 4 && gfc_option.flag_integer4_kind == 8)
+    ts->kind =  8;
+
+  if (ts->type == BT_REAL || ts->type == BT_COMPLEX)
+    {
+      if (ts->kind == 4)
+	{
+	  if (gfc_option.flag_real4_kind == 8)
+	    ts->kind =  8;
+	  if (gfc_option.flag_real4_kind == 10)
+	    ts->kind = 10;
+	  if (gfc_option.flag_real4_kind == 16)
+	    ts->kind = 16;
+	}
+
+      if (ts->kind == 8)
+	{
+	  if (gfc_option.flag_real8_kind == 4)
+	    ts->kind = 4;
+	  if (gfc_option.flag_real8_kind == 10)
+	    ts->kind = 10;
+	  if (gfc_option.flag_real8_kind == 16)
+	    ts->kind = 16;
+	}
+    }
+
   /* Return what we know from the test(s).  */
   return m;
 
@@ -2521,7 +2579,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
     ts->kind = -1;
 
   /* Clear the current binding label, in case one is given.  */
-  curr_binding_label[0] = '\0';
+  curr_binding_label = NULL;
 
   if (gfc_match (" byte") == MATCH_YES)
     {
@@ -3749,8 +3807,9 @@ cleanup:
    (J3/04-007, section 15.4.1).  If a binding label was given and
    there is more than one argument (num_idents), it is an error.  */
 
-gfc_try
-set_binding_label (char *dest_label, const char *sym_name, int num_idents)
+static gfc_try
+set_binding_label (const char **dest_label, const char *sym_name, 
+		   int num_idents)
 {
   if (num_idents > 1 && has_name_equals)
     {
@@ -3759,17 +3818,15 @@ set_binding_label (char *dest_label, const char *sym_name, int num_idents)
       return FAILURE;
     }
 
-  if (curr_binding_label[0] != '\0')
-    {
-      /* Binding label given; store in temp holder til have sym.  */
-      strcpy (dest_label, curr_binding_label);
-    }
+  if (curr_binding_label)
+    /* Binding label given; store in temp holder til have sym.  */
+    *dest_label = curr_binding_label;
   else
     {
       /* No binding label given, and the NAME= specifier did not exist,
          which means there was no NAME="".  */
       if (sym_name != NULL && has_name_equals == 0)
-        strcpy (dest_label, sym_name);
+        *dest_label = IDENTIFIER_POINTER (get_identifier (sym_name));
     }
    
   return SUCCESS;
@@ -3949,7 +4006,7 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
   /* See if the symbol has been marked as private.  If it has, make sure
      there is no binding label and warn the user if there is one.  */
   if (tmp_sym->attr.access == ACCESS_PRIVATE
-      && tmp_sym->binding_label[0] != '\0')
+      && tmp_sym->binding_label)
       /* Use gfc_warning_now because we won't say that the symbol fails
 	 just because of this.	*/
       gfc_warning_now ("Symbol '%s' at %L is marked PRIVATE but has been "
@@ -3975,7 +4032,7 @@ set_verify_bind_c_sym (gfc_symbol *tmp_sym, int num_idents)
   /* Set the is_bind_c bit in symbol_attribute.  */
   gfc_add_is_bind_c (&(tmp_sym->attr), tmp_sym->name, &gfc_current_locus, 0);
 
-  if (set_binding_label (tmp_sym->binding_label, tmp_sym->name, 
+  if (set_binding_label (&tmp_sym->binding_label, tmp_sym->name,
 			 num_idents) != SUCCESS)
     return FAILURE;
 
@@ -3992,7 +4049,8 @@ set_verify_bind_c_com_block (gfc_common_head *com_block, int num_idents)
   gfc_try retval = SUCCESS;
   
   /* destLabel, common name, typespec (which may have binding label).  */
-  if (set_binding_label (com_block->binding_label, com_block->name, num_idents)
+  if (set_binding_label (&com_block->binding_label, com_block->name, 
+			 num_idents)
       != SUCCESS)
     return FAILURE;
 
@@ -4103,7 +4161,7 @@ gfc_match_bind_c_stmt (void)
   /* This may not be necessary.  */
   gfc_clear_ts (ts);
   /* Clear the temporary binding label holder.  */
-  curr_binding_label[0] = '\0';
+  curr_binding_label = NULL;
 
   /* Look for the bind(c).  */
   found_match = gfc_match_bind_c (NULL, true);
@@ -4811,7 +4869,8 @@ match_procedure_decl (void)
 	      return MATCH_ERROR;
 	    }
 	  /* Set binding label for BIND(C).  */
-	  if (set_binding_label (sym->binding_label, sym->name, num) != SUCCESS)
+	  if (set_binding_label (&sym->binding_label, sym->name, num) 
+	      != SUCCESS)
 	    return MATCH_ERROR;
 	}
 
@@ -5655,7 +5714,7 @@ match
 gfc_match_bind_c (gfc_symbol *sym, bool allow_binding_name)
 {
   /* binding label, if exists */   
-  char binding_label[GFC_MAX_SYMBOL_LEN + 1];
+  const char* binding_label = NULL;
   match double_quote;
   match single_quote;
 
@@ -5663,10 +5722,6 @@ gfc_match_bind_c (gfc_symbol *sym, bool allow_binding_name)
      specifier or not.  */
   has_name_equals = 0;
 
-  /* Init the first char to nil so we can catch if we don't have
-     the label (name attr) or the symbol name yet.  */
-  binding_label[0] = '\0';
-   
   /* This much we have to be able to match, in this order, if
      there is a bind(c) label.	*/
   if (gfc_match (" bind ( c ") != MATCH_YES)
@@ -5701,7 +5756,7 @@ gfc_match_bind_c (gfc_symbol *sym, bool allow_binding_name)
       
       /* Grab the binding label, using functions that will not lower
 	 case the names automatically.	*/
-      if (gfc_match_name_C (binding_label) != MATCH_YES)
+      if (gfc_match_name_C (&binding_label) != MATCH_YES)
 	 return MATCH_ERROR;
       
       /* Get the closing quotation.  */
@@ -5749,14 +5804,12 @@ gfc_match_bind_c (gfc_symbol *sym, bool allow_binding_name)
   /* Save the binding label to the symbol.  If sym is null, we're
      probably matching the typespec attributes of a declaration and
      haven't gotten the name yet, and therefore, no symbol yet.	 */
-  if (binding_label[0] != '\0')
+  if (binding_label)
     {
       if (sym != NULL)
-      {
-	strcpy (sym->binding_label, binding_label);
-      }
+	sym->binding_label = binding_label;
       else
-	strcpy (curr_binding_label, binding_label);
+	curr_binding_label = binding_label;
     }
   else if (allow_binding_name)
     {
@@ -5765,7 +5818,7 @@ gfc_match_bind_c (gfc_symbol *sym, bool allow_binding_name)
 	 If name="" or allow_binding_name is false, no C binding name is
 	 created. */
       if (sym != NULL && sym->name != NULL && has_name_equals == 0)
-	strncpy (sym->binding_label, sym->name, strlen (sym->name) + 1);
+	sym->binding_label = IDENTIFIER_POINTER (get_identifier (sym->name));
     }
 
   if (has_name_equals && gfc_current_state () == COMP_INTERFACE

@@ -421,6 +421,8 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
       c->attr.access = ACCESS_PRIVATE;
       c->attr.pointer = 1;
     }
+  else if (!fclass->f2k_derived)
+    fclass->f2k_derived = gfc_get_namespace (NULL, 0);
 
   /* Since the extension field is 8 bit wide, we can only have
      up to 255 extension levels.  */
@@ -432,6 +434,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
     }
     
   fclass->attr.extension = ts->u.derived->attr.extension + 1;
+  fclass->attr.alloc_comp = ts->u.derived->attr.alloc_comp;
   fclass->attr.is_class = 1;
   ts->u.derived = fclass;
   attr->allocatable = attr->pointer = attr->dimension = attr->codimension = 0;
@@ -587,7 +590,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	{
 	  gfc_get_symbol (name, ns, &vtab);
 	  vtab->ts.type = BT_DERIVED;
-	  if (gfc_add_flavor (&vtab->attr, FL_PARAMETER, NULL,
+	  if (gfc_add_flavor (&vtab->attr, FL_VARIABLE, NULL,
 	                      &gfc_current_locus) == FAILURE)
 	    goto cleanup;
 	  vtab->attr.target = 1;
@@ -681,7 +684,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  def_init->attr.target = 1;
 		  def_init->attr.save = SAVE_IMPLICIT;
 		  def_init->attr.access = ACCESS_PUBLIC;
-		  def_init->attr.flavor = FL_PARAMETER;
+		  def_init->attr.flavor = FL_VARIABLE;
 		  gfc_set_sym_referenced (def_init);
 		  def_init->ts.type = BT_DERIVED;
 		  def_init->ts.u.derived = derived;

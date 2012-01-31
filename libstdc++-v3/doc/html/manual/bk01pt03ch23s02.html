@@ -13,16 +13,20 @@
      &lt;slist&gt;
      &lt;rb_tree&gt;
    </pre><p>are all here;
-      <code class="code">&lt;hash_map&gt;</code> and <code class="code">&lt;hash_set&gt;</code>
+      <code class="filename">&lt;backwards/hash_map&gt;</code> and
+      <code class="filename">&lt;backwards/hash_set&gt;</code>
       are deprecated but available as backwards-compatible extensions,
-      as discussed further below.  <code class="code">&lt;rope&gt;</code> is the
-      SGI specialization for large strings ("rope,"
-      "large strings," get it? Love that geeky humor.)
-      <code class="code">&lt;slist&gt;</code> is a singly-linked list, for when the
-      doubly-linked <code class="code">list&lt;&gt;</code> is too much space
-      overhead, and <code class="code">&lt;rb_tree&gt;</code> exposes the red-black
-      tree classes used in the implementation of the standard maps and
-      sets.
+      as discussed further below.
+      <code class="filename">&lt;ext/rope&gt;</code> is the SGI
+      specialization for large strings ("rope," "large strings," get it? Love
+      that geeky humor.)
+      <code class="filename">&lt;ext/slist&gt;</code> (superseded in
+      C++11 by <code class="filename">&lt;forward_list&gt;</code>)
+      is a singly-linked list, for when the doubly-linked <code class="code">list&lt;&gt;</code>
+      is too much space overhead, and
+      <code class="filename">&lt;ext/rb_tree&gt;</code> exposes the
+      red-black tree classes used in the implementation of the standard maps
+      and sets.
    </p><p>Each of the associative containers map, multimap, set, and multiset
       have a counterpart which uses a
       <a class="link" href="http://www.sgi.com/tech/stl/HashFunction.html">hashing
@@ -47,4 +51,9 @@
        possibility of pathological cases, you'll probably get better
        performance from hash_map.
      </em></span>
-     </p></blockquote></div></div><div class="navfooter"><hr/><table width="100%" summary="Navigation footer"><tr><td align="left"><a accesskey="p" href="ext_containers.html">Prev</a> </td><td align="center"><a accesskey="u" href="ext_containers.html">Up</a></td><td align="right"> <a accesskey="n" href="ext_utilities.html">Next</a></td></tr><tr><td align="left" valign="top">Chapter 23. HP/SGI Extensions </td><td align="center"><a accesskey="h" href="../index.html">Home</a></td><td align="right" valign="top"> Chapter 24. Utilities</td></tr></table></div></body></html>
+     </p></blockquote></div><p>
+      The deprecated hash tables are superseded by the standard unordered
+      associative containers defined in the ISO C++ 2011 standard in the
+      headers <code class="filename">&lt;unordered_map&gt;</code>
+      and <code class="filename">&lt;unordered_set&gt;</code>.
+   </p></div><div class="navfooter"><hr/><table width="100%" summary="Navigation footer"><tr><td align="left"><a accesskey="p" href="ext_containers.html">Prev</a> </td><td align="center"><a accesskey="u" href="ext_containers.html">Up</a></td><td align="right"> <a accesskey="n" href="ext_utilities.html">Next</a></td></tr><tr><td align="left" valign="top">Chapter 23. HP/SGI Extensions </td><td align="center"><a accesskey="h" href="../index.html">Home</a></td><td align="right" valign="top"> Chapter 24. Utilities</td></tr></table></div></body></html>

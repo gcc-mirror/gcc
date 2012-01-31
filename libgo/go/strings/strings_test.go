@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"io"
 	"reflect"
-	"strconv"
 	. "strings"
 	"testing"
 	"unicode"
@@ -143,7 +142,7 @@ const benchmarkString = "some_text=some☺value"
 
 func BenchmarkIndexRune(b *testing.B) {
 	if got := IndexRune(benchmarkString, '☺'); got != 14 {
-		panic("wrong index: got=" + strconv.Itoa(got))
+		b.Fatalf("wrong index: expected 14, got=%d", got)
 	}
 	for i := 0; i < b.N; i++ {
 		IndexRune(benchmarkString, '☺')
@@ -152,7 +151,7 @@ func BenchmarkIndexRune(b *testing.B) {
 
 func BenchmarkIndexRuneFastPath(b *testing.B) {
 	if got := IndexRune(benchmarkString, 'v'); got != 17 {
-		panic("wrong index: got=" + strconv.Itoa(got))
+		b.Fatalf("wrong index: expected 17, got=%d", got)
 	}
 	for i := 0; i < b.N; i++ {
 		IndexRune(benchmarkString, 'v')
@@ -161,7 +160,7 @@ func BenchmarkIndexRuneFastPath(b *testing.B) {
 
 func BenchmarkIndex(b *testing.B) {
 	if got := Index(benchmarkString, "v"); got != 17 {
-		panic("wrong index: got=" + strconv.Itoa(got))
+		b.Fatalf("wrong index: expected 17, got=%d", got)
 	}
 	for i := 0; i < b.N; i++ {
 		Index(benchmarkString, "v")
@@ -642,7 +641,7 @@ func equal(m string, s1, s2 string, t *testing.T) bool {
 
 func TestCaseConsistency(t *testing.T) {
 	// Make a string of all the runes.
-	numRunes := unicode.MaxRune + 1
+	numRunes := int(unicode.MaxRune + 1)
 	if testing.Short() {
 		numRunes = 1000
 	}

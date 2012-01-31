@@ -327,7 +327,7 @@ GTM::gtm_thread::rollback (gtm_transaction_cp *cp, bool aborting)
   // data. Because of the latter, we have to roll it back before any
   // dispatch-specific rollback (which handles synchronization with other
   // transactions).
-  undolog.rollback (cp ? cp->undolog_size : 0);
+  undolog.rollback (this, cp ? cp->undolog_size : 0);
 
   // Perform dispatch-specific rollback.
   abi_disp()->rollback (cp);

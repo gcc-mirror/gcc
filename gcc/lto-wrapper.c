@@ -403,6 +403,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	case OPT_fpie:
 	case OPT_fcommon:
 	case OPT_fexceptions:
+	case OPT_fgnu_tm:
 	  /* Do what the old LTO code did - collect exactly one option
 	     setting per OPT code, we pick the first we encounter.
 	     ???  This doesn't make too much sense, but when it doesn't
@@ -478,7 +479,8 @@ run_gcc (unsigned argc, char *argv[])
       fd = open (argv[i], O_RDONLY);
       if (fd == -1)
 	continue;
-      sobj = simple_object_start_read (fd, file_offset, NULL, &errmsg, &err);
+      sobj = simple_object_start_read (fd, file_offset, "__GNU_LTO", 
+	  			       &errmsg, &err);
       if (!sobj)
 	{
 	  close (fd);
@@ -555,6 +557,7 @@ run_gcc (unsigned argc, char *argv[])
 	case OPT_fpie:
 	case OPT_fcommon:
 	case OPT_fexceptions:
+	case OPT_fgnu_tm:
 	  break;
 
 	default:

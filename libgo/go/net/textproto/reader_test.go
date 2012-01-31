@@ -138,6 +138,15 @@ func TestReadMIMEHeader(t *testing.T) {
 	}
 }
 
+func TestReadMIMEHeaderSingle(t *testing.T) {
+	r := reader("Foo: bar\n\n")
+	m, err := r.ReadMIMEHeader()
+	want := MIMEHeader{"Foo": {"bar"}}
+	if !reflect.DeepEqual(m, want) || err != nil {
+		t.Fatalf("ReadMIMEHeader: %v, %v; want %v", m, err, want)
+	}
+}
+
 func TestLargeReadMIMEHeader(t *testing.T) {
 	data := make([]byte, 16*1024)
 	for i := 0; i < len(data); i++ {
@@ -203,7 +212,7 @@ func TestRFC959Lines(t *testing.T) {
 			t.Errorf("#%d: code=%d, want %d", i, code, tt.wantCode)
 		}
 		if msg != tt.wantMsg {
-			t.Errorf("%#d: msg=%q, want %q", i, msg, tt.wantMsg)
+			t.Errorf("#%d: msg=%q, want %q", i, msg, tt.wantMsg)
 		}
 	}
 }

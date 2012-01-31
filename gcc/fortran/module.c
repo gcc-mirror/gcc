@@ -75,6 +75,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "md5.h"
 #include "constructor.h"
 #include "cpp.h"
+#include "tree.h"
 
 #define MODULE_EXTENSION ".mod"
 
@@ -154,13 +155,12 @@ typedef struct pointer_info
     struct
     {
       gfc_symbol *sym;
-      char true_name[GFC_MAX_SYMBOL_LEN + 1], module[GFC_MAX_SYMBOL_LEN + 1];
+      char *true_name, *module, *binding_label;
+      fixup_t *stfixup;
+      gfc_symtree *symtree;
       enum gfc_rsym_state state;
       int ns, referenced, renamed;
       module_locus where;
-      fixup_t *stfixup;
-      gfc_symtree *symtree;
-      char binding_label[GFC_MAX_SYMBOL_LEN + 1];
     }
     rsym;
 
@@ -226,6 +226,13 @@ free_pi_tree (pointer_info *p)
 
   free_pi_tree (p->left);
   free_pi_tree (p->right);
+
+  if (iomode == IO_INPUT)
+    {
+      XDELETEVEC (p->u.rsym.true_name);
+      XDELETEVEC (p->u.rsym.module);
+      XDELETEVEC (p->u.rsym.binding_label);
+    }
 
   free (p);
 }
@@ -1435,6 +1442,19 @@ find_enum (const mstring *m)
   bad_module ("find_enum(): Enum not found");
 
   /* Not reached.  */
+}
+
+
+/* Read a string. The caller is responsible for freeing.  */
+
+static char*
+read_string (void)
+{
+  char* p;
+  require_atom (ATOM_STRING);
+  p = atom_string;
+  atom_string = NULL;
+  return p;
 }
 
 
@@ -4126,6 +4146,7 @@ load_commons (void)
   while (peek_atom () != ATOM_RPAREN)
     {
       int flags;
+      char* label;
       mio_lparen ();
       mio_internal_string (name);
 
@@ -4142,7 +4163,10 @@ load_commons (void)
       /* Get whether this was a bind(c) common or not.  */
       mio_integer (&p->is_bind_c);
       /* Get the binding label.  */
-      mio_internal_string (p->binding_label);
+      label = read_string ();
+      if (strlen (label))
+	p->binding_label = IDENTIFIER_POINTER (get_identifier (label));
+      XDELETEVEC (label);
       
       mio_rparen ();
     }
@@ -4344,14 +4368,20 @@ load_needed (pointer_info *p)
       sym = gfc_new_symbol (p->u.rsym.true_name, ns);
       sym->name = dt_lower_string (p->u.rsym.true_name);
       sym->module = gfc_get_string (p->u.rsym.module);
-      strcpy (sym->binding_label, p->u.rsym.binding_label);
+      if (p->u.rsym.binding_label)
+	sym->binding_label = IDENTIFIER_POINTER (get_identifier 
+						 (p->u.rsym.binding_label));
 
       associate_integer_pointer (p, sym);
     }
 
   mio_symbol (sym);
   sym->attr.use_assoc = 1;
-  if (only_flag)
+
+  /* Mark as only or rename for later diagnosis for explicitly imported
+     but not used warnings; don't mark internal symbols such as __vtab,
+     __def_init etc.  */
+  if (only_flag && sym->name[0] != '_' && sym->name[1] != '_')
     sym->attr.use_only = 1;
   if (p->u.rsym.renamed)
     sym->attr.use_rename = 1;
@@ -4465,7 +4495,7 @@ read_module (void)
   int i;
   int ambiguous, j, nuse, symbol;
   pointer_info *info, *q;
-  gfc_use_rename *u;
+  gfc_use_rename *u = NULL;
   gfc_symtree *st;
   gfc_symbol *sym;
 
@@ -4489,16 +4519,20 @@ read_module (void)
 
   while (peek_atom () != ATOM_RPAREN)
     {
+      char* bind_label;
       require_atom (ATOM_INTEGER);
       info = get_integer (atom_int);
 
       info->type = P_SYMBOL;
       info->u.rsym.state = UNUSED;
 
-      mio_internal_string (info->u.rsym.true_name);
-      mio_internal_string (info->u.rsym.module);
-      mio_internal_string (info->u.rsym.binding_label);
-
+      info->u.rsym.true_name = read_string ();
+      info->u.rsym.module = read_string ();
+      bind_label = read_string ();
+      if (strlen (bind_label))
+	info->u.rsym.binding_label = bind_label;
+      else
+	XDELETEVEC (bind_label);
       
       require_atom (ATOM_INTEGER);
       info->u.rsym.ns = atom_int;
@@ -4574,8 +4608,9 @@ read_module (void)
 	    p = name;
 
 	  /* Exception: Always import vtabs & vtypes.  */
-	  if (p == NULL && (strncmp (name, "__vtab_", 5) == 0
-			    || strncmp (name, "__vtype_", 6) == 0))
+	  if (p == NULL && name[0] == '_'
+	      && (strncmp (name, "__vtab_", 5) == 0
+		  || strncmp (name, "__vtype_", 6) == 0))
 	    p = name;
 
 	  /* Skip symtree nodes not in an ONLY clause, unless there
@@ -4629,10 +4664,10 @@ read_module (void)
 		  sym = info->u.rsym.sym;
 		  sym->module = gfc_get_string (info->u.rsym.module);
 
-		  /* TODO: hmm, can we test this?  Do we know it will be
-		     initialized to zeros?  */
-		  if (info->u.rsym.binding_label[0] != '\0')
-		    strcpy (sym->binding_label, info->u.rsym.binding_label);
+		  if (info->u.rsym.binding_label)
+		    sym->binding_label = 
+		      IDENTIFIER_POINTER (get_identifier 
+					  (info->u.rsym.binding_label));
 		}
 
 	      st->n.sym = sym;
@@ -4641,7 +4676,10 @@ read_module (void)
 	      if (strcmp (name, p) != 0)
 		sym->attr.use_rename = 1;
 
-	      sym->attr.use_only = only_flag;
+	      if (name[0] != '_'
+		  || (strncmp (name, "__vtab_", 5) != 0
+		      && strncmp (name, "__vtype_", 6) != 0))
+		sym->attr.use_only = only_flag;
 
 	      /* Store the symtree pointing to this symbol.  */
 	      info->u.rsym.symtree = st;
@@ -4678,6 +4716,8 @@ read_module (void)
 	}
 
       mio_interface (&gfc_current_ns->op[i]);
+      if (u && !gfc_current_ns->op[i])
+	u->found = 0;
     }
 
   mio_rparen ();
@@ -4826,10 +4866,10 @@ write_common_0 (gfc_symtree *st, bool this_module)
 
   write_common_0 (st->left, this_module);
 
-  /* We will write out the binding label, or the name if no label given.  */
+  /* We will write out the binding label, or "" if no label given.  */
   name = st->n.common->name;
   p = st->n.common;
-  label = p->is_bind_c ? p->binding_label : p->name;
+  label = (p->is_bind_c && p->binding_label) ? p->binding_label : "";
 
   /* Check if we've already output this common.  */
   w = written_commons;
@@ -4914,9 +4954,8 @@ write_blank_common (void)
   /* Write out whether the common block is bind(c) or not.  */
   mio_integer (&is_bind_c);
 
-  /* Write out the binding label, which is BLANK_COMMON_NAME, though
-     it doesn't matter because the label isn't used.  */
-  mio_pool_string (&name);
+  /* Write out an empty binding label.  */
+  write_atom (ATOM_STRING, "");
 
   mio_rparen ();
 }
@@ -5014,13 +5053,13 @@ write_symbol (int n, gfc_symbol *sym)
     mio_pool_string (&sym->name);
 
   mio_pool_string (&sym->module);
-  if (sym->attr.is_bind_c || sym->attr.is_iso_c)
+  if ((sym->attr.is_bind_c || sym->attr.is_iso_c) && sym->binding_label)
     {
       label = sym->binding_label;
       mio_pool_string (&label);
     }
   else
-    mio_pool_string (&sym->name);
+    write_atom (ATOM_STRING, "");
 
   mio_pointer_ref (&sym->ns);
 
@@ -6093,6 +6132,31 @@ gfc_use_module (gfc_use_list *module)
 }
 
 
+/* Remove duplicated intrinsic operators from the rename list. */
+
+static void
+rename_list_remove_duplicate (gfc_use_rename *list)
+{
+  gfc_use_rename *seek, *last;
+
+  for (; list; list = list->next)
+    if (list->op != INTRINSIC_USER && list->op != INTRINSIC_NONE)
+      {
+	last = list;
+	for (seek = list->next; seek; seek = last->next)
+	  {
+	    if (list->op == seek->op)
+	      {
+		last->next = seek->next;
+		free (seek);
+	      }
+	    else
+	      last = seek;
+	  }
+      }
+}
+
+
 /* Process all USE directives.  */
 
 void
@@ -6171,6 +6235,7 @@ gfc_use_modules (void)
   for (; module_list; module_list = next)
     {
       next = module_list->next;
+      rename_list_remove_duplicate (module_list->rename);
       gfc_use_module (module_list);
       if (module_list->intrinsic)
 	free_rename (module_list->rename);

@@ -1,5 +1,6 @@
 /* Primary expression subroutines
-   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -223,6 +224,9 @@ match_integer_constant (gfc_expr **result, int signflag)
     kind = gfc_default_integer_kind;
   if (kind == -1)
     return MATCH_ERROR;
+
+  if (kind == 4 && gfc_option.flag_integer4_kind == 8)
+    kind = 8;
 
   if (gfc_validate_kind (BT_INTEGER, kind, true) < 0)
     {
@@ -636,6 +640,26 @@ done:
 	  goto cleanup;
 	}
       kind = gfc_default_double_kind;
+
+      if (kind == 4)
+	{
+	  if (gfc_option.flag_real4_kind == 8)
+	    kind = 8;
+	  if (gfc_option.flag_real4_kind == 10)
+	    kind = 10;
+	  if (gfc_option.flag_real4_kind == 16)
+	    kind = 16;
+	}
+
+      if (kind == 8)
+	{
+	  if (gfc_option.flag_real8_kind == 4)
+	    kind = 4;
+	  if (gfc_option.flag_real8_kind == 10)
+	    kind = 10;
+	  if (gfc_option.flag_real8_kind == 16)
+	    kind = 16;
+	}
       break;
 
     case 'q':
@@ -665,6 +689,26 @@ done:
     default:
       if (kind == -2)
 	kind = gfc_default_real_kind;
+
+      if (kind == 4)
+	{
+	  if (gfc_option.flag_real4_kind == 8)
+	    kind = 8;
+	  if (gfc_option.flag_real4_kind == 10)
+	    kind = 10;
+	  if (gfc_option.flag_real4_kind == 16)
+	    kind = 16;
+	}
+
+      if (kind == 8)
+	{
+	  if (gfc_option.flag_real8_kind == 4)
+	    kind = 4;
+	  if (gfc_option.flag_real8_kind == 10)
+	    kind = 10;
+	  if (gfc_option.flag_real8_kind == 16)
+	    kind = 16;
+	}
 
       if (gfc_validate_kind (BT_REAL, kind, true) < 0)
 	{
@@ -1824,18 +1868,24 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  && (CLASS_DATA (sym)->attr.dimension
 	      || CLASS_DATA (sym)->attr.codimension)))
     {
-      /* In EQUIVALENCE, we don't know yet whether we are seeing
-	 an array, character variable or array of character
-	 variables.  We'll leave the decision till resolve time.  */
+      gfc_array_spec *as;
+
       tail = extend_ref (primary, tail);
       tail->type = REF_ARRAY;
 
-      m = gfc_match_array_ref (&tail->u.ar, equiv_flag ? NULL : sym->as,
-			       equiv_flag,
-			       sym->ts.type == BT_CLASS && CLASS_DATA (sym)
-			       ? (CLASS_DATA (sym)->as
-				  ? CLASS_DATA (sym)->as->corank : 0)
-			       : (sym->as ? sym->as->corank : 0));
+      /* In EQUIVALENCE, we don't know yet whether we are seeing
+	 an array, character variable or array of character
+	 variables.  We'll leave the decision till resolve time.  */
+
+      if (equiv_flag)
+	as = NULL;
+      else if (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
+	as = CLASS_DATA (sym)->as;
+      else
+	as = sym->as;
+
+      m = gfc_match_array_ref (&tail->u.ar, as, equiv_flag,
+			       as ? as->corank : 0);
       if (m != MATCH_YES)
 	return m;
 
@@ -2849,7 +2899,10 @@ gfc_match_rvalue (gfc_expr **result)
       e->value.function.actual = actual_arglist;
       e->where = gfc_current_locus;
 
-      if (sym->as != NULL)
+      if (sym->ts.type == BT_CLASS && sym->attr.class_ok
+	  && CLASS_DATA (sym)->as)
+	e->rank = CLASS_DATA (sym)->as->rank;
+      else if (sym->as != NULL)
 	e->rank = sym->as->rank;
 
       if (!sym->attr.function

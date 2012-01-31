@@ -506,78 +506,43 @@ func BenchmarkSprintfFloat(b *testing.B) {
 	}
 }
 
+var mallocBuf bytes.Buffer
+
+// gccgo numbers are different because gccgo does not have escape
+// analysis yet.
+var mallocTest = []struct {
+	count int
+	desc  string
+	fn    func()
+}{
+	{5, `Sprintf("")`, func() { Sprintf("") }},
+	{5, `Sprintf("xxx")`, func() { Sprintf("xxx") }},
+	{5, `Sprintf("%x")`, func() { Sprintf("%x", 7) }},
+	{5, `Sprintf("%s")`, func() { Sprintf("%s", "hello") }},
+	{5, `Sprintf("%x %x")`, func() { Sprintf("%x %x", 7, 112) }},
+	// For %g we use a float32, not float64, to guarantee passing the argument
+	// does not need to allocate memory to store the result in a pointer-sized word.
+	{20, `Sprintf("%g")`, func() { Sprintf("%g", float32(3.14159)) }},
+	{5, `Fprintf(buf, "%x %x %x")`, func() { mallocBuf.Reset(); Fprintf(&mallocBuf, "%x %x %x", 7, 8, 9) }},
+	{5, `Fprintf(buf, "%s")`, func() { mallocBuf.Reset(); Fprintf(&mallocBuf, "%s", "hello") }},
+}
+
+var _ bytes.Buffer
+
 func TestCountMallocs(t *testing.T) {
-	if testing.Short() {
-		return
+	for _, mt := range mallocTest {
+		const N = 100
+		runtime.UpdateMemStats()
+		mallocs := 0 - runtime.MemStats.Mallocs
+		for i := 0; i < N; i++ {
+			mt.fn()
+		}
+		runtime.UpdateMemStats()
+		mallocs += runtime.MemStats.Mallocs
+		if mallocs/N > uint64(mt.count) {
+			t.Errorf("%s: expected %d mallocs, got %d", mt.desc, mt.count, mallocs/N)
+		}
 	}
-	const N = 100
-	runtime.UpdateMemStats()
-	mallocs := 0 - runtime.MemStats.Mallocs
-	for i := 0; i < N; i++ {
-		Sprintf("")
-	}
-	runtime.UpdateMemStats()
-	mallocs += runtime.MemStats.Mallocs
-	Printf("mallocs per Sprintf(\"\"): %d\n", mallocs/N)
-	runtime.UpdateMemStats()
-	mallocs = 0 - runtime.MemStats.Mallocs
-	for i := 0; i < N; i++ {
-		Sprintf("xxx")
-	}
-	runtime.UpdateMemStats()
-	mallocs += runtime.MemStats.Mallocs
-	Printf("mallocs per Sprintf(\"xxx\"): %d\n", mallocs/N)
-	runtime.UpdateMemStats()
-	mallocs = 0 - runtime.MemStats.Mallocs
-	for i := 0; i < N; i++ {
-		Sprintf("%x", i)
-	}
-	runtime.UpdateMemStats()
-	mallocs += runtime.MemStats.Mallocs
-	Printf("mallocs per Sprintf(\"%%x\"): %d\n", mallocs/N)
-	runtime.UpdateMemStats()
-	mallocs = 0 - runtime.MemStats.Mallocs
-	for i := 0; i < N; i++ {
-		Sprintf("%s", "hello")
-	}
-	runtime.UpdateMemStats()
-	mallocs += runtime.MemStats.Mallocs
-	Printf("mallocs per Sprintf(\"%%s\"): %d\n", mallocs/N)
-	runtime.UpdateMemStats()
-	mallocs = 0 - runtime.MemStats.Mallocs
-	for i := 0; i < N; i++ {
-		Sprintf("%x %x", i, i)
-	}
-	runtime.UpdateMemStats()
-	mallocs += runtime.MemStats.Mallocs
-	Printf("mallocs per Sprintf(\"%%x %%x\"): %d\n", mallocs/N)
-	runtime.UpdateMemStats()
-	mallocs = 0 - runtime.MemStats.Mallocs
-	for i := 0; i < N; i++ {
-		Sprintf("%g", 3.14159)
-	}
-	runtime.UpdateMemStats()
-	mallocs += runtime.MemStats.Mallocs
-	Printf("mallocs per Sprintf(\"%%g\"): %d\n", mallocs/N)
-	buf := new(bytes.Buffer)
-	runtime.UpdateMemStats()
-	mallocs = 0 - runtime.MemStats.Mallocs
-	for i := 0; i < N; i++ {
-		buf.Reset()
-		Fprintf(buf, "%x %x %x", i, i, i)
-	}
-	runtime.UpdateMemStats()
-	mallocs += runtime.MemStats.Mallocs
-	Printf("mallocs per Fprintf(buf, \"%%x %%x %%x\"): %d\n", mallocs/N)
-	runtime.UpdateMemStats()
-	mallocs = 0 - runtime.MemStats.Mallocs
-	for i := 0; i < N; i++ {
-		buf.Reset()
-		Fprintf(buf, "%s", "hello")
-	}
-	runtime.UpdateMemStats()
-	mallocs += runtime.MemStats.Mallocs
-	Printf("mallocs per Fprintf(buf, \"%%s\"): %d\n", mallocs/N)
 }
 
 type flagPrinter struct{}
@@ -811,5 +776,39 @@ func TestPanics(t *testing.T) {
 		if s != tt.out {
 			t.Errorf("%q: got %q expected %q", tt.fmt, s, tt.out)
 		}
+	}
+}
+
+// Test that erroneous String routine doesn't cause fatal recursion.
+var recurCount = 0
+
+type Recur struct {
+	i      int
+	failed *bool
+}
+
+func (r Recur) String() string {
+	if recurCount++; recurCount > 10 {
+		*r.failed = true
+		return "FAIL"
+	}
+	// This will call badVerb. Before the fix, that would cause us to recur into
+	// this routine to print %!p(value). Now we don't call the user's method
+	// during an error.
+	return Sprintf("recur@%p value: %d", r, r.i)
+}
+
+func TestBadVerbRecursion(t *testing.T) {
+	failed := false
+	r := Recur{3, &failed}
+	Sprintf("recur@%p value: %d\n", &r, r.i)
+	if failed {
+		t.Error("fail with pointer")
+	}
+	failed = false
+	r = Recur{4, &failed}
+	Sprintf("recur@%p, value: %d\n", r, r.i)
+	if failed {
+		t.Error("fail with value")
 	}
 }

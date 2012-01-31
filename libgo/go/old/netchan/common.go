@@ -155,7 +155,7 @@ func (cs *clientSet) drain(timeout time.Duration) error {
 		if timeout > 0 && time.Now().After(deadline) {
 			return errors.New("timeout")
 		}
-		time.Sleep(100 * 1e6) // 100 milliseconds
+		time.Sleep(100 * time.Millisecond)
 	}
 	return nil
 }
@@ -165,9 +165,11 @@ func (cs *clientSet) sync(timeout time.Duration) error {
 	deadline := time.Now().Add(timeout)
 	// seq remembers the clients and their seqNum at point of entry.
 	seq := make(map[unackedCounter]int64)
+	cs.mu.Lock()
 	for client := range cs.clients {
 		seq[client] = client.seq()
 	}
+	cs.mu.Unlock()
 	for {
 		pending := false
 		cs.mu.Lock()
@@ -188,7 +190,7 @@ func (cs *clientSet) sync(timeout time.Duration) error {
 		if timeout > 0 && time.Now().After(deadline) {
 			return errors.New("timeout")
 		}
-		time.Sleep(100 * 1e6) // 100 milliseconds
+		time.Sleep(100 * time.Millisecond)
 	}
 	return nil
 }

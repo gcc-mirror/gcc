@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux openbsd windows
+// +build darwin freebsd linux netbsd openbsd windows
 
 package os
 
@@ -22,39 +22,6 @@ func epipecheck(file *File, e error) {
 	} else {
 		file.nepipe = 0
 	}
-}
-
-// Remove removes the named file or directory.
-func Remove(name string) error {
-	// System call interface forces us to know
-	// whether name is a file or directory.
-	// Try both: it is cheaper on average than
-	// doing a Stat plus the right one.
-	e := syscall.Unlink(name)
-	if e == nil {
-		return nil
-	}
-	e1 := syscall.Rmdir(name)
-	if e1 == nil {
-		return nil
-	}
-
-	// Both failed: figure out which error to return.
-	// OS X and Linux differ on whether unlink(dir)
-	// returns EISDIR, so can't use that.  However,
-	// both agree that rmdir(file) returns ENOTDIR,
-	// so we can use that to decide which error is real.
-	// Rmdir might also return ENOTDIR if given a bad
-	// file path, like /etc/passwd/foo, but in that case,
-	// both errors will be ENOTDIR, so it's okay to
-	// use the error from unlink.
-	// For windows syscall.ENOTDIR is set
-	// to syscall.ERROR_PATH_NOT_FOUND, hopefully it should
-	// do the trick.
-	if e1 != syscall.ENOTDIR {
-		e = e1
-	}
-	return &PathError{"remove", name, e}
 }
 
 // LinkError records an error during a link or symlink or rename
@@ -114,18 +81,34 @@ func Rename(oldname, newname string) error {
 	return nil
 }
 
+// syscallMode returns the syscall-specific mode bits from Go's portable mode bits.
+func syscallMode(i FileMode) (o uint32) {
+	o |= uint32(i.Perm())
+	if i&ModeSetuid != 0 {
+		o |= syscall.S_ISUID
+	}
+	if i&ModeSetgid != 0 {
+		o |= syscall.S_ISGID
+	}
+	if i&ModeSticky != 0 {
+		o |= syscall.S_ISVTX
+	}
+	// No mapping for Go's ModeTemporary (plan9 only).
+	return
+}
+
 // Chmod changes the mode of the named file to mode.
 // If the file is a symbolic link, it changes the mode of the link's target.
-func Chmod(name string, mode uint32) error {
-	if e := syscall.Chmod(name, mode); e != nil {
+func Chmod(name string, mode FileMode) error {
+	if e := syscall.Chmod(name, syscallMode(mode)); e != nil {
 		return &PathError{"chmod", name, e}
 	}
 	return nil
 }
 
 // Chmod changes the mode of the file to mode.
-func (f *File) Chmod(mode uint32) error {
-	if e := syscall.Fchmod(f.fd, mode); e != nil {
+func (f *File) Chmod(mode FileMode) error {
+	if e := syscall.Fchmod(f.fd, syscallMode(mode)); e != nil {
 		return &PathError{"chmod", f.name, e}
 	}
 	return nil

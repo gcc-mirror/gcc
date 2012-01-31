@@ -556,6 +556,7 @@ vn_reference_eq (const void *p1, const void *p2)
 	  tem1.type = TREE_TYPE (tem1.op0);
 	  tem1.opcode = TREE_CODE (tem1.op0);
 	  vro1 = &tem1;
+	  deref1 = false;
 	}
       if (deref2 && vro2->opcode == ADDR_EXPR)
 	{
@@ -564,7 +565,10 @@ vn_reference_eq (const void *p1, const void *p2)
 	  tem2.type = TREE_TYPE (tem2.op0);
 	  tem2.opcode = TREE_CODE (tem2.op0);
 	  vro2 = &tem2;
+	  deref2 = false;
 	}
+      if (deref1 != deref2)
+	return false;
       if (!vn_reference_op_eq (vro1, vro2))
 	return false;
       ++j;
@@ -624,6 +628,10 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 
       switch (temp.opcode)
 	{
+	case WITH_SIZE_EXPR:
+	  temp.op0 = TREE_OPERAND (ref, 1);
+	  temp.off = 0;
+	  break;
 	case MEM_REF:
 	  /* The base address gets its own vn_reference_op_s structure.  */
 	  temp.op0 = TREE_OPERAND (ref, 1);
@@ -740,6 +748,7 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
       VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
 
       if (REFERENCE_CLASS_P (ref)
+	  || TREE_CODE (ref) == WITH_SIZE_EXPR
 	  || (TREE_CODE (ref) == ADDR_EXPR
 	      && !is_gimple_min_invariant (ref)))
 	ref = TREE_OPERAND (ref, 0);

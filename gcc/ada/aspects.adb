@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -295,6 +295,7 @@ package body Aspects is
     Aspect_Preelaborable_Initialization => Aspect_Preelaborable_Initialization,
     Aspect_Priority                     => Aspect_Priority,
     Aspect_Pure_Function                => Aspect_Pure_Function,
+    Aspect_Remote_Access_Type           => Aspect_Remote_Access_Type,
     Aspect_Read                         => Aspect_Read,
     Aspect_Shared                       => Aspect_Atomic,
     Aspect_Size                         => Aspect_Size,
@@ -305,6 +306,7 @@ package body Aspects is
     Aspect_Stream_Size                  => Aspect_Stream_Size,
     Aspect_Suppress                     => Aspect_Suppress,
     Aspect_Suppress_Debug_Info          => Aspect_Suppress_Debug_Info,
+    Aspect_Synchronization              => Aspect_Synchronization,
     Aspect_Test_Case                    => Aspect_Test_Case,
     Aspect_Type_Invariant               => Aspect_Invariant,
     Aspect_Unchecked_Union              => Aspect_Unchecked_Union,

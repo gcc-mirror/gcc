@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux openbsd windows
+// +build darwin freebsd linux netbsd openbsd windows
 
 package net
 
@@ -91,11 +91,6 @@ func favoriteAddrFamily(net string, raddr, laddr sockaddr, mode string) int {
 	return syscall.AF_INET6
 }
 
-// TODO(rsc): if syscall.OS == "linux", we're supposed to read
-// /proc/sys/net/core/somaxconn,
-// to take advantage of kernels that have raised the limit.
-func listenBacklog() int { return syscall.SOMAXCONN }
-
 // Internet sockets (TCP, UDP)
 
 // A sockaddr represents a TCP or UDP network address that can
@@ -106,7 +101,7 @@ type sockaddr interface {
 	family() int
 }
 
-func internetSocket(net string, laddr, raddr sockaddr, socktype, proto int, mode string, toAddr func(syscall.Sockaddr) Addr) (fd *netFD, err error) {
+func internetSocket(net string, laddr, raddr sockaddr, sotype, proto int, mode string, toAddr func(syscall.Sockaddr) Addr) (fd *netFD, err error) {
 	var oserr error
 	var la, ra syscall.Sockaddr
 	family := favoriteAddrFamily(net, raddr, laddr, mode)
@@ -120,7 +115,7 @@ func internetSocket(net string, laddr, raddr sockaddr, socktype, proto int, mode
 			goto Error
 		}
 	}
-	fd, oserr = socket(net, family, socktype, proto, la, ra, toAddr)
+	fd, oserr = socket(net, family, sotype, proto, la, ra, toAddr)
 	if oserr != nil {
 		goto Error
 	}

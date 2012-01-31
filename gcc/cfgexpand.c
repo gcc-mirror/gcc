@@ -357,8 +357,7 @@ aggregate_contains_union_type (tree type)
    and due to type based aliasing rules decides that for two overlapping
    union temporaries { short s; int i; } accesses to the same mem through
    different types may not alias and happily reorders stores across
-   life-time boundaries of the temporaries (See PR25654).
-   We also have to mind MEM_IN_STRUCT_P and MEM_SCALAR_P.  */
+   life-time boundaries of the temporaries (See PR25654).  */
 
 static void
 add_alias_set_conflicts (void)
@@ -2493,10 +2492,8 @@ convert_debug_memory_address (enum machine_mode mode, rtx x,
   gcc_assert (xmode == mode || xmode == VOIDmode);
 #else
   rtx temp;
-  enum machine_mode address_mode = targetm.addr_space.address_mode (as);
-  enum machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
 
-  gcc_assert (mode == address_mode || mode == pointer_mode);
+  gcc_assert (targetm.addr_space.valid_pointer_mode (mode, as));
 
   if (GET_MODE (x) == mode || GET_MODE (x) == VOIDmode)
     return x;

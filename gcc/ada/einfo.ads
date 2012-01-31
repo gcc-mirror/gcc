@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -734,6 +734,14 @@ package Einfo is
 --       full type declaration node. Also note that for subprograms, this
 --       returns the {function,procedure}_specification, not the subprogram_
 --       declaration.
+
+--    Default_Aspect_Component_Value (Node19)
+--       Present in array types. Holds the static value specified in a
+--       default_component_value aspect specification for the array type.
+
+--    Default_Aspect_Value (Node19)
+--       Present in scalar types. Holds the static value specified in a
+--       default_value aspect specification for the type.
 
 --    Default_Expr_Function (Node21)
 --       Present in parameters. It holds the entity of the parameterless
@@ -2272,7 +2280,7 @@ package Einfo is
 --    Is_Generic_Type (Flag13)
 --       Present in all entities. Set for types which are generic formal types.
 --       Such types have an Ekind that corresponds to their classification, so
---       the Ekind cannot be used to identify generic types.
+--       the Ekind cannot be used to identify generic formal types.
 
 --    Is_Generic_Unit (synthesized)
 --       Applies to all entities. Yields True for a generic unit (generic
@@ -2721,6 +2729,8 @@ package Einfo is
 --       Present in all entities. Set in E_Package and E_Generic_Package
 --       entities to which a pragma Remote_Types is applied, and also on
 --       entities declared in the visible part of the spec of such a package.
+--       Also set for types which are generic formal types to which the
+--       pragma Remote_Access_Type applies.
 
 --    Is_Renaming_Of_Object (Flag112)
 --       Present in all entities, set only for a variable or constant for
@@ -3447,7 +3457,7 @@ package Einfo is
 --       register call to make appropriate entries in the special tables
 --       used for handling these pragmas at runtime.
 
---    Related_Array_Object (Node19)
+--    Related_Array_Object (Node25)
 --       Present in array types and subtypes. Used only for the base type
 --       and subtype created for an anonymous array object. Set to point
 --       to the entity of the corresponding array object. Currently used
@@ -5014,11 +5024,12 @@ package Einfo is
    --  E_Array_Type
    --  E_Array_Subtype
    --    First_Index                         (Node17)
-   --    Related_Array_Object                (Node19)
+   --    Default_Aspect_Component_Value      (Node19)
    --    Component_Type                      (Node20)   (base type only)
    --    Original_Array_Type                 (Node21)
    --    Component_Size                      (Uint22)   (base type only)
    --    Packed_Array_Type                   (Node23)
+   --    Related_Array_Object                (Node25)
    --    Component_Alignment                 (special)  (base type only)
    --    Has_Component_Size_Clause           (Flag68)   (base type only)
    --    Has_Pragma_Pack                     (Flag121)  (impl base type only)
@@ -5193,6 +5204,7 @@ package Einfo is
    --    Lit_Indexes                         (Node15)   (root type only)
    --    Lit_Strings                         (Node16)   (root type only)
    --    First_Literal                       (Node17)
+   --    Default_Aspect_Value                (Node19)
    --    Scalar_Range                        (Node20)
    --    Enum_Pos_To_Rep                     (Node23)   (type only)
    --    Static_Predicate                    (List25)
@@ -5224,6 +5236,7 @@ package Einfo is
    --  E_Floating_Point_Subtype
    --    Digits_Value                        (Uint17)
    --    Float_Rep                           (Uint10)   (Float_Rep_Kind)
+   --    Default_Aspect_Value                (Node19)
    --    Scalar_Range                        (Node20)
    --    Machine_Emax_Value                  (synth)
    --    Machine_Emin_Value                  (synth)
@@ -5395,6 +5408,7 @@ package Einfo is
    --  E_Modular_Integer_Type
    --  E_Modular_Integer_Subtype
    --    Modulus                             (Uint17)   (base type only)
+   --    Default_Aspect_Value                (Node19)
    --    Original_Array_Type                 (Node21)
    --    Scalar_Range                        (Node20)
    --    Static_Predicate                    (List25)
@@ -5429,6 +5443,7 @@ package Einfo is
    --  E_Ordinary_Fixed_Point_Type
    --  E_Ordinary_Fixed_Point_Subtype
    --    Delta_Value                         (Ureal18)
+   --    Default_Aspect_Value                (Node19)
    --    Scalar_Range                        (Node20)
    --    Small_Value                         (Ureal21)
    --    Has_Small_Clause                    (Flag67)
@@ -5670,6 +5685,7 @@ package Einfo is
 
    --  E_Signed_Integer_Type
    --  E_Signed_Integer_Subtype
+   --    Default_Aspect_Value                (Node19)
    --    Scalar_Range                        (Node20)
    --    Static_Predicate                    (List25)
    --    Has_Biased_Representation           (Flag139)
@@ -6031,14 +6047,16 @@ package Einfo is
    function CR_Discriminant                     (Id : E) return E;
    function C_Pass_By_Copy                      (Id : E) return B;
    function Can_Never_Be_Null                   (Id : E) return B;
+   function Can_Use_Internal_Rep                (Id : E) return B;
    function Checks_May_Be_Suppressed            (Id : E) return B;
    function Class_Wide_Type                     (Id : E) return E;
    function Cloned_Subtype                      (Id : E) return E;
    function Component_Alignment                 (Id : E) return C;
-   function Component_Clause                    (Id : E) return N;
    function Component_Bit_Offset                (Id : E) return U;
+   function Component_Clause                    (Id : E) return N;
    function Component_Size                      (Id : E) return U;
    function Component_Type                      (Id : E) return E;
+   function Contract                            (Id : E) return N;
    function Corresponding_Concurrent_Type       (Id : E) return E;
    function Corresponding_Discriminant          (Id : E) return E;
    function Corresponding_Equality              (Id : E) return E;
@@ -6047,13 +6065,14 @@ package Einfo is
    function Corresponding_Remote_Type           (Id : E) return E;
    function Current_Use_Clause                  (Id : E) return E;
    function Current_Value                       (Id : E) return N;
-   function Debug_Info_Off                      (Id : E) return B;
-   function Debug_Renaming_Link                 (Id : E) return E;
-   function Dispatch_Table_Wrappers             (Id : E) return L;
    function DTC_Entity                          (Id : E) return E;
    function DT_Entry_Count                      (Id : E) return U;
    function DT_Offset_To_Top_Func               (Id : E) return E;
    function DT_Position                         (Id : E) return U;
+   function Debug_Info_Off                      (Id : E) return B;
+   function Debug_Renaming_Link                 (Id : E) return E;
+   function Default_Aspect_Component_Value      (Id : E) return N;
+   function Default_Aspect_Value                (Id : E) return N;
    function Default_Expr_Function               (Id : E) return E;
    function Default_Expressions_Processed       (Id : E) return B;
    function Default_Value                       (Id : E) return N;
@@ -6063,6 +6082,7 @@ package Einfo is
    function Dependent_Instances                 (Id : E) return L;
    function Depends_On_Private                  (Id : E) return B;
    function Digits_Value                        (Id : E) return U;
+   function Direct_Primitive_Operations         (Id : E) return L;
    function Directly_Designated_Type            (Id : E) return E;
    function Discard_Names                       (Id : E) return B;
    function Discriminal                         (Id : E) return E;
@@ -6071,6 +6091,7 @@ package Einfo is
    function Discriminant_Constraint             (Id : E) return L;
    function Discriminant_Default_Value          (Id : E) return N;
    function Discriminant_Number                 (Id : E) return U;
+   function Dispatch_Table_Wrappers             (Id : E) return L;
    function Elaborate_Body_Desirable            (Id : E) return B;
    function Elaboration_Entity                  (Id : E) return E;
    function Elaboration_Entity_Required         (Id : E) return B;
@@ -6082,7 +6103,6 @@ package Einfo is
    function Entry_Formal                        (Id : E) return E;
    function Entry_Index_Constant                (Id : E) return E;
    function Entry_Index_Type                    (Id : E) return E;
-   function Contract                            (Id : E) return N;
    function Entry_Parameters_Type               (Id : E) return E;
    function Enum_Pos_To_Rep                     (Id : E) return E;
    function Enumeration_Pos                     (Id : E) return U;
@@ -6096,7 +6116,6 @@ package Einfo is
    function Extra_Constrained                   (Id : E) return E;
    function Extra_Formal                        (Id : E) return E;
    function Extra_Formals                       (Id : E) return E;
-   function Can_Use_Internal_Rep                (Id : E) return B;
    function Finalization_Master                 (Id : E) return E;
    function Finalize_Storage_Only               (Id : E) return B;
    function Finalizer                           (Id : E) return E;
@@ -6145,8 +6164,8 @@ package Einfo is
    function Has_Implicit_Dereference            (Id : E) return B;
    function Has_Inheritable_Invariants          (Id : E) return B;
    function Has_Initial_Value                   (Id : E) return B;
-   function Has_Invariants                      (Id : E) return B;
    function Has_Interrupt_Handler               (Id : E) return B;
+   function Has_Invariants                      (Id : E) return B;
    function Has_Machine_Radix_Clause            (Id : E) return B;
    function Has_Master_Entity                   (Id : E) return B;
    function Has_Missing_Return                  (Id : E) return B;
@@ -6201,8 +6220,8 @@ package Einfo is
    function In_Use                              (Id : E) return B;
    function Inner_Instances                     (Id : E) return L;
    function Interface_Alias                     (Id : E) return E;
-   function Interfaces                          (Id : E) return L;
    function Interface_Name                      (Id : E) return N;
+   function Interfaces                          (Id : E) return L;
    function Is_AST_Entry                        (Id : E) return B;
    function Is_Abstract_Subprogram              (Id : E) return B;
    function Is_Abstract_Type                    (Id : E) return B;
@@ -6242,8 +6261,8 @@ package Einfo is
    function Is_Implementation_Defined           (Id : E) return B;
    function Is_Imported                         (Id : E) return B;
    function Is_Inlined                          (Id : E) return B;
-   function Is_Interface                        (Id : E) return B;
    function Is_Instantiated                     (Id : E) return B;
+   function Is_Interface                        (Id : E) return B;
    function Is_Internal                         (Id : E) return B;
    function Is_Interrupt_Handler                (Id : E) return B;
    function Is_Intrinsic_Subprogram             (Id : E) return B;
@@ -6336,12 +6355,11 @@ package Einfo is
    function Original_Record_Component           (Id : E) return E;
    function Overlays_Constant                   (Id : E) return B;
    function Overridden_Operation                (Id : E) return E;
+   function PPC_Wrapper                         (Id : E) return E;
    function Package_Instantiation               (Id : E) return N;
    function Packed_Array_Type                   (Id : E) return E;
    function Parent_Subtype                      (Id : E) return E;
    function Postcondition_Proc                  (Id : E) return E;
-   function PPC_Wrapper                         (Id : E) return E;
-   function Direct_Primitive_Operations         (Id : E) return L;
    function Prival                              (Id : E) return E;
    function Prival_Link                         (Id : E) return E;
    function Private_Dependents                  (Id : E) return L;
@@ -6365,9 +6383,9 @@ package Einfo is
    function Renamed_Object                      (Id : E) return N;
    function Renaming_Map                        (Id : E) return U;
    function Requires_Overriding                 (Id : E) return B;
+   function Return_Applies_To                   (Id : E) return N;
    function Return_Flag_Or_Transient_Decl       (Id : E) return E;
    function Return_Present                      (Id : E) return B;
-   function Return_Applies_To                   (Id : E) return N;
    function Returns_By_Ref                      (Id : E) return B;
    function Reverse_Bit_Order                   (Id : E) return B;
    function Scalar_Range                        (Id : E) return N;
@@ -6377,14 +6395,14 @@ package Einfo is
    function Shadow_Entities                     (Id : E) return S;
    function Shared_Var_Procs_Instance           (Id : E) return E;
    function Size_Check_Code                     (Id : E) return N;
-   function Size_Known_At_Compile_Time          (Id : E) return B;
    function Size_Depends_On_Discriminant        (Id : E) return B;
+   function Size_Known_At_Compile_Time          (Id : E) return B;
    function Small_Value                         (Id : E) return R;
    function Spec_Entity                         (Id : E) return E;
-   function Static_Predicate                    (Id : E) return S;
-   function Storage_Size_Variable               (Id : E) return E;
    function Static_Elaboration_Desired          (Id : E) return B;
    function Static_Initialization               (Id : E) return N;
+   function Static_Predicate                    (Id : E) return S;
+   function Storage_Size_Variable               (Id : E) return E;
    function Stored_Constraint                   (Id : E) return L;
    function Strict_Alignment                    (Id : E) return B;
    function String_Literal_Length               (Id : E) return U;
@@ -6608,7 +6626,6 @@ package Einfo is
 
    procedure Set_Accept_Address                  (Id : E; V : L);
    procedure Set_Access_Disp_Table               (Id : E; V : L);
-   procedure Set_Dispatch_Table_Wrappers         (Id : E; V : L);
    procedure Set_Actual_Subtype                  (Id : E; V : E);
    procedure Set_Address_Taken                   (Id : E; V : B := True);
    procedure Set_Alias                           (Id : E; V : E);
@@ -6623,6 +6640,7 @@ package Einfo is
    procedure Set_CR_Discriminant                 (Id : E; V : E);
    procedure Set_C_Pass_By_Copy                  (Id : E; V : B := True);
    procedure Set_Can_Never_Be_Null               (Id : E; V : B := True);
+   procedure Set_Can_Use_Internal_Rep            (Id : E; V : B := True);
    procedure Set_Checks_May_Be_Suppressed        (Id : E; V : B := True);
    procedure Set_Class_Wide_Type                 (Id : E; V : E);
    procedure Set_Cloned_Subtype                  (Id : E; V : E);
@@ -6631,6 +6649,7 @@ package Einfo is
    procedure Set_Component_Clause                (Id : E; V : N);
    procedure Set_Component_Size                  (Id : E; V : U);
    procedure Set_Component_Type                  (Id : E; V : E);
+   procedure Set_Contract                        (Id : E; V : N);
    procedure Set_Corresponding_Concurrent_Type   (Id : E; V : E);
    procedure Set_Corresponding_Discriminant      (Id : E; V : E);
    procedure Set_Corresponding_Equality          (Id : E; V : E);
@@ -6639,12 +6658,14 @@ package Einfo is
    procedure Set_Corresponding_Remote_Type       (Id : E; V : E);
    procedure Set_Current_Use_Clause              (Id : E; V : E);
    procedure Set_Current_Value                   (Id : E; V : N);
-   procedure Set_Debug_Info_Off                  (Id : E; V : B := True);
-   procedure Set_Debug_Renaming_Link             (Id : E; V : E);
    procedure Set_DTC_Entity                      (Id : E; V : E);
    procedure Set_DT_Entry_Count                  (Id : E; V : U);
    procedure Set_DT_Offset_To_Top_Func           (Id : E; V : E);
    procedure Set_DT_Position                     (Id : E; V : U);
+   procedure Set_Debug_Info_Off                  (Id : E; V : B := True);
+   procedure Set_Debug_Renaming_Link             (Id : E; V : E);
+   procedure Set_Default_Aspect_Component_Value  (Id : E; V : N);
+   procedure Set_Default_Aspect_Value            (Id : E; V : N);
    procedure Set_Default_Expr_Function           (Id : E; V : E);
    procedure Set_Default_Expressions_Processed   (Id : E; V : B := True);
    procedure Set_Default_Value                   (Id : E; V : N);
@@ -6654,6 +6675,7 @@ package Einfo is
    procedure Set_Dependent_Instances             (Id : E; V : L);
    procedure Set_Depends_On_Private              (Id : E; V : B := True);
    procedure Set_Digits_Value                    (Id : E; V : U);
+   procedure Set_Direct_Primitive_Operations     (Id : E; V : L);
    procedure Set_Directly_Designated_Type        (Id : E; V : E);
    procedure Set_Discard_Names                   (Id : E; V : B := True);
    procedure Set_Discriminal                     (Id : E; V : E);
@@ -6662,6 +6684,7 @@ package Einfo is
    procedure Set_Discriminant_Constraint         (Id : E; V : L);
    procedure Set_Discriminant_Default_Value      (Id : E; V : N);
    procedure Set_Discriminant_Number             (Id : E; V : U);
+   procedure Set_Dispatch_Table_Wrappers         (Id : E; V : L);
    procedure Set_Elaborate_Body_Desirable        (Id : E; V : B := True);
    procedure Set_Elaboration_Entity              (Id : E; V : E);
    procedure Set_Elaboration_Entity_Required     (Id : E; V : B := True);
@@ -6672,7 +6695,6 @@ package Einfo is
    procedure Set_Entry_Component                 (Id : E; V : E);
    procedure Set_Entry_Formal                    (Id : E; V : E);
    procedure Set_Entry_Index_Constant            (Id : E; V : E);
-   procedure Set_Contract                        (Id : E; V : N);
    procedure Set_Entry_Parameters_Type           (Id : E; V : E);
    procedure Set_Enum_Pos_To_Rep                 (Id : E; V : E);
    procedure Set_Enumeration_Pos                 (Id : E; V : U);
@@ -6686,7 +6708,6 @@ package Einfo is
    procedure Set_Extra_Constrained               (Id : E; V : E);
    procedure Set_Extra_Formal                    (Id : E; V : E);
    procedure Set_Extra_Formals                   (Id : E; V : E);
-   procedure Set_Can_Use_Internal_Rep            (Id : E; V : B := True);
    procedure Set_Finalization_Master             (Id : E; V : E);
    procedure Set_Finalize_Storage_Only           (Id : E; V : B := True);
    procedure Set_Finalizer                       (Id : E; V : E);
@@ -6786,13 +6807,13 @@ package Einfo is
    procedure Set_Has_Xref_Entry                  (Id : E; V : B := True);
    procedure Set_Hiding_Loop_Variable            (Id : E; V : E);
    procedure Set_Homonym                         (Id : E; V : E);
-   procedure Set_Interfaces                      (Id : E; V : L);
    procedure Set_In_Package_Body                 (Id : E; V : B := True);
    procedure Set_In_Private_Part                 (Id : E; V : B := True);
    procedure Set_In_Use                          (Id : E; V : B := True);
    procedure Set_Inner_Instances                 (Id : E; V : L);
    procedure Set_Interface_Alias                 (Id : E; V : E);
    procedure Set_Interface_Name                  (Id : E; V : N);
+   procedure Set_Interfaces                      (Id : E; V : L);
    procedure Set_Is_AST_Entry                    (Id : E; V : B := True);
    procedure Set_Is_Abstract_Subprogram          (Id : E; V : B := True);
    procedure Set_Is_Abstract_Type                (Id : E; V : B := True);
@@ -6837,8 +6858,8 @@ package Einfo is
    procedure Set_Is_Implementation_Defined       (Id : E; V : B := True);
    procedure Set_Is_Imported                     (Id : E; V : B := True);
    procedure Set_Is_Inlined                      (Id : E; V : B := True);
-   procedure Set_Is_Interface                    (Id : E; V : B := True);
    procedure Set_Is_Instantiated                 (Id : E; V : B := True);
+   procedure Set_Is_Interface                    (Id : E; V : B := True);
    procedure Set_Is_Internal                     (Id : E; V : B := True);
    procedure Set_Is_Interrupt_Handler            (Id : E; V : B := True);
    procedure Set_Is_Intrinsic_Subprogram         (Id : E; V : B := True);
@@ -6932,12 +6953,11 @@ package Einfo is
    procedure Set_Original_Record_Component       (Id : E; V : E);
    procedure Set_Overlays_Constant               (Id : E; V : B := True);
    procedure Set_Overridden_Operation            (Id : E; V : E);
+   procedure Set_PPC_Wrapper                     (Id : E; V : E);
    procedure Set_Package_Instantiation           (Id : E; V : N);
    procedure Set_Packed_Array_Type               (Id : E; V : E);
    procedure Set_Parent_Subtype                  (Id : E; V : E);
    procedure Set_Postcondition_Proc              (Id : E; V : E);
-   procedure Set_PPC_Wrapper                     (Id : E; V : E);
-   procedure Set_Direct_Primitive_Operations     (Id : E; V : L);
    procedure Set_Prival                          (Id : E; V : E);
    procedure Set_Prival_Link                     (Id : E; V : E);
    procedure Set_Private_Dependents              (Id : E; V : L);
@@ -6961,9 +6981,9 @@ package Einfo is
    procedure Set_Renamed_Object                  (Id : E; V : N);
    procedure Set_Renaming_Map                    (Id : E; V : U);
    procedure Set_Requires_Overriding             (Id : E; V : B := True);
+   procedure Set_Return_Applies_To               (Id : E; V : N);
    procedure Set_Return_Flag_Or_Transient_Decl   (Id : E; V : E);
    procedure Set_Return_Present                  (Id : E; V : B := True);
-   procedure Set_Return_Applies_To               (Id : E; V : N);
    procedure Set_Returns_By_Ref                  (Id : E; V : B := True);
    procedure Set_Reverse_Bit_Order               (Id : E; V : B := True);
    procedure Set_Scalar_Range                    (Id : E; V : N);
@@ -6977,10 +6997,10 @@ package Einfo is
    procedure Set_Size_Known_At_Compile_Time      (Id : E; V : B := True);
    procedure Set_Small_Value                     (Id : E; V : R);
    procedure Set_Spec_Entity                     (Id : E; V : E);
-   procedure Set_Static_Predicate                (Id : E; V : S);
-   procedure Set_Storage_Size_Variable           (Id : E; V : E);
    procedure Set_Static_Elaboration_Desired      (Id : E; V : B);
    procedure Set_Static_Initialization           (Id : E; V : N);
+   procedure Set_Static_Predicate                (Id : E; V : S);
+   procedure Set_Storage_Size_Variable           (Id : E; V : E);
    procedure Set_Stored_Constraint               (Id : E; V : L);
    procedure Set_Strict_Alignment                (Id : E; V : B := True);
    procedure Set_String_Literal_Length           (Id : E; V : U);
@@ -7326,6 +7346,7 @@ package Einfo is
    pragma Inline (CR_Discriminant);
    pragma Inline (C_Pass_By_Copy);
    pragma Inline (Can_Never_Be_Null);
+   pragma Inline (Can_Use_Internal_Rep);
    pragma Inline (Checks_May_Be_Suppressed);
    pragma Inline (Class_Wide_Type);
    pragma Inline (Cloned_Subtype);
@@ -7342,13 +7363,14 @@ package Einfo is
    pragma Inline (Corresponding_Remote_Type);
    pragma Inline (Current_Use_Clause);
    pragma Inline (Current_Value);
-   pragma Inline (Debug_Info_Off);
-   pragma Inline (Debug_Renaming_Link);
-   pragma Inline (Dispatch_Table_Wrappers);
    pragma Inline (DTC_Entity);
    pragma Inline (DT_Entry_Count);
    pragma Inline (DT_Offset_To_Top_Func);
    pragma Inline (DT_Position);
+   pragma Inline (Debug_Info_Off);
+   pragma Inline (Debug_Renaming_Link);
+   pragma Inline (Default_Aspect_Component_Value);
+   pragma Inline (Default_Aspect_Value);
    pragma Inline (Default_Expr_Function);
    pragma Inline (Default_Expressions_Processed);
    pragma Inline (Default_Value);
@@ -7367,6 +7389,7 @@ package Einfo is
    pragma Inline (Discriminant_Constraint);
    pragma Inline (Discriminant_Default_Value);
    pragma Inline (Discriminant_Number);
+   pragma Inline (Dispatch_Table_Wrappers);
    pragma Inline (Elaborate_Body_Desirable);
    pragma Inline (Elaboration_Entity);
    pragma Inline (Elaboration_Entity_Required);
@@ -7391,7 +7414,6 @@ package Einfo is
    pragma Inline (Extra_Constrained);
    pragma Inline (Extra_Formal);
    pragma Inline (Extra_Formals);
-   pragma Inline (Can_Use_Internal_Rep);
    pragma Inline (Finalization_Master);
    pragma Inline (Finalizer);
    pragma Inline (First_Entity);
@@ -7489,22 +7511,22 @@ package Einfo is
    pragma Inline (Has_Xref_Entry);
    pragma Inline (Hiding_Loop_Variable);
    pragma Inline (Homonym);
-   pragma Inline (Interfaces);
    pragma Inline (In_Package_Body);
    pragma Inline (In_Private_Part);
    pragma Inline (In_Use);
    pragma Inline (Inner_Instances);
    pragma Inline (Interface_Alias);
    pragma Inline (Interface_Name);
+   pragma Inline (Interfaces);
    pragma Inline (Is_AST_Entry);
    pragma Inline (Is_Abstract_Subprogram);
    pragma Inline (Is_Abstract_Type);
    pragma Inline (Is_Access_Constant);
-   pragma Inline (Is_Ada_2005_Only);
-   pragma Inline (Is_Ada_2012_Only);
-   pragma Inline (Is_Access_Type);
    pragma Inline (Is_Access_Protected_Subprogram_Type);
    pragma Inline (Is_Access_Subprogram_Type);
+   pragma Inline (Is_Access_Type);
+   pragma Inline (Is_Ada_2005_Only);
+   pragma Inline (Is_Ada_2012_Only);
    pragma Inline (Is_Aggregate_Type);
    pragma Inline (Is_Aliased);
    pragma Inline (Is_Array_Type);
@@ -7531,11 +7553,11 @@ package Einfo is
    pragma Inline (Is_Controlled);
    pragma Inline (Is_Controlling_Formal);
    pragma Inline (Is_Decimal_Fixed_Point_Type);
-   pragma Inline (Is_Discrim_SO_Function);
-   pragma Inline (Is_Digits_Type);
    pragma Inline (Is_Descendent_Of_Address);
+   pragma Inline (Is_Digits_Type);
    pragma Inline (Is_Discrete_Or_Fixed_Point_Type);
    pragma Inline (Is_Discrete_Type);
+   pragma Inline (Is_Discrim_SO_Function);
    pragma Inline (Is_Dispatch_Table_Entity);
    pragma Inline (Is_Dispatching_Operation);
    pragma Inline (Is_Elementary_Type);
@@ -7565,9 +7587,9 @@ package Einfo is
    pragma Inline (Is_Incomplete_Or_Private_Type);
    pragma Inline (Is_Incomplete_Type);
    pragma Inline (Is_Inlined);
-   pragma Inline (Is_Interface);
    pragma Inline (Is_Instantiated);
    pragma Inline (Is_Integer_Type);
+   pragma Inline (Is_Interface);
    pragma Inline (Is_Internal);
    pragma Inline (Is_Interrupt_Handler);
    pragma Inline (Is_Intrinsic_Subprogram);
@@ -7584,14 +7606,14 @@ package Einfo is
    pragma Inline (Is_Named_Number);
    pragma Inline (Is_Non_Static_Subtype);
    pragma Inline (Is_Null_Init_Proc);
-   pragma Inline (Is_Obsolescent);
-   pragma Inline (Is_Only_Out_Parameter);
    pragma Inline (Is_Numeric_Type);
    pragma Inline (Is_Object);
+   pragma Inline (Is_Obsolescent);
+   pragma Inline (Is_Only_Out_Parameter);
    pragma Inline (Is_Optional_Parameter);
-   pragma Inline (Is_Package_Body_Entity);
    pragma Inline (Is_Ordinary_Fixed_Point_Type);
    pragma Inline (Is_Overloadable);
+   pragma Inline (Is_Package_Body_Entity);
    pragma Inline (Is_Packed);
    pragma Inline (Is_Packed_Array_Type);
    pragma Inline (Is_Potentially_Use_Visible);
@@ -7623,10 +7645,10 @@ package Einfo is
    pragma Inline (Is_Subprogram);
    pragma Inline (Is_Tag);
    pragma Inline (Is_Tagged_Type);
-   pragma Inline (Is_True_Constant);
    pragma Inline (Is_Task_Type);
    pragma Inline (Is_Thunk);
    pragma Inline (Is_Trivial_Subprogram);
+   pragma Inline (Is_True_Constant);
    pragma Inline (Is_Type);
    pragma Inline (Is_Unchecked_Union);
    pragma Inline (Is_Underlying_Record_View);
@@ -7677,12 +7699,12 @@ package Einfo is
    pragma Inline (Original_Record_Component);
    pragma Inline (Overlays_Constant);
    pragma Inline (Overridden_Operation);
+   pragma Inline (PPC_Wrapper);
    pragma Inline (Package_Instantiation);
    pragma Inline (Packed_Array_Type);
    pragma Inline (Parameter_Mode);
    pragma Inline (Parent_Subtype);
    pragma Inline (Postcondition_Proc);
-   pragma Inline (PPC_Wrapper);
    pragma Inline (Prival);
    pragma Inline (Prival_Link);
    pragma Inline (Private_Dependents);
@@ -7706,9 +7728,9 @@ package Einfo is
    pragma Inline (Renamed_Object);
    pragma Inline (Renaming_Map);
    pragma Inline (Requires_Overriding);
+   pragma Inline (Return_Applies_To);
    pragma Inline (Return_Flag_Or_Transient_Decl);
    pragma Inline (Return_Present);
-   pragma Inline (Return_Applies_To);
    pragma Inline (Returns_By_Ref);
    pragma Inline (Reverse_Bit_Order);
    pragma Inline (Scalar_Range);
@@ -7722,10 +7744,10 @@ package Einfo is
    pragma Inline (Size_Known_At_Compile_Time);
    pragma Inline (Small_Value);
    pragma Inline (Spec_Entity);
-   pragma Inline (Static_Predicate);
-   pragma Inline (Storage_Size_Variable);
    pragma Inline (Static_Elaboration_Desired);
    pragma Inline (Static_Initialization);
+   pragma Inline (Static_Predicate);
+   pragma Inline (Storage_Size_Variable);
    pragma Inline (Stored_Constraint);
    pragma Inline (Strict_Alignment);
    pragma Inline (String_Literal_Length);
@@ -7773,6 +7795,7 @@ package Einfo is
    pragma Inline (Set_CR_Discriminant);
    pragma Inline (Set_C_Pass_By_Copy);
    pragma Inline (Set_Can_Never_Be_Null);
+   pragma Inline (Set_Can_Use_Internal_Rep);
    pragma Inline (Set_Checks_May_Be_Suppressed);
    pragma Inline (Set_Class_Wide_Type);
    pragma Inline (Set_Cloned_Subtype);
@@ -7789,14 +7812,14 @@ package Einfo is
    pragma Inline (Set_Corresponding_Remote_Type);
    pragma Inline (Set_Current_Use_Clause);
    pragma Inline (Set_Current_Value);
-   pragma Inline (Set_Debug_Info_Off);
-   pragma Inline (Set_Debug_Renaming_Link);
-   pragma Inline (Set_Dispatch_Table_Wrappers);
    pragma Inline (Set_DTC_Entity);
    pragma Inline (Set_DT_Entry_Count);
    pragma Inline (Set_DT_Offset_To_Top_Func);
    pragma Inline (Set_DT_Position);
-   pragma Inline (Set_Relative_Deadline_Variable);
+   pragma Inline (Set_Debug_Info_Off);
+   pragma Inline (Set_Debug_Renaming_Link);
+   pragma Inline (Set_Default_Aspect_Component_Value);
+   pragma Inline (Set_Default_Aspect_Value);
    pragma Inline (Set_Default_Expr_Function);
    pragma Inline (Set_Default_Expressions_Processed);
    pragma Inline (Set_Default_Value);
@@ -7815,6 +7838,7 @@ package Einfo is
    pragma Inline (Set_Discriminant_Constraint);
    pragma Inline (Set_Discriminant_Default_Value);
    pragma Inline (Set_Discriminant_Number);
+   pragma Inline (Set_Dispatch_Table_Wrappers);
    pragma Inline (Set_Elaborate_Body_Desirable);
    pragma Inline (Set_Elaboration_Entity);
    pragma Inline (Set_Elaboration_Entity_Required);
@@ -7837,7 +7861,6 @@ package Einfo is
    pragma Inline (Set_Extra_Constrained);
    pragma Inline (Set_Extra_Formal);
    pragma Inline (Set_Extra_Formals);
-   pragma Inline (Set_Can_Use_Internal_Rep);
    pragma Inline (Set_Finalization_Master);
    pragma Inline (Set_Finalizer);
    pragma Inline (Set_First_Entity);
@@ -7935,13 +7958,13 @@ package Einfo is
    pragma Inline (Set_Has_Xref_Entry);
    pragma Inline (Set_Hiding_Loop_Variable);
    pragma Inline (Set_Homonym);
-   pragma Inline (Set_Interfaces);
    pragma Inline (Set_In_Package_Body);
    pragma Inline (Set_In_Private_Part);
    pragma Inline (Set_In_Use);
    pragma Inline (Set_Inner_Instances);
    pragma Inline (Set_Interface_Alias);
    pragma Inline (Set_Interface_Name);
+   pragma Inline (Set_Interfaces);
    pragma Inline (Set_Is_AST_Entry);
    pragma Inline (Set_Is_Abstract_Subprogram);
    pragma Inline (Set_Is_Abstract_Type);
@@ -7960,8 +7983,8 @@ package Einfo is
    pragma Inline (Set_Is_Compilation_Unit);
    pragma Inline (Set_Is_Completely_Hidden);
    pragma Inline (Set_Is_Concurrent_Record_Type);
-   pragma Inline (Set_Is_Constr_Subt_For_U_Nominal);
    pragma Inline (Set_Is_Constr_Subt_For_UN_Aliased);
+   pragma Inline (Set_Is_Constr_Subt_For_U_Nominal);
    pragma Inline (Set_Is_Constrained);
    pragma Inline (Set_Is_Constructor);
    pragma Inline (Set_Is_Controlled);
@@ -7986,8 +8009,8 @@ package Einfo is
    pragma Inline (Set_Is_Implementation_Defined);
    pragma Inline (Set_Is_Imported);
    pragma Inline (Set_Is_Inlined);
-   pragma Inline (Set_Is_Interface);
    pragma Inline (Set_Is_Instantiated);
+   pragma Inline (Set_Is_Interface);
    pragma Inline (Set_Is_Internal);
    pragma Inline (Set_Is_Interrupt_Handler);
    pragma Inline (Set_Is_Intrinsic_Subprogram);
@@ -8072,8 +8095,8 @@ package Einfo is
    pragma Inline (Set_Normalized_First_Bit);
    pragma Inline (Set_Normalized_Position);
    pragma Inline (Set_Normalized_Position_Max);
-   pragma Inline (Set_OK_To_Reorder_Components);
    pragma Inline (Set_OK_To_Rename);
+   pragma Inline (Set_OK_To_Reorder_Components);
    pragma Inline (Set_Optimize_Alignment_Space);
    pragma Inline (Set_Optimize_Alignment_Time);
    pragma Inline (Set_Original_Access_Type);
@@ -8081,11 +8104,11 @@ package Einfo is
    pragma Inline (Set_Original_Record_Component);
    pragma Inline (Set_Overlays_Constant);
    pragma Inline (Set_Overridden_Operation);
+   pragma Inline (Set_PPC_Wrapper);
    pragma Inline (Set_Package_Instantiation);
    pragma Inline (Set_Packed_Array_Type);
    pragma Inline (Set_Parent_Subtype);
    pragma Inline (Set_Postcondition_Proc);
-   pragma Inline (Set_PPC_Wrapper);
    pragma Inline (Set_Prival);
    pragma Inline (Set_Prival_Link);
    pragma Inline (Set_Private_Dependents);
@@ -8103,14 +8126,15 @@ package Einfo is
    pragma Inline (Set_Related_Expression);
    pragma Inline (Set_Related_Instance);
    pragma Inline (Set_Related_Type);
+   pragma Inline (Set_Relative_Deadline_Variable);
    pragma Inline (Set_Renamed_Entity);
    pragma Inline (Set_Renamed_In_Spec);
    pragma Inline (Set_Renamed_Object);
    pragma Inline (Set_Renaming_Map);
    pragma Inline (Set_Requires_Overriding);
+   pragma Inline (Set_Return_Applies_To);
    pragma Inline (Set_Return_Flag_Or_Transient_Decl);
    pragma Inline (Set_Return_Present);
-   pragma Inline (Set_Return_Applies_To);
    pragma Inline (Set_Returns_By_Ref);
    pragma Inline (Set_Reverse_Bit_Order);
    pragma Inline (Set_Scalar_Range);
@@ -8124,10 +8148,10 @@ package Einfo is
    pragma Inline (Set_Size_Known_At_Compile_Time);
    pragma Inline (Set_Small_Value);
    pragma Inline (Set_Spec_Entity);
-   pragma Inline (Set_Static_Predicate);
-   pragma Inline (Set_Storage_Size_Variable);
    pragma Inline (Set_Static_Elaboration_Desired);
    pragma Inline (Set_Static_Initialization);
+   pragma Inline (Set_Static_Predicate);
+   pragma Inline (Set_Storage_Size_Variable);
    pragma Inline (Set_Stored_Constraint);
    pragma Inline (Set_Strict_Alignment);
    pragma Inline (Set_String_Literal_Length);

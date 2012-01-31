@@ -1441,7 +1441,7 @@ class Type_case_clauses
 
   // Lower to if and goto statements.
   void
-  lower(Block*, Temporary_statement* descriptor_temp,
+  lower(Type*, Block*, Temporary_statement* descriptor_temp,
 	Unnamed_label* break_label) const;
 
   // Dump the AST representation to a dump context.
@@ -1485,7 +1485,7 @@ class Type_case_clauses
 
     // Lower to if and goto statements.
     void
-    lower(Block*, Temporary_statement* descriptor_temp,
+    lower(Type*, Block*, Temporary_statement* descriptor_temp,
 	  Unnamed_label* break_label, Unnamed_label** stmts_label) const;
 
     // Dump the AST representation to a dump context.

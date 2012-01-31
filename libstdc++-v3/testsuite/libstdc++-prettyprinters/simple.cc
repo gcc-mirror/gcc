@@ -1,7 +1,9 @@
-// { dg-do run }
-// { dg-options "-g" }
+// If you modify this, please update debug.cc as well.
 
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// { dg-do run }
+// { dg-options "-g -O0" }
+
+// Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,34 +26,13 @@
 #include <iostream>
 #include <list>
 #include <map>
-
-template<class T>
-void
-placeholder(const T &s)
-{
-  std::cout << s;
-}
-
-template<class T, class S>
-void
-placeholder(const std::pair<T,S> &s)
-{
-  std::cout << s.first;
-}
-
-template<class T>
-void
-use(const T &container)
-{
-  for (typename T::const_iterator i = container.begin();
-       i != container.end();
-       ++i)
-    placeholder(*i);
-}
+#include <set>
+#include <ext/slist>
 
 int
 main()
 {
+  std::string tem;
   std::string str = "zardoz";
 // { dg-final { note-test str "\"zardoz\"" } }
 
@@ -66,22 +47,46 @@ main()
   deq.push_back("two");
 // { dg-final { note-test deq {std::deque with 2 elements = {"one", "two"}} } }
 
+  std::deque<std::string>::iterator deqiter = deq.begin();
+// { dg-final { note-test deqiter {"one"} } }
+
   std::list<std::string> lst;
   lst.push_back("one");
   lst.push_back("two");
 // { dg-final { note-test lst {std::list = {[0] = "one", [1] = "two"}} } }
 
+  std::list<std::string>::iterator lstiter = lst.begin();
+  tem = *lstiter;
+// { dg-final { note-test lstiter {"one"}} }
+
+  std::list<std::string>::const_iterator lstciter = lst.begin();
+  tem = *lstciter;
+// { dg-final { note-test lstciter {"one"}} }
+
   std::map<std::string, int> mp;
   mp["zardoz"] = 23;
 // { dg-final { note-test mp {std::map with 1 elements = {["zardoz"] = 23}} } }
 
-  placeholder(str); // Mark SPOT
-  std::cout << bs;
-  use(deq);
-  use(lst);
-  use(mp);
+  std::map<std::string, int>::iterator mpiter = mp.begin();
+// { dg-final { note-test mpiter {{first = "zardoz", second = 23}} } }
 
-  return 0;
+  std::set<std::string> sp;
+  sp.insert("clownfish");
+  sp.insert("barrel");
+// { dg-final { note-test sp {std::set with 2 elements = {[0] = "barrel", [1] = "clownfish"}} } }
+
+  std::set<std::string>::const_iterator spciter = sp.begin();
+// { dg-final { note-test spciter {"barrel"} } }
+
+  __gnu_cxx::slist<int> sll;
+  sll.push_front(23);
+  sll.push_front(47);
+// { dg-final { note-test sll {__gnu_cxx::slist = {[0] = 47, [1] = 23}} } }
+
+  __gnu_cxx::slist<int>::iterator slliter = sll.begin();
+// { dg-final { note-test slliter {47} } }
+
+  return 0;			// Mark SPOT
 }
 
 // { dg-final { gdb-test SPOT } }

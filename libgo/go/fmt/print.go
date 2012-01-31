@@ -74,6 +74,7 @@ type GoStringer interface {
 type pp struct {
 	n         int
 	panicking bool
+	erroring  bool // printing an error condition
 	buf       bytes.Buffer
 	// field holds the current item, as an interface{}.
 	field interface{}
@@ -124,6 +125,7 @@ var ppFree = newCache(func() interface{} { return new(pp) })
 func newPrinter() *pp {
 	p := ppFree.get().(*pp)
 	p.panicking = false
+	p.erroring = false
 	p.fmt.init(&p.buf)
 	return p
 }
@@ -299,6 +301,7 @@ func (p *pp) unknownType(v interface{}) {
 }
 
 func (p *pp) badVerb(verb rune) {
+	p.erroring = true
 	p.add('%')
 	p.add('!')
 	p.add(verb)
@@ -316,6 +319,7 @@ func (p *pp) badVerb(verb rune) {
 		p.buf.Write(nilAngleBytes)
 	}
 	p.add(')')
+	p.erroring = false
 }
 
 func (p *pp) fmtBool(v bool, verb rune) {
@@ -499,9 +503,9 @@ func (p *pp) fmtString(v string, verb rune, goSyntax bool) {
 	case 's':
 		p.fmt.fmt_s(v)
 	case 'x':
-		p.fmt.fmt_sx(v)
+		p.fmt.fmt_sx(v, ldigits)
 	case 'X':
-		p.fmt.fmt_sX(v)
+		p.fmt.fmt_sx(v, udigits)
 	case 'q':
 		p.fmt.fmt_q(v)
 	default:
@@ -538,9 +542,9 @@ func (p *pp) fmtBytes(v []byte, verb rune, goSyntax bool, depth int) {
 	case 's':
 		p.fmt.fmt_s(s)
 	case 'x':
-		p.fmt.fmt_sx(s)
+		p.fmt.fmt_sx(s, ldigits)
 	case 'X':
-		p.fmt.fmt_sX(s)
+		p.fmt.fmt_sx(s, udigits)
 	case 'q':
 		p.fmt.fmt_q(s)
 	default:
@@ -606,6 +610,9 @@ func (p *pp) catchPanic(field interface{}, verb rune) {
 }
 
 func (p *pp) handleMethods(verb rune, plus, goSyntax bool, depth int) (wasString, handled bool) {
+	if p.erroring {
+		return
+	}
 	// Is it a Formatter?
 	if formatter, ok := p.field.(Formatter); ok {
 		handled = true

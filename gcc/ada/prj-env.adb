@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -115,10 +115,9 @@ package body Prj.Env is
       Buffer_Last : Natural := 0;
 
       procedure Add
-        (Project          : Project_Id;
-         In_Tree          : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         Dummy            : in out Boolean);
+        (Project : Project_Id;
+         In_Tree : Project_Tree_Ref;
+         Dummy   : in out Boolean);
       --  Add source dirs of Project to the path
 
       ---------
@@ -126,12 +125,11 @@ package body Prj.Env is
       ---------
 
       procedure Add
-        (Project          : Project_Id;
-         In_Tree          : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         Dummy            : in out Boolean)
+        (Project : Project_Id;
+         In_Tree : Project_Tree_Ref;
+         Dummy   : in out Boolean)
       is
-         pragma Unreferenced (Dummy, In_Aggregate_Lib);
+         pragma Unreferenced (Dummy);
       begin
          Add_To_Path
            (Project.Source_Dirs, In_Tree.Shared, Buffer, Buffer_Last);
@@ -187,10 +185,9 @@ package body Prj.Env is
       Buffer_Last : Natural := 0;
 
       procedure Add
-        (Project          : Project_Id;
-         In_Tree          : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         Dummy            : in out Boolean);
+        (Project : Project_Id;
+         In_Tree : Project_Tree_Ref;
+         Dummy   : in out Boolean);
       --  Add all the object directories of a project to the path
 
       ---------
@@ -198,12 +195,11 @@ package body Prj.Env is
       ---------
 
       procedure Add
-        (Project          : Project_Id;
-         In_Tree          : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         Dummy            : in out Boolean)
+        (Project : Project_Id;
+         In_Tree : Project_Tree_Ref;
+         Dummy   : in out Boolean)
       is
-         pragma Unreferenced (Dummy, In_Tree, In_Aggregate_Lib);
+         pragma Unreferenced (Dummy, In_Tree);
 
          Path : constant Path_Name_Type :=
                   Get_Object_Directory
@@ -476,10 +472,9 @@ package body Prj.Env is
       Current_Naming : Naming_Id;
 
       procedure Check
-        (Project          : Project_Id;
-         In_Tree          : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         State            : in out Integer);
+        (Project : Project_Id;
+         In_Tree : Project_Tree_Ref;
+         State   : in out Integer);
       --  Recursive procedure that put in the config pragmas file any non
       --  standard naming schemes, if it is not already in the file, then call
       --  itself for any imported project.
@@ -501,12 +496,11 @@ package body Prj.Env is
       -----------
 
       procedure Check
-        (Project          : Project_Id;
-         In_Tree          : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         State            : in out Integer)
+        (Project : Project_Id;
+         In_Tree : Project_Tree_Ref;
+         State   : in out Integer)
       is
-         pragma Unreferenced (State, In_Aggregate_Lib);
+         pragma Unreferenced (State);
 
          Lang   : constant Language_Ptr :=
                     Get_Language_From_Name (Project, "ada");
@@ -792,10 +786,9 @@ package body Prj.Env is
       --  Put the line contained in the Name_Buffer in the global buffer
 
       procedure Process
-        (Project          : Project_Id;
-         In_Tree          : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         State            : in out Integer);
+        (Project : Project_Id;
+         In_Tree : Project_Tree_Ref;
+         State   : in out Integer);
       --  Generate the mapping file for Project (not recursively)
 
       ---------------------
@@ -818,12 +811,11 @@ package body Prj.Env is
       -------------
 
       procedure Process
-        (Project          : Project_Id;
-         In_Tree          : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         State            : in out Integer)
+        (Project : Project_Id;
+         In_Tree : Project_Tree_Ref;
+         State   : in out Integer)
       is
-         pragma Unreferenced (State, In_Aggregate_Lib);
+         pragma Unreferenced (State);
 
          Source : Source_Id;
          Suffix : File_Name_Type;
@@ -1233,10 +1225,9 @@ package body Prj.Env is
       Tree    : Project_Tree_Ref)
    is
       procedure For_Project
-        (Prj              : Project_Id;
-         Tree             : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         Dummy            : in out Integer);
+        (Prj   : Project_Id;
+         Tree  : Project_Tree_Ref;
+         Dummy : in out Integer);
       --  Get all object directories of Prj
 
       -----------------
@@ -1244,12 +1235,11 @@ package body Prj.Env is
       -----------------
 
       procedure For_Project
-        (Prj              : Project_Id;
-         Tree             : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         Dummy            : in out Integer)
+        (Prj   : Project_Id;
+         Tree  : Project_Tree_Ref;
+         Dummy : in out Integer)
       is
-         pragma Unreferenced (Dummy, Tree, In_Aggregate_Lib);
+         pragma Unreferenced (Dummy, Tree);
 
       begin
          --  ??? Set_Ada_Paths has a different behavior for library project
@@ -1280,10 +1270,9 @@ package body Prj.Env is
       In_Tree : Project_Tree_Ref)
    is
       procedure For_Project
-        (Prj              : Project_Id;
-         In_Tree          : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         Dummy            : in out Integer);
+        (Prj     : Project_Id;
+         In_Tree : Project_Tree_Ref;
+         Dummy   : in out Integer);
       --  Get all object directories of Prj
 
       -----------------
@@ -1291,12 +1280,11 @@ package body Prj.Env is
       -----------------
 
       procedure For_Project
-        (Prj              : Project_Id;
-         In_Tree          : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         Dummy            : in out Integer)
+        (Prj     : Project_Id;
+         In_Tree : Project_Tree_Ref;
+         Dummy   : in out Integer)
       is
-         pragma Unreferenced (Dummy, In_Aggregate_Lib);
+         pragma Unreferenced (Dummy);
 
          Current    : String_List_Id := Prj.Source_Dirs;
          The_String : String_Element;
@@ -1654,10 +1642,9 @@ package body Prj.Env is
       Buffer_Last : Natural := 0;
 
       procedure Recursive_Add
-        (Project          : Project_Id;
-         In_Tree          : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         Dummy            : in out Boolean);
+        (Project : Project_Id;
+         In_Tree : Project_Tree_Ref;
+         Dummy   : in out Boolean);
       --  Recursive procedure to add the source/object paths of extended/
       --  imported projects.
 
@@ -1666,12 +1653,11 @@ package body Prj.Env is
       -------------------
 
       procedure Recursive_Add
-        (Project          : Project_Id;
-         In_Tree          : Project_Tree_Ref;
-         In_Aggregate_Lib : Boolean;
-         Dummy            : in out Boolean)
+        (Project : Project_Id;
+         In_Tree : Project_Tree_Ref;
+         Dummy   : in out Boolean)
       is
-         pragma Unreferenced (Dummy, In_Tree, In_Aggregate_Lib);
+         pragma Unreferenced (Dummy, In_Tree);
 
          Path : Path_Name_Type;
 

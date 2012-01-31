@@ -248,14 +248,15 @@ make_relative_prefix_1 (const char *progname, const char *bin_prefix,
 	{
 	  char *startp, *endp, *nstore;
 	  size_t prefixlen = strlen (temp) + 1;
+	  size_t len;
 	  if (prefixlen < 2)
 	    prefixlen = 2;
 
-	  nstore = (char *) alloca (prefixlen + strlen (progname) + 1
+	  len = prefixlen + strlen (progname) + 1;
 #ifdef HAVE_HOST_EXECUTABLE_SUFFIX
-				    + strlen (HOST_EXECUTABLE_SUFFIX)
+	  len += strlen (HOST_EXECUTABLE_SUFFIX);
 #endif
-				    );
+	  nstore = (char *) alloca (len);
 
 	  startp = endp = temp;
 	  while (1)

@@ -1,3 +1,322 @@
+2012-01-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* module.c (pointer_info): Make true_name and module pointers
+	rather than arrays, order pointers before other fields.
+	(free_pi_tree): free true_name and module as well.
+	(mio_read_string): Rename to read_string.
+	(mio_write_string): Remove.
+	(load_commons): Use read_string.
+	(read_module): Use read_string rather than mio_internal_string.
+	(write_blank_common): Call write_atom directly.
+	(write_symbol): Likewise.
+
+2012-01-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41600
+	* expr.c (gfc_default_initializer): Convert the values if
+	the type does not match.
+
+2012-01-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51972
+	* trans-array.c (structure_alloc_comps): Fix assignment of
+	polymorphic components (polymorphic deep copying).
+
+2012-01-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/51808
+	* decl.c (set_binding_label): Make binding_label argument const.
+	(curr_binding_label): Constify.
+	* gfortran.h (gfc_symbol): Constify binding_label.
+	(gfc_common_head): Likewise.
+	(get_iso_c_sym): Likewise.
+	* match.c (gfc_match_name_C): Constify buffer argument.
+	* match.h (gfc_match_name_C): Likewise.
+	* resolve.c (set_name_and_label): Constify binding_label argument.
+	(gfc_iso_c_sub_interface): Constify binding_label variable.
+	* symbol.c (get_iso_c_sym): Constify binding_label argument.
+
+2012-01-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/51808
+	* decl.c (set_binding_label): Move prototype from match.h to here.
+	(curr_binding_label): Make a pointer rather than static array.
+	(build_sym): Check sym->binding_label pointer rather than array,
+	update set_binding_label call, handle curr_binding_label changes.
+	(set_binding_label): Handle new curr_binding_label, dest_label
+	double ptr, and sym->binding_label.
+	(verify_bind_c_sym): Handle sym->binding_label being a pointer.
+	(set_verify_bind_c_sym): Check sym->binding_label pointer rather
+	than array, update set_binding_label call.
+	(gfc_match_bind_c_stmt): Handle curr_binding_label change.
+	(match_procedure_decl): Update set_binding_label call.
+	(gfc_match_bind_c): Change binding_label to pointer, update
+	gfc_match_name_C call.
+	* gfortran.h (GFC_MAX_BINDING_LABEL_LEN): Remove macro.
+	(gfc_symbol): Make binding_label a pointer.
+	(gfc_common_head): Likewise.
+	* match.c (gfc_match_name_C): Heap allocate bind(C) name.
+	* match.h (gfc_match_name_C): Change prototype argument.
+	(set_binding_label): Move prototype to decl.c.
+	* module.c (struct pointer_info): Make binding_label a pointer.
+	(free_pi_tree): Free unused binding_label.
+	(mio_read_string): New function.
+	(mio_write_string): New function.
+	(load_commons): Redo reading of binding_label.
+	(read_module): Likewise.
+	(write_common_0): Change to write empty string instead of name if
+	no binding_label.
+	(write_blank_common): Write empty string for binding label.
+	(write_symbol): Change to write empty string instead of name if no
+	binding_label.
+	* resolve.c (gfc_iso_c_func_interface): Don't set binding_label.
+	(set_name_and_label): Make binding_label double pointer, use
+	asprintf.
+	(gfc_iso_c_sub_interface): Make binding_label a pointer.
+	(resolve_bind_c_comms): Handle cases if
+	gfc_common_head->binding_label is NULL.
+	(gfc_verify_binding_labels): sym->binding_label is a pointer.
+	* symbol.c (gfc_new_symbol): Rely on XCNEW zero init for
+	binding_label.
+	(gen_special_c_interop_ptr): Don't set binding label.
+	(generate_isocbinding_symbol): Insert binding_label into symbol
+	table.
+	(get_iso_c_sym): Use pointer assignment instead of strcpy.
+	* trans-common.c (gfc_sym_mangled_common_id): Handle
+	com->binding_label being a pointer.
+	* trans-decl.c (gfc_sym_mangled_identifier): Handle
+	sym->binding_label being a pointer.
+	(gfc_sym_mangled_function_id): Likewise.
+
+2012-01-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52038
+	* resolve.c (symbol_as): Remove unused, accidentally
+	added function.
+
+2012-01-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51972
+	* trans-stmt.c (gfc_trans_allocate): Properly check whether
+	we have a BT_CLASS which needs to be memset.
+
+2012-01-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52022
+	* trans-expr.c (gfc_conv_procedure_call): Fix passing
+	of functions, which return allocatables.
+
+2012-01-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52016
+	* resolve.c (resolve_formal_arglist): Fix elemental
+	constraint checks for polymorphic dummies also for
+	pointers.
+
+2012-01-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51970
+	PR fortran/51977
+	* primary.c (gfc_match_varspec. gfc_match_rvalue): Set
+	handle array spec for BT_CLASS.
+	* expr.c (gfc_get_variable_expr, gfc_lval_expr_from_sym)
+	* frontend-passes.c (create_var): Ditto.
+	* resolve.c (resolve_actual_arglist, resolve_assoc_var): Ditto.
+	* trans-decl.c (gfc_trans_deferred_vars): Use class_pointer
+	instead of attr.pointer.
+	(gfc_generate_function_code): Use CLASS_DATA (sym) for BT_CLASS.
+	* trans-intrinsic.c (conv_intrinsic_move_alloc): Move assert.
+	* trans-stmt.c (trans_associate_var): Ask for the descriptor.
+
+2012-01-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51953
+	* match.c (gfc_match_allocate): Allow more than allocate
+	object with SOURCE=.
+
+2012-01-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52016
+	* resolve.c (resolve_formal_arglist): Fix elemental
+	constraint checks for polymorphic dummies.
+
+2012-01-27  Paul Thomas  <pault@gcc.gnu.org>
+	    Tobias Burnus <burnus@gcc.gnu.org>
+
+	PR fortran/48705
+	PR fortran/51870
+	PR fortran/51943
+	PR fortran/51946
+	* trans-array.c (gfc_array_init_size): Add two extra arguments
+	to convey the dynamic element size of a calls object and to
+	return the number of elements that have been allocated.
+	(gfc_array_allocate): Add the same arguments and use them to
+	call gfc_array_init_size.  Before the allocation dereference
+	the data pointer, if necessary. Set the allocated array to zero
+	if the class element size or expr3 are non-null.
+	* trans-expr.c (gfc_conv_class_to_class): Give this function
+	global scope.
+	(get_class_array_ref): New function.
+	(gfc_copy_class_to_class): New function.
+	* trans-array.h : Update prototype for gfc_array_allocate.
+	* trans-stmt.c (gfc_trans_allocate): For non-variable class
+	STATUS expressions extract the class object and the dynamic
+	element size. Use the latter to call gfc_array_allocate and
+	the former for setting the vptr and, via
+	gfc_copy_class_to_clasfc_cs, to copy to the allocated data.
+	* trans.h : Prototypes for gfc_get_class_array_ref,
+	gfc_copy_class_to_class and gfc_conv_class_to_class.
+
+2012-01-25  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (symbol_as): Check also for attr.class_ok.
+
+2012-01-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51995
+	* class.c (gfc_build_class_symbol): Fix invalid freeing
+	issue with fclass->f2k_derived.
+
+2012-01-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51995
+	* class.c (gfc_build_class_symbol): Ensure that
+	fclass->f2k_derived is set.
+
+2012-01-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51966
+	* resolve.c (resolve_structure_cons): Only create an
+	array constructors for nonscalars.
+
+2012-01-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51948
+	* check.c (variable_check): Fix checking for
+	 variables and deeply nested BLOCKs.
+
+2012-01-21  Tobias Burnus  <burnus@net-b.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/50556
+	* symbol.c (check_conflict): namelist-group-name cannot have the SAVE
+	attribute.
+
+2012-01-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51913
+	* interface.c (compare_parameter): Fix CLASS comparison.
+
+2012-01-20  Tobias Burnus  <burnus@net-b.de>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/51056
+	* module.c (load_needed, read_module): Don't mark __vtab etc.
+	as use_only.
+
+2012-01-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51904
+	* expr.c (gfc_build_intrinsic_call): Also set the symtree.
+
+2012-01-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/51634
+	* trans-expr.c (gfc_conv_procedure_call): Deallocate allocatable
+	components of temporary class arguments.
+
+2012-01-17  Tobias Burnus  <burnus@net-b.de>
+	    Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/51869
+	* trans-expr.c (alloc_scalar_allocatable_for_assignment): Nullify
+	LHS after allocation, if it has allocatable components.
+	* f95-lang.c (gfc_init_builtin_functions): Add BUILT_IN_CALLOC.
+
+2012-01-16  Mikael Morin  <mikael@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50981
+	* trans-array.c (gfc_walk_elemental_function_args): Fix
+	passing of deallocated allocatables/pointers as absent argument. 
+
+2012-01-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51809
+	* class.c (gfc_find_derived_vtab): Mark __vtab and
+	__def_init as FL_VARIABLE not as FL_PARAMETER.
+	* expr.c (gfc_simplify_expr): Remove special
+	handling of __vtab.
+	* resolve.c (resolve_values): Ditto.
+	* trans-decl.c (gfc_get_symbol_decl): Mark __vtab
+	and __def_init as TREE_READONLY.
+
+2012-01-16  Zydrunas Gimbutas  <gimbutas@cims.nyu.edu>
+	Andreas Kloeckner  <kloeckner@cims.nyu.edu>
+	Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/48426
+	* gfortran.h (gfc_option_t): Add members flag_*_kind to store kind.
+	* lang.opt: Add options -freal-4-real-8, -freal-4-real-10,
+	-freal-4-real-16, -freal-8-real-4, -freal-8-real-10, -freal-8-real-16
+	and -finteger-4-integer-8. User-desired type conversion information.
+	* decl.c (gfc_match_old_kind_spec,kind_expr): Type conversions
+	in declaration parsing.
+	* trans-types.c (gfc_init_kinds): User-specified type conversion
+	checked for current backend.
+	* primary.c (match_integer_constant,match_real_constant): Implement
+	type conversion in constant parsing.
+	* options.c (gfc_init_options,gfc_handle_option): Translate input
+	options to flags in internal options data structure.
+	* invoke.texi: Document new options.  Re-order options in Options
+	summary section.
+
+2012-01-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_create_temp_array): In the case of a
+	class array temporary, detect a null 'eltype' on entry and use 
+	'initial' to provde the class reference and so, through the
+	vtable, the element size for the dynamic type.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): For class
+	expressions, set 'eltype' to null and pass the values via the
+	'initial' expression.
+
+2012-01-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51800
+	* resolve.c (build_default_init_expr): Also initialize
+	nonconstant-length strings with -finit-character=<n>.
+
+2011-01-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51816
+	* module.c (read_module): Don't make nonexisting
+	intrinsic operators as found.
+	(rename_list_remove_duplicate): New function.
+	(gfc_use_modules): Use it.
+
+2012-01-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/48351
+	* trans-array.c (structure_alloc_comps): Suppress interative
+	call to self, when current component is deallocated using
+	gfc_trans_dealloc_allocated.
+	* class.c (gfc_build_class_symbol): Copy the 'alloc_comp'
+	attribute from the declared type to the class structure.
+
+2012-01-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51842
+	* fortran/trans-types.c (gfc_init_kinds): Use PTRDIFF_TYPE
+	instead of a signed int of size POINTER_SIZE for
+	gfc_index_integer_kind.
+
+2012-01-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36755
+	* intrinsic.texi (CHMOD): Extend a bit and remove statement
+	that /bin/chmod is called.
+
 2012-01-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gfortran.texi (Fortran 2003 Status): Fix grammar.

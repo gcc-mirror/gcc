@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -286,6 +286,50 @@ package body Sem_Dist is
             return False;
       end case;
    end Is_RACW_Stub_Type_Operation;
+
+   ---------------------------------
+   -- Is_Valid_Remote_Object_Type --
+   ---------------------------------
+
+   function Is_Valid_Remote_Object_Type (E : Entity_Id) return Boolean is
+      P : constant Node_Id := Parent (E);
+
+   begin
+      pragma Assert (Is_Tagged_Type (E));
+
+      --  Simple case: a limited private type
+
+      if Nkind (P) = N_Private_Type_Declaration
+        and then Is_Limited_Record (E)
+      then
+         return True;
+
+      --  AI05-0060 (Binding Interpretation): A limited interface is a legal
+      --  ancestor for the designated type of an RACW type.
+
+      elsif Is_Limited_Record (E) and then Is_Limited_Interface (E) then
+         return True;
+
+      --  A generic tagged limited type is a valid candidate. Limitedness will
+      --  be checked again on the actual at instantiation point.
+
+      elsif Nkind (P) = N_Formal_Type_Declaration
+        and then Ekind (E) = E_Record_Type_With_Private
+        and then Is_Generic_Type (E)
+        and then Is_Limited_Record (E)
+      then
+         return True;
+
+      --  A private extension declaration is a valid candidate if its parent
+      --  type is.
+
+      elsif Nkind (P) = N_Private_Extension_Declaration then
+         return Is_Valid_Remote_Object_Type (Etype (E));
+
+      else
+         return False;
+      end if;
+   end Is_Valid_Remote_Object_Type;
 
    ------------------------------------
    -- Package_Specification_Of_Scope --

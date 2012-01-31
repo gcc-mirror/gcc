@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2006-2011, Free Software Foundation, Inc.       --
+--            Copyright (C) 2006-2012, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -728,10 +728,9 @@ package body Prj.Conf is
                  Value_Of (Name_Ide, Project.Decl.Packages, Shared);
 
          procedure Add_Config_Switches_For_Project
-           (Project          : Project_Id;
-            Tree             : Project_Tree_Ref;
-            In_Aggregate_Lib : Boolean;
-            With_State       : in out Integer);
+           (Project    : Project_Id;
+            Tree       : Project_Tree_Ref;
+            With_State : in out Integer);
          --  Add all --config switches for this project. This is also called
          --  for aggregate projects.
 
@@ -740,12 +739,11 @@ package body Prj.Conf is
          -------------------------------------
 
          procedure Add_Config_Switches_For_Project
-           (Project          : Project_Id;
-            Tree             : Project_Tree_Ref;
-            In_Aggregate_Lib : Boolean;
-            With_State       : in out Integer)
+           (Project    : Project_Id;
+            Tree       : Project_Tree_Ref;
+            With_State : in out Integer)
          is
-            pragma Unreferenced (With_State, In_Aggregate_Lib);
+            pragma Unreferenced (With_State);
 
             Shared : constant Shared_Project_Tree_Data_Access := Tree.Shared;
 

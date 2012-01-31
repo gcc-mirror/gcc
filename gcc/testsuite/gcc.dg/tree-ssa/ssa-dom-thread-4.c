@@ -1,5 +1,6 @@
 /* { dg-do compile } */ 
 /* { dg-options "-O2 -fdump-tree-dom1-details" } */
+/* { dg-additional-options "-mbranch-cost=2" { target s390*-*-* } } */
 struct bitmap_head_def;
 typedef struct bitmap_head_def *bitmap;
 typedef const struct bitmap_head_def *const_bitmap;
@@ -58,6 +59,9 @@ bitmap_ior_and_compl (bitmap dst, const_bitmap a, const_bitmap b,
    code we missed the edge when the first conditional is false
    (b_elt is zero, which means the second conditional is always
    zero.  */
-/* { dg-final { scan-tree-dump-times "Threaded" 3 "dom1"} } */
+/* { dg-final { scan-tree-dump-times "Threaded" 3 "dom1" { target { ! mips*-*-* } } } } */
+/* MIPS defines LOGICAL_OP_NON_SHORT_CIRCUIT to 0, so we split var1 || var2
+   into two conditions, rather than use (var1 != 0) | (var2 != 0).  */
+/* { dg-final { scan-tree-dump-times "Threaded" 4 "dom1" { target mips*-*-* } } } */
 /* { dg-final { cleanup-tree-dump "dom1" } } */
 

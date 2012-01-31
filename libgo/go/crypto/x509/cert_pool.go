@@ -28,6 +28,9 @@ func NewCertPool() *CertPool {
 // given certificate. If no such certificate can be found or the signature
 // doesn't match, it returns nil.
 func (s *CertPool) findVerifiedParents(cert *Certificate) (parents []int) {
+	if s == nil {
+		return
+	}
 	var candidates []int
 
 	if len(cert.AuthorityKeyId) > 0 {
@@ -96,5 +99,15 @@ func (s *CertPool) AppendCertsFromPEM(pemCerts []byte) (ok bool) {
 		ok = true
 	}
 
+	return
+}
+
+// Subjects returns a list of the DER-encoded subjects of
+// all of the certificates in the pool. 
+func (s *CertPool) Subjects() (res [][]byte) {
+	res = make([][]byte, len(s.certs))
+	for i, c := range s.certs {
+		res[i] = c.RawSubject
+	}
 	return
 }

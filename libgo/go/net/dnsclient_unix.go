@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux openbsd
+// +build darwin freebsd linux netbsd openbsd
 
 // DNS client: see RFC 1035.
 // Has to be linked into package net for Dial.
@@ -45,7 +45,11 @@ func exchange(cfg *dnsConfig, c Conn, name string, qtype uint16) (*dnsMsg, error
 			return nil, err
 		}
 
-		c.SetReadTimeout(int64(cfg.timeout) * 1e9) // nanoseconds
+		if cfg.timeout == 0 {
+			c.SetReadDeadline(time.Time{})
+		} else {
+			c.SetReadDeadline(time.Now().Add(time.Duration(cfg.timeout) * time.Second))
+		}
 
 		buf := make([]byte, 2000) // More than enough.
 		n, err = c.Read(buf)

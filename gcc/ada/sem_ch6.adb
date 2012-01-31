@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -293,7 +293,31 @@ package body Sem_Ch6 is
       --  determine whether this is possible.
 
       Inline_Processing_Required := True;
-      New_Spec := Copy_Separate_Tree (Spec);
+
+      --  Create a specification for the generated body. Types and defauts in
+      --  the profile are copies of the spec, but new entities must be created
+      --  for the unit name and the formals.
+
+      New_Spec := New_Copy_Tree (Spec);
+      Set_Defining_Unit_Name (New_Spec,
+        Make_Defining_Identifier (Sloc (Defining_Unit_Name (Spec)),
+          Chars (Defining_Unit_Name (Spec))));
+
+      if Present (Parameter_Specifications (New_Spec)) then
+         declare
+            Formal_Spec : Node_Id;
+         begin
+            Formal_Spec := First (Parameter_Specifications (New_Spec));
+            while Present (Formal_Spec) loop
+               Set_Defining_Identifier
+                 (Formal_Spec,
+                  Make_Defining_Identifier (Sloc (Formal_Spec),
+                    Chars => Chars (Defining_Identifier (Formal_Spec))));
+               Next (Formal_Spec);
+            end loop;
+         end;
+      end if;
+
       Prev     := Current_Entity_In_Scope (Defining_Entity (Spec));
 
       --  If there are previous overloadable entities with the same name,
@@ -3138,7 +3162,6 @@ package body Sem_Ch6 is
 
          Set_Defining_Unit_Name (Specification (Null_Body),
            Make_Defining_Identifier (Loc, Chars (Defining_Entity (N))));
-         Set_Corresponding_Body (N, Defining_Entity (Null_Body));
 
          Form := First (Parameter_Specifications (Specification (Null_Body)));
          while Present (Form) loop
@@ -3192,7 +3215,13 @@ package body Sem_Ch6 is
       then
          Set_Has_Completion (Designator);
 
-         if Present (Null_Body) then
+         --  Null procedures are always inlined, but generic formal subprograms
+         --  which appear as such in the internal instance of formal packages,
+         --  need no completion and are not marked Inline.
+
+         if Present (Null_Body)
+           and then Nkind (N) /= N_Formal_Concrete_Subprogram_Declaration
+         then
             Set_Corresponding_Body (N, Defining_Entity (Null_Body));
             Set_Body_To_Inline (N, Null_Body);
             Set_Is_Inlined (Designator);

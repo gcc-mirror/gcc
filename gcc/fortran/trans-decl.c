@@ -326,9 +326,8 @@ gfc_sym_mangled_identifier (gfc_symbol * sym)
 
   /* Prevent the mangling of identifiers that have an assigned
      binding label (mainly those that are bind(c)).  */
-  if (sym->attr.is_bind_c == 1
-      && sym->binding_label[0] != '\0')
-    return get_identifier(sym->binding_label);
+  if (sym->attr.is_bind_c == 1 && sym->binding_label)
+    return get_identifier (sym->binding_label);
   
   if (sym->module == NULL)
     return gfc_sym_identifier (sym);
@@ -352,7 +351,7 @@ gfc_sym_mangled_function_id (gfc_symbol * sym)
      provided, and remove the other checks.  Then we could use it
      for other things if we wished.  */
   if ((sym->attr.is_bind_c == 1 || sym->attr.is_iso_c == 1) &&
-      sym->binding_label[0] != '\0')
+      sym->binding_label)
     /* use the binding label rather than the mangled name */
     return get_identifier (sym->binding_label);
 
@@ -1485,7 +1484,10 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 
   if (sym->attr.vtab
       || (sym->name[0] == '_' && strncmp ("__def_init", sym->name, 10) == 0))
-    GFC_DECL_PUSH_TOPLEVEL (decl) = 1;
+    {
+      TREE_READONLY (decl) = 1;
+      GFC_DECL_PUSH_TOPLEVEL (decl) = 1;
+    }
 
   return decl;
 }
@@ -3684,7 +3686,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	}
       else if ((!sym->attr.dummy || sym->ts.deferred)
 		&& (sym->ts.type == BT_CLASS
-		&& CLASS_DATA (sym)->attr.pointer))
+		&& CLASS_DATA (sym)->attr.class_pointer))
 	continue;
       else if ((!sym->attr.dummy || sym->ts.deferred)
 		&& (sym->attr.allocatable
@@ -5338,7 +5340,8 @@ gfc_generate_function_code (gfc_namespace * ns)
 							 null_pointer_node));
 	  else if (sym->ts.type == BT_CLASS
 		   && CLASS_DATA (sym)->attr.allocatable
-		   && sym->attr.dimension == 0 && sym->result == sym)
+		   && CLASS_DATA (sym)->attr.dimension == 0
+		   && sym->result == sym)
 	    {
 	      tmp = CLASS_DATA (sym)->backend_decl;
 	      tmp = fold_build3_loc (input_location, COMPONENT_REF,

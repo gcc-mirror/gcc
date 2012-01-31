@@ -6,6 +6,7 @@ package json
 
 import (
 	"bytes"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -73,6 +74,12 @@ var unmarshalTests = []unmarshalTest{
 
 	// syntax errors
 	{`{"X": "foo", "Y"}`, nil, nil, &SyntaxError{"invalid character '}' after object key", 17}},
+	{`[1, 2, 3+]`, nil, nil, &SyntaxError{"invalid character '+' after array element", 9}},
+
+	// array tests
+	{`[1, 2, 3]`, new([3]int), [3]int{1, 2, 3}, nil},
+	{`[1, 2, 3]`, new([1]int), [1]int{1}, nil},
+	{`[1, 2, 3]`, new([5]int), [5]int{1, 2, 3, 0, 0}, nil},
 
 	// composite tests
 	{allValueIndent, new(All), allValue, nil},
@@ -239,6 +246,35 @@ func TestHTMLEscape(t *testing.T) {
 	}
 	if !bytes.Equal(b, []byte(`"foobarbaz\u003c\u003e\u0026quux"`)) {
 		t.Fatalf("Unexpected encoding of \"<>&\": %s", b)
+	}
+}
+
+// WrongString is a struct that's misusing the ,string modifier.
+type WrongString struct {
+	Message string `json:"result,string"`
+}
+
+type wrongStringTest struct {
+	in, err string
+}
+
+var wrongStringTests = []wrongStringTest{
+	{`{"result":"x"}`, `json: invalid use of ,string struct tag, trying to unmarshal "x" into string`},
+	{`{"result":"foo"}`, `json: invalid use of ,string struct tag, trying to unmarshal "foo" into string`},
+	{`{"result":"123"}`, `json: invalid use of ,string struct tag, trying to unmarshal "123" into string`},
+}
+
+// If people misuse the ,string modifier, the error message should be
+// helpful, telling the user that they're doing it wrong.
+func TestErrorMessageFromMisusedString(t *testing.T) {
+	for n, tt := range wrongStringTests {
+		r := strings.NewReader(tt.in)
+		var s WrongString
+		err := NewDecoder(r).Decode(&s)
+		got := fmt.Sprintf("%v", err)
+		if got != tt.err {
+			t.Errorf("%d. got err = %q, want %q", n, got, tt.err)
+		}
 	}
 }
 

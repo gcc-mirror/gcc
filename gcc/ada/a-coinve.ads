@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -31,10 +31,10 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
-private with Ada.Finalization;
-
-with Ada.Streams; use Ada.Streams;
 with Ada.Iterator_Interfaces;
+
+private with Ada.Finalization;
+private with Ada.Streams;
 
 generic
    type Index_Type is range <>;
@@ -67,19 +67,8 @@ package Ada.Containers.Indefinite_Vectors is
    Empty_Vector : constant Vector;
 
    No_Element : constant Cursor;
+
    function Has_Element (Position : Cursor) return Boolean;
-
-   procedure Read
-     (Stream   : not null access Root_Stream_Type'Class;
-      Position : out Cursor);
-
-   for Cursor'Read use Read;
-
-   procedure Write
-     (Stream   : not null access Root_Stream_Type'Class;
-      Position : Cursor);
-
-   for Cursor'Write use Write;
 
    package Vector_Iterator_Interfaces is new
      Ada.Iterator_Interfaces (Cursor, Has_Element);
@@ -121,33 +110,9 @@ package Ada.Containers.Indefinite_Vectors is
    with
       Implicit_Dereference => Element;
 
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Constant_Reference_Type);
-
-   for Constant_Reference_Type'Write use Write;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Constant_Reference_Type);
-
-   for Constant_Reference_Type'Read use Read;
-
    type Reference_Type (Element : not null access Element_Type) is private
    with
       Implicit_Dereference => Element;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Reference_Type);
-
-   for Reference_Type'Write use Write;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Reference_Type);
-
-   for Reference_Type'Read use Read;
 
    function Constant_Reference
      (Container : aliased Vector;
@@ -397,24 +362,19 @@ private
 
    type Elements_Access is access Elements_Type;
 
-   use Ada.Finalization;
-
-   type Vector is new Controlled with record
+   type Vector is new Ada.Finalization.Controlled with record
       Elements : Elements_Access;
       Last     : Extended_Index := No_Index;
       Busy     : Natural := 0;
       Lock     : Natural := 0;
    end record;
 
-   type Constant_Reference_Type
-     (Element : not null access constant Element_Type) is null record;
-
-   type Reference_Type
-     (Element : not null access Element_Type) is null record;
-
    overriding procedure Adjust (Container : in out Vector);
 
    overriding procedure Finalize (Container : in out Vector);
+
+   use Ada.Finalization;
+   use Ada.Streams;
 
    procedure Write
      (Stream    : not null access Root_Stream_Type'Class;
@@ -435,6 +395,48 @@ private
       Container : Vector_Access;
       Index     : Index_Type := Index_Type'First;
    end record;
+
+   procedure Read
+     (Stream   : not null access Root_Stream_Type'Class;
+      Position : out Cursor);
+
+   for Cursor'Read use Read;
+
+   procedure Write
+     (Stream   : not null access Root_Stream_Type'Class;
+      Position : Cursor);
+
+   for Cursor'Write use Write;
+
+   type Constant_Reference_Type
+     (Element : not null access constant Element_Type) is null record;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type);
+
+   for Constant_Reference_Type'Write use Write;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type);
+
+   for Constant_Reference_Type'Read use Read;
+
+   type Reference_Type
+     (Element : not null access Element_Type) is null record;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type);
+
+   for Reference_Type'Write use Write;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type);
+
+   for Reference_Type'Read use Read;
 
    Empty_Vector : constant Vector := (Controlled with null, No_Index, 0, 0);
 

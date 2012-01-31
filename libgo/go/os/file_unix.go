@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux openbsd
+// +build darwin freebsd linux netbsd openbsd
 
 package os
 
@@ -60,15 +60,20 @@ const DevNull = "/dev/null"
 // (O_RDONLY etc.) and perm, (0666 etc.) if applicable.  If successful,
 // methods on the returned File can be used for I/O.
 // It returns the File and an error, if any.
-func OpenFile(name string, flag int, perm uint32) (file *File, err error) {
-	r, e := syscall.Open(name, flag|syscall.O_CLOEXEC, perm)
+func OpenFile(name string, flag int, perm FileMode) (file *File, err error) {
+	r, e := syscall.Open(name, flag|syscall.O_CLOEXEC, syscallMode(perm))
 	if e != nil {
 		return nil, &PathError{"open", name, e}
 	}
 
 	// There's a race here with fork/exec, which we are
-	// content to live with.  See ../syscall/exec.go
-	if syscall.O_CLOEXEC == 0 { // O_CLOEXEC not supported
+	// content to live with.  See ../syscall/exec_unix.go.
+	// On OS X 10.6, the O_CLOEXEC flag is not respected.
+	// On OS X 10.7, the O_CLOEXEC flag works.
+	// Without a cheap & reliable way to detect 10.6 vs 10.7 at
+	// runtime, we just always call syscall.CloseOnExec on Darwin.
+	// Once >=10.7 is prevalent, this extra call can removed.
+	if syscall.O_CLOEXEC == 0 || runtime.GOOS == "darwin" { // O_CLOEXEC not supported
 		syscall.CloseOnExec(r)
 	}
 
@@ -140,22 +145,7 @@ func Lstat(name string) (fi FileInfo, err error) {
 	return fileInfoFromStat(&stat, name), nil
 }
 
-// Readdir reads the contents of the directory associated with file and
-// returns an array of up to n FileInfo values, as would be returned
-// by Lstat, in directory order. Subsequent calls on the same file will yield
-// further FileInfos.
-//
-// If n > 0, Readdir returns at most n FileInfo structures. In this case, if
-// Readdir returns an empty slice, it will return a non-nil error
-// explaining why. At the end of a directory, the error is io.EOF.
-//
-// If n <= 0, Readdir returns all the FileInfo from the directory in
-// a single slice. In this case, if Readdir succeeds (reads all
-// the way to the end of the directory), it returns the slice and a
-// nil error. If it encounters an error before the end of the
-// directory, Readdir returns the FileInfo read until that point
-// and a non-nil error.
-func (f *File) Readdir(n int) (fi []FileInfo, err error) {
+func (f *File) readdir(n int) (fi []FileInfo, err error) {
 	dirname := f.name
 	if dirname == "" {
 		dirname = "."
@@ -214,6 +204,36 @@ func Truncate(name string, size int64) error {
 		return &PathError{"truncate", name, e}
 	}
 	return nil
+}
+
+// Remove removes the named file or directory.
+func Remove(name string) error {
+	// System call interface forces us to know
+	// whether name is a file or directory.
+	// Try both: it is cheaper on average than
+	// doing a Stat plus the right one.
+	e := syscall.Unlink(name)
+	if e == nil {
+		return nil
+	}
+	e1 := syscall.Rmdir(name)
+	if e1 == nil {
+		return nil
+	}
+
+	// Both failed: figure out which error to return.
+	// OS X and Linux differ on whether unlink(dir)
+	// returns EISDIR, so can't use that.  However,
+	// both agree that rmdir(file) returns ENOTDIR,
+	// so we can use that to decide which error is real.
+	// Rmdir might also return ENOTDIR if given a bad
+	// file path, like /etc/passwd/foo, but in that case,
+	// both errors will be ENOTDIR, so it's okay to
+	// use the error from unlink.
+	if e1 != syscall.ENOTDIR {
+		e = e1
+	}
+	return &PathError{"remove", name, e}
 }
 
 // basename removes trailing slashes and the leading directory name from path name

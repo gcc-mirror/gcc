@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6037,10 +6037,11 @@ package body Sem_Util is
 
    function Implementation_Kind (Subp : Entity_Id) return Name_Id is
       Impl_Prag : constant Node_Id := Get_Rep_Pragma (Subp, Name_Implemented);
+      Arg       : Node_Id;
    begin
       pragma Assert (Present (Impl_Prag));
-      return
-        Chars (Expression (Last (Pragma_Argument_Associations (Impl_Prag))));
+      Arg := Last (Pragma_Argument_Associations (Impl_Prag));
+      return Chars (Get_Pragma_Arg (Arg));
    end Implementation_Kind;
 
    --------------------------
@@ -7133,14 +7134,23 @@ package body Sem_Util is
 
    function Is_Fully_Initialized_Type (Typ : Entity_Id) return Boolean is
    begin
+      --  In Ada2012, a scalar type with an aspect Default_Value
+      --  is fully initialized.
+
       if Is_Scalar_Type (Typ) then
-         return False;
+         return
+           Ada_Version >= Ada_2012
+             and then Has_Default_Aspect (Typ);
 
       elsif Is_Access_Type (Typ) then
          return True;
 
       elsif Is_Array_Type (Typ) then
-         if Is_Fully_Initialized_Type (Component_Type (Typ)) then
+         if Is_Fully_Initialized_Type (Component_Type (Typ))
+           or else
+             (Ada_Version >= Ada_2012
+                and then Has_Default_Aspect (Typ))
+         then
             return True;
          end if;
 

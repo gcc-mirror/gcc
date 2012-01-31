@@ -107,7 +107,7 @@ func check(t *testing.T, source, golden string, mode checkMode) {
 	// start a timer to produce a time-out signal
 	tc := make(chan int)
 	go func() {
-		time.Sleep(10e9) // plenty of a safety margin, even for very slow machines
+		time.Sleep(10 * time.Second) // plenty of a safety margin, even for very slow machines
 		tc <- 0
 	}()
 
@@ -202,5 +202,20 @@ func init() {
 	}
 	if s := buf.String(); s != name {
 		panic("got " + s + ", want " + name)
+	}
+}
+
+// Verify that the printer doesn't crash if the AST contains BadXXX nodes.
+func TestBadNodes(t *testing.T) {
+	const src = "package p\n("
+	const res = "package p\nBadDecl\n"
+	f, err := parser.ParseFile(fset, "", src, parser.ParseComments)
+	if err == nil {
+		t.Errorf("expected illegal program")
+	}
+	var buf bytes.Buffer
+	Fprint(&buf, fset, f)
+	if buf.String() != res {
+		t.Errorf("got %q, expected %q", buf.String(), res)
 	}
 }

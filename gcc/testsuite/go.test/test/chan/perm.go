@@ -48,4 +48,11 @@ func main() {
 	case x := <-cs: // ERROR "receive"
 		_ = x
 	}
+
+	for _ = range cs {// ERROR "receive"
+	}
+
+	close(c)
+	close(cs)
+	close(cr)  // ERROR "receive"
 }

@@ -4,6 +4,9 @@
 
 package time
 
+// Sleep pauses the current goroutine for the duration d.
+func Sleep(d Duration)
+
 func nano() int64 {
 	sec, nsec := now()
 	return sec*1e9 + int64(nsec)
@@ -38,7 +41,7 @@ func (t *Timer) Stop() (ok bool) {
 }
 
 // NewTimer creates a new Timer that will send
-// the current time on its channel after at least ns nanoseconds.
+// the current time on its channel after at least duration d.
 func NewTimer(d Duration) *Timer {
 	c := make(chan Time, 1)
 	t := &Timer{
@@ -67,18 +70,18 @@ func sendTime(now int64, c interface{}) {
 
 // After waits for the duration to elapse and then sends the current time
 // on the returned channel.
-// It is equivalent to NewTimer(ns).C.
+// It is equivalent to NewTimer(d).C.
 func After(d Duration) <-chan Time {
 	return NewTimer(d).C
 }
 
-// AfterFunc waits at least ns nanoseconds before calling f
+// AfterFunc waits for the duration to elapse and then calls f
 // in its own goroutine. It returns a Timer that can
 // be used to cancel the call using its Stop method.
-func AfterFunc(ns int64, f func()) *Timer {
+func AfterFunc(d Duration, f func()) *Timer {
 	t := &Timer{
 		r: runtimeTimer{
-			when: nano() + ns,
+			when: nano() + int64(d),
 			f:    goFunc,
 			arg:  f,
 		},

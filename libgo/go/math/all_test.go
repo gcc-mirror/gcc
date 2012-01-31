@@ -22,6 +22,7 @@ var vf = []float64{
 	1.8253080916808550e+00,
 	-8.6859247685756013e+00,
 }
+
 // The expected results below were computed by the high precision calculators
 // at http://keisan.casio.com/.  More exact input values (array vf[], above)
 // were obtained by printing them with "%.26f".  The answers were calculated
@@ -159,6 +160,7 @@ var cos = []float64{
 	-2.517729313893103197176091e-01,
 	-7.39241351595676573201918e-01,
 }
+
 // Results for 100000 * Pi + vf[i]
 var cosLarge = []float64{
 	2.634752141185559426744e-01,
@@ -514,6 +516,7 @@ var sin = []float64{
 	9.6778633541687993721617774e-01,
 	-6.734405869050344734943028e-01,
 }
+
 // Results for 100000 * Pi + vf[i]
 var sinLarge = []float64{
 	-9.646661658548936063912e-01,
@@ -563,6 +566,7 @@ var tan = []float64{
 	-3.843885560201130679995041e+00,
 	9.10988793377685105753416e-01,
 }
+
 // Results for 100000 * Pi + vf[i]
 var tanLarge = []float64{
 	-3.66131656475596512705e+00,
@@ -958,6 +962,75 @@ var fabsSC = []float64{
 	NaN(),
 }
 
+var vffdimSC = [][2]float64{
+	{Inf(-1), Inf(-1)},
+	{Inf(-1), Inf(1)},
+	{Inf(-1), NaN()},
+	{Copysign(0, -1), Copysign(0, -1)},
+	{Copysign(0, -1), 0},
+	{0, Copysign(0, -1)},
+	{0, 0},
+	{Inf(1), Inf(-1)},
+	{Inf(1), Inf(1)},
+	{Inf(1), NaN()},
+	{NaN(), Inf(-1)},
+	{NaN(), Copysign(0, -1)},
+	{NaN(), 0},
+	{NaN(), Inf(1)},
+	{NaN(), NaN()},
+}
+var fdimSC = []float64{
+	NaN(),
+	0,
+	NaN(),
+	0,
+	0,
+	0,
+	0,
+	Inf(1),
+	NaN(),
+	NaN(),
+	NaN(),
+	NaN(),
+	NaN(),
+	NaN(),
+	NaN(),
+}
+var fmaxSC = []float64{
+	Inf(-1),
+	Inf(1),
+	NaN(),
+	Copysign(0, -1),
+	0,
+	0,
+	0,
+	Inf(1),
+	Inf(1),
+	Inf(1),
+	NaN(),
+	NaN(),
+	NaN(),
+	Inf(1),
+	NaN(),
+}
+var fminSC = []float64{
+	Inf(-1),
+	Inf(-1),
+	Inf(-1),
+	Copysign(0, -1),
+	Copysign(0, -1),
+	Copysign(0, -1),
+	0,
+	Inf(-1),
+	Inf(1),
+	NaN(),
+	Inf(-1),
+	NaN(),
+	NaN(),
+	NaN(),
+	NaN(),
+}
+
 var vffmodSC = [][2]float64{
 	{Inf(-1), Inf(-1)},
 	{Inf(-1), -Pi},
@@ -1259,12 +1332,26 @@ var modfSC = [][2]float64{
 }
 
 var vfnextafterSC = [][2]float64{
+	{0, 0},
+	{0, Copysign(0, -1)},
+	{0, -1},
 	{0, NaN()},
+	{Copysign(0, -1), 1},
+	{Copysign(0, -1), 0},
+	{Copysign(0, -1), Copysign(0, -1)},
+	{Copysign(0, -1), -1},
 	{NaN(), 0},
 	{NaN(), NaN()},
 }
 var nextafterSC = []float64{
+	0,
+	0,
+	-4.9406564584124654418e-324, // Float64frombits(0x8000000000000001)
 	NaN(),
+	4.9406564584124654418e-324, // Float64frombits(0x0000000000000001)
+	Copysign(0, -1),
+	Copysign(0, -1),
+	-4.9406564584124654418e-324, // Float64frombits(0x8000000000000001)
 	NaN(),
 	NaN(),
 }
@@ -1875,6 +1962,11 @@ func TestDim(t *testing.T) {
 			t.Errorf("Dim(%g, %g) = %g, want %g", vf[i], 0.0, f, fdim[i])
 		}
 	}
+	for i := 0; i < len(vffdimSC); i++ {
+		if f := Dim(vffdimSC[i][0], vffdimSC[i][1]); !alike(fdimSC[i], f) {
+			t.Errorf("Dim(%g, %g) = %g, want %g", vffdimSC[i][0], vffdimSC[i][1], f, fdimSC[i])
+		}
+	}
 }
 
 func TestFloor(t *testing.T) {
@@ -1896,12 +1988,22 @@ func TestMax(t *testing.T) {
 			t.Errorf("Max(%g, %g) = %g, want %g", vf[i], ceil[i], f, ceil[i])
 		}
 	}
+	for i := 0; i < len(vffdimSC); i++ {
+		if f := Max(vffdimSC[i][0], vffdimSC[i][1]); !alike(fmaxSC[i], f) {
+			t.Errorf("Max(%g, %g) = %g, want %g", vffdimSC[i][0], vffdimSC[i][1], f, fmaxSC[i])
+		}
+	}
 }
 
 func TestMin(t *testing.T) {
 	for i := 0; i < len(vf); i++ {
 		if f := Min(vf[i], floor[i]); floor[i] != f {
 			t.Errorf("Min(%g, %g) = %g, want %g", vf[i], floor[i], f, floor[i])
+		}
+	}
+	for i := 0; i < len(vffdimSC); i++ {
+		if f := Min(vffdimSC[i][0], vffdimSC[i][1]); !alike(fminSC[i], f) {
+			t.Errorf("Min(%g, %g) = %g, want %g", vffdimSC[i][0], vffdimSC[i][1], f, fminSC[i])
 		}
 	}
 }
@@ -1960,6 +2062,20 @@ func TestHypot(t *testing.T) {
 	for i := 0; i < len(vfhypotSC); i++ {
 		if f := Hypot(vfhypotSC[i][0], vfhypotSC[i][1]); !alike(hypotSC[i], f) {
 			t.Errorf("Hypot(%g, %g) = %g, want %g", vfhypotSC[i][0], vfhypotSC[i][1], f, hypotSC[i])
+		}
+	}
+}
+
+func TestHypotGo(t *testing.T) {
+	for i := 0; i < len(vf); i++ {
+		a := Abs(1e200 * tanh[i] * Sqrt(2))
+		if f := HypotGo(1e200*tanh[i], 1e200*tanh[i]); !veryclose(a, f) {
+			t.Errorf("HypotGo(%g, %g) = %g, want %g", 1e200*tanh[i], 1e200*tanh[i], f, a)
+		}
+	}
+	for i := 0; i < len(vfhypotSC); i++ {
+		if f := HypotGo(vfhypotSC[i][0], vfhypotSC[i][1]); !alike(hypotSC[i], f) {
+			t.Errorf("HypotGo(%g, %g) = %g, want %g", vfhypotSC[i][0], vfhypotSC[i][1], f, hypotSC[i])
 		}
 	}
 }
@@ -2098,8 +2214,8 @@ func TestLogb(t *testing.T) {
 		}
 	}
 	for i := 0; i < len(vffrexpBC); i++ {
-		if e := Logb(vffrexpBC[i]); !alike(logbBC[i], e) {
-			t.Errorf("Ilogb(%g) = %g, want %g", vffrexpBC[i], e, logbBC[i])
+		if f := Logb(vffrexpBC[i]); !alike(logbBC[i], f) {
+			t.Errorf("Logb(%g) = %g, want %g", vffrexpBC[i], f, logbBC[i])
 		}
 	}
 }
@@ -2175,7 +2291,7 @@ func TestNextafter(t *testing.T) {
 			t.Errorf("Nextafter(%g, %g) = %g want %g", vf[i], 10.0, f, nextafter[i])
 		}
 	}
-	for i := 0; i < len(vfmodfSC); i++ {
+	for i := 0; i < len(vfnextafterSC); i++ {
 		if f := Nextafter(vfnextafterSC[i][0], vfnextafterSC[i][1]); !alike(nextafterSC[i], f) {
 			t.Errorf("Nextafter(%g, %g) = %g want %g", vfnextafterSC[i][0], vfnextafterSC[i][1], f, nextafterSC[i])
 		}
@@ -2420,7 +2536,7 @@ func TestLargeTan(t *testing.T) {
 }
 
 // Check that math constants are accepted by compiler
-// and have right value (assumes strconv.Atof works).
+// and have right value (assumes strconv.ParseFloat works).
 // http://code.google.com/p/go/issues/detail?id=201
 
 type floatTest struct {

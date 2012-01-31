@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build windows
+
 package winfsnotify
 
 import (
@@ -21,7 +23,7 @@ func expect(t *testing.T, eventstream <-chan *Event, name string, mask uint32) {
 		if event.Name != name || event.Mask != mask {
 			t.Fatal("did not receive expected event")
 		}
-	case <-time.After(1e9):
+	case <-time.After(1 * time.Second):
 		t.Fatal("timed out waiting for event")
 	}
 }
@@ -108,7 +110,7 @@ func TestNotifyClose(t *testing.T) {
 		done = true
 	}()
 
-	time.Sleep(50e6) // 50 ms
+	time.Sleep(50 * time.Millisecond)
 	if !done {
 		t.Fatal("double Close() test failed: second Close() call didn't return")
 	}

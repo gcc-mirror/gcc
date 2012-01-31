@@ -1,3 +1,9 @@
+2012-01-22  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/mh-interix: Remove as unneeded.
+	* config/picflag.m4 (i[[34567]]86-*-interix3*):
+        Change triplet to i[[34567]]86-*-interix[[3-9]]*.
+
 2012-01-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR bootstrap/51734

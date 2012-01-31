@@ -1,16 +1,12 @@
 2012-01-30  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* Make-lang.in: Fix the --program-suffix configuration
-	option. GUPC executables are installed with appropriate
-	suffixes and GUPC driver execs the gcc with the right
-	suffix.
-
-	Also, prevented install of gupc/upc executables with the version 
-	number in its name (same as other languages).
+	option.  GUPC executables are now installed with appropriate
+	suffixes and GUPC driver execs 'gcc' with the right suffix.
 
 2012-01-24  Nenad Vukicevic  <nenad@intrepid.com>
 
-	* upc-lang.c (upc_init_options): Disable section anchors 
+	* upc-lang.c (upc_init_options): Disable section anchors
 	for UPC language.
 
 2012-01-14  Gary Funck  <gary@intrepid.com>
@@ -39,7 +35,7 @@
 
 	Fix gupc driver to avoid segfault when processing
 	invalid use of a switch that expects an argument.
-	* gupc.c (get_libgupc_path): Add check for non-NULL value
+	* gupc.c (get_libgupc_path): Add check for non-NULL value of
 	libgupc_archive before attempting to access libgupc_archive[0].
 	(main): Do not issue error if lib_dir is NULL.  Instead, only
 	process lib_dir if it is non-NULL.

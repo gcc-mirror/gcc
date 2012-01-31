@@ -9,12 +9,9 @@ package main
 import (
 	"fmt"
 	"math"
+	"runtime"
 	"strings"
 )
-
-type Error interface {
-	String() string
-}
 
 type ErrorTest struct {
 	name string
@@ -161,10 +158,10 @@ var errorTests = []ErrorTest{
 	ErrorTest{"complex128 1/0", func() { use(e128 / d128) }, ""},
 }
 
-func error(fn func()) (error string) {
+func error_(fn func()) (error string) {
 	defer func() {
 		if e := recover(); e != nil {
-			error = e.(Error).String()
+			error = e.(runtime.Error).Error()
 		}
 	}()
 	fn()
@@ -199,7 +196,7 @@ func main() {
 		if t.err != "" {
 			continue
 		}
-		err := error(t.fn)
+		err := error_(t.fn)
 		switch {
 		case t.err == "" && err == "":
 			// fine

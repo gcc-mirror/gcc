@@ -2,9 +2,9 @@
 /* { dg-options "-march=octeon2 -O -mgp64" } */
 
 #define TEST(N, R, T) \
- T fll##N (T j, R *b, long long i) { return j + b[i]; } \
+ T fll##N (T j, signed R *b, long long i) { return j + b[i]; } \
  T gll##N (T j, unsigned R *b, long long i) { return j + b[i]; } \
- T fi##N (T j, R *b, int i) { return j + b[i]; } \
+ T fi##N (T j, signed R *b, int i) { return j + b[i]; } \
  T gi##N (T j, unsigned R *b, int i) { return j + b[i]; } \
 
 TEST (1, char, int)

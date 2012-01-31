@@ -6,6 +6,7 @@ package json
 
 import (
 	"bytes"
+	"math"
 	"reflect"
 	"testing"
 )
@@ -80,5 +81,48 @@ func TestStringTag(t *testing.T) {
 	}
 	if !reflect.DeepEqual(s, s2) {
 		t.Fatalf("decode didn't match.\nsource: %#v\nEncoded as:\n%s\ndecode: %#v", s, string(got), s2)
+	}
+}
+
+// byte slices are special even if they're renamed types.
+type renamedByte byte
+type renamedByteSlice []byte
+type renamedRenamedByteSlice []renamedByte
+
+func TestEncodeRenamedByteSlice(t *testing.T) {
+	s := renamedByteSlice("abc")
+	result, err := Marshal(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expect := `"YWJj"`
+	if string(result) != expect {
+		t.Errorf(" got %s want %s", result, expect)
+	}
+	r := renamedRenamedByteSlice("abc")
+	result, err = Marshal(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(result) != expect {
+		t.Errorf(" got %s want %s", result, expect)
+	}
+}
+
+var unsupportedValues = []interface{}{
+	math.NaN(),
+	math.Inf(-1),
+	math.Inf(1),
+}
+
+func TestUnsupportedValues(t *testing.T) {
+	for _, v := range unsupportedValues {
+		if _, err := Marshal(v); err != nil {
+			if _, ok := err.(*UnsupportedValueError); !ok {
+				t.Errorf("for %v, got %T want UnsupportedValueError", v, err)
+			}
+		} else {
+			t.Errorf("for %v, expected error", v)
+		}
 	}
 }

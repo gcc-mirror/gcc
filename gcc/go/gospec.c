@@ -1,5 +1,5 @@
 /* gospec.c -- Specific flags and argument handling of the gcc Go front end.
-   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -109,6 +109,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* Whether the -o option was used.  */
   bool saw_opt_o = false;
 
+  /* Whether the -S option was used.  */
+  bool saw_opt_S = false;
+
   /* The first input file with an extension of .go.  */
   const char *first_go_file = NULL;  
 
@@ -163,13 +166,17 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  break;
 
 	case OPT_c:
-	case OPT_S:
 	case OPT_E:
 	case OPT_M:
 	case OPT_MM:
 	case OPT_fsyntax_only:
 	  /* Don't specify libraries if we won't link, since that would
 	     cause a warning.  */
+	  library = -1;
+	  break;
+
+	case OPT_S:
+	  saw_opt_S = true;
 	  library = -1;
 	  break;
 
@@ -280,10 +287,13 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
       alen = baselen + 3;
       out = XNEWVEC (char, alen);
       memcpy (out, base, baselen);
-      /* The driver will convert .o to some other suffix if
-	 appropriate.  */
+      /* The driver will convert .o to some other suffix (e.g., .obj)
+	 if appropriate.  */
       out[baselen] = '.';
-      out[baselen + 1] = 'o';
+      if (saw_opt_S)
+	out[baselen + 1] = 's';
+      else
+	out[baselen + 1] = 'o';
       out[baselen + 2] = '\0';
       generate_option (OPT_o, out, 1, CL_DRIVER,
 		       &new_decoded_options[j]);

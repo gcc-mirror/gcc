@@ -561,7 +561,7 @@ PACKAGE_STRING='package-unused version-unused'
 PACKAGE_BUGREPORT=''
 PACKAGE_URL=''
 
-ac_unique_file="src/ios.cc"
+ac_unique_file="src/shared/hashtable-aux.cc"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -602,7 +602,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
-LIBSUPCXX_PICFLAGS
+PIC_CXXFLAGS
 WARN_FLAGS
 OPTIMIZE_CXXFLAGS
 TOPLEVEL_INCLUDES
@@ -618,10 +618,6 @@ CPU_DEFINES_SRCDIR
 ATOMIC_FLAGS
 ATOMIC_WORD_SRCDIR
 ATOMICITY_SRCDIR
-BUILD_EPUB_FALSE
-BUILD_EPUB_TRUE
-DBTOEPUB
-RUBY
 BUILD_PDF_FALSE
 BUILD_PDF_TRUE
 PDFLATEX
@@ -632,6 +628,8 @@ BUILD_HTML_FALSE
 BUILD_HTML_TRUE
 BUILD_XML_FALSE
 BUILD_XML_TRUE
+BUILD_EPUB_FALSE
+BUILD_EPUB_TRUE
 XSL_STYLE_DIR
 XMLLINT
 XSLTPROC
@@ -1536,7 +1534,7 @@ Optional Features:
   --enable-concept-checks use Boost-derived template checks [default=no]
   --enable-libstdcxx-debug-flags=FLAGS
                           pass compiler FLAGS when building debug library
-                          [default="-g3 -O0"]
+                          [default="-gdwarf-4 -g3 -O0"]
   --enable-libstdcxx-debug
                           build extra debug library [default=no]
   --enable-cxx-flags=FLAGS
@@ -4861,7 +4859,7 @@ $as_echo "$ac_cv_path_EGREP" >&6; }
   # expandable list at autoconf time; the second provides an expandable list
   # (i.e., shell variable) at configure time.
 
-  SUBDIRS='include libsupc++ python src doc po testsuite'
+  SUBDIRS='include libsupc++ python src src/c++98 src/c++11 doc po testsuite'
 
   # These need to be absolute paths, yet at the same time need to
   # canonicalize only relative paths, because then amd will not unmount
@@ -11488,7 +11486,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11491 "configure"
+#line 11489 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11594,7 +11592,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11597 "configure"
+#line 11595 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14952,7 +14950,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14955 "configure"
+#line 14953 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15283,7 +15281,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15286 "configure"
+#line 15284 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15317,7 +15315,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15320 "configure"
+#line 15318 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15351,7 +15349,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15354 "configure"
+#line 15352 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15386,7 +15384,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15389 "configure"
+#line 15387 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15462,7 +15460,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15465 "configure"
+#line 15463 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15504,7 +15502,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15507 "configure"
+#line 15505 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15538,7 +15536,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15541 "configure"
+#line 15539 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -17098,7 +17096,7 @@ if test "${enable_libstdcxx_debug_flags+set}" = set; then :
       *)          as_fn_error "--enable-libstdcxx-debug-flags needs compiler flags as arguments" "$LINENO" 5 ;;
      esac
 else
-  enable_libstdcxx_debug_flags="-g3 -O0"
+  enable_libstdcxx_debug_flags="-gdwarf-4 -g3 -O0"
 fi
 
 
@@ -65755,8 +65753,8 @@ fi
 
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for stylesheets used in generation of documentation" >&5
-$as_echo_n "checking for stylesheets used in generation of documentation... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for docbook stylesheets for documentation creation" >&5
+$as_echo_n "checking for docbook stylesheets for documentation creation... " >&6; }
 glibcxx_stylesheets=no
 if test x${XSLTPROC} = xyes && echo '<title/>' | xsltproc --noout --nonet --xinclude http://docbook.sourceforge.net/release/xsl-ns/current/xhtml-1_1/docbook.xsl - 2>/dev/null; then
   glibcxx_stylesheets=yes
@@ -65787,6 +65785,27 @@ $as_echo "$as_me: $XSL_STYLE_DIR" >&6;}
 else
   glibcxx_stylesheets=no
 fi
+
+# Check for epub3 dependencies.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for epub3 stylesheets for documentation creation" >&5
+$as_echo_n "checking for epub3 stylesheets for documentation creation... " >&6; }
+glibcxx_epub_stylesheets=no
+if test x"$glibcxx_local_stylesheets" = x"yes"; then
+   if test -f "$XSL_STYLE_DIR/epub3/chunk.xsl"; then
+      glibcxx_epub_stylesheets=yes
+   fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_epub_stylesheets" >&5
+$as_echo "$glibcxx_epub_stylesheets" >&6; }
+ if test x"$glibcxx_epub_stylesheets" = x"yes"; then
+  BUILD_EPUB_TRUE=
+  BUILD_EPUB_FALSE='#'
+else
+  BUILD_EPUB_TRUE='#'
+  BUILD_EPUB_FALSE=
+fi
+
+
 
 
 # Check for xml/html dependencies.
@@ -65827,7 +65846,7 @@ else
 fi
 
 
-# Check for pdf/epub dependencies.
+# Check for pdf dependencies.
 # Extract the first word of "dblatex", so it can be a program name with args.
 set dummy dblatex; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
@@ -65911,92 +65930,6 @@ fi
 else
   BUILD_PDF_TRUE='#'
   BUILD_PDF_FALSE=
-fi
-
-
-# Extract the first word of "ruby", so it can be a program name with args.
-set dummy ruby; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_prog_RUBY+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$RUBY"; then
-  ac_cv_prog_RUBY="$RUBY" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_RUBY="yes"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_prog_RUBY" && ac_cv_prog_RUBY="no"
-fi
-fi
-RUBY=$ac_cv_prog_RUBY
-if test -n "$RUBY"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $RUBY" >&5
-$as_echo "$RUBY" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-# Extract the first word of "dbtoepub", so it can be a program name with args.
-set dummy dbtoepub; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_prog_DBTOEPUB+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$DBTOEPUB"; then
-  ac_cv_prog_DBTOEPUB="$DBTOEPUB" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_DBTOEPUB="yes"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_prog_DBTOEPUB" && ac_cv_prog_DBTOEPUB="no"
-fi
-fi
-DBTOEPUB=$ac_cv_prog_DBTOEPUB
-if test -n "$DBTOEPUB"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DBTOEPUB" >&5
-$as_echo "$DBTOEPUB" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
- if test $ac_cv_prog_RUBY = "yes" &&
-	       test $ac_cv_prog_DBTOEPUB = "yes"; then
-  BUILD_EPUB_TRUE=
-  BUILD_EPUB_FALSE='#'
-else
-  BUILD_EPUB_TRUE='#'
-  BUILD_EPUB_FALSE=
 fi
 
 
@@ -66383,9 +66316,9 @@ $as_echo "$gxx_include_dir" >&6; }
 
 
 if test "$enable_shared" = yes; then
-  LIBSUPCXX_PICFLAGS="-prefer-pic"
+  PIC_CXXFLAGS="-prefer-pic"
 else
-  LIBSUPCXX_PICFLAGS=
+  PIC_CXXFLAGS=
 fi
 
 
@@ -66404,7 +66337,7 @@ ac_config_files="$ac_config_files scripts/extract_symvers"
 # append it here.  Only modify Makefiles that have just been created.
 #
 # Also, get rid of this simulated-VPATH thing that automake does.
-ac_config_files="$ac_config_files include/Makefile libsupc++/Makefile python/Makefile src/Makefile doc/Makefile po/Makefile testsuite/Makefile"
+ac_config_files="$ac_config_files include/Makefile libsupc++/Makefile python/Makefile src/Makefile src/c++98/Makefile src/c++11/Makefile doc/Makefile po/Makefile testsuite/Makefile"
 
 
 ac_config_commands="$ac_config_commands generate-headers"
@@ -66591,6 +66524,10 @@ if test -z "${BUILD_INFO_TRUE}" && test -z "${BUILD_INFO_FALSE}"; then
   as_fn_error "conditional \"BUILD_INFO\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${BUILD_EPUB_TRUE}" && test -z "${BUILD_EPUB_FALSE}"; then
+  as_fn_error "conditional \"BUILD_EPUB\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${BUILD_XML_TRUE}" && test -z "${BUILD_XML_FALSE}"; then
   as_fn_error "conditional \"BUILD_XML\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -66605,10 +66542,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_PDF_TRUE}" && test -z "${BUILD_PDF_FALSE}"; then
   as_fn_error "conditional \"BUILD_PDF\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${BUILD_EPUB_TRUE}" && test -z "${BUILD_EPUB_FALSE}"; then
-  as_fn_error "conditional \"BUILD_EPUB\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -67606,6 +67539,8 @@ do
     "libsupc++/Makefile") CONFIG_FILES="$CONFIG_FILES libsupc++/Makefile" ;;
     "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
+    "src/c++98/Makefile") CONFIG_FILES="$CONFIG_FILES src/c++98/Makefile" ;;
+    "src/c++11/Makefile") CONFIG_FILES="$CONFIG_FILES src/c++11/Makefile" ;;
     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
     "po/Makefile") CONFIG_FILES="$CONFIG_FILES po/Makefile" ;;
     "testsuite/Makefile") CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
@@ -69420,6 +69355,28 @@ _EOF
    { ml_norecursion=; unset ml_norecursion;}
  ;;
     "src/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
+ ;;
+    "src/c++98/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
+ ;;
+    "src/c++11/Makefile":F) cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
    sed -f vpsed$$ $ac_file > tmp$$

@@ -1,3 +1,35 @@
+2012-01-21  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::type_size): Check for error_mark_node.
+	(Gcc_backend::type_alignment): Likewise.
+	(Gcc_backend::type_field_alignment): Likewise.
+	(Gcc_backend::type_field_offset): Likewise.
+
+2012-01-20  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::placeholder_struct_type): Permit name to
+	be empty.
+	(Gcc_backend::set_placeholder_struct_type): Likewise.
+
+2012-01-17  Ian Lance Taylor  <iant@google.com>
+
+	* gospec.c (lang_specific_driver): If we see -S without -o, add -o
+	BASE.s rather than -o BASE.o.
+
+2012-01-11  Ian Lance Taylor  <iant@google.com>
+
+	* go-lang.c (go_langhook_init): Initialize void_list_node before
+	calling go_create_gogo.
+
+2012-01-10  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::type_size): New function.
+	(Gcc_backend::type_alignment): New function.
+	(Gcc_backend::type_field_alignment): New function.
+	(Gcc_backend::type_field_offset): New function.
+	* go-backend.c (go_type_alignment): Remove.
+	* go-c.h (go_type_alignment): Don't declare.
+
 2011-12-27  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::set_placeholder_struct_type): Use

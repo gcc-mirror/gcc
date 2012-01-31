@@ -374,21 +374,26 @@ resolve_formal_arglist (gfc_symbol *proc)
       if (gfc_elemental (proc))
 	{
 	  /* F08:C1289.  */
-	  if (sym->attr.codimension)
+	  if (sym->attr.codimension
+	      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
+		  && CLASS_DATA (sym)->attr.codimension))
 	    {
 	      gfc_error ("Coarray dummy argument '%s' at %L to elemental "
 			 "procedure", sym->name, &sym->declared_at);
 	      continue;
 	    }
 
-	  if (sym->as != NULL)
+	  if (sym->as || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
+			  && CLASS_DATA (sym)->as))
 	    {
 	      gfc_error ("Argument '%s' of elemental procedure at %L must "
 			 "be scalar", sym->name, &sym->declared_at);
 	      continue;
 	    }
 
-	  if (sym->attr.allocatable)
+	  if (sym->attr.allocatable
+	      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
+		  && CLASS_DATA (sym)->attr.allocatable))
 	    {
 	      gfc_error ("Argument '%s' of elemental procedure at %L cannot "
 			 "have the ALLOCATABLE attribute", sym->name,
@@ -396,7 +401,9 @@ resolve_formal_arglist (gfc_symbol *proc)
 	      continue;
 	    }
 
-	  if (sym->attr.pointer)
+	  if (sym->attr.pointer
+	      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
+		  && CLASS_DATA (sym)->attr.class_pointer))
 	    {
 	      gfc_error ("Argument '%s' of elemental procedure at %L cannot "
 			 "have the POINTER attribute", sym->name,
@@ -1051,6 +1058,7 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	  && comp->ts.u.cl->length->expr_type == EXPR_CONSTANT
 	  && cons->expr->ts.u.cl && cons->expr->ts.u.cl->length
 	  && cons->expr->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	  && cons->expr->rank != 0
 	  && mpz_cmp (cons->expr->ts.u.cl->length->value.integer,
 		      comp->ts.u.cl->length->value.integer) != 0)
 	{
@@ -1739,13 +1747,17 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
     got_variable:
       e->expr_type = EXPR_VARIABLE;
       e->ts = sym->ts;
-      if (sym->as != NULL)
+      if ((sym->as != NULL && sym->ts.type != BT_CLASS)
+	  || (sym->ts.type == BT_CLASS && sym->attr.class_ok
+	      && CLASS_DATA (sym)->as))
 	{
-	  e->rank = sym->as->rank;
+	  e->rank = sym->ts.type == BT_CLASS
+		    ? CLASS_DATA (sym)->as->rank : sym->as->rank;
 	  e->ref = gfc_get_ref ();
 	  e->ref->type = REF_ARRAY;
 	  e->ref->u.ar.type = AR_FULL;
-	  e->ref->u.ar.as = sym->as;
+	  e->ref->u.ar.as = sym->ts.type == BT_CLASS
+			    ? CLASS_DATA (sym)->as : sym->as;
 	}
 
       /* Expressions are assigned a default ts.type of BT_PROCEDURE in
@@ -2710,7 +2722,6 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
                           gfc_symbol **new_sym)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
-  char binding_label[GFC_MAX_BINDING_LABEL_LEN + 1];
   int optional_arg = 0;
   gfc_try retval = SUCCESS;
   gfc_symbol *args_sym;
@@ -2744,26 +2755,23 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
 	{
 	  /* two args.  */
 	  sprintf (name, "%s_2", sym->name);
-	  sprintf (binding_label, "%s_2", sym->binding_label);
 	  optional_arg = 1;
 	}
       else
 	{
 	  /* one arg.  */
 	  sprintf (name, "%s_1", sym->name);
-	  sprintf (binding_label, "%s_1", sym->binding_label);
 	  optional_arg = 0;
 	}
 
       /* Get a new symbol for the version of c_associated that
 	 will get called.  */
-      *new_sym = get_iso_c_sym (sym, name, binding_label, optional_arg);
+      *new_sym = get_iso_c_sym (sym, name, NULL, optional_arg);
     }
   else if (sym->intmod_sym_id == ISOCBINDING_LOC
 	   || sym->intmod_sym_id == ISOCBINDING_FUNLOC)
     {
       sprintf (name, "%s", sym->name);
-      sprintf (binding_label, "%s", sym->binding_label);
 
       /* Error check the call.  */
       if (args->next != NULL)
@@ -3348,7 +3356,7 @@ generic:
 
 static void
 set_name_and_label (gfc_code *c, gfc_symbol *sym,
-                    char *name, char *binding_label)
+                    char *name, const char **binding_label)
 {
   gfc_expr *arg = NULL;
   char type;
@@ -3381,7 +3389,8 @@ set_name_and_label (gfc_code *c, gfc_symbol *sym,
       sprintf (name, "%s_%c%d", sym->name, type, kind);
       /* Set up the binding label as the given symbol's label plus
          the type and kind.  */
-      sprintf (binding_label, "%s_%c%d", sym->binding_label, type, kind);
+      *binding_label = gfc_get_string ("%s_%c%d", sym->binding_label, type, 
+				       kind);
     }
   else
     {
@@ -3389,7 +3398,7 @@ set_name_and_label (gfc_code *c, gfc_symbol *sym,
          was, cause it should at least be found, and the missing
          arg error will be caught by compare_parameters().  */
       sprintf (name, "%s", sym->name);
-      sprintf (binding_label, "%s", sym->binding_label);
+      *binding_label = sym->binding_label;
     }
    
   return;
@@ -3411,7 +3420,7 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
   gfc_symbol *new_sym;
   /* this is fine, since we know the names won't use the max */
   char name[GFC_MAX_SYMBOL_LEN + 1];
-  char binding_label[GFC_MAX_BINDING_LABEL_LEN + 1];
+  const char* binding_label;
   /* default to success; will override if find error */
   match m = MATCH_YES;
 
@@ -3422,7 +3431,7 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
   if ((sym->intmod_sym_id == ISOCBINDING_F_POINTER) ||
       (sym->intmod_sym_id == ISOCBINDING_F_PROCPOINTER))
     {
-      set_name_and_label (c, sym, name, binding_label);
+      set_name_and_label (c, sym, name, &binding_label);
       
       if (sym->intmod_sym_id == ISOCBINDING_F_POINTER)
 	{
@@ -7929,13 +7938,8 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       sym->attr.asynchronous = tsym->attr.asynchronous;
       sym->attr.volatile_ = tsym->attr.volatile_;
 
-      if (tsym->ts.type == BT_CLASS)
-	sym->attr.target = tsym->attr.target || CLASS_DATA (tsym)->attr.pointer;
-      else
-	sym->attr.target = tsym->attr.target || tsym->attr.pointer;
-
-      if (sym->ts.type == BT_DERIVED && tsym->ts.type == BT_CLASS)
-	target->rank = sym->as ? sym->as->rank : 0;
+      sym->attr.target = tsym->attr.target
+			 || gfc_expr_attr (target).pointer;
     }
 
   /* Get type if this was not already set.  Note that it can be
@@ -7950,10 +7954,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 			  && !gfc_has_vector_subscript (target));
 
   /* Finally resolve if this is an array or not.  */
-  if (sym->attr.dimension
-	&& (target->ts.type == BT_CLASS
-	      ? !CLASS_DATA (target)->attr.dimension
-	      : target->rank == 0))
+  if (sym->attr.dimension && target->rank == 0)
     {
       gfc_error ("Associate-name '%s' at %L is used as array",
 		 sym->name, &sym->declared_at);
@@ -9637,7 +9638,7 @@ resolve_values (gfc_symbol *sym)
 {
   gfc_try t;
 
-  if (sym->value == NULL || sym->attr.use_assoc)
+  if (sym->value == NULL)
     return;
 
   if (sym->value->expr_type == EXPR_STRUCTURE)
@@ -9664,6 +9665,8 @@ resolve_bind_c_comms (gfc_symtree *comm_block_tree)
     {
       gfc_gsymbol *binding_label_gsym;
       gfc_gsymbol *comm_name_gsym;
+      const char * bind_label = comm_block_tree->n.common->binding_label 
+	? comm_block_tree->n.common->binding_label : "";
 
       /* See if a global symbol exists by the common block's name.  It may
          be NULL if the common block is use-associated.  */
@@ -9672,7 +9675,7 @@ resolve_bind_c_comms (gfc_symtree *comm_block_tree)
       if (comm_name_gsym != NULL && comm_name_gsym->type != GSYM_COMMON)
         gfc_error ("Binding label '%s' for common block '%s' at %L collides "
                    "with the global entity '%s' at %L",
-                   comm_block_tree->n.common->binding_label,
+                   bind_label,
                    comm_block_tree->n.common->name,
                    &(comm_block_tree->n.common->where),
                    comm_name_gsym->name, &(comm_name_gsym->where));
@@ -9684,17 +9687,14 @@ resolve_bind_c_comms (gfc_symtree *comm_block_tree)
              as expected.  */
           if (comm_name_gsym->binding_label == NULL)
             /* No binding label for common block stored yet; save this one.  */
-            comm_name_gsym->binding_label =
-              comm_block_tree->n.common->binding_label;
-          else
-            if (strcmp (comm_name_gsym->binding_label,
-                        comm_block_tree->n.common->binding_label) != 0)
+            comm_name_gsym->binding_label = bind_label;
+          else if (strcmp (comm_name_gsym->binding_label, bind_label) != 0)
               {
                 /* Common block names match but binding labels do not.  */
                 gfc_error ("Binding label '%s' for common block '%s' at %L "
                            "does not match the binding label '%s' for common "
                            "block '%s' at %L",
-                           comm_block_tree->n.common->binding_label,
+                           bind_label,
                            comm_block_tree->n.common->name,
                            &(comm_block_tree->n.common->where),
                            comm_name_gsym->binding_label,
@@ -9706,7 +9706,7 @@ resolve_bind_c_comms (gfc_symtree *comm_block_tree)
 
       /* There is no binding label (NAME="") so we have nothing further to
          check and nothing to add as a global symbol for the label.  */
-      if (comm_block_tree->n.common->binding_label[0] == '\0' )
+      if (!comm_block_tree->n.common->binding_label)
         return;
       
       binding_label_gsym =
@@ -9773,7 +9773,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
   int has_error = 0;
   
   if (sym != NULL && sym->attr.is_bind_c && sym->attr.is_iso_c == 0 
-      && sym->attr.flavor != FL_DERIVED && sym->binding_label[0] != '\0')
+      && sym->attr.flavor != FL_DERIVED && sym->binding_label)
     {
       gfc_gsymbol *bind_c_sym;
 
@@ -9824,8 +9824,8 @@ gfc_verify_binding_labels (gfc_symbol *sym)
               }
 
           if (has_error != 0)
-            /* Clear the binding label to prevent checking multiple times.  */
-            sym->binding_label[0] = '\0';
+	    /* Clear the binding label to prevent checking multiple times.  */
+	    sym->binding_label = NULL;
         }
       else if (bind_c_sym == NULL)
 	{
@@ -10143,6 +10143,26 @@ build_default_init_expr (gfc_symbol *sym)
 	  gfc_free_expr (init_expr);
 	  init_expr = NULL;
 	}
+      if (!init_expr && gfc_option.flag_init_character == GFC_INIT_CHARACTER_ON
+	  && sym->ts.u.cl->length)
+	{
+	  gfc_actual_arglist *arg;
+	  init_expr = gfc_get_expr ();
+	  init_expr->where = sym->declared_at;
+	  init_expr->ts = sym->ts;
+	  init_expr->expr_type = EXPR_FUNCTION;
+	  init_expr->value.function.isym =
+		gfc_intrinsic_function_by_id (GFC_ISYM_REPEAT);
+	  init_expr->value.function.name = "repeat";
+	  arg = gfc_get_actual_arglist ();
+	  arg->expr = gfc_get_character_expr (sym->ts.kind, &sym->declared_at,
+					      NULL, 1);
+	  arg->expr->value.character.string[0]
+		= gfc_option.flag_init_character_value;
+	  arg->next = gfc_get_actual_arglist ();
+	  arg->next->expr = gfc_copy_expr (sym->ts.u.cl->length);
+	  init_expr->value.function.actual = arg;
+	}
       break;
 	  
     default:
@@ -10169,10 +10189,12 @@ apply_default_init_local (gfc_symbol *sym)
   if (init == NULL)
     return;
 
-  /* For saved variables, we don't want to add an initializer at 
-     function entry, so we just add a static initializer.  */
+  /* For saved variables, we don't want to add an initializer at function
+     entry, so we just add a static initializer. Note that automatic variables
+     are stack allocated even with -fno-automatic.  */
   if (sym->attr.save || sym->ns->save_all 
-      || gfc_option.flag_max_stack_var_size == 0)
+      || (gfc_option.flag_max_stack_var_size == 0
+	  && (!sym->attr.dimension || !is_non_constant_shape_array (sym))))
     {
       /* Don't clobber an existing initializer!  */
       gcc_assert (sym->value == NULL);
@@ -12173,7 +12195,7 @@ resolve_fl_parameter (gfc_symbol *sym)
   /* Make sure the types of derived parameters are consistent.  This
      type checking is deferred until resolution because the type may
      refer to a derived type from the host.  */
-  if (sym->ts.type == BT_DERIVED && sym->value
+  if (sym->ts.type == BT_DERIVED
       && !gfc_compare_types (&sym->ts, &sym->value->ts))
     {
       gfc_error ("Incompatible derived type in PARAMETER at %L",

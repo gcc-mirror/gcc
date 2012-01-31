@@ -186,6 +186,7 @@ Implementation Defined Pragmas
 * Pragma Profile (Restricted)::
 * Pragma Psect_Object::
 * Pragma Pure_Function::
+* Pragma Remote_Access_Type::
 * Pragma Restriction_Warnings::
 * Pragma Shared::
 * Pragma Short_Circuit_And_Or::
@@ -824,6 +825,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Profile (Restricted)::
 * Pragma Psect_Object::
 * Pragma Pure_Function::
+* Pragma Remote_Access_Type::
 * Pragma Restriction_Warnings::
 * Pragma Shared::
 * Pragma Short_Circuit_And_Or::
@@ -4478,6 +4480,32 @@ If pragma @code{Pure_Function} is applied to a library level function, the
 function is also considered pure from an optimization point of view, but the
 unit is not a Pure unit in the categorization sense. So for example, a function
 thus marked is free to @code{with} non-pure units.
+
+@node Pragma Remote_Access_Type
+@unnumberedsec Pragma Remote_Access_Type
+@findex Remote_Access_Type
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Remote_Access_Type ([Entity =>] formal_access_type_LOCAL_NAME);
+@end smallexample
+
+@noindent
+This pragma appears in the formal part of a generic declaration.
+It specifies an exception to the RM rule from E.2.2(17/2), which forbids
+the use of a remote access to class-wide type as actual for a formal
+access type.
+
+When this pragma applies to a formal access type @code{Entity}, that
+type is treated as a remote access to class-wide type in the generic.
+It must be a formal general access type, and its designated type must
+be the class-wide type of a formal tagged limited private type from the
+same generic declaration.
+
+In the generic unit, the formal type is subject to all restrictions
+pertaining to remote access to class-wide types. At instantiation, the
+actual type must be a remote access to class-wide type.
 
 @node Pragma Restriction_Warnings
 @unnumberedsec Pragma Restriction_Warnings
@@ -16803,6 +16831,7 @@ A complete description of the AIs may be found in
 @item @code{Predicate} @tab
 @item @code{Preelaborable_Initialization} @tab
 @item @code{Pure_Function} @tab                 -- GNAT
+@item @code{Remote_Access_Type} @tab            -- GNAT
 @item @code{Shared} @tab                        -- GNAT
 @item @code{Size} @tab
 @item @code{Storage_Pool} @tab

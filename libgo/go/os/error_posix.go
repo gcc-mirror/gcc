@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux openbsd windows
+// +build darwin freebsd linux netbsd openbsd windows
 
 package os
 
@@ -58,10 +58,6 @@ type SyscallError struct {
 }
 
 func (e *SyscallError) Error() string { return e.Syscall + ": " + e.Errno.Error() }
-
-// Note: If the name of the function NewSyscallError changes,
-// pkg/go/doc/doc.go should be adjusted since it hardwires
-// this name in a heuristic.
 
 // NewSyscallError returns, as an error, a new SyscallError
 // with the given system call name and error details.

@@ -37,6 +37,7 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int int_type_size,
     imported_init_fns_(),
     unique_prefix_(),
     unique_prefix_specified_(false),
+    verify_types_(),
     interface_types_(),
     specific_type_functions_(),
     specific_type_functions_are_written_(false),
@@ -58,8 +59,9 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int int_type_size,
 					       RUNTIME_TYPE_KIND_INT8));
   this->add_named_type(Type::make_integer_type("int16", false,  16,
 					       RUNTIME_TYPE_KIND_INT16));
-  this->add_named_type(Type::make_integer_type("int32", false,  32,
-					       RUNTIME_TYPE_KIND_INT32));
+  Named_type* int32_type = Type::make_integer_type("int32", false,  32,
+						   RUNTIME_TYPE_KIND_INT32);
+  this->add_named_type(int32_type);
   this->add_named_type(Type::make_integer_type("int64", false,  64,
 					       RUNTIME_TYPE_KIND_INT64));
 
@@ -82,20 +84,21 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int int_type_size,
 						 RUNTIME_TYPE_KIND_INT);
   this->add_named_type(int_type);
 
-  // "byte" is an alias for "uint8".  Construct a Named_object which
-  // points to UINT8_TYPE.  Note that this breaks the normal pairing
-  // in which a Named_object points to a Named_type which points back
-  // to the same Named_object.
-  Named_object* byte_type = this->declare_type("byte", loc);
-  byte_type->set_type_value(uint8_type);
-
-  // "rune" is an alias for "int".
-  Named_object* rune_type = this->declare_type("rune", loc);
-  rune_type->set_type_value(int_type);
-
   this->add_named_type(Type::make_integer_type("uintptr", true,
 					       pointer_size,
 					       RUNTIME_TYPE_KIND_UINTPTR));
+
+  // "byte" is an alias for "uint8".
+  uint8_type->integer_type()->set_is_byte();
+  Named_object* byte_type = Named_object::make_type("byte", NULL, uint8_type,
+						    loc);
+  this->add_named_type(byte_type->type_value());
+
+  // "rune" is an alias for "int32".
+  int32_type->integer_type()->set_is_rune();
+  Named_object* rune_type = Named_object::make_type("rune", NULL, int32_type,
+						    loc);
+  this->add_named_type(rune_type->type_value());
 
   this->add_named_type(Type::make_named_bool_type());
 
@@ -108,7 +111,8 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int int_type_size,
     results->push_back(Typed_identifier("", Type::lookup_string_type(), loc));
     Type *method_type = Type::make_function_type(NULL, NULL, results, loc);
     methods->push_back(Typed_identifier("Error", method_type, loc));
-    Type *error_iface = Type::make_interface_type(methods, loc);
+    Interface_type *error_iface = Type::make_interface_type(methods, loc);
+    error_iface->finalize_methods();
     Named_type *error_type = Named_object::make_type("error", NULL, error_iface, loc)->type_value();
     this->add_named_type(error_type);
   }
@@ -173,7 +177,7 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int int_type_size,
   print_type->set_is_builtin();
   this->globals_->add_function_declaration("println", NULL, print_type, loc);
 
-  Type *empty = Type::make_interface_type(NULL, loc);
+  Type *empty = Type::make_empty_interface_type(loc);
   Typed_identifier_list* panic_parms = new Typed_identifier_list();
   panic_parms->push_back(Typed_identifier("e", empty, loc));
   Function_type *panic_type = Type::make_function_type(NULL, panic_parms,
@@ -623,8 +627,8 @@ Gogo::start_function(const std::string& name, Function_type* type,
       const Typed_identifier* receiver = type->receiver();
       Variable* this_param = new Variable(receiver->type(), NULL, false,
 					  true, true, location);
-      std::string name = receiver->name();
-      if (name.empty())
+      std::string rname = receiver->name();
+      if (rname.empty())
 	{
 	  // We need to give receivers a name since they wind up in
 	  // DECL_ARGUMENTS.  FIXME.
@@ -632,9 +636,10 @@ Gogo::start_function(const std::string& name, Function_type* type,
 	  char buf[50];
 	  snprintf(buf, sizeof buf, "r.%u", count);
 	  ++count;
-	  name = buf;
+	  rname = buf;
 	}
-      block->bindings()->add_variable(name, NULL, this_param);
+      if (!Gogo::is_sink_name(rname))
+	block->bindings()->add_variable(rname, NULL, this_param);
     }
 
   const Typed_identifier_list* parameters = type->parameters();
@@ -650,8 +655,8 @@ Gogo::start_function(const std::string& name, Function_type* type,
 	  if (is_varargs && p + 1 == parameters->end())
 	    param->set_is_varargs_parameter();
 
-	  std::string name = p->name();
-	  if (name.empty() || Gogo::is_sink_name(name))
+	  std::string pname = p->name();
+	  if (pname.empty() || Gogo::is_sink_name(pname))
 	    {
 	      // We need to give parameters a name since they wind up
 	      // in DECL_ARGUMENTS.  FIXME.
@@ -659,9 +664,9 @@ Gogo::start_function(const std::string& name, Function_type* type,
 	      char buf[50];
 	      snprintf(buf, sizeof buf, "p.%u", count);
 	      ++count;
-	      name = buf;
+	      pname = buf;
 	    }
-	  block->bindings()->add_variable(name, NULL, param);
+	  block->bindings()->add_variable(pname, NULL, param);
 	}
     }
 
@@ -828,6 +833,14 @@ Gogo::finish_block(Location location)
   this->functions_.back().blocks.pop_back();
   block->set_end_location(location);
   return block;
+}
+
+// Add an erroneous name.
+
+Named_object*
+Gogo::add_erroneous_name(const std::string& name)
+{
+  return this->package_->bindings()->add_erroneous_name(name);
 }
 
 // Add an unknown name.
@@ -1032,6 +1045,23 @@ Gogo::add_named_object(Named_object* no)
   this->current_bindings()->add_named_object(no);
 }
 
+// Mark all local variables used.  This is used when some types of
+// parse error occur.
+
+void
+Gogo::mark_locals_used()
+{
+  for (Open_functions::iterator pf = this->functions_.begin();
+       pf != this->functions_.end();
+       ++pf)
+    {
+      for (std::vector<Block*>::iterator pb = pf->blocks.begin();
+	   pb != pf->blocks.end();
+	   ++pb)
+	(*pb)->bindings()->mark_locals_used();
+    }
+}
+
 // Record that we've seen an interface type.
 
 void
@@ -1149,11 +1179,86 @@ Gogo::queue_specific_type_function(Type* type, Named_type* name,
   this->specific_type_functions_.push_back(tsf);
 }
 
+// Look for types which need specific hash or equality functions.
+
+class Specific_type_functions : public Traverse
+{
+ public:
+  Specific_type_functions(Gogo* gogo)
+    : Traverse(traverse_types),
+      gogo_(gogo)
+  { }
+
+  int
+  type(Type*);
+
+ private:
+  Gogo* gogo_;
+};
+
+int
+Specific_type_functions::type(Type* t)
+{
+  Named_object* hash_fn;
+  Named_object* equal_fn;
+  switch (t->classification())
+    {
+    case Type::TYPE_NAMED:
+      {
+	Named_type* nt = t->named_type();
+	if (!t->compare_is_identity(this->gogo_) && t->is_comparable())
+	  t->type_functions(this->gogo_, nt, NULL, NULL, &hash_fn, &equal_fn);
+
+	// If this is a struct type, we don't want to make functions
+	// for the unnamed struct.
+	Type* rt = nt->real_type();
+	if (rt->struct_type() == NULL)
+	  {
+	    if (Type::traverse(rt, this) == TRAVERSE_EXIT)
+	      return TRAVERSE_EXIT;
+	  }
+	else
+	  {
+	    // If this type is defined in another package, then we don't
+	    // need to worry about the unexported fields.
+	    bool is_defined_elsewhere = nt->named_object()->package() != NULL;
+	    const Struct_field_list* fields = rt->struct_type()->fields();
+	    for (Struct_field_list::const_iterator p = fields->begin();
+		 p != fields->end();
+		 ++p)
+	      {
+		if (is_defined_elsewhere
+		    && Gogo::is_hidden_name(p->field_name()))
+		  continue;
+		if (Type::traverse(p->type(), this) == TRAVERSE_EXIT)
+		  return TRAVERSE_EXIT;
+	      }
+	  }
+
+	return TRAVERSE_SKIP_COMPONENTS;
+      }
+
+    case Type::TYPE_STRUCT:
+    case Type::TYPE_ARRAY:
+      if (!t->compare_is_identity(this->gogo_) && t->is_comparable())
+	t->type_functions(this->gogo_, NULL, NULL, NULL, &hash_fn, &equal_fn);
+      break;
+
+    default:
+      break;
+    }
+
+  return TRAVERSE_CONTINUE;
+}
+
 // Write out type specific functions.
 
 void
 Gogo::write_specific_type_functions()
 {
+  Specific_type_functions stf(this);
+  this->traverse(&stf);
+
   while (!this->specific_type_functions_.empty())
     {
       Specific_type_function* tsf = this->specific_type_functions_.back();
@@ -1190,6 +1295,15 @@ Gogo::traverse(Traverse* traverse)
     }
 }
 
+// Add a type to verify.  This is used for types of sink variables, in
+// order to give appropriate error messages.
+
+void
+Gogo::add_type_to_verify(Type* type)
+{
+  this->verify_types_.push_back(type);
+}
+
 // Traversal class used to verify types.
 
 class Verify_types : public Traverse
@@ -1220,6 +1334,12 @@ Gogo::verify_types()
 {
   Verify_types traverse;
   this->traverse(&traverse);
+
+  for (std::vector<Type*>::iterator p = this->verify_types_.begin();
+       p != this->verify_types_.end();
+       ++p)
+    (*p)->verify();
+  this->verify_types_.clear();
 }
 
 // Traversal class used to lower parse tree.
@@ -1412,6 +1532,8 @@ Lower_parse_tree::expression(Expression** pexpr)
 				  &this->inserter_, this->iota_value_);
       if (enew == e)
 	break;
+      if (enew->traverse_subexpressions(this) == TRAVERSE_EXIT)
+	return TRAVERSE_EXIT;
       *pexpr = enew;
     }
   return TRAVERSE_SKIP_COMPONENTS;
@@ -1499,7 +1621,8 @@ Finalize_methods::type(Type* t)
 	// finalize the methods of the field types, not of the struct
 	// type itself.  We don't want to add methods to the struct,
 	// since it has a name.
-	Type* rt = t->named_type()->real_type();
+	Named_type* nt = t->named_type();
+	Type* rt = nt->real_type();
 	if (rt->classification() != Type::TYPE_STRUCT)
 	  {
 	    if (Type::traverse(rt, this) == TRAVERSE_EXIT)
@@ -1511,17 +1634,27 @@ Finalize_methods::type(Type* t)
 	      return TRAVERSE_EXIT;
 	  }
 
-	t->named_type()->finalize_methods(this->gogo_);
+	nt->finalize_methods(this->gogo_);
+
+	// If this type is defined in a different package, then finalize the
+	// types of all the methods, since we won't see them otherwise.
+	if (nt->named_object()->package() != NULL && nt->has_any_methods())
+	  {
+	    const Methods* methods = nt->methods();
+	    for (Methods::const_iterator p = methods->begin();
+		 p != methods->end();
+		 ++p)
+	      {
+		if (Type::traverse(p->second->type(), this) == TRAVERSE_EXIT)
+		  return TRAVERSE_EXIT;
+	      }
+	  }
 
 	return TRAVERSE_SKIP_COMPONENTS;
       }
 
     case Type::TYPE_STRUCT:
       t->struct_type()->finalize_methods(this->gogo_);
-      break;
-
-    case Type::TYPE_ARRAY:
-      t->array_type()->finalize_methods(this->gogo_);
       break;
 
     default:
@@ -1653,6 +1786,15 @@ Check_types_traverse::variable(Named_object* named_object)
 		     reason.c_str());
 	  var->clear_init();
 	}
+      else if (!var->is_used()
+	       && !var->is_global()
+	       && !var->is_parameter()
+	       && !var->is_receiver()
+	       && !var->type()->is_error()
+	       && (init == NULL || !init->is_error_expression())
+	       && !Lex::is_invalid_identifier(named_object->name()))
+	error_at(var->location(), "%qs declared and not used",
+		 named_object->message_name().c_str());
     }
   return TRAVERSE_CONTINUE;
 }
@@ -2561,6 +2703,9 @@ class Build_method_tables : public Traverse
 void
 Gogo::build_interface_method_tables()
 {
+  if (saw_errors())
+    return;
+
   std::vector<Interface_type*> hidden_interfaces;
   hidden_interfaces.reserve(this->interface_types_.size());
   for (std::vector<Interface_type*>::const_iterator pi =
@@ -2892,6 +3037,7 @@ Function::closure_var()
       Type* struct_type = Type::make_struct_type(sfl, loc);
       Variable* var = new Variable(Type::make_pointer_type(struct_type),
 				   NULL, false, true, false, loc);
+      var->set_is_used();
       this->closure_var_ = Named_object::make_variable("closure", NULL, var);
       // Note that the new variable is not in any binding contour.
     }
@@ -3414,6 +3560,7 @@ Block::traverse(Traverse* traverse)
 
 	    case Named_object::NAMED_OBJECT_TYPE_DECLARATION:
 	    case Named_object::NAMED_OBJECT_UNKNOWN:
+	    case Named_object::NAMED_OBJECT_ERRONEOUS:
 	      break;
 
 	    case Named_object::NAMED_OBJECT_PACKAGE:
@@ -3612,7 +3759,7 @@ Variable::Variable(Type* type, Expression* init, bool is_global,
 		   Location location)
   : type_(type), init_(init), preinit_(NULL), location_(location),
     backend_(NULL), is_global_(is_global), is_parameter_(is_parameter),
-    is_receiver_(is_receiver), is_varargs_parameter_(false),
+    is_receiver_(is_receiver), is_varargs_parameter_(false), is_used_(false),
     is_address_taken_(false), is_non_escaping_address_taken_(false),
     seen_(false), init_is_lowered_(false), type_from_init_tuple_(false),
     type_from_range_index_(false), type_from_range_value_(false),
@@ -3749,7 +3896,12 @@ Variable::type_from_range(Expression* expr, bool get_index_type,
 	return t->deref()->array_type()->element_type();
     }
   else if (t->is_string_type())
-    return Type::lookup_integer_type("int");
+    {
+      if (get_index_type)
+	return Type::lookup_integer_type("int");
+      else
+	return Type::lookup_integer_type("int32");
+    }
   else if (t->map_type() != NULL)
     {
       if (get_index_type)
@@ -4408,6 +4560,9 @@ Named_object::location() const
     case NAMED_OBJECT_UNINITIALIZED:
       go_unreachable();
 
+    case NAMED_OBJECT_ERRONEOUS:
+      return Linemap::unknown_location();
+
     case NAMED_OBJECT_UNKNOWN:
       return this->unknown_value()->location();
 
@@ -4451,6 +4606,9 @@ Named_object::export_named_object(Export* exp) const
     case NAMED_OBJECT_UNINITIALIZED:
     case NAMED_OBJECT_UNKNOWN:
       go_unreachable();
+
+    case NAMED_OBJECT_ERRONEOUS:
+      break;
 
     case NAMED_OBJECT_CONST:
       this->const_value()->export_const(exp, this->name_);
@@ -4638,12 +4796,18 @@ Bindings::add_named_object_to_contour(Contour* contour,
 Named_object*
 Bindings::new_definition(Named_object* old_object, Named_object* new_object)
 {
+  if (new_object->is_erroneous() && !old_object->is_erroneous())
+    return new_object;
+
   std::string reason;
   switch (old_object->classification())
     {
     default:
     case Named_object::NAMED_OBJECT_UNINITIALIZED:
       go_unreachable();
+
+    case Named_object::NAMED_OBJECT_ERRONEOUS:
+      return old_object;
 
     case Named_object::NAMED_OBJECT_UNKNOWN:
       {
@@ -4791,6 +4955,19 @@ Bindings::define_type(Named_object* no, Named_type* type)
   this->named_objects_.push_back(no);
 }
 
+// Mark all local variables as used.  This is used for some types of
+// parse error.
+
+void
+Bindings::mark_locals_used()
+{
+  for (std::vector<Named_object*>::iterator p = this->named_objects_.begin();
+       p != this->named_objects_.end();
+       ++p)
+    if ((*p)->is_variable())
+      (*p)->var_value()->set_is_used();
+}
+
 // Traverse bindings.
 
 int
@@ -4861,10 +5038,7 @@ Bindings::traverse(Traverse* traverse, bool is_global)
 		     | Traverse::traverse_statements
 		     | Traverse::traverse_expressions
 		     | Traverse::traverse_types)) != 0)
-	    {
-	      if (p->func_value()->traverse(traverse) == TRAVERSE_EXIT)
-		return TRAVERSE_EXIT;
-	    }
+	    t = p->func_value()->traverse(traverse);
 	  break;
 
 	case Named_object::NAMED_OBJECT_PACKAGE:
@@ -4880,6 +5054,7 @@ Bindings::traverse(Traverse* traverse, bool is_global)
 	case Named_object::NAMED_OBJECT_TYPE_DECLARATION:
 	case Named_object::NAMED_OBJECT_FUNC_DECLARATION:
 	case Named_object::NAMED_OBJECT_UNKNOWN:
+	case Named_object::NAMED_OBJECT_ERRONEOUS:
 	  break;
 
 	case Named_object::NAMED_OBJECT_SINK:
@@ -4889,6 +5064,26 @@ Bindings::traverse(Traverse* traverse, bool is_global)
 
       if (t == TRAVERSE_EXIT)
 	return TRAVERSE_EXIT;
+    }
+
+  // If we need to traverse types, check the function declarations,
+  // which have types.  We don't need to check the type declarations,
+  // as those are just names.
+  if ((traverse_mask & e_or_t) != 0)
+    {
+      for (Bindings::const_declarations_iterator p =
+	     this->begin_declarations();
+	   p != this->end_declarations();
+	   ++p)
+	{
+	  if (p->second->is_function_declaration())
+	    {
+	      if (Type::traverse(p->second->func_declaration_value()->type(),
+				 traverse)
+		  == TRAVERSE_EXIT)
+		return TRAVERSE_EXIT;
+	    }
+	}
     }
 
   return TRAVERSE_CONTINUE;
@@ -5029,9 +5224,12 @@ Traverse::remember_type(const Type* type)
     return true;
   go_assert((this->traverse_mask() & traverse_types) != 0
 	     || (this->traverse_mask() & traverse_expressions) != 0);
-  // We only have to remember named types, as they are the only ones
-  // we can see multiple times in a traversal.
-  if (type->classification() != Type::TYPE_NAMED)
+  // We mostly only have to remember named types.  But it turns out
+  // that an interface type can refer to itself without using a name
+  // by relying on interface inheritance, as in
+  // type I interface { F() interface{I} }
+  if (type->classification() != Type::TYPE_NAMED
+      && type->classification() != Type::TYPE_INTERFACE)
     return false;
   if (this->types_seen_ == NULL)
     this->types_seen_ = new Types_seen();

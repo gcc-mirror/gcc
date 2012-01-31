@@ -17,5 +17,5 @@ void foo (int n)
 /* We should apply loop distribution and generate a memset (0).  */
 
 /* { dg-final { scan-tree-dump "distributed: split to 2" "ldist" } } */
-/* { dg-final { scan-tree-dump-times "__builtin_memset" 2 "ldist" } } */
+/* { dg-final { scan-tree-dump-times "generated memset zero" 1 "ldist" } } */
 /* { dg-final { cleanup-tree-dump "ldist" } } */

@@ -2792,6 +2792,23 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	return folded;
       }
       break;
+    case WITH_SIZE_EXPR:
+      {
+	tree genop0 = create_component_ref_by_pieces_1 (block, ref, operand,
+							stmts, domstmt);
+	pre_expr op1expr = get_or_alloc_expr_for (currop->op0);
+	tree genop1;
+
+	if (!genop0)
+	  return NULL_TREE;
+
+	genop1 = find_or_generate_expression (block, op1expr, stmts, domstmt);
+	if (!genop1)
+	  return NULL_TREE;
+
+	return fold_build2 (currop->opcode, currop->type, genop0, genop1);
+      }
+      break;
     case BIT_FIELD_REF:
       {
 	tree folded;
@@ -4541,8 +4558,10 @@ eliminate (void)
 	  gsi = gsi_for_stmt (stmt);
 	  unlink_stmt_vdef (stmt);
 	  gsi_remove (&gsi, true);
-	  if (gimple_purge_dead_eh_edges (bb))
-	    todo |= TODO_cleanup_cfg;
+	  /* ???  gsi_remove doesn't tell us whether the stmt was
+	     in EH tables and thus whether we need to purge EH edges.
+	     Simply schedule the block for a cleanup.  */
+	  bitmap_set_bit (need_eh_cleanup, bb->index);
 	  if (TREE_CODE (lhs) == SSA_NAME)
 	    bitmap_clear_bit (inserted_exprs, SSA_NAME_VERSION (lhs));
 	  release_defs (stmt);

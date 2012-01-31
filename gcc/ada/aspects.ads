@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 2010-2011, Free Software Foundation, Inc.          --
+--          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,6 +81,7 @@ package Aspects is
       Aspect_Storage_Size,
       Aspect_Stream_Size,
       Aspect_Suppress,
+      Aspect_Synchronization,
       Aspect_Test_Case,                     -- GNAT
       Aspect_Type_Invariant,
       Aspect_Unsuppress,
@@ -128,6 +129,7 @@ package Aspects is
       Aspect_Persistent_BSS,                -- GNAT
       Aspect_Preelaborable_Initialization,
       Aspect_Pure_Function,                 -- GNAT
+      Aspect_Remote_Access_Type,            -- GNAT
       Aspect_Shared,                        -- GNAT (equivalent to Atomic)
       Aspect_Suppress_Debug_Info,           -- GNAT
       Aspect_Unchecked_Union,
@@ -182,6 +184,7 @@ package Aspects is
                              Aspect_Pure_05              => True,
                              Aspect_Pure_12              => True,
                              Aspect_Pure_Function        => True,
+                             Aspect_Remote_Access_Type   => True,
                              Aspect_Shared               => True,
                              Aspect_Suppress_Debug_Info  => True,
                              Aspect_Test_Case            => True,
@@ -281,6 +284,7 @@ package Aspects is
                         Aspect_Storage_Size            => Expression,
                         Aspect_Stream_Size             => Expression,
                         Aspect_Suppress                => Name,
+                        Aspect_Synchronization         => Name,
                         Aspect_Test_Case               => Expression,
                         Aspect_Type_Invariant          => Expression,
                         Aspect_Unsuppress              => Name,
@@ -355,6 +359,7 @@ package Aspects is
      Aspect_Pure_12                      => Name_Pure_12,
      Aspect_Pure_Function                => Name_Pure_Function,
      Aspect_Read                         => Name_Read,
+     Aspect_Remote_Access_Type           => Name_Remote_Access_Type,
      Aspect_Remote_Call_Interface        => Name_Remote_Call_Interface,
      Aspect_Remote_Types                 => Name_Remote_Types,
      Aspect_Shared                       => Name_Shared,
@@ -367,6 +372,7 @@ package Aspects is
      Aspect_Stream_Size                  => Name_Stream_Size,
      Aspect_Suppress                     => Name_Suppress,
      Aspect_Suppress_Debug_Info          => Name_Suppress_Debug_Info,
+     Aspect_Synchronization              => Name_Synchronization,
      Aspect_Test_Case                    => Name_Test_Case,
      Aspect_Type_Invariant               => Name_Type_Invariant,
      Aspect_Unchecked_Union              => Name_Unchecked_Union,

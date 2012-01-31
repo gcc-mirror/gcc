@@ -2811,11 +2811,13 @@ microblaze_emit_compare (enum machine_mode mode, rtx cmp, enum rtx_code *cmp_cod
       if (TARGET_PATTERN_COMPARE && GET_CODE(cmp_op1) == REG) 
         {
           if (code == EQ) 
-	    emit_insn (gen_seq_internal_pat (comp_reg, cmp_op0, cmp_op1));
+	    {
+	      emit_insn (gen_seq_internal_pat (comp_reg, cmp_op0, cmp_op1));
+	      *cmp_code = NE;
+	    }
 	  else
 	    {    
 	      emit_insn (gen_sne_internal_pat (comp_reg, cmp_op0, cmp_op1));
-	      *cmp_code = EQ;
 	    }
         }
       else

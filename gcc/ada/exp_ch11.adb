@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -101,9 +101,16 @@ package body Exp_Ch11 is
 
    procedure Expand_At_End_Handler (HSS : Node_Id; Block : Node_Id) is
       Clean   : constant Entity_Id  := Entity (At_End_Proc (HSS));
-      Loc     : constant Source_Ptr := Sloc (Clean);
       Ohandle : Node_Id;
       Stmnts  : List_Id;
+
+      Loc : constant Source_Ptr := No_Location;
+      --  Location used for expansion. We quite deliberately do not set a
+      --  specific source location for the expanded handler. This makes
+      --  sense since really the handler is not associated with specific
+      --  source. We used to set this to Sloc (Clean), but that caused
+      --  useless and annoying bouncing around of line numbers in the
+      --  debugger in some circumstances.
 
    begin
       pragma Assert (Present (Clean));
@@ -1033,16 +1040,17 @@ package body Exp_Ch11 is
                      Save :=
                        Make_Procedure_Call_Statement (No_Location,
                          Name =>
-                           New_Occurrence_Of (RTE (RE_Save_Occurrence),
-                                              No_Location),
+                           New_Occurrence_Of
+                             (RTE (RE_Save_Occurrence), No_Location),
                          Parameter_Associations => New_List (
-                           New_Occurrence_Of (Cparm, Cloc),
+                           New_Occurrence_Of (Cparm, No_Location),
                            Make_Explicit_Dereference (No_Location,
                              Make_Function_Call (No_Location,
-                               Name => Make_Explicit_Dereference (No_Location,
-                                 New_Occurrence_Of
-                                   (RTE (RE_Get_Current_Excep),
-                                    No_Location))))));
+                               Name =>
+                                 Make_Explicit_Dereference (No_Location,
+                                   New_Occurrence_Of
+                                     (RTE (RE_Get_Current_Excep),
+                                      No_Location))))));
 
                      Mark_Rewrite_Insertion (Save);
                      Prepend (Save, Statements (Handler));

@@ -136,14 +136,24 @@
   redefining them will only affect inline functions and template
   instantiations which are compiled in user code. This allows annotation
   of templates such as <code class="code">shared_ptr</code>, but not code which is
-  only instantiated in the library.
-  In order to annotate <code class="code">basic_string</code> reference counting it
-  is necessary to disable extern templates (by defining 
-  <code class="code">_GLIBCXX_EXTERN_TEMPLATE=-1</code>) or to rebuild the 
-  <code class="code">.so</code> file.
+  only instantiated in the library.  Code which is only instantiated in
+  the library needs to be recompiled with the annotation macros defined.
+  That can be done by rebuilding the entire
+  <code class="filename">libstdc++.so</code> file but a simpler
+  alternative exists for ELF platforms such as GNU/Linux, because ELF
+  symbol interposition allows symbols defined in the shared library to be
+  overridden by symbols with the same name that appear earlier in the
+  runtime search path. This means you only need to recompile the functions
+  that are affected by the annotation macros, which can be done by
+  recompiling individual files.
+  Annotating <code class="code">std::string</code> and <code class="code">std::wstring</code>
+  reference counting can be done by disabling extern templates (by defining 
+  <code class="code">_GLIBCXX_EXTERN_TEMPLATE=-1</code>) or by rebuilding the 
+  <code class="filename">src/string-inst.cc</code> file.
   Annotating the remaining atomic operations (at the time of writing these
-  are in <code class="code">ios_base::Init::~Init</code>, <code class="code">locale::_Impl</code> and
-  <code class="code">locale::facet</code>) requires rebuilding the <code class="code">.so</code> file.
+  are in <code class="code">ios_base::Init::~Init</code>, <code class="code">locale::_Impl</code>,
+  <code class="code">locale::facet</code> and <code class="code">thread::_M_start_thread</code>)
+  requires rebuilding the relevant source files.
 </p><p>
   The approach described above is known to work with the following race
   detection tools:

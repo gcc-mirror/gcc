@@ -1,5 +1,6 @@
 /* PR debug/49871 */
 /* { dg-do compile } */
+/* { dg-require-effective-target int32plus } */
 /* { dg-options "-gdwarf-3 -dA -fno-merge-debug-strings" } */
 
 struct S

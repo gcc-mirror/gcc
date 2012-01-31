@@ -267,6 +267,11 @@ class Gogo
   Block*
   finish_block(Location);
 
+  // Declare an erroneous name.  This is used to avoid knock-on errors
+  // after a parsing error.
+  Named_object*
+  add_erroneous_name(const std::string& name);
+
   // Declare an unknown name.  This is used while parsing.  The name
   // must be resolved by the end of the parse.  Unknown names are
   // always added at the package level.
@@ -339,10 +344,20 @@ class Gogo
   Named_object*
   add_sink();
 
+  // Add a type which needs to be verified.  This is used for sink
+  // types, just to give appropriate error messages.
+  void
+  add_type_to_verify(Type* type);
+
   // Add a named object to the current namespace.  This is used for
   // import . "package".
   void
   add_named_object(Named_object*);
+
+  // Mark all local variables in current bindings as used.  This is
+  // used when there is a parse error to avoid useless errors.
+  void
+  mark_locals_used();
 
   // Return a name to use for a thunk function.  A thunk function is
   // one we create during the compilation, for a go statement or a
@@ -673,6 +688,8 @@ class Gogo
   std::string unique_prefix_;
   // Whether an explicit unique prefix was set by -fgo-prefix.
   bool unique_prefix_specified_;
+  // A list of types to verify.
+  std::vector<Type*> verify_types_;
   // A list of interface types defined while parsing.
   std::vector<Interface_type*> interface_types_;
   // Type specific functions to write out.
@@ -1232,6 +1249,16 @@ class Variable
     this->is_varargs_parameter_ = true;
   }
 
+  // Return whether the variable has been used.
+  bool
+  is_used() const
+  { return this->is_used_; }
+
+  // Mark that the variable has been used.
+  void
+  set_is_used()
+  { this->is_used_ = true; }
+
   // Clear the initial value; used for error handling.
   void
   clear_init()
@@ -1368,6 +1395,8 @@ class Variable
   bool is_receiver_ : 1;
   // Whether this is the varargs parameter of a function.
   bool is_varargs_parameter_ : 1;
+  // Whether this variable is ever referenced.
+  bool is_used_ : 1;
   // Whether something takes the address of this variable.  For a
   // local variable this implies that the variable has to be on the
   // heap.
@@ -1671,6 +1700,9 @@ class Named_object
   {
     // An uninitialized Named_object.  We should never see this.
     NAMED_OBJECT_UNINITIALIZED,
+    // An erroneous name.  This indicates a parse error, to avoid
+    // later errors about undefined references.
+    NAMED_OBJECT_ERRONEOUS,
     // An unknown name.  This is used for forward references.  In a
     // correct program, these will all be resolved by the end of the
     // parse.
@@ -1701,6 +1733,10 @@ class Named_object
   { return this->classification_; }
 
   // Classifiers.
+
+  bool
+  is_erroneous() const
+  { return this->classification_ == NAMED_OBJECT_ERRONEOUS; }
 
   bool
   is_unknown() const
@@ -1743,6 +1779,10 @@ class Named_object
   { return this->classification_ == NAMED_OBJECT_PACKAGE; }
 
   // Creators.
+
+  static Named_object*
+  make_erroneous_name(const std::string& name)
+  { return new Named_object(name, NULL, NAMED_OBJECT_ERRONEOUS); }
 
   static Named_object*
   make_unknown_name(const std::string& name, Location);
@@ -2015,6 +2055,11 @@ class Bindings
 
   Bindings(Bindings* enclosing);
 
+  // Add an erroneous name.
+  Named_object*
+  add_erroneous_name(const std::string& name)
+  { return this->add_named_object(Named_object::make_erroneous_name(name)); }
+
   // Add an unknown name.
   Named_object*
   add_unknown_name(const std::string& name, Location location)
@@ -2123,6 +2168,11 @@ class Bindings
   // Remove a name.
   void
   remove_binding(Named_object*);
+
+  // Mark all variables as used.  This is used for some types of parse
+  // error.
+  void
+  mark_locals_used();
 
   // Traverse the tree.  See the Traverse class.
   int
@@ -2578,8 +2628,13 @@ class Traverse
   type(Type*);
 
  private:
-  typedef Unordered_set_hash(const Type*, Type_hash_identical,
-			     Type_identical) Types_seen;
+  // A hash table for types we have seen during this traversal.  Note
+  // that this uses the default hash functions for pointers rather
+  // than Type_hash_identical and Type_identical.  This is because for
+  // traversal we care about seeing a specific type structure.  If
+  // there are two separate instances of identical types, we want to
+  // traverse both.
+  typedef Unordered_set(const Type*) Types_seen;
 
   typedef Unordered_set(const Expression*) Expressions_seen;
 

@@ -1,3 +1,212 @@
+2012-01-30  Tom Tromey  <tromey@redhat.com>
+
+	PR libstdc++/51649:
+	* testsuite/libstdc++-prettyprinters/debug.cc: New file.
+	* testsuite/lib/gdb-test.exp (regexp-test): New proc.
+	(note-test): Update.
+	(gdb-test): Handle regexp tests.  Add some logging.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Compile with -O0.
+	(placeholder, use): Remove.
+	(main): Add tests for deque, list, map, and set iterators.  Add
+	tests for slist and slist iterator.
+	* testsuite/libstdc++-prettyprinters/48362.cc (main): Handle __7
+	namespace.
+	* python/libstdcxx/v6/printers.py (StdListPrinter.children): Use
+	the type's _Node typedef.
+	(StdListIteratorPrinter.to_string): Change how node type is
+	computed.
+	(StdSlistPrinter.children): Use the type's _Node typedef.
+	(StdSlistIteratorPrinter.to_string): Likewise.
+	(StdRbtreeIteratorPrinter.to_string): Use the type's _Link_type
+	typedef.
+	(StdMapPrinter.children): Change how the node's type is computed.
+	(StdSetPrinter.children): Likewise.
+	(StdForwardListPrinter.children): Use the type's _Node typedef.
+	(Printer.add_version): New method.
+	(Printer.add_container): New method.
+	(build_libstdcxx_dictionary): Handle __7 and __cxx1998
+	namespaces.
+	(find_type): New function.
+
+2012-01-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/51795
+	* include/bits/random.h (linear_congruential_generator): Add
+	static_assert preventing instantiation for values of 'a' and 'm'
+	currently handled incorrectly but _Mod::__calc.
+	* include/bits/random.tcc (seed_seq::generate): Avoid unsafe
+	uses of _Mod::__calc.
+
+2012-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/51798
+	* config/cpu/generic/atomicity_builtins/atomicity.h
+	(__exchange_and_add, __atomic_add): Use __atomic_fetch_add
+	with __ATOMIC_ACQ_REL semantics instead of __sync_fetch_and_add.
+	* include/ext/atomicity.h (__exchange_and_add, __atomic_add):
+	Likewise.
+
+2011-01-27  Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+
+	* libsupc++/typeinfo: Correctly match #pragma GCC visibility
+	pop with #pragma GCC visibility push.
+
+2012-01-27  Benjamin Kosnik  <bkoz@redhat.com>
+	    Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac (GLIBCXX_ENABLE_DEBUG_FLAGS): Use -gdwarf-4 -g3 -O0.
+	* configure.in: Regenerated.
+	* src/Makefile.am (all-once, install-data-once): New rules.
+	(all-local, install-data-local): Use them.
+	(build-debug, install-debug): Tweak.
+	* src/Makefile.in: Regenerate.
+
+2012-01-27  Richard Henderson  <rth@redhat.com>
+
+	* include/bits/atomic_base.h (__atomic_flag_base): Define _M_i
+	based on the value of __GCC_ATOMIC_TEST_AND_SET_TRUEVAL.
+	(ATOMIC_FLAG_INIT): Initialize with 0, not false.
+	(atomic_flag::atomic_flag): Use __GCC_ATOMIC_TEST_AND_SET_TRUEVAL.
+
+2012-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/51985
+	* src/c++98/Makefile.am (libc__98_la_SOURCES,
+	libc__98convenience_la_SOURCES): Remove $(inst_sources).
+	* src/c++98/Makefile.in: Regenerated.
+
+2012-01-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* testsuite/20_util/system_clock/1.cc: Add dg-require-time.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_2.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_3.cc: Likewise.
+	* testsuite/27_io/basic_istream/readsome/wchar_t/6746-2.cc: Add
+	dg-require-fileio.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/fstream.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/fstream.cc: Likewise.
+	* testsuite/27_io/basic_ostream/seekp/wchar_t/2346-fstream.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/tellp/wchar_t/1.cc: Likewise.
+
+2012-01-25  Matthias Klose  <doko@ubuntu.com>
+
+	* testsuite/30_threads/condition_variable_any/requirements: Remove
+	empty directory.
+
+2012-01-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/Makefile.am (libstdc++convenience.la): Correct stamp rule, copy.
+	* src/Makefile.in: Regenerate.
+
+2012-01-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/49829
+	Add libc++98convenience.la, libc++11convenience.la.
+	* src/c++98: New directory.
+	* src/c++11: New directory.
+	* acinclude.m4: (GLIBCXX_CONFIGURE): Add src-c++98, src-c++11.
+	* configure: Regenerated.
+	* Makefile.am (hosted_source): Add src-c++98, src-c++11 to SUBDIRS.
+	* Makefile.in: Regenerate.
+	* libsupc++/Makefile.am (AM_CXXFLAGS): USe XTEMPLATE_FLAGS for
+	-fno-implicit-templates.
+	* libsupc++/Makefile.in: Regenerate.
+	* src/Makefile.am (inst_sources): Move... C++11 files into
+	separate directory for libstdc++11convenience.la. Files are:
+	fstream-inst.cc, string-inst.cc, wlocale-inst.cc, wstring-inst.cc).
+	(sources): Move C++11 files. Files are: compatibility-c++0x.cc,
+	compatibility-atomic-c++0x.cc, debug.cc, functexcept.cc,
+	functional.cc, hash_c++0x.cc, hashtable_c++0x.cc, limits.cc,
+	system_error.cc, placeholders.cc, regex.cc, shared_ptr.cc,
+	mutex.cc, condition_variable.cc, chrono.cc, thread.cc, future.cc.
+	(libstdc++convenience.la): Add new target.
+	(SUBDIRS): Add c++11, c++98.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.am: New.
+	* src/c++11/Makefile.in: Generate.
+	* src/c++98/Makefile.am: New, C++98 files.
+	* src/c++98/Makefile.in: Generate.
+
+2012-01-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	libstdc++-v3:
+	* testsuite/22_locale/num_put/put/char/14220.cc: Don't xfail on
+	32-bit Solaris 10/x86.
+	* testsuite/22_locale/num_put/put/wchar_t/14220.cc: Likewise.
+
+2012-01-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/50982
+	* testsuite/30_threads/*: Add powerpc-ibm-aix* to target selectors.
+
+2012-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/51845
+	* include/bits/hashtable.h
+	(_Hashtable<>::erase(const_iterator, const_iterator)): Also update
+	_M_buckets[__n_bkt] if __is_bucket_begin.
+	* testsuite/23_containers/unordered_multimap/erase/51845-multimap.cc:
+	New test.
+
+2012-01-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude (GLIBCXX_CONFIGURE_DOCBOOK): Fix quoting.
+
+2012-01-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.ac: Move epub checks...
+	* acinclude (GLIBCXX_CONFIGURE_DOCBOOK): ...here, use
+	test -f instead of AC_CHECK_FILES.
+
+2012-01-18  François Dumont  <fdumont@gcc.gnu.org>
+	    Roman Kononov  <roman@binarylife.net>
+
+	PR libstdc++/51866
+	* include/bits/hashtable.h (_Hashtable<>::_M_insert(_Arg, false_type)):
+	Do not keep a reference to a potentially moved instance.
+	* testsuite/23_containers/unordered_multiset/insert/51866.cc: New.
+	* testsuite/23_containers/unordered_multimap/insert/51866.cc: New.
+
+2012-01-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/html/*: Regenerate.
+
+2012-01-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.ac (BUILD_EPUB): Adjust for epub3.
+	* configure: Regenerate.
+	* Makefile.in: Same.
+	* doc/Makefile.am (stamp-epub-docbook): Update for epub3.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Same.
+	* libsupc++/Makefile.in: Same.
+	* po/Makefile.in: Same.
+	* python/Makefile.in: Same.
+	* src/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+
+	* doc/xml/manual/documentation_hacking.xml: Update.
+
+2012-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/47852
+	* configure.host (irix6.5*): Add -lpthread to OPT_LDFLAGS.
+
+2012-01-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/stl_iterator.h (reverse_iterator): Doxygen comments.
+
+2012-01-13  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Hash_node_base): New, use it as
+	base class of ...
+	(_Hash_node<Value, true>, _Hash_node<Value, false>): ... those.
+	* include/bits/hashtable.h (_Hashtable): Replace _M_begin_bucket_index
+	by _M_before_begin. Review implementation so that we do not need to
+	look for previous non-empty bucket when inserting nodes.
+
 2012-01-09  Kai Tietz  <ktietz@redhat.com>
 
 	PR libstc++/51673 part 2

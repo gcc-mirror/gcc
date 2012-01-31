@@ -1,7 +1,7 @@
 /* Expands front end tree to back end RTL for GCC.
    Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
    1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011  Free Software Foundation, Inc.
+   2010, 2011, 2012  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -939,14 +939,7 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
 
   /* If a type is specified, set the relevant flags.  */
   if (type != 0)
-    {
-      MEM_VOLATILE_P (slot) = TYPE_VOLATILE (type);
-      gcc_checking_assert (!MEM_SCALAR_P (slot) && !MEM_IN_STRUCT_P (slot));
-      if (AGGREGATE_TYPE_P (type) || TREE_CODE (type) == COMPLEX_TYPE)
-	MEM_IN_STRUCT_P (slot) = 1;
-      else
-	MEM_SCALAR_P (slot) = 1;
-    }
+    MEM_VOLATILE_P (slot) = TYPE_VOLATILE (type);
   MEM_NOTRAP_P (slot) = 1;
 
   return slot;
@@ -1737,7 +1730,7 @@ instantiate_virtual_regs_in_insn (rtx insn)
       if (!check_asm_operands (PATTERN (insn)))
 	{
 	  error_for_asm (insn, "impossible constraint in %<asm%>");
-	  delete_insn (insn);
+	  delete_insn_and_edges (insn);
 	}
     }
   else
@@ -5910,7 +5903,7 @@ thread_prologue_and_epilogue_insns (void)
       && nonempty_prologue && !crtl->calls_eh_return)
     {
       HARD_REG_SET prologue_clobbered, prologue_used, live_on_edge;
-      HARD_REG_SET set_up_by_prologue;
+      struct hard_reg_set_container set_up_by_prologue;
       rtx p_insn;
       VEC(basic_block, heap) *vec;
       basic_block bb;
@@ -5950,18 +5943,22 @@ thread_prologue_and_epilogue_insns (void)
 
       vec = VEC_alloc (basic_block, heap, n_basic_blocks);
 
-      CLEAR_HARD_REG_SET (set_up_by_prologue);
-      add_to_hard_reg_set (&set_up_by_prologue, Pmode, STACK_POINTER_REGNUM);
-      add_to_hard_reg_set (&set_up_by_prologue, Pmode, ARG_POINTER_REGNUM);
+      CLEAR_HARD_REG_SET (set_up_by_prologue.set);
+      add_to_hard_reg_set (&set_up_by_prologue.set, Pmode,
+			   STACK_POINTER_REGNUM);
+      add_to_hard_reg_set (&set_up_by_prologue.set, Pmode, ARG_POINTER_REGNUM);
       if (frame_pointer_needed)
-	add_to_hard_reg_set (&set_up_by_prologue, Pmode,
+	add_to_hard_reg_set (&set_up_by_prologue.set, Pmode,
 			     HARD_FRAME_POINTER_REGNUM);
       if (pic_offset_table_rtx)
-	add_to_hard_reg_set (&set_up_by_prologue, Pmode,
+	add_to_hard_reg_set (&set_up_by_prologue.set, Pmode,
 			     PIC_OFFSET_TABLE_REGNUM);
       if (stack_realign_drap && crtl->drap_reg)
-	add_to_hard_reg_set (&set_up_by_prologue, GET_MODE (crtl->drap_reg),
+	add_to_hard_reg_set (&set_up_by_prologue.set,
+			     GET_MODE (crtl->drap_reg),
 			     REGNO (crtl->drap_reg));
+      if (targetm.set_up_by_prologue)
+	targetm.set_up_by_prologue (&set_up_by_prologue);
 
       /* We don't use a different max size depending on
 	 optimize_bb_for_speed_p because increasing shrink-wrapping
@@ -5979,7 +5976,7 @@ thread_prologue_and_epilogue_insns (void)
 	    if (NONDEBUG_INSN_P (insn))
 	      {
 		if (requires_stack_frame_p (insn, prologue_used,
-					    set_up_by_prologue))
+					    set_up_by_prologue.set))
 		  {
 		    if (bb == entry_edge->dest)
 		      goto fail_shrinkwrap;

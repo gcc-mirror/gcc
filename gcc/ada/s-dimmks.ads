@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---            Copyright (C) 2011, Free Software Foundation, Inc.            --
+--          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@ package System.Dim_Mks is
 
    --  Dimensioned type Mks_Type
 
-   type Mks_Type is new Long_Float
+   type Mks_Type is new Long_Long_Float
      with
       Dimension_System => ((Meter, 'm'),
         (Kilogram, "kg"),

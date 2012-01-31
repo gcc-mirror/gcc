@@ -24,11 +24,13 @@ import (
 // The Client's Transport typically has internal state (cached
 // TCP connections), so Clients should be reused instead of created as
 // needed. Clients are safe for concurrent use by multiple goroutines.
-//
-// Client is not yet very configurable.
 type Client struct {
-	Transport RoundTripper // if nil, DefaultTransport is used
+	// Transport specifies the mechanism by which individual
+	// HTTP requests are made.
+	// If nil, DefaultTransport is used.
+	Transport RoundTripper
 
+	// CheckRedirect specifies the policy for handling redirects.
 	// If CheckRedirect is not nil, the client calls it before
 	// following an HTTP redirect. The arguments req and via
 	// are the upcoming request and the requests made already,
@@ -38,6 +40,11 @@ type Client struct {
 	// If CheckRedirect is nil, the Client uses its default policy,
 	// which is to stop after 10 consecutive requests.
 	CheckRedirect func(req *Request, via []*Request) error
+
+	// Jar specifies the cookie jar. 
+	// If Jar is nil, cookies are not sent in requests and ignored 
+	// in responses.
+	Jar CookieJar
 }
 
 // DefaultClient is the default Client and is used by Get, Head, and Post.
@@ -116,9 +123,8 @@ func send(req *Request, t RoundTripper) (resp *Response, err error) {
 		req.Header = make(Header)
 	}
 
-	info := req.URL.RawUserinfo
-	if len(info) > 0 {
-		req.Header.Set("Authorization", "Basic "+base64.URLEncoding.EncodeToString([]byte(info)))
+	if u := req.URL.User; u != nil {
+		req.Header.Set("Authorization", "Basic "+base64.URLEncoding.EncodeToString([]byte(u.String())))
 	}
 	return t.RoundTrip(req)
 }
@@ -180,6 +186,11 @@ func (c *Client) doFollowingRedirects(ireq *Request) (r *Response, err error) {
 		return nil, errors.New("http: nil Request.URL")
 	}
 
+	jar := c.Jar
+	if jar == nil {
+		jar = blackHoleJar{}
+	}
+
 	req := ireq
 	urlStr := "" // next relative or absolute URL to fetch (after first request)
 	for redirect := 0; ; redirect++ {
@@ -205,10 +216,17 @@ func (c *Client) doFollowingRedirects(ireq *Request) (r *Response, err error) {
 			}
 		}
 
+		for _, cookie := range jar.Cookies(req.URL) {
+			req.AddCookie(cookie)
+		}
 		urlStr = req.URL.String()
 		if r, err = send(req, c.Transport); err != nil {
 			break
 		}
+		if c := r.Cookies(); len(c) > 0 {
+			jar.SetCookies(req.URL, c)
+		}
+
 		if shouldRedirect(r.StatusCode) {
 			r.Body.Close()
 			if urlStr = r.Header.Get("Location"); urlStr == "" {

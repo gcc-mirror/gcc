@@ -1,6 +1,7 @@
 /* Build expressions with type checking for C++ compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011, 2012
    Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
@@ -3599,6 +3600,29 @@ build_x_array_ref (tree arg1, tree arg2, tsubst_flags_t complain)
   return expr;
 }
 
+/* Return whether OP is an expression of enum type cast to integer
+   type.  In C++ even unsigned enum types are cast to signed integer
+   types.  We do not want to issue warnings about comparisons between
+   signed and unsigned types when one of the types is an enum type.
+   Those warnings are always false positives in practice.  */
+
+static bool
+enum_cast_to_int (tree op)
+{
+  if (TREE_CODE (op) == NOP_EXPR
+      && TREE_TYPE (op) == integer_type_node
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (op, 0))) == ENUMERAL_TYPE
+      && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op, 0))))
+    return true;
+
+  /* The cast may have been pushed into a COND_EXPR.  */
+  if (TREE_CODE (op) == COND_EXPR)
+    return (enum_cast_to_int (TREE_OPERAND (op, 1))
+	    || enum_cast_to_int (TREE_OPERAND (op, 2)));
+
+  return false;
+}
+
 /* For the c-common bits.  */
 tree
 build_binary_op (location_t location, enum tree_code code, tree op0, tree op1,
@@ -4465,13 +4489,15 @@ cp_build_binary_op (location_t location,
 
       if ((short_compare || code == MIN_EXPR || code == MAX_EXPR)
 	  && warn_sign_compare
-	  && !TREE_NO_WARNING (orig_op0)
-	  && !TREE_NO_WARNING (orig_op1)
 	  /* Do not warn until the template is instantiated; we cannot
 	     bound the ranges of the arguments until that point.  */
 	  && !processing_template_decl
           && (complain & tf_warning)
-	  && c_inhibit_evaluation_warnings == 0)
+	  && c_inhibit_evaluation_warnings == 0
+	  /* Even unsigned enum types promote to signed int.  We don't
+	     want to issue -Wsign-compare warnings for this case.  */
+	  && !enum_cast_to_int (orig_op0)
+	  && !enum_cast_to_int (orig_op1))
 	{
 	  warn_for_sign_compare (location, orig_op0, orig_op1, op0, op1, 
 				 result_type, resultcode);
@@ -5786,11 +5812,12 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 {
   tree intype;
   tree result;
+  cp_lvalue_kind clk;
 
   /* Assume the cast is valid.  */
   *valid_p = true;
 
-  intype = TREE_TYPE (expr);
+  intype = unlowered_expr_type (expr);
 
   /* Save casted types in the function's used types hash table.  */
   used_types_insert (type);
@@ -5856,22 +5883,29 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
      cv2 T2 if cv2 T2 is reference-compatible with cv1 T1 (8.5.3)."  */
   if (TREE_CODE (type) == REFERENCE_TYPE
       && TYPE_REF_IS_RVALUE (type)
-      && real_lvalue_p (expr)
+      && (clk = real_lvalue_p (expr))
       && reference_related_p (TREE_TYPE (type), intype)
       && (c_cast_p || at_least_as_qualified_p (TREE_TYPE (type), intype)))
     {
-      /* Handle the lvalue case here by casting to lvalue reference and
-	 then changing it to an rvalue reference.  Casting an xvalue to
-	 rvalue reference will be handled by the main code path.  */
-      tree lref = cp_build_reference_type (TREE_TYPE (type), false);
-      result = (perform_direct_initialization_if_possible
-		(lref, expr, c_cast_p, complain));
-      result = cp_fold_convert (type, result);
-      /* Make sure we don't fold back down to a named rvalue reference,
-	 because that would be an lvalue.  */
-      if (DECL_P (result))
-	result = build1 (NON_LVALUE_EXPR, type, result);
-      return convert_from_reference (result);
+      if (clk == clk_ordinary)
+	{
+	  /* Handle the (non-bit-field) lvalue case here by casting to
+	     lvalue reference and then changing it to an rvalue reference.
+	     Casting an xvalue to rvalue reference will be handled by the
+	     main code path.  */
+	  tree lref = cp_build_reference_type (TREE_TYPE (type), false);
+	  result = (perform_direct_initialization_if_possible
+		    (lref, expr, c_cast_p, complain));
+	  result = cp_fold_convert (type, result);
+	  /* Make sure we don't fold back down to a named rvalue reference,
+	     because that would be an lvalue.  */
+	  if (DECL_P (result))
+	    result = build1 (NON_LVALUE_EXPR, type, result);
+	  return convert_from_reference (result);
+	}
+      else
+	/* For a bit-field or packed field, bind to a temporary.  */
+	expr = rvalue (expr);
     }
 
   /* Resolve overloaded address here rather than once in
@@ -8525,4 +8559,3 @@ check_literal_operator_args (const_tree decl,
       return true;
     }
 }
-

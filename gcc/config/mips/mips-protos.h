@@ -56,9 +56,6 @@ enum mips_symbol_context {
        The symbol's value will be calculated using a MIPS16 PC-relative
        calculation.
 
-   SYMBOL_FORCE_TO_MEM
-       The symbol's value must be forced to memory and loaded from there.
-
    SYMBOL_GOT_PAGE_OFST
        The symbol's value will be calculated by loading an address
        from the GOT and then applying a 16-bit offset.
@@ -94,9 +91,6 @@ enum mips_symbol_context {
        UNSPEC wrappers around SYMBOL_TLS, corresponding to the
        thread-local storage relocation operators.
 
-   SYMBOL_32_HIGH
-       For a 32-bit symbolic address X, this is the value of %hi(X).
-
    SYMBOL_64_HIGH
        For a 64-bit symbolic address X, this is the value of
        (%highest(X) << 16) + %higher(X).
@@ -116,7 +110,6 @@ enum mips_symbol_type {
   SYMBOL_ABSOLUTE,
   SYMBOL_GP_RELATIVE,
   SYMBOL_PC_RELATIVE,
-  SYMBOL_FORCE_TO_MEM,
   SYMBOL_GOT_PAGE_OFST,
   SYMBOL_GOT_DISP,
   SYMBOL_GOTOFF_PAGE,
@@ -129,7 +122,6 @@ enum mips_symbol_type {
   SYMBOL_DTPREL,
   SYMBOL_GOTTPREL,
   SYMBOL_TPREL,
-  SYMBOL_32_HIGH,
   SYMBOL_64_HIGH,
   SYMBOL_64_MID,
   SYMBOL_64_LOW,
@@ -260,6 +252,7 @@ extern void mips_push_asm_switch (struct mips_asm_switch *);
 extern void mips_pop_asm_switch (struct mips_asm_switch *);
 extern void mips_output_external (FILE *, tree, const char *);
 extern void mips_output_ascii (FILE *, const char *, size_t);
+extern const char *mips_output_tls_reloc_directive (rtx *);
 extern void mips_output_aligned_decl_common (FILE *, tree, const char *,
 					     unsigned HOST_WIDE_INT,
 					     unsigned int);

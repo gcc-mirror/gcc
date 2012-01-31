@@ -20,6 +20,7 @@
 // { dg-do run { xfail arm*-*-elf arm*-*-eabi } }
 
 // { dg-require-binary-io "" }
+// { dg-require-fileio "" }
 
 // 27.6.1.3 unformatted input functions
 // @require@ %-*.tst %-*.txt

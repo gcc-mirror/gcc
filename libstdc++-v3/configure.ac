@@ -2,7 +2,7 @@
 
 AC_PREREQ(2.64)
 AC_INIT(package-unused, version-unused,, libstdc++)
-AC_CONFIG_SRCDIR(src/ios.cc)
+AC_CONFIG_SRCDIR(src/shared/hashtable-aux.cc)
 AC_CONFIG_HEADER(config.h)
 
 # This works around the fact that libtool configuration may change LD
@@ -124,7 +124,7 @@ GLIBCXX_ENABLE_LONG_LONG([yes])
 GLIBCXX_ENABLE_WCHAR_T([yes])
 GLIBCXX_ENABLE_C99([yes])
 GLIBCXX_ENABLE_CONCEPT_CHECKS([no])
-GLIBCXX_ENABLE_DEBUG_FLAGS(["-g3 -O0"])
+GLIBCXX_ENABLE_DEBUG_FLAGS(["-gdwarf-4 -g3 -O0"])
 GLIBCXX_ENABLE_DEBUG([no])
 GLIBCXX_ENABLE_PARALLEL([yes])
 GLIBCXX_ENABLE_CXX_FLAGS
@@ -373,18 +373,12 @@ AM_CONDITIONAL(BUILD_MAN,
 	       test $ac_cv_prog_DOXYGEN = "yes" &&
 	       test $ac_cv_prog_DOT = "yes")
 
-# Check for pdf/epub dependencies.
+# Check for pdf dependencies.
 AC_CHECK_PROG([DBLATEX], dblatex, yes, no)
 AC_CHECK_PROG([PDFLATEX], pdflatex, yes, no)
 AM_CONDITIONAL(BUILD_PDF,
 	       test $ac_cv_prog_DBLATEX = "yes" &&
 	       test $ac_cv_prog_PDFLATEX = "yes")
-
-AC_CHECK_PROG([RUBY], ruby, yes, no)
-AC_CHECK_PROG([DBTOEPUB], dbtoepub, yes, no)
-AM_CONDITIONAL(BUILD_EPUB,
-	       test $ac_cv_prog_RUBY = "yes" &&
-	       test $ac_cv_prog_DBTOEPUB = "yes")
 
 
 # Propagate the target-specific source directories through the build chain.
@@ -425,11 +419,11 @@ GLIBCXX_EXPORT_INCLUDES
 GLIBCXX_EXPORT_FLAGS
 
 if test "$enable_shared" = yes; then
-  LIBSUPCXX_PICFLAGS="-prefer-pic"
+  PIC_CXXFLAGS="-prefer-pic"
 else
-  LIBSUPCXX_PICFLAGS=
+  PIC_CXXFLAGS=
 fi
-AC_SUBST(LIBSUPCXX_PICFLAGS)
+AC_SUBST(PIC_CXXFLAGS)
 
 dnl In autoconf 2.5x, AC_OUTPUT is replaced by four AC_CONFIG_* macros,
 dnl which can all be called multiple times as needed, plus one (different)

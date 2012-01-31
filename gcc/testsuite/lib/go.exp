@@ -216,6 +216,7 @@ proc go_target_compile { source dest type options } {
 	lappend options "ldflags=${wrap_flags}"
     }
 
+    lappend options "timeout=[timeout_value]"
     lappend options "compiler=$GOC_UNDER_TEST"
 
     set options [concat "$ALWAYS_GOCFLAGS" $options]

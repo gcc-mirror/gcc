@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,8 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Conversion;
+
+with Interfaces.C;
 
 with System.OS_Primitives;
 
@@ -109,6 +111,22 @@ package body Ada.Calendar is
      new Ada.Unchecked_Conversion (Time_Rep, Duration);
    --  Convert a time representation value into a duration value
 
+   function UTC_Time_Offset
+     (Date        : Time;
+      Is_Historic : Boolean) return Long_Integer;
+   --  This routine acts as an Ada wrapper around __gnat_localtime_tzoff which
+   --  in turn utilizes various OS-dependent mechanisms to calculate the time
+   --  zone offset of a date. Formal parameter Date represents an arbitrary
+   --  time stamp, either in the past, now, or in the future. If the flag
+   --  Is_Historic is set, this routine would try to calculate to the best of
+   --  the OS's abilities the time zone offset that was or will be in effect
+   --  on Date. If the flag is set to False, the routine returns the current
+   --  time zone with Date effectively set to Clock.
+   --
+   --  NOTE: Targets which support localtime_r will aways return a historic
+   --  time zone even if flag Is_Historic is set to False because this is how
+   --  localtime_r operates.
+
    -----------------
    -- Local Types --
    -----------------
@@ -132,14 +150,12 @@ package body Ada.Calendar is
    pragma Import (C, Flag, "__gl_leap_seconds_support");
    --  This imported value is used to determine whether the compilation had
    --  binder flag "-y" present which enables leap seconds. A value of zero
-   --  signifies no leap seconds support while a value of one enables the
-   --  support.
+   --  signifies no leap seconds support while a value of one enables support.
 
-   Leap_Support : constant Boolean := Flag = 1;
-   --  The above flag controls the usage of leap seconds in all Ada.Calendar
-   --  routines.
+   Leap_Support : constant Boolean := (Flag = 1);
+   --  Flag to controls the usage of leap seconds in all Ada.Calendar routines
 
-   Leap_Seconds_Count : constant Natural := 24;
+   Leap_Seconds_Count : constant Natural := 25;
 
    ---------------------
    -- Local Constants --
@@ -172,11 +188,18 @@ package body Ada.Calendar is
    Start_Of_Time : constant Time_Rep :=
                      Ada_Low - Time_Rep (3) * Nanos_In_Day;
 
-   --  The Unix lower time bound expressed as nanoseconds since the
-   --  start of Ada time in UTC.
+   --  The Unix lower time bound expressed as nanoseconds since the start of
+   --  Ada time in UTC.
 
    Unix_Min : constant Time_Rep :=
                 Ada_Low + Time_Rep (17 * 366 + 52 * 365) * Nanos_In_Day;
+
+   --  The Unix upper time bound expressed as nanoseconds since the start of
+   --  Ada time in UTC.
+
+   Unix_Max : constant Time_Rep :=
+                Ada_Low + Time_Rep (34 * 366 + 102 * 365) * Nanos_In_Day +
+                          Time_Rep (Leap_Seconds_Count) * Nano;
 
    Epoch_Offset : constant Time_Rep := (136 * 365 + 44 * 366) * Nanos_In_Day;
    --  The difference between 2150-1-1 UTC and 1970-1-1 UTC expressed in
@@ -187,7 +210,8 @@ package body Ada.Calendar is
        (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334);
 
    --  The following table contains the hard time values of all existing leap
-   --  seconds. The values are produced by the utility program xleaps.adb.
+   --  seconds. The values are produced by the utility program xleaps.adb. This
+   --  must be updated when additional leap second times are defined.
 
    Leap_Second_Times : constant array (1 .. Leap_Seconds_Count) of Time_Rep :=
      (-5601484800000000000,
@@ -213,7 +237,8 @@ package body Ada.Calendar is
       -4812566380000000000,
       -4765132779000000000,
       -4544207978000000000,
-      -4449513577000000000);
+      -4449513577000000000,
+      -4339180776000000000);
 
    ---------
    -- "+" --
@@ -251,10 +276,9 @@ package body Ada.Calendar is
    function "-" (Left : Time; Right : Time) return Duration is
       pragma Unsuppress (Overflow_Check);
 
-      --  The bounds of type Duration expressed as time representations
-
       Dur_Low  : constant Time_Rep := Duration_To_Time_Rep (Duration'First);
       Dur_High : constant Time_Rep := Duration_To_Time_Rep (Duration'Last);
+      --  The bounds of type Duration expressed as time representations
 
       Res_N : Time_Rep;
 
@@ -266,13 +290,12 @@ package body Ada.Calendar is
       --  the generation of bogus values by the Unchecked_Conversion, we apply
       --  the following check.
 
-      if Res_N < Dur_Low
-        or else Res_N > Dur_High
-      then
+      if Res_N < Dur_Low or else Res_N > Dur_High then
          raise Time_Error;
       end if;
 
       return Time_Rep_To_Duration (Res_N);
+
    exception
       when Constraint_Error =>
          raise Time_Error;
@@ -344,8 +367,7 @@ package body Ada.Calendar is
       --  by adding the number of nanoseconds between the two origins.
 
       Res_N : Time_Rep :=
-                Duration_To_Time_Rep (System.OS_Primitives.Clock) +
-                  Unix_Min;
+                Duration_To_Time_Rep (System.OS_Primitives.Clock) + Unix_Min;
 
    begin
       --  If the target supports leap seconds, determine the number of leap
@@ -572,10 +594,10 @@ package body Ada.Calendar is
 
       --  Validity checks
 
-      if not Year'Valid
-        or else not Month'Valid
-        or else not Day'Valid
-        or else not Seconds'Valid
+      if not Year'Valid    or else
+         not Month'Valid   or else
+         not Day'Valid     or else
+         not Seconds'Valid
       then
          raise Time_Error;
       end if;
@@ -603,10 +625,10 @@ package body Ada.Calendar is
    begin
       --  Validity checks
 
-      if not Year'Valid
-        or else not Month'Valid
-        or else not Day'Valid
-        or else not Seconds'Valid
+      if not Year'Valid    or else
+         not Month'Valid   or else
+         not Day'Valid     or else
+         not Seconds'Valid
       then
          raise Time_Error;
       end if;
@@ -629,6 +651,110 @@ package body Ada.Calendar is
            Is_Ada_05    => False,
            Time_Zone    => 0);
    end Time_Of;
+
+   ---------------------
+   -- UTC_Time_Offset --
+   ---------------------
+
+   function UTC_Time_Offset
+     (Date        : Time;
+      Is_Historic : Boolean) return Long_Integer
+   is
+      --  The following constants denote February 28 during non-leap centennial
+      --  years, the units are nanoseconds.
+
+      T_2100_2_28 : constant Time_Rep := Ada_Low +
+                      (Time_Rep (49 * 366 + 150 * 365 + 59) * Secs_In_Day +
+                       Time_Rep (Leap_Seconds_Count)) * Nano;
+
+      T_2200_2_28 : constant Time_Rep := Ada_Low +
+                      (Time_Rep (73 * 366 + 226 * 365 + 59) * Secs_In_Day +
+                       Time_Rep (Leap_Seconds_Count)) * Nano;
+
+      T_2300_2_28 : constant Time_Rep := Ada_Low +
+                      (Time_Rep (97 * 366 + 302 * 365 + 59) * Secs_In_Day +
+                       Time_Rep (Leap_Seconds_Count)) * Nano;
+
+      --  56 years (14 leap years + 42 non-leap years) in nanoseconds:
+
+      Nanos_In_56_Years : constant := (14 * 366 + 42 * 365) * Nanos_In_Day;
+
+      type int_Pointer  is access all Interfaces.C.int;
+      type long_Pointer is access all Interfaces.C.long;
+
+      type time_t is
+        range -(2 ** (Standard'Address_Size - Integer'(1))) ..
+              +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
+      type time_t_Pointer is access all time_t;
+
+      procedure localtime_tzoff
+        (timer       : time_t_Pointer;
+         is_historic : int_Pointer;
+         off         : long_Pointer);
+      pragma Import (C, localtime_tzoff, "__gnat_localtime_tzoff");
+      --  This routine is a interfacing wrapper around the library function
+      --  __gnat_localtime_tzoff. Parameter 'timer' represents a Unix-based
+      --  time equivalent of the input date. If flag 'is_historic' is set, this
+      --  routine would try to calculate to the best of the OS's abilities the
+      --  time zone offset that was or will be in effect on 'timer'. If the
+      --  flag is set to False, the routine returns the current time zone
+      --  regardless of what 'timer' designates. Parameter 'off' captures the
+      --  UTC offset of 'timer'.
+
+      Adj_Cent : Integer;
+      Date_N   : Time_Rep;
+      Flag     : aliased Interfaces.C.int;
+      Offset   : aliased Interfaces.C.long;
+      Secs_T   : aliased time_t;
+
+   --  Start of processing for UTC_Time_Offset
+
+   begin
+      Date_N := Time_Rep (Date);
+
+      --  Dates which are 56 years apart fall on the same day, day light saving
+      --  and so on. Non-leap centennial years violate this rule by one day and
+      --  as a consequence, special adjustment is needed.
+
+      Adj_Cent :=
+        (if    Date_N <= T_2100_2_28 then 0
+         elsif Date_N <= T_2200_2_28 then 1
+         elsif Date_N <= T_2300_2_28 then 2
+         else                             3);
+
+      if Adj_Cent > 0 then
+         Date_N := Date_N - Time_Rep (Adj_Cent) * Nanos_In_Day;
+      end if;
+
+      --  Shift the date within bounds of Unix time
+
+      while Date_N < Unix_Min loop
+         Date_N := Date_N + Nanos_In_56_Years;
+      end loop;
+
+      while Date_N >= Unix_Max loop
+         Date_N := Date_N - Nanos_In_56_Years;
+      end loop;
+
+      --  Perform a shift in origins from Ada to Unix
+
+      Date_N := Date_N - Unix_Min;
+
+      --  Convert the date into seconds
+
+      Secs_T := time_t (Date_N / Nano);
+
+      --  Determine whether to treat the input date as historical or not
+
+      Flag := (if Is_Historic then 1 else 0);
+
+      localtime_tzoff
+        (Secs_T'Unchecked_Access,
+         Flag'Unchecked_Access,
+         Offset'Unchecked_Access);
+
+      return Long_Integer (Offset);
+   end UTC_Time_Offset;
 
    ----------
    -- Year --
@@ -815,12 +941,10 @@ package body Ada.Calendar is
 
          --  Step 1: Validity checks of input values
 
-         if not Year'Valid
-           or else not Month'Valid
-           or else not Day'Valid
-           or else tm_hour not in 0 .. 24
-           or else tm_min not in 0 .. 59
-           or else tm_sec not in 0 .. 60
+         if not Year'Valid or else not Month'Valid or else not Day'Valid
+           or else tm_hour  not in 0 .. 24
+           or else tm_min   not in 0 .. 59
+           or else tm_sec   not in 0 .. 60
            or else tm_isdst not in -1 .. 1
          then
             raise Time_Error;
@@ -1030,9 +1154,7 @@ package body Ada.Calendar is
 
       function Day_Of_Week (Date : Time) return Integer is
          Date_N    : constant Time_Rep := Time_Rep (Date);
-         Time_Zone : constant Long_Integer :=
-                       Time_Zones_Operations.UTC_Time_Offset (Date);
-
+         Time_Zone : constant Long_Integer := UTC_Time_Offset (Date, True);
          Ada_Low_N : Time_Rep;
          Day_Count : Long_Integer;
          Day_Dur   : Time_Dur;
@@ -1133,7 +1255,7 @@ package body Ada.Calendar is
          Date_N := Date_N - Time_Rep (Elapsed_Leaps) * Nano;
 
          --  Step 2: Time zone processing. This action converts the input date
-         --  from GMT to the requested time zone.
+         --  from GMT to the requested time zone. Applies from Ada 2005 on.
 
          if Is_Ada_05 then
             if Time_Zone /= 0 then
@@ -1145,7 +1267,8 @@ package body Ada.Calendar is
          else
             declare
                Off : constant Long_Integer :=
-                       Time_Zones_Operations.UTC_Time_Offset (Time (Date_N));
+                       UTC_Time_Offset (Time (Date_N), False);
+
             begin
                Date_N := Date_N + Time_Rep (Off) * Nano;
             end;
@@ -1289,6 +1412,7 @@ package body Ada.Calendar is
          --  the input date.
 
          Count := (Year - Year_Number'First) / 4;
+
          for Four_Year_Segments in 1 .. Count loop
             Res_N := Res_N + Nanos_In_Four_Years;
          end loop;
@@ -1365,13 +1489,12 @@ package body Ada.Calendar is
          else
             declare
                Current_Off   : constant Long_Integer :=
-                                 Time_Zones_Operations.UTC_Time_Offset
-                                   (Time (Res_N));
+                                 UTC_Time_Offset (Time (Res_N), False);
                Current_Res_N : constant Time_Rep :=
                                  Res_N - Time_Rep (Current_Off) * Nano;
                Off           : constant Long_Integer :=
-                                 Time_Zones_Operations.UTC_Time_Offset
-                                   (Time (Current_Res_N));
+                                 UTC_Time_Offset (Time (Current_Res_N), False);
+
             begin
                Res_N := Res_N - Time_Rep (Off) * Nano;
             end;
@@ -1388,9 +1511,7 @@ package body Ada.Calendar is
             --  An Ada 2005 caller requesting an explicit leap second or an
             --  Ada 95 caller accounting for an invisible leap second.
 
-            if Leap_Sec
-              or else Res_N >= Next_Leap_N
-            then
+            if Leap_Sec or else Res_N >= Next_Leap_N then
                Res_N := Res_N + Time_Rep (1) * Nano;
             end if;
 
@@ -1417,101 +1538,13 @@ package body Ada.Calendar is
 
    package body Time_Zones_Operations is
 
-      --  The Unix time bounds in nanoseconds: 1970/1/1 .. 2037/1/1
-
-      Unix_Min : constant Time_Rep := Ada_Low +
-                   Time_Rep (17 * 366 +  52 * 365) * Nanos_In_Day;
-
-      Unix_Max : constant Time_Rep := Ada_Low +
-                   Time_Rep (34 * 366 + 102 * 365) * Nanos_In_Day +
-                   Time_Rep (Leap_Seconds_Count) * Nano;
-
-      --  The following constants denote February 28 during non-leap
-      --  centennial years, the units are nanoseconds.
-
-      T_2100_2_28 : constant Time_Rep := Ada_Low +
-                      (Time_Rep (49 * 366 + 150 * 365 + 59) * Secs_In_Day +
-                       Time_Rep (Leap_Seconds_Count)) * Nano;
-
-      T_2200_2_28 : constant Time_Rep := Ada_Low +
-                      (Time_Rep (73 * 366 + 226 * 365 + 59) * Secs_In_Day +
-                       Time_Rep (Leap_Seconds_Count)) * Nano;
-
-      T_2300_2_28 : constant Time_Rep := Ada_Low +
-                      (Time_Rep (97 * 366 + 302 * 365 + 59) * Secs_In_Day +
-                       Time_Rep (Leap_Seconds_Count)) * Nano;
-
-      --  56 years (14 leap years + 42 non leap years) in nanoseconds:
-
-      Nanos_In_56_Years : constant := (14 * 366 + 42 * 365) * Nanos_In_Day;
-
-      subtype long is Long_Integer;
-      type long_Pointer is access all long;
-
-      type time_t is
-        range -(2 ** (Standard'Address_Size - Integer'(1))) ..
-              +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
-      type time_t_Pointer is access all time_t;
-
-      procedure localtime_tzoff
-       (timer : time_t_Pointer;
-        off   : long_Pointer);
-      pragma Import (C, localtime_tzoff, "__gnat_localtime_tzoff");
-      --  This is a lightweight wrapper around the system library function
-      --  localtime_r. Parameter 'off' captures the UTC offset which is either
-      --  retrieved from the tm struct or calculated from the 'timezone' extern
-      --  and the tm_isdst flag in the tm struct.
-
       ---------------------
       -- UTC_Time_Offset --
       ---------------------
 
       function UTC_Time_Offset (Date : Time) return Long_Integer is
-         Adj_Cent : Integer;
-         Date_N   : Time_Rep;
-         Offset   : aliased long;
-         Secs_T   : aliased time_t;
-
       begin
-         Date_N := Time_Rep (Date);
-
-         --  Dates which are 56 years apart fall on the same day, day light
-         --  saving and so on. Non-leap centennial years violate this rule by
-         --  one day and as a consequence, special adjustment is needed.
-
-         Adj_Cent :=
-           (if    Date_N <= T_2100_2_28 then 0
-            elsif Date_N <= T_2200_2_28 then 1
-            elsif Date_N <= T_2300_2_28 then 2
-            else                             3);
-
-         if Adj_Cent > 0 then
-            Date_N := Date_N - Time_Rep (Adj_Cent) * Nanos_In_Day;
-         end if;
-
-         --  Shift the date within bounds of Unix time
-
-         while Date_N < Unix_Min loop
-            Date_N := Date_N + Nanos_In_56_Years;
-         end loop;
-
-         while Date_N >= Unix_Max loop
-            Date_N := Date_N - Nanos_In_56_Years;
-         end loop;
-
-         --  Perform a shift in origins from Ada to Unix
-
-         Date_N := Date_N - Unix_Min;
-
-         --  Convert the date into seconds
-
-         Secs_T := time_t (Date_N / Nano);
-
-         localtime_tzoff
-           (Secs_T'Unchecked_Access,
-            Offset'Unchecked_Access);
-
-         return Offset;
+         return UTC_Time_Offset (Date, True);
       end UTC_Time_Offset;
 
    end Time_Zones_Operations;
@@ -1520,4 +1553,5 @@ package body Ada.Calendar is
 
 begin
    System.OS_Primitives.Initialize;
+
 end Ada.Calendar;

@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-const __pgm __int24 vals[] =
+const __flash __int24 vals[] =
   {
     0, 1, 2, 3, -1, -2, -3, 0xff, 0x100, 0x101,
     0xffL * 0xff, 0xfffL * 0xfff, 0x101010L, 0xaaaaaaL

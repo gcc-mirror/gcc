@@ -87,7 +87,8 @@ struct ira_loop_tree_node
 {
   /* The node represents basic block if children == NULL.  */
   basic_block bb;    /* NULL for loop.  */
-  struct loop *loop; /* NULL for BB.  */
+  /* NULL for BB or for loop tree root if we did not build CFG loop tree.  */
+  struct loop *loop;
   /* NEXT/SUBLOOP_NEXT is the next node/loop-node of the same parent.
      SUBLOOP_NEXT is always NULL for BBs.  */
   ira_loop_tree_node_t subloop_next, next;
@@ -102,6 +103,9 @@ struct ira_loop_tree_node
 
   /* All the following members are defined only for nodes representing
      loops.  */
+
+  /* The loop number from CFG loop tree.  The root number is 0.  */
+  int loop_num;
 
   /* True if the loop was marked for removal from the register
      allocation.  */
@@ -154,7 +158,7 @@ extern ira_loop_tree_node_t ira_bb_nodes;
 /* Two access macros to the nodes representing basic blocks.  */
 #if defined ENABLE_IRA_CHECKING && (GCC_VERSION >= 2007)
 #define IRA_BB_NODE_BY_INDEX(index) __extension__			\
-(({ ira_loop_tree_node_t _node = (&ira_bb_nodes[index]);	\
+(({ ira_loop_tree_node_t _node = (&ira_bb_nodes[index]);		\
      if (_node->children != NULL || _node->loop != NULL || _node->bb == NULL)\
        {								\
          fprintf (stderr,						\
@@ -176,8 +180,9 @@ extern ira_loop_tree_node_t ira_loop_nodes;
 /* Two access macros to the nodes representing loops.  */
 #if defined ENABLE_IRA_CHECKING && (GCC_VERSION >= 2007)
 #define IRA_LOOP_NODE_BY_INDEX(index) __extension__			\
-(({ ira_loop_tree_node_t const _node = (&ira_loop_nodes[index]);\
-     if (_node->children == NULL || _node->bb != NULL || _node->loop == NULL)\
+(({ ira_loop_tree_node_t const _node = (&ira_loop_nodes[index]);	\
+     if (_node->children == NULL || _node->bb != NULL			\
+         || (_node->loop == NULL && current_loops != NULL))		\
        {								\
          fprintf (stderr,						\
                   "\n%s: %d: error in %s: it is not a loop node\n",	\
@@ -989,7 +994,7 @@ extern int *ira_allocate_cost_vector (reg_class_t);
 extern void ira_free_cost_vector (int *, reg_class_t);
 
 extern void ira_flattening (int, int);
-extern bool ira_build (bool);
+extern bool ira_build (void);
 extern void ira_destroy (void);
 
 /* ira-costs.c */

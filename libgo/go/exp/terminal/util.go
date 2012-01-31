@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build linux
+
 // Package terminal provides support functions for dealing with terminals, as
 // commonly found on UNIX systems.
 //
@@ -9,7 +11,7 @@
 //
 // 	oldState, err := terminal.MakeRaw(0)
 // 	if err != nil {
-// 	        panic(err.String())
+// 	        panic(err)
 // 	}
 // 	defer terminal.Restore(0, oldState)
 package terminal
@@ -17,6 +19,7 @@ package terminal
 import (
 	"io"
 	"syscall"
+	"unsafe"
 )
 
 // State contains the state of a terminal.
@@ -55,6 +58,18 @@ func MakeRaw(fd int) (*State, error) {
 func Restore(fd int, state *State) error {
 	err := syscall.Tcsetattr(fd, syscall.TCSANOW, &state.termios)
 	return err
+}
+
+func ioctl(int, int, unsafe.Pointer) int __asm__("ioctl")
+
+// GetSize returns the dimensions of the given terminal.
+func GetSize(fd int) (width, height int, err error) {
+	var dimensions [4]uint16
+
+	if ioctl(fd, syscall.TIOCGWINSZ, unsafe.Pointer(&dimensions)) < 0 {
+		return -1, -1, syscall.GetErrno()
+	}
+	return int(dimensions[1]), int(dimensions[0]), nil
 }
 
 // ReadPassword reads a line of input from a terminal without local echo.  This

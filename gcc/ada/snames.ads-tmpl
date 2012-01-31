@@ -6,7 +6,7 @@
 --                                                                          --
 --                             T e m p l a t e                              --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -145,6 +145,7 @@ package Snames is
    Name_Post                           : constant Name_Id := N + $;
    Name_Pre                            : constant Name_Id := N + $;
    Name_Static_Predicate               : constant Name_Id := N + $;
+   Name_Synchronization                : constant Name_Id := N + $;
    Name_Type_Invariant                 : constant Name_Id := N + $;
 
    --  Some special names used by the expander. Note that the lower case u's
@@ -227,7 +228,9 @@ package Snames is
    Name_Dim_Float_IO                 : constant Name_Id := N + $; -- Ada 12
    Name_Dim_Integer_IO               : constant Name_Id := N + $; -- Ada 12
    Name_Generic_Elementary_Functions : constant Name_Id := N + $; -- Ada 12
+   Name_Item                         : constant Name_Id := N + $; -- Ada 12
    Name_Sqrt                         : constant Name_Id := N + $; -- Ada 12
+   Name_Symbols                      : constant Name_Id := N + $; -- Ada 12
 
    --  Some miscellaneous names used for error detection/recovery
 
@@ -534,6 +537,7 @@ package Snames is
    Name_Pure_12                        : constant Name_Id := N + $; -- GNAT
    Name_Pure_Function                  : constant Name_Id := N + $; -- GNAT
    Name_Relative_Deadline              : constant Name_Id := N + $; -- Ada 05
+   Name_Remote_Access_Type             : constant Name_Id := N + $; -- GNAT
    Name_Remote_Call_Interface          : constant Name_Id := N + $;
    Name_Remote_Types                   : constant Name_Id := N + $;
    Name_Share_Generic                  : constant Name_Id := N + $; -- GNAT
@@ -677,6 +681,7 @@ package Snames is
    Name_No_Task_Attributes_Package     : constant Name_Id := N + $;
    Name_Nominal                        : constant Name_Id := N + $;
    Name_On                             : constant Name_Id := N + $;
+   Name_Optional                       : constant Name_Id := N + $;
    Name_Policy                         : constant Name_Id := N + $;
    Name_Parameter_Types                : constant Name_Id := N + $;
    Name_Reference                      : constant Name_Id := N + $;
@@ -1086,6 +1091,7 @@ package Snames is
 
    --  Additional reserved words and identifiers used in GNAT Project Files
    --  Note that Name_External is already previously declared.
+
    --  The names with the -- GB annotation are only used in gprbuild.
 
    Name_Aggregate                          : constant Name_Id := N + $;
@@ -1160,7 +1166,7 @@ package Snames is
    Name_Library_Partial_Linker             : constant Name_Id := N + $;
    Name_Library_Reference_Symbol_File      : constant Name_Id := N + $;
    Name_Library_Standalone                 : constant Name_Id := N + $;
-   Name_Library_Encapsulated_Options       : constant Name_Id := N + $;
+   Name_Library_Encapsulated_Options       : constant Name_Id := N + $; -- GB
    Name_Library_Encapsulated_Supported     : constant Name_Id := N + $; -- GB
    Name_Library_Src_Dir                    : constant Name_Id := N + $;
    Name_Library_Support                    : constant Name_Id := N + $;
@@ -1684,6 +1690,7 @@ package Snames is
       Pragma_Pure_12,
       Pragma_Pure_Function,
       Pragma_Relative_Deadline,
+      Pragma_Remote_Access_Type,
       Pragma_Remote_Call_Interface,
       Pragma_Remote_Types,
       Pragma_Share_Generic,

@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Major control parameters.  */
 
 #define GFC_MAX_SYMBOL_LEN 63   /* Must be at least 63 for F2003.  */
-#define GFC_MAX_BINDING_LABEL_LEN 126 /* (2 * GFC_MAX_SYMBOL_LEN) */
 #define GFC_MAX_LINE 132	/* Characters beyond this are not seen.  */
 #define GFC_LETTERS 26		/* Number of letters in the alphabet.  */
 
@@ -1238,7 +1237,7 @@ typedef struct gfc_symbol
 
   /* This may be repetitive, since the typespec now has a binding
      label field.  */
-  char binding_label[GFC_MAX_BINDING_LABEL_LEN + 1];
+  const char* binding_label;
   /* Store a reference to the common_block, if this symbol is in one.  */
   struct gfc_common_head *common_block;
 
@@ -1255,7 +1254,7 @@ typedef struct gfc_common_head
   char use_assoc, saved, threadprivate;
   char name[GFC_MAX_SYMBOL_LEN + 1];
   struct gfc_symbol *head;
-  char binding_label[GFC_MAX_BINDING_LABEL_LEN + 1];
+  const char* binding_label;
   int is_bind_c;
 }
 gfc_common_head;
@@ -2221,6 +2220,9 @@ typedef struct
   int flag_default_double;
   int flag_default_integer;
   int flag_default_real;
+  int flag_integer4_kind;
+  int flag_real4_kind;
+  int flag_real8_kind;
   int flag_dollar_ok;
   int flag_underscoring;
   int flag_second_underscore;
@@ -2593,7 +2595,7 @@ gfc_try verify_bind_c_sym (gfc_symbol *, gfc_typespec *, int, gfc_common_head *)
 gfc_try verify_bind_c_derived_type (gfc_symbol *);
 gfc_try verify_com_block_vars_c_interop (gfc_common_head *);
 void generate_isocbinding_symbol (const char *, iso_c_binding_symbol, const char *);
-gfc_symbol *get_iso_c_sym (gfc_symbol *, char *, char *, int);
+gfc_symbol *get_iso_c_sym (gfc_symbol *, char *, const char *, int);
 int gfc_get_sym_tree (const char *, gfc_namespace *, gfc_symtree **, bool);
 int gfc_get_ha_symbol (const char *, gfc_symbol **);
 int gfc_get_ha_sym_tree (const char *, gfc_symtree **);

@@ -92,6 +92,7 @@ class vector
   size_t size() const { return m_size; }
   size_t capacity() const { return this->capacity; }
 
+  void set_size (size_t size) { m_size = size; }
   void clear() { m_size = 0; }
 
   iterator push() {

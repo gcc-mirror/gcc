@@ -1,6 +1,6 @@
 // 2004-04-30  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2004, 2009, 2010 Free Software Foundation
+// Copyright (C) 2004, 2009, 2010, 2012 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,11 +23,11 @@
 #include <sstream>
 #include <testsuite_hooks.h>
 
-// On Solaris 9 and 32-bit Solaris 10/x86, this test crashes in libc.  Inside
-// libstdc++, we call sprintf like so:
+// On Solaris 9 and 32-bit Solaris 10/x86 before update 10, this test crashes
+// in libc.  Inside libstdc++, we call sprintf like so:
 //   sprintf (buffer, "%.*f", 1000, 1.0)
 // which crashes.
-// { dg-do run { xfail { i?86-*-solaris2.9 || { i?86-*-solaris2.10 && ilp32 } } } } 
+// { dg-do run { xfail { i?86-*-solaris2.9 } } } 
 
 // libstdc++/14220
 void test01()

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -890,6 +890,28 @@ package body Sem_Ch13 is
                end loop;
             end if;
 
+            --  Check some general restrictions on language defined aspects
+
+            if not Impl_Defined_Aspects (A_Id) then
+               Error_Msg_Name_1 := Nam;
+
+               --  Not allowed for renaming declarations
+
+               if Nkind (N) in N_Renaming_Declaration then
+                  Error_Msg_N
+                    ("aspect % not allowed for renaming declaration",
+                     Aspect);
+               end if;
+
+               --  Not allowed for formal type declarations
+
+               if Nkind (N) = N_Formal_Type_Declaration then
+                  Error_Msg_N
+                    ("aspect % not allowed for formal type declaration",
+                     Aspect);
+               end if;
+            end if;
+
             --  Copy expression for later processing by the procedures
             --  Check_Aspect_At_[Freeze_Point | End_Of_Declarations]
 
@@ -1103,6 +1125,21 @@ package body Sem_Ch13 is
 
                   pragma Assert (not Delay_Required);
 
+               when Aspect_Synchronization =>
+
+                  --  The aspect corresponds to pragma Implemented.
+                  --  Construct the pragma
+
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Argument_Associations => New_List (
+                        New_Occurrence_Of (E, Loc),
+                        Relocate_Node (Expr)),
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Name_Implemented));
+
+                  pragma Assert (not Delay_Required);
+
                --  Aspects corresponding to pragmas with two arguments, where
                --  the second argument is a local name referring to the entity,
                --  and the first argument is the aspect definition expression.
@@ -1163,6 +1200,12 @@ package body Sem_Ch13 is
                   Delay_Required := True;
                   Set_Is_Delayed_Aspect (Aspect);
                   Set_Has_Default_Aspect (Base_Type (Entity (Ent)));
+
+                  if Is_Scalar_Type (E) then
+                     Set_Default_Aspect_Value (Entity (Ent), Expr);
+                  else
+                     Set_Default_Aspect_Component_Value (Entity (Ent), Expr);
+                  end if;
 
                when Aspect_Attach_Handler =>
                   Aitem :=
@@ -1387,6 +1430,10 @@ package body Sem_Ch13 is
                   --  missing in cases like subtype X is Y, and we would not
                   --  have a place to build the predicate function).
 
+                  --  If the type is private, indicate that its completion
+                  --  has a freeze node, because that is the one that will be
+                  --  visible at freeze time.
+
                   Set_Has_Predicates (E);
 
                   if Is_Private_Type (E)
@@ -1394,6 +1441,7 @@ package body Sem_Ch13 is
                   then
                      Set_Has_Predicates (Full_View (E));
                      Set_Has_Delayed_Aspects (Full_View (E));
+                     Ensure_Freeze_Node (Full_View (E));
                   end if;
 
                   Ensure_Freeze_Node (E);
@@ -5019,6 +5067,12 @@ package body Sem_Ch13 is
          Set_Has_Predicates (SId);
          Set_Predicate_Function (Typ, SId);
 
+         --  The predicate function is shared between views of a type.
+
+         if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
+            Set_Predicate_Function (Full_View (Typ), SId);
+         end if;
+
          Spec :=
            Make_Function_Specification (Loc,
              Defining_Unit_Name       => SId,
@@ -5975,6 +6029,18 @@ package body Sem_Ch13 is
          if No (T) then
             Check_Aspect_At_Freeze_Point (ASN);
             return;
+
+         --  The default values attributes may be defined in the private part,
+         --  and the analysis of the expression may take place when only the
+         --  partial view is visible. The expression must be scalar, so use
+         --  the full view to resolve.
+
+         elsif (A_Id = Aspect_Default_Value
+                  or else
+                A_Id = Aspect_Default_Component_Value)
+            and then Is_Private_Type (T)
+         then
+            Preanalyze_Spec_Expression (End_Decl_Expr, Full_View (T));
          else
             Preanalyze_Spec_Expression (End_Decl_Expr, T);
          end if;
@@ -6115,11 +6181,12 @@ package body Sem_Ch13 is
             Analyze (Expression (ASN));
             return;
 
-         --  Suppress/Unsuppress/Warnings should never be delayed
+         --  Suppress/Unsuppress/Synchronization/Warnings should not be delayed
 
-         when Aspect_Suppress   |
-              Aspect_Unsuppress |
-              Aspect_Warnings   =>
+         when Aspect_Suppress        |
+              Aspect_Unsuppress      |
+              Aspect_Synchronization |
+              Aspect_Warnings        =>
             raise Program_Error;
 
          --  Pre/Post/Invariant/Predicate take boolean expressions

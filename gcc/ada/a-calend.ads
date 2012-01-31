@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -147,7 +147,7 @@ private
    --  00:00:00.0 UTC - 2399-12-31-23:59:59.999999999 UTC).
 
    ------------------
-   -- Leap seconds --
+   -- Leap Seconds --
    ------------------
 
    --  Due to Earth's slowdown, the astronomical time is not as precise as the
@@ -185,7 +185,7 @@ private
    --  modification.
 
    ------------------------------
-   -- Non-leap centennial years --
+   -- Non-leap Centennial Years --
    ------------------------------
 
    --  Over the range of Ada time, centennial years 2100, 2200 and 2300 are
@@ -193,15 +193,46 @@ private
    --  of year - 4 to year + 4. Internally, routines Split and Time_Of add or
    --  subtract a "fake" February 29 to facilitate the arithmetic involved.
 
+   ------------------------------------
+   -- Time Zones and UTC_Time_Offset --
+   ------------------------------------
+
+   --  The implementation-defined time zone of Ada.Calendar routines is the
+   --  local time zone. The term "local time zone" can be interpreted in two
+   --  different ways - either the offset from UTC of the "now" or the offset
+   --  from UTC of some input date.
+
+   --  For efficency reasons, Split and Time_Of take the first approach. Since
+   --  the Ada Reference Manual does not mandate that Split and Time_Of should
+   --  be concious of historic time zones, this interpretation is acceptable
+   --  and efficent in terms of performance. Split and Time_Of localize their
+   --  respective input regardless of whether it represent a past or a future
+   --  date.
+
+   --  UTC_Time_Offset on the other hand must be knowledgeable of historic time
+   --  zones. To achieve this, the implementation relies on various operating
+   --  system routines. Note that not all operating systems support time zones.
+   --  UTC_Time_Offset calculates the offset from UTC as it occurred or will
+   --  occur on the input date relative to the local time zone. Example:
+
+   --     Date         Offset    Reason
+   --     2012-01-11   -300
+   --     2011-03-12   -300
+   --     2011-03-14   -240      Daylight savings is in effect
+
+   ------------------------
+   -- Local Declarations --
+   ------------------------
+
+   type Time_Rep is range -2 ** 63 .. +2 ** 63 - 1;
+   type Time is new Time_Rep;
    --  The underlying type of Time has been chosen to be a 64 bit signed
    --  integer number since it allows for easier processing of sub seconds
    --  and arithmetic.
 
-   type Time_Rep is range -2 ** 63 .. +2 ** 63 - 1;
-   type Time is new Time_Rep;
-
    Days_In_Month : constant array (Month_Number) of Day_Number :=
                      (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
+   --  Days in month for non-leap year, leap year case is adjusted in code
 
    Invalid_Time_Zone_Offset : Long_Integer;
    pragma Import (C, Invalid_Time_Zone_Offset, "__gnat_invalid_tzoff");
@@ -209,7 +240,11 @@ private
    function Is_Leap (Year : Year_Number) return Boolean;
    --  Determine whether a given year is leap
 
-   --  The following packages provide a target independent interface to the
+   ----------------------------------------------------------
+   -- Target-Independent Interface to Children of Calendar --
+   ----------------------------------------------------------
+
+   --  The following packages provide a target-independent interface to the
    --  children of Calendar - Arithmetic, Conversions, Delays, Formatting and
    --  Time_Zones.
 
@@ -351,7 +386,8 @@ private
    package Time_Zones_Operations is
 
       function UTC_Time_Offset (Date : Time) return Long_Integer;
-      --  Return the offset in seconds from UTC
+      --  Return (in seconds) the difference between the local time zone and
+      --  UTC time at a specific historic date.
 
    end Time_Zones_Operations;
 

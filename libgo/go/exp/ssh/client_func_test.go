@@ -6,7 +6,7 @@ package ssh
 
 // ClientConn functional tests.
 // These tests require a running ssh server listening on port 22
-// on the local host. Functional tests will be skipped unless 
+// on the local host. Functional tests will be skipped unless
 // -ssh.user and -ssh.pass must be passed to gotest.
 
 import (
@@ -50,7 +50,7 @@ func TestFuncPublickeyAuth(t *testing.T) {
 	config := &ClientConfig{
 		User: *sshuser,
 		Auth: []ClientAuth{
-			ClientAuthPublickey(kc),
+			ClientAuthKeyring(kc),
 		},
 	}
 	conn, err := Dial("tcp", "localhost:22", config)

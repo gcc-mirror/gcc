@@ -250,6 +250,11 @@ alpha_option_override (void)
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
+  /* Default to full IEEE compliance mode for Go language.  */
+  if (strcmp (lang_hooks.name, "GNU Go") == 0
+      && !(target_flags_explicit & MASK_IEEE))
+    target_flags |= MASK_IEEE;
+
   alpha_fprm = ALPHA_FPRM_NORM;
   alpha_tp = ALPHA_TP_PROG;
   alpha_fptm = ALPHA_FPTM_N;
@@ -1489,8 +1494,6 @@ alpha_set_memflags_1 (rtx *xp, void *data)
     return 0;
 
   MEM_VOLATILE_P (x) = MEM_VOLATILE_P (orig);
-  MEM_IN_STRUCT_P (x) = MEM_IN_STRUCT_P (orig);
-  MEM_SCALAR_P (x) = MEM_SCALAR_P (orig);
   MEM_NOTRAP_P (x) = MEM_NOTRAP_P (orig);
   MEM_READONLY_P (x) = MEM_READONLY_P (orig);
 
@@ -1520,8 +1523,6 @@ alpha_set_memflags (rtx seq, rtx ref)
      generated from one of the insn patterns.  So if everything is
      zero, the pattern is already up-to-date.  */
   if (!MEM_VOLATILE_P (ref)
-      && !MEM_IN_STRUCT_P (ref)
-      && !MEM_SCALAR_P (ref)
       && !MEM_NOTRAP_P (ref)
       && !MEM_READONLY_P (ref))
     return;

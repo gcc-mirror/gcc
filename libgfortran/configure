@@ -2569,7 +2569,6 @@ as_fn_append ac_func_list " execve"
 as_fn_append ac_func_list " pipe"
 as_fn_append ac_func_list " dup2"
 as_fn_append ac_func_list " close"
-as_fn_append ac_func_list " fdopen"
 as_fn_append ac_func_list " strcasestr"
 as_fn_append ac_func_list " getrlimit"
 as_fn_append ac_func_list " gettimeofday"
@@ -2592,6 +2591,7 @@ as_fn_append ac_func_list " getpid"
 as_fn_append ac_func_list " getppid"
 as_fn_append ac_func_list " getuid"
 as_fn_append ac_func_list " geteuid"
+as_fn_append ac_func_list " umask"
 # Check that the precious variables saved in the cache have kept the same
 # value.
 ac_cache_corrupted=false

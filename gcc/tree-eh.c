@@ -3617,14 +3617,40 @@ remove_unreachable_handlers_no_lp (void)
 {
   eh_region r;
   int i;
+  sbitmap r_reachable;
+  basic_block bb;
+
+  r_reachable = sbitmap_alloc (VEC_length (eh_region, cfun->eh->region_array));
+  sbitmap_zero (r_reachable);
+
+  FOR_EACH_BB (bb)
+    {
+      gimple stmt = last_stmt (bb);
+      if (stmt)
+	/* Avoid removing regions referenced from RESX/EH_DISPATCH.  */
+	switch (gimple_code (stmt))
+	  {
+	  case GIMPLE_RESX:
+	    SET_BIT (r_reachable, gimple_resx_region (stmt));
+	    break;
+	  case GIMPLE_EH_DISPATCH:
+	    SET_BIT (r_reachable, gimple_eh_dispatch_region (stmt));
+	    break;
+	  default:
+	    break;
+	  }
+    }
 
   for (i = 1; VEC_iterate (eh_region, cfun->eh->region_array, i, r); ++i)
-    if (r && r->landing_pads == NULL && r->type != ERT_MUST_NOT_THROW)
+    if (r && r->landing_pads == NULL && r->type != ERT_MUST_NOT_THROW
+	&& !TEST_BIT (r_reachable, i))
       {
 	if (dump_file)
 	  fprintf (dump_file, "Removing unreachable region %d\n", i);
 	remove_eh_handler (r);
       }
+
+  sbitmap_free (r_reachable);
 }
 
 /* Undo critical edge splitting on an EH landing pad.  Earlier, we
@@ -4030,6 +4056,7 @@ cleanup_empty_eh (eh_landing_pad lp)
   edge_iterator ei;
   edge e, e_out;
   bool has_non_eh_pred;
+  bool ret = false;
   int new_lp_nr;
 
   /* There can be zero or one edges out of BB.  This is the quickest test.  */
@@ -4044,6 +4071,16 @@ cleanup_empty_eh (eh_landing_pad lp)
     default:
       return false;
     }
+
+  resx = last_stmt (bb);
+  if (resx && is_gimple_resx (resx))
+    {
+      if (stmt_can_throw_external (resx))
+	optimize_clobbers (bb);
+      else if (sink_clobbers (bb))
+	ret = true;
+    }
+
   gsi = gsi_after_labels (bb);
 
   /* Make sure to skip debug statements.  */
@@ -4055,9 +4092,9 @@ cleanup_empty_eh (eh_landing_pad lp)
     {
       /* For the degenerate case of an infinite loop bail out.  */
       if (infinite_empty_loop_p (e_out))
-	return false;
+	return ret;
 
-      return cleanup_empty_eh_unsplit (bb, e_out, lp);
+      return ret | cleanup_empty_eh_unsplit (bb, e_out, lp);
     }
 
   /* The block should consist only of a single RESX statement, modulo a
@@ -4070,7 +4107,7 @@ cleanup_empty_eh (eh_landing_pad lp)
       resx = gsi_stmt (gsi);
     }
   if (!is_gimple_resx (resx))
-    return false;
+    return ret;
   gcc_assert (gsi_one_before_end_p (gsi));
 
   /* Determine if there are non-EH edges, or resx edges into the handler.  */
@@ -4146,7 +4183,7 @@ cleanup_empty_eh (eh_landing_pad lp)
       return true;
     }
 
-  return false;
+  return ret;
 
  succeed:
   if (dump_file && (dump_flags & TDF_DETAILS))

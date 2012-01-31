@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,6 +59,7 @@ with Sem_Disp; use Sem_Disp;
 with Sem_Elab; use Sem_Elab;
 with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
+with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
@@ -917,20 +918,20 @@ package body Sem_Ch12 is
       Formals : List_Id;
       F_Copy  : List_Id) return List_Id
    is
-      Actual_Types    : constant Elist_Id  := New_Elmt_List;
-      Assoc           : constant List_Id   := New_List;
-      Default_Actuals : constant Elist_Id  := New_Elmt_List;
-      Gen_Unit        : constant Entity_Id :=
-                          Defining_Entity (Parent (F_Copy));
+      Actuals_To_Freeze : constant Elist_Id  := New_Elmt_List;
+      Assoc             : constant List_Id   := New_List;
+      Default_Actuals   : constant Elist_Id  := New_Elmt_List;
+      Gen_Unit          : constant Entity_Id :=
+                            Defining_Entity (Parent (F_Copy));
 
       Actuals         : List_Id;
       Actual          : Node_Id;
-      Formal          : Node_Id;
-      Next_Formal     : Node_Id;
       Analyzed_Formal : Node_Id;
+      First_Named     : Node_Id := Empty;
+      Formal          : Node_Id;
       Match           : Node_Id;
       Named           : Node_Id;
-      First_Named     : Node_Id := Empty;
+      Saved_Formal    : Node_Id;
 
       Default_Formals : constant List_Id := New_List;
       --  If an Others_Choice is present, some of the formals may be defaulted.
@@ -958,6 +959,10 @@ package body Sem_Ch12 is
       --  to formals of formal packages by AI05-0025, and it also applies to
       --  box-initialized formals.
 
+      function Has_Fully_Defined_Profile (Subp : Entity_Id) return Boolean;
+      --  Determine whether the parameter types and the return type of Subp
+      --  are fully defined at the point of instantiation.
+
       function Matching_Actual
         (F   : Entity_Id;
          A_F : Entity_Id) return Node_Id;
@@ -966,7 +971,7 @@ package body Sem_Ch12 is
       --  are named, scan the parameter associations to find the right one.
       --  A_F is the corresponding entity in the analyzed generic,which is
       --  placed on the selector name for ASIS use.
-
+      --
       --  In Ada 2005, a named association may be given with a box, in which
       --  case Matching_Actual sets Found_Assoc to the generic association,
       --  but return Empty for the actual itself. In this case the code below
@@ -981,6 +986,10 @@ package body Sem_Ch12 is
       --  Add a copy of the declaration of generic formal  F to the list of
       --  associations, and add an explicit box association for F  if there
       --  is none yet, and the default comes from an Others_Choice.
+
+      function Renames_Standard_Subprogram (Subp : Entity_Id) return Boolean;
+      --  Determine whether Subp renames one of the subprograms defined in the
+      --  generated package Standard.
 
       procedure Set_Analyzed_Formal;
       --  Find the node in the generic copy that corresponds to a given formal.
@@ -1024,6 +1033,62 @@ package body Sem_Ch12 is
             Next (Temp_Formal);
          end loop;
       end Check_Overloaded_Formal_Subprogram;
+
+      -------------------------------
+      -- Has_Fully_Defined_Profile --
+      -------------------------------
+
+      function Has_Fully_Defined_Profile (Subp : Entity_Id) return Boolean is
+         function Is_Fully_Defined_Type (Typ : Entity_Id) return Boolean;
+         --  Determine whethet type Typ is fully defined
+
+         ---------------------------
+         -- Is_Fully_Defined_Type --
+         ---------------------------
+
+         function Is_Fully_Defined_Type (Typ : Entity_Id) return Boolean is
+         begin
+            --  A private type without a full view is not fully defined
+
+            if Is_Private_Type (Typ)
+              and then No (Full_View (Typ))
+            then
+               return False;
+
+            --  An incomplete type is never fully defined
+
+            elsif Is_Incomplete_Type (Typ) then
+               return False;
+
+            --  All other types are fully defined
+
+            else
+               return True;
+            end if;
+         end Is_Fully_Defined_Type;
+
+         --  Local declarations
+
+         Param : Entity_Id;
+
+      --  Start of processing for Has_Fully_Defined_Profile
+
+      begin
+         --  Check the parameters
+
+         Param := First_Formal (Subp);
+         while Present (Param) loop
+            if not Is_Fully_Defined_Type (Etype (Param)) then
+               return False;
+            end if;
+
+            Next_Formal (Param);
+         end loop;
+
+         --  Check the return type
+
+         return Is_Fully_Defined_Type (Etype (Subp));
+      end Has_Fully_Defined_Profile;
 
       ---------------------
       -- Matching_Actual --
@@ -1149,6 +1214,26 @@ package body Sem_Ch12 is
          end if;
       end Process_Default;
 
+      ---------------------------------
+      -- Renames_Standard_Subprogram --
+      ---------------------------------
+
+      function Renames_Standard_Subprogram (Subp : Entity_Id) return Boolean is
+         Id : Entity_Id;
+
+      begin
+         Id := Alias (Subp);
+         while Present (Id) loop
+            if Scope (Id) = Standard_Standard then
+               return True;
+            end if;
+
+            Id := Alias (Id);
+         end loop;
+
+         return False;
+      end Renames_Standard_Subprogram;
+
       -------------------------
       -- Set_Analyzed_Formal --
       -------------------------
@@ -1259,7 +1344,7 @@ package body Sem_Ch12 is
       Named := First_Named;
       while Present (Named) loop
          if Nkind (Named) /= N_Others_Choice
-           and then  No (Selector_Name (Named))
+           and then No (Selector_Name (Named))
          then
             Error_Msg_N ("invalid positional actual after named one", Named);
             Abandon_Instantiation (Named);
@@ -1293,7 +1378,7 @@ package body Sem_Ch12 is
 
          while Present (Formal) loop
             Set_Analyzed_Formal;
-            Next_Formal := Next_Non_Pragma (Formal);
+            Saved_Formal := Next_Non_Pragma (Formal);
 
             case Nkind (Formal) is
                when N_Formal_Object_Declaration =>
@@ -1335,38 +1420,72 @@ package body Sem_Ch12 is
                      Analyze (Match);
                      Append_List
                        (Instantiate_Type
-                         (Formal, Match, Analyzed_Formal, Assoc),
-                       Assoc);
+                          (Formal, Match, Analyzed_Formal, Assoc),
+                        Assoc);
 
                      --  An instantiation is a freeze point for the actuals,
                      --  unless this is a rewritten formal package, or the
                      --  formal is an Ada 2012 formal incomplete type.
 
-                     if Nkind (I_Node) /= N_Formal_Package_Declaration
-                       and then
-                         Ekind (Defining_Identifier (Analyzed_Formal)) /=
-                           E_Incomplete_Type
+                     if Nkind (I_Node) = N_Formal_Package_Declaration
+                       or else
+                         (Ada_Version >= Ada_2012
+                           and then
+                             Ekind (Defining_Identifier (Analyzed_Formal)) =
+                                                            E_Incomplete_Type)
                      then
-                        Append_Elmt (Entity (Match), Actual_Types);
+                        null;
+
+                     else
+                        Append_Elmt (Entity (Match), Actuals_To_Freeze);
                      end if;
                   end if;
 
                   --  A remote access-to-class-wide type is not a legal actual
-                  --  for a generic formal of an access type (E.2.2(17)).
+                  --  for a generic formal of an access type (E.2.2(17/2)).
+                  --  In GNAT an exception to this rule is introduced when
+                  --  the formal is marked as remote using implementation
+                  --  defined aspect/pragma Remote_Access_Type. In that case
+                  --  the actual must be remote as well.
 
                   if Nkind (Analyzed_Formal) = N_Formal_Type_Declaration
                     and then
                       Nkind (Formal_Type_Definition (Analyzed_Formal)) =
                                             N_Access_To_Object_Definition
                   then
-                     Validate_Remote_Access_To_Class_Wide_Type (Match);
+                     declare
+                        Formal_Ent : constant Entity_Id :=
+                                        Defining_Identifier (Analyzed_Formal);
+                     begin
+                        if Is_Remote_Access_To_Class_Wide_Type (Entity (Match))
+                             = Is_Remote_Types (Formal_Ent)
+                        then
+                           --  Remoteness of formal and actual match
+
+                           null;
+
+                        elsif Is_Remote_Types (Formal_Ent) then
+
+                           --  Remote formal, non-remote actual
+
+                           Error_Msg_NE
+                             ("actual for& must be remote", Match, Formal_Ent);
+
+                        else
+                           --  Non-remote formal, remote actual
+
+                           Error_Msg_NE
+                             ("actual for& may not be remote",
+                              Match, Formal_Ent);
+                        end if;
+                     end;
                   end if;
 
                when N_Formal_Subprogram_Declaration =>
                   Match :=
-                    Matching_Actual (
-                      Defining_Unit_Name (Specification (Formal)),
-                      Defining_Unit_Name (Specification (Analyzed_Formal)));
+                    Matching_Actual
+                      (Defining_Unit_Name (Specification (Formal)),
+                       Defining_Unit_Name (Specification (Analyzed_Formal)));
 
                   --  If the formal subprogram has the same name as another
                   --  formal subprogram of the generic, then a named
@@ -1384,10 +1503,9 @@ package body Sem_Ch12 is
                   --  partial parametrization, or else the formal has a default
                   --  or a box.
 
-                  if No (Match)
-                    and then  Partial_Parametrization
-                  then
+                  if No (Match) and then Partial_Parametrization then
                      Process_Default (Formal);
+
                      if Nkind (I_Node) = N_Formal_Package_Declaration then
                         Check_Overloaded_Formal_Subprogram (Formal);
                      end if;
@@ -1396,6 +1514,37 @@ package body Sem_Ch12 is
                      Append_To (Assoc,
                        Instantiate_Formal_Subprogram
                          (Formal, Match, Analyzed_Formal));
+
+                     --  An instantiation is a freeze point for the actuals,
+                     --  unless this is a rewritten formal package.
+
+                     if Nkind (I_Node) /= N_Formal_Package_Declaration
+                       and then Nkind (Match) = N_Identifier
+                       and then Is_Subprogram (Entity (Match))
+
+                       --  The actual subprogram may rename a routine defined
+                       --  in Standard. Avoid freezing such renamings because
+                       --  subprograms coming from Standard cannot be frozen.
+
+                       and then
+                         not Renames_Standard_Subprogram (Entity (Match))
+
+                       --  If the actual subprogram comes from a different
+                       --  unit, it is already frozen, either by a body in
+                       --  that unit or by the end of the declarative part
+                       --  of the unit. This check avoids the freezing of
+                       --  subprograms defined in Standard which are used
+                       --  as generic actuals.
+
+                       and then In_Same_Code_Unit (Entity (Match), I_Node)
+                       and then Has_Fully_Defined_Profile (Entity (Match))
+                     then
+                        --  Mark the subprogram as having a delayed freeze
+                        --  since this may be an out-of-order action.
+
+                        Set_Has_Delayed_Freeze (Entity (Match));
+                        Append_Elmt (Entity (Match), Actuals_To_Freeze);
+                     end if;
                   end if;
 
                   --  If this is a nested generic, preserve default for later
@@ -1459,7 +1608,7 @@ package body Sem_Ch12 is
 
             end case;
 
-            Formal := Next_Formal;
+            Formal := Saved_Formal;
             Next_Non_Pragma (Analyzed_Formal);
          end loop;
 
@@ -1484,8 +1633,12 @@ package body Sem_Ch12 is
            ("too many actuals in generic instantiation", Instantiation_Node);
       end if;
 
+      --  An instantiation freezes all generic actuals. The only exceptions
+      --  to this are incomplete types and subprograms which are not fully
+      --  defined at the point of instantiation.
+
       declare
-         Elmt : Elmt_Id := First_Elmt (Actual_Types);
+         Elmt : Elmt_Id := First_Elmt (Actuals_To_Freeze);
       begin
          while Present (Elmt) loop
             Freeze_Before (I_Node, Node (Elmt));
@@ -3054,6 +3207,15 @@ package body Sem_Ch12 is
 
       Save_Global_References (Original_Node (N));
 
+      --  For ASIS purposes, convert any postcondition, precondition pragmas
+      --  into aspects, if N is not a compilation unit by itself, in order to
+      --  enable the analysis of expressions inside the corresponding PPC
+      --  pragmas.
+
+      if ASIS_Mode and then Is_List_Member (N) then
+         Make_Aspect_For_PPC_In_Gen_Sub_Decl (N);
+      end if;
+
       --  To capture global references, analyze the expressions of aspects,
       --  and propagate information to original tree. Note that in this case
       --  analysis of attributes is not delayed until the freeze point.
@@ -4539,7 +4701,8 @@ package body Sem_Ch12 is
          end if;
 
          Generate_Definition (Act_Decl_Id);
-         Set_Contract (Anon_Id, Make_Contract (Sloc (Anon_Id))); -- ??? needed?
+         --  Set_Contract (Anon_Id, Make_Contract (Sloc (Anon_Id)));
+         --  ??? needed?
          Set_Contract (Act_Decl_Id, Make_Contract (Sloc (Act_Decl_Id)));
 
          --  Inherit all inlining-related flags which apply to the generic in
@@ -5101,6 +5264,15 @@ package body Sem_Ch12 is
             elsif Nkind (Unit_Declaration_Node (E2)) in
                     N_Formal_Subprogram_Declaration
               and then Box_Present (Unit_Declaration_Node (E2))
+            then
+               null;
+
+            --  No check needed if subprogram is a defaulted null procedure
+
+            elsif No (Alias (E2))
+              and then Ekind (E2) = E_Procedure
+              and then
+                Null_Present (Specification (Unit_Declaration_Node (E2)))
             then
                null;
 
@@ -6809,11 +6981,6 @@ package body Sem_Ch12 is
    -------------
 
    function Earlier (N1, N2 : Node_Id) return Boolean is
-      D1 : Integer := 0;
-      D2 : Integer := 0;
-      P1 : Node_Id := N1;
-      P2 : Node_Id := N2;
-
       procedure Find_Depth (P : in out Node_Id; D : in out Integer);
       --  Find distance from given node to enclosing compilation unit
 
@@ -6830,6 +6997,13 @@ package body Sem_Ch12 is
             D := D + 1;
          end loop;
       end Find_Depth;
+
+      --  Local declarations
+
+      D1 : Integer := 0;
+      D2 : Integer := 0;
+      P1 : Node_Id := N1;
+      P2 : Node_Id := N2;
 
    --  Start of processing for Earlier
 
@@ -6855,12 +7029,11 @@ package body Sem_Ch12 is
       end loop;
 
       --  At this point P1 and P2 are at the same distance from the root.
-      --  We examine their parents until we find a common declarative list,
-      --  at which point we can establish their relative placement by
-      --  comparing their ultimate slocs. If we reach the root, N1 and N2
-      --  do not descend from the same declarative list (e.g. one is nested
-      --  in the declarative part and the other is in a block in the
-      --  statement part) and the earlier one is already frozen.
+      --  We examine their parents until we find a common declarative list.
+      --  If we reach the root, N1 and N2 do not descend from the same
+      --  declarative list (e.g. one is nested in the declarative part and
+      --  the other is in a block in the statement part) and the earlier
+      --  one is already frozen.
 
       while not Is_List_Member (P1)
         or else not Is_List_Member (P2)
@@ -6882,23 +7055,99 @@ package body Sem_Ch12 is
          end if;
       end loop;
 
-      --  If the sloc positions are different the result is unambiguous. If
-      --  the slocs are identical, one of them must not come from source, which
-      --  is the case for freeze nodes, whose sloc is unrelated to the point
-      --  point at which they are inserted in the tree. The source node is the
-      --  earlier one in the tree.
+      --  Expanded code usually shares the source location of the original
+      --  construct it was generated for. This however may not necessarely
+      --  reflect the true location of the code within the tree.
 
-      if Top_Level_Location (Sloc (P1)) < Top_Level_Location (Sloc (P2)) then
-         return True;
+      --  Before comparing the slocs of the two nodes, make sure that we are
+      --  working with correct source locations. Assume that P1 is to the left
+      --  of P2. If either one does not come from source, traverse the common
+      --  list heading towards the other node and locate the first source
+      --  statement.
 
-      elsif
-        Top_Level_Location (Sloc (P1)) > Top_Level_Location (Sloc (P2))
-      then
-         return False;
+      --             P1                     P2
+      --     ----+===+===+--------------+===+===+----
+      --          expanded code          expanded code
 
-      else
-         return Comes_From_Source (P1);
+      if not Comes_From_Source (P1) then
+         while Present (P1) loop
+
+            --  Neither P2 nor a source statement were located during the
+            --  search. If we reach the end of the list, then P1 does not
+            --  occur earlier than P2.
+
+            --                     ---->
+            --   start --- P2 ----- P1 --- end
+
+            if No (Next (P1)) then
+               return False;
+
+            --  We encounter P2 while going to the right of the list. This
+            --  means that P1 does indeed appear earlier.
+
+            --             ---->
+            --    start --- P1 ===== P2 --- end
+            --                 expanded code in between
+
+            elsif P1 = P2 then
+               return True;
+
+            --  No need to look any further since we have located a source
+            --  statement.
+
+            elsif Comes_From_Source (P1) then
+               exit;
+            end if;
+
+            --  Keep going right
+
+            Next (P1);
+         end loop;
       end if;
+
+      if not Comes_From_Source (P2) then
+         while Present (P2) loop
+
+            --  Neither P1 nor a source statement were located during the
+            --  search. If we reach the start of the list, then P1 does not
+            --  occur earlier than P2.
+
+            --            <----
+            --    start --- P2 --- P1 --- end
+
+            if No (Prev (P2)) then
+               return False;
+
+            --  We encounter P1 while going to the left of the list. This
+            --  means that P1 does indeed appear earlier.
+
+            --                     <----
+            --    start --- P1 ===== P2 --- end
+            --                 expanded code in between
+
+            elsif P2 = P1 then
+               return True;
+
+            --  No need to look any further since we have located a source
+            --  statement.
+
+            elsif Comes_From_Source (P2) then
+               exit;
+            end if;
+
+            --  Keep going left
+
+            Prev (P2);
+         end loop;
+      end if;
+
+      --  At this point either both nodes came from source or we approximated
+      --  their source locations through neighbouring source statements. There
+      --  is no need to look at the top level locations of P1 and P2 because
+      --  both nodes are in the same list and whether the enclosing context is
+      --  instantiated is irrelevant.
+
+      return Sloc (P1) < Sloc (P2);
    end Earlier;
 
    ----------------------
@@ -7894,6 +8143,19 @@ package body Sem_Ch12 is
                      if Nkind (Parent (Parent (N))) = N_Subunit then
                         Insert_Freeze_Node_For_Instance
                           (Corresponding_Stub (Parent (Parent (N))),
+                           Freeze_Node (Enclosing));
+
+                     --  The enclosing context is a package with a stub body
+                     --  which has already been replaced by the real body.
+                     --  Insert the freeze node after the actual body.
+
+                     elsif Ekind (Enclosing) = E_Package
+                       and then Present (Body_Entity (Enclosing))
+                       and then Was_Originally_Stub
+                                  (Parent (Body_Entity (Enclosing)))
+                     then
+                        Insert_Freeze_Node_For_Instance
+                          (Parent (Body_Entity (Enclosing)),
                            Freeze_Node (Enclosing));
 
                      --  The parent instance has been frozen before the body of
@@ -9148,7 +9410,7 @@ package body Sem_Ch12 is
 
          Set_Corresponding_Generic_Association (Decl_Node, Act_Assoc);
 
-         --  The analysis of the actual may produce insert_action nodes, so
+         --  The analysis of the actual may produce Insert_Action nodes, so
          --  the declaration must have a context in which to attach them.
 
          Append (Decl_Node, List);

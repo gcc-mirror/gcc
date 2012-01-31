@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 1992-2011, Free Software Foundation, Inc.          *
+ *         Copyright (C) 1992-2012, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -644,71 +644,94 @@ extern void (*Unlock_Task) (void);
 /* Reentrant localtime for Windows. */
 
 extern void
-__gnat_localtime_tzoff (const time_t *, long *);
+__gnat_localtime_tzoff (const time_t *, const int *, long *);
 
 static const unsigned long long w32_epoch_offset = 11644473600ULL;
 void
-__gnat_localtime_tzoff (const time_t *timer, long *off)
+__gnat_localtime_tzoff (const time_t *timer, const int *is_historic, long *off)
 {
-  union
-  {
-    FILETIME ft_time;
-    unsigned long long ull_time;
-  } utc_time, local_time;
-
-  SYSTEMTIME utc_sys_time, local_sys_time;
   TIME_ZONE_INFORMATION tzi;
 
-  BOOL  status = 1;
+  BOOL  rtx_active;
   DWORD tzi_status;
+
+#ifdef RTX
+  rtx_active = 1;
+#else
+  rtx_active = 0;
+#endif
 
   (*Lock_Task) ();
 
-#ifdef RTX
-
-  tzi_status = GetTimeZoneInformation (&tzi);
-  *off = tzi.Bias;
-  if (tzi_status == TIME_ZONE_ID_STANDARD)
-     /* The system is operating in the range covered by the StandardDate
-        member. */
-     *off = *off + tzi.StandardBias;
-  else if (tzi_status == TIME_ZONE_ID_DAYLIGHT)
-     /* The system is operating in the range covered by the DaylightDate
-        member. */
-     *off = *off + tzi.DaylightBias;
-  *off = *off * -60;
-
-#else
-
-  /* First convert unix time_t structure to windows FILETIME format.  */
-  utc_time.ull_time = ((unsigned long long) *timer + w32_epoch_offset)
-                      * 10000000ULL;
-
   tzi_status = GetTimeZoneInformation (&tzi);
 
-  /* If GetTimeZoneInformation does not return a value between 0 and 2 then
-     it means that we were not able to retrieve timezone informations.
-     Note that we cannot use here FileTimeToLocalFileTime as Windows will use
-     in always in this case the current timezone setting. As suggested on
-     MSDN we use the following three system calls to get the right information.
-     Note also that starting with Windows Vista new functions are provided to
-     get timezone settings that depend on the year. We cannot use them as we
-     still support Windows XP and Windows 2003.  */
-  status = (tzi_status >= 0 && tzi_status <= 2)
-     && FileTimeToSystemTime (&utc_time.ft_time, &utc_sys_time)
-     && SystemTimeToTzSpecificLocalTime (&tzi, &utc_sys_time, &local_sys_time)
-     && SystemTimeToFileTime (&local_sys_time, &local_time.ft_time);
+  /* Processing for RTX targets or cases where we simply want to extract the
+     offset of the current time zone, regardless of the date. */
 
-  if (!status)
-     /* An error occurs so return invalid_tzoff.  */
-     *off = __gnat_invalid_tzoff;
-  else
-     if (local_time.ull_time > utc_time.ull_time)
-        *off = (long) ((local_time.ull_time - utc_time.ull_time) / 10000000ULL);
-     else
-        *off = - (long) ((utc_time.ull_time - local_time.ull_time) / 10000000ULL);
+  if (rtx_active || !is_historic) {
+    *off = tzi.Bias;
 
-#endif
+    /* The system is operating in the range covered by the StandardDate
+       member. */
+    if (tzi_status == TIME_ZONE_ID_STANDARD) {
+       *off = *off + tzi.StandardBias;
+    }
+
+    /* The system is operating in the range covered by the DaylightDate
+       member. */
+    else if (tzi_status == TIME_ZONE_ID_DAYLIGHT) {
+       *off = *off + tzi.DaylightBias;
+    }
+
+    *off = *off * -60;
+  }
+
+  /* Time zone offset calculations for a historic or future date */
+
+  else {
+    union
+    {
+      FILETIME ft_time;
+      unsigned long long ull_time;
+    } utc_time, local_time;
+
+    SYSTEMTIME utc_sys_time, local_sys_time;
+    BOOL status;
+
+    /* First convert unix time_t structure to windows FILETIME format.  */
+    utc_time.ull_time = ((unsigned long long) *timer + w32_epoch_offset)
+                        * 10000000ULL;
+
+    /* If GetTimeZoneInformation does not return a value between 0 and 2 then
+       it means that we were not able to retrieve timezone informations. Note
+       that we cannot use here FileTimeToLocalFileTime as Windows will use in
+       always in this case the current timezone setting. As suggested on MSDN
+       we use the following three system calls to get the right information.
+       Note also that starting with Windows Vista new functions are provided
+       to get timezone settings that depend on the year. We cannot use them as
+       we still support Windows XP and Windows 2003.  */
+
+    status = (tzi_status >= 0 && tzi_status <= 2)
+      && FileTimeToSystemTime (&utc_time.ft_time, &utc_sys_time)
+      && SystemTimeToTzSpecificLocalTime (&tzi, &utc_sys_time, &local_sys_time)
+      && SystemTimeToFileTime (&local_sys_time, &local_time.ft_time);
+
+    /* An error has occured, return invalid_tzoff */
+
+    if (!status) {
+      *off = __gnat_invalid_tzoff;
+    }
+    else {
+      if (local_time.ull_time > utc_time.ull_time) {
+        *off = (long) ((local_time.ull_time - utc_time.ull_time)
+               / 10000000ULL);
+      }
+      else {
+        *off = - (long) ((utc_time.ull_time - local_time.ull_time)
+               / 10000000ULL);
+      }
+    }
+  }
 
   (*Unlock_Task) ();
 }
@@ -726,10 +749,10 @@ __gnat_localtime_tzoff (const time_t *timer, long *off)
    the Lynx convention when building against the legacy API. */
 
 extern void
-__gnat_localtime_tzoff (const time_t *, long *);
+__gnat_localtime_tzoff (const time_t *, const int *, long *);
 
 void
-__gnat_localtime_tzoff (const time_t *timer, long *off)
+__gnat_localtime_tzoff (const time_t *timer, const int *is_historic, long *off)
 {
   *off = 0;
 }
@@ -751,10 +774,10 @@ extern void (*Lock_Task) (void);
 extern void (*Unlock_Task) (void);
 
 extern void
-__gnat_localtime_tzoff (const time_t *, long *);
+__gnat_localtime_tzoff (const time_t *, const int *, long *);
 
 void
-__gnat_localtime_tzoff (const time_t *timer, long *off)
+__gnat_localtime_tzoff (const time_t *timer, const int *is_historic, long *off)
 {
   struct tm tp;
 

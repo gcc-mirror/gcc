@@ -84,15 +84,15 @@ func (c *testConn) RemoteAddr() net.Addr {
 	return dummyAddr("remote-addr")
 }
 
-func (c *testConn) SetTimeout(nsec int64) error {
+func (c *testConn) SetDeadline(t time.Time) error {
 	return nil
 }
 
-func (c *testConn) SetReadTimeout(nsec int64) error {
+func (c *testConn) SetReadDeadline(t time.Time) error {
 	return nil
 }
 
-func (c *testConn) SetWriteTimeout(nsec int64) error {
+func (c *testConn) SetWriteDeadline(t time.Time) error {
 	return nil
 }
 
@@ -361,7 +361,7 @@ func TestIdentityResponse(t *testing.T) {
 
 	// The ReadAll will hang for a failing test, so use a Timer to
 	// fail explicitly.
-	goTimeout(t, 2e9, func() {
+	goTimeout(t, 2*time.Second, func() {
 		got, _ := ioutil.ReadAll(conn)
 		expectedSuffix := "\r\n\r\ntoo short"
 		if !strings.HasSuffix(string(got), expectedSuffix) {
@@ -395,7 +395,7 @@ func testTcpConnectionCloses(t *testing.T, req string, h Handler) {
 	success := make(chan bool)
 	go func() {
 		select {
-		case <-time.After(5e9):
+		case <-time.After(5 * time.Second):
 			t.Fatal("body not closed after 5s")
 		case <-success:
 		}
@@ -538,7 +538,7 @@ func TestHeadResponses(t *testing.T) {
 
 func TestTLSHandshakeTimeout(t *testing.T) {
 	ts := httptest.NewUnstartedServer(HandlerFunc(func(w ResponseWriter, r *Request) {}))
-	ts.Config.ReadTimeout = 250e6
+	ts.Config.ReadTimeout = 250 * time.Millisecond
 	ts.StartTLS()
 	defer ts.Close()
 	conn, err := net.Dial("tcp", ts.Listener.Addr().String())
@@ -546,7 +546,7 @@ func TestTLSHandshakeTimeout(t *testing.T) {
 		t.Fatalf("Dial: %v", err)
 	}
 	defer conn.Close()
-	goTimeout(t, 10e9, func() {
+	goTimeout(t, 10*time.Second, func() {
 		var buf [1]byte
 		n, err := conn.Read(buf[:])
 		if err == nil || n != 0 {
@@ -576,7 +576,7 @@ func TestTLSServer(t *testing.T) {
 		t.Fatalf("Dial: %v", err)
 	}
 	defer idleConn.Close()
-	goTimeout(t, 10e9, func() {
+	goTimeout(t, 10*time.Second, func() {
 		if !strings.HasPrefix(ts.URL, "https://") {
 			t.Errorf("expected test TLS server to start with https://, got %q", ts.URL)
 			return
@@ -642,7 +642,7 @@ func TestServerExpect(t *testing.T) {
 		// Note using r.FormValue("readbody") because for POST
 		// requests that would read from r.Body, which we only
 		// conditionally want to do.
-		if strings.Contains(r.URL.RawPath, "readbody=true") {
+		if strings.Contains(r.URL.RawQuery, "readbody=true") {
 			ioutil.ReadAll(r.Body)
 			w.Write([]byte("Hi"))
 		} else {
@@ -904,17 +904,13 @@ func testHandlerPanic(t *testing.T, withHijack bool) {
 		panic("intentional death for testing")
 	}))
 	defer ts.Close()
-	_, err := Get(ts.URL)
-	if err == nil {
-		t.Logf("expected an error")
-	}
 
 	// Do a blocking read on the log output pipe so its logging
 	// doesn't bleed into the next test.  But wait only 5 seconds
 	// for it.
-	done := make(chan bool)
+	done := make(chan bool, 1)
 	go func() {
-		buf := make([]byte, 1024)
+		buf := make([]byte, 4<<10)
 		_, err := pr.Read(buf)
 		pr.Close()
 		if err != nil {
@@ -922,10 +918,16 @@ func testHandlerPanic(t *testing.T, withHijack bool) {
 		}
 		done <- true
 	}()
+
+	_, err := Get(ts.URL)
+	if err == nil {
+		t.Logf("expected an error")
+	}
+
 	select {
 	case <-done:
 		return
-	case <-time.After(5e9):
+	case <-time.After(5 * time.Second):
 		t.Fatal("expected server handler to log an error")
 	}
 }
@@ -1072,7 +1074,7 @@ func TestClientWriteShutdown(t *testing.T) {
 	}()
 	select {
 	case <-donec:
-	case <-time.After(10e9):
+	case <-time.After(10 * time.Second):
 		t.Fatalf("timeout")
 	}
 }
@@ -1103,10 +1105,10 @@ func TestServerBufferedChunking(t *testing.T) {
 }
 
 // goTimeout runs f, failing t if f takes more than ns to complete.
-func goTimeout(t *testing.T, ns int64, f func()) {
+func goTimeout(t *testing.T, d time.Duration, f func()) {
 	ch := make(chan bool, 2)
-	timer := time.AfterFunc(ns, func() {
-		t.Errorf("Timeout expired after %d ns", ns)
+	timer := time.AfterFunc(d, func() {
+		t.Errorf("Timeout expired after %v", d)
 		ch <- true
 	})
 	defer timer.Stop()
@@ -1164,15 +1166,15 @@ func BenchmarkClientServer(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		res, err := Get(ts.URL)
 		if err != nil {
-			panic("Get: " + err.Error())
+			b.Fatal("Get:", err)
 		}
 		all, err := ioutil.ReadAll(res.Body)
 		if err != nil {
-			panic("ReadAll: " + err.Error())
+			b.Fatal("ReadAll:", err)
 		}
 		body := string(all)
 		if body != "Hello world.\n" {
-			panic("Got body: " + body)
+			b.Fatal("Got body:", body)
 		}
 	}
 

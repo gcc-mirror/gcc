@@ -1,7 +1,7 @@
 ## Makefile for the GNU C++ Support library.
 ##
 ## Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-## 2009, 2010, 2011
+## 2009, 2010, 2011, 2012
 ## Free Software Foundation, Inc.
 ##
 ## Process this file with automake to produce Makefile.in.
@@ -104,8 +104,8 @@ libsupc__convenience_la_SOURCES = $(sources) $(c_sources)
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
 # as the occasion call for it.
 AM_CXXFLAGS = \
-	-fno-implicit-templates \
-	$(LIBSUPCXX_PICFLAGS) \
+	$(PIC_CXXFLAGS) \
+	$(XTEMPLATE_FLAGS) \
 	$(WARN_CXXFLAGS) \
 	$(OPTIMIZE_CXXFLAGS) \
 	$(CONFIG_CXXFLAGS)
@@ -124,7 +124,7 @@ C_COMPILE = \
 
 # LTCOMPILE is copied from LTCXXCOMPILE below.
 LTCOMPILE = $(LIBTOOL) --tag CC --tag disable-shared $(LIBTOOLFLAGS) --mode=compile \
-	    $(CC) $(DEFS) $(C_INCLUDES) $(LIBSUPCXX_PICFLAGS) \
+	    $(CC) $(DEFS) $(C_INCLUDES) $(PIC_CXXFLAGS) \
             $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 
 cp-demangle.c:

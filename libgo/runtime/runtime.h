@@ -196,7 +196,7 @@ enum
 
 /* Macros.  */
 
-#ifdef __WINDOWS__
+#ifdef GOOS_windows
 enum {
    Windows = 1
 };
@@ -266,6 +266,7 @@ void	runtime_args(int32, byte**);
 void	runtime_osinit();
 void	runtime_goargs(void);
 void	runtime_goenvs(void);
+void	runtime_goenvs_unix(void);
 void	runtime_throw(const char*) __attribute__ ((noreturn));
 void	runtime_panicstring(const char*) __attribute__ ((noreturn));
 void*	runtime_mal(uintptr);
@@ -343,7 +344,6 @@ void	runtime_panic(Eface);
 #define runtime_printf printf
 #define runtime_malloc(s) __go_alloc(s)
 #define runtime_free(p) __go_free(p)
-#define runtime_memclr(buf, size) __builtin_memset((buf), 0, (size))
 #define runtime_strcmp(s1, s2) __builtin_strcmp((s1), (s2))
 #define runtime_mcmp(a, b, s) __builtin_memcmp((a), (b), (s))
 #define runtime_memmove(a, b, s) __builtin_memmove((a), (b), (s))
@@ -352,8 +352,6 @@ MCache*	runtime_allocmcache(void);
 void	free(void *v);
 struct __go_func_type;
 bool	runtime_addfinalizer(void*, void(*fn)(void*), const struct __go_func_type *);
-#define runtime_mmap mmap
-#define runtime_munmap(p, s) munmap((p), (s))
 #define runtime_cas(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 #define runtime_casp(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 #define runtime_xadd(p, v) __sync_add_and_fetch (p, v)
@@ -382,6 +380,14 @@ void	runtime_procyield(uint32);
 void	runtime_osyield(void);
 void	runtime_LockOSThread(void) __asm__("libgo_runtime.runtime.LockOSThread");
 void	runtime_UnlockOSThread(void) __asm__("libgo_runtime.runtime.UnlockOSThread");
+
+/*
+ * low level C-called
+ */
+#define runtime_mmap mmap
+#define runtime_munmap munmap
+#define runtime_madvise madvise
+#define runtime_memclr(buf, size) __builtin_memset((buf), 0, (size))
 
 struct __go_func_type;
 void reflect_call(const struct __go_func_type *, const void *, _Bool, _Bool,

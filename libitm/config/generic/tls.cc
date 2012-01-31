@@ -30,4 +30,11 @@ namespace GTM HIDDEN {
 __thread gtm_thread_tls _gtm_thr_tls;
 #endif
 
+// See tls.h for comments.
+void * __attribute__((noinline))
+mask_stack_bottom(gtm_thread *tx)
+{
+  return (uint8_t*)__builtin_dwarf_cfa() - 256;
+}
+
 } // namespace GTM

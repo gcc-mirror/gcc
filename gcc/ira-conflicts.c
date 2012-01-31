@@ -419,6 +419,7 @@ process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p,
     {
       ira_allocno_t a1 = ira_curr_regno_allocno_map[REGNO (reg1)];
       ira_allocno_t a2 = ira_curr_regno_allocno_map[REGNO (reg2)];
+
       if (!allocnos_conflict_for_copy_p (a1, a2) && offset1 == offset2)
 	{
 	  cp = ira_add_allocno_copy (a1, a2, freq, constraint_p, insn,
@@ -765,7 +766,7 @@ print_allocno_conflicts (FILE * file, bool reg_p, ira_allocno_t a)
       if ((bb = ALLOCNO_LOOP_TREE_NODE (a)->bb) != NULL)
         fprintf (file, "b%d", bb->index);
       else
-        fprintf (file, "l%d", ALLOCNO_LOOP_TREE_NODE (a)->loop->num);
+        fprintf (file, "l%d", ALLOCNO_LOOP_TREE_NODE (a)->loop_num);
       putc (')', file);
     }
 
@@ -796,7 +797,7 @@ print_allocno_conflicts (FILE * file, bool reg_p, ira_allocno_t a)
 		fprintf (file, ",b%d", bb->index);
 	      else
 		fprintf (file, ",l%d",
-			 ALLOCNO_LOOP_TREE_NODE (conflict_a)->loop->num);
+			 ALLOCNO_LOOP_TREE_NODE (conflict_a)->loop_num);
 	      putc (')', file);
 	    }
 	}

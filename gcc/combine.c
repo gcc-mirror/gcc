@@ -1,7 +1,7 @@
 /* Optimize by combining instructions for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011 Free Software Foundation, Inc.
+   2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -367,14 +367,14 @@ static int nonzero_sign_valid;
 /* Record one modification to rtl structure
    to be undone by storing old_contents into *where.  */
 
-enum undo_kind { UNDO_RTX, UNDO_INT, UNDO_MODE };
+enum undo_kind { UNDO_RTX, UNDO_INT, UNDO_MODE, UNDO_LINKS };
 
 struct undo
 {
   struct undo *next;
   enum undo_kind kind;
-  union { rtx r; int i; enum machine_mode m; } old_contents;
-  union { rtx *r; int *i; } where;
+  union { rtx r; int i; enum machine_mode m; struct insn_link *l; } old_contents;
+  union { rtx *r; int *i; struct insn_link **l; } where;
 };
 
 /* Record a bunch of changes to be undone, up to MAX_UNDO of them.
@@ -789,6 +789,33 @@ do_SUBST_MODE (rtx *into, enum machine_mode newval)
 }
 
 #define SUBST_MODE(INTO, NEWVAL)  do_SUBST_MODE(&(INTO), (NEWVAL))
+
+/* Similar to SUBST, but NEWVAL is a LOG_LINKS expression.  */
+
+static void
+do_SUBST_LINK (struct insn_link **into, struct insn_link *newval)
+{
+  struct undo *buf;
+  struct insn_link * oldval = *into;
+
+  if (oldval == newval)
+    return;
+
+  if (undobuf.frees)
+    buf = undobuf.frees, undobuf.frees = buf->next;
+  else
+    buf = XNEW (struct undo);
+
+  buf->kind = UNDO_LINKS;
+  buf->where.l = into;
+  buf->old_contents.l = oldval;
+  *into = newval;
+
+  buf->next = undobuf.undos, undobuf.undos = buf;
+}
+
+#define SUBST_LINK(oldval, newval) do_SUBST_LINK (&oldval, newval)
+
 
 /* Subroutine of try_combine.  Determine whether the replacement patterns
    NEWPAT, NEWI2PAT and NEWOTHERPAT are cheaper according to insn_rtx_cost
@@ -2865,6 +2892,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	  SUBST (PATTERN (i2), XVECEXP (PATTERN (i2), 0, 0));
 	  SUBST (XEXP (SET_SRC (PATTERN (i2)), 0),
 		 SET_DEST (PATTERN (i1)));
+	  SUBST_LINK (LOG_LINKS (i2), alloc_insn_link (i1, LOG_LINKS (i2)));
 	}
     }
 #endif
@@ -4493,6 +4521,9 @@ undo_all (void)
 	  break;
 	case UNDO_MODE:
 	  adjust_reg_mode (*undo->where.r, undo->old_contents.m);
+	  break;
+	case UNDO_LINKS:
+	  *undo->where.l = undo->old_contents.l;
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -13281,8 +13312,28 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 	  if (!noop_move_p (i3))
 	    {
 	      int old_size, args_size = INTVAL (XEXP (note, 0));
+	      /* fixup_args_size_notes looks at REG_NORETURN note,
+		 so ensure the note is placed there first.  */
+	      if (CALL_P (i3))
+		{
+		  rtx *np;
+		  for (np = &next_note; *np; np = &XEXP (*np, 1))
+		    if (REG_NOTE_KIND (*np) == REG_NORETURN)
+		      {
+			rtx n = *np;
+			*np = XEXP (n, 1);
+			XEXP (n, 1) = REG_NOTES (i3);
+			REG_NOTES (i3) = n;
+			break;
+		      }
+		}
 	      old_size = fixup_args_size_notes (PREV_INSN (i3), i3, args_size);
-	      gcc_assert (old_size != args_size);
+	      /* emit_call_1 adds for !ACCUMULATE_OUTGOING_ARGS
+		 REG_ARGS_SIZE note to all noreturn calls, allow that here.  */
+	      gcc_assert (old_size != args_size
+			  || (CALL_P (i3)
+			      && !ACCUMULATE_OUTGOING_ARGS
+			      && find_reg_note (i3, REG_NORETURN, NULL_RTX)));
 	    }
 	  break;
 

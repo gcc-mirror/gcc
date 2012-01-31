@@ -2246,7 +2246,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   if (!args_to_skip)
     new_decl = copy_node (old_decl);
   else
-    new_decl = build_function_decl_skip_args (old_decl, args_to_skip);
+    new_decl = build_function_decl_skip_args (old_decl, args_to_skip, false);
   DECL_STRUCT_FUNCTION (new_decl) = NULL;
 
   /* Generate a new name for the new version. */

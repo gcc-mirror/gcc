@@ -984,6 +984,28 @@ proc check_effective_target_fortran_real_16 { } {
     }]
 }
 
+
+# Return 1 if the target supports SQRT for the largest floating-point
+# type. (Some targets lack the libm support for this FP type.)
+# On most targets, this check effectively checks either whether sqrtl is
+# available or on __float128 systems whether libquadmath is installed,
+# which provides sqrtq.
+#
+# When the target name changes, replace the cached result.
+
+proc check_effective_target_fortran_largest_fp_has_sqrt { } {
+    return [check_no_compiler_messages fortran_largest_fp_has_sqrt executable {
+	! Fortran
+        use iso_fortran_env, only: real_kinds
+        integer,parameter:: maxFP = real_kinds(ubound(real_kinds,dim=1))
+	real(kind=maxFP), volatile :: x
+        x = 2.0_maxFP
+	x = sqrt (x)
+	end
+    }]
+}
+
+
 # Return 1 if the target supports Fortran integer kinds larger than
 # integer(8), 0 otherwise.
 #
@@ -2737,7 +2759,9 @@ proc check_effective_target_vect_perm { } {
 	     || [istarget powerpc*-*-*]
              || [istarget spu-*-*]
 	     || [istarget i?86-*-*]
-	     || [istarget x86_64-*-*] } {
+	     || [istarget x86_64-*-*]
+	     || ([istarget mips*-*-*]
+		 && [check_effective_target_mpaired_single]) } {
             set et_vect_perm_saved 1
         }
     }
@@ -3458,11 +3482,14 @@ proc check_effective_target_vect_extract_even_odd { } {
     } else {
         set et_vect_extract_even_odd_saved 0 
         if { [istarget powerpc*-*-*] 
+            || [is-effective-target arm_neon_ok]
              || [istarget i?86-*-*]
              || [istarget x86_64-*-*]
              || [istarget ia64-*-*]
-             || [istarget spu-*-*] } {
-           set et_vect_extract_even_odd_saved 1
+             || [istarget spu-*-*]
+	     || ([istarget mips*-*-*]
+		 && [check_effective_target_mpaired_single]) } {
+	    set et_vect_extract_even_odd_saved 1
         }
     }
 
@@ -3480,10 +3507,13 @@ proc check_effective_target_vect_interleave { } {
     } else {
         set et_vect_interleave_saved 0
         if { [istarget powerpc*-*-*]
+            || [is-effective-target arm_neon_ok]
              || [istarget i?86-*-*]
              || [istarget x86_64-*-*]
              || [istarget ia64-*-*]
-             || [istarget spu-*-*] } {
+             || [istarget spu-*-*]
+	     || ([istarget mips*-*-*]
+		 && [check_effective_target_mpaired_single]) } {
            set et_vect_interleave_saved 1
         }
     }

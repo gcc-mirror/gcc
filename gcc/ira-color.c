@@ -1670,7 +1670,6 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
       update_conflict_hard_regno_costs (full_costs, aclass, false);
     }
   min_cost = min_full_cost = INT_MAX;
-
   /* We don't care about giving callee saved registers to allocnos no
      living through calls because call clobbered registers are
      allocated first (it is usual practice to put them first in
@@ -2011,7 +2010,7 @@ ira_loop_edge_freq (ira_loop_tree_node_t loop_node, int regno, bool exit_p)
   edge e;
   VEC (edge, heap) *edges;
 
-  ira_assert (loop_node->loop != NULL
+  ira_assert (current_loops != NULL && loop_node->loop != NULL
 	      && (regno < 0 || regno >= FIRST_PSEUDO_REGISTER));
   freq = 0;
   if (! exit_p)
@@ -2662,14 +2661,19 @@ print_loop_title (ira_loop_tree_node_t loop_tree_node)
   edge e;
   edge_iterator ei;
 
-  ira_assert (loop_tree_node->loop != NULL);
-  fprintf (ira_dump_file,
-	   "\n  Loop %d (parent %d, header bb%d, depth %d)\n    bbs:",
-	   loop_tree_node->loop->num,
-	   (loop_tree_node->parent == NULL
-	    ? -1 : loop_tree_node->parent->loop->num),
-	   loop_tree_node->loop->header->index,
-	   loop_depth (loop_tree_node->loop));
+  if (loop_tree_node->parent == NULL)
+    fprintf (ira_dump_file,
+	     "\n  Loop 0 (parent -1, header bb%d, depth 0)\n    bbs:",
+	     NUM_FIXED_BLOCKS);
+  else
+    {
+      ira_assert (current_loops != NULL && loop_tree_node->loop != NULL);
+      fprintf (ira_dump_file,
+	       "\n  Loop %d (parent %d, header bb%d, depth %d)\n    bbs:",
+	       loop_tree_node->loop_num, loop_tree_node->parent->loop_num,
+	       loop_tree_node->loop->header->index,
+	       loop_depth (loop_tree_node->loop));
+    }
   for (subloop_node = loop_tree_node->children;
        subloop_node != NULL;
        subloop_node = subloop_node->next)
@@ -2681,7 +2685,7 @@ print_loop_title (ira_loop_tree_node_t loop_tree_node)
 	      && ((dest_loop_node = IRA_BB_NODE (e->dest)->parent)
 		  != loop_tree_node))
 	    fprintf (ira_dump_file, "(->%d:l%d)",
-		     e->dest->index, dest_loop_node->loop->num);
+		     e->dest->index, dest_loop_node->loop_num);
       }
   fprintf (ira_dump_file, "\n    all:");
   EXECUTE_IF_SET_IN_BITMAP (loop_tree_node->all_allocnos, 0, j, bi)
@@ -3011,7 +3015,7 @@ move_spill_restore (void)
 		  fprintf
 		    (ira_dump_file,
 		     "      Moving spill/restore for a%dr%d up from loop %d",
-		     ALLOCNO_NUM (a), regno, loop_node->loop->num);
+		     ALLOCNO_NUM (a), regno, loop_node->loop_num);
 		  fprintf (ira_dump_file, " - profit %d\n", -cost);
 		}
 	      changed_p = true;

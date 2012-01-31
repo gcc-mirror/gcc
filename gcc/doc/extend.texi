@@ -1215,15 +1215,194 @@ Pragmas to control overflow and rounding behaviors are not implemented.
 Fixed-point types are supported by the DWARF2 debug information format.
 
 @node Named Address Spaces
-@section Named address spaces
-@cindex named address spaces
+@section Named Address Spaces
+@cindex Named Address Spaces
 
 As an extension, the GNU C compiler supports named address spaces as
 defined in the N1275 draft of ISO/IEC DTR 18037.  Support for named
 address spaces in GCC will evolve as the draft technical report
 changes.  Calling conventions for any target might also change.  At
-present, only the SPU, M32C, and RL78 targets support other address
-spaces.  On the SPU target, for example, variables may be declared as
+present, only the AVR, SPU, M32C, and RL78 targets support address
+spaces other than the generic address space.
+
+Address space identifiers may be used exactly like any other C type
+qualifier (e.g., @code{const} or @code{volatile}).  See the N1275
+document for more details.
+
+@anchor{AVR Named Address Spaces}
+@subsection AVR Named Address Spaces
+
+On the AVR target, there are several address spaces that can be used
+in order to put read-only data into the flash memory and access that
+data by means of the special instructions @code{LPM} or @code{ELPM}
+needed to read from flash.
+
+Per default, any data including read-only data is located in RAM
+(the generic address space) so that non-generic address spaces are
+needed to locate read-only data in flash memory
+@emph{and} to generate the right instructions to access this data
+without using (inline) assembler code.
+
+@table @code
+@item __flash
+@cindex @code{__flash} AVR Named Address Spaces
+The @code{__flash} qualifier will locate data in the
+@code{.progmem.data} section. Data will be read using the @code{LPM}
+instruction. Pointers to this address space are 16 bits wide.
+
+@item __flash1
+@item __flash2
+@item __flash3
+@item __flash4
+@item __flash5
+@cindex @code{__flash1} AVR Named Address Spaces
+@cindex @code{__flash2} AVR Named Address Spaces
+@cindex @code{__flash3} AVR Named Address Spaces
+@cindex @code{__flash4} AVR Named Address Spaces
+@cindex @code{__flash5} AVR Named Address Spaces
+These are 16-bit address spaces locating data in section
+@code{.progmem@var{N}.data} where @var{N} refers to
+address space @code{__flash@var{N}}.
+The compiler will set the @code{RAMPZ} segment register approptiately 
+before reading data by means of the @code{ELPM} instruction.
+
+On devices with less 64@tie{}kiB flash segments as indicated by the address
+space, the compiler will cut down the segment number to a number the
+device actually supports. Counting starts at@tie{}@code{0}
+for space @code{__flash}. For example, if you access address space
+@code{__flash3} on an ATmega128 device with two 64@tie{}kiB flash segments,
+the compiler will generate a read from @code{__flash1}, i.e.@: it
+will load @code{RAMPZ} with@tie{}@code{1} before reading.
+
+@item __memx
+@cindex @code{__memx} AVR Named Address Spaces
+This is a 24-bit address space that linearizes flash and RAM:
+If the high bit of the address is set, data is read from
+RAM using the lower two bytes as RAM address.
+If the high bit of the address is clear, data is read from flash
+with @code{RAMPZ} set according to the high byte of the address.
+
+Objects in this address space will be located in @code{.progmem.data}.
+@end table
+
+@b{Example}
+
+@example
+char my_read (const __flash char ** p)
+@{
+    /* p is a pointer to RAM that points to a pointer to flash.
+       The first indirection of p will read that flash pointer
+       from RAM and the second indirection reads a char from this
+       flash address.  */
+
+    return **p;
+@}
+
+/* Locate array[] in flash memory */
+const __flash int array[] = @{ 3, 5, 7, 11, 13, 17, 19 @};
+
+int i = 1;
+
+int main (void)
+@{
+   /* Return 17 by reading from flash memory */
+   return array[array[i]];
+@}
+@end example
+
+For each named address space supported by avr-gcc there is an equally
+named but uppercase built-in macro defined. 
+The purpose is to facilitate testing if respective address space
+support is available or not:
+
+@example
+#ifdef __FLASH
+const __flash int var = 1;
+
+int read_i (void)
+@{
+    return i;
+@}
+#else
+#include <avr/pgmspace.h> /* From avr-libc */
+
+const int var PROGMEM = 1;
+
+int read_i (void)
+@{
+    return (int) pgm_read_word (&i);
+@}
+#endif /* __FLASH */
+@end example
+
+Notice that attribute @ref{AVR Variable Attributes,@code{progmem}}
+locates data in flash but
+accesses to these data will read from generic address space, i.e.@:
+from RAM,
+so that you need special accessors like @code{pgm_read_byte}
+from @w{@uref{http://nongnu.org/avr-libc/user-manual,avr-libc}}.
+
+@b{Limitations and caveats}
+
+@itemize
+@item
+Reading across the 64@tie{}KiB section boundary of
+the @code{__flash} or @code{__flash@var{N}} address spaces
+will show undefined behaviour. The only address space that
+supports reading across the 64@tie{}KiB flash segment boundaries is
+@code{__memx}.
+
+@item
+If you use one if the @code{__flash@var{N}} address spaces
+you will have to arrange your linker skript to locate the
+@code{.progmem@var{N}.data} sections according to your needs.
+
+@item
+Any data or pointers to the non-generic address spaces must
+be qualified as @code{const}, i.e.@: as read-only data.
+This still applies if the data in one of these address
+spaces like software version number or calibration lookup table are intended to
+be changed after load time by, say, a boot loader. In this case
+the right qualification is @code{const} @code{volatile} so that the compiler
+must not optimize away known values or insert them
+as immediates into operands of instructions.
+
+@item
+Code like the following is not yet supported because of missing
+support in avr-binutils,
+see @w{@uref{http://sourceware.org/PR13503,PR13503}}.
+@example
+extern const __memx char foo;
+const __memx void *pfoo = &foo;
+@end example
+The code will throw an assembler warning and the high byte of
+@code{pfoo} will be initialized with@tie{}@code{0}, i.e.@: the
+initialization will be as if @code{foo} was located in the first
+64@tie{}KiB chunk of flash.
+
+@end itemize
+
+@subsection M32C Named Address Spaces
+@cindex @code{__far} M32C Named Address Spaces
+
+On the M32C target, with the R8C and M16C cpu variants, variables
+qualified with @code{__far} are accessed using 32-bit addresses in
+order to access memory beyond the first 64@tie{}Ki bytes.  If
+@code{__far} is used with the M32CM or M32C cpu variants, it has no
+effect.
+
+@subsection RL78 Named Address Spaces
+@cindex @code{__far} RL78 Named Address Spaces
+
+On the RL78 target, variables qualified with @code{__far} are accessed
+with 32-bit pointers (20-bit addresses) rather than the default 16-bit
+addresses.  Non-far variables are assumed to appear in the topmost
+64@tie{}KiB of the address space.
+
+@subsection SPU Named Address Spaces
+@cindex @code{__ea} SPU Named Address Spaces
+
+On the SPU target variables may be declared as
 belonging to another address space by qualifying the type with the
 @code{__ea} address space identifier:
 
@@ -1235,20 +1414,6 @@ When the variable @code{i} is accessed, the compiler will generate
 special code to access this variable.  It may use runtime library
 support, or generate special machine instructions to access that address
 space.
-
-The @code{__ea} identifier may be used exactly like any other C type
-qualifier (e.g., @code{const} or @code{volatile}).  See the N1275
-document for more details.
-
-On the M32C target, with the R8C and M16C cpu variants, variables
-qualified with @code{__far} are accessed using 32-bit addresses in
-order to access memory beyond the first 64k bytes.  If @code{__far} is
-used with the M32CM or M32C cpu variants, it has no effect.
-
-On the RL78 target, variables qualified with @code{__far} are accessed
-with 32-bit pointers (20-bit addresses) rather than the default 16-bit
-addresses.  Non-far variables are assumed to appear in the topmost 64
-kB of the address space.
 
 @node Zero Length
 @section Arrays of Length Zero
@@ -2771,13 +2936,12 @@ efficient @code{jal} instruction.
 @cindex @code{malloc} attribute
 The @code{malloc} attribute is used to tell the compiler that a function
 may be treated as if any non-@code{NULL} pointer it returns cannot
-alias any other pointer valid when the function returns.
+alias any other pointer valid when the function returns and that the memory
+has undefined content.
 This will often improve optimization.
 Standard functions with this property include @code{malloc} and
-@code{calloc}.  @code{realloc}-like functions have this property as
-long as the old pointer is never referred to (including comparing it
-to the new pointer) after the function returns a non-@code{NULL}
-value.
+@code{calloc}.  @code{realloc}-like functions do not have this
+property as the memory pointed to does not have undefined content.
 
 @item mips16/nomips16
 @cindex @code{mips16} attribute
@@ -3058,7 +3222,7 @@ is entered like for, e@.g@. task functions in a multi-threading operating
 system. In that case, changing the stack pointer register will be
 guarded by save/clear/restore of the global interrupt enable flag.
 
-The differences to the @code{naked} function attrubute are:
+The differences to the @code{naked} function attribute are:
 @itemize @bullet
 @item @code{naked} functions do not have a return instruction whereas 
 @code{OS_main} and @code{OS_task} functions will have a @code{RET} or
@@ -4564,17 +4728,43 @@ The @code{dllexport} attribute is described in @ref{Function Attributes}.
 
 @end table
 
+@anchor{AVR Variable Attributes}
 @subsection AVR Variable Attributes
 
 @table @code
 @item progmem
 @cindex @code{progmem} AVR variable attribute
-The @code{progmem} attribute is used on the AVR to place data in the program
-memory address space (flash). This is accomplished by putting
-respective variables into a section whose name starts with @code{.progmem}.
+The @code{progmem} attribute is used on the AVR to place read-only
+data in the non-volatile program memory (flash). The @code{progmem}
+attribute accomplishes this by putting respective variables into a
+section whose name starts with @code{.progmem}.
 
-AVR is a Harvard architecture processor and data and reas only data
-normally resides in the data memory address space (RAM).
+This attribute works similar to the @code{section} attribute
+but adds additional checking. Notice that just like the
+@code{section} attribute, @code{progmem} affects the location
+of the data but not how this data is accessed.
+
+In order to read data located with the @code{progmem} attribute
+(inline) assembler must be used.
+@example
+/* Use custom macros from @w{@uref{http://nongnu.org/avr-libc/user-manual,avr-libc}} */
+#include <avr/pgmspace.h> 
+
+/* Locate var in flash memory */
+const int var[2] PROGMEM = @{ 1, 2 @};
+
+int read_var (int i)
+@{
+    /* Access var[] by accessor macro from avr/pgmspace.h */
+    return (int) pgm_read_word (& var[i]);
+@}
+@end example
+
+AVR is a Harvard architecture processor and data and read-only data
+normally resides in the data memory (RAM).
+
+See also the @ref{AVR Named Address Spaces} section for
+an alternate way to locate and access data in flash memory.
 @end table
 
 @subsection Blackfin Variable Attributes
@@ -7012,11 +7202,12 @@ All memory models are valid.
 
 @end deftypefn
 
-@deftypefn {Built-in Function} bool __atomic_test_and_set (bool *ptr, int memmodel)
+@deftypefn {Built-in Function} bool __atomic_test_and_set (void *ptr, int memmodel)
 
 This built-in function performs an atomic test-and-set operation on
-@code{*@var{ptr}}.  @code{*@var{ptr}} is set to the value 1 and
-the previous contents are returned.
+the byte at @code{*@var{ptr}}.  The byte is set to some implementation
+defined non-zero "set" value and the return value is @code{true} if and only
+if the previous contents were "set".
 
 All memory models are valid.
 

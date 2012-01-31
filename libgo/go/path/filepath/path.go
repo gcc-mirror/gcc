@@ -147,6 +147,7 @@ func SplitList(path string) []string {
 // separating it into a directory and file name component.
 // If there is no Separator in path, Split returns an empty dir
 // and file set to path.
+// The returned values have the property that path = dir+file.
 func Split(path string) (dir, file string) {
 	vol := VolumeName(path)
 	i := len(path) - 1
@@ -262,6 +263,8 @@ func Abs(path string) (string, error) {
 // Rel returns a relative path that is lexically equivalent to targpath when
 // joined to basepath with an intervening separator. That is,
 // Join(basepath, Rel(basepath, targpath)) is equivalent to targpath itself.
+// On success, the returned path will always be relative to basepath,
+// even if basepath and targpath share no elements.
 // An error is returned if targpath can't be made relative to basepath or if
 // knowing the current working directory would be necessary to compute it.
 func Rel(basepath, targpath string) (string, error) {
@@ -423,6 +426,8 @@ func Base(path string) string {
 	for len(path) > 0 && os.IsPathSeparator(path[len(path)-1]) {
 		path = path[0 : len(path)-1]
 	}
+	// Throw away volume name
+	path = path[len(VolumeName(path)):]
 	// Find the last element
 	i := len(path) - 1
 	for i >= 0 && !os.IsPathSeparator(path[i]) {
@@ -436,4 +441,26 @@ func Base(path string) string {
 		return string(Separator)
 	}
 	return path
+}
+
+// Dir returns the all but the last element of path, typically the path's directory.
+// Trailing path separators are removed before processing.
+// If the path is empty, Dir returns ".".
+// If the path consists entirely of separators, Dir returns a single separator.
+// The returned path does not end in a separator unless it is the root directory.
+func Dir(path string) string {
+	vol := VolumeName(path)
+	i := len(path) - 1
+	for i >= len(vol) && !os.IsPathSeparator(path[i]) {
+		i--
+	}
+	dir := Clean(path[len(vol) : i+1])
+	last := len(dir) - 1
+	if last > 0 && os.IsPathSeparator(dir[last]) {
+		dir = dir[:last]
+	}
+	if dir == "" {
+		dir = "."
+	}
+	return vol + dir
 }

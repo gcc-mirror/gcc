@@ -34,3 +34,11 @@ var _zero uintptr
 
 var dummy *byte
 const sizeofPtr uintptr = uintptr(unsafe.Sizeof(dummy))
+
+func (ts *Timespec) Unix() (sec int64, nsec int64) {
+	return int64(ts.Sec), int64(ts.Nsec)
+}
+
+func (tv *Timeval) Unix() (sec int64, nsec int64) {
+	return int64(tv.Sec), int64(tv.Usec) * 1000
+}

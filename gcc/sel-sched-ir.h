@@ -1,6 +1,7 @@
 /* Instruction scheduling pass.  This file contains definitions used
    internally in the scheduler.
-   Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1119,7 +1120,8 @@ get_all_loop_exits (basic_block bb)
   /* If bb is empty, and we're skipping to loop exits, then
      consider bb as a possible gate to the inner loop now.  */
   while (sel_bb_empty_or_nop_p (bb)
-	 && in_current_region_p (bb))
+	 && in_current_region_p (bb)
+	 && EDGE_COUNT (bb->succs) > 0)
     {
       bb = single_succ (bb);
 

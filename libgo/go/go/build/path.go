@@ -57,7 +57,7 @@ func (t *Tree) PkgDir() string {
 func (t *Tree) BinDir() string {
 	if t.Goroot {
 		if gobin := os.Getenv("GOBIN"); gobin != "" {
-			return gobin
+			return filepath.Clean(gobin)
 		}
 	}
 	return filepath.Join(t.Path, "bin")
@@ -85,8 +85,8 @@ func (t *Tree) HasPkg(pkg string) bool {
 }
 
 var (
-	ErrNotFound     = errors.New("go/build: package could not be found locally")
-	ErrTreeNotFound = errors.New("go/build: no valid GOROOT or GOPATH could be found")
+	ErrNotFound     = errors.New("package could not be found locally")
+	ErrTreeNotFound = errors.New("no valid GOROOT or GOPATH could be found")
 )
 
 // FindTree takes an import or filesystem path and returns the
@@ -105,14 +105,14 @@ func FindTree(path string) (tree *Tree, pkg string, err error) {
 				continue
 			}
 			tree = t
-			pkg = path[len(tpath):]
+			pkg = filepath.ToSlash(path[len(tpath):])
 			return
 		}
 		err = fmt.Errorf("path %q not inside a GOPATH", path)
 		return
 	}
 	tree = defaultTree
-	pkg = path
+	pkg = filepath.ToSlash(path)
 	for _, t := range Path {
 		if t.HasSrc(pkg) {
 			tree = t
@@ -151,21 +151,37 @@ func init() {
 	root := runtime.GOROOT()
 	t, err := newTree(root)
 	if err != nil {
-		log.Printf("go/build: invalid GOROOT %q: %v", root, err)
+		log.Printf("invalid GOROOT %q: %v", root, err)
 	} else {
 		t.Goroot = true
 		Path = []*Tree{t}
 	}
 
+Loop:
 	for _, p := range filepath.SplitList(os.Getenv("GOPATH")) {
 		if p == "" {
 			continue
 		}
 		t, err := newTree(p)
 		if err != nil {
-			log.Printf("go/build: invalid GOPATH %q: %v", p, err)
+			log.Printf("invalid GOPATH %q: %v", p, err)
 			continue
 		}
+
+		// Check for dupes.
+		// TODO(alexbrainman): make this correct under windows (case insensitive).
+		for _, t2 := range Path {
+			if t2.Path != t.Path {
+				continue
+			}
+			if t2.Goroot {
+				log.Printf("GOPATH is the same as GOROOT: %q", t.Path)
+			} else {
+				log.Printf("duplicate GOPATH entry: %q", t.Path)
+			}
+			continue Loop
+		}
+
 		Path = append(Path, t)
 		gcImportArgs = append(gcImportArgs, "-I", t.PkgDir())
 		ldImportArgs = append(ldImportArgs, "-L", t.PkgDir())

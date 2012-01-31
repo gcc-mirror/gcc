@@ -75,6 +75,7 @@ c-common.h, not after.
       IMPLICIT_CONV_EXPR_DIRECT_INIT (in IMPLICIT_CONV_EXPR)
       TRANSACTION_EXPR_IS_STMT (in TRANSACTION_EXPR)
       CONVERT_EXPR_VBASE_PATH (in CONVERT_EXPR)
+      OVL_ARG_DEPENDENT (in OVERLOAD)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -5679,6 +5680,7 @@ extern tree get_fns				(tree);
 extern tree get_first_fn			(tree);
 extern tree ovl_cons				(tree, tree);
 extern tree build_overload			(tree, tree);
+extern tree ovl_scope				(tree);
 extern bool non_static_member_function_p        (tree);
 extern const char *cxx_printable_name		(tree, int);
 extern const char *cxx_printable_name_translate	(tree, int);

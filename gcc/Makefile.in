@@ -3,7 +3,7 @@
 
 # Copyright (C) 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1995, 1996,
 # 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-# 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+# 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -1867,7 +1867,7 @@ c-decl.o : c-decl.c c-lang.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(TIMEVAR_H) $(OPTS_H) $(C_PRAGMA_H) gt-c-decl.h $(CGRAPH_H) \
 	$(HASHTAB_H) $(LIBFUNCS_H) $(EXCEPT_H) $(LANGHOOKS_DEF_H) \
 	$(TREE_DUMP_H) $(C_COMMON_H) $(CPPLIB_H) $(DIAGNOSTIC_CORE_H) \
-	$(INPUT_H) langhooks.h tree-mudflap.h pointer-set.h tree-iterator.h \
+	$(INPUT_H) langhooks.h pointer-set.h tree-iterator.h \
 	$(PLUGIN_H) c-family/c-ada-spec.h c-family/c-objc.h c-family/c-upc.h
 
 c-errors.o: c-errors.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
@@ -2565,7 +2565,7 @@ tree-optimize.o : tree-optimize.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(DIAGNOSTIC_H) $(BASIC_BLOCK_H) $(FLAGS_H) $(TIMEVAR_H) $(TM_H) \
    coretypes.h $(TREE_DUMP_H) toplev.h $(DIAGNOSTIC_CORE_H) $(FUNCTION_H) langhooks.h \
    $(FLAGS_H) $(CGRAPH_H) $(PLUGIN_H) \
-   $(TREE_INLINE_H) tree-mudflap.h $(GGC_H) graph.h $(CGRAPH_H) \
+   $(TREE_INLINE_H) $(GGC_H) graph.h $(CGRAPH_H) \
    $(TREE_PASS_H) $(CFGLOOP_H) $(EXCEPT_H) $(REGSET_H)
 
 gimplify.o : gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(GIMPLE_H) \
@@ -2603,7 +2603,7 @@ tree-scalar-evolution.o : tree-scalar-evolution.c $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_PASS_H) $(PARAMS_H) gt-tree-scalar-evolution.h
 tree-data-ref.o : tree-data-ref.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    gimple-pretty-print.h $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) \
-   $(TREE_PASS_H) langhooks.h tree-affine.h
+   $(TREE_PASS_H) langhooks.h tree-affine.h $(PARAMS_H)
 sese.o : sese.c sese.h $(CONFIG_H) $(SYSTEM_H) coretypes.h tree-pretty-print.h \
    $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) tree-pass.h value-prof.h
 graphite.o : graphite.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(DIAGNOSTIC_CORE_H) \

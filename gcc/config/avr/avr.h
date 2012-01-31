@@ -158,13 +158,13 @@ extern const avr_addrspace_t avr_addrspace[];
 enum
   {
     ADDR_SPACE_RAM,
-    ADDR_SPACE_PGM,
-    ADDR_SPACE_PGM1,
-    ADDR_SPACE_PGM2,
-    ADDR_SPACE_PGM3,
-    ADDR_SPACE_PGM4,
-    ADDR_SPACE_PGM5,
-    ADDR_SPACE_PGMX
+    ADDR_SPACE_FLASH,
+    ADDR_SPACE_FLASH1,
+    ADDR_SPACE_FLASH2,
+    ADDR_SPACE_FLASH3,
+    ADDR_SPACE_FLASH4,
+    ADDR_SPACE_FLASH5,
+    ADDR_SPACE_MEMX
   };
 
 #define TARGET_CPU_CPP_BUILTINS()	avr_cpu_cpp_builtins (pfile)

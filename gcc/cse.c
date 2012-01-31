@@ -573,7 +573,6 @@ static struct table_elt *insert (rtx, struct table_elt *, unsigned,
 				 enum machine_mode);
 static void merge_equiv_classes (struct table_elt *, struct table_elt *);
 static void invalidate (rtx, enum machine_mode);
-static bool cse_rtx_varies_p (const_rtx, bool);
 static void remove_invalid_refs (unsigned int);
 static void remove_invalid_subreg_refs (unsigned int, unsigned int,
 					enum machine_mode);
@@ -1846,8 +1845,7 @@ check_dependence (rtx *x, void *data)
 {
   struct check_dependence_data *d = (struct check_dependence_data *) data;
   if (*x && MEM_P (*x))
-    return canon_true_dependence (d->exp, d->mode, d->addr, *x, NULL_RTX,
-		    		  cse_rtx_varies_p);
+    return canon_true_dependence (d->exp, d->mode, d->addr, *x, NULL_RTX);
   else
     return 0;
 }
@@ -2792,67 +2790,6 @@ exp_equiv_p (const_rtx x, const_rtx y, int validate, bool for_gcse)
     }
 
   return 1;
-}
-
-/* Return 1 if X has a value that can vary even between two
-   executions of the program.  0 means X can be compared reliably
-   against certain constants or near-constants.  */
-
-static bool
-cse_rtx_varies_p (const_rtx x, bool from_alias)
-{
-  /* We need not check for X and the equivalence class being of the same
-     mode because if X is equivalent to a constant in some mode, it
-     doesn't vary in any mode.  */
-
-  if (REG_P (x)
-      && REGNO_QTY_VALID_P (REGNO (x)))
-    {
-      int x_q = REG_QTY (REGNO (x));
-      struct qty_table_elem *x_ent = &qty_table[x_q];
-
-      if (GET_MODE (x) == x_ent->mode
-	  && x_ent->const_rtx != NULL_RTX)
-	return 0;
-    }
-
-  if (GET_CODE (x) == PLUS
-      && CONST_INT_P (XEXP (x, 1))
-      && REG_P (XEXP (x, 0))
-      && REGNO_QTY_VALID_P (REGNO (XEXP (x, 0))))
-    {
-      int x0_q = REG_QTY (REGNO (XEXP (x, 0)));
-      struct qty_table_elem *x0_ent = &qty_table[x0_q];
-
-      if ((GET_MODE (XEXP (x, 0)) == x0_ent->mode)
-	  && x0_ent->const_rtx != NULL_RTX)
-	return 0;
-    }
-
-  /* This can happen as the result of virtual register instantiation, if
-     the initial constant is too large to be a valid address.  This gives
-     us a three instruction sequence, load large offset into a register,
-     load fp minus a constant into a register, then a MEM which is the
-     sum of the two `constant' registers.  */
-  if (GET_CODE (x) == PLUS
-      && REG_P (XEXP (x, 0))
-      && REG_P (XEXP (x, 1))
-      && REGNO_QTY_VALID_P (REGNO (XEXP (x, 0)))
-      && REGNO_QTY_VALID_P (REGNO (XEXP (x, 1))))
-    {
-      int x0_q = REG_QTY (REGNO (XEXP (x, 0)));
-      int x1_q = REG_QTY (REGNO (XEXP (x, 1)));
-      struct qty_table_elem *x0_ent = &qty_table[x0_q];
-      struct qty_table_elem *x1_ent = &qty_table[x1_q];
-
-      if ((GET_MODE (XEXP (x, 0)) == x0_ent->mode)
-	  && x0_ent->const_rtx != NULL_RTX
-	  && (GET_MODE (XEXP (x, 1)) == x1_ent->mode)
-	  && x1_ent->const_rtx != NULL_RTX)
-	return 0;
-    }
-
-  return rtx_varies_p (x, from_alias);
 }
 
 /* Subroutine of canon_reg.  Pass *XLOC through canon_reg, and validate

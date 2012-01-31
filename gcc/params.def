@@ -1,6 +1,6 @@
 /* params.def - Run-time parameters.
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011
+   2011, 2012
    Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
@@ -819,6 +819,12 @@ DEFPARAM (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION,
 	  "graphite-max-bbs-per-function",
 	  "maximum number of basic blocks per function to be analyzed by Graphite",
 	  100, 0, 0)
+
+/* Avoid data dependence analysis on very large loops.  */
+DEFPARAM (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS,
+	  "loop-max-datarefs-for-datadeps",
+	  "Maximum number of datarefs in loop for building loop data dependencies",
+	  1000, 0, 0)
 
 /* Avoid doing loop invariant motion on very large loops.  */
 

@@ -29,13 +29,13 @@ namespace GTM HIDDEN {
 typedef struct gtm_jmpbuf
 {
   void *cfa;
-  unsigned long rip;
   unsigned long rbx;
   unsigned long rbp;
   unsigned long r12;
   unsigned long r13;
   unsigned long r14;
   unsigned long r15;
+  unsigned long rip;
 } gtm_jmpbuf;
 #else
 typedef struct gtm_jmpbuf

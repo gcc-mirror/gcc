@@ -1,5 +1,5 @@
 @c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,
-@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -4907,6 +4907,8 @@ TARGET_STRUCT_VALUE_RTX, FRAME_POINTER_REGNUM, EH_USES,
 FRAME_POINTER_REGNUM, ARG_POINTER_REGNUM, and the PIC_OFFSET_TABLE_REGNUM.
 @end deftypefn
 
+@hook TARGET_SET_UP_BY_PROLOGUE
+
 @node Stack Smashing Protection
 @subsection Stack smashing protection
 @cindex stack smashing protection
@@ -5564,6 +5566,11 @@ references inside an @code{UNSPEC} rtx to represent PIC or similar
 addressing modes.  This target hook allows GCC's optimizers to understand
 the semantics of these opaque @code{UNSPEC}s by converting them back
 into their original form.
+@end deftypefn
+
+@hook TARGET_CONST_NOT_OK_FOR_DEBUG_P
+This hook should return true if @var{x} should not be emitted into
+debug sections.
 @end deftypefn
 
 @hook TARGET_CANNOT_FORCE_CONST_MEM
@@ -11311,3 +11318,5 @@ value of @code{TARGET_CONST_ANCHOR} is a power of 2.  For example, on
 MIPS, where add-immediate takes a 16-bit signed value,
 @code{TARGET_CONST_ANCHOR} is set to @samp{0x8000}.  The default value
 is zero, which disables this optimization.  @end deftypevr
+
+@hook TARGET_ATOMIC_TEST_AND_SET_TRUEVAL

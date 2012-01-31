@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com) and
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
@@ -6608,15 +6608,6 @@ s390_chunkify_start (void)
 		  pending_ltrel = pool_ref;
 		}
 	    }
-	  /* Make sure we do not split between a call and its
-	     corresponding CALL_ARG_LOCATION note.  */
-	  if (CALL_P (insn))
-	    {
-	      rtx next = NEXT_INSN (insn);
-	      if (next && NOTE_P (next)
-		  && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
-		continue;
-	    }
 	}
 
       if (GET_CODE (insn) == JUMP_INSN || GET_CODE (insn) == CODE_LABEL)
@@ -6627,8 +6618,18 @@ s390_chunkify_start (void)
 	  gcc_assert (!pending_ltrel);
 	}
 
-      if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_SWITCH_TEXT_SECTIONS)
-	section_switch_p = true;
+      if (NOTE_P (insn))
+	switch (NOTE_KIND (insn))
+	  {
+	  case NOTE_INSN_SWITCH_TEXT_SECTIONS:
+	    section_switch_p = true;
+	    break;
+	  case NOTE_INSN_VAR_LOCATION:
+	  case NOTE_INSN_CALL_ARG_LOCATION:
+	    continue;
+	  default:
+	    break;
+	  }
 
       if (!curr_pool
 	  || INSN_ADDRESSES_SIZE () <= (size_t) INSN_UID (insn)
@@ -6674,7 +6675,7 @@ s390_chunkify_start (void)
 	           || curr_pool->size > S390_POOL_CHUNK_MAX
 		   || section_switch_p)
 	    {
-              rtx label, jump, barrier;
+	      rtx label, jump, barrier, next, prev;
 
 	      if (!section_switch_p)
 		{
@@ -6684,9 +6685,19 @@ s390_chunkify_start (void)
 		  if (get_attr_length (insn) == 0)
 		    continue;
 		  /* Don't separate LTREL_BASE from the corresponding
-		 LTREL_OFFSET load.  */
+		     LTREL_OFFSET load.  */
 		  if (pending_ltrel)
 		    continue;
+		  next = insn;
+		  do
+		    {
+		      insn = next;
+		      next = NEXT_INSN (insn);
+		    }
+		  while (next
+			 && NOTE_P (next)
+			 && (NOTE_KIND (next) == NOTE_INSN_VAR_LOCATION
+			     || NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION));
 		}
 	      else
 		{
@@ -6699,7 +6710,14 @@ s390_chunkify_start (void)
 		}
 
 	      label = gen_label_rtx ();
-	      jump = emit_jump_insn_after (gen_jump (label), insn);
+	      prev = insn;
+	      if (prev && NOTE_P (prev))
+		prev = prev_nonnote_insn (prev);
+	      if (prev)
+		jump = emit_jump_insn_after_setloc (gen_jump (label), insn,
+						    INSN_LOCATOR (prev));
+	      else
+		jump = emit_jump_insn_after_noloc (gen_jump (label), insn);
 	      barrier = emit_barrier_after (jump);
 	      insn = emit_label_after (label, barrier);
 	      JUMP_LABEL (jump) = label;

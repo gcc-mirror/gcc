@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2601,6 +2601,12 @@ package body Exp_Ch4 is
       --  This is either an integer literal node, or an identifier reference to
       --  a constant entity initialized to the appropriate value.
 
+      Last_Opnd_Low_Bound : Node_Id;
+      --  A tree node representing the low bound of the last operand. This
+      --  need only be set if the result could be null. It is used for the
+      --  special case of setting the right low bound for a null result.
+      --  This is of type Ityp.
+
       Last_Opnd_High_Bound : Node_Id;
       --  A tree node representing the high bound of the last operand. This
       --  need only be set if the result could be null. It is used for the
@@ -2811,11 +2817,14 @@ package body Exp_Ch4 is
                Result_May_Be_Null := False;
             end if;
 
-            --  Capture last operand high bound if result could be null
+            --  Capture last operand low and high bound if result could be null
 
             if J = N and then Result_May_Be_Null then
+               Last_Opnd_Low_Bound :=
+                 New_Copy_Tree (String_Literal_Low_Bound (Opnd_Typ));
+
                Last_Opnd_High_Bound :=
-                 Make_Op_Add (Loc,
+                 Make_Op_Subtract (Loc,
                    Left_Opnd  =>
                      New_Copy_Tree (String_Literal_Low_Bound (Opnd_Typ)),
                    Right_Opnd => Make_Integer_Literal (Loc, 1));
@@ -2871,9 +2880,13 @@ package body Exp_Ch4 is
                            Result_May_Be_Null := False;
                         end if;
 
-                        --  Capture last operand bound if result could be null
+                        --  Capture last operand bounds if result could be null
 
                         if J = N and then Result_May_Be_Null then
+                           Last_Opnd_Low_Bound :=
+                             Convert_To (Ityp,
+                               Make_Integer_Literal (Loc, Expr_Value (Lo)));
+
                            Last_Opnd_High_Bound :=
                              Convert_To (Ityp,
                                Make_Integer_Literal (Loc, Expr_Value (Hi)));
@@ -2914,7 +2927,16 @@ package body Exp_Ch4 is
                      Duplicate_Subexpr (Opnd, Name_Req => True),
                    Attribute_Name => Name_First);
 
+               --  Capture last operand bounds if result could be null
+
                if J = N and Result_May_Be_Null then
+                  Last_Opnd_Low_Bound :=
+                    Convert_To (Ityp,
+                      Make_Attribute_Reference (Loc,
+                        Prefix         =>
+                          Duplicate_Subexpr (Opnd, Name_Req => True),
+                        Attribute_Name => Name_First));
+
                   Last_Opnd_High_Bound :=
                     Convert_To (Ityp,
                       Make_Attribute_Reference (Loc,
@@ -3124,6 +3146,15 @@ package body Exp_Ch4 is
       --  bounds if the last operand is super-flat).
 
       if Result_May_Be_Null then
+         Low_Bound :=
+           Make_Conditional_Expression (Loc,
+             Expressions => New_List (
+               Make_Op_Eq (Loc,
+                 Left_Opnd  => New_Copy (Aggr_Length (NN)),
+                 Right_Opnd => Make_Artyp_Literal (0)),
+               Last_Opnd_Low_Bound,
+               Low_Bound));
+
          High_Bound :=
            Make_Conditional_Expression (Loc,
              Expressions => New_List (

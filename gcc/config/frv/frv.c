@@ -7229,8 +7229,7 @@ frv_registers_conflict_p_1 (rtx *x, void *data)
       for (i = 0; i < frv_packet.num_mems; i++)
 	if (frv_regstate_conflict_p (frv_packet.mems[i].cond, cond))
 	  {
-	    if (true_dependence (frv_packet.mems[i].mem, VOIDmode,
-				 *x, rtx_varies_p))
+	    if (true_dependence (frv_packet.mems[i].mem, VOIDmode, *x))
 	      return 1;
 
 	    if (output_dependence (frv_packet.mems[i].mem, *x))

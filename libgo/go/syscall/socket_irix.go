@@ -119,3 +119,12 @@ const (
 func anyToSockaddrOS(rsa *RawSockaddrAny) (Sockaddr, error) {
 	return nil, EAFNOSUPPORT
 }
+
+// <netinet/in.h.h> only provides IPV6_* etc. if  _NO_XOPEN4 && _NO_XOPEN5,
+// so as above simply provide them here.
+const (
+	IPV6_UNICAST_HOPS   = 48
+	IPV6_MULTICAST_IF   = IP_MULTICAST_IF
+	IPV6_MULTICAST_HOPS = IP_MULTICAST_TTL
+	IPV6_MULTICAST_LOOP = IP_MULTICAST_LOOP
+)

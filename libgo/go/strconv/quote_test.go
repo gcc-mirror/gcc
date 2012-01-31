@@ -47,7 +47,7 @@ func TestQuoteToASCII(t *testing.T) {
 }
 
 type quoteRuneTest struct {
-	in    int
+	in    rune
 	out   string
 	ascii string
 }
@@ -191,7 +191,13 @@ var misquoted = []string{
 	`"'`,
 	`b"`,
 	`"\"`,
+	`"\9"`,
+	`"\19"`,
+	`"\129"`,
 	`'\'`,
+	`'\9'`,
+	`'\19'`,
+	`'\129'`,
 	`'ab'`,
 	`"\x1!"`,
 	`"\U12345678"`,

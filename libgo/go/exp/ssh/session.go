@@ -34,6 +34,20 @@ const (
 	SIGUSR2 Signal = "USR2"
 )
 
+var signals = map[Signal]int{
+	SIGABRT: 6,
+	SIGALRM: 14,
+	SIGFPE:  8,
+	SIGHUP:  1,
+	SIGILL:  4,
+	SIGINT:  2,
+	SIGKILL: 9,
+	SIGPIPE: 13,
+	SIGQUIT: 3,
+	SIGSEGV: 11,
+	SIGTERM: 15,
+}
+
 // A Session represents a connection to a remote command or shell.
 type Session struct {
 	// Stdin specifies the remote process's standard input.
@@ -54,10 +68,12 @@ type Session struct {
 
 	*clientChan // the channel backing this session
 
-	started        bool // true once Start, Run or Shell is invoked.
-	closeAfterWait []io.Closer
-	copyFuncs      []func() error
-	errch          chan error // one send per copyFunc
+	started   bool // true once Start, Run or Shell is invoked.
+	copyFuncs []func() error
+	errors    chan error // one send per copyFunc
+
+	// true if pipe method is active
+	stdinpipe, stdoutpipe, stderrpipe bool
 }
 
 // RFC 4254 Section 6.4.
@@ -170,10 +186,17 @@ func (s *Session) Start(cmd string) error {
 	return s.start()
 }
 
-// Run runs cmd on the remote host and waits for it to terminate.
-// Typically, the remote server passes cmd to the shell for
-// interpretation. A Session only accepts one call to Run,
-// Start or Shell.
+// Run runs cmd on the remote host. Typically, the remote
+// server passes cmd to the shell for interpretation.
+// A Session only accepts one call to Run, Start or Shell.
+//
+// The returned error is nil if the command runs, has no problems
+// copying stdin, stdout, and stderr, and exits with a zero exit
+// status.
+//
+// If the command fails to run or doesn't complete successfully, the
+// error is of type *ExitError. Other error types may be
+// returned for I/O problems.
 func (s *Session) Run(cmd string) error {
 	err := s.Start(cmd)
 	if err != nil {
@@ -216,23 +239,29 @@ func (s *Session) waitForResponse() error {
 func (s *Session) start() error {
 	s.started = true
 
-	type F func(*Session) error
+	type F func(*Session)
 	for _, setupFd := range []F{(*Session).stdin, (*Session).stdout, (*Session).stderr} {
-		if err := setupFd(s); err != nil {
-			return err
-		}
+		setupFd(s)
 	}
 
-	s.errch = make(chan error, len(s.copyFuncs))
+	s.errors = make(chan error, len(s.copyFuncs))
 	for _, fn := range s.copyFuncs {
 		go func(fn func() error) {
-			s.errch <- fn()
+			s.errors <- fn()
 		}(fn)
 	}
 	return nil
 }
 
 // Wait waits for the remote command to exit.
+//
+// The returned error is nil if the command runs, has no problems
+// copying stdin, stdout, and stderr, and exits with a zero exit
+// status.
+//
+// If the command fails to run or doesn't complete successfully, the
+// error is of type *ExitError. Other error types may be
+// returned for I/O problems.
 func (s *Session) Wait() error {
 	if !s.started {
 		return errors.New("ssh: session not started")
@@ -241,12 +270,9 @@ func (s *Session) Wait() error {
 
 	var copyError error
 	for _ = range s.copyFuncs {
-		if err := <-s.errch; err != nil && copyError == nil {
+		if err := <-s.errors; err != nil && copyError == nil {
 			copyError = err
 		}
-	}
-	for _, fd := range s.closeAfterWait {
-		fd.Close()
 	}
 	if waitErr != nil {
 		return waitErr
@@ -255,21 +281,40 @@ func (s *Session) Wait() error {
 }
 
 func (s *Session) wait() error {
-	for {
-		switch msg := (<-s.msg).(type) {
+	wm := Waitmsg{status: -1}
+
+	// Wait for msg channel to be closed before returning.
+	for msg := range s.msg {
+		switch msg := msg.(type) {
 		case *channelRequestMsg:
-			// TODO(dfc) improve this behavior to match os.Waitmsg
 			switch msg.Request {
 			case "exit-status":
 				d := msg.RequestSpecificData
-				status := int(d[0])<<24 | int(d[1])<<16 | int(d[2])<<8 | int(d[3])
-				if status > 0 {
-					return fmt.Errorf("remote process exited with %d", status)
-				}
-				return nil
+				wm.status = int(d[0])<<24 | int(d[1])<<16 | int(d[2])<<8 | int(d[3])
 			case "exit-signal":
-				// TODO(dfc) make a more readable error message
-				return fmt.Errorf("%v", msg.RequestSpecificData)
+				signal, rest, ok := parseString(msg.RequestSpecificData)
+				if !ok {
+					return fmt.Errorf("wait: could not parse request data: %v", msg.RequestSpecificData)
+				}
+				wm.signal = safeString(string(signal))
+
+				// skip coreDumped bool
+				if len(rest) == 0 {
+					return fmt.Errorf("wait: could not parse request data: %v", msg.RequestSpecificData)
+				}
+				rest = rest[1:]
+
+				errmsg, rest, ok := parseString(rest)
+				if !ok {
+					return fmt.Errorf("wait: could not parse request data: %v", msg.RequestSpecificData)
+				}
+				wm.msg = safeString(string(errmsg))
+
+				lang, _, ok := parseString(rest)
+				if !ok {
+					return fmt.Errorf("wait: could not parse request data: %v", msg.RequestSpecificData)
+				}
+				wm.lang = safeString(string(lang))
 			default:
 				return fmt.Errorf("wait: unexpected channel request: %v", msg)
 			}
@@ -277,10 +322,26 @@ func (s *Session) wait() error {
 			return fmt.Errorf("wait: unexpected packet %T received: %v", msg, msg)
 		}
 	}
-	panic("unreachable")
+	if wm.status == 0 {
+		return nil
+	}
+	if wm.status == -1 {
+		// exit-status was never sent from server
+		if wm.signal == "" {
+			return errors.New("wait: remote command exited without exit status or exit signal")
+		}
+		wm.status = 128
+		if _, ok := signals[Signal(wm.signal)]; ok {
+			wm.status += signals[Signal(wm.signal)]
+		}
+	}
+	return &ExitError{wm}
 }
 
-func (s *Session) stdin() error {
+func (s *Session) stdin() {
+	if s.stdinpipe {
+		return
+	}
 	if s.Stdin == nil {
 		s.Stdin = new(bytes.Buffer)
 	}
@@ -291,10 +352,12 @@ func (s *Session) stdin() error {
 		}
 		return err
 	})
-	return nil
 }
 
-func (s *Session) stdout() error {
+func (s *Session) stdout() {
+	if s.stdoutpipe {
+		return
+	}
 	if s.Stdout == nil {
 		s.Stdout = ioutil.Discard
 	}
@@ -302,10 +365,12 @@ func (s *Session) stdout() error {
 		_, err := io.Copy(s.Stdout, s.clientChan.stdout)
 		return err
 	})
-	return nil
 }
 
-func (s *Session) stderr() error {
+func (s *Session) stderr() {
+	if s.stderrpipe {
+		return
+	}
 	if s.Stderr == nil {
 		s.Stderr = ioutil.Discard
 	}
@@ -313,7 +378,6 @@ func (s *Session) stderr() error {
 		_, err := io.Copy(s.Stderr, s.clientChan.stderr)
 		return err
 	})
-	return nil
 }
 
 // StdinPipe returns a pipe that will be connected to the
@@ -325,10 +389,8 @@ func (s *Session) StdinPipe() (io.WriteCloser, error) {
 	if s.started {
 		return nil, errors.New("ssh: StdinPipe after process started")
 	}
-	pr, pw := io.Pipe()
-	s.Stdin = pr
-	s.closeAfterWait = append(s.closeAfterWait, pr)
-	return pw, nil
+	s.stdinpipe = true
+	return s.clientChan.stdin, nil
 }
 
 // StdoutPipe returns a pipe that will be connected to the
@@ -337,17 +399,15 @@ func (s *Session) StdinPipe() (io.WriteCloser, error) {
 // stdout and stderr streams. If the StdoutPipe reader is
 // not serviced fast enought it may eventually cause the
 // remote command to block.
-func (s *Session) StdoutPipe() (io.ReadCloser, error) {
+func (s *Session) StdoutPipe() (io.Reader, error) {
 	if s.Stdout != nil {
 		return nil, errors.New("ssh: Stdout already set")
 	}
 	if s.started {
 		return nil, errors.New("ssh: StdoutPipe after process started")
 	}
-	pr, pw := io.Pipe()
-	s.Stdout = pw
-	s.closeAfterWait = append(s.closeAfterWait, pw)
-	return pr, nil
+	s.stdoutpipe = true
+	return s.clientChan.stdout, nil
 }
 
 // StderrPipe returns a pipe that will be connected to the
@@ -356,17 +416,15 @@ func (s *Session) StdoutPipe() (io.ReadCloser, error) {
 // stdout and stderr streams. If the StderrPipe reader is
 // not serviced fast enought it may eventually cause the
 // remote command to block.
-func (s *Session) StderrPipe() (io.ReadCloser, error) {
+func (s *Session) StderrPipe() (io.Reader, error) {
 	if s.Stderr != nil {
 		return nil, errors.New("ssh: Stderr already set")
 	}
 	if s.started {
 		return nil, errors.New("ssh: StderrPipe after process started")
 	}
-	pr, pw := io.Pipe()
-	s.Stderr = pw
-	s.closeAfterWait = append(s.closeAfterWait, pw)
-	return pr, nil
+	s.stderrpipe = true
+	return s.clientChan.stderr, nil
 }
 
 // TODO(dfc) add Output and CombinedOutput helpers
@@ -390,4 +448,47 @@ func (c *ClientConn) NewSession() (*Session, error) {
 	return &Session{
 		clientChan: ch,
 	}, nil
+}
+
+// An ExitError reports unsuccessful completion of a remote command.
+type ExitError struct {
+	Waitmsg
+}
+
+func (e *ExitError) Error() string {
+	return e.Waitmsg.String()
+}
+
+// Waitmsg stores the information about an exited remote command
+// as reported by Wait.
+type Waitmsg struct {
+	status int
+	signal string
+	msg    string
+	lang   string
+}
+
+// ExitStatus returns the exit status of the remote command.
+func (w Waitmsg) ExitStatus() int {
+	return w.status
+}
+
+// Signal returns the exit signal of the remote command if
+// it was terminated violently.
+func (w Waitmsg) Signal() string {
+	return w.signal
+}
+
+// Msg returns the exit message given by the remote command
+func (w Waitmsg) Msg() string {
+	return w.msg
+}
+
+// Lang returns the language tag. See RFC 3066
+func (w Waitmsg) Lang() string {
+	return w.lang
+}
+
+func (w Waitmsg) String() string {
+	return fmt.Sprintf("Process exited with: %v. Reason was: %v (%v)", w.status, w.msg, w.signal)
 }

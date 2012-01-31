@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -473,6 +473,9 @@ package body Sem_Prag is
          N1, N2, N3         : Name_Id);
       procedure Check_Arg_Is_One_Of
         (Arg                : Node_Id;
+         N1, N2, N3, N4     : Name_Id);
+      procedure Check_Arg_Is_One_Of
+        (Arg                : Node_Id;
          N1, N2, N3, N4, N5 : Name_Id);
       --  Check the specified argument Arg to make sure that it is an
       --  identifier whose name matches either N1 or N2 (or N3, N4, N5 if
@@ -707,7 +710,7 @@ package body Sem_Prag is
 
       procedure Fix_Error (Msg : in out String);
       --  This is called prior to issuing an error message. Msg is a string
-      --  which typically contains the substring pragma. If the current pragma
+      --  that typically contains the substring "pragma". If the current pragma
       --  comes from an aspect, each such "pragma" substring is replaced with
       --  the characters "aspect", and if Error_Msg_Name_1 is Name_Precondition
       --  (resp Name_Postcondition) it is changed to Name_Pre (resp Name_Post).
@@ -1171,6 +1174,24 @@ package body Sem_Prag is
          if Chars (Argx) /= N1
            and then Chars (Argx) /= N2
            and then Chars (Argx) /= N3
+         then
+            Error_Pragma_Arg ("invalid argument for pragma%", Argx);
+         end if;
+      end Check_Arg_Is_One_Of;
+
+      procedure Check_Arg_Is_One_Of
+        (Arg                : Node_Id;
+         N1, N2, N3, N4     : Name_Id)
+      is
+         Argx : constant Node_Id := Get_Pragma_Arg (Arg);
+
+      begin
+         Check_Arg_Is_Identifier (Argx);
+
+         if Chars (Argx) /= N1
+           and then Chars (Argx) /= N2
+           and then Chars (Argx) /= N3
+           and then Chars (Argx) /= N4
          then
             Error_Pragma_Arg ("invalid argument for pragma%", Argx);
          end if;
@@ -7063,7 +7084,7 @@ package body Sem_Prag is
                Check_Interrupt_Or_Attach_Handler;
 
                --  The expression that designates the attribute may depend on a
-               --  discriminant, and is therefore a per- object expression, to
+               --  discriminant, and is therefore a per-object expression, to
                --  be expanded in the init proc. If expansion is enabled, then
                --  perform semantic checks on a copy only.
 
@@ -7967,6 +7988,20 @@ package body Sem_Prag is
             --  use of the secondary stack does not generate execution overhead
             --  for suppressed conditions.
 
+            --  Normally the analysis that follows will freeze the subprogram
+            --  being called. However, if the call is to a null procedure,
+            --  we want to freeze it before creating the block, because the
+            --  analysis that follows may be done with expansion disabled, in
+            --  which case the body will not be generated, leading to spurious
+            --  errors.
+
+            if Nkind (Call) = N_Procedure_Call_Statement
+              and then Is_Entity_Name (Name (Call))
+            then
+               Analyze (Name (Call));
+               Freeze_Before (N, Entity (Name (Call)));
+            end if;
+
             Rewrite (N, Make_Implicit_If_Statement (N,
               Condition => Cond,
                  Then_Statements => New_List (
@@ -8256,7 +8291,7 @@ package body Sem_Prag is
 
                if Citem = N then
                   Error_Pragma_Arg
-                    ("argument of pragma% is not with'ed unit", Arg);
+                    ("argument of pragma% is not withed unit", Arg);
                end if;
 
                Next (Arg);
@@ -8334,7 +8369,7 @@ package body Sem_Prag is
                if Citem = N then
                   Set_Error_Posted (N);
                   Error_Pragma_Arg
-                    ("argument of pragma% is not with'ed unit", Arg);
+                    ("argument of pragma% is not withed unit", Arg);
                end if;
 
                Next (Arg);
@@ -9325,7 +9360,11 @@ package body Sem_Prag is
          -----------------
 
          --  pragma Implemented (procedure_LOCAL_NAME, implementation_kind);
-         --  implementation_kind ::= By_Entry | By_Protected_Procedure | By_Any
+         --  implementation_kind ::=
+         --    By_Entry | By_Protected_Procedure | By_Any | Optional
+
+         --  "By_Any" and "Optional" are treated as synonyms in order to
+         --  support Ada 2012 aspect Synchronization.
 
          when Pragma_Implemented => Implemented : declare
             Proc_Id : Entity_Id;
@@ -9337,8 +9376,11 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Check_Arg_Is_Identifier (Arg1);
             Check_Arg_Is_Local_Name (Arg1);
-            Check_Arg_Is_One_Of
-              (Arg2, Name_By_Any, Name_By_Entry, Name_By_Protected_Procedure);
+            Check_Arg_Is_One_Of (Arg2,
+              Name_By_Any,
+              Name_By_Entry,
+              Name_By_Protected_Procedure,
+              Name_Optional);
 
             --  Extract the name of the local procedure
 
@@ -12848,6 +12890,40 @@ package body Sem_Prag is
             end if;
          end Relative_Deadline;
 
+         ------------------------
+         -- Remote_Access_Type --
+         ------------------------
+
+         --  pragma Remote_Access_Type ([Entity =>] formal_type_LOCAL_NAME);
+
+         when Pragma_Remote_Access_Type => Remote_Access_Type : declare
+            E : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+            Check_Optional_Identifier (Arg1, Name_Entity);
+            Check_Arg_Is_Local_Name (Arg1);
+
+            E := Entity (Get_Pragma_Arg (Arg1));
+
+            if Nkind (Parent (E)) = N_Formal_Type_Declaration
+              and then Ekind (E) = E_General_Access_Type
+              and then Is_Class_Wide_Type (Directly_Designated_Type (E))
+              and then Scope (Root_Type (Directly_Designated_Type (E)))
+                         = Scope (E)
+              and then Is_Valid_Remote_Object_Type
+                         (Root_Type (Directly_Designated_Type (E)))
+            then
+               Set_Is_Remote_Types (E);
+
+            else
+               Error_Pragma_Arg
+                 ("pragma% applies only to formal access to classwide types",
+                  Arg1);
+            end if;
+         end Remote_Access_Type;
+
          ---------------------------
          -- Remote_Call_Interface --
          ---------------------------
@@ -14203,7 +14279,7 @@ package body Sem_Prag is
 
                   if Citem = N then
                      Error_Pragma_Arg
-                       ("argument of pragma% is not with'ed unit", Arg_Node);
+                       ("argument of pragma% is not withed unit", Arg_Node);
                   end if;
 
                   Next (Arg_Node);
@@ -15029,6 +15105,7 @@ package body Sem_Prag is
       Pragma_Queuing_Policy                 => -1,
       Pragma_Ravenscar                      => -1,
       Pragma_Relative_Deadline              => -1,
+      Pragma_Remote_Access_Type             => -1,
       Pragma_Remote_Call_Interface          => -1,
       Pragma_Remote_Types                   => -1,
       Pragma_Restricted_Run_Time            => -1,
@@ -15201,6 +15278,82 @@ package body Sem_Prag is
       end if;
    end Is_Pragma_String_Literal;
 
+   -----------------------------------------
+   -- Make_Aspect_For_PPC_In_Gen_Sub_Decl --
+   -----------------------------------------
+
+   procedure Make_Aspect_For_PPC_In_Gen_Sub_Decl (Decl : Node_Id) is
+      Aspects : constant List_Id := New_List;
+      Loc     : constant Source_Ptr := Sloc (Decl);
+      Or_Decl : constant Node_Id := Original_Node (Decl);
+
+      Original_Aspects : List_Id;
+      --  To capture global references, a copy of the created aspects must be
+      --  inserted in the original tree.
+
+      Prag         : Node_Id;
+      Prag_Arg_Ass : Node_Id;
+      Prag_Id      : Pragma_Id;
+
+   begin
+      --  Check for any PPC pragmas that appear within Decl
+
+      Prag := Next (Decl);
+      while Nkind (Prag) = N_Pragma loop
+         Prag_Id := Get_Pragma_Id (Chars (Pragma_Identifier (Prag)));
+
+         case Prag_Id is
+            when Pragma_Postcondition | Pragma_Precondition =>
+               Prag_Arg_Ass := First (Pragma_Argument_Associations (Prag));
+
+               --  Make an aspect from any PPC pragma
+
+               Append_To (Aspects,
+                 Make_Aspect_Specification (Loc,
+                   Identifier =>
+                     Make_Identifier (Loc, Chars (Pragma_Identifier (Prag))),
+                   Expression =>
+                     Copy_Separate_Tree (Expression (Prag_Arg_Ass))));
+
+               --  Generate the analysis information in the pragma expression
+               --  and then set the pragma node analyzed to avoid any further
+               --  analysis.
+
+               Analyze (Expression (Prag_Arg_Ass));
+               Set_Analyzed (Prag, True);
+
+            when others => null;
+         end case;
+
+         Next (Prag);
+      end loop;
+
+      --  Set all new aspects into the generic declaration node
+
+      if Is_Non_Empty_List (Aspects) then
+
+         --  Create the list of aspects to be inserted in the original tree
+
+         Original_Aspects := Copy_Separate_List (Aspects);
+
+         --  Check if Decl already has aspects
+
+         --  Attach the new lists of aspects to both the generic copy and the
+         --  original tree.
+
+         if Has_Aspects (Decl) then
+            Append_List (Aspects, Aspect_Specifications (Decl));
+            Append_List (Original_Aspects, Aspect_Specifications (Or_Decl));
+
+         else
+            Set_Parent (Aspects, Decl);
+            Set_Aspect_Specifications (Decl, Aspects);
+            Set_Parent (Original_Aspects, Or_Decl);
+            Set_Aspect_Specifications (Or_Decl, Original_Aspects);
+         end if;
+      end if;
+   end Make_Aspect_For_PPC_In_Gen_Sub_Decl;
+
    ------------------------
    -- Preanalyze_TC_Args --
    ------------------------
@@ -15217,9 +15370,7 @@ package body Sem_Prag is
          --  In ASIS mode, for a pragma generated from a source aspect, also
          --  analyze the original aspect expression.
 
-         if ASIS_Mode
-           and then Present (Corresponding_Aspect (N))
-         then
+         if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
             Preanalyze_Spec_Expression
               (Original_Node (Get_Pragma_Arg (Arg_Req)), Standard_Boolean);
          end if;
@@ -15232,9 +15383,7 @@ package body Sem_Prag is
          --  In ASIS mode, for a pragma generated from a source aspect, also
          --  analyze the original aspect expression.
 
-         if ASIS_Mode
-           and then Present (Corresponding_Aspect (N))
-         then
+         if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
             Preanalyze_Spec_Expression
               (Original_Node (Get_Pragma_Arg (Arg_Ens)), Standard_Boolean);
          end if;

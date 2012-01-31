@@ -168,8 +168,8 @@ for f in $runtime; do
   merge_c $f $f
 done
 
-merge_c linux/thread.c thread-linux.c
-merge_c linux/mem.c mem.c
+merge_c thread_linux.c thread-linux.c
+merge_c mem_linux.c mem.c
 
 (cd ${OLDDIR}/src/pkg && find . -name '*.go' -print) | while read f; do
   oldfile=${OLDDIR}/src/pkg/$f

@@ -1,3 +1,5 @@
+/* { dg-options "-mno-hard-dfp" { target { s390*-*-* } } } */
+
 /* Check that appropriate exceptions are raised for BFP to DFP conversions.
    The test only uses double and _Decimal32; tests for conversions to
    _Decimal64 would need 128-bit long double.  */

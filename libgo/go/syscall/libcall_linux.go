@@ -207,12 +207,6 @@ func PtraceDetach(pid int) (err error) { return ptrace(PTRACE_DETACH, pid, 0, 0)
 // //sysnb	Gettid() (tid int)
 // //gettid() Pid_t
 
-//sys	Ioperm(from int, num int, on int) (err error)
-//ioperm(from _C_long, num _C_long, on int) int
-
-//sys	Iopl(level int) (err error)
-//iopl(level int) int
-
 // FIXME: mksysinfo linux_dirent
 //    Or just abandon this function.
 // //sys	Getdents(fd int, buf []byte) (n int, err error)
@@ -278,19 +272,19 @@ func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err e
 func Splice(rfd int, roff *int64, wfd int, woff *int64, len int, flags int) (n int64, err error) {
 	var lroff _loff_t
 	var plroff *_loff_t
-	if (roff != nil) {
+	if roff != nil {
 		plroff = &lroff
 	}
 	var lwoff _loff_t
 	var plwoff *_loff_t
-	if (woff != nil) {
+	if woff != nil {
 		plwoff = &lwoff
 	}
 	n, err = splice(rfd, plroff, wfd, plwoff, len, flags)
-	if (roff != nil) {
+	if roff != nil {
 		*roff = int64(lroff)
 	}
-	if (woff != nil) {
+	if woff != nil {
 		*woff = int64(lwoff)
 	}
 	return

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -376,7 +376,7 @@ package body Sem is
             Analyze_Unary_Op (N);
 
          when N_Op_Mod =>
-            Analyze_Arithmetic_Op (N);
+            Analyze_Mod (N);
 
          when N_Op_Multiply =>
             Analyze_Arithmetic_Op (N);

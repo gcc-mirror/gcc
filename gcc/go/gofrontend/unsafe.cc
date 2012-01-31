@@ -87,7 +87,7 @@ Gogo::import_unsafe(const std::string& local_name, bool is_local_name_exported,
     this->add_named_object(no);
 
   // Typeof.
-  Type* empty_interface = Type::make_interface_type(NULL, bloc);
+  Type* empty_interface = Type::make_empty_interface_type(bloc);
   Typed_identifier_list* parameters = new Typed_identifier_list;
   parameters->push_back(Typed_identifier("i", empty_interface, bloc));
   results = new Typed_identifier_list;

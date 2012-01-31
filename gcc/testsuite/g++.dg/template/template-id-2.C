@@ -11,7 +11,7 @@ template<> struct A<void>
     template<typename T> void foo()
     {
         A<T> a;
-        a.template foo<int>();	// { dg-error "no member" }
+        a.template foo<int>();	// { dg-error "member" }
     }
 };
 

@@ -24,13 +24,14 @@ do {\
     } \
 } while (0)
 
+volatile int one = 1;
 
 int main (int argc, char *argv[]) {
 #define fvec_2 (vector(4, float)){2., 2., 2., 2.}
 #define dvec_2 (vector(2, double)){2., 2.}
 
 
-    vector(8, short) v0 = {argc, 1,2,3,4,5,6,7};
+    vector(8, short) v0 = {one, 1, 2, 3, 4, 5, 6, 7};
     vector(8, short) v1;
 
     vector(4, float) f0 = {1., 2., 3., 4.};

@@ -1,3 +1,43 @@
+2012-01-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR libgfortran/51899
+	* configure.ac: Check whether umask is available.
+	* intrinsics/chmod.c (chmod_func): Make compile with MinGW.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2012-01-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36755
+	* intrinsics/chmod.c (chmod_func): Replace call to /bin/chmod
+
+2012-01-12  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure.ac: Remove check for fdopen.
+	* runtime/backtrace.c (CAN_PIPE): Fix comment, remove check for
+	fdopen.
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+
+2012-01-12  Janne Blomqvist  <jb@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR libfortran/51803
+	* runtime/main.c (store_exe_path): Avoid malloc if getcwd fails or
+	is not available.
+
+2012-01-11  Tobias Burnus  <burnus@net-b.de>
+
+	* runtime/main.c (store_exe_path): Fix absolute path
+	detection for Windows.
+
+2012-01-11  Janne Blomqvist  <jb@gcc.gnu.org>
+	    Mike Stump  <mikestump@comcast.net>
+
+	PR libfortran/51803
+	* runtime/main.c (store_exe_path): Handle getcwd failure and lack
+	of the function better.
+
 2012-01-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51197

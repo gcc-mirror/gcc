@@ -266,10 +266,25 @@ build_base_path (enum tree_code code,
   if (want_pointer)
     probe = TYPE_MAIN_VARIANT (TREE_TYPE (probe));
 
+  if (code == PLUS_EXPR
+      && !SAME_BINFO_TYPE_P (BINFO_TYPE (d_binfo), probe))
+    {
+      /* This can happen when adjust_result_of_qualified_name_lookup can't
+	 find a unique base binfo in a call to a member function.  We
+	 couldn't give the diagnostic then since we might have been calling
+	 a static member function, so we do it now.  */
+      if (complain & tf_error)
+	{
+	  tree base = lookup_base (probe, BINFO_TYPE (d_binfo),
+				   ba_unique, NULL);
+	  gcc_assert (base == error_mark_node);
+	}
+      return error_mark_node;
+    }
+
   gcc_assert ((code == MINUS_EXPR
 	       && SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), probe))
-	      || (code == PLUS_EXPR
-		  && SAME_BINFO_TYPE_P (BINFO_TYPE (d_binfo), probe)));
+	      || code == PLUS_EXPR);
 
   if (binfo == d_binfo)
     /* Nothing to do.  */
@@ -1103,6 +1118,8 @@ add_method (tree type, tree method, tree using_decl)
 
   /* Add the new binding.  */
   overload = build_overload (method, current_fns);
+  if (using_decl && TREE_CODE (overload) == OVERLOAD)
+    OVL_USED (overload) = true;
 
   if (conv_p)
     TYPE_HAS_CONVERSION (type) = 1;
@@ -4413,7 +4430,12 @@ set_method_tm_attributes (tree t)
       tree vchain;
       for (vchain = BINFO_VIRTUALS (TYPE_BINFO (t)); vchain;
 	   vchain = TREE_CHAIN (vchain))
-	set_one_vmethod_tm_attributes (t, BV_FN (vchain));
+	{
+	  fndecl = BV_FN (vchain);
+	  if (DECL_THUNK_P (fndecl))
+	    fndecl = THUNK_TARGET (fndecl);
+	  set_one_vmethod_tm_attributes (t, fndecl);
+	}
     }
 
   /* If the class doesn't have an attribute, nothing more to do.  */
@@ -4888,7 +4910,27 @@ explain_non_literal_class (tree t)
 	      "is not a copy or move constructor", t);
       if (TYPE_HAS_DEFAULT_CONSTRUCTOR (t)
 	  && !type_has_user_provided_default_constructor (t))
-	explain_invalid_constexpr_fn (locate_ctor (t));
+	{
+	  /* Note that we can't simply call locate_ctor because when the
+	     constructor is deleted it just returns NULL_TREE.  */
+	  tree fns;
+	  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+	    {
+	      tree fn = OVL_CURRENT (fns);
+	      tree parms = TYPE_ARG_TYPES (TREE_TYPE (fn));
+
+	      parms = skip_artificial_parms_for (fn, parms);
+
+	      if (sufficient_parms_p (parms))
+		{
+		  if (DECL_DELETED_FN (fn))
+		    maybe_explain_implicit_delete (fn);
+		  else
+		    explain_invalid_constexpr_fn (fn);
+		  break;
+		}
+	    }
+	}
     }
   else
     {
@@ -6180,6 +6222,18 @@ finish_struct (tree t, tree attributes)
 	if (DECL_PURE_VIRTUAL_P (x))
 	  VEC_safe_push (tree, gc, CLASSTYPE_PURE_VIRTUALS (t), x);
       complete_vars (t);
+      /* We need to add the target functions to the CLASSTYPE_METHOD_VEC if
+	 an enclosing scope is a template class, so that this function be
+	 found by lookup_fnfields_1 when the using declaration is not
+	 instantiated yet.  */
+      for (x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
+	if (TREE_CODE (x) == USING_DECL)
+	  {
+	    tree fn = strip_using_decl (x);
+	    if (is_overloaded_fn (fn))
+	      for (; fn; fn = OVL_NEXT (fn))
+		add_method (t, OVL_CURRENT (fn), x);
+	  }
 
       /* Remember current #pragma pack value.  */
       TYPE_PRECISION (t) = maximum_field_alignment;
@@ -8336,6 +8390,18 @@ build_vtbl_initializer (tree binfo,
 				      build_fold_addr_expr (fn));
 		  init = abort_fndecl_addr;
 		}
+	    }
+	  /* Likewise for deleted virtuals.  */
+	  else if (DECL_DELETED_FN (fn_original))
+	    {
+	      fn = get_identifier ("__cxa_deleted_virtual");
+	      if (!get_global_value_if_present (fn, &fn))
+		fn = push_library_fn (fn, (build_function_type_list
+					   (void_type_node, NULL_TREE)),
+				      NULL_TREE);
+	      if (!TARGET_VTABLE_USES_DESCRIPTORS)
+		init = fold_convert (vfunc_ptr_type_node,
+				     build_fold_addr_expr (fn));
 	    }
 	  else
 	    {

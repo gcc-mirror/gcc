@@ -9,6 +9,11 @@
 
 
 
+#if defined( CDEF_CPLUSPLUS_CHECK )
+#define _Noreturn	__attribute__((__noreturn__))
+#endif  /* CDEF_CPLUSPLUS_CHECK */
+
+
 #if defined( FREEBSD_GCC3_BREAKAGE_CHECK )
 #if __GNUC__ == 2 && __GNUC_MINOR__ >= 7
 #endif  /* FREEBSD_GCC3_BREAKAGE_CHECK */

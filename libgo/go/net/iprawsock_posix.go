@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux openbsd windows
+// +build darwin freebsd linux netbsd openbsd windows
 
 // (Raw) IP sockets
 
@@ -12,6 +12,7 @@ import (
 	"errors"
 	"os"
 	"syscall"
+	"time"
 )
 
 func sockaddrToIP(sa syscall.Sockaddr) Addr {
@@ -97,28 +98,28 @@ func (c *IPConn) RemoteAddr() Addr {
 	return c.fd.raddr
 }
 
-// SetTimeout implements the net.Conn SetTimeout method.
-func (c *IPConn) SetTimeout(nsec int64) error {
+// SetDeadline implements the net.Conn SetDeadline method.
+func (c *IPConn) SetDeadline(t time.Time) error {
 	if !c.ok() {
 		return os.EINVAL
 	}
-	return setTimeout(c.fd, nsec)
+	return setDeadline(c.fd, t)
 }
 
-// SetReadTimeout implements the net.Conn SetReadTimeout method.
-func (c *IPConn) SetReadTimeout(nsec int64) error {
+// SetReadDeadline implements the net.Conn SetReadDeadline method.
+func (c *IPConn) SetReadDeadline(t time.Time) error {
 	if !c.ok() {
 		return os.EINVAL
 	}
-	return setReadTimeout(c.fd, nsec)
+	return setReadDeadline(c.fd, t)
 }
 
-// SetWriteTimeout implements the net.Conn SetWriteTimeout method.
-func (c *IPConn) SetWriteTimeout(nsec int64) error {
+// SetWriteDeadline implements the net.Conn SetWriteDeadline method.
+func (c *IPConn) SetWriteDeadline(t time.Time) error {
 	if !c.ok() {
 		return os.EINVAL
 	}
-	return setWriteTimeout(c.fd, nsec)
+	return setWriteDeadline(c.fd, t)
 }
 
 // SetReadBuffer sets the size of the operating system's
@@ -146,8 +147,8 @@ func (c *IPConn) SetWriteBuffer(bytes int) error {
 // that was on the packet.
 //
 // ReadFromIP can be made to time out and return an error with
-// Timeout() == true after a fixed time limit; see SetTimeout and
-// SetReadTimeout.
+// Timeout() == true after a fixed time limit; see SetDeadline and
+// SetReadDeadline.
 func (c *IPConn) ReadFromIP(b []byte) (n int, addr *IPAddr, err error) {
 	if !c.ok() {
 		return 0, nil, os.EINVAL
@@ -182,7 +183,7 @@ func (c *IPConn) ReadFrom(b []byte) (n int, addr Addr, err error) {
 //
 // WriteToIP can be made to time out and return
 // an error with Timeout() == true after a fixed time limit;
-// see SetTimeout and SetWriteTimeout.
+// see SetDeadline and SetWriteDeadline.
 // On packet-oriented connections, write timeouts are rare.
 func (c *IPConn) WriteToIP(b []byte, addr *IPAddr) (n int, err error) {
 	if !c.ok() {
@@ -224,8 +225,8 @@ func splitNetProto(netProto string) (net string, proto int, err error) {
 	return net, proto, nil
 }
 
-// DialIP connects to the remote address raddr on the network net,
-// which must be "ip", "ip4", or "ip6".
+// DialIP connects to the remote address raddr on the network protocol netProto,
+// which must be "ip", "ip4", or "ip6" followed by a colon and a protocol number or name.
 func DialIP(netProto string, laddr, raddr *IPAddr) (c *IPConn, err error) {
 	net, proto, err := splitNetProto(netProto)
 	if err != nil {
@@ -260,7 +261,7 @@ func ListenIP(netProto string, laddr *IPAddr) (c *IPConn, err error) {
 	default:
 		return nil, UnknownNetworkError(net)
 	}
-	fd, e := internetSocket(net, laddr.toAddr(), nil, syscall.SOCK_RAW, proto, "dial", sockaddrToIP)
+	fd, e := internetSocket(net, laddr.toAddr(), nil, syscall.SOCK_RAW, proto, "listen", sockaddrToIP)
 	if e != nil {
 		return nil, e
 	}

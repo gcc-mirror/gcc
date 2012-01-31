@@ -302,7 +302,7 @@ func TestEscape(t *testing.T) {
 		},
 		{
 			"styleObfuscatedExpressionBlocked",
-			`<p style="width: {{"  e\78preS\0Sio/**/n(alert(1337))"}}">`,
+			`<p style="width: {{"  e\\78preS\x00Sio/**/n(alert(1337))"}}">`,
 			`<p style="width: ZgotmplZ">`,
 		},
 		{
@@ -312,7 +312,7 @@ func TestEscape(t *testing.T) {
 		},
 		{
 			"styleObfuscatedMozBindingBlocked",
-			`<p style="{{"  -mo\7a-B\0I/**/nding(alert(1337))"}}: ...">`,
+			`<p style="{{"  -mo\\7a-B\x00I/**/nding(alert(1337))"}}: ...">`,
 			`<p style="ZgotmplZ: ...">`,
 		},
 		{
@@ -654,7 +654,7 @@ func TestEscape(t *testing.T) {
 	for _, test := range tests {
 		tmpl := New(test.name)
 		// TODO: Move noescape into template/func.go
-		tmpl.Funcs(template.FuncMap{
+		tmpl.Funcs(FuncMap{
 			"noescape": func(a ...interface{}) string {
 				return fmt.Sprint(a...)
 			},
@@ -792,7 +792,7 @@ func TestEscapeSet(t *testing.T) {
 
 	// pred is a template function that returns the predecessor of a
 	// natural number for testing recursive templates.
-	fns := template.FuncMap{"pred": func(a ...interface{}) (interface{}, error) {
+	fns := FuncMap{"pred": func(a ...interface{}) (interface{}, error) {
 		if len(a) == 1 {
 			if i, _ := a[0].(int); i > 0 {
 				return i - 1, nil
@@ -899,7 +899,7 @@ func TestErrors(t *testing.T) {
 		},
 		{
 			`<a href="{{if .F}}/foo?a={{else}}/bar/{{end}}{{.H}}">`,
-			"z:1: (action: [(command: [F=[H]])]) appears in an ambiguous URL context",
+			"z:1: {{.H}} appears in an ambiguous URL context",
 		},
 		{
 			`<a onclick="alert('Hello \`,
@@ -928,7 +928,7 @@ func TestErrors(t *testing.T) {
 		},
 		{
 			`{{template "foo"}}`,
-			"z:1: no such template foo",
+			"z:1: no such template \"foo\"",
 		},
 		{
 			`<div{{template "y"}}>` +
@@ -944,23 +944,23 @@ func TestErrors(t *testing.T) {
 		},
 		{
 			`<input type=button value=onclick=>`,
-			`exp/template/html:z: "=" in unquoted attr: "onclick="`,
+			`html/template:z: "=" in unquoted attr: "onclick="`,
 		},
 		{
 			`<input type=button value= onclick=>`,
-			`exp/template/html:z: "=" in unquoted attr: "onclick="`,
+			`html/template:z: "=" in unquoted attr: "onclick="`,
 		},
 		{
 			`<input type=button value= 1+1=2>`,
-			`exp/template/html:z: "=" in unquoted attr: "1+1=2"`,
+			`html/template:z: "=" in unquoted attr: "1+1=2"`,
 		},
 		{
 			"<a class=`foo>",
-			"exp/template/html:z: \"`\" in unquoted attr: \"`foo\"",
+			"html/template:z: \"`\" in unquoted attr: \"`foo\"",
 		},
 		{
 			`<a style=font:'Arial'>`,
-			`exp/template/html:z: "'" in unquoted attr: "font:'Arial'"`,
+			`html/template:z: "'" in unquoted attr: "font:'Arial'"`,
 		},
 		{
 			`<a=foo>`,
@@ -1490,62 +1490,62 @@ func TestEnsurePipelineContains(t *testing.T) {
 	}{
 		{
 			"{{.X}}",
-			"[(command: [F=[X]])]",
+			".X",
 			[]string{},
 		},
 		{
 			"{{.X | html}}",
-			"[(command: [F=[X]]) (command: [I=html])]",
+			".X | html",
 			[]string{},
 		},
 		{
 			"{{.X}}",
-			"[(command: [F=[X]]) (command: [I=html])]",
+			".X | html",
 			[]string{"html"},
 		},
 		{
 			"{{.X | html}}",
-			"[(command: [F=[X]]) (command: [I=html]) (command: [I=urlquery])]",
+			".X | html | urlquery",
 			[]string{"urlquery"},
 		},
 		{
 			"{{.X | html | urlquery}}",
-			"[(command: [F=[X]]) (command: [I=html]) (command: [I=urlquery])]",
+			".X | html | urlquery",
 			[]string{"urlquery"},
 		},
 		{
 			"{{.X | html | urlquery}}",
-			"[(command: [F=[X]]) (command: [I=html]) (command: [I=urlquery])]",
+			".X | html | urlquery",
 			[]string{"html", "urlquery"},
 		},
 		{
 			"{{.X | html | urlquery}}",
-			"[(command: [F=[X]]) (command: [I=html]) (command: [I=urlquery])]",
+			".X | html | urlquery",
 			[]string{"html"},
 		},
 		{
 			"{{.X | urlquery}}",
-			"[(command: [F=[X]]) (command: [I=html]) (command: [I=urlquery])]",
+			".X | html | urlquery",
 			[]string{"html", "urlquery"},
 		},
 		{
 			"{{.X | html | print}}",
-			"[(command: [F=[X]]) (command: [I=urlquery]) (command: [I=html]) (command: [I=print])]",
+			".X | urlquery | html | print",
 			[]string{"urlquery", "html"},
 		},
 	}
-	for _, test := range tests {
+	for i, test := range tests {
 		tmpl := template.Must(template.New("test").Parse(test.input))
 		action, ok := (tmpl.Tree.Root.Nodes[0].(*parse.ActionNode))
 		if !ok {
-			t.Errorf("First node is not an action: %s", test.input)
+			t.Errorf("#%d: First node is not an action: %s", i, test.input)
 			continue
 		}
 		pipe := action.Pipe
 		ensurePipelineContains(pipe, test.ids)
 		got := pipe.String()
 		if got != test.output {
-			t.Errorf("%s, %v: want\n\t%s\ngot\n\t%s", test.input, test.ids, test.output, got)
+			t.Errorf("#%d: %s, %v: want\n\t%s\ngot\n\t%s", i, test.input, test.ids, test.output, got)
 		}
 	}
 }

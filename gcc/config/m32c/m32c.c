@@ -3475,95 +3475,11 @@ m32c_mov_ok (rtx * operands, enum machine_mode mode ATTRIBUTE_UNUSED)
    for moving an immediate double data to a double data type variable
    location, can be combined into single SImode mov instruction.  */
 bool
-m32c_immd_dbl_mov (rtx * operands, 
+m32c_immd_dbl_mov (rtx * operands ATTRIBUTE_UNUSED,
 		   enum machine_mode mode ATTRIBUTE_UNUSED)
 {
-  int flag = 0, okflag = 0, offset1 = 0, offset2 = 0, offsetsign = 0;
-  const char *str1;
-  const char *str2;
-
-  if (GET_CODE (XEXP (operands[0], 0)) == SYMBOL_REF
-      && MEM_SCALAR_P (operands[0])
-      && !MEM_IN_STRUCT_P (operands[0])
-      && GET_CODE (XEXP (operands[2], 0)) == CONST
-      && GET_CODE (XEXP (XEXP (operands[2], 0), 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (XEXP (operands[2], 0), 0), 0)) == SYMBOL_REF
-      && GET_CODE (XEXP (XEXP (XEXP (operands[2], 0), 0), 1)) == CONST_INT
-      && MEM_SCALAR_P (operands[2])
-      && !MEM_IN_STRUCT_P (operands[2]))
-    flag = 1; 
-
-  else if (GET_CODE (XEXP (operands[0], 0)) == CONST
-           && GET_CODE (XEXP (XEXP (operands[0], 0), 0)) == PLUS
-           && GET_CODE (XEXP (XEXP (XEXP (operands[0], 0), 0), 0)) == SYMBOL_REF
-           && MEM_SCALAR_P (operands[0])
-           && !MEM_IN_STRUCT_P (operands[0])
-           && !(INTVAL (XEXP (XEXP (XEXP (operands[0], 0), 0), 1)) %4)
-           && GET_CODE (XEXP (operands[2], 0)) == CONST
-           && GET_CODE (XEXP (XEXP (operands[2], 0), 0)) == PLUS
-           && GET_CODE (XEXP (XEXP (XEXP (operands[2], 0), 0), 0)) == SYMBOL_REF
-           && MEM_SCALAR_P (operands[2])
-           && !MEM_IN_STRUCT_P (operands[2]))
-    flag = 2; 
-
-  else if (GET_CODE (XEXP (operands[0], 0)) == PLUS
-           &&  GET_CODE (XEXP (XEXP (operands[0], 0), 0)) == REG
-           &&  REGNO (XEXP (XEXP (operands[0], 0), 0)) == FB_REGNO 
-           &&  GET_CODE (XEXP (XEXP (operands[0], 0), 1)) == CONST_INT
-           &&  MEM_SCALAR_P (operands[0])
-           &&  !MEM_IN_STRUCT_P (operands[0])
-           &&  !(INTVAL (XEXP (XEXP (operands[0], 0), 1)) %4)
-           &&  REGNO (XEXP (XEXP (operands[2], 0), 0)) == FB_REGNO 
-           &&  GET_CODE (XEXP (XEXP (operands[2], 0), 1)) == CONST_INT
-           &&  MEM_SCALAR_P (operands[2])
-           &&  !MEM_IN_STRUCT_P (operands[2]))
-    flag = 3; 
-
-  else
-    return false;
-
-  switch (flag)
-    {
-    case 1:
-      str1 = XSTR (XEXP (operands[0], 0), 0);
-      str2 = XSTR (XEXP (XEXP (XEXP (operands[2], 0), 0), 0), 0);
-      if (strcmp (str1, str2) == 0)
-	okflag = 1; 
-      else
-	okflag = 0; 
-      break;
-    case 2:
-      str1 = XSTR (XEXP (XEXP (XEXP (operands[0], 0), 0), 0), 0);
-      str2 = XSTR (XEXP (XEXP (XEXP (operands[2], 0), 0), 0), 0);
-      if (strcmp(str1,str2) == 0)
-	okflag = 1; 
-      else
-	okflag = 0; 
-      break; 
-    case 3:
-      offset1 = INTVAL (XEXP (XEXP (operands[0], 0), 1));
-      offset2 = INTVAL (XEXP (XEXP (operands[2], 0), 1));
-      offsetsign = offset1 >> ((sizeof (offset1) * 8) -1);
-      if (((offset2-offset1) == 2) && offsetsign != 0)
-	okflag = 1;
-      else 
-	okflag = 0; 
-      break; 
-    default:
-      okflag = 0; 
-    } 
-      
-  if (okflag == 1)
-    {
-      HOST_WIDE_INT val;
-      operands[4] = gen_rtx_MEM (SImode, XEXP (operands[0], 0));
-
-      val = (INTVAL (operands[3]) << 16) + (INTVAL (operands[1]) & 0xFFFF);
-      operands[5] = gen_rtx_CONST_INT (VOIDmode, val);
-     
-      return true;
-    }
-
+  /* ??? This relied on the now-defunct MEM_SCALAR and MEM_IN_STRUCT_P
+     flags.  */
   return false;
 }  
 

@@ -1,6 +1,6 @@
 /* Java(TM) language-specific utility routines.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2010, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -550,6 +550,7 @@ java_init_options_struct (struct gcc_options *opts)
 
   /* In Java floating point operations never trap.  */
   opts->x_flag_trapping_math = 0;
+  opts->frontend_set_flag_trapping_math = true;
 
   /* In Java arithmetic overflow always wraps around.  */
   opts->x_flag_wrapv = 1;

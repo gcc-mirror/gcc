@@ -401,6 +401,10 @@ class Type
   static Integer_type*
   make_abstract_integer_type();
 
+  // Make an abstract type for a character constant.
+  static Integer_type*
+  make_abstract_character_type();
+
   // Make a named integer type with a specified size.
   // RUNTIME_TYPE_KIND is the code to use in reflection information,
   // to distinguish int and int32.
@@ -485,6 +489,9 @@ class Type
   static Interface_type*
   make_interface_type(Typed_identifier_list* methods, Location);
 
+  static Interface_type*
+  make_empty_interface_type(Location);
+
   static Type*
   make_type_descriptor_type();
 
@@ -568,8 +575,8 @@ class Type
   // identity function which gets nothing but a pointer to the value
   // and a size.
   bool
-  compare_is_identity() const
-  { return this->do_compare_is_identity(); }
+  compare_is_identity(Gogo* gogo) const
+  { return this->do_compare_is_identity(gogo); }
 
   // Return a hash code for this type for the method hash table.
   // Types which are equivalent according to are_identical will have
@@ -861,6 +868,27 @@ class Type
   std::string
   mangled_name(Gogo*) const;
 
+  // If the size of the type can be determined, set *PSIZE to the size
+  // in bytes and return true.  Otherwise, return false.  This queries
+  // the backend.
+  bool
+  backend_type_size(Gogo*, unsigned int* psize);
+
+  // If the alignment of the type can be determined, set *PALIGN to
+  // the alignment in bytes and return true.  Otherwise, return false.
+  bool
+  backend_type_align(Gogo*, unsigned int* palign);
+
+  // If the alignment of a struct field of this type can be
+  // determined, set *PALIGN to the alignment in bytes and return
+  // true.  Otherwise, return false.
+  bool
+  backend_type_field_align(Gogo*, unsigned int* palign);
+
+  // Whether the backend size is known.
+  bool
+  is_backend_type_size_known(Gogo*);
+
   // Get the hash and equality functions for a type.
   void
   type_functions(Gogo*, Named_type* name, Function_type* hash_fntype,
@@ -903,7 +931,7 @@ class Type
   { return false; }
 
   virtual bool
-  do_compare_is_identity() const = 0;
+  do_compare_is_identity(Gogo*) const = 0;
 
   virtual unsigned int
   do_hash_for_method(Gogo*) const;
@@ -1298,6 +1326,10 @@ class Typed_identifier_list
                                               Linemap::unknown_location()));
   }
 
+  void
+  reserve(size_t c)
+  { this->entries_.reserve(c); }
+
   // Iterators.
 
   typedef std::vector<Typed_identifier>::iterator iterator;
@@ -1346,6 +1378,10 @@ class Integer_type : public Type
   static Integer_type*
   create_abstract_integer_type();
 
+  // Create an abstract character type.
+  static Integer_type*
+  create_abstract_character_type();
+
   // Whether this is an abstract integer type.
   bool
   is_abstract() const
@@ -1365,9 +1401,29 @@ class Integer_type : public Type
   bool
   is_identical(const Integer_type* t) const;
 
- protected:
+  // Whether this is the type "byte" or another name for "byte".
   bool
-  do_compare_is_identity() const
+  is_byte() const
+  { return this->is_byte_; }
+
+  // Mark this as the "byte" type.
+  void
+  set_is_byte()
+  { this->is_byte_ = true; }
+
+  // Whether this is the type "rune" or another name for "rune".
+  bool
+  is_rune() const
+  { return this->is_rune_; }
+
+  // Mark this as the "rune" type.
+  void
+  set_is_rune()
+  { this->is_rune_ = true; }
+
+protected:
+  bool
+  do_compare_is_identity(Gogo*) const
   { return true; }
 
   unsigned int
@@ -1389,8 +1445,8 @@ class Integer_type : public Type
   Integer_type(bool is_abstract, bool is_unsigned, int bits,
 	       int runtime_type_kind)
     : Type(TYPE_INTEGER),
-      is_abstract_(is_abstract), is_unsigned_(is_unsigned), bits_(bits),
-      runtime_type_kind_(runtime_type_kind)
+      is_abstract_(is_abstract), is_unsigned_(is_unsigned), is_byte_(false),
+      is_rune_(false), bits_(bits), runtime_type_kind_(runtime_type_kind)
   { }
 
   // Map names of integer types to the types themselves.
@@ -1401,6 +1457,10 @@ class Integer_type : public Type
   bool is_abstract_;
   // True if this is an unsigned type.
   bool is_unsigned_;
+  // True if this is the byte type.
+  bool is_byte_;
+  // True if this is the rune type.
+  bool is_rune_;
   // The number of bits.
   int bits_;
   // The runtime type code used in the type descriptor for this type.
@@ -1440,7 +1500,7 @@ class Float_type : public Type
 
  protected:
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   unsigned int
@@ -1509,7 +1569,7 @@ class Complex_type : public Type
 
  protected:
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   unsigned int
@@ -1569,7 +1629,7 @@ class String_type : public Type
   { return true; }
 
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   Btype*
@@ -1687,7 +1747,7 @@ class Function_type : public Type
   { return true; }
 
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   unsigned int
@@ -1772,7 +1832,7 @@ class Pointer_type : public Type
   { return true; }
 
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return true; }
 
   unsigned int
@@ -1964,7 +2024,7 @@ class Struct_type : public Type
 		  Location) const;
 
   // Return the total number of fields, including embedded fields.
-  // This is the number of values which can appear in a conversion to
+  // This is the number of values that can appear in a conversion to
   // this type.
   unsigned int
   total_field_count() const;
@@ -2013,6 +2073,12 @@ class Struct_type : public Type
   traverse_field_types(Traverse* traverse)
   { return this->do_traverse(traverse); }
 
+  // If the offset of field INDEX in the backend implementation can be
+  // determined, set *POFFSET to the offset in bytes and return true.
+  // Otherwise, return false.
+  bool
+  backend_field_offset(Gogo*, unsigned int index, unsigned int* poffset);
+
   // Import a struct type.
   static Struct_type*
   do_import(Import*);
@@ -2039,7 +2105,7 @@ class Struct_type : public Type
   do_has_pointer() const;
 
   bool
-  do_compare_is_identity() const;
+  do_compare_is_identity(Gogo*) const;
 
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -2109,10 +2175,6 @@ class Array_type : public Type
   array_has_hidden_fields(const Named_type* within, std::string* reason) const
   { return this->element_type_->has_hidden_fields(within, reason); }
 
-  // Build the hash and equality functions if necessary.
-  void
-  finalize_methods(Gogo*);
-
   // Return a tree for the pointer to the values in an array.
   tree
   value_pointer_tree(Gogo*, tree array) const;
@@ -2165,11 +2227,7 @@ class Array_type : public Type
   }
 
   bool
-  do_compare_is_identity() const
-  {
-    return (this->length_ != NULL
-	    && this->element_type_->compare_is_identity());
-  }
+  do_compare_is_identity(Gogo*) const;
 
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -2262,7 +2320,7 @@ class Map_type : public Type
   { return true; }
 
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   unsigned int
@@ -2348,7 +2406,7 @@ class Channel_type : public Type
   { return true; }
 
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return true; }
 
   unsigned int
@@ -2386,7 +2444,9 @@ class Interface_type : public Type
  public:
   Interface_type(Typed_identifier_list* methods, Location location)
     : Type(TYPE_INTERFACE),
-      methods_(methods), location_(location)
+      parse_methods_(methods), all_methods_(NULL), location_(location),
+      interface_btype_(NULL), assume_identical_(NULL),
+      methods_are_finalized_(false), seen_(false)
   { go_assert(methods == NULL || !methods->empty()); }
 
   // The location where the interface type was defined.
@@ -2397,18 +2457,27 @@ class Interface_type : public Type
   // Return whether this is an empty interface.
   bool
   is_empty() const
-  { return this->methods_ == NULL; }
+  {
+    go_assert(this->methods_are_finalized_);
+    return this->all_methods_ == NULL;
+  }
 
   // Return the list of methods.  This will return NULL for an empty
   // interface.
   const Typed_identifier_list*
   methods() const
-  { return this->methods_; }
+  {
+    go_assert(this->methods_are_finalized_);
+    return this->all_methods_;
+  }
 
   // Return the number of methods.
   size_t
   method_count() const
-  { return this->methods_ == NULL ? 0 : this->methods_->size(); }
+  {
+    go_assert(this->methods_are_finalized_);
+    return this->all_methods_ == NULL ? 0 : this->all_methods_->size();
+  }
 
   // Return the method NAME, or NULL.
   const Typed_identifier*
@@ -2418,7 +2487,8 @@ class Interface_type : public Type
   size_t
   method_index(const std::string& name) const;
 
-  // Finalize the methods.  This handles interface inheritance.
+  // Finalize the methods.  This sets all_methods_.  This handles
+  // interface inheritance.
   void
   finalize_methods();
 
@@ -2463,7 +2533,7 @@ class Interface_type : public Type
   { return true; }
 
   bool
-  do_compare_is_identity() const
+  do_compare_is_identity(Gogo*) const
   { return false; }
 
   unsigned int
@@ -2485,11 +2555,41 @@ class Interface_type : public Type
   do_export(Export*) const;
 
  private:
-  // The list of methods associated with the interface.  This will be
-  // NULL for the empty interface.
-  Typed_identifier_list* methods_;
+  // This type guards against infinite recursion when comparing
+  // interface types.  We keep a list of interface types assumed to be
+  // identical during comparison.  We just keep the list on the stack.
+  // This permits us to compare cases like
+  // type I1 interface { F() interface{I1} }
+  // type I2 interface { F() interface{I2} }
+  struct Assume_identical
+  {
+    Assume_identical* next;
+    const Interface_type* t1;
+    const Interface_type* t2;
+  };
+
+  bool
+  assume_identical(const Interface_type*, const Interface_type*) const;
+
+  // The list of methods associated with the interface from the
+  // parser.  This will be NULL for the empty interface.  This may
+  // include unnamed interface types.
+  Typed_identifier_list* parse_methods_;
+  // The list of all methods associated with the interface.  This
+  // expands any interface types listed in methods_.  It is set by
+  // finalize_methods.  This will be NULL for the empty interface.
+  Typed_identifier_list* all_methods_;
   // The location where the interface was defined.
   Location location_;
+  // The backend representation of this type during backend conversion.
+  Btype* interface_btype_;
+  // A list of interface types assumed to be identical during
+  // interface comparison.
+  mutable Assume_identical* assume_identical_;
+  // Whether the methods have been finalized.
+  bool methods_are_finalized_;
+  // Used to avoid endless recursion in do_mangled_name.
+  mutable bool seen_;
 };
 
 // The value we keep for a named type.  This lets us get the right
@@ -2507,8 +2607,9 @@ class Named_type : public Type
       local_methods_(NULL), all_methods_(NULL),
       interface_method_tables_(NULL), pointer_interface_method_tables_(NULL),
       location_(location), named_btype_(NULL), dependencies_(),
-      is_visible_(true), is_error_(false), is_converted_(false),
-      is_circular_(false), seen_(false), seen_in_get_backend_(false)
+      is_visible_(true), is_error_(false), is_placeholder_(false),
+      is_converted_(false), is_circular_(false), seen_(false),
+      seen_in_compare_is_identity_(false), seen_in_get_backend_(false)
   { }
 
   // Return the associated Named_object.  This holds the actual name.
@@ -2580,6 +2681,11 @@ class Named_type : public Type
   bool
   is_builtin() const
   { return Linemap::is_predeclared_location(this->location_); }
+
+  // Whether this is an alias.  There are currently two aliases: byte
+  // and rune.
+  bool
+  is_alias() const;
 
   // Whether this is a circular type: a pointer or function type that
   // refers to itself, which is not possible in C.
@@ -2672,6 +2778,13 @@ class Named_type : public Type
   add_dependency(Named_type* nt)
   { this->dependencies_.push_back(nt); }
 
+  // Return true if the size and alignment of the backend
+  // representation of this type is known.  This is always true after
+  // types have been converted, but may be false beforehand.
+  bool
+  is_named_backend_type_size_known() const
+  { return this->named_btype_ != NULL && !this->is_placeholder_; }
+
   // Export the type.
   void
   export_named_type(Export*, const std::string& name) const;
@@ -2696,7 +2809,7 @@ class Named_type : public Type
   do_has_pointer() const;
 
   bool
-  do_compare_is_identity() const;
+  do_compare_is_identity(Gogo*) const;
 
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -2766,8 +2879,11 @@ class Named_type : public Type
   bool is_visible_;
   // Whether this type is erroneous.
   bool is_error_;
+  // Whether the current value of named_btype_ is a placeholder for
+  // which the final size of the type is not known.
+  bool is_placeholder_;
   // Whether this type has been converted to the backend
-  // representation.
+  // representation.  Implies that is_placeholder_ is false.
   bool is_converted_;
   // Whether this is a pointer or function type which refers to the
   // type itself.
@@ -2777,6 +2893,8 @@ class Named_type : public Type
   // This is mutable because it is always reset to false when the
   // function exits.
   mutable bool seen_;
+  // Like seen_, but used only by do_compare_is_identity.
+  mutable bool seen_in_compare_is_identity_;
   // Like seen_, but used only by do_get_backend.
   bool seen_in_get_backend_;
 };
@@ -2831,8 +2949,8 @@ class Forward_declaration_type : public Type
   { return this->real_type()->has_pointer(); }
 
   bool
-  do_compare_is_identity() const
-  { return this->real_type()->compare_is_identity(); }
+  do_compare_is_identity(Gogo* gogo) const
+  { return this->real_type()->compare_is_identity(gogo); }
 
   unsigned int
   do_hash_for_method(Gogo* gogo) const

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1849,17 +1849,19 @@ potential_alignment_gap (tree prev_field, tree curr_field, tree offset)
   return true;
 }
 
-/* Return a LABEL_DECL node for LABEL_NAME.  */
+/* Return a LABEL_DECL with LABEL_NAME.  GNAT_NODE is used for the position
+   of the decl.  */
 
 tree
-create_label_decl (tree label_name)
+create_label_decl (tree label_name, Node_Id gnat_node)
 {
-  tree label_decl = build_decl (input_location,
-				LABEL_DECL, label_name, void_type_node);
+  tree label_decl
+    = build_decl (input_location, LABEL_DECL, label_name, void_type_node);
 
-  DECL_CONTEXT (label_decl)     = current_function_decl;
-  DECL_MODE (label_decl)        = VOIDmode;
-  DECL_SOURCE_LOCATION (label_decl) = input_location;
+  DECL_MODE (label_decl) = VOIDmode;
+
+  /* Add this decl to the current binding level.  */
+  gnat_pushdecl (label_decl, gnat_node);
 
   return label_decl;
 }

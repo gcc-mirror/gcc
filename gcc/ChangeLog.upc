@@ -1,7 +1,12 @@
+2012-01-31  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 183751 into gupc branch.
+	Incorporates fix for bootstrap failure on openSUSE 12.1.
+
 2012-01-10  Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 183072 into gupc branch.
-        Incorporates libcpp __BASE_FILE__ fix.
+	Merge trunk version 183072 into gupc branch.
+	Incorporates libcpp __BASE_FILE__ fix.
 
 2011-12-20  Nenad Vukicevic <nenad@intrepid.com>
 
@@ -19,8 +24,8 @@
 
 2011-11-18  Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 181552 into gupc branch.
-        Incorporates libgcc/libunwind fix for IA64.
+	Merge trunk version 181552 into gupc branch.
+	Incorporates libgcc/libunwind fix for IA64.
 
 2011-11-19  Gary Funck  <gary@intrepid.com>
 
@@ -30,8 +35,8 @@
 
 2011-11-18  Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 181493 into gupc branch.
-        Incorporates final fix for PR target/49992.
+	Merge trunk version 181493 into gupc branch.
+	Incorporates final fix for PR target/49992.
 
 2011-11-09  Nenad Vukicevic <nenad@intrepid.com>
 
@@ -56,7 +61,7 @@
 	* top-level/configure.ac: Implement support for cross-builds, and
 	  adjust for rename of libupc to libgupc.
 	* top-level/Makefile.tpl: Ditto.
-        * top-level/Makefile.def: Ditto.
+	* top-level/Makefile.def: Ditto.
 	* top-level/configure: Re-generate.
 	* top-level/Makefile.in: Re-generate.
 	* top-level/contrib/gcc_update: Adjust for rename of libupc to libgupc.
@@ -76,17 +81,17 @@
 
 2011-10-20  Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 180276 into gupc branch.
-        Incorporates fix for PR bootstrap/50709.
+	Merge trunk version 180276 into gupc branch.
+	Incorporates fix for PR bootstrap/50709.
 
 2011-10-20  Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 180246 into gupc branch.
+	Merge trunk version 180246 into gupc branch.
 
 2011-10-19  Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 180233 into gupc branch.
-        Incorporates fix for PR debug/49310 (var tracking).
+	Merge trunk version 180233 into gupc branch.
+	Incorporates fix for PR debug/49310 (var tracking).
 
 2011-10-11  Nenad Vukicevic <nenad@intrepid.com>
 
@@ -125,8 +130,8 @@
 
 2011-09-13  Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 178795 into gupc branch.
-        Incorporates fix to PR bootstrap/50010 for x86-32.
+	Merge trunk version 178795 into gupc branch.
+	Incorporates fix to PR bootstrap/50010 for x86-32.
 
 2011-09-08  Gary Funck  <gary@intrepid.com>
 
@@ -243,7 +248,7 @@
 	Merge trunk version 177949 into gupc branch.
 	* c-family/c-common.h (enum rid): Bump the number of type modifiers
 	  in the comment.
-        * ../libcpp/init.c (struct lang_flags): Adjust the entry for UPC
+	* ../libcpp/init.c (struct lang_flags): Adjust the entry for UPC
 	  to add new rliterals column value.
 
 2011-08-26  Gary Funck  <gary@intrepid.com>
@@ -409,9 +414,9 @@ libcpp/
 
 2011-06-07  Alexander Monakov  <amonakov@ispras.ru>
 
-        * sel-sched.c (move_op): Use correct type for 'res'.  Verify that
-        code_motion_path_driver returned 0 or 1.
-        (sel_region_finish): Clear h_d_i_d.
+	* sel-sched.c (move_op): Use correct type for 'res'.  Verify that
+	code_motion_path_driver returned 0 or 1.
+	(sel_region_finish): Clear h_d_i_d.
 
 2011-06-02  Gary Funck  <gary@intrepid.com>
 
@@ -637,7 +642,7 @@ libcpp/
 	  upc_localsizeof_expr, upc_localsizeof_type):
 	  Move from upc/upc-act.c.
 
-        * tree.c (build_upc_unshared_type): New.
+	* tree.c (build_upc_unshared_type): New.
 	  Move upc_get_unshared_type from upc/upc-act.c and rename
 	  to build_upc_unshared_type.
 	  c-family/c-common.c (pointer_int_sum): refer to renamed
@@ -669,7 +674,7 @@ libcpp/
 	* ../config.sub: Remove Cray Catamount/CNL support.
 	* config.gcc: Remove Cray Catamount/CNL support.
 	* ../maintainer-scripts/gcc_release: Revert to trunk.
-        * c-family/c-common.h: Define parse_optimize_options.  Its definition
+	* c-family/c-common.h: Define parse_optimize_options.  Its definition
 	  was missed in a previous merge with the trunk.
 	* dwarf2out.c: Revert a fix which removed the 'type_main_variant'
 	  procedure.
@@ -821,7 +826,7 @@ gcc/
 	  UPC-related linker compiler specifications,
 	  accessed via %:include().
 
-        * configure.ac, configure: Remove logic related to building
+	* configure.ac, configure: Remove logic related to building
 	  upc-crtbegin/end. Remove config. tests for numa and cpu
 	  affinity (previously used by the 'upc' driver); these
 	  settings are now propagated by target-specific compiler
@@ -1232,7 +1237,7 @@ libgcc/
 	Create gupc branch from trunk version 157149.
 2011-10-04  Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 179421 into gupc branch.
+	Merge trunk version 179421 into gupc branch.
 
 	* tree.c (build_opaque_vector_type): Add null UPC layout qualifier
 	argument to the call to check_qualified_type().
@@ -1258,8 +1263,8 @@ libgcc/
 
 2011-09-13  Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 178795 into gupc branch.
-        Incorporates fix to PR bootstrap/50010 for x86-32.
+	Merge trunk version 178795 into gupc branch.
+	Incorporates fix to PR bootstrap/50010 for x86-32.
 
 2011-09-08  Gary Funck  <gary@intrepid.com>
 
@@ -1376,7 +1381,7 @@ libgcc/
 	Merge trunk version 177949 into gupc branch.
 	* c-family/c-common.h (enum rid): Bump the number of type modifiers
 	  in the comment.
-        * ../libcpp/init.c (struct lang_flags): Adjust the entry for UPC
+	* ../libcpp/init.c (struct lang_flags): Adjust the entry for UPC
 	  to add new rliterals column value.
 
 2011-08-26  Gary Funck  <gary@intrepid.com>
@@ -1542,9 +1547,9 @@ libcpp/
 
 2011-06-07  Alexander Monakov  <amonakov@ispras.ru>
 
-        * sel-sched.c (move_op): Use correct type for 'res'.  Verify that
-        code_motion_path_driver returned 0 or 1.
-        (sel_region_finish): Clear h_d_i_d.
+	* sel-sched.c (move_op): Use correct type for 'res'.  Verify that
+	code_motion_path_driver returned 0 or 1.
+	(sel_region_finish): Clear h_d_i_d.
 
 2011-06-02  Gary Funck  <gary@intrepid.com>
 
@@ -1770,7 +1775,7 @@ libcpp/
 	  upc_localsizeof_expr, upc_localsizeof_type):
 	  Move from upc/upc-act.c.
 
-        * tree.c (build_upc_unshared_type): New.
+	* tree.c (build_upc_unshared_type): New.
 	  Move upc_get_unshared_type from upc/upc-act.c and rename
 	  to build_upc_unshared_type.
 	  c-family/c-common.c (pointer_int_sum): refer to renamed
@@ -1802,7 +1807,7 @@ libcpp/
 	* ../config.sub: Remove Cray Catamount/CNL support.
 	* config.gcc: Remove Cray Catamount/CNL support.
 	* ../maintainer-scripts/gcc_release: Revert to trunk.
-        * c-family/c-common.h: Define parse_optimize_options.  Its definition
+	* c-family/c-common.h: Define parse_optimize_options.  Its definition
 	  was missed in a previous merge with the trunk.
 	* dwarf2out.c: Revert a fix which removed the 'type_main_variant'
 	  procedure.
@@ -1941,7 +1946,6 @@ libcpp/
 	configuration files, and ensures that these UPC-specific
 	components are only built when the UPC language dialect is selected.
 
-
 gcc/
 	* c-family/c.opt: Add -fupc-link switch, used to select UPC-specific
 	  linker specs. Fix typo in -fupc-debug message.
@@ -1954,7 +1958,7 @@ gcc/
 	  UPC-related linker compiler specifications,
 	  accessed via %:include().
 
-        * configure.ac, configure: Remove logic related to building
+	* configure.ac, configure: Remove logic related to building
 	  upc-crtbegin/end. Remove config. tests for numa and cpu
 	  affinity (previously used by the 'upc' driver); these
 	  settings are now propagated by target-specific compiler

@@ -1364,8 +1364,19 @@ func TestFieldByName(t *testing.T) {
 }
 
 func TestImportPath(t *testing.T) {
-	if path := TypeOf(&base64.Encoding{}).Elem().PkgPath(); path != "libgo_encoding.base64" {
-		t.Errorf(`TypeOf(&base64.Encoding{}).Elem().PkgPath() = %q, want "libgo_encoding.base64"`, path)
+	tests := []struct {
+		t    Type
+		path string
+	}{
+		{TypeOf(&base64.Encoding{}).Elem(), "libgo_encoding.base64"},
+		{TypeOf(uint(0)), ""},
+		{TypeOf(map[string]int{}), ""},
+		{TypeOf((*error)(nil)).Elem(), ""},
+	}
+	for _, test := range tests {
+		if path := test.t.PkgPath(); path != test.path {
+			t.Errorf("%v.PkgPath() = %q, want %q", test.t, path, test.path)
+		}
 	}
 }
 
@@ -1561,14 +1572,26 @@ func TestSmallNegativeInt(t *testing.T) {
 func TestSlice(t *testing.T) {
 	xs := []int{1, 2, 3, 4, 5, 6, 7, 8}
 	v := ValueOf(xs).Slice(3, 5).Interface().([]int)
-	if len(v) != 2 || v[0] != 4 || v[1] != 5 {
-		t.Errorf("xs.Slice(3, 5) = %v", v)
+	if len(v) != 2 {
+		t.Errorf("len(xs.Slice(3, 5)) = %d", len(v))
+	}
+	if cap(v) != 5 {
+		t.Errorf("cap(xs.Slice(3, 5)) = %d", cap(v))
+	}
+	if !DeepEqual(v[0:5], xs[3:]) {
+		t.Errorf("xs.Slice(3, 5)[0:5] = %v", v[0:5])
 	}
 
-	xa := [7]int{10, 20, 30, 40, 50, 60, 70}
+	xa := [8]int{10, 20, 30, 40, 50, 60, 70, 80}
 	v = ValueOf(&xa).Elem().Slice(2, 5).Interface().([]int)
-	if len(v) != 3 || v[0] != 30 || v[1] != 40 || v[2] != 50 {
-		t.Errorf("xa.Slice(2, 5) = %v", v)
+	if len(v) != 3 {
+		t.Errorf("len(xa.Slice(2, 5)) = %d", len(v))
+	}
+	if cap(v) != 6 {
+		t.Errorf("cap(xa.Slice(2, 5)) = %d", cap(v))
+	}
+	if !DeepEqual(v[0:6], xa[2:]) {
+		t.Errorf("xs.Slice(2, 5)[0:6] = %v", v[0:6])
 	}
 }
 

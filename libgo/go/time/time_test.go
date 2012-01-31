@@ -5,6 +5,10 @@
 package time_test
 
 import (
+	"bytes"
+	"encoding/gob"
+	"encoding/json"
+	"math/rand"
 	"strconv"
 	"strings"
 	"testing"
@@ -628,6 +632,263 @@ func TestDate(t *testing.T) {
 			t.Errorf("Date(%d, %d, %d, %d, %d, %d, %d, %s) = %v, want %v",
 				tt.year, tt.month, tt.day, tt.hour, tt.min, tt.sec, tt.nsec, tt.z,
 				time, want)
+		}
+	}
+}
+
+// Several ways of getting from
+// Fri Nov 18 7:56:35 PST 2011
+// to
+// Thu Mar 19 7:56:35 PST 2016
+var addDateTests = []struct {
+	years, months, days int
+}{
+	{4, 4, 1},
+	{3, 16, 1},
+	{3, 15, 30},
+	{5, -6, -18 - 30 - 12},
+}
+
+func TestAddDate(t *testing.T) {
+	t0 := Date(2011, 11, 18, 7, 56, 35, 0, UTC)
+	t1 := Date(2016, 3, 19, 7, 56, 35, 0, UTC)
+	for _, at := range addDateTests {
+		time := t0.AddDate(at.years, at.months, at.days)
+		if !time.Equal(t1) {
+			t.Errorf("AddDate(%d, %d, %d) = %v, want %v",
+				at.years, at.months, at.days,
+				time, t1)
+		}
+	}
+}
+
+var daysInTests = []struct {
+	year, month, di int
+}{
+	{2011, 1, 31},  // January, first month, 31 days
+	{2011, 2, 28},  // February, non-leap year, 28 days
+	{2012, 2, 29},  // February, leap year, 29 days
+	{2011, 6, 30},  // June, 30 days
+	{2011, 12, 31}, // December, last month, 31 days
+}
+
+func TestDaysIn(t *testing.T) {
+	// The daysIn function is not exported.
+	// Test the daysIn function via the `var DaysIn = daysIn`
+	// statement in the internal_test.go file.
+	for _, tt := range daysInTests {
+		di := DaysIn(Month(tt.month), tt.year)
+		if di != tt.di {
+			t.Errorf("got %d; expected %d for %d-%02d",
+				di, tt.di, tt.year, tt.month)
+		}
+	}
+}
+
+func TestAddToExactSecond(t *testing.T) {
+	// Add an amount to the current time to round it up to the next exact second.
+	// This test checks that the nsec field still lies within the range [0, 999999999].
+	t1 := Now()
+	t2 := t1.Add(Second - Duration(t1.Nanosecond()))
+	sec := (t1.Second() + 1) % 60
+	if t2.Second() != sec || t2.Nanosecond() != 0 {
+		t.Errorf("sec = %d, nsec = %d, want sec = %d, nsec = 0", t2.Second(), t2.Nanosecond(), sec)
+	}
+}
+
+func equalTimeAndZone(a, b Time) bool {
+	aname, aoffset := a.Zone()
+	bname, boffset := b.Zone()
+	return a.Equal(b) && aoffset == boffset && aname == bname
+}
+
+var gobTests = []Time{
+	Date(0, 1, 2, 3, 4, 5, 6, UTC),
+	Date(7, 8, 9, 10, 11, 12, 13, FixedZone("", 0)),
+	Unix(81985467080890095, 0x76543210), // Time.sec: 0x0123456789ABCDEF
+	Time{},                              // nil location
+	Date(1, 2, 3, 4, 5, 6, 7, FixedZone("", 32767*60)),
+	Date(1, 2, 3, 4, 5, 6, 7, FixedZone("", -32768*60)),
+}
+
+func TestTimeGob(t *testing.T) {
+	var b bytes.Buffer
+	enc := gob.NewEncoder(&b)
+	dec := gob.NewDecoder(&b)
+	for _, tt := range gobTests {
+		var gobtt Time
+		if err := enc.Encode(&tt); err != nil {
+			t.Errorf("%v gob Encode error = %q, want nil", tt, err)
+		} else if err := dec.Decode(&gobtt); err != nil {
+			t.Errorf("%v gob Decode error = %q, want nil", tt, err)
+		} else if !equalTimeAndZone(gobtt, tt) {
+			t.Errorf("Decoded time = %v, want %v", gobtt, tt)
+		}
+		b.Reset()
+	}
+}
+
+var invalidEncodingTests = []struct {
+	bytes []byte
+	want  string
+}{
+	{[]byte{}, "Time.GobDecode: no data"},
+	{[]byte{0, 2, 3}, "Time.GobDecode: unsupported version"},
+	{[]byte{1, 2, 3}, "Time.GobDecode: invalid length"},
+}
+
+func TestInvalidTimeGob(t *testing.T) {
+	for _, tt := range invalidEncodingTests {
+		var ignored Time
+		err := ignored.GobDecode(tt.bytes)
+		if err == nil || err.Error() != tt.want {
+			t.Errorf("time.GobDecode(%#v) error = %v, want %v", tt.bytes, err, tt.want)
+		}
+	}
+}
+
+var notEncodableTimes = []struct {
+	time Time
+	want string
+}{
+	{Date(0, 1, 2, 3, 4, 5, 6, FixedZone("", 1)), "Time.GobEncode: zone offset has fractional minute"},
+	{Date(0, 1, 2, 3, 4, 5, 6, FixedZone("", -1*60)), "Time.GobEncode: unexpected zone offset"},
+	{Date(0, 1, 2, 3, 4, 5, 6, FixedZone("", -32769*60)), "Time.GobEncode: unexpected zone offset"},
+	{Date(0, 1, 2, 3, 4, 5, 6, FixedZone("", 32768*60)), "Time.GobEncode: unexpected zone offset"},
+}
+
+func TestNotGobEncodableTime(t *testing.T) {
+	for _, tt := range notEncodableTimes {
+		_, err := tt.time.GobEncode()
+		if err == nil || err.Error() != tt.want {
+			t.Errorf("%v GobEncode error = %v, want %v", tt.time, err, tt.want)
+		}
+	}
+}
+
+var jsonTests = []struct {
+	time Time
+	json string
+}{
+	{Date(9999, 4, 12, 23, 20, 50, .52*1e9, UTC), `"9999-04-12T23:20:50.52Z"`},
+	{Date(1996, 12, 19, 16, 39, 57, 0, Local), `"1996-12-19T16:39:57-08:00"`},
+	{Date(0, 1, 1, 0, 0, 0, 1, FixedZone("", 1*60)), `"0000-01-01T00:00:00.000000001+00:01"`},
+}
+
+func TestTimeJSON(t *testing.T) {
+	for _, tt := range jsonTests {
+		var jsonTime Time
+
+		if jsonBytes, err := json.Marshal(tt.time); err != nil {
+			t.Errorf("%v json.Marshal error = %v, want nil", tt.time, err)
+		} else if string(jsonBytes) != tt.json {
+			t.Errorf("%v JSON = %q, want %q", tt.time, string(jsonBytes), tt.json)
+		} else if err = json.Unmarshal(jsonBytes, &jsonTime); err != nil {
+			t.Errorf("%v json.Unmarshal error = %v, want nil", tt.time, err)
+		} else if !equalTimeAndZone(jsonTime, tt.time) {
+			t.Errorf("Unmarshaled time = %v, want %v", jsonTime, tt.time)
+		}
+	}
+}
+
+func TestInvalidTimeJSON(t *testing.T) {
+	var tt Time
+	err := json.Unmarshal([]byte(`{"now is the time":"buddy"}`), &tt)
+	_, isParseErr := err.(*ParseError)
+	if !isParseErr {
+		t.Errorf("expected *time.ParseError unmarshaling JSON, got %v", err)
+	}
+}
+
+var notJSONEncodableTimes = []struct {
+	time Time
+	want string
+}{
+	{Date(10000, 1, 1, 0, 0, 0, 0, UTC), "Time.MarshalJSON: year outside of range [0,9999]"},
+	{Date(-1, 1, 1, 0, 0, 0, 0, UTC), "Time.MarshalJSON: year outside of range [0,9999]"},
+}
+
+func TestNotJSONEncodableTime(t *testing.T) {
+	for _, tt := range notJSONEncodableTimes {
+		_, err := tt.time.MarshalJSON()
+		if err == nil || err.Error() != tt.want {
+			t.Errorf("%v MarshalJSON error = %v, want %v", tt.time, err, tt.want)
+		}
+	}
+}
+
+var parseDurationTests = []struct {
+	in   string
+	ok   bool
+	want Duration
+}{
+	// simple
+	{"0", true, 0},
+	{"5s", true, 5 * Second},
+	{"30s", true, 30 * Second},
+	{"1478s", true, 1478 * Second},
+	// sign
+	{"-5s", true, -5 * Second},
+	{"+5s", true, 5 * Second},
+	{"-0", true, 0},
+	{"+0", true, 0},
+	// decimal
+	{"5.0s", true, 5 * Second},
+	{"5.6s", true, 5*Second + 600*Millisecond},
+	{"5.s", true, 5 * Second},
+	{".5s", true, 500 * Millisecond},
+	{"1.0s", true, 1 * Second},
+	{"1.00s", true, 1 * Second},
+	{"1.004s", true, 1*Second + 4*Millisecond},
+	{"1.0040s", true, 1*Second + 4*Millisecond},
+	{"100.00100s", true, 100*Second + 1*Millisecond},
+	// different units
+	{"10ns", true, 10 * Nanosecond},
+	{"11us", true, 11 * Microsecond},
+	{"12µs", true, 12 * Microsecond}, // U+00B5
+	{"12μs", true, 12 * Microsecond}, // U+03BC
+	{"13ms", true, 13 * Millisecond},
+	{"14s", true, 14 * Second},
+	{"15m", true, 15 * Minute},
+	{"16h", true, 16 * Hour},
+	// composite durations
+	{"3h30m", true, 3*Hour + 30*Minute},
+	{"10.5s4m", true, 4*Minute + 10*Second + 500*Millisecond},
+	{"-2m3.4s", true, -(2*Minute + 3*Second + 400*Millisecond)},
+	{"1h2m3s4ms5us6ns", true, 1*Hour + 2*Minute + 3*Second + 4*Millisecond + 5*Microsecond + 6*Nanosecond},
+	{"39h9m14.425s", true, 39*Hour + 9*Minute + 14*Second + 425*Millisecond},
+
+	// errors
+	{"", false, 0},
+	{"3", false, 0},
+	{"-", false, 0},
+	{"s", false, 0},
+	{".", false, 0},
+	{"-.", false, 0},
+	{".s", false, 0},
+	{"+.s", false, 0},
+}
+
+func TestParseDuration(t *testing.T) {
+	for _, tc := range parseDurationTests {
+		d, err := ParseDuration(tc.in)
+		if tc.ok && (err != nil || d != tc.want) {
+			t.Errorf("ParseDuration(%q) = %v, %v, want %v, nil", tc.in, d, err, tc.want)
+		} else if !tc.ok && err == nil {
+			t.Errorf("ParseDuration(%q) = _, nil, want _, non-nil", tc.in)
+		}
+	}
+}
+
+func TestParseDurationRoundTrip(t *testing.T) {
+	for i := 0; i < 100; i++ {
+		// Resolutions finer than milliseconds will result in
+		// imprecise round-trips.
+		d0 := Duration(rand.Int31()) * Millisecond
+		s := d0.String()
+		d1, err := ParseDuration(s)
+		if err != nil || d0 != d1 {
+			t.Errorf("round-trip failed: %d => %q => %d, %v", d0, s, d1, err)
 		}
 	}
 }

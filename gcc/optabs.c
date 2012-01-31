@@ -1,7 +1,7 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011  Free Software Foundation, Inc.
+   2011, 2012  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -659,7 +659,7 @@ expand_ternary_op (enum machine_mode mode, optab ternary_optab, rtx op0,
    calculated at compile time.  The arguments and return value are
    otherwise the same as for expand_binop.  */
 
-static rtx
+rtx
 simplify_expand_binop (enum machine_mode mode, optab binoptab,
 		       rtx op0, rtx op1, rtx target, int unsignedp,
 		       enum optab_methods methods)
@@ -7398,10 +7398,42 @@ maybe_emit_compare_and_swap_exchange_loop (rtx target, rtx mem, rtx val)
   return NULL_RTX;
 }
 
+/* This function tries to implement an atomic test-and-set operation
+   using the atomic_test_and_set instruction pattern.  A boolean value
+   is returned from the operation, using TARGET if possible.  */
+
 #ifndef HAVE_atomic_test_and_set
 #define HAVE_atomic_test_and_set 0
-#define gen_atomic_test_and_set(x,y,z)  (gcc_unreachable (), NULL_RTX)
+#define CODE_FOR_atomic_test_and_set CODE_FOR_nothing
 #endif
+
+static rtx
+maybe_emit_atomic_test_and_set (rtx target, rtx mem, enum memmodel model)
+{
+  enum machine_mode pat_bool_mode;
+  struct expand_operand ops[3];
+
+  if (!HAVE_atomic_test_and_set)
+    return NULL_RTX;
+
+  /* While we always get QImode from __atomic_test_and_set, we get
+     other memory modes from __sync_lock_test_and_set.  Note that we
+     use no endian adjustment here.  This matches the 4.6 behavior
+     in the Sparc backend.  */
+  gcc_checking_assert
+    (insn_data[CODE_FOR_atomic_test_and_set].operand[1].mode == QImode);
+  if (GET_MODE (mem) != QImode)
+    mem = adjust_address_nv (mem, QImode, 0);
+
+  pat_bool_mode = insn_data[CODE_FOR_atomic_test_and_set].operand[0].mode;
+  create_output_operand (&ops[0], target, pat_bool_mode);
+  create_fixed_operand (&ops[1], mem);
+  create_integer_operand (&ops[2], model);
+
+  if (maybe_expand_insn (CODE_FOR_atomic_test_and_set, 3, ops))
+    return ops[0].value;
+  return NULL_RTX;
+}
 
 /* This function expands the legacy _sync_lock test_and_set operation which is
    generally an atomic exchange.  Some limited targets only allow the
@@ -7417,20 +7449,21 @@ expand_sync_lock_test_and_set (rtx target, rtx mem, rtx val)
 
   /* Try an atomic_exchange first.  */
   ret = maybe_emit_atomic_exchange (target, mem, val, MEMMODEL_ACQUIRE);
+  if (ret)
+    return ret;
 
-  if (!ret)
-    ret = maybe_emit_sync_lock_test_and_set (target, mem, val,
-					     MEMMODEL_ACQUIRE);
-  if (!ret)
-    ret = maybe_emit_compare_and_swap_exchange_loop (target, mem, val);
+  ret = maybe_emit_sync_lock_test_and_set (target, mem, val, MEMMODEL_ACQUIRE);
+  if (ret)
+    return ret;
+
+  ret = maybe_emit_compare_and_swap_exchange_loop (target, mem, val);
+  if (ret)
+    return ret;
 
   /* If there are no other options, try atomic_test_and_set if the value
      being stored is 1.  */
-  if (!ret && val == const1_rtx && HAVE_atomic_test_and_set)
-    {
-      ret = gen_atomic_test_and_set (target, mem, GEN_INT (MEMMODEL_ACQUIRE));
-      emit_insn (ret);
-    }
+  if (val == const1_rtx)
+    ret = maybe_emit_atomic_test_and_set (target, mem, MEMMODEL_ACQUIRE);
 
   return ret;
 }
@@ -7445,28 +7478,26 @@ rtx
 expand_atomic_test_and_set (rtx target, rtx mem, enum memmodel model)
 {
   enum machine_mode mode = GET_MODE (mem);
-  rtx ret = NULL_RTX;
+  rtx ret;
+
+  ret = maybe_emit_atomic_test_and_set (target, mem, model);
+  if (ret)
+    return ret;
 
   if (target == NULL_RTX)
     target = gen_reg_rtx (mode);
 
-  if (HAVE_atomic_test_and_set)
-    {
-      ret = gen_atomic_test_and_set (target, mem, GEN_INT (MEMMODEL_ACQUIRE));
-      emit_insn (ret);
-      return ret;
-    }
-
   /* If there is no test and set, try exchange, then a compare_and_swap loop,
      then __sync_test_and_set.  */
   ret = maybe_emit_atomic_exchange (target, mem, const1_rtx, model);
+  if (ret)
+    return ret;
 
-  if (!ret)
-    ret = maybe_emit_compare_and_swap_exchange_loop (target, mem, const1_rtx);
+  ret = maybe_emit_compare_and_swap_exchange_loop (target, mem, const1_rtx);
+  if (ret)
+    return ret;
 
-  if (!ret)
-    ret = maybe_emit_sync_lock_test_and_set (target, mem, const1_rtx, model);
-
+  ret = maybe_emit_sync_lock_test_and_set (target, mem, const1_rtx, model);
   if (ret)
     return ret;
 

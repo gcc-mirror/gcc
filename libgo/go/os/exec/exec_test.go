@@ -10,6 +10,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"runtime"
 	"strconv"
@@ -18,7 +21,7 @@ import (
 )
 
 func helperCommand(s ...string) *Cmd {
-	cs := []string{"-test.run=exec.TestHelperProcess", "--"}
+	cs := []string{"-test.run=TestHelperProcess", "--"}
 	cs = append(cs, s...)
 	cmd := Command(os.Args[0], cs...)
 	cmd.Env = append([]string{"GO_WANT_HELPER_PROCESS=1"}, os.Environ()...)
@@ -146,6 +149,23 @@ func TestExtraFiles(t *testing.T) {
 		t.Logf("no operating system support; skipping")
 		return
 	}
+
+	// Force network usage, to verify the epoll (or whatever) fd
+	// doesn't leak to the child,
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ln.Close()
+
+	// Force TLS root certs to be loaded (which might involve
+	// cgo), to make sure none of that potential C code leaks fds.
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Hello"))
+	}))
+	defer ts.Close()
+	http.Get(ts.URL) // ignore result; just calling to force root cert loading
+
 	tf, err := ioutil.TempFile("", "")
 	if err != nil {
 		t.Fatalf("TempFile: %v", err)
@@ -167,7 +187,7 @@ func TestExtraFiles(t *testing.T) {
 	c.ExtraFiles = []*os.File{tf}
 	bs, err := c.CombinedOutput()
 	if err != nil {
-		t.Fatalf("CombinedOutput: %v", err)
+		t.Fatalf("CombinedOutput: %v; output %q", err, bs)
 	}
 	if string(bs) != text {
 		t.Errorf("got %q; want %q", string(bs), text)
@@ -245,6 +265,32 @@ func TestHelperProcess(*testing.T) {
 		if err != nil {
 			fmt.Printf("ReadAll from fd 3: %v", err)
 			os.Exit(1)
+		}
+		switch runtime.GOOS {
+		case "darwin":
+			// TODO(bradfitz): broken? Sometimes.
+			// http://golang.org/issue/2603
+			// Skip this additional part of the test for now.
+		default:
+			// Now verify that there are no other open fds.
+			var files []*os.File
+			for wantfd := os.Stderr.Fd() + 2; wantfd <= 100; wantfd++ {
+				f, err := os.Open(os.Args[0])
+				if err != nil {
+					fmt.Printf("error opening file with expected fd %d: %v", wantfd, err)
+					os.Exit(1)
+				}
+				if got := f.Fd(); got != wantfd {
+					fmt.Printf("leaked parent file. fd = %d; want %d\n", got, wantfd)
+					out, _ := Command("lsof", "-p", fmt.Sprint(os.Getpid())).CombinedOutput()
+					fmt.Print(string(out))
+					os.Exit(1)
+				}
+				files = append(files, f)
+			}
+			for _, f := range files {
+				f.Close()
+			}
 		}
 		os.Stderr.Write(bs)
 	case "exit":

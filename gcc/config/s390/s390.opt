@@ -140,3 +140,9 @@ Warn if a single function's framesize exceeds the given framesize
 mzarch
 Target Report RejectNegative Negative(mesa) Mask(ZARCH)
 z/Architecture
+
+mbranch-cost=
+Target Report Joined RejectNegative UInteger Var(s390_branch_cost) Init(1)
+Set the branch costs for conditional branch instructions.  Reasonable
+values are small, non-negative integers.  The default branch cost is
+1.

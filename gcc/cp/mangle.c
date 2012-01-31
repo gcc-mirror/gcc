@@ -615,7 +615,7 @@ find_substitution (tree node)
       /* NODE is a matched to a candidate if it's the same decl node or
 	 if it's the same type.  */
       if (decl == candidate
-	  || (TYPE_P (candidate) && type && TYPE_P (type)
+	  || (TYPE_P (candidate) && type && TYPE_P (node)
 	      && same_type_p (type, candidate))
 	  || NESTED_TEMPLATE_MATCH (node, candidate))
 	{
@@ -949,7 +949,7 @@ write_nested_name (const tree decl)
   else
     {
       /* No, just use <prefix>  */
-      write_prefix (CP_DECL_CONTEXT (decl));
+      write_prefix (decl_mangling_context (decl));
       write_unqualified_name (decl);
     }
   write_char ('E');
@@ -2500,7 +2500,9 @@ write_expression (tree expr)
       code = TREE_CODE (expr);
     }
 
-  if (code == BASELINK)
+  if (code == BASELINK
+      && (!type_unknown_p (expr)
+	  || !BASELINK_QUALIFIED_P (expr)))
     {
       expr = BASELINK_FUNCTIONS (expr);
       code = TREE_CODE (expr);
@@ -2583,10 +2585,20 @@ write_expression (tree expr)
       write_string ("at");
       write_type (TREE_OPERAND (expr, 0));
     }
-  else if (TREE_CODE (expr) == SCOPE_REF)
+  else if (code == SCOPE_REF
+	   || code == BASELINK)
     {
-      tree scope = TREE_OPERAND (expr, 0);
-      tree member = TREE_OPERAND (expr, 1);
+      tree scope, member;
+      if (code == SCOPE_REF)
+	{
+	  scope = TREE_OPERAND (expr, 0);
+	  member = TREE_OPERAND (expr, 1);
+	}
+      else
+	{
+	  scope = BINFO_TYPE (BASELINK_ACCESS_BINFO (expr));
+	  member = BASELINK_FUNCTIONS (expr);
+	}
 
       if (!abi_version_at_least (2) && DECL_P (member))
 	{
@@ -2913,6 +2925,25 @@ write_template_arg_literal (const tree value)
 
       case REAL_CST:
 	write_real_cst (value);
+	break;
+
+      case COMPLEX_CST:
+	if (TREE_CODE (TREE_REALPART (value)) == INTEGER_CST
+	    && TREE_CODE (TREE_IMAGPART (value)) == INTEGER_CST)
+	  {
+	    write_integer_cst (TREE_REALPART (value));
+	    write_char ('_');
+	    write_integer_cst (TREE_IMAGPART (value));
+	  }
+	else if (TREE_CODE (TREE_REALPART (value)) == REAL_CST
+		 && TREE_CODE (TREE_IMAGPART (value)) == REAL_CST)
+	  {
+	    write_real_cst (TREE_REALPART (value));
+	    write_char ('_');
+	    write_real_cst (TREE_IMAGPART (value));
+	  }
+	else
+	  gcc_unreachable ();
 	break;
 
       case STRING_CST:
@@ -3318,7 +3349,21 @@ get_mangled_id (tree decl)
 void
 mangle_decl (const tree decl)
 {
-  tree id = get_mangled_id (decl);
+  tree id;
+  bool dep;
+
+  /* Don't bother mangling uninstantiated templates.  */
+  ++processing_template_decl;
+  if (TREE_CODE (decl) == TYPE_DECL)
+    dep = dependent_type_p (TREE_TYPE (decl));
+  else
+    dep = (DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)
+	   && any_dependent_template_arguments_p (DECL_TI_ARGS (decl)));
+  --processing_template_decl;
+  if (dep)
+    return;
+
+  id = get_mangled_id (decl);
   SET_DECL_ASSEMBLER_NAME (decl, id);
 
   if (G.need_abi_warning

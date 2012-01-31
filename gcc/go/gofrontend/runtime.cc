@@ -38,6 +38,8 @@ enum Runtime_function_type
   RFT_UINT64,
   // Go type uintptr, C type uintptr_t.
   RFT_UINTPTR,
+  // Go type rune, C type int32_t.
+  RFT_RUNE,
   // Go type float64, C type double.
   RFT_FLOAT64,
   // Go type complex128, C type __complex double.
@@ -108,6 +110,10 @@ runtime_function_type(Runtime_function_type bft)
 	  t = Type::lookup_integer_type("uint64");
 	  break;
 
+	case RFT_RUNE:
+	  t = Type::lookup_integer_type("int32");
+	  break;
+
 	case RFT_UINTPTR:
 	  t = Type::lookup_integer_type("uintptr");
 	  break;
@@ -151,12 +157,14 @@ runtime_function_type(Runtime_function_type bft)
 	    Typed_identifier_list* methods = new Typed_identifier_list();
 	    Type* mtype = Type::make_function_type(NULL, NULL, NULL, bloc);
 	    methods->push_back(Typed_identifier("x", mtype, bloc));
-	    t = Type::make_interface_type(methods, bloc);
+	    Interface_type* it = Type::make_interface_type(methods, bloc);
+	    it->finalize_methods();
+	    t = it;
 	  }
 	  break;
 
 	case RFT_EFACE:
-	  t = Type::make_interface_type(NULL, bloc);
+	  t = Type::make_empty_interface_type(bloc);
 	  break;
 
 	case RFT_FUNC_PTR:
@@ -201,6 +209,7 @@ convert_to_runtime_function_type(Runtime_function_type bft, Expression* e,
     case RFT_INT64:
     case RFT_UINT64:
     case RFT_UINTPTR:
+    case RFT_RUNE:
     case RFT_FLOAT64:
     case RFT_COMPLEX128:
     case RFT_STRING:

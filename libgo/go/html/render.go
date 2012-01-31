@@ -149,6 +149,14 @@ func render1(w writer, n *Node) error {
 		if err := w.WriteByte(' '); err != nil {
 			return err
 		}
+		if a.Namespace != "" {
+			if _, err := w.WriteString(a.Namespace); err != nil {
+				return err
+			}
+			if err := w.WriteByte(':'); err != nil {
+				return err
+			}
+		}
 		if _, err := w.WriteString(a.Key); err != nil {
 			return err
 		}
@@ -247,7 +255,7 @@ func writeQuoted(w writer, s string) error {
 	return nil
 }
 
-// Section 13.1.2, "Elements", gives this list of void elements. Void elements
+// Section 12.1.2, "Elements", gives this list of void elements. Void elements
 // are those that can't have any contents.
 var voidElements = map[string]bool{
 	"area":    true,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux openbsd
+// +build darwin freebsd linux netbsd openbsd
 
 package os
 
@@ -72,10 +72,7 @@ func (p *Process) Release() error {
 	return nil
 }
 
-// FindProcess looks for a running process by its pid.
-// The Process it returns can be used to obtain information
-// about the underlying operating system process.
-func FindProcess(pid int) (p *Process, err error) {
+func findProcess(pid int) (p *Process, err error) {
 	// NOOP for unix.
 	return newProcess(pid, 0), nil
 }

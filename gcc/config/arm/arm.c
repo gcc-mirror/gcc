@@ -3680,6 +3680,10 @@ arm_libcall_uses_aapcs_base (const_rtx libcall)
       add_libcall (libcall_htab,
 		   convert_optab_libfunc (trunc_optab, HFmode, SFmode));
       add_libcall (libcall_htab,
+		   convert_optab_libfunc (sfix_optab, SImode, DFmode));
+      add_libcall (libcall_htab,
+		   convert_optab_libfunc (ufix_optab, SImode, DFmode));
+      add_libcall (libcall_htab,
 		   convert_optab_libfunc (sfix_optab, DImode, DFmode));
       add_libcall (libcall_htab,
 		   convert_optab_libfunc (ufix_optab, DImode, DFmode));
@@ -5578,11 +5582,7 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
 
       if (TARGET_32BIT)
 	{
-	  emit_insn (gen_pic_load_addr_32bit (pic_reg, pic_rtx));
-	  if (TARGET_ARM)
-	    emit_insn (gen_pic_add_dot_plus_eight (pic_reg, pic_reg, labelno));
-	  else
-	    emit_insn (gen_pic_add_dot_plus_four (pic_reg, pic_reg, labelno));
+	  emit_insn (gen_pic_load_addr_unified (pic_reg, pic_rtx, labelno));
 	}
       else /* TARGET_THUMB1 */
 	{
@@ -5595,10 +5595,10 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
 				     thumb_find_work_register (saved_regs));
 	      emit_insn (gen_pic_load_addr_thumb1 (pic_tmp, pic_rtx));
 	      emit_insn (gen_movsi (pic_offset_table_rtx, pic_tmp));
+	      emit_insn (gen_pic_add_dot_plus_four (pic_reg, pic_reg, labelno));
 	    }
 	  else
-	    emit_insn (gen_pic_load_addr_thumb1 (pic_reg, pic_rtx));
-	  emit_insn (gen_pic_add_dot_plus_four (pic_reg, pic_reg, labelno));
+	    emit_insn (gen_pic_load_addr_unified (pic_reg, pic_rtx, labelno));
 	}
     }
 
@@ -5628,20 +5628,7 @@ arm_pic_static_addr (rtx orig, rtx reg)
                                UNSPEC_SYMBOL_OFFSET);
   offset_rtx = gen_rtx_CONST (Pmode, offset_rtx);
 
-  if (TARGET_32BIT)
-    {
-      emit_insn (gen_pic_load_addr_32bit (reg, offset_rtx));
-      if (TARGET_ARM)
-        insn = emit_insn (gen_pic_add_dot_plus_eight (reg, reg, labelno));
-      else
-        insn = emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
-    }
-  else /* TARGET_THUMB1 */
-    {
-      emit_insn (gen_pic_load_addr_thumb1 (reg, offset_rtx));
-      insn = emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
-    }
-
+  insn = emit_insn (gen_pic_load_addr_unified (reg, offset_rtx, labelno));
   return insn;
 }
 
@@ -5684,7 +5671,7 @@ static bool
 will_be_in_index_register (const_rtx x)
 {
   /* arm.md: calculate_pic_address will split this into a register.  */
-  return GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_PIC_SYM;
+  return GET_CODE (x) == UNSPEC && (XINT (x, 1) == UNSPEC_PIC_SYM);
 }
 
 /* Return nonzero if X is a valid ARM state address operand.  */
@@ -7648,6 +7635,15 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 
     case SET:
       return false;
+      
+    case UNSPEC:
+      /* We cost this as high as our memory costs to allow this to
+	 be hoisted from loops.  */
+      if (XINT (x, 1) == UNSPEC_PIC_UNIFIED)
+	{
+	  *total = COSTS_N_INSNS (2 + ARM_NUM_REGS (mode));
+	}
+      return true;
 
     default:
       *total = COSTS_N_INSNS (4);
@@ -10008,7 +10004,8 @@ static int
 arm_note_pic_base (rtx *x, void *date ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (*x) == UNSPEC
-      && XINT (*x, 1) == UNSPEC_PIC_BASE)
+      && (XINT (*x, 1) == UNSPEC_PIC_BASE
+	  || XINT (*x, 1) == UNSPEC_PIC_UNIFIED))
     return 1;
   return 0;
 }
@@ -17718,9 +17715,9 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	/* Only certain alignment specifiers are supported by the hardware.  */
 	if (memsize == 16 && (align % 32) == 0)
 	  align_bits = 256;
-	else if ((memsize == 8 || memsize == 16) && (align % 16) == 0)
+	else if (memsize == 16 && (align % 16) == 0)
 	  align_bits = 128;
-	else if ((align % 8) == 0)
+	else if (memsize >= 8 && (align % 8) == 0)
 	  align_bits = 64;
 	else
 	  align_bits = 0;
@@ -20935,7 +20932,11 @@ neon_split_vcombine (rtx operands[3])
   rtx destlo, desthi;
 
   if (src1 == dest && src2 == dest + halfregs)
-    return;
+    {
+      /* No-op move.  Can't split to nothing; emit something.  */
+      emit_note (NOTE_INSN_DELETED);
+      return;
+    }
 
   /* Preserve register attributes for variable tracking.  */
   destlo = gen_rtx_REG_offset (operands[0], halfmode, dest, 0);
@@ -24671,7 +24672,12 @@ int
 arm_count_output_move_double_insns (rtx *operands)
 {
   int count;
-  output_move_double (operands, false, &count);
+  rtx ops[2];
+  /* output_move_double may modify the operands array, so call it
+     here on a copy of the array.  */
+  ops[0] = operands[0];
+  ops[1] = operands[1];
+  output_move_double (ops, false, &count);
   return count;
 }
 

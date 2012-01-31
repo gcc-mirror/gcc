@@ -261,7 +261,7 @@ func (w *response) Header() Header {
 }
 
 // maxPostHandlerReadBytes is the max number of Request.Body bytes not
-// consumed by a handler that the server will read from the a client
+// consumed by a handler that the server will read from the client
 // in order to keep a connection alive.  If there are more bytes than
 // this then the server to be paranoid instead sends a "Connection:
 // close" response.
@@ -569,14 +569,15 @@ func (c *conn) serve() {
 		if err == nil {
 			return
 		}
-		if c.rwc != nil { // may be nil if connection hijacked
-			c.rwc.Close()
-		}
 
 		var buf bytes.Buffer
 		fmt.Fprintf(&buf, "http: panic serving %v: %v\n", c.remoteAddr, err)
 		buf.Write(debug.Stack())
 		log.Print(buf.String())
+
+		if c.rwc != nil { // may be nil if connection hijacked
+			c.rwc.Close()
+		}
 	}()
 
 	if tlsConn, ok := c.rwc.(*tls.Conn); ok {
@@ -952,11 +953,11 @@ func Serve(l net.Listener, handler Handler) error {
 
 // A Server defines parameters for running an HTTP server.
 type Server struct {
-	Addr           string  // TCP address to listen on, ":http" if empty
-	Handler        Handler // handler to invoke, http.DefaultServeMux if nil
-	ReadTimeout    int64   // the net.Conn.SetReadTimeout value for new connections
-	WriteTimeout   int64   // the net.Conn.SetWriteTimeout value for new connections
-	MaxHeaderBytes int     // maximum size of request headers, DefaultMaxHeaderBytes if 0
+	Addr           string        // TCP address to listen on, ":http" if empty
+	Handler        Handler       // handler to invoke, http.DefaultServeMux if nil
+	ReadTimeout    time.Duration // maximum duration before timing out read of the request
+	WriteTimeout   time.Duration // maximum duration before timing out write of the response
+	MaxHeaderBytes int           // maximum size of request headers, DefaultMaxHeaderBytes if 0
 }
 
 // ListenAndServe listens on the TCP network address srv.Addr and then
@@ -989,10 +990,10 @@ func (srv *Server) Serve(l net.Listener) error {
 			return e
 		}
 		if srv.ReadTimeout != 0 {
-			rw.SetReadTimeout(srv.ReadTimeout)
+			rw.SetReadDeadline(time.Now().Add(srv.ReadTimeout))
 		}
 		if srv.WriteTimeout != 0 {
-			rw.SetWriteTimeout(srv.WriteTimeout)
+			rw.SetWriteDeadline(time.Now().Add(srv.WriteTimeout))
 		}
 		c, err := srv.newConn(rw)
 		if err != nil {
@@ -1027,7 +1028,7 @@ func (srv *Server) Serve(l net.Listener) error {
 //		http.HandleFunc("/hello", HelloServer)
 //		err := http.ListenAndServe(":12345", nil)
 //		if err != nil {
-//			log.Fatal("ListenAndServe: ", err.String())
+//			log.Fatal("ListenAndServe: ", err)
 //		}
 //	}
 func ListenAndServe(addr string, handler Handler) error {

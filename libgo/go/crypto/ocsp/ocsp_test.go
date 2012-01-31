@@ -1,3 +1,7 @@
+// Copyright 2010 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package ocsp
 
 import (
@@ -23,11 +27,11 @@ func TestOCSPDecode(t *testing.T) {
 		NextUpdate:       time.Date(2010, 7, 7, 18, 35, 17, 0, time.UTC),
 	}
 
-	if !reflect.DeepEqual(resp.ThisUpdate, resp.ThisUpdate) {
+	if !reflect.DeepEqual(resp.ThisUpdate, expected.ThisUpdate) {
 		t.Errorf("resp.ThisUpdate: got %d, want %d", resp.ThisUpdate, expected.ThisUpdate)
 	}
 
-	if !reflect.DeepEqual(resp.NextUpdate, resp.NextUpdate) {
+	if !reflect.DeepEqual(resp.NextUpdate, expected.NextUpdate) {
 		t.Errorf("resp.NextUpdate: got %d, want %d", resp.NextUpdate, expected.NextUpdate)
 	}
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux openbsd
+// +build darwin freebsd linux netbsd openbsd
 
 package exec
 
@@ -47,8 +47,9 @@ func LookPath(file string) (string, error) {
 			// Unix shell semantics: path element "" means "."
 			dir = "."
 		}
-		if err := findExecutable(dir + "/" + file); err == nil {
-			return dir + "/" + file, nil
+		path := dir + "/" + file
+		if err := findExecutable(path); err == nil {
+			return path, nil
 		}
 	}
 	return "", &Error{file, ErrNotFound}

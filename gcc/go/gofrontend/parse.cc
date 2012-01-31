@@ -45,11 +45,13 @@ Parse::Parse(Lex* lex, Gogo* gogo)
     token_(Token::make_invalid_token(Linemap::unknown_location())),
     unget_token_(Token::make_invalid_token(Linemap::unknown_location())),
     unget_token_valid_(false),
+    is_erroneous_function_(false),
     gogo_(gogo),
     break_stack_(NULL),
     continue_stack_(NULL),
     iota_(0),
-    enclosing_vars_()
+    enclosing_vars_(),
+    type_switch_vars_()
 {
 }
 
@@ -539,6 +541,7 @@ Parse::field_decl(Struct_field_list* sfl)
   else
     {
       error_at(this->location(), "expected field name");
+      this->gogo_->mark_locals_used();
       while (!token->is_op(OPERATOR_SEMICOLON)
 	     && !token->is_op(OPERATOR_RCURLY)
 	     && !token->is_eof())
@@ -554,6 +557,7 @@ Parse::field_decl(Struct_field_list* sfl)
 	  if (!this->peek_token()->is_identifier())
 	    {
 	      error_at(this->location(), "expected field name");
+	      this->gogo_->mark_locals_used();
 	      while (!token->is_op(OPERATOR_SEMICOLON)
 		     && !token->is_op(OPERATOR_RCURLY)
 		     && !token->is_eof())
@@ -1123,6 +1127,8 @@ Parse::block()
 	  if (!token->is_eof() || !saw_errors())
 	    error_at(this->location(), "expected %<}%>");
 
+	  this->gogo_->mark_locals_used();
+
 	  // Skip ahead to the end of the block, in hopes of avoiding
 	  // lots of meaningless errors.
 	  Location ret = token->location();
@@ -1249,6 +1255,7 @@ Parse::method_spec(Typed_identifier_list* methods)
 		     "name list not allowed in interface type");
 	  else
 	    error_at(location, "expected signature or type name");
+	  this->gogo_->mark_locals_used();
 	  token = this->peek_token();
 	  while (!token->is_eof()
 		 && !token->is_op(OPERATOR_SEMICOLON)
@@ -1498,6 +1505,7 @@ Parse::type_spec(void*)
 
   if (type->is_error_type())
     {
+      this->gogo_->mark_locals_used();
       while (!this->peek_token()->is_op(OPERATOR_SEMICOLON)
 	     && !this->peek_token()->is_eof())
 	this->advance_token();
@@ -1558,6 +1566,7 @@ Parse::var_spec(void*)
       type = this->type();
       if (type->is_error_type())
 	{
+	  this->gogo_->mark_locals_used();
 	  while (!this->peek_token()->is_op(OPERATOR_EQ)
 		 && !this->peek_token()->is_op(OPERATOR_SEMICOLON)
 		 && !this->peek_token()->is_eof())
@@ -1883,11 +1892,27 @@ Parse::init_var(const Typed_identifier& tid, Type* type, Expression* init,
     {
       if (!type_from_init && init != NULL)
 	{
-	  if (!this->gogo_->in_global_scope())
+	  if (this->gogo_->in_global_scope())
+	    return this->create_dummy_global(type, init, location);
+	  else if (type == NULL)
 	    this->gogo_->add_statement(Statement::make_statement(init, true));
 	  else
-	    return this->create_dummy_global(type, init, location);
+	    {
+	      // With both a type and an initializer, create a dummy
+	      // variable so that we will check whether the
+	      // initializer can be assigned to the type.
+	      Variable* var = new Variable(type, init, false, false, false,
+					   location);
+	      var->set_is_used();
+	      static int count;
+	      char buf[30];
+	      snprintf(buf, sizeof buf, "sink$%d", count);
+	      ++count;
+	      return this->gogo_->add_variable(buf, var);
+	    }
 	}
+      if (type != NULL)
+	this->gogo_->add_type_to_verify(type);
       return this->gogo_->add_sink();
     }
 
@@ -2101,8 +2126,6 @@ Parse::function_decl()
   this->advance_token();
 
   Function_type* fntype = this->signature(rec, this->location());
-  if (fntype == NULL)
-    return;
 
   Named_object* named_object = NULL;
 
@@ -2149,13 +2172,28 @@ Parse::function_decl()
   if (!this->peek_token()->is_op(OPERATOR_LCURLY))
     {
       if (named_object == NULL && !Gogo::is_sink_name(name))
-	this->gogo_->declare_function(name, fntype, location);
+	{
+	  if (fntype != NULL)
+	    this->gogo_->declare_function(name, fntype, location);
+	  else
+	    this->gogo_->add_erroneous_name(name);
+	}
     }
   else
     {
+      bool hold_is_erroneous_function = this->is_erroneous_function_;
+      if (fntype == NULL)
+	{
+	  fntype = Type::make_function_type(NULL, NULL, NULL, location);
+	  this->is_erroneous_function_ = true;
+	  if (!Gogo::is_sink_name(name))
+	    this->gogo_->add_erroneous_name(name);
+	  name = this->gogo_->pack_hidden_name("_", false);
+	}
       this->gogo_->start_function(name, fntype, true, location);
       Location end_loc = this->block();
       this->gogo_->finish_function(end_loc);
+      this->is_erroneous_function_ = hold_is_erroneous_function;
     }
 }
 
@@ -2175,6 +2213,7 @@ Parse::receiver()
       if (!token->is_identifier())
 	{
 	  error_at(this->location(), "method has no receiver");
+	  this->gogo_->mark_locals_used();
 	  while (!token->is_eof() && !token->is_op(OPERATOR_RPAREN))
 	    token = this->advance_token();
 	  if (!token->is_eof())
@@ -2214,6 +2253,7 @@ Parse::receiver()
   if (!token->is_identifier())
     {
       error_at(this->location(), "expected receiver name or type");
+      this->gogo_->mark_locals_used();
       int c = token->is_op(OPERATOR_LPAREN) ? 1 : 0;
       while (!token->is_eof())
 	{
@@ -2245,6 +2285,7 @@ Parse::receiver()
 	error_at(this->location(), "method has multiple receivers");
       else
 	error_at(this->location(), "expected %<)%>");
+      this->gogo_->mark_locals_used();
       while (!token->is_eof() && !token->is_op(OPERATOR_RPAREN))
 	token = this->advance_token();
       if (!token->is_eof())
@@ -2352,6 +2393,7 @@ Parse::operand(bool may_be_sink)
 	    }
 	  case Named_object::NAMED_OBJECT_VAR:
 	  case Named_object::NAMED_OBJECT_RESULT_VAR:
+	    this->mark_var_used(named_object);
 	    return Expression::make_var_reference(named_object, location);
 	  case Named_object::NAMED_OBJECT_SINK:
 	    if (may_be_sink)
@@ -2366,7 +2408,15 @@ Parse::operand(bool may_be_sink)
 	    return Expression::make_func_reference(named_object, NULL,
 						   location);
 	  case Named_object::NAMED_OBJECT_UNKNOWN:
-	    return Expression::make_unknown_reference(named_object, location);
+	    {
+	      Unknown_expression* ue =
+		Expression::make_unknown_reference(named_object, location);
+	      if (this->is_erroneous_function_)
+		ue->set_no_error_message();
+	      return ue;
+	    }
+	  case Named_object::NAMED_OBJECT_ERRONEOUS:
+	    return Expression::make_error(location);
 	  default:
 	    go_unreachable();
 	  }
@@ -2375,6 +2425,12 @@ Parse::operand(bool may_be_sink)
 
     case Token::TOKEN_STRING:
       ret = Expression::make_string(token->string_value(), token->location());
+      this->advance_token();
+      return ret;
+
+    case Token::TOKEN_CHARACTER:
+      ret = Expression::make_character(token->character_value(), NULL,
+				       token->location());
       this->advance_token();
       return ret;
 
@@ -2457,6 +2513,8 @@ Parse::enclosing_var_reference(Named_object* in_function, Named_object* var,
 			       Location location)
 {
   go_assert(var->is_variable() || var->is_result_variable());
+
+  this->mark_var_used(var);
 
   Named_object* this_function = this->gogo_->current_function();
   Named_object* closure = this_function->func_value()->closure_var();
@@ -2629,6 +2687,7 @@ Parse::composite_lit(Type* type, int depth, Location location)
 	{
 	  error_at(this->location(), "expected %<,%> or %<}%>");
 
+	  this->gogo_->mark_locals_used();
 	  int depth = 0;
 	  while (!token->is_eof()
 		 && (depth > 0 || !token->is_op(OPERATOR_RCURLY)))
@@ -2663,13 +2722,21 @@ Parse::function_lit()
   hold_enclosing_vars.swap(this->enclosing_vars_);
 
   Function_type* type = this->signature(NULL, location);
+  bool fntype_is_error = false;
   if (type == NULL)
-    type = Type::make_function_type(NULL, NULL, NULL, location);
+    {
+      type = Type::make_function_type(NULL, NULL, NULL, location);
+      fntype_is_error = true;
+    }
 
   // For a function literal, the next token must be a '{'.  If we
   // don't see that, then we may have a type expression.
   if (!this->peek_token()->is_op(OPERATOR_LCURLY))
     return Expression::make_type(type, location);
+
+  bool hold_is_erroneous_function = this->is_erroneous_function_;
+  if (fntype_is_error)
+    this->is_erroneous_function_ = true;
 
   Bc_stack* hold_break_stack = this->break_stack_;
   Bc_stack* hold_continue_stack = this->continue_stack_;
@@ -2688,6 +2755,8 @@ Parse::function_lit()
     delete this->continue_stack_;
   this->break_stack_ = hold_break_stack;
   this->continue_stack_ = hold_continue_stack;
+
+  this->is_erroneous_function_ = hold_is_erroneous_function;
 
   hold_enclosing_vars.swap(this->enclosing_vars_);
 
@@ -3000,6 +3069,7 @@ Parse::id_to_expression(const std::string& name, Location location)
       return Expression::make_const_reference(named_object, location);
     case Named_object::NAMED_OBJECT_VAR:
     case Named_object::NAMED_OBJECT_RESULT_VAR:
+      this->mark_var_used(named_object);
       return Expression::make_var_reference(named_object, location);
     case Named_object::NAMED_OBJECT_SINK:
       return Expression::make_sink(location);
@@ -3007,13 +3077,27 @@ Parse::id_to_expression(const std::string& name, Location location)
     case Named_object::NAMED_OBJECT_FUNC_DECLARATION:
       return Expression::make_func_reference(named_object, NULL, location);
     case Named_object::NAMED_OBJECT_UNKNOWN:
-      return Expression::make_unknown_reference(named_object, location);
+      {
+	Unknown_expression* ue =
+	  Expression::make_unknown_reference(named_object, location);
+	if (this->is_erroneous_function_)
+	  ue->set_no_error_message();
+	return ue;
+      }
     case Named_object::NAMED_OBJECT_PACKAGE:
     case Named_object::NAMED_OBJECT_TYPE:
     case Named_object::NAMED_OBJECT_TYPE_DECLARATION:
-      // These cases can arise for a field name in a composite
-      // literal.
-      return Expression::make_unknown_reference(named_object, location);
+      {
+	// These cases can arise for a field name in a composite
+	// literal.
+	Unknown_expression* ue =
+	  Expression::make_unknown_reference(named_object, location);
+	if (this->is_erroneous_function_)
+	  ue->set_no_error_message();
+	return ue;
+      }
+    case Named_object::NAMED_OBJECT_ERRONEOUS:
+      return Expression::make_error(location);
     default:
       error_at(this->location(), "unexpected type of identifier");
       return Expression::make_error(location);
@@ -3155,6 +3239,7 @@ Parse::expression_may_start_here()
 	default:
 	  return false;
 	}
+    case Token::TOKEN_CHARACTER:
     case Token::TOKEN_INTEGER:
     case Token::TOKEN_FLOAT:
     case Token::TOKEN_IMAGINARY:
@@ -3317,6 +3402,7 @@ Parse::statement(Label* label)
       break;
 
     case Token::TOKEN_STRING:
+    case Token::TOKEN_CHARACTER:
     case Token::TOKEN_INTEGER:
     case Token::TOKEN_FLOAT:
     case Token::TOKEN_IMAGINARY:
@@ -3376,6 +3462,7 @@ Parse::statement_may_start_here()
 	return this->expression_may_start_here();
 
     case Token::TOKEN_STRING:
+    case Token::TOKEN_CHARACTER:
     case Token::TOKEN_INTEGER:
     case Token::TOKEN_FLOAT:
     case Token::TOKEN_IMAGINARY:
@@ -3512,6 +3599,7 @@ Parse::simple_stat(bool may_be_composite_lit, bool* return_exp,
 	{
 	  if (!exp->is_error_expression())
 	    error_at(token->location(), "non-name on left side of %<:=%>");
+	  this->gogo_->mark_locals_used();
 	  while (!token->is_op(OPERATOR_SEMICOLON)
 		 && !token->is_eof())
 	    token = this->advance_token();
@@ -3969,6 +4057,7 @@ Parse::switch_stat(Label* label)
   Expression* switch_val = NULL;
   bool saw_send_stmt;
   Type_switch type_switch;
+  bool have_type_switch_block = false;
   if (this->simple_stat_may_start_here())
     {
       switch_val = this->simple_stat(false, &saw_send_stmt, NULL,
@@ -4011,7 +4100,14 @@ Parse::switch_stat(Label* label)
 							     id_loc));
 	      if (is_coloneq)
 		{
-		  // This must be a TypeSwitchGuard.
+		  // This must be a TypeSwitchGuard.  It is in a
+		  // different block from any initial SimpleStat.
+		  if (saw_simple_stat)
+		    {
+		      this->gogo_->start_block(id_loc);
+		      have_type_switch_block = true;
+		    }
+
 		  switch_val = this->simple_stat(false, &saw_send_stmt, NULL,
 						 &type_switch);
 		  if (!type_switch.found)
@@ -4054,13 +4150,23 @@ Parse::switch_stat(Label* label)
 	  if (this->peek_token()->is_op(OPERATOR_SEMICOLON))
 	    this->advance_token();
 	  if (!this->peek_token()->is_op(OPERATOR_LCURLY))
-	    return;
+	    {
+	      if (have_type_switch_block)
+		this->gogo_->add_block(this->gogo_->finish_block(location),
+				       location);
+	      this->gogo_->add_block(this->gogo_->finish_block(location),
+				     location);
+	      return;
+	    }
 	  if (type_switch.found)
 	    type_switch.expr = Expression::make_error(location);
 	}
       else
 	{
 	  error_at(this->location(), "expected %<{%>");
+	  if (have_type_switch_block)
+	    this->gogo_->add_block(this->gogo_->finish_block(this->location()),
+				   location);
 	  this->gogo_->add_block(this->gogo_->finish_block(this->location()),
 				 location);
 	  return;
@@ -4076,6 +4182,10 @@ Parse::switch_stat(Label* label)
 
   if (statement != NULL)
     this->gogo_->add_statement(statement);
+
+  if (have_type_switch_block)
+    this->gogo_->add_block(this->gogo_->finish_block(this->location()),
+			   location);
 
   this->gogo_->add_block(this->gogo_->finish_block(this->location()),
 			 location);
@@ -4265,7 +4375,15 @@ Parse::type_case_clause(Named_object* switch_no, Type_case_clauses* clauses,
 	  Variable* v = new Variable(type, init, false, false, false,
 				     location);
 	  v->set_is_type_switch_var();
-	  this->gogo_->add_variable(switch_no->name(), v);
+	  Named_object* no = this->gogo_->add_variable(switch_no->name(), v);
+
+	  // We don't want to issue an error if the compiler
+	  // introduced special variable is not used.  Instead we want
+	  // to issue an error if the variable defined by the switch
+	  // is not used.  That is handled via type_switch_vars_ and
+	  // Parse::mark_var_used.
+	  v->set_is_used();
+	  this->type_switch_vars_[no] = switch_no;
 	}
       this->statement_list();
       statements = this->gogo_->finish_block(this->location());
@@ -4321,6 +4439,7 @@ Parse::type_switch_case(std::vector<Type*>* types, bool* is_default)
 	    types->push_back(t);
 	  else
 	    {
+	      this->gogo_->mark_locals_used();
 	      token = this->peek_token();
 	      while (!token->is_op(OPERATOR_COLON)
 		     && !token->is_op(OPERATOR_COMMA)
@@ -5187,6 +5306,7 @@ Parse::program()
       else
 	{
 	  error_at(this->location(), "expected declaration");
+	  this->gogo_->mark_locals_used();
 	  do
 	    this->advance_token();
 	  while (!this->peek_token()->is_eof()
@@ -5245,6 +5365,7 @@ Parse::increment_iota()
 bool
 Parse::skip_past_error(Operator op)
 {
+  this->gogo_->mark_locals_used();
   const Token* token = this->peek_token();
   while (!token->is_op(op))
     {
@@ -5271,4 +5392,23 @@ Parse::verify_not_sink(Expression* expr)
       expr = Expression::make_error(expr->location());
     }
   return expr;
+}
+
+// Mark a variable as used.
+
+void
+Parse::mark_var_used(Named_object* no)
+{
+  if (no->is_variable())
+    {
+      no->var_value()->set_is_used();
+
+      // When a type switch uses := to define a variable, then for
+      // each case with a single type we introduce a new variable with
+      // the appropriate type.  When we do, if the newly introduced
+      // variable is used, then the type switch variable is used.
+      Type_switch_vars::iterator p = this->type_switch_vars_.find(no);
+      if (p != this->type_switch_vars_.end())
+	p->second->var_value()->set_is_used();
+    }
 }

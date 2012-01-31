@@ -6045,9 +6045,9 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	      parser->qualifying_scope = NULL_TREE;
 	      parser->object_scope = NULL_TREE;
 	    }
-	  if (scope && name && BASELINK_P (name))
+	  if (parser->scope && name && BASELINK_P (name))
 	    adjust_result_of_qualified_name_lookup
-	      (name, BINFO_TYPE (BASELINK_ACCESS_BINFO (name)), scope);
+	      (name, parser->scope, scope);
 	  postfix_expression
 	    = finish_class_member_access_expr (postfix_expression, name,
 					       template_p, 
@@ -12722,7 +12722,7 @@ cp_parser_template_name (cp_parser* parser,
      its name; we will look it up again during template instantiation.  */
   if (DECL_FUNCTION_TEMPLATE_P (decl) || !DECL_P (decl))
     {
-      tree scope = CP_DECL_CONTEXT (get_first_fn (decl));
+      tree scope = ovl_scope (decl);
       if (TYPE_P (scope) && dependent_type_p (scope))
 	return identifier;
     }
@@ -15724,8 +15724,7 @@ cp_parser_init_declarator (cp_parser* parser,
 	{
 	  /* We want to record the extra mangling scope for in-class
 	     initializers of class members and initializers of static data
-	     member templates.  The former is a C++0x feature which isn't
-	     implemented yet, and I expect it will involve deferring
+	     member templates.  The former involves deferring
 	     parsing of the initializer until end of class as with default
 	     arguments.  So right here we only handle the latter.  */
 	  if (!member_p && processing_template_decl)
@@ -17425,11 +17424,8 @@ cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser)
      cp_parser_function_body changed its state.  */
   if (check_body_p)
     {
-      list = body;
-      if (TREE_CODE (list) == BIND_EXPR)
-	list = BIND_EXPR_BODY (list);
-      if (TREE_CODE (list) == STATEMENT_LIST
-	  && STATEMENT_LIST_TAIL (list) != NULL)
+      list = cur_stmt_list;
+      if (STATEMENT_LIST_TAIL (list))
 	last = STATEMENT_LIST_TAIL (list)->stmt;
     }
   /* Parse the function-body.  */

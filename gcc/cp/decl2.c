@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "c-family/c-common.h"
 #include "c-family/c-objc.h"
-#include "tree-mudflap.h"
 #include "cgraph.h"
 #include "tree-inline.h"
 #include "c-family/c-pragma.h"
@@ -1200,9 +1199,9 @@ save_template_attributes (tree *attr_p, tree *decl_p)
 
   old_attrs = *q;
 
-  /* Place the late attributes at the beginning of the attribute
+  /* Merge the late attributes at the beginning with the attribute
      list.  */
-  TREE_CHAIN (tree_last (late_attrs)) = *q;
+  late_attrs = merge_attributes (late_attrs, *q);
   *q = late_attrs;
 
   if (!DECL_P (*decl_p) && *decl_p == TYPE_MAIN_VARIANT (*decl_p))
@@ -1984,6 +1983,8 @@ constrain_visibility (tree decl, int visibility, bool tmpl)
 	   && (tmpl || !DECL_VISIBILITY_SPECIFIED (decl)))
     {
       DECL_VISIBILITY (decl) = (enum symbol_visibility) visibility;
+      /* This visibility was not specified.  */
+      DECL_VISIBILITY_SPECIFIED (decl) = false;
     }
 }
 
@@ -2176,8 +2177,14 @@ determine_visibility (tree decl)
 		    ? TYPE_TEMPLATE_INFO (TREE_TYPE (decl))
 		    : DECL_TEMPLATE_INFO (decl));
       tree args = TI_ARGS (tinfo);
+      tree attribs = (TREE_CODE (decl) == TYPE_DECL
+		      ? TYPE_ATTRIBUTES (TREE_TYPE (decl))
+		      : DECL_ATTRIBUTES (decl));
       
-      if (args != error_mark_node)
+      if (args != error_mark_node
+	  /* Template argument visibility outweighs #pragma or namespace
+	     visibility, but not an explicit attribute.  */
+	  && !lookup_attribute ("visibility", attribs))
 	{
 	  int depth = TMPL_ARGS_DEPTH (args);
 	  tree pattern = DECL_TEMPLATE_RESULT (TI_TEMPLATE (tinfo));
