@@ -747,10 +747,11 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 static void
 add_removable_extension (const_rtx expr, rtx insn,
 			 VEC (ext_cand, heap) **insn_list,
-			 ext_cand **def_map)
+			 unsigned *def_map)
 {
   enum rtx_code code;
   enum machine_mode mode;
+  unsigned int idx;
   rtx src, dest;
 
   /* We are looking for SET (REG N) (ANY_EXTEND (REG N)).  */
@@ -786,7 +787,8 @@ add_removable_extension (const_rtx expr, rtx insn,
       /* Second, make sure the reaching definitions don't feed another and
 	 different extension.  FIXME: this obviously can be improved.  */
       for (def = defs; def; def = def->next)
-	if ((cand = def_map[INSN_UID(DF_REF_INSN (def->ref))])
+	if ((idx = def_map[INSN_UID(DF_REF_INSN (def->ref))])
+	    && (cand = VEC_index (ext_cand, *insn_list, idx - 1))
 	    && (cand->code != code || cand->mode != mode))
 	  {
 	    if (dump_file)
@@ -805,9 +807,10 @@ add_removable_extension (const_rtx expr, rtx insn,
       cand->code = code;
       cand->mode = mode;
       cand->insn = insn;
+      idx = VEC_length (ext_cand, *insn_list);
 
       for (def = defs; def; def = def->next)
-	def_map[INSN_UID(DF_REF_INSN (def->ref))] = cand;
+	def_map[INSN_UID(DF_REF_INSN (def->ref))] = idx;
     }
 }
 
@@ -820,7 +823,7 @@ find_removable_extensions (void)
   VEC (ext_cand, heap) *insn_list = NULL;
   basic_block bb;
   rtx insn, set;
-  ext_cand **def_map = XCNEWVEC (ext_cand *, max_insn_uid);
+  unsigned *def_map = XCNEWVEC (unsigned, max_insn_uid);
 
   FOR_EACH_BB (bb)
     FOR_BB_INSNS (bb, insn)
