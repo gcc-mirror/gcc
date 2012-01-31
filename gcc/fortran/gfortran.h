@@ -1115,6 +1115,7 @@ typedef struct gfc_tbp_generic
   struct gfc_typebound_proc* specific;
 
   struct gfc_tbp_generic* next;
+  bool is_operator;
 }
 gfc_tbp_generic;
 

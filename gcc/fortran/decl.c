@@ -8391,6 +8391,8 @@ gfc_match_generic (void)
       target->specific_st = target_st;
       target->specific = NULL;
       target->next = tb->u.generic;
+      target->is_operator = ((op_type == INTERFACE_USER_OP)
+			     || (op_type == INTERFACE_INTRINSIC_OP));
       tb->u.generic = target;
     }
   while (gfc_match (" ,") == MATCH_YES);
