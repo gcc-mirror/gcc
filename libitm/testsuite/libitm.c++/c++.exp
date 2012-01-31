@@ -1,3 +1,5 @@
+# Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -17,14 +19,16 @@ load_lib libitm-dg.exp
 global shlib_ext
 
 set shlib_ext [get_shlib_extension]
-set lang_link_flags "-lstdc++"
+# The C++ tests should be linked with g++, which defaults to -shared-libgcc.
+# Doing that is currently too intrusive, so hardcode here.
+set lang_link_flags "-shared-libgcc -lstdc++"
 set lang_test_file_found 0
 set lang_library_path "../libstdc++-v3/src/.libs"
 
 # Initialize dg.
 dg-init
 
-set blddir [lookfor_file [get_multilibs] libgomp]
+set blddir [lookfor_file [get_multilibs] libitm]
 
 
 if { $blddir != "" } {
@@ -41,7 +45,7 @@ if { $blddir != "" } {
     }
 } elseif { [info exists GXX_UNDER_TEST] } {
     set lang_test_file_found 1
-    # Needs to exist for libgomp.exp.
+    # Needs to exist for libitm.exp.
     set lang_test_file ""
 } else {
     puts "GXX_UNDER_TEST not defined, will not execute c++ tests"

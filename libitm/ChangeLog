@@ -1,3 +1,10 @@
+2012-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/51296
+	* testsuite/libitm.c++/c++.exp (lang_link_flags): Add
+	-shared-libgcc.
+	Correct libgomp references.
+
 2012-01-24  Torvald Riegel  <triegel@redhat.com>
 
 	* config/linux/rwlock.cc (GTM::gtm_rwlock::write_unlock): Fix reader
