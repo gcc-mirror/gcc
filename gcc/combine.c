@@ -790,6 +790,7 @@ do_SUBST_MODE (rtx *into, enum machine_mode newval)
 
 #define SUBST_MODE(INTO, NEWVAL)  do_SUBST_MODE(&(INTO), (NEWVAL))
 
+#ifndef HAVE_cc0
 /* Similar to SUBST, but NEWVAL is a LOG_LINKS expression.  */
 
 static void
@@ -815,7 +816,7 @@ do_SUBST_LINK (struct insn_link **into, struct insn_link *newval)
 }
 
 #define SUBST_LINK(oldval, newval) do_SUBST_LINK (&oldval, newval)
-
+#endif
 
 /* Subroutine of try_combine.  Determine whether the replacement patterns
    NEWPAT, NEWI2PAT and NEWOTHERPAT are cheaper according to insn_rtx_cost
