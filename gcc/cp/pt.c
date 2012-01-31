@@ -3238,6 +3238,8 @@ make_pack_expansion (tree arg)
     }
   PACK_EXPANSION_PARAMETER_PACKS (result) = parameter_packs;
 
+  PACK_EXPANSION_LOCAL_P (result) = at_function_scope_p ();
+
   return result;
 }
 
@@ -9340,7 +9342,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
        }
       if (TREE_CODE (parm_pack) == PARM_DECL)
 	{
-	  if (at_function_scope_p ())
+	  if (PACK_EXPANSION_LOCAL_P (t))
 	    arg_pack = retrieve_local_specialization (parm_pack);
 	  else
 	    {
@@ -18905,6 +18907,7 @@ tsubst_initializer_list (tree t, tree argvec)
           /* Build a dummy EXPR_PACK_EXPANSION that will be used to
              expand each argument in the TREE_VALUE of t.  */
           expr = make_node (EXPR_PACK_EXPANSION);
+	  PACK_EXPANSION_LOCAL_P (expr) = true;
           PACK_EXPANSION_PARAMETER_PACKS (expr) =
             PACK_EXPANSION_PARAMETER_PACKS (TREE_PURPOSE (t));
 

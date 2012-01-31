@@ -76,6 +76,7 @@ c-common.h, not after.
       TRANSACTION_EXPR_IS_STMT (in TRANSACTION_EXPR)
       CONVERT_EXPR_VBASE_PATH (in CONVERT_EXPR)
       OVL_ARG_DEPENDENT (in OVERLOAD)
+      PACK_EXPANSION_LOCAL_P (in *_PACK_EXPANSION)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -2838,6 +2839,9 @@ extern void decl_shadowed_for_var_insert (tree, tree);
   *(TREE_CODE (NODE) == TYPE_PACK_EXPANSION	\
     ? &TYPE_MAXVAL (NODE)			\
     : &TREE_OPERAND ((NODE), 2))
+
+/* True iff this pack expansion is within a function context.  */
+#define PACK_EXPANSION_LOCAL_P(NODE) TREE_LANG_FLAG_0 (NODE)
 
 /* Determine if this is an argument pack.  */
 #define ARGUMENT_PACK_P(NODE)                          \
