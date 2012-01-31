@@ -6310,16 +6310,11 @@ fcncall_realloc_result (gfc_se *se, int rank)
   gfc_add_modify (&se->post, desc, res_desc);
 
   offset = gfc_index_zero_node;
-  tmp = gfc_index_one_node;
-  /* Now reset the bounds from zero based to unity based.  */
+
+  /* Now reset the bounds from zero based to unity based and set the
+     offset accordingly.  */
   for (n = 0 ; n < rank; n++)
     {
-      /* Accumulate the offset.  */
-      offset = fold_build2_loc (input_location, MINUS_EXPR,
-				gfc_array_index_type,
-				offset, tmp);
-      /* Now do the bounds.  */
-      gfc_conv_descriptor_offset_set (&se->post, desc, tmp);
       tmp = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[n]);
       tmp = fold_build2_loc (input_location, PLUS_EXPR,
 			     gfc_array_index_type,
@@ -6330,15 +6325,16 @@ fcncall_realloc_result (gfc_se *se, int rank)
       gfc_conv_descriptor_ubound_set (&se->post, desc,
 				      gfc_rank_cst[n], tmp);
 
-      /* The extent for the next contribution to offset.  */
-      tmp = fold_build2_loc (input_location, MINUS_EXPR,
-			     gfc_array_index_type,
-			     gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[n]),
-			     gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[n]));
-      tmp = fold_build2_loc (input_location, PLUS_EXPR,
-			     gfc_array_index_type,
-			     tmp, gfc_index_one_node);
+      /* Accumulate the offset.  Since all lbounds are unity, offset
+	 is just minus the sum of the strides.  */
+      tmp = gfc_conv_descriptor_stride_get (desc, gfc_rank_cst[n]);
+      offset = fold_build2_loc (input_location, MINUS_EXPR,
+				gfc_array_index_type,
+				offset, tmp);
+      offset = gfc_evaluate_now (offset, &se->post);
+
     }
+
   gfc_conv_descriptor_offset_set (&se->post, desc, offset);
 }
 
