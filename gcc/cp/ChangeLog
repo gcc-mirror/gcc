@@ -1,3 +1,10 @@
+2012-01-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52043
+	* cp-tree.h (PACK_EXPANSION_LOCAL_P): New.
+	* pt.c (make_pack_expansion, tsubst_initializer_list): Set it.
+	(tsubst_pack_expansion): Check it.
+
 2012-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51327
