@@ -1,6 +1,6 @@
 2012-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	PR libstdc++/51296
+	PR libitm/51822
 	* testsuite/libitm.c++/c++.exp (lang_link_flags): Add
 	-shared-libgcc.
 	Correct libgomp references.
