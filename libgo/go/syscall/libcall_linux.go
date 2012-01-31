@@ -139,14 +139,6 @@ func PtracePokeData(pid int, addr uintptr, data []byte) (count int, err error) {
 	return ptracePoke(PTRACE_POKEDATA, PTRACE_PEEKDATA, pid, addr, data)
 }
 
-func PtraceGetRegs(pid int, regsout *PtraceRegs) (err error) {
-	return ptrace(PTRACE_GETREGS, pid, 0, uintptr(unsafe.Pointer(regsout)))
-}
-
-func PtraceSetRegs(pid int, regs *PtraceRegs) (err error) {
-	return ptrace(PTRACE_SETREGS, pid, 0, uintptr(unsafe.Pointer(regs)))
-}
-
 func PtraceSetOptions(pid int, options int) (err error) {
 	return ptrace(PTRACE_SETOPTIONS, pid, 0, uintptr(options))
 }
