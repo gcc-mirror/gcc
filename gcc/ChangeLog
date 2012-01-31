@@ -1,3 +1,8 @@
+2012-01-31  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	config/arm/thumb2.md (thumb2_mov_notscc): Use MVN for true
+	condition.
+
 2012-01-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/52041

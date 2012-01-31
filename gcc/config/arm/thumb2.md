@@ -259,7 +259,7 @@
 	(not:SI (match_operator:SI 1 "arm_comparison_operator"
 		 [(match_operand 2 "cc_register" "") (const_int 0)])))]
   "TARGET_THUMB2"
-  "ite\\t%D1\;mov%D1\\t%0, #0\;mvn%d1\\t%0, #1"
+  "ite\\t%D1\;mvn%D1\\t%0, #0\;mvn%d1\\t%0, #1"
   [(set_attr "conds" "use")
    (set_attr "length" "10")]
 )
