@@ -3135,9 +3135,14 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	      sra_stats.deleted++;
 	      return SRA_AM_REMOVED;
 	    }
+	  /* Restore the aggregate RHS from its components so the
+	     prevailing aggregate copy does the right thing.  */
 	  if (access_has_children_p (racc))
-	    generate_subtree_copies (racc->first_child, lhs, racc->offset,
-				     0, 0, gsi, false, true, loc);
+	    generate_subtree_copies (racc->first_child, racc->base, 0, 0, 0,
+				     gsi, false, false, loc);
+	  /* Re-load the components of the aggregate copy destination.
+	     But use the RHS aggregate to load from to expose more
+	     optimization opportunities.  */
 	  if (access_has_children_p (lacc))
 	    generate_subtree_copies (lacc->first_child, rhs, lacc->offset,
 				     0, 0, gsi, true, true, loc);
