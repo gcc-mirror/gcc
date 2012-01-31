@@ -1,5 +1,14 @@
 2012-01-31  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/52024
+	* gfortran.h (gfc_tbp_generic): Store whether the
+	generic is an operator.
+	* decl.c (gfc_match_generic): Set that flag.
+	* resolve.c (check_generic_tbp_ambiguity): Use it in the
+	gfc_compare_interfaces check.
+
+2012-01-31  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/52029
 	* class.c (gfc_find_derived_vtab): Mark _copy function as pure.
 

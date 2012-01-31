@@ -10950,6 +10950,7 @@ check_generic_tbp_ambiguity (gfc_tbp_generic* t1, gfc_tbp_generic* t2,
   gcc_assert (t1->specific && t2->specific);
   gcc_assert (!t1->specific->is_generic);
   gcc_assert (!t2->specific->is_generic);
+  gcc_assert (t1->is_operator == t2->is_operator);
 
   sym1 = t1->specific->u.specific->n.sym;
   sym2 = t2->specific->u.specific->n.sym;
@@ -10968,7 +10969,8 @@ check_generic_tbp_ambiguity (gfc_tbp_generic* t1, gfc_tbp_generic* t2,
     }
 
   /* Compare the interfaces.  */
-  if (gfc_compare_interfaces (sym1, sym2, sym2->name, 1, 0, NULL, 0))
+  if (gfc_compare_interfaces (sym1, sym2, sym2->name, !t1->is_operator, 0,
+			      NULL, 0))
     {
       gfc_error ("'%s' and '%s' for GENERIC '%s' at %L are ambiguous",
 		 sym1->name, sym2->name, generic_name, &where);

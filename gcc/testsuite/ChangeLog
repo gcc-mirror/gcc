@@ -1,5 +1,10 @@
 2012-01-31  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/52024
+	* gfortran.dg/typebound_generic_11.f90: New.
+
+2012-01-31  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/52029
 	* gfortran.dg/class_49.f90: New.
 
