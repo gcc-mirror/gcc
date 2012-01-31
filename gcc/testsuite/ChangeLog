@@ -1,3 +1,8 @@
+2012-01-31  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51528
+	* gcc.dg/torture/pr51528.c: New testcase.
+
 2012-01-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR go/48501

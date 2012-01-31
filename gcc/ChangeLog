@@ -1,3 +1,9 @@
+2012-01-31  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/51528
+	* tree-sra.c (sra_modify_assign): Avoid copy-in/out for aggregate
+	assigns.
+
 2012-01-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/52041
