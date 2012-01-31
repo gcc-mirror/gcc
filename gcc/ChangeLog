@@ -1,3 +1,13 @@
+2012-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/52041
+	PR bootstrap/52039
+	PR target/51974
+	* ree.c (add_removable_extension): Change def_map argument
+	to unsigned *, store in def_map 1 + offset into *insn_list vector
+	instead of pointers into the vector.
+	(find_removable_extensions): Adjust caller.
+
 2012-01-30  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md: Resolve all AS1 and AS2 macros.
