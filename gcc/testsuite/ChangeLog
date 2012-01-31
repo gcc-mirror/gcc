@@ -1,5 +1,10 @@
 2012-01-31  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/52029
+	* gfortran.dg/class_49.f90: New.
+
+2012-01-31  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/52013
 	* gfortran.dg/elemental_args_check_6.f90: New.
 

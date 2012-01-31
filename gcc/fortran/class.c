@@ -717,6 +717,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  sub_ns->proc_name = copy;
 		  copy->attr.flavor = FL_PROCEDURE;
 		  copy->attr.subroutine = 1;
+		  copy->attr.pure = 1;
 		  copy->attr.if_source = IFSRC_DECL;
 		  /* This is elemental so that arrays are automatically
 		     treated correctly by the scalarizer.  */
