@@ -2380,15 +2380,14 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 
 	  /* Otherwise, use the do-while form with the help of a special
 	     induction variable in the unsigned version of the base type
-	     or the unsigned version of the size type, whichever is the
+	     or the unsigned version of sizetype, whichever is the
 	     largest, in order to have wrap-around arithmetics for it.  */
 	  else
 	    {
-	      if (TYPE_PRECISION (gnu_base_type)
-		  > TYPE_PRECISION (size_type_node))
+	      if (TYPE_PRECISION (gnu_base_type) > TYPE_PRECISION (sizetype))
 		gnu_base_type = gnat_unsigned_type (gnu_base_type);
 	      else
-		gnu_base_type = size_type_node;
+		gnu_base_type = sizetype;
 
 	      gnu_first = convert (gnu_base_type, gnu_first);
 	      gnu_last = convert (gnu_base_type, gnu_last);
