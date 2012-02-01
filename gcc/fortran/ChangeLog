@@ -1,3 +1,10 @@
+2012-02-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52024
+	* module.c (MOD_VERSION): Bump.
+	(mio_typebound_proc): Read/write is_operator from/to the
+	.mod file.
+
 2012-02-01  Tobias Burnus
 
 	PR fortran/52059
