@@ -1,3 +1,10 @@
+2012-01-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from mainline r183796
+	PR rtl-optimization/51374
+	* combine.c (can_combine_p): Don't allow volatile_refs_p insns
+	to cross other volatile_refs_p insns.
+
 2012-01-31  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	Backport from mainline.
