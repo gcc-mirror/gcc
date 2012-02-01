@@ -1,3 +1,9 @@
+2012-02-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/51374
+	* combine.c (can_combine_p): Don't allow volatile_refs_p insns
+	to cross other volatile_refs_p insns.
+
 2012-02-01  Richard Guenther  <rguenther@suse.de>
 
 	* doc/invoke.texi (fno-inline): Clarify documentation.

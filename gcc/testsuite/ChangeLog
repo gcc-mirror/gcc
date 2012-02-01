@@ -1,3 +1,8 @@
+2012-02-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/51374
+	* testsuite/gcc.target/avr/torture/pr51374-1.c: New.
+
 2012-01-31  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52024
