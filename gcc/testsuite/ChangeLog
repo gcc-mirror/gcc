@@ -2,7 +2,7 @@
 
 	Backport from mainline r183796
 	PR rtl-optimization/51374
-	* testsuite/gcc.target/avr/torture/pr51374-1.c: New.
+	* gcc.target/avr/torture/pr51374-1.c: New.
 
 2012-01-30  Bin Cheng  <bin.cheng@arm.com>
 
