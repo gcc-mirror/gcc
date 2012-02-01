@@ -1154,8 +1154,7 @@ class Variable
 
   // Return whether the type is defined yet.
   bool
-  has_type() const
-  { return this->type_ != NULL; }
+  has_type() const;
 
   // Get the initial value.
   Expression*

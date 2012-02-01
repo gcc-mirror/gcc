@@ -3848,6 +3848,24 @@ Variable::add_preinit_statement(Gogo* gogo, Statement* s)
   b->set_end_location(s->location());
 }
 
+// Whether this variable has a type.
+
+bool
+Variable::has_type() const
+{
+  if (this->type_ == NULL)
+    return false;
+
+  // A variable created in a type switch case nil does not actually
+  // have a type yet.  It will be changed to use the initializer's
+  // type in determine_type.
+  if (this->is_type_switch_var_
+      && this->type_->is_nil_constant_as_type())
+    return false;
+
+  return true;
+}
+
 // In an assignment which sets a variable to a tuple of EXPR, return
 // the type of the first element of the tuple.
 
