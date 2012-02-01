@@ -5,6 +5,7 @@
 package sql
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -310,6 +311,40 @@ func TestTxStmt(t *testing.T) {
 	}
 }
 
+// Issue: http://golang.org/issue/2784
+// This test didn't fail before because we got luckly with the fakedb driver.
+// It was failing, and now not, in github.com/bradfitz/go-sql-test
+func TestTxQuery(t *testing.T) {
+	db := newTestDB(t, "")
+	defer closeDB(t, db)
+	exec(t, db, "CREATE|t1|name=string,age=int32,dead=bool")
+	exec(t, db, "INSERT|t1|name=Alice")
+
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+
+	r, err := tx.Query("SELECT|t1|name|")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !r.Next() {
+		if r.Err() != nil {
+			t.Fatal(r.Err())
+		}
+		t.Fatal("expected one row")
+	}
+
+	var x string
+	err = r.Scan(&x)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 // Tests fix for issue 2542, that we release a lock when querying on
 // a closed connection.
 func TestIssue2542Deadlock(t *testing.T) {
@@ -320,6 +355,34 @@ func TestIssue2542Deadlock(t *testing.T) {
 		if err == nil {
 			t.Fatalf("expected error")
 		}
+	}
+}
+
+// Tests fix for issue 2788, that we bind nil to a []byte if the
+// value in the column is sql null
+func TestNullByteSlice(t *testing.T) {
+	db := newTestDB(t, "")
+	defer closeDB(t, db)
+	exec(t, db, "CREATE|t|id=int32,name=nullstring")
+	exec(t, db, "INSERT|t|id=10,name=?", nil)
+
+	var name []byte
+
+	err := db.QueryRow("SELECT|t|name|id=?", 10).Scan(&name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if name != nil {
+		t.Fatalf("name []byte should be nil for null column value, got: %#v", name)
+	}
+
+	exec(t, db, "INSERT|t|id=11,name=?", "bob")
+	err = db.QueryRow("SELECT|t|name|id=?", 11).Scan(&name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(name) != "bob" {
+		t.Fatalf("name []byte should be bob, got: %q", string(name))
 	}
 }
 
@@ -341,16 +404,96 @@ func TestQueryRowClosingStmt(t *testing.T) {
 	}
 }
 
+type nullTestRow struct {
+	nullParam    interface{}
+	notNullParam interface{}
+	scanNullVal  interface{}
+}
+
+type nullTestSpec struct {
+	nullType    string
+	notNullType string
+	rows        [6]nullTestRow
+}
+
 func TestNullStringParam(t *testing.T) {
+	spec := nullTestSpec{"nullstring", "string", [6]nullTestRow{
+		nullTestRow{NullString{"aqua", true}, "", NullString{"aqua", true}},
+		nullTestRow{NullString{"brown", false}, "", NullString{"", false}},
+		nullTestRow{"chartreuse", "", NullString{"chartreuse", true}},
+		nullTestRow{NullString{"darkred", true}, "", NullString{"darkred", true}},
+		nullTestRow{NullString{"eel", false}, "", NullString{"", false}},
+		nullTestRow{"foo", NullString{"black", false}, nil},
+	}}
+	nullTestRun(t, spec)
+}
+
+func TestNullInt64Param(t *testing.T) {
+	spec := nullTestSpec{"nullint64", "int64", [6]nullTestRow{
+		nullTestRow{NullInt64{31, true}, 1, NullInt64{31, true}},
+		nullTestRow{NullInt64{-22, false}, 1, NullInt64{0, false}},
+		nullTestRow{22, 1, NullInt64{22, true}},
+		nullTestRow{NullInt64{33, true}, 1, NullInt64{33, true}},
+		nullTestRow{NullInt64{222, false}, 1, NullInt64{0, false}},
+		nullTestRow{0, NullInt64{31, false}, nil},
+	}}
+	nullTestRun(t, spec)
+}
+
+func TestNullFloat64Param(t *testing.T) {
+	spec := nullTestSpec{"nullfloat64", "float64", [6]nullTestRow{
+		nullTestRow{NullFloat64{31.2, true}, 1, NullFloat64{31.2, true}},
+		nullTestRow{NullFloat64{13.1, false}, 1, NullFloat64{0, false}},
+		nullTestRow{-22.9, 1, NullFloat64{-22.9, true}},
+		nullTestRow{NullFloat64{33.81, true}, 1, NullFloat64{33.81, true}},
+		nullTestRow{NullFloat64{222, false}, 1, NullFloat64{0, false}},
+		nullTestRow{10, NullFloat64{31.2, false}, nil},
+	}}
+	nullTestRun(t, spec)
+}
+
+func TestNullBoolParam(t *testing.T) {
+	spec := nullTestSpec{"nullbool", "bool", [6]nullTestRow{
+		nullTestRow{NullBool{false, true}, true, NullBool{false, true}},
+		nullTestRow{NullBool{true, false}, false, NullBool{false, false}},
+		nullTestRow{true, true, NullBool{true, true}},
+		nullTestRow{NullBool{true, true}, false, NullBool{true, true}},
+		nullTestRow{NullBool{true, false}, true, NullBool{false, false}},
+		nullTestRow{true, NullBool{true, false}, nil},
+	}}
+	nullTestRun(t, spec)
+}
+
+func nullTestRun(t *testing.T, spec nullTestSpec) {
 	db := newTestDB(t, "")
 	defer closeDB(t, db)
-	exec(t, db, "CREATE|t|id=int32,name=string,favcolor=nullstring")
+	exec(t, db, fmt.Sprintf("CREATE|t|id=int32,name=string,nullf=%s,notnullf=%s", spec.nullType, spec.notNullType))
 
 	// Inserts with db.Exec:
-	exec(t, db, "INSERT|t|id=?,name=?,favcolor=?", 1, "alice", NullString{"aqua", true})
-	exec(t, db, "INSERT|t|id=?,name=?,favcolor=?", 2, "bob", NullString{"brown", false})
+	exec(t, db, "INSERT|t|id=?,name=?,nullf=?,notnullf=?", 1, "alice", spec.rows[0].nullParam, spec.rows[0].notNullParam)
+	exec(t, db, "INSERT|t|id=?,name=?,nullf=?,notnullf=?", 2, "bob", spec.rows[1].nullParam, spec.rows[1].notNullParam)
 
-	_, err := db.Exec("INSERT|t|id=?,name=?,favcolor=?", 999, nil, nil)
+	// Inserts with a prepared statement:
+	stmt, err := db.Prepare("INSERT|t|id=?,name=?,nullf=?,notnullf=?")
+	if err != nil {
+		t.Fatalf("prepare: %v", err)
+	}
+	if _, err := stmt.Exec(3, "chris", spec.rows[2].nullParam, spec.rows[2].notNullParam); err != nil {
+		t.Errorf("exec insert chris: %v", err)
+	}
+	if _, err := stmt.Exec(4, "dave", spec.rows[3].nullParam, spec.rows[3].notNullParam); err != nil {
+		t.Errorf("exec insert dave: %v", err)
+	}
+	if _, err := stmt.Exec(5, "eleanor", spec.rows[4].nullParam, spec.rows[4].notNullParam); err != nil {
+		t.Errorf("exec insert eleanor: %v", err)
+	}
+
+	// Can't put null val into non-null col
+	if _, err := stmt.Exec(6, "bob", spec.rows[5].nullParam, spec.rows[5].notNullParam); err == nil {
+		t.Errorf("expected error inserting nil val with prepared statement Exec")
+	}
+
+	_, err = db.Exec("INSERT|t|id=?,name=?,nullf=?", 999, nil, nil)
 	if err == nil {
 		// TODO: this test fails, but it's just because
 		// fakeConn implements the optional Execer interface,
@@ -360,45 +503,17 @@ func TestNullStringParam(t *testing.T) {
 		// t.Errorf("expected error inserting nil name with Exec")
 	}
 
-	// Inserts with a prepared statement:
-	stmt, err := db.Prepare("INSERT|t|id=?,name=?,favcolor=?")
-	if err != nil {
-		t.Fatalf("prepare: %v", err)
-	}
-	if _, err := stmt.Exec(3, "chris", "chartreuse"); err != nil {
-		t.Errorf("exec insert chris: %v", err)
-	}
-	if _, err := stmt.Exec(4, "dave", NullString{"darkred", true}); err != nil {
-		t.Errorf("exec insert dave: %v", err)
-	}
-	if _, err := stmt.Exec(5, "eleanor", NullString{"eel", false}); err != nil {
-		t.Errorf("exec insert dave: %v", err)
-	}
+	paramtype := reflect.TypeOf(spec.rows[0].nullParam)
+	bindVal := reflect.New(paramtype).Interface()
 
-	// Can't put null name into non-nullstring column,
-	if _, err := stmt.Exec(5, NullString{"", false}, nil); err == nil {
-		t.Errorf("expected error inserting nil name with prepared statement Exec")
-	}
-
-	type nameColor struct {
-		name     string
-		favColor NullString
-	}
-
-	wantMap := map[int]nameColor{
-		1: nameColor{"alice", NullString{"aqua", true}},
-		2: nameColor{"bob", NullString{"", false}},
-		3: nameColor{"chris", NullString{"chartreuse", true}},
-		4: nameColor{"dave", NullString{"darkred", true}},
-		5: nameColor{"eleanor", NullString{"", false}},
-	}
-	for id, want := range wantMap {
-		var got nameColor
-		if err := db.QueryRow("SELECT|t|name,favcolor|id=?", id).Scan(&got.name, &got.favColor); err != nil {
+	for i := 0; i < 5; i++ {
+		id := i + 1
+		if err := db.QueryRow("SELECT|t|nullf|id=?", id).Scan(bindVal); err != nil {
 			t.Errorf("id=%d Scan: %v", id, err)
 		}
-		if got != want {
-			t.Errorf("id=%d got %#v, want %#v", id, got, want)
+		bindValDeref := reflect.ValueOf(bindVal).Elem().Interface()
+		if !reflect.DeepEqual(bindValDeref, spec.rows[i].scanNullVal) {
+			t.Errorf("id=%d got %#v, want %#v", id, bindValDeref, spec.rows[i].scanNullVal)
 		}
 	}
 }

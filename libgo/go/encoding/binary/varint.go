@@ -37,6 +37,7 @@ const (
 )
 
 // PutUvarint encodes a uint64 into buf and returns the number of bytes written.
+// If the buffer is too small, PutUvarint will panic.
 func PutUvarint(buf []byte, x uint64) int {
 	i := 0
 	for x >= 0x80 {
@@ -73,6 +74,7 @@ func Uvarint(buf []byte) (uint64, int) {
 }
 
 // PutVarint encodes an int64 into buf and returns the number of bytes written.
+// If the buffer is too small, PutVarint will panic.
 func PutVarint(buf []byte, x int64) int {
 	ux := uint64(x) << 1
 	if x < 0 {
@@ -98,14 +100,6 @@ func Varint(buf []byte) (int64, int) {
 	return x, n
 }
 
-// WriteUvarint encodes x and writes the result to w.
-func WriteUvarint(w io.Writer, x uint64) error {
-	var buf [MaxVarintLen64]byte
-	n := PutUvarint(buf[:], x)
-	_, err := w.Write(buf[0:n])
-	return err
-}
-
 var overflow = errors.New("binary: varint overflows a 64-bit integer")
 
 // ReadUvarint reads an encoded unsigned integer from r and returns it as a uint64.
@@ -127,15 +121,6 @@ func ReadUvarint(r io.ByteReader) (uint64, error) {
 		s += 7
 	}
 	panic("unreachable")
-}
-
-// WriteVarint encodes x and writes the result to w.
-func WriteVarint(w io.Writer, x int64) error {
-	ux := uint64(x) << 1
-	if x < 0 {
-		ux = ^ux
-	}
-	return WriteUvarint(w, ux)
 }
 
 // ReadVarint reads an encoded unsigned integer from r and returns it as a uint64.

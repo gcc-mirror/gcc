@@ -33,6 +33,9 @@ const (
 	opRead                   // Any other read operation.
 )
 
+// ErrTooLarge is passed to panic if memory cannot be allocated to store data in a buffer.
+var ErrTooLarge = errors.New("bytes.Buffer: too large")
+
 // Bytes returns a slice of the contents of the unread portion of the buffer;
 // len(b.Bytes()) == b.Len().  If the caller changes the contents of the
 // returned slice, the contents of the buffer will change provided there
@@ -68,8 +71,9 @@ func (b *Buffer) Truncate(n int) {
 // b.Reset() is the same as b.Truncate(0).
 func (b *Buffer) Reset() { b.Truncate(0) }
 
-// Grow buffer to guarantee space for n more bytes.
-// Return index where bytes should be written.
+// grow grows the buffer to guarantee space for n more bytes.
+// It returns the index where bytes should be written.
+// If the buffer can't grow it will panic with ErrTooLarge.
 func (b *Buffer) grow(n int) int {
 	m := b.Len()
 	// If buffer is empty, reset to recover space.
@@ -82,7 +86,7 @@ func (b *Buffer) grow(n int) int {
 			buf = b.bootstrap[0:]
 		} else {
 			// not enough space anywhere
-			buf = make([]byte, 2*cap(b.buf)+n)
+			buf = makeSlice(2*cap(b.buf) + n)
 			copy(buf, b.buf[b.off:])
 		}
 		b.buf = buf
@@ -94,6 +98,8 @@ func (b *Buffer) grow(n int) int {
 
 // Write appends the contents of p to the buffer.  The return
 // value n is the length of p; err is always nil.
+// If the buffer becomes too large, Write will panic with
+// ErrTooLarge.
 func (b *Buffer) Write(p []byte) (n int, err error) {
 	b.lastRead = opInvalid
 	m := b.grow(len(p))
@@ -102,6 +108,8 @@ func (b *Buffer) Write(p []byte) (n int, err error) {
 
 // WriteString appends the contents of s to the buffer.  The return
 // value n is the length of s; err is always nil.
+// If the buffer becomes too large, WriteString will panic with
+// ErrTooLarge.
 func (b *Buffer) WriteString(s string) (n int, err error) {
 	b.lastRead = opInvalid
 	m := b.grow(len(s))
@@ -118,6 +126,8 @@ const MinRead = 512
 // The return value n is the number of bytes read.
 // Any error except io.EOF encountered during the read
 // is also returned.
+// If the buffer becomes too large, ReadFrom will panic with
+// ErrTooLarge.
 func (b *Buffer) ReadFrom(r io.Reader) (n int64, err error) {
 	b.lastRead = opInvalid
 	// If buffer is empty, reset to recover space.
@@ -125,18 +135,16 @@ func (b *Buffer) ReadFrom(r io.Reader) (n int64, err error) {
 		b.Truncate(0)
 	}
 	for {
-		if cap(b.buf)-len(b.buf) < MinRead {
-			var newBuf []byte
-			// can we get space without allocation?
-			if b.off+cap(b.buf)-len(b.buf) >= MinRead {
-				// reuse beginning of buffer
-				newBuf = b.buf[0 : len(b.buf)-b.off]
-			} else {
-				// not enough space at end; put space on end
-				newBuf = make([]byte, len(b.buf)-b.off, 2*(cap(b.buf)-b.off)+MinRead)
+		if free := cap(b.buf) - len(b.buf); free < MinRead {
+			// not enough space at end
+			newBuf := b.buf
+			if b.off+free < MinRead {
+				// not enough space using beginning of buffer;
+				// double buffer capacity
+				newBuf = makeSlice(2*cap(b.buf) + MinRead)
 			}
 			copy(newBuf, b.buf[b.off:])
-			b.buf = newBuf
+			b.buf = newBuf[:len(b.buf)-b.off]
 			b.off = 0
 		}
 		m, e := r.Read(b.buf[len(b.buf):cap(b.buf)])
@@ -150,6 +158,18 @@ func (b *Buffer) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 	}
 	return n, nil // err is EOF, so return nil explicitly
+}
+
+// makeSlice allocates a slice of size n. If the allocation fails, it panics
+// with ErrTooLarge.
+func makeSlice(n int) []byte {
+	// If the make fails, give a known error.
+	defer func() {
+		if recover() != nil {
+			panic(ErrTooLarge)
+		}
+	}()
+	return make([]byte, n)
 }
 
 // WriteTo writes data to w until the buffer is drained or an error
@@ -176,6 +196,8 @@ func (b *Buffer) WriteTo(w io.Writer) (n int64, err error) {
 // WriteByte appends the byte c to the buffer.
 // The returned error is always nil, but is included
 // to match bufio.Writer's WriteByte.
+// If the buffer becomes too large, WriteByte will panic with
+// ErrTooLarge.
 func (b *Buffer) WriteByte(c byte) error {
 	b.lastRead = opInvalid
 	m := b.grow(1)
@@ -187,6 +209,8 @@ func (b *Buffer) WriteByte(c byte) error {
 // code point r to the buffer, returning its length and
 // an error, which is always nil but is included
 // to match bufio.Writer's WriteRune.
+// If the buffer becomes too large, WriteRune will panic with
+// ErrTooLarge.
 func (b *Buffer) WriteRune(r rune) (n int, err error) {
 	if r < utf8.RuneSelf {
 		b.WriteByte(byte(r))

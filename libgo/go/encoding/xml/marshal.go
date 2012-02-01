@@ -15,26 +15,13 @@ import (
 )
 
 const (
-	// A generic XML header suitable for use with the output of Marshal and
-	// MarshalIndent.  This is not automatically added to any output of this
-	// package, it is provided as a convenience.
+	// A generic XML header suitable for use with the output of Marshal.
+	// This is not automatically added to any output of this package,
+	// it is provided as a convenience.
 	Header = `<?xml version="1.0" encoding="UTF-8"?>` + "\n"
 )
 
-// A Marshaler can produce well-formatted XML representing its internal state.
-// It is used by both Marshal and MarshalIndent.
-type Marshaler interface {
-	MarshalXML() ([]byte, error)
-}
-
-type printer struct {
-	*bufio.Writer
-}
-
-// Marshal writes an XML-formatted representation of v to w.
-//
-// If v implements Marshaler, then Marshal calls its MarshalXML method.
-// Otherwise, Marshal uses the following procedure to create the XML.
+// Marshal returns the XML encoding of v.
 //
 // Marshal handles an array or slice by marshalling each of the elements.
 // Marshal handles a pointer by marshalling the value it points at or, if the
@@ -53,6 +40,7 @@ type printer struct {
 // The XML element for a struct contains marshalled elements for each of the
 // exported fields of the struct, with these exceptions:
 //     - the XMLName field, described above, is omitted.
+//     - a field with tag "-" is omitted.
 //     - a field with tag "name,attr" becomes an attribute with
 //       the given name in the XML element.
 //     - a field with tag ",attr" becomes an attribute with the
@@ -77,7 +65,7 @@ type printer struct {
 //		Age       int      `xml:"person>age"`
 //	}
 //
-//	xml.Marshal(w, &Result{Id: 13, FirstName: "John", LastName: "Doe", Age: 42})
+//	xml.Marshal(&Result{Id: 13, FirstName: "John", LastName: "Doe", Age: 42})
 //
 // would be marshalled as:
 //
@@ -92,11 +80,36 @@ type printer struct {
 //	</result>
 //
 // Marshal will return an error if asked to marshal a channel, function, or map.
-func Marshal(w io.Writer, v interface{}) (err error) {
-	p := &printer{bufio.NewWriter(w)}
-	err = p.marshalValue(reflect.ValueOf(v), nil)
-	p.Flush()
+func Marshal(v interface{}) ([]byte, error) {
+	var b bytes.Buffer
+	if err := NewEncoder(&b).Encode(v); err != nil {
+		return nil, err
+	}
+	return b.Bytes(), nil
+}
+
+// An Encoder writes XML data to an output stream.
+type Encoder struct {
+	printer
+}
+
+// NewEncoder returns a new encoder that writes to w.
+func NewEncoder(w io.Writer) *Encoder {
+	return &Encoder{printer{bufio.NewWriter(w)}}
+}
+
+// Encode writes the XML encoding of v to the stream.
+//
+// See the documentation for Marshal for details about the conversion
+// of Go values to XML.
+func (enc *Encoder) Encode(v interface{}) error {
+	err := enc.marshalValue(reflect.ValueOf(v), nil)
+	enc.Flush()
 	return err
+}
+
+type printer struct {
+	*bufio.Writer
 }
 
 func (p *printer) marshalValue(val reflect.Value, finfo *fieldInfo) error {
@@ -106,18 +119,6 @@ func (p *printer) marshalValue(val reflect.Value, finfo *fieldInfo) error {
 
 	kind := val.Kind()
 	typ := val.Type()
-
-	// Try Marshaler
-	if typ.NumMethod() > 0 {
-		if marshaler, ok := val.Interface().(Marshaler); ok {
-			bytes, err := marshaler.MarshalXML()
-			if err != nil {
-				return err
-			}
-			p.Write(bytes)
-			return nil
-		}
-	}
 
 	// Drill into pointers/interfaces
 	if kind == reflect.Ptr || kind == reflect.Interface {
@@ -181,23 +182,43 @@ func (p *printer) marshalValue(val reflect.Value, finfo *fieldInfo) error {
 		if finfo.flags&fAttr == 0 {
 			continue
 		}
-		var str string
-		if fv := val.FieldByIndex(finfo.idx); fv.Kind() == reflect.String {
-			str = fv.String()
-		} else {
-			str = fmt.Sprint(fv.Interface())
+		fv := val.FieldByIndex(finfo.idx)
+		switch fv.Kind() {
+		case reflect.String, reflect.Array, reflect.Slice:
+			// TODO: Should we really do this once ,omitempty is in?
+			if fv.Len() == 0 {
+				continue
+			}
 		}
-		if str != "" {
-			p.WriteByte(' ')
-			p.WriteString(finfo.name)
-			p.WriteString(`="`)
-			Escape(p, []byte(str))
-			p.WriteByte('"')
+		p.WriteByte(' ')
+		p.WriteString(finfo.name)
+		p.WriteString(`="`)
+		if err := p.marshalSimple(fv.Type(), fv); err != nil {
+			return err
 		}
+		p.WriteByte('"')
 	}
 	p.WriteByte('>')
 
-	switch k := val.Kind(); k {
+	if val.Kind() == reflect.Struct {
+		err = p.marshalStruct(tinfo, val)
+	} else {
+		err = p.marshalSimple(typ, val)
+	}
+	if err != nil {
+		return err
+	}
+
+	p.WriteByte('<')
+	p.WriteByte('/')
+	p.WriteString(name)
+	p.WriteByte('>')
+
+	return nil
+}
+
+func (p *printer) marshalSimple(typ reflect.Type, val reflect.Value) error {
+	switch val.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		p.WriteString(strconv.FormatInt(val.Int(), 10))
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
@@ -205,6 +226,7 @@ func (p *printer) marshalValue(val reflect.Value, finfo *fieldInfo) error {
 	case reflect.Float32, reflect.Float64:
 		p.WriteString(strconv.FormatFloat(val.Float(), 'g', -1, 64))
 	case reflect.String:
+		// TODO: Add EscapeString.
 		Escape(p, []byte(val.String()))
 	case reflect.Bool:
 		p.WriteString(strconv.FormatBool(val.Bool()))
@@ -217,21 +239,10 @@ func (p *printer) marshalValue(val reflect.Value, finfo *fieldInfo) error {
 		Escape(p, bytes)
 	case reflect.Slice:
 		// will be []byte
-		bytes := val.Interface().([]byte)
-		Escape(p, bytes)
-	case reflect.Struct:
-		if err := p.marshalStruct(tinfo, val); err != nil {
-			return err
-		}
+		Escape(p, val.Bytes())
 	default:
 		return &UnsupportedTypeError{typ}
 	}
-
-	p.WriteByte('<')
-	p.WriteByte('/')
-	p.WriteString(name)
-	p.WriteByte('>')
-
 	return nil
 }
 
@@ -358,7 +369,7 @@ func (s *parentStack) push(parents []string) {
 	s.stack = append(s.stack, parents...)
 }
 
-// A MarshalXMLError is returned when Marshal or MarshalIndent encounter a type
+// A MarshalXMLError is returned when Marshal encounters a type
 // that cannot be converted into XML.
 type UnsupportedTypeError struct {
 	Type reflect.Type

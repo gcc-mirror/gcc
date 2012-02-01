@@ -5,7 +5,6 @@
 package xml
 
 import (
-	"bytes"
 	"reflect"
 	"strconv"
 	"strings"
@@ -33,12 +32,6 @@ type Ship struct {
 	Age       uint         `xml:"age"`
 	Passenger []*Passenger `xml:"passenger"`
 	secret    string
-}
-
-type RawXML string
-
-func (rx RawXML) MarshalXML() ([]byte, error) {
-	return []byte(rx), nil
 }
 
 type NamedType string
@@ -184,6 +177,22 @@ type RecurseB struct {
 	B string
 }
 
+type PresenceTest struct {
+	Exists *struct{}
+}
+
+type IgnoreTest struct {
+	PublicSecret string `xml:"-"`
+}
+
+type MyBytes []byte
+
+type Data struct {
+	Bytes  []byte
+	Attr   []byte `xml:",attr"`
+	Custom MyBytes
+}
+
 type Plain struct {
 	V interface{}
 }
@@ -225,6 +234,44 @@ var marshalTests = []struct {
 	{Value: &Plain{[]int{1, 2, 3}}, ExpectXML: `<Plain><V>1</V><V>2</V><V>3</V></Plain>`},
 	{Value: &Plain{[3]int{1, 2, 3}}, ExpectXML: `<Plain><V>1</V><V>2</V><V>3</V></Plain>`},
 
+	// A pointer to struct{} may be used to test for an element's presence.
+	{
+		Value:     &PresenceTest{new(struct{})},
+		ExpectXML: `<PresenceTest><Exists></Exists></PresenceTest>`,
+	},
+	{
+		Value:     &PresenceTest{},
+		ExpectXML: `<PresenceTest></PresenceTest>`,
+	},
+
+	// A pointer to struct{} may be used to test for an element's presence.
+	{
+		Value:     &PresenceTest{new(struct{})},
+		ExpectXML: `<PresenceTest><Exists></Exists></PresenceTest>`,
+	},
+	{
+		Value:     &PresenceTest{},
+		ExpectXML: `<PresenceTest></PresenceTest>`,
+	},
+
+	// A []byte field is only nil if the element was not found.
+	{
+		Value:         &Data{},
+		ExpectXML:     `<Data></Data>`,
+		UnmarshalOnly: true,
+	},
+	{
+		Value:         &Data{Bytes: []byte{}, Custom: MyBytes{}, Attr: []byte{}},
+		ExpectXML:     `<Data Attr=""><Bytes></Bytes><Custom></Custom></Data>`,
+		UnmarshalOnly: true,
+	},
+
+	// Check that []byte works, including named []byte types.
+	{
+		Value:     &Data{Bytes: []byte("ab"), Custom: MyBytes("cd"), Attr: []byte{'v'}},
+		ExpectXML: `<Data Attr="v"><Bytes>ab</Bytes><Custom>cd</Custom></Data>`,
+	},
+
 	// Test innerxml
 	{
 		Value: &SecretAgent{
@@ -243,13 +290,6 @@ var marshalTests = []struct {
 		},
 		ExpectXML:     `<agent handle="007"><Identity>James Bond</Identity><redacted/></agent>`,
 		UnmarshalOnly: true,
-	},
-
-	// Test marshaller interface
-	{
-		Value:       RawXML("</>"),
-		ExpectXML:   `</>`,
-		MarshalOnly: true,
 	},
 
 	// Test structs
@@ -542,6 +582,22 @@ var marshalTests = []struct {
 		},
 		ExpectXML: `<RecurseA><A>a1</A><B><A><A>a2</A></A><B>b1</B></B></RecurseA>`,
 	},
+
+	// Test ignoring fields via "-" tag
+	{
+		ExpectXML: `<IgnoreTest></IgnoreTest>`,
+		Value:     &IgnoreTest{},
+	},
+	{
+		ExpectXML:   `<IgnoreTest></IgnoreTest>`,
+		Value:       &IgnoreTest{PublicSecret: "can't tell"},
+		MarshalOnly: true,
+	},
+	{
+		ExpectXML:     `<IgnoreTest><PublicSecret>ignore me</PublicSecret></IgnoreTest>`,
+		Value:         &IgnoreTest{},
+		UnmarshalOnly: true,
+	},
 }
 
 func TestMarshal(t *testing.T) {
@@ -549,13 +605,12 @@ func TestMarshal(t *testing.T) {
 		if test.UnmarshalOnly {
 			continue
 		}
-		buf := bytes.NewBuffer(nil)
-		err := Marshal(buf, test.Value)
+		data, err := Marshal(test.Value)
 		if err != nil {
 			t.Errorf("#%d: Error: %s", idx, err)
 			continue
 		}
-		if got, want := buf.String(), test.ExpectXML; got != want {
+		if got, want := string(data), test.ExpectXML; got != want {
 			if strings.Contains(want, "\n") {
 				t.Errorf("#%d: marshal(%#v):\nHAVE:\n%s\nWANT:\n%s", idx, test.Value, got, want)
 			} else {
@@ -596,8 +651,7 @@ var marshalErrorTests = []struct {
 
 func TestMarshalErrors(t *testing.T) {
 	for idx, test := range marshalErrorTests {
-		buf := bytes.NewBuffer(nil)
-		err := Marshal(buf, test.Value)
+		_, err := Marshal(test.Value)
 		if err == nil || err.Error() != test.Err {
 			t.Errorf("#%d: marshal(%#v) = [error] %v, want %v", idx, test.Value, err, test.Err)
 		}
@@ -621,8 +675,7 @@ func TestUnmarshal(t *testing.T) {
 
 		vt := reflect.TypeOf(test.Value)
 		dest := reflect.New(vt.Elem()).Interface()
-		buffer := bytes.NewBufferString(test.ExpectXML)
-		err := Unmarshal(buffer, dest)
+		err := Unmarshal([]byte(test.ExpectXML), dest)
 
 		switch fix := dest.(type) {
 		case *Feed:
@@ -641,17 +694,14 @@ func TestUnmarshal(t *testing.T) {
 }
 
 func BenchmarkMarshal(b *testing.B) {
-	buf := bytes.NewBuffer(nil)
 	for i := 0; i < b.N; i++ {
-		Marshal(buf, atomValue)
-		buf.Truncate(0)
+		Marshal(atomValue)
 	}
 }
 
 func BenchmarkUnmarshal(b *testing.B) {
 	xml := []byte(atomXml)
 	for i := 0; i < b.N; i++ {
-		buffer := bytes.NewBuffer(xml)
-		Unmarshal(buffer, &Feed{})
+		Unmarshal(xml, &Feed{})
 	}
 }
