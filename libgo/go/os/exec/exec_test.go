@@ -292,6 +292,7 @@ func TestHelperProcess(*testing.T) {
 				f.Close()
 			}
 		}
+		fd3.Close()
 		os.Stderr.Write(bs)
 	case "exit":
 		n, _ := strconv.Atoi(args[0])
