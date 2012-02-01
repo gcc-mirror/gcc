@@ -1,3 +1,9 @@
+2012-02-01  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/51958
+	* frontend-passes.c (convert_elseif):  New function.
+	(optimize_namespace):  Call it.
+
 2012-02-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52024
