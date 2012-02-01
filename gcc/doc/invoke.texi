@@ -6335,16 +6335,20 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fno-inline
 @opindex fno-inline
-Don't pay attention to the @code{inline} keyword.  Normally this option
-is used to keep the compiler from expanding any functions inline.
-Note that if you are not optimizing, no functions can be expanded inline.
+Do not expand any functions inline apart from those marked with
+the @code{always_inline} attribute.  This is the default when not
+optimizing.
+
+Single functions can be exempted from inlining by marking them
+with the @code{noinline} attribute.
 
 @item -finline-small-functions
 @opindex finline-small-functions
 Integrate functions into their callers when their body is smaller than expected
 function call code (so overall size of program gets smaller).  The compiler
 heuristically decides which functions are simple enough to be worth integrating
-in this way.
+in this way.  This inlining applies to all functions, even those not declared
+inline.
 
 Enabled at level @option{-O2}.
 
@@ -6359,9 +6363,9 @@ Enabled at level @option{-O2}.
 
 @item -finline-functions
 @opindex finline-functions
-Integrate all simple functions into their callers.  The compiler
-heuristically decides which functions are simple enough to be worth
-integrating in this way.
+Consider all functions for inlining, even if they are not declared inline.
+The compiler heuristically decides which functions are worth integrating
+in this way.
 
 If all calls to a given function are integrated, and the function is
 declared @code{static}, then the function is normally not output as

@@ -1,3 +1,13 @@
+2012-02-01  Richard Guenther  <rguenther@suse.de>
+
+	* doc/invoke.texi (fno-inline): Clarify documentation.
+	(finline-small-functions): Likewise.
+	(finline-functions): Likewise.
+	* common.opt (finline): Adjust comment and documentation.
+	(finline-small-functions): Clarify documentation.
+	(finline-functions): Likewise.
+	(finline-functions-called-once): Likewise.
+
 2012-02-01  Tristan Gingold  <gingold@adacore.com>
 
 	* c-typeck.c (composite_type): Keep mode for pointers.
