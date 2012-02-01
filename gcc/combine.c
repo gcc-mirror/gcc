@@ -1700,6 +1700,7 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED,
   rtx link;
 #endif
   bool all_adjacent = true;
+  int (*is_volatile_p) (const_rtx);
 
   if (succ)
     {
@@ -1948,11 +1949,17 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED,
       && REG_P (dest) && REGNO (dest) < FIRST_PSEUDO_REGISTER)
     return 0;
 
-  /* If there are any volatile insns between INSN and I3, reject, because
-     they might affect machine state.  */
+  /* If INSN contains volatile references (specifically volatile MEMs),
+     we cannot combine across any other volatile references.
+     Even if INSN doesn't contain volatile references, any intervening
+     volatile insn might affect machine state.  */
 
+  is_volatile_p = volatile_refs_p (PATTERN (insn))
+    ? volatile_refs_p
+    : volatile_insn_p;
+    
   for (p = NEXT_INSN (insn); p != i3; p = NEXT_INSN (p))
-    if (INSN_P (p) && p != succ && p != succ2 && volatile_insn_p (PATTERN (p)))
+    if (INSN_P (p) && p != succ && p != succ2 && is_volatile_p (PATTERN (p)))
       return 0;
 
   /* If INSN contains an autoincrement or autodecrement, make sure that
