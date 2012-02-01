@@ -615,22 +615,6 @@ mmcu=*:-mmcu=%*}"
 #define TEST_HARD_REG_CLASS(CLASS, REGNO) \
   TEST_HARD_REG_BIT (reg_class_contents[ (int) (CLASS)], REGNO)
 
-/* Note that the other files fail to use these
-   in some of the places where they should.  */
-
-#if defined(__STDC__) || defined(ALMOST_STDC)
-#define AS2(a,b,c) #a " " #b "," #c
-#define AS2C(b,c) " " #b "," #c
-#define AS3(a,b,c,d) #a " " #b "," #c "," #d
-#define AS1(a,b) #a " " #b
-#else
-#define AS1(a,b) "a	b"
-#define AS2(a,b,c) "a	b,c"
-#define AS2C(b,c) " b,c"
-#define AS3(a,b,c,d) "a	b,c,d"
-#endif
-#define OUT_AS1(a,b) output_asm_insn (AS1(a,b), operands)
-#define OUT_AS2(a,b,c) output_asm_insn (AS2(a,b,c), operands)
 #define CR_TAB "\n\t"
 
 #define DWARF2_ADDR_SIZE 4
