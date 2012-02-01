@@ -12,3 +12,4 @@ void vector_18 (void)
 }
 
 /* { dg-final { scan-assembler-not "\tsbic " } } */
+/* { dg-final { scan-assembler-not "\tsbis " } } */
