@@ -333,3 +333,40 @@ func TestMulAddWWW(t *testing.T) {
 		}
 	}
 }
+
+func testWordBitLen(t *testing.T, fname string, f func(Word) int) {
+	for i := 0; i <= _W; i++ {
+		x := Word(1) << uint(i-1) // i == 0 => x == 0
+		n := f(x)
+		if n != i {
+			t.Errorf("got %d; want %d for %s(%#x)", n, i, fname, x)
+		}
+	}
+}
+
+func TestWordBitLen(t *testing.T) {
+	testWordBitLen(t, "bitLen", bitLen)
+	testWordBitLen(t, "bitLen_g", bitLen_g)
+}
+
+// runs b.N iterations of bitLen called on a Word containing (1 << nbits)-1.
+func benchmarkBitLenN(b *testing.B, nbits uint) {
+	testword := Word((uint64(1) << nbits) - 1)
+	for i := 0; i < b.N; i++ {
+		bitLen(testword)
+	}
+}
+
+// Individual bitLen tests.  Numbers chosen to examine both sides
+// of powers-of-two boundaries.
+func BenchmarkBitLen0(b *testing.B)  { benchmarkBitLenN(b, 0) }
+func BenchmarkBitLen1(b *testing.B)  { benchmarkBitLenN(b, 1) }
+func BenchmarkBitLen2(b *testing.B)  { benchmarkBitLenN(b, 2) }
+func BenchmarkBitLen3(b *testing.B)  { benchmarkBitLenN(b, 3) }
+func BenchmarkBitLen4(b *testing.B)  { benchmarkBitLenN(b, 4) }
+func BenchmarkBitLen5(b *testing.B)  { benchmarkBitLenN(b, 5) }
+func BenchmarkBitLen8(b *testing.B)  { benchmarkBitLenN(b, 8) }
+func BenchmarkBitLen9(b *testing.B)  { benchmarkBitLenN(b, 9) }
+func BenchmarkBitLen16(b *testing.B) { benchmarkBitLenN(b, 16) }
+func BenchmarkBitLen17(b *testing.B) { benchmarkBitLenN(b, 17) }
+func BenchmarkBitLen31(b *testing.B) { benchmarkBitLenN(b, 31) }

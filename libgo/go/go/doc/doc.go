@@ -7,7 +7,7 @@ package doc
 
 import (
 	"go/ast"
-	"sort"
+	"go/token"
 )
 
 // Package is the documentation for an entire package.
@@ -17,11 +17,13 @@ type Package struct {
 	ImportPath string
 	Imports    []string
 	Filenames  []string
-	Consts     []*Value
-	Types      []*Type
-	Vars       []*Value
-	Funcs      []*Func
 	Bugs       []string
+
+	// declarations
+	Consts []*Value
+	Types  []*Type
+	Vars   []*Value
+	Funcs  []*Func
 }
 
 // Value is the documentation for a (possibly grouped) var or const declaration.
@@ -33,36 +35,30 @@ type Value struct {
 	order int
 }
 
-type Method struct {
-	*Func
-	// TODO(gri) The following fields are not set at the moment. 
-	Origin *Type // original receiver base type
-	Level  int   // embedding level; 0 means Func is not embedded
-}
-
-// Type is the documentation for type declaration.
+// Type is the documentation for a type declaration.
 type Type struct {
-	Doc     string
-	Name    string
-	Type    *ast.TypeSpec
-	Decl    *ast.GenDecl
-	Consts  []*Value  // sorted list of constants of (mostly) this type
-	Vars    []*Value  // sorted list of variables of (mostly) this type
-	Funcs   []*Func   // sorted list of functions returning this type
-	Methods []*Method // sorted list of methods (including embedded ones) of this type
+	Doc  string
+	Name string
+	Decl *ast.GenDecl
 
-	methods  []*Func   // top-level methods only
-	embedded methodSet // embedded methods only
-	order    int
+	// associated declarations
+	Consts  []*Value // sorted list of constants of (mostly) this type
+	Vars    []*Value // sorted list of variables of (mostly) this type
+	Funcs   []*Func  // sorted list of functions returning this type
+	Methods []*Func  // sorted list of methods (including embedded ones) of this type
 }
 
 // Func is the documentation for a func declaration.
 type Func struct {
 	Doc  string
 	Name string
-	// TODO(gri) remove Recv once we switch to new implementation
-	Recv ast.Expr // TODO(rsc): Would like string here
 	Decl *ast.FuncDecl
+
+	// methods
+	// (for functions, these fields have the respective zero value)
+	Recv  string // actual   receiver "T" or "*T"
+	Orig  string // original receiver "T" or "*T"
+	Level int    // embedding level; 0 means not embedded
 }
 
 // Mode values control the operation of New.
@@ -74,27 +70,24 @@ const (
 	AllDecls Mode = 1 << iota
 )
 
-// New computes the package documentation for the given package.
-func New(pkg *ast.Package, importpath string, mode Mode) *Package {
-	var r docReader
-	r.init(pkg.Name, mode)
-	filenames := make([]string, len(pkg.Files))
-	// sort package files before reading them so that the
-	// result is the same on different machines (32/64bit)
-	i := 0
-	for filename := range pkg.Files {
-		filenames[i] = filename
-		i++
+// New computes the package documentation for the given package AST.
+// New takes ownership of the AST pkg and may edit or overwrite it.
+//
+func New(pkg *ast.Package, importPath string, mode Mode) *Package {
+	var r reader
+	r.readPackage(pkg, mode)
+	r.computeMethodSets()
+	r.cleanupTypes()
+	return &Package{
+		Doc:        r.doc,
+		Name:       pkg.Name,
+		ImportPath: importPath,
+		Imports:    sortedKeys(r.imports),
+		Filenames:  r.filenames,
+		Bugs:       r.bugs,
+		Consts:     sortedValues(r.values, token.CONST),
+		Types:      sortedTypes(r.types),
+		Vars:       sortedValues(r.values, token.VAR),
+		Funcs:      sortedFuncs(r.funcs),
 	}
-	sort.Strings(filenames)
-
-	// process files in sorted order
-	for _, filename := range filenames {
-		f := pkg.Files[filename]
-		if mode&AllDecls == 0 {
-			r.fileExports(f)
-		}
-		r.addFile(f)
-	}
-	return r.newDoc(importpath, filenames)
 }

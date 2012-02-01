@@ -23,7 +23,7 @@ type parser struct {
 	scanner scanner.Scanner
 
 	// Tracing/debugging
-	mode   uint // parsing mode
+	mode   Mode // parsing mode
 	trace  bool // == (mode & Trace != 0)
 	indent uint // indentation used for tracing output
 
@@ -52,9 +52,9 @@ type parser struct {
 	targetStack [][]*ast.Ident // stack of unresolved labels
 }
 
-func (p *parser) init(fset *token.FileSet, filename string, src []byte, mode uint) {
+func (p *parser) init(fset *token.FileSet, filename string, src []byte, mode Mode) {
 	p.file = fset.AddFile(filename, fset.Base(), len(src))
-	var m uint
+	var m scanner.Mode
 	if mode&ParseComments != 0 {
 		m = scanner.ScanComments
 	}

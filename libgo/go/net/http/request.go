@@ -153,6 +153,12 @@ type Request struct {
 	// This field is ignored by the HTTP client.
 	RemoteAddr string
 
+	// RequestURI is the unmodified Request-URI of the
+	// Request-Line (RFC 2616, Section 5.1) as sent by the client
+	// to a server. Usually the URL field should be used instead.
+	// It is an error to set this field in an HTTP client request.
+	RequestURI string
+
 	// TLS allows HTTP servers and other software to record
 	// information about the TLS connection on which the request
 	// was received. This field is not filled in by ReadRequest.
@@ -305,6 +311,9 @@ func (req *Request) write(w io.Writer, usingProxy bool, extraHeaders Header) err
 	ruri := req.URL.RequestURI()
 	if usingProxy && req.URL.Scheme != "" && req.URL.Opaque == "" {
 		ruri = req.URL.Scheme + "://" + host + ruri
+	} else if req.Method == "CONNECT" && req.URL.Path == "" {
+		// CONNECT requests normally give just the host and port, not a full URL.
+		ruri = host
 	}
 	// TODO(bradfitz): escape at least newlines in ruri?
 
@@ -456,15 +465,34 @@ func ReadRequest(b *bufio.Reader) (req *Request, err error) {
 	if f = strings.SplitN(s, " ", 3); len(f) < 3 {
 		return nil, &badStringError{"malformed HTTP request", s}
 	}
-	var rawurl string
-	req.Method, rawurl, req.Proto = f[0], f[1], f[2]
+	req.Method, req.RequestURI, req.Proto = f[0], f[1], f[2]
+	rawurl := req.RequestURI
 	var ok bool
 	if req.ProtoMajor, req.ProtoMinor, ok = ParseHTTPVersion(req.Proto); !ok {
 		return nil, &badStringError{"malformed HTTP version", req.Proto}
 	}
 
+	// CONNECT requests are used two different ways, and neither uses a full URL:
+	// The standard use is to tunnel HTTPS through an HTTP proxy.
+	// It looks like "CONNECT www.google.com:443 HTTP/1.1", and the parameter is
+	// just the authority section of a URL. This information should go in req.URL.Host.
+	//
+	// The net/rpc package also uses CONNECT, but there the parameter is a path
+	// that starts with a slash. It can be parsed with the regular URL parser,
+	// and the path will end up in req.URL.Path, where it needs to be in order for
+	// RPC to work.
+	justAuthority := req.Method == "CONNECT" && !strings.HasPrefix(rawurl, "/")
+	if justAuthority {
+		rawurl = "http://" + rawurl
+	}
+
 	if req.URL, err = url.ParseRequest(rawurl); err != nil {
 		return nil, err
+	}
+
+	if justAuthority {
+		// Strip the bogus "http://" back off.
+		req.URL.Scheme = ""
 	}
 
 	// Subsequent lines: Key: value.
@@ -584,7 +612,7 @@ func (r *Request) ParseForm() (err error) {
 			return errors.New("missing form body")
 		}
 		ct := r.Header.Get("Content-Type")
-		ct, _, err := mime.ParseMediaType(ct)
+		ct, _, err = mime.ParseMediaType(ct)
 		switch {
 		case ct == "application/x-www-form-urlencoded":
 			var reader io.Reader = r.Body
@@ -624,8 +652,6 @@ func (r *Request) ParseForm() (err error) {
 			// Clean this up and write more tests.
 			// request_test.go contains the start of this,
 			// in TestRequestMultipartCallOrder.
-		default:
-			return &badStringError{"unknown Content-Type", ct}
 		}
 	}
 	return err

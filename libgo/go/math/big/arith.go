@@ -54,6 +54,7 @@ func subWW_g(x, y, c Word) (z1, z0 Word) {
 
 // z1<<_W + z0 = x*y
 func mulWW(x, y Word) (z1, z0 Word) { return mulWW_g(x, y) }
+
 // Adapted from Warren, Hacker's Delight, p. 132.
 func mulWW_g(x, y Word) (z1, z0 Word) {
 	x0 := x & _M2
@@ -80,11 +81,24 @@ func mulAddWWW_g(x, y, c Word) (z1, z0 Word) {
 }
 
 // Length of x in bits.
-func bitLen(x Word) (n int) {
-	for ; x >= 0x100; x >>= 8 {
+func bitLen(x Word) (n int) { return bitLen_g(x) }
+func bitLen_g(x Word) (n int) {
+	for ; x >= 0x8000; x >>= 16 {
+		n += 16
+	}
+	if x >= 0x80 {
+		x >>= 8
 		n += 8
 	}
-	for ; x > 0; x >>= 1 {
+	if x >= 0x8 {
+		x >>= 4
+		n += 4
+	}
+	if x >= 0x2 {
+		x >>= 2
+		n += 2
+	}
+	if x >= 0x1 {
 		n++
 	}
 	return
@@ -104,6 +118,7 @@ func leadingZeros(x Word) uint {
 
 // q = (u1<<_W + u0 - r)/y
 func divWW(x1, x0, y Word) (q, r Word) { return divWW_g(x1, x0, y) }
+
 // Adapted from Warren, Hacker's Delight, p. 152.
 func divWW_g(u1, u0, v Word) (q, r Word) {
 	if u1 >= v {
