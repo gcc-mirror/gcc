@@ -7657,7 +7657,10 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
 	    this->set_is_error();
 	    return this;
 	  }
-	this->lower_varargs(gogo, function, inserter, slice_type, 2);
+	Type* element_type = slice_type->array_type()->element_type();
+	this->lower_varargs(gogo, function, inserter,
+			    Type::make_array_type(element_type, NULL),
+			    2);
       }
       break;
 
@@ -8624,16 +8627,20 @@ Builtin_call_expression::do_check_types(Gogo*)
 	      break;
 	  }
 
+	// The language says that the second argument must be
+	// assignable to a slice of the element type of the first
+	// argument.  We already know the first argument is a slice
+	// type.
+	Array_type* at = args->front()->type()->array_type();
+	Type* arg2_type = Type::make_array_type(at->element_type(), NULL);
 	std::string reason;
-	if (!Type::are_assignable(args->front()->type(), args->back()->type(),
-				  &reason))
+	if (!Type::are_assignable(arg2_type, args->back()->type(), &reason))
 	  {
 	    if (reason.empty())
-	      this->report_error(_("arguments 1 and 2 have different types"));
+	      this->report_error(_("argument 2 has invalid type"));
 	    else
 	      {
-		error_at(this->location(),
-			 "arguments 1 and 2 have different types (%s)",
+		error_at(this->location(), "argument 2 has invalid type (%s)",
 			 reason.c_str());
 		this->set_is_error();
 	      }
