@@ -35,8 +35,9 @@ void test01()
   std::promise<int> p2;
   p1.set_value(1);
   p1.swap(p2);
-  VERIFY( !p1.get_future().wait_for(std::chrono::milliseconds(1)) );
-  VERIFY( p2.get_future().wait_for(std::chrono::milliseconds(1)) );
+  auto delay = std::chrono::milliseconds(1);
+  VERIFY( p1.get_future().wait_for(delay) == std::future_status::timeout );
+  VERIFY( p2.get_future().wait_for(delay) == std::future_status::ready );
 }
 
 int main()

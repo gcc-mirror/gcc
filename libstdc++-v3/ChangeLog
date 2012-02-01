@@ -1,3 +1,32 @@
+2012-02-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/49204
+	* include/std/future (__future_base::_State_base::wait()): Use lambda
+	expression for predicate and remove redundant test.
+	(__future_base::_State_base::wait_for()): Return future_status and
+	use lambda expression for predicate.
+	(__future_base::_State_base::wait_until()): Likewise.
+	(__basic_future::wait_for(), __basic_future::wait_until()): Likewise.
+	(__future_base::_Async_state): Replace with _Async_state_common
+	class for non-dependent functionality and _Async_state_impl class
+	template for dependent functionality.
+	(__future_base::_Async_state_common::_M_join): Serialize attempts to
+	join thread.
+	(__future_base::_Async_state_common::_M_run_deferred): Join.
+	(__future_base::_Async_state::_M_do_run): Replace with lambda.
+	* src/c++11/future.cc (__future_base::_Async_state_common): Define
+	destructor, so key function is in the library.
+	* config/abi/pre/gnu.ver: Add exports for ~_Async_state_common.
+	* testsuite/30_threads/packaged_task/members/get_future.cc: Expect
+	future_status return instead of bool.
+	* testsuite/30_threads/shared_future/members/wait_until.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/wait_for.cc: Likewise.
+	* testsuite/30_threads/future/members/wait_until.cc: Likewise.
+	* testsuite/30_threads/future/members/wait_for.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value2.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value3.cc: Likewise.
+	* testsuite/30_threads/promise/members/swap.cc: Likewise.
+
 2012-01-30  Tom Tromey  <tromey@redhat.com>
 
 	PR libstdc++/51649:
