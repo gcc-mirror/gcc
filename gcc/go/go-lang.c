@@ -1,5 +1,5 @@
 /* go-lang.c -- Go frontend gcc interface.
-   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -277,6 +277,7 @@ go_langhook_type_for_size (unsigned int bits, int unsignedp)
 static tree
 go_langhook_type_for_mode (enum machine_mode mode, int unsignedp)
 {
+  tree type;
   /* Go has no vector types.  Build them here.  FIXME: It does not
      make sense for the middle-end to ask the frontend for a type
      which the frontend does not support.  However, at least for now
@@ -291,7 +292,22 @@ go_langhook_type_for_mode (enum machine_mode mode, int unsignedp)
       return NULL_TREE;
     }
 
-  return go_type_for_mode (mode, unsignedp);
+  type = go_type_for_mode (mode, unsignedp);
+  if (type)
+    return type;
+
+#if HOST_BITS_PER_WIDE_INT >= 64
+  /* The middle-end and some backends rely on TImode being supported
+     for 64-bit HWI.  */
+  if (mode == TImode)
+    {
+      type = build_nonstandard_integer_type (GET_MODE_BITSIZE (TImode),
+					     unsignedp);
+      if (type && TYPE_MODE (type) == TImode)
+	return type;
+    }
+#endif
+  return NULL_TREE;
 }
 
 /* Record a builtin function.  We just ignore builtin functions.  */

@@ -1,3 +1,9 @@
+2012-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/52079
+	* go-lang.c (go_langhook_type_for_mode): For TImode and 64-bit HWI
+	return build_nonstandard_integer_type result if possible.
+
 2012-01-21  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::type_size): Check for error_mark_node.
