@@ -1307,6 +1307,14 @@ GLIBCXX_3.4.17 {
     # std::wstring::pop_back()
     _ZNSbIwSt11char_traitsIwESaIwEE8pop_backEv;
 
+    # std::_Async_state_common::~_Async_state_common
+    _ZTINSt13__future_base19_Async_state_commonE;
+    _ZTSNSt13__future_base19_Async_state_commonE;
+    _ZTVNSt13__future_base19_Async_state_commonE;
+    _ZNSt13__future_base19_Async_state_commonD0Ev;
+    _ZNSt13__future_base19_Async_state_commonD1Ev;
+    _ZNSt13__future_base19_Async_state_commonD2Ev;
+
 } GLIBCXX_3.4.16;
 
 # Symbols in the support library (libsupc++) have their own tag.

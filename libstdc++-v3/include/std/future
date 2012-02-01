@@ -1,6 +1,6 @@
 // <future> -*- C++ -*-
 
-// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -328,27 +328,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	_M_run_deferred();
 	unique_lock<mutex> __lock(_M_mutex);
-	if (!_M_ready())
-	  _M_cond.wait(__lock, std::bind<bool>(&_State_base::_M_ready, this));
+	_M_cond.wait(__lock, [&] { return _M_ready(); });
 	return *_M_result;
       }
 
       template<typename _Rep, typename _Period>
-        bool
+        future_status
         wait_for(const chrono::duration<_Rep, _Period>& __rel)
         {
 	  unique_lock<mutex> __lock(_M_mutex);
-	  auto __bound = std::bind<bool>(&_State_base::_M_ready, this);
-	  return _M_ready() || _M_cond.wait_for(__lock, __rel, __bound);
+	  if (_M_cond.wait_for(__lock, __rel, [&] { return _M_ready(); }))
+	    return future_status::ready;
+	  return future_status::timeout;
 	}
 
       template<typename _Clock, typename _Duration>
-        bool
+        future_status
         wait_until(const chrono::time_point<_Clock, _Duration>& __abs)
         {
 	  unique_lock<mutex> __lock(_M_mutex);
-	  auto __bound = std::bind<bool>(&_State_base::_M_ready, this);
-	  return _M_ready() || _M_cond.wait_until(__lock, __abs, __bound);
+	  if (_M_cond.wait_until(__lock, __abs, [&] { return _M_ready(); }))
+	    return future_status::ready;
+	  return future_status::timeout;
 	}
 
       void
@@ -480,14 +481,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       bool _M_ready() const noexcept { return static_cast<bool>(_M_result); }
 
+      // Misnamed: waits for completion of async function.
       virtual void _M_run_deferred() { }
     };
 
     template<typename _BoundFn, typename = typename _BoundFn::result_type>
       class _Deferred_state;
 
+    class _Async_state_common;
+
     template<typename _BoundFn, typename = typename _BoundFn::result_type>
-      class _Async_state;
+      class _Async_state_impl;
 
     template<typename _Signature>
       class _Task_state;
@@ -573,7 +577,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<typename _Rep, typename _Period>
-        bool
+        future_status
         wait_for(const chrono::duration<_Rep, _Period>& __rel) const
         {
           _State_base::_S_check(_M_state);
@@ -581,7 +585,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         }
 
       template<typename _Clock, typename _Duration>
-        bool
+        future_status
         wait_until(const chrono::time_point<_Clock, _Duration>& __abs) const
         {
           _State_base::_S_check(_M_state);
@@ -1418,29 +1422,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
+  class __future_base::_Async_state_common : public __future_base::_State_base
+  {
+  protected:
+    ~_Async_state_common();
+
+    // Allow non-timed waiting functions to block until the thread completes,
+    // as if joined.
+    virtual void _M_run_deferred() { _M_join(); }
+
+    void _M_join() { std::call_once(_M_once, &thread::join, ref(_M_thread)); }
+
+    thread _M_thread;
+    once_flag _M_once;
+  };
+
   template<typename _BoundFn, typename _Res>
-    class __future_base::_Async_state final
-    : public __future_base::_State_base
+    class __future_base::_Async_state_impl final
+    : public __future_base::_Async_state_common
     {
     public:
       explicit
-      _Async_state(_BoundFn&& __fn)
-      : _M_result(new _Result<_Res>()), _M_fn(std::move(__fn)),
-	_M_thread(mem_fn(&_Async_state::_M_do_run), this)
-      { }
-
-      ~_Async_state() { _M_thread.join(); }
-
-    private:
-      void _M_do_run()
+      _Async_state_impl(_BoundFn&& __fn)
+      : _M_result(new _Result<_Res>()), _M_fn(std::move(__fn))
       {
-        _M_set_result(_S_task_setter(_M_result, _M_fn));
+	_M_thread = std::thread{ [this] {
+	  _M_set_result(_S_task_setter(_M_result, _M_fn));
+        } };
       }
 
+    private:
       typedef __future_base::_Ptr<_Result<_Res>> _Ptr_type;
       _Ptr_type _M_result;
       _BoundFn _M_fn;
-      thread _M_thread;
     };
 
   template<typename _BoundFn>
@@ -1457,7 +1471,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __future_base::_S_make_async_state(_BoundFn&& __fn)
     {
       typedef typename remove_reference<_BoundFn>::type __fn_type;
-      typedef _Async_state<__fn_type> __state_type;
+      typedef _Async_state_impl<__fn_type> __state_type;
       return std::make_shared<__state_type>(std::move(__fn));
     }
 

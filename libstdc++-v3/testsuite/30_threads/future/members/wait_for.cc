@@ -37,12 +37,12 @@ void test01()
 
   std::chrono::milliseconds delay(100);
 
-  VERIFY( !f1.wait_for(delay) );
+  VERIFY( f1.wait_for(delay) == std::future_status::timeout );
 
   p1.set_value(1);
 
   auto before = std::chrono::system_clock::now();
-  VERIFY( f1.wait_for(delay) );
+  VERIFY( f1.wait_for(delay) == std::future_status::ready );
   VERIFY( std::chrono::system_clock::now() < (before + delay) );
 }
 

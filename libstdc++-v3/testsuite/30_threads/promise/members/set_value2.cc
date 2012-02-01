@@ -48,7 +48,8 @@ void test01()
     test = true;
   }
 
-  VERIFY( f1.wait_for(std::chrono::milliseconds(1)) );
+  std::chrono::milliseconds delay(1);
+  VERIFY( f1.wait_for(delay) == std::future_status::ready );
   VERIFY( f1.get() == 1 );
   VERIFY( test );
 }
@@ -74,7 +75,8 @@ void test02()
     test = true;
   }
 
-  VERIFY( f1.wait_for(std::chrono::milliseconds(1)) );
+  std::chrono::milliseconds delay(1);
+  VERIFY( f1.wait_for(delay) == std::future_status::ready );
   VERIFY( f1.get() == 3 );
   VERIFY( test );
 }
