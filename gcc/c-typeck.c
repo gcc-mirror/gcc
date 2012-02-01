@@ -394,7 +394,7 @@ composite_type (tree t1, tree t2)
 	tree pointed_to_1 = TREE_TYPE (t1);
 	tree pointed_to_2 = TREE_TYPE (t2);
 	tree target = composite_type (pointed_to_1, pointed_to_2);
-	t1 = build_pointer_type (target);
+        t1 = build_pointer_type_for_mode (target, TYPE_MODE (t1), false);
 	t1 = build_type_attribute_variant (t1, attributes);
 	return qualify_type (t1, t2);
       }
