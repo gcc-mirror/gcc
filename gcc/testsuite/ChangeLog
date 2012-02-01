@@ -1,3 +1,8 @@
+2012-02-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* go.test/go-test.exp (go-gc-tests): xfail test/nilptr.go runtime
+	test on alpha*-*-*.
+
 2012-02-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52024

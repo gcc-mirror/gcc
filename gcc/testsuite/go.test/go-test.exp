@@ -286,22 +286,25 @@ proc go-gc-tests { } {
 
 	# Skip certain tests if target is RTEMS OS.
 	if [istarget "*-*-rtems*"] {
-	    if { [string match "*go.test/test/args.go" \
-		   $test] \
-		 || [string match "*go.test/test/env.go" \
-		   $test] } {
+	    if { [string match "*go.test/test/args.go" $test] \
+		 || [string match "*go.test/test/env.go" $test] } {
 		    untested "$name: uses the command-line or environment variables"
 		    continue
 	    }
 
-	    if { [string match "*go.test/test/stack.go" \
-		   $test] \
-		 || [string match "*go.test/test/peano.go" \
-		   $test] \
-		 || [string match "*go.test/test/chan/goroutines.go" \
-		   $test] } {
+	    if { [string match "*go.test/test/stack.go" $test] \
+		 || [string match "*go.test/test/peano.go" $test] \
+		 || [string match "*go.test/test/chan/goroutines.go" $test] } {
 		    untested "$name: has very high memory requirement"
 		    continue
+	    }
+	}
+
+	# Handle certain tests in a target-dependant way.
+	if [istarget "alpha*-*-*"] {
+	    if { [string match "*go.test/test/nilptr.go" $test] } {
+		go-execute-xfail $test
+		continue
 	    }
 	}
 
