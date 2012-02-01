@@ -1,3 +1,13 @@
+2012-02-01  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/51500
+	* interpret.cc (_Jv_init_cif): Handle thiscall
+	convention for 32-bit Windows.
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA):
+	Likewise.
+	* java/lang/reflect/natVMProxy.cc (invoke_t): Add
+	thiscall-attribute for 32-bit Windows.
+
 2012-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnu/gcj/convert/Convert.java (version): Update copyright notice
