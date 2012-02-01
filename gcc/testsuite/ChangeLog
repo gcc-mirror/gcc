@@ -1,3 +1,8 @@
+2012-02-01  Tobias Burnus
+
+	PR fortran/52059
+	* gfortran.dg/elemental_function_1.f90: New.
+
 2012-02-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR rtl-optimization/51374
