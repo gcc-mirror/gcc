@@ -1245,26 +1245,23 @@ findirect-inlining
 Common Report Var(flag_indirect_inlining)
 Perform indirect inlining
 
-; Nonzero means that functions declared `inline' will be treated
-; as `static'.  Prevents generation of zillions of copies of unused
-; static inline functions; instead, `inlines' are written out
-; only when actually used.  Used in conjunction with -g.  Also
-; does the right thing with #pragma interface.
+; General flag to enable inlining.  Specifying -fno-inline will disable
+; all inlining apart from always-inline functions.
 finline
 Common Report Var(flag_no_inline,0) Init(0)
-Pay attention to the \"inline\" keyword
+Enable inlining of function declared \"inline\", disabling disables all inlining
 
 finline-small-functions
 Common Report Var(flag_inline_small_functions) Optimization
-Integrate simple functions into their callers when code size is known to not growth
+Integrate functions into their callers when code size is known not to grow
 
 finline-functions
 Common Report Var(flag_inline_functions) Optimization
-Integrate simple functions into their callers
+Integrate functions not declared \"inline\" into their callers when profitable
 
 finline-functions-called-once
 Common Report Var(flag_inline_functions_called_once) Optimization
-Integrate functions called once into their callers
+Integrate functions only required by their single caller
 
 finline-limit-
 Common RejectNegative Joined Alias(finline-limit=)
