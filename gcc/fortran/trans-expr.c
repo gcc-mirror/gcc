@@ -3526,7 +3526,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  gfc_init_se (&parmse, se);
 	  parm_kind = ELEMENTAL;
 
-	  if (se->ss->dimen > 0
+	  if (se->ss->dimen > 0 && e->expr_type == EXPR_VARIABLE
 	      && se->ss->info->data.array.ref == NULL)
 	    {
 	      gfc_conv_tmp_array_ref (&parmse);
