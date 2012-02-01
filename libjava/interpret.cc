@@ -1303,7 +1303,12 @@ _Jv_init_cif (_Jv_Utf8Const* signature,
   if (ptr != (unsigned char*)signature->chars() + signature->len())
     throw_internal_error ("did not find end of signature");
 
-  if (ffi_prep_cif (cif, FFI_DEFAULT_ABI,
+  ffi_abi cabi = FFI_DEFAULT_ABI;
+#if defined (X86_WIN32) && !defined (__CYGWIN__)
+  if (!staticp)
+    cabi = FFI_THISCALL;
+#endif
+  if (ffi_prep_cif (cif, cabi,
 		    arg_count, rtype, arg_types) != FFI_OK)
     throw_internal_error ("ffi_prep_cif failed");
 
