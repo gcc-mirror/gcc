@@ -1,5 +1,11 @@
 2012-02-01  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/avr.c: Resolve all AS1 and AS2 macros.
+	* config/avr/avr.h (AS1, AS2, AS2C, AS3): Remove.
+	(OUT_AS1, OUT_AS2): Remove.
+
+2012-02-01  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR rtl-optimization/51374
 	* combine.c (can_combine_p): Don't allow volatile_refs_p insns
 	to cross other volatile_refs_p insns.
