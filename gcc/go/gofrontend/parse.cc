@@ -4311,9 +4311,16 @@ Parse::type_switch_body(Label* label, const Type_switch& type_switch,
   Named_object* switch_no = NULL;
   if (!type_switch.name.empty())
     {
-      Variable* switch_var = new Variable(NULL, type_switch.expr, false, false,
-					  false, type_switch.location);
-      switch_no = this->gogo_->add_variable(type_switch.name, switch_var);
+      if (Gogo::is_sink_name(type_switch.name))
+	error_at(type_switch.location,
+		 "no new variables on left side of %<:=%>");
+      else
+	{
+	  Variable* switch_var = new Variable(NULL, type_switch.expr, false,
+					      false, false,
+					      type_switch.location);
+	  switch_no = this->gogo_->add_variable(type_switch.name, switch_var);
+	}
     }
 
   Type_switch_statement* statement =
