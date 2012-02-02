@@ -1,3 +1,9 @@
+2012-02-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/49800
+	* haifa-sched.c (sched_init): Call regstat_init_n_sets_and_refs.
+	(sched_finish): Call regstat_free_n_sets_and_refs.
+
 2012-02-02  Jia Liu  <proljc@gmail.com>
 
 	* config/mips/mips-dspr2.md (mips_prepend): Mask operand 3 rather
