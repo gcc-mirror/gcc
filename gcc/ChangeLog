@@ -1,3 +1,8 @@
+2012-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48071
+	* diagnostic.c (diagnostic_finish): Remove trailing newlines.
+
 2012-02-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/49800
