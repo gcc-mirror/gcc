@@ -133,15 +133,15 @@ type FdSet struct {
 }
 
 func FDSet(fd int, set *FdSet) {
-	set.Bits[fd / nfdbits] |= (1 << (uint)(fd % nfdbits))
+	set.Bits[fd/nfdbits] |= (1 << (uint)(fd%nfdbits))
 }
 
 func FDClr(fd int, set *FdSet) {
-	set.Bits[fd / nfdbits] &^= (1 << (uint)(fd % nfdbits))
+	set.Bits[fd/nfdbits] &^= (1 << (uint)(fd%nfdbits))
 }
 
 func FDIsSet(fd int, set *FdSet) bool {
-	if set.Bits[fd / nfdbits] & (1 << (uint)(fd % nfdbits)) != 0 {
+	if set.Bits[fd/nfdbits]&(1<<(uint)(fd%nfdbits)) != 0 {
 		return true
 	} else {
 		return false
@@ -323,9 +323,8 @@ func Settimeofday(tv *Timeval) (err error) {
 // //sysnb	Time(t *Time_t) (tt Time_t, err error)
 // //time(t *Time_t) Time_t
 
-// FIXME: mksysinfo Tms
-// //sysnb	Times(tms *Tms) (ticks uintptr, err error)
-// //times(tms *Tms) _clock_t
+//sysnb	Times(tms *Tms) (ticks uintptr, err error)
+//times(tms *Tms) _clock_t
 
 //sysnb	Umask(mask int) (oldmask int)
 //umask(mask Mode_t) Mode_t
