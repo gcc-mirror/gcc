@@ -441,12 +441,29 @@ Import::import_func(Package* package)
   Named_object* no;
   if (fntype->is_method())
     {
-      Type* rtype = receiver->type()->deref();
+      Type* rtype = receiver->type();
+
+      // We may still be reading the definition of RTYPE, so we have
+      // to be careful to avoid calling base or convert.  If RTYPE is
+      // a named type or a forward declaration, then we know that it
+      // is not a pointer, because we are reading a method on RTYPE
+      // and named pointers can't have methods.
+
+      if (rtype->classification() == Type::TYPE_POINTER)
+	rtype = rtype->points_to();
+
       if (rtype->is_error_type())
 	return NULL;
-      Named_type* named_rtype = rtype->named_type();
-      go_assert(named_rtype != NULL);
-      no = named_rtype->add_method_declaration(name, package, fntype, loc);
+      else if (rtype->named_type() != NULL)
+	no = rtype->named_type()->add_method_declaration(name, package, fntype,
+							 loc);
+      else if (rtype->forward_declaration_type() != NULL)
+	no = rtype->forward_declaration_type()->add_method_declaration(name,
+								       package,
+								       fntype,
+								       loc);
+      else
+	go_unreachable();
     }
   else
     {
@@ -647,8 +664,8 @@ Import::read_type()
 	{
 	  // We have seen this type before.  FIXME: it would be a good
 	  // idea to check that the two imported types are identical,
-	  // but we have not finalized the methds yet, which means
-	  // that we can nt reliably compare interface types.
+	  // but we have not finalized the methods yet, which means
+	  // that we can not reliably compare interface types.
 	  type = no->type_value();
 
 	  // Don't change the visibility of the existing type.

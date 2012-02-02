@@ -1621,8 +1621,8 @@ class Type_declaration
 
   // Add a method declaration to this type.
   Named_object*
-  add_method_declaration(const std::string& name, Function_type* type,
-			 Location location);
+  add_method_declaration(const std::string& name, Package*,
+			 Function_type* type, Location location);
 
   // Return whether any methods were defined.
   bool

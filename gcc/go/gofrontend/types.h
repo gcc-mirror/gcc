@@ -2937,7 +2937,7 @@ class Forward_declaration_type : public Type
 
   // Add a method declaration to this type.
   Named_object*
-  add_method_declaration(const std::string& name, Function_type*,
+  add_method_declaration(const std::string& name, Package*, Function_type*,
 			 Location);
 
  protected:
