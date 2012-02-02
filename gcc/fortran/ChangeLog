@@ -1,3 +1,15 @@
+2012-02-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/41587
+	PR fortran/46356
+	PR fortran/51754
+	PR fortran/50981
+	* class.c (insert_component_ref, class_data_ref_missing,
+	gfc_fix_class_refs): New functions.
+	* gfortran.h (gfc_fix_class_refs): New prototype.
+	* trans-expr.c (gfc_conv_expr): Remove special case handling and call
+	gfc_fix_class_refs instead.
+
 2012-02-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/52012
@@ -22,7 +34,7 @@
 	(mio_typebound_proc): Read/write is_operator from/to the
 	.mod file.
 
-2012-02-01  Tobias Burnus
+2012-02-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52059
 	* trans-expr.c (gfc_conv_procedure_call): Add array ref

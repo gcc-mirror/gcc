@@ -5486,10 +5486,7 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
         }
     }
 
-  /* TODO: make this work for general class array expressions.  */
-  if (expr->ts.type == BT_CLASS
-	&& expr->ref && expr->ref->type == REF_ARRAY)
-    gfc_add_component_ref (expr, "_data");
+  gfc_fix_class_refs (expr);
 
   switch (expr->expr_type)
     {
