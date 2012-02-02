@@ -836,6 +836,16 @@ cgraph_analyze_function (struct cgraph_node *node)
   if (node->alias && node->thunk.alias)
     {
       struct cgraph_node *tgt = cgraph_get_node (node->thunk.alias);
+      struct cgraph_node *n;
+
+      for (n = tgt; n && n->alias;
+	   n = n->analyzed ? cgraph_alias_aliased_node (n) : NULL)
+	if (n == node)
+	  {
+	    error ("function %q+D part of alias cycle", node->decl);
+	    node->alias = false;
+	    return;
+	  }
       if (!VEC_length (ipa_ref_t, node->ref_list.references))
         ipa_record_reference (node, NULL, tgt, NULL, IPA_REF_ALIAS, NULL);
       if (node->same_body_alias)
