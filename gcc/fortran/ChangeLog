@@ -1,3 +1,8 @@
+2012-02-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52093
+	* simplify.c (gfc_simplify_size): Handle INTRINSIC_PARENTHESES.
+
 2012-02-01  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/51958

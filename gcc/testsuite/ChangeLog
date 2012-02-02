@@ -1,3 +1,8 @@
+2012-02-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52093
+	* gfortran.dg/shape_7.f90: New.
+
 2012-02-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/mips-prepend-1.c: New test.
