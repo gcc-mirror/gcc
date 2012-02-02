@@ -173,7 +173,7 @@ BUILT_SOURCES += $(UPC_LINK_SCRIPT)
 else
 UPC_LINK_SCRIPT =
 endif
-toolexeclib_SCRIPTS = $(UPC_LINK_SCRIPT)
+nodist_toolexeclib_HEADERS += $(UPC_LINK_SCRIPT)
 
 
 libgupc_la_SOURCES = $(UPC_RUNTIME_SRC)

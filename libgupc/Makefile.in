@@ -19,7 +19,6 @@
 
 
 
-
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -113,8 +112,7 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
-	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)" \
+am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)" \
 	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(libsubincludedir)" \
 	"$(DESTDIR)$(libsubincludedir)" "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
@@ -215,7 +213,6 @@ libgupc_pt_la_OBJECTS = $(nodist_libgupc_pt_la_OBJECTS)
 @LIBGUPC_PTHREADS_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am_libgupc_pt_la_rpath =  \
 @LIBGUPC_PTHREADS_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@	-rpath \
 @LIBGUPC_PTHREADS_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@	$(toolexeclibdir)
-SCRIPTS = $(toolexeclib_SCRIPTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
@@ -515,11 +512,11 @@ UPC_RUNTIME_SRC = $(am__append_3) $(am__append_4)
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	collectives/upc_coll_sort.upc
 
 toolexeclib_LTLIBRARIES = libgupc.la $(libgupc_pt)
-nodist_toolexeclib_HEADERS = upc-crtbegin.spec libgupc.spec upc-crtend.spec
+nodist_toolexeclib_HEADERS = upc-crtbegin.spec libgupc.spec \
+	upc-crtend.spec $(UPC_LINK_SCRIPT)
 BUILT_SOURCES = gcc-upc-lib.h $(am__append_6)
 @LIBGUPC_LINK_SCRIPT_FALSE@UPC_LINK_SCRIPT = 
 @LIBGUPC_LINK_SCRIPT_TRUE@UPC_LINK_SCRIPT = gupc.ld
-toolexeclib_SCRIPTS = $(UPC_LINK_SCRIPT)
 libgupc_la_SOURCES = $(UPC_RUNTIME_SRC)
 libgupc_version_info = -version-info $(libtool_VERSION)
 libgupc_la_LDFLAGS = $(libgupc_version_info)
@@ -651,40 +648,6 @@ libgupc.la: $(libgupc_la_OBJECTS) $(libgupc_la_DEPENDENCIES)
 	$(libgupc_la_LINK) -rpath $(toolexeclibdir) $(libgupc_la_OBJECTS) $(libgupc_la_LIBADD) $(LIBS)
 libgupc_pt.la: $(libgupc_pt_la_OBJECTS) $(libgupc_pt_la_DEPENDENCIES) 
 	$(libgupc_pt_la_LINK) $(am_libgupc_pt_la_rpath) $(libgupc_pt_la_OBJECTS) $(libgupc_pt_la_LIBADD) $(LIBS)
-install-toolexeclibSCRIPTS: $(toolexeclib_SCRIPTS)
-	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)"
-	@list='$(toolexeclib_SCRIPTS)'; test -n "$(toolexeclibdir)" || list=; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  if test -f "$$d$$p"; then echo "$$d$$p"; echo "$$p"; else :; fi; \
-	done | \
-	sed -e 'p;s,.*/,,;n' \
-	    -e 'h;s|.*|.|' \
-	    -e 'p;x;s,.*/,,;$(transform)' | sed 'N;N;N;s,\n, ,g' | \
-	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1; } \
-	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
-	    if ($$2 == $$4) { files[d] = files[d] " " $$1; \
-	      if (++n[d] == $(am__install_max)) { \
-		print "f", d, files[d]; n[d] = 0; files[d] = "" } } \
-	    else { print "f", d "/" $$4, $$1 } } \
-	  END { for (d in files) print "f", d, files[d] }' | \
-	while read type dir files; do \
-	     if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
-	     test -z "$$files" || { \
-	       echo " $(INSTALL_SCRIPT) $$files '$(DESTDIR)$(toolexeclibdir)$$dir'"; \
-	       $(INSTALL_SCRIPT) $$files "$(DESTDIR)$(toolexeclibdir)$$dir" || exit $$?; \
-	     } \
-	; done
-
-uninstall-toolexeclibSCRIPTS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclib_SCRIPTS)'; test -n "$(toolexeclibdir)" || exit 0; \
-	files=`for p in $$list; do echo "$$p"; done | \
-	       sed -e 's,.*/,,;$(transform)'`; \
-	test -n "$$list" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibdir)" && rm -f $$files
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1775,11 +1738,11 @@ distcleancheck: distclean
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-recursive
-all-am: Makefile $(INFO_DEPS) $(LTLIBRARIES) $(SCRIPTS) all-multi \
-		$(DATA) $(HEADERS) config.h all-local
+all-am: Makefile $(INFO_DEPS) $(LTLIBRARIES) all-multi $(DATA) \
+		$(HEADERS) config.h all-local
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(libsubincludedir)" "$(DESTDIR)$(libsubincludedir)" "$(DESTDIR)$(toolexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(libsubincludedir)" "$(DESTDIR)$(libsubincludedir)" "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -1854,8 +1817,7 @@ install-dvi-am: $(DVIS)
 	  $(INSTALL_DATA) $$files "$(DESTDIR)$(dvidir)" || exit $$?; \
 	done
 install-exec-am: install-multi install-nodist_toolexeclibHEADERS \
-	install-toolexeclibDATA install-toolexeclibLTLIBRARIES \
-	install-toolexeclibSCRIPTS
+	install-toolexeclibDATA install-toolexeclibLTLIBRARIES
 
 install-html: install-html-recursive
 
@@ -1969,7 +1931,7 @@ uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
 	uninstall-nodist_libsubincludeHEADERS \
 	uninstall-nodist_toolexeclibHEADERS uninstall-pdf-am \
 	uninstall-ps-am uninstall-toolexeclibDATA \
-	uninstall-toolexeclibLTLIBRARIES uninstall-toolexeclibSCRIPTS
+	uninstall-toolexeclibLTLIBRARIES
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) all all-multi \
 	check clean-multi ctags-recursive distclean-multi install \
@@ -1992,19 +1954,18 @@ uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
 	install-multi install-nodist_libsubincludeHEADERS \
 	install-nodist_toolexeclibHEADERS install-pdf install-pdf-am \
 	install-ps install-ps-am install-strip install-toolexeclibDATA \
-	install-toolexeclibLTLIBRARIES install-toolexeclibSCRIPTS \
-	installcheck installcheck-am installdirs installdirs-am \
-	maintainer-clean maintainer-clean-aminfo \
-	maintainer-clean-generic maintainer-clean-multi mostlyclean \
-	mostlyclean-aminfo mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool mostlyclean-multi pdf pdf-am ps ps-am tags \
-	tags-recursive uninstall uninstall-am uninstall-dvi-am \
-	uninstall-html-am uninstall-info-am \
-	uninstall-libsubincludeHEADERS \
+	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-aminfo maintainer-clean-generic \
+	maintainer-clean-multi mostlyclean mostlyclean-aminfo \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	mostlyclean-multi pdf pdf-am ps ps-am tags tags-recursive \
+	uninstall uninstall-am uninstall-dvi-am uninstall-html-am \
+	uninstall-info-am uninstall-libsubincludeHEADERS \
 	uninstall-nodist_libsubincludeHEADERS \
 	uninstall-nodist_toolexeclibHEADERS uninstall-pdf-am \
 	uninstall-ps-am uninstall-toolexeclibDATA \
-	uninstall-toolexeclibLTLIBRARIES uninstall-toolexeclibSCRIPTS
+	uninstall-toolexeclibLTLIBRARIES
 
 
 vpath % $(strip $(search_path))

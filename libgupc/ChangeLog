@@ -1,3 +1,12 @@
+2012-02-02  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* Makefile.am: Prevent install from adding suffix to the
+	link script (gupc.ld).
+	(toolexeclib_SCRIPTS) remove upc link script.
+	(nodist_toolexeclib_HEADERS) add upc link script.
+	* Makefile: Regenerate.
+	* configure: Regenerate.
+
 2012-01-24  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* smp/upc_pgm_info.c (__upc_validate_pgm_info): Fix the error
