@@ -6276,7 +6276,7 @@ realloc_lhs_loop_for_fcn_call (gfc_se *se, locus *where, gfc_ss **ss,
 }
 
 
-/* For Assignment to a reallocatable lhs from intrinsic functions,
+/* For assignment to a reallocatable lhs from intrinsic functions,
    replace the se.expr (ie. the result) with a temporary descriptor.
    Null the data field so that the library allocates space for the
    result. Free the data of the original descriptor after the function,
@@ -6290,44 +6290,88 @@ fcncall_realloc_result (gfc_se *se, int rank)
   tree res_desc;
   tree tmp;
   tree offset;
+  tree zero_cond;
   int n;
 
   /* Use the allocation done by the library.  Substitute the lhs
      descriptor with a copy, whose data field is nulled.*/
   desc = build_fold_indirect_ref_loc (input_location, se->expr);
+
   /* Unallocated, the descriptor does not have a dtype.  */
   tmp = gfc_conv_descriptor_dtype (desc);
   gfc_add_modify (&se->pre, tmp, gfc_get_dtype (TREE_TYPE (desc)));
+
   res_desc = gfc_evaluate_now (desc, &se->pre);
   gfc_conv_descriptor_data_set (&se->pre, res_desc, null_pointer_node);
   se->expr = gfc_build_addr_expr (TREE_TYPE (se->expr), res_desc);
 
-  /* Free the lhs after the function call and copy the result to
+  /* Free the lhs after the function call and copy the result data to
      the lhs descriptor.  */
   tmp = gfc_conv_descriptor_data_get (desc);
+  zero_cond = fold_build2_loc (input_location, EQ_EXPR,
+			       boolean_type_node, tmp,
+			       build_int_cst (TREE_TYPE (tmp), 0));
+  zero_cond = gfc_evaluate_now (zero_cond, &se->post);
   tmp = gfc_call_free (fold_convert (pvoid_type_node, tmp));
   gfc_add_expr_to_block (&se->post, tmp);
-  gfc_add_modify (&se->post, desc, res_desc);
 
-  offset = gfc_index_zero_node;
+  tmp = gfc_conv_descriptor_data_get (res_desc);
+  gfc_conv_descriptor_data_set (&se->post, desc, tmp);
 
-  /* Now reset the bounds from zero based to unity based and set the
-     offset accordingly.  */
+  /* Check that the shapes are the same between lhs and expression.  */
   for (n = 0 ; n < rank; n++)
     {
-      tmp = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[n]);
+      tree tmp1;
+      tmp = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[n]);
+      tmp1 = gfc_conv_descriptor_lbound_get (res_desc, gfc_rank_cst[n]);
+      tmp = fold_build2_loc (input_location, MINUS_EXPR,
+			     gfc_array_index_type, tmp, tmp1);
+      tmp1 = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[n]);
+      tmp = fold_build2_loc (input_location, MINUS_EXPR,
+			     gfc_array_index_type, tmp, tmp1);
+      tmp1 = gfc_conv_descriptor_ubound_get (res_desc, gfc_rank_cst[n]);
       tmp = fold_build2_loc (input_location, PLUS_EXPR,
-			     gfc_array_index_type,
-			     tmp, gfc_index_one_node);
+			     gfc_array_index_type, tmp, tmp1);
+      tmp = fold_build2_loc (input_location, NE_EXPR,
+			     boolean_type_node, tmp,
+			     gfc_index_zero_node);
+      tmp = gfc_evaluate_now (tmp, &se->post);
+      zero_cond = fold_build2_loc (input_location, TRUTH_OR_EXPR,
+				   boolean_type_node, tmp,
+				   zero_cond);
+    }
+
+  /* 'zero_cond' being true is equal to lhs not being allocated or the
+     shapes being different.  */
+  zero_cond = gfc_evaluate_now (zero_cond, &se->post);
+
+  /* Now reset the bounds returned from the function call to bounds based
+     on the lhs lbounds, except where the lhs is not allocated or the shapes
+     of 'variable and 'expr' are different. Set the offset accordingly.  */
+  offset = gfc_index_zero_node;
+  for (n = 0 ; n < rank; n++)
+    {
+      tree lbound;
+
+      lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[n]);
+      lbound = fold_build3_loc (input_location, COND_EXPR,
+				gfc_array_index_type, zero_cond,
+				gfc_index_one_node, lbound);
+      lbound = gfc_evaluate_now (lbound, &se->post);
+
+      tmp = gfc_conv_descriptor_ubound_get (res_desc, gfc_rank_cst[n]);
+      tmp = fold_build2_loc (input_location, PLUS_EXPR,
+			     gfc_array_index_type, tmp, lbound);
       gfc_conv_descriptor_lbound_set (&se->post, desc,
-				      gfc_rank_cst[n],
-				      gfc_index_one_node);
+				      gfc_rank_cst[n], lbound);
       gfc_conv_descriptor_ubound_set (&se->post, desc,
 				      gfc_rank_cst[n], tmp);
 
-      /* Accumulate the offset.  Since all lbounds are unity, offset
-	 is just minus the sum of the strides.  */
+      /* Accumulate the offset.  */
       tmp = gfc_conv_descriptor_stride_get (desc, gfc_rank_cst[n]);
+      tmp = fold_build2_loc (input_location, MULT_EXPR,
+				gfc_array_index_type,
+				lbound, tmp);
       offset = fold_build2_loc (input_location, MINUS_EXPR,
 				gfc_array_index_type,
 				offset, tmp);

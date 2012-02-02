@@ -1,3 +1,9 @@
+2012-02-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52012
+	* trans-expr.c (fcncall_realloc_result): If variable shape is
+	correct, retain the bounds, whatever they are.
+
 2012-02-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52093
