@@ -1,3 +1,8 @@
+2012-02-02  Jia Liu  <proljc@gmail.com>
+
+	* config/mips/mips-dspr2.md (mips_prepend): Mask operand 3 rather
+	than operand 2.
+
 2012-02-02 Jan Hubicka  <jh@suse.cz>
 	   Tom de Vries  <tom@codesourcery.com>
 
