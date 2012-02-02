@@ -1,3 +1,14 @@
+2012-02-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/41587
+	* gfortran.dg/class_array_10.f03: New test.
+
+	PR fortran/46356
+	* gfortran.dg/class_array_11.f03: New test.
+
+	PR fortran/51754
+	* gfortran.dg/class_array_12.f03: New test.
+
 2012-02-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/52012
@@ -42,7 +53,7 @@
 	PR fortran/52024
 	* gfortran.dg/typebound_operator_14.f90: New.
 
-2012-02-01  Tobias Burnus
+2012-02-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52059
 	* gfortran.dg/elemental_function_1.f90: New.

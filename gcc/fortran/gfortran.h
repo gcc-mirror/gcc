@@ -2919,6 +2919,7 @@ gfc_try gfc_calculate_transfer_sizes (gfc_expr*, gfc_expr*, gfc_expr*,
 				      size_t*, size_t*, size_t*);
 
 /* class.c */
+void gfc_fix_class_refs (gfc_expr *e);
 void gfc_add_component_ref (gfc_expr *, const char *);
 void gfc_add_class_array_ref (gfc_expr *);
 #define gfc_add_data_component(e)     gfc_add_component_ref(e,"_data")

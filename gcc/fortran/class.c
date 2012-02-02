@@ -52,6 +52,129 @@ along with GCC; see the file COPYING3.  If not see
 #include "constructor.h"
 
 
+/* Inserts a derived type component reference in a data reference chain.
+    TS: base type of the ref chain so far, in which we will pick the component
+    REF: the address of the GFC_REF pointer to update
+    NAME: name of the component to insert
+   Note that component insertion makes sense only if we are at the end of
+   the chain (*REF == NULL) or if we are adding a missing "_data" component
+   to access the actual contents of a class object.  */
+
+static void
+insert_component_ref (gfc_typespec *ts, gfc_ref **ref, const char * const name)
+{
+  gfc_symbol *type_sym;
+  gfc_ref *new_ref;
+
+  gcc_assert (ts->type == BT_DERIVED || ts->type == BT_CLASS);
+  type_sym = ts->u.derived;
+
+  new_ref = gfc_get_ref ();
+  new_ref->type = REF_COMPONENT;
+  new_ref->next = *ref;
+  new_ref->u.c.sym = type_sym;
+  new_ref->u.c.component = gfc_find_component (type_sym, name, true, true);
+  gcc_assert (new_ref->u.c.component);
+
+  if (new_ref->next)
+    {
+      gfc_ref *next = NULL;
+
+      /* We need to update the base type in the trailing reference chain to
+	 that of the new component.  */
+
+      gcc_assert (strcmp (name, "_data") == 0);
+
+      if (new_ref->next->type == REF_COMPONENT)
+	next = new_ref->next;
+      else if (new_ref->next->type == REF_ARRAY
+	       && new_ref->next->next
+	       && new_ref->next->next->type == REF_COMPONENT)
+	next = new_ref->next->next;
+
+      if (next != NULL)
+	{
+	  gcc_assert (new_ref->u.c.component->ts.type == BT_CLASS
+		      || new_ref->u.c.component->ts.type == BT_DERIVED);
+	  next->u.c.sym = new_ref->u.c.component->ts.u.derived;
+	}
+    }
+
+  *ref = new_ref;
+}
+
+
+/* Tells whether we need to add a "_data" reference to access REF subobject
+   from an object of type TS.  If FIRST_REF_IN_CHAIN is set, then the base
+   object accessed by REF is a variable; in other words it is a full object,
+   not a subobject.  */
+
+static bool
+class_data_ref_missing (gfc_typespec *ts, gfc_ref *ref, bool first_ref_in_chain)
+{
+  /* Only class containers may need the "_data" reference.  */
+  if (ts->type != BT_CLASS)
+    return false;
+
+  /* Accessing a class container with an array reference is certainly wrong.  */
+  if (ref->type != REF_COMPONENT)
+    return true;
+
+  /* Accessing the class container's fields is fine.  */
+  if (ref->u.c.component->name[0] == '_')
+    return false;
+
+  /* At this point we have a class container with a non class container's field
+     component reference.  We don't want to add the "_data" component if we are
+     at the first reference and the symbol's type is an extended derived type.
+     In that case, conv_parent_component_references will do the right thing so
+     it is not absolutely necessary.  Omitting it prevents a regression (see
+     class_41.f03) in the interface mapping mechanism.  When evaluating string
+     lengths depending on dummy arguments, we create a fake symbol with a type
+     equal to that of the dummy type.  However, because of type extension,
+     the backend type (corresponding to the actual argument) can have a
+     different (extended) type.  Adding the "_data" component explicitly, using
+     the base type, confuses the gfc_conv_component_ref code which deals with
+     the extended type.  */
+  if (first_ref_in_chain && ts->u.derived->attr.extension)
+    return false;
+
+  /* We have a class container with a non class container's field component
+     reference that doesn't fall into the above.  */
+  return true;
+}
+
+
+/* Browse through a data reference chain and add the missing "_data" references
+   when a subobject of a class object is accessed without it.
+   Note that it doesn't add the "_data" reference when the class container
+   is the last element in the reference chain.  */
+
+void
+gfc_fix_class_refs (gfc_expr *e)
+{
+  gfc_typespec *ts;
+  gfc_ref **ref;
+
+  if ((e->expr_type != EXPR_VARIABLE
+       && e->expr_type != EXPR_FUNCTION)
+      || (e->expr_type == EXPR_FUNCTION
+	  && e->value.function.isym != NULL))
+    return;
+
+  ts = &e->symtree->n.sym->ts;
+
+  for (ref = &e->ref; *ref != NULL; ref = &(*ref)->next)
+    {
+      if (class_data_ref_missing (ts, *ref, ref == &e->ref))
+	insert_component_ref (ts, ref, "_data");
+
+      if ((*ref)->type == REF_COMPONENT)
+	ts = &(*ref)->u.c.component->ts;
+    }
+}
+
+
 /* Insert a reference to the component of the given name.
    Only to be used with CLASS containers and vtables.  */
 
