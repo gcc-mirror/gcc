@@ -1843,6 +1843,40 @@ Matches control register values to switch fp mode, which are encapsulated in
 @code{UNSPEC_FP_MODE}.
 @end table
 
+@item CR16 Architecture---@file{config/cr16/cr16.h}
+@table @code
+
+@item b
+Registers from r0 to r14 (registers without stack pointer)
+
+@item t
+Register from r0 to r11 (all 16-bit registers)
+
+@item p
+Register from r12 to r15 (all 32-bit registers)
+
+@item I
+Signed constant that fits in 4 bits
+
+@item J
+Signed constant that fits in 5 bits
+
+@item K
+Signed constant that fits in 6 bits
+
+@item L
+Unsigned constant that fits in 4 bits
+
+@item M
+Signed constant that fits in 32 bits
+
+@item N
+Check for 64 bits wide constants for add/sub instructions
+
+@item G
+Floating point constant that is legal for store immediate
+@end table
+
 @item Hewlett-Packard PA-RISC---@file{config/pa/pa.h}
 @table @code
 @item a

@@ -98,6 +98,8 @@ avr-*-*)
 bfin*-*)
 	cpu_type=bfin
 	;;
+cr16-*-*)
+	;;
 fido-*-*)
 	cpu_type=m68k
 	;;
@@ -414,6 +416,10 @@ bfin*-rtems*)
 bfin*-*)
 	tmake_file="$tmake_file bfin/t-bfin t-fdpbit"
 	extra_parts="crtbegin.o crtend.o crti.o crtn.o"
+        ;;
+cr16-*-elf)
+	tmake_file="${tmake_file} cr16/t-cr16 cr16/t-crtlibid t-fdpbit"
+	extra_parts="$extra_parts crti.o crtn.o crtlibid.o"
         ;;
 crisv32-*-elf)
 	tmake_file="$tmake_file cris/t-cris t-fdpbit"

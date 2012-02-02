@@ -1,0 +1,51 @@
+; Options for the National Semiconductor CR16 port of the compiler.
+; Copyright (C) 2012 Free Software Foundation, Inc.
+; Contributed by KPIT Cummins Infosystems Limited.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it
+; under the terms of the GNU General Public License as published
+; by the Free Software Foundation; either version 3, or (at your
+; option) any later version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT
+; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+; License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+msim
+Target
+-msim   Use simulator runtime
+
+mbit-ops
+Target Report Mask(BIT_OPS)
+Generate SBIT, CBIT instructions
+
+mmac
+Target Report Mask(MAC)
+Support multiply accumulate instructions
+
+mdebug-addr
+Target RejectNegative Var(TARGET_DEBUG_ADDR) Undocumented
+
+mdata-model=
+Target RejectNegative JoinedOrMissing Var(cr16_data_model)
+Treat data references as near, far or medium. medium is default
+
+mcr16c
+Target RejectNegative Mask(CR16C)
+Generate code for CR16C architecture
+
+mcr16cplus
+Target RejectNegative InverseMask(CR16C,CR16CP)
+Generate code for CR16C+ architecture (Default)
+
+mint32
+Target RejectNegative Mask(INT32)
+Treat integers as 32-bit.
+

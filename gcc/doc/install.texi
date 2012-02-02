@@ -3272,6 +3272,29 @@ is available at @uref{http://blackfin.uclinux.org}
 @html
 <hr />
 @end html
+@heading @anchor{cr16}CR16
+
+The CR16 CompactRISC architecture is a 16-bit architecture. This architecture is 
+used in embedded applications.
+
+@ifnothtml
+@xref{CR16 Options,, CR16 Options, gcc, Using and Porting the GNU Compiler
+Collection (GCC)},
+@end ifnothtml
+
+@ifhtml
+See ``CR16 Options'' in the main manual for a list of CR16-specific options.
+@end ifhtml
+
+Use @samp{configure --target=cr16-elf --enable-languages=c,c++} to configure
+GCC@ for building a CR16 elf cross-compiler.
+
+Use @samp{configure --target=cr16-uclinux --enable-languages=c,c++} to configure
+GCC@ for building a CR16 uclinux cross-compiler.
+
+@html
+<hr />
+@end html
 @heading @anchor{cris}CRIS
 
 CRIS is the CPU architecture in Axis Communications ETRAX system-on-a-chip

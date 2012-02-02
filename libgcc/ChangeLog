@@ -1,3 +1,17 @@
+2012-02-02  Sumanth G <sumanth.gundapaneni@kpitcummins.com>
+	    Jayant R Sonar <jayant.sonar@kpitcummins.com>
+
+	* config.host: Add National Semiconductor CR16 target (cr16-*-*).
+	* config/cr16/crti.S: New file.
+	* config/cr16/crtlibid.S: New file.
+	* config/cr16/crtn.S: New file.
+	* config/cr16/lib1funcs.S: New file.
+	* config/cr16/t-cr16: New file.
+	* config/cr16/t-crtlibid: New file.
+	* config/cr16/unwind-dw2.h: New file.
+	* config/cr16/unwind-cr16.c: New file.
+	* config/cr16/divmodhi3.c: New file.
+
 2012-01-25  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/t-linux64: Delete.  Move..
