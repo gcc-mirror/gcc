@@ -1,5 +1,8 @@
 2012-02-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/52086
+	* gcc.dg/pr52086.c: New test.
+
 	PR tree-optimization/52073
 	* gcc.c-torture/compile/pr52073.c: New test.
 
