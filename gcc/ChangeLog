@@ -1,5 +1,9 @@
 2012-02-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/52086
+	* config/i386/i386.md (*addqi_2 peephole with SImode addition): Check
+	that operands[2] is either immediate, or q_regs_operand.
+
 	PR tree-optimization/52073
 	* tree-vect-stmts.c (vect_mark_relevant): When checking uses of
 	a pattern stmt for pattern uses, ignore uses outside of the loop.
