@@ -1,3 +1,13 @@
+2012-02-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/52068
+	* src/c++11/Makefile.am (toolexeclib_LTLIBRARIES,
+	libc__11_la_SOURCES): Remove.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++98/Makefile.am (toolexeclib_LTLIBRARIES,
+	libc__98_la_SOURCES): Remove.
+	* src/c++98/Makefile.in: Regenerate.
+
 2012-02-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/49204

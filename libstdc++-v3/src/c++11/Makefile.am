@@ -25,7 +25,6 @@
 include $(top_srcdir)/fragment.am
 
 # Convenience library for C++11 runtime.
-toolexeclib_LTLIBRARIES = libc++11.la
 noinst_LTLIBRARIES = libc++11convenience.la
 
 headers =
@@ -63,7 +62,6 @@ endif
 vpath % $(top_srcdir)/src/c++11
 vpath % $(top_srcdir)
 
-libc__11_la_SOURCES = $(sources) $(inst_sources)
 libc__11convenience_la_SOURCES = $(sources)  $(inst_sources)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
