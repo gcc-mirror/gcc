@@ -5416,7 +5416,8 @@ tree
 Array_type::capacity_tree(Gogo* gogo, tree array)
 {
   if (this->length_ != NULL)
-    return omit_one_operand(sizetype, this->get_length_tree(gogo), array);
+    return omit_one_operand(integer_type_node, this->get_length_tree(gogo),
+			    array);
 
   // This is an open array.  We need to read the capacity field.
 
