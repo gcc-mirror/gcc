@@ -1,3 +1,23 @@
+2012-02-02  Sumanth G <sumanth.gundapaneni@kpitcummins.com>
+	    Jayant R Sonar <jayant.sonar@kpitcummins.com>
+
+	* config.gcc: Add cr16-* support.
+
+	* doc/extend.texi: Document cr16 extensions.
+	* doc/install.texi: Document cr16 install.
+	* doc/invoke.texi: Document cr16 options.
+	* doc/md.texi: Document cr16 constraints.
+
+	* common/config/cr16/cr16-common.c: New file.
+	* config/cr16/cr16.c: New file.
+	* config/cr16/cr16.h: New file.
+	* config/cr16/cr16.md: New file.
+	* config/cr16/cr16.opt: New file.
+	* config/cr16/cr16-protos.h: New file.
+	* config/cr16/predicates.md: New file.
+	* config/cr16/constraints.md: New file.
+	* config/cr16/t-cr16: New file.
+
 2012-02-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52086

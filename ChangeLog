@@ -1,3 +1,9 @@
+2012-02-02  Sumanth G <sumanth.gundapaneni@kpitcummins.com>
+	    Jayant R Sonar <jayant.sonar@kpitcummins.com>
+
+	* configure.ac (cr16-*-*): Remove nonconfigdirs.
+	* configure: Regenerate.
+
 2012-01-23  Harshit Chopra  <harshit@google.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

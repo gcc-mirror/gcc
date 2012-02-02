@@ -944,6 +944,11 @@ bfin*-*)
 	use_collect2=no
 	use_gcc_stdint=wrap
 	;;
+cr16-*-elf)
+        tm_file="elfos.h ${tm_file}"
+        tmake_file="${tmake_file} cr16/t-cr16 "
+        use_collect2=no
+        ;;
 crisv32-*-elf | crisv32-*-none)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	tmake_file="cris/t-cris"

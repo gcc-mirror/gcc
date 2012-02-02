@@ -524,6 +524,12 @@ Objective-C and Objective-C++ Dialects}.
 -melf  -maout  -melinux  -mlinux  -sim  -sim2 @gol
 -mmul-bug-workaround  -mno-mul-bug-workaround}
 
+@emph{CR16 Options}
+@gccoptlist{-mmac @gol
+-mcr16cplus -mcr16c @gol
+-msim -mint32 -mbit-ops
+-mdata-model=@var{model}}
+
 @emph{Darwin Options}
 @gccoptlist{-all_load  -allowable_client  -arch  -arch_errors_fatal @gol
 -arch_only  -bind_at_load  -bundle  -bundle_loader @gol
@@ -10307,6 +10313,7 @@ platform.
 * Blackfin Options::
 * C6X Options::
 * CRIS Options::
+* CR16 Options::
 * Darwin Options::
 * DEC Alpha Options::
 * DEC Alpha/VMS Options::
@@ -11632,6 +11639,46 @@ initialized data and zero-initialized data are allocated consecutively.
 @opindex sim2
 Like @option{-sim}, but pass linker options to locate initialized data at
 0x40000000 and zero-initialized data at 0x80000000.
+@end table
+
+@node CR16 Options
+@subsection CR16 Options
+@cindex CR16 Options
+
+These options are defined specifically for the CR16 ports.
+
+@table @gcctabopt
+
+@item -mmac
+@opindex mmac
+Enable the use of multiply-accumulate instructions. Disabled by default.
+
+@item -mcr16cplus
+@itemx -mcr16c
+@opindex mcr16cplus
+@opindex mcr16c
+Generate code for CR16C or CR16C+ architecture. CR16C+ architecture 
+is default.
+
+@item -msim
+@opindex msim
+Links the library libsim.a which is in compatible with simulator. Applicable
+to elf compiler only.
+
+@item -mint32
+@opindex mint32
+Choose integer type as 32-bit wide.
+
+@item -mbit-ops
+@opindex mbit-ops
+Generates sbit/cbit instructions for bit manipulations.
+
+@item -mdata-model=@var{model}
+@opindex mdata-model
+Choose a data model. The choices for @var{model} are @samp{near},
+@samp{far} or @samp{medium}. @samp{medium} is default.
+However, @samp{far} is not valid when -mcr16c option is chosen as
+CR16C architecture does not support far data model.
 @end table
 
 @node Darwin Options
