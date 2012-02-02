@@ -150,6 +150,8 @@ vect_mark_relevant (VEC(gimple,heap) **worklist, gimple stmt,
           use_operand_p use_p;
           gimple use_stmt;
           tree lhs;
+	  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+	  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
 
           if (is_gimple_assign (stmt))
             lhs = gimple_assign_lhs (stmt);
@@ -165,6 +167,9 @@ vect_mark_relevant (VEC(gimple,heap) **worklist, gimple stmt,
 		if (is_gimple_debug (USE_STMT (use_p)))
 		  continue;
 		use_stmt = USE_STMT (use_p);
+
+		if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
+		  continue;
 
 		if (vinfo_for_stmt (use_stmt)
 		    && STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (use_stmt)))

@@ -1,3 +1,9 @@
+2012-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52073
+	* tree-vect-stmts.c (vect_mark_relevant): When checking uses of
+	a pattern stmt for pattern uses, ignore uses outside of the loop.
+
 2012-02-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c: Resolve all AS1 and AS2 macros.
