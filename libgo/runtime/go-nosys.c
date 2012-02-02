@@ -31,7 +31,8 @@ typedef off64_t loff_t;
 int
 epoll_create1 (int flags __attribute__ ((unused)))
 {
-  return ENOSYS;
+  errno = ENOSYS;
+  return -1;
 }
 #endif
 
@@ -42,7 +43,8 @@ faccessat (int fd __attribute__ ((unused)),
 	   int mode __attribute__ ((unused)),
 	   int flags __attribute__ ((unused)))
 {
-  return ENOSYS;
+  errno = ENOSYS;
+  return -1;
 }
 #endif
 
@@ -53,7 +55,8 @@ fchmodat (int dirfd __attribute__ ((unused)),
 	  mode_t mode __attribute__ ((unused)),
 	  int flags __attribute__ ((unused)))
 {
-  return ENOSYS;
+  errno = ENOSYS;
+  return -1;
 }
 #endif
 
@@ -65,7 +68,8 @@ fchownat (int dirfd __attribute__ ((unused)),
 	  gid_t group __attribute__ ((unused)),
 	  int flags __attribute__ ((unused)))
 {
-  return ENOSYS;
+  errno = ENOSYS;
+  return -1;
 }
 #endif
 
@@ -75,7 +79,8 @@ futimesat (int dirfd __attribute__ ((unused)),
 	   const char *pathname __attribute__ ((unused)),
 	   const struct timeval times[2] __attribute__ ((unused)))
 {
-  return ENOSYS;
+  errno = ENOSYS;
+  return -1;
 }
 #endif
 
@@ -85,7 +90,8 @@ inotify_add_watch (int fd __attribute__ ((unused)),
 		   const char* pathname __attribute__ ((unused)),
 		   uint32_t mask __attribute__ ((unused)))
 {
-  return ENOSYS;
+  errno = ENOSYS;
+  return -1;
 }
 #endif
 
@@ -93,7 +99,8 @@ inotify_add_watch (int fd __attribute__ ((unused)),
 int
 inotify_init (void)
 {
-  return ENOSYS;
+  errno = ENOSYS;
+  return -1;
 }
 #endif
 
@@ -102,7 +109,8 @@ int
 inotify_rm_watch (int fd __attribute__ ((unused)),
 		  uint32_t wd __attribute__ ((unused)))
 {
-  return ENOSYS;
+  errno = ENOSYS;
+  return -1;
 }
 #endif
 
@@ -112,7 +120,8 @@ mkdirat (int dirfd __attribute__ ((unused)),
 	 const char *pathname __attribute__ ((unused)),
 	 mode_t mode __attribute__ ((unused)))
 {
-  return ENOSYS;
+  errno = ENOSYS;
+  return -1;
 }
 #endif
 
@@ -123,7 +132,8 @@ mknodat (int dirfd __attribute__ ((unused)),
 	 mode_t mode __attribute__ ((unused)),
 	 dev_t dev __attribute__ ((unused)))
 {
-  return ENOSYS;
+  errno = ENOSYS;
+  return -1;
 }
 #endif
 
@@ -134,7 +144,8 @@ openat (int dirfd __attribute__ ((unused)),
 	int oflag __attribute__ ((unused)),
 	...)
 {
-  return ENOSYS;
+  errno = ENOSYS;
+  return -1;
 }
 #endif
 
@@ -145,7 +156,8 @@ renameat (int olddirfd __attribute__ ((unused)),
 	  int newdirfd __attribute__ ((unused)),
 	  const char *newpath __attribute__ ((unused)))
 {
-  return ENOSYS;
+  errno = ENOSYS;
+  return -1;
 }
 #endif
 
@@ -158,7 +170,8 @@ splice (int fd __attribute__ ((unused)),
 	size_t len __attribute__ ((unused)),
 	unsigned int flags __attribute__ ((unused)))
 {
-  return ENOSYS;
+  errno = ENOSYS;
+  return -1;
 }
 #endif
 
@@ -169,7 +182,8 @@ tee (int fd_in __attribute__ ((unused)),
      size_t len __attribute__ ((unused)),
      unsigned int flags __attribute__ ((unused)))
 {
-  return ENOSYS;
+  errno = ENOSYS;
+  return -1;
 }
 #endif
 
@@ -179,7 +193,8 @@ unlinkat (int dirfd __attribute__ ((unused)),
 	  const char *pathname __attribute__ ((unused)),
 	  int flags __attribute__ ((unused)))
 {
-  return ENOSYS;
+  errno = ENOSYS;
+  return -1;
 }
 #endif
 
@@ -187,6 +202,7 @@ unlinkat (int dirfd __attribute__ ((unused)),
 int
 unshare (int flags __attribute__ ((unused)))
 {
-  return ENOSYS;
+  errno = ENOSYS;
+  return -1;
 }
 #endif
