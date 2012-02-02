@@ -477,6 +477,16 @@ varpool_analyze_pending_decls (void)
       if (node->alias && node->alias_of)
 	{
 	  struct varpool_node *tgt = varpool_node (node->alias_of);
+          struct varpool_node *n;
+
+	  for (n = tgt; n && n->alias;
+	       n = n->analyzed ? varpool_alias_aliased_node (n) : NULL)
+	    if (n == node)
+	      {
+		error ("variable %q+D part of alias cycle", node->decl);
+		node->alias = false;
+		continue;
+	      }
 	  if (!VEC_length (ipa_ref_t, node->ref_list.references))
 	    ipa_record_reference (NULL, node, NULL, tgt, IPA_REF_ALIAS, NULL);
 	  /* C++ FE sometimes change linkage flags after producing same body aliases.  */

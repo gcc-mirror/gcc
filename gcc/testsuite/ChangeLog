@@ -1,3 +1,10 @@
+2012-02-02 Jan Hubicka  <jh@suse.cz>
+	   Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/51998
+	* testsuite/gcc.dg/alias-12.c: New testcase.
+	* testsuite/gcc.dg/alias-13.c: New testcase.
+
 2012-02-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52086
