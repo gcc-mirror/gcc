@@ -64,30 +64,8 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
-am__install_max = 40
-am__nobase_strip_setup = \
-  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
-am__nobase_strip = \
-  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
-am__nobase_list = $(am__nobase_strip_setup); \
-  for p in $$list; do echo "$$p $$p"; done | \
-  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
-  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
-    if (++n[$$2] == $(am__install_max)) \
-      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
-    END { for (dir in files) print dir, files[dir] }'
-am__base_list = \
-  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
-  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
-LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
-libc__98_la_LIBADD =
+LTLIBRARIES = $(noinst_LTLIBRARIES)
+libc__98convenience_la_LIBADD =
 am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
 	ctype_configure_char.lo ctype_members.lo messages_members.lo \
 	monetary_members.lo numeric_members.lo time_members.lo
@@ -114,9 +92,6 @@ am__objects_6 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
 	math_stubs_long_double.lo stdexcept.lo strstream.lo tree.lo \
 	istream.lo streambuf.lo valarray.lo $(am__objects_1) \
 	$(am__objects_5)
-am_libc__98_la_OBJECTS = $(am__objects_6)
-libc__98_la_OBJECTS = $(am_libc__98_la_OBJECTS)
-libc__98convenience_la_LIBADD =
 am_libc__98convenience_la_OBJECTS = $(am__objects_6)
 libc__98convenience_la_OBJECTS = $(am_libc__98convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -125,7 +100,7 @@ am__depfiles_maybe =
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
-SOURCES = $(libc__98_la_SOURCES) $(libc__98convenience_la_SOURCES)
+SOURCES = $(libc__98convenience_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 ABI_TWEAKS_SRCDIR = @ABI_TWEAKS_SRCDIR@
@@ -337,7 +312,6 @@ WARN_CXXFLAGS = \
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 
 # Convenience library for C++98 runtime.
-toolexeclib_LTLIBRARIES = libc++98.la
 noinst_LTLIBRARIES = libc++98convenience.la
 headers = 
 
@@ -423,7 +397,6 @@ sources = \
 	${host_sources} \
 	${host_sources_extra}
 
-libc__98_la_SOURCES = $(sources)
 libc__98convenience_la_SOURCES = $(sources)
 
 # Use special rules for the deprecated source files so that they find
@@ -528,39 +501,6 @@ clean-noinstLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
-	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)"
-	@list='$(toolexeclib_LTLIBRARIES)'; test -n "$(toolexeclibdir)" || list=; \
-	list2=; for p in $$list; do \
-	  if test -f $$p; then \
-	    list2="$$list2 $$p"; \
-	  else :; fi; \
-	done; \
-	test -z "$$list2" || { \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(toolexeclibdir)'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(toolexeclibdir)"; \
-	}
-
-uninstall-toolexeclibLTLIBRARIES:
-	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclib_LTLIBRARIES)'; test -n "$(toolexeclibdir)" || list=; \
-	for p in $$list; do \
-	  $(am__strip_dir) \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(toolexeclibdir)/$$f'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(toolexeclibdir)/$$f"; \
-	done
-
-clean-toolexeclibLTLIBRARIES:
-	-test -z "$(toolexeclib_LTLIBRARIES)" || rm -f $(toolexeclib_LTLIBRARIES)
-	@list='$(toolexeclib_LTLIBRARIES)'; for p in $$list; do \
-	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
-	  test "$$dir" != "$$p" || dir=.; \
-	  echo "rm -f \"$${dir}/so_locations\""; \
-	  rm -f "$${dir}/so_locations"; \
-	done
-libc++98.la: $(libc__98_la_OBJECTS) $(libc__98_la_DEPENDENCIES) 
-	$(CXXLINK) -rpath $(toolexeclibdir) $(libc__98_la_OBJECTS) $(libc__98_la_LIBADD) $(LIBS)
 libc++98convenience.la: $(libc__98convenience_la_OBJECTS) $(libc__98convenience_la_DEPENDENCIES) 
 	$(CXXLINK)  $(libc__98convenience_la_OBJECTS) $(libc__98convenience_la_LIBADD) $(LIBS)
 
@@ -640,9 +580,6 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES)
 installdirs:
-	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
-	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
-	done
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -671,7 +608,7 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
-	clean-toolexeclibLTLIBRARIES mostlyclean-am
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -f Makefile
@@ -696,7 +633,7 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-toolexeclibLTLIBRARIES
+install-exec-am:
 
 install-html: install-html-am
 
@@ -735,24 +672,22 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-toolexeclibLTLIBRARIES
+uninstall-am:
 
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-noinstLTLIBRARIES \
-	clean-toolexeclibLTLIBRARIES ctags distclean distclean-compile \
-	distclean-generic distclean-libtool distclean-tags dvi dvi-am \
-	html html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip \
-	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-toolexeclibLTLIBRARIES
+	clean-libtool clean-noinstLTLIBRARIES ctags distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags dvi dvi-am html html-am info info-am install \
+	install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags uninstall uninstall-am
 
 
 codecvt_members.cc: ${glibcxx_srcdir}/$(CCODECVT_CC)
