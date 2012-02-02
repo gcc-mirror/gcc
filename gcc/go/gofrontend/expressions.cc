@@ -10649,11 +10649,28 @@ Array_index_expression::do_get_tree(Translate_context* context)
 
   if (array_type->length() == NULL && !DECL_P(array_tree))
     array_tree = save_expr(array_tree);
-  tree length_tree = array_type->length_tree(gogo, array_tree);
-  if (length_tree == error_mark_node)
-    return error_mark_node;
-  length_tree = save_expr(length_tree);
-  tree length_type = TREE_TYPE(length_tree);
+
+  tree length_tree = NULL_TREE;
+  if (this->end_ == NULL || this->end_->is_nil_expression())
+    {
+      length_tree = array_type->length_tree(gogo, array_tree);
+      if (length_tree == error_mark_node)
+	return error_mark_node;
+      length_tree = save_expr(length_tree);
+    }
+
+  tree capacity_tree = NULL_TREE;
+  if (this->end_ != NULL)
+    {
+      capacity_tree = array_type->capacity_tree(gogo, array_tree);
+      if (capacity_tree == error_mark_node)
+	return error_mark_node;
+      capacity_tree = save_expr(capacity_tree);
+    }
+
+  tree length_type = (length_tree != NULL_TREE
+		      ? TREE_TYPE(length_tree)
+		      : TREE_TYPE(capacity_tree));
 
   tree bad_index = boolean_false_node;
 
@@ -10676,7 +10693,9 @@ Array_index_expression::do_get_tree(Translate_context* context)
 					       ? GE_EXPR
 					       : GT_EXPR),
 					      boolean_type_node, start_tree,
-					      length_tree));
+					      (this->end_ == NULL
+					       ? length_tree
+					       : capacity_tree)));
 
   int code = (array_type->length() != NULL
 	      ? (this->end_ == NULL
@@ -10723,12 +10742,6 @@ Array_index_expression::do_get_tree(Translate_context* context)
 
   // Array slice.
 
-  tree capacity_tree = array_type->capacity_tree(gogo, array_tree);
-  if (capacity_tree == error_mark_node)
-    return error_mark_node;
-  capacity_tree = fold_convert_loc(loc.gcc_location(), length_type,
-                                   capacity_tree);
-
   tree end_tree;
   if (this->end_->is_nil_expression())
     end_tree = length_tree;
@@ -10747,7 +10760,6 @@ Array_index_expression::do_get_tree(Translate_context* context)
 
       end_tree = fold_convert_loc(loc.gcc_location(), length_type, end_tree);
 
-      capacity_tree = save_expr(capacity_tree);
       tree bad_end = fold_build2_loc(loc.gcc_location(), TRUTH_OR_EXPR,
                                      boolean_type_node,
 				     fold_build2_loc(loc.gcc_location(),
