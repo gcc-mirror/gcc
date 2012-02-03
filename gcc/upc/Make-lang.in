@@ -161,18 +161,56 @@ upc/upc-gasp.o : upc/upc-gasp.c \
    upc/upc-rts-names.h
 
 #
+# Documentation
+
+UPC_TEXI_FILES = \
+	upc/gupc.texi \
+        $(gcc_docdir)/include/fdl.texi \
+	$(gcc_docdir)/include/gpl_v3.texi \
+	$(gcc_docdir)/include/gcc-common.texi \
+	gcc-vers.texi
+
+doc/gupc.info: upc/gupc.texi
+	if test "x$(BUILD_INFO)" = xinfo; then \
+	  rm -f doc/gupc.info*; \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -I. -I $(gcc_docdir) \
+		-I $(gcc_docdir)/include -o $@ $<; \
+	else true; fi
+
+doc/gupc.dvi: $(UPC_TEXI_FILES)
+	$(TEXI2DVI) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+
+doc/gupc.pdf: $(UPC_TEXI_FILES)
+	$(TEXI2PDF) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+
+$(build_htmldir)/upc/index.html: $(UPC_TEXI_FILES)
+	$(mkinstalldirs) $(@D)
+	rm -f $(@D)/*
+	$(TEXI2HTML) -I $(gcc_docdir) -I $(gcc_docdir)/include \
+		-I $(srcdir)/upc -o $(@D) $<
+
+.INTERMEDIATE: gupc.pod
+
+gupc.pod: upc/gupc.texi
+	-$(TEXI2POD) -D gupc < $< > $@
+
+#
 # Build hooks:
 
 upc.all.build:
 upc.all.cross:
 upc.start.encap:
 upc.rest.encap:
-upc.info:
-upc.man:
+upc.info: doc/gupc.info
+upc.dvi: doc/gupc.dvi
+upc.pdf: doc/gupc.pdf
+upc.html: $(build_htmldir)/upc/index.html
 upc.srcinfo:
-upc.srcman:
+	-cp -p $^ $(srcdir)/doc
+upc.man: doc/gupc.1
+upc.srcman: doc/gupc.1
+	-cp -p $^ $(srcdir)/doc
 upc.srcextra:
-upc.install-info:
 upc.install-pdf:
 upc.install-plugin:
 
@@ -186,44 +224,60 @@ lang_checks += check-upc
 # Install hooks:
 # cc1upc is installed elsewhere as part of $(COMPILERS).
 
-upc.install-normal:
-
 upc.install-common: cc1upc$(exeext) gupc$(exeext) installdirs
 	-rm -f $(DESTDIR)$(bindir)/$(GUPC_INSTALL_NAME)$(exeext)
 	$(INSTALL_PROGRAM) -m 755 gupc$(exeext) $(DESTDIR)$(bindir)/$(GUPC_INSTALL_NAME)$(exeext)
 	-rm -f $(DESTDIR)$(bindir)/$(GUPC_TARGET_INSTALL_NAME)$(exeext)
 	cd $(DESTDIR)$(bindir) && \
 	   $(LN) $(GUPC_INSTALL_NAME)$(exeext) $(GUPC_TARGET_INSTALL_NAME)$(exeext)
-	-rm -f $(DESTDIR)$(bindir)/upc$(exeext)
+	-rm -f $(DESTDIR)$(bindir)/$(UPC_INSTALL_NAME)$(exeext)
 	cd $(DESTDIR)$(bindir) && $(LN_S) $(GUPC_INSTALL_NAME)$(exeext) $(UPC_INSTALL_NAME)$(exeext)
 
+upc.install-plugin:
 
-.PHONY: upc.pdf upc.html
+upc.install-info: $(DESTDIR)$(infodir)/gupc.info
 
-upc.pdf:
+upc.install-pdf: doc/gupc.pdf
+	@$(NORMAL_INSTALL)
+	test -z "$(pdfdir)" || $(mkinstalldirs) "$(DESTDIR)$(pdfdir)/gcc"
+	@for p in doc/gupc.pdf; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(pdf__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(pdfdir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
+	done
 
-upc.html: $(build_htmldir)/upc/index.html
+upc.install-html: $(build_htmldir)/upc
+	@$(NORMAL_INSTALL)
+	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
+	@for p in $(build_htmldir)/upc; do \
+	  if test -f "$$p" || test -d "$$p"; then d=""; else d="$(srcdir)/"; fi; \
+	  f=$(html__strip_dir) \
+	  if test -d "$$d$$p"; then \
+	    echo " $(mkinstalldirs) '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(mkinstalldirs) "$(DESTDIR)$(htmldir)/$$f" || exit 1; \
+	    echo " $(INSTALL_DATA) '$$d$$p'/* '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p"/* "$(DESTDIR)$(htmldir)/$$f"; \
+	  else \
+	    echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(htmldir)/$$f"; \
+	  fi; \
+	done
 
-$(build_htmldir)/upc/index.html: $(srcdir)/upc/upc-manpage.html
-	$(mkinstalldirs) $(@D)
-	$(INSTALL_DATA) $< $@
+upc.install-man: $(DESTDIR)$(man1dir)/$(GUPC_INSTALL_NAME)$(man1ext)
 
-# Make sure `installdirs' target (from gcc Makefile) has been
-# run, since we use libsubdir to store our `flag' file, lang-upc.
-upc.install-man: $(srcdir)/upc/gupc.1 installdirs
-	case "$(LANGUAGES)" in \
-	  *[Uu][Pp][Cc]*) touch $(DESTDIR)$(libsubdir)/lang-upc;; \
-	  *) rm -f $(DESTDIR)$(libsubdir)/lang-upc;; \
-	esac
-	-if [ -f $(DESTDIR)$(libsubdir)/lang-upc -a -f cc1upc$(exeext) ] ; then \
-	    rm -f $(DESTDIR)$(man1dir)/upc$(man1ext); \
-	    $(INSTALL_DATA) $(srcdir)/upc/gupc.1 \
-	      $(DESTDIR)$(man1dir)/upc$(man1ext); \
-	    chmod a-x $(DESTDIR)$(man1dir)/upc$(man1ext); \
-	else true; fi
-	rm -f $(DESTDIR)$(libsubdir)/lang-upc
+$(DESTDIR)$(man1dir)/$(GUPC_INSTALL_NAME)$(man1ext): doc/gupc.1 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
 upc.uninstall:
+	rm -rf $(DESTDIR)$(bindir)/$(GUPC_INSTALL_NAME)$(exeext)
+	rm -rf $(DESTDIR)$(bindir)/$(UPC_INSTALL_NAME)$(exeext)
+	rm -rf $(DESTDIR)$(man1dir)/$(GUPC_INSTALL_NAME)$(man1ext)
+	rm -rf $(DESTDIR)$(bindir)/$(GUPC_TARGET_INSTALL_NAME)$(exeext)
+	rm -rf $(DESTDIR)$(infodir)/gupc.info*
+
 #
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.

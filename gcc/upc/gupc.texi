@@ -1,0 +1,383 @@
+\input texinfo @c -*-texinfo-*-
+@setfilename gupc
+@settitle GNU project UPC compiler
+
+@c Merge the standard indexes into a single one.
+@syncodeindex fn cp
+@syncodeindex vr cp
+@syncodeindex ky cp
+@syncodeindex pg cp
+@syncodeindex tp cp
+
+@include gcc-common.texi
+
+@c Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 
+@c 2010, 2011, 2012 Free Software Foundation, Inc.
+@c Contributed by Gary Funck <gary@intrepid.com>
+@c   and Nenad Vukicevic <nenad@intrepid.com>.
+@c Based on original implementation
+@c   by Jesse M. Draper <jdraper@super.org>
+@c   and William W. Carlson <wwc@super.org>.
+
+@ignore
+@c man begin COPYRIGHT
+Copyright @copyright{} 1996, 1997, 1999, 2000, 2001, 2002, 2003, 2004,
+2005, 2008, 2010, 2011, 2012  Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``GNU General Public License'' and ``Funding
+Free Software'', the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the gfdl(7) man page.
+
+(a) The FSF's Front-Cover Text is:
+
+     A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+     You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.
+@c man end
+@c Set file name and title for the man page.
+@end ignore
+
+@node Top
+@chapter @command{gupc}--- UPC compiler for parallel computers
+
+@command{gupc} provides a compilation and execution environment for
+programs written in the UPC (Unified Parallel C) language. 
+
+@menu
+* Gupc Intro::		Introduction to gupc.
+* Threads::		Number of Execution Threads.
+* Invoking Gupc::	How to use gupc.
+* Gupc Options::	Gupc Options.
+* Seealso::		Referencies.
+* Gupc Bugs::		Report Gupc Problems.
+* Contributors::	Gupc Contributors.
+* Index::		Index.
+@end menu
+
+@node Gupc Intro
+@section Introduction to @command{gupc}
+@c man begin DESCRIPTION
+
+@command{gupc} is an extension to the GNU Compiler Collection from the
+Free Software Foundation.  In addition to the options specified here,
+all of the normal options listed in the man pages for @command{gcc}
+are available.
+
+The @command{gupc} compiler is integrated with the @command{gcc} compiler.
+The @command{gupc} compiler processes input files through one or more of
+four stages: pre-processing, compilation, assembly, and linking.
+
+Suffixes of source file names indicate the language and kind of
+processing to be done:
+
+@table @gcctabopt
+@item @file{file}.upc
+UPC source; pre-process, compile, assemble
+
+@item @file{file}.upci
+Pre-processed UPC source; compile, assemble
+
+@item @file{file}.h
+Pre-processor header file; not usually named on command line
+
+@item @file{file}.c
+Files will be compiled as UPC source, unless preceded by @option{-x c}
+
+@item @file{file}.i
+Pre-processed source code; compile, assemble
+
+@item @file{file}.s
+Assembler source files; assemble
+@end table
+
+Files with other suffixes are passed to the linker.  Common cases include:
+
+@table @gcctabopt
+@item @file{file}.o
+Object file
+@item @file{file}.a
+Archive file
+@end table
+
+Linking is always the last stage unless you use one of the @option{-c},
+@option{-S}, or @option{-E} options to avoid linking.  Compilation errors
+also stop the process, and the linker is not invoked.  For the link stage,
+all @file{.o} files correspond to source files, and all @option{-l}
+options correspond to libraries.  Named @file{.o} object files, @file{.a}
+archives, and any file names unrecognized by @command{gupc} are passed
+to the linker in command-line order.
+
+@node Threads
+@section Number of Threads
+
+Within a UPC program, the special symbol THREADS refers to the number
+of parallel execution threads.  On each thread, the special symbol
+MYTHREAD refers to the thread number.  The number of threads in a UPC
+application can be specified statically at compile-time or dynamically
+at execution time.  Generally, the number of threads should not exceed
+the number of physical central processing units or cores.
+
+If the number of threads is specified statically at compile-time,
+the special symbol THREADS is a constant and can be used freely in any
+context where a constant is required by the C language specification
+(for example, in array dimensions in an array declaration).  See the
+@option{-fupc-threads-N} compilation option.
+
+If the number of threads is specified dynamically at execution time, the
+special symbol THREADS is assigned at run-time, and THREADS can be used
+in array declarations only if the array is qualified as @code{shared} and
+only if one and only one of the shared array's dimensions is specified
+as an integral multiple of THREADS.  See the @option{-fupc-threads-N}
+execution option.
+
+@c man end
+
+@node Invoking Gupc
+@section Invoking @command{gupc}
+
+@c man begin SYNOPSIS
+gupc @r{[}@var{options}@r{]} @file{files}
+@c man end
+
+@node Gupc Options
+@section @command{gupc} Options
+
+@c man begin OPTIONS
+@command{gupc} accepts the following UPC-specific options:
+
+@subsection Information Options
+@table @gcctabopt
+@item -v
+@cindex @option{-v}
+Print (on standard error output) the commands executed to run the stages 
+of compilation.  Also print the version number of the compiler driver 
+program and of the preprocessor and the compiler proper.
+@end table
+
+@subsection Language Options
+
+@table @gcctabopt
+@item -x upc
+@cindex @option{-x}
+All source files ending in @file{.upc} or @file{.upci} will be compiled by 
+the @command{gupc} compiler. The @option{-x upc} option tells the compiler
+to process all of the following file names as UPC source code, ignoring 
+the default language typically associated with filename extensions.
+
+@item -n N
+@itemx -fupc-threads-N
+Specify the number of threads at compile-time as @option{N}.  See the
+Number of Threads section, above.
+
+@item -fupc-pthreads-model-tls
+@cindex @option{-fupc-pthreads-model-tls}
+Compile for the POSIX threads (pthreads) environment. Each UPC thread
+is directly mapped to one pthread.
+
+@item -fupc-inline-lib
+@cindex @option{-fupc-inline-lib}
+Inline UPC run-time library calls. This option is turned on by default 
+when compiled with optimization and the @option{-fno-upc-inline-lib} option 
+must be specified to turn it off. In general, inlining of run-time 
+library calls produces larger code. Turn it off if more 
+condensed code is required.
+@end table
+
+@subsection Debugging Options
+
+@table @gcctabopt
+@item -g
+@cindex @option{-g}
+Produce symbolic debugging information
+
+@item -dwarf-2-upc
+@cindex @option{-dwarf-2-upc}
+Generate UPC-specific symbolic DWARF-2 debugging information.  This
+debugging information is processed by UPC-aware debuggers including
+GDB-UPC, a variant of the GDB debugger, and the commercially available
+Totalview debugger.
+
+@item -fupc-debug
+@cindex @option{-fupc-debug}
+Generate calls to the UPC run-time library that include source filename and line
+number information that is used to print more informative error messages when
+errors are detected at run-time.
+@end table
+
+@subsection Instrumentation Options
+
+@table @gcctabopt
+@item --inst
+@cindex @option{--inst}
+@itemx -fupc-instrument
+@cindex @option{-fupc-instrument}
+Instrument UPC shared accesses and library calls using GASP tool 
+support. This option implies @option{-fno-upc-inline-lib}.
+
+@item --inst-functions
+@cindex @option{--inst-functions}
+@itemx -fupc-instrument-functions
+@cindex @option{-fupc-instrument-functions}
+Instrument functions calls using GASP tool support. This option implies 
+@option{-fupc-instrument} and @option{-fno-upc-inline-lib}.
+@end table
+
+@subsection Optimization Options
+
+@table @gcctabopt
+@item -O0, -O1, -O2
+Specify the optimization level. This is a standard GCC option that is
+especially important for UPC because it enables instruction scheduling,
+which increases performance dramatically for distributed data access.
+Optimizations that involve a space-speed trade off, such as loop unrolling
+and function inlining, are not performed.  Nearly all other supported
+optimizations are performed.
+@end table
+
+@subsection Execution (Run-time) Options
+
+This section describes options that are specified on the command
+line when you invoke a UPC program.  These options are recognized by
+the UPC run-time.  Before calling the @code{main()} function of a UPC
+program, the UPC run-time removes all options that begin with the prefix
+@option{-fupc-} and that immediately follow the UPC program name on the
+command line.
+
+@file{UPC_program}
+@r{[}@option{number of threads}@r{]}
+@r{[}@option{heap size}@r{]}
+@r{[}@option{affinity options}@r{]} 
+@r{[}@option{program arguments}@r{]}
+
+@table @gcctabopt
+@item -n N
+@cindex @option{-n}
+@itemx -fupc-threads-N
+@cindex @option{-fupc-threads-}
+Specifies, at run-time, the number of parallel execution threads
+as @option{N}.  If the UPC program was not compiled with the
+@option{-fupc-threads-N} option, either the @option{-fupc-threads-N}
+or @option{-n N} command-line option is required when you invoke the
+UPC program.  See the Number of Threads section, above.
+
+@item -fupc-heap-HEAPSIZE
+@cindex @option{-fupc-heap}
+Specifies the size of the heap available to each thread
+as @option{HEAPSIZE}.  A suffix of @option{K} indicates that
+@option{HEAPSIZE} is expressed in kilobytes (2^10 bytes).  A suffix
+of @option{M} indicates that @option{HEAPSIZE} is expressed in
+megabytes (2^20 bytes).  A suffix of @option{G} indicates that
+@option{HEAPSIZE} is expressed in gigabytes (2^30 bytes).  If a
+suffix is not present, @option{HEAPSIZE} is expressed in bytes.  If the
+@option{-fupc-heap-HEAPSIZE} option is not supplied, the run-time system
+will use a default heap size of 16 megabytes per thread.
+@end table
+
+The following options specify thread scheduling and NUMA policies:
+
+@table @gcctabopt
+@item -sched-policy @r{[}cpu|strict|node|auto@r{]}
+@cindex @option{-sched-policy}
+Specifies the scheduling policy for threads.
+
+@table @gcctabopt
+@item cpu
+specifies that threads are evenly scheduled over available CPUs.
+(A CPU is a processor with a single core or a core unit in a multicore
+processor.)
+@item strict
+is similar to cpu scheduling except that one to one mapping of 
+threads and CPUs is required.
+@item node
+specifies that threads are scheduled on nodes if a NUMA-aware kernel 
+is available. 
+@item auto
+specifies that the UPC run-time should not manage scheduling of UPC threads.
+@end table
+
+@item -sched-cpu-avoid n1,n2,.. 
+@cindex @option{-sched-cpu-avoid}
+Specifies the availability of CPUs for UPC thread scheduling.  The UPC
+run-time will not schedule any thread on the specified CPUs.
+
+@item -mem-policy @r{[}node,strict,auto@r{]}
+@cindex @option{-mem-policy}
+Specifies the memory allocation policy if a NUMA-aware kernel is available.
+
+@table @gcctabopt
+@item node
+allocates memory first from the node on which a thread is scheduled to run.
+@item strict
+allocates memory only from the node on which a thread is scheduled to run.
+@item  auto
+lets the kernel decide the memory allocation policy.
+@end table
+@end table
+@c man end
+
+@node Seealso
+@section Referencies
+@c man begin SEEALSO
+gcc(1), cpp(1), as(1), ld(1), gdb(1), adb(1), dbx(1), sdb(1).
+
+
+@uref{http://upc.lbl.gov/publications/UPC-TR-Original99.pdf} 
+Introduction to UPC and Language Specification, 
+William W. Carlson et al., LLNL, CCS-TR-99-157, May 13, 1999
+
+
+@uref{http://www.gwu.edu/~upc/docs/upc_specs_1.2.pdf} 
+UPC Language Specification, 
+Tarek A. El-Ghazawi et al, February 25, 2001
+
+
+@uref{http://gasp.hcs.ufl.edu/} 
+GASP Tool Interface, 
+University of Florida
+
+@uref{http://www.gccupc.org} 
+GNU UPC web site
+
+@uref{http://www.gwu.edu/~upc/software/gnu-upc-ml.html} 
+GNU UPC Mailing List is an electronic forum for discussing 
+news announcements, bug reports, planned developments, and other 
+topics of interest to GNU UPC developers and users.
+@c man end 
+
+@node Gupc Bugs
+@section Report Gupc Problems
+@c man begin BUGS
+Report bugs at @uref{http://gccupc.org/bugs}.
+@c man end
+
+@node Contributors
+@section Contributors to GUPC
+
+The current developers and maintainers of GUPC are
+Gary Funck @email{gary@@intrepid.com} and
+Nenad Vukicevic @email{nenad@@intrepid.com}.
+
+GUPC was originally implemented by
+Jesse M. Draper @email{jdraper@@super.org} and
+William W. Carlson @email{wwc@@super.org}.
+
+@c man begin AUTHOR
+See the Info entry for @command{gupc}, or
+@uref{http://gcc.gnu.org/onlinedocs/gcc/Contributors.html} 
+for contributors to GCC and GUPC.
+@c man end
+
+@node Index
+@section Index
+
+@printindex cp
+
+@bye
