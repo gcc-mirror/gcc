@@ -507,6 +507,7 @@ if test -n "$cmsghdr"; then
         -e 's/cmsg_len *[a-zA-Z0-9_]*/Len Cmsghdr_len_t/' \
         -e 's/cmsg_level/Level/' \
         -e 's/cmsg_type/Type/' \
+        -e 's/\[\]/[0]/' \
       >> ${OUT}
 
   # The size of the cmsghdr struct.
