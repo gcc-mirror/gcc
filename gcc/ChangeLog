@@ -1,3 +1,12 @@
+2012-02-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2011-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/51118
+	* fold-const.c (fold_checksum_tree): Check for TS_TYPED structure
+	before using TREE_TYPE accessor on expr.
+
 2012-01-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from mainline r183796
@@ -30,7 +39,7 @@
 2012-01-30  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	Backport from mainline.
-        2012-01-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+	2012-01-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	PR target/50313
 	* config/arm/arm.c (arm_load_pic_register): Use
