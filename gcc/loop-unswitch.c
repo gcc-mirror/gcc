@@ -1,5 +1,5 @@
 /* Loop unswitching for GNU compiler.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -367,7 +367,7 @@ unswitch_single_loop (struct loop *loop, rtx cond_checked, int num)
     fprintf (dump_file, ";; Unswitching loop\n");
 
   /* Unswitch the loop on this condition.  */
-  nloop = unswitch_loop (loop, bbs[i], cond, cinsn);
+  nloop = unswitch_loop (loop, bbs[i], copy_rtx_if_shared (cond), cinsn);
   gcc_assert (nloop);
 
   /* Invoke itself on modified loops.  */
