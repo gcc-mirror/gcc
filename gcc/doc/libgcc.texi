@@ -106,8 +106,8 @@ These functions return the quotient of the unsigned division of @var{a}
 and @var{b}.
 @end deftypefn
 
-@deftypefn {Runtime Function} {unsigned long} __udivmoddi3 (unsigned long @var{a}, unsigned long @var{b}, unsigned long *@var{c})
-@deftypefnx {Runtime Function} {unsigned long long} __udivti3 (unsigned long long @var{a}, unsigned long long @var{b}, unsigned long long *@var{c})
+@deftypefn {Runtime Function} {unsigned long} __udivmoddi4 (unsigned long @var{a}, unsigned long @var{b}, unsigned long *@var{c})
+@deftypefnx {Runtime Function} {unsigned long long} __udivmodti4 (unsigned long long @var{a}, unsigned long long @var{b}, unsigned long long *@var{c})
 These functions calculate both the quotient and remainder of the unsigned
 division of @var{a} and @var{b}.  The return value is the quotient, and
 the remainder is placed in variable pointed to by @var{c}.

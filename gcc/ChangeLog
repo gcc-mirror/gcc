@@ -1,3 +1,9 @@
+2012-02-02  Andrew Pinski  <apinski@cavium.com>
+
+	PR middle-end/47982
+	PR middle-end/43967
+	* doc/libgcc.texi (__udivmoddi4/__udivmodti4): Fix documentation typo.
+
 2012-02-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/48071
