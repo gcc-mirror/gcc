@@ -1,3 +1,10 @@
+2012-02-02  Kai Tietz  <ktietz@redhat.com>
+
+	PR libjava/48512
+	* configure.ac (THREADSTARTFILESPEC): Don't add crtmet.o file for
+	w64 windows targets.
+	* configure: Regenerated.
+
 2012-02-01  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/51500
