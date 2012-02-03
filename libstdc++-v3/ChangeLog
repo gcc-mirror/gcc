@@ -1,3 +1,10 @@
+2012-02-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/51811
+	* include/bits/atomic_base.h (atomic<_Tp*>): Fix offsets.
+	* testsuite/29_atomics/atomic/operators/51811.cc: New.
+	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc: New.
+
 2012-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
