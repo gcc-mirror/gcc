@@ -1,5 +1,10 @@
 2012-02-03  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/49445
+	* testsuite/29_atomics/atomic/cons/49445.cc: Add.
+
+2012-02-03  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/51811
 	* include/bits/atomic_base.h (atomic<_Tp*>): Fix offsets.
 	* testsuite/29_atomics/atomic/operators/51811.cc: New.
