@@ -5583,6 +5583,7 @@ gfc_simplify_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 	  case INTRINSIC_NOT:
 	  case INTRINSIC_UPLUS:
 	  case INTRINSIC_UMINUS:
+	  case INTRINSIC_PARENTHESES:
 	    replacement = array->value.op.op1;
 	    break;
 
