@@ -1,3 +1,8 @@
+2012-02-01  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/trans.c (Loop_Statement_to_gnu): Use sizetype
+	instead of size_type_node.
+
 2012-01-30  Nicolas Roche  <roche@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.
