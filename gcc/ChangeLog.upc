@@ -2,9 +2,9 @@
 
 	* c-family/c-pragma.c (disable_pupc_mode): New. Disable profiling
 	code generation (same as #pragma pupc off).
-	(set_pucp_mode): New. Set/restore profiling mode.
+	(set_pupc_mode): New. Set/restore profiling mode.
 	* c-family/c-upc.h (disable_pupc_mode): New. Prototype.
-	(set_pucp_mode): New. Prototype.
+	(set_pupc_mode): New. Prototype.
 	* upc/upc-act.c (upc_write_init_func): Disable emitting of the
 	profiling code for shared variables initialization routines. 
 
