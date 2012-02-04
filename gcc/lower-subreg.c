@@ -1,5 +1,6 @@
 /* Decompose multiword subregs.
-   Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012
+   Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
 		  Ian Lance Taylor <iant@google.com>
 
@@ -1135,10 +1136,11 @@ decompose_multiword_subregs (void)
 	      || GET_CODE (PATTERN (insn)) == USE)
 	    continue;
 
+	  recog_memoized (insn);
+
 	  if (find_decomposable_shift_zext (insn))
 	    continue;
 
-	  recog_memoized (insn);
 	  extract_insn (insn);
 
 	  set = simple_move (insn);

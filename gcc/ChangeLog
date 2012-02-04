@@ -1,3 +1,9 @@
+2012-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/52113
+	* lower-subreg.c (decompose_multiword_subregs): Call recog_memoized
+	even for decomposable shift/zext insns.
+
 2012-02-03  Jakub Jelinek  <jakub@redhat.com>
 	    Zdenek Dvorak  <ook@ucw.cz>
 
