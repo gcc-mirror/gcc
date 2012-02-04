@@ -999,6 +999,17 @@ func (ct *commonType) ptrTo() *commonType {
 		return &p.commonType
 	}
 
+	s := "*" + *ct.string
+
+	canonicalTypeLock.RLock()
+	r, ok := canonicalType[s]
+	canonicalTypeLock.RUnlock()
+	if ok {
+		ptrMap.m[ct] = (*ptrType)(unsafe.Pointer(r.(*commonType)))
+		ptrMap.Unlock()
+		return r.(*commonType)
+	}
+
 	rp := new(runtime.PtrType)
 
 	// initialize p using *byte's ptrType as a prototype.
@@ -1008,7 +1019,6 @@ func (ct *commonType) ptrTo() *commonType {
 	bp := (*ptrType)(unsafe.Pointer(unsafe.Typeof((*byte)(nil)).(*runtime.PtrType)))
 	*p = *bp
 
-	s := "*" + *ct.string
 	p.string = &s
 
 	// For the type structures linked into the binary, the
@@ -1016,11 +1026,15 @@ func (ct *commonType) ptrTo() *commonType {
 	// Create a good hash for the new string by using
 	// the FNV-1 hash's mixing function to combine the
 	// old hash and the new "*".
-	p.hash = ct.hash*16777619 ^ '*'
+	// p.hash = ct.hash*16777619 ^ '*'
+	// This is the gccgo version.
+	p.hash = (ct.hash << 4) + 9
 
 	p.uncommonType = nil
 	p.ptrToThis = nil
 	p.elem = (*runtime.Type)(unsafe.Pointer(ct))
+
+	p = canonicalize(p).(*ptrType)
 
 	ptrMap.m[ct] = p
 	ptrMap.Unlock()
