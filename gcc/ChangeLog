@@ -1,5 +1,9 @@
 2012-02-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/52095
+	* modulo-sched.c (dump_insn_locator): New function.
+	(loop_canon_p, sms_schedule): Use it.
+
 	PR rtl-optimization/52113
 	* lower-subreg.c (decompose_multiword_subregs): Call recog_memoized
 	even for decomposable shift/zext insns.
