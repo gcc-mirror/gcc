@@ -1,5 +1,5 @@
 /* Swing Modulo Scheduling implementation.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Ayal Zaks and Mustafa Hagog <zaks,mustafa@il.ibm.com>
 
@@ -1246,6 +1246,19 @@ loop_single_full_bb_p (struct loop *loop)
   return true;
 }
 
+/* Dump file:line from INSN's location info to dump_file.  */
+
+static void
+dump_insn_locator (rtx insn)
+{
+  if (dump_file && INSN_LOCATOR (insn))
+    {
+      const char *file = insn_file (insn);
+      if (file)
+	fprintf (dump_file, " %s:%i", file, insn_line (insn));
+    }
+}
+
 /* A simple loop from SMS point of view; it is a loop that is composed of
    either a single basic block or two BBs - a header and a latch.  */
 #define SIMPLE_SMS_LOOP_P(loop) ((loop->num_nodes < 3 ) 		    \
@@ -1271,9 +1284,9 @@ loop_canon_p (struct loop *loop)
 	{
 	  rtx insn = BB_END (loop->header);
 
-	  fprintf (dump_file, "SMS loop many exits ");
-	  	  fprintf (dump_file, " %s %d (file, line)\n",
-			   insn_file (insn), insn_line (insn));
+	  fprintf (dump_file, "SMS loop many exits");
+	  dump_insn_locator (insn);
+	  fprintf (dump_file, "\n");
 	}
       return false;
     }
@@ -1284,9 +1297,9 @@ loop_canon_p (struct loop *loop)
 	{
 	  rtx insn = BB_END (loop->header);
 
-	  fprintf (dump_file, "SMS loop many BBs. ");
-	  fprintf (dump_file, " %s %d (file, line)\n",
-		   insn_file (insn), insn_line (insn));
+	  fprintf (dump_file, "SMS loop many BBs.");
+	  dump_insn_locator (insn);
+	  fprintf (dump_file, "\n");
 	}
       return false;
     }
@@ -1407,13 +1420,13 @@ sms_schedule (void)
         }
 
       if (dump_file)
-      {
-         rtx insn = BB_END (loop->header);
+	{
+	  rtx insn = BB_END (loop->header);
 
-         fprintf (dump_file, "SMS loop num: %d, file: %s, line: %d\n",
-                  loop->num, insn_file (insn), insn_line (insn));
-
-      }
+	  fprintf (dump_file, "SMS loop num: %d", loop->num);
+	  dump_insn_locator (insn);
+	  fprintf (dump_file, "\n");
+	}
 
       if (! loop_canon_p (loop))
         continue;
@@ -1440,9 +1453,8 @@ sms_schedule (void)
 	{
 	  if (dump_file)
 	    {
-	      fprintf (dump_file, " %s %d (file, line)\n",
-		       insn_file (tail), insn_line (tail));
-	      fprintf (dump_file, "SMS single-bb-loop\n");
+	      dump_insn_locator (tail);
+	      fprintf (dump_file, "\nSMS single-bb-loop\n");
 	      if (profile_info && flag_branch_probabilities)
 	    	{
 	      	  fprintf (dump_file, "SMS loop-count ");
@@ -1543,14 +1555,15 @@ sms_schedule (void)
         continue;
 
       if (dump_file)
-      {
-         rtx insn = BB_END (loop->header);
+	{
+	  rtx insn = BB_END (loop->header);
 
-         fprintf (dump_file, "SMS loop num: %d, file: %s, line: %d\n",
-                  loop->num, insn_file (insn), insn_line (insn));
+	  fprintf (dump_file, "SMS loop num: %d", loop->num);
+	  dump_insn_locator (insn);
+	  fprintf (dump_file, "\n");
 
-         print_ddg (dump_file, g);
-      }
+	  print_ddg (dump_file, g);
+	}
 
       get_ebb_head_tail (loop->header, loop->header, &head, &tail);
 
@@ -1561,9 +1574,8 @@ sms_schedule (void)
 
       if (dump_file)
 	{
-	  fprintf (dump_file, " %s %d (file, line)\n",
-		   insn_file (tail), insn_line (tail));
-	  fprintf (dump_file, "SMS single-bb-loop\n");
+	  dump_insn_locator (tail);
+	  fprintf (dump_file, "\nSMS single-bb-loop\n");
 	  if (profile_info && flag_branch_probabilities)
 	    {
 	      fprintf (dump_file, "SMS loop-count ");
@@ -1705,9 +1717,9 @@ sms_schedule (void)
 
           if (dump_file)
             {
-	      fprintf (dump_file,
-		       "%s:%d SMS succeeded %d %d (with ii, sc)\n",
-		       insn_file (tail), insn_line (tail), ps->ii, stage_count);
+	      dump_insn_locator (tail);
+	      fprintf (dump_file, " SMS succeeded %d %d (with ii, sc)\n",
+		       ps->ii, stage_count);
 	      print_partial_schedule (ps, dump_file);
 	    }
  
