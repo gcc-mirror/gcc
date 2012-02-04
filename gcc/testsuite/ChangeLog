@@ -1,3 +1,8 @@
+2012-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/52113
+	* gcc.target/avr/pr52113.c: New test.
+
 2012-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/52092
