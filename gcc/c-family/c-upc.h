@@ -37,6 +37,8 @@ extern int count_upc_threads_refs (tree);
 extern void deny_pragma_upc (void);
 extern int get_upc_consistency_mode (void);
 extern int get_upc_pupc_mode(void);
+extern int disable_pupc_mode(void);
+extern void set_pupc_mode(int);
 extern int is_multiple_of_upc_threads (tree);
 extern void permit_pragma_upc (void);
 extern void pop_upc_consistency_mode (void);

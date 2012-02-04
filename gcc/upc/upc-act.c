@@ -1498,7 +1498,9 @@ upc_write_init_func (void)
 {
   if (upc_init_stmt_list)
     {
+      int pupc_mode = disable_pupc_mode ();
       upc_build_init_func (upc_init_stmt_list);
+      set_pupc_mode (pupc_mode);
       upc_init_stmt_list = NULL;
     }
 }

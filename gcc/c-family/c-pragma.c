@@ -688,7 +688,7 @@ push_upc_consistency_mode (void)
 }
 
 /* Called at the end of every compound statement.
-   Sets the current consistenty mode to the previously saved value. */
+   Sets the current consistency mode to the previously saved value. */
 
 void
 pop_upc_consistency_mode (void)
@@ -711,6 +711,16 @@ static void init_pragma_pupc(void)
 int get_upc_pupc_mode(void)
 {
   return pragma_pupc_on;
+}
+
+int disable_pupc_mode(void)
+{
+  pragma_pupc_on = 0;
+}
+
+void set_pupc_mode(int new_pupc)
+{
+  pragma_pupc_on = new_pupc;
 }
 
 /*
