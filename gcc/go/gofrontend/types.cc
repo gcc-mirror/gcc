@@ -1658,7 +1658,12 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
 
   ++p;
   go_assert(p->is_field_name("hash"));
-  mpz_set_ui(iv, this->hash_for_method(gogo));
+  unsigned int h;
+  if (name != NULL)
+    h = name->hash_for_method(gogo);
+  else
+    h = this->hash_for_method(gogo);
+  mpz_set_ui(iv, h);
   vals->push_back(Expression::make_integer(&iv, p->type(), bloc));
 
   ++p;
