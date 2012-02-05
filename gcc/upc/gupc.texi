@@ -167,10 +167,11 @@ program and of the preprocessor and the compiler proper.
 @table @gcctabopt
 @item -x upc
 @cindex @option{-x}
-All source files ending in @file{.upc} or @file{.upci} will be compiled by 
-the @command{gupc} compiler. The @option{-x upc} option tells the compiler
-to process all of the following file names as UPC source code, ignoring 
-the default language typically associated with filename extensions.
+All source files ending in @file{.upc}, @file{.c}, or @file{.upci} will
+be compiled by the @command{gupc} compiler. The @option{-x upc} option
+tells the compiler to process all of the following file names as 
+UPC source code, ignoring the default language typically associated 
+with filename extensions.
 
 @item -n N
 @itemx -fupc-threads-N
