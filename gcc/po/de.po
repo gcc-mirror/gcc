@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.7-b20120128\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2012-01-27 16:13+0000\n"
-"PO-Revision-Date: 2012-01-30 22:51+0200\n"
+"PO-Revision-Date: 2012-02-05 23:21+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -2636,9 +2636,9 @@ msgid "predicated instruction in conditional sequence"
 msgstr "angegebene Anweisung in bedingter Sequenz"
 
 #: config/arm/arm.c:17247
-#, fuzzy, c-format
+#, c-format
 msgid "Unsupported operand for code '%c'"
-msgstr "ungültiger Operand für Code »%c«"
+msgstr "Operand für Code »%c« nicht unterstützt"
 
 #: config/arm/arm.c:17295
 #, c-format
@@ -2683,19 +2683,16 @@ msgid "address operand requires constraint for X, Y, or Z register"
 msgstr "Adressoperand erfordert Beschränkung für X-, Y- oder Z-Register"
 
 #: config/avr/avr.c:1851
-#, fuzzy
 msgid "operands to %T/%t must be reg + const_int:"
-msgstr "Ausgabeoperand %d muss %<&%>-Bedingung verwenden"
+msgstr "Operanden für %T/%t müssen reg + const_int sein:"
 
 #: config/avr/avr.c:1883 config/avr/avr.c:1938
-#, fuzzy
 msgid "bad address, not an I/O address:"
-msgstr "Falsche Adresse, nicht (reg+disp):"
+msgstr "falsche Adresse, keine E/A-Adresse:"
 
 #: config/avr/avr.c:1892
-#, fuzzy
 msgid "bad address, not a constant:"
-msgstr "falsche Adresse, keine Konstante):"
+msgstr "falsche Adresse, keine Konstante:"
 
 #: config/avr/avr.c:1910
 msgid "bad address, not (reg+disp):"
@@ -3730,9 +3727,8 @@ msgid "{anonymous}"
 msgstr "{anonym}"
 
 #: cp/error.c:1128
-#, fuzzy
 msgid "<template arguments error>"
-msgstr "<Template-Parameter-Fehler>"
+msgstr "<Template-Argumente-Fehler>"
 
 #: cp/error.c:1149
 msgid "<enumerator>"
@@ -3805,54 +3801,49 @@ msgid "In lambda function"
 msgstr "In Lambda-Funktion"
 
 #: cp/error.c:3003
-#, fuzzy, c-format
+#, c-format
 msgid "%s: In substitution of %qS:\n"
-msgstr "%s: In Instanziierung von %qs:\n"
+msgstr "%s: In Ersetzung von %qS:\n"
 
 #: cp/error.c:3004
-#, fuzzy
 msgid "%s: In instantiation of %q#D:\n"
-msgstr "%s: In Instanziierung von %qs:\n"
+msgstr "%s: In Instanziierung von %q#D:\n"
 
 #: cp/error.c:3027
 #, c-format
 msgid "%s:%d:%d:   "
-msgstr ""
+msgstr "%s:%d:%d:   "
 
 #: cp/error.c:3030
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d:   "
-msgstr "%s:%3d %s\n"
+msgstr "%s:%d:   "
 
 #: cp/error.c:3038
 #, c-format
 msgid "recursively required by substitution of %qS\n"
-msgstr ""
+msgstr "rekursiv erforderlich durch Ersetzung von %qS\n"
 
 #: cp/error.c:3039
 #, c-format
 msgid "required by substitution of %qS\n"
-msgstr ""
+msgstr "erforderlich durch Ersetzung von %qS\n"
 
 #: cp/error.c:3044
-#, fuzzy
 msgid "recursively required from %q#D\n"
-msgstr "%s:%d:   rekursiv instanziiert von %qs\n"
+msgstr "rekursiv erfordert von %q#D\n"
 
 #: cp/error.c:3045
-#, fuzzy
 msgid "required from %q#D\n"
-msgstr "für %q+D bereitgestellt"
+msgstr "erfordert durch %q#D\n"
 
 #: cp/error.c:3052
-#, fuzzy
 msgid "recursively required from here"
-msgstr "%s:%d:   rekursiv instanziiert von hier"
+msgstr "rekursiv erfordert von hier"
 
 #: cp/error.c:3053
-#, fuzzy
 msgid "required from here"
-msgstr "von hier aufgerufen"
+msgstr "von hier erfordert"
 
 #: cp/error.c:3095
 #, c-format
@@ -4408,9 +4399,9 @@ msgid "Unequal character lengths (%ld/%ld) in %s"
 msgstr "Ungleiche Zeichenlängen (%ld/%ld) in %s"
 
 #: fortran/trans-intrinsic.c:6054
-#, fuzzy, c-format
+#, c-format
 msgid "Argument NCOPIES of REPEAT intrinsic is negative (its value is %ld)"
-msgstr "Argument NCOPIES des intrinsischen REPEAT ist negativ (sein Wert ist %lld)"
+msgstr "Argument NCOPIES des intrinsischen REPEAT ist negativ (sein Wert ist %ld)"
 
 #: fortran/trans-intrinsic.c:6086
 msgid "Argument NCOPIES of REPEAT intrinsic is too large"
@@ -4476,17 +4467,16 @@ msgid "lseek failed while reading export data"
 msgstr ""
 
 #: go/go-backend.c:177
-#, fuzzy
 msgid "memory allocation failed while reading export data"
-msgstr "Speicherreservierung gescheitert"
+msgstr "Speicherreservierung beim Lesen der Export-Daten gescheitert"
 
 #: go/go-backend.c:185
 msgid "read failed while reading export data"
-msgstr ""
+msgstr "Lesen der Export-Daten gescheitert"
 
 #: go/go-backend.c:191
 msgid "short read while reading export data"
-msgstr ""
+msgstr "zu wenig Export-Daten gelesen"
 
 #: java/jcf-dump.c:1063
 #, c-format
@@ -4638,9 +4628,8 @@ msgid "%s: Failed to close output file %s\n"
 msgstr "%s: Ausgabedatei %s konnte nicht geschlossen werden\n"
 
 #: gcc.c:654
-#, fuzzy
 msgid "-fuse-linker-plugin is not supported in this configuration"
-msgstr "ifunc wird in dieser Konfiguration nicht unterstützt"
+msgstr "-fuse-linker-plugin wird in dieser Konfiguration nicht unterstützt"
 
 #: gcc.c:777 ada/gcc-interface/lang-specs.h:33 java/jvspec.c:80
 msgid "-pg and -fomit-frame-pointer are incompatible"
@@ -4716,9 +4705,8 @@ msgid "-c or -S required for Ada"
 msgstr "Für Ada wird -c oder -S benötigt"
 
 #: ada/gcc-interface/lang-specs.h:52
-#, fuzzy
 msgid "-c required for gnat2why"
-msgstr "Für Ada wird -c oder -S benötigt"
+msgstr "Für gnat2why wird -c benötigt"
 
 #: java/lang-specs.h:33
 msgid "-fjni and -femit-class-files are incompatible"
@@ -4741,9 +4729,8 @@ msgid "does not support multilib"
 msgstr "unterstützt nicht multilib"
 
 #: config/arm/arm.h:157
-#, fuzzy
 msgid "-mfloat-abi=soft and -mfloat-abi=hard may not be used together"
-msgstr "-msoft-float und -mhard_float dürfen nicht zusammen verwendet werden"
+msgstr "-mfloat-abi=soft und -mfloat-abi=hard dürfen nicht zusammen verwendet werden"
 
 #: config/arm/arm.h:159
 msgid "-mbig-endian and -mlittle-endian may not be used together"
@@ -4940,39 +4927,36 @@ msgid "Set the target VM version"
 msgstr "Ziel-VM-Version angeben"
 
 #: ada/gcc-interface/lang.opt:51
-#, fuzzy
 msgid "-I <dir>.\tAdd <dir> to the end of the main source path"
-msgstr "-I <Verz>\t<Verz> an das Ende des Haupteinfügepfades anfügen"
+msgstr "-I <Verz>.\t<Verz> an das Ende des Haupt-Quellpfades anfügen"
 
 #: ada/gcc-interface/lang.opt:55 c-family/c.opt:272
 msgid "Enable most warning messages"
 msgstr "Die meisten Warnungen einschalten"
 
 #: ada/gcc-interface/lang.opt:59
-#, fuzzy
 msgid "Synonym of -gnatk8"
-msgstr "Synonym für -Wcomment"
+msgstr "Synonym für -gnatk8"
 
 #: ada/gcc-interface/lang.opt:63
 msgid "Do not look for source files in standard path"
-msgstr ""
+msgstr "Nicht nach Quelldateien im Standardverzeichnis suchen"
 
 #: ada/gcc-interface/lang.opt:67
 msgid "Do not look for object files in standard path"
-msgstr ""
+msgstr "Nicht nach Objektenen im Standardverzeichnis suchen"
 
 #: ada/gcc-interface/lang.opt:71
-#, fuzzy
 msgid "Select the runtime"
-msgstr "Codemodell auswählen"
+msgstr "Laufzeitumgebung auswählen"
 
 #: ada/gcc-interface/lang.opt:75
 msgid "Catch typos"
-msgstr ""
+msgstr "Tippfehler abfangen"
 
 #: ada/gcc-interface/lang.opt:79
 msgid "Set name of output ALI file (internal switch)"
-msgstr ""
+msgstr "Namen der ALI-Ausgabedatei setzen (interner Schalter)"
 
 #: ada/gcc-interface/lang.opt:83
 msgid "-gnat<options>\tSpecify options to GNAT"
@@ -5007,9 +4991,8 @@ msgid "Warn about most implicit conversions"
 msgstr "Bei den meisten impliziten Umwandlungen warnen"
 
 #: fortran/lang.opt:227
-#, fuzzy
 msgid "Warn about function call elimination"
-msgstr "Bei impliziten Funktionsdeklarationen warnen"
+msgstr "Beim Entfernen von Funktionsaufrufen warnen"
 
 #: fortran/lang.opt:231
 msgid "Warn about calls with implicit interface"
@@ -5197,9 +5180,8 @@ msgid "-ffree-line-length-<n>\tUse n as character line width in free mode"
 msgstr "-ffixed-line-length-<n>\tIm freien Modus n als Zeilenlänge verwenden"
 
 #: fortran/lang.opt:431
-#, fuzzy
 msgid "Enable front end optimization"
-msgstr "Binder-Optimierungen einschalten"
+msgstr "Frontend-Optimierung einschalten"
 
 #: fortran/lang.opt:435
 msgid "Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements"
@@ -5242,9 +5224,8 @@ msgid "-fmax-stack-var-size=<n>\tSize in bytes of the largest array that will be
 msgstr "-fmax-stack-var-size=<n>\tGröße des größten Feldes, das auf dem Stack abgelegt wird, in Bytes"
 
 #: fortran/lang.opt:475
-#, fuzzy
 msgid "Put all local arrays on stack."
-msgstr "Alle Argumente über Stapel übergeben"
+msgstr "Alle lokalen Felder über Stapel übergeben."
 
 #: fortran/lang.opt:479
 msgid "Set default accessibility of module entities to PRIVATE."
@@ -5343,9 +5324,8 @@ msgid "Conform to the ISO Fortran 2008 standard"
 msgstr "Mit dem Standard ISO Fortran 2008 übereinstimmen"
 
 #: fortran/lang.opt:623
-#, fuzzy
 msgid "Conform to the ISO Fortran 2008 standard including TS 29113"
-msgstr "Mit dem Standard ISO Fortran 2008 übereinstimmen"
+msgstr "Mit dem Standard ISO Fortran 2008 inkl. TS 29113 übereinstimmen"
 
 #: fortran/lang.opt:627
 msgid "Conform to the ISO Fortran 95 standard"
@@ -5661,16 +5641,15 @@ msgstr "Binderlockerungen einschalten"
 
 #: config/mn10300/mn10300.opt:59
 msgid "Return pointers in both a0 and d0"
-msgstr "Zeiger sowohl in a0 als auch in d0 zurück geben"
+msgstr "Zeiger sowohl in a0 als auch in d0 zurückgeben"
 
 #: config/mn10300/mn10300.opt:63
 msgid "Allow gcc to generate LIW instructions"
 msgstr "GCC erlauben, LIW-Befehle zu verwenden"
 
 #: config/mn10300/mn10300.opt:67
-#, fuzzy
 msgid "Allow gcc to generate the SETLB and Lcc instructions"
-msgstr "GCC erlauben, LIW-Befehle zu verwenden"
+msgstr "GCC erlauben, SETLB- und Lcc-Befehle zu verwenden"
 
 #: config/s390/tpf.opt:23
 msgid "Enable TPF-OS tracing code"
@@ -5975,29 +5954,24 @@ msgid "Compile for V8+ ABI"
 msgstr "Für V8+-ABI-übersetzen"
 
 #: config/sparc/sparc.opt:66
-#, fuzzy
 msgid "Use UltraSPARC Visual Instruction Set version 1.0 extensions"
-msgstr "Visuelle Befehlssatzerweiterungen für UltraSPARC verwenden"
+msgstr "Visuelle Befehlssatzerweiterungen Version 1.0 für UltraSPARC verwenden"
 
 #: config/sparc/sparc.opt:70
-#, fuzzy
 msgid "Use UltraSPARC Visual Instruction Set version 2.0 extensions"
-msgstr "Visuelle Befehlssatzerweiterungen für UltraSPARC verwenden"
+msgstr "Visuelle Befehlssatzerweiterungen Version 2.0 für UltraSPARC verwenden"
 
 #: config/sparc/sparc.opt:74
-#, fuzzy
 msgid "Use UltraSPARC Visual Instruction Set version 3.0 extensions"
-msgstr "Visuelle Befehlssatzerweiterungen für UltraSPARC verwenden"
+msgstr "Visuelle Befehlssatzerweiterungen Version 3.0 für UltraSPARC verwenden"
 
 #: config/sparc/sparc.opt:78
-#, fuzzy
 msgid "Use UltraSPARC Fused Multiply-Add extensions"
-msgstr "Visuelle Befehlssatzerweiterungen für UltraSPARC verwenden"
+msgstr "Multiplizier-Addier-Erweiterungen für UltraSPARC verwenden"
 
 #: config/sparc/sparc.opt:82
-#, fuzzy
 msgid "Use UltraSPARC Population-Count instruction"
-msgstr "Hardware-Gleitkommabefehle verwenden"
+msgstr "Füllzähler für UltraSPARC verwenden"
 
 #: config/sparc/sparc.opt:86
 msgid "Pointers are 64-bit"
@@ -6036,9 +6010,8 @@ msgid "Use given SPARC-V9 code model"
 msgstr "Gegebenes SPARC-V9-Codemodell verwenden"
 
 #: config/sparc/sparc.opt:189
-#, fuzzy
 msgid "Enable debug output"
-msgstr "-mdebug=\tAusgaben zur Fehlersuche einschalten"
+msgstr "Ausgaben zur Fehlersuche einschalten"
 
 #: config/sparc/sparc.opt:193
 msgid "Enable strict 32-bit psABI struct return checking."
@@ -6386,9 +6359,8 @@ msgid "Generate floating point mathematics using given instruction set"
 msgstr "Gleitkommaarithmetik mit gegebenem Befehlssatz erzeugen"
 
 #: config/i386/i386.opt:183
-#, fuzzy
 msgid "Valid arguments to -mfpmath=:"
-msgstr "gültige Argumente für %qs sind: %s"
+msgstr "Gültige Argumente für -mfpmath=:"
 
 #: config/i386/i386.opt:216
 msgid "Inline all known string operations"
@@ -6407,19 +6379,16 @@ msgid "Omit the frame pointer in leaf functions"
 msgstr "Rahmenzeiger in Blattfunktionen auslassen"
 
 #: config/i386/i386.opt:248
-#, fuzzy
 msgid "Set 80387 floating-point precision to 32-bit"
-msgstr "Gleitkommapräzision von 80387 setzen (-mpc32, -mpc64, -mpc80)"
+msgstr "Gleitkommapräzision von 80387 auf 32 Bit setzen"
 
 #: config/i386/i386.opt:252
-#, fuzzy
 msgid "Set 80387 floating-point precision to 64-bit"
-msgstr "Gleitkommapräzision von 80387 setzen (-mpc32, -mpc64, -mpc80)"
+msgstr "Gleitkommapräzision von 80387 auf 64 Bit setzen"
 
 #: config/i386/i386.opt:256
-#, fuzzy
 msgid "Set 80387 floating-point precision to 80-bit"
-msgstr "Gleitkommapräzision von 80387 setzen (-mpc32, -mpc64, -mpc80)"
+msgstr "Gleitkommapräzision von 80387 auf 80 Bit setzen"
 
 #: config/i386/i386.opt:260
 msgid "Attempt to keep stack aligned to this power of 2"
@@ -6462,9 +6431,8 @@ msgid "Chose strategy to generate stringop using"
 msgstr "Strategie zur Erzeugung von Zeichenkettenoperationen wählen"
 
 #: config/i386/i386.opt:304
-#, fuzzy
 msgid "Valid arguments to -mstringop-strategy=:"
-msgstr "falscher Wert (%s) für Schalter %sstringop-strategy=%s %s"
+msgstr "Gültige Arguments für -mstringop-strategy=:"
 
 #: config/i386/i386.opt:329
 msgid "Use given thread-local storage dialect"
@@ -6472,7 +6440,7 @@ msgstr "Gegebenen Thread-lokalen Speicherdialekt verwenden"
 
 #: config/i386/i386.opt:333
 msgid "Known TLS dialects (for use with the -mtls-dialect= option):"
-msgstr ""
+msgstr "Bekannte TLS-Dialekte (für Verwendung mit Option -mtls-dialect=):"
 
 #: config/i386/i386.opt:343
 #, c-format
@@ -6485,16 +6453,15 @@ msgstr "Code erzeugen, der zum angegebenen ABI passt"
 
 #: config/i386/i386.opt:355
 msgid "Known ABIs (for use with the -mabi= option):"
-msgstr ""
+msgstr "Bekannte ABIs (für Verwendung mit Option -mabi=):"
 
 #: config/i386/i386.opt:365 config/rs6000/rs6000.opt:196
 msgid "Vector library ABI to use"
 msgstr "Zu verwendendes Vektorbibliotheks-ABI"
 
 #: config/i386/i386.opt:369
-#, fuzzy
 msgid "Known vectorization library ABIs (for use with the -mveclibabi= option):"
-msgstr "unbekannte ABI-Typ (%s) für Vektorisierungsbibliothek bei Schalter -mveclibabi="
+msgstr "Bekannte ABIs für Vektorisierungs-Bibliothek (für Verwendung mit Schalter -mveclibabi=):"
 
 #: config/i386/i386.opt:379
 msgid "Return 8-byte vectors in memory"
@@ -6514,16 +6481,15 @@ msgstr "Im Funktionsprolog cld-Befehle erzeugen."
 
 #: config/i386/i386.opt:395
 msgid "Generate vzeroupper instruction before a transfer of control flow out of"
-msgstr ""
+msgstr "Befehl vzeroupper erzeugen vor Übergabe der Abarbeitung aus"
 
 #: config/i386/i386.opt:400
-#, fuzzy
 msgid "Do dispatch scheduling if processor is bdver1 or bdver2 and Haifa scheduling"
-msgstr "Bericht-Planung durchführen, wenn Prozessor bdver1 und Haifa-Planung"
+msgstr "Bericht-Planung durchführen, wenn Prozessor bdver1 oder bdver2 und Haifa-Planung"
 
 #: config/i386/i386.opt:405
 msgid "Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vectorizer."
-msgstr ""
+msgstr "128-Bit-AVX-Befehle statt 256-Bit-AVX-Befehlen in Auto-Vektorisierer verwenden."
 
 #: config/i386/i386.opt:411
 msgid "Generate 32bit i386 code"
@@ -6534,9 +6500,8 @@ msgid "Generate 64bit x86-64 code"
 msgstr "64-Bit-x86-64-Code erzeugen"
 
 #: config/i386/i386.opt:419
-#, fuzzy
 msgid "Generate 32bit x86-64 code"
-msgstr "64-Bit-x86-64-Code erzeugen"
+msgstr "32-Bit-x86-64-Code erzeugen"
 
 #: config/i386/i386.opt:423
 msgid "Support MMX built-in functions"
@@ -6587,9 +6552,8 @@ msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in func
 msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2- und AVX-Funktionen und Codeerzeugung unterstützen"
 
 #: config/i386/i386.opt:475
-#, fuzzy
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation"
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX- und FMA-Funktionen und Codeerzeugung unterstützen"
+msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX- und AVX2-Funktionen und Codeerzeugung unterstützen"
 
 #: config/i386/i386.opt:479
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation"
@@ -6624,14 +6588,12 @@ msgid "Support BMI built-in functions and code generation"
 msgstr "Eingebaute BMI-Funktionen und Codeerzeugung unterstützen"
 
 #: config/i386/i386.opt:511
-#, fuzzy
 msgid "Support BMI2 built-in functions and code generation"
-msgstr "Eingebaute BMI-Funktionen und Codeerzeugung unterstützen"
+msgstr "Eingebaute BMI2-Funktionen und Codeerzeugung unterstützen"
 
 #: config/i386/i386.opt:515
-#, fuzzy
 msgid "Support LZCNT built-in function and code generation"
-msgstr "Eingebaute TBM-Funktionen und Codeerzeugung unterstützen"
+msgstr "Eingebaute LZCNT-Funktion und Codeerzeugung unterstützen"
 
 #: config/i386/i386.opt:519
 msgid "Support TBM built-in functions and code generation"
@@ -6910,14 +6872,12 @@ msgid "Generate VRSAVE instructions when generating AltiVec code"
 msgstr "Beim Erzeugen von AltiVec-Code VRSAVE-Befehle erzeugen"
 
 #: config/rs6000/rs6000.opt:326
-#, fuzzy
 msgid "Deprecated option.  Use -mno-vrsave instead"
-msgstr "-mvrsave=yes/no\tVeraltete Option. Stattdessen -mvrsave/-mno-vrsave verwenden"
+msgstr "Veraltete Option. Stattdessen -mno-vrsave verwenden"
 
 #: config/rs6000/rs6000.opt:330
-#, fuzzy
 msgid "Deprecated option.  Use -mvrsave instead"
-msgstr "Veraltet. Stattdessen -Os verwenden"
+msgstr "Veraltete Option. Stattdessen -mvrsave verwenden"
 
 #: config/rs6000/rs6000.opt:334
 msgid "Specify how many bytes should be moved inline before calling out to memcpy/memmove"
@@ -6928,14 +6888,12 @@ msgid "Generate isel instructions"
 msgstr "isel-Befehle erzeugen"
 
 #: config/rs6000/rs6000.opt:342
-#, fuzzy
 msgid "Deprecated option.  Use -mno-isel instead"
-msgstr "-misel=yes/no\tVeraltete Option. Stattdessen -misel/-mno-isel verwenden"
+msgstr "Veraltete Option. Stattdessen -mno-isel verwenden"
 
 #: config/rs6000/rs6000.opt:346
-#, fuzzy
 msgid "Deprecated option.  Use -misel instead"
-msgstr "Veraltet. Stattdessen -Os verwenden"
+msgstr "Veraltete Option. Stattdessen -misel verwenden"
 
 #: config/rs6000/rs6000.opt:350
 msgid "Generate SPE SIMD instructions on E500"
@@ -6946,38 +6904,32 @@ msgid "Generate PPC750CL paired-single instructions"
 msgstr "Paarweise-Einzel-Befehle für PPC750CL erzeugen"
 
 #: config/rs6000/rs6000.opt:358
-#, fuzzy
 msgid "Deprecated option.  Use -mno-spe instead"
-msgstr "-mspe=yes/no\tVeraltete Option. Stattdessen -mspe/-mno-spe verwenden"
+msgstr "Veraltete Option. Stattdessen -mno-spe verwenden"
 
 #: config/rs6000/rs6000.opt:362
-#, fuzzy
 msgid "Deprecated option.  Use -mspe instead"
-msgstr "Veraltet. Stattdessen -Os verwenden"
+msgstr "Veraltete Option. Stattdessen -mspe verwenden"
 
 #: config/rs6000/rs6000.opt:366
 msgid "-mdebug=\tEnable debug output"
 msgstr "-mdebug=\tAusgaben zur Fehlersuche einschalten"
 
 #: config/rs6000/rs6000.opt:370
-#, fuzzy
 msgid "Use the AltiVec ABI extensions"
-msgstr "Die Cray-Zeiger-Erweiterung verwenden"
+msgstr "Die AltiVec-ABI-Erweiterungen verwenden"
 
 #: config/rs6000/rs6000.opt:374
-#, fuzzy
 msgid "Do not use the AltiVec ABI extensions"
-msgstr "AltiVec-Befehle nicht verwenden"
+msgstr "AltiVec-ABI-Erweiterungen nicht verwenden"
 
 #: config/rs6000/rs6000.opt:378
-#, fuzzy
 msgid "Use the SPE ABI extensions"
-msgstr "Die Cray-Zeiger-Erweiterung verwenden"
+msgstr "Die SPE-ABI-Erweiterungen verwenden"
 
 #: config/rs6000/rs6000.opt:382
-#, fuzzy
 msgid "Do not use the SPE ABI extensions"
-msgstr "Bit-Feld-Befehle nicht verwenden"
+msgstr "Die SPE-ABI-Erweiterungen nicht verwenden"
 
 #: config/rs6000/rs6000.opt:389
 msgid "using darwin64 ABI"
@@ -7028,9 +6980,8 @@ msgid "-mfloat-gprs=\tSelect GPR floating point method"
 msgstr "-mfloat-gprs=\tGPR-Gleitkommamethode auswählen"
 
 #: config/rs6000/rs6000.opt:446
-#, fuzzy
 msgid "Valid arguments to -mfloat-gprs=:"
-msgstr "gültige Argumente für %qs sind: %s"
+msgstr "Gültige Argumente für -mfloat-gprs=:"
 
 #: config/rs6000/rs6000.opt:462
 msgid "-mlong-double-<n>\tSpecify size of long double (64 or 128 bits)"
@@ -7049,9 +7000,8 @@ msgid "Specify alignment of structure fields default/natural"
 msgstr "Ausrichtung der Strukturfelder als Standard/natürlich angeben"
 
 #: config/rs6000/rs6000.opt:478
-#, fuzzy
 msgid "Valid arguments to -malign-:"
-msgstr "gültige Argumente für %qs sind: %s"
+msgstr "Gültige Argumente für -malign-:"
 
 #: config/rs6000/rs6000.opt:488
 msgid "Specify scheduling priority for dispatch slot restricted insns"
@@ -7324,14 +7274,12 @@ msgid "Use simulator runtime"
 msgstr "Simulator-Laufzeitumgebung verwenden"
 
 #: config/c6x/c6x.opt:46
-#, fuzzy
 msgid "Valid arguments for the -msdata= option"
-msgstr "Argumente über den Stapel übergeben"
+msgstr "Gültige Argumente für die Option -msdata="
 
 #: config/c6x/c6x.opt:59
-#, fuzzy
 msgid "Compile for the DSBT shared library ABI"
-msgstr "Shared Library erzeugen"
+msgstr "Für das DSBT-Shared-Library-ABI kompilieren"
 
 #: config/c6x/c6x.opt:63 config/bfin/bfin.opt:82
 msgid "Avoid generating pc-relative calls; use indirection"
@@ -7339,7 +7287,7 @@ msgstr "Erzeugung PC-relativer Aufrufe verhindern; Indirektion verwenden"
 
 #: config/c6x/c6x-tables.opt:24
 msgid "Known C6X ISAs (for use with the -march= option):"
-msgstr ""
+msgstr "Bekannte C6X ISAs (für Verwendung mit der Option -march=):"
 
 #: config/sh/sh.opt:45
 msgid "Generate SH1 code"
@@ -7658,9 +7606,8 @@ msgid "Generate re-entrant, PIC code"
 msgstr "Wiedereinsprungsfähigen PIC-Code erzeugen"
 
 #: config/arm/arm.opt:90
-#, fuzzy
 msgid "Generate code in 32 bit ARM state."
-msgstr "Code für 32-Bit-Adressierung erzeugen"
+msgstr "Code im 32-Bit-ARM-Zustand erzeugen."
 
 #: config/arm/arm.opt:94
 msgid "Assume target CPU is configured as big endian"
@@ -7695,9 +7642,8 @@ msgid "Specify the __fp16 floating-point format"
 msgstr "Gleitkommaformat __fp16 angeben"
 
 #: config/arm/arm.opt:141
-#, fuzzy
 msgid "Known __fp16 formats (for use with the -mfp16-format= option):"
-msgstr "Ungültige Option für __fp16-Format: -mfp16-format=%s"
+msgstr "Bekannte __fp16-Formate (für Verwendung mit der Option -mfp16-format=):"
 
 #: config/arm/arm.opt:164
 msgid "Specify the name of the target floating point hardware/format"
@@ -7728,27 +7674,24 @@ msgid "Specify the minimum bit alignment of structures"
 msgstr "Kleinste Bitausrichtung von Strukturen angeben"
 
 #: config/arm/arm.opt:202
-#, fuzzy
 msgid "Generate code for Thumb state"
-msgstr "Code für GNU as erzeugen"
+msgstr "Code für Thumb-Zustand erzeugen"
 
 #: config/arm/arm.opt:206
 msgid "Support calls between Thumb and ARM instruction sets"
 msgstr "Aufrufe zwischen Thumb- und ARM-Befehlssätzen unterstützen"
 
 #: config/arm/arm.opt:210
-#, fuzzy
 msgid "Specify thread local storage scheme"
-msgstr "Gegebenen Thread-lokalen Speicherdialekt verwenden"
+msgstr "Schema für Thread-lokalen Speicher angeben"
 
 #: config/arm/arm.opt:214
 msgid "Specify how to access the thread pointer"
 msgstr "Angeben, wie auf Threadzeiger zugegriffen wird"
 
 #: config/arm/arm.opt:218
-#, fuzzy
 msgid "Valid arguments to -mtp=:"
-msgstr "gültige Argumente für %qs sind: %s"
+msgstr "Gültige Argumente für -mtp=:"
 
 #: config/arm/arm.opt:231
 msgid "Thumb: Generate (non-leaf) stack frames even if not needed"
@@ -7759,18 +7702,16 @@ msgid "Thumb: Generate (leaf) stack frames even if not needed"
 msgstr "Thumb: Blatt-Stapelrahmen erzeugen, auch wenn nicht erforderlich"
 
 #: config/arm/arm.opt:248
-#, fuzzy
 msgid "Assume big endian bytes, little endian words.  This option is deprecated."
-msgstr "»big endian« Bytes und »little endian« Wörter annehmen"
+msgstr "»big endian« Bytes und »little endian« Wörter annehmen. Veraltete Option."
 
 #: config/arm/arm.opt:252
 msgid "Use Neon quad-word (rather than double-word) registers for vectorization"
 msgstr "Neon-Quad-Word (statt Double-Word) Register für Vektorisierung verwenden"
 
 #: config/arm/arm.opt:256
-#, fuzzy
 msgid "Use Neon double-word (rather than quad-word) registers for vectorization"
-msgstr "Neon-Quad-Word (statt Double-Word) Register für Vektorisierung verwenden"
+msgstr "Neon-Double-Word (statt Quad-Word) Register für Vektorisierung verwenden"
 
 #: config/arm/arm.opt:260
 msgid "Only generate absolute relocations on word sized values."
