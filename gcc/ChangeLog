@@ -1,5 +1,13 @@
 2012-02-05  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.md (sibcall_internal, sibcall_value_internal)
+	(sibcall_value_multiple_internal, call_split, call_internal_direct)
+	(call_direct_split, call_value_split, call_value_internal_direct)
+	(call_value_direct_split, call_value_multiple_split): Use jal and
+	jal_macro attributes.
+
+2012-02-05  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* reload1.c (reload_regs_reach_end_p): Replace with...
 	(reload_reg_rtx_reaches_end_p): ...this function.
 	(new_spill_reg_store): Update commentary.

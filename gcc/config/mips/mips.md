@@ -6119,7 +6119,8 @@
 	 (match_operand 1 "" ""))]
   "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
   { return MIPS_CALL ("j", operands, 0, 1); }
-  [(set_attr "type" "call")])
+  [(set_attr "jal" "indirect,direct")
+   (set_attr "jal_macro" "no")])
 
 (define_expand "sibcall_value"
   [(parallel [(set (match_operand 0 "")
@@ -6139,7 +6140,8 @@
               (match_operand 2 "" "")))]
   "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
   { return MIPS_CALL ("j", operands, 1, 2); }
-  [(set_attr "type" "call")])
+  [(set_attr "jal" "indirect,direct")
+   (set_attr "jal_macro" "no")])
 
 (define_insn "sibcall_value_multiple_internal"
   [(set (match_operand 0 "register_operand" "")
@@ -6150,7 +6152,8 @@
 	      (match_dup 2)))]
   "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
   { return MIPS_CALL ("j", operands, 1, 2); }
-  [(set_attr "type" "call")])
+  [(set_attr "jal" "indirect,direct")
+   (set_attr "jal_macro" "no")])
 
 (define_expand "call"
   [(parallel [(call (match_operand 0 "")
@@ -6214,13 +6217,14 @@
   [(set_attr "jal" "indirect,direct")])
 
 (define_insn "call_split"
-  [(call (mem:SI (match_operand 0 "call_insn_operand" "cS"))
+  [(call (mem:SI (match_operand 0 "call_insn_operand" "c,S"))
 	 (match_operand 1 "" ""))
    (clobber (reg:SI RETURN_ADDR_REGNUM))
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
   { return MIPS_CALL ("jal", operands, 0, 1); }
-  [(set_attr "type" "call")])
+  [(set_attr "jal" "indirect,direct")
+   (set_attr "jal_macro" "no")])
 
 ;; A pattern for calls that must be made directly.  It is used for
 ;; MIPS16 calls that the linker may need to redirect to a hard-float
@@ -6240,7 +6244,7 @@
 		   gen_call_direct_split (operands[0], operands[1]));
   DONE;
 }
-  [(set_attr "type" "call")])
+  [(set_attr "jal" "direct")])
 
 (define_insn "call_direct_split"
   [(call (mem:SI (match_operand 0 "const_call_insn_operand"))
@@ -6250,7 +6254,8 @@
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
   { return MIPS_CALL ("jal", operands, 0, -1); }
-  [(set_attr "type" "call")])
+  [(set_attr "jal" "direct")
+   (set_attr "jal_macro" "no")])
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "")
@@ -6284,13 +6289,14 @@
 
 (define_insn "call_value_split"
   [(set (match_operand 0 "register_operand" "")
-        (call (mem:SI (match_operand 1 "call_insn_operand" "cS"))
+        (call (mem:SI (match_operand 1 "call_insn_operand" "c,S"))
               (match_operand 2 "" "")))
    (clobber (reg:SI RETURN_ADDR_REGNUM))
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
   { return MIPS_CALL ("jal", operands, 1, 2); }
-  [(set_attr "type" "call")])
+  [(set_attr "jal" "indirect,direct")
+   (set_attr "jal_macro" "no")])
 
 ;; See call_internal_direct.
 (define_insn_and_split "call_value_internal_direct"
@@ -6309,7 +6315,7 @@
 						operands[2]));
   DONE;
 }
-  [(set_attr "type" "call")])
+  [(set_attr "jal" "direct")])
 
 (define_insn "call_value_direct_split"
   [(set (match_operand 0 "register_operand")
@@ -6320,7 +6326,8 @@
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
   { return MIPS_CALL ("jal", operands, 1, -1); }
-  [(set_attr "type" "call")])
+  [(set_attr "jal" "direct")
+   (set_attr "jal_macro" "no")])
 
 ;; See comment for call_internal.
 (define_insn_and_split "call_value_multiple_internal"
@@ -6345,7 +6352,7 @@
 
 (define_insn "call_value_multiple_split"
   [(set (match_operand 0 "register_operand" "")
-        (call (mem:SI (match_operand 1 "call_insn_operand" "cS"))
+        (call (mem:SI (match_operand 1 "call_insn_operand" "c,S"))
               (match_operand 2 "" "")))
    (set (match_operand 3 "register_operand" "")
 	(call (mem:SI (match_dup 1))
@@ -6354,7 +6361,8 @@
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
   { return MIPS_CALL ("jal", operands, 1, 2); }
-  [(set_attr "type" "call")])
+  [(set_attr "jal" "indirect,direct")
+   (set_attr "jal_macro" "no")])
 
 ;; Call subroutine returning any type.
 
