@@ -890,6 +890,26 @@ proc check_effective_target_mips_newabi_large_long_double { } {
     } "-mabi=64"]
 }
 
+# Return true if the target is a MIPS target that has access
+# to the LL and SC instructions.
+
+proc check_effective_target_mips_llsc { } {
+    if { ![istarget mips*-*-*] } {
+	return 0
+    }
+    # Assume that these instructions are always implemented for
+    # non-elf* targets, via emulation if necessary.
+    if { ![istarget *-*-elf*] } {
+	return 1
+    }
+    # Otherwise assume LL/SC support for everything but MIPS I.
+    return [check_no_compiler_messages mips_llsc assembly {
+	#if __mips == 1
+	#error FOO
+	#endif
+    }]
+}
+
 # Return 1 if the current multilib does not generate PIC by default.
 
 proc check_effective_target_nonpic { } {
@@ -3770,7 +3790,7 @@ proc check_effective_target_sync_int_long { } {
 	     || [istarget powerpc*-*-*]
 	     || [istarget sparc64-*-*]
 	     || [istarget sparcv9-*-*]
-	     || [istarget mips*-*-*] } {
+	     || [check_effective_target_mips_llsc] } {
            set et_sync_int_long_saved 1
         }
     }
@@ -3800,7 +3820,7 @@ proc check_effective_target_sync_char_short { } {
 	     || [istarget powerpc*-*-*]
 	     || [istarget sparc64-*-*]
 	     || [istarget sparcv9-*-*]
-	     || [istarget mips*-*-*] } {
+	     || [check_effective_target_mips_llsc] } {
            set et_sync_char_short_saved 1
         }
     }
