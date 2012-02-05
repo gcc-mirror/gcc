@@ -4957,7 +4957,7 @@ gfc_trans_allocate (gfc_code * code)
 	      tmp = gfc_nullify_alloc_comp (expr->ts.u.derived, tmp, 0);
 	      gfc_add_expr_to_block (&se.pre, tmp);
 	    }
-	  else if (al->expr->ts.type == BT_CLASS && code->expr3)
+	  else if (al->expr->ts.type == BT_CLASS)
 	    {
 	      /* With class objects, it is best to play safe and null the 
 		 memory because we cannot know if dynamic types have allocatable
@@ -5076,7 +5076,13 @@ gfc_trans_allocate (gfc_code * code)
 	      actual->next->expr = gfc_copy_expr (al->expr);
 	      actual->next->expr->ts.type = BT_CLASS;
 	      gfc_add_data_component (actual->next->expr);
+
 	      dataref = actual->next->expr->ref;
+	      /* Make sure we go up through the reference chain to
+		 the _data reference, where the arrayspec is found.  */
+	      while (dataref->next && dataref->next->type != REF_ARRAY)
+		dataref = dataref->next;
+
 	      if (dataref->u.c.component->as)
 		{
 		  int dim;

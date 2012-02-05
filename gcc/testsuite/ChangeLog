@@ -1,3 +1,11 @@
+2012-02-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52102
+	* gfortran.dg/class_48.f90 : Add test of allocate class array
+	component with source in subroutine test3.  Remove commenting
+	out in subroutine test4, since branching on unitialized variable
+	is now fixed (no PR for this last.).
+
 2012-02-05  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.dg/tree-prof/stringop-2.c (main): Add a nomips16 attribute
