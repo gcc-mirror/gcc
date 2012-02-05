@@ -1,3 +1,8 @@
+2012-02-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/20_util/shared_ptr/cons/weak_ptr_expired.cc: Modify to
+	PASS instead of XFAIL.
+
 2012-02-05  Jeffrey Yasskin  <jyasskin@gcc.gnu.org>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
