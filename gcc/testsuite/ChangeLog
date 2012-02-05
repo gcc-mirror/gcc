@@ -1,3 +1,8 @@
+2012-02-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51972
+	* gfortran.dg/class_48.f90: Add some further checks.
+
 2012-02-05  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/52091
