@@ -170,7 +170,7 @@ UPC_TEXI_FILES = \
 	$(gcc_docdir)/include/gcc-common.texi \
 	gcc-vers.texi
 
-doc/gupc.info: upc/gupc.texi
+doc/gupc.info: $(UPC_TEXI_FILES)
 	if test "x$(BUILD_INFO)" = xinfo; then \
 	  rm -f doc/gupc.info*; \
 	  $(MAKEINFO) $(MAKEINFOFLAGS) -I. -I $(gcc_docdir) \

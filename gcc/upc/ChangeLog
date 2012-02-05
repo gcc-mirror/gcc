@@ -1,3 +1,8 @@
+2012-02-04  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* Make-lang.in (doc/gupc.info): Fix dependencies for creating
+	gupc.info document.
+
 2012-02-03  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* upc-act.c (upc_write_init_func): Disable emitting of the
