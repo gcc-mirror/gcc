@@ -374,7 +374,7 @@ process_use (gimple stmt, tree use, loop_vec_info loop_vinfo, bool live_p,
   if (!force && !exist_non_indexing_operands_for_use_p (use, stmt))
      return true;
 
-  if (!vect_is_simple_use (use, loop_vinfo, NULL, &def_stmt, &def, &dt))
+  if (!vect_is_simple_use (use, stmt, loop_vinfo, NULL, &def_stmt, &def, &dt))
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
         fprintf (vect_dump, "not vectorized: unsupported use in stmt.");
@@ -1193,8 +1193,8 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
       print_generic_expr (vect_dump, op, TDF_SLIM);
     }
 
-  is_simple_use = vect_is_simple_use (op, loop_vinfo, NULL, &def_stmt, &def,
-                                      &dt);
+  is_simple_use = vect_is_simple_use (op, stmt, loop_vinfo, NULL,
+				      &def_stmt, &def, &dt);
   gcc_assert (is_simple_use);
   if (vect_print_dump_info (REPORT_DETAILS))
     {
@@ -1596,7 +1596,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       if (!rhs_type)
 	rhs_type = TREE_TYPE (op);
 
-      if (!vect_is_simple_use_1 (op, loop_vinfo, bb_vinfo,
+      if (!vect_is_simple_use_1 (op, stmt, loop_vinfo, bb_vinfo,
 				 &def_stmt, &def, &dt[i], &opvectype))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
@@ -2208,7 +2208,7 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
     }
 
   /* Check the operands of the operation.  */
-  if (!vect_is_simple_use_1 (op0, loop_vinfo, bb_vinfo,
+  if (!vect_is_simple_use_1 (op0, stmt, loop_vinfo, bb_vinfo,
 			     &def_stmt, &def, &dt[0], &vectype_in))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -2224,11 +2224,11 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
       /* For WIDEN_MULT_EXPR, if OP0 is a constant, use the type of
 	 OP1.  */
       if (CONSTANT_CLASS_P (op0))
-	ok = vect_is_simple_use_1 (op1, loop_vinfo, NULL,
+	ok = vect_is_simple_use_1 (op1, stmt, loop_vinfo, NULL,
 				   &def_stmt, &def, &dt[1], &vectype_in);
       else
-	ok = vect_is_simple_use (op1, loop_vinfo, NULL, &def_stmt, &def,
-				 &dt[1]);
+	ok = vect_is_simple_use (op1, stmt, loop_vinfo, NULL, &def_stmt,
+				 &def, &dt[1]);
 
       if (!ok)
 	{
@@ -2757,7 +2757,7 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
   if (code == VIEW_CONVERT_EXPR)
     op = TREE_OPERAND (op, 0);
 
-  if (!vect_is_simple_use_1 (op, loop_vinfo, bb_vinfo,
+  if (!vect_is_simple_use_1 (op, stmt, loop_vinfo, bb_vinfo,
 			     &def_stmt, &def, &dt[0], &vectype_in))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -2957,7 +2957,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
     }
 
   op0 = gimple_assign_rhs1 (stmt);
-  if (!vect_is_simple_use_1 (op0, loop_vinfo, bb_vinfo,
+  if (!vect_is_simple_use_1 (op0, stmt, loop_vinfo, bb_vinfo,
                              &def_stmt, &def, &dt[0], &vectype))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -2987,8 +2987,8 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
     return false;
 
   op1 = gimple_assign_rhs2 (stmt);
-  if (!vect_is_simple_use_1 (op1, loop_vinfo, bb_vinfo, &def_stmt, &def,
-			     &dt[1], &op1_vectype))
+  if (!vect_is_simple_use_1 (op1, stmt, loop_vinfo, bb_vinfo, &def_stmt,
+			     &def, &dt[1], &op1_vectype))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "use not simple.");
@@ -3334,7 +3334,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
     }
 
   op0 = gimple_assign_rhs1 (stmt);
-  if (!vect_is_simple_use_1 (op0, loop_vinfo, bb_vinfo,
+  if (!vect_is_simple_use_1 (op0, stmt, loop_vinfo, bb_vinfo,
 			     &def_stmt, &def, &dt[0], &vectype))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -3366,8 +3366,8 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   if (op_type == binary_op || op_type == ternary_op)
     {
       op1 = gimple_assign_rhs2 (stmt);
-      if (!vect_is_simple_use (op1, loop_vinfo, bb_vinfo, &def_stmt, &def,
-                               &dt[1]))
+      if (!vect_is_simple_use (op1, stmt, loop_vinfo, bb_vinfo, &def_stmt,
+			       &def, &dt[1]))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "use not simple.");
@@ -3377,8 +3377,8 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   if (op_type == ternary_op)
     {
       op2 = gimple_assign_rhs3 (stmt);
-      if (!vect_is_simple_use (op2, loop_vinfo, bb_vinfo, &def_stmt, &def,
-                               &dt[2]))
+      if (!vect_is_simple_use (op2, stmt, loop_vinfo, bb_vinfo, &def_stmt,
+			       &def, &dt[2]))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "use not simple.");
@@ -3684,7 +3684,8 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
   gcc_assert (gimple_assign_single_p (stmt));
   op = gimple_assign_rhs1 (stmt);
-  if (!vect_is_simple_use (op, loop_vinfo, bb_vinfo, &def_stmt, &def, &dt))
+  if (!vect_is_simple_use (op, stmt, loop_vinfo, bb_vinfo, &def_stmt,
+			   &def, &dt))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "use not simple.");
@@ -3731,8 +3732,8 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
             {
 	      gcc_assert (gimple_assign_single_p (next_stmt));
 	      op = gimple_assign_rhs1 (next_stmt);
-              if (!vect_is_simple_use (op, loop_vinfo, bb_vinfo, &def_stmt,
-                                       &def, &dt))
+              if (!vect_is_simple_use (op, next_stmt, loop_vinfo, bb_vinfo,
+				       &def_stmt, &def, &dt))
                 {
                   if (vect_print_dump_info (REPORT_DETAILS))
                     fprintf (vect_dump, "use not simple.");
@@ -3917,8 +3918,8 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  for (i = 0; i < group_size; i++)
 	    {
 	      op = VEC_index (tree, oprnds, i);
-	      vect_is_simple_use (op, loop_vinfo, bb_vinfo, &def_stmt, &def,
-	                          &dt);
+	      vect_is_simple_use (op, NULL, loop_vinfo, bb_vinfo, &def_stmt,
+				  &def, &dt);
 	      vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, op);
 	      VEC_replace(tree, dr_chain, i, vec_oprnd);
 	      VEC_replace(tree, oprnds, i, vec_oprnd);
@@ -4279,7 +4280,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       gather_decl = vect_check_gather (stmt, loop_vinfo, &gather_base,
 				       &gather_off, &gather_scale);
       gcc_assert (gather_decl);
-      if (!vect_is_simple_use_1 (gather_off, loop_vinfo, bb_vinfo,
+      if (!vect_is_simple_use_1 (gather_off, NULL, loop_vinfo, bb_vinfo,
 				 &def_stmt, &def, &gather_dt,
 				 &gather_off_vectype))
 	{
@@ -4914,8 +4915,8 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
    condition operands are supportable using vec_is_simple_use.  */
 
 static bool
-vect_is_simple_cond (tree cond, loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
-		     tree *comp_vectype)
+vect_is_simple_cond (tree cond, gimple stmt, loop_vec_info loop_vinfo,
+		     bb_vec_info bb_vinfo, tree *comp_vectype)
 {
   tree lhs, rhs;
   tree def;
@@ -4931,8 +4932,8 @@ vect_is_simple_cond (tree cond, loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   if (TREE_CODE (lhs) == SSA_NAME)
     {
       gimple lhs_def_stmt = SSA_NAME_DEF_STMT (lhs);
-      if (!vect_is_simple_use_1 (lhs, loop_vinfo, bb_vinfo, &lhs_def_stmt, &def,
-				 &dt, &vectype1))
+      if (!vect_is_simple_use_1 (lhs, stmt, loop_vinfo, bb_vinfo,
+				 &lhs_def_stmt, &def, &dt, &vectype1))
 	return false;
     }
   else if (TREE_CODE (lhs) != INTEGER_CST && TREE_CODE (lhs) != REAL_CST
@@ -4942,8 +4943,8 @@ vect_is_simple_cond (tree cond, loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   if (TREE_CODE (rhs) == SSA_NAME)
     {
       gimple rhs_def_stmt = SSA_NAME_DEF_STMT (rhs);
-      if (!vect_is_simple_use_1 (rhs, loop_vinfo, bb_vinfo, &rhs_def_stmt, &def,
-				 &dt, &vectype2))
+      if (!vect_is_simple_use_1 (rhs, stmt, loop_vinfo, bb_vinfo,
+				 &rhs_def_stmt, &def, &dt, &vectype2))
 	return false;
     }
   else if (TREE_CODE (rhs) != INTEGER_CST && TREE_CODE (rhs) != REAL_CST
@@ -5035,14 +5036,15 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
   then_clause = gimple_assign_rhs2 (stmt);
   else_clause = gimple_assign_rhs3 (stmt);
 
-  if (!vect_is_simple_cond (cond_expr, loop_vinfo, bb_vinfo, &comp_vectype)
+  if (!vect_is_simple_cond (cond_expr, stmt, loop_vinfo, bb_vinfo,
+			    &comp_vectype)
       || !comp_vectype)
     return false;
 
   if (TREE_CODE (then_clause) == SSA_NAME)
     {
       gimple then_def_stmt = SSA_NAME_DEF_STMT (then_clause);
-      if (!vect_is_simple_use (then_clause, loop_vinfo, bb_vinfo,
+      if (!vect_is_simple_use (then_clause, stmt, loop_vinfo, bb_vinfo,
 			       &then_def_stmt, &def, &dt))
 	return false;
     }
@@ -5054,7 +5056,7 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
   if (TREE_CODE (else_clause) == SSA_NAME)
     {
       gimple else_def_stmt = SSA_NAME_DEF_STMT (else_clause);
-      if (!vect_is_simple_use (else_clause, loop_vinfo, bb_vinfo,
+      if (!vect_is_simple_use (else_clause, stmt, loop_vinfo, bb_vinfo,
 			       &else_def_stmt, &def, &dt))
 	return false;
     }
@@ -5114,21 +5116,21 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
 	      vec_cond_lhs =
 	      vect_get_vec_def_for_operand (TREE_OPERAND (cond_expr, 0),
 					    stmt, NULL);
-	      vect_is_simple_use (TREE_OPERAND (cond_expr, 0), loop_vinfo,
-			      NULL, &gtemp, &def, &dts[0]);
+	      vect_is_simple_use (TREE_OPERAND (cond_expr, 0), stmt,
+				  loop_vinfo, NULL, &gtemp, &def, &dts[0]);
 
 	      vec_cond_rhs =
 		vect_get_vec_def_for_operand (TREE_OPERAND (cond_expr, 1),
 						stmt, NULL);
-	      vect_is_simple_use (TREE_OPERAND (cond_expr, 1), loop_vinfo,
-					NULL, &gtemp, &def, &dts[1]);
+	      vect_is_simple_use (TREE_OPERAND (cond_expr, 1), stmt,
+				  loop_vinfo, NULL, &gtemp, &def, &dts[1]);
 	      if (reduc_index == 1)
 		vec_then_clause = reduc_def;
 	      else
 		{
 		  vec_then_clause = vect_get_vec_def_for_operand (then_clause,
 		 		  			      stmt, NULL);
-	          vect_is_simple_use (then_clause, loop_vinfo,
+	          vect_is_simple_use (then_clause, stmt, loop_vinfo,
 					  NULL, &gtemp, &def, &dts[2]);
 		}
 	      if (reduc_index == 2)
@@ -5137,7 +5139,7 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
 		{
 		  vec_else_clause = vect_get_vec_def_for_operand (else_clause,
 							      stmt, NULL);
-		  vect_is_simple_use (else_clause, loop_vinfo,
+		  vect_is_simple_use (else_clause, stmt, loop_vinfo,
 				  NULL, &gtemp, &def, &dts[3]);
 		}
 	    }
@@ -5831,7 +5833,7 @@ get_same_sized_vectype (tree scalar_type, tree vector_type)
    Input:
    LOOP_VINFO - the vect info of the loop that is being vectorized.
    BB_VINFO - the vect info of the basic block that is being vectorized.
-   OPERAND - operand of a stmt in the loop or bb.
+   OPERAND - operand of STMT in the loop or bb.
    DEF - the defining stmt in case OPERAND is an SSA_NAME.
 
    Returns whether a stmt with OPERAND can be vectorized.
@@ -5843,7 +5845,7 @@ get_same_sized_vectype (tree scalar_type, tree vector_type)
    For now, operands defined outside the basic block are not supported.  */
 
 bool
-vect_is_simple_use (tree operand, loop_vec_info loop_vinfo,
+vect_is_simple_use (tree operand, gimple stmt, loop_vec_info loop_vinfo,
                     bb_vec_info bb_vinfo, gimple *def_stmt,
 		    tree *def, enum vect_def_type *dt)
 {
@@ -5925,7 +5927,10 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo,
       *dt = STMT_VINFO_DEF_TYPE (stmt_vinfo);
     }
 
-  if (*dt == vect_unknown_def_type)
+  if (*dt == vect_unknown_def_type
+      || (stmt
+	  && *dt == vect_double_reduction_def
+	  && gimple_code (stmt) != GIMPLE_PHI))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "Unsupported pattern.");
@@ -5969,11 +5974,12 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo,
    scalar operand.  */
 
 bool
-vect_is_simple_use_1 (tree operand, loop_vec_info loop_vinfo,
+vect_is_simple_use_1 (tree operand, gimple stmt, loop_vec_info loop_vinfo,
 		      bb_vec_info bb_vinfo, gimple *def_stmt,
 		      tree *def, enum vect_def_type *dt, tree *vectype)
 {
-  if (!vect_is_simple_use (operand, loop_vinfo, bb_vinfo, def_stmt, def, dt))
+  if (!vect_is_simple_use (operand, stmt, loop_vinfo, bb_vinfo, def_stmt,
+			   def, dt))
     return false;
 
   /* Now get a vector type if the def is internal, otherwise supply

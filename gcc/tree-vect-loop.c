@@ -1,5 +1,5 @@
 /* Loop Vectorization
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com> and
    Ira Rosen <irar@il.ibm.com>
@@ -4486,7 +4486,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       if (i == 0 && code == COND_EXPR)
         continue;
 
-      is_simple_use = vect_is_simple_use_1 (ops[i], loop_vinfo, NULL,
+      is_simple_use = vect_is_simple_use_1 (ops[i], stmt, loop_vinfo, NULL,
 					    &def_stmt, &def, &dt, &tem);
       if (!vectype_in)
 	vectype_in = tem;
@@ -4507,8 +4507,8 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
         }
     }
 
-  is_simple_use = vect_is_simple_use_1 (ops[i], loop_vinfo, NULL, &def_stmt,
-					&def, &dt, &tem);
+  is_simple_use = vect_is_simple_use_1 (ops[i], stmt, loop_vinfo, NULL,
+					&def_stmt, &def, &dt, &tem);
   if (!vectype_in)
     vectype_in = tem;
   gcc_assert (is_simple_use);
@@ -4864,14 +4864,14 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
               gimple dummy_stmt;
               tree dummy;
 
-              vect_is_simple_use (ops[!reduc_index], loop_vinfo, NULL,
+              vect_is_simple_use (ops[!reduc_index], stmt, loop_vinfo, NULL,
                                   &dummy_stmt, &dummy, &dt);
               loop_vec_def0 = vect_get_vec_def_for_stmt_copy (dt,
                                                               loop_vec_def0);
               VEC_replace (tree, vec_oprnds0, 0, loop_vec_def0);
               if (op_type == ternary_op)
                 {
-                  vect_is_simple_use (op1, loop_vinfo, NULL, &dummy_stmt,
+                  vect_is_simple_use (op1, stmt, loop_vinfo, NULL, &dummy_stmt,
                                       &dummy, &dt);
                   loop_vec_def1 = vect_get_vec_def_for_stmt_copy (dt,
                                                                 loop_vec_def1);
@@ -5103,7 +5103,8 @@ vectorizable_live_operation (gimple stmt,
       else
 	op = gimple_op (stmt, i + 1);
       if (op
-          && !vect_is_simple_use (op, loop_vinfo, NULL, &def_stmt, &def, &dt))
+          && !vect_is_simple_use (op, stmt, loop_vinfo, NULL, &def_stmt, &def,
+				  &dt))
         {
           if (vect_print_dump_info (REPORT_DETAILS))
             fprintf (vect_dump, "use not simple.");

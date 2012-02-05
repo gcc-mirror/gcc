@@ -1,5 +1,5 @@
 /* Vectorizer
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
@@ -808,9 +808,11 @@ extern bool vect_can_advance_ivs_p (loop_vec_info);
 extern unsigned int current_vector_size;
 extern tree get_vectype_for_scalar_type (tree);
 extern tree get_same_sized_vectype (tree, tree);
-extern bool vect_is_simple_use (tree, loop_vec_info, bb_vec_info, gimple *,
+extern bool vect_is_simple_use (tree, gimple, loop_vec_info,
+			        bb_vec_info, gimple *,
                                 tree *,  enum vect_def_type *);
-extern bool vect_is_simple_use_1 (tree, loop_vec_info, bb_vec_info, gimple *,
+extern bool vect_is_simple_use_1 (tree, gimple, loop_vec_info,
+				  bb_vec_info, gimple *,
 				  tree *,  enum vect_def_type *, tree *);
 extern bool supportable_widening_operation (enum tree_code, gimple, tree, tree,
                                             tree *, tree *, enum tree_code *,

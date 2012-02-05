@@ -1,3 +1,31 @@
+2012-02-05  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/52091
+	* tree-vectorizer.h (vect_is_simple_use): Add an argument.
+	(vect_is_simple_use_1): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): Update calls
+	to vect_is_simple_use_1 and vect_is_simple_use.
+	(vectorizable_live_operation): Likewise.
+	* tree-vect-patterns.c (widened_name_p,
+	vect_recog_vector_vector_shift_pattern, check_bool_pattern):
+	Likewise.
+	* tree-vect-stmts.c (process_use, vect_get_vec_def_for_operand,
+	vectorizable_call, vectorizable_conversion,
+	vectorizable_assignment, vectorizable_shift,
+	vectorizable_operation, vectorizable_store, vectorizable_load):
+	Likewise.
+	(vect_is_simple_cond): Add an argument, pass it to
+	vect_is_simple_use_1.
+	(vectorizable_condition): Update calls to vect_is_simple_cond,
+	vect_is_simple_use.
+	(vect_is_simple_use): Add an argument, the statement in which
+	OPERAND is used.  Check that if OPERAND's def stmt is a double
+	reduction phi node, the use is a phi node too.
+	(vect_is_simple_use_1): Add an argument, pass it to
+	vect_is_simple_use.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Update a call
+	to vect_is_simple_use.
+
 2012-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/52095

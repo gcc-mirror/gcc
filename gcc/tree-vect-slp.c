@@ -233,8 +233,8 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
           oprnd = TREE_OPERAND (oprnd, 0);
 	}
 
-      if (!vect_is_simple_use (oprnd, loop_vinfo, bb_vinfo, &def_stmt, &def,
-                               &dt)
+      if (!vect_is_simple_use (oprnd, NULL, loop_vinfo, bb_vinfo, &def_stmt,
+			       &def, &dt)
 	  || (!def_stmt && dt != vect_constant_def))
 	{
 	  if (vect_print_dump_info (REPORT_SLP))
