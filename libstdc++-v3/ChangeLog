@@ -1,5 +1,12 @@
 2012-02-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/51956
+	* python/libstdcxx/v6/printers.py (StdPointerPrinter): Rename to...
+	(SharedPointerPrinter): This. Also show weak count.
+	* testsuite/libstdc++-prettyprinters/shared_ptr.cc: New.
+
+2012-02-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* testsuite/20_util/shared_ptr/cons/weak_ptr_expired.cc: Modify to
 	PASS instead of XFAIL.
 
