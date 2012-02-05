@@ -1,3 +1,9 @@
+2012-02-05  Jeffrey Yasskin  <jyasskin@gcc.gnu.org>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52119
+	* include/std/limits (__glibcxx_min): Fix to avoid undefined behavior.
+
 2012-02-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/49445
@@ -97,7 +103,7 @@
 	PR libstdc++/51795
 	* include/bits/random.h (linear_congruential_generator): Add
 	static_assert preventing instantiation for values of 'a' and 'm'
-	currently handled incorrectly but _Mod::__calc.
+	currently handled incorrectly by _Mod::__calc.
 	* include/bits/random.tcc (seed_seq::generate): Avoid unsafe
 	uses of _Mod::__calc.
 
