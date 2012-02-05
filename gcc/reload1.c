@@ -5505,15 +5505,15 @@ reload_reg_reaches_end_p (unsigned int regno, int reloadnum)
 }
 
 /* Like reload_reg_reaches_end_p, but check that the condition holds for
-   every register in the range [REGNO, REGNO + NREGS).  */
+   every register in REG.  */
 
 static bool
-reload_regs_reach_end_p (unsigned int regno, int nregs, int reloadnum)
+reload_reg_rtx_reaches_end_p (rtx reg, int reloadnum)
 {
-  int i;
+  unsigned int i;
 
-  for (i = 0; i < nregs; i++)
-    if (!reload_reg_reaches_end_p (regno + i, reloadnum))
+  for (i = REGNO (reg); i < END_REGNO (reg); i++)
+    if (!reload_reg_reaches_end_p (i, reloadnum))
       return false;
   return true;
 }
@@ -7058,7 +7058,9 @@ static rtx operand_reload_insns = 0;
 static rtx other_operand_reload_insns = 0;
 static rtx other_output_reload_insns[MAX_RECOG_OPERANDS];
 
-/* Values to be put in spill_reg_store are put here first.  */
+/* Values to be put in spill_reg_store are put here first.  Instructions
+   must only be placed here if the associated reload register reaches
+   the end of the instruction's reload sequence.  */
 static rtx new_spill_reg_store[FIRST_PSEUDO_REGISTER];
 static HARD_REG_SET reg_reloaded_died;
 
@@ -7219,9 +7221,7 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 
       /* Prevent normal processing of this reload.  */
       special = 1;
-      /* Output a special code sequence for this case, and forget about
-	 spill reg information.  */
-      new_spill_reg_store[REGNO (reloadreg)] = NULL;
+      /* Output a special code sequence for this case.  */
       inc_for_reload (reloadreg, oldequiv, rl->out, rl->inc);
     }
 
@@ -7742,14 +7742,14 @@ emit_output_reload_insns (struct insn_chain *chain, struct reload *rl,
 		    rld[s].out_reg = rl->out_reg;
 		    set = single_set (next);
 		    if (set && SET_SRC (set) == s_reg
-			&& ! new_spill_reg_store[REGNO (s_reg)])
+			&& reload_reg_rtx_reaches_end_p (s_reg, s))
 		      {
 			SET_HARD_REG_BIT (reg_is_output_reload,
 					  REGNO (s_reg));
 			new_spill_reg_store[REGNO (s_reg)] = next;
 		      }
 		  }
-		else
+		else if (reload_reg_rtx_reaches_end_p (rl_reg_rtx, j))
 		  new_spill_reg_store[REGNO (rl_reg_rtx)] = p;
 	      }
 	  }
@@ -8009,6 +8009,15 @@ emit_reload_insns (struct insn_chain *chain)
       debug_reload_to_stream (dump_file);
     }
 
+  for (j = 0; j < n_reloads; j++)
+    if (rld[j].reg_rtx && HARD_REGISTER_P (rld[j].reg_rtx))
+      {
+	unsigned int i;
+
+	for (i = REGNO (rld[j].reg_rtx); i < END_REGNO (rld[j].reg_rtx); i++)
+	  new_spill_reg_store[i] = 0;
+      }
+
   /* Now output the instructions to copy the data into and out of the
      reload registers.  Do these in the order that the reloads were reported,
      since reloads of base and index registers precede reloads of operands
@@ -8016,14 +8025,6 @@ emit_reload_insns (struct insn_chain *chain)
 
   for (j = 0; j < n_reloads; j++)
     {
-      if (rld[j].reg_rtx && HARD_REGISTER_P (rld[j].reg_rtx))
-	{
-	  unsigned int i;
-
-	  for (i = REGNO (rld[j].reg_rtx); i < END_REGNO (rld[j].reg_rtx); i++)
-	    new_spill_reg_store[i] = 0;
-	}
-
       do_input_reload (chain, rld + j, j);
       do_output_reload (chain, rld + j, j);
     }
@@ -8149,15 +8150,13 @@ emit_reload_insns (struct insn_chain *chain)
 			 && GET_CODE (rld[r].out) != PRE_MODIFY))))
 	    {
 	      rtx reg;
-	      enum machine_mode mode;
-	      int regno, nregs;
 
 	      reg = reload_reg_rtx_for_output[r];
-	      mode = GET_MODE (reg);
-	      regno = REGNO (reg);
-	      nregs = hard_regno_nregs[regno][mode];
-	      if (reload_regs_reach_end_p (regno, nregs, r))
+	      if (reload_reg_rtx_reaches_end_p (reg, r))
 		{
+		  enum machine_mode mode = GET_MODE (reg);
+		  int regno = REGNO (reg);
+		  int nregs = hard_regno_nregs[regno][mode];
 		  rtx out = (REG_P (rld[r].out)
 			     ? rld[r].out
 			     : rld[r].out_reg
@@ -8221,20 +8220,21 @@ emit_reload_insns (struct insn_chain *chain)
 		   && !reg_set_p (reload_reg_rtx_for_input[r], PATTERN (insn)))
 	    {
 	      rtx reg;
-	      enum machine_mode mode;
-	      int regno, nregs;
 
 	      reg = reload_reg_rtx_for_input[r];
-	      mode = GET_MODE (reg);
-	      regno = REGNO (reg);
-	      nregs = hard_regno_nregs[regno][mode];
-	      if (reload_regs_reach_end_p (regno, nregs, r))
+	      if (reload_reg_rtx_reaches_end_p (reg, r))
 		{
+		  enum machine_mode mode;
+		  int regno;
+		  int nregs;
 		  int in_regno;
 		  int in_nregs;
 		  rtx in;
 		  bool piecemeal;
 
+		  mode = GET_MODE (reg);
+		  regno = REGNO (reg);
+		  nregs = hard_regno_nregs[regno][mode];
 		  if (REG_P (rld[r].in)
 		      && REGNO (rld[r].in) >= FIRST_PSEUDO_REGISTER)
 		    in = rld[r].in;
@@ -8336,10 +8336,17 @@ emit_reload_insns (struct insn_chain *chain)
 		 delete_output_reload.  */
 	      src_reg = reload_reg_rtx_for_output[r];
 
-	      /* If this is an optional reload, try to find the source reg
-		 from an input reload.  */
-	      if (! src_reg)
+	      if (src_reg)
 		{
+		  if (reload_reg_rtx_reaches_end_p (src_reg, r))
+		    store_insn = new_spill_reg_store[REGNO (src_reg)];
+		  else
+		    src_reg = NULL_RTX;
+		}
+	      else
+		{
+		  /* If this is an optional reload, try to find the
+		     source reg from an input reload.  */
 		  rtx set = single_set (insn);
 		  if (set && SET_DEST (set) == rld[r].out)
 		    {
@@ -8357,8 +8364,6 @@ emit_reload_insns (struct insn_chain *chain)
 			}
 		    }
 		}
-	      else
-		store_insn = new_spill_reg_store[REGNO (src_reg)];
 	      if (src_reg && REG_P (src_reg)
 		  && REGNO (src_reg) < FIRST_PSEUDO_REGISTER)
 		{

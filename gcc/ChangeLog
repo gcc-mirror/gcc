@@ -1,3 +1,16 @@
+2012-02-05  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* reload1.c (reload_regs_reach_end_p): Replace with...
+	(reload_reg_rtx_reaches_end_p): ...this function.
+	(new_spill_reg_store): Update commentary.
+	(emit_input_reload_insns): Don't clear new_spill_reg_store here.
+	(emit_output_reload_insns): Check reload_reg_rtx_reaches_end_p
+	before setting new_spill_reg_store.
+	(emit_reload_insns): Use a separate loop to clear new_spill_reg_store.
+	Use reload_reg_rtx_reaches_end_p instead of reload_regs_reach_end_p.
+	Also use reload_reg_rtx_reaches_end_p when reading new_spill_reg_store
+	for non-spill reload registers.
+
 2012-02-05  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/52091
