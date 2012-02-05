@@ -109,7 +109,8 @@ widened_name_p (tree name, gimple use_stmt, tree *half_type, gimple *def_stmt,
   stmt_vinfo = vinfo_for_stmt (use_stmt);
   loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
 
-  if (!vect_is_simple_use (name, loop_vinfo, NULL, def_stmt, &def, &dt))
+  if (!vect_is_simple_use (name, use_stmt, loop_vinfo, NULL, def_stmt, &def,
+			   &dt))
     return false;
 
   if (dt != vect_internal_def
@@ -133,8 +134,8 @@ widened_name_p (tree name, gimple use_stmt, tree *half_type, gimple *def_stmt,
       || (TYPE_PRECISION (type) < (TYPE_PRECISION (*half_type) * 2)))
     return false;
 
-  if (!vect_is_simple_use (oprnd0, loop_vinfo, NULL, &dummy_gimple, &dummy,
-                           &dt))
+  if (!vect_is_simple_use (oprnd0, *def_stmt, loop_vinfo,
+			   NULL, &dummy_gimple, &dummy, &dt))
     return false;
 
   return true;
@@ -1550,7 +1551,8 @@ vect_recog_vector_vector_shift_pattern (VEC (gimple, heap) **stmts,
 	 != TYPE_PRECISION (TREE_TYPE (oprnd0)))
     return NULL;
 
-  if (!vect_is_simple_use (oprnd1, loop_vinfo, NULL, &def_stmt, &def, &dt))
+  if (!vect_is_simple_use (oprnd1, last_stmt, loop_vinfo, NULL, &def_stmt,
+			   &def, &dt))
     return NULL;
 
   if (dt != vect_internal_def)
@@ -1926,7 +1928,7 @@ check_bool_pattern (tree var, loop_vec_info loop_vinfo)
   tree def, rhs1;
   enum tree_code rhs_code;
 
-  if (!vect_is_simple_use (var, loop_vinfo, NULL, &def_stmt, &def, &dt))
+  if (!vect_is_simple_use (var, NULL, loop_vinfo, NULL, &def_stmt, &def, &dt))
     return false;
 
   if (dt != vect_internal_def)
