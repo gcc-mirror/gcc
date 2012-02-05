@@ -1,3 +1,14 @@
+2012-02-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	* trans-array.c (gfc_array_allocate): Zero memory for all class
+	array allocations.
+	* trans-stmt.c (gfc_trans_allocate): Ditto for class scalars.
+
+	PR fortran/52102
+	* trans-stmt.c (gfc_trans_allocate): Before correcting a class
+	array reference, ensure that 'dataref' points to the _data
+	component that is followed by the array reference..
+
 2012-02-02  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/41587

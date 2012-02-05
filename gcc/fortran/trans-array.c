@@ -5111,8 +5111,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 
   gfc_add_expr_to_block (&se->pre, tmp);
 
-  if (expr->ts.type == BT_CLASS
-	&& (expr3_elem_size != NULL_TREE || expr3))
+  if (expr->ts.type == BT_CLASS)
     {
       tmp = build_int_cst (unsigned_char_type_node, 0);
       /* With class objects, it is best to play safe and null the 
