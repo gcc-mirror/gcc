@@ -910,6 +910,20 @@ proc check_effective_target_mips_llsc { } {
     }]
 }
 
+# Return true if the target is a MIPS target that uses in-place relocations.
+
+proc check_effective_target_mips_rel { } {
+    if { ![istarget mips*-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages mips_rel object {
+	#if (defined _ABIN32 && _MIPS_SIM == _ABIN32) \
+	    || (defined _ABI64 && _MIPS_SIM == _ABI64)
+	#error FOO
+	#endif
+    }]
+}
+
 # Return 1 if the current multilib does not generate PIC by default.
 
 proc check_effective_target_nonpic { } {
