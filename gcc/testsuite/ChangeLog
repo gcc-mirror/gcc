@@ -1,5 +1,10 @@
 2012-02-05  Thomas König  <tkoenig@gcc.gnu.org>
 
+	PR fortran/32373
+	* gfortran.dg/vect/vect-8.f90:  New test case.
+
+2012-02-05  Thomas König  <tkoenig@gcc.gnu.org>
+
 	PR fortran/48847
 	* gfortran.dg/warn_unused_dummy_argument_3.f90:  New test.
 
