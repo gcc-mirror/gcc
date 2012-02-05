@@ -1425,7 +1425,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class __future_base::_Async_state_common : public __future_base::_State_base
   {
   protected:
+#ifdef _GLIBCXX_HAVE_TLS
     ~_Async_state_common();
+#else
+    ~_Async_state_common() { _M_join(); }
+#endif
 
     // Allow non-timed waiting functions to block until the thread completes,
     // as if joined.
