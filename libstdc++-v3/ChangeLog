@@ -1,5 +1,13 @@
 2012-02-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/52104
+	* include/std/future (__future_base::_Async_state_common): Define
+	destructor inline for targets without TLS.
+	* src/c++11/future.cc (__future_base::_Async_state_common): Only
+	define destructor for TLS targets.
+
+2012-02-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/51956
 	* python/libstdcxx/v6/printers.py (StdPointerPrinter): Rename to...
 	(SharedPointerPrinter): This. Also show weak count.
