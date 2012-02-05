@@ -4683,6 +4683,22 @@ generate_local_decl (gfc_symbol * sym)
 	  && sym->ts.type == BT_CHARACTER && sym->ts.is_c_interop
 	  && sym->ns->proc_name != NULL && sym->ns->proc_name->attr.is_bind_c)
 	gfc_conv_scalar_char_value (sym, NULL, NULL);
+
+      /* Unused procedure passed as dummy argument.  */
+      if (sym->attr.flavor == FL_PROCEDURE)
+	{
+	  if (!sym->attr.referenced)
+	    {
+	      if (gfc_option.warn_unused_dummy_argument)
+		gfc_warning ("Unused dummy argument '%s' at %L", sym->name,
+			     &sym->declared_at);	     
+	    }
+
+	  /* Silence bogus "unused parameter" warnings from the
+	     middle end.  */
+	  if (sym->backend_decl != NULL_TREE)
+		TREE_NO_WARNING (sym->backend_decl) = 1;
+	}
     }
 
   /* Make sure we convert the types of the derived types from iso_c_binding

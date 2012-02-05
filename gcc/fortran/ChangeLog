@@ -1,3 +1,10 @@
+2012-02-05  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48847
+	* trans-decl.c:  Warn about unused dummy procedure arguments
+	if -Wunused-dummy-argument is specified.  Suppress middle-end
+	warnings about procedure arguments.
+
 2012-02-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	* trans-array.c (gfc_array_allocate): Zero memory for all class
