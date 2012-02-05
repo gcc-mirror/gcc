@@ -712,6 +712,9 @@ CALL_STUB_RET (__mips16_call_stub_dc_10, 10, DC)
 
 #ifdef L_m16rdhwr
 STARTFN (__mips16_rdhwr)
+	/* Forced always hidden, because the PLT resolver function would
+	   not preserve all necessary registers.  */
+	.hidden	__mips16_rdhwr
 	.set	push
 	.set	mips32r2
 	.set	noreorder

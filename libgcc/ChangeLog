@@ -1,3 +1,10 @@
+2012-02-05  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config.host (mips64*-*-linux*, mipsisa64*-*-linux*, mips*-*-linux*):
+	Add t-slibgcc-libgcc to tmake_file.
+	* config/mips/libgcc-mips16.ver: Revert previous patch.
+	* config/mips/mips16.S (__mips16_rdhwr): Hide.
+
 2012-02-02  Sumanth G <sumanth.gundapaneni@kpitcummins.com>
 	    Jayant R Sonar <jayant.sonar@kpitcummins.com>
 

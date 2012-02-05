@@ -746,12 +746,12 @@ mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	;;
 mips64*-*-linux* | mipsisa64*-*-linux*)
 	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="${tmake_file} t-crtfm mips/t-mips16 mips/t-tpbit"
+	tmake_file="${tmake_file} t-crtfm mips/t-mips16 mips/t-tpbit t-slibgcc-libgcc"
 	md_unwind_header=mips/linux-unwind.h
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
 	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="${tmake_file} t-crtfm mips/t-mips16"
+	tmake_file="${tmake_file} t-crtfm mips/t-mips16 t-slibgcc-libgcc"
 	md_unwind_header=mips/linux-unwind.h
 	;;
 mips*-*-openbsd*)
