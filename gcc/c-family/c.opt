@@ -1,6 +1,6 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
 ; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-; 2011 Free Software Foundation, Inc.
+; 2011, 2012 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -663,7 +663,7 @@ Warn about unsuffixed float constants
 
 Wunused-local-typedefs
 C ObjC C++ ObjC++ Var(warn_unused_local_typedefs) Warning
-Warn about
+Warn when typedefs locally defined in a function are not used
 
 Wunused-macros
 C ObjC C++ ObjC++ Warning
