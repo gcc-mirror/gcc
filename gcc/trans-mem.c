@@ -1,5 +1,5 @@
 /* Passes for transactional memory support.
-   Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -2267,6 +2267,8 @@ expand_call_tm (struct tm_region *region,
     }
 
   node = cgraph_get_node (fn_decl);
+  /* All calls should have cgraph here. */
+  gcc_assert (node);
   if (node->local.tm_may_enter_irr)
     transaction_subcode_ior (region, GTMA_MAY_ENTER_IRREVOCABLE);
 
