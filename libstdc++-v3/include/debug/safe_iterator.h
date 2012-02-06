@@ -380,8 +380,12 @@ namespace __gnu_debug
       bool
       _M_before_dereferenceable() const
       {
-	_Self __it = *this;
-	return __it._M_incrementable() && (++__it)._M_dereferenceable();
+	if (this->_M_incrementable())
+	{
+	  _Iterator __base = base();
+	  return ++__base != _M_get_sequence()->_M_base().end();
+	}
+	return false;
       }
 
       /// Is the iterator incrementable?
