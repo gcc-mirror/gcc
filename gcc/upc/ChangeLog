@@ -1,5 +1,10 @@
 2012-02-05  Nenad Vukicevic  <nenad@intrepid.com>
 
+	* gupc-manpage.html: Removed. HTML files are generated from
+	the texi source.
+
+2012-02-05  Nenad Vukicevic  <nenad@intrepid.com>
+
 	* gupc.texi (-x upc): Add files ending with '.c' to the list 
 	of files compiled as UPC source.
 
