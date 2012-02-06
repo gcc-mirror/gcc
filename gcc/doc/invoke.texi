@@ -2437,7 +2437,7 @@ the compiler to never throw an exception.
 Warn when a class has virtual functions and accessible non-virtual
 destructor, in which case it would be possible but unsafe to delete
 an instance of a derived class through a pointer to the base class.
-This warning is also enabled if -Weffc++ is specified.
+This warning is also enabled if @option{-Weffc++} is specified.
 
 @item -Wreorder @r{(C++ and Objective-C++ only)}
 @opindex Wreorder
@@ -2467,7 +2467,7 @@ The following @option{-W@dots{}} options are not affected by @option{-Wall}.
 @opindex Weffc++
 @opindex Wno-effc++
 Warn about violations of the following style guidelines from Scott Meyers'
-@cite{Effective C++} book:
+@cite{Effective C++, Second Edition} book:
 
 @itemize @bullet
 @item
