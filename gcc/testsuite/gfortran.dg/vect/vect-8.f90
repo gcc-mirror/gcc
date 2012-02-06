@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-require-effective-target vect_float }
+! { dg-require-effective-target vect_double }
 
 module lfk_prec
  integer, parameter :: dp=kind(1.d0)
@@ -705,3 +705,4 @@ END SUBROUTINE kernel
 
 ! { dg-final { scan-tree-dump-times "vectorized 19 loops" 1 "vect" } }
 ! { dg-final { cleanup-tree-dump "vect" } }
+! { dg-final { cleanup-modules "lfk_prec" } }
