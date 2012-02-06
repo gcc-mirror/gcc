@@ -1,3 +1,9 @@
+2012-02-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52115
+	* tree-sra.c (access_has_replacements_p): New function.
+	(sra_modify_assign): Use it to decide whether a use is uninitialized.
+
 2012-02-06  Patrick Marlier  <patrick.marlier@gmail.com>
 
 	PR middle-end/52047

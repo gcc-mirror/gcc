@@ -440,6 +440,20 @@ access_has_children_p (struct access *acc)
   return acc && acc->first_child;
 }
 
+/* Return true iff ACC is (partly) covered by at least one replacement.  */
+
+static bool
+access_has_replacements_p (struct access *acc)
+{
+  struct access *child;
+  if (acc->grp_to_be_replaced)
+    return true;
+  for (child = acc->first_child; child; child = child->next_sibling)
+    if (access_has_replacements_p (child))
+      return true;
+  return false;
+}
+
 /* Return a vector of pointers to accesses for the variable given in BASE or
    NULL if there is none.  */
 
@@ -2992,10 +3006,9 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
       sra_stats.exprs++;
     }
   else if (racc
-	   && !access_has_children_p (racc)
-	   && !racc->grp_to_be_replaced
 	   && !racc->grp_unscalarized_data
-	   && TREE_CODE (lhs) == SSA_NAME)
+	   && TREE_CODE (lhs) == SSA_NAME
+	   && !access_has_replacements_p (racc))
     {
       rhs = get_repl_default_def_ssa_name (racc);
       modify_this_stmt = true;
