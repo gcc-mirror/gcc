@@ -4048,7 +4048,11 @@ get_computation_cost_at (struct ivopts_data *data,
       return infinite_cost;
     }
 
-  if (address_p)
+  if (address_p
+      || (use->iv->base_object
+	  && cand->iv->base_object
+	  && POINTER_TYPE_P (TREE_TYPE (use->iv->base_object))
+	  && POINTER_TYPE_P (TREE_TYPE (cand->iv->base_object))))
     {
       /* Do not try to express address of an object with computation based
 	 on address of a different object.  This may cause problems in rtl
