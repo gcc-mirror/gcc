@@ -1,3 +1,8 @@
+2012-02-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52088
+	* cvt.c (build_expr_type_conversion): Check for template conversion.
+
 2012-01-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52043
