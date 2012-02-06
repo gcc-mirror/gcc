@@ -1,3 +1,8 @@
+2012-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/52129
+	* gcc.c-torture/execute/pr52129.c: New test.
+
 2012-02-06  Andrey Belevantsev  <abel@ispras.ru>
 
 	* gcc.dg/pr48374.c: Actually add the test I forgot 

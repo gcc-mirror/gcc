@@ -1808,6 +1808,11 @@ mem_overlaps_already_clobbered_arg_p (rtx addr, unsigned HOST_WIDE_INT size)
     return true;
   else
     i = INTVAL (val);
+#ifdef STACK_GROWS_DOWNWARD
+  i -= crtl->args.pretend_args_size;
+#else
+  i += crtl->args.pretend_args_size;
+#endif
 
 #ifdef ARGS_GROW_DOWNWARD
   i = -i - size;
