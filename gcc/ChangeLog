@@ -1,3 +1,9 @@
+2012-02-07  Alan Modra  <amodra@gmail.com>
+
+	PR target/52107
+	* config/rs6000/rs6000.c (rs6000_emit_move): Don't create DImode
+	subregs of TFmode.
+
 2012-02-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/50969

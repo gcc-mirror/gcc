@@ -7010,17 +7010,14 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
   if (!TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128
       && mode == TFmode && GET_CODE (operands[1]) == CONST_DOUBLE)
     {
-      /* DImode is used, not DFmode, because simplify_gen_subreg doesn't
-	 know how to get a DFmode SUBREG of a TFmode.  */
-      enum machine_mode imode = (TARGET_E500_DOUBLE ? DFmode : DImode);
-      rs6000_emit_move (simplify_gen_subreg (imode, operands[0], mode, 0),
-			simplify_gen_subreg (imode, operands[1], mode, 0),
-			imode);
-      rs6000_emit_move (simplify_gen_subreg (imode, operands[0], mode,
-					     GET_MODE_SIZE (imode)),
-			simplify_gen_subreg (imode, operands[1], mode,
-					     GET_MODE_SIZE (imode)),
-			imode);
+      rs6000_emit_move (simplify_gen_subreg (DFmode, operands[0], mode, 0),
+			simplify_gen_subreg (DFmode, operands[1], mode, 0),
+			DFmode);
+      rs6000_emit_move (simplify_gen_subreg (DFmode, operands[0], mode,
+					     GET_MODE_SIZE (DFmode)),
+			simplify_gen_subreg (DFmode, operands[1], mode,
+					     GET_MODE_SIZE (DFmode)),
+			DFmode);
       return;
     }
 
