@@ -90,6 +90,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Explicit instantiation due to -fno-implicit-instantiation.
   template void call_once(once_flag&, void (thread::*&&)(), reference_wrapper<thread>&&);
+  template _Bind_simple_helper<void (thread::*)(), reference_wrapper<thread>>::__type __bind_simple(void (thread::*&&)(), reference_wrapper<thread>&&);
 #endif
 #endif
 
