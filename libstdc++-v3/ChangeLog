@@ -1,3 +1,9 @@
+2012-02-06  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_iterator.h
+	(_Safe_iterator::_M_before_dereferenceable): Avoid the expensive
+	creation of a _Safe_iterator instance to do the check.
+
 2012-02-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/52104
