@@ -1,3 +1,9 @@
+2012-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/52129
+	* calls.c (mem_overlaps_already_clobbered_arg_p): If val is
+	CONST_INT_P, subtract resp. add crtl->args.pretend_args_size to it.
+
 2012-02-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR c++/48680
