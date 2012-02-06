@@ -1,3 +1,8 @@
+2012-02-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c/52118
+	* c.opt ([Wunused-local-typedefs]): Fix description.
+
 2012-01-24  Mike Stump  <mikestump@comcast.net>
 
 	* c-common.c (c_common_type_for_mode): Match signed/unsigned types
