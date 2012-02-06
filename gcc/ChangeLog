@@ -1,3 +1,10 @@
+2012-02-06  Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR middle-end/52047
+	* trans-mem.c (expand_call_tm): Add an assertion.
+	* calls.c (flags_from_decl_or_type): Add ECF_TM_PURE to 'no vops'
+	functions.
+
 2012-02-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50955
