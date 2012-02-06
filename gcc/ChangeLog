@@ -1,3 +1,9 @@
+2012-02-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/48680
+	* doc/invoke.texi (C++ Dialect Options): Use @option markup for
+	-Weffc++ and specify guidelines come from second edition.
+
 2012-02-05  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.md (sibcall_internal, sibcall_value_internal)
