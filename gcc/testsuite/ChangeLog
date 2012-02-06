@@ -1,3 +1,8 @@
+2012-02-06  Andrey Belevantsev  <abel@ispras.ru>
+
+	* gcc.dg/pr48374.c: Actually add the test I forgot 
+	in the 2012-01-25 commit.
+
 2012-02-05  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/32373
