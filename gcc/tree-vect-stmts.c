@@ -882,7 +882,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
     {
       /* Uses a high and low interleave operation for each needed permute.  */
       inside_cost = ncopies * exact_log2(group_size) * group_size
-        * vect_get_stmt_cost (vector_stmt);
+        * vect_get_stmt_cost (vec_perm);
 
       if (vect_print_dump_info (REPORT_COST))
         fprintf (vect_dump, "vect_model_store_cost: strided group_size = %d .",
@@ -988,7 +988,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, bool load_lanes_p,
     {
       /* Uses an even and odd extract operations for each needed permute.  */
       inside_cost = ncopies * exact_log2(group_size) * group_size
-	* vect_get_stmt_cost (vector_stmt);
+	* vect_get_stmt_cost (vec_perm);
 
       if (vect_print_dump_info (REPORT_COST))
         fprintf (vect_dump, "vect_model_load_cost: strided group_size = %d .",

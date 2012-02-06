@@ -1,3 +1,14 @@
+2012-02-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/50969
+	* tree-vect-stmts.c (vect_model_store_cost): Correct statement cost to
+	use vec_perm rather than vector_stmt.
+	(vect_model_load_cost): Likewise.
+	* config/i386/i386.c (ix86_builtin_vectorization_cost): Change cost of
+	vec_perm to be the same as other vector statements.
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost): Revise
+	cost of vec_perm for TARGET_VSX.
+
 2012-02-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52115
