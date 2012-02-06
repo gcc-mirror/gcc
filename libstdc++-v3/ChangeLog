@@ -1,3 +1,8 @@
+2012-02-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/52128
+	* src/c++11/future.cc: Add explicit instantiation.
+
 2012-02-06  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/safe_iterator.h
