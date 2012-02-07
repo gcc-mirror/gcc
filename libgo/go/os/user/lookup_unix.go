@@ -26,8 +26,11 @@ static int mygetpwuid_r(int uid, struct passwd *pwd,
 }
 */
 
-func libc_getpwnam_r(name *byte, pwd *syscall.Passwd, buf *byte, buflen syscall.Size_t, result **syscall.Passwd) int __asm__ ("getpwnam_r")
-func libc_getpwuid_r(uid syscall.Uid_t, pwd *syscall.Passwd, buf *byte, buflen syscall.Size_t, result **syscall.Passwd) int __asm__ ("getpwuid_r")
+//extern getpwnam_r
+func libc_getpwnam_r(name *byte, pwd *syscall.Passwd, buf *byte, buflen syscall.Size_t, result **syscall.Passwd) int
+
+//extern getpwuid_r
+func libc_getpwuid_r(uid syscall.Uid_t, pwd *syscall.Passwd, buf *byte, buflen syscall.Size_t, result **syscall.Passwd) int
 
 // bytePtrToString takes a NUL-terminated array of bytes and convert
 // it to a Go string.

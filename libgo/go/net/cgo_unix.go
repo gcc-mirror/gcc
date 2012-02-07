@@ -21,9 +21,14 @@ import (
 	"unsafe"
 )
 
-func libc_getaddrinfo(node *byte, service *byte, hints *syscall.Addrinfo, res **syscall.Addrinfo) int __asm__ ("getaddrinfo")
-func libc_freeaddrinfo(res *syscall.Addrinfo) __asm__ ("freeaddrinfo")
-func libc_gai_strerror(errcode int) *byte __asm__ ("gai_strerror")
+//extern getaddrinfo
+func libc_getaddrinfo(node *byte, service *byte, hints *syscall.Addrinfo, res **syscall.Addrinfo) int
+
+//extern freeaddrinfo
+func libc_freeaddrinfo(res *syscall.Addrinfo)
+
+//extern gai_strerror
+func libc_gai_strerror(errcode int) *byte
 
 // bytePtrToString takes a NUL-terminated array of bytes and convert
 // it to a Go string.

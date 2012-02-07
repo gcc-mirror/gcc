@@ -344,6 +344,11 @@ class Lex
   Token
   next_token();
 
+  // Return the contents of any current //extern comment.
+  const std::string&
+  extern_name() const
+  { return this->extern_; }
+
   // Return whether the identifier NAME should be exported.  NAME is a
   // mangled name which includes only ASCII characters.
   static bool
@@ -474,6 +479,9 @@ class Lex
   size_t lineno_;
   // Whether to add a semicolon if we see a newline now.
   bool add_semi_at_eol_;
+  // The external name to use for a function declaration, from a magic
+  // //extern comment.
+  std::string extern_;
 };
 
 #endif // !defined(GO_LEX_H)

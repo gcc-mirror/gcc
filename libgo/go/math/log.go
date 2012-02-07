@@ -77,7 +77,10 @@ package math
 //	Log(0) = -Inf
 //	Log(x < 0) = NaN
 //	Log(NaN) = NaN
-func libc_log(float64) float64 __asm__("log")
+
+//extern log
+func libc_log(float64) float64
+
 func Log(x float64) float64 {
 	return libc_log(x)
 }

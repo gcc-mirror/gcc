@@ -11,7 +11,10 @@ package math
 //	Exp(NaN) = NaN
 // Very large values overflow to 0 or +Inf.
 // Very small values underflow to 1.
-func libc_exp(float64) float64 __asm__("exp")
+
+//extern exp
+func libc_exp(float64) float64
+
 func Exp(x float64) float64 {
 	return libc_exp(x)
 }

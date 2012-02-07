@@ -11,7 +11,10 @@ package math
 //	Ldexp(±0, exp) = ±0
 //	Ldexp(±Inf, exp) = ±Inf
 //	Ldexp(NaN, exp) = NaN
-func libc_ldexp(float64, int) float64 __asm__("ldexp")
+
+//extern ldexp
+func libc_ldexp(float64, int) float64
+
 func Ldexp(frac float64, exp int) float64 {
 	return libc_ldexp(frac, exp)
 }

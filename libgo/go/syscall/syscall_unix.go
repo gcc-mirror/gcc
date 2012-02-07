@@ -18,8 +18,11 @@ var (
 	Stderr = 2
 )
 
-func c_syscall32(trap int32, a1, a2, a3, a4, a5, a6 int32) int32 __asm__ ("syscall");
-func c_syscall64(trap int64, a1, a2, a3, a4, a5, a6 int64) int64 __asm__ ("syscall");
+//extern syscall
+func c_syscall32(trap int32, a1, a2, a3, a4, a5, a6 int32) int32
+
+//extern syscall
+func c_syscall64(trap int64, a1, a2, a3, a4, a5, a6 int64) int64
 
 const darwinAMD64 = runtime.GOOS == "darwin" && runtime.GOARCH == "amd64"
 
@@ -46,7 +49,7 @@ func Syscall6(trap, a1, a2, a3, a4, a5, a6 uintptr) (r1, r2 uintptr, err Errno) 
 	var r uintptr
 	if unsafe.Sizeof(r) == 4 {
 		r1 := c_syscall32(int32(trap), int32(a1), int32(a2), int32(a3),
-    			int32(a4), int32(a5), int32(a6))
+			int32(a4), int32(a5), int32(a6))
 		r = uintptr(r1)
 	} else {
 		r1 := c_syscall64(int64(trap), int64(a1), int64(a2), int64(a3),
@@ -75,7 +78,7 @@ func RawSyscall6(trap, a1, a2, a3, a4, a5, a6 uintptr) (r1, r2 uintptr, err Errn
 	var r uintptr
 	if unsafe.Sizeof(r) == 4 {
 		r1 := c_syscall32(int32(trap), int32(a1), int32(a2), int32(a3),
-    			int32(a4), int32(a5), int32(a6))
+			int32(a4), int32(a5), int32(a6))
 		r = uintptr(r1)
 	} else {
 		r1 := c_syscall64(int64(trap), int64(a1), int64(a2), int64(a3),

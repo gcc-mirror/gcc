@@ -18,7 +18,10 @@ package math
 //	Mod(x, 0) = NaN
 //	Mod(x, ±Inf) = x
 //	Mod(x, NaN) = NaN
-func libc_fmod(float64, float64) float64 __asm__("fmod")
+
+//extern fmod
+func libc_fmod(float64, float64) float64
+
 func Mod(x, y float64) float64 {
 	return libc_fmod(x, y)
 }
