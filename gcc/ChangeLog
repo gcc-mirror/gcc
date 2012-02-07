@@ -1,3 +1,9 @@
+2012-02-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/51994
+	* expr.c (get_inner_reference): If there is an offset, add a negative
+	bit position to it (if any).
+
 2012-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/52060
