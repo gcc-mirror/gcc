@@ -1,5 +1,10 @@
 2012-02-07  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR target/52152
+	* objc.dg/stabs-1.m: XFAIL for mips*-*-elf*.
+
+2012-02-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	PR middle-end/24306
 	PR target/52154
 	* lib/target-supports.exp (check_effective_target_mips_eabi): New.

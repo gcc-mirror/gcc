@@ -15,4 +15,5 @@
 }
 @end
 
-/* { dg-final { scan-assembler "(.SUBSPA.*\[\$\]CODE\[\$\]|.text\"?)\n\t.stabs.*100,0,0,(\[\.\$\])?L?L\[\$\]?etext\[0-9\]*\n(\[\.\$\])?L?L\[\$\]?etext" } } */
+/* See PR 52152 for the xfail.  */
+/* { dg-final { scan-assembler "(.SUBSPA.*\[\$\]CODE\[\$\]|.text\"?)\n\t.stabs.*100,0,0,(\[\.\$\])?L?L\[\$\]?etext\[0-9\]*\n(\[\.\$\])?L?L\[\$\]?etext" { xfail mips*-*-elf* } } } */
