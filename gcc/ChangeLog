@@ -1,3 +1,8 @@
+2012-02-07  Richard Guenther  <rguenther@suse.de>
+
+	* gimple-pretty-print.c (dump_gimple_phi): Avoid excessive
+	newline in -alias dumps.
+
 2012-02-07  Kai Tietz  <ktietz@redhat.com>
             Dave Korn  <dave.korn.cygwin@gmail.com>
 
