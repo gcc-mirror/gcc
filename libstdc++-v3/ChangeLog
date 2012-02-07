@@ -1,3 +1,14 @@
+2012-02-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51296
+	* include/std/mutex (__mutex_base::~__mutex_base): Declare noexcept.
+	* src/c++11/condition_variable.cc (condition_variable): Use macro for
+	initializer function.
+
+	PR libstdc++/51906
+	* config/os/bsd/darwin/os_defines.h: Disable static initializer for
+	recursive mutexes.
+
 2012-02-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/52128

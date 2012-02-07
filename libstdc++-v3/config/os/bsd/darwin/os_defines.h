@@ -39,4 +39,7 @@
 // -flat_namespace to work around the way that it doesn't.
 #define _GLIBCXX_WEAK_DEFINITION __attribute__ ((weak))
 
+// Static initializer macro is buggy in darwin, see libstdc++/51906
+#define _GTHREAD_USE_RECURSIVE_MUTEX_INIT_FUNC
+
 #endif

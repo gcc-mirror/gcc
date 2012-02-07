@@ -36,10 +36,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #else
   condition_variable::condition_variable() noexcept
   {
-    int __e = __gthread_cond_init(&_M_cond, 0);
-
-    if (__e)
-      __throw_system_error(__e);
+    __GTHREAD_COND_INIT_FUNCTION(&_M_cond);
   }
 
   condition_variable::~condition_variable() noexcept

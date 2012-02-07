@@ -74,6 +74,20 @@ typedef struct timespec __gthread_time_t;
 #define __GTHREAD_COND_INIT PTHREAD_COND_INITIALIZER
 #define __GTHREAD_TIME_INIT {0,0}
 
+#ifdef _GTHREAD_USE_MUTEX_INIT_FUNC
+# undef __GTHREAD_MUTEX_INIT
+# define __GTHREAD_MUTEX_INIT_FUNCTION __gthread_mutex_init_function
+#endif
+#ifdef _GTHREAD_USE_RECURSIVE_MUTEX_INIT_FUNC
+# undef __GTHREAD_RECURSIVE_MUTEX_INIT
+# undef __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION
+# define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION __gthread_recursive_mutex_init_function
+#endif
+#ifdef _GTHREAD_USE_COND_INIT_FUNC
+# undef __GTHREAD_COND_INIT
+# define __GTHREAD_COND_INIT_FUNCTION __gthread_cond_init_function
+#endif
+
 #if SUPPORTS_WEAK && GTHREAD_USE_WEAK
 # ifndef __gthrw_pragma
 #  define __gthrw_pragma(pragma)
@@ -116,6 +130,7 @@ __gthrw3(pthread_mutex_unlock)
 __gthrw3(pthread_mutex_init)
 __gthrw3(pthread_mutex_destroy)
 
+__gthrw3(pthread_cond_init)
 __gthrw3(pthread_cond_broadcast)
 __gthrw3(pthread_cond_signal)
 __gthrw3(pthread_cond_wait)
@@ -145,6 +160,7 @@ __gthrw(pthread_mutex_unlock)
 __gthrw(pthread_mutex_init)
 __gthrw(pthread_mutex_destroy)
 
+__gthrw(pthread_cond_init)
 __gthrw(pthread_cond_broadcast)
 __gthrw(pthread_cond_signal)
 __gthrw(pthread_cond_wait)
@@ -162,10 +178,8 @@ __gthrw(pthread_mutexattr_destroy)
 #if defined(_LIBOBJC) || defined(_LIBOBJC_WEAK)
 /* Objective-C.  */
 #if defined(__osf__) && defined(_PTHREAD_USE_MANGLED_NAMES_)
-__gthrw3(pthread_cond_init)
 __gthrw3(pthread_exit)
 #else
-__gthrw(pthread_cond_init)
 __gthrw(pthread_exit)
 #endif /* __osf__ && _PTHREAD_USE_MANGLED_NAMES_ */
 #ifdef _POSIX_PRIORITY_SCHEDULING
@@ -730,6 +744,15 @@ __gthread_setspecific (__gthread_key_t __key, const void *__ptr)
   return __gthrw_(pthread_setspecific) (__key, __ptr);
 }
 
+#ifdef _GTHREAD_USE_MUTEX_INIT_FUNC
+static inline void
+__gthread_mutex_init_function (__gthread_mutex_t *__mutex)
+{
+  if (__gthread_active_p ())
+    __gthrw_(pthread_mutex_init) (__mutex, NULL);
+}
+#endif
+
 static inline int
 __gthread_mutex_destroy (__gthread_mutex_t *__mutex)
 {
@@ -778,7 +801,8 @@ __gthread_mutex_unlock (__gthread_mutex_t *__mutex)
     return 0;
 }
 
-#ifndef PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
+#if !defined( PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP) \
+  || defined(_GTHREAD_USE_RECURSIVE_MUTEX_INIT_FUNC)
 static inline int
 __gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *__mutex)
 {
@@ -827,6 +851,15 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 {
   return __gthread_mutex_unlock (__mutex);
 }
+
+#ifdef _GTHREAD_USE_COND_INIT_FUNC
+static inline void
+__gthread_cond_init_function (__gthread_cond_t *__cond)
+{
+  if (__gthread_active_p ())
+    __gthrw_(pthread_cond_init) (__cond, NULL);
+}
+#endif
 
 static inline int
 __gthread_cond_broadcast (__gthread_cond_t *__cond)
