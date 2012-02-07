@@ -1,3 +1,7 @@
+2012-02-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20120207-1.c: New test.
+
 2012-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/52060
