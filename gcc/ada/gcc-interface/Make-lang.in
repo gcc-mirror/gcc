@@ -165,7 +165,10 @@ else
   endif
 endif
 
-GCC_LINK=$(LINKER) $(ALL_LINKERFLAGS) -static-libgcc $(LDFLAGS)
+# Strip -Werror during linking for the LTO bootstrap
+GCC_LINKERFLAGS = $(filter-out -Werror, $(ALL_LINKERFLAGS))
+
+GCC_LINK=$(LINKER) $(GCC_LINKERFLAGS) -static-libgcc $(LDFLAGS)
 
 # Lists of files for various purposes.
 

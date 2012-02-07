@@ -1,3 +1,8 @@
+2012-02-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in (GCC_LINKERFLAGS): New variable.
+	(GCC_LINK): Use it.
+
 2012-02-01  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/trans.c (Loop_Statement_to_gnu): Use sizetype
