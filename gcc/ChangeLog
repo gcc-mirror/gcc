@@ -1,3 +1,9 @@
+2012-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/52074
+	* expr.c (expand_expr_addr_expr_1): For CONSTANT_CLASS_P or CONST_DECL
+	if modifier < EXPAND_SUM call force_operand on the result.
+
 2012-02-07  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/epiphany.h (ASM_DECLARE_FUNCTION_SIZE): Redefine,
