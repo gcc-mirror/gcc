@@ -64,6 +64,8 @@ int epiphany_normal_fp_rounding;
 static void epiphany_init_reg_tables (void);
 static int get_epiphany_condition_code (rtx);
 static tree epiphany_handle_interrupt_attribute (tree *, tree, tree, int, bool *);
+static tree epiphany_handle_forwarder_attribute (tree *, tree, tree, int,
+						 bool *);
 static bool epiphany_pass_by_reference (cumulative_args_t, enum machine_mode,
 					const_tree, bool);
 static rtx frame_insn (rtx);
@@ -410,10 +412,11 @@ epiphany_init_reg_tables (void)
 static const struct attribute_spec epiphany_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "interrupt",  1, 1, true,  false, false, epiphany_handle_interrupt_attribute, true },
+  { "interrupt",  0, 9, true,  false, false, epiphany_handle_interrupt_attribute, true },
+  { "forwarder_section", 1, 1, true, false, false, epiphany_handle_forwarder_attribute, false },
   { "long_call",  0, 0, false, true, true, NULL, false },
   { "short_call", 0, 0, false, true, true, NULL, false },
-  { "disinterrupt", 0, 0, false, true, true, NULL, false },
+  { "disinterrupt", 0, 0, false, true, true, NULL, true },
   { NULL,         0, 0, false, false, false, NULL, false }
 };
 
@@ -425,7 +428,12 @@ epiphany_handle_interrupt_attribute (tree *node ATTRIBUTE_UNUSED,
 				     int flags ATTRIBUTE_UNUSED,
 				     bool *no_add_attrs)
 {
-  tree value = TREE_VALUE (args);
+  tree value;
+
+  if (!args)
+    return NULL_TREE;
+
+  value = TREE_VALUE (args);
 
   if (TREE_CODE (value) != STRING_CST)
     {
@@ -448,8 +456,31 @@ epiphany_handle_interrupt_attribute (tree *node ATTRIBUTE_UNUSED,
 	       "argument of %qE attribute is not \"reset\", \"software_exception\", \"page_miss\", \"timer0\", \"timer1\", \"message\", \"dma0\", \"dma1\", \"wand\" or \"swi\"",
 	       name);
       *no_add_attrs = true;
+      return NULL_TREE;
     }
 
+  return epiphany_handle_interrupt_attribute (node, name, TREE_CHAIN (args),
+					      flags, no_add_attrs);
+}
+
+/* Handle a "forwarder_section" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+epiphany_handle_forwarder_attribute (tree *node ATTRIBUTE_UNUSED,
+				     tree name, tree args,
+				     int flags ATTRIBUTE_UNUSED,
+				     bool *no_add_attrs)
+{
+  tree value;
+
+  value = TREE_VALUE (args);
+
+  if (TREE_CODE (value) != STRING_CST)
+    {
+      warning (OPT_Wattributes,
+	       "argument of %qE attribute is not a string constant", name);
+      *no_add_attrs = true;
+    }
   return NULL_TREE;
 }
 
@@ -883,38 +914,10 @@ epiphany_compute_function_type (tree decl)
        a;
        a = TREE_CHAIN (a))
     {
-      tree name = TREE_PURPOSE (a), args = TREE_VALUE (a);
+      tree name = TREE_PURPOSE (a);
 
-      if (name == get_identifier ("interrupt")
-	  && list_length (args) == 1
-	  && TREE_CODE (TREE_VALUE (args)) == STRING_CST)
-	{
-	  tree value = TREE_VALUE (args);
-
-	  if (!strcmp (TREE_STRING_POINTER (value), "reset"))
-	    fn_type = EPIPHANY_FUNCTION_RESET;
-	  else if (!strcmp (TREE_STRING_POINTER (value), "software_exception"))
-	    fn_type = EPIPHANY_FUNCTION_SOFTWARE_EXCEPTION;
-	  else if (!strcmp (TREE_STRING_POINTER (value), "page_miss"))
-	    fn_type = EPIPHANY_FUNCTION_PAGE_MISS;
-	  else if (!strcmp (TREE_STRING_POINTER (value), "timer0"))
-	    fn_type = EPIPHANY_FUNCTION_TIMER0;
-	  else if (!strcmp (TREE_STRING_POINTER (value), "timer1"))
-	    fn_type = EPIPHANY_FUNCTION_TIMER1;
-	  else if (!strcmp (TREE_STRING_POINTER (value), "message"))
-	    fn_type = EPIPHANY_FUNCTION_MESSAGE;
-	  else if (!strcmp (TREE_STRING_POINTER (value), "dma0"))
-	    fn_type = EPIPHANY_FUNCTION_DMA0;
-	  else if (!strcmp (TREE_STRING_POINTER (value), "dma1"))
-	    fn_type = EPIPHANY_FUNCTION_DMA1;
-	  else if (!strcmp (TREE_STRING_POINTER (value), "wand"))
-	    fn_type = EPIPHANY_FUNCTION_WAND;
-	  else if (!strcmp (TREE_STRING_POINTER (value), "swi"))
-	    fn_type = EPIPHANY_FUNCTION_SWI;
-	  else
-	    gcc_unreachable ();
-	  break;
-	}
+      if (name == get_identifier ("interrupt"))
+	fn_type = EPIPHANY_FUNCTION_INTERRUPT;
     }
 
   last_fn = decl;
@@ -1645,8 +1648,12 @@ epiphany_expand_prologue (void)
     {
       addr = plus_constant (stack_pointer_rtx,
 			    - (HOST_WIDE_INT) 2 * UNITS_PER_WORD);
-      frame_move_insn (gen_frame_mem (DImode, addr),
-		       gen_rtx_REG (DImode, GPR_0));
+      if (!lookup_attribute ("forwarder_section",
+			    DECL_ATTRIBUTES (current_function_decl))
+	  || !epiphany_is_long_call_p (XEXP (DECL_RTL (current_function_decl),
+					     0)))
+        frame_move_insn (gen_frame_mem (DImode, addr),
+			 gen_rtx_REG (DImode, GPR_0));
       frame_move_insn (gen_rtx_REG (SImode, GPR_0),
 		       gen_rtx_REG (word_mode, STATUS_REGNUM));
       frame_move_insn (gen_rtx_REG (SImode, GPR_0+1),
@@ -2760,24 +2767,69 @@ epiphany_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 void
 epiphany_start_function (FILE *file, const char *name, tree decl)
 {
-  tree attrs, int_attr;
+  /* If the function doesn't fit into the on-chip memory, it will have a
+     section attribute - or lack of it - that denotes it goes somewhere else.
+     But the architecture spec says that an interrupt vector still has to
+     point to on-chip memory.  So we must place a jump there to get to the
+     actual function implementation.  The forwarder_section attribute
+     specifies the section where this jump goes.
+     This mechanism can also be useful to have a shortcall destination for
+     a function that is actually placed much farther away.  */
+  tree attrs, int_attr, int_names, int_name, forwarder_attr;
 
   attrs = DECL_ATTRIBUTES (decl);
   int_attr = lookup_attribute ("interrupt", attrs);
   if (int_attr)
-    {
-      char buf[99];
-      const char *fname;
+    for (int_names = TREE_VALUE (int_attr); int_names;
+	 int_names = TREE_CHAIN (int_names))
+      {
+	char buf[99];
 
-      int_attr = TREE_VALUE (TREE_VALUE (int_attr));
-      sprintf (buf, "ivt_entry_%.80s", TREE_STRING_POINTER (int_attr));
-      switch_to_section (get_section (buf, SECTION_CODE, decl));
-      fname = XSTR (XEXP (DECL_RTL (decl), 0), 0);
-      fputs ("\tb\t", file);
-      assemble_name (file, fname);
-      fputc ('\n', file);
-      switch_to_section (function_section (decl));
+	int_name = TREE_VALUE (int_names);
+	sprintf (buf, "ivt_entry_%.80s", TREE_STRING_POINTER (int_name));
+	switch_to_section (get_section (buf, SECTION_CODE, decl));
+	fputs ("\tb\t", file);
+	assemble_name (file, name);
+	fputc ('\n', file);
+      }
+  forwarder_attr = lookup_attribute ("forwarder_section", attrs);
+  if (forwarder_attr)
+    {
+      const char *prefix = "__forwarder_dst_";
+      char *dst_name = (char *) alloca (strlen (prefix) + strlen (name) + 1);
+
+      strcpy (dst_name, prefix);
+      strcat (dst_name, name);
+      forwarder_attr = TREE_VALUE (TREE_VALUE (forwarder_attr));
+      switch_to_section (get_section (TREE_STRING_POINTER (forwarder_attr),
+			 SECTION_CODE, decl));
+      ASM_OUTPUT_FUNCTION_LABEL (file, name, decl);
+      if (epiphany_is_long_call_p (XEXP (DECL_RTL (decl), 0)))
+	{
+	  int tmp = GPR_0;
+
+	  if (int_attr)
+	    fputs ("\tstrd r0,[sp,-1]\n", file);
+	  else
+	    tmp = GPR_16;
+	  gcc_assert (call_used_regs[tmp]);
+	  fprintf (file, "\tmov r%d,%%low(", tmp);
+	  assemble_name (file, dst_name);
+	  fprintf (file, ")\n"
+		   "\tmovt r%d,%%high(", tmp);
+	  assemble_name (file, dst_name);
+	  fprintf (file, ")\n"
+		 "\tjr r%d\n", tmp);
+	}
+      else
+	{
+	  fputs ("\tb\t", file);
+	  assemble_name (file, dst_name);
+	  fputc ('\n', file);
+	}
+      name = dst_name;
     }
+  switch_to_section (function_section (decl));
   ASM_OUTPUT_FUNCTION_LABEL (file, name, decl);
 }
 
