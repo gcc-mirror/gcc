@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.7-b20120128\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2012-01-27 16:13+0000\n"
-"PO-Revision-Date: 2012-02-05 23:21+0200\n"
+"PO-Revision-Date: 2012-02-07 23:21+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -8011,9 +8011,8 @@ msgid "-mcode-readable=SETTING\tSpecify when instructions are allowed to access 
 msgstr "-mcode-readable=SETTING\tAngeben, wann Befehle zum Codezugriff erlaubt sind"
 
 #: config/mips/mips.opt:87
-#, fuzzy
 msgid "Valid arguments to -mcode-readable=:"
-msgstr "ungültiges Argument %qs für -fdebug-prefix-map"
+msgstr "Gültige Argumente für -mcode-readable=:"
 
 #: config/mips/mips.opt:100
 msgid "Use branch-and-break sequences to check for integer divide by zero"
@@ -8052,9 +8051,8 @@ msgid "Use -G for data that is not defined by the current object"
 msgstr "-G für Daten verwenden, die nicht von aktuellem Objekt definiert wurden"
 
 #: config/mips/mips.opt:150
-#, fuzzy
 msgid "Work around certain 24K errata"
-msgstr "Bestimmte R4000-Errata umgehen"
+msgstr "Bestimmte 24K-Errata umgehen"
 
 #: config/mips/mips.opt:154
 msgid "Work around certain R4000 errata"
@@ -8201,9 +8199,8 @@ msgid "-mr10k-cache-barrier=SETTING\tSpecify when r10k cache barriers should be 
 msgstr "-mr10k-cache-barrier=SETTING\tAngabe, wann R10k Cachegrenzen eingefügt werden sollen"
 
 #: config/mips/mips.opt:298
-#, fuzzy
 msgid "Valid arguments to -mr10k-cache-barrier=:"
-msgstr "gültige Argumente für %qs sind: %s"
+msgstr "Gültige Argumente für -mr10k-cache-barrier=:"
 
 #: config/mips/mips.opt:311
 msgid "Try to allow the linker to turn PIC calls into direct calls"
@@ -8634,63 +8631,56 @@ msgid "preferentially allocate registers that allow short instruction generation
 msgstr ""
 
 #: config/epiphany/epiphany.opt:32
-#, fuzzy
 msgid "Set branch cost"
-msgstr "Zweige entspannen"
+msgstr "Sprungkosten setzen"
 
 #: config/epiphany/epiphany.opt:36
-#, fuzzy
 msgid "enable conditional move instruction usage."
-msgstr "Verwendung bedingter Kopierbefehle ausschalten"
+msgstr "Verwendung bedingter Kopierbefehle einschalten"
 
 #: config/epiphany/epiphany.opt:40
-#, fuzzy
 msgid "set number of nops to emit before each insn pattern"
-msgstr "Die Anzahl der ausgeführten Befehle bevor Prefetch abgeschlossen ist"
+msgstr "Anzahl der zu erzeugenden NOPs vor jeder Befehlsfolge setzen"
 
 #: config/epiphany/epiphany.opt:52
-#, fuzzy
 msgid "Use software floating point comparisons"
-msgstr "Software-Gleitkomma verwenden"
+msgstr "Software-Gleitkommavergleiche verwenden"
 
 #: config/epiphany/epiphany.opt:56
 msgid "Enable split of 32 bit immediate loads into low / high part"
-msgstr ""
+msgstr "Aufteilung von 32-Bit-Immediates in oberen/unteren Teil einschalten"
 
 #: config/epiphany/epiphany.opt:60
 msgid "Enable use of POST_INC / POST_DEC"
-msgstr ""
+msgstr "Verwendung von POST_INC / POST_DEC einschalten"
 
 #: config/epiphany/epiphany.opt:64
 msgid "Enable use of POST_MODIFY"
-msgstr ""
+msgstr "Verwendung von POST_MODIFY einschalten"
 
 #: config/epiphany/epiphany.opt:68
 msgid "Set number of bytes on the stack preallocated for use by the callee."
-msgstr ""
+msgstr "Anzahl der reservierten Bytes für die aufgerufene Funktion auf dem Stack."
 
 #: config/epiphany/epiphany.opt:72
 msgid "Assume round to nearest is selected for purposes of scheduling."
-msgstr ""
+msgstr "Rundung zur nächsten Ganzzahl für Zwecke der Planung annehmen."
 
 #: config/epiphany/epiphany.opt:76
-#, fuzzy
 msgid "Generate call insns as indirect calls"
-msgstr "Falls nötig, Aufruf-Befehle als indirekte Aufrufe erzeugen"
+msgstr "Sprungbefehle als indirekte Sprünge erzeugen"
 
 #: config/epiphany/epiphany.opt:80
-#, fuzzy
 msgid "Generate call insns as direct calls"
-msgstr "Falls nötig, Aufruf-Befehle als indirekte Aufrufe erzeugen"
+msgstr "Sprungbefehle als direkte Sprünge erzeugen"
 
 #: config/epiphany/epiphany.opt:84
 msgid "Assume labels and symbols can be addressed using 16 bit absolute addresses."
-msgstr ""
+msgstr "Annahme, dass Marken und Symbole mit absoluten 16-Bit-Adressen adressiert werden können."
 
 #: config/epiphany/epiphany.opt:108
-#, fuzzy
 msgid "Vectorize for double-word operations."
-msgstr "Bei stärkerer Ausrichtung für Doppelwort-Kopien Structs verwenden"
+msgstr "Für Doppelwort-Operationen vektorisieren."
 
 #: config/epiphany/epiphany.opt:124
 msgid "Split unaligned 8 byte vector moves before post-modify address generation."
