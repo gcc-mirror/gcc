@@ -1,3 +1,9 @@
+2012-02-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51514
+	* trans-expr.c (gfc_conv_procedure_call): Add _data component
+	for calls of scalar CLASS actuals to TYPE dummies.
+
 2012-02-05  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/48847

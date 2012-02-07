@@ -3619,6 +3619,12 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			&& CLASS_DATA (e)->attr.dimension)
 		    gfc_conv_class_to_class (&parmse, e, fsym->ts, false);
 
+		  if (fsym && fsym->ts.type == BT_DERIVED
+		      && e->ts.type == BT_CLASS
+		      && !CLASS_DATA (e)->attr.dimension
+		      && !CLASS_DATA (e)->attr.codimension)
+		    parmse.expr = gfc_class_data_get (parmse.expr);
+
 		  /* If an ALLOCATABLE dummy argument has INTENT(OUT) and is 
 		     allocated on entry, it must be deallocated.  */
 		  if (fsym && fsym->attr.allocatable
