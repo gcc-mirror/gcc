@@ -1,3 +1,10 @@
+2012-02-07  Kai Tietz  <ktietz@redhat.com>
+            Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/40068
+	* config/i386/winnt-cxx.c (i386_pe_adjust_class_at_definition):
+	Take care that typinfo gets dllexport-attribute.
+
 2012-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/52074
