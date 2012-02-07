@@ -6,7 +6,10 @@ package math
 
 // Log10 returns the decimal logarithm of x.
 // The special cases are the same as for Log.
-func libc_log10(float64) float64 __asm__("log10")
+
+//extern log10
+func libc_log10(float64) float64
+
 func Log10(x float64) float64 {
 	return libc_log10(x)
 }
@@ -17,7 +20,10 @@ func log10(x float64) float64 {
 
 // Log2 returns the binary logarithm of x.
 // The special cases are the same as for Log.
-func libc_log2(float64) float64 __asm__("log2")
+
+//extern log2
+func libc_log2(float64) float64
+
 func Log2(x float64) float64 {
 	return libc_log2(x)
 }

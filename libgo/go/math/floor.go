@@ -10,7 +10,10 @@ package math
 //	Floor(±0) = ±0
 //	Floor(±Inf) = ±Inf
 //	Floor(NaN) = NaN
-func libc_floor(float64) float64 __asm__("floor")
+
+//extern floor
+func libc_floor(float64) float64
+
 func Floor(x float64) float64 {
 	return libc_floor(x)
 }
@@ -38,7 +41,10 @@ func floor(x float64) float64 {
 //	Ceil(±0) = ±0
 //	Ceil(±Inf) = ±Inf
 //	Ceil(NaN) = NaN
-func libc_ceil(float64) float64 __asm__("ceil")
+
+//extern ceil
+func libc_ceil(float64) float64
+
 func Ceil(x float64) float64 {
 	return libc_ceil(x)
 }
@@ -53,7 +59,10 @@ func ceil(x float64) float64 {
 //	Trunc(±0) = ±0
 //	Trunc(±Inf) = ±Inf
 //	Trunc(NaN) = NaN
-func libc_trunc(float64) float64 __asm__("trunc")
+
+//extern trunc
+func libc_trunc(float64) float64
+
 func Trunc(x float64) float64 {
 	return libc_trunc(x)
 }

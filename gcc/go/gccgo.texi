@@ -304,14 +304,20 @@ function is still using it.
 @node Function Names
 @section Function Names
 
-@cindex @code{__asm__}
+@cindex @code{extern}
+@cindex external names
 Go code can call C functions directly using a Go extension implemented
-in @command{gccgo}: a function declaration may be followed by
-@code{__asm__ ("@var{name}")}. For example, here is how the C function
-@code{open} can be declared in Go:
+in @command{gccgo}: a function declaration may be preceded by a
+comment giving the external name.  The comment must be at the
+beginning of the line and must start with @code{//extern}.  This must
+be followed by a space and then the external name of the function.
+The function declaration must be on the line immediately after the
+comment.  For example, here is how the C function @code{open} can be
+declared in Go:
 
 @smallexample
-func c_open(name *byte, mode int, perm int) int __asm__ ("open");
+//extern open
+func c_open(name *byte, mode int, perm int) int
 @end smallexample
 
 The C function naturally expects a nul terminated string, which in Go
@@ -333,7 +339,7 @@ present the name of a Go function that does not have a receiver is
 @option{-fgo-prefix} option used when the package is compiled; if the
 option is not used, the default is simply @code{go}.  To call the
 function from C you must set the name using the @command{gcc}
-extension similar to the @command{gccgo} extension.
+@code{__asm__} extension.
 
 @smallexample
 extern int go_function(int) __asm__ ("myprefix.mypackage.Function");

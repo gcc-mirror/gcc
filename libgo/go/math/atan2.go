@@ -26,7 +26,10 @@ package math
 //	Atan2(y<0, -Inf) = -Pi
 //	Atan2(+Inf, x) = +Pi/2
 //	Atan2(-Inf, x) = -Pi/2
-func libc_atan2(float64, float64) float64 __asm__("atan2")
+
+//extern atan2
+func libc_atan2(float64, float64) float64
+
 func Atan2(y, x float64) float64 {
 	return libc_atan2(y, x)
 }

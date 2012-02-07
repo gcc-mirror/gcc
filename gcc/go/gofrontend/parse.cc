@@ -2093,17 +2093,19 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 // FunctionDecl = "func" identifier Signature [ Block ] .
 // MethodDecl = "func" Receiver identifier Signature [ Block ] .
 
-// gcc extension:
+// Deprecated gcc extension:
 //   FunctionDecl = "func" identifier Signature
 //                    __asm__ "(" string_lit ")" .
 // This extension means a function whose real name is the identifier
-// inside the asm.
+// inside the asm.  This extension will be removed at some future
+// date.  It has been replaced with //extern comments.
 
 void
 Parse::function_decl()
 {
   go_assert(this->peek_token()->is_keyword(KEYWORD_FUNC));
   Location location = this->location();
+  std::string extern_name = this->lex_->extern_name();
   const Token* token = this->advance_token();
 
   Typed_identifier* rec = NULL;
@@ -2173,10 +2175,20 @@ Parse::function_decl()
     {
       if (named_object == NULL && !Gogo::is_sink_name(name))
 	{
-	  if (fntype != NULL)
-	    this->gogo_->declare_function(name, fntype, location);
-	  else
+	  if (fntype == NULL)
 	    this->gogo_->add_erroneous_name(name);
+	  else
+	    {
+	      named_object = this->gogo_->declare_function(name, fntype,
+							   location);
+	      if (!extern_name.empty()
+		  && named_object->is_function_declaration())
+		{
+		  Function_declaration* fd =
+		    named_object->func_declaration_value();
+		  fd->set_asm_name(extern_name);
+		}
+	    }
 	}
     }
   else

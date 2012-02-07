@@ -60,7 +60,8 @@ func Restore(fd int, state *State) error {
 	return err
 }
 
-func ioctl(int, int, unsafe.Pointer) int __asm__("ioctl")
+//extern ioctl
+func ioctl(int, int, unsafe.Pointer) int
 
 // GetSize returns the dimensions of the given terminal.
 func GetSize(fd int) (width, height int, err error) {

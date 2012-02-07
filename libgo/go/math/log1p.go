@@ -92,7 +92,10 @@ package math
 //	Log1p(-1) = -Inf
 //	Log1p(x < -1) = NaN
 //	Log1p(NaN) = NaN
-func libc_log1p(float64) float64 __asm__("log1p")
+
+//extern log1p
+func libc_log1p(float64) float64
+
 func Log1p(x float64) float64 {
 	return libc_log1p(x)
 }

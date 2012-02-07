@@ -79,7 +79,10 @@ var _tanQ = [...]float64{
 //	Tan(±0) = ±0
 //	Tan(±Inf) = NaN
 //	Tan(NaN) = NaN
-func libc_tan(float64) float64 __asm__("tan")
+
+//extern tan
+func libc_tan(float64) float64
+
 func Tan(x float64) float64 {
 	return libc_tan(x)
 }

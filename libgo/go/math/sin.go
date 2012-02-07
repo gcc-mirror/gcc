@@ -114,7 +114,10 @@ var _cos = [...]float64{
 // Special cases are:
 //	Cos(±Inf) = NaN
 //	Cos(NaN) = NaN
-func libc_cos(float64) float64  __asm__("cos")
+
+//extern cos
+func libc_cos(float64) float64
+
 func Cos(x float64) float64 {
 	return libc_cos(x)
 }
@@ -176,7 +179,10 @@ func cos(x float64) float64 {
 //	Sin(±0) = ±0
 //	Sin(±Inf) = NaN
 //	Sin(NaN) = NaN
-func libc_sin(float64) float64 __asm__("sin")
+
+//extern sin
+func libc_sin(float64) float64
+
 func Sin(x float64) float64 {
 	return libc_sin(x)
 }
