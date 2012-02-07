@@ -1,6 +1,6 @@
 /* Base configuration file for all FreeBSD targets.
    Copyright (C) 1999, 2000, 2001, 2007, 2008, 2009,
-   2010 Free Software Foundation, Inc.
+   2010, 2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,6 +44,19 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  LIB_SPEC
 #define LIB_SPEC FBSD_LIB_SPEC
+
+#if defined(HAVE_LD_EH_FRAME_HDR)
+#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
+#endif
+
+#ifdef TARGET_LIBC_PROVIDES_SSP
+#define LINK_SSP_SPEC "%{fstack-protector|fstack-protector-all:-lssp_nonshared}"
+#endif
+
+/* Use --as-needed -lgcc_s for eh support.  */
+#ifdef HAVE_LD_AS_NEEDED
+#define USE_LD_AS_NEEDED 1
+#endif
 
 /************************[  Target stuff  ]***********************************/
 

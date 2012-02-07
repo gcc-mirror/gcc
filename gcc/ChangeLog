@@ -1,3 +1,11 @@
+2012-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/freebsd-spec.h: Add comment about what macros can be defined
+	in this header.
+	(LINK_EH_SPEC, LINK_SSP_SPEC, USE_LD_AS_NEEDED): Don't define here.
+	* config/freebsd.h (LINK_EH_SPEC, LINK_SSP_SPEC, USE_LD_AS_NEEDED): But
+	here instead.
+
 2012-02-07  Richard Guenther  <rguenther@suse.de>
 
 	* gimple-pretty-print.c (dump_gimple_phi): Avoid excessive
