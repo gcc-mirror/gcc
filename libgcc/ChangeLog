@@ -1,3 +1,10 @@
+2012-02-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51296
+	PR libstdc++/51906
+	* gthr-posix.h: Allow static initializer macros to be disabled.
+	(__gthrw_pthread_cond_init): Define weak reference unconditionally.
+
 2012-02-05  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config.host (mips64*-*-linux*, mipsisa64*-*-linux*, mips*-*-linux*):
