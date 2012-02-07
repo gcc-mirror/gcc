@@ -45,6 +45,31 @@ included in the gfdl(7) man page.
 @c Set file name and title for the man page.
 @end ignore
 
+@ifinfo
+@dircategory Software development
+@direntry
+* GNU UPC: (gupc).           A GCC-based compiler for the UPC language
+@end direntry
+
+@insertcopying
+@end ifinfo
+
+@titlepage
+@title The GNU UPC Compiler
+@versionsubtitle
+@author Gary Funck and Nenad Vukicevic
+
+@page
+@vskip 0pt plus 1filll
+Published by the Free Software Foundation @*
+51 Franklin Street, Fifth Floor@*
+Boston, MA 02110-1301, USA@*
+@sp 1
+@insertcopying
+@end titlepage
+@contents
+@page
+
 @node Top
 @chapter @command{gupc}--- UPC compiler for parallel computers
 
