@@ -1,5 +1,13 @@
 2012-02-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/52060
+	* combine.c (try_combine): Add i0src_copy and i0src_copy2 variables,
+	copy i1src to i1src_copy whenever added_sets_2 && i1_feeds_i2_n already
+	before i1dest -> i1src substitution in newpat, copy i0src to i0src_copy
+	and/or i0src_copy2 when needed.
+
+2012-02-07  Jakub Jelinek  <jakub@redhat.com>
+
 	* gcc.c (main): Don't look for lto-wrapper or lto-wrapper
 	or LTOPLUGINSONAME if have_c.
 
