@@ -1,5 +1,8 @@
 2012-02-07  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.c (main): Don't look for lto-wrapper or lto-wrapper
+	or LTOPLUGINSONAME if have_c.
+
 	* config/freebsd-spec.h: Add comment about what macros can be defined
 	in this header.
 	(LINK_EH_SPEC, LINK_SSP_SPEC, USE_LD_AS_NEEDED): Don't define here.
