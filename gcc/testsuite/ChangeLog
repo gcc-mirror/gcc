@@ -1,5 +1,12 @@
 2012-02-07  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR target/52155
+	* gcc.target/mips/mips.exp (mips-dg-options): Handle xfail and target.
+	* gcc.target/mips/loongson-shift-count-truncated-1.c: Force -mlong64
+	for MIPS ELF.
+
+2012-02-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	PR target/52152
 	* objc.dg/stabs-1.m: XFAIL for mips*-*-elf*.
 

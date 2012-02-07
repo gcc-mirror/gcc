@@ -855,6 +855,15 @@ proc mips-dg-options { args } {
     # Information about this run.
     global mips_base_options
 
+    if { [llength $args] >= 3 } {
+        switch { [dg-process-target [lindex $args 2]] } {
+            "S" { }
+            "N" { return }
+            "F" { error "[lindex $args 0]: `xfail' not allowed here" }
+            "P" { error "[lindex $args 0]: `xfail' not allowed here" }
+        }
+    }
+
     # Start out with the default option state.
     array set options [array get mips_base_options]
 
