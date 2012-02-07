@@ -32,6 +32,8 @@
 	(epiphany_start_function): Handle multiple interrupt arguments and/or
 	forwarder_section attribute.
 
+	* config/epiphany/epiphany.h (LIB_SPEC): Link libc again after libgloss.
+
 2012-02-07  Alan Modra  <amodra@gmail.com>
 
 	PR target/52107

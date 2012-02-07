@@ -43,9 +43,11 @@ along with GCC; see the file COPYING3.  If not see
     } while (0)
 
 /* Pick up the libgloss library. One day we may do this by linker script, but
-   for now its static. */
+   for now its static.
+   libgloss might use errno/__errno, which might not have been needed when we
+   saw libc the first time, so link with libc a second time.  */
 #undef LIB_SPEC
-#define LIB_SPEC "%{!shared:%{g*:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}} -lepiphany"
+#define LIB_SPEC "%{!shared:%{g*:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}} -lepiphany %{!shared:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}}"
 
 #define LINK_SPEC "%{v}"
 
