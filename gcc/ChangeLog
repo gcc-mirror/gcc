@@ -1,3 +1,24 @@
+2012-02-07  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.h (ASM_DECLARE_FUNCTION_SIZE): Redefine,
+	adding __forwarder_dst__ prefix if a forwarder_section attribute is
+	present.
+	(epiphany_function_type): Replace types for specific interrupts with
+	EPIPHANY_FUNCTION_INTERRUPT.
+	(EPIPHANY_INTERRUPT_P): Update.
+	* config/epiphany/epiphany.c (epiphany_handle_forwarder_attribute):
+	New static function.
+	(epiphany_attribute_table) <interrupt>: min_len is 0, max_len is 9.
+	<disinterrupt>: Affects type identity.
+	(epiphany_handle_interrupt_attribute): Handle variable number of
+	arguments.
+	(epiphany_compute_function_type): Update for new
+	epiphany_function_type definition.
+	(epiphany_expand_prologue): Don't save (reg:DI GPR_0) for interrupt
+	handlers with a longcall forwarder.
+	(epiphany_start_function): Handle multiple interrupt arguments and/or
+	forwarder_section attribute.
+
 2012-02-07  Alan Modra  <amodra@gmail.com>
 
 	PR target/52107

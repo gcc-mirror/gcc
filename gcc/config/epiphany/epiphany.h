@@ -778,6 +778,31 @@ do {							\
    to a multiple of 2**LOG bytes.  */
 #define ASM_OUTPUT_ALIGN(FILE,LOG) \
 do { if ((LOG) != 0) fprintf (FILE, "\t.balign %d\n", 1 << (LOG)); } while (0)
+
+/* This is how to declare the size of a function.  */
+#undef ASM_DECLARE_FUNCTION_SIZE
+#define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)			\
+  do									\
+    {									\
+      const char *__name = (FNAME);					\
+      tree attrs = DECL_ATTRIBUTES ((DECL));				\
+									\
+      if (!flag_inhibit_size_directive)					\
+	{								\
+	  if (lookup_attribute ("forwarder_section", attrs))			\
+	    {								\
+	      const char *prefix = "__forwarder_dst_";			\
+	      char *dst_name						\
+		= (char *) alloca (strlen (prefix) + strlen (__name) + 1); \
+									\
+	      strcpy (dst_name, prefix);				\
+	      strcat (dst_name, __name);				\
+	      __name = dst_name;					\
+	    }								\
+	  ASM_OUTPUT_MEASURED_SIZE ((FILE), __name);			\
+	}								\
+    }									\
+  while (0)
 
 /* Debugging information.  */
 
@@ -831,17 +856,10 @@ do { if ((LOG) != 0) fprintf (FILE, "\t.balign %d\n", 1 << (LOG)); } while (0)
 enum epiphany_function_type
 {
   EPIPHANY_FUNCTION_UNKNOWN, EPIPHANY_FUNCTION_NORMAL,
-  /* These are interrupt handlers. The name corresponds to which type
-     of interrupt handler we're dealing with. */
-  EPIPHANY_FUNCTION_RESET, EPIPHANY_FUNCTION_SOFTWARE_EXCEPTION,
-  EPIPHANY_FUNCTION_PAGE_MISS,
-  EPIPHANY_FUNCTION_TIMER0, EPIPHANY_FUNCTION_TIMER1, EPIPHANY_FUNCTION_MESSAGE,
-  EPIPHANY_FUNCTION_DMA0, EPIPHANY_FUNCTION_DMA1, EPIPHANY_FUNCTION_WAND,
-  EPIPHANY_FUNCTION_SWI
+  EPIPHANY_FUNCTION_INTERRUPT
 };
 
-#define EPIPHANY_INTERRUPT_P(TYPE) \
-  ((TYPE) >= EPIPHANY_FUNCTION_RESET && (TYPE) <= EPIPHANY_FUNCTION_SWI)
+#define EPIPHANY_INTERRUPT_P(TYPE) ((TYPE) == EPIPHANY_FUNCTION_INTERRUPT)
 
 /* Compute the type of a function from its DECL.  */
 
