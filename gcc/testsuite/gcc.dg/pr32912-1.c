@@ -1,8 +1,8 @@
 /* PR middle-end/32912 */
 /* { dg-do run } */
 /* { dg-options "-O2 -w" } */
-/* { dg-options "-O2 -w -fno-common" { target hppa*-*-hpux* } } */
-/* { dg-options "-O2 -w -msse" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
+/* { dg-additional-options "-msse" { target { i?86-*-* x86_64-*-* } } } */
 /* { dg-require-effective-target sse_runtime { target { i?86-*-* x86_64-*-* } } } */
 
 extern void abort (void);
