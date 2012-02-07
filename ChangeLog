@@ -1,3 +1,8 @@
+2012-02-08  Ira Rosen <irar@il.ibm.com>
+
+	* MAINTAINERS (Various Maintainers): Remove myself as auto-vectorizer
+	maintainer.
+
 2012-02-04  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	* MAINTAINERS (Write After Approval): Move myself to maintain alphabetical order.
