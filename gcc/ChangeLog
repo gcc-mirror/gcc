@@ -1,3 +1,8 @@
+2012-02-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_trampoline_init): Fix error
+	message for -mno-pointers-to-nested-function.
+
 2012-02-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/51994

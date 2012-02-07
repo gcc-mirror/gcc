@@ -1,3 +1,8 @@
+2012-02-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/no-r11-3.c (outer_func): Fix error message
+	for -mno-pointers-to-nested-functions.
+
 2012-02-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20120207-1.c: New test.
