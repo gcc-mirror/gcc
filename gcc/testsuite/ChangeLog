@@ -1,3 +1,10 @@
+2012-02-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/24306
+	PR target/52154
+	* lib/target-supports.exp (check_effective_target_mips_eabi): New.
+	* gcc.target/mips/va-arg-1.c: New test.
+
 2012-02-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/no-r11-3.c (outer_func): Fix error message

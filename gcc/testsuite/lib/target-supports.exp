@@ -924,6 +924,19 @@ proc check_effective_target_mips_rel { } {
     }]
 }
 
+# Return true if the target is a MIPS target that uses the EABI.
+
+proc check_effective_target_mips_eabi { } {
+    if { ![istarget mips*-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages mips_eabi object {
+	#ifndef __mips_eabi
+	#error FOO
+	#endif
+    }]
+}
+
 # Return 1 if the current multilib does not generate PIC by default.
 
 proc check_effective_target_nonpic { } {

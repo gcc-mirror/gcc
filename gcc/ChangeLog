@@ -1,3 +1,10 @@
+2012-02-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/24306
+	* config/mips/mips.c (mips_std_gimplify_va_arg_expr): New function.
+	(mips_gimplify_va_arg_expr): Call it instead of
+	std_gimplify_va_arg_expr.
+
 2012-02-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_trampoline_init): Fix error
