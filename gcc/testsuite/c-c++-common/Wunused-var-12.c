@@ -1,7 +1,7 @@
 /* PR c++/44780 */
 /* { dg-do compile } */
 /* { dg-options "-Wunused" } */
-/* { dg-options "-Wunused -fno-common" { target { { hppa*-*-hpux* } && { ! hppa*64*-*-* } } } } */
+/* { dg-additional-options "-fno-common" { target { { hppa*-*-hpux* } && { ! lp64 } } } } */
 
 typedef double vec __attribute__ ((__vector_size__ (16)));
 vec c, d;

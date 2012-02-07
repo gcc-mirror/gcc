@@ -1,3 +1,29 @@
+2012-02-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gfortran.dg/guality/pr41558.f90: Use lp64 instead of hppa*64*-*-*.
+	* gcc.dg/special/weak-1.c: Likewise.
+	* gcc.dg/ucnid-12.c: Likewise.
+	* gcc.dg/torture/pr45678-1.c: Likewise.
+	* gcc.dg/torture/pr45678-2.c: Likewise.
+	* gcc.dg/vector-4.c: Likewise.
+	* gcc.dg/ipa/inline-5.c: Likewise.
+	* gcc.dg/ucnid-11.c: Likewise.
+	* gcc.misc-tests/gcov-13.c: Likewise.
+	* gcc.misc-tests/gcov-14.c: Likewise.
+	* g++.dg/ext/label13.C: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-31.c: Use dg-additional-options for extra
+	hppa*-*-hpux* options.
+	* gcc.dg/tree-ssa/ssa-fre-33.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-34.c: Likewise.
+	* gcc.dg/pr48616.c: Likewise.
+	* gcc.dg/pr17957.c: Likewise.
+	* gcc.dg/pr17055-1.c: Likewise.
+	* gcc.dg/pr32912-1.c: Likewise.
+	* gcc.dg/tm/pr51472.c: Likewise.
+	* c-c++-common/fold-bitand-4.c: Likewise.
+	* c-c++-common/Wunused-var-12.c: Use lp64 instead of hppa*64*-*-*.
+	Use dg-additional-options for extra options.
+
 2012-02-07  Joern Rennecke <joern.rennecke@embecosm.com>
 
 	* gcc.target/epiphany/interrupt-2.c: New test.

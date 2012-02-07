@@ -1,6 +1,6 @@
 ! PR debug/41558
 ! { dg-do run }
-! { dg-skip-if "PR testsuite/51875" { { hppa*-*-hpux* } && { ! hppa*64*-*-* } } { "*" } { "" } }
+! { dg-skip-if "PR testsuite/51875" { { hppa*-*-hpux* } && { ! lp64 } } { "*" } { "" } }
 ! { dg-options "-g" }
 
 subroutine f (s)
