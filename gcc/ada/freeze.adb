@@ -4111,13 +4111,13 @@ package body Freeze is
             --  two are optional). We also verify that the full type for a
             --  private type is allowed to be a simple storage pool type.
 
-            if Present (Get_Rep_Pragma (E, Name_Simple_Storage_Pool))
+            if Present (Get_Rep_Pragma (E, Name_Simple_Storage_Pool_Type))
               and then (Is_Base_Type (E) or else Has_Private_Declaration (E))
             then
 
                --  If the type is marked Has_Private_Declaration, then this is
                --  a full type for a private type that was specified with the
-               --  pragma Simple_Storage_Pool, and here we ensure that the
+               --  pragma Simple_Storage_Pool_Type, and here we ensure that the
                --  pragma is allowed for the full type (for example, it can't
                --  be an array type, or a nonlimited record type).
 
@@ -4126,7 +4126,7 @@ package body Freeze is
                        or else not Is_Immutably_Limited_Type (E))
                     and then not Is_Private_Type (E)
                   then
-                     Error_Msg_Name_1 := Name_Simple_Storage_Pool;
+                     Error_Msg_Name_1 := Name_Simple_Storage_Pool_Type;
 
                      Error_Msg_N
                        ("pragma% can only apply to full type that is an " &

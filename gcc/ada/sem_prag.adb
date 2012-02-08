@@ -13150,15 +13150,16 @@ package body Sem_Prag is
             Check_Valid_Configuration_Pragma;
             Short_Descriptors := True;
 
-         -------------------------
-         -- Simple_Storage_Pool --
-         -------------------------
+         ------------------------------
+         -- Simple_Storage_Pool_Type --
+         ------------------------------
 
-         --  pragma Simple_Storage_Pool (type_LOCAL_NAME);
+         --  pragma Simple_Storage_Pool_Type (type_LOCAL_NAME);
 
-         when Pragma_Simple_Storage_Pool => Simple_Storage_Pool : declare
-               Type_Id : Node_Id;
-               Typ     : Entity_Id;
+         when Pragma_Simple_Storage_Pool_Type =>
+         Simple_Storage_Pool_Type : declare
+            Type_Id : Node_Id;
+            Typ     : Entity_Id;
 
          begin
             GNAT_Pragma;
@@ -13207,7 +13208,7 @@ package body Sem_Prag is
             end if;
 
             Record_Rep_Item (Typ, N);
-         end Simple_Storage_Pool;
+         end Simple_Storage_Pool_Type;
 
          ----------------------
          -- Source_File_Name --
@@ -15176,7 +15177,7 @@ package body Sem_Prag is
       Pragma_Shared                         => -1,
       Pragma_Shared_Passive                 => -1,
       Pragma_Short_Descriptors              =>  0,
-      Pragma_Simple_Storage_Pool            =>  0,
+      Pragma_Simple_Storage_Pool_Type       =>  0,
       Pragma_Source_File_Name               => -1,
       Pragma_Source_File_Name_Project       => -1,
       Pragma_Source_Reference               => -1,

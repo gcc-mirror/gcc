@@ -3569,7 +3569,7 @@ package body Exp_Ch4 is
             --  and save a reference to the pool type's Allocate routine.
 
             elsif Present (Get_Rep_Pragma
-                             (Etype (Pool), Name_Simple_Storage_Pool))
+                             (Etype (Pool), Name_Simple_Storage_Pool_Type))
             then
                declare
                   Alloc_Op  : Entity_Id := Get_Name_Entity_Id (Name_Allocate);

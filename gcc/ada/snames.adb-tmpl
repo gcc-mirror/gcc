@@ -217,8 +217,6 @@ package body Snames is
          return Pragma_Priority;
       elsif N = Name_Relative_Deadline then
          return Pragma_Relative_Deadline;
-      elsif N = Name_Simple_Storage_Pool then
-         return Pragma_Simple_Storage_Pool;
       elsif N = Name_Storage_Size then
          return Pragma_Storage_Size;
       elsif N = Name_Storage_Unit then
@@ -416,7 +414,6 @@ package body Snames is
         or else N = Name_Interface
         or else N = Name_Relative_Deadline
         or else N = Name_Priority
-        or else N = Name_Simple_Storage_Pool
         or else N = Name_Storage_Size
         or else N = Name_Storage_Unit;
    end Is_Pragma_Name;

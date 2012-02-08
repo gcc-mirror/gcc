@@ -5105,7 +5105,15 @@ All other optional warnings are turned on.
 @cindex @option{-gnatwA} (@command{gcc})
 This switch suppresses all optional warning messages, see remaining list
 in this section for details on optional warning messages that can be
-individually controlled.
+individually controlled. Note that unlike switch @option{-gnatws}, the
+use of switch @option{-gnatwA} does not suppress warnings that are
+normally given unconditionally and cannot be individually controlled
+(for example, the warning about a missing exit path in a function).
+Also, again unlike switch @option{-gnatws}, warnings suppressed by
+the use of switch @option{-gnatwA} can be individually turned back
+on. For example the use of switch @option{-gnatwA} followed by
+switch @option{-gnatwd} will suppress all optional warnings except
+the warnings for implicit dereferencing.
 
 @item -gnatw.a
 @emph{Activate warnings on failing assertions.}
@@ -5632,8 +5640,14 @@ This switch suppresses warnings for object renaming function.
 @emph{Suppress all warnings.}
 @cindex @option{-gnatws} (@command{gcc})
 This switch completely suppresses the
-output of all warning messages from the GNAT front end.
-Note that it does not suppress warnings from the @command{gcc} back end.
+output of all warning messages from the GNAT front end, including
+both warnings that can be controlled by switches described in this
+section, and those that are normally given unconditionally. The
+effect of this suppress action can only be cancelled by a subsequent
+use of the switch @option{-gnatwn}.
+
+Note that switch @option{-gnatws} does not suppress
+warnings from the @command{gcc} back end.
 To suppress these back end warnings as well, use the switch @option{-w}
 in addition to @option{-gnatws}. Also this switch has no effect on the
 handling of style check messages.

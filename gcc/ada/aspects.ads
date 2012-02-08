@@ -132,6 +132,7 @@ package Aspects is
       Aspect_Pure_Function,                 -- GNAT
       Aspect_Remote_Access_Type,            -- GNAT
       Aspect_Shared,                        -- GNAT (equivalent to Atomic)
+      Aspect_Simple_Storage_Pool_Type,      -- GNAT
       Aspect_Suppress_Debug_Info,           -- GNAT
       Aspect_Unchecked_Union,
       Aspect_Universal_Aliasing,            -- GNAT
@@ -171,32 +172,33 @@ package Aspects is
    --  The following array identifies all implementation defined aspects
 
    Impl_Defined_Aspects : constant array (Aspect_Id) of Boolean :=
-                            (Aspect_Ada_2005             => True,
-                             Aspect_Ada_2012             => True,
-                             Aspect_Compiler_Unit        => True,
-                             Aspect_Dimension            => True,
-                             Aspect_Dimension_System     => True,
-                             Aspect_Favor_Top_Level      => True,
-                             Aspect_Inline_Always        => True,
-                             Aspect_Object_Size          => True,
-                             Aspect_Persistent_BSS       => True,
-                             Aspect_Predicate            => True,
-                             Aspect_Preelaborate_05      => True,
-                             Aspect_Pure_05              => True,
-                             Aspect_Pure_12              => True,
-                             Aspect_Pure_Function        => True,
-                             Aspect_Remote_Access_Type   => True,
-                             Aspect_Shared               => True,
-                             Aspect_Simple_Storage_Pool  => True,
-                             Aspect_Suppress_Debug_Info  => True,
-                             Aspect_Test_Case            => True,
-                             Aspect_Universal_Data       => True,
-                             Aspect_Universal_Aliasing   => True,
-                             Aspect_Unmodified           => True,
-                             Aspect_Unreferenced         => True,
-                             Aspect_Unreferenced_Objects => True,
-                             Aspect_Value_Size           => True,
-                             others                      => False);
+                            (Aspect_Ada_2005                 => True,
+                             Aspect_Ada_2012                 => True,
+                             Aspect_Compiler_Unit            => True,
+                             Aspect_Dimension                => True,
+                             Aspect_Dimension_System         => True,
+                             Aspect_Favor_Top_Level          => True,
+                             Aspect_Inline_Always            => True,
+                             Aspect_Object_Size              => True,
+                             Aspect_Persistent_BSS           => True,
+                             Aspect_Predicate                => True,
+                             Aspect_Preelaborate_05          => True,
+                             Aspect_Pure_05                  => True,
+                             Aspect_Pure_12                  => True,
+                             Aspect_Pure_Function            => True,
+                             Aspect_Remote_Access_Type       => True,
+                             Aspect_Shared                   => True,
+                             Aspect_Simple_Storage_Pool      => True,
+                             Aspect_Simple_Storage_Pool_Type => True,
+                             Aspect_Suppress_Debug_Info      => True,
+                             Aspect_Test_Case                => True,
+                             Aspect_Universal_Data           => True,
+                             Aspect_Universal_Aliasing       => True,
+                             Aspect_Unmodified               => True,
+                             Aspect_Unreferenced             => True,
+                             Aspect_Unreferenced_Objects     => True,
+                             Aspect_Value_Size               => True,
+                             others                          => False);
 
    --  The following array indicates aspects for which multiple occurrences of
    --  the same aspect attached to the same declaration are allowed.
@@ -368,6 +370,7 @@ package Aspects is
      Aspect_Shared                       => Name_Shared,
      Aspect_Shared_Passive               => Name_Shared_Passive,
      Aspect_Simple_Storage_Pool          => Name_Simple_Storage_Pool,
+     Aspect_Simple_Storage_Pool_Type     => Name_Simple_Storage_Pool_Type,
      Aspect_Size                         => Name_Size,
      Aspect_Small                        => Name_Small,
      Aspect_Static_Predicate             => Name_Static_Predicate,

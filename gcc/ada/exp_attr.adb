@@ -4518,7 +4518,7 @@ package body Exp_Attr is
                --  then the result will default to zero.
 
                if Present (Get_Rep_Pragma (Root_Type (Ptyp),
-                                           Name_Simple_Storage_Pool))
+                                           Name_Simple_Storage_Pool_Type))
                then
                   declare
                      Pool_Type : constant Entity_Id :=

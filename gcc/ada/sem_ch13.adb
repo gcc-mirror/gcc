@@ -3201,14 +3201,14 @@ package body Sem_Ch13 is
                  (Expr, Class_Wide_Type (RTE (RE_Root_Storage_Pool)));
 
             --  In the Simple_Storage_Pool case, we allow a variable of any
-            --  Simple_Storage_Pool type, so we Resolve without imposing an
+            --  simple storage pool type, so we Resolve without imposing an
             --  expected type.
 
             else
                Analyze_And_Resolve (Expr);
 
                if not Present (Get_Rep_Pragma
-                                 (Etype (Expr), Name_Simple_Storage_Pool))
+                                 (Etype (Expr), Name_Simple_Storage_Pool_Type))
                then
                   Error_Msg_N
                     ("expression must be of a simple storage pool type", Expr);
