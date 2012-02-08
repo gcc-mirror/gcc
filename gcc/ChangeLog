@@ -1,3 +1,8 @@
+2012-02-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* optabs.c (expand_atomic_load): Do not assume compare_and_swap will
+	always succeed for integers larger than a native word.
+
 2012-02-08  Richard Guenther  <rguenther@suse.de>
 
 	PR rtl-optimization/52170

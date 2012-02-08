@@ -7665,9 +7665,12 @@ expand_atomic_load (rtx target, rtx mem, enum memmodel model)
       /* Issue val = compare_and_swap (mem, 0, 0).
 	 This may cause the occasional harmless store of 0 when the value is
 	 already 0, but it seems to be OK according to the standards guys.  */
-      expand_atomic_compare_and_swap (NULL, &target, mem, const0_rtx,
-				      const0_rtx, false, model, model);
-      return target;
+      if (expand_atomic_compare_and_swap (NULL, &target, mem, const0_rtx,
+					  const0_rtx, false, model, model))
+	return target;
+      else
+      /* Otherwise there is no atomic load, leave the library call.  */
+        return NULL_RTX;
     }
 
   /* Otherwise assume loads are atomic, and emit the proper barriers.  */
