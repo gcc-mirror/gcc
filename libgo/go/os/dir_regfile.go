@@ -9,5 +9,5 @@ package os
 
 import "syscall"
 
-// extern readdir_r
+//extern readdir_r
 func libc_readdir_r(*syscall.DIR, *syscall.Dirent, **syscall.Dirent) syscall.Errno
