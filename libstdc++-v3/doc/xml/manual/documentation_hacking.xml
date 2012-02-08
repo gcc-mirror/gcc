@@ -242,7 +242,7 @@
 
     <row>
       <entry>doxygen</entry>
-      <entry>1.7.0</entry>
+      <entry>1.7.6.1</entry>
       <entry>all</entry>
     </row>
 
@@ -279,6 +279,16 @@
 	will need to be installed. For PDF
 	output, <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.tug.org/applications/pdftex/">
 	pdflatex</link> is required.
+      </para>
+
+      <para>
+	Be warned the PDF file generated via doxygen is extremely
+	large. At last count, the PDF file is over three thousand
+	pages. Generating this document taxes the underlying TeX
+	formatting system, and will require the expansion of TeX's memory
+	capacity. Specifically, the <literal>pool_size</literal>
+	variable in the configuration file <filename>texmf.cnf</filename> may
+	need to be increased by a minimum factor of two.
       </para>
     </section>
 
