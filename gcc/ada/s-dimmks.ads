@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                        S Y S T E M . D I M _ M K S                       --
+--                        S Y S T E M . D I M . M K S                       --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
@@ -35,9 +35,11 @@
 --  System.Dim_Mks.Other_Prefixes) in order to avoid too many constant
 --  declarations in this package.
 
+--  The dimension terminology is defined in System.Dim_IO package
+
 with Ada.Numerics;
 
-package System.Dim_Mks is
+package System.Dim.Mks is
 
    e  : constant := Ada.Numerics.e;
    Pi : constant := Ada.Numerics.Pi;
@@ -54,7 +56,7 @@ package System.Dim_Mks is
         (Mole,     "mol"),
         (Candela,  "cd"));
 
-   --  SI Base
+   --  SI Base dimensioned subtype
 
    subtype Length is Mks_Type
      with
@@ -321,4 +323,4 @@ package System.Dim_Mks is
    kA  : constant Electric_Current := 1.0E+03;  -- kilo
    MeA : constant Electric_Current := 1.0E+06;  -- mega
 
-end System.Dim_Mks;
+end System.Dim.Mks;

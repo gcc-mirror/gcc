@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                    S Y S T E M . D I M _ F L O A T _ I O                 --
+--                    S Y S T E M . D I M . F L O A T _ I O                 --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -29,19 +29,74 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package is a generic package that provides IO facilities for float
---  dimensioned types.
+--  This package provides output routines for float dimensioned types. All Put
+--  routines are modelled after those in package Ada.Text_IO.Float_IO with the
+--  addition of an extra default parameter.
 
---  Note that there is a default string parameter in every Put routine
---  rewritten at compile time to output the corresponding dimensions as a
---  suffix of the numeric value.
+--  Parameter Symbol may be used in the following manner (all the examples are
+--  based on the MKS system of units as defined in package System.Dim.Mks):
+
+--  Case 1. A value is supplied for Symbol
+
+--    The string appears as a suffix of Item
+
+--      Obj : Mks_Type := 2.6;
+--      Put (Obj, 1, 1, 0, " dimensionless");
+
+--      The corresponding output is: 2.6 dimensionless
+
+--  Case 2. No value is supplied for Symbol and Item is dimensionless
+
+--    Item appears without a suffix
+
+--      Obj : Mks_Type := 2.6;
+--      Put (Obj, 1, 1, 0);
+
+--      The corresponding output is: 2.6
+
+--  Case 3. No value is supplied for Symbol and Item has a dimension
+
+--    If the type of Item is a dimensioned subtype whose symbolic name is not
+--    empty, then the symbolic name appears as a suffix.
+
+--      subtype Length is Mks_Type
+--        with
+--         Dimension => ('m',
+--           Meter =>  1,
+--           others => 0);
+
+--      Obj : Length := 2.3 * dm;
+--      Put (Obj, 1, 2, 0);
+
+--      The corresponding output is: 0.23 m
+
+--    Otherwise, a new string is created and appears as a suffix of Item.
+--    This string results in the successive concatanations between each
+--    dimension symbolic name raised by its corresponding dimension power from
+--    the dimensions of Item.
+
+--      subtype Random is Mks_Type
+--        with
+--         Dimension => ("",
+--         Meter =>   3,
+--         Candela => -1,
+--         others =>  0);
+
+--      Obj : Random := 5.0;
+--      Put (Obj);
+
+--      The corresponding output is: 5.0 m**3.cd**(-1)
+
+--      Put (3.3 * km * dm * min, 5, 1, 0);
+
+--      The corresponding output is: 19800.0 m**2.s
 
 with Ada.Text_IO; use Ada.Text_IO;
 
 generic
    type Num_Dim_Float is digits <>;
 
-package System.Dim_Float_IO is
+package System.Dim.Float_IO is
 
    Default_Fore : Field := 2;
    Default_Aft  : Field := Num_Dim_Float'Digits - 1;
@@ -71,4 +126,4 @@ package System.Dim_Float_IO is
 
    pragma Inline (Put);
 
-end System.Dim_Float_IO;
+end System.Dim.Float_IO;

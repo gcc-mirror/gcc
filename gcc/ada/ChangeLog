@@ -1,3 +1,35 @@
+2012-02-08  Vincent Celier  <celier@adacore.com>
+
+	* gcc-interface/Make-lang.in: Add g-byorma.o to gnatbind objects
+	(g-buorma is now imported by sinput).
+	Update dependencies.
+	* scn.adb (Initialize_Scanner): Call Check_For_BOM
+	* sinput-p.adb (Source_File_Is_Subunit): Call Check_For_BOM
+	* sinput.adb: New procedure Check_For_BOM
+	* sinput.ads: New procedure Check_For_BOM
+
+2012-02-08  Vincent Pucci  <pucci@adacore.com>
+
+	* impunit.adb: Dimension package names updated
+	* Makefile.rtl: s-dim added
+	* sem_dim.adb (Is_Procedure_Put_Call): minor changes
+	(Is_Dim_IO_Package_Instantiation): minor changes
+	* sem_dim.ads: minor changes in comments
+	* snames.ads-tmpl: Name_Dim added Name_Dim_Float_IO and
+	Name_Dim_Integer_IO removed
+	* s-dim.ads: New package. Define the dimension terminology.
+	* s-diflio.adb, s-diinio.adb, s-dimkio.ads, s-dimmks.ads,
+	* s-dmotpr.ads: Package names updated.
+	* s-diflio.ads, s-diinio.ads: Documentation added and package
+	names updated.
+
+2012-02-08  Gary Dismukes  <dismukes@adacore.com>
+
+	* gcc-interface/utils2.c (build_call_alloc_dealloc_proc): Revise test
+	for storage pools to test for an underlying record type rather than
+	testing Is_Tagged_Type, so that simple storage pools will be handled
+	the same as normal Ada storage pools.
+
 2012-02-08  Yannick Moy  <moy@adacore.com>
 
 	* gnat_rm.texi: Minor reshuffling to place restriction at

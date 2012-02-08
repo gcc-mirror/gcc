@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2011, Free Software Foundation, Inc.        --
+--           Copyright (C) 2000-2012, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -366,11 +366,11 @@ package body Impunit is
 
     ("s-addima", F),  -- System.Address_Image
     ("s-assert", F),  -- System.Assertions
-    ("s-diflio", F),  -- System.Dim_Float_IO
-    ("s-diinio", F),  -- System.Dim_Integer_IO
-    ("s-dimkio", F),  -- System.Dim_Mks_IO
-    ("s-dimmks", F),  -- System.Dim_Mks
-    ("s-dmotpr", F),  -- System.Dim_Mks.Other_Prefixes
+    ("s-diflio", F),  -- System.Dim.Float_IO
+    ("s-diinio", F),  -- System.Dim.Integer_IO
+    ("s-dimkio", F),  -- System.Dim.Mks_IO
+    ("s-dimmks", F),  -- System.Dim.Mks
+    ("s-dmotpr", F),  -- System.Dim.Mks.Other_Prefixes
     ("s-memory", F),  -- System.Memory
     ("s-parint", F),  -- System.Partition_Interface
     ("s-pooglo", F),  -- System.Pool_Global

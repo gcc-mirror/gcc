@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                  S Y S T E M . D I M . I N T E G E R _ I O               --
+--                           S Y S T E M . D I M                            --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
+--             Copyright (C) 2012, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,49 +29,41 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Dim.Integer_IO is
+--  Defines the dimension terminology
 
-   package Num_Dim_Integer_IO is new Ada.Text_IO.Integer_IO (Num_Dim_Integer);
+---------------------------
+-- Dimension Terminology --
+---------------------------
 
-   ---------
-   -- Put --
-   ---------
+--  * Dimensioned type
 
-   procedure Put
-     (File    : File_Type;
-      Item    : Num_Dim_Integer;
-      Width   : Field       := Default_Width;
-      Base    : Number_Base := Default_Base;
-      Symbols : String      := "")
+--    A dimensioned type is a type (more accurately a first subtype) to which
+--    the aspect Dimension_System applies to.
 
-   is
-   begin
-      Num_Dim_Integer_IO.Put (File, Item, Width, Base);
-      Ada.Text_IO.Put (File, Symbols);
-   end Put;
+--      type Mks_Type is new Long_Long_Float
+--        with
+--         Dimension_System => ((Meter, 'm'),
+--           (Kilogram, "kg"),
+--           (Second,   's'),
+--           (Ampere,   'A'),
+--           (Kelvin,   'K'),
+--           (Mole,     "mol"),
+--           (Candela,  "cd"));
 
-   procedure Put
-     (Item    : Num_Dim_Integer;
-      Width   : Field       := Default_Width;
-      Base    : Number_Base := Default_Base;
-      Symbols : String      := "")
+--      'm' is the symbolic name of dimension Meter
 
-   is
-   begin
-      Num_Dim_Integer_IO.Put (Item, Width, Base);
-      Ada.Text_IO.Put (Symbols);
-   end Put;
+--  * Dimensioned subtype
 
-   procedure Put
-     (To      : out String;
-      Item    : Num_Dim_Integer;
-      Base    : Number_Base := Default_Base;
-      Symbols : String      := "")
+--    A dimensioned subtype is a subtype directly defined from the dimensioned
+--    type and to which the aspect Dimension applies to.
 
-   is
-   begin
-      Num_Dim_Integer_IO.Put (To, Item, Base);
-      To := To & Symbols;
-   end Put;
+--      subtype Length is Mks_Type
+--        with
+--         Dimension => ('m',
+--           Meter =>  1,
+--           others => 0);
 
-end System.Dim.Integer_IO;
+--      'm' is the symbolic name of dimensioned subtype Length
+
+package System.Dim is
+end System.Dim;

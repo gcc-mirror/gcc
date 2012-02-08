@@ -2126,7 +2126,7 @@ package body Sem_Dim is
    -- Expand_Put_Call_With_Dimension_Symbol --
    -------------------------------------------
 
-   --  For procedure Put defined in System.Dim_Float_IO/System.Dim_Integer_IO,
+   --  For procedure Put defined in System.Dim.Float_IO/System.Dim.Integer_IO,
    --  the default string parameter must be rewritten to include the dimension
    --  symbols in the output of a dimensioned object.
 
@@ -2175,8 +2175,8 @@ package body Sem_Dim is
 
       function Is_Procedure_Put_Call return Boolean;
       --  Return True if the current call is a call of an instantiation of a
-      --  procedure Put defined in the package System.Dim_Float_IO and
-      --  System.Dim_Integer_IO.
+      --  procedure Put defined in the package System.Dim.Float_IO and
+      --  System.Dim.Integer_IO.
 
       function Item_Actual return Node_Id;
       --  Return the item actual parameter node in the put call
@@ -2240,16 +2240,17 @@ package body Sem_Dim is
             then
                Ent := Cunit_Entity (Get_Source_Unit (Ent));
 
-               --  Verify that the generic package is System.Dim_Float_IO or
-               --  System.Dim_Integer_IO.
+               --  Verify that the generic package is System.Dim.Float_IO or
+               --  System.Dim.Integer_IO.
 
                if Is_Library_Level_Entity (Ent) then
                   Package_Name := Chars (Ent);
 
-                  return
-                    Package_Name = Name_Dim_Float_IO
-                      or else
-                    Package_Name = Name_Dim_Integer_IO;
+                  if Package_Name = Name_Float_IO
+                    or else Package_Name = Name_Integer_IO
+                  then
+                     return Chars (Scope (Ent)) = Name_Dim;
+                  end if;
                end if;
             end if;
          end if;
@@ -2511,11 +2512,13 @@ package body Sem_Dim is
       if Is_Entity_Name (Gen_Id) then
          Ent := Entity (Gen_Id);
 
-         return
-           Is_Library_Level_Entity (Ent)
-             and then
-               (Chars (Ent) = Name_Dim_Float_IO
-                 or else Chars (Ent) = Name_Dim_Integer_IO);
+         if Is_Library_Level_Entity (Ent)
+           and then
+            (Chars (Ent) = Name_Float_IO
+               or else Chars (Ent) = Name_Integer_IO)
+         then
+            return Chars (Scope (Ent)) = Name_Dim;
+         end if;
       end if;
 
       return False;
