@@ -2908,6 +2908,10 @@ package body Prj.Proc is
 
             Process_Imported_Projects (Imported, Limited_With => True);
 
+            if Err_Vars.Total_Errors_Detected = 0 then
+               Process_Aggregated_Projects;
+            end if;
+
             --  At this point (after Process_Declarative_Items) we have the
             --  attribute values set, we can backtrace In_Tree.Project and
             --  set the From_Encapsulated_Library status.
@@ -2935,7 +2939,6 @@ package body Prj.Proc is
                end if;
 
                if Err_Vars.Total_Errors_Detected = 0 then
-                  Process_Aggregated_Projects;
 
                   --  For an aggregate library we add the aggregated projects
                   --  as imported ones. This is necessary to give visibility

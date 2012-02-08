@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2010, AdaCore                     --
+--                     Copyright (C) 1995-2012, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,12 +31,12 @@
 
 pragma Compiler_Unit;
 
-with System.Case_Util;
-with System.CRTL;
-with System.Soft_Links;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System; use System;
+with System.Case_Util;
+with System.CRTL;
+with System.Soft_Links;
 
 package body System.OS_Lib is
 
@@ -1703,6 +1703,16 @@ package body System.OS_Lib is
                --  If null terminated string, put the quote before
 
                if Res (J) = ASCII.NUL then
+
+                  --  If the string ends with \, double it
+
+                  if Res (J - 1) = '\' then
+                     Res (J) := '\';
+                     J := J + 1;
+                  end if;
+
+                  --  Then adds the quote and the NUL character
+
                   Res (J) := '"';
                   J := J + 1;
                   Res (J) := ASCII.NUL;
@@ -2131,8 +2141,8 @@ package body System.OS_Lib is
             Start := Last;
             loop
                Start := Start - 1;
-               exit when Start < 1 or else
-                 Path_Buffer (Start) = Directory_Separator;
+               exit when Start < 1
+                 or else Path_Buffer (Start) = Directory_Separator;
             end loop;
 
             if Start <= 1 then
