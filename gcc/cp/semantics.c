@@ -6025,13 +6025,28 @@ cx_check_missing_mem_inits (tree fun, tree body, bool complain)
   bool bad;
   tree field;
   unsigned i, nelts;
+  tree ctype;
 
   if (TREE_CODE (body) != CONSTRUCTOR)
     return false;
 
-  bad = false;
   nelts = CONSTRUCTOR_NELTS (body);
-  field = TYPE_FIELDS (DECL_CONTEXT (fun));
+  ctype = DECL_CONTEXT (fun);
+  field = TYPE_FIELDS (ctype);
+
+  if (TREE_CODE (ctype) == UNION_TYPE)
+    {
+      if (nelts == 0 && next_initializable_field (field))
+	{
+	  if (complain)
+	    error ("%<constexpr%> constructor for union %qT must "
+		   "initialize exactly one non-static data member", ctype);
+	  return true;
+	}
+      return false;
+    }
+
+  bad = false;
   for (i = 0; i <= nelts; ++i)
     {
       tree index;
@@ -6050,8 +6065,6 @@ cx_check_missing_mem_inits (tree fun, tree body, bool complain)
 	  if (TREE_CODE (field) != FIELD_DECL
 	      || (DECL_C_BIT_FIELD (field) && !DECL_NAME (field)))
 	    continue;
-	  if (!complain)
-	    return true;
 	  ftype = strip_array_types (TREE_TYPE (field));
 	  if (type_has_constexpr_default_constructor (ftype))
 	    {
@@ -6062,6 +6075,8 @@ cx_check_missing_mem_inits (tree fun, tree body, bool complain)
 				   || errorcount != 0);
 	      continue;
 	    }
+	  if (!complain)
+	    return true;
 	  error ("uninitialized member %qD in %<constexpr%> constructor",
 		 field);
 	  bad = true;

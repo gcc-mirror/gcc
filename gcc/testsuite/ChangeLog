@@ -1,5 +1,8 @@
 2012-02-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51675
+	* g++.dg/cpp0x/constexpr-union3.C: New.
+
 	PR c++/52035
 	* g++.dg/lto/pr52035_0.C: New.
 

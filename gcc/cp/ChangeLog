@@ -1,5 +1,9 @@
 2012-02-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51675
+	* semantics.c (cx_check_missing_mem_inits): Handle unions.
+	Fix constexpr default constructor logic.
+
 	PR c++/52035
 	* pt.c (tsubst): Strip uninstantiated typedef.
 
