@@ -1621,6 +1621,17 @@ package Prj is
       With_State         : in out State;
       Include_Aggregated : Boolean := True;
       Imported_First     : Boolean := False);
+   --  As above but with an associated context
+
+   generic
+      with procedure Action
+        (Project : Project_Id;
+         Tree    : Project_Tree_Ref;
+         Context : Project_Context);
+   procedure For_Project_And_Aggregated_Context
+     (Root_Project : Project_Id;
+      Root_Tree    : Project_Tree_Ref);
+   --  As above but with an associated context
 
    function Extend_Name
      (File        : File_Name_Type;

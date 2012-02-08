@@ -1,3 +1,8 @@
+2012-02-08  Pascal Obry  <obry@adacore.com>
+
+	* prj.ads, prj.adb (For_Project_And_Aggregated_Context): New
+	generic routine with a context parameter.
+
 2012-02-08  Robert Dewar  <dewar@adacore.com>
 
 	* a-coinve.adb, sem_util.adb, sem_ch8.adb, a-cobove.adb,
