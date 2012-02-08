@@ -1,3 +1,9 @@
+2012-02-08  Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/52170
+	* simplify-rtx.c (simplify_plus_minus): Use CONSTM1_RTX to
+	properly handle integer vector modes.
+
 2012-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR gcov-profile/52150
