@@ -1863,6 +1863,56 @@ package body Prj is
       end if;
    end For_Project_And_Aggregated;
 
+   ----------------------------------------
+   -- For_Project_And_Aggregated_Context --
+   ----------------------------------------
+
+   procedure For_Project_And_Aggregated_Context
+     (Root_Project : Project_Id;
+      Root_Tree    : Project_Tree_Ref)
+   is
+
+      procedure Recursive_Process
+        (Project : Project_Id;
+         Tree    : Project_Tree_Ref;
+         Context : Project_Context);
+      --  Process Project and all aggregated projects recursively
+
+      -----------------------
+      -- Recursive_Process --
+      -----------------------
+
+      procedure Recursive_Process
+        (Project : Project_Id;
+         Tree    : Project_Tree_Ref;
+         Context : Project_Context)
+      is
+         Agg : Aggregated_Project_List;
+         Ctx : Project_Context;
+      begin
+         Action (Project, Tree, Context);
+
+         if Project.Qualifier in Aggregate_Project then
+            Ctx :=
+              (In_Aggregate_Lib      => True,
+               From_Encapsulated_Lib =>
+                 Context.From_Encapsulated_Lib
+                   or else
+                 Project.Standalone_Library = Encapsulated);
+
+            Agg := Project.Aggregated_Projects;
+            while Agg /= null loop
+               Recursive_Process (Agg.Project, Agg.Tree, Ctx);
+               Agg := Agg.Next;
+            end loop;
+         end if;
+      end Recursive_Process;
+
+   begin
+      Recursive_Process
+        (Root_Project, Root_Tree, Project_Context'(False, False));
+   end For_Project_And_Aggregated_Context;
+
 --  Package initialization for Prj
 
 begin
