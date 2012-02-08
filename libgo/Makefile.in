@@ -192,12 +192,13 @@ am__libgo_la_SOURCES_DIST = runtime/go-append.c runtime/go-assert.c \
 	runtime/go-interface-val-compare.c runtime/go-make-slice.c \
 	runtime/go-map-delete.c runtime/go-map-index.c \
 	runtime/go-map-len.c runtime/go-map-range.c \
-	runtime/go-nanotime.c runtime/go-now.c runtime/go-new-map.c \
-	runtime/go-new.c runtime/go-nosys.c runtime/go-panic.c \
-	runtime/go-print.c runtime/go-recover.c runtime/go-reflect.c \
-	runtime/go-reflect-call.c runtime/go-reflect-map.c \
-	runtime/go-rune.c runtime/go-runtime-error.c \
-	runtime/go-setenv.c runtime/go-signal.c runtime/go-strcmp.c \
+	runtime/go-matherr.c runtime/go-nanotime.c runtime/go-now.c \
+	runtime/go-new-map.c runtime/go-new.c runtime/go-nosys.c \
+	runtime/go-panic.c runtime/go-print.c runtime/go-recover.c \
+	runtime/go-reflect.c runtime/go-reflect-call.c \
+	runtime/go-reflect-map.c runtime/go-rune.c \
+	runtime/go-runtime-error.c runtime/go-setenv.c \
+	runtime/go-signal.c runtime/go-strcmp.c \
 	runtime/go-string-to-byte-array.c \
 	runtime/go-string-to-int-array.c runtime/go-strplus.c \
 	runtime/go-strslice.c runtime/go-trampoline.c \
@@ -230,22 +231,23 @@ am__objects_4 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-int-array-to-string.lo go-int-to-string.lo \
 	go-interface-compare.lo go-interface-eface-compare.lo \
 	go-interface-val-compare.lo go-make-slice.lo go-map-delete.lo \
-	go-map-index.lo go-map-len.lo go-map-range.lo go-nanotime.lo \
-	go-now.lo go-new-map.lo go-new.lo go-nosys.lo go-panic.lo \
-	go-print.lo go-recover.lo go-reflect.lo go-reflect-call.lo \
-	go-reflect-map.lo go-rune.lo go-runtime-error.lo go-setenv.lo \
-	go-signal.lo go-strcmp.lo go-string-to-byte-array.lo \
-	go-string-to-int-array.lo go-strplus.lo go-strslice.lo \
-	go-trampoline.lo go-type-complex.lo go-type-eface.lo \
-	go-type-error.lo go-type-float.lo go-type-identity.lo \
-	go-type-interface.lo go-type-string.lo go-typedesc-equal.lo \
-	go-typestring.lo go-unreflect.lo go-unsafe-new.lo \
-	go-unsafe-newarray.lo go-unsafe-pointer.lo go-unwind.lo \
-	chan.lo cpuprof.lo $(am__objects_1) mcache.lo mcentral.lo \
-	$(am__objects_2) mfinal.lo mfixalloc.lo mgc0.lo mheap.lo \
-	msize.lo proc.lo runtime.lo thread.lo yield.lo \
-	$(am__objects_3) iface.lo malloc.lo map.lo mprof.lo reflect.lo \
-	runtime1.lo sema.lo sigqueue.lo string.lo time.lo
+	go-map-index.lo go-map-len.lo go-map-range.lo go-matherr.lo \
+	go-nanotime.lo go-now.lo go-new-map.lo go-new.lo go-nosys.lo \
+	go-panic.lo go-print.lo go-recover.lo go-reflect.lo \
+	go-reflect-call.lo go-reflect-map.lo go-rune.lo \
+	go-runtime-error.lo go-setenv.lo go-signal.lo go-strcmp.lo \
+	go-string-to-byte-array.lo go-string-to-int-array.lo \
+	go-strplus.lo go-strslice.lo go-trampoline.lo \
+	go-type-complex.lo go-type-eface.lo go-type-error.lo \
+	go-type-float.lo go-type-identity.lo go-type-interface.lo \
+	go-type-string.lo go-typedesc-equal.lo go-typestring.lo \
+	go-unreflect.lo go-unsafe-new.lo go-unsafe-newarray.lo \
+	go-unsafe-pointer.lo go-unwind.lo chan.lo cpuprof.lo \
+	$(am__objects_1) mcache.lo mcentral.lo $(am__objects_2) \
+	mfinal.lo mfixalloc.lo mgc0.lo mheap.lo msize.lo proc.lo \
+	runtime.lo thread.lo yield.lo $(am__objects_3) iface.lo \
+	malloc.lo map.lo mprof.lo reflect.lo runtime1.lo sema.lo \
+	sigqueue.lo string.lo time.lo
 am_libgo_la_OBJECTS = $(am__objects_4)
 libgo_la_OBJECTS = $(am_libgo_la_OBJECTS)
 libgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
@@ -839,6 +841,7 @@ runtime_files = \
 	runtime/go-map-index.c \
 	runtime/go-map-len.c \
 	runtime/go-map-range.c \
+	runtime/go-matherr.c \
 	runtime/go-nanotime.c \
 	runtime/go-now.c \
 	runtime/go-new-map.c \
@@ -2391,6 +2394,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-map-index.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-map-len.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-map-range.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-matherr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-nanotime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-new-map.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-new.Plo@am__quote@
@@ -2678,6 +2682,13 @@ go-map-range.lo: runtime/go-map-range.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-map-range.c' object='go-map-range.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-map-range.lo `test -f 'runtime/go-map-range.c' || echo '$(srcdir)/'`runtime/go-map-range.c
+
+go-matherr.lo: runtime/go-matherr.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-matherr.lo -MD -MP -MF $(DEPDIR)/go-matherr.Tpo -c -o go-matherr.lo `test -f 'runtime/go-matherr.c' || echo '$(srcdir)/'`runtime/go-matherr.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-matherr.Tpo $(DEPDIR)/go-matherr.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-matherr.c' object='go-matherr.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-matherr.lo `test -f 'runtime/go-matherr.c' || echo '$(srcdir)/'`runtime/go-matherr.c
 
 go-nanotime.lo: runtime/go-nanotime.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-nanotime.lo -MD -MP -MF $(DEPDIR)/go-nanotime.Tpo -c -o go-nanotime.lo `test -f 'runtime/go-nanotime.c' || echo '$(srcdir)/'`runtime/go-nanotime.c

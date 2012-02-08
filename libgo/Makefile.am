@@ -422,6 +422,7 @@ runtime_files = \
 	runtime/go-map-index.c \
 	runtime/go-map-len.c \
 	runtime/go-map-range.c \
+	runtime/go-matherr.c \
 	runtime/go-nanotime.c \
 	runtime/go-now.c \
 	runtime/go-new-map.c \
