@@ -57,12 +57,6 @@
    (LPM_REGNO	0)	; implicit target register of LPM
    (TMP_REGNO	0)	; temporary register r0
    (ZERO_REGNO	1)	; zero register r1
-
-   ;; RAM addresses of some SFRs common to all Devices.
-
-   (SREG_ADDR   0x5F)   ; Status Register
-   (SP_ADDR     0x5D)   ; Stack Pointer
-   (RAMPZ_ADDR  0x5B)   ; Address' high part when loading via ELPM
    ])
 
 (define_c_enum "unspec"

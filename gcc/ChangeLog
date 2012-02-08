@@ -1,3 +1,18 @@
+2012-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (SREG_ADDR): Remove constant definition.
+	(SP_ADDR): Ditto.
+	(RAMPZ_ADDR): Ditto.
+	* config/avr/avr.c (avr_addr_t): New typedef.
+	(avr_addr): New struct to hold RAM address of SPL, SPH, RAMPZ, SREG.
+	(avr_init_expanders): Initialize it.
+	(expand_prologue): Use avr_addr instead of RAMPZ_ADDR, SP_ADDR,
+	SREG_ADDR.
+	(expand_epilogue): Ditto.
+	(avr_print_operand): Ditto.
+	(avr_file_start): Ditto.
+	(avr_emit_movmemhi): Ditto.
+
 2012-02-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46886
