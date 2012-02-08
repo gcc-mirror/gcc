@@ -104,6 +104,24 @@ static const char* const progmem_section_prefix[6] =
     ".progmem5.data"
   };
 
+/* Holding RAM addresses of some SFRs used by the compiler and that
+   are unique over all devices in an architecture like 'avr4'.  */
+  
+typedef struct
+{
+  /* SREG: The pocessor status */
+  int sreg;
+
+  /* RAMPZ: The high byte of 24-bit address used with ELPM */ 
+  int rampz;
+
+  /* SP: The stack pointer and its low and high byte */
+  int sp_l;
+  int sp_h;
+} avr_addr_t;
+
+static avr_addr_t avr_addr;
+
 
 /* Prototypes for local helper functions.  */
 
@@ -394,6 +412,18 @@ avr_option_override (void)
   avr_current_device = &avr_mcu_types[avr_mcu_index];
   avr_current_arch = &avr_arch_types[avr_current_device->arch];
   avr_extra_arch_macro = avr_current_device->macro;
+  
+  /* RAM addresses of some SFRs common to all Devices in respective Arch. */
+
+  /* SREG: Status Register containing flags like I (global IRQ) */
+  avr_addr.sreg = 0x3F + avr_current_arch->sfr_offset;
+
+  /* RAMPZ: Address' high part when loading via ELPM */
+  avr_addr.rampz = 0x3B + avr_current_arch->sfr_offset;
+
+  /* SP: Stack Pointer (SP_H:SP_L) */
+  avr_addr.sp_l = 0x3D + avr_current_arch->sfr_offset;
+  avr_addr.sp_h = avr_addr.sp_l + 1;
 
   init_machine_status = avr_init_machine_status;
 
@@ -433,7 +463,7 @@ avr_init_expanders (void)
 
   lpm_addr_reg_rtx = gen_rtx_REG (HImode, REG_Z);
 
-  rampz_rtx = gen_rtx_MEM (QImode, GEN_INT (RAMPZ_ADDR));
+  rampz_rtx = gen_rtx_MEM (QImode, GEN_INT (avr_addr.rampz));
 
   xstring_empty = gen_rtx_CONST_STRING (VOIDmode, "");
   xstring_e = gen_rtx_CONST_STRING (VOIDmode, "e");
@@ -1133,7 +1163,8 @@ expand_prologue (void)
 
       /* Push SREG.  */
       /* ??? There's no dwarf2 column reserved for SREG.  */
-      emit_move_insn (tmp_reg_rtx, gen_rtx_MEM (QImode, GEN_INT (SREG_ADDR)));
+      emit_move_insn (tmp_reg_rtx,
+                      gen_rtx_MEM (QImode, GEN_INT (avr_addr.sreg)));
       emit_push_byte (TMP_REGNO, false);
 
       /* Push RAMPZ.  */
@@ -1386,7 +1417,7 @@ expand_epilogue (bool sibcall_p)
       /* Restore SREG using tmp reg as scratch.  */
       
       emit_pop_byte (TMP_REGNO);
-      emit_move_insn (gen_rtx_MEM (QImode, GEN_INT (SREG_ADDR)), 
+      emit_move_insn (gen_rtx_MEM (QImode, GEN_INT (avr_addr.sreg)), 
                       tmp_reg_rtx);
 
       /* Restore tmp REG.  */
@@ -1869,17 +1900,14 @@ avr_print_operand (FILE *file, rtx x, int code)
       else if (low_io_address_operand (x, VOIDmode)
                || high_io_address_operand (x, VOIDmode))
         {
-          switch (ival)
+          if (ival == avr_addr.rampz)       fprintf (file, "__RAMPZ__");
+          else if (ival == avr_addr.sreg)   fprintf (file, "__SREG__");
+          else if (ival == avr_addr.sp_l)   fprintf (file, "__SP_L__");
+          else if (ival == avr_addr.sp_h)   fprintf (file, "__SP_H__");
+          else
             {
-            case RAMPZ_ADDR: fprintf (file, "__RAMPZ__"); break;
-            case SREG_ADDR: fprintf (file, "__SREG__"); break;
-            case SP_ADDR:   fprintf (file, "__SP_L__"); break;
-            case SP_ADDR+1: fprintf (file, "__SP_H__"); break;
-              
-            default:
               fprintf (file, HOST_WIDE_INT_PRINT_HEX,
                        ival - avr_current_arch->sfr_offset);
-              break;
             }
         }
       else
@@ -7294,22 +7322,16 @@ avr_file_start (void)
 
   default_file_start ();
 
-  if (!AVR_HAVE_8BIT_SP)
-    fprintf (asm_out_file,
-             "__SP_H__ = 0x%02x\n",
-             -sfr_offset + SP_ADDR + 1);
+  /* Print I/O addresses of some SFRs used with IN and OUT.  */
 
-  fprintf (asm_out_file,
-           "__SP_L__ = 0x%02x\n"
-           "__SREG__ = 0x%02x\n"
-           "__RAMPZ__ = 0x%02x\n"
-           "__tmp_reg__ = %d\n" 
-           "__zero_reg__ = %d\n",
-           -sfr_offset + SP_ADDR,
-           -sfr_offset + SREG_ADDR,
-           -sfr_offset + RAMPZ_ADDR,
-           TMP_REGNO,
-           ZERO_REGNO);
+  if (!AVR_HAVE_8BIT_SP)
+    fprintf (asm_out_file, "__SP_H__ = 0x%02x\n", avr_addr.sp_h - sfr_offset);
+
+  fprintf (asm_out_file, "__SP_L__ = 0x%02x\n", avr_addr.sp_l - sfr_offset);
+  fprintf (asm_out_file, "__SREG__ = 0x%02x\n", avr_addr.sreg - sfr_offset);
+  fprintf (asm_out_file, "__RAMPZ__ = 0x%02x\n", avr_addr.rampz - sfr_offset);
+  fprintf (asm_out_file, "__tmp_reg__ = %d\n", TMP_REGNO);
+  fprintf (asm_out_file, "__zero_reg__ = %d\n", ZERO_REGNO);
 }
 
 
@@ -9736,7 +9758,7 @@ avr_emit_movmemhi (rtx *xop)
       emit_move_insn (r23, a_hi8);
       
       insn = fun (addr0, addr1, xas, loop_reg, addr0, addr1,
-                  lpm_reg_rtx, loop_reg16, r23, r23, GEN_INT (RAMPZ_ADDR));
+                  lpm_reg_rtx, loop_reg16, r23, r23, GEN_INT (avr_addr.rampz));
     }
 
   set_mem_addr_space (SET_SRC (XVECEXP (insn, 0, 0)), as);
