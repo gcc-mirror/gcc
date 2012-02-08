@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -2003,9 +2003,10 @@ build_call_alloc_dealloc_proc (tree gnu_obj, tree gnu_size, tree gnu_type,
   tree gnu_proc = gnat_to_gnu (gnat_proc);
   tree gnu_call;
 
-  /* The storage pools are obviously always tagged types, but the
-     secondary stack uses the same mechanism and is not tagged.  */
-  if (Is_Tagged_Type (Etype (gnat_pool)))
+  /* A storage pool's underlying type is a record type (for both predefined
+     storage pools and GNAT simple storage pools). The secondary stack uses
+     the same mechanism, but its pool object (SS_Pool) is an integer.  */
+  if (Is_Record_Type (Underlying_Type (Etype (gnat_pool))))
     {
       /* The size is the third parameter; the alignment is the
 	 same type.  */

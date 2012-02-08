@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                     S Y S T E M . D I M _ M K S _ I O                    --
+--                     S Y S T E M . D I M . M K S _ I O                    --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---            Copyright (C) 2011, Free Software Foundation, Inc.            --
+--           Copyright (C) 2011-2012, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,10 +29,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides IO routines for the MKS dimension system (see
---  System.Dim_Mks).
+--  Provides output facilities for the MKS dimension system (see System.Dim.Mks
+--  and System.Dim.Float_IO).
 
-with System.Dim_Mks; use System.Dim_Mks;
-with System.Dim_Float_IO;
+with System.Dim.Mks; use System.Dim.Mks;
+with System.Dim.Float_IO;
 
-package System.Dim_Mks_IO is new System.Dim_Float_IO (Mks_Type);
+package System.Dim.Mks_IO is new System.Dim.Float_IO (Mks_Type);

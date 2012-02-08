@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2011, Free Software Foundation, Inc.            --
+--           Copyright (C) 2011-2012, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 --  "dimension" is a compile-time property of a numerical type which represents
 --  a relation between various quantifiers such as length, velocity, etc.
 
---  Package System.Dim_Mks offers a ready-to-use system of SI base units. In
+--  Package System.Dim.Mks offers a ready-to-use system of SI base units. In
 --  addition, the implementation of this feature offers the ability to define
 --  an arbitrary system of units through the use of Ada 2012 aspects.
 
@@ -82,12 +82,6 @@
 
 --  Phase 2 is called only when the node allows a dimension (see body of
 --  Sem_Dim to get the list of nodes that permit dimensions).
-
-------------------
--- Dimension_IO --
-------------------
-
---  This section contains the routine used for IO purposes
 
 with Types; use Types;
 
@@ -145,7 +139,7 @@ package Sem_Dim is
 
    procedure Expand_Put_Call_With_Dimension_Symbol (N : Node_Id);
    --  Determine whether N denotes a subprogram call to one of the routines
-   --  defined in System.Dim_Float_IO or System.Dim_Integer_IO and add an
+   --  defined in System.Dim.Float_IO or System.Dim.Integer_IO and add an
    --  extra actual to the call to represent the symbolic representation of
    --  a dimension.
 
@@ -153,8 +147,8 @@ package Sem_Dim is
    --  Return True if type Typ has aspect Dimension_System applied to it
 
    function Is_Dim_IO_Package_Instantiation (N : Node_Id) return Boolean;
-   --  Return True if N is a package instantiation of System.Dim_Integer_IO or
-   --  of System.Dim_Float_IO.
+   --  Return True if N is a package instantiation of System.Dim.Integer_IO or
+   --  of System.Dim.Float_IO.
 
    procedure Remove_Dimension_In_Call (Call : Node_Id);
    --  Remove the dimensions from all formal parameters of Call

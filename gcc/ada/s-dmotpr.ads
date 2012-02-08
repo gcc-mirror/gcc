@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---         S Y S T E M . D I M _ M K S . O T H E R _ P R E F I X E S        --
+--         S Y S T E M . D I M . M K S . O T H E R _ P R E F I X E S        --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---            Copyright (C) 2011, Free Software Foundation, Inc.            --
+--           Copyright (C) 2011-2012, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@
 --  These prefixes have been defined in a child package in order to avoid too
 --  many constant declarations in System.Dim_Mks.
 
-package System.Dim_Mks.Other_Prefixes is
+package System.Dim.Mks.Other_Prefixes is
 
    --  SI prefixes for Meter
 
@@ -165,4 +165,4 @@ package System.Dim_Mks.Other_Prefixes is
    Zecd : constant Luminous_Intensity := 1.0E+21;  -- zetta
    Yocd : constant Luminous_Intensity := 1.0E+24;  -- yotta
 
-end System.Dim_Mks.Other_Prefixes;
+end System.Dim.Mks.Other_Prefixes;

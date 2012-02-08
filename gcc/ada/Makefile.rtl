@@ -505,6 +505,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-crtl$(objext)   \
   s-crtrun$(objext) \
   s-diflio$(objext) \
+  s-dim$(objext)    \
   s-diinio$(objext) \
   s-dimkio$(objext) \
   s-dimmks$(objext) \
