@@ -1,6 +1,6 @@
 set height 0
 break simulate_thread_main
-disp/i $pc
+# disp/i $pc
 run
 
 set $ret = 0

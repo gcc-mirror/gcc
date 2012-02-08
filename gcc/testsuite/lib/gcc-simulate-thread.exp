@@ -56,8 +56,8 @@ proc simulate-thread { args } {
 
     set gdb_worked 0
 
-    # Set timeout to 10 seconds due to huge amount of generated log.
-    remote_expect target 10 {
+    # Set timeout to 20 seconds due to huge amount of generated log.
+    remote_expect target 20 {
 	# Too old GDB
 	-re "Unhandled dwarf expression|Error in sourced command file" {
 	    unsupported "$testcase $message"

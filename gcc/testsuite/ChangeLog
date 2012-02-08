@@ -1,3 +1,14 @@
+2012-02-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/simulate-thread/simulate-thread.exp: Use -O0, -O2, and -O3.
+	* gcc.dg/simulate-thread/simulate-thread.gdb: Don't display every 
+	machine instuction in the log.
+
+2012-02-08  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* lib/gcc-simulate-thread.exp (simulate-thread): Increase timeout
+	  to 20 seconds.
+
 2012-02-08  Magnus Granberg  <zorry@gentoo.org>
 
 	PR driver/48524
