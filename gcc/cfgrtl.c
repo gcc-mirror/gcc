@@ -2871,6 +2871,11 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
       rtx first = BB_END (a), last;
 
       last = emit_insn_after_noloc (b->il.rtl->header, BB_END (a), a);
+      /* The above might add a BARRIER as BB_END, but as barriers
+	 aren't valid parts of a bb, remove_insn doesn't update
+	 BB_END if it is a barrier.  So adjust BB_END here.  */
+      while (BB_END (a) != first && BARRIER_P (BB_END (a)))
+	BB_END (a) = PREV_INSN (BB_END (a));
       delete_insn_chain (NEXT_INSN (first), last, false);
       b->il.rtl->header = NULL;
     }
