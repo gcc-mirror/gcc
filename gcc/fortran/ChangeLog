@@ -1,3 +1,8 @@
+2012-02-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52151
+	* trans-expr.c (fcncall_realloc_result): Set also the stride.
+
 2012-02-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51514

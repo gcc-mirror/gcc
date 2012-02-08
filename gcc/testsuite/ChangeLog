@@ -1,3 +1,8 @@
+2012-02-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52151
+	* gfortran.dg/realloc_on_assign_12.f90: New.
+
 2012-02-08  Richard Guenther  <rguenther@suse.de>
 
 	PR rtl-optimization/52170

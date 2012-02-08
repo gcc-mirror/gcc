@@ -6370,16 +6370,15 @@ fcncall_realloc_result (gfc_se *se, int rank)
       gfc_conv_descriptor_ubound_set (&se->post, desc,
 				      gfc_rank_cst[n], tmp);
 
-      /* Accumulate the offset.  */
-      tmp = gfc_conv_descriptor_stride_get (desc, gfc_rank_cst[n]);
+      /* Set stride and accumulate the offset.  */
+      tmp = gfc_conv_descriptor_stride_get (res_desc, gfc_rank_cst[n]);
+      gfc_conv_descriptor_stride_set (&se->post, desc,
+				      gfc_rank_cst[n], tmp);
       tmp = fold_build2_loc (input_location, MULT_EXPR,
-				gfc_array_index_type,
-				lbound, tmp);
+			     gfc_array_index_type, lbound, tmp);
       offset = fold_build2_loc (input_location, MINUS_EXPR,
-				gfc_array_index_type,
-				offset, tmp);
+				gfc_array_index_type, offset, tmp);
       offset = gfc_evaluate_now (offset, &se->post);
-
     }
 
   gfc_conv_descriptor_offset_set (&se->post, desc, offset);
