@@ -1,3 +1,8 @@
+2012-02-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46886
+	* testsuite/libgomp.c/pr46886.c: New testcase.
+
 2012-01-25  Matthias Klose  <doko@ubuntu.com>
 
 	* config/linux/arm: Remove empty directory.

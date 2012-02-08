@@ -619,6 +619,9 @@ extern bool may_propagate_copy (tree, tree);
 extern bool may_propagate_copy_into_stmt (gimple, tree);
 extern bool may_propagate_copy_into_asm (tree);
 
+/* In tree-ssa-loop-ch.c  */
+bool do_while_loop_p (struct loop *);
+
 /* Affine iv.  */
 
 typedef struct
