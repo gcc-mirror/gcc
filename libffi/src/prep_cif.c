@@ -93,7 +93,12 @@ ffi_status ffi_prep_cif(ffi_cif *cif, ffi_abi abi, unsigned int nargs,
   ffi_type **ptr;
 
   FFI_ASSERT(cif != NULL);
+#ifndef X86_WIN32
   FFI_ASSERT((abi > FFI_FIRST_ABI) && (abi <= FFI_DEFAULT_ABI));
+#else
+  FFI_ASSERT(abi > FFI_FIRST_ABI && abi <= FFI_DEFAULT_ABI
+	     || abi == FFI_THISCALL);
+#endif
 
   cif->abi = abi;
   cif->arg_types = atypes;

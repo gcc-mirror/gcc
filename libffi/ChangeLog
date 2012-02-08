@@ -1,3 +1,15 @@
+2012-02-08  Kai Tietz  <ktietz@redhat.com>
+
+	* src/prep_cif.c (ffi_prep_cif): Allow for X86_WIN32
+	also FFI_THISCALL.
+	* src/x86/ffi.c (ffi_closure_THISCALL): Add prototype.
+	(FFI_INIT_TRAMPOLINE_THISCALL): New trampoline code.
+	(ffi_prep_closure_loc): Add FFI_THISCALL support.
+	* src/x86/ffitarget.h (FFI_TRAMPOLINE_SIZE): Adjust size.
+	* src/x86/win32.S (ffi_closure_THISCALL): New closure code
+	for thiscall-calling convention.
+	* testsuite/libffi.call/closure_thiscall.c: New test.
+
 2012-01-28  Kai Tietz  <ktietz@redhat.com>
 
 	* src/libffi/src/x86/ffi.c (ffi_call_win32): Add new
