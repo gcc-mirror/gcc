@@ -604,6 +604,7 @@ LTLIBOBJS
 LIBOBJS
 STRUCT_EPOLL_EVENT_FD_OFFSET
 SIZEOF_STRUCT_EPOLL_EVENT
+MATH_FLAG
 STRINGOPS_FLAG
 HAVE_WAIT4_FALSE
 HAVE_WAIT4_TRUE
@@ -11101,7 +11102,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11104 "configure"
+#line 11105 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11207,7 +11208,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11210 "configure"
+#line 11211 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14704,6 +14705,33 @@ $as_echo "$libgo_cv_c_stringops" >&6; }
 STRINGOPS_FLAG=
 if test "$libgo_cv_c_stringops" = yes; then
   STRINGOPS_FLAG=-minline-all-stringops
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiler supports -mfancy-math-387" >&5
+$as_echo_n "checking whether compiler supports -mfancy-math-387... " >&6; }
+if test "${libgo_cv_c_fancymath+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  CFLAGS_hold=$CFLAGS
+CFLAGS="$CFLAGS -mfancy-math-387"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int i;
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libgo_cv_c_fancymath=yes
+else
+  libgo_cv_c_fancymath=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+CFLAGS=$CFLAGS_hold
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_c_fancymath" >&5
+$as_echo "$libgo_cv_c_fancymath" >&6; }
+MATH_FLAG=
+if test "$libgo_cv_c_fancymath" = yes; then
+  MATH_FLAG="-mfancy-math-387 -funsafe-math-optimizations"
 fi
 
 

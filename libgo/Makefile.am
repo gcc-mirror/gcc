@@ -1959,7 +1959,9 @@ log/check: $(CHECK_DEPS)
 math/math.lo.dep: $(go_math_files)
 	$(BUILDDEPS)
 math/math.lo: $(go_math_files)
-	$(BUILDPACKAGE)
+	$(MKDIR_P) $(@D)
+	files=`echo $^ | sed -e 's/[^ ]*\.gox//g'`; \
+	$(LTGOCOMPILE) $(MATH_FLAG) -I . -c -fgo-prefix="libgo_$(@D)" -o $@ $$files
 math/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: math/check

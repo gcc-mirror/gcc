@@ -522,6 +522,23 @@ if test "$libgo_cv_c_stringops" = yes; then
 fi
 AC_SUBST(STRINGOPS_FLAG)
 
+dnl For x86 we want to compile the math library with -mfancy-math-387
+dnl -funsafe-math-optimizations so that we can use the builtin
+dnl instructions directly.
+AC_CACHE_CHECK([whether compiler supports -mfancy-math-387],
+[libgo_cv_c_fancymath],
+[CFLAGS_hold=$CFLAGS
+CFLAGS="$CFLAGS -mfancy-math-387"
+AC_COMPILE_IFELSE([int i;],
+[libgo_cv_c_fancymath=yes],
+[libgo_cv_c_fancymath=no])
+CFLAGS=$CFLAGS_hold])
+MATH_FLAG=
+if test "$libgo_cv_c_fancymath" = yes; then
+  MATH_FLAG="-mfancy-math-387 -funsafe-math-optimizations"
+fi
+AC_SUBST(MATH_FLAG)
+
 CFLAGS_hold=$CFLAGS
 CFLAGS="$CFLAGS -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE"
 AC_CHECK_TYPES([off64_t])
