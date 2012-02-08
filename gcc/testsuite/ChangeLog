@@ -1,3 +1,9 @@
+2012-02-08  Magnus Granberg  <zorry@gentoo.org>
+
+	PR driver/48524
+	* gcc.dg/pr48524.c: New test.
+	* gcc.dg/pr48524.spec: New spec file for test.
+
 2012-02-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/32380
