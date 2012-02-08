@@ -24,10 +24,8 @@ dg-init
 torture-init
 set-torture-options [list \
 	{ -O0 -g } \
-	{ -O1 -g } \
 	{ -O2 -g } \
-	{ -O3 -g } \
-	{ -Os -g } ]
+	{ -O3 -g } ]
 
 if [gdb-exists] {
   gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] ""
