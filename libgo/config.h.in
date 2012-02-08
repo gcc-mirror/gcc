@@ -48,6 +48,9 @@
 /* Define to 1 if the system has the type `loff_t'. */
 #undef HAVE_LOFF_T
 
+/* Define to 1 if you have the `matherr' function. */
+#undef HAVE_MATHERR
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -98,6 +101,9 @@
 
 /* Define to 1 if you have the `strsignal' function. */
 #undef HAVE_STRSIGNAL
+
+/* Define to 1 if <math.h> defines struct exception */
+#undef HAVE_STRUCT_EXCEPTION
 
 /* Define to 1 if the compiler provides the __sync_bool_compare_and_swap
    function for uint32 */

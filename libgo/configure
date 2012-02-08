@@ -14623,6 +14623,21 @@ done
 CFLAGS="$CFLAGS_hold"
 LIBS="$LIBS_hold"
 
+LIBS_hold="$LIBS"
+LIBS="$LIBS $MATH_LIBS"
+for ac_func in matherr
+do :
+  ac_fn_c_check_func "$LINENO" "matherr" "ac_cv_func_matherr"
+if test "x$ac_cv_func_matherr" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_MATHERR 1
+_ACEOF
+
+fi
+done
+
+LIBS="$LIBS_hold"
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __sync_bool_compare_and_swap_4" >&5
 $as_echo_n "checking for __sync_bool_compare_and_swap_4... " >&6; }
 if test "${libgo_cv_func___sync_bool_compare_and_swap_4+set}" = set; then :
@@ -14783,6 +14798,20 @@ fi
 $as_echo "$libgo_cv_c_epoll_event_fd_offset" >&6; }
 STRUCT_EPOLL_EVENT_FD_OFFSET=${libgo_cv_c_epoll_event_fd_offset}
 
+
+ac_fn_c_check_type "$LINENO" "struct exception" "ac_cv_type_struct_exception" "#include <math.h>
+"
+if test "x$ac_cv_type_struct_exception" = x""yes; then :
+  libgo_has_struct_exception=yes
+else
+  libgo_has_struct_exception=no
+fi
+
+if test "$libgo_has_struct_exception" = "yes"; then
+
+$as_echo "#define HAVE_STRUCT_EXCEPTION 1" >>confdefs.h
+
+fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether setcontext clobbers TLS variables" >&5
 $as_echo_n "checking whether setcontext clobbers TLS variables... " >&6; }
