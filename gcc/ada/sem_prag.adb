@@ -13150,6 +13150,65 @@ package body Sem_Prag is
             Check_Valid_Configuration_Pragma;
             Short_Descriptors := True;
 
+         -------------------------
+         -- Simple_Storage_Pool --
+         -------------------------
+
+         --  pragma Simple_Storage_Pool (type_LOCAL_NAME);
+
+         when Pragma_Simple_Storage_Pool => Simple_Storage_Pool : declare
+               Type_Id : Node_Id;
+               Typ     : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+            Check_Arg_Is_Library_Level_Local_Name (Arg1);
+
+            Type_Id := Get_Pragma_Arg (Arg1);
+            Find_Type (Type_Id);
+            Typ := Entity (Type_Id);
+
+            if Typ = Any_Type then
+               return;
+            end if;
+
+            --  We require the pragma to apply to a type declared in a package
+            --  declaration, but not (immediately) within a package body.
+
+            if Ekind (Current_Scope) /= E_Package
+              or else In_Package_Body (Current_Scope)
+            then
+               Error_Pragma
+                 ("pragma% can only apply to type declared immediately " &
+                  "within a package declaration");
+            end if;
+
+            --  A simple storage pool type must be an immutably limited record
+            --  or private type. If the pragma is given for a private type,
+            --  the full type is similarly restricted (which is checked later
+            --  in Freeze_Entity).
+
+            if Is_Record_Type (Typ)
+              and then not Is_Immutably_Limited_Type (Typ)
+            then
+               Error_Pragma
+                 ("pragma% can only apply to explicitly limited record type");
+
+            elsif Is_Private_Type (Typ) and then not Is_Limited_Type (Typ) then
+               Error_Pragma
+                 ("pragma% can only apply to a private type that is limited");
+
+            elsif not Is_Record_Type (Typ)
+              and then not Is_Private_Type (Typ)
+            then
+               Error_Pragma
+                 ("pragma% can only apply to limited record or private type");
+            end if;
+
+            Record_Rep_Item (Typ, N);
+         end Simple_Storage_Pool;
+
          ----------------------
          -- Source_File_Name --
          ----------------------
@@ -15117,6 +15176,7 @@ package body Sem_Prag is
       Pragma_Shared                         => -1,
       Pragma_Shared_Passive                 => -1,
       Pragma_Short_Descriptors              =>  0,
+      Pragma_Simple_Storage_Pool            =>  0,
       Pragma_Source_File_Name               => -1,
       Pragma_Source_File_Name_Project       => -1,
       Pragma_Source_Reference               => -1,

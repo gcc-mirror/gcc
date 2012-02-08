@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4217,6 +4217,17 @@ package body Exp_Attr is
       when Attribute_Scaling =>
          Expand_Fpt_Attribute_RI (N);
 
+      -------------------------
+      -- Simple_Storage_Pool --
+      -------------------------
+
+      when Attribute_Simple_Storage_Pool =>
+         Rewrite (N,
+           Make_Type_Conversion (Loc,
+             Subtype_Mark => New_Reference_To (Etype (N), Loc),
+             Expression   => New_Reference_To (Entity (N), Loc)));
+         Analyze_And_Resolve (N, Typ);
+
       ----------
       -- Size --
       ----------
@@ -4475,7 +4486,10 @@ package body Exp_Attr is
       -- Storage_Size --
       ------------------
 
-      when Attribute_Storage_Size => Storage_Size : begin
+      when Attribute_Storage_Size => Storage_Size : declare
+         Alloc_Op  : Entity_Id := Empty;
+
+      begin
 
          --  Access type case, always go to the root type
 
@@ -4497,19 +4511,64 @@ package body Exp_Attr is
                          (Storage_Size_Variable (Root_Type (Ptyp)), Loc)))));
 
             elsif Present (Associated_Storage_Pool (Root_Type (Ptyp))) then
-               Rewrite (N,
-                 OK_Convert_To (Typ,
-                   Make_Function_Call (Loc,
-                     Name =>
-                       New_Reference_To
-                         (Find_Prim_Op
-                           (Etype (Associated_Storage_Pool (Root_Type (Ptyp))),
-                            Attribute_Name (N)),
-                          Loc),
 
-                     Parameter_Associations => New_List (
-                       New_Reference_To
-                         (Associated_Storage_Pool (Root_Type (Ptyp)), Loc)))));
+               --  If the access type is associated with a simple storage pool
+               --  object, then attempt to locate the optional Storage_Size
+               --  function of the simple storage pool type. If not found,
+               --  then the result will default to zero.
+
+               if Present (Get_Rep_Pragma (Root_Type (Ptyp),
+                                           Name_Simple_Storage_Pool))
+               then
+                  declare
+                     Pool_Type : constant Entity_Id :=
+                                   Base_Type (Etype (Entity (N)));
+
+                  begin
+                     Alloc_Op := Get_Name_Entity_Id (Name_Storage_Size);
+                     while Present (Alloc_Op) loop
+                        if Scope (Alloc_Op) = Scope (Pool_Type)
+                          and then Present (First_Formal (Alloc_Op))
+                          and then Etype (First_Formal (Alloc_Op)) = Pool_Type
+                        then
+                           exit;
+                        end if;
+
+                        Alloc_Op := Homonym (Alloc_Op);
+                     end loop;
+                  end;
+
+               --  In the normal Storage_Pool case, retrieve the primitive
+               --  function associated with the pool type.
+
+               else
+                  Alloc_Op :=
+                    Find_Prim_Op
+                      (Etype (Associated_Storage_Pool (Root_Type (Ptyp))),
+                       Attribute_Name (N));
+               end if;
+
+               --  If Storage_Size wasn't found (can only occur in the simple
+               --  storage pool case), then simply use zero for the result.
+
+               if not Present (Alloc_Op) then
+                  Rewrite (N, Make_Integer_Literal (Loc, 0));
+
+               --  Otherwise, rewrite the allocator as a call to pool type's
+               --  Storage_Size function.
+
+               else
+                  Rewrite (N,
+                    OK_Convert_To (Typ,
+                      Make_Function_Call (Loc,
+                        Name =>
+                          New_Reference_To (Alloc_Op, Loc),
+
+                        Parameter_Associations => New_List (
+                          New_Reference_To
+                            (Associated_Storage_Pool
+                               (Root_Type (Ptyp)), Loc)))));
+               end if;
 
             else
                Rewrite (N, Make_Integer_Literal (Loc, 0));

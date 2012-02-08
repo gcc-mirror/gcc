@@ -4528,7 +4528,8 @@ package body Sem_Attr is
       -- Storage_Pool --
       ------------------
 
-      when Attribute_Storage_Pool => Storage_Pool :
+      when Attribute_Storage_Pool        |
+           Attribute_Simple_Storage_Pool => Storage_Pool :
       begin
          Check_E0;
 
@@ -4546,7 +4547,38 @@ package body Sem_Attr is
                Set_Entity (N, RTE (RE_Global_Pool_Object));
             end if;
 
-            Set_Etype (N, Class_Wide_Type (RTE (RE_Root_Storage_Pool)));
+            if Attr_Id = Attribute_Storage_Pool then
+               if Present (Get_Rep_Pragma (Etype (Entity (N)),
+                                           Name_Simple_Storage_Pool))
+               then
+                  Error_Msg_Name_1 := Aname;
+                  Error_Msg_N ("cannot use % attribute for type with simple " &
+                               "storage pool?", N);
+                  Error_Msg_N
+                     ("\Program_Error will be raised at run time?", N);
+
+                  Rewrite
+                    (N, Make_Raise_Program_Error
+                          (Sloc (N), Reason => PE_Explicit_Raise));
+               end if;
+
+               Set_Etype (N, Class_Wide_Type (RTE (RE_Root_Storage_Pool)));
+
+            --  In the Simple_Storage_Pool case, verify that the pool entity is
+            --  actually of a simple storage pool type, and set the attribute's
+            --  type to the pool object's type.
+
+            else
+               if not Present (Get_Rep_Pragma (Etype (Entity (N)),
+                                               Name_Simple_Storage_Pool))
+               then
+                  Error_Attr_P
+                    ("cannot use % attribute for type without simple " &
+                     "storage pool");
+               end if;
+
+               Set_Etype (N, Etype (Entity (N)));
+            end if;
 
             --  Validate_Remote_Access_To_Class_Wide_Type for attribute
             --  Storage_Pool since this attribute is not defined for such
@@ -7931,6 +7963,7 @@ package body Sem_Attr is
            Attribute_Priority                   |
            Attribute_Read                       |
            Attribute_Result                     |
+           Attribute_Simple_Storage_Pool        |
            Attribute_Storage_Pool               |
            Attribute_Storage_Size               |
            Attribute_Storage_Unit               |

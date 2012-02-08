@@ -4228,6 +4228,31 @@ package body Sem_Res is
             Wrong_Type (Expression (E), Etype (E));
          end if;
 
+         --  Calls to build-in-place functions are not currently supported in
+         --  allocators for access types associated with a simple storage pool.
+         --  Supporting such allocators may require passing additional implicit
+         --  parameters to build-in-place functions (or a significant revision
+         --  of the current b-i-p implementation to unify the handling for
+         --  multiple kinds of storage pools). ???
+
+         if Is_Immutably_Limited_Type (Desig_T)
+           and then Nkind (Expression (E)) = N_Function_Call
+         then
+            declare
+               Pool : constant Entity_Id
+                        := Associated_Storage_Pool (Root_Type (Typ));
+            begin
+               if Present (Pool)
+                 and then Present (Get_Rep_Pragma
+                                     (Etype (Pool), Name_Simple_Storage_Pool))
+               then
+                  Error_Msg_N
+                    ("limited function calls not yet supported in simple " &
+                     "storage pool allocators", Expression (E));
+               end if;
+            end;
+         end if;
+
          --  A special accessibility check is needed for allocators that
          --  constrain access discriminants. The level of the type of the
          --  expression used to constrain an access discriminant cannot be

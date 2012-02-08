@@ -1402,8 +1402,6 @@ package body Ada.Containers.Indefinite_Vectors is
             Array_Type   => Elements_Array,
             "<"          => Is_Less);
 
-      --  Start of processing for Sort
-
       begin
          if Container.Last <= Index_Type'First then
             return;
@@ -3432,9 +3430,9 @@ package body Ada.Containers.Indefinite_Vectors is
       --  catch more things) instead of for element tampering (which will catch
       --  fewer things). It's true that the elements of this vector container
       --  could be safely moved around while (say) an iteration is taking place
-      --  (iteration only increments the busy counter), and so technically all
-      --  we would need here is a test for element tampering (indicated by the
-      --  lock counter), that's simply an artifact of our array-based
+      --  (iteration only increments the busy counter), and so technically
+      --  all we would need here is a test for element tampering (indicated
+      --  by the lock counter), that's simply an artifact of our array-based
       --  implementation. Logically Reverse_Elements requires a check for
       --  cursor tampering.
 

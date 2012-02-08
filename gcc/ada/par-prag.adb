@@ -1230,6 +1230,7 @@ begin
            Pragma_Shared_Passive                 |
            Pragma_Short_Circuit_And_Or           |
            Pragma_Short_Descriptors              |
+           Pragma_Simple_Storage_Pool            |
            Pragma_Storage_Size                   |
            Pragma_Storage_Unit                   |
            Pragma_Static_Elaboration_Desired     |

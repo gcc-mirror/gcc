@@ -42,6 +42,7 @@ with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Restrict; use Restrict;
 with Rident;   use Rident;
+with Rtsfind; use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
@@ -4102,6 +4103,281 @@ package body Freeze is
                      Next_Elmt (Prim);
                   end loop;
                end;
+            end if;
+
+            --  If the type is a simple storage pool type, then this is where
+            --  we attempt to locate and validate its Allocate, Deallocate, and
+            --  Storage_Size operations (the first is required, and the latter
+            --  two are optional). We also verify that the full type for a
+            --  private type is allowed to be a simple storage pool type.
+
+            if Present (Get_Rep_Pragma (E, Name_Simple_Storage_Pool))
+              and then (Is_Base_Type (E) or else Has_Private_Declaration (E))
+            then
+
+               --  If the type is marked Has_Private_Declaration, then this is
+               --  a full type for a private type that was specified with the
+               --  pragma Simple_Storage_Pool, and here we ensure that the
+               --  pragma is allowed for the full type (for example, it can't
+               --  be an array type, or a nonlimited record type).
+
+               if Has_Private_Declaration (E) then
+                  if (not Is_Record_Type (E)
+                       or else not Is_Immutably_Limited_Type (E))
+                    and then not Is_Private_Type (E)
+                  then
+                     Error_Msg_Name_1 := Name_Simple_Storage_Pool;
+
+                     Error_Msg_N
+                       ("pragma% can only apply to full type that is an " &
+                        "explicitly limited type", E);
+                  end if;
+               end if;
+
+               Validate_Simple_Pool_Ops : declare
+                  Pool_Type    : Entity_Id renames E;
+                  Address_Type : constant Entity_Id := RTE (RE_Address);
+                  Stg_Cnt_Type : constant Entity_Id := RTE (RE_Storage_Count);
+
+                  procedure Validate_Simple_Pool_Op_Formal
+                    (Pool_Op        : Entity_Id;
+                     Pool_Op_Formal : in out Entity_Id;
+                     Expected_Mode  : Formal_Kind;
+                     Expected_Type  : Entity_Id;
+                     Formal_Name    : String;
+                     OK_Formal      : in out Boolean);
+                  --  Validate one formal Pool_Op_Formal of the candidate pool
+                  --  operation Pool_Op. The formal must be of Expected_Type
+                  --  and have mode Expected_Mode. OK_Formal will be set to
+                  --  False if the formal doesn't match. If OK_Formal is False
+                  --  on entry, then the formal will effectively be ignored
+                  --  (because validation of the pool op has already failed).
+                  --  Upon return, Pool_Op_Formal will be updated to the next
+                  --  formal, if any.
+
+                  procedure Validate_Simple_Pool_Operation (Op_Name : Name_Id);
+                  --  Search for and validate a simple pool operation with the
+                  --  name Op_Name. If the name is Allocate, then there must be
+                  --  exactly one such primitive operation for the simple pool
+                  --  type. If the name is Deallocate or Storage_Size, then
+                  --  there can be at most one such primitive operation. The
+                  --  profile of the located primitive must conform to what
+                  --  is expected for each operation.
+
+                  ------------------------------------
+                  -- Validate_Simple_Pool_Op_Formal --
+                  ------------------------------------
+
+                  procedure Validate_Simple_Pool_Op_Formal
+                    (Pool_Op        : Entity_Id;
+                     Pool_Op_Formal : in out Entity_Id;
+                     Expected_Mode  : Formal_Kind;
+                     Expected_Type  : Entity_Id;
+                     Formal_Name    : String;
+                     OK_Formal      : in out Boolean)
+                  is
+                  begin
+                     --  If OK_Formal is False on entry, then simply ignore
+                     --  the formal, because an earlier formal has already
+                     --  been flagged.
+
+                     if not OK_Formal then
+                        return;
+
+                     --  If no formal is passed in, then issue an error for a
+                     --  missing formal.
+
+                     elsif not Present (Pool_Op_Formal) then
+                        Error_Msg_NE
+                          ("simple storage pool op missing formal " &
+                           Formal_Name & " of type&", Pool_Op, Expected_Type);
+                        OK_Formal := False;
+
+                        return;
+                     end if;
+
+                     if Etype (Pool_Op_Formal) /= Expected_Type then
+                        --  If the pool type was expected for this formal, then
+                        --  this will not be considered a candidate operation
+                        --  for the simple pool, so we unset OK_Formal so that
+                        --  the op and any later formals will be ignored.
+
+                        if Expected_Type = Pool_Type then
+                           OK_Formal := False;
+
+                           return;
+
+                        else
+                           Error_Msg_NE
+                             ("wrong type for formal " & Formal_Name &
+                              " of simple storage pool op; expected type&",
+                              Pool_Op_Formal, Expected_Type);
+                        end if;
+                     end if;
+
+                     --  Issue error if formal's mode is not the expected one
+
+                     if Ekind (Pool_Op_Formal) /= Expected_Mode then
+                        Error_Msg_N
+                          ("wrong mode for formal of simple storage pool op",
+                           Pool_Op_Formal);
+                     end if;
+
+                     --  Advance to the next formal
+
+                     Next_Formal (Pool_Op_Formal);
+                  end Validate_Simple_Pool_Op_Formal;
+
+                  ------------------------------------
+                  -- Validate_Simple_Pool_Operation --
+                  ------------------------------------
+
+                  procedure Validate_Simple_Pool_Operation
+                    (Op_Name : Name_Id)
+                  is
+                     Op       : Entity_Id;
+                     Found_Op : Entity_Id := Empty;
+                     Formal   : Entity_Id;
+                     Is_OK    : Boolean;
+
+                  begin
+                     pragma Assert
+                       (Op_Name = Name_Allocate
+                          or else Op_Name = Name_Deallocate
+                          or else Op_Name = Name_Storage_Size);
+
+                     Error_Msg_Name_1 := Op_Name;
+
+                     --  For each homonym declared immediately in the scope
+                     --  of the simple storage pool type, determine whether
+                     --  the homonym is an operation of the pool type, and,
+                     --  if so, check that its profile is as expected for
+                     --  a simple pool operation of that name.
+
+                     Op := Get_Name_Entity_Id (Op_Name);
+                     while Present (Op) loop
+                        if Ekind_In (Op, E_Function, E_Procedure)
+                          and then Scope (Op) = Current_Scope
+                        then
+                           Formal := First_Entity (Op);
+
+                           Is_OK := True;
+
+                           --  The first parameter must be of the pool type
+                           --  in order for the operation to qualify.
+
+                           if Op_Name = Name_Storage_Size then
+                              Validate_Simple_Pool_Op_Formal
+                                (Op, Formal, E_In_Parameter, Pool_Type,
+                                 "Pool", Is_OK);
+
+                           else
+                              Validate_Simple_Pool_Op_Formal
+                                (Op, Formal, E_In_Out_Parameter, Pool_Type,
+                                 "Pool", Is_OK);
+                           end if;
+
+                           --  If another operation with this name has already
+                           --  been located for the type, then flag an error,
+                           --  since we only allow the type to have a single
+                           --  such primitive.
+
+                           if Present (Found_Op) and then Is_OK then
+                              Error_Msg_NE
+                                ("only one % operation allowed for " &
+                                 "simple storage pool type&", Op, Pool_Type);
+                           end if;
+
+                           --  In the case of Allocate and Deallocate, a formal
+                           --  of type System.Address is required.
+
+                           if Op_Name = Name_Allocate then
+                              Validate_Simple_Pool_Op_Formal
+                                (Op, Formal, E_Out_Parameter,
+                                 Address_Type, "Storage_Address", Is_OK);
+
+                           elsif Op_Name = Name_Deallocate then
+                              Validate_Simple_Pool_Op_Formal
+                                (Op, Formal, E_In_Parameter,
+                                 Address_Type, "Storage_Address", Is_OK);
+                           end if;
+
+                           --  In the case of Allocate and Deallocate, formals
+                           --  of type Storage_Count are required as the third
+                           --  and fourth parameters.
+
+                           if Op_Name /= Name_Storage_Size then
+                              Validate_Simple_Pool_Op_Formal
+                                (Op, Formal, E_In_Parameter,
+                                 Stg_Cnt_Type, "Size_In_Storage_Units", Is_OK);
+
+                              Validate_Simple_Pool_Op_Formal
+                                (Op, Formal, E_In_Parameter,
+                                 Stg_Cnt_Type, "Alignment", Is_OK);
+                           end if;
+
+                           --  If no mismatched formals have been found (Is_OK)
+                           --  and no excess formals are present, then this
+                           --  operation has been validated, so record it.
+
+                           if not Present (Formal) and then Is_OK then
+                              Found_Op := Op;
+                           end if;
+                        end if;
+
+                        Op := Homonym (Op);
+                     end loop;
+
+                     --  There must be a valid Allocate operation for the type,
+                     --  so issue an error if none was found.
+
+                     if Op_Name = Name_Allocate
+                       and then not Present (Found_Op)
+                     then
+                        Error_Msg_N ("missing % operation for simple " &
+                                     "storage pool type", Pool_Type);
+
+                     elsif Present (Found_Op) then
+                        --  Simple pool operations can't be abstract
+
+                        if Is_Abstract_Subprogram (Found_Op) then
+                           Error_Msg_N
+                             ("simple storage pool operation must not be " &
+                              "abstract", Found_Op);
+                        end if;
+
+                        --  The Storage_Size operation must be a function with
+                        --  Storage_Count as its result type.
+
+                        if Op_Name = Name_Storage_Size then
+                           if Ekind (Found_Op) = E_Procedure then
+                              Error_Msg_N
+                                ("% operation must be a function", Found_Op);
+
+                           elsif Etype (Found_Op) /= Stg_Cnt_Type then
+                              Error_Msg_NE
+                                ("wrong result type for%, expected type&",
+                                 Found_Op, Stg_Cnt_Type);
+                           end if;
+
+                        --  Allocate and Deallocate must be procedures
+
+                        elsif Ekind (Found_Op) = E_Function then
+                           Error_Msg_N
+                             ("% operation must be a procedure", Found_Op);
+                        end if;
+                     end if;
+                  end Validate_Simple_Pool_Operation;
+
+               --  Start of processing for Validate_Simple_Pool_Ops
+
+               begin
+                  Validate_Simple_Pool_Operation (Name_Allocate);
+
+                  Validate_Simple_Pool_Operation (Name_Deallocate);
+
+                  Validate_Simple_Pool_Operation (Name_Storage_Size);
+               end Validate_Simple_Pool_Ops;
             end if;
          end if;
 

@@ -1064,23 +1064,24 @@ package body Sem_Ch13 is
 
                --  Aspects corresponding to attribute definition clauses
 
-               when Aspect_Address        |
-                    Aspect_Alignment      |
-                    Aspect_Bit_Order      |
-                    Aspect_Component_Size |
-                    Aspect_External_Tag   |
-                    Aspect_Input          |
-                    Aspect_Machine_Radix  |
-                    Aspect_Object_Size    |
-                    Aspect_Output         |
-                    Aspect_Read           |
-                    Aspect_Size           |
-                    Aspect_Small          |
-                    Aspect_Storage_Pool   |
-                    Aspect_Storage_Size   |
-                    Aspect_Stream_Size    |
-                    Aspect_Value_Size     |
-                    Aspect_Write          =>
+               when Aspect_Address             |
+                    Aspect_Alignment           |
+                    Aspect_Bit_Order           |
+                    Aspect_Component_Size      |
+                    Aspect_External_Tag        |
+                    Aspect_Input               |
+                    Aspect_Machine_Radix       |
+                    Aspect_Object_Size         |
+                    Aspect_Output              |
+                    Aspect_Read                |
+                    Aspect_Size                |
+                    Aspect_Small               |
+                    Aspect_Simple_Storage_Pool |
+                    Aspect_Storage_Pool        |
+                    Aspect_Storage_Size        |
+                    Aspect_Stream_Size         |
+                    Aspect_Value_Size          |
+                    Aspect_Write               =>
 
                   --  Construct the attribute definition clause
 
@@ -2210,13 +2211,14 @@ package body Sem_Ch13 is
             --  legality, e.g. failing to provide a stream attribute for a
             --  type may make a program illegal.
 
-            when Attribute_External_Tag |
-                 Attribute_Input        |
-                 Attribute_Output       |
-                 Attribute_Read         |
-                 Attribute_Storage_Pool |
-                 Attribute_Storage_Size |
-                 Attribute_Write        =>
+            when Attribute_External_Tag        |
+                 Attribute_Input               |
+                 Attribute_Output              |
+                 Attribute_Read                |
+                 Attribute_Simple_Storage_Pool |
+                 Attribute_Storage_Pool        |
+                 Attribute_Storage_Size        |
+                 Attribute_Write               =>
                null;
 
             --  Other cases are errors ("attribute& cannot be set with
@@ -3163,7 +3165,7 @@ package body Sem_Ch13 is
 
          --  Storage_Pool attribute definition clause
 
-         when Attribute_Storage_Pool => Storage_Pool : declare
+         when Attribute_Storage_Pool | Attribute_Simple_Storage_Pool => declare
             Pool : Entity_Id;
             T    : Entity_Id;
 
@@ -3194,8 +3196,24 @@ package body Sem_Ch13 is
                return;
             end if;
 
-            Analyze_And_Resolve
-              (Expr, Class_Wide_Type (RTE (RE_Root_Storage_Pool)));
+            if Id = Attribute_Storage_Pool then
+               Analyze_And_Resolve
+                 (Expr, Class_Wide_Type (RTE (RE_Root_Storage_Pool)));
+
+            --  In the Simple_Storage_Pool case, we allow a variable of any
+            --  Simple_Storage_Pool type, so we Resolve without imposing an
+            --  expected type.
+
+            else
+               Analyze_And_Resolve (Expr);
+
+               if not Present (Get_Rep_Pragma
+                                 (Etype (Expr), Name_Simple_Storage_Pool))
+               then
+                  Error_Msg_N
+                    ("expression must be of a simple storage pool type", Expr);
+               end if;
+            end if;
 
             if not Denotes_Variable (Expr) then
                Error_Msg_N ("storage pool must be a variable", Expr);
@@ -3280,7 +3298,7 @@ package body Sem_Ch13 is
                Error_Msg_N ("incorrect reference to a Storage Pool", Expr);
                return;
             end if;
-         end Storage_Pool;
+         end;
 
          ------------------
          -- Storage_Size --
@@ -6146,6 +6164,13 @@ package body Sem_Ch13 is
 
          when Aspect_Small =>
             T := Universal_Real;
+
+         --  For a simple storage pool, we have to retrieve the type of the
+         --  pool object associated with the aspect's corresponding attribute
+         --  definition clause.
+
+         when Aspect_Simple_Storage_Pool =>
+            T := Etype (Expression (Aspect_Rep_Item (ASN)));
 
          when Aspect_Storage_Pool =>
             T := Class_Wide_Type (RTE (RE_Root_Storage_Pool));
