@@ -74,6 +74,7 @@ package Aspects is
       Aspect_Predicate,                     -- GNAT
       Aspect_Priority,
       Aspect_Read,
+      Aspect_Simple_Storage_Pool,           -- GNAT
       Aspect_Size,
       Aspect_Small,
       Aspect_Static_Predicate,
@@ -186,6 +187,7 @@ package Aspects is
                              Aspect_Pure_Function        => True,
                              Aspect_Remote_Access_Type   => True,
                              Aspect_Shared               => True,
+                             Aspect_Simple_Storage_Pool  => True,
                              Aspect_Suppress_Debug_Info  => True,
                              Aspect_Test_Case            => True,
                              Aspect_Universal_Data       => True,
@@ -277,6 +279,7 @@ package Aspects is
                         Aspect_Predicate               => Expression,
                         Aspect_Priority                => Expression,
                         Aspect_Read                    => Name,
+                        Aspect_Simple_Storage_Pool     => Name,
                         Aspect_Size                    => Expression,
                         Aspect_Small                   => Expression,
                         Aspect_Static_Predicate        => Expression,
@@ -364,6 +367,7 @@ package Aspects is
      Aspect_Remote_Types                 => Name_Remote_Types,
      Aspect_Shared                       => Name_Shared,
      Aspect_Shared_Passive               => Name_Shared_Passive,
+     Aspect_Simple_Storage_Pool          => Name_Simple_Storage_Pool,
      Aspect_Size                         => Name_Size,
      Aspect_Small                        => Name_Small,
      Aspect_Static_Predicate             => Name_Static_Predicate,

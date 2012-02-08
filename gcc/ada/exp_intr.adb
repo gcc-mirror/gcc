@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1083,6 +1083,34 @@ package body Exp_Intr is
 
          if Is_RTE (Pool, RE_SS_Pool) then
             null;
+
+         --  If the pool object is of a simple storage pool type, then attempt
+         --  to locate the type's Deallocate procedure, if any, and set the
+         --  free operation's procedure to call. If the type doesn't have a
+         --  Deallocate (which is allowed), then the actual will simply be set
+         --  to null.
+
+         elsif Present (Get_Rep_Pragma
+                          (Etype (Pool), Name_Simple_Storage_Pool))
+         then
+            declare
+               Dealloc_Op  : Entity_Id := Get_Name_Entity_Id (Name_Deallocate);
+               Pool_Type : constant Entity_Id := Base_Type (Etype (Pool));
+
+            begin
+               while Present (Dealloc_Op) loop
+                  if Scope (Dealloc_Op) = Scope (Pool_Type)
+                    and then Present (First_Formal (Dealloc_Op))
+                    and then Etype (First_Formal (Dealloc_Op)) = Pool_Type
+                  then
+                     Set_Procedure_To_Call (Free_Node, Dealloc_Op);
+
+                     exit;
+                  end if;
+
+                  Dealloc_Op := Homonym (Dealloc_Op);
+               end loop;
+            end;
 
          --  Case of a class-wide pool type: make a dispatching call to
          --  Deallocate through the class-wide Deallocate_Any.

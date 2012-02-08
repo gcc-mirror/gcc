@@ -1047,8 +1047,6 @@ package body Ada.Containers.Vectors is
               Array_Type   => Elements_Array,
               "<"          => "<");
 
-      --  Start of processing for Sort
-
       begin
          if Container.Last <= Index_Type'First then
             return;
@@ -2994,9 +2992,9 @@ package body Ada.Containers.Vectors is
       --  catch more things) instead of for element tampering (which will catch
       --  fewer things). It's true that the elements of this vector container
       --  could be safely moved around while (say) an iteration is taking place
-      --  (iteration only increments the busy counter), and so technically all
-      --  we would need here is a test for element tampering (indicated by the
-      --  lock counter), that's simply an artifact of our array-based
+      --  (iteration only increments the busy counter), and so technically
+      --  all we would need here is a test for element tampering (indicated
+      --  by the lock counter), that's simply an artifact of our array-based
       --  implementation. Logically Reverse_Elements requires a check for
       --  cursor tampering.
 
@@ -3006,22 +3004,22 @@ package body Ada.Containers.Vectors is
       end if;
 
       declare
-         I, J : Index_Type;
-         E    : Elements_Type renames Container.Elements.all;
+         K : Index_Type;
+         J : Index_Type;
+         E : Elements_Type renames Container.Elements.all;
 
       begin
-         I := Index_Type'First;
+         K := Index_Type'First;
          J := Container.Last;
-         while I < J loop
+         while K < J loop
             declare
-               EI : constant Element_Type := E.EA (I);
-
+               EK : constant Element_Type := E.EA (K);
             begin
-               E.EA (I) := E.EA (J);
-               E.EA (J) := EI;
+               E.EA (K) := E.EA (J);
+               E.EA (J) := EK;
             end;
 
-            I := I + 1;
+            K := K + 1;
             J := J - 1;
          end loop;
       end;
@@ -3116,12 +3114,12 @@ package body Ada.Containers.Vectors is
       Count : constant Count_Type'Base := Container.Length - Length;
 
    begin
-      --  Set_Length allows the user to set the length explicitly, instead of
-      --  implicitly as a side-effect of deletion or insertion. If the
+      --  Set_Length allows the user to set the length explicitly, instead
+      --  of implicitly as a side-effect of deletion or insertion. If the
       --  requested length is less then the current length, this is equivalent
       --  to deleting items from the back end of the vector. If the requested
-      --  length is greater than the current length, then this is equivalent to
-      --  inserting "space" (nonce items) at the end.
+      --  length is greater than the current length, then this is equivalent
+      --  to inserting "space" (nonce items) at the end.
 
       if Count >= 0 then
          Container.Delete_Last (Count);
@@ -3360,6 +3358,7 @@ package body Ada.Containers.Vectors is
          end if;
 
       elsif Index_Type'First <= 0 then
+
          --  Here we can compute Last directly, in the normal way. We know that
          --  No_Index is less than 0, so there is no danger of overflow when
          --  adding the (positive) value of Length.
@@ -3440,13 +3439,11 @@ package body Ada.Containers.Vectors is
    begin
       if Position.Container = null then
          raise Constraint_Error with "Position cursor has no element";
-      end if;
-
-      if Position.Container /= Container'Unrestricted_Access then
+      elsif Position.Container /= Container'Unrestricted_Access then
          raise Program_Error with "Position cursor denotes wrong container";
+      else
+         Update_Element (Container, Position.Index, Process);
       end if;
-
-      Update_Element (Container, Position.Index, Process);
    end Update_Element;
 
    -----------

@@ -1,3 +1,78 @@
+2012-02-08  Robert Dewar  <dewar@adacore.com>
+
+	* a-coinve.adb, sem_util.adb, sem_ch8.adb, a-cobove.adb,
+	a-convec.adb: Minor reformatting and code reorganization.
+
+2012-02-08  Steve Baird  <baird@adacore.com>
+
+	* sem_cat.adb (In_Preelaborated_Unit): A child
+	unit instantiation does not inherit preelaboration requirements
+	from its parent.
+
+2012-02-08  Gary Dismukes  <dismukes@adacore.com>
+
+	* aspects.ads (type Aspect_Id): Add Aspect_Simple_Storage_Pool.
+	(Impl_Defined_Aspects): Add entry for Aspect_Simple_Storage_Pool.
+	(Aspect_Argument): Add Name entry for Aspect_Simple_Storage_Pool.
+	(Aspect_Names): Add entry for Aspect_Simple_Storage_Pool.
+	* aspects.adb (Canonical_Aspect): Add entry for
+	Aspect_Simple_Storage_Pool.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Handle case of
+	Attribute_Simple_Storage_Pool in the same way as Storage_Pool
+	(add conversion, analyze/resolve). For the Storage_Size attribute,
+	for the simple pool case, locate and use the simple pool type's
+	Storage_Size function (if any), otherwise evaluate to zero.
+	* exp_ch4.adb (Expand_N_Allocator): In the case of an allocator
+	for an access type with an associated simple storage pool,
+	locate and use the pool type's Allocate.
+	* exp_intr.adb (Expand_Unc_Deallocation): In the case where the
+	access type has a simple storage pool, locate the pool type's
+	Deallocate procedure (if present) and use it as the procedure
+	to call on the Free operation.
+	* freeze.adb (Freeze_Entity): In the case of a full type for
+	a private type defined with pragma Simple_Storage_Pool, check
+	that the full type is also appropriate for the pragma. For
+	a simple storage pool type, validate that the operations
+	Allocate, Deallocate (if present), and Storage_Size
+	(if present) are defined with appropriate expected profiles.
+	(Validate_Simple_Pool_Op_Formal): New procedure
+	(Validate_Simple_Pool_Operation): New procedure Add with and
+	use of Rtsfind.
+	* par-prag.adb: Add Pragma_Simple_Storage_Pool to case statement
+	(no action required).
+	* sem_attr.adb (Analyze_Attribute): For the case of the
+	Storage_Pool attribute, give a warning if the prefix type has an
+	associated simple storage pool, and rewrite the attribute as a
+	raise of Program_Error. In the case of the Simple_Storage_Pool
+	attribute, check that the prefix type has an associated simple
+	storage pool, and set the attribute type to the pool's type.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add
+	Aspect_Simple_Storage_Pool case choice.
+	(Analyze_Attribute_Definition_Clause): Add
+	Aspect_Simple_Storage_Pool to case for Ignore_Rep_Clauses
+	(no action). Add handling for Simple_Storage_Pool attribute
+	definition, requiring the name to denote a simple storage pool
+	object.
+	(Check_Aspect_At_Freeze_Point): For a simple storage pool
+	aspect, set the type to that of the name specified for the aspect.
+	* sem_prag.adb (Analyze_Pragma): Add handling for pragma
+	Simple_Storage_Pool, requiring that it applies to a library-level
+	type declared in a package declaration that is a limited private
+	or limited record type.
+	* sem_res.adb (Resolve_Allocator): Flag an attempt to call a
+	build-in-place function in an allocator for an access type with
+	a simple storage pool as unsupported.
+	* snames.ads-tmpl: Add Name_Simple_Storage_Pool.
+	(type Attribute_Id): Add Attribute_Simple_Storage_Pool.
+	(type Pragma_Id): Add Pragma_Simple_Storage_Pool.
+	* snames.adb-tmpl (Get_Pragma_Id): Handle case of
+	Name_Simple_Storage_Pool.
+	(Is_Pragma_Name): Return True for Name_Simple_Storage_Pool.
+
+2012-02-08  Cyrille Comar  <comar@adacore.com>
+
+	* projects.texi: Clarify doc for interfaces.
+
 2012-02-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Make-lang.in (GCC_LINKERFLAGS): New variable.

@@ -1767,10 +1767,10 @@ language and takes a list of sources as parameter.
 @table @asis
 @item @b{Library_Interface}:
 @cindex @code{Library_Interface}
-  This attribute defines an explicit subset of the units of the project.
-  Projects importing this library project may only "with" units whose sources
-  are listed in the @code{Library_Interface}. Other sources are considered
-  implementation units.
+  This attribute defines an explicit subset of the units of the project. Units
+  from projects importing this library project may only "with" units whose
+  sources are listed in the @code{Library_Interface}. Other sources are
+  considered implementation units.
 
 @smallexample @c projectfile
 @group
@@ -1781,11 +1781,13 @@ language and takes a list of sources as parameter.
 @end smallexample
 
 @item @b{Interfaces}
-  This attribute defnes an explicit subset of the source files of a project.
-  It may be used as a replacement for attribute @code{Library_Interface}. For
-  multi-language library projects, it is the only way to make the project a
-  Stand-Alone Library project and at the same time to reduce the non Ada
-  interfacing sources.
+  This attribute defines an explicit subset of the source files of a project.
+  Sources from projects importing this project, can only depend on sources from
+  this subset. This attribute can be used on non library projects. It can also
+  be used as a replacement for attribute @code{Library_Interface}, in which
+  case, units have to be replaced by source files. For multi-language library
+  projects, it is the only way to make the project a Stand-Alone Library project
+  whose interface is not purely Ada.
 
 @item @b{Library_Standalone}:
 @cindex @code{Library_Standalone}

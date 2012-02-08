@@ -486,11 +486,22 @@ package body Sem_Cat is
    ---------------------------
 
    function In_Preelaborated_Unit return Boolean is
-      Unit_Entity : constant Entity_Id := Current_Scope;
+      Unit_Entity : Entity_Id := Current_Scope;
       Unit_Kind   : constant Node_Kind :=
                       Nkind (Unit (Cunit (Current_Sem_Unit)));
 
    begin
+      --  If evaluating actuals for a child unit instantiation, then ignore
+      --  the preelaboration status of the parent; use the child instead.
+
+      if Is_Compilation_Unit (Unit_Entity)
+        and then Unit_Kind in N_Generic_Instantiation
+        and then not In_Same_Source_Unit (Unit_Entity,
+                                          Cunit (Current_Sem_Unit))
+      then
+         Unit_Entity := Cunit_Entity (Current_Sem_Unit);
+      end if;
+
       --  There are no constraints on the body of Remote_Call_Interface or
       --  Remote_Types packages.
 
