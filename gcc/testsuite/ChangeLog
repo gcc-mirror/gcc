@@ -1,3 +1,8 @@
+2012-02-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52035
+	* g++.dg/lto/pr52035_0.C: New.
+
 2012-02-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gfortran.dg/guality/pr41558.f90: Use lp64 instead of hppa*64*-*-*.
