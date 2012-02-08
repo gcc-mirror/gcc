@@ -1,6 +1,6 @@
 /* Read and write coverage files, and associated functionality.
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 1996, 1997, 1998, 1999,
-   2000, 2001, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
+   2000, 2001, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "intl.h"
 #include "filenames.h"
+#include "target.h"
 
 #include "gcov-io.h"
 #include "gcov-io.c"
@@ -656,13 +657,25 @@ static tree
 build_var (tree fn_decl, tree type, int counter)
 {
   tree var = build_decl (BUILTINS_LOCATION, VAR_DECL, NULL_TREE, type);
-  tree fn_name = DECL_ASSEMBLER_NAME (fn_decl);
-  char *buf = (char *)alloca (IDENTIFIER_LENGTH (fn_name) + 10);
+  const char *fn_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fn_decl));
+  char *buf;
+  size_t fn_name_len, len;
+
+  fn_name = targetm.strip_name_encoding (fn_name);
+  fn_name_len = strlen (fn_name);
+  buf = XALLOCAVEC (char, fn_name_len + 8 + sizeof (int) * 3);
 
   if (counter < 0)
-    sprintf (buf, "__gcov__%s", IDENTIFIER_POINTER (fn_name));
+    strcpy (buf, "__gcov__");
   else
-    sprintf (buf, "__gcov%u_%s", counter, IDENTIFIER_POINTER (fn_name));
+    sprintf (buf, "__gcov%u_", counter);
+  len = strlen (buf);
+#ifndef NO_DOT_IN_LABEL
+  buf[len - 1] = '.';
+#elif !defined NO_DOLLAR_IN_LABEL
+  buf[len - 1] = '$';
+#endif
+  memcpy (buf + len, fn_name, fn_name_len + 1);
   DECL_NAME (var) = get_identifier (buf);
   TREE_STATIC (var) = 1;
   TREE_ADDRESSABLE (var) = 1;

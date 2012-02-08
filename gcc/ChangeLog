@@ -1,5 +1,11 @@
 2012-02-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR gcov-profile/52150
+	* coverage.c: Include target.h.
+	(build_var): Call targetm.strip_name_encoding on the assembler name.
+	Change one _ into . or $ if the target allows it.
+	* Makefile.in (coverage.o): Depend on $(TARGET_H).
+
 	PR rtl-optimization/52139
 	* cfgrtl.c (cfg_layout_merge_blocks): If BB_END
 	is a BARRIER after emit_insn_after_noloc, move BB_END
