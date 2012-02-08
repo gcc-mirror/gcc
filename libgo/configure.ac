@@ -549,6 +549,87 @@ AC_CACHE_CHECK([epoll_event data.fd offset],
 STRUCT_EPOLL_EVENT_FD_OFFSET=${libgo_cv_c_epoll_event_fd_offset}
 AC_SUBST(STRUCT_EPOLL_EVENT_FD_OFFSET)
 
+dnl See whether setcontext changes the value of TLS variables.
+AC_CACHE_CHECK([whether setcontext clobbers TLS variables],
+[libgo_cv_lib_setcontext_clobbers_tls],
+[LIBS_hold="$LIBS"
+LIBS="$LIBS $PTHREAD_LIBS"
+AC_RUN_IFELSE(
+  [AC_LANG_SOURCE([
+#include <pthread.h>
+#include <stdlib.h>
+#include <ucontext.h>
+#include <unistd.h>
+
+__thread int tls;
+
+static char stack[[10 * 1024 * 1024]];
+static ucontext_t c;
+
+/* Called via makecontext/setcontext.  */
+
+static void
+cfn (void)
+{
+  exit (tls);
+}
+
+/* Called via pthread_create.  */
+
+static void *
+tfn (void *dummy)
+{
+  /* The thread should still see this value after calling
+     setcontext.  */
+  tls = 0;
+
+  setcontext (&c);
+
+  /* The call to setcontext should not return.  */
+  abort ();
+}
+
+int
+main ()
+{
+  pthread_t tid;
+
+  /* The thread should not see this value.  */
+  tls = 1;
+
+  if (getcontext (&c) < 0)
+    abort ();
+
+  c.uc_stack.ss_sp = stack;
+  c.uc_stack.ss_flags = 0;
+  c.uc_stack.ss_size = sizeof stack;
+  c.uc_link = NULL;
+  makecontext (&c, cfn, 0);
+
+  if (pthread_create (&tid, NULL, tfn, NULL) != 0)
+    abort ();
+
+  if (pthread_join (tid, NULL) != 0)
+    abort ();
+
+  /* The thread should have called exit.  */
+  abort ();
+}
+])],
+[libgo_cv_lib_setcontext_clobbers_tls=no],
+[libgo_cv_lib_setcontext_clobbers_tls=yes],
+[case "$target" in
+  x86_64*-*-solaris2.10) libgo_cv_lib_setcontext_clobbers_tls=yes ;;
+  *) libgo_cv_lib_setcontext_clobbers_tls=no ;;
+ esac
+])
+LIBS="$LIBS_hold"
+])
+if test "$libgo_cv_lib_setcontext_clobbers_tls" = "yes"; then
+  AC_DEFINE(SETCONTEXT_CLOBBERS_TLS, 1,
+	    [Define if setcontext clobbers TLS variables])
+fi
+
 AC_CACHE_SAVE
 
 if test ${multilib} = yes; then

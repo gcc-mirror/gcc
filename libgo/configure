@@ -14756,6 +14756,104 @@ $as_echo "$libgo_cv_c_epoll_event_fd_offset" >&6; }
 STRUCT_EPOLL_EVENT_FD_OFFSET=${libgo_cv_c_epoll_event_fd_offset}
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether setcontext clobbers TLS variables" >&5
+$as_echo_n "checking whether setcontext clobbers TLS variables... " >&6; }
+if test "${libgo_cv_lib_setcontext_clobbers_tls+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  LIBS_hold="$LIBS"
+LIBS="$LIBS $PTHREAD_LIBS"
+if test "$cross_compiling" = yes; then :
+  case "$target" in
+  x86_64*-*-solaris2.10) libgo_cv_lib_setcontext_clobbers_tls=yes ;;
+  *) libgo_cv_lib_setcontext_clobbers_tls=no ;;
+ esac
+
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <pthread.h>
+#include <stdlib.h>
+#include <ucontext.h>
+#include <unistd.h>
+
+__thread int tls;
+
+static char stack[10 * 1024 * 1024];
+static ucontext_t c;
+
+/* Called via makecontext/setcontext.  */
+
+static void
+cfn (void)
+{
+  exit (tls);
+}
+
+/* Called via pthread_create.  */
+
+static void *
+tfn (void *dummy)
+{
+  /* The thread should still see this value after calling
+     setcontext.  */
+  tls = 0;
+
+  setcontext (&c);
+
+  /* The call to setcontext should not return.  */
+  abort ();
+}
+
+int
+main ()
+{
+  pthread_t tid;
+
+  /* The thread should not see this value.  */
+  tls = 1;
+
+  if (getcontext (&c) < 0)
+    abort ();
+
+  c.uc_stack.ss_sp = stack;
+  c.uc_stack.ss_flags = 0;
+  c.uc_stack.ss_size = sizeof stack;
+  c.uc_link = NULL;
+  makecontext (&c, cfn, 0);
+
+  if (pthread_create (&tid, NULL, tfn, NULL) != 0)
+    abort ();
+
+  if (pthread_join (tid, NULL) != 0)
+    abort ();
+
+  /* The thread should have called exit.  */
+  abort ();
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  libgo_cv_lib_setcontext_clobbers_tls=no
+else
+  libgo_cv_lib_setcontext_clobbers_tls=yes
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+LIBS="$LIBS_hold"
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_lib_setcontext_clobbers_tls" >&5
+$as_echo "$libgo_cv_lib_setcontext_clobbers_tls" >&6; }
+if test "$libgo_cv_lib_setcontext_clobbers_tls" = "yes"; then
+
+$as_echo "#define SETCONTEXT_CLOBBERS_TLS 1" >>confdefs.h
+
+fi
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
