@@ -130,6 +130,12 @@ __go_new_channel(ChanType *t, uintptr hint)
 	return runtime_makechan_c(t, hint);
 }
 
+Hchan*
+__go_new_channel_big(ChanType *t, uint64 hint)
+{
+	return runtime_makechan_c(t, hint);
+}
+
 /*
  * generic single channel send/recv
  * if the bool pointer is nil,
