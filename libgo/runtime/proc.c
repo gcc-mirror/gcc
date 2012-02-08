@@ -60,6 +60,54 @@ G	runtime_g0;	// idle goroutine for m0
 static __thread G *g;
 static __thread M *m;
 
+#ifndef SETCONTEXT_CLOBBERS_TLS
+
+static inline void
+initcontext(void)
+{
+}
+
+static inline void
+fixcontext(ucontext_t *c __attribute__ ((unused)))
+{
+}
+
+# else
+
+# if defined(__x86_64__) && defined(__sun__)
+
+// x86_64 Solaris 10 and 11 have a bug: setcontext switches the %fs
+// register to that of the thread which called getcontext.  The effect
+// is that the address of all __thread variables changes.  This bug
+// also affects pthread_self() and pthread_getspecific.  We work
+// around it by clobbering the context field directly to keep %fs the
+// same.
+
+static __thread greg_t fs;
+
+static inline void
+initcontext(void)
+{
+	ucontext_t c;
+
+	getcontext(&c);
+	fs = c.uc_mcontext.gregs[REG_FSBASE];
+}
+
+static inline void
+fixcontext(ucontext_t* c)
+{
+	c->uc_mcontext.gregs[REG_FSBASE] = fs;
+}
+
+# else
+
+#  error unknown case for SETCONTEXT_CLOBBERS_TLS
+
+# endif
+
+#endif
+
 // We can not always refer to the TLS variables directly.  The
 // compiler will call tls_get_addr to get the address of the variable,
 // and it may hold it in a register across a call to schedule.  When
@@ -248,7 +296,9 @@ runtime_gogo(G* newg)
 #endif
 	g = newg;
 	newg->fromgogo = true;
+	fixcontext(&newg->context);
 	setcontext(&newg->context);
+	runtime_throw("gogo setcontext returned");
 }
 
 // Save context and call fn passing g as a parameter.  This is like
@@ -287,6 +337,7 @@ runtime_mcall(void (*pfn)(G*))
 		m->g0->entry = (byte*)pfn;
 		m->g0->param = g;
 		g = m->g0;
+		fixcontext(&m->g0->context);
 		setcontext(&m->g0->context);
 		runtime_throw("runtime: mcall function returned");
 	}
@@ -311,6 +362,8 @@ runtime_schedinit(void)
 	m->g0 = g;
 	m->curg = g;
 	g->m = m;
+
+	initcontext();
 
 	m->nomemprof++;
 	runtime_mallocinit();
@@ -843,6 +896,8 @@ runtime_mstart(void* mp)
 {
 	m = (M*)mp;
 	g = m->g0;
+
+	initcontext();
 
 	g->entry = nil;
 	g->param = nil;
