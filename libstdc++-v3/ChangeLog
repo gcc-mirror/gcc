@@ -1,3 +1,8 @@
+2012-02-07  Benjamin Kosnik  <bkoz@redhat.com>
+
+            * doc/doxygen/user.cfg.in: Update to doxygen 1.7.6.1.
+            * doc/xml/manual/documentation_hacking.xml: Update.
+
 2012-02-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/30_threads/call_once/39909.cc: Remove duplicate target
