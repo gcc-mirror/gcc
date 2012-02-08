@@ -1476,7 +1476,8 @@ package body Prj is
    is
       procedure Analyze_Tree
         (Local_Root : Project_Id;
-         Local_Tree : Project_Tree_Ref);
+         Local_Tree : Project_Tree_Ref;
+         Context    : Project_Context);
       --  Process Project and all its aggregated project to analyze their own
       --  imported projects.
 
@@ -1486,7 +1487,8 @@ package body Prj is
 
       procedure Analyze_Tree
         (Local_Root : Project_Id;
-         Local_Tree : Project_Tree_Ref)
+         Local_Tree : Project_Tree_Ref;
+         Context    : Project_Context)
       is
          pragma Unreferenced (Local_Root);
 
@@ -1540,7 +1542,9 @@ package body Prj is
                Project.All_Imported_Projects :=
                  new Project_List_Element'
                    (Project               => Prj2,
-                    From_Encapsulated_Lib => Context.From_Encapsulated_Lib,
+                    From_Encapsulated_Lib =>
+                      Context.From_Encapsulated_Lib
+                        or else Analyze_Tree.Context.From_Encapsulated_Lib,
                     Next                  => Project.All_Imported_Projects);
             end if;
          end Recursive_Add;
@@ -1564,7 +1568,7 @@ package body Prj is
       end Analyze_Tree;
 
       procedure For_Aggregates is
-        new For_Project_And_Aggregated (Analyze_Tree);
+        new For_Project_And_Aggregated_Context (Analyze_Tree);
 
    --  Start of processing for Compute_All_Imported_Projects
 
