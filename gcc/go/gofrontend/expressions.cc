@@ -7744,6 +7744,10 @@ Builtin_call_expression::lower_make()
       return Expression::make_error(this->location());
     }
 
+  bool have_big_args = false;
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+  int uintptr_bits = uintptr_type->integer_type()->bits();
+
   ++parg;
   Expression* len_arg;
   if (parg == args->end())
@@ -7767,6 +7771,9 @@ Builtin_call_expression::lower_make()
 	  this->report_error(_("bad size for make"));
 	  return Expression::make_error(this->location());
 	}
+      if (len_arg->type()->integer_type() != NULL
+	  && len_arg->type()->integer_type()->bits() > uintptr_bits)
+	have_big_args = true;
       ++parg;
     }
 
@@ -7779,6 +7786,9 @@ Builtin_call_expression::lower_make()
 	  this->report_error(_("bad capacity when making slice"));
 	  return Expression::make_error(this->location());
 	}
+      if (cap_arg->type()->integer_type() != NULL
+	  && cap_arg->type()->integer_type()->bits() > uintptr_bits)
+	have_big_args = true;
       ++parg;
     }
 
@@ -7801,16 +7811,26 @@ Builtin_call_expression::lower_make()
   if (is_slice)
     {
       if (cap_arg == NULL)
-	call = Runtime::make_call(Runtime::MAKESLICE1, loc, 2, type_arg,
-				  len_arg);
+	call = Runtime::make_call((have_big_args
+				   ? Runtime::MAKESLICE1BIG
+				   : Runtime::MAKESLICE1),
+				  loc, 2, type_arg, len_arg);
       else
-	call = Runtime::make_call(Runtime::MAKESLICE2, loc, 3, type_arg,
-				  len_arg, cap_arg);
+	call = Runtime::make_call((have_big_args
+				   ? Runtime::MAKESLICE2BIG
+				   : Runtime::MAKESLICE2),
+				  loc, 3, type_arg, len_arg, cap_arg);
     }
   else if (is_map)
-    call = Runtime::make_call(Runtime::MAKEMAP, loc, 2, type_arg, len_arg);
+    call = Runtime::make_call((have_big_args
+			       ? Runtime::MAKEMAPBIG
+			       : Runtime::MAKEMAP),
+			      loc, 2, type_arg, len_arg);
   else if (is_chan)
-    call = Runtime::make_call(Runtime::MAKECHAN, loc, 2, type_arg, len_arg);
+    call = Runtime::make_call((have_big_args
+			       ? Runtime::MAKECHANBIG
+			       : Runtime::MAKECHAN),
+			      loc, 2, type_arg, len_arg);
   else
     go_unreachable();
 

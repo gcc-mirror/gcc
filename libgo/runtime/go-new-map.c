@@ -125,3 +125,17 @@ __go_new_map (const struct __go_map_descriptor *descriptor, uintptr_t entries)
   __builtin_memset (ret->__buckets, 0, entries * sizeof (void *));
   return ret;
 }
+
+/* Allocate a new map when the argument to make is a large type.  */
+
+struct __go_map *
+__go_new_map_big (const struct __go_map_descriptor *descriptor,
+		  uint64_t entries)
+{
+  uintptr_t sentries;
+
+  sentries = (uintptr_t) entries;
+  if ((uint64_t) sentries != entries)
+    runtime_panicstring ("map size out of range");
+  return __go_new_map (descriptor, sentries);
+}
