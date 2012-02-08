@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -308,6 +308,7 @@ package System.Tasking.Rendezvous is
 
    procedure Exceptional_Complete_Rendezvous
      (Ex : Ada.Exceptions.Exception_Id);
+   pragma No_Return (Exceptional_Complete_Rendezvous);
    --  Called by acceptor to mark the end of the current rendezvous and
    --  propagate an exception to the caller.
 

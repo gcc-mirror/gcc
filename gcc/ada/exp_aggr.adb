@@ -5115,6 +5115,14 @@ package body Exp_Aggr is
       --  and the aggregate can be constructed statically and handled by
       --  the back-end.
 
+      function Compile_Time_Known_Composite_Value (N : Node_Id) return Boolean;
+      --  Returns true if N is an expression of composite type which can be
+      --  fully evaluated at compile time without raising constraint error.
+      --  Such expressions can be passed as is to Gigi without any expansion.
+      --
+      --  This returns true for N_Aggregate with Compile_Time_Known_Aggregate
+      --  set and constants whose expression is such an aggregate, recursively.
+
       function Component_Not_OK_For_Backend return Boolean;
       --  Check for presence of component which makes it impossible for the
       --  backend to process the aggregate, thus requiring the use of a series
@@ -5144,6 +5152,46 @@ package body Exp_Aggr is
       function Top_Level_Aggregate (N : Node_Id) return Node_Id;
       --  For nested aggregates return the ultimate enclosing aggregate; for
       --  non-nested aggregates return N.
+
+      ----------------------------------------
+      -- Compile_Time_Known_Composite_Value --
+      ----------------------------------------
+
+      function Compile_Time_Known_Composite_Value (N : Node_Id) return Boolean
+      is
+
+      begin
+         --  If we have an entity name, then see if it is the name of a
+         --  constant and if so, test the corresponding constant value.
+
+         if Is_Entity_Name (N) then
+            declare
+               E : constant Entity_Id := Entity (N);
+               V : Node_Id;
+
+            begin
+               if Ekind (E) /= E_Constant then
+                  return False;
+               end if;
+
+               V := Constant_Value (E);
+               return Present (V)
+                 and then Compile_Time_Known_Composite_Value (V);
+            end;
+
+         --  We have a value, see if it is compile time known
+
+         else
+            if Nkind (N) = N_Aggregate then
+               return Compile_Time_Known_Aggregate (N);
+            end if;
+
+            --  All other types of values are not known at compile time
+
+            return False;
+         end if;
+
+      end Compile_Time_Known_Composite_Value;
 
       ----------------------------------
       -- Component_Not_OK_For_Backend --
@@ -5201,14 +5249,12 @@ package body Exp_Aggr is
                return True;
             end if;
 
-            if Is_Scalar_Type (Etype (Expr_Q)) then
+            if Is_Elementary_Type (Etype (Expr_Q)) then
                if not Compile_Time_Known_Value (Expr_Q) then
                   Static_Components := False;
                end if;
 
-            elsif Nkind (Expr_Q) /= N_Aggregate
-              or else not Compile_Time_Known_Aggregate (Expr_Q)
-            then
+            elsif not Compile_Time_Known_Composite_Value (Expr_Q) then
                Static_Components := False;
 
                if Is_Private_Type (Etype (Expr_Q))
@@ -5374,12 +5420,14 @@ package body Exp_Aggr is
       --  may be distinct from the default size of the type component, so
       --  we need to expand to insure that the back-end copies the proper
       --  size of the data. However, if the aggregate is the initial value of
-      --  a constant, the target is immutable and may be built statically.
+      --  a constant, the target is immutable and might be built statically
+      --  if components are appropriate.
 
       elsif Has_Mutable_Components (Typ)
         and then
           (Nkind (Parent (Top_Level_Aggr)) /= N_Object_Declaration
-            or else not Constant_Present (Parent (Top_Level_Aggr)))
+            or else not Constant_Present (Parent (Top_Level_Aggr))
+            or else not Static_Components)
       then
          Convert_To_Assignments (N, Typ);
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,10 +26,15 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 
+with GNAT.Byte_Order_Mark; use GNAT.Byte_Order_Mark;
+
+with Opt;     use Opt;
+with Output;  use Output;
 with Prj.Err;
 with Sinput.C;
 
 with System;
+with System.WCh_Con; use System.WCh_Con;
 
 package body Sinput.P is
 
@@ -163,6 +168,46 @@ package body Sinput.P is
 
       Prj.Err.Scanner.Set_Special_Character ('#');
       Prj.Err.Scanner.Set_Special_Character ('$');
+
+      --  Check for BOM
+
+      declare
+         BOM : BOM_Kind;
+         Len : Natural;
+         Tst : String (1 .. 5);
+
+      begin
+         for J in 1 .. 5 loop
+            Tst (J) := Source (Scan_Ptr + Source_Ptr (J) - 1);
+         end loop;
+
+         Read_BOM (Tst, Len, BOM, False);
+
+         case BOM is
+            when UTF8_All =>
+               Scan_Ptr := Scan_Ptr + Source_Ptr (Len);
+               Wide_Character_Encoding_Method := WCEM_UTF8;
+               Upper_Half_Encoding := True;
+
+            when UTF16_LE | UTF16_BE =>
+               Set_Standard_Error;
+               Write_Line ("UTF-16 encoding format not recognized");
+               Set_Standard_Output;
+               raise Unrecoverable_Error;
+
+            when UTF32_LE | UTF32_BE =>
+               Set_Standard_Error;
+               Write_Line ("UTF-32 encoding format not recognized");
+               Set_Standard_Output;
+               raise Unrecoverable_Error;
+
+            when Unknown =>
+               null;
+
+            when others =>
+               raise Program_Error;
+         end case;
+      end;
 
       --  We scan past junk to the first interesting compilation unit token, to
       --  see if it is SEPARATE. We ignore WITH keywords during this and also

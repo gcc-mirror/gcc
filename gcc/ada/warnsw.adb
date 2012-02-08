@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -308,6 +308,7 @@ package body Warnsw is
             Warn_On_Redundant_Constructs        := False;
             Warn_On_Reverse_Bit_Order           := False;
             Warn_On_Suspicious_Contract         := False;
+            Warn_On_Suspicious_Modulus_Value    := False;
             Warn_On_Unchecked_Conversion        := False;
             Warn_On_Unordered_Enumeration_Type  := False;
             Warn_On_Unrecognized_Pragma         := False;

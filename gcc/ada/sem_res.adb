@@ -4243,8 +4243,9 @@ package body Sem_Res is
                         := Associated_Storage_Pool (Root_Type (Typ));
             begin
                if Present (Pool)
-                 and then Present (Get_Rep_Pragma
-                                     (Etype (Pool), Name_Simple_Storage_Pool))
+                 and then
+                   Present (Get_Rep_Pragma
+                              (Etype (Pool), Name_Simple_Storage_Pool_Type))
                then
                   Error_Msg_N
                     ("limited function calls not yet supported in simple " &

@@ -4549,7 +4549,7 @@ package body Sem_Attr is
 
             if Attr_Id = Attribute_Storage_Pool then
                if Present (Get_Rep_Pragma (Etype (Entity (N)),
-                                           Name_Simple_Storage_Pool))
+                                           Name_Simple_Storage_Pool_Type))
                then
                   Error_Msg_Name_1 := Aname;
                   Error_Msg_N ("cannot use % attribute for type with simple " &
@@ -4570,7 +4570,7 @@ package body Sem_Attr is
 
             else
                if not Present (Get_Rep_Pragma (Etype (Entity (N)),
-                                               Name_Simple_Storage_Pool))
+                                               Name_Simple_Storage_Pool_Type))
                then
                   Error_Attr_P
                     ("cannot use % attribute for type without simple " &

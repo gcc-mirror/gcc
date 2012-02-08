@@ -1,3 +1,74 @@
+2012-02-08  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Minor reshuffling to place restriction at
+	appropriate place.
+
+2012-02-08  Bob Duff  <duff@adacore.com>
+
+	* warnsw.adb (Set_Warning_Switch): Set Warn_On_Suspicious_Modulus_Value
+	False for '-gnatwA', to suppress these warnings.
+
+2012-02-08  Vincent Celier  <celier@adacore.com>
+
+	* sinput-p.adb (Source_File_Is_Subunit): Check for BOM before
+	starting to scan, so that UTF8 encoding is taken into account.
+
+2012-02-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-tasren.adb, s-tasren.ads (Internal_Complete_Rendezvous): New
+	function.
+	(Complete_Rendezvous): Now call Internal_Complete_Rendezvous.
+	(Exceptional_Complete_Rendezvous): Mark No_Return.
+
+2012-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Compile_Time_Known_Composite_Value):
+	New predicate to compute whether a composite value can be
+	evaluated at compile time.
+	(Component_Not_OK_For_Backend): Use Compile_Time_Known_Value for all
+	expressions of elementary type and Compile_Time_Known_Composite_Value
+	for all other expressions.
+	(Expand_Record_Aggregate): Convert to assignments in the case
+	of a type with mutable components if the aggregate cannot be
+	built statically.
+
+2012-02-08  Gary Dismukes  <dismukes@adacore.com>
+
+	* aspects.ads (type Aspect_Id): Add Simple_Storage_Pool_Type.
+	(Impl_Defined_Aspects): Add association for
+	Aspect_Simple_Storage_Pool_Type.
+	(Aspect_Names): Add
+	association for Aspect_Simple_Storage_Pool_Type.
+	* aspects.adb:
+	(Canonical_Aspect): Add association for Simple_Storage_Pool_Type.
+	* exp_attr.adb (Expand_N_Attribute_Reference):
+	Change name to Name_Simple_Storage_Pool_Type.
+	* exp_ch4.adb (Expand_N_Allocator): Change
+	name to Name_Simple_Storage_Pool_Type.
+	* exp_intr.adb (Expand_Unc_Deallocation): Change name to
+	Name_Simple_Storage_Pool_Type.	* freeze.adb (Freeze_Entity):
+	Change names to Name_Simple_Storage_Pool_Type.	* par-prag.adb:
+	Change names to Name_Simple_Storage_Pool_Type.	* sem_attr.adb:
+	(Analyze_Attribute): Change name to Name_Simple_Storage_Pool_Type.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause):
+	Change name to Name_Simple_Storage_Pool_Type.
+	* sem_prag.adb:
+	(Analyze_Pragma): Change name to Name_Simple_Storage_Pool_Type.
+	(Sig_Flags): Change name to Name_Simple_Storage_Pool_Type.
+	* sem_res.adb (Resolve_Allocator): Change name to
+	Name_Simple_Storage_Pool_Type.	* snames.ads-tmpl:
+	(Name_Simple_Storage_Pool_Type): New name constant.
+	(type Pragma_Id): Change name to Name_Simple_Storage_Pool_Type and
+	move to main pragma section because it no longer matches the
+	attribute name.
+	* snames.adb-tmpl (Get_Pragma_Id): Remove test for
+	Name_Simple_Storage_Pool.
+	(Is_Pragma_Name): Remove test for Name_Simple_Storage_Pool.
+
+2012-02-08  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Add some clarification to -gnatwA and -gnatws.
+
 2012-02-08  Pascal Obry  <obry@adacore.com>
 
 	* prj.adb (Compute_All_Imported_Projects): Use new

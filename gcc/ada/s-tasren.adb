@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2012, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,6 +106,12 @@ package body System.Tasking.Rendezvous is
    --  error that has failed to undefer an earlier abort deferral. Thus, for
    --  debugging it may be wise to modify the above renamings to the
    --  non-nestable forms.
+
+   procedure Local_Complete_Rendezvous (Ex : Ada.Exceptions.Exception_Id);
+   --  Internal version of Complete_Rendezvous, used to implement
+   --  Complete_Rendezvous and Exceptional_Complete_Rendezvous.
+   --  Should be called holding no locks, generally with abort not yet
+   --  deferred.
 
    procedure Boost_Priority (Call : Entry_Call_Link; Acceptor : Task_Id);
    pragma Inline (Boost_Priority);
@@ -498,7 +504,7 @@ package body System.Tasking.Rendezvous is
 
    procedure Complete_Rendezvous is
    begin
-      Exceptional_Complete_Rendezvous (Ada.Exceptions.Null_Id);
+      Local_Complete_Rendezvous (Ada.Exceptions.Null_Id);
    end Complete_Rendezvous;
 
    -------------------------------------
@@ -508,19 +514,33 @@ package body System.Tasking.Rendezvous is
    procedure Exceptional_Complete_Rendezvous
      (Ex : Ada.Exceptions.Exception_Id)
    is
+      procedure Internal_Reraise;
+      pragma No_Return (Internal_Reraise);
+      pragma Import (C, Internal_Reraise, "__gnat_reraise");
+
+   begin
+      Local_Complete_Rendezvous (Ex);
+      Internal_Reraise;
+
+      --  ??? Do we need to give precedence to Program_Error that might be
+      --  raised due to failure of finalization, over Tasking_Error from
+      --  failure of requeue?
+   end Exceptional_Complete_Rendezvous;
+
+   -------------------------------
+   -- Local_Complete_Rendezvous --
+   -------------------------------
+
+   procedure Local_Complete_Rendezvous (Ex : Ada.Exceptions.Exception_Id) is
       Self_Id                : constant Task_Id := STPO.Self;
       Entry_Call             : Entry_Call_Link := Self_Id.Common.Call;
       Caller                 : Task_Id;
       Called_PO              : STPE.Protection_Entries_Access;
       Acceptor_Prev_Priority : Integer;
 
-      Exception_To_Raise : Ada.Exceptions.Exception_Id := Ex;
       Ceiling_Violation  : Boolean;
 
       use type Ada.Exceptions.Exception_Id;
-      procedure Internal_Reraise;
-      pragma Import (C, Internal_Reraise, "__gnat_reraise");
-
       procedure Transfer_Occurrence
         (Target : Ada.Exceptions.Exception_Occurrence_Access;
          Source : Ada.Exceptions.Exception_Occurrence);
@@ -529,18 +549,12 @@ package body System.Tasking.Rendezvous is
       use type STPE.Protection_Entries_Access;
 
    begin
-      --  Consider phasing out Complete_Rendezvous in favor of direct call to
-      --  this with Ada.Exceptions.Null_ID. See code expansion examples for
-      --  Accept_Call and Selective_Wait. Also consider putting an explicit
-      --  re-raise after this call, in the generated code. That way we could
-      --  eliminate the code here that reraises the exception.
-
       --  The deferral level is critical here, since we want to raise an
       --  exception or allow abort to take place, if there is an exception or
       --  abort pending.
 
       pragma Debug
-       (Debug.Trace (Self_Id, "Exceptional_Complete_Rendezvous", 'R'));
+        (Debug.Trace (Self_Id, "Local_Complete_Rendezvous", 'R'));
 
       if Ex = Ada.Exceptions.Null_Id then
 
@@ -632,9 +646,7 @@ package body System.Tasking.Rendezvous is
 
                if Ceiling_Violation then
                   pragma Assert (Ex = Ada.Exceptions.Null_Id);
-
-                  Exception_To_Raise := Program_Error'Identity;
-                  Entry_Call.Exception_To_Raise := Exception_To_Raise;
+                  Entry_Call.Exception_To_Raise := Program_Error'Identity;
 
                   if Single_Lock then
                      Lock_RTS;
@@ -692,16 +704,7 @@ package body System.Tasking.Rendezvous is
       end if;
 
       Initialization.Undefer_Abort (Self_Id);
-
-      if Exception_To_Raise /= Ada.Exceptions.Null_Id then
-         Internal_Reraise;
-      end if;
-
-      --  ??? Do we need to give precedence to Program_Error that might be
-      --  raised due to failure of finalization, over Tasking_Error from
-      --  failure of requeue?
-
-   end Exceptional_Complete_Rendezvous;
+   end Local_Complete_Rendezvous;
 
    -------------------------------------
    -- Requeue_Protected_To_Task_Entry --

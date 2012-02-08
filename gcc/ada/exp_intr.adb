@@ -1091,7 +1091,7 @@ package body Exp_Intr is
          --  to null.
 
          elsif Present (Get_Rep_Pragma
-                          (Etype (Pool), Name_Simple_Storage_Pool))
+                          (Etype (Pool), Name_Simple_Storage_Pool_Type))
          then
             declare
                Dealloc_Op  : Entity_Id := Get_Name_Entity_Id (Name_Deallocate);
