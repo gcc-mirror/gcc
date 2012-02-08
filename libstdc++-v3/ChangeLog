@@ -1,3 +1,7 @@
+2012-02-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update C++11 status table.
+
 2012-02-07  Benjamin Kosnik  <bkoz@redhat.com>
 
             * doc/doxygen/user.cfg.in: Update to doxygen 1.7.6.1.

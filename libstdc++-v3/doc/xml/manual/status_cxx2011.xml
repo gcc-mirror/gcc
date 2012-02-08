@@ -384,12 +384,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.3.2</entry>
       <entry>Class template <code>pair</code></entry>
-      <entry>Partial</entry>
-      <entry>Piecewise construction requires an accessible copy/move
-             constructor.</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>20.3.3</entry>
@@ -530,11 +528,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.6.3</entry>
       <entry>Pointer traits</entry>
-      <entry>Partial</entry>
-      <entry>Missing rebind</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
@@ -563,11 +560,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.6.8</entry>
       <entry>Allocator traits</entry>
-      <entry>Partial</entry>
-      <entry>Missing rebind_alloc and rebind_traits</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>20.6.9</entry>
@@ -992,11 +988,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>20.11.7.2</entry>
       <entry>Class <code>steady_clock</code></entry>
-      <entry>N</entry>
-      <entry>Support old <code>monotonic_clock</code> spec instead</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>20.11.7.3</entry>
@@ -1125,11 +1120,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>21.4</entry>
       <entry>Class template <code>basic_string</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing pop_back</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>21.5</entry>
@@ -2287,28 +2281,23 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>29.3</entry>
       <entry>Order and consistency</entry>
-      <entry>N</entry>
+      <entry>Partial</entry>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>29.4</entry>
       <entry>Lock-free property</entry>
-      <entry>Partial</entry>
-      <entry>Missing <code>ATOMIC_BOOL_LOCK_FREE</code> and
-        <code>ATOMIC_POINTER_LOCK_FREE</code>.
-        Based on _GLIBCXX_ATOMIC_PROPERTY
-      </entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>29.5</entry>
       <entry>Atomic types</entry>
-      <entry>Partial</entry>
-      <entry>Missing constexpr</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>29.6</entry>
@@ -2526,14 +2515,14 @@ particular release.
       <entry>30.6.6</entry>
       <entry>Class template <code>future</code></entry>
       <entry>Partial</entry>
-      <entry>Timed waiting functions do not return future_status</entry>
+      <entry>Timed waiting functions do not return future_status::deferred</entry>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>30.6.7</entry>
       <entry>Class template <code>shared_future</code></entry>
       <entry>Partial</entry>
-      <entry>Timed waiting functions do not return future_status</entry>
+      <entry>Timed waiting functions do not return future_status::deferred</entry>
     </row>
     <row>
       <entry>30.6.8</entry>
