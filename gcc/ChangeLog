@@ -1,3 +1,9 @@
+2012-02-08  Magnus Granberg  <zorry@gentoo.org>
+
+	PR driver/48524
+	* gcc.c (switch_matches) Support switches with separated form, -D
+	and -U.
+
 2012-02-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (SREG_ADDR): Remove constant definition.
