@@ -11178,7 +11178,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     complain | tf_ignore_bad_quals);
 	  return r;
 	}
-      /* Else we must be instantiating the typedef, so fall through.  */
+      else
+	/* We don't have an instantiation yet, so drop the typedef.  */
+	t = DECL_ORIGINAL_TYPE (decl);
     }
 
   if (type
