@@ -1,3 +1,8 @@
+2012-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/52139
+	* gcc.dg/pr52139.c: New test.
+
 2012-02-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51675

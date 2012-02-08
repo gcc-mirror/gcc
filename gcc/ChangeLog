@@ -1,3 +1,10 @@
+2012-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/52139
+	* cfgrtl.c (cfg_layout_merge_blocks): If BB_END
+	is a BARRIER after emit_insn_after_noloc, move BB_END
+	to the last non-BARRIER insn before it.
+
 2012-02-07  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR middle-end/24306
