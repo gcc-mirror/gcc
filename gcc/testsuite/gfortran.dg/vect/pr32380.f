@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-require-effective-target vect_float }
-! { dg-options "-O3 -fcray-pointer -ftree-vectorize -fdump-tree-vect-stats" }
+! { dg-additional-options "-O3 -fcray-pointer" }
 ! PR 32380 - loops were not vectorized due to unaligned store.
       subroutine trnfbt(e,f,qs,mte,gm,ihgenf,hgener,lft,llt,sthick,
      .                  fibl,istupd,ies,hoff)
