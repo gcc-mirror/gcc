@@ -1,3 +1,11 @@
+2012-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2012-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/44777
+	* gcc.dg/tree-prof/pr44777.c: New test.
+
 2012-02-09  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline 
