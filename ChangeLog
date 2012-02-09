@@ -1,3 +1,7 @@
+2012-02-09  Bin Cheng  <bin.cheng@arm.com>
+
+	* MAINTAINERS (write-after-approval): Add myself.
+
 2012-02-08  Ira Rosen <irar@il.ibm.com>
 
 	* MAINTAINERS (Various Maintainers): Remove myself as auto-vectorizer
