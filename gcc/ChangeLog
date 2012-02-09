@@ -3,6 +3,10 @@
 	Backported from mainline
 	2011-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/51360
+	* c-parser.c (c_parser_omp_clause_num_threads,
+	c_parser_omp_clause_schedule): Call mark_exp_read.
+
 	PR debug/51517
 	* tree-ssa-coalesce.c (coalesce_ssa_name): For !optimize, test
 	!DECL_IGNORED_P instead of !DECL_ARTIFICIAL.
