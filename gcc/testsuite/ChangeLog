@@ -1,3 +1,11 @@
+2012-02-09  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline 
+	2012-02-09  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/52140
+	* gcc.dg/dfp/pr52140.c: New test.
+
 2012-02-09  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline
