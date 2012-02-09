@@ -1,3 +1,8 @@
+2012-02-09  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/52140
+	* dojump.c (do_compare_rtx_and_jump): Use SCALAR_FLOAT_MODE_P.
+
 2012-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/52165
