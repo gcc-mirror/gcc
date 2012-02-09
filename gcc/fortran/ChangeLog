@@ -1,3 +1,13 @@
+2012-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2011-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/51517
+	* trans-decl.c (gfc_get_symbol_decl): Don't set DECL_INITAL on span.
+	(gfc_trans_deferred_vars): Instead add its runtime initialization
+	here.
+
 2012-02-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52151

@@ -1373,7 +1373,7 @@ coalesce_ssa_name (void)
 
 	  if (a
 	      && SSA_NAME_VAR (a)
-	      && !DECL_ARTIFICIAL (SSA_NAME_VAR (a))
+	      && !DECL_IGNORED_P (SSA_NAME_VAR (a))
 	      && (!has_zero_uses (a) || !SSA_NAME_IS_DEFAULT_DEF (a)))
 	    {
 	      tree *slot = (tree *) htab_find_slot (ssa_name_hash, a, INSERT);
