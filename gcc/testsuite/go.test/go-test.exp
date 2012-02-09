@@ -33,6 +33,7 @@
 
 load_lib go-dg.exp
 load_lib go-torture.exp
+load_lib target-supports.exp
 
 # Compare two files
 proc filecmp { file1 file2 testname } {
@@ -325,6 +326,15 @@ proc go-gc-tests { } {
 	if { [file tail $test] == "closure.go" } {
 	    # This tests whether function closures do any memory
 	    # allocation, which for gccgo they currently do.
+	    untested $name
+	    continue
+	}
+
+	if { [file tail $test] == "select2.go" && \
+		 ! [check_effective_target_split_stack] } {
+	    # chan/select2.go fails on targets without split stack,
+	    # because they allocate a large stack segment that blows
+	    # out the memory calculations.
 	    untested $name
 	    continue
 	}
