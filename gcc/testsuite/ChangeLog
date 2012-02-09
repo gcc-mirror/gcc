@@ -1,3 +1,9 @@
+2012-02-09  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (go-gc-tests): Don't run stack.go on systems
+	which don't support -fsplit-stack.  Turn off optimization when
+	compiling select5-out.go.
+
 2012-02-08  Ian Lance Taylor  <iant@google.com>
 
 	* go.test/go-test.exp (go-gc-tests): Don't run chan/select2.go on

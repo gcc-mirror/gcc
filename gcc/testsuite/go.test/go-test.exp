@@ -330,8 +330,9 @@ proc go-gc-tests { } {
 	    continue
 	}
 
-	if { [file tail $test] == "select2.go" && \
-		 ! [check_effective_target_split_stack] } {
+	if { ( [file tail $test] == "select2.go" \
+		   || [file tail $test] == "stack.go" ) \
+		 && ! [check_effective_target_split_stack] } {
 	    # chan/select2.go fails on targets without split stack,
 	    # because they allocate a large stack segment that blows
 	    # out the memory calculations.
@@ -1018,10 +1019,12 @@ proc go-gc-tests { } {
 		} else {
 		    pass "$name execution"
 		    file delete $base-out.x
-		    # This testcase takes long time to compile.
-		    dg-timeout-factor list 4 { target alpha*-*-* }
+		    # Disable optimizations as this test takes a long time
+		    # to compile.
+		    set hold $TORTURE_OPTIONS
+		    set TORTURE_OPTIONS [ list { -O0 -g }]
 		    go-torture-execute "./$base-out.go"
-		    unset_timeout_vars
+		    set TORTURE_OPTIONS $hold
 		}
 		file delete $base-out.go
 	    }
