@@ -1,3 +1,12 @@
+2012-02-09  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline 
+	2012-01-20  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR target/51106
+	* function.c (instantiate_virtual_regs_in_insn): Use
+	delete_insn_and_edges when removing a wrong asm insn.
+
 2012-02-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/51994
