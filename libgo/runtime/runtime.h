@@ -286,6 +286,7 @@ void	runtime_exitsyscall(void) __asm__("libgo_syscall.syscall.exitsyscall");
 void	siginit(void);
 bool	__go_sigsend(int32 sig);
 int64	runtime_nanotime(void);
+int64	runtime_cputicks(void);
 
 void	runtime_stoptheworld(void);
 void	runtime_starttheworld(bool);

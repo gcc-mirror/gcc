@@ -4,7 +4,7 @@
 
 /*
 
-Ebnflint verifies that EBNF productions are consistent and gramatically correct.
+Ebnflint verifies that EBNF productions are consistent and grammatically correct.
 It reads them from an HTML document such as the Go specification.
 
 Grammar productions are grouped in boxes demarcated by the HTML elements
@@ -13,7 +13,7 @@ Grammar productions are grouped in boxes demarcated by the HTML elements
 
 
 Usage:
-	ebnflint [--start production] [file]
+	go tool ebnflint [--start production] [file]
 
 The --start flag specifies the name of the start production for
 the grammar; it defaults to "Start".

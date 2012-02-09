@@ -22,33 +22,22 @@ func probeIPv6Stack() (supportsIPv6, supportsIPv4map bool) {
 
 // parsePlan9Addr parses address of the form [ip!]port (e.g. 127.0.0.1!80).
 func parsePlan9Addr(s string) (ip IP, iport int, err error) {
-	var (
-		addr IP
-		p, i int
-		ok   bool
-	)
-	addr = IPv4zero // address contains port only
-	i = byteIndex(s, '!')
+	addr := IPv4zero // address contains port only
+	i := byteIndex(s, '!')
 	if i >= 0 {
 		addr = ParseIP(s[:i])
 		if addr == nil {
-			err = errors.New("net: parsing IP failed")
-			goto Error
+			return nil, 0, errors.New("net: parsing IP failed")
 		}
 	}
-	p, _, ok = dtoi(s[i+1:], 0)
+	p, _, ok := dtoi(s[i+1:], 0)
 	if !ok {
-		err = errors.New("net: parsing port failed")
-		goto Error
+		return nil, 0, errors.New("net: parsing port failed")
 	}
 	if p < 0 || p > 0xFFFF {
-		err = &AddrError{"invalid port", string(p)}
-		goto Error
+		return nil, 0, &AddrError{"invalid port", string(p)}
 	}
 	return addr, p, nil
-
-Error:
-	return nil, 0, err
 }
 
 func readPlan9Addr(proto, filename string) (addr Addr, err error) {
@@ -91,7 +80,7 @@ func (c *plan9Conn) ok() bool { return c != nil && c.ctl != nil }
 
 // Implementation of the Conn interface - see Conn for documentation.
 
-// Read implements the net.Conn Read method.
+// Read implements the Conn Read method.
 func (c *plan9Conn) Read(b []byte) (n int, err error) {
 	if !c.ok() {
 		return 0, os.EINVAL
@@ -110,7 +99,7 @@ func (c *plan9Conn) Read(b []byte) (n int, err error) {
 	return
 }
 
-// Write implements the net.Conn Write method.
+// Write implements the Conn Write method.
 func (c *plan9Conn) Write(b []byte) (n int, err error) {
 	if !c.ok() {
 		return 0, os.EINVAL
@@ -157,17 +146,17 @@ func (c *plan9Conn) RemoteAddr() Addr {
 	return c.raddr
 }
 
-// SetDeadline implements the net.Conn SetDeadline method.
+// SetDeadline implements the Conn SetDeadline method.
 func (c *plan9Conn) SetDeadline(t time.Time) error {
 	return os.EPLAN9
 }
 
-// SetReadDeadline implements the net.Conn SetReadDeadline method.
+// SetReadDeadline implements the Conn SetReadDeadline method.
 func (c *plan9Conn) SetReadDeadline(t time.Time) error {
 	return os.EPLAN9
 }
 
-// SetWriteDeadline implements the net.Conn SetWriteDeadline method.
+// SetWriteDeadline implements the Conn SetWriteDeadline method.
 func (c *plan9Conn) SetWriteDeadline(t time.Time) error {
 	return os.EPLAN9
 }

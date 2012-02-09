@@ -525,7 +525,7 @@ mcommoninit(M *m)
 	runtime_atomicstorep((void**)&runtime_allm, m);
 
 	m->id = runtime_sched.mcount++;
-	m->fastrand = 0x49f6428aUL + m->id;
+	m->fastrand = 0x49f6428aUL + m->id + runtime_cputicks();
 
 	if(m->mcache == nil)
 		m->mcache = runtime_allocmcache();

@@ -158,7 +158,7 @@ func (f *File) readdir(n int) (fi []FileInfo, err error) {
 		if err == nil {
 			fi[i] = fip
 		} else {
-			fi[i] = &FileStat{name: filename}
+			fi[i] = &fileStat{name: filename}
 		}
 	}
 	return fi, err

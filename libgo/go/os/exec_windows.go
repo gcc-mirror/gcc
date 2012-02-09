@@ -29,7 +29,7 @@ func (p *Process) Wait(options int) (w *Waitmsg, err error) {
 		return nil, NewSyscallError("GetExitCodeProcess", e)
 	}
 	p.done = true
-	return &Waitmsg{p.Pid, syscall.WaitStatus{s, ec}, new(syscall.Rusage)}, nil
+	return &Waitmsg{p.Pid, syscall.WaitStatus{Status: s, ExitCode: ec}, new(syscall.Rusage)}, nil
 }
 
 // Signal sends a signal to the Process.
@@ -37,8 +37,7 @@ func (p *Process) Signal(sig Signal) error {
 	if p.done {
 		return errors.New("os: process already finished")
 	}
-	switch sig.(UnixSignal) {
-	case SIGKILL:
+	if us, ok := sig.(UnixSignal); ok && us == syscall.SIGKILL {
 		e := syscall.TerminateProcess(syscall.Handle(p.handle), 1)
 		return NewSyscallError("TerminateProcess", e)
 	}
@@ -47,14 +46,14 @@ func (p *Process) Signal(sig Signal) error {
 
 // Release releases any resources associated with the Process.
 func (p *Process) Release() error {
-	if p.handle == -1 {
+	if p.handle == uintptr(syscall.InvalidHandle) {
 		return EINVAL
 	}
 	e := syscall.CloseHandle(syscall.Handle(p.handle))
 	if e != nil {
 		return NewSyscallError("CloseHandle", e)
 	}
-	p.handle = -1
+	p.handle = uintptr(syscall.InvalidHandle)
 	// no need for a finalizer anymore
 	runtime.SetFinalizer(p, nil)
 	return nil
@@ -67,7 +66,7 @@ func findProcess(pid int) (p *Process, err error) {
 	if e != nil {
 		return nil, NewSyscallError("OpenProcess", e)
 	}
-	return newProcess(pid, int(h)), nil
+	return newProcess(pid, uintptr(h)), nil
 }
 
 func init() {

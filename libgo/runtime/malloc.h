@@ -235,7 +235,7 @@ struct MStats
 };
 
 extern MStats mstats
-  __asm__ ("libgo_runtime.runtime.MemStats");
+  __asm__ ("libgo_runtime.runtime.VmemStats");
 
 
 // Size classes.  Computed and initialized by InitSizes.

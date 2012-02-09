@@ -226,6 +226,7 @@ toolexeclibgoexp_DATA = \
 	$(exp_inotify_gox) \
 	exp/norm.gox \
 	exp/proxy.gox \
+	exp/signal.gox \
 	exp/terminal.gox \
 	exp/types.gox \
 	exp/utf8string.gox
@@ -257,13 +258,11 @@ toolexeclibgohtml_DATA = \
 toolexeclibgoimagedir = $(toolexeclibgodir)/image
 
 toolexeclibgoimage_DATA = \
-	image/bmp.gox \
 	image/color.gox \
 	image/draw.gox \
 	image/gif.gox \
 	image/jpeg.gox \
-	image/png.gox \
-	image/tiff.gox
+	image/png.gox
 
 toolexeclibgoindexdir = $(toolexeclibgodir)/index
 
@@ -327,8 +326,7 @@ toolexeclibgoosdir = $(toolexeclibgodir)/os
 
 toolexeclibgoos_DATA = \
 	os/exec.gox \
-	os/user.gox \
-	os/signal.gox
+	os/user.gox
 
 toolexeclibgopathdir = $(toolexeclibgodir)/path
 
@@ -949,7 +947,6 @@ go_crypto_cipher_files = \
 	go/crypto/cipher/cipher.go \
 	go/crypto/cipher/ctr.go \
 	go/crypto/cipher/io.go \
-	go/crypto/cipher/ocfb.go \
 	go/crypto/cipher/ofb.go
 go_crypto_des_files = \
 	go/crypto/des/block.go \
@@ -1107,6 +1104,8 @@ go_exp_proxy_files = \
 	go/exp/proxy/per_host.go \
 	go/exp/proxy/proxy.go \
 	go/exp/proxy/socks5.go
+go_exp_signal_files = \
+	go/exp/signal/signal.go
 go_exp_terminal_files = \
 	go/exp/terminal/terminal.go \
 	go/exp/terminal/util.go
@@ -1179,9 +1178,6 @@ go_html_template_files = \
 	go/html/template/transition.go \
 	go/html/template/url.go
 
-go_image_bmp_files = \
-	go/image/bmp/reader.go
-
 go_image_color_files = \
 	go/image/color/color.go \
 	go/image/color/ycbcr.go
@@ -1202,12 +1198,6 @@ go_image_jpeg_files = \
 go_image_png_files = \
 	go/image/png/reader.go \
 	go/image/png/writer.go
-
-go_image_tiff_files = \
-	go/image/tiff/buffer.go \
-	go/image/tiff/compress.go \
-	go/image/tiff/consts.go \
-	go/image/tiff/reader.go
 
 go_index_suffixarray_files = \
 	go/index/suffixarray/qsufsort.go \
@@ -1316,9 +1306,6 @@ go_os_exec_files = \
 go_os_user_files = \
 	go/os/user/user.go \
 	go/os/user/lookup_unix.go
-
-go_os_signal_files = \
-	go/os/signal/signal.go
 
 go_path_filepath_files = \
 	go/path/filepath/match.go \
@@ -1673,6 +1660,7 @@ libgo_go_objs = \
 	exp/html.lo \
 	exp/norm.lo \
 	exp/proxy.lo \
+	exp/signal.lo \
 	exp/terminal.lo \
 	exp/types.lo \
 	exp/utf8string.lo \
@@ -1693,13 +1681,11 @@ libgo_go_objs = \
 	net/http/httptest.lo \
 	net/http/httputil.lo \
 	net/http/pprof.lo \
-	image/bmp.lo \
 	image/color.lo \
 	image/draw.lo \
 	image/gif.lo \
 	image/jpeg.lo \
 	image/png.lo \
-	image/tiff.lo \
 	index/suffixarray.lo \
 	io/ioutil.lo \
 	log/syslog.lo \
@@ -1720,7 +1706,6 @@ libgo_go_objs = \
 	old/template.lo \
 	$(os_lib_inotify_lo) \
 	os/user.lo \
-	os/signal.lo \
 	path/filepath.lo \
 	regexp/syntax.lo \
 	net/rpc/jsonrpc.lo \
@@ -2607,6 +2592,16 @@ exp/proxy/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: exp/proxy/check
 
+@go_include@ exp/signal.lo.dep
+exp/signal.lo.dep: $(go_exp_signal_files)
+	$(BUILDDEPS)
+exp/signal.lo: $(go_exp_signal_files)
+	$(BUILDPACKAGE)
+exp/signal/check: $(CHECK_DEPS)
+	@$(MKDIR_P) exp/signal
+	@$(CHECK)
+.PHONY: exp/signal/check
+
 @go_include@ exp/terminal.lo.dep
 exp/terminal.lo.dep: $(go_exp_terminal_files)
 	$(BUILDDEPS)
@@ -2776,16 +2771,6 @@ hash/fnv/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: hash/fnv/check
 
-@go_include@ image/bmp.lo.dep
-image/bmp.lo.dep: $(go_image_bmp_files)
-	$(BUILDDEPS)
-image/bmp.lo: $(go_image_bmp_files)
-	$(BUILDPACKAGE)
-image/bmp/check: $(CHECK_DEPS)
-	@$(MKDIR_P) image/bmp
-	@$(CHECK)
-.PHONY: image/bmp/check
-
 @go_include@ image/color.lo.dep
 image/color.lo.dep: $(go_image_color_files)
 	$(BUILDDEPS)
@@ -2835,16 +2820,6 @@ image/png/check: $(CHECK_DEPS)
 	@$(MKDIR_P) image/png
 	@$(CHECK)
 .PHONY: image/png/check
-
-@go_include@ image/tiff.lo.dep
-image/tiff.lo.dep: $(go_image_tiff_files)
-	$(BUILDDEPS)
-image/tiff.lo: $(go_image_tiff_files)
-	$(BUILDPACKAGE)
-image/tiff/check: $(CHECK_DEPS)
-	@$(MKDIR_P) image/tiff
-	@$(CHECK)
-.PHONY: image/tiff/check
 
 @go_include@ index/suffixarray.lo.dep
 index/suffixarray.lo.dep: $(go_index_suffixarray_files)
@@ -3087,16 +3062,6 @@ os/user/check: $(CHECK_DEPS)
 	@$(MKDIR_P) os/user
 	@$(CHECK)
 .PHONY: os/user/check
-
-@go_include@ os/signal.lo.dep
-os/signal.lo.dep: $(go_os_signal_files)
-	$(BUILDDEPS)
-os/signal.lo: $(go_os_signal_files)
-	$(BUILDPACKAGE)
-os/signal/check: $(CHECK_DEPS)
-	@$(MKDIR_P) os/signal
-	@$(CHECK)
-.PHONY: os/signal/check
 
 @go_include@ path/filepath.lo.dep
 path/filepath.lo.dep: $(go_path_filepath_files)
@@ -3412,6 +3377,8 @@ exp/norm.gox: exp/norm.lo
 	$(BUILDGOX)
 exp/proxy.gox: exp/proxy.lo
 	$(BUILDGOX)
+exp/signal.gox: exp/signal.lo
+	$(BUILDGOX)
 exp/terminal.gox: exp/terminal.lo
 	$(BUILDGOX)
 exp/types.gox: exp/types.lo
@@ -3446,8 +3413,6 @@ hash/crc64.gox: hash/crc64.lo
 hash/fnv.gox: hash/fnv.lo
 	$(BUILDGOX)
 
-image/bmp.gox: image/bmp.lo
-	$(BUILDGOX)
 image/color.gox: image/color.lo
 	$(BUILDGOX)
 image/draw.gox: image/draw.lo
@@ -3457,8 +3422,6 @@ image/gif.gox: image/gif.lo
 image/jpeg.gox: image/jpeg.lo
 	$(BUILDGOX)
 image/png.gox: image/png.lo
-	$(BUILDGOX)
-image/tiff.gox: image/tiff.lo
 	$(BUILDGOX)
 
 index/suffixarray.gox: index/suffixarray.lo
@@ -3517,8 +3480,6 @@ old/template.gox: old/template.lo
 os/exec.gox: os/exec.lo
 	$(BUILDGOX)
 os/user.gox: os/user.lo
-	$(BUILDGOX)
-os/signal.gox: os/signal.lo
 	$(BUILDGOX)
 
 path/filepath.gox: path/filepath.lo
@@ -3637,6 +3598,7 @@ TEST_PACKAGES = \
 	$(exp_inotify_check) \
 	exp/norm/check \
 	exp/proxy/check \
+	exp/signal/check \
 	exp/terminal/check \
 	exp/utf8string/check \
 	html/template/check \
@@ -3656,7 +3618,6 @@ TEST_PACKAGES = \
 	image/draw/check \
 	image/jpeg/check \
 	image/png/check \
-	image/tiff/check \
 	index/suffixarray/check \
 	io/ioutil/check \
 	log/syslog/check \
@@ -3679,7 +3640,6 @@ TEST_PACKAGES = \
 	old/template/check \
 	os/exec/check \
 	os/user/check \
-	os/signal/check \
 	path/filepath/check \
 	regexp/syntax/check \
 	sync/atomic/check \
