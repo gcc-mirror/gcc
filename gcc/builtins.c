@@ -5776,7 +5776,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
      set of builtins.  */
   if (!optimize
       && !called_as_built_in (fndecl)
-      && DECL_ASSEMBLER_NAME_SET_P (fndecl)
       && fcode != BUILT_IN_ALLOCA
       && fcode != BUILT_IN_ALLOCA_WITH_ALIGN
       && fcode != BUILT_IN_FREE)

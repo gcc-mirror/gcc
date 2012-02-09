@@ -1,7 +1,10 @@
-/* { dg-options "-O0" } */
+/* { dg-options "-O1" } */
 
 /* Check that the compiler uses builtins for signbit; if not the link
    will fail because library functions are in libm.  */
+/* See PR51867.
+   Since GCC uses library call when optimizing for "-O0", this test
+   case requires at least "-O1" level optimization now.  */
 
 #include "dfp-dbg.h"
 
