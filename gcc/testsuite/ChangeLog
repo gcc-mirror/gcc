@@ -1,6 +1,11 @@
 2012-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/52006
+	* gcc.target/arm/pr52006.c: New test.
+
 	2012-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/51767

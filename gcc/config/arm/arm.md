@@ -5363,7 +5363,8 @@
 		    (const_int 8)
 		    (match_operand 1 "" "")]
 		   UNSPEC_PIC_BASE))
-   (set (match_operand:SI 2 "register_operand" "") (mem:SI (match_dup 0)))]
+   (set (match_operand:SI 2 "arm_general_register_operand" "")
+	(mem:SI (match_dup 0)))]
   "TARGET_ARM && peep2_reg_dead_p (2, operands[0])"
   [(set (match_dup 2)
 	(mem:SI (unspec:SI [(match_dup 3)

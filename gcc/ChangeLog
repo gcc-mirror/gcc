@@ -1,6 +1,13 @@
 2012-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/52006
+	* config/arm/arm.md (pic_add_dot_plus_eight peephole2): Use
+	arm_general_register_operand predicate for operand 2 instead of
+	register_operand.
+
 	2012-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libmudflap/40778
