@@ -1,3 +1,11 @@
+2012-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2012-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libmudflap/40778
+	* testsuite/libmudflap.c/fail68-frag.c: New test.
+
 2011-11-20  Andreas Tobler  <andreast@fgznet.ch>
 
 	* configure: Regenerate.
