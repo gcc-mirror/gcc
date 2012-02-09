@@ -1,6 +1,11 @@
 2012-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/52129
+	* gcc.c-torture/execute/pr52129.c: New test.
+
 	2012-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52006
