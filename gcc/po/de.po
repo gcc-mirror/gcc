@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.7-b20120128\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2012-01-27 16:13+0000\n"
-"PO-Revision-Date: 2012-02-08 23:21+0200\n"
+"PO-Revision-Date: 2012-02-09 22:21+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -13202,49 +13202,49 @@ msgid "%qs specified for structure field"
 msgstr "%qs für Strukturfeld angegeben"
 
 #: c-decl.c:5764
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "alignment specified for typedef %qE"
-msgstr "Für %q+D darf keine Ausrichtung angegeben werden"
+msgstr "Ausrichtung für typedef %qE angegeben"
 
 #: c-decl.c:5766
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "alignment specified for %<register%> object %qE"
-msgstr "%qs für Parameter %qE angegeben"
+msgstr "Ausrichtung für %<register%>-Objekt %qE angegeben"
 
 #: c-decl.c:5771
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "alignment specified for parameter %qE"
-msgstr "%qs für Parameter %qE angegeben"
+msgstr "Ausrichtung für Parameter %qE angegeben"
 
 #: c-decl.c:5773
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "alignment specified for unnamed parameter"
-msgstr "%qs für unbenannten Parameter angegeben"
+msgstr "Ausrichtung für unbenannten Parameter angegeben"
 
 #: c-decl.c:5778
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "alignment specified for bit-field %qE"
-msgstr "Für %q+D darf keine Ausrichtung angegeben werden"
+msgstr "Ausrichtung für Bitfeld %qE angegeben"
 
 #: c-decl.c:5780
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "alignment specified for unnamed bit-field"
-msgstr "%qs für unbenannten Parameter angegeben"
+msgstr "Ausrichtung für unbenanntes Bitfeld angegeben"
 
 #: c-decl.c:5783
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "alignment specified for function %qE"
-msgstr "Zuweisung der Funktion %qD"
+msgstr "Ausrichtung für Funktion %qE angegeben"
 
 #: c-decl.c:5790
 #, gcc-internal-format
 msgid "%<_Alignas%> specifiers cannot reduce alignment of %qE"
-msgstr ""
+msgstr "%<_Alignas%>-Spezifizierer können nicht die Ausrichtung von %qE reduzieren"
 
 #: c-decl.c:5793
 #, gcc-internal-format
 msgid "%<_Alignas%> specifiers cannot reduce alignment of unnamed field"
-msgstr ""
+msgstr "%<_Alignas%>-Spezifizierer können nicht die Ausrichtung eines unbenannten Feldes reduzieren"
 
 #: c-decl.c:5832
 #, gcc-internal-format
@@ -13252,9 +13252,9 @@ msgid "typedef %q+D declared %<inline%>"
 msgstr "typedef %q+D als %<inline%> deklariert"
 
 #: c-decl.c:5834
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "typedef %q+D declared %<_Noreturn%>"
-msgstr "typedef %q+D als %<inline%> deklariert"
+msgstr "typedef %q+D als %<_Noreturn%> deklariert"
 
 #: c-decl.c:5870
 #, gcc-internal-format
@@ -13283,9 +13283,9 @@ msgid "parameter %q+D declared %<inline%>"
 msgstr "Parameter %q+D als %<inline%> deklariert"
 
 #: c-decl.c:5964
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "parameter %q+D declared %<_Noreturn%>"
-msgstr "Parameter %q+D als %<inline%> deklariert"
+msgstr "Parameter %q+D als %<_Noreturn%> deklariert"
 
 #: c-decl.c:5977
 #, gcc-internal-format
@@ -13313,19 +13313,19 @@ msgid "cannot inline function %<main%>"
 msgstr "%<main%> ist nicht als »inline« möglich"
 
 #: c-decl.c:6070
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<main%> declared %<_Noreturn%>"
-msgstr "%qE initialisiert und als %<extern%> deklariert"
+msgstr "%<main%> als %<_Noreturn%> deklariert"
 
 #: c-decl.c:6083
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C99 does not support %<_Noreturn%>"
-msgstr "ISO-C99 unterstützt nicht %<_Static_assert%>"
+msgstr "ISO-C99 unterstützt nicht %<_Noreturn%>"
 
 #: c-decl.c:6086
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C90 does not support %<_Noreturn%>"
-msgstr "ISO-C90 unterstützt nicht %<long long%>"
+msgstr "ISO-C90 unterstützt nicht %<_Noreturn%>"
 
 #: c-decl.c:6115
 #, gcc-internal-format
@@ -13338,9 +13338,9 @@ msgid "variable %q+D declared %<inline%>"
 msgstr "Variable %q+D als %<inline%> deklariert"
 
 #: c-decl.c:6127
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %q+D declared %<_Noreturn%>"
-msgstr "Variable %q+D als %<inline%> deklariert"
+msgstr "Variable %q+D als %<_Noreturn%> deklariert"
 
 #: c-decl.c:6162
 #, gcc-internal-format
@@ -14045,14 +14045,14 @@ msgid "%<typeof%> applied to a bit-field"
 msgstr "%<typeof%> auf ein Bitfeld angewandt"
 
 #: c-parser.c:2789
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C99 does not support %<_Alignas%>"
-msgstr "ISO-C90 unterstützt nicht %<long long%>"
+msgstr "ISO-C99 unterstützt nicht %<_Alignas%>"
 
 #: c-parser.c:2792
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C90 does not support %<_Alignas%>"
-msgstr "ISO-C90 unterstützt nicht %<long long%>"
+msgstr "ISO-C90 unterstützt nicht %<_Alignas%>"
 
 #: c-parser.c:3020
 #, gcc-internal-format
@@ -14204,24 +14204,24 @@ msgid "%<sizeof%> applied to a bit-field"
 msgstr "%<sizeof%> auf ein Bitfeld angewandt"
 
 #: c-parser.c:6047
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C99 does not support %qE"
-msgstr "%s unterstützt nicht %s"
+msgstr "ISO-C99 unterstützt nicht %qE"
 
 #: c-parser.c:6050
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C90 does not support %qE"
-msgstr "ISO-C90 unterstützt nicht %<long long%>"
+msgstr "ISO-C90 unterstützt nicht %qE"
 
 #: c-parser.c:6101
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C does not allow %<%E (expression)%>"
-msgstr "ISO-C++ erlaubt kein %<alignof%> mit einem Nicht-Typ"
+msgstr "ISO-C erlaubt kein %<%E (expression)%>"
 
 #: c-parser.c:6126
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot take address of %qs"
-msgstr "die Adresse des Bit-Feldes %qD kann nicht ermittelt werden"
+msgstr "die Adresse von %qs kann nicht ermittelt werden"
 
 #: c-parser.c:6297 c-parser.c:6742 c-parser.c:6761
 #, gcc-internal-format
@@ -14239,9 +14239,9 @@ msgid "ISO C forbids braced-groups within expressions"
 msgstr "ISO-C verbietet geklammerte Gruppen innerhalb von Ausdrücken"
 
 #: c-parser.c:6520
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "wrong number of arguments to %<__builtin_choose_expr%>"
-msgstr "falsche Anzahl der Argumente für Funktion %<__builtin_next_arg%>"
+msgstr "falsche Anzahl der Argumente für %<__builtin_choose_expr%>"
 
 #: c-parser.c:6536
 #, gcc-internal-format
@@ -14249,24 +14249,24 @@ msgid "first argument to %<__builtin_choose_expr%> not a constant"
 msgstr "erstes Argument für %<__builtin_choose_expr%> ist keine Konstante"
 
 #: c-parser.c:6602
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "wrong number of arguments to %<__builtin_complex%>"
-msgstr "falsche Anzahl der Argumente für Funktion %<__builtin_next_arg%>"
+msgstr "falsche Anzahl der Argumente für %<__builtin_complex%>"
 
 #: c-parser.c:6624
 #, gcc-internal-format
 msgid "%<__builtin_complex%> operand not of real binary floating-point type"
-msgstr ""
+msgstr "Operand von %<__builtin_complex%> nicht realer binärer Gleitkommatyp"
 
 #: c-parser.c:6633
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<__builtin_complex%> operands of different types"
-msgstr "Zweites Argument für %<__builtin_longjmp%> muss 1 sein"
+msgstr "Operanden von %<__builtin_complex%> unterschiedlichen Typs"
 
 #: c-parser.c:6674
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "wrong number of arguments to %<__builtin_shuffle%>"
-msgstr "falsche Anzahl der Argumente für Funktion %<__builtin_next_arg%>"
+msgstr "falsche Anzahl der Argumente für %<__builtin_shuffle%>"
 
 #: c-parser.c:6796
 #, gcc-internal-format
@@ -14364,9 +14364,9 @@ msgid "%<#pragma omp taskwait%> may only be used in compound statements"
 msgstr "%<#pragma omp taskwait%> darf nur in Verbundanweisungen verwendet werden"
 
 #: c-parser.c:8534 cp/parser.c:27326
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<#pragma omp taskyield%> may only be used in compound statements"
-msgstr "%<#pragma omp taskwait%> darf nur in Verbundanweisungen verwendet werden"
+msgstr "%<#pragma omp taskyield%> darf nur in Verbundanweisungen verwendet werden"
 
 #: c-parser.c:8547 cp/parser.c:27354
 #, gcc-internal-format
@@ -14404,9 +14404,9 @@ msgid "%<num_threads%> value must be positive"
 msgstr "Wert von %<num_threads%> muss positiv sein"
 
 #: c-parser.c:9137 cp/parser.c:25331
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<+%>, %<*%>, %<-%>, %<&%>, %<^%>, %<|%>, %<&&%>, %<||%>, %<min%> or %<max%>"
-msgstr "%<+%>, %<*%>, %<-%>, %<&%>, %<^%>, %<|%>, %<&&%> oder %<||%> erwartet"
+msgstr "%<+%>, %<*%>, %<-%>, %<&%>, %<^%>, %<|%>, %<&&%>, %<||%>, %<min%> oder %<max%> erwartet"
 
 #: c-parser.c:9226 cp/parser.c:25416
 #, gcc-internal-format
@@ -14434,9 +14434,9 @@ msgid "%qs is not valid for %qs"
 msgstr "%qs ist für %qs ungültig"
 
 #: c-parser.c:9677 cp/parser.c:25860
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid form of %<#pragma omp atomic%>"
-msgstr "ungültiger Operator für %<#pragma omp atomic%>"
+msgstr "ungültige Form von %<#pragma omp atomic%>"
 
 #: c-parser.c:9717 c-parser.c:9735 cp/parser.c:25891 cp/parser.c:25908
 #, gcc-internal-format
@@ -14668,19 +14668,19 @@ msgid "function with qualified void return type called"
 msgstr "Funktion mit qualifiziertem void-Rückgabetypen aufgerufen"
 
 #: c-typeck.c:2888
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "__builtin_shuffle last argument must be an integer vector"
-msgstr "Das letzte Argument muss ein 8-Bit-Immediate sein"
+msgstr "Das letzte Argument von __builtin_shuffle muss Ganzzahlvektor sein"
 
 #: c-typeck.c:2896
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "__builtin_shuffle arguments must be vectors"
-msgstr "Zweites Argument für %<__builtin_longjmp%> muss 1 sein"
+msgstr "Argumente für __builtin_shuffle müssen Vektoren sein"
 
 #: c-typeck.c:2902
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "__builtin_shuffle argument vectors must be of the same type"
-msgstr "Argumente »%s« und »%s« des intrinsischen »%s« bei %L müssen den selben Typ haben"
+msgstr "Vektorargumente von __builtin_shuffle müssen gleichen Typ haben"
 
 #: c-typeck.c:2912
 #, gcc-internal-format
@@ -15578,14 +15578,14 @@ msgid "left shift count >= width of type"
 msgstr "Links-Schiebe-Weite >= Breite des Typs"
 
 #: c-typeck.c:10015 c-typeck.c:10152
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparing vectors with different element types"
-msgstr "Beim Vergleich verschiedener Enum-Typen warnen"
+msgstr "Vergleich von Vektoren mit verschiedenen Element-Typen"
 
 #: c-typeck.c:10022 c-typeck.c:10159
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparing vectors with different number of elements"
-msgstr "Konstruktorprioritäten werden nicht unterstützt"
+msgstr "Vergleich von Vektoren mit unterschiedlicher Elementanzahl"
 
 #: c-typeck.c:10038 cp/typeck.c:4007
 #, gcc-internal-format
@@ -15595,12 +15595,12 @@ msgstr "Vergleich von Gleitkomma mit == oder != ist unsicher"
 #: c-typeck.c:10055 c-typeck.c:10075
 #, gcc-internal-format
 msgid "the comparison will always evaluate as %<false%> for the address of %qD will never be NULL"
-msgstr ""
+msgstr "Vergleich wird stets als %<false%> ausgewertet da die Adresse von %qD nie NULL wird"
 
 #: c-typeck.c:10061 c-typeck.c:10081
 #, gcc-internal-format
 msgid "the comparison will always evaluate as %<true%> for the address of %qD will never be NULL"
-msgstr ""
+msgstr "Vergleich wird stets als %<true%> ausgewertet da die Adresse von %qD nie NULL wird"
 
 #: c-typeck.c:10102 c-typeck.c:10202
 #, gcc-internal-format
@@ -15664,9 +15664,9 @@ msgid "used union type value where scalar is required"
 msgstr "Wert eines union-Typs anstelle des geforderten Skalars verwendet"
 
 #: c-typeck.c:10580
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "used vector type where scalar is required"
-msgstr "Wert eines struct-Typs anstelle des geforderten Skalars verwendet"
+msgstr "Vektortyp verwendet, wo Skalars benötigt wird"
 
 #: c-typeck.c:10734 cp/semantics.c:4205
 #, gcc-internal-format
@@ -15711,7 +15711,7 @@ msgstr "%qE ist vorbestimmt %qs für %qs"
 #: c-typeck.c:11013
 #, gcc-internal-format
 msgid "C++ requires promoted type, not enum type, in %<va_arg%>"
-msgstr ""
+msgstr "C++ erfordert weitergegebenen Typ, nicht Enum-Typ, in %<va_arg%>"
 
 #: calls.c:2311
 #, gcc-internal-format
@@ -15874,9 +15874,9 @@ msgid "%s does not support make_forwarder_block"
 msgstr "%s unterstützt nicht make_forwarder_block"
 
 #: cfghooks.c:889
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support force_nonfallthru"
-msgstr "%s unterstützt nicht move_block_after"
+msgstr "%s unterstützt nicht force_nonfallthru"
 
 #: cfghooks.c:917
 #, gcc-internal-format, gfc-internal-format
@@ -16034,14 +16034,14 @@ msgid "fallthru edge crosses section boundary (bb %i)"
 msgstr "Fall-Through-Kante überschreitet Abschnittsgrenze (bb %i)"
 
 #: cfgrtl.c:1913
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "EH edge crosses section boundary (bb %i)"
-msgstr "Fall-Through-Kante überschreitet Abschnittsgrenze (bb %i)"
+msgstr "EH-Kante überschneidet Abschnittsgrenze (bb %i)"
 
 #: cfgrtl.c:1920
 #, gcc-internal-format
 msgid "EDGE_CROSSING missing across section boundary"
-msgstr ""
+msgstr "EDGE_CROSSING fehlt bei Übertretung von Abschnittsgrenze"
 
 #: cfgrtl.c:1943
 #, gcc-internal-format, gfc-internal-format
@@ -16369,9 +16369,9 @@ msgid "%<weakref%> attribute ignored because function is defined"
 msgstr "Attribut %<weakref%> ignoriert, da Funktion bereits definiert ist"
 
 #: cgraphunit.c:1016
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "always_inline function might not be inlinable"
-msgstr "Warnen, wenn eine inline-Funktion nicht als solche erzeugt werden kann"
+msgstr "always_inline könnte nicht als inline erzeugt werden"
 
 #: cgraphunit.c:1050
 #, gcc-internal-format
@@ -16381,12 +16381,12 @@ msgstr "Attribut %<weakref%> ignoriert, da Variable bereits initialisiert ist"
 #: cgraphunit.c:1404
 #, gcc-internal-format
 msgid "failed to reclaim unneeded function"
-msgstr "Zurückfordern der nicht genötigten Funktion gescheitert"
+msgstr "Zurückfordern der nicht benötigten Funktion gescheitert"
 
 #: cgraphunit.c:1430
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "failed to reclaim unneeded functionin same comdat group"
-msgstr "Zurückfordern der nicht genötigten Funktion gescheitert"
+msgstr "Zurückfordern der nicht benötigten Funktion in gleicher Comdat-Grupp gescheitert"
 
 #: cgraphunit.c:2233
 #, gcc-internal-format
@@ -16419,19 +16419,19 @@ msgid "unknown demangling style '%s'"
 msgstr "unbekannter Aufbereitungszustand »%s«"
 
 #: collect2.c:1680 collect2.c:1863 collect2.c:1898
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "fopen %s: %m"
-msgstr "fopen %s"
+msgstr "fopen %s: %m"
 
 #: collect2.c:1683 collect2.c:1868 collect2.c:1901
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "fclose %s: %m"
-msgstr "fclose %s"
+msgstr "fclose %s: %m"
 
 #: collect2.c:1965
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can't get program status: %m"
-msgstr "Programm-Status kann nicht ermittelt werden"
+msgstr "Programm-Status kann nicht ermittelt werden: %m"
 
 #: collect2.c:1973
 #, gcc-internal-format, gfc-internal-format
@@ -16474,9 +16474,9 @@ msgid "cannot find 'nm'"
 msgstr "»nm« kann nicht gefunden werden"
 
 #: collect2.c:2639
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can't open nm output: %m"
-msgstr "nm-Ausgabe kann nicht geöffnet werden"
+msgstr "nm-Ausgabe kann nicht geöffnet werden: %m"
 
 #: collect2.c:2722
 #, gcc-internal-format, gfc-internal-format
@@ -16494,9 +16494,9 @@ msgid "cannot find 'ldd'"
 msgstr "»ldd« kann nicht gefunden werden"
 
 #: collect2.c:2834
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can't open ldd output: %m"
-msgstr "ldd-Ausgabe kann nicht geöffnet werden"
+msgstr "ldd-Ausgabe kann nicht geöffnet werden: %m"
 
 #: collect2.c:2852
 #, gcc-internal-format, gfc-internal-format
@@ -16584,14 +16584,14 @@ msgid "%qs is version %q.*s, expected version %q.*s"
 msgstr "%qs hat Version %q.*s, Version %q.*s erwartet"
 
 #: coverage.c:275 coverage.c:284
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Profile data for function %u is corrupted"
-msgstr "Profil passt nicht zum Flussgraphen der Funktion %s (veraltet?)"
+msgstr "Profildaten für Funktion %u ist beschädigt"
 
 #: coverage.c:276
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "checksum is (%x,%x) instead of (%x,%x)"
-msgstr "Prüfsumme ist %x statt %x"
+msgstr "Prüfsumme ist (%x,%x) statt (%x,%x)"
 
 #: coverage.c:285
 #, gcc-internal-format, gfc-internal-format
@@ -16839,9 +16839,9 @@ msgid "when a volatile object spans multiple type-sized locations, the compiler 
 msgstr "wenn ein »volatile«-Objekt über mehrere Bereiche mit Typgröße geht, muss der Compiler wählen zwischen der Verwendung einzelner falsch ausgerichteter Zugriffe um die Volatilität zu erhalten und der Verwendung mehrerer ausgerichteter Zugriffe um Laufzeitfehler zu verhindern. Dies kann zur Laufzeit fehlschlagen, wenn die Hardware diesen Zugriff nicht erlaubt"
 
 #: expr.c:7479
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "local frame unavailable (naked function?)"
-msgstr "globale Register-Variable %qD in verschachtelter Funktion verwendet"
+msgstr "lokaler Rahmen nicht verfügbar (nackte Funktion?)"
 
 #: expr.c:9951
 #, gcc-internal-format
@@ -17215,9 +17215,9 @@ msgid "comparing final insns dumps"
 msgstr "Vergleich der endgültigen Answeisungslisten"
 
 #: gcc.c:6853
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "-fuse-linker-plugin, but %s not found"
-msgstr "-fuse-linker-plugin, aber "
+msgstr "-fuse-linker-plugin, aber %s nicht gefunden"
 
 #: gcc.c:6883
 #, gcc-internal-format, gfc-internal-format
@@ -17503,9 +17503,9 @@ msgstr "Graphite-Schleifenoptimierungen können nicht verwendet werden"
 #. with different version of compiler or different flags than the WPA
 #. unit, so this should never happen.
 #: ipa-inline-analysis.c:3122
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ipa inline summary is missing in input file"
-msgstr "IPA-Referenzzusammenfassung fehlt in ltrans-Einheit"
+msgstr "IPA-Inline-Zusammenfassung fehlt in Eingabedatei"
 
 #. Fatal error here.  We do not want to support compiling ltrans units with
 #. different version of compiler or different flags than the WPA unit, so
@@ -17587,9 +17587,9 @@ msgid "bytecode stream: unexpected tag %s"
 msgstr "Bytecode-Strom: unerwartete Marke %s"
 
 #: lto-streamer-out.c:324
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "tree code %qs is not supported in LTO streams"
-msgstr "Baumcode %qs wird in GIMPLE-Strömen nicht unterstützt"
+msgstr "Baumcode %qs wird in LTO-Strömen nicht unterstützt"
 
 #: lto-streamer.c:163
 #, gcc-internal-format, gfc-internal-format
