@@ -1,7 +1,12 @@
+2012-02-08  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (go-gc-tests): Don't run chan/select2.go on
+	systems which don't support -fsplit-stack.
+
 2012-02-08  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/simulate-thread/simulate-thread.exp: Use -O0, -O2, and -O3.
-	* gcc.dg/simulate-thread/simulate-thread.gdb: Don't display every 
+	* gcc.dg/simulate-thread/simulate-thread.gdb: Don't display every
 	machine instuction in the log.
 
 2012-02-08  Jack Howarth <howarth@bromo.med.uc.edu>
