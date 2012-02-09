@@ -1487,10 +1487,6 @@ hyphen = _
 LN = cp -p
 LN_S = cp -p
 
-.SUFFIXES: .sym
-
-.o.sym:
-	@ gnu:[bin]vmssymvec $<
 endif
 
 ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ))),)
@@ -1566,16 +1562,11 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ)))
     endif
   endif
 
-adamsg.o: adamsg.msg
-	-$(DECC) --cc=message adamsg.msg -o adamsg.o
-
   EXTRA_GNATMAKE_OBJS = mlib-tgt-vms_common.o
 
   GMEM_LIB = gmemlib
   EH_MECHANISM=-gcc
   GNATLIB_SHARED=gnatlib-shared-vms
-  EXTRA_LIBGNAT_SRCS+=adamsg.msg
-  EXTRA_LIBGNAT_OBJS+=adamsg.o
   EXTRA_GNATRTL_NONTASKING_OBJS+=s-po32gl.o
   EXTRA_GNATRTL_TASKING_OBJS=s-tpopde.o
   EXTRA_GNATTOOLS = \

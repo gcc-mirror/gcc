@@ -1,3 +1,24 @@
+2012-02-09  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/Makefile.in: Remove .sym rule (not used).
+	Remove adamsg.o object (requires native message compiler).
+	* init.c (CMA$_EXIT_THREAD, MTH$_FLOOVEMAT, SS$_INTDIV): Define as a
+	macro instead of as extern int.
+	(ADA$_ALREADY_OPEN, ADA$_CONSTRAINT_ERRO, ADA$_DATA_ERROR)
+	(ADA$_DEVICE_ERROR, ADA$_END_ERROR, ADA$_FAC_MODE_MISMAT)
+	(ADA$_IOSYSFAILED, ADA$_KEYSIZERR, ADA$_KEY_MISMATCH)
+	(ADA$_LAYOUT_ERROR, ADA$_LINEXCMRS, ADA$_MAXLINEXC)
+	(ADA$_MODE_ERROR, ADA$_MRN_MISMATCH, ADA$_MRS_MISMATCH)
+	(ADA$_NAME_ERROR, ADA$_NOT_OPEN, ADA$_ORG_MISMATCH)
+	(ADA$_PROGRAM_ERROR, ADA$_RAT_MISMATCH, ADA$_RFM_MISMATCH)
+	(ADA$_STAOVF, ADA$_STATUS_ERROR, ADA$_STORAGE_ERROR)
+	(ADA$_UNSUPPORTED, ADA$_USE_ERROR): Likewise.
+	(struct cond_except): Field cond is now an unsigned int.
+	(dec_ada_cond_except_table): Adjust.
+	(cond_except_table): Likewise.
+	(cond_resignal_table): Likewise.
+	(__gnat_default_resignal_p): Fix style.
+
 2012-02-08  Vincent Celier  <celier@adacore.com>
 
 	* gcc-interface/Make-lang.in: Add g-byorma.o to gnatbind objects
