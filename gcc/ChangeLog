@@ -1,6 +1,12 @@
 2012-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/51695
+	* dwarf2out.c (output_loc_list): For now drop >= 64KB expressions
+	in .debug_loc on the floor.
+
 	2011-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/51360
