@@ -1,3 +1,12 @@
+2012-02-09  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
+	2012-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/51106
+	* gcc.dg/torture/pr51106-1.c: New test.
+	* gcc.dg/torture/pr51106-2.c: New test.
+
 2012-01-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52022
