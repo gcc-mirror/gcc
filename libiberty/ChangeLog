@@ -1,3 +1,22 @@
+2012-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2012-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* make-relative-prefix.c (make_relative_prefix_1): Avoid warning
+	about using preprocessor directives inside of macro arguments.
+
+	2012-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* make-relative-prefix.c (make_relative_prefix_1): Avoid
+	stack overflow if PATH contains just a single entry and
+	HOST_EXECUTABLE_SUFFIX needs to be used.
+
+	PR driver/48306
+	* make-relative-prefix.c: Include sys/stat.h.
+	(make_relative_prefix_1): If access succeeds, check also stat
+	if nstore is a regular file.
+
 2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/test-expandargv.c (writeout_test): Check result of fwrite.
