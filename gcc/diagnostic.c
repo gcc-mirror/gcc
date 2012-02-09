@@ -133,12 +133,12 @@ diagnostic_finish (diagnostic_context *context)
       /* -Werror was given.  */
       if (context->warning_as_error_requested)
 	pp_verbatim (context->printer,
-		     _("%s: all warnings being treated as errors\n"),
+		     _("%s: all warnings being treated as errors"),
 		     progname);
       /* At least one -Werror= was given.  */
       else
 	pp_verbatim (context->printer,
-		     _("%s: some warnings being treated as errors\n"),
+		     _("%s: some warnings being treated as errors"),
 		     progname);
       pp_flush (context->printer);
     }

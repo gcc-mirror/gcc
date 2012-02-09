@@ -1,6 +1,11 @@
 2012-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48071
+	* diagnostic.c (diagnostic_finish): Remove trailing newlines.
+
 	2012-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52006
