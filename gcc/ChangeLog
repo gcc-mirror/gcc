@@ -1,3 +1,8 @@
+2012-02-09  Bin Cheng  <bin.cheng@arm.com>
+
+	PR middle-end/51867
+	* builtins.c (expand_builtin): Don't check DECL_ASSEMBLER_NAME_SET_P.
+
 2012-02-08  Magnus Granberg  <zorry@gentoo.org>
 
 	PR driver/48524

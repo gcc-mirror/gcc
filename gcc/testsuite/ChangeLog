@@ -1,3 +1,9 @@
+2012-02-09  Bin Cheng  <bin.cheng@arm.com>
+
+	PR middle-end/51867
+	* testsuite/c-c++-common/dfp/signbit-2.c: Change '-O0' to '-O1'.
+	* testsuite/gcc.dg/pr51867.c: New test.
+
 2012-02-09  Ian Lance Taylor  <iant@google.com>
 
 	* go.test/go-test.exp (go-gc-tests): Don't run stack.go on systems
