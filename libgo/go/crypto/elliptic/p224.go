@@ -225,7 +225,7 @@ func p224ReduceLarge(out *p224FieldElement, in *p224LargeFieldElement) {
 		in[i] += p224ZeroModP63[i]
 	}
 
-	// Elimintate the coefficients at 2**224 and greater.
+	// Eliminate the coefficients at 2**224 and greater.
 	for i := 14; i >= 8; i-- {
 		in[i-8] -= in[i]
 		in[i-5] += (in[i] & 0xffff) << 12
@@ -288,7 +288,7 @@ func p224Reduce(a *p224FieldElement) {
 	a[0] += mask & (1 << 28)
 }
 
-// p224Invert calcuates *out = in**-1 by computing in**(2**224 - 2**96 - 1),
+// p224Invert calculates *out = in**-1 by computing in**(2**224 - 2**96 - 1),
 // i.e. Fermat's little theorem.
 func p224Invert(out, in *p224FieldElement) {
 	var f1, f2, f3, f4 p224FieldElement
@@ -341,7 +341,7 @@ func p224Invert(out, in *p224FieldElement) {
 
 // p224Contract converts a FieldElement to its unique, minimal form.
 //
-// On entry, in[i] < 2**32
+// On entry, in[i] < 2**29
 // On exit, in[i] < 2**28
 func p224Contract(out, in *p224FieldElement) {
 	copy(out[:], in[:])
@@ -359,6 +359,39 @@ func p224Contract(out, in *p224FieldElement) {
 	// We may just have made out[i] negative. So we carry down. If we made
 	// out[0] negative then we know that out[3] is sufficiently positive
 	// because we just added to it.
+	for i := 0; i < 3; i++ {
+		mask := uint32(int32(out[i]) >> 31)
+		out[i] += (1 << 28) & mask
+		out[i+1] -= 1 & mask
+	}
+
+	// We might have pushed out[3] over 2**28 so we perform another, partial,
+	// carry chain.
+	for i := 3; i < 7; i++ {
+		out[i+1] += out[i] >> 28
+		out[i] &= bottom28Bits
+	}
+	top = out[7] >> 28
+	out[7] &= bottom28Bits
+
+	// Eliminate top while maintaining the same value mod p.
+	out[0] -= top
+	out[3] += top << 12
+
+	// There are two cases to consider for out[3]:
+	//   1) The first time that we eliminated top, we didn't push out[3] over
+	//      2**28. In this case, the partial carry chain didn't change any values
+	//      and top is zero.
+	//   2) We did push out[3] over 2**28 the first time that we eliminated top.
+	//      The first value of top was in [0..16), therefore, prior to eliminating
+	//      the first top, 0xfff1000 <= out[3] <= 0xfffffff. Therefore, after
+	//      overflowing and being reduced by the second carry chain, out[3] <=
+	//      0xf000. Thus it cannot have overflowed when we eliminated top for the
+	//      second time.
+
+	// Again, we may just have made out[0] negative, so do the same carry down.
+	// As before, if we made out[0] negative then we know that out[3] is
+	// sufficiently positive.
 	for i := 0; i < 3; i++ {
 		mask := uint32(int32(out[i]) >> 31)
 		out[i] += (1 << 28) & mask

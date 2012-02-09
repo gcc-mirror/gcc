@@ -49,6 +49,7 @@
 
 	Integer flags accept 1234, 0664, 0x1234 and may be negative.
 	Boolean flags may be 1, 0, t, f, true, false, TRUE, FALSE, True, False.
+	Duration flags accept any input valid for time.ParseDuration.
 
 	The default set of command-line flags is controlled by
 	top-level functions.  The FlagSet type allows one to define
@@ -62,6 +63,7 @@ package flag
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"sort"
 	"strconv"
@@ -228,6 +230,7 @@ type FlagSet struct {
 	args          []string // arguments after flags
 	exitOnError   bool     // does the program exit if there's an error?
 	errorHandling ErrorHandling
+	output        io.Writer // nil means stderr; use out() accessor
 }
 
 // A Flag represents the state of a flag.
@@ -252,6 +255,19 @@ func sortFlags(flags map[string]*Flag) []*Flag {
 		result[i] = flags[name]
 	}
 	return result
+}
+
+func (f *FlagSet) out() io.Writer {
+	if f.output == nil {
+		return os.Stderr
+	}
+	return f.output
+}
+
+// SetOutput sets the destination for usage and error messages.
+// If output is nil, os.Stderr is used.
+func (f *FlagSet) SetOutput(output io.Writer) {
+	f.output = output
 }
 
 // VisitAll visits the flags in lexicographical order, calling fn for each.
@@ -315,15 +331,16 @@ func Set(name, value string) error {
 	return commandLine.Set(name, value)
 }
 
-// PrintDefaults prints to standard error the default values of all defined flags in the set.
+// PrintDefaults prints, to standard error unless configured
+// otherwise, the default values of all defined flags in the set.
 func (f *FlagSet) PrintDefaults() {
-	f.VisitAll(func(f *Flag) {
+	f.VisitAll(func(flag *Flag) {
 		format := "  -%s=%s: %s\n"
-		if _, ok := f.Value.(*stringValue); ok {
+		if _, ok := flag.Value.(*stringValue); ok {
 			// put quotes on the value
 			format = "  -%s=%q: %s\n"
 		}
-		fmt.Fprintf(os.Stderr, format, f.Name, f.DefValue, f.Usage)
+		fmt.Fprintf(f.out(), format, flag.Name, flag.DefValue, flag.Usage)
 	})
 }
 
@@ -334,7 +351,7 @@ func PrintDefaults() {
 
 // defaultUsage is the default function to print a usage message.
 func defaultUsage(f *FlagSet) {
-	fmt.Fprintf(os.Stderr, "Usage of %s:\n", f.name)
+	fmt.Fprintf(f.out(), "Usage of %s:\n", f.name)
 	f.PrintDefaults()
 }
 
@@ -601,7 +618,7 @@ func (f *FlagSet) Var(value Value, name string, usage string) {
 	flag := &Flag{name, usage, value, value.String()}
 	_, alreadythere := f.formal[name]
 	if alreadythere {
-		fmt.Fprintf(os.Stderr, "%s flag redefined: %s\n", f.name, name)
+		fmt.Fprintf(f.out(), "%s flag redefined: %s\n", f.name, name)
 		panic("flag redefinition") // Happens only if flags are declared with identical names
 	}
 	if f.formal == nil {
@@ -624,7 +641,7 @@ func Var(value Value, name string, usage string) {
 // returns the error.
 func (f *FlagSet) failf(format string, a ...interface{}) error {
 	err := fmt.Errorf(format, a...)
-	fmt.Fprintln(os.Stderr, err)
+	fmt.Fprintln(f.out(), err)
 	f.usage()
 	return err
 }

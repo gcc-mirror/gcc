@@ -406,7 +406,7 @@ func TestHardLink(t *testing.T) {
 	if err != nil {
 		t.Fatalf("stat %q failed: %v", from, err)
 	}
-	if !tostat.(*FileStat).SameFile(fromstat.(*FileStat)) {
+	if !SameFile(tostat, fromstat) {
 		t.Errorf("link %q, %q did not create hard link", to, from)
 	}
 }
@@ -442,7 +442,7 @@ func TestSymLink(t *testing.T) {
 	if err != nil {
 		t.Fatalf("stat %q failed: %v", from, err)
 	}
-	if !tostat.(*FileStat).SameFile(fromstat.(*FileStat)) {
+	if !SameFile(tostat, fromstat) {
 		t.Errorf("symlink %q, %q did not create symlink", to, from)
 	}
 	fromstat, err = Lstat(from)
@@ -656,7 +656,7 @@ func TestChtimes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Stat %s: %s", f.Name(), err)
 	}
-	preStat := st.(*FileStat)
+	preStat := st
 
 	// Move access and modification time back a second
 	at := Atime(preStat)
@@ -670,7 +670,7 @@ func TestChtimes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("second Stat %s: %s", f.Name(), err)
 	}
-	postStat := st.(*FileStat)
+	postStat := st
 
 	/* Plan 9:
 		Mtime is the time of the last change of content.  Similarly, atime is set whenever the

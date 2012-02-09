@@ -9,6 +9,7 @@ package user
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"syscall"
 	"unsafe"
@@ -43,8 +44,9 @@ func bytePtrToString(p *byte) string {
 	return string(a[:i])
 }
 
-func init() {
-	implemented = true
+// Current returns the current user. 
+func Current() (*User, error) {
+	return lookup(syscall.Getuid(), "", false)
 }
 
 // Lookup looks up a user by username. If the user cannot be found,
@@ -55,8 +57,12 @@ func Lookup(username string) (*User, error) {
 
 // LookupId looks up a user by userid. If the user cannot be found,
 // the returned error is of type UnknownUserIdError.
-func LookupId(uid int) (*User, error) {
-	return lookup(uid, "", false)
+func LookupId(uid string) (*User, error) {
+	i, e := strconv.Atoi(uid)
+	if e != nil {
+		return nil, e
+	}
+	return lookup(i, "", false)
 }
 
 func lookup(uid int, username string, lookupByName bool) (*User, error) {
@@ -92,8 +98,8 @@ func lookup(uid int, username string, lookupByName bool) (*User, error) {
 		}
 	}
 	u := &User{
-		Uid:      int(pwd.Pw_uid),
-		Gid:      int(pwd.Pw_gid),
+		Uid:      strconv.Itoa(int(pwd.Pw_uid)),
+		Gid:      strconv.Itoa(int(pwd.Pw_gid)),
 		Username: bytePtrToString((*byte)(unsafe.Pointer(pwd.Pw_name))),
 		Name:     bytePtrToString((*byte)(unsafe.Pointer(pwd.Pw_gecos))),
 		HomeDir:  bytePtrToString((*byte)(unsafe.Pointer(pwd.Pw_dir))),

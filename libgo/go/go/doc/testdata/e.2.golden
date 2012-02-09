@@ -1,0 +1,45 @@
+// The package e is a go/doc test for embedded methods. 
+PACKAGE e
+
+IMPORTPATH
+	testdata/e
+
+FILENAMES
+	testdata/e.go
+
+TYPES
+	// T1 has no embedded (level 1) M method due to conflict. 
+	type T1 struct {
+		// contains filtered or unexported fields
+	}
+
+	// T2 has only M as top-level method. 
+	type T2 struct {
+		// contains filtered or unexported fields
+	}
+
+	// T2.M should appear as method of T2. 
+	func (T2) M()
+
+	// T3 has only M as top-level method. 
+	type T3 struct {
+		// contains filtered or unexported fields
+	}
+
+	// T3.M should appear as method of T3. 
+	func (T3) M()
+
+	// 
+	type T4 struct{}
+
+	// T4.M should appear as method of T5 only if AllMethods is set. 
+	func (*T4) M()
+
+	// 
+	type T5 struct {
+		T4
+	}
+
+	// T4.M should appear as method of T5 only if AllMethods is set. 
+	func (*T5) M()
+

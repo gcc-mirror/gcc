@@ -5,6 +5,7 @@
 package filepath_test
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -547,6 +548,7 @@ func TestIsAbs(t *testing.T) {
 }
 
 type EvalSymlinksTest struct {
+	// If dest is empty, the path is created; otherwise the dest is symlinked to the path.
 	path, dest string
 }
 
@@ -574,31 +576,42 @@ var EvalSymlinksAbsWindowsTests = []EvalSymlinksTest{
 	{`c:\`, `c:\`},
 }
 
-func testEvalSymlinks(t *testing.T, tests []EvalSymlinksTest) {
-	for _, d := range tests {
-		if p, err := filepath.EvalSymlinks(d.path); err != nil {
-			t.Errorf("EvalSymlinks(%q) error: %v", d.path, err)
-		} else if filepath.Clean(p) != filepath.Clean(d.dest) {
-			t.Errorf("EvalSymlinks(%q)=%q, want %q", d.path, p, d.dest)
-		}
-	}
+// simpleJoin builds a file name from the directory and path.
+// It does not use Join because we don't want ".." to be evaluated.
+func simpleJoin(dir, path string) string {
+	return dir + string(filepath.Separator) + path
 }
 
 func TestEvalSymlinks(t *testing.T) {
-	defer os.RemoveAll("test")
+	tmpDir, err := ioutil.TempDir("", "evalsymlink")
+	if err != nil {
+		t.Fatal("creating temp dir:", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// /tmp may itself be a symlink! Avoid the confusion, although
+	// it means trusting the thing we're testing.
+	tmpDir, err = filepath.EvalSymlinks(tmpDir)
+	if err != nil {
+		t.Fatal("eval symlink for tmp dir:", err)
+	}
+
+	// Create the symlink farm using relative paths.
 	for _, d := range EvalSymlinksTestDirs {
 		var err error
+		path := simpleJoin(tmpDir, d.path)
 		if d.dest == "" {
-			err = os.Mkdir(d.path, 0755)
+			err = os.Mkdir(path, 0755)
 		} else {
 			if runtime.GOOS != "windows" {
-				err = os.Symlink(d.dest, d.path)
+				err = os.Symlink(d.dest, path)
 			}
 		}
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
+
 	var tests []EvalSymlinksTest
 	if runtime.GOOS == "windows" {
 		for _, d := range EvalSymlinksTests {
@@ -610,26 +623,17 @@ func TestEvalSymlinks(t *testing.T) {
 	} else {
 		tests = EvalSymlinksTests
 	}
-	// relative
-	testEvalSymlinks(t, tests)
-	// absolute
-	/* These tests do not work in the gccgo test environment.
-	goroot, err := filepath.EvalSymlinks(os.Getenv("GOROOT"))
-	if err != nil {
-		t.Fatalf("EvalSymlinks(%q) error: %v", os.Getenv("GOROOT"), err)
-	}
-	testroot := filepath.Join(goroot, "src", "pkg", "path", "filepath")
-	for i, d := range tests {
-		tests[i].path = filepath.Join(testroot, d.path)
-		tests[i].dest = filepath.Join(testroot, d.dest)
-	}
-	if runtime.GOOS == "windows" {
-		for _, d := range EvalSymlinksAbsWindowsTests {
-			tests = append(tests, d)
+
+	// Evaluate the symlink farm.
+	for _, d := range tests {
+		path := simpleJoin(tmpDir, d.path)
+		dest := simpleJoin(tmpDir, d.dest)
+		if p, err := filepath.EvalSymlinks(path); err != nil {
+			t.Errorf("EvalSymlinks(%q) error: %v", d.path, err)
+		} else if filepath.Clean(p) != filepath.Clean(dest) {
+			t.Errorf("Clean(%q)=%q, want %q", path, p, dest)
 		}
 	}
-	testEvalSymlinks(t, tests)
-	*/
 }
 
 /* These tests do not work in the gccgo test environment.
@@ -638,16 +642,19 @@ func TestEvalSymlinks(t *testing.T) {
 var abstests = []string{
 	"../AUTHORS",
 	"pkg/../../AUTHORS",
-	"Make.pkg",
-	"pkg/Makefile",
+	"Make.inc",
+	"pkg/math",
 	".",
-	"$GOROOT/src/Make.pkg",
-	"$GOROOT/src/../src/Make.pkg",
+	"$GOROOT/src/Make.inc",
+	"$GOROOT/src/../src/Make.inc",
 	"$GOROOT/misc/cgo",
 	"$GOROOT",
 }
 
 func TestAbs(t *testing.T) {
+	t.Logf("test needs to be rewritten; disabled")
+	return
+
 	oldwd, err := os.Getwd()
 	if err != nil {
 		t.Fatal("Getwd failed: " + err.Error())
@@ -670,7 +677,7 @@ func TestAbs(t *testing.T) {
 			continue
 		}
 		absinfo, err := os.Stat(abspath)
-		if err != nil || !absinfo.(*os.FileStat).SameFile(info.(*os.FileStat)) {
+		if err != nil || !os.SameFile(absinfo, info) {
 			t.Errorf("Abs(%q)=%q, not the same file", path, abspath)
 		}
 		if !filepath.IsAbs(abspath) {

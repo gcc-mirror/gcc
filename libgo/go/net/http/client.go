@@ -245,7 +245,11 @@ func (c *Client) doFollowingRedirects(ireq *Request) (r *Response, err error) {
 	}
 
 	method := ireq.Method
-	err = &url.Error{method[0:1] + strings.ToLower(method[1:]), urlStr, err}
+	err = &url.Error{
+		Op:  method[0:1] + strings.ToLower(method[1:]),
+		URL: urlStr,
+		Err: err,
+	}
 	return
 }
 
@@ -274,7 +278,11 @@ func (c *Client) Post(url string, bodyType string, body io.Reader) (r *Response,
 		return nil, err
 	}
 	req.Header.Set("Content-Type", bodyType)
-	return send(req, c.Transport)
+	r, err = send(req, c.Transport)
+	if err == nil && c.Jar != nil {
+		c.Jar.SetCookies(req.URL, r.Cookies())
+	}
+	return r, err
 }
 
 // PostForm issues a POST to the specified URL, 

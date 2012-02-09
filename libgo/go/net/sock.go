@@ -10,7 +10,6 @@ package net
 
 import (
 	"io"
-	"reflect"
 	"syscall"
 )
 
@@ -28,9 +27,18 @@ func socket(net string, f, t, p int, la, ra syscall.Sockaddr, toAddr func(syscal
 	syscall.CloseOnExec(s)
 	syscall.ForkLock.RUnlock()
 
-	setDefaultSockopts(s, f, t)
+	err = setDefaultSockopts(s, f, t)
+	if err != nil {
+		closesocket(s)
+		return nil, err
+	}
 
 	if la != nil {
+		la, err = listenerSockaddr(s, f, la, toAddr)
+		if err != nil {
+			closesocket(s)
+			return nil, err
+		}
 		err = syscall.Bind(s, la)
 		if err != nil {
 			closesocket(s)
@@ -59,14 +67,6 @@ func socket(net string, f, t, p int, la, ra syscall.Sockaddr, toAddr func(syscal
 
 	fd.setAddr(laddr, raddr)
 	return fd, nil
-}
-
-type UnknownSocketError struct {
-	sa syscall.Sockaddr
-}
-
-func (e *UnknownSocketError) Error() string {
-	return "unknown socket address type " + reflect.TypeOf(e.sa).String()
 }
 
 type writerOnly struct {

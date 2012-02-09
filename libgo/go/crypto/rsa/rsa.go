@@ -62,7 +62,7 @@ func (priv *PrivateKey) Validate() error {
 	// ProbablyPrime are deterministic, given the candidate number, it's
 	// easy for an attack to generate composites that pass this test.
 	for _, prime := range priv.Primes {
-		if !big.ProbablyPrime(prime, 20) {
+		if !prime.ProbablyPrime(20) {
 			return errors.New("prime factor is composite")
 		}
 	}
@@ -85,7 +85,7 @@ func (priv *PrivateKey) Validate() error {
 	gcd := new(big.Int)
 	x := new(big.Int)
 	y := new(big.Int)
-	big.GcdInt(gcd, x, y, totient, e)
+	gcd.GCD(x, y, totient, e)
 	if gcd.Cmp(bigOne) != 0 {
 		return errors.New("invalid public exponent E")
 	}
@@ -156,7 +156,7 @@ NextSetOfPrimes:
 		priv.D = new(big.Int)
 		y := new(big.Int)
 		e := big.NewInt(int64(priv.E))
-		big.GcdInt(g, priv.D, y, e, totient)
+		g.GCD(priv.D, y, e, totient)
 
 		if g.Cmp(bigOne) == 0 {
 			priv.D.Add(priv.D, totient)
@@ -284,7 +284,7 @@ func modInverse(a, n *big.Int) (ia *big.Int, ok bool) {
 	g := new(big.Int)
 	x := new(big.Int)
 	y := new(big.Int)
-	big.GcdInt(g, x, y, a, n)
+	g.GCD(x, y, a, n)
 	if g.Cmp(bigOne) != 0 {
 		// In this case, a and n aren't coprime and we cannot calculate
 		// the inverse. This happens because the values of n are nearly
@@ -412,7 +412,7 @@ func decrypt(random io.Reader, priv *PrivateKey, c *big.Int) (m *big.Int, err er
 }
 
 // DecryptOAEP decrypts ciphertext using RSA-OAEP.
-// If rand != nil, DecryptOAEP uses RSA blinding to avoid timing side-channel attacks.
+// If random != nil, DecryptOAEP uses RSA blinding to avoid timing side-channel attacks.
 func DecryptOAEP(hash hash.Hash, random io.Reader, priv *PrivateKey, ciphertext []byte, label []byte) (msg []byte, err error) {
 	k := (priv.N.BitLen() + 7) / 8
 	if len(ciphertext) > k ||
