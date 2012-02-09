@@ -3804,6 +3804,8 @@ finish_omp_clauses (tree clauses)
 	  t = maybe_convert_cond (t);
 	  if (t == error_mark_node)
 	    remove = true;
+	  else if (!processing_template_decl)
+	    t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 	  OMP_CLAUSE_IF_EXPR (c) = t;
 	  break;
 
@@ -3818,7 +3820,12 @@ finish_omp_clauses (tree clauses)
 	      remove = true;
 	    }
 	  else
-	    OMP_CLAUSE_NUM_THREADS_EXPR (c) = mark_rvalue_use (t);
+	    {
+	      t = mark_rvalue_use (t);
+	      if (!processing_template_decl)
+		t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+	      OMP_CLAUSE_NUM_THREADS_EXPR (c) = t;
+	    }
 	  break;
 
 	case OMP_CLAUSE_SCHEDULE:
@@ -3834,7 +3841,12 @@ finish_omp_clauses (tree clauses)
 	      remove = true;
 	    }
 	  else
-	    OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (c) = mark_rvalue_use (t);
+	    {
+	      t = mark_rvalue_use (t);
+	      if (!processing_template_decl)
+		t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+	      OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (c) = t;
+	    }
 	  break;
 
 	case OMP_CLAUSE_NOWAIT:

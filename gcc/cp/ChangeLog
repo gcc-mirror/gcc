@@ -1,6 +1,12 @@
 2012-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/51669
+	* semantics.c (finish_omp_clauses): Call fold_build_cleanup_point_expr
+	on OMP_CLAUSE_{IF,NUM_THREADS,SCHEDULE_CHUNK}_EXPR.
+
 	2011-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/51360
