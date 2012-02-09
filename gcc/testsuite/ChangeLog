@@ -1,3 +1,9 @@
+2012-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/32380
+	* gfortran.dg/vect/pr32380.f: Use dg-additional-options instead
+	of dg-options.
+
 2012-02-09  Bin Cheng  <bin.cheng@arm.com>
 
 	PR middle-end/51867
