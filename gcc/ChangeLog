@@ -1,3 +1,11 @@
+2012-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/52165
+	* var-tracking.c (emit_note_insn_var_location): If
+	EMIT_NOTE_BEFORE_INSN and insn is NOTE_INSN_CALL_ARG_LOCATION,
+	emit it before next non-NOTE_INSN_CALL_ARG_LOCATION
+	non-NOTE_DURING_CALL_P insn.
+
 2012-02-09  Bin Cheng  <bin.cheng@arm.com>
 
 	PR middle-end/51867

@@ -8225,9 +8225,14 @@ emit_note_insn_var_location (void **varp, void *data)
       /* Make sure that the call related notes come first.  */
       while (NEXT_INSN (insn)
 	     && NOTE_P (insn)
-	     && NOTE_DURING_CALL_P (insn))
+	     && ((NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION
+		  && NOTE_DURING_CALL_P (insn))
+		 || NOTE_KIND (insn) == NOTE_INSN_CALL_ARG_LOCATION))
 	insn = NEXT_INSN (insn);
-      if (NOTE_P (insn) && NOTE_DURING_CALL_P (insn))
+      if (NOTE_P (insn)
+	  && ((NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION
+	       && NOTE_DURING_CALL_P (insn))
+	      || NOTE_KIND (insn) == NOTE_INSN_CALL_ARG_LOCATION))
 	note = emit_note_after (NOTE_INSN_VAR_LOCATION, insn);
       else
 	note = emit_note_before (NOTE_INSN_VAR_LOCATION, insn);
