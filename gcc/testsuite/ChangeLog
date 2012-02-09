@@ -1,6 +1,11 @@
 2012-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/52074
+	* gcc.c-torture/compile/pr52074.c: New test.
+
 	2012-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52129
