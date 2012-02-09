@@ -1117,12 +1117,12 @@ int __gnat_features_set = 0;
 
 /* These codes are in standard message libraries.  */
 extern int C$_SIGKILL;
-extern int CMA$_EXIT_THREAD;
 extern int SS$_DEBUG;
-extern int SS$_INTDIV;
 extern int LIB$_KEYNOTFOU;
 extern int LIB$_ACTIMAGE;
-extern int MTH$_FLOOVEMAT;       /* Some ACVC_21 CXA tests */
+#define CMA$_EXIT_THREAD 4227492
+#define MTH$_FLOOVEMAT 1475268       /* Some ACVC_21 CXA tests */
+#define SS$_INTDIV 1156
 
 /* These codes are non standard, which is to say the author is
    not sure if they are defined in the standard message libraries
@@ -1131,7 +1131,7 @@ extern int MTH$_FLOOVEMAT;       /* Some ACVC_21 CXA tests */
 #define FDL$_UNPRIKW 11829410
 
 struct cond_except {
-  const int *cond;
+  unsigned int cond;
   const struct Exception_Data *except;
 };
 
@@ -1181,76 +1181,73 @@ extern struct Exception_Data *Coded_Exception (Exception_Code);
 extern Exception_Code Base_Code_In (Exception_Code);
 
 /* DEC Ada exceptions are not defined in a header file, so they
-   must be declared as external addresses.  */
+   must be declared.  */
 
-extern int ADA$_PROGRAM_ERROR;
-extern int ADA$_LOCK_ERROR;
-extern int ADA$_EXISTENCE_ERROR;
-extern int ADA$_KEY_ERROR;
-extern int ADA$_KEYSIZERR;
-extern int ADA$_STAOVF;
-extern int ADA$_CONSTRAINT_ERRO;
-extern int ADA$_IOSYSFAILED;
-extern int ADA$_LAYOUT_ERROR;
-extern int ADA$_STORAGE_ERROR;
-extern int ADA$_DATA_ERROR;
-extern int ADA$_DEVICE_ERROR;
-extern int ADA$_END_ERROR;
-extern int ADA$_MODE_ERROR;
-extern int ADA$_NAME_ERROR;
-extern int ADA$_STATUS_ERROR;
-extern int ADA$_NOT_OPEN;
-extern int ADA$_ALREADY_OPEN;
-extern int ADA$_USE_ERROR;
-extern int ADA$_UNSUPPORTED;
-extern int ADA$_FAC_MODE_MISMAT;
-extern int ADA$_ORG_MISMATCH;
-extern int ADA$_RFM_MISMATCH;
-extern int ADA$_RAT_MISMATCH;
-extern int ADA$_MRS_MISMATCH;
-extern int ADA$_MRN_MISMATCH;
-extern int ADA$_KEY_MISMATCH;
-extern int ADA$_MAXLINEXC;
-extern int ADA$_LINEXCMRS;
+#define ADA$_ALREADY_OPEN	0x0031a594
+#define ADA$_CONSTRAINT_ERRO	0x00318324
+#define ADA$_DATA_ERROR		0x003192c4
+#define ADA$_DEVICE_ERROR	0x003195e4
+#define ADA$_END_ERROR		0x00319904
+#define ADA$_FAC_MODE_MISMAT	0x0031a8b3
+#define ADA$_IOSYSFAILED	0x0031af04
+#define ADA$_KEYSIZERR		0x0031aa3c
+#define ADA$_KEY_MISMATCH	0x0031a8e3
+#define ADA$_LAYOUT_ERROR	0x00319c24
+#define ADA$_LINEXCMRS		0x0031a8f3
+#define ADA$_MAXLINEXC		0x0031a8eb
+#define ADA$_MODE_ERROR		0x00319f44
+#define ADA$_MRN_MISMATCH	0x0031a8db
+#define ADA$_MRS_MISMATCH	0x0031a8d3
+#define ADA$_NAME_ERROR		0x0031a264
+#define ADA$_NOT_OPEN		0x0031a58c
+#define ADA$_ORG_MISMATCH	0x0031a8bb
+#define ADA$_PROGRAM_ERROR	0x00318964
+#define ADA$_RAT_MISMATCH	0x0031a8cb
+#define ADA$_RFM_MISMATCH	0x0031a8c3
+#define ADA$_STAOVF		0x00318cac
+#define ADA$_STATUS_ERROR	0x0031a584
+#define ADA$_STORAGE_ERROR	0x00318c84
+#define ADA$_UNSUPPORTED	0x0031a8ab
+#define ADA$_USE_ERROR		0x0031a8a4
 
 /* DEC Ada specific conditions.  */
 static const struct cond_except dec_ada_cond_except_table [] = {
-  {&ADA$_PROGRAM_ERROR,   &program_error},
-  {&ADA$_USE_ERROR,       &Use_Error},
-  {&ADA$_KEYSIZERR,       &program_error},
-  {&ADA$_STAOVF,          &storage_error},
-  {&ADA$_CONSTRAINT_ERRO, &constraint_error},
-  {&ADA$_IOSYSFAILED,     &Device_Error},
-  {&ADA$_LAYOUT_ERROR,    &Layout_Error},
-  {&ADA$_STORAGE_ERROR,   &storage_error},
-  {&ADA$_DATA_ERROR,      &Data_Error},
-  {&ADA$_DEVICE_ERROR,    &Device_Error},
-  {&ADA$_END_ERROR,       &End_Error},
-  {&ADA$_MODE_ERROR,      &Mode_Error},
-  {&ADA$_NAME_ERROR,      &Name_Error},
-  {&ADA$_STATUS_ERROR,    &Status_Error},
-  {&ADA$_NOT_OPEN,        &Use_Error},
-  {&ADA$_ALREADY_OPEN,    &Use_Error},
-  {&ADA$_USE_ERROR,       &Use_Error},
-  {&ADA$_UNSUPPORTED,     &Use_Error},
-  {&ADA$_FAC_MODE_MISMAT, &Use_Error},
-  {&ADA$_ORG_MISMATCH,    &Use_Error},
-  {&ADA$_RFM_MISMATCH,    &Use_Error},
-  {&ADA$_RAT_MISMATCH,    &Use_Error},
-  {&ADA$_MRS_MISMATCH,    &Use_Error},
-  {&ADA$_MRN_MISMATCH,    &Use_Error},
-  {&ADA$_KEY_MISMATCH,    &Use_Error},
-  {&ADA$_MAXLINEXC,       &constraint_error},
-  {&ADA$_LINEXCMRS,       &constraint_error},
-  {0,                     0}
+  {ADA$_PROGRAM_ERROR,   &program_error},
+  {ADA$_USE_ERROR,       &Use_Error},
+  {ADA$_KEYSIZERR,       &program_error},
+  {ADA$_STAOVF,          &storage_error},
+  {ADA$_CONSTRAINT_ERRO, &constraint_error},
+  {ADA$_IOSYSFAILED,     &Device_Error},
+  {ADA$_LAYOUT_ERROR,    &Layout_Error},
+  {ADA$_STORAGE_ERROR,   &storage_error},
+  {ADA$_DATA_ERROR,      &Data_Error},
+  {ADA$_DEVICE_ERROR,    &Device_Error},
+  {ADA$_END_ERROR,       &End_Error},
+  {ADA$_MODE_ERROR,      &Mode_Error},
+  {ADA$_NAME_ERROR,      &Name_Error},
+  {ADA$_STATUS_ERROR,    &Status_Error},
+  {ADA$_NOT_OPEN,        &Use_Error},
+  {ADA$_ALREADY_OPEN,    &Use_Error},
+  {ADA$_USE_ERROR,       &Use_Error},
+  {ADA$_UNSUPPORTED,     &Use_Error},
+  {ADA$_FAC_MODE_MISMAT, &Use_Error},
+  {ADA$_ORG_MISMATCH,    &Use_Error},
+  {ADA$_RFM_MISMATCH,    &Use_Error},
+  {ADA$_RAT_MISMATCH,    &Use_Error},
+  {ADA$_MRS_MISMATCH,    &Use_Error},
+  {ADA$_MRN_MISMATCH,    &Use_Error},
+  {ADA$_KEY_MISMATCH,    &Use_Error},
+  {ADA$_MAXLINEXC,       &constraint_error},
+  {ADA$_LINEXCMRS,       &constraint_error},
+  {0,                    0}
 };
 
 #if 0
    /* Already handled by a pragma Import_Exception
       in Aux_IO_Exceptions */
-  {&ADA$_LOCK_ERROR,      &Lock_Error},
-  {&ADA$_EXISTENCE_ERROR, &Existence_Error},
-  {&ADA$_KEY_ERROR,       &Key_Error},
+  {ADA$_LOCK_ERROR,      &Lock_Error},
+  {ADA$_EXISTENCE_ERROR, &Existence_Error},
+  {ADA$_KEY_ERROR,       &Key_Error},
 #endif
 
 #endif /* IN_RTS */
@@ -1258,8 +1255,8 @@ static const struct cond_except dec_ada_cond_except_table [] = {
 /* Non-DEC Ada specific conditions.  We could probably also put
    SS$_HPARITH here and possibly SS$_ACCVIO, SS$_STKOVF.  */
 static const struct cond_except cond_except_table [] = {
-  {&MTH$_FLOOVEMAT, &constraint_error},
-  {&SS$_INTDIV,     &constraint_error},
+  {MTH$_FLOOVEMAT, &constraint_error},
+  {SS$_INTDIV,     &constraint_error},
   {0,               0}
 };
 
@@ -1297,7 +1294,7 @@ resignal_predicate (int code);
 
 static const int * const cond_resignal_table [] = {
   &C$_SIGKILL,
-  &CMA$_EXIT_THREAD,
+  (int *)CMA$_EXIT_THREAD,
   &SS$_DEBUG,
   &LIB$_KEYNOTFOU,
   &LIB$_ACTIMAGE,
@@ -1324,8 +1321,8 @@ __gnat_default_resignal_p (int code)
       return 1;
 
   for (i = 0, iexcept = 0;
-       cond_resignal_table [i] &&
-       !(iexcept = LIB$MATCH_COND (&code, &cond_resignal_table [i]));
+       cond_resignal_table [i]
+         && !(iexcept = LIB$MATCH_COND (&code, &cond_resignal_table [i]));
        i++);
 
   return iexcept;
@@ -1410,7 +1407,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
       msg = message;
 
       exception->Name_Length = 19;
-      /* ??? The full name really should be get sys$getmsg returns.  */
+      /* ??? The full name really should be get SYS$GETMSG returns.  */
       exception->Full_Name = "IMPORTED_EXCEPTION";
       exception->Import_Code = base_code;
 
