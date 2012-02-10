@@ -1,3 +1,10 @@
+2012-02-10  Kai Tietz  <ktietz@redhat.com>
+
+	PR boehm-gc/48514
+	* include/gc_config_macros.h (GC_DLL): Define it for mingw-targets
+	only, if we are actual in boehm-gc's build and DLL_EXPORT
+	is defined.
+	
 2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
 
 	* configure: Regenerate.
