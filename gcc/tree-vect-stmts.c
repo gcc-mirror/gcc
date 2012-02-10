@@ -5117,6 +5117,15 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
       && GET_MODE_CLASS (inner_mode) != MODE_FLOAT)
     return NULL_TREE;
 
+  /* We shouldn't end up building VECTOR_TYPEs of non-scalar components.
+     When the component mode passes the above test simply use a type
+     corresponding to that mode.  The theory is that any use that
+     would cause problems with this will disable vectorization anyway.  */
+  if (!SCALAR_FLOAT_TYPE_P (scalar_type)
+      && !INTEGRAL_TYPE_P (scalar_type)
+      && !POINTER_TYPE_P (scalar_type))
+    scalar_type = lang_hooks.types.type_for_mode (inner_mode, 1);
+
   /* If no size was supplied use the mode the target prefers.   Otherwise
      lookup a vector mode of the specified size.  */
   if (size == 0)

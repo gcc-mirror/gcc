@@ -1,3 +1,13 @@
+2012-02-09  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	Backported from mainline
+	2011-06-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49536
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size):
+	For non-scalar inner types use a scalar type according to
+	the scalar inner mode.
+
 2012-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
