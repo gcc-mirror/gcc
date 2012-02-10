@@ -1,3 +1,15 @@
+2012-02-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/51296
+	* config/os/osf/ctype_base.h,
+	config/os/osf/ctype_configure_char.cc,
+	config/os/osf/ctype_inline.h, config/os/osf/error_constants.h:
+	Copy from config/os/generic.
+	* config/os/osf/os_defines.h: Likewise.
+	(_GTHREAD_USE_MUTEX_INIT_FUNC, _GTHREAD_USE_COND_INIT_FUNC):
+	Define.
+	* configure.host <osf*>: Use os/osf for os_include_dir.
+
 2012-02-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Regenerated.

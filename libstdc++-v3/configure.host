@@ -280,7 +280,7 @@ case "${host_os}" in
     os_include_dir="os/bsd/netbsd"
     ;;
   osf*)
-    os_include_dir="os/generic"
+    os_include_dir="os/osf"
     # libstdc++.so relies on emutls on Tru64 UNIX, which only works with the
     # real functions implemented in libpthread.so, not with the dummies in
     # libgcc, so always pass -lpthread.
