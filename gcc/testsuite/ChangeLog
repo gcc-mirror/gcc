@@ -1,3 +1,8 @@
+2012-02-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/52146
+	* gcc.target/i386/pr52146.c: New.
+
 2012-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/52177
