@@ -1,3 +1,13 @@
+2012-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/52177
+	* builtins.c (fold_builtin_atomic_always_lock_free,
+	expand_builtin_atomic_always_lock_free,
+	fold_builtin_atomic_is_lock_free,
+	expand_builtin_atomic_is_lock_free): Return and/or test
+	boolean_true_node/boolean_false_node instead of
+	integer_one_node/integer_zero_node.
+
 2012-02-10  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/48600

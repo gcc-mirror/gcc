@@ -1,3 +1,8 @@
+2012-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/52177
+	* c-c++-common/pr52177.c: New test.
+
 2012-02-10  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/48600
