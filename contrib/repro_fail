@@ -31,14 +31,26 @@
 # command, it asks which one you want.
 
 if [ $# -lt 2 ] ; then
-    echo "usage: $0 pattern file.log [additional-args]"
+    echo "usage: $0 [--debug|--debug-tui] pattern file.log [additional-args]"
     echo
     echo "Finds the 'spawn' line matching PATTERN in FILE.LOG and executes"
     echo "the command with any arguments in ADDITIONAL-ARGS."
     echo
+    echo "If --debug is used, the compiler is invoked with -wrapper gdb,--args"
+    echo "If --debug-tui is used, the compiler is invoked with -wrapper "\
+         "gdb,--tui,--args"
     exit 1
 fi
 
+if [ "$1" == "--debug" ] ; then
+    debug_args="-wrapper gdb,--args"
+    shift
+elif [ "$1" == "--debug-tui" ] ; then
+    debug_args="-wrapper gdb,--tui,--args"
+    shift
+else
+    debug_args=""
+fi
 pattern="$1"
 logf="$2"
 shift 2
@@ -77,6 +89,6 @@ IFS="$old_IFS"
 for cmd_num in $cmds_to_run ; do
     cmd=${commands[$cmd_num]}
     set -x +e
-    $cmd "$@"
+    $cmd $debug_args "$@"
     set +x -e
 done
