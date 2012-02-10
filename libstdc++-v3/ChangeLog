@@ -1,3 +1,7 @@
+2012-02-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Regenerated.
+
 2012-02-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/documentation_hacking.xml: Fix invalid attribute.
