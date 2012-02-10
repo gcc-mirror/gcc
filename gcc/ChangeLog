@@ -1,3 +1,9 @@
+2012-02-10  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/48600
+	* predict.c (predict_paths_for_bb): Prevent looping.
+	(predict_paths_leading_to_edge, predict_paths_leading_to): Update.
+
 2012-02-10  Roman Zhuykov  <zhroma@ispras.ru>
 
 	* config/arm/arm.c (output_move_double): In one case properly
