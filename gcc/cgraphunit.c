@@ -1430,14 +1430,16 @@ cgraph_mark_functions_to_output (void)
 	  tree decl = node->decl;
 	  if (!node->global.inlined_to
 	      && gimple_has_body_p (decl)
-	      /* FIXME: in ltrans unit when offline copy is outside partition but inline copies
-		 are inside partition, we can end up not removing the body since we no longer
-		 have analyzed node pointing to it.  */
+	      /* FIXME: in an ltrans unit when the offline copy is outside a
+		 partition but inline copies are inside a partition, we can
+		 end up not removing the body since we no longer have an
+		 analyzed node pointing to it.  */
 	      && !node->in_other_partition
 	      && !DECL_EXTERNAL (decl))
 	    {
 	      dump_cgraph_node (stderr, node);
-	      internal_error ("failed to reclaim unneeded functionin same comdat group");
+	      internal_error ("failed to reclaim unneeded function in same "
+			      "comdat group");
 	    }
 	}
 #endif

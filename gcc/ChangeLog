@@ -1,3 +1,8 @@
+2012-02-10  Richard Guenther  <rguenther@suse.de>
+
+	PR translation/52193
+	* cgraphunit.c (cgraph_mark_functions_to_output): Fix typo.
+
 2012-02-09  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR middle-end/52140
