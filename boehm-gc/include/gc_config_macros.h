@@ -81,7 +81,9 @@
     typedef long ptrdiff_t;	/* ptrdiff_t is not defined */
 # endif
 
-#if defined(_DLL) && !defined(GC_NOT_DLL) && !defined(GC_DLL)
+#if ((defined(_DLL) && !defined (__MINGW32__)) \
+     || (defined (DLL_EXPORT) && defined (GC_BUILD))) \
+    && !defined(GC_DLL)
 # define GC_DLL
 #endif
 
