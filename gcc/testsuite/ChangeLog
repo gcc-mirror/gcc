@@ -1,3 +1,8 @@
+2012-02-10  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/48600
+	* g++.dg/torture/pr48600.C: New testcase.
+
 2012-02-09  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR middle-end/52140
