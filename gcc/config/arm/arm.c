@@ -14205,6 +14205,9 @@ output_move_double (rtx *operands, bool emit, int *count)
 		    output_asm_insn ("sub%?\t%0, %1, %2", otherops);
 		}
 
+	      if (count)
+		*count = 2;
+
 	      if (TARGET_LDRD)
 		return "ldr%(d%)\t%0, [%1]";
 

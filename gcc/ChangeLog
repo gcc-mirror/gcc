@@ -1,3 +1,8 @@
+2012-02-10  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* config/arm/arm.c (output_move_double): In one case properly
+	count number of instructions that will be emitted.
+
 2012-02-10  Richard Guenther  <rguenther@suse.de>
 
 	PR translation/52193
