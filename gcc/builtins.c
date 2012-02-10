@@ -5639,15 +5639,15 @@ fold_builtin_atomic_always_lock_free (tree arg0, tree arg1)
   /* If the object has smaller alignment, the the lock free routines cannot
      be used.  */
   if (type_align < mode_align)
-    return integer_zero_node;
+    return boolean_false_node;
 
   /* Check if a compare_and_swap pattern exists for the mode which represents
      the required size.  The pattern is not allowed to fail, so the existence
      of the pattern indicates support is present.  */
   if (can_compare_and_swap_p (mode, true))
-    return integer_one_node;
+    return boolean_true_node;
   else
-    return integer_zero_node;
+    return boolean_false_node;
 }
 
 /* Return true if the parameters to call EXP represent an object which will
@@ -5671,7 +5671,7 @@ expand_builtin_atomic_always_lock_free (tree exp)
     }
 
   size = fold_builtin_atomic_always_lock_free (arg0, arg1);
-  if (size == integer_one_node)
+  if (size == boolean_true_node)
     return const1_rtx;
   return const0_rtx;
 }
@@ -5686,8 +5686,8 @@ fold_builtin_atomic_is_lock_free (tree arg0, tree arg1)
     return NULL_TREE;
   
   /* If it isn't always lock free, don't generate a result.  */
-  if (fold_builtin_atomic_always_lock_free (arg0, arg1) == integer_one_node)
-    return integer_one_node;
+  if (fold_builtin_atomic_always_lock_free (arg0, arg1) == boolean_true_node)
+    return boolean_true_node;
 
   return NULL_TREE;
 }
@@ -5717,7 +5717,7 @@ expand_builtin_atomic_is_lock_free (tree exp)
 
   /* If the value is known at compile time, return the RTX for it.  */
   size = fold_builtin_atomic_is_lock_free (arg0, arg1);
-  if (size == integer_one_node)
+  if (size == boolean_true_node)
     return const1_rtx;
 
   return NULL_RTX;
