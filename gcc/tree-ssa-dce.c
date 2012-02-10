@@ -965,6 +965,13 @@ propagate_necessity (struct edge_list *el)
 		    mark_aliased_reaching_defs_necessary (stmt, op);
 		}
 	    }
+	  else if (gimple_code (stmt) == GIMPLE_TRANSACTION)
+	    {
+	      /* The beginning of a transaction is a memory barrier.  */
+	      /* ??? If we were really cool, we'd only be a barrier
+		 for the memories touched within the transaction.  */
+	      mark_all_reaching_defs_necessary (stmt);
+	    }
 	  else
 	    gcc_unreachable ();
 
