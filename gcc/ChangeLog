@@ -1,3 +1,9 @@
+2012-02-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR c/52190
+	* doc/extend.texi : Update comments for __atomic_compare_exchange and
+	__atomic_{is,always}_lock_free.
+
 2012-02-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/52146
