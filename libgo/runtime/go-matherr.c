@@ -35,7 +35,7 @@ matherr (struct exception* e)
   n = e->name;
   if (__builtin_strcmp (n, "acos") == 0
       || __builtin_strcmp (n, "asin") == 0)
-    e->retval = NAN;
+    e->retval = __builtin_nan ("");
   else if (__builtin_strcmp (n, "atan2") == 0)
     {
       if (e->arg1 == 0 && e->arg2 == 0)
@@ -53,11 +53,11 @@ matherr (struct exception* e)
     }
   else if (__builtin_strcmp (n, "log") == 0
 	   || __builtin_strcmp (n, "log10") == 0)
-    e->retval = NAN;
+    e->retval = __builtin_nan ("");
   else if (__builtin_strcmp (n, "pow") == 0)
     {
       if (e->arg1 < 0)
-	e->retval = NAN;
+	e->retval = __builtin_nan ("");
       else if (e->arg1 == 0 && e->arg2 == 0)
 	e->retval = 1.0;
       else if (e->arg1 == 0 && e->arg2 < 0)
@@ -65,9 +65,9 @@ matherr (struct exception* e)
 	  double i;
 
 	  if (modf (e->arg2, &i) == 0 && ((int64_t) i & 1) == 1)
-	    e->retval = copysign (INFINITY, e->arg1);
+	    e->retval = copysign (__builtin_inf (), e->arg1);
 	  else
-	    e->retval = INFINITY;
+	    e->retval = __builtin_inf ();
 	}
       else
 	return 0;
@@ -75,7 +75,7 @@ matherr (struct exception* e)
   else if (__builtin_strcmp (n, "sqrt") == 0)
     {
       if (e->arg1 < 0)
-	e->retval = NAN;
+	e->retval = __builtin_nan ("");
       else
 	return 0;
     }
