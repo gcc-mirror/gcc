@@ -6920,6 +6920,7 @@ spu_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
       case scalar_to_vec:
       case cond_branch_not_taken:
       case vec_perm:
+      case vec_promote_demote:
         return 1;
 
       case scalar_store:

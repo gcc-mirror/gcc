@@ -3543,9 +3543,16 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 1;
 
       case vec_perm:
-	if (!TARGET_VSX)
+	if (TARGET_VSX)
+	  return 4;
+	else
 	  return 1;
-	return 2;
+
+      case vec_promote_demote:
+        if (TARGET_VSX)
+          return 5;
+        else
+          return 1;
 
       case cond_branch_taken:
         return 3;
