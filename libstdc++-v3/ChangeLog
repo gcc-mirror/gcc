@@ -1,3 +1,21 @@
+2012-02-10  Benjamin Kosnik  <bkoz@redhat.com>
+            Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51798 continued.
+	* acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): Use __atomic_*
+	builtins instead of __sync_* builtins for atomic functionality.
+	* include/bits/shared_ptr_base.h: Same.
+	* include/parallel/compatibility.h: Same.
+	* include/profile/impl/profiler_state.h: Same.
+	* include/tr1/shared_ptr.h: Same.
+	* libsupc++/eh_ptr.cc: Same.
+	* libsupc++/eh_throw.cc: Same.
+	* libsupc++/eh_tm.cc: Same.
+	* libsupc++/guard.cc: Same.
+	* configure: Regenerated.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line numbers.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc: Same.
+
 2012-02-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libstdc++/51296

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -102,7 +102,7 @@ namespace __gnu_parallel
     return _InterlockedExchangeAdd(reinterpret_cast<volatile long*>(__ptr),
                                    __addend);
 #elif defined(__GNUC__)
-    return __sync_fetch_and_add(__ptr, __addend);
+    return __atomic_fetch_add(__ptr, __addend, __ATOMIC_ACQ_REL);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
     volatile int32_t __before, __after;
     do
@@ -145,11 +145,11 @@ namespace __gnu_parallel
     return _InterlockedExchangeAdd64(__ptr, __addend);
 #endif
 #elif defined(__GNUC__) && defined(__x86_64)
-    return __sync_fetch_and_add(__ptr, __addend);
+    return __atomic_fetch_add(__ptr, __addend, __ATOMIC_ACQ_REL);
 #elif defined(__GNUC__) && defined(__i386) &&                   \
   (defined(__i686) || defined(__pentium4) || defined(__athlon)  \
    || defined(__k8) || defined(__core2))
-    return __sync_fetch_and_add(__ptr, __addend);
+    return __atomic_fetch_add(__ptr, __addend, __ATOMIC_ACQ_REL);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
     volatile int64_t __before, __after;
     do
@@ -252,7 +252,8 @@ namespace __gnu_parallel
                __replacement, __comparand)
              == __comparand;
 #elif defined(__GNUC__)
-    return __sync_bool_compare_and_swap(__ptr, __comparand, __replacement);
+    return __atomic_compare_exchange_n(__ptr, &__comparand, __replacement, true,
+				       __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
     return atomic_cas_32((volatile unsigned int*)__ptr, __comparand,
                          __replacement) == __comparand;
@@ -298,11 +299,13 @@ namespace __gnu_parallel
 #endif
 
 #elif defined(__GNUC__) && defined(__x86_64)
-    return __sync_bool_compare_and_swap(__ptr, __comparand, __replacement);
+    return __atomic_compare_exchange_n(__ptr, &__comparand, __replacement, true,
+				       __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
 #elif defined(__GNUC__) && defined(__i386) &&                   \
   (defined(__i686) || defined(__pentium4) || defined(__athlon)  \
    || defined(__k8) || defined(__core2))
-    return __sync_bool_compare_and_swap(__ptr, __comparand, __replacement);
+    return __atomic_compare_exchange_n(__ptr, &__comparand, __replacement, true,
+				       __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
     return atomic_cas_64((volatile unsigned long long*)__ptr,
                          __comparand, __replacement) == __comparand;

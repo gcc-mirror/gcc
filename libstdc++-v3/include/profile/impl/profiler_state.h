@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -45,9 +45,12 @@ namespace __gnu_profile
 
   inline bool
   __turn(__state_type __s)
-  { return (_GLIBCXX_PROFILE_DATA(__state)
-	    == __sync_val_compare_and_swap(&_GLIBCXX_PROFILE_DATA(__state),
-					   __INVALID, __s)); }
+  { 
+    __state_type inv(__INVALID);
+    return __atomic_compare_exchange_n(&_GLIBCXX_PROFILE_DATA(__state),
+				       &inv, __s, true, __ATOMIC_ACQ_REL, 
+				       __ATOMIC_RELAXED);
+  }
 
   inline bool
   __turn_on()
