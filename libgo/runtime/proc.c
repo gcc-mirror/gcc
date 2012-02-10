@@ -909,7 +909,9 @@ runtime_mstart(void* mp)
 	__splitstack_getcontext(&g->stack_context[0]);
 #else
 	g->gcinitial_sp = &mp;
-	g->gcstack_size = StackMin;
+	// Setting gcstack_size to 0 is a marker meaning that gcinitial_sp
+	// is the top of the stack, not the bottom.
+	g->gcstack_size = 0;
 	g->gcnext_sp = &mp;
 #endif
 	getcontext(&g->context);
@@ -1267,6 +1269,8 @@ __go_go(void (*fn)(void*), void* arg)
 #else
 		sp = newg->gcinitial_sp;
 		spsize = newg->gcstack_size;
+		if(spsize == 0)
+			runtime_throw("bad spsize in __go_go");
 		newg->gcnext_sp = sp;
 #endif
 	} else {
