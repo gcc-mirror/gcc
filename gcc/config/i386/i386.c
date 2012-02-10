@@ -35336,6 +35336,7 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return ix86_cost->cond_not_taken_branch_cost;
 
       case vec_perm:
+      case vec_promote_demote:
         return ix86_cost->vec_stmt_cost;
 
       default:

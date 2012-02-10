@@ -1,3 +1,23 @@
+2012-02-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/50031
+	* targhooks.c (default_builtin_vectorization_cost): Handle
+	vec_promote_demote.
+	* target.h (enum vect_cost_for_stmt): Add vec_promote_demote.
+	* tree-vect-loop.c (vect_get_single_scalar_iteraion_cost): Handle
+	all types of reduction and pattern statements.
+	(vect_estimate_min_profitable_iters): Likewise.
+	* tree-vect-stmts.c (vect_model_promotion_demotion_cost): New function.
+	(vect_get_load_cost): Use vec_perm for permutations; add dump logic
+	for explicit realigns.
+	(vectorizable_conversion): Call vect_model_promotion_demotion_cost.
+	* config/spu/spu.c (spu_builtin_vectorization_cost): Handle
+	vec_promote_demote.
+	* config/i386/i386.c (ix86_builtin_vectorization_cost): Likewise.
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost): Update
+	vec_perm for VSX and handle vec_promote_demote.
+
 2012-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/52177
