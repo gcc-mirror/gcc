@@ -7146,7 +7146,10 @@ This built-in function implements an atomic compare and exchange operation.
 This compares the contents of @code{*@var{ptr}} with the contents of
 @code{*@var{expected}} and if equal, writes @var{desired} into
 @code{*@var{ptr}}.  If they are not equal, the current contents of
-@code{*@var{ptr}} is written into @code{*@var{expected}}.
+@code{*@var{ptr}} is written into @code{*@var{expected}}.  @var{weak} is true
+for weak compare_exchange, and false for the strong variation.  Many targets 
+only offer the strong variation and ignore the parameter.  When in doubt, use
+the strong variation.
 
 True is returned if @code{*@var{desired}} is written into
 @code{*@var{ptr}} and the execution is considered to conform to the
@@ -7242,27 +7245,32 @@ All memory orders are valid.
 
 @end deftypefn
 
-@deftypefn {Built-in Function} bool __atomic_always_lock_free (size_t size)
+@deftypefn {Built-in Function} bool __atomic_always_lock_free (size_t size,  void *ptr)
 
-This built-in function returns true if objects of size bytes will always
-generate lock free atomic instructions for the target architecture.
-Otherwise false is returned.
+This built-in function returns true if objects of @var{size} bytes will always
+generate lock free atomic instructions for the target architecture.  
+@var{size} must resolve to a compile time constant and the result also resolves to compile time constant.
 
-size must resolve to a compile time constant.
+@var{ptr} is an optional pointer to the object which may be used to determine
+alignment.  A value of 0 indicates typical alignment should be used.  The 
+compiler may also ignore this parameter.
 
 @smallexample
-if (_atomic_always_lock_free (sizeof (long long)))
+if (_atomic_always_lock_free (sizeof (long long), 0))
 @end smallexample
 
 @end deftypefn
 
-@deftypefn {Built-in Function} bool __atomic_is_lock_free (size_t size)
+@deftypefn {Built-in Function} bool __atomic_is_lock_free (size_t size, void *ptr)
 
-This built-in function returns true if objects of size bytes will always
+This built-in function returns true if objects of @var{size} bytes will always
 generate lock free atomic instructions for the target architecture.  If
 it is not known to be lock free a call is made to a runtime routine named
 @code{__atomic_is_lock_free}.
 
+@var{ptr} is an optional pointer to the object which may be used to determine
+alignment.  A value of 0 indicates typical alignment should be used.  The 
+compiler may also ignore this parameter.
 @end deftypefn
 
 @node Object Size Checking
