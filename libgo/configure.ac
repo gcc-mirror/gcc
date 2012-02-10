@@ -584,8 +584,12 @@ fi
 dnl See whether setcontext changes the value of TLS variables.
 AC_CACHE_CHECK([whether setcontext clobbers TLS variables],
 [libgo_cv_lib_setcontext_clobbers_tls],
-[LIBS_hold="$LIBS"
+[CFLAGS_hold="$CFLAGS"
+CFLAGS="$PTHREAD_CFLAGS"
+LIBS_hold="$LIBS"
 LIBS="$LIBS $PTHREAD_LIBS"
+AC_CHECK_SIZEOF([void *])
+AS_VAR_ARITH([ptr_type_size], [$ac_cv_sizeof_void_p \* 8])
 AC_RUN_IFELSE(
   [AC_LANG_SOURCE([
 #include <pthread.h>
@@ -650,11 +654,14 @@ main ()
 ])],
 [libgo_cv_lib_setcontext_clobbers_tls=no],
 [libgo_cv_lib_setcontext_clobbers_tls=yes],
-[case "$target" in
-  x86_64*-*-solaris2.10) libgo_cv_lib_setcontext_clobbers_tls=yes ;;
-  *) libgo_cv_lib_setcontext_clobbers_tls=no ;;
+[case "$target:$ptr_type_size" in
+  i?86-*-solaris2.1[[01]]:64 | x86_64*-*-solaris2.1[[01]]:64)
+    libgo_cv_lib_setcontext_clobbers_tls=yes ;;
+  *)
+    libgo_cv_lib_setcontext_clobbers_tls=no ;;
  esac
 ])
+CFLAGS="$CFLAGS_hold"
 LIBS="$LIBS_hold"
 ])
 if test "$libgo_cv_lib_setcontext_clobbers_tls" = "yes"; then
