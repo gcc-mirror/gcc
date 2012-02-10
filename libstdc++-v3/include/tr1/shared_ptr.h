@@ -1,6 +1,7 @@
 // <tr1/shared_ptr.h> -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -246,9 +247,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // Replace the current counter value with the old value + 1, as
 	  // long as it's not changed meanwhile. 
 	}
-      while (!__sync_bool_compare_and_swap(&_M_use_count, __count,
-					   __count + 1));
-    }
+      while (!__atomic_compare_exchange_n(&_M_use_count, &__count, __count + 1,
+					  true, __ATOMIC_ACQ_REL, 
+					  __ATOMIC_RELAXED));
+     }
 
   template<typename _Ptr, typename _Deleter, _Lock_policy _Lp>
     class _Sp_counted_base_impl

@@ -1,4 +1,4 @@
-// Copyright (C) 2002, 2004, 2006, 2008, 2009, 2010, 2011
+// Copyright (C) 2002, 2004, 2006, 2008, 2009, 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //  
 // This file is part of GCC.
@@ -239,34 +239,42 @@ namespace __cxxabiv1
       return 0;
 
 # ifdef _GLIBCXX_USE_FUTEX
-    // If __sync_* and futex syscall are supported, don't use any global
+    // If __atomic_* and futex syscall are supported, don't use any global
     // mutex.
     if (__gthread_active_p ())
       {
 	int *gi = (int *) (void *) g;
+	int expected(0);
 	const int guard_bit = _GLIBCXX_GUARD_BIT;
 	const int pending_bit = _GLIBCXX_GUARD_PENDING_BIT;
 	const int waiting_bit = _GLIBCXX_GUARD_WAITING_BIT;
 
 	while (1)
 	  {
-	    int old = __sync_val_compare_and_swap (gi, 0, pending_bit);
-	    if (old == 0)
-	      return 1;	// This thread should do the initialization.
-
-	    if (old == guard_bit)
-	      return 0;	// Already initialized.
-
-	    if (old == pending_bit)
+	    if (__atomic_compare_exchange_n(gi, &expected, pending_bit, true,
+					    __ATOMIC_ACQ_REL, __ATOMIC_RELAXED))
 	      {
-		int newv = old | waiting_bit;
-		if (__sync_val_compare_and_swap (gi, old, newv) != old)
-		  continue;
-
-		old = newv;
+		// This thread should do the initialization.
+		return 1;
 	      }
+	      
+	    if (expected == guard_bit)
+	      {
+		// Already initialized.
+		return 0;	
+	      }
+	     if (expected == pending_bit)
+	       {
+		 int newv = expected | waiting_bit;
+		 if (!__atomic_compare_exchange_n(gi, &expected, newv, true,
+						  __ATOMIC_ACQ_REL, 
+						  __ATOMIC_RELAXED))
+		   continue;
+		 
+		 expected = newv;
+	       }
 
-	    syscall (SYS_futex, gi, _GLIBCXX_FUTEX_WAIT, old, 0);
+	    syscall (SYS_futex, gi, _GLIBCXX_FUTEX_WAIT, expected, 0);
 	  }
       }
 # else
@@ -316,13 +324,13 @@ namespace __cxxabiv1
   void __cxa_guard_abort (__guard *g) throw ()
   {
 #ifdef _GLIBCXX_USE_FUTEX
-    // If __sync_* and futex syscall are supported, don't use any global
+    // If __atomic_* and futex syscall are supported, don't use any global
     // mutex.
     if (__gthread_active_p ())
       {
 	int *gi = (int *) (void *) g;
 	const int waiting_bit = _GLIBCXX_GUARD_WAITING_BIT;
-	int old = __sync_lock_test_and_set (gi, 0);
+	int old = __atomic_exchange_n (gi, 0, __ATOMIC_ACQ_REL);
 
 	if ((old & waiting_bit) != 0)
 	  syscall (SYS_futex, gi, _GLIBCXX_FUTEX_WAKE, INT_MAX);
@@ -355,14 +363,14 @@ namespace __cxxabiv1
   void __cxa_guard_release (__guard *g) throw ()
   {
 #ifdef _GLIBCXX_USE_FUTEX
-    // If __sync_* and futex syscall are supported, don't use any global
+    // If __atomic_* and futex syscall are supported, don't use any global
     // mutex.
     if (__gthread_active_p ())
       {
 	int *gi = (int *) (void *) g;
 	const int guard_bit = _GLIBCXX_GUARD_BIT;
 	const int waiting_bit = _GLIBCXX_GUARD_WAITING_BIT;
-	int old = __sync_lock_test_and_set (gi, guard_bit);
+	int old = __atomic_exchange_n (gi, guard_bit, __ATOMIC_ACQ_REL);
 
 	if ((old & waiting_bit) != 0)
 	  syscall (SYS_futex, gi, _GLIBCXX_FUTEX_WAKE, INT_MAX);

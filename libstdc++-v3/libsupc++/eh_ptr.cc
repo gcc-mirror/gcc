@@ -1,5 +1,5 @@
 // -*- C++ -*- Implement the members of exception_ptr.
-// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -75,7 +75,7 @@ std::__exception_ptr::exception_ptr::_M_addref() _GLIBCXX_USE_NOEXCEPT
     {
       __cxa_refcounted_exception *eh =
 	__get_refcounted_exception_header_from_obj (_M_exception_object);
-      __sync_add_and_fetch (&eh->referenceCount, 1);
+      __atomic_add_fetch (&eh->referenceCount, 1, __ATOMIC_ACQ_REL);
     }
 }
 
@@ -87,7 +87,7 @@ std::__exception_ptr::exception_ptr::_M_release() _GLIBCXX_USE_NOEXCEPT
     {
       __cxa_refcounted_exception *eh =
 	__get_refcounted_exception_header_from_obj (_M_exception_object);
-      if (__sync_sub_and_fetch (&eh->referenceCount, 1) == 0)
+      if (__atomic_sub_fetch (&eh->referenceCount, 1, __ATOMIC_ACQ_REL) == 0)
         {
 	  if (eh->exc.exceptionDestructor)
 	    eh->exc.exceptionDestructor (_M_exception_object);
@@ -191,7 +191,7 @@ __gxx_dependent_exception_cleanup(_Unwind_Reason_Code code,
 
   __cxa_free_dependent_exception (dep);
 
-  if (__sync_sub_and_fetch (&header->referenceCount, 1) == 0)
+  if (__atomic_sub_fetch (&header->referenceCount, 1, __ATOMIC_ACQ_REL) == 0)
     {
       if (header->exc.exceptionDestructor)
 	header->exc.exceptionDestructor (header + 1);
@@ -210,7 +210,7 @@ std::rethrow_exception(std::exception_ptr ep)
 
   __cxa_dependent_exception *dep = __cxa_allocate_dependent_exception ();
   dep->primaryException = obj;
-  __sync_add_and_fetch (&eh->referenceCount, 1);
+  __atomic_add_fetch (&eh->referenceCount, 1,  __ATOMIC_ACQ_REL);
 
   dep->unexpectedHandler = __unexpected_handler;
   dep->terminateHandler = __terminate_handler;

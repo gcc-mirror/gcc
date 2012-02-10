@@ -15125,12 +15125,13 @@ main ()
 typedef bool atomic_type;
        atomic_type c1;
        atomic_type c2;
-       const atomic_type c3(0);
-       __sync_fetch_and_add(&c1, c2);
-       __sync_val_compare_and_swap(&c1, c3, c2);
-       __sync_lock_test_and_set(&c1, c3);
-       __sync_lock_release(&c1);
-       __sync_synchronize();
+       atomic_type c3(0);
+       __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+       __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
+                                   __ATOMIC_RELAXED);
+       __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
+       __atomic_load_n(&c1, __ATOMIC_RELAXED);
+
   ;
   return 0;
 }
@@ -15166,12 +15167,13 @@ main ()
 typedef short atomic_type;
        atomic_type c1;
        atomic_type c2;
-       const atomic_type c3(0);
-       __sync_fetch_and_add(&c1, c2);
-       __sync_val_compare_and_swap(&c1, c3, c2);
-       __sync_lock_test_and_set(&c1, c3);
-       __sync_lock_release(&c1);
-       __sync_synchronize();
+       atomic_type c3(0);
+       __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+       __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
+                                   __ATOMIC_RELAXED);
+       __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
+       __atomic_load_n(&c1, __ATOMIC_RELAXED);
+
   ;
   return 0;
 }
@@ -15207,12 +15209,13 @@ main ()
 typedef int atomic_type;
        atomic_type c1;
        atomic_type c2;
-       const atomic_type c3(0);
-       __sync_fetch_and_add(&c1, c2);
-       __sync_val_compare_and_swap(&c1, c3, c2);
-       __sync_lock_test_and_set(&c1, c3);
-       __sync_lock_release(&c1);
-       __sync_synchronize();
+       atomic_type c3(0);
+       __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+       __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
+                                   __ATOMIC_RELAXED);
+       __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
+       __atomic_load_n(&c1, __ATOMIC_RELAXED);
+
   ;
   return 0;
 }
@@ -15248,12 +15251,13 @@ main ()
 typedef long long atomic_type;
        atomic_type c1;
        atomic_type c2;
-       const atomic_type c3(0);
-       __sync_fetch_and_add(&c1, c2);
-       __sync_val_compare_and_swap(&c1, c3, c2);
-       __sync_lock_test_and_set(&c1, c3);
-       __sync_lock_release(&c1);
-       __sync_synchronize();
+       atomic_type c3(0);
+       __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+       __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
+                                   __ATOMIC_RELAXED);
+       __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
+       __atomic_load_n(&c1, __ATOMIC_RELAXED);
+
   ;
   return 0;
 }
@@ -15281,18 +15285,19 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15284 "configure"
+#line 15288 "configure"
 int main()
 {
   typedef bool atomic_type;
   atomic_type c1;
   atomic_type c2;
-  const atomic_type c3(0);
-  __sync_fetch_and_add(&c1, c2);
-  __sync_val_compare_and_swap(&c1, c3, c2);
-  __sync_lock_test_and_set(&c1, c3);
-  __sync_lock_release(&c1);
-  __sync_synchronize();
+  atomic_type c3(0);
+  __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+  __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
+                              __ATOMIC_RELAXED);
+  __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
+  __atomic_load_n(&c1, __ATOMIC_RELAXED);
+
   return 0;
 }
 EOF
@@ -15315,18 +15320,19 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15318 "configure"
+#line 15323 "configure"
 int main()
 {
   typedef short atomic_type;
   atomic_type c1;
   atomic_type c2;
-  const atomic_type c3(0);
-  __sync_fetch_and_add(&c1, c2);
-  __sync_val_compare_and_swap(&c1, c3, c2);
-  __sync_lock_test_and_set(&c1, c3);
-  __sync_lock_release(&c1);
-  __sync_synchronize();
+  atomic_type c3(0);
+  __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+  __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
+                              __ATOMIC_RELAXED);
+  __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
+  __atomic_load_n(&c1, __ATOMIC_RELAXED);
+
   return 0;
 }
 EOF
@@ -15349,19 +15355,20 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15352 "configure"
+#line 15358 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
   typedef int atomic_type;
   atomic_type c1;
   atomic_type c2;
-  const atomic_type c3(0);
-  __sync_fetch_and_add(&c1, c2);
-  __sync_val_compare_and_swap(&c1, c3, c2);
-  __sync_lock_test_and_set(&c1, c3);
-  __sync_lock_release(&c1);
-  __sync_synchronize();
+  atomic_type c3(0);
+  __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+  __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
+                              __ATOMIC_RELAXED);
+  __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
+  __atomic_load_n(&c1, __ATOMIC_RELAXED);
+
   return 0;
 }
 EOF
@@ -15384,18 +15391,19 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15387 "configure"
+#line 15394 "configure"
 int main()
 {
   typedef long long atomic_type;
   atomic_type c1;
   atomic_type c2;
-  const atomic_type c3(0);
-  __sync_fetch_and_add(&c1, c2);
-  __sync_val_compare_and_swap(&c1, c3, c2);
-  __sync_lock_test_and_set(&c1, c3);
-  __sync_lock_release(&c1);
-  __sync_synchronize();
+  atomic_type c3(0);
+  __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+  __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
+                              __ATOMIC_RELAXED);
+  __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
+  __atomic_load_n(&c1, __ATOMIC_RELAXED);
+
   return 0;
 }
 EOF
@@ -15427,8 +15435,11 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-  # Set atomicity_dir to builtins if either of above tests pass.
-  if test $glibcxx_cv_atomic_int = yes || test $glibcxx_cv_atomic_bool = yes ; then
+  # Set atomicity_dir to builtins if all of above tests pass.
+  if test $glibcxx_cv_atomic_bool = yes \
+     && test $glibcxx_cv_atomic_short = yes \
+     && test $glibcxx_cv_atomic_int = yes \
+     && test $glibcxx_cv_atomic_long_long = yes ; then
 
 $as_echo "#define _GLIBCXX_ATOMIC_BUILTINS 1" >>confdefs.h
 
@@ -15460,7 +15471,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15463 "configure"
+#line 15474 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15502,7 +15513,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15505 "configure"
+#line 15516 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15536,7 +15547,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15539 "configure"
+#line 15550 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };

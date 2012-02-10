@@ -1,6 +1,6 @@
 // -*- C++ -*- Exception handling routines for throwing.
 // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-// 2011  Free Software Foundation, Inc.
+// 2011, 2012  Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -44,7 +44,7 @@ __gxx_exception_cleanup (_Unwind_Reason_Code code, _Unwind_Exception *exc)
     __terminate (header->exc.terminateHandler);
 
 #if ATOMIC_INT_LOCK_FREE > 1
-  if (__sync_sub_and_fetch (&header->referenceCount, 1) == 0)
+  if (__atomic_sub_fetch (&header->referenceCount, 1, __ATOMIC_ACQ_REL) == 0)
     {
 #endif
       if (header->exc.exceptionDestructor)
