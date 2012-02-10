@@ -1,3 +1,7 @@
+2012-02-10   Diego Novillo  <dnovillo@google.com>
+
+	* repro_fail: Add --debug and --debug-tui flags.
+
 2012-02-02  Sumanth G <sumanth.gundapaneni@kpitcummins.com>
 	    Jayant R Sonar <jayant.sonar@kpitcummins.com>
 
