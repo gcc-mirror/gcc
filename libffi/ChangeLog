@@ -1,3 +1,9 @@
+2012-02-10  Kai Tietz  <ktietz@redhat.com>
+
+	* configure.ac (AM_LTLDFLAGS): Add -no-undefine for x64
+	windows target.
+	* configure: Regenerated.
+	
 2012-02-08  Kai Tietz  <ktietz@redhat.com>
 
 	* src/prep_cif.c (ffi_prep_cif): Allow for X86_WIN32
