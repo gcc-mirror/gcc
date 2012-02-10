@@ -936,6 +936,10 @@ runtime_gc(int32 force)
 	const byte *p;
 	bool extra;
 
+	// Make sure all registers are saved on stack so that
+	// scanstack sees them.
+	__builtin_unwind_init();
+
 	// The gc is turned off (via enablegc) until
 	// the bootstrap has completed.
 	// Also, malloc gets called in the guts
