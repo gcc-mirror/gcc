@@ -1,3 +1,9 @@
+2012-02-10  Richard Henderson  <rth@redhat.com>
+
+        * tree-ssa-dce.c (propagate_necessity): Handle GIMPLE_TRANSACTION.
+        * tree-ssa-operands.c (parse_ssa_operands): Add virtual operands
+        for GIMPLE_TRANSACTION.  Tidy if's into a switch.
+
 2012-02-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    Ira Rosen  <irar@il.ibm.com>
 
