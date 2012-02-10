@@ -1,3 +1,9 @@
+2012-02-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52146
+	* config/i386/i386.c (ix86_legitimate_address_p): Disallow
+	negative constant address for x32.
+
 2012-02-10  Richard Henderson  <rth@redhat.com>
 
         * tree-ssa-dce.c (propagate_necessity): Handle GIMPLE_TRANSACTION.
