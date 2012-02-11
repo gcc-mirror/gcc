@@ -1946,7 +1946,7 @@ gcc-ranlib.c: gcc-ar.c
 gcc-nm.c: gcc-ar.c
 	cp $^ $@
 
-COLLECT2_OBJS = collect2.o collect2-aix.o tlink.o
+COLLECT2_OBJS = collect2.o collect2-aix.o tlink.o vec.o ggc-none.o
 COLLECT2_LIBS = @COLLECT2_LIBS@
 collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
