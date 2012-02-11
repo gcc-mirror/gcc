@@ -1,3 +1,8 @@
+2012-02-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/aggr4.ads: New test.
+	* gnat.dg/specs/aggr4_pkg.ads: New helper.
+
 2012-02-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/52146
