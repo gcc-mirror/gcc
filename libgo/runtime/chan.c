@@ -409,11 +409,20 @@ closed:
 void
 __go_send_small(ChanType *t, Hchan* c, uint64 val)
 {
-	byte b[sizeof(uint64)];
+	union
+	{
+		byte b[sizeof(uint64)];
+		uint64 v;
+	} u;
+	byte *p;
 
-	runtime_memclr(b, sizeof(uint64));
-	__builtin_memcpy(b, &val, t->__element_type->__size);
-	runtime_chansend(t, c, b, nil);
+	u.v = val;
+#ifndef WORDS_BIGENDIAN
+	p = u.b;
+#else
+	p = u.b + sizeof(uint64) - t->__element_type->__size;
+#endif
+	runtime_chansend(t, c, p, nil);
 }
 
 // The compiler generates a call to __go_send_big to send a value
@@ -433,9 +442,15 @@ __go_receive_small(ChanType *t, Hchan* c)
 		byte b[sizeof(uint64)];
 		uint64 v;
 	} u;
+	byte *p;
 
 	u.v = 0;
-	runtime_chanrecv(t, c, u.b, nil, nil);
+#ifndef WORDS_BIGENDIAN
+	p = u.b;
+#else
+	p = u.b + sizeof(uint64) - t->__element_type->__size;
+#endif
+	runtime_chanrecv(t, c, p, nil, nil);
 	return u.v;
 }
 
@@ -654,8 +669,8 @@ newselect(int32 size, Select **selp)
 
 	sel->tcase = size;
 	sel->ncase = 0;
-	sel->pollorder = (void*)(sel->scase + size);
-	sel->lockorder = (void*)(sel->pollorder + size);
+	sel->lockorder = (void*)(sel->scase + size);
+	sel->pollorder = (void*)(sel->lockorder + size);
 	*selp = sel;
 
 	if(debug)
