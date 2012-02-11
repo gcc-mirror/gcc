@@ -2937,6 +2937,7 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
   if (delay_list == 0 && likely
       && new_thread && !ANY_RETURN_P (new_thread)
       && NONJUMP_INSN_P (new_thread)
+      && !RTX_FRAME_RELATED_P (new_thread)
       && GET_CODE (PATTERN (new_thread)) != ASM_INPUT
       && asm_noperands (PATTERN (new_thread)) < 0)
     {
