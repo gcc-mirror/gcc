@@ -1,3 +1,8 @@
+2012-02-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* compare-elim.c (find_comparisons_in_bb): Eliminate only compares
+	having the same mode as previous compare.
+
 2012-02-09  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	Backported from mainline
@@ -87,7 +92,7 @@
 
 2012-02-09  Peter Bergner  <bergner@vnet.ibm.com>
 
-	Backport from mainline 
+	Backport from mainline
 	2012-02-09  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR middle-end/52140
@@ -95,7 +100,7 @@
 
 2012-02-09  Andrey Belevantsev  <abel@ispras.ru>
 
-	Backport from mainline 
+	Backport from mainline
 	2012-01-20  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR target/51106
@@ -109,11 +114,11 @@
 	bit position to it (if any).
 
 2012-02-07  Kai Tietz  <ktietz@redhat.com>
-            Dave Korn  <dave.korn.cygwin@gmail.com>
+	    Dave Korn  <dave.korn.cygwin@gmail.com>
 
-        PR target/40068
-        * config/i386/winnt-cxx.c (i386_pe_adjust_class_at_definition):
-        Take care that typinfo gets dllexport-attribute.
+	PR target/40068
+	* config/i386/winnt-cxx.c (i386_pe_adjust_class_at_definition):
+	Take care that typinfo gets dllexport-attribute.
 
 2012-02-07  Alan Modra  <amodra@gmail.com>
 
