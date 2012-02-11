@@ -5131,7 +5131,7 @@ sparc_flat_expand_prologue (void)
 
 	  /* Prevent this instruction from ever being considered dead,
 	     even if this function has no epilogue.  */
-	  emit_insn (gen_rtx_USE (VOIDmode, i7));
+	  emit_use (i7);
 	}
     }
 
