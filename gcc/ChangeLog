@@ -1,3 +1,10 @@
+2012-02-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (sparc_flat_expand_prologue): Use emit_use.
+	* config/sparc/sparc.md (UNSPECV_GOTO): Delete.
+	(nonlocal_goto_internal): Likewise.
+	(nonlocal_goto): Emit a use and an indirect jump directly.
+
 2012-02-10  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR c/52190

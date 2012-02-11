@@ -99,7 +99,6 @@
 (define_constants
   [(UNSPECV_BLOCKAGE		0)
    (UNSPECV_FLUSHW		1)
-   (UNSPECV_GOTO		2)
    (UNSPECV_FLUSH		4)
    (UNSPECV_SAVEW		6)
    (UNSPECV_CAS			8)
@@ -6524,6 +6523,7 @@
    (match_operand 3 "memory_operand" "")]
   ""
 {
+  rtx i7 = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
   rtx r_label = copy_to_reg (operands[1]);
   rtx r_sp = adjust_address_nv (operands[2], Pmode, 0);
   rtx r_fp = operands[3];
@@ -6540,43 +6540,18 @@
   /* Restore frame pointer for containing function.  */
   emit_move_insn (hard_frame_pointer_rtx, r_fp);
   emit_stack_restore (SAVE_NONLOCAL, r_sp);
+  emit_move_insn (i7, r_i7);
 
   /* USE of hard_frame_pointer_rtx added for consistency;
      not clear if really needed.  */
   emit_use (hard_frame_pointer_rtx);
   emit_use (stack_pointer_rtx);
+  emit_use (i7);
 
-  /* We need to smuggle the load of %i7 as it is a fixed register.  */
-  emit_jump_insn (gen_nonlocal_goto_internal (r_label, r_i7));
+  emit_jump_insn (gen_indirect_jump (r_label));
   emit_barrier ();
   DONE;
 })
-
-(define_insn "nonlocal_goto_internal"
-  [(unspec_volatile [(match_operand 0 "register_operand" "r")
-                     (match_operand 1 "memory_operand" "m")] UNSPECV_GOTO)]
-  "GET_MODE (operands[0]) == Pmode && GET_MODE (operands[1]) == Pmode"
-{
-  if (flag_delayed_branch)
-    {
-      if (TARGET_ARCH64)
-	return "jmp\t%0\n\t ldx\t%1, %%i7";
-      else
-	return "jmp\t%0\n\t ld\t%1, %%i7";
-    }
-  else
-    {
-      if (TARGET_ARCH64)
-	return "ldx\t%1, %%i7\n\tjmp\t%0\n\t nop";
-      else
-	return "ld\t%1, %%i7\n\tjmp\t%0\n\t nop";
-    }
-}
-  [(set (attr "type") (const_string "multi"))
-   (set (attr "length")
-	(if_then_else (eq_attr "delayed_branch" "true")
-		      (const_int 2)
-		      (const_int 3)))])
 
 (define_expand "builtin_setjmp_receiver"
   [(label_ref (match_operand 0 "" ""))]
