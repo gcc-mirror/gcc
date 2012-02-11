@@ -1,3 +1,13 @@
+2012-02-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51910
+	* tlink.c (demangled_hash_entry): Change mangled to a VEC.
+	(demangle_new_symbols): Fill it.
+	(scan_linker_output): Walk it.
+	(start_tweaking): Split out from scan_linker_output.
+	(maybe_tweak): Update sym->chosen.
+	* Makefile.in (COLLECT2_OBJS): Add vec.o and gcc-none.o
+
 2012-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/52132

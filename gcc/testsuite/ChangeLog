@@ -1,3 +1,8 @@
+2012-02-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51910
+	* g++.dg/template/repo10.C: New.
+
 2012-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/52132
