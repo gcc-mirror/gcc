@@ -83,11 +83,14 @@ if [ -d "$1" -a -d "$2" ] ; then
 		exit $exit_status
 	fi
 	cmnsums=`cat $lst5 | wc -l`
+	sum1="/tmp/$tool-sum-1"
+	sum2="/tmp/$tool-sum-2"
 	echo "# Comparing $cmnsums common sum files"
 	( for fname in `cat $lst5`; do cat $1/$fname; done ) >$sum1
 	( for fname in `cat $lst5`; do cat $2/$fname; done ) >$sum2
 	echo "## ${CONFIG_SHELL-/bin/sh} $0 $strict $sum1 $sum2"
 	${CONFIG_SHELL-/bin/sh} $0 $strict $sum1 $sum2
+	rm -f $sum1 $sum2
 	ret=$?
 	if [ $ret -ne 0 ]; then
 		exit_status=`expr $exit_status + 1`

@@ -1,3 +1,7 @@
+2012-02-11  Mike Stump  <mikestump@comcast.net>
+
+	* compare_tests (exit_status): Fix.
+
 2012-02-10   Diego Novillo  <dnovillo@google.com>
 
 	* repro_fail: Add --debug and --debug-tui flags.
