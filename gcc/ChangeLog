@@ -1,3 +1,9 @@
+2012-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/52132
+	* reg-stack.c (subst_stack_regs_in_debug_insn): Don't use
+	get_true_reg.
+
 2012-02-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* compare-elim.c (find_comparisons_in_bb): Eliminate only compares
