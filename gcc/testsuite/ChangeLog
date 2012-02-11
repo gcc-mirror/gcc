@@ -1,3 +1,8 @@
+2012-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/52132
+	* gcc.dg/pr52132.c: New test.
+
 2012-02-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/aggr4.ads: New test.
