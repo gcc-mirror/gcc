@@ -1,3 +1,8 @@
+2012-02-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* compare-elim.c (find_comparisons_in_bb): Eliminate only compares
+	having the same mode as previous compare.
+
 2012-02-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (sparc_flat_expand_prologue): Use emit_use.
@@ -19,9 +24,9 @@
 
 2012-02-10  Richard Henderson  <rth@redhat.com>
 
-        * tree-ssa-dce.c (propagate_necessity): Handle GIMPLE_TRANSACTION.
-        * tree-ssa-operands.c (parse_ssa_operands): Add virtual operands
-        for GIMPLE_TRANSACTION.  Tidy if's into a switch.
+	* tree-ssa-dce.c (propagate_necessity): Handle GIMPLE_TRANSACTION.
+	* tree-ssa-operands.c (parse_ssa_operands): Add virtual operands
+	for GIMPLE_TRANSACTION.  Tidy if's into a switch.
 
 2012-02-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    Ira Rosen  <irar@il.ibm.com>
@@ -48,9 +53,8 @@
 	PR middle-end/52177
 	* builtins.c (fold_builtin_atomic_always_lock_free,
 	expand_builtin_atomic_always_lock_free,
-	fold_builtin_atomic_is_lock_free,
-	expand_builtin_atomic_is_lock_free): Return and/or test
-	boolean_true_node/boolean_false_node instead of
+	fold_builtin_atomic_is_lock_free, expand_builtin_atomic_is_lock_free):
+	Return and/or test boolean_true_node/boolean_false_node instead of
 	integer_one_node/integer_zero_node.
 
 2012-02-10  Jan Hubicka  <jh@suse.cz>
@@ -90,8 +94,8 @@
 2012-02-08  Magnus Granberg  <zorry@gentoo.org>
 
 	PR driver/48524
-	* gcc.c (switch_matches) Support switches with separated form, -D
-	and -U.
+	* gcc.c (switch_matches) Support switches with separated form,
+	-D and -U.
 
 2012-02-08  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -113,8 +117,7 @@
 	PR tree-optimization/46886
 	* tree-flow.h (do_while_loop_p): Declare.
 	* tree-ssa-loop-ch.c (do_while_loop_p): Export.
-	* tree-parloops.c (parallelize_loops): Only parallelize do-while
-	loops.
+	* tree-parloops.c (parallelize_loops): Only parallelize do-while loops.
 
 2012-02-08  Andrew MacLeod  <amacleod@redhat.com>
 
@@ -183,7 +186,7 @@
 	newline in -alias dumps.
 
 2012-02-07  Kai Tietz  <ktietz@redhat.com>
-            Dave Korn  <dave.korn.cygwin@gmail.com>
+	    Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR target/40068
 	* config/i386/winnt-cxx.c (i386_pe_adjust_class_at_definition):
@@ -216,7 +219,8 @@
 	(epiphany_start_function): Handle multiple interrupt arguments and/or
 	forwarder_section attribute.
 
-	* config/epiphany/epiphany.h (LIB_SPEC): Link libc again after libgloss.
+	* config/epiphany/epiphany.h (LIB_SPEC): Link libc again after
+	libgloss.
 
 2012-02-07  Alan Modra  <amodra@gmail.com>
 
@@ -297,13 +301,11 @@
 	to vect_is_simple_use_1 and vect_is_simple_use.
 	(vectorizable_live_operation): Likewise.
 	* tree-vect-patterns.c (widened_name_p,
-	vect_recog_vector_vector_shift_pattern, check_bool_pattern):
-	Likewise.
+	vect_recog_vector_vector_shift_pattern, check_bool_pattern): Likewise.
 	* tree-vect-stmts.c (process_use, vect_get_vec_def_for_operand,
-	vectorizable_call, vectorizable_conversion,
-	vectorizable_assignment, vectorizable_shift,
-	vectorizable_operation, vectorizable_store, vectorizable_load):
-	Likewise.
+	vectorizable_call, vectorizable_conversion, vectorizable_assignment,
+	vectorizable_shift,vectorizable_operation, vectorizable_store,
+	vectorizable_load): Likewise.
 	(vect_is_simple_cond): Add an argument, pass it to
 	vect_is_simple_use_1.
 	(vectorizable_condition): Update calls to vect_is_simple_cond,
@@ -436,8 +438,7 @@
 
 2012-01-31  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
-	config/arm/thumb2.md (thumb2_mov_notscc): Use MVN for true
-	condition.
+	* config/arm/thumb2.md (thumb2_mov_notscc): Use MVN for true condition.
 
 2012-01-31  Jakub Jelinek  <jakub@redhat.com>
 
@@ -537,7 +538,7 @@
 
 2012-01-29  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/alpha/alpha.c (alpha_option_overrride): Default to
+	* config/alpha/alpha.c (alpha_option_override): Default to
 	full IEEE compliance mode for Go language.
 
 2011-01-29  Tijl Coosemans  <tijl@coosemans.org>
