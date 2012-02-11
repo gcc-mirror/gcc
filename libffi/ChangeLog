@@ -1,3 +1,7 @@
+2012-02-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* src/sparc/v9.S (STACKFRAME): Bump to 176.
+
 2012-02-10  Kai Tietz  <ktietz@redhat.com>
 
 	* configure.ac (AM_LTLDFLAGS): Add -no-undefine for x64
