@@ -297,8 +297,11 @@ find_comparisons_in_bb (struct dom_walk_data *data ATTRIBUTE_UNUSED,
       src = conforming_compare (insn);
       if (src)
 	{
+	  enum machine_mode src_mode = GET_MODE (src);
+
 	  /* Eliminate a compare that's redundant with the previous.  */
 	  if (last_cmp_valid
+	      && src_mode == last_cmp->orig_mode
 	      && rtx_equal_p (last_cmp->in_a, XEXP (src, 0))
 	      && rtx_equal_p (last_cmp->in_b, XEXP (src, 1)))
 	    {
@@ -311,7 +314,7 @@ find_comparisons_in_bb (struct dom_walk_data *data ATTRIBUTE_UNUSED,
 	  last_cmp->prev_clobber = last_clobber;
 	  last_cmp->in_a = XEXP (src, 0);
 	  last_cmp->in_b = XEXP (src, 1);
-	  last_cmp->orig_mode = GET_MODE (SET_DEST (single_set (insn)));
+	  last_cmp->orig_mode = src_mode;
 	  VEC_safe_push (comparison_struct_p, heap, all_compares, last_cmp);
 
 	  /* It's unusual, but be prepared for comparison patterns that
