@@ -43,6 +43,14 @@ __go_can_recover (const void* retaddr)
      such as an instruction to adjust the stack pointer.  */
 
   ret = (const char *) retaddr;
+
+#ifdef __sparc__
+  /* On SPARC the address we get, from __builtin_return_address, is
+     the address of the call instruction.  Adjust forward, also
+     skipping the delayed instruction following the call.  */
+  ret += 8;
+#endif
+
   dret = (const char *) d->__retaddr;
   return ret <= dret && ret + 16 >= dret;
 }
