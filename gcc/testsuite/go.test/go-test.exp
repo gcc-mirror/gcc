@@ -302,9 +302,9 @@ proc go-gc-tests { } {
 	}
 
 	# Handle certain tests in a target-dependant way.
-	if [istarget "alpha*-*-*"] {
+	if { [istarget "alpha*-*-*"] || [istarget "sparc*-*-solaris*"] } {
 	    if { [string match "*go.test/test/nilptr.go" $test] } {
-		go-execute-xfail $test
+		untested $test
 		continue
 	    }
 	}
