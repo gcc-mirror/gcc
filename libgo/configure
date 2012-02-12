@@ -14667,6 +14667,35 @@ $as_echo "#define HAVE_SYNC_BOOL_COMPARE_AND_SWAP_4 1" >>confdefs.h
 
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for __sync_bool_compare_and_swap_8" >&5
+$as_echo_n "checking for __sync_bool_compare_and_swap_8... " >&6; }
+if test "${libgo_cv_func___sync_bool_compare_and_swap_8+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+typedef unsigned int uint64  __attribute__ ((mode (DI)));
+uint64 i;
+int main() { return __sync_bool_compare_and_swap (&i, 0, 1); }
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libgo_cv_func___sync_bool_compare_and_swap_8=yes
+else
+  libgo_cv_func___sync_bool_compare_and_swap_8=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_func___sync_bool_compare_and_swap_8" >&5
+$as_echo "$libgo_cv_func___sync_bool_compare_and_swap_8" >&6; }
+if test "$libgo_cv_func___sync_bool_compare_and_swap_8" = "yes"; then
+
+$as_echo "#define HAVE_SYNC_BOOL_COMPARE_AND_SWAP_8 1" >>confdefs.h
+
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __sync_fetch_and_add_4" >&5
 $as_echo_n "checking for __sync_fetch_and_add_4... " >&6; }
 if test "${libgo_cv_func___sync_fetch_and_add_4+set}" = set; then :
@@ -14693,6 +14722,35 @@ $as_echo "$libgo_cv_func___sync_fetch_and_add_4" >&6; }
 if test "$libgo_cv_func___sync_fetch_and_add_4" = "yes"; then
 
 $as_echo "#define HAVE_SYNC_FETCH_AND_ADD_4 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for __sync_add_and_fetch_8" >&5
+$as_echo_n "checking for __sync_add_and_fetch_8... " >&6; }
+if test "${libgo_cv_func___sync_add_and_fetch_8+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+typedef unsigned int uint64  __attribute__ ((mode (DI)));
+uint64 i;
+int main() { return __sync_add_and_fetch (&i, 1); }
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libgo_cv_func___sync_add_and_fetch_8=yes
+else
+  libgo_cv_func___sync_add_and_fetch_8=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_func___sync_add_and_fetch_8" >&5
+$as_echo "$libgo_cv_func___sync_add_and_fetch_8" >&6; }
+if test "$libgo_cv_func___sync_add_and_fetch_8" = "yes"; then
+
+$as_echo "#define HAVE_SYNC_ADD_AND_FETCH_8 1" >>confdefs.h
 
 fi
 

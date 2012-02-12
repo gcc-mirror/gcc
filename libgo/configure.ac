@@ -497,6 +497,20 @@ if test "$libgo_cv_func___sync_bool_compare_and_swap_4" = "yes"; then
     [Define to 1 if the compiler provides the __sync_bool_compare_and_swap function for uint32])
 fi
 
+AC_CACHE_CHECK([for __sync_bool_compare_and_swap_8],
+[libgo_cv_func___sync_bool_compare_and_swap_8],
+[AC_LINK_IFELSE([
+typedef unsigned int uint64  __attribute__ ((mode (DI)));
+uint64 i;
+int main() { return __sync_bool_compare_and_swap (&i, 0, 1); }
+],
+[libgo_cv_func___sync_bool_compare_and_swap_8=yes],
+[libgo_cv_func___sync_bool_compare_and_swap_8=no])])
+if test "$libgo_cv_func___sync_bool_compare_and_swap_8" = "yes"; then
+  AC_DEFINE(HAVE_SYNC_BOOL_COMPARE_AND_SWAP_8, 1,
+    [Define to 1 if the compiler provides the __sync_bool_compare_and_swap function for uint64])
+fi
+
 AC_CACHE_CHECK([for __sync_fetch_and_add_4],
 [libgo_cv_func___sync_fetch_and_add_4],
 [AC_LINK_IFELSE([
@@ -509,6 +523,20 @@ int main() { return __sync_fetch_and_add (&i, 1); }
 if test "$libgo_cv_func___sync_fetch_and_add_4" = "yes"; then
   AC_DEFINE(HAVE_SYNC_FETCH_AND_ADD_4, 1,
     [Define to 1 if the compiler provides the __sync_fetch_and_add function for uint32])
+fi
+
+AC_CACHE_CHECK([for __sync_add_and_fetch_8],
+[libgo_cv_func___sync_add_and_fetch_8],
+[AC_LINK_IFELSE([
+typedef unsigned int uint64  __attribute__ ((mode (DI)));
+uint64 i;
+int main() { return __sync_add_and_fetch (&i, 1); }
+],
+[libgo_cv_func___sync_add_and_fetch_8=yes],
+[libgo_cv_func___sync_add_and_fetch_8=no])])
+if test "$libgo_cv_func___sync_add_and_fetch_8" = "yes"; then
+  AC_DEFINE(HAVE_SYNC_ADD_AND_FETCH_8, 1,
+    [Define to 1 if the compiler provides the __sync_add_and_fetch function for uint64])
 fi
 
 dnl For x86 we want to use the -minline-all-stringops option to avoid
