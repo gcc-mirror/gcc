@@ -1,4 +1,9 @@
-2012-01-29  Robert Millan  <rmh@gnu.org>
+2012-02-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.h (CANNOT_CHANGE_MODE_CLASS): In 64-bit mode,
+	disallow changes from SFmode to mode with different size in FP regs.
+
+2012-02-12  Robert Millan  <rmh@gnu.org>
             Gerald Pfeifer <gerald@pfeifer.com>
 
 	* ginclude/stddef.h [__FreeBSD_kernel__] (__size_t): Do not define.
