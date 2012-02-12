@@ -1,3 +1,9 @@
+2012-02-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_get_proc_ifc_for_expr): New function.
+	(gfc_walk_elemental_function_args): Move code to
+	gfc_get_proc_ifc_for_expr and call it.
+
 2012-02-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52151
