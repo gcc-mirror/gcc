@@ -105,9 +105,17 @@
 /* Define to 1 if <math.h> defines struct exception */
 #undef HAVE_STRUCT_EXCEPTION
 
+/* Define to 1 if the compiler provides the __sync_add_and_fetch function for
+   uint64 */
+#undef HAVE_SYNC_ADD_AND_FETCH_8
+
 /* Define to 1 if the compiler provides the __sync_bool_compare_and_swap
    function for uint32 */
 #undef HAVE_SYNC_BOOL_COMPARE_AND_SWAP_4
+
+/* Define to 1 if the compiler provides the __sync_bool_compare_and_swap
+   function for uint64 */
+#undef HAVE_SYNC_BOOL_COMPARE_AND_SWAP_8
 
 /* Define to 1 if the compiler provides the __sync_fetch_and_add function for
    uint32 */
