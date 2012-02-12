@@ -1,3 +1,9 @@
+2012-01-29  Robert Millan  <rmh@gnu.org>
+            Gerald Pfeifer <gerald@pfeifer.com>
+
+	* ginclude/stddef.h [__FreeBSD_kernel__] (__size_t): Do not define.
+	Tweak comment.
+
 2012-02-11  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR rtl-optimization/52175
