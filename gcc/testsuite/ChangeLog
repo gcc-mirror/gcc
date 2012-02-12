@@ -1,3 +1,9 @@
+2012-02012 Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR testsuite/50076
+	* c-c++-common/cxxbitfields-3.c: Adjust scan assembler for nonpic
+	cases.
+
 2012-02-11  Ian Lance Taylor  <iant@google.com>
 
 	PR go/51874
