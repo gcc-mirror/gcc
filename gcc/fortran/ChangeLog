@@ -1,5 +1,11 @@
 2012-02-12  Mikael Morin  <mikael@gcc.gnu.org>
 
+	PR fortran/50981
+	* trans-stmt.c (gfc_get_proc_ifc_for_call): New function.
+	(gfc_trans_call): Use gfc_get_proc_ifc_for_call.
+
+2012-02-12  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_walk_elemental_function_args,
 	gfc_walk_function_expr): Move call to gfc_get_proc_ifc_for_expr out
 	of gfc_walk_elemental_function_args.

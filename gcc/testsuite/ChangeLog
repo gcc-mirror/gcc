@@ -1,4 +1,9 @@
-2012-02012 Iain Sandoe  <iains@gcc.gnu.org>
+2012-02-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50981
+	* gfortran.dg/elemental_optional_args_5.f03: New test.
+
+2012-02-12 Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR testsuite/50076
 	* c-c++-common/cxxbitfields-3.c: Adjust scan assembler for nonpic
