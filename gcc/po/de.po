@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.7-b20120128\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2012-01-27 16:13+0000\n"
-"PO-Revision-Date: 2012-02-09 22:21+0200\n"
+"PO-Revision-Date: 2012-02-11 21:55+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -17175,7 +17175,7 @@ msgstr "Spezifikationsfehler: mehr als ein Argument für SYSROOT_HEADERS_SUFFIX_
 #: gcc.c:6466
 #, gcc-internal-format
 msgid "unrecognized option %<-%s%>"
-msgstr "nicht erkannte Option %<-%s%>"
+msgstr "unbekannte Option %<-%s%>"
 
 #. The error status indicates that only one set of fixed
 #. headers should be built.
@@ -17769,9 +17769,9 @@ msgid "toplevel reorder must be disabled when unit-at-a-time is disabled"
 msgstr "Toplevel-Neuordnung muss ausgeschaltet sein, wenn »unit-at-a-time« ausgeschaltet ist"
 
 #: opts.c:667
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "transactional memory is not supported with non-call exceptions"
-msgstr "-static-libgfortran wird in dieser Konfiguration nicht unterstützt"
+msgstr "transaktionsbasierter Speicher wird von Nicht-Aufruf-Ausnahmen nicht unterstützt"
 
 #: opts.c:686
 #, gcc-internal-format
@@ -17905,49 +17905,49 @@ msgid "invalid parameter %qs"
 msgstr "ungültiger Parameter %qs"
 
 #: passes.c:700
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized option -fenable"
-msgstr "nicht erkannte Option %<-%s%>"
+msgstr "unbekannte Option -fenable"
 
 #: passes.c:702
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized option -fdisable"
-msgstr "nicht erkannte Option %<-%s%>"
+msgstr "unbekannte Option -fdisable"
 
 #: passes.c:710
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "unknown pass %s specified in -fenable"
-msgstr "unbekanntes Feld %qE in Initialisierung angegeben"
+msgstr "unbekannter Durchlauf %s in -fenable angegeben"
 
 #: passes.c:712
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "unknown pass %s specified in -fdisble"
-msgstr "unbekanntes Feld %qE in Initialisierung angegeben"
+msgstr "unbekannter Durchlauf %s in -fdisable"
 
 #: passes.c:739 passes.c:829
 #, gcc-internal-format, gfc-internal-format
 msgid "enable pass %s for functions in the range of [%u, %u]"
-msgstr ""
+msgstr "Durchlauf %s für Funktionen im Bereich [%u, %u] einschalten"
 
 #: passes.c:742 passes.c:840
 #, gcc-internal-format, gfc-internal-format
 msgid "disable pass %s for functions in the range of [%u, %u]"
-msgstr ""
+msgstr "Durchlauf %s für Funktionen im Bereich [%u, %u] ausschalten"
 
 #: passes.c:778 passes.c:806
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Invalid range %s in option %s"
-msgstr "ungültige Option %qs"
+msgstr "Ungültiger Bereich %s in Option %s"
 
 #: passes.c:825
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "enable pass %s for function %s"
-msgstr "ungültige Speicherklasse für Funktion %qE"
+msgstr "Durchlauf %s für Funktion %s einschalten"
 
 #: passes.c:836
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "disable pass %s for function %s"
-msgstr "ungültige Speicherklasse für Funktion %qE"
+msgstr "Durchlauf %s für Funktion %s ausschalten"
 
 #: passes.c:1049
 #, gcc-internal-format
@@ -17975,7 +17975,7 @@ msgid "pass %qs not found but is referenced by new pass %qs"
 msgstr "Durchlauf %qs nicht gefunden, wird jedoch von neuem Durchlauf %qs referenziert"
 
 #: plugin.c:152
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "inaccessible plugin file %s expanded from short plugin name %s: %m"
 msgstr "nicht zugreifbare Plugin-Datei %s aus kurzem Plugin-Namen %s erzeugt: %m"
 
@@ -18170,14 +18170,14 @@ msgid "global register variable follows a function definition"
 msgstr "globale Registervariable folgt einer Funktionsdefinition"
 
 #: reginfo.c:886
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "register of %qD used for multiple global register variables"
-msgstr "Register für zwei globale Registervariablen verwendet"
+msgstr "Register von %qD für mehrere globale Registervariablen verwendet"
 
 #: reginfo.c:889
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conflicts with %qD"
-msgstr "  Konflikt mit %q+D"
+msgstr "Konflikt mit %qD"
 
 #: reginfo.c:894
 #, gcc-internal-format
@@ -18490,14 +18490,14 @@ msgid "#pragma GCC target is not supported for this machine"
 msgstr "#pragma GCC target wird für diese Maschine nicht unterstützt"
 
 #: tlink.c:481
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "removing .rpo file: %m"
-msgstr ".rpo-Datei wird gelöscht"
+msgstr ".rpo-Datei wird gelöscht: %m"
 
 #: tlink.c:483
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "renaming .rpo file: %m"
-msgstr ".rpo-Datei wird umbenannt"
+msgstr ".rpo-Datei wird umbenannt: %m"
 
 #: tlink.c:487
 #, gcc-internal-format, gfc-internal-format
@@ -18530,24 +18530,24 @@ msgid "-frecord-gcc-switches is not supported by the current target"
 msgstr "-frecord-gcc-switches wird für das aktuelle Ziel nicht unterstützt"
 
 #: toplev.c:1056
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stack usage computation not supported for this target"
-msgstr "-fstack-usage für dieses Ziel nicht unterstützt"
+msgstr "Stapelverbrauchsberechnung wird für dieses Ziel nicht unterstützt"
 
 #: toplev.c:1110
 #, gcc-internal-format
 msgid "stack usage might be unbounded"
-msgstr ""
+msgstr "Stapelverbrauch möglicherweise unbegrenzt"
 
 #: toplev.c:1114
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stack usage might be %wd bytes"
-msgstr "Stapelrahmen zu groß: %d Bytes"
+msgstr "Stapelverbrauch könnte %wd Bytes sein"
 
 #: toplev.c:1117
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stack usage is %wd bytes"
-msgstr "Stapelrahmen zu groß: %d Bytes"
+msgstr "Stapelverbrauch ist %wd Bytes"
 
 #: toplev.c:1294
 #, gcc-internal-format
@@ -18562,12 +18562,12 @@ msgstr "Graphite-Schleifenoptimierungen können nicht verwendet werden (-fgraphi
 #: toplev.c:1329
 #, gcc-internal-format
 msgid "mudflap cannot be used together with link-time optimization"
-msgstr ""
+msgstr "Schmutzfänger kann nicht zusammen mit Linkzeit-Optimierung verwendet werden"
 
 #: toplev.c:1338
 #, gcc-internal-format
 msgid "-fstrict-volatile-bitfields disabled; it is incompatible with ABI versions < 2"
-msgstr ""
+msgstr "-fstrict-volatile-bitfields ausgeschaltet; unverträglich mit ABI-Versionen < 2"
 
 #: toplev.c:1366
 #, gcc-internal-format
@@ -18665,79 +18665,79 @@ msgid "error closing %s: %m"
 msgstr "Fehler beim Schließen von %s: %m"
 
 #: trans-mem.c:570
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid volatile use of %qD inside transaction"
-msgstr "ungültige Verwendung von %qD in Spezifizierung der Bindung"
+msgstr "ungültige volatile-Verwendung von %qD innerhalb von Transaktion"
 
 #: trans-mem.c:596
 #, gcc-internal-format
 msgid "%<transaction_may_cancel_outer%> function call not within outer transaction or %<transaction_may_cancel_outer%>"
-msgstr ""
+msgstr "Funktionsaufruf von %<transaction_may_cancel_outer%> nicht innerhalb von äußerer Transaktion oder %<transaction_may_cancel_outer%>"
 
 #: trans-mem.c:664 trans-mem.c:4137
 #, gcc-internal-format
 msgid "unsafe function call %qD within atomic transaction"
-msgstr ""
+msgstr "unsicherer Funktionsaufruf %qD innerhalb von atomarer Transaktion"
 
 #: trans-mem.c:670
 #, gcc-internal-format
 msgid "unsafe function call %qE within atomic transaction"
-msgstr ""
+msgstr "unsicherer Funktionsaufruf %qE innerhalb von atomarer Transaktion"
 
 #: trans-mem.c:674
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unsafe indirect function call within atomic transaction"
-msgstr "Indirekter Funktionsaufruf mit noch unbekanntem Aufrufer"
+msgstr "unsicherer indirekter Funktionsaufruf innerhalb von atomarer Transaktion"
 
 #: trans-mem.c:682 trans-mem.c:4070
 #, gcc-internal-format
 msgid "unsafe function call %qD within %<transaction_safe%> function"
-msgstr ""
+msgstr "unsicherer Funktionsaufruf %qD innerhalb von %<transaction_safe%>-Funktion"
 
 #: trans-mem.c:688
 #, gcc-internal-format
 msgid "unsafe function call %qE within %<transaction_safe%> function"
-msgstr ""
+msgstr "unsicherer Funktionsaufruf %qE innerhalb von %<transaction_safe%>-Funktion"
 
 #: trans-mem.c:692
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unsafe indirect function call within %<transaction_safe%> function"
-msgstr "Indirekter Funktionsaufruf mit noch unbekanntem Aufrufer"
+msgstr "unsicherer indirekter Funktionsaufruf innerhalb von %<transaction_safe%>-Funktion"
 
 #: trans-mem.c:707 trans-mem.c:4109
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "asm not allowed in atomic transaction"
-msgstr "%H%<[*]%> nicht außerhalb einer Deklaration erlaubt"
+msgstr "in atomarer Transaktion ist kein asm erlaubt"
 
 #: trans-mem.c:710
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "asm not allowed in %<transaction_safe%> function"
-msgstr "bei einer Funktionsdefinition sind keine Attribute erlaubt"
+msgstr "in %<transaction_safe%>-Funktion ist kein asm erlaubt"
 
 #: trans-mem.c:721
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "relaxed transaction in atomic transaction"
-msgstr "Jede Funktion in ihren eigenen Abschnitt platzieren"
+msgstr "entspannte Transaktion in atomarer Transaktion"
 
 #: trans-mem.c:724
 #, gcc-internal-format
 msgid "relaxed transaction in %<transaction_safe%> function"
-msgstr ""
+msgstr "entspannte Transaktion in %<transaction_safe%>-Funktion"
 
 #: trans-mem.c:731
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "outer transaction in transaction"
-msgstr "Zeiger auf eine Funktion in Subtraktion verwendet"
+msgstr "äußere Transaktion in Transaktion"
 
 #: trans-mem.c:734
 #, gcc-internal-format
 msgid "outer transaction in %<transaction_may_cancel_outer%> function"
-msgstr ""
+msgstr "äußere Transaktion in %<transaction_may_cancel_outer%>-Funktion"
 
 #: trans-mem.c:738
 #, gcc-internal-format
 msgid "outer transaction in %<transaction_safe%> function"
-msgstr ""
+msgstr "äußere Transaktion in %<transaction_safe%>-Funktion"
 
 #: tree-cfg.c:2616
 #, gcc-internal-format
@@ -18830,14 +18830,14 @@ msgid "invalid operand to pointer plus, first operand is not a pointer"
 msgstr "ungültiger Operand für Zeiger-Plus, erster Operand ist kein Zeiger"
 
 #: tree-cfg.c:2844
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid operand to pointer plus, second operand is not an integer type of appropriate width"
-msgstr "ungültiger Operand für Zeiger-Plus, zweiter Operand ist keine Ganzzahl mit Größentyp"
+msgstr "ungültiger Operand für Zeiger-Plus, zweiter Operand ist kein Ganzzahltyp mit passender Breite"
 
 #: tree-cfg.c:2895
 #, gcc-internal-format
 msgid "invalid CASE_CHAIN"
-msgstr ""
+msgstr "ungültiges CASE_CHAIN"
 
 #: tree-cfg.c:2923
 #, gcc-internal-format
@@ -18895,9 +18895,9 @@ msgid "invalid offset operand in MEM_REF"
 msgstr "ungültiger Offset-Operand in MEM_REF"
 
 #: tree-cfg.c:3060
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid address operand in TARGET_MEM_REF"
-msgstr "invalid address operand in TARGET_MEM_REF"
+msgstr "ungültiger Adressoperand in TARGET_MEM_REF"
 
 #: tree-cfg.c:3067
 #, gcc-internal-format
@@ -18907,12 +18907,12 @@ msgstr "ungültiger Offset-Operand in TARGET_MEM_REF"
 #: tree-cfg.c:3121
 #, gcc-internal-format
 msgid "gimple call has two targets"
-msgstr ""
+msgstr "Gimple-Aufruf hat zwei Ziele"
 
 #: tree-cfg.c:3130
 #, gcc-internal-format
 msgid "gimple call has no target"
-msgstr ""
+msgstr "Gimple-Aufruf hat kein Ziel"
 
 #: tree-cfg.c:3137
 #, gcc-internal-format
@@ -18970,24 +18970,24 @@ msgid "invalid operands in gimple comparison"
 msgstr "ungültige Operanden in GIMPLE-Vergleich"
 
 #: tree-cfg.c:3270
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "mismatching comparison operand types"
-msgstr "Typ passt nicht in Vergleichsausdruck"
+msgstr "Vergleichsoperandentypen passen nicht"
 
 #: tree-cfg.c:3289
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-vector operands in vector comparison"
-msgstr "ungültige Operanden in GIMPLE-Vergleich"
+msgstr "Nicht-Vektoroperanden in Vektorvergleich"
 
 #: tree-cfg.c:3299
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid vector comparison resulting type"
-msgstr "ungültige Operanden in Vergleichsausdruck"
+msgstr "ungültiger Ergebnistyp in Vektorvergleich"
 
 #: tree-cfg.c:3306
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bogus comparison result type"
-msgstr "Beim Vergleich verschiedener Enum-Typen warnen"
+msgstr "falscher Ergebnistyp bei Vergleich"
 
 #: tree-cfg.c:3328
 #, gcc-internal-format
@@ -19060,9 +19060,9 @@ msgid "non-element sized vector shift of floating point vector"
 msgstr "Vektorschieben um Nicht-Elementgröße eines Gleitkommavektors"
 
 #: tree-cfg.c:3588 tree-cfg.c:3609
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch in widening vector shift expression"
-msgstr "Typ passt nicht in Vektorschiebeausdruck"
+msgstr "Typ passt nicht bei Erweiterung von Vektorschiebeausdruck"
 
 #: tree-cfg.c:3631
 #, gcc-internal-format
@@ -19105,24 +19105,24 @@ msgid "type mismatch in fused multiply-add expression"
 msgstr "Typ passt nicht in vereinigtem Multiplizier-Addier-Ausdruck"
 
 #: tree-cfg.c:3836
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch in vector permute expression"
-msgstr "Typ passt nicht in Vektorschiebeausdruck"
+msgstr "Typ passt nicht in Vektorpermutationsausdruck"
 
 #: tree-cfg.c:3848
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "vector types expected in vector permute expression"
-msgstr "Ganzzahlausdruck erwartet"
+msgstr "in Vektorpermutationsausdruck werden Vektortypen erwartet"
 
 #: tree-cfg.c:3862
 #, gcc-internal-format
 msgid "vectors with different element number found in vector permute expression"
-msgstr ""
+msgstr "Vektoren unterschiedlicher Elementanzahl in Vektorpermutationsausdruck gefunden"
 
 #: tree-cfg.c:3875
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid mask type in vector permute expression"
-msgstr "ungültige Operanden in Wahrheitsausdruck"
+msgstr "ungültiger Maskentyp in Vektorpermutationsausdruck"
 
 #: tree-cfg.c:3911
 #, gcc-internal-format
@@ -19455,9 +19455,9 @@ msgid "function %q+F can never be inlined because it uses attributes conflicting
 msgstr "Funktion %q+F kann nie inline sein, da sie mit inline in Konflikt stehende Attribute hat"
 
 #: tree-inline.c:3823
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "inlining failed in call to always_inline %q+F: %s"
-msgstr "»inline« beim Aufruf von %q+F gescheitert: %s"
+msgstr "»inline« beim Aufruf von always_inline %q+F gescheitert: %s"
 
 #: tree-inline.c:3825 tree-inline.c:3840
 #, gcc-internal-format
@@ -19516,44 +19516,44 @@ msgid "virtual definition of statement not up-to-date"
 msgstr ""
 
 #: tree-ssa-operands.c:1123
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "virtual def operand missing for stmt"
-msgstr "ungültiger Operand in »return«-Anweisung"
+msgstr "für Anweisung fehlt virtueller Def-Operand"
 
 #: tree-ssa-operands.c:1133
 #, gcc-internal-format
 msgid "virtual use of statement not up-to-date"
-msgstr ""
+msgstr "virtuelle Verwendung von Anweisung nicht aktuell"
 
 #: tree-ssa-operands.c:1140
 #, gcc-internal-format
 msgid "virtual use operand missing for stmt"
-msgstr ""
+msgstr "für Anweisung fehlt virtueller Verwendungs-Operand"
 
 #: tree-ssa-operands.c:1156
 #, gcc-internal-format
 msgid "excess use operand for stmt"
-msgstr ""
+msgstr "überzähliger Verwendungs-Operand für Anweisung"
 
 #: tree-ssa-operands.c:1164
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "use operand missing for stmt"
-msgstr "Operandenzahl fehlt hinter %%-Buchstabe"
+msgstr "für Anweisung fehlt Verwendungs-Operand"
 
 #: tree-ssa-operands.c:1181
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "excess def operand for stmt"
-msgstr "Deklaration oder Anweisung erwartet"
+msgstr "überzähliger Def-Operand für Anweisung"
 
 #: tree-ssa-operands.c:1189
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "def operand missing for stmt"
-msgstr "Operandenzahl fehlt hinter %%-Buchstabe"
+msgstr "für Anweisung fehlt Def-Operand"
 
 #: tree-ssa-operands.c:1196
 #, gcc-internal-format
 msgid "stmt volatile flag not up-to-date"
-msgstr ""
+msgstr "volatile-Kennzeichen für Anweisung nicht aktuell"
 
 #: tree-ssa-uninit.c:1958 tree-ssa.c:1655
 #, gcc-internal-format
@@ -19686,19 +19686,19 @@ msgid "%qD is used uninitialized in this function"
 msgstr "%qD wird in dieser Funktion uninitialisiert verwendet"
 
 #: tree-ssa.c:1687
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE is used uninitialized in this function"
-msgstr "%qD wird in dieser Funktion uninitialisiert verwendet"
+msgstr "%qE wird in dieser Funktion uninitialisiert verwendet"
 
 #: tree-ssa.c:1692
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE may be used uninitialized in this function"
-msgstr "%qD könnte in dieser Funktion uninitialisiert verwendet werden"
+msgstr "%qE könnte in dieser Funktion uninitialisiert verwendet werden"
 
 #: tree-streamer-in.c:306 tree-streamer-in.c:1075
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "machine independent builtin code out of range"
-msgstr "Hex-Fluchtsequenz außerhalb des Wertebereiches"
+msgstr "maschinenunabhängiger eingebauter Code außerhalb des Wertebereiches"
 
 #: tree-streamer-in.c:311 tree-streamer-in.c:1083
 #, gcc-internal-format
@@ -19711,34 +19711,34 @@ msgid "cl_target_option size mismatch in LTO reader and writer"
 msgstr "unpassende Größe von cl_target_option in LTO-Leser und -Schreiber"
 
 #: tree-streamer-in.c:920
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cl_optimization size mismatch in LTO reader and writer"
-msgstr "unpassende Größe von cl_target_option in LTO-Leser und -Schreiber"
+msgstr "unpassende Größe von cl_optimization in LTO-Leser und -Schreiber"
 
 #: tree-streamer-out.c:364
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "tree bytecode streams do not support machine specific builtin functions on this target"
-msgstr "GIMPLE-Bytecode-Ströme unterstützen keine maschinenspezifischen eingebauten Funktionen auf diesem Ziel"
+msgstr "Baum-Bytecode-Ströme unterstützen keine maschinenspezifischen eingebauten Funktionen auf diesem Ziel"
 
 #: tree-vect-generic.c:244
 #, gcc-internal-format
 msgid "vector operation will be expanded piecewise"
-msgstr ""
+msgstr "Vektoroperation wird stückweise ausgeweitet"
 
 #: tree-vect-generic.c:247
 #, gcc-internal-format
 msgid "vector operation will be expanded in parallel"
-msgstr ""
+msgstr "Vektoroperation wird parallel ausgeweitet"
 
 #: tree-vect-generic.c:299
 #, gcc-internal-format
 msgid "vector operation will be expanded with a single scalar operation"
-msgstr ""
+msgstr "Vektoroperation wird mit einzelner skalarer Operation ausgeweitet"
 
 #: tree-vect-generic.c:661
 #, gcc-internal-format
 msgid "vector shuffling operation will be expanded piecewise"
-msgstr ""
+msgstr "Vektorumverteilungsoperation wird stückweise ausgeweitet"
 
 #: tree-vrp.c:5295
 #, gcc-internal-format
@@ -20004,9 +20004,9 @@ msgid "variable tracking size limit exceeded"
 msgstr ""
 
 #: varasm.c:317
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%+D causes a section type conflict with %D"
-msgstr "%+D löst einen Abschnittstypkonflikt aus"
+msgstr "%+D löst einen Abschnittstypkonflikt mit %D aus"
 
 #: varasm.c:958
 #, gcc-internal-format
@@ -20029,14 +20029,14 @@ msgid "data type of %q+D isn%'t suitable for a register"
 msgstr "Datentyp von %q+D ist nicht für Register geeignet"
 
 #: varasm.c:1212
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the register specified for %q+D cannot be accessed by the current target"
-msgstr "für %q+D angegebenes Register eignet sich nicht für Datentyp"
+msgstr "für %q+D angegebenes Register kann vom aktuellen Ziel nicht zugegriffen werden"
 
 #: varasm.c:1215
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the register specified for %q+D is not general enough to be used as a register variable"
-msgstr "Register für zwei globale Registervariablen verwendet"
+msgstr "für %q+D angegebenes Register ist nicht allgemein genug, um als eine Registervariable verwendet zu werden"
 
 #: varasm.c:1218
 #, gcc-internal-format
@@ -20406,14 +20406,14 @@ msgid "invalid application of %<sizeof%> to a function type"
 msgstr "Ungültige Anwendung von %<sizeof%> auf einen Funktionstypen"
 
 #: c-family/c-common.c:4367
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ does not permit %<alignof%> applied to a function type"
-msgstr "ISO-C++ erlaubt kein %<alignof%> mit einem Nicht-Typ"
+msgstr "ISO-C++ erlaubt kein auf Funktionstypen angewendetes %<alignof%>"
 
 #: c-family/c-common.c:4370
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C does not permit %<_Alignof%> applied to a function type"
-msgstr "ISO-C++ erlaubt kein %<alignof%> mit einem Nicht-Typ"
+msgstr "ISO-C erlaubt kein auf Funktionstypen angewendetes %<_Alignof%>"
 
 #: c-family/c-common.c:4381
 #, gcc-internal-format
@@ -20421,14 +20421,14 @@ msgid "invalid application of %qs to a void type"
 msgstr "Ungültige Anwendung von %qs auf einen void-Typen"
 
 #: c-family/c-common.c:4390
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid application of %qs to incomplete type %qT"
 msgstr "Ungültige Anwendung von %qs auf unvollständigen Typen %qT"
 
 #: c-family/c-common.c:4398
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid application of %qs to array type %qT of incomplete element type"
-msgstr "Ungültige Anwendung von %qs auf unvollständigen Typen %qT"
+msgstr "Ungültige Anwendung von %qs auf Feldtyp %qT mit unvollständigem Elementtyp"
 
 #: c-family/c-common.c:4440
 #, gcc-internal-format
@@ -20632,9 +20632,9 @@ msgid "section attributes are not supported for this target"
 msgstr "Abschnitts-Attribute werden für dieses Ziel nicht unterstützt"
 
 #: c-family/c-common.c:6747
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "requested alignment is not an integer constant"
-msgstr "Verlangte Ausrichtung ist keine Konstante"
+msgstr "Verlangte Ausrichtung ist keine Ganzzahlkonstante"
 
 #: c-family/c-common.c:6754
 #, gcc-internal-format
@@ -20758,34 +20758,34 @@ msgid "alloc_size parameter outside range"
 msgstr "Parameter alloc_size außerhalb des Wertebereiches"
 
 #: c-family/c-common.c:7397
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute duplicated"
-msgstr "Attribut %qE wird ignoriert"
+msgstr "doppeltes Attribut %qE"
 
 #: c-family/c-common.c:7399
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute follows %qE"
-msgstr "Attribut %qE ignoriert für %qE"
+msgstr "Attribut %qE folgt auf %qE"
 
 #: c-family/c-common.c:7498
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type was previously declared %qE"
-msgstr "vorher hier deklariert"
+msgstr "Typ war vorher als %qE deklariert"
 
 #: c-family/c-common.c:7551
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE argument not an identifier"
-msgstr "Argument für cleanup ist kein Bezeichner"
+msgstr "Argument %qE ist kein Bezeichner"
 
 #: c-family/c-common.c:7562
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not compatible with %qD"
-msgstr "%qD in %qD nicht deklariert"
+msgstr "%qD ist mit %qD unverträglich"
 
 #: c-family/c-common.c:7565
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "transaction_wrap argument is not a function"
-msgstr "Argument für cleanup ist keine Funktion"
+msgstr "Argument für transaction_wrap ist keine Funktion"
 
 #: c-family/c-common.c:7613
 #, gcc-internal-format
@@ -20916,9 +20916,9 @@ msgid "non-const integer argument %u in call to function %qE"
 msgstr "Nicht-konstantes Ganzzahl-Argument %u in Aufruf von Funktion %qE"
 
 #: c-family/c-common.c:8522
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-integer argument 3 in call to function %qE"
-msgstr "Nicht-konstantes Ganzzahl-Argument %u in Aufruf von Funktion %qE"
+msgstr "Nicht-Ganzzahl-Argument 3 in Aufruf von Funktion %qE"
 
 #: c-family/c-common.c:8847
 #, gcc-internal-format
@@ -21131,44 +21131,44 @@ msgid "size of array is too large"
 msgstr "Feldgröße ist zu groß"
 
 #: c-family/c-common.c:9425
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "incorrect number of arguments to function %qE"
-msgstr "Zu wenige Argumente für Funktion %qE"
+msgstr "Falsche Anzahl der Argumente für Funktion %qE"
 
 #: c-family/c-common.c:9433
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument 1 of %qE must be a non-void pointer type"
-msgstr "Argument %d von %qE muss eine Adresse sein"
+msgstr "Argument 1 von %qE muss ein Nicht-Void-Zeigertyp sein"
 
 #: c-family/c-common.c:9442
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument 1 of %qE must be a pointer to a constant size type"
-msgstr "%Kerstes Argument von %D muss ein Zeiger, das zweite eine Ganzzahlkonstante sein"
+msgstr "Argument 1 von %qE muss ein Zeiger auf Typen konstanter Größe sein"
 
 #: c-family/c-common.c:9453
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument 1 of %qE must be a pointer to a nonzero size object"
-msgstr "%Kerstes Argument von %D muss ein Zeiger, das zweite eine Ganzzahlkonstante sein"
+msgstr "Argument 1 von %qE muss ein Zeiger auf Objekt breiter als Null sein"
 
 #: c-family/c-common.c:9468
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument %d of %qE must be a pointer type"
-msgstr "Argument %d von %qE muss eine Adresse sein"
+msgstr "Argument %d von %qE muss eine Zeigertyp sein"
 
 #: c-family/c-common.c:9475
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "size mismatch in argument %d of %qE"
-msgstr "Unpassender Typ/Rang in Argument »%s« bei %L"
+msgstr "Unpassende Größe in Argument %d von %qE"
 
 #: c-family/c-common.c:9491
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid memory model argument %d of %qE"
-msgstr "Inkompatibler Typ für Argument %d von %qE"
+msgstr "ungültiges Argument %d für Speichermodell von %qE"
 
 #: c-family/c-common.c:9498
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-integer memory model argument %d of %qE"
-msgstr "Inkompatibler Typ für Argument %d von %qE"
+msgstr "Nicht-Ganzzahlargument %d für Speichermodell von %qE"
 
 #: c-family/c-common.c:10024
 #, gcc-internal-format
@@ -21301,9 +21301,9 @@ msgid "comparison of promoted ~unsigned with unsigned"
 msgstr "Vergleich von weitergegebenem ~unsigned mit unsigned"
 
 #: c-family/c-common.c:10511
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "typedef %qD locally defined but not used"
-msgstr "%q+D definiert, aber nicht verwendet"
+msgstr "typedef %qD lokal definiert, aber nicht verwendet"
 
 #: c-family/c-format.c:126 c-family/c-format.c:313
 #, gcc-internal-format
@@ -22259,39 +22259,39 @@ msgid "-mcpu=%s has invalid silicon revision"
 msgstr "-mcpu=%s hat ungültige Silizium-Revision"
 
 #: common/config/i386/i386-common.c:560
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-malign-loops is obsolete, use -falign-loops"
-msgstr "%salign-loops%s ist veraltet, Ersatz: -falign-loops%s"
+msgstr "-malign-loops ist veraltet, Ersatz: -falign-loops"
 
 #: common/config/i386/i386-common.c:562
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "-malign-loops=%d is not between 0 and %d"
-msgstr "-malign-loops=%d ist nicht zwischen 1 und %d"
+msgstr "-malign-loops=%d ist nicht zwischen 0 und %d"
 
 #: common/config/i386/i386-common.c:569
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-malign-jumps is obsolete, use -falign-jumps"
-msgstr "%salign-jumps%s ist veraltet, Ersatz: -falign-jumps%s"
+msgstr "-malign-jumps ist veraltet, Ersatz: -falign-jumps"
 
 #: common/config/i386/i386-common.c:571
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "-malign-jumps=%d is not between 0 and %d"
-msgstr "-malign-jumps=%d ist nicht zwischen 1 und %d"
+msgstr "-malign-jumps=%d ist nicht zwischen 0 und %d"
 
 #: common/config/i386/i386-common.c:579
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-malign-functions is obsolete, use -falign-functions"
-msgstr "%salign-functions%s ist veraltet, Ersatz: -falign-functions%s"
+msgstr "-malign-functions ist veraltet, Ersatz: -falign-functions"
 
 #: common/config/i386/i386-common.c:581
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "-malign-functions=%d is not between 0 and %d"
-msgstr "-malign-functions=%d ist nicht zwischen 1 und %d"
+msgstr "-malign-functions=%d ist nicht zwischen 0 und %d"
 
 #: common/config/i386/i386-common.c:590
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "-mbranch-cost=%d is not between 0 and 5"
-msgstr "%sbranch-cost=%d%s ist nicht zwischen 0 und 5"
+msgstr "-mbranch-cost=%d ist nicht zwischen 0 und 5"
 
 #: common/config/i386/i386-common.c:640
 #, gcc-internal-format
@@ -22344,9 +22344,9 @@ msgid "stack size must be an exact power of 2"
 msgstr "Stack-Größe muss eine exakte Zweierpotenz sein"
 
 #: common/config/v850/v850-common.c:48
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "value passed in %qs is too large"
-msgstr "an %<-m%s%> übergebener Wert ist zu groß"
+msgstr "in %qs übergebener Wert ist zu groß"
 
 #: config/darwin-c.c:85
 #, gcc-internal-format
@@ -22452,17 +22452,17 @@ msgstr "temporäre Datei %s konnte nicht mit LTO-Ausgabe geöffnet werden"
 #: config/darwin.c:2963
 #, gcc-internal-format
 msgid "%<-fobjc-abi-version%> >= 2 must be used for %<-m64%> targets with %<-fnext-runtime%>"
-msgstr ""
+msgstr "für %<-m64%>-Ziele mit %<-fnext-runtime%> muss %<-fobjc-abi-version%> verwendet werden"
 
 #: config/darwin.c:2967
 #, gcc-internal-format
 msgid "%<-fobjc-abi-version%> >= 2 is not supported on %<-m32%> targets with %<-fnext-runtime%>"
-msgstr ""
+msgstr "auf %<-m32%>-Zielen mit %<-fnext-runtime%> wird %<-fobjc-abi-version%> >= 2 nicht unterstützt"
 
 #: config/darwin.c:3038
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<-mdynamic-no-pic%> overrides %<-fpic%>, %<-fPIC%>, %<-fpie%> or %<-fPIE%>"
-msgstr "-mdynamic-no-pic hebt -fpic oder -fPIC auf"
+msgstr "%<-mdynamic-no-pic%> hebt %<-fpic%>, %<-fPIC%>, %<-fpie%> oder %<-fPIE%> auf"
 
 #: config/darwin.c:3223
 #, gcc-internal-format
@@ -22747,14 +22747,14 @@ msgid "can not use -mtp=cp15 with 16-bit Thumb"
 msgstr "-mtp=cp15 kann nicht mit 16-Bit-Thumb verwendet werden"
 
 #: config/arm/arm.c:1899
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "structure size boundary can only be set to 8, 32 or 64"
-msgstr "Grenze für Strukturgröße kann nur auf %s gesetzt werden"
+msgstr "Grenze für Strukturgröße kann nur auf 8, 32 oder 64 gesetzt werden"
 
 #: config/arm/arm.c:1901
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "structure size boundary can only be set to 8 or 32"
-msgstr "Grenze für Strukturgröße kann nur auf %s gesetzt werden"
+msgstr "Grenze für Strukturgröße kann nur auf 8 oder 32 gesetzt werden"
 
 #: config/arm/arm.c:1909
 #, gcc-internal-format
@@ -22777,9 +22777,9 @@ msgid "unable to use '%s' for PIC register"
 msgstr "»%s« kann nicht für PIC-Register verwendet werden"
 
 #: config/arm/arm.c:1971
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "target CPU does not support unaligned accesses"
-msgstr "Ziel-CPU unterstützt nicht ARM-Modus"
+msgstr "Ziel-CPU unterstützt nicht unausgerichteten Zugriffe"
 
 #: config/arm/arm.c:1995
 #, gcc-internal-format
@@ -22888,14 +22888,14 @@ msgid "accessing program memory with data memory address"
 msgstr ""
 
 #: config/avr/avr.c:2350
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "fixed register %s used to pass parameter to function"
-msgstr "Anzahl der zur Übergabe von Ganzzahlargumenten verwendeten Register"
+msgstr "festes Register %s zur Parameterübergabe an Funktion verwendet"
 
 #: config/avr/avr.c:2622
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "writing to address space %qs not supported"
-msgstr "in Konflikt stehende benannte Adressräume (%s und %s)"
+msgstr "Schreibzugriff auf Adressraum %qs wird nicht unterstützt"
 
 #: config/avr/avr.c:6660
 #, gcc-internal-format
@@ -22908,19 +22908,19 @@ msgid "%qs appears to be a misspelled signal handler"
 msgstr "%qs scheint ein falsch geschriebener Signal-Handler zu sein"
 
 #: config/avr/avr.c:6932
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "pointer targeting address space %qs must be const in %qT"
-msgstr "Zeiger auf disjunkte Adressräume in bedingtem Ausdruck verwendet"
+msgstr "Zeiger auf Adressraum %qs muss in %qT konstant sein"
 
 #: config/avr/avr.c:6935
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "pointer targeting address space %qs must be const in %s %q+D"
-msgstr "Zeiger auf disjunkte Adressräume in bedingtem Ausdruck verwendet"
+msgstr "Zeiger auf Adressraum %qs muss in %s %q+D konstant sein"
 
 #: config/avr/avr.c:6978
 #, gcc-internal-format
 msgid "variable %q+D must be const in order to be put into read-only section by means of %qs"
-msgstr ""
+msgstr "Variable %q+D muss konstant sein, um mit %qs in Nur-Lese-Abschnitt gelegt zu werden"
 
 #: config/avr/avr.c:7188
 #, gcc-internal-format
@@ -22928,9 +22928,9 @@ msgid "only uninitialized variables can be placed in the .noinit section"
 msgstr "Nur uninitialisierte Variablen können im .noinit-Bereich platziert werden"
 
 #: config/avr/avr.c:7229
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "uninitialized variable %q+D put into program memory area"
-msgstr "Nur initialisierte Variablen können im Programmspeicherbereich platziert werden"
+msgstr "nicht initialisierte Variable %q+D in Programmspeicherbereich platziert"
 
 #: config/avr/avr.c:7296
 #, gcc-internal-format
@@ -22938,24 +22938,24 @@ msgid "MCU %qs supported for assembler only"
 msgstr "MCU %qs nur für Assemblierung unterstützt"
 
 #: config/avr/avr.c:10519
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s expects a compile time integer constant"
-msgstr "Unerwartetes Modulende in Zeichenkettenkonstante"
+msgstr "%s erwartet eine Ganzzahlkonstante zur Compile-Zeit"
 
 #: config/avr/avr.c:10532
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s expects a compile time long integer constant as first argument"
-msgstr "%qs erwartet ein konstantes Argument"
+msgstr "%s erwartet eine Long-Ganzzahlkonstante als erstes Argument zur Compile-Zeit"
 
 #: config/avr/avr.c:10545
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s expects a compile time long long integer constant as first argument"
-msgstr "Attribut %qE erlaubt nur eine Ganzzahlkonstante als Argument"
+msgstr "%s erwartet eine Long Long-Ganzzahlkonstante als erstes Argument zur Compile-Zeit"
 
 #: config/bfin/bfin.c:2348
 #, gcc-internal-format
 msgid "-mfdpic is not supported, please use a bfin-linux-uclibc target"
-msgstr ""
+msgstr "-mfdpic wird nicht unterstützt, bitte »bfin-linux-uclibc-Ziel« verwenden"
 
 #: config/bfin/bfin.c:2353
 #, gcc-internal-format
@@ -22965,7 +22965,7 @@ msgstr "-mshared-library-id= ohne -mid-shared-library angegeben"
 #: config/bfin/bfin.c:2357
 #, gcc-internal-format
 msgid "-fstack-limit- options are ignored with -mfdpic; use -mstack-check-l1"
-msgstr ""
+msgstr "Optionen -fstack-limit- werden mit -mfdpic ignoriert; stattdessen -mstack-check-l1 verwenden"
 
 #: config/bfin/bfin.c:2362
 #, gcc-internal-format
@@ -23024,14 +23024,14 @@ msgid "%qE attribute cannot be specified for local variables"
 msgstr "Attribut %qE kann nicht für lokale Variablen angegeben werden"
 
 #: config/c6x/c6x.c:235
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-fpic and -fPIC not supported without -mdsbt on this target"
-msgstr "-fPIC und -fpic werden für dieses Ziel nicht unterstützt"
+msgstr "-fpic und -fPIC werden ohne -mdsbt für dieses Ziel nicht unterstützt"
 
 #: config/c6x/c6x.h:362
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "profiling is not yet implemented for this architecture"
-msgstr "Profiling ist für dieses Ziel noch experimentell"
+msgstr "Profiling ist für dieses Ziel noch nicht implementiert"
 
 #. This function is for retrieving a part of an instruction name for
 #. an operator, for immediate output.  If that ever happens for
@@ -23183,14 +23183,14 @@ msgid "argument of %qE attribute is not \"reset\", \"software_exception\", \"pag
 msgstr ""
 
 #: config/epiphany/epiphany.c:1428
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stack_offset must be at least 4"
-msgstr "Stack-Größe muss eine exakte Zweierpotenz sein"
+msgstr "stack_offset muss mindestens 4 sein"
 
 #: config/epiphany/epiphany.c:1430
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stack_offset must be a multiple of 4"
-msgstr "Stack-Größe muss eine exakte Zweierpotenz sein"
+msgstr "stack_offset muss ein Vielfaches von 4 sein"
 
 #: config/frv/frv.c:8681
 #, gcc-internal-format
@@ -23295,9 +23295,9 @@ msgid "code model %qs not supported in the %s bit mode"
 msgstr "Codemodell %qs wird im %s-Bit-Modus nicht unterstützt"
 
 #: config/i386/i386.c:3195 config/i386/i386.c:3207
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "code model %qs not supported in x32 mode"
-msgstr "Codemodell %qs wird im %s-Bit-Modus nicht unterstützt"
+msgstr "Codemodell %qs wird im x32-Modus nicht unterstützt"
 
 #: config/i386/i386.c:3213 config/i386/i386.c:3222
 #, gcc-internal-format, gfc-internal-format
@@ -23305,9 +23305,9 @@ msgid "code model %s does not support PIC mode"
 msgstr "Codemodell %s unterstützt keinen PIC-Modus"
 
 #: config/i386/i386.c:3249
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-masm=intel not supported in this configuration"
-msgstr "-m%s wird in dieser Konfiguration nicht unterstützt"
+msgstr "-masm=intel wird in dieser Konfiguration nicht unterstützt"
 
 #: config/i386/i386.c:3253
 #, gcc-internal-format, gfc-internal-format
@@ -23330,14 +23330,14 @@ msgid "bad value (%s) for %sarch=%s %s"
 msgstr "falscher Wert (%s) für %sarch=%s %s"
 
 #: config/i386/i386.c:3481
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mregparm is ignored in 64-bit mode"
-msgstr "%sregparm%s wird im 64-Bit-Modus ignoriert"
+msgstr "-mregparm wird im 64-Bit-Modus ignoriert"
 
 #: config/i386/i386.c:3484
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "-mregparm=%d is not between 0 and %d"
-msgstr "%sregparm=%d%s ist nicht zwischen 0 und %d"
+msgstr "-mregparm=%d ist nicht zwischen 0 und %d"
 
 #: config/i386/i386.c:3525
 #, gcc-internal-format, gfc-internal-format
@@ -23345,14 +23345,14 @@ msgid "%srtd%s is ignored in 64bit mode"
 msgstr "%srtd%s wird im 64-Bit-Modus ignoriert"
 
 #: config/i386/i386.c:3589
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mpreferred-stack-boundary is not supported for this target"
-msgstr "%spreferred-stack-boundary%s wird für dieses Ziel nicht unterstützt"
+msgstr "-mpreferred-stack-boundary wird für dieses Ziel nicht unterstützt"
 
 #: config/i386/i386.c:3592
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "-mpreferred-stack-boundary=%d is not between %d and %d"
-msgstr "%spreferred-stack-boundary=%d%s ist nicht zwischen %d und %d"
+msgstr "-mpreferred-stack-boundary=%d ist nicht zwischen %d und %d"
 
 #: config/i386/i386.c:3613
 #, gcc-internal-format, gfc-internal-format
@@ -23602,7 +23602,7 @@ msgid "the third argument must be an 8-bit immediate"
 msgstr "drittes Argument muss ein 8-Bit-Immediate sein"
 
 #: config/i386/i386.c:28612
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the last argument must be an 1-bit immediate"
 msgstr "Das letzte Argument muss ein 1-Bit-Immediate sein"
 
@@ -23657,9 +23657,9 @@ msgid "last argument must be an immediate"
 msgstr "das letzte Argument muss ein Immediate sein"
 
 #: config/i386/i386.c:29473
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "last argument must be scale 1, 2, 4, 8"
-msgstr "linkes Argument muss eine Scheibe sein"
+msgstr "letztes Argument muss Skalierung 1, 2, 4, 8 sein"
 
 #: config/i386/i386.c:31719
 #, gcc-internal-format
@@ -24060,18 +24060,22 @@ msgid "%qE attribute only applies to functions, not %s"
 msgstr "Attribut %qE gilt nur für Funktionen, nicht %s"
 
 #: config/mep/mep.c:4107
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid ""
 "to describe a pointer to a VLIW function, use syntax like this:\n"
 "%s"
-msgstr "um Zeiger auf VLIW-Funktion zu beschreiben, folgende Syntax verwenden:"
+msgstr ""
+"um Zeiger auf VLIW-Funktion zu beschreiben, folgende Syntax verwenden:\n"
+"%s"
 
 #: config/mep/mep.c:4116
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid ""
 "to describe an array of VLIW function pointers, use syntax like this:\n"
 "%s"
-msgstr "um Feld von VLIW-Funktionszeigern zu beschreiben, folgende Syntax verwenden:"
+msgstr ""
+"um Feld von VLIW-Funktionszeigern zu beschreiben, folgende Syntax verwenden:\n"
+"%s"
 
 #: config/mep/mep.c:4122
 #, gcc-internal-format
@@ -24274,9 +24278,9 @@ msgid "%<-mgp32%> and %<-mfp64%> can only be combined when using the o32 ABI"
 msgstr "%<-mgp32%> und %<-mfp64%> können nur kombiniert werden, wenn o32-ABI verwendet wird"
 
 #: config/mips/mips.c:15724 config/mips/mips.c:15726 config/mips/mips.c:15739
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs is incompatible with %qs"
-msgstr "assert: %s ist mit %s zuweisungsverträglich"
+msgstr "%qs ist mit %qs unverträglich"
 
 #. We have traditionally allowed non-abicalls code to use
 #. an LP64 form of o64.  However, it would take a bit more
@@ -24284,9 +24288,9 @@ msgstr "assert: %s ist mit %s zuweisungsverträglich"
 #. and 64-bit pointers, so we treat the abicalls case as
 #. an error.
 #: config/mips/mips.c:15733
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the combination of %qs and %qs is incompatible with %qs"
-msgstr "assert: %s ist mit %s zuweisungsverträglich"
+msgstr "die Kombination von %qs und %qs ist mit %qs unverträglich"
 
 #: config/mips/mips.c:15779
 #, gcc-internal-format
@@ -24640,9 +24644,9 @@ msgid "-malign-power is not supported for 64-bit Darwin; it is incompatible with
 msgstr "-malign-power wird für 64-Bit-Darwin nicht unterstützt; es ist mit den installierten C- und C++-Bibliotheken unverträglich"
 
 #: config/rs6000/rs6000.c:2621
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "not configured for SPE ABI"
-msgstr "nicht für ABI konfiguriert: »%s«"
+msgstr "nicht für SPE-ABI konfiguriert"
 
 #: config/rs6000/rs6000.c:2697
 #, gcc-internal-format
@@ -24720,9 +24724,9 @@ msgid "GCC vector passed by reference: non-standard ABI extension with no compat
 msgstr "GCC-Vektor per Referenz übergegeben: Nicht-Standard-ABI-Erweiterung ohne Kompatibilitätsgarantie"
 
 #: config/rs6000/rs6000.c:9443
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "internal error: builtin function %s already processed"
-msgstr "interner Fehler: Eingebaute Funktion auf %s bereits verarbeitet"
+msgstr "interner Fehler: Eingebaute Funktion %s bereits verarbeitet"
 
 #: config/rs6000/rs6000.c:9816
 #, gcc-internal-format
@@ -24795,34 +24799,34 @@ msgid "argument 1 of __builtin_spe_predicate is out of range"
 msgstr "Argument 1 von __builtin_spe_predicate ist außerhalb des Wertebereiches"
 
 #: config/rs6000/rs6000.c:11282
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s is only valid for the cell processor"
-msgstr "diese eingebaute Funktion ist nur auf dem fr450 verfügbar"
+msgstr "Eingebaute Funktion %s ist nur für den Cell-Prozessor gültig"
 
 #: config/rs6000/rs6000.c:11284
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mvsx option"
-msgstr "eingebaute Funktion %qD erfordert das Kennzeichen %<-mconstant-cfstrings%>"
+msgstr "Eingebaute Funktion %s erfordert die Option -mvsx"
 
 #: config/rs6000/rs6000.c:11286
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -maltivec option"
-msgstr "eingebaute Funktion %qD erfordert das Kennzeichen %<-mconstant-cfstrings%>"
+msgstr "Eingebaute Funktion %s erfordert die Option -maltivec"
 
 #: config/rs6000/rs6000.c:11288
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mpaired option"
-msgstr "eingebaute Funktion %qD erfordert das Kennzeichen %<-mconstant-cfstrings%>"
+msgstr "Eingebaute Funktion %s erfordert die Option -mpaired"
 
 #: config/rs6000/rs6000.c:11290
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mspe option"
-msgstr "eingebaute Funktion %qD erfordert das Kennzeichen %<-mconstant-cfstrings%>"
+msgstr "Eingebaute Funktion %s erfordert die Option -mspe"
 
 #: config/rs6000/rs6000.c:11292
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s is not supported with the current options"
-msgstr "ifunc wird in dieser Konfiguration nicht unterstützt"
+msgstr "Eingebaute Funktion %s wird mit den aktuellen Optionen nicht unterstützt"
 
 #: config/rs6000/rs6000.c:12552
 #, gcc-internal-format, gfc-internal-format
@@ -24837,7 +24841,7 @@ msgstr "interner Fehler: eingebaute Funktion %s hatte unerwarteten Rückgabetyp 
 #: config/rs6000/rs6000.c:12575
 #, gcc-internal-format, gfc-internal-format
 msgid "internal error: builtin function %s, argument %d had unexpected argument type %s"
-msgstr ""
+msgstr "interner Fehler: Eingebaute Funktion %s, Argument %d hatte unerwarteten Argumenttypen %s"
 
 #: config/rs6000/rs6000.c:18575
 #, gcc-internal-format
@@ -24852,7 +24856,7 @@ msgstr "kein Profiling von 64-bit-Code für dieses ABI"
 #: config/rs6000/rs6000.c:24034
 #, gcc-internal-format
 msgid "-mno-r11 must not be used if you have trampolines"
-msgstr ""
+msgstr "-mno-r11 darf nicht mit Trampolinen verwendet werden"
 
 #: config/rs6000/rs6000.c:24114
 #, gcc-internal-format
@@ -25053,7 +25057,7 @@ msgid "-m%s not supported in this configuration"
 msgstr "-m%s wird in dieser Konfiguration nicht unterstützt"
 
 #: config/rx/rx.c:641
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "unrecognized control register number: %d - using 'psw'"
 msgstr "unbekannte Steuerregisterzahl: %d - 'psw' wird verwendet"
 
@@ -25130,17 +25134,17 @@ msgstr "Gesamtgröße der lokalen Variablen übersteigt Grenze der Architektur"
 #: config/s390/s390.c:8072
 #, gcc-internal-format
 msgid "frame size of function %qs is %wd bytes exceeding user provided stack limit of %d bytes.  An unconditional trap is added."
-msgstr ""
+msgstr "Rahmengröße der Funktion %qs ist %wd Bytes, größer als benutzerdefinierte Stackgrenze von %d Bytes. Eine unbedingte Falle wird gesetzt."
 
 #: config/s390/s390.c:8087
 #, gcc-internal-format
 msgid "frame size of function %qs is %wd bytes which is more than half the stack size. The dynamic check would not be reliable. No check emitted for this function."
-msgstr ""
+msgstr "Rahmengröße der Funktion %qs ist %wd Bytes, mehr als die Hälfte der Stapelgröße. Dynamische Prüfung wäre nicht zuverlässig. Für diese Funktion wird keine Prüfung ausgegeben."
 
 #: config/s390/s390.c:8115
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "frame size of %qs is %wd bytes"
-msgstr "Rahmengröße von %qs ist "
+msgstr "Rahmengröße von %qs ist %wd Bytes"
 
 #: config/s390/s390.c:8119
 #, gcc-internal-format
@@ -25241,9 +25245,9 @@ msgid "-mcmodel= is not supported on 32 bit systems"
 msgstr "-mcmodel= wird auf 32-Bit-Systemen nicht unterstützt"
 
 #: config/sparc/sparc.c:1019
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-fcall-saved-REG is not supported for out registers"
-msgstr "-fdata-sections wird für dieses Ziel nicht unterstützt"
+msgstr "-fcall-saved-REG wird für Ausgaberegister nicht unterstützt"
 
 #: config/spu/spu-c.c:135
 #, gcc-internal-format, gfc-internal-format
@@ -25441,69 +25445,69 @@ msgid "too much stack space to prepare: %d"
 msgstr "Zu viel Stapelspeicher vorzubereiten: %d"
 
 #: config/vms/vms-c.c:44
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of #pragma __nostandard"
-msgstr "Ausschuss am Ende von #pragma ghs starttda"
+msgstr "Ausschuss am Ende von #pragma __nostandard"
 
 #: config/vms/vms-c.c:55
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of #pragma __standard"
-msgstr "Ausschuss am Ende von #pragma %s"
+msgstr "Ausschuss am Ende von #pragma __standard"
 
 #: config/vms/vms-c.c:80
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed '#pragma member_alignment', ignoring"
-msgstr "Falsch geformtes %<#pragma align%> - ignoriert"
+msgstr "Falsch geformtes »#pragma member_alignment«, ignoriert"
 
 #: config/vms/vms-c.c:95
 #, gcc-internal-format, gfc-internal-format
 msgid "unknown '#pragma member_alignment' name %s"
-msgstr ""
+msgstr "unbekannter Name %s für »#pragma member_alignment«"
 
 #: config/vms/vms-c.c:100
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed '#pragma member_alignment'"
-msgstr "Falsch geformtes %<#pragma align%>"
+msgstr "Falsch geformtes »#pragma member_alignment«"
 
 #: config/vms/vms-c.c:130
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unhandled alignment for '#pragma nomember_alignment'"
-msgstr "ungültige Ausrichtung für %<#pragma align%> - ignoriert"
+msgstr "unbehandelte Ausrichtung für »#pragma nomember_alignment«"
 
 #: config/vms/vms-c.c:143
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "garbage at end of '#pragma nomember_alignment'"
-msgstr "Ausschuss am Ende von '#pragma options'"
+msgstr "Ausschuss am Ende von »#pragma nomember_alignment«'"
 
 #: config/vms/vms-c.c:182
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed '#pragma extern_model', ignoring"
-msgstr "Falsch geformtes '#pragma options', ignoriert"
+msgstr "Falsch geformtes »#pragma extern_model«, ignoriert"
 
 #: config/vms/vms-c.c:201
 #, gcc-internal-format
 msgid "extern model globalvalue"
-msgstr ""
+msgstr "Globaler Wert mit externem Modell"
 
 #: config/vms/vms-c.c:206
 #, gcc-internal-format, gfc-internal-format
 msgid "unknown '#pragma extern_model' model '%s'"
-msgstr ""
+msgstr "unbekanntes Modell »%s« für »#pragma extern_model«"
 
 #: config/vms/vms-c.c:212
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of '#pragma extern_model'"
-msgstr "Ausschuss am Ende von %<#pragma extern_prefix%>"
+msgstr "Ausschuss am Ende von »#pragma extern_model«"
 
 #: config/vms/vms-c.c:226
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "vms '#pragma __message' is ignored"
-msgstr "falsch geformtes %<#pragma message%>, ignoriert"
+msgstr "vms »#pragma __message« wird ignoriert"
 
 #: config/vms/vms-c.c:251 config/vms/vms-c.c:257
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed '#pragma __extern_prefix', ignoring"
-msgstr "falsch geformtes #pragma extern_prefix, ignoriert"
+msgstr "falsch geformtes »#pragma __extern_prefix«, ignoriert"
 
 #: config/xtensa/xtensa.c:2172
 #, gcc-internal-format
@@ -25533,7 +25537,7 @@ msgstr "%<-gnat%> falsch buchstabiert als %<-gant%>"
 #: ada/gcc-interface/misc.c:229
 #, gcc-internal-format
 msgid "-fexcess-precision=standard for Ada"
-msgstr ""
+msgstr "-fexcess-precision=standard für Ada"
 
 #: ada/gcc-interface/utils.c:5289 ada/gcc-interface/utils.c:5464
 #: ada/gcc-interface/utils.c:5506 ada/gcc-interface/utils.c:5560
@@ -39734,12 +39738,12 @@ msgstr "Höchste unterstützte Bezeichnerlänge ist %d"
 #: fortran/options.c:898
 #, gcc-internal-format, gfc-internal-format
 msgid "Unrecognized option to -finit-logical: %s"
-msgstr "Nicht erkannte Option für -finit-logical: %s"
+msgstr "Unbekannte Option für -finit-logical: %s"
 
 #: fortran/options.c:914
 #, gcc-internal-format, gfc-internal-format
 msgid "Unrecognized option to -finit-real: %s"
-msgstr "Nicht erkannte Option für -finit-real: %s"
+msgstr "Unbekannte Option für -finit-real: %s"
 
 #: fortran/options.c:930
 #, gcc-internal-format
