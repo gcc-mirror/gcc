@@ -8463,9 +8463,8 @@ gfc_get_proc_ifc_for_expr (gfc_expr *procedure_ref)
 
 gfc_ss *
 gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
-				  gfc_expr *proc_expr, gfc_ss_type type)
+				  gfc_symbol *proc_ifc, gfc_ss_type type)
 {
-  gfc_symbol *proc_ifc;
   gfc_formal_arglist *dummy_arg;
   int scalar;
   gfc_ss *head;
@@ -8475,7 +8474,6 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
   head = gfc_ss_terminator;
   tail = NULL;
 
-  proc_ifc = gfc_get_proc_ifc_for_expr (proc_expr);
   if (proc_ifc)
     dummy_arg = proc_ifc->formal;
   else
@@ -8565,7 +8563,8 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
      by reference.  */
   if (sym->attr.elemental || (comp && comp->attr.elemental))
     return gfc_walk_elemental_function_args (ss, expr->value.function.actual,
-					     expr, GFC_SS_REFERENCE);
+					     gfc_get_proc_ifc_for_expr (expr),
+					     GFC_SS_REFERENCE);
 
   /* Scalar functions are OK as these are evaluated outside the scalarization
      loop.  Pass back and let the caller deal with it.  */
