@@ -211,6 +211,9 @@ build machinery (*.in)	Alexandre Oliva		aoliva@redhat.com
 build machinery (*.in)	Ralf Wildenhues		Ralf.Wildenhues@gmx.de
 docs co-maintainer	Gerald Pfeifer		gerald@pfeifer.com
 docs co-maintainer	Joseph Myers		joseph@codesourcery.com
+docstring relicensing	Diego Novillo		dnovillo@google.com
+docstring relicensing	Gerald Pfeifer		gerald@pfeifer.com
+docstring relicensing	Joseph Myers		joseph@codesourcery.com
 predict.def		Jan Hubicka		jh@suse.cz
 contrib/regression	Geoff Keating		geoffk@geoffk.org
 gcov			Jan Hubicka		jh@suse.cz
