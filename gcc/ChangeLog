@@ -1,3 +1,8 @@
+2012-02-13  Richard Guenther  <rguenther@suse.de>
+
+	PR translation/52211
+	* passes.c (enable_disable_pass): Fix typo.
+
 2012-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/52209
