@@ -1,3 +1,8 @@
+2012-02-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR c/52190
+	* doc/extend.texi : Fix another __atomic_compare_exchange typo.
+
 2012-02-13  Richard Guenther  <rguenther@suse.de>
 
 	PR translation/52211
