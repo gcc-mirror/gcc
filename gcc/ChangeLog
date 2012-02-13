@@ -1,5 +1,8 @@
 2012-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	* cselib.c (expand_loc): Return sp, fp, hfp or cfa base reg right
+	away if seen.
+
 	* cselib.c (dump_cselib_val): Don't assume l->setting_insn is
 	non-NULL.
 
