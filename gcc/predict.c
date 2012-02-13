@@ -1869,7 +1869,7 @@ predict_paths_for_bb (basic_block cur, basic_block bb,
 	 prevent visiting given BB twice.  */
       if (found)
         predict_edge_def (e, pred, taken);
-      else if (!bitmap_set_bit (visited, e->src->index))
+      else if (bitmap_set_bit (visited, e->src->index))
 	predict_paths_for_bb (e->src, e->src, pred, taken, visited);
     }
   for (son = first_dom_son (CDI_POST_DOMINATORS, cur);

@@ -1,3 +1,8 @@
+2012-02-13  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/52214
+	* predict.c (predict_paths_for_bb): Fix thinko in prevoius patch.
+
 2012-02-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c (LINK_COMMAND_SPEC): Deal with -fgnu-tm.
