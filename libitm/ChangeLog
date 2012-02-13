@@ -1,4 +1,12 @@
-2012-02-11  Eric Botcazou  <ebotcazou@adacore.com>
+2012-02-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.tgt (target_cpu): Handle sparc and sparc64 & sparcv9.
+	* config/sparc/cacheline.h: New file.
+	* config/sparc/target.h: Likewise.
+	* config/sparc/sjlj.S: Likewise.
+	* config/linux/sparc/futex_bits.h: Likewise.
+
+2012-02-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac (link_itm): Fix comment.
 	* configure: Regenerate.
