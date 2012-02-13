@@ -675,6 +675,7 @@ proper position among the other output files.  */
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}}\
     %{static:} %{L*} %(mfwrap) %(link_libgcc) %o\
     %{fopenmp|ftree-parallelize-loops=*:%:include(libgomp.spec)%(link_gomp)}\
+    %{fgnu-tm:%:include(libitm.spec)%(link_itm)}\
     %(mflib) " STACK_SPLIT_SPEC "\
     %{fprofile-arcs|fprofile-generate*|coverage:-lgcov}\
     %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
@@ -839,9 +840,14 @@ static const char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
 #define GOMP_SELF_SPECS "%{fopenmp|ftree-parallelize-loops=*: -pthread}"
 #endif
 
+/* Likewise for -fgnu-tm.  */
+#ifndef GTM_SELF_SPECS
+#define GTM_SELF_SPECS "%{fgnu-tm: -pthread}"
+#endif
+
 static const char *const driver_self_specs[] = {
   "%{fdump-final-insns:-fdump-final-insns=.} %<fdump-final-insns",
-  DRIVER_SELF_SPECS, CONFIGURE_SPECS, GOMP_SELF_SPECS
+  DRIVER_SELF_SPECS, CONFIGURE_SPECS, GOMP_SELF_SPECS, GTM_SELF_SPECS
 };
 
 #ifndef OPTION_DEFAULT_SPECS

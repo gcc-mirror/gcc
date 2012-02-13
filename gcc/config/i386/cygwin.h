@@ -126,6 +126,8 @@ along with GCC; see the file COPYING3.  If not see
    and the -pthread flag is not recognized.  */
 #undef GOMP_SELF_SPECS
 #define GOMP_SELF_SPECS ""
+#undef GTM_SELF_SPECS
+#define GTM_SELF_SPECS ""
 
 /* This matches SHLIB_SONAME and SHLIB_SOVERSION in t-cygwin. */
 #if DWARF2_UNWIND_INFO

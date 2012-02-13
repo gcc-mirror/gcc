@@ -183,6 +183,8 @@ extern GTY(()) int darwin_ms_struct;
     %{L*} %(link_libgcc) %o %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
     %{fopenmp|ftree-parallelize-loops=*: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libgomp.a%s; : -lgomp } } \
+    %{fgnu-tm: \
+      %{static|static-libgcc|static-libstdc++|static-libgfortran: libitm.a%s; : -litm } } \
     %{!nostdlib:%{!nodefaultlibs:\
       %(link_ssp) %(link_gcc_c_sequence)\
     }}\
@@ -915,6 +917,8 @@ void add_framework_path (char *);
 
 #undef GOMP_SELF_SPECS
 #define GOMP_SELF_SPECS ""
+#undef GTM_SELF_SPECS
+#define GTM_SELF_SPECS ""
 
 /* Darwin disables section anchors by default.  
    They should be enabled per arch where support exists in that arch.  */

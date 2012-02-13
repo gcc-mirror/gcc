@@ -187,6 +187,8 @@ do {						         \
 #undef GOMP_SELF_SPECS
 #define GOMP_SELF_SPECS "%{fopenmp|ftree-parallelize-loops=*: " \
 			"-mthreads -pthread}"
+#undef GTM_SELF_SPECS
+#define GTM_SELF_SPECS "%{fgnu-tm:-mthreads -pthread}"
 
 /* mingw32 atexit function is safe to use in shared libraries.  Use it
    to register C++ static destructors.  */

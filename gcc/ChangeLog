@@ -1,3 +1,13 @@
+2012-02-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c (LINK_COMMAND_SPEC): Deal with -fgnu-tm.
+	(GTM_SELF_SPECS): Define if not already defined.
+	(driver_self_specs): Add GTM_SELF_SPECS.
+        * config/darwin.h (LINK_COMMAND_SPEC_A): Deal with -fgnu-tm.
+        (GTM_SELF_SPECS): Define.
+	* config/i386/cygwin.h (GTM_SELF_SPECS): Likewise.
+	* config/i386/mingw32.h (GTM_SELF_SPECS): Likewise.
+
 2012-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* cselib.c (expand_loc): Return sp, fp, hfp or cfa base reg right
