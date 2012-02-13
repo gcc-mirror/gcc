@@ -252,8 +252,9 @@ namespace __gnu_parallel
                __replacement, __comparand)
              == __comparand;
 #elif defined(__GNUC__)
-    return __atomic_compare_exchange_n(__ptr, &__comparand, __replacement, true,
-				       __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
+    return __atomic_compare_exchange_n(__ptr, &__comparand, __replacement,
+				       false, __ATOMIC_ACQ_REL,
+				       __ATOMIC_RELAXED);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
     return atomic_cas_32((volatile unsigned int*)__ptr, __comparand,
                          __replacement) == __comparand;
@@ -299,13 +300,15 @@ namespace __gnu_parallel
 #endif
 
 #elif defined(__GNUC__) && defined(__x86_64)
-    return __atomic_compare_exchange_n(__ptr, &__comparand, __replacement, true,
-				       __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
+    return __atomic_compare_exchange_n(__ptr, &__comparand, __replacement,
+				       false, __ATOMIC_ACQ_REL,
+				       __ATOMIC_RELAXED);
 #elif defined(__GNUC__) && defined(__i386) &&                   \
   (defined(__i686) || defined(__pentium4) || defined(__athlon)  \
    || defined(__k8) || defined(__core2))
-    return __atomic_compare_exchange_n(__ptr, &__comparand, __replacement, true,
-				       __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
+    return __atomic_compare_exchange_n(__ptr, &__comparand, __replacement,
+				       false, __ATOMIC_ACQ_REL,
+				       __ATOMIC_RELAXED);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
     return atomic_cas_64((volatile unsigned long long*)__ptr,
                          __comparand, __replacement) == __comparand;

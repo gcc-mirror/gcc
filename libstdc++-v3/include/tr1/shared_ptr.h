@@ -237,13 +237,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_add_ref_lock()
     {
       // Perform lock-free add-if-not-zero operation.
-      _Atomic_word __count;
+      _Atomic_word __count = _M_use_count;
       do
 	{
-	  __count = _M_use_count;
 	  if (__count == 0)
 	    __throw_bad_weak_ptr();
-	  
 	  // Replace the current counter value with the old value + 1, as
 	  // long as it's not changed meanwhile. 
 	}
