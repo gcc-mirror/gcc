@@ -7151,7 +7151,7 @@ for weak compare_exchange, and false for the strong variation.  Many targets
 only offer the strong variation and ignore the parameter.  When in doubt, use
 the strong variation.
 
-True is returned if @code{*@var{desired}} is written into
+True is returned if @var{desired} is written into
 @code{*@var{ptr}} and the execution is considered to conform to the
 memory model specified by @var{success_memmodel}.  There are no
 restrictions on what memory model can be used here.
