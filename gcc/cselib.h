@@ -1,6 +1,6 @@
 /* Common subexpression elimination for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   1998, 1999, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -88,6 +88,7 @@ extern rtx cselib_expand_value_rtx_cb (rtx, bitmap, int,
 extern bool cselib_dummy_expand_value_rtx_cb (rtx, bitmap, int,
 					      cselib_expand_callback, void *);
 extern rtx cselib_subst_to_values (rtx, enum machine_mode);
+extern rtx cselib_subst_to_values_from_insn (rtx, enum machine_mode, rtx);
 extern void cselib_invalidate_rtx (rtx);
 
 extern void cselib_reset_table (unsigned int);

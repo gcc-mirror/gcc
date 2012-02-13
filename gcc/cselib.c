@@ -1905,6 +1905,19 @@ cselib_subst_to_values (rtx x, enum machine_mode memmode)
   return copy;
 }
 
+/* Wrapper for cselib_subst_to_values, that indicates X is in INSN.  */
+
+rtx
+cselib_subst_to_values_from_insn (rtx x, enum machine_mode memmode, rtx insn)
+{
+  rtx ret;
+  gcc_assert (!cselib_current_insn);
+  cselib_current_insn = insn;
+  ret = cselib_subst_to_values (x, memmode);
+  cselib_current_insn = NULL;
+  return ret;
+}
+
 /* Look up the rtl expression X in our tables and return the value it
    has.  If CREATE is zero, we return NULL if we don't know the value.
    Otherwise, we create a new one if possible, using mode MODE if X

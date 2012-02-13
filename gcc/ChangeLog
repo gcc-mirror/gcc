@@ -1,3 +1,11 @@
+2012-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/52172
+	* cselib.h (cselib_subst_to_values_from_insn): New prototype.
+	* cselib.c (cselib_subst_to_values_from_insn): New function.
+	* sched-deps.c (add_insn_mem_dependence,
+	sched_analyze_1, sched_analyze_2): Use it.
+
 2012-02-13  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/52214
