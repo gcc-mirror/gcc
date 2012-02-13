@@ -1,3 +1,7 @@
+2012-02-13  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.c-torture/execute/pr51933.c: Disable for s390 31 bit.
+
 2012-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/52209

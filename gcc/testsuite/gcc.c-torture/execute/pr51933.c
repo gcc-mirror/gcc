@@ -6,7 +6,15 @@ static unsigned char v2[256], v3[256];
 __attribute__((noclone, noinline)) void
 foo (void)
 {
+#if defined(__s390__) && !defined(__zarch__)
+  /* S/390 31 bit cannot deal with more than one literal pool
+     reference per insn.  */
+  asm volatile ("" : : "g" (&v1) : "memory");
+  asm volatile ("" : : "g" (&v2[0]));
+  asm volatile ("" : : "g" (&v3[0]));
+#else
   asm volatile ("" : : "g" (&v1), "g" (&v2[0]), "g" (&v3[0]) : "memory");
+#endif
 }
 
 __attribute__((noclone, noinline)) int
