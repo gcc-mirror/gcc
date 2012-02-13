@@ -1,3 +1,9 @@
+2012-02-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac (link_itm): Fix comment.
+	* configure: Regenerate.
+	* testsuite/lib/libitm.exp: Do not pass -litm for the link.
+
 2012-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libitm/51822
