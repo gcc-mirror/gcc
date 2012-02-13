@@ -614,7 +614,7 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue, void **avalue,
 { unsigned char *__tramp = (unsigned char*)(TRAMP); \
    unsigned int  __fun = (unsigned int)(FUN); \
    unsigned int  __ctx = (unsigned int)(CTX); \
-   unsigned int  __dis = __fun - (__ctx + 22);  \
+   unsigned int  __dis = __fun - (__ctx + 49);  \
    unsigned short __size = (unsigned short)(SIZE); \
    *(unsigned int *) &__tramp[0] = 0x8324048b;	/* mov (%esp), %eax */ \
    *(unsigned int *) &__tramp[4] = 0x4c890cec;	/* sub $12, %esp */ \
@@ -720,6 +720,9 @@ ffi_prep_raw_closure_loc (ffi_raw_closure* closure,
   int i;
 
   if (cif->abi != FFI_SYSV) {
+#ifdef X86_WIN32
+    if (cif->abi != FFI_THISCALL)
+#endif
     return FFI_BAD_ABI;
   }
 
@@ -734,10 +737,20 @@ ffi_prep_raw_closure_loc (ffi_raw_closure* closure,
       FFI_ASSERT (cif->arg_types[i]->type != FFI_TYPE_LONGDOUBLE);
     }
   
-
+#ifdef X86_WIN32
+  if (cif->abi == FFI_SYSV)
+    {
+#endif
   FFI_INIT_TRAMPOLINE (&closure->tramp[0], &ffi_closure_raw_SYSV,
                        codeloc);
-    
+#ifdef X86_WIN32
+    }
+  else if (cif->abi == FFI_THISCALL)
+    {
+      FFI_INIT_TRAMPOLINE_THISCALL (&closure->tramp[0], &ffi_closure_raw_SYSV,
+				    codeloc, cif->bytes);
+    }
+#endif
   closure->cif  = cif;
   closure->user_data = user_data;
   closure->fun  = fun;
