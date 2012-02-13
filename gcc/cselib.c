@@ -2688,8 +2688,11 @@ dump_cselib_val (void **x, void *info)
       fputs (" locs:", out);
       do
 	{
-	  fprintf (out, "\n  from insn %i ",
-		   INSN_UID (l->setting_insn));
+	  if (l->setting_insn)
+	    fprintf (out, "\n  from insn %i ",
+		     INSN_UID (l->setting_insn));
+	  else
+	    fprintf (out, "\n   ");
 	  print_inline_rtx (out, l->loc, 4);
 	}
       while ((l = l->next));
