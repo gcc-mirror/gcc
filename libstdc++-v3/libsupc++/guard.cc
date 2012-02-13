@@ -251,8 +251,9 @@ namespace __cxxabiv1
 
 	while (1)
 	  {
-	    if (__atomic_compare_exchange_n(gi, &expected, pending_bit, true,
-					    __ATOMIC_ACQ_REL, __ATOMIC_RELAXED))
+	    if (__atomic_compare_exchange_n(gi, &expected, pending_bit, false,
+					    __ATOMIC_ACQ_REL,
+					    __ATOMIC_RELAXED))
 	      {
 		// This thread should do the initialization.
 		return 1;
@@ -266,7 +267,7 @@ namespace __cxxabiv1
 	     if (expected == pending_bit)
 	       {
 		 int newv = expected | waiting_bit;
-		 if (!__atomic_compare_exchange_n(gi, &expected, newv, true,
+		 if (!__atomic_compare_exchange_n(gi, &expected, newv, false,
 						  __ATOMIC_ACQ_REL, 
 						  __ATOMIC_RELAXED))
 		   continue;

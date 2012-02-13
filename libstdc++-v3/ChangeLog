@@ -1,3 +1,16 @@
+2012-02-13  Richard Henderson  <rth@redhat.com>
+
+	PR libstdc++/51798 continued.
+	* include/bits/shared_ptr_base.h
+	(_Sp_counted_base<_S_atomic>::_M_add_ref_lock): Hoist initial load
+	outside compare_exchange loop.
+	* include/tr1/shared_ptr.h: Same.
+	* include/parallel/compatibility.h (__compare_and_swap_32): Use strong
+	version of compare_exchange.
+	(__compare_and_swap_64): Same.
+	* include/profile/impl/profiler_state.h (__gnu_profile::__turn): Same.
+	* libsupc++/guard.cc (__cxa_guard_acquire): Same.
+
 2012-02-10  Benjamin Kosnik  <bkoz@redhat.com>
             Jonathan Wakely  <jwakely.gcc@gmail.com>
 

@@ -48,7 +48,7 @@ namespace __gnu_profile
   { 
     __state_type inv(__INVALID);
     return __atomic_compare_exchange_n(&_GLIBCXX_PROFILE_DATA(__state),
-				       &inv, __s, true, __ATOMIC_ACQ_REL, 
+				       &inv, __s, false, __ATOMIC_ACQ_REL, 
 				       __ATOMIC_RELAXED);
   }
 
