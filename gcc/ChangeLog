@@ -1,5 +1,8 @@
 2012-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	* cselib.c (dump_cselib_val): Don't assume l->setting_insn is
+	non-NULL.
+
 	PR middle-end/52230
 	* omp-low.c (expand_omp_for): If a static schedule without
 	chunk size has NULL region->cont, force fd.chunk_size to be
