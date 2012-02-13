@@ -1,3 +1,10 @@
+2012-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/52215
+	* c-common.c (sync_resolve_params): Don't decide whether to convert
+	or not based on TYPE_SIZE comparison, convert whenever arg_type
+	is unsigned INTEGER_TYPE.
+
 2012-02-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c/52118
