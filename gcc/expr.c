@@ -8600,8 +8600,9 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;
       /* In case we have to reduce the result to bitfield precision
-	 expand this as XOR with a proper constant instead.  */
-      if (reduce_bit_field)
+	 for unsigned bitfield expand this as XOR with a proper constant
+	 instead.  */
+      if (reduce_bit_field && TYPE_UNSIGNED (type))
 	temp = expand_binop (mode, xor_optab, op0,
 			     immed_double_int_const
 			       (double_int_mask (TYPE_PRECISION (type)), mode),
