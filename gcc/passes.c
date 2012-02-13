@@ -709,7 +709,7 @@ enable_disable_pass (const char *arg, bool is_enable)
       if (is_enable)
         error ("unknown pass %s specified in -fenable", phase_name);
       else
-        error ("unknown pass %s specified in -fdisble", phase_name);
+        error ("unknown pass %s specified in -fdisable", phase_name);
       free (argstr);
       return;
     }
