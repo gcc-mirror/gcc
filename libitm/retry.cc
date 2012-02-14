@@ -199,6 +199,11 @@ parse_default_method()
       disp = GTM::dispatch_gl_wt();
       env += 5;
     }
+  else if (strncmp(env, "ml_wt", 5) == 0)
+    {
+      disp = GTM::dispatch_ml_wt();
+      env += 5;
+    }
   else
     goto unknown;
 

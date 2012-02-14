@@ -145,6 +145,13 @@ struct gtm_undolog
   void rollback (gtm_thread* tx, size_t until_size = 0);
 };
 
+// An entry of a read or write log.  Used by multi-lock TM methods.
+struct gtm_rwlog_entry
+{
+  atomic<gtm_word> *orec;
+  gtm_word value;
+};
+
 // Contains all thread-specific data required by the entire library.
 // This includes all data relevant to a single transaction. Because most
 // thread-specific data is about the current transaction, we also refer to
@@ -173,6 +180,10 @@ struct gtm_thread
 
   // Data used by local.c for the undo log for both local and shared memory.
   gtm_undolog undolog;
+
+  // Read and write logs.  Used by multi-lock TM methods.
+  vector<gtm_rwlog_entry> readlog;
+  vector<gtm_rwlog_entry> writelog;
 
   // Data used by alloc.c for the malloc/free undo log.
   aa_tree<uintptr_t, gtm_alloc_action> alloc_actions;
@@ -320,6 +331,7 @@ extern abi_dispatch *dispatch_serial();
 extern abi_dispatch *dispatch_serialirr();
 extern abi_dispatch *dispatch_serialirr_onwrite();
 extern abi_dispatch *dispatch_gl_wt();
+extern abi_dispatch *dispatch_ml_wt();
 
 extern gtm_cacheline_mask gtm_mask_stack(gtm_cacheline *, gtm_cacheline_mask);
 
