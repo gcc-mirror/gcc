@@ -8,12 +8,16 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "ffi.h"
+#include "config.h"
 
 #include "go-alloc.h"
 #include "go-assert.h"
 #include "go-type.h"
 #include "runtime.h"
+
+#ifdef USE_LIBFFI
+
+#include "ffi.h"
 
 /* The functions in this file are only called from reflect_call.  As
    reflect_call calls a libffi function, which will be compiled
@@ -500,3 +504,20 @@ reflect_call (const struct __go_func_type *func_type, const void *func_addr,
 
   free (call_result);
 }
+
+#else /* !defined(USE_LIBFFI) */
+
+void
+reflect_call (const struct __go_func_type *func_type __attribute__ ((unused)),
+	      const void *func_addr __attribute__ ((unused)),
+	      _Bool is_interface __attribute__ ((unused)),
+	      _Bool is_method __attribute__ ((unused)),
+	      void **params __attribute__ ((unused)),
+	      void **results __attribute__ ((unused)))
+{
+  /* Without FFI there is nothing we can do.  */
+  runtime_throw("libgo built without FFI does not support "
+		"reflect.Call or runtime.SetFinalizer");
+}
+
+#endif /* !defined(USE_LIBFFI) */
