@@ -1,3 +1,12 @@
+2012-02-14  Ian Lance Taylor  <iant@google.com>
+
+	PR go/48411
+	* Make-lang.in (gccgo-cross$(exeext)): New target.
+	(go.all.cross): Depend on gccgo-cross$(exeext) instead of
+	gccgo$(exeext).
+	(go.install-common): Only install GCCGO_TARGET_INSTALL_NAME if
+	gccgo-cross$(exeext) does not exist.
+
 2012-02-07  Ian Lance Taylor  <iant@google.com>
 
 	* gccgo.texi (Function Names): Document //extern instead of
