@@ -1,3 +1,10 @@
+2012-02-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/install.texi (Prerequisites): Suggest building GMP, MPFR and
+	MPC as part of GCC before describing configuring with --with-gmp etc.
+	(Installing GCC: Configuration): --with-gmp etc. aren't needed if
+	sources are present.
+
 2012-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/51950

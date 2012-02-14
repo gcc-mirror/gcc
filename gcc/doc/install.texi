@@ -328,37 +328,39 @@ others optional.  While any sufficiently new version of required tools
 usually work, library requirements are generally stricter.  Newer
 versions may work in some cases, but it's safer to use the exact
 versions documented.  We appreciate bug reports about problems with
-newer versions, though.
+newer versions, though.  If your OS vendor provides packages for the
+support libraries then using those packages may be the simplest way to
+install the libraries.
 
 @table @asis
 @item GNU Multiple Precision Library (GMP) version 4.3.2 (or later)
 
-Necessary to build GCC@.  If you do not have it installed in your
-library search path, you will have to configure with the
+Necessary to build GCC@.  If a GMP source distribution is found in a
+subdirectory of your GCC sources named @file{gmp}, it will be built
+together with GCC.  Alternatively, if GMP is already installed but it
+is not in your library search path, you will have to configure with the
 @option{--with-gmp} configure option.  See also @option{--with-gmp-lib}
-and @option{--with-gmp-include}.  Alternatively, if a GMP source
-distribution is found in a subdirectory of your GCC sources named
-@file{gmp}, it will be built together with GCC@.
+and @option{--with-gmp-include}.
 
 @item MPFR Library version 2.4.2 (or later)
 
 Necessary to build GCC@.  It can be downloaded from
-@uref{http://www.mpfr.org/}.  The @option{--with-mpfr} configure
-option should be used if your MPFR Library is not installed in your
-default library search path.  See also @option{--with-mpfr-lib} and
-@option{--with-mpfr-include}.  Alternatively, if a MPFR source
-distribution is found in a subdirectory of your GCC sources named
-@file{mpfr}, it will be built together with GCC@.
+@uref{http://www.mpfr.org/}.  If an MPFR source distribution is found
+in a subdirectory of your GCC sources named @file{mpfr}, it will be
+built together with GCC.  Alternatively, if MPFR is already installed
+but it is not in your default library search path, the
+@option{--with-mpfr} configure option should be used.  See also
+@option{--with-mpfr-lib} and @option{--with-mpfr-include}.
 
 @item MPC Library version 0.8.1 (or later)
 
 Necessary to build GCC@.  It can be downloaded from
-@uref{http://www.multiprecision.org/}.  The @option{--with-mpc}
-configure option should be used if your MPC Library is not installed
-in your default library search path.  See also @option{--with-mpc-lib}
-and @option{--with-mpc-include}.  Alternatively, if an MPC source
-distribution is found in a subdirectory of your GCC sources named
-@file{mpc}, it will be built together with GCC@.
+@uref{http://www.multiprecision.org/}.  If an MPC source distribution
+is found in a subdirectory of your GCC sources named @file{mpc}, it
+will be built together with GCC.  Alternatively, if MPC is already
+installed but it is not in your default library search path, the
+@option{--with-mpc} configure option should be used.  See also
+@option{--with-mpc-lib} and @option{--with-mpc-include}.
 
 @item Parma Polyhedra Library (PPL) version 0.11
 
@@ -1608,10 +1610,11 @@ When neither of these configure options are used, the default will be
 @itemx --with-mpc=@var{pathname}
 @itemx --with-mpc-include=@var{pathname}
 @itemx --with-mpc-lib=@var{pathname}
-If you do not have GMP (the GNU Multiple Precision library), the MPFR
+If you want to build GCC but do not have the GMP library, the MPFR
 library and/or the MPC library installed in a standard location and
-you want to build GCC, you can explicitly specify the directory where
-they are installed (@samp{--with-gmp=@var{gmpinstalldir}},
+do not have their sources present in the GCC source tree then you
+can explicitly specify the directory where they are installed
+(@samp{--with-gmp=@var{gmpinstalldir}},
 @samp{--with-mpfr=@/@var{mpfrinstalldir}},
 @samp{--with-mpc=@/@var{mpcinstalldir}}).  The
 @option{--with-gmp=@/@var{gmpinstalldir}} option is shorthand for
