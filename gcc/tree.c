@@ -4596,7 +4596,10 @@ free_lang_data_in_decl (tree decl)
   free_lang_data_in_one_sizepos (&DECL_SIZE (decl));
   free_lang_data_in_one_sizepos (&DECL_SIZE_UNIT (decl));
   if (TREE_CODE (decl) == FIELD_DECL)
-    free_lang_data_in_one_sizepos (&DECL_FIELD_OFFSET (decl));
+    {
+      free_lang_data_in_one_sizepos (&DECL_FIELD_OFFSET (decl));
+      DECL_QUALIFIER (decl) = NULL_TREE;
+    }
 
  if (TREE_CODE (decl) == FUNCTION_DECL)
     {
@@ -4800,7 +4803,6 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	{
 	  fld_worklist_push (DECL_FIELD_OFFSET (t), fld);
 	  fld_worklist_push (DECL_BIT_FIELD_TYPE (t), fld);
-	  fld_worklist_push (DECL_QUALIFIER (t), fld);
 	  fld_worklist_push (DECL_FIELD_BIT_OFFSET (t), fld);
 	  fld_worklist_push (DECL_FCONTEXT (t), fld);
 	}
