@@ -716,6 +716,15 @@ proc check_effective_target_fopenmp {} {
     } "-fopenmp"]
 }
 
+# Return 1 if compilation with -fgnu-tm is error-free for trivial
+# code, 0 otherwise.
+
+proc check_effective_target_fgnu_tm {} {
+    return [check_no_compiler_messages fgnu_tm object {
+	void foo (void) { }
+    } "-fgnu-tm"]
+}
+
 # Return 1 if the target supports mmap, 0 otherwise.
 
 proc check_effective_target_mmap {} {
