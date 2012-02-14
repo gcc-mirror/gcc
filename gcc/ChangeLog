@@ -1,3 +1,9 @@
+2012-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/52181
+	* c-decl.c (merge_decls): Copy DECL_USER_ALIGN bit from olddecl to
+	newdecl.
+
 2012-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/52172
