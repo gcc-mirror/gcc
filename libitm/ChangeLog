@@ -1,3 +1,7 @@
+2012-02-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/x86/target.h (GTM_longjmp): Jump indirect from memory address.
+
 2012-02-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.tgt (target_cpu): Handle sparc and sparc64 & sparcv9.

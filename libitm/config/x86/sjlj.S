@@ -119,23 +119,21 @@ SYM(GTM_longjmp):
 	movq	32(%rsi), %r13
 	movq	40(%rsi), %r14
 	movq	48(%rsi), %r15
-	movq	56(%rsi), %rdx
 	movl	%edi, %eax
+	cfi_offset(%rip, 56)
 	cfi_def_cfa(%rcx, 0)
-	cfi_register(%rip, %rdx)
 	movq	%rcx, %rsp
-	jmp	*%rdx
+	jmp	*56(%rsi)
 #else
 	movl	(%edx), %ecx
 	movl	4(%edx), %ebx
 	movl	8(%edx), %esi
 	movl	12(%edx), %edi
 	movl	16(%edx), %ebp
-	movl	20(%edx), %edx
+	cfi_offset(%eip, 20)
 	cfi_def_cfa(%ecx, 0)
-	cfi_register(%eip, %edx)
 	movl	%ecx, %esp
-	jmp	*%edx
+	jmp	*20(%edx)
 #endif
 	cfi_endproc
 
