@@ -47,6 +47,9 @@ import (
 //sysnb	raw_exit(status int)
 //_exit(status int)
 
+//sysnb raw_dup2(oldfd int, newfd int) (err Errno)
+//dup2(oldfd int, newfd int) int
+
 // Note: not raw, returns error rather than Errno.
 //sys	read(fd int, p *byte, np int) (n int, err error)
 //read(fd int, buf *byte, count Size_t) Ssize_t
