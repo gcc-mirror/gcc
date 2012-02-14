@@ -640,7 +640,7 @@ lto_input_ts_field_decl_tree_pointers (struct lto_input_block *ib,
 {
   DECL_FIELD_OFFSET (expr) = stream_read_tree (ib, data_in);
   DECL_BIT_FIELD_TYPE (expr) = stream_read_tree (ib, data_in);
-  DECL_QUALIFIER (expr) = stream_read_tree (ib, data_in);
+  /* Do not stream DECL_QUALIFIER, it is useless after gimplification.  */
   DECL_FIELD_BIT_OFFSET (expr) = stream_read_tree (ib, data_in);
   DECL_FCONTEXT (expr) = stream_read_tree (ib, data_in);
 }

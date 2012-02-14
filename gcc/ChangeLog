@@ -1,3 +1,12 @@
+2012-02-14  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/52178
+	* tree-streamer-in.c (lto_input_ts_field_decl_tree_pointers):
+	Do not stream DECL_QUALIFIER.
+	* tree-streamer-out.c (write_ts_field_decl_tree_pointers): Likewise.
+	* tree.c (free_lang_data_in_decl): Free DECL_QUALIFIER.
+	(find_decls_types_r): Do not walk DECL_QUALIFIER.
+
 2012-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/52181
