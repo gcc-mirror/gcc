@@ -1,3 +1,9 @@
+2012-02-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52244
+	PR tree-optimization/51528
+	* gcc.dg/torture/pr52244.c: New testcase.
+
 2012-02-14  Walter Lee  <walt@tilera.com>
 
 	* g++.dg/other/PR23205.C: Disable test on tile.
