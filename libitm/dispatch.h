@@ -245,6 +245,12 @@ struct method_group
   // Stop using any method from this group for now. This can be used to
   // destruct meta data as soon as this method group is not used anymore.
   virtual void fini() = 0;
+  // This can be overriden to implement more light-weight re-initialization.
+  virtual void reinit()
+  {
+    fini();
+    init();
+  }
 };
 
 
@@ -290,6 +296,10 @@ public:
   // method on begin of a nested transaction without committing or restarting
   // the parent method.
   virtual abi_dispatch* closed_nesting_alternative() { return 0; }
+  // Returns true iff this method group supports the current situation.
+  // NUMBER_OF_THREADS is the current number of threads that might execute
+  // transactions.
+  virtual bool supports(unsigned number_of_threads) { return true; }
 
   bool read_only () const { return m_read_only; }
   bool write_through() const { return m_write_through; }
