@@ -1,3 +1,8 @@
+2012-02-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line numbers.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc: Same.
+
 2012-02-13  Richard Henderson  <rth@redhat.com>
 
 	PR libstdc++/51798 continued.
