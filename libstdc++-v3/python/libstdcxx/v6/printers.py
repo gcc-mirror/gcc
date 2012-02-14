@@ -610,38 +610,18 @@ class StdStringPrinter:
 
 class Tr1HashtableIterator:
     def __init__ (self, hash):
-        self.count = 0
-        self.n_buckets = hash['_M_element_count']
-        if self.n_buckets == 0:
-            self.node = False
-        else:
-            self.bucket = hash['_M_buckets']
-            self.node = self.bucket[0]
-            self.update ()
+        self.node = hash['_M_before_begin']['_M_nxt']
+        self.node_type = find_type(hash.type, '_Node').pointer()
 
     def __iter__ (self):
         return self
 
-    def update (self):
-        # If we advanced off the end of the chain, move to the next
-        # bucket.
-        while self.node == 0:
-            self.bucket = self.bucket + 1
-            self.node = self.bucket[0]
-
-       # If we advanced off the end of the bucket array, then
-       # we're done.
-        if self.count == self.n_buckets:
-            self.node = False
-        else:
-            self.count = self.count + 1
-
     def next (self):
-        if not self.node:
+        if self.node == 0:
             raise StopIteration
-        result = self.node.dereference()['_M_v']
-        self.node = self.node.dereference()['_M_next']
-        self.update ()
+        node = self.node.cast(self.node_type)
+        result = node.dereference()['_M_v']
+        self.node = node.dereference()['_M_nxt']
         return result
 
 class Tr1UnorderedSetPrinter:
