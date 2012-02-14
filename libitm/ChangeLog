@@ -1,3 +1,7 @@
+2012-02-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/x86/target.h (GTM_longjmp): Correct .cfi directives.
+
 2012-02-14  Torvald Riegel  <triegel@redhat.com>
 
 	* libitm_i.h (GTM::gtm_rwlog_entry): New.
