@@ -58,11 +58,8 @@ GTM::gtm_thread::decide_retry_strategy (gtm_restart_reason r)
 	  serial_lock.read_unlock(this);
 	  serial_lock.write_lock();
 	  if (disp->get_method_group() == default_dispatch->get_method_group())
-	    {
-	      // Still the same method group.
-	      disp->get_method_group()->fini();
-	      disp->get_method_group()->init();
-	    }
+	    // Still the same method group.
+	    disp->get_method_group()->reinit();
 	  serial_lock.write_unlock();
 	  serial_lock.read_lock(this);
 	  if (disp->get_method_group() != default_dispatch->get_method_group())
@@ -72,11 +69,8 @@ GTM::gtm_thread::decide_retry_strategy (gtm_restart_reason r)
 	    }
 	}
       else
-	{
-	  // We are a serial transaction already, which makes things simple.
-	  disp->get_method_group()->fini();
-	  disp->get_method_group()->init();
-	}
+	// We are a serial transaction already, which makes things simple.
+	disp->get_method_group()->reinit();
     }
 
   bool retry_irr = (r == RESTART_SERIAL_IRR);
@@ -249,7 +243,7 @@ GTM::gtm_thread::number_of_threads_changed(unsigned previous, unsigned now)
       // Only one thread, so use a serializing method.
       // ??? If we don't have a fast serial mode implementation, it might be
       // better to use the global lock method set here.
-      if (default_dispatch_user)
+      if (default_dispatch_user && default_dispatch_user->supports(now))
 	set_default_dispatch(default_dispatch_user);
       else
 	set_default_dispatch(dispatch_serialirr());
@@ -257,9 +251,16 @@ GTM::gtm_thread::number_of_threads_changed(unsigned previous, unsigned now)
   else if (now > 1 && previous <= 1)
     {
       // More than one thread, use the default method.
-      if (default_dispatch_user)
+      if (default_dispatch_user && default_dispatch_user->supports(now))
 	set_default_dispatch(default_dispatch_user);
       else
-	set_default_dispatch(dispatch_serialirr_onwrite());
+	{
+	  abi_dispatch* a = dispatch_serialirr_onwrite();
+	  if (a->supports(now))
+	    set_default_dispatch(a);
+	  else
+	    // Serial-irrevocable mode always works.
+	    set_default_dispatch(dispatch_serialirr());
+	}
     }
 }

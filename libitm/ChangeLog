@@ -1,5 +1,13 @@
 2012-02-14  Torvald Riegel  <triegel@redhat.com>
 
+	* dispatch.h (GTM::abi_dispatch::supports): New.
+	(GTM::method_group::reinit): New.
+	* retry.cc (GTM::gtm_thread::decide_retry_strategy): Use reinit().
+	(GTM::gtm_thread::number_of_threads_changed): Check that the method
+	supports the current situation.
+
+2012-02-14  Torvald Riegel  <triegel@redhat.com>
+
 	* util.cc (GTM::xcalloc): New.
 	* common.h (GTM::xcalloc): Declare.
 
