@@ -1,3 +1,8 @@
+2012-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52210
+	* gcc.dg/pr52210.c: New test.
+
 2012-02-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39055
