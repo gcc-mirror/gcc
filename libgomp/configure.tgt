@@ -51,6 +51,10 @@ if test $enable_linux_futex = yes; then
 	config_path="linux/s390 linux posix"
 	;;
 
+    tile*-*-linux*)
+	config_path="linux/tile linux posix"
+	;;
+
     # Note that bare i386 is not included here.  We need cmpxchg.
     i[456]86-*-linux*)
 	config_path="linux/x86 linux posix"

@@ -1,0 +1,40 @@
+; Options for the TILE-Gx port of the compiler.
+; Copyright (C) 2011, 2012
+; Free Software Foundation, Inc.
+; Contributed by Walter Lee (walt@tilera.com)
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+mcpu=
+Target RejectNegative Joined Enum(tilegx_cpu) Var(tilegx_cpu) Init(0)
+-mcpu=CPU	Use features of and schedule code for given CPU
+
+Enum
+Name(tilegx_cpu) Type(int)
+Known TILE-Gx CPUs (for use with the -mcpu= option):
+
+EnumValue
+Enum(tilegx_cpu) String(tilegx) Value(0)
+
+m32
+Target Report RejectNegative Negative(m64) Mask(32BIT)
+Compile with 32 bit longs and pointers.
+
+m64
+Target Report RejectNegative Negative(m32) InverseMask(32BIT, 64BIT)
+Compile with 64 bit longs and pointers.
+

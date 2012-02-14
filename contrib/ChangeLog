@@ -1,3 +1,10 @@
+2012-02-14  Walter Lee  <walt@tilera.com>
+
+	* config-list.mk (LIST): Add tilegx-linux-gnu and
+	tilepro-linux-gnu.
+	* gcc_update (gcc/config/tilegx/mul-tables.c): New dependencies.
+	(gcc/config/tilepro/mul-tables.c): New dependencies.
+
 2012-02-11  Mike Stump  <mikestump@comcast.net>
 
 	* compare_tests (exit_status): Fix.

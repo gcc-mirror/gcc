@@ -1,0 +1,35 @@
+/* TILEPro extra machine modes.
+   Copyright (C) 2011, 2012
+   Free Software Foundation, Inc.
+   Contributed by Walter Lee (walt@tilera.com)
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 3, or (at your
+   option) any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* Extra modes for handling struct returns in up to 10 registers. */
+INT_MODE (R3I, 12);
+INT_MODE (R5I, 20);
+INT_MODE (R6I, 24);
+INT_MODE (R7I, 28);
+INT_MODE (R8I, 32);
+INT_MODE (R9I, 36);
+INT_MODE (R10I, 40);
+
+/* Vector modes.  */
+VECTOR_MODES (INT, 4);    /* V4QI V2HI */
+VECTOR_MODE (INT, QI, 8); /* V8QI */
+VECTOR_MODE (INT, HI, 4); /* V4HI */
+VECTOR_MODE (INT, QI, 2); /* V2QI */
