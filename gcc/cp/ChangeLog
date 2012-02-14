@@ -1,3 +1,9 @@
+2012-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/52181
+	* decl.c (duplicate_decls): If olddecl has bigger DECL_ALIGN than
+	newdecl, copy DECL_ALIGN to newdecl and or DECL_USER_ALIGN bits.
+
 2012-02-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51675
