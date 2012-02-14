@@ -1,5 +1,13 @@
 2012-02-14  Jakub Jelinek  <jakub@redhat.com>
 
+	Backported from mainline
+	2012-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/52230
+	* omp-low.c (expand_omp_for): If a static schedule without
+	chunk size has NULL region->cont, force fd.chunk_size to be
+	integer_zero_node.
+
 	PR bootstrap/51969
 	Backported from mainline
 	2011-11-08  Michael Matz  <matz@suse.de>

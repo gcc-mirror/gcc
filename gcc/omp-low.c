@@ -4618,6 +4618,9 @@ expand_omp_for (struct omp_region *region)
     {
       int fn_index, start_ix, next_ix;
 
+      if (fd.chunk_size == NULL
+	  && fd.sched_kind == OMP_CLAUSE_SCHEDULE_STATIC)
+	fd.chunk_size = integer_zero_node;
       gcc_assert (fd.sched_kind != OMP_CLAUSE_SCHEDULE_AUTO);
       fn_index = (fd.sched_kind == OMP_CLAUSE_SCHEDULE_RUNTIME)
 		  ? 3 : fd.sched_kind;
