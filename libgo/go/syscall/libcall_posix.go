@@ -178,7 +178,7 @@ func FDZero(set *FdSet) {
 //sysnb	Dup(oldfd int) (fd int, err error)
 //dup(oldfd int) int
 
-//sysnb	Dup2(oldfd int, newfd int) (fd int, err error)
+//sysnb	Dup2(oldfd int, newfd int) (err error)
 //dup2(oldfd int, newfd int) int
 
 //sys	Exit(code int)
