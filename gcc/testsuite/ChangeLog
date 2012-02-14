@@ -1,3 +1,7 @@
+2012-02-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/lower-subreg-1.c: Fix and simplify target selector.
+
 2012-02-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52244
