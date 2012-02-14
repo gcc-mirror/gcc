@@ -32,7 +32,10 @@ __go_type_hash_identity (const void *key, uintptr_t key_size)
       } u;
       u.v = 0;
       __builtin_memcpy (&u.a, key, key_size);
-      return (uintptr_t) u.v;
+      if (sizeof (uintptr_t) >= 8)
+	return (uintptr_t) u.v;
+      else
+	return (uintptr_t) ((u.v >> 32) ^ (u.v & 0xffffffff));
     }
 
   ret = 5381;
