@@ -1,3 +1,12 @@
+2012-02-14  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/cxx11.cc (main): Add new
+	tests.
+	* python/libstdcxx/v6/printers.py (Tr1HashtableIterator.__init__):
+	Rewrite.
+	(Tr1HashtableIterator.update): Remove.
+	(Tr1HashtableIterator.next): Rewrite.
+
 2012-02-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line numbers.

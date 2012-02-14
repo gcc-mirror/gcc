@@ -1,7 +1,7 @@
 // { dg-do run }
 // { dg-options "-std=gnu++11 -g" }
 
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -67,6 +67,24 @@ main()
 // { dg-final { note-test eus "std::unordered_set with 0 elements" } }
   std::unordered_multiset<int> eums;
 // { dg-final { note-test eums "std::unordered_multiset with 0 elements" } }
+
+  std::unordered_map<int, std::string> uom;
+  uom[5] = "three";
+  uom[3] = "seven";
+// { dg-final { note-test uom {std::unordered_map with 2 elements = {[3] = "seven", [5] = "three"}} } }
+
+  std::unordered_multimap<int, std::string> uomm;
+  uomm.insert(std::pair<int, std::string> (5, "three"));
+  uomm.insert(std::pair<int, std::string> (5, "seven"));
+// { dg-final { note-test uomm {std::unordered_multimap with 2 elements = {[5] = "seven", [5] = "three"}} } }
+
+  std::unordered_set<int> uos;
+  uos.insert(5);
+// { dg-final { note-test uos {std::unordered_set with 1 elements = {[0] = 5}} } }
+
+  std::unordered_multiset<int> uoms;
+  uoms.insert(5);
+// { dg-final { note-test uoms {std::unordered_multiset with 1 elements = {[0] = 5}} } }
 
   placeholder(""); // Mark SPOT
   use(efl);
