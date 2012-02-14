@@ -1,3 +1,9 @@
+2012-02-14  Ian Lance Taylor  <iant@google.com>
+
+	PR go/48501
+	* go.test/go-test.exp (go-gc-tests): Disable optimizations when
+	compiling generated file for 64bit and index tests.
+
 2012-02-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/lower-subreg-1.c: Fix and simplify target selector.

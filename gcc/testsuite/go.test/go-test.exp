@@ -433,7 +433,12 @@ proc go-gc-tests { } {
 		} else {
 		    pass "$name execution"
 		    file delete $base-out.x
+		    # Disable optimizations as this test takes a long time
+		    # to compile.
+		    set hold $TORTURE_OPTIONS
+		    set TORTURE_OPTIONS [ list { -O0 -g }]
 		    go-torture-execute "./$base-out.go"
+		    set TORTURE_OPTIONS $hold
 		}
 		file delete $base-out.go
 	    }
@@ -940,7 +945,12 @@ proc go-gc-tests { } {
 		} else {
 		    pass "$name execution 0"
 		    file delete tmp.x
+		    # Disable optimizations as this test takes a long time
+		    # to compile.
+		    set hold $TORTURE_OPTIONS
+		    set TORTURE_OPTIONS [ list { -O0 -g }]
 		    go-torture-execute "./tmp.go"
+		    set TORTURE_OPTIONS $hold
 		}
 		if { [catch "exec $output_file -pass 1 >tmp.go"] != 0 } {
 		    fail "$name execution 1"
