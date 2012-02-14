@@ -10509,14 +10509,15 @@ static tree
 local_variable_p_walkfn (tree *tp, int *walk_subtrees,
 			 void *data ATTRIBUTE_UNUSED)
 {
-  if (local_variable_p (*tp) && !DECL_ARTIFICIAL (*tp))
+  /* Check DECL_NAME to avoid including temporaries.  We don't check
+     DECL_ARTIFICIAL because we do want to complain about 'this'.  */
+  if (local_variable_p (*tp) && DECL_NAME (*tp))
     return *tp;
   else if (TYPE_P (*tp))
     *walk_subtrees = 0;
 
   return NULL_TREE;
 }
-
 
 /* Check that ARG, which is a default-argument expression for a
    parameter DECL, is valid.  Returns ARG, or ERROR_MARK_NODE, if
@@ -10578,7 +10579,10 @@ check_default_argument (tree decl, tree arg)
   var = cp_walk_tree_without_duplicates (&arg, local_variable_p_walkfn, NULL);
   if (var)
     {
-      error ("default argument %qE uses local variable %qD", arg, var);
+      if (DECL_NAME (var) == this_identifier)
+	permerror (input_location, "default argument %qE uses %qD", arg, var);
+      else
+	error ("default argument %qE uses local variable %qD", arg, var);
       return error_mark_node;
     }
 
