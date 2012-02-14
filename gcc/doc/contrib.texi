@@ -395,6 +395,9 @@ of testing and bug fixing, particularly of GCC configury code.
 Steve Holmgren for MachTen patches.
 
 @item
+Mat Hostetter for work on the TILE-Gx and TILEPro ports.
+
+@item
 Jan Hubicka for his x86 port improvements.
 
 @item
@@ -504,6 +507,9 @@ Jeff Law for his direction via the steering committee, coordinating the
 entire egcs project and GCC 2.95, rolling out snapshots and releases,
 handling merges from GCC2, reviewing tons of patches that might have
 fallen through the cracks else, and random but extensive hacking.
+
+@item
+Walter Lee for work on the TILE-Gx and TILEPro ports.
 
 @item
 Marc Lehmann for his direction via the steering committee and helping

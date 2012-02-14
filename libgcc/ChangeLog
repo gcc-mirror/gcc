@@ -1,3 +1,21 @@
+2012-02-14  Walter Lee  <walt@tilera.com>
+
+	* config.host: Handle tilegx and tilepro.
+	* config/tilegx/sfp-machine.h: New file.
+	* config/tilegx/sfp-machine32.h: New file.
+	* config/tilegx/sfp-machine64.h: New file.
+	* config/tilegx/t-crtstuff: New file.
+	* config/tilegx/t-softfp: New file.
+	* config/tilegx/t-tilegx: New file.
+	* config/tilepro/atomic.c: New file.
+	* config/tilepro/atomic.h: New file.
+	* config/tilepro/linux-unwind.h: New file.
+	* config/tilepro/sfp-machine.h: New file.
+	* config/tilepro/softdivide.c: New file.
+	* config/tilepro/softmpy.S: New file.
+	* config/tilepro/t-crtstuff: New file.
+	* config/tilepro/t-tilepro: New file.
+
 2012-02-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/51296

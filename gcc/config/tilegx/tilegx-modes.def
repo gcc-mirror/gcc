@@ -1,0 +1,38 @@
+/* TILE-Gx extra machine modes. 
+   Copyright (C) 2011, 2012
+   Free Software Foundation, Inc.
+   Contributed by Walter Lee (walt@tilera.com)
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 3, or (at your
+   option) any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* Extra modes for handling struct returns in up to 10 registers. */
+INT_MODE (R3I, 24);
+INT_MODE (R5I, 40);
+INT_MODE (R6I, 48);
+INT_MODE (R7I, 56);
+INT_MODE (R8I, 64);
+INT_MODE (R9I, 72);
+INT_MODE (R10I, 80);
+
+/* Vector modes.  */
+VECTOR_MODES (INT, 8);     /* V8QI V4HI V2SI */
+VECTOR_MODE (INT, QI, 16); /* V16QI */
+VECTOR_MODE (INT, HI, 8);  /* V8HI */
+VECTOR_MODE (INT, SI, 4);  /* V4SI */
+VECTOR_MODE (INT, HI, 2);  /* V2HI */
+
+VECTOR_MODE (INT, QI, 4);  /* V4QI */

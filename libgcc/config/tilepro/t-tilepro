@@ -1,0 +1,33 @@
+LIB2ADD += \
+  $(srcdir)/config/tilepro/softmpy.S \
+  $(srcdir)/config/tilepro/atomic.c
+
+LIB2FUNCS_EXCLUDE += \
+  _divdi3 \
+  _moddi3 \
+  _muldi3 \
+  _udivdi3 \
+  _umoddi3
+
+SOFTDIVIDE_FUNCS := \
+  _tile_udivsi3 \
+  _tile_divsi3 \
+  _tile_udivdi3 \
+  _tile_divdi3 \
+  _tile_umodsi3 \
+  _tile_modsi3 \
+  _tile_umoddi3 \
+  _tile_moddi3
+
+softdivide-o = $(patsubst %,%$(objext),$(SOFTDIVIDE_FUNCS))
+$(softdivide-o): %$(objext): $(srcdir)/config/tilepro/softdivide.c
+	$(gcc_compile) -ffunction-sections -DMAYBE_STATIC= -DL$* -c $< \
+	  $(vis_hide)
+libgcc-objects += $(softdivide-o)
+
+ifeq ($(enable_shared),yes)
+softdivide-s-o = $(patsubst %,%_s$(objext),$(SOFTDIVIDE_FUNCS))
+$(softdivide-s-o): %_s$(objext): $(srcdir)/config/tilepro/softdivide.c
+	$(gcc_s_compile) -ffunction-sections -DMAYBE_STATIC= -DL$* -c $<
+libgcc-s-objects += $(softdivide-s-o)
+endif

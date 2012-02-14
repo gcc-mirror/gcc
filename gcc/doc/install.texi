@@ -3096,6 +3096,10 @@ information are.
 @item
 @uref{#c6x-x-x,,c6x-*-*}
 @item
+@uref{#tilegx-x-linux,,tilegx-*-linux*}
+@item
+@uref{#tilepro-x-linux,,tilepro-*-linux*}
+@item
 @uref{#x-x-vxworks,,*-*-vxworks*}
 @item
 @uref{#x86-64-x-x,,x86_64-*-*, amd64-*-*}
@@ -4456,6 +4460,22 @@ This is a synonym for @samp{sparc64-*-solaris2*}.
 @heading @anchor{c6x-x-x}c6x-*-*
 
 The C6X family of processors. This port requires binutils-2.22 or newer.
+
+@html
+<hr />
+@end html
+@heading @anchor{tilegx-*-linux}tilegx-*-linux*
+
+The TILE-Gx processor running GNU/Linux.  This port requires
+binutils-2.22 or newer.
+
+@html
+<hr />
+@end html
+@heading @anchor{tilepro-*-linux}tilepro-*-linux*
+
+The TILEPro processor running GNU/Linux.  This port requires
+binutils-2.22 or newer.
 
 @html
 <hr />

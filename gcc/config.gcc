@@ -448,6 +448,14 @@ tic6x-*-*)
 xtensa*-*-*)
 	extra_options="${extra_options} fused-madd.opt"
 	;;
+tilegx*-*-*)
+	cpu_type=tilegx
+	need_64bit_hwint=yes
+	;;
+tilepro-*-*)
+	cpu_type=tilepro
+	need_64bit_hwint=yes
+	;;
 esac
 
 tm_file=${cpu_type}/${cpu_type}.h
@@ -2467,6 +2475,20 @@ tic6x-*-uclinux)
 	tmake_file="t-sysroot-suffix t-slibgcc"
 	tmake_file="${tmake_file} c6x/t-c6x c6x/t-c6x-elf c6x/t-c6x-uclinux"
 	use_collect2=no
+	;;
+tilegx-*-linux*)
+	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h tilegx/linux.h ${tm_file}"
+        tmake_file="${tmake_file} tilegx/t-tilegx"
+	extra_objs="mul-tables.o"
+	c_target_objs="tilegx-c.o"
+	cxx_target_objs="tilegx-c.o"
+	;;
+tilepro-*-linux*)
+	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h tilepro/linux.h ${tm_file}"
+        tmake_file="${tmake_file} tilepro/t-tilepro"
+	extra_objs="mul-tables.o"
+	c_target_objs="tilepro-c.o"
+	cxx_target_objs="tilepro-c.o"
 	;;
 v850*-*-*)
 	case ${target} in

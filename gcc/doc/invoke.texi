@@ -923,6 +923,12 @@ See RS/6000 and PowerPC Options.
 @emph{System V Options}
 @gccoptlist{-Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}}
 
+@emph{TILE-Gx Options}
+@gccoptlist{-mcpu=CPU -m32 -m64}
+
+@emph{TILEPro Options}
+@gccoptlist{-mcpu=CPU -m32}
+
 @emph{V850 Options}
 @gccoptlist{-mlong-calls  -mno-long-calls  -mep  -mno-ep @gol
 -mprolog-function  -mno-prolog-function  -mspace @gol
@@ -10349,6 +10355,8 @@ platform.
 * SPARC Options::
 * SPU Options::
 * System V Options::
+* TILE-Gx Options::
+* TILEPro Options::
 * V850 Options::
 * VAX Options::
 * VxWorks Options::
@@ -18477,6 +18485,46 @@ Look in the directory @var{dir} to find the M4 preprocessor.
 The assembler uses this option.
 @c This is supposed to go with a -Yd for predefined M4 macro files, but
 @c the generic assembler that comes with Solaris takes just -Ym.
+@end table
+
+@node TILE-Gx Options
+@subsection TILE-Gx Options
+@cindex TILE-Gx options
+
+These @samp{-m} options are supported on the TILE-Gx:
+
+@table @gcctabopt
+@item -mcpu=@var{name}
+@opindex mcpu
+Selects the type of CPU to be targeted.  Currently the only supported
+type is @samp{tilegx}.
+
+@item -m32
+@itemx -m64
+@opindex m32
+@opindex m64
+Generate code for a 32-bit or 64-bit environment.  The 32-bit
+environment sets int, long, and pointer to 32 bits.  The 64-bit
+environment sets int to 32 bits and long and pointer to 64 bits.
+@end table
+
+@node TILEPro Options
+@subsection TILEPro Options
+@cindex TILEPro options
+
+These @samp{-m} options are supported on the TILEPro:
+
+@table @gcctabopt
+@item -mcpu=@var{name}
+@opindex mcpu
+Selects the type of CPU to be targeted.  Currently the only supported
+type is @samp{tilepro}.
+
+@item -m32
+@opindex m32
+Generate code for a 32-bit environment, which sets int, long, and
+pointer to 32 bits.  This is the only supported behavior so the flag
+is essentially ignored.
 @end table
 
 @node V850 Options

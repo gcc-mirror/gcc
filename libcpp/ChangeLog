@@ -1,3 +1,8 @@
+2012-02-14  Walter Lee  <walt@tilera.com>
+
+	* configure.ac: Require 64-bit hwint for tilegx and tilepro.
+	* configure: Regenerate.
+
 2012-01-09  Richard Guenther  <rguenther@suse.de>
 
 	* macro.c (_cpp_builtin_macro_text): Remove unused variable map.

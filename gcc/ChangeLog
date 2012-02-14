@@ -1,3 +1,56 @@
+2012-02-14  Walter Lee  <walt@tilera.com>
+
+	* config.gcc: Handle tilegx and tilepro.
+	* configure.ac (gcc_cv_as_dwarf2_debug_line): Enable test for
+	tilegx and tilepro.
+	Add HAVE_AS_TLS check for tilegx and tilepro.
+	* configure: Regenerate.
+	* doc/contrib.texi: Add Mat Hostetter and self.
+	* doc/extend.texi (TILE-Gx Built-in Functions): New node.
+	Document instruction intrinsics and network accessing intrinsics.
+	(TILEPro Built-in Functions): New node.  Document instruction
+	intrinsics and network accessing intrinsics.
+	* doc/install.texi (Specific, tilegx-*-linux*): Document it.
+	(Specific, tilepro-*-linux*): Likewise.
+	* doc/invoke.texi (TILE-Gx Options): New section.
+	(TILEPro Options): New section.
+	* doc/md.texi (TILE-Gx): New section.
+	(TILEPro): New section.
+	* common/config/tilegx/tilegx-common.c: New file.
+	* common/config/tilepro/tilepro-common.c: New file.
+	* config/tilegx/constraints.md: New file.
+	* config/tilegx/linux.h: New file.
+	* config/tilegx/mul-tables.c: New file.
+	* config/tilegx/predicates.md: New file.
+	* config/tilegx/sync.md: New file.
+	* config/tilegx/t-tilegx: New file.
+	* config/tilegx/tilegx-builtins.h: New file.
+	* config/tilegx/tilegx-c.c: New file.
+	* config/tilegx/tilegx-generic.md: New file.
+	* config/tilegx/tilegx-modes.def: New file.
+	* config/tilegx/tilegx-multiply.h: New file.
+	* config/tilegx/tilegx-protos.h: New file.
+	* config/tilegx/tilegx.c: New file.
+	* config/tilegx/tilegx.h: New file.
+	* config/tilegx/tilegx.md: New file.
+	* config/tilegx/tilegx.opt: New file.
+	* config/tilepro/constraints.md: New file.
+	* config/tilepro/gen-mul-tables.cc: New file.
+	* config/tilepro/linux.h: New file.
+	* config/tilepro/mul-tables.c: New file.
+	* config/tilepro/predicates.md: New file.
+	* config/tilepro/t-tilepro: New file.
+	* config/tilepro/tilepro-builtins.h: New file.
+	* config/tilepro/tilepro-c.c: New file.
+	* config/tilepro/tilepro-generic.md: New file.
+	* config/tilepro/tilepro-modes.def: New file.
+	* config/tilepro/tilepro-multiply.h: New file.
+	* config/tilepro/tilepro-protos.h: New file.
+	* config/tilepro/tilepro.c: New file.
+	* config/tilepro/tilepro.h: New file.
+	* config/tilepro/tilepro.md: New file.
+	* config/tilepro/tilepro.opt: New file.
+
 2012-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/52210
