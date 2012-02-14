@@ -2436,6 +2436,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
     memcpy ((char *) olddecl + sizeof (struct tree_common),
 	    (char *) newdecl + sizeof (struct tree_common),
 	    sizeof (struct tree_decl_common) - sizeof (struct tree_common));
+    DECL_USER_ALIGN (olddecl) = DECL_USER_ALIGN (newdecl);
     switch (TREE_CODE (olddecl))
       {
       case FUNCTION_DECL:
