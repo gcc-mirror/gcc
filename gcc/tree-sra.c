@@ -2172,11 +2172,21 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	      && (root->grp_scalar_write || root->grp_assignment_write))))
     {
       bool new_integer_type;
-      if (TREE_CODE (root->type) == ENUMERAL_TYPE)
+      /* Always create access replacements that cover the whole access.
+         For integral types this means the precision has to match.
+	 Avoid assumptions based on the integral type kind, too.  */
+      if (INTEGRAL_TYPE_P (root->type)
+	  && (TREE_CODE (root->type) != INTEGER_TYPE
+	      || TYPE_PRECISION (root->type) != root->size)
+	  /* But leave bitfield accesses alone.  */
+	  && (root->offset % BITS_PER_UNIT) == 0)
 	{
 	  tree rt = root->type;
-	  root->type = build_nonstandard_integer_type (TYPE_PRECISION (rt),
+	  root->type = build_nonstandard_integer_type (root->size,
 						       TYPE_UNSIGNED (rt));
+	  root->expr = build_ref_for_offset (UNKNOWN_LOCATION,
+					     root->base, root->offset,
+					     root->type, NULL, false);
 	  new_integer_type = true;
 	}
       else
