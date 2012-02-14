@@ -1,10 +1,15 @@
-2012-02-15  Uros Bizjak  <ubizjak@gmail.com>
+2012-02-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/target.h (cpu_relax): Read from CC register.
+	* config/sparc/sjlj.S (GTM_longjmp): Restore %fp atomically.
+
+2012-02-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/x86/target.h (GTM_longjmp): Jump indirect from memory address.
 
 2012-02-13  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* configure.tgt (target_cpu): Handle sparc and sparc64 & sparcv9.
+	* configure.tgt (target_cpu): Handle sparc and sparc64/sparcv9.
 	* config/sparc/cacheline.h: New file.
 	* config/sparc/target.h: Likewise.
 	* config/sparc/sjlj.S: Likewise.
@@ -19,8 +24,7 @@
 2012-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libitm/51822
-	* testsuite/libitm.c++/c++.exp (lang_link_flags): Add
-	-shared-libgcc.
+	* testsuite/libitm.c++/c++.exp (lang_link_flags): Add -shared-libgcc.
 	Correct libgomp references.
 
 2012-01-24  Torvald Riegel  <triegel@redhat.com>

@@ -79,12 +79,13 @@ _ITM_beginTransaction:
 GTM_longjmp:
 	cfi_startproc
 	flushw
-	load	[%o1 + OFFSET (JB_CFA)], %fp
-	cfi_def_cfa(%fp, 0)
 #if STACK_BIAS
-	sub	%fp, STACK_BIAS, %fp
-	cfi_def_cfa_offset(STACK_BIAS)
+	load	[%o1 + OFFSET (JB_CFA)], %g1
+	sub	%g1, STACK_BIAS, %fp
+#else
+	load	[%o1 + OFFSET (JB_CFA)], %fp
 #endif
+	cfi_def_cfa(%fp, STACK_BIAS)
 	load	[%o1 + OFFSET (JB_PC)], %o7
 	jmp	%o7+8
 	 restore %g0, %o0, %o0
