@@ -40,7 +40,7 @@ typedef struct gtm_jmpbuf
 static inline void
 cpu_relax (void)
 {
-  __asm volatile ("" : : : "memory");
+  __asm volatile ("rd %%ccr, %%g0" : : : "memory");
 }
 
 } // namespace GTM
