@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
@@ -3945,6 +3945,7 @@ prune_ready_list (state_t temp_state, bool first_cycle_insn_p,
 		  bool shadows_only_p, bool modulo_epilogue_p)
 {
   int i;
+  bool sched_group_found = false;
 
  restart:
   for (i = 0; i < ready.n_ready; i++)
@@ -3953,13 +3954,27 @@ prune_ready_list (state_t temp_state, bool first_cycle_insn_p,
       int cost = 0;
       const char *reason = "resource conflict";
 
-      if (modulo_epilogue_p && !DEBUG_INSN_P (insn)
-	  && INSN_EXACT_TICK (insn) == INVALID_TICK)
+      if (DEBUG_INSN_P (insn))
+	continue;
+
+      if (SCHED_GROUP_P (insn) && !sched_group_found)
+	{
+	  sched_group_found = true;
+	  if (i > 0)
+	    goto restart;
+	}
+
+      if (sched_group_found && !SCHED_GROUP_P (insn))
+	{
+	  cost = 1;
+	  reason = "not in sched group";
+	}
+      else if (modulo_epilogue_p && INSN_EXACT_TICK (insn) == INVALID_TICK)
 	{
 	  cost = max_insn_queue_index;
 	  reason = "not an epilogue insn";
 	}
-      if (shadows_only_p && !DEBUG_INSN_P (insn) && !SHADOW_P (insn))
+      else if (shadows_only_p && !SHADOW_P (insn))
 	{
 	  cost = 1;
 	  reason = "not a shadow";

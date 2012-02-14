@@ -1,3 +1,9 @@
+2012-02-15  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* haifa-sched.c (prune_ready_list): Ensure that if there is a
+	sched-group insn, it either remains alone or the entire list is
+	pruned.
+
 2012-02-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/install.texi (Prerequisites): Fix grammar.
