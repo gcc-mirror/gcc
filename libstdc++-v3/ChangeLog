@@ -1,3 +1,7 @@
+2012-02-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* 30_threads/thread/native_handle/typesizes.cc: Do not run on cygwin.
+
 2012-02-14  Tom Tromey  <tromey@redhat.com>
 
 	* testsuite/libstdc++-prettyprinters/cxx11.cc (main): Add new
