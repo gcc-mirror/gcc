@@ -42,6 +42,13 @@ gccgo$(exeext): $(GCCGO_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
 	  $(GCCGO_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
 	  $(EXTRA_GCC_LIBS) $(LIBS)
 
+# The cross-compiler version.  This is built mainly as a signal to the
+# go.install-common target.  If this executable exists, it means that
+# go.all.cross was run.
+gccgo-cross$(exeext): gccgo$(exeext)
+	-rm -f gccgo-cross$(exeext)
+	cp gccgo$(exeext) gccgo-cross$(exeext)
+
 # Use strict warnings.
 go-warn = $(STRICT_WARN)
 
@@ -107,7 +114,7 @@ gccgo.pod: go/gccgo.texi
 
 # Build hooks.
 
-go.all.cross: gccgo$(exeext)
+go.all.cross: gccgo-cross$(exeext)
 go.start.encap: gccgo$(exeext)
 go.rest.encap:
 go.info: doc/gccgo.info
@@ -136,13 +143,15 @@ check_go_parallelize = go-test.exp=*/test/\[0-57-9a-bd-hj-zA-Z\]* \
 
 go.install-common: installdirs
 	-rm -f $(DESTDIR)$(bindir)/$(GCCGO_INSTALL_NAME)$(exeext)
-	-rm -f $(DESTDIR)$(bindir)/$(GCCGO_TARGET_INSTALL_NAME)$(exeext)
 	$(INSTALL_PROGRAM) gccgo$(exeext) $(DESTDIR)$(bindir)/$(GCCGO_INSTALL_NAME)$(exeext)
-	if test -f $(DESTDIR)$(bindir)$(GCCGO_TARGET_INSTALL_NAME)$(exeext); then \
-	  :; \
-	else \
-	  cd $(DESTDIR)$(bindir) && \
-	   $(LN) $(GCCGO_INSTALL_NAME)$(exeext) $(GCCGO_TARGET_INSTALL_NAME)$(exeext); \
+	-if test -f go1$(exeext); then \
+	  if test -f gccgo-cross$(exeext); then \
+	    :; \
+	  else \
+	    rm -f $(DESTDIR)$(bindir)/$(GCCGO_TARGET_INSTALL_NAME)$(exeext); \
+	    ( cd $(DESTDIR)$(bindir) && \
+	      $(LN) $(GCCGO_INSTALL_NAME)$(exeext) $(GCCGO_TARGET_INSTALL_NAME)$(exeext) ); \
+	  fi; \
 	fi
 
 go.install-plugin:
