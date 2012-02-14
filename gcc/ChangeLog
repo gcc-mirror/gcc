@@ -1,3 +1,18 @@
+2012-02-14  Bin Cheng  <bin.cheng@arm.com>
+
+	Backport from mainline.
+	2012-01-30  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/51835
+	* config/arm/arm.c (arm_libcall_uses_aapcs_base): Use correct ABI
+	for __aeabi_d2iz/__aeabi_d2uiz with hard-float.
+
+	2011-06-08  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm.c (arm_libcall_uses_aapcs_base): Use correct ABI
+	for double-precision helper functions in hard-float mode if only
+	single-precision arithmetic is supported in hardware.
+
 2012-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
