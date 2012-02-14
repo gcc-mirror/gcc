@@ -1,3 +1,10 @@
+2012-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52210
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Call
+	vect_model_simple_cost with two entry vect_def_type array instead
+	of an address of dt.
+
 2012-02-14  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/52178
