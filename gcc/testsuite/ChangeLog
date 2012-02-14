@@ -3,6 +3,9 @@
 	Backported from mainline
 	2012-02-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/52247
+	* g++.dg/template/asmgoto1.C: New test.
+
 	PR c/52181
 	* c-c++-common/pr52181.c: New test.
 
