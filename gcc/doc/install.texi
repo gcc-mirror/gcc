@@ -498,7 +498,7 @@ the GCC-specific entry point.  You can download a suitable jar from
 
 If you wish to build the @command{gjdoc} binary in libjava, you will
 need to have an @file{antlr.jar} library available. The library is
-searched in system locations but can be configured with
+searched for in system locations but can be specified with
 @option{--with-antlr-jar=} instead.  When configuring with
 @option{--enable-java-maintainer-mode}, you will need to have one of
 the executables named @command{cantlr}, @command{runantlr} or
@@ -1736,7 +1736,7 @@ The following options only apply to building cross compilers.
 Tells GCC to consider @var{dir} as the root of a tree that contains
 (a subset of) the root filesystem of the target operating system.
 Target system headers, libraries and run-time object files will be
-searched in there.  More specifically, this acts as if
+searched for in there.  More specifically, this acts as if
 @option{--sysroot=@var{dir}} was added to the default options of the built
 compiler.  The specified directory is not copied into the
 install tree, unlike the options @option{--with-headers} and
