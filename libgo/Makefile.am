@@ -25,6 +25,7 @@ STAMP = echo timestamp >
 
 toolexecdir = $(glibgo_toolexecdir)
 toolexeclibdir = $(glibgo_toolexeclibdir)
+toolexeclibgodir = $(nover_glibgo_toolexeclibdir)/go/$(gcc_version)/$(target_alias)
 
 LIBFFI = @LIBFFI@
 LIBFFIINCS = @LIBFFIINCS@
@@ -96,8 +97,6 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 
 toolexeclib_LTLIBRARIES = libgo.la
 toolexeclib_LIBRARIES = libgobegin.a
-
-toolexeclibgodir = $(toolexeclibdir)/go/$(gcc_version)/$(target_alias)
 
 toolexeclibgo_DATA = \
 	bufio.gox \

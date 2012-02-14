@@ -58,7 +58,6 @@ AC_SUBST(WERROR)
 
 glibgo_toolexecdir=no
 glibgo_toolexeclibdir=no
-glibgo_prefixdir=$prefix
 
 AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
 AC_ARG_ENABLE([version-specific-runtime-libs],
@@ -80,25 +79,28 @@ fi
 
 # Calculate glibgo_toolexecdir, glibgo_toolexeclibdir
 # Install a library built with a cross compiler in tooldir, not libdir.
+if test -n "$with_cross_host" &&
+   test x"$with_cross_host" != x"no"; then
+  nover_glibgo_toolexecdir='${exec_prefix}/${host_alias}'
+  nover_glibgo_toolexeclibdir='${toolexecdir}/lib'
+else
+  nover_glibgo_toolexecdir='${libdir}/gcc/${host_alias}'
+  nover_glibgo_toolexeclibdir='${libdir}'
+fi
+multi_os_directory=`$CC -print-multi-os-directory`
+case $multi_os_directory in
+  .) ;; # Avoid trailing /.
+  *) nover_glibgo_toolexeclibdir=${nover_glibgo_toolexeclibdir}/${multi_os_directory} ;;
+esac
+
 if test x"$glibgo_toolexecdir" = x"no"; then
-  if test -n "$with_cross_host" &&
-     test x"$with_cross_host" != x"no"; then
-    glibgo_toolexecdir='${exec_prefix}/${host_alias}'
-    glibgo_toolexeclibdir='${toolexecdir}/lib'
-  else
-    glibgo_toolexecdir='${libdir}/gcc/${host_alias}'
-    glibgo_toolexeclibdir='${libdir}'
-  fi
-  multi_os_directory=`$CC -print-multi-os-directory`
-  case $multi_os_directory in
-    .) ;; # Avoid trailing /.
-    *) glibgo_toolexeclibdir=$glibgo_toolexeclibdir/$multi_os_directory ;;
-  esac
+  glibgo_toolexecdir="${nover_glibgo_toolexecdir}"
+  glibgo_toolexeclibdir="${nover_glibgo_toolexeclibdir}"
 fi
 
-AC_SUBST(glibgo_prefixdir)
 AC_SUBST(glibgo_toolexecdir)
 AC_SUBST(glibgo_toolexeclibdir)
+AC_SUBST(nover_glibgo_toolexeclibdir)
 
 # See if the user wants to configure without libffi.  Some
 # architectures don't support it.  FIXME: We should set a default

@@ -671,9 +671,9 @@ LIBGO_IS_DARWIN_TRUE
 go_include
 LIBFFIINCS
 LIBFFI
+nover_glibgo_toolexeclibdir
 glibgo_toolexeclibdir
 glibgo_toolexecdir
-glibgo_prefixdir
 WERROR
 WARN_FLAGS
 CC_FOR_BUILD
@@ -13391,7 +13391,6 @@ WERROR="-Werror"
 
 glibgo_toolexecdir=no
 glibgo_toolexeclibdir=no
-glibgo_prefixdir=$prefix
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for --enable-version-specific-runtime-libs" >&5
 $as_echo_n "checking for --enable-version-specific-runtime-libs... " >&6; }
@@ -13417,20 +13416,23 @@ fi
 
 # Calculate glibgo_toolexecdir, glibgo_toolexeclibdir
 # Install a library built with a cross compiler in tooldir, not libdir.
+if test -n "$with_cross_host" &&
+   test x"$with_cross_host" != x"no"; then
+  nover_glibgo_toolexecdir='${exec_prefix}/${host_alias}'
+  nover_glibgo_toolexeclibdir='${toolexecdir}/lib'
+else
+  nover_glibgo_toolexecdir='${libdir}/gcc/${host_alias}'
+  nover_glibgo_toolexeclibdir='${libdir}'
+fi
+multi_os_directory=`$CC -print-multi-os-directory`
+case $multi_os_directory in
+  .) ;; # Avoid trailing /.
+  *) nover_glibgo_toolexeclibdir=${nover_glibgo_toolexeclibdir}/${multi_os_directory} ;;
+esac
+
 if test x"$glibgo_toolexecdir" = x"no"; then
-  if test -n "$with_cross_host" &&
-     test x"$with_cross_host" != x"no"; then
-    glibgo_toolexecdir='${exec_prefix}/${host_alias}'
-    glibgo_toolexeclibdir='${toolexecdir}/lib'
-  else
-    glibgo_toolexecdir='${libdir}/gcc/${host_alias}'
-    glibgo_toolexeclibdir='${libdir}'
-  fi
-  multi_os_directory=`$CC -print-multi-os-directory`
-  case $multi_os_directory in
-    .) ;; # Avoid trailing /.
-    *) glibgo_toolexeclibdir=$glibgo_toolexeclibdir/$multi_os_directory ;;
-  esac
+  glibgo_toolexecdir="${nover_glibgo_toolexecdir}"
+  glibgo_toolexeclibdir="${nover_glibgo_toolexeclibdir}"
 fi
 
 

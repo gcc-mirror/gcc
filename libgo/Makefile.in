@@ -451,7 +451,6 @@ dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
-glibgo_prefixdir = @glibgo_prefixdir@
 glibgo_toolexecdir = @glibgo_toolexecdir@
 glibgo_toolexeclibdir = @glibgo_toolexeclibdir@
 go_include = @go_include@
@@ -472,6 +471,7 @@ localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 multi_basedir = @multi_basedir@
+nover_glibgo_toolexeclibdir = @nover_glibgo_toolexeclibdir@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
 prefix = @prefix@
@@ -501,6 +501,7 @@ PWD_COMMAND = $${PWDCMD-pwd}
 STAMP = echo timestamp >
 toolexecdir = $(glibgo_toolexecdir)
 toolexeclibdir = $(glibgo_toolexeclibdir)
+toolexeclibgodir = $(nover_glibgo_toolexeclibdir)/go/$(gcc_version)/$(target_alias)
 WARN_CFLAGS = $(WARN_FLAGS) $(WERROR)
 
 # -I/-D flags to pass when compiling.
@@ -564,7 +565,6 @@ AM_MAKEFLAGS = \
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 toolexeclib_LTLIBRARIES = libgo.la
 toolexeclib_LIBRARIES = libgobegin.a
-toolexeclibgodir = $(toolexeclibdir)/go/$(gcc_version)/$(target_alias)
 toolexeclibgo_DATA = \
 	bufio.gox \
 	bytes.gox \
