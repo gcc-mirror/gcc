@@ -1,5 +1,15 @@
 2012-02-14  Torvald Riegel  <triegel@redhat.com>
 
+	* libitm_i.h (GTM::gtm_rwlog_entry): New.
+	(GTM::gtm_thread): Add read and write logs.
+	(GTM::dispatch_ml_wt): Declare.
+	* retry.cc (parse_default_method): Support ml_wt.
+	* method-ml.cc: New file.
+	* Makefile.am: Add method-ml.cc.
+	* Makefile.in: Regenerate.
+
+2012-02-14  Torvald Riegel  <triegel@redhat.com>
+
 	* dispatch.h (GTM::abi_dispatch::supports): New.
 	(GTM::method_group::reinit): New.
 	* retry.cc (GTM::gtm_thread::decide_retry_strategy): Use reinit().
