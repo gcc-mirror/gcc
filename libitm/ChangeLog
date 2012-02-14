@@ -1,3 +1,7 @@
+2012-02-14  Richard Henderson  <rth@redhat.com>
+
+	* config/x86/target.h (GTM_longjmp): Correct the .cfi corrections.
+
 2012-02-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/x86/target.h (GTM_longjmp): Correct .cfi directives.
