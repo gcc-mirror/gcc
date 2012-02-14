@@ -1,3 +1,12 @@
+2012-02-14  Bin Cheng  <bin.cheng@arm.com>
+
+	Backport from mainline.
+	2011-06-08  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm.c (arm_libcall_uses_aapcs_base): Use correct ABI
+	for double-precision helper functions in hard-float mode if only
+	single-precision arithmetic is supported in hardware.
+
 2012-02-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* compare-elim.c (find_comparisons_in_bb): Eliminate only compares
