@@ -12612,8 +12612,17 @@ tsubst_copy_asm_operands (tree t, tree args, tsubst_flags_t complain,
   if (purpose)
     purpose = RECUR (purpose);
   value = TREE_VALUE (t);
-  if (value && TREE_CODE (value) != LABEL_DECL)
-    value = RECUR (value);
+  if (value)
+    {
+      if (TREE_CODE (value) != LABEL_DECL)
+	value = RECUR (value);
+      else
+	{
+	  value = lookup_label (DECL_NAME (value));
+	  gcc_assert (TREE_CODE (value) == LABEL_DECL);
+	  TREE_USED (value) = 1;
+	}
+    }
   chain = TREE_CHAIN (t);
   if (chain && chain != void_type_node)
     chain = RECUR (chain);

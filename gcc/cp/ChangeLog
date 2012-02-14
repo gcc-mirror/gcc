@@ -1,3 +1,9 @@
+2012-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/52247
+	* pt.c (tsubst_copy_asm_operands): For LABEL_DECL values call
+	lookup_label on label's name and set TREE_USED.
+
 2012-02-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39055
