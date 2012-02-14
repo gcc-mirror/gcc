@@ -1,3 +1,9 @@
+2012-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/51950
+	* dwarf2out.c (clone_tree_hash): New function.
+	(copy_decls_walk): Use it instead of clone_tree.
+
 2012-02-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52244
