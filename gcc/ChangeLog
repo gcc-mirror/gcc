@@ -1,3 +1,11 @@
+2012-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/51969
+	Backported from mainline
+	2011-11-08  Michael Matz  <matz@suse.de>
+
+	* gengtype.c (write_field_root): Avoid out-of-scope access of newv.
+
 2012-02-14  Bin Cheng  <bin.cheng@arm.com>
 
 	Backport from mainline.
