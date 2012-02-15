@@ -8812,33 +8812,53 @@ might increase delay time. @code{ticks} must be a compile time
 integer constant; delays with a variable number of cycles are not supported.
 
 @smallexample
-     unsigned char __builtin_avr_map8 (unsigned long map, unsigned char val)
+     unsigned char __builtin_avr_insert_bits (unsigned long map, unsigned char bits, unsigned char val)
 @end smallexample
 
 @noindent
-Each bit of the result is copied from a specific bit of @code{val}.
-@code{map} is a compile time constant that represents a map composed
-of 8 nibbles (4-bit groups):
-The @var{n}-th nibble of @code{map} specifies which bit of @code{val}
-is to be moved to the @var{n}-th bit of the result.
-For example, @code{map = 0x76543210} represents identity: The MSB of
-the result is read from the 7-th bit of @code{val}, the LSB is
-read from the 0-th bit to @code{val}, etc.
-Two more examples: @code{0x01234567} reverses the bit order and
-@code{0x32107654} is equivalent to a @code{swap} instruction.
+Insert bits from @var{bits} into @var{val} and return the resulting
+value. The nibbles of @var{map} determine how the insertion is
+performed: Let @var{X} be the @var{n}-th nibble of @var{map}
+@enumerate
+@item If @var{X} is @code{0xf},
+then the @var{n}-th bit of @var{val} is returned unaltered.
+
+@item If X is in the range 0@dots{}7,
+then the @var{n}-th result bit is set to the @var{X}-th bit of @var{bits}
+
+@item If X is in the range 8@dots{}@code{0xe},
+then the @var{n}-th result bit is undefined.
+@end enumerate
 
 @noindent
-One typical use case for this and the following built-in is adjusting input and
-output values to non-contiguous port layouts.
+One typical use case for this built-in is adjusting input and
+output values to non-contiguous port layouts. Some examples:
 
 @smallexample
-     unsigned int __builtin_avr_map16 (unsigned long long map, unsigned int val)
+// same as val, bits is unused
+__builtin_avr_insert_bits (0xffffffff, bits, val)
 @end smallexample
 
-@noindent
-Similar to the previous built-in except that it operates on @code{int}
-and thus 16 bits are involved.  Again, @code{map} must be a compile
-time constant.
+@smallexample
+// same as bits, val is unused
+__builtin_avr_insert_bits (0x76543210, bits, val)
+@end smallexample
+
+@smallexample
+// same as rotating bits by 4
+__builtin_avr_insert_bits (0x32107654, bits, 0)
+@end smallexample
+
+@smallexample
+// high-nibble of result is the high-nibble of val
+// low-nibble of result is the low-nibble of bits
+__builtin_avr_insert_bits (0xffff3210, bits, val)
+@end smallexample
+
+@smallexample
+// reverse the bit order of bits
+__builtin_avr_insert_bits (0x01234567, bits, 0)
+@end smallexample
 
 @node Blackfin Built-in Functions
 @subsection Blackfin Built-in Functions

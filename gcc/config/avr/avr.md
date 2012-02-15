@@ -68,7 +68,7 @@
    UNSPEC_FMULSU
    UNSPEC_COPYSIGN
    UNSPEC_IDENTITY
-   UNSPEC_MAP_BITS
+   UNSPEC_INSERT_BITS
    ])
 
 (define_c_enum "unspecv"
@@ -144,7 +144,7 @@
    ashlhi, ashrhi, lshrhi,
    ashlsi, ashrsi, lshrsi,
    ashlpsi, ashrpsi, lshrpsi,
-   map_bits,
+   insert_bits,
    no"
   (const_string "no"))
 
@@ -5264,28 +5264,20 @@
   [(set_attr "length" "9")
    (set_attr "cc" "clobber")])
 
-(define_insn "map_bitsqi"
-  [(set (match_operand:QI 0 "register_operand"             "=d")
-        (unspec:QI [(match_operand:SI 1 "const_int_operand" "n")
-                    (match_operand:QI 2 "register_operand"  "r")]
-                   UNSPEC_MAP_BITS))]
-  ""
-  {
-    return avr_out_map_bits (insn, operands, NULL);
-  }
-  [(set_attr "adjust_len" "map_bits")
-   (set_attr "cc" "clobber")])
 
-(define_insn "map_bitshi"
-  [(set (match_operand:HI 0 "register_operand"               "=&r")
-        (unspec:HI [(match_operand:DI 1 "const_double_operand" "n")
-                    (match_operand:HI 2 "register_operand"     "r")]
-                   UNSPEC_MAP_BITS))]
+;; __builtin_avr_insert_bits
+
+(define_insn "insert_bits"
+  [(set (match_operand:QI 0 "register_operand"              "=r  ,d  ,r")
+        (unspec:QI [(match_operand:SI 1 "const_int_operand"  "C0f,Cxf,C0f")
+                    (match_operand:QI 2 "register_operand"   "r  ,r  ,r")
+                    (match_operand:QI 3 "nonmemory_operand"  "n  ,0  ,0")]
+                   UNSPEC_INSERT_BITS))]
   ""
   {
-    return avr_out_map_bits (insn, operands, NULL);
+    return avr_out_insert_bits (operands, NULL);
   }
-  [(set_attr "adjust_len" "map_bits")
+  [(set_attr "adjust_len" "insert_bits")
    (set_attr "cc" "clobber")])
 
 
