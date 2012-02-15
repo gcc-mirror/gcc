@@ -4180,6 +4180,11 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 					    package != NULL,
 					    Gogo::is_hidden_name(name),
 					    this->location_);
+	  else if (function == NULL)
+	    {
+	      go_assert(saw_errors());
+	      bvar = backend->error_variable();
+	    }
 	  else
 	    {
 	      tree fndecl = function->func_value()->get_decl();

@@ -126,7 +126,9 @@ class Backend
 
   // Fill in a placeholder pointer type as a pointer.  This takes a
   // type returned by placeholder_pointer_type and arranges for it to
-  // point to to_type.  Returns true on success, false on failure.
+  // point to the type that TO_TYPE points to (that is, PLACEHOLDER
+  // becomes the same type as TO_TYPE).  Returns true on success,
+  // false on failure.
   virtual bool
   set_placeholder_pointer_type(Btype* placeholder, Btype* to_type) = 0;
 

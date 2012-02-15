@@ -3595,7 +3595,7 @@ Pointer_type::do_hash_for_method(Gogo* gogo) const
   return this->to_type_->hash_for_method(gogo) << 4;
 }
 
-// The tree for a pointer type.
+// Get the backend representation for a pointer type.
 
 Btype*
 Pointer_type::do_get_backend(Gogo* gogo)
@@ -5345,6 +5345,7 @@ Array_type::do_get_backend(Gogo* gogo)
 }
 
 // Return the backend representation of the element type.
+
 Btype*
 Array_type::get_backend_element(Gogo* gogo)
 {
@@ -7567,6 +7568,11 @@ Find_type_use::type(Type* type)
 	  this->find_type_->add_dependency(type->named_type());
 	  break;
 
+	case Type::TYPE_NAMED:
+	case Type::TYPE_FORWARD:
+	  go_assert(saw_errors());
+	  break;
+
 	case Type::TYPE_VOID:
 	case Type::TYPE_SINK:
 	case Type::TYPE_FUNCTION:
@@ -7575,8 +7581,6 @@ Find_type_use::type(Type* type)
 	case Type::TYPE_MAP:
 	case Type::TYPE_CHANNEL:
 	case Type::TYPE_INTERFACE:
-	case Type::TYPE_NAMED:
-	case Type::TYPE_FORWARD:
 	default:
 	  go_unreachable();
 	}
