@@ -1077,17 +1077,6 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	}
     }
 
-  /* The GNAT tree has the type of a function as the type of its result.  Also
-     use the type of the result if the Etype is a subtype which is nominally
-     unconstrained.  But remove any padding from the resulting type.  */
-  if (TREE_CODE (TREE_TYPE (gnu_result)) == FUNCTION_TYPE
-      || Is_Constr_Subt_For_UN_Aliased (gnat_temp_type))
-    {
-      gnu_result_type = TREE_TYPE (gnu_result);
-      if (TYPE_IS_PADDING_P (gnu_result_type))
-	gnu_result_type = TREE_TYPE (TYPE_FIELDS (gnu_result_type));
-    }
-
   /* If we have a constant declaration and its initializer, try to return the
      latter to avoid the need to call fold in lots of places and the need for
      elaboration code if this identifier is used as an initializer itself.
@@ -1118,6 +1107,24 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	 global level.  This should be fixed in add_decl_expr.  */
       if ((constant_only && !address_of_constant) || !require_lvalue)
 	gnu_result = unshare_expr (DECL_INITIAL (gnu_result));
+    }
+
+  /* The GNAT tree has the type of a function set to its result type, so we
+     adjust here.  Also use the type of the result if the Etype is a subtype
+     that is nominally unconstrained.  Likewise if this is a deferred constant
+     of a discriminated type whose full view can be elaborated statically, to
+     avoid problematic conversions to the nominal subtype.  But remove any
+     padding from the resulting type.  */
+  if (TREE_CODE (TREE_TYPE (gnu_result)) == FUNCTION_TYPE
+      || Is_Constr_Subt_For_UN_Aliased (gnat_temp_type)
+      || (Ekind (gnat_temp) == E_Constant
+	  && Present (Full_View (gnat_temp))
+	  && Has_Discriminants (gnat_temp_type)
+	  && TREE_CODE (gnu_result) == CONSTRUCTOR))
+    {
+      gnu_result_type = TREE_TYPE (gnu_result);
+      if (TYPE_IS_PADDING_P (gnu_result_type))
+	gnu_result_type = TREE_TYPE (TYPE_FIELDS (gnu_result_type));
     }
 
   *gnu_result_type_p = gnu_result_type;

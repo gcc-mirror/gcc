@@ -1,5 +1,11 @@
 2012-02-15  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Identifier_to_gnu): Move block retrieving the
+	type of the result to the end and execute it for a deferred constant of
+	a discriminated type whose full view can be elaborated statically.
+
+2012-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Qualified_Expression>: If the
 	type is tagged, mark it as used for debugging purposes.
 	<N_Allocator>: Likewise for a qualified expression.
