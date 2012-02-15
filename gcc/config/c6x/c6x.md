@@ -1,5 +1,5 @@
 ;; Machine description for TI C6X.
-;; Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+;; Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
 ;; Contributed by Andrew Jenner <andrew@codesourcery.com>
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;; Contributed by CodeSourcery.
@@ -199,6 +199,17 @@
 	 (eq_attr "type" "mpyid") (const_int 10)
 	 (eq_attr "type" "mpyspdp") (const_int 7)
 	 (eq_attr "type" "mpysp2dp") (const_int 5)]
+	(const_int 1)))
+
+;; The number of cycles during which the instruction reserves functional
+;; units.
+(define_attr "reserve_cycles" ""
+  (cond [(eq_attr "type" "cmpdp") (const_int 2)
+	 (eq_attr "type" "adddp") (const_int 2)
+	 (eq_attr "type" "mpydp") (const_int 4)
+	 (eq_attr "type" "mpyi") (const_int 4)
+	 (eq_attr "type" "mpyid") (const_int 4)
+	 (eq_attr "type" "mpyspdp") (const_int 2)]
 	(const_int 1)))
 
 (define_attr "predicable" "no,yes"
