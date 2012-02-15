@@ -1,3 +1,11 @@
+2012-02-15  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2012-02-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46886
+	* testsuite/libgomp.c/pr46886.c: New testcase.
+
 2011-11-20  Andreas Tobler  <andreast@fgznet.ch>
 
 	* configure: Regenerate.

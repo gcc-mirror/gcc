@@ -104,7 +104,7 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
 
 /* Checks whether LOOP is a do-while style loop.  */
 
-static bool
+bool
 do_while_loop_p (struct loop *loop)
 {
   gimple stmt = last_stmt (loop->latch);

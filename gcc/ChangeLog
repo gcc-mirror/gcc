@@ -1,3 +1,14 @@
+2012-02-15  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2012-02-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46886
+	* tree-flow.h (do_while_loop_p): Declare.
+	* tree-ssa-loop-ch.c (do_while_loop_p): Export.
+	* tree-parloops.c (parallelize_loops): Only parallelize do-while
+	loops.
+
 2012-02-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/51921
