@@ -43,7 +43,9 @@ lst2=/tmp/$tool-lst2.$$
 lst3=/tmp/$tool-lst3.$$
 lst4=/tmp/$tool-lst4.$$
 lst5=/tmp/$tool-lst5.$$
-tmps="$tmp1 $tmp2 $now_s $before_s $lst1 $lst2 $lst3 $lst4 $lst5"
+sum1=/tmp/$tool-sum1.$$
+sum2=/tmp/$tool-sum2.$$
+tmps="$tmp1 $tmp2 $now_s $before_s $lst1 $lst2 $lst3 $lst4 $lst5 $sum1 $sum2"
 
 [ "$1" = "-strict" ] && strict=$1 && shift
 [ "$1" = "-?" ] && usage
@@ -60,8 +62,8 @@ if [ -d "$1" -a -d "$2" ] ; then
 	echo "## Dir2=$2: `cat $lst2 | wc -l` sum files"
 	echo
 	# remove leading directory components to compare
-	sed -e "s|^$1/||" $lst1 | sort >$lst3
-	sed -e "s|^$2/||" $lst2 | sort >$lst4
+	sed -e "s|^$1[/]*||" $lst1 | sort >$lst3
+	sed -e "s|^$2[/]*||" $lst2 | sort >$lst4
 	comm -23 $lst3 $lst4 >$lst5
 	if [ -s $lst5 ] ; then
 		echo "# Extra sum files in Dir1=$1"
@@ -83,14 +85,11 @@ if [ -d "$1" -a -d "$2" ] ; then
 		exit $exit_status
 	fi
 	cmnsums=`cat $lst5 | wc -l`
-	sum1="/tmp/$tool-sum-1"
-	sum2="/tmp/$tool-sum-2"
 	echo "# Comparing $cmnsums common sum files"
 	( for fname in `cat $lst5`; do cat $1/$fname; done ) >$sum1
 	( for fname in `cat $lst5`; do cat $2/$fname; done ) >$sum2
 	echo "## ${CONFIG_SHELL-/bin/sh} $0 $strict $sum1 $sum2"
 	${CONFIG_SHELL-/bin/sh} $0 $strict $sum1 $sum2
-	rm -f $sum1 $sum2
 	ret=$?
 	if [ $ret -ne 0 ]; then
 		exit_status=`expr $exit_status + 1`
