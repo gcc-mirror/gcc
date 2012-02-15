@@ -1,3 +1,8 @@
+2012-02-15  Tobias Grosser <grosser@fim.uni-passau.de>
+
+	PR tree-optimization/50561
+	* gcc.dg/graphite/pr50561.c: New testcase.
+
 2012-02-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.target/avr/torture/builtin_insert_bits-1.c: New test.

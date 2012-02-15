@@ -277,12 +277,26 @@ lst_project_loop (lst_p outer, lst_p inner, mpz_t stride)
       ppl_delete_Linear_Expression (expr);
 
       /* Remove inner loop and the static schedule of its body.  */
-      ds = XNEWVEC (ppl_dimension_type, 2);
-      ds[0] = inner_dim;
-      ds[1] = inner_dim + 1;
-      ppl_Polyhedron_remove_space_dimensions (poly, ds, 2);
-      PBB_NB_SCATTERING_TRANSFORM (pbb) -= 2;
-      free (ds);
+      /* FIXME: As long as we use PPL we are not able to remove the old
+	 scattering dimensions.  The reason is that these dimensions are not
+	 entirely unused.  They are not necessary as part of the scheduling
+	 vector, as the earlier dimensions already unambiguously define the
+	 execution time, however they may still be needed to carry modulo
+	 constraints as introduced e.g. by strip mining.  The correct solution
+	 would be to project these dimensions out of the scattering polyhedra.
+	 In case they are still required to carry modulo constraints they should be kept
+	 internally as existentially quantified dimensions.  PPL does only support
+         projection of rational polyhedra, however in this case we need an integer
+	 projection. With isl this will be trivial to implement.  For now we just
+	 leave the dimensions. This is a little ugly, but should be correct.  */
+      if (0) {
+	ds = XNEWVEC (ppl_dimension_type, 2);
+	ds[0] = inner_dim;
+	ds[1] = inner_dim + 1;
+	ppl_Polyhedron_remove_space_dimensions (poly, ds, 2);
+	PBB_NB_SCATTERING_TRANSFORM (pbb) -= 2;
+	free (ds);
+      }
     }
 
   mpz_clear (x);
@@ -412,7 +426,21 @@ lst_do_flatten (lst_p lst)
     if (LST_LOOP_P (l))
       {
 	res |= lst_flatten_loop (l, zero);
-	remove_unused_scattering_dimensions (l);
+
+	/* FIXME: As long as we use PPL we are not able to remove the old
+	   scattering dimensions.  The reason is that these dimensions are not
+	   entirely unused.  They are not necessary as part of the scheduling
+	   vector, as the earlier dimensions already unambiguously define the
+	   execution time, however they may still be needed to carry modulo
+	   constraints as introduced e.g. by strip mining.  The correct solution
+	   would be to project these dimensions out of the scattering polyhedra.
+	   In case they are still required to carry modulo constraints they should be kept
+	   internally as existentially quantified dimensions.  PPL does only support
+           projection of rational polyhedra, however in this case we need an integer
+	   projection. With isl this will be trivial to implement.  For now we just
+	   leave the dimensions. This is a little ugly, but should be correct.  */
+	if (0)
+	  remove_unused_scattering_dimensions (l);
       }
 
   lst_update_scattering (lst);

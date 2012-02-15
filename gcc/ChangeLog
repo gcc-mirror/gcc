@@ -1,3 +1,10 @@
+2012-02-15  Tobias Grosser <grosser@fim.uni-passau.de>
+
+	PR tree-optimization/50561
+	* graphite-flattening.c (lst_project_loop): Do not
+	remove old scattering dimensions after flattening.
+	(lst_do_flatten): Likewise.
+
 2012-02-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	* doc/extend.texi (AVR Built-in Functions): Remove doc for
