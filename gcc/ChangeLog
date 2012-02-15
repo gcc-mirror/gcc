@@ -1,3 +1,9 @@
+2012-02-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/52142
+	* ipa-inline.c (can_inline_edge_p): Do not inline tm_pure
+	functions into non-tm_pure functions.
+
 2012-02-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR lto/52178

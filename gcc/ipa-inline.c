@@ -284,10 +284,10 @@ can_inline_edge_p (struct cgraph_edge *e, bool report)
       e->inline_failed = CIF_EH_PERSONALITY;
       inlinable = false;
     }
-  /* TM pure functions should not get inlined if the outer function is
-     a TM safe function.  */
+  /* TM pure functions should not be inlined into non-TM_pure
+     functions.  */
   else if (is_tm_pure (callee->decl)
-	   && is_tm_safe (e->caller->decl))
+	   && !is_tm_pure (e->caller->decl))
     {
       e->inline_failed = CIF_UNSPECIFIED;
       inlinable = false;
