@@ -3642,24 +3642,34 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       went_into_elab_proc = true;
     }
 
-  /* First, create the temporary for the return value if we need it: for a
-     variable-sized return type if there is no target and this is not an
-     object declaration, or else there is a target and it is a slice or an
-     array with fixed size, as the gimplifier doesn't handle these cases;
-     otherwise for a function with copy-in/copy-out parameters if there is
-     no target, because we need to preserve the return value before copying
-     back the parameters.  This must be done before we push a binding level
-     around the call as we will pop it before copying the return value.  */
+  /* First, create the temporary for the return value when:
+
+       1. There is no target and the function has copy-in/copy-out parameters,
+	  because we need to preserve the return value before copying back the
+	  parameters.
+
+       2. There is no target and this is not an object declaration, and the
+	  return type is by-reference or has variable size, because in these
+	  cases the gimplifier cannot create the temporary.
+
+       3. There is a target and it is a slice or an array with fixed size,
+	  and the return type has variable size, because the gimplifier
+	  doesn't handle these cases.
+
+     This must be done before we push a binding level around the call, since
+     we will pop it before copying the return value.  */
   if (function_call
-      && ((TREE_CODE (TYPE_SIZE (gnu_result_type)) != INTEGER_CST
-	   && ((!gnu_target
-		&& Nkind (Parent (gnat_node)) != N_Object_Declaration)
-	       || (gnu_target
-		   && (TREE_CODE (gnu_target) == ARRAY_RANGE_REF
-		       || (TREE_CODE (TREE_TYPE (gnu_target)) == ARRAY_TYPE
-			   && TREE_CODE (TYPE_SIZE (TREE_TYPE (gnu_target)))
-			      == INTEGER_CST)))))
-	  || (!gnu_target && TYPE_CI_CO_LIST (gnu_subprog_type))))
+      && ((!gnu_target && TYPE_CI_CO_LIST (gnu_subprog_type))
+	  || (!gnu_target
+	      && Nkind (Parent (gnat_node)) != N_Object_Declaration
+	      && (TREE_ADDRESSABLE (gnu_result_type)
+		  || TREE_CODE (TYPE_SIZE (gnu_result_type)) != INTEGER_CST))
+	  || (gnu_target
+	      && (TREE_CODE (gnu_target) == ARRAY_RANGE_REF
+		  || (TREE_CODE (TREE_TYPE (gnu_target)) == ARRAY_TYPE
+		      && TREE_CODE (TYPE_SIZE (TREE_TYPE (gnu_target)))
+			 == INTEGER_CST))
+	      && TREE_CODE (TYPE_SIZE (gnu_result_type)) != INTEGER_CST)))
     gnu_retval = create_temporary ("R", gnu_result_type);
 
   /* Create the list of the actual parameters as GCC expects it, namely a

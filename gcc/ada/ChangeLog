@@ -1,3 +1,9 @@
+2012-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (call_to_gnu): Create the temporary for the
+	return value in the by-reference return type case if this isn't the
+	expression of an object declaration.  Tidy up.
+
 2012-02-09  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/Makefile.in: Remove .sym rule (not used).

@@ -1,3 +1,8 @@
+2012-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/volatile10.adb: New case.
+	* gnat.dg/volatile10_pkg.ads: New helper.
+
 2012-02-14  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/ext/attrib43.C: New.
