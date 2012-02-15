@@ -1,4 +1,12 @@
-2012-02-15  Bernd Schmidt  <bernds@codesourcery.com>
+2012-02-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/52178
+	* gimple.c (iterative_hash_gimple_type): Use RECORD_OR_UNION_TYPE_P.
+	(iterative_hash_canonical_type): Likewise.
+	* tree-ssa-pre.c (fini_pre): Clean up the CFG only after purging all
+	the dead edges.
+
+2012-02-14  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* haifa-sched.c (prune_ready_list): Ensure that if there is a
 	sched-group insn, it either remains alone or the entire list is

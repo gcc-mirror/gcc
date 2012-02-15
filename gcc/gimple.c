@@ -4140,9 +4140,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
       v = iterative_hash_hashval_t (na, v);
     }
 
-  if (TREE_CODE (type) == RECORD_TYPE
-      || TREE_CODE (type) == UNION_TYPE
-      || TREE_CODE (type) == QUAL_UNION_TYPE)
+  if (RECORD_OR_UNION_TYPE_P (type))
     {
       unsigned nf;
       tree f;
@@ -4373,9 +4371,7 @@ iterative_hash_canonical_type (tree type, hashval_t val)
       v = iterative_hash_hashval_t (na, v);
     }
 
-  if (TREE_CODE (type) == RECORD_TYPE
-      || TREE_CODE (type) == UNION_TYPE
-      || TREE_CODE (type) == QUAL_UNION_TYPE)
+  if (RECORD_OR_UNION_TYPE_P (type))
     {
       unsigned nf;
       tree f;
