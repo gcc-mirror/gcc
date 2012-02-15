@@ -1,3 +1,7 @@
+2012-02-14  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/ext/attrib43.C: New.
+
 2012-02-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	* lib/target-supports.exp (check_effective_target_fgnu_tm): New

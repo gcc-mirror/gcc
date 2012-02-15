@@ -13122,6 +13122,9 @@ cp_parser_explicit_instantiation (cp_parser* parser)
       tree type;
 
       type = check_tag_decl (&decl_specifiers);
+      if (decl_specifiers.attributes)
+	warning (OPT_Wattributes,
+		 "attributes ignored on explicit type instantiation");
       /* Turn access control back on for names used during
 	 template instantiation.  */
       pop_deferring_access_checks ();
