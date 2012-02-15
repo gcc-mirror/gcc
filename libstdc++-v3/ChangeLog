@@ -1,3 +1,7 @@
+2012-02-15  DJ Delorie  <dj@redhat.com>
+
+	* src/c++98/locale.cc (locale::facet::_S_get_c_locale): Fix typo.
+
 2012-02-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/51368
