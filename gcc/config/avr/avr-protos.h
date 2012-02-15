@@ -94,8 +94,9 @@ extern const char* avr_out_plus64 (rtx, int*);
 extern const char* avr_out_addto_sp (rtx*, int*);
 extern const char* avr_out_xload (rtx, rtx*, int*);
 extern const char* avr_out_movmem (rtx, rtx*, int*);
-extern const char* avr_out_map_bits (rtx, rtx*, int*);
+extern const char* avr_out_insert_bits (rtx*, int*);
 extern bool avr_popcount_each_byte (rtx, int, int);
+extern bool avr_has_nibble_0xf (rtx);
 
 extern int extra_constraint_Q (rtx x);
 extern int adjust_insn_length (rtx insn, int len);

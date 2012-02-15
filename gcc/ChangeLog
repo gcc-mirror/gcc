@@ -1,3 +1,41 @@
+2012-02-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/extend.texi (AVR Built-in Functions): Remove doc for
+	__builtin_avr_map8, __builtin_avr_map16.
+	Document __builtin_avr_insert_bits.
+
+	* config/avr/avr.md (map_bitsqi, map_bitshi): Remove.
+	(insert_bits): New insn.
+	(adjust_len.map_bits): Rename to insert_bits.
+	(UNSPEC_MAP_BITS): Rename to UNSPEC_INSERT_BITS.
+	* avr-protos.h (avr_out_map_bits): Remove.
+	(avr_out_insert_bits, avr_has_nibble_0xf): New.
+	* config/avr/constraints.md (Cxf,C0f): New.
+	* config/avr/avr.c (avr_cpu_cpp_builtins): Remove built-in
+	defines __BUILTIN_AVR_MAP8, __BUILTIN_AVR_MAP16.
+	New built-in define __BUILTIN_AVR_INSERT_BITS.
+	* config/avr/avr.c (TARGET_FOLD_BUILTIN): New define.
+	(enum avr_builtin_id): Add AVR_BUILTIN_INSERT_BITS.
+	(avr_move_bits): Rewrite.
+	(avr_fold_builtin, avr_map_metric, avr_map_decompose): New static
+	functions.
+	(avr_map_op_t): New typedef.
+	(avr_map_op): New static variable.
+	(avr_out_insert_bits, avr_has_nibble_0xf): New functions.
+	(adjust_insn_length): Handle ADJUST_LEN_INSERT_BITS.
+	(avr_init_builtins): Add definition for __builtin_avr_insert_bits.
+	(bdesc_3arg, avr_expand_triop_builtin): New.
+	(avr_expand_builtin): Use them. And handle AVR_BUILTIN_INSERT_BITS.
+	(avr_revert_map, avr_swap_map, avr_id_map, avr_sig_map): Remove.
+	(avr_map_hamming_byte, avr_map_hamming_nonstrict): Remove.
+	(avr_map_equal_p, avr_map_sig_p): Remove.
+	(avr_out_swap_bits, avr_out_revert_bits, avr_out_map_bits): Remove.
+	(bdesc_2arg): Remove AVR_BUILTIN_MAP8, AVR_BUILTIN_MAP16.
+	(adjust_insn_length): Remove handling for ADJUST_LEN_MAP_BITS.
+	(enum avr_builtin_id): Remove AVR_BUILTIN_MAP8, AVR_BUILTIN_MAP16.
+	(avr_init_builtins): Remove __builtin_avr_map8, __builtin_avr_map16.
+	(avr_expand_builtin): Remove AVR_BUILTIN_MAP8, AVR_BUILTIN_MAP16.
+
 2012-02-14  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config/c6x/c6x.md (reserve_cycles): New attribute.

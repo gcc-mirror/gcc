@@ -1,3 +1,8 @@
+2012-02-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/builtin_insert_bits-1.c: New test.
+	* gcc.target/avr/torture/builtin_insert_bits-2.c: New test.
+
 2012-02-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr35.ad[sb]: New test.
