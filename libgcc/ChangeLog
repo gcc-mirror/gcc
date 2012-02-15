@@ -1,3 +1,11 @@
+2012-02-15  Iain Sandoe  <iains@gcc.gnu.org>
+	    Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR libitm/52042
+	* config/darwin-crt-tm.c (getTMCloneTable): New function.
+	(__doTMRegistrations): Call it.
+	(__doTMdeRegistrations): Likewise. 
+
 2012-01-15  Georg-Johann Lay  <avr@gjlay.de>
 	    Anatoly Sokolov <aesok@post.ru>
 	    Eric Weddington <eric.weddington@atmel.com>
