@@ -1,3 +1,8 @@
+2012-02-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/lto/20091013-1_1.c: xfail for avr.
+	* gcc.dg/lto/20091013-1_2.c: xfail for avr.
+
 2012-02-15  Tobias Grosser <grosser@fim.uni-passau.de>
 
 	PR tree-optimization/50561
