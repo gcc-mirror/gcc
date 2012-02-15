@@ -611,6 +611,21 @@ if test "$libgo_has_struct_exception" = "yes"; then
             [Define to 1 if <math.h> defines struct exception])
 fi
 
+dnl Check if makecontext expects the uc_stack member of ucontext to point
+dnl to the top of the stack.
+case "$target" in
+  sparc*-*-solaris2.[[89]]*)
+    libgo_cv_lib_makecontext_stack_top=yes
+    ;;
+  *)
+    libgo_cv_lib_makecontext_stack_top=no
+    ;;
+esac
+if test "$libgo_cv_lib_makecontext_stack_top" = "yes"; then
+  AC_DEFINE(MAKECONTEXT_STACK_TOP, 1,
+	    [Define if makecontext expects top of stack in uc_stack.])
+fi
+
 dnl See whether setcontext changes the value of TLS variables.
 AC_CACHE_CHECK([whether setcontext clobbers TLS variables],
 [libgo_cv_lib_setcontext_clobbers_tls],
@@ -667,6 +682,9 @@ main ()
     abort ();
 
   c.uc_stack.ss_sp = stack;
+#ifdef MAKECONTEXT_STACK_TOP
+  c.uc_stack.ss_sp += sizeof stack;
+#endif
   c.uc_stack.ss_flags = 0;
   c.uc_stack.ss_size = sizeof stack;
   c.uc_link = NULL;

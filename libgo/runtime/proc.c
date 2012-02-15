@@ -1316,6 +1316,9 @@ __go_go(void (*fn)(void*), void* arg)
 
 	getcontext(&newg->context);
 	newg->context.uc_stack.ss_sp = sp;
+#ifdef MAKECONTEXT_STACK_TOP
+	newg->context.uc_stack.ss_sp += spsize;
+#endif
 	newg->context.uc_stack.ss_size = spsize;
 	makecontext(&newg->context, kickoff, 0);
 

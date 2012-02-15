@@ -14873,6 +14873,20 @@ $as_echo "#define HAVE_STRUCT_EXCEPTION 1" >>confdefs.h
 
 fi
 
+case "$target" in
+  sparc*-*-solaris2.[89]*)
+    libgo_cv_lib_makecontext_stack_top=yes
+    ;;
+  *)
+    libgo_cv_lib_makecontext_stack_top=no
+    ;;
+esac
+if test "$libgo_cv_lib_makecontext_stack_top" = "yes"; then
+
+$as_echo "#define MAKECONTEXT_STACK_TOP 1" >>confdefs.h
+
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether setcontext clobbers TLS variables" >&5
 $as_echo_n "checking whether setcontext clobbers TLS variables... " >&6; }
 if test "${libgo_cv_lib_setcontext_clobbers_tls+set}" = set; then :
@@ -14974,6 +14988,9 @@ main ()
     abort ();
 
   c.uc_stack.ss_sp = stack;
+#ifdef MAKECONTEXT_STACK_TOP
+  c.uc_stack.ss_sp += sizeof stack;
+#endif
   c.uc_stack.ss_flags = 0;
   c.uc_stack.ss_size = sizeof stack;
   c.uc_link = NULL;
