@@ -1,3 +1,9 @@
+2012-02-14  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/c6x/c6x.md (reserve_cycles): New attribute.
+	* config/c6x/c6x.c (c6x_sched_reorder_1): Ensure insns we predicate
+	don't reserve functional units after the branch occurs.
+
 2012-02-14  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/52142
