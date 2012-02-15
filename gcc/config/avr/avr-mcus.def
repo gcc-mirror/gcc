@@ -201,6 +201,36 @@ AVR_MCU ("at90usb1287",          ARCH_AVR51, "__AVR_AT90USB1287__",      0, 0, 0
 AVR_MCU ("avr6",                 ARCH_AVR6, NULL,                        0, 0, 0x0200, "m2561")
 AVR_MCU ("atmega2560",           ARCH_AVR6, "__AVR_ATmega2560__",        0, 0, 0x0200, "m2560")
 AVR_MCU ("atmega2561",           ARCH_AVR6, "__AVR_ATmega2561__",        0, 0, 0x0200, "m2561")
+/* Xmega, 16K <= Flash < 64K, RAM <= 64K */
+AVR_MCU ("avrxmega2",        ARCH_AVRXMEGA2, NULL,                       0, 0, 0x2000, "x32a4")
+AVR_MCU ("atxmega16a4",      ARCH_AVRXMEGA2, "__AVR_ATxmega16A4__",      0, 0, 0x2000, "x16a4")
+AVR_MCU ("atxmega16d4",      ARCH_AVRXMEGA2, "__AVR_ATxmega16D4__",      0, 0, 0x2000, "x16d4")
+AVR_MCU ("atxmega16x1",      ARCH_AVRXMEGA2, "__AVR_ATxmega16X1__",      0, 0, 0x2000, "x16x1")
+AVR_MCU ("atxmega32a4",      ARCH_AVRXMEGA2, "__AVR_ATxmega32A4__",      0, 0, 0x2000, "x32a4")
+AVR_MCU ("atxmega32d4",      ARCH_AVRXMEGA2, "__AVR_ATxmega32D4__",      0, 0, 0x2000, "x32d4")
+AVR_MCU ("atxmega32x1",      ARCH_AVRXMEGA2, "__AVR_ATxmega32X1__",      0, 0, 0x2000, "x32x1")
+/* Xmega, Flash == 64K, RAM <= 64K */
+AVR_MCU ("avrxmega4",        ARCH_AVRXMEGA4, NULL,                       0, 0, 0x2000, "x64a4")
+AVR_MCU ("atxmega64a3",      ARCH_AVRXMEGA4, "__AVR_ATxmega64A3__",      0, 0, 0x2000, "x64a3")
+AVR_MCU ("atxmega64d3",      ARCH_AVRXMEGA4, "__AVR_ATxmega64D3__",      0, 0, 0x2000, "x64d3")
+/* Xmega, Flash == 64K, RAM > 64K */
+AVR_MCU ("avrxmega5",        ARCH_AVRXMEGA5, NULL,                       0, 0, 0x2000, "x64a1")
+AVR_MCU ("atxmega64a1",      ARCH_AVRXMEGA5, "__AVR_ATxmega64A1__",      0, 0, 0x2000, "x64a1")
+AVR_MCU ("atxmega64a1u",     ARCH_AVRXMEGA5, "__AVR_ATxmega64A1U__",     0, 0, 0x2000, "x64a1u")
+/* Xmega, 128K <= Flash <= 256K, RAM <= 64K */
+AVR_MCU ("avrxmega6",        ARCH_AVRXMEGA6, NULL,                       0, 0, 0x2000, "x128a3")
+AVR_MCU ("atxmega128a3",     ARCH_AVRXMEGA6, "__AVR_ATxmega128A3__",     0, 0, 0x2000, "x128a3")
+AVR_MCU ("atxmega128d3",     ARCH_AVRXMEGA6, "__AVR_ATxmega128D3__",     0, 0, 0x2000, "x128d3")
+AVR_MCU ("atxmega192a3",     ARCH_AVRXMEGA6, "__AVR_ATxmega192A3__",     0, 0, 0x2000, "x192a3")
+AVR_MCU ("atxmega192d3",     ARCH_AVRXMEGA6, "__AVR_ATxmega192D3__",     0, 0, 0x2000, "x192d3")
+AVR_MCU ("atxmega256a3",     ARCH_AVRXMEGA6, "__AVR_ATxmega256A3__",     0, 0, 0x2000, "x256a3")
+AVR_MCU ("atxmega256a3b",    ARCH_AVRXMEGA6, "__AVR_ATxmega256A3B__",    0, 0, 0x2000, "x256a3b")
+AVR_MCU ("atxmega256a3bu",   ARCH_AVRXMEGA6, "__AVR_ATxmega256A3BU__",   0, 0, 0x2000, "x256a3bu")
+AVR_MCU ("atxmega256d3",     ARCH_AVRXMEGA6, "__AVR_ATxmega256D3__",     0, 0, 0x2000, "x256d3")
+/* Xmega, 128K <= Flash <= 256K, RAM > 64K RAM.  */
+AVR_MCU ("avrxmega7",        ARCH_AVRXMEGA7, NULL,                       0, 0, 0x2000, "x128a1")
+AVR_MCU ("atxmega128a1",     ARCH_AVRXMEGA7, "__AVR_ATxmega128A1__",     0, 0, 0x2000, "x128a1")
+AVR_MCU ("atxmega128a1u",    ARCH_AVRXMEGA7, "__AVR_ATxmega128A1U__",    0, 0, 0x2000, "x128a1u")
 /* Assembler only.  */
 AVR_MCU ("avr1",                 ARCH_AVR1, NULL,                        0, 0, 0x0060, "s1200")
 AVR_MCU ("at90s1200",            ARCH_AVR1, "__AVR_AT90S1200__",         0, 0, 0x0060, "s1200")

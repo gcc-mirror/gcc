@@ -112,6 +112,12 @@ typedef struct
   /* SREG: The pocessor status */
   int sreg;
 
+  /* RAMPX, RAMPY, RAMPD and CCP of XMEGA */
+  int ccp;
+  int rampd;
+  int rampx;
+  int rampy;
+
   /* RAMPZ: The high byte of 24-bit address used with ELPM */ 
   int rampz;
 
@@ -177,8 +183,18 @@ rtx zero_reg_rtx;
 extern GTY(()) rtx all_regs_rtx[32];
 rtx all_regs_rtx[32];
 
-/* RAMPZ special function register */
+/* SREG, the processor status */
+extern GTY(()) rtx sreg_rtx;
+rtx sreg_rtx;
+
+/* RAMP* special function registers */
+extern GTY(()) rtx rampd_rtx;
+extern GTY(()) rtx rampx_rtx;
+extern GTY(()) rtx rampy_rtx;
 extern GTY(()) rtx rampz_rtx;
+rtx rampd_rtx;
+rtx rampx_rtx;
+rtx rampy_rtx;
 rtx rampz_rtx;
 
 /* RTX containing the strings "" and "e", respectively */
@@ -424,6 +440,11 @@ avr_option_override (void)
   /* RAMPZ: Address' high part when loading via ELPM */
   avr_addr.rampz = 0x3B + avr_current_arch->sfr_offset;
 
+  avr_addr.rampy = 0x3A + avr_current_arch->sfr_offset;
+  avr_addr.rampx = 0x39 + avr_current_arch->sfr_offset;
+  avr_addr.rampd = 0x38 + avr_current_arch->sfr_offset;
+  avr_addr.ccp = 0x34 + avr_current_arch->sfr_offset;
+
   /* SP: Stack Pointer (SP_H:SP_L) */
   avr_addr.sp_l = 0x3D + avr_current_arch->sfr_offset;
   avr_addr.sp_h = avr_addr.sp_l + 1;
@@ -450,13 +471,6 @@ avr_init_expanders (void)
 {
   int regno;
 
-  static bool done = false;
-
-  if (done)
-    return;
-  else
-    done = true;
-
   for (regno = 0; regno < 32; regno ++)
     all_regs_rtx[regno] = gen_rtx_REG (QImode, regno);
 
@@ -466,6 +480,10 @@ avr_init_expanders (void)
 
   lpm_addr_reg_rtx = gen_rtx_REG (HImode, REG_Z);
 
+  sreg_rtx = gen_rtx_MEM (QImode, GEN_INT (avr_addr.sreg));
+  rampd_rtx = gen_rtx_MEM (QImode, GEN_INT (avr_addr.rampd));
+  rampx_rtx = gen_rtx_MEM (QImode, GEN_INT (avr_addr.rampx));
+  rampy_rtx = gen_rtx_MEM (QImode, GEN_INT (avr_addr.rampy));
   rampz_rtx = gen_rtx_MEM (QImode, GEN_INT (avr_addr.rampz));
 
   xstring_empty = gen_rtx_CONST_STRING (VOIDmode, "");
@@ -903,6 +921,35 @@ emit_push_byte (unsigned regno, bool frame_related_p)
   cfun->machine->stack_usage++;
 }
 
+
+/*  Helper for expand_prologue.  Emit a push of a SFR via tmp_reg.
+    SFR is a MEM representing the memory location of the SFR.
+    If CLR_P then clear the SFR after the push using zero_reg.  */
+
+static void
+emit_push_sfr (rtx sfr, bool frame_related_p, bool clr_p)
+{
+  rtx insn;
+  
+  gcc_assert (MEM_P (sfr));
+
+  /* IN __tmp_reg__, IO(SFR) */
+  insn = emit_move_insn (tmp_reg_rtx, sfr);
+  if (frame_related_p)
+    RTX_FRAME_RELATED_P (insn) = 1;
+  
+  /* PUSH __tmp_reg__ */
+  emit_push_byte (TMP_REGNO, frame_related_p);
+
+  if (clr_p)
+    {
+      /* OUT IO(SFR), __zero_reg__ */
+      insn = emit_move_insn (sfr, const0_rtx);
+      if (frame_related_p)
+        RTX_FRAME_RELATED_P (insn) = 1;
+    }
+}
+
 static void
 avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
 {
@@ -1061,7 +1108,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
              changed the CFA to the frame pointer this operation
              need not be annotated if frame pointer is needed.  */
               
-          if (AVR_HAVE_8BIT_SP)
+          if (AVR_HAVE_8BIT_SP || AVR_XMEGA)
             {
               insn = emit_move_insn (stack_pointer_rtx, fp);
             }
@@ -1166,26 +1213,42 @@ expand_prologue (void)
 
       /* Push SREG.  */
       /* ??? There's no dwarf2 column reserved for SREG.  */
-      emit_move_insn (tmp_reg_rtx,
-                      gen_rtx_MEM (QImode, GEN_INT (avr_addr.sreg)));
-      emit_push_byte (TMP_REGNO, false);
+      emit_push_sfr (sreg_rtx, false, false /* clr */);
 
-      /* Push RAMPZ.  */
-      /* ??? There's no dwarf2 column reserved for RAMPZ.  */
-      if (AVR_HAVE_RAMPZ 
-          && TEST_HARD_REG_BIT (set, REG_Z)
-          && TEST_HARD_REG_BIT (set, REG_Z + 1))
-        {
-          emit_move_insn (tmp_reg_rtx, rampz_rtx);
-          emit_push_byte (TMP_REGNO, false);
-        }
-        
       /* Clear zero reg.  */
       emit_move_insn (zero_reg_rtx, const0_rtx);
 
       /* Prevent any attempt to delete the setting of ZERO_REG!  */
       emit_use (zero_reg_rtx);
-    }
+
+      /* Push and clear RAMPD/X/Y/Z if present and low-part register is used.
+         ??? There are no dwarf2 columns reserved for RAMPD/X/Y/Z.  */
+      
+      if (AVR_HAVE_RAMPD)
+        emit_push_sfr (rampd_rtx, false /* frame-related */, true /* clr */);
+
+      if (AVR_HAVE_RAMPX
+          && TEST_HARD_REG_BIT (set, REG_X)
+          && TEST_HARD_REG_BIT (set, REG_X + 1))
+        {
+          emit_push_sfr (rampx_rtx, false /* frame-related */, true /* clr */);
+        }
+
+      if (AVR_HAVE_RAMPY
+          && (frame_pointer_needed
+              || (TEST_HARD_REG_BIT (set, REG_Y)
+                  && TEST_HARD_REG_BIT (set, REG_Y + 1))))
+        {
+          emit_push_sfr (rampy_rtx, false /* frame-related */, true /* clr */);
+        }
+
+      if (AVR_HAVE_RAMPZ 
+          && TEST_HARD_REG_BIT (set, REG_Z)
+          && TEST_HARD_REG_BIT (set, REG_Z + 1))
+        {
+          emit_push_sfr (rampz_rtx, false /* frame-related */, true /* clr */);
+        }
+    }  /* is_interrupt is_signal */
 
   avr_prologue_setup_frame (size, set);
   
@@ -1344,7 +1407,7 @@ expand_epilogue (bool sibcall_p)
 
       /* Copy to stack pointer.  */
               
-      if (AVR_HAVE_8BIT_SP)
+      if (AVR_HAVE_8BIT_SP || AVR_XMEGA)
         {
           emit_move_insn (stack_pointer_rtx, fp);
         }
@@ -1407,9 +1470,27 @@ expand_epilogue (bool sibcall_p)
 
   if (isr_p)
     {
-      /* Restore RAMPZ using tmp reg as scratch.  */
+      /* Restore RAMPZ/Y/X/D using tmp_reg as scratch.
+         The conditions to restore them must be tha same as in prologue.  */
       
-      if (AVR_HAVE_RAMPZ 
+      if (AVR_HAVE_RAMPX
+          && TEST_HARD_REG_BIT (set, REG_X)
+          && TEST_HARD_REG_BIT (set, REG_X + 1))
+        {
+          emit_pop_byte (TMP_REGNO);
+          emit_move_insn (rampx_rtx, tmp_reg_rtx);
+        }
+
+      if (AVR_HAVE_RAMPY
+          && (frame_pointer_needed
+              || (TEST_HARD_REG_BIT (set, REG_Y)
+                  && TEST_HARD_REG_BIT (set, REG_Y + 1))))
+        {
+          emit_pop_byte (TMP_REGNO);
+          emit_move_insn (rampy_rtx, tmp_reg_rtx);
+        }
+
+      if (AVR_HAVE_RAMPZ
           && TEST_HARD_REG_BIT (set, REG_Z)
           && TEST_HARD_REG_BIT (set, REG_Z + 1))
         {
@@ -1417,11 +1498,16 @@ expand_epilogue (bool sibcall_p)
           emit_move_insn (rampz_rtx, tmp_reg_rtx);
         }
 
-      /* Restore SREG using tmp reg as scratch.  */
+      if (AVR_HAVE_RAMPD)
+        {
+          emit_pop_byte (TMP_REGNO);
+          emit_move_insn (rampd_rtx, tmp_reg_rtx);
+        }
+
+      /* Restore SREG using tmp_reg as scratch.  */
       
       emit_pop_byte (TMP_REGNO);
-      emit_move_insn (gen_rtx_MEM (QImode, GEN_INT (avr_addr.sreg)), 
-                      tmp_reg_rtx);
+      emit_move_insn (sreg_rtx, tmp_reg_rtx);
 
       /* Restore tmp REG.  */
       emit_pop_byte (TMP_REGNO);
@@ -1903,7 +1989,16 @@ avr_print_operand (FILE *file, rtx x, int code)
       else if (low_io_address_operand (x, VOIDmode)
                || high_io_address_operand (x, VOIDmode))
         {
-          if (ival == avr_addr.rampz)       fprintf (file, "__RAMPZ__");
+          if (AVR_HAVE_RAMPZ && ival == avr_addr.rampz)
+            fprintf (file, "__RAMPZ__");
+          else if (AVR_HAVE_RAMPY && ival == avr_addr.rampy)
+            fprintf (file, "__RAMPY__");
+          else if (AVR_HAVE_RAMPX && ival == avr_addr.rampx)
+            fprintf (file, "__RAMPX__");
+          else if (AVR_HAVE_RAMPD && ival == avr_addr.rampd)
+            fprintf (file, "__RAMPD__");
+          else if (AVR_XMEGA && ival == avr_addr.ccp)
+            fprintf (file, "__CCP__");
           else if (ival == avr_addr.sreg)   fprintf (file, "__SREG__");
           else if (ival == avr_addr.sp_l)   fprintf (file, "__SP_L__");
           else if (ival == avr_addr.sp_h)   fprintf (file, "__SP_H__");
@@ -2901,6 +2996,10 @@ output_movhi (rtx insn, rtx xop[], int *plen)
             {
               if (AVR_HAVE_8BIT_SP)
                 return avr_asm_len ("out __SP_L__,%A1", xop, plen, -1);
+
+              if (AVR_XMEGA)
+                return avr_asm_len ("out __SP_L__,%A1" CR_TAB
+                                    "out __SP_H__,%B1", xop, plen, -2);
               
               /* Use simple load of SP if no interrupts are  used.  */
               
@@ -3875,6 +3974,119 @@ out_movqi_mr_r (rtx insn, rtx op[], int *plen)
   return avr_asm_len ("st %0,%1", op, plen, -1);
 }
 
+
+/* Helper for the next function for XMEGA.  It does the same
+   but with low byte first.  */
+
+static const char*
+avr_out_movhi_mr_r_xmega (rtx insn, rtx op[], int *plen)
+{
+  rtx dest = op[0];
+  rtx src = op[1];
+  rtx base = XEXP (dest, 0);
+  int reg_base = true_regnum (base);
+  int reg_src = true_regnum (src);
+
+  /* "volatile" forces writing low byte first, even if less efficient,
+     for correct operation with 16-bit I/O registers like SP.  */
+  int mem_volatile_p = MEM_VOLATILE_P (dest);
+
+  if (CONSTANT_ADDRESS_P (base))
+    return optimize > 0 && io_address_operand (base, HImode)
+      ? avr_asm_len ("out %i0,%A1" CR_TAB
+                     "out %i0+1,%B1", op, plen, -2)
+
+      : avr_asm_len ("sts %m0,%A1" CR_TAB
+                     "sts %m0+1,%B1", op, plen, -4);
+  
+  if (reg_base > 0)
+    {
+      if (reg_base != REG_X)
+        return avr_asm_len ("st %0,%A1" CR_TAB
+                            "std %0+1,%B1", op, plen, -2);
+      
+      if (reg_src == REG_X)
+        /* "st X+,r26" and "st -X,r26" are undefined.  */
+        avr_asm_len ("mov __tmp_reg__,r27" CR_TAB
+                     "st X,r26"            CR_TAB
+                     "adiw r26,1"          CR_TAB
+                     "st X,__tmp_reg__", op, plen, -4);
+      else
+        avr_asm_len ("st X+,%A1" CR_TAB
+                     "st X,%B1", op, plen, -2);
+            
+      return reg_unused_after (insn, src)
+        ? ""
+        : avr_asm_len ("sbiw r26,1", op, plen, 1);
+    }
+  else if (GET_CODE (base) == PLUS)
+    {
+      int disp = INTVAL (XEXP (base, 1));
+      reg_base = REGNO (XEXP (base, 0));
+      if (disp > MAX_LD_OFFSET (GET_MODE (dest)))
+        {
+          if (reg_base != REG_Y)
+            fatal_insn ("incorrect insn:",insn);
+          
+          return disp <= 63 + MAX_LD_OFFSET (GET_MODE (dest))
+            ? avr_asm_len ("adiw r28,%o0-62" CR_TAB
+                           "std Y+62,%A1"    CR_TAB
+                           "std Y+63,%B1"    CR_TAB
+                           "sbiw r28,%o0-62", op, plen, -4)
+
+            : avr_asm_len ("subi r28,lo8(-%o0)" CR_TAB
+                           "sbci r29,hi8(-%o0)" CR_TAB
+                           "st Y,%A1"           CR_TAB
+                           "std Y+1,%B1"        CR_TAB
+                           "subi r28,lo8(%o0)"  CR_TAB
+                           "sbci r29,hi8(%o0)", op, plen, -6);
+        }
+      
+      if (reg_base != REG_X)
+        return avr_asm_len ("std %A0,%A1" CR_TAB
+                            "std %B0,%B1", op, plen, -2);
+      /* (X + d) = R */
+      return reg_src == REG_X
+        ? avr_asm_len ("mov __tmp_reg__,r26"  CR_TAB
+                       "mov __zero_reg__,r27" CR_TAB
+                       "adiw r26,%o0"         CR_TAB
+                       "st X+,__tmp_reg__"    CR_TAB
+                       "st X,__zero_reg__"    CR_TAB
+                       "clr __zero_reg__"     CR_TAB
+                       "sbiw r26,%o0+1", op, plen, -7)
+
+        : avr_asm_len ("adiw r26,%o0" CR_TAB
+                       "st X+,%A1"    CR_TAB
+                       "st X,%B1"     CR_TAB
+                       "sbiw r26,%o0+1", op, plen, -4);
+    }
+  else if (GET_CODE (base) == PRE_DEC) /* (--R) */
+    {
+      if (!mem_volatile_p)
+        return avr_asm_len ("st %0,%B1" CR_TAB
+                            "st %0,%A1", op, plen, -2);
+
+      return REGNO (XEXP (base, 0)) == REG_X
+        ? avr_asm_len ("sbiw r26,2"  CR_TAB
+                       "st X+,%A1"   CR_TAB
+                       "st X,%B1"    CR_TAB
+                       "sbiw r26,1", op, plen, -4)
+
+        : avr_asm_len ("sbiw %r0,2"  CR_TAB
+                       "st %p0,%A1"  CR_TAB
+                       "std %p0+1,%B1", op, plen, -3);
+    }
+  else if (GET_CODE (base) == POST_INC) /* (R++) */
+    {
+      return avr_asm_len ("st %0,%A1"  CR_TAB
+                          "st %0,%B1", op, plen, -2);
+      
+    }
+  fatal_insn ("unknown move insn:",insn);
+  return "";
+}
+
+
 static const char*
 out_movhi_mr_r (rtx insn, rtx op[], int *plen)
 {
@@ -3883,9 +4095,16 @@ out_movhi_mr_r (rtx insn, rtx op[], int *plen)
   rtx base = XEXP (dest, 0);
   int reg_base = true_regnum (base);
   int reg_src = true_regnum (src);
-  /* "volatile" forces writing high byte first, even if less efficient,
-     for correct operation with 16-bit I/O registers.  */
-  int mem_volatile_p = MEM_VOLATILE_P (dest);
+  int mem_volatile_p;
+
+  /* "volatile" forces writing high-byte first (no-xmega) resp.
+     low-byte first (xmega) even if less efficient, for correct
+     operation with 16-bit I/O registers like.  */
+
+  if (AVR_XMEGA)
+    return avr_out_movhi_mr_r_xmega (insn, op, plen);
+
+  mem_volatile_p = MEM_VOLATILE_P (dest);
 
   if (CONSTANT_ADDRESS_P (base))
     return optimize > 0 && io_address_operand (base, HImode)
@@ -7332,7 +7551,16 @@ avr_file_start (void)
 
   fprintf (asm_out_file, "__SP_L__ = 0x%02x\n", avr_addr.sp_l - sfr_offset);
   fprintf (asm_out_file, "__SREG__ = 0x%02x\n", avr_addr.sreg - sfr_offset);
-  fprintf (asm_out_file, "__RAMPZ__ = 0x%02x\n", avr_addr.rampz - sfr_offset);
+  if (AVR_HAVE_RAMPZ)
+    fprintf (asm_out_file, "__RAMPZ__ = 0x%02x\n", avr_addr.rampz - sfr_offset);
+  if (AVR_HAVE_RAMPY)
+    fprintf (asm_out_file, "__RAMPY__ = 0x%02x\n", avr_addr.rampy - sfr_offset);
+  if (AVR_HAVE_RAMPX)
+    fprintf (asm_out_file, "__RAMPX__ = 0x%02x\n", avr_addr.rampx - sfr_offset);
+  if (AVR_HAVE_RAMPD)
+    fprintf (asm_out_file, "__RAMPD__ = 0x%02x\n", avr_addr.rampd - sfr_offset);
+  if (AVR_XMEGA)
+    fprintf (asm_out_file, "__CCP__ = 0x%02x\n", avr_addr.ccp - sfr_offset);
   fprintf (asm_out_file, "__tmp_reg__ = %d\n", TMP_REGNO);
   fprintf (asm_out_file, "__zero_reg__ = %d\n", ZERO_REGNO);
 }

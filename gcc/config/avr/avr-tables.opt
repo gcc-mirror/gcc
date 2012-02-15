@@ -504,20 +504,95 @@ EnumValue
 Enum(avr_mcu) String(atmega2561) Value(159)
 
 EnumValue
-Enum(avr_mcu) String(avr1) Value(160)
+Enum(avr_mcu) String(avrxmega2) Value(160)
 
 EnumValue
-Enum(avr_mcu) String(at90s1200) Value(161)
+Enum(avr_mcu) String(atxmega16a4) Value(161)
 
 EnumValue
-Enum(avr_mcu) String(attiny11) Value(162)
+Enum(avr_mcu) String(atxmega16d4) Value(162)
 
 EnumValue
-Enum(avr_mcu) String(attiny12) Value(163)
+Enum(avr_mcu) String(atxmega16x1) Value(163)
 
 EnumValue
-Enum(avr_mcu) String(attiny15) Value(164)
+Enum(avr_mcu) String(atxmega32a4) Value(164)
 
 EnumValue
-Enum(avr_mcu) String(attiny28) Value(165)
+Enum(avr_mcu) String(atxmega32d4) Value(165)
+
+EnumValue
+Enum(avr_mcu) String(atxmega32x1) Value(166)
+
+EnumValue
+Enum(avr_mcu) String(avrxmega4) Value(167)
+
+EnumValue
+Enum(avr_mcu) String(atxmega64a3) Value(168)
+
+EnumValue
+Enum(avr_mcu) String(atxmega64d3) Value(169)
+
+EnumValue
+Enum(avr_mcu) String(avrxmega5) Value(170)
+
+EnumValue
+Enum(avr_mcu) String(atxmega64a1) Value(171)
+
+EnumValue
+Enum(avr_mcu) String(atxmega64a1u) Value(172)
+
+EnumValue
+Enum(avr_mcu) String(avrxmega6) Value(173)
+
+EnumValue
+Enum(avr_mcu) String(atxmega128a3) Value(174)
+
+EnumValue
+Enum(avr_mcu) String(atxmega128d3) Value(175)
+
+EnumValue
+Enum(avr_mcu) String(atxmega192a3) Value(176)
+
+EnumValue
+Enum(avr_mcu) String(atxmega192d3) Value(177)
+
+EnumValue
+Enum(avr_mcu) String(atxmega256a3) Value(178)
+
+EnumValue
+Enum(avr_mcu) String(atxmega256a3b) Value(179)
+
+EnumValue
+Enum(avr_mcu) String(atxmega256a3bu) Value(180)
+
+EnumValue
+Enum(avr_mcu) String(atxmega256d3) Value(181)
+
+EnumValue
+Enum(avr_mcu) String(avrxmega7) Value(182)
+
+EnumValue
+Enum(avr_mcu) String(atxmega128a1) Value(183)
+
+EnumValue
+Enum(avr_mcu) String(atxmega128a1u) Value(184)
+
+EnumValue
+Enum(avr_mcu) String(avr1) Value(185)
+
+EnumValue
+Enum(avr_mcu) String(at90s1200) Value(186)
+
+EnumValue
+Enum(avr_mcu) String(attiny11) Value(187)
+
+EnumValue
+Enum(avr_mcu) String(attiny12) Value(188)
+
+EnumValue
+Enum(avr_mcu) String(attiny15) Value(189)
+
+EnumValue
+Enum(avr_mcu) String(attiny28) Value(190)
 
