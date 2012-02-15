@@ -7092,6 +7092,11 @@ functions will map any runtime value to @code{__ATOMIC_SEQ_CST} rather
 than invoke a runtime library call or inline a switch statement.  This is
 standard compliant, safe, and the simplest approach for now.
 
+The memory model parameter is a signed int, but only the lower 8 bits are
+reserved for the memory model.  The remainder of the signed int is reserved
+for future use and should be 0.  Use of the predefined atomic values will
+ensure proper usage.
+
 @deftypefn {Built-in Function} @var{type} __atomic_load_n (@var{type} *ptr, int memmodel)
 This built-in function implements an atomic load operation.  It returns the
 contents of @code{*@var{ptr}}.

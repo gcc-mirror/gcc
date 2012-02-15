@@ -1,3 +1,7 @@
+2012-02-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	* extend.texi: Reserve upper bits of memory model for future use.
+
 2012-01-15  Georg-Johann Lay  <avr@gjlay.de>
 	    Anatoly Sokolov <aesok@post.ru>
 	    Eric Weddington <eric.weddington@atmel.com>
