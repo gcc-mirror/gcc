@@ -1,3 +1,11 @@
+2012-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/51921
+	PR target/52205
+	* config/sparc/sol2-unwind.h (sparc64_is_sighandler): Add support for
+	Solaris 11 and slightly reformat.
+	(sparc_is_sighandler): Likewise.
+
 2012-02-14  Walter Lee  <walt@tilera.com>
 
 	* config.host: Handle tilegx and tilepro.

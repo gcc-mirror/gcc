@@ -119,7 +119,12 @@ sparc64_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
       unsigned int cuh_pattern
 	= *(unsigned int *)(*(unsigned long *)(cfa + 15*8) - 4);
 
-      if (cuh_pattern == 0xd25fa7ef)
+      if (cuh_pattern == 0x92100019)
+	/* This matches the call_user_handler pattern for Solaris 11.
+	   This is the same setup as for Solaris 9, see below.  */
+	*nframes = 3;
+
+      else if (cuh_pattern == 0xd25fa7ef)
 	{
 	  /* This matches the call_user_handler pattern for Solaris 10.
 	     There are 2 cases so we look for the return address of the
@@ -140,6 +145,7 @@ sparc64_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 	    */
 	    *nframes = 2;
 	}
+
       else if (cuh_pattern == 0x9410001a || cuh_pattern == 0x94100013)
 	/* This matches the call_user_handler pattern for Solaris 9 and
 	   for Solaris 8 running inside Solaris Containers respectively
@@ -152,7 +158,8 @@ sparc64_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 		<kernel>
 	*/
 	*nframes = 3;
-      else
+
+      else /* cuh_pattern == 0xe0272010 */
 	/* This is the default Solaris 8 case.
 	   We need to move up two frames:
 
@@ -162,6 +169,7 @@ sparc64_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 		<kernel>
 	*/
 	*nframes = 2;
+
       return 1;
     }
 
@@ -296,7 +304,12 @@ sparc_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
       unsigned int cuh_pattern
 	= *(unsigned int *)(*(unsigned int *)(cfa + 15*4) - 4);
 
-      if (cuh_pattern == 0xd407a04c)
+      if (cuh_pattern == 0x92100019)
+	/* This matches the call_user_handler pattern for Solaris 11.
+	   This is the same setup as for Solaris 9, see below.  */
+	*nframes = 3;
+
+      else if (cuh_pattern == 0xd407a04c)
 	{
 	  /* This matches the call_user_handler pattern for Solaris 10.
 	     There are 2 cases so we look for the return address of the
@@ -317,6 +330,7 @@ sparc_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 	    */
 	    *nframes = 2;
 	}
+
       else if (cuh_pattern == 0x9410001a || cuh_pattern == 0x9410001b)
 	/* This matches the call_user_handler pattern for Solaris 9 and
 	   for Solaris 8 running inside Solaris Containers respectively.
@@ -329,7 +343,8 @@ sparc_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 		<kernel>
 	*/
 	*nframes = 3;
-      else
+
+      else /* cuh_pattern == 0x90100018 */
 	/* This is the default Solaris 8 case.
 	   We need to move up two frames:
 
@@ -339,6 +354,7 @@ sparc_is_sighandler (unsigned int *pc, void *cfa, int *nframes)
 		<kernel>
 	*/
 	*nframes = 2;
+
       return 1;
     }
 
