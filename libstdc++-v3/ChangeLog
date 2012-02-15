@@ -1,3 +1,20 @@
+2012-02-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/51368
+	* acinclude.m4 (GLIBCXX_ENABLE_PYTHON): New.
+	* configure.ac: Use it.
+	* python/Makefile.am: Same.
+	* configure: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* Makefile.in: Same.
+	* doc/Makefile.in: Same.
+	* include/Makefile.in: Same.
+	* po/Makefile.in: Same.
+	* src/Makefile.in: Same.
+	* src/c++11/Makefile.in: Same.
+	* src/c++98/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+
 2012-02-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* 30_threads/thread/native_handle/typesizes.cc: Do not run on cygwin.
@@ -30,7 +47,7 @@
 	* libsupc++/guard.cc (__cxa_guard_acquire): Same.
 
 2012-02-10  Benjamin Kosnik  <bkoz@redhat.com>
-            Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/51798 continued.
 	* acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): Use __atomic_*
