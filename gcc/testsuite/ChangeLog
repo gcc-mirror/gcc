@@ -1,5 +1,10 @@
 2012-02-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	PR target/52152
+	* objc.dg/stabs-1.m: xfail on mips-sgi-irix6.5.
+
+2012-02-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* gcc.dg/pr51867.c: Don't include <math.h>.
 	(sqrtf): Declare.
 
