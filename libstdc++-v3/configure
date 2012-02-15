@@ -664,6 +664,9 @@ LIBICONV
 OPT_LDFLAGS
 SECTION_LDFLAGS
 GLIBCXX_LIBS
+ENABLE_PYTHONDIR_FALSE
+ENABLE_PYTHONDIR_TRUE
+python_mod_dir
 ENABLE_EXTERN_TEMPLATE_FALSE
 ENABLE_EXTERN_TEMPLATE_TRUE
 EXTRA_CXX_FLAGS
@@ -856,6 +859,7 @@ enable_libstdcxx_debug
 enable_cxx_flags
 enable_fully_dynamic_string
 enable_extern_template
+with_python_dir
 enable_libstdcxx_time
 enable_tls
 enable_rpath
@@ -1568,6 +1572,8 @@ Optional Packages:
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
+  --with-python-dir       the location to install Python modules. This path is
+                          relative starting from the prefix.
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
@@ -11486,7 +11492,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11489 "configure"
+#line 11495 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11592,7 +11598,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11595 "configure"
+#line 11601 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14950,7 +14956,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14953 "configure"
+#line 14959 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15128,7 +15134,7 @@ typedef bool atomic_type;
        atomic_type c3(0);
        __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
        __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-                                   __ATOMIC_RELAXED);
+				   __ATOMIC_RELAXED);
        __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
        __atomic_load_n(&c1, __ATOMIC_RELAXED);
 
@@ -15170,7 +15176,7 @@ typedef short atomic_type;
        atomic_type c3(0);
        __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
        __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-                                   __ATOMIC_RELAXED);
+				   __ATOMIC_RELAXED);
        __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
        __atomic_load_n(&c1, __ATOMIC_RELAXED);
 
@@ -15212,7 +15218,7 @@ typedef int atomic_type;
        atomic_type c3(0);
        __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
        __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-                                   __ATOMIC_RELAXED);
+				   __ATOMIC_RELAXED);
        __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
        __atomic_load_n(&c1, __ATOMIC_RELAXED);
 
@@ -15254,7 +15260,7 @@ typedef long long atomic_type;
        atomic_type c3(0);
        __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
        __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-                                   __ATOMIC_RELAXED);
+				   __ATOMIC_RELAXED);
        __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
        __atomic_load_n(&c1, __ATOMIC_RELAXED);
 
@@ -15285,7 +15291,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15288 "configure"
+#line 15294 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15294,7 +15300,7 @@ int main()
   atomic_type c3(0);
   __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
   __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-                              __ATOMIC_RELAXED);
+			      __ATOMIC_RELAXED);
   __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
   __atomic_load_n(&c1, __ATOMIC_RELAXED);
 
@@ -15320,7 +15326,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15323 "configure"
+#line 15329 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15329,7 +15335,7 @@ int main()
   atomic_type c3(0);
   __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
   __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-                              __ATOMIC_RELAXED);
+			      __ATOMIC_RELAXED);
   __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
   __atomic_load_n(&c1, __ATOMIC_RELAXED);
 
@@ -15355,7 +15361,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15358 "configure"
+#line 15364 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15365,7 +15371,7 @@ int main()
   atomic_type c3(0);
   __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
   __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-                              __ATOMIC_RELAXED);
+			      __ATOMIC_RELAXED);
   __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
   __atomic_load_n(&c1, __ATOMIC_RELAXED);
 
@@ -15391,7 +15397,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15394 "configure"
+#line 15400 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15400,7 +15406,7 @@ int main()
   atomic_type c3(0);
   __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
   __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-                              __ATOMIC_RELAXED);
+			      __ATOMIC_RELAXED);
   __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
   __atomic_load_n(&c1, __ATOMIC_RELAXED);
 
@@ -15471,7 +15477,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15474 "configure"
+#line 15480 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15513,7 +15519,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15516 "configure"
+#line 15522 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15547,7 +15553,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15550 "configure"
+#line 15556 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -17240,6 +17246,26 @@ $as_echo "$enable_extern_template" >&6; }
 
 
 
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for custom python install directory" >&5
+$as_echo_n "checking for custom python install directory... " >&6; }
+
+# Check whether --with-python-dir was given.
+if test "${with_python_dir+set}" = set; then :
+  withval=$with_python_dir; with_python_dir=$withval
+else
+  with_python_dir="no"
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${with_python_dir}" >&5
+$as_echo "${with_python_dir}" >&6; }
+
+# Needed for installing Python modules during make install.
+python_mod_dir="${with_python_dir}"
+
+
+
+
 # Checks for operating systems support that doesn't require linking.
 
 
@@ -17286,10 +17312,10 @@ fi
 
 
       if test $glibcxx_cv_abs_float = yes; then
-        $as_echo "#define __CORRECT_ISO_CPP_MATH_H_PROTO1 1" >>confdefs.h
+	$as_echo "#define __CORRECT_ISO_CPP_MATH_H_PROTO1 1" >>confdefs.h
 
       else
-        $as_echo "#define __CORRECT_ISO_CPP_MATH_H_PROTO2 1" >>confdefs.h
+	$as_echo "#define __CORRECT_ISO_CPP_MATH_H_PROTO2 1" >>confdefs.h
 
       fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_abs_float" >&5
@@ -17347,7 +17373,7 @@ fi
       # autoheader cannot handle indented templates.
 
       if test $glibcxx_cv_abs_long = yes; then
-        $as_echo "#define __CORRECT_ISO_CPP_STDLIB_H_PROTO 1" >>confdefs.h
+	$as_echo "#define __CORRECT_ISO_CPP_STDLIB_H_PROTO 1" >>confdefs.h
 
       fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_abs_long" >&5
@@ -19822,7 +19848,7 @@ main ()
 
       // In case of POSIX threads check _POSIX_TIMEOUTS.
       #if (defined(_PTHREADS) \
-          && (!defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS <= 0))
+	  && (!defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS <= 0))
       #error
       #endif
 
@@ -66046,6 +66072,15 @@ else
 fi
 
 
+    if test $python_mod_dir != no; then
+  ENABLE_PYTHONDIR_TRUE=
+  ENABLE_PYTHONDIR_FALSE='#'
+else
+  ENABLE_PYTHONDIR_TRUE='#'
+  ENABLE_PYTHONDIR_FALSE=
+fi
+
+
     if test $enable_symvers != no; then
   ENABLE_SYMVERS_TRUE=
   ENABLE_SYMVERS_FALSE='#'
@@ -66497,6 +66532,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_EXTERN_TEMPLATE_TRUE}" && test -z "${ENABLE_EXTERN_TEMPLATE_FALSE}"; then
   as_fn_error "conditional \"ENABLE_EXTERN_TEMPLATE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_PYTHONDIR_TRUE}" && test -z "${ENABLE_PYTHONDIR_FALSE}"; then
+  as_fn_error "conditional \"ENABLE_PYTHONDIR\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_SYMVERS_TRUE}" && test -z "${ENABLE_SYMVERS_FALSE}"; then
