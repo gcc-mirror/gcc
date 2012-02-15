@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O0 -fno-math-errno -fdump-rtl-expand" } */
-#include <math.h>
+
+extern float sqrtf(float);
 
 float a(float x)
 {
