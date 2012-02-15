@@ -182,6 +182,9 @@
    */
 #undef LT_OBJDIR
 
+/* Define if makecontext expects top of stack in uc_stack. */
+#undef MAKECONTEXT_STACK_TOP
+
 /* Name of package */
 #undef PACKAGE
 
