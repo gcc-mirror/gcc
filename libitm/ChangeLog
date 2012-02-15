@@ -1,3 +1,10 @@
+2012-02-15  Iain Sandoe  <iains@gcc.gnu.org>
+	    Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR libitm/52220
+	* alloc_cpp.cc: No dummy definitions for darwin.
+	* eh_cpp.cc: Likewise.
+
 2012-02-14  Richard Henderson  <rth@redhat.com>
 
 	* config/x86/target.h (GTM_longjmp): Correct the .cfi corrections.

@@ -39,6 +39,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #define WEAK __attribute__((weak))
+#define UNUSED __attribute__((unused))
 
 extern void _ITM_registerTMCloneTable (void *, size_t) WEAK;
 extern void _ITM_deregisterTMCloneTable (void *) WEAK;
@@ -103,3 +104,46 @@ void __doTMdeRegistrations (void)
 }
 
 #endif
+
+/* Provide dummy functions to satisfy linkage for versions of the Darwin 
+   tool-chain that that can't handle undefined weak refs at the link stage.
+   ??? Define these dummy functions only when !HAVE_ELF_STYLE_WEAKREF. */
+
+extern void *__cxa_allocate_exception (size_t) WEAK;
+extern void __cxa_throw (void *, void *, void *) WEAK;
+extern void *__cxa_begin_catch (void *) WEAK;
+extern void *__cxa_end_catch (void) WEAK;
+extern void __cxa_tm_cleanup (void *, void *, unsigned int) WEAK;
+
+extern void *_ZnwX (size_t) WEAK;
+extern void _ZdlPv (void *) WEAK;
+extern void *_ZnaX (size_t) WEAK;
+extern void _ZdaPv (void *) WEAK;
+
+typedef const struct nothrow_t { } *c_nothrow_p;
+
+extern void *_ZnwXRKSt9nothrow_t (size_t, c_nothrow_p) WEAK;
+extern void _ZdlPvRKSt9nothrow_t (void *, c_nothrow_p) WEAK;
+extern void *_ZnaXRKSt9nothrow_t (size_t, c_nothrow_p) WEAK;
+extern void _ZdaPvRKSt9nothrow_t (void *, c_nothrow_p) WEAK;
+
+void *__cxa_allocate_exception (size_t s UNUSED) { return NULL; }
+void __cxa_throw (void * a UNUSED, void * b UNUSED, void * c UNUSED)
+  { return; }
+void *__cxa_begin_catch (void * a UNUSED) { return NULL; }
+void *__cxa_end_catch (void) { return NULL; }
+void __cxa_tm_cleanup (void * a UNUSED, void * b UNUSED, unsigned int c UNUSED)
+  { return; }
+
+void *_ZnwX (size_t s UNUSED) { return NULL; }
+void _ZdlPv (void * a UNUSED) { return; }
+void *_ZnaX (size_t s UNUSED) { return NULL; }
+void _ZdaPv (void * a UNUSED) { return; }
+
+void *_ZnwXRKSt9nothrow_t (size_t s UNUSED, c_nothrow_p b UNUSED)
+  { return NULL; }
+void _ZdlPvRKSt9nothrow_t (void * a UNUSED, c_nothrow_p b UNUSED)  { return; }
+void *_ZnaXRKSt9nothrow_t (size_t s UNUSED, c_nothrow_p b UNUSED)
+  { return NULL; }
+void _ZdaPvRKSt9nothrow_t (void * a UNUSED, c_nothrow_p b UNUSED) { return; }
+

@@ -1,6 +1,12 @@
 2012-02-15  Iain Sandoe  <iains@gcc.gnu.org>
 	    Patrick Marlier  <patrick.marlier@gmail.com>
 
+	PR libitm/52220
+	* config/darwin-crt-tm.c: Generate dummy functions.
+
+2012-02-15  Iain Sandoe  <iains@gcc.gnu.org>
+	    Patrick Marlier  <patrick.marlier@gmail.com>
+
 	PR libitm/52042
 	* config/darwin-crt-tm.c (getTMCloneTable): New function.
 	(__doTMRegistrations): Call it.

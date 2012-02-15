@@ -60,7 +60,7 @@ extern void _ZdlPvRKSt9nothrow_t (void *, c_nothrow_p) __attribute__((weak));
 extern void *_ZnaXRKSt9nothrow_t (size_t, c_nothrow_p) __attribute__((weak));
 extern void _ZdaPvRKSt9nothrow_t (void *, c_nothrow_p) __attribute__((weak));
 
-#if !defined (HAVE_ELF_STYLE_WEAKREF)
+#if !defined (HAVE_ELF_STYLE_WEAKREF) && !defined (__MACH__)
 void *_ZnwX (size_t) { return NULL; }
 void _ZdlPv (void *) { return; }
 void *_ZnaX (size_t) { return NULL; }
