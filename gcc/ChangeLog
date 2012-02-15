@@ -1,3 +1,7 @@
+2012-02-15  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi: Clean up "n-bit/byte/word" modifiers.
+
 2012-02-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/52199

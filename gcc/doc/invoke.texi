@@ -10440,7 +10440,7 @@ for direct calls.  The default is @option{-mlong-calls}.
 
 @item -msmall16
 @opindex msmall16
-Assume addresses can be loaded as 16 bit unsigned values.  This does not
+Assume addresses can be loaded as 16-bit unsigned values.  This does not
 apply to function addresses for which @option{-mlong-calls} semantics
 are in effect.
 
@@ -10487,8 +10487,8 @@ The default is @option{-mfp-mode=caller}
 @opindex mno-postinc
 @item -mno-postmodify
 @opindex mno-postmodify
-Code generation tweaks that disable, respectively, splitting of 32
-bit loads, generation of post-increment addresses, and generation of
+Code generation tweaks that disable, respectively, splitting of 32-bit
+loads, generation of post-increment addresses, and generation of
 post-modify addresses.  The defaults are @option{msplit-lohi},
 @option{-mpost-inc}, and @option{-mpost-modify}.
 
@@ -10903,7 +10903,7 @@ this option and always use the original scheme.
 
 @item -mword-relocations
 @opindex mword-relocations
-Only generate absolute relocations on word sized values (i.e. R_ARM_ABS32).
+Only generate absolute relocations on word-sized values (i.e. R_ARM_ABS32).
 This is enabled by default on targets (uClinux, SymbianOS) where the runtime
 loader imposes this restriction, and when @option{-fpic} or @option{-fPIC}
 is specified.
@@ -11021,7 +11021,7 @@ subroutines.  Code size will be smaller.
 
 @item -mint8
 @opindex mint8
-Assume int to be 8 bit integer.  This affects the sizes of all types: A
+Assume int to be 8-bit integer.  This affects the sizes of all types: a
 char will be 1 byte, an int will be 1 byte, a long will be 2 bytes
 and long long will be 4 bytes.  Please note that this option does not
 comply to the C standards, but it will provide you with smaller code
@@ -11251,7 +11251,7 @@ with up to 128@tie{}KiB of program memory.
 
 @item __AVR_HAVE_8BIT_SP__
 @item __AVR_HAVE_16BIT_SP__
-The stack pointer (SP) is 8@tie{}bits resp. 16@tie{}bits wide.
+The stack pointer (SP) is respectively 8 or 16 bits wide.
 The definition of these macros is affected by @code{-mtiny-stack}.
 
 @item __NO_INTERRUPTS__
@@ -11410,7 +11410,7 @@ This is the default.
 Tells the compiler to perform function calls by first loading the
 address of the function into a register and then performing a subroutine
 call on this register.  This switch is needed if the target function
-will lie outside of the 24 bit addressing range of the offset based
+lies outside of the 24-bit addressing range of the offset-based
 version of subroutine call instruction.
 
 This feature is not enabled by default.  Specifying
@@ -12312,7 +12312,7 @@ routine for the debugger.
 
 @item -mmalloc64
 @opindex mmalloc64
-Default to 64bit memory allocation routines.
+Default to 64-bit memory allocation routines.
 @end table
 
 @node FR30 Options
@@ -12730,9 +12730,9 @@ Make @code{int} data 32 bits by default.
 @item -malign-300
 @opindex malign-300
 On the H8/300H and H8S, use the same alignment rules as for the H8/300.
-The default for the H8/300H and H8S is to align longs and floats on 4
-byte boundaries.
-@option{-malign-300} causes them to be aligned on 2 byte boundaries.
+The default for the H8/300H and H8S is to align longs and floats on
+4-byte boundaries.
+@option{-malign-300} causes them to be aligned on 2-byte boundaries.
 This option has no effect on the H8/300.
 @end table
 
@@ -12869,7 +12869,7 @@ are passed to that ld.  The ld that is called is determined by the
 @option{--with-ld} configure option, GCC's program search path, and
 finally by the user's @env{PATH}.  The linker used by GCC can be printed
 using @samp{which `gcc -print-prog-name=ld`}.  This option is only available
-on the 64 bit HP-UX GCC, i.e.@: configured with @samp{hppa*64*-*-hpux*}.
+on the 64-bit HP-UX GCC, i.e.@: configured with @samp{hppa*64*-*-hpux*}.
 
 @item -mhp-ld
 @opindex mhp-ld
@@ -12881,7 +12881,7 @@ which ld is called, it only changes what parameters are passed to that
 ld.  The ld that is called is determined by the @option{--with-ld}
 configure option, GCC's program search path, and finally by the user's
 @env{PATH}.  The linker used by GCC can be printed using @samp{which
-`gcc -print-prog-name=ld`}.  This option is only available on the 64 bit
+`gcc -print-prog-name=ld`}.  This option is only available on the 64-bit
 HP-UX GCC, i.e.@: configured with @samp{hppa*64*-*-hpux*}.
 
 @item -mlong-calls
@@ -13140,7 +13140,7 @@ effective.  For the x86-64 compiler, these extensions are enabled by default.
 
 The resulting code should be considerably faster in the majority of cases and avoid
 the numerical instability problems of 387 code, but may break some existing
-code that expects temporaries to be 80bit.
+code that expects temporaries to be 80 bits.
 
 This is the default choice for the x86-64 compiler.
 
@@ -13209,9 +13209,9 @@ instructions are not generated unless you also use the
 @opindex malign-double
 @opindex mno-align-double
 Control whether GCC aligns @code{double}, @code{long double}, and
-@code{long long} variables on a two word boundary or a one word
-boundary.  Aligning @code{double} variables on a two word boundary will
-produce code that runs somewhat faster on a @samp{Pentium} at the
+@code{long long} variables on a two-word boundary or a one-word
+boundary.  Aligning @code{double} variables on a two-word boundary
+produces code that runs somewhat faster on a @samp{Pentium} at the
 expense of more memory.
 
 On x86-64, @option{-malign-double} is enabled by default.
@@ -13228,17 +13228,17 @@ without that switch.
 @opindex m128bit-long-double
 These switches control the size of @code{long double} type.  The i386
 application binary interface specifies the size to be 96 bits,
-so @option{-m96bit-long-double} is the default in 32 bit mode.
+so @option{-m96bit-long-double} is the default in 32-bit mode.
 
-Modern architectures (Pentium and newer) would prefer @code{long double}
-to be aligned to an 8 or 16 byte boundary.  In arrays or structures
-conforming to the ABI, this would not be possible.  So specifying a
-@option{-m128bit-long-double} will align @code{long double}
-to a 16 byte boundary by padding the @code{long double} with an additional
-32 bit zero.
+Modern architectures (Pentium and newer) prefer @code{long double}
+to be aligned to an 8- or 16-byte boundary.  In arrays or structures
+conforming to the ABI, this is not possible.  So specifying
+@option{-m128bit-long-double} aligns @code{long double}
+to a 16-byte boundary by padding the @code{long double} with an additional
+32-bit zero.
 
 In the x86-64 compiler, @option{-m128bit-long-double} is the default choice as
-its ABI specifies that @code{long double} is to be aligned on 16 byte boundary.
+its ABI specifies that @code{long double} is to be aligned on 16-byte boundary.
 
 Notice that neither of these options enable any extra precision over the x87
 standard of 80 bits for a @code{long double}.
@@ -13361,10 +13361,10 @@ boundary.  If @option{-mincoming-stack-boundary} is not specified,
 the one specified by @option{-mpreferred-stack-boundary} will be used.
 
 On Pentium and PentiumPro, @code{double} and @code{long double} values
-should be aligned to an 8 byte boundary (see @option{-malign-double}) or
+should be aligned to an 8-byte boundary (see @option{-malign-double}) or
 suffer significant run time performance penalties.  On Pentium III, the
 Streaming SIMD Extension (SSE) data type @code{__m128} may not work
-properly if it is not 16 byte aligned.
+properly if it is not 16-byte aligned.
 
 To ensure proper alignment of this values on the stack, the stack boundary
 must be as aligned as that required by any value stored on the stack.
@@ -13625,8 +13625,9 @@ but GCC doesn't know about it.
 
 @item -minline-all-stringops
 @opindex minline-all-stringops
-By default GCC inlines string operations only when destination is known to be
-aligned at least to 4 byte boundary.  This enables more inlining, increase code
+By default GCC inlines string operations only when the destination is 
+known to be aligned to least a 4-byte boundary.  
+This enables more inlining, increase code
 size, but may improve performance of code that depends on fast memcpy, strlen
 and memset for short lengths.
 
@@ -14118,7 +14119,7 @@ routine for the debugger.
 
 @item -mmalloc64
 @opindex mmalloc64
-Default to 64bit memory allocation routines.
+Default to 64-bit memory allocation routines.
 @end table
 
 @node LM32 Options
@@ -14727,7 +14728,7 @@ Always treat bit-fields as int-sized.
 @itemx -mno-4byte-functions
 @opindex m4byte-functions
 @opindex mno-4byte-functions
-Force all functions to be aligned to a four byte boundary.
+Force all functions to be aligned to a 4-byte boundary.
 
 @item -mcallgraph-data
 @itemx -mno-callgraph-data
@@ -14795,7 +14796,7 @@ registers.
 @opindex mbased=
 Variables of size @var{n} bytes or smaller will be placed in the
 @code{.based} section by default.  Based variables use the @code{$tp}
-register as a base register, and there is a 128 byte limit to the
+register as a base register, and there is a 128-byte limit to the
 @code{.based} section.
 
 @item -mbitops
@@ -14895,7 +14896,7 @@ low-overhead looping.
 @item -ms
 @opindex ms
 Causes all variables to default to the @code{.tiny} section.  Note
-that there is a 65536 byte limit to this section.  Accesses to these
+that there is a 65536-byte limit to this section.  Accesses to these
 variables use the @code{%gp} base register.
 
 @item -msatur
@@ -14927,7 +14928,7 @@ this option, functions default to the @code{.near} section.
 Variables that are @var{n} bytes or smaller will be allocated to the
 @code{.tiny} section.  These variables use the @code{$gp} base
 register.  The default for this option is 4, but note that there's a
-65536 byte limit to the @code{.tiny} section.
+65536-byte limit to the @code{.tiny} section.
 
 @end table
 
@@ -16748,9 +16749,9 @@ and unions that contain bit-fields to be aligned to the base type of the
 bit-field.
 
 For example, by default a structure containing nothing but 8
-@code{unsigned} bit-fields of length 1 would be aligned to a 4 byte
-boundary and have a size of 4 bytes.  By using @option{-mno-bit-align},
-the structure would be aligned to a 1 byte boundary and be one byte in
+@code{unsigned} bit-fields of length 1 is aligned to a 4-byte
+boundary and has a size of 4 bytes.  By using @option{-mno-bit-align},
+the structure is aligned to a 1-byte boundary and is 1 byte in
 size.
 
 @item -mno-strict-align
@@ -16771,7 +16772,7 @@ PowerPC system loader should relocate the entire contents of
 a table of 32-bit addresses generated by this option.  For this to
 work, all objects linked together must be compiled with
 @option{-mrelocatable} or @option{-mrelocatable-lib}.
-@option{-mrelocatable} code aligns the stack to an 8 byte boundary.
+@option{-mrelocatable} code aligns the stack to an 8-byte boundary.
 
 @item -mrelocatable-lib
 @itemx -mno-relocatable-lib
@@ -16987,11 +16988,11 @@ header to indicate that @samp{eabi} extended relocations are used.
 On System V.4 and embedded PowerPC systems do (do not) adhere to the
 Embedded Applications Binary Interface (eabi) which is a set of
 modifications to the System V.4 specifications.  Selecting @option{-meabi}
-means that the stack is aligned to an 8 byte boundary, a function
+means that the stack is aligned to an 8-byte boundary, a function
 @code{__eabi} is called to from @code{main} to set up the eabi
 environment, and the @option{-msdata} option can use both @code{r2} and
 @code{r13} to point to two separate small data areas.  Selecting
-@option{-mno-eabi} means that the stack is aligned to a 16 byte boundary,
+@option{-mno-eabi} means that the stack is aligned to a 16-byte boundary,
 do not call an initialization function from @code{main}, and the
 @option{-msdata} option will only use @code{r13} to point to a single
 small data area.  The @option{-meabi} option is on by default if you
@@ -17201,7 +17202,7 @@ the floating-point number is too large to fit in an integer.
 @opindex mpointers-to-nested-functions
 Generate (do not generate) code to load up the static chain register
 (@var{r11}) when calling through a pointer on AIX and 64-bit Linux
-systems where a function pointer points to a 3 word descriptor giving
+systems where a function pointer points to a 3-word descriptor giving
 the function address, TOC value to be loaded in register @var{r2}, and
 static chain value to be loaded in register @var{r11}.  The
 @option{-mpointers-to-nested-functions} is on by default.  You will
@@ -17425,7 +17426,7 @@ instructions.  This is the default for @option{-march=z9-ec} or higher.
 @opindex mlong-double-64
 @opindex mlong-double-128
 These switches control the size of @code{long double} type. A size
-of 64bit makes the @code{long double} type equivalent to the @code{double}
+of 64 bits makes the @code{long double} type equivalent to the @code{double}
 type. This is the default.
 
 @item -mbackchain
@@ -17779,7 +17780,7 @@ Mark the @code{MAC} register as call-clobbered, even if
 @opindex mieee
 Increase IEEE compliance of floating-point code.
 At the moment, this is equivalent to @option{-fno-finite-math-only}.
-When generating 16 bit SH opcodes, getting IEEE-conforming results for
+When generating 16-bit SH opcodes, getting IEEE-conforming results for
 comparisons of NANs / infinities incurs extra overhead in every
 floating-point comparison, therefore the default is set to
 @option{-ffinite-math-only}.
@@ -17878,7 +17879,7 @@ needed for unwinding to avoid changing the stack frame around conditional code.
 
 @item -mdivsi3_libfunc=@var{name}
 @opindex mdivsi3_libfunc=@var{name}
-Set the name of the library function used for 32 bit signed division to
+Set the name of the library function used for 32-bit signed division to
 @var{name}.  This only affect the name used in the call and inv:call
 division strategies, and the compiler will still expect the same
 sets of input/output/clobbered registers as if this option was not present.
@@ -17900,12 +17901,12 @@ TARGET_ADJUST_UNROLL_MAX target hook.
 @item -mindexed-addressing
 @opindex mindexed-addressing
 Enable the use of the indexed addressing mode for SHmedia32/SHcompact.
-This is only safe if the hardware and/or OS implement 32 bit wrap-around
+This is only safe if the hardware and/or OS implement 32-bit wrap-around
 semantics for the indexed addressing mode.  The architecture allows the
-implementation of processors with 64 bit MMU, which the OS could use to
-get 32 bit addressing, but since no current hardware implementation supports
+implementation of processors with 64-bit MMU, which the OS could use to
+get 32-bit addressing, but since no current hardware implementation supports
 this or any other way to make the indexed addressing mode safe to use in
-the 32 bit ABI, the default is -mno-indexed-addressing.
+the 32-bit ABI, the default is @option{-mno-indexed-addressing}.
 
 @item -mgettrcost=@var{number}
 @opindex mgettrcost=@var{number}
@@ -18059,11 +18060,11 @@ this is much slower than calling the ABI library routines.  Thus the
 @itemx -munaligned-doubles
 @opindex mno-unaligned-doubles
 @opindex munaligned-doubles
-Assume that doubles have 8 byte alignment.  This is the default.
+Assume that doubles have 8-byte alignment.  This is the default.
 
-With @option{-munaligned-doubles}, GCC assumes that doubles have 8 byte
+With @option{-munaligned-doubles}, GCC assumes that doubles have 8-byte
 alignment only if they are contained in another type, or if they have an
-absolute address.  Otherwise, it assumes they have 4 byte alignment.
+absolute address.  Otherwise, it assumes they have 4-byte alignment.
 Specifying this option avoids some rare compatibility problems with code
 generated by other compilers.  It is not the default because it results
 in a performance loss, especially for floating-point code.
@@ -18073,7 +18074,7 @@ in a performance loss, especially for floating-point code.
 @opindex mno-faster-structs
 @opindex mfaster-structs
 With @option{-mfaster-structs}, the compiler assumes that structures
-should have 8 byte alignment.  This enables the use of pairs of
+should have 8-byte alignment.  This enables the use of pairs of
 @code{ldd} and @code{std} instructions for copies in structure
 assignment, in place of twice as many @code{ld} and @code{st} pairs.
 However, the use of this changed alignment directly violates the SPARC
@@ -18181,7 +18182,7 @@ native Solaris and GNU/Linux toolchains, @samp{native} can also be used.
 @opindex mno-v8plus
 With @option{-mv8plus}, GCC generates code for the SPARC-V8+ ABI@.  The
 difference from the V8 ABI is that the global and out registers are
-considered 64-bit wide.  This is enabled by default on Solaris in 32-bit
+considered 64 bits wide.  This is enabled by default on Solaris in 32-bit
 mode for all SPARC-V9 processors.
 
 @item -mvis
@@ -18364,7 +18365,7 @@ or to make an object a little bit smaller.
 
 By default, GCC generates code assuming that addresses are never larger
 than 18 bits.  With @option{-mlarge-mem} code is generated that assumes
-a full 32 bit address.
+a full 32-bit address.
 
 @item -mstdmain
 @opindex mstdmain
@@ -19388,8 +19389,8 @@ field's type, aligned to a natural alignment if possible.  For
 example, targets with memory-mapped peripheral registers might require
 all such accesses to be 16 bits wide; with this flag the user could
 declare all peripheral bitfields as ``unsigned short'' (assuming short
-is 16 bits on these targets) to force GCC to use 16 bit accesses
-instead of, perhaps, a more efficient 32 bit access.
+is 16 bits on these targets) to force GCC to use 16-bit accesses
+instead of, perhaps, a more efficient 32-bit access.
 
 If this option is disabled, the compiler will use the most efficient
 instruction.  In the previous example, that might be a 32-bit load
