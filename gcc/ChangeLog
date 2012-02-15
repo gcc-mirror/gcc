@@ -1,3 +1,60 @@
+2012-01-15  Georg-Johann Lay  <avr@gjlay.de>
+	    Anatoly Sokolov <aesok@post.ru>
+	    Eric Weddington <eric.weddington@atmel.com>
+
+	PR target/52261
+	* config/avr/avr-devices.c (avr_arch_types): Add avrxmega2,
+	avrxmega4, avrxmega5, avrxmega6, avrxmega7.
+	Rewrite initializers for .macro.
+	* config/avr/avr-mcus.def (AVR_MCU): Add known MCUs:
+	avrxmega2: atxmega16a4, atxmega16d4, atxmega16x1, atxmega32a4
+	atxmega32d4, atxmega32x1.
+	avrxmega4: atxmega64a3, atxmega64d3.
+	avrxmega5: atxmega64a1, atxmega64a1u.
+	avrxmega6: atxmega128a3, atxmega128d3, atxmega192a3, atxmega192d3,
+	atxmega256a3, atxmega256a3b, atxmega256a3bu, atxmega256d3.
+	avrxmega7: atxmega128a1, atxmega128a1u.
+	* config/avr/avr.h (enum avr_arch): Add: ARCH_AVRXMEGA2,
+	ARCH_AVRXMEGA4,	ARCH_AVRXMEGA5, ARCH_AVRXMEGA6, ARCH_AVRXMEGA7.
+	(struct base_arch_s): Rename reserved to xmega_p.
+	Rename reserved2 to have_rampd.
+	(AVR_XMEGA): New define.
+	(AVR_HAVE_RAMPD, AVR_HAVE_RAMPX, AVR_HAVE_RAMPY): New defines.
+	(AVR_HAVE_RAMPZ): Change definition to fit xmega.
+	* config/avr/predicates.md (io_address_operand): Take into
+	account SFR offset.
+	(low_io_address_operand): Ditto.
+	(high_io_address_operand): Ditto.
+	* config/avr/avr.md (isa): Add alternatives no_xmega, xmega.
+	(enabled, movhi_sp_r): Use them.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Use
+	cpp_define_formatted to built-in define __AVR_ARCH__.
+	(__AVR_XMEGA__): New built-in define.
+	(__AVR_HAVE_RAMPD__): New built-in define.
+	(__AVR_HAVE_RAMPX__): New built-in define.
+	(__AVR_HAVE_RAMPY__): New built-in define.
+	(__AVR_HAVE_RAMPZ__): Change condition when to built-in define it.
+
+	* config/avr/avr.c (avr_addr_t): Add ccp, rampd, rampx, rampy.
+	(avr_option_override): Initialize them.
+	(sreg_rtx, rampd_rtx, rampx_rtx, rampy_rtx): New GTY rtx.
+	(avr_init_expanders): Initialize them. No more block several calls.
+	(emit_push_sfr): New static function.
+	(avr_prologue_setup_frame): Use it to push SREG, RAMPD/X/Y/Z as needed.
+	Handle AVR_XMEGA.
+	(expand_epilogue): Handle AVR_XMEGA. Pop RAMPD/X/Y/Z as needed.
+	(avr_print_operand): Print addreeses as symbols for
+	RAMPX, RAMPY, RAMPD, CCP.
+	(output_movhi): Handle AVR_XMEGA when writing to SP.
+	(avr_out_movhi_mr_r_xmega): New static function.
+	(out_movhi_mr_r): Forward to avr_out_movhi_mr_r_xmega for AVR_XMEGA.
+	(avr_file_start): Print symbol defines for __RAMPX__,  __RAMPY__,
+	__RAMPD__,  __CCP__ as needed.
+
+	* config/avr/multilib.h: Regenerate.
+	* config/avr/t-multilib: Regenerate.
+	* config/avr/avr-tables.opt: Regenerate.
+
 2012-02-15  Tobias Grosser <grosser@fim.uni-passau.de>
 
 	PR tree-optimization/50561

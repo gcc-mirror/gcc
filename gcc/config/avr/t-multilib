@@ -21,9 +21,9 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-MULTILIB_OPTIONS = mmcu=avr2/mmcu=avr25/mmcu=avr3/mmcu=avr31/mmcu=avr35/mmcu=avr4/mmcu=avr5/mmcu=avr51/mmcu=avr6 mtiny-stack
+MULTILIB_OPTIONS = mmcu=avr2/mmcu=avr25/mmcu=avr3/mmcu=avr31/mmcu=avr35/mmcu=avr4/mmcu=avr5/mmcu=avr51/mmcu=avr6/mmcu=avrxmega2/mmcu=avrxmega4/mmcu=avrxmega5/mmcu=avrxmega6/mmcu=avrxmega7 mtiny-stack
 
-MULTILIB_DIRNAMES =  avr2 avr25 avr3 avr31 avr35 avr4 avr5 avr51 avr6 tiny-stack avr25/tiny-stack
+MULTILIB_DIRNAMES =  avr2 avr25 avr3 avr31 avr35 avr4 avr5 avr51 avr6 avrxmega2 avrxmega4 avrxmega5 avrxmega6 avrxmega7 tiny-stack avr25/tiny-stack
 
 MULTILIB_EXCEPTIONS = \
 	mmcu=avr3/mtiny-stack \
@@ -32,7 +32,12 @@ MULTILIB_EXCEPTIONS = \
 	mmcu=avr4/mtiny-stack \
 	mmcu=avr5/mtiny-stack \
 	mmcu=avr51/mtiny-stack \
-	mmcu=avr6/mtiny-stack
+	mmcu=avr6/mtiny-stack \
+	mmcu=avrxmega2/mtiny-stack \
+	mmcu=avrxmega4/mtiny-stack \
+	mmcu=avrxmega5/mtiny-stack \
+	mmcu=avrxmega6/mtiny-stack \
+	mmcu=avrxmega7/mtiny-stack
 
 MULTILIB_MATCHES = \
 	mmcu?at90s2313=mmcu?at90s2313 \
@@ -189,4 +194,24 @@ MULTILIB_MATCHES = \
 	mmcu?avr51=mmcu?at90usb1286 \
 	mmcu?avr51=mmcu?at90usb1287 \
 	mmcu?avr6=mmcu?atmega2560 \
-	mmcu?avr6=mmcu?atmega2561
+	mmcu?avr6=mmcu?atmega2561 \
+	mmcu?avrxmega2=mmcu?atxmega16a4 \
+	mmcu?avrxmega2=mmcu?atxmega16d4 \
+	mmcu?avrxmega2=mmcu?atxmega16x1 \
+	mmcu?avrxmega2=mmcu?atxmega32a4 \
+	mmcu?avrxmega2=mmcu?atxmega32d4 \
+	mmcu?avrxmega2=mmcu?atxmega32x1 \
+	mmcu?avrxmega4=mmcu?atxmega64a3 \
+	mmcu?avrxmega4=mmcu?atxmega64d3 \
+	mmcu?avrxmega5=mmcu?atxmega64a1 \
+	mmcu?avrxmega5=mmcu?atxmega64a1u \
+	mmcu?avrxmega6=mmcu?atxmega128a3 \
+	mmcu?avrxmega6=mmcu?atxmega128d3 \
+	mmcu?avrxmega6=mmcu?atxmega192a3 \
+	mmcu?avrxmega6=mmcu?atxmega192d3 \
+	mmcu?avrxmega6=mmcu?atxmega256a3 \
+	mmcu?avrxmega6=mmcu?atxmega256a3b \
+	mmcu?avrxmega6=mmcu?atxmega256a3bu \
+	mmcu?avrxmega6=mmcu?atxmega256d3 \
+	mmcu?avrxmega7=mmcu?atxmega128a1 \
+	mmcu?avrxmega7=mmcu?atxmega128a1u

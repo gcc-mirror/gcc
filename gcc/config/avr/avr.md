@@ -155,9 +155,10 @@
 ;; ijmp : ISA has no EICALL/EIJMP        eijmp : ISA has EICALL/EIJMP
 ;; lpm  : ISA has no LPMX                lpmx  : ISA has LPMX
 ;; elpm : ISA has ELPM but no ELPMX      elpmx : ISA has ELPMX
+;; no_xmega: non-XMEGA core              xmega : XMEGA core
 
 (define_attr "isa"
-  "mov,movw, rjmp,jmp, ijmp,eijmp, lpm,lpmx, elpm,elpmx,
+  "mov,movw, rjmp,jmp, ijmp,eijmp, lpm,lpmx, elpm,elpmx, no_xmega,xmega,
    standard"
   (const_string "standard"))
 
@@ -203,6 +204,14 @@
 
          (and (eq_attr "isa" "elpmx")
               (match_test "AVR_HAVE_ELPMX"))
+         (const_int 1)
+
+         (and (eq_attr "isa" "xmega")
+              (match_test "AVR_XMEGA"))
+         (const_int 1)
+
+         (and (eq_attr "isa" "no_xmega")
+              (match_test "!AVR_XMEGA"))
          (const_int 1)
          ] (const_int 0)))
 
@@ -580,15 +589,17 @@
 ;; handled by generic movhi insn.
 
 (define_insn "movhi_sp_r"
-  [(set (match_operand:HI 0 "stack_register_operand"                "=q,q")
-        (unspec_volatile:HI [(match_operand:HI 1 "register_operand"  "r,r")
-                             (match_operand:HI 2 "const_int_operand" "L,P")]
+  [(set (match_operand:HI 0 "stack_register_operand"                "=q,q,q")
+        (unspec_volatile:HI [(match_operand:HI 1 "register_operand"  "r,r,r")
+                             (match_operand:HI 2 "const_int_operand" "L,P,LP")]
                             UNSPECV_WRITE_SP))]
   "!AVR_HAVE_8BIT_SP"
   "@
 	out __SP_H__,%B1\;out __SP_L__,%A1
-	cli\;out __SP_H__,%B1\;sei\;out __SP_L__,%A1"
-  [(set_attr "length" "2,4")
+	cli\;out __SP_H__,%B1\;sei\;out __SP_L__,%A1
+	out __SP_L__,%A1\;out __SP_H__,%B1"
+  [(set_attr "length" "2,4,2")
+   (set_attr "isa" "no_xmega,no_xmega,xmega")
    (set_attr "cc" "none")])
 
 (define_peephole2

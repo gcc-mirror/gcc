@@ -1,3 +1,11 @@
+2012-01-15  Georg-Johann Lay  <avr@gjlay.de>
+	    Anatoly Sokolov <aesok@post.ru>
+	    Eric Weddington <eric.weddington@atmel.com>
+
+	PR target/52261
+	* config/avr/lib1funcs.S (__prologue_saves__): Handle AVR_XMEGA
+	(__epilogue_restores__): Ditto.
+
 2012-02-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/51921

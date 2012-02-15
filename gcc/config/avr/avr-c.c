@@ -77,23 +77,21 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   builtin_define_std ("AVR");
 
   if (avr_current_arch->macro)
-    cpp_define (pfile, avr_current_arch->macro);
+    cpp_define_formatted (pfile, "__AVR_ARCH__=%s", avr_current_arch->macro);
   if (avr_extra_arch_macro)
     cpp_define (pfile, avr_extra_arch_macro);
-  if (avr_current_arch->have_elpm)
-    cpp_define (pfile, "__AVR_HAVE_RAMPZ__");
-  if (avr_current_arch->have_elpm)
-    cpp_define (pfile, "__AVR_HAVE_ELPM__");
-  if (avr_current_arch->have_elpmx)
-    cpp_define (pfile, "__AVR_HAVE_ELPMX__");
-  if (avr_current_arch->have_movw_lpmx)
-    {
-      cpp_define (pfile, "__AVR_HAVE_MOVW__");
-      cpp_define (pfile, "__AVR_HAVE_LPMX__");
-    }
+  if (AVR_HAVE_RAMPD)    cpp_define (pfile, "__AVR_HAVE_RAMPD__");
+  if (AVR_HAVE_RAMPX)    cpp_define (pfile, "__AVR_HAVE_RAMPX__");
+  if (AVR_HAVE_RAMPY)    cpp_define (pfile, "__AVR_HAVE_RAMPY__");
+  if (AVR_HAVE_RAMPZ)    cpp_define (pfile, "__AVR_HAVE_RAMPZ__");
+  if (AVR_HAVE_ELPM)     cpp_define (pfile, "__AVR_HAVE_ELPM__");
+  if (AVR_HAVE_ELPMX)    cpp_define (pfile, "__AVR_HAVE_ELPMX__");
+  if (AVR_HAVE_MOVW)     cpp_define (pfile, "__AVR_HAVE_MOVW__");
+  if (AVR_HAVE_LPMX)     cpp_define (pfile, "__AVR_HAVE_LPMX__");
+
   if (avr_current_arch->asm_only)
     cpp_define (pfile, "__AVR_ASM_ONLY__");
-  if (avr_current_arch->have_mul)
+  if (AVR_HAVE_MUL)
     {
       cpp_define (pfile, "__AVR_ENHANCED__");
       cpp_define (pfile, "__AVR_HAVE_MUL__");
@@ -103,6 +101,8 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
       cpp_define (pfile, "__AVR_MEGA__");
       cpp_define (pfile, "__AVR_HAVE_JMP_CALL__");
     }
+  if (AVR_XMEGA)
+    cpp_define (pfile, "__AVR_XMEGA__");
   if (avr_current_arch->have_eijmp_eicall)
     {
       cpp_define (pfile, "__AVR_HAVE_EIJMP_EICALL__");

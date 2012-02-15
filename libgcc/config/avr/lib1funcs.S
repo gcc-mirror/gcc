@@ -1696,6 +1696,13 @@ DEFUN __prologue_saves__
 	sub	r28,r26
 	out	__SP_L__,r28
 	clr	r29
+#elif defined (__AVR__XMEGA__)
+	in	r28,__SP_L__
+	in	r29,__SP_H__
+	sub	r28,r26
+	sbc	r29,r27
+	out	__SP_L__,r28
+	out	__SP_H__,r29
 #else
 	in	r28,__SP_L__
 	in	r29,__SP_H__
@@ -1745,6 +1752,13 @@ DEFUN __epilogue_restores__
 	add	r28,r30
 	out	__SP_L__,r28
 	mov	r28, r26
+#elif defined (__AVR__XMEGA__)
+	ldd  r27,Y+1
+	add  r28,r30
+	adc  r29,__zero_reg__
+	out  __SP_L__,r28
+	out  __SP_H__,r29
+	wmov 28, 26
 #else
 	ldd	r27,Y+1
 	add	r28,r30
