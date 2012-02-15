@@ -3736,10 +3736,6 @@ ipa_tm_scan_irr_block (basic_block bb)
 	     assembly statement is not relevant to the transaction
 	     is to wrap it in a __tm_waiver block.  This is not
 	     yet implemented, so we can't check for it.  */
-	  if (is_tm_safe (current_function_decl))
-	    error_at (gimple_location (stmt),
-		      "asm not allowed in %<transaction_safe%> function %qE",
-		      current_function_decl);
 	  return true;
 
 	default:
