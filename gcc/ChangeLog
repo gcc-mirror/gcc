@@ -1,3 +1,10 @@
+2012-02-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/52199
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): Use
+	force_reg instead of copy_to_reg for better optimization.  Force
+	non-register or memory operands into a register.
+
 2012-02-15  Andrew MacLeod  <amacleod@redhat.com>
 
 	* extend.texi: Reserve upper bits of memory model for future use.
