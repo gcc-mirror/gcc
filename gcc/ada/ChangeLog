@@ -1,8 +1,14 @@
 2012-02-15  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Qualified_Expression>: If the
+	type is tagged, mark it as used for debugging purposes.
+	<N_Allocator>: Likewise for a qualified expression.
+
+2012-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (call_to_gnu): Create the temporary for the
 	return value in the by-reference return type case if this isn't the
-	expression of an object declaration.  Tidy up.
+	expression of an object declaration.  Tidy up.
 
 2012-02-09  Tristan Gingold  <gingold@adacore.com>
 

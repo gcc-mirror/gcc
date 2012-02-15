@@ -5518,6 +5518,13 @@ gnat_to_gnu (Node_Id gnat_node)
       gnu_result = gnat_to_gnu (Expression (gnat_node));
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
+      /* If this is a qualified expression for a tagged type, we mark the type
+	 as used.  Because of polymorphism, this might be the only reference to
+	 the tagged type in the program while objects have it as dynamic type.
+	 The debugger needs to see it to display these objects properly.  */
+      if (kind == N_Qualified_Expression && Is_Tagged_Type (Etype (gnat_node)))
+	used_types_insert (gnu_result_type);
+
       gnu_result
 	= convert_with_check (Etype (gnat_node), gnu_result,
 			      Do_Overflow_Check (gnat_node),
@@ -5865,18 +5872,19 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	    if (Is_Elementary_Type (gnat_desig_type)
 		|| Is_Constrained (gnat_desig_type))
-	      {
-		gnu_type = gnat_to_gnu_type (gnat_desig_type);
-		gnu_init = convert (gnu_type, gnu_init);
-	      }
+	      gnu_type = gnat_to_gnu_type (gnat_desig_type);
 	    else
 	      {
 		gnu_type = gnat_to_gnu_type (Etype (Expression (gnat_temp)));
 		if (TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE)
 		  gnu_type = TREE_TYPE (gnu_init);
-
-		gnu_init = convert (gnu_type, gnu_init);
 	      }
+
+	    /* See the N_Qualified_Expression case for the rationale.  */
+	    if (Is_Tagged_Type (gnat_desig_type))
+	      used_types_insert (gnu_type);
+
+	    gnu_init = convert (gnu_type, gnu_init);
 	  }
 	else
 	  gcc_unreachable ();
