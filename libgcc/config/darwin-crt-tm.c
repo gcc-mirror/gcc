@@ -103,8 +103,6 @@ void __doTMdeRegistrations (void)
     _ITM_deregisterTMCloneTable (tmct);
 }
 
-#endif
-
 /* Provide dummy functions to satisfy linkage for versions of the Darwin 
    tool-chain that that can't handle undefined weak refs at the link stage.
    ??? Define these dummy functions only when !HAVE_ELF_STYLE_WEAKREF. */
@@ -147,3 +145,4 @@ void *_ZnaXRKSt9nothrow_t (size_t s UNUSED, c_nothrow_p b UNUSED)
   { return NULL; }
 void _ZdaPvRKSt9nothrow_t (void * a UNUSED, c_nothrow_p b UNUSED) { return; }
 
+#endif
