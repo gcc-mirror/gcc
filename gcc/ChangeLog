@@ -1,3 +1,8 @@
+2012-02-16  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/i386.c (legitimate_pic_address_disp_p): Allow
+	interger-constant displacement for UNSPEC_PCREL.
+
 2012-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/52208
