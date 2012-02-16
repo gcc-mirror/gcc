@@ -5824,15 +5824,46 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
   }
 
   // String constant expressions.
-  if (op == OPERATOR_PLUS
-      && left->type()->is_string_type()
-      && right->type()->is_string_type())
+  if (left->type()->is_string_type() && right->type()->is_string_type())
     {
       std::string left_string;
       std::string right_string;
       if (left->string_constant_value(&left_string)
 	  && right->string_constant_value(&right_string))
-	return Expression::make_string(left_string + right_string, location);
+	{
+	  if (op == OPERATOR_PLUS)
+	    return Expression::make_string(left_string + right_string,
+					   location);
+	  else if (is_comparison)
+	    {
+	      int cmp = left_string.compare(right_string);
+	      bool r;
+	      switch (op)
+		{
+		case OPERATOR_EQEQ:
+		  r = cmp == 0;
+		  break;
+		case OPERATOR_NOTEQ:
+		  r = cmp != 0;
+		  break;
+		case OPERATOR_LT:
+		  r = cmp < 0;
+		  break;
+		case OPERATOR_LE:
+		  r = cmp <= 0;
+		  break;
+		case OPERATOR_GT:
+		  r = cmp > 0;
+		  break;
+		case OPERATOR_GE:
+		  r = cmp >= 0;
+		  break;
+		default:
+		  go_unreachable();
+		}
+	      return Expression::make_boolean(r, location);
+	    }
+	}
     }
 
   // Special case for shift of a floating point constant.
