@@ -1,5 +1,9 @@
 2012-02-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/52208
+	* ira-costs.c (scan_one_insn): Don't decrease mem_cost
+	for MEMs with REG_EQUIV, if the MEM isn't general_operand.
+
 	PR tree-optimization/52255
 	* tree-vect-loop-manip.c (slpeel_tree_peel_loop_to_edge): If
 	loop->header has virtual PHI, but exit_e->dest doesn't, add
