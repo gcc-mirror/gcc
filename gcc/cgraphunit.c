@@ -667,7 +667,7 @@ verify_cgraph_node (struct cgraph_node *node)
       for (i = 0; ipa_ref_list_reference_iterate (&node->ref_list, i, ref); i++)
 	if (ref->use != IPA_REF_ALIAS)
 	  {
-	    error ("Alias has non-alias refernece");
+	    error ("Alias has non-alias reference");
 	    error_found = true;
 	  }
 	else if (ref_found)

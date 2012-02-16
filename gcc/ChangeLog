@@ -1,3 +1,8 @@
+2012-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/52264
+	* cgraphunit.c (verify_cgraph_node): Fix a typo.
+
 2012-02-15  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi: Clean up "n-bit/byte/word" modifiers.
