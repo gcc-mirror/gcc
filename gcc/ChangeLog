@@ -1,3 +1,9 @@
+2012-02-17  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* system.h: Poison SMALL_REGISTER_CLASSES
+	* config/rl78/rl78.h: Replace SMALL_REGISTER_CLASSES with hook.
+	* config/rx/rx.h: Remove SMALL_REGISTER_CLASSES.
+
 2012-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/52285

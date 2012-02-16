@@ -258,7 +258,7 @@ enum reg_class
   { 0xff7fffff, 0x0000001f }	/* All registers.  */		\
 }
 
-#define SMALL_REGISTER_CLASSES 		1
+#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 #define N_REG_CLASSES			(int) LIM_REG_CLASSES
 #define CLASS_MAX_NREGS(CLASS, MODE)    ((GET_MODE_SIZE (MODE) \
 					  + UNITS_PER_WORD - 1) \

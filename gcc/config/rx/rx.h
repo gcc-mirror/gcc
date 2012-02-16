@@ -185,7 +185,6 @@ enum reg_class
   { 0x0000ffff }	/* All registers.  */		\
 }
 
-#define SMALL_REGISTER_CLASSES 		0
 #define N_REG_CLASSES			(int) LIM_REG_CLASSES
 #define CLASS_MAX_NREGS(CLASS, MODE)    ((GET_MODE_SIZE (MODE) \
 					  + UNITS_PER_WORD - 1) \
