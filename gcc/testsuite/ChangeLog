@@ -1,5 +1,8 @@
 2012-02-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/52260
+	* g++.dg/debug/dwarf2/pr52260.C: New test.
+
 	PR middle-end/51929
 	* g++.dg/ipa/pr51929.C: New test.
 
