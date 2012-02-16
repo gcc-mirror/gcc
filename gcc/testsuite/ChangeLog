@@ -1,3 +1,8 @@
+2012-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/52260
+	* g++.dg/debug/dwarf2/pr52260.C: New test.
+
 2012-02-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline

@@ -1,3 +1,9 @@
+2012-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/52260
+	* dwarf2out.c (copy_decls_walk): Fill in *slot before traversing
+	children with clone_tree_hash, not after it.
+
 2012-02-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline
