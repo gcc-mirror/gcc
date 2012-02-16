@@ -7471,14 +7471,6 @@ copy_decls_walk (dw_die_ref unit, dw_die_ref die, htab_t decl_table)
               dw_die_ref parent = unit;
 	      dw_die_ref copy = clone_die (targ);
 
-	      FOR_EACH_CHILD (targ, c,
-			      add_child_die (copy,
-					     clone_tree_hash (c, decl_table)));
-
-              /* Make sure the cloned tree is marked as part of the
-                 type unit.  */
-              mark_dies (copy);
-
               /* Record in DECL_TABLE that TARG has been copied.
                  Need to do this now, before the recursive call,
                  because DECL_TABLE may be expanded and SLOT
@@ -7487,6 +7479,14 @@ copy_decls_walk (dw_die_ref unit, dw_die_ref die, htab_t decl_table)
               entry->orig = targ;
               entry->copy = copy;
               *slot = entry;
+
+	      FOR_EACH_CHILD (targ, c,
+			      add_child_die (copy,
+					     clone_tree_hash (c, decl_table)));
+
+              /* Make sure the cloned tree is marked as part of the
+                 type unit.  */
+              mark_dies (copy);
 
               /* If TARG has surrounding context, copy its ancestor tree
                  into the new type unit.  */
