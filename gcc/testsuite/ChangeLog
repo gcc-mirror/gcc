@@ -1,5 +1,8 @@
 2012-02-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/52255
+	* gcc.c-torture/compile/pr52255.c: New test.
+
 	PR debug/52260
 	* g++.dg/debug/dwarf2/pr52260.C: New test.
 
