@@ -58,11 +58,8 @@ func ceil(x float64) float64 {
 //	Trunc(±Inf) = ±Inf
 //	Trunc(NaN) = NaN
 
-//extern trunc
-func libc_trunc(float64) float64
-
 func Trunc(x float64) float64 {
-	return libc_trunc(x)
+	return trunc(x)
 }
 
 func trunc(x float64) float64 {

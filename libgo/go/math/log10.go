@@ -21,11 +21,8 @@ func log10(x float64) float64 {
 // Log2 returns the binary logarithm of x.
 // The special cases are the same as for Log.
 
-//extern log2
-func libc_log2(float64) float64
-
 func Log2(x float64) float64 {
-	return libc_log2(x)
+	return log2(x)
 }
 
 func log2(x float64) float64 {
