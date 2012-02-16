@@ -11823,6 +11823,13 @@ legitimate_pic_address_disp_p (rtx disp)
             break;
 	  if (GET_CODE (op0) == LABEL_REF)
 	    return true;
+	  if (GET_CODE (op0) == CONST
+	      && GET_CODE (XEXP (op0, 0)) == UNSPEC
+	      && XINT (XEXP (op0, 0), 1) == UNSPEC_PCREL)
+	    return true;
+	  if (GET_CODE (op0) == UNSPEC
+	      && XINT (op0, 1) == UNSPEC_PCREL)
+	    return true;
 	  if (GET_CODE (op0) != SYMBOL_REF)
 	    break;
 	  /* FALLTHRU */
