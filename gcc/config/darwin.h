@@ -615,7 +615,7 @@ int darwin_label_is_anonymous_local_objc_name (const char *name);
        else if (!strncmp (xname, ".objc_class_name_", 17))		     \
 	 fprintf (FILE, "%s", xname);					     \
        else if (xname[0] != '"' && name_needs_quotes (xname))		     \
-	 fprintf (FILE, "\"%s\"", xname);				     \
+	 asm_fprintf (FILE, "\"%U%s\"", xname);				     \
        else								     \
          asm_fprintf (FILE, "%U%s", xname);				     \
   } while (0)
