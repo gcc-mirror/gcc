@@ -1,3 +1,9 @@
+2012-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52285
+	* tree-tailcall.c (find_tail_calls): Ignore gimple_clobber_p stmts
+	when deciding if a call is a tail call or tail recursion.
+
 2012-02-16  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/i386.c (legitimate_pic_address_disp_p): Allow
