@@ -471,11 +471,17 @@ verify_edge_corresponds_to_fndecl (struct cgraph_edge *e, tree decl)
     return false;
   node = cgraph_function_or_thunk_node (node, NULL);
 
-  if ((e->callee->former_clone_of != node->decl)
+  if ((e->callee->former_clone_of != node->decl
+       && (!node->same_body_alias
+	   || e->callee->former_clone_of != node->thunk.alias))
       /* IPA-CP sometimes redirect edge to clone and then back to the former
-	 function.  This ping-pong has to go, eventaully.  */
+	 function.  This ping-pong has to go, eventually.  */
       && (node != cgraph_function_or_thunk_node (e->callee, NULL))
-      && !clone_of_p (node, e->callee))
+      && !clone_of_p (node, e->callee)
+      /* If decl is a same body alias of some other decl, allow e->callee to be
+	 a clone of a clone of that other decl too.  */
+      && (!node->same_body_alias
+	  || !clone_of_p (cgraph_get_node (node->thunk.alias), e->callee)))
     return true;
   else
     return false;
