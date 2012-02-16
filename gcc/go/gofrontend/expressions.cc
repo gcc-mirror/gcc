@@ -522,8 +522,8 @@ Expression::convert_interface_to_interface(Translate_context* context,
       // first field is just the type descriptor of the object.
       go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)),
 			"__type_descriptor") == 0);
-      go_assert(TREE_TYPE(field) == TREE_TYPE(rhs_type_descriptor));
-      elt->value = rhs_type_descriptor;
+      elt->value = fold_convert_loc(location.gcc_location(),
+				    TREE_TYPE(field), rhs_type_descriptor);
     }
   else
     {

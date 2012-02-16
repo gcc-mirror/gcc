@@ -2929,8 +2929,6 @@ Gogo::convert_named_types()
 
   Runtime::convert_types(this);
 
-  Function_type::convert_types(this);
-
   this->named_types_are_converted_ = true;
 }
 
