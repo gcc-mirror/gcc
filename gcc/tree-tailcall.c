@@ -1,5 +1,5 @@
 /* Tail call optimization on trees.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -400,9 +400,10 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
     {
       stmt = gsi_stmt (gsi);
 
-      /* Ignore labels, returns and debug stmts.  */
+      /* Ignore labels, returns, clobbers and debug stmts.  */
       if (gimple_code (stmt) == GIMPLE_LABEL
 	  || gimple_code (stmt) == GIMPLE_RETURN
+	  || gimple_clobber_p (stmt)
 	  || is_gimple_debug (stmt))
 	continue;
 
@@ -522,6 +523,9 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 
       if (gimple_code (stmt) == GIMPLE_RETURN)
 	break;
+
+      if (gimple_clobber_p (stmt))
+	continue;
 
       if (is_gimple_debug (stmt))
 	continue;
