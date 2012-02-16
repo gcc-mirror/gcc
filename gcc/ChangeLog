@@ -1,3 +1,8 @@
+2012-02-16  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/darwin.h (ASM_OUTPUT_LABELREF): Add user label prefix for
+	extended identifiers.
+
 2012-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/51929
