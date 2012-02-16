@@ -2189,6 +2189,8 @@ dump_expr (tree t, int flags)
 		}
 	    }
 	}
+      if (TREE_TYPE (t) && LAMBDA_TYPE_P (TREE_TYPE (t)))
+	pp_string (cxx_pp, "<lambda closure object>");
       if (TREE_TYPE (t) && EMPTY_CONSTRUCTOR_P (t))
 	{
 	  dump_type (TREE_TYPE (t), 0);

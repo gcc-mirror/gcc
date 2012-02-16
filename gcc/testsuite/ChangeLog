@@ -1,3 +1,8 @@
+2012-02-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51415
+	* g++.dg/cpp0x/lambda/lambda-err1.C: New.
+
 2012-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/52255
