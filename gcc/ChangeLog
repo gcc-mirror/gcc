@@ -1,5 +1,10 @@
 2012-02-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/52255
+	* tree-vect-loop-manip.c (slpeel_tree_peel_loop_to_edge): If
+	loop->header has virtual PHI, but exit_e->dest doesn't, add
+	virtual PHI to exit_e->dest and adjust all uses after the loop.
+
 	PR debug/52260
 	* dwarf2out.c (copy_decls_walk): Fill in *slot before traversing
 	children with clone_tree_hash, not after it.
