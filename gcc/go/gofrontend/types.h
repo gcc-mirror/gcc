@@ -852,6 +852,16 @@ class Type
   Btype*
   get_backend(Gogo*);
 
+  // Return a placeholder for the backend representation of the type.
+  // This will return a type of the correct size, but for which some
+  // of the fields may still need to be completed.
+  Btype*
+  get_backend_placeholder(Gogo*);
+
+  // Finish the backend representation of a placeholder.
+  void
+  finish_backend(Gogo*);
+
   // Build a type descriptor entry for this type.  Return a pointer to
   // it.  The location is the location which causes us to need the
   // entry.
@@ -1179,6 +1189,9 @@ class Type
 
   // The type classification.
   Type_classification classification_;
+  // Whether btype_ is a placeholder type used while named types are
+  // being converted.
+  bool btype_is_placeholder_;
   // The backend representation of the type, once it has been
   // determined.
   Btype* btype_;
@@ -1730,10 +1743,6 @@ class Function_type : public Type
   Function_type*
   copy_with_receiver(Type*) const;
 
-  // Finishing converting function types.
-  static void
-  convert_types(Gogo*);
-
   static Type*
   make_function_type_descriptor_type();
 
@@ -1772,16 +1781,6 @@ class Function_type : public Type
   Expression*
   type_descriptor_params(Type*, const Typed_identifier*,
 			 const Typed_identifier_list*);
-
-  Btype*
-  get_function_backend(Gogo*);
-
-  // A list of function types with multiple results and their
-  // placeholder backend representations, used to postpone building
-  // the structs we use for multiple results until all types are
-  // converted.
-  typedef std::vector<std::pair<Function_type*, Btype*> > Placeholders;
-  static Placeholders placeholders;
 
   // The receiver name and type.  This will be NULL for a normal
   // function, non-NULL for a method.
@@ -2079,6 +2078,10 @@ class Struct_type : public Type
   bool
   backend_field_offset(Gogo*, unsigned int index, unsigned int* poffset);
 
+  // Finish the backend representation of all the fields.
+  void
+  finish_backend_fields(Gogo*);
+
   // Import a struct type.
   static Struct_type*
   do_import(Import*);
@@ -2193,11 +2196,15 @@ class Array_type : public Type
 
   // Return the backend representation of the element type.
   Btype*
-  get_backend_element(Gogo*);
+  get_backend_element(Gogo*, bool use_placeholder);
 
   // Return the backend representation of the length.
   Bexpression*
   get_backend_length(Gogo*);
+
+  // Finish the backend representation of the element type.
+  void
+  finish_backend_element(Gogo*);
 
   static Type*
   make_array_type_descriptor_type();
@@ -2520,6 +2527,10 @@ class Interface_type : public Type
   // Make a struct for an empty interface type.
   static Btype*
   get_backend_empty_interface_type(Gogo*);
+
+  // Finish the backend representation of the method types.
+  void
+  finish_backend_methods(Gogo*);
 
   static Type*
   make_interface_type_descriptor_type();
