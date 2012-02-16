@@ -1,3 +1,8 @@
+2012-02-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51415
+	* error.c (dump_expr): Handle lambda closures specifically.
+
 2012-02-14  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_explicit_instantiation): Give a warning
