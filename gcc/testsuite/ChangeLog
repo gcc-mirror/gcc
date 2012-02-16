@@ -1,3 +1,8 @@
+2012-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/51929
+	* g++.dg/ipa/pr51929.C: New test.
+
 2012-02-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/52199

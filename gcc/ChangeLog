@@ -1,5 +1,10 @@
 2012-02-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/51929
+	* cgraphunit.c (verify_edge_corresponds_to_fndecl): If node is
+	a same_body_alias, also test whether e->callee isn't a former
+	or current clone of the decl this is a same body alias of.
+
 	PR translation/52264
 	* cgraphunit.c (verify_cgraph_node): Fix a typo.
 
