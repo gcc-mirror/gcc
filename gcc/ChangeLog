@@ -1,3 +1,7 @@
+2012-02-16  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi: Clean up "that"/"which" confusion.
+
 2012-02-17  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* system.h: Poison SMALL_REGISTER_CLASSES
