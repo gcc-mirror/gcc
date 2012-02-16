@@ -2595,7 +2595,7 @@ Integer_type::do_get_backend(Gogo* gogo)
 Expression*
 Integer_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 {
-  go_assert(name != NULL);
+  go_assert(name != NULL || saw_errors());
   return this->plain_type_descriptor(gogo, this->runtime_type_kind_, name);
 }
 
@@ -2730,7 +2730,7 @@ Float_type::do_get_backend(Gogo* gogo)
 Expression*
 Float_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 {
-  go_assert(name != NULL);
+  go_assert(name != NULL || saw_errors());
   return this->plain_type_descriptor(gogo, this->runtime_type_kind_, name);
 }
 
@@ -2857,7 +2857,7 @@ Complex_type::do_get_backend(Gogo* gogo)
 Expression*
 Complex_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 {
-  go_assert(name != NULL);
+  go_assert(name != NULL || saw_errors());
   return this->plain_type_descriptor(gogo, this->runtime_type_kind_, name);
 }
 
