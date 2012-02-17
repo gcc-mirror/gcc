@@ -1,3 +1,8 @@
+2012-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/52296
+	* g++.dg/debug/dwarf2/pr52260.C: Remove.
+
 2012-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/52260
