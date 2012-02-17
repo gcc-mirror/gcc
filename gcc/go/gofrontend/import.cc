@@ -11,6 +11,7 @@
 
 #include "go-c.h"
 #include "gogo.h"
+#include "lex.h"
 #include "types.h"
 #include "export.h"
 #include "import.h"
@@ -32,11 +33,6 @@ go_add_search_path(const char* path)
 {
   search_path.push_back(std::string(path));
 }
-
-// The name used for parameters, receivers, and results in imported
-// function types.
-
-const char* const Import::import_marker = "*imported*";
 
 // Find import data.  This searches the file system for FILENAME and
 // returns a pointer to a Stream object to read the data that it
@@ -746,6 +742,21 @@ Import::read_identifier()
       ret += c;
       stream->advance(1);
     }
+  return ret;
+}
+
+// Read a name from the stream.
+
+std::string
+Import::read_name()
+{
+  std::string ret = this->read_identifier();
+  if (ret == "?")
+    ret.clear();
+  else if (!Lex::is_exported_name(ret))
+    ret = ('.' + this->package_->unique_prefix()
+	   + '.' + this->package_->name()
+	   + '.' + ret);
   return ret;
 }
 

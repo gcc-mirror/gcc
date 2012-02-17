@@ -11783,7 +11783,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 	   p != method_parameters->end();
 	   ++p, ++i)
 	{
-	  if (!p->name().empty() && p->name() != Import::import_marker)
+	  if (!p->name().empty())
 	    parameters->push_back(*p);
 	  else
 	    {

@@ -3111,9 +3111,7 @@ Function_type::is_valid_redeclaration(const Function_type* t,
   // A redeclaration of a function is required to use the same names
   // for the receiver and parameters.
   if (this->receiver() != NULL
-      && this->receiver()->name() != t->receiver()->name()
-      && this->receiver()->name() != Import::import_marker
-      && t->receiver()->name() != Import::import_marker)
+      && this->receiver()->name() != t->receiver()->name())
     {
       if (reason != NULL)
 	*reason = "receiver name changed";
@@ -3129,9 +3127,7 @@ Function_type::is_valid_redeclaration(const Function_type* t,
 	   p2 != parms2->end();
 	   ++p2, ++p1)
 	{
-	  if (p1->name() != p2->name()
-	      && p1->name() != Import::import_marker
-	      && p2->name() != Import::import_marker)
+	  if (p1->name() != p2->name())
 	    {
 	      if (reason != NULL)
 		*reason = "parameter name changed";
@@ -3160,9 +3156,7 @@ Function_type::is_valid_redeclaration(const Function_type* t,
 	   res2 != results2->end();
 	   ++res2, ++res1)
 	{
-	  if (res1->name() != res2->name()
-	      && res1->name() != Import::import_marker
-	      && res2->name() != Import::import_marker)
+	  if (res1->name() != res2->name())
 	    {
 	      if (reason != NULL)
 		*reason = "result name changed";
@@ -3609,6 +3603,8 @@ Function_type::do_export(Export* exp) const
 	    first = false;
 	  else
 	    exp->write_c_string(", ");
+	  exp->write_name(p->name());
+	  exp->write_c_string(" ");
 	  if (!is_varargs || p + 1 != this->parameters_->end())
 	    exp->write_type(p->type());
 	  else
@@ -3624,7 +3620,7 @@ Function_type::do_export(Export* exp) const
   if (results != NULL)
     {
       exp->write_c_string(" ");
-      if (results->size() == 1)
+      if (results->size() == 1 && results->begin()->name().empty())
 	exp->write_type(results->begin()->type());
       else
 	{
@@ -3638,6 +3634,8 @@ Function_type::do_export(Export* exp) const
 		first = false;
 	      else
 		exp->write_c_string(", ");
+	      exp->write_name(p->name());
+	      exp->write_c_string(" ");
 	      exp->write_type(p->type());
 	    }
 	  exp->write_c_string(")");
@@ -3660,6 +3658,9 @@ Function_type::do_import(Import* imp)
       parameters = new Typed_identifier_list();
       while (true)
 	{
+	  std::string name = imp->read_name();
+	  imp->require_c_string(" ");
+
 	  if (imp->match_c_string("..."))
 	    {
 	      imp->advance(3);
@@ -3669,8 +3670,8 @@ Function_type::do_import(Import* imp)
 	  Type* ptype = imp->read_type();
 	  if (is_varargs)
 	    ptype = Type::make_array_type(ptype, NULL);
-	  parameters->push_back(Typed_identifier(Import::import_marker,
-						 ptype, imp->location()));
+	  parameters->push_back(Typed_identifier(name, ptype,
+						 imp->location()));
 	  if (imp->peek_char() != ',')
 	    break;
 	  go_assert(!is_varargs);
@@ -3689,17 +3690,18 @@ Function_type::do_import(Import* imp)
       if (imp->peek_char() != '(')
 	{
 	  Type* rtype = imp->read_type();
-	  results->push_back(Typed_identifier(Import::import_marker, rtype,
-					      imp->location()));
+	  results->push_back(Typed_identifier("", rtype, imp->location()));
 	}
       else
 	{
 	  imp->advance(1);
 	  while (true)
 	    {
+	      std::string name = imp->read_name();
+	      imp->require_c_string(" ");
 	      Type* rtype = imp->read_type();
-	      results->push_back(Typed_identifier(Import::import_marker,
-						  rtype, imp->location()));
+	      results->push_back(Typed_identifier(name, rtype,
+						  imp->location()));
 	      if (imp->peek_char() != ',')
 		break;
 	      imp->require_c_string(", ");
@@ -7185,7 +7187,7 @@ Interface_type::do_export(Export* exp) const
 	{
 	  if (pm->name().empty())
 	    {
-	      exp->write_c_string("$ ");
+	      exp->write_c_string("? ");
 	      exp->write_type(pm->type());
 	    }
 	  else
@@ -7209,6 +7211,8 @@ Interface_type::do_export(Export* exp) const
 			first = false;
 		      else
 			exp->write_c_string(", ");
+		      exp->write_name(pp->name());
+		      exp->write_c_string(" ");
 		      if (!is_varargs || pp + 1 != parameters->end())
 			exp->write_type(pp->type());
 		      else
@@ -7226,7 +7230,7 @@ Interface_type::do_export(Export* exp) const
 	      if (results != NULL)
 		{
 		  exp->write_c_string(" ");
-		  if (results->size() == 1)
+		  if (results->size() == 1 && results->begin()->name().empty())
 		    exp->write_type(results->begin()->type());
 		  else
 		    {
@@ -7241,6 +7245,8 @@ Interface_type::do_export(Export* exp) const
 			    first = false;
 			  else
 			    exp->write_c_string(", ");
+			  exp->write_name(p->name());
+			  exp->write_c_string(" ");
 			  exp->write_type(p->type());
 			}
 		      exp->write_c_string(")");
@@ -7267,7 +7273,7 @@ Interface_type::do_import(Import* imp)
     {
       std::string name = imp->read_identifier();
 
-      if (name == "$")
+      if (name == "?")
 	{
 	  imp->require_c_string(" ");
 	  Type* t = imp->read_type();
@@ -7287,6 +7293,9 @@ Interface_type::do_import(Import* imp)
 	  parameters = new Typed_identifier_list;
 	  while (true)
 	    {
+	      std::string name = imp->read_name();
+	      imp->require_c_string(" ");
+
 	      if (imp->match_c_string("..."))
 		{
 		  imp->advance(3);
@@ -7296,8 +7305,8 @@ Interface_type::do_import(Import* imp)
 	      Type* ptype = imp->read_type();
 	      if (is_varargs)
 		ptype = Type::make_array_type(ptype, NULL);
-	      parameters->push_back(Typed_identifier(Import::import_marker,
-						     ptype, imp->location()));
+	      parameters->push_back(Typed_identifier(name, ptype,
+						     imp->location()));
 	      if (imp->peek_char() != ',')
 		break;
 	      go_assert(!is_varargs);
@@ -7316,17 +7325,18 @@ Interface_type::do_import(Import* imp)
 	  if (imp->peek_char() != '(')
 	    {
 	      Type* rtype = imp->read_type();
-	      results->push_back(Typed_identifier(Import::import_marker,
-						  rtype, imp->location()));
+	      results->push_back(Typed_identifier("", rtype, imp->location()));
 	    }
 	  else
 	    {
 	      imp->advance(1);
 	      while (true)
 		{
+		  std::string name = imp->read_name();
+		  imp->require_c_string(" ");
 		  Type* rtype = imp->read_type();
-		  results->push_back(Typed_identifier(Import::import_marker,
-						      rtype, imp->location()));
+		  results->push_back(Typed_identifier(name, rtype,
+						      imp->location()));
 		  if (imp->peek_char() != ',')
 		    break;
 		  imp->require_c_string(", ");

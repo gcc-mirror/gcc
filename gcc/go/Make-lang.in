@@ -295,7 +295,8 @@ go/gogo.o: go/gofrontend/gogo.cc $(GO_SYSTEM_H) $(GO_C_H) \
 	$(GO_IMPORT_H) $(GO_EXPORT_H) go/gofrontend/backend.h $(GO_GOGO_H)
 go/import.o: go/gofrontend/import.cc $(GO_SYSTEM_H) \
 	$(srcdir)/../include/filenames.h $(srcdir)/../include/simple-object.h \
-	$(GO_C_H) $(GO_GOGO_H) $(GO_TYPES_H) $(GO_EXPORT_H) $(GO_IMPORT_H)
+	$(GO_C_H) $(GO_GOGO_H) $(GO_LEX_H) $(GO_TYPES_H) $(GO_EXPORT_H) \
+	$(GO_IMPORT_H)
 go/import-archive.o: go/gofrontend/import-archive.cc $(GO_SYSTEM_H) \
 	$(GO_IMPORT_H)
 go/lex.o: go/gofrontend/lex.cc $(GO_LEX_H) $(GO_SYSTEM_H)

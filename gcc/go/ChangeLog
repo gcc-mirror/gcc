@@ -1,5 +1,9 @@
 2012-02-17  Ian Lance Taylor  <iant@google.com>
 
+	* Make-lang.in (go/import.o): Add dependency on $(GO_LEX_H).
+
+2012-02-17  Ian Lance Taylor  <iant@google.com>
+
 	* gospec.c (lang_specific_driver): If linking, and no -o option
 	was used, add one.
 
