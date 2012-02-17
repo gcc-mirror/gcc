@@ -1,3 +1,28 @@
+2012-02-17  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_aggr.adb: Minor reformatting.
+
+2012-02-17  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Update doc for -gnatw.m to include 2*x case.
+
+2012-02-17  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_dim.adb (Is_Dim_IO_Package_Entity): New routine.
+	(Is_Dim_IO_Package_Instantiation): Is_Dim_IO_Package_Entity
+	call added.
+	(Is_Procedure_Put_Call): Is_Dim_IO_Package_Entity
+	call added.
+	* s-dim.ads: Make package Pure.
+
+2012-02-17  Gary Dismukes  <dismukes@adacore.com>
+
+	* prj-nmsc.adb: Minor reformatting.
+
+2012-02-17  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Update GNAT RM with a separate chapter on restrictions.
+
 2012-02-17  Yannick Moy  <moy@adacore.com>
 
 	* gnat_ugn.texi: Fix typos.

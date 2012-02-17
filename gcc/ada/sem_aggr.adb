@@ -3920,9 +3920,10 @@ package body Sem_Aggr is
                  and then Present (Expression (Parent (Component)))
                then
                   Expr :=
-                    New_Copy_Tree (Expression (Parent (Component)),
-                     New_Scope => Current_Scope,
-                      New_Sloc => Sloc (N));
+                    New_Copy_Tree
+                      (Expression (Parent (Component)),
+                       New_Scope => Current_Scope,
+                       New_Sloc  => Sloc (N));
 
                   Add_Association
                     (Component  => Component,

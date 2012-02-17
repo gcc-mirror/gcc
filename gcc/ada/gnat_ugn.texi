@@ -5472,7 +5472,9 @@ This switch activates warnings for modulus values that seem suspicious.
 The cases caught are where the size is the same as the modulus (e.g.
 a modulus of 7 with a size of 7 bits), and modulus values of 32 or 64
 with no size clause. The guess in both cases is that 2**x was intended
-rather than x. The default is that these warnings are given.
+rather than x. In addition expressions of the form 2*x for small x
+generate a warning (the almost certainly accurate guess being that
+2**x was intended). The default is that these warnings are given.
 
 @item -gnatw.M
 @emph{Disable warnings on suspicious modulus values.}
