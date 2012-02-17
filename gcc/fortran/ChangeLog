@@ -1,5 +1,9 @@
 2012-02-17  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.texi (Q exponent-letter): Fix grammar.
+
+2012-02-17  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.texi (Status): Fix typos.
 	* invoke.texi (ffixed-form, fstack-arrays): Spell Fortran with
 	a majuscule.
