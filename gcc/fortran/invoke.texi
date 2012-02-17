@@ -204,7 +204,7 @@ accepted by the compiler:
 @itemx -ffixed-form
 @opindex @code{ffree-form}
 @opindex @code{fno-fixed-form}
-@cindex options, fortran dialect
+@cindex options, Fortran dialect
 @cindex file format, free
 @cindex file format, fixed
 Specify the layout used by the source file.  The free form layout
@@ -1425,7 +1425,7 @@ The default value for @var{n} is 32768.
 
 @item -fstack-arrays
 @opindex @code{fstack-arrays}
-Adding this option will make the fortran compiler put all local arrays,
+Adding this option will make the Fortran compiler put all local arrays,
 even those of unknown size onto stack memory.  If your program uses very
 large local arrays it is possible that you will have to extend your runtime
 limits for stack memory on some operating systems. This flag is enabled
