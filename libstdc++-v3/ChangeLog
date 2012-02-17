@@ -1,5 +1,12 @@
 2012-02-17  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/51798 continued.
+	* acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): Grep for
+	__atomic_, not __sync.
+	* configure: Regenerated.
+	
+2012-02-17  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/47058
 	* acinclude.m4 (GLIBCXX_ENABLE_WERROR): New.
 	(GLIBCXX_EXPORT_FLAGS): Add -Wabi to WARN_FLAGS
