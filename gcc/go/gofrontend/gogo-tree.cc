@@ -834,8 +834,15 @@ Gogo::write_globals()
 	      else if (init == NULL_TREE)
 		;
 	      else if (TREE_CONSTANT(init))
-		this->backend()->global_variable_set_init(var,
-							  tree_to_expr(init));
+		{
+		  if (expression_requires(no->var_value()->init(), NULL, no))
+		    error_at(no->location(),
+			     "initialization expression for %qs depends "
+			     "upon itself",
+			     no->message_name().c_str());
+		  this->backend()->global_variable_set_init(var,
+							    tree_to_expr(init));
+		}
 	      else if (is_sink)
 		var_init_tree = init;
 	      else
