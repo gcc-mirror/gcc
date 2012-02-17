@@ -1695,12 +1695,11 @@ package body System.OS_Lib is
                else
                   Res (J) := Arg (K);
                end if;
-
             end loop;
 
             if Quote_Needed then
 
-               --  If null terminated string, put the quote before
+               --  Case of null terminated string
 
                if Res (J) = ASCII.NUL then
 
@@ -1711,7 +1710,7 @@ package body System.OS_Lib is
                      J := J + 1;
                   end if;
 
-                  --  Then adds the quote and the NUL character
+                  --  Put a quote just before the null at the end
 
                   Res (J) := '"';
                   J := J + 1;

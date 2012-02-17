@@ -1094,21 +1094,20 @@ package body Exp_Intr is
                           (Etype (Pool), Name_Simple_Storage_Pool_Type))
          then
             declare
-               Dealloc_Op  : Entity_Id := Get_Name_Entity_Id (Name_Deallocate);
-               Pool_Type : constant Entity_Id := Base_Type (Etype (Pool));
-
+               Pool_Type  : constant Entity_Id := Base_Type (Etype (Pool));
+               Dealloc_Op : Entity_Id;
             begin
+               Dealloc_Op := Get_Name_Entity_Id (Name_Deallocate);
                while Present (Dealloc_Op) loop
                   if Scope (Dealloc_Op) = Scope (Pool_Type)
                     and then Present (First_Formal (Dealloc_Op))
                     and then Etype (First_Formal (Dealloc_Op)) = Pool_Type
                   then
                      Set_Procedure_To_Call (Free_Node, Dealloc_Op);
-
                      exit;
+                  else
+                     Dealloc_Op := Homonym (Dealloc_Op);
                   end if;
-
-                  Dealloc_Op := Homonym (Dealloc_Op);
                end loop;
             end;
 
@@ -1140,8 +1139,8 @@ package body Exp_Intr is
          if Is_Class_Wide_Type (Desig_T)
            or else
             (Is_Array_Type (Desig_T)
-               and then not Is_Constrained (Desig_T)
-               and then Is_Packed (Desig_T))
+              and then not Is_Constrained (Desig_T)
+              and then Is_Packed (Desig_T))
          then
             declare
                Deref    : constant Node_Id :=

@@ -4114,7 +4114,6 @@ package body Freeze is
             if Present (Get_Rep_Pragma (E, Name_Simple_Storage_Pool_Type))
               and then (Is_Base_Type (E) or else Has_Private_Declaration (E))
             then
-
                --  If the type is marked Has_Private_Declaration, then this is
                --  a full type for a private type that was specified with the
                --  pragma Simple_Storage_Pool_Type, and here we ensure that the
@@ -4127,7 +4126,6 @@ package body Freeze is
                     and then not Is_Private_Type (E)
                   then
                      Error_Msg_Name_1 := Name_Simple_Storage_Pool_Type;
-
                      Error_Msg_N
                        ("pragma% can only apply to full type that is an " &
                         "explicitly limited type", E);
@@ -4197,6 +4195,7 @@ package body Freeze is
                      end if;
 
                      if Etype (Pool_Op_Formal) /= Expected_Type then
+
                         --  If the pool type was expected for this formal, then
                         --  this will not be considered a candidate operation
                         --  for the simple pool, so we unset OK_Formal so that
@@ -4243,8 +4242,8 @@ package body Freeze is
                   begin
                      pragma Assert
                        (Op_Name = Name_Allocate
-                          or else Op_Name = Name_Deallocate
-                          or else Op_Name = Name_Storage_Size);
+                         or else Op_Name = Name_Deallocate
+                         or else Op_Name = Name_Storage_Size);
 
                      Error_Msg_Name_1 := Op_Name;
 
@@ -4270,7 +4269,6 @@ package body Freeze is
                               Validate_Simple_Pool_Op_Formal
                                 (Op, Formal, E_In_Parameter, Pool_Type,
                                  "Pool", Is_OK);
-
                            else
                               Validate_Simple_Pool_Op_Formal
                                 (Op, Formal, E_In_Out_Parameter, Pool_Type,
@@ -4295,7 +4293,6 @@ package body Freeze is
                               Validate_Simple_Pool_Op_Formal
                                 (Op, Formal, E_Out_Parameter,
                                  Address_Type, "Storage_Address", Is_OK);
-
                            elsif Op_Name = Name_Deallocate then
                               Validate_Simple_Pool_Op_Formal
                                 (Op, Formal, E_In_Parameter,
@@ -4310,7 +4307,6 @@ package body Freeze is
                               Validate_Simple_Pool_Op_Formal
                                 (Op, Formal, E_In_Parameter,
                                  Stg_Cnt_Type, "Size_In_Storage_Units", Is_OK);
-
                               Validate_Simple_Pool_Op_Formal
                                 (Op, Formal, E_In_Parameter,
                                  Stg_Cnt_Type, "Alignment", Is_OK);
@@ -4338,6 +4334,7 @@ package body Freeze is
                                      "storage pool type", Pool_Type);
 
                      elsif Present (Found_Op) then
+
                         --  Simple pool operations can't be abstract
 
                         if Is_Abstract_Subprogram (Found_Op) then
@@ -4373,9 +4370,7 @@ package body Freeze is
 
                begin
                   Validate_Simple_Pool_Operation (Name_Allocate);
-
                   Validate_Simple_Pool_Operation (Name_Deallocate);
-
                   Validate_Simple_Pool_Operation (Name_Storage_Size);
                end Validate_Simple_Pool_Ops;
             end if;
