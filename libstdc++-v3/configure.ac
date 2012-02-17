@@ -165,9 +165,6 @@ GLIBCXX_CHECK_GETTIMEOFDAY
 # NB: The default is [no], because otherwise it requires linking.
 GLIBCXX_ENABLE_LIBSTDCXX_TIME([no])
 
-# For gthread support
-GLIBCXX_CHECK_GTHREADS
-
 AC_LC_MESSAGES
 
 # For hardware_concurrency
@@ -335,6 +332,9 @@ GLIBCXX_CONDITIONAL(GLIBCXX_LDBL_COMPAT, test $ac_ldbl_compat = yes)
 
 # This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE.
 GLIBCXX_CONFIGURE_TESTSUITE
+
+# For gthread support.  Depends on GLIBCXX_ENABLE_SYMVERS.
+GLIBCXX_CHECK_GTHREADS
 
 # Define documentation rules conditionally.
 

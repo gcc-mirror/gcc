@@ -1,3 +1,14 @@
+2012-02-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/52189
+	* acinclude.m4 (GLIBCXX_CHECK_GTHREADS): Handle
+	--enable-libstdcxx-threads.
+	Disable on Solaris 8/9 with symbol versioning.
+	* configure.ac (GLIBCXX_CHECK_GTHREADS): Move after
+	GLIBCXX_ENABLE_SYMVERS.
+	* configure: Regenerate.
+	* doc/xml/manual/configure.xml (--enable-libstdcxx-threads): Explain.
+
 2012-02-15  DJ Delorie  <dj@redhat.com>
 
 	* src/c++98/locale.cc (locale::facet::_S_get_c_locale): Fix typo.
