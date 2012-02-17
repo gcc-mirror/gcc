@@ -868,6 +868,7 @@ with_system_libunwind
 enable_linux_futex
 enable_symvers
 enable_libstdcxx_visibility
+enable_libstdcxx_threads
 with_gxx_include_dir
 enable_version_specific_runtime_libs
 '
@@ -1558,6 +1559,8 @@ Optional Features:
                           [default=yes]
   --enable-libstdcxx-visibility
                           enables visibility safe usage [default=yes]
+  --enable-libstdcxx-threads
+                          enable C++11 threads support [default=auto]
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory
@@ -11492,7 +11495,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11495 "configure"
+#line 11498 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11598,7 +11601,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11601 "configure"
+#line 11604 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14956,7 +14959,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14959 "configure"
+#line 14962 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15291,7 +15294,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15294 "configure"
+#line 15297 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15326,7 +15329,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15329 "configure"
+#line 15332 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15361,7 +15364,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15364 "configure"
+#line 15367 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15397,7 +15400,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15400 "configure"
+#line 15403 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15477,7 +15480,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15480 "configure"
+#line 15483 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15519,7 +15522,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15522 "configure"
+#line 15525 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15553,7 +15556,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15556 "configure"
+#line 15559 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -19808,107 +19811,6 @@ $as_echo "#define _GLIBCXX_USE_NANOSLEEP 1" >>confdefs.h
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   LIBS="$ac_save_LIBS"
-  ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-
-
-# For gthread support
-
-
-  ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -fno-exceptions \
-	-I${toplevel_srcdir}/libgcc -I${toplevel_builddir}/libgcc"
-
-  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
-  case $target_thread_file in
-    posix)
-      CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
-  esac
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether it can be safely assumed that mutex_timedlock is available" >&5
-$as_echo_n "checking whether it can be safely assumed that mutex_timedlock is available... " >&6; }
-
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <unistd.h>
-int
-main ()
-{
-
-      // In case of POSIX threads check _POSIX_TIMEOUTS.
-      #if (defined(_PTHREADS) \
-	  && (!defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS <= 0))
-      #error
-      #endif
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  ac_gthread_use_mutex_timedlock=1
-else
-  ac_gthread_use_mutex_timedlock=0
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-
-
-cat >>confdefs.h <<_ACEOF
-#define _GTHREAD_USE_MUTEX_TIMEDLOCK $ac_gthread_use_mutex_timedlock
-_ACEOF
-
-
-  if test $ac_gthread_use_mutex_timedlock = 1 ; then res_mutex_timedlock=yes ;
-  else res_mutex_timedlock=no ; fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $res_mutex_timedlock" >&5
-$as_echo "$res_mutex_timedlock" >&6; }
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gthreads library" >&5
-$as_echo_n "checking for gthreads library... " >&6; }
-
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include "gthr.h"
-int
-main ()
-{
-
-      #ifndef __GTHREADS_CXX0X
-      #error
-      #endif
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  ac_has_gthreads=yes
-else
-  ac_has_gthreads=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_gthreads" >&5
-$as_echo "$ac_has_gthreads" >&6; }
-
-  if test x"$ac_has_gthreads" = x"yes"; then
-
-$as_echo "#define _GLIBCXX_HAS_GTHREADS 1" >>confdefs.h
-
-  fi
-
-  CXXFLAGS="$ac_save_CXXFLAGS"
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -65553,6 +65455,146 @@ done
   baseline_dir="$glibcxx_srcdir/config/abi/post/${abi_baseline_pair}"
 
   baseline_subdir_switch="$abi_baseline_subdir_switch"
+
+
+
+# For gthread support.  Depends on GLIBCXX_ENABLE_SYMVERS.
+
+   # Check whether --enable-libstdcxx-threads was given.
+if test "${enable_libstdcxx_threads+set}" = set; then :
+  enableval=$enable_libstdcxx_threads;
+      case "$enableval" in
+       yes|no) ;;
+       *) as_fn_error "Argument to enable/disable libstdcxx-threads must be yes or no" "$LINENO" 5 ;;
+      esac
+
+else
+  enable_libstdcxx_threads=auto
+fi
+
+
+
+  if test x$enable_libstdcxx_threads = xauto ||
+     test x$enable_libstdcxx_threads = xyes; then
+
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions \
+	-I${toplevel_srcdir}/libgcc -I${toplevel_builddir}/libgcc"
+
+  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
+  case $target_thread_file in
+    posix)
+      CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
+  esac
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether it can be safely assumed that mutex_timedlock is available" >&5
+$as_echo_n "checking whether it can be safely assumed that mutex_timedlock is available... " >&6; }
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+int
+main ()
+{
+
+      // In case of POSIX threads check _POSIX_TIMEOUTS.
+      #if (defined(_PTHREADS) \
+	  && (!defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS <= 0))
+      #error
+      #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_gthread_use_mutex_timedlock=1
+else
+  ac_gthread_use_mutex_timedlock=0
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+
+cat >>confdefs.h <<_ACEOF
+#define _GTHREAD_USE_MUTEX_TIMEDLOCK $ac_gthread_use_mutex_timedlock
+_ACEOF
+
+
+  if test $ac_gthread_use_mutex_timedlock = 1 ; then res_mutex_timedlock=yes ;
+  else res_mutex_timedlock=no ; fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $res_mutex_timedlock" >&5
+$as_echo "$res_mutex_timedlock" >&6; }
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gthreads library" >&5
+$as_echo_n "checking for gthreads library... " >&6; }
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include "gthr.h"
+int
+main ()
+{
+
+      #ifndef __GTHREADS_CXX0X
+      #error
+      #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  case $target_os in
+	  # gthreads support breaks symbol versioning on Solaris 8/9 (PR
+	  # libstdc++/52189).
+          solaris2.[89]*)
+	    if test x$enable_symvers = xno; then
+	      ac_has_gthreads=yes
+	    elif test x$enable_libstdcxx_threads = xyes; then
+	      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You have requested C++11 threads support, but" >&5
+$as_echo "$as_me: WARNING: You have requested C++11 threads support, but" >&2;}
+	      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: this breaks symbol versioning." >&5
+$as_echo "$as_me: WARNING: this breaks symbol versioning." >&2;}
+	      ac_has_gthreads=yes
+	    else
+	      ac_has_gthreads=no
+	    fi
+	    ;;
+	  *)
+	    ac_has_gthreads=yes
+	    ;;
+        esac
+else
+  ac_has_gthreads=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  else
+    ac_has_gthreads=no
+  fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_gthreads" >&5
+$as_echo "$ac_has_gthreads" >&6; }
+
+  if test x"$ac_has_gthreads" = x"yes"; then
+
+$as_echo "#define _GLIBCXX_HAS_GTHREADS 1" >>confdefs.h
+
+  fi
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
