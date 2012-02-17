@@ -3704,18 +3704,37 @@ package body Sem_Ch12 is
             end if;
          end;
 
-         --  Note that we generate the instance body even when generating
-         --  calling stubs for an RCI unit: it may be required e.g. if it
-         --  provides stream attributes for some type used in the profile of a
-         --  remote subprogram. If the instantiation is within the visible part
-         --  of the RCI, then calling stubs for any relevant subprogram will
-         --  be inserted immediately after the subprogram declaration, and
-         --  will take precedence over the subsequent (original) body. (The
-         --  stub and original body will be complete homographs, but this is
-         --  permitted in an instance).
+         --  For RCI unit calling stubs, we omit the instance body if the
+         --  instance is the RCI library unit itself.
 
-         --  Could we do better and remove the original subprogram body in that
-         --  case???
+         --  However there is a special case for nested instances: in this case
+         --  we do generate the instance body, as it might be required, e.g.
+         --  because it provides stream attributes for some type used in the
+         --  profile of a remote subprogram. This is consistent with 12.3(12),
+         --  which indicates that the instance body occurs at the place of the
+         --  instantiation, and thus is part of the RCI declaration, which is
+         --  present on all client partitions (this is E.2.3(18)).
+
+         --  Note that AI12-0002 may make it illegal at some point to have
+         --  stream attributes defined in an RCI unit, in which case this
+         --  special case will become unnecessary. In the meantime, there
+         --  is known application code in production that depends on this
+         --  being possible, so we definitely cannot eliminate the body in
+         --  the case of nested instances for the time being.
+
+         --  When we generate a nested instance body, calling stubs for any
+         --  relevant subprogram will be be inserted immediately after the
+         --  subprogram declarations, and will take precedence over the
+         --  subsequent (original) body. (The stub and original body will be
+         --  complete homographs, but this is permitted in an instance).
+         --  (Could we do better and remove the original body???)
+
+         if Distribution_Stub_Mode = Generate_Caller_Stub_Body
+              and then Comes_From_Source (N)
+              and then Nkind (Parent (N)) = N_Compilation_Unit
+         then
+            Needs_Body := False;
+         end if;
 
          if Needs_Body then
 

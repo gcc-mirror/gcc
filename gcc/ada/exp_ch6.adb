@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1417,8 +1417,18 @@ package body Exp_Ch6 is
          --  representation clauses give the actual a misaligned address.
 
          if Is_By_Reference_Type (Etype (Formal)) then
-            Error_Msg_N
-              ("misaligned actual cannot be passed by reference", Actual);
+
+         --  If the front-end does not perform full type layout, the actual
+         --  may in fact be properly aligned but there is not enough front-end
+         --  information to determine this. In that case gigi will emit an
+         --  error if a copy is not legal, or generate the proper code.
+         --  For other backends we report the error now.
+
+            if Frontend_Layout_On_Target then
+               Error_Msg_N
+                 ("misaligned actual cannot be passed by reference", Actual);
+            end if;
+
             return False;
 
          --  For users of Starlet, we assume that the specification of by-
@@ -6120,6 +6130,7 @@ package body Exp_Ch6 is
 
          begin
             Set_Has_Completion (Subp, False);
+            --  Set_Has_Delayed_Freeze (Subp);
             Append_Freeze_Action (Subp, Bod);
 
             --  The body now contains raise statements, so calls to it will

@@ -7032,10 +7032,10 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		   TYPE_ALIGN (gnu_field_type));
 
 	      else if (Strict_Alignment (gnat_field_type))
-		post_error_ne_num
-  ("position of & with aliased or tagged components not multiple of ^ bits",
-		   First_Bit (Component_Clause (gnat_field)), gnat_field,
-		   TYPE_ALIGN (gnu_field_type));
+		post_error_ne
+		  ("position of & is not compatible with alignment required "
+		   "by its components",
+		    First_Bit (Component_Clause (gnat_field)), gnat_field);
 
 	      else
 		gcc_unreachable ();
@@ -7132,8 +7132,8 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   return gnu_field;
 }
 
-/* Return true if TYPE is a type with variable size, a padding type with a
-   field of variable size or is a record that has a field such a field.  */
+/* Return true if TYPE is a type with variable size or a padding type with a
+   field of variable size or a record that has a field with such a type.  */
 
 static bool
 type_has_variable_size (tree type)
