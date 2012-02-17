@@ -1,3 +1,19 @@
+2012-02-17  Yannick Moy  <moy@adacore.com>
+
+	* gnat_ugn.texi: Fix typos.
+
+2012-02-17  Pascal Obry  <obry@adacore.com>
+
+	* prj-nmsc.adb: prj-nmsc.adb (Check_Aggregated): Check that an
+	aggregate is not Externally_Built.
+
+2012-02-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate): If a composite
+	component has a box association, copy the default value using
+	the current scope as the scope of internal types, to prevent
+	scoping anomalies in gigi.
+
 2012-02-17  Robert Dewar  <dewar@adacore.com>
 
 	* sem_dim.adb, sem_dim.ads, s-tasren.adb, prj.adb, prj.ads, freeze.adb,
