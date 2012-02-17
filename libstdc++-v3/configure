@@ -664,6 +664,8 @@ LIBICONV
 OPT_LDFLAGS
 SECTION_LDFLAGS
 GLIBCXX_LIBS
+ENABLE_WERROR_FALSE
+ENABLE_WERROR_TRUE
 ENABLE_PYTHONDIR_FALSE
 ENABLE_PYTHONDIR_TRUE
 python_mod_dir
@@ -860,6 +862,7 @@ enable_cxx_flags
 enable_fully_dynamic_string
 enable_extern_template
 with_python_dir
+enable_werror
 enable_libstdcxx_time
 enable_tls
 enable_rpath
@@ -1549,6 +1552,7 @@ Optional Features:
                           memory [default=no]
   --enable-extern-template
                           enable extern template [default=yes]
+  --enable-werror         turns on -Werror [default=yes]
   --enable-libstdcxx-time[=KIND]
                           use KIND for check type [default=no]
   --enable-tls            Use thread-local storage [default=yes]
@@ -11495,7 +11499,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11498 "configure"
+#line 11502 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11601,7 +11605,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11604 "configure"
+#line 11608 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14959,7 +14963,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14962 "configure"
+#line 14966 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15294,7 +15298,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15297 "configure"
+#line 15301 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15329,7 +15333,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15332 "configure"
+#line 15336 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15364,7 +15368,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15367 "configure"
+#line 15371 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15400,7 +15404,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15403 "configure"
+#line 15407 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15480,7 +15484,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15483 "configure"
+#line 15487 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15522,7 +15526,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15525 "configure"
+#line 15529 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15556,7 +15560,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15559 "configure"
+#line 15563 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -17266,6 +17270,26 @@ $as_echo "${with_python_dir}" >&6; }
 # Needed for installing Python modules during make install.
 python_mod_dir="${with_python_dir}"
 
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -Werror" >&5
+$as_echo_n "checking for -Werror... " >&6; }
+   # Check whether --enable-werror was given.
+if test "${enable_werror+set}" = set; then :
+  enableval=$enable_werror;
+      case "$enableval" in
+       yes|no) ;;
+       *) as_fn_error "Argument to enable/disable werror must be yes or no" "$LINENO" 5 ;;
+      esac
+
+else
+  enable_werror=yes
+fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_werror" >&5
+$as_echo "$enable_werror" >&6; }
 
 
 
@@ -66123,6 +66147,15 @@ else
 fi
 
 
+    if test $enable_werror = yes; then
+  ENABLE_WERROR_TRUE=
+  ENABLE_WERROR_FALSE='#'
+else
+  ENABLE_WERROR_TRUE='#'
+  ENABLE_WERROR_FALSE=
+fi
+
+
     if test $enable_symvers != no; then
   ENABLE_SYMVERS_TRUE=
   ENABLE_SYMVERS_FALSE='#'
@@ -66399,7 +66432,7 @@ $as_echo "$gxx_include_dir" >&6; }
   # OPTIMIZE_CXXFLAGS = -O3 -fstrict-aliasing -fvtable-gc
 
 
-  WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual'
+  WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual -Wabi'
 
 
 
@@ -66578,6 +66611,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_PYTHONDIR_TRUE}" && test -z "${ENABLE_PYTHONDIR_FALSE}"; then
   as_fn_error "conditional \"ENABLE_PYTHONDIR\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_WERROR_TRUE}" && test -z "${ENABLE_WERROR_FALSE}"; then
+  as_fn_error "conditional \"ENABLE_WERROR\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_SYMVERS_TRUE}" && test -z "${ENABLE_SYMVERS_FALSE}"; then
