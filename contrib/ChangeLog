@@ -1,3 +1,8 @@
+2012-02-17   Doug Kwan  <dougkwan@google.com>
+
+	* contrib/testsuite-management/validate_failures.py
+	(GetMakefileValue): Check for cross compilers.
+
 2012-02-15   Quentin Neill  <quentin.neill@amd.com>
 
 	* compare_tests: Fix trailing paths in dir arguments.
