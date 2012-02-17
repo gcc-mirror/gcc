@@ -4239,8 +4239,8 @@ package body Sem_Res is
            and then Nkind (Expression (E)) = N_Function_Call
          then
             declare
-               Pool : constant Entity_Id
-                        := Associated_Storage_Pool (Root_Type (Typ));
+               Pool : constant Entity_Id :=
+                        Associated_Storage_Pool (Root_Type (Typ));
             begin
                if Present (Pool)
                  and then

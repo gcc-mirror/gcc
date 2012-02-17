@@ -250,6 +250,10 @@ package body Sinput is
       return Name_Buffer (1 .. Name_Len);
    end Build_Location_String;
 
+   -------------------
+   -- Check_For_BOM --
+   -------------------
+
    procedure Check_For_BOM is
       BOM : BOM_Kind;
       Len : Natural;

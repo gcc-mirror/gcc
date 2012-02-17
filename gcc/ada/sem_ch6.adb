@@ -188,9 +188,9 @@ package body Sem_Ch6 is
       New_E  : Entity_Id) return Boolean;
    --  Enforce the rule given in 12.3(18): a private operation in an instance
    --  overrides an inherited operation only if the corresponding operation
-   --  was overriding in the generic. This can happen for primitive operations
-   --  of types derived (in the generic unit) from formal private or formal
-   --  derived types.
+   --  was overriding in the generic. This needs to be checked for primitive
+   --  operations of types derived (in the generic unit) from formal private
+   --  or formal derived types.
 
    procedure Make_Inequality_Operator (S : Entity_Id);
    --  Create the declaration for an inequality operator that is implicitly
@@ -7843,6 +7843,22 @@ package body Sem_Ch6 is
 
                --  If no match found, then the new subprogram does not
                --  override in the generic (nor in the instance).
+
+               --  If the type in question is not abstract, and the subprogram
+               --  is, this will be an error if the new operation is in the
+               --  private part of the instance. Emit a warning now, which will
+               --  make the subsequent error message easier to understand.
+
+               if not Is_Abstract_Type (F_Typ)
+                 and then Is_Abstract_Subprogram (Prev_E)
+                 and then In_Private_Part (Current_Scope)
+               then
+                  Error_Msg_Node_2 := F_Typ;
+                  Error_Msg_NE
+                    ("private operation& in generic unit does not override " &
+                     "any primitive operation of& (RM 12.3 (18))?",
+                     New_E, New_E);
+               end if;
 
                return True;
             end;

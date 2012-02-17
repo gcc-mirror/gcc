@@ -110,8 +110,8 @@ package body System.Tasking.Rendezvous is
    procedure Local_Complete_Rendezvous (Ex : Ada.Exceptions.Exception_Id);
    --  Internal version of Complete_Rendezvous, used to implement
    --  Complete_Rendezvous and Exceptional_Complete_Rendezvous.
-   --  Should be called holding no locks, generally with abort not yet
-   --  deferred.
+   --  Should be called holding no locks, generally with abort
+   --  not yet deferred.
 
    procedure Boost_Priority (Call : Entry_Call_Link; Acceptor : Task_Id);
    pragma Inline (Boost_Priority);
@@ -538,7 +538,7 @@ package body System.Tasking.Rendezvous is
       Called_PO              : STPE.Protection_Entries_Access;
       Acceptor_Prev_Priority : Integer;
 
-      Ceiling_Violation  : Boolean;
+      Ceiling_Violation : Boolean;
 
       use type Ada.Exceptions.Exception_Id;
       procedure Transfer_Occurrence

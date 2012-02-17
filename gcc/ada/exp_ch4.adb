@@ -3572,21 +3572,20 @@ package body Exp_Ch4 is
                              (Etype (Pool), Name_Simple_Storage_Pool_Type))
             then
                declare
-                  Alloc_Op  : Entity_Id := Get_Name_Entity_Id (Name_Allocate);
                   Pool_Type : constant Entity_Id := Base_Type (Etype (Pool));
-
+                  Alloc_Op  : Entity_Id;
                begin
+                  Alloc_Op := Get_Name_Entity_Id (Name_Allocate);
                   while Present (Alloc_Op) loop
                      if Scope (Alloc_Op) = Scope (Pool_Type)
                        and then Present (First_Formal (Alloc_Op))
                        and then Etype (First_Formal (Alloc_Op)) = Pool_Type
                      then
                         Set_Procedure_To_Call (N, Alloc_Op);
-
                         exit;
+                     else
+                        Alloc_Op := Homonym (Alloc_Op);
                      end if;
-
-                     Alloc_Op := Homonym (Alloc_Op);
                   end loop;
                end;
 

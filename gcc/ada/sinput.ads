@@ -544,6 +544,14 @@ package Sinput is
    --  Functional form returning a string, which does not include a terminating
    --  null character. The contents of Name_Buffer is destroyed.
 
+   procedure Check_For_BOM;
+   --  Check if the current source starts with a BOM. Scan_Ptr needs to be at
+   --  the start of the current source. If the current source starts with a
+   --  recognized BOM, then some flags such as Wide_Character_Encoding_Method
+   --  are set accordingly, and the Scan_Ptr on return points past this BOM.
+   --  An error message is output and Unrecoverable_Error raised if a non-
+   --  recognized BOM is detected. The call has no effect if no BOM is found.
+
    function Get_Column_Number (P : Source_Ptr) return Column_Number;
    --  The ones-origin column number of the specified Source_Ptr value is
    --  determined and returned. Tab characters if present are assumed to
@@ -711,16 +719,6 @@ package Sinput is
    procedure Tree_Write;
    --  Writes out internal tables to current tree file using the relevant
    --  Table.Tree_Write routines.
-
-   procedure Check_For_BOM;
-   --  Check if the current source starts with a BOM. Scan_Ptr needs to be at
-   --  the start of the current source.
-   --  If the current source starts with a recognized BOM, then some flags
-   --  such as Wide_Character_Encoding_Method are set accordingly.
-   --  An exception is raised if a BOM is found that indicates an unrecognized
-   --  format.
-   --  This procedure has no effect if there is no BOM at the beginning of the
-   --  current source.
 
 private
    pragma Inline (File_Name);

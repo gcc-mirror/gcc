@@ -1,3 +1,15 @@
+2012-02-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_dim.adb, sem_dim.ads, s-tasren.adb, prj.adb, prj.ads, freeze.adb,
+	sem_res.adb, exp_ch4.adb, sinput.adb, sinput.ads, exp_aggr.adb,
+	exp_intr.adb, s-os_lib.adb: Minor reformatting.
+
+2012-02-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Is_Non_Overriding_Operation): Add warning if the
+	old operation is abstract, the relevant type is not abstract,
+	and the new subprogram fails to override.
+
 2012-02-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Identifier_to_gnu): Move block retrieving the

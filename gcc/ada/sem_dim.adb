@@ -2247,7 +2247,8 @@ package body Sem_Dim is
                   Package_Name := Chars (Ent);
 
                   if Package_Name = Name_Float_IO
-                    or else Package_Name = Name_Integer_IO
+                       or else
+                     Package_Name = Name_Integer_IO
                   then
                      return Chars (Scope (Ent)) = Name_Dim;
                   end if;
@@ -2512,10 +2513,13 @@ package body Sem_Dim is
       if Is_Entity_Name (Gen_Id) then
          Ent := Entity (Gen_Id);
 
+         --  Is it really OK just to test names ??? why???
+
          if Is_Library_Level_Entity (Ent)
            and then
             (Chars (Ent) = Name_Float_IO
-               or else Chars (Ent) = Name_Integer_IO)
+               or else
+             Chars (Ent) = Name_Integer_IO)
          then
             return Chars (Scope (Ent)) = Name_Dim;
          end if;

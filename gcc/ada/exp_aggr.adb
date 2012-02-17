@@ -5157,9 +5157,9 @@ package body Exp_Aggr is
       -- Compile_Time_Known_Composite_Value --
       ----------------------------------------
 
-      function Compile_Time_Known_Composite_Value (N : Node_Id) return Boolean
+      function Compile_Time_Known_Composite_Value
+        (N : Node_Id) return Boolean
       is
-
       begin
          --  If we have an entity name, then see if it is the name of a
          --  constant and if so, test the corresponding constant value.
@@ -5168,15 +5168,14 @@ package body Exp_Aggr is
             declare
                E : constant Entity_Id := Entity (N);
                V : Node_Id;
-
             begin
                if Ekind (E) /= E_Constant then
                   return False;
+               else
+                  V := Constant_Value (E);
+                  return Present (V)
+                    and then Compile_Time_Known_Composite_Value (V);
                end if;
-
-               V := Constant_Value (E);
-               return Present (V)
-                 and then Compile_Time_Known_Composite_Value (V);
             end;
 
          --  We have a value, see if it is compile time known
