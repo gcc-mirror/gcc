@@ -396,6 +396,20 @@ package body Ada.Containers.Vectors is
       end;
    end Adjust;
 
+   procedure Adjust (Control : in out Reference_Control_Type) is
+   begin
+      if Control.Container /= null then
+         declare
+            C : Vector renames Control.Container.all;
+            B : Natural renames C.Busy;
+            L : Natural renames C.Lock;
+         begin
+            B := B + 1;
+            L := L + 1;
+         end;
+      end if;
+   end Adjust;
+
    ------------
    -- Append --
    ------------
@@ -499,7 +513,21 @@ package body Ada.Containers.Vectors is
          raise Constraint_Error with "Position cursor is out of range";
       end if;
 
-      return (Element => Container.Elements.EA (Position.Index)'Access);
+      declare
+         C : Vector renames Position.Container.all;
+         B : Natural renames C.Busy;
+         L : Natural renames C.Lock;
+      begin
+         return R : constant Constant_Reference_Type :=
+                      (Element =>
+                         Container.Elements.EA (Position.Index)'Access,
+                       Control =>
+                         (Controlled with Container'Unrestricted_Access))
+         do
+            B := B + 1;
+            L := L + 1;
+         end return;
+      end;
    end Constant_Reference;
 
    function Constant_Reference
@@ -510,7 +538,20 @@ package body Ada.Containers.Vectors is
       if Index > Container.Last then
          raise Constraint_Error with "Index is out of range";
       else
-         return (Element => Container.Elements.EA (Index)'Access);
+         declare
+            C : Vector renames Container'Unrestricted_Access.all;
+            B : Natural renames C.Busy;
+            L : Natural renames C.Lock;
+         begin
+            return R : constant Constant_Reference_Type :=
+                         (Element => Container.Elements.EA (Index)'Access,
+                          Control =>
+                            (Controlled with Container'Unrestricted_Access))
+            do
+               B := B + 1;
+               L := L + 1;
+            end return;
+         end;
       end if;
    end Constant_Reference;
 
@@ -823,6 +864,22 @@ package body Ada.Containers.Vectors is
       B : Natural renames Object.Container.Busy;
    begin
       B := B - 1;
+   end Finalize;
+
+   procedure Finalize (Control : in out Reference_Control_Type) is
+   begin
+      if Control.Container /= null then
+         declare
+            C : Vector renames Control.Container.all;
+            B : Natural renames C.Busy;
+            L : Natural renames C.Lock;
+         begin
+            B := B - 1;
+            L := L - 1;
+         end;
+
+         Control.Container := null;
+      end if;
    end Finalize;
 
    ----------
@@ -2601,7 +2658,20 @@ package body Ada.Containers.Vectors is
          raise Constraint_Error with "Position cursor is out of range";
       end if;
 
-      return (Element => Container.Elements.EA (Position.Index)'Access);
+      declare
+         C : Vector renames Position.Container.all;
+         B : Natural renames C.Busy;
+         L : Natural renames C.Lock;
+      begin
+         return R : constant Reference_Type :=
+                      (Element =>
+                         Container.Elements.EA (Position.Index)'Access,
+                       Control => (Controlled with Position.Container))
+         do
+            B := B + 1;
+            L := L + 1;
+         end return;
+      end;
    end Reference;
 
    function Reference
@@ -2612,7 +2682,20 @@ package body Ada.Containers.Vectors is
       if Index > Container.Last then
          raise Constraint_Error with "Index is out of range";
       else
-         return (Element => Container.Elements.EA (Index)'Access);
+         declare
+            C : Vector renames Container'Unrestricted_Access.all;
+            B : Natural renames C.Busy;
+            L : Natural renames C.Lock;
+         begin
+            return R : constant Reference_Type :=
+                         (Element => Container.Elements.EA (Index)'Access,
+                          Control =>
+                            (Controlled with Container'Unrestricted_Access))
+            do
+               B := B + 1;
+               L := L + 1;
+            end return;
+         end;
       end if;
    end Reference;
 

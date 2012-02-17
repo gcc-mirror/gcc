@@ -103,10 +103,12 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
    function Constant_Reference
      (Container : aliased List;
       Position  : Cursor) return Constant_Reference_Type;
+   pragma Inline (Constant_Reference);
 
    function Reference
      (Container : aliased in out List;
       Position  : Cursor) return Reference_Type;
+   pragma Inline (Reference);
 
    procedure Assign (Target : in out List; Source : List);
 
@@ -299,8 +301,22 @@ private
 
    for Cursor'Write use Write;
 
+   type Reference_Control_Type is
+      new Controlled with record
+         Container : List_Access;
+      end record;
+
+   overriding procedure Adjust (Control : in out Reference_Control_Type);
+   pragma Inline (Adjust);
+
+   overriding procedure Finalize (Control : in out Reference_Control_Type);
+   pragma Inline (Finalize);
+
    type Constant_Reference_Type
-      (Element : not null access constant Element_Type) is null record;
+      (Element : not null access constant Element_Type) is
+      record
+         Control : Reference_Control_Type;
+      end record;
 
    procedure Write
      (Stream : not null access Root_Stream_Type'Class;
@@ -315,7 +331,10 @@ private
    for Constant_Reference_Type'Read use Read;
 
    type Reference_Type
-      (Element : not null access Element_Type) is null record;
+      (Element : not null access Element_Type) is
+      record
+         Control : Reference_Control_Type;
+      end record;
 
    procedure Write
      (Stream : not null access Root_Stream_Type'Class;
