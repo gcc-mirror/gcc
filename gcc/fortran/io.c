@@ -2016,7 +2016,7 @@ gfc_match_open (void)
   /* Checks on the ROUND specifier.  */
   if (open->round)
     {
-      if (gfc_notify_std (GFC_STD_F2003, "Fortran F2003: ROUND= at %C "
+      if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ROUND= at %C "
 	  "not allowed in Fortran 95") == FAILURE)
       goto cleanup;
 

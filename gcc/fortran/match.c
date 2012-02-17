@@ -3661,7 +3661,7 @@ alloc_opt_list:
 
 	  if (head->next
 	      && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: SOURCE tag at %L"
-				 " with more than a single allocate objects",
+				 " with more than a single allocate object",
 				 &tmp->where) == FAILURE)
 	    goto cleanup;
 
@@ -3787,7 +3787,7 @@ gfc_match_nullify (void)
       /* F2008, C1242.  */
       if (gfc_is_coindexed (p))
 	{
-	  gfc_error ("Pointer object at %C shall not be conindexed");
+	  gfc_error ("Pointer object at %C shall not be coindexed");
 	  goto cleanup;
 	}
 

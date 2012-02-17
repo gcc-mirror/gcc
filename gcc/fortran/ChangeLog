@@ -1,3 +1,18 @@
+2012-02-17  Tobias Burnus  <burnus@net-b.de>
+	    Roland Stigge  <stigge@antcom.de>
+
+	PR translation/52232
+	PR translation/52234
+	PR translation/52245
+	PR translation/52246
+	PR translation/52262
+	PR translation/52273
+	* io.c (gfc_match_open): Fix typo.
+	* interface.c (compare_actual_formal): Ditto.
+	* lang.opt (freal-4-real-8, freal-4-real-16, freal-8-real-16): Ditto.
+	* match.c (alloc_opt_list, gfc_match_nullify): Ditto.
+	* check.c (gfc_check_associated, gfc_check_null): Ditto.
+
 2012-02-12  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50981
