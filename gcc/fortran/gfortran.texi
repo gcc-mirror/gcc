@@ -1521,7 +1521,7 @@ of the @code{READ} statement, and the output item lists of the
 
 GNU Fortran accepts real literal constants with an exponent-letter
 of @code{Q}, for example, @code{1.23Q45}.  The constant is interpreted
-as a @code{REAL(16)} entity on targets that supports this type.  If
+as a @code{REAL(16)} entity on targets that support this type.  If
 the target does not support @code{REAL(16)} but has a @code{REAL(10)}
 type, then the real-literal-constant will be interpreted as a
 @code{REAL(10)} entity.  In the absence of @code{REAL(16)} and
