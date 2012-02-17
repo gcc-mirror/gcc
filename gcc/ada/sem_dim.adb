@@ -2499,6 +2499,8 @@ package body Sem_Dim is
    -- Is_Dim_IO_Package_Entity --
    ------------------------------
 
+   --  Why all this comparison of names, why not use Is_RTE and Is_RTU ???
+
    function Is_Dim_IO_Package_Entity (E : Entity_Id) return Boolean is
    begin
       --  Check the package entity is standard and its scope is either

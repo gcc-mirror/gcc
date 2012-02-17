@@ -1,3 +1,11 @@
+2012-02-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_dim.adb: Minor reformatting.
+
+2012-02-17  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Minor rewording.
+
 2012-02-17  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_aggr.adb: Minor reformatting.
