@@ -1,3 +1,7 @@
+2012-02-17  Walter Lee  <walt@tilera.com>
+
+	* MAINTAINERS: (Write After Approval): Delete myself.
+
 2012-02-14  Walter Lee  <walt@tilera.com>
 
 	* MAINTAINERS (tilegx port): Add myself.
