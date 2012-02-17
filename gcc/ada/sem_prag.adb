@@ -1818,6 +1818,7 @@ package body Sem_Prag is
                  ("aspect % requires ''Class for null procedure");
 
             elsif not Nkind_In (PO, N_Subprogram_Declaration,
+                                    N_Expression_Function,
                                     N_Generic_Subprogram_Declaration,
                                     N_Entry_Declaration)
             then

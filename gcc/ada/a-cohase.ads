@@ -153,6 +153,7 @@ package Ada.Containers.Hashed_Sets is
    function Constant_Reference
      (Container : aliased Set;
       Position  : Cursor) return Constant_Reference_Type;
+   pragma Inline (Constant_Reference);
 
    procedure Assign (Target : in out Set; Source : Set);
 
@@ -509,8 +510,22 @@ private
 
    for Cursor'Read use Read;
 
+   type Reference_Control_Type is
+      new Controlled with record
+         Container : Set_Access;
+      end record;
+
+   overriding procedure Adjust (Control : in out Reference_Control_Type);
+   pragma Inline (Adjust);
+
+   overriding procedure Finalize (Control : in out Reference_Control_Type);
+   pragma Inline (Finalize);
+
    type Constant_Reference_Type
-     (Element : not null access constant Element_Type) is null record;
+     (Element : not null access constant Element_Type) is
+      record
+         Control : Reference_Control_Type;
+      end record;
 
    procedure Read
      (Stream : not null access Root_Stream_Type'Class;

@@ -355,6 +355,7 @@ Partition-Wide Restrictions
 * No_Task_Allocators::
 * No_Task_Attributes_Package::
 * No_Task_Hierarchy::
+* No_Task_Termination::
 * No_Tasking::
 * No_Terminate_Alternatives::
 * No_Unchecked_Access::
@@ -376,7 +377,6 @@ Program Unit Level Restrictions
 * No_Obsolescent_Features::
 * No_Wide_Characters::
 * SPARK::
-* No_Task_Termination::
 
 The Implementation of Standard I/O
 
@@ -6993,6 +6993,7 @@ then all compilation units in the partition must obey the restriction).
 * No_Task_Allocators::
 * No_Task_Attributes_Package::
 * No_Task_Hierarchy::
+* No_Task_Termination::
 * No_Tasking::
 * No_Terminate_Alternatives::
 * No_Unchecked_Access::
@@ -7541,6 +7542,11 @@ explicit dependencies on the package @code{Ada.Task_Attributes}.
 [RM D.7] All (non-environment) tasks depend
 directly on the environment task of the partition.
 
+@node No_Task_Termination
+@unnumberedsubsec No_Task_Termination
+@findex No_Task_Termination
+[RM D.7] Tasks which terminate are erroneous.
+
 @node No_Tasking
 @unnumberedsubsec No_Tasking
 @findex No_Tasking
@@ -7605,7 +7611,6 @@ other compilation units in the partition.
 * No_Obsolescent_Features::
 * No_Wide_Characters::
 * SPARK::
-* No_Task_Termination::
 @end menu
 
 @node No_Elaboration_Code
@@ -7763,11 +7768,6 @@ SPARK @code{inherit} annotations.
 This restriction can be useful in providing an initial filter for
 code developed using SPARK, or in examining legacy code to see how far
 it is from meeting SPARK restrictions.
-
-@node No_Task_Termination
-@unnumberedsubsec No_Task_Termination
-@findex No_Task_Termination
-[RM D.7] Tasks which terminate are erroneous.
 
 @c ------------------------
 @node Implementation Advice

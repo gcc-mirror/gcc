@@ -483,6 +483,13 @@ package body Exp_Util is
             Utyp := Base_Type (Utyp);
          end if;
 
+         --  When dealing with an internally built full view for a type with
+         --  unknown discriminants, use the original record type.
+
+         if Is_Underlying_Record_View (Utyp) then
+            Utyp := Etype (Utyp);
+         end if;
+
          return TSS (Utyp, TSS_Finalize_Address);
       end Find_Finalize_Address;
 

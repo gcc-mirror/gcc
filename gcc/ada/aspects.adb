@@ -193,6 +193,7 @@ package body Aspects is
       N_Entry_Declaration                      => True,
       N_Exception_Declaration                  => True,
       N_Exception_Renaming_Declaration         => True,
+      N_Expression_Function                    => True,
       N_Formal_Abstract_Subprogram_Declaration => True,
       N_Formal_Concrete_Subprogram_Declaration => True,
       N_Formal_Object_Declaration              => True,

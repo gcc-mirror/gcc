@@ -1,3 +1,44 @@
+2012-02-17  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Minor shuffling.
+
+2012-02-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* aspects.adb: Expression functions can carry pre/postconditions.
+	* par-ch6.adb (P_Subprogram): look for optional pre/postconditions
+	in an expression function.
+	* sem_prag (Check_Precondition_Postcondition): legal on expression
+	functions.
+
+2012-02-17  Vincent Pucci  <pucci@adacore.com>
+
+	* a-cdlili.adb, a-cidlli.adb, a-cihama.adb, a-cimutr.adb,
+	* a-ciorma.adb, a-cohama.adb, a-coinve.adb, a-comutr.adb,
+	* a-convec.adb, a-coorma.adb (Adjust): New routine.
+	(Constant_Reference): Increment Busy and Lock counters.
+	(Reference): Increase Busy and Lock counters.
+	(Finalize): New routine.
+	* a-cihase.adb, a-ciorse.adb, a-cohase.adb, a-coorse.adb:
+	(Adjust): New routine.	(Constant_Reference): Increment Busy
+	and Lock counters.
+	(Finalize): New routine.
+	* a-cdlili.ads, a-cidlli.ads, a-cihama.ads, a-cihase.ads,
+	* a-cimutr.ads, a-ciorma.ads, a-ciorse.ads, a-cohama.ads,
+	* a-cohase.ads, a-coinve.ads, a-comutr.ads, a-convec.ads,
+	* a-coorma.ads, a-coorse: Controlled component added to the
+	reference types.
+
+2012-02-17  Robert Dewar  <dewar@adacore.com>
+
+	* restrict.adb (Check_Restriction): Add special handling for
+	No_Obsolescent_Features.
+
+2012-02-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Find_Finalize_Address): When dealing with an
+	internally built full view for a type with unknown discriminants,
+	use the original record type.
+
 2012-02-17  Robert Dewar  <dewar@adacore.com>
 
 	* sem_dim.adb: Minor reformatting.
