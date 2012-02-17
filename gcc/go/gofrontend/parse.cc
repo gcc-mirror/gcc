@@ -2491,7 +2491,7 @@ Parse::operand(bool may_be_sink)
       if (token->is_op(OPERATOR_LPAREN))
 	{
 	  this->advance_token();
-	  ret = this->expression(PRECEDENCE_NORMAL, false, true, NULL);
+	  ret = this->expression(PRECEDENCE_NORMAL, may_be_sink, true, NULL);
 	  if (!this->peek_token()->is_op(OPERATOR_RPAREN))
 	    error_at(this->location(), "missing %<)%>");
 	  else
