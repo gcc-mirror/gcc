@@ -3896,7 +3896,12 @@ package body Sem_Aggr is
 
             begin
                --  If there is a default expression for the aggregate, copy
-               --  it into a new association.
+               --  it into a new association. This copy must modify the scopes
+               --  of internal types that may be attached to the expression
+               --  (e.g. index subtypes of arrays) because in general the type
+               --  declaration and the aggregate appear in different scopes,
+               --  and the backend requires the scope of the type to match the
+               --  point at which it is elaborated.
 
                --  If the component has an initialization procedure (IP) we
                --  pass the component to the expander, which will generate
@@ -3916,6 +3921,7 @@ package body Sem_Aggr is
                then
                   Expr :=
                     New_Copy_Tree (Expression (Parent (Component)),
+                     New_Scope => Current_Scope,
                       New_Sloc => Sloc (N));
 
                   Add_Association

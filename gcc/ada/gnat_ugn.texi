@@ -18009,9 +18009,11 @@ switch or by the corresponding attribute in the project file.
 
 @item filename
 is the name of the source file containing the library unit package declaration
-for which a test package will be created. The file name may given with a path.
+for which a test package will be created. The file name may be given with a
+path.
 
-@item @samp{@var{gcc_switches}} is a list of switches for
+@item @samp{@var{gcc_switches}}
+is a list of switches for
 @command{gcc}. These switches will be passed on to all compiler invocations
 made by @command{gnatstub} to generate a set of ASIS trees. Here you can provide
 @option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
@@ -18027,7 +18029,7 @@ is an optional sequence of switches as described in the next section.
 @command{gnattest} results can be found in two different places.
 
 @itemize @bullet
-@item automatic harness
+@item automatic harness:
 the harness code, which is located either in the harness-dir as specified on
 the command line or in the project file. All of this code is generated
 completely automatically and can be destroyed and regenerated at will. It is not
@@ -18044,7 +18046,7 @@ test_runner
 Note that you might need to specify the necessary values of scenario variables
 when you are not using the AUnit defaults.
 
-@item actual unit test stubs
+@item actual unit test stubs:
 a test stub for each visible subprogram is created in a separate file, if it
 doesn't exist already. By default, those separate test files are located in a
 "tests" directory that is created in the directory containing the source file
@@ -18053,10 +18055,10 @@ source, option @option{--separate-root} can be used. For example, if a source
 file my_unit.ads in directory src contains a visible subprogram Proc, then
 the corresponding unit test will be found in file
 src/tests/my_unit-tests-proc_<code>.adb. <code> is a signature encoding used to
-differentiate test names in cases of overloading.
+differentiate test names in case of overloading.
 
-Note that if the project already has both my_unit.ads and my_unit-tests.ads this
-will cause name a conflict with generated test package.
+Note that if the project already has both my_unit.ads and my_unit-tests.ads,
+this will cause a name conflict with the generated test package.
 @end itemize
 
 @node Switches for gnattest

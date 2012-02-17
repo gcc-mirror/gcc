@@ -8172,6 +8172,14 @@ package body Prj.Nmsc is
          --  Check the aggregate project attributes, reject any not supported
          --  attributes.
 
+         procedure Check_Aggregated
+           (Project : Project_Id;
+            Data    : in out Tree_Processing_Data);
+         --  Check aggregated projets which should not be externally built.
+         --  What is Data??? if same as outer Data, why passed???
+         --  What exact check is performed here??? Seems a bad idea to have
+         --  two procedures with such close names ???
+
          ---------------------
          -- Check_Aggregate --
          ---------------------
@@ -8180,7 +8188,6 @@ package body Prj.Nmsc is
            (Project : Project_Id;
             Data    : in out Tree_Processing_Data)
          is
-
             procedure Check_Not_Defined (Name : Name_Id);
             --  Report an error if Var is defined
 
@@ -8203,6 +8210,8 @@ package body Prj.Nmsc is
                end if;
             end Check_Not_Defined;
 
+         --  Start of processing for Check_Aggregate
+
          begin
             Check_Not_Defined (Snames.Name_Library_Dir);
             Check_Not_Defined (Snames.Name_Library_Interface);
@@ -8215,6 +8224,43 @@ package body Prj.Nmsc is
             Check_Not_Defined (Snames.Name_Leading_Library_Options);
             Check_Not_Defined (Snames.Name_Library_Version);
          end Check_Aggregate;
+
+         ----------------------
+         -- Check_Aggregated --
+         ----------------------
+
+         procedure Check_Aggregated
+           (Project : Project_Id;
+            Data    : in out Tree_Processing_Data)
+         is
+            L : Aggregated_Project_List;
+
+         begin
+            --  Check that aggregated projects are not externally built
+
+            L := Project.Aggregated_Projects;
+            while L /= null loop
+               declare
+                  Var : constant Prj.Variable_Value :=
+                          Prj.Util.Value_Of
+                            (Snames.Name_Externally_Built,
+                             L.Project.Decl.Attributes,
+                             Data.Tree.Shared);
+               begin
+                  if not Var.Default then
+                     Error_Msg_Name_1 := L.Project.Display_Name;
+                     Error_Msg
+                       (Data.Flags,
+                        "cannot aggregate externally build library %%",
+                        Var.Location, Project);
+                  end if;
+               end;
+
+               L := L.Next;
+            end loop;
+         end Check_Aggregated;
+
+         --  Local Variables
 
          Shared   : constant Shared_Project_Tree_Data_Access :=
                       Data.Tree.Shared;
@@ -8231,9 +8277,11 @@ package body Prj.Nmsc is
 
          case Project.Qualifier is
             when Aggregate =>
-               null;
+               Check_Aggregated (Project, Data);
 
             when Aggregate_Library =>
+               Check_Aggregated (Project, Data);
+
                if Project.Object_Directory = No_Path_Information then
                   Project.Object_Directory := Project.Directory;
                end if;
@@ -8251,10 +8299,9 @@ package body Prj.Nmsc is
                end if;
          end case;
 
-         --  Check configuration. This must be done even for gnatmake (even
-         --  though no user configuration file was provided) since the default
-         --  config we generate indicates whether libraries are supported for
-         --  instance.
+         --  Check configuration. Must be done for gnatmake (even though no
+         --  user configuration file was provided) since the default config we
+         --  generate indicates whether libraries are supported for instance.
 
          Check_Configuration (Project, Data);
 
@@ -8318,6 +8365,9 @@ package body Prj.Nmsc is
 
       procedure Check_All_Projects is new For_Every_Project_Imported_Context
         (Tree_Processing_Data, Recursive_Check);
+      --  Comment required???
+
+      --  Local Variables
 
       Data : Tree_Processing_Data;
 
@@ -8342,6 +8392,7 @@ package body Prj.Nmsc is
          List := Tree.Projects;
          while List /= null loop
             Proj := List.Project;
+
             Exte := Proj;
             while Exte.Extended_By /= No_Project loop
                Exte := Exte.Extended_By;
