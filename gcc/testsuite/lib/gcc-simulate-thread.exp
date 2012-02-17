@@ -1,4 +1,4 @@
-#   Copyright (C) 2011 Free Software Foundation, Inc.
+#   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
+
+load_lib timeout.exp
 
 # Utility for running a given test through the simulate-thread harness
 # using gdb.  This is invoked via dg-final.
@@ -56,8 +58,7 @@ proc simulate-thread { args } {
 
     set gdb_worked 0
 
-    # Set timeout to 20 seconds due to huge amount of generated log.
-    remote_expect target 20 {
+    remote_expect target [timeout_value] {
 	# Too old GDB
 	-re "Unhandled dwarf expression|Error in sourced command file" {
 	    unsupported "$testcase $message"
