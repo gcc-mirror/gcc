@@ -292,7 +292,7 @@ Implementation Defined Attributes
 Implementation Defined Restrictions
 
 * Partition-Wide Restrictions::
-* Unit-Level Restrictions::
+* Program Unit Level Restrictions::
 
 Partition-Wide Restrictions
 
@@ -340,6 +340,8 @@ Partition-Wide Restrictions
 * No_Nested_Finalization::
 * No_Protected_Type_Allocators::
 * No_Protected_Types::
+* No_Recursion::
+* No_Reentrancy::
 * No_Relative_Delay::
 * No_Requeue_Statements::
 * No_Secondary_Stack::
@@ -360,7 +362,7 @@ Partition-Wide Restrictions
 * Static_Priorities::
 * Static_Storage_Size::
 
-Unit-Level Restrictions
+Program Unit Level Restrictions
 
 * No_Elaboration_Code::
 * No_Entry_Queue::
@@ -372,8 +374,6 @@ Unit-Level Restrictions
 * No_Implementation_Units::
 * No_Implicit_Aliasing::
 * No_Obsolescent_Features::
-* No_Recursion::
-* No_Reentrancy::
 * No_Wide_Characters::
 * SPARK::
 * No_Task_Termination::
@@ -4342,7 +4342,7 @@ plus the following set of restrictions:
 No task can be queued on a protected entry.
 @item Max_Protected_Entries => 1
 @item Max_Task_Entries => 0
-No rendezvous are possible.
+No rendezvous statements are allowed.
 @item No_Abort_Statements
 @item No_Dynamic_Attachment
 @item No_Dynamic_Priorities
@@ -6922,7 +6922,7 @@ language defined or GNAT-specific, are listed in the following.
 
 @menu
 * Partition-Wide Restrictions::
-* Unit-Level Restrictions::
+* Program Unit Level Restrictions::
 @end menu
 
 @node Partition-Wide Restrictions
@@ -6978,6 +6978,8 @@ then all compilation units in the partition must obey the restriction).
 * No_Nested_Finalization::
 * No_Protected_Type_Allocators::
 * No_Protected_Types::
+* No_Recursion::
+* No_Reentrancy::
 * No_Relative_Delay::
 * No_Requeue_Statements::
 * No_Secondary_Stack::
@@ -7256,12 +7258,12 @@ represents the line number in the source program where the raise occurs.
 @unnumberedsubsec No_Exception_Propagation
 @findex No_Exception_Propagation
 [GNAT] This restriction guarantees that exceptions are never propagated
-to an outer subprogram scope). The only case in which an exception may
+to an outer subprogram scope. The only case in which an exception may
 be raised is when the handler is statically in the same subprogram, so
 that the effect of a raise is essentially like a goto statement. Any
 other raise statement (implicit or explicit) will be considered
 unhandled. Exception handlers are allowed, but may not contain an
-exception occurrence identifier (exception choice). In addition use of
+exception occurrence identifier (exception choice). In addition, use of
 the package GNAT.Current_Exception is not permitted, and reraise
 statements (raise with no operand) are not permitted.
 
@@ -7426,6 +7428,18 @@ expressions that attempt to allocate protected objects.
 [RM H.4] This restriction ensures at compile time that there are no
 declarations of protected types or protected objects.
 
+@node No_Recursion
+@unnumberedsubsec No_Recursion
+@findex No_Recursion
+[RM H.4] A program execution is erroneous if a subprogram is invoked as
+part of its execution.
+
+@node No_Reentrancy
+@unnumberedsubsec No_Reentrancy
+@findex No_Reentrancy
+[RM H.4] A program execution is erroneous if a subprogram is executed by
+two tasks at the same time.
+
 @node No_Relative_Delay
 @unnumberedsubsec No_Relative_Delay
 @findex No_Relative_Delay
@@ -7568,8 +7582,8 @@ are static, and that there are no dependences on the package
 [GNAT] This restriction ensures at compile time that any expression appearing
 in a Storage_Size pragma or attribute definition clause is static.
 
-@node Unit-Level Restrictions
-@section Unit-Level Restrictions
+@node Program Unit Level Restrictions
+@section Program Unit Level Restrictions
 
 @noindent
 The second set of restriction identifiers
@@ -7589,8 +7603,6 @@ other compilation units in the partition.
 * No_Implementation_Units::
 * No_Implicit_Aliasing::
 * No_Obsolescent_Features::
-* No_Recursion::
-* No_Reentrancy::
 * No_Wide_Characters::
 * SPARK::
 * No_Task_Termination::
@@ -7712,18 +7724,6 @@ the standard attribute Unchecked_Access which is preferable.
 @findex No_Obsolescent_Features
 [RM 13.12.1] This restriction checks at compile time that no obsolescent
 features are used, as defined in Annex J of the Ada Reference Manual.
-
-@node No_Recursion
-@unnumberedsubsec No_Recursion
-@findex No_Recursion
-[RM H.4] A program execution is erroneous if a subprogram is invoked as
-part of its execution.
-
-@node No_Reentrancy
-@unnumberedsubsec No_Reentrancy
-@findex No_Reentrancy
-[RM H.4] A program execution is erroneous if a subprogram is executed by
-two tasks at the same time.
 
 @node No_Wide_Characters
 @unnumberedsubsec No_Wide_Characters
