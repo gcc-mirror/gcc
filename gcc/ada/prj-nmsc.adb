@@ -8175,7 +8175,7 @@ package body Prj.Nmsc is
          procedure Check_Aggregated
            (Project : Project_Id;
             Data    : in out Tree_Processing_Data);
-         --  Check aggregated projets which should not be externally built.
+         --  Check aggregated projects which should not be externally built.
          --  What is Data??? if same as outer Data, why passed???
          --  What exact check is performed here??? Seems a bad idea to have
          --  two procedures with such close names ???

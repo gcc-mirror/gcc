@@ -71,6 +71,7 @@ AdaCore
 * About This Guide::
 * Implementation Defined Pragmas::
 * Implementation Defined Attributes::
+* Implementation Defined Restrictions::
 * Implementation Advice::
 * Implementation Defined Characteristics::
 * Intrinsic Subprograms::
@@ -191,6 +192,7 @@ Implementation Defined Pragmas
 * Pragma Shared::
 * Pragma Short_Circuit_And_Or::
 * Pragma Short_Descriptors::
+* Pragma Simple_Storage_Pool_Type::
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
@@ -269,6 +271,7 @@ Implementation Defined Attributes
 * Result::
 * Safe_Emax::
 * Safe_Large::
+* Simple_Storage_Pool::
 * Small::
 * Storage_Unit::
 * Stub_Type::
@@ -285,6 +288,95 @@ Implementation Defined Attributes
 * Value_Size::
 * Wchar_T_Size::
 * Word_Size::
+
+Implementation Defined Restrictions
+
+* Partition-Wide Restrictions::
+* Unit-Level Restrictions::
+
+Partition-Wide Restrictions
+
+* Immediate_Reclamation::
+* Max_Asynchronous_Select_Nesting::
+* Max_Entry_Queue_Length::
+* Max_Protected_Entries::
+* Max_Select_Alternatives::
+* Max_Storage_At_Blocking::
+* Max_Task_Entries::
+* Max_Tasks::
+* No_Abort_Statements::
+* No_Access_Parameter_Allocators::
+* No_Access_Subprograms::
+* No_Allocators::
+* No_Anonymous_Allocators::
+* No_Calendar::
+* No_Coextensions::
+* No_Default_Initialization::
+* No_Delay::
+* No_Dependence::
+* No_Direct_Boolean_Operators::
+* No_Dispatch::
+* No_Dispatching_Calls::
+* No_Dynamic_Attachment::
+* No_Dynamic_Priorities::
+* No_Entry_Calls_In_Elaboration_Code::
+* No_Enumeration_Maps::
+* No_Exception_Handlers::
+* No_Exception_Propagation::
+* No_Exception_Registration::
+* No_Exceptions::
+* No_Finalization::
+* No_Fixed_Point::
+* No_Floating_Point::
+* No_Implicit_Conditionals::
+* No_Implicit_Dynamic_Code::
+* No_Implicit_Heap_Allocations::
+* No_Implicit_Loops::
+* No_Initialize_Scalars::
+* No_IO::
+* No_Local_Allocators::
+* No_Local_Protected_Objects::
+* No_Local_Timing_Events::
+* No_Nested_Finalization::
+* No_Protected_Type_Allocators::
+* No_Protected_Types::
+* No_Relative_Delay::
+* No_Requeue_Statements::
+* No_Secondary_Stack::
+* No_Select_Statements::
+* No_Specific_Termination_Handlers::
+* No_Specification_of_Aspect::
+* No_Standard_Allocators_After_Elaboration::
+* No_Standard_Storage_Pools::
+* No_Stream_Optimizations::
+* No_Streams::
+* No_Task_Allocators::
+* No_Task_Attributes_Package::
+* No_Task_Hierarchy::
+* No_Tasking::
+* No_Terminate_Alternatives::
+* No_Unchecked_Access::
+* Simple_Barriers::
+* Static_Priorities::
+* Static_Storage_Size::
+
+Unit-Level Restrictions
+
+* No_Elaboration_Code::
+* No_Entry_Queue::
+* No_Implementation_Aspect_Specifications::
+* No_Implementation_Attributes::
+* No_Implementation_Identifiers::
+* No_Implementation_Pragmas::
+* No_Implementation_Restrictions::
+* No_Implementation_Units::
+* No_Implicit_Aliasing::
+* No_Obsolescent_Features::
+* No_Recursion::
+* No_Reentrancy::
+* No_Wide_Characters::
+* SPARK::
+* No_Task_Termination::
 
 The Implementation of Standard I/O
 
@@ -554,7 +646,12 @@ compiler.
 
 @item
 @ref{Implementation Defined Attributes}, lists GNAT
-implementation-dependent attributes which can be used to extend and
+implementation-dependent attributes, which can be used to extend and
+enhance the functionality of the compiler.
+
+@item
+@ref{Implementation Defined Restrictions}, lists GNAT
+implementation-dependent restrictions, which can be used to extend and
 enhance the functionality of the compiler.
 
 @item
@@ -830,6 +927,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Shared::
 * Pragma Short_Circuit_And_Or::
 * Pragma Short_Descriptors::
+* Pragma Simple_Storage_Pool_Type::
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
@@ -4241,83 +4339,25 @@ plus the following set of restrictions:
 
 @table @code
 @item Max_Entry_Queue_Length => 1
-Defines the maximum number of calls that are queued on a (protected) entry.
-Note that this restrictions is checked at run time. Violation of this
-restriction results in the raising of Program_Error exception at the point of
-the call. For the Profile (Ravenscar) the value of Max_Entry_Queue_Length is
-always 1 and hence no task can be queued on a protected entry.
-
+No task can be queued on a protected entry.
 @item Max_Protected_Entries => 1
-[RM D.7] Specifies the maximum number of entries per protected type. The
-bounds of every entry family of a protected unit shall be static, or shall be
-defined by a discriminant of a subtype whose corresponding bound is static.
-For the Profile (Ravenscar) the value of Max_Protected_Entries is always 1.
-
 @item Max_Task_Entries => 0
-[RM D.7] Specifies the maximum number of entries
-per task.  The bounds of every entry family
-of a task unit shall be static, or shall be
-defined by a discriminant of a subtype whose
-corresponding bound is static.  A value of zero
-indicates that no rendezvous are possible.  For
-the Profile (Ravenscar), the value of Max_Task_Entries is always
-0 (zero).
-
+No rendezvous are possible.
 @item No_Abort_Statements
-[RM D.7] There are no abort_statements, and there are
-no calls to Task_Identification.Abort_Task.
-
 @item No_Dynamic_Attachment
-There is no call to any of the operations defined in package Ada.Interrupts
-(Is_Reserved, Is_Attached, Current_Handler, Attach_Handler, Exchange_Handler,
-Detach_Handler, and Reference).
-
 @item No_Dynamic_Priorities
-[RM D.7] There are no semantic dependencies on the package Dynamic_Priorities.
-
 @item No_Implicit_Heap_Allocations
-[RM D.7] No constructs are allowed to cause implicit heap allocation.
-
 @item No_Local_Protected_Objects
-Protected objects and access types that designate
-such objects shall be declared only at library level.
-
 @item No_Local_Timing_Events
-[RM D.7] All objects of type Ada.Timing_Events.Timing_Event are
-declared at the library level.
-
 @item No_Protected_Type_Allocators
-There are no allocators for protected types or
-types containing protected subcomponents.
-
 @item No_Relative_Delay
-There are no delay_relative statements.
-
 @item No_Requeue_Statements
-Requeue statements are not allowed.
-
 @item No_Select_Statements
-There are no select_statements.
-
 @item No_Specific_Termination_Handlers
-[RM D.7] There are no calls to Ada.Task_Termination.Set_Specific_Handler
-or to Ada.Task_Termination.Specific_Handler.
-
 @item No_Task_Allocators
-[RM D.7] There are no allocators for task types
-or types containing task subcomponents.
-
 @item No_Task_Hierarchy
-[RM D.7] All (non-environment) tasks depend
-directly on the environment task of the partition.
-
 @item No_Task_Termination
-Tasks which terminate are erroneous.
-
 @item Simple_Barriers
-Entry barrier condition expressions shall be either static
-boolean expressions or boolean objects which are declared in
-the protected type which contains the entry.
 @end table
 @noindent
 
@@ -4563,6 +4603,73 @@ occurrences of the mechanism types Descriptor[_xxx] to be treated as
 Short_Descriptor[_xxx]. This is helpful in porting legacy applications from a
 32-bit environment to a 64-bit environment. This pragma is ignored for non-VMS
 versions.
+
+@node Pragma Simple_Storage_Pool_Type
+@unnumberedsec Pragma Simple_Storage_Pool_Type
+@findex Simple_Storage_Pool_Type
+@cindex Storage pool, simple
+@cindex Simple storage pool
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Simple_Storage_Pool_Type (type_LOCAL_NAME);
+@end smallexample
+
+@noindent
+A type can be established as a ``simple storage pool type'' by applying
+the representation pragma @code{Simple_Storage_Pool_Type} to the type.
+A type named in the pragma must be a library-level immutably limited record
+type or limited tagged type declared immediately within a package declaration.
+The type can also be a limited private type whose full type is allowed as
+a simple storage pool type.
+
+For a simple storage pool type @var{SSP}, nonabstract primitive subprograms
+@code{Allocate}, @code{Deallocate}, and @code{Storage_Size} can be declared that
+are subtype conformant with the following subprogram declarations:
+
+@smallexample @c ada
+procedure Allocate
+  (Pool                     : in out SSP;
+   Storage_Address          : out System.Address;
+   Size_In_Storage_Elements : System.Storage_Elements.Storage_Count;
+   Alignment                : System.Storage_Elements.Storage_Count);
+
+procedure Deallocate
+  (Pool : in out SSP;
+   Storage_Address          : System.Address;
+   Size_In_Storage_Elements : System.Storage_Elements.Storage_Count;
+   Alignment                : System.Storage_Elements.Storage_Count);
+
+function Storage_Size (Pool : SSP)
+  return System.Storage_Elements.Storage_Count;
+@end smallexample
+
+@noindent
+Procedure @code{Allocate} must be declared, whereas @code{Deallocate} and
+@code{Storage_Size} are optional. If @code{Deallocate} is not declared, then
+applying an unchecked deallocation has no effect other than to set its actual
+parameter to null. If @code{Storage_Size} is not declared, then the
+@code{Storage_Size} attribute applied to an access type associated with
+a pool object of type SSP returns zero. Additional operations can be declared
+for a simple storage pool type (such as for supporting a mark/release
+storage-management discipline).
+
+An object of a simple storage pool type can be associated with an access
+type by specifying the attribute @code{Simple_Storage_Pool}. For example:
+
+@smallexample @c ada
+
+My_Pool : My_Simple_Storage_Pool_Type;
+
+type Acc is access My_Data_Type;
+
+for Acc'Simple_Storage_Pool use My_Pool;
+
+@end smallexample
+
+@noindent
+See attribute @code{Simple_Storage_Pool} for further details.
 
 @node Pragma Source_File_Name
 @unnumberedsec Pragma Source_File_Name
@@ -5791,6 +5898,7 @@ consideration, you should minimize the use of these attributes.
 * Result::
 * Safe_Emax::
 * Safe_Large::
+* Simple_Storage_Pool::
 * Small::
 * Storage_Unit::
 * Stub_Type::
@@ -6516,6 +6624,66 @@ The @code{Safe_Large} attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
 
+@node Simple_Storage_Pool
+@unnumberedsec Simple_Storage_Pool
+@cindex Storage pool, simple
+@cindex Simple storage pool
+@findex Simple_Storage_Pool
+@noindent
+For every nonformal, nonderived access-to-object type @var{Acc}, the
+representation attribute @code{Simple_Storage_Pool} may be specified
+via an attribute_definition_clause (or by specifying the equivalent aspect):
+
+@smallexample @c ada
+
+My_Pool : My_Simple_Storage_Pool_Type;
+
+type Acc is access My_Data_Type;
+
+for Acc'Simple_Storage_Pool use My_Pool;
+
+@end smallexample
+
+@noindent
+The name given in an attribute_definition_clause for the
+@code{Simple_Storage_Pool} attribute shall denote a variable of
+a ``simple storage pool type'' (see pragma @code{Simple_Storage_Pool_Type}).
+
+The use of this attribute is only allowed for a prefix denoting a type
+for which it has been specified. The type of the attribute is the type
+of the variable specified as the simple storage pool of the access type,
+and the attribute denotes that variable.
+
+It is illegal to specify both @code{Storage_Pool} and @code{Simple_Storage_Pool}
+for the same access type.
+
+If the @code{Simple_Storage_Pool} attribute has been specified for an access
+type, then applying the @code{Storage_Pool} attribute to the type is flagged
+with a warning and its evaluation raises the exception @code{Program_Error}.
+
+If the Simple_Storage_Pool attribute has been specified for an access
+type @var{S}, then the evaluation of the attribute @code{@var{S}'Storage_Size}
+returns the result of calling @code{Storage_Size (@var{S}'Simple_Storage_Pool)},
+which is intended to indicate the number of storage elements reserved for
+the simple storage pool. If the Storage_Size function has not been defined
+for the simple storage pool type, then this attribute returns zero.
+
+If an access type @var{S} has a specified simple storage pool of type
+@var{SSP}, then the evaluation of an allocator for that access type calls
+the primitive @code{Allocate} procedure for type @var{SSP}, passing
+@code{@var{S}'Simple_Storage_Pool} as the pool parameter. The detailed
+semantics of such allocators is the same as those defined for allocators
+in section 13.11 of the Ada Reference Manual, with the term
+``simple storage pool'' substituted for ``storage pool''.
+
+If an access type @var{S} has a specified simple storage pool of type
+@var{SSP}, then a call to an instance of the @code{Ada.Unchecked_Deallocation}
+for that access type invokes the primitive @code{Deallocate} procedure
+for type @var{SSP}, passing @code{@var{S}'Simple_Storage_Pool} as the pool
+parameter. The detailed semantics of such unchecked deallocations is the same
+as defined in section 13.11.2 of the Ada Reference Manual, except that the
+term ``simple storage pool'' is substituted for ``storage pool''.
+
 @node Small
 @unnumberedsec Small
 @cindex Ada 83 attributes
@@ -6735,6 +6903,871 @@ package @code{Interfaces.C}.
 @findex Word_Size
 @code{Standard'Word_Size} (@code{Standard} is the only permissible
 prefix) provides the value @code{System.Word_Size}.
+
+@node Implementation Defined Restrictions
+@chapter Implementation Defined Restrictions
+
+@noindent
+All RM defined Restriction identifiers are implemented:
+
+@itemize @bullet
+@item language-defined restrictions (see 13.12.1)
+@item tasking restrictions (see D.7)
+@item high integrity restrictions (see H.4)
+@end itemize
+
+@noindent
+GNAT implements additional restriction identifiers. All restrictions, whether
+language defined or GNAT-specific, are listed in the following.
+
+@menu
+* Partition-Wide Restrictions::
+* Unit-Level Restrictions::
+@end menu
+
+@node Partition-Wide Restrictions
+@section Partition-Wide Restrictions
+
+There are two separate lists of restriction identifiers. The first
+set requires consistency throughout a partition (in other words, if the
+restriction identifier is used for any compilation unit in the partition,
+then all compilation units in the partition must obey the restriction).
+
+@menu
+* Immediate_Reclamation::
+* Max_Asynchronous_Select_Nesting::
+* Max_Entry_Queue_Length::
+* Max_Protected_Entries::
+* Max_Select_Alternatives::
+* Max_Storage_At_Blocking::
+* Max_Task_Entries::
+* Max_Tasks::
+* No_Abort_Statements::
+* No_Access_Parameter_Allocators::
+* No_Access_Subprograms::
+* No_Allocators::
+* No_Anonymous_Allocators::
+* No_Calendar::
+* No_Coextensions::
+* No_Default_Initialization::
+* No_Delay::
+* No_Dependence::
+* No_Direct_Boolean_Operators::
+* No_Dispatch::
+* No_Dispatching_Calls::
+* No_Dynamic_Attachment::
+* No_Dynamic_Priorities::
+* No_Entry_Calls_In_Elaboration_Code::
+* No_Enumeration_Maps::
+* No_Exception_Handlers::
+* No_Exception_Propagation::
+* No_Exception_Registration::
+* No_Exceptions::
+* No_Finalization::
+* No_Fixed_Point::
+* No_Floating_Point::
+* No_Implicit_Conditionals::
+* No_Implicit_Dynamic_Code::
+* No_Implicit_Heap_Allocations::
+* No_Implicit_Loops::
+* No_Initialize_Scalars::
+* No_IO::
+* No_Local_Allocators::
+* No_Local_Protected_Objects::
+* No_Local_Timing_Events::
+* No_Nested_Finalization::
+* No_Protected_Type_Allocators::
+* No_Protected_Types::
+* No_Relative_Delay::
+* No_Requeue_Statements::
+* No_Secondary_Stack::
+* No_Select_Statements::
+* No_Specific_Termination_Handlers::
+* No_Specification_of_Aspect::
+* No_Standard_Allocators_After_Elaboration::
+* No_Standard_Storage_Pools::
+* No_Stream_Optimizations::
+* No_Streams::
+* No_Task_Allocators::
+* No_Task_Attributes_Package::
+* No_Task_Hierarchy::
+* No_Tasking::
+* No_Terminate_Alternatives::
+* No_Unchecked_Access::
+* Simple_Barriers::
+* Static_Priorities::
+* Static_Storage_Size::
+@end menu
+
+@node Immediate_Reclamation
+@unnumberedsubsec Immediate_Reclamation
+@findex Immediate_Reclamation
+[RM H.4] This restriction ensures that, except for storage occupied by
+objects created by allocators and not deallocated via unchecked
+deallocation, any storage reserved at run time for an object is
+immediately reclaimed when the object no longer exists.
+
+@node Max_Asynchronous_Select_Nesting
+@unnumberedsubsec Max_Asynchronous_Select_Nesting
+@findex Max_Asynchronous_Select_Nesting
+[RM D.7] Specifies the maximum dynamic nesting level of asynchronous
+selects. Violations of this restriction with a value of zero are
+detected at compile time. Violations of this restriction with values
+other than zero cause Storage_Error to be raised.
+
+@node Max_Entry_Queue_Length
+@unnumberedsubsec Max_Entry_Queue_Length
+@findex Max_Entry_Queue_Length
+[RM D.7] This restriction is a declaration that any protected entry compiled in
+the scope of the restriction has at most the specified number of
+tasks waiting on the entry at any one time, and so no queue is required.
+Note that this restriction is checked at run time. Violation of this
+restriction results in the raising of Program_Error exception at the point of
+the call.
+
+@node Max_Protected_Entries
+@unnumberedsubsec Max_Protected_Entries
+@findex Max_Protected_Entries
+[RM D.7] Specifies the maximum number of entries per protected type. The
+bounds of every entry family of a protected unit shall be static, or shall be
+defined by a discriminant of a subtype whose corresponding bound is static.
+
+@node Max_Select_Alternatives
+@unnumberedsubsec Max_Select_Alternatives
+@findex Max_Select_Alternatives
+[RM D.7] Specifies the maximum number of alternatives in a selective accept.
+
+@node Max_Storage_At_Blocking
+@unnumberedsubsec Max_Storage_At_Blocking
+@findex Max_Storage_At_Blocking
+[RM D.7] Specifies the maximum portion (in storage elements) of a task's
+Storage_Size that can be retained by a blocked task. A violation of this
+restriction causes Storage_Error to be raised.
+
+@node Max_Task_Entries
+@unnumberedsubsec Max_Task_Entries
+@findex Max_Task_Entries
+[RM D.7] Specifies the maximum number of entries
+per task.  The bounds of every entry family
+of a task unit shall be static, or shall be
+defined by a discriminant of a subtype whose
+corresponding bound is static.
+
+@node Max_Tasks
+@unnumberedsubsec Max_Tasks
+@findex Max_Tasks
+[RM D.7] Specifies the maximum number of task that may be created, not
+counting the creation of the environment task.  Violations of this
+restriction with a value of zero are detected at compile
+time. Violations of this restriction with values other than zero cause
+Storage_Error to be raised.
+
+@node No_Abort_Statements
+@unnumberedsubsec No_Abort_Statements
+@findex No_Abort_Statements
+[RM D.7] There are no abort_statements, and there are
+no calls to Task_Identification.Abort_Task.
+
+@node No_Access_Parameter_Allocators
+@unnumberedsubsec No_Access_Parameter_Allocators
+@findex No_Access_Parameter_Allocators
+[RM H.4] This restriction ensures at compile time that there are no
+occurrences of an allocator as the actual parameter to an access
+parameter.
+
+@node No_Access_Subprograms
+@unnumberedsubsec No_Access_Subprograms
+@findex No_Access_Subprograms
+[RM H.4] This restriction ensures at compile time that there are no
+declarations of access-to-subprogram types.
+
+@node No_Allocators
+@unnumberedsubsec No_Allocators
+@findex No_Allocators
+[RM H.4] This restriction ensures at compile time that there are no
+occurrences of an allocator.
+
+@node No_Anonymous_Allocators
+@unnumberedsubsec No_Anonymous_Allocators
+@findex No_Anonymous_Allocators
+[RM H.4] This restriction ensures at compile time that there are no
+occurrences of an allocator of anonymous access type.
+
+@node No_Calendar
+@unnumberedsubsec No_Calendar
+@findex No_Calendar
+[GNAT] This restriction ensures at compile time that there is no implicit or
+explicit dependence on the package @code{Ada.Calendar}.
+
+@node No_Coextensions
+@unnumberedsubsec No_Coextensions
+@findex No_Coextensions
+[RM H.4] This restriction ensures at compile time that there are no
+coextensions. See 3.10.2.
+
+@node No_Default_Initialization
+@unnumberedsubsec No_Default_Initialization
+@findex No_Default_Initialization
+
+[GNAT] This restriction prohibits any instance of default initialization
+of variables.  The binder implements a consistency rule which prevents
+any unit compiled without the restriction from with'ing a unit with the
+restriction (this allows the generation of initialization procedures to
+be skipped, since you can be sure that no call is ever generated to an
+initialization procedure in a unit with the restriction active). If used
+in conjunction with Initialize_Scalars or Normalize_Scalars, the effect
+is to prohibit all cases of variables declared without a specific
+initializer (including the case of OUT scalar parameters).
+
+@node No_Delay
+@unnumberedsubsec No_Delay
+@findex No_Delay
+[RM H.4] This restriction ensures at compile time that there are no
+delay statements and no dependences on package Calendar.
+
+@node No_Dependence
+@unnumberedsubsec No_Dependence
+@findex No_Dependence
+[RM 13.12.1] This restriction checks at compile time that there are no
+dependence on a library unit.
+
+@node No_Direct_Boolean_Operators
+@unnumberedsubsec No_Direct_Boolean_Operators
+@findex No_Direct_Boolean_Operators
+[GNAT] This restriction ensures that no logical (and/or/xor) are used on
+operands of type Boolean (or any type derived
+from Boolean). This is intended for use in safety critical programs
+where the certification protocol requires the use of short-circuit
+(and then, or else) forms for all composite boolean operations.
+
+@node No_Dispatch
+@unnumberedsubsec No_Dispatch
+@findex No_Dispatch
+[RM H.4] This restriction ensures at compile time that there are no
+occurrences of @code{T'Class}, for any (tagged) subtype @code{T}.
+
+@node No_Dispatching_Calls
+@unnumberedsubsec No_Dispatching_Calls
+@findex No_Dispatching_Calls
+[GNAT] This restriction ensures at compile time that the code generated by the
+compiler involves no dispatching calls. The use of this restriction allows the
+safe use of record extensions, classwide membership tests and other classwide
+features not involving implicit dispatching. This restriction ensures that
+the code contains no indirect calls through a dispatching mechanism. Note that
+this includes internally-generated calls created by the compiler, for example
+in the implementation of class-wide objects assignments. The
+membership test is allowed in the presence of this restriction, because its
+implementation requires no dispatching.
+This restriction is comparable to the official Ada restriction
+@code{No_Dispatch} except that it is a bit less restrictive in that it allows
+all classwide constructs that do not imply dispatching.
+The following example indicates constructs that violate this restriction.
+
+@smallexample
+package Pkg is
+  type T is tagged record
+    Data : Natural;
+  end record;
+  procedure P (X : T);
+
+  type DT is new T with record
+    More_Data : Natural;
+  end record;
+  procedure Q (X : DT);
+end Pkg;
+
+with Pkg; use Pkg;
+procedure Example is
+  procedure Test (O : T'Class) is
+    N : Natural  := O'Size;--  Error: Dispatching call
+    C : T'Class := O;      --  Error: implicit Dispatching Call
+  begin
+    if O in DT'Class then  --  OK   : Membership test
+       Q (DT (O));         --  OK   : Type conversion plus direct call
+    else
+       P (O);              --  Error: Dispatching call
+    end if;
+  end Test;
+
+  Obj : DT;
+begin
+  P (Obj);                 --  OK   : Direct call
+  P (T (Obj));             --  OK   : Type conversion plus direct call
+  P (T'Class (Obj));       --  Error: Dispatching call
+
+  Test (Obj);              --  OK   : Type conversion
+
+  if Obj in T'Class then   --  OK   : Membership test
+     null;
+  end if;
+end Example;
+@end smallexample
+
+@node No_Dynamic_Attachment
+@unnumberedsubsec No_Dynamic_Attachment
+@findex No_Dynamic_Attachment
+[RM D.7] This restriction ensures that there is no call to any of the
+operations defined in package Ada.Interrupts
+(Is_Reserved, Is_Attached, Current_Handler, Attach_Handler, Exchange_Handler,
+Detach_Handler, and Reference).
+
+@node No_Dynamic_Priorities
+@unnumberedsubsec No_Dynamic_Priorities
+@findex No_Dynamic_Priorities
+[RM D.7] There are no semantic dependencies on the package Dynamic_Priorities.
+
+@node No_Entry_Calls_In_Elaboration_Code
+@unnumberedsubsec No_Entry_Calls_In_Elaboration_Code
+@findex No_Entry_Calls_In_Elaboration_Code
+[GNAT] This restriction ensures at compile time that no task or protected entry
+calls are made during elaboration code.  As a result of the use of this
+restriction, the compiler can assume that no code past an accept statement
+in a task can be executed at elaboration time.
+
+@node No_Enumeration_Maps
+@unnumberedsubsec No_Enumeration_Maps
+@findex No_Enumeration_Maps
+[GNAT] This restriction ensures at compile time that no operations requiring
+enumeration maps are used (that is Image and Value attributes applied
+to enumeration types).
+
+@node No_Exception_Handlers
+@unnumberedsubsec No_Exception_Handlers
+@findex No_Exception_Handlers
+[GNAT] This restriction ensures at compile time that there are no explicit
+exception handlers. It also indicates that no exception propagation will
+be provided. In this mode, exceptions may be raised but will result in
+an immediate call to the last chance handler, a routine that the user
+must define with the following profile:
+
+@smallexample @c ada
+procedure Last_Chance_Handler
+  (Source_Location : System.Address; Line : Integer);
+pragma Export (C, Last_Chance_Handler,
+               "__gnat_last_chance_handler");
+@end smallexample
+
+The parameter is a C null-terminated string representing a message to be
+associated with the exception (typically the source location of the raise
+statement generated by the compiler). The Line parameter when nonzero
+represents the line number in the source program where the raise occurs.
+
+@node No_Exception_Propagation
+@unnumberedsubsec No_Exception_Propagation
+@findex No_Exception_Propagation
+[GNAT] This restriction guarantees that exceptions are never propagated
+to an outer subprogram scope). The only case in which an exception may
+be raised is when the handler is statically in the same subprogram, so
+that the effect of a raise is essentially like a goto statement. Any
+other raise statement (implicit or explicit) will be considered
+unhandled. Exception handlers are allowed, but may not contain an
+exception occurrence identifier (exception choice). In addition use of
+the package GNAT.Current_Exception is not permitted, and reraise
+statements (raise with no operand) are not permitted.
+
+@node No_Exception_Registration
+@unnumberedsubsec No_Exception_Registration
+@findex No_Exception_Registration
+[GNAT] This restriction ensures at compile time that no stream operations for
+types Exception_Id or Exception_Occurrence are used. This also makes it
+impossible to pass exceptions to or from a partition with this restriction
+in a distributed environment. If this exception is active, then the generated
+code is simplified by omitting the otherwise-required global registration
+of exceptions when they are declared.
+
+@node No_Exceptions
+@unnumberedsubsec No_Exceptions
+@findex No_Exceptions
+[RM H.4] This restriction ensures at compile time that there are no
+raise statements and no exception handlers.
+
+@node No_Finalization
+@unnumberedsubsec No_Finalization
+@findex No_Finalization
+[GNAT] This restriction disables the language features described in
+chapter 7.6 of the Ada 2005 RM as well as all form of code generation
+performed by the compiler to support these features. The following types
+are no longer considered controlled when this restriction is in effect:
+@itemize @bullet
+@item
+@code{Ada.Finalization.Controlled}
+@item
+@code{Ada.Finalization.Limited_Controlled}
+@item
+Derivations from @code{Controlled} or @code{Limited_Controlled}
+@item
+Class-wide types
+@item
+Protected types
+@item
+Task types
+@item
+Array and record types with controlled components
+@end itemize
+The compiler no longer generates code to initialize, finalize or adjust an
+object or a nested component, either declared on the stack or on the heap. The
+deallocation of a controlled object no longer finalizes its contents.
+
+@node No_Fixed_Point
+@unnumberedsubsec No_Fixed_Point
+@findex No_Fixed_Point
+[RM H.4] This restriction ensures at compile time that there are no
+occurrences of fixed point types and operations.
+
+@node No_Floating_Point
+@unnumberedsubsec No_Floating_Point
+@findex No_Floating_Point
+[RM H.4] This restriction ensures at compile time that there are no
+occurrences of floating point types and operations.
+
+@node No_Implicit_Conditionals
+@unnumberedsubsec No_Implicit_Conditionals
+@findex No_Implicit_Conditionals
+[GNAT] This restriction ensures that the generated code does not contain any
+implicit conditionals, either by modifying the generated code where possible,
+or by rejecting any construct that would otherwise generate an implicit
+conditional. Note that this check does not include run time constraint
+checks, which on some targets may generate implicit conditionals as
+well. To control the latter, constraint checks can be suppressed in the
+normal manner. Constructs generating implicit conditionals include comparisons
+of composite objects and the Max/Min attributes.
+
+@node No_Implicit_Dynamic_Code
+@unnumberedsubsec No_Implicit_Dynamic_Code
+@findex No_Implicit_Dynamic_Code
+@cindex trampoline
+[GNAT] This restriction prevents the compiler from building ``trampolines''.
+This is a structure that is built on the stack and contains dynamic
+code to be executed at run time. On some targets, a trampoline is
+built for the following features: @code{Access},
+@code{Unrestricted_Access}, or @code{Address} of a nested subprogram;
+nested task bodies; primitive operations of nested tagged types.
+Trampolines do not work on machines that prevent execution of stack
+data. For example, on windows systems, enabling DEP (data execution
+protection) will cause trampolines to raise an exception.
+Trampolines are also quite slow at run time.
+
+On many targets, trampolines have been largely eliminated. Look at the
+version of system.ads for your target --- if it has
+Always_Compatible_Rep equal to False, then trampolines are largely
+eliminated. In particular, a trampoline is built for the following
+features: @code{Address} of a nested subprogram;
+@code{Access} or @code{Unrestricted_Access} of a nested subprogram,
+but only if pragma Favor_Top_Level applies, or the access type has a
+foreign-language convention; primitive operations of nested tagged
+types.
+
+@node No_Implicit_Heap_Allocations
+@unnumberedsubsec No_Implicit_Heap_Allocations
+@findex No_Implicit_Heap_Allocations
+[RM D.7] No constructs are allowed to cause implicit heap allocation.
+
+@node No_Implicit_Loops
+@unnumberedsubsec No_Implicit_Loops
+@findex No_Implicit_Loops
+[GNAT] This restriction ensures that the generated code does not contain any
+implicit @code{for} loops, either by modifying
+the generated code where possible,
+or by rejecting any construct that would otherwise generate an implicit
+@code{for} loop. If this restriction is active, it is possible to build
+large array aggregates with all static components without generating an
+intermediate temporary, and without generating a loop to initialize individual
+components. Otherwise, a loop is created for arrays larger than about 5000
+scalar components.
+
+@node No_Initialize_Scalars
+@unnumberedsubsec No_Initialize_Scalars
+@findex No_Initialize_Scalars
+[GNAT] This restriction ensures that no unit in the partition is compiled with
+pragma Initialize_Scalars. This allows the generation of more efficient
+code, and in particular eliminates dummy null initialization routines that
+are otherwise generated for some record and array types.
+
+@node No_IO
+@unnumberedsubsec No_IO
+@findex No_IO
+[RM H.4] This restriction ensures at compile time that there are no
+dependences on any of the library units Sequential_IO, Direct_IO,
+Text_IO, Wide_Text_IO, Wide_Wide_Text_IO, or Stream_IO.
+
+@node No_Local_Allocators
+@unnumberedsubsec No_Local_Allocators
+@findex No_Local_Allocators
+[RM H.4] This restriction ensures at compile time that there are no
+occurrences of an allocator in subprograms, generic subprograms, tasks,
+and entry bodies.
+
+@node No_Local_Protected_Objects
+@unnumberedsubsec No_Local_Protected_Objects
+@findex No_Local_Protected_Objects
+[RM D.7] This restriction ensures at compile time that protected objects are
+only declared at the library level.
+
+@node No_Local_Timing_Events
+@unnumberedsubsec No_Local_Timing_Events
+@findex No_Local_Timing_Events
+[RM D.7] All objects of type Ada.Timing_Events.Timing_Event are
+declared at the library level.
+
+@node No_Nested_Finalization
+@unnumberedsubsec No_Nested_Finalization
+@findex No_Nested_Finalization
+[RM D.7] All objects requiring finalization are declared at the library level.
+
+@node No_Protected_Type_Allocators
+@unnumberedsubsec No_Protected_Type_Allocators
+@findex No_Protected_Type_Allocators
+[RM D.7] This restriction ensures at compile time that there are no allocator
+expressions that attempt to allocate protected objects.
+
+@node No_Protected_Types
+@unnumberedsubsec No_Protected_Types
+@findex No_Protected_Types
+[RM H.4] This restriction ensures at compile time that there are no
+declarations of protected types or protected objects.
+
+@node No_Relative_Delay
+@unnumberedsubsec No_Relative_Delay
+@findex No_Relative_Delay
+[RM D.7] This restriction ensures at compile time that there are no delay
+relative statements and prevents expressions such as @code{delay 1.23;} from
+appearing in source code.
+
+@node No_Requeue_Statements
+@unnumberedsubsec No_Requeue_Statements
+@findex No_Requeue_Statements
+[RM D.7] This restriction ensures at compile time that no requeue statements
+are permitted and prevents keyword @code{requeue} from being used in source
+code.
+
+@node No_Secondary_Stack
+@unnumberedsubsec No_Secondary_Stack
+@findex No_Secondary_Stack
+[GNAT] This restriction ensures at compile time that the generated code
+does not contain any reference to the secondary stack.  The secondary
+stack is used to implement functions returning unconstrained objects
+(arrays or records) on some targets.
+
+@node No_Select_Statements
+@unnumberedsubsec No_Select_Statements
+@findex No_Select_Statements
+[RM D.7] This restriction ensures at compile time no select statements of any
+kind are permitted, that is the keyword @code{select} may not appear.
+
+@node No_Specific_Termination_Handlers
+@unnumberedsubsec No_Specific_Termination_Handlers
+@findex No_Specific_Termination_Handlers
+[RM D.7] There are no calls to Ada.Task_Termination.Set_Specific_Handler
+or to Ada.Task_Termination.Specific_Handler.
+
+@node No_Specification_of_Aspect
+@unnumberedsubsec No_Specification_of_Aspect
+@findex No_Specification_of_Aspect
+[RM 13.12.1] This restriction checks at compile time that no aspect
+specification, attribute definition clause, or pragma is given for a
+given aspect.
+
+@node No_Standard_Allocators_After_Elaboration
+@unnumberedsubsec No_Standard_Allocators_After_Elaboration
+@findex No_Standard_Allocators_After_Elaboration
+[RM D.7] Specifies that an allocator using a standard storage pool
+should never be evaluated at run time after the elaboration of the
+library items of the partition has completed. Otherwise, Storage_Error
+is raised.
+
+@node No_Standard_Storage_Pools
+@unnumberedsubsec No_Standard_Storage_Pools
+@findex No_Standard_Storage_Pools
+[GNAT] This restriction ensures at compile time that no access types
+use the standard default storage pool.  Any access type declared must
+have an explicit Storage_Pool attribute defined specifying a
+user-defined storage pool.
+
+@node No_Stream_Optimizations
+@unnumberedsubsec No_Stream_Optimizations
+@findex No_Stream_Optimizations
+[GNAT] This restriction affects the performance of stream operations on types
+@code{String}, @code{Wide_String} and @code{Wide_Wide_String}. By default, the
+compiler uses block reads and writes when manipulating @code{String} objects
+due to their supperior performance. When this restriction is in effect, the
+compiler performs all IO operations on a per-character basis.
+
+@node No_Streams
+@unnumberedsubsec No_Streams
+@findex No_Streams
+[GNAT] This restriction ensures at compile/bind time that there are no
+stream objects created and no use of stream attributes.
+This restriction does not forbid dependences on the package
+@code{Ada.Streams}. So it is permissible to with
+@code{Ada.Streams} (or another package that does so itself)
+as long as no actual stream objects are created and no
+stream attributes are used.
+
+Note that the use of restriction allows optimization of tagged types,
+since they do not need to worry about dispatching stream operations.
+To take maximum advantage of this space-saving optimization, any
+unit declaring a tagged type should be compiled with the restriction,
+though this is not required.
+
+@node No_Task_Allocators
+@unnumberedsubsec No_Task_Allocators
+@findex No_Task_Allocators
+[RM D.7] There are no allocators for task types
+or types containing task subcomponents.
+
+@node No_Task_Attributes_Package
+@unnumberedsubsec No_Task_Attributes_Package
+@findex No_Task_Attributes_Package
+[GNAT] This restriction ensures at compile time that there are no implicit or
+explicit dependencies on the package @code{Ada.Task_Attributes}.
+
+@node No_Task_Hierarchy
+@unnumberedsubsec No_Task_Hierarchy
+@findex No_Task_Hierarchy
+[RM D.7] All (non-environment) tasks depend
+directly on the environment task of the partition.
+
+@node No_Tasking
+@unnumberedsubsec No_Tasking
+@findex No_Tasking
+[GNAT] This restriction prevents the declaration of tasks or task types
+throughout the partition.  It is similar in effect to the use of
+@code{Max_Tasks => 0} except that violations are caught at compile time
+and cause an error message to be output either by the compiler or
+binder.
+
+@node No_Terminate_Alternatives
+@unnumberedsubsec No_Terminate_Alternatives
+@findex No_Terminate_Alternatives
+[RM D.7] There are no selective accepts with terminate alternatives.
+
+@node No_Unchecked_Access
+@unnumberedsubsec No_Unchecked_Access
+@findex No_Unchecked_Access
+[RM H.4] This restriction ensures at compile time that there are no
+occurrences of the Unchecked_Access attribute.
+
+@node Simple_Barriers
+@unnumberedsubsec Simple_Barriers
+@findex Simple_Barriers
+[RM D.7] This restriction ensures at compile time that barriers in entry
+declarations for protected types are restricted to either static boolean
+expressions or references to simple boolean variables defined in the private
+part of the protected type.  No other form of entry barriers is permitted.
+
+@node Static_Priorities
+@unnumberedsubsec Static_Priorities
+@findex Static_Priorities
+[GNAT] This restriction ensures at compile time that all priority expressions
+are static, and that there are no dependences on the package
+@code{Ada.Dynamic_Priorities}.
+
+@node Static_Storage_Size
+@unnumberedsubsec Static_Storage_Size
+@findex Static_Storage_Size
+[GNAT] This restriction ensures at compile time that any expression appearing
+in a Storage_Size pragma or attribute definition clause is static.
+
+@node Unit-Level Restrictions
+@section Unit-Level Restrictions
+
+@noindent
+The second set of restriction identifiers
+does not require partition-wide consistency.
+The restriction may be enforced for a single
+compilation unit without any effect on any of the
+other compilation units in the partition.
+
+@menu
+* No_Elaboration_Code::
+* No_Entry_Queue::
+* No_Implementation_Aspect_Specifications::
+* No_Implementation_Attributes::
+* No_Implementation_Identifiers::
+* No_Implementation_Pragmas::
+* No_Implementation_Restrictions::
+* No_Implementation_Units::
+* No_Implicit_Aliasing::
+* No_Obsolescent_Features::
+* No_Recursion::
+* No_Reentrancy::
+* No_Wide_Characters::
+* SPARK::
+* No_Task_Termination::
+@end menu
+
+@node No_Elaboration_Code
+@unnumberedsubsec No_Elaboration_Code
+@findex No_Elaboration_Code
+[GNAT] This restriction ensures at compile time that no elaboration code is
+generated.  Note that this is not the same condition as is enforced
+by pragma @code{Preelaborate}.  There are cases in which pragma
+@code{Preelaborate} still permits code to be generated (e.g.@: code
+to initialize a large array to all zeroes), and there are cases of units
+which do not meet the requirements for pragma @code{Preelaborate},
+but for which no elaboration code is generated.  Generally, it is
+the case that preelaborable units will meet the restrictions, with
+the exception of large aggregates initialized with an others_clause,
+and exception declarations (which generate calls to a run-time
+registry procedure).  This restriction is enforced on
+a unit by unit basis, it need not be obeyed consistently
+throughout a partition.
+
+In the case of aggregates with others, if the aggregate has a dynamic
+size, there is no way to eliminate the elaboration code (such dynamic
+bounds would be incompatible with @code{Preelaborate} in any case). If
+the bounds are static, then use of this restriction actually modifies
+the code choice of the compiler to avoid generating a loop, and instead
+generate the aggregate statically if possible, no matter how many times
+the data for the others clause must be repeatedly generated.
+
+It is not possible to precisely document
+the constructs which are compatible with this restriction, since,
+unlike most other restrictions, this is not a restriction on the
+source code, but a restriction on the generated object code. For
+example, if the source contains a declaration:
+
+@smallexample
+   Val : constant Integer := X;
+@end smallexample
+
+@noindent
+where X is not a static constant, it may be possible, depending
+on complex optimization circuitry, for the compiler to figure
+out the value of X at compile time, in which case this initialization
+can be done by the loader, and requires no initialization code. It
+is not possible to document the precise conditions under which the
+optimizer can figure this out.
+
+Note that this the implementation of this restriction requires full
+code generation. If it is used in conjunction with "semantics only"
+checking, then some cases of violations may be missed.
+
+@node No_Entry_Queue
+@unnumberedsubsec No_Entry_Queue
+@findex No_Entry_Queue
+[GNAT] This restriction is a declaration that any protected entry compiled in
+the scope of the restriction has at most one task waiting on the entry
+at any one time, and so no queue is required.  This restriction is not
+checked at compile time.  A program execution is erroneous if an attempt
+is made to queue a second task on such an entry.
+
+@node No_Implementation_Aspect_Specifications
+@unnumberedsubsec No_Implementation_Aspect_Specifications
+@findex No_Implementation_Aspect_Specifications
+[RM 13.12.1] This restriction checks at compile time that no
+GNAT-defined aspects are present.  With this restriction, the only
+aspects that can be used are those defined in the Ada Reference Manual.
+
+@node No_Implementation_Attributes
+@unnumberedsubsec No_Implementation_Attributes
+@findex No_Implementation_Attributes
+[RM 13.12.1] This restriction checks at compile time that no
+GNAT-defined attributes are present.  With this restriction, the only
+attributes that can be used are those defined in the Ada Reference
+Manual.
+
+@node No_Implementation_Identifiers
+@unnumberedsubsec No_Implementation_Identifiers
+@findex No_Implementation_Identifiers
+[RM 13.12.1] This restriction checks at compile time that no
+implementation-defined identifiers occur within language-defined
+packages.
+
+@node No_Implementation_Pragmas
+@unnumberedsubsec No_Implementation_Pragmas
+@findex No_Implementation_Pragmas
+[RM 13.12.1] This restriction checks at compile time that no
+GNAT-defined pragmas are present.  With this restriction, the only
+pragmas that can be used are those defined in the Ada Reference Manual.
+
+@node No_Implementation_Restrictions
+@unnumberedsubsec No_Implementation_Restrictions
+@findex No_Implementation_Restrictions
+[GNAT] This restriction checks at compile time that no GNAT-defined restriction
+identifiers (other than @code{No_Implementation_Restrictions} itself)
+are present.  With this restriction, the only other restriction identifiers
+that can be used are those defined in the Ada Reference Manual.
+
+@node No_Implementation_Units
+@unnumberedsubsec No_Implementation_Units
+@findex No_Implementation_Units
+[RM 13.12.1] This restriction checks at compile time that there is no
+mention in the context clause of any implementation-defined descendants
+of packages Ada, Interfaces, or System.
+
+@node No_Implicit_Aliasing
+@unnumberedsubsec No_Implicit_Aliasing
+@findex No_Implicit_Aliasing
+[GNAT] This restriction, which is not required to be partition-wide consistent,
+requires an explicit aliased keyword for an object to which 'Access,
+'Unchecked_Access, or 'Address is applied, and forbids entirely the use of
+the 'Unrestricted_Access attribute for objects. Note: the reason that
+Unrestricted_Access is forbidden is that it would require the prefix
+to be aliased, and in such cases, it can always be replaced by
+the standard attribute Unchecked_Access which is preferable.
+
+@node No_Obsolescent_Features
+@unnumberedsubsec No_Obsolescent_Features
+@findex No_Obsolescent_Features
+[RM 13.12.1] This restriction checks at compile time that no obsolescent
+features are used, as defined in Annex J of the Ada Reference Manual.
+
+@node No_Recursion
+@unnumberedsubsec No_Recursion
+@findex No_Recursion
+[RM H.4] A program execution is erroneous if a subprogram is invoked as
+part of its execution.
+
+@node No_Reentrancy
+@unnumberedsubsec No_Reentrancy
+@findex No_Reentrancy
+[RM H.4] A program execution is erroneous if a subprogram is executed by
+two tasks at the same time.
+
+@node No_Wide_Characters
+@unnumberedsubsec No_Wide_Characters
+@findex No_Wide_Characters
+[GNAT] This restriction ensures at compile time that no uses of the types
+@code{Wide_Character} or @code{Wide_String} or corresponding wide
+wide types
+appear, and that no wide or wide wide string or character literals
+appear in the program (that is literals representing characters not in
+type @code{Character}.
+
+@node SPARK
+@unnumberedsubsec SPARK
+@findex SPARK
+[GNAT] This restriction checks at compile time that some constructs
+forbidden in SPARK are not present. The SPARK version used as a
+reference is the same as the Ada mode for the unit, so a unit compiled
+in Ada 95 mode with SPARK restrictions will be checked for constructs
+forbidden in SPARK 95.  Error messages related to SPARK restriction have
+the form:
+
+@smallexample
+violation of restriction "SPARK" at <file>
+ <error message>
+@end smallexample
+
+This is not a replacement for the semantic checks performed by the
+SPARK Examiner tool, as the compiler only deals currently with code,
+not at all with SPARK annotations and does not guarantee catching all
+cases of constructs forbidden by SPARK.
+
+Thus it may well be the case that code which
+passes the compiler in SPARK mode is rejected by the SPARK Examiner,
+e.g. due to the different visibility rules of the Examiner based on
+SPARK @code{inherit} annotations.
+
+This restriction can be useful in providing an initial filter for
+code developed using SPARK, or in examining legacy code to see how far
+it is from meeting SPARK restrictions.
+
+@node No_Task_Termination
+@unnumberedsubsec No_Task_Termination
+@findex No_Task_Termination
+[RM D.7] Tasks which terminate are erroneous.
 
 @c ------------------------
 @node Implementation Advice
@@ -8887,477 +9920,7 @@ See documentation in the sources of the run time mentioned in paragraph
 @code{Restrictions}.  See 13.12(7).
 @end cartouche
 @noindent
-All RM defined Restriction identifiers are implemented.  The following
-additional restriction identifiers are provided.  There are two separate
-lists of implementation dependent restriction identifiers.  The first
-set requires consistency throughout a partition (in other words, if the
-restriction identifier is used for any compilation unit in the partition,
-then all compilation units in the partition must obey the restriction.
-
-@table @code
-
-@item Simple_Barriers
-@findex Simple_Barriers
-This restriction ensures at compile time that barriers in entry declarations
-for protected types are restricted to either static boolean expressions or
-references to simple boolean variables defined in the private part of the
-protected type.  No other form of entry barriers is permitted.  This is one
-of the restrictions of the Ravenscar profile for limited tasking (see also
-pragma @code{Profile (Ravenscar)}).
-
-@item Max_Entry_Queue_Length => Expr
-@findex Max_Entry_Queue_Length
-This restriction is a declaration that any protected entry compiled in
-the scope of the restriction has at most the specified number of
-tasks waiting on the entry
-at any one time, and so no queue is required.  This restriction is not
-checked at compile time.  A program execution is erroneous if an attempt
-is made to queue more than the specified number of tasks on such an entry.
-
-@item No_Calendar
-@findex No_Calendar
-This restriction ensures at compile time that there is no implicit or
-explicit dependence on the package @code{Ada.Calendar}.
-
-@item No_Default_Initialization
-@findex No_Default_Initialization
-
-This restriction prohibits any instance of default initialization of variables.
-The binder implements a consistency rule which prevents any unit compiled
-without the restriction from with'ing a unit with the restriction (this allows
-the generation of initialization procedures to be skipped, since you can be
-sure that no call is ever generated to an initialization procedure in a unit
-with the restriction active). If used in conjunction with Initialize_Scalars or
-Normalize_Scalars, the effect is to prohibit all cases of variables declared
-without a specific initializer (including the case of OUT scalar parameters).
-
-@item No_Direct_Boolean_Operators
-@findex No_Direct_Boolean_Operators
-This restriction ensures that no logical (and/or/xor) are used on
-operands of type Boolean (or any type derived
-from Boolean). This is intended for use in safety critical programs
-where the certification protocol requires the use of short-circuit
-(and then, or else) forms for all composite boolean operations.
-
-@item No_Dispatching_Calls
-@findex No_Dispatching_Calls
-This restriction ensures at compile time that the code generated by the
-compiler involves no dispatching calls. The use of this restriction allows the
-safe use of record extensions, classwide membership tests and other classwide
-features not involving implicit dispatching. This restriction ensures that
-the code contains no indirect calls through a dispatching mechanism. Note that
-this includes internally-generated calls created by the compiler, for example
-in the implementation of class-wide objects assignments. The
-membership test is allowed in the presence of this restriction, because its
-implementation requires no dispatching.
-This restriction is comparable to the official Ada restriction
-@code{No_Dispatch} except that it is a bit less restrictive in that it allows
-all classwide constructs that do not imply dispatching.
-The following example indicates constructs that violate this restriction.
-
-@smallexample
-package Pkg is
-  type T is tagged record
-    Data : Natural;
-  end record;
-  procedure P (X : T);
-
-  type DT is new T with record
-    More_Data : Natural;
-  end record;
-  procedure Q (X : DT);
-end Pkg;
-
-with Pkg; use Pkg;
-procedure Example is
-  procedure Test (O : T'Class) is
-    N : Natural  := O'Size;--  Error: Dispatching call
-    C : T'Class := O;      --  Error: implicit Dispatching Call
-  begin
-    if O in DT'Class then  --  OK   : Membership test
-       Q (DT (O));         --  OK   : Type conversion plus direct call
-    else
-       P (O);              --  Error: Dispatching call
-    end if;
-  end Test;
-
-  Obj : DT;
-begin
-  P (Obj);                 --  OK   : Direct call
-  P (T (Obj));             --  OK   : Type conversion plus direct call
-  P (T'Class (Obj));       --  Error: Dispatching call
-
-  Test (Obj);              --  OK   : Type conversion
-
-  if Obj in T'Class then   --  OK   : Membership test
-     null;
-  end if;
-end Example;
-@end smallexample
-
-@item No_Dynamic_Attachment
-@findex No_Dynamic_Attachment
-This restriction ensures that there is no call to any of the operations
-defined in package Ada.Interrupts.
-
-@item No_Enumeration_Maps
-@findex No_Enumeration_Maps
-This restriction ensures at compile time that no operations requiring
-enumeration maps are used (that is Image and Value attributes applied
-to enumeration types).
-
-@item No_Entry_Calls_In_Elaboration_Code
-@findex No_Entry_Calls_In_Elaboration_Code
-This restriction ensures at compile time that no task or protected entry
-calls are made during elaboration code.  As a result of the use of this
-restriction, the compiler can assume that no code past an accept statement
-in a task can be executed at elaboration time.
-
-@item No_Exception_Handlers
-@findex No_Exception_Handlers
-This restriction ensures at compile time that there are no explicit
-exception handlers. It also indicates that no exception propagation will
-be provided. In this mode, exceptions may be raised but will result in
-an immediate call to the last chance handler, a routine that the user
-must define with the following profile:
-
-@smallexample @c ada
-procedure Last_Chance_Handler
-  (Source_Location : System.Address; Line : Integer);
-pragma Export (C, Last_Chance_Handler,
-               "__gnat_last_chance_handler");
-@end smallexample
-
-The parameter is a C null-terminated string representing a message to be
-associated with the exception (typically the source location of the raise
-statement generated by the compiler). The Line parameter when nonzero
-represents the line number in the source program where the raise occurs.
-
-@item No_Exception_Propagation
-@findex No_Exception_Propagation
-This restriction guarantees that exceptions are never propagated to an outer
-subprogram scope). The only case in which an exception may be raised is when
-the handler is statically in the same subprogram, so that the effect of a raise
-is essentially like a goto statement. Any other raise statement (implicit or
-explicit) will be considered unhandled. Exception handlers are allowed, but may
-not contain an exception occurrence identifier (exception choice). In addition
-use of the package GNAT.Current_Exception is not permitted, and reraise
-statements (raise with no operand) are not permitted.
-
-@item No_Exception_Registration
-@findex No_Exception_Registration
-This restriction ensures at compile time that no stream operations for
-types Exception_Id or Exception_Occurrence are used. This also makes it
-impossible to pass exceptions to or from a partition with this restriction
-in a distributed environment. If this exception is active, then the generated
-code is simplified by omitting the otherwise-required global registration
-of exceptions when they are declared.
-
-@item No_Finalization
-@findex No_Finalization
-This restriction disables the language features described in chapter 7.6 of the
-Ada 2005 RM as well as all form of code generation performed by the compiler to
-support these features. The following types are no longer considered controlled
-when this restriction is in effect:
-@itemize @bullet
-@item
-@code{Ada.Finalization.Controlled}
-@item
-@code{Ada.Finalization.Limited_Controlled}
-@item
-Derivations from @code{Controlled} or @code{Limited_Controlled}
-@item
-Class-wide types
-@item
-Protected types
-@item
-Task types
-@item
-Array and record types with controlled components
-@end itemize
-The compiler no longer generates code to initialize, finalize or adjust an
-object or a nested component, either declared on the stack or on the heap. The
-deallocation of a controlled object no longer finalizes its contents.
-
-@item No_Implicit_Conditionals
-@findex No_Implicit_Conditionals
-This restriction ensures that the generated code does not contain any
-implicit conditionals, either by modifying the generated code where possible,
-or by rejecting any construct that would otherwise generate an implicit
-conditional. Note that this check does not include run time constraint
-checks, which on some targets may generate implicit conditionals as
-well. To control the latter, constraint checks can be suppressed in the
-normal manner. Constructs generating implicit conditionals include comparisons
-of composite objects and the Max/Min attributes.
-
-@item No_Implicit_Dynamic_Code
-@findex No_Implicit_Dynamic_Code
-@cindex trampoline
-This restriction prevents the compiler from building ``trampolines''.
-This is a structure that is built on the stack and contains dynamic
-code to be executed at run time. On some targets, a trampoline is
-built for the following features: @code{Access},
-@code{Unrestricted_Access}, or @code{Address} of a nested subprogram;
-nested task bodies; primitive operations of nested tagged types.
-Trampolines do not work on machines that prevent execution of stack
-data. For example, on windows systems, enabling DEP (data execution
-protection) will cause trampolines to raise an exception.
-Trampolines are also quite slow at run time.
-
-On many targets, trampolines have been largely eliminated. Look at the
-version of system.ads for your target --- if it has
-Always_Compatible_Rep equal to False, then trampolines are largely
-eliminated. In particular, a trampoline is built for the following
-features: @code{Address} of a nested subprogram;
-@code{Access} or @code{Unrestricted_Access} of a nested subprogram,
-but only if pragma Favor_Top_Level applies, or the access type has a
-foreign-language convention; primitive operations of nested tagged
-types.
-
-@item No_Implicit_Loops
-@findex No_Implicit_Loops
-This restriction ensures that the generated code does not contain any
-implicit @code{for} loops, either by modifying
-the generated code where possible,
-or by rejecting any construct that would otherwise generate an implicit
-@code{for} loop. If this restriction is active, it is possible to build
-large array aggregates with all static components without generating an
-intermediate temporary, and without generating a loop to initialize individual
-components. Otherwise, a loop is created for arrays larger than about 5000
-scalar components.
-
-@item No_Initialize_Scalars
-@findex No_Initialize_Scalars
-This restriction ensures that no unit in the partition is compiled with
-pragma Initialize_Scalars. This allows the generation of more efficient
-code, and in particular eliminates dummy null initialization routines that
-are otherwise generated for some record and array types.
-
-@item No_Local_Protected_Objects
-@findex No_Local_Protected_Objects
-This restriction ensures at compile time that protected objects are
-only declared at the library level.
-
-@item No_Protected_Type_Allocators
-@findex No_Protected_Type_Allocators
-This restriction ensures at compile time that there are no allocator
-expressions that attempt to allocate protected objects.
-
-@item No_Relative_Delay
-@findex No_Relative_Delay
-This restriction ensures at compile time that there are no delay relative
-statements and prevents expressions such as @code{delay 1.23;} from appearing
-in source code.
-
-@item No_Requeue_Statements
-@findex No_Requeue_Statements
-This restriction ensures at compile time that no requeue statements are
-permitted and prevents keyword @code{requeue} from being used in source code.
-
-@item No_Secondary_Stack
-@findex No_Secondary_Stack
-This restriction ensures at compile time that the generated code does not
-contain any reference to the secondary stack.  The secondary stack is used
-to implement functions returning unconstrained objects (arrays or records)
-on some targets.
-
-@item No_Select_Statements
-@findex No_Select_Statements
-This restriction ensures at compile time no select statements of any kind
-are permitted, that is the keyword @code{select} may not appear.
-This is one of the restrictions of the Ravenscar
-profile for limited tasking (see also pragma @code{Profile (Ravenscar)}).
-
-@item No_Standard_Storage_Pools
-@findex No_Standard_Storage_Pools
-This restriction ensures at compile time that no access types
-use the standard default storage pool.  Any access type declared must
-have an explicit Storage_Pool attribute defined specifying a
-user-defined storage pool.
-
-@item No_Stream_Optimizations
-@findex No_Stream_Optimizations
-This restriction affects the performance of stream operations on types
-@code{String}, @code{Wide_String} and @code{Wide_Wide_String}. By default, the
-compiler uses block reads and writes when manipulating @code{String} objects
-due to their supperior performance. When this restriction is in effect, the
-compiler performs all IO operations on a per-character basis.
-
-@item No_Streams
-@findex No_Streams
-This restriction ensures at compile/bind time that there are no
-stream objects created and no use of stream attributes.
-This restriction does not forbid dependences on the package
-@code{Ada.Streams}. So it is permissible to with
-@code{Ada.Streams} (or another package that does so itself)
-as long as no actual stream objects are created and no
-stream attributes are used.
-
-Note that the use of restriction allows optimization of tagged types,
-since they do not need to worry about dispatching stream operations.
-To take maximum advantage of this space-saving optimization, any
-unit declaring a tagged type should be compiled with the restriction,
-though this is not required.
-
-@item No_Task_Attributes_Package
-@findex No_Task_Attributes_Package
-This restriction ensures at compile time that there are no implicit or
-explicit dependencies on the package @code{Ada.Task_Attributes}.
-
-@item No_Task_Termination
-@findex No_Task_Termination
-This restriction ensures at compile time that no terminate alternatives
-appear in any task body.
-
-@item No_Tasking
-@findex No_Tasking
-This restriction prevents the declaration of tasks or task types throughout
-the partition.  It is similar in effect to the use of @code{Max_Tasks => 0}
-except that violations are caught at compile time and cause an error message
-to be output either by the compiler or binder.
-
-@item Static_Priorities
-@findex Static_Priorities
-This restriction ensures at compile time that all priority expressions
-are static, and that there are no dependencies on the package
-@code{Ada.Dynamic_Priorities}.
-
-@item Static_Storage_Size
-@findex Static_Storage_Size
-This restriction ensures at compile time that any expression appearing
-in a Storage_Size pragma or attribute definition clause is static.
-
-@end table
-
-@noindent
-The second set of implementation dependent restriction identifiers
-does not require partition-wide consistency.
-The restriction may be enforced for a single
-compilation unit without any effect on any of the
-other compilation units in the partition.
-
-@table @code
-
-@item No_Elaboration_Code
-@findex No_Elaboration_Code
-This restriction ensures at compile time that no elaboration code is
-generated.  Note that this is not the same condition as is enforced
-by pragma @code{Preelaborate}.  There are cases in which pragma
-@code{Preelaborate} still permits code to be generated (e.g.@: code
-to initialize a large array to all zeroes), and there are cases of units
-which do not meet the requirements for pragma @code{Preelaborate},
-but for which no elaboration code is generated.  Generally, it is
-the case that preelaborable units will meet the restrictions, with
-the exception of large aggregates initialized with an others_clause,
-and exception declarations (which generate calls to a run-time
-registry procedure).  This restriction is enforced on
-a unit by unit basis, it need not be obeyed consistently
-throughout a partition.
-
-In the case of aggregates with others, if the aggregate has a dynamic
-size, there is no way to eliminate the elaboration code (such dynamic
-bounds would be incompatible with @code{Preelaborate} in any case). If
-the bounds are static, then use of this restriction actually modifies
-the code choice of the compiler to avoid generating a loop, and instead
-generate the aggregate statically if possible, no matter how many times
-the data for the others clause must be repeatedly generated.
-
-It is not possible to precisely document
-the constructs which are compatible with this restriction, since,
-unlike most other restrictions, this is not a restriction on the
-source code, but a restriction on the generated object code. For
-example, if the source contains a declaration:
-
-@smallexample
-   Val : constant Integer := X;
-@end smallexample
-
-@noindent
-where X is not a static constant, it may be possible, depending
-on complex optimization circuitry, for the compiler to figure
-out the value of X at compile time, in which case this initialization
-can be done by the loader, and requires no initialization code. It
-is not possible to document the precise conditions under which the
-optimizer can figure this out.
-
-Note that this the implementation of this restriction requires full
-code generation. If it is used in conjunction with "semantics only"
-checking, then some cases of violations may be missed.
-
-@item No_Entry_Queue
-@findex No_Entry_Queue
-This restriction is a declaration that any protected entry compiled in
-the scope of the restriction has at most one task waiting on the entry
-at any one time, and so no queue is required.  This restriction is not
-checked at compile time.  A program execution is erroneous if an attempt
-is made to queue a second task on such an entry.
-
-@item No_Implementation_Attributes
-@findex No_Implementation_Attributes
-This restriction checks at compile time that no GNAT-defined attributes
-are present.  With this restriction, the only attributes that can be used
-are those defined in the Ada Reference Manual.
-
-@item No_Implementation_Pragmas
-@findex No_Implementation_Pragmas
-This restriction checks at compile time that no GNAT-defined pragmas
-are present.  With this restriction, the only pragmas that can be used
-are those defined in the Ada Reference Manual.
-
-@item No_Implementation_Restrictions
-@findex No_Implementation_Restrictions
-This restriction checks at compile time that no GNAT-defined restriction
-identifiers (other than @code{No_Implementation_Restrictions} itself)
-are present.  With this restriction, the only other restriction identifiers
-that can be used are those defined in the Ada Reference Manual.
-
-@item No_Implicit_Aliasing
-@findex No_Implicit_Aliasing
-This restriction, which is not required to be partition-wide consistent,
-requires an explicit aliased keyword for an object to which 'Access,
-'Unchecked_Access, or 'Address is applied, and forbids entirely the use of
-the 'Unrestricted_Access attribute for objects. Note: the reason that
-Unrestricted_Access is forbidden is that it would require the prefix
-to be aliased, and in such cases, it can always be replaced by
-the standard attribute Unchecked_Access which is preferable.
-
-@item No_Wide_Characters
-@findex No_Wide_Characters
-This restriction ensures at compile time that no uses of the types
-@code{Wide_Character} or @code{Wide_String} or corresponding wide
-wide types
-appear, and that no wide or wide wide string or character literals
-appear in the program (that is literals representing characters not in
-type @code{Character}.
-
-@item SPARK
-@findex SPARK
-This restriction checks at compile time that some constructs forbidden in
-SPARK are not present. The SPARK version used as a reference is the same as
-the Ada mode for the unit, so a unit compiled in Ada 95 mode with SPARK
-restrictions will be checked for constructs forbidden in SPARK 95.
-Error messages related to SPARK restriction have the form:
-
-@smallexample
-violation of restriction "Spark" at <file>
- <error message>
-@end smallexample
-
-This is not a replacement for the semantic checks performed by the
-SPARK Examiner tool, as the compiler only deals currently with code,
-not at all with SPARK annotations and does not guarantee catching all
-cases of constructs forbidden by SPARK.
-
-Thus it may well be the case that code which
-passes the compiler in SPARK mode is rejected by the SPARK Examiner,
-e.g. due to the different visibility rules of the Examiner based on
-SPARK @code{inherit} annotations.
-
-This restriction can be useful in providing an initial filter for
-code developed using SPARK, or in examining legacy code to see how far
-it is from meeting SPARK restrictions.
-
-@end table
+@xref{Implementation Defined Restrictions}.
 
 @sp 1
 @cartouche
@@ -9969,7 +10532,7 @@ of delay expirations for lower priority tasks.
 @sp 1
 @cartouche
 @noindent
-@strong{100}.  Implementation defined task dispatching.  See D.2.2(18).
+@strong{100}.  Implementation-defined task dispatching.  See D.2.2(18).
 @end cartouche
 @noindent
 @c SGI info:

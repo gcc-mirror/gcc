@@ -66,4 +66,6 @@
 --      'm' is the symbolic name of dimensioned subtype Length
 
 package System.Dim is
+   pragma Pure;
+
 end System.Dim;

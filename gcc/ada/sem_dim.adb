@@ -311,6 +311,10 @@ package body Sem_Dim is
    --  Given a dimension vector and a dimension system, return the proper
    --  string of symbols.
 
+   function Is_Dim_IO_Package_Entity (E : Entity_Id) return Boolean;
+   --  Return True if E is the package entity of System.Dim.Float_IO or
+   --  System.Dim.Integer_IO.
+
    function Is_Invalid (Position : Dimension_Position) return Boolean;
    --  Return True if Pos denotes the invalid position
 
@@ -2165,7 +2169,6 @@ package body Sem_Dim is
       Dims_Of_Actual : Dimension_Type;
       Etyp           : Entity_Id;
       New_Str_Lit    : Node_Id := Empty;
-      Package_Name   : Name_Id;
       System         : System_Type;
 
       function Has_Dimension_Symbols return Boolean;
@@ -2240,19 +2243,10 @@ package body Sem_Dim is
             then
                Ent := Cunit_Entity (Get_Source_Unit (Ent));
 
-               --  Verify that the generic package is System.Dim.Float_IO or
-               --  System.Dim.Integer_IO.
+               --  Verify that the generic package is either
+               --  System.Dim.Float_IO or System.Dim.Integer_IO.
 
-               if Is_Library_Level_Entity (Ent) then
-                  Package_Name := Chars (Ent);
-
-                  if Package_Name = Name_Float_IO
-                       or else
-                     Package_Name = Name_Integer_IO
-                  then
-                     return Chars (Scope (Ent)) = Name_Dim;
-                  end if;
-               end if;
+               return Is_Dim_IO_Package_Entity (Ent);
             end if;
          end if;
 
@@ -2501,6 +2495,26 @@ package body Sem_Dim is
       return Exists (System_Of (Typ));
    end Has_Dimension_System;
 
+   ------------------------------
+   -- Is_Dim_IO_Package_Entity --
+   ------------------------------
+
+   function Is_Dim_IO_Package_Entity (E : Entity_Id) return Boolean is
+   begin
+      --  Check the package entity is standard and its scope is either
+      --  System.Dim.Float_IO or System.Dim.Integer_IO.
+
+      if Is_Library_Level_Entity (E)
+        and then (Chars (E) = Name_Float_IO
+                    or else Chars (E) = Name_Integer_IO)
+      then
+         return Chars (Scope (E)) = Name_Dim
+           and Chars (Scope (Scope (E))) = Name_System;
+      end if;
+
+      return False;
+   end Is_Dim_IO_Package_Entity;
+
    -------------------------------------
    -- Is_Dim_IO_Package_Instantiation --
    -------------------------------------
@@ -2513,16 +2527,10 @@ package body Sem_Dim is
       if Is_Entity_Name (Gen_Id) then
          Ent := Entity (Gen_Id);
 
-         --  Is it really OK just to test names ??? why???
+         --  Verify that the instantiated package is either System.Dim.Float_IO
+         --  or System.Dim.Integer_IO.
 
-         if Is_Library_Level_Entity (Ent)
-           and then
-            (Chars (Ent) = Name_Float_IO
-               or else
-             Chars (Ent) = Name_Integer_IO)
-         then
-            return Chars (Scope (Ent)) = Name_Dim;
-         end if;
+         return Is_Dim_IO_Package_Entity (Ent);
       end if;
 
       return False;
