@@ -109,6 +109,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* Whether the -o option was used.  */
   bool saw_opt_o = false;
 
+  /* Whether the -c option was used.  Also used for -E, -fsyntax-only,
+     in general anything which implies only compilation and not
+     linking.  */
+  bool saw_opt_c = false;
+
   /* Whether the -S option was used.  */
   bool saw_opt_S = false;
 
@@ -172,6 +177,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	case OPT_fsyntax_only:
 	  /* Don't specify libraries if we won't link, since that would
 	     cause a warning.  */
+	  saw_opt_c = true;
 	  library = -1;
 	  break;
 
@@ -272,31 +278,39 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
       j++;
     }
 
-  /* If we are not linking, add a -o option.  This is because we need
+  /* If we didn't see a -o option, add one.  This is because we need
      the driver to pass all .go files to go1.  Without a -o option the
-     driver will invoke go1 separately for each input file.  */
-  if (library < 0 && first_go_file != NULL && !saw_opt_o)
+     driver will invoke go1 separately for each input file.  FIXME:
+     This should probably use some other interface to force the driver
+     to set combine_inputs.  */
+  if (first_go_file != NULL && !saw_opt_o)
     {
-      const char *base;
-      int baselen;
-      int alen;
-      char *out;
+      if (saw_opt_c || saw_opt_S)
+	{
+	  const char *base;
+	  int baselen;
+	  int alen;
+	  char *out;
 
-      base = lbasename (first_go_file);
-      baselen = strlen (base) - 3;
-      alen = baselen + 3;
-      out = XNEWVEC (char, alen);
-      memcpy (out, base, baselen);
-      /* The driver will convert .o to some other suffix (e.g., .obj)
-	 if appropriate.  */
-      out[baselen] = '.';
-      if (saw_opt_S)
-	out[baselen + 1] = 's';
+	  base = lbasename (first_go_file);
+	  baselen = strlen (base) - 3;
+	  alen = baselen + 3;
+	  out = XNEWVEC (char, alen);
+	  memcpy (out, base, baselen);
+	  /* The driver will convert .o to some other suffix (e.g.,
+	     .obj) if appropriate.  */
+	  out[baselen] = '.';
+	  if (saw_opt_S)
+	    out[baselen + 1] = 's';
+	  else
+	    out[baselen + 1] = 'o';
+	  out[baselen + 2] = '\0';
+	  generate_option (OPT_o, out, 1, CL_DRIVER,
+			   &new_decoded_options[j]);
+	}
       else
-	out[baselen + 1] = 'o';
-      out[baselen + 2] = '\0';
-      generate_option (OPT_o, out, 1, CL_DRIVER,
-		       &new_decoded_options[j]);
+	generate_option (OPT_o, "a.out", 1, CL_DRIVER,
+			 &new_decoded_options[j]);
       j++;
     }
 
