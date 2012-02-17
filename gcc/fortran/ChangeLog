@@ -1,4 +1,10 @@
 2012-02-17  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (Status): Fix typos.
+	* invoke.texi (ffixed-form, fstack-arrays): Spell Fortran with
+	a majuscule.
+
+2012-02-17  Tobias Burnus  <burnus@net-b.de>
 	    Roland Stigge  <stigge@antcom.de>
 
 	PR translation/52232

@@ -795,7 +795,7 @@ override type-bound procedures or to have deferred binding.
 
 @item Polymorphic entities (``@code{CLASS}'') for derived types -- including
 @code{SAME_TYPE_AS}, @code{EXTENDS_TYPE_OF} and @code{SELECT TYPE}.
-Note that unlimited polymophism is currently not supported.
+Note that unlimited polymorphism is currently not supported.
 
 @item Generic interface names, which have the same name as derived types,
 are now supported. This allows one to write constructor functions.  Note
@@ -835,7 +835,7 @@ association status not the value of the pointer target.
 @item Intrinsics @code{command_argument_count}, @code{get_command},
 @code{get_command_argument}, and @code{get_environment_variable}.
 
-@item Support for unicode characters (ISO 10646) and UTF-8, including
+@item Support for Unicode characters (ISO 10646) and UTF-8, including
 the @code{SELECTED_CHAR_KIND} and @code{NEW_LINE} intrinsic functions.
 
 @item Support for binary, octal and hexadecimal (BOZ) constants in the
@@ -1521,7 +1521,7 @@ of the @code{READ} statement, and the output item lists of the
 
 GNU Fortran accepts real literal constants with an exponent-letter
 of @code{Q}, for example, @code{1.23Q45}.  The constant is interpreted
-as a @code{REAL(16)} entity on targets that suppports this type.  If
+as a @code{REAL(16)} entity on targets that supports this type.  If
 the target does not support @code{REAL(16)} but has a @code{REAL(10)}
 type, then the real-literal-constant will be interpreted as a
 @code{REAL(10)} entity.  In the absence of @code{REAL(16)} and
