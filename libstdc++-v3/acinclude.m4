@@ -729,7 +729,7 @@ AC_DEFUN([GLIBCXX_EXPORT_FLAGS], [
   # OPTIMIZE_CXXFLAGS = -O3 -fstrict-aliasing -fvtable-gc
   AC_SUBST(OPTIMIZE_CXXFLAGS)
 
-  WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual'
+  WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual -Wabi'
   AC_SUBST(WARN_FLAGS)
 ])
 
@@ -3589,6 +3589,17 @@ AC_MSG_RESULT(${with_python_dir})
 python_mod_dir="${with_python_dir}"
 AC_SUBST(python_mod_dir)
 GLIBCXX_CONDITIONAL(ENABLE_PYTHONDIR, test $python_mod_dir != no)
+])
+
+dnl
+dnl Check to see if -Werror is disabled.
+dnl
+dnl --enable-werror/--disable-werror
+AC_DEFUN([GLIBCXX_ENABLE_WERROR], [
+  AC_MSG_CHECKING([for -Werror])
+  GLIBCXX_ENABLE(werror,$1,,[turns on -Werror])
+  AC_MSG_RESULT($enable_werror)
+  GLIBCXX_CONDITIONAL(ENABLE_WERROR, test $enable_werror = yes)
 ])
 
 
