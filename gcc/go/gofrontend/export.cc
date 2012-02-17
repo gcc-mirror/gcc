@@ -229,6 +229,17 @@ Export::write_imported_init_fns(
   this->write_c_string(";\n");
 }
 
+// Write a name to the export stream.
+
+void
+Export::write_name(const std::string& name)
+{
+  if (name.empty())
+    this->write_c_string("?");
+  else
+    this->write_string(Gogo::message_name(name));
+}
+
 // Export a type.  We have to ensure that on import we create a single
 // Named_type node for each named type.  We do this by keeping a hash
 // table mapping named types to reference numbers.  The first time we

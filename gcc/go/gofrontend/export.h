@@ -145,6 +145,10 @@ class Export : public String_dump
   write_bytes(const char* bytes, size_t length)
   { this->stream_->write_bytes(bytes, length); }
 
+  // Write a name to the export stream.  If NAME is empty, write "?".
+  void
+  write_name(const std::string& name);
+
   // Write out a type.  This handles references back to previous
   // definitions.
   void
