@@ -2947,9 +2947,9 @@ tree
 define_label (location_t location, tree name)
 {
   tree ret;
-  timevar_start (TV_NAME_LOOKUP);
+  bool running = timevar_cond_start (TV_NAME_LOOKUP);
   ret = define_label_1 (location, name);
-  timevar_stop (TV_NAME_LOOKUP);
+  timevar_cond_stop (TV_NAME_LOOKUP, running);
   return ret;
 }
 
