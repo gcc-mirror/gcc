@@ -1,3 +1,9 @@
+2012-02-16  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/52126
+	* g++.dg/template/using21.C: New.
+	* g++.dg/template/using22.C: Likewise.
+
 2012-02-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51415
