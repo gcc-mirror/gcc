@@ -1,3 +1,14 @@
+2012-02-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR translation/52232
+	PR translation/52234
+	PR translation/52245
+	PR translation/52246
+	PR translation/52262
+	PR translation/52273
+	* gfortran.dg/coarray_22.f90: Update dg-error.
+	* gfortran.dg/allocate_alloc_opt_4.f90: Ditto.
+
 2012-02-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/51753
