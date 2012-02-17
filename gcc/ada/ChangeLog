@@ -1,3 +1,9 @@
+2012-02-17  Steve Baird  <baird@adacore.com>
+
+	* sem_prag.adb (Analyze_PPC_In_Decl_Part): Pre'Class and
+	Post'Class aspects can only be specified for a primitive operation
+	of a tagged type.
+
 2012-02-17  Yannick Moy  <moy@adacore.com>
 
 	* gnat_rm.texi: Minor shuffling.
