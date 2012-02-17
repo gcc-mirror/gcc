@@ -304,7 +304,10 @@ Import::import(Gogo* gogo, const std::string& local_name,
       this->package_->set_priority(prio);
       this->require_c_string(";\n");
 
-      if (stream->match_c_string("import "))
+      while (stream->match_c_string("import"))
+	this->read_one_import();
+
+      if (stream->match_c_string("init"))
 	this->read_import_init_fns(gogo);
 
       // Loop over all the input data for this package.
@@ -344,12 +347,24 @@ Import::import(Gogo* gogo, const std::string& local_name,
   return this->package_;
 }
 
+// Read an import line.  We don't actually care about these.
+
+void
+Import::read_one_import()
+{
+  this->require_c_string("import ");
+  Stream* stream = this->stream_;
+  while (stream->peek_char() != ';')
+    stream->advance(1);
+  this->require_c_string(";\n");
+}
+
 // Read the list of import control functions.
 
 void
 Import::read_import_init_fns(Gogo* gogo)
 {
-  this->require_c_string("import");
+  this->require_c_string("init");
   while (!this->match_c_string(";"))
     {
       this->require_c_string(" ");

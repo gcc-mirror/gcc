@@ -14,6 +14,7 @@ class Gogo;
 class Import_init;
 class Bindings;
 class Type;
+class Package;
 
 // Codes used for the builtin types.  These are all negative to make
 // them easily distinct from the codes assigned by Export::write_type.
@@ -126,6 +127,7 @@ class Export : public String_dump
   export_globals(const std::string& package_name,
 		 const std::string& unique_prefix,
 		 int package_priority,
+		 const std::map<std::string, Package*>& imports,
 		 const std::string& import_init_fn,
 		 const std::set<Import_init>& imported_init_fns,
 		 const Bindings* bindings);
@@ -157,6 +159,10 @@ class Export : public String_dump
  private:
   Export(const Export&);
   Export& operator=(const Export&);
+
+  // Write out the imported packages.
+  void
+  write_imports(const std::map<std::string, Package*>& imports);
 
   // Write out the imported initialization functions.
   void

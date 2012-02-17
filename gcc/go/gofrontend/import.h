@@ -213,6 +213,10 @@ class Import
   find_archive_export_data(const std::string& filename, int fd,
 			   Location);
 
+  // Read an import line.
+  void
+  read_one_import();
+
   // Read the import control functions.
   void
   read_import_init_fns(Gogo*);

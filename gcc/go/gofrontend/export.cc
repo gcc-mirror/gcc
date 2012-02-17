@@ -93,6 +93,7 @@ void
 Export::export_globals(const std::string& package_name,
 		       const std::string& unique_prefix,
 		       int package_priority,
+		       const std::map<std::string, Package*>& imports,
 		       const std::string& import_init_fn,
 		       const std::set<Import_init>& imported_init_fns,
 		       const Bindings* bindings)
@@ -149,6 +150,8 @@ Export::export_globals(const std::string& package_name,
   snprintf(buf, sizeof buf, "priority %d;\n", package_priority);
   this->write_c_string(buf);
 
+  this->write_imports(imports);
+
   this->write_imported_init_fns(package_name, package_priority, import_init_fn,
 				imported_init_fns);
 
@@ -177,7 +180,46 @@ Export::export_globals(const std::string& package_name,
   this->stream_->write_checksum(s);
 }
 
-// Write out the import control variables for this package.
+// Sort imported packages.
+
+static bool
+import_compare(const std::pair<std::string, Package*>& a,
+	       const std::pair<std::string, Package*>& b)
+{
+  return a.first < b.first;
+}
+
+// Write out the imported packages.
+
+void
+Export::write_imports(const std::map<std::string, Package*>& imports)
+{
+  // Sort the imports for more consistent output.
+  std::vector<std::pair<std::string, Package*> > imp;
+  for (std::map<std::string, Package*>::const_iterator p = imports.begin();
+       p != imports.end();
+       ++p)
+    imp.push_back(std::make_pair(p->first, p->second));
+
+  std::sort(imp.begin(), imp.end(), import_compare);
+
+  for (std::vector<std::pair<std::string, Package*> >::const_iterator p =
+	 imp.begin();
+       p != imp.end();
+       ++p)
+    {
+      this->write_c_string("import ");
+      this->write_string(p->second->name());
+      this->write_c_string(" ");
+      this->write_string(p->second->unique_prefix());
+      this->write_c_string(" \"");
+      this->write_string(p->first);
+      this->write_c_string("\";\n");
+    }
+}
+
+// Write out the initialization functions which need to run for this
+// package.
 
 void
 Export::write_imported_init_fns(
@@ -189,7 +231,7 @@ Export::write_imported_init_fns(
   if (import_init_fn.empty() && imported_init_fns.empty())
     return;
 
-  this->write_c_string("import");
+  this->write_c_string("init");
 
   if (!import_init_fn.empty())
     {
