@@ -1,4 +1,10 @@
 2012-02-17  Tobias Burnus  <burnus@net-b.de>
+	    Roland Stigge  <stigge@antcom.de>
+
+	PR translation/52273
+	* interface.c (compare_actual_formal): Fix typo "at at".
+
+2012-02-17  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi (Q exponent-letter): Fix grammar.
 
