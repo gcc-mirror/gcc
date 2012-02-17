@@ -1,3 +1,26 @@
+2012-02-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Legal_Copy): If layout is not
+	determined in the front-end, do not emit error message when
+	by-reference actual is potentially unaligned.
+	* gcc-interface/decl.c (gnat_to_gnu_field): Better error message for
+	illegal representation clause on tagged or aliased component, or on
+	by-reference type with forced alignment.
+
+2012-02-17  Nicolas Roche  <roche@adacore.com>
+
+	* gcc-interface/Makefile.in: Ensure FORCE_DEBUG_ADAFLAGS variables is
+	propagated by gnatlib-sjlj and gnatlib-zcx targets.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2012-02-17  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation): For an
+	instantiation in an RCI library unit, omit the instance body
+	if the RCI library unit is the instance itself (E.2.3(18)),
+	but include the body if the instantiation is within the RCI
+	declaration (12.3(12)).
+
 2012-02-17  Steve Baird  <baird@adacore.com>
 
 	* sem_prag.adb (Analyze_PPC_In_Decl_Part): Pre'Class and
