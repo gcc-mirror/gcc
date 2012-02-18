@@ -1,3 +1,9 @@
+2012-02-17  Gary Funck  <gary@intrepid.com>
+
+	Released GUPC 4.7.0.2 based on version 183992.
+	* DEV-PHASE: Bump release identifier to 4.7.0-3.
+	* DATESTAMP: Bump date stamp.
+
 2012-02-03  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* c-family/c-pragma.c (disable_pupc_mode): New. Disable profiling
