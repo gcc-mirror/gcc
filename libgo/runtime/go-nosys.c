@@ -48,6 +48,18 @@ faccessat (int fd __attribute__ ((unused)),
 }
 #endif
 
+#ifndef HAVE_FALLOCATE
+int
+fallocate (int fd __attribute__ ((unused)),
+	   int mode __attribute__ ((unused)),
+	   off_t offset __attribute __ ((unused)),
+	   off_t len __attribute__ ((unused)))
+{
+  errno = ENOSYS;
+  return -1;
+}
+#endif
+
 #ifndef HAVE_FCHMODAT
 int
 fchmodat (int dirfd __attribute__ ((unused)),

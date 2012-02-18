@@ -178,9 +178,8 @@ func PtraceDetach(pid int) (err error) { return ptrace(PTRACE_DETACH, pid, 0, 0)
 //sys	Faccessat(dirfd int, path string, mode uint32, flags int) (err error)
 //faccessat(dirfd int, pathname *byte, mode int, flags int) int
 
-// FIXME: Only in glibc 2.10 and later.
-// //sys	Fallocate(fd int, mode uint32, off int64, len int64) (err error)
-// //fallocate(fd int, mode int, offset Offset_t, len Offset_t) int
+//sys	Fallocate(fd int, mode uint32, off int64, len int64) (err error)
+//fallocate(fd int, mode int, offset Offset_t, len Offset_t) int
 
 //sys	Fchmodat(dirfd int, path string, mode uint32, flags int) (err error)
 //fchmodat(dirfd int, pathname *byte, mode Mode_t, flags int) int
@@ -191,9 +190,8 @@ func PtraceDetach(pid int) (err error) { return ptrace(PTRACE_DETACH, pid, 0, 0)
 //sys	Flock(fd int, how int) (err error)
 //flock(fd int, how int) int
 
-// FIXME: mksysinfo statfs
-// //sys	Fstatfs(fd int, buf *Statfs_t) (err error)
-// //fstatfs(fd int, buf *Statfs_t) int
+//sys	Fstatfs(fd int, buf *Statfs_t) (err error)
+//fstatfs(fd int, buf *Statfs_t) int
 
 func Gettid() (tid int) {
 	r1, _, _ := Syscall(SYS_GETTID, 0, 0, 0)
@@ -283,9 +281,8 @@ func Splice(rfd int, roff *int64, wfd int, woff *int64, len int, flags int) (n i
 	return
 }
 
-// FIXME: mksysinfo statfs
-// //sys	Statfs(path string, buf *Statfs_t) (err error)
-// //statfs(path *byte, buf *Statfs_t) int
+//sys	Statfs(path string, buf *Statfs_t) (err error)
+//statfs(path *byte, buf *Statfs_t) int
 
 // FIXME: Only in glibc 2.6 and later.
 // //sys	SyncFileRange(fd int, off int64, n int64, flags int) (err error)
