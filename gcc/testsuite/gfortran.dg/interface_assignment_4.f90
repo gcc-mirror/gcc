@@ -16,7 +16,7 @@
 
 contains
 
-  subroutine op_assign_VS_CH (var, exp) ! { dg-warning "Extension: Internal procedure" }
+  subroutine op_assign_VS_CH (var, exp)
     type(varying_string), intent(out) :: var
     character(LEN=*), intent(in)      :: exp
   end subroutine

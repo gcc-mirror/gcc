@@ -1292,9 +1292,10 @@ check_interface0 (gfc_interface *p, const char *interface_name)
 	  return 1;
 	}
 
+      /* F2003, C1207. F2008, C1207.  */
       if (p->sym->attr.proc == PROC_INTERNAL
-	  && gfc_notify_std (GFC_STD_GNU, "Extension: Internal procedure '%s' "
-			     "in %s at %L", p->sym->name, interface_name,
+	  && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Internal procedure "
+			     "'%s' in %s at %L", p->sym->name, interface_name,
 			     &p->sym->declared_at) == FAILURE)
 	return 1;
     }

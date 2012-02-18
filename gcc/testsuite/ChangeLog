@@ -1,3 +1,14 @@
+2012-02-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52295
+	* gfortran.dg/interface_35.f90: Use -std=f2003.
+	* gfortran.dg/proc_ptr_comp_20.f90: Remove dg-warning.
+	* gfortran.dg/interface_assignment_4.f90: Ditto.
+	* gfortran.dg/bessel_1.f90: Ditto.
+	* gfortran.dg/func_result_6.f90: Ditto.
+	* gfortran.dg/hypot_1.f90: Ditto.
+	* gfortran.dg/proc_ptr_comp_21.f90: Ditto.
+
 2012-02-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR translation/52232
