@@ -6471,7 +6471,7 @@ Interface_type::finalize_methods()
 	}
 
       Named_type* nt = t->named_type();
-      if (nt != NULL)
+      if (nt != NULL && it->parse_methods_ != NULL)
 	{
 	  std::vector<Named_type*>::const_iterator q;
 	  for (q = seen.begin(); q != seen.end(); ++q)
