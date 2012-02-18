@@ -93,6 +93,15 @@ cat > sysinfo.c <<EOF
 #if defined(HAVE_NET_IF_H)
 #include <net/if.h>
 #endif
+#if defined(HAVE_SYS_MOUNT_H)
+#include <sys/mount.h>
+#endif
+#if defined(HAVE_SYS_VFS_H)
+#include <sys/vfs.h>
+#endif
+#if defined(HAVE_STATFS_H)
+#include <sys/statfs.h>
+#endif
 
 /* Constants that may only be defined as expressions on some systems,
    expressions too complex for -fdump-go-spec to handle.  These are
@@ -765,5 +774,36 @@ for n in IGNBRK BRKINT IGNPAR PARMRK INPCK ISTRIP INLCR IGNCR ICRNL IUCLC \
     grep "^const _$n " gen-sysinfo.go | \
 	sed -e 's/^\(const \)_\([^=]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 done
+
+# The mount flags
+grep '^const _MS_' gen-sysinfo.go |
+    sed -e 's/^\(const \)_\(MS_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+# The fallocate flags.
+grep '^const _FALLOC_' gen-sysinfo.go |
+    sed -e 's/^\(const \)_\(FALLOC_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+# The statfs struct.
+# Prefer largefile variant if available.
+statfs=`grep '^type _statfs64 ' gen-sysinfo.go || true`
+if test "$statfs" != ""; then
+  grep '^type _statfs64 ' gen-sysinfo.go
+else
+  grep '^type _statfs ' gen-sysinfo.go
+fi | sed -e 's/type _statfs64/type Statfs_t/' \
+	 -e 's/type _statfs/type Statfs_t/' \
+	 -e 's/f_type/Type/' \
+	 -e 's/f_bsize/Bsize/' \
+	 -e 's/f_blocks/Blocks/' \
+	 -e 's/f_bfree/Bfree/' \
+	 -e 's/f_bavail/Bavail/' \
+	 -e 's/f_files/Files/' \
+	 -e 's/f_ffree/Ffree/' \
+	 -e 's/f_fsid/Fsid/' \
+	 -e 's/f_namelen/Namelen/' \
+	 -e 's/f_frsize/Frsize/' \
+	 -e 's/f_flags/Flags/' \
+	 -e 's/f_spare/Spare/' \
+    >> ${OUT}
 
 exit $?
