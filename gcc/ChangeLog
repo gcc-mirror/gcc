@@ -1,3 +1,8 @@
+2012-02-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi: Consistently hyphenate "big-endian"/"little-endian"
+	when used as adjectives.
+
 2012-02-16  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi: Clean up "that"/"which" confusion.
