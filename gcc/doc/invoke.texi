@@ -6759,56 +6759,65 @@ optimization.
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fira-algorithm=@var{algorithm}
-Use specified coloring algorithm for the integrated register
-allocator.  The @var{algorithm} argument should be @code{priority} or
-@code{CB}.  The first algorithm specifies Chow's priority coloring,
-the second one specifies Chaitin-Briggs coloring.  The second
-algorithm can be unimplemented for some architectures.  If it is
-implemented, it is the default because Chaitin-Briggs coloring as a
-rule generates a better code.
+Use the specified coloring algorithm for the integrated register
+allocator.  The @var{algorithm} argument can be @samp{priority}, which
+specifies Chow's priority coloring, or @samp{CB}, which specifies
+Chaitin-Briggs coloring.  Chaitin-Briggs coloring is not implemented
+for all architectures, but for those targets that do support it, it is
+the default because it generates better code.
 
 @item -fira-region=@var{region}
 Use specified regions for the integrated register allocator.  The
-@var{region} argument should be one of @code{all}, @code{mixed}, or
-@code{one}.  The first value means using all loops as register
-allocation regions, the second value which is enabled by default when
-compiling with optimization for speed (@option{-O}, @option{-O2},
-@dots{}) means using all loops except for loops with small register
-pressure as the regions, and third one which is enabled by default for
-@option{-Os} or @option{-O0} means using all function as a single
-region.  The first value can give best result for machines with small
-size and irregular register set, the third one results in faster and
-generates decent code and the smallest size code, and the second value
-usually give the best results in most cases and for most
-architectures.
+@var{region} argument should be one of the following:
+
+@table @samp
+
+@item all
+Use all loops as register allocation regions.
+This can give the best results for machines with a small and/or
+irregular register set.
+
+@item mixed
+Use all loops except for loops with small register pressure 
+as the regions.  This value usually gives
+the best results in most cases and for most architectures,
+and is enabled by default when compiling with optimization for speed
+(@option{-O}, @option{-O2}, @dots{}).
+
+@item one
+Use all functions as a single region.  
+This typically results in the smallest code size, and is enabled by default for
+@option{-Os} or @option{-O0}.
+
+@end table
 
 @item -fira-loop-pressure
 @opindex fira-loop-pressure
-Use IRA to evaluate register pressure in loops for decision to move
-loop invariants.  Usage of this option usually results in generation
-of faster and smaller code on machines with big register files (>= 32
-registers) but it can slow compiler down.
+Use IRA to evaluate register pressure in loops for decisions to move
+loop invariants.  This option usually results in generation
+of faster and smaller code on machines with large register files (>= 32
+registers), but it can slow the compiler down.
 
 This option is enabled at level @option{-O3} for some targets.
 
 @item -fno-ira-share-save-slots
 @opindex fno-ira-share-save-slots
-Switch off sharing stack slots used for saving call used hard
-registers living through a call.  Each hard register will get a
-separate stack slot and as a result function stack frame will be
-bigger.
+Disable sharing of stack slots used for saving call-used hard
+registers living through a call.  Each hard register gets a
+separate stack slot, and as a result function stack frames are
+larger.
 
 @item -fno-ira-share-spill-slots
 @opindex fno-ira-share-spill-slots
-Switch off sharing stack slots allocated for pseudo-registers.  Each
-pseudo-register that did not get a hard register will get a separate
-stack slot and as a result function stack frame will be bigger.
+Disable sharing of stack slots allocated for pseudo-registers.  Each
+pseudo-register that does not get a hard register gets a separate
+stack slot, and as a result function stack frames are larger.
 
 @item -fira-verbose=@var{n}
 @opindex fira-verbose
-Set up how verbose dump file for the integrated register allocator
-will be.  Default value is 5.  If the value is greater or equal to 10,
-the dump file will be stderr as if the value were @var{n} minus 10.
+Control the verbosity of the dump file for the integrated register allocator.
+The default value is 5.  If the value @var{n} is greater or equal to 10,
+the dump output is sent to stderr using the same format as @var{n} minus 10.
 
 @item -fdelayed-branch
 @opindex fdelayed-branch
@@ -9103,28 +9112,28 @@ function will not be done and optimizations depending on it will
 be disabled.  The default maximum SCC size is 10000.
 
 @item ira-max-loops-num
-IRA uses a regional register allocation by default.  If a function
-contains loops more than number given by the parameter, only at most
-given number of the most frequently executed loops will form regions
-for the regional register allocation.  The default value of the
+IRA uses regional register allocation by default.  If a function
+contains more loops than the number given by this parameter, only at most
+the given number of the most frequently-executed loops form regions
+for regional register allocation.  The default value of the
 parameter is 100.
 
-@item ira-max-conflict-table-size
-Although IRA uses a sophisticated algorithm of compression conflict
-table, the table can be still big for huge functions.  If the conflict
-table for a function could be more than size in MB given by the
-parameter, the conflict table is not built and faster, simpler, and
-lower quality register allocation algorithm will be used.  The
-algorithm do not use pseudo-register conflicts.  The default value of
-the parameter is 2000.
+@item ira-max-conflict-table-size 
+Although IRA uses a sophisticated algorithm to compress the conflict
+table, the table can still require excessive amounts of memory for
+huge functions.  If the conflict table for a function could be more
+than the size in MB given by this parameter, the register allocator
+instead uses a faster, simpler, and lower-quality
+algorithm that does not require building a pseudo-register conflict table.  
+The default value of the parameter is 2000.
 
 @item ira-loop-reserved-regs
 IRA can be used to evaluate more accurate register pressure in loops
-for decision to move loop invariants (see @option{-O3}).  The number
-of available registers reserved for some other purposes is described
-by this parameter.  The default value of the parameter is 2 which is
-minimal number of registers needed for execution of typical
-instruction.  This value is the best found from numerous experiments.
+for decisions to move loop invariants (see @option{-O3}).  The number
+of available registers reserved for some other purposes is given
+by this parameter.  The default value of the parameter is 2, which is
+the minimal number of registers needed by typical instructions.
+This value is the best found from numerous experiments.
 
 @item loop-invariant-max-bbs-in-loop
 Loop invariant motion can be very expensive, both in compilation time and

@@ -1,3 +1,8 @@
+2012-02-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (-fira-* options): Copy-edit.
+	(ira-* parameters): Copy-edit.
+
 2012-02-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi: Minor copy-edits to bring into conformance with
