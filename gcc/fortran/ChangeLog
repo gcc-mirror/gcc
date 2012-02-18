@@ -1,3 +1,9 @@
+2012-02-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52295
+	* interface.c (check_interface0): Internal procs in
+	generic interfaces are allowed in Fortran 2008.
+
 2012-02-17  Tobias Burnus  <burnus@net-b.de>
 	    Roland Stigge  <stigge@antcom.de>
 
