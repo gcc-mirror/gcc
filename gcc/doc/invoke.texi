@@ -2128,11 +2128,11 @@ This information is generally only useful to the G++ development team.
 @item -fstrict-enums
 @opindex fstrict-enums
 Allow the compiler to optimize using the assumption that a value of
-enumeration type can only be one of the values of the enumeration (as
+enumerated type can only be one of the values of the enumeration (as
 defined in the C++ standard; basically, a value that can be
 represented in the minimum number of bits needed to represent all the
 enumerators).  This assumption may not be valid if the program uses a
-cast to convert an arbitrary integer value to the enumeration type.
+cast to convert an arbitrary integer value to the enumerated type.
 
 @item -ftemplate-depth=@var{n}
 @opindex ftemplate-depth
@@ -3738,20 +3738,20 @@ Possibly useful when higher levels
 do not warn but -fstrict-aliasing still breaks the code, as it has very few
 false negatives.  However, it has many false positives.
 Warns for all pointer conversions between possibly incompatible types,
-even if never dereferenced.  Runs in the frontend only.
+even if never dereferenced.  Runs in the front end only.
 
 Level 2: Aggressive, quick, not too precise.
 May still have many false positives (not as many as level 1 though),
 and few false negatives (but possibly more than level 1).
 Unlike level 1, it only warns when an address is taken.  Warns about
-incomplete types.  Runs in the frontend only.
+incomplete types.  Runs in the front end only.
 
 Level 3 (default for @option{-Wstrict-aliasing}):
 Should have very few false positives and few false
 negatives.  Slightly slower than levels 1 or 2 when optimization is enabled.
-Takes care of the common pun+dereference pattern in the frontend:
+Takes care of the common pun+dereference pattern in the front end:
 @code{*(int*)&some_float}.
-If optimization is enabled, it also runs in the backend, where it deals
+If optimization is enabled, it also runs in the back end, where it deals
 with multiple statement cases using flow-sensitive points-to information.
 Only warns when the converted pointer is dereferenced.
 Does not warn about incomplete types.
@@ -4212,7 +4212,7 @@ while} statement.  This warning is also enabled by @option{-Wextra}.
 @item -Wenum-compare
 @opindex Wenum-compare
 @opindex Wno-enum-compare
-Warn about a comparison between values of different enum types. In C++
+Warn about a comparison between values of different enumerated types. In C++
 this warning is enabled by default.  In C this warning is enabled by
 @option{-Wall}.
 
@@ -4223,7 +4223,7 @@ Warn if a @code{goto} statement or a @code{switch} statement jumps
 forward across the initialization of a variable, or jumps backward to a
 label after the variable has been initialized.  This only warns about
 variables that are initialized when they are declared.  This warning is
-only supported for C and Objective C; in C++ this sort of branch is an
+only supported for C and Objective-C; in C++ this sort of branch is an
 error in any case.
 
 @option{-Wjump-misses-init} is included in @option{-Wc++-compat}.  It
@@ -5432,7 +5432,7 @@ Dump after post-reload optimizations.
 
 @itemx -fdump-rtl-pro_and_epilogue
 @opindex fdump-rtl-pro_and_epilogue
-Dump after generating the function pro and epilogues.
+Dump after generating the function prologues and epilogues.
 
 @item -fdump-rtl-regmove
 @opindex fdump-rtl-regmove
@@ -8599,7 +8599,7 @@ The limit specifying really large functions.  For functions larger than this
 limit after inlining, inlining is constrained by
 @option{--param large-function-growth}.  This parameter is useful primarily
 to avoid extreme compilation time caused by non-linear algorithms used by the
-backend.
+back end.
 The default value is 2700.
 
 @item large-function-growth
@@ -8716,7 +8716,7 @@ of huge functions.  The default value is 30.
 
 @item max-tail-merge-comparisons
 The maximum amount of similar bbs to compare a bb with.  This is used to
-avoid quadratic behaviour in tree tail merging.  The default value is 10.
+avoid quadratic behavior in tree tail merging.  The default value is 10.
 
 @item max-tail-merge-iterations
 The maximum amount of iterations of the pass over the function.  This is used to
@@ -10585,7 +10585,7 @@ configurations this option is meaningless.
 
 @item -mno-sched-prolog
 @opindex mno-sched-prolog
-Prevent the reordering of instructions in the function prolog, or the
+Prevent the reordering of instructions in the function prologue, or the
 merging of those instruction with the instructions in the function's
 body.  This means that all functions will start with a recognizable set
 of instructions (or in fact one of a choice from a small set of
@@ -10666,7 +10666,7 @@ See @option{-mtune} for more information.
 
 @option{-mcpu=native} causes the compiler to auto-detect the CPU
 of the build computer.  At present, this feature is only supported on
-Linux, and not all architectures are recognised.  If the auto-detect is
+Linux, and not all architectures are recognized.  If the auto-detect is
 unsuccessful the option has no effect.
 
 @item -mtune=@var{name}
@@ -10689,7 +10689,7 @@ this option may change in future GCC versions as CPU models come and go.
 
 @option{-mtune=native} causes the compiler to auto-detect the CPU
 of the build computer.  At present, this feature is only supported on
-Linux, and not all architectures are recognised.  If the auto-detect is
+Linux, and not all architectures are recognized.  If the auto-detect is
 unsuccessful the option has no effect.
 
 @item -march=@var{name}
@@ -10707,7 +10707,7 @@ of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 
 @option{-march=native} causes the compiler to auto-detect the architecture
 of the build computer.  At present, this feature is only supported on
-Linux, and not all architectures are recognised.  If the auto-detect is
+Linux, and not all architectures are recognized.  If the auto-detect is
 unsuccessful the option has no effect.
 
 @item -mfpu=@var{name}
@@ -11210,7 +11210,7 @@ The built-in macros' names follow
 the scheme @code{__AVR_@var{Device}__} where @var{Device} is
 the device name as from the AVR user manual. The difference between
 @var{Device} in the built-in macro and @var{device} in
-@code{-mmcu=@var{device}} is that the latter is always lower case.
+@code{-mmcu=@var{device}} is that the latter is always lowercase.
 
 @item __AVR_HAVE_RAMPZ__
 @item __AVR_HAVE_ELPM__
@@ -17286,7 +17286,7 @@ could result in slower and/or larger code if variables which once
 could have been held in the reserved register are now pushed onto the
 stack.
 
-Note, common variables (variables that have not been initialised) and
+Note, common variables (variables that have not been initialized) and
 constants are not placed into the small data area as they are assigned
 to other sections in the output executable.
 
@@ -18848,9 +18848,9 @@ it.
 @table @gcctabopt
 @item -fbounds-check
 @opindex fbounds-check
-For front-ends that support it, generate additional code to check that
+For front ends that support it, generate additional code to check that
 indices used to access arrays are within the declared range.  This is
-currently only supported by the Java and Fortran front-ends, where
+currently only supported by the Java and Fortran front ends, where
 this option defaults to true and false respectively.
 
 @item -ftrapv
@@ -18864,7 +18864,7 @@ This option instructs the compiler to assume that signed arithmetic
 overflow of addition, subtraction and multiplication wraps around
 using twos-complement representation.  This flag enables some optimizations
 and disables others.  This option is enabled by default for the Java
-front-end, as required by the Java language specification.
+front end, as required by the Java language specification.
 
 @item -fexceptions
 @opindex fexceptions
@@ -19279,7 +19279,7 @@ The resulting program has a discontiguous stack which can only
 overflow if the program is unable to allocate any more memory.  This
 is most useful when running threaded programs, as it is no longer
 necessary to calculate a good stack size to use for each thread.  This
-is currently only implemented for the i386 and x86_64 backends running
+is currently only implemented for the i386 and x86_64 back ends running
 GNU/Linux.
 
 When code compiled with @option{-fsplit-stack} calls code compiled
@@ -19381,20 +19381,20 @@ is at @uref{http://gcc.gnu.org/@/wiki/@/Visibility}.
 
 @item -fstrict-volatile-bitfields
 @opindex fstrict-volatile-bitfields
-This option should be used if accesses to volatile bitfields (or other
+This option should be used if accesses to volatile bit-fields (or other
 structure fields, although the compiler usually honors those types
 anyway) should use a single access of the width of the
 field's type, aligned to a natural alignment if possible.  For
 example, targets with memory-mapped peripheral registers might require
 all such accesses to be 16 bits wide; with this flag the user could
-declare all peripheral bitfields as ``unsigned short'' (assuming short
+declare all peripheral bit-fields as ``unsigned short'' (assuming short
 is 16 bits on these targets) to force GCC to use 16-bit accesses
 instead of, perhaps, a more efficient 32-bit access.
 
 If this option is disabled, the compiler will use the most efficient
 instruction.  In the previous example, that might be a 32-bit load
 instruction, even though that will access bytes that do not contain
-any portion of the bitfield, or memory-mapped registers unrelated to
+any portion of the bit-field, or memory-mapped registers unrelated to
 the one being updated.
 
 If the target requires strict alignment, and honoring the field

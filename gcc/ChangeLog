@@ -1,5 +1,10 @@
 2012-02-17  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* doc/invoke.texi: Minor copy-edits to bring into conformance with
+	GCC coding conventions.
+
+2012-02-17  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* doc/invoke.texi: Consistently hyphenate "big-endian"/"little-endian"
 	when used as adjectives.
 
