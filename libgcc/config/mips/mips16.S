@@ -566,15 +566,23 @@ CALL_STUB_NO_RET (__mips16_call_stub_10, 10)
    being called is 16 bits, in which case the copy is unnecessary;
    however, it's faster to always do the copy.  */
 
-#define CALL_STUB_RET(NAME, CODE, MODE)	\
-STARTFN (NAME);				\
-	move	$18,$31;		\
-	STUB_ARGS_##CODE;		\
-	.set	noreorder;		\
-	jalr	$2;			\
-	move	$25,$2;			\
-	.set	reorder;		\
-	MOVE_##MODE##_RET (f, $18);	\
+#define CALL_STUB_RET(NAME, CODE, MODE)					\
+STARTFN (NAME);								\
+	.cfi_startproc;							\
+	/* Create a fake CFA 4 bytes below the stack pointer.  */	\
+	.cfi_def_cfa 29,-4;						\
+	/* "Save" $sp in itself so we don't use the fake CFA.		\
+	   This is: DW_CFA_val_expression r29, { DW_OP_reg29 }.  */	\
+	.cfi_escape 0x16,29,1,0x6d;					\
+	move	$18,$31;						\
+	.cfi_register 31,18;						\
+	STUB_ARGS_##CODE;						\
+	.set	noreorder;						\
+	jalr	$2;							\
+	move	$25,$2;							\
+	.set	reorder;						\
+	MOVE_##MODE##_RET (f, $18);					\
+	.cfi_endproc;							\
 	ENDFN (NAME)
 
 /* First, instantiate the single-float set.  */

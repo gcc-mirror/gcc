@@ -6387,7 +6387,20 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
       assemble_start_function (stubdecl, stubname);
       mips_start_function_definition (stubname, false);
 
-      if (!fp_ret_p)
+      if (fp_ret_p)
+	{
+	  fprintf (asm_out_file, "\t.cfi_startproc\n");
+
+	  /* Create a fake CFA 4 bytes below the stack pointer.
+	     This works around unwinders (like libgcc's) that expect
+	     the CFA for non-signal frames to be unique.  */
+	  fprintf (asm_out_file, "\t.cfi_def_cfa 29,-4\n");
+
+	  /* "Save" $sp in itself so we don't use the fake CFA.
+	     This is: DW_CFA_val_expression r29, { DW_OP_reg29 }.  */
+	  fprintf (asm_out_file, "\t.cfi_escape 0x16,29,1,0x6d\n");
+	}
+      else
 	{
 	  /* Load the address of the MIPS16 function into $25.  Do this
 	     first so that targets with coprocessor interlocks can use
@@ -6405,12 +6418,7 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 	 registers.  */
       mips_output_args_xfer (fp_code, 't');
 
-      if (!fp_ret_p)
-	{
-	  /* Jump to the previously-loaded address.  */
-	  output_asm_insn ("jr\t%^", NULL);
-	}
-      else
+      if (fp_ret_p)
 	{
 	  /* Save the return address in $18 and call the non-MIPS16 function.
 	     The stub's caller knows that $18 might be clobbered, even though
@@ -6418,6 +6426,7 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 	  fprintf (asm_out_file, "\tmove\t%s,%s\n",
 		   reg_names[GP_REG_FIRST + 18], reg_names[RETURN_ADDR_REGNUM]);
 	  output_asm_insn (MIPS_CALL ("jal", &fn, 0, -1), &fn);
+	  fprintf (asm_out_file, "\t.cfi_register 31,18\n");
 
 	  /* Move the result from floating-point registers to
 	     general registers.  */
@@ -6470,6 +6479,12 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 	      gcc_unreachable ();
 	    }
 	  fprintf (asm_out_file, "\tjr\t%s\n", reg_names[GP_REG_FIRST + 18]);
+	  fprintf (asm_out_file, "\t.cfi_endproc\n");
+	}
+      else
+	{
+	  /* Jump to the previously-loaded address.  */
+	  output_asm_insn ("jr\t%^", NULL);
 	}
 
 #ifdef ASM_DECLARE_FUNCTION_SIZE
