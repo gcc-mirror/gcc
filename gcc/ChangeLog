@@ -1,5 +1,13 @@
 2012-02-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.c (mips_need_mips16_rdhwr_p): New variable.
+	(mips_get_tp): Set it.  Record that __mips16_rdhwr binds locally.
+	(mips_start_unique_function, mips_output_mips16_rdhwr)
+	(mips_code_end): New functions.
+	(TARGET_ASM_CODE_END): Define.
+
+2012-02-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips.c (mips16_build_call_stub): Add CFI information
 	to stubs with non-sibling calls.
 

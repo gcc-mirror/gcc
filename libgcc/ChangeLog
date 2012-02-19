@@ -1,5 +1,12 @@
 2012-02-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config.host (mips64*-*-linux*, mipsisa64*-*-linux*)
+	(mips*-*-linux*): Remove t-slibgcc-libgcc.
+	* config/mips/t-mips16 (LIB1ASMFUNCS): Remove __mips16_rdhwr.
+	* config/mips/mips16.S (__mips16_rdhwr): Delete.
+
+2012-02-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips16.S (CALL_STUB_RET): Add CFI information.
 
 2012-02-15  Iain Sandoe  <iains@gcc.gnu.org>
