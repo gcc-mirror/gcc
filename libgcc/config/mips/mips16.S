@@ -718,17 +718,4 @@ CALL_STUB_RET (__mips16_call_stub_dc_10, 10, DC)
 #endif
 #endif /* !__mips_single_float */
 
-#ifdef L_m16rdhwr
-STARTFN (__mips16_rdhwr)
-	/* Forced always hidden, because the PLT resolver function would
-	   not preserve all necessary registers.  */
-	.hidden	__mips16_rdhwr
-	.set	push
-	.set	mips32r2
-	.set	noreorder
-	rdhwr	$3,$29
-	.set	pop
-	j	$31
-	ENDFN (__mips16_rdhwr)
-#endif
 #endif

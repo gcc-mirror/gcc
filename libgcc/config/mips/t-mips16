@@ -36,8 +36,7 @@ LIB1ASMFUNCS = _m16addsf3 _m16subsf3 _m16mulsf3 _m16divsf3 \
 	_m16stubsc0 _m16stubsc1 _m16stubsc2 _m16stubsc5 _m16stubsc6 \
 	_m16stubsc9 _m16stubsc10 \
 	_m16stubdc0 _m16stubdc1 _m16stubdc2 _m16stubdc5 _m16stubdc6 \
-	_m16stubdc9 _m16stubdc10 \
-	_m16rdhwr
+	_m16stubdc9 _m16stubdc10
 
 SYNC = yes
 SYNC_CFLAGS = -mno-mips16
