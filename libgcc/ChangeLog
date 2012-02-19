@@ -1,3 +1,7 @@
+2012-02-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips16.S (CALL_STUB_RET): Add CFI information.
+
 2012-02-15  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR libitm/52220
