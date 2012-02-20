@@ -1,3 +1,7 @@
+2012-02-20  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.dg/bf-ms-layout-3.c: New testcase.
+
 2012-02-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR testsuite/52229

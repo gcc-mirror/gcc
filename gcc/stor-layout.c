@@ -1141,15 +1141,14 @@ place_field (record_layout_info rli, tree field)
     }
 
   /* Does this field automatically have alignment it needs by virtue
-     of the fields that precede it and the record's own alignment?
-     We already align ms_struct fields, so don't re-align them.  */
-  if (known_align < desired_align
-      && !targetm.ms_bitfield_layout_p (rli->t))
+     of the fields that precede it and the record's own alignment?  */
+  if (known_align < desired_align)
     {
       /* No, we need to skip space before this field.
 	 Bump the cumulative size to multiple of field alignment.  */
 
-      if (DECL_SOURCE_LOCATION (field) != BUILTINS_LOCATION)
+      if (!targetm.ms_bitfield_layout_p (rli->t)
+          && DECL_SOURCE_LOCATION (field) != BUILTINS_LOCATION)
 	warning (OPT_Wpadded, "padding struct to align %q+D", field);
 
       /* If the alignment is still within offset_align, just align
@@ -1171,7 +1170,8 @@ place_field (record_layout_info rli, tree field)
 
       if (! TREE_CONSTANT (rli->offset))
 	rli->offset_align = desired_align;
-
+      if (targetm.ms_bitfield_layout_p (rli->t))
+	rli->prev_field = NULL;
     }
 
   /* Handle compatibility with PCC.  Note that if the record has any
