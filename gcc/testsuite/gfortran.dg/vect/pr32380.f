@@ -259,5 +259,5 @@ c
       return
       end
 
-! { dg-final { scan-tree-dump-times "vectorized 7 loops" 1 "vect" } }
+! { dg-final { scan-tree-dump-times "vectorized 7 loops" 1 "vect" { xfail powerpc*-*-* ia64-*-*-* } } }
 ! { dg-final { cleanup-tree-dump "vect" } }
