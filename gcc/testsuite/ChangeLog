@@ -1,3 +1,9 @@
+2012-02-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52298
+	* gcc.dg/torture/pr52298.c: New testcase.
+	* gcc.dg/vect/pr52298.c: Likewise.
+
 2012-02-20  Georg-Johann Lay  <avr@gjlay.de>
 	
 	* gcc.dg/pr52132.c: Fix FAIL on 16-bit int platforms.

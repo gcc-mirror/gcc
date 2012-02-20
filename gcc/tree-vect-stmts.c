@@ -3753,7 +3753,9 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   if (!STMT_VINFO_DATA_REF (stmt_info))
     return false;
 
-  if (tree_int_cst_compare (DR_STEP (dr), size_zero_node) < 0)
+  if (tree_int_cst_compare (loop && nested_in_vect_loop_p (loop, stmt)
+			    ? STMT_VINFO_DR_STEP (stmt_info) : DR_STEP (dr),
+			    size_zero_node) < 0)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "negative step for store.");
@@ -4266,7 +4268,10 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   if (!STMT_VINFO_DATA_REF (stmt_info))
     return false;
 
-  negative = tree_int_cst_compare (DR_STEP (dr), size_zero_node) < 0;
+  negative = tree_int_cst_compare (loop && nested_in_vect_loop_p (loop, stmt)
+				   ? STMT_VINFO_DR_STEP (stmt_info)
+				   : DR_STEP (dr),
+				   size_zero_node) < 0;
   if (negative && ncopies > 1)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -4654,7 +4659,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
      nested within an outer-loop that is being vectorized.  */
 
   if (loop && nested_in_vect_loop_p (loop, stmt)
-      && (TREE_INT_CST_LOW (DR_STEP (dr))
+      && (TREE_INT_CST_LOW (STMT_VINFO_DR_STEP (stmt_info))
 	  % GET_MODE_SIZE (TYPE_MODE (vectype)) != 0))
     {
       gcc_assert (alignment_support_scheme != dr_explicit_realign_optimized);
