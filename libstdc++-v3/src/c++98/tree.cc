@@ -1,6 +1,6 @@
 // RB tree utilities implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2005, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2005, 2009, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,8 +56,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  _Rb_tree_node_base*
-  _Rb_tree_increment(_Rb_tree_node_base* __x) throw ()
+  static _Rb_tree_node_base*
+  local_Rb_tree_increment(_Rb_tree_node_base* __x) throw ()
   {
     if (__x->_M_right != 0) 
       {
@@ -79,14 +79,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __x;
   }
 
+  _Rb_tree_node_base*
+  _Rb_tree_increment(_Rb_tree_node_base* __x) throw ()
+  {
+    return local_Rb_tree_increment(__x);
+  }
+
   const _Rb_tree_node_base*
   _Rb_tree_increment(const _Rb_tree_node_base* __x) throw ()
   {
-    return _Rb_tree_increment(const_cast<_Rb_tree_node_base*>(__x));
+    return local_Rb_tree_increment(const_cast<_Rb_tree_node_base*>(__x));
   }
 
-  _Rb_tree_node_base*
-  _Rb_tree_decrement(_Rb_tree_node_base* __x) throw ()
+  static _Rb_tree_node_base*
+  local_Rb_tree_decrement(_Rb_tree_node_base* __x) throw ()
   {
     if (__x->_M_color == _S_red 
         && __x->_M_parent->_M_parent == __x)
@@ -111,10 +117,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __x;
   }
 
+  _Rb_tree_node_base*
+  _Rb_tree_decrement(_Rb_tree_node_base* __x) throw ()
+  {
+    return local_Rb_tree_decrement(__x);
+  }
+
   const _Rb_tree_node_base*
   _Rb_tree_decrement(const _Rb_tree_node_base* __x) throw ()
   {
-    return _Rb_tree_decrement(const_cast<_Rb_tree_node_base*>(__x));
+    return local_Rb_tree_decrement(const_cast<_Rb_tree_node_base*>(__x));
   }
 
   static void 
