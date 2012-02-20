@@ -85,9 +85,9 @@ static gl_mg o_gl_mg;
 class gl_wt_dispatch : public abi_dispatch
 {
 protected:
-  static void pre_write(const void *addr, size_t len)
+  static void pre_write(const void *addr, size_t len,
+      gtm_thread *tx = gtm_thr())
   {
-    gtm_thread *tx = gtm_thr();
     gtm_word v = tx->shared_state.load(memory_order_relaxed);
     if (unlikely(!gl_mg::is_locked(v)))
       {
@@ -123,7 +123,7 @@ protected:
     tx->undolog.log(addr, len);
   }
 
-  static void validate()
+  static void validate(gtm_thread *tx = gtm_thr())
   {
     // Check that snapshot is consistent.  We expect the previous data load to
     // have acquire memory order, or be atomic and followed by an acquire
@@ -137,7 +137,6 @@ protected:
     // or read an orec value that was written after the data had been written.
     // Either will allow us to detect inconsistent reads because it will have
     // a higher/different value.
-    gtm_thread *tx = gtm_thr();
     gtm_word l = o_gl_mg.orec.load(memory_order_relaxed);
     if (l != tx->shared_state.load(memory_order_relaxed))
       tx->restart(RESTART_VALIDATE_READ);
@@ -198,9 +197,13 @@ public:
   static void memtransfer_static(void *dst, const void* src, size_t size,
       bool may_overlap, ls_modifier dst_mod, ls_modifier src_mod)
   {
-    if ((dst_mod != WaW && src_mod != RaW)
-	&& (dst_mod != NONTXNAL || src_mod == RfW))
-      pre_write(dst, size);
+    gtm_thread *tx = gtm_thr();
+    if (dst_mod != WaW && dst_mod != NONTXNAL)
+      pre_write(dst, size, tx);
+    // We need at least undo-logging for an RfW src region because we might
+    // subsequently write there with WaW.
+    if (src_mod == RfW)
+      pre_write(src, size, tx);
 
     // FIXME We should use atomics here (see store()).  Let's just hope that
     // memcpy/memmove are good enough.
@@ -211,7 +214,7 @@ public:
 
     if (src_mod != RfW && src_mod != RaW && src_mod != NONTXNAL
 	&& dst_mod != WaW)
-      validate();
+      validate(tx);
   }
 
   static void memset_static(void *dst, int c, size_t size, ls_modifier mod)
