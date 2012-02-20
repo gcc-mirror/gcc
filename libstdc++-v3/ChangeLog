@@ -1,10 +1,17 @@
+2012-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52309
+	* include/bits/hashtable_policy.h (_Equality_base<, true,>::
+    	_M_equal(const _Hashtable&)): Compare values with operator==.
+	* testsuite/23_containers/unordered_set/operators/52309.cc: New.
+
 2012-02-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/51798 continued.
 	* acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): Grep for
 	__atomic_, not __sync.
 	* configure: Regenerated.
-	
+
 2012-02-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/47058
