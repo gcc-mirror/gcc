@@ -314,22 +314,26 @@ public:
     // value that is correct wrt. privatization safety.
     if (gl_mg::is_locked(v))
       {
-	// Release the global orec, increasing its version number / timestamp.
-        // See begin_or_restart() for why we need release memory order here.
+	// With our rollback, global time increases.
 	v = gl_mg::clear_locked(v) + 1;
-	o_gl_mg.orec.store(v, memory_order_release);
 
-	// Also reset the timestamp published via shared_state.
+	// First reset the timestamp published via shared_state.  Release
+	// memory order will make this happen after undoing prior data writes.
+	// This must also happen before we actually release the global orec
+	// next, so that future update transactions in other threads observe
+	// a meaningful snapshot time for our transaction; otherwise, they
+	// could read a shared_store value with the LOCK_BIT set, which can
+	// break privatization safety because it's larger than the actual
+	// snapshot time.  Note that we only need to consider other update
+	// transactions because only those will potentially privatize data.
 	tx->shared_state.store(v, memory_order_release);
 
-	// We need a store-load barrier after this store to prevent it
-	// from becoming visible after later data loads because the
-	// previous value of shared_state has been higher than the actual
-	// snapshot time (the lock bit had been set), which could break
-	// privatization safety. We do not need a barrier before this
-	// store (see pre_write() for an explanation).
-	// ??? What is the precise reasoning in the C++11 model?
-	atomic_thread_fence(memory_order_seq_cst);
+	// Release the global orec, increasing its version number / timestamp.
+	// See begin_or_restart() for why we need release memory order here,
+	// and we also need it to make future update transactions read the
+	// prior update to shared_state too (update transactions acquire the
+	// global orec with acquire memory order).
+	o_gl_mg.orec.store(v, memory_order_release);
       }
 
   }
