@@ -1,3 +1,9 @@
+2012-02-20  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/52238
+	* stor-layout.c (place_field): Handle desired_align for
+	ms-bitfields, too.
+
 2012-02-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52298
