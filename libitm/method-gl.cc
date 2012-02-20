@@ -76,12 +76,10 @@ static gl_mg o_gl_mg;
 // validate that no other update transaction comitted before we acquired the
 // orec, so we have the most recent timestamp and no other transaction can
 // commit until we have committed).
-// However, we therefore cannot use this method for a serial transaction
-// (because shared_state needs to remain at ~0) and we have to be careful
-// when switching to serial mode (see the special handling in trycommit() and
-// rollback()).
-// ??? This sharing adds some complexity wrt. serial mode. Just use a separate
-// state variable?
+// However, we therefore depend on shared_state not being modified by the
+// serial lock during upgrades to serial mode, which is ensured by
+// gtm_thread::serialirr_mode by not calling gtm_rwlock::write_upgrade_finish
+// before we have committed or rolled back.
 class gl_wt_dispatch : public abi_dispatch
 {
 protected:
@@ -283,15 +281,6 @@ public:
     gtm_thread* tx = gtm_thr();
     gtm_word v = tx->shared_state.load(memory_order_relaxed);
 
-    // Special case: If shared_state is ~0, then we have acquired the
-    // serial lock (tx->state is not updated yet). In this case, the previous
-    // value isn't available anymore, so grab it from the global lock, which
-    // must have a meaningful value because no other transactions are active
-    // anymore. In particular, if it is locked, then we are an update
-    // transaction, which is all we care about for commit.
-    if (v == ~(typeof v)0)
-      v = o_gl_mg.orec.load(memory_order_relaxed);
-
     // Release the orec but do not reset shared_state, which will be modified
     // by the serial lock right after our commit anyway. Also, resetting
     // shared state here would interfere with the serial lock's use of this
@@ -319,15 +308,6 @@ public:
 
     gtm_thread *tx = gtm_thr();
     gtm_word v = tx->shared_state.load(memory_order_relaxed);
-    // Special case: If shared_state is ~0, then we have acquired the
-    // serial lock (tx->state is not updated yet). In this case, the previous
-    // value isn't available anymore, so grab it from the global lock, which
-    // must have a meaningful value because no other transactions are active
-    // anymore. In particular, if it is locked, then we are an update
-    // transaction, which is all we care about for rollback.
-    bool is_serial = v == ~(typeof v)0;
-    if (is_serial)
-      v = o_gl_mg.orec.load(memory_order_relaxed);
 
     // Release lock and increment version number to prevent dirty reads.
     // Also reset shared state here, so that begin_or_restart() can expect a
@@ -340,10 +320,7 @@ public:
 	o_gl_mg.orec.store(v, memory_order_release);
 
 	// Also reset the timestamp published via shared_state.
-	// Special case: Only do this if we are not a serial transaction
-	// because otherwise, we would interfere with the serial lock.
-	if (!is_serial)
-	  tx->shared_state.store(v, memory_order_release);
+	tx->shared_state.store(v, memory_order_release);
 
 	// We need a store-load barrier after this store to prevent it
 	// from becoming visible after later data loads because the
