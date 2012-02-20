@@ -104,16 +104,27 @@ protected:
 	  tx->restart(RESTART_VALIDATE_WRITE);
 
 	// CAS global orec from our snapshot time to the locked state.
-	// We need acq_rel memory order here to synchronize with other loads
-	// and modifications of orec.
+        // We need acquire memory order here to synchronize with other
+        // (ownership) releases of the orec.  We do not need acq_rel order
+        // because whenever another thread reads from this CAS'
+        // modification, then it will abort anyway and does not rely on
+        // any further happens-before relation to be established.
+	// Also note that unlike in ml_wt's increase of the global time
+	// base (remember that the global orec is used as time base), we do
+	// not need require memory order here because we do not need to make
+	// prior orec acquisitions visible to other threads that try to
+	// extend their snapshot time.
 	if (!o_gl_mg.orec.compare_exchange_strong (now, gl_mg::set_locked(now),
-						   memory_order_acq_rel))
+						   memory_order_acquire))
 	  tx->restart(RESTART_LOCKED_WRITE);
 
 	// We use an explicit fence here to avoid having to use release
 	// memory order for all subsequent data stores.  This fence will
 	// synchronize with loads of the data with acquire memory order.  See
 	// validate() for why this is necessary.
+        // Adding require memory order to the prior CAS is not sufficient,
+        // at least according to the Batty et al. formalization of the
+        // memory model.
 	atomic_thread_fence(memory_order_release);
 
 	// Set shared_state to new value.
