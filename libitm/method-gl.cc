@@ -41,7 +41,8 @@ struct gl_mg : public method_group
   static gtm_word clear_locked(gtm_word l) { return l & ~LOCK_BIT; }
 
   // The global ownership record.
-  atomic<gtm_word> orec;
+  // No tail-padding necessary (the virtual functions aren't used frequently).
+  atomic<gtm_word> orec __attribute__((aligned(HW_CACHELINE_SIZE)));
 
   virtual void init()
   {
@@ -52,7 +53,6 @@ struct gl_mg : public method_group
   virtual void fini() { }
 };
 
-// TODO cacheline padding
 static gl_mg o_gl_mg;
 
 
