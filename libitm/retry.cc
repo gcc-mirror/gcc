@@ -27,8 +27,16 @@
 #include <ctype.h>
 #include "libitm_i.h"
 
-// The default TM method used when starting a new transaction.
-static GTM::abi_dispatch* default_dispatch = 0;
+// The default TM method used when starting a new transaction.  Initialized
+// in number_of_threads_changed() below.
+// Access to this variable is always synchronized with help of the serial
+// lock, except one read access that happens in decide_begin_dispatch() before
+// a transaction has become active (by acquiring the serial lock in read or
+// write mode).  The default_dispatch is only changed and initialized in
+// serial mode.  Transactions stay active when they restart (see beginend.cc),
+// thus decide_retry_strategy() can expect default_dispatch to be unmodified.
+// See decide_begin_dispatch() for further comments.
+static std::atomic<GTM::abi_dispatch*> default_dispatch;
 // The default TM method as requested by the user, if any.
 static GTM::abi_dispatch* default_dispatch_user = 0;
 
@@ -57,20 +65,24 @@ GTM::gtm_thread::decide_retry_strategy (gtm_restart_reason r)
 	  // given that re-inits should be very infrequent.
 	  serial_lock.read_unlock(this);
 	  serial_lock.write_lock();
-	  if (disp->get_method_group() == default_dispatch->get_method_group())
+	  if (disp->get_method_group()
+	      == default_dispatch.load(memory_order_relaxed)
+	      ->get_method_group())
 	    // Still the same method group.
 	    disp->get_method_group()->reinit();
 	  serial_lock.write_unlock();
-	  serial_lock.read_lock(this);
-	  if (disp->get_method_group() != default_dispatch->get_method_group())
-	    {
-	      disp = default_dispatch;
-	      set_abi_disp(disp);
-	    }
+	  // Also, we're making the transaction inactive, so when we become
+	  // active again, some other thread might have changed the default
+	  // dispatch, so we run the same code as for the first execution
+	  // attempt.
+	  disp = decide_begin_dispatch(prop);
+	  set_abi_disp(disp);
 	}
       else
 	// We are a serial transaction already, which makes things simple.
 	disp->get_method_group()->reinit();
+
+      return;
     }
 
   bool retry_irr = (r == RESTART_SERIAL_IRR);
@@ -124,48 +136,89 @@ GTM::gtm_thread::decide_retry_strategy (gtm_restart_reason r)
 
 
 // Decides which TM method should be used on the first attempt to run this
-// transaction.
+// transaction.  Acquires the serial lock and sets transaction state
+// according to the chosen TM method.
 GTM::abi_dispatch*
 GTM::gtm_thread::decide_begin_dispatch (uint32_t prop)
 {
+  abi_dispatch* dd;
   // TODO Pay more attention to prop flags (eg, *omitted) when selecting
   // dispatch.
+  // ??? We go irrevocable eagerly here, which is not always good for
+  // performance.  Don't do this?
   if ((prop & pr_doesGoIrrevocable) || !(prop & pr_instrumentedCode))
-    return dispatch_serialirr();
+    dd = dispatch_serialirr();
 
-  // If we might need closed nesting and the default dispatch has an
-  // alternative that supports closed nesting, use it.
-  // ??? We could choose another TM method that we know supports closed
-  // nesting but isn't the default (e.g., dispatch_serial()). However, we
-  // assume that aborts that need closed nesting are infrequent, so don't
-  // choose a non-default method until we have to actually restart the
-  // transaction.
-  if (!(prop & pr_hasNoAbort) && !default_dispatch->closed_nesting()
-      && default_dispatch->closed_nesting_alternative())
-    return default_dispatch->closed_nesting_alternative();
+  else
+    {
+      // Load the default dispatch.  We're not an active transaction and so it
+      // can change concurrently but will still be some valid dispatch.
+      // Relaxed memory order is okay because we expect each dispatch to be
+      // constructed properly already (at least that its closed_nesting() and
+      // closed_nesting_alternatives() will return sensible values).  It is
+      // harmless if we incorrectly chose the serial or serialirr methods, and
+      // for all other methods we will acquire the serial lock in read mode
+      // and load the default dispatch again.
+      abi_dispatch* dd_orig = default_dispatch.load(memory_order_relaxed);
+      dd = dd_orig;
 
-  // No special case, just use the default dispatch.
-  return default_dispatch;
+      // If we might need closed nesting and the default dispatch has an
+      // alternative that supports closed nesting, use it.
+      // ??? We could choose another TM method that we know supports closed
+      // nesting but isn't the default (e.g., dispatch_serial()). However, we
+      // assume that aborts that need closed nesting are infrequent, so don't
+      // choose a non-default method until we have to actually restart the
+      // transaction.
+      if (!(prop & pr_hasNoAbort) && !dd->closed_nesting()
+	  && dd->closed_nesting_alternative())
+	dd = dd->closed_nesting_alternative();
+
+      if (dd != dispatch_serial() && dd != dispatch_serialirr())
+	{
+	  // The current dispatch is supposedly a non-serial one.  Become an
+	  // active transaction and verify this.  Relaxed memory order is fine
+	  // because the serial lock itself will have established
+	  // happens-before for any change to the selected dispatch.
+	  serial_lock.read_lock (this);
+	  if (default_dispatch.load(memory_order_relaxed) == dd_orig)
+	    return dd;
+
+	  // If we raced with a concurrent modification of default_dispatch,
+	  // just fall back to serialirr.  The dispatch choice might not be
+	  // up-to-date anymore, but this is harmless.
+	  serial_lock.read_unlock (this);
+	  dd = dispatch_serialirr();
+	}
+    }
+
+  // We are some kind of serial transaction.
+  serial_lock.write_lock();
+  if (dd == dispatch_serialirr())
+    state = STATE_SERIAL | STATE_IRREVOCABLE;
+  else
+    state = STATE_SERIAL;
+  return dd;
 }
 
 
 void
 GTM::gtm_thread::set_default_dispatch(GTM::abi_dispatch* disp)
 {
-  if (default_dispatch == disp)
+  abi_dispatch* dd = default_dispatch.load(memory_order_relaxed);
+  if (dd == disp)
     return;
-  if (default_dispatch)
+  if (dd)
     {
       // If we are switching method groups, initialize and shut down properly.
-      if (default_dispatch->get_method_group() != disp->get_method_group())
+      if (dd->get_method_group() != disp->get_method_group())
 	{
-	  default_dispatch->get_method_group()->fini();
+	  dd->get_method_group()->fini();
 	  disp->get_method_group()->init();
 	}
     }
   else
     disp->get_method_group()->init();
-  default_dispatch = disp;
+  default_dispatch.store(disp, memory_order_relaxed);
 }
 
 
@@ -233,6 +286,7 @@ GTM::gtm_thread::number_of_threads_changed(unsigned previous, unsigned now)
 	{
 	  initialized = true;
 	  // Check for user preferences here.
+	  default_dispatch = 0;
 	  default_dispatch_user = parse_default_method();
 	}
     }
