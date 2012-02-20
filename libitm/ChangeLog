@@ -1,5 +1,10 @@
 2012-02-20  Torvald Riegel  <triegel@redhat.com>
 
+	* method-gl.cc (gl_wt_dispatch::memtransfer_static): Add missing undo
+	for RfW src.  Optimize number of calls to gtm_thr.
+
+2012-02-20  Torvald Riegel  <triegel@redhat.com>
+
 	* beginend.cc (GTM::gtm_thread::begin_transaction): Move serial lock
 	acquisition to ...
 	* retry.cc (GTM::gtm_thread::decide_begin_dispatch): ... here.
