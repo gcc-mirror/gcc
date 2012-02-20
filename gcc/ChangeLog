@@ -1,3 +1,9 @@
+2012-02-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/52141
+	* trans-mem.c (ipa_tm_scan_irr_block): Error out on GIMPLE_ASM's
+	in a transaction safe function.
+
 2012-02-20  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/52238
