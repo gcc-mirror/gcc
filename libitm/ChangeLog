@@ -1,3 +1,15 @@
+2012-02-20  Torvald Riegel  <triegel@redhat.com>
+
+	* beginend.cc (GTM::gtm_thread::begin_transaction): Move serial lock
+	acquisition to ...
+	* retry.cc (GTM::gtm_thread::decide_begin_dispatch): ... here.
+	(default_dispatch): Make atomic.
+	(GTM::gtm_thread::set_default_dispatch): Access atomically.
+	(GTM::gtm_thread::decide_retry_strategy): Access atomically and
+	use decide_begin_dispatch() if default_dispatch might have changed.
+	(GTM::gtm_thread::number_of_threads_changed): Initialize
+	default_dispatch here.
+
 2012-02-15  Iain Sandoe  <iains@gcc.gnu.org>
 	    Patrick Marlier  <patrick.marlier@gmail.com>
 
