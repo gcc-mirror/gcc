@@ -1,3 +1,10 @@
+2012-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52309
+	* include/bits/hashtable_policy.h (_Equality_base<, true,>::
+    	_M_equal(const _Hashtable&)): Compare values with operator==.
+	* testsuite/23_containers/unordered_set/operators/52309.cc: New.
+
 2012-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/51795
