@@ -1,3 +1,20 @@
+2012-02-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/50166
+	* acinclude.m4 (gcc_AC_INITFINI_ARRAY): Require gcc_SUN_LD_VERSION.
+	Define _start.
+	Remove -e 0 from $gcc_cv_ld invocation.
+	Only use __GLIBC_PREREQ if defined.
+	Enable on Solaris since Solaris 8 patch.
+	(gcc_SUN_LD_VERSION): New macro.
+	* configure.ac (ld_ver) <*-*-solaris2*>: Refer to
+	gcc_SUN_LD_VERSION for version number format.
+	* configure: Regenerate.
+	* varasm.c (get_elf_initfini_array_priority_section): Set
+	SECTION_NOTYPE for non-default priority.
+	Use get_section instead of get_unnamed_section to emit
+	.init_array/.fini_array with default priority.
+
 2012-02-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_need_mips16_rdhwr_p): New variable.
