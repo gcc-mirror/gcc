@@ -1,6 +1,7 @@
 2012-02-20  Georg-Johann Lay  <avr@gjlay.de>
 	
 	* gcc.dg/pr52132.c: Fix FAIL on 16-bit int platforms.
+	* gcc.c-torture/execute/pr52286.c: Ditto.
 
 2012-02-20  Jakub Jelinek  <jakub@redhat.com>
 
