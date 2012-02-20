@@ -1,3 +1,8 @@
+2012-02-20  Kai Tietz  <ktietz@redhat.com>
+
+	* config.host (i686-*-mingw*): Set md_unwind_header only for dw2-mode
+	to w32-unwind.h header.
+
 2012-02-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config.host (mips64*-*-linux*, mipsisa64*-*-linux*)
