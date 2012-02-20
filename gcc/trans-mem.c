@@ -3736,6 +3736,13 @@ ipa_tm_scan_irr_block (basic_block bb)
 	     assembly statement is not relevant to the transaction
 	     is to wrap it in a __tm_waiver block.  This is not
 	     yet implemented, so we can't check for it.  */
+	  if (is_tm_safe (current_function_decl))
+	    {
+	      tree t = build1 (NOP_EXPR, void_type_node, size_zero_node);
+	      SET_EXPR_LOCATION (t, gimple_location (stmt));
+	      TREE_BLOCK (t) = gimple_block (stmt);
+	      error ("%Kasm not allowed in %<transaction_safe%> function", t);
+	    }
 	  return true;
 
 	default:
