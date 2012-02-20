@@ -7658,7 +7658,7 @@ get_elf_initfini_array_priority_section (int priority,
       sprintf (buf, "%s.%.5u", 
 	       constructor_p ? ".init_array" : ".fini_array",
 	       priority);
-      sec = get_section (buf, SECTION_WRITE, NULL_TREE);
+      sec = get_section (buf, SECTION_WRITE | SECTION_NOTYPE, NULL_TREE);
     }
   else
     {
@@ -7666,16 +7666,16 @@ get_elf_initfini_array_priority_section (int priority,
 	{
 	  if (elf_init_array_section == NULL)
 	    elf_init_array_section
-	      = get_unnamed_section (0, output_section_asm_op,
-				     "\t.section\t.init_array");
+	      = get_section (".init_array",
+			     SECTION_WRITE | SECTION_NOTYPE, NULL_TREE);
 	  sec = elf_init_array_section;
 	}
       else
 	{
 	  if (elf_fini_array_section == NULL)
 	    elf_fini_array_section
-	      = get_unnamed_section (0, output_section_asm_op,
-				     "\t.section\t.fini_array");
+	      = get_section (".fini_array",
+			     SECTION_WRITE | SECTION_NOTYPE, NULL_TREE);
 	  sec = elf_fini_array_section;
 	}
     }

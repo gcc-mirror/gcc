@@ -1,4 +1,5 @@
-dnl Copyright (C) 2005, 2006, 2007, 2008, 2011 Free Software Foundation, Inc.
+dnl Copyright (C) 2005, 2006, 2007, 2008, 2011, 2012
+dnl Free Software Foundation, Inc.
 dnl
 dnl This file is part of GCC.
 dnl
@@ -370,7 +371,8 @@ fi
 fi])
 
 AC_DEFUN([gcc_AC_INITFINI_ARRAY],
-[AC_ARG_ENABLE(initfini-array,
+[AC_REQUIRE([gcc_SUN_LD_VERSION])dnl
+AC_ARG_ENABLE(initfini-array,
 	[  --enable-initfini-array	use .init_array/.fini_array sections],
 	[], [
 AC_CACHE_CHECK(for .preinit_array/.init_array/.fini_array support,
@@ -427,9 +429,11 @@ int (*fp) (void) __attribute__ ((section (".init_array"))) = foo;
 .balign 4
 .byte 'H', 'H', 'H', 'H'
 .text
+.globl _start
+_start:
 EOF
 	  if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
-	     && $gcc_cv_ld -e 0 -o conftest conftest.o > /dev/null 2>&1 \
+	     && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
 	     && $gcc_cv_objdump -s -j .init_array conftest \
 		| grep HHHHFFFFDDDDBBBB > /dev/null 2>&1 \
 	     && $gcc_cv_objdump -s -j .fini_array conftest \
@@ -442,14 +446,38 @@ changequote([,])dnl
 	fi
 	AC_PREPROC_IFELSE([AC_LANG_SOURCE([
 #ifndef __ELF__
-#error Not an ELF OS
+# error Not an ELF OS
 #endif
 #include <stdlib.h>
-#if defined __GLIBC_PREREQ && __GLIBC_PREREQ (2, 4)
+#if defined __GLIBC_PREREQ
+# if __GLIBC_PREREQ (2, 4)
+# else
+#  error GLIBC 2.4 required
+# endif
 #else
-#error The C library not known to support .init_array/.fini_array
+# if defined __sun__ && defined __svr4__
+   /* Solaris ld.so.1 supports .init_array/.fini_array since Solaris 8.  */
+# else
+#  error The C library not known to support .init_array/.fini_array
+# endif
 #endif
-])],, [gcc_cv_initfini_array=no]);;
+])],[
+    case "${target}" in
+      *-*-solaris2.8*)
+	# .init_array/.fini_array support was introduced in Solaris 8
+	# patches 109147-08 (sparc) and 109148-08 (x86).  Since ld.so.1 and
+	# ld are guaranteed to be updated in lockstep, we can check ld -V
+	# instead.  Unfortunately, proper ld version numbers were only
+	# introduced in rev. -14, so we check for that.
+  	if test "$gcc_cv_sun_ld_vers_minor" -lt 272; then
+	  gcc_cv_initfini_array=no
+	fi
+      ;;
+      *-*-solaris2.9* | *-*-solaris2.1[[0-9]]*)
+        # .init_array/.fini_array support is present since Solaris 9 FCS.
+        ;;
+    esac
+], [gcc_cv_initfini_array=no]);;
     esac
   else
     AC_MSG_CHECKING(cross compile... guessing)
@@ -568,6 +596,43 @@ ifelse([$7],,,[dnl
 if test $[$2] = yes; then
   $7
 fi])])
+
+dnl gcc_SUN_LD_VERSION
+dnl
+dnl Determines Sun linker version numbers, setting gcc_cv_sun_ld_vers to
+dnl the complete version number and gcc_cv_sun_ld_vers_{major, minor} to
+dnl the corresponding fields.
+dnl
+dnl ld and ld.so.1 are guaranteed to be updated in lockstep, so ld version
+dnl numbers can be used in ld.so.1 feature checks even if a different
+dnl linker is configured.
+dnl
+AC_DEFUN([gcc_SUN_LD_VERSION],
+[changequote(,)dnl
+if test "x${build}" = "x${target}" && test "x${build}" = "x${host}"; then
+  case "${target}" in
+    *-*-solaris2*)
+      #
+      # Solaris 2 ld -V output looks like this for a regular version:
+      #
+      # ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1699
+      #
+      # but test versions add stuff at the end:
+      #
+      # ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1701:onnv-ab196087-6931056-03/25/10
+      #
+      gcc_cv_sun_ld_ver=`/usr/ccs/bin/ld -V 2>&1`
+      if echo "$gcc_cv_sun_ld_ver" | grep 'Solaris Link Editors' > /dev/null; then
+	gcc_cv_sun_ld_vers=`echo $gcc_cv_sun_ld_ver | sed -n \
+	  -e 's,^.*: 5\.[0-9][0-9]*-\([0-9]\.[0-9][0-9]*\).*$,\1,p'`
+	gcc_cv_sun_ld_vers_major=`expr "$gcc_cv_sun_ld_vers" : '\([0-9]*\)'`
+	gcc_cv_sun_ld_vers_minor=`expr "$gcc_cv_sun_ld_vers" : '[0-9]*\.\([0-9]*\)'`
+      fi
+      ;;
+  esac
+fi
+changequote([,])dnl
+])
 
 dnl GCC_TARGET_TEMPLATE(KEY)
 dnl ------------------------
