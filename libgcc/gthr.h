@@ -135,6 +135,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 */
 
 #if SUPPORTS_WEAK
+/* The pe-coff weak support isn't fully compatible to ELF's weak.
+   For static libraries it might would work, but as we need to deal
+   with shared versions too, we disable it for mingw-targets.  */
+#ifdef __MINGW32__
+#undef GTHREAD_USE_WEAK
+#define GTHREAD_USE_WEAK 0
+#endif
+
 #ifndef GTHREAD_USE_WEAK
 #define GTHREAD_USE_WEAK 1
 #endif
