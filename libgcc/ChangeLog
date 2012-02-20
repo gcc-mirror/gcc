@@ -1,5 +1,8 @@
 2012-02-20  Kai Tietz  <ktietz@redhat.com>
 
+	PR libstdc++/52300
+	* gthr.h (GTHREAD_USE_WEAK): Define as zero for mingw.
+
 	* config.host (i686-*-mingw*): Set md_unwind_header only for dw2-mode
 	to w32-unwind.h header.
 
