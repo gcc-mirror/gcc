@@ -1,5 +1,9 @@
 2012-02-20  Torvald Riegel  <triegel@redhat.com>
 
+	* method-gl.cc (gl_wt_dispatch::rollback): Optimize memory orders.
+
+2012-02-20  Torvald Riegel  <triegel@redhat.com>
+
 	* method-gl.cc (gl_wt_dispatch::trycommit): Remove handling of
 	serial mode corner cases made obsolete by prior gtm_rwlock changes.
 	(gl_wt_dispatch.rollback): Same.
