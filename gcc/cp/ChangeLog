@@ -1,3 +1,9 @@
+2012-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/52312
+	* typeck.c (check_literal_operator_args): Initialize *long_double_p
+	and *long_long_unsigned_p even if processing_template_decl.
+
 2012-02-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52248
