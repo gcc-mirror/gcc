@@ -2319,7 +2319,7 @@ vect_analyze_data_ref_access (struct data_reference *dr)
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = NULL;
-  HOST_WIDE_INT dr_step = TREE_INT_CST_LOW (step);
+  HOST_WIDE_INT dr_step;
 
   if (loop_vinfo)
     loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -2332,6 +2332,7 @@ vect_analyze_data_ref_access (struct data_reference *dr)
     }
 
   /* Allow invariant loads in loops.  */
+  dr_step = TREE_INT_CST_LOW (step);
   if (loop_vinfo && dr_step == 0)
     {
       GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) = NULL;

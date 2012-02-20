@@ -1,3 +1,13 @@
+2012-02-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52298
+	* tree-vect-stmts.c (vectorizable_store): Properly use
+	STMT_VINFO_DR_STEP instead of DR_STEP when vectorizing
+	outer loops.
+	(vectorizable_load): Likewise.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_access):
+	Access DR_STEP after ensuring it is not NULL.
+
 2012-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/52286
