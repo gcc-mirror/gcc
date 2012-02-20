@@ -1,3 +1,8 @@
+2012-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52286
+	* gcc.c-torture/execute/pr52286.c: New test.
+
 2012-02-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52295

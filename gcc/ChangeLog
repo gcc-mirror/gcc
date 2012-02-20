@@ -1,3 +1,10 @@
+2012-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52286
+	* fold-const.c (fold_binary_loc): For (X & C1) | C2
+	optimization use double_int_to_tree instead of build_int_cst_wide,
+	rewrite to use double_int vars.
+
 2012-02-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/50166
