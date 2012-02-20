@@ -1,5 +1,15 @@
 2012-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/52241
+	* src/c++98/tree.cc (local_Rb_tree_increment,
+	local_Rb_tree_decrement): Add.
+	(_Rb_tree_increment(const _Rb_tree_node_base*),
+	_Rb_tree_decrement(const _Rb_tree_node_base*)): Use the latter.
+	(_Rb_tree_increment(_Rb_tree_node_base*),
+	_Rb_tree_decrement(_Rb_tree_node_base*)): New.
+
+2012-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/52309
 	* include/bits/hashtable_policy.h (_Equality_base<, true,>::
     	_M_equal(const _Hashtable&)): Compare values with operator==.
