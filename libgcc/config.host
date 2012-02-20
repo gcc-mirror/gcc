@@ -606,6 +606,7 @@ i[34567]86-*-mingw*)
 		tmake_eh_file="i386/t-sjlj-eh"
 	else
 		tmake_eh_file="i386/t-dw2-eh"
+		md_unwind_header=i386/w32-unwind.h
 	fi
 	# Shared libgcc DLL install dir depends on cross/native build.
 	if test x${build} = x${host} ; then
@@ -614,7 +615,6 @@ i[34567]86-*-mingw*)
 		tmake_dlldir_file="i386/t-dlldir-x"
 	fi
 	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-cygming i386/t-mingw32 i386/t-crtfm i386/t-chkstk t-dfprules"
-	md_unwind_header=i386/w32-unwind.h
 	;;
 x86_64-*-mingw*)
 	case ${target_thread_file} in
