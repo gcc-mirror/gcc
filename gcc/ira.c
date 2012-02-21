@@ -1,5 +1,5 @@
 /* Integrated Register Allocator (IRA) entry point.
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
@@ -2089,7 +2089,7 @@ check_allocation (void)
 	  int this_regno = hard_regno;
 	  if (n > 1)
 	    {
-	      if (WORDS_BIG_ENDIAN)
+	      if (REG_WORDS_BIG_ENDIAN)
 		this_regno += n - i - 1;
 	      else
 		this_regno += i;
@@ -2108,7 +2108,7 @@ check_allocation (void)
 	      if (ALLOCNO_NUM_OBJECTS (conflict_a) > 1
 		  && conflict_nregs == ALLOCNO_NUM_OBJECTS (conflict_a))
 		{
-		  if (WORDS_BIG_ENDIAN)
+		  if (REG_WORDS_BIG_ENDIAN)
 		    conflict_hard_regno += (ALLOCNO_NUM_OBJECTS (conflict_a)
 					    - OBJECT_SUBWORD (conflict_obj) - 1);
 		  else

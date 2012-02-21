@@ -1,5 +1,5 @@
 /* IRA allocation based on graph coloring.
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
@@ -1067,7 +1067,7 @@ setup_profitable_hard_regs (void)
 		{
 		  int num = OBJECT_SUBWORD (conflict_obj);
 		  
-		  if (WORDS_BIG_ENDIAN)
+		  if (REG_WORDS_BIG_ENDIAN)
 		    CLEAR_HARD_REG_BIT
 		      (ALLOCNO_COLOR_DATA (conflict_a)->profitable_hard_regs,
 		       hard_regno + nobj - num - 1);
@@ -1451,7 +1451,7 @@ check_hard_reg_p (ira_allocno_t a, int hard_regno,
       
       if (nregs == nwords)
 	{
-	  if (WORDS_BIG_ENDIAN)
+	  if (REG_WORDS_BIG_ENDIAN)
 	    set_to_test_start = nwords - j - 1;
 	  else
 	    set_to_test_start = j;
@@ -1610,7 +1610,7 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 		    {
 		      int num = OBJECT_SUBWORD (conflict_obj);
 
-		      if (WORDS_BIG_ENDIAN)
+		      if (REG_WORDS_BIG_ENDIAN)
 			SET_HARD_REG_BIT (conflicting_regs[word],
 					  hard_regno + n_objects - num - 1);
 		      else
