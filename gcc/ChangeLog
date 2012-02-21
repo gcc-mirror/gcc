@@ -1,14 +1,21 @@
-2012-01-21  Georg-Johann Lay  <avr@gjlay.de>
+2012-02-21  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* ira.c (check_allocation): Use REG_WORDS_BIG_ENDIAN, not
+	WORDS_BIG_ENDIAN.
+	* ira-color.c (setup_profitable_hard_regs, check_hard_reg_p,
+	assign_hard_reg): Likewise.
+
+2012-02-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (neghi2): Remove "!d,0" alternative. Tweak "r,0".
 
-2012-01-21  Georg-Johann Lay  <avr@gjlay.de>
+2012-02-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md
 	(*dec-and-branchhi!=-1.d.clobber): New text peephole.
 	(*dec-and-branchhi!=-1.l.clobber): New text peephole.
 
-2012-01-21  Georg-Johann Lay  <avr@gjlay.de>
+2012-02-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-protos.h (avr_accumulate_outgoing_args): Move
 	prototype from here to...
@@ -17,7 +24,7 @@
 2012-02-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/52294
-	* thumb2.md (thumb2_shiftsi3_short): Split register and 	
+	* thumb2.md (thumb2_shiftsi3_short): Split register and
 	immediate shifts.  For register shifts tie operands 0 and 1.
 	(peephole2 for above): Check that register-controlled shifts
 	have suitably tied operands.
