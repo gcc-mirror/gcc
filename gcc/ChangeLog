@@ -1,5 +1,11 @@
 2012-02-21  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/52314
+	* gimplify.c (create_tmp_from_val): Use the main variant type
+	for the type of the temporary we create.
+
+2012-02-21  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/52324
 	* gimplify.c (gimplify_expr): When re-gimplifying expressions
 	do not gimplify a MEM_REF address operand if it is already
