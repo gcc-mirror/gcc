@@ -1,3 +1,49 @@
+2012-02-21  Quentin Neill  <quentin.neill@amd.com>
+
+	PR target/52137
+	* config/i386/bdver1.md (bdver1_call, bdver1_push,
+	bdver1_pop, bdver1_leave, bdver1_lea, bdver1_imul_DI, bdver1_imul,
+	bdver1_imul_mem_DI, bdver1_imul_mem, bdver1_idiv, bdver1_idiv_mem,
+	bdver1_str, bdver1_idirect, bdver1_ivector, bdver1_idirect_loadmov,
+	bdver1_idirect_load, bdver1_ivector_load, bdver1_idirect_movstore,
+	bdver1_idirect_both, bdver1_ivector_both, bdver1_idirect_store,
+	bdver1_ivector_store, bdver1_fldxf, bdver1_fld, bdver1_fstxf,
+	bdver1_fst, bdver1_fist, bdver1_fmov_bdver1, bdver1_fadd_load,
+	bdver1_fadd, bdver1_fmul_load, bdver1_fmul, bdver1_fsgn,
+	bdver1_fdiv_load, bdver1_fdiv, bdver1_fpspc_load, bdver1_fpspc,
+	bdver1_fcmov_load, bdver1_fcmov, bdver1_fcomi_load,
+	bdver1_fcomi, bdver1_fcom_load, bdver1_fcom,
+	bdver1_fxch, bdver1_ssevector_avx128_unaligned_load,
+	bdver1_ssevector_avx256_unaligned_load,
+	bdver1_ssevector_sse128_unaligned_load,
+	bdver1_ssevector_avx128_load, bdver1_ssevector_avx256_load,
+	bdver1_ssevector_sse128_load, bdver1_ssescalar_movq_load,
+	bdver1_ssescalar_vmovss_load, bdver1_ssescalar_sse128_load,
+	bdver1_mmxsse_load, bdver1_sse_store_avx256, bdver1_sse_store,
+	bdver1_mmxsse_store_short, bdver1_ssevector_avx256,
+	bdver1_movss_movsd, bdver1_mmxssemov, bdver1_sselog_load_256,
+	bdver1_sselog_256, bdver1_sselog_load, bdver1_sselog,
+	bdver1_ssecmp_load, bdver1_ssecmp, bdver1_ssecomi_load,
+	bdver1_ssecomi, bdver1_vcvtX2Y_avx256_load, bdver1_vcvtX2Y_avx256,
+	bdver1_ssecvt_cvtss2sd_load, bdver1_ssecvt_cvtss2sd,
+	bdver1_sseicvt_cvtsi2sd_load, bdver1_sseicvt_cvtsi2sd,
+	bdver1_ssecvt_cvtpd2ps_load, bdver1_ssecvt_cvtpd2ps,
+	bdver1_ssecvt_cvtdq2ps_load, bdver1_ssecvt_cvtdq2ps,
+	bdver1_ssecvt_cvtdq2pd_load, bdver1_ssecvt_cvtdq2pd,
+	bdver1_ssecvt_cvtps2pd_load, bdver1_ssecvt_cvtps2pd,
+	bdver1_ssecvt_cvtsX2si_load, bdver1_ssecvt_cvtsX2si,
+	bdver1_ssecvt_cvtpd2pi_load, bdver1_ssecvt_cvtpd2pi,
+	bdver1_ssecvt_cvtpd2dq_load, bdver1_ssecvt_cvtpd2dq,
+	bdver1_ssecvt_cvtps2pi_load, bdver1_ssecvt_cvtps2pi,
+	bdver1_ssemuladd_load_256, bdver1_ssemuladd_256,
+	bdver1_ssemuladd_load, bdver1_ssemuladd, bdver1_sseimul_load,
+	bdver1_sseimul, bdver1_sseiadd_load, bdver1_sseiadd,
+	bdver1_ssediv_double_load_256, bdver1_ssediv_double_256,
+	bdver1_ssediv_single_load_256, bdver1_ssediv_single_256,
+	bdver1_ssediv_double_load, bdver1_ssediv_double,
+	bdver1_ssediv_single_load, bdver1_ssediv_single, bdver1_sseins):
+	Add "bdver2" attribute.
+
 2012-02-21  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_option_override): Make -mhard-dfp the

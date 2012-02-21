@@ -123,50 +123,50 @@
 
 ;; Jump instructions are executed in the branch unit completely transparent to us.
 (define_insn_reservation "bdver1_call" 0
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "call,callv"))
 			 "bdver1-double,bdver1-agu,bdver1-ieu")
 ;; PUSH mem is double path.
 (define_insn_reservation "bdver1_push" 1
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "push"))
 			 "bdver1-direct,bdver1-agu,bdver1-store")
 ;; POP r16/mem are double path.
 (define_insn_reservation "bdver1_pop" 1
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "pop"))
 			 "bdver1-direct,(bdver1-ieu+bdver1-load)")
 ;; LEAVE no latency info so far, assume same with amdfam10.
 (define_insn_reservation "bdver1_leave" 3
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "leave"))
 			 "bdver1-vector,(bdver1-ieu+bdver1-load)")
 ;; LEA executes in AGU unit with 1 cycle latency on BDVER1.
 (define_insn_reservation "bdver1_lea" 1
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "lea"))
 			 "bdver1-direct,bdver1-agu,nothing")
 
 ;; MUL executes in special multiplier unit attached to IEU1.
 (define_insn_reservation "bdver1_imul_DI" 6
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "imul")
 				   (and (eq_attr "mode" "DI")
 					(eq_attr "memory" "none,unknown"))))
 			 "bdver1-direct1,bdver1-ieu1,bdver1-mult,nothing,bdver1-ieu1")
 (define_insn_reservation "bdver1_imul" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "imul")
 				   (eq_attr "memory" "none,unknown")))
 			 "bdver1-direct1,bdver1-ieu1,bdver1-mult,bdver1-ieu1")
 (define_insn_reservation "bdver1_imul_mem_DI" 10
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "imul")
 				   (and (eq_attr "mode" "DI")
 					(eq_attr "memory" "load,both"))))
 			 "bdver1-direct1,bdver1-load,bdver1-ieu,bdver1-mult,nothing,bdver1-ieu")
 (define_insn_reservation "bdver1_imul_mem" 8
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "imul")
 				   (eq_attr "memory" "load,both")))
 			 "bdver1-direct1,bdver1-load,bdver1-ieu,bdver1-mult,bdver1-ieu")
@@ -178,13 +178,13 @@
 ;; ??? Experiments show that the IDIV can overlap with roughly 6 cycles
 ;; of the other code.
 (define_insn_reservation "bdver1_idiv" 6
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "idiv")
 				   (eq_attr "memory" "none,unknown")))
 			 "bdver1-vector,(bdver1-ieu0*6+(bdver1-fpsched,bdver1-fvector))")
 
 (define_insn_reservation "bdver1_idiv_mem" 10
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "idiv")
 				   (eq_attr "memory" "load,both")))
 			 "bdver1-vector,((bdver1-load,bdver1-ieu0*6)+(bdver1-fpsched,bdver1-fvector))")
@@ -193,48 +193,48 @@
 ;; as IDIV to create smaller automata.  This probably does not matter much.
 ;; Using the same heuristics for bdver1 as amdfam10 and K8 with IDIV.
 (define_insn_reservation "bdver1_str" 6
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "str")
 				   (eq_attr "memory" "load,both,store")))
 			 "bdver1-vector,bdver1-load,bdver1-ieu0*6")
 
 ;; Integer instructions.
 (define_insn_reservation "bdver1_idirect" 1
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "bdver1_decode" "direct")
 				   (and (eq_attr "unit" "integer,unknown")
 					(eq_attr "memory" "none,unknown"))))
 			 "bdver1-direct,bdver1-ieu")
 (define_insn_reservation "bdver1_ivector" 2
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "bdver1_decode" "vector")
 				   (and (eq_attr "unit" "integer,unknown")
 					(eq_attr "memory" "none,unknown"))))
 			 "bdver1-vector,bdver1-ieu,bdver1-ieu")
 (define_insn_reservation "bdver1_idirect_loadmov" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "imov")
 				   (eq_attr "memory" "load")))
 			 "bdver1-direct,bdver1-load")
 (define_insn_reservation "bdver1_idirect_load" 5
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "bdver1_decode" "direct")
 				   (and (eq_attr "unit" "integer,unknown")
 					(eq_attr "memory" "load"))))
 			 "bdver1-direct,bdver1-load,bdver1-ieu")
 (define_insn_reservation "bdver1_ivector_load" 6
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "bdver1_decode" "vector")
 				   (and (eq_attr "unit" "integer,unknown")
 					(eq_attr "memory" "load"))))
 			 "bdver1-vector,bdver1-load,bdver1-ieu,bdver1-ieu")
 (define_insn_reservation "bdver1_idirect_movstore" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "imov")
 				   (eq_attr "memory" "store")))
 			 "bdver1-direct,bdver1-agu,bdver1-store")
 (define_insn_reservation "bdver1_idirect_both" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "bdver1_decode" "direct")
 				   (and (eq_attr "unit" "integer,unknown")
 					(eq_attr "memory" "both"))))
@@ -242,7 +242,7 @@
 			  bdver1-ieu,bdver1-store,
 			  bdver1-store")
 (define_insn_reservation "bdver1_ivector_both" 5
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "bdver1_decode" "vector")
 				   (and (eq_attr "unit" "integer,unknown")
 					(eq_attr "memory" "both"))))
@@ -251,14 +251,14 @@
 			  bdver1-ieu,
 			  bdver1-store")
 (define_insn_reservation "bdver1_idirect_store" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "bdver1_decode" "direct")
 				   (and (eq_attr "unit" "integer,unknown")
 					(eq_attr "memory" "store"))))
 			 "bdver1-direct,(bdver1-ieu+bdver1-agu),
 			  bdver1-store")
 (define_insn_reservation "bdver1_ivector_store" 5
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "bdver1_decode" "vector")
 				   (and (eq_attr "unit" "integer,unknown")
 					(eq_attr "memory" "store"))))
@@ -267,113 +267,113 @@
 
 ;; BDVER1 floating point units.
 (define_insn_reservation "bdver1_fldxf" 13
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "fmov")
 				   (and (eq_attr "memory" "load")
 					(eq_attr "mode" "XF"))))
 			 "bdver1-vector,bdver1-fpload2,bdver1-fvector*9")
 (define_insn_reservation "bdver1_fld" 5
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "fmov")
 				   (eq_attr "memory" "load")))
 			 "bdver1-direct,bdver1-fpload,bdver1-ffma")
 (define_insn_reservation "bdver1_fstxf" 8
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "fmov")
 				   (and (eq_attr "memory" "store,both")
 					(eq_attr "mode" "XF"))))
 			 "bdver1-vector,(bdver1-fpsched+bdver1-agu),(bdver1-store2+(bdver1-fvector*6))")
 (define_insn_reservation "bdver1_fst" 2
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "fmov")
 				   (eq_attr "memory" "store,both")))
 			 "bdver1-double,(bdver1-fpsched+bdver1-agu),(bdver1-fsto+bdver1-store)")
 (define_insn_reservation "bdver1_fist" 2
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "fistp,fisttp"))
 			 "bdver1-double,(bdver1-fpsched+bdver1-agu),(bdver1-fsto+bdver1-store)")
 (define_insn_reservation "bdver1_fmov_bdver1" 2
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "fmov"))
 			 "bdver1-direct,bdver1-fpsched,bdver1-ffma")
 (define_insn_reservation "bdver1_fadd_load" 10
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "fop")
 				   (eq_attr "memory" "load")))
 			 "bdver1-direct,bdver1-fpload,bdver1-ffma")
 (define_insn_reservation "bdver1_fadd" 6
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "fop"))
 			 "bdver1-direct,bdver1-fpsched,bdver1-ffma")
 (define_insn_reservation "bdver1_fmul_load" 10
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "fmul")
 				   (eq_attr "memory" "load")))
 			 "bdver1-double,bdver1-fpload,bdver1-ffma")
 (define_insn_reservation "bdver1_fmul" 6
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "fmul"))
 			 "bdver1-direct,bdver1-fpsched,bdver1-ffma")
 (define_insn_reservation "bdver1_fsgn" 2
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "fsgn"))
 			 "bdver1-direct,bdver1-fpsched,bdver1-ffma")
 (define_insn_reservation "bdver1_fdiv_load" 46
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "fdiv")
 				   (eq_attr "memory" "load")))
 			 "bdver1-direct,bdver1-fpload,bdver1-ffma")
 (define_insn_reservation "bdver1_fdiv" 42
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "fdiv"))
 			 "bdver1-direct,bdver1-fpsched,bdver1-ffma")
 (define_insn_reservation "bdver1_fpspc_load" 103
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "fpspc")
 				   (eq_attr "memory" "load")))
 			 "bdver1-vector,bdver1-fpload,bdver1-fvector")
 (define_insn_reservation "bdver1_fpspc" 100
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "fpspc")
 				   (eq_attr "memory" "load")))
 			 "bdver1-vector,bdver1-fpload,bdver1-fvector")
 (define_insn_reservation "bdver1_fcmov_load" 17
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "fcmov")
 				   (eq_attr "memory" "load")))
 			 "bdver1-vector,bdver1-fpload,bdver1-fvector")
 (define_insn_reservation "bdver1_fcmov" 15
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "fcmov"))
 			 "bdver1-vector,bdver1-fpsched,bdver1-fvector")
 (define_insn_reservation "bdver1_fcomi_load" 6
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "fcmp")
 				   (and (eq_attr "bdver1_decode" "double")
 					(eq_attr "memory" "load"))))
 			 "bdver1-double,bdver1-fpload,(bdver1-ffma | bdver1-fsto)")
 (define_insn_reservation "bdver1_fcomi" 2
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "bdver1_decode" "double")
 				   (eq_attr "type" "fcmp")))
 			 "bdver1-double,bdver1-fpsched,(bdver1-ffma | bdver1-fsto)")
 (define_insn_reservation "bdver1_fcom_load" 6
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "fcmp")
 				   (eq_attr "memory" "load")))
 			 "bdver1-direct,bdver1-fpload,bdver1-ffma")
 (define_insn_reservation "bdver1_fcom" 2
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "fcmp"))
 			 "bdver1-direct,bdver1-fpsched,bdver1-ffma")
 (define_insn_reservation "bdver1_fxch" 2
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "fxch"))
 			 "bdver1-direct,bdver1-fpsched,bdver1-ffma")
 
 ;; SSE loads.
 (define_insn_reservation "bdver1_ssevector_avx128_unaligned_load" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemov")
 				   (and (eq_attr "prefix" "vex")
 					(and (eq_attr "movu" "1")
@@ -381,139 +381,139 @@
 						  (eq_attr "memory" "load"))))))
 			 "bdver1-direct,bdver1-fpload")
 (define_insn_reservation "bdver1_ssevector_avx256_unaligned_load" 5
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemov")
 				   (and (eq_attr "movu" "1")
 				        (and (eq_attr "mode" "V8SF,V4DF")
 				             (eq_attr "memory" "load")))))
 			 "bdver1-double,bdver1-fpload")
 (define_insn_reservation "bdver1_ssevector_sse128_unaligned_load" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemov")
 				   (and (eq_attr "movu" "1")
 				        (and (eq_attr "mode" "V4SF,V2DF")
 				             (eq_attr "memory" "load")))))
 			 "bdver1-direct,bdver1-fpload,bdver1-fmal")
 (define_insn_reservation "bdver1_ssevector_avx128_load" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemov")
 				   (and (eq_attr "prefix" "vex")
 				        (and (eq_attr "mode" "V4SF,V2DF,TI")
 				             (eq_attr "memory" "load")))))
 			 "bdver1-direct,bdver1-fpload,bdver1-fmal")
 (define_insn_reservation "bdver1_ssevector_avx256_load" 5
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemov")
 				   (and (eq_attr "mode" "V8SF,V4DF,OI")
 				        (eq_attr "memory" "load"))))
 			 "bdver1-double,bdver1-fpload,bdver1-fmal")
 (define_insn_reservation "bdver1_ssevector_sse128_load" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemov")
 				   (and (eq_attr "mode" "V4SF,V2DF,TI")
 				        (eq_attr "memory" "load"))))
 			 "bdver1-direct,bdver1-fpload")
 (define_insn_reservation "bdver1_ssescalar_movq_load" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemov")
 				   (and (eq_attr "mode" "DI")
 				        (eq_attr "memory" "load"))))
 			 "bdver1-direct,bdver1-fpload,bdver1-fmal")
 (define_insn_reservation "bdver1_ssescalar_vmovss_load" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemov")
 				   (and (eq_attr "prefix" "vex")
 				        (and (eq_attr "mode" "SF")
 				             (eq_attr "memory" "load")))))
 			 "bdver1-direct,bdver1-fpload")
 (define_insn_reservation "bdver1_ssescalar_sse128_load" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemov")
 				   (and (eq_attr "mode" "SF,DF")
 				        (eq_attr "memory" "load"))))
 			 "bdver1-direct,bdver1-fpload, bdver1-ffma")
 (define_insn_reservation "bdver1_mmxsse_load" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "mmxmov,ssemov")
 				   (eq_attr "memory" "load")))
 			 "bdver1-direct,bdver1-fpload, bdver1-fmal")
 
 ;; SSE stores.
 (define_insn_reservation "bdver1_sse_store_avx256" 5
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemov")
 				   (and (eq_attr "mode" "V8SF,V4DF,OI")
 					(eq_attr "memory" "store,both"))))
 			 "bdver1-double,(bdver1-fpsched+bdver1-agu),((bdver1-fsto+bdver1-store)*2)")
 (define_insn_reservation "bdver1_sse_store" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemov")
 				   (and (eq_attr "mode" "V4SF,V2DF,TI")
 					(eq_attr "memory" "store,both"))))
 			 "bdver1-direct,(bdver1-fpsched+bdver1-agu),((bdver1-fsto+bdver1-store)*2)")
 (define_insn_reservation "bdver1_mmxsse_store_short" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "mmxmov,ssemov")
 				   (eq_attr "memory" "store,both")))
 			 "bdver1-direct,(bdver1-fpsched+bdver1-agu),(bdver1-fsto+bdver1-store)")
 
 ;; Register moves.
 (define_insn_reservation "bdver1_ssevector_avx256" 3
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemov")
 				   (and (eq_attr "mode" "V8SF,V4DF,OI")
 					(eq_attr "memory" "none"))))
 			 "bdver1-double,bdver1-fpsched,bdver1-fmal")
 (define_insn_reservation "bdver1_movss_movsd" 2
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemov")
 				   (and (eq_attr "mode" "SF,DF")
                                         (eq_attr "memory" "none"))))
 			 "bdver1-direct,bdver1-fpsched,bdver1-ffma")
 (define_insn_reservation "bdver1_mmxssemov" 2
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "mmxmov,ssemov")
 				   (eq_attr "memory" "none")))
 			 "bdver1-direct,bdver1-fpsched,bdver1-fmal")
 ;; SSE logs.
 (define_insn_reservation "bdver1_sselog_load_256" 7
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "sselog,sselog1")
 				   (and (eq_attr "mode" "V8SF")
 				   (eq_attr "memory" "load"))))
 			 "bdver1-double,bdver1-fpload,bdver1-fmal")
 (define_insn_reservation "bdver1_sselog_256" 3
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "sselog,sselog1")
                                    (eq_attr "mode" "V8SF")))
 			 "bdver1-double,bdver1-fpsched,bdver1-fmal")
 (define_insn_reservation "bdver1_sselog_load" 6
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "sselog,sselog1")
 				   (eq_attr "memory" "load")))
 			 "bdver1-direct,bdver1-fpload,bdver1-fxbar")
 (define_insn_reservation "bdver1_sselog" 2
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "sselog,sselog1"))
 			 "bdver1-direct,bdver1-fpsched,bdver1-fxbar")
 
 ;; PCMP actually executes in FMAL.
 (define_insn_reservation "bdver1_ssecmp_load" 6
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecmp")
 				   (eq_attr "memory" "load")))
 			 "bdver1-direct,bdver1-fpload,bdver1-ffma")
 (define_insn_reservation "bdver1_ssecmp" 2
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "ssecmp"))
 			 "bdver1-direct,bdver1-fpsched,bdver1-ffma")
 (define_insn_reservation "bdver1_ssecomi_load" 6
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecomi")
 				   (eq_attr "memory" "load")))
 			 "bdver1-double,bdver1-fpload,(bdver1-ffma | bdver1-fsto)")
 (define_insn_reservation "bdver1_ssecomi" 2
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "ssecomi"))
 			 "bdver1-double,bdver1-fpsched,(bdver1-ffma | bdver1-fsto)")
 
@@ -522,7 +522,7 @@
 
 ;; 256 bit conversion.
 (define_insn_reservation "bdver1_vcvtX2Y_avx256_load" 8
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "memory" "load")
 					(ior (ior (match_operand:V4DF 0 "register_operand")
@@ -533,7 +533,7 @@
 						       (match_operand:V8SI 1 "nonimmediate_operand")))))))
 			 "bdver1-vector,bdver1-fpload,bdver1-fvector")
 (define_insn_reservation "bdver1_vcvtX2Y_avx256" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "memory" "none")
 					(ior (ior (match_operand:V4DF 0 "register_operand")
@@ -545,40 +545,40 @@
 			 "bdver1-vector,bdver1-fpsched,bdver1-fvector")
 ;; CVTSS2SD, CVTSD2SS.
 (define_insn_reservation "bdver1_ssecvt_cvtss2sd_load" 8
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "mode" "SF,DF")
 					(eq_attr "memory" "load"))))
 			 "bdver1-direct,bdver1-fpload,bdver1-fcvt")
 (define_insn_reservation "bdver1_ssecvt_cvtss2sd" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "mode" "SF,DF")
 					(eq_attr "memory" "none"))))
 			 "bdver1-direct,bdver1-fpsched,bdver1-fcvt")
 ;; CVTSI2SD, CVTSI2SS, CVTSI2SDQ, CVTSI2SSQ.
 (define_insn_reservation "bdver1_sseicvt_cvtsi2sd_load" 8
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "sseicvt")
 				   (and (eq_attr "mode" "SF,DF")
 					(eq_attr "memory" "load"))))
 			 "bdver1-direct,bdver1-fpload,bdver1-fcvt")
 (define_insn_reservation "bdver1_sseicvt_cvtsi2sd" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "sseicvt")
 				   (and (eq_attr "mode" "SF,DF")
 					(eq_attr "memory" "none"))))
 			 "bdver1-double,bdver1-fpsched,(nothing | bdver1-fcvt)")
 ;; CVTPD2PS.
 (define_insn_reservation "bdver1_ssecvt_cvtpd2ps_load" 8
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "memory" "load")
                                         (and (match_operand:V4SF 0 "register_operand")
 					     (match_operand:V2DF 1 "nonimmediate_operand")))))
 			 "bdver1-double,bdver1-fpload,(bdver1-fxbar | bdver1-fcvt)")
 (define_insn_reservation "bdver1_ssecvt_cvtpd2ps" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "memory" "none")
                                         (and (match_operand:V4SF 0 "register_operand")
@@ -586,7 +586,7 @@
 			 "bdver1-double,bdver1-fpsched,(bdver1-fxbar | bdver1-fcvt)")
 ;; CVTPI2PS, CVTDQ2PS.
 (define_insn_reservation "bdver1_ssecvt_cvtdq2ps_load" 8
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "memory" "load")
                                         (and (match_operand:V4SF 0 "register_operand")
@@ -594,7 +594,7 @@
 					          (match_operand:V4SI 1 "nonimmediate_operand"))))))
 			 "bdver1-direct,bdver1-fpload,bdver1-fcvt")
 (define_insn_reservation "bdver1_ssecvt_cvtdq2ps" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "memory" "none")
                                         (and (match_operand:V4SF 0 "register_operand")
@@ -603,14 +603,14 @@
 			 "bdver1-direct,bdver1-fpsched,bdver1-fcvt")
 ;; CVTDQ2PD.
 (define_insn_reservation "bdver1_ssecvt_cvtdq2pd_load" 8
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "memory" "load")
                                         (and (match_operand:V2DF 0 "register_operand")
 					     (match_operand:V4SI 1 "nonimmediate_operand")))))
 			 "bdver1-double,bdver1-fpload,(bdver1-fxbar | bdver1-fcvt)")
 (define_insn_reservation "bdver1_ssecvt_cvtdq2pd" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "memory" "none")
                                         (and (match_operand:V2DF 0 "register_operand")
@@ -618,7 +618,7 @@
 			 "bdver1-double,bdver1-fpsched,(bdver1-fxbar | bdver1-fcvt)")
 ;; CVTPS2PD, CVTPI2PD.
 (define_insn_reservation "bdver1_ssecvt_cvtps2pd_load" 6
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "memory" "load")
                                         (and (match_operand:V2DF 0 "register_operand")
@@ -626,7 +626,7 @@
 					          (match_operand:V4SF 1 "nonimmediate_operand"))))))
 			 "bdver1-double,bdver1-fpload,(bdver1-fxbar | bdver1-fcvt)")
 (define_insn_reservation "bdver1_ssecvt_cvtps2pd" 2
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "memory" "load")
                                         (and (match_operand:V2DF 0 "register_operand")
@@ -635,27 +635,27 @@
 			 "bdver1-double,bdver1-fpsched,(bdver1-fxbar | bdver1-fcvt)")
 ;; CVTSD2SI, CVTSD2SIQ, CVTSS2SI, CVTSS2SIQ, CVTTSD2SI, CVTTSD2SIQ, CVTTSS2SI, CVTTSS2SIQ.
 (define_insn_reservation "bdver1_ssecvt_cvtsX2si_load" 8
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "sseicvt")
 				   (and (eq_attr "mode" "SI,DI")
 					(eq_attr "memory" "load"))))
 			 "bdver1-double,bdver1-fpload,(bdver1-fcvt | bdver1-fsto)")
 (define_insn_reservation "bdver1_ssecvt_cvtsX2si" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "sseicvt")
 				   (and (eq_attr "mode" "SI,DI")
 					(eq_attr "memory" "none"))))
 			 "bdver1-double,bdver1-fpsched,(bdver1-fcvt | bdver1-fsto)")
 ;; CVTPD2PI, CVTTPD2PI.
 (define_insn_reservation "bdver1_ssecvt_cvtpd2pi_load" 8
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "memory" "load")
 				        (and (match_operand:V2DF 1 "nonimmediate_operand")
 					     (match_operand:V2SI 0 "register_operand")))))
 			 "bdver1-double,bdver1-fpload,(bdver1-fcvt | bdver1-fxbar)")
 (define_insn_reservation "bdver1_ssecvt_cvtpd2pi" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "memory" "none")
 				        (and (match_operand:V2DF 1 "nonimmediate_operand")
@@ -663,14 +663,14 @@
 			 "bdver1-double,bdver1-fpsched,(bdver1-fcvt | bdver1-fxbar)")
 ;; CVTPD2DQ, CVTTPD2DQ.
 (define_insn_reservation "bdver1_ssecvt_cvtpd2dq_load" 6
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "memory" "load")
 				        (and (match_operand:V2DF 1 "nonimmediate_operand")
 					     (match_operand:V4SI 0 "register_operand")))))
 			 "bdver1-double,bdver1-fpload,(bdver1-fcvt | bdver1-fxbar)")
 (define_insn_reservation "bdver1_ssecvt_cvtpd2dq" 2
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "memory" "none")
 				        (and (match_operand:V2DF 1 "nonimmediate_operand")
@@ -678,7 +678,7 @@
 			 "bdver1-double,bdver1-fpsched,(bdver1-fcvt | bdver1-fxbar)")
 ;; CVTPS2PI, CVTTPS2PI, CVTPS2DQ, CVTTPS2DQ.
 (define_insn_reservation "bdver1_ssecvt_cvtps2pi_load" 8
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
                                    (and (eq_attr "memory" "load")
 				        (and (match_operand:V4SF 1 "nonimmediate_operand")
@@ -686,7 +686,7 @@
 						  (match_operand: V4SI 0 "register_operand"))))))
 			 "bdver1-direct,bdver1-fpload,bdver1-fcvt")
 (define_insn_reservation "bdver1_ssecvt_cvtps2pi" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssecvt")
 				   (and (eq_attr "memory" "none")
 				        (and (match_operand:V4SF 1 "nonimmediate_operand")
@@ -696,100 +696,100 @@
 
 ;; SSE MUL, ADD, and MULADD.
 (define_insn_reservation "bdver1_ssemuladd_load_256" 11
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemul,sseadd,ssemuladd")
 				   (and (eq_attr "mode" "V8SF,V4DF")
 					(eq_attr "memory" "load"))))
 			 "bdver1-double,bdver1-fpload,bdver1-ffma")
 (define_insn_reservation "bdver1_ssemuladd_256" 7
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemul,sseadd,ssemuladd")
 				   (and (eq_attr "mode" "V8SF,V4DF")
 					(eq_attr "memory" "none"))))
 			 "bdver1-double,bdver1-fpsched,bdver1-ffma")
 (define_insn_reservation "bdver1_ssemuladd_load" 10
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemul,sseadd,ssemuladd")
 				   (eq_attr "memory" "load")))
 			 "bdver1-direct,bdver1-fpload,bdver1-ffma")
 (define_insn_reservation "bdver1_ssemuladd" 6
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssemul,sseadd,ssemuladd")
 				   (eq_attr "memory" "none")))
 			 "bdver1-direct,bdver1-fpsched,bdver1-ffma")
 (define_insn_reservation "bdver1_sseimul_load" 8
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "sseimul")
 				   (eq_attr "memory" "load")))
 			 "bdver1-direct,bdver1-fpload,bdver1-fmma")
 (define_insn_reservation "bdver1_sseimul" 4
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "sseimul")
 				   (eq_attr "memory" "none")))
 			 "bdver1-direct,bdver1-fpsched,bdver1-fmma")
 (define_insn_reservation "bdver1_sseiadd_load" 6
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "sseiadd")
 				   (eq_attr "memory" "load")))
 			 "bdver1-direct,bdver1-fpload,bdver1-fmal")
 (define_insn_reservation "bdver1_sseiadd" 2
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "sseiadd")
 				   (eq_attr "memory" "none")))
 			 "bdver1-direct,bdver1-fpsched,bdver1-fmal")
 
 ;; SSE DIV: no throughput information (assume same as amdfam10).
 (define_insn_reservation "bdver1_ssediv_double_load_256" 31
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssediv")
 				   (and (eq_attr "mode" "V4DF")
 				        (eq_attr "memory" "load"))))
 			 "bdver1-double,bdver1-fpload,(bdver1-ffma0*17 | bdver1-ffma1*17)")
 (define_insn_reservation "bdver1_ssediv_double_256" 27
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssediv")
 				   (and (eq_attr "mode" "V4DF")
 				        (eq_attr "memory" "none"))))
 			 "bdver1-double,bdver1-fpsched,(bdver1-ffma0*17 | bdver1-ffma1*17)")
 (define_insn_reservation "bdver1_ssediv_single_load_256" 28
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssediv")
 				   (and (eq_attr "mode" "V8SF")
 				        (eq_attr "memory" "load"))))
 			 "bdver1-double,bdver1-fpload,(bdver1-ffma0*17 | bdver1-ffma1*17)")
 (define_insn_reservation "bdver1_ssediv_single_256" 24
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssediv")
 				   (and (eq_attr "mode" "V8SF")
 				        (eq_attr "memory" "none"))))
 			 "bdver1-double,bdver1-fpsched,(bdver1-ffma0*17 | bdver1-ffma1*17)")
 (define_insn_reservation "bdver1_ssediv_double_load" 31
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssediv")
 				   (and (eq_attr "mode" "DF,V2DF")
 					(eq_attr "memory" "load"))))
 			 "bdver1-direct,bdver1-fpload,(bdver1-ffma0*17 | bdver1-ffma1*17)")
 (define_insn_reservation "bdver1_ssediv_double" 27
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssediv")
 				   (and (eq_attr "mode" "DF,V2DF")
 					(eq_attr "memory" "none"))))
 			 "bdver1-direct,bdver1-fpsched,(bdver1-ffma0*17 | bdver1-ffma1*17)")
 (define_insn_reservation "bdver1_ssediv_single_load" 28
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssediv")
 				   (and (eq_attr "mode" "SF,V4SF")
 					(eq_attr "memory" "load"))))
 			 "bdver1-direct,bdver1-fpload,(bdver1-ffma0*17 | bdver1-ffma1*17)")
 (define_insn_reservation "bdver1_ssediv_single" 24
-			 (and (eq_attr "cpu" "bdver1")
+			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "ssediv")
 				   (and (eq_attr "mode" "SF,V4SF")
 					(eq_attr "memory" "none"))))
 			 "bdver1-direct,bdver1-fpsched,(bdver1-ffma0*17 | bdver1-ffma1*17)")
 
 (define_insn_reservation "bdver1_sseins" 3
-                         (and (eq_attr "cpu" "bdver1")
+                         (and (eq_attr "cpu" "bdver1,bdver2")
                               (and (eq_attr "type" "sseins")
                                    (eq_attr "mode" "TI")))
                          "bdver1-direct,bdver1-fpsched,bdver1-fxbar")
