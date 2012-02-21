@@ -4268,7 +4268,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   if (!STMT_VINFO_DATA_REF (stmt_info))
     return false;
 
-  negative = tree_int_cst_compare (loop && nested_in_vect_loop_p (loop, stmt)
+  negative = tree_int_cst_compare (nested_in_vect_loop
 				   ? STMT_VINFO_DR_STEP (stmt_info)
 				   : DR_STEP (dr),
 				   size_zero_node) < 0;
@@ -4658,7 +4658,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
      This can only occur when vectorizing memory accesses in the inner-loop
      nested within an outer-loop that is being vectorized.  */
 
-  if (loop && nested_in_vect_loop_p (loop, stmt)
+  if (nested_in_vect_loop
       && (TREE_INT_CST_LOW (STMT_VINFO_DR_STEP (stmt_info))
 	  % GET_MODE_SIZE (TYPE_MODE (vectype)) != 0))
     {
