@@ -1352,6 +1352,10 @@
 ;; Load in operand 0 the (absolute) address of operand 1, which is a symbolic
 ;; value subject to a PC-relative relocation.  Operand 2 is a helper function
 ;; that adds the PC value at the call point to register #(operand 3).
+;;
+;; Even on V9 we use this call sequence with a stub, instead of "rd %pc, ..."
+;; because the RDPC instruction is extremely expensive and incurs a complete
+;; instruction pipeline flush.
 
 (define_insn "load_pcrel_sym<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")

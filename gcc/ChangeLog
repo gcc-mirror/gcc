@@ -1,3 +1,8 @@
+2012-02-20  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.md (load_pcrel_sym<P:mode>): Explain why we
+	don't use the "rd %pc" instruction on v9 for PIC register loads.
+
 2012-02-20  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/52141
