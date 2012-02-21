@@ -1,3 +1,8 @@
+2012-02-21  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_option_override): Make -mhard-dfp the
+	default if possible and not specified otherwise.
+
 2012-02-21  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52314
