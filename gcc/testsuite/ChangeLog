@@ -1,3 +1,8 @@
+2012-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52318
+	* gcc.dg/pr52318.c: New test.
+
 2012-02-20  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc.dg/bf-ms-layout-3.c: New testcase.
