@@ -1,3 +1,11 @@
+2012-02-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/52294
+	* thumb2.md (thumb2_shiftsi3_short): Split register and 	
+	immediate shifts.  For register shifts tie operands 0 and 1.
+	(peephole2 for above): Check that register-controlled shifts
+	have suitably tied operands.
+
 2012-02-21  Quentin Neill  <quentin.neill@amd.com>
 
 	PR target/52137

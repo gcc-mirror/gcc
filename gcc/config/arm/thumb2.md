@@ -686,6 +686,7 @@
 	  (match_operand:SI 2 "low_reg_or_int_operand" "")]))]
   "TARGET_THUMB2
    && peep2_regno_dead_p(0, CC_REGNUM)
+   && (CONST_INT_P (operands[2]) || operands[1] == operands[0])
    && ((GET_CODE(operands[3]) != ROTATE && GET_CODE(operands[3]) != ROTATERT)
        || REG_P(operands[2]))"
   [(parallel
@@ -698,10 +699,10 @@
 )
 
 (define_insn "*thumb2_shiftsi3_short"
-  [(set (match_operand:SI   0 "low_register_operand" "=l")
+  [(set (match_operand:SI   0 "low_register_operand" "=l,l")
 	(match_operator:SI  3 "shift_operator"
-	 [(match_operand:SI 1 "low_register_operand"  "l")
-	  (match_operand:SI 2 "low_reg_or_int_operand" "lM")]))
+	 [(match_operand:SI 1 "low_register_operand"  "0,l")
+	  (match_operand:SI 2 "low_reg_or_int_operand" "l,M")]))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB2 && reload_completed
    && ((GET_CODE(operands[3]) != ROTATE && GET_CODE(operands[3]) != ROTATERT)
