@@ -1421,8 +1421,6 @@ CXXABI_1.3 {
     # __gnu_cxx::_verbose_terminate_handler()
     _ZN9__gnu_cxx27__verbose_terminate_handlerEv;
 
-  local:
-    *;
 };
 
 CXXABI_1.3.1 {
@@ -1471,15 +1469,6 @@ CXXABI_1.3.3 {
 
 } CXXABI_1.3.2;
 
-# Symbols in the support library (libsupc++) supporting trans-mem.
-CXXABI_TM_1 {
-  global:
-    __cxa_tm_cleanup;
-
-  local:
-    *;
-};
-
 CXXABI_1.3.4 {
 
     # typeinfo for decimal floating point types
@@ -1521,3 +1510,12 @@ CXXABI_1.3.6 {
     __cxa_deleted_virtual;
 
 } CXXABI_1.3.5;
+
+
+# Symbols in the support library (libsupc++) supporting transactional memory.
+CXXABI_TM_1 {
+
+  global:
+    __cxa_tm_cleanup;
+
+};

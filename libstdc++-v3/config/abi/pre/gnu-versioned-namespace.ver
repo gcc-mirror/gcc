@@ -312,15 +312,12 @@ CXXABI_2.0 {
     _ZTVN10__cxxabiv120__si_class_type_infoE;
     _ZTVN10__cxxabiv121__vmi_class_type_infoE;
 
-  local:
-    *;
 };
 
 # Symbols in the support library (libsupc++) supporting trans-mem.
 CXXABI_TM_1 {
+
   global:
     __cxa_tm_cleanup;
 
-  local:
-    *;
 };
