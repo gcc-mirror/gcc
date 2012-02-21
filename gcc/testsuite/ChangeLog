@@ -1,3 +1,8 @@
+2012-02-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR middle-end/51782
+	* gcc.target/avr/torture/pr51782-1.c: New test.
+
 2012-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/52318
