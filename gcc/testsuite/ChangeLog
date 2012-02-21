@@ -1,3 +1,8 @@
+2012-02-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52324
+	* gcc.dg/tree-ssa/ssa-lim-10.c: New testcase.
+
 2012-02-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR middle-end/51782

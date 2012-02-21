@@ -7061,15 +7061,23 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	      ret = GS_OK;
 	      break;
 	    }
-	  ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
-			       is_gimple_mem_ref_addr, fb_rvalue);
-	  if (ret == GS_ERROR)
-	    break;
+	  /* Avoid re-gimplifying the address operand if it is already
+	     in suitable form.  Re-gimplifying would mark the address
+	     operand addressable.  Always gimplify when not in SSA form
+	     as we still may have to gimplify decls with value-exprs.  */
+	  if (!gimplify_ctxp || !gimplify_ctxp->into_ssa
+	      || !is_gimple_mem_ref_addr (TREE_OPERAND (*expr_p, 0)))
+	    {
+	      ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
+				   is_gimple_mem_ref_addr, fb_rvalue);
+	      if (ret == GS_ERROR)
+		break;
+	    }
 	  recalculate_side_effects (*expr_p);
 	  ret = GS_ALL_DONE;
 	  break;
 
-	  /* Constants need not be gimplified.  */
+	/* Constants need not be gimplified.  */
 	case INTEGER_CST:
 	case REAL_CST:
 	case FIXED_CST:
