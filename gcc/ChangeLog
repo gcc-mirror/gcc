@@ -1,3 +1,9 @@
+2012-01-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-protos.h (avr_accumulate_outgoing_args): Move
+	prototype from here to...
+	* config/avr/avr.h: ...here.
+
 2012-02-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/52294

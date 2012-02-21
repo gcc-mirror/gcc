@@ -676,6 +676,10 @@ struct GTY(()) machine_function
    required in order for pushes to be generated.  */
 #define PUSH_ROUNDING(X)	(X)
 
+/* Define prototype here to avoid build warning.  Some files using
+   ACCUMULATE_OUTGOING_ARGS (directly or indirectly) include
+   tm.h but not tm_p.h.  */
+extern bool avr_accumulate_outgoing_args (void);
 #define ACCUMULATE_OUTGOING_ARGS avr_accumulate_outgoing_args()
 
 #define INIT_EXPANDERS avr_init_expanders()
