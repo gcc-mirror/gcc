@@ -1,5 +1,29 @@
 2012-02-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/52317 (cont)
+	* include/profile/unordered_map: Ad Library Exception comment.
+	* include/profile/set: Likewise.
+	* include/profile/base.h: Likewise.
+	* include/profile/impl/profiler_list_to_slist.h: Likewise.
+	* include/profile/impl/profiler_container_size.h: Likewise.
+	* include/profile/impl/profiler_vector_size.h: Likewise.
+	* include/profile/impl/profiler_hash_func.h: Likewise.
+	* include/profile/impl/profiler_trace.h: Likewise.
+	* include/profile/impl/profiler_list_to_vector.h: Likewise.
+	* include/profile/impl/profiler_vector_to_list.h: Likewise.
+	* include/profile/impl/profiler.h: Likewise.
+	* include/profile/impl/profiler_state.h: Likewise.
+	* include/profile/impl/profiler_map_to_unordered_map.h: Likewise.
+	* include/profile/impl/profiler_algos.h: Likewise.
+	* include/profile/impl/profiler_hashtable_size.h: Likewise.
+	* include/profile/impl/profiler_node.h: Likewise.
+	* include/profile/vector: Likewise.
+	* include/profile/unordered_set: Likewise.
+	* include/profile/map.h: Likewise.
+	* include/profile/map: Likewise.
+
+2012-02-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/52317
 	* python/Makefile.am: Update boilerplate license text to GPLv3.
 	* include/profile/unordered_map: Likewise.
