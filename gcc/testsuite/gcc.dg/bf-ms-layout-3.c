@@ -16,24 +16,25 @@ struct s2_t {
 struct s2_t s2;
 
 struct s3_t {
-  char a : 6;
+  __extension__ char a : 6;
   char b __attribute__ ((aligned (16)));
 } __attribute__ ((ms_struct));
 struct s3_t s3;
 
 struct s4_t {
-  char a : 6;
+  __extension__ char a : 6;
   char b __attribute__ ((aligned (2)));
 } __attribute__ ((ms_struct));
 struct s4_t s4;
 
 struct s5_t {
-  char a : 6;
+  __extension__ char a : 6;
   char b __attribute__ ((aligned (1)));
 } __attribute__ ((ms_struct));
 struct s5_t s5;
 
-__PTRDIFF_TYPE__ offs (const void *a, const void *b)
+__extension__
+static __PTRDIFF_TYPE__ offs (const void *a, const void *b)
 {
   return (__PTRDIFF_TYPE__) ((const char*)a  - (const char*)b);
 }
