@@ -1,3 +1,9 @@
+2012-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52318
+	* gimple-fold.c (gimplify_and_update_call_from_tree): Add
+	vdef also to non-pure/const call stmts in the sequence.
+
 2012-02-20  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.md (load_pcrel_sym<P:mode>): Explain why we

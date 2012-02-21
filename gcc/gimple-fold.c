@@ -1,5 +1,5 @@
 /* Statement simplification on GIMPLE.
-   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
    Split out from tree-ssa-ccp.c.
 
 This file is part of GCC.
@@ -591,8 +591,11 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
   for (i = gsi_last (stmts); !gsi_end_p (i); gsi_prev (&i))
     {
       new_stmt = gsi_stmt (i);
-      if (gimple_assign_single_p (new_stmt)
-	  && !is_gimple_reg (gimple_assign_lhs (new_stmt)))
+      if ((gimple_assign_single_p (new_stmt)
+	   && !is_gimple_reg (gimple_assign_lhs (new_stmt)))
+	  || (is_gimple_call (new_stmt)
+	      && (gimple_call_flags (new_stmt)
+		  & (ECF_NOVOPS | ECF_PURE | ECF_CONST | ECF_NORETURN)) == 0))
 	{
 	  tree vdef;
 	  if (!laststore)
