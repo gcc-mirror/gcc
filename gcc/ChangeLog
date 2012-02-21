@@ -1,3 +1,10 @@
+2012-02-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52324
+	* gimplify.c (gimplify_expr): When re-gimplifying expressions
+	do not gimplify a MEM_REF address operand if it is already
+	in suitable form.
+
 2012-02-21  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md ("fixuns_trunc<mode>si2"): Replace
