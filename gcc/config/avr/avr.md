@@ -3807,15 +3807,14 @@
    (set_attr "cc" "set_n")])
 
 (define_insn "neghi2"
-  [(set (match_operand:HI 0 "register_operand"       "=!d,r,&r")
-	(neg:HI (match_operand:HI 1 "register_operand" "0,0,r")))]
+  [(set (match_operand:HI 0 "register_operand"        "=r,&r")
+        (neg:HI (match_operand:HI 1 "register_operand" "0,r")))]
   ""
   "@
-	com %B0\;neg %A0\;sbci %B0,lo8(-1)
-	com %B0\;neg %A0\;sbc %B0,__zero_reg__\;inc %B0
+	neg %B0\;neg %A0\;sbc %B0,__zero_reg__
 	clr %A0\;clr %B0\;sub %A0,%A1\;sbc %B0,%B1"
-  [(set_attr "length" "3,4,4")
-   (set_attr "cc" "set_czn,set_n,set_czn")])
+  [(set_attr "length" "3,4")
+   (set_attr "cc" "set_czn")])
 
 (define_insn "negpsi2"
   [(set (match_operand:PSI 0 "register_operand"        "=!d,r,&r")
