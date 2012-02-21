@@ -4919,7 +4919,7 @@
 
 ;; ************************* Peepholes ********************************
 
-(define_peephole
+(define_peephole ; "*dec-and-branchsi!=-1.d.clobber"
   [(parallel [(set (match_operand:SI 0 "d_register_operand" "")
                    (plus:SI (match_dup 0)
                             (const_int -1)))
@@ -4960,7 +4960,7 @@
     return "";
   })
 
-(define_peephole
+(define_peephole ; "*dec-and-branchhi!=-1"
   [(set (match_operand:HI 0 "d_register_operand" "")
         (plus:HI (match_dup 0)
                  (const_int -1)))
@@ -4996,7 +4996,81 @@
     return "";
   })
 
-(define_peephole
+;; Same as above but with clobber flavour of addhi3
+(define_peephole ; "*dec-and-branchhi!=-1.d.clobber"
+  [(parallel [(set (match_operand:HI 0 "d_register_operand" "")
+                   (plus:HI (match_dup 0)
+                            (const_int -1)))
+              (clobber (scratch:QI))])
+   (parallel [(set (cc0)
+                   (compare (match_dup 0)
+                            (const_int -1)))
+              (clobber (match_operand:QI 1 "d_register_operand" ""))])
+   (set (pc)
+        (if_then_else (ne (cc0)
+                          (const_int 0))
+                      (label_ref (match_operand 2 "" ""))
+                      (pc)))]
+  ""
+  {
+    CC_STATUS_INIT;
+    if (test_hard_reg_class (ADDW_REGS, operands[0]))
+      output_asm_insn ("sbiw %0,1", operands);
+    else
+      output_asm_insn ("subi %A0,1" CR_TAB
+                       "sbc %B0,__zero_reg__", operands);
+
+    switch (avr_jump_mode (operands[2], insn))
+      {
+      case 1:
+        return "brcc %2";
+      case 2:
+        return "brcs .+2\;rjmp %2";
+      case 3:
+        return "brcs .+4\;jmp %2";
+      }
+
+    gcc_unreachable();
+    return "";
+  })
+
+;; Same as above but with clobber flavour of addhi3
+(define_peephole ; "*dec-and-branchhi!=-1.l.clobber"
+  [(parallel [(set (match_operand:HI 0 "l_register_operand" "")
+                   (plus:HI (match_dup 0)
+                            (const_int -1)))
+              (clobber (match_operand:QI 3 "d_register_operand" ""))])
+   (parallel [(set (cc0)
+                   (compare (match_dup 0)
+                            (const_int -1)))
+              (clobber (match_operand:QI 1 "d_register_operand" ""))])
+   (set (pc)
+        (if_then_else (ne (cc0)
+                          (const_int 0))
+                      (label_ref (match_operand 2 "" ""))
+                      (pc)))]
+  ""
+  {
+    CC_STATUS_INIT;
+      output_asm_insn ("ldi %3,1"   CR_TAB
+                       "sub %A0,%3" CR_TAB
+                       "sbc %B0,__zero_reg__", operands);
+
+    switch (avr_jump_mode (operands[2], insn))
+      {
+      case 1:
+        return "brcc %2";
+      case 2:
+        return "brcs .+2\;rjmp %2";
+      case 3:
+        return "brcs .+4\;jmp %2";
+      }
+
+    gcc_unreachable();
+    return "";
+  })
+
+(define_peephole ; "*dec-and-branchqi!=-1"
   [(set (match_operand:QI 0 "d_register_operand" "")
         (plus:QI (match_dup 0)
                  (const_int -1)))

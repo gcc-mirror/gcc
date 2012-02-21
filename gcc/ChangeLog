@@ -1,5 +1,11 @@
 2012-01-21  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/avr.md
+	(*dec-and-branchhi!=-1.d.clobber): New text peephole.
+	(*dec-and-branchhi!=-1.l.clobber): New text peephole.
+
+2012-01-21  Georg-Johann Lay  <avr@gjlay.de>
+
 	* config/avr/avr-protos.h (avr_accumulate_outgoing_args): Move
 	prototype from here to...
 	* config/avr/avr.h: ...here.
