@@ -640,7 +640,7 @@ main (int argc, char **argv)
 	{
 	  /* Comes from pragma Ident ().  */
           fprintf (optfile, "case_sensitive=yes\n");
-          fprintf (optfile, "IDENTIFICATION=\"%15.15s\"\n", &argv[i][17]);
+          fprintf (optfile, "IDENTIFICATION=\"%-.15s\"\n", &argv[i][17]);
           fprintf (optfile, "case_sensitive=NO\n");
 	}
     }
