@@ -33,7 +33,6 @@ extern int avr_simple_epilogue (void);
 extern int avr_hard_regno_rename_ok (unsigned int, unsigned int);
 extern rtx avr_return_addr_rtx (int count, rtx tem);
 extern void avr_register_target_pragmas (void);
-extern bool avr_accumulate_outgoing_args (void);
 extern void avr_init_expanders (void);
 
 #ifdef TREE_CODE
