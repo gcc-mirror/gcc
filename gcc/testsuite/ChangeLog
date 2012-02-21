@@ -1,3 +1,8 @@
+2012-02-21  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.dg/bf-ms-layout-3.c: Mark char typed bitfield
+	as extension.
+
 2012-02-21  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52324
