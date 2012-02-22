@@ -1,3 +1,8 @@
+2012-02-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52335
+	* io.c (gfc_match_open): Remove bogus F2003 DELIM= check.
+
 2012-02-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52295

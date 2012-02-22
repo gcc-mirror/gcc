@@ -1947,10 +1947,6 @@ gfc_match_open (void)
   /* Checks on the DELIM specifier.  */
   if (open->delim)
     {
-      if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: DELIM= at %C "
-	  "not allowed in Fortran 95") == FAILURE)
-	goto cleanup;
-
       if (open->delim->expr_type == EXPR_CONSTANT)
 	{
 	  static const char *delim[] = { "APOSTROPHE", "QUOTE", "NONE", NULL };

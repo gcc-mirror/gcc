@@ -1,3 +1,8 @@
+2012-02-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52335
+	* gfortran.dg/io_constraints_10.f90: New.
+
 2012-02-22  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	* lib/target-supports.exp (check_effective_target_vect_condition):
