@@ -5,7 +5,9 @@
 // { dg-additional-options "-mshort-calls" {target epiphany-*-*} }
 // Using -mno-abicalls avoids a R_MIPS_JALR .reloc.
 // { dg-additional-options "-mno-abicalls" { target mips*-*-* } }
-// { dg-final { scan-assembler-times "xyzzy" 2 { target { ! { alpha*-*-* hppa*-*-* ia64*-*-hpux* sparc*-*-* } } } } }
+// { dg-final { scan-assembler-times "xyzzy" 2 { target { ! { alpha*-*-* hppa*-*-* ia64*-*-hpux* sparc*-*-* *-*-mingw* } } } } }
+// For *-*-mingw* there is additionally one .def match
+// { dg-final { scan-assembler-times "xyzzy" 3 { target *-*-mingw* } } }
 // The IA64 and HPPA compilers generate external declarations in addition
 // to the call so those scans need to be more specific.
 // { dg-final { scan-assembler-times "br\[^\n\]*xyzzy" 2 { target ia64*-*-hpux* } } }

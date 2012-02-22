@@ -1,3 +1,10 @@
+2012-02-22  Kai Tietz  <ktietz@redhat.com>
+
+	* g++.dg/opt/devirt2.C: Add rule for *-*-mingw* target.
+	* g++.dg/opt/pr48549.C (long): Replace by long by __PTRDIFF_TYPE__
+	derived pdiff_t type.
+	* g++.dg/torture/pr49720.C: Likewise
+
 2012-02-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/52330
