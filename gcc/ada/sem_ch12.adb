@@ -3730,8 +3730,8 @@ package body Sem_Ch12 is
          --  (Could we do better and remove the original body???)
 
          if Distribution_Stub_Mode = Generate_Caller_Stub_Body
-              and then Comes_From_Source (N)
-              and then Nkind (Parent (N)) = N_Compilation_Unit
+           and then Comes_From_Source (N)
+           and then Nkind (Parent (N)) = N_Compilation_Unit
          then
             Needs_Body := False;
          end if;
@@ -3741,9 +3741,7 @@ package body Sem_Ch12 is
             --  Here is a defence against a ludicrous number of instantiations
             --  caused by a circular set of instantiation attempts.
 
-            if Pending_Instantiations.Last >
-                 Hostparm.Max_Instantiations
-            then
+            if Pending_Instantiations.Last > Hostparm.Max_Instantiations then
                Error_Msg_N ("too many instantiations", N);
                raise Unrecoverable_Error;
             end if;
@@ -3857,13 +3855,13 @@ package body Sem_Ch12 is
             Insert_Before (N, Act_Decl);
             Analyze (Act_Decl);
 
-         --  For an instantiation that is a compilation unit, place declaration
-         --  on current node so context is complete for analysis (including
-         --  nested instantiations). If this is the main unit, the declaration
-         --  eventually replaces the instantiation node. If the instance body
-         --  is created later, it replaces the instance node, and the
-         --  declaration is attached to it (see
-         --  Build_Instance_Compilation_Unit_Nodes).
+         --  For an instantiation that is a compilation unit, place
+         --  declaration on current node so context is complete for analysis
+         --  (including nested instantiations). If this is the main unit,
+         --  the declaration eventually replaces the instantiation node.
+         --  If the instance body is created later, it replaces the
+         --  instance node, and the declaration is attached to it
+         --  (see Build_Instance_Compilation_Unit_Nodes).
 
          else
             if Cunit_Entity (Current_Sem_Unit) = Defining_Entity (N) then

@@ -1418,11 +1418,14 @@ package body Exp_Ch6 is
 
          if Is_By_Reference_Type (Etype (Formal)) then
 
-         --  If the front-end does not perform full type layout, the actual
-         --  may in fact be properly aligned but there is not enough front-end
-         --  information to determine this. In that case gigi will emit an
-         --  error if a copy is not legal, or generate the proper code.
-         --  For other backends we report the error now.
+            --  If the front-end does not perform full type layout, the actual
+            --  may in fact be properly aligned but there is not enough front-
+            --  end information to determine this. In that case gigi will emit
+            --  an error if a copy is not legal, or generate the proper code.
+            --  For other backends we report the error now.
+
+            --  Seems wrong to be issuing an error in the expander, since it
+            --  will be missed in -gnatc mode ???
 
             if Frontend_Layout_On_Target then
                Error_Msg_N
@@ -6130,7 +6133,6 @@ package body Exp_Ch6 is
 
          begin
             Set_Has_Completion (Subp, False);
-            --  Set_Has_Delayed_Freeze (Subp);
             Append_Freeze_Action (Subp, Bod);
 
             --  The body now contains raise statements, so calls to it will
