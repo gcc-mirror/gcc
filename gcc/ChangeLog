@@ -1,3 +1,9 @@
+2012-02-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52329
+	* gimple-fold.c (fold_stmt_1): Also canonicalize ADDR_EXPRs
+	for GIMPLE_DEBUG stmts.
+ 
 2012-02-22  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/51782
