@@ -1816,7 +1816,7 @@ package body Exp_Ch7 is
                  and then Needs_Finalization (Obj_Typ)
                  and then not (Ekind (Obj_Id) = E_Constant
                                 and then not Has_Completion (Obj_Id))
-                 and then not Is_Tag_To_CW_Conversion (Obj_Id)
+                 and then not Is_Tag_To_Class_Wide_Conversion (Obj_Id)
                then
                   Processing_Actions;
 
@@ -1894,10 +1894,7 @@ package body Exp_Ch7 is
 
             --  Specific cases of object renamings
 
-            elsif Nkind (Decl) = N_Object_Renaming_Declaration
-              and then Nkind (Name (Decl)) = N_Explicit_Dereference
-              and then Nkind (Prefix (Name (Decl))) = N_Identifier
-            then
+            elsif Nkind (Decl) = N_Object_Renaming_Declaration then
                Obj_Id  := Defining_Identifier (Decl);
                Obj_Typ := Base_Type (Etype (Obj_Id));
 
@@ -1918,6 +1915,19 @@ package body Exp_Ch7 is
                  and then Is_Return_Object (Obj_Id)
                  and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
                then
+                  Processing_Actions (Has_No_Init => True);
+
+               --  Detect a case where a source object has been initialized by
+               --  a controlled function call which was later rewritten as a
+               --  class-wide conversion of Ada.Tags.Displace.
+
+               --     Obj : Class_Wide_Type := Function_Call (...);
+
+               --     Temp : ... := Function_Call (...)'reference;
+               --     Obj  : Class_Wide_Type renames
+               --              (... Ada.Tags.Displace (Temp));
+
+               elsif Is_Displacement_Of_Ctrl_Function_Result (Obj_Id) then
                   Processing_Actions (Has_No_Init => True);
                end if;
 

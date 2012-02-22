@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -521,6 +521,12 @@ package Exp_Util is
    --  False otherwise. True for an empty list. It is an error to call this
    --  routine with No_List as the argument.
 
+   function Is_Displacement_Of_Ctrl_Function_Result
+     (Obj_Id : Entity_Id) return Boolean;
+   --  Determine whether Obj_Id is a source object that has been initialized by
+   --  a controlled function call later rewritten as a class-wide conversion of
+   --  Ada.Tags.Displace.
+
    function Is_Finalizable_Transient
      (Decl     : Node_Id;
       Rel_Node : Node_Id) return Boolean;
@@ -587,7 +593,8 @@ package Exp_Util is
    --  We consider that a (1 .. 2) is a renamed object since it is the prefix
    --  of the name in the renaming declaration.
 
-   function Is_Tag_To_CW_Conversion (Obj_Id : Entity_Id) return Boolean;
+   function Is_Tag_To_Class_Wide_Conversion
+     (Obj_Id : Entity_Id) return Boolean;
    --  Determine whether object Obj_Id is the result of a tag-to-class-wide
    --  type conversion.
 

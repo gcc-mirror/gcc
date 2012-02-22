@@ -3940,6 +3940,92 @@ package body Exp_Util is
       return True;
    end Is_All_Null_Statements;
 
+   ---------------------------------------------
+   -- Is_Displacement_Of_Ctrl_Function_Result --
+   ---------------------------------------------
+
+   function Is_Displacement_Of_Ctrl_Function_Result
+     (Obj_Id : Entity_Id) return Boolean
+   is
+      function Initialized_By_Ctrl_Function (N : Node_Id) return Boolean;
+      --  Determine whether object declaration N is initialized by a controlled
+      --  function call.
+
+      function Is_Displace_Call (N : Node_Id) return Boolean;
+      --  Determine whether a particular node is a call to Ada.Tags.Displace.
+      --  The call might be nested within other actions such as conversions.
+
+      ----------------------------------
+      -- Initialized_By_Ctrl_Function --
+      ----------------------------------
+
+      function Initialized_By_Ctrl_Function (N : Node_Id) return Boolean is
+         Expr : constant Node_Id := Original_Node (Expression (N));
+
+      begin
+         return
+            Nkind (Expr) = N_Function_Call
+              and then Needs_Finalization (Etype (Expr));
+      end Initialized_By_Ctrl_Function;
+
+      ----------------------
+      -- Is_Displace_Call --
+      ----------------------
+
+      function Is_Displace_Call (N : Node_Id) return Boolean is
+         Call : Node_Id := N;
+
+      begin
+         --  Strip various actions which may precede a call to Displace
+
+         loop
+            if Nkind (Call) = N_Explicit_Dereference then
+               Call := Prefix (Call);
+
+            elsif Nkind_In (Call, N_Type_Conversion,
+                                  N_Unchecked_Type_Conversion)
+            then
+               Call := Expression (Call);
+            else
+               exit;
+            end if;
+         end loop;
+
+         return
+           Nkind (Call) = N_Function_Call
+             and then Is_RTE (Entity (Name (Call)), RE_Displace);
+      end Is_Displace_Call;
+
+      --  Local variables
+
+      Decl      : constant Node_Id   := Parent (Obj_Id);
+      Obj_Typ   : constant Entity_Id := Base_Type (Etype (Obj_Id));
+      Orig_Decl : constant Node_Id   := Original_Node (Decl);
+
+   --  Start of processing for Is_Displacement_Of_Ctrl_Function_Result
+
+   begin
+      --  Detect the following case:
+
+      --     Obj : Class_Wide_Type := Function_Call (...);
+
+      --  which is rewritten into:
+
+      --     Temp : ... := Function_Call (...)'reference;
+      --     Obj  : Class_Wide_Type renames (... Ada.Tags.Displace (Temp));
+
+      --  when the return type of the function and the class-wide type require
+      --  dispatch table pointer displacement.
+
+      return
+        Nkind (Decl) = N_Object_Renaming_Declaration
+          and then Nkind (Orig_Decl) = N_Object_Declaration
+          and then Comes_From_Source (Orig_Decl)
+          and then Initialized_By_Ctrl_Function (Orig_Decl)
+          and then Is_Class_Wide_Type (Obj_Typ)
+          and then Is_Displace_Call (Renamed_Object (Obj_Id));
+   end Is_Displacement_Of_Ctrl_Function_Result;
+
    ------------------------------
    -- Is_Finalizable_Transient --
    ------------------------------
@@ -4321,7 +4407,7 @@ package body Exp_Util is
 
           --  Do not consider conversions of tags to class-wide types
 
-          and then not Is_Tag_To_CW_Conversion (Obj_Id)
+          and then not Is_Tag_To_Class_Wide_Conversion (Obj_Id)
 
           --  Do not consider containers in the context of iterator loops. Such
           --  transient objects must exist for as long as the loop is around,
@@ -4851,11 +4937,13 @@ package body Exp_Util is
       end if;
    end Is_Renamed_Object;
 
-   -----------------------------
-   -- Is_Tag_To_CW_Conversion --
-   -----------------------------
+   -------------------------------------
+   -- Is_Tag_To_Class_Wide_Conversion --
+   -------------------------------------
 
-   function Is_Tag_To_CW_Conversion (Obj_Id : Entity_Id) return Boolean is
+   function Is_Tag_To_Class_Wide_Conversion
+     (Obj_Id : Entity_Id) return Boolean
+   is
       Expr : constant Node_Id := Expression (Parent (Obj_Id));
 
    begin
@@ -4864,7 +4952,7 @@ package body Exp_Util is
           and then Present (Expr)
           and then Nkind (Expr) = N_Unchecked_Type_Conversion
           and then Etype (Expression (Expr)) = RTE (RE_Tag);
-   end Is_Tag_To_CW_Conversion;
+   end Is_Tag_To_Class_Wide_Conversion;
 
    ----------------------------
    -- Is_Untagged_Derivation --
@@ -7015,7 +7103,7 @@ package body Exp_Util is
               and then Needs_Finalization (Obj_Typ)
               and then not (Ekind (Obj_Id) = E_Constant
                               and then not Has_Completion (Obj_Id))
-              and then not Is_Tag_To_CW_Conversion (Obj_Id)
+              and then not Is_Tag_To_Class_Wide_Conversion (Obj_Id)
             then
                return True;
 
@@ -7064,10 +7152,7 @@ package body Exp_Util is
 
          --  Specific cases of object renamings
 
-         elsif Nkind (Decl) = N_Object_Renaming_Declaration
-           and then Nkind (Name (Decl)) = N_Explicit_Dereference
-           and then Nkind (Prefix (Name (Decl))) = N_Identifier
-         then
+         elsif Nkind (Decl) = N_Object_Renaming_Declaration then
             Obj_Id  := Defining_Identifier (Decl);
             Obj_Typ := Base_Type (Etype (Obj_Id));
 
@@ -7088,6 +7173,19 @@ package body Exp_Util is
               and then Is_Return_Object (Obj_Id)
               and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
             then
+               return True;
+
+            --  Detect a case where a source object has been initialized by a
+            --  controlled function call which was later rewritten as a class-
+            --  wide conversion of Ada.Tags.Displace.
+
+            --     Obj : Class_Wide_Type := Function_Call (...);
+
+            --     Temp : ... := Function_Call (...)'reference;
+            --     Obj  : Class_Wide_Type renames
+            --              (... Ada.Tags.Displace (Temp));
+
+            elsif Is_Displacement_Of_Ctrl_Function_Result (Obj_Id) then
                return True;
             end if;
 
