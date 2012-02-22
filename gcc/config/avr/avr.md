@@ -583,23 +583,26 @@
 
 ;; Move register $1 to the Stack Pointer register SP.
 ;; This insn is emit during function prologue/epilogue generation.
-;;    $2 = 0: We know that IRQs are off
-;;    $2 = 1: We know that IRQs are on
-;; Remaining cases when the state of the I-Flag is unknown are
-;; handled by generic movhi insn.
+;;    $2 =  0: We know that IRQs are off
+;;    $2 =  1: We know that IRQs are on
+;;    $2 =  2: SP has 8 bits only, IRQ state does not matter
+;;    $2 = -1: We don't know anything about IRQ on/off
+;; Always write SP via unspec, see PR50063
 
 (define_insn "movhi_sp_r"
-  [(set (match_operand:HI 0 "stack_register_operand"                "=q,q,q")
-        (unspec_volatile:HI [(match_operand:HI 1 "register_operand"  "r,r,r")
-                             (match_operand:HI 2 "const_int_operand" "L,P,LP")]
+  [(set (match_operand:HI 0 "stack_register_operand"                "=q,q,q,q,q")
+        (unspec_volatile:HI [(match_operand:HI 1 "register_operand"  "r,r,r,r,r")
+                             (match_operand:HI 2 "const_int_operand" "L,P,N,K,LPN")]
                             UNSPECV_WRITE_SP))]
-  "!AVR_HAVE_8BIT_SP"
+  ""
   "@
-	out __SP_H__,%B1\;out __SP_L__,%A1
-	cli\;out __SP_H__,%B1\;sei\;out __SP_L__,%A1
-	out __SP_L__,%A1\;out __SP_H__,%B1"
-  [(set_attr "length" "2,4,2")
-   (set_attr "isa" "no_xmega,no_xmega,xmega")
+	out %B0,%B1\;out %A0,%A1
+	cli\;out %B0,%B1\;sei\;out %A0,%A1
+	in __tmp_reg__,__SREG__\;cli\;out %B0,%B1\;out __SREG__,__tmp_reg__\;out %A0,%A1
+	out %A0,%A1
+	out %A0,%A1\;out %B0,%B1"
+  [(set_attr "length" "2,4,5,1,2")
+   (set_attr "isa" "no_xmega,no_xmega,no_xmega,*,xmega")
    (set_attr "cc" "none")])
 
 (define_peephole2
