@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,7 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
+with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
@@ -2086,6 +2087,18 @@ package body Exp_Ch5 is
                          and then
                            not Restriction_Active (No_Dispatching_Calls))
             then
+               if Is_Limited_Type (Typ) then
+
+                  --  This can happen in an instance when the formal is an
+                  --  extension of a limited interface, and the actual is
+                  --  limited. This is an error according to AI05-0087, but
+                  --  is not caught at the point of instantiation in earlier
+                  --  versions.
+
+                  Error_Msg_N ("assignment not available on limited type", N);
+                  return;
+               end if;
+
                --  Fetch the primitive op _assign and proper type to call it.
                --  Because of possible conflicts between private and full view,
                --  fetch the proper type directly from the operation profile.
