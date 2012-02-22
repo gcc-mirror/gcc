@@ -1,3 +1,9 @@
+2012-02-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/51782
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Set address space
+	according to the base object.
+
 2012-02-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR rtl-optimization/50063
