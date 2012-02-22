@@ -1,3 +1,9 @@
+2012-02-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52330
+	* config/i386/i386.c (ix86_print_operand) <case 'H'>: Error out if x
+	is not offsettable memory reference.
+
 2012-02-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/18145
@@ -7,7 +13,7 @@
 2012-02-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.h (avr_accumulate_outgoing_args): Return int.
-	* config/avr/avr.c (avr_accumulate_outgoing_args): Return int.	
+	* config/avr/avr.c (avr_accumulate_outgoing_args): Return int.
 
 2012-02-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
@@ -422,8 +428,7 @@
 2012-02-14  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* haifa-sched.c (prune_ready_list): Ensure that if there is a
-	sched-group insn, it either remains alone or the entire list is
-	pruned.
+	sched-group insn, it either remains alone or the entire list is pruned.
 
 2012-02-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
@@ -543,8 +548,8 @@
 	* gcc.c (LINK_COMMAND_SPEC): Deal with -fgnu-tm.
 	(GTM_SELF_SPECS): Define if not already defined.
 	(driver_self_specs): Add GTM_SELF_SPECS.
-        * config/darwin.h (LINK_COMMAND_SPEC_A): Deal with -fgnu-tm.
-        (GTM_SELF_SPECS): Define.
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Deal with -fgnu-tm.
+	(GTM_SELF_SPECS): Define.
 	* config/i386/cygwin.h (GTM_SELF_SPECS): Likewise.
 	* config/i386/mingw32.h (GTM_SELF_SPECS): Likewise.
 
@@ -553,13 +558,11 @@
 	* cselib.c (expand_loc): Return sp, fp, hfp or cfa base reg right
 	away if seen.
 
-	* cselib.c (dump_cselib_val): Don't assume l->setting_insn is
-	non-NULL.
+	* cselib.c (dump_cselib_val): Don't assume l->setting_insn is non-NULL.
 
 	PR middle-end/52230
-	* omp-low.c (expand_omp_for): If a static schedule without
-	chunk size has NULL region->cont, force fd.chunk_size to be
-	integer_zero_node.
+	* omp-low.c (expand_omp_for): If a static schedule without chunk size
+	has NULL region->cont, force fd.chunk_size to be integer_zero_node.
 
 2012-02-13  Andrew MacLeod  <amacleod@redhat.com>
 
@@ -583,7 +586,7 @@
 	disallow changes from SFmode to mode with different size in FP regs.
 
 2012-02-12  Robert Millan  <rmh@gnu.org>
-            Gerald Pfeifer <gerald@pfeifer.com>
+	    Gerald Pfeifer <gerald@pfeifer.com>
 
 	* ginclude/stddef.h [__FreeBSD_kernel__] (__size_t): Do not define.
 	Tweak comment.
@@ -607,8 +610,7 @@
 2012-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/52132
-	* reg-stack.c (subst_stack_regs_in_debug_insn): Don't use
-	get_true_reg.
+	* reg-stack.c (subst_stack_regs_in_debug_insn): Don't use get_true_reg.
 
 2012-02-11  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -969,8 +971,8 @@
 	* config/mips/mips-dspr2.md (mips_prepend): Mask operand 3 rather
 	than operand 2.
 
-2012-02-02 Jan Hubicka  <jh@suse.cz>
-	   Tom de Vries  <tom@codesourcery.com>
+2012-02-02  Jan Hubicka  <jh@suse.cz>
+	    Tom de Vries  <tom@codesourcery.com>
 
 	PR middle-end/51998
 	* cgraphunit.c (cgraph_analyze_function): Break cyclic aliases.
