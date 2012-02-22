@@ -62,6 +62,14 @@ along with this program; see the file COPYING3.  If not see
 #include "simple-object.h"
 #include "plugin-api.h"
 
+/* We need to use I64 instead of ll width-specifier on native Windows.
+   The reason for this is that older MS-runtimes don't support the ll.  */
+#ifdef __MINGW32__
+#define PRI_LL "I64"
+#else
+#define PRI_LL "ll"
+#endif
+
 /* Handle opening elf files on hosts, such as Windows, that may use
    text file handling that will break binary access.  */
 #ifndef O_BINARY
@@ -360,7 +368,7 @@ dump_symtab (FILE *f, struct plugin_symtab *symtab)
       
       assert (resolution != LDPR_UNKNOWN);
 
-      fprintf (f, "%u %llx %s %s\n",
+      fprintf (f, "%u %" PRI_LL "x %s %s\n",
                (unsigned int) slot, symtab->aux[j].id,
 	       lto_resolution_str[resolution], 
 	       symtab->syms[j].name);
@@ -816,7 +824,7 @@ process_symtab (void *data, const char *name, off_t offset, off_t length)
 
   s = strrchr (name, '.');
   if (s)
-    sscanf (s, ".%llx", &obj->out->id);
+    sscanf (s, ".%" PRI_LL "x", &obj->out->id);
   secdata = xmalloc (length);
   offset += obj->file->offset;
   if (offset != lseek (obj->file->fd, offset, SEEK_SET)
