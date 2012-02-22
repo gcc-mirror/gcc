@@ -1,3 +1,8 @@
+2012-02-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52330
+	* gcc.target/i386/pr52330.c: New test.
+
 2012-02-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52335
@@ -10,8 +15,7 @@
 
 2012-02-21  Kai Tietz  <ktietz@redhat.com>
 
-	* gcc.dg/bf-ms-layout-3.c: Mark char typed bitfield
-	as extension.
+	* gcc.dg/bf-ms-layout-3.c: Mark char typed bitfield as extension.
 
 2012-02-21  Richard Guenther  <rguenther@suse.de>
 
@@ -154,10 +158,9 @@
 
 2012-02-14  Hans-Peter Nilsson  <hp@axis.com>
 
-	* lib/target-supports.exp (check_effective_target_fgnu_tm): New
-	proc.
+	* lib/target-supports.exp (check_effective_target_fgnu_tm): New proc.
 	* gfortran.dg/trans-mem-skel.f90: Gate test on effective_target
-	fgnu_tm. 
+	fgnu_tm.
 	* gcc.dg/lto/trans-mem-1_0.c, gcc.dg/lto/trans-mem-2_0.c,
 	gcc.dg/lto/trans-mem-3_0.c, gcc.dg/lto/trans-mem-4_0.c: Ditto.
 	* gcc.dg/tm/tm.exp: Gate the whole of gcc.dg/tm on
@@ -531,8 +534,8 @@
 
 	* gcc.target/mips/mips-prepend-1.c: New test.
 
-2012-02-02 Jan Hubicka  <jh@suse.cz>
-	   Tom de Vries  <tom@codesourcery.com>
+2012-02-02  Jan Hubicka  <jh@suse.cz>
+	    Tom de Vries  <tom@codesourcery.com>
 
 	PR middle-end/51998
 	* testsuite/gcc.dg/alias-12.c: New testcase.
