@@ -1250,6 +1250,18 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace)
 		  changed = true;
 		}
 	    }
+	  else if (val
+		   && TREE_CODE (val) == ADDR_EXPR)
+	    {
+	      tree ref = TREE_OPERAND (val, 0);
+	      tree tem = maybe_fold_reference (ref, false);
+	      if (tem)
+		{
+		  tem = build_fold_addr_expr_with_type (tem, TREE_TYPE (val));
+		  gimple_debug_bind_set_value (stmt, tem);
+		  changed = true;
+		}
+	    }
 	}
       break;
 
