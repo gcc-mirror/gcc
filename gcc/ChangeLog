@@ -1,3 +1,9 @@
+2012-02-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52330
+	* config/i386/i386.c (ix86_print_operand) <case 'H'>: Error out if x
+	is not offsettable memory reference.
+
 2012-01-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/51821

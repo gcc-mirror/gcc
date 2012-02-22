@@ -1,3 +1,8 @@
+2012-02-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52330
+	* gcc.target/i386/pr52330.c: New test.
+
 2012-01-20  Kai Tietz  <ktietz@redhat.com>
 
 	* g++.dg/torture/pr51344.C: Fix typo.
