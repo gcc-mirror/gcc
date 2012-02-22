@@ -1,3 +1,9 @@
+2012-02-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52330
+	* config/i386/i386.c (ix86_print_operand) <case 'H'>: Error out if x
+	is not offsettable memory reference.
+
 2012-02-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/52294
@@ -3684,7 +3690,8 @@
 	PR lto/47497
 	* lto-symtab.c (lto_cgraph_replace_node): Do not set thunk.alias.
 	(lto_symtab_merge_cgraph_nodes_1): Update thunk.alias pointers here.
-	* cgraph.h (cgraph_same_body_alias, cgraph_add_thunk): Add node pointers.
+	* cgraph.h (cgraph_same_body_alias, cgraph_add_thunk): Add node
+	pointers.
 	* cgraph.c (cgraph_same_body_alias_1, cgraph_same_body_alias,
 	cgraph_add_thunk): Add node pointers.
 	* lto-cgraph.c (lto_output_node): Verify that thunks&aliases are
