@@ -1062,8 +1062,8 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               !frame_pointer_needed can only occur if the function is not a
               leaf function and thus X has already been saved.  */
               
+          int irq_state = -1;
           rtx fp_plus_insns, fp, my_fp;
-          rtx sp_minus_size = plus_constant (stack_pointer_rtx, -size);
 
           gcc_assert (frame_pointer_needed
                       || !isr_p
@@ -1076,7 +1076,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
           if (AVR_HAVE_8BIT_SP)
             {
               /* The high byte (r29) does not change:
-                 Prefer SUBI (1 cycle) over ABIW (2 cycles, same size).  */
+                 Prefer SUBI (1 cycle) over SBIW (2 cycles, same size).  */
 
               my_fp = all_regs_rtx[FRAME_POINTER_REGNUM];
             }
@@ -1092,43 +1092,50 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
              the frame pointer subtraction is done.  */
           
           insn = emit_move_insn (fp, stack_pointer_rtx);
-          if (!frame_pointer_needed)
-            RTX_FRAME_RELATED_P (insn) = 1;
-
-          insn = emit_move_insn (my_fp, plus_constant (my_fp, -size));
-          RTX_FRAME_RELATED_P (insn) = 1;
-          
           if (frame_pointer_needed)
             {
+              RTX_FRAME_RELATED_P (insn) = 1;
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
-                            gen_rtx_SET (VOIDmode, fp, sp_minus_size));
+                            gen_rtx_SET (VOIDmode, fp, stack_pointer_rtx));
+            }
+
+          insn = emit_move_insn (my_fp, plus_constant (my_fp, -size));
+          if (frame_pointer_needed)
+            {
+              RTX_FRAME_RELATED_P (insn) = 1;
+              add_reg_note (insn, REG_CFA_ADJUST_CFA,
+                            gen_rtx_SET (VOIDmode, fp,
+                                         plus_constant (fp, -size)));
             }
           
           /* Copy to stack pointer.  Note that since we've already
              changed the CFA to the frame pointer this operation
-             need not be annotated if frame pointer is needed.  */
-              
-          if (AVR_HAVE_8BIT_SP || AVR_XMEGA)
-            {
-              insn = emit_move_insn (stack_pointer_rtx, fp);
-            }
-          else if (TARGET_NO_INTERRUPTS 
-                   || isr_p
-                   || cfun->machine->is_OS_main)
-            {
-              rtx irqs_are_on = GEN_INT (!!cfun->machine->is_interrupt);
-              
-              insn = emit_insn (gen_movhi_sp_r (stack_pointer_rtx,
-                                                fp, irqs_are_on));
-            }
-          else
-            {
-              insn = emit_move_insn (stack_pointer_rtx, fp);
-            }
+             need not be annotated if frame pointer is needed.
+             Always move through unspec, see PR50063.
+             For meaning of irq_state see movhi_sp_r insn.  */
 
+          if (cfun->machine->is_interrupt)
+            irq_state = 1;
+
+          if (TARGET_NO_INTERRUPTS
+              || cfun->machine->is_signal
+              || cfun->machine->is_OS_main)
+            irq_state = 0;
+
+          if (AVR_HAVE_8BIT_SP)
+            irq_state = 2;
+
+          insn = emit_insn (gen_movhi_sp_r (stack_pointer_rtx,
+                                            fp, GEN_INT (irq_state)));
           if (!frame_pointer_needed)
-            RTX_FRAME_RELATED_P (insn) = 1;
-
+            {
+              RTX_FRAME_RELATED_P (insn) = 1;
+              add_reg_note (insn, REG_CFA_ADJUST_CFA,
+                            gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+                                         plus_constant (stack_pointer_rtx,
+                                                        -size)));
+            }
+          
           fp_plus_insns = get_insns ();
           end_sequence ();
           
@@ -1143,9 +1150,13 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               
               start_sequence ();
 
-              insn = emit_move_insn (stack_pointer_rtx, sp_minus_size);
+              insn = emit_move_insn (stack_pointer_rtx,
+                                     plus_constant (stack_pointer_rtx, -size));
               RTX_FRAME_RELATED_P (insn) = 1;
-
+              add_reg_note (insn, REG_CFA_ADJUST_CFA,
+                            gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+                                         plus_constant (stack_pointer_rtx,
+                                                        -size)));
               if (frame_pointer_needed)
                 {
                   insn = emit_move_insn (fp, stack_pointer_rtx);
@@ -1376,7 +1387,8 @@ expand_epilogue (bool sibcall_p)
   if (size)
     {
       /* Try two methods to adjust stack and select shortest.  */
-          
+
+      int irq_state = -1;
       rtx fp, my_fp;
       rtx fp_plus_insns;
 
@@ -1406,23 +1418,15 @@ expand_epilogue (bool sibcall_p)
       emit_move_insn (my_fp, plus_constant (my_fp, size));
 
       /* Copy to stack pointer.  */
-              
-      if (AVR_HAVE_8BIT_SP || AVR_XMEGA)
-        {
-          emit_move_insn (stack_pointer_rtx, fp);
-        }
-      else if (TARGET_NO_INTERRUPTS 
-               || isr_p
-               || cfun->machine->is_OS_main)
-        {
-          rtx irqs_are_on = GEN_INT (!!cfun->machine->is_interrupt);
-          
-          emit_insn (gen_movhi_sp_r (stack_pointer_rtx, fp, irqs_are_on));
-        }
-      else
-        {
-          emit_move_insn (stack_pointer_rtx, fp);
-        }
+
+      if (TARGET_NO_INTERRUPTS)
+        irq_state = 0;
+
+      if (AVR_HAVE_8BIT_SP)
+        irq_state = 2;
+
+      emit_insn (gen_movhi_sp_r (stack_pointer_rtx, fp,
+                                 GEN_INT (irq_state)));
 
       fp_plus_insns = get_insns ();
       end_sequence ();        

@@ -1,3 +1,17 @@
+2012-02-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/50063
+	* config/avr/avr.md (movhi_sp_r): Handle -1 (unknown IRQ state)
+	and 2 (8-bit SP) in operand 2.
+	* config/avr/avr.c (avr_prologue_setup_frame): Adjust prologue
+	setup to use movhi_sp_r instead of vanilla move to write SP.
+	Adjust REG_CFA notes to superseed unspec.
+	(expand_epilogue): Adjust epilogue setup to use movhi_sp_r instead
+	of vanilla move.
+	As function body might contain CLI or SEI: Use irq_state 0 (IRQ
+	known to be off) only with TARGET_NO_INTERRUPTS. Never use
+	irq_state 1 (IRQ known to be on) here.
+
 2012-02-21  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* ira.c (check_allocation): Use REG_WORDS_BIG_ENDIAN, not
