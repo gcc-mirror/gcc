@@ -1,3 +1,8 @@
+2012-02-22  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch5.adb: Add comment.
+	* sem_ch12.adb, exp_ch6.adb: minor reformatting
+
 2012-02-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Freeze_Entity): Do not perform type layout within

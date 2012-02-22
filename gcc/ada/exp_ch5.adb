@@ -2095,6 +2095,9 @@ package body Exp_Ch5 is
                   --  is not caught at the point of instantiation in earlier
                   --  versions.
 
+                  --  This is wrong, error messages cannot be issued during
+                  --  expansion, since they would be missed in -gnatc mode ???
+
                   Error_Msg_N ("assignment not available on limited type", N);
                   return;
                end if;
