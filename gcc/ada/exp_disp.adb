@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,6 +74,11 @@ package body Exp_Disp is
    function Default_Prim_Op_Position (E : Entity_Id) return Uint;
    --  Ada 2005 (AI-251): Returns the fixed position in the dispatch table
    --  of the default primitive operations.
+
+   function Find_Specific_Type (CW : Entity_Id) return Entity_Id;
+   --  Find specific type of a class-wide type, and handle the case of an
+   --  incomplete type coming  either from a limited_with clause or from an
+   --  incomplete type declaration.
 
    function Has_DT (Typ : Entity_Id) return Boolean;
    pragma Inline (Has_DT);
@@ -178,11 +183,7 @@ package body Exp_Disp is
          CW_Typ := Class_Wide_Type (Ctrl_Typ);
       end if;
 
-      Typ := Root_Type (CW_Typ);
-
-      if Ekind (Typ) = E_Incomplete_Type then
-         Typ := Non_Limited_View (Typ);
-      end if;
+      Typ := Find_Specific_Type (CW_Typ);
 
       if not Is_Limited_Type (Typ) then
          Eq_Prim_Op := Find_Prim_Op (Typ, Name_Op_Eq);
@@ -746,11 +747,7 @@ package body Exp_Disp is
          CW_Typ := Class_Wide_Type (Ctrl_Typ);
       end if;
 
-      Typ := Root_Type (CW_Typ);
-
-      if Ekind (Typ) = E_Incomplete_Type then
-         Typ := Non_Limited_View (Typ);
-      end if;
+      Typ := Find_Specific_Type (CW_Typ);
 
       if not Is_Limited_Type (Typ) then
          Eq_Prim_Op := Find_Prim_Op (Typ, Name_Op_Eq);
@@ -1883,6 +1880,25 @@ package body Exp_Disp is
                         Parameter_Associations => Actuals)))));
       end if;
    end Expand_Interface_Thunk;
+
+   ------------------------
+   -- Find_Specific_Type --
+   ------------------------
+
+   function Find_Specific_Type (CW : Entity_Id) return Entity_Id is
+      Typ : Entity_Id := Root_Type (CW);
+
+   begin
+      if Ekind (Typ) = E_Incomplete_Type then
+         if From_With_Type (Typ) then
+            Typ := Non_Limited_View (Typ);
+         else
+            Typ := Full_View (Typ);
+         end if;
+      end if;
+
+      return Typ;
+   end Find_Specific_Type;
 
    --------------------------
    -- Has_CPP_Constructors --

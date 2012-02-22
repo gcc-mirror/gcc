@@ -225,8 +225,6 @@ package Snames is
    --  Names used by the analyzer and expander for aspect Dimension and
    --  Dimension_System to deal with Sqrt and IO routines.
 
-   Name_Dim                          : constant Name_Id := N + $; -- Ada 12
-   Name_Generic_Elementary_Functions : constant Name_Id := N + $; -- Ada 12
    Name_Item                         : constant Name_Id := N + $; -- Ada 12
    Name_Sqrt                         : constant Name_Id := N + $; -- Ada 12
    Name_Symbols                      : constant Name_Id := N + $; -- Ada 12
