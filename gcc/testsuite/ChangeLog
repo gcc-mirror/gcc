@@ -1,3 +1,8 @@
+2012-02-22  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* lib/target-supports.exp (check_effective_target_vect_condition):
+	Return true for NEON.
+
 2012-02-21  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc.dg/bf-ms-layout-3.c: Mark char typed bitfield
