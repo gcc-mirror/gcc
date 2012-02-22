@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -123,10 +123,10 @@ package Makeutl is
 
    function Check_Source_Info_In_ALI
      (The_ALI      : ALI.ALI_Id;
-      Tree         : Project_Tree_Ref) return Boolean;
+      Tree         : Project_Tree_Ref) return Name_Id;
    --  Check whether all file references in ALI are still valid (i.e. the
-   --  source files are still associated with the same units). Return True
-   --  if everything is still valid.
+   --  source files are still associated with the same units). Return the name
+   --  of the unit if everything is still valid. Return No_Name otherwise.
 
    function Is_Subunit (Source : Source_Id) return Boolean;
    --  Return True if source is a subunit

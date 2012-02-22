@@ -1,3 +1,59 @@
+2012-02-22  Pascal Obry  <obry@adacore.com>
+
+	* s-taprop-mingw.adb (Finalize_TCB): Do not wait on thread handle as
+	this is our own thread.
+
+2012-02-22  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* tree_io.ads: Update ASIS_Version_Number because of the changes
+	in Snames.
+
+2012-02-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Create_Finalizer): Suppress elaboration checks on 
+	stack-related finalizers.
+
+2012-02-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): If the construct
+	is a completion, indicate that its formals are the formals of
+	a completion, and as such do not get a cross- reference entry.
+	(Analyze_Subprogram_Specification): Do not generate a definition
+	for the entity of an expression function, because it may be a
+	completion. Definition will be generated if needed when analyzing
+	the generated subprogram declaration.
+
+2012-02-22  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Check): When checking if an object file is in the
+	correct object directory, get the unit name from a previous call
+	to Check_Source_Info_In_ALI.
+	* makeutl.adb (Check_Source_Info_In_ALI): Return the name of
+	the unit when everything is OK, otherwise return No_Name.
+	* makeutl.ads (Check_Source_Info_In_ALI): Return Name_Id instead
+	of Boolean
+
+2012-02-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Find_Equality_Types, Try_One_Interp): In an
+	instance, the operator is visible if an operand is of some
+	numeric type which is not in use or directly visible, and the
+	other operand is a numeric literal.
+
+2012-02-22  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c: Minor code clean up.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2012-02-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnatlink.adb (Gnatlink): Use -gnatcC in CodePeer_Node,
+	otherwise GCC will generate an object file.
+
+2012-02-22  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Correct typo related to "**" in Source_Dirs.
+
 2012-02-22  Steve Baird  <baird@adacore.com>
 
 	* sem_prag.adb (Analyze_PPC_In_Decl_Part): Clean up generation of

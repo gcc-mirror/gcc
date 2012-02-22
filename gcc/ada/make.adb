@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1863,44 +1863,44 @@ package body Make is
                end if;
 
             elsif not Read_Only and then Main_Project /= No_Project then
-               if not Check_Source_Info_In_ALI (ALI, Project_Tree) then
-                  ALI := No_ALI_Id;
-                  return;
-               end if;
-
-               --  Check that the ALI file is in the correct object directory.
-               --  If it is in the object directory of a project that is
-               --  extended and it depends on a source that is in one of its
-               --  extending projects, then the ALI file is not in the correct
-               --  object directory.
-
-               --  First, find the project of this ALI file. As there may be
-               --  several projects with the same object directory, we first
-               --  need to find the project of the source.
-
-               ALI_Project := No_Project;
-
                declare
+                  Uname : constant Name_Id :=
+                    Check_Source_Info_In_ALI (ALI, Project_Tree);
+
                   Udata : Prj.Unit_Index;
 
                begin
-                  Udata := Units_Htable.Get_First (Project_Tree.Units_HT);
-                  while Udata /= No_Unit_Index loop
+                  if Uname = No_Name then
+                     ALI := No_ALI_Id;
+                     return;
+                  end if;
+
+                  --  Check that the ALI file is in the correct object
+                  --  directory. If it is in the object directory of a project
+                  --  that is extended and it depends on a source that is in
+                  --  one of its extending projects, then the ALI file is not
+                  --  in the correct object directory.
+
+                  --  First, find the project of this ALI file. As there may be
+                  --  several projects with the same object directory, we first
+                  --  need to find the project of the source.
+
+                  ALI_Project := No_Project;
+
+                  Udata := Units_Htable.Get (Project_Tree.Units_HT, Uname);
+
+                  if Udata /= No_Unit_Index then
                      if Udata.File_Names (Impl) /= null
                        and then Udata.File_Names (Impl).File = Source_File
                      then
                         ALI_Project := Udata.File_Names (Impl).Project;
-                        exit;
 
                      elsif Udata.File_Names (Spec) /= null
                        and then Udata.File_Names (Spec).File = Source_File
                      then
                         ALI_Project := Udata.File_Names (Spec).Project;
-                        exit;
                      end if;
-
-                     Udata := Units_Htable.Get_Next (Project_Tree.Units_HT);
-                  end loop;
+                  end if;
                end;
 
                if ALI_Project = No_Project then
