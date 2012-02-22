@@ -36,7 +36,6 @@ with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
@@ -1359,94 +1358,105 @@ package body Sem_Dim is
    -- Analyze_Dimension_Function_Call --
    -------------------------------------
 
+   --  Propagate the dimensions from the returned type to the call node. Note
+   --  that there is a special treatment for elementary function calls. Indeed
+   --  for Sqrt call, the resulting dimensions equal to half the dimensions of
+   --  the actual, and for other elementary calls, this routine check that
+   --  every actuals are dimensionless.
+
    procedure Analyze_Dimension_Function_Call (N : Node_Id) is
-      Name_Call      : constant Node_Id := Name (N);
       Actuals        : constant List_Id := Parameter_Associations (N);
+      Name_Call      : constant Node_Id := Name (N);
       Actual         : Node_Id;
       Dims_Of_Actual : Dimension_Type;
       Dims_Of_Call   : Dimension_Type;
+      Ent            : Entity_Id;
 
-      function Is_Elementary_Function_Call return Boolean;
-      --  Return True if the call is a call of an elementary function (see
+      function Is_Elementary_Function_Entity (E : Entity_Id) return Boolean;
+      --  Given E the original subprogram entity, return True if the call is a
+      --  an elementary function call (see
       --  Ada.Numerics.Generic_Elementary_Functions).
 
-      ---------------------------------
-      -- Is_Elementary_Function_Call --
-      ---------------------------------
+      -----------------------------------
+      -- Is_Elementary_Function_Entity --
+      -----------------------------------
 
-      function Is_Elementary_Function_Call return Boolean is
-         Ent : Entity_Id;
+      function Is_Elementary_Function_Entity (E : Entity_Id) return Boolean is
+         Loc : constant Source_Ptr := Sloc (E);
 
       begin
-         if Is_Entity_Name (Name_Call) then
-            Ent := Entity (Name_Call);
+         --  Check the function entity is located in
+         --  Ada.Numerics.Generic_Elementary_Functions.
 
-            --  Check the procedure is defined in an instantiation of a generic
-            --  package.
-
-            if Is_Generic_Instance (Scope (Ent)) then
-               Ent := Cunit_Entity (Get_Source_Unit (Ent));
-
-               --  Check the name of the generic package is
-               --  Generic_Elementary_Functions
-
-               return
-                 Is_Library_Level_Entity (Ent)
-                   and then Chars (Ent) = Name_Generic_Elementary_Functions;
-            end if;
-         end if;
-
-         return False;
-      end Is_Elementary_Function_Call;
+         return
+           Loc > No_Location
+             and then
+               Is_RTU
+                (Cunit_Entity (Get_Source_Unit (Loc)),
+                 Ada_Numerics_Generic_Elementary_Functions);
+      end Is_Elementary_Function_Entity;
 
    --  Start of processing for Analyze_Dimension_Function_Call
 
    begin
-      --  Elementary function case
+      --  Look for elementary function call
 
-      if Is_Elementary_Function_Call then
+      if Is_Entity_Name (Name_Call) then
+         Ent := Entity (Name_Call);
+
+         --  Get the original subprogram entity following the renaming chain
+
+         if Present (Alias (Ent)) then
+            Ent := Alias (Ent);
+         end if;
+
+         --  Elementary function case
+
+         if Is_Elementary_Function_Entity (Ent) then
 
          --  Sqrt function call case
 
-         if Chars (Name_Call) = Name_Sqrt then
-            Dims_Of_Call := Dimensions_Of (First (Actuals));
+            if Chars (Ent) = Name_Sqrt then
+               Dims_Of_Call := Dimensions_Of (First (Actuals));
 
-            if Exists (Dims_Of_Call) then
-               for Position in Dims_Of_Call'Range loop
-                  Dims_Of_Call (Position) :=
-                    Dims_Of_Call (Position) * Rational'(Numerator =>   1,
+               if Exists (Dims_Of_Call) then
+                  for Position in Dims_Of_Call'Range loop
+                     Dims_Of_Call (Position) :=
+                       Dims_Of_Call (Position) * Rational'(Numerator =>   1,
                                                         Denominator => 2);
-               end loop;
+                  end loop;
 
-               Set_Dimensions (N, Dims_Of_Call);
-            end if;
-
-         --  All other functions in Ada.Numerics.Generic_Elementary_Functions
-         --  case. Note that all parameters here should be dimensionless.
-
-         else
-            Actual := First (Actuals);
-            while Present (Actual) loop
-               Dims_Of_Actual := Dimensions_Of (Actual);
-
-               if Exists (Dims_Of_Actual) then
-                  Error_Msg_NE ("parameter should be dimensionless for " &
-                                "elementary function&",
-                                Actual,
-                                Name_Call);
-                  Error_Msg_N ("\parameter " & Dimensions_Msg_Of (Actual),
-                               Actual);
+                  Set_Dimensions (N, Dims_Of_Call);
                end if;
 
-               Next (Actual);
-            end loop;
+            --  All other elementary functions case. Note that every actual
+            --  here should be dimensionless.
+
+            else
+               Actual := First (Actuals);
+               while Present (Actual) loop
+                  Dims_Of_Actual := Dimensions_Of (Actual);
+
+                  if Exists (Dims_Of_Actual) then
+                     Error_Msg_NE ("parameter should be dimensionless for " &
+                                   "elementary function&",
+                                   Actual,
+                                   Name_Call);
+                     Error_Msg_N ("\parameter " & Dimensions_Msg_Of (Actual),
+                                  Actual);
+                  end if;
+
+                  Next (Actual);
+               end loop;
+            end if;
+
+            return;
          end if;
-
-      --  Other case
-
-      else
-         Analyze_Dimension_Has_Etype (N);
       end if;
+
+      --  Other cases
+
+      Analyze_Dimension_Has_Etype (N);
    end Analyze_Dimension_Function_Call;
 
    ---------------------------------
@@ -2226,28 +2236,31 @@ package body Sem_Dim is
 
       function Is_Procedure_Put_Call return Boolean is
          Ent : Entity_Id;
+         Loc : Source_Ptr;
 
       begin
-         --  There are three different Put routine in each generic package
-         --  Check that the current procedure call is one of them
+         --  There are three different Put routines in each generic dim IO
+         --  package. Verify the current procedure call is one of them.
 
          if Is_Entity_Name (Name_Call) then
             Ent := Entity (Name_Call);
 
-            --  Check that the name of the procedure is Put
-            --  Check the procedure is defined in an instantiation of a
-            --  generic package.
+            --  Get the original subprogram entity following the renaming chain
 
-            if Chars (Name_Call) = Name_Put
-              and then Is_Generic_Instance (Scope (Ent))
-            then
-               Ent := Cunit_Entity (Get_Source_Unit (Ent));
-
-               --  Verify that the generic package is either
-               --  System.Dim.Float_IO or System.Dim.Integer_IO.
-
-               return Is_Dim_IO_Package_Entity (Ent);
+            if Present (Alias (Ent)) then
+               Ent := Alias (Ent);
             end if;
+
+            Loc := Sloc (Ent);
+
+            --  Check the name of the entity subprogram is Put and verify this
+            --  entity is located in either System.Dim.Float_IO or
+            --  System.Dim.Integer_IO.
+
+            return Chars (Ent) = Name_Put
+              and then Loc > No_Location
+              and then Is_Dim_IO_Package_Entity
+                         (Cunit_Entity (Get_Source_Unit (Loc)));
          end if;
 
          return False;
@@ -2499,22 +2512,14 @@ package body Sem_Dim is
    -- Is_Dim_IO_Package_Entity --
    ------------------------------
 
-   --  Why all this comparison of names, why not use Is_RTE and Is_RTU ???
-
    function Is_Dim_IO_Package_Entity (E : Entity_Id) return Boolean is
    begin
-      --  Check the package entity is standard and its scope is either
-      --  System.Dim.Float_IO or System.Dim.Integer_IO.
+      --  Check the package entity corresponds to System.Dim.Float_IO or
+      --  System.Dim.Integer_IO.
 
-      if Is_Library_Level_Entity (E)
-        and then (Chars (E) = Name_Float_IO
-                    or else Chars (E) = Name_Integer_IO)
-      then
-         return Chars (Scope (E)) = Name_Dim
-           and Chars (Scope (Scope (E))) = Name_System;
-      end if;
-
-      return False;
+      return
+        Is_RTU (E, System_Dim_Float_IO)
+          or Is_RTU (E, System_Dim_Integer_IO);
    end Is_Dim_IO_Package_Entity;
 
    -------------------------------------
@@ -2523,19 +2528,14 @@ package body Sem_Dim is
 
    function Is_Dim_IO_Package_Instantiation (N : Node_Id) return Boolean is
       Gen_Id : constant Node_Id := Name (N);
-      Ent    : Entity_Id;
 
    begin
-      if Is_Entity_Name (Gen_Id) then
-         Ent := Entity (Gen_Id);
+      --  Check that the instantiated package is either System.Dim.Float_IO
+      --  or System.Dim.Integer_IO.
 
-         --  Verify that the instantiated package is either System.Dim.Float_IO
-         --  or System.Dim.Integer_IO.
-
-         return Is_Dim_IO_Package_Entity (Ent);
-      end if;
-
-      return False;
+      return
+        Is_Entity_Name (Gen_Id)
+          and then Is_Dim_IO_Package_Entity (Entity (Gen_Id));
    end Is_Dim_IO_Package_Instantiation;
 
    ----------------

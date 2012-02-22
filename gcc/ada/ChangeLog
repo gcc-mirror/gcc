@@ -1,3 +1,38 @@
+2012-02-22  Vincent Pucci  <pucci@adacore.com>
+
+	* rtsfind.adb (Get_Unit_Name): Ada_Numerics_Child and
+	System_Dim_Child cases added.
+	* rtsfind.ads: Ada_Numerics,
+	Ada_Numerics_Generic_Elementary_Functions, System_Dim,
+	System_Dim_Float_IO and System_Dim_Integer_IO added to the list
+	of RTU_Id.  Ada_Numerics_Child and System_Dim_Child added as
+	new RTU_Id subtypes.
+	* sem_dim.adb (Is_Dim_IO_Package_Entity): Use of
+	Rtsfind to verify the package entity is located either
+	in System.Dim.Integer_IO or in System.Dim.Float_IO.
+	(Is_Dim_IO_Package_Instantiation): Minor
+	changes.  (Is_Elementary_Function_Call): Removed.
+	(Is_Elementary_Function_Entity): New routine.
+	(Is_Procedure_Put_Call): Is_Dim_IO_Package_Entity call added.
+	* snames.ads-tmpl: Name_Dim and Name_Generic_Elementary_Functions
+	removed.
+
+2012-02-22  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+
+2012-02-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Find_Type_Name): When analyzing a private type
+	declaration that is the completion of a tagged incomplete type, do
+	not associate the class-wide type already created with the private
+	type to prevent order-of-elaboration issues in the back-end.
+	* exp_disp.adb (Find_Specific_Type): Find specific type of
+	a class-wide type, and handle the case of an incomplete type
+	coming	either from a limited_with clause or from an incomplete
+	type declaration. Used when expanding a dispatchin call and
+	generating tag checks (minor refactoring).
+
 2012-02-22  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb: Add comment.

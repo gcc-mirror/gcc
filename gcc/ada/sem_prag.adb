@@ -14970,14 +14970,15 @@ package body Sem_Prag is
       --  Follow subprogram renaming chain
 
       Result := Def_Id;
-      while Is_Subprogram (Result)
+
+      if Is_Subprogram (Result)
         and then
           Nkind (Parent (Declaration_Node (Result))) =
                                          N_Subprogram_Renaming_Declaration
         and then Present (Alias (Result))
-      loop
+      then
          Result := Alias (Result);
-      end loop;
+      end if;
 
       return Result;
    end Get_Base_Subprogram;
