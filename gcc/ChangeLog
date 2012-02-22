@@ -1,3 +1,8 @@
+2012-02-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.h (avr_accumulate_outgoing_args): Return int.
+	* config/avr/avr.c (avr_accumulate_outgoing_args): Return int.	
+
 2012-02-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (LIB_TLS_SPEC): Enforce use of alternate thread

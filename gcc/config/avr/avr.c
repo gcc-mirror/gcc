@@ -654,7 +654,8 @@ avr_OS_main_function_p (tree func)
 
 
 /* Implement `ACCUMULATE_OUTGOING_ARGS'.  */
-bool
+
+int
 avr_accumulate_outgoing_args (void)
 {
   if (!cfun)
