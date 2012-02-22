@@ -1,3 +1,8 @@
+2012-02-22  Steve Baird  <baird@adacore.com>
+
+	* sem_prag.adb (Analyze_PPC_In_Decl_Part): Clean up generation of
+	error message text.
+
 2012-02-22  Vincent Pucci  <pucci@adacore.com>
 
 	* rtsfind.adb (Get_Unit_Name): Ada_Numerics_Child and

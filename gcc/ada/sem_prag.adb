@@ -285,12 +285,6 @@ package body Sem_Prag is
             --  Access to T'class, created if there is a controlling formal
             --  that is an access parameter.
 
-            function Aspect_Name return String;
-            --  Return the name of the aspect being specified ("Pre" or "Post")
-            --  properly capitalized for use in an error message. Precondition
-            --  is Present (Corresponding_Aspect (N)), which will be satisfied
-            --  if Class_Present (N).
-
             function Get_ACW return Entity_Id;
             --  If the expression has a reference to an controlling access
             --  parameter, create an access to T'class for the necessary
@@ -304,19 +298,6 @@ package body Sem_Prag is
             --  accessparameter of type access-to-T is interpreted as having
             --  type access-to-T'Class. This ensures the expression is well-
             --  defined for a primitive subprogram of a type descended from T.
-
-            -----------------
-            -- Aspect_Name --
-            -----------------
-
-            function Aspect_Name return String is
-            begin
-               if Chars (Identifier (Corresponding_Aspect (N))) = Name_Pre then
-                  return "Pre";
-               else
-                  return "Post";
-               end if;
-            end Aspect_Name;
 
             -------------
             -- Get_ACW --
@@ -388,20 +369,14 @@ package body Sem_Prag is
 
          begin
             if not Present (T) then
+               Error_Msg_Name_1 :=
+                 Chars (Identifier (Corresponding_Aspect (N)));
 
-               --  This is weird code, why not just set Err_Msg_Name_1 to
-               --  Identifier (Corresponding_Aspect (N)), and Err_Msg_Name_2
-               --  to Name_Class and then use
-
-               --    "aspect `%''%` can only be specified ...
-
-               --  That would be the more normal way of doing things ???
-               --  Then you get proper identifier casing mode as well,
-               --  instead of presuming mixed case ???
+               Error_Msg_Name_2 := Name_Class;
 
                Error_Msg_N
-                 ("aspect " & Aspect_Name & "''Class can only be specified " &
-                  "for a primitive operation of a tagged type",
+                 ("aspect `%''%` can only be specified for a primitive " &
+                  "operation of a tagged type",
                   Corresponding_Aspect (N));
             end if;
 
