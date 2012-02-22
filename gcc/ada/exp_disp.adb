@@ -77,8 +77,9 @@ package body Exp_Disp is
 
    function Find_Specific_Type (CW : Entity_Id) return Entity_Id;
    --  Find specific type of a class-wide type, and handle the case of an
-   --  incomplete type coming  either from a limited_with clause or from an
-   --  incomplete type declaration.
+   --  incomplete type coming either from a limited_with clause or from an
+   --  incomplete type declaration. Shouldn't this be in Sem_Util? It seems
+   --  like a general purpose semantic routine ???
 
    function Has_DT (Typ : Entity_Id) return Boolean;
    pragma Inline (Has_DT);

@@ -3961,7 +3961,6 @@ package body Exp_Util is
 
       function Initialized_By_Ctrl_Function (N : Node_Id) return Boolean is
          Expr : constant Node_Id := Original_Node (Expression (N));
-
       begin
          return
             Nkind (Expr) = N_Function_Call
@@ -3986,6 +3985,7 @@ package body Exp_Util is
                                   N_Unchecked_Type_Conversion)
             then
                Call := Expression (Call);
+
             else
                exit;
             end if;

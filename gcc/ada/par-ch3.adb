@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2279,13 +2279,30 @@ package body Ch3 is
          Scan; -- past RANGE
       end if;
 
-      Expr_Node := P_Expression;
-      Check_Simple_Expression (Expr_Node);
-      Set_Low_Bound (Typedef_Node, Expr_Node);
-      T_Dot_Dot;
-      Expr_Node := P_Expression;
-      Check_Simple_Expression (Expr_Node);
-      Set_High_Bound (Typedef_Node, Expr_Node);
+      Expr_Node := P_Expression_Or_Range_Attribute;
+
+      --  Range case (not permitted by the grammar, this is surprising but
+      --  the grammar in the RM is as quoted above, and does not allow Range).
+
+      if Expr_Form = EF_Range_Attr then
+         Error_Msg_N
+           ("Range attribute not allowed here, use First .. Last", Expr_Node);
+         Set_Low_Bound (Typedef_Node, Expr_Node);
+         Set_Attribute_Name (Expr_Node, Name_First);
+         Set_High_Bound (Typedef_Node, Copy_Separate_Tree (Expr_Node));
+         Set_Attribute_Name (High_Bound (Typedef_Node), Name_Last);
+
+      --  Normal case of explicit range
+
+      else
+         Check_Simple_Expression (Expr_Node);
+         Set_Low_Bound (Typedef_Node, Expr_Node);
+         T_Dot_Dot;
+         Expr_Node := P_Expression;
+         Check_Simple_Expression (Expr_Node);
+         Set_High_Bound (Typedef_Node, Expr_Node);
+      end if;
+
       return Typedef_Node;
    end P_Signed_Integer_Type_Definition;
 

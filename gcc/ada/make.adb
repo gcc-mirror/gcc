@@ -1865,7 +1865,7 @@ package body Make is
             elsif not Read_Only and then Main_Project /= No_Project then
                declare
                   Uname : constant Name_Id :=
-                    Check_Source_Info_In_ALI (ALI, Project_Tree);
+                            Check_Source_Info_In_ALI (ALI, Project_Tree);
 
                   Udata : Prj.Unit_Index;
 
@@ -1875,11 +1875,11 @@ package body Make is
                      return;
                   end if;
 
-                  --  Check that the ALI file is in the correct object
-                  --  directory. If it is in the object directory of a project
-                  --  that is extended and it depends on a source that is in
-                  --  one of its extending projects, then the ALI file is not
-                  --  in the correct object directory.
+                  --  Check that ALI file is in the correct object directory.
+                  --  If it is in the object directory of a project that is
+                  --  extended and it depends on a source that is in one of
+                  --  its extending projects, then the ALI file is not in the
+                  --  correct object directory.
 
                   --  First, find the project of this ALI file. As there may be
                   --  several projects with the same object directory, we first

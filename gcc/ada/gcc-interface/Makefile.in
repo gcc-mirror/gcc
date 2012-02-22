@@ -430,13 +430,11 @@ ATOMICS_BUILTINS_TARGET_PAIRS = \
 X86_TARGET_PAIRS = \
   a-numaux.ads<a-numaux-x86.ads \
   a-numaux.adb<a-numaux-x86.adb \
-  g-bytswa.adb<g-bytswa-x86.adb \
   s-atocou.adb<s-atocou-x86.adb
 
 X86_64_TARGET_PAIRS = \
   a-numaux.ads<a-numaux-x86.ads \
   a-numaux.adb<a-numaux-x86.adb \
-  g-bytswa.adb<g-bytswa-x86.adb \
   s-atocou.adb<s-atocou-builtin.adb
 
 LIB_VERSION = $(strip $(shell grep ' Library_Version :' $(fsrcpfx)ada/gnatvsn.ads | sed -e 's/.*"\(.*\)".*/\1/'))
