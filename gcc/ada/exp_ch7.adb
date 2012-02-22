@@ -1372,6 +1372,37 @@ package body Exp_Ch7 is
             Fin_Id :=
               Make_Defining_Identifier (Loc,
                 Chars => New_External_Name (Name_uFinalizer));
+
+            --  The visibility semantics of AT_END handlers force a strange
+            --  separation of spec and body for stack-related finalizers:
+
+            --     declare : Enclosing_Scope
+            --        procedure _finalizer;
+            --     begin
+            --        <controlled objects>
+            --        procedure _finalizer is
+            --           ...
+            --     at end
+            --        _finalizer;
+            --     end;
+
+            --  Both spec and body are within the same construct and scope, but
+            --  the body is part of the handled sequence of statements. This
+            --  placement confuses the elaboration mechanism on targets where
+            --  AT_END handlers are expanded into "when all others" handlers:
+
+            --     exception
+            --        when all others =>
+            --           _finalizer;  --  appears to require elab checks
+            --     at end
+            --        _finalizer;
+            --     end;
+
+            --  Since the compiler guarantees that the body of a _finalizer is
+            --  always inserted in the same construct where the AT_END handler
+            --  resides, there is no need for elaboration checks.
+
+            Set_Kill_Elaboration_Checks (Fin_Id);
          end if;
 
          --  Step 2: Creation of the finalizer specification

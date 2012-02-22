@@ -1239,8 +1239,6 @@ static const struct cond_except dec_ada_cond_except_table [] = {
   {ADA$_KEY_MISMATCH,    &Use_Error},
   {ADA$_MAXLINEXC,       &constraint_error},
   {ADA$_LINEXCMRS,       &constraint_error},
-  {0,                    0}
-};
 
 #if 0
    /* Already handled by a pragma Import_Exception
@@ -1249,6 +1247,9 @@ static const struct cond_except dec_ada_cond_except_table [] = {
   {ADA$_EXISTENCE_ERROR, &Existence_Error},
   {ADA$_KEY_ERROR,       &Key_Error},
 #endif
+
+  {0,                    0}
+};
 
 #endif /* IN_RTS */
 

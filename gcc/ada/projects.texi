@@ -403,12 +403,12 @@ If the order of the source directories is known statically, that is if
 be several files with the same source file name sitting in different
 directories of the project. In this case, only the file in the first directory
 is considered as a source of the project and the others are hidden. If
-@code{"**"} is not used in the string list @code{Source_Dirs}, it is an error
+@code{"**"} is used in the string list @code{Source_Dirs}, it is an error
 to have several files with the same source file name in the same directory
 @code{"**"} subtree, since there would be an ambiguity as to which one should
-be used. However, two files with the same source file name may in two single
-directories or directory subtrees. In this case, the one in the first directory
-or directory subtree is a source of the project.
+be used. However, two files with the same source file name may exist in two
+single directories or directory subtrees. In this case, the one in the first
+directory or directory subtree is a source of the project.
 
 @c ---------------------------------------------
 @node Object and Exec Directory

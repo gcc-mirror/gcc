@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,13 +41,13 @@ pragma Polling (Off);
 with Interfaces.C;
 with Interfaces.C.Strings;
 
+with System.Float_Control;
+with System.Interrupt_Management;
 with System.Multiprocessors;
-with System.Tasking.Debug;
 with System.OS_Primitives;
 with System.Task_Info;
-with System.Interrupt_Management;
+with System.Tasking.Debug;
 with System.Win32.Ext;
-with System.Float_Control;
 
 with System.Soft_Links;
 --  We use System.Soft_Links instead of System.Tasking.Initialization because
@@ -59,14 +59,14 @@ package body System.Task_Primitives.Operations is
 
    package SSL renames System.Soft_Links;
 
-   use System.Tasking.Debug;
-   use System.Tasking;
    use Interfaces.C;
    use Interfaces.C.Strings;
    use System.OS_Interface;
-   use System.Parameters;
    use System.OS_Primitives;
+   use System.Parameters;
    use System.Task_Info;
+   use System.Tasking;
+   use System.Tasking.Debug;
    use System.Win32;
    use System.Win32.Ext;
 
@@ -979,7 +979,6 @@ package body System.Task_Primitives.Operations is
    ------------------
 
    procedure Finalize_TCB (T : Task_Id) is
-      Result    : DWORD;
       Succeeded : BOOL;
 
    begin
@@ -995,11 +994,9 @@ package body System.Task_Primitives.Operations is
 
       if T.Common.LL.Thread /= 0 then
 
-         --  This task has been activated. Wait for the thread to terminate
-         --  then close it. This is needed to release system resources.
+         --  This task has been activated. Close the thread handle. This
+         --  is needed to release system resources.
 
-         Result := WaitForSingleObject (T.Common.LL.Thread, Wait_Infinite);
-         pragma Assert (Result /= WAIT_FAILED);
          Succeeded := CloseHandle (T.Common.LL.Thread);
          pragma Assert (Succeeded = Win32.TRUE);
       end if;

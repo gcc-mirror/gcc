@@ -186,8 +186,9 @@ package body Makeutl is
 
    function Check_Source_Info_In_ALI
      (The_ALI : ALI_Id;
-      Tree    : Project_Tree_Ref) return Boolean
+      Tree    : Project_Tree_Ref) return Name_Id
    is
+      Result    : Name_Id := No_Name;
       Unit_Name : Name_Id;
 
    begin
@@ -203,7 +204,11 @@ package body Makeutl is
          Unit_Name := Name_Find;
 
          if File_Not_A_Source_Of (Tree, Unit_Name, Units.Table (U).Sfile) then
-            return False;
+            return No_Name;
+         end if;
+
+         if Result = No_Name then
+            Result := Unit_Name;
          end if;
 
          --  Loop to do same check for each of the withed units
@@ -219,7 +224,7 @@ package body Makeutl is
                   Unit_Name := Name_Find;
 
                   if File_Not_A_Source_Of (Tree, Unit_Name, WR.Sfile) then
-                     return False;
+                     return No_Name;
                   end if;
                end if;
             end;
@@ -258,7 +263,7 @@ package body Makeutl is
                               Get_Name_String (Replacement));
                         end if;
 
-                        return False;
+                        return No_Name;
                      end if;
                   end;
                end if;
@@ -294,14 +299,14 @@ package body Makeutl is
                            & " parsing the project. Will recompile");
                      end if;
 
-                     return False;
+                     return No_Name;
                   end if;
                end if;
             end if;
          end;
       end loop;
 
-      return True;
+      return Result;
    end Check_Source_Info_In_ALI;
 
    --------------------------------
