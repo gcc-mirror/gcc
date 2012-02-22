@@ -3264,6 +3264,13 @@ case "$target" in
     if test $set_have_as_tls = no; then
       LIBS=
     fi
+    # Even without TLS support on Solaris 8, explicitly link with libthread
+    # to guarantee that the alternate thread library is used.
+    case "$target" in
+      *-*-solaris2.8)
+	LIBS=-lthread
+	;;
+    esac
     # Always define LIB_TLS_SPEC, even without TLS support.
     AC_DEFINE_UNQUOTED(LIB_TLS_SPEC, "$LIBS",
         [Define to the library containing __tls_get_addr/___tls_get_addr.])

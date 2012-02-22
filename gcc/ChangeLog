@@ -1,9 +1,15 @@
+2012-02-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (LIB_TLS_SPEC): Enforce use of alternate thread
+	library on Solaris 8 even without TLS support.
+	* configure: Regenerate.
+
 2012-02-22  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52329
 	* gimple-fold.c (fold_stmt_1): Also canonicalize ADDR_EXPRs
 	for GIMPLE_DEBUG stmts.
- 
+
 2012-02-22  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/51782
