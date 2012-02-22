@@ -1,3 +1,8 @@
+2012-02-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52330
+	* gcc.target/i386/pr52330.c: New test.
+
 2012-02-14  Bin Cheng  <bin.cheng@arm.com>
 
 	Backport from mainline.
@@ -27,7 +32,7 @@
 
 2012-02-09  Peter Bergner  <bergner@vnet.ibm.com>
 
-	Backport from mainline 
+	Backport from mainline
 	2012-02-09  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR middle-end/52140

@@ -1,3 +1,9 @@
+2012-02-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52330
+	* config/i386/i386.c (ix86_print_operand) <case 'H'>: Error out if x
+	is not offsettable memory reference.
+
 2012-02-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/52294
@@ -54,7 +60,7 @@
 
 2012-02-09  Peter Bergner  <bergner@vnet.ibm.com>
 
-	Backport from mainline 
+	Backport from mainline
 	2012-02-09  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR middle-end/52140
@@ -62,7 +68,7 @@
 
 2012-02-09  Andrey Belevantsev  <abel@ispras.ru>
 
-	Backport from mainline 
+	Backport from mainline
 	2012-01-20  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR target/51106
@@ -79,7 +85,7 @@
 	family to distinguish PROCESSOR_ATHLON.
 
 2012-02-07  Kai Tietz  <ktietz@redhat.com>
-            Dave Korn  <dave.korn.cygwin@gmail.com>
+	    Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR target/40068
 	* config/i386/winnt-cxx.c (i386_pe_adjust_class_at_definition):
@@ -90,8 +96,7 @@
 	Backport from mainline:
 	2012-01-31  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
-	config/arm/thumb2.md (thumb2_mov_notscc): Use MVN for true
-	condition.
+	* config/arm/thumb2.md (thumb2_mov_notscc): Use MVN for true condition.
 
 2012-01-20  Eric Botcazou  <ebotcazou@adacore.com>
 
