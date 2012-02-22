@@ -4407,10 +4407,12 @@ package body Freeze is
          --  the size and alignment values. This processing is not required for
          --  generic types, since generic types do not play any part in code
          --  generation, and so the size and alignment values for such types
-         --  are irrelevant.
+         --  are irrelevant. Ditto for types declared within a generic unit,
+         --  which may have components that depend on generic parameters, and
+         --  that will be recreated in an instance.
 
-         if Is_Generic_Type (E) then
-            return Result;
+         if Inside_A_Generic then
+            null;
 
          --  Otherwise we call the layout procedure
 

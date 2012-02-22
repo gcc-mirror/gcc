@@ -1,3 +1,21 @@
+2012-02-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Do not perform type layout within
+	a generic unit.
+
+2012-02-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* init.c (__gnat_error_handler) [Linux]: Map SIGBUS to
+	Storage_Error.
+
+2012-02-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Reject an
+	assignment to a classwide type whose type is limited, as
+	can happen in an instantiation in programs that run afoul or
+	AI05-0087.
+
+
 2012-02-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch6.adb (Legal_Copy): If layout is not
