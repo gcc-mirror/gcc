@@ -7245,7 +7245,11 @@ avr_asm_output_aligned_decl_common (FILE * stream,
                                     unsigned HOST_WIDE_INT size,
                                     unsigned int align, bool local_p)
 {
-  avr_need_clear_bss_p = true;
+  /* __gnu_lto_v1 etc. are just markers for the linker injected by toplev.c.
+     There is no need to trigger __do_clear_bss code for them.  */
+
+  if (!STR_PREFIX_P (name, "__gnu_lto"))
+    avr_need_clear_bss_p = true;
 
   if (local_p)
     ASM_OUTPUT_ALIGNED_LOCAL (stream, name, size, align);

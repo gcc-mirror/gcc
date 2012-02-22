@@ -1,5 +1,11 @@
 2012-02-22  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/18145
+	* config/avr/avr.c (avr_asm_output_aligned_decl_common): Skip
+	setting avr_need_clear_bss_p for __gnu_lto* symbols.
+
+2012-02-22  Georg-Johann Lay  <avr@gjlay.de>
+
 	* config/avr/avr.h (avr_accumulate_outgoing_args): Return int.
 	* config/avr/avr.c (avr_accumulate_outgoing_args): Return int.	
 
