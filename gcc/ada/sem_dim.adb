@@ -1373,9 +1373,8 @@ package body Sem_Dim is
       Ent            : Entity_Id;
 
       function Is_Elementary_Function_Entity (E : Entity_Id) return Boolean;
-      --  Given E the original subprogram entity, return True if the call is a
-      --  an elementary function call (see
-      --  Ada.Numerics.Generic_Elementary_Functions).
+      --  Given E, the original subprogram entity, return True if call is to an
+      --  elementary function (see Ada.Numerics.Generic_Elementary_Functions).
 
       -----------------------------------
       -- Is_Elementary_Function_Entity --
@@ -1385,8 +1384,7 @@ package body Sem_Dim is
          Loc : constant Source_Ptr := Sloc (E);
 
       begin
-         --  Check the function entity is located in
-         --  Ada.Numerics.Generic_Elementary_Functions.
+         --  Is function entity in Ada.Numerics.Generic_Elementary_Functions?
 
          return
            Loc > No_Location
@@ -1422,8 +1420,8 @@ package body Sem_Dim is
                if Exists (Dims_Of_Call) then
                   for Position in Dims_Of_Call'Range loop
                      Dims_Of_Call (Position) :=
-                       Dims_Of_Call (Position) * Rational'(Numerator =>   1,
-                                                        Denominator => 2);
+                       Dims_Of_Call (Position) * Rational'(Numerator   => 1,
+                                                           Denominator => 2);
                   end loop;
 
                   Set_Dimensions (N, Dims_Of_Call);
@@ -1440,8 +1438,7 @@ package body Sem_Dim is
                   if Exists (Dims_Of_Actual) then
                      Error_Msg_NE ("parameter should be dimensionless for " &
                                    "elementary function&",
-                                   Actual,
-                                   Name_Call);
+                                   Actual, Name_Call);
                      Error_Msg_N ("\parameter " & Dimensions_Msg_Of (Actual),
                                   Actual);
                   end if;

@@ -1,3 +1,23 @@
+2012-02-22  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb, make.adb, sem_dim.adb, sem_ch4.adb, exp_disp.adb: Minor
+	reformatting.
+
+2012-02-22  Geert Bosch  <bosch@adacore.com>
+
+	* g-bytswa-x86.adb, g-bytswa.adb, gcc-interface/Makefile.in: Remove
+	x86-specific version of byteswap and use GCC builtins instead.
+
+2012-02-22  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) [E_String_Type,
+	E_Array_Type]: Translate component ealier.
+
+2012-02-22  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch3.adb (P_Signed_Integer_Type_Definition): Specialize
+	error message for 'Range.
+
 2012-02-22  Pascal Obry  <obry@adacore.com>
 
 	* s-taprop-mingw.adb (Finalize_TCB): Do not wait on thread handle as

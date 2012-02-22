@@ -5543,10 +5543,10 @@ package body Sem_Ch4 is
                return;
             end if;
 
-         --  If we have infix notation, the operator must be usable.
-         --  Within an instance, if the type is already established we
-         --  know it is correct. If an operand is universal it is compatible
-         --  with any numeric type.
+         --  If we have infix notation, the operator must be usable. Within
+         --  an instance, if the type is already established we know it is
+         --  correct. If an operand is universal it is compatible with any
+         --  numeric type.
 
          --  In Ada 2005, the equality on anonymous access types is declared
          --  in Standard, and is always visible.
@@ -5554,15 +5554,13 @@ package body Sem_Ch4 is
          elsif In_Open_Scopes (Scope (Bas))
            or else Is_Potentially_Use_Visible (Bas)
            or else In_Use (Bas)
-           or else (In_Use (Scope (Bas))
-                     and then not Is_Hidden (Bas))
-
+           or else (In_Use (Scope (Bas)) and then not Is_Hidden (Bas))
            or else (In_Instance
-                    and then
-                      (First_Subtype (T1) = First_Subtype (Etype (R))
-                       or else (Is_Numeric_Type (T1)
-                         and then Is_Universal_Numeric_Type (Etype (R)))))
-
+                     and then
+                       (First_Subtype (T1) = First_Subtype (Etype (R))
+                         or else
+                           (Is_Numeric_Type (T1)
+                             and then Is_Universal_Numeric_Type (Etype (R)))))
            or else Ekind (T1) = E_Anonymous_Access_Type
          then
             null;

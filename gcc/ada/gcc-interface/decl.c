@@ -2003,6 +2003,18 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	tree gnu_max_size = size_one_node, gnu_max_size_unit, tem, t;
 	Entity_Id gnat_index, gnat_name;
 	int index;
+	tree comp_type;
+
+	/* Create the type for the component now, as it simplifies breaking
+	   type reference loops.  */
+	comp_type
+	  = gnat_to_gnu_component_type (gnat_entity, definition, debug_info_p);
+	if (present_gnu_tree (gnat_entity))
+	  {
+	    /* As a side effect, the type may have been translated.  */
+	    maybe_present = true;
+	    break;
+	  }
 
 	/* We complete an existing dummy fat pointer type in place.  This both
 	   avoids further complex adjustments in update_pointer_to and yields
@@ -2173,29 +2185,28 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			    debug_info_p);
 	TYPE_READONLY (gnu_template_type) = 1;
 
-	/* Now make the array of arrays and update the pointer to the array
-	   in the fat pointer.  Note that it is the first field.  */
-	tem
-	  = gnat_to_gnu_component_type (gnat_entity, definition, debug_info_p);
+	/* Now build the array type.  */
 
 	/* If Component_Size is not already specified, annotate it with the
 	   size of the component.  */
 	if (Unknown_Component_Size (gnat_entity))
-	  Set_Component_Size (gnat_entity, annotate_value (TYPE_SIZE (tem)));
+	  Set_Component_Size (gnat_entity,
+                              annotate_value (TYPE_SIZE (comp_type)));
 
 	/* Compute the maximum size of the array in units and bits.  */
 	if (gnu_max_size)
 	  {
 	    gnu_max_size_unit = size_binop (MULT_EXPR, gnu_max_size,
-					    TYPE_SIZE_UNIT (tem));
+					    TYPE_SIZE_UNIT (comp_type));
 	    gnu_max_size = size_binop (MULT_EXPR,
 				       convert (bitsizetype, gnu_max_size),
-				       TYPE_SIZE (tem));
+				       TYPE_SIZE (comp_type));
 	  }
 	else
 	  gnu_max_size_unit = NULL_TREE;
 
 	/* Now build the array type.  */
+        tem = comp_type;
 	for (index = ndim - 1; index >= 0; index--)
 	  {
 	    tem = build_nonshared_array_type (tem, gnu_index_types[index]);
