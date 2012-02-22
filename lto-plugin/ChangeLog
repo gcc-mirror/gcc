@@ -1,3 +1,10 @@
+2012-02-22  Kai Tietz  <ktietz@redhat.com>
+
+	PR lto/50616
+	* lto-plugin.c (PRI_LL): New macro.
+	(dump_symtab): Use PRI_LL instead of ll in print.
+	(process_symtab): Use PRI_LL instead of ll in scan.
+
 2011-12-20  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* configure: Regenerate.
