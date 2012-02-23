@@ -602,7 +602,7 @@ Btype*
 Gcc_backend::placeholder_pointer_type(const std::string& name,
 				      Location location, bool)
 {
-  tree ret = build_variant_type_copy(ptr_type_node);
+  tree ret = build_distinct_type_copy(ptr_type_node);
   if (!name.empty())
     {
       tree decl = build_decl(location.gcc_location(), TYPE_DECL,

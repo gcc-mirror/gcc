@@ -1,3 +1,8 @@
+2012-02-23  Richard Guenther  <rguenther@suse.de>
+
+	* go-gcc.cc (Gcc_backend::placeholder_pointer_type): Use
+	build_distinct_type_copy.
+
 2012-02-17  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in (go/import.o): Add dependency on $(GO_LEX_H).
