@@ -1,3 +1,8 @@
+2012-02-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR c/52290
+	* c-decl.c (start_function): Exit early if decl1 is not FUNTION_DECL.
+
 2012-02-23  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (code_stdname): Add ior, xor.
