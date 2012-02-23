@@ -344,6 +344,9 @@ the support for System V Release 4.  He has also worked heavily on the
 Intel 386 and 860 support.
 
 @item
+Sumanth Gundapaneni for contributing the CR16 port.
+
+@item
 Mostafa Hagog for Swing Modulo Scheduling (SMS) and post reload GCSE@.
 
 @item
@@ -880,6 +883,9 @@ rudimentary support for @code{INTEGER*1}, @code{INTEGER*2}, and
 @item
 Zdenek Sojka for running automated regression testing of GCC and reporting
 numerous bugs.
+
+@item
+Jayant Sonar for contributing the CR16 port.
 
 @item
 Brad Spencer for contributions to the GLIBCPP_FORCE_NEW technique.
