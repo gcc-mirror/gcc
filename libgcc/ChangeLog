@@ -1,3 +1,8 @@
+2012-02-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52261
+	* config/avr/lib1funcs.S (__AVR__XMEGA__): Fix tippo to __AVR_XMEGA__.
+
 2012-02-23  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/ia64/crtbegin.S: Use HAVE_INITFINI_ARRAY_SUPPORT
