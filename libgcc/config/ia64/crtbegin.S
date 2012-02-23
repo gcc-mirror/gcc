@@ -61,7 +61,7 @@ __dso_handle:
 	.hidden __dso_handle
 
 
-#ifdef HAVE_INITFINI_ARRAY
+#ifdef HAVE_INITFINI_ARRAY_SUPPORT
 
 .section .fini_array, "a"
 	data8 @fptr(__do_global_dtors_aux)
@@ -70,7 +70,7 @@ __dso_handle:
 	data8 @fptr(__do_jv_register_classes)
 	data8 @fptr(__do_global_ctors_aux)
 
-#else /* !HAVE_INITFINI_ARRAY */
+#else /* !HAVE_INITFINI_ARRAY_SUPPORT */
 /*
  * Fragment of the ELF _fini routine that invokes our dtor cleanup.
  *
@@ -117,7 +117,7 @@ __dso_handle:
 	  mov b6 = r2
 	  br.call.sptk.many b0 = b6
 	}
-#endif /* !HAVE_INITFINI_ARRAY */
+#endif /* !HAVE_INITFINI_ARRAY_SUPPORT */
 
 .section .text
 	.align	32

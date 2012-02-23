@@ -486,7 +486,7 @@ changequote([,])dnl
   enable_initfini_array=$gcc_cv_initfini_array
 ])
 if test $enable_initfini_array = yes; then
-  AC_DEFINE(HAVE_INITFINI_ARRAY, 1,
+  AC_DEFINE(HAVE_INITFINI_ARRAY_SUPPORT, 1,
     [Define .init_array/.fini_array sections are available and working.])
 fi])
 
