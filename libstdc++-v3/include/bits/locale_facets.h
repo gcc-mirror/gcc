@@ -2169,6 +2169,9 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
        *  @return  Iterator after reading.
       */
       virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, bool&) const;
+
+      virtual iter_type
       do_get(iter_type __beg, iter_type __end, ios_base& __io,
 	     ios_base::iostate& __err, long& __v) const
       { return _M_extract_int(__beg, __end, __io, __err, __v); }
@@ -2199,9 +2202,6 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 	     ios_base::iostate& __err, unsigned long long& __v) const
       { return _M_extract_int(__beg, __end, __io, __err, __v); }
 #endif
-
-      virtual iter_type
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, bool&) const;
 
       virtual iter_type
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, float&) const;
