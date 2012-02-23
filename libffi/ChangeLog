@@ -1,3 +1,14 @@
+2012-02-22  Kai Tietz  <ktietz@redhat.com>
+
+	PR libffi/52221
+	* src/x86/ffi.c (ffi_closure_raw_THISCALL): New
+	prototype.
+	(ffi_prep_raw_closure_loc): Use ffi_closure_raw_THISCALL for
+	thiscall-convention.
+	(ffi_raw_call): Use ffi_prep_args_raw.
+	* src/x86/win32.S (ffi_closure_raw_THISCALL): Add
+	implementation for stub.
+
 2012-02-13  Kai Tietz  <ktietz@redhat.com>
 
 	PR libffi/52221
