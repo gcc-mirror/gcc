@@ -1,3 +1,8 @@
+2012-02-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52335
+	* gfortran.dg/io_constraints_10.f90: New.
+
 2012-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from trunk
