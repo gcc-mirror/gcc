@@ -1,3 +1,9 @@
+2012-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52019
+	* ipa-split.c (find_return_bb, find_retval, visit_bb): Ignore
+	CLOBBER stmts.
+
 2012-02-23  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* acinclude.m4: Use HAVE_INITFINI_ARRAY_SUPPORT instead of
