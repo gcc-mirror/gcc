@@ -158,27 +158,27 @@ int main(){
   struct ten test_ten;
 
 #if defined (_TEST_MS_LAYOUT) || defined (_MSC_VER)
-  size_t exp_sizeof_one = 12;
-  size_t exp_sizeof_two = 16;
+  size_t exp_sizeof_one = 8;
+  size_t exp_sizeof_two = 12;
   size_t exp_sizeof_three =6;
   size_t exp_sizeof_four = 8;
   size_t exp_sizeof_five = 3;
   size_t exp_sizeof_six = 8;
   size_t exp_sizeof_seven = 3;
-  size_t exp_sizeof_eight = 4;
+  size_t exp_sizeof_eight = 2;
   size_t exp_sizeof_nine = 8;
-  size_t exp_sizeof_ten = 16;
+  size_t exp_sizeof_ten = 8;
 
-  unsigned char exp_one_c = 8;
-  unsigned char exp_two_c  = 12;
+  unsigned char exp_one_c = 7;
+  unsigned char exp_two_c  = 9;
   unsigned char exp_three_c = 4;
   unsigned char exp_four_c = 4;
   char exp_five_c = 2;
   char exp_six_c = 5;
   char exp_seven_c = 2;
-  char exp_eight_c = 2;
+  char exp_eight_c = 1;
   char exp_nine_c = 0;
-  char exp_ten_c = 8;
+  char exp_ten_c = 1;
 
 #else /* testing -mno-ms-bitfields */
 

@@ -1,23 +1,24 @@
-long *wm_TR;
-long *wm_HB;
-long *wm_SPB;
+__extension__ typedef __PTRDIFF_TYPE__ ptr_t;
+ptr_t *wm_TR;
+ptr_t *wm_HB;
+ptr_t *wm_SPB;
 
-long mem[100];
+ptr_t mem[100];
 
 f (mr_TR, mr_SPB, mr_HB, reg1, reg2)
-     long *mr_TR;
-     long *mr_SPB;
-     long *mr_HB;
-     long *reg1;
-     long *reg2;
+     ptr_t *mr_TR;
+     ptr_t *mr_SPB;
+     ptr_t *mr_HB;
+     ptr_t *reg1;
+     ptr_t *reg2;
 {
-  long *x = mr_TR;
+  ptr_t *x = mr_TR;
 
   for (;;)
     {
       if (reg1 < reg2)
 	goto out;
-      if ((long *) *reg1 < mr_HB && (long *) *reg1 >= mr_SPB)
+      if ((ptr_t *) *reg1 < mr_HB && (ptr_t *) *reg1 >= mr_SPB)
 	*--mr_TR = *reg1;
       reg1--;
     }
@@ -29,7 +30,7 @@ f (mr_TR, mr_SPB, mr_HB, reg1, reg2)
 
 main ()
 {
-  mem[99] = (long) mem;
+  mem[99] = (ptr_t) mem;
   f (mem + 100, mem + 6, mem + 8, mem + 99, mem + 99);
   exit (0);
 }
