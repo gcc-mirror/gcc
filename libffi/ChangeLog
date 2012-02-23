@@ -1,4 +1,4 @@
-2012-02-22  Kai Tietz  <ktietz@redhat.com>
+2012-02-23  Kai Tietz  <ktietz@redhat.com>
 
 	PR libffi/52221
 	* src/x86/ffi.c (ffi_closure_raw_THISCALL): New
