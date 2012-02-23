@@ -3,7 +3,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target dfp } */
 /* { dg-options "-Wformat" } */
-/* { dg-skip-if "No scanf/printf dfp support" { *-*-mingw* } } */
+/* { dg-skip-if "No scanf/printf dfp support" { *-*-mingw* } { "*" } { "" } } */
 
 extern int printf (const char *restrict, ...);
 

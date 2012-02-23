@@ -6,6 +6,7 @@
    We won't get a warning anyway if the target has "packed" structure
    layout.  */
 /* { dg-options "-Wpadded -fpack-struct=8" } */
+/* { dg-additional-options "-mno-ms-bitfields" { target *-*-mingw* } } */
 
 struct foo {
   char bar;

@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! { x86_64-*-mingw* } } } } */
 /* { dg-options "-O2" } */
 /* { dg-additional-options "-mpreferred-stack-boundary=12" { target x86_64-*-* } } */
 

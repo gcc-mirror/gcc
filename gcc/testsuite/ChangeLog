@@ -1,3 +1,25 @@
+2012-02-23  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.dg/pack-test-5.c: Add -mno-ms-bitfields option
+	for mingw-targets.
+	* gcc.dg/Wpadded.c: Likewise.
+	* gcc.dg/bf-ms-layout-2.c: Adjust offsets to fit ms-bitfield
+	structure-layout.
+	* gcc.dg/di-sync-multithread.c: Replace for mingw-target the use
+	for sleep by Sleep and add windows.h include for this function.
+	* gcc.dg/format/dfp-printf-1.c: Adjust dg-skip-if rule for mingw
+	targets.
+	* gcc.dg/stack-usage-1.c (SIZE): Provide proper SIZE for x64 mingw
+	target.
+	* gcc.dg/tls/thr-cse-1.c: Provide proper pattern for x64 mingw
+	target.
+	* gcc.dg/tls/opt-11.c (memset): Use __extension__ to avoid fail
+	on x64 mingw target.
+	* gcc.dg/bf-ms-attrib.c: Adjust expected size for ms_struct layout.
+	* gcc.dg/pr50251.c: Disable test for x64 mingw target.
+	* gcc.c-torture/execute/930930-1.c (long): Replace by ptr_t to avoid
+	failure on LLP64 target.
+
 2012-02-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR c/52290
