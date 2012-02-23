@@ -1696,7 +1696,7 @@ DEFUN __prologue_saves__
 	sub	r28,r26
 	out	__SP_L__,r28
 	clr	r29
-#elif defined (__AVR__XMEGA__)
+#elif defined (__AVR_XMEGA__)
 	in	r28,__SP_L__
 	in	r29,__SP_H__
 	sub	r28,r26
@@ -1752,7 +1752,7 @@ DEFUN __epilogue_restores__
 	add	r28,r30
 	out	__SP_L__,r28
 	mov	r28, r26
-#elif defined (__AVR__XMEGA__)
+#elif defined (__AVR_XMEGA__)
 	ldd  r27,Y+1
 	add  r28,r30
 	adc  r29,__zero_reg__
