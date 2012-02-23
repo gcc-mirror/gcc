@@ -1,3 +1,8 @@
+2012-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52019
+	* gcc.dg/tree-ssa/ipa-split-6.c: New test.
+
 2012-02-22  Kai Tietz  <ktietz@redhat.com>
 
 	* g++.dg/opt/devirt2.C: Add rule for *-*-mingw* target.

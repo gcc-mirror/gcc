@@ -1,5 +1,5 @@
 /* Function splitting pass
-   Copyright (C) 2010, 2011
+   Copyright (C) 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Jan Hubicka  <jh@suse.cz>
 
@@ -624,7 +624,9 @@ find_return_bb (void)
   for (bsi = gsi_last_bb (e->src); !gsi_end_p (bsi); gsi_prev (&bsi))
     {
       gimple stmt = gsi_stmt (bsi);
-      if (gimple_code (stmt) == GIMPLE_LABEL || is_gimple_debug (stmt))
+      if (gimple_code (stmt) == GIMPLE_LABEL
+	  || is_gimple_debug (stmt)
+	  || gimple_clobber_p (stmt))
 	;
       else if (gimple_code (stmt) == GIMPLE_ASSIGN
 	       && found_return
@@ -657,7 +659,8 @@ find_retval (basic_block return_bb)
   for (bsi = gsi_start_bb (return_bb); !gsi_end_p (bsi); gsi_next (&bsi))
     if (gimple_code (gsi_stmt (bsi)) == GIMPLE_RETURN)
       return gimple_return_retval (gsi_stmt (bsi));
-    else if (gimple_code (gsi_stmt (bsi)) == GIMPLE_ASSIGN)
+    else if (gimple_code (gsi_stmt (bsi)) == GIMPLE_ASSIGN
+	     && !gimple_clobber_p (gsi_stmt (bsi)))
       return gimple_assign_rhs1 (gsi_stmt (bsi));
   return NULL;
 }
@@ -731,6 +734,9 @@ visit_bb (basic_block bb, basic_block return_bb,
       tree decl;
 
       if (is_gimple_debug (stmt))
+	continue;
+
+      if (gimple_clobber_p (stmt))
 	continue;
 
       /* FIXME: We can split regions containing EH.  We can not however
