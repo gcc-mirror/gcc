@@ -1,3 +1,15 @@
+2012-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from trunk
+	2012-02-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.c-torture/execute/pr52286.c: Fix FAIL on 16-bit int platforms.
+
+	2012-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52286
+	* gcc.c-torture/execute/pr52286.c: New test.
+
 2012-02-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR c/52290
