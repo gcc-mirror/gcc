@@ -1,3 +1,8 @@
+2012-02-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/52287
+	* haifa-sched.c (rank_for_schedule): Stabilize sort for debug insns.
+
 2012-02-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR c/52290
