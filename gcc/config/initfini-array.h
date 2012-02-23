@@ -19,7 +19,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-#ifdef HAVE_INITFINI_ARRAY
+#ifdef HAVE_INITFINI_ARRAY_SUPPORT
 
 #define USE_INITFINI_ARRAY
 

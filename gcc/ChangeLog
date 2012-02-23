@@ -1,3 +1,13 @@
+2012-02-23  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* acinclude.m4: Use HAVE_INITFINI_ARRAY_SUPPORT instead of
+	HAVE_INITFINI_ARRAY to work around namespace pollution in
+	certain versions of newlib system headers.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* config/initfini-array.h: Use HAVE_INITFINI_ARRAY_SUPPORT
+	instead of HAVE_INITFINI_ARRAY.
+
 2012-02-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/52330
