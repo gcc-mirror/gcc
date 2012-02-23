@@ -1,3 +1,46 @@
+2012-02-14  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* testsuite/26_numerics/random/
+	uniform_real_distribution/requirements/typedefs.cc: Check param_type.
+	* testsuite/26_numerics/random/
+	piecewise_constant_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	chi_squared_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	normal_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	uniform_int_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	poisson_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	bernoulli_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	discrete_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	weibull_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	cauchy_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	negative_binomial_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	gamma_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	fisher_f_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	exponential_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	binomial_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	lognormal_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	extreme_value_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	piecewise_linear_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	student_t_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	geometric_distribution/requirements/typedefs.cc: Ditto.
+
 2012-02-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/50349
