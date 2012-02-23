@@ -1647,8 +1647,10 @@ rank_for_schedule (const void *x, const void *y)
       /* Schedule debug insns as early as possible.  */
       if (DEBUG_INSN_P (tmp) && !DEBUG_INSN_P (tmp2))
 	return -1;
-      else if (DEBUG_INSN_P (tmp2))
+      else if (!DEBUG_INSN_P (tmp) && DEBUG_INSN_P (tmp2))
 	return 1;
+      else if (DEBUG_INSN_P (tmp) && DEBUG_INSN_P (tmp2))
+	return INSN_LUID (tmp) - INSN_LUID (tmp2);
     }
 
   /* The insn in a schedule group should be issued the first.  */
