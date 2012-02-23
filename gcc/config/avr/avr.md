@@ -231,6 +231,8 @@
 (define_code_iterator any_extend  [sign_extend zero_extend])
 (define_code_iterator any_extend2 [sign_extend zero_extend])
 
+(define_code_iterator xior [xor ior])
+
 ;; Define code attributes
 (define_code_attr extend_su
   [(sign_extend "s")
@@ -254,6 +256,8 @@
   [(ashift   "ashl")
    (ashiftrt "ashr")
    (lshiftrt "lshr")
+   (ior      "ior")
+   (xor      "xor")
    (rotate   "rotl")])
 
 ;;========================================================================
@@ -5960,24 +5964,28 @@
 ;; in particular when subreg lowering (-fsplit-wide-types) is turned on.
 ;; That switch obfuscates things here and in many other places.
 
-(define_insn_and_split "*ior<mode>qi.byte0"
+;; "*iorhiqi.byte0"   "*iorpsiqi.byte0"   "*iorsiqi.byte0"
+;; "*xorhiqi.byte0"   "*xorpsiqi.byte0"   "*xorsiqi.byte0"
+(define_insn_and_split "*<code_stdname><mode>qi.byte0"
   [(set (match_operand:HISI 0 "register_operand"                 "=r")
-        (ior:HISI
+        (xior:HISI
          (zero_extend:HISI (match_operand:QI 1 "register_operand" "r"))
          (match_operand:HISI 2 "register_operand"                 "0")))]
   ""
   "#"
   "reload_completed"
   [(set (match_dup 3)
-        (ior:QI (match_dup 3)
-                (match_dup 1)))]
+        (xior:QI (match_dup 3)
+                 (match_dup 1)))]
   {
     operands[3] = simplify_gen_subreg (QImode, operands[0], <MODE>mode, 0);
   })
 
-(define_insn_and_split "*ior<mode>qi.byte1-3"
+;; "*iorhiqi.byte1-3"  "*iorpsiqi.byte1-3"  "*iorsiqi.byte1-3"
+;; "*xorhiqi.byte1-3"  "*xorpsiqi.byte1-3"  "*xorsiqi.byte1-3"
+(define_insn_and_split "*<code_stdname><mode>qi.byte1-3"
   [(set (match_operand:HISI 0 "register_operand"                              "=r")
-        (ior:HISI
+        (xior:HISI
          (ashift:HISI (zero_extend:HISI (match_operand:QI 1 "register_operand" "r"))
                       (match_operand:QI 2 "const_8_16_24_operand"              "n"))
          (match_operand:HISI 3 "register_operand"                              "0")))]
@@ -5985,8 +5993,8 @@
   "#"
   "&& reload_completed"
   [(set (match_dup 4)
-        (ior:QI (match_dup 4)
-                (match_dup 1)))]
+        (xior:QI (match_dup 4)
+                 (match_dup 1)))]
   {
     int byteno = INTVAL(operands[2]) / BITS_PER_UNIT;
     operands[4] = simplify_gen_subreg (QImode, operands[0], <MODE>mode, byteno);

@@ -1,3 +1,10 @@
+2012-02-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (code_stdname): Add ior, xor.
+	(xior): New code iterator.
+	(*<code_stdname><mode>qi.byte0): Use xior instead of ior.
+	(*<code_stdname><mode>qi.byte1-3): Ditto.
+
 2012-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/52019
