@@ -447,6 +447,8 @@ unsigned int FFI_HIDDEN ffi_closure_SYSV_inner (ffi_closure *, void **, void *)
 void FFI_HIDDEN ffi_closure_raw_SYSV (ffi_raw_closure *)
      __attribute__ ((regparm(1)));
 #ifdef X86_WIN32
+void FFI_HIDDEN ffi_closure_raw_THISCALL (ffi_raw_closure *)
+     __attribute__ ((regparm(1)));
 void FFI_HIDDEN ffi_closure_STDCALL (ffi_closure *)
      __attribute__ ((regparm(1)));
 void FFI_HIDDEN ffi_closure_THISCALL (ffi_closure *)
@@ -747,7 +749,7 @@ ffi_prep_raw_closure_loc (ffi_raw_closure* closure,
     }
   else if (cif->abi == FFI_THISCALL)
     {
-      FFI_INIT_TRAMPOLINE_THISCALL (&closure->tramp[0], &ffi_closure_raw_SYSV,
+      FFI_INIT_TRAMPOLINE_THISCALL (&closure->tramp[0], &ffi_closure_raw_THISCALL,
 				    codeloc, cif->bytes);
     }
 #endif
@@ -795,7 +797,7 @@ ffi_raw_call(ffi_cif *cif, void (*fn)(void), void *rvalue, ffi_raw *fake_avalue)
 #ifdef X86_WIN32
     case FFI_SYSV:
     case FFI_STDCALL:
-      ffi_call_win32(ffi_prep_args, &ecif, cif->abi, cif->bytes, cif->flags,
+      ffi_call_win32(ffi_prep_args_raw, &ecif, cif->abi, cif->bytes, cif->flags,
 		     ecif.rvalue, fn);
       break;
     case FFI_THISCALL:
@@ -823,7 +825,7 @@ ffi_raw_call(ffi_cif *cif, void (*fn)(void), void *rvalue, ffi_raw *fake_avalue)
 	  cif->abi = abi = FFI_THISCALL;
 	if (passed_regs < 1 && abi == FFI_THISCALL)
 	  cif->abi = abi = FFI_STDCALL;
-        ffi_call_win32(ffi_prep_args, &ecif, abi, cif->bytes, cif->flags,
+        ffi_call_win32(ffi_prep_args_raw, &ecif, abi, cif->bytes, cif->flags,
                        ecif.rvalue, fn);
       }
       break;
