@@ -1,3 +1,9 @@
+2012-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/50580
+	* gcc.target/mips/interrupt_handler-2.c: Skip on mips-sgi-irix6*.
+	* gcc.target/mips/interrupt_handler-3.c: Likewise.
+
 2012-02-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52355
