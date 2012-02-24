@@ -1,3 +1,13 @@
+2012-02-24  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* gcc-interface/Makefile.in (WIN_SO_PREFIX [windows targets]): New
+	Windows-specific make variable.
+	(WIN_SO_INSTALL_DIR [windows targets]): Likewise.
+	(install-gnatlib): Respect the above during installation when set,
+	and also install any windows import library that has been built.
+	(gnatlib-shared-win32): Use WIN_SO_PREFIX to name output DLL and also
+	build a corresponding import library.
+
 2012-02-22  Robert Dewar  <dewar@adacore.com>
 
 	* exp_util.adb, make.adb, sem_dim.adb, sem_ch4.adb, exp_disp.adb: Minor

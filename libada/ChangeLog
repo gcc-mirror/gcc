@@ -1,3 +1,7 @@
+2012-02-24  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* Makefile.in (bindir): Import from autoconf and pass down to submake.
+
 2012-01-22  Douglas B Rupp  <rupp@gnat.com>
 
 	* configure: Regenerate.
