@@ -314,7 +314,7 @@ GTM::gtm_thread::number_of_threads_changed(unsigned previous, unsigned now)
 	set_default_dispatch(default_dispatch_user);
       else
 	{
-	  abi_dispatch* a = dispatch_serialirr_onwrite();
+	  abi_dispatch* a = dispatch_ml_wt();
 	  if (a->supports(now))
 	    set_default_dispatch(a);
 	  else

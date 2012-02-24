@@ -1,3 +1,8 @@
+2012-02-24  Torvald Riegel  <triegel@redhat.com>
+
+	* retry.cc (GTM::gtm_thread::number_of_threads_changed): Change
+	default dispatch for more than 1 thread to ml_wt.
+
 2012-02-20  Torvald Riegel  <triegel@redhat.com>
 
 	* method-gl.cc (gl_wt_dispatch::orec): Put on separate cacheline.
