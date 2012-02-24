@@ -1,3 +1,7 @@
+2012-02-23  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* doc/invoke.texi (-fdse, -fdce): Remove duplicate entries.
+
 2012-02-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/52287
