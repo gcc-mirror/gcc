@@ -1331,7 +1331,11 @@
 	 These aren't used when dyld support is enabled (it is by default) */
 #     define DATASTART ((ptr_t) get_etext())
 #     define DATAEND	((ptr_t) get_end())
-#     define STACKBOTTOM ((ptr_t) 0xc0000000)
+#     ifdef HAVE_PTHREAD_GET_STACKADDR_NP
+#       define STACKBOTTOM (ptr_t)pthread_get_stackaddr_np(pthread_self())
+#     else
+#       define STACKBOTTOM ((ptr_t) 0xc0000000)
+#     endif
 #     define USE_MMAP
 #     define USE_MMAP_ANON
 #     define USE_ASM_PUSH_REGS
@@ -2014,7 +2018,11 @@
 	 These aren't used when dyld support is enabled (it is by default) */
 #     define DATASTART ((ptr_t) get_etext())
 #     define DATAEND	((ptr_t) get_end())
-#     define STACKBOTTOM ((ptr_t) 0x7fff5fc00000)
+#     ifdef HAVE_PTHREAD_GET_STACKADDR_NP
+#       define STACKBOTTOM (ptr_t)pthread_get_stackaddr_np(pthread_self())
+#     else
+#       define STACKBOTTOM ((ptr_t) 0x7fff5fc00000)
+#     endif
 #     define USE_MMAP
 #     define USE_MMAP_ANON
 #     ifdef GC_DARWIN_THREADS

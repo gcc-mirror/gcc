@@ -898,13 +898,8 @@ case "${host}" in
         SYSTEMSPEC="-lunicows $SYSTEMSPEC"
       fi
     ;;
-    *-*-darwin9*)
+    *-*-darwin[[912]]*)
       SYSTEMSPEC="%{!Zdynamiclib:%{!Zbundle:-allow_stack_execute}}"
-    ;;
-    *-*-darwin[[12]]*)
-      # Something is incompatible with pie, would be nice to fix it and
-      # remove -no_pie.  PR49461
-      SYSTEMSPEC="-no_pie %{!Zdynamiclib:%{!Zbundle:-allow_stack_execute}}"
     ;;
     *)
       SYSTEMSPEC=

@@ -1,3 +1,13 @@
+2012-02-23  Patrick Marlier  <patrick.marlier@gmail.com>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR boehm-gc/52179
+	* include/gc_config.h.in: Undefine HAVE_PTHREAD_GET_STACKADDR_NP.
+	* include/private/gcconfig.h (DARWIN): Define STACKBOTTOM with
+	pthread_get_stackaddr_np when available.
+	* configure.ac (THREADS): Check availability of pthread_get_stackaddr_np.
+	* configure: Regenerate.
+
 2012-02-10  Kai Tietz  <ktietz@redhat.com>
 
 	PR boehm-gc/48514
