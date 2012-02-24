@@ -1,3 +1,8 @@
+2012-02-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52355
+	* gcc.dg/pr52355.c: New testcase.
+
 2012-02-23  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc.dg/pack-test-5.c: Add -mno-ms-bitfields option
