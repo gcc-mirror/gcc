@@ -9671,6 +9671,44 @@ fold_vec_perm (tree type, tree arg0, tree arg1, const unsigned char *sel)
     }
 }
 
+/* Try to fold a pointer difference of type TYPE two address expressions of
+   array references AREF0 and AREF1 using location LOC.  Return a
+   simplified expression for the difference or NULL_TREE.  */
+
+static tree
+fold_addr_of_array_ref_difference (location_t loc, tree type,
+				   tree aref0, tree aref1)
+{
+  tree base0 = TREE_OPERAND (aref0, 0);
+  tree base1 = TREE_OPERAND (aref1, 0);
+  tree base_offset = build_int_cst (type, 0);
+
+  /* If the bases are array references as well, recurse.  If the bases
+     are pointer indirections compute the difference of the pointers.
+     If the bases are equal, we are set.  */
+  if ((TREE_CODE (base0) == ARRAY_REF
+       && TREE_CODE (base1) == ARRAY_REF
+       && (base_offset
+	   = fold_addr_of_array_ref_difference (loc, type, base0, base1)))
+      || (INDIRECT_REF_P (base0)
+	  && INDIRECT_REF_P (base1)
+	  && (base_offset = fold_binary_loc (loc, MINUS_EXPR, type,
+					     TREE_OPERAND (base0, 0),
+					     TREE_OPERAND (base1, 0))))
+      || operand_equal_p (base0, base1, 0))
+    {
+      tree op0 = fold_convert_loc (loc, type, TREE_OPERAND (aref0, 1));
+      tree op1 = fold_convert_loc (loc, type, TREE_OPERAND (aref1, 1));
+      tree esz = fold_convert_loc (loc, type, array_ref_element_size (aref0));
+      tree diff = build2 (MINUS_EXPR, type, op0, op1);
+      return fold_build2_loc (loc, PLUS_EXPR, type,
+			      base_offset,
+			      fold_build2_loc (loc, MULT_EXPR, type,
+					       diff, esz));
+    }
+  return NULL_TREE;
+}
+
 /* Fold a binary expression of code CODE and type TYPE with operands
    OP0 and OP1.  LOC is the location of the resulting expression.
    Return the folded expression if folding is successful.  Otherwise,
@@ -10582,19 +10620,11 @@ fold_binary_loc (location_t loc,
 	  && TREE_CODE (arg1) == ADDR_EXPR
 	  && TREE_CODE (TREE_OPERAND (arg1, 0)) == ARRAY_REF)
         {
-	  tree aref0 = TREE_OPERAND (arg0, 0);
-	  tree aref1 = TREE_OPERAND (arg1, 0);
-	  if (operand_equal_p (TREE_OPERAND (aref0, 0),
-			       TREE_OPERAND (aref1, 0), 0))
-	    {
-	      tree op0 = fold_convert_loc (loc, type, TREE_OPERAND (aref0, 1));
-	      tree op1 = fold_convert_loc (loc, type, TREE_OPERAND (aref1, 1));
-	      tree esz = array_ref_element_size (aref0);
-	      tree diff = build2 (MINUS_EXPR, type, op0, op1);
-	      return fold_build2_loc (loc, MULT_EXPR, type, diff,
-			          fold_convert_loc (loc, type, esz));
-
-	    }
+	  tree tem = fold_addr_of_array_ref_difference (loc, type,
+							TREE_OPERAND (arg0, 0),
+							TREE_OPERAND (arg1, 0));
+	  if (tem)
+	    return tem;
 	}
 
       if (FLOAT_TYPE_P (type)

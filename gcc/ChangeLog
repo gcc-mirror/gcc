@@ -1,3 +1,10 @@
+2012-02-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52355
+	* fold-const.c (fold_addr_of_array_ref_difference): New function.
+	(fold_binary_loc): Use it to extend the existing &a[i] - &a[j]
+	folding.
+
 2012-02-13  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* tree-if-conv (predicate_scalar_phi): Commentary typo fix.
