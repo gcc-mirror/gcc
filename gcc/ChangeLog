@@ -1,6 +1,14 @@
 2012-02-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52361
+	* gimple.c (walk_gimple_op): Use predicates with less redundant
+	tests.
+	(is_gimple_reg_type): Move inline ...
+	* gimple.h (is_gimple_reg_type): ... here.
+
+2012-02-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52361
 	* passes.c (execute_function_todo): When verifying SSA form
 	verify gimple form first.
 	* tree-ssa.c (verify_ssa): Do not verify gimple form here.

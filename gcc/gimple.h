@@ -963,8 +963,6 @@ tree gimple_extract_devirt_binfo_from_cst (tree);
 /* Returns true iff T is a valid GIMPLE statement.  */
 extern bool is_gimple_stmt (tree);
 
-/* Returns true iff TYPE is a valid type for a scalar register variable.  */
-extern bool is_gimple_reg_type (tree);
 /* Returns true iff T is a scalar register variable.  */
 extern bool is_gimple_reg (tree);
 /* Returns true iff T is any sort of variable.  */
@@ -4838,6 +4836,13 @@ gimple_expr_type (const_gimple stmt)
     return void_type_node;
 }
 
+/* Return true if TYPE is a suitable type for a scalar register variable.  */
+
+static inline bool
+is_gimple_reg_type (tree type)
+{
+  return !AGGREGATE_TYPE_P (type);
+}
 
 /* Return a new iterator pointing to GIMPLE_SEQ's first statement.  */
 
