@@ -356,8 +356,8 @@ Objective-C and Objective-C++ Dialects}.
 -fcompare-elim -fcprop-registers -fcrossjumping @gol
 -fcse-follow-jumps -fcse-skip-blocks -fcx-fortran-rules @gol
 -fcx-limited-range @gol
--fdata-sections -fdce -fdce -fdelayed-branch @gol
--fdelete-null-pointer-checks -fdse -fdevirtualize -fdse @gol
+-fdata-sections -fdce -fdelayed-branch @gol
+-fdelete-null-pointer-checks -fdevirtualize -fdse @gol
 -fearly-inlining -fipa-sra -fexpensive-optimizations -ffat-lto-objects @gol
 -ffast-math -ffinite-math-only -ffloat-store -fexcess-precision=@var{style} @gol
 -fforward-propagate -ffp-contract=@var{style} -ffunction-sections @gol
