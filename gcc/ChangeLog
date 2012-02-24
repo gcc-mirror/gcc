@@ -1,5 +1,11 @@
 2012-02-23  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
+	* tree-phinodes.c (make_phi_node): Mark static.
+	* tree-flow.h (make_phi_node): Remove extern decl.
+	* doc/gimple.texi (make_phi_node): Remove documentation.
+
+2012-02-23  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
 	* tree-into-ssa (update_ssa): Avoid trailing whitespace in
 	dump_file.
 	* tree-ssa-sccvn.c (print_scc): Ditto.

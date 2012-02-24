@@ -1963,10 +1963,6 @@ Set @code{CLAUSES} to be the clauses associated with @code{OMP_SINGLE} @code{G}.
 @subsection @code{GIMPLE_PHI}
 @cindex @code{GIMPLE_PHI}
 
-@deftypefn {GIMPLE function} gimple make_phi_node (tree var, int len)
-Build a @code{PHI} node with len argument slots for variable var.
-@end deftypefn
-
 @deftypefn {GIMPLE function} unsigned gimple_phi_capacity (gimple g)
 Return the maximum number of arguments supported by @code{GIMPLE_PHI} @code{G}.
 @end deftypefn
