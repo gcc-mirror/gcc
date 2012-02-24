@@ -1,3 +1,8 @@
+2012-02-23  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/i386.c (ix86_delegitimize_address): Handle
+	UNSPEC_PCREL plus displacement.
+
 2012-02-24  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/52261
