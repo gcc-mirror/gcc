@@ -13241,6 +13241,19 @@ ix86_delegitimize_address (rtx x)
 
   if (TARGET_64BIT)
     {
+      if (GET_CODE (x) == CONST
+          && GET_CODE (XEXP (x, 0)) == PLUS
+          && GET_MODE (XEXP (x, 0)) == Pmode
+          && CONST_INT_P (XEXP (XEXP (x, 0), 1))
+          && GET_CODE (XEXP (XEXP (x, 0), 0)) == UNSPEC
+          && XINT (XEXP (XEXP (x, 0), 0), 1) == UNSPEC_PCREL)
+        {
+	  rtx x2 = XVECEXP (XEXP (XEXP (x, 0), 0), 0, 0);
+	  x = gen_rtx_PLUS (Pmode, XEXP (XEXP (x, 0), 1), x2);
+	  if (MEM_P (orig_x))
+	    x = replace_equiv_address_nv (orig_x, x);
+	  return x;
+	}
       if (GET_CODE (x) != CONST
 	  || GET_CODE (XEXP (x, 0)) != UNSPEC
 	  || (XINT (XEXP (x, 0), 1) != UNSPEC_GOTPCREL
