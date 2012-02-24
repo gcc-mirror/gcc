@@ -105,9 +105,6 @@ void simulate_thread_main()
 {
   int x;
 
-  /* Make sure value starts with an atomic value now.  */
-  __atomic_store_n (&value, ret, __ATOMIC_SEQ_CST);
-
   /* Execute loads with value changing at various cyclic values.  */
   for (table_cycle_size = 16; table_cycle_size > 4 ; table_cycle_size--)
     {
@@ -126,6 +123,10 @@ void simulate_thread_main()
 main()
 {
   fill_table ();
+
+  /* Make sure value starts with an atomic value from the table.  */
+  __atomic_store_n (&value, table[0], __ATOMIC_SEQ_CST);
+
   simulate_thread_main ();
   simulate_thread_done ();
   return 0;
