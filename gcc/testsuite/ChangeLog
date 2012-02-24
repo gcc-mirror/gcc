@@ -1,3 +1,18 @@
+2012-02-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/simulate-thread/simulate-thread.gdb: Use return value from
+	simulate_thread_wrapper_other_threads
+	* gcc.dg/simulate-thread/atomic-load-int128.c (simulate_thread_main):
+	Move initialization of 'value' to main().
+	(main): Initialize 'value';
+	* gcc.dg/simulate-thread/speculative-store.c
+	(simulate_thread_step_verify): Return 0 when successful.
+	* gcc.dg/simulate-thread/simulate-thread.h (HOSTILE_THREAD_THRESHOLD):
+	Reduce threshold.
+	(INSN_COUNT_THRESHOLD): New.  Instruction limit to terminate test.
+	(simulate_thread_wrapper_other_threads): Return a success/fail value
+	and issue an error if the instruction count threshold is exceeded.
+
 2012-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/50580

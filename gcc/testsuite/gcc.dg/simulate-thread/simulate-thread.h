@@ -37,7 +37,7 @@ simulate_thread_done ()
    infinite loop to be avoided.
 
    If the testcase defines HOSTILE_PAUSE_ERROR, then it will be
-   considered an RUNTIME FAILURE if the hostile pause is triggered.
+   considered a RUNTIME FAILURE if the hostile pause is triggered.
    This will allow to test for guaranteed forward progress routines.
 
    If the default values for HOSTILE_THREAD_THRESHOLD or
@@ -50,15 +50,27 @@ simulate_thread_done ()
    hostile condition is interferring.  */
 
   
-/* Define the threshold to start pausing the hostile thread.  */
+/* Define the threshold instruction count to start pausing the hostile 
+   thread.  To avoid huge potential log files when things are not going well,
+   set this number very low.  If a test specifically requires that the forward
+   progress guarantee is made, this number should be raised by the testcase. */
 #if !defined (HOSTILE_THREAD_THRESHOLD)
-#define HOSTILE_THREAD_THRESHOLD 	500
+#define HOSTILE_THREAD_THRESHOLD 	50
 #endif
 
 /* Define the length of pause in cycles for the hostile thread to pause to
-   allow forward progress to be made.  */
+   allow forward progress to be made.  If this number is too low, a 
+   compare_and_swap loop may not have time to finish, especially on a
+   128 bit operation. */
 #if !defined (HOSTILE_THREAD_PAUSE)
 #define HOSTILE_THREAD_PAUSE	20
+#endif
+
+/* Define the number of instructions which are allowed to be executed before
+   the testcase is deemed to fail.  This is primarily to avoid huge log files
+   when a testcase goes into an infinte loop.  */
+#if !defined (INSN_COUNT_THRESHOLD)
+#define INSN_COUNT_THRESHOLD	10000
 #endif
 
 void simulate_thread_other_threads (void);
@@ -71,26 +83,34 @@ static int simulate_thread_hostile_pause = 0;
    is reached, the other_thread process is paused for
    HOSTILE_THREAD_PAUSE cycles before resuming, and the counters start
    again.  */
-void
+int
 simulate_thread_wrapper_other_threads()
 {
-  static int count = 0;
-  static int pause = 0;
+  static int insn_count = 0;
+  static int hostile_count = 0;
+  static int hostile_pause = 0;
 
-  if (++count >= HOSTILE_THREAD_THRESHOLD)
+  if (++insn_count >= INSN_COUNT_THRESHOLD)
+    {
+      printf ("FAIL: Testcase exceeded maximum instruction count threshold\n");
+      return 1;
+    }
+
+  if (++hostile_count >= HOSTILE_THREAD_THRESHOLD)
     {
       if (!simulate_thread_hostile_pause)
         simulate_thread_hostile_pause = 1;
 
       /* Count cycles before calling the hostile thread again.  */
-      if (pause++ < HOSTILE_THREAD_PAUSE)
-	return;
+      if (hostile_pause++ < HOSTILE_THREAD_PAUSE)
+	return 0;
 
       /* Reset the pause counter, as well as the thread counter.  */
-      pause = 0;
-      count = 0;
+      hostile_pause = 0;
+      hostile_count = 0;
     }
   simulate_thread_other_threads ();
+  return 0;
 }
 
 
