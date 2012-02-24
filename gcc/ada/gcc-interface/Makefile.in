@@ -1589,16 +1589,19 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(osys))),)
   # the Cygwin port has always been a CygMing frankenhybrid and it is
   # a long-term project to disentangle them.
   ifeq ($(strip $(filter-out cygwin%,$(osys))),)
+    WIN_SO_PREFIX=cyg
     LIBGNAT_TARGET_PAIRS = \
     s-memory.adb<s-memory.adb \
     g-socthi.ads<g-socthi.ads \
     g-socthi.adb<g-socthi.adb
   else
+    WIN_SO_PREFIX=lib
     LIBGNAT_TARGET_PAIRS = \
     s-memory.adb<s-memory-mingw.adb \
     g-socthi.ads<g-socthi-mingw.ads \
     g-socthi.adb<g-socthi-mingw.adb
   endif
+  WIN_SO_INSTALL_DIR = $(bindir)
   LIBGNAT_TARGET_PAIRS += \
   a-dirval.adb<a-dirval-mingw.adb \
   a-excpol.adb<a-excpol-abort.adb \
@@ -2449,11 +2452,14 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR)
 #     for shared libraries on some targets, e.g. on HP-UX where the x
 #     permission is required.
 #     Also install the .dSYM directories if they exist (these directories
-#     contain the debug information for the shared libraries on darwin)
+#     contain the debug information for the shared libraries on darwin),
+#     and the windows import libraries if they exist.
+	libpfx=$(if $(WIN_SO_PREFIX),$(WIN_SO_PREFIX),lib); \
+	librtlobjdir=$(if $(WIN_SO_INSTALL_DIR),$(WIN_SO_INSTALL_DIR),$(ADA_RTL_OBJ_DIR)); \
 	for file in gnat gnarl; do \
-	   if [ -f $(RTSDIR)/lib$${file}$(hyphen)$(LIBRARY_VERSION)$(soext) ]; then \
-	      $(INSTALL) $(RTSDIR)/lib$${file}$(hyphen)$(LIBRARY_VERSION)$(soext) \
-			 $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
+	   if [ -f $(RTSDIR)/$${libpfx}$${file}$(hyphen)$(LIBRARY_VERSION)$(soext) ]; then \
+	      $(INSTALL) $(RTSDIR)/$${libpfx}$${file}$(hyphen)$(LIBRARY_VERSION)$(soext) \
+			 $(DESTDIR)$${librtlobjdir}; \
 	   fi; \
 	   if [ -f $(RTSDIR)/lib$${file}$(soext) ]; then \
 	      $(LN_S) lib$${file}$(hyphen)$(LIBRARY_VERSION)$(soext) \
@@ -2462,6 +2468,10 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR)
 	   if [ -d $(RTSDIR)/lib$${file}$(hyphen)$(LIBRARY_VERSION)$(soext).dSYM ]; then \
 	      $(CP) -r $(RTSDIR)/lib$${file}$(hyphen)$(LIBRARY_VERSION)$(soext).dSYM \
 	        $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
+	   fi; \
+	   if [ -f $(RTSDIR)/lib$${file}$(hyphen)$(LIBRARY_VERSION)$(soext)$(arext) ]; then \
+	      $(INSTALL_DATA) $(RTSDIR)/lib$${file}$(hyphen)$(LIBRARY_VERSION)$(soext)$(arext) \
+			 $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	   fi; \
 	done
 # This copy must be done preserving the date on the original file.
@@ -2674,16 +2684,18 @@ gnatlib-shared-win32:
 	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
                 | sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'` -shared -shared-libgcc \
 		$(PICFLAG_FOR_TARGET) \
-		-o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
+		-o $(WIN_SO_PREFIX)gnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
+		-Wl,-out-implib,libgnat$(hyphen)$(LIBRARY_VERSION)$(soext)$(arext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
-		$(SO_OPTS)libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) $(MISCLIB)
+		$(SO_OPTS)$(WIN_SO_PREFIX)gnat$(hyphen)$(LIBRARY_VERSION)$(soext) $(MISCLIB)
 	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
                 | sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'` -shared -shared-libgcc \
 		$(PICFLAG_FOR_TARGET) \
-		-o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
+		-o $(WIN_SO_PREFIX)gnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
+		-Wl,-out-implib,libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext)$(arext) \
 		$(GNATRTL_TASKING_OBJS) \
-		$(SO_OPTS)libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
-		$(THREADSLIB) -Wl,libgnat$(hyphen)$(LIBRARY_VERSION)$(soext)
+		$(SO_OPTS)$(WIN_SO_PREFIX)gnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
+		$(THREADSLIB) -L. -lgnat$(hyphen)$(LIBRARY_VERSION)
 
 gnatlib-shared-darwin:
 	$(MAKE) $(FLAGS_TO_PASS) \
