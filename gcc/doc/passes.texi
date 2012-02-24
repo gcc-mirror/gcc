@@ -393,7 +393,7 @@ in @file{tree-ssa-math-opts.c} and is described by
 @item Full redundancy elimination
 
 This is a simpler form of PRE that only eliminates redundancies that
-occur an all paths.  It is located in @file{tree-ssa-pre.c} and
+occur on all paths.  It is located in @file{tree-ssa-pre.c} and
 described by @code{pass_fre}.
 
 @item Loop optimization
