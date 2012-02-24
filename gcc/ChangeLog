@@ -1,3 +1,7 @@
+2012-02-13  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* tree-if-conv (predicate_scalar_phi): Commentary typo fix.
+
 2012-02-23  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* tree-phinodes.c (make_phi_node): Mark static.
