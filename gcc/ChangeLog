@@ -1,3 +1,9 @@
+2012-02-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52261
+	* config/avr/avr.c (avr_out_movhi_mr_r_xmega): Use base
+	to test for unusedness in st X addressing.
+
 2012-02-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52361
