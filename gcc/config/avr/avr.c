@@ -4019,8 +4019,8 @@ avr_out_movhi_mr_r_xmega (rtx insn, rtx op[], int *plen)
       else
         avr_asm_len ("st X+,%A1" CR_TAB
                      "st X,%B1", op, plen, -2);
-            
-      return reg_unused_after (insn, src)
+
+      return reg_unused_after (insn, base)
         ? ""
         : avr_asm_len ("sbiw r26,1", op, plen, 1);
     }
