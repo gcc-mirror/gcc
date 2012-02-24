@@ -2462,11 +2462,11 @@ print_scc (FILE *out, VEC (tree, heap) *scc)
   tree var;
   unsigned int i;
 
-  fprintf (out, "SCC consists of: ");
+  fprintf (out, "SCC consists of:");
   FOR_EACH_VEC_ELT (tree, scc, i, var)
     {
-      print_generic_expr (out, var, 0);
       fprintf (out, " ");
+      print_generic_expr (out, var, 0);
     }
   fprintf (out, "\n");
 }
