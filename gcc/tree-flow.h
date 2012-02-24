@@ -504,7 +504,6 @@ extern void find_referenced_vars_in (gimple);
 /* In tree-phinodes.c  */
 extern void reserve_phi_args_for_new_edge (basic_block);
 extern void add_phi_node_to_bb (gimple phi, basic_block bb);
-extern gimple make_phi_node (tree var, int len);
 extern gimple create_phi_node (tree, basic_block);
 extern void add_phi_arg (gimple, tree, edge, source_location);
 extern void remove_phi_args (edge);
