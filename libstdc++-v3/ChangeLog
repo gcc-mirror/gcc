@@ -1,3 +1,9 @@
+2012-02-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/52201
+	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc: Require	atomic builtins.
+	* testsuite/29_atomics/atomic/operators/51811.cc: Likewise.
+
 2012-02-23  Jason Merrill  <jason@redhat.com>
 
 	* include/bits/locale_facets.h (class num_get): Undo reordering of
