@@ -1,6 +1,13 @@
 2012-02-25  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/52001
+	* alias.c (refs_newer_value_cb, refs_newer_value_p): New.
+	(get_addr): Walk canonical value's locs.  Avoid returning VALUEs
+	and locs that reference values newer than the non-canonical value
+	at hand.  Return the canonical value as a worst case.
+	(memrefs_conflict_p): Walk canonical value's locs.
+
+	PR debug/52001
 	* cselib.c (preserve_only_constants): Rename to...
 	(preserve_constants_and_equivs): ... this.  Split out...
 	(invariant_or_equiv_p): ... this.  Preserve plus expressions
