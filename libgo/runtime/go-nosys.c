@@ -52,7 +52,7 @@ faccessat (int fd __attribute__ ((unused)),
 int
 fallocate (int fd __attribute__ ((unused)),
 	   int mode __attribute__ ((unused)),
-	   off_t offset __attribute __ ((unused)),
+	   off_t offset __attribute__ ((unused)),
 	   off_t len __attribute__ ((unused)))
 {
   errno = ENOSYS;
