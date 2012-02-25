@@ -1,3 +1,14 @@
+2012-02-25  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/52001
+	* cselib.c (preserve_only_constants): Rename to...
+	(preserve_constants_and_equivs): ... this.  Split out...
+	(invariant_or_equiv_p): ... this.  Preserve plus expressions
+	of other preserved expressions too.
+	(cselib_reset_table): Adjust.
+	* var-tracking.c (reverse_op): Use canonical value to build
+	reverse operation.
+
 2012-02-23  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/i386.c (ix86_delegitimize_address): Handle

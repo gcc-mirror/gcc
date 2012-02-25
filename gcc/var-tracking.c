@@ -5334,6 +5334,10 @@ reverse_op (rtx val, const_rtx expr, rtx insn)
   if (!v || !cselib_preserved_value_p (v))
     return;
 
+  /* Use canonical V to avoid creating multiple redundant expressions
+     for different VALUES equivalent to V.  */
+  v = canonical_cselib_val (v);
+
   /* Adding a reverse op isn't useful if V already has an always valid
      location.  Ignore ENTRY_VALUE, while it is always constant, we should
      prefer non-ENTRY_VALUE locations whenever possible.  */
