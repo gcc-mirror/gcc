@@ -1,3 +1,9 @@
+2012-02-26  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.c (match_pcrel_step2): Fix instruction
+	pattern.
+	(replace_mov_pcrel_step2): Ditto.
+
 2012-02-25  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/52001
