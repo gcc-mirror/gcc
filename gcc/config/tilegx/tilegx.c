@@ -4420,7 +4420,9 @@ replace_mov_pcrel_step1 (rtx insn)
 static bool
 match_pcrel_step2 (rtx insn)
 {
-  rtx src;
+  rtx unspec;
+  rtx addr;
+
   if (TARGET_32BIT)
     {
       if (recog_memoized (insn) != CODE_FOR_insn_addr_shl16insli_32bit)
@@ -4432,11 +4434,12 @@ match_pcrel_step2 (rtx insn)
 	return false;
     }
 
-  src = SET_SRC (PATTERN (insn));
+  unspec = SET_SRC (PATTERN (insn));
+  addr = XVECEXP (unspec, 0, 1);
 
-  return (GET_CODE (src) == CONST
-	  && GET_CODE (XEXP (src, 0)) == UNSPEC
-	  && XINT (XEXP (src, 0), 1) == UNSPEC_HW0_PCREL);
+  return (GET_CODE (addr) == CONST
+	  && GET_CODE (XEXP (addr, 0)) == UNSPEC
+	  && XINT (XEXP (addr, 0), 1) == UNSPEC_HW0_PCREL);
 }
 
 
@@ -4446,6 +4449,7 @@ replace_mov_pcrel_step2 (rtx insn)
 {
   rtx pattern = PATTERN (insn);
   rtx unspec;
+  rtx addr;
   rtx opnds[3];
   rtx new_insns;
   rtx got_rtx = tilegx_got_rtx ();
@@ -4453,10 +4457,18 @@ replace_mov_pcrel_step2 (rtx insn)
   gcc_assert (GET_CODE (pattern) == SET);
   opnds[0] = SET_DEST (pattern);
 
-  unspec = XEXP (SET_SRC (pattern), 0);
+  unspec = SET_SRC (pattern);
+  gcc_assert (GET_CODE (unspec) == UNSPEC);
+  gcc_assert (XINT (unspec, 1) == UNSPEC_INSN_ADDR_SHL16INSLI);
+
+  opnds[1] = XVECEXP (unspec, 0, 0);
+
+  addr = XVECEXP (unspec, 0, 1);
+  gcc_assert (GET_CODE (addr) == CONST);
+
+  unspec = XEXP (addr, 0);
   gcc_assert (GET_CODE (unspec) == UNSPEC);
   gcc_assert (XINT (unspec, 1) == UNSPEC_HW0_PCREL);
-  opnds[1] = XEXP (XEXP (SET_SRC (pattern), 0), 0);
   opnds[2] = XVECEXP (unspec, 0, 0);
 
   /* We only need to replace SYMBOL_REFs, not LABEL_REFs.  */
