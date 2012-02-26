@@ -1,3 +1,11 @@
+2012-02-26  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/predicates.md: Remove blank lines.
+	* config/sh/sh.c: Fix typos in comments.
+	* config/sh/constraints.md: Likewise.
+	* config/sh/sh.md: Remove blank lines.
+	Fix typos in comments.  Use ;; as comment characters.
+
 2012-02-26  Walter Lee  <walt@tilera.com>
 
 	* config/tilegx/tilegx.c (match_pcrel_step2): Fix instruction

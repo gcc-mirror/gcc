@@ -448,7 +448,6 @@
   return general_operand (op, mode);
 })
 
-
 ;; Returns 1 if OP is a POST_INC on stack pointer register.
 
 (define_predicate "sh_no_delay_pop_operand"
@@ -465,7 +464,6 @@
 
   return 0;
 })
-
 
 ;; Returns 1 if OP is a MEM that can be source of a simple move operation.
 
