@@ -1,3 +1,8 @@
+2012-02-26  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/49263
+	* gcc.target/sh/pr49263.c: New.
+
 2012-02-24  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/simulate-thread/simulate-thread.gdb: Use return value from
