@@ -1,3 +1,12 @@
+2012-02-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Revert previous
+	change that creates a special VAR_DECL for debugging purposes.  For an
+	aliased object with an unconstrained nominal subtype, make its type a
+	thin reference to the underlying object.
+	* gcc-interface/utils2.c (build_unary_op) <INDIRECT_REF>: Deal with
+	expressions built for the initialization of above objects.
+
 2012-02-24  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* gcc-interface/Makefile.in (WIN_SO_PREFIX [windows targets]): New

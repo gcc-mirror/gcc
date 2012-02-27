@@ -1365,8 +1365,8 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	default:
 	common:
 
-	  /* If we are taking the address of a padded record whose field is
-	     contains a template, take the address of the template.  */
+	  /* If we are taking the address of a padded record whose field
+	     contains a template, take the address of the field.  */
 	  if (TYPE_IS_PADDING_P (type)
 	      && TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == RECORD_TYPE
 	      && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (TYPE_FIELDS (type))))
@@ -1387,14 +1387,30 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	tree t = remove_conversions (operand, false);
 	bool can_never_be_null = DECL_P (t) && DECL_CAN_NEVER_BE_NULL_P (t);
 
-	/* If TYPE is a thin pointer, first convert to the fat pointer.  */
-	if (TYPE_IS_THIN_POINTER_P (type)
-	    && TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (type)))
+	/* If TYPE is a thin pointer, either first retrieve the base if this
+	   is an expression with an offset built for the initialization of an
+	   object with an unconstrained nominal subtype, or else convert to
+	   the fat pointer.  */
+	if (TYPE_IS_THIN_POINTER_P (type))
 	  {
-	    operand = convert
-		      (TREE_TYPE (TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (type))),
-		       operand);
-	    type = TREE_TYPE (operand);
+	    tree rec_type = TREE_TYPE (type);
+
+	    if (TREE_CODE (operand) == POINTER_PLUS_EXPR
+		&& integer_zerop
+		   (size_binop (PLUS_EXPR, TREE_OPERAND (operand, 1),
+				DECL_FIELD_OFFSET (TYPE_FIELDS (rec_type))))
+		&& TREE_CODE (TREE_OPERAND (operand, 0)) == NOP_EXPR)
+	      {
+		operand = TREE_OPERAND (TREE_OPERAND (operand, 0), 0);
+		type = TREE_TYPE (operand);
+	      }
+	    else if (TYPE_UNCONSTRAINED_ARRAY (rec_type))
+	      {
+		operand
+		  = convert (TREE_TYPE (TYPE_UNCONSTRAINED_ARRAY (rec_type)),
+			     operand);
+		type = TREE_TYPE (operand);
+	      }
 	  }
 
 	/* If we want to refer to an unconstrained array, use the appropriate
