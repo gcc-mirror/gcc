@@ -1300,7 +1300,8 @@ split_function (struct split_point *split_point)
 			    gimple_return_set_retval (gsi_stmt (bsi), retval);
 			    break;
 			  }
-			else if (gimple_code (gsi_stmt (bsi)) == GIMPLE_ASSIGN)
+			else if (gimple_code (gsi_stmt (bsi)) == GIMPLE_ASSIGN
+				 && !gimple_clobber_p (gsi_stmt (bsi)))
 			  {
 			    gimple_assign_set_rhs1 (gsi_stmt (bsi), retval);
 			    break;
