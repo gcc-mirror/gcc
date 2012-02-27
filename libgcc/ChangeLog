@@ -1,3 +1,9 @@
+2012-02-27  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	PR target/52390
+	* generic-morestack.c (__generic_morestack_set_initial_sp): Test
+	for __linux__ when removing signals from __morestack_fullmask.
+
 2012-02-23  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/52261
