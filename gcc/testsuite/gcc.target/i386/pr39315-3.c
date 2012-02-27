@@ -4,7 +4,7 @@
 /* { dg-final { scan-assembler-not "movups" } } */
 /* { dg-final { scan-assembler-not "movlps" } } */
 /* { dg-final { scan-assembler-not "movhps" } } */
-/* { dg-final { scan-assembler "and\[lq\]?\[\\t \]*\\$-128,\[\\t \]*%\[re\]?sp" } } */
+/* { dg-final { scan-assembler "and\[lq\]?\[\\t \]*\\$-128,\[\\t \]*%\[re\]?sp" { target { ! x86_64-*-mingw* } } } } */
 /* { dg-final { scan-assembler "movaps" } } */
 
 typedef float __m128 __attribute__ ((__vector_size__ (16)));

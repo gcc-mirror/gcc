@@ -19,6 +19,11 @@
 #define TYPE2 long long
 #endif
 
+/* mingw runtime don't provide random().  */
+#ifdef __MINGW32__
+#define random rand
+#endif
+
 signed TYPE1 a[N], b[N], g[N];
 unsigned TYPE1 c[N], h[N];
 signed TYPE2 d[N], e[N], j[N];

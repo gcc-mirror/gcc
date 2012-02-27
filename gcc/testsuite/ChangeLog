@@ -1,3 +1,49 @@
+2012-02-28  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.target/i386/pr46939.c (long): Fix LP64 vs LLP64
+	issue.
+	* gcc.target/i386/pr45352-2.c: Likewise.
+	* gcc.target/i386/bitfield3.c: Add -mno-ms-bitfields for
+	mingw targets.
+	* gcc.target/i386/xop-vshift-1.c(random): Use on mingw
+	targets instead rand.
+	* gcc.target/i386/sse4_1-blendps-2.c: Likewise.
+	* gcc.target/i386/sse2-mul-1.c: Likewise.
+	* gcc.target/i386/sse4_1-blendps.c: Likewise.
+	* gcc.target/i386/pad-6b.c: Adjust test for x64 mingw
+	target.
+	* gcc.target/i386/pad-1.c: Likewise.
+	* gcc.target/i386/pad-9.c: Likewise.
+	* gcc.target/i386/pad-2.c: Likewise.
+	* gcc.target/i386/pad-5b.c: Likewise.
+	* gcc.target/i386/pad-8.c: Likewise.
+	* gcc.target/i386/pr46470.c: Skip for x64 mingw target.
+	* gcc.target/i386/pr44130.c: Likewise.
+	* gcc.target/i386/align-main-1.c: Likewise.
+	* gcc.target/i386/align-main-2.c: Likewise.
+	* gcc.target/i386/sw-1.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-5.c: Add -mabi=sysv
+	on x64 mingw target.
+	* gcc.target/i386/avx-vzeroupper-4.c: Likewise.
+	* gcc.target/i386/pr46295.c: Likewise.
+	* gcc.target/i386/amd64-abi-1.c: Likewise.
+	* gcc.target/i386/amd64-abi-2.c: Likewise.
+	* gcc.target/i386/pr39082-1.c: Likewise.
+	* gcc.target/i386/pr39162.c: Likewise.
+	* gcc.target/i386/pr22152.c: Likewise.
+	* gcc.target/i386/wrgsbase-2.c: Adjust dg-final rule.
+	* gcc.target/i386/wrfsbase-2.c: Likewise.
+	* gcc.target/i386/local.c: Likewise
+	* gcc.target/i386/wrgsbase-1.c: Likewise.
+	* gcc.target/i386/wrfsbase-1.c: Likewise.
+	* gcc.target/i386/pr39315-3.c: Likewise.
+	* gcc.target/i386/pr35767-4.c: Likewise.
+	* gcc.target/i386/pr45336-3.c (pextrd): Don't check for
+	x64 mingw target.
+	* gcc.target/i386/pr45336-2.c: Likewise.
+	* gcc.target/i386/pr45336-1.c: Likewise.
+	* gcc.target/i386/pr45336-4.c: Likewise.
+
 2012-02-27  Tristan Gingold  <gingold@adacore.com>
 
 	* gnat.dg/array20.ad[sb]: New test.

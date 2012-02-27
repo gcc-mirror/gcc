@@ -1,5 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
+
+__extension__ typedef __SIZE_TYPE__ size_t;
+
 int
 php_filter_parse_int (char const *str, unsigned int str_len, long *ret)
 {
@@ -23,7 +26,7 @@ php_filter_parse_int (char const *str, unsigned int str_len, long *ret)
     default:;
       break;
     }
-  if ((unsigned long) str < (unsigned long) end)
+  if ((size_t) str < (size_t) end)
     {
       if ((int const) *str >= 49)
 	{
@@ -59,7 +62,7 @@ php_filter_parse_int (char const *str, unsigned int str_len, long *ret)
     {
       return (-1);
     }
-  while ((unsigned long) str < (unsigned long) end)
+  while ((size_t) str < (size_t) end)
     {
       if ((int const) *str >= 48)
 	{

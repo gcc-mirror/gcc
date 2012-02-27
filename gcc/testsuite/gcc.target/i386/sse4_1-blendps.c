@@ -16,6 +16,11 @@
 #include <string.h>
 #include <stdlib.h>
 
+/* mingw runtime don't provide random().  */
+#ifdef __MINGW32__
+#define random rand
+#endif
+
 #define NUM 20
 
 #ifndef MASK
