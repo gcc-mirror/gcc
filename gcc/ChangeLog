@@ -1,3 +1,7 @@
+2012-02-27  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.h: Delete dead GO_IF_LEGITIMATE_INDEX macro.
+
 2012-02-26  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/predicates.md: Remove blank lines.
