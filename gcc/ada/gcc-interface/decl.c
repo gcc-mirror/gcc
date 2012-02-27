@@ -2003,8 +2003,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	const bool convention_fortran_p
 	  = (Convention (gnat_entity) == Convention_Fortran);
 	const int ndim = Number_Dimensions (gnat_entity);
-	tree gnu_template_type = make_node (RECORD_TYPE);
-	tree gnu_ptr_template = build_pointer_type (gnu_template_type);
+	tree gnu_template_type;
+	tree gnu_ptr_template;
 	tree gnu_template_reference, gnu_template_fields, gnu_fat_type;
 	tree *gnu_index_types = XALLOCAVEC (tree, ndim);
 	tree *gnu_temp_fields = XALLOCAVEC (tree, ndim);
@@ -2035,9 +2035,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    TYPE_NAME (gnu_fat_type) = NULL_TREE;
 	    /* Save the contents of the dummy type for update_pointer_to.  */
 	    TYPE_POINTER_TO (gnu_type) = copy_type (gnu_fat_type);
+	    gnu_ptr_template =
+	      TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (gnu_fat_type)));
+	    gnu_template_type = TREE_TYPE (gnu_ptr_template);
 	  }
 	else
-	  gnu_fat_type = make_node (RECORD_TYPE);
+	  {
+	    gnu_fat_type = make_node (RECORD_TYPE);
+	    gnu_template_type = make_node (RECORD_TYPE);
+	    gnu_ptr_template = build_pointer_type (gnu_template_type);
+	  }
 
 	/* Make a node for the array.  If we are not defining the array
 	   suppress expanding incomplete types.  */
