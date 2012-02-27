@@ -1,3 +1,7 @@
+2012-02-27  Tristan Gingold  <gingold@adacore.com>
+
+	* gnat.dg/array20.ad[sb]: New test.
+
 2012-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52375
