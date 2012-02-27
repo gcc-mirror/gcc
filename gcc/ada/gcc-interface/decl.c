@@ -4144,7 +4144,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      return_by_invisi_ref_p = true;
 
 	    /* Likewise, if the return type is itself By_Reference.  */
-	    else if (TREE_ADDRESSABLE (gnu_return_type))
+	    else if (TYPE_IS_BY_REFERENCE_P (gnu_return_type))
 	      return_by_invisi_ref_p = true;
 
 	    /* If the type is a padded type and the underlying type would not
@@ -4673,10 +4673,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  || Is_Class_Wide_Equivalent_Type (gnat_entity))
 	TYPE_ALIGN_OK (gnu_type) = 1;
 
-      /* If the type is passed by reference, objects of this type must be
-	 fully addressable and cannot be copied.  */
-      if (Is_By_Reference_Type (gnat_entity))
-	TREE_ADDRESSABLE (gnu_type) = 1;
+      /* Record whether the type is passed by reference.  */
+      if (!VOID_TYPE_P (gnu_type) && Is_By_Reference_Type (gnat_entity))
+	TYPE_BY_REFERENCE_P (gnu_type) = 1;
 
       /* ??? Don't set the size for a String_Literal since it is either
 	 confirming or we don't handle it properly (if the low bound is
@@ -5621,7 +5620,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 	 parameters whose type isn't by-ref and for which the mechanism hasn't
 	 been forced to by-ref are restrict-qualified in the C sense.  */
       bool restrict_p
-	= !TREE_ADDRESSABLE (gnu_param_type) && mech != By_Reference;
+	= !TYPE_IS_BY_REFERENCE_P (gnu_param_type) && mech != By_Reference;
       gnu_param_type = build_reference_type (gnu_param_type);
       if (restrict_p)
 	gnu_param_type
@@ -6653,7 +6652,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   if (align != 0
       && RECORD_OR_UNION_TYPE_P (type)
       && TYPE_MODE (type) == BLKmode
-      && !TREE_ADDRESSABLE (type)
+      && !TYPE_BY_REFERENCE_P (type)
       && TREE_CODE (orig_size) == INTEGER_CST
       && !TREE_OVERFLOW (orig_size)
       && compare_tree_int (orig_size, MAX_FIXED_MODE_SIZE) <= 0
@@ -8353,7 +8352,7 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 
       /* Only do something if the type is not a packed array type and
 	 doesn't already have the proper size.  */
-      if (TYPE_PACKED_ARRAY_TYPE_P (type)
+      if (TYPE_IS_PACKED_ARRAY_TYPE_P (type)
 	  || (TYPE_PRECISION (type) == size && biased_p == for_biased))
 	break;
 

@@ -80,7 +80,8 @@ do {							 \
 /* For integral types and array types, nonzero if this is a packed array type
    used for bit-packed types.  Such types should not be extended to a larger
    size or validated against a specified size.  */
-#define TYPE_PACKED_ARRAY_TYPE_P(NODE) TYPE_LANG_FLAG_0 (NODE)
+#define TYPE_PACKED_ARRAY_TYPE_P(NODE) \
+  TYPE_LANG_FLAG_0 (TREE_CHECK2 (NODE, INTEGER_TYPE, ARRAY_TYPE))
 
 #define TYPE_IS_PACKED_ARRAY_TYPE_P(NODE) \
   ((TREE_CODE (NODE) == INTEGER_TYPE || TREE_CODE (NODE) == ARRAY_TYPE) \
@@ -107,6 +108,21 @@ do {							 \
 /* Nonzero in an arithmetic subtype if this is a subtype not known to the
    front-end.  */
 #define TYPE_EXTRA_SUBTYPE_P(NODE) TYPE_LANG_FLAG_2 (INTEGER_TYPE_CHECK (NODE))
+
+/* Nonzero for an aggregate type if this is a by-reference type.  We also
+   set this on an ENUMERAL_TYPE that is dummy.  */
+#define TYPE_BY_REFERENCE_P(NODE)				       \
+  TYPE_LANG_FLAG_2 (TREE_CHECK5 (NODE, RECORD_TYPE, UNION_TYPE,	       \
+				 ARRAY_TYPE, UNCONSTRAINED_ARRAY_TYPE, \
+				 ENUMERAL_TYPE))
+
+#define TYPE_IS_BY_REFERENCE_P(NODE)		    \
+  ((TREE_CODE (NODE) == RECORD_TYPE		    \
+    || TREE_CODE (NODE) == UNION_TYPE		    \
+    || TREE_CODE (NODE) == ARRAY_TYPE		    \
+    || TREE_CODE (NODE) == UNCONSTRAINED_ARRAY_TYPE \
+    || TREE_CODE (NODE) == ENUMERAL_TYPE)	    \
+   && TYPE_BY_REFERENCE_P (NODE))
 
 /* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, nonzero if this is the
    type for an object whose type includes its template in addition to
@@ -144,13 +160,15 @@ do {							 \
 #define TYPE_RETURN_BY_DIRECT_REF_P(NODE) \
   TYPE_LANG_FLAG_4 (FUNCTION_TYPE_CHECK (NODE))
 
-/* For VOID_TYPE, ENUMERAL_TYPE, UNION_TYPE, and RECORD_TYPE, nonzero if this
-   is a dummy type, made to correspond to a private or incomplete type.  */
-#define TYPE_DUMMY_P(NODE) TYPE_LANG_FLAG_4 (NODE)
+/* For RECORD_TYPE, UNION_TYPE and ENUMERAL_TYPE, nonzero if this is a dummy
+   type, made to correspond to a private or incomplete type.  */
+#define TYPE_DUMMY_P(NODE) \
+  TYPE_LANG_FLAG_4 (TREE_CHECK3 (NODE, RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE))
 
-#define TYPE_IS_DUMMY_P(NODE) \
-  ((TREE_CODE (NODE) == VOID_TYPE || TREE_CODE (NODE) == RECORD_TYPE	\
-    || TREE_CODE (NODE) == UNION_TYPE || TREE_CODE (NODE) == ENUMERAL_TYPE) \
+#define TYPE_IS_DUMMY_P(NODE)		  \
+  ((TREE_CODE (NODE) == RECORD_TYPE	  \
+    || TREE_CODE (NODE) == UNION_TYPE	  \
+    || TREE_CODE (NODE) == ENUMERAL_TYPE) \
    && TYPE_DUMMY_P (NODE))
 
 /* For an INTEGER_TYPE, nonzero if TYPE_ACTUAL_BOUNDS is present.  */
@@ -167,7 +185,7 @@ do {							 \
 /* True if TYPE can alias any other types.  */
 #define TYPE_UNIVERSAL_ALIASING_P(NODE) TYPE_LANG_FLAG_6 (NODE)
 
-/* In an UNCONSTRAINED_ARRAY_TYPE, this is the record containing both the
+/* For an UNCONSTRAINED_ARRAY_TYPE, this is the record containing both the
    template and the object.
 
    ??? We also put this on an ENUMERAL_TYPE that is dummy.  Technically,

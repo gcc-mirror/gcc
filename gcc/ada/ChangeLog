@@ -1,5 +1,31 @@
 2012-02-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/ada-tree.h (TYPE_PACKED_ARRAY_TYPE_P): Add checking.
+	(TYPE_BY_REFERENCE_P): New flag.
+	(TYPE_IS_BY_REFERENCE_P): New macro.
+	(TYPE_DUMMY_P): Add checking and remove VOID_TYPE.
+	(TYPE_IS_DUMMY_P): Adjust for above change.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use TYPE_BY_REFERENCE_P
+	and TYPE_IS_BY_REFERENCE_P instead of TREE_ADDRESSABLE.
+	(gnat_to_gnu_param): Likewise.
+	(maybe_pad_type): Likewise.
+	(make_type_from_size): Use TYPE_IS_PACKED_ARRAY_TYPE_P.
+	* gcc-interface/misc.c (must_pass_by_ref): Use TYPE_IS_BY_REFERENCE_P
+	instead of TREE_ADDRESSABLE.
+	* gcc-interface/trans.c (finalize_nrv): Likewise.
+	(call_to_gnu): Likewise.  Do not create a temporary for return values
+	with by-reference type here.
+	(gnat_to_gnu): Test TYPE_IS_DUMMY_P instead of TYPE_DUMMY_P.
+	(gnat_gimplify_expr) <ADDR_EXPR>: Don't do anything for non-constant
+	CONSTRUCTORs and calls.
+	* gcc-interface/utils.c (make_dummy_type): Get the equivalent type of
+	the underlying type and use it throughout.  Use TYPE_IS_BY_REFERENCE_P
+	instead of TREE_ADDRESSABLE.
+	* gcc-interface/utils2.c (build_cond_expr): Deal with by-reference
+	types explicitly.
+
+2012-02-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Revert previous
 	change that creates a special VAR_DECL for debugging purposes.  For an
 	aliased object with an unconstrained nominal subtype, make its type a

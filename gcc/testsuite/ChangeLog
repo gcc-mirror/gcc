@@ -1,3 +1,8 @@
+2012-02-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr19.adb: New test.
+	* gnat.dg/aggr19_pkg.ad[sb]: New helper.
+
 2012-02-26  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/49263
