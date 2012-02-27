@@ -619,8 +619,6 @@ link_gomp
 XLDFLAGS
 XCFLAGS
 config_path
-LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_FALSE
-LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_TRUE
 LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_FALSE
 LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE
 LIBGOMP_BUILD_VERSIONED_SHLIB_GNU_FALSE
@@ -11082,7 +11080,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11085 "configure"
+#line 11083 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11188,7 +11186,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11191 "configure"
+#line 11189 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15994,25 +15992,15 @@ if test $enable_symvers != no ; then
      # The Solaris 2 runtime linker doesn't support the GNU extension of
      # binding the same symbol to different versions
      solaris2*)
-       symvers_renaming=no ;;
+       ;;
      # Other platforms with GNU symbol versioning (GNU/Linux, more?) do.
      *)
 
 $as_echo "#define HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT 1" >>confdefs.h
 
-       symvers_renaming=yes ;;
+       ;;
     esac
-else
-    symvers_renaming=no
 fi
- if test $symvers_renaming = no; then
-  LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_TRUE=
-  LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_FALSE='#'
-else
-  LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_TRUE='#'
-  LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_FALSE=
-fi
-
 
 
 if test $enable_symvers = gnu; then
@@ -16402,10 +16390,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE}" && test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_FALSE}"; then
   as_fn_error "conditional \"LIBGOMP_BUILD_VERSIONED_SHLIB_SUN\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_TRUE}" && test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_FALSE}"; then
-  as_fn_error "conditional \"LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USE_FORTRAN_TRUE}" && test -z "${USE_FORTRAN_FALSE}"; then

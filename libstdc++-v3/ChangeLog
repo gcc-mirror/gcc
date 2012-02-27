@@ -1,3 +1,18 @@
+2012-02-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/52188
+	* acinclude.m4 (GLIBCXX_ENABLE_SYMVERS): Remove symvers_renaming.
+	Remove ENABLE_SYMVERS_SOL2.
+	* configure: Regenerate.
+	* src/Makefile.am [ENABLE_SYMVERS] (libstdc++-symbols.ver):
+	Postprocess mapfile.
+	[ENABLE_SYMVERS_GNU]: Remove ENABLE_SYMVERS_SOL2 handling.
+	* src/Makefile.in: Regenerate.
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.5) [!__sun__ && !__svr4__]:
+	Don't export
+	_ZNSt19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEppEv.
+
 2012-02-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/52201

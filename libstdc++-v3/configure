@@ -644,8 +644,6 @@ GLIBCXX_LDBL_COMPAT_TRUE
 ENABLE_VISIBILITY_FALSE
 ENABLE_VISIBILITY_TRUE
 libtool_VERSION
-ENABLE_SYMVERS_SOL2_FALSE
-ENABLE_SYMVERS_SOL2_TRUE
 ENABLE_SYMVERS_SUN_FALSE
 ENABLE_SYMVERS_SUN_TRUE
 ENABLE_SYMVERS_DARWIN_FALSE
@@ -11499,7 +11497,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11502 "configure"
+#line 11500 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11605,7 +11603,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11608 "configure"
+#line 11606 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14963,7 +14961,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14966 "configure"
+#line 14964 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15298,7 +15296,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15301 "configure"
+#line 15299 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15333,7 +15331,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15336 "configure"
+#line 15334 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15368,7 +15366,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15371 "configure"
+#line 15369 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15404,7 +15402,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15407 "configure"
+#line 15405 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15484,7 +15482,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15487 "configure"
+#line 15485 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15526,7 +15524,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15529 "configure"
+#line 15527 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15560,7 +15558,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15563 "configure"
+#line 15561 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -64998,18 +64996,15 @@ if test $enable_symvers != no ; then
      # The Solaris 2 runtime linker doesn't support the GNU extension of
      # binding the same symbol to different versions
      solaris2*)
-       symvers_renaming=no  ;;
+       ;;
      # Other platforms with GNU symbol versioning (GNU/Linux, more?) do.
      *)
 
 $as_echo "#define HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT 1" >>confdefs.h
 
-       symvers_renaming=yes  ;;
+       ;;
     esac
-else
-    symvers_renaming=no
 fi
-
 
 # Now, set up compatibility support, if any.
 # In addition, need this to deal with std::size_t mangling in
@@ -66201,15 +66196,6 @@ else
 fi
 
 
-    if test $symvers_renaming = no; then
-  ENABLE_SYMVERS_SOL2_TRUE=
-  ENABLE_SYMVERS_SOL2_FALSE='#'
-else
-  ENABLE_SYMVERS_SOL2_TRUE='#'
-  ENABLE_SYMVERS_SOL2_FALSE=
-fi
-
-
     if test $enable_libstdcxx_visibility = yes; then
   ENABLE_VISIBILITY_TRUE=
   ENABLE_VISIBILITY_FALSE='#'
@@ -66635,10 +66621,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_SYMVERS_SUN_TRUE}" && test -z "${ENABLE_SYMVERS_SUN_FALSE}"; then
   as_fn_error "conditional \"ENABLE_SYMVERS_SUN\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${ENABLE_SYMVERS_SOL2_TRUE}" && test -z "${ENABLE_SYMVERS_SOL2_FALSE}"; then
-  as_fn_error "conditional \"ENABLE_SYMVERS_SOL2\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_VISIBILITY_TRUE}" && test -z "${ENABLE_VISIBILITY_FALSE}"; then
