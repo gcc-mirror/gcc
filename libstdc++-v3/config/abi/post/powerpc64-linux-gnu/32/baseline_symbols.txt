@@ -1441,6 +1441,9 @@ FUNC:_ZNSt13__future_base12_Result_baseC2Ev@@GLIBCXX_3.4.15
 FUNC:_ZNSt13__future_base12_Result_baseD0Ev@@GLIBCXX_3.4.15
 FUNC:_ZNSt13__future_base12_Result_baseD1Ev@@GLIBCXX_3.4.15
 FUNC:_ZNSt13__future_base12_Result_baseD2Ev@@GLIBCXX_3.4.15
+FUNC:_ZNSt13__future_base19_Async_state_commonD0Ev@@GLIBCXX_3.4.17
+FUNC:_ZNSt13__future_base19_Async_state_commonD1Ev@@GLIBCXX_3.4.17
+FUNC:_ZNSt13__future_base19_Async_state_commonD2Ev@@GLIBCXX_3.4.17
 FUNC:_ZNSt13bad_exceptionD0Ev@@GLIBCXX_3.4
 FUNC:_ZNSt13bad_exceptionD1Ev@@GLIBCXX_3.4
 FUNC:_ZNSt13bad_exceptionD2Ev@@GLIBCXX_3.4
@@ -2760,6 +2763,7 @@ OBJECT:12:_ZTIN9__gnu_cxx13stdio_filebufIcSt11char_traitsIcEEE@@GLIBCXX_3.4
 OBJECT:12:_ZTIN9__gnu_cxx13stdio_filebufIwSt11char_traitsIwEEE@@GLIBCXX_3.4
 OBJECT:12:_ZTIN9__gnu_cxx18stdio_sync_filebufIcSt11char_traitsIcEEE@@GLIBCXX_3.4
 OBJECT:12:_ZTIN9__gnu_cxx18stdio_sync_filebufIwSt11char_traitsIwEEE@@GLIBCXX_3.4
+OBJECT:12:_ZTINSt13__future_base19_Async_state_commonE@@GLIBCXX_3.4.17
 OBJECT:12:_ZTINSt17__gnu_cxx_ldbl1287num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEEE@@GLIBCXX_LDBL_3.4
 OBJECT:12:_ZTINSt17__gnu_cxx_ldbl1287num_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEEE@@GLIBCXX_LDBL_3.4
 OBJECT:12:_ZTINSt17__gnu_cxx_ldbl1287num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEEE@@GLIBCXX_LDBL_3.4
@@ -3268,6 +3272,7 @@ OBJECT:20:_ZTSSt12ctype_bynameIwE@@GLIBCXX_3.4
 OBJECT:20:_ZTSSt15underflow_error@@GLIBCXX_3.4
 OBJECT:20:_ZTVNSt13__future_base11_State_baseE@@GLIBCXX_3.4.15
 OBJECT:20:_ZTVNSt13__future_base12_Result_baseE@@GLIBCXX_3.4.15
+OBJECT:20:_ZTVNSt13__future_base19_Async_state_commonE@@GLIBCXX_3.4.17
 OBJECT:20:_ZTVNSt8ios_base7failureE@@GLIBCXX_3.4
 OBJECT:20:_ZTVSt10bad_typeid@@GLIBCXX_3.4
 OBJECT:20:_ZTVSt10lock_error@@GLIBCXX_3.4.11
@@ -3460,6 +3465,7 @@ OBJECT:40:_ZTVSt19basic_ostringstreamIcSt11char_traitsIcESaIcEE@@GLIBCXX_3.4
 OBJECT:40:_ZTVSt19basic_ostringstreamIwSt11char_traitsIwESaIwEE@@GLIBCXX_3.4
 OBJECT:40:_ZTVSt8time_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE@@GLIBCXX_3.4
 OBJECT:40:_ZTVSt8time_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEE@@GLIBCXX_3.4
+OBJECT:41:_ZTSNSt13__future_base19_Async_state_commonE@@GLIBCXX_3.4.17
 OBJECT:41:_ZTSSt15basic_streambufIcSt11char_traitsIcEE@@GLIBCXX_3.4
 OBJECT:41:_ZTSSt15basic_streambufIwSt11char_traitsIwEE@@GLIBCXX_3.4
 OBJECT:44:_ZTVN10__cxxabiv117__class_type_infoE@@CXXABI_1.3
