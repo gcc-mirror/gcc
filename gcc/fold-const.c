@@ -13768,8 +13768,7 @@ recursive_label:
 	}
     }
   md5_process_bytes (expr, tree_size (expr), ctx);
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
-    fold_checksum_tree (TREE_TYPE (expr), ctx, ht);
+  fold_checksum_tree (TREE_TYPE (expr), ctx, ht);
   if (TREE_CODE_CLASS (code) != tcc_type
       && TREE_CODE_CLASS (code) != tcc_declaration
       && code != TREE_LIST
