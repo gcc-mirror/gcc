@@ -1,3 +1,8 @@
+2012-02-27  Stuart Henderson  <shenders@gcc.gnu.org>
+
+	* ifcvt.c (noce_get_condition): Check condition variable is not
+	small_register_classes_for_mode_p before accepting.
+
 2012-02-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movabs<mode>_1): Fix operand 1 constraints.
