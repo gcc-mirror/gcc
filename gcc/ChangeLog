@@ -1,3 +1,7 @@
+2012-02-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movabs<mode>_1): Fix operand 1 constraints.
+
 2012-02-27  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	Revert:
@@ -20,8 +24,7 @@
 
 2012-02-26  Walter Lee  <walt@tilera.com>
 
-	* config/tilegx/tilegx.c (match_pcrel_step2): Fix instruction
-	pattern.
+	* config/tilegx/tilegx.c (match_pcrel_step2): Fix instruction pattern.
 	(replace_mov_pcrel_step2): Ditto.
 
 2012-02-25  Alexandre Oliva  <aoliva@redhat.com>
@@ -56,8 +59,7 @@
 2012-02-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52361
-	* gimple.c (walk_gimple_op): Use predicates with less redundant
-	tests.
+	* gimple.c (walk_gimple_op): Use predicates with less redundant tests.
 	(is_gimple_reg_type): Move inline ...
 	* gimple.h (is_gimple_reg_type): ... here.
 
@@ -72,8 +74,7 @@
 
 	PR middle-end/52355
 	* fold-const.c (fold_addr_of_array_ref_difference): New function.
-	(fold_binary_loc): Use it to extend the existing &a[i] - &a[j]
-	folding.
+	(fold_binary_loc): Use it to extend the existing &a[i] - &a[j] folding.
 
 2012-02-13  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
@@ -87,8 +88,7 @@
 
 2012-02-23  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
-	* tree-into-ssa (update_ssa): Avoid trailing whitespace in
-	dump_file.
+	* tree-into-ssa (update_ssa): Avoid trailing whitespace in dump_file.
 	* tree-ssa-sccvn.c (print_scc): Ditto.
 
 2012-02-23  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
