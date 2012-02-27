@@ -4,7 +4,7 @@
 /* { dg-options "-O2 -mpreferred-stack-boundary=6 -mincoming-stack-boundary=6" } */
 /* { dg-final { scan-assembler "and\[lq\]?\[\\t \]*\\$-64,\[\\t \]*%\[re\]?sp" } } */
 /* { dg-final { scan-assembler-not "and\[lq\]?\[\\t \]*\\$-128,\[\\t \]*%\[re\]?sp" } } */
-
+/* { dg-skip-if "Options about stack-boundary aren't support" { x86_64-*-mingw* } { "*" } { "" } } */
 #include <stddef.h>
 
 #define ALIGNMENT 32

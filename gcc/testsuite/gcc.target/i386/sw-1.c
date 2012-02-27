@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fshrink-wrap -fdump-rtl-pro_and_epilogue" } */
+/* { dg-skip-if "No shrink-wrapping preformed" { x86_64-*-mingw* } { "*" } { "" } } */
 
 #include <string.h>
 

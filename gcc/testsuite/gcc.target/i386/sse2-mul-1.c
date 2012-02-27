@@ -14,6 +14,11 @@
 
 #include <stdlib.h>
 
+/* mingw runtime don't provide random().  */
+#ifdef __MINGW32__
+#define random rand
+#endif
+
 #define N 512
 static short a1[N], a2[N], a3[N];
 static unsigned short b1[N], b2[N], b3[N];
