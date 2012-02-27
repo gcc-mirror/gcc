@@ -1,3 +1,9 @@
+2012-02-27  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR libffi/52223
+	* Makefile.am (FLAGS_TO_PASS): Define.
+	* Makefile.in: Regenerate.
+
 2012-02-23  Kai Tietz  <ktietz@redhat.com>
 
 	PR libffi/52221
