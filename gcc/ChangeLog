@@ -1,5 +1,10 @@
 2012-02-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/52375
+	* config/arm/neon.md (vashr<mode>3, vlshr<mode>3): Use
+	s_register_operand in the test instead of REG_P.  Don't call
+	gen_reg_rtx if it won't be used.
+
 	PR tree-optimization/52376
 	* ipa-split.c (split_function): Ignore CLOBBER stmts.
 

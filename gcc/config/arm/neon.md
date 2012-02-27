@@ -1064,9 +1064,9 @@
 			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon" "")))]
   "TARGET_NEON"
 {
-  rtx neg = gen_reg_rtx (<MODE>mode);
-  if (REG_P (operands[2]))
+  if (s_register_operand (operands[2], <MODE>mode))
     {
+      rtx neg = gen_reg_rtx (<MODE>mode);
       emit_insn (gen_neg<mode>2 (neg, operands[2]));
       emit_insn (gen_ashl<mode>3_signed (operands[0], operands[1], neg));
     }
@@ -1081,9 +1081,9 @@
 			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon" "")))]
   "TARGET_NEON"
 {
-  rtx neg = gen_reg_rtx (<MODE>mode);
-  if (REG_P (operands[2]))
+  if (s_register_operand (operands[2], <MODE>mode))
     {
+      rtx neg = gen_reg_rtx (<MODE>mode);
       emit_insn (gen_neg<mode>2 (neg, operands[2]));
       emit_insn (gen_ashl<mode>3_unsigned (operands[0], operands[1], neg));
     }
