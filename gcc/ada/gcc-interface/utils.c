@@ -291,7 +291,7 @@ make_dummy_type (Entity_Id gnat_type)
 
   /* If there is an equivalent type, get its underlying type.  */
   if (Present (gnat_underlying))
-    gnat_underlying = Underlying_Type (gnat_underlying);
+    gnat_underlying = Gigi_Equivalent_Type (Underlying_Type (gnat_underlying));
 
   /* If there was no equivalent type (can only happen when just annotating
      types) or underlying type, go back to the original type.  */
@@ -311,8 +311,8 @@ make_dummy_type (Entity_Id gnat_type)
   TYPE_DUMMY_P (gnu_type) = 1;
   TYPE_STUB_DECL (gnu_type)
     = create_type_stub_decl (TYPE_NAME (gnu_type), gnu_type);
-  if (Is_By_Reference_Type (gnat_type))
-    TREE_ADDRESSABLE (gnu_type) = 1;
+  if (Is_By_Reference_Type (gnat_underlying))
+    TYPE_BY_REFERENCE_P (gnu_type) = 1;
 
   SET_DUMMY_NODE (gnat_underlying, gnu_type);
 

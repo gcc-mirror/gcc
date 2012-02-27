@@ -1554,8 +1554,9 @@ build_cond_expr (tree result_type, tree condition_operand,
 
   /* If the result type is unconstrained, take the address of the operands and
      then dereference the result.  Likewise if the result type is passed by
-     reference, but this is natively handled in the gimplifier.  */
+     reference, because creating a temporary of this type is not allowed.  */
   if (TREE_CODE (result_type) == UNCONSTRAINED_ARRAY_TYPE
+      || TYPE_IS_BY_REFERENCE_P (result_type)
       || CONTAINS_PLACEHOLDER_P (TYPE_SIZE (result_type)))
     {
       result_type = build_pointer_type (result_type);
