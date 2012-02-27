@@ -507,7 +507,7 @@ __generic_morestack_set_initial_sp (void *sp, size_t len)
   sigemptyset (&__morestack_initial_sp.mask);
 
   sigfillset (&__morestack_fullmask);
-#ifdef __GLIBC__
+#if defined(__GLIBC__) && defined(__linux__)
   /* In glibc, the first two real time signals are used by the NPTL
      threading library.  By taking them out of the set of signals, we
      avoiding copying the signal mask in pthread_sigmask.  More
