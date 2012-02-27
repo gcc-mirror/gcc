@@ -1,3 +1,10 @@
+2012-02-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/52352
+	* config/i386/i386.md (*movabs<mode>_1): Enable only for
+	TARGET_LP64.
+	(*movabs<mode>_2): Likewise.
+
 2012-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52375
