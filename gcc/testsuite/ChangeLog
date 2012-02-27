@@ -1,3 +1,8 @@
+2012-02-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gfortran.dg/typebound_operator_9.f03: Skip on SPU.
+	* gcc.dg/torture/builtin-complex-1.c: Skip "float" tests on SPU.
+
 2012-02-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/aggr19.adb: New test.
