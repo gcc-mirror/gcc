@@ -1,3 +1,9 @@
+2012-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/52375
+	* gcc.target/arm/pr52375.c: New test.
+	* gcc.c-torture/compile/pr52375.c: New test.
+
 2012-02-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* gfortran.dg/typebound_operator_9.f03: Skip on SPU.
