@@ -102,33 +102,28 @@ CXXLINK = $(LIBTOOL) --tag CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 if ENABLE_SYMVERS
 libstdc++-symbols.ver:  ${glibcxx_srcdir}/$(SYMVER_FILE) \
 		$(port_specific_symbol_files)
-	cp ${glibcxx_srcdir}/$(SYMVER_FILE) ./libstdc++-symbols.ver
-	chmod +w ./libstdc++-symbols.ver
+	cp ${glibcxx_srcdir}/$(SYMVER_FILE) $@.tmp
+	chmod +w $@.tmp
 	if test "x$(port_specific_symbol_files)" != x; then \
 	  if grep '^# Appended to version file.' \
 	       $(port_specific_symbol_files) /dev/null > /dev/null 2>&1; then \
-	    cat $(port_specific_symbol_files) >> $@; \
+	    cat $(port_specific_symbol_files) >> $@.tmp; \
 	  else \
-	    sed -n '1,/DO NOT DELETE/p' $@ > tmp.top; \
-	    sed -n '/DO NOT DELETE/,$$p' $@ > tmp.bottom; \
-	    cat tmp.top $(port_specific_symbol_files) tmp.bottom > $@; \
+	    sed -n '1,/DO NOT DELETE/p' $@.tmp > tmp.top; \
+	    sed -n '/DO NOT DELETE/,$$p' $@.tmp > tmp.bottom; \
+	    cat tmp.top $(port_specific_symbol_files) tmp.bottom > $@.tmp; \
 	    rm tmp.top tmp.bottom; \
 	  fi; \
 	fi
+	$(EGREP) -v '#(#| |$$)' $@.tmp | \
+	  $(COMPILE) -E -P -include config.h - > $@ || (rm -f $@ ; exit 1)
+	rm -f $@.tmp
 
 CLEANFILES = libstdc++-symbols.ver
 
 if ENABLE_SYMVERS_GNU
-if ENABLE_SYMVERS_SOL2
-version_arg = -Wl,--version-script,libstdc++-symbols.ver-sol2
-version_dep = libstdc++-symbols.ver-sol2
-libstdc++-symbols.ver-sol2 : libstdc++-symbols.ver
-	sed -e '/^#ifdef HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT/,/^#endif/d' $< \
-	 > $@ || (rm -f $@ ; exit 1)
-else
 version_arg = -Wl,--version-script=libstdc++-symbols.ver
 version_dep = libstdc++-symbols.ver
-endif
 endif
 if ENABLE_SYMVERS_GNU_NAMESPACE
 version_arg = -Wl,--version-script=libstdc++-symbols.ver

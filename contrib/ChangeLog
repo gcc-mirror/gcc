@@ -1,3 +1,8 @@
+2012-02-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/52188
+	* make_sunver.pl: Remove #ifdef handling.
+
 2012-02-17   Doug Kwan  <dougkwan@google.com>
 
 	* contrib/testsuite-management/validate_failures.py

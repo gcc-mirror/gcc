@@ -1,3 +1,19 @@
+2012-02-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/52188
+	* acinclude.m4 (LIBGOMP_ENABLE_SYMVERS): Remove	symvers_renaming.
+	Remove ENABLE_SYMVERS_SOL2.
+	* configure: Regenerate.
+	* Makefile.am [LIBGOMP_BUILD_VERSIONED_SHLIB] (comma): New variable.
+	(PREPROCESS): New variable.
+	(libgomp.ver): New target.
+	[LIBGOMP_BUILD_VERSIONED_SHLIB &&
+	LIBGOMP_BUILD_VERSIONED_SHLIB_GNU]: Remove
+	LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2 handling.
+	Use libgomp.ver.
+	[LIBGOMP_BUILD_VERSIONED_SHLIB_SUN]: Use libgomp.ver, libgomp.ver-sun.
+	* Makefile.in: Regenerate.
+
 2012-02-14  Walter Lee  <walt@tilera.com>
 
 	* configure.tgt: Handle tilegx and tilepro.
