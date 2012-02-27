@@ -968,17 +968,6 @@ const struct tune_params arm_cortex_a9_tune =
   arm_default_branch_cost
 };
 
-const struct tune_params arm_cortex_a15_tune =
-{
-  arm_9e_rtx_costs,
-  NULL,
-  1,						/* Constant limit.  */
-  1,						/* Max cond insns.  */
-  ARM_PREFETCH_NOT_BENEFICIAL,			/* TODO: Calculate correct values.  */
-  false,					/* Prefer constant pool.  */
-  arm_cortex_a5_branch_cost
-};
-
 const struct tune_params arm_fa726te_tune =
 {
   arm_9e_rtx_costs,

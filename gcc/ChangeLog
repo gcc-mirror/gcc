@@ -1,3 +1,11 @@
+2012-02-27  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	Revert:
+	2012-01-09  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+	* config/arm/arm-cores.def (cortex-a15): Use cortex_a15_tune for
+	tuning parameters.
+	* config/arm/arm.c (arm_cortex_a15_tune): New static variable.
+
 2012-02-27  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.h: Delete dead GO_IF_LEGITIMATE_INDEX macro.
