@@ -1,3 +1,9 @@
+2012-02-28  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52402
+	* ipa-prop.c (ipa_modify_call_arguments): Properly use
+	mis-aligned types when creating the accesses at the call site.
+
 2012-02-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/builtins.def: New file.

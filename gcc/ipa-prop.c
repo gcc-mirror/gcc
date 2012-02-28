@@ -2508,9 +2508,27 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 		}
 	    }
 
-	  expr = fold_build2_loc (loc, MEM_REF, adj->type, base, off);
-	  if (adj->by_ref)
-	    expr = build_fold_addr_expr (expr);
+	  if (!adj->by_ref)
+	    {
+	      tree type = adj->type;
+	      unsigned int align;
+	      unsigned HOST_WIDE_INT misalign;
+	      align = get_pointer_alignment_1 (base, &misalign);
+	      misalign += (double_int_sext (tree_to_double_int (off),
+					    TYPE_PRECISION (TREE_TYPE (off))).low
+			   * BITS_PER_UNIT);
+	      misalign = misalign & (align - 1);
+	      if (misalign != 0)
+		align = (misalign & -misalign);
+	      if (align < TYPE_ALIGN (type))
+		type = build_aligned_type (type, align);
+	      expr = fold_build2_loc (loc, MEM_REF, type, base, off);
+	    }
+	  else
+	    {
+	      expr = fold_build2_loc (loc, MEM_REF, adj->type, base, off);
+	      expr = build_fold_addr_expr (expr);
+	    }
 
 	  expr = force_gimple_operand_gsi (&gsi, expr,
 					   adj->by_ref
