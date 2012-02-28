@@ -1,3 +1,8 @@
+2012-02-28  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/sfp-machine.h (_FP_STRUCT_LAYOUT): Define it
+	for mingw-targets as attribute gcc_struct.
+
 2012-02-28  Ian Lance Taylor  <iant@google.com>
 
 	* generic-morestack.c (__splitstack_releasecontext): Correct call
