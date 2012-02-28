@@ -1,3 +1,10 @@
+2012-02-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/52191
+	* testsuite/util/testsuite_abi.cc (compare_symbols): Check new
+	symbols added into the latest version. Mark tls entities as
+	undesignated.
+
 2012-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/52414
@@ -37,7 +44,8 @@
 2012-02-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/52201
-	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc: Require	atomic builtins.
+	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc:
+	Require	atomic builtins.
 	* testsuite/29_atomics/atomic/operators/51811.cc: Likewise.
 
 2012-02-23  Jason Merrill  <jason@redhat.com>
@@ -88,7 +96,7 @@
 	* testsuite/26_numerics/random/
 	geometric_distribution/requirements/typedefs.cc: Ditto.
 
-2012-02-17  Benjamin Kosnik  <bkoz@redhat.com>
+2012-02-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/50349
 	* config/abi/pre/gnu.ver: Only one local.
