@@ -1,3 +1,9 @@
+2012-02-27  Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR boehm-gc/48299
+	testsuite/boehm-gc.c/thread_leak_test.c: Merge upstream changes.
+
 2012-02-23  Patrick Marlier  <patrick.marlier@gmail.com>
 	    Jack Howarth  <howarth@bromo.med.uc.edu>
 
