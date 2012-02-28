@@ -61,6 +61,6 @@ const struct mcu_type_s avr_mcu_types[] = {
 #include "avr-mcus.def"
 #undef AVR_MCU
     /* End of list.  */
-  { NULL, ARCH_UNKNOWN, NULL, 0, 0, 0, NULL }
+  { NULL, ARCH_UNKNOWN, NULL, 0, 0, 0, 0, NULL }
 };
 
