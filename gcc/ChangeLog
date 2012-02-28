@@ -1,3 +1,7 @@
+2012-02-28  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* doc/install.texi: Document check-$LANG specific shortcuts
+
 2012-02-28  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	PR target/51534
