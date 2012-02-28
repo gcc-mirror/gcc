@@ -1,5 +1,21 @@
 2012-02-28  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/builtins.def: New file.
+	* config/avr/t-avr (avr.o, avr-c.o): Depend on it.
+	* config/avr/avr.c (enum avr_builtin_id): Use it.
+	(avr_init_builtins): Use it. And use avr_bdesc.
+	(bdesc_1arg): Remove.
+	(bdesc_2arg): Remove.
+	(bdesc_3arg): Remove.
+	(struct avr_builtin_description): Add field n_args.
+	(avr_bdesc): New static variable using builtins.def.
+	(avr_expand_builtin): Use it.
+	Don't call avr_expand_delay_cycles if op0 is not CONST_INT.
+	(avr_fold_builtin): Fold AVR_BUILTIN_SWAP.
+	Don't fold AVR_BUILTIN_INSERT_BITS if arg0 is not INTEGER_CST.
+
+2012-02-28  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/52148
 	* config/avr/avr.md (movmem_<mode>): Replace match_operand that
 	match only one single hard register with respective hard reg rtx.
