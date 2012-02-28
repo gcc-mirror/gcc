@@ -1,3 +1,13 @@
+2012-02-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	Partially revert:
+
+	2012-02-20  Richard Guenther  <rguenther@suse.de>
+	PR tree-optimization/52298
+	* tree-vect-stmts.c (vectorizable_load): Properly use
+	STMT_VINFO_DR_STEP instead of DR_STEP when vectorizing
+	outer loops.
+
 2012-02-28  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/51752
