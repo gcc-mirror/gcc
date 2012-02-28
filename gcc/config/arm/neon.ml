@@ -700,6 +700,8 @@ let bit_select shape elt =
 
 (* Common lists of supported element types.  *)
 
+let s_8_32 = [S8; S16; S32]
+let u_8_32 = [U8; U16; U32]
 let su_8_32 = [S8; S16; S32; U8; U16; U32]
 let su_8_64 = S64 :: U64 :: su_8_32
 let su_16_64 = [S16; S32; S64; U16; U32; U64]
@@ -777,26 +779,40 @@ let ops =
     Vceq, [], All (3, Qreg), "vceqQ", cmp_sign_invar, P8 :: F32 :: su_8_32;
 
     (* Comparison, greater-than or equal.  *)
-    Vcge, [], All (3, Dreg), "vcge", cmp_sign_matters, F32 :: su_8_32;
-    Vcge, [], All (3, Qreg), "vcgeQ", cmp_sign_matters, F32 :: su_8_32;
+    Vcge, [], All (3, Dreg), "vcge", cmp_sign_matters, F32 :: s_8_32;
+    Vcge, [Builtin_name "vcgeu"], All (3, Dreg), "vcge", cmp_sign_matters, u_8_32;
+    Vcge, [], All (3, Qreg), "vcgeQ", cmp_sign_matters, F32 :: s_8_32;
+    Vcge, [Builtin_name "vcgeu"], All (3, Qreg), "vcgeQ", cmp_sign_matters, u_8_32;
 
     (* Comparison, less-than or equal.  *)
     Vcle, [Flipped "vcge"], All (3, Dreg), "vcle", cmp_sign_matters,
-      F32 :: su_8_32;
+      F32 :: s_8_32;
+    Vcle, [Flipped "vcgeu"], All (3, Dreg), "vcle", cmp_sign_matters,
+      u_8_32;
     Vcle, [Instruction_name ["vcge"]; Flipped "vcgeQ"],
       All (3, Qreg), "vcleQ", cmp_sign_matters,
-      F32 :: su_8_32;
+      F32 :: s_8_32;
+    Vcle, [Instruction_name ["vcge"]; Flipped "vcgeuQ"],
+      All (3, Qreg), "vcleQ", cmp_sign_matters,
+      u_8_32;
 
     (* Comparison, greater-than.  *)
-    Vcgt, [], All (3, Dreg), "vcgt", cmp_sign_matters, F32 :: su_8_32;
-    Vcgt, [], All (3, Qreg), "vcgtQ", cmp_sign_matters, F32 :: su_8_32;
+    Vcgt, [], All (3, Dreg), "vcgt", cmp_sign_matters, F32 :: s_8_32;
+    Vcgt, [Builtin_name "vcgtu"], All (3, Dreg), "vcgt", cmp_sign_matters, u_8_32;
+    Vcgt, [], All (3, Qreg), "vcgtQ", cmp_sign_matters, F32 :: s_8_32;
+    Vcgt, [Builtin_name "vcgtu"], All (3, Qreg), "vcgtQ", cmp_sign_matters, u_8_32;
 
     (* Comparison, less-than.  *)
     Vclt, [Flipped "vcgt"], All (3, Dreg), "vclt", cmp_sign_matters,
-      F32 :: su_8_32;
+      F32 :: s_8_32;
+    Vclt, [Flipped "vcgtu"], All (3, Dreg), "vclt", cmp_sign_matters,
+      u_8_32;
     Vclt, [Instruction_name ["vcgt"]; Flipped "vcgtQ"],
       All (3, Qreg), "vcltQ", cmp_sign_matters,
-      F32 :: su_8_32;
+      F32 :: s_8_32;
+    Vclt, [Instruction_name ["vcgt"]; Flipped "vcgtuQ"],
+      All (3, Qreg), "vcltQ", cmp_sign_matters,
+      u_8_32;
 
     (* Compare absolute greater-than or equal.  *)
     Vcage, [Instruction_name ["vacge"]],
