@@ -1,5 +1,11 @@
 2012-02-28  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/52395
+	* tree-sra.c (build_ref_for_offset): Also look at the base
+	TYPE_ALIGN when figuring out the alignment of the replacement.
+
+2012-02-28  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/52402
 	* ipa-prop.c (ipa_modify_call_arguments): Properly use
 	mis-aligned types when creating the accesses at the call site.

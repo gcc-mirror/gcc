@@ -1526,10 +1526,12 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
      we can extract more optimistic alignment information
      by looking at the access mode.  That would constrain the
      alignment of base + base_offset which we would need to
-     adjust according to offset.
-     ???  But it is not at all clear that prev_base is an access
-     that was in the IL that way, so be conservative for now.  */
+     adjust according to offset.  */
   align = get_pointer_alignment_1 (base, &misalign);
+  if (misalign == 0
+      && (TREE_CODE (prev_base) == MEM_REF
+	  || TREE_CODE (prev_base) == TARGET_MEM_REF))
+    align = MAX (align, TYPE_ALIGN (TREE_TYPE (prev_base)));
   misalign += (double_int_sext (tree_to_double_int (off),
 				TYPE_PRECISION (TREE_TYPE (off))).low
 	       * BITS_PER_UNIT);
