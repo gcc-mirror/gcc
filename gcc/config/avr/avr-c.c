@@ -143,7 +143,11 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
       int i;
       
       for (i = 0; avr_addrspace[i].name; i++)
-        if (!ADDR_SPACE_GENERIC_P (i))
+        if (!ADDR_SPACE_GENERIC_P (i)
+            /* Only supply __FLASH<n> macro if the address space is reasonable
+               for this target.  The address space qualifier itself is still
+               supported, but using it will throw an error.  */
+            && avr_addrspace[i].segment < avr_current_device->n_flash)
           {
             const char *name = avr_addrspace[i].name;
             char *Name = (char*) alloca (1 + strlen (name));

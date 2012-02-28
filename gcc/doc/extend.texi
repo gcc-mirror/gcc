@@ -1266,14 +1266,6 @@ address space @code{__flash@var{N}}.
 The compiler will set the @code{RAMPZ} segment register approptiately 
 before reading data by means of the @code{ELPM} instruction.
 
-On devices with less 64@tie{}kiB flash segments as indicated by the address
-space, the compiler will cut down the segment number to a number the
-device actually supports. Counting starts at@tie{}@code{0}
-for space @code{__flash}. For example, if you access address space
-@code{__flash3} on an ATmega128 device with two 64@tie{}kiB flash segments,
-the compiler will generate a read from @code{__flash1}, i.e.@: it
-will load @code{RAMPZ} with@tie{}@code{1} before reading.
-
 @item __memx
 @cindex @code{__memx} AVR Named Address Spaces
 This is a 24-bit address space that linearizes flash and RAM:
