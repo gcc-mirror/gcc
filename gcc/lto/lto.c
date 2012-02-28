@@ -689,13 +689,6 @@ lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl)
 	  lto_record_renamed_decl (data_in->file_data,
 				   IDENTIFIER_POINTER (old_assembler_name),
 				   IDENTIFIER_POINTER (new_assembler_name));
-
-	  /* Also register the reverse mapping so that we can find the
-	     new name given to an existing assembler name (used when
-	     restoring alias pairs in input_constructors_or_inits.  */
-	  lto_record_renamed_decl (data_in->file_data,
-				   IDENTIFIER_POINTER (new_assembler_name),
-				   IDENTIFIER_POINTER (old_assembler_name));
 	}
     }
 
