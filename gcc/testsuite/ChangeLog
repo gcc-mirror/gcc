@@ -1,3 +1,8 @@
+2012-02-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/builtins-1.c: New test.
+	* gcc.target/avr/torture/builtins-error.c: New test.
+
 2012-02-28  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc.target/i386/pr46939.c (long): Fix LP64 vs LLP64
