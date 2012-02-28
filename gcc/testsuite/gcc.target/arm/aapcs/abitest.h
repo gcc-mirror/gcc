@@ -1,3 +1,4 @@
+
 #define IN_FRAMEWORK
 
 #ifdef VFP
@@ -9,6 +10,13 @@
 #define D5	40
 #define D6	48
 #define D7	56
+
+#ifdef NEON
+#define Q0      D0
+#define Q1      D2
+#define Q2      D4
+#define Q3      D6
+#endif
 
 #define S0	64
 #define S1	68
@@ -27,23 +35,18 @@
 #define S14	120
 #define S15	124
 
-#define R0	128
-#define R1	132
-#define R2	136
-#define R3	140
-
-#define STACK	144
-
+#define CORE_REG_START 128
 #else
-
-#define R0	0
-#define R1	4
-#define R2	8
-#define R3	12
-
-#define STACK   16
-
+#define CORE_REG_START 0
 #endif
+
+#define R0	CORE_REG_START
+#define R1	(R0 + 4)
+#define R2	(R1 + 4)
+#define R3	(R2 + 4)
+#define STACK	(R3 + 4)
+
+
 
 extern void abort (void);
 
