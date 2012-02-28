@@ -1,5 +1,6 @@
 2012-02-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/52414
 	* src/Makefile.am (libstdc++-symbols.ver): Only remove comment lines
 	if they are at the beginning of lines (with optional whitespace before
 	#).
