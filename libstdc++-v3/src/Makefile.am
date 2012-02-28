@@ -115,7 +115,7 @@ libstdc++-symbols.ver:  ${glibcxx_srcdir}/$(SYMVER_FILE) \
 	    rm tmp.top tmp.bottom; \
 	  fi; \
 	fi
-	$(EGREP) -v '#(#| |$$)' $@.tmp | \
+	$(EGREP) -v '^[ 	]*#(#| |$$)' $@.tmp | \
 	  $(COMPILE) -E -P -include config.h - > $@ || (rm -f $@ ; exit 1)
 	rm -f $@.tmp
 

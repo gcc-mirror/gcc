@@ -1,3 +1,10 @@
+2012-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/Makefile.am (libstdc++-symbols.ver): Only remove comment lines
+	if they are at the beginning of lines (with optional whitespace before
+	#).
+	* src/Makefile.in: Regenerated.
+
 2012-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.

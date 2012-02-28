@@ -776,7 +776,7 @@ vpath % $(top_srcdir)
 @ENABLE_SYMVERS_TRUE@	    rm tmp.top tmp.bottom; \
 @ENABLE_SYMVERS_TRUE@	  fi; \
 @ENABLE_SYMVERS_TRUE@	fi
-@ENABLE_SYMVERS_TRUE@	$(EGREP) -v '#(#| |$$)' $@.tmp | \
+@ENABLE_SYMVERS_TRUE@	$(EGREP) -v '^[ 	]*#(#| |$$)' $@.tmp | \
 @ENABLE_SYMVERS_TRUE@	  $(COMPILE) -E -P -include config.h - > $@ || (rm -f $@ ; exit 1)
 @ENABLE_SYMVERS_TRUE@	rm -f $@.tmp
 @ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@libstdc++-symbols.ver-sun : libstdc++-symbols.ver \
