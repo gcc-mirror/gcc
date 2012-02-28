@@ -1,5 +1,11 @@
 2012-02-28  Richard Earnshaw  <rearnsha@arm.com>
 
+	PR target/49448
+	* config.gcc (arm*-*-linux*): Use an unambiguous pattern for
+	detecting big-endian triplets.
+
+2012-02-28  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.c (aapcs_vfp_is_call_or_return_candidate): Only use the machine
 	mode if there is no type information available.
 
