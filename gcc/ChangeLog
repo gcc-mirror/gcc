@@ -1,3 +1,8 @@
+2012-02-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-devices.c (avr_mcu_type): Adjust NULL part
+	of initializer to changes from r184614.
+	
 2012-02-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52395
