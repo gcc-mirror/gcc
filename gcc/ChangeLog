@@ -1,5 +1,15 @@
 2012-02-28  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/52148
+	* config/avr/avr.md (movmem_<mode>): Replace match_operand that
+	match only one single hard register with respective hard reg rtx.
+	(movmemx_<mode>): Ditto.
+	* config/avr/avr.c (avr_emit_movmemhi): Adapt expanding to new
+	insn anatomy of movmem[x]_<mode>.
+	(avr_out_movmem): Same for printing assembler and operand usage.
+
+2012-02-28  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/49868
 	PR target/52261
 	* doc/extend.texi (AVR Named Address Spaces): No more try to fix

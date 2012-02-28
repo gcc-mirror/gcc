@@ -9935,7 +9935,7 @@ avr_emit_movmemhi (rtx *xop)
   HOST_WIDE_INT count;
   enum machine_mode loop_mode;
   addr_space_t as = MEM_ADDR_SPACE (xop[1]);
-  rtx loop_reg, addr0, addr1, a_src, a_dest, insn, xas, reg_x;
+  rtx loop_reg, addr1, a_src, a_dest, insn, xas;
   rtx a_hi8 = NULL_RTX;
 
   if (avr_mem_flash_p (xop[0]))
@@ -9991,11 +9991,7 @@ avr_emit_movmemhi (rtx *xop)
         X = destination address  */
 
   emit_move_insn (lpm_addr_reg_rtx, addr1);
-  addr1 = lpm_addr_reg_rtx;
-
-  reg_x = gen_rtx_REG (HImode, REG_X);
-  emit_move_insn (reg_x, a_dest);
-  addr0 = reg_x;
+  emit_move_insn (gen_rtx_REG (HImode, REG_X), a_dest);
 
   /* FIXME: Register allocator does a bad job and might spill address
         register(s) inside the loop leading to additional move instruction
@@ -10010,23 +10006,19 @@ avr_emit_movmemhi (rtx *xop)
       /* Load instruction ([E]LPM or LD) is known at compile time:
          Do the copy-loop inline.  */
       
-      rtx (*fun) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx)
+      rtx (*fun) (rtx, rtx, rtx)
         = QImode == loop_mode ? gen_movmem_qi : gen_movmem_hi;
 
-      insn = fun (addr0, addr1, xas, loop_reg,
-                  addr0, addr1, tmp_reg_rtx, loop_reg);
+      insn = fun (xas, loop_reg, loop_reg);
     }
   else
     {
-      rtx loop_reg16 = gen_rtx_REG (HImode, 24);
-      rtx r23 = gen_rtx_REG (QImode, 23);
-      rtx (*fun) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx)
+      rtx (*fun) (rtx, rtx)
         = QImode == loop_mode ? gen_movmemx_qi : gen_movmemx_hi;
 
-      emit_move_insn (r23, a_hi8);
+      emit_move_insn (gen_rtx_REG (QImode, 23), a_hi8);
       
-      insn = fun (addr0, addr1, xas, loop_reg, addr0, addr1,
-                  lpm_reg_rtx, loop_reg16, r23, r23, GEN_INT (avr_addr.rampz));
+      insn = fun (xas, GEN_INT (avr_addr.rampz));
     }
 
   set_mem_addr_space (SET_SRC (XVECEXP (insn, 0, 0)), as);
@@ -10037,31 +10029,26 @@ avr_emit_movmemhi (rtx *xop)
 
 
 /* Print assembler for movmem_qi, movmem_hi insns...
-       $0, $4 : & dest
-       $1, $5 : & src
-       $2     : Address Space
-       $3, $7 : Loop register
-       $6     : Scratch register
-
-   ...and movmem_qi_elpm, movmem_hi_elpm insns.
-   
-       $8, $9 : hh8 (& src)
-       $10    : RAMPZ_ADDR
+       $0     : Address Space
+       $1, $2 : Loop register
+       Z      : Source address
+       X      : Destination address
 */
 
 const char*
-avr_out_movmem (rtx insn ATTRIBUTE_UNUSED, rtx *xop, int *plen)
+avr_out_movmem (rtx insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
 {
-  addr_space_t as = (addr_space_t) INTVAL (xop[2]);
-  enum machine_mode loop_mode = GET_MODE (xop[3]);
-
-  bool sbiw_p = test_hard_reg_class (ADDW_REGS, xop[3]);
-
-  gcc_assert (REG_X == REGNO (xop[0])
-              && REG_Z == REGNO (xop[1]));
+  addr_space_t as = (addr_space_t) INTVAL (op[0]);
+  enum machine_mode loop_mode = GET_MODE (op[1]);
+  bool sbiw_p = test_hard_reg_class (ADDW_REGS, op[1]);
+  rtx xop[3];
 
   if (plen)
     *plen = 0;
+
+  xop[0] = op[0];
+  xop[1] = op[1];
+  xop[2] = tmp_reg_rtx;
 
   /* Loop label */
 
@@ -10076,16 +10063,16 @@ avr_out_movmem (rtx insn ATTRIBUTE_UNUSED, rtx *xop, int *plen)
       
     case ADDR_SPACE_GENERIC:
 
-      avr_asm_len ("ld %6,%a1+", xop, plen, 1);
+      avr_asm_len ("ld %2,Z+", xop, plen, 1);
       break;
       
     case ADDR_SPACE_FLASH:
 
       if (AVR_HAVE_LPMX)
-        avr_asm_len ("lpm %6,%a1+", xop, plen, 1);
+        avr_asm_len ("lpm %2,%Z+", xop, plen, 1);
       else
         avr_asm_len ("lpm" CR_TAB
-                     "adiw %1,1", xop, plen, 2);
+                     "adiw r30,1", xop, plen, 2);
       break;
       
     case ADDR_SPACE_FLASH1:
@@ -10095,31 +10082,31 @@ avr_out_movmem (rtx insn ATTRIBUTE_UNUSED, rtx *xop, int *plen)
     case ADDR_SPACE_FLASH5:
 
       if (AVR_HAVE_ELPMX)
-        avr_asm_len ("elpm %6,%a1+", xop, plen, 1);
+        avr_asm_len ("elpm %2,Z+", xop, plen, 1);
       else
         avr_asm_len ("elpm" CR_TAB
-                     "adiw %1,1", xop, plen, 2);
+                     "adiw r30,1", xop, plen, 2);
       break;
     }
 
   /* Store with post-increment */
 
-  avr_asm_len ("st %a0+,%6", xop, plen, 1);
+  avr_asm_len ("st X+,%2", xop, plen, 1);
 
   /* Decrement loop-counter and set Z-flag */
 
   if (QImode == loop_mode)
     {
-      avr_asm_len ("dec %3", xop, plen, 1);
+      avr_asm_len ("dec %1", xop, plen, 1);
     }
   else if (sbiw_p)
     {
-      avr_asm_len ("sbiw %3,1", xop, plen, 1);
+      avr_asm_len ("sbiw %1,1", xop, plen, 1);
     }
   else
     {
-      avr_asm_len ("subi %A3,1" CR_TAB
-                   "sbci %B3,0", xop, plen, 2);
+      avr_asm_len ("subi %A1,1" CR_TAB
+                   "sbci %B1,0", xop, plen, 2);
     }
 
   /* Loop until zero */

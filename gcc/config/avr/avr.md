@@ -465,6 +465,9 @@
    (set_attr "isa" "lpmx,lpm")
    (set_attr "cc" "none")])
 
+;; R21:Z : 24-bit source address
+;; R22   : 1-4 byte output
+
 ;; "xload_qi_libgcc"
 ;; "xload_hi_libgcc"
 ;; "xload_psi_libgcc"
@@ -848,24 +851,23 @@
 (define_mode_attr MOVMEM_r_d [(QI "r")
                               (HI "wd")])
 
-;; $0, $4 : & dest (REG_X)
-;; $1, $5 : & src  (REG_Z)
-;; $2     : Address Space
-;; $3, $7 : Loop register
-;; $6     : Scratch register
+;; $0     : Address Space
+;; $1, $2 : Loop register
+;; R30    : source address
+;; R26    : destination address
 
 ;; "movmem_qi"
 ;; "movmem_hi"
 (define_insn "movmem_<mode>"
-  [(set (mem:BLK (match_operand:HI 0 "register_operand" "x"))
-        (mem:BLK (match_operand:HI 1 "register_operand" "z")))
-   (unspec [(match_operand:QI 2 "const_int_operand"     "n")]
+  [(set (mem:BLK (reg:HI REG_X))
+        (mem:BLK (reg:HI REG_Z)))
+   (unspec [(match_operand:QI 0 "const_int_operand" "n")]
            UNSPEC_MOVMEM)
-   (use (match_operand:QIHI 3 "register_operand"       "<MOVMEM_r_d>"))
-   (clobber (match_operand:HI 4 "register_operand"     "=0"))
-   (clobber (match_operand:HI 5 "register_operand"     "=1"))
-   (clobber (match_operand:QI 6 "register_operand"     "=&r"))
-   (clobber (match_operand:QIHI 7 "register_operand"   "=3"))]
+   (use (match_operand:QIHI 1 "register_operand" "<MOVMEM_r_d>"))
+   (clobber (reg:HI REG_X))
+   (clobber (reg:HI REG_Z))
+   (clobber (reg:QI LPM_REGNO))
+   (clobber (match_operand:QIHI 2 "register_operand" "=1"))]
   ""
   {
     return avr_out_movmem (insn, operands, NULL);
@@ -873,26 +875,28 @@
   [(set_attr "adjust_len" "movmem")
    (set_attr "cc" "clobber")])
 
-;; Ditto and
-;; $3, $7 : Loop register = R24
-;; $8, $9 : hh8 (& src)   = R23
-;; $10    : RAMPZ_ADDR
+
+;; $0    : Address Space
+;; $1    : RAMPZ RAM address
+;; R24   : #bytes and loop register
+;; R23:Z : 24-bit source address
+;; R26   : 16-bit destination address
 
 ;; "movmemx_qi"
 ;; "movmemx_hi"
 (define_insn "movmemx_<mode>"
-  [(set (mem:BLK (match_operand:HI 0 "register_operand"             "x"))
-        (mem:BLK (lo_sum:PSI (match_operand:QI 8 "register_operand" "r")
-                             (match_operand:HI 1 "register_operand" "z"))))
-   (unspec [(match_operand:QI 2 "const_int_operand"                 "n")]
+  [(set (mem:BLK (reg:HI REG_X))
+        (mem:BLK (lo_sum:PSI (reg:QI 23)
+                             (reg:HI REG_Z))))
+   (unspec [(match_operand:QI 0 "const_int_operand" "n")]
            UNSPEC_MOVMEM)
-   (use (match_operand:QIHI 3 "register_operand"                   "w"))
-   (clobber (match_operand:HI 4 "register_operand"                 "=0"))
-   (clobber (match_operand:HI 5 "register_operand"                 "=1"))
-   (clobber (match_operand:QI 6 "register_operand"                 "=&r"))
-   (clobber (match_operand:HI 7 "register_operand"                 "=3"))
-   (clobber (match_operand:QI 9 "register_operand"                 "=8"))
-   (clobber (mem:QI (match_operand:QI 10 "io_address_operand"       "n")))]
+   (use (reg:QIHI 24))
+   (clobber (reg:HI REG_X))
+   (clobber (reg:HI REG_Z))
+   (clobber (reg:QI LPM_REGNO))
+   (clobber (reg:HI 24))
+   (clobber (reg:QI 23))
+   (clobber (mem:QI (match_operand:QI 1 "io_address_operand" "n")))]
   ""
   "%~call __movmemx_<mode>"
   [(set_attr "type" "xcall")
