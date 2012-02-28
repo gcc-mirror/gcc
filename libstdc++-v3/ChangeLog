@@ -1,4 +1,4 @@
-2012-02-21  Benjamin Kosnik  <bkoz@redhat.com>
+2012-02-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/52191
 	* testsuite/util/testsuite_abi.cc (compare_symbols): Check new
