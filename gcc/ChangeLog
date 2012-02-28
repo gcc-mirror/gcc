@@ -1,3 +1,8 @@
+2012-02-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (aapcs_vfp_is_call_or_return_candidate): Only use the machine
+	mode if there is no type information available.
+
 2012-02-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR tree-optimization/53207

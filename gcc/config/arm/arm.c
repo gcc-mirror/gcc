@@ -4264,6 +4264,11 @@ use_vfp_abi (enum arm_pcs pcs_variant, bool is_double)
 	  (TARGET_VFP_DOUBLE || !is_double));
 }
 
+/* Return true if an argument whose type is TYPE, or mode is MODE, is
+   suitable for passing or returning in VFP registers for the PCS
+   variant selected.  If it is, then *BASE_MODE is updated to contain
+   a machine mode describing each element of the argument's type and
+   *COUNT to hold the number of such elements.  */
 static bool
 aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
 				       enum machine_mode mode, const_tree type,
@@ -4271,9 +4276,20 @@ aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
 {
   enum machine_mode new_mode = VOIDmode;
 
-  if (GET_MODE_CLASS (mode) == MODE_FLOAT
-      || GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-      || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+  /* If we have the type information, prefer that to working things
+     out from the mode.  */
+  if (type)
+    {
+      int ag_count = aapcs_vfp_sub_candidate (type, &new_mode);
+
+      if (ag_count > 0 && ag_count <= 4)
+	*count = ag_count;
+      else
+	return false;
+    }
+  else if (GET_MODE_CLASS (mode) == MODE_FLOAT
+	   || GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+	   || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
     {
       *count = 1;
       new_mode = mode;
@@ -4282,15 +4298,6 @@ aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
     {
       *count = 2;
       new_mode = (mode == DCmode ? DFmode : SFmode);
-    }
-  else if (type && (mode == BLKmode || TREE_CODE (type) == VECTOR_TYPE))
-    {
-      int ag_count = aapcs_vfp_sub_candidate (type, &new_mode);
-
-      if (ag_count > 0 && ag_count <= 4)
-	*count = ag_count;
-      else
-	return false;
     }
   else
     return false;

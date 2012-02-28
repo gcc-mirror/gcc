@@ -1,3 +1,32 @@
+2012-02-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* gcc.target/arm/vfp1.c (dg_do run): Run on all eabi variants.
+	* gcc.target/arm/vfp2.c: Likewise.
+	* gcc.target/arm/vfp3.c: Likewise.
+	* gcc.target/arm/vfp4.c: Likewise.
+	* gcc.target/arm/vfp5.c: Likewise.
+	* gcc.target/arm/vfp6.c: Likewise.
+	* gcc.target/arm/vfp7.c: Likewise.
+	* gcc.target/arm/vfp8.c: Likewise.
+	* gcc.target/arm/vfp9.c: Likewise.
+	* gcc.target/arm/vfp10.c: Likewise.
+	* gcc.target/arm/vfp11.c: Likewise.
+	* gcc.target/arm/vfp12.c: Likewise.
+	* gcc.target/arm/vfp13.c: Likewise.
+	* gcc.target/arm/vfp14.c: Likewise.
+	* gcc.target/arm/vfp15.c: Likewise.
+	* gcc.target/arm/vfp16.c: Likewise.
+	* gcc.target/arm/vfp17.c: Likewise.
+	* gcc.target/arm/neon-constants.h: New file.
+	* gcc.target/arm/neon-vect1.c: New test.
+	* gcc.target/arm/neon-vect2.c: New test.
+	* gcc.target/arm/neon-vect3.c: New test.
+	* gcc.target/arm/neon-vect4.c: New test.
+	* gcc.target/arm/neon-vect5.c: New test.
+	* gcc.target/arm/neon-vect6.c: New test.
+	* gcc.target/arm/neon-vect7.c: New test.
+	* gcc.target/arm/neon-vect8.c: New test.
+
 2012-02-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/52402
