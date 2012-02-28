@@ -348,7 +348,7 @@ void	runtime_panic(Eface);
 #define runtime_strcmp(s1, s2) __builtin_strcmp((s1), (s2))
 #define runtime_mcmp(a, b, s) __builtin_memcmp((a), (b), (s))
 #define runtime_memmove(a, b, s) __builtin_memmove((a), (b), (s))
-#define runtime_exit(s) _exit(s)
+#define runtime_exit(s) exit(s)
 MCache*	runtime_allocmcache(void);
 void	free(void *v);
 struct __go_func_type;
