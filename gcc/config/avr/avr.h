@@ -60,9 +60,6 @@ struct base_arch_s
      SFR-address = RAM-address - sfr_offset  */
   int sfr_offset;
 
-  /* Number of 64k segments in the flash.  */
-  int n_segments;
-
   /* Architecture id to built-in define __AVR_ARCH__ (NULL -> no macro) */
   const char *const macro;
   
@@ -129,6 +126,9 @@ struct mcu_type_s {
   /* Start of data section.  */
   int data_section_start;
   
+  /* Number of 64k segments in the flash.  */
+  int n_flash;
+
   /* Name of device library.  */
   const char *const library_name; 
 };

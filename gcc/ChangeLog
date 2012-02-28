@@ -1,3 +1,30 @@
+2012-02-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49868
+	PR target/52261
+	* doc/extend.texi (AVR Named Address Spaces): No more try to fix
+	address spaces located outside of device flash.
+
+	* config/avr/avr.h (base_arch_s): Remove field n_segments.
+	(mcu_type_s): Add field n_flash.
+	* config/avr/avr-devices.c (avr_arch_types): Remove .n_segments.
+	Set .have_elpm and .have_elpmx to 1 for avrxmega4 and avrxmega5.
+	(AVR_MCU): Add N_FLASH argument.
+	* config/avr/avr-mcus.def (AVR_MCU): Add initializer for .n_flash.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Only define built-in
+	macro __FLASH<n> if that address space makes sense for the device.
+	* config/avr/avr.c (avr_out_lpm): Don't try to fix address spaces
+	outside of target flash.
+	(avr_asm_named_section): Ditto.
+	(avr_asm_select_section): Ditto.
+	(avr_addr_space_convert): Ditto.
+	(avr_emit_movmemhi): Ditto.
+	(avr_nonconst_pointer_addrspace, avr_pgm_check_var_decl): Error if
+	address space is outside of device flash.
+	(avr_insert_attributes): Ditto.
+	(avr_xload_libgcc_p): Use avr_current_device->n_flash instead of
+	avr_current_arch->n_segments.
+
 2012-02-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/52352

@@ -2577,7 +2577,7 @@ avr_xload_libgcc_p (enum machine_mode mode)
   int n_bytes = GET_MODE_SIZE (mode);
   
   return (n_bytes > 1
-          || avr_current_arch->n_segments > 1);
+          || avr_current_device->n_flash > 1);
 }
 
 
@@ -2773,10 +2773,7 @@ avr_out_lpm (rtx insn, rtx *op, int *plen)
 
   regno_dest = REGNO (dest);
 
-  /* Cut down segment number to a number the device actually supports.
-     We do this late to preserve the address space's name for diagnostics.  */
-
-  segment = avr_addrspace[as].segment % avr_current_arch->n_segments;
+  segment = avr_addrspace[as].segment;
 
   /* Set RAMPZ as needed.  */
 
@@ -7101,6 +7098,7 @@ avr_nonconst_pointer_addrspace (tree typ)
 
   if (POINTER_TYPE_P (typ))
     {
+      addr_space_t as;
       tree target = TREE_TYPE (typ);
 
       /* Pointer to function: Test the function's return type.  */
@@ -7113,12 +7111,16 @@ avr_nonconst_pointer_addrspace (tree typ)
       while (TREE_CODE (target) == ARRAY_TYPE)
         target = TREE_TYPE (target);
 
-      if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (target))
-          && !TYPE_READONLY (target))
-        {
-          /* Pointers to non-generic address space must be const.  */
+      /* Pointers to non-generic address space must be const.
+         Refuse address spaces outside the device's flash.  */
           
-          return TYPE_ADDR_SPACE (target);
+      as = TYPE_ADDR_SPACE (target);
+        
+      if (!ADDR_SPACE_GENERIC_P (as)
+          && (!TYPE_READONLY (target)
+              || avr_addrspace[as].segment >= avr_current_device->n_flash))
+        {
+          return as;
         }
 
       /* Scan pointer's target type.  */
@@ -7180,12 +7182,29 @@ avr_pgm_check_var_decl (tree node)
 
   if (reason)
     {
-      if (TYPE_P (node))
-        error ("pointer targeting address space %qs must be const in %qT",
-               avr_addrspace[as].name, node);
+      avr_edump ("%?: %s, %d, %d\n",
+                 avr_addrspace[as].name,
+                 avr_addrspace[as].segment, avr_current_device->n_flash);
+      if (avr_addrspace[as].segment >= avr_current_device->n_flash)
+        {
+          if (TYPE_P (node))
+            error ("%qT uses address space %qs beyond flash of %qs",
+                   node, avr_addrspace[as].name, avr_current_device->name);
+          else
+            error ("%s %q+D uses address space %qs beyond flash of %qs",
+                   reason, node, avr_addrspace[as].name,
+                   avr_current_device->name);
+        }
       else
-        error ("pointer targeting address space %qs must be const in %s %q+D",
-               avr_addrspace[as].name, reason, node);
+        {
+          if (TYPE_P (node))
+            error ("pointer targeting address space %qs must be const in %qT",
+                   avr_addrspace[as].name, node);
+          else
+            error ("pointer targeting address space %qs must be const"
+                   " in %s %q+D",
+                   avr_addrspace[as].name, reason, node);
+        }
     }
 
   return reason == NULL;
@@ -7203,6 +7222,7 @@ avr_insert_attributes (tree node, tree *attributes)
       && (TREE_STATIC (node) || DECL_EXTERNAL (node))
       && avr_progmem_p (node, *attributes))
     {
+      addr_space_t as;
       tree node0 = node;
 
       /* For C++, we have to peel arrays in order to get correct
@@ -7214,11 +7234,19 @@ avr_insert_attributes (tree node, tree *attributes)
 
       if (error_mark_node == node0)
         return;
+
+      as = TYPE_ADDR_SPACE (TREE_TYPE (node));
+
+      if (avr_addrspace[as].segment >= avr_current_device->n_flash)
+        {
+          error ("variable %q+D located in address space %qs"
+                 " beyond flash of %qs",
+                 node, avr_addrspace[as].name, avr_current_device->name);
+        }
       
       if (!TYPE_READONLY (node0)
           && !TREE_READONLY (node))
         {
-          addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (node));
           const char *reason = "__attribute__((progmem))";
 
           if (!ADDR_SPACE_GENERIC_P (as))
@@ -7403,7 +7431,7 @@ avr_asm_named_section (const char *name, unsigned int flags, tree decl)
   if (flags & AVR_SECTION_PROGMEM)
     {
       addr_space_t as = (flags & AVR_SECTION_PROGMEM) / SECTION_MACH_DEP;
-      int segment = avr_addrspace[as].segment % avr_current_arch->n_segments;
+      int segment = avr_addrspace[as].segment;
       const char *old_prefix = ".rodata";
       const char *new_prefix = progmem_section_prefix[segment];
       
@@ -7518,7 +7546,7 @@ avr_asm_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
       && avr_progmem_p (decl, DECL_ATTRIBUTES (decl)))
     {
       addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (decl));
-      int segment = avr_addrspace[as].segment % avr_current_arch->n_segments;
+      int segment = avr_addrspace[as].segment;
       
       if (sect->common.flags & SECTION_NAMED)
         {
@@ -9852,7 +9880,7 @@ avr_addr_space_convert (rtx src, tree type_from, tree type_to)
              
       msb = ADDR_SPACE_GENERIC_P (as_from)
         ? 0x80
-        : avr_addrspace[as_from].segment % avr_current_arch->n_segments;
+        : avr_addrspace[as_from].segment;
 
       src = force_reg (Pmode, src);
       
@@ -9936,10 +9964,10 @@ avr_emit_movmemhi (rtx *xop)
     }
   else
     {
-      int segment = avr_addrspace[as].segment % avr_current_arch->n_segments;
+      int segment = avr_addrspace[as].segment;
       
       if (segment
-          && avr_current_arch->n_segments > 1)
+          && avr_current_device->n_flash > 1)
         {
           a_hi8 = GEN_INT (segment);
           emit_move_insn (rampz_rtx, a_hi8 = copy_to_mode_reg (QImode, a_hi8));
