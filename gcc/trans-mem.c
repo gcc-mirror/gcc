@@ -1858,18 +1858,25 @@ tm_region_init (struct tm_region *region)
   VEC(basic_block, heap) *queue = NULL;
   bitmap visited_blocks = BITMAP_ALLOC (NULL);
   struct tm_region *old_region;
+  struct tm_region **region_worklist;
 
   all_tm_regions = region;
   bb = single_succ (ENTRY_BLOCK_PTR);
 
+  /* We could store this information in bb->aux, but we may get called
+     through get_all_tm_blocks() from another pass that may be already
+     using bb->aux.  */
+  region_worklist =
+    (struct tm_region **) xcalloc (sizeof (struct tm_region *),
+				  n_basic_blocks + NUM_FIXED_BLOCKS + 2);
+
   VEC_safe_push (basic_block, heap, queue, bb);
-  gcc_assert (!bb->aux);	/* FIXME: Remove me.  */
-  bb->aux = region;
+  region_worklist[bb->index] = region;
   do
     {
       bb = VEC_pop (basic_block, queue);
-      region = (struct tm_region *)bb->aux;
-      bb->aux = NULL;
+      region = region_worklist[bb->index];
+      region_worklist[bb->index] = NULL;
 
       /* Record exit and irrevocable blocks.  */
       region = tm_region_init_1 (region, bb);
@@ -1886,20 +1893,20 @@ tm_region_init (struct tm_region *region)
 	  {
 	    bitmap_set_bit (visited_blocks, e->dest->index);
 	    VEC_safe_push (basic_block, heap, queue, e->dest);
-	    gcc_assert (!e->dest->aux); /* FIXME: Remove me.  */
 
 	    /* If the current block started a new region, make sure that only
 	       the entry block of the new region is associated with this region.
 	       Other successors are still part of the old region.  */
 	    if (old_region != region && e->dest != region->entry_block)
-	      e->dest->aux = old_region;
+	      region_worklist[e->dest->index] = old_region;
 	    else
-	      e->dest->aux = region;
+	      region_worklist[e->dest->index] = region;
 	  }
     }
   while (!VEC_empty (basic_block, queue));
   VEC_free (basic_block, heap, queue);
   BITMAP_FREE (visited_blocks);
+  free (region_worklist);
 }
 
 /* The "gate" function for all transactional memory expansion and optimization
@@ -2422,6 +2429,42 @@ get_tm_region_blocks (basic_block entry_block,
 
   BITMAP_FREE (visited_blocks);
   return bbs;
+}
+
+/* Set the IN_TRANSACTION for all gimple statements that appear in a
+   transaction.  */
+
+void
+compute_transaction_bits (void)
+{
+  struct tm_region *region;
+  VEC (basic_block, heap) *queue;
+  unsigned int i;
+  gimple_stmt_iterator gsi;
+  basic_block bb;
+
+  /* ?? Perhaps we need to abstract gate_tm_init further, because we
+     certainly don't need it to calculate CDI_DOMINATOR info.  */
+  gate_tm_init ();
+
+  for (region = all_tm_regions; region; region = region->next)
+    {
+      queue = get_tm_region_blocks (region->entry_block,
+				    region->exit_blocks,
+				    region->irr_blocks,
+				    NULL,
+				    /*stop_at_irr_p=*/true);
+      for (i = 0; VEC_iterate (basic_block, queue, i, bb); ++i)
+	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  {
+	    gimple stmt = gsi_stmt (gsi);
+	    gimple_set_in_transaction (stmt, true);
+	  }
+      VEC_free (basic_block, heap, queue);
+    }
+
+  if (all_tm_regions)
+    bitmap_obstack_release (&tm_obstack);
 }
 
 /* Entry point to the MARK phase of TM expansion.  Here we replace

@@ -1,3 +1,17 @@
+2012-02-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/51752
+	* gimple.h (gimple_in_transaction): New.
+	(gimple_set_in_transaction): New.
+	(struct gimple_statement_base): Add in_transaction field.
+	* tree-ssa-loop-im.c: (movement_possibility): Restrict movement of
+	transaction loads.
+	(tree_ssa_lim_initialize): Compute transaction bits.
+	* tree.h (compute_transaction_bits): Protoize.
+	* trans-mem.c (tm_region_init): Use the heap to store BB
+	auxilliary data.
+	(compute_transaction_bits): New.
+
 2012-02-28  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* gcc.c (display_help): Document --help=common and sort entries
