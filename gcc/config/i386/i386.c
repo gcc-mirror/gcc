@@ -33562,9 +33562,9 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 	  tmp = gen_reg_rtx (GET_MODE_INNER (mode));
 	  ix86_expand_vector_extract (true, tmp, target, 1 - elt);
 	  if (elt == 0)
-	    tmp = gen_rtx_VEC_CONCAT (mode, tmp, val);
-	  else
 	    tmp = gen_rtx_VEC_CONCAT (mode, val, tmp);
+	  else
+	    tmp = gen_rtx_VEC_CONCAT (mode, tmp, val);
 	  emit_insn (gen_rtx_SET (VOIDmode, target, tmp));
 	  return;
 	}
@@ -33578,9 +33578,9 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       tmp = gen_reg_rtx (GET_MODE_INNER (mode));
       ix86_expand_vector_extract (false, tmp, target, 1 - elt);
       if (elt == 0)
-	tmp = gen_rtx_VEC_CONCAT (mode, tmp, val);
-      else
 	tmp = gen_rtx_VEC_CONCAT (mode, val, tmp);
+      else
+	tmp = gen_rtx_VEC_CONCAT (mode, tmp, val);
       emit_insn (gen_rtx_SET (VOIDmode, target, tmp));
       return;
 
