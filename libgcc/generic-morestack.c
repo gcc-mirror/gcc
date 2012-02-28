@@ -1104,7 +1104,9 @@ __splitstack_resetcontext (void *context[10], size_t *size)
 void
 __splitstack_releasecontext (void *context[10])
 {
-  __morestack_release_segments (context[MORESTACK_SEGMENTS], 1);
+  __morestack_release_segments (((struct stack_segment **)
+				 &context[MORESTACK_SEGMENTS]),
+				1);
 }
 
 /* Like __splitstack_block_signals, but operating on CONTEXT, rather
