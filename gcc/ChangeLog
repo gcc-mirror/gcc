@@ -1,3 +1,16 @@
+2012-02-28  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	PR target/51534
+	* config/arm/arm.c (neon_builtin_data): Add entries for vcgeu
+	and vcgtu.
+	* config/arm/arm_neon.h: Regenerate.
+	* config/arm/neon.md (unspec): Add UNSPEC_VCGEU, and UNSPEC_VCGTU.
+	(neon_vcgeu): New insn.
+	(neon_vcgtu): Likewise.
+	* config/arm/neon.ml (s_8_32, u_8_32): New lists.
+	(ops): Unsigned comparison intrinsics call a different
+	builtin.
+
 2012-02-28  Richard Guenther  <rguenther@suse.de>
 
 	PR target/52407

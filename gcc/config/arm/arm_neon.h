@@ -1893,19 +1893,19 @@ vcge_f32 (float32x2_t __a, float32x2_t __b)
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
 vcge_u8 (uint8x8_t __a, uint8x8_t __b)
 {
-  return (uint8x8_t)__builtin_neon_vcgev8qi ((int8x8_t) __a, (int8x8_t) __b, 0);
+  return (uint8x8_t)__builtin_neon_vcgeuv8qi ((int8x8_t) __a, (int8x8_t) __b, 0);
 }
 
 __extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
 vcge_u16 (uint16x4_t __a, uint16x4_t __b)
 {
-  return (uint16x4_t)__builtin_neon_vcgev4hi ((int16x4_t) __a, (int16x4_t) __b, 0);
+  return (uint16x4_t)__builtin_neon_vcgeuv4hi ((int16x4_t) __a, (int16x4_t) __b, 0);
 }
 
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vcge_u32 (uint32x2_t __a, uint32x2_t __b)
 {
-  return (uint32x2_t)__builtin_neon_vcgev2si ((int32x2_t) __a, (int32x2_t) __b, 0);
+  return (uint32x2_t)__builtin_neon_vcgeuv2si ((int32x2_t) __a, (int32x2_t) __b, 0);
 }
 
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
@@ -1935,19 +1935,19 @@ vcgeq_f32 (float32x4_t __a, float32x4_t __b)
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vcgeq_u8 (uint8x16_t __a, uint8x16_t __b)
 {
-  return (uint8x16_t)__builtin_neon_vcgev16qi ((int8x16_t) __a, (int8x16_t) __b, 0);
+  return (uint8x16_t)__builtin_neon_vcgeuv16qi ((int8x16_t) __a, (int8x16_t) __b, 0);
 }
 
 __extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
 vcgeq_u16 (uint16x8_t __a, uint16x8_t __b)
 {
-  return (uint16x8_t)__builtin_neon_vcgev8hi ((int16x8_t) __a, (int16x8_t) __b, 0);
+  return (uint16x8_t)__builtin_neon_vcgeuv8hi ((int16x8_t) __a, (int16x8_t) __b, 0);
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vcgeq_u32 (uint32x4_t __a, uint32x4_t __b)
 {
-  return (uint32x4_t)__builtin_neon_vcgev4si ((int32x4_t) __a, (int32x4_t) __b, 0);
+  return (uint32x4_t)__builtin_neon_vcgeuv4si ((int32x4_t) __a, (int32x4_t) __b, 0);
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
@@ -1977,19 +1977,19 @@ vcle_f32 (float32x2_t __a, float32x2_t __b)
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
 vcle_u8 (uint8x8_t __a, uint8x8_t __b)
 {
-  return (uint8x8_t)__builtin_neon_vcgev8qi ((int8x8_t) __b, (int8x8_t) __a, 0);
+  return (uint8x8_t)__builtin_neon_vcgeuv8qi ((int8x8_t) __b, (int8x8_t) __a, 0);
 }
 
 __extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
 vcle_u16 (uint16x4_t __a, uint16x4_t __b)
 {
-  return (uint16x4_t)__builtin_neon_vcgev4hi ((int16x4_t) __b, (int16x4_t) __a, 0);
+  return (uint16x4_t)__builtin_neon_vcgeuv4hi ((int16x4_t) __b, (int16x4_t) __a, 0);
 }
 
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vcle_u32 (uint32x2_t __a, uint32x2_t __b)
 {
-  return (uint32x2_t)__builtin_neon_vcgev2si ((int32x2_t) __b, (int32x2_t) __a, 0);
+  return (uint32x2_t)__builtin_neon_vcgeuv2si ((int32x2_t) __b, (int32x2_t) __a, 0);
 }
 
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
@@ -2019,19 +2019,19 @@ vcleq_f32 (float32x4_t __a, float32x4_t __b)
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vcleq_u8 (uint8x16_t __a, uint8x16_t __b)
 {
-  return (uint8x16_t)__builtin_neon_vcgev16qi ((int8x16_t) __b, (int8x16_t) __a, 0);
+  return (uint8x16_t)__builtin_neon_vcgeuv16qi ((int8x16_t) __b, (int8x16_t) __a, 0);
 }
 
 __extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
 vcleq_u16 (uint16x8_t __a, uint16x8_t __b)
 {
-  return (uint16x8_t)__builtin_neon_vcgev8hi ((int16x8_t) __b, (int16x8_t) __a, 0);
+  return (uint16x8_t)__builtin_neon_vcgeuv8hi ((int16x8_t) __b, (int16x8_t) __a, 0);
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vcleq_u32 (uint32x4_t __a, uint32x4_t __b)
 {
-  return (uint32x4_t)__builtin_neon_vcgev4si ((int32x4_t) __b, (int32x4_t) __a, 0);
+  return (uint32x4_t)__builtin_neon_vcgeuv4si ((int32x4_t) __b, (int32x4_t) __a, 0);
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
@@ -2061,19 +2061,19 @@ vcgt_f32 (float32x2_t __a, float32x2_t __b)
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
 vcgt_u8 (uint8x8_t __a, uint8x8_t __b)
 {
-  return (uint8x8_t)__builtin_neon_vcgtv8qi ((int8x8_t) __a, (int8x8_t) __b, 0);
+  return (uint8x8_t)__builtin_neon_vcgtuv8qi ((int8x8_t) __a, (int8x8_t) __b, 0);
 }
 
 __extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
 vcgt_u16 (uint16x4_t __a, uint16x4_t __b)
 {
-  return (uint16x4_t)__builtin_neon_vcgtv4hi ((int16x4_t) __a, (int16x4_t) __b, 0);
+  return (uint16x4_t)__builtin_neon_vcgtuv4hi ((int16x4_t) __a, (int16x4_t) __b, 0);
 }
 
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vcgt_u32 (uint32x2_t __a, uint32x2_t __b)
 {
-  return (uint32x2_t)__builtin_neon_vcgtv2si ((int32x2_t) __a, (int32x2_t) __b, 0);
+  return (uint32x2_t)__builtin_neon_vcgtuv2si ((int32x2_t) __a, (int32x2_t) __b, 0);
 }
 
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
@@ -2103,19 +2103,19 @@ vcgtq_f32 (float32x4_t __a, float32x4_t __b)
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vcgtq_u8 (uint8x16_t __a, uint8x16_t __b)
 {
-  return (uint8x16_t)__builtin_neon_vcgtv16qi ((int8x16_t) __a, (int8x16_t) __b, 0);
+  return (uint8x16_t)__builtin_neon_vcgtuv16qi ((int8x16_t) __a, (int8x16_t) __b, 0);
 }
 
 __extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
 vcgtq_u16 (uint16x8_t __a, uint16x8_t __b)
 {
-  return (uint16x8_t)__builtin_neon_vcgtv8hi ((int16x8_t) __a, (int16x8_t) __b, 0);
+  return (uint16x8_t)__builtin_neon_vcgtuv8hi ((int16x8_t) __a, (int16x8_t) __b, 0);
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vcgtq_u32 (uint32x4_t __a, uint32x4_t __b)
 {
-  return (uint32x4_t)__builtin_neon_vcgtv4si ((int32x4_t) __a, (int32x4_t) __b, 0);
+  return (uint32x4_t)__builtin_neon_vcgtuv4si ((int32x4_t) __a, (int32x4_t) __b, 0);
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
@@ -2145,19 +2145,19 @@ vclt_f32 (float32x2_t __a, float32x2_t __b)
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
 vclt_u8 (uint8x8_t __a, uint8x8_t __b)
 {
-  return (uint8x8_t)__builtin_neon_vcgtv8qi ((int8x8_t) __b, (int8x8_t) __a, 0);
+  return (uint8x8_t)__builtin_neon_vcgtuv8qi ((int8x8_t) __b, (int8x8_t) __a, 0);
 }
 
 __extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
 vclt_u16 (uint16x4_t __a, uint16x4_t __b)
 {
-  return (uint16x4_t)__builtin_neon_vcgtv4hi ((int16x4_t) __b, (int16x4_t) __a, 0);
+  return (uint16x4_t)__builtin_neon_vcgtuv4hi ((int16x4_t) __b, (int16x4_t) __a, 0);
 }
 
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vclt_u32 (uint32x2_t __a, uint32x2_t __b)
 {
-  return (uint32x2_t)__builtin_neon_vcgtv2si ((int32x2_t) __b, (int32x2_t) __a, 0);
+  return (uint32x2_t)__builtin_neon_vcgtuv2si ((int32x2_t) __b, (int32x2_t) __a, 0);
 }
 
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
@@ -2187,19 +2187,19 @@ vcltq_f32 (float32x4_t __a, float32x4_t __b)
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vcltq_u8 (uint8x16_t __a, uint8x16_t __b)
 {
-  return (uint8x16_t)__builtin_neon_vcgtv16qi ((int8x16_t) __b, (int8x16_t) __a, 0);
+  return (uint8x16_t)__builtin_neon_vcgtuv16qi ((int8x16_t) __b, (int8x16_t) __a, 0);
 }
 
 __extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
 vcltq_u16 (uint16x8_t __a, uint16x8_t __b)
 {
-  return (uint16x8_t)__builtin_neon_vcgtv8hi ((int16x8_t) __b, (int16x8_t) __a, 0);
+  return (uint16x8_t)__builtin_neon_vcgtuv8hi ((int16x8_t) __b, (int16x8_t) __a, 0);
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vcltq_u32 (uint32x4_t __a, uint32x4_t __b)
 {
-  return (uint32x4_t)__builtin_neon_vcgtv4si ((int32x4_t) __b, (int32x4_t) __a, 0);
+  return (uint32x4_t)__builtin_neon_vcgtuv4si ((int32x4_t) __b, (int32x4_t) __a, 0);
 }
 
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
