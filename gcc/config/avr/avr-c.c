@@ -71,9 +71,19 @@ avr_toupper (char *up, const char *lo)
              
 /* Worker function for TARGET_CPU_CPP_BUILTINS.  */
 
+static const char *const avr_builtin_name[] =
+  {
+#define DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, CODE) NAME,
+#include "builtins.def"
+#undef DEF_BUILTIN
+    NULL
+  };
+
 void
 avr_cpu_cpp_builtins (struct cpp_reader *pfile)
 {
+  int i;
+  
   builtin_define_std ("AVR");
 
   if (avr_current_arch->macro)
@@ -140,8 +150,6 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   
   if (!strcmp (lang_hooks.name, "GNU C"))
     {
-      int i;
-      
       for (i = 0; avr_addrspace[i].name; i++)
         if (!ADDR_SPACE_GENERIC_P (i)
             /* Only supply __FLASH<n> macro if the address space is reasonable
@@ -161,20 +169,11 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
      easily query if or if not a specific builtin
      is available. */
 
-  cpp_define (pfile, "__BUILTIN_AVR_NOP");
-  cpp_define (pfile, "__BUILTIN_AVR_SEI");
-  cpp_define (pfile, "__BUILTIN_AVR_CLI");
-  cpp_define (pfile, "__BUILTIN_AVR_WDR");
-  cpp_define (pfile, "__BUILTIN_AVR_SLEEP");
-  cpp_define (pfile, "__BUILTIN_AVR_SWAP");
-  cpp_define (pfile, "__BUILTIN_AVR_INSERT_BITS");
-  cpp_define (pfile, "__BUILTIN_AVR_DELAY_CYCLES");
+  for (i = 0; avr_builtin_name[i]; i++)
+    {
+      const char *name = avr_builtin_name[i];
+      char *Name = (char*) alloca (1 + strlen (name));
 
-  cpp_define (pfile, "__BUILTIN_AVR_FMUL");
-  cpp_define (pfile, "__BUILTIN_AVR_FMULS");
-  cpp_define (pfile, "__BUILTIN_AVR_FMULSU");
-
-  cpp_define (pfile, "__INT24_MAX__=8388607L");
-  cpp_define (pfile, "__INT24_MIN__=(-__INT24_MAX__-1)");
-  cpp_define (pfile, "__UINT24_MAX__=16777215UL");
+      cpp_define (pfile, avr_toupper (Name, name));
+    }
 }

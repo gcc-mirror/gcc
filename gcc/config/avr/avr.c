@@ -10528,17 +10528,12 @@ avr_out_insert_bits (rtx *op, int *plen)
 
 enum avr_builtin_id
   {
-    AVR_BUILTIN_NOP,
-    AVR_BUILTIN_SEI,
-    AVR_BUILTIN_CLI,
-    AVR_BUILTIN_WDR,
-    AVR_BUILTIN_SLEEP,
-    AVR_BUILTIN_SWAP,
-    AVR_BUILTIN_INSERT_BITS,
-    AVR_BUILTIN_FMUL,
-    AVR_BUILTIN_FMULS,
-    AVR_BUILTIN_FMULSU,
-    AVR_BUILTIN_DELAY_CYCLES
+    
+#define DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, CODE) ID,
+#include "builtins.def"  
+#undef DEF_BUILTIN
+
+    AVR_BUILTIN_COUNT
   };
 
 static void
@@ -10550,14 +10545,6 @@ avr_init_builtin_int24 (void)
   (*lang_hooks.types.register_builtin_type) (int24_type, "__int24");
   (*lang_hooks.types.register_builtin_type) (uint24_type, "__uint24");
 }
-
-#define DEF_BUILTIN(NAME, TYPE, CODE)                                   \
-  do                                                                    \
-    {                                                                   \
-      add_builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD,        \
-                            NULL, NULL_TREE);                           \
-    } while (0)
-
 
 /* Implement `TARGET_INIT_BUILTINS' */
 /* Set up all builtin functions for this target.  */
@@ -10598,57 +10585,35 @@ avr_init_builtins (void)
                                 unsigned_char_type_node,
                                 NULL_TREE);
 
-  DEF_BUILTIN ("__builtin_avr_nop", void_ftype_void, AVR_BUILTIN_NOP);
-  DEF_BUILTIN ("__builtin_avr_sei", void_ftype_void, AVR_BUILTIN_SEI);
-  DEF_BUILTIN ("__builtin_avr_cli", void_ftype_void, AVR_BUILTIN_CLI);
-  DEF_BUILTIN ("__builtin_avr_wdr", void_ftype_void, AVR_BUILTIN_WDR);
-  DEF_BUILTIN ("__builtin_avr_sleep", void_ftype_void, AVR_BUILTIN_SLEEP);
-  DEF_BUILTIN ("__builtin_avr_swap", uchar_ftype_uchar, AVR_BUILTIN_SWAP);
-  DEF_BUILTIN ("__builtin_avr_delay_cycles", void_ftype_ulong, 
-               AVR_BUILTIN_DELAY_CYCLES);
-
-  DEF_BUILTIN ("__builtin_avr_fmul", uint_ftype_uchar_uchar, 
-               AVR_BUILTIN_FMUL);
-  DEF_BUILTIN ("__builtin_avr_fmuls", int_ftype_char_char, 
-               AVR_BUILTIN_FMULS);
-  DEF_BUILTIN ("__builtin_avr_fmulsu", int_ftype_char_uchar, 
-               AVR_BUILTIN_FMULSU);
-
-  DEF_BUILTIN ("__builtin_avr_insert_bits", uchar_ftype_ulong_uchar_uchar,
-               AVR_BUILTIN_INSERT_BITS);
-
+#define DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, CODE)                       \
+  add_builtin_function (NAME, TYPE, ID, BUILT_IN_MD, NULL, NULL_TREE);
+#include "builtins.def"  
+#undef DEF_BUILTIN
+  
   avr_init_builtin_int24 ();
 }
 
-#undef DEF_BUILTIN
 
 struct avr_builtin_description
 {
-  const enum insn_code icode;
-  const char *const name;
-  const enum avr_builtin_id id;
+  enum insn_code icode;
+  const char *name;
+  enum avr_builtin_id id;
+  int n_args;
 };
 
 static const struct avr_builtin_description
-bdesc_1arg[] =
+avr_bdesc[] =
   {
-    { CODE_FOR_rotlqi3_4, "__builtin_avr_swap", AVR_BUILTIN_SWAP }
+
+#define DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, ICODE)      \
+    { ICODE, NAME, ID, N_ARGS },
+#include "builtins.def"  
+#undef DEF_BUILTIN
+
+    { CODE_FOR_nothing, NULL, 0, -1 }
   };
 
-static const struct avr_builtin_description
-bdesc_2arg[] =
-  {
-    { CODE_FOR_fmul, "__builtin_avr_fmul", AVR_BUILTIN_FMUL },
-    { CODE_FOR_fmuls, "__builtin_avr_fmuls", AVR_BUILTIN_FMULS },
-    { CODE_FOR_fmulsu, "__builtin_avr_fmulsu", AVR_BUILTIN_FMULSU }
-  };
-
-static const struct avr_builtin_description
-bdesc_3arg[] =
-  {
-    { CODE_FOR_insert_bits, "__builtin_avr_insert_bits",
-      AVR_BUILTIN_INSERT_BITS }
-  };
 
 /* Subroutine of avr_expand_builtin to take care of unop insns.  */
 
@@ -10831,7 +10796,6 @@ avr_expand_builtin (tree exp, rtx target,
                     int ignore ATTRIBUTE_UNUSED)
 {
   size_t i;
-  const struct avr_builtin_description *d;
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   const char* bname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
   unsigned int id = DECL_FUNCTION_CODE (fndecl);
@@ -10844,31 +10808,16 @@ avr_expand_builtin (tree exp, rtx target,
       emit_insn (gen_nopv (GEN_INT(1)));
       return 0;
       
-    case AVR_BUILTIN_SEI:
-      emit_insn (gen_enable_interrupt ());
-      return 0;
-      
-    case AVR_BUILTIN_CLI:
-      emit_insn (gen_disable_interrupt ());
-      return 0;
-      
-    case AVR_BUILTIN_WDR:
-      emit_insn (gen_wdr ());
-      return 0;
-      
-    case AVR_BUILTIN_SLEEP:
-      emit_insn (gen_sleep ());
-      return 0;
-      
     case AVR_BUILTIN_DELAY_CYCLES:
       {
         arg0 = CALL_EXPR_ARG (exp, 0);
         op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
-        if (! CONST_INT_P (op0))
+        if (!CONST_INT_P (op0))
           error ("%s expects a compile time integer constant", bname);
+        else
+          avr_expand_delay_cycles (op0);
 
-        avr_expand_delay_cycles (op0);
         return 0;
       }
 
@@ -10886,18 +10835,31 @@ avr_expand_builtin (tree exp, rtx target,
       }
     }
 
-  for (i = 0, d = bdesc_1arg; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
-    if (d->id == id)
-      return avr_expand_unop_builtin (d->icode, exp, target);
-
-  for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
-    if (d->id == id)
-      return avr_expand_binop_builtin (d->icode, exp, target);
-
-  for (i = 0, d = bdesc_3arg; i < ARRAY_SIZE (bdesc_3arg); i++, d++)
-    if (d->id == id)
-      return avr_expand_triop_builtin (d->icode, exp, target);
-
+  for (i = 0; avr_bdesc[i].name; i++)
+    {
+      const struct avr_builtin_description *d = &avr_bdesc[i];
+      
+      if (d->id == id)
+        switch (d->n_args)
+          {
+          case 0:
+            emit_insn ((GEN_FCN (d->icode)) (target));
+            return 0;
+            
+          case 1:
+            return avr_expand_unop_builtin (d->icode, exp, target);
+            
+          case 2:
+            return avr_expand_binop_builtin (d->icode, exp, target);
+            
+          case 3:
+            return avr_expand_triop_builtin (d->icode, exp, target);
+            
+          default:
+            gcc_unreachable();
+        }
+    }
+  
   gcc_unreachable ();
 }
 
@@ -10919,17 +10881,32 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
     default:
       break;
 
+    case AVR_BUILTIN_SWAP:
+      {
+        return fold_build2 (LROTATE_EXPR, val_type, arg[0],
+                            build_int_cst (val_type, 4));
+      }
+  
     case AVR_BUILTIN_INSERT_BITS:
       {
         tree tbits = arg[1];
         tree tval = arg[2];
         tree tmap;
         tree map_type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
-        double_int map = tree_to_double_int (arg[0]);
+        double_int map;
         bool changed = false;
         unsigned i;
         avr_map_op_t best_g;
+
+        if (TREE_CODE (arg[0]) != INTEGER_CST)
+          {
+            /* No constant as first argument: Don't fold this and run into
+               error in avr_expand_builtin.  */
+            
+            break;
+          }
         
+        map = tree_to_double_int (arg[0]);
         tmap = double_int_to_tree (map_type, map);
 
         if (TREE_CODE (tval) != INTEGER_CST
