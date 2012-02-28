@@ -7289,8 +7289,12 @@ dead code elimination in loops.
 @item -floop-flatten
 @opindex floop-flatten
 Removes the loop nesting structure: transforms the loop nest into a
-single loop.  This transformation can be useful to vectorize all the
-levels of the loop nest.
+single loop.  This transformation can be useful as an enablement
+transform for vectorization and parallelization.  This feature
+is experimental.
+To use this code transformation, GCC has to be configured
+with @option{--with-ppl} and @option{--with-cloog} to enable the
+Graphite loop transformation infrastructure.
 
 @item -floop-parallelize-all
 @opindex floop-parallelize-all

@@ -1,3 +1,8 @@
+2012-02-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR tree-optimization/53207
+	* doc/invoke.texi: Document as experimental and relying on graphite.
+
 2012-02-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-devices.c (avr_mcu_type): Adjust NULL part
