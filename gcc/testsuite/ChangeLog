@@ -1,3 +1,8 @@
+2012-02-28  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/52400
+	* g++.dg/lto/pr52400_0.C: New testcase.
+
 2012-02-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.target/avr/torture/builtins-1.c: New test.
