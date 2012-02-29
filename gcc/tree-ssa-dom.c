@@ -1779,6 +1779,9 @@ dom_opt_leave_block (struct dom_walk_data *walk_data, basic_block bb)
       && (single_succ_edge (bb)->flags & EDGE_ABNORMAL) == 0
       && potentially_threadable_block (single_succ (bb)))
     {
+      /* Push a marker on the stack, which thread_across_edge expects
+	 and will remove.  */
+      VEC_safe_push (tree, heap, const_and_copies_stack, NULL_TREE);
       dom_thread_across_edge (walk_data, single_succ_edge (bb));
     }
   else if ((last = last_stmt (bb))
