@@ -1,5 +1,9 @@
 2012-02-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/52419
+	* expr.c (expand_assignment): If doing misaligned store that doesn't
+	cover all mode bits, perform a RMW cycle.
+
 	PR tree-optimization/52429
 	* tree-parloops.c (separate_decls_in_region_debug): Return early
 	if var is LABEL_DECL.

@@ -1,5 +1,8 @@
 2012-02-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/52419
+	* gcc.dg/torture/pr52419.c: New test.
+
 	PR tree-optimization/52429
 	* gcc.dg/torture/pr52429.c: New test.
 	* g++.dg/opt/pr52429.C: New test.
