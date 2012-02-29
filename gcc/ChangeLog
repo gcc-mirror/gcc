@@ -1,3 +1,9 @@
+2012-02-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/52424
+	* tree-ssa-dom.c (dom_opt_leave_block): Push a marker before
+	calling dom_thread_across_edge.
+
 2012-02-29  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c: Move definition of TARGET macros to end of file.
