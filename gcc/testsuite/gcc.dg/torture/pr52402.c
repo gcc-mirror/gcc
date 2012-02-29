@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-options "-w -Wno-psabi" } */
 
 typedef int v4si __attribute__((vector_size(16)));
 struct T { v4si i[2]; int j; } __attribute__((packed));
