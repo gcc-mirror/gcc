@@ -4892,11 +4892,14 @@ gnat_write_global_declarations (void)
      the global hash table.  We use a dummy variable for this purpose.  */
   if (!VEC_empty (tree, types_used_by_cur_var_decl))
     {
+      struct varpool_node *node;
       dummy_global
 	= build_decl (BUILTINS_LOCATION, VAR_DECL, NULL_TREE, void_type_node);
       TREE_STATIC (dummy_global) = 1;
       TREE_ASM_WRITTEN (dummy_global) = 1;
-      varpool_mark_needed_node (varpool_node (dummy_global));
+      node = varpool_node (dummy_global);
+      node->force_output = 1;
+      varpool_mark_needed_node (node);
 
       while (!VEC_empty (tree, types_used_by_cur_var_decl))
 	{

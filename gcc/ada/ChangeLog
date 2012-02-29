@@ -1,3 +1,8 @@
+2012-02-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (gnat_write_global_declarations): Make sure the
+	dummy global built for global types is preserved.
+
 2012-02-27  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) [E_String_Type,
