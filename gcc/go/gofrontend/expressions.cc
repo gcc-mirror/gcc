@@ -3942,10 +3942,6 @@ Unsafe_type_conversion_expression::do_get_tree(Translate_context* context)
     go_assert(et->map_type() != NULL);
   else if (t->channel_type() != NULL)
     go_assert(et->channel_type() != NULL);
-  else if (t->points_to() != NULL && t->points_to()->channel_type() != NULL)
-    go_assert((et->points_to() != NULL
-		&& et->points_to()->channel_type() != NULL)
-	       || et->is_nil_type());
   else if (t->points_to() != NULL)
     go_assert(et->points_to() != NULL || et->is_nil_type());
   else if (et->is_unsafe_pointer_type())
@@ -8502,6 +8498,7 @@ Builtin_call_expression::do_check_types(Gogo*)
     case BUILTIN_INVALID:
     case BUILTIN_NEW:
     case BUILTIN_MAKE:
+    case BUILTIN_DELETE:
       return;
 
     case BUILTIN_LEN:
@@ -8670,13 +8667,17 @@ Builtin_call_expression::do_check_types(Gogo*)
 	    this->report_error(_("too many arguments"));
 	    break;
 	  }
+	if (args->front()->type()->is_error()
+	    || args->back()->type()->is_error())
+	  break;
+
+	Array_type* at = args->front()->type()->array_type();
+	Type* e = at->element_type();
 
 	// The language permits appending a string to a []byte, as a
 	// special case.
 	if (args->back()->type()->is_string_type())
 	  {
-	    const Array_type* at = args->front()->type()->array_type();
-	    const Type* e = at->element_type()->forwarded();
 	    if (e->integer_type() != NULL && e->integer_type()->is_byte())
 	      break;
 	  }
@@ -8685,8 +8686,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	// assignable to a slice of the element type of the first
 	// argument.  We already know the first argument is a slice
 	// type.
-	Array_type* at = args->front()->type()->array_type();
-	Type* arg2_type = Type::make_array_type(at->element_type(), NULL);
+	Type* arg2_type = Type::make_array_type(e, NULL);
 	std::string reason;
 	if (!Type::are_assignable(arg2_type, args->back()->type(), &reason))
 	  {
@@ -8982,7 +8982,10 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 		    fnname = "__go_print_slice";
 		  }
 		else
-		  go_unreachable();
+		  {
+		    go_assert(saw_errors());
+		    return error_mark_node;
+		  }
 
 		tree call = Gogo::call_builtin(pfndecl,
 					       location,
@@ -9665,8 +9668,11 @@ Call_expression::result_count() const
 Temporary_statement*
 Call_expression::result(size_t i) const
 {
-  go_assert(this->results_ != NULL
-	    && this->results_->size() > i);
+  if (this->results_ == NULL || this->results_->size() <= i)
+    {
+      go_assert(saw_errors());
+      return NULL;
+    }
   return (*this->results_)[i];
 }
 
@@ -10153,6 +10159,11 @@ Call_expression::set_results(Translate_context* context, tree call_tree)
       go_assert(field != NULL_TREE);
 
       Temporary_statement* temp = this->result(i);
+      if (temp == NULL)
+	{
+	  go_assert(saw_errors());
+	  return error_mark_node;
+	}
       Temporary_reference_expression* ref =
 	Expression::make_temporary_reference(temp, loc);
       ref->set_is_lvalue();
@@ -10332,8 +10343,17 @@ tree
 Call_result_expression::do_get_tree(Translate_context* context)
 {
   Call_expression* ce = this->call_->call_expression();
-  go_assert(ce != NULL);
+  if (ce == NULL)
+    {
+      go_assert(this->call_->is_error_expression());
+      return error_mark_node;
+    }
   Temporary_statement* ts = ce->result(this->index_);
+  if (ts == NULL)
+    {
+      go_assert(saw_errors());
+      return error_mark_node;
+    }
   Expression* ref = Expression::make_temporary_reference(ts, this->location());
   return ref->get_tree(context);
 }

@@ -1013,7 +1013,7 @@ Tuple_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
       b->add_statement(s);
       ++ptemp;
     }
-  go_assert(ptemp == temps.end());
+  go_assert(ptemp == temps.end() || saw_errors());
 
   return Statement::make_block_statement(b, loc);
 }
@@ -3452,7 +3452,7 @@ Case_clauses::Case_clause::get_backend(Translate_context* context,
 	    {
 	      // Value was already present.
 	      error_at(this->location_, "duplicate case in switch");
-	      continue;
+	      e = Expression::make_error(this->location_);
 	    }
 
 	  tree case_tree = e->get_tree(context);
