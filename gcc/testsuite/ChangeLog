@@ -1,3 +1,9 @@
+2012-02-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52429
+	* gcc.dg/torture/pr52429.c: New test.
+	* g++.dg/opt/pr52429.C: New test.
+
 2012-02-29  Richard Guenther  <rguenther@suse.de>
 
 	PR testsuite/52297

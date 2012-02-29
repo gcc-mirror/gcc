@@ -909,7 +909,7 @@ separate_decls_in_region_debug (gimple stmt, htab_t name_copies,
     var = gimple_debug_source_bind_get_var (stmt);
   else
     return true;
-  if (TREE_CODE (var) == DEBUG_EXPR_DECL)
+  if (TREE_CODE (var) == DEBUG_EXPR_DECL || TREE_CODE (var) == LABEL_DECL)
     return true;
   gcc_assert (DECL_P (var) && SSA_VAR_P (var));
   ielt.uid = DECL_UID (var);
