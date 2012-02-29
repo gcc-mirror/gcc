@@ -160,20 +160,17 @@ func PtraceAttach(pid int) (err error) { return ptrace(PTRACE_ATTACH, pid, 0, 0)
 
 func PtraceDetach(pid int) (err error) { return ptrace(PTRACE_DETACH, pid, 0, 0) }
 
-// FIXME: mksysinfo needs to produce LINUX_REBOOT_MAGIC[12].
-
-// //sys	reboot(magic1 uint, magic2 uint, cmd int, arg string) (err error)
-// //reboot(magic1 uint, magic2 uint, cmd int, arg *byte) int
-// func Reboot(cmd int) (err error) {
-// 	return reboot(LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, cmd, "")
-// }
+//sys	reboot(magic1 uint, magic2 uint, cmd int, arg string) (err error)
+//reboot(magic1 uint, magic2 uint, cmd int, arg *byte) int
+func Reboot(cmd int) (err error) {
+	return reboot(LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, cmd, "")
+}
 
 //sys	Acct(path string) (err error)
 //acct(path *byte) int
 
-// FIXME: mksysinfo Timex
-// //sys	Adjtimex(buf *Timex) (state int, err error)
-// //adjtimex(buf *Timex) int
+//sys	Adjtimex(buf *Timex) (state int, err error)
+//adjtimex(buf *Timex) int
 
 //sys	Faccessat(dirfd int, path string, mode uint32, flags int) (err error)
 //faccessat(dirfd int, pathname *byte, mode int, flags int) int
@@ -198,10 +195,56 @@ func Gettid() (tid int) {
 	return int(r1)
 }
 
-// FIXME: mksysinfo linux_dirent
-//    Or just abandon this function.
-// //sys	Getdents(fd int, buf []byte) (n int, err error)
-// //getdents64(fd int, buf *byte, count uint)
+func Getdents(fd int, buf []byte) (n int, err error) {
+	var p *byte
+	if len(buf) > 0 {
+		p = &buf[0]
+	} else {
+		p = (*byte)(unsafe.Pointer(&_zero))
+	}
+	entersyscall()
+	r1, _, errno := Syscall(SYS_GETDENTS64, uintptr(fd), uintptr(unsafe.Pointer(p)), uintptr(len(buf)))
+	n = int(r1)
+	if n < 0 {
+		err = errno
+	}
+	exitsyscall()
+	return
+}
+
+func clen(n []byte) int {
+	for i := 0; i < len(n); i++ {
+		if n[i] == 0 {
+			return i
+		}
+	}
+	return len(n)
+}
+
+func ReadDirent(fd int, buf []byte) (n int, err error) {
+	return Getdents(fd, buf)
+}
+
+func ParseDirent(buf []byte, max int, names []string) (consumed int, count int, newnames []string) {
+	origlen := len(buf)
+	count = 0
+	for max != 0 && len(buf) > 0 {
+		dirent := (*Dirent)(unsafe.Pointer(&buf[0]))
+		buf = buf[dirent.Reclen:]
+		if dirent.Ino == 0 { // File absent in directory.
+			continue
+		}
+		bytes := (*[10000]byte)(unsafe.Pointer(&dirent.Name[0]))
+		var name = string(bytes[0:clen(bytes[:])])
+		if name == "." || name == ".." { // Useless names
+			continue
+		}
+		max--
+		count++
+		names = append(names, name)
+	}
+	return origlen - len(buf), count, names
+}
 
 //sys	InotifyAddWatch(fd int, pathname string, mask uint32) (watchdesc int, err error)
 //inotify_add_watch(fd int, pathname *byte, mask uint32) int
@@ -209,9 +252,8 @@ func Gettid() (tid int) {
 //sysnb	InotifyInit() (fd int, err error)
 //inotify_init() int
 
-// FIXME: Only in glibc 2.9 and later.
-// //sysnb	InotifyInit1(flags int) (fd int, err error)
-// //inotify_init1(flags int) int
+//sysnb	InotifyInit1(flags int) (fd int, err error)
+//inotify_init1(flags int) int
 
 //sysnb	InotifyRmWatch(fd int, watchdesc uint32) (success int, err error)
 //inotify_rm_watch(fd int, wd uint32) int
@@ -284,20 +326,22 @@ func Splice(rfd int, roff *int64, wfd int, woff *int64, len int, flags int) (n i
 //sys	Statfs(path string, buf *Statfs_t) (err error)
 //statfs(path *byte, buf *Statfs_t) int
 
-// FIXME: Only in glibc 2.6 and later.
-// //sys	SyncFileRange(fd int, off int64, n int64, flags int) (err error)
-// //sync_file_range(fd int, off Offset_t, n Offset_t, flags uint) int
+//sys	SyncFileRange(fd int, off int64, n int64, flags int) (err error)
+//sync_file_range(fd int, off Offset_t, n Offset_t, flags uint) int
 
-// FIXME: mksysinfo Sysinfo_t
-// //sysnb	Sysinfo(info *Sysinfo_t) (err error)
-// //sysinfo(info *Sysinfo_t) int
+//sysnb	Sysinfo(info *Sysinfo_t) (err error)
+//sysinfo(info *Sysinfo_t) int
 
 //sys	Tee(rfd int, wfd int, len int, flags int) (n int64, err error)
 //tee(rfd int, wfd int, len Size_t, flags uint) Ssize_t
 
-// FIXME: Only available as a syscall.
-// //sysnb	Tgkill(tgid int, tid int, sig int) (err error)
-// //tgkill(tgid int, tid int, sig int) int
+func Tgkill(tgid, tid, sig int) error {
+	r1, _, errno := Syscall(SYS_TGKILL, uintptr(tgid), uintptr(tid), uintptr(sig))
+	if r1 < 0 {
+		return errno
+	}
+	return nil
+}
 
 //sys	unlinkat(dirfd int, path string, flags int) (err error)
 //unlinkat(dirfd int, path *byte, flags int) int
@@ -312,6 +356,5 @@ func Unlinkat(dirfd int, path string) (err error) {
 //sys	Unshare(flags int) (err error)
 //unshare(flags int) int
 
-// FIXME: mksysinfo Ustat_t
-// //sys	Ustat(dev int, ubuf *Ustat_t) (err error)
-// //ustat(dev _dev_t, ubuf *Ustat_t) int
+//sys	Ustat(dev int, ubuf *Ustat_t) (err error)
+//ustat(dev _dev_t, ubuf *Ustat_t) int

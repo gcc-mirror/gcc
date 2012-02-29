@@ -33,6 +33,9 @@
 /* Define to 1 if you have the `inotify_init' function. */
 #undef HAVE_INOTIFY_INIT
 
+/* Define to 1 if you have the `inotify_init1' function. */
+#undef HAVE_INOTIFY_INIT1
+
 /* Define to 1 if you have the `inotify_rm_watch' function. */
 #undef HAVE_INOTIFY_RM_WATCH
 
@@ -44,6 +47,9 @@
 
 /* Define to 1 if you have the <linux/netlink.h> header file. */
 #undef HAVE_LINUX_NETLINK_H
+
+/* Define to 1 if you have the <linux/reboot.h> header file. */
+#undef HAVE_LINUX_REBOOT_H
 
 /* Define to 1 if you have the <linux/rtnetlink.h> header file. */
 #undef HAVE_LINUX_RTNETLINK_H
@@ -124,6 +130,9 @@
    uint32 */
 #undef HAVE_SYNC_FETCH_AND_ADD_4
 
+/* Define to 1 if you have the `sync_file_range' function. */
+#undef HAVE_SYNC_FILE_RANGE
+
 /* Define to 1 if you have the <syscall.h> header file. */
 #undef HAVE_SYSCALL_H
 
@@ -157,6 +166,12 @@
 /* Define to 1 if you have the <sys/syscall.h> header file. */
 #undef HAVE_SYS_SYSCALL_H
 
+/* Define to 1 if you have the <sys/sysinfo.h> header file. */
+#undef HAVE_SYS_SYSINFO_H
+
+/* Define to 1 if you have the <sys/timex.h> header file. */
+#undef HAVE_SYS_TIMEX_H
+
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
@@ -180,6 +195,12 @@
 
 /* Define to 1 if you have the `unshare' function. */
 #undef HAVE_UNSHARE
+
+/* Define to 1 if you have the <ustat.h> header file. */
+#undef HAVE_USTAT_H
+
+/* Define to 1 if you have the <utime.h> header file. */
+#undef HAVE_UTIME_H
 
 /* Define to 1 if you have the `wait4' function. */
 #undef HAVE_WAIT4
