@@ -918,8 +918,6 @@ rest_of_record_type_compilation (tree record_type)
       TYPE_SIZE_UNIT (new_record_type)
 	= size_int (TYPE_ALIGN (record_type) / BITS_PER_UNIT);
 
-      add_parallel_type (TYPE_STUB_DECL (record_type), new_record_type);
-
       /* Now scan all the fields, replacing each field with a new
 	 field corresponding to the new encoding.  */
       for (old_field = TYPE_FIELDS (record_type); old_field;
@@ -1058,7 +1056,12 @@ rest_of_record_type_compilation (tree record_type)
       TYPE_FIELDS (new_record_type)
 	= nreverse (TYPE_FIELDS (new_record_type));
 
-      rest_of_type_decl_compilation (TYPE_STUB_DECL (new_record_type));
+      /* We used to explicitly invoke rest_of_type_decl_compilation on the
+	 parallel type for the sake of STABS.  We don't do it any more, so
+	 as to ensure that the parallel type be processed after the type
+	 by the debug back-end and, thus, prevent it from interfering with
+	 the processing of a recursive type.  */
+      add_parallel_type (TYPE_STUB_DECL (record_type), new_record_type);
     }
 
   rest_of_type_decl_compilation (TYPE_STUB_DECL (record_type));
