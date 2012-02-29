@@ -1,3 +1,7 @@
+2012-02-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Update.
+
 2012-02-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/52191
