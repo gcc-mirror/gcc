@@ -1,3 +1,13 @@
+2012-02-29  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/52297
+	* gcc.dg/lto/trans-mem-1_0.c: Remove.
+	* gcc.dg/lto/trans-mem-1_1.c: Likewise.
+	* gcc.dg/lto/trans-mem-2_0.c: Likewise.
+	* gcc.dg/lto/trans-mem-2_1.c: Likewise.
+	* gcc.dg/lto/trans-mem-4_0.c: Likewise.
+	* gcc.dg/lto/trans-mem-4_1.c: Likewise.
+
 2012-02-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/torture/pr52402.c: Add -w -Wno-psabi to dg-options.
