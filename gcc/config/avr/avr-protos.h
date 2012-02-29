@@ -83,7 +83,6 @@ extern bool avr_emit_movmemhi (rtx*);
 extern int avr_epilogue_uses (int regno);
 extern int avr_starting_frame_offset (void);
 
-extern void avr_output_bld (rtx operands[], int bit_nr);
 extern void avr_output_addr_vec_elt (FILE *stream, int value);
 extern const char *avr_out_sbxx_branch (rtx insn, rtx operands[]);
 extern const char* avr_out_bitop (rtx, rtx*, int*);

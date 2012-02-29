@@ -9503,15 +9503,6 @@ avr_out_reload_inpsi (rtx *op, rtx clobber_reg, int *len)
   return "";
 }
 
-void
-avr_output_bld (rtx operands[], int bit_nr)
-{
-  static char s[] = "bld %A0,0";
-
-  s[5] = 'A' + (bit_nr >> 3);
-  s[8] = '0' + (bit_nr & 7);
-  output_asm_insn (s, operands);
-}
 
 void
 avr_output_addr_vec_elt (FILE *stream, int value)
@@ -9626,23 +9617,10 @@ avr_out_sbxx_branch (rtx insn, rtx operands[])
 
     case REG:
 
-      if (GET_MODE (operands[1]) == QImode)
-        {
-          if (comp == EQ)
-            output_asm_insn ("sbrs %1,%2", operands);
-          else
-            output_asm_insn ("sbrc %1,%2", operands);
-        }
-      else  /* HImode, PSImode or SImode */
-        {
-          static char buf[] = "sbrc %A1,0";
-          unsigned int bit_nr = UINTVAL (operands[2]);
-
-          buf[3] = (comp == EQ) ? 's' : 'c';
-          buf[6] = 'A' + (bit_nr / 8);
-          buf[9] = '0' + (bit_nr % 8);
-          output_asm_insn (buf, operands);
-        }
+      if (comp == EQ)
+        output_asm_insn ("sbrs %T1%T2", operands);
+      else
+        output_asm_insn ("sbrc %T1%T2", operands);
 
       break; /* REG */
     }        /* switch */
