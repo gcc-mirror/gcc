@@ -225,137 +225,6 @@ bool avr_need_clear_bss_p = false;
 bool avr_need_copy_data_p = false;
 
 
-/* Initialize the GCC target structure.  */
-#undef TARGET_ASM_ALIGNED_HI_OP
-#define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
-#undef TARGET_ASM_ALIGNED_SI_OP
-#define TARGET_ASM_ALIGNED_SI_OP "\t.long\t"
-#undef TARGET_ASM_UNALIGNED_HI_OP
-#define TARGET_ASM_UNALIGNED_HI_OP "\t.word\t"
-#undef TARGET_ASM_UNALIGNED_SI_OP
-#define TARGET_ASM_UNALIGNED_SI_OP "\t.long\t"
-#undef TARGET_ASM_INTEGER
-#define TARGET_ASM_INTEGER avr_assemble_integer
-#undef TARGET_ASM_FILE_START
-#define TARGET_ASM_FILE_START avr_file_start
-#undef TARGET_ASM_FILE_END
-#define TARGET_ASM_FILE_END avr_file_end
-
-#undef TARGET_ASM_FUNCTION_END_PROLOGUE
-#define TARGET_ASM_FUNCTION_END_PROLOGUE avr_asm_function_end_prologue
-#undef TARGET_ASM_FUNCTION_BEGIN_EPILOGUE
-#define TARGET_ASM_FUNCTION_BEGIN_EPILOGUE avr_asm_function_begin_epilogue
-
-#undef TARGET_FUNCTION_VALUE
-#define TARGET_FUNCTION_VALUE avr_function_value
-#undef TARGET_LIBCALL_VALUE
-#define TARGET_LIBCALL_VALUE avr_libcall_value
-#undef TARGET_FUNCTION_VALUE_REGNO_P
-#define TARGET_FUNCTION_VALUE_REGNO_P avr_function_value_regno_p
-
-#undef TARGET_ATTRIBUTE_TABLE
-#define TARGET_ATTRIBUTE_TABLE avr_attribute_table
-#undef TARGET_INSERT_ATTRIBUTES
-#define TARGET_INSERT_ATTRIBUTES avr_insert_attributes
-#undef TARGET_SECTION_TYPE_FLAGS
-#define TARGET_SECTION_TYPE_FLAGS avr_section_type_flags
-
-#undef TARGET_ASM_NAMED_SECTION
-#define TARGET_ASM_NAMED_SECTION avr_asm_named_section
-#undef TARGET_ASM_INIT_SECTIONS
-#define TARGET_ASM_INIT_SECTIONS avr_asm_init_sections
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO avr_encode_section_info
-#undef TARGET_ASM_SELECT_SECTION
-#define TARGET_ASM_SELECT_SECTION avr_asm_select_section
-
-#undef TARGET_REGISTER_MOVE_COST
-#define TARGET_REGISTER_MOVE_COST avr_register_move_cost
-#undef TARGET_MEMORY_MOVE_COST
-#define TARGET_MEMORY_MOVE_COST avr_memory_move_cost
-#undef TARGET_RTX_COSTS
-#define TARGET_RTX_COSTS avr_rtx_costs
-#undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST avr_address_cost
-#undef TARGET_MACHINE_DEPENDENT_REORG
-#define TARGET_MACHINE_DEPENDENT_REORG avr_reorg
-#undef TARGET_FUNCTION_ARG
-#define TARGET_FUNCTION_ARG avr_function_arg
-#undef TARGET_FUNCTION_ARG_ADVANCE
-#define TARGET_FUNCTION_ARG_ADVANCE avr_function_arg_advance
-
-#undef TARGET_RETURN_IN_MEMORY
-#define TARGET_RETURN_IN_MEMORY avr_return_in_memory
-
-#undef TARGET_STRICT_ARGUMENT_NAMING
-#define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
-
-#undef TARGET_BUILTIN_SETJMP_FRAME_VALUE
-#define TARGET_BUILTIN_SETJMP_FRAME_VALUE avr_builtin_setjmp_frame_value
-
-#undef TARGET_HARD_REGNO_SCRATCH_OK
-#define TARGET_HARD_REGNO_SCRATCH_OK avr_hard_regno_scratch_ok
-#undef TARGET_CASE_VALUES_THRESHOLD
-#define TARGET_CASE_VALUES_THRESHOLD avr_case_values_threshold
-
-#undef TARGET_FRAME_POINTER_REQUIRED
-#define TARGET_FRAME_POINTER_REQUIRED avr_frame_pointer_required_p
-#undef TARGET_CAN_ELIMINATE
-#define TARGET_CAN_ELIMINATE avr_can_eliminate
-
-#undef TARGET_CLASS_LIKELY_SPILLED_P
-#define TARGET_CLASS_LIKELY_SPILLED_P avr_class_likely_spilled_p
-
-#undef TARGET_OPTION_OVERRIDE
-#define TARGET_OPTION_OVERRIDE avr_option_override
-
-#undef TARGET_CANNOT_MODIFY_JUMPS_P
-#define TARGET_CANNOT_MODIFY_JUMPS_P avr_cannot_modify_jumps_p
-
-#undef TARGET_FUNCTION_OK_FOR_SIBCALL
-#define TARGET_FUNCTION_OK_FOR_SIBCALL avr_function_ok_for_sibcall
-
-#undef TARGET_INIT_BUILTINS
-#define TARGET_INIT_BUILTINS avr_init_builtins
-
-#undef TARGET_EXPAND_BUILTIN
-#define TARGET_EXPAND_BUILTIN avr_expand_builtin
-
-#undef  TARGET_FOLD_BUILTIN
-#define TARGET_FOLD_BUILTIN avr_fold_builtin
-
-#undef TARGET_ASM_FUNCTION_RODATA_SECTION
-#define TARGET_ASM_FUNCTION_RODATA_SECTION avr_asm_function_rodata_section
-
-#undef  TARGET_SCALAR_MODE_SUPPORTED_P
-#define TARGET_SCALAR_MODE_SUPPORTED_P avr_scalar_mode_supported_p
-
-#undef  TARGET_ADDR_SPACE_SUBSET_P
-#define TARGET_ADDR_SPACE_SUBSET_P avr_addr_space_subset_p
-
-#undef  TARGET_ADDR_SPACE_CONVERT
-#define TARGET_ADDR_SPACE_CONVERT avr_addr_space_convert
-
-#undef  TARGET_ADDR_SPACE_ADDRESS_MODE
-#define TARGET_ADDR_SPACE_ADDRESS_MODE avr_addr_space_address_mode
-
-#undef  TARGET_ADDR_SPACE_POINTER_MODE
-#define TARGET_ADDR_SPACE_POINTER_MODE avr_addr_space_pointer_mode
-
-#undef  TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
-#define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P avr_addr_space_legitimate_address_p
-
-#undef TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS
-#define TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS avr_addr_space_legitimize_address
-
-#undef  TARGET_PRINT_OPERAND
-#define TARGET_PRINT_OPERAND avr_print_operand
-#undef  TARGET_PRINT_OPERAND_ADDRESS
-#define TARGET_PRINT_OPERAND_ADDRESS avr_print_operand_address
-#undef  TARGET_PRINT_OPERAND_PUNCT_VALID_P
-#define TARGET_PRINT_OPERAND_PUNCT_VALID_P avr_print_operand_punct_valid_p
-
-
 
 /* Custom function to count number of set bits.  */
 
@@ -10998,8 +10867,141 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
   return NULL_TREE;
 }
 
-
 
+
+/* Initialize the GCC target structure.  */
+
+#undef  TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
+#undef  TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP "\t.long\t"
+#undef  TARGET_ASM_UNALIGNED_HI_OP
+#define TARGET_ASM_UNALIGNED_HI_OP "\t.word\t"
+#undef  TARGET_ASM_UNALIGNED_SI_OP
+#define TARGET_ASM_UNALIGNED_SI_OP "\t.long\t"
+#undef  TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER avr_assemble_integer
+#undef  TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START avr_file_start
+#undef  TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END avr_file_end
+
+#undef  TARGET_ASM_FUNCTION_END_PROLOGUE
+#define TARGET_ASM_FUNCTION_END_PROLOGUE avr_asm_function_end_prologue
+#undef  TARGET_ASM_FUNCTION_BEGIN_EPILOGUE
+#define TARGET_ASM_FUNCTION_BEGIN_EPILOGUE avr_asm_function_begin_epilogue
+
+#undef  TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE avr_function_value
+#undef  TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE avr_libcall_value
+#undef  TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P avr_function_value_regno_p
+
+#undef  TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE avr_attribute_table
+#undef  TARGET_INSERT_ATTRIBUTES
+#define TARGET_INSERT_ATTRIBUTES avr_insert_attributes
+#undef  TARGET_SECTION_TYPE_FLAGS
+#define TARGET_SECTION_TYPE_FLAGS avr_section_type_flags
+
+#undef  TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION avr_asm_named_section
+#undef  TARGET_ASM_INIT_SECTIONS
+#define TARGET_ASM_INIT_SECTIONS avr_asm_init_sections
+#undef  TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO avr_encode_section_info
+#undef  TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION avr_asm_select_section
+
+#undef  TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST avr_register_move_cost
+#undef  TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST avr_memory_move_cost
+#undef  TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS avr_rtx_costs
+#undef  TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST avr_address_cost
+#undef  TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG avr_reorg
+#undef  TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG avr_function_arg
+#undef  TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE avr_function_arg_advance
+
+#undef  TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY avr_return_in_memory
+
+#undef  TARGET_STRICT_ARGUMENT_NAMING
+#define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
+
+#undef  TARGET_BUILTIN_SETJMP_FRAME_VALUE
+#define TARGET_BUILTIN_SETJMP_FRAME_VALUE avr_builtin_setjmp_frame_value
+
+#undef  TARGET_HARD_REGNO_SCRATCH_OK
+#define TARGET_HARD_REGNO_SCRATCH_OK avr_hard_regno_scratch_ok
+#undef  TARGET_CASE_VALUES_THRESHOLD
+#define TARGET_CASE_VALUES_THRESHOLD avr_case_values_threshold
+
+#undef  TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED avr_frame_pointer_required_p
+#undef  TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE avr_can_eliminate
+
+#undef  TARGET_CLASS_LIKELY_SPILLED_P
+#define TARGET_CLASS_LIKELY_SPILLED_P avr_class_likely_spilled_p
+
+#undef  TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE avr_option_override
+
+#undef  TARGET_CANNOT_MODIFY_JUMPS_P
+#define TARGET_CANNOT_MODIFY_JUMPS_P avr_cannot_modify_jumps_p
+
+#undef  TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL avr_function_ok_for_sibcall
+
+#undef  TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS avr_init_builtins
+
+#undef  TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN avr_expand_builtin
+
+#undef  TARGET_FOLD_BUILTIN
+#define TARGET_FOLD_BUILTIN avr_fold_builtin
+
+#undef  TARGET_ASM_FUNCTION_RODATA_SECTION
+#define TARGET_ASM_FUNCTION_RODATA_SECTION avr_asm_function_rodata_section
+
+#undef  TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P avr_scalar_mode_supported_p
+
+#undef  TARGET_ADDR_SPACE_SUBSET_P
+#define TARGET_ADDR_SPACE_SUBSET_P avr_addr_space_subset_p
+
+#undef  TARGET_ADDR_SPACE_CONVERT
+#define TARGET_ADDR_SPACE_CONVERT avr_addr_space_convert
+
+#undef  TARGET_ADDR_SPACE_ADDRESS_MODE
+#define TARGET_ADDR_SPACE_ADDRESS_MODE avr_addr_space_address_mode
+
+#undef  TARGET_ADDR_SPACE_POINTER_MODE
+#define TARGET_ADDR_SPACE_POINTER_MODE avr_addr_space_pointer_mode
+
+#undef  TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
+#define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P  \
+  avr_addr_space_legitimate_address_p
+
+#undef  TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS
+#define TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS avr_addr_space_legitimize_address
+
+#undef  TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND avr_print_operand
+#undef  TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS avr_print_operand_address
+#undef  TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P avr_print_operand_punct_valid_p
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+
 #include "gt-avr.h"
