@@ -1,5 +1,13 @@
 2012-02-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (components_to_record): Add ARTIFICIAL parameter
+	and set TYPE_ARTIFICIAL according to it.  Adjust recursive call.
+	(gnat_to_gnu_entity) <E_Record_Type>: Adjust call to above function.
+	* gcc-interface/utils.c (rest_of_record_type_compilation): Do not
+	invoke rest_of_type_decl_compilation on the parallel type, if any.
+
+2012-02-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (gnat_write_global_declarations): Make sure the
 	dummy global built for global types is preserved.
 

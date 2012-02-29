@@ -1,3 +1,13 @@
+2012-02-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (modified_type_die): Set DW_AT_GNAT_descriptive_type and
+	DW_AT_artificial attributes at the end of the processing.
+	(gen_array_type_die): Likewise.
+	(gen_enumeration_type_die): Likewise.
+	(gen_struct_or_union_type_die): Likewise.
+	(add_gnat_descriptive_type_attribute): Do not suppress debug info for
+	the parent type.
+
 2012-02-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/52419
