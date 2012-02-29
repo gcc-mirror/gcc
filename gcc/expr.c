@@ -4666,6 +4666,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
       int volatilep = 0;
       tree tem;
       bool misalignp;
+      rtx mem = NULL_RTX;
 
       push_temp_slots ();
       tem = get_inner_reference (to, &bitsize, &bitpos, &offset, &mode1,
@@ -4686,8 +4687,44 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	  && ((icode = optab_handler (movmisalign_optab, mode))
 	      != CODE_FOR_nothing))
 	{
+	  enum machine_mode address_mode;
+	  rtx op0;
+	  struct expand_operand ops[2];
+	  addr_space_t as = TYPE_ADDR_SPACE
+	      (TREE_TYPE (TREE_TYPE (TREE_OPERAND (tem, 0))));
+	  tree base = TREE_OPERAND (tem, 0);
+
 	  misalignp = true;
 	  to_rtx = gen_reg_rtx (mode);
+
+	  address_mode = targetm.addr_space.address_mode (as);
+	  op0 = expand_expr (base, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+	  op0 = convert_memory_address_addr_space (address_mode, op0, as);
+	  if (!integer_zerop (TREE_OPERAND (tem, 1)))
+	    {
+	      rtx off = immed_double_int_const (mem_ref_offset (tem),
+						address_mode);
+	      op0 = simplify_gen_binary (PLUS, address_mode, op0, off);
+	    }
+	  op0 = memory_address_addr_space (mode, op0, as);
+	  mem = gen_rtx_MEM (mode, op0);
+	  set_mem_attributes (mem, tem, 0);
+	  set_mem_addr_space (mem, as);
+	  if (TREE_THIS_VOLATILE (tem))
+	    MEM_VOLATILE_P (mem) = 1;
+
+	  /* If the misaligned store doesn't overwrite all bits, perform
+	     rmw cycle on MEM.  */
+	  if (bitsize != GET_MODE_BITSIZE (mode))
+	    {
+	      create_input_operand (&ops[0], to_rtx, mode);
+	      create_fixed_operand (&ops[1], mem);
+	      /* The movmisalign<mode> pattern cannot fail, else the assignment
+		 would silently be omitted.  */
+	      expand_insn (icode, 2, ops);
+
+	      mem = copy_rtx (mem);
+	    }
 	}
       else
 	{
@@ -4842,26 +4879,6 @@ expand_assignment (tree to, tree from, bool nontemporal)
       if (misalignp)
 	{
 	  struct expand_operand ops[2];
-	  enum machine_mode address_mode;
-	  rtx op0, mem;
-	  addr_space_t as = TYPE_ADDR_SPACE
-	      (TREE_TYPE (TREE_TYPE (TREE_OPERAND (tem, 0))));
-	  tree base = TREE_OPERAND (tem, 0);
-	  address_mode = targetm.addr_space.address_mode (as);
-	  op0 = expand_expr (base, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-	  op0 = convert_memory_address_addr_space (address_mode, op0, as);
-	  if (!integer_zerop (TREE_OPERAND (tem, 1)))
-	    {
-	      rtx off = immed_double_int_const (mem_ref_offset (tem),
-						address_mode);
-	      op0 = simplify_gen_binary (PLUS, address_mode, op0, off);
-	    }
-	  op0 = memory_address_addr_space (mode, op0, as);
-	  mem = gen_rtx_MEM (mode, op0);
-	  set_mem_attributes (mem, tem, 0);
-	  set_mem_addr_space (mem, as);
-	  if (TREE_THIS_VOLATILE (tem))
-	    MEM_VOLATILE_P (mem) = 1;
 
 	  create_fixed_operand (&ops[0], mem);
 	  create_input_operand (&ops[1], to_rtx, mode);
