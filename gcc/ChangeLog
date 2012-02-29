@@ -1,5 +1,16 @@
 2012-02-29  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/avr.md: Untabify.
+
+2012-02-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (eqne): New code iterator.
+	(*dec-and-branchsi): Use it in text peephole's condition.
+	(*dec-and-branchhi): Ditto.
+	(*dec-and-branchqi): Ditto.
+
+2012-02-29  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/49939
 	* config/avr/avr.h (ASM_SPEC): Add -mno-skip-bug if we know that
 	the device does not have the skip-bug.
