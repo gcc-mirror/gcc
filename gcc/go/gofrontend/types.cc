@@ -4116,7 +4116,6 @@ Struct_type::do_verify()
   Struct_field_list* fields = this->fields_;
   if (fields == NULL)
     return true;
-  bool ret = true;
   for (Struct_field_list::iterator p = fields->begin();
        p != fields->end();
        ++p)
@@ -4126,7 +4125,6 @@ Struct_type::do_verify()
 	{
 	  error_at(p->location(), "struct field type is incomplete");
 	  p->set_type(Type::make_error_type());
-	  ret = false;
 	}
       else if (p->is_anonymous())
 	{
@@ -4134,19 +4132,17 @@ Struct_type::do_verify()
 	    {
 	      error_at(p->location(), "embedded type may not be a pointer");
 	      p->set_type(Type::make_error_type());
-	      return false;
 	    }
-	  if (t->points_to() != NULL
-	      && t->points_to()->interface_type() != NULL)
+	  else if (t->points_to() != NULL
+		   && t->points_to()->interface_type() != NULL)
 	    {
 	      error_at(p->location(),
 		       "embedded type may not be pointer to interface");
 	      p->set_type(Type::make_error_type());
-	      return false;
 	    }
 	}
     }
-  return ret;
+  return true;
 }
 
 // Whether this contains a pointer.
@@ -5206,10 +5202,7 @@ bool
 Array_type::do_verify()
 {
   if (!this->verify_length())
-    {
-      this->length_ = Expression::make_error(this->length_->location());
-      return false;
-    }
+    this->length_ = Expression::make_error(this->length_->location());
   return true;
 }
 
@@ -5899,10 +5892,7 @@ Map_type::do_verify()
 {
   // The runtime support uses "map[void]void".
   if (!this->key_type_->is_comparable() && !this->key_type_->is_void_type())
-    {
-      error_at(this->location_, "invalid map key type");
-      return false;
-    }
+    error_at(this->location_, "invalid map key type");
   return true;
 }
 
@@ -7885,7 +7875,6 @@ Named_type::do_verify()
   if (this->local_methods_ != NULL)
     {
       Struct_type* st = this->type_->struct_type();
-      bool found_dup = false;
       if (st != NULL)
 	{
 	  for (Bindings::const_declarations_iterator p =
@@ -7899,12 +7888,9 @@ Named_type::do_verify()
 		  error_at(p->second->location(),
 			   "method %qs redeclares struct field name",
 			   Gogo::message_name(name).c_str());
-		  found_dup = true;
 		}
 	    }
 	}
-      if (found_dup)
-	return false;
     }
 
   return true;
