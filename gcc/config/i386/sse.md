@@ -3895,13 +3895,13 @@
 ;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn "vec_set<mode>_0"
   [(set (match_operand:VI4F_128 0 "nonimmediate_operand"
-	  "=x,x,x ,x,x,x,x  ,x  ,m,m ,m")
+	  "=x,x,x ,x,x,x,x  ,x  ,m ,m   ,m")
 	(vec_merge:VI4F_128
 	  (vec_duplicate:VI4F_128
 	    (match_operand:<ssescalarmode> 2 "general_operand"
-	  " x,m,*r,m,x,x,*rm,*rm,x,fF,*r"))
+	  " x,m,*r,m,x,x,*rm,*rm,!x,!*re,!*fF"))
 	  (match_operand:VI4F_128 1 "vector_move_operand"
-	  " C,C,C ,C,0,x,0  ,x  ,0,0 ,0")
+	  " C,C,C ,C,0,x,0  ,x  ,0 ,0   ,0")
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
@@ -3921,9 +3921,9 @@
      (cond [(eq_attr "alternative" "0,6,7")
 	      (const_string "sselog")
 	    (eq_attr "alternative" "9")
-	      (const_string "fmov")
-	    (eq_attr "alternative" "10")
 	      (const_string "imov")
+	    (eq_attr "alternative" "10")
+	      (const_string "fmov")
 	   ]
 	   (const_string "ssemov")))
    (set_attr "prefix_extra" "*,*,*,*,*,*,1,1,*,*,*")
