@@ -1,3 +1,9 @@
+2012-02-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52429
+	* tree-parloops.c (separate_decls_in_region_debug): Return early
+	if var is LABEL_DECL.
+
 2012-02-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/52424
