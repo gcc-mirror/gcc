@@ -1,3 +1,7 @@
+2012-02-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/linux/sparc/futex.h (cpu_relax): Read from CC register.
+
 2012-02-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libstdc++/52188

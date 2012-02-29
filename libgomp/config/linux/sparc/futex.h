@@ -90,9 +90,5 @@ futex_wake (int *addr, int count)
 static inline void
 cpu_relax (void)
 {
-#if defined __arch64__ || defined  __sparc_v9__
-  __asm volatile ("membar #LoadLoad" : : : "memory");
-#else
-  __asm volatile ("" : : : "memory");
-#endif
+  __asm volatile ("rd %%ccr, %%g0" : : : "memory");
 }
