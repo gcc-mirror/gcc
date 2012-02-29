@@ -1,3 +1,9 @@
+2012-02-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52386
+	* trans-expr.c (fcncall_realloc_result): Dereference the
+	descriptor if needed.
+
 2012-02-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52335

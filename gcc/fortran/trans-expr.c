@@ -6299,6 +6299,8 @@ fcncall_realloc_result (gfc_se *se, int rank)
   /* Use the allocation done by the library.  Substitute the lhs
      descriptor with a copy, whose data field is nulled.*/
   desc = build_fold_indirect_ref_loc (input_location, se->expr);
+  if (POINTER_TYPE_P (TREE_TYPE (desc)))
+    desc = build_fold_indirect_ref_loc (input_location, desc);
 
   /* Unallocated, the descriptor does not have a dtype.  */
   tmp = gfc_conv_descriptor_dtype (desc);
