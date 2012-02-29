@@ -1,3 +1,7 @@
+2012-02-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/torture/pr52402.c: Add -w -Wno-psabi to dg-options.
+
 2012-02-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/52386
