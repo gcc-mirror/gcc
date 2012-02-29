@@ -1795,6 +1795,10 @@ go_unicode_utf8_files = \
 
 # Support for netlink sockets and messages.
 @LIBGO_IS_LINUX_TRUE@syscall_netlink_file = go/syscall/netlink_linux.go
+@LIBGO_IS_LINUX_FALSE@syscall_lsf_file = 
+
+# GNU/Linux specific socket filters.
+@LIBGO_IS_LINUX_TRUE@syscall_lsf_file = go/syscall/lsf_linux.go
 go_base_syscall_files = \
 	go/syscall/env_unix.go \
 	go/syscall/syscall_errno.go \
@@ -1815,6 +1819,7 @@ go_base_syscall_files = \
 	$(syscall_socket_file) \
 	$(syscall_uname_file) \
 	$(syscall_netlink_file) \
+	$(syscall_lsf_file) \
 	$(GO_LIBCALL_OS_FILE) \
 	$(GO_LIBCALL_OS_ARCH_FILE) \
 	$(GO_SYSCALL_OS_FILE) \

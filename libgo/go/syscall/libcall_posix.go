@@ -61,6 +61,18 @@ func Getwd() (ret string, err error) {
 	}
 }
 
+func Getcwd(buf []byte) (n int, err error) {
+	err = getcwd(&buf[0], Size_t(len(buf)))
+	if err == nil {
+		i := 0
+		for buf[i] != 0 {
+			i++
+		}
+		n = i + 1
+	}
+	return
+}
+
 //sysnb	getgroups(size int, list *Gid_t) (nn int, err error)
 //getgroups(size int, list *Gid_t) int
 
@@ -226,9 +238,8 @@ func FDZero(set *FdSet) {
 //sysnb	Getppid() (ppid int)
 //getppid() Pid_t
 
-// FIXME: mksysinfo Rlimit
-// //sysnb	Getrlimit(resource int, rlim *Rlimit) (err error)
-// //getrlimit(resource int, rlim *Rlimit) int
+//sysnb	Getrlimit(resource int, rlim *Rlimit) (err error)
+//getrlimit(resource int, rlim *Rlimit) int
 
 //sysnb	Getrusage(who int, rusage *Rusage) (err error)
 //getrusage(who int, rusage *Rusage) int
@@ -296,9 +307,8 @@ func Gettimeofday(tv *Timeval) (err error) {
 //sysnb	Setreuid(ruid int, euid int) (err error)
 //setreuid(ruid Uid_t, euid Uid_t) int
 
-// FIXME: mksysinfo Rlimit
-// //sysnb	Setrlimit(resource int, rlim *Rlimit) (err error)
-// //setrlimit(resource int, rlim *Rlimit) int
+//sysnb	Setrlimit(resource int, rlim *Rlimit) (err error)
+//setrlimit(resource int, rlim *Rlimit) int
 
 //sysnb	Setsid() (pid int, err error)
 //setsid() Pid_t
@@ -319,9 +329,8 @@ func Settimeofday(tv *Timeval) (err error) {
 //sys	Sync()
 //sync()
 
-// FIXME: mksysinfo Time_t
-// //sysnb	Time(t *Time_t) (tt Time_t, err error)
-// //time(t *Time_t) Time_t
+//sysnb	Time(t *Time_t) (tt Time_t, err error)
+//time(t *Time_t) Time_t
 
 //sysnb	Times(tms *Tms) (ticks uintptr, err error)
 //times(tms *Tms) _clock_t
@@ -332,9 +341,8 @@ func Settimeofday(tv *Timeval) (err error) {
 //sys	Unlink(path string) (err error)
 //unlink(path *byte) int
 
-// FIXME: mksysinfo Utimbuf
-// //sys	Utime(path string, buf *Utimbuf) (err error)
-// //utime(path *byte, buf *Utimbuf) int
+//sys	Utime(path string, buf *Utimbuf) (err error)
+//utime(path *byte, buf *Utimbuf) int
 
 //sys	Write(fd int, p []byte) (n int, err error)
 //write(fd int, buf *byte, count Size_t) Ssize_t

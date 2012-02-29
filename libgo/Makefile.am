@@ -1489,6 +1489,13 @@ else
 syscall_netlink_file =
 endif
 
+# GNU/Linux specific socket filters.
+if LIBGO_IS_LINUX
+syscall_lsf_file = go/syscall/lsf_linux.go
+else
+syscall_lsf_file =
+endif
+
 go_base_syscall_files = \
 	go/syscall/env_unix.go \
 	go/syscall/syscall_errno.go \
@@ -1509,6 +1516,7 @@ go_base_syscall_files = \
 	$(syscall_socket_file) \
 	$(syscall_uname_file) \
 	$(syscall_netlink_file) \
+	$(syscall_lsf_file) \
 	$(GO_LIBCALL_OS_FILE) \
 	$(GO_LIBCALL_OS_ARCH_FILE) \
 	$(GO_SYSCALL_OS_FILE) \

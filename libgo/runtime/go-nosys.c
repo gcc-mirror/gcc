@@ -116,6 +116,15 @@ inotify_init (void)
 }
 #endif
 
+#ifndef HAVE_INOTIFY_INIT1
+int
+inotify_init1 (int flags __attribute__ ((unused)))
+{
+  errno = ENOSYS;
+  return -1;
+}
+#endif
+
 #ifndef HAVE_INOTIFY_RM_WATCH
 int
 inotify_rm_watch (int fd __attribute__ ((unused)),
@@ -181,6 +190,18 @@ splice (int fd __attribute__ ((unused)),
 	loff_t *off_out __attribute__ ((unused)),
 	size_t len __attribute__ ((unused)),
 	unsigned int flags __attribute__ ((unused)))
+{
+  errno = ENOSYS;
+  return -1;
+}
+#endif
+
+#ifndef HAVE_SYNC_FILE_RANGE
+int
+sync_file_range (int fd __attribute__ ((unused)),
+		 off64_t offset __attribute__ ((unused)),
+		 off64_t nbytes __attribute__ ((unused)),
+		 unsigned int flags __attribute__ ((unused)))
 {
   errno = ENOSYS;
   return -1;
