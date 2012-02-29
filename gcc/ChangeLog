@@ -1,5 +1,9 @@
 2012-02-29  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/avr.c: Move definition of TARGET macros to end of file.
+
+2012-02-29  Georg-Johann Lay  <avr@gjlay.de>
+
 	* config/avr/avr-protos.h (avr_output_bld): Remove unused prototype.
 	* config/avr/avr.c (avr_output_bld): Remove unused function.
 	(avr_out_sbxx_branch): Use "%T" to print bit position.
