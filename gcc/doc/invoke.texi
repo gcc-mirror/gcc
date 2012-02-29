@@ -886,7 +886,8 @@ See RS/6000 and PowerPC Options.
 -mprefergot  -musermode -multcost=@var{number} -mdiv=@var{strategy} @gol
 -mdivsi3_libfunc=@var{name} -mfixed-range=@var{register-range} @gol
 -madjust-unroll -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
--maccumulate-outgoing-args -minvalid-symbols -msoft-atomic}
+-maccumulate-outgoing-args -minvalid-symbols -msoft-atomic @gol
+-mbranch-cost=@var{num} -mcbranchdi -mcmpeqdi -mfused-madd -mpretend-cmove}
 
 @emph{Solaris 2 Options}
 @gccoptlist{-mimpure-text  -mno-impure-text @gol
@@ -17821,8 +17822,12 @@ which is incompatible with the SH ABI@.
 
 @item -msoft-atomic
 @opindex msoft-atomic
-Generate software atomic sequences for the atomic operations.
-This is the default when the target is @code{sh-*-linux*}.
+Generate GNU/Linux compatible gUSA software atomic sequences for the atomic
+built-in functions.  The generated atomic sequences require support from the 
+interrupt / exception handling code of the system and are only suitable for
+single-core systems.  They will not perform correctly on multi-core systems.
+This option is enabled by default when the target is @code{sh-*-linux*}.
+For details on the atomic built-in functions see @ref{__atomic Builtins}.
 
 @item -mspace
 @opindex mspace
@@ -17953,6 +17958,35 @@ to generate symbols that will cause ptabs / ptrel to trap.
 This option is only meaningful when @option{-mno-pt-fixed} is in effect.
 It will then prevent cross-basic-block cse, hoisting and most scheduling
 of symbol loads.  The default is @option{-mno-invalid-symbols}.
+
+@item -mbranch-cost=@var{num}
+@opindex mbranch-cost=@var{num}
+Assume @var{num} to be the cost for a branch instruction.  Higher numbers
+will make the compiler try to generate more branch-free code if possible.  
+If not specified the value is selected depending on the processor type that
+is being compiled for.
+
+@item -mcbranchdi
+@opindex mcbranchdi
+Enable the @code{cbranchdi4} instruction pattern.
+
+@item -mcmpeqdi
+@opindex mcmpeqdi
+Emit the @code{cmpeqdi_t} instruction pattern even when @option{-mcbranchdi}
+is in effect.
+
+@item -mfused-madd
+@opindex mfused-madd
+Allow the usage of the @code{fmac} instruction (floating-point
+multiply-accumulate) if the processor type supports it.  Enabling this
+option might generate code that produces different numeric floating-point
+results compared to strict IEEE 754 arithmetic.
+
+@item -mpretend-cmove
+@opindex mpretend-cmove
+Prefer zero-displacement conditional branches for conditional move instruction
+patterns.  This can result in faster code on the SH4 processor.
+
 @end table
 
 @node Solaris 2 Options
