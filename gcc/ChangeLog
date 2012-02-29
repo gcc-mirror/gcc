@@ -1,3 +1,11 @@
+2012-02-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/52397
+	* df.h (struct df_d): Adjust comment that hard_regs_live_count
+	doesn't count DEBUG_INSN refs.
+	* df-scan.c (df_ref_create_structure): Don't set DF_HARD_REG_LIVE
+	for DEBUG_INSN refs.
+
 2012-02-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	Partially revert:
