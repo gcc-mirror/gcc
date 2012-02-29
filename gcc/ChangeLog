@@ -1,3 +1,9 @@
+2012-02-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49939
+	* config/avr/avr.h (ASM_SPEC): Add -mno-skip-bug if we know that
+	the device does not have the skip-bug.
+
 2012-02-29  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* doc/invoke.texi (-msoft-atomic): Add more detailed description.

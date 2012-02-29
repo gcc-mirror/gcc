@@ -595,7 +595,9 @@ extern const char *avr_device_to_devicelib (int argc, const char **argv);
    pass to `cc1plus'.  */
 
 #define ASM_SPEC "%{mmcu=avr25:-mmcu=avr2;mmcu=avr35:-mmcu=avr3;mmcu=avr31:-mmcu=avr3;mmcu=avr51:-mmcu=avr5;\
-mmcu=*:-mmcu=%*}"
+mmcu=*:-mmcu=%*} \
+%{mmcu=*:%{!mmcu=avr2:%{!mmcu=at90s8515:%{!mmcu=avr31:%{!mmcu=atmega103:\
+-mno-skip-bug}}}}}"
 
 #define LINK_SPEC "\
 %{mrelax:--relax\
