@@ -510,7 +510,8 @@ class Type
 
   // Verify the type.  This is called after parsing, and verifies that
   // types are complete and meet the language requirements.  This
-  // returns false if the type is invalid.
+  // returns false if the type is invalid and we should not continue
+  // traversing it.
   bool
   verify()
   { return this->do_verify(); }
