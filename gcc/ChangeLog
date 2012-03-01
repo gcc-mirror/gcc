@@ -1,3 +1,8 @@
+2012-03-01  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	* doc/invoke.texi: Document AMD bdver2 and remove mentioning
+	3DNow from bdver1.
+
 2012-02-29  Jakub Jelinek  <jakub@redhat.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
