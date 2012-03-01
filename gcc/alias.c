@@ -1811,20 +1811,34 @@ get_addr (rtx x)
   v = CSELIB_VAL_PTR (x);
   if (v)
     {
-      v = canonical_cselib_val (v);
+      bool have_equivs = cselib_have_permanent_equivalences ();
+      if (have_equivs)
+	v = canonical_cselib_val (v);
       for (l = v->locs; l; l = l->next)
 	if (CONSTANT_P (l->loc))
 	  return l->loc;
       for (l = v->locs; l; l = l->next)
-	if (!REG_P (l->loc) && !MEM_P (l->loc) && GET_CODE (l->loc) != VALUE
-	    && !refs_newer_value_p (l->loc, x))
+	if (!REG_P (l->loc) && !MEM_P (l->loc)
+	    /* Avoid infinite recursion when potentially dealing with
+	       var-tracking artificial equivalences, by skipping the
+	       equivalences themselves, and not choosing expressions
+	       that refer to newer VALUEs.  */
+	    && (!have_equivs
+		|| (GET_CODE (l->loc) != VALUE
+		    && !refs_newer_value_p (l->loc, x))))
 	  return l->loc;
-      for (l = v->locs; l; l = l->next)
-	if (REG_P (l->loc) || (GET_CODE (l->loc) != VALUE
-			       && !refs_newer_value_p (l->loc, x)))
-	  return l->loc;
-      /* Return the canonical value.  */
-      return v->val_rtx;
+      if (have_equivs)
+	{
+	  for (l = v->locs; l; l = l->next)
+	    if (REG_P (l->loc)
+		|| (GET_CODE (l->loc) != VALUE
+		    && !refs_newer_value_p (l->loc, x)))
+	      return l->loc;
+	  /* Return the canonical value.  */
+	  return v->val_rtx;
+	}
+      if (v->locs)
+	return v->locs->loc;
     }
   return x;
 }
