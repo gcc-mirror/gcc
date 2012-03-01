@@ -13084,8 +13084,12 @@ instruction set extensions.)
 @item bdver1
 AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
 supersets FMA4, AVX, XOP, LWP, AES, PCL_MUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A,
-SSSE3, SSE4.1, SSE4.2, 3DNow!, enhanced 3DNow!, ABM and 64-bit
-instruction set extensions.)
+SSSE3, SSE4.1, SSE4.2, ABM and 64-bit instruction set extensions.)
+@item bdver2
+AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
+supersets BMI, TBM, F16C, FMA, AVX, XOP, LWP, AES, PCL_MUL, CX16, MMX, SSE,
+SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM and 64-bit instruction set 
+extensions.)
 @item btver1
 AMD Family 14h core based CPUs with x86-64 instruction set support.  (This
 supersets MMX, SSE, SSE2, SSE3, SSSE3, SSE4A, CX16, ABM and 64-bit
