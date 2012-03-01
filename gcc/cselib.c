@@ -52,6 +52,7 @@ struct elt_list {
 
 static bool cselib_record_memory;
 static bool cselib_preserve_constants;
+static bool cselib_any_perm_equivs;
 static int entry_and_rtx_equal_p (const void *, const void *);
 static hashval_t get_value_hash (const void *);
 static struct elt_list *new_elt_list (struct elt_list *, cselib_val *);
@@ -477,7 +478,10 @@ cselib_reset_table (unsigned int num)
   if (cselib_preserve_constants)
     htab_traverse (cselib_hash_table, preserve_constants_and_equivs, NULL);
   else
-    htab_empty (cselib_hash_table);
+    {
+      htab_empty (cselib_hash_table);
+      gcc_checking_assert (!cselib_any_perm_equivs);
+    }
 
   n_useless_values = 0;
   n_useless_debug_values = 0;
@@ -2388,6 +2392,8 @@ cselib_add_permanent_equiv (cselib_val *elt, rtx x, rtx insn)
 
   if (nelt != elt)
     {
+      cselib_any_perm_equivs = true;
+
       if (!PRESERVED_VALUE_P (nelt->val_rtx))
 	cselib_preserve_value (nelt);
 
@@ -2395,6 +2401,14 @@ cselib_add_permanent_equiv (cselib_val *elt, rtx x, rtx insn)
     }
 
   cselib_current_insn = save_cselib_current_insn;
+}
+
+/* Return TRUE if any permanent equivalences have been recorded since
+   the table was last initialized.  */
+bool
+cselib_have_permanent_equivalences (void)
+{
+  return cselib_any_perm_equivs;
 }
 
 /* There is no good way to determine how many elements there can be
@@ -2651,6 +2665,7 @@ cselib_init (int record_what)
   value_pool = create_alloc_pool ("value", RTX_CODE_SIZE (VALUE), 100);
   cselib_record_memory = record_what & CSELIB_RECORD_MEMORY;
   cselib_preserve_constants = record_what & CSELIB_PRESERVE_CONSTANTS;
+  cselib_any_perm_equivs = false;
 
   /* (mem:BLK (scratch)) is a special mechanism to conflict with everything,
      see canon_true_dependence.  This is only created once.  */
@@ -2684,6 +2699,7 @@ cselib_finish (void)
 {
   cselib_discard_hook = NULL;
   cselib_preserve_constants = false;
+  cselib_any_perm_equivs = false;
   cfa_base_preserved_val = NULL;
   cfa_base_preserved_regno = INVALID_REGNUM;
   free_alloc_pool (elt_list_pool);

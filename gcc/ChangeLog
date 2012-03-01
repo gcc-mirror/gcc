@@ -1,3 +1,17 @@
+2012-03-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/52001
+	PR rtl-optimization/52417
+	* cselib.c (cselib_any_perm_equivs): New variable.
+	(cselib_reset_table): Check that it's not set when not
+	preserving constants.
+	(cselib_add_permanent_equiv): Set it.
+	(cselib_have_permanent_equivalences): New.
+	(cselib_init, cselib_finish): Reset it.
+	* cselib.h (cselib_have_permanent_equivalences): Declare.
+	* alias.c (get_addr): Restore earlier behavior when there
+	aren't permanent equivalences.
+
 2012-03-01  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/mn10300/mn10300-modes.def: Fix copyright notice.
