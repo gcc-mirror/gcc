@@ -1,3 +1,7 @@
+2012-03-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.md (movmisalign<mode>): New patterns.
+
 2012-03-01  Jeremy Bennett  <jeremy.bennett@embecosm.com>
 	    Joern Rennecke  <joern.rennecke@embecosm.com>
 
