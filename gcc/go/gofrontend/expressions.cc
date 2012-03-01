@@ -13878,7 +13878,7 @@ tree
 Heap_composite_expression::do_get_tree(Translate_context* context)
 {
   tree expr_tree = this->expr_->get_tree(context);
-  if (expr_tree == error_mark_node)
+  if (expr_tree == error_mark_node || TREE_TYPE(expr_tree) == error_mark_node)
     return error_mark_node;
   tree expr_size = TYPE_SIZE_UNIT(TREE_TYPE(expr_tree));
   go_assert(TREE_CODE(expr_size) == INTEGER_CST);

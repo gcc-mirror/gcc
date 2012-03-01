@@ -1,3 +1,9 @@
+2012-02-29  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (class Gcc_tree): Add set_tree method.
+	(set_placeholder_pointer_type): When setting to a pointer to
+	error, set to error_mark_node.
+
 2012-02-23  Richard Guenther  <rguenther@suse.de>
 
 	* go-gcc.cc (Gcc_backend::placeholder_pointer_type): Use
