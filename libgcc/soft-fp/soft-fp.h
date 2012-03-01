@@ -1,5 +1,5 @@
 /* Software floating-point emulation.
-   Copyright (C) 1997,1998,1999,2000,2002,2003,2005,2006
+   Copyright (C) 1997,1998,1999,2000,2002,2003,2005,2006,2007,2012
 	Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
@@ -27,9 +27,8 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, 51 Franklin Street, Fifth Floor, Boston,
-   MA 02110-1301, USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 #ifndef SOFT_FP_H
 #define SOFT_FP_H
@@ -83,6 +82,16 @@
 #endif
 #ifndef FP_EX_DENORM
 #define FP_EX_DENORM		0
+#endif
+
+/* _FP_STRUCT_LAYOUT may be defined as an attribute to determine the
+   struct layout variant used for structures where bit-fields are used
+   to access specific parts of binary floating-point numbers.  This is
+   required for systems where the default ABI uses struct layout with
+   differences in how consecutive bit-fields are laid out from the
+   default expected by soft-fp.  */
+#ifndef _FP_STRUCT_LAYOUT
+#define _FP_STRUCT_LAYOUT
 #endif
 
 #ifdef _FP_DECL_EX

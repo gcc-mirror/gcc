@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Definitions for IEEE Double Precision
-   Copyright (C) 1997, 1998, 1999, 2006, 2007, 2008, 2009
+   Copyright (C) 1997, 1998, 1999, 2006, 2007, 2008, 2009, 2012
    Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
@@ -28,9 +28,8 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, 51 Franklin Street, Fifth Floor, Boston,
-   MA 02110-1301, USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 #if _FP_W_TYPE_SIZE < 32
 #error "Here's a nickel kid.  Go buy yourself a real computer."
@@ -68,7 +67,7 @@ typedef float DFtype __attribute__((mode(DF)));
 union _FP_UNION_D
 {
   DFtype flt;
-  struct {
+  struct _FP_STRUCT_LAYOUT {
 #if __BYTE_ORDER == __BIG_ENDIAN
     unsigned sign  : 1;
     unsigned exp   : _FP_EXPBITS_D;
@@ -167,7 +166,7 @@ union _FP_UNION_D
 union _FP_UNION_D
 {
   DFtype flt;
-  struct {
+  struct _FP_STRUCT_LAYOUT {
 #if __BYTE_ORDER == __BIG_ENDIAN
     unsigned sign   : 1;
     unsigned exp    : _FP_EXPBITS_D;
