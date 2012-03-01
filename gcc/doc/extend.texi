@@ -2719,7 +2719,8 @@ Use this attribute on the ARM, AVR, CR16, Epiphany, M32C, M32R/D, m68k, MeP, MIP
 RL78, RX and Xstormy16 ports to indicate that the specified function is an
 interrupt handler.  The compiler will generate function entry and exit
 sequences suitable for use in an interrupt handler when this attribute
-is present.
+is present.  With Epiphany targets it may also generate a special section with
+code to initialize the interrupt vector table.
 
 Note, interrupt handlers for the Blackfin, H8/300, H8/300H, H8S, MicroBlaze,
 and SH processors can be specified via the @code{interrupt_handler} attribute.
@@ -2737,6 +2738,48 @@ Permissible values for this parameter are: IRQ, FIQ, SWI, ABORT and UNDEF@.
 
 On ARMv7-M the interrupt type is ignored, and the attribute means the function
 may be called with a word aligned stack pointer.
+
+On Epiphany targets one or more optional parameters can be added like this:
+
+@smallexample
+void __attribute__ ((interrupt ("dma0, dma1"))) universal_dma_handler ();
+@end smallexample
+
+Permissible values for these parameters are: @w{@code{reset}},
+@w{@code{software_exception}}, @w{@code{page_miss}},
+@w{@code{timer0}}, @w{@code{timer1}}, @w{@code{message}},
+@w{@code{dma0}}, @w{@code{dma1}}, @w{@code{wand}} and @w{@code{swi}}.
+Multiple parameters indicate that multiple entries in the interrupt
+vector table should be initialized for this function, i.e. for each
+parameter @w{@var{name}}, a jump to the function will be emitted in
+the section @w{ivt_entry_@var{name}}.  The parameter(s) may be omitted
+entirely, in which case no interrupt vector table entry will be provided.
+
+Note, on Epiphany targets, interrupts are enabled inside the function
+unless the @code{disinterrupt} attribute is also specified.
+
+On Epiphany targets, you can also use the following attribute to
+modify the behavior of an interrupt handler:
+@table @code
+@item forwarder_section
+@cindex @code{forwarder_section} attribute
+The interrupt handler may be in external memory which cannot be
+reached by a branch instruction, so generate a local memory trampoline
+to transfer control.  The single parameter identifies the section where
+the trampoline will be placed.
+@end table
+
+The following examples are all valid uses of these attributes on
+Epiphany targets:
+@smallexample
+void __attribute__ ((interrupt)) universal_handler ();
+void __attribute__ ((interrupt ("dma1"))) dma1_handler ();
+void __attribute__ ((interrupt ("dma0, dma1"))) universal_dma_handler ();
+void __attribute__ ((interrupt ("timer0"), disinterrupt))
+  fast_timer_handler ();
+void __attribute__ ((interrupt ("dma0, dma1"), forwarder_section ("tramp")))
+  external_dma_handler ();
+@end smallexample
 
 On MIPS targets, you can use the following attributes to modify the behavior
 of an interrupt handler:
