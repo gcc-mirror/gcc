@@ -1,3 +1,9 @@
+2012-03-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Restore built-in
+	defines for __UINT24_MAX__, __INT24_MAX__, __INT24_MIN__ 
+	unintentionally removed in r184616.
+
 2012-03-01  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	* doc/invoke.texi: Document AMD bdver2 and remove mentioning
