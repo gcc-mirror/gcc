@@ -1,6 +1,6 @@
 ;; Machine description of the Adaptiva epiphany cpu for GNU C compiler
 ;; Copyright (C) 1994, 1997, 1998, 1999, 2000, 2004, 2005, 2007, 2009, 2010,
-;; 2011 Free Software Foundation, Inc.
+;; 2011, 2012 Free Software Foundation, Inc.
 ;; Contributed by Embecosm on behalf of Adapteva, Inc.
 
 ;; This file is part of GCC.
@@ -2437,6 +2437,24 @@
     = simplify_gen_subreg (<vmode_PART>mode, operands[0], <MODE>mode,
 			   UNITS_PER_WORD * INTVAL (operands[2]));
   emit_move_insn (operands[0], operands[1]);
+  DONE;
+})
+
+(define_expand "movmisalign<mode>"
+ [(set (match_operand:DWV2MODE 0 "nonimmediate_operand" "")
+       (match_operand:DWV2MODE 1 "general_operand" ""))]
+ ""
+{
+  rtx op00, op01, op10, op11;
+
+  op00 = simplify_gen_subreg (<vmode_PART>mode, operands[0], <MODE>mode, 0);
+  op01 = simplify_gen_subreg (<vmode_PART>mode, operands[0], <MODE>mode,
+			      UNITS_PER_WORD);
+  op10 = simplify_gen_subreg (<vmode_PART>mode, operands[1], <MODE>mode, 0);
+  op11 = simplify_gen_subreg (<vmode_PART>mode, operands[1], <MODE>mode,
+			      UNITS_PER_WORD);
+  emit_move_insn (op00, op10);
+  emit_move_insn (op01, op11);
   DONE;
 })
 
