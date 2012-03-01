@@ -622,16 +622,24 @@ Type::are_assignable_check_hidden(const Type* lhs, const Type* rhs,
 				  std::string* reason)
 {
   // Do some checks first.  Make sure the types are defined.
-  if (rhs != NULL
-      && rhs->forwarded()->forward_declaration_type() == NULL
-      && rhs->is_void_type())
+  if (rhs != NULL && !rhs->is_undefined())
     {
-      if (reason != NULL)
-	*reason = "non-value used as value";
-      return false;
+      if (rhs->is_void_type())
+	{
+	  if (reason != NULL)
+	    *reason = "non-value used as value";
+	  return false;
+	}
+      if (rhs->is_call_multiple_result_type())
+	{
+	  if (reason != NULL)
+	    reason->assign(_("multiple value function call in "
+			     "single value context"));
+	  return false;
+	}
     }
 
-  if (lhs != NULL && lhs->forwarded()->forward_declaration_type() == NULL)
+  if (lhs != NULL && !lhs->is_undefined())
     {
       // Any value may be assigned to the blank identifier.
       if (lhs->is_sink_type())
@@ -639,9 +647,7 @@ Type::are_assignable_check_hidden(const Type* lhs, const Type* rhs,
 
       // All fields of a struct must be exported, or the assignment
       // must be in the same package.
-      if (check_hidden_fields
-	  && rhs != NULL
-	  && rhs->forwarded()->forward_declaration_type() == NULL)
+      if (check_hidden_fields && rhs != NULL && !rhs->is_undefined())
 	{
 	  if (lhs->has_hidden_fields(NULL, reason)
 	      || rhs->has_hidden_fields(NULL, reason))
@@ -715,9 +721,6 @@ Type::are_assignable_check_hidden(const Type* lhs, const Type* rhs,
     {
       if (rhs->interface_type() != NULL)
 	reason->assign(_("need explicit conversion"));
-      else if (rhs->is_call_multiple_result_type())
-	reason->assign(_("multiple value function call in "
-			 "single value context"));
       else if (lhs->named_type() != NULL && rhs->named_type() != NULL)
 	{
 	  size_t len = (lhs->named_type()->name().length()
