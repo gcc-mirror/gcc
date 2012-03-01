@@ -1,3 +1,15 @@
+2012-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52445
+	* tree-ssa-phiopt.c (struct name_to_bb): Remove ssa_name field,
+	add ssa_name_ver, offset and size fields and change store field
+	to bool.
+	(name_to_bb_hash, name_to_bb_eq): Adjust for the above changes.
+	(add_or_mark_expr): Likewise.  Only consider previous stores
+	with the same size and offset.
+	(nt_init_block): Only look at gimple_assign_single_p stmts,
+	doesn't look at rhs2.
+
 2012-03-01  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52443
