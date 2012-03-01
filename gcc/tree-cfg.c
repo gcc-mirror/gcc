@@ -3340,15 +3340,12 @@ verify_gimple_assign_unary (gimple stmt)
     {
     CASE_CONVERT:
       {
-	/* Allow conversions between integral types and pointers only if
+	/* Allow conversions from pointer type to integral type only if
 	   there is no sign or zero extension involved.
 	   For targets were the precision of ptrofftype doesn't match that
-	   of pointers we need to allow arbitrary conversions from and
-	   to ptrofftype.  */
+	   of pointers we need to allow arbitrary conversions to ptrofftype.  */
 	if ((POINTER_TYPE_P (lhs_type)
-	     && INTEGRAL_TYPE_P (rhs1_type)
-	     && (TYPE_PRECISION (lhs_type) >= TYPE_PRECISION (rhs1_type)
-		 || ptrofftype_p (rhs1_type)))
+	     && INTEGRAL_TYPE_P (rhs1_type))
 	    || (POINTER_TYPE_P (rhs1_type)
 		&& INTEGRAL_TYPE_P (lhs_type)
 		&& (TYPE_PRECISION (rhs1_type) >= TYPE_PRECISION (lhs_type)
