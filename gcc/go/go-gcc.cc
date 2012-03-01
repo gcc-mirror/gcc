@@ -56,6 +56,10 @@ class Gcc_tree
   get_tree() const
   { return this->t_; }
 
+  void
+  set_tree(tree t)
+  { this->t_ = t; }
+
  private:
   tree t_;
 };
@@ -626,7 +630,7 @@ Gcc_backend::set_placeholder_pointer_type(Btype* placeholder,
   tree tt = to_type->get_tree();
   if (tt == error_mark_node)
     {
-      TREE_TYPE(pt) = tt;
+      placeholder->set_tree(error_mark_node);
       return false;
     }
   gcc_assert(TREE_CODE(tt) == POINTER_TYPE);

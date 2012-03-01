@@ -3948,8 +3948,9 @@ Parse::return_stat()
 	   ++p)
 	{
 	  Named_object* no = this->gogo_->lookup((*p)->name(), NULL);
-	  go_assert(no != NULL);
-	  if (!no->is_result_variable())
+	  if (no == NULL)
+	    go_assert(saw_errors());
+	  else if (!no->is_result_variable())
 	    error_at(location, "%qs is shadowed during return",
 		     (*p)->message_name().c_str());
 	}
