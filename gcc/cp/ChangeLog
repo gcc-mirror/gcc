@@ -1,3 +1,10 @@
+2012-02-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51930
+	* decl.c (check_tag_decl): Move warning for misplaced attributes here.
+	(shadow_tag): From here.
+	* parser.c (cp_parser_explicit_instantiation): Don't warn here.
+
 2012-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/52312
