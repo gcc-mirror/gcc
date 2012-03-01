@@ -139,7 +139,7 @@
        (match_test "ival >= 0 && ival <= 255")))
  
 (define_constraint "K12"
-  "An unsigned 8-bit constant, as used in SH2A 12-bit displacement addressing."
+  "An unsigned 12-bit constant, as used in SH2A 12-bit displacement addressing."
   (and (match_code "const_int")
        (match_test "ival >= 0 && ival <= 4095")))
 
