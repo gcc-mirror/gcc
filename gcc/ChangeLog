@@ -1,5 +1,10 @@
 2012-03-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh-protos.h (tertiary_reload_operand): Remove dead function.
+	* config/sh/sh.c (tertiary_reload_operand): Likewise.
+
+2012-03-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/constraints.md: Fix comment typo.
 
 2012-03-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
