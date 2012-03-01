@@ -1,3 +1,8 @@
+2012-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/52445
+	* gcc.dg/pr52445.c: New test.
+
 2012-02-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52437
