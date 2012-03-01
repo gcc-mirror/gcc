@@ -1,3 +1,15 @@
+2012-03-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/extend.texi (AVR Built-in Functions): Document
+	__builtin_avr_flash_segment.
+
+	* config/avr/builtins.def (__builtin_avr_flash_segment): New entry.
+	* config/avr/avr.md (flash_segment, flash_segment1): New expanders.
+	(*split.flash_segment): New insn-and-split.
+	* config/avr/avr.c (avr_init_builtins): Add local variables:
+	const_memx_void_node, const_memx_ptr_type_node,
+	char_ftype_const_memx_ptr.
+
 2012-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/52445

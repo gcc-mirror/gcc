@@ -8809,7 +8809,18 @@ might increase delay time. @code{ticks} must be a compile time
 integer constant; delays with a variable number of cycles are not supported.
 
 @smallexample
-     unsigned char __builtin_avr_insert_bits (unsigned long map, unsigned char bits, unsigned char val)
+char __builtin_avr_flash_segment (const __memx void*)
+@end smallexample
+
+@noindent
+This built-in takes a byte address to the 24-bit
+@ref{AVR Named Address Spaces,address space} @code{__memx} and returns
+the number of the flash segment (the 64 KiB chunk) where the address
+points to.  Counting starts at @code{0}.
+If the address does not point to flash memory, return @code{-1}.
+
+@smallexample
+unsigned char __builtin_avr_insert_bits (unsigned long map, unsigned char bits, unsigned char val)
 @end smallexample
 
 @noindent
