@@ -1,3 +1,7 @@
+2012-03-01  Release Manager
+
+	* GCC 4.6.3 released.
+
 2012-02-10  Kai Tietz  <ktietz@redhat.com>
 
 	PR boehm-gc/48514
