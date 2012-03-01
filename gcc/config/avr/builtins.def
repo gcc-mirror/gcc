@@ -48,3 +48,4 @@ DEF_BUILTIN ("__builtin_avr_fmulsu", 2, AVR_BUILTIN_FMULSU, int_ftype_char_uchar
 /* More complex stuff that cannot be mapped 1:1 to an instruction.  */
 DEF_BUILTIN ("__builtin_avr_delay_cycles", -1, AVR_BUILTIN_DELAY_CYCLES, void_ftype_ulong, -1)
 DEF_BUILTIN ("__builtin_avr_insert_bits", 3, AVR_BUILTIN_INSERT_BITS, uchar_ftype_ulong_uchar_uchar, CODE_FOR_insert_bits)
+DEF_BUILTIN ("__builtin_avr_flash_segment", 1, AVR_BUILTIN_FLASH_SEGMENT, char_ftype_const_memx_ptr, CODE_FOR_flash_segment)

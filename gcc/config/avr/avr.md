@@ -5393,6 +5393,53 @@
    (set_attr "cc" "clobber")])
 
 
+;; __builtin_avr_flash_segment
+
+;; Just a helper for the next "official" expander.
+
+(define_expand "flash_segment1"
+  [(set (match_operand:QI 0 "register_operand" "")
+        (subreg:QI (match_operand:PSI 1 "register_operand" "")
+                   2))
+   (set (cc0)
+        (compare (match_dup 0)
+                 (const_int 0)))
+   (set (pc)
+        (if_then_else (ge (cc0)
+                          (const_int 0))
+                      (label_ref (match_operand 2 "" ""))
+                      (pc)))
+   (set (match_dup 0)
+        (const_int -1))])
+
+(define_expand "flash_segment"
+  [(parallel [(match_operand:QI 0 "register_operand" "")
+              (match_operand:PSI 1 "register_operand" "")])]
+  ""
+  {
+    rtx label = gen_label_rtx ();
+    emit (gen_flash_segment1 (operands[0], operands[1], label));
+    emit_label (label);
+    DONE;
+  })
+
+;; Actually, it's too late now to work out address spaces known at compiletime.
+;; Best place would be to fold ADDR_SPACE_CONVERT_EXPR in avr_fold_builtin.
+;; However, avr_addr_space_convert can add some built-in knowledge for PSTR
+;; so that ADDR_SPACE_CONVERT_EXPR in the built-in must not be resolved.
+
+(define_insn_and_split "*split.flash_segment"
+  [(set (match_operand:QI 0 "register_operand"                        "=d")
+        (subreg:QI (lo_sum:PSI (match_operand:QI 1 "nonmemory_operand" "ri")
+                               (match_operand:HI 2 "register_operand"  "r"))
+                   2))]
+  ""
+  { gcc_unreachable(); }
+  ""
+  [(set (match_dup 0)
+        (match_dup 1))])
+
+
 ;; Parity
 
 ;; Postpone expansion of 16-bit parity to libgcc call until after combine for

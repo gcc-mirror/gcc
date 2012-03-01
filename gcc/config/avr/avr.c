@@ -10432,6 +10432,19 @@ avr_init_builtins (void)
                                 unsigned_char_type_node,
                                 NULL_TREE);
 
+  tree const_memx_void_node
+      = build_qualified_type (void_type_node,
+                              TYPE_QUAL_CONST
+                              | ENCODE_QUAL_ADDR_SPACE (ADDR_SPACE_MEMX));
+
+  tree const_memx_ptr_type_node
+      = build_pointer_type_for_mode (const_memx_void_node, PSImode, false);
+  
+  tree char_ftype_const_memx_ptr
+      = build_function_type_list (char_type_node,
+                                  const_memx_ptr_type_node,
+                                  NULL);
+
 #define DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, CODE)                       \
   add_builtin_function (NAME, TYPE, ID, BUILT_IN_MD, NULL, NULL_TREE);
 #include "builtins.def"  
