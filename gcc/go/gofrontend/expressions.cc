@@ -4300,14 +4300,23 @@ Unary_expression::eval_integer(Operator op, Type* utype, mpz_t uval, mpz_t val,
 	  unsigned HOST_WIDE_INT* phwi = new unsigned HOST_WIDE_INT[count];
 	  memset(phwi, 0, count * sizeof(HOST_WIDE_INT));
 
+	  size_t obits = utype->integer_type()->bits();
+
+	  if (!utype->integer_type()->is_unsigned()
+	      && mpz_sgn(uval) < 0)
+	    {
+	      mpz_t adj;
+	      mpz_init_set_ui(adj, 1);
+	      mpz_mul_2exp(adj, adj, obits);
+	      mpz_add(uval, uval, adj);
+	      mpz_clear(adj);
+	    }
+
 	  size_t ecount;
 	  mpz_export(phwi, &ecount, -1, sizeof(HOST_WIDE_INT), 0, 0, uval);
 	  go_assert(ecount <= count);
 
 	  // Trim down to the number of words required by the type.
-	  size_t obits = utype->integer_type()->bits();
-	  if (!utype->integer_type()->is_unsigned())
-	    ++obits;
 	  size_t ocount = ((obits + HOST_BITS_PER_WIDE_INT - 1)
 			   / HOST_BITS_PER_WIDE_INT);
 	  go_assert(ocount <= count);
@@ -4321,6 +4330,16 @@ Unary_expression::eval_integer(Operator op, Type* utype, mpz_t uval, mpz_t val,
 				 >> clearbits);
 
 	  mpz_import(val, ocount, -1, sizeof(HOST_WIDE_INT), 0, 0, phwi);
+
+	  if (!utype->integer_type()->is_unsigned()
+	      && mpz_tstbit(val, obits - 1))
+	    {
+	      mpz_t adj;
+	      mpz_init_set_ui(adj, 1);
+	      mpz_mul_2exp(adj, adj, obits);
+	      mpz_sub(val, val, adj);
+	      mpz_clear(adj);
+	    }
 
 	  delete[] phwi;
 	}
