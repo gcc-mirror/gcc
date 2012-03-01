@@ -4705,29 +4705,33 @@ Unary_expression::do_get_tree(Translate_context* context)
 	// need to check for nil.  We don't bother to check for small
 	// structs because we expect the system to crash on a nil
 	// pointer dereference.
-	HOST_WIDE_INT s = int_size_in_bytes(TREE_TYPE(TREE_TYPE(expr)));
-	if (s == -1 || s >= 4096)
+	tree target_type_tree = TREE_TYPE(TREE_TYPE(expr));
+	if (!VOID_TYPE_P(target_type_tree))
 	  {
-	    if (!DECL_P(expr))
-	      expr = save_expr(expr);
-	    tree compare = fold_build2_loc(loc.gcc_location(), EQ_EXPR,
-                                           boolean_type_node,
-					   expr,
-					   fold_convert(TREE_TYPE(expr),
-							null_pointer_node));
-	    tree crash = Gogo::runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
-					     loc);
-	    expr = fold_build2_loc(loc.gcc_location(), COMPOUND_EXPR,
-                                   TREE_TYPE(expr), build3(COND_EXPR,
-                                                           void_type_node,
-                                                           compare, crash,
-                                                           NULL_TREE),
-				   expr);
+	    HOST_WIDE_INT s = int_size_in_bytes(target_type_tree);
+	    if (s == -1 || s >= 4096)
+	      {
+		if (!DECL_P(expr))
+		  expr = save_expr(expr);
+		tree compare = fold_build2_loc(loc.gcc_location(), EQ_EXPR,
+					       boolean_type_node,
+					       expr,
+					       fold_convert(TREE_TYPE(expr),
+							    null_pointer_node));
+		tree crash = Gogo::runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
+						 loc);
+		expr = fold_build2_loc(loc.gcc_location(), COMPOUND_EXPR,
+				       TREE_TYPE(expr), build3(COND_EXPR,
+							       void_type_node,
+							       compare, crash,
+							       NULL_TREE),
+				       expr);
+	      }
 	  }
 
 	// If the type of EXPR is a recursive pointer type, then we
 	// need to insert a cast before indirecting.
-	if (TREE_TYPE(TREE_TYPE(expr)) == ptr_type_node)
+	if (VOID_TYPE_P(target_type_tree))
 	  {
 	    Type* pt = this->expr_->type()->points_to();
 	    tree ind = type_to_tree(pt->get_backend(context->gogo()));
