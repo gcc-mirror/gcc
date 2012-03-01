@@ -1,5 +1,13 @@
 2012-03-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh-protos.h: Update copyright notice dates.
+	* config/sh/sh.h: Likewise.
+	* config/sh/sh.md: Likewise.
+	* config/sh/constraints.md: Likewise.
+	* config/sh/predicates.md: Likewise.
+
+2012-03-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh-protos.h (tertiary_reload_operand): Remove dead function.
 	* config/sh/sh.c (tertiary_reload_operand): Likewise.
 
