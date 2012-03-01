@@ -3,6 +3,7 @@
 /* { dg-options "-std=c99 -D_ISO_C_SOURCE=19990L" { target alpha*-dec-osf5* } } */
 /* { dg-options "-std=c99 -D_XOPEN_SOURCE=500" { target mips-sgi-irix6.5 *-*-solaris2.[89] } } */
 /* { dg-options "-std=gnu99" { target *-*-hpux* } } */
+/* { dg-additional-options "-D__USE_MINGW_ANSI_STDIO=1" { target *-*-mingw* } } */
 /* { dg-xfail-if "no C99 snprintf function" { *-*-hpux10* } } */
 /* { dg-xfail-run-if "non-conforming C99 snprintf" { *-*-hpux11.[012]* } } */
 

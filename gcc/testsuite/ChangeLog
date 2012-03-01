@@ -1,3 +1,10 @@
+2012-03-01  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.dg/torture/pr47917.c: Make test using POSIX-printf
+	routines on mingw targets.
+	* gcc.dg/vect/pr46126.c (size_t): Add support for
+	LLP64 target.
+
 2012-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/52445
