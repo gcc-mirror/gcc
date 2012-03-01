@@ -1066,6 +1066,10 @@ class Set_and_use_temporary_expression : public Expression
   { return this->expr_; }
 
  protected:
+  int
+  do_traverse(Traverse* traverse)
+  { return Expression::traverse(&this->expr_, traverse); }
+
   Type*
   do_type();
 

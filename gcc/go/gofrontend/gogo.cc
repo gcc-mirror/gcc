@@ -2500,6 +2500,9 @@ Build_recover_thunks::function(Named_object* orig_no)
 
   Call_expression* call = Expression::make_call(fn, args, false, location);
 
+  // Any varargs call has already been lowered.
+  call->set_varargs_are_lowered();
+
   Statement* s;
   if (orig_fntype->results() == NULL || orig_fntype->results()->empty())
     s = Statement::make_statement(call, true);
@@ -5346,5 +5349,5 @@ Statement_inserter::insert(Statement* s)
   else if (this->var_ != NULL)
     this->var_->add_preinit_statement(this->gogo_, s);
   else
-    go_unreachable();
+    go_assert(saw_errors());
 }
