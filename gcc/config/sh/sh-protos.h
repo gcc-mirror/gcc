@@ -104,7 +104,6 @@ extern int fp_arith_reg_operand (rtx, enum machine_mode);
 extern int arith_operand (rtx, enum machine_mode);
 extern int arith_reg_or_0_operand (rtx, enum machine_mode);
 extern int logical_operand (rtx, enum machine_mode);
-extern int tertiary_reload_operand (rtx, enum machine_mode);
 extern int fpscr_operand (rtx, enum machine_mode);
 extern int fpul_operand (rtx, enum machine_mode);
 extern int commutative_float_operator (rtx, enum machine_mode);
