@@ -1,3 +1,13 @@
+2012-01-02  Oleg Endo  <olegendo@gcc.gnu.org>
+ 
+	PR target/31640
+	* config/sh/sh.h (LOOP_ALIGN): Move logic to sh_loop_align.
+	* config/sh/sh.c: Update copyright notice dates.
+	(sh_loop_align): Add logic from LOOP_ALIGN.  Don't disable loop
+	alignment for TARGET_HARD_SH4.
+	(sh_option_override): Reduce default function alignment.  Set 
+	loop alignment to 4 bytes when not optimizing for size.
+
 2012-03-02  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	PR middle-end/50335

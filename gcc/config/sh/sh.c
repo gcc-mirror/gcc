@@ -1,6 +1,6 @@
 /* Output routines for GCC for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
@@ -816,20 +816,42 @@ sh_option_override (void)
 	}
     }
 
+  /*  Adjust loop, jump and function alignment values (in bytes), if those
+      were not specified by the user using -falign-loops, -falign-jumps
+      and -falign-functions options.
+      32 bit alignment is better for speed, because instructions can be
+      fetched as a pair from a longword boundary.  For size use 16 bit
+      alignment to get more compact code.
+      Aligning all jumps increases the code size, even if it might
+      result in slightly faster code.  Thus, it is set to the smallest 
+      alignment possible if not specified by the user.  */
   if (align_loops == 0)
-    align_loops =  1 << (TARGET_SH5 ? 3 : 2);
+    {
+      if (TARGET_SH5)
+	align_loops = 8;
+      else
+	align_loops = optimize_size ? 2 : 4;
+    }
+
   if (align_jumps == 0)
-    align_jumps = 1 << CACHE_LOG;
+    {
+      if (TARGET_SHMEDIA)
+	align_jumps = 1 << CACHE_LOG;
+      else
+	align_jumps = 2;
+    }
   else if (align_jumps < (TARGET_SHMEDIA ? 4 : 2))
     align_jumps = TARGET_SHMEDIA ? 4 : 2;
 
-  /* Allocation boundary (in *bytes*) for the code of a function.
-     SH1: 32 bit alignment is faster, because instructions are always
-     fetched as a pair from a longword boundary.
-     SH2 .. SH5 : align to cache line start.  */
   if (align_functions == 0)
-    align_functions
-      = optimize_size ? FUNCTION_BOUNDARY/8 : (1 << CACHE_LOG);
+    {
+      if (TARGET_SHMEDIA)
+	align_functions = optimize_size
+			  ? FUNCTION_BOUNDARY/8 : (1 << CACHE_LOG);
+      else
+	align_functions = optimize_size ? 2 : 4;
+    }
+
   /* The linker relaxation code breaks when a function contains
      alignments that are larger than that at the start of a
      compilation unit.  */
@@ -5341,6 +5363,9 @@ int
 sh_loop_align (rtx label)
 {
   rtx next = label;
+
+  if (! optimize || optimize_size)
+    return 0;
 
   do
     next = next_nonnote_insn (next);
