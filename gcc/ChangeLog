@@ -1,5 +1,6 @@
 2012-03-02  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
+	PR middle-end/50335
 	* doc/invoke.texi (floop-flatten): Remove.
 	* toplev.c (process_options): Remove references to flag_loop_flatten.
 	* tree-ssa-loop.c (gate_graphite_transform): Same.
