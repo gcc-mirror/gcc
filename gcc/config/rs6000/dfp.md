@@ -546,6 +546,13 @@
   "dcmpuq %0,%1,%2"
   [(set_attr "type" "fpcompare")])
 
+(define_insn "floatdidd2"
+  [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
+	(float:DD (match_operand:DI 1 "gpc_reg_operand" "d")))]
+  "TARGET_DFP && TARGET_POPCNTD"
+  "dcffix %0,%1"
+  [(set_attr "type" "fp")])
+
 (define_insn "floatditd2"
   [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
 	(float:TD (match_operand:DI 1 "gpc_reg_operand" "d")))]
