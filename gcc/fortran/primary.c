@@ -1910,6 +1910,19 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       && gfc_get_default_type (sym->name, sym->ns)->type == BT_DERIVED)
     gfc_set_default_type (sym, 0, sym->ns);
 
+  if (sym->ts.type == BT_UNKNOWN && gfc_match_char ('%') == MATCH_YES)
+    {
+      gfc_error ("Symbol '%s' at %C has no IMPLICIT type", sym->name);
+      return MATCH_ERROR;
+    }
+  else if ((sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS)
+	   && gfc_match_char ('%') == MATCH_YES)
+    {
+      gfc_error ("Unexpected '%%' for nonderived-type variable '%s' at %C",
+		 sym->name)
+      return MATCH_ERROR;
+    }
+
   if ((sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS)
       || gfc_match_char ('%') != MATCH_YES)
     goto check_substring;
