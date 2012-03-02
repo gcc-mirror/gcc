@@ -207,7 +207,7 @@ func storeIword(p unsafe.Pointer, w iword, n uintptr) {
 
 // emptyInterface is the header for an interface{} value.
 type emptyInterface struct {
-	typ  *runtime.Type
+	typ  *runtimeType
 	word iword
 }
 
@@ -215,7 +215,7 @@ type emptyInterface struct {
 type nonEmptyInterface struct {
 	// see ../runtime/iface.c:/Itab
 	itab *struct {
-		typ *runtime.Type          // dynamic concrete type
+		typ *runtimeType           // dynamic concrete type
 		fun [100000]unsafe.Pointer // method table
 	}
 	word iword
@@ -692,7 +692,7 @@ func (v Value) FieldByNameFunc(match func(string) bool) Value {
 	return Value{}
 }
 
-// Float returns v's underlying value, as an float64.
+// Float returns v's underlying value, as a float64.
 // It panics if v's Kind is not Float32 or Float64
 func (v Value) Float() float64 {
 	k := v.kind()
@@ -796,6 +796,8 @@ func (v Value) CanInterface() bool {
 // If v is a method obtained by invoking Value.Method
 // (as opposed to Type.Method), Interface cannot return an
 // interface value, so it panics.
+// It also panics if the Value was obtained by accessing
+// unexported struct fields.
 func (v Value) Interface() interface{} {
 	return valueInterface(v, true)
 }
@@ -1244,7 +1246,8 @@ func (v Value) SetInt(x int64) {
 }
 
 // SetLen sets v's length to n.
-// It panics if v's Kind is not Slice.
+// It panics if v's Kind is not Slice or if n is negative or
+// greater than the capacity of the slice.
 func (v Value) SetLen(n int) {
 	v.mustBeAssignable()
 	v.mustBe(Slice)
@@ -1595,6 +1598,10 @@ func Copy(dst, src Value) int {
  * constructors
  */
 
+// implemented in package runtime
+func unsafe_New(Type) unsafe.Pointer
+func unsafe_NewArray(Type, int) unsafe.Pointer
+
 // MakeSlice creates a new zero-initialized slice value
 // for the specified slice type, length, and capacity.
 func MakeSlice(typ Type, len, cap int) Value {
@@ -1607,7 +1614,7 @@ func MakeSlice(typ Type, len, cap int) Value {
 
 	// Reinterpret as *SliceHeader to edit.
 	s := (*SliceHeader)(unsafe.Pointer(&x))
-	s.Data = uintptr(unsafe.NewArray(typ.Elem(), cap))
+	s.Data = uintptr(unsafe_NewArray(typ.Elem(), cap))
 	s.Len = len
 	s.Cap = cap
 
@@ -1639,7 +1646,7 @@ func MakeMap(typ Type) Value {
 }
 
 // Indirect returns the value that v points to.
-// If v is a nil pointer, Indirect returns a nil Value.
+// If v is a nil pointer, Indirect returns a zero Value.
 // If v is not a pointer, Indirect returns v.
 func Indirect(v Value) Value {
 	if v.Kind() != Ptr {
@@ -1686,7 +1693,7 @@ func Zero(typ Type) Value {
 	if t.Kind() == Ptr || t.Kind() == UnsafePointer {
 		return Value{t, nil, fl}
 	}
-	return Value{t, unsafe.New(typ), fl | flagIndir}
+	return Value{t, unsafe_New(typ), fl | flagIndir}
 }
 
 // New returns a Value representing a pointer to a new zero value
@@ -1695,9 +1702,16 @@ func New(typ Type) Value {
 	if typ == nil {
 		panic("reflect: New(nil)")
 	}
-	ptr := unsafe.New(typ)
+	ptr := unsafe_New(typ)
 	fl := flag(Ptr) << flagKindShift
 	return Value{typ.common().ptrTo(), ptr, fl}
+}
+
+// NewAt returns a Value representing a pointer to a value of the
+// specified type, using p as that pointer.
+func NewAt(typ Type, p unsafe.Pointer) Value {
+	fl := flag(Ptr) << flagKindShift
+	return Value{typ.common().ptrTo(), p, fl}
 }
 
 // assignTo returns a value v that can be assigned directly to typ.
@@ -1738,20 +1752,20 @@ func (v Value) assignTo(context string, dst *commonType, target *interface{}) Va
 func chancap(ch iword) int32
 func chanclose(ch iword)
 func chanlen(ch iword) int32
-func chanrecv(t *runtime.Type, ch iword, nb bool) (val iword, selected, received bool)
-func chansend(t *runtime.Type, ch iword, val iword, nb bool) bool
+func chanrecv(t *runtimeType, ch iword, nb bool) (val iword, selected, received bool)
+func chansend(t *runtimeType, ch iword, val iword, nb bool) bool
 
-func makechan(typ *runtime.Type, size uint32) (ch iword)
-func makemap(t *runtime.Type) (m iword)
-func mapaccess(t *runtime.Type, m iword, key iword) (val iword, ok bool)
-func mapassign(t *runtime.Type, m iword, key, val iword, ok bool)
-func mapiterinit(t *runtime.Type, m iword) *byte
+func makechan(typ *runtimeType, size uint32) (ch iword)
+func makemap(t *runtimeType) (m iword)
+func mapaccess(t *runtimeType, m iword, key iword) (val iword, ok bool)
+func mapassign(t *runtimeType, m iword, key, val iword, ok bool)
+func mapiterinit(t *runtimeType, m iword) *byte
 func mapiterkey(it *byte) (key iword, ok bool)
 func mapiternext(it *byte)
 func maplen(m iword) int32
 
 func call(typ *commonType, fnaddr unsafe.Pointer, isInterface bool, isMethod bool, params *unsafe.Pointer, results *unsafe.Pointer)
-func ifaceE2I(t *runtime.Type, src interface{}, dst unsafe.Pointer)
+func ifaceE2I(t *runtimeType, src interface{}, dst unsafe.Pointer)
 
 // Dummy annotation marking that the value x escapes,
 // for use in cases where the reflect code is so clever that

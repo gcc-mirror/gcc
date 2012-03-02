@@ -240,7 +240,7 @@ runtime_MProf_Free(void *p, uintptr size)
 // Go interface to profile data.  (Declared in extern.go)
 // Assumes Go sizeof(int) == sizeof(int32)
 
-// Must match MemProfileRecord in extern.go.
+// Must match MemProfileRecord in debug.go.
 typedef struct Record Record;
 struct Record {
 	int64 alloc_bytes, free_bytes;
@@ -291,4 +291,29 @@ runtime_MProf_Mark(void (*scan)(byte *, int64))
 	scan((byte*)&buckets, sizeof buckets);
 	scan((byte*)&addrhash, sizeof addrhash);
 	scan((byte*)&addrfree, sizeof addrfree);
+}
+
+// Must match ThreadProfileRecord in debug.go.
+typedef struct TRecord TRecord;
+struct TRecord {
+	uintptr stk[32];
+};
+
+func ThreadProfile(p Slice) (n int32, ok bool) {
+	TRecord *r;
+	M *first, *m;
+	
+	first = runtime_atomicloadp(&runtime_allm);
+	n = 0;
+	for(m=first; m; m=m->alllink)
+		n++;
+	ok = false;
+	if(n <= p.__count) {
+		ok = true;
+		r = (TRecord*)p.__values;
+		for(m=first; m; m=m->alllink) {
+			runtime_memmove(r->stk, m->createstack, sizeof r->stk);
+			r++;
+		}
+	}
 }

@@ -16,6 +16,7 @@ import (
 	. "net/http"
 	"net/http/httptest"
 	"net/url"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -441,11 +442,7 @@ func TestRoundTripGzip(t *testing.T) {
 		}
 		if accept == "gzip" {
 			rw.Header().Set("Content-Encoding", "gzip")
-			gz, err := gzip.NewWriter(rw)
-			if err != nil {
-				t.Errorf("gzip NewWriter: %v", err)
-				return
-			}
+			gz := gzip.NewWriter(rw)
 			gz.Write([]byte(responseBody))
 			gz.Close()
 		} else {
@@ -512,7 +509,7 @@ func TestTransportGzip(t *testing.T) {
 				rw.Header().Set("Content-Length", strconv.Itoa(buf.Len()))
 			}()
 		}
-		gz, _ := gzip.NewWriter(w)
+		gz := gzip.NewWriter(w)
 		gz.Write([]byte(testString))
 		if req.FormValue("body") == "large" {
 			io.CopyN(gz, rand.Reader, nRandBytes)
@@ -633,6 +630,70 @@ func TestTransportGzipRecursive(t *testing.T) {
 	}
 	if g, e := res.Header.Get("Content-Encoding"), ""; g != e {
 		t.Fatalf("Content-Encoding = %q; want %q", g, e)
+	}
+}
+
+// tests that persistent goroutine connections shut down when no longer desired.
+func TestTransportPersistConnLeak(t *testing.T) {
+	gotReqCh := make(chan bool)
+	unblockCh := make(chan bool)
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		gotReqCh <- true
+		<-unblockCh
+		w.Header().Set("Content-Length", "0")
+		w.WriteHeader(204)
+	}))
+	defer ts.Close()
+
+	tr := &Transport{}
+	c := &Client{Transport: tr}
+
+	n0 := runtime.Goroutines()
+
+	const numReq = 25
+	didReqCh := make(chan bool)
+	for i := 0; i < numReq; i++ {
+		go func() {
+			res, err := c.Get(ts.URL)
+			didReqCh <- true
+			if err != nil {
+				t.Errorf("client fetch error: %v", err)
+				return
+			}
+			res.Body.Close()
+		}()
+	}
+
+	// Wait for all goroutines to be stuck in the Handler.
+	for i := 0; i < numReq; i++ {
+		<-gotReqCh
+	}
+
+	nhigh := runtime.Goroutines()
+
+	// Tell all handlers to unblock and reply.
+	for i := 0; i < numReq; i++ {
+		unblockCh <- true
+	}
+
+	// Wait for all HTTP clients to be done.
+	for i := 0; i < numReq; i++ {
+		<-didReqCh
+	}
+
+	tr.CloseIdleConnections()
+	time.Sleep(100 * time.Millisecond)
+	runtime.GC()
+	runtime.GC() // even more.
+	nfinal := runtime.Goroutines()
+
+	growth := nfinal - n0
+
+	// We expect 0 or 1 extra goroutine, empirically.  Allow up to 5.
+	// Previously we were leaking one per numReq.
+	t.Logf("goroutine growth: %d -> %d -> %d (delta: %d)", n0, nhigh, nfinal, growth)
+	if int(growth) > 5 {
+		t.Error("too many new goroutines")
 	}
 }
 

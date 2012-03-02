@@ -7,25 +7,16 @@
 package os
 
 import (
-	"runtime"
 	"syscall"
 )
-
-type UnixSignal int32
-
-func (sig UnixSignal) String() string {
-	s := runtime.Signame(int32(sig))
-	if len(s) > 0 {
-		return s
-	}
-	return "UnixSignal"
-}
 
 // StartProcess starts a new process with the program, arguments and attributes
 // specified by name, argv and attr.
 //
 // StartProcess is a low-level interface. The os/exec package provides
 // higher-level interfaces.
+//
+// If there is an error, it will be of type *PathError.
 func StartProcess(name string, argv []string, attr *ProcAttr) (p *Process, err error) {
 	sysattr := &syscall.ProcAttr{
 		Dir: attr.Dir,
@@ -48,24 +39,7 @@ func StartProcess(name string, argv []string, attr *ProcAttr) (p *Process, err e
 
 // Kill causes the Process to exit immediately.
 func (p *Process) Kill() error {
-	return p.Signal(UnixSignal(syscall.SIGKILL))
-}
-
-// Exec replaces the current process with an execution of the
-// named binary, with arguments argv and environment envv.
-// If successful, Exec never returns.  If it fails, it returns an error.
-//
-// To run a child process, see StartProcess (for a low-level interface)
-// or the os/exec package (for higher-level interfaces).
-func Exec(name string, argv []string, envv []string) error {
-	if envv == nil {
-		envv = Environ()
-	}
-	e := syscall.Exec(name, argv, envv)
-	if e != nil {
-		return &PathError{"exec", name, e}
-	}
-	return nil
+	return p.Signal(Kill)
 }
 
 // TODO(rsc): Should os implement its own syscall.WaitStatus
@@ -133,9 +107,9 @@ func (w *Waitmsg) String() string {
 	case w.Exited():
 		res = "exit status " + itod(w.ExitStatus())
 	case w.Signaled():
-		res = "signal " + itod(w.Signal())
+		res = "signal " + itod(int(w.Signal()))
 	case w.Stopped():
-		res = "stop signal " + itod(w.StopSignal())
+		res = "stop signal " + itod(int(w.StopSignal()))
 		if w.StopSignal() == syscall.SIGTRAP && w.TrapCause() != 0 {
 			res += " (trap " + itod(w.TrapCause()) + ")"
 		}

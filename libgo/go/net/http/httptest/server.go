@@ -61,7 +61,7 @@ func newLocalListener() net.Listener {
 
 // When debugging a particular http server-based test,
 // this flag lets you run
-//	gotest -run=BrokenTest -httptest.serve=127.0.0.1:8000
+//	go test -run=BrokenTest -httptest.serve=127.0.0.1:8000
 // to start the broken server so you can interact with it manually.
 var serve = flag.String("httptest.serve", "", "if non-empty, httptest.NewServer serves on this address and blocks")
 
@@ -95,7 +95,7 @@ func (s *Server) Start() {
 	s.URL = "http://" + s.Listener.Addr().String()
 	go s.Config.Serve(s.Listener)
 	if *serve != "" {
-		fmt.Println(os.Stderr, "httptest: serving on", s.URL)
+		fmt.Fprintln(os.Stderr, "httptest: serving on", s.URL)
 		select {}
 	}
 }

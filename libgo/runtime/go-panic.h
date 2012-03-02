@@ -40,23 +40,4 @@ extern struct __go_empty_interface __go_recover (void);
 
 extern void __go_unwind_stack (void);
 
-/* Functions defined in libgo/go/runtime/error.go.  */
-
-extern void newTypeAssertionError(const struct __go_type_descriptor *pt1,
-				  const struct __go_type_descriptor *pt2,
-				  const struct __go_type_descriptor *pt3,
-				  const struct __go_string *ps1,
-				  const struct __go_string *ps2,
-				  const struct __go_string *ps3,
-				  const struct __go_string *pmeth,
-				  struct __go_empty_interface *ret)
-  __asm__ ("libgo_runtime.runtime.NewTypeAssertionError");
-
-extern void runtime_newErrorString(struct __go_string,
-				   struct __go_empty_interface *)
-  __asm__ ("libgo_runtime.runtime.NewErrorString");
-
-extern void printany(struct __go_empty_interface)
-  __asm__ ("libgo_runtime.runtime.Printany");
-
 #endif /* !defined(LIBGO_GO_PANIC_H) */

@@ -172,7 +172,7 @@ fi
 # The signal numbers.
 grep '^const _SIG[^_]' gen-sysinfo.go | \
   grep -v '^const _SIGEV_' | \
-  sed -e 's/^\(const \)_\(SIG[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+  sed -e 's/^\(const \)_\(SIG[^= ]*\)\(.*\)$/\1\2 = Signal(_\2)/' >> ${OUT}
 
 # The syscall numbers.  We force the names to upper case.
 grep '^const _SYS_' gen-sysinfo.go | \
