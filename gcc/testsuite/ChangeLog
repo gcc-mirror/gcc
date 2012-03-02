@@ -1,5 +1,13 @@
 2012-03-02  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/52325
+	* gfortran.dg/derived_comp_array_ref_8.f90: New.
+	* gfortran.dg/nullify_2.f90: Update dg-error.
+	* gfortran.dg/nullify_4.f90: Ditto.
+	* gfortran.dg/pointer_init_6.f90: Ditto.
+
+2012-03-02  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/52270
 	* gfortran.dg/class_51.f90: New.
 

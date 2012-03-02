@@ -1,5 +1,11 @@
 2012-03-02  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/52325
+	* primary.c (gfc_match_varspec): Add diagnostic for % with
+	nonderived types.
+
+2012-03-02  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/52270
 	* expr.c (gfc_check_vardef_context): Fix check for
 	intent-in polymorphic pointer .

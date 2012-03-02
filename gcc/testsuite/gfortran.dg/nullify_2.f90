@@ -3,5 +3,5 @@
 program i
    implicit none
    TYPE (a) t1     ! { dg-error "is being used before" }
-   nullify(t1%x)   ! { dg-error "error in NULLIFY" }
+   nullify(t1%x)   ! { dg-error "Symbol 't1' at .1. has no IMPLICIT type" }
 end program

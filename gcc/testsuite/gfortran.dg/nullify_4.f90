@@ -4,5 +4,5 @@
 ! Check error recovery; was crashing before.
 !
 real, pointer :: ptr
-nullify(ptr, mesh%coarser) ! { dg-error "Syntax error in NULLIFY statement" }
+nullify(ptr, mesh%coarser) ! { dg-error "Symbol 'mesh' at .1. has no IMPLICIT type" }
 end
