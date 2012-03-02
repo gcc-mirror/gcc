@@ -1,3 +1,7 @@
+2012-03-02  Richard Guenther  <rguenther@suse.de>
+
+	* crontab: Update for 4.7 branching.
+
 2011-11-21  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* update_web_docs_svn: Make $DOCSDIR group writable after
