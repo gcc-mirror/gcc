@@ -24,20 +24,8 @@ func epipecheck(file *File, e error) {
 	}
 }
 
-// LinkError records an error during a link or symlink or rename
-// system call and the paths that caused it.
-type LinkError struct {
-	Op  string
-	Old string
-	New string
-	Err error
-}
-
-func (e *LinkError) Error() string {
-	return e.Op + " " + e.Old + " " + e.New + ": " + e.Err.Error()
-}
-
 // Link creates newname as a hard link to the oldname file.
+// If there is an error, it will be of type *LinkError.
 func Link(oldname, newname string) error {
 	e := syscall.Link(oldname, newname)
 	if e != nil {
@@ -47,6 +35,7 @@ func Link(oldname, newname string) error {
 }
 
 // Symlink creates newname as a symbolic link to oldname.
+// If there is an error, it will be of type *LinkError.
 func Symlink(oldname, newname string) error {
 	e := syscall.Symlink(oldname, newname)
 	if e != nil {
@@ -160,7 +149,7 @@ func (f *File) Truncate(size int64) error {
 // of recently written data to disk.
 func (f *File) Sync() (err error) {
 	if f == nil {
-		return EINVAL
+		return syscall.EINVAL
 	}
 	if e := syscall.Fsync(f.fd); e != nil {
 		return NewSyscallError("fsync", e)

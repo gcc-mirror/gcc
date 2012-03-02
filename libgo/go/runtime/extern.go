@@ -68,17 +68,6 @@ func funcline_go(*Func, uintptr) (string, int)
 // mid returns the current os thread (m) id.
 func mid() uint32
 
-// Semacquire waits until *s > 0 and then atomically decrements it.
-// It is intended as a simple sleep primitive for use by the synchronization
-// library and should not be used directly.
-func Semacquire(s *uint32)
-
-// Semrelease atomically increments *s and notifies a waiting goroutine
-// if one is blocked in Semacquire.
-// It is intended as a simple wakeup primitive for use by the synchronization
-// library and should not be used directly.
-func Semrelease(s *uint32)
-
 // SetFinalizer sets the finalizer associated with x to f.
 // When the garbage collector finds an unreachable block
 // with an associated finalizer, it clears the association and runs
@@ -141,10 +130,10 @@ func Version() string {
 	return theVersion
 }
 
-// GOOS is the Go tree's operating system target:
+// GOOS is the running program's operating system target:
 // one of darwin, freebsd, linux, and so on.
 const GOOS string = theGoos
 
-// GOARCH is the Go tree's architecture target:
+// GOARCH is the running program's architecture target:
 // 386, amd64, or arm.
 const GOARCH string = theGoarch

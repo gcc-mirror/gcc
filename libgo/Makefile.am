@@ -504,7 +504,7 @@ runtime1.c: $(srcdir)/runtime/runtime1.goc goc2c
 	mv -f $@.tmp $@
 
 sema.c: $(srcdir)/runtime/sema.goc goc2c
-	./goc2c --gcc --go-prefix libgo_runtime $< > $@.tmp
+	./goc2c --gcc --go-prefix libgo_sync $< > $@.tmp
 	mv -f $@.tmp $@
 
 sigqueue.c: $(srcdir)/runtime/sigqueue.goc goc2c
@@ -847,6 +847,7 @@ go_sync_files = \
 	go/sync/cond.go \
 	go/sync/mutex.go \
 	go/sync/once.go \
+	go/sync/runtime.go \
 	go/sync/rwmutex.go \
 	go/sync/waitgroup.go
 
@@ -878,6 +879,7 @@ go_time_files = \
 	go/time/tick.go \
 	go/time/time.go \
 	go/time/zoneinfo.go \
+	go/time/zoneinfo_read.go \
 	go/time/zoneinfo_unix.go
 
 go_unicode_files = \
@@ -1091,6 +1093,7 @@ go_exp_norm_files = \
 	go/exp/norm/composition.go \
 	go/exp/norm/forminfo.go \
 	go/exp/norm/input.go \
+	go/exp/norm/iter.go \
 	go/exp/norm/normalize.go \
 	go/exp/norm/readwriter.go \
 	go/exp/norm/tables.go \
@@ -1132,7 +1135,8 @@ go_go_doc_files = \
 	go/go/doc/example.go \
 	go/go/doc/exports.go \
 	go/go/doc/filter.go \
-	go/go/doc/reader.go
+	go/go/doc/reader.go \
+	go/go/doc/synopsis.go
 go_go_parser_files = \
 	go/go/parser/interface.go \
 	go/go/parser/parser.go
@@ -1159,7 +1163,6 @@ go_hash_fnv_files = \
 
 go_html_template_files = \
 	go/html/template/attr.go \
-	go/html/template/clone.go \
 	go/html/template/content.go \
 	go/html/template/context.go \
 	go/html/template/css.go \

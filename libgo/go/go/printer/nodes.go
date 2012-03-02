@@ -87,7 +87,6 @@ const (
 	commaSep                            // elements are separated by commas
 	commaTerm                           // list is optionally terminated by a comma
 	noIndent                            // no extra indentation in multi-line lists
-	periodSep                           // elements are separated by periods
 )
 
 // Sets multiLine to true if the identifier list spans multiple lines.
@@ -133,7 +132,9 @@ func (p *printer) exprList(prev0 token.Pos, list []ast.Expr, depth int, mode exp
 		for i, x := range list {
 			if i > 0 {
 				if mode&commaSep != 0 {
-					p.print(token.COMMA)
+					// use position of expression following the comma as
+					// comma position for correct comment placement
+					p.print(x.Pos(), token.COMMA)
 				}
 				p.print(blank)
 			}
@@ -213,14 +214,18 @@ func (p *printer) exprList(prev0 token.Pos, list []ast.Expr, depth int, mode exp
 		}
 
 		if i > 0 {
-			switch {
-			case mode&commaSep != 0:
+			needsLinebreak := prevLine < line && prevLine > 0 && line > 0
+			if mode&commaSep != 0 {
+				// use position of expression following the comma as
+				// comma position for correct comment placement, but
+				// only if the expression is on the same line
+				if !needsLinebreak {
+					p.print(x.Pos())
+				}
 				p.print(token.COMMA)
-			case mode&periodSep != 0:
-				p.print(token.PERIOD)
 			}
-			needsBlank := mode&periodSep == 0 // period-separated list elements don't need a blank
-			if prevLine < line && prevLine > 0 && line > 0 {
+			needsBlank := true
+			if needsLinebreak {
 				// lines are broken using newlines so comments remain aligned
 				// unless forceFF is set or there are multiple expressions on
 				// the same line in which case formfeed is used
@@ -287,11 +292,18 @@ func (p *printer) parameters(fields *ast.FieldList, multiLine *bool) {
 				parLineBeg = parLineEnd
 			}
 			// separating "," if needed
+			needsLinebreak := 0 < prevLine && prevLine < parLineBeg
 			if i > 0 {
+				// use position of parameter following the comma as
+				// comma position for correct comma placement, but
+				// only if the next parameter is on the same line
+				if !needsLinebreak {
+					p.print(par.Pos())
+				}
 				p.print(token.COMMA)
 			}
 			// separator if needed (linebreak or blank)
-			if 0 < prevLine && prevLine < parLineBeg && p.linebreak(parLineBeg, 0, ws, true) {
+			if needsLinebreak && p.linebreak(parLineBeg, 0, ws, true) {
 				// break line if the opening "(" or previous parameter ended on a different line
 				ws = ignore
 				*multiLine = true
@@ -316,7 +328,7 @@ func (p *printer) parameters(fields *ast.FieldList, multiLine *bool) {
 		// if the closing ")" is on a separate line from the last parameter,
 		// print an additional "," and line break
 		if closing := p.lineFor(fields.Closing); 0 < prevLine && prevLine < closing {
-			p.print(",")
+			p.print(token.COMMA)
 			p.linebreak(closing, 0, ignore, true)
 		}
 		// unindent if we indented
@@ -374,7 +386,7 @@ func (p *printer) isOneLineFieldList(list []*ast.Field) bool {
 }
 
 func (p *printer) setLineComment(text string) {
-	p.setComment(&ast.CommentGroup{[]*ast.Comment{{token.NoPos, text}}})
+	p.setComment(&ast.CommentGroup{List: []*ast.Comment{{Slash: token.NoPos, Text: text}}})
 }
 
 func (p *printer) fieldList(fields *ast.FieldList, isStruct, isIncomplete bool) {
@@ -397,6 +409,7 @@ func (p *printer) fieldList(fields *ast.FieldList, isStruct, isIncomplete bool) 
 			f := list[0]
 			for i, x := range f.Names {
 				if i > 0 {
+					// no comments so no need for comma position
 					p.print(token.COMMA, blank)
 				}
 				p.expr(x, ignoreMultiLine)
@@ -668,63 +681,6 @@ func isBinary(expr ast.Expr) bool {
 	return ok
 }
 
-// If the expression contains one or more selector expressions, splits it into
-// two expressions at the rightmost period. Writes entire expr to suffix when
-// selector isn't found. Rewrites AST nodes for calls, index expressions and
-// type assertions, all of which may be found in selector chains, to make them
-// parts of the chain.
-func splitSelector(expr ast.Expr) (body, suffix ast.Expr) {
-	switch x := expr.(type) {
-	case *ast.SelectorExpr:
-		body, suffix = x.X, x.Sel
-		return
-	case *ast.CallExpr:
-		body, suffix = splitSelector(x.Fun)
-		if body != nil {
-			suffix = &ast.CallExpr{suffix, x.Lparen, x.Args, x.Ellipsis, x.Rparen}
-			return
-		}
-	case *ast.IndexExpr:
-		body, suffix = splitSelector(x.X)
-		if body != nil {
-			suffix = &ast.IndexExpr{suffix, x.Lbrack, x.Index, x.Rbrack}
-			return
-		}
-	case *ast.SliceExpr:
-		body, suffix = splitSelector(x.X)
-		if body != nil {
-			suffix = &ast.SliceExpr{suffix, x.Lbrack, x.Low, x.High, x.Rbrack}
-			return
-		}
-	case *ast.TypeAssertExpr:
-		body, suffix = splitSelector(x.X)
-		if body != nil {
-			suffix = &ast.TypeAssertExpr{suffix, x.Type}
-			return
-		}
-	}
-	suffix = expr
-	return
-}
-
-// Convert an expression into an expression list split at the periods of
-// selector expressions.
-func selectorExprList(expr ast.Expr) (list []ast.Expr) {
-	// split expression
-	for expr != nil {
-		var suffix ast.Expr
-		expr, suffix = splitSelector(expr)
-		list = append(list, suffix)
-	}
-
-	// reverse list
-	for i, j := 0, len(list)-1; i < j; i, j = i+1, j-1 {
-		list[i], list[j] = list[j], list[i]
-	}
-
-	return
-}
-
 // Sets multiLine to true if the expression spans multiple lines.
 func (p *printer) expr1(expr ast.Expr, prec1, depth int, multiLine *bool) {
 	p.print(expr.Pos())
@@ -798,8 +754,14 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int, multiLine *bool) {
 		}
 
 	case *ast.SelectorExpr:
-		parts := selectorExprList(expr)
-		p.exprList(token.NoPos, parts, depth, periodSep, multiLine, token.NoPos)
+		p.expr1(x.X, token.HighestPrec, depth, multiLine)
+		p.print(token.PERIOD)
+		if line := p.lineFor(x.Sel.Pos()); p.pos.IsValid() && p.pos.Line < line {
+			p.print(indent, newline, x.Sel.Pos(), x.Sel, unindent)
+			*multiLine = true
+		} else {
+			p.print(x.Sel.Pos(), x.Sel)
+		}
 
 	case *ast.TypeAssertExpr:
 		p.expr1(x.X, token.HighestPrec, depth, multiLine)
@@ -1180,7 +1142,9 @@ func (p *printer) stmt(stmt ast.Stmt, nextIsRBrace bool, multiLine *bool) {
 		p.print(token.FOR, blank)
 		p.expr(s.Key, multiLine)
 		if s.Value != nil {
-			p.print(token.COMMA, blank)
+			// use position of value following the comma as
+			// comma position for correct comment placement
+			p.print(s.Value.Pos(), token.COMMA, blank)
 			p.expr(s.Value, multiLine)
 		}
 		p.print(blank, s.TokPos, s.Tok, blank, token.RANGE, blank)

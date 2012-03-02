@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -538,7 +539,7 @@ func exec(t *testing.T, dir, cmd string, args []string, expect string) {
 		t.Errorf("exec %q returned %q wanted %q",
 			strings.Join(append([]string{cmd}, args...), " "), output, expect)
 	}
-	p.Wait(0)
+	p.Wait()
 }
 
 func TestStartProcess(t *testing.T) {
@@ -767,7 +768,7 @@ func TestSeek(t *testing.T) {
 	for i, tt := range tests {
 		off, err := f.Seek(tt.in, tt.whence)
 		if off != tt.out || err != nil {
-			if e, ok := err.(*PathError); ok && e.Err == EINVAL && tt.out > 1<<32 {
+			if e, ok := err.(*PathError); ok && e.Err == syscall.EINVAL && tt.out > 1<<32 {
 				// Reiserfs rejects the big seeks.
 				// http://code.google.com/p/go/issues/detail?id=91
 				break
@@ -787,17 +788,17 @@ var openErrorTests = []openErrorTest{
 	{
 		sfdir + "/no-such-file",
 		O_RDONLY,
-		ENOENT,
+		syscall.ENOENT,
 	},
 	{
 		sfdir,
 		O_WRONLY,
-		EISDIR,
+		syscall.EISDIR,
 	},
 	{
 		sfdir + "/" + sfname + "/no-such-file",
 		O_WRONLY,
-		ENOTDIR,
+		syscall.ENOTDIR,
 	},
 }
 
@@ -850,7 +851,7 @@ func run(t *testing.T, cmd []string) string {
 
 	var b bytes.Buffer
 	io.Copy(&b, r)
-	_, err = p.Wait(0)
+	_, err = p.Wait()
 	if err != nil {
 		t.Fatalf("run hostname Wait: %v", err)
 	}
@@ -983,32 +984,31 @@ func TestAppend(t *testing.T) {
 }
 
 func TestStatDirWithTrailingSlash(t *testing.T) {
-	// Create new dir, in _test so it will get
-	// cleaned up by make if not by us.
-	path := "_test/_TestStatDirWithSlash_"
-	err := MkdirAll(path, 0777)
+	// Create new temporary directory and arrange to clean it up.
+	path, err := ioutil.TempDir("", "/_TestStatDirWithSlash_")
 	if err != nil {
-		t.Fatalf("MkdirAll %q: %s", path, err)
+		t.Fatalf("TempDir: %s", err)
 	}
 	defer RemoveAll(path)
 
 	// Stat of path should succeed.
 	_, err = Stat(path)
 	if err != nil {
-		t.Fatal("stat failed:", err)
+		t.Fatalf("stat %s failed: %s", path, err)
 	}
 
 	// Stat of path+"/" should succeed too.
-	_, err = Stat(path + "/")
+	path += "/"
+	_, err = Stat(path)
 	if err != nil {
-		t.Fatal("stat failed:", err)
+		t.Fatalf("stat %s failed: %s", path, err)
 	}
 }
 
-func TestNilWaitmsgString(t *testing.T) {
-	var w *Waitmsg
-	s := w.String()
+func TestNilProcessStateString(t *testing.T) {
+	var ps *ProcessState
+	s := ps.String()
 	if s != "<nil>" {
-		t.Errorf("(*Waitmsg)(nil).String() = %q, want %q", s, "<nil>")
+		t.Errorf("(*ProcessState)(nil).String() = %q, want %q", s, "<nil>")
 	}
 }

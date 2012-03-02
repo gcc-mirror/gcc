@@ -685,3 +685,54 @@ func TestSliceIncompatibility(t *testing.T) {
 		t.Error("expected compatibility error")
 	}
 }
+
+// Mutually recursive slices of structs caused problems.
+type Bug3 struct {
+	Num      int
+	Children []*Bug3
+}
+
+func TestGobPtrSlices(t *testing.T) {
+	in := []*Bug3{
+		&Bug3{1, nil},
+		&Bug3{2, nil},
+	}
+	b := new(bytes.Buffer)
+	err := NewEncoder(b).Encode(&in)
+	if err != nil {
+		t.Fatal("encode:", err)
+	}
+
+	var out []*Bug3
+	err = NewDecoder(b).Decode(&out)
+	if err != nil {
+		t.Fatal("decode:", err)
+	}
+	if !reflect.DeepEqual(in, out) {
+		t.Fatal("got %v; wanted %v", out, in)
+	}
+}
+
+// getDecEnginePtr cached engine for ut.base instead of ut.user so we passed
+// a *map and then tried to reuse its engine to decode the inner map.
+func TestPtrToMapOfMap(t *testing.T) {
+	Register(make(map[string]interface{}))
+	subdata := make(map[string]interface{})
+	subdata["bar"] = "baz"
+	data := make(map[string]interface{})
+	data["foo"] = subdata
+
+	b := new(bytes.Buffer)
+	err := NewEncoder(b).Encode(data)
+	if err != nil {
+		t.Fatal("encode:", err)
+	}
+	var newData map[string]interface{}
+	err = NewDecoder(b).Decode(&newData)
+	if err != nil {
+		t.Fatal("decode:", err)
+	}
+	if !reflect.DeepEqual(data, newData) {
+		t.Fatalf("expected %v got %v", data, newData)
+	}
+}

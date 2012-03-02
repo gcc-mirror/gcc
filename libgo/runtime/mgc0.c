@@ -61,6 +61,21 @@ enum {
 
 #define bitMask (bitBlockBoundary | bitAllocated | bitMarked | bitSpecial)
 
+// Holding worldsema grants an M the right to try to stop the world.
+// The procedure is:
+//
+//	runtime_semacquire(&runtime_worldsema);
+//	m->gcing = 1;
+//	runtime_stoptheworld();
+//
+//	... do stuff ...
+//
+//	m->gcing = 0;
+//	runtime_semrelease(&runtime_worldsema);
+//	runtime_starttheworld();
+//
+uint32 runtime_worldsema = 1;
+
 // TODO: Make these per-M.
 static uint64 nhandoff;
 
@@ -91,7 +106,6 @@ struct FinBlock
 	int32 cap;
 	Finalizer fin[1];
 };
-
 
 static G *fing;
 static FinBlock *finq; // list of finalizers that are to be executed
@@ -778,9 +792,11 @@ sweep(void)
 	byte *p;
 	MCache *c;
 	byte *arena_start;
+	int64 now;
 
 	m = runtime_m();
 	arena_start = runtime_mheap.arena_start;
+	now = runtime_nanotime();
 
 	for(;;) {
 		s = work.spans;
@@ -788,6 +804,11 @@ sweep(void)
 			break;
 		if(!runtime_casp(&work.spans, s, s->allnext))
 			continue;
+
+		// Stamp newly unused spans. The scavenger will use that
+		// info to potentially give back some pages to the OS.
+		if(s->state == MSpanFree && s->unusedsince == 0)
+			s->unusedsince = now;
 
 		if(s->state != MSpanInUse)
 			continue;
@@ -874,11 +895,6 @@ runtime_gchelper(void)
 	if(runtime_xadd(&work.ndone, +1) == work.nproc-1)
 		runtime_notewakeup(&work.alldone);
 }
-
-// Semaphore, not Lock, so that the goroutine
-// reschedules when there is contention rather
-// than spinning.
-static uint32 gcsema = 1;
 
 // Initialized from $GOGC.  GOGC=off means no gc.
 //
@@ -968,9 +984,9 @@ runtime_gc(int32 force)
 	if(gcpercent < 0)
 		return;
 
-	runtime_semacquire(&gcsema);
+	runtime_semacquire(&runtime_worldsema);
 	if(!force && mstats.heap_alloc < mstats.next_gc) {
-		runtime_semrelease(&gcsema);
+		runtime_semrelease(&runtime_worldsema);
 		return;
 	}
 
@@ -1032,6 +1048,7 @@ runtime_gc(int32 force)
 	obj1 = mstats.nmalloc - mstats.nfree;
 
 	t3 = runtime_nanotime();
+	mstats.last_gc = t3;
 	mstats.pause_ns[mstats.numgc%nelem(mstats.pause_ns)] = t3 - t0;
 	mstats.pause_total_ns += t3 - t0;
 	mstats.numgc++;
@@ -1045,8 +1062,9 @@ runtime_gc(int32 force)
 			(unsigned long long) mstats.nmalloc, (unsigned long long)mstats.nfree,
 			(unsigned long long) nhandoff);
 	}
-
-	runtime_semrelease(&gcsema);
+	
+	runtime_MProf_GC();
+	runtime_semrelease(&runtime_worldsema);
 
 	// If we could have used another helper proc, start one now,
 	// in the hope that it will be available next time.
@@ -1073,18 +1091,18 @@ runtime_ReadMemStats(MStats *stats)
 {
 	M *m;
 
-	// Have to acquire gcsema to stop the world,
+	// Have to acquire worldsema to stop the world,
 	// because stoptheworld can only be used by
 	// one goroutine at a time, and there might be
 	// a pending garbage collection already calling it.
-	runtime_semacquire(&gcsema);
+	runtime_semacquire(&runtime_worldsema);
 	m = runtime_m();
 	m->gcing = 1;
 	runtime_stoptheworld();
 	cachestats();
 	*stats = mstats;
 	m->gcing = 0;
-	runtime_semrelease(&gcsema);
+	runtime_semrelease(&runtime_worldsema);
 	runtime_starttheworld(false);
 }
 

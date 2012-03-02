@@ -8,6 +8,7 @@ import (
 	"errors"
 	"runtime"
 	"syscall"
+	"time"
 )
 
 // StartProcess starts a new process with the program, arguments and attributes
@@ -20,17 +21,9 @@ func StartProcess(name string, argv []string, attr *ProcAttr) (p *Process, err e
 		Sys: attr.Sys,
 	}
 
-	// Create array of integer (system) fds.
-	intfd := make([]int, len(attr.Files))
-	for i, f := range attr.Files {
-		if f == nil {
-			intfd[i] = -1
-		} else {
-			intfd[i] = f.Fd()
-		}
+	for _, f := range attr.Files {
+		sysattr.Files = append(sysattr.Files, f.Fd())
 	}
-
-	sysattr.Files = intfd
 
 	pid, h, e := syscall.StartProcess(name, argv, sysattr)
 	if e != nil {
@@ -72,19 +65,13 @@ func (p *Process) Kill() error {
 	return e
 }
 
-// Waitmsg stores the information about an exited process as reported by Wait.
-type Waitmsg struct {
-	syscall.Waitmsg
-}
-
 // Wait waits for the Process to exit or stop, and then returns a
-// Waitmsg describing its status and an error, if any. The options
-// (WNOHANG etc.) affect the behavior of the Wait call.
-func (p *Process) Wait(options int) (w *Waitmsg, err error) {
+// ProcessState describing its status and an error, if any.
+func (p *Process) Wait() (ps *ProcessState, err error) {
 	var waitmsg syscall.Waitmsg
 
 	if p.Pid == -1 {
-		return nil, EINVAL
+		return nil, ErrInvalid
 	}
 
 	for true {
@@ -100,21 +87,11 @@ func (p *Process) Wait(options int) (w *Waitmsg, err error) {
 		}
 	}
 
-	return &Waitmsg{waitmsg}, nil
-}
-
-// Wait waits for process pid to exit or stop, and then returns a
-// Waitmsg describing its status and an error, if any. The options
-// (WNOHANG etc.) affect the behavior of the Wait call.
-// Wait is equivalent to calling FindProcess and then Wait
-// and Release on the result.
-func Wait(pid int, options int) (w *Waitmsg, err error) {
-	p, e := FindProcess(pid)
-	if e != nil {
-		return nil, e
+	ps = &ProcessState{
+		pid:    waitmsg.Pid,
+		status: &waitmsg,
 	}
-	defer p.Release()
-	return p.Wait(options)
+	return ps, nil
 }
 
 // Release releases any resources associated with the Process.
@@ -131,9 +108,57 @@ func findProcess(pid int) (p *Process, err error) {
 	return newProcess(pid, 0), nil
 }
 
-func (w *Waitmsg) String() string {
-	if w == nil {
+// ProcessState stores information about process as reported by Wait.
+type ProcessState struct {
+	pid    int              // The process's id.
+	status *syscall.Waitmsg // System-dependent status info.
+}
+
+// Pid returns the process id of the exited process.
+func (p *ProcessState) Pid() int {
+	return p.pid
+}
+
+// Exited returns whether the program has exited.
+func (p *ProcessState) Exited() bool {
+	return p.status.Exited()
+}
+
+// Success reports whether the program exited successfully,
+// such as with exit status 0 on Unix.
+func (p *ProcessState) Success() bool {
+	return p.status.ExitStatus() == 0
+}
+
+// Sys returns system-dependent exit information about
+// the process.  Convert it to the appropriate underlying
+// type, such as *syscall.Waitmsg on Plan 9, to access its contents.
+func (p *ProcessState) Sys() interface{} {
+	return p.status
+}
+
+// SysUsage returns system-dependent resource usage information about
+// the exited process.  Convert it to the appropriate underlying
+// type, such as *syscall.Waitmsg on Plan 9, to access its contents.
+func (p *ProcessState) SysUsage() interface{} {
+	return p.status
+}
+
+// UserTime returns the user CPU time of the exited process and its children.
+// It is always reported as 0 on Windows.
+func (p *ProcessState) UserTime() time.Duration {
+	return time.Duration(p.status.Time[0]) * time.Millisecond
+}
+
+// SystemTime returns the system CPU time of the exited process and its children.
+// It is always reported as 0 on Windows.
+func (p *ProcessState) SystemTime() time.Duration {
+	return time.Duration(p.status.Time[1]) * time.Millisecond
+}
+
+func (p *ProcessState) String() string {
+	if p == nil {
 		return "<nil>"
 	}
-	return "exit status: " + w.Msg
+	return "exit status: " + p.status.Msg
 }

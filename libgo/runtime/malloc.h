@@ -205,6 +205,7 @@ struct MStats
 	uint64	heap_sys;	// bytes obtained from system
 	uint64	heap_idle;	// bytes in idle spans
 	uint64	heap_inuse;	// bytes in non-idle spans
+	uint64	heap_released;	// bytes released to the OS
 	uint64	heap_objects;	// total number of allocated objects
 
 	// Statistics about allocation of low-level fixed-size structures.
@@ -220,6 +221,7 @@ struct MStats
 	// Statistics about garbage collector.
 	// Protected by stopping the world during GC.
 	uint64	next_gc;	// next GC (in heap_alloc time)
+	uint64  last_gc;	// last GC (in absolute time)
 	uint64	pause_total_ns;
 	uint64	pause_ns[256];
 	uint32	numgc;
@@ -304,14 +306,16 @@ struct MSpan
 {
 	MSpan	*next;		// in a span linked list
 	MSpan	*prev;		// in a span linked list
-	MSpan	*allnext;		// in the list of all spans
+	MSpan	*allnext;	// in the list of all spans
 	PageID	start;		// starting page number
 	uintptr	npages;		// number of pages in span
 	MLink	*freelist;	// list of free objects
 	uint32	ref;		// number of allocated objects in this span
 	uint32	sizeclass;	// size class
 	uint32	state;		// MSpanInUse etc
-	byte	*limit;	// end of data in span
+	int64   unusedsince;	// First time spotted by GC in MSpanFree state
+	uintptr npreleased;	// number of pages released to the OS
+	byte	*limit;		// end of data in span
 };
 
 void	runtime_MSpan_Init(MSpan *span, PageID start, uintptr npages);
@@ -381,6 +385,7 @@ MSpan*	runtime_MHeap_LookupMaybe(MHeap *h, void *v);
 void	runtime_MGetSizeClassInfo(int32 sizeclass, uintptr *size, int32 *npages, int32 *nobj);
 void*	runtime_MHeap_SysAlloc(MHeap *h, uintptr n);
 void	runtime_MHeap_MapBits(MHeap *h);
+void	runtime_MHeap_Scavenger(void*);
 
 void*	runtime_mallocgc(uintptr size, uint32 flag, int32 dogc, int32 zeroed);
 int32	runtime_mlookup(void *v, byte **base, uintptr *size, MSpan **s);
@@ -406,18 +411,10 @@ enum
 
 void	runtime_MProf_Malloc(void*, uintptr);
 void	runtime_MProf_Free(void*, uintptr);
+void	runtime_MProf_GC(void);
 void	runtime_MProf_Mark(void (*scan)(byte *, int64));
 int32	runtime_helpgc(bool*);
 void	runtime_gchelper(void);
-
-// Malloc profiling settings.
-// Must match definition in extern.go.
-enum {
-	MProf_None = 0,
-	MProf_Sample = 1,
-	MProf_All = 2,
-};
-extern int32 runtime_malloc_profile;
 
 struct __go_func_type;
 bool	runtime_getfinalizer(void *p, bool del, void (**fn)(void*), const struct __go_func_type **ft);
