@@ -1,9 +1,14 @@
 2012-03-02  Oleg Endo  <olegendo@gcc.gnu.org>
 
-        * config/sh/sync.md: Update copyright notice dates.
+	* config/sh/sync.md (atomic_exchange<mode>): New expander.
+	(atomic_exchange<mode>_soft): New insn.
+
+2012-03-02  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sync.md: Update copyright notice dates.
 	(atomic_compare_and_swap<mode>): Use SImode for return value instead
 	of QImode.
-        (atomic_compare_and_swap<mode>_soft): Likewise.
+	(atomic_compare_and_swap<mode>_soft): Likewise.
 
 2012-03-02  Oleg Endo  <olegendo@gcc.gnu.org>
  

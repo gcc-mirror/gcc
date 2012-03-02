@@ -164,6 +164,45 @@
 }
   [(set_attr "length" "20")])
 
+(define_expand "atomic_exchange<mode>"
+  [(match_operand:I124 0 "register_operand" "")		;; oldval output
+   (match_operand:I124 1 "memory_operand" "")		;; memory
+   (match_operand:I124 2 "register_operand" "")		;; newval input
+   (match_operand:SI 3 "const_int_operand" "")]		;; memory model
+  "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
+{
+  rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
+  emit_insn (gen_atomic_exchange<mode>_soft
+	     (operands[0], addr, operands[2]));
+  if (<MODE>mode == QImode)
+    emit_insn (gen_zero_extendqisi2 (gen_lowpart (SImode, operands[0]),
+				     operands[0]));
+  else if (<MODE>mode == HImode)
+    emit_insn (gen_zero_extendhisi2 (gen_lowpart (SImode, operands[0]),
+				     operands[0]));
+  DONE;
+})
+
+(define_insn "atomic_exchange<mode>_soft"
+  [(set (match_operand:I124 0 "register_operand" "=&u")
+	(mem:I124 (match_operand:SI 1 "register_operand" "u")))
+   (set (mem:I124 (match_dup 1))
+	(unspec:I124
+	  [(match_operand:I124 2 "register_operand" "u")] UNSPEC_ATOMIC))
+   (clobber (reg:SI R0_REG))
+   (clobber (reg:SI R1_REG))]
+  "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
+{
+  return "mova	1f,r0"				"\n"
+	 "	.align 2"			"\n"
+	 "	mov	r15,r1"			"\n"
+	 "	mov	#(0f-1f),r15"		"\n"
+	 "0:	mov.<i124suffix>	@%1,%0"	"\n"
+	 "	mov.<i124suffix>	%2,@%1"	"\n"
+	 "1:	mov	r1,r15";
+}
+  [(set_attr "length" "14")])
+
 (define_expand "atomic_fetch_<fetchop_name><mode>"
   [(set (match_operand:I124 0 "register_operand" "")
 	(match_operand:I124 1 "memory_operand" ""))
