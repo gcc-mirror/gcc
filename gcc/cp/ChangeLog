@@ -1,5 +1,14 @@
 2012-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/51989
+	* typeck2.c (build_x_arrow): Take a tsubst_flags_t argument and
+	propagate it.
+	* cp-tree.h (build_x_arrow): Adjust prototype.
+	* pt.c (tsubst_copy_and_build): Adjust call.
+	* parser.c (cp_parser_postfix_dot_deref_expression): Likewise.
+
+2012-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* name-lookup.c (binding_to_template_parms_of_scope_p): Clean up.
 
 2012-02-29  Jason Merrill  <jason@redhat.com>

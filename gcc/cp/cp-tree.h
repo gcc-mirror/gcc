@@ -5880,7 +5880,7 @@ extern void check_narrowing			(tree, tree);
 extern tree digest_init				(tree, tree, tsubst_flags_t);
 extern tree digest_init_flags			(tree, tree, int);
 extern tree build_scoped_ref			(tree, tree, tree *);
-extern tree build_x_arrow			(tree);
+extern tree build_x_arrow			(tree, tsubst_flags_t);
 extern tree build_m_component_ref		(tree, tree);
 extern tree build_functional_cast		(tree, tree, tsubst_flags_t);
 extern tree add_exception_specifier		(tree, tree, int);
