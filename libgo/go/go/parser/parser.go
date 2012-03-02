@@ -18,8 +18,8 @@ import (
 
 // The parser structure holds the parser's internal state.
 type parser struct {
-	file *token.File
-	scanner.ErrorVector
+	file    *token.File
+	errors  scanner.ErrorList
 	scanner scanner.Scanner
 
 	// Tracing/debugging
@@ -58,7 +58,8 @@ func (p *parser) init(fset *token.FileSet, filename string, src []byte, mode Mod
 	if mode&ParseComments != 0 {
 		m = scanner.ScanComments
 	}
-	p.scanner.Init(p.file, src, p, m)
+	eh := func(pos token.Position, msg string) { p.errors.Add(pos, msg) }
+	p.scanner.Init(p.file, src, eh, m)
 
 	p.mode = mode
 	p.trace = mode&Trace != 0 // for convenience (p.trace is used frequently)
@@ -72,14 +73,6 @@ func (p *parser) init(fset *token.FileSet, filename string, src []byte, mode Mod
 
 	// for the same reason, set up a label scope
 	p.openLabelScope()
-}
-
-func (p *parser) errors() error {
-	m := scanner.Sorted
-	if p.mode&SpuriousErrors == 0 {
-		m = scanner.NoMultiples
-	}
-	return p.GetError(m)
 }
 
 // ----------------------------------------------------------------------------
@@ -334,7 +327,7 @@ func (p *parser) next() {
 }
 
 func (p *parser) error(pos token.Pos, msg string) {
-	p.Error(p.file.Position(pos), msg)
+	p.errors.Add(p.file.Position(pos), msg)
 }
 
 func (p *parser) errorExpected(pos token.Pos, msg string) {
@@ -342,7 +335,7 @@ func (p *parser) errorExpected(pos token.Pos, msg string) {
 	if pos == p.pos {
 		// the error happened at the current position;
 		// make the error message more specific
-		if p.tok == token.SEMICOLON && p.lit[0] == '\n' {
+		if p.tok == token.SEMICOLON && p.lit == "\n" {
 			msg += ", found newline"
 		} else {
 			msg += ", found '" + p.tok.String() + "'"
@@ -361,6 +354,17 @@ func (p *parser) expect(tok token.Token) token.Pos {
 	}
 	p.next() // make progress
 	return pos
+}
+
+// expectClosing is like expect but provides a better error message
+// for the common case of a missing comma before a newline.
+//
+func (p *parser) expectClosing(tok token.Token, construct string) token.Pos {
+	if p.tok != tok && p.tok == token.SEMICOLON && p.lit == "\n" {
+		p.error(p.pos, "missing ',' before newline in "+construct)
+		p.next()
+	}
+	return p.expect(tok)
 }
 
 func (p *parser) expectSemi() {
@@ -1063,7 +1067,7 @@ func (p *parser) parseCallOrConversion(fun ast.Expr) *ast.CallExpr {
 		p.next()
 	}
 	p.exprLev--
-	rparen := p.expect(token.RPAREN)
+	rparen := p.expectClosing(token.RPAREN, "argument list")
 
 	return &ast.CallExpr{fun, lparen, list, ellipsis, rparen}
 }
@@ -1118,7 +1122,7 @@ func (p *parser) parseLiteralValue(typ ast.Expr) ast.Expr {
 		elts = p.parseElementList()
 	}
 	p.exprLev--
-	rbrace := p.expect(token.RBRACE)
+	rbrace := p.expectClosing(token.RBRACE, "composite literal")
 	return &ast.CompositeLit{typ, lbrace, elts, rbrace}
 }
 
@@ -2123,7 +2127,7 @@ func (p *parser) parseFile() *ast.File {
 	// Don't bother parsing the rest if we had errors already.
 	// Likely not a Go source file at all.
 
-	if p.ErrorCount() == 0 && p.mode&PackageClauseOnly == 0 {
+	if p.errors.Len() == 0 && p.mode&PackageClauseOnly == 0 {
 		// import decls
 		for p.tok == token.IMPORT {
 			decls = append(decls, p.parseGenDecl(token.IMPORT, parseImportSpec))

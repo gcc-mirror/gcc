@@ -154,25 +154,25 @@ am__DEPENDENCIES_2 = bufio/bufio.lo bytes/bytes.lo bytes/index.lo \
 	encoding/base32.lo encoding/base64.lo encoding/binary.lo \
 	encoding/csv.lo encoding/gob.lo encoding/hex.lo \
 	encoding/json.lo encoding/pem.lo encoding/xml.lo exp/ebnf.lo \
-	exp/html.lo exp/norm.lo exp/proxy.lo exp/signal.lo \
-	exp/terminal.lo exp/types.lo exp/utf8string.lo \
-	html/template.lo go/ast.lo go/build.lo go/doc.lo go/parser.lo \
-	go/printer.lo go/scanner.lo go/token.lo hash/adler32.lo \
-	hash/crc32.lo hash/crc64.lo hash/fnv.lo net/http/cgi.lo \
-	net/http/fcgi.lo net/http/httptest.lo net/http/httputil.lo \
-	net/http/pprof.lo image/color.lo image/draw.lo image/gif.lo \
-	image/jpeg.lo image/png.lo index/suffixarray.lo io/ioutil.lo \
-	log/syslog.lo log/syslog/syslog_c.lo math/big.lo math/cmplx.lo \
-	math/rand.lo mime/mime.lo mime/multipart.lo net/http.lo \
-	net/mail.lo net/rpc.lo net/smtp.lo net/textproto.lo net/url.lo \
+	exp/html.lo exp/norm.lo exp/proxy.lo exp/terminal.lo \
+	exp/types.lo exp/utf8string.lo html/template.lo go/ast.lo \
+	go/build.lo go/doc.lo go/parser.lo go/printer.lo go/scanner.lo \
+	go/token.lo hash/adler32.lo hash/crc32.lo hash/crc64.lo \
+	hash/fnv.lo net/http/cgi.lo net/http/fcgi.lo \
+	net/http/httptest.lo net/http/httputil.lo net/http/pprof.lo \
+	image/color.lo image/draw.lo image/gif.lo image/jpeg.lo \
+	image/png.lo index/suffixarray.lo io/ioutil.lo log/syslog.lo \
+	log/syslog/syslog_c.lo math/big.lo math/cmplx.lo math/rand.lo \
+	mime/mime.lo mime/multipart.lo net/http.lo net/mail.lo \
+	net/rpc.lo net/smtp.lo net/textproto.lo net/url.lo \
 	old/netchan.lo old/regexp.lo old/template.lo \
-	$(am__DEPENDENCIES_1) os/user.lo path/filepath.lo \
+	$(am__DEPENDENCIES_1) os/signal.lo os/user.lo path/filepath.lo \
 	regexp/syntax.lo net/rpc/jsonrpc.lo runtime/debug.lo \
 	runtime/pprof.lo sync/atomic.lo sync/atomic_c.lo \
-	syscall/syscall.lo syscall/errno.lo syscall/wait.lo \
-	text/scanner.lo text/tabwriter.lo text/template.lo \
-	text/template/parse.lo testing/testing.lo testing/iotest.lo \
-	testing/quick.lo testing/script.lo unicode/utf16.lo \
+	syscall/syscall.lo syscall/errno.lo syscall/signame.lo \
+	syscall/wait.lo text/scanner.lo text/tabwriter.lo \
+	text/template.lo text/template/parse.lo testing/testing.lo \
+	testing/iotest.lo testing/quick.lo unicode/utf16.lo \
 	unicode/utf8.lo
 libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -180,14 +180,14 @@ libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1) \
 am__libgo_la_SOURCES_DIST = runtime/go-append.c runtime/go-assert.c \
 	runtime/go-assert-interface.c \
 	runtime/go-byte-array-to-string.c runtime/go-breakpoint.c \
-	runtime/go-caller.c runtime/go-can-convert-interface.c \
-	runtime/go-cgo.c runtime/go-check-interface.c \
-	runtime/go-construct-map.c runtime/go-convert-interface.c \
-	runtime/go-copy.c runtime/go-defer.c \
-	runtime/go-deferred-recover.c runtime/go-eface-compare.c \
-	runtime/go-eface-val-compare.c runtime/go-getgoroot.c \
-	runtime/go-int-array-to-string.c runtime/go-int-to-string.c \
-	runtime/go-interface-compare.c \
+	runtime/go-caller.c runtime/go-callers.c \
+	runtime/go-can-convert-interface.c runtime/go-cgo.c \
+	runtime/go-check-interface.c runtime/go-construct-map.c \
+	runtime/go-convert-interface.c runtime/go-copy.c \
+	runtime/go-defer.c runtime/go-deferred-recover.c \
+	runtime/go-eface-compare.c runtime/go-eface-val-compare.c \
+	runtime/go-getgoroot.c runtime/go-int-array-to-string.c \
+	runtime/go-int-to-string.c runtime/go-interface-compare.c \
 	runtime/go-interface-eface-compare.c \
 	runtime/go-interface-val-compare.c runtime/go-make-slice.c \
 	runtime/go-map-delete.c runtime/go-map-index.c \
@@ -195,10 +195,9 @@ am__libgo_la_SOURCES_DIST = runtime/go-append.c runtime/go-assert.c \
 	runtime/go-matherr.c runtime/go-nanotime.c runtime/go-now.c \
 	runtime/go-new-map.c runtime/go-new.c runtime/go-nosys.c \
 	runtime/go-panic.c runtime/go-print.c runtime/go-recover.c \
-	runtime/go-reflect.c runtime/go-reflect-call.c \
-	runtime/go-reflect-map.c runtime/go-rune.c \
-	runtime/go-runtime-error.c runtime/go-setenv.c \
-	runtime/go-signal.c runtime/go-strcmp.c \
+	runtime/go-reflect-call.c runtime/go-reflect-map.c \
+	runtime/go-rune.c runtime/go-runtime-error.c \
+	runtime/go-setenv.c runtime/go-signal.c runtime/go-strcmp.c \
 	runtime/go-string-to-byte-array.c \
 	runtime/go-string-to-int-array.c runtime/go-strplus.c \
 	runtime/go-strslice.c runtime/go-trampoline.c \
@@ -206,15 +205,15 @@ am__libgo_la_SOURCES_DIST = runtime/go-append.c runtime/go-assert.c \
 	runtime/go-type-error.c runtime/go-type-float.c \
 	runtime/go-type-identity.c runtime/go-type-interface.c \
 	runtime/go-type-string.c runtime/go-typedesc-equal.c \
-	runtime/go-typestring.c runtime/go-unreflect.c \
-	runtime/go-unsafe-new.c runtime/go-unsafe-newarray.c \
-	runtime/go-unsafe-pointer.c runtime/go-unwind.c runtime/chan.c \
-	runtime/cpuprof.c runtime/lock_sema.c runtime/thread-sema.c \
-	runtime/lock_futex.c runtime/thread-linux.c runtime/mcache.c \
-	runtime/mcentral.c runtime/mem_posix_memalign.c runtime/mem.c \
-	runtime/mfinal.c runtime/mfixalloc.c runtime/mgc0.c \
-	runtime/mheap.c runtime/msize.c runtime/proc.c \
-	runtime/runtime.c runtime/thread.c runtime/yield.c \
+	runtime/go-typestring.c runtime/go-unsafe-new.c \
+	runtime/go-unsafe-newarray.c runtime/go-unsafe-pointer.c \
+	runtime/go-unwind.c runtime/chan.c runtime/cpuprof.c \
+	runtime/lock_sema.c runtime/thread-sema.c runtime/lock_futex.c \
+	runtime/thread-linux.c runtime/mcache.c runtime/mcentral.c \
+	runtime/mem_posix_memalign.c runtime/mem.c runtime/mfinal.c \
+	runtime/mfixalloc.c runtime/mgc0.c runtime/mheap.c \
+	runtime/msize.c runtime/proc.c runtime/runtime.c \
+	runtime/signal_unix.c runtime/thread.c runtime/yield.c \
 	runtime/rtems-task-variable-add.c iface.c malloc.c map.c \
 	mprof.c reflect.c runtime1.c sema.c sigqueue.c string.c time.c
 @LIBGO_IS_LINUX_FALSE@am__objects_1 = lock_sema.lo thread-sema.lo
@@ -224,30 +223,30 @@ am__libgo_la_SOURCES_DIST = runtime/go-append.c runtime/go-assert.c \
 @LIBGO_IS_RTEMS_TRUE@am__objects_3 = rtems-task-variable-add.lo
 am__objects_4 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-byte-array-to-string.lo go-breakpoint.lo go-caller.lo \
-	go-can-convert-interface.lo go-cgo.lo go-check-interface.lo \
-	go-construct-map.lo go-convert-interface.lo go-copy.lo \
-	go-defer.lo go-deferred-recover.lo go-eface-compare.lo \
+	go-callers.lo go-can-convert-interface.lo go-cgo.lo \
+	go-check-interface.lo go-construct-map.lo \
+	go-convert-interface.lo go-copy.lo go-defer.lo \
+	go-deferred-recover.lo go-eface-compare.lo \
 	go-eface-val-compare.lo go-getgoroot.lo \
 	go-int-array-to-string.lo go-int-to-string.lo \
 	go-interface-compare.lo go-interface-eface-compare.lo \
 	go-interface-val-compare.lo go-make-slice.lo go-map-delete.lo \
 	go-map-index.lo go-map-len.lo go-map-range.lo go-matherr.lo \
 	go-nanotime.lo go-now.lo go-new-map.lo go-new.lo go-nosys.lo \
-	go-panic.lo go-print.lo go-recover.lo go-reflect.lo \
-	go-reflect-call.lo go-reflect-map.lo go-rune.lo \
-	go-runtime-error.lo go-setenv.lo go-signal.lo go-strcmp.lo \
-	go-string-to-byte-array.lo go-string-to-int-array.lo \
-	go-strplus.lo go-strslice.lo go-trampoline.lo \
-	go-type-complex.lo go-type-eface.lo go-type-error.lo \
-	go-type-float.lo go-type-identity.lo go-type-interface.lo \
-	go-type-string.lo go-typedesc-equal.lo go-typestring.lo \
-	go-unreflect.lo go-unsafe-new.lo go-unsafe-newarray.lo \
+	go-panic.lo go-print.lo go-recover.lo go-reflect-call.lo \
+	go-reflect-map.lo go-rune.lo go-runtime-error.lo go-setenv.lo \
+	go-signal.lo go-strcmp.lo go-string-to-byte-array.lo \
+	go-string-to-int-array.lo go-strplus.lo go-strslice.lo \
+	go-trampoline.lo go-type-complex.lo go-type-eface.lo \
+	go-type-error.lo go-type-float.lo go-type-identity.lo \
+	go-type-interface.lo go-type-string.lo go-typedesc-equal.lo \
+	go-typestring.lo go-unsafe-new.lo go-unsafe-newarray.lo \
 	go-unsafe-pointer.lo go-unwind.lo chan.lo cpuprof.lo \
 	$(am__objects_1) mcache.lo mcentral.lo $(am__objects_2) \
 	mfinal.lo mfixalloc.lo mgc0.lo mheap.lo msize.lo proc.lo \
-	runtime.lo thread.lo yield.lo $(am__objects_3) iface.lo \
-	malloc.lo map.lo mprof.lo reflect.lo runtime1.lo sema.lo \
-	sigqueue.lo string.lo time.lo
+	runtime.lo signal_unix.lo thread.lo yield.lo $(am__objects_3) \
+	iface.lo malloc.lo map.lo mprof.lo reflect.lo runtime1.lo \
+	sema.lo sigqueue.lo string.lo time.lo
 am_libgo_la_OBJECTS = $(am__objects_4)
 libgo_la_OBJECTS = $(am_libgo_la_OBJECTS)
 libgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
@@ -679,7 +678,6 @@ toolexeclibgoexp_DATA = \
 	$(exp_inotify_gox) \
 	exp/norm.gox \
 	exp/proxy.gox \
-	exp/signal.gox \
 	exp/terminal.gox \
 	exp/types.gox \
 	exp/utf8string.gox
@@ -765,6 +763,7 @@ toolexeclibgoold_DATA = \
 toolexeclibgoosdir = $(toolexeclibgodir)/os
 toolexeclibgoos_DATA = \
 	os/exec.gox \
+	os/signal.gox \
 	os/user.gox
 
 toolexeclibgopathdir = $(toolexeclibgodir)/path
@@ -787,8 +786,7 @@ toolexeclibgosync_DATA = \
 toolexeclibgotestingdir = $(toolexeclibgodir)/testing
 toolexeclibgotesting_DATA = \
 	testing/iotest.gox \
-	testing/quick.gox \
-	testing/script.gox
+	testing/quick.gox
 
 toolexeclibgotextdir = $(toolexeclibgodir)/text
 toolexeclibgotext_DATA = \
@@ -818,6 +816,7 @@ runtime_files = \
 	runtime/go-byte-array-to-string.c \
 	runtime/go-breakpoint.c \
 	runtime/go-caller.c \
+	runtime/go-callers.c \
 	runtime/go-can-convert-interface.c \
 	runtime/go-cgo.c \
 	runtime/go-check-interface.c \
@@ -848,7 +847,6 @@ runtime_files = \
 	runtime/go-panic.c \
 	runtime/go-print.c \
 	runtime/go-recover.c \
-	runtime/go-reflect.c \
 	runtime/go-reflect-call.c \
 	runtime/go-reflect-map.c \
 	runtime/go-rune.c \
@@ -870,7 +868,6 @@ runtime_files = \
 	runtime/go-type-string.c \
 	runtime/go-typedesc-equal.c \
 	runtime/go-typestring.c \
-	runtime/go-unreflect.c \
 	runtime/go-unsafe-new.c \
 	runtime/go-unsafe-newarray.c \
 	runtime/go-unsafe-pointer.c \
@@ -888,6 +885,7 @@ runtime_files = \
 	runtime/msize.c \
 	runtime/proc.c \
 	runtime/runtime.c \
+	runtime/signal_unix.c \
 	runtime/thread.c \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
@@ -908,7 +906,8 @@ go_bufio_files = \
 go_bytes_files = \
 	go/bytes/buffer.go \
 	go/bytes/bytes.go \
-	go/bytes/bytes_decl.go
+	go/bytes/bytes_decl.go \
+	go/bytes/reader.go
 
 go_bytes_c_files = \
 	go/bytes/indexbyte.c
@@ -1106,9 +1105,7 @@ go_os_files = \
 	$(go_os_stat_file) \
 	go/os/str.go \
 	$(go_os_sys_file) \
-	go/os/time.go \
-	go/os/types.go \
-	signal_unix.go
+	go/os/types.go
 
 go_path_files = \
 	go/path/match.go \
@@ -1133,7 +1130,6 @@ go_runtime_files = \
 	go/runtime/error.go \
 	go/runtime/extern.go \
 	go/runtime/mem.go \
-	go/runtime/sig.go \
 	go/runtime/softfloat64.go \
 	go/runtime/type.go \
 	version.go
@@ -1442,9 +1438,6 @@ go_exp_proxy_files = \
 	go/exp/proxy/proxy.go \
 	go/exp/proxy/socks5.go
 
-go_exp_signal_files = \
-	go/exp/signal/signal.go
-
 go_exp_terminal_files = \
 	go/exp/terminal/terminal.go \
 	go/exp/terminal/util.go
@@ -1664,6 +1657,10 @@ go_os_exec_files = \
 	go/os/exec/exec.go \
 	go/os/exec/lp_unix.go
 
+go_os_signal_files = \
+	go/os/signal/signal.go \
+	go/os/signal/signal_unix.go
+
 go_os_user_files = \
 	go/os/user/user.go \
 	go/os/user/lookup_unix.go
@@ -1719,9 +1716,6 @@ go_testing_iotest_files = \
 
 go_testing_quick_files = \
 	go/testing/quick/quick.go
-
-go_testing_script_files = \
-	go/testing/script/script.go
 
 go_text_scanner_files = \
 	go/text/scanner/scanner.go
@@ -1833,6 +1827,7 @@ go_syscall_files = \
 
 go_syscall_c_files = \
 	go/syscall/errno.c \
+	go/syscall/signame.c \
 	$(syscall_wait_c_file)
 
 @LIBGO_IS_LINUX_FALSE@os_lib_inotify_lo = 
@@ -1917,7 +1912,6 @@ libgo_go_objs = \
 	exp/html.lo \
 	exp/norm.lo \
 	exp/proxy.lo \
-	exp/signal.lo \
 	exp/terminal.lo \
 	exp/types.lo \
 	exp/utf8string.lo \
@@ -1962,6 +1956,7 @@ libgo_go_objs = \
 	old/regexp.lo \
 	old/template.lo \
 	$(os_lib_inotify_lo) \
+	os/signal.lo \
 	os/user.lo \
 	path/filepath.lo \
 	regexp/syntax.lo \
@@ -1972,6 +1967,7 @@ libgo_go_objs = \
 	sync/atomic_c.lo \
 	syscall/syscall.lo \
 	syscall/errno.lo \
+	syscall/signame.lo \
 	syscall/wait.lo \
 	text/scanner.lo \
 	text/tabwriter.lo \
@@ -1980,7 +1976,6 @@ libgo_go_objs = \
 	testing/testing.lo \
 	testing/iotest.lo \
 	testing/quick.lo \
-	testing/script.lo \
 	unicode/utf16.lo \
 	unicode/utf8.lo
 
@@ -2166,7 +2161,6 @@ TEST_PACKAGES = \
 	$(exp_inotify_check) \
 	exp/norm/check \
 	exp/proxy/check \
-	exp/signal/check \
 	exp/terminal/check \
 	exp/utf8string/check \
 	html/template/check \
@@ -2196,6 +2190,7 @@ TEST_PACKAGES = \
 	net/http/check \
 	net/http/cgi/check \
 	net/http/fcgi/check \
+	net/http/httptest/check \
 	net/http/httputil/check \
 	net/mail/check \
 	net/rpc/check \
@@ -2207,6 +2202,7 @@ TEST_PACKAGES = \
 	old/regexp/check \
 	old/template/check \
 	os/exec/check \
+	os/signal/check \
 	os/user/check \
 	path/filepath/check \
 	regexp/syntax/check \
@@ -2216,7 +2212,6 @@ TEST_PACKAGES = \
 	text/template/check \
 	text/template/parse/check \
 	testing/quick/check \
-	testing/script/check \
 	unicode/utf16/check \
 	unicode/utf8/check
 
@@ -2362,6 +2357,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-breakpoint.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-byte-array-to-string.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-caller.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-callers.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-can-convert-interface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-cgo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-check-interface.Plo@am__quote@
@@ -2395,7 +2391,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-recover.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-reflect-call.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-reflect-map.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-reflect.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-rune.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-runtime-error.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-setenv.Plo@am__quote@
@@ -2415,7 +2410,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-string.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-typedesc-equal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-typestring.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-unreflect.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-unsafe-new.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-unsafe-newarray.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-unsafe-pointer.Plo@am__quote@
@@ -2441,6 +2435,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtime1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sema.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signal_unix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sigqueue.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/string.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thread-linux.Plo@am__quote@
@@ -2525,6 +2520,13 @@ go-caller.lo: runtime/go-caller.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-caller.c' object='go-caller.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-caller.lo `test -f 'runtime/go-caller.c' || echo '$(srcdir)/'`runtime/go-caller.c
+
+go-callers.lo: runtime/go-callers.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-callers.lo -MD -MP -MF $(DEPDIR)/go-callers.Tpo -c -o go-callers.lo `test -f 'runtime/go-callers.c' || echo '$(srcdir)/'`runtime/go-callers.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-callers.Tpo $(DEPDIR)/go-callers.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-callers.c' object='go-callers.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-callers.lo `test -f 'runtime/go-callers.c' || echo '$(srcdir)/'`runtime/go-callers.c
 
 go-can-convert-interface.lo: runtime/go-can-convert-interface.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-can-convert-interface.lo -MD -MP -MF $(DEPDIR)/go-can-convert-interface.Tpo -c -o go-can-convert-interface.lo `test -f 'runtime/go-can-convert-interface.c' || echo '$(srcdir)/'`runtime/go-can-convert-interface.c
@@ -2736,13 +2738,6 @@ go-recover.lo: runtime/go-recover.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-recover.lo `test -f 'runtime/go-recover.c' || echo '$(srcdir)/'`runtime/go-recover.c
 
-go-reflect.lo: runtime/go-reflect.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-reflect.lo -MD -MP -MF $(DEPDIR)/go-reflect.Tpo -c -o go-reflect.lo `test -f 'runtime/go-reflect.c' || echo '$(srcdir)/'`runtime/go-reflect.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-reflect.Tpo $(DEPDIR)/go-reflect.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-reflect.c' object='go-reflect.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-reflect.lo `test -f 'runtime/go-reflect.c' || echo '$(srcdir)/'`runtime/go-reflect.c
-
 go-reflect-call.lo: runtime/go-reflect-call.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-reflect-call.lo -MD -MP -MF $(DEPDIR)/go-reflect-call.Tpo -c -o go-reflect-call.lo `test -f 'runtime/go-reflect-call.c' || echo '$(srcdir)/'`runtime/go-reflect-call.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-reflect-call.Tpo $(DEPDIR)/go-reflect-call.Plo
@@ -2890,13 +2885,6 @@ go-typestring.lo: runtime/go-typestring.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-typestring.lo `test -f 'runtime/go-typestring.c' || echo '$(srcdir)/'`runtime/go-typestring.c
 
-go-unreflect.lo: runtime/go-unreflect.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-unreflect.lo -MD -MP -MF $(DEPDIR)/go-unreflect.Tpo -c -o go-unreflect.lo `test -f 'runtime/go-unreflect.c' || echo '$(srcdir)/'`runtime/go-unreflect.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-unreflect.Tpo $(DEPDIR)/go-unreflect.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-unreflect.c' object='go-unreflect.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-unreflect.lo `test -f 'runtime/go-unreflect.c' || echo '$(srcdir)/'`runtime/go-unreflect.c
-
 go-unsafe-new.lo: runtime/go-unsafe-new.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-unsafe-new.lo -MD -MP -MF $(DEPDIR)/go-unsafe-new.Tpo -c -o go-unsafe-new.lo `test -f 'runtime/go-unsafe-new.c' || echo '$(srcdir)/'`runtime/go-unsafe-new.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-unsafe-new.Tpo $(DEPDIR)/go-unsafe-new.Plo
@@ -3043,6 +3031,13 @@ runtime.lo: runtime/runtime.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/runtime.c' object='runtime.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o runtime.lo `test -f 'runtime/runtime.c' || echo '$(srcdir)/'`runtime/runtime.c
+
+signal_unix.lo: runtime/signal_unix.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT signal_unix.lo -MD -MP -MF $(DEPDIR)/signal_unix.Tpo -c -o signal_unix.lo `test -f 'runtime/signal_unix.c' || echo '$(srcdir)/'`runtime/signal_unix.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/signal_unix.Tpo $(DEPDIR)/signal_unix.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/signal_unix.c' object='signal_unix.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o signal_unix.lo `test -f 'runtime/signal_unix.c' || echo '$(srcdir)/'`runtime/signal_unix.c
 
 thread.lo: runtime/thread.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT thread.lo -MD -MP -MF $(DEPDIR)/thread.Tpo -c -o thread.lo `test -f 'runtime/thread.c' || echo '$(srcdir)/'`runtime/thread.c
@@ -4327,7 +4322,7 @@ sema.c: $(srcdir)/runtime/sema.goc goc2c
 	mv -f $@.tmp $@
 
 sigqueue.c: $(srcdir)/runtime/sigqueue.goc goc2c
-	./goc2c --gcc --go-prefix libgo_runtime $< > $@.tmp
+	./goc2c --gcc --go-prefix libgo_os $< > $@.tmp
 	mv -f $@.tmp $@
 
 time.c: $(srcdir)/runtime/time.goc goc2c
@@ -4547,10 +4542,6 @@ os/os.lo: $(go_os_files)
 os/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: os/check
-
-signal_unix.go: $(srcdir)/go/os/mkunixsignals.sh sysinfo.go
-	$(SHELL) $(srcdir)/go/os/mkunixsignals.sh sysinfo.go > $@.tmp
-	mv -f $@.tmp $@
 
 @go_include@ path/path.lo.dep
 path/path.lo.dep: $(go_path_files)
@@ -5161,16 +5152,6 @@ exp/proxy/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: exp/proxy/check
 
-@go_include@ exp/signal.lo.dep
-exp/signal.lo.dep: $(go_exp_signal_files)
-	$(BUILDDEPS)
-exp/signal.lo: $(go_exp_signal_files)
-	$(BUILDPACKAGE)
-exp/signal/check: $(CHECK_DEPS)
-	@$(MKDIR_P) exp/signal
-	@$(CHECK)
-.PHONY: exp/signal/check
-
 @go_include@ exp/terminal.lo.dep
 exp/terminal.lo.dep: $(go_exp_terminal_files)
 	$(BUILDDEPS)
@@ -5622,6 +5603,16 @@ os/exec/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: os/exec/check
 
+@go_include@ os/signal.lo.dep
+os/signal.lo.dep: $(go_os_signal_files)
+	$(BUILDDEPS)
+os/signal.lo: $(go_os_signal_files)
+	$(BUILDPACKAGE)
+os/signal/check: $(CHECK_DEPS)
+	@$(MKDIR_P) os/signal
+	@$(CHECK)
+.PHONY: os/signal/check
+
 @go_include@ os/user.lo.dep
 os/user.lo.dep: $(go_os_user_files)
 	$(BUILDDEPS)
@@ -5733,16 +5724,6 @@ testing/quick/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: testing/quick/check
 
-@go_include@ testing/script.lo.dep
-testing/script.lo.dep: $(go_testing_script_files)
-	$(BUILDDEPS)
-testing/script.lo: $(go_testing_script_files)
-	$(BUILDPACKAGE)
-testing/script/check: $(CHECK_DEPS)
-	@$(MKDIR_P) testing/script
-	@$(CHECK)
-.PHONY: testing/script/check
-
 @go_include@ unicode/utf16.lo.dep
 unicode/utf16.lo.dep: $(go_unicode_utf16_files)
 	$(BUILDDEPS)
@@ -5769,6 +5750,8 @@ syscall/syscall.lo.dep: $(go_syscall_files)
 syscall/syscall.lo: $(go_syscall_files)
 	$(BUILDPACKAGE)
 syscall/errno.lo: go/syscall/errno.c
+	$(LTCOMPILE) -c -o $@ $<
+syscall/signame.lo: go/syscall/signame.c
 	$(LTCOMPILE) -c -o $@ $<
 syscall/wait.lo: go/syscall/wait.c
 	$(LTCOMPILE) -c -o $@ $<
@@ -5941,8 +5924,6 @@ exp/norm.gox: exp/norm.lo
 	$(BUILDGOX)
 exp/proxy.gox: exp/proxy.lo
 	$(BUILDGOX)
-exp/signal.gox: exp/signal.lo
-	$(BUILDGOX)
 exp/terminal.gox: exp/terminal.lo
 	$(BUILDGOX)
 exp/types.gox: exp/types.lo
@@ -6043,6 +6024,8 @@ old/template.gox: old/template.lo
 
 os/exec.gox: os/exec.lo
 	$(BUILDGOX)
+os/signal.gox: os/signal.lo
+	$(BUILDGOX)
 os/user.gox: os/user.lo
 	$(BUILDGOX)
 
@@ -6072,8 +6055,6 @@ text/template/parse.gox: text/template/parse.lo
 testing/iotest.gox: testing/iotest.lo
 	$(BUILDGOX)
 testing/quick.gox: testing/quick.lo
-	$(BUILDGOX)
-testing/script.gox: testing/script.lo
 	$(BUILDGOX)
 
 unicode/utf16.gox: unicode/utf16.lo

@@ -225,7 +225,6 @@ toolexeclibgoexp_DATA = \
 	$(exp_inotify_gox) \
 	exp/norm.gox \
 	exp/proxy.gox \
-	exp/signal.gox \
 	exp/terminal.gox \
 	exp/types.gox \
 	exp/utf8string.gox
@@ -325,6 +324,7 @@ toolexeclibgoosdir = $(toolexeclibgodir)/os
 
 toolexeclibgoos_DATA = \
 	os/exec.gox \
+	os/signal.gox \
 	os/user.gox
 
 toolexeclibgopathdir = $(toolexeclibgodir)/path
@@ -352,8 +352,7 @@ toolexeclibgotestingdir = $(toolexeclibgodir)/testing
 
 toolexeclibgotesting_DATA = \
 	testing/iotest.gox \
-	testing/quick.gox \
-	testing/script.gox
+	testing/quick.gox
 
 toolexeclibgotextdir = $(toolexeclibgodir)/text
 
@@ -398,6 +397,7 @@ runtime_files = \
 	runtime/go-byte-array-to-string.c \
 	runtime/go-breakpoint.c \
 	runtime/go-caller.c \
+	runtime/go-callers.c \
 	runtime/go-can-convert-interface.c \
 	runtime/go-cgo.c \
 	runtime/go-check-interface.c \
@@ -428,7 +428,6 @@ runtime_files = \
 	runtime/go-panic.c \
 	runtime/go-print.c \
 	runtime/go-recover.c \
-	runtime/go-reflect.c \
 	runtime/go-reflect-call.c \
 	runtime/go-reflect-map.c \
 	runtime/go-rune.c \
@@ -450,7 +449,6 @@ runtime_files = \
 	runtime/go-type-string.c \
 	runtime/go-typedesc-equal.c \
 	runtime/go-typestring.c \
-	runtime/go-unreflect.c \
 	runtime/go-unsafe-new.c \
 	runtime/go-unsafe-newarray.c \
 	runtime/go-unsafe-pointer.c \
@@ -468,6 +466,7 @@ runtime_files = \
 	runtime/msize.c \
 	runtime/proc.c \
 	runtime/runtime.c \
+	runtime/signal_unix.c \
 	runtime/thread.c \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
@@ -509,7 +508,7 @@ sema.c: $(srcdir)/runtime/sema.goc goc2c
 	mv -f $@.tmp $@
 
 sigqueue.c: $(srcdir)/runtime/sigqueue.goc goc2c
-	./goc2c --gcc --go-prefix libgo_runtime $< > $@.tmp
+	./goc2c --gcc --go-prefix libgo_os $< > $@.tmp
 	mv -f $@.tmp $@
 
 time.c: $(srcdir)/runtime/time.goc goc2c
@@ -526,7 +525,8 @@ go_bufio_files = \
 go_bytes_files = \
 	go/bytes/buffer.go \
 	go/bytes/bytes.go \
-	go/bytes/bytes_decl.go
+	go/bytes/bytes_decl.go \
+	go/bytes/reader.go
 go_bytes_c_files = \
 	go/bytes/indexbyte.c
 
@@ -784,9 +784,7 @@ go_os_files = \
 	$(go_os_stat_file) \
 	go/os/str.go \
 	$(go_os_sys_file) \
-	go/os/time.go \
-	go/os/types.go \
-	signal_unix.go
+	go/os/types.go
 
 go_path_files = \
 	go/path/match.go \
@@ -811,7 +809,6 @@ go_runtime_files = \
 	go/runtime/error.go \
 	go/runtime/extern.go \
 	go/runtime/mem.go \
-	go/runtime/sig.go \
 	go/runtime/softfloat64.go \
 	go/runtime/type.go \
 	version.go
@@ -1103,8 +1100,6 @@ go_exp_proxy_files = \
 	go/exp/proxy/per_host.go \
 	go/exp/proxy/proxy.go \
 	go/exp/proxy/socks5.go
-go_exp_signal_files = \
-	go/exp/signal/signal.go
 go_exp_terminal_files = \
 	go/exp/terminal/terminal.go \
 	go/exp/terminal/util.go
@@ -1302,6 +1297,10 @@ go_os_exec_files = \
 	go/os/exec/exec.go \
 	go/os/exec/lp_unix.go
 
+go_os_signal_files = \
+	go/os/signal/signal.go \
+	go/os/signal/signal_unix.go
+
 go_os_user_files = \
 	go/os/user/user.go \
 	go/os/user/lookup_unix.go
@@ -1352,8 +1351,6 @@ go_testing_iotest_files = \
 	go/testing/iotest/writer.go
 go_testing_quick_files = \
 	go/testing/quick/quick.go
-go_testing_script_files = \
-	go/testing/script/script.go
 
 go_text_scanner_files = \
 	go/text/scanner/scanner.go
@@ -1529,6 +1526,7 @@ go_syscall_files = \
 	syscall_arch.go
 go_syscall_c_files = \
 	go/syscall/errno.c \
+	go/syscall/signame.c \
 	$(syscall_wait_c_file)
 
 libcalls.go: s-libcalls; @true
@@ -1667,7 +1665,6 @@ libgo_go_objs = \
 	exp/html.lo \
 	exp/norm.lo \
 	exp/proxy.lo \
-	exp/signal.lo \
 	exp/terminal.lo \
 	exp/types.lo \
 	exp/utf8string.lo \
@@ -1712,6 +1709,7 @@ libgo_go_objs = \
 	old/regexp.lo \
 	old/template.lo \
 	$(os_lib_inotify_lo) \
+	os/signal.lo \
 	os/user.lo \
 	path/filepath.lo \
 	regexp/syntax.lo \
@@ -1722,6 +1720,7 @@ libgo_go_objs = \
 	sync/atomic_c.lo \
 	syscall/syscall.lo \
 	syscall/errno.lo \
+	syscall/signame.lo \
 	syscall/wait.lo \
 	text/scanner.lo \
 	text/tabwriter.lo \
@@ -1730,7 +1729,6 @@ libgo_go_objs = \
 	testing/testing.lo \
 	testing/iotest.lo \
 	testing/quick.lo \
-	testing/script.lo \
 	unicode/utf16.lo \
 	unicode/utf8.lo
 
@@ -1985,10 +1983,6 @@ os/os.lo: $(go_os_files)
 os/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: os/check
-
-signal_unix.go: $(srcdir)/go/os/mkunixsignals.sh sysinfo.go
-	$(SHELL) $(srcdir)/go/os/mkunixsignals.sh sysinfo.go > $@.tmp
-	mv -f $@.tmp $@
 
 @go_include@ path/path.lo.dep
 path/path.lo.dep: $(go_path_files)
@@ -2599,16 +2593,6 @@ exp/proxy/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: exp/proxy/check
 
-@go_include@ exp/signal.lo.dep
-exp/signal.lo.dep: $(go_exp_signal_files)
-	$(BUILDDEPS)
-exp/signal.lo: $(go_exp_signal_files)
-	$(BUILDPACKAGE)
-exp/signal/check: $(CHECK_DEPS)
-	@$(MKDIR_P) exp/signal
-	@$(CHECK)
-.PHONY: exp/signal/check
-
 @go_include@ exp/terminal.lo.dep
 exp/terminal.lo.dep: $(go_exp_terminal_files)
 	$(BUILDDEPS)
@@ -3060,6 +3044,16 @@ os/exec/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: os/exec/check
 
+@go_include@ os/signal.lo.dep
+os/signal.lo.dep: $(go_os_signal_files)
+	$(BUILDDEPS)
+os/signal.lo: $(go_os_signal_files)
+	$(BUILDPACKAGE)
+os/signal/check: $(CHECK_DEPS)
+	@$(MKDIR_P) os/signal
+	@$(CHECK)
+.PHONY: os/signal/check
+
 @go_include@ os/user.lo.dep
 os/user.lo.dep: $(go_os_user_files)
 	$(BUILDDEPS)
@@ -3171,16 +3165,6 @@ testing/quick/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: testing/quick/check
 
-@go_include@ testing/script.lo.dep
-testing/script.lo.dep: $(go_testing_script_files)
-	$(BUILDDEPS)
-testing/script.lo: $(go_testing_script_files)
-	$(BUILDPACKAGE)
-testing/script/check: $(CHECK_DEPS)
-	@$(MKDIR_P) testing/script
-	@$(CHECK)
-.PHONY: testing/script/check
-
 @go_include@ unicode/utf16.lo.dep
 unicode/utf16.lo.dep: $(go_unicode_utf16_files)
 	$(BUILDDEPS)
@@ -3207,6 +3191,8 @@ syscall/syscall.lo.dep: $(go_syscall_files)
 syscall/syscall.lo: $(go_syscall_files)
 	$(BUILDPACKAGE)
 syscall/errno.lo: go/syscall/errno.c
+	$(LTCOMPILE) -c -o $@ $<
+syscall/signame.lo: go/syscall/signame.c
 	$(LTCOMPILE) -c -o $@ $<
 syscall/wait.lo: go/syscall/wait.c
 	$(LTCOMPILE) -c -o $@ $<
@@ -3384,8 +3370,6 @@ exp/norm.gox: exp/norm.lo
 	$(BUILDGOX)
 exp/proxy.gox: exp/proxy.lo
 	$(BUILDGOX)
-exp/signal.gox: exp/signal.lo
-	$(BUILDGOX)
 exp/terminal.gox: exp/terminal.lo
 	$(BUILDGOX)
 exp/types.gox: exp/types.lo
@@ -3486,6 +3470,8 @@ old/template.gox: old/template.lo
 
 os/exec.gox: os/exec.lo
 	$(BUILDGOX)
+os/signal.gox: os/signal.lo
+	$(BUILDGOX)
 os/user.gox: os/user.lo
 	$(BUILDGOX)
 
@@ -3515,8 +3501,6 @@ text/template/parse.gox: text/template/parse.lo
 testing/iotest.gox: testing/iotest.lo
 	$(BUILDGOX)
 testing/quick.gox: testing/quick.lo
-	$(BUILDGOX)
-testing/script.gox: testing/script.lo
 	$(BUILDGOX)
 
 unicode/utf16.gox: unicode/utf16.lo
@@ -3605,7 +3589,6 @@ TEST_PACKAGES = \
 	$(exp_inotify_check) \
 	exp/norm/check \
 	exp/proxy/check \
-	exp/signal/check \
 	exp/terminal/check \
 	exp/utf8string/check \
 	html/template/check \
@@ -3635,6 +3618,7 @@ TEST_PACKAGES = \
 	net/http/check \
 	net/http/cgi/check \
 	net/http/fcgi/check \
+	net/http/httptest/check \
 	net/http/httputil/check \
 	net/mail/check \
 	net/rpc/check \
@@ -3646,6 +3630,7 @@ TEST_PACKAGES = \
 	old/regexp/check \
 	old/template/check \
 	os/exec/check \
+	os/signal/check \
 	os/user/check \
 	path/filepath/check \
 	regexp/syntax/check \
@@ -3655,7 +3640,6 @@ TEST_PACKAGES = \
 	text/template/check \
 	text/template/parse/check \
 	testing/quick/check \
-	testing/script/check \
 	unicode/utf16/check \
 	unicode/utf8/check
 

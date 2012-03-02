@@ -39,6 +39,22 @@ addrspace_free(void *v __attribute__ ((unused)), uintptr n __attribute__ ((unuse
 	return 1;
 }
 
+static void *
+mmap_fixed(byte *v, uintptr n, int32 prot, int32 flags, int32 fd, uint32 offset)
+{
+	void *p;
+
+	p = runtime_mmap(v, n, prot, flags, fd, offset);
+	if(p != v && addrspace_free(v, n)) {
+		// On some systems, mmap ignores v without
+		// MAP_FIXED, so retry if the address space is free.
+		if(p != MAP_FAILED)
+			runtime_munmap(p, n);
+		p = runtime_mmap(v, n, prot, flags|MAP_FIXED, fd, offset);
+	}
+	return p;
+}
+
 void*
 runtime_SysAlloc(uintptr n)
 {
@@ -91,12 +107,6 @@ runtime_SysReserve(void *v, uintptr n)
 	int fd = -1;
 	void *p;
 
-	// On 64-bit, people with ulimit -v set complain if we reserve too
-	// much address space.  Instead, assume that the reservation is okay
-	// and check the assumption in SysMap.
-	if(sizeof(void*) == 8)
-		return v;
-	
 #ifdef USE_DEV_ZERO
 	if (dev_zero == -1) {
 		dev_zero = open("/dev/zero", O_RDONLY);
@@ -108,10 +118,21 @@ runtime_SysReserve(void *v, uintptr n)
 	fd = dev_zero;
 #endif
 
-	p = runtime_mmap(v, n, PROT_NONE, MAP_ANON|MAP_PRIVATE, fd, 0);
-	if((uintptr)p < 4096 || -(uintptr)p < 4096) {
-		return nil;
+	// On 64-bit, people with ulimit -v set complain if we reserve too
+	// much address space.  Instead, assume that the reservation is okay
+	// if we can reserve at least 64K and check the assumption in SysMap.
+	// Only user-mode Linux (UML) rejects these requests.
+	if(sizeof(void*) == 8 && (uintptr)v >= 0xffffffffU) {
+		p = mmap_fixed(v, 64<<10, PROT_NONE, MAP_ANON|MAP_PRIVATE, fd, 0);
+		if (p != v)
+			return nil;
+		runtime_munmap(p, 64<<10);
+		return v;
 	}
+	
+	p = runtime_mmap(v, n, PROT_NONE, MAP_ANON|MAP_PRIVATE, fd, 0);
+	if(p == MAP_FAILED)
+		return nil;
 	return p;
 }
 
@@ -135,13 +156,10 @@ runtime_SysMap(void *v, uintptr n)
 #endif
 
 	// On 64-bit, we don't actually have v reserved, so tread carefully.
-	if(sizeof(void*) == 8) {
-		p = runtime_mmap(v, n, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_ANON|MAP_PRIVATE, fd, 0);
-		if(p != v && addrspace_free(v, n)) {
-			// On some systems, mmap ignores v without
-			// MAP_FIXED, so retry if the address space is free.
-			p = runtime_mmap(v, n, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_ANON|MAP_FIXED|MAP_PRIVATE, fd, 0);
-		}
+	if(sizeof(void*) == 8 && (uintptr)v >= 0xffffffffU) {
+		p = mmap_fixed(v, n, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_ANON|MAP_PRIVATE, fd, 0);
+		if(p == MAP_FAILED && errno == ENOMEM)
+			runtime_throw("runtime: out of memory");
 		if(p != v) {
 			runtime_printf("runtime: address space conflict: map(%p) = %p\n", v, p);
 			runtime_throw("runtime: address space conflict");

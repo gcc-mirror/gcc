@@ -37,7 +37,7 @@ func (e *LinkError) Error() string {
 	return e.Op + " " + e.Old + " " + e.New + ": " + e.Err.Error()
 }
 
-// Link creates a hard link.
+// Link creates newname as a hard link to the oldname file.
 func Link(oldname, newname string) error {
 	e := syscall.Link(oldname, newname)
 	if e != nil {
@@ -46,7 +46,7 @@ func Link(oldname, newname string) error {
 	return nil
 }
 
-// Symlink creates a symbolic link.
+// Symlink creates newname as a symbolic link to oldname.
 func Symlink(oldname, newname string) error {
 	e := syscall.Symlink(oldname, newname)
 	if e != nil {
@@ -55,8 +55,8 @@ func Symlink(oldname, newname string) error {
 	return nil
 }
 
-// Readlink reads the contents of a symbolic link: the destination of
-// the link.  It returns the contents and an error, if any.
+// Readlink returns the destination of the named symbolic link.
+// If there is an error, it will be of type *PathError.
 func Readlink(name string) (string, error) {
 	for len := 128; ; len *= 2 {
 		b := make([]byte, len)
@@ -99,6 +99,7 @@ func syscallMode(i FileMode) (o uint32) {
 
 // Chmod changes the mode of the named file to mode.
 // If the file is a symbolic link, it changes the mode of the link's target.
+// If there is an error, it will be of type *PathError.
 func Chmod(name string, mode FileMode) error {
 	if e := syscall.Chmod(name, syscallMode(mode)); e != nil {
 		return &PathError{"chmod", name, e}
@@ -107,6 +108,7 @@ func Chmod(name string, mode FileMode) error {
 }
 
 // Chmod changes the mode of the file to mode.
+// If there is an error, it will be of type *PathError.
 func (f *File) Chmod(mode FileMode) error {
 	if e := syscall.Fchmod(f.fd, syscallMode(mode)); e != nil {
 		return &PathError{"chmod", f.name, e}
@@ -116,6 +118,7 @@ func (f *File) Chmod(mode FileMode) error {
 
 // Chown changes the numeric uid and gid of the named file.
 // If the file is a symbolic link, it changes the uid and gid of the link's target.
+// If there is an error, it will be of type *PathError.
 func Chown(name string, uid, gid int) error {
 	if e := syscall.Chown(name, uid, gid); e != nil {
 		return &PathError{"chown", name, e}
@@ -125,6 +128,7 @@ func Chown(name string, uid, gid int) error {
 
 // Lchown changes the numeric uid and gid of the named file.
 // If the file is a symbolic link, it changes the uid and gid of the link itself.
+// If there is an error, it will be of type *PathError.
 func Lchown(name string, uid, gid int) error {
 	if e := syscall.Lchown(name, uid, gid); e != nil {
 		return &PathError{"lchown", name, e}
@@ -133,6 +137,7 @@ func Lchown(name string, uid, gid int) error {
 }
 
 // Chown changes the numeric uid and gid of the named file.
+// If there is an error, it will be of type *PathError.
 func (f *File) Chown(uid, gid int) error {
 	if e := syscall.Fchown(f.fd, uid, gid); e != nil {
 		return &PathError{"chown", f.name, e}
@@ -142,6 +147,7 @@ func (f *File) Chown(uid, gid int) error {
 
 // Truncate changes the size of the file.
 // It does not change the I/O offset.
+// If there is an error, it will be of type *PathError.
 func (f *File) Truncate(size int64) error {
 	if e := syscall.Ftruncate(f.fd, size); e != nil {
 		return &PathError{"truncate", f.name, e}
@@ -167,6 +173,7 @@ func (f *File) Sync() (err error) {
 //
 // The underlying filesystem may truncate or round the values to a
 // less precise time unit.
+// If there is an error, it will be of type *PathError.
 func Chtimes(name string, atime time.Time, mtime time.Time) error {
 	var utimes [2]syscall.Timeval
 	atime_ns := atime.Unix()*1e9 + int64(atime.Nanosecond())

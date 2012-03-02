@@ -59,7 +59,9 @@ type ResponseWriter interface {
 
 	// Write writes the data to the connection as part of an HTTP reply.
 	// If WriteHeader has not yet been called, Write calls WriteHeader(http.StatusOK)
-	// before writing the data.
+	// before writing the data.  If the Header does not contain a
+	// Content-Type line, Write adds a Content-Type set to the result of passing
+	// the initial 512 bytes of written data to DetectContentType.
 	Write([]byte) (int, error)
 
 	// WriteHeader sends an HTTP response header with status code.
@@ -833,11 +835,17 @@ func RedirectHandler(url string, code int) Handler {
 // redirecting any request containing . or .. elements to an
 // equivalent .- and ..-free URL.
 type ServeMux struct {
-	m map[string]Handler
+	mu sync.RWMutex
+	m  map[string]muxEntry
+}
+
+type muxEntry struct {
+	explicit bool
+	h        Handler
 }
 
 // NewServeMux allocates and returns a new ServeMux.
-func NewServeMux() *ServeMux { return &ServeMux{make(map[string]Handler)} }
+func NewServeMux() *ServeMux { return &ServeMux{m: make(map[string]muxEntry)} }
 
 // DefaultServeMux is the default ServeMux used by Serve.
 var DefaultServeMux = NewServeMux()
@@ -883,8 +891,24 @@ func (mux *ServeMux) match(path string) Handler {
 		}
 		if h == nil || len(k) > n {
 			n = len(k)
-			h = v
+			h = v.h
 		}
+	}
+	return h
+}
+
+// handler returns the handler to use for the request r.
+func (mux *ServeMux) handler(r *Request) Handler {
+	mux.mu.RLock()
+	defer mux.mu.RUnlock()
+
+	// Host-specific pattern takes precedence over generic ones
+	h := mux.match(r.Host + r.URL.Path)
+	if h == nil {
+		h = mux.match(r.URL.Path)
+	}
+	if h == nil {
+		h = NotFoundHandler()
 	}
 	return h
 }
@@ -898,30 +922,33 @@ func (mux *ServeMux) ServeHTTP(w ResponseWriter, r *Request) {
 		w.WriteHeader(StatusMovedPermanently)
 		return
 	}
-	// Host-specific pattern takes precedence over generic ones
-	h := mux.match(r.Host + r.URL.Path)
-	if h == nil {
-		h = mux.match(r.URL.Path)
-	}
-	if h == nil {
-		h = NotFoundHandler()
-	}
-	h.ServeHTTP(w, r)
+	mux.handler(r).ServeHTTP(w, r)
 }
 
 // Handle registers the handler for the given pattern.
+// If a handler already exists for pattern, Handle panics.
 func (mux *ServeMux) Handle(pattern string, handler Handler) {
+	mux.mu.Lock()
+	defer mux.mu.Unlock()
+
 	if pattern == "" {
 		panic("http: invalid pattern " + pattern)
 	}
+	if handler == nil {
+		panic("http: nil handler")
+	}
+	if mux.m[pattern].explicit {
+		panic("http: multiple registrations for " + pattern)
+	}
 
-	mux.m[pattern] = handler
+	mux.m[pattern] = muxEntry{explicit: true, h: handler}
 
 	// Helpful behavior:
-	// If pattern is /tree/, insert permanent redirect for /tree.
+	// If pattern is /tree/, insert an implicit permanent redirect for /tree.
+	// It can be overridden by an explicit registration.
 	n := len(pattern)
-	if n > 0 && pattern[n-1] == '/' {
-		mux.m[pattern[0:n-1]] = RedirectHandler(pattern, StatusMovedPermanently)
+	if n > 0 && pattern[n-1] == '/' && !mux.m[pattern[0:n-1]].explicit {
+		mux.m[pattern[0:n-1]] = muxEntry{h: RedirectHandler(pattern, StatusMovedPermanently)}
 	}
 }
 
@@ -980,15 +1007,26 @@ func (srv *Server) ListenAndServe() error {
 // then call srv.Handler to reply to them.
 func (srv *Server) Serve(l net.Listener) error {
 	defer l.Close()
+	var tempDelay time.Duration // how long to sleep on accept failure
 	for {
 		rw, e := l.Accept()
 		if e != nil {
 			if ne, ok := e.(net.Error); ok && ne.Temporary() {
-				log.Printf("http: Accept error: %v", e)
+				if tempDelay == 0 {
+					tempDelay = 5 * time.Millisecond
+				} else {
+					tempDelay *= 2
+				}
+				if max := 1 * time.Second; tempDelay > max {
+					tempDelay = max
+				}
+				log.Printf("http: Accept error: %v; retrying in %v", e, tempDelay)
+				time.Sleep(tempDelay)
 				continue
 			}
 			return e
 		}
+		tempDelay = 0
 		if srv.ReadTimeout != 0 {
 			rw.SetReadDeadline(time.Now().Add(srv.ReadTimeout))
 		}

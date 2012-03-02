@@ -28,19 +28,20 @@ type file struct {
 }
 
 // Fd returns the integer Unix file descriptor referencing the open file.
-func (f *File) Fd() int {
+func (f *File) Fd() uintptr {
 	if f == nil {
-		return -1
+		return ^(uintptr(0))
 	}
-	return f.fd
+	return uintptr(f.fd)
 }
 
 // NewFile returns a new File with the given file descriptor and name.
-func NewFile(fd int, name string) *File {
-	if fd < 0 {
+func NewFile(fd uintptr, name string) *File {
+	fdi := int(fd)
+	if fdi < 0 {
 		return nil
 	}
-	f := &File{&file{fd: fd, name: name}}
+	f := &File{&file{fd: fdi, name: name}}
 	runtime.SetFinalizer(f.file, (*file).close)
 	return f
 }
@@ -59,7 +60,7 @@ const DevNull = "/dev/null"
 // or Create instead.  It opens the named file with specified flag
 // (O_RDONLY etc.) and perm, (0666 etc.) if applicable.  If successful,
 // methods on the returned File can be used for I/O.
-// It returns the File and an error, if any.
+// If there is an error, it will be of type *PathError.
 func OpenFile(name string, flag int, perm FileMode) (file *File, err error) {
 	r, e := syscall.Open(name, flag|syscall.O_CLOEXEC, syscallMode(perm))
 	if e != nil {
@@ -77,7 +78,7 @@ func OpenFile(name string, flag int, perm FileMode) (file *File, err error) {
 		syscall.CloseOnExec(r)
 	}
 
-	return NewFile(r, name), nil
+	return NewFile(uintptr(r), name), nil
 }
 
 // Close closes the File, rendering it unusable for I/O.
@@ -109,7 +110,7 @@ func (file *file) close() error {
 }
 
 // Stat returns the FileInfo structure describing file.
-// It returns the FileInfo and an error, if any.
+// If there is an error, it will be of type *PathError.
 func (f *File) Stat() (fi FileInfo, err error) {
 	var stat syscall.Stat_t
 	err = syscall.Fstat(f.fd, &stat)
@@ -119,11 +120,8 @@ func (f *File) Stat() (fi FileInfo, err error) {
 	return fileInfoFromStat(&stat, f.name), nil
 }
 
-// Stat returns a FileInfo describing the named file and an error, if any.
-// If name names a valid symbolic link, the returned FileInfo describes
-// the file pointed at by the link and has fi.FollowedSymlink set to true.
-// If name names an invalid symbolic link, the returned FileInfo describes
-// the link itself and has fi.FollowedSymlink set to false.
+// Stat returns a FileInfo describing the named file.
+// If there is an error, it will be of type *PathError.
 func Stat(name string) (fi FileInfo, err error) {
 	var stat syscall.Stat_t
 	err = syscall.Stat(name, &stat)
@@ -133,9 +131,10 @@ func Stat(name string) (fi FileInfo, err error) {
 	return fileInfoFromStat(&stat, name), nil
 }
 
-// Lstat returns a FileInfo describing the named file and an
-// error, if any.  If the file is a symbolic link, the returned FileInfo
+// Lstat returns a FileInfo describing the named file.
+// If the file is a symbolic link, the returned FileInfo
 // describes the symbolic link.  Lstat makes no attempt to follow the link.
+// If there is an error, it will be of type *PathError.
 func Lstat(name string) (fi FileInfo, err error) {
 	var stat syscall.Stat_t
 	err = syscall.Lstat(name, &stat)
@@ -199,6 +198,7 @@ func (f *File) seek(offset int64, whence int) (ret int64, err error) {
 
 // Truncate changes the size of the named file.
 // If the file is a symbolic link, it changes the size of the link's target.
+// If there is an error, it will be of type *PathError.
 func Truncate(name string, size int64) error {
 	if e := syscall.Truncate(name, size); e != nil {
 		return &PathError{"truncate", name, e}
@@ -207,6 +207,7 @@ func Truncate(name string, size int64) error {
 }
 
 // Remove removes the named file or directory.
+// If there is an error, it will be of type *PathError.
 func Remove(name string) error {
 	// System call interface forces us to know
 	// whether name is a file or directory.
@@ -270,7 +271,7 @@ func Pipe() (r *File, w *File, err error) {
 	syscall.CloseOnExec(p[1])
 	syscall.ForkLock.RUnlock()
 
-	return NewFile(p[0], "|0"), NewFile(p[1], "|1"), nil
+	return NewFile(uintptr(p[0]), "|0"), NewFile(uintptr(p[1]), "|1"), nil
 }
 
 // TempDir returns the default directory to use for temporary files.

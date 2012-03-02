@@ -128,8 +128,8 @@ func (w WaitStatus) Stopped() bool
 func (w WaitStatus) Continued() bool
 func (w WaitStatus) CoreDump() bool
 func (w WaitStatus) ExitStatus() int
-func (w WaitStatus) Signal() int
-func (w WaitStatus) StopSignal() int
+func (w WaitStatus) Signal() Signal
+func (w WaitStatus) StopSignal() Signal
 func (w WaitStatus) TrapCause() int
 
 //sys	Mkfifo(path string, mode uint32) (err error)
@@ -253,7 +253,7 @@ func Gettimeofday(tv *Timeval) (err error) {
 //sysnb Getuid() (uid int)
 //getuid() Uid_t
 
-//sysnb	Kill(pid int, sig int) (err error)
+//sysnb	Kill(pid int, sig Signal) (err error)
 //kill(pid Pid_t, sig int) int
 
 //sys	Lchown(path string, uid int, gid int) (err error)

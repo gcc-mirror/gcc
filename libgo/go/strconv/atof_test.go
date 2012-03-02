@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"reflect"
 	. "strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -117,6 +118,20 @@ var atoftests = []atofTest{
 
 	// A very large number (initially wrongly parsed by the fast algorithm).
 	{"4.630813248087435e+307", "4.630813248087435e+307", nil},
+
+	// A different kind of very large number.
+	{"22.222222222222222", "22.22222222222222", nil},
+	{"2." + strings.Repeat("2", 4000) + "e+1", "22.22222222222222", nil},
+
+	// Exactly halfway between 1 and math.Nextafter(1, 2).
+	// Round to even (down).
+	{"1.00000000000000011102230246251565404236316680908203125", "1", nil},
+	// Slightly lower; still round down.
+	{"1.00000000000000011102230246251565404236316680908203124", "1", nil},
+	// Slightly higher; round up.
+	{"1.00000000000000011102230246251565404236316680908203126", "1.0000000000000002", nil},
+	// Slightly higher, but you have to read all the way to the end.
+	{"1.00000000000000011102230246251565404236316680908203125" + strings.Repeat("0", 10000) + "1", "1.0000000000000002", nil},
 }
 
 type atofSimpleTest struct {
@@ -209,6 +224,44 @@ func TestAtofRandom(t *testing.T) {
 		}
 	}
 	t.Logf("tested %d random numbers", len(atofRandomTests))
+}
+
+var roundTripCases = []struct {
+	f float64
+	s string
+}{
+	// Issue 2917.
+	// This test will break the optimized conversion if the
+	// FPU is using 80-bit registers instead of 64-bit registers,
+	// usually because the operating system initialized the
+	// thread with 80-bit precision and the Go runtime didn't
+	// fix the FP control word.
+	{8865794286000691 << 39, "4.87402195346389e+27"},
+	{8865794286000692 << 39, "4.8740219534638903e+27"},
+}
+
+func TestRoundTrip(t *testing.T) {
+	for _, tt := range roundTripCases {
+		old := SetOptimize(false)
+		s := FormatFloat(tt.f, 'g', -1, 64)
+		if s != tt.s {
+			t.Errorf("no-opt FormatFloat(%b) = %s, want %s", tt.f, s, tt.s)
+		}
+		f, err := ParseFloat(tt.s, 64)
+		if f != tt.f || err != nil {
+			t.Errorf("no-opt ParseFloat(%s) = %b, %v want %b, nil", tt.s, f, err, tt.f)
+		}
+		SetOptimize(true)
+		s = FormatFloat(tt.f, 'g', -1, 64)
+		if s != tt.s {
+			t.Errorf("opt FormatFloat(%b) = %s, want %s", tt.f, s, tt.s)
+		}
+		f, err = ParseFloat(tt.s, 64)
+		if f != tt.f || err != nil {
+			t.Errorf("opt ParseFloat(%s) = %b, %v want %b, nil", tt.s, f, err, tt.f)
+		}
+		SetOptimize(old)
+	}
 }
 
 func BenchmarkAtof64Decimal(b *testing.B) {
