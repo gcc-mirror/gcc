@@ -1,5 +1,12 @@
 2012-03-02  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/49486
+	* config/sh/sh.md (negdi2): Add TARGET_SH1 condition.
+	(absdi2): New expander.
+	(*absdi2, *negabsdi2, negdi_cond): New insns and splits.
+
+2012-03-02  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sync.md (atomic_exchange<mode>): New expander.
 	(atomic_exchange<mode>_soft): New insn.
 
