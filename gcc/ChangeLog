@@ -1,3 +1,10 @@
+2012-03-02  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+       * config/arm/arm-ldmstm.ml (write_ldm_commutative_peephole):
+	Improve conditions for peepholes of loads followed by commutative
+	operators.
+       * config/arm/ldmstm.md: Regenerated.
+
 2012-03-02  Richard Guenther  <rguenther@suse.de>
 
 	* BASE-VER: Set to 4.8.0.

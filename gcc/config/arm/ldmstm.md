@@ -1160,9 +1160,14 @@
             [(match_operand:SI 6 "s_register_operand" "")
              (match_operand:SI 7 "s_register_operand" "")]))
       (clobber (reg:CC CC_REGNUM))])]
-  "(((operands[6] == operands[0] && operands[7] == operands[1])
-     || (operands[7] == operands[0] && operands[6] == operands[1]))
-    && peep2_reg_dead_p (3, operands[0]) && peep2_reg_dead_p (3, operands[1]))"
+  "((((REGNO (operands[6]) == REGNO (operands[0]))
+         && (REGNO (operands[7]) == REGNO (operands[1])))
+      || ((REGNO (operands[7]) == REGNO (operands[0]))
+         && (REGNO (operands[6]) == REGNO (operands[1]))))
+    && (peep2_regno_dead_p (3, REGNO (operands[0]))
+      || (REGNO (operands[0]) == REGNO (operands[4])))
+    && (peep2_regno_dead_p (3, REGNO (operands[1]))
+      || (REGNO (operands[1]) == REGNO (operands[4]))))"
   [(parallel
     [(set (match_dup 4) (match_op_dup 5 [(match_dup 6) (match_dup 7)]))
      (clobber (reg:CC CC_REGNUM))])]
@@ -1180,9 +1185,14 @@
         (match_operator:SI 5 "commutative_binary_operator"
          [(match_operand:SI 6 "s_register_operand" "")
           (match_operand:SI 7 "s_register_operand" "")]))]
-  "(((operands[6] == operands[0] && operands[7] == operands[1])
-     || (operands[7] == operands[0] && operands[6] == operands[1]))
-    && peep2_reg_dead_p (3, operands[0]) && peep2_reg_dead_p (3, operands[1]))"
+  "((((REGNO (operands[6]) == REGNO (operands[0]))
+         && (REGNO (operands[7]) == REGNO (operands[1])))
+      || ((REGNO (operands[7]) == REGNO (operands[0]))
+         && (REGNO (operands[6]) == REGNO (operands[1]))))
+    && (peep2_regno_dead_p (3, REGNO (operands[0]))
+      || (REGNO (operands[0]) == REGNO (operands[4])))
+    && (peep2_regno_dead_p (3, REGNO (operands[1]))
+      || (REGNO (operands[1]) == REGNO (operands[4]))))"
   [(set (match_dup 4) (match_op_dup 5 [(match_dup 6) (match_dup 7)]))]
 {
   if (!gen_ldm_seq (operands, 2, true))

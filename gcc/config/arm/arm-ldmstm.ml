@@ -216,9 +216,14 @@ let write_ldm_commutative_peephole thumb =
     Printf.printf "%s          (match_operand:SI %d \"s_register_operand\" \"\")]))\n" indent (nregs * 2 + 3);
     Printf.printf "%s   (clobber (reg:CC CC_REGNUM))])]\n" indent
   end;
-  Printf.printf "  \"(((operands[%d] == operands[0] && operands[%d] == operands[1])\n" (nregs * 2 + 2) (nregs * 2 + 3);
-  Printf.printf "     || (operands[%d] == operands[0] && operands[%d] == operands[1]))\n" (nregs * 2 + 3) (nregs * 2 + 2);
-  Printf.printf "    && peep2_reg_dead_p (%d, operands[0]) && peep2_reg_dead_p (%d, operands[1]))\"\n" (nregs + 1) (nregs + 1);
+  Printf.printf "  \"((((REGNO (operands[%d]) == REGNO (operands[0]))\n" (nregs * 2 + 2);
+  Printf.printf "         && (REGNO (operands[%d]) == REGNO (operands[1])))\n"  (nregs * 2 + 3);
+  Printf.printf "      || ((REGNO (operands[%d]) == REGNO (operands[0]))\n" (nregs * 2 + 3);
+  Printf.printf "         && (REGNO (operands[%d]) == REGNO (operands[1]))))\n" (nregs * 2 + 2);
+  Printf.printf "    && (peep2_regno_dead_p (%d, REGNO (operands[0]))\n" (nregs + 1);
+  Printf.printf "      || (REGNO (operands[0]) == REGNO (operands[%d])))\n"  (nregs * 2);
+  Printf.printf "    && (peep2_regno_dead_p (%d, REGNO (operands[1]))\n" (nregs + 1);
+  Printf.printf "      || (REGNO (operands[1]) == REGNO (operands[%d]))))\"\n" (nregs * 2);
   begin
     if thumb then
       Printf.printf "  [(set (match_dup %d) (match_op_dup %d [(match_dup %d) (match_dup %d)]))]\n"
