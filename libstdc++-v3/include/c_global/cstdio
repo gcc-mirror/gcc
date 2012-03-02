@@ -47,7 +47,7 @@
 #define _GLIBCXX_CSTDIO 1
 
 #ifndef _GLIBCXX_HAVE_GETS
-extern "C" extern char* gets (char* __s) __attribute__((deprecated));
+extern "C" char* gets (char* __s) __attribute__((deprecated));
 #endif
 
 // Get rid of those macros defined in <stdio.h> in lieu of real functions.
