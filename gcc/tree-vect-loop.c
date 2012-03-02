@@ -2104,7 +2104,8 @@ vect_get_single_scalar_iteraion_cost (loop_vec_info loop_vinfo)
           if (stmt_info
               && !STMT_VINFO_RELEVANT_P (stmt_info)
               && (!STMT_VINFO_LIVE_P (stmt_info)
-                  || STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def))
+                  || !VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
+	      && !STMT_VINFO_IN_PATTERN_P (stmt_info))
             continue;
 
           if (STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt)))
@@ -2251,11 +2252,19 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 	{
 	  gimple stmt = gsi_stmt (si);
 	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+
+	  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
+	    {
+	      stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+	      stmt_info = vinfo_for_stmt (stmt);
+	    }
+
 	  /* Skip stmts that are not vectorized inside the loop.  */
 	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
 	      && (!STMT_VINFO_LIVE_P (stmt_info)
-		  || STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def))
+		  || !VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info))))
 	    continue;
+
 	  vec_inside_cost += STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info) * factor;
 	  /* FIXME: for stmts in the inner-loop in outer-loop vectorization,
 	     some of the "outside" costs are generated inside the outer-loop.  */

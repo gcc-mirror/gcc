@@ -128,7 +128,8 @@ enum vect_cost_for_stmt
   scalar_to_vec,
   cond_branch_not_taken,
   cond_branch_taken,
-  vec_perm
+  vec_perm,
+  vec_promote_demote
 };
 
 /* Sets of optimization levels at which an option may be enabled by
