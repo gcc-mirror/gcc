@@ -579,9 +579,7 @@ extern enum sh_divide_strategy_e sh_div_strategy;
 #define LABEL_ALIGN_AFTER_BARRIER(LABEL_AFTER_BARRIER) \
   barrier_align (LABEL_AFTER_BARRIER)
 
-#define LOOP_ALIGN(A_LABEL) \
-  ((! optimize || TARGET_HARD_SH4 || optimize_size) \
-   ? 0 : sh_loop_align (A_LABEL))
+#define LOOP_ALIGN(A_LABEL) sh_loop_align (A_LABEL)
 
 #define LABEL_ALIGN(A_LABEL) \
 (									\
