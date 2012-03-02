@@ -1,3 +1,7 @@
+2012-03-02  Richard Guenther  <rguenther@suse.de>
+
+	* BASE-VER: Set to 4.8.0.
+
 2012-03-01  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config.gcc (obsolete): Add all ARM targets using the FPA.
