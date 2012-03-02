@@ -44,13 +44,13 @@ mmap_fixed(byte *v, uintptr n, int32 prot, int32 flags, int32 fd, uint32 offset)
 {
 	void *p;
 
-	p = runtime_mmap(v, n, prot, flags, fd, offset);
+	p = runtime_mmap((void *)v, n, prot, flags, fd, offset);
 	if(p != v && addrspace_free(v, n)) {
 		// On some systems, mmap ignores v without
 		// MAP_FIXED, so retry if the address space is free.
 		if(p != MAP_FAILED)
 			runtime_munmap(p, n);
-		p = runtime_mmap(v, n, prot, flags|MAP_FIXED, fd, offset);
+		p = runtime_mmap((void *)v, n, prot, flags|MAP_FIXED, fd, offset);
 	}
 	return p;
 }
