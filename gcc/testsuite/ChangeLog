@@ -1,3 +1,8 @@
+2012-03-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52406
+	* gcc.dg/torture/pr52406.c: New testcase.
+
 2012-03-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52325

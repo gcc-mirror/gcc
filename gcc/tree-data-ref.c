@@ -856,7 +856,7 @@ static void
 dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
 {
   VEC (tree, heap) *access_fns = NULL;
-  tree ref, *aref, op;
+  tree ref, op;
   tree base, off, access_fn;
   basic_block before_loop;
 
@@ -869,7 +869,7 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
       return;
     }
 
-  ref = unshare_expr (DR_REF (dr));
+  ref = DR_REF (dr);
   before_loop = block_before_loop (nest);
 
   /* REALPART_EXPR and IMAGPART_EXPR can be handled like accesses
@@ -887,60 +887,83 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
     }
 
   /* Analyze access functions of dimensions we know to be independent.  */
-  aref = &ref;
-  while (handled_component_p (*aref))
+  while (handled_component_p (ref))
     {
-      if (TREE_CODE (*aref) == ARRAY_REF)
+      if (TREE_CODE (ref) == ARRAY_REF)
 	{
-	  op = TREE_OPERAND (*aref, 1);
+	  op = TREE_OPERAND (ref, 1);
 	  access_fn = analyze_scalar_evolution (loop, op);
 	  access_fn = instantiate_scev (before_loop, loop, access_fn);
 	  VEC_safe_push (tree, heap, access_fns, access_fn);
-	  /* For ARRAY_REFs the base is the reference with the index replaced
-	     by zero if we can not strip it as the outermost component.  */
-	  if (*aref == ref)
-	    {
-	      *aref = TREE_OPERAND (*aref, 0);
-	      continue;
-	    }
-	  else
-	    TREE_OPERAND (*aref, 1) = build_int_cst (TREE_TYPE (op), 0);
 	}
+      else if (TREE_CODE (ref) == COMPONENT_REF
+	       && TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 0))) == RECORD_TYPE)
+	{
+	  /* For COMPONENT_REFs of records (but not unions!) use the
+	     FIELD_DECL offset as constant access function so we can
+	     disambiguate a[i].f1 and a[i].f2.  */
+	  tree off = component_ref_field_offset (ref);
+	  off = size_binop (PLUS_EXPR,
+			    size_binop (MULT_EXPR,
+					fold_convert (bitsizetype, off),
+					bitsize_int (BITS_PER_UNIT)),
+			    DECL_FIELD_BIT_OFFSET (TREE_OPERAND (ref, 1)));
+	  VEC_safe_push (tree, heap, access_fns, off);
+	}
+      else
+	/* If we have an unhandled component we could not translate
+	   to an access function stop analyzing.  We have determined
+	   our base object in this case.  */
+	break;
 
-      aref = &TREE_OPERAND (*aref, 0);
+      ref = TREE_OPERAND (ref, 0);
     }
 
   /* If the address operand of a MEM_REF base has an evolution in the
      analyzed nest, add it as an additional independent access-function.  */
-  if (TREE_CODE (*aref) == MEM_REF)
+  if (TREE_CODE (ref) == MEM_REF)
     {
-      op = TREE_OPERAND (*aref, 0);
+      op = TREE_OPERAND (ref, 0);
       access_fn = analyze_scalar_evolution (loop, op);
       access_fn = instantiate_scev (before_loop, loop, access_fn);
       if (TREE_CODE (access_fn) == POLYNOMIAL_CHREC)
 	{
 	  tree orig_type;
+	  tree memoff = TREE_OPERAND (ref, 1);
 	  base = initial_condition (access_fn);
 	  orig_type = TREE_TYPE (base);
 	  STRIP_USELESS_TYPE_CONVERSION (base);
 	  split_constant_offset (base, &base, &off);
 	  /* Fold the MEM_REF offset into the evolutions initial
 	     value to make more bases comparable.  */
-	  if (!integer_zerop (TREE_OPERAND (*aref, 1)))
+	  if (!integer_zerop (memoff))
 	    {
 	      off = size_binop (PLUS_EXPR, off,
-				fold_convert (ssizetype,
-					      TREE_OPERAND (*aref, 1)));
-	      TREE_OPERAND (*aref, 1)
-		= build_int_cst (TREE_TYPE (TREE_OPERAND (*aref, 1)), 0);
+				fold_convert (ssizetype, memoff));
+	      memoff = build_int_cst (TREE_TYPE (memoff), 0);
 	    }
 	  access_fn = chrec_replace_initial_condition
 	      (access_fn, fold_convert (orig_type, off));
-	  *aref = fold_build2_loc (EXPR_LOCATION (*aref),
-				   MEM_REF, TREE_TYPE (*aref),
-				   base, TREE_OPERAND (*aref, 1));
+	  /* ???  This is still not a suitable base object for
+	     dr_may_alias_p - the base object needs to be an
+	     access that covers the object as whole.  With
+	     an evolution in the pointer this cannot be
+	     guaranteed.
+	     As a band-aid, mark the access so we can special-case
+	     it in dr_may_alias_p.  */
+	  ref = fold_build2_loc (EXPR_LOCATION (ref),
+				 MEM_REF, TREE_TYPE (ref),
+				 base, memoff);
+	  DR_UNCONSTRAINED_BASE (dr) = true;
 	  VEC_safe_push (tree, heap, access_fns, access_fn);
 	}
+    }
+  else if (DECL_P (ref))
+    {
+      /* Canonicalize DR_BASE_OBJECT to MEM_REF form.  */
+      ref = build2 (MEM_REF, TREE_TYPE (ref),
+		    build_fold_addr_expr (ref),
+		    build_int_cst (reference_alias_ptr_type (ref), 0));
     }
 
   DR_BASE_OBJECT (dr) = ref;
@@ -1345,6 +1368,27 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
 	return false;
     }
 
+  /* If we had an evolution in a MEM_REF BASE_OBJECT we do not know
+     the size of the base-object.  So we cannot do any offset/overlap
+     based analysis but have to rely on points-to information only.  */
+  if (TREE_CODE (addr_a) == MEM_REF
+      && DR_UNCONSTRAINED_BASE (a))
+    {
+      if (TREE_CODE (addr_b) == MEM_REF
+	  && DR_UNCONSTRAINED_BASE (b))
+	return ptr_derefs_may_alias_p (TREE_OPERAND (addr_a, 0),
+				       TREE_OPERAND (addr_b, 0));
+      else
+	return ptr_derefs_may_alias_p (TREE_OPERAND (addr_a, 0),
+				       build_fold_addr_expr (addr_b));
+    }
+  else if (TREE_CODE (addr_b) == MEM_REF
+	   && DR_UNCONSTRAINED_BASE (b))
+    return ptr_derefs_may_alias_p (build_fold_addr_expr (addr_a),
+				   TREE_OPERAND (addr_b, 0));
+
+  /* Otherwise DR_BASE_OBJECT is an access that covers the whole object
+     that is being subsetted in the loop nest.  */
   if (DR_IS_WRITE (a) && DR_IS_WRITE (b))
     return refs_output_dependent_p (addr_a, addr_b);
   else if (DR_IS_READ (a) && DR_IS_WRITE (b))
@@ -4049,11 +4093,10 @@ compute_affine_dependence (struct data_dependence_relation *ddr,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "(compute_affine_dependence\n");
-      fprintf (dump_file, "  (stmt_a = \n");
-      print_gimple_stmt (dump_file, DR_STMT (dra), 0, 0);
-      fprintf (dump_file, ")\n  (stmt_b = \n");
-      print_gimple_stmt (dump_file, DR_STMT (drb), 0, 0);
-      fprintf (dump_file, ")\n");
+      fprintf (dump_file, "  stmt_a: ");
+      print_gimple_stmt (dump_file, DR_STMT (dra), 0, TDF_SLIM);
+      fprintf (dump_file, "  stmt_b: ");
+      print_gimple_stmt (dump_file, DR_STMT (drb), 0, TDF_SLIM);
     }
 
   /* Analyze only when the dependence relation is not yet known.  */
@@ -4129,7 +4172,14 @@ compute_affine_dependence (struct data_dependence_relation *ddr,
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, ")\n");
+    {
+      if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
+	fprintf (dump_file, ") -> no dependence\n");
+      else if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
+	fprintf (dump_file, ") -> dependence analysis failed\n");
+      else
+	fprintf (dump_file, ")\n");
+    }
 }
 
 /* Compute in DEPENDENCE_RELATIONS the data dependence graph for all
