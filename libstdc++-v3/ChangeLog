@@ -1,3 +1,8 @@
+2012-03-01  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/Makefile.am (CLEANFILES): Add *.gdb.
+	* testsuite/Makefile.in: Regenerate.
+
 2012-02-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Update.
