@@ -371,7 +371,7 @@ Objective-C and Objective-C++ Dialects}.
 -fira-loop-pressure -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
--floop-block -floop-flatten -floop-interchange -floop-strip-mine @gol
+-floop-block -floop-interchange -floop-strip-mine @gol
 -floop-parallelize-all -flto -flto-compression-level @gol
 -flto-partition=@var{alg} -flto-report -fmerge-all-constants @gol
 -fmerge-constants -fmodulo-sched -fmodulo-sched-allow-regmoves @gol
@@ -7286,16 +7286,6 @@ the polyhedral representation and transform it back to gimple.  Using
 GIMPLE -> GRAPHITE -> GIMPLE transformation.  Some minimal optimizations
 are also performed by the code generator CLooG, like index splitting and
 dead code elimination in loops.
-
-@item -floop-flatten
-@opindex floop-flatten
-Removes the loop nesting structure: transforms the loop nest into a
-single loop.  This transformation can be useful as an enablement
-transform for vectorization and parallelization.  This feature
-is experimental.
-To use this code transformation, GCC has to be configured
-with @option{--with-ppl} and @option{--with-cloog} to enable the
-Graphite loop transformation infrastructure.
 
 @item -floop-parallelize-all
 @opindex floop-parallelize-all

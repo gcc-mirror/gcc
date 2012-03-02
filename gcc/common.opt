@@ -1198,8 +1198,8 @@ Common Report Var(flag_tm)
 Enable support for GNU transactional memory
 
 floop-flatten
-Common Report Var(flag_loop_flatten) Optimization
-Enable Loop Flattening transformation
+Common Ignore
+Does nothing. Preserved for backward compatibility.
 
 fstrict-volatile-bitfields
 Common Report Var(flag_strict_volatile_bitfields) Init(-1)
