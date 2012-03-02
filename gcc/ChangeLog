@@ -1,3 +1,10 @@
+2012-03-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* compare-elim.c (find_comparisons_in_bb): Eliminate only compares
+	having mode compatible with the mode of previous compare.  Substitute
+	compare mode of previous compare with the mode, compatible
+	with eliminated and previous compare.
+
 2012-03-02  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/dfp.md (floatdidd2): New define_insn.
