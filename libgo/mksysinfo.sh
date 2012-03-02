@@ -895,6 +895,11 @@ grep '^type _ustat ' gen-sysinfo.go | \
       -e 's/f_fname/Fname/' \
       -e 's/f_fpack/Fpack/' \
     >> ${OUT}
+# Force it to be defined, as on some older GNU/Linux systems the
+# header file fails when using with <linux/filter.h>.
+if ! grep 'type _ustat ' gen-sysinfo.go >/dev/null 2>&1; then
+  echo 'type Ustat_t struct { Tfree int32; Tinoe uint64; Fname [5+1]int8; Fpack [5+1]int8; }' >> ${OUT}
+fi
 
 # The utimbuf struct.
 grep '^type _utimbuf ' gen-sysinfo.go | \
