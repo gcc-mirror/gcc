@@ -301,15 +301,37 @@ find_comparisons_in_bb (struct dom_walk_data *data ATTRIBUTE_UNUSED,
 
 	  /* Eliminate a compare that's redundant with the previous.  */
 	  if (last_cmp_valid
-	      && src_mode == last_cmp->orig_mode
 	      && rtx_equal_p (last_cmp->in_a, XEXP (src, 0))
 	      && rtx_equal_p (last_cmp->in_b, XEXP (src, 1)))
 	    {
+	      rtx flags, x;
+	      enum machine_mode new_mode
+		= targetm.cc_modes_compatible (last_cmp->orig_mode, src_mode);
+
+	      /* New mode is incompatible with the previous compare mode.  */
+	      if (new_mode == VOIDmode)
+		continue;
+
+	      if (new_mode != last_cmp->orig_mode)
+		{
+		  flags = gen_rtx_REG (src_mode, targetm.flags_regnum);
+
+		  /* Generate new comparison for substitution.  */
+		  x = gen_rtx_COMPARE (new_mode, XEXP (src, 0), XEXP (src, 1));
+		  x = gen_rtx_SET (VOIDmode, flags, x);
+
+		  if (!validate_change (last_cmp->insn,
+					&PATTERN (last_cmp->insn), x, false))
+		    continue;
+
+		  last_cmp->orig_mode = new_mode;
+		}
+
 	      delete_insn (insn);
 	      continue;
 	    }
 
-          last_cmp = XCNEW (struct comparison);
+	  last_cmp = XCNEW (struct comparison);
 	  last_cmp->insn = insn;
 	  last_cmp->prev_clobber = last_clobber;
 	  last_cmp->in_a = XEXP (src, 0);
