@@ -306,47 +306,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /** The minimum finite value, or for floating types with
 	  denormalization, the minimum positive normalized value.  */
       static _GLIBCXX_CONSTEXPR _Tp
-      min() _GLIBCXX_USE_NOEXCEPT { return static_cast<_Tp>(0); }
+      min() _GLIBCXX_USE_NOEXCEPT { return _Tp(); }
 
       /** The maximum finite value.  */
       static _GLIBCXX_CONSTEXPR _Tp
-      max() _GLIBCXX_USE_NOEXCEPT { return static_cast<_Tp>(0); }
+      max() _GLIBCXX_USE_NOEXCEPT { return _Tp(); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /** A finite value x such that there is no other finite value y
        *  where y < x.  */
       static constexpr _Tp
-      lowest() noexcept { return static_cast<_Tp>(0); }
+      lowest() noexcept { return _Tp(); }
 #endif
 
       /** The @e machine @e epsilon:  the difference between 1 and the least
 	  value greater than 1 that is representable.  */
       static _GLIBCXX_CONSTEXPR _Tp
-      epsilon() _GLIBCXX_USE_NOEXCEPT { return static_cast<_Tp>(0); }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return _Tp(); }
 
       /** The maximum rounding error measurement (see LIA-1).  */
       static _GLIBCXX_CONSTEXPR _Tp
-      round_error() _GLIBCXX_USE_NOEXCEPT { return static_cast<_Tp>(0); }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return _Tp(); }
 
       /** The representation of positive infinity, if @c has_infinity.  */
       static _GLIBCXX_CONSTEXPR _Tp
-      infinity() _GLIBCXX_USE_NOEXCEPT { return static_cast<_Tp>(0); }
+      infinity() _GLIBCXX_USE_NOEXCEPT { return _Tp(); }
 
       /** The representation of a quiet <em>Not a Number</em>,
 	  if @c has_quiet_NaN. */
       static _GLIBCXX_CONSTEXPR _Tp
-      quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return static_cast<_Tp>(0); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return _Tp(); }
 
       /** The representation of a signaling <em>Not a Number</em>, if
 	  @c has_signaling_NaN. */
       static _GLIBCXX_CONSTEXPR _Tp
-      signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return static_cast<_Tp>(0); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return _Tp(); }
 
       /** The minimum positive denormalized value.  For types where
 	  @c has_denorm is false, this is the minimum positive normalized
 	  value.  */
       static _GLIBCXX_CONSTEXPR _Tp
-      denorm_min() _GLIBCXX_USE_NOEXCEPT { return static_cast<_Tp>(0); }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT { return _Tp(); }
     };
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__

@@ -1,3 +1,8 @@
+2012-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/limits (numeric_limits): Fix returns per C++11.
+	* testsuite/18_support/numeric_limits/primary.cc: New.
+
 2012-03-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/c_global/cstdio: Remove extraneous extern.
