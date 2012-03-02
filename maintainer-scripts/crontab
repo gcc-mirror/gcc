@@ -6,4 +6,4 @@
 32 22 * * 4 sh /home/gccadmin/scripts/gcc_release -s 4.5:branches/gcc-4_5-branch -l -d /sourceware/snapshot-tmp/gcc all
 32 22 * * 5 sh /home/gccadmin/scripts/gcc_release -s 4.6:branches/gcc-4_6-branch -l -d /sourceware/snapshot-tmp/gcc all
 #32 22 * * 6 sh /home/gccadmin/scripts/gcc_release -s 4.7:branches/gcc-4_7-branch -l -d /sourceware/snapshot-tmp/gcc all
-32 22 * * 8 sh /home/gccadmin/scripts/gcc_release -s 4.8:trunk -l -d /sourceware/snapshot-tmp/gcc all
+32 22 * * 7 sh /home/gccadmin/scripts/gcc_release -s 4.8:trunk -l -d /sourceware/snapshot-tmp/gcc all
