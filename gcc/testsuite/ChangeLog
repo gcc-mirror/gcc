@@ -9,7 +9,7 @@
 2012-03-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46716
-	* gcc.target/i386/pr46176.c: New test.
+	* gcc.target/i386/pr46716.c: New test.
 
 2012-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
 

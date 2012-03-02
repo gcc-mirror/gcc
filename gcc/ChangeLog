@@ -1,3 +1,8 @@
+2012-03-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_cc_modes_compatible): Declare CCZmode
+	compatible with CCGOCmode and CCGCmode.
+
 2012-03-02  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/vsx.md (vsx_set_<mode>): Reorder operands.
