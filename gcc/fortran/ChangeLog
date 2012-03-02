@@ -1,5 +1,13 @@
 2012-03-02  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/52270
+	* expr.c (gfc_check_vardef_context): Fix check for
+	intent-in polymorphic pointer .
+	* interface.c (compare_parameter): Allow passing TYPE to
+	intent-in polymorphic pointer.
+
+2012-03-02  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/52452
 	* resolve.c (resolve_intrinsic): Don't search for a
 	function if we know that it is a subroutine.

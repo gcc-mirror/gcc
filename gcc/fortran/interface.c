@@ -1579,7 +1579,9 @@ compare_pointer (gfc_symbol *formal, gfc_expr *actual)
 {
   symbol_attribute attr;
 
-  if (formal->attr.pointer)
+  if (formal->attr.pointer
+      || (formal->ts.type == BT_CLASS && CLASS_DATA (formal)
+	  && CLASS_DATA (formal)->attr.class_pointer))
     {
       attr = gfc_expr_attr (actual);
 
@@ -1706,10 +1708,11 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		   gfc_typename (&formal->ts));
       return 0;
     }
-    
-  /* F2008, 12.5.2.5.  */
+
+  /* F2008, 12.5.2.5; IR F08/0073.  */
   if (formal->ts.type == BT_CLASS
-      && (CLASS_DATA (formal)->attr.class_pointer
+      && ((CLASS_DATA (formal)->attr.class_pointer
+	   && !formal->attr.intent == INTENT_IN)
           || CLASS_DATA (formal)->attr.allocatable))
     {
       if (actual->ts.type != BT_CLASS)
