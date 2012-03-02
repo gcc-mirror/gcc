@@ -97,10 +97,14 @@ class TestResult(object):
       self.attrs = ''
       if '|' in summary_line:
         (self.attrs, summary_line) = summary_line.split('|', 1)
-      (self.state,
-       self.name,
-       self.description) = re.match(r' *([A-Z]+): ([^ ]+) (.*)',
-                                    summary_line).groups()
+      try:
+        (self.state,
+         self.name,
+         self.description) = re.match(r' *([A-Z]+): (\S+)\s(.*)',
+                                      summary_line).groups()
+      except:
+        print 'Failed to parse summary line: "%s"' % summary_line
+        raise
       self.attrs = self.attrs.strip()
       self.state = self.state.strip()
       self.description = self.description.strip()
