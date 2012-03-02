@@ -1,3 +1,9 @@
+2012-03-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.gcc (obsolete): Add all ARM targets using the FPA.
+	(with_fpu): Obsolete selection of the FPA or Maverick on ARM.
+	* doc/install.texi: Avoid references to obsolete ARM ports.
+
 2012-03-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/epiphany.md (movmisalign<mode>): New patterns.
