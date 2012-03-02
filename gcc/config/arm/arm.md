@@ -283,7 +283,7 @@
 ;; scheduling information.
 
 (define_attr "insn"
-        "mov,mvn,smulxy,smlaxy,smlalxy,smulwy,smlawx,mul,muls,mla,mlas,umull,umulls,umlal,umlals,smull,smulls,smlal,smlals,smlawy,smuad,smuadx,smlad,smladx,smusd,smusdx,smlsd,smlsdx,smmul,smmulr,smmla,umaal,smlald,smlsld,clz,mrs,msr,xtab,sdiv,udiv,other"
+        "mov,mvn,smulxy,smlaxy,smlalxy,smulwy,smlawx,mul,muls,mla,mlas,umull,umulls,umlal,umlals,smull,smulls,smlal,smlals,smlawy,smuad,smuadx,smlad,smladx,smusd,smusdx,smlsd,smlsdx,smmul,smmulr,smmla,umaal,smlald,smlsld,clz,mrs,msr,xtab,sdiv,udiv,sat,other"
         (const_string "other"))
 
 ; TYPE attribute is used to detect floating point instructions which, if
@@ -3446,6 +3446,60 @@
 		      (const_int 12)))]
 )
 
+(define_code_iterator SAT [smin smax])
+(define_code_iterator SATrev [smin smax])
+(define_code_attr SATlo [(smin "1") (smax "2")])
+(define_code_attr SAThi [(smin "2") (smax "1")])
+
+(define_insn "*satsi_<SAT:code>"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+        (SAT:SI (SATrev:SI (match_operand:SI 3 "s_register_operand" "r")
+                           (match_operand:SI 1 "const_int_operand" "i"))
+                (match_operand:SI 2 "const_int_operand" "i")))]
+  "TARGET_32BIT && arm_arch6 && <SAT:CODE> != <SATrev:CODE>
+   && arm_sat_operator_match (operands[<SAT:SATlo>], operands[<SAT:SAThi>], NULL, NULL)"
+{
+  int mask;
+  bool signed_sat;
+  if (!arm_sat_operator_match (operands[<SAT:SATlo>], operands[<SAT:SAThi>],
+                               &mask, &signed_sat))
+    gcc_unreachable ();
+
+  operands[1] = GEN_INT (mask);
+  if (signed_sat)
+    return "ssat%?\t%0, %1, %3";
+  else
+    return "usat%?\t%0, %1, %3";
+}
+  [(set_attr "predicable" "yes")
+   (set_attr "insn" "sat")])
+
+(define_insn "*satsi_<SAT:code>_shift"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+        (SAT:SI (SATrev:SI (match_operator:SI 3 "sat_shift_operator"
+                             [(match_operand:SI 4 "s_register_operand" "r")
+                              (match_operand:SI 5 "const_int_operand" "i")])
+                           (match_operand:SI 1 "const_int_operand" "i"))
+                (match_operand:SI 2 "const_int_operand" "i")))]
+  "TARGET_32BIT && arm_arch6 && <SAT:CODE> != <SATrev:CODE>
+   && arm_sat_operator_match (operands[<SAT:SATlo>], operands[<SAT:SAThi>], NULL, NULL)"
+{
+  int mask;
+  bool signed_sat;
+  if (!arm_sat_operator_match (operands[<SAT:SATlo>], operands[<SAT:SAThi>],
+                               &mask, &signed_sat))
+    gcc_unreachable ();
+
+  operands[1] = GEN_INT (mask);
+  if (signed_sat)
+    return "ssat%?\t%0, %1, %4%S3";
+  else
+    return "usat%?\t%0, %1, %4%S3";
+}
+  [(set_attr "predicable" "yes")
+   (set_attr "insn" "sat")
+   (set_attr "shift" "3")
+   (set_attr "type" "alu_shift")])
 
 ;; Shift and rotation insns
 

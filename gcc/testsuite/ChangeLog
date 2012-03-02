@@ -1,3 +1,7 @@
+2012-03-02  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* gcc.target/arm/sat-1.c: New test.
+
 2012-03-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46716
