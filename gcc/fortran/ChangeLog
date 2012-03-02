@@ -1,6 +1,11 @@
 2012-03-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52325
+	* primary.c (gfc_match_varspec): Add missing ;.
+
+2012-03-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52325
 	* primary.c (gfc_match_varspec): Add diagnostic for % with
 	nonderived types.
 

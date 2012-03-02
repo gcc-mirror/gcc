@@ -1919,7 +1919,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	   && gfc_match_char ('%') == MATCH_YES)
     {
       gfc_error ("Unexpected '%%' for nonderived-type variable '%s' at %C",
-		 sym->name)
+		 sym->name);
       return MATCH_ERROR;
     }
 
