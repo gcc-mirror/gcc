@@ -1,3 +1,10 @@
+2012-03-02  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2012-03-02  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/vsx.md (vsx_set_<mode>): Reorder operands.
+
 2012-03-02  Richard Guenther  <rguenther@suse.de>
 
 	* DEV-PHASE: Set to prerelease.
