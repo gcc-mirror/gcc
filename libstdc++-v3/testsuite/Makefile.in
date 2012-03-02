@@ -322,7 +322,7 @@ profile_flags = "unix/-D_GLIBCXX_PROFILE"
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
 	     testsuite_* site.exp abi_check baseline_symbols *TEST* *.dat \
-	     *.ii *.s *.o *.cc *.x *.a *.so *.xml *.raw *.out
+	     *.ii *.s *.o *.cc *.x *.a *.so *.xml *.raw *.out *.gdb
 
 all: all-am
 
@@ -663,7 +663,7 @@ check-profile: site.exp
 
 # To remove directories.
 clean-local:
-	rm -rf de fr debug parallel profile binaries normal*
+	rm -rf de fr debug parallel profile binaries normal* 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
