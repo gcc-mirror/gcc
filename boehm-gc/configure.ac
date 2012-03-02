@@ -392,6 +392,7 @@ esac
 oldLIBS="$LIBS"
 LIBS="$LIBS $THREADLIBS"
 AC_CHECK_FUNCS([pthread_getattr_np])
+AC_CHECK_FUNCS([pthread_get_stackaddr_np])
 LIBS="$oldLIBS"
 
 # Configuration of machine-dependent code

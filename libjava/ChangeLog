@@ -1,3 +1,13 @@
+2012-03-02  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	Backport from mainline
+	2012-02-23  Patrick Marlier  <patrick.marlier@gmail.com>
+       	    Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR target/49461
+	* configure.ac (SYSTEMSPEC): No longer pass -no_pie for darwin11.
+	* configure: Regenerate.
+
 2012-03-01  Release Manager
 
 	* GCC 4.6.3 released.
