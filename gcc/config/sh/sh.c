@@ -11517,8 +11517,15 @@ sh_register_move_cost (enum machine_mode mode,
        && REGCLASS_HAS_GENERAL_REG (srcclass))
       || (REGCLASS_HAS_GENERAL_REG (dstclass)
 	  && REGCLASS_HAS_FP_REG (srcclass)))
-    return ((TARGET_SHMEDIA ? 4 : TARGET_FMOVD ? 8 : 12)
-	    * ((GET_MODE_SIZE (mode) + 7) / 8U));
+    {
+      /* Discourage trying to use fp regs for a pointer.  This also
+	 discourages fp regs with SImode because Pmode is an alias
+	 of SImode on this target.  See PR target/48596.  */
+      int addend = (mode == Pmode) ? 40 : 0;
+
+      return (((TARGET_SHMEDIA ? 4 : TARGET_FMOVD ? 8 : 12) + addend)
+	      * ((GET_MODE_SIZE (mode) + 7) / 8U));
+    }
 
   if ((dstclass == FPUL_REGS
        && REGCLASS_HAS_GENERAL_REG (srcclass))
