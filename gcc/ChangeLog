@@ -1,3 +1,23 @@
+2012-03-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52406
+	* tree-data-ref.h: Update documentation about DR_BASE_OBJECT.
+	(struct indices): Add unconstrained_base member.
+	(struct dr_alias): Remove unused vops member.
+	(DR_UNCONSTRAINED_BASE): New define.
+	* tree-data-ref.c (dr_analyze_indices): For COMPONENT_REFs
+	add indices to allow their disambiguation.  Make DR_BASE_OBJECT
+	be an artificial access that covers the whole indexed object,
+	or mark it with DR_UNCONSTRAINED_BASE if we cannot do so.  Canonicalize
+	plain decl base-objects to their MEM_REF variant.
+	(dr_may_alias_p): When the base-object of either data reference
+	has unknown size use only points-to information.
+	(compute_affine_dependence): Make dumps easier to read and
+	more verbose.
+	* tree-vect-data-ref.c (vector_alignment_reachable_p): Use
+	DR_REF when looking for packed references.
+	(vect_supportable_dr_alignment): Likewise.
+
 2012-03-02  Greta Yorsh  <Greta.Yorsh@arm.com>
 
        * config/arm/arm-ldmstm.ml (write_ldm_commutative_peephole):
