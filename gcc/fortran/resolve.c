@@ -1496,7 +1496,7 @@ resolve_intrinsic (gfc_symbol *sym, locus *loc)
 
   if (sym->intmod_sym_id)
     isym = gfc_intrinsic_function_by_id ((gfc_isym_id) sym->intmod_sym_id);
-  else
+  else if (!sym->attr.subroutine)
     isym = gfc_find_function (sym->name);
 
   if (isym)
