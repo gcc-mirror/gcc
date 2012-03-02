@@ -13691,7 +13691,7 @@ tsubst_copy_and_build (tree t,
       /* Remember that there was a reference to this entity.  */
       if (DECL_P (op1))
 	mark_used (op1);
-      return build_x_arrow (op1);
+      return build_x_arrow (op1, complain);
 
     case NEW_EXPR:
       {

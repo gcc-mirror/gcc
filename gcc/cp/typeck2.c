@@ -1462,7 +1462,7 @@ build_scoped_ref (tree datum, tree basetype, tree* binfo_p)
    delegation is detected.  */
 
 tree
-build_x_arrow (tree expr)
+build_x_arrow (tree expr, tsubst_flags_t complain)
 {
   tree orig_expr = expr;
   tree type = TREE_TYPE (expr);
@@ -1486,7 +1486,7 @@ build_x_arrow (tree expr)
 
       while ((expr = build_new_op (COMPONENT_REF, LOOKUP_NORMAL, expr,
 				   NULL_TREE, NULL_TREE,
-				   &fn, tf_warning_or_error)))
+				   &fn, complain)))
 	{
 	  if (expr == error_mark_node)
 	    return error_mark_node;
@@ -1497,7 +1497,8 @@ build_x_arrow (tree expr)
 
 	  if (vec_member (TREE_TYPE (expr), types_memoized))
 	    {
-	      error ("circular pointer delegation detected");
+	      if (complain & tf_error)
+		error ("circular pointer delegation detected");
 	      return error_mark_node;
 	    }
 
@@ -1510,7 +1511,8 @@ build_x_arrow (tree expr)
 
       if (last_rval == NULL_TREE)
 	{
-	  error ("base operand of %<->%> has non-pointer type %qT", type);
+	  if (complain & tf_error)
+	    error ("base operand of %<->%> has non-pointer type %qT", type);
 	  return error_mark_node;
 	}
 
@@ -1530,13 +1532,16 @@ build_x_arrow (tree expr)
 	  return expr;
 	}
 
-      return cp_build_indirect_ref (last_rval, RO_NULL, tf_warning_or_error);
+      return cp_build_indirect_ref (last_rval, RO_NULL, complain);
     }
 
-  if (types_memoized)
-    error ("result of %<operator->()%> yields non-pointer result");
-  else
-    error ("base operand of %<->%> is not a pointer");
+  if (complain & tf_error)
+    {
+      if (types_memoized)
+	error ("result of %<operator->()%> yields non-pointer result");
+      else
+	error ("base operand of %<->%> is not a pointer");
+    }
   return error_mark_node;
 }
 
