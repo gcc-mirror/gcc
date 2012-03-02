@@ -1,6 +1,6 @@
 This directory contains a .Net wrapper class library for the ZLib1.dll
 
-The wrapper includes support for inflating/deflating memory buffers, 
+The wrapper includes support for inflating/deflating memory buffers,
 .Net streaming wrappers for the gz streams part of zlib, and wrappers
 for the checksum parts of zlib. See DotZLib/UnitTests.cs for examples.
 
@@ -26,11 +26,11 @@ Build instructions:
 
 1. Using Visual Studio.Net 2003:
    Open DotZLib.sln in VS.Net and build from there. Output file (DotZLib.dll)
-   will be found ./DotZLib/bin/release or ./DotZLib/bin/debug, depending on 
-   you are building the release or debug version of the library. Check 
+   will be found ./DotZLib/bin/release or ./DotZLib/bin/debug, depending on
+   you are building the release or debug version of the library. Check
    DotZLib/UnitTests.cs for instructions on how to include unit tests in the
    build.
-   
+
 2. Using NAnt:
    Open a command prompt with access to the build environment and run nant
    in the same directory as the DotZLib.build file.
@@ -38,15 +38,15 @@ Build instructions:
    debug={true|false} to toggle between release/debug builds (default=true).
    nunit={true|false} to include or esclude unit tests (default=true).
    Also the target clean will remove binaries.
-   Output file (DotZLib.dll) will be found in either ./DotZLib/bin/release 
-   or ./DotZLib/bin/debug, depending on whether you are building the release 
+   Output file (DotZLib.dll) will be found in either ./DotZLib/bin/release
+   or ./DotZLib/bin/debug, depending on whether you are building the release
    or debug version of the library.
 
-   Examples: 
+   Examples:
      nant -D:debug=false -D:nunit=false
        will build a release mode version of the library without unit tests.
      nant
-       will build a debug version of the library with unit tests 
+       will build a debug version of the library with unit tests
      nant clean
        will remove all previously built files.
 
@@ -54,5 +54,5 @@ Build instructions:
 ---------------------------------
 Copyright (c) Henrik Ravn 2004
 
-Use, modification and distribution are subject to the Boost Software License, Version 1.0. 
+Use, modification and distribution are subject to the Boost Software License, Version 1.0.
 (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)

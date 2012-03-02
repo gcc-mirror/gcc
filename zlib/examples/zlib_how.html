@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <title>zlib Usage Example</title>
-<!--  Copyright (c) 2004 Mark Adler.  -->
+<!--  Copyright (c) 2004, 2005 Mark Adler.  -->
 </head>
 <body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#00A000">
 <h2 align="center"> zlib Usage Example </h2>
@@ -21,13 +21,16 @@ Without further adieu, here is the program <a href="zpipe.c"><tt>zpipe.c</tt></a
 <pre><b>
 /* zpipe.c: example of proper use of zlib's inflate() and deflate()
    Not copyrighted -- provided to the public domain
-   Version 1.2  9 November 2004  Mark Adler */
+   Version 1.4  11 December 2005  Mark Adler */
 
 /* Version history:
    1.0  30 Oct 2004  First version
    1.1   8 Nov 2004  Add void casting for unused return values
                      Use switch statement for inflate() return values
    1.2   9 Nov 2004  Add assertions to document zlib guarantees
+   1.3   6 Apr 2005  Remove incorrect assertion in inf()
+   1.4  11 Dec 2005  Add hack to avoid MSDOS end-of-line conversions
+                     Avoid some compiler warnings for input and output buffers
  */
 </b></pre><!-- -->
 We now include the header files for the required definitions.  From
@@ -46,6 +49,21 @@ functions <tt>inflateInit()</tt>, <tt>inflate()</tt>, and
 #include &lt;string.h&gt;
 #include &lt;assert.h&gt;
 #include "zlib.h"
+</b></pre><!-- -->
+This is an ugly hack required to avoid corruption of the input and output data on
+Windows/MS-DOS systems.  Without this, those systems would assume that the input and output
+files are text, and try to convert the end-of-line characters from one standard to
+another.  That would corrupt binary data, and in particular would render the compressed data unusable.
+This sets the input and output to binary which suppresses the end-of-line conversions.
+<tt>SET_BINARY_MODE()</tt> will be used later on <tt>stdin</tt> and <tt>stdout</tt>, at the beginning of <tt>main()</tt>.
+<pre><b>
+#if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(__CYGWIN__)
+#  include &lt;fcntl.h&gt;
+#  include &lt;io.h&gt;
+#  define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
+#else
+#  define SET_BINARY_MODE(file)
+#endif
 </b></pre><!-- -->
 <tt>CHUNK</tt> is simply the buffer size for feeding data to and pulling data
 from the <em>zlib</em> routines.  Larger buffer sizes would be more efficient,
@@ -80,8 +98,8 @@ is used to pass information to and from the <em>zlib</em> routines, and to maint
     int ret, flush;
     unsigned have;
     z_stream strm;
-    char in[CHUNK];
-    char out[CHUNK];
+    unsigned char in[CHUNK];
+    unsigned char out[CHUNK];
 </b></pre><!-- -->
 The first thing we do is to initialize the <em>zlib</em> state for compression using
 <tt>deflateInit()</tt>.  This must be done before the first use of <tt>deflate()</tt>.
@@ -313,8 +331,8 @@ can tell from the <em>zlib</em> stream itself when the stream is complete.
     int ret;
     unsigned have;
     z_stream strm;
-    char in[CHUNK];
-    char out[CHUNK];
+    unsigned char in[CHUNK];
+    unsigned char out[CHUNK];
 </b></pre><!-- -->
 The initialization of the state is the same, except that there is no compression level,
 of course, and two more elements of the structure are initialized.  <tt>avail_in</tt>
@@ -494,6 +512,10 @@ int main(int argc, char **argv)
 {
     int ret;
 
+    /* avoid end-of-line conversions */
+    SET_BINARY_MODE(stdin);
+    SET_BINARY_MODE(stdout);
+
     /* do compression if no arguments */
     if (argc == 1) {
         ret = def(stdin, stdout, Z_DEFAULT_COMPRESSION);
@@ -518,6 +540,6 @@ int main(int argc, char **argv)
 }
 </b></pre>
 <hr>
-<i>Copyright (c) 2004 by Mark Adler<br>Last modified 13 November 2004</i>
+<i>Copyright (c) 2004, 2005 by Mark Adler<br>Last modified 11 December 2005</i>
 </body>
 </html>

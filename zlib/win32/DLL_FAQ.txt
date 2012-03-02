@@ -16,7 +16,7 @@ in the zlib distribution, or at the following location:
 
     Pointers to a precompiled ZLIB1.DLL can be found in the zlib
     web site at:
-      http://www.zlib.org/
+      http://www.zlib.net/
 
     Applications that link to ZLIB1.DLL can rely on the following
     specification:
@@ -350,9 +350,9 @@ in the zlib distribution, or at the following location:
     your build is unofficial.  You should give it a different file
     name, and/or install it in a private directory that can be
     accessed by your application only, and is not visible to the
-    others (e.g. it's not in the SYSTEM or the SYSTEM32 directory,
-    and it's not in the PATH).  Otherwise, your build may clash
-    with applications that link to the official build.
+    others (i.e. it's neither in the PATH, nor in the SYSTEM or
+    SYSTEM32 directories).  Otherwise, your build may clash with
+    applications that link to the official build.
 
     For example, in Cygwin, zlib is linked to the Cygwin runtime
     CYGWIN1.DLL, and it is distributed under the name CYGZ.DLL.

@@ -351,7 +351,7 @@ int main(int argc, char **argv)
     int len;
     off_t offset;
     FILE *in;
-    struct access *index;
+    struct access *index = NULL;
     unsigned char buf[CHUNK];
 
     /* open input file */

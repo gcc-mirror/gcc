@@ -1,6 +1,6 @@
 /* zpipe.c: example of proper use of zlib's inflate() and deflate()
    Not copyrighted -- provided to the public domain
-   Version 1.2  9 November 2004  Mark Adler */
+   Version 1.4  11 December 2005  Mark Adler */
 
 /* Version history:
    1.0  30 Oct 2004  First version
@@ -8,12 +8,22 @@
                      Use switch statement for inflate() return values
    1.2   9 Nov 2004  Add assertions to document zlib guarantees
    1.3   6 Apr 2005  Remove incorrect assertion in inf()
+   1.4  11 Dec 2005  Add hack to avoid MSDOS end-of-line conversions
+                     Avoid some compiler warnings for input and output buffers
  */
 
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 #include "zlib.h"
+
+#if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(__CYGWIN__)
+#  include <fcntl.h>
+#  include <io.h>
+#  define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
+#else
+#  define SET_BINARY_MODE(file)
+#endif
 
 #define CHUNK 16384
 
@@ -28,8 +38,8 @@ int def(FILE *source, FILE *dest, int level)
     int ret, flush;
     unsigned have;
     z_stream strm;
-    char in[CHUNK];
-    char out[CHUNK];
+    unsigned char in[CHUNK];
+    unsigned char out[CHUNK];
 
     /* allocate deflate state */
     strm.zalloc = Z_NULL;
@@ -84,8 +94,8 @@ int inf(FILE *source, FILE *dest)
     int ret;
     unsigned have;
     z_stream strm;
-    char in[CHUNK];
-    char out[CHUNK];
+    unsigned char in[CHUNK];
+    unsigned char out[CHUNK];
 
     /* allocate inflate state */
     strm.zalloc = Z_NULL;
@@ -166,6 +176,10 @@ void zerr(int ret)
 int main(int argc, char **argv)
 {
     int ret;
+
+    /* avoid end-of-line conversions */
+    SET_BINARY_MODE(stdin);
+    SET_BINARY_MODE(stdout);
 
     /* do compression if no arguments */
     if (argc == 1) {

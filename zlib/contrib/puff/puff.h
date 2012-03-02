@@ -1,6 +1,6 @@
 /* puff.h
-  Copyright (C) 2002, 2003 Mark Adler, all rights reserved
-  version 1.7, 3 Mar 2002
+  Copyright (C) 2002-2010 Mark Adler, all rights reserved
+  version 2.1, 4 Apr 2010
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the author be held liable for any damages

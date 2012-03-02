@@ -84,17 +84,19 @@ libz_a_AR = $(AR) $(ARFLAGS)
 libz_a_LIBADD =
 am__objects_1 = libz_a-adler32.$(OBJEXT) libz_a-compress.$(OBJEXT) \
 	libz_a-crc32.$(OBJEXT) libz_a-deflate.$(OBJEXT) \
-	libz_a-gzio.$(OBJEXT) libz_a-infback.$(OBJEXT) \
-	libz_a-inffast.$(OBJEXT) libz_a-inflate.$(OBJEXT) \
-	libz_a-inftrees.$(OBJEXT) libz_a-trees.$(OBJEXT) \
-	libz_a-uncompr.$(OBJEXT) libz_a-zutil.$(OBJEXT)
+	libz_a-gzread.$(OBJEXT) libz_a-gzclose.$(OBJEXT) \
+	libz_a-gzwrite.$(OBJEXT) libz_a-gzlib.$(OBJEXT) \
+	libz_a-infback.$(OBJEXT) libz_a-inffast.$(OBJEXT) \
+	libz_a-inflate.$(OBJEXT) libz_a-inftrees.$(OBJEXT) \
+	libz_a-trees.$(OBJEXT) libz_a-uncompr.$(OBJEXT) \
+	libz_a-zutil.$(OBJEXT)
 @TARGET_LIBRARY_FALSE@am_libz_a_OBJECTS = $(am__objects_1)
 libz_a_OBJECTS = $(am_libz_a_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libzgcj_convenience_la_LIBADD =
-am__objects_2 = adler32.lo compress.lo crc32.lo deflate.lo gzio.lo \
-	infback.lo inffast.lo inflate.lo inftrees.lo trees.lo \
-	uncompr.lo zutil.lo
+am__objects_2 = adler32.lo compress.lo crc32.lo deflate.lo gzread.lo \
+	gzclose.lo gzwrite.lo gzlib.lo infback.lo inffast.lo \
+	inflate.lo inftrees.lo trees.lo uncompr.lo zutil.lo
 @TARGET_LIBRARY_TRUE@am_libzgcj_convenience_la_OBJECTS =  \
 @TARGET_LIBRARY_TRUE@	$(am__objects_2)
 libzgcj_convenience_la_OBJECTS = $(am_libzgcj_convenience_la_OBJECTS)
@@ -244,9 +246,10 @@ top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = 1.8 cygnus
 ACLOCAL_AMFLAGS = -I .. -I ../config
 ZLIB_SOURCES = adler32.c compress.c crc32.c crc32.h deflate.c \
-deflate.h gzio.c infback.c inffast.c inffast.h inffixed.h inflate.c \
+deflate.h gzguts.h gzread.c gzclose.c gzwrite.c gzlib.c \
+infback.c inffast.c inffast.h inffixed.h inflate.c \
 inflate.h inftrees.c inftrees.h trees.c trees.h uncompr.c zconf.h \
-zconf.in.h zlib.h zutil.c zutil.h
+zconf.h.in zlib.h zutil.c zutil.h
 
 @TARGET_LIBRARY_TRUE@noinst_LTLIBRARIES = libzgcj_convenience.la
 @TARGET_LIBRARY_TRUE@libzgcj_convenience_la_SOURCES = $(ZLIB_SOURCES)
@@ -420,11 +423,29 @@ libz_a-deflate.o: deflate.c
 libz_a-deflate.obj: deflate.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-deflate.obj `if test -f 'deflate.c'; then $(CYGPATH_W) 'deflate.c'; else $(CYGPATH_W) '$(srcdir)/deflate.c'; fi`
 
-libz_a-gzio.o: gzio.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzio.o `test -f 'gzio.c' || echo '$(srcdir)/'`gzio.c
+libz_a-gzread.o: gzread.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzread.o `test -f 'gzread.c' || echo '$(srcdir)/'`gzread.c
 
-libz_a-gzio.obj: gzio.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzio.obj `if test -f 'gzio.c'; then $(CYGPATH_W) 'gzio.c'; else $(CYGPATH_W) '$(srcdir)/gzio.c'; fi`
+libz_a-gzread.obj: gzread.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzread.obj `if test -f 'gzread.c'; then $(CYGPATH_W) 'gzread.c'; else $(CYGPATH_W) '$(srcdir)/gzread.c'; fi`
+
+libz_a-gzclose.o: gzclose.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzclose.o `test -f 'gzclose.c' || echo '$(srcdir)/'`gzclose.c
+
+libz_a-gzclose.obj: gzclose.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzclose.obj `if test -f 'gzclose.c'; then $(CYGPATH_W) 'gzclose.c'; else $(CYGPATH_W) '$(srcdir)/gzclose.c'; fi`
+
+libz_a-gzwrite.o: gzwrite.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzwrite.o `test -f 'gzwrite.c' || echo '$(srcdir)/'`gzwrite.c
+
+libz_a-gzwrite.obj: gzwrite.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzwrite.obj `if test -f 'gzwrite.c'; then $(CYGPATH_W) 'gzwrite.c'; else $(CYGPATH_W) '$(srcdir)/gzwrite.c'; fi`
+
+libz_a-gzlib.o: gzlib.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzlib.o `test -f 'gzlib.c' || echo '$(srcdir)/'`gzlib.c
+
+libz_a-gzlib.obj: gzlib.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzlib.obj `if test -f 'gzlib.c'; then $(CYGPATH_W) 'gzlib.c'; else $(CYGPATH_W) '$(srcdir)/gzlib.c'; fi`
 
 libz_a-infback.o: infback.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-infback.o `test -f 'infback.c' || echo '$(srcdir)/'`infback.c

@@ -1,7 +1,7 @@
 //
 // © Copyright Henrik Ravn 2004
 //
-// Use, modification and distribution are subject to the Boost Software License, Version 1.0. 
+// Use, modification and distribution are subject to the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
@@ -19,7 +19,7 @@ namespace DotZLib
     /// <summary>
     /// Defines constants for the various flush types used with zlib
     /// </summary>
-    internal enum FlushTypes 
+    internal enum FlushTypes
     {
         None,  Partial,  Sync,  Full,  Finish,  Block
     }
@@ -38,7 +38,7 @@ namespace DotZLib
         public uint total_out;
 
         [MarshalAs(UnmanagedType.LPStr)]
-        string msg; 
+        string msg;
         uint state;
 
         uint zalloc;
@@ -51,7 +51,7 @@ namespace DotZLib
     }
 
     #endregion
-    
+
     #endregion
 
     #region Public enums
@@ -63,7 +63,7 @@ namespace DotZLib
         /// <summary>
         /// The default compression level with a reasonable compromise between compression and speed
         /// </summary>
-        Default = -1,   
+        Default = -1,
         /// <summary>
         /// No compression at all. The data are passed straight through.
         /// </summary>
@@ -71,7 +71,7 @@ namespace DotZLib
         /// <summary>
         /// The maximum compression rate available.
         /// </summary>
-        Best = 9,   
+        Best = 9,
         /// <summary>
         /// The fastest available compression level.
         /// </summary>
@@ -86,7 +86,7 @@ namespace DotZLib
     public class ZLibException : ApplicationException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ZLibException"/> class with a specified 
+        /// Initializes a new instance of the <see cref="ZLibException"/> class with a specified
         /// error message and error code
         /// </summary>
         /// <param name="errorCode">The zlib error code that caused the exception</param>
@@ -96,7 +96,7 @@ namespace DotZLib
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ZLibException"/> class with a specified 
+        /// Initializes a new instance of the <see cref="ZLibException"/> class with a specified
         /// error code
         /// </summary>
         /// <param name="errorCode">The zlib error code that caused the exception</param>
@@ -109,7 +109,7 @@ namespace DotZLib
     #region Interfaces
 
     /// <summary>
-    /// Declares methods and properties that enables a running checksum to be calculated 
+    /// Declares methods and properties that enables a running checksum to be calculated
     /// </summary>
     public interface ChecksumGenerator
     {
@@ -163,7 +163,7 @@ namespace DotZLib
     /// <paramref name="data">The byte array containing the processed data</paramref>
     /// <paramref name="startIndex">The index of the first processed byte in <c>data</c></paramref>
     /// <paramref name="count">The number of processed bytes available</paramref>
-    /// <remarks>On return from this method, the data may be overwritten, so grab it while you can. 
+    /// <remarks>On return from this method, the data may be overwritten, so grab it while you can.
     /// You cannot assume that startIndex will be zero.
     /// </remarks>
     public delegate void DataAvailableHandler(byte[] data, int startIndex, int count);

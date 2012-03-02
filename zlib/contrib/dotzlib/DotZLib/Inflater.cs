@@ -1,7 +1,7 @@
 //
 // © Copyright Henrik Ravn 2004
 //
-// Use, modification and distribution are subject to the Boost Software License, Version 1.0. 
+// Use, modification and distribution are subject to the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace DotZLib
 {
-    
+
     /// <summary>
     /// Implements a data decompressor, using the inflate algorithm in the ZLib dll
     /// </summary>
@@ -84,7 +84,7 @@ namespace DotZLib
         public override void Finish()
         {
             int err;
-            do 
+            do
             {
                 err = inflate(ref _ztream, (int)FlushTypes.Finish);
                 OnDataAvailable();

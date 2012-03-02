@@ -4,7 +4,7 @@
 
 	<property name="nunit.location" value="c:/program files/NUnit V2.1/bin" />
 	<property name="build.root" value="bin" />
-	
+
 	<property name="debug" value="true" />
 	<property name="nunit" value="true" />
 
@@ -16,7 +16,7 @@
 	</target>
 
 	<target name="build" description="compiles the source code">
-		
+
 		<mkdir dir="${build.folder}" />
 		<csc target="library" output="${build.folder}DotZLib.dll" debug="${debug}">
 			<references basedir="${nunit.location}">

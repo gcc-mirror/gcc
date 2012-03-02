@@ -1,8 +1,8 @@
 /*
  * puff.c
- * Copyright (C) 2002-2004 Mark Adler
+ * Copyright (C) 2002-2010 Mark Adler
  * For conditions of distribution and use, see copyright notice in puff.h
- * version 1.8, 9 Jan 2004
+ * version 2.1, 4 Apr 2010
  *
  * puff.c is a simple inflate written to be an unambiguous way to specify the
  * deflate format.  It is not written for speed but rather simplicity.  As a
@@ -61,6 +61,14 @@
  * 1.7   3 Mar 2003     - Added test code for distribution
  *                      - Added zlib-like license
  * 1.8   9 Jan 2004     - Added some comments on no distance codes case
+ * 1.9  21 Feb 2008     - Fix bug on 16-bit integer architectures [Pohland]
+ *                      - Catch missing end-of-block symbol error
+ * 2.0  25 Jul 2008     - Add #define to permit distance too far back
+ *                      - Add option in TEST code for puff to write the data
+ *                      - Add option in TEST code to skip input bytes
+ *                      - Allow TEST code to read from piped stdin
+ * 2.1   4 Apr 2010     - Avoid variable initialization for happier compilers
+ *                      - Avoid unsigned comparisons for even happier compilers
  */
 
 #include <setjmp.h>             /* for setjmp(), longjmp(), and jmp_buf */
@@ -194,7 +202,7 @@ struct huffman {
  * Decode a code from the stream s using huffman table h.  Return the symbol or
  * a negative value if there is an error.  If all of the lengths are zero, i.e.
  * an empty code, or if the code is incomplete and an invalid code is received,
- * then -9 is returned after reading MAXBITS bits.
+ * then -10 is returned after reading MAXBITS bits.
  *
  * Format notes:
  *
@@ -226,14 +234,14 @@ local int decode(struct state *s, struct huffman *h)
     for (len = 1; len <= MAXBITS; len++) {
         code |= bits(s, 1);             /* get next bit */
         count = h->count[len];
-        if (code < first + count)       /* if length len, return symbol */
+        if (code - count < first)       /* if length len, return symbol */
             return h->symbol[index + (code - first)];
         index += count;                 /* else update for next length */
         first += count;
         first <<= 1;
         code <<= 1;
     }
-    return -9;                          /* ran out of codes */
+    return -10;                         /* ran out of codes */
 }
 
 /*
@@ -263,7 +271,7 @@ local int decode(struct state *s, struct huffman *h)
             code |= bitbuf & 1;
             bitbuf >>= 1;
             count = *next++;
-            if (code < first + count) { /* if length len, return symbol */
+            if (code - count < first) { /* if length len, return symbol */
                 s->bitbuf = bitbuf;
                 s->bitcnt = (s->bitcnt - len) & 7;
                 return h->symbol[index + (code - first)];
@@ -280,7 +288,7 @@ local int decode(struct state *s, struct huffman *h)
         bitbuf = s->in[s->incnt++];
         if (left > 8) left = 8;
     }
-    return -9;                          /* ran out of codes */
+    return -10;                         /* ran out of codes */
 }
 #endif /* SLOW */
 
@@ -448,21 +456,27 @@ local int codes(struct state *s,
         else if (symbol > 256) {        /* length */
             /* get and compute length */
             symbol -= 257;
-            if (symbol >= 29) return -9;        /* invalid fixed code */
+            if (symbol >= 29) return -10;       /* invalid fixed code */
             len = lens[symbol] + bits(s, lext[symbol]);
 
             /* get and check distance */
             symbol = decode(s, distcode);
             if (symbol < 0) return symbol;      /* invalid symbol */
             dist = dists[symbol] + bits(s, dext[symbol]);
+#ifndef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
             if (dist > s->outcnt)
-                return -10;     /* distance too far back */
+                return -11;     /* distance too far back */
+#endif
 
             /* copy length bytes from distance bytes back */
             if (s->out != NIL) {
                 if (s->outcnt + len > s->outlen) return 1;
                 while (len--) {
-                    s->out[s->outcnt] = s->out[s->outcnt - dist];
+                    s->out[s->outcnt] =
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+                        dist > s->outcnt ? 0 :
+#endif
+                        s->out[s->outcnt - dist];
                     s->outcnt++;
                 }
             }
@@ -504,8 +518,7 @@ local int fixed(struct state *s)
     static int virgin = 1;
     static short lencnt[MAXBITS+1], lensym[FIXLCODES];
     static short distcnt[MAXBITS+1], distsym[MAXDCODES];
-    static struct huffman lencode = {lencnt, lensym};
-    static struct huffman distcode = {distcnt, distsym};
+    static struct huffman lencode, distcode;
 
     /* build fixed huffman tables if first call (may not be thread safe) */
     if (virgin) {
@@ -527,6 +540,12 @@ local int fixed(struct state *s)
         for (symbol = 0; symbol < MAXDCODES; symbol++)
             lengths[symbol] = 5;
         construct(&distcode, lengths, MAXDCODES);
+
+        /* construct lencode and distcode */
+        lencode.count = lencnt;
+        lencode.symbol = lensym;
+        distcode.count = distcnt;
+        distcode.symbol = distsym;
 
         /* do this just once */
         virgin = 0;
@@ -631,10 +650,15 @@ local int dynamic(struct state *s)
     short lengths[MAXCODES];            /* descriptor code lengths */
     short lencnt[MAXBITS+1], lensym[MAXLCODES];         /* lencode memory */
     short distcnt[MAXBITS+1], distsym[MAXDCODES];       /* distcode memory */
-    struct huffman lencode = {lencnt, lensym};          /* length code */
-    struct huffman distcode = {distcnt, distsym};       /* distance code */
+    struct huffman lencode, distcode;   /* length and distance codes */
     static const short order[19] =      /* permutation of code length codes */
         {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
+
+    /* construct lencode and distcode */
+    lencode.count = lencnt;
+    lencode.symbol = lensym;
+    distcode.count = distcnt;
+    distcode.symbol = distsym;
 
     /* get number of lengths in each table, check lengths */
     nlen = bits(s, 5) + 257;
@@ -680,6 +704,10 @@ local int dynamic(struct state *s)
         }
     }
 
+    /* check for end-of-block code -- there better be one! */
+    if (lengths[256] == 0)
+        return -9;
+
     /* build huffman table for literal/length codes */
     err = construct(&lencode, lengths, nlen);
     if (err < 0 || (err > 0 && nlen - lencode.count[0] != 1))
@@ -724,8 +752,9 @@ local int dynamic(struct state *s)
  *  -6:  dynamic block code description: repeat more than specified lengths
  *  -7:  dynamic block code description: invalid literal/length code lengths
  *  -8:  dynamic block code description: invalid distance code lengths
- *  -9:  invalid literal/length or distance code in fixed or dynamic block
- * -10:  distance is too far back in fixed or dynamic block
+ *  -9:  dynamic block code description: missing end-of-block code
+ * -10:  invalid literal/length or distance code in fixed or dynamic block
+ * -11:  distance is too far back in fixed or dynamic block
  *
  * Format notes:
  *
@@ -783,54 +812,143 @@ int puff(unsigned char *dest,           /* pointer to destination pointer */
 }
 
 #ifdef TEST
-/* Example of how to use puff() */
+/* Examples of how to use puff().
+
+   Usage: puff [-w] [-nnn] file
+          ... | puff [-w] [-nnn]
+
+   where file is the input file with deflate data, nnn is the number of bytes
+   of input to skip before inflating (e.g. to skip a zlib or gzip header), and
+   -w is used to write the decompressed data to stdout */
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 
-local unsigned char *yank(char *name, unsigned long *len)
+/* Return size times approximately the cube root of 2, keeping the result as 1,
+   3, or 5 times a power of 2 -- the result is always > size, until the result
+   is the maximum value of an unsigned long, where it remains.  This is useful
+   to keep reallocations less than ~33% over the actual data. */
+local size_t bythirds(size_t size)
 {
-    unsigned long size;
-    unsigned char *buf;
+    int n;
+    size_t m;
+
+    m = size;
+    for (n = 0; m; n++)
+        m >>= 1;
+    if (n < 3)
+        return size + 1;
+    n -= 3;
+    m = size >> n;
+    m += m == 6 ? 2 : 1;
+    m <<= n;
+    return m > size ? m : (size_t)(-1);
+}
+
+/* Read the input file *name, or stdin if name is NULL, into allocated memory.
+   Reallocate to larger buffers until the entire file is read in.  Return a
+   pointer to the allocated data, or NULL if there was a memory allocation
+   failure.  *len is the number of bytes of data read from the input file (even
+   if load() returns NULL).  If the input file was empty or could not be opened
+   or read, *len is zero. */
+local void *load(char *name, size_t *len)
+{
+    size_t size;
+    void *buf, *swap;
     FILE *in;
-    struct stat s;
 
     *len = 0;
-    if (stat(name, &s)) return NULL;
-    if ((s.st_mode & S_IFMT) != S_IFREG) return NULL;
-    size = (unsigned long)(s.st_size);
-    if (size == 0 || (off_t)size != s.st_size) return NULL;
-    in = fopen(name, "r");
-    if (in == NULL) return NULL;
-    buf = malloc(size);
-    if (buf != NULL && fread(buf, 1, size, in) != size) {
-        free(buf);
-        buf = NULL;
+    buf = malloc(size = 4096);
+    if (buf == NULL)
+        return NULL;
+    in = name == NULL ? stdin : fopen(name, "rb");
+    if (in != NULL) {
+        for (;;) {
+            *len += fread((char *)buf + *len, 1, size - *len, in);
+            if (*len < size) break;
+            size = bythirds(size);
+            if (size == *len || (swap = realloc(buf, size)) == NULL) {
+                free(buf);
+                buf = NULL;
+                break;
+            }
+            buf = swap;
+        }
+        fclose(in);
     }
-    fclose(in);
-    *len = size;
     return buf;
 }
 
 int main(int argc, char **argv)
 {
-    int ret;
-    unsigned char *source;
-    unsigned long len, sourcelen, destlen;
+    int ret, put = 0;
+    unsigned skip = 0;
+    char *arg, *name = NULL;
+    unsigned char *source = NULL, *dest;
+    size_t len = 0;
+    unsigned long sourcelen, destlen;
 
-    if (argc < 2) return 2;
-    source = yank(argv[1], &len);
-    if (source == NULL) return 2;
-    sourcelen = len;
-    ret = puff(NIL, &destlen, source, &sourcelen);
-    if (ret)
-        printf("puff() failed with return code %d\n", ret);
-    else {
-        printf("puff() succeeded uncompressing %lu bytes\n", destlen);
-        if (sourcelen < len) printf("%lu compressed bytes unused\n",
-                                    len - sourcelen);
+    /* process arguments */
+    while (arg = *++argv, --argc)
+        if (arg[0] == '-') {
+            if (arg[1] == 'w' && arg[2] == 0)
+                put = 1;
+            else if (arg[1] >= '0' && arg[1] <= '9')
+                skip = (unsigned)atoi(arg + 1);
+            else {
+                fprintf(stderr, "invalid option %s\n", arg);
+                return 3;
+            }
+        }
+        else if (name != NULL) {
+            fprintf(stderr, "only one file name allowed\n");
+            return 3;
+        }
+        else
+            name = arg;
+    source = load(name, &len);
+    if (source == NULL) {
+        fprintf(stderr, "memory allocation failure\n");
+        return 4;
     }
+    if (len == 0) {
+        fprintf(stderr, "could not read %s, or it was empty\n",
+                name == NULL ? "<stdin>" : name);
+        free(source);
+        return 3;
+    }
+    if (skip >= len) {
+        fprintf(stderr, "skip request of %d leaves no input\n", skip);
+        free(source);
+        return 3;
+    }
+
+    /* test inflate data with offset skip */
+    len -= skip;
+    sourcelen = (unsigned long)len;
+    ret = puff(NIL, &destlen, source + skip, &sourcelen);
+    if (ret)
+        fprintf(stderr, "puff() failed with return code %d\n", ret);
+    else {
+        fprintf(stderr, "puff() succeeded uncompressing %lu bytes\n", destlen);
+        if (sourcelen < len) fprintf(stderr, "%lu compressed bytes unused\n",
+                                     len - sourcelen);
+    }
+
+    /* if requested, inflate again and write decompressd data to stdout */
+    if (put) {
+        dest = malloc(destlen);
+        if (dest == NULL) {
+            fprintf(stderr, "memory allocation failure\n");
+            free(source);
+            return 4;
+        }
+        puff(dest, &destlen, source + skip, &sourcelen);
+        fwrite(dest, 1, destlen, stdout);
+        free(dest);
+    }
+
+    /* clean up */
     free(source);
     return ret;
 }

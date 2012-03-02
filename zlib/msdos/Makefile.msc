@@ -37,8 +37,8 @@ LDFLAGS=/noi/e/st:0x1500/noe/farcall/packcode
 # variables
 ZLIB_LIB = zlib_$(MODEL).lib
 
-OBJ1 = adler32.obj compress.obj crc32.obj deflate.obj gzio.obj infback.obj
-OBJ2 = inffast.obj inflate.obj inftrees.obj trees.obj uncompr.obj zutil.obj
+OBJ1 = adler32.obj compress.obj crc32.obj deflate.obj gzclose.obj gzlib.obj gzread.obj
+OBJ2 = gzwrite.obj infback.obj inffast.obj inflate.obj inftrees.obj trees.obj uncompr.obj zutil.obj
 
 
 # targets
@@ -55,7 +55,13 @@ crc32.obj: crc32.c zlib.h zconf.h crc32.h
 
 deflate.obj: deflate.c deflate.h zutil.h zlib.h zconf.h
 
-gzio.obj: gzio.c zutil.h zlib.h zconf.h
+gzclose.obj: gzclose.c zlib.h zconf.h gzguts.h
+
+gzlib.obj: gzlib.c zlib.h zconf.h gzguts.h
+
+gzread.obj: gzread.c zlib.h zconf.h gzguts.h
+
+gzwrite.obj: gzwrite.c zlib.h zconf.h gzguts.h
 
 infback.obj: infback.c zutil.h zlib.h zconf.h inftrees.h inflate.h \
  inffast.h inffixed.h

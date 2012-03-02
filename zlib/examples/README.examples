@@ -1,4 +1,10 @@
-This directory contains examples of the use of zlib.
+This directory contains examples of the use of zlib and other relevant
+programs and documentation.
+
+enough.c
+    calculation and justification of ENOUGH parameter in inftrees.h
+    - calculates the maximum table space used in inflate tree
+      construction over all possible Huffman codes
 
 fitblk.c
     compress just enough input to nearly fill a requested output size
@@ -23,9 +29,10 @@ gzjoin.c
 
 gzlog.c
 gzlog.h
-    efficiently maintain a message log file in gzip format
-    - illustrates use of raw deflate and Z_SYNC_FLUSH
-    - illustrates use of gzip header extra field
+    efficiently and robustly maintain a message log file in gzip format
+    - illustrates use of raw deflate, Z_PARTIAL_FLUSH, deflatePrime(),
+      and deflateSetDictionary()
+    - illustrates use of a gzip header extra field
 
 zlib_how.html
     painfully comprehensive description of zpipe.c (see below)
