@@ -3004,7 +3004,7 @@ information are.
 @item
 @uref{#amd64-x-solaris210,,amd64-*-solaris2.10}
 @item
-@uref{#arm-x-elf,,arm-*-elf}
+@uref{#arm-x-eabi,,arm-*-eabi}
 @item
 @uref{#avr,,avr}
 @item
@@ -3219,11 +3219,11 @@ This is a synonym for @samp{x86_64-*-solaris2.1[0-9]*}.
 @html
 <hr />
 @end html
-@heading @anchor{arm-x-elf}arm-*-elf
+@heading @anchor{arm-x-eabi}arm-*-eabi
 ARM-family processors.  Subtargets that use the ELF object format
 require GNU binutils 2.13 or newer.  Such subtargets include:
-@code{arm-*-freebsd}, @code{arm-*-netbsdelf}, @code{arm-*-*linux}
-and @code{arm-*-rtems}.
+@code{arm-*-netbsdelf}, @code{arm-*-*linux-gnueabi}
+and @code{arm-*-rtemseabi}.
 
 @html
 <hr />
@@ -4614,7 +4614,7 @@ Presently Windows for Itanium is not supported.
 
 @subheading Windows CE
 
-Windows CE is supported as a target only on ARM (arm-wince-pe), Hitachi
+Windows CE is supported as a target only on Hitachi
 SuperH (sh-wince-pe), and MIPS (mips-wince-pe).
 
 @subheading Other Windows Platforms
