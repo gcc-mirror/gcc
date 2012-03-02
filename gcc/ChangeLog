@@ -1,3 +1,7 @@
+2012-03-02  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/vsx.md (vsx_set_<mode>): Reorder operands.
+
 2012-03-02  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	* config/arm/arm.c (arm_sat_operator_match): New function.

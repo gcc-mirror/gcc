@@ -1,3 +1,7 @@
+2012-03-02  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr52457.c: New test.
+
 2012-03-02  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	* gcc.target/arm/sat-1.c: New test.
