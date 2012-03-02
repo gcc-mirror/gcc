@@ -1,7 +1,7 @@
 // -*- C++ -*- forwarding header.
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
+// 2006, 2007, 2008, 2009, 2010, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -46,6 +46,10 @@
 #ifndef _GLIBCXX_CSTDIO
 #define _GLIBCXX_CSTDIO 1
 
+#ifndef _GLIBCXX_HAVE_GETS
+extern "C" extern char* gets (char* __s) __attribute__((deprecated));
+#endif
+
 // Get rid of those macros defined in <stdio.h> in lieu of real functions.
 #undef clearerr
 #undef fclose
@@ -67,7 +71,6 @@
 #undef ftell
 #undef fwrite
 #undef getc
-#undef getchar
 #undef gets
 #undef perror
 #undef printf
