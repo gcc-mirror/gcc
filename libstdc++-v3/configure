@@ -17415,6 +17415,56 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gets declaration" >&5
+$as_echo_n "checking for gets declaration... " >&6; }
+  if test "${glibcxx_cv_gets+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdio.h>
+	   namespace test
+	   {
+              using ::gets;
+	   }
+
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_gets=yes
+else
+  glibcxx_cv_gets=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+
+  if test $glibcxx_cv_gets = yes; then
+
+$as_echo "#define HAVE_GETS 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_gets" >&5
+$as_echo "$glibcxx_cv_gets" >&6; }
+
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for EOWNERDEAD" >&5
 $as_echo_n "checking for EOWNERDEAD... " >&6; }
 if test "${glibcxx_cv_system_error1+set}" = set; then :

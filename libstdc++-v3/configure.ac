@@ -136,6 +136,7 @@ GLIBCXX_ENABLE_WERROR([yes])
 # Checks for operating systems support that doesn't require linking.
 GLIBCXX_CHECK_MATH_PROTO
 GLIBCXX_CHECK_STDLIB_PROTO
+GLIBCXX_CHECK_STDIO_PROTO
 GLIBCXX_CHECK_SYSTEM_ERROR
 
 # For the streamoff typedef.
