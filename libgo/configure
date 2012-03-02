@@ -14508,7 +14508,7 @@ no)
   ;;
 esac
 
-for ac_header in sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h ustat.h utime.h linux/reboot.h
+for ac_header in sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h utime.h linux/reboot.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -14541,6 +14541,36 @@ fi
 
 done
 
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether <ustat.h> can be used" >&5
+$as_echo_n "checking whether <ustat.h> can be used... " >&6; }
+if test "${libgo_cv_c_ustat_h+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/types.h>
+#ifdef HAVE_LINUX_FILTER_H
+#include <linux/filter.h>
+#endif
+#include <ustat.h>
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libgo_cv_c_ustat_h=yes
+else
+  libgo_cv_c_ustat_h=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_c_ustat_h" >&5
+$as_echo "$libgo_cv_c_ustat_h" >&6; }
+if test $libgo_cv_c_ustat_h = yes; then
+
+$as_echo "#define HAVE_USTAT_H 1" >>confdefs.h
+
+fi
 
  if test "$ac_cv_header_sys_mman_h" = yes; then
   HAVE_SYS_MMAN_H_TRUE=
