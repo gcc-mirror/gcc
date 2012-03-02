@@ -1,4 +1,11 @@
-2012-01-02  Oleg Endo  <olegendo@gcc.gnu.org>
+2012-03-02  Oleg Endo  <olegendo@gcc.gnu.org>
+
+        * config/sh/sync.md: Update copyright notice dates.
+	(atomic_compare_and_swap<mode>): Use SImode for return value instead
+	of QImode.
+        (atomic_compare_and_swap<mode>_soft): Likewise.
+
+2012-03-02  Oleg Endo  <olegendo@gcc.gnu.org>
  
 	PR target/31640
 	* config/sh/sh.h (LOOP_ALIGN): Move logic to sh_loop_align.

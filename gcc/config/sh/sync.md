@@ -1,5 +1,5 @@
 ;; GCC machine description for SH synchronization instructions.
-;; Copyright (C) 2011
+;; Copyright (C) 2011, 2012
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -109,7 +109,7 @@
   [(plus "add") (minus "sub") (ior "or") (xor "xor") (and "and")])
 
 (define_expand "atomic_compare_and_swap<mode>"
-  [(match_operand:QI 0 "register_operand" "")		;; bool success output
+  [(match_operand:SI 0 "register_operand" "")		;; bool success output
    (match_operand:I124 1 "register_operand" "")		;; oldval output
    (match_operand:I124 2 "memory_operand" "")		;; memory
    (match_operand:I124 3 "register_operand" "")		;; expected input
@@ -131,7 +131,7 @@
   else if (<MODE>mode == HImode)
     emit_insn (gen_zero_extendhisi2 (gen_lowpart (SImode, operands[1]),
 				     operands[1]));
-  emit_insn (gen_movqi (operands[0], gen_rtx_REG (QImode, T_REG)));
+  emit_insn (gen_movsi (operands[0], gen_rtx_REG (SImode, T_REG)));
   DONE;
 })
 
@@ -144,8 +144,8 @@
 	  UNSPECV_CMPXCHG_1))
    (set (mem:I124 (match_dup 1))
 	(unspec_volatile:I124 [(const_int 0)] UNSPECV_CMPXCHG_2))
-   (set (reg:QI T_REG)
-	(unspec_volatile:QI [(const_int 0)] UNSPECV_CMPXCHG_3))
+   (set (reg:SI T_REG)
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_CMPXCHG_3))
    (clobber (match_scratch:SI 4 "=&u"))
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
