@@ -19,6 +19,7 @@ package runtime
 #include "go-type.h"
 
 MHeap runtime_mheap;
+
 extern MStats mstats;	// defined in extern.go
 
 extern volatile int32 runtime_MemProfileRate
@@ -427,18 +428,6 @@ runtime_mal(uintptr n)
 func new(typ *Type) (ret *uint8) {
 	uint32 flag = typ->__code&GO_NO_POINTERS ? FlagNoPointers : 0;
 	ret = runtime_mallocgc(typ->__size, flag, 1, 1);
-}
-
-func Alloc(n uintptr) (p *byte) {
-	p = runtime_malloc(n);
-}
-
-func Free(p *byte) {
-	runtime_free(p);
-}
-
-func Lookup(p *byte) (base *byte, size uintptr) {
-	runtime_mlookup(p, &base, &size, nil);
 }
 
 func GC() {

@@ -7,11 +7,33 @@
 // Go-like; failing calls return values of type error rather than error numbers.
 // Often, more information is available within the error. For example,
 // if a call that takes a file name fails, such as Open or Stat, the error
-// will include failing file name when printed and will be of type *PathError,
-// which may be unpacked for more information.
+// will include the failing file name when printed and will be of type
+// *PathError, which may be unpacked for more information.
 // 
 // The os interface is intended to be uniform across all operating systems.
 // Features not generally available appear in the system-specific package syscall.
+//
+// Here is a simple example, opening a file and reading some of it.
+//
+//	file, err := os.Open("file.go") // For read access.
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//
+// If the open fails, the error string will be self-explanatory, like
+//
+//	open file.go: no such file or directory
+//
+// The file's data can then be read into a slice of bytes. Read and
+// Write take their byte counts from the length of the artument slice.
+//
+//	data := make([]byte, 100)
+//	count, err := file.Read(data)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	fmt.Printf("read %d bytes: %q\n", count, data[:count])
+//
 package os
 
 import (
@@ -50,12 +72,25 @@ const (
 	SEEK_END int = 2 // seek relative to the end
 )
 
+// LinkError records an error during a link or symlink or rename
+// system call and the paths that caused it.
+type LinkError struct {
+	Op  string
+	Old string
+	New string
+	Err error
+}
+
+func (e *LinkError) Error() string {
+	return e.Op + " " + e.Old + " " + e.New + ": " + e.Err.Error()
+}
+
 // Read reads up to len(b) bytes from the File.
 // It returns the number of bytes read and an error, if any.
 // EOF is signaled by a zero count with err set to io.EOF.
 func (f *File) Read(b []byte) (n int, err error) {
 	if f == nil {
-		return 0, EINVAL
+		return 0, ErrInvalid
 	}
 	n, e := f.read(b)
 	if n < 0 {
@@ -76,7 +111,7 @@ func (f *File) Read(b []byte) (n int, err error) {
 // At end of file, that error is io.EOF.
 func (f *File) ReadAt(b []byte, off int64) (n int, err error) {
 	if f == nil {
-		return 0, EINVAL
+		return 0, ErrInvalid
 	}
 	for len(b) > 0 {
 		m, e := f.pread(b, off)
@@ -99,7 +134,7 @@ func (f *File) ReadAt(b []byte, off int64) (n int, err error) {
 // Write returns a non-nil error when n != len(b).
 func (f *File) Write(b []byte) (n int, err error) {
 	if f == nil {
-		return 0, EINVAL
+		return 0, ErrInvalid
 	}
 	n, e := f.write(b)
 	if n < 0 {
@@ -119,7 +154,7 @@ func (f *File) Write(b []byte) (n int, err error) {
 // WriteAt returns a non-nil error when n != len(b).
 func (f *File) WriteAt(b []byte, off int64) (n int, err error) {
 	if f == nil {
-		return 0, EINVAL
+		return 0, ErrInvalid
 	}
 	for len(b) > 0 {
 		m, e := f.pwrite(b, off)
@@ -153,7 +188,7 @@ func (f *File) Seek(offset int64, whence int) (ret int64, err error) {
 // an array of bytes.
 func (f *File) WriteString(s string) (ret int, err error) {
 	if f == nil {
-		return 0, EINVAL
+		return 0, ErrInvalid
 	}
 	return f.Write([]byte(s))
 }

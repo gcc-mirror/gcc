@@ -143,6 +143,8 @@ struct	G
 	M*	lockedm;
 	M*	idlem;
 	// int32	sig;
+	int32	writenbuf;
+	byte*	writebuf;
 	// uintptr	sigcode0;
 	// uintptr	sigcode1;
 	// uintptr	sigpc;
@@ -189,9 +191,9 @@ struct	SigTab
 enum
 {
 	SigNotify = 1<<0,	// let signal.Notify have signal, even if from kernel
-	SigKill = 1<<1,  // if signal.Notify doesn't take it, exit quietly
-	SigThrow = 1<<2,  // if signal.Notify doesn't take it, exit loudly
-	SigPanic = 1<<3,  // if the signal is from the kernel, panic
+	SigKill = 1<<1,		// if signal.Notify doesn't take it, exit quietly
+	SigThrow = 1<<2,	// if signal.Notify doesn't take it, exit loudly
+	SigPanic = 1<<3,	// if the signal is from the kernel, panic
 	SigDefault = 1<<4,	// if the signal isn't explicitly requested, don't monitor it
 };
 
@@ -277,6 +279,7 @@ void	runtime_panicstring(const char*) __attribute__ ((noreturn));
 void*	runtime_mal(uintptr);
 void	runtime_schedinit(void);
 void	runtime_initsig(void);
+void	runtime_sigenable(uint32 sig);
 String	runtime_gostringnocopy(const byte*);
 void*	runtime_mstart(void*);
 G*	runtime_malg(int32, byte**, size_t*);
@@ -296,6 +299,7 @@ int64	runtime_cputicks(void);
 
 void	runtime_stoptheworld(void);
 void	runtime_starttheworld(bool);
+extern uint32 runtime_worldsema;
 G*	__go_go(void (*pfn)(void*), void*);
 
 /*
@@ -348,6 +352,7 @@ void	runtime_futexwakeup(uint32*, uint32);
 #define runtime_munmap munmap
 #define runtime_madvise madvise
 #define runtime_memclr(buf, size) __builtin_memset((buf), 0, (size))
+#define runtime_getcallerpc(p) __builtin_return_address(0)
 
 #ifdef __rtems__
 void __wrap_rtems_task_variable_add(void **);
@@ -373,8 +378,6 @@ void reflect_call(const struct __go_func_type *, const void *, _Bool, _Bool,
 #define runtime_exit(s) exit(s)
 MCache*	runtime_allocmcache(void);
 void	free(void *v);
-struct __go_func_type;
-bool	runtime_addfinalizer(void*, void(*fn)(void*), const struct __go_func_type *);
 #define runtime_cas(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 #define runtime_casp(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 #define runtime_xadd(p, v) __sync_add_and_fetch (p, v)
@@ -384,6 +387,11 @@ bool	runtime_addfinalizer(void*, void(*fn)(void*), const struct __go_func_type *
 #define runtime_atomicloadp(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
 #define runtime_atomicstorep(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
 
+struct __go_func_type;
+bool	runtime_addfinalizer(void*, void(*fn)(void*), const struct __go_func_type *);
+#define runtime_getcallersp(p) __builtin_frame_address(1)
+int32	runtime_mcount(void);
+int32	runtime_gcount(void);
 void	runtime_dopanic(int32) __attribute__ ((noreturn));
 void	runtime_startpanic(void);
 void	runtime_ready(G*);

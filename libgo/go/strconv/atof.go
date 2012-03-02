@@ -13,6 +13,7 @@ package strconv
 //   3) Multiply by 2^precision and round to get mantissa.
 
 import "math"
+import "runtime"
 
 var optimize = true // can change for testing
 
@@ -298,6 +299,11 @@ func (d *decimal) atof64() (f float64, ok bool) {
 	// Exact integers are <= 10^15.
 	// Exact powers of ten are <= 10^22.
 	if d.nd > 15 {
+		return
+	}
+	// gccgo gets this wrong on 32-bit i386 when not using -msse.
+	// See TestRoundTrip in atof_test.go for a test case.
+	if runtime.GOARCH == "386" {
 		return
 	}
 	switch {
