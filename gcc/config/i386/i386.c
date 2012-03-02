@@ -17827,6 +17827,11 @@ ix86_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
       || (m1 == CCGOCmode && m2 == CCGCmode))
     return CCGCmode;
 
+  if (m1 == CCZmode && (m2 == CCGCmode || m2 == CCGOCmode))
+    return m2;
+  else if (m2 == CCZmode && (m1 == CCGCmode || m1 == CCGOCmode))
+    return m1;
+
   switch (m1)
     {
     default:
