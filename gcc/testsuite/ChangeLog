@@ -1,3 +1,7 @@
+2012-03-02  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* gcc.dg/graphite/pr50561.c: Update.
+
 2012-03-02  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/pr52457.c: New test.

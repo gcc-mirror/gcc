@@ -1,3 +1,14 @@
+2012-03-02  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* doc/invoke.texi (floop-flatten): Remove.
+	* toplev.c (process_options): Remove references to flag_loop_flatten.
+	* tree-ssa-loop.c (gate_graphite_transform): Same.
+	* common.opt (floop-flatten): Obsolete.
+	* graphite-poly.c (apply_poly_transforms): Remove reference to
+	flag_loop_flatten.
+	* Makefile.in (graphite-flattening.o): Remove.
+	* graphite-flattening.c: Remove.
+
 2012-03-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* compare-elim.c (find_comparisons_in_bb): Eliminate only compares

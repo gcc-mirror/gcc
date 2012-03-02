@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -floop-flatten -floop-strip-mine" } */
+/* { dg-options "-O2 -floop-strip-mine" } */
 
 void f (unsigned *s)
 {
