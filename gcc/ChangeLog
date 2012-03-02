@@ -1,3 +1,18 @@
+2012-03-02  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* config/arm/arm.c (arm_sat_operator_match): New function.
+	* config/arm/arm-protos.h (arm_sat_operator_match): Add prototype.
+	* config/arm/arm.md ("insn" attribute): Add "sat" value.
+	("SAT", "SATrev"): New code iterators.
+	("SATlo", "SAThi"): New code iterator attributes.
+	("*satsi_<SAT:code>"): New pattern.
+	("*satsi_<SAT:code>_shift"): Likewise.
+	* config/arm/arm-fixed.md ("arm_ssatsihi_shift"): Add "insn"
+	and "shift" attributes.
+	("arm_usatsihi"): Add "insn" attribute.
+	* config/arm/predicates.md (sat_shift_operator): Allow multiplication
+	by powers of two.  Do not allow shift by 32.
+
 2012-03-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46716

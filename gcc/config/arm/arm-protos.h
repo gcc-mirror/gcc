@@ -107,6 +107,7 @@ extern int tls_mentioned_p (rtx);
 extern int symbol_mentioned_p (rtx);
 extern int label_mentioned_p (rtx);
 extern RTX_CODE minmax_code (rtx);
+extern bool arm_sat_operator_match (rtx, rtx, int *, bool *);
 extern int adjacent_mem_locations (rtx, rtx);
 extern bool gen_ldm_seq (rtx *, int, bool);
 extern bool gen_stm_seq (rtx *, int);
