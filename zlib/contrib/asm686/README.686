@@ -32,3 +32,20 @@ then do:
 
 CFLAGS="-O3 -DASMV" ./configure
 make OBJA=match.o
+
+
+Update:
+
+I've been ignoring these assembly routines for years, believing that
+gcc's generated code had caught up with it sometime around gcc 2.95
+and the major rearchitecting of the Pentium 4. However, I recently
+learned that, despite what I believed, this code still has some life
+in it. On the Pentium 4 and AMD64 chips, it continues to run about 8%
+faster than the code produced by gcc 4.1.
+
+In acknowledgement of its continuing usefulness, I've altered the
+license to match that of the rest of zlib. Share and Enjoy!
+
+Brian Raiter
+breadbox@muppetlabs.com
+April, 2007

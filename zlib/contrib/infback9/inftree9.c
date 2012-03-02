@@ -1,5 +1,5 @@
 /* inftree9.c -- generate Huffman trees for efficient decoding
- * Copyright (C) 1995-2005 Mark Adler
+ * Copyright (C) 1995-2010 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -9,7 +9,7 @@
 #define MAXBITS 15
 
 const char inflate9_copyright[] =
-   " inflate9 1.2.3 Copyright 1995-2005 Mark Adler ";
+   " inflate9 1.2.5 Copyright 1995-2010 Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
   in the documentation of your product. If for some reason you cannot
@@ -64,7 +64,7 @@ unsigned short FAR *work;
     static const unsigned short lext[31] = { /* Length codes 257..285 extra */
         128, 128, 128, 128, 128, 128, 128, 128, 129, 129, 129, 129,
         130, 130, 130, 130, 131, 131, 131, 131, 132, 132, 132, 132,
-        133, 133, 133, 133, 144, 201, 196};
+        133, 133, 133, 133, 144, 73, 195};
     static const unsigned short dbase[32] = { /* Distance codes 0..31 base */
         1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49,
         65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073,
@@ -160,11 +160,10 @@ unsigned short FAR *work;
        entered in the tables.
 
        used keeps track of how many table entries have been allocated from the
-       provided *table space.  It is checked when a LENS table is being made
-       against the space in *table, ENOUGH, minus the maximum space needed by
-       the worst case distance code, MAXD.  This should never happen, but the
-       sufficiency of ENOUGH has not been proven exhaustively, hence the check.
-       This assumes that when type == LENS, bits == 9.
+       provided *table space.  It is checked for LENS and DIST tables against
+       the constants ENOUGH_LENS and ENOUGH_DISTS to guard against changes in
+       the initial root table size constants.  See the comments in inftree9.h
+       for more information.
 
        sym increments through all symbols, and the loop terminates when
        all codes of length max, i.e. all codes, have been processed.  This
@@ -203,7 +202,8 @@ unsigned short FAR *work;
     mask = used - 1;            /* mask for comparing low */
 
     /* check available table space */
-    if (type == LENS && used >= ENOUGH - MAXD)
+    if ((type == LENS && used >= ENOUGH_LENS) ||
+        (type == DISTS && used >= ENOUGH_DISTS))
         return 1;
 
     /* process all codes and make table entries */
@@ -270,7 +270,8 @@ unsigned short FAR *work;
 
             /* check for enough space */
             used += 1U << curr;
-            if (type == LENS && used >= ENOUGH - MAXD)
+            if ((type == LENS && used >= ENOUGH_LENS) ||
+                (type == DISTS && used >= ENOUGH_DISTS))
                 return 1;
 
             /* point entry in root table to sub-table */

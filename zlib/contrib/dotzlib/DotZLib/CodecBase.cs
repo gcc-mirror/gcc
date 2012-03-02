@@ -1,7 +1,7 @@
 //
 // © Copyright Henrik Ravn 2004
 //
-// Use, modification and distribution are subject to the Boost Software License, Version 1.0. 
+// Use, modification and distribution are subject to the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
@@ -19,7 +19,7 @@ namespace DotZLib
         #region Data members
 
         /// <summary>
-        /// Instance of the internal zlib buffer structure that is 
+        /// Instance of the internal zlib buffer structure that is
         /// passed to all functions in the zlib dll
         /// </summary>
         internal ZStream _ztream = new ZStream();
@@ -45,7 +45,7 @@ namespace DotZLib
         #endregion
 
         /// <summary>
-        /// Initializes a new instance of the <c>CodeBase</c> class. 
+        /// Initializes a new instance of the <c>CodeBase</c> class.
         /// </summary>
 		public CodecBase()
 		{
@@ -77,7 +77,7 @@ namespace DotZLib
             if (_ztream.total_out > 0)
             {
                 if (DataAvailable != null)
-                    DataAvailable( _outBuffer, 0, (int)_ztream.total_out); 
+                    DataAvailable( _outBuffer, 0, (int)_ztream.total_out);
                 resetOutput();
             }
         }

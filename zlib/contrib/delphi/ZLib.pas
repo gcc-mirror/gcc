@@ -152,7 +152,7 @@ procedure DecompressToUserBuf(const InBuf: Pointer; InBytes: Integer;
   const OutBuf: Pointer; BufSize: Integer);
 
 const
-  zlib_version = '1.2.3';
+  zlib_version = '1.2.5';
 
 type
   EZlibError = class(Exception);

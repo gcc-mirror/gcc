@@ -1,9 +1,6 @@
 # Makefile for zlib
 # Borland C++ for Win32
 #
-# Updated for zlib 1.2.x by Cosmin Truta, 11-Mar-2003
-# Last updated: 28-Aug-2003
-#
 # Usage:
 #  make -f win32/Makefile.bor
 #  make -f win32/Makefile.bor LOCAL_ZLIB=-DASMV OBJA=match.obj OBJPA=+match.obj
@@ -27,11 +24,11 @@ LDFLAGS = $(LOC)
 # variables
 ZLIB_LIB = zlib.lib
 
-OBJ1  = adler32.obj compress.obj crc32.obj deflate.obj gzio.obj infback.obj
-OBJ2  = inffast.obj inflate.obj inftrees.obj trees.obj uncompr.obj zutil.obj
+OBJ1 = adler32.obj compress.obj crc32.obj deflate.obj gzclose.obj gzlib.obj gzread.obj
+OBJ2 = gzwrite.obj infback.obj inffast.obj inflate.obj inftrees.obj trees.obj uncompr.obj zutil.obj
 #OBJA =
-OBJP1 = +adler32.obj+compress.obj+crc32.obj+deflate.obj+gzio.obj+infback.obj
-OBJP2 = +inffast.obj+inflate.obj+inftrees.obj+trees.obj+uncompr.obj+zutil.obj
+OBJP1 = +adler32.obj+compress.obj+crc32.obj+deflate.obj+gzclose.obj+gzlib.obj+gzread.obj
+OBJP2 = +gzwrite.obj+infback.obj+inffast.obj+inflate.obj+inftrees.obj+trees.obj+uncompr.obj+zutil.obj
 #OBJPA=
 
 
@@ -52,7 +49,13 @@ crc32.obj: crc32.c zlib.h zconf.h crc32.h
 
 deflate.obj: deflate.c deflate.h zutil.h zlib.h zconf.h
 
-gzio.obj: gzio.c zutil.h zlib.h zconf.h
+gzclose.obj: gzclose.c zlib.h zconf.h gzguts.h
+
+gzlib.obj: gzlib.c zlib.h zconf.h gzguts.h
+
+gzread.obj: gzread.c zlib.h zconf.h gzguts.h
+
+gzwrite.obj: gzwrite.c zlib.h zconf.h gzguts.h
 
 infback.obj: infback.c zutil.h zlib.h zconf.h inftrees.h inflate.h \
  inffast.h inffixed.h
@@ -99,8 +102,8 @@ minigzip.exe: minigzip.obj $(ZLIB_LIB)
 
 # cleanup
 clean:
+	-del $(ZLIB_LIB)
 	-del *.obj
-	-del *.lib
 	-del *.exe
 	-del *.tds
 	-del zlib.bak

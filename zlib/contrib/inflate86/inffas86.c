@@ -113,7 +113,7 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
     ar.beg = ar.out - (start - strm->avail_out);
     ar.end = ar.out + (strm->avail_out - PAD_AVAIL_OUT);
     ar.wsize = state->wsize;
-    ar.write = state->write;
+    ar.write = state->wnext;
     ar.window = state->window;
     ar.hold = state->hold;
     ar.bits = state->bits;

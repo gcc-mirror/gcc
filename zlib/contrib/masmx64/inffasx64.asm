@@ -9,11 +9,15 @@
 ;   ml64.exe /Flinffasx64 /c /Zi inffasx64.asm
 ;   with Microsoft Macro Assembler (x64) for AMD64
 ;
-;   ml64.exe is given with Visual Studio 2005, Windows 2003 server DDK
+
+; This file compile with Microsoft Macro Assembler (x64) for AMD64
 ;
-;   (you can get Windows 2003 server DDK with ml64 and cl.exe for AMD64 from 
-;      http://www.microsoft.com/whdc/devtools/ddk/default.mspx for low price)
+;   ml64.exe is given with Visual Studio 2005/2008/2010 and Windows WDK
 ;
+;   (you can get Windows WDK with ml64 for AMD64 from
+;      http://www.microsoft.com/whdc/Devtools/wdk/default.mspx for low price)
+;
+
 
 .code
 inffas8664fnc PROC
@@ -379,7 +383,7 @@ L_break_loop_with_status:
 	mov r14,[rsp-40]
 	mov r15,[rsp-48]
 	mov rbx,[rsp-56]
-	
+
     ret 0
 ;          :
 ;          : "m" (ar)
