@@ -1,3 +1,9 @@
+2012-03-02   Diego Novillo  <dnovillo@google.com>
+
+	* testsuite-management/validate_failures.py (class TestResult): Fix
+	match pattern for the summary line.  If there is a parsing failure,
+	show the line we failed to parse.
+
 2012-02-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libstdc++/52188
