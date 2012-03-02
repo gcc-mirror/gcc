@@ -1,3 +1,7 @@
+2012-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* name-lookup.c (binding_to_template_parms_of_scope_p): Clean up.
+
 2012-02-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51930

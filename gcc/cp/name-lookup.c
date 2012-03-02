@@ -4467,20 +4467,17 @@ binding_to_template_parms_of_scope_p (cxx_binding *binding,
 				      cp_binding_level *scope)
 {
   tree binding_value;
+  tree tinfo;
 
-  if (!binding || !scope)
+  if (!binding || !scope || !scope->this_entity)
     return false;
 
   binding_value = binding->value ?  binding->value : binding->type;
+  tinfo = get_template_info (scope->this_entity);
 
-  return (scope
-	  && scope->this_entity
-	  && get_template_info (scope->this_entity)
-	  && PRIMARY_TEMPLATE_P (TI_TEMPLATE
-				 (get_template_info (scope->this_entity)))
-	  && parameter_of_template_p (binding_value,
-				      TI_TEMPLATE (get_template_info \
-						    (scope->this_entity))));
+  return (tinfo
+	  && PRIMARY_TEMPLATE_P (TI_TEMPLATE (tinfo))
+	  && parameter_of_template_p (binding_value, TI_TEMPLATE (tinfo)));
 }
 
 /* Return the innermost non-namespace binding for NAME from a scope
