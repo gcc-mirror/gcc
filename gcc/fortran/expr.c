@@ -336,6 +336,7 @@ gfc_copy_expr (gfc_expr *p)
 	case BT_LOGICAL:
 	case BT_DERIVED:
 	case BT_CLASS:
+	case BT_ASSUMED:
 	  break;		/* Already done.  */
 
 	case BT_PROCEDURE:

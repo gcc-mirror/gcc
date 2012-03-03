@@ -1118,6 +1118,7 @@ gfc_typenode_for_spec (gfc_typespec * spec)
         }
       break;
     case BT_VOID:
+    case BT_ASSUMED:
       /* This is for the second arg to c_f_pointer and c_f_procpointer
          of the iso_c_binding module, to accept any ptr type.  */
       basetype = ptr_type_node;
@@ -1414,6 +1415,10 @@ gfc_get_dtype (tree type)
 
     case ARRAY_TYPE:
       n = BT_CHARACTER;
+      break;
+
+    case POINTER_TYPE:
+      n = BT_ASSUMED;
       break;
 
     default:

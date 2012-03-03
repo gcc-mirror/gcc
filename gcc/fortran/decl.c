@@ -2600,9 +2600,31 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
     }
 
 
-  m = gfc_match (" type ( %n", name);
+  m = gfc_match (" type (");
   matched_type = (m == MATCH_YES);
-  
+  if (matched_type)
+    {
+      gfc_gobble_whitespace ();
+      if (gfc_peek_ascii_char () == '*')
+	{
+	  if ((m = gfc_match ("*)")) != MATCH_YES)
+	    return m;
+	  if (gfc_current_state () == COMP_DERIVED)
+	    {
+	      gfc_error ("Assumed type at %C is not allowed for components");
+	      return MATCH_ERROR;
+	    }
+	  if (gfc_notify_std (GFC_STD_F2008_TS, "TS 29113: Assumed type "
+			  "at %C") == FAILURE)
+	    return MATCH_ERROR;
+	  ts->type = BT_ASSUMED;
+	  return MATCH_YES;
+	}
+
+      m = gfc_match ("%n", name);
+      matched_type = (m == MATCH_YES);
+    }
+
   if ((matched_type && strcmp ("integer", name) == 0)
       || (!matched_type && gfc_match (" integer") == MATCH_YES))
     {
@@ -3854,9 +3876,9 @@ gfc_verify_c_interop (gfc_typespec *ts)
 	   ? SUCCESS : FAILURE;
   else if (ts->type == BT_CLASS)
     return FAILURE;
-  else if (ts->is_c_interop != 1)
+  else if (ts->is_c_interop != 1 && ts->type != BT_ASSUMED)
     return FAILURE;
-  
+
   return SUCCESS;
 }
 
