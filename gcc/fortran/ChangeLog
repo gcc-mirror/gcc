@@ -1,5 +1,15 @@
 2012-03-03  Tobias Burnus  <burnus@net-b.de>
 
+	* lang.opt (Wc-binding-type): New flag.
+	* options.c (gfc_init_options, gfc_handle_option): Handle it.
+	* invoke.texi (Wc-binding-type): Document it.
+	* gfortran.h (gfc_option_t): Add warn_c_binding_type.
+	* decl.c (verify_bind_c_sym): Handle -Wc-binding-type.
+	* symbol.c (gfc_set_default_type, verify_bind_c_derived_type):
+	Ditto.
+
+2012-03-03  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/48820
 	* decl.c (gfc_match_decl_type_spec): Support type(*).
 	(gfc_verify_c_interop): Allow type(*).
