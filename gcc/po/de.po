@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.7-b20120128\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2012-01-27 16:13+0000\n"
-"PO-Revision-Date: 2012-02-15 21:55+0200\n"
+"PO-Revision-Date: 2012-03-03 13:30+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -42848,7 +42848,7 @@ msgstr "Implizit deklarierte BIND(C)-Variable »%s« bei %L kann nicht C-kompati
 #: fortran/symbol.c:294
 #, gcc-internal-format, gfc-internal-format
 msgid "Implicitly declared variable '%s' at %L may not be C interoperable but it is a dummy argument to the BIND(C) procedure '%s' at %L"
-msgstr "Implizit deklarierte Variable »%s« bei %L ist nicht C-kompatibel, sondern ein Scheinargument für BIND(C)-Prozedur »%s« bei %L"
+msgstr "Implizit deklarierte Variable »%s« bei %L könnte nicht C-kompatibel sein, ist aber ein Scheinargument für BIND(C)-Prozedur »%s« bei %L"
 
 #: fortran/symbol.c:335
 #, gcc-internal-format, gfc-internal-format
