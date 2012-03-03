@@ -4462,7 +4462,7 @@ label:
   [(set (match_operand:SI 0 "arith_reg_dest" "")
   	(abs:SI (match_operand:SI 1 "arith_reg_operand" "")))
    (clobber (reg:SI T_REG))]
-  ""
+  "TARGET_SH1"
   "")
 
 (define_insn_and_split "*abssi2"
