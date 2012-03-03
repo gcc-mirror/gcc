@@ -49,7 +49,6 @@ use mpi_interface
 contains
     subroutine foo(x)
     type(*):: x(*)
-    call MPI_Send(x, 1, 1,1,1,j,i)
     call MPI_Send2(x, 1, 1,1,1,j,i)
   end
 end

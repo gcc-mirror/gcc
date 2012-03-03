@@ -5,6 +5,11 @@
 !
 ! Test TYPE(*)
 
+subroutine fourteen(x)
+  type(*) :: x
+  x = x ! { dg-error "Invalid expression with assumed-type variable" }
+end subroutine fourteen
+
 subroutine one(a) ! { dg-error "may not have the ALLOCATABLE, CODIMENSION, POINTER or VALUE attribute" }
   type(*), value :: a
 end subroutine one
@@ -52,10 +57,10 @@ subroutine nine()
     subroutine okay2(x)
       type(*) :: x(*)
     end subroutine okay2
-    subroutine okay2(x,y)
+    subroutine okay3(x,y)
       integer :: x
       type(*) :: y
-    end subroutine okay2
+    end subroutine okay3
   end interface
   interface two
     subroutine okok1(x)
@@ -100,10 +105,10 @@ end subroutine eleven
 
 subroutine twelf(x)
   type(*) :: x
-  call bar(x)
+  call bar(x) ! { dg-error "Type mismatch in argument" }
 contains
   subroutine bar(x)
-    integer :: x ! { dg-error "Type mismatch in argument" }
+    integer :: x
   end subroutine bar
 end subroutine twelf
 
@@ -113,7 +118,4 @@ subroutine thirteen(x, y)
   print *, ubound(y, dim=x) ! { dg-error "must be INTEGER" }
 end subroutine thirteen
 
-subroutine fourteen(x)
-  type(*) :: x
-  x = x ! { dg-error "Invalid expression with assumed-type variable" }
-end subroutine fourteen
+
