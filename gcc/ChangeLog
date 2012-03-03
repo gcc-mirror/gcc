@@ -1,3 +1,10 @@
+2012-03-03  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (shiftcosts): Return MAX_COST when the first
+	operand is CONST_INT.  Take COSTS_N_INSNS into account.
+	(sh_rtx_costs): Don't apply COSTS_N_INSNS to the return value
+	of shiftcosts.
+
 2012-03-02  Richard Henderson  <rth@redhat.com>
 
 	* optabs.c (expand_atomic_test_and_set): Honor
