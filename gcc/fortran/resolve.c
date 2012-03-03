@@ -1833,7 +1833,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
           return FAILURE;
         }
     }
-  assumed_type_expr_allowed = true;
+  assumed_type_expr_allowed = false;
 
   return SUCCESS;
 }
