@@ -187,7 +187,11 @@ unsigned char __gnat_using_gnu_linker = 1;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
 #if defined (__x86_64)
+# if defined (__LP64__)
 const char *__gnat_default_libgcc_subdir = "lib64";
+# else
+const char *__gnat_default_libgcc_subdir = "libx32";
+# endif
 #else
 const char *__gnat_default_libgcc_subdir = "lib";
 #endif

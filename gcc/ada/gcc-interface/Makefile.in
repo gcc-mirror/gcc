@@ -349,6 +349,10 @@ GNATMAKE_OBJS = a-except.o ali.o ali-util.o aspects.o s-casuti.o alloc.o \
 ifeq ($(strip $(filter-out %x86_64, $(arch))),)
   ifeq ($(strip $(MULTISUBDIR)),/32)
     arch:=i686
+  else
+    ifeq ($(strip $(MULTISUBDIR)),/x32)
+      arch:=x32
+    endif
   endif
 endif
 
@@ -2120,6 +2124,43 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_64_TARGET_PAIRS) \
   system.ads<system-linux-x86_64.ads
+
+  TOOLS_TARGET_PAIRS =  \
+    mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
+    indepsw.adb<indepsw-gnu.adb
+
+  EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
+  EH_MECHANISM=-gcc
+  THREADSLIB=-lpthread -lrt
+  GNATLIB_SHARED=gnatlib-shared-dual
+  GMEM_LIB = gmemlib
+  LIBRARY_VERSION := $(LIB_VERSION)
+endif
+
+ifeq ($(strip $(filter-out %x32 linux%,$(arch) $(osys))),)
+  LIBGNAT_TARGET_PAIRS = \
+  a-exetim.adb<a-exetim-posix.adb \
+  a-exetim.ads<a-exetim-default.ads \
+  a-intnam.ads<a-intnam-linux.ads \
+  a-synbar.adb<a-synbar-posix.adb \
+  a-synbar.ads<a-synbar-posix.ads \
+  s-inmaop.adb<s-inmaop-posix.adb \
+  s-intman.adb<s-intman-posix.adb \
+  s-linux.ads<s-linux.ads \
+  s-mudido.adb<s-mudido-affinity.adb \
+  s-osinte.ads<s-osinte-linux.ads \
+  s-osinte.adb<s-osinte-posix.adb \
+  s-osprim.adb<s-osprim-posix.adb \
+  s-taprop.adb<s-taprop-linux.adb \
+  s-tasinf.ads<s-tasinf-linux.ads \
+  s-tasinf.adb<s-tasinf-linux.adb \
+  s-tpopsp.adb<s-tpopsp-tls.adb \
+  s-taspri.ads<s-taspri-posix.ads \
+  g-sercom.adb<g-sercom-linux.adb \
+  $(ATOMICS_TARGET_PAIRS) \
+  $(X86_64_TARGET_PAIRS) \
+  system.ads<system-linux-x86.ads
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
