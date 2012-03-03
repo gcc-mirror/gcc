@@ -1,5 +1,9 @@
 2012-03-03  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	* config/sh/sh.md (abssi2): Add TARGET_SH1 condition.
+
+2012-03-03  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	* config/sh/sh.c (sh_dwarf_register_span): Don't apply
 	DBX_REGISTER_NUMBER.
 
