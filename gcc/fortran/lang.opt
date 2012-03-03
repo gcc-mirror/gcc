@@ -210,6 +210,10 @@ Warray-temporaries
 Fortran Warning
 Warn about creation of array temporaries
 
+Wc-binding-type
+Fortran Warning
+Warn if the type of a variable might be not interoperable with C
+
 Wcharacter-truncation
 Fortran Warning
 Warn about truncated character expressions

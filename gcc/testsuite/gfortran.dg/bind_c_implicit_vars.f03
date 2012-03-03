@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-Wc-binding-type" }
 module bind_c_implicit_vars
 
 bind(c) :: j ! { dg-warning "may not be C interoperable" }

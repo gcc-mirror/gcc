@@ -1,5 +1,14 @@
 2012-03-03  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/bind_c_dts_4.f03: Add dg-options -Wc-binding-type.
+	* gfortran.dg/bind_c_implicit_vars.f03: Ditto.
+	* gfortran.dg/bind_c_usage_8.f03: Ditto.
+	* gfortran.dg/c_kind_tests_2.f03: Ditto.
+	* gfortran.dg/class_30.f90: Remove dg-warning line.
+	* gfortran.dg/bind_c_usage_25.f90: New.
+
+2012-03-03  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/48820
 	* gfortran.dg/assumed_type_1.f90: Correct dg-error.
 	* gfortran.dg/assumed_type_3.f90: Correct dg-error.
