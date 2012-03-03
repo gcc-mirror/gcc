@@ -8162,10 +8162,8 @@ sh_dwarf_register_span (rtx reg)
   return
     gen_rtx_PARALLEL (VOIDmode,
 		      gen_rtvec (2,
-				 gen_rtx_REG (SFmode,
-					      DBX_REGISTER_NUMBER (regno+1)),
-				 gen_rtx_REG (SFmode,
-					      DBX_REGISTER_NUMBER (regno))));
+				 gen_rtx_REG (SFmode, regno + 1),
+				 gen_rtx_REG (SFmode, regno)));
 }
 
 static enum machine_mode
