@@ -1,5 +1,10 @@
 2012-03-03  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/48820
+	* gfortran.dg/assumed_type_3.f90: Undo previous commit.
+
+2012-03-03  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/bind_c_dts_4.f03: Add dg-options -Wc-binding-type.
 	* gfortran.dg/bind_c_implicit_vars.f03: Ditto.
 	* gfortran.dg/bind_c_usage_8.f03: Ditto.
