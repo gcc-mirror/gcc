@@ -1,3 +1,21 @@
+2012-03-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48820
+	* decl.c (gfc_match_decl_type_spec): Support type(*).
+	(gfc_verify_c_interop): Allow type(*).
+	* dump-parse-tree.c (show_typespec): Handle type(*).
+	* expr.c (gfc_copy_expr): Ditto.
+	* interface.c (compare_type_rank, compare_parameter,
+	compare_actual_formal, gfc_procedure_use): Ditto.
+	* libgfortran.h (bt): Add BT_ASSUMED.
+	* misc.c (gfc_basic_typename, gfc_typename): Handle type(*).
+	* module.c (bt_types): Ditto.
+	* resolve.c (assumed_type_expr_allowed): New static variable.
+	(resolve_actual_arglist, resolve_variable, resolve_symbol):
+	Handle type(*). 
+	* trans-expr.c (gfc_conv_procedure_call): Ditto.
+	* trans-types.c (gfc_typenode_for_spec, gfc_get_dtype): Ditto.
+
 2012-03-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52325
