@@ -615,9 +615,13 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
   if (signo == SIGSEGV && pc && *pc == 0x00240c83)
     mcontext->gregs[REG_ESP] += 4096 + 4 * sizeof (unsigned long);
 #elif defined (__x86_64__)
-  unsigned long *pc = (unsigned long *)mcontext->gregs[REG_RIP];
-  /* The pattern is "orq $0x0,(%rsp)" for a probe in 64-bit mode.  */
-  if (signo == SIGSEGV && pc && (*pc & 0xffffffffff) == 0x00240c8348)
+  unsigned long long *pc = (unsigned long long *)mcontext->gregs[REG_RIP];
+  if (signo == SIGSEGV && pc
+      /* The pattern is "orq $0x0,(%rsp)" for a probe in 64-bit mode.  */
+      && ((*pc & 0xffffffffffLL) == 0x00240c8348LL
+	  /* The pattern may also be "orl $0x0,(%esp)" for a probe in
+	     x32 mode.  */
+	  || (*pc & 0xffffffffLL) == 0x00240c83LL))
     mcontext->gregs[REG_RSP] += 4096 + 4 * sizeof (unsigned long);
 #elif defined (__ia64__)
   /* ??? The IA-64 unwinder doesn't compensate for signals.  */
