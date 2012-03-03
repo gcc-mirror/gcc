@@ -6090,22 +6090,17 @@ gfc_use_module (gfc_use_list *module)
 	parse_name (c);
       if ((start == 1 && strcmp (atom_name, "GFORTRAN") != 0)
 	  || (start == 2 && strcmp (atom_name, " module") != 0))
-	gfc_fatal_error ("File '%s' opened at %C is not a GFORTRAN module "
-			 "file", filename);
+	gfc_fatal_error ("File '%s' opened at %C is not a GNU Fortran"
+			 " module file", filename);
       if (start == 3)
 	{
 	  if (strcmp (atom_name, " version") != 0
 	      || module_char () != ' '
-	      || parse_atom () != ATOM_STRING)
-	    gfc_fatal_error ("Parse error when checking module version"
-		    	     " for file '%s' opened at %C", filename);
-
-	  if (strcmp (atom_string, MOD_VERSION))
-	    {
-	      gfc_fatal_error ("Wrong module version '%s' (expected '%s') "
-			       "for file '%s' opened at %C", atom_string,
-			       MOD_VERSION, filename);
-	    }
+	      || parse_atom () != ATOM_STRING
+	      || strcmp (atom_string, MOD_VERSION))
+	    gfc_fatal_error ("Cannot read module file '%s' opened at %C,"
+			     " because it was created by an older"
+			     " version of GNU Fortran", filename);
 
 	  free (atom_string);
 	}
