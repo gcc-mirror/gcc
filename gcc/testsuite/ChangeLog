@@ -1,6 +1,13 @@
 2012-03-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48820
+	* gfortran.dg/assumed_type_1.f90: Correct dg-error.
+	* gfortran.dg/assumed_type_3.f90: Correct dg-error.
+	* gfortran.dg/assumed_type_4.f90: Correct dg-error.
+
+2012-03-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48820
 	* gfortran.dg/assumed_type_1.f90: New.
 	* gfortran.dg/assumed_type_2.f90: New.
 	* gfortran.dg/assumed_type_3.f90: New.

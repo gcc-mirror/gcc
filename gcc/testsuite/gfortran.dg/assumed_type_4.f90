@@ -5,6 +5,6 @@
 !
 ! Test TYPE(*)
 
-subroutine one(a) ! { dg-error "TS 29113: Assumed type" }
-  type(*)  :: a
+subroutine one(a)
+  type(*)  :: a ! { dg-error "TS 29113: Assumed type" }
 end subroutine one
