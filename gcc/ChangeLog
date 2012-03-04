@@ -1,3 +1,14 @@
+2012-03-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (C++ Dialect Options): Minor copy-edits to
+	x86-specific text.
+	(Debugging Options): Likewise.
+	(Optimize Options): Likewise.
+	(i386 and x86-64 Options): Discuss -march before -mtune, consistently
+	with other architectures.  Use official processor names with correct
+	spelling/capitalization.  Fix formatting and grammar issues.
+	(i386 and x86-64 Windows Options): Similar cleanup here.
+
 2012-03-03  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (abssi2): Add TARGET_SH1 condition.
