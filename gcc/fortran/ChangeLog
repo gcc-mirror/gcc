@@ -1,5 +1,13 @@
 2012-03-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/36160
+	* error.c (gfc_widechar_display_length, gfc_wide_display_length):
+	New functions.
+	(print_wide_char_into_buffer): Return length written.
+	(show_locus): Fix locus displayed when wide characters are present.
+
+2012-03-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* module.c (gfc_use_module): Improve error message some more.
 
 2012-03-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
