@@ -1,5 +1,11 @@
 2012-03-03  Jason Merrill  <jason@redhat.com>
 
+	Core 1270
+	* call.c (build_aggr_conv): Call reshape_init.
+	(convert_like_real): Likewise.
+	* typeck2.c (process_init_constructor): Clear TREE_CONSTANT if
+	not all constant.
+
 	* mangle.c (write_nested_name): Use decl_mangling_context.
 	(write_prefix, write_template_prefix): Likewise.
 

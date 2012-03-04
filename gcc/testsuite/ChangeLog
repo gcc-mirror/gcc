@@ -1,5 +1,8 @@
 2012-03-03  Jason Merrill  <jason@redhat.com>
 
+	Core 1270
+	* g++.dg/cpp0x/initlist65.C: New.
+
 	PR c++/36797
 	* g++.dg/ext/is_empty2.C: New.
 
