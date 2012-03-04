@@ -942,7 +942,7 @@ write_nested_name (const tree decl)
 	}
       else
 	{
-	  write_prefix (CP_DECL_CONTEXT (decl));
+	  write_prefix (decl_mangling_context (decl));
 	  write_unqualified_name (decl);
 	}
     }
@@ -1030,7 +1030,7 @@ write_prefix (const tree node)
 	}
       else
 	{
-	  write_prefix (CP_DECL_CONTEXT (decl));
+	  write_prefix (decl_mangling_context (decl));
 	  write_unqualified_name (decl);
 	}
     }
@@ -1060,7 +1060,7 @@ write_template_prefix (const tree node)
 {
   tree decl = DECL_P (node) ? node : TYPE_NAME (node);
   tree type = DECL_P (node) ? TREE_TYPE (node) : node;
-  tree context = CP_DECL_CONTEXT (decl);
+  tree context = decl_mangling_context (decl);
   tree template_info;
   tree templ;
   tree substitution;
