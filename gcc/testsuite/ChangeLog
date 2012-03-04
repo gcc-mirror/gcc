@@ -1,3 +1,8 @@
+2012-03-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50981
+	* gfortran.dg/elemental_optional_args_5.f03: Add array checks.
+
 2012-03-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.dg/torture/pr52402.c: Add dg-require-effective-target
