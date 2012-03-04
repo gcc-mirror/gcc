@@ -1,3 +1,9 @@
+2012-03-03  Jason Merrill  <jason@redhat.com>
+
+	* class.c (add_method): Always build an OVERLOAD for using-decls.
+	* search.c (lookup_member): Handle getting an OVERLOAD for a
+	single function.
+
 2012-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51989
