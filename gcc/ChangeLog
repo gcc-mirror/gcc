@@ -1,5 +1,10 @@
 2012-03-04  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_expand_prologue): Check Pmode to set
+	adjust_stack_insn.
+
+2012-03-04  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.c (ix86_print_operand_address): Only handle
 	zero-extended DImode addresses.
 

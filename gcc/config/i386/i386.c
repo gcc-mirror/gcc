@@ -10330,7 +10330,7 @@ ix86_expand_prologue (void)
       emit_insn (ix86_gen_allocate_stack_worker (eax, eax));
 
       /* Use the fact that AX still contains ALLOCATE.  */
-      adjust_stack_insn = (TARGET_64BIT
+      adjust_stack_insn = (Pmode == DImode
 			   ? gen_pro_epilogue_adjust_stack_di_sub
 			   : gen_pro_epilogue_adjust_stack_si_sub);
 
