@@ -261,7 +261,8 @@ ffi_prep_closure_loc (ffi_closure* closure,
 		      void *user_data,
 		      void *codeloc)
 {
-  FFI_ASSERT (cif->abi == FFI_SYSV);
+  if (cif->abi != FFI_SYSV)
+    return FFI_BAD_ABI;
 
   *(unsigned short *)closure->tramp = 0x207c;
   *(void **)(closure->tramp + 2) = codeloc;
