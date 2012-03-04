@@ -1,3 +1,27 @@
+2012-03-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraints.md (Ya): New internal constraint.
+	* config/i386/i386.md (zero_extendsidi2): Remove expansion.
+	(*zero_extendsidi2_rex64): Add x,x alternative.
+	(*zero_extendsidi2): Ditto.  Add o,0 alternative.
+	Remove flags reg clobber.  Adjust corresponding splits.
+	(zero_extend<mode>si2): Macroize expander from zero_extendhisi2 and
+	zero_extendqisi2 expanders using SWI12 mode iterator.
+	(zero_extend<mode>si2_and): Macroize insn from
+	zero_extendhisi2_and and zero_extendqisi2_and.  Merge corresponding
+	splitters.
+	(*zero_extend<mode>si2):  Macroize insn from
+	*zero_extendhisi2_movzbl and *zero_extendqisi2_movzbl.
+	(*zero_extend*2_movzbl_and): Remove insn patterns.
+	(zero_extendqihi2_and): Merge corresponding splitter.
+	(*zero_extendqihi2): Rename from *zero_extendqihi2_movzbl.
+	(*zero_extend*2_movzbl_and): Remove insn patterns.
+	(*anddi_1): Split TYPE_IMOVX instructions.
+	(*andsi_1): Use Ya for alternative 2.  Split TYPE_IMOVX instructions.
+	(*andhi_1): Ditto.
+	(and->zext splitter): Add splitter pattern.
+	(zero extend with andsi3 splitter): Adjust zero_extend pattern.
+
 2012-03-04  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (C++ Dialect Options): Minor copy-edits to
@@ -58,13 +82,13 @@
 	(atomic_compare_and_swap<mode>_soft): Likewise.
 
 2012-03-02  Oleg Endo  <olegendo@gcc.gnu.org>
- 
+
 	PR target/31640
 	* config/sh/sh.h (LOOP_ALIGN): Move logic to sh_loop_align.
 	* config/sh/sh.c: Update copyright notice dates.
 	(sh_loop_align): Add logic from LOOP_ALIGN.  Don't disable loop
 	alignment for TARGET_HARD_SH4.
-	(sh_option_override): Reduce default function alignment.  Set 
+	(sh_option_override): Reduce default function alignment.  Set
 	loop alignment to 4 bytes when not optimizing for size.
 
 2012-03-02  Maxim Kuvyrkov  <maxim@codesourcery.com>

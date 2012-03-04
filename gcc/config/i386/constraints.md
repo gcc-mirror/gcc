@@ -89,6 +89,7 @@
 ;;  z	First SSE register.
 ;;  i	SSE2 inter-unit moves enabled
 ;;  m	MMX inter-unit moves enabled
+;;  a	Integer register when zero extensions with AND are disabled
 ;;  p	Integer register when TARGET_PARTIAL_REG_STALL is disabled
 ;;  d	Integer register when integer DFmode moves are enabled
 ;;  x	Integer register when integer XFmode moves are enabled
@@ -107,6 +108,11 @@
 (define_register_constraint "Yp"
  "TARGET_PARTIAL_REG_STALL ? NO_REGS : GENERAL_REGS"
  "@internal Any integer register when TARGET_PARTIAL_REG_STALL is disabled.")
+
+(define_register_constraint "Ya"
+ "TARGET_ZERO_EXTEND_WITH_AND && optimize_function_for_speed_p (cfun)
+  ? NO_REGS : GENERAL_REGS"
+ "@internal Any integer register when zero extensions with AND are disabled.")
 
 (define_register_constraint "Yd"
  "(TARGET_64BIT
