@@ -14482,7 +14482,7 @@ ix86_print_operand_address (FILE *file, rtx addr)
 
       /* Print SImode registers for zero-extended addresses to force
 	 addr32 prefix.  Otherwise print DImode registers to avoid it.  */
-      if (TARGET_64BIT)
+      if (TARGET_64BIT && GET_MODE (addr) == DImode)
 	code = ((GET_CODE (addr) == ZERO_EXTEND
 		 || GET_CODE (addr) == AND)
 		? 'l'
