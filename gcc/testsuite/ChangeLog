@@ -1,5 +1,7 @@
 2012-03-03  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/nsdmi-defer6.C: New.
+
 	Core 1270
 	* g++.dg/cpp0x/initlist65.C: New.
 

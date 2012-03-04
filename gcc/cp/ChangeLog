@@ -1,5 +1,7 @@
 2012-03-03  Jason Merrill  <jason@redhat.com>
 
+	* init.c (perform_member_init): Cope with uninstantiated NSDMI.
+
 	Core 1270
 	* call.c (build_aggr_conv): Call reshape_init.
 	(convert_like_real): Likewise.
