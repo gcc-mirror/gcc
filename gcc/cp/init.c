@@ -540,6 +540,12 @@ perform_member_init (tree member, tree init)
       else
 	{
 	  init = DECL_INITIAL (member);
+	  if (init && TREE_CODE (init) == DEFAULT_ARG)
+	    {
+	      error ("constructor required before non-static data member "
+		     "for %qD has been parsed", member);
+	      init = NULL_TREE;
+	    }
 	  /* Strip redundant TARGET_EXPR so we don't need to remap it, and
 	     so the aggregate init code below will see a CONSTRUCTOR.  */
 	  if (init && TREE_CODE (init) == TARGET_EXPR
