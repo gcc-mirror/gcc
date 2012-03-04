@@ -2376,14 +2376,14 @@ Instantiations of these templates may be mangled incorrectly.
 
 @end itemize
 
-It also warns psABI related changes.  The known psABI changes at this
+It also warns about psABI-related changes.  The known psABI changes at this
 point include:
 
 @itemize @bullet
 
 @item
-For SYSV/x86-64, when passing union with long double, it is changed to
-pass in memory as specified in psABI.  For example:
+For SysV/x86-64, unions with @code{long double} members are 
+passed in memory as specified in psABI.  For example:
 
 @smallexample
 union U @{
@@ -2393,7 +2393,7 @@ union U @{
 @end smallexample
 
 @noindent
-@code{union U} will always be passed in memory.
+@code{union U} is always passed in memory.
 
 @end itemize
 
@@ -5484,7 +5484,7 @@ architectures.
 
 @item -fdump-rtl-stack
 @opindex fdump-rtl-stack
-Dump after conversion from GCC's "flat register file" registers to the
+Dump after conversion from GCC's ``flat register file'' registers to the
 x87's stack-like registers.  This pass is only run on x86 variants.
 
 @item -fdump-rtl-subreg1
@@ -6333,7 +6333,7 @@ whether a target machine supports this flag.  @xref{Registers,,Register
 Usage, gccint, GNU Compiler Collection (GCC) Internals}.
 
 Starting with GCC version 4.6, the default setting (when not optimizing for
-size) for 32-bit Linux x86 and 32-bit Darwin x86 targets has been changed to
+size) for 32-bit GNU/Linux x86 and 32-bit Darwin x86 targets has been changed to
 @option{-fomit-frame-pointer}.  The default can be reverted to
 @option{-fno-omit-frame-pointer} by configuring GCC with the
 @option{--enable-frame-pointer} configure option.
@@ -6740,7 +6740,7 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 @item -free
 @opindex free
 Attempt to remove redundant extension instructions.  This is especially
-helpful for the x86-64 architecture which implicitly zero-extends in 64-bit
+helpful for the x86-64 architecture, which implicitly zero-extends in 64-bit
 registers after writing to their lower 32-bit half.
 
 Enabled for x86 at levels @option{-O2}, @option{-O3}.
@@ -12977,102 +12977,134 @@ These @samp{-m} options are defined for the i386 and x86-64 family of
 computers:
 
 @table @gcctabopt
-@item -mtune=@var{cpu-type}
-@opindex mtune
-Tune to @var{cpu-type} everything applicable about the generated code, except
-for the ABI and the set of available instructions.  The choices for
-@var{cpu-type} are:
-@table @emph
-@item generic
-Produce code optimized for the most common IA32/@/AMD64/@/EM64T processors.
-If you know the CPU on which your code will run, then you should use
-the corresponding @option{-mtune} option instead of
-@option{-mtune=generic}.  But, if you do not know exactly what CPU users
-of your application will have, then you should use this option.
 
-As new processors are deployed in the marketplace, the behavior of this
-option will change.  Therefore, if you upgrade to a newer version of
-GCC, the code generated option will change to reflect the processors
-that were most common when that version of GCC was released.
+@item -march=@var{cpu-type}
+@opindex march
+Generate instructions for the machine type @var{cpu-type}.  In contrast to
+@option{-mtune=@var{cpu-type}}, which merely tunes the generated code 
+for the specified @var{cpu-type}, @option{-march=@var{cpu-type}} allows GCC
+to generate code that may not run at all on processors other than the one
+indicated.  Specifying @option{-march=@var{cpu-type}} implies 
+@option{-mtune=@var{cpu-type}}.
 
-There is no @option{-march=generic} option because @option{-march}
-indicates the instruction set the compiler can use, and there is no
-generic instruction set applicable to all processors.  In contrast,
-@option{-mtune} indicates the processor (or, in this case, collection of
-processors) for which the code is optimized.
+The choices for @var{cpu-type} are:
+
+@table @samp
 @item native
-This selects the CPU to tune for at compilation time by determining
-the processor type of the compiling machine.  Using @option{-mtune=native}
-will produce code optimized for the local machine under the constraints
-of the selected instruction set.  Using @option{-march=native} will
-enable all instruction subsets supported by the local machine (hence
-the result might not run on different machines).
+This selects the CPU to generate code for at compilation time by determining
+the processor type of the compiling machine.  Using @option{-march=native}
+enables all instruction subsets supported by the local machine (hence
+the result might not run on different machines).  Using @option{-mtune=native}
+produces code optimized for the local machine under the constraints
+of the selected instruction set.  
+
 @item i386
-Original Intel's i386 CPU@.
+Original Intel i386 CPU@.
+
 @item i486
-Intel's i486 CPU@.  (No scheduling is implemented for this chip.)
-@item i586, pentium
+Intel i486 CPU@.  (No scheduling is implemented for this chip.)
+
+@item i586
+@itemx pentium
 Intel Pentium CPU with no MMX support.
+
 @item pentium-mmx
-Intel PentiumMMX CPU based on Pentium core with MMX instruction set support.
+Intel Pentium MMX CPU, based on Pentium core with MMX instruction set support.
+
 @item pentiumpro
-Intel PentiumPro CPU@.
+Intel Pentium Pro CPU@.
+
 @item i686
-Same as @code{generic}, but when used as @code{march} option, PentiumPro
-instruction set will be used, so the code will run on all i686 family chips.
+When used with @option{-march}, the Pentium Pro
+instruction set is used, so the code runs on all i686 family chips.
+When used with @option{-mtune}, it has the same meaning as @samp{generic}.
+
 @item pentium2
-Intel Pentium2 CPU based on PentiumPro core with MMX instruction set support.
-@item pentium3, pentium3m
-Intel Pentium3 CPU based on PentiumPro core with MMX and SSE instruction set
+Intel Pentium II CPU, based on Pentium Pro core with MMX instruction set
 support.
-@item pentium-m
-Low power version of Intel Pentium3 CPU with MMX, SSE and SSE2 instruction set
-support.  Used by Centrino notebooks.
-@item pentium4, pentium4m
-Intel Pentium4 CPU with MMX, SSE and SSE2 instruction set support.
-@item prescott
-Improved version of Intel Pentium4 CPU with MMX, SSE, SSE2 and SSE3 instruction
+
+@item pentium3
+@itemx pentium3m
+Intel Pentium III CPU, based on Pentium Pro core with MMX and SSE instruction
 set support.
+
+@item pentium-m
+Intel Pentium M; low-power version of Intel Pentium III CPU
+with MMX, SSE and SSE2 instruction set support.  Used by Centrino notebooks.
+
+@item pentium4
+@itemx pentium4m
+Intel Pentium 4 CPU with MMX, SSE and SSE2 instruction set support.
+
+@item prescott
+Improved version of Intel Pentium 4 CPU with MMX, SSE, SSE2 and SSE3 instruction
+set support.
+
 @item nocona
-Improved version of Intel Pentium4 CPU with 64-bit extensions, MMX, SSE,
+Improved version of Intel Pentium 4 CPU with 64-bit extensions, MMX, SSE,
 SSE2 and SSE3 instruction set support.
+
 @item core2
-Intel Core2 CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3 and SSSE3
+Intel Core 2 CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3 and SSSE3
 instruction set support.
+
 @item corei7
 Intel Core i7 CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1
 and SSE4.2 instruction set support.
+
 @item corei7-avx
 Intel Core i7 CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, AVX, AES and PCLMUL instruction set support.
+
 @item core-avx-i
 Intel Core CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, AVX, AES, PCLMUL, FSGSBASE, RDRND and F16C instruction
 set support.
+
 @item atom
 Intel Atom CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3 and SSSE3
 instruction set support.
+
 @item k6
 AMD K6 CPU with MMX instruction set support.
-@item k6-2, k6-3
+
+@item k6-2
+@itemx k6-3
 Improved versions of AMD K6 CPU with MMX and 3DNow!@: instruction set support.
-@item athlon, athlon-tbird
+
+@item athlon
+@itemx athlon-tbird
 AMD Athlon CPU with MMX, 3dNOW!, enhanced 3DNow!@: and SSE prefetch instructions
 support.
-@item athlon-4, athlon-xp, athlon-mp
+
+@item athlon-4
+@itemx athlon-xp
+@itemx athlon-mp
 Improved AMD Athlon CPU with MMX, 3DNow!, enhanced 3DNow!@: and full SSE
 instruction set support.
-@item k8, opteron, athlon64, athlon-fx
-AMD K8 core based CPUs with x86-64 instruction set support.  (This supersets
-MMX, SSE, SSE2, 3DNow!, enhanced 3DNow!@: and 64-bit instruction set extensions.)
-@item k8-sse3, opteron-sse3, athlon64-sse3
-Improved versions of k8, opteron and athlon64 with SSE3 instruction set support.
-@item amdfam10, barcelona
-AMD Family 10h core based CPUs with x86-64 instruction set support.  (This
+
+@item k8
+@itemx opteron
+@itemx athlon64
+@itemx athlon-fx
+Processors based on the AMD K8 core with x86-64 instruction set support,
+including the AMD Opteron, Athlon 64, and Athlon 64 FX processors.
+(This supersets MMX, SSE, SSE2, 3DNow!, enhanced 3DNow!@: and 64-bit
+instruction set extensions.)
+
+@item k8-sse3
+@itemx opteron-sse3
+@itemx athlon64-sse3
+Improved versions of AMD K8 cores with SSE3 instruction set support.
+
+@item amdfam10
+@itemx barcelona
+CPUs based on AMD Family 10h cores with x86-64 instruction set support.  (This
 supersets MMX, SSE, SSE2, SSE3, SSE4A, 3DNow!, enhanced 3DNow!, ABM and 64-bit
 instruction set extensions.)
+
 @item bdver1
-AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
+CPUs based on AMD Family 15h cores with x86-64 instruction set support.  (This
 supersets FMA4, AVX, XOP, LWP, AES, PCL_MUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A,
 SSSE3, SSE4.1, SSE4.2, ABM and 64-bit instruction set extensions.)
 @item bdver2
@@ -13080,38 +13112,68 @@ AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
 supersets BMI, TBM, F16C, FMA, AVX, XOP, LWP, AES, PCL_MUL, CX16, MMX, SSE,
 SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM and 64-bit instruction set 
 extensions.)
+
 @item btver1
-AMD Family 14h core based CPUs with x86-64 instruction set support.  (This
+CPUs based on AMD Family 14h cores with x86-64 instruction set support.  (This
 supersets MMX, SSE, SSE2, SSE3, SSSE3, SSE4A, CX16, ABM and 64-bit
 instruction set extensions.)
+
 @item winchip-c6
-IDT Winchip C6 CPU, dealt in same way as i486 with additional MMX instruction
+IDT WinChip C6 CPU, dealt in same way as i486 with additional MMX instruction
 set support.
+
 @item winchip2
-IDT Winchip2 CPU, dealt in same way as i486 with additional MMX and 3DNow!@:
+IDT WinChip 2 CPU, dealt in same way as i486 with additional MMX and 3DNow!@:
 instruction set support.
+
 @item c3
-Via C3 CPU with MMX and 3DNow!@: instruction set support.  (No scheduling is
+VIA C3 CPU with MMX and 3DNow!@: instruction set support.  (No scheduling is
 implemented for this chip.)
+
 @item c3-2
-Via C3-2 CPU with MMX and SSE instruction set support.  (No scheduling is
+VIA C3-2 (Nehemiah/C5XL) CPU with MMX and SSE instruction set support.
+(No scheduling is
 implemented for this chip.)
+
 @item geode
-Embedded AMD CPU with MMX and 3DNow!@: instruction set support.
+AMD Geode embedded processor with MMX and 3DNow!@: instruction set support.
 @end table
 
-While picking a specific @var{cpu-type} will schedule things appropriately
-for that particular chip, the compiler will not generate any code that
-does not run on the default machine type without the @option{-march=@var{cpu-type}}
-option being used. For example, if GCC is configured for i686-pc-linux-gnu
-then @option{-mtune=pentium4} will generate code that is tuned for Pentium4
-but will still run on i686 machines.
+@item -mtune=@var{cpu-type}
+@opindex mtune
+Tune to @var{cpu-type} everything applicable about the generated code, except
+for the ABI and the set of available instructions.  
+While picking a specific @var{cpu-type} schedules things appropriately
+for that particular chip, the compiler does not generate any code that
+cannot run on the default machine type unless you use a
+@option{-march=@var{cpu-type}} option.
+For example, if GCC is configured for i686-pc-linux-gnu
+then @option{-mtune=pentium4} generates code that is tuned for Pentium 4
+but still runs on i686 machines.
 
-@item -march=@var{cpu-type}
-@opindex march
-Generate instructions for the machine type @var{cpu-type}.  The choices
-for @var{cpu-type} are the same as for @option{-mtune}.  Moreover,
-specifying @option{-march=@var{cpu-type}} implies @option{-mtune=@var{cpu-type}}.
+The choices for @var{cpu-type} are the same as for @option{-march}.
+In addition, @option{-mtune} supports an extra choice for @var{cpu-type}:
+
+@table @samp
+@item generic
+Produce code optimized for the most common IA32/@/AMD64/@/EM64T processors.
+If you know the CPU on which your code will run, then you should use
+the corresponding @option{-mtune} or @option{-march} option instead of
+@option{-mtune=generic}.  But, if you do not know exactly what CPU users
+of your application will have, then you should use this option.
+
+As new processors are deployed in the marketplace, the behavior of this
+option will change.  Therefore, if you upgrade to a newer version of
+GCC, code generation controlled by this option will change to reflect
+the processors
+that are most common at the time that version of GCC is released.
+
+There is no @option{-march=generic} option because @option{-march}
+indicates the instruction set the compiler can use, and there is no
+generic instruction set applicable to all processors.  In contrast,
+@option{-mtune} indicates the processor (or, in this case, collection of
+processors) for which the code is optimized.
+@end table
 
 @item -mcpu=@var{cpu-type}
 @opindex mcpu
@@ -13134,14 +13196,15 @@ This is the default choice for i386 compiler.
 
 @item sse
 Use scalar floating-point instructions present in the SSE instruction set.
-This instruction set is supported by Pentium3 and newer chips, in the AMD line
-by Athlon-4, Athlon-xp and Athlon-mp chips.  The earlier version of SSE
+This instruction set is supported by Pentium III and newer chips,
+and in the AMD line
+by Athlon-4, Athlon XP and Athlon MP chips.  The earlier version of the SSE
 instruction set supports only single-precision arithmetic, thus the double and
 extended-precision arithmetic are still done using 387.  A later version, present
-only in Pentium4 and the future AMD x86-64 chips, supports double-precision
+only in Pentium 4 and AMD x86-64 chips, supports double-precision
 arithmetic too.
 
-For the i386 compiler, you need to use @option{-march=@var{cpu-type}}, @option{-msse}
+For the i386 compiler, you must use @option{-march=@var{cpu-type}}, @option{-msse}
 or @option{-msse2} switches to enable SSE extensions and make this option
 effective.  For the x86-64 compiler, these extensions are enabled by default.
 
@@ -13154,17 +13217,17 @@ This is the default choice for the x86-64 compiler.
 @item sse,387
 @itemx sse+387
 @itemx both
-Attempt to utilize both instruction sets at once.  This effectively double the
-amount of available registers and on chips with separate execution units for
+Attempt to utilize both instruction sets at once.  This effectively doubles the
+amount of available registers, and on chips with separate execution units for
 387 and SSE the execution resources too.  Use this option with care, as it is
 still experimental, because the GCC register allocator does not model separate
-functional units well resulting in instable performance.
+functional units well, resulting in unstable performance.
 @end table
 
 @item -masm=@var{dialect}
 @opindex masm=@var{dialect}
-Output asm instructions using selected @var{dialect}.  Supported
-choices are @samp{intel} or @samp{att} (the default one).  Darwin does
+Output assembly instructions using selected @var{dialect}.  Supported
+choices are @samp{intel} or @samp{att} (the default).  Darwin does
 not support @samp{intel}.
 
 @item -mieee-fp
@@ -13172,12 +13235,13 @@ not support @samp{intel}.
 @opindex mieee-fp
 @opindex mno-ieee-fp
 Control whether or not the compiler uses IEEE floating-point
-comparisons.  These handle correctly the case where the result of a
+comparisons.  These correctly handle the case where the result of a
 comparison is unordered.
 
 @item -msoft-float
 @opindex msoft-float
 Generate output containing library calls for floating point.
+
 @strong{Warning:} the requisite libraries are not part of GCC@.
 Normally the facilities of the machine's usual C compiler are used, but
 this can't be done directly in cross-compilation.  You must make your
@@ -13206,8 +13270,8 @@ Some 387 emulators do not support the @code{sin}, @code{cos} and
 @code{sqrt} instructions for the 387.  Specify this option to avoid
 generating those instructions.  This option is the default on FreeBSD,
 OpenBSD and NetBSD@.  This option is overridden when @option{-march}
-indicates that the target CPU will always have an FPU and so the
-instruction will not need emulation.  As of revision 2.6.1, these
+indicates that the target CPU always has an FPU and so the
+instruction does not need emulation.  These
 instructions are not generated unless you also use the
 @option{-funsafe-math-optimizations} switch.
 
@@ -13218,15 +13282,15 @@ instructions are not generated unless you also use the
 Control whether GCC aligns @code{double}, @code{long double}, and
 @code{long long} variables on a two-word boundary or a one-word
 boundary.  Aligning @code{double} variables on a two-word boundary
-produces code that runs somewhat faster on a @samp{Pentium} at the
+produces code that runs somewhat faster on a Pentium at the
 expense of more memory.
 
 On x86-64, @option{-malign-double} is enabled by default.
 
 @strong{Warning:} if you use the @option{-malign-double} switch,
-structures containing the above types will be aligned differently than
+structures containing the above types are aligned differently than
 the published application binary interface specifications for the 386
-and will not be binary compatible with structures in code compiled
+and are not binary compatible with structures in code compiled
 without that switch.
 
 @item -m96bit-long-double
@@ -13245,27 +13309,28 @@ to a 16-byte boundary by padding the @code{long double} with an additional
 32-bit zero.
 
 In the x86-64 compiler, @option{-m128bit-long-double} is the default choice as
-its ABI specifies that @code{long double} is to be aligned on 16-byte boundary.
+its ABI specifies that @code{long double} is aligned on 16-byte boundary.
 
 Notice that neither of these options enable any extra precision over the x87
 standard of 80 bits for a @code{long double}.
 
-@strong{Warning:} if you override the default value for your target ABI, the
-structures and arrays containing @code{long double} variables will change
-their size as well as function calling convention for function taking
-@code{long double} will be modified.  Hence they will not be binary
-compatible with arrays or structures in code compiled without that switch.
+@strong{Warning:} if you override the default value for your target ABI, this
+changes the size of 
+structures and arrays containing @code{long double} variables,
+as well as modifying the function calling convention for functions taking
+@code{long double}.  Hence they are not binary-compatible
+with code compiled without that switch.
 
-@item -mlarge-data-threshold=@var{number}
-@opindex mlarge-data-threshold=@var{number}
-When @option{-mcmodel=medium} is specified, the data greater than
-@var{threshold} are placed in large data section.  This value must be the
-same across all object linked into the binary and defaults to 65535.
+@item -mlarge-data-threshold=@var{threshold}
+@opindex mlarge-data-threshold
+When @option{-mcmodel=medium} is specified, data objects larger than
+@var{threshold} are placed in the large data section.  This value must be the
+same across all objects linked into the binary, and defaults to 65535.
 
 @item -mrtd
 @opindex mrtd
 Use a different function-calling convention, in which functions that
-take a fixed number of arguments return with the @code{ret} @var{num}
+take a fixed number of arguments return with the @code{ret @var{num}}
 instruction, which pops their arguments while returning.  This saves one
 instruction in the caller since there is no need to pop the arguments
 there.
@@ -13281,10 +13346,10 @@ libraries compiled with the Unix compiler.
 
 Also, you must provide function prototypes for all functions that
 take variable numbers of arguments (including @code{printf});
-otherwise incorrect code will be generated for calls to those
+otherwise incorrect code is generated for calls to those
 functions.
 
-In addition, seriously incorrect code will result if you call a
+In addition, seriously incorrect code results if you call a
 function with too many arguments.  (Normally, extra arguments are
 harmlessly ignored.)
 
@@ -13320,7 +13385,7 @@ Studio compilers until version 12.  Later compiler versions (starting
 with Studio 12 Update@tie{}1) follow the ABI used by other x86 targets, which
 is the default on Solaris@tie{}10 and later.  @emph{Only} use this option if
 you need to remain compatible with existing code produced by those
-previous compiler versions or older versions of GCC.
+previous compiler versions or older versions of GCC@.
 
 @item -mpc32
 @itemx -mpc64
@@ -13343,15 +13408,15 @@ Setting the rounding of floating-point operations to less than the default
 80 bits can speed some programs by 2% or more.  Note that some mathematical
 libraries assume that extended-precision (80-bit) floating-point operations
 are enabled by default; routines in such libraries could suffer significant
-loss of accuracy, typically through so-called "catastrophic cancellation",
+loss of accuracy, typically through so-called ``catastrophic cancellation'',
 when this option is used to set the precision to less than extended precision.
 
 @item -mstackrealign
 @opindex mstackrealign
 Realign the stack at entry.  On the Intel x86, the @option{-mstackrealign}
-option will generate an alternate prologue and epilogue that realigns the
+option generates an alternate prologue and epilogue that realigns the
 run-time stack if necessary.  This supports mixing legacy codes that keep
-a 4-byte aligned stack with modern codes that keep a 16-byte stack for
+4-byte stack alignment with modern codes that keep 16-byte stack alignment for
 SSE compatibility.  See also the attribute @code{force_align_arg_pointer},
 applicable to individual functions.
 
@@ -13365,9 +13430,9 @@ the default is 4 (16 bytes or 128 bits).
 @opindex mincoming-stack-boundary
 Assume the incoming stack is aligned to a 2 raised to @var{num} byte
 boundary.  If @option{-mincoming-stack-boundary} is not specified,
-the one specified by @option{-mpreferred-stack-boundary} will be used.
+the one specified by @option{-mpreferred-stack-boundary} is used.
 
-On Pentium and PentiumPro, @code{double} and @code{long double} values
+On Pentium and Pentium Pro, @code{double} and @code{long double} values
 should be aligned to an 8-byte boundary (see @option{-malign-double}) or
 suffer significant run time performance penalties.  On Pentium III, the
 Streaming SIMD Extension (SSE) data type @code{__m128} may not work
@@ -13378,7 +13443,7 @@ must be as aligned as that required by any value stored on the stack.
 Further, every function must be generated such that it keeps the stack
 aligned.  Thus calling a function compiled with a higher preferred
 stack boundary from a function compiled with a lower preferred stack
-boundary will most likely misalign the stack.  It is recommended that
+boundary most likely misaligns the stack.  It is recommended that
 libraries that use callbacks always use the default setting.
 
 This extra alignment does consume extra stack space, and generally
@@ -13451,20 +13516,20 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @opindex mno-3dnow
 These switches enable or disable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, F16C,
-FMA, SSE4A, FMA4, XOP, LWP, ABM, BMI, BMI2, LZCNT or 3DNow!
-@: extended instruction sets.
+FMA, SSE4A, FMA4, XOP, LWP, ABM, BMI, BMI2, LZCNT or 3DNow!@: 
+extended instruction sets.
 These extensions are also available as built-in functions: see
 @ref{X86 Built-in Functions}, for details of the functions enabled and
 disabled by these switches.
 
-To have SSE/SSE2 instructions generated automatically from floating-point
+To generate SSE/SSE2 instructions automatically from floating-point
 code (as opposed to 387 instructions), see @option{-mfpmath=sse}.
 
 GCC depresses SSEx instructions when @option{-mavx} is used. Instead, it
 generates new AVX instructions or AVX equivalence for all SSEx instructions
 when needed.
 
-These options will enable GCC to use these extended instructions in
+These options enable GCC to use these extended instructions in
 generated code, even without @option{-mfpmath=sse}.  Applications that
 perform run-time CPU detection must compile separate files for each
 supported architecture, using the appropriate flags.  In particular,
@@ -13489,43 +13554,49 @@ in this case.
 @opindex mvzeroupper
 This option instructs GCC to emit a @code{vzeroupper} instruction
 before a transfer of control flow out of the function to minimize
-AVX to SSE transition penalty as well as remove unnecessary zeroupper
+the AVX to SSE transition penalty as well as remove unnecessary @code{zeroupper}
 intrinsics.
 
 @item -mcx16
 @opindex mcx16
-This option will enable GCC to use CMPXCHG16B instruction in generated code.
-CMPXCHG16B allows for atomic operations on 128-bit double quadword (or oword)
-data types.  This is useful for high resolution counters that could be updated
+This option enables GCC to generate @code{CMPXCHG16B} instructions.
+@code{CMPXCHG16B} allows for atomic operations on 128-bit double quadword
+(or oword) data types.  
+This is useful for high-resolution counters that can be updated
 by multiple processors (or cores).  This instruction is generated as part of
 atomic built-in functions: see @ref{__sync Builtins} or
 @ref{__atomic Builtins} for details.
 
 @item -msahf
 @opindex msahf
-This option will enable GCC to use SAHF instruction in generated 64-bit code.
-Early Intel CPUs with Intel 64 lacked LAHF and SAHF instructions supported
-by AMD64 until introduction of Pentium 4 G1 step in December 2005.  LAHF and
-SAHF are load and store instructions, respectively, for certain status flags.
-In 64-bit mode, SAHF instruction is used to optimize @code{fmod}, @code{drem}
-or @code{remainder} built-in functions: see @ref{Other Builtins} for details.
+This option enables generation of @code{SAHF} instructions in 64-bit code.
+Early Intel Pentium 4 CPUs with Intel 64 support,
+prior to the introduction of Pentium 4 G1 step in December 2005,
+lacked the @code{LAHF} and @code{SAHF} instructions
+which were supported by AMD64.
+These are load and store instructions, respectively, for certain status flags.
+In 64-bit mode, the @code{SAHF} instruction is used to optimize @code{fmod},
+@code{drem}, and @code{remainder} built-in functions;
+see @ref{Other Builtins} for details.
 
 @item -mmovbe
 @opindex mmovbe
-This option will enable GCC to use movbe instruction to implement
+This option enables use of the @code{movbe} instruction to implement
 @code{__builtin_bswap32} and @code{__builtin_bswap64}.
 
 @item -mcrc32
 @opindex mcrc32
-This option will enable built-in functions, @code{__builtin_ia32_crc32qi},
-@code{__builtin_ia32_crc32hi}. @code{__builtin_ia32_crc32si} and
-@code{__builtin_ia32_crc32di} to generate the crc32 machine instruction.
+This option enables built-in functions @code{__builtin_ia32_crc32qi},
+@code{__builtin_ia32_crc32hi}, @code{__builtin_ia32_crc32si} and
+@code{__builtin_ia32_crc32di} to generate the @code{crc32} machine instruction.
 
 @item -mrecip
 @opindex mrecip
-This option will enable GCC to use RCPSS and RSQRTSS instructions (and their
-vectorized variants RCPPS and RSQRTPS) with an additional Newton-Raphson step
-to increase precision instead of DIVSS and SQRTSS (and their vectorized
+This option enables use of @code{RCPSS} and @code{RSQRTSS} instructions
+(and their vectorized variants @code{RCPPS} and @code{RSQRTPS})
+with an additional Newton-Raphson step
+to increase precision instead of @code{DIVSS} and @code{SQRTSS}
+(and their vectorized
 variants) for single-precision floating-point arguments.  These instructions
 are generated only when @option{-funsafe-math-optimizations} is enabled
 together with @option{-finite-math-only} and @option{-fno-trapping-math}.
@@ -13533,8 +13604,8 @@ Note that while the throughput of the sequence is higher than the throughput
 of the non-reciprocal instruction, the precision of the sequence can be
 decreased by up to 2 ulp (i.e. the inverse of 1.0 equals 0.99999994).
 
-Note that GCC implements @code{1.0f/sqrtf(@var{x})} in terms of RSQRTSS
-(or RSQRTPS) already with @option{-ffast-math} (or the above option
+Note that GCC implements @code{1.0f/sqrtf(@var{x})} in terms of @code{RSQRTSS}
+(or @code{RSQRTPS}) already with @option{-ffast-math} (or the above option
 combination), and doesn't need @option{-mrecip}.
 
 Also note that GCC emits the above sequence with additional Newton-Raphson step
@@ -13544,26 +13615,47 @@ doesn't need @option{-mrecip}.
 
 @item -mrecip=@var{opt}
 @opindex mrecip=opt
-This option allows to control which reciprocal estimate instructions
-may be used.  @var{opt} is a comma separated list of options, which may
-be preceded by a @code{!} to invert the option:
-@code{all}: enable all estimate instructions,
-@code{default}: enable the default instructions, equivalent to @option{-mrecip},
-@code{none}: disable all estimate instructions, equivalent to @option{-mno-recip},
-@code{div}: enable the approximation for scalar division,
-@code{vec-div}: enable the approximation for vectorized division,
-@code{sqrt}: enable the approximation for scalar square root,
-@code{vec-sqrt}: enable the approximation for vectorized square root.
+This option controls which reciprocal estimate instructions
+may be used.  @var{opt} is a comma-separated list of options, which may
+be preceded by a @samp{!} to invert the option:
 
-So for example, @option{-mrecip=all,!sqrt} would enable
+@table @samp
+@item all
+Enable all estimate instructions.
+
+@item default
+Enable the default instructions, equivalent to @option{-mrecip}.
+
+@item none
+Disable all estimate instructions, equivalent to @option{-mno-recip}.
+
+@item div
+Enable the approximation for scalar division.
+
+@item vec-div
+Enable the approximation for vectorized division.
+
+@item sqrt
+Enable the approximation for scalar square root.
+
+@item vec-sqrt
+Enable the approximation for vectorized square root.
+@end table
+
+So, for example, @option{-mrecip=all,!sqrt} enables
 all of the reciprocal approximations, except for square root.
 
 @item -mveclibabi=@var{type}
 @opindex mveclibabi
 Specifies the ABI type to use for vectorizing intrinsics using an
-external library.  Supported types are @code{svml} for the Intel short
-vector math library and @code{acml} for the AMD math core library style
-of interfacing.  GCC will currently emit calls to @code{vmldExp2},
+external library.  Supported values for @var{type} are @samp{svml} 
+for the Intel short
+vector math library and @samp{acml} for the AMD math core library.
+To use this option, both @option{-ftree-vectorize} and
+@option{-funsafe-math-optimizations} have to be enabled, and an SVML or ACML 
+ABI-compatible library must be specified at link time.
+
+GCC currently emits calls to @code{vmldExp2},
 @code{vmldLn2}, @code{vmldLog102}, @code{vmldLog102}, @code{vmldPow2},
 @code{vmldTanh2}, @code{vmldTan2}, @code{vmldAtan2}, @code{vmldAtanh2},
 @code{vmldCbrt2}, @code{vmldSinh2}, @code{vmldSin2}, @code{vmldAsinh2},
@@ -13573,22 +13665,20 @@ of interfacing.  GCC will currently emit calls to @code{vmldExp2},
 @code{vmlsAtan4}, @code{vmlsAtanh4}, @code{vmlsCbrt4}, @code{vmlsSinh4},
 @code{vmlsSin4}, @code{vmlsAsinh4}, @code{vmlsAsin4}, @code{vmlsCosh4},
 @code{vmlsCos4}, @code{vmlsAcosh4} and @code{vmlsAcos4} for corresponding
-function type when @option{-mveclibabi=svml} is used and @code{__vrd2_sin},
+function type when @option{-mveclibabi=svml} is used, and @code{__vrd2_sin},
 @code{__vrd2_cos}, @code{__vrd2_exp}, @code{__vrd2_log}, @code{__vrd2_log2},
 @code{__vrd2_log10}, @code{__vrs4_sinf}, @code{__vrs4_cosf},
 @code{__vrs4_expf}, @code{__vrs4_logf}, @code{__vrs4_log2f},
-@code{__vrs4_log10f} and @code{__vrs4_powf} for corresponding function type
-when @option{-mveclibabi=acml} is used. Both @option{-ftree-vectorize} and
-@option{-funsafe-math-optimizations} have to be enabled. A SVML or ACML ABI
-compatible library will have to be specified at link time.
+@code{__vrs4_log10f} and @code{__vrs4_powf} for the corresponding function type
+when @option{-mveclibabi=acml} is used.  
 
 @item -mabi=@var{name}
 @opindex mabi
 Generate code for the specified calling convention.  Permissible values
-are: @samp{sysv} for the ABI used on GNU/Linux and other systems and
+are @samp{sysv} for the ABI used on GNU/Linux and other systems, and
 @samp{ms} for the Microsoft ABI.  The default is to use the Microsoft
-ABI when targeting Windows.  On all other systems, the default is the
-SYSV ABI.  You can control this behavior for a specific function by
+ABI when targeting Microsoft Windows and the SysV ABI on all other systems.
+You can control this behavior for a specific function by
 using the function attribute @samp{ms_abi}/@samp{sysv_abi}.
 @xref{Function Attributes}.
 
@@ -13610,23 +13700,23 @@ improved scheduling and reduced dependencies.
 
 @item -maccumulate-outgoing-args
 @opindex maccumulate-outgoing-args
-If enabled, the maximum amount of space required for outgoing arguments will be
+If enabled, the maximum amount of space required for outgoing arguments is
 computed in the function prologue.  This is faster on most modern CPUs
 because of reduced dependencies, improved scheduling and reduced stack usage
-when preferred stack boundary is not equal to 2.  The drawback is a notable
+when the preferred stack boundary is not equal to 2.  The drawback is a notable
 increase in code size.  This switch implies @option{-mno-push-args}.
 
 @item -mthreads
 @opindex mthreads
-Support thread-safe exception handling on @samp{Mingw32}.  Code that relies
+Support thread-safe exception handling on MinGW.  Programs that rely
 on thread-safe exception handling must compile and link all code with the
 @option{-mthreads} option.  When compiling, @option{-mthreads} defines
-@option{-D_MT}; when linking, it links in a special thread helper library
-@option{-lmingwthrd} which cleans up per thread exception handling data.
+@code{-D_MT}; when linking, it links in a special thread helper library
+@option{-lmingwthrd} which cleans up per-thread exception-handling data.
 
 @item -mno-align-stringops
 @opindex mno-align-stringops
-Do not align destination of inlined string operations.  This switch reduces
+Do not align the destination of inlined string operations.  This switch reduces
 code size and improves performance in case the destination is already aligned,
 but GCC doesn't know about it.
 
@@ -13634,9 +13724,10 @@ but GCC doesn't know about it.
 @opindex minline-all-stringops
 By default GCC inlines string operations only when the destination is 
 known to be aligned to least a 4-byte boundary.  
-This enables more inlining, increase code
-size, but may improve performance of code that depends on fast memcpy, strlen
-and memset for short lengths.
+This enables more inlining and increases code
+size, but may improve performance of code that depends on fast
+@code{memcpy}, @code{strlen},
+and @code{memset} for short lengths.
 
 @item -minline-stringops-dynamically
 @opindex minline-stringops-dynamically
@@ -13645,18 +13736,30 @@ inline code for small blocks and a library call for large blocks.
 
 @item -mstringop-strategy=@var{alg}
 @opindex mstringop-strategy=@var{alg}
-Overwrite internal decision heuristic about particular algorithm to inline
-string operation with.  The allowed values are @code{rep_byte},
-@code{rep_4byte}, @code{rep_8byte} for expanding using i386 @code{rep} prefix
-of specified size, @code{byte_loop}, @code{loop}, @code{unrolled_loop} for
-expanding inline loop, @code{libcall} for always expanding library call.
+Override the internal decision heuristic for the particular algorithm to use
+for inlining string operations.  The allowed values for @var{alg} are:
+
+@table @samp
+@item rep_byte
+@itemx rep_4byte
+@itemx rep_8byte
+Expand using i386 @code{rep} prefix of the specified size.
+
+@item byte_loop
+@itemx loop
+@itemx unrolled_loop
+Expand into an inline loop.
+
+@item libcall
+Always use a library call.
+@end table
 
 @item -momit-leaf-frame-pointer
 @opindex momit-leaf-frame-pointer
 Don't keep the frame pointer in a register for leaf functions.  This
-avoids the instructions to save, set up and restore frame pointers and
+avoids the instructions to save, set up, and restore frame pointers and
 makes an extra register available in leaf functions.  The option
-@option{-fomit-frame-pointer} removes the frame pointer for all functions,
+@option{-fomit-leaf-frame-pointer} removes the frame pointer for leaf functions,
 which might make debugging harder.
 
 @item -mtls-direct-seg-refs
@@ -13665,10 +13768,10 @@ which might make debugging harder.
 Controls whether TLS variables may be accessed with offsets from the
 TLS segment register (@code{%gs} for 32-bit, @code{%fs} for 64-bit),
 or whether the thread base pointer must be added.  Whether or not this
-is legal depends on the operating system, and whether it maps the
+is valid depends on the operating system, and whether it maps the
 segment to cover the entire TLS area.
 
-For systems that use GNU libc, the default is on.
+For systems that use the GNU C Library, the default is on.
 
 @item -msse2avx
 @itemx -mno-sse2avx
@@ -13679,8 +13782,8 @@ prefix.  The option @option{-mavx} turns this on by default.
 @item -mfentry
 @itemx -mno-fentry
 @opindex mfentry
-If profiling is active @option{-pg} put the profiling
-counter call before prologue.
+If profiling is active (@option{-pg}), put the profiling
+counter call before the prologue.
 Note: On x86 architectures the attribute @code{ms_hook_prologue}
 isn't possible at the moment for @option{-mfentry} and @option{-pg}.
 
@@ -13694,7 +13797,7 @@ to 255, 8-bit unsigned integer divide is used instead of
 32-bit/64-bit integer divide.
 
 @item -mavx256-split-unaligned-load
-@item -mavx256-split-unaligned-store
+@itemx -mavx256-split-unaligned-store
 @opindex avx256-split-unaligned-load
 @opindex avx256-split-unaligned-store
 Split 32-byte AVX unaligned load and store.
@@ -13702,7 +13805,7 @@ Split 32-byte AVX unaligned load and store.
 @end table
 
 These @samp{-m} switches are supported in addition to the above
-on AMD x86-64 processors in 64-bit environments.
+on x86-64 processors in 64-bit environments.
 
 @table @gcctabopt
 @item -m32
@@ -13712,20 +13815,24 @@ on AMD x86-64 processors in 64-bit environments.
 @opindex m64
 @opindex mx32
 Generate code for a 32-bit or 64-bit environment.
-The @option{-m32} option sets int, long and pointer to 32 bits and
+The @option{-m32} option sets @code{int}, @code{long}, and pointer types
+to 32 bits, and
 generates code that runs on any i386 system.
-The @option{-m64} option sets int to 32 bits and long and pointer
-to 64 bits and generates code for AMD's x86-64 architecture.
-The @option{-mx32} option sets int, long and pointer to 32 bits and
-generates code for AMD's x86-64 architecture.
-For darwin only the @option{-m64} option turns off the @option{-fno-pic}
+
+The @option{-m64} option sets @code{int} to 32 bits and @code{long} and pointer
+types to 64 bits, and generates code for the x86-64 architecture.
+For Darwin only the @option{-m64} option also turns off the @option{-fno-pic}
 and @option{-mdynamic-no-pic} options.
+
+The @option{-mx32} option sets @code{int}, @code{long}, and pointer types
+to 32 bits, and
+generates code for the x86-64 architecture.
 
 @item -mno-red-zone
 @opindex mno-red-zone
-Do not use a so called red zone for x86-64 code.  The red zone is mandated
-by the x86-64 ABI, it is a 128-byte area beyond the location of the
-stack pointer that will not be modified by signal or interrupt handlers
+Do not use a so-called ``red zone'' for x86-64 code.  The red zone is mandated
+by the x86-64 ABI; it is a 128-byte area beyond the location of the
+stack pointer that is not modified by signal or interrupt handlers
 and therefore can be used for temporary data without adjusting the stack
 pointer.  The flag @option{-mno-red-zone} disables this red zone.
 
@@ -13744,15 +13851,15 @@ This model has to be used for Linux kernel code.
 
 @item -mcmodel=medium
 @opindex mcmodel=medium
-Generate code for the medium model: The program is linked in the lower 2
+Generate code for the medium model: the program is linked in the lower 2
 GB of the address space.  Small symbols are also placed there.  Symbols
 with sizes larger than @option{-mlarge-data-threshold} are put into
-large data or bss sections and can be located above 2GB.  Programs can
+large data or BSS sections and can be located above 2GB.  Programs can
 be statically or dynamically linked.
 
 @item -mcmodel=large
 @opindex mcmodel=large
-Generate code for the large model: This model makes no assumptions
+Generate code for the large model.  This model makes no assumptions
 about addresses and sizes of sections.
 @end table
 
@@ -13760,28 +13867,29 @@ about addresses and sizes of sections.
 @subsection i386 and x86-64 Windows Options
 @cindex i386 and x86-64 Windows Options
 
-These additional options are available for Windows targets:
+These additional options are available for Microsoft Windows targets:
 
 @table @gcctabopt
 @item -mconsole
 @opindex mconsole
-This option is available for Cygwin and MinGW targets.  It
+This option
 specifies that a console application is to be generated, by
 instructing the linker to set the PE header subsystem type
 required for console applications.
-This is the default behavior for Cygwin and MinGW targets.
+This option is available for Cygwin and MinGW targets and is
+enabled by default on those targets.
 
 @item -mdll
 @opindex mdll
 This option is available for Cygwin and MinGW targets.  It
-specifies that a DLL - a dynamic link library - is to be
+specifies that a DLL---a dynamic link library---is to be
 generated, enabling the selection of the required runtime
 startup object and entry point.
 
 @item -mnop-fun-dllimport
 @opindex mnop-fun-dllimport
 This option is available for Cygwin and MinGW targets.  It
-specifies that the dllimport attribute should be ignored.
+specifies that the @code{dllimport} attribute should be ignored.
 
 @item -mthread
 @opindex mthread
@@ -13790,14 +13898,14 @@ that MinGW-specific thread support is to be used.
 
 @item -municode
 @opindex municode
-This option is available for mingw-w64 targets.  It specifies
-that the UNICODE macro is getting pre-defined and that the
-unicode capable runtime startup code is chosen.
+This option is available for MinGW-w64 targets.  It causes
+the @code{UNICODE} preprocessor macro to be predefined, and
+chooses Unicode-capable runtime startup code.
 
 @item -mwin32
 @opindex mwin32
 This option is available for Cygwin and MinGW targets.  It
-specifies that the typical Windows pre-defined macros are to
+specifies that the typical Microsoft Windows predefined macros are to
 be set in the pre-processor, but does not influence the choice
 of runtime library/startup code.
 
@@ -13811,9 +13919,9 @@ appropriately.
 @item -fno-set-stack-executable
 @opindex fno-set-stack-executable
 This option is available for MinGW targets. It specifies that
-the executable flag for stack used by nested functions isn't
+the executable flag for the stack used by nested functions isn't
 set. This is necessary for binaries running in kernel mode of
-Windows, as there the user32 API, which is used to set executable
+Microsoft Windows, as there the User32 API, which is used to set executable
 privileges, isn't available.
 
 @item -mpe-aligned-commons
@@ -13821,7 +13929,7 @@ privileges, isn't available.
 This option is available for Cygwin and MinGW targets.  It
 specifies that the GNU extension to the PE file format that
 permits the correct alignment of COMMON variables should be
-used when generating code.  It will be enabled by default if
+used when generating code.  It is enabled by default if
 GCC detects that the target assembler found during configuration
 supports the feature.
 @end table
@@ -13936,7 +14044,7 @@ using the maximum throughput algorithm.
 
 @item -mno-inline-sqrt
 @opindex mno-inline-sqrt
-Do not generate inline code for sqrt.
+Do not generate inline code for @code{sqrt}.
 
 @item -mfused-madd
 @itemx -mno-fused-madd
@@ -13949,7 +14057,7 @@ instructions.  The default is to use these instructions.
 @itemx -mdwarf2-asm
 @opindex mno-dwarf2-asm
 @opindex mdwarf2-asm
-Don't (or do) generate assembler code for the DWARF2 line number debugging
+Don't (or do) generate assembler code for the DWARF 2 line number debugging
 info.  This may be useful when not using the GNU assembler.
 
 @item -mearly-stop-bits
@@ -13963,7 +14071,7 @@ scheduling, but does not always do so.
 @item -mfixed-range=@var{register-range}
 @opindex mfixed-range
 Generate code treating the given register range as fixed registers.
-A fixed register is one that the register allocator can not use.  This is
+A fixed register is one that the register allocator cannot use.  This is
 useful when compiling kernel code.  A register range is specified as
 two registers separated by a dash.  Multiple register ranges can be
 specified separated by a comma.
@@ -13976,7 +14084,8 @@ Specify bit size of immediate TLS offsets.  Valid values are 14, 22, and
 @item -mtune=@var{cpu-type}
 @opindex mtune
 Tune the instruction scheduling for a particular CPU, Valid values are
-itanium, itanium1, merced, itanium2, and mckinley.
+@samp{itanium}, @samp{itanium1}, @samp{merced}, @samp{itanium2},
+and @samp{mckinley}.
 
 @item -milp32
 @itemx -mlp64
@@ -13992,8 +14101,8 @@ to 64 bits.  These are HP-UX specific flags.
 @opindex mno-sched-br-data-spec
 @opindex msched-br-data-spec
 (Dis/En)able data speculative scheduling before reload.
-This will result in generation of the ld.a instructions and
-the corresponding check instructions (ld.c / chk.a).
+This results in generation of @code{ld.a} instructions and
+the corresponding check instructions (@code{ld.c} / @code{chk.a}).
 The default is 'disable'.
 
 @item -msched-ar-data-spec
@@ -14001,8 +14110,8 @@ The default is 'disable'.
 @opindex msched-ar-data-spec
 @opindex mno-sched-ar-data-spec
 (En/Dis)able data speculative scheduling after reload.
-This will result in generation of the ld.a instructions and
-the corresponding check instructions (ld.c / chk.a).
+This results in generation of @code{ld.a} instructions and
+the corresponding check instructions (@code{ld.c} / @code{chk.a}).
 The default is 'enable'.
 
 @item -mno-sched-control-spec
@@ -14011,8 +14120,8 @@ The default is 'enable'.
 @opindex msched-control-spec
 (Dis/En)able control speculative scheduling.  This feature is
 available only during region scheduling (i.e.@: before reload).
-This will result in generation of the ld.s instructions and
-the corresponding check instructions chk.s .
+This results in generation of the @code{ld.s} instructions and
+the corresponding check instructions @code{chk.s}.
 The default is 'disable'.
 
 @item -msched-br-in-data-spec
@@ -14046,8 +14155,8 @@ The default is 'enable'.
 @itemx -msched-prefer-non-data-spec-insns
 @opindex mno-sched-prefer-non-data-spec-insns
 @opindex msched-prefer-non-data-spec-insns
-If enabled, data speculative instructions will be chosen for schedule
-only if there are no other choices at the moment.  This will make
+If enabled, data-speculative instructions are chosen for schedule
+only if there are no other choices at the moment.  This makes
 the use of the data speculation much more conservative.
 The default is 'disable'.
 
@@ -14055,8 +14164,8 @@ The default is 'disable'.
 @itemx -msched-prefer-non-control-spec-insns
 @opindex mno-sched-prefer-non-control-spec-insns
 @opindex msched-prefer-non-control-spec-insns
-If enabled, control speculative instructions will be chosen for schedule
-only if there are no other choices at the moment.  This will make
+If enabled, control-speculative instructions are chosen for schedule
+only if there are no other choices at the moment.  This makes
 the use of the control speculation much more conservative.
 The default is 'disable'.
 
@@ -14064,8 +14173,8 @@ The default is 'disable'.
 @itemx -msched-count-spec-in-critical-path
 @opindex mno-sched-count-spec-in-critical-path
 @opindex msched-count-spec-in-critical-path
-If enabled, speculative dependencies will be considered during
-computation of the instructions priorities.  This will make the use of the
+If enabled, speculative dependencies are considered during
+computation of the instructions priorities.  This makes the use of the
 speculation a bit more conservative.
 The default is 'disable'.
 
@@ -14102,9 +14211,11 @@ The default value is 1.
 
 @item -msched-max-memory-insns-hard-limit
 @opindex msched-max-memory-insns-hard-limit
-Disallow more than `msched-max-memory-insns' in instruction group.
-Otherwise, limit is `soft' meaning that we would prefer non-memory operations
-when limit is reached but may still schedule memory operations.
+Makes the limit specified by @option{msched-max-memory-insns} a hard limit,
+disallowing more than that number in an instruction group.
+Otherwise, the limit is ``soft'', meaning that non-memory operations
+are preferred when the limit is reached, but memory operations may still
+be scheduled.
 
 @end table
 
@@ -14116,8 +14227,8 @@ These @samp{-m} options are defined for the IA-64/VMS implementations:
 @table @gcctabopt
 @item -mvms-return-codes
 @opindex mvms-return-codes
-Return VMS condition codes from main. The default is to return POSIX
-style condition (e.g.@ error) codes.
+Return VMS condition codes from @code{main}. The default is to return POSIX-style
+condition (e.g.@ error) codes.
 
 @item -mdebug-main=@var{prefix}
 @opindex mdebug-main=@var{prefix}
