@@ -1,3 +1,10 @@
+2012-03-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/52433
+	* include/debug/safe_iterator.h (_Safe_iterator): Add move
+	constructor and move assignment operator.
+	* testsuite/23_containers/vector/debug/52433.cc: New.
+
 2012-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/limits (numeric_limits): Fix returns per C++11.
