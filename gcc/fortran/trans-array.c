@@ -2448,7 +2448,7 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	case GFC_SS_REFERENCE:
 	  /* Scalar argument to elemental procedure.  */
 	  gfc_init_se (&se, NULL);
-	  if (ss_info->data.scalar.can_be_null_ref)
+	  if (ss_info->can_be_null_ref)
 	    {
 	      /* If the actual argument can be absent (in other words, it can
 		 be a NULL reference), don't try to evaluate it; pass instead
@@ -8493,16 +8493,17 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
 	  newss = gfc_get_scalar_ss (head, arg->expr);
 	  newss->info->type = type;
 
-	  if (dummy_arg != NULL
-	      && dummy_arg->sym->attr.optional
-	      && arg->expr->expr_type == EXPR_VARIABLE
-	      && (gfc_expr_attr (arg->expr).optional
-		  || gfc_expr_attr (arg->expr).allocatable
-		  || gfc_expr_attr (arg->expr).pointer))
-	    newss->info->data.scalar.can_be_null_ref = true;
 	}
       else
 	scalar = 0;
+
+      if (dummy_arg != NULL
+	  && dummy_arg->sym->attr.optional
+	  && arg->expr->expr_type == EXPR_VARIABLE
+	  && (gfc_expr_attr (arg->expr).optional
+	      || gfc_expr_attr (arg->expr).allocatable
+	      || gfc_expr_attr (arg->expr).pointer))
+	newss->info->can_be_null_ref = true;
 
       head = newss;
       if (!tail)

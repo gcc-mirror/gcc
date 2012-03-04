@@ -198,9 +198,6 @@ typedef struct gfc_ss_info
     struct
     {
       tree value;
-      /* Tells whether the reference can be null in the GFC_SS_REFERENCE case.
-	 Used to handle elemental procedures' optional arguments.  */
-      bool can_be_null_ref;
     }
     scalar;
 
@@ -223,6 +220,11 @@ typedef struct gfc_ss_info
 
   /* Suppresses precalculation of scalars in WHERE assignments.  */
   unsigned where:1;
+
+  /* Tells whether the SS is for an actual argument which can be a NULL
+     reference.  In other words, the associated dummy argument is OPTIONAL.
+     Used to handle elemental procedures.  */
+  bool can_be_null_ref;
 }
 gfc_ss_info;
 
