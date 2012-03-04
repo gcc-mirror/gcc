@@ -1,3 +1,8 @@
+2012-03-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/36797
+	* g++.dg/ext/is_empty2.C: New.
+
 2012-03-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48820

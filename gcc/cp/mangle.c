@@ -2808,7 +2808,17 @@ write_expression (tree expr)
 
       if (name == NULL)
 	{
-	  sorry ("mangling %C", code);
+	  switch (code)
+	    {
+	    case TRAIT_EXPR:
+	      error ("use of built-in trait %qE in function signature; "
+		     "use library traits instead", expr);
+	      break;
+
+	    default:
+	      sorry ("mangling %C", code);
+	      break;
+	    }
 	  return;
 	}
       else
