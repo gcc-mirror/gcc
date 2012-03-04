@@ -69,6 +69,51 @@ if (s /= 5*2) call abort()
 if (any (v /= [5*2, 5*2])) call abort()
 
 
+! ARRAY COMPONENTS: Non alloc/assoc
+
+v = [9, 33]
+
+call sub1 (v, x%a2, .false.)
+!print *, v
+if (any (v /= [9, 33])) call abort()
+
+call sub1 (v, x%p2, .false.)
+!print *, v
+if (any (v /= [9, 33])) call abort()
+
+
+! ARRAY COMPONENTS: alloc/assoc
+
+allocate (x%a2(2), x%p2(2))
+x%a2(:) = [84, 82]
+x%p2    = [35, 58]
+
+call sub1 (v, x%a2, .true.)
+!print *, v
+if (any (v /= [84*2, 82*2])) call abort()
+
+call sub1 (v, x%p2, .true.)
+!print *, v
+if (any (v /= [35*2, 58*2])) call abort()
+
+
+! =============== sub_t ==================
+! SCALAR DT: Non alloc/assoc
+
+s = 3
+v = [9, 33]
+
+call sub_t (s, ta, .false.)
+call sub_t (v, ta, .false.)
+!print *, s, v
+if (s /= 3) call abort()
+if (any (v /= [9, 33])) call abort()
+
+call sub_t (s, tp, .false.)
+call sub_t (v, tp, .false.)
+!print *, s, v
+if (s /= 3) call abort()
+if (any (v /= [9, 33])) call abort()
 
 contains
 
@@ -81,6 +126,16 @@ contains
     if (present(y)) &
       x = y*2
   end subroutine sub1
+
+  elemental subroutine sub_t(x, y, alloc)
+    integer, intent(inout) :: x
+    type(t), intent(in), optional :: y
+    logical, intent(in) :: alloc
+    if (alloc .neqv. present (y)) &
+      x = -99
+    if (present(y)) &
+      x = y%a*2
+  end subroutine sub_t
 
 end
 
