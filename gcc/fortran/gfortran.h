@@ -2930,6 +2930,7 @@ void gfc_add_class_array_ref (gfc_expr *);
 #define gfc_add_def_init_component(e) gfc_add_component_ref(e,"_def_init")
 bool gfc_is_class_array_ref (gfc_expr *, bool *);
 bool gfc_is_class_scalar_expr (gfc_expr *);
+bool gfc_is_class_container_ref (gfc_expr *e);
 gfc_expr *gfc_class_null_initializer (gfc_typespec *);
 unsigned int gfc_hash_value (gfc_symbol *);
 gfc_try gfc_build_class_symbol (gfc_typespec *, symbol_attribute *,

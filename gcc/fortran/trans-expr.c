@@ -3542,6 +3542,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  else
 	    gfc_conv_expr_reference (&parmse, e);
 
+	  if (fsym && fsym->ts.type == BT_DERIVED
+	      && gfc_is_class_container_ref (e))
+	    parmse.expr = gfc_class_data_get (parmse.expr);
+
 	  /* If we are passing an absent array as optional dummy to an
 	     elemental procedure, make sure that we pass NULL when the data
 	     pointer is NULL.  We need this extra conditional because of

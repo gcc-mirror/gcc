@@ -361,6 +361,39 @@ gfc_is_class_scalar_expr (gfc_expr *e)
 }
 
 
+/* Tells whether the expression E is a reference to a (scalar) class container.
+   Scalar because array class containers usually have an array reference after
+   them, and gfc_fix_class_refs will add the missing "_data" component reference
+   in that case.  */
+
+bool
+gfc_is_class_container_ref (gfc_expr *e)
+{
+  gfc_ref *ref;
+  bool result;
+
+  if (e->expr_type != EXPR_VARIABLE)
+    return e->ts.type == BT_CLASS;
+
+  if (e->symtree->n.sym->ts.type == BT_CLASS)
+    result = true;
+  else
+    result = false;
+
+  for (ref = e->ref; ref; ref = ref->next)
+    {
+      if (ref->type != REF_COMPONENT)
+	result = false;
+      else if (ref->u.c.component->ts.type == BT_CLASS)
+	result = true; 
+      else
+	result = false;
+    }
+
+  return result;
+}
+
+
 /* Build a NULL initializer for CLASS pointers,
    initializing the _data component to NULL and
    the _vptr component to the declared type.  */
