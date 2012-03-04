@@ -1,3 +1,8 @@
+2012-03-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/debug/dwarf2/pr49871.c: Add dg-require-effective-target
+	int32plus.
+
 2012-03-03  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/nsdmi-defer6.C: New.
