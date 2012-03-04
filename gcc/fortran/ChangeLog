@@ -1,6 +1,14 @@
 2012-03-04  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50981
+	* gfortran.h (gfc_is_class_container_ref): New prototype.
+	* class.c (gfc_is_class_container_ref): New function.
+	* trans-expr.c (gfc_conv_procedure_call): Add a "_data" component
+	reference to polymorphic actual arguments.
+
+2012-03-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50981
 	* trans-expr.c (gfc_conv_procedure_call): Save se->ss's value. 
 	Handle the case of unallocated arrays passed to elemental procedures.
 
