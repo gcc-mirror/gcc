@@ -1,13 +1,16 @@
+2012-03-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatvsn.ads (Library_Version): Bump to 4.8.
+
 2012-03-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* init.c (__gnat_adjust_context_for_raise): Also check
 	"orq $0x0,(%esp)" for x32.
 
-	* link.c (__gnat_default_libgcc_subdir): set to libx32 for x32.
+	* link.c (__gnat_default_libgcc_subdir): Set to libx32 for x32.
 
 	* gcc-interface/Makefile.in (arch): Set to x32 if MULTISUBDIR
-	is /x32.
-	Support x32.
+	is /x32 and add support for x32.
 
 2012-02-29  Eric Botcazou  <ebotcazou@adacore.com>
 
