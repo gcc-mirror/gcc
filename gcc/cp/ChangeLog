@@ -1,5 +1,8 @@
 2012-03-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/36797
+	* mangle.c (write_expression): Improve diagnostic for TRAIT_EXPR.
+
 	* class.c (add_method): Always build an OVERLOAD for using-decls.
 	* search.c (lookup_member): Handle getting an OVERLOAD for a
 	single function.
