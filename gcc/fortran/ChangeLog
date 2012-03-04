@@ -1,3 +1,7 @@
+2012-03-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* module.c (gfc_use_module): Improve error message some more.
+
 2012-03-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/52313

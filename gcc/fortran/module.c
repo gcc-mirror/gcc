@@ -6099,7 +6099,7 @@ gfc_use_module (gfc_use_list *module)
 	      || parse_atom () != ATOM_STRING
 	      || strcmp (atom_string, MOD_VERSION))
 	    gfc_fatal_error ("Cannot read module file '%s' opened at %C,"
-			     " because it was created by an older"
+			     " because it was created by a different"
 			     " version of GNU Fortran", filename);
 
 	  free (atom_string);
