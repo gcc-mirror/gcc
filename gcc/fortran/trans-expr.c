@@ -5458,7 +5458,7 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
       se->expr = ss_info->data.scalar.value;
       /* If the reference can be NULL, the value field contains the reference,
 	 not the value the reference points to (see gfc_add_loop_ss_code).  */
-      if (ss_info->data.scalar.can_be_null_ref)
+      if (ss_info->can_be_null_ref)
 	se->expr = build_fold_indirect_ref_loc (input_location, se->expr);
 
       se->string_length = ss_info->string_length;

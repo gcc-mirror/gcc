@@ -1,3 +1,12 @@
+2012-03-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss_info): Move can_be_null_ref component from
+	the data::scalar subcomponent to the toplevel.
+	* trans-expr.c (gfc_conv_expr): Update component reference.
+	* trans-array.c (gfc_add_loop_ss_code): Ditto.
+	(gfc_walk_elemental_function_args): Ditto.  Move the conditional setting
+	the field out of the scalar-only block.
+
 2012-03-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/36160
