@@ -15,6 +15,11 @@
 
 2012-03-04  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.c (ix86_print_operand) <case '+'>: Declare
+	taken and cputaken as bool.
+
+2012-03-04  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/constraints.md (Ya): New internal constraint.
 	* config/i386/i386.md (zero_extendsidi2): Remove expansion.
 	(*zero_extendsidi2_rex64): Add x,x alternative.
