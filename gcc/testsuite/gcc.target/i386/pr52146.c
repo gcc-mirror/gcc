@@ -15,4 +15,4 @@ test2 (void)
   *apic_tpr_addr = 0;
 }
 
-/* { dg-final { scan-assembler-not "-18874240" } } */
+/* { dg-final { scan-assembler-not "\[,\\t \]+-18874240" } } */
