@@ -484,7 +484,7 @@ LSCIE1:
 	.byte	EH_DATA_ALIGN_FACT ; sleb128 -4; CIE Data Alignment Factor
 	.byte	0x41	; CIE RA Column
 	.byte	0x1	; uleb128 0x1; Augmentation size
-	.byte	0x90	; FDE Encoding (indirect pcrel)
+	.byte	0x10	; FDE Encoding (indirect pcrel)
 	.byte	0xc	; DW_CFA_def_cfa
 	.byte	0x1	; uleb128 0x1
 	.byte	0x0	; uleb128 0x0

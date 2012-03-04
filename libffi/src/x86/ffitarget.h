@@ -1,6 +1,7 @@
 /* -----------------------------------------------------------------*-C-*-
-   ffitarget.h - Copyright (c) 1996-2003, 2010  Red Hat, Inc.
-   Copyright (C) 2008  Free Software Foundation, Inc.
+   ffitarget.h - Copyright (c) 2012  Anthony Green
+                 Copyright (c) 1996-2003, 2010  Red Hat, Inc.
+                 Copyright (C) 2008  Free Software Foundation, Inc.
 
    Target configuration macros for x86 and x86-64.
 
@@ -29,7 +30,14 @@
 #ifndef LIBFFI_TARGET_H
 #define LIBFFI_TARGET_H
 
+#ifndef LIBFFI_H
+#error "Please do not include ffitarget.h directly into your source.  Use ffi.h instead."
+#endif
+
 /* ---- System specific configurations ----------------------------------- */
+
+/* For code common to all platforms on x86 and x86_64. */
+#define X86_ANY
 
 #if defined (X86_64) && defined (__i386__)
 #undef X86_64
@@ -53,8 +61,14 @@ typedef unsigned long long     ffi_arg;
 typedef long long              ffi_sarg;
 #endif
 #else
+#if defined __x86_64__ && !defined __LP64__
+#define FFI_SIZEOF_ARG 8
+typedef unsigned long long     ffi_arg;
+typedef long long              ffi_sarg;
+#else
 typedef unsigned long          ffi_arg;
 typedef signed long            ffi_sarg;
+#endif
 #endif
 
 typedef enum ffi_abi {
@@ -66,28 +80,26 @@ typedef enum ffi_abi {
   FFI_STDCALL,
   FFI_THISCALL,
   FFI_FASTCALL,
+  FFI_LAST_ABI,
   /* TODO: Add fastcall support for the sake of completeness */
-  FFI_DEFAULT_ABI = FFI_SYSV,
-#endif
+  FFI_DEFAULT_ABI = FFI_SYSV
 
-#ifdef X86_WIN64
+#elif defined(X86_WIN64)
   FFI_WIN64,
-  FFI_DEFAULT_ABI = FFI_WIN64,
-#else
+  FFI_LAST_ABI,
+  FFI_DEFAULT_ABI = FFI_WIN64
 
+#else
   /* ---- Intel x86 and AMD x86-64 - */
-#if !defined(X86_WIN32) && (defined(__i386__) || defined(__x86_64__) || defined(__i386) || defined(__amd64))
   FFI_SYSV,
   FFI_UNIX64,   /* Unix variants all use the same ABI for x86-64  */
+  FFI_LAST_ABI,
 #if defined(__i386__) || defined(__i386)
-  FFI_DEFAULT_ABI = FFI_SYSV,
+  FFI_DEFAULT_ABI = FFI_SYSV
 #else
-  FFI_DEFAULT_ABI = FFI_UNIX64,
+  FFI_DEFAULT_ABI = FFI_UNIX64
 #endif
 #endif
-#endif /* X86_WIN64 */
-
-  FFI_LAST_ABI = FFI_DEFAULT_ABI + 1
 } ffi_abi;
 #endif
 

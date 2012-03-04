@@ -1,6 +1,7 @@
 /* -----------------------------------------------------------------------
    ffi.c - Copyright (c) 1998, 2007, 2008, 2012 Red Hat, Inc.
 	   Copyright (c) 2000 Hewlett Packard Company
+	   Copyright (c) 2011 Anthony Green
    
    IA64 Foreign Function Interface 
 
@@ -429,7 +430,8 @@ ffi_prep_closure_loc (ffi_closure* closure,
   struct ffi_ia64_trampoline_struct *tramp;
   struct ia64_fd *fd;
 
-  FFI_ASSERT (cif->abi == FFI_UNIX);
+  if (cif->abi != FFI_UNIX)
+    return FFI_BAD_ABI;
 
   tramp = (struct ffi_ia64_trampoline_struct *)closure->tramp;
   fd = (struct ia64_fd *)(void *)ffi_closure_unix;

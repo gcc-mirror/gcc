@@ -1,6 +1,7 @@
 /* -----------------------------------------------------------------------
-   closures.c - Copyright (c) 2007  Red Hat, Inc.
-   Copyright (C) 2007, 2009, 2010 Free Software Foundation, Inc
+   closures.c - Copyright (c) 2007, 2009, 2010  Red Hat, Inc.
+                Copyright (C) 2007, 2009, 2010 Free Software Foundation, Inc
+                Copyright (c) 2011 Plausible Labs Cooperative, Inc.
 
    Code to allocate and deallocate memory for closures.
 
@@ -32,7 +33,7 @@
 #include <ffi.h>
 #include <ffi_common.h>
 
-#ifndef FFI_MMAP_EXEC_WRIT
+#if !FFI_MMAP_EXEC_WRIT && !FFI_EXEC_TRAMPOLINE_TABLE
 # if __gnu_linux__
 /* This macro indicates it may be forbidden to map anonymous memory
    with both write and execute permission.  Code compiled when this
@@ -63,7 +64,11 @@
 
 #if FFI_CLOSURES
 
-# if FFI_MMAP_EXEC_WRIT
+# if FFI_EXEC_TRAMPOLINE_TABLE
+
+// Per-target implementation; It's unclear what can reasonable be shared between two OS/architecture implementations.
+
+# elif FFI_MMAP_EXEC_WRIT /* !FFI_EXEC_TRAMPOLINE_TABLE */
 
 #define USE_LOCKS 1
 #define USE_DL_PREFIX 1
@@ -167,7 +172,7 @@ selinux_enabled_check (void)
 
 #endif /* !FFI_MMAP_EXEC_SELINUX */
 
-#elif defined (__CYGWIN__)
+#elif defined (__CYGWIN__) || defined(__INTERIX)
 
 #include <sys/mman.h>
 
@@ -193,11 +198,11 @@ static int dlmalloc_trim(size_t) MAYBE_UNUSED;
 static size_t dlmalloc_usable_size(void*) MAYBE_UNUSED;
 static void dlmalloc_stats(void) MAYBE_UNUSED;
 
-#if !(defined(X86_WIN32) || defined(X86_WIN64) || defined(__OS2__)) || defined (__CYGWIN__)
+#if !(defined(X86_WIN32) || defined(X86_WIN64) || defined(__OS2__)) || defined (__CYGWIN__) || defined(__INTERIX)
 /* Use these for mmap and munmap within dlmalloc.c.  */
 static void *dlmmap(void *, size_t, int, int, int, off_t);
 static int dlmunmap(void *, size_t);
-#endif /* !(defined(X86_WIN32) || defined(X86_WIN64) || defined(__OS2__)) || defined (__CYGWIN__) */
+#endif /* !(defined(X86_WIN32) || defined(X86_WIN64) || defined(__OS2__)) || defined (__CYGWIN__) || defined(__INTERIX) */
 
 #define mmap dlmmap
 #define munmap dlmunmap
@@ -207,7 +212,7 @@ static int dlmunmap(void *, size_t);
 #undef mmap
 #undef munmap
 
-#if !(defined(X86_WIN32) || defined(X86_WIN64) || defined(__OS2__)) || defined (__CYGWIN__)
+#if !(defined(X86_WIN32) || defined(X86_WIN64) || defined(__OS2__)) || defined (__CYGWIN__) || defined(__INTERIX)
 
 /* A mutex used to synchronize access to *exec* variables in this file.  */
 static pthread_mutex_t open_temp_exec_file_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -522,7 +527,7 @@ segment_holding_code (mstate m, char* addr)
 }
 #endif
 
-#endif /* !(defined(X86_WIN32) || defined(X86_WIN64) || defined(__OS2__)) || defined (__CYGWIN__) */
+#endif /* !(defined(X86_WIN32) || defined(X86_WIN64) || defined(__OS2__)) || defined (__CYGWIN__) || defined(__INTERIX) */
 
 /* Allocate a chunk of memory with the given size.  Returns a pointer
    to the writable address, and sets *CODE to the executable

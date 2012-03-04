@@ -228,12 +228,10 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   switch (cif->rtype->type)
     {
     case FFI_TYPE_VOID:
-#if defined(X86) || defined (X86_WIN32) || defined(X86_FREEBSD) || defined(X86_DARWIN) || defined(X86_WIN64)
     case FFI_TYPE_UINT8:
     case FFI_TYPE_UINT16:
     case FFI_TYPE_SINT8:
     case FFI_TYPE_SINT16:
-#endif
 #ifdef X86_WIN64
     case FFI_TYPE_UINT32:
     case FFI_TYPE_SINT32:
@@ -364,27 +362,8 @@ void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
     {
 #ifdef X86_WIN64
     case FFI_WIN64:
-      {
-        /* Make copies of all struct arguments
-           NOTE: not sure if responsibility should be here or in caller */
-        unsigned int i;
-        for (i=0; i < cif->nargs;i++) {
-          size_t size = cif->arg_types[i]->size;
-          if ((cif->arg_types[i]->type == FFI_TYPE_STRUCT
-               && (size != 1 && size != 2 && size != 4 && size != 8))
-#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
-              || cif->arg_types[i]->type == FFI_TYPE_LONGDOUBLE
-#endif
-              )
-            {
-              void *local = alloca(size);
-              memcpy(local, avalue[i], size);
-              avalue[i] = local;
-            }
-        }
-        ffi_call_win64(ffi_prep_args, &ecif, cif->bytes,
-                       cif->flags, ecif.rvalue, fn);
-      }
+      ffi_call_win64(ffi_prep_args, &ecif, cif->bytes,
+                     cif->flags, ecif.rvalue, fn);
       break;
 #elif defined(X86_WIN32)
     case FFI_SYSV:
@@ -447,8 +426,6 @@ unsigned int FFI_HIDDEN ffi_closure_SYSV_inner (ffi_closure *, void **, void *)
 void FFI_HIDDEN ffi_closure_raw_SYSV (ffi_raw_closure *)
      __attribute__ ((regparm(1)));
 #ifdef X86_WIN32
-void FFI_HIDDEN ffi_closure_raw_THISCALL (ffi_raw_closure *)
-     __attribute__ ((regparm(1)));
 void FFI_HIDDEN ffi_closure_STDCALL (ffi_closure *)
      __attribute__ ((regparm(1)));
 void FFI_HIDDEN ffi_closure_THISCALL (ffi_closure *)
@@ -616,7 +593,7 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue, void **avalue,
 { unsigned char *__tramp = (unsigned char*)(TRAMP); \
    unsigned int  __fun = (unsigned int)(FUN); \
    unsigned int  __ctx = (unsigned int)(CTX); \
-   unsigned int  __dis = __fun - (__ctx + 49);  \
+   unsigned int  __dis = __fun - (__ctx + 22);  \
    unsigned short __size = (unsigned short)(SIZE); \
    *(unsigned int *) &__tramp[0] = 0x8324048b;	/* mov (%esp), %eax */ \
    *(unsigned int *) &__tramp[4] = 0x4c890cec;	/* sub $12, %esp */ \
@@ -722,9 +699,6 @@ ffi_prep_raw_closure_loc (ffi_raw_closure* closure,
   int i;
 
   if (cif->abi != FFI_SYSV) {
-#ifdef X86_WIN32
-    if (cif->abi != FFI_THISCALL)
-#endif
     return FFI_BAD_ABI;
   }
 
@@ -739,20 +713,10 @@ ffi_prep_raw_closure_loc (ffi_raw_closure* closure,
       FFI_ASSERT (cif->arg_types[i]->type != FFI_TYPE_LONGDOUBLE);
     }
   
-#ifdef X86_WIN32
-  if (cif->abi == FFI_SYSV)
-    {
-#endif
+
   FFI_INIT_TRAMPOLINE (&closure->tramp[0], &ffi_closure_raw_SYSV,
                        codeloc);
-#ifdef X86_WIN32
-    }
-  else if (cif->abi == FFI_THISCALL)
-    {
-      FFI_INIT_TRAMPOLINE_THISCALL (&closure->tramp[0], &ffi_closure_raw_THISCALL,
-				    codeloc, cif->bytes);
-    }
-#endif
+    
   closure->cif  = cif;
   closure->user_data = user_data;
   closure->fun  = fun;
@@ -797,7 +761,7 @@ ffi_raw_call(ffi_cif *cif, void (*fn)(void), void *rvalue, ffi_raw *fake_avalue)
 #ifdef X86_WIN32
     case FFI_SYSV:
     case FFI_STDCALL:
-      ffi_call_win32(ffi_prep_args_raw, &ecif, cif->abi, cif->bytes, cif->flags,
+      ffi_call_win32(ffi_prep_args, &ecif, cif->abi, cif->bytes, cif->flags,
 		     ecif.rvalue, fn);
       break;
     case FFI_THISCALL:
@@ -825,7 +789,7 @@ ffi_raw_call(ffi_cif *cif, void (*fn)(void), void *rvalue, ffi_raw *fake_avalue)
 	  cif->abi = abi = FFI_THISCALL;
 	if (passed_regs < 1 && abi == FFI_THISCALL)
 	  cif->abi = abi = FFI_STDCALL;
-        ffi_call_win32(ffi_prep_args_raw, &ecif, abi, cif->bytes, cif->flags,
+        ffi_call_win32(ffi_prep_args, &ecif, abi, cif->bytes, cif->flags,
                        ecif.rvalue, fn);
       }
       break;

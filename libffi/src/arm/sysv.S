@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
-   sysv.S - Copyright (c) 1998, 2008 Red Hat, Inc.
+   sysv.S - Copyright (c) 1998, 2008, 2011 Red Hat, Inc.
+	    Copyright (c) 2011 Plausible Labs Cooperative, Inc.
    
    ARM Foreign Function Interface 
 
@@ -39,13 +40,23 @@
 #else
 #define CNAME(x) x
 #endif
+#ifdef __APPLE__
+#define ENTRY(x) .globl CNAME(x); CNAME(x):
+#else
 #define ENTRY(x) .globl CNAME(x); .type CNAME(x),%function; CNAME(x):
+#endif /* __APPLE__ */
 #endif
 
 #ifdef __ELF__
 #define LSYM(x) .x
 #else
 #define LSYM(x) x
+#endif
+
+/* Use the SOFTFP return value ABI on Mac OS X, as per the iOS ABI
+  Function Call Guide */
+#ifdef __APPLE__
+#define __SOFTFP__
 #endif
 
 /* We need a better way of testing for this, but for now, this is all 
@@ -105,21 +116,33 @@
 	.align 0
 	.thumb
 	.thumb_func
+#ifdef __APPLE__
+	ENTRY($0)
+#else
 	ENTRY(\name)
+#endif
 	bx	pc
 	nop
 	.arm
 	UNWIND .fnstart
 /* A hook to tell gdb that we've switched to ARM mode.  Also used to call
    directly from other local arm routines.  */
-_L__\name:		
+#ifdef __APPLE__
+_L__$0:
+#else
+_L__\name:
+#endif
 .endm
 #else
 .macro	ARM_FUNC_START name
 	.text
 	.align 0
 	.arm
+#ifdef __APPLE__
+	ENTRY($0)
+#else
 	ENTRY(\name)
+#endif
 	UNWIND .fnstart
 .endm
 #endif
@@ -141,8 +164,7 @@ _L__\name:
 #endif
 .endm
 
-
-	@ r0:   fn
+	@ r0:   ffi_prep_args
 	@ r1:   &ecif
 	@ r2:   cif->bytes
 	@ r3:   fig->flags
@@ -222,11 +244,18 @@ ARM_FUNC_START ffi_call_SYSV
 #endif
 
 LSYM(Lepilogue):
-	RETLDM	"r0-r3,fp"
+#if defined (__INTERWORKING__)
+	ldmia   sp!, {r0-r3,fp, lr}
+	bx	lr
+#else
+	ldmia   sp!, {r0-r3,fp, pc}
+#endif
 
 .ffi_call_SYSV_end:
 	UNWIND .fnend
+#ifdef __ELF__
         .size    CNAME(ffi_call_SYSV),.ffi_call_SYSV_end-CNAME(ffi_call_SYSV)
+#endif
 
 
 /*
@@ -247,7 +276,7 @@ ARM_FUNC_START ffi_closure_SYSV
 	sub	sp, sp, #16
 	str	sp, [sp, #8]
 	add	r1, sp, #8
-	bl	ffi_closure_SYSV_inner
+	bl	CNAME(ffi_closure_SYSV_inner)
 	cmp	r0, #FFI_TYPE_INT
 	beq	.Lretint
 
@@ -299,7 +328,9 @@ ARM_FUNC_START ffi_closure_SYSV
 
 .ffi_closure_SYSV_end:
 	UNWIND .fnend
+#ifdef __ELF__
         .size    CNAME(ffi_closure_SYSV),.ffi_closure_SYSV_end-CNAME(ffi_closure_SYSV)
+#endif
 
 
 /* Below are VFP hard-float ABI call and closure implementations.
@@ -371,7 +402,7 @@ LSYM(Lbase_args):
 	@ assume no return value.
 	cmp	r2, #0
 	beq	LSYM(Lepilogue_vfp)
-	
+
 	cmp	r3, #FFI_TYPE_INT
 	streq	r0, [r2]
 	beq	LSYM(Lepilogue_vfp)

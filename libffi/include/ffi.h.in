@@ -1,16 +1,17 @@
 /* -----------------------------------------------------------------*-C-*-
-   libffi @VERSION@ - Copyright (c) 1996-2003, 2007, 2008  Red Hat, Inc.
+   libffi @VERSION@ - Copyright (c) 2011 Anthony Green
+                    - Copyright (c) 1996-2003, 2007, 2008 Red Hat, Inc.
 
-   Permission is hereby granted, free of charge, to any person obtaining
-   a copy of this software and associated documentation files (the
-   ``Software''), to deal in the Software without restriction, including
-   without limitation the rights to use, copy, modify, merge, publish,
-   distribute, sublicense, and/or sell copies of the Software, and to
-   permit persons to whom the Software is furnished to do so, subject to
-   the following conditions:
+   Permission is hereby granted, free of charge, to any person
+   obtaining a copy of this software and associated documentation
+   files (the ``Software''), to deal in the Software without
+   restriction, including without limitation the rights to use, copy,
+   modify, merge, publish, distribute, sublicense, and/or sell copies
+   of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included
-   in all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
 
    THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND,
    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
@@ -77,14 +78,30 @@ extern "C" {
 /* LONG_LONG_MAX is not always defined (not if STRICT_ANSI, for example).
    But we can find it either under the correct ANSI name, or under GNU
    C's internal name.  */
+
+#define FFI_64_BIT_MAX 9223372036854775807
+
 #ifdef LONG_LONG_MAX
 # define FFI_LONG_LONG_MAX LONG_LONG_MAX
 #else
 # ifdef LLONG_MAX
 #  define FFI_LONG_LONG_MAX LLONG_MAX
+#  ifdef _AIX52 /* or newer has C99 LLONG_MAX */
+#   undef FFI_64_BIT_MAX
+#   define FFI_64_BIT_MAX 9223372036854775807LL
+#  endif /* _AIX52 or newer */
 # else
 #  ifdef __GNUC__
 #   define FFI_LONG_LONG_MAX __LONG_LONG_MAX__
+#  endif
+#  ifdef _AIX /* AIX 5.1 and earlier have LONGLONG_MAX */
+#   ifndef __PPC64__
+#    if defined (__IBMC__) || defined (__IBMCPP__)
+#     define FFI_LONG_LONG_MAX LONGLONG_MAX
+#    endif
+#   endif /* __PPC64__ */
+#   undef  FFI_64_BIT_MAX
+#   define FFI_64_BIT_MAX 9223372036854775807LL
 #  endif
 # endif
 #endif
@@ -132,17 +149,17 @@ typedef struct _ffi_type
 #endif
 
 #if LONG_MAX == 2147483647
-# if FFI_LONG_LONG_MAX != 9223372036854775807
+# if FFI_LONG_LONG_MAX != FFI_64_BIT_MAX
  #error "no 64-bit data type supported"
 # endif
-#elif LONG_MAX != 9223372036854775807
+#elif LONG_MAX != FFI_64_BIT_MAX
  #error "long size not supported"
 #endif
 
 #if LONG_MAX == 2147483647
 # define ffi_type_ulong        ffi_type_uint32
 # define ffi_type_slong        ffi_type_sint32
-#elif LONG_MAX == 9223372036854775807
+#elif LONG_MAX == FFI_64_BIT_MAX
 # define ffi_type_ulong        ffi_type_uint64
 # define ffi_type_slong        ffi_type_sint64
 #else
@@ -190,12 +207,21 @@ typedef struct {
 #endif
 } ffi_cif;
 
+/* Used internally, but overridden by some architectures */
+ffi_status ffi_prep_cif_core(ffi_cif *cif,
+			     ffi_abi abi,
+			     unsigned int isvariadic,
+			     unsigned int nfixedargs,
+			     unsigned int ntotalargs,
+			     ffi_type *rtype,
+			     ffi_type **atypes);
+
 /* ---- Definitions for the raw API -------------------------------------- */
 
 #ifndef FFI_SIZEOF_ARG
 # if LONG_MAX == 2147483647
 #  define FFI_SIZEOF_ARG        4
-# elif LONG_MAX == 9223372036854775807
+# elif LONG_MAX == FFI_64_BIT_MAX
 #  define FFI_SIZEOF_ARG        8
 # endif
 #endif
@@ -265,6 +291,9 @@ typedef struct {
 } ffi_closure __attribute__((aligned (8)));
 #else
 } ffi_closure;
+# ifdef __sgi
+#  pragma pack 0
+# endif
 #endif
 
 void *ffi_closure_alloc (size_t size, void **code);
@@ -283,6 +312,9 @@ ffi_prep_closure_loc (ffi_closure*,
 		      void *user_data,
 		      void*codeloc);
 
+#ifdef __sgi
+# pragma pack 8
+#endif
 typedef struct {
   char tramp[FFI_TRAMPOLINE_SIZE];
 
@@ -360,6 +392,13 @@ ffi_status ffi_prep_cif(ffi_cif *cif,
 			unsigned int nargs,
 			ffi_type *rtype,
 			ffi_type **atypes);
+
+ffi_status ffi_prep_cif_var(ffi_cif *cif,
+			    ffi_abi abi,
+			    unsigned int nfixedargs,
+			    unsigned int ntotalargs,
+			    ffi_type *rtype,
+			    ffi_type **atypes);
 
 void ffi_call(ffi_cif *cif,
 	      void (*fn)(void),

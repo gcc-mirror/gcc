@@ -622,6 +622,9 @@ DEFAULT_MMAP_THRESHOLD       default: 256K
 #include "/usr/include/malloc.h"
 #else /* HAVE_USR_INCLUDE_MALLOC_H */
 
+/* HP-UX's stdlib.h redefines mallinfo unless _STRUCT_MALLINFO is defined */
+#define _STRUCT_MALLINFO
+
 struct mallinfo {
   MALLINFO_FIELD_TYPE arena;    /* non-mmapped space allocated from system */
   MALLINFO_FIELD_TYPE ordblks;  /* number of free chunks */
