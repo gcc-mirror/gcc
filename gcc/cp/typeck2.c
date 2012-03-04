@@ -1392,7 +1392,10 @@ process_init_constructor (tree type, tree init, tsubst_flags_t complain)
   TREE_TYPE (init) = type;
   if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type) == NULL_TREE)
     cp_complete_array_type (&TREE_TYPE (init), init, /*do_default=*/0);
-  if (!(flags & PICFLAG_NOT_ALL_CONSTANT))
+  if (flags & PICFLAG_NOT_ALL_CONSTANT)
+    /* Make sure TREE_CONSTANT isn't set from build_constructor.  */
+    TREE_CONSTANT (init) = false;
+  else
     {
       TREE_CONSTANT (init) = 1;
       if (!(flags & PICFLAG_NOT_ALL_SIMPLE))
