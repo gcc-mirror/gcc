@@ -1,3 +1,7 @@
+2012-03-05  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.c (TARGET_ATOMIC_TEST_AND_SET_TRUEVAL): New hook.
+
 2012-03-05  Richard Henderson  <rth@redhat.com>
 
 	PR target/52481
