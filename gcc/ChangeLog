@@ -1,3 +1,21 @@
+2012-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/51902
+	* tree.h (BLOCK_SAME_RANGE): Define.
+	* function.c (block_fragments_nreverse): Clear BLOCK_SAME_RANGE
+	if BLOCK_FRAGMENT_CHAIN is non-NULL, but has it cleared.
+	Also clear BLOCK_SAME_RANGE if fragment chain's supercontext fragment
+	isn't equal to supercontext fragment's fragment chain.
+	Adjust BLOCK_SUPERCONTEXT to point to supercontext fragment's
+	fragment origin.
+	(blocks_nreverse_all): Likewise.
+	(reorder_blocks_1): Compute BLOCK_SAME_RANGE bits.  Set
+	BLOCK_SUPERCONTEXT to supercontext fragment instead of
+	supercontext fragment's fragment origin.
+	* dwarf2out.c (add_high_low_attributes): If stmt has the same
+	range as its parent (or parents thereof etc.), use the parent's
+	DW_AT_ranges value instead of creating a new .debug_ranges range.
+
 2012-03-05  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/52242
