@@ -1868,7 +1868,7 @@ tm_region_init (struct tm_region *region)
      using bb->aux.  */
   region_worklist =
     (struct tm_region **) xcalloc (sizeof (struct tm_region *),
-				  n_basic_blocks + NUM_FIXED_BLOCKS + 2);
+				  last_basic_block + NUM_FIXED_BLOCKS);
 
   VEC_safe_push (basic_block, heap, queue, bb);
   region_worklist[bb->index] = region;

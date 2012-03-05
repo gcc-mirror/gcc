@@ -1,3 +1,8 @@
+2012-03-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/52463
+	* trans-mem.c (tm_region_init): Use last_basic_block.
+
 2012-03-05  Richard Henderson  <rth@redhat.com>
 
 	PR target/52481
