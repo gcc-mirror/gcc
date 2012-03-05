@@ -32664,7 +32664,7 @@
 
 	* ira-conflicts.c: Remove mentioning cover classes from the file.
 	Use ALLOCNO_CLASS instead of ALLOCNO_COVER_CLASS.  Use
-	ALLOCNO_COVER_CLASS_COST instead of ALLOCNO_CLASS_COST.  Fix formatting.
+	ALLOCNO_CLASS_COST instead of ALLOCNO_COVER_CLASS_COST.  Fix formatting.
 
 	* targhooks.c (default_ira_cover_classes): Remove.
 
