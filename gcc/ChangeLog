@@ -1,3 +1,17 @@
+2012-03-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/mips/iris6.h [!USED_FOR_TARGET] (long_intmax): Declare.
+	(INTMAX_TYPE): Use it.
+	(UINTMAX_TYPE): Likewise.
+	(SUBTARGET_OVERRIDE_OPTIONS): Define.
+	(irix6_c_common_override_options): Declare.
+	(C_COMMON_OVERRIDE_OPTIONS): Define.
+	* config/mips/mips.c [TARGET_IRIX6] (long_intmax): Define.
+	* config/mips/irix6-c.c: New file.
+	* config/mips/t-irix6 (irix6-c.o): New target.
+	* config.gcc (mips-sgi-irix6.5): Set c_target_objs,
+	cxx_target_objs.
+
 2012-03-02  Richard Henderson  <rth@redhat.com>
 
 	* optabs.c (expand_atomic_test_and_set): Honor

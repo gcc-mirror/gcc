@@ -1718,6 +1718,8 @@ microblaze*-*-*)
 mips-sgi-irix6.5*)
 	tm_file="elfos.h ${tm_file} mips/iris6.h"
 	tmake_file="mips/t-irix6 t-slibgcc"
+	c_target_objs="irix6-c.o"
+	cxx_target_objs="irix6-c.o"
 	extra_options="${extra_options} rpath.opt mips/iris6.opt"
 	target_cpu_default="MASK_ABICALLS"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"

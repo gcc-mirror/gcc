@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  IRIX 6.5 version.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -121,6 +121,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #undef WINT_TYPE_SIZE
 #define WINT_TYPE_SIZE INT_TYPE_SIZE
 
+#ifndef USED_FOR_TARGET
+/* Use long for intmax_t, uintmax_t?  */
+extern int long_intmax;
+#endif
+
 /* C99 stdint.h types.  */
 #define INT8_TYPE "signed char"
 #define INT16_TYPE "short int"
@@ -149,8 +154,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define UINT_FAST32_TYPE "unsigned int"
 #define UINT_FAST64_TYPE "long long unsigned int"
 
-#define INTMAX_TYPE "long long int"
-#define UINTMAX_TYPE "long long unsigned int"
+#define INTMAX_TYPE (long_intmax ? "long int" : "long long int")
+#define UINTMAX_TYPE (long_intmax ? "long unsigned int" : "long long unsigned int")
 
 #define INTPTR_TYPE "long int"
 #define UINTPTR_TYPE "long unsigned int"
@@ -205,6 +210,20 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 	}							\
     }								\
   while (0)
+
+/* SUBTARGET_OVERRIDE_OPTIONS is run after C_COMMON_OVERRIDE_OPTIONS, so
+   only set long_intmax if uninitialized.  */
+#undef SUBTARGET_OVERRIDE_OPTIONS
+#define SUBTARGET_OVERRIDE_OPTIONS 		\
+  do						\
+    {						\
+      if (long_intmax == -1)			\
+	long_intmax = mips_abi == ABI_64;	\
+    }						\
+  while (0)
+
+extern void irix6_c_common_override_options (void);
+#define C_COMMON_OVERRIDE_OPTIONS irix6_c_common_override_options()
 
 #undef SUBTARGET_CC1_SPEC
 #define SUBTARGET_CC1_SPEC "%{static: -mno-abicalls}"

@@ -539,6 +539,12 @@ int mips_isa;
 /* The architecture selected by -mipsN, or null if -mipsN wasn't used.  */
 static const struct mips_cpu_info *mips_isa_option_info;
 
+#if TARGET_IRIX6
+/* On IRIX 6, intmax_t and uintmax_t depend on __c99, which is only
+   available in C-family compilers.  See irix6_c_common_override_options.  */
+int long_intmax = -1;
+#endif
+
 /* Which cost information to use.  */
 static const struct mips_rtx_cost_data *mips_cost;
 

@@ -2,3 +2,7 @@ MULTILIB_OPTIONS=mabi=n32/mabi=64
 MULTILIB_DIRNAMES=n32 64
 MULTILIB_MATCHES=
 MULTILIB_OSDIRNAMES=../lib32 ../lib64
+
+irix6-c.o: $(srcdir)/config/mips/irix6-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+  tree.h $(TM_H) $(C_COMMON_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
