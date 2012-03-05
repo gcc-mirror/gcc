@@ -1,5 +1,10 @@
 2012-03-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/51721
+	* tree-vrp.c (register_edge_assert_for_2): If comparing
+	lhs of right shift by constant with an integer constant,
+	add ASSERT_EXPRs for the rhs1 of the right shift.
+
 	* cfgrtl.c (cfg_layout_merge_blocks): Cleanup.
 
 2012-03-05  Richard Guenther  <rguenther@suse.de>
