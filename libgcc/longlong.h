@@ -220,9 +220,12 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "rI" ((USItype) (bh)),					\
 	     "r" ((USItype) (al)),					\
 	     "rI" ((USItype) (bl)) __CLOBBER_CC)
-#define umul_ppmm(xh, xl, a, b) \
-{register USItype __t0, __t1, __t2;					\
-  __asm__ ("%@ Inlined umul_ppmm\n"					\
+# if defined(__ARM_ARCH_2__) || defined(__ARM_ARCH_2A__) \
+     || defined(__ARM_ARCH_3__)
+#  define umul_ppmm(xh, xl, a, b)					\
+  do {									\
+    register USItype __t0, __t1, __t2;					\
+    __asm__ ("%@ Inlined umul_ppmm\n"					\
 	   "	mov	%2, %5, lsr #16\n"				\
 	   "	mov	%0, %6, lsr #16\n"				\
 	   "	bic	%3, %5, %2, lsl #16\n"				\
@@ -239,14 +242,26 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "=r" ((USItype) (xl)),					\
 	     "=&r" (__t0), "=&r" (__t1), "=r" (__t2)			\
 	   : "r" ((USItype) (a)),					\
-	     "r" ((USItype) (b)) __CLOBBER_CC );}
-#define UMUL_TIME 20
-#define UDIV_TIME 100
+	     "r" ((USItype) (b)) __CLOBBER_CC );			\
+  } while (0)
+#  define UMUL_TIME 20
+# else
+#  define umul_ppmm(xh, xl, a, b)					\
+  do {									\
+    /* Generate umull, under compiler control.  */			\
+    register UDItype __t0 = (UDItype)(USItype)(a) * (USItype)(b);	\
+    (xl) = (USItype)__t0;						\
+    (xh) = (USItype)(__t0 >> 32);					\
+  } while (0)
+#  define UMUL_TIME 3
+# endif
+# define UDIV_TIME 100
 #endif /* __arm__ */
 
 #if defined(__arm__)
 /* Let gcc decide how best to implement count_leading_zeros.  */
 #define count_leading_zeros(COUNT,X)	((COUNT) = __builtin_clz (X))
+#define count_trailing_zeros(COUNT,X)   ((COUNT) = __builtin_ctz (X))
 #define COUNT_LEADING_ZEROS_0 32
 #endif
 
