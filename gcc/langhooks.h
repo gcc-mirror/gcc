@@ -479,6 +479,7 @@ struct lang_hooks
 
 /* Each front end provides its own.  */
 extern struct lang_hooks lang_hooks;
+
 extern tree add_builtin_function (const char *name, tree type,
 				  int function_code, enum built_in_class cl,
 				  const char *library_name,
@@ -489,5 +490,6 @@ extern tree add_builtin_function_ext_scope (const char *name, tree type,
 					    enum built_in_class cl,
 					    const char *library_name,
 					    tree attrs);
-
+extern tree add_builtin_type (const char *name, tree type);
+ 
 #endif /* GCC_LANG_HOOKS_H */

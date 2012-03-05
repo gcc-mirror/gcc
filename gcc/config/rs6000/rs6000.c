@@ -11567,25 +11567,17 @@ rs6000_init_builtins (void)
   builtin_mode_to_type[V16QImode][0] = V16QI_type_node;
   builtin_mode_to_type[V16QImode][1] = unsigned_V16QI_type_node;
 
-  tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL,
-      		      get_identifier ("__bool char"),
-		      bool_char_type_node);
+  tdecl = add_builtin_type ("__bool char", bool_char_type_node);
   TYPE_NAME (bool_char_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL,
-      		      get_identifier ("__bool short"),
-		      bool_short_type_node);
+
+  tdecl = add_builtin_type ("__bool short", bool_short_type_node);
   TYPE_NAME (bool_short_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL,
-      		      get_identifier ("__bool int"),
-		      bool_int_type_node);
+
+  tdecl = add_builtin_type ("__bool int", bool_int_type_node);
   TYPE_NAME (bool_int_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL, get_identifier ("__pixel"),
-		      pixel_type_node);
+
+  tdecl = add_builtin_type ("__pixel", pixel_type_node);
   TYPE_NAME (pixel_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
   bool_V16QI_type_node = build_vector_type (bool_char_type_node, 16);
   bool_V8HI_type_node = build_vector_type (bool_short_type_node, 8);
@@ -11593,88 +11585,50 @@ rs6000_init_builtins (void)
   bool_V2DI_type_node = build_vector_type (bool_long_type_node, 2);
   pixel_V8HI_type_node = build_vector_type (pixel_type_node, 8);
 
-  tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL,
-      		      get_identifier ("__vector unsigned char"),
-		      unsigned_V16QI_type_node);
+  tdecl = add_builtin_type ("__vector unsigned char", unsigned_V16QI_type_node);
   TYPE_NAME (unsigned_V16QI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION,
-      		      TYPE_DECL, get_identifier ("__vector signed char"),
-		      V16QI_type_node);
+
+  tdecl = add_builtin_type ("__vector signed char", V16QI_type_node);
   TYPE_NAME (V16QI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION,
-      		      TYPE_DECL, get_identifier ("__vector __bool char"),
-		      bool_V16QI_type_node);
+
+  tdecl = add_builtin_type ("__vector __bool char", bool_V16QI_type_node);
   TYPE_NAME ( bool_V16QI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  tdecl = build_decl (BUILTINS_LOCATION,
-      		      TYPE_DECL, get_identifier ("__vector unsigned short"),
-		      unsigned_V8HI_type_node);
+  tdecl = add_builtin_type ("__vector unsigned short", unsigned_V8HI_type_node);
   TYPE_NAME (unsigned_V8HI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION,
-      		      TYPE_DECL, get_identifier ("__vector signed short"),
-		      V8HI_type_node);
+
+  tdecl = add_builtin_type ("__vector signed short", V8HI_type_node);
   TYPE_NAME (V8HI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL,
-      		      get_identifier ("__vector __bool short"),
-		      bool_V8HI_type_node);
+
+  tdecl = add_builtin_type ("__vector __bool short", bool_V8HI_type_node);
   TYPE_NAME (bool_V8HI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL,
-      		      get_identifier ("__vector unsigned int"),
-		      unsigned_V4SI_type_node);
+  tdecl = add_builtin_type ("__vector unsigned int", unsigned_V4SI_type_node);
   TYPE_NAME (unsigned_V4SI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION,
-      		      TYPE_DECL, get_identifier ("__vector signed int"),
-		      V4SI_type_node);
+
+  tdecl = add_builtin_type ("__vector signed int", V4SI_type_node);
   TYPE_NAME (V4SI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION,
-      		      TYPE_DECL, get_identifier ("__vector __bool int"),
-		      bool_V4SI_type_node);
+
+  tdecl = add_builtin_type ("__vector __bool int", bool_V4SI_type_node);
   TYPE_NAME (bool_V4SI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  tdecl = build_decl (BUILTINS_LOCATION,
-      		      TYPE_DECL, get_identifier ("__vector float"),
-		      V4SF_type_node);
+  tdecl = add_builtin_type ("__vector float", V4SF_type_node);
   TYPE_NAME (V4SF_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
-  tdecl = build_decl (BUILTINS_LOCATION,
-      		      TYPE_DECL, get_identifier ("__vector __pixel"),
-		      pixel_V8HI_type_node);
+
+  tdecl = add_builtin_type ("__vector __pixel", pixel_V8HI_type_node);
   TYPE_NAME (pixel_V8HI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  tdecl = build_decl (BUILTINS_LOCATION,
-		      TYPE_DECL, get_identifier ("__vector double"),
-		      V2DF_type_node);
+  tdecl = add_builtin_type ("__vector double", V2DF_type_node);
   TYPE_NAME (V2DF_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  tdecl = build_decl (BUILTINS_LOCATION,
-		      TYPE_DECL, get_identifier ("__vector long"),
-		      V2DI_type_node);
+  tdecl = add_builtin_type ("__vector long", V2DI_type_node);
   TYPE_NAME (V2DI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  tdecl = build_decl (BUILTINS_LOCATION,
-		      TYPE_DECL, get_identifier ("__vector unsigned long"),
-		      unsigned_V2DI_type_node);
+  tdecl = add_builtin_type ("__vector unsigned long", unsigned_V2DI_type_node);
   TYPE_NAME (unsigned_V2DI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  tdecl = build_decl (BUILTINS_LOCATION,
-		      TYPE_DECL, get_identifier ("__vector __bool long"),
-		      bool_V2DI_type_node);
+  tdecl = add_builtin_type ("__vector __bool long", bool_V2DI_type_node);
   TYPE_NAME (bool_V2DI_type_node) = tdecl;
-  (*lang_hooks.decls.pushdecl) (tdecl);
 
   /* Paired and SPE builtins are only available if you build a compiler with
      the appropriate options, so only create those builtins with the
@@ -11843,10 +11797,7 @@ spe_init_builtins (void)
                                 signed_char_type_node,
                                 NULL_TREE);
 
-  (*lang_hooks.decls.pushdecl)
-    (build_decl (BUILTINS_LOCATION, TYPE_DECL,
-		 get_identifier ("__ev64_opaque__"),
-		 opaque_V2SI_type_node));
+  add_builtin_type ("__ev64_opaque__", opaque_V2SI_type_node);
 
   /* Initialize irregular SPE builtins.  */
 
