@@ -1,5 +1,8 @@
 2012-03-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51930
+	* g++.dg/ext/visibility/template11.C: New.
+
 	* g++.dg/cpp0x/implicit13.C: New.
 
 2012-03-05  Jakub Jelinek  <jakub@redhat.com>
