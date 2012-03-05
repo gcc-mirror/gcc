@@ -508,7 +508,7 @@ ipcp_initialize_node_lattices (struct cgraph_node *node)
 
   if (ipa_is_called_with_var_arguments (info))
     type = IPA_BOTTOM;
-  else if (!node->needed)
+  else if (!node->needed && !node->local.externally_visible)
     type = IPA_TOP;
   /* When cloning is allowed, we can assume that externally visible functions
      are not called.  We will compensate this by cloning later.  */

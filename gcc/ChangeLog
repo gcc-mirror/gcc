@@ -1,3 +1,9 @@
+2012-03-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/52430
+	* ipa-cp.c (ipcp_initialize_node_lattices): Also consider
+	node->local.externally_visible as needed.
+
 2012-03-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline
