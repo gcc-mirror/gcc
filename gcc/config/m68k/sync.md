@@ -62,8 +62,11 @@
    (match_operand:SI 2 "const_int_operand" "")]		;; model
   ""
 {
-  emit_insn (gen_atomic_test_and_set_1 (operands[0], operands[1]));
-  emit_insn (gen_negqi2 (operands[0], operands[0]));
+  rtx t = gen_reg_rtx (QImode);
+  emit_insn (gen_atomic_test_and_set_1 (t, operands[1]));
+  t = expand_simple_unop (QImode, NEG, t, operands[0], 0);
+  if (t != operands[0])
+    emit_move_insn (operands[0], t);
   DONE;
 })
 
