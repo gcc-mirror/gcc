@@ -667,6 +667,7 @@ ada/doctools/xgnatugn$(build_exeext): ada/xgnatugn.adb
 
 doc/gnat_ugn.texi: $(srcdir)/ada/gnat_ugn.texi $(srcdir)/ada/ug_words \
    doc/projects.texi $(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
+	$(MAKE) ada/doctools/xgnatugn$(build_exeext)
 	ada/doctools/xgnatugn unw $(srcdir)/ada/gnat_ugn.texi \
 	   $(srcdir)/ada/ug_words doc/gnat_ugn.texi
 

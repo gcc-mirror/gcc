@@ -1,3 +1,8 @@
+2012-03-05  Jason Merrill  <jason@redhat.com>
+
+	* gcc-interface/Make-lang.in (doc/gnat_ugn.texi): Build xgnatugn
+	before using it.
+
 2012-03-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatvsn.ads (Library_Version): Bump to 4.8.
