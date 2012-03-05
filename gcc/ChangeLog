@@ -1,3 +1,9 @@
+2012-03-05  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (integer_zerop): Handle VECTOR_CSTs.
+	(integer_onep): Likewise.
+	(integer_all_onesp): Likewise.
+
 2012-03-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (*umaddqihi4.2): New insn-and-split.
