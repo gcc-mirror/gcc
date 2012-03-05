@@ -12,7 +12,7 @@ Get, Head, Post, and PostForm make HTTP requests:
 	resp, err := http.Post("http://example.com/upload", "image/jpeg", &buf)
 	...
 	resp, err := http.PostForm("http://example.com/form",
- 		url.Values{"key": {"Value"}, "id": {"123"}})
+		url.Values{"key": {"Value"}, "id": {"123"}})
 
 The client must close the response body when finished with it:
 
@@ -60,7 +60,7 @@ Handle and HandleFunc add handlers to DefaultServeMux:
 	http.Handle("/foo", fooHandler)
 
 	http.HandleFunc("/bar", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.RawPath))
+		fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))

@@ -45,17 +45,20 @@
 ;; Return true if OP is a valid address for lower half of I/O space.
 (define_predicate "low_io_address_operand"
   (and (match_code "const_int")
-       (match_test "IN_RANGE((INTVAL (op)), 0x20, 0x3F)")))
+       (match_test "IN_RANGE (INTVAL (op) - avr_current_arch->sfr_offset,
+                              0, 0x1f)")))
 
 ;; Return true if OP is a valid address for high half of I/O space.
 (define_predicate "high_io_address_operand"
   (and (match_code "const_int")
-       (match_test "IN_RANGE((INTVAL (op)), 0x40, 0x5F)")))
+       (match_test "IN_RANGE (INTVAL (op) - avr_current_arch->sfr_offset,
+                              0x20, 0x3F)")))
 
 ;; Return true if OP is a valid address of I/O space.
 (define_predicate "io_address_operand"
   (and (match_code "const_int")
-       (match_test "IN_RANGE((INTVAL (op)), 0x20, (0x60 - GET_MODE_SIZE(mode)))")))
+       (match_test "IN_RANGE (INTVAL (op) - avr_current_arch->sfr_offset,
+                              0, 0x40 - GET_MODE_SIZE (mode))")))
 
 ;; Return 1 if OP is a general operand not in flash memory
 (define_predicate "nop_general_operand"

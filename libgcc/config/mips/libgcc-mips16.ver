@@ -84,7 +84,3 @@ GCC_4.4.0 {
   __mips16_call_stub_dc_9
   __mips16_call_stub_dc_10
 }
-
-GCC_4.7.0 {
-  __mips16_rdhwr
-}

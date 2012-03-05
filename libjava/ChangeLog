@@ -1,3 +1,27 @@
+2012-02-23  Patrick Marlier  <patrick.marlier@gmail.com>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR target/49461
+	* configure.ac (SYSTEMSPEC): No longer pass -no_pie for darwin11.
+	* configure: Regenerate.
+
+2012-02-02  Kai Tietz  <ktietz@redhat.com>
+
+	PR libjava/48512
+	* configure.ac (THREADSTARTFILESPEC): Don't add crtmet.o file for
+	w64 windows targets.
+	* configure: Regenerated.
+
+2012-02-01  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/51500
+	* interpret.cc (_Jv_init_cif): Handle thiscall
+	convention for 32-bit Windows.
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA):
+	Likewise.
+	* java/lang/reflect/natVMProxy.cc (invoke_t): Add
+	thiscall-attribute for 32-bit Windows.
+
 2012-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnu/gcj/convert/Convert.java (version): Update copyright notice

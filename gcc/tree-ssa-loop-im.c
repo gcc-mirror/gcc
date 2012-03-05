@@ -150,7 +150,7 @@ typedef struct mem_ref
 
   bitmap indep_ref;		/* The set of memory references on that
 				   this reference is independent.  */
-  bitmap dep_ref;		/* The complement of DEP_REF.  */
+  bitmap dep_ref;		/* The complement of INDEP_REF.  */
 } *mem_ref_p;
 
 DEF_VEC_P(mem_ref_p);
@@ -411,6 +411,26 @@ movement_possibility (gimple stmt)
   if (TREE_CODE (lhs) != SSA_NAME
       || gimple_could_trap_p (stmt))
     return MOVE_PRESERVE_EXECUTION;
+
+  /* Non local loads in a transaction cannot be hoisted out.  Well,
+     unless the load happens on every path out of the loop, but we
+     don't take this into account yet.  */
+  if (flag_tm
+      && gimple_in_transaction (stmt)
+      && gimple_assign_single_p (stmt))
+    {
+      tree rhs = gimple_assign_rhs1 (stmt);
+      if (DECL_P (rhs) && is_global_var (rhs))
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Cannot hoist conditional load of ");
+	      print_generic_expr (dump_file, rhs, TDF_SLIM);
+	      fprintf (dump_file, " because it is in a transaction.\n");
+	    }
+	  return MOVE_IMPOSSIBLE;
+	}
+    }
 
   return ret;
 }
@@ -2387,6 +2407,9 @@ tree_ssa_lim_initialize (void)
   sbitmap_free (contains_call);
 
   lim_aux_data_map = pointer_map_create ();
+
+  if (flag_tm)
+    compute_transaction_bits ();
 }
 
 /* Cleans up after the invariant motion pass.  */

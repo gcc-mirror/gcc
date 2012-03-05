@@ -7,11 +7,13 @@ package build
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 )
+
+// ToolDir is the directory containing build tools.
+var ToolDir = filepath.Join(runtime.GOROOT(), "pkg/tool/"+runtime.GOOS+"_"+runtime.GOARCH)
 
 // Path is a validated list of Trees derived from $GOROOT and $GOPATH at init.
 var Path []*Tree
@@ -81,7 +83,6 @@ func (t *Tree) HasPkg(pkg string) bool {
 		return false
 	}
 	return !fi.IsDir()
-	// TODO(adg): check object version is consistent
 }
 
 var (
@@ -150,36 +151,18 @@ var (
 func init() {
 	root := runtime.GOROOT()
 	t, err := newTree(root)
-	if err != nil {
-		log.Printf("invalid GOROOT %q: %v", root, err)
-	} else {
+	if err == nil {
 		t.Goroot = true
 		Path = []*Tree{t}
 	}
 
-Loop:
 	for _, p := range filepath.SplitList(os.Getenv("GOPATH")) {
 		if p == "" {
 			continue
 		}
 		t, err := newTree(p)
 		if err != nil {
-			log.Printf("invalid GOPATH %q: %v", p, err)
 			continue
-		}
-
-		// Check for dupes.
-		// TODO(alexbrainman): make this correct under windows (case insensitive).
-		for _, t2 := range Path {
-			if t2.Path != t.Path {
-				continue
-			}
-			if t2.Goroot {
-				log.Printf("GOPATH is the same as GOROOT: %q", t.Path)
-			} else {
-				log.Printf("duplicate GOPATH entry: %q", t.Path)
-			}
-			continue Loop
 		}
 
 		Path = append(Path, t)

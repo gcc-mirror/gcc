@@ -233,8 +233,8 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
           oprnd = TREE_OPERAND (oprnd, 0);
 	}
 
-      if (!vect_is_simple_use (oprnd, loop_vinfo, bb_vinfo, &def_stmt, &def,
-                               &dt)
+      if (!vect_is_simple_use (oprnd, NULL, loop_vinfo, bb_vinfo, &def_stmt,
+			       &def, &dt)
 	  || (!def_stmt && dt != vect_constant_def))
 	{
 	  if (vect_print_dump_info (REPORT_SLP))
@@ -321,10 +321,15 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
                 vect_model_store_cost (stmt_info, ncopies_for_cost, false,
                                         dt, slp_node);
 	      else
-	        /* Not memory operation (we don't call this function for
-		   loads).  */
-		vect_model_simple_cost (stmt_info, ncopies_for_cost, &dt,
-					slp_node);
+		{
+		  enum vect_def_type dts[2];
+		  dts[0] = dt;
+		  dts[1] = vect_uninitialized_def;
+		  /* Not memory operation (we don't call this function for
+		     loads).  */
+		  vect_model_simple_cost (stmt_info, ncopies_for_cost, dts,
+					  slp_node);
+		}
 	    }
 	}
       else

@@ -8,7 +8,10 @@ ada/        by Dmitriy Anisimkov <anisimkov@yahoo.com>
         Support for Ada
         See http://zlib-ada.sourceforge.net/
 
-asm586/
+amd64/      by Mikhail Teterin <mi@ALDAN.algebra.com>
+        asm code for AMD64
+        See patch at http://www.freebsd.org/cgi/query-pr.cgi?pr=bin/96393
+
 asm686/     by Brian Raiter <breadbox@muppetlabs.com>
         asm code for Pentium and PPro/PII, using the AT&T (GNU as) syntax
         See http://www.muppetlabs.com/~breadbox/software/assembly.html
@@ -21,6 +24,10 @@ delphi/     by Cosmin Truta <cosmint@cs.ubbcluj.ro>
 
 dotzlib/    by Henrik Ravn <henrik@ravn.com>
         Support for Microsoft .Net and Visual C++ .Net
+
+gcc_gvmat64/by Gilles Vollant <info@winimage.com>
+        GCC Version of x86 64-bit (AMD64 and Intel EM64t) code for x64
+        assembler to replace longest_match() and inflate_fast()
 
 infback9/   by Mark Adler <madler@alumni.caltech.edu>
         Unsupported diffs to infback to decode the deflate64 format
@@ -38,20 +45,19 @@ iostream3/  by Ludwig Schwardt <schwardt@sun.ac.za>
             and Kevin Ruland <kevin@rodin.wustl.edu>
         Yet another C++ I/O streams interface
 
-masm686/    by Dan Higdon <hdan@kinesoft.com>
-            and Chuck Walbourn <chuckw@kinesoft.com>
-        asm code for Pentium Pro/PII, using the MASM syntax
-
 masmx64/    by Gilles Vollant <info@winimage.com>
-	x86 64-bit (AMD64 and Intel EM64t) code for x64 assembler to
-	replace longest_match() and inflate_fast()
+        x86 64-bit (AMD64 and Intel EM64t) code for x64 assembler to
+        replace longest_match() and inflate_fast(),  also masm x86
+        64-bits translation of Chris Anderson inflate_fast()
 
 masmx86/    by Gilles Vollant <info@winimage.com>
         x86 asm code to replace longest_match() and inflate_fast(),
-        for Visual C++ and MASM
+        for Visual C++ and MASM (32 bits).
+        Based on Brian Raiter (asm686) and Chris Anderson (inflate86)
 
 minizip/    by Gilles Vollant <info@winimage.com>
         Mini zip and unzip based on zlib
+        Includes Zip64 support by Mathias Svensson <mathias@result42.com>
         See http://www.winimage.com/zLibDll/unzip.html
 
 pascal/     by Bob Dellaca <bobdl@xtra.co.nz> et al.

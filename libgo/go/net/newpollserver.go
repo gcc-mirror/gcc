@@ -18,16 +18,16 @@ func newPollServer() (s *pollServer, err error) {
 	if s.pr, s.pw, err = os.Pipe(); err != nil {
 		return nil, err
 	}
-	if err = syscall.SetNonblock(s.pr.Fd(), true); err != nil {
+	if err = syscall.SetNonblock(int(s.pr.Fd()), true); err != nil {
 		goto Errno
 	}
-	if err = syscall.SetNonblock(s.pw.Fd(), true); err != nil {
+	if err = syscall.SetNonblock(int(s.pw.Fd()), true); err != nil {
 		goto Errno
 	}
 	if s.poll, err = newpollster(); err != nil {
 		goto Error
 	}
-	if _, err = s.poll.AddFD(s.pr.Fd(), 'r', true); err != nil {
+	if _, err = s.poll.AddFD(int(s.pr.Fd()), 'r', true); err != nil {
 		s.poll.Close()
 		goto Error
 	}
@@ -36,7 +36,11 @@ func newPollServer() (s *pollServer, err error) {
 	return s, nil
 
 Errno:
-	err = &os.PathError{"setnonblock", s.pr.Name(), err}
+	err = &os.PathError{
+		Op:   "setnonblock",
+		Path: s.pr.Name(),
+		Err:  err,
+	}
 Error:
 	s.pr.Close()
 	s.pw.Close()

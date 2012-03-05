@@ -12,6 +12,9 @@
 /* Define to 1 if you have the `faccessat' function. */
 #undef HAVE_FACCESSAT
 
+/* Define to 1 if you have the `fallocate' function. */
+#undef HAVE_FALLOCATE
+
 /* Define to 1 if you have the `fchmodat' function. */
 #undef HAVE_FCHMODAT
 
@@ -30,6 +33,9 @@
 /* Define to 1 if you have the `inotify_init' function. */
 #undef HAVE_INOTIFY_INIT
 
+/* Define to 1 if you have the `inotify_init1' function. */
+#undef HAVE_INOTIFY_INIT1
+
 /* Define to 1 if you have the `inotify_rm_watch' function. */
 #undef HAVE_INOTIFY_RM_WATCH
 
@@ -42,11 +48,17 @@
 /* Define to 1 if you have the <linux/netlink.h> header file. */
 #undef HAVE_LINUX_NETLINK_H
 
+/* Define to 1 if you have the <linux/reboot.h> header file. */
+#undef HAVE_LINUX_REBOOT_H
+
 /* Define to 1 if you have the <linux/rtnetlink.h> header file. */
 #undef HAVE_LINUX_RTNETLINK_H
 
 /* Define to 1 if the system has the type `loff_t'. */
 #undef HAVE_LOFF_T
+
+/* Define to 1 if you have the `matherr' function. */
+#undef HAVE_MATHERR
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
@@ -99,13 +111,27 @@
 /* Define to 1 if you have the `strsignal' function. */
 #undef HAVE_STRSIGNAL
 
+/* Define to 1 if <math.h> defines struct exception */
+#undef HAVE_STRUCT_EXCEPTION
+
+/* Define to 1 if the compiler provides the __sync_add_and_fetch function for
+   uint64 */
+#undef HAVE_SYNC_ADD_AND_FETCH_8
+
 /* Define to 1 if the compiler provides the __sync_bool_compare_and_swap
    function for uint32 */
 #undef HAVE_SYNC_BOOL_COMPARE_AND_SWAP_4
 
+/* Define to 1 if the compiler provides the __sync_bool_compare_and_swap
+   function for uint64 */
+#undef HAVE_SYNC_BOOL_COMPARE_AND_SWAP_8
+
 /* Define to 1 if the compiler provides the __sync_fetch_and_add function for
    uint32 */
 #undef HAVE_SYNC_FETCH_AND_ADD_4
+
+/* Define to 1 if you have the `sync_file_range' function. */
+#undef HAVE_SYNC_FILE_RANGE
 
 /* Define to 1 if you have the <syscall.h> header file. */
 #undef HAVE_SYSCALL_H
@@ -115,6 +141,9 @@
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
 #undef HAVE_SYS_MMAN_H
+
+/* Define to 1 if you have the <sys/mount.h> header file. */
+#undef HAVE_SYS_MOUNT_H
 
 /* Define to 1 if you have the <sys/prctl.h> header file. */
 #undef HAVE_SYS_PRCTL_H
@@ -128,11 +157,20 @@
 /* Define to 1 if you have the <sys/socket.h> header file. */
 #undef HAVE_SYS_SOCKET_H
 
+/* Define to 1 if you have the <sys/statfs.h> header file. */
+#undef HAVE_SYS_STATFS_H
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
 /* Define to 1 if you have the <sys/syscall.h> header file. */
 #undef HAVE_SYS_SYSCALL_H
+
+/* Define to 1 if you have the <sys/sysinfo.h> header file. */
+#undef HAVE_SYS_SYSINFO_H
+
+/* Define to 1 if you have the <sys/timex.h> header file. */
+#undef HAVE_SYS_TIMEX_H
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
@@ -142,6 +180,9 @@
 
 /* Define to 1 if you have the <sys/utsname.h> header file. */
 #undef HAVE_SYS_UTSNAME_H
+
+/* Define to 1 if you have the <sys/vfs.h> header file. */
+#undef HAVE_SYS_VFS_H
 
 /* Define to 1 if you have the `tee' function. */
 #undef HAVE_TEE
@@ -155,6 +196,12 @@
 /* Define to 1 if you have the `unshare' function. */
 #undef HAVE_UNSHARE
 
+/* Define to 1 if you have the <ustat.h> header file and it works. */
+#undef HAVE_USTAT_H
+
+/* Define to 1 if you have the <utime.h> header file. */
+#undef HAVE_UTIME_H
+
 /* Define to 1 if you have the `wait4' function. */
 #undef HAVE_WAIT4
 
@@ -167,6 +214,9 @@
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
 #undef LT_OBJDIR
+
+/* Define if makecontext expects top of stack in uc_stack. */
+#undef MAKECONTEXT_STACK_TOP
 
 /* Name of package */
 #undef PACKAGE
@@ -188,6 +238,12 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* Define if setcontext clobbers TLS variables */
+#undef SETCONTEXT_CLOBBERS_TLS
+
+/* The size of `void *', as computed by sizeof. */
+#undef SIZEOF_VOID_P
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
@@ -212,3 +268,6 @@
 #  undef WORDS_BIGENDIAN
 # endif
 #endif
+
+/* Define to `long int' if <sys/types.h> does not define. */
+#undef off_t

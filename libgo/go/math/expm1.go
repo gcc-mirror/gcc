@@ -121,7 +121,10 @@ package math
 //	Expm1(-Inf) = -1
 //	Expm1(NaN) = NaN
 // Very large values overflow to -1 or +Inf.
-func libc_expm1(float64) float64 __asm__("expm1")
+
+//extern expm1
+func libc_expm1(float64) float64
+
 func Expm1(x float64) float64 {
 	return libc_expm1(x)
 }
@@ -145,12 +148,10 @@ func expm1(x float64) float64 {
 	)
 
 	// special cases
-	// TODO(rsc): Remove manual inlining of IsNaN, IsInf
-	// when compiler does it for us
 	switch {
-	case x > MaxFloat64 || x != x: // IsInf(x, 1) || IsNaN(x):
+	case IsInf(x, 1) || IsNaN(x):
 		return x
-	case x < -MaxFloat64: // IsInf(x, -1):
+	case IsInf(x, -1):
 		return -1
 	}
 

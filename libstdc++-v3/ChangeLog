@@ -1,3 +1,506 @@
+2012-03-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/52433
+	* include/debug/safe_iterator.h (_Safe_iterator): Add move
+	constructor and move assignment operator.
+	* testsuite/23_containers/vector/debug/52433.cc: New.
+
+2012-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/limits (numeric_limits): Fix returns per C++11.
+	* testsuite/18_support/numeric_limits/primary.cc: New.
+
+2012-03-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/c_global/cstdio: Remove extraneous extern.
+	* include/c_std/cstdio: Same.
+
+2012-03-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/solaris2.8/baseline_symbols.txt: Regenerate.
+	* config/abi/post/solaris2.8/sparcv9/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt: Likewise.
+
+2012-03-01  Benjamin Kosnik  <bkoz@redhat.com>
+            Ramana Radhakrishnan <ramana@gcc.gnu.org>
+
+	PR libstdc++/51785
+	* acinclude.m4 (GLIBCXX_CHECK_STDIO_PROTO): New.
+	* configure.ac: Call it.
+	* configure: Regenerate.
+	* config.h.in: Same.
+	* config/os/gnu-linux/os_defines.h: Conditionally undefine
+	_GLIBCXX_HAVE_GETS.
+	* include/c_global/cstdio: Conditionally declare deprecated gets.
+	* include/c_std/cstdio: Same.
+
+2012-03-01  Michael Spertus  <mike_spertus@symantec.com>
+
+	* include/tr2/type_traits (typelist): To __reflection_typelist.
+	(first, rest, empty): Remove.
+
+2012-03-01  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/Makefile.am (CLEANFILES): Add *.gdb.
+	* testsuite/Makefile.in: Regenerate.
+
+2012-02-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Update.
+
+2012-02-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/52191
+	* testsuite/util/testsuite_abi.cc (compare_symbols): Check new
+	symbols added into the latest version. Mark tls entities as
+	undesignated.
+
+2012-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/52414
+	* src/Makefile.am (libstdc++-symbols.ver): Only remove comment lines
+	if they are at the beginning of lines (with optional whitespace before
+	#).
+	* src/Makefile.in: Regenerated.
+
+2012-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt:
+	Likewise.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Likewise.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Likewise.
+
+2012-02-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/52188
+	* acinclude.m4 (GLIBCXX_ENABLE_SYMVERS): Remove symvers_renaming.
+	Remove ENABLE_SYMVERS_SOL2.
+	* configure: Regenerate.
+	* src/Makefile.am [ENABLE_SYMVERS] (libstdc++-symbols.ver):
+	Postprocess mapfile.
+	[ENABLE_SYMVERS_GNU]: Remove ENABLE_SYMVERS_SOL2 handling.
+	* src/Makefile.in: Regenerate.
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.5) [!__sun__ && !__svr4__]:
+	Don't export
+	_ZNSt19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEppEv.
+
+2012-02-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/52201
+	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc:
+	Require	atomic builtins.
+	* testsuite/29_atomics/atomic/operators/51811.cc: Likewise.
+
+2012-02-23  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/locale_facets.h (class num_get): Undo reordering of
+	do_get virtual functions.
+
+2012-02-14  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* testsuite/26_numerics/random/
+	uniform_real_distribution/requirements/typedefs.cc: Check param_type.
+	* testsuite/26_numerics/random/
+	piecewise_constant_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	chi_squared_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	normal_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	uniform_int_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	poisson_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	bernoulli_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	discrete_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	weibull_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	cauchy_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	negative_binomial_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	gamma_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	fisher_f_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	exponential_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	binomial_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	lognormal_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	extreme_value_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	piecewise_linear_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	student_t_distribution/requirements/typedefs.cc: Ditto.
+	* testsuite/26_numerics/random/
+	geometric_distribution/requirements/typedefs.cc: Ditto.
+
+2012-02-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/50349
+	* config/abi/pre/gnu.ver: Only one local.
+	* config/abi/pre/gnu-versioned-namespace.ver: Same.
+
+2012-02-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52317 (cont)
+	* include/profile/unordered_map: Ad Library Exception comment.
+	* include/profile/set: Likewise.
+	* include/profile/base.h: Likewise.
+	* include/profile/impl/profiler_list_to_slist.h: Likewise.
+	* include/profile/impl/profiler_container_size.h: Likewise.
+	* include/profile/impl/profiler_vector_size.h: Likewise.
+	* include/profile/impl/profiler_hash_func.h: Likewise.
+	* include/profile/impl/profiler_trace.h: Likewise.
+	* include/profile/impl/profiler_list_to_vector.h: Likewise.
+	* include/profile/impl/profiler_vector_to_list.h: Likewise.
+	* include/profile/impl/profiler.h: Likewise.
+	* include/profile/impl/profiler_state.h: Likewise.
+	* include/profile/impl/profiler_map_to_unordered_map.h: Likewise.
+	* include/profile/impl/profiler_algos.h: Likewise.
+	* include/profile/impl/profiler_hashtable_size.h: Likewise.
+	* include/profile/impl/profiler_node.h: Likewise.
+	* include/profile/vector: Likewise.
+	* include/profile/unordered_set: Likewise.
+	* include/profile/map.h: Likewise.
+	* include/profile/map: Likewise.
+
+2012-02-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52317
+	* python/Makefile.am: Update boilerplate license text to GPLv3.
+	* include/profile/unordered_map: Likewise.
+	* include/profile/set: Likewise.
+	* include/profile/base.h: Likewise.
+	* include/profile/impl/profiler_list_to_slist.h: Likewise.
+	* include/profile/impl/profiler_container_size.h: Likewise.
+	* include/profile/impl/profiler_vector_size.h: Likewise.
+	* include/profile/impl/profiler_hash_func.h: Likewise.
+	* include/profile/impl/profiler_trace.h: Likewise.
+	* include/profile/impl/profiler_list_to_vector.h: Likewise.
+	* include/profile/impl/profiler_vector_to_list.h: Likewise.
+	* include/profile/impl/profiler.h: Likewise.
+	* include/profile/impl/profiler_state.h: Likewise.
+	* include/profile/impl/profiler_map_to_unordered_map.h: Likewise.
+	* include/profile/impl/profiler_algos.h: Likewise.
+	* include/profile/impl/profiler_hashtable_size.h: Likewise.
+	* include/profile/impl/profiler_node.h: Likewise.
+	* include/profile/vector: Likewise.
+	* include/profile/unordered_set: Likewise.
+	* include/profile/map.h: Likewise.
+	* include/profile/map: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	wchar_t/dr1261.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/
+	char/dr1261.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/invoke-2.cc: Likewise.
+
+2012-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52241
+	* src/c++98/tree.cc (local_Rb_tree_increment,
+	local_Rb_tree_decrement): Add.
+	(_Rb_tree_increment(const _Rb_tree_node_base*),
+	_Rb_tree_decrement(const _Rb_tree_node_base*)): Use the latter.
+	(_Rb_tree_increment(_Rb_tree_node_base*),
+	_Rb_tree_decrement(_Rb_tree_node_base*)): New.
+
+2012-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52309
+	* include/bits/hashtable_policy.h (_Equality_base<, true,>::
+    	_M_equal(const _Hashtable&)): Compare values with operator==.
+	* testsuite/23_containers/unordered_set/operators/52309.cc: New.
+
+2012-02-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/51798 continued.
+	* acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): Grep for
+	__atomic_, not __sync.
+	* configure: Regenerated.
+
+2012-02-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/47058
+	* acinclude.m4 (GLIBCXX_ENABLE_WERROR): New.
+	(GLIBCXX_EXPORT_FLAGS): Add -Wabi to WARN_FLAGS
+	* configure.ac: Use it.
+	* fragment.am: Set WERROR_FLAG conditionally on --disable-werror.
+	* configure: Regenerate.
+	* python/Makefile.in: Same.
+	* Makefile.in: Same.
+	* doc/Makefile.in: Same.
+	* include/Makefile.in: Same.
+	* po/Makefile.in: Same.
+	* python/Makefile.in: Same.
+	* src/Makefile.in: Same.
+	* src/c++11/Makefile.in: Same.
+	* src/c++98/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+
+2012-02-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/52189
+	* acinclude.m4 (GLIBCXX_CHECK_GTHREADS): Handle
+	--enable-libstdcxx-threads.
+	Disable on Solaris 8/9 with symbol versioning.
+	* configure.ac (GLIBCXX_CHECK_GTHREADS): Move after
+	GLIBCXX_ENABLE_SYMVERS.
+	* configure: Regenerate.
+	* doc/xml/manual/configure.xml (--enable-libstdcxx-threads): Explain.
+
+2012-02-15  DJ Delorie  <dj@redhat.com>
+
+	* src/c++98/locale.cc (locale::facet::_S_get_c_locale): Fix typo.
+
+2012-02-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/51368
+	* acinclude.m4 (GLIBCXX_ENABLE_PYTHON): New.
+	* configure.ac: Use it.
+	* python/Makefile.am: Same.
+	* configure: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* Makefile.in: Same.
+	* doc/Makefile.in: Same.
+	* include/Makefile.in: Same.
+	* po/Makefile.in: Same.
+	* src/Makefile.in: Same.
+	* src/c++11/Makefile.in: Same.
+	* src/c++98/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+
+2012-02-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* 30_threads/thread/native_handle/typesizes.cc: Do not run on cygwin.
+
+2012-02-14  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/cxx11.cc (main): Add new
+	tests.
+	* python/libstdcxx/v6/printers.py (Tr1HashtableIterator.__init__):
+	Rewrite.
+	(Tr1HashtableIterator.update): Remove.
+	(Tr1HashtableIterator.next): Rewrite.
+
+2012-02-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line numbers.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc: Same.
+
+2012-02-13  Richard Henderson  <rth@redhat.com>
+
+	PR libstdc++/51798 continued.
+	* include/bits/shared_ptr_base.h
+	(_Sp_counted_base<_S_atomic>::_M_add_ref_lock): Hoist initial load
+	outside compare_exchange loop.
+	* include/tr1/shared_ptr.h: Same.
+	* include/parallel/compatibility.h (__compare_and_swap_32): Use strong
+	version of compare_exchange.
+	(__compare_and_swap_64): Same.
+	* include/profile/impl/profiler_state.h (__gnu_profile::__turn): Same.
+	* libsupc++/guard.cc (__cxa_guard_acquire): Same.
+
+2012-02-10  Benjamin Kosnik  <bkoz@redhat.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51798 continued.
+	* acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): Use __atomic_*
+	builtins instead of __sync_* builtins for atomic functionality.
+	* include/bits/shared_ptr_base.h: Same.
+	* include/parallel/compatibility.h: Same.
+	* include/profile/impl/profiler_state.h: Same.
+	* include/tr1/shared_ptr.h: Same.
+	* libsupc++/eh_ptr.cc: Same.
+	* libsupc++/eh_throw.cc: Same.
+	* libsupc++/eh_tm.cc: Same.
+	* libsupc++/guard.cc: Same.
+	* configure: Regenerated.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line numbers.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc: Same.
+
+2012-02-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/51296
+	* config/os/osf/ctype_base.h,
+	config/os/osf/ctype_configure_char.cc,
+	config/os/osf/ctype_inline.h, config/os/osf/error_constants.h:
+	Copy from config/os/generic.
+	* config/os/osf/os_defines.h: Likewise.
+	(_GTHREAD_USE_MUTEX_INIT_FUNC, _GTHREAD_USE_COND_INIT_FUNC):
+	Define.
+	* configure.host <osf*>: Use os/osf for os_include_dir.
+
+2012-02-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Regenerated.
+
+2012-02-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Fix invalid attribute.
+
+2012-02-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update C++11 status table.
+
+2012-02-07  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Update to doxygen 1.7.6.1.
+	* doc/xml/manual/documentation_hacking.xml: Update.
+
+2012-02-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/30_threads/call_once/39909.cc: Remove duplicate target
+	selector.
+	* testsuite/30_threads/call_once/49668.cc: Likewise.
+	* testsuite/30_threads/call_once/call_once1.cc: Likewise.
+	* testsuite/30_threads/lock_guard/cons/1.cc: Likewise.
+	* testsuite/30_threads/mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/mutex/dest/destructor_locked.cc: Likewise.
+	* testsuite/30_threads/mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/mutex/native_handle/1.cc: Likewise.
+	* testsuite/30_threads/mutex/native_handle/typesizes.cc: Likewise.
+	* testsuite/30_threads/mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/2.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/3.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/5.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/6.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/2.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/3.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/modifiers/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/modifiers/2.cc: Likewise.
+
+2012-02-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51296
+	* include/std/mutex (__mutex_base::~__mutex_base): Declare noexcept.
+	* src/c++11/condition_variable.cc (condition_variable): Use macro for
+	initializer function.
+
+	PR libstdc++/51906
+	* config/os/bsd/darwin/os_defines.h: Disable static initializer for
+	recursive mutexes.
+
+2012-02-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/52128
+	* src/c++11/future.cc: Add explicit instantiation.
+
+2012-02-06  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_iterator.h
+	(_Safe_iterator::_M_before_dereferenceable): Avoid the expensive
+	creation of a _Safe_iterator instance to do the check.
+
+2012-02-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/52104
+	* include/std/future (__future_base::_Async_state_common): Define
+	destructor inline for targets without TLS.
+	* src/c++11/future.cc (__future_base::_Async_state_common): Only
+	define destructor for TLS targets.
+
+2012-02-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51956
+	* python/libstdcxx/v6/printers.py (StdPointerPrinter): Rename to...
+	(SharedPointerPrinter): This. Also show weak count.
+	* testsuite/libstdc++-prettyprinters/shared_ptr.cc: New.
+
+2012-02-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/20_util/shared_ptr/cons/weak_ptr_expired.cc: Modify to
+	PASS instead of XFAIL.
+
+2012-02-05  Jeffrey Yasskin  <jyasskin@gcc.gnu.org>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/52119
+	* include/std/limits (__glibcxx_min): Fix to avoid undefined behavior.
+
+2012-02-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/49445
+	* testsuite/29_atomics/atomic/cons/49445.cc: Add.
+
+2012-02-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/51811
+	* include/bits/atomic_base.h (atomic<_Tp*>): Fix offsets.
+	* testsuite/29_atomics/atomic/operators/51811.cc: New.
+	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc: New.
+
+2012-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt:
+	Likewise.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Likewise.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Likewise.
+
+2012-02-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/52068
+	* src/c++11/Makefile.am (toolexeclib_LTLIBRARIES,
+	libc__11_la_SOURCES): Remove.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++98/Makefile.am (toolexeclib_LTLIBRARIES,
+	libc__98_la_SOURCES): Remove.
+	* src/c++98/Makefile.in: Regenerate.
+
+2012-02-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/49204
+	* include/std/future (__future_base::_State_base::wait()): Use lambda
+	expression for predicate and remove redundant test.
+	(__future_base::_State_base::wait_for()): Return future_status and
+	use lambda expression for predicate.
+	(__future_base::_State_base::wait_until()): Likewise.
+	(__basic_future::wait_for(), __basic_future::wait_until()): Likewise.
+	(__future_base::_Async_state): Replace with _Async_state_common
+	class for non-dependent functionality and _Async_state_impl class
+	template for dependent functionality.
+	(__future_base::_Async_state_common::_M_join): Serialize attempts to
+	join thread.
+	(__future_base::_Async_state_common::_M_run_deferred): Join.
+	(__future_base::_Async_state::_M_do_run): Replace with lambda.
+	* src/c++11/future.cc (__future_base::_Async_state_common): Define
+	destructor, so key function is in the library.
+	* config/abi/pre/gnu.ver: Add exports for ~_Async_state_common.
+	* testsuite/30_threads/packaged_task/members/get_future.cc: Expect
+	future_status return instead of bool.
+	* testsuite/30_threads/shared_future/members/wait_until.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/wait_for.cc: Likewise.
+	* testsuite/30_threads/future/members/wait_until.cc: Likewise.
+	* testsuite/30_threads/future/members/wait_for.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value2.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value3.cc: Likewise.
+	* testsuite/30_threads/promise/members/swap.cc: Likewise.
+
 2012-01-30  Tom Tromey  <tromey@redhat.com>
 
 	PR libstdc++/51649:
@@ -33,7 +536,7 @@
 	PR libstdc++/51795
 	* include/bits/random.h (linear_congruential_generator): Add
 	static_assert preventing instantiation for values of 'a' and 'm'
-	currently handled incorrectly but _Mod::__calc.
+	currently handled incorrectly by _Mod::__calc.
 	* include/bits/random.tcc (seed_seq::generate): Avoid unsafe
 	uses of _Mod::__calc.
 

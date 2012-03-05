@@ -1,6 +1,6 @@
 /* Language-independent diagnostic subroutines for the GNU Compiler Collection
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010 Free Software Foundation, Inc.
+   2009, 2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -133,12 +133,12 @@ diagnostic_finish (diagnostic_context *context)
       /* -Werror was given.  */
       if (context->warning_as_error_requested)
 	pp_verbatim (context->printer,
-		     _("%s: all warnings being treated as errors\n"),
+		     _("%s: all warnings being treated as errors"),
 		     progname);
       /* At least one -Werror= was given.  */
       else
 	pp_verbatim (context->printer,
-		     _("%s: some warnings being treated as errors\n"),
+		     _("%s: some warnings being treated as errors"),
 		     progname);
       pp_flush (context->printer);
     }

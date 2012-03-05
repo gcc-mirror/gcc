@@ -1,5 +1,5 @@
 /* Interprocedural analyses.
-   Copyright (C) 2005, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2005, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -442,13 +442,11 @@ detect_type_change_1 (tree arg, tree base, tree comp_type, gimple call,
   if (!flag_devirtualize || !gimple_vuse (call))
     return false;
 
-  ao.ref = arg;
+  ao_ref_init (&ao, arg);
   ao.base = base;
   ao.offset = offset;
   ao.size = POINTER_SIZE;
   ao.max_size = ao.size;
-  ao.ref_alias_set = -1;
-  ao.base_alias_set = -1;
 
   tci.offset = offset;
   tci.object = get_base_address (arg);
@@ -2510,9 +2508,27 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 		}
 	    }
 
-	  expr = fold_build2_loc (loc, MEM_REF, adj->type, base, off);
-	  if (adj->by_ref)
-	    expr = build_fold_addr_expr (expr);
+	  if (!adj->by_ref)
+	    {
+	      tree type = adj->type;
+	      unsigned int align;
+	      unsigned HOST_WIDE_INT misalign;
+	      align = get_pointer_alignment_1 (base, &misalign);
+	      misalign += (double_int_sext (tree_to_double_int (off),
+					    TYPE_PRECISION (TREE_TYPE (off))).low
+			   * BITS_PER_UNIT);
+	      misalign = misalign & (align - 1);
+	      if (misalign != 0)
+		align = (misalign & -misalign);
+	      if (align < TYPE_ALIGN (type))
+		type = build_aligned_type (type, align);
+	      expr = fold_build2_loc (loc, MEM_REF, type, base, off);
+	    }
+	  else
+	    {
+	      expr = fold_build2_loc (loc, MEM_REF, adj->type, base, off);
+	      expr = build_fold_addr_expr (expr);
+	    }
 
 	  expr = force_gimple_operand_gsi (&gsi, expr,
 					   adj->by_ref

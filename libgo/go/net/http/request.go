@@ -153,6 +153,12 @@ type Request struct {
 	// This field is ignored by the HTTP client.
 	RemoteAddr string
 
+	// RequestURI is the unmodified Request-URI of the
+	// Request-Line (RFC 2616, Section 5.1) as sent by the client
+	// to a server. Usually the URL field should be used instead.
+	// It is an error to set this field in an HTTP client request.
+	RequestURI string
+
 	// TLS allows HTTP servers and other software to record
 	// information about the TLS connection on which the request
 	// was received. This field is not filled in by ReadRequest.
@@ -180,7 +186,7 @@ func (r *Request) Cookies() []*Cookie {
 	return readCookies(r.Header, "")
 }
 
-var ErrNoCookie = errors.New("http: named cookied not present")
+var ErrNoCookie = errors.New("http: named cookie not present")
 
 // Cookie returns the named cookie provided in the request or
 // ErrNoCookie if not found.
@@ -266,7 +272,7 @@ func valueOrDefault(value, def string) string {
 const defaultUserAgent = "Go http package"
 
 // Write writes an HTTP/1.1 request -- header and body -- in wire format.
-// This method consults the following fields of req:
+// This method consults the following fields of the request:
 //	Host
 //	URL
 //	Method (defaults to "GET")
@@ -278,18 +284,18 @@ const defaultUserAgent = "Go http package"
 // If Body is present, Content-Length is <= 0 and TransferEncoding
 // hasn't been set to "identity", Write adds "Transfer-Encoding:
 // chunked" to the header. Body is closed after it is sent.
-func (req *Request) Write(w io.Writer) error {
-	return req.write(w, false, nil)
+func (r *Request) Write(w io.Writer) error {
+	return r.write(w, false, nil)
 }
 
 // WriteProxy is like Write but writes the request in the form
 // expected by an HTTP proxy.  In particular, WriteProxy writes the
 // initial Request-URI line of the request with an absolute URI, per
-// section 5.1.2 of RFC 2616, including the scheme and host. In
-// either case, WriteProxy also writes a Host header, using either
-// req.Host or req.URL.Host.
-func (req *Request) WriteProxy(w io.Writer) error {
-	return req.write(w, true, nil)
+// section 5.1.2 of RFC 2616, including the scheme and host.
+// In either case, WriteProxy also writes a Host header, using
+// either r.Host or r.URL.Host.
+func (r *Request) WriteProxy(w io.Writer) error {
+	return r.write(w, true, nil)
 }
 
 // extraHeaders may be nil
@@ -305,6 +311,9 @@ func (req *Request) write(w io.Writer, usingProxy bool, extraHeaders Header) err
 	ruri := req.URL.RequestURI()
 	if usingProxy && req.URL.Scheme != "" && req.URL.Opaque == "" {
 		ruri = req.URL.Scheme + "://" + host + ruri
+	} else if req.Method == "CONNECT" && req.URL.Path == "" {
+		// CONNECT requests normally give just the host and port, not a full URL.
+		ruri = host
 	}
 	// TODO(bradfitz): escape at least newlines in ruri?
 
@@ -456,15 +465,34 @@ func ReadRequest(b *bufio.Reader) (req *Request, err error) {
 	if f = strings.SplitN(s, " ", 3); len(f) < 3 {
 		return nil, &badStringError{"malformed HTTP request", s}
 	}
-	var rawurl string
-	req.Method, rawurl, req.Proto = f[0], f[1], f[2]
+	req.Method, req.RequestURI, req.Proto = f[0], f[1], f[2]
+	rawurl := req.RequestURI
 	var ok bool
 	if req.ProtoMajor, req.ProtoMinor, ok = ParseHTTPVersion(req.Proto); !ok {
 		return nil, &badStringError{"malformed HTTP version", req.Proto}
 	}
 
-	if req.URL, err = url.ParseRequest(rawurl); err != nil {
+	// CONNECT requests are used two different ways, and neither uses a full URL:
+	// The standard use is to tunnel HTTPS through an HTTP proxy.
+	// It looks like "CONNECT www.google.com:443 HTTP/1.1", and the parameter is
+	// just the authority section of a URL. This information should go in req.URL.Host.
+	//
+	// The net/rpc package also uses CONNECT, but there the parameter is a path
+	// that starts with a slash. It can be parsed with the regular URL parser,
+	// and the path will end up in req.URL.Path, where it needs to be in order for
+	// RPC to work.
+	justAuthority := req.Method == "CONNECT" && !strings.HasPrefix(rawurl, "/")
+	if justAuthority {
+		rawurl = "http://" + rawurl
+	}
+
+	if req.URL, err = url.ParseRequestURI(rawurl); err != nil {
 		return nil, err
+	}
+
+	if justAuthority {
+		// Strip the bogus "http://" back off.
+		req.URL.Scheme = ""
 	}
 
 	// Subsequent lines: Key: value.
@@ -584,7 +612,7 @@ func (r *Request) ParseForm() (err error) {
 			return errors.New("missing form body")
 		}
 		ct := r.Header.Get("Content-Type")
-		ct, _, err := mime.ParseMediaType(ct)
+		ct, _, err = mime.ParseMediaType(ct)
 		switch {
 		case ct == "application/x-www-form-urlencoded":
 			var reader io.Reader = r.Body
@@ -624,8 +652,6 @@ func (r *Request) ParseForm() (err error) {
 			// Clean this up and write more tests.
 			// request_test.go contains the start of this,
 			// in TestRequestMultipartCallOrder.
-		default:
-			return &badStringError{"unknown Content-Type", ct}
 		}
 	}
 	return err

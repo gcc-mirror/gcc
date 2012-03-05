@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                    S Y S T E M . D I M _ F L O A T _ I O                 --
+--                    S Y S T E M . D I M . F L O A T _ I O                 --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Dim_Float_IO is
+package body System.Dim.Float_IO is
 
    package Num_Dim_Float_IO is new Ada.Text_IO.Float_IO (Num_Dim_Float);
 
@@ -74,4 +74,4 @@ package body System.Dim_Float_IO is
       To := To & Symbols;
    end Put;
 
-end System.Dim_Float_IO;
+end System.Dim.Float_IO;

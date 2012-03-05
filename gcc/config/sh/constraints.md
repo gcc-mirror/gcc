@@ -1,5 +1,5 @@
 ;; Constraint definitions for Renesas / SuperH SH.
-;; Copyright (C) 2007, 2008, 2011 Free Software Foundation, Inc.
+;; Copyright (C) 2007, 2008, 2011, 2012 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -139,7 +139,7 @@
        (match_test "ival >= 0 && ival <= 255")))
  
 (define_constraint "K12"
-  "An unsigned 8-bit constant, as used in SH2A 12-bit display."
+  "An unsigned 12-bit constant, as used in SH2A 12-bit displacement addressing."
   (and (match_code "const_int")
        (match_test "ival >= 0 && ival <= 4095")))
 

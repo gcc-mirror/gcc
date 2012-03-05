@@ -366,6 +366,7 @@ func newScanState(r io.Reader, nlIsSpace, nlIsEnd bool) (s *ss, old ssave) {
 	s.fieldLimit = hugeWid
 	s.maxWid = hugeWid
 	s.validSave = true
+	s.count = 0
 	return
 }
 
@@ -511,7 +512,7 @@ func (s *ss) scanBool(verb rune) bool {
 		}
 		return true
 	case 'f', 'F':
-		if s.accept("aL") && (!s.accept("lL") || !s.accept("sS") || !s.accept("eE")) {
+		if s.accept("aA") && (!s.accept("lL") || !s.accept("sS") || !s.accept("eE")) {
 			s.error(boolError)
 		}
 		return false

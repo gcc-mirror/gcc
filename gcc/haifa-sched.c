@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
@@ -1647,8 +1647,10 @@ rank_for_schedule (const void *x, const void *y)
       /* Schedule debug insns as early as possible.  */
       if (DEBUG_INSN_P (tmp) && !DEBUG_INSN_P (tmp2))
 	return -1;
-      else if (DEBUG_INSN_P (tmp2))
+      else if (!DEBUG_INSN_P (tmp) && DEBUG_INSN_P (tmp2))
 	return 1;
+      else if (DEBUG_INSN_P (tmp) && DEBUG_INSN_P (tmp2))
+	return INSN_LUID (tmp) - INSN_LUID (tmp2);
     }
 
   /* The insn in a schedule group should be issued the first.  */
@@ -3945,6 +3947,7 @@ prune_ready_list (state_t temp_state, bool first_cycle_insn_p,
 		  bool shadows_only_p, bool modulo_epilogue_p)
 {
   int i;
+  bool sched_group_found = false;
 
  restart:
   for (i = 0; i < ready.n_ready; i++)
@@ -3953,13 +3956,27 @@ prune_ready_list (state_t temp_state, bool first_cycle_insn_p,
       int cost = 0;
       const char *reason = "resource conflict";
 
-      if (modulo_epilogue_p && !DEBUG_INSN_P (insn)
-	  && INSN_EXACT_TICK (insn) == INVALID_TICK)
+      if (DEBUG_INSN_P (insn))
+	continue;
+
+      if (SCHED_GROUP_P (insn) && !sched_group_found)
+	{
+	  sched_group_found = true;
+	  if (i > 0)
+	    goto restart;
+	}
+
+      if (sched_group_found && !SCHED_GROUP_P (insn))
+	{
+	  cost = 1;
+	  reason = "not in sched group";
+	}
+      else if (modulo_epilogue_p && INSN_EXACT_TICK (insn) == INVALID_TICK)
 	{
 	  cost = max_insn_queue_index;
 	  reason = "not an epilogue insn";
 	}
-      if (shadows_only_p && !DEBUG_INSN_P (insn) && !SHADOW_P (insn))
+      else if (shadows_only_p && !SHADOW_P (insn))
 	{
 	  cost = 1;
 	  reason = "not a shadow";
@@ -4835,6 +4852,10 @@ sched_init (void)
     {
       int i, max_regno = max_reg_num ();
 
+      if (sched_dump != NULL)
+	/* We need info about pseudos for rtl dumps about pseudo
+	   classes and costs.  */
+	regstat_init_n_sets_and_refs ();
       ira_set_pseudo_classes (sched_verbose ? sched_dump : NULL);
       sched_regno_pressure_class
 	= (enum reg_class *) xmalloc (max_regno * sizeof (enum reg_class));
@@ -4946,6 +4967,8 @@ sched_finish (void)
   haifa_finish_h_i_d ();
   if (sched_pressure_p)
     {
+      if (regstat_n_sets_and_refs != NULL)
+	regstat_free_n_sets_and_refs ();
       free (sched_regno_pressure_class);
       BITMAP_FREE (region_ref_regs);
       BITMAP_FREE (saved_reg_live);

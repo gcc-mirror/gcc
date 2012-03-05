@@ -14,12 +14,12 @@ import (
 )
 
 // If an IPv6 tunnel is running, we can try dialing a real IPv6 address.
-var ipv6 = flag.Bool("ipv6", false, "assume ipv6 tunnel is present")
+var testIPv6 = flag.Bool("ipv6", false, "assume ipv6 tunnel is present")
 
 // fd is already connected to the destination, port 80.
 // Run an HTTP request to fetch the appropriate page.
 func fetchGoogle(t *testing.T, fd Conn, network, addr string) {
-	req := []byte("GET /intl/en/privacy/ HTTP/1.0\r\nHost: www.google.com\r\n\r\n")
+	req := []byte("GET /robots.txt HTTP/1.0\r\nHost: www.google.com\r\n\r\n")
 	n, err := fd.Write(req)
 
 	buf := make([]byte, 1000)
@@ -130,7 +130,7 @@ func TestDialGoogleIPv6(t *testing.T) {
 		return
 	}
 	// Only run tcp6 if the kernel will take it.
-	if !*ipv6 || !supportsIPv6 {
+	if !*testIPv6 || !supportsIPv6 {
 		return
 	}
 

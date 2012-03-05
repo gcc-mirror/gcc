@@ -552,7 +552,7 @@ write_ts_field_decl_tree_pointers (struct output_block *ob, tree expr,
 {
   stream_write_tree (ob, DECL_FIELD_OFFSET (expr), ref_p);
   stream_write_tree (ob, DECL_BIT_FIELD_TYPE (expr), ref_p);
-  stream_write_tree (ob, DECL_QUALIFIER (expr), ref_p);
+  /* Do not stream DECL_QUALIFIER, it is useless after gimplification.  */
   stream_write_tree (ob, DECL_FIELD_BIT_OFFSET (expr), ref_p);
   stream_write_tree (ob, DECL_FCONTEXT (expr), ref_p);
 }

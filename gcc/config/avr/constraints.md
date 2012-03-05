@@ -182,3 +182,13 @@
   "Integer constant in the range -6 @dots{} 6."
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, -6, 6)")))
+
+(define_constraint "Cxf"
+  "32-bit integer constant where at least one nibble is 0xf."
+  (and (match_code "const_int")
+       (match_test "avr_has_nibble_0xf (op)")))
+
+(define_constraint "C0f"
+  "32-bit integer constant where no nibble equals 0xf."
+  (and (match_code "const_int")
+       (match_test "!avr_has_nibble_0xf (op)")))

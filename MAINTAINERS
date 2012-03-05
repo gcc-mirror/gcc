@@ -104,6 +104,8 @@ sparc port		Eric Botcazou		ebotcazou@libertysurf.fr
 spu port		Trevor Smigiel		trevor_smigiel@playstation.sony.com
 spu port		David Edelsohn		dje.gcc@gmail.com
 spu port		Ulrich Weigand		uweigand@de.ibm.com
+tilegx port		Walter Lee		walt@tilera.com
+tilepro port		Walter Lee		walt@tilera.com
 v850 port		Nick Clifton		nickc@redhat.com
 vax port		Matt Thomas		matt@3am-software.com
 x86-64 port		Jan Hubicka		jh@suse.cz
@@ -211,6 +213,9 @@ build machinery (*.in)	Alexandre Oliva		aoliva@redhat.com
 build machinery (*.in)	Ralf Wildenhues		Ralf.Wildenhues@gmx.de
 docs co-maintainer	Gerald Pfeifer		gerald@pfeifer.com
 docs co-maintainer	Joseph Myers		joseph@codesourcery.com
+docstring relicensing	Diego Novillo		dnovillo@google.com
+docstring relicensing	Gerald Pfeifer		gerald@pfeifer.com
+docstring relicensing	Joseph Myers		joseph@codesourcery.com
 predict.def		Jan Hubicka		jh@suse.cz
 contrib/regression	Geoff Keating		geoffk@geoffk.org
 gcov			Jan Hubicka		jh@suse.cz
@@ -240,7 +245,6 @@ RTL optimizers		Eric Botcazou		ebotcazou@libertysurf.fr
 RTL optimizers		Richard Sandiford	rdsandiford@googlemail.com
 auto-vectorizer		Richard Guenther	rguenther@suse.de
 auto-vectorizer		Zdenek Dvorak		ook@ucw.cz
-auto-vectorizer		Ira Rosen		irar@il.ibm.com
 loop infrastructure	Zdenek Dvorak		ook@ucw.cz
 OpenMP			Jakub Jelinek		jakub@redhat.com
 testsuite		Rainer Orth		ro@CeBiTec.Uni-Bielefeld.DE
@@ -336,6 +340,7 @@ Stephane Carrez					stcarrez@nerim.fr
 Gabriel Charette				gchare@google.com
 Chandra Chavva					cchavva@redhat.com
 Fabien Chêne					fabien@gcc.gnu.org
+Bin Cheng					bin.cheng@arm.com
 Harshit Chopra        harshit@google.com
 William Cohen					wcohen@redhat.com
 Josh Conner					jconner@apple.com
@@ -413,6 +418,7 @@ Jeff Knaggs					jknaggs@redhat.com
 Michael Koch					konqueror@gmx.de
 Matt Kraai					kraai@ftbfs.org
 Jan Kratochvil					jan.kratochvil@redhat.com
+Venkataramanan Kumar				venkataramanan.kumar@amd.com
 Maxim Kuvyrkov					maxim@codesourcery.com
 Doug Kwan					dougkwan@google.com
 Scott Robert Ladd				scott.ladd@coyotegulch.com
@@ -495,6 +501,7 @@ Johannes Singler				singler@kit.edu
 Franz Sirl					franz.sirl-kernel@lauterbach.com
 Jan Sjodin					jan.sjodin@amd.com
 Edward Smith-Rowland				3dw4rd@verizon.net
+Jayant Sonar					jayant.sonar@kpitcummins.com
 Michael Sokolov					msokolov@ivan.Harhan.ORG
 Richard Stallman				rms@gnu.org
 Basile Starynkevitch				basile@starynkevitch.net

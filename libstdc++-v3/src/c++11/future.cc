@@ -1,6 +1,6 @@
 // future -*- C++ -*-
 
-// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -84,6 +84,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __future_base::_Result_base::~_Result_base() = default;
 
   __future_base::_State_base::~_State_base() = default;
+
+#ifdef _GLIBCXX_HAVE_TLS
+  __future_base::_Async_state_common::~_Async_state_common() { _M_join(); }
+
+  // Explicit instantiation due to -fno-implicit-instantiation.
+  template void call_once(once_flag&, void (thread::*&&)(), reference_wrapper<thread>&&);
+  template _Bind_simple_helper<void (thread::*)(), reference_wrapper<thread>>::__type __bind_simple(void (thread::*&&)(), reference_wrapper<thread>&&);
+#endif
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

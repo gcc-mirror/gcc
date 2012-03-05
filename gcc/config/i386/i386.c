@@ -5829,7 +5829,8 @@ classify_argument (enum machine_mode mode, const_tree type,
 {
   HOST_WIDE_INT bytes =
     (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
-  int words = (bytes + (bit_offset % 64) / 8 + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  int words
+    = (bytes + (bit_offset % 64) / 8 + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   /* Variable sized entities are always passed/returned in memory.  */
   if (bytes < 0)
@@ -5888,7 +5889,8 @@ classify_argument (enum machine_mode mode, const_tree type,
 		     misaligned integers.  */
 		  if (DECL_BIT_FIELD (field))
 		    {
-		      for (i = (int_bit_position (field) + (bit_offset % 64)) / 8 / 8;
+		      for (i = (int_bit_position (field)
+				+ (bit_offset % 64)) / 8 / 8;
 			   i < ((int_bit_position (field) + (bit_offset % 64))
 			        + tree_low_cst (DECL_SIZE (field), 0)
 				+ 63) / 8 / 8; i++)
@@ -5928,7 +5930,8 @@ classify_argument (enum machine_mode mode, const_tree type,
 						+ bit_offset) % 256);
 		      if (!num)
 			return 0;
-		      pos = (int_bit_position (field) + (bit_offset % 64)) / 8 / 8;
+		      pos = (int_bit_position (field)
+			     + (bit_offset % 64)) / 8 / 8;
 		      for (i = 0; i < num && (i + pos) < words; i++)
 			classes[i + pos] =
 			  merge_classes (subclasses[i], classes[i + pos]);
@@ -6345,21 +6348,27 @@ construct_container (enum machine_mode mode, enum machine_mode orig_mode,
       default:
 	gcc_unreachable ();
       }
-  if (n == 2 && regclass[0] == X86_64_SSE_CLASS
-      && regclass[1] == X86_64_SSEUP_CLASS && mode != BLKmode)
-    return gen_rtx_REG (mode, SSE_REGNO (sse_regno));
+  if (n == 2
+      && regclass[0] == X86_64_SSE_CLASS
+      && regclass[1] == X86_64_SSEUP_CLASS
+      && mode != BLKmode)
+    return gen_reg_or_parallel (mode, orig_mode,
+				SSE_REGNO (sse_regno));
   if (n == 4
       && regclass[0] == X86_64_SSE_CLASS
       && regclass[1] == X86_64_SSEUP_CLASS
       && regclass[2] == X86_64_SSEUP_CLASS
       && regclass[3] == X86_64_SSEUP_CLASS
       && mode != BLKmode)
-    return gen_rtx_REG (mode, SSE_REGNO (sse_regno));
+    return gen_reg_or_parallel (mode, orig_mode,
+				SSE_REGNO (sse_regno));
+  if (n == 2
+      && regclass[0] == X86_64_X87_CLASS
+      && regclass[1] == X86_64_X87UP_CLASS)
+    return gen_rtx_REG (XFmode, FIRST_STACK_REG);
 
   if (n == 2
-      && regclass[0] == X86_64_X87_CLASS && regclass[1] == X86_64_X87UP_CLASS)
-    return gen_rtx_REG (XFmode, FIRST_STACK_REG);
-  if (n == 2 && regclass[0] == X86_64_INTEGER_CLASS
+      && regclass[0] == X86_64_INTEGER_CLASS
       && regclass[1] == X86_64_INTEGER_CLASS
       && (mode == CDImode || mode == TImode || mode == TFmode)
       && intreg[0] + 1 == intreg[1])
@@ -6378,31 +6387,36 @@ construct_container (enum machine_mode mode, enum machine_mode orig_mode,
 	  case X86_64_INTEGERSI_CLASS:
 	    /* Merge TImodes on aligned occasions here too.  */
 	    if (i * 8 + 8 > bytes)
-	      tmpmode = mode_for_size ((bytes - i * 8) * BITS_PER_UNIT, MODE_INT, 0);
+	      tmpmode
+		= mode_for_size ((bytes - i * 8) * BITS_PER_UNIT, MODE_INT, 0);
 	    else if (regclass[i] == X86_64_INTEGERSI_CLASS)
 	      tmpmode = SImode;
 	    else
 	      tmpmode = DImode;
-	    /* We've requested 24 bytes we don't have mode for.  Use DImode.  */
+	    /* We've requested 24 bytes we
+	       don't have mode for.  Use DImode.  */
 	    if (tmpmode == BLKmode)
 	      tmpmode = DImode;
-	    exp [nexps++] = gen_rtx_EXPR_LIST (VOIDmode,
-					       gen_rtx_REG (tmpmode, *intreg),
-					       GEN_INT (i*8));
+	    exp [nexps++]
+	      = gen_rtx_EXPR_LIST (VOIDmode,
+				   gen_rtx_REG (tmpmode, *intreg),
+				   GEN_INT (i*8));
 	    intreg++;
 	    break;
 	  case X86_64_SSESF_CLASS:
-	    exp [nexps++] = gen_rtx_EXPR_LIST (VOIDmode,
-					       gen_rtx_REG (SFmode,
-							    SSE_REGNO (sse_regno)),
-					       GEN_INT (i*8));
+	    exp [nexps++]
+	      = gen_rtx_EXPR_LIST (VOIDmode,
+				   gen_rtx_REG (SFmode,
+						SSE_REGNO (sse_regno)),
+				   GEN_INT (i*8));
 	    sse_regno++;
 	    break;
 	  case X86_64_SSEDF_CLASS:
-	    exp [nexps++] = gen_rtx_EXPR_LIST (VOIDmode,
-					       gen_rtx_REG (DFmode,
-							    SSE_REGNO (sse_regno)),
-					       GEN_INT (i*8));
+	    exp [nexps++]
+	      = gen_rtx_EXPR_LIST (VOIDmode,
+				   gen_rtx_REG (DFmode,
+						SSE_REGNO (sse_regno)),
+				   GEN_INT (i*8));
 	    sse_regno++;
 	    break;
 	  case X86_64_SSE_CLASS:
@@ -6432,10 +6446,11 @@ construct_container (enum machine_mode mode, enum machine_mode orig_mode,
 	      default:
 		gcc_unreachable ();
 	      }
-	    exp [nexps++] = gen_rtx_EXPR_LIST (VOIDmode,
-					       gen_rtx_REG (tmpmode,
-							    SSE_REGNO (sse_regno)),
-					       GEN_INT (pos*8));
+	    exp [nexps++]
+	      = gen_rtx_EXPR_LIST (VOIDmode,
+				   gen_rtx_REG (tmpmode,
+						SSE_REGNO (sse_regno)),
+				   GEN_INT (pos*8));
 	    sse_regno++;
 	    break;
 	  default:
@@ -10330,7 +10345,7 @@ ix86_expand_prologue (void)
       emit_insn (ix86_gen_allocate_stack_worker (eax, eax));
 
       /* Use the fact that AX still contains ALLOCATE.  */
-      adjust_stack_insn = (TARGET_64BIT
+      adjust_stack_insn = (Pmode == DImode
 			   ? gen_pro_epilogue_adjust_stack_di_sub
 			   : gen_pro_epilogue_adjust_stack_si_sub);
 
@@ -11838,6 +11853,13 @@ legitimate_pic_address_disp_p (rtx disp)
             break;
 	  if (GET_CODE (op0) == LABEL_REF)
 	    return true;
+	  if (GET_CODE (op0) == CONST
+	      && GET_CODE (XEXP (op0, 0)) == UNSPEC
+	      && XINT (XEXP (op0, 0), 1) == UNSPEC_PCREL)
+	    return true;
+	  if (GET_CODE (op0) == UNSPEC
+	      && XINT (op0, 1) == UNSPEC_PCREL)
+	    return true;
 	  if (GET_CODE (op0) != SYMBOL_REF)
 	    break;
 	  /* FALLTHRU */
@@ -11946,6 +11968,13 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   struct ix86_address parts;
   rtx base, index, disp;
   HOST_WIDE_INT scale;
+
+  /* Since constant address in x32 is signed extended to 64bit,
+     we have to prevent addresses from 0x80000000 to 0xffffffff.  */
+  if (TARGET_X32
+      && CONST_INT_P (addr)
+      && INTVAL (addr) < 0)
+    return false;
 
   if (ix86_decompose_address (addr, &parts) <= 0)
     /* Decomposition failed.  */
@@ -13242,6 +13271,19 @@ ix86_delegitimize_address (rtx x)
 
   if (TARGET_64BIT)
     {
+      if (GET_CODE (x) == CONST
+          && GET_CODE (XEXP (x, 0)) == PLUS
+          && GET_MODE (XEXP (x, 0)) == Pmode
+          && CONST_INT_P (XEXP (XEXP (x, 0), 1))
+          && GET_CODE (XEXP (XEXP (x, 0), 0)) == UNSPEC
+          && XINT (XEXP (XEXP (x, 0), 0), 1) == UNSPEC_PCREL)
+        {
+	  rtx x2 = XVECEXP (XEXP (XEXP (x, 0), 0), 0, 0);
+	  x = gen_rtx_PLUS (Pmode, XEXP (XEXP (x, 0), 1), x2);
+	  if (MEM_P (orig_x))
+	    x = replace_equiv_address_nv (orig_x, x);
+	  return x;
+	}
       if (GET_CODE (x) != CONST
 	  || GET_CODE (XEXP (x, 0)) != UNSPEC
 	  || (XINT (XEXP (x, 0), 1) != UNSPEC_GOTPCREL
@@ -14092,6 +14134,13 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  return;
 
 	case 'H':
+	  if (!offsettable_memref_p (x))
+	    {
+	      output_operand_lossage ("operand is not an offsettable memory "
+				      "reference, invalid operand "
+				      "code 'H'");
+	      return;
+	    }
 	  /* It doesn't actually matter what mode we use here, as we're
 	     only going to use this for printing.  */
 	  x = adjust_address_nv (x, DImode, 8);
@@ -14448,7 +14497,7 @@ ix86_print_operand_address (FILE *file, rtx addr)
 
       /* Print SImode registers for zero-extended addresses to force
 	 addr32 prefix.  Otherwise print DImode registers to avoid it.  */
-      if (TARGET_64BIT)
+      if (TARGET_64BIT && GET_MODE (addr) == DImode)
 	code = ((GET_CODE (addr) == ZERO_EXTEND
 		 || GET_CODE (addr) == AND)
 		? 'l'
@@ -17792,6 +17841,11 @@ ix86_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
   if ((m1 == CCGCmode && m2 == CCGOCmode)
       || (m1 == CCGOCmode && m2 == CCGCmode))
     return CCGCmode;
+
+  if (m1 == CCZmode && (m2 == CCGCmode || m2 == CCGOCmode))
+    return m2;
+  else if (m2 == CCZmode && (m1 == CCGCmode || m1 == CCGOCmode))
+    return m1;
 
   switch (m1)
     {
@@ -33543,9 +33597,9 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 	  tmp = gen_reg_rtx (GET_MODE_INNER (mode));
 	  ix86_expand_vector_extract (true, tmp, target, 1 - elt);
 	  if (elt == 0)
-	    tmp = gen_rtx_VEC_CONCAT (mode, tmp, val);
-	  else
 	    tmp = gen_rtx_VEC_CONCAT (mode, val, tmp);
+	  else
+	    tmp = gen_rtx_VEC_CONCAT (mode, tmp, val);
 	  emit_insn (gen_rtx_SET (VOIDmode, target, tmp));
 	  return;
 	}
@@ -33559,9 +33613,9 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       tmp = gen_reg_rtx (GET_MODE_INNER (mode));
       ix86_expand_vector_extract (false, tmp, target, 1 - elt);
       if (elt == 0)
-	tmp = gen_rtx_VEC_CONCAT (mode, tmp, val);
-      else
 	tmp = gen_rtx_VEC_CONCAT (mode, val, tmp);
+      else
+	tmp = gen_rtx_VEC_CONCAT (mode, tmp, val);
       emit_insn (gen_rtx_SET (VOIDmode, target, tmp));
       return;
 
@@ -35351,7 +35405,8 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return ix86_cost->cond_not_taken_branch_cost;
 
       case vec_perm:
-        return 1;
+      case vec_promote_demote:
+        return ix86_cost->vec_stmt_cost;
 
       default:
         gcc_unreachable ();

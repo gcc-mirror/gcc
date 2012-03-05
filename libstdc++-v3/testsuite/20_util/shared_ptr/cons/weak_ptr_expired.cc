@@ -1,7 +1,6 @@
 // { dg-options "-std=gnu++0x" }
-// { dg-do run { xfail *-*-* } }
 
-// Copyright (C) 2005, 2006, 2007, 2009 Free Software Foundation
+// Copyright (C) 2005, 2006, 2007, 2009, 2012 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +30,7 @@ struct A { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
+  bool test = false;
 
   std::shared_ptr<A> a1(new A);
   std::weak_ptr<A> wa(a1);
@@ -44,12 +43,9 @@ test01()
   catch (const std::bad_weak_ptr&)
   {
     // Expected.
-      __throw_exception_again;
+    test = true;
   }
-  catch (...)
-  {
-    // Failed.
-  }
+  VERIFY( test );
 
   return 0;
 }

@@ -1,5 +1,5 @@
 /* Optimization of PHI nodes by converting them into straightline code.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1122,9 +1122,10 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
    same accesses.  */
 struct name_to_bb
 {
-  tree ssa_name;
+  unsigned int ssa_name_ver;
+  bool store;
+  HOST_WIDE_INT offset, size;
   basic_block bb;
-  unsigned store : 1;
 };
 
 /* The hash table for remembering what we've seen.  */
@@ -1133,23 +1134,26 @@ static htab_t seen_ssa_names;
 /* The set of MEM_REFs which can't trap.  */
 static struct pointer_set_t *nontrap_set;
 
-/* The hash function, based on the pointer to the pointer SSA_NAME.  */
+/* The hash function.  */
 static hashval_t
 name_to_bb_hash (const void *p)
 {
-  const_tree n = ((const struct name_to_bb *)p)->ssa_name;
-  return htab_hash_pointer (n) ^ ((const struct name_to_bb *)p)->store;
+  const struct name_to_bb *n = (const struct name_to_bb *) p;
+  return n->ssa_name_ver ^ (((hashval_t) n->store) << 31)
+         ^ (n->offset << 6) ^ (n->size << 3);
 }
 
-/* The equality function of *P1 and *P2.  SSA_NAMEs are shared, so
-   it's enough to simply compare them for equality.  */
+/* The equality function of *P1 and *P2.  */
 static int
 name_to_bb_eq (const void *p1, const void *p2)
 {
   const struct name_to_bb *n1 = (const struct name_to_bb *)p1;
   const struct name_to_bb *n2 = (const struct name_to_bb *)p2;
 
-  return n1->ssa_name == n2->ssa_name && n1->store == n2->store;
+  return n1->ssa_name_ver == n2->ssa_name_ver
+         && n1->store == n2->store
+         && n1->offset == n2->offset
+         && n1->size == n2->size;
 }
 
 /* We see the expression EXP in basic block BB.  If it's an interesting
@@ -1161,8 +1165,12 @@ static void
 add_or_mark_expr (basic_block bb, tree exp,
 		  struct pointer_set_t *nontrap, bool store)
 {
+  HOST_WIDE_INT size;
+
   if (TREE_CODE (exp) == MEM_REF
-      && TREE_CODE (TREE_OPERAND (exp, 0)) == SSA_NAME)
+      && TREE_CODE (TREE_OPERAND (exp, 0)) == SSA_NAME
+      && host_integerp (TREE_OPERAND (exp, 1), 0)
+      && (size = int_size_in_bytes (TREE_TYPE (exp))) > 0)
     {
       tree name = TREE_OPERAND (exp, 0);
       struct name_to_bb map;
@@ -1172,9 +1180,12 @@ add_or_mark_expr (basic_block bb, tree exp,
 
       /* Try to find the last seen MEM_REF through the same
          SSA_NAME, which can trap.  */
-      map.ssa_name = name;
+      map.ssa_name_ver = SSA_NAME_VERSION (name);
       map.bb = 0;
       map.store = store;
+      map.offset = tree_low_cst (TREE_OPERAND (exp, 1), 0);
+      map.size = size;
+
       slot = htab_find_slot (seen_ssa_names, &map, INSERT);
       n2bb = (struct name_to_bb *) *slot;
       if (n2bb)
@@ -1197,9 +1208,11 @@ add_or_mark_expr (basic_block bb, tree exp,
 	  else
 	    {
 	      n2bb = XNEW (struct name_to_bb);
-	      n2bb->ssa_name = name;
+	      n2bb->ssa_name_ver = SSA_NAME_VERSION (name);
 	      n2bb->bb = bb;
 	      n2bb->store = store;
+	      n2bb->offset = map.offset;
+	      n2bb->size = size;
 	      *slot = n2bb;
 	    }
 	}
@@ -1219,13 +1232,10 @@ nt_init_block (struct dom_walk_data *data ATTRIBUTE_UNUSED, basic_block bb)
     {
       gimple stmt = gsi_stmt (gsi);
 
-      if (is_gimple_assign (stmt))
+      if (gimple_assign_single_p (stmt))
 	{
 	  add_or_mark_expr (bb, gimple_assign_lhs (stmt), nontrap_set, true);
 	  add_or_mark_expr (bb, gimple_assign_rhs1 (stmt), nontrap_set, false);
-	  if (get_gimple_rhs_num_ops (gimple_assign_rhs_code (stmt)) > 1)
-	    add_or_mark_expr (bb, gimple_assign_rhs2 (stmt), nontrap_set,
-			      false);
 	}
     }
 }

@@ -19,6 +19,10 @@
 # Load support procs.
 load_lib g++-dg.exp
 
+if ![check_effective_target_fgnu_tm] {
+  return
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CXXFLAGS
 if ![info exists DEFAULT_CXXFLAGS] then {

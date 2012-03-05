@@ -1,6 +1,9 @@
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
+// +build !windows,!plan9
+
 package syslog
 
 import (
@@ -61,9 +64,9 @@ func TestNewLogger(t *testing.T) {
 	if skipNetTest(t) {
 		return
 	}
-	f := NewLogger(LOG_INFO, 0)
+	f, err := NewLogger(LOG_INFO, 0)
 	if f == nil {
-		t.Error("NewLogger() failed")
+		t.Error(err)
 	}
 }
 

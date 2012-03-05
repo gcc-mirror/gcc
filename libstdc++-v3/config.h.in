@@ -171,6 +171,9 @@
 /* Define if _Unwind_GetIPInfo is available. */
 #undef HAVE_GETIPINFO
 
+/* Define if gets is available in <stdio.h>. */
+#undef HAVE_GETS
+
 /* Define to 1 if you have the `hypot' function. */
 #undef HAVE_HYPOT
 

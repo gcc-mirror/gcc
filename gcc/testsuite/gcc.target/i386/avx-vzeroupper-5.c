@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O0 -mavx -mvzeroupper -dp" } */
+/* { dg-additional-options "-mabi=sysv" { target x86_64-*-mingw* } } */
 
 #include <immintrin.h>
 

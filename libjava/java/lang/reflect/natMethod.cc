@@ -436,7 +436,12 @@ _Jv_CallAnyMethodA (jobject obj,
       p += size_per_arg;
     }
 
-  if (ffi_prep_cif (&cif, FFI_DEFAULT_ABI, param_count,
+  ffi_abi cabi = FFI_DEFAULT_ABI;
+#if defined (X86_WIN32) && !defined (__CYGWIN__)
+  if (needs_this)
+    cabi = FFI_THISCALL;
+#endif
+  if (ffi_prep_cif (&cif, cabi, param_count,
 		    rtype, argtypes) != FFI_OK)
     throw new java::lang::VirtualMachineError(JvNewStringLatin1("internal error: ffi_prep_cif failed"));
 

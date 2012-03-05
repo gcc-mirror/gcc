@@ -1,6 +1,6 @@
 /* { dg-do run } */
 
-/* { dg-message "note: '__sync_nand_and_fetch' changed semantics in GCC 4.4" "" { target *-*-* } 0 } */
+/* { dg-message "note: '__sync_nand_and_fetch' changed semantics in GCC 4.4" "" { target mips_llsc } 0 } */
 
 extern void abort (void);
 extern void exit (int);

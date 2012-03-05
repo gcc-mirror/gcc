@@ -440,6 +440,20 @@ access_has_children_p (struct access *acc)
   return acc && acc->first_child;
 }
 
+/* Return true iff ACC is (partly) covered by at least one replacement.  */
+
+static bool
+access_has_replacements_p (struct access *acc)
+{
+  struct access *child;
+  if (acc->grp_to_be_replaced)
+    return true;
+  for (child = acc->first_child; child; child = child->next_sibling)
+    if (access_has_replacements_p (child))
+      return true;
+  return false;
+}
+
 /* Return a vector of pointers to accesses for the variable given in BASE or
    NULL if there is none.  */
 
@@ -1512,10 +1526,12 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
      we can extract more optimistic alignment information
      by looking at the access mode.  That would constrain the
      alignment of base + base_offset which we would need to
-     adjust according to offset.
-     ???  But it is not at all clear that prev_base is an access
-     that was in the IL that way, so be conservative for now.  */
+     adjust according to offset.  */
   align = get_pointer_alignment_1 (base, &misalign);
+  if (misalign == 0
+      && (TREE_CODE (prev_base) == MEM_REF
+	  || TREE_CODE (prev_base) == TARGET_MEM_REF))
+    align = MAX (align, TYPE_ALIGN (TREE_TYPE (prev_base)));
   misalign += (double_int_sext (tree_to_double_int (off),
 				TYPE_PRECISION (TREE_TYPE (off))).low
 	       * BITS_PER_UNIT);
@@ -2158,11 +2174,21 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	      && (root->grp_scalar_write || root->grp_assignment_write))))
     {
       bool new_integer_type;
-      if (TREE_CODE (root->type) == ENUMERAL_TYPE)
+      /* Always create access replacements that cover the whole access.
+         For integral types this means the precision has to match.
+	 Avoid assumptions based on the integral type kind, too.  */
+      if (INTEGRAL_TYPE_P (root->type)
+	  && (TREE_CODE (root->type) != INTEGER_TYPE
+	      || TYPE_PRECISION (root->type) != root->size)
+	  /* But leave bitfield accesses alone.  */
+	  && (root->offset % BITS_PER_UNIT) == 0)
 	{
 	  tree rt = root->type;
-	  root->type = build_nonstandard_integer_type (TYPE_PRECISION (rt),
+	  root->type = build_nonstandard_integer_type (root->size,
 						       TYPE_UNSIGNED (rt));
+	  root->expr = build_ref_for_offset (UNKNOWN_LOCATION,
+					     root->base, root->offset,
+					     root->type, NULL, false);
 	  new_integer_type = true;
 	}
       else
@@ -2992,10 +3018,9 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
       sra_stats.exprs++;
     }
   else if (racc
-	   && !access_has_children_p (racc)
-	   && !racc->grp_to_be_replaced
 	   && !racc->grp_unscalarized_data
-	   && TREE_CODE (lhs) == SSA_NAME)
+	   && TREE_CODE (lhs) == SSA_NAME
+	   && !access_has_replacements_p (racc))
     {
       rhs = get_repl_default_def_ssa_name (racc);
       modify_this_stmt = true;
@@ -3135,9 +3160,14 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	      sra_stats.deleted++;
 	      return SRA_AM_REMOVED;
 	    }
+	  /* Restore the aggregate RHS from its components so the
+	     prevailing aggregate copy does the right thing.  */
 	  if (access_has_children_p (racc))
-	    generate_subtree_copies (racc->first_child, lhs, racc->offset,
-				     0, 0, gsi, false, true, loc);
+	    generate_subtree_copies (racc->first_child, racc->base, 0, 0, 0,
+				     gsi, false, false, loc);
+	  /* Re-load the components of the aggregate copy destination.
+	     But use the RHS aggregate to load from to expose more
+	     optimization opportunities.  */
 	  if (access_has_children_p (lacc))
 	    generate_subtree_copies (lacc->first_child, rhs, lacc->offset,
 				     0, 0, gsi, true, true, loc);

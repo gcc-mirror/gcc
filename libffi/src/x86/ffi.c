@@ -228,12 +228,10 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   switch (cif->rtype->type)
     {
     case FFI_TYPE_VOID:
-#if defined(X86) || defined (X86_WIN32) || defined(X86_FREEBSD) || defined(X86_DARWIN) || defined(X86_WIN64)
     case FFI_TYPE_UINT8:
     case FFI_TYPE_UINT16:
     case FFI_TYPE_SINT8:
     case FFI_TYPE_SINT16:
-#endif
 #ifdef X86_WIN64
     case FFI_TYPE_UINT32:
     case FFI_TYPE_SINT32:
@@ -364,27 +362,8 @@ void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
     {
 #ifdef X86_WIN64
     case FFI_WIN64:
-      {
-        /* Make copies of all struct arguments
-           NOTE: not sure if responsibility should be here or in caller */
-        unsigned int i;
-        for (i=0; i < cif->nargs;i++) {
-          size_t size = cif->arg_types[i]->size;
-          if ((cif->arg_types[i]->type == FFI_TYPE_STRUCT
-               && (size != 1 && size != 2 && size != 4 && size != 8))
-#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
-              || cif->arg_types[i]->type == FFI_TYPE_LONGDOUBLE
-#endif
-              )
-            {
-              void *local = alloca(size);
-              memcpy(local, avalue[i], size);
-              avalue[i] = local;
-            }
-        }
-        ffi_call_win64(ffi_prep_args, &ecif, cif->bytes,
-                       cif->flags, ecif.rvalue, fn);
-      }
+      ffi_call_win64(ffi_prep_args, &ecif, cif->bytes,
+                     cif->flags, ecif.rvalue, fn);
       break;
 #elif defined(X86_WIN32)
     case FFI_SYSV:
@@ -448,6 +427,8 @@ void FFI_HIDDEN ffi_closure_raw_SYSV (ffi_raw_closure *)
      __attribute__ ((regparm(1)));
 #ifdef X86_WIN32
 void FFI_HIDDEN ffi_closure_STDCALL (ffi_closure *)
+     __attribute__ ((regparm(1)));
+void FFI_HIDDEN ffi_closure_THISCALL (ffi_closure *)
      __attribute__ ((regparm(1)));
 #endif
 #ifdef X86_WIN64
@@ -608,6 +589,33 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue, void **avalue,
    *(unsigned int*)  &__tramp[6] = __dis; /* jmp __fun  */ \
  }
 
+#define FFI_INIT_TRAMPOLINE_THISCALL(TRAMP,FUN,CTX,SIZE) \
+{ unsigned char *__tramp = (unsigned char*)(TRAMP); \
+   unsigned int  __fun = (unsigned int)(FUN); \
+   unsigned int  __ctx = (unsigned int)(CTX); \
+   unsigned int  __dis = __fun - (__ctx + 22);  \
+   unsigned short __size = (unsigned short)(SIZE); \
+   *(unsigned int *) &__tramp[0] = 0x8324048b;	/* mov (%esp), %eax */ \
+   *(unsigned int *) &__tramp[4] = 0x4c890cec;	/* sub $12, %esp */ \
+   *(unsigned int *) &__tramp[8] = 0x04890424;	/* mov %ecx, 4(%esp) */ \
+   *(unsigned char*) &__tramp[12] = 0x24;	/* mov %eax, (%esp) */ \
+   *(unsigned char*) &__tramp[13] = 0xb8; \
+   *(unsigned int *) &__tramp[14] = __size;	/* mov __size, %eax */ \
+   *(unsigned int *) &__tramp[18] = 0x08244c8d;	/* lea 8(%esp), %ecx */ \
+   *(unsigned int *) &__tramp[22] = 0x4802e8c1; /* shr $2, %eax ; dec %eax */ \
+   *(unsigned short*) &__tramp[26] = 0x0b74;	/* jz 1f */ \
+   *(unsigned int *) &__tramp[28] = 0x8908518b;	/* 2b: mov 8(%ecx), %edx */ \
+   *(unsigned int *) &__tramp[32] = 0x04c18311; /* mov %edx, (%ecx) ; add $4, %ecx */ \
+   *(unsigned char*) &__tramp[36] = 0x48;	/* dec %eax */ \
+   *(unsigned short*) &__tramp[37] = 0xf575;	/* jnz 2b ; 1f: */ \
+   *(unsigned char*) &__tramp[39] = 0xb8; \
+   *(unsigned int*)  &__tramp[40] = __ctx; /* movl __ctx, %eax */ \
+   *(unsigned char *)  &__tramp[44] = 0xe8; \
+   *(unsigned int*)  &__tramp[45] = __dis; /* call __fun  */ \
+   *(unsigned char*)  &__tramp[49] = 0xc2; /* ret  */ \
+   *(unsigned short*)  &__tramp[50] = (__size + 8); /* ret (__size + 8)  */ \
+ }
+
 #define FFI_INIT_TRAMPOLINE_STDCALL(TRAMP,FUN,CTX,SIZE)  \
 { unsigned char *__tramp = (unsigned char*)(TRAMP); \
    unsigned int  __fun = (unsigned int)(FUN); \
@@ -650,6 +658,13 @@ ffi_prep_closure_loc (ffi_closure* closure,
                            (void*)codeloc);
     }
 #ifdef X86_WIN32
+  else if (cif->abi == FFI_THISCALL)
+    {
+      FFI_INIT_TRAMPOLINE_THISCALL (&closure->tramp[0],
+				    &ffi_closure_THISCALL,
+				    (void*)codeloc,
+				    cif->bytes);
+    }
   else if (cif->abi == FFI_STDCALL)
     {
       FFI_INIT_TRAMPOLINE_STDCALL (&closure->tramp[0],

@@ -26,17 +26,18 @@ package math
 //	Atan2(y<0, -Inf) = -Pi
 //	Atan2(+Inf, x) = +Pi/2
 //	Atan2(-Inf, x) = -Pi/2
-func libc_atan2(float64, float64) float64 __asm__("atan2")
+
+//extern atan2
+func libc_atan2(float64, float64) float64
+
 func Atan2(y, x float64) float64 {
 	return libc_atan2(y, x)
 }
 
 func atan2(y, x float64) float64 {
-	// TODO(rsc): Remove manual inlining of IsNaN, IsInf
-	// when compiler does it for us
 	// special cases
 	switch {
-	case y != y || x != x: // IsNaN(y) || IsNaN(x):
+	case IsNaN(y) || IsNaN(x):
 		return NaN()
 	case y == 0:
 		if x >= 0 && !Signbit(x) {
@@ -45,22 +46,22 @@ func atan2(y, x float64) float64 {
 		return Copysign(Pi, y)
 	case x == 0:
 		return Copysign(Pi/2, y)
-	case x < -MaxFloat64 || x > MaxFloat64: // IsInf(x, 0):
-		if x > MaxFloat64 { // IsInf(x, 1) {
+	case IsInf(x, 0):
+		if IsInf(x, 1) {
 			switch {
-			case y < -MaxFloat64 || y > MaxFloat64: // IsInf(y, -1) || IsInf(y, 1):
+			case IsInf(y, 0):
 				return Copysign(Pi/4, y)
 			default:
 				return Copysign(0, y)
 			}
 		}
 		switch {
-		case y < -MaxFloat64 || y > MaxFloat64: // IsInf(y, -1) || IsInf(y, 1):
+		case IsInf(y, 0):
 			return Copysign(3*Pi/4, y)
 		default:
 			return Copysign(Pi, y)
 		}
-	case y < -MaxFloat64 || y > MaxFloat64: //IsInf(y, 0):
+	case IsInf(y, 0):
 		return Copysign(Pi/2, y)
 	}
 

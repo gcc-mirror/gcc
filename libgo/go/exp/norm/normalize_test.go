@@ -5,6 +5,7 @@
 package norm
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 )
@@ -495,44 +496,100 @@ func TestAppend(t *testing.T) {
 	runAppendTests(t, "TestString", NFKC, stringF, appendTests)
 }
 
-func doFormBenchmark(b *testing.B, f Form, s string) {
+func appendBench(f Form, in []byte) func() {
+	buf := make([]byte, 0, 4*len(in))
+	return func() {
+		f.Append(buf, in...)
+	}
+}
+
+func iterBench(f Form, in []byte) func() {
+	buf := make([]byte, 4*len(in))
+	iter := Iter{}
+	return func() {
+		iter.SetInput(f, in)
+		for !iter.Done() {
+			iter.Next(buf)
+		}
+	}
+}
+
+func appendBenchmarks(bm []func(), f Form, in []byte) []func() {
+	//bm = append(bm, appendBench(f, in))
+	bm = append(bm, iterBench(f, in))
+	return bm
+}
+
+func doFormBenchmark(b *testing.B, inf, f Form, s string) {
 	b.StopTimer()
-	in := []byte(s)
-	buf := make([]byte, 2*len(in))
-	b.SetBytes(int64(len(s)))
+	in := inf.Bytes([]byte(s))
+	bm := appendBenchmarks(nil, f, in)
+	b.SetBytes(int64(len(in) * len(bm)))
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		buf = f.Append(buf[0:0], in...)
-		buf = buf[0:0]
+		for _, fn := range bm {
+			fn()
+		}
 	}
 }
 
 var ascii = strings.Repeat("There is nothing to change here! ", 500)
 
 func BenchmarkNormalizeAsciiNFC(b *testing.B) {
-	doFormBenchmark(b, NFC, ascii)
+	doFormBenchmark(b, NFC, NFC, ascii)
 }
 func BenchmarkNormalizeAsciiNFD(b *testing.B) {
-	doFormBenchmark(b, NFD, ascii)
+	doFormBenchmark(b, NFC, NFD, ascii)
 }
 func BenchmarkNormalizeAsciiNFKC(b *testing.B) {
-	doFormBenchmark(b, NFKC, ascii)
+	doFormBenchmark(b, NFC, NFKC, ascii)
 }
 func BenchmarkNormalizeAsciiNFKD(b *testing.B) {
-	doFormBenchmark(b, NFKD, ascii)
+	doFormBenchmark(b, NFC, NFKD, ascii)
 }
+
+func BenchmarkNormalizeNFC2NFC(b *testing.B) {
+	doFormBenchmark(b, NFC, NFC, txt_all)
+}
+func BenchmarkNormalizeNFC2NFD(b *testing.B) {
+	doFormBenchmark(b, NFC, NFD, txt_all)
+}
+func BenchmarkNormalizeNFD2NFC(b *testing.B) {
+	doFormBenchmark(b, NFD, NFC, txt_all)
+}
+func BenchmarkNormalizeNFD2NFD(b *testing.B) {
+	doFormBenchmark(b, NFD, NFD, txt_all)
+}
+
+// Hangul is often special-cased, so we test it separately.
+func BenchmarkNormalizeHangulNFC2NFC(b *testing.B) {
+	doFormBenchmark(b, NFC, NFC, txt_kr)
+}
+func BenchmarkNormalizeHangulNFC2NFD(b *testing.B) {
+	doFormBenchmark(b, NFC, NFD, txt_kr)
+}
+func BenchmarkNormalizeHangulNFD2NFC(b *testing.B) {
+	doFormBenchmark(b, NFD, NFC, txt_kr)
+}
+func BenchmarkNormalizeHangulNFD2NFD(b *testing.B) {
+	doFormBenchmark(b, NFD, NFD, txt_kr)
+}
+
+var forms = []Form{NFC, NFD, NFKC, NFKD}
 
 func doTextBenchmark(b *testing.B, s string) {
 	b.StopTimer()
-	b.SetBytes(int64(len(s)) * 4)
 	in := []byte(s)
-	var buf = make([]byte, 0, 2*len(in))
+	bm := []func(){}
+	for _, f := range forms {
+		bm = appendBenchmarks(bm, f, in)
+	}
+	b.SetBytes(int64(len(s) * len(bm)))
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		NFC.Append(buf, in...)
-		NFD.Append(buf, in...)
-		NFKC.Append(buf, in...)
-		NFKD.Append(buf, in...)
+		for _, f := range bm {
+			f()
+		}
 	}
 }
 
@@ -557,6 +614,11 @@ func BenchmarkJapanese(b *testing.B) {
 func BenchmarkChinese(b *testing.B) {
 	doTextBenchmark(b, txt_cn)
 }
+func BenchmarkOverflow(b *testing.B) {
+	doTextBenchmark(b, overflow)
+}
+
+var overflow = string(bytes.Repeat([]byte("\u035D"), 4096)) + "\u035B"
 
 // Tests sampled from the Canonical ordering tests (Part 2) of
 // http://unicode.org/Public/UNIDATA/NormalizationTest.txt
@@ -657,3 +719,6 @@ const txt_cn = `您可以自由： 复制、发行、展览、表演、放映、
 署名 — 您必须按照作者或者许可人指定的方式对作品进行署名。
 相同方式共享 — 如果您改变、转换本作品或者以本作品为基础进行创作，
 您只能采用与本协议相同的许可协议发布基于本作品的演绎作品。`
+
+const txt_cjk = txt_cn + txt_jp + txt_kr
+const txt_all = txt_vn + twoByteUtf8 + threeByteUtf8 + txt_cjk

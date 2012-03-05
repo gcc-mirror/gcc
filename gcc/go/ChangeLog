@@ -1,3 +1,43 @@
+2012-02-29  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (class Gcc_tree): Add set_tree method.
+	(set_placeholder_pointer_type): When setting to a pointer to
+	error, set to error_mark_node.
+
+2012-02-23  Richard Guenther  <rguenther@suse.de>
+
+	* go-gcc.cc (Gcc_backend::placeholder_pointer_type): Use
+	build_distinct_type_copy.
+
+2012-02-17  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (go/import.o): Add dependency on $(GO_LEX_H).
+
+2012-02-17  Ian Lance Taylor  <iant@google.com>
+
+	* gospec.c (lang_specific_driver): If linking, and no -o option
+	was used, add one.
+
+2012-02-14  Ian Lance Taylor  <iant@google.com>
+
+	PR go/48411
+	* Make-lang.in (gccgo-cross$(exeext)): New target.
+	(go.all.cross): Depend on gccgo-cross$(exeext) instead of
+	gccgo$(exeext).
+	(go.install-common): Only install GCCGO_TARGET_INSTALL_NAME if
+	gccgo-cross$(exeext) does not exist.
+
+2012-02-07  Ian Lance Taylor  <iant@google.com>
+
+	* gccgo.texi (Function Names): Document //extern instead of
+	__asm__.
+
+2012-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/52079
+	* go-lang.c (go_langhook_type_for_mode): For TImode and 64-bit HWI
+	return build_nonstandard_integer_type result if possible.
+
 2012-01-21  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::type_size): Check for error_mark_node.

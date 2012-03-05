@@ -117,18 +117,22 @@ package Ada.Containers.Indefinite_Vectors is
    function Constant_Reference
      (Container : aliased Vector;
       Position  : Cursor) return Constant_Reference_Type;
+   pragma Inline (Constant_Reference);
 
    function Reference
      (Container : aliased in out Vector;
       Position  : Cursor) return Reference_Type;
+   pragma Inline (Reference);
 
    function Constant_Reference
      (Container : aliased Vector;
       Index     : Index_Type) return Constant_Reference_Type;
+   pragma Inline (Constant_Reference);
 
    function Reference
      (Container : aliased in out Vector;
       Index     : Index_Type) return Reference_Type;
+   pragma Inline (Reference);
 
    function To_Cursor
      (Container : Vector;
@@ -408,8 +412,22 @@ private
 
    for Cursor'Write use Write;
 
+   type Reference_Control_Type is
+      new Controlled with record
+         Container : Vector_Access;
+      end record;
+
+   overriding procedure Adjust (Control : in out Reference_Control_Type);
+   pragma Inline (Adjust);
+
+   overriding procedure Finalize (Control : in out Reference_Control_Type);
+   pragma Inline (Finalize);
+
    type Constant_Reference_Type
-     (Element : not null access constant Element_Type) is null record;
+     (Element : not null access constant Element_Type) is
+      record
+         Control : Reference_Control_Type;
+      end record;
 
    procedure Write
      (Stream : not null access Root_Stream_Type'Class;
@@ -424,7 +442,10 @@ private
    for Constant_Reference_Type'Read use Read;
 
    type Reference_Type
-     (Element : not null access Element_Type) is null record;
+     (Element : not null access Element_Type) is
+      record
+         Control : Reference_Control_Type;
+      end record;
 
    procedure Write
      (Stream : not null access Root_Stream_Type'Class;

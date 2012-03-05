@@ -1,5 +1,5 @@
 /* Target Code for TI C6X
-   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Andrew Jenner <andrew@codesourcery.com>
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
@@ -4196,13 +4196,14 @@ c6x_sched_reorder_1 (rtx *ready, int *pn_ready, int clock_var)
 	  bool is_asm = (icode < 0
 			 && (GET_CODE (PATTERN (insn)) == ASM_INPUT
 			     || asm_noperands (PATTERN (insn)) >= 0));
-	  int this_cycles;
+	  int this_cycles, rsrv_cycles;
 	  enum attr_type type;
 
 	  gcc_assert (!is_asm);
 	  if (icode < 0)
 	    continue;
 	  this_cycles = get_attr_cycles (insn);
+	  rsrv_cycles = get_attr_reserve_cycles (insn);
 	  type = get_attr_type (insn);
 	  /* Treat branches specially; there is also a hazard if two jumps
 	     end at the same cycle.  */
@@ -4211,6 +4212,7 @@ c6x_sched_reorder_1 (rtx *ready, int *pn_ready, int clock_var)
 	  if (clock_var + this_cycles <= first_cycle)
 	    continue;
 	  if ((first_jump > 0 && clock_var + this_cycles > second_cycle)
+	      || clock_var + rsrv_cycles > first_cycle
 	      || !predicate_insn (insn, first_cond, false))
 	    {
 	      memmove (ready + 1, ready, (insnp - ready) * sizeof (rtx));

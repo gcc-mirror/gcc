@@ -1,6 +1,6 @@
 /* { dg-do compile { target { ! { ia32 } } } } */
 /* { dg-options "-O2 -mfsgsbase" } */
-/* { dg-final { scan-assembler "wrgsbase\[ \t]+(%|)rdi" } } */
+/* { dg-final { scan-assembler "wrgsbase\[ \t]+(%|)(rdi|rcx)" } } */
 
 #include <immintrin.h>
 

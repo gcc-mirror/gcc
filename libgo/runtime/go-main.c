@@ -40,7 +40,7 @@ static void mainstart (void *);
 int
 main (int argc, char **argv)
 {
-  runtime_initsig (0);
+  runtime_initsig ();
   runtime_args (argc, (byte **) argv);
   runtime_osinit ();
   runtime_schedinit ();

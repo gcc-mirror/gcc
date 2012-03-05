@@ -2936,32 +2936,11 @@ package body Sem_Ch10 is
 
       function Build_Unit_Name (Nam : Node_Id) return Node_Id is
          Ent      : Entity_Id;
-         Renaming : Entity_Id;
          Result   : Node_Id;
 
       begin
          if Nkind (Nam) = N_Identifier then
-
-            --  If the parent unit P in the name of the with_clause for P.Q is
-            --  a renaming of package R, then the entity of the parent is set
-            --  to R, but the identifier retains Chars (P) to be consistent
-            --  with the source (see details in lib-load). However the implicit
-            --  with_clause for the parent must make the entity for P visible,
-            --  because P.Q may be used as a prefix within the current unit.
-            --  The entity for P is the current_entity with that name, because
-            --  the package renaming declaration for it has just been analyzed.
-            --  Note that this case can only happen if P.Q has already appeared
-            --  in a previous with_clause in a related unit, such as the
-            --  library body of the current unit.
-
-            if Chars (Nam) /= Chars (Entity (Nam)) then
-               Renaming := Current_Entity (Nam);
-               pragma Assert (Renamed_Entity (Renaming) = Entity (Nam));
-               return New_Occurrence_Of (Renaming, Loc);
-
-            else
-               return New_Occurrence_Of (Entity (Nam), Loc);
-            end if;
+            return New_Occurrence_Of (Entity (Nam), Loc);
 
          else
             Ent := Entity (Nam);

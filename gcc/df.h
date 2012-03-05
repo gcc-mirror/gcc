@@ -1,7 +1,7 @@
 /* Form lists of pseudo register references for autoinc optimization
    for GNU compiler.  This is part of flow optimization.
    Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010  Free Software Foundation, Inc.
+   2009, 2010, 2011, 2012  Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -574,7 +574,7 @@ struct df_d
      uses and defs as well as refs in eq notes are ignored.  If the
      ref is a def, it cannot be a MAY_CLOBBER def.  If the ref is a
      use, it cannot be the emim_reg_set or be the frame or arg pointer
-     register.
+     register.  Uses in debug insns are ignored.
 
      IT IS NOT ACCEPTABLE TO MANUALLY CHANGE THIS ARRAY.  This array
      always reflects the actual number of refs in the insn stream that

@@ -32,7 +32,7 @@ main()
     /* As long as the sizes are as expected, we know attributes are working.
        bf-ms-layout.c makes sure the right thing happens when the attribute
        is on. */
-    if (sizeof(struct one_ms) != 12)
+    if (sizeof(struct one_ms) != 8)
 	abort();
     if (sizeof(struct one_gcc) != 8)
 	abort();

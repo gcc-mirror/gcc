@@ -11,7 +11,10 @@ package math
 //	Exp(NaN) = NaN
 // Very large values overflow to 0 or +Inf.
 // Very small values underflow to 1.
-func libc_exp(float64) float64 __asm__("exp")
+
+//extern exp
+func libc_exp(float64) float64
+
 func Exp(x float64) float64 {
 	return libc_exp(x)
 }
@@ -103,13 +106,11 @@ func exp(x float64) float64 {
 		NearZero  = 1.0 / (1 << 28) // 2**-28
 	)
 
-	// TODO(rsc): Remove manual inlining of IsNaN, IsInf
-	// when compiler does it for us
 	// special cases
 	switch {
-	case x != x || x > MaxFloat64: // IsNaN(x) || IsInf(x, 1):
+	case IsNaN(x) || IsInf(x, 1):
 		return x
-	case x < -MaxFloat64: // IsInf(x, -1):
+	case IsInf(x, -1):
 		return 0
 	case x > Overflow:
 		return Inf(1)
@@ -150,13 +151,11 @@ func exp2(x float64) float64 {
 		Underflow = -1.0740e+03
 	)
 
-	// TODO: remove manual inlining of IsNaN and IsInf
-	// when compiler does it for us
 	// special cases
 	switch {
-	case x != x || x > MaxFloat64: // IsNaN(x) || IsInf(x, 1):
+	case IsNaN(x) || IsInf(x, 1):
 		return x
-	case x < -MaxFloat64: // IsInf(x, -1):
+	case IsInf(x, -1):
 		return 0
 	case x > Overflow:
 		return Inf(1)

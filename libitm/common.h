@@ -54,6 +54,8 @@ namespace GTM HIDDEN {
 // cache lines that are not shared with any object used by another thread.
 extern void * xmalloc (size_t s, bool separate_cl = false)
   __attribute__((malloc, nothrow));
+extern void * xcalloc (size_t s, bool separate_cl = false)
+  __attribute__((malloc, nothrow));
 extern void * xrealloc (void *p, size_t s, bool separate_cl = false)
   __attribute__((malloc, nothrow));
 

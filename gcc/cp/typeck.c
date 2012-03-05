@@ -8483,6 +8483,9 @@ check_literal_operator_args (const_tree decl,
 			     bool *long_long_unsigned_p, bool *long_double_p)
 {
   tree argtypes = TYPE_ARG_TYPES (TREE_TYPE (decl));
+
+  *long_long_unsigned_p = false;
+  *long_double_p = false;
   if (processing_template_decl || processing_specialization)
     return argtypes == void_list_node;
   else
@@ -8490,9 +8493,6 @@ check_literal_operator_args (const_tree decl,
       tree argtype;
       int arity;
       int max_arity = 2;
-
-      *long_long_unsigned_p = false;
-      *long_double_p = false;
 
       /* Count the number and type of arguments and check for ellipsis.  */
       for (argtype = argtypes, arity = 0;

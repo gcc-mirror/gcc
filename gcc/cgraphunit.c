@@ -471,11 +471,17 @@ verify_edge_corresponds_to_fndecl (struct cgraph_edge *e, tree decl)
     return false;
   node = cgraph_function_or_thunk_node (node, NULL);
 
-  if ((e->callee->former_clone_of != node->decl)
+  if ((e->callee->former_clone_of != node->decl
+       && (!node->same_body_alias
+	   || e->callee->former_clone_of != node->thunk.alias))
       /* IPA-CP sometimes redirect edge to clone and then back to the former
-	 function.  This ping-pong has to go, eventaully.  */
+	 function.  This ping-pong has to go, eventually.  */
       && (node != cgraph_function_or_thunk_node (e->callee, NULL))
-      && !clone_of_p (node, e->callee))
+      && !clone_of_p (node, e->callee)
+      /* If decl is a same body alias of some other decl, allow e->callee to be
+	 a clone of a clone of that other decl too.  */
+      && (!node->same_body_alias
+	  || !clone_of_p (cgraph_get_node (node->thunk.alias), e->callee)))
     return true;
   else
     return false;
@@ -667,7 +673,7 @@ verify_cgraph_node (struct cgraph_node *node)
       for (i = 0; ipa_ref_list_reference_iterate (&node->ref_list, i, ref); i++)
 	if (ref->use != IPA_REF_ALIAS)
 	  {
-	    error ("Alias has non-alias refernece");
+	    error ("Alias has non-alias reference");
 	    error_found = true;
 	  }
 	else if (ref_found)
@@ -836,6 +842,16 @@ cgraph_analyze_function (struct cgraph_node *node)
   if (node->alias && node->thunk.alias)
     {
       struct cgraph_node *tgt = cgraph_get_node (node->thunk.alias);
+      struct cgraph_node *n;
+
+      for (n = tgt; n && n->alias;
+	   n = n->analyzed ? cgraph_alias_aliased_node (n) : NULL)
+	if (n == node)
+	  {
+	    error ("function %q+D part of alias cycle", node->decl);
+	    node->alias = false;
+	    return;
+	  }
       if (!VEC_length (ipa_ref_t, node->ref_list.references))
         ipa_record_reference (node, NULL, tgt, NULL, IPA_REF_ALIAS, NULL);
       if (node->same_body_alias)
@@ -1420,14 +1436,16 @@ cgraph_mark_functions_to_output (void)
 	  tree decl = node->decl;
 	  if (!node->global.inlined_to
 	      && gimple_has_body_p (decl)
-	      /* FIXME: in ltrans unit when offline copy is outside partition but inline copies
-		 are inside partition, we can end up not removing the body since we no longer
-		 have analyzed node pointing to it.  */
+	      /* FIXME: in an ltrans unit when the offline copy is outside a
+		 partition but inline copies are inside a partition, we can
+		 end up not removing the body since we no longer have an
+		 analyzed node pointing to it.  */
 	      && !node->in_other_partition
 	      && !DECL_EXTERNAL (decl))
 	    {
 	      dump_cgraph_node (stderr, node);
-	      internal_error ("failed to reclaim unneeded functionin same comdat group");
+	      internal_error ("failed to reclaim unneeded function in same "
+			      "comdat group");
 	    }
 	}
 #endif

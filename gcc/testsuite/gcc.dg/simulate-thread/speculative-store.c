@@ -24,6 +24,7 @@ int simulate_thread_step_verify()
       printf("FAIL: global variable was assigned to.  \n");
       return 1;
     }
+  return 0;
 }
 
 int simulate_thread_final_verify()

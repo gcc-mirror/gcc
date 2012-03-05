@@ -514,7 +514,8 @@ compare_type_rank (gfc_symbol *s1, gfc_symbol *s2)
   if (r1 != r2)
     return 0;			/* Ranks differ.  */
 
-  return gfc_compare_types (&s1->ts, &s2->ts);
+  return gfc_compare_types (&s1->ts, &s2->ts)
+	 || s1->ts.type == BT_ASSUMED || s2->ts.type == BT_ASSUMED; 
 }
 
 
@@ -1292,9 +1293,10 @@ check_interface0 (gfc_interface *p, const char *interface_name)
 	  return 1;
 	}
 
+      /* F2003, C1207. F2008, C1207.  */
       if (p->sym->attr.proc == PROC_INTERNAL
-	  && gfc_notify_std (GFC_STD_GNU, "Extension: Internal procedure '%s' "
-			     "in %s at %L", p->sym->name, interface_name,
+	  && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Internal procedure "
+			     "'%s' in %s at %L", p->sym->name, interface_name,
 			     &p->sym->declared_at) == FAILURE)
 	return 1;
     }
@@ -1578,7 +1580,9 @@ compare_pointer (gfc_symbol *formal, gfc_expr *actual)
 {
   symbol_attribute attr;
 
-  if (formal->attr.pointer)
+  if (formal->attr.pointer
+      || (formal->ts.type == BT_CLASS && CLASS_DATA (formal)
+	  && CLASS_DATA (formal)->attr.class_pointer))
     {
       attr = gfc_expr_attr (actual);
 
@@ -1694,6 +1698,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
   if ((actual->expr_type != EXPR_NULL || actual->ts.type != BT_UNKNOWN)
       && actual->ts.type != BT_HOLLERITH
+      && formal->ts.type != BT_ASSUMED
       && !gfc_compare_types (&formal->ts, &actual->ts)
       && !(formal->ts.type == BT_DERIVED && actual->ts.type == BT_CLASS
 	   && gfc_compare_derived_types (formal->ts.u.derived, 
@@ -1705,10 +1710,11 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		   gfc_typename (&formal->ts));
       return 0;
     }
-    
-  /* F2008, 12.5.2.5.  */
+
+  /* F2008, 12.5.2.5; IR F08/0073.  */
   if (formal->ts.type == BT_CLASS
-      && (CLASS_DATA (formal)->attr.class_pointer
+      && ((CLASS_DATA (formal)->attr.class_pointer
+	   && !formal->attr.intent == INTENT_IN)
           || CLASS_DATA (formal)->attr.allocatable))
     {
       if (actual->ts.type != BT_CLASS)
@@ -2270,6 +2276,27 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 			      is_elemental, where))
 	return 0;
 
+      /* TS 29113, 6.3p2.  */
+      if (f->sym->ts.type == BT_ASSUMED
+	  && (a->expr->ts.type == BT_DERIVED
+	      || (a->expr->ts.type == BT_CLASS && CLASS_DATA (a->expr))))
+	{
+	  gfc_namespace *f2k_derived;
+
+	  f2k_derived = a->expr->ts.type == BT_DERIVED
+			? a->expr->ts.u.derived->f2k_derived
+			: CLASS_DATA (a->expr)->ts.u.derived->f2k_derived;
+
+	  if (f2k_derived
+	      && (f2k_derived->finalizers || f2k_derived->tb_sym_root))
+	    {
+	      gfc_error ("Actual argument at %L to assumed-type dummy is of "
+			 "derived type with type-bound or FINAL procedures",
+			 &a->expr->where);
+	      return FAILURE;
+	    }
+	}
+
       /* Special case for character arguments.  For allocatable, pointer
 	 and assumed-shape dummies, the string length needs to match
 	 exactly.  */
@@ -2305,7 +2332,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	    && a->expr->ts.type == BT_CHARACTER)
 	{
 	  if (where)
-	    gfc_error ("Actual argument argument at %L to allocatable or "
+	    gfc_error ("Actual argument at %L to allocatable or "
 		       "pointer dummy argument '%s' must have a deferred "
 		       "length type parameter if and only if the dummy has one",
 		       &a->expr->where, f->sym->name);
@@ -2429,7 +2456,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	{
 	  if (where)
 	    gfc_error ("Coindexed ASYNCHRONOUS or VOLATILE actual argument at "
-		       "at %L requires that dummy %s' has neither "
+		       "%L requires that dummy '%s' has neither "
 		       "ASYNCHRONOUS nor VOLATILE", &a->expr->where,
 		       f->sym->name);
 	  return 0;
@@ -2881,7 +2908,6 @@ check_intents (gfc_formal_arglist *f, gfc_actual_arglist *a)
 void
 gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 {
-
   /* Warn about calls with an implicit interface.  Special case
      for calling a ISO_C_BINDING becase c_loc and c_funloc
      are pseudo-unknown.  Additionally, warn about procedures not
@@ -2931,6 +2957,16 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	    {
 	      gfc_error("Keyword argument requires explicit interface "
 			"for procedure '%s' at %L", sym->name, &a->expr->where);
+	      break;
+	    }
+
+	  /* TS 29113, 6.2.  */
+	  if (a->expr && a->expr->ts.type == BT_ASSUMED
+	      && sym->intmod_sym_id != ISOCBINDING_LOC)
+	    {
+	      gfc_error ("Assumed-type argument %s at %L requires an explicit "
+			 "interface", a->expr->symtree->n.sym->name,
+			 &a->expr->where);
 	      break;
 	    }
 

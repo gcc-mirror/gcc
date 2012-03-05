@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -543,6 +543,14 @@ package Sinput is
    function Build_Location_String (Loc : Source_Ptr) return String;
    --  Functional form returning a string, which does not include a terminating
    --  null character. The contents of Name_Buffer is destroyed.
+
+   procedure Check_For_BOM;
+   --  Check if the current source starts with a BOM. Scan_Ptr needs to be at
+   --  the start of the current source. If the current source starts with a
+   --  recognized BOM, then some flags such as Wide_Character_Encoding_Method
+   --  are set accordingly, and the Scan_Ptr on return points past this BOM.
+   --  An error message is output and Unrecoverable_Error raised if a non-
+   --  recognized BOM is detected. The call has no effect if no BOM is found.
 
    function Get_Column_Number (P : Source_Ptr) return Column_Number;
    --  The ones-origin column number of the specified Source_Ptr value is

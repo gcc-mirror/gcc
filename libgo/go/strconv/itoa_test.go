@@ -127,11 +127,13 @@ func TestUitoa(t *testing.T) {
 }
 
 func numAllocations(f func()) int {
-	runtime.UpdateMemStats()
-	n0 := runtime.MemStats.Mallocs
+	runtime.GC()
+	memstats := new(runtime.MemStats)
+	runtime.ReadMemStats(memstats)
+	n0 := memstats.Mallocs
 	f()
-	runtime.UpdateMemStats()
-	return int(runtime.MemStats.Mallocs - n0)
+	runtime.ReadMemStats(memstats)
+	return int(memstats.Mallocs - n0)
 }
 
 /* This test relies on escape analysis which gccgo does not yet do.

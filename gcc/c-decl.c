@@ -1,6 +1,6 @@
 /* Process declarations and variables for C compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2457,6 +2457,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
     memcpy ((char *) olddecl + sizeof (struct tree_common),
 	    (char *) newdecl + sizeof (struct tree_common),
 	    sizeof (struct tree_decl_common) - sizeof (struct tree_common));
+    DECL_USER_ALIGN (olddecl) = DECL_USER_ALIGN (newdecl);
     switch (TREE_CODE (olddecl))
       {
       case FUNCTION_DECL:
@@ -7879,7 +7880,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 
   /* If the declarator is not suitable for a function definition,
      cause a syntax error.  */
-  if (decl1 == 0)
+  if (decl1 == 0
+      || TREE_CODE (decl1) != FUNCTION_DECL)
     return 0;
 
   loc = DECL_SOURCE_LOCATION (decl1);

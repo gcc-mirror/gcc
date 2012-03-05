@@ -79,7 +79,11 @@ typedef void (*closure_fun) (ffi_cif*, void*, void**, void*);
 static void *ncode (int method_index, jclass klass, _Jv_Method *self, closure_fun fun);
 static void run_proxy (ffi_cif*, void*, void**, void*);
 
-typedef jobject invoke_t (jobject, Proxy *, Method *, JArray< jobject > *);
+typedef jobject
+#if defined (X86_WIN32) && !defined (__CYGWIN__)
+ __attribute__ ((thiscall))
+#endif
+ invoke_t (jobject, Proxy *, Method *, JArray< jobject > *);
 
 // True if pc points to a proxy frame.
 

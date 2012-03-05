@@ -39,10 +39,10 @@ __DTOR_END__:
 __JCR_END__:
 	data8	0
 
-#ifdef HAVE_INITFINI_ARRAY
+#ifdef HAVE_INITFINI_ARRAY_SUPPORT
 	.global __do_global_ctors_aux
 	.hidden	__do_global_ctors_aux
-#else /* !HAVE_INITFINI_ARRAY */
+#else /* !HAVE_INITFINI_ARRAY_SUPPORT */
 /*
  * Fragment of the ELF _init routine that invokes our dtor cleanup.
  *
@@ -71,7 +71,7 @@ __JCR_END__:
 	  br.call.sptk.many b0 = b6
 	  ;;
 	}
-#endif /* !HAVE_INITFINI_ARRAY */
+#endif /* !HAVE_INITFINI_ARRAY_SUPPORT */
 
 .text
 	.align 32

@@ -63,6 +63,8 @@ static code_stack *cs_base = NULL;
 static int forall_flag;
 static int do_concurrent_flag;
 
+static bool assumed_type_expr_allowed = false;
+
 /* Nonzero if we're inside a OpenMP WORKSHARE or PARALLEL WORKSHARE block.  */
 
 static int omp_workshare_flag;
@@ -1496,7 +1498,7 @@ resolve_intrinsic (gfc_symbol *sym, locus *loc)
 
   if (sym->intmod_sym_id)
     isym = gfc_intrinsic_function_by_id ((gfc_isym_id) sym->intmod_sym_id);
-  else
+  else if (!sym->attr.subroutine)
     isym = gfc_find_function (sym->name);
 
   if (isym)
@@ -1596,6 +1598,8 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
   gfc_symtree *parent_st;
   gfc_expr *e;
   int save_need_full_assumed_size;
+
+  assumed_type_expr_allowed = true;
 
   for (; arg; arg = arg->next)
     {
@@ -1829,6 +1833,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
           return FAILURE;
         }
     }
+  assumed_type_expr_allowed = false;
 
   return SUCCESS;
 }
@@ -5056,6 +5061,24 @@ resolve_variable (gfc_expr *e)
   if (e->symtree == NULL)
     return FAILURE;
   sym = e->symtree->n.sym;
+
+  /* TS 29113, 407b.  */
+  if (e->ts.type == BT_ASSUMED && !assumed_type_expr_allowed)
+    {
+      gfc_error ("Invalid expression with assumed-type variable %s at %L",
+		 sym->name, &e->where);
+      return FAILURE;
+    }
+
+  /* TS 29113, 407b.  */
+  if (e->ts.type == BT_ASSUMED && e->ref
+      && !(e->ref->type == REF_ARRAY && e->ref->u.ar.type == AR_FULL
+           && e->ref->next == NULL))
+    {
+      gfc_error ("Assumed-type variable %s with designator at %L",
+                 sym->name, &e->ref->u.ar.where);
+      return FAILURE;
+    }
 
   /* If this is an associate-name, it may be parsed with an array reference
      in error even though the target is scalar.  Fail directly in this case.  */
@@ -10950,6 +10973,7 @@ check_generic_tbp_ambiguity (gfc_tbp_generic* t1, gfc_tbp_generic* t2,
   gcc_assert (t1->specific && t2->specific);
   gcc_assert (!t1->specific->is_generic);
   gcc_assert (!t2->specific->is_generic);
+  gcc_assert (t1->is_operator == t2->is_operator);
 
   sym1 = t1->specific->u.specific->n.sym;
   sym2 = t2->specific->u.specific->n.sym;
@@ -10968,7 +10992,8 @@ check_generic_tbp_ambiguity (gfc_tbp_generic* t1, gfc_tbp_generic* t2,
     }
 
   /* Compare the interfaces.  */
-  if (gfc_compare_interfaces (sym1, sym2, sym2->name, 1, 0, NULL, 0))
+  if (gfc_compare_interfaces (sym1, sym2, sym2->name, !t1->is_operator, 0,
+			      NULL, 0))
     {
       gfc_error ("'%s' and '%s' for GENERIC '%s' at %L are ambiguous",
 		 sym1->name, sym2->name, generic_name, &where);
@@ -12429,6 +12454,31 @@ resolve_symbol (gfc_symbol *sym)
 		     "which has not been defined", sym->name,
 		     &sym->declared_at, sym->ts.u.derived->name);
 	  sym->ts.type = BT_UNKNOWN;
+	  return;
+	}
+    }
+
+  if (sym->ts.type == BT_ASSUMED)
+    { 
+      /* TS 29113, C407a.  */
+      if (!sym->attr.dummy)
+	{
+	  gfc_error ("Assumed type of variable %s at %L is only permitted "
+		     "for dummy variables", sym->name, &sym->declared_at);
+	  return;
+	}
+      if (sym->attr.allocatable || sym->attr.codimension
+	  || sym->attr.pointer || sym->attr.value)
+    	{
+	  gfc_error ("Assumed-type variable %s at %L may not have the "
+		     "ALLOCATABLE, CODIMENSION, POINTER or VALUE attribute",
+		     sym->name, &sym->declared_at);
+	  return;
+	}
+      if (sym->attr.dimension && sym->as->type == AS_EXPLICIT)
+	{
+	  gfc_error ("Assumed-type variable %s at %L shall not be an "
+		     "explicit-shape array", sym->name, &sym->declared_at);
 	  return;
 	}
     }

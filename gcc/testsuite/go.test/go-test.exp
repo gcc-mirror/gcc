@@ -33,6 +33,7 @@
 
 load_lib go-dg.exp
 load_lib go-torture.exp
+load_lib target-supports.exp
 
 # Compare two files
 proc filecmp { file1 file2 testname } {
@@ -286,22 +287,25 @@ proc go-gc-tests { } {
 
 	# Skip certain tests if target is RTEMS OS.
 	if [istarget "*-*-rtems*"] {
-	    if { [string match "*go.test/test/args.go" \
-		   $test] \
-		 || [string match "*go.test/test/env.go" \
-		   $test] } {
+	    if { [string match "*go.test/test/args.go" $test] \
+		 || [string match "*go.test/test/env.go" $test] } {
 		    untested "$name: uses the command-line or environment variables"
 		    continue
 	    }
 
-	    if { [string match "*go.test/test/stack.go" \
-		   $test] \
-		 || [string match "*go.test/test/peano.go" \
-		   $test] \
-		 || [string match "*go.test/test/chan/goroutines.go" \
-		   $test] } {
+	    if { [string match "*go.test/test/stack.go" $test] \
+		 || [string match "*go.test/test/peano.go" $test] \
+		 || [string match "*go.test/test/chan/goroutines.go" $test] } {
 		    untested "$name: has very high memory requirement"
 		    continue
+	    }
+	}
+
+	# Handle certain tests in a target-dependant way.
+	if { [istarget "alpha*-*-*"] || [istarget "sparc*-*-solaris*"] } {
+	    if { [string match "*go.test/test/nilptr.go" $test] } {
+		untested $test
+		continue
 	    }
 	}
 
@@ -322,6 +326,16 @@ proc go-gc-tests { } {
 	if { [file tail $test] == "closure.go" } {
 	    # This tests whether function closures do any memory
 	    # allocation, which for gccgo they currently do.
+	    untested $name
+	    continue
+	}
+
+	if { ( [file tail $test] == "select2.go" \
+		   || [file tail $test] == "stack.go" ) \
+		 && ! [check_effective_target_split_stack] } {
+	    # chan/select2.go fails on targets without split stack,
+	    # because they allocate a large stack segment that blows
+	    # out the memory calculations.
 	    untested $name
 	    continue
 	}
@@ -419,7 +433,12 @@ proc go-gc-tests { } {
 		} else {
 		    pass "$name execution"
 		    file delete $base-out.x
+		    # Disable optimizations as this test takes a long time
+		    # to compile.
+		    set hold $TORTURE_OPTIONS
+		    set TORTURE_OPTIONS [ list { -O0 -g }]
 		    go-torture-execute "./$base-out.go"
+		    set TORTURE_OPTIONS $hold
 		}
 		file delete $base-out.go
 	    }
@@ -926,7 +945,12 @@ proc go-gc-tests { } {
 		} else {
 		    pass "$name execution 0"
 		    file delete tmp.x
+		    # Disable optimizations as this test takes a long time
+		    # to compile.
+		    set hold $TORTURE_OPTIONS
+		    set TORTURE_OPTIONS [ list { -O0 -g }]
 		    go-torture-execute "./tmp.go"
+		    set TORTURE_OPTIONS $hold
 		}
 		if { [catch "exec $output_file -pass 1 >tmp.go"] != 0 } {
 		    fail "$name execution 1"
@@ -1005,10 +1029,12 @@ proc go-gc-tests { } {
 		} else {
 		    pass "$name execution"
 		    file delete $base-out.x
-		    # This testcase takes long time to compile.
-		    dg-timeout-factor list 4 { target alpha*-*-* }
+		    # Disable optimizations as this test takes a long time
+		    # to compile.
+		    set hold $TORTURE_OPTIONS
+		    set TORTURE_OPTIONS [ list { -O0 -g }]
 		    go-torture-execute "./$base-out.go"
-		    unset_timeout_vars
+		    set TORTURE_OPTIONS $hold
 		}
 		file delete $base-out.go
 	    }

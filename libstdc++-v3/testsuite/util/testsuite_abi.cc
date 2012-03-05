@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+// Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 // Free Software Foundation, Inc.
 
 // This library is free software; you can redistribute it and/or
@@ -30,7 +30,7 @@
 
 using namespace std;
 
-void 
+void
 symbol::init(string& data)
 {
   const char delim = ':';
@@ -119,9 +119,9 @@ symbol::print() const
     }
   cout << "version status: " << vers << endl;
 
-  if (version_name.size() 
+  if (version_name.size()
       && (version_status == compatible || version_status == incompatible))
-    cout << version_name << endl;  
+    cout << version_name << endl;
 
   string type_string;
   switch (type)
@@ -142,7 +142,7 @@ symbol::print() const
       type_string = "<default>";
     }
   cout << "type: " << type_string << endl;
-  
+
   if (type == object || type == tls)
     cout << "type size: " << size << endl;
 
@@ -181,7 +181,7 @@ check_version(symbol& test, bool added)
       known_versions.push_back("GLIBCXX_3.4.1");
       known_versions.push_back("GLIBCXX_3.4.2");
       known_versions.push_back("GLIBCXX_3.4.3");
-      known_versions.push_back("GLIBCXX_3.4.4"); 
+      known_versions.push_back("GLIBCXX_3.4.4");
       known_versions.push_back("GLIBCXX_3.4.5");
       known_versions.push_back("GLIBCXX_3.4.6");
       known_versions.push_back("GLIBCXX_3.4.7");
@@ -203,10 +203,10 @@ check_version(symbol& test, bool added)
       known_versions.push_back("CXXABI_1.3.2");
       known_versions.push_back("CXXABI_1.3.3");
       known_versions.push_back("CXXABI_1.3.4");
-      known_versions.push_back("CXXABI_TM_1");
       known_versions.push_back("CXXABI_1.3.5");
       known_versions.push_back("CXXABI_1.3.6");
       known_versions.push_back("CXXABI_LDBL_1.3");
+      known_versions.push_back("CXXABI_TM_1");
     }
   compat_list::iterator begin = known_versions.begin();
   compat_list::iterator end = known_versions.end();
@@ -220,13 +220,12 @@ check_version(symbol& test, bool added)
 	test.version_status = symbol::compatible;
       else
 	test.version_status = symbol::incompatible;
-      
-      // Check that added symbols aren't added in the base versions.
-      if (added
-	  && (test.version_name == known_versions[0]
-	      || test.version_name == "CXXABI_1.3"
-	      || test.version_name == "GLIBCXX_LDBL_3.4"
-	      || test.version_name == "CXXABI_LDBL_1.3"))
+
+      // Check that added symbols are added in the latest pre-release version.
+      bool latestp = (test.version_name == "GLIBCXX_3.4.17"
+		     || test.version_name == "CXXABI_1.3.6"
+		     || test.version_name == "CXXABI_TM_1");
+      if (added && !latestp)
 	test.version_status = symbol::incompatible;
 
       // Check that long double compatibility symbols demangled as
@@ -241,8 +240,8 @@ check_version(symbol& test, bool added)
       // Check for weak label.
       if (it1 == end && it2 == end)
 	test.version_status = symbol::incompatible;
-      
-      // Check that 
+
+      // Check that
       // GLIBCXX_3.4
       // GLIBCXX_3.4.5
       // version as compatible
@@ -263,7 +262,7 @@ check_version(symbol& test, bool added)
   return test.version_status == symbol::compatible;
 }
 
-bool 
+bool
 check_compatible(symbol& lhs, symbol& rhs, bool verbose)
 {
   bool ret = true;
@@ -276,7 +275,7 @@ check_compatible(symbol& lhs, symbol& rhs, bool verbose)
       if (verbose)
 	cout << tab << "incompatible types" << endl;
     }
-  
+
   if (lhs.name != rhs.name)
     {
       ret = false;
@@ -295,7 +294,7 @@ check_compatible(symbol& lhs, symbol& rhs, bool verbose)
 	}
     }
 
-  if (lhs.version_name != rhs.version_name 
+  if (lhs.version_name != rhs.version_name
       && !check_version(lhs) && !check_version(rhs))
     {
       ret = false;
@@ -334,7 +333,7 @@ get_symbol(const string& name, const symbols& s)
     }
 }
 
-void 
+void
 examine_symbol(const char* name, const char* file)
 {
   try
@@ -348,7 +347,7 @@ examine_symbol(const char* name, const char* file)
 }
 
 int
-compare_symbols(const char* baseline_file, const char* test_file, 
+compare_symbols(const char* baseline_file, const char* test_file,
 		bool verbose)
 {
   // Input both lists of symbols into container.
@@ -377,7 +376,7 @@ compare_symbols(const char* baseline_file, const char* test_file,
   // duplicates.
   //
   // The names added to missing_names are baseline names not found in
-  // test names 
+  // test names
   // -> symbols that have been deleted.
   //
   // The names added to added_names are test names not in
@@ -416,6 +415,9 @@ compare_symbols(const char* baseline_file, const char* test_file,
   typedef pair<symbol, symbol> symbol_pair;
   vector<symbol_pair> incompatible;
 
+  // Fill out list of undesignated symbols.
+  vector<symbol> undesignated;
+
   // Check missing names for compatibility.
   for (size_t j = 0; j < missing_names.size(); ++j)
     {
@@ -440,10 +442,40 @@ compare_symbols(const char* baseline_file, const char* test_file,
   for (size_t l = 0; l < added_size; ++l)
     {
       symbol& stest = test[added_names[l]];
-      stest.status = symbol::added;
-      if (!check_version(stest, true))
-	incompatible.push_back(symbol_pair(stest, stest));
+
+      // Mark TLS as undesignated, remove from added.
+      if (stest.type == symbol::tls)
+	{
+	  stest.status = symbol::undesignated;
+	  if (!check_version(stest, false))
+	    incompatible.push_back(symbol_pair(stest, stest));
+	  else
+	    undesignated.push_back(stest);
+	}
+      else
+	{
+	  stest.status = symbol::added;
+	  if (!check_version(stest, true))
+	    incompatible.push_back(symbol_pair(stest, stest));
+	}
     }
+
+  // Normalize added names and undesignated names.
+  const size_t undesignated_size = undesignated.size();
+  for (size_t l = 0; l < undesignated_size; ++l)
+    {
+      symbol& sundes = undesignated[l];
+      symbol_names::iterator end = added_names.end();
+      symbol_names::iterator it = find(added_names.begin(), end, sundes.name);
+       if (it != end)
+	{
+	  // Found.
+	  added_names.erase(it);
+	}
+       else
+	 __throw_runtime_error(sundes.name.c_str());
+    }
+
 
   // Report results.
   if (verbose && added_names.size())
@@ -455,7 +487,7 @@ compare_symbols(const char* baseline_file, const char* test_file,
 	  test[added_names[j]].print();
 	}
     }
-  
+
   if (verbose && missing_names.size())
     {
       cout << endl << missing_names.size() << " missing symbols " << endl;
@@ -465,7 +497,21 @@ compare_symbols(const char* baseline_file, const char* test_file,
 	  baseline[missing_names[j]].print();
 	}
     }
-  
+
+  if (verbose && undesignated.size())
+    {
+      cout << endl << undesignated.size() << " undesignated symbols " << endl;
+      for (size_t j = 0; j < undesignated.size() ; ++j)
+	{
+	  // First, print index.
+	  cout << j << endl;
+
+	  // Second, report name.
+	  symbol& s = undesignated[j];
+	  s.print();
+	}
+    }
+
   if (verbose && incompatible.size())
     {
       cout << endl << incompatible.size() << " incompatible symbols " << endl;
@@ -478,16 +524,17 @@ compare_symbols(const char* baseline_file, const char* test_file,
 	  symbol& sbase = incompatible[j].first;
 	  symbol& stest = incompatible[j].second;
 	  stest.print();
-	  
-	  // Second, report reason or reasons incompatible.
+
+	  // Third, report reason or reasons incompatible.
 	  check_compatible(sbase, stest, true);
 	}
     }
-  
+
   cout << "\n\t\t=== libstdc++-v3 check-abi Summary ===" << endl;
   cout << endl;
   cout << "# of added symbols:\t\t " << added_names.size() << endl;
   cout << "# of missing symbols:\t\t " << missing_names.size() << endl;
+  cout << "# of undesignated symbols:\t " << undesignated.size() << endl;
   cout << "# of incompatible symbols:\t " << incompatible.size() << endl;
   cout << endl;
   cout << "using: " << baseline_file << endl;
@@ -563,4 +610,3 @@ demangle(const std::string& mangled)
     }
   return name;
 }
-

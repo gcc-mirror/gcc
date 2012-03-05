@@ -105,54 +105,74 @@ done:
 }
 
 func setReadBuffer(fd *netFD, bytes int) error {
-	fd.incref()
+	if err := fd.incref(false); err != nil {
+		return err
+	}
 	defer fd.decref()
 	return os.NewSyscallError("setsockopt", syscall.SetsockoptInt(fd.sysfd, syscall.SOL_SOCKET, syscall.SO_RCVBUF, bytes))
 }
 
 func setWriteBuffer(fd *netFD, bytes int) error {
-	fd.incref()
+	if err := fd.incref(false); err != nil {
+		return err
+	}
 	defer fd.decref()
 	return os.NewSyscallError("setsockopt", syscall.SetsockoptInt(fd.sysfd, syscall.SOL_SOCKET, syscall.SO_SNDBUF, bytes))
 }
 
 func setReadDeadline(fd *netFD, t time.Time) error {
-	fd.rdeadline = t.UnixNano()
+	if t.IsZero() {
+		fd.rdeadline = 0
+	} else {
+		fd.rdeadline = t.UnixNano()
+	}
 	return nil
 }
 
 func setWriteDeadline(fd *netFD, t time.Time) error {
-	fd.wdeadline = t.UnixNano()
+	if t.IsZero() {
+		fd.wdeadline = 0
+	} else {
+		fd.wdeadline = t.UnixNano()
+	}
 	return nil
 }
 
 func setDeadline(fd *netFD, t time.Time) error {
-	if e := setReadDeadline(fd, t); e != nil {
-		return e
+	if err := setReadDeadline(fd, t); err != nil {
+		return err
 	}
 	return setWriteDeadline(fd, t)
 }
 
 func setReuseAddr(fd *netFD, reuse bool) error {
-	fd.incref()
+	if err := fd.incref(false); err != nil {
+		return err
+	}
 	defer fd.decref()
 	return os.NewSyscallError("setsockopt", syscall.SetsockoptInt(fd.sysfd, syscall.SOL_SOCKET, syscall.SO_REUSEADDR, boolint(reuse)))
 }
 
 func setDontRoute(fd *netFD, dontroute bool) error {
-	fd.incref()
+	if err := fd.incref(false); err != nil {
+		return err
+	}
 	defer fd.decref()
 	return os.NewSyscallError("setsockopt", syscall.SetsockoptInt(fd.sysfd, syscall.SOL_SOCKET, syscall.SO_DONTROUTE, boolint(dontroute)))
 }
 
 func setKeepAlive(fd *netFD, keepalive bool) error {
-	fd.incref()
+	if err := fd.incref(false); err != nil {
+		return err
+	}
 	defer fd.decref()
 	return os.NewSyscallError("setsockopt", syscall.SetsockoptInt(fd.sysfd, syscall.SOL_SOCKET, syscall.SO_KEEPALIVE, boolint(keepalive)))
 }
 
 func setNoDelay(fd *netFD, noDelay bool) error {
-	fd.incref()
+	if err := fd.incref(false); err != nil {
+		return err
+	}
 	defer fd.decref()
 	return os.NewSyscallError("setsockopt", syscall.SetsockoptInt(fd.sysfd, syscall.IPPROTO_TCP, syscall.TCP_NODELAY, boolint(noDelay)))
 }
@@ -166,7 +186,9 @@ func setLinger(fd *netFD, sec int) error {
 		l.Onoff = 0
 		l.Linger = 0
 	}
-	fd.incref()
+	if err := fd.incref(false); err != nil {
+		return err
+	}
 	defer fd.decref()
 	return os.NewSyscallError("setsockopt", syscall.SetsockoptLinger(fd.sysfd, syscall.SOL_SOCKET, syscall.SO_LINGER, &l))
 }

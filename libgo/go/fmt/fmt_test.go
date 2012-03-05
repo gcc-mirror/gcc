@@ -423,6 +423,7 @@ var fmttests = []struct {
 	{"p0=%p", new(int), "p0=0xPTR"},
 	{"p1=%s", &pValue, "p1=String(p)"}, // String method...
 	{"p2=%p", &pValue, "p2=0xPTR"},     // ... not called with %p
+	{"p3=%p", (*int)(nil), "p3=0x0"},
 	{"p4=%#p", new(int), "p4=PTR"},
 
 	// %p on non-pointers
@@ -430,6 +431,14 @@ var fmttests = []struct {
 	{"%p", make(map[int]int), "0xPTR"},
 	{"%p", make([]int, 1), "0xPTR"},
 	{"%p", 27, "%!p(int=27)"}, // not a pointer at all
+
+	// %q on pointers
+	{"%q", (*int)(nil), "%!q(*int=<nil>)"},
+	{"%q", new(int), "%!q(*int=0xPTR)"},
+
+	// %v on pointers formats 0 as <nil>
+	{"%v", (*int)(nil), "<nil>"},
+	{"%v", new(int), "0xPTR"},
 
 	// %d on Stringer should give integer if possible
 	{"%s", time.Time{}.Month(), "January"},
@@ -443,6 +452,14 @@ var fmttests = []struct {
 	{"%s", nil, "%!s(<nil>)"},
 	{"%T", nil, "<nil>"},
 	{"%-1", 100, "%!(NOVERB)%!(EXTRA int=100)"},
+
+	// The "<nil>" show up because maps are printed by
+	// first obtaining a list of keys and then looking up
+	// each key.  Since NaNs can be map keys but cannot
+	// be fetched directly, the lookup fails and returns a
+	// zero reflect.Value, which formats as <nil>.
+	// This test is just to check that it shows the two NaNs at all.
+	{"%v", map[float64]int{math.NaN(): 1, math.NaN(): 2}, "map[NaN:<nil> NaN:<nil>]"},
 }
 
 func TestSprintf(t *testing.T) {
@@ -532,13 +549,14 @@ var _ bytes.Buffer
 func TestCountMallocs(t *testing.T) {
 	for _, mt := range mallocTest {
 		const N = 100
-		runtime.UpdateMemStats()
-		mallocs := 0 - runtime.MemStats.Mallocs
+		memstats := new(runtime.MemStats)
+		runtime.ReadMemStats(memstats)
+		mallocs := 0 - memstats.Mallocs
 		for i := 0; i < N; i++ {
 			mt.fn()
 		}
-		runtime.UpdateMemStats()
-		mallocs += runtime.MemStats.Mallocs
+		runtime.ReadMemStats(memstats)
+		mallocs += memstats.Mallocs
 		if mallocs/N > uint64(mt.count) {
 			t.Errorf("%s: expected %d mallocs, got %d", mt.desc, mt.count, mallocs/N)
 		}

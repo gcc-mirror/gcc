@@ -170,6 +170,16 @@ ca_epilogue:
         ret
 ffi_call_win32 ENDP
 
+ffi_closure_THISCALL PROC NEAR FORCEFRAME
+	push	ebp
+	mov	ebp, esp
+	sub	esp, 40
+	lea	edx, [ebp -24]
+	mov	[ebp - 12], edx	/* resp */
+	lea	edx, [ebp + 12]  /* account for stub return address on stack */
+	jmp	stub
+ffi_closure_THISCALL ENDP
+
 ffi_closure_SYSV PROC NEAR FORCEFRAME
     ;; the ffi_closure ctx is passed in eax by the trampoline.
 
@@ -177,6 +187,7 @@ ffi_closure_SYSV PROC NEAR FORCEFRAME
         lea  edx, [ebp - 24]
         mov  [ebp - 12], edx         ;; resp
         lea  edx, [ebp + 8]
+stub:
         mov  [esp + 8], edx          ;; args
         lea  edx, [ebp - 12]
         mov  [esp + 4], edx          ;; &resp
@@ -573,6 +584,19 @@ _ffi_call_win32:
         popl %ebp
         ret
 .ffi_call_win32_end:
+        .balign 16
+	.globl	_ffi_closure_THISCALL
+#ifndef __OS2__
+	.def	_ffi_closure_THISCALL;	.scl	2;	.type	32;	.endef
+#endif
+_ffi_closure_THISCALL:
+	pushl	%ebp
+	movl	%esp, %ebp
+	subl	$40, %esp
+	leal	-24(%ebp), %edx
+	movl	%edx, -12(%ebp)	/* resp */
+	leal	12(%ebp), %edx  /* account for stub return address on stack */
+	jmp	.stub
 .LFE1:
 
         # This assumes we are using gas.
@@ -591,6 +615,7 @@ _ffi_closure_SYSV:
 	leal	-24(%ebp), %edx
 	movl	%edx, -12(%ebp)	/* resp */
 	leal	8(%ebp), %edx
+.stub:
 	movl	%edx, 4(%esp)	/* args = __builtin_dwarf_cfa () */
 	leal	-12(%ebp), %edx
 	movl	%edx, (%esp)	/* &resp */

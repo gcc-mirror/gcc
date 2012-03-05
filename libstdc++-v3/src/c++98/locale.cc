@@ -206,7 +206,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __c_locale
   locale::facet::_S_get_c_locale()
   {
-#ifdef __GHTREADS
+#ifdef __GTHREADS
     if (__gthread_active_p())
       __gthread_once(&_S_once, _S_initialize_once);
     else

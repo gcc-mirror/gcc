@@ -12,11 +12,11 @@ import (
 // Process stores the information about a process created by StartProcess.
 type Process struct {
 	Pid    int
-	handle int
+	handle uintptr
 	done   bool // process has been successfuly waited on
 }
 
-func newProcess(pid, handle int) *Process {
+func newProcess(pid int, handle uintptr) *Process {
 	p := &Process{Pid: pid, handle: handle}
 	runtime.SetFinalizer(p, (*Process).Release)
 	return p
@@ -46,10 +46,21 @@ type ProcAttr struct {
 	Sys *syscall.SysProcAttr
 }
 
-// A Signal can represent any operating system signal.
+// A Signal represents an operating system signal.
+// The usual underlying implementation is operating system-dependent:
+// on Unix it is syscall.Signal.
 type Signal interface {
 	String() string
+	Signal() // to distinguish from other Stringers
 }
+
+// The only signal values guaranteed to be present on all systems
+// are Interrupt (send the process an interrupt) and
+// Kill (force the process to exit).
+var (
+	Interrupt Signal = syscall.SIGINT
+	Kill      Signal = syscall.SIGKILL
+)
 
 // Getpid returns the process id of the caller.
 func Getpid() int { return syscall.Getpid() }

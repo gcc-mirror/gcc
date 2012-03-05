@@ -130,6 +130,12 @@ __go_new_channel(ChanType *t, uintptr hint)
 	return runtime_makechan_c(t, hint);
 }
 
+Hchan*
+__go_new_channel_big(ChanType *t, uint64 hint)
+{
+	return runtime_makechan_c(t, hint);
+}
+
 /*
  * generic single channel send/recv
  * if the bool pointer is nil,
@@ -403,11 +409,20 @@ closed:
 void
 __go_send_small(ChanType *t, Hchan* c, uint64 val)
 {
-	byte b[sizeof(uint64)];
+	union
+	{
+		byte b[sizeof(uint64)];
+		uint64 v;
+	} u;
+	byte *p;
 
-	runtime_memclr(b, sizeof(uint64));
-	__builtin_memcpy(b, &val, t->__element_type->__size);
-	runtime_chansend(t, c, b, nil);
+	u.v = val;
+#ifndef WORDS_BIGENDIAN
+	p = u.b;
+#else
+	p = u.b + sizeof(uint64) - t->__element_type->__size;
+#endif
+	runtime_chansend(t, c, p, nil);
 }
 
 // The compiler generates a call to __go_send_big to send a value
@@ -427,9 +442,15 @@ __go_receive_small(ChanType *t, Hchan* c)
 		byte b[sizeof(uint64)];
 		uint64 v;
 	} u;
+	byte *p;
 
 	u.v = 0;
-	runtime_chanrecv(t, c, u.b, nil, nil);
+#ifndef WORDS_BIGENDIAN
+	p = u.b;
+#else
+	p = u.b + sizeof(uint64) - t->__element_type->__size;
+#endif
+	runtime_chanrecv(t, c, p, nil, nil);
 	return u.v;
 }
 
@@ -641,6 +662,10 @@ newselect(int32 size, Select **selp)
 	if(size > 1)
 		n = size-1;
 
+	// allocate all the memory we need in a single allocation
+	// start with Select with size cases
+	// then lockorder with size entries
+	// then pollorder with size entries
 	sel = runtime_mal(sizeof(*sel) +
 		n*sizeof(sel->scase[0]) +
 		size*sizeof(sel->lockorder[0]) +
@@ -648,8 +673,8 @@ newselect(int32 size, Select **selp)
 
 	sel->tcase = size;
 	sel->ncase = 0;
-	sel->pollorder = (void*)(sel->scase + size);
-	sel->lockorder = (void*)(sel->pollorder + size);
+	sel->lockorder = (void*)(sel->scase + size);
+	sel->pollorder = (void*)(sel->lockorder + size);
 	*selp = sel;
 
 	if(debug)

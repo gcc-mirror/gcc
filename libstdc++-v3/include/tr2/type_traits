@@ -1,6 +1,6 @@
 // TR2 <type_traits> -*- C++ -*-
 
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,60 +53,48 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Simple typelist. Compile-time list of types.
    */
   template<typename... _Elements>
-    struct typelist;
+    struct __reflection_typelist;
 
   /// Specialization for an empty typelist.
   template<>
-    struct typelist<>
+    struct __reflection_typelist<>
     {
-      typedef std::true_type 			empty;
+      typedef std::true_type					empty;
     };
 
   /// Partial specialization.
   template<typename _First, typename... _Rest>
-    struct typelist<_First, _Rest...>
+    struct __reflection_typelist<_First, _Rest...>
     {
-      typedef std::false_type 			empty;
+      typedef std::false_type					empty;
 
       struct first
       {
-	typedef _First 				type;
+	typedef _First						type;
       };
 
       struct rest
       {
-	typedef typelist<_Rest...> 		type;
+	typedef __reflection_typelist<_Rest...>			type;
       };
     };
 
   /// Sequence abstraction metafunctions for manipulating a typelist.
 
 
-  /// Return the first type in a typelist.
-  template<typename _Tp>
-    struct first : public _Tp::first { };
-
-  /// Return the typelist minus the first type.
-  template<typename _Tp>
-    struct rest : public _Tp::rest { };
-
-  /// Query to see if a typelist is empty.
-  template<typename _Tp>
-    struct empty : public _Tp::empty { };
-
 
   /// Enumerate all the base classes of a class. Form of a typelist.
   template<typename _Tp>
     struct bases
     {
-      typedef typelist<__bases(_Tp)...> 	type;
+      typedef __reflection_typelist<__bases(_Tp)...>		type;
     };
 
   /// Enumerate all the direct base classes of a class. Form of a typelist.
   template<typename _Tp>
     struct direct_bases
     {
-      typedef typelist<__direct_bases(_Tp)...> 	type;
+      typedef __reflection_typelist<__direct_bases(_Tp)...>	type;
     };
 
   /// @} group metaprogramming

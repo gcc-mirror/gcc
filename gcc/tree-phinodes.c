@@ -204,7 +204,7 @@ ideal_phi_node_len (int len)
 
 /* Return a PHI node with LEN argument slots for variable VAR.  */
 
-gimple
+static gimple
 make_phi_node (tree var, int len)
 {
   gimple phi;

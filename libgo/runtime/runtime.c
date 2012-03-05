@@ -184,6 +184,19 @@ runtime_fastrand1(void)
 	return x;
 }
 
+int64
+runtime_cputicks(void)
+{
+#if defined(__386__) || defined(__x86_64__)
+  uint32 low, high;
+  asm("rdtsc" : "=a" (low), "=d" (high));
+  return (int64)(((uint64)high << 32) | (uint64)low);
+#else
+  // FIXME: implement for other processors.
+  return 0;
+#endif
+}
+
 struct funcline_go_return
 {
   String retfile;

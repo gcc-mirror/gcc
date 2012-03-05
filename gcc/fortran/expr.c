@@ -336,6 +336,7 @@ gfc_copy_expr (gfc_expr *p)
 	case BT_LOGICAL:
 	case BT_DERIVED:
 	case BT_CLASS:
+	case BT_ASSUMED:
 	  break;		/* Already done.  */
 
 	case BT_PROCEDURE:
@@ -4648,7 +4649,8 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
      the component of sub-component of a pointer.  Obviously,
      procedure pointers are of no interest here.  */
   check_intentin = true;
-  ptr_component = sym->attr.pointer;
+  ptr_component = (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
+		  ? CLASS_DATA (sym)->attr.class_pointer : sym->attr.pointer;
   for (ref = e->ref; ref && check_intentin; ref = ref->next)
     {
       if (ptr_component && ref->type == REF_COMPONENT)

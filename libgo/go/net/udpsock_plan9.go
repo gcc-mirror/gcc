@@ -9,6 +9,7 @@ package net
 import (
 	"errors"
 	"os"
+	"syscall"
 	"time"
 )
 
@@ -18,19 +19,19 @@ type UDPConn struct {
 	plan9Conn
 }
 
-// SetDeadline implements the net.Conn SetDeadline method.
+// SetDeadline implements the Conn SetDeadline method.
 func (c *UDPConn) SetDeadline(t time.Time) error {
-	return os.EPLAN9
+	return syscall.EPLAN9
 }
 
-// SetReadDeadline implements the net.Conn SetReadDeadline method.
+// SetReadDeadline implements the Conn SetReadDeadline method.
 func (c *UDPConn) SetReadDeadline(t time.Time) error {
-	return os.EPLAN9
+	return syscall.EPLAN9
 }
 
-// SetWriteDeadline implements the net.Conn SetWriteDeadline method.
+// SetWriteDeadline implements the Conn SetWriteDeadline method.
 func (c *UDPConn) SetWriteDeadline(t time.Time) error {
-	return os.EPLAN9
+	return syscall.EPLAN9
 }
 
 // UDP-specific methods.
@@ -43,7 +44,7 @@ func (c *UDPConn) SetWriteDeadline(t time.Time) error {
 // after a fixed time limit; see SetDeadline and SetReadDeadline.
 func (c *UDPConn) ReadFromUDP(b []byte) (n int, addr *UDPAddr, err error) {
 	if !c.ok() {
-		return 0, nil, os.EINVAL
+		return 0, nil, syscall.EINVAL
 	}
 	if c.data == nil {
 		c.data, err = os.OpenFile(c.dir+"/data", os.O_RDWR, 0)
@@ -66,10 +67,10 @@ func (c *UDPConn) ReadFromUDP(b []byte) (n int, addr *UDPAddr, err error) {
 	return n, &UDPAddr{h.raddr, int(h.rport)}, nil
 }
 
-// ReadFrom implements the net.PacketConn ReadFrom method.
+// ReadFrom implements the PacketConn ReadFrom method.
 func (c *UDPConn) ReadFrom(b []byte) (n int, addr Addr, err error) {
 	if !c.ok() {
-		return 0, nil, os.EINVAL
+		return 0, nil, syscall.EINVAL
 	}
 	return c.ReadFromUDP(b)
 }
@@ -82,7 +83,7 @@ func (c *UDPConn) ReadFrom(b []byte) (n int, addr Addr, err error) {
 // On packet-oriented connections, write timeouts are rare.
 func (c *UDPConn) WriteToUDP(b []byte, addr *UDPAddr) (n int, err error) {
 	if !c.ok() {
-		return 0, os.EINVAL
+		return 0, syscall.EINVAL
 	}
 	if c.data == nil {
 		c.data, err = os.OpenFile(c.dir+"/data", os.O_RDWR, 0)
@@ -103,14 +104,14 @@ func (c *UDPConn) WriteToUDP(b []byte, addr *UDPAddr) (n int, err error) {
 	return c.data.Write(buf)
 }
 
-// WriteTo implements the net.PacketConn WriteTo method.
+// WriteTo implements the PacketConn WriteTo method.
 func (c *UDPConn) WriteTo(b []byte, addr Addr) (n int, err error) {
 	if !c.ok() {
-		return 0, os.EINVAL
+		return 0, syscall.EINVAL
 	}
 	a, ok := addr.(*UDPAddr)
 	if !ok {
-		return 0, &OpError{"writeto", "udp", addr, os.EINVAL}
+		return 0, &OpError{"write", c.dir, addr, syscall.EINVAL}
 	}
 	return c.WriteToUDP(b, a)
 }
@@ -125,7 +126,7 @@ func DialUDP(net string, laddr, raddr *UDPAddr) (c *UDPConn, err error) {
 		return nil, UnknownNetworkError(net)
 	}
 	if raddr == nil {
-		return nil, &OpError{"dial", "udp", nil, errMissingAddress}
+		return nil, &OpError{"dial", net, nil, errMissingAddress}
 	}
 	c1, err := dialPlan9(net, laddr, raddr)
 	if err != nil {
@@ -173,7 +174,7 @@ func ListenUDP(net string, laddr *UDPAddr) (c *UDPConn, err error) {
 		return nil, UnknownNetworkError(net)
 	}
 	if laddr == nil {
-		return nil, &OpError{"listen", "udp", nil, errMissingAddress}
+		return nil, &OpError{"listen", net, nil, errMissingAddress}
 	}
 	l, err := listenPlan9(net, laddr)
 	if err != nil {
@@ -186,20 +187,10 @@ func ListenUDP(net string, laddr *UDPAddr) (c *UDPConn, err error) {
 	return &UDPConn{*l.plan9Conn()}, nil
 }
 
-// JoinGroup joins the IP multicast group named by addr on ifi,
-// which specifies the interface to join.  JoinGroup uses the
-// default multicast interface if ifi is nil.
-func (c *UDPConn) JoinGroup(ifi *Interface, addr IP) error {
-	if !c.ok() {
-		return os.EINVAL
-	}
-	return os.EPLAN9
-}
-
-// LeaveGroup exits the IP multicast group named by addr on ifi.
-func (c *UDPConn) LeaveGroup(ifi *Interface, addr IP) error {
-	if !c.ok() {
-		return os.EINVAL
-	}
-	return os.EPLAN9
+// ListenMulticastUDP listens for incoming multicast UDP packets
+// addressed to the group address gaddr on ifi, which specifies
+// the interface to join.  ListenMulticastUDP uses default
+// multicast interface if ifi is nil.
+func ListenMulticastUDP(net string, ifi *Interface, gaddr *UDPAddr) (*UDPConn, error) {
+	return nil, syscall.EPLAN9
 }

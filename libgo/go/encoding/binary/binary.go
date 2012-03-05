@@ -5,6 +5,9 @@
 // Package binary implements translation between
 // unsigned integer values and byte sequences
 // and the reading and writing of fixed-size values.
+// A fixed-size value is either a fixed-size arithmetic
+// type (int8, uint8, int16, float32, complex64, ...)
+// or an array or struct containing only fixed-size values.
 package binary
 
 import (
@@ -119,9 +122,6 @@ func (bigEndian) GoString() string { return "binary.BigEndian" }
 // Read reads structured binary data from r into data.
 // Data must be a pointer to a fixed-size value or a slice
 // of fixed-size values.
-// A fixed-size value is either a fixed-size arithmetic
-// type (int8, uint8, int16, float32, complex64, ...)
-// or an array or struct containing only fixed-size values.
 // Bytes read from r are decoded using the specified byte order
 // and written to successive fields of the data.
 func Read(r io.Reader, order ByteOrder, data interface{}) error {
@@ -163,7 +163,7 @@ func Read(r io.Reader, order ByteOrder, data interface{}) error {
 	default:
 		return errors.New("binary.Read: invalid type " + d.Type().String())
 	}
-	size := TotalSize(v)
+	size := dataSize(v)
 	if size < 0 {
 		return errors.New("binary.Read: invalid type " + v.Type().String())
 	}
@@ -176,11 +176,8 @@ func Read(r io.Reader, order ByteOrder, data interface{}) error {
 }
 
 // Write writes the binary representation of data into w.
-// Data must be a fixed-size value or a pointer to
-// a fixed-size value.
-// A fixed-size value is either a fixed-size arithmetic
-// type (int8, uint8, int16, float32, complex64, ...)
-// or an array or struct containing only fixed-size values.
+// Data must be a fixed-size value or a slice of fixed-size
+// values, or a pointer to such data.
 // Bytes written to w are encoded using the specified byte order
 // and read from successive fields of the data.
 func Write(w io.Writer, order ByteOrder, data interface{}) error {
@@ -242,7 +239,7 @@ func Write(w io.Writer, order ByteOrder, data interface{}) error {
 		return err
 	}
 	v := reflect.Indirect(reflect.ValueOf(data))
-	size := TotalSize(v)
+	size := dataSize(v)
 	if size < 0 {
 		return errors.New("binary.Write: invalid type " + v.Type().String())
 	}
@@ -253,7 +250,17 @@ func Write(w io.Writer, order ByteOrder, data interface{}) error {
 	return err
 }
 
-func TotalSize(v reflect.Value) int {
+// Size returns how many bytes Write would generate to encode the value v, which
+// must be a fixed-size value or a slice of fixed-size values, or a pointer to such data.
+func Size(v interface{}) int {
+	return dataSize(reflect.Indirect(reflect.ValueOf(v)))
+}
+
+// dataSize returns the number of bytes the actual data represented by v occupies in memory.
+// For compound structures, it sums the sizes of the elements. Thus, for instance, for a slice
+// it returns the length of the slice times the element size and does not count the memory
+// occupied by the header.
+func dataSize(v reflect.Value) int {
 	if v.Kind() == reflect.Slice {
 		elem := sizeof(v.Type().Elem())
 		if elem < 0 {
@@ -369,6 +376,7 @@ func (d *decoder) value(v reflect.Value) {
 		for i := 0; i < l; i++ {
 			d.value(v.Index(i))
 		}
+
 	case reflect.Struct:
 		l := v.NumField()
 		for i := 0; i < l; i++ {
@@ -424,11 +432,13 @@ func (e *encoder) value(v reflect.Value) {
 		for i := 0; i < l; i++ {
 			e.value(v.Index(i))
 		}
+
 	case reflect.Struct:
 		l := v.NumField()
 		for i := 0; i < l; i++ {
 			e.value(v.Field(i))
 		}
+
 	case reflect.Slice:
 		l := v.Len()
 		for i := 0; i < l; i++ {

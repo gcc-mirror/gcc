@@ -1,7 +1,7 @@
 //
 // © Copyright Henrik Ravn 2004
 //
-// Use, modification and distribution are subject to the Boost Software License, Version 1.0. 
+// Use, modification and distribution are subject to the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
@@ -56,7 +56,7 @@ namespace DotZLib
             if (data == null) throw new ArgumentNullException();
             if (offset < 0 || count < 0) throw new ArgumentOutOfRangeException();
             if ((offset+count) > data.Length) throw new ArgumentException();
-            
+
             int total = count;
             int inputIndex = offset;
             int err = 0;
@@ -86,7 +86,7 @@ namespace DotZLib
         public override void Finish()
         {
             int err;
-            do 
+            do
             {
                 err = deflate(ref _ztream, (int)FlushTypes.Finish);
                 OnDataAvailable();

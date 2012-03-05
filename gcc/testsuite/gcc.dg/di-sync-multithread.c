@@ -10,6 +10,9 @@
 
 #include <pthread.h>
 #include <unistd.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 /*#define DEBUGIT 1 */
 
@@ -175,7 +178,11 @@ main ()
 	t, err);
   };
 
+#ifdef _WIN32
+  Sleep (5000);
+#else
   sleep (5);
+#endif
 
   /* Stop please.  */
   __sync_lock_test_and_set (&doquit, 1ll);

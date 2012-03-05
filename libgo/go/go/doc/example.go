@@ -2,44 +2,98 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Extract example functions from package ASTs.
+// Extract example functions from file ASTs.
 
 package doc
 
 import (
 	"go/ast"
-	"go/printer"
+	"go/token"
+	"regexp"
+	"sort"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 )
 
 type Example struct {
-	Name   string                 // name of the item being demonstrated
-	Body   *printer.CommentedNode // code
-	Output string                 // expected output
+	Name     string // name of the item being exemplified
+	Doc      string // example function doc string
+	Code     ast.Node
+	Comments []*ast.CommentGroup
+	Output   string // expected output
 }
 
-func Examples(pkg *ast.Package) []*Example {
-	var examples []*Example
-	for _, src := range pkg.Files {
-		for _, decl := range src.Decls {
+func Examples(files ...*ast.File) []*Example {
+	var list []*Example
+	for _, file := range files {
+		hasTests := false // file contains tests or benchmarks
+		numDecl := 0      // number of non-import declarations in the file
+		var flist []*Example
+		for _, decl := range file.Decls {
+			if g, ok := decl.(*ast.GenDecl); ok && g.Tok != token.IMPORT {
+				numDecl++
+				continue
+			}
 			f, ok := decl.(*ast.FuncDecl)
 			if !ok {
 				continue
 			}
+			numDecl++
 			name := f.Name.Name
+			if isTest(name, "Test") || isTest(name, "Benchmark") {
+				hasTests = true
+				continue
+			}
 			if !isTest(name, "Example") {
 				continue
 			}
-			examples = append(examples, &Example{
-				Name:   name[len("Example"):],
-				Body:   &printer.CommentedNode{f.Body, src.Comments},
-				Output: f.Doc.Text(),
+			var doc string
+			if f.Doc != nil {
+				doc = f.Doc.Text()
+			}
+			flist = append(flist, &Example{
+				Name:     name[len("Example"):],
+				Doc:      doc,
+				Code:     f.Body,
+				Comments: file.Comments,
+				Output:   exampleOutput(f, file.Comments),
 			})
 		}
+		if !hasTests && numDecl > 1 && len(flist) == 1 {
+			// If this file only has one example function, some
+			// other top-level declarations, and no tests or
+			// benchmarks, use the whole file as the example.
+			flist[0].Code = file
+		}
+		list = append(list, flist...)
 	}
-	return examples
+	sort.Sort(exampleByName(list))
+	return list
+}
+
+var outputPrefix = regexp.MustCompile(`(?i)^[[:space:]]*output:`)
+
+func exampleOutput(fun *ast.FuncDecl, comments []*ast.CommentGroup) string {
+	// find the last comment in the function
+	var last *ast.CommentGroup
+	for _, cg := range comments {
+		if cg.Pos() < fun.Pos() {
+			continue
+		}
+		if cg.End() > fun.End() {
+			break
+		}
+		last = cg
+	}
+	if last != nil {
+		// test that it begins with the correct prefix
+		text := last.Text()
+		if loc := outputPrefix.FindStringIndex(text); loc != nil {
+			return strings.TrimSpace(text[loc[1]:])
+		}
+	}
+	return "" // no suitable comment found
 }
 
 // isTest tells whether name looks like a test, example, or benchmark.
@@ -55,3 +109,9 @@ func isTest(name, prefix string) bool {
 	rune, _ := utf8.DecodeRuneInString(name[len(prefix):])
 	return !unicode.IsLower(rune)
 }
+
+type exampleByName []*Example
+
+func (s exampleByName) Len() int           { return len(s) }
+func (s exampleByName) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s exampleByName) Less(i, j int) bool { return s[i].Name < s[j].Name }

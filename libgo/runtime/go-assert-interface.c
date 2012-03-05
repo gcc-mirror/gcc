@@ -8,6 +8,7 @@
 #include "go-assert.h"
 #include "go-panic.h"
 #include "interface.h"
+#include "runtime.h"
 
 /* This is called by the compiler to implement a type assertion from
    one interface type to another.  This returns the value that should
@@ -26,14 +27,8 @@ __go_assert_interface (const struct __go_type_descriptor *lhs_descriptor,
 
       /* A type assertion is not permitted with a nil interface.  */
 
-      newTypeAssertionError (NULL,
-			     NULL,
-			     lhs_descriptor,
-			     NULL,
-			     NULL,
-			     lhs_descriptor->__reflection,
-			     NULL,
-			     &panic_arg);
+      runtime_newTypeAssertionError (NULL, NULL, lhs_descriptor->__reflection,
+				     NULL, &panic_arg);
       __go_panic (panic_arg);
     }
 

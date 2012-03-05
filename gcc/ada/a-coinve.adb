@@ -578,6 +578,20 @@ package body Ada.Containers.Indefinite_Vectors is
       end;
    end Adjust;
 
+   procedure Adjust (Control : in out Reference_Control_Type) is
+   begin
+      if Control.Container /= null then
+         declare
+            C : Vector renames Control.Container.all;
+            B : Natural renames C.Busy;
+            L : Natural renames C.Lock;
+         begin
+            B := B + 1;
+            L := L + 1;
+         end;
+      end if;
+   end Adjust;
+
    ------------
    -- Append --
    ------------
@@ -697,7 +711,20 @@ package body Ada.Containers.Indefinite_Vectors is
          raise Constraint_Error with "element at Position is empty";
       end if;
 
-      return (Element => E.all'Access);
+      declare
+         C : Vector renames Container'Unrestricted_Access.all;
+         B : Natural renames C.Busy;
+         L : Natural renames C.Lock;
+      begin
+         return R : constant Constant_Reference_Type :=
+                      (Element => E.all'Access,
+                       Control =>
+                         (Controlled with Container'Unrestricted_Access))
+         do
+            B := B + 1;
+            L := L + 1;
+         end return;
+      end;
    end Constant_Reference;
 
    function Constant_Reference
@@ -717,7 +744,20 @@ package body Ada.Containers.Indefinite_Vectors is
          raise Constraint_Error with "element at Index is empty";
       end if;
 
-      return (Element => E.all'Access);
+      declare
+         C : Vector renames Container'Unrestricted_Access.all;
+         B : Natural renames C.Busy;
+         L : Natural renames C.Lock;
+      begin
+         return R : constant Constant_Reference_Type :=
+                      (Element => E.all'Access,
+                       Control =>
+                         (Controlled with Container'Unrestricted_Access))
+         do
+            B := B + 1;
+            L := L + 1;
+         end return;
+      end;
    end Constant_Reference;
 
    --------------
@@ -1129,6 +1169,22 @@ package body Ada.Containers.Indefinite_Vectors is
       B : Natural renames Object.Container.Busy;
    begin
       B := B - 1;
+   end Finalize;
+
+   procedure Finalize (Control : in out Reference_Control_Type) is
+   begin
+      if Control.Container /= null then
+         declare
+            C : Vector renames Control.Container.all;
+            B : Natural renames C.Busy;
+            L : Natural renames C.Lock;
+         begin
+            B := B - 1;
+            L := L - 1;
+         end;
+
+         Control.Container := null;
+      end if;
    end Finalize;
 
    ----------
@@ -3049,7 +3105,19 @@ package body Ada.Containers.Indefinite_Vectors is
          raise Constraint_Error with "element at Position is empty";
       end if;
 
-      return (Element => E.all'Access);
+      declare
+         C : Vector renames Container'Unrestricted_Access.all;
+         B : Natural renames C.Busy;
+         L : Natural renames C.Lock;
+      begin
+         return R : constant Reference_Type :=
+                      (Element => E.all'Access,
+                       Control => (Controlled with Position.Container))
+         do
+            B := B + 1;
+            L := L + 1;
+         end return;
+      end;
    end Reference;
 
    function Reference
@@ -3069,7 +3137,20 @@ package body Ada.Containers.Indefinite_Vectors is
          raise Constraint_Error with "element at Index is empty";
       end if;
 
-      return (Element => E.all'Access);
+      declare
+         C : Vector renames Container'Unrestricted_Access.all;
+         B : Natural renames C.Busy;
+         L : Natural renames C.Lock;
+      begin
+         return R : constant Reference_Type :=
+                      (Element => E.all'Access,
+                       Control =>
+                         (Controlled with Container'Unrestricted_Access))
+         do
+            B := B + 1;
+            L := L + 1;
+         end return;
+      end;
    end Reference;
 
    ---------------------

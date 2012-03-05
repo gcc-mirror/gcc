@@ -15,14 +15,14 @@ type(t) :: x[*], y[*]
 if (associated(x%ptr)) stop 0
 if (associated(x%ptr,y%ptr)) stop 0
 
-if (associated(x[1]%ptr)) stop 0  ! { dg-error "shall not be conindexed" }
-if (associated(x%ptr,y[1]%ptr)) stop 0  ! { dg-error "shall not be conindexed" }
+if (associated(x[1]%ptr)) stop 0  ! { dg-error "shall not be coindexed" }
+if (associated(x%ptr,y[1]%ptr)) stop 0  ! { dg-error "shall not be coindexed" }
 
 nullify (x%ptr)
-nullify (x[1]%ptr)  ! { dg-error "shall not be conindexed" }
+nullify (x[1]%ptr)  ! { dg-error "shall not be coindexed" }
 
 x%ptr => null(x%ptr)
-x%ptr => null(x[1]%ptr)  ! { dg-error "shall not be conindexed" }
+x%ptr => null(x[1]%ptr)  ! { dg-error "shall not be coindexed" }
 x[1]%ptr => null(x%ptr)  ! { dg-error "shall not have a coindex" }
 
 allocate(x%ptr)

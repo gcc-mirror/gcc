@@ -1,5 +1,6 @@
 /* PR target/48774 */
 /* { dg-do run } */
+/* { dg-skip-if "PR 52125" { mips_rel } { "*" } { "" } } */
 /* { dg-options "-O2 -funroll-loops" } */
 
 extern void abort (void);

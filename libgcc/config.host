@@ -98,6 +98,8 @@ avr-*-*)
 bfin*-*)
 	cpu_type=bfin
 	;;
+cr16-*-*)
+	;;
 fido-*-*)
 	cpu_type=m68k
 	;;
@@ -415,6 +417,10 @@ bfin*-*)
 	tmake_file="$tmake_file bfin/t-bfin t-fdpbit"
 	extra_parts="crtbegin.o crtend.o crti.o crtn.o"
         ;;
+cr16-*-elf)
+	tmake_file="${tmake_file} cr16/t-cr16 cr16/t-crtlibid t-fdpbit"
+	extra_parts="$extra_parts crti.o crtn.o crtlibid.o"
+        ;;
 crisv32-*-elf)
 	tmake_file="$tmake_file cris/t-cris t-fdpbit"
  	;;
@@ -600,6 +606,7 @@ i[34567]86-*-mingw*)
 		tmake_eh_file="i386/t-sjlj-eh"
 	else
 		tmake_eh_file="i386/t-dw2-eh"
+		md_unwind_header=i386/w32-unwind.h
 	fi
 	# Shared libgcc DLL install dir depends on cross/native build.
 	if test x${build} = x${host} ; then
@@ -608,7 +615,6 @@ i[34567]86-*-mingw*)
 		tmake_dlldir_file="i386/t-dlldir-x"
 	fi
 	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-cygming i386/t-mingw32 i386/t-crtfm i386/t-chkstk t-dfprules"
-	md_unwind_header=i386/w32-unwind.h
 	;;
 x86_64-*-mingw*)
 	case ${target_thread_file} in
@@ -1084,6 +1090,14 @@ tic6x-*-elf)
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crti.o crtn.o"
 	unwind_header=config/c6x/unwind-c6x.h
 	;;
+tilegx-*-linux*)
+	tmake_file="${tmake_file} tilegx/t-crtstuff t-softfp-sfdf tilegx/t-softfp t-softfp tilegx/t-tilegx"
+	md_unwind_header=tilepro/linux-unwind.h
+        ;;
+tilepro-*-linux*)
+	tmake_file="${tmake_file} tilepro/t-crtstuff t-softfp-sfdf t-softfp tilepro/t-tilepro"
+	md_unwind_header=tilepro/linux-unwind.h
+        ;;
 v850*-*-*)
 	tmake_file="v850/t-v850 t-fdpbit"
 	;;

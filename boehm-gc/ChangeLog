@@ -1,3 +1,26 @@
+2012-02-27  Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR boehm-gc/48299
+	* testsuite/boehm-gc.c/thread_leak_test.c: Merge upstream changes.
+
+2012-02-23  Patrick Marlier  <patrick.marlier@gmail.com>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR boehm-gc/52179
+	* include/gc_config.h.in: Undefine HAVE_PTHREAD_GET_STACKADDR_NP.
+	* include/private/gcconfig.h (DARWIN): Define STACKBOTTOM with
+	pthread_get_stackaddr_np when available.
+	* configure.ac (THREADS): Check availability of pthread_get_stackaddr_np.
+	* configure: Regenerate.
+
+2012-02-10  Kai Tietz  <ktietz@redhat.com>
+
+	PR boehm-gc/48514
+	* include/gc_config_macros.h (GC_DLL): Define it for mingw-targets
+	only, if we are actual in boehm-gc's build and DLL_EXPORT
+	is defined.
+	
 2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
 
 	* configure: Regenerate.

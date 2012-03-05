@@ -2295,7 +2295,9 @@ noce_get_condition (rtx jump, rtx *earliest, bool then_else_reversed)
 
   cond = XEXP (SET_SRC (set), 0);
   tmp = XEXP (cond, 0);
-  if (REG_P (tmp) && GET_MODE_CLASS (GET_MODE (tmp)) == MODE_INT)
+  if (REG_P (tmp) && GET_MODE_CLASS (GET_MODE (tmp)) == MODE_INT
+      && (GET_MODE (tmp) != BImode
+          || !targetm.small_register_classes_for_mode_p (BImode)))
     {
       *earliest = jump;
 

@@ -36,9 +36,7 @@ const (
 	fComment
 	fAny
 
-	// TODO:
-	//fIgnore
-	//fOmitEmpty
+	fOmitEmpty
 
 	fMode = fElement | fAttr | fCharData | fInnerXml | fComment | fAny
 )
@@ -62,7 +60,7 @@ func getTypeInfo(typ reflect.Type) (*typeInfo, error) {
 		n := typ.NumField()
 		for i := 0; i < n; i++ {
 			f := typ.Field(i)
-			if f.PkgPath != "" {
+			if f.PkgPath != "" || f.Tag.Get("xml") == "-" {
 				continue // Private field
 			}
 
@@ -134,20 +132,28 @@ func structFieldInfo(typ reflect.Type, f *reflect.StructField) (*fieldInfo, erro
 				finfo.flags |= fComment
 			case "any":
 				finfo.flags |= fAny
+			case "omitempty":
+				finfo.flags |= fOmitEmpty
 			}
 		}
 
 		// Validate the flags used.
+		valid := true
 		switch mode := finfo.flags & fMode; mode {
 		case 0:
 			finfo.flags |= fElement
 		case fAttr, fCharData, fInnerXml, fComment, fAny:
-			if f.Name != "XMLName" && (tag == "" || mode == fAttr) {
-				break
+			if f.Name == "XMLName" || tag != "" && mode != fAttr {
+				valid = false
 			}
-			fallthrough
 		default:
 			// This will also catch multiple modes in a single field.
+			valid = false
+		}
+		if finfo.flags&fOmitEmpty != 0 && finfo.flags&(fElement|fAttr) == 0 {
+			valid = false
+		}
+		if !valid {
 			return nil, fmt.Errorf("xml: invalid tag in field %s of type %s: %q",
 				f.Name, typ, f.Tag.Get("xml"))
 		}
@@ -194,7 +200,7 @@ func structFieldInfo(typ reflect.Type, f *reflect.StructField) (*fieldInfo, erro
 
 	// If the field type has an XMLName field, the names must match
 	// so that the behavior of both marshalling and unmarshalling
-	// is straighforward and unambiguous.
+	// is straightforward and unambiguous.
 	if finfo.flags&fElement != 0 {
 		ftyp := f.Type
 		xmlname := lookupXMLName(ftyp)

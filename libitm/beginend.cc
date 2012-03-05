@@ -233,16 +233,6 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
     {
       // Outermost transaction
       disp = tx->decide_begin_dispatch (prop);
-      if (disp == dispatch_serialirr() || disp == dispatch_serial())
-	{
-	  tx->state = STATE_SERIAL;
-	  if (disp == dispatch_serialirr())
-	    tx->state |= STATE_IRREVOCABLE;
-	  serial_lock.write_lock ();
-	}
-      else
-	serial_lock.read_lock (tx);
-
       set_abi_disp (disp);
     }
 

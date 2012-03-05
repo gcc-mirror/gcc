@@ -8,7 +8,7 @@ struct C
   C();
 };
 
-C::C()	// { dg-bogus "can never be copied" "" { xfail { { *-apple-darwin* alpha*-dec-osf* } || { hppa*-*-hpux* && { ! hppa*64*-*-* } } } } }
+C::C()	// { dg-bogus "can never be copied" "" { xfail { { *-apple-darwin* alpha*-dec-osf* } || { hppa*-*-hpux* && { ! lp64 } } } } }
 {
   static void *labelref = &&label;
   goto *labelref;

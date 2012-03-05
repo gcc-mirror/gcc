@@ -225,9 +225,6 @@ package Snames is
    --  Names used by the analyzer and expander for aspect Dimension and
    --  Dimension_System to deal with Sqrt and IO routines.
 
-   Name_Dim_Float_IO                 : constant Name_Id := N + $; -- Ada 12
-   Name_Dim_Integer_IO               : constant Name_Id := N + $; -- Ada 12
-   Name_Generic_Elementary_Functions : constant Name_Id := N + $; -- Ada 12
    Name_Item                         : constant Name_Id := N + $; -- Ada 12
    Name_Sqrt                         : constant Name_Id := N + $; -- Ada 12
    Name_Symbols                      : constant Name_Id := N + $; -- Ada 12
@@ -543,6 +540,7 @@ package Snames is
    Name_Share_Generic                  : constant Name_Id := N + $; -- GNAT
    Name_Shared                         : constant Name_Id := N + $; -- Ada 83
    Name_Shared_Passive                 : constant Name_Id := N + $;
+   Name_Simple_Storage_Pool_Type       : constant Name_Id := N + $; -- GNAT
 
    --  Note: Storage_Size is not in this list because its name matches the name
    --  of the corresponding attribute. However, it is included in the
@@ -909,6 +907,7 @@ package Snames is
    Name_Elab_Body                      : constant Name_Id := N + $; -- GNAT
    Name_Elab_Spec                      : constant Name_Id := N + $; -- GNAT
    Name_Elab_Subp_Body                 : constant Name_Id := N + $; -- GNAT
+   Name_Simple_Storage_Pool            : constant Name_Id := N + $; -- GNAT
    Name_Storage_Pool                   : constant Name_Id := N + $;
 
    --  These attributes are the ones that return types
@@ -1459,6 +1458,7 @@ package Snames is
       Attribute_Elab_Body,
       Attribute_Elab_Spec,
       Attribute_Elab_Subp_Body,
+      Attribute_Simple_Storage_Pool,
       Attribute_Storage_Pool,
 
       --  Type attributes
@@ -1696,6 +1696,7 @@ package Snames is
       Pragma_Share_Generic,
       Pragma_Shared,
       Pragma_Shared_Passive,
+      Pragma_Simple_Storage_Pool_Type,
       Pragma_Source_Reference,
       Pragma_Static_Elaboration_Desired,
       Pragma_Stream_Convert,

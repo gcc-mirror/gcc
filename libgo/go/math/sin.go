@@ -114,7 +114,10 @@ var _cos = [...]float64{
 // Special cases are:
 //	Cos(±Inf) = NaN
 //	Cos(NaN) = NaN
-func libc_cos(float64) float64  __asm__("cos")
+
+//extern cos
+func libc_cos(float64) float64
+
 func Cos(x float64) float64 {
 	return libc_cos(x)
 }
@@ -126,11 +129,9 @@ func cos(x float64) float64 {
 		PI4C = 2.69515142907905952645E-15                            // 0x3ce8469898cc5170,
 		M4PI = 1.273239544735162542821171882678754627704620361328125 // 4/pi
 	)
-	// TODO(rsc): Remove manual inlining of IsNaN, IsInf
-	// when compiler does it for us
 	// special cases
 	switch {
-	case x != x || x < -MaxFloat64 || x > MaxFloat64: // IsNaN(x) || IsInf(x, 0):
+	case IsNaN(x) || IsInf(x, 0):
 		return NaN()
 	}
 
@@ -176,7 +177,10 @@ func cos(x float64) float64 {
 //	Sin(±0) = ±0
 //	Sin(±Inf) = NaN
 //	Sin(NaN) = NaN
-func libc_sin(float64) float64 __asm__("sin")
+
+//extern sin
+func libc_sin(float64) float64
+
 func Sin(x float64) float64 {
 	return libc_sin(x)
 }
@@ -188,13 +192,11 @@ func sin(x float64) float64 {
 		PI4C = 2.69515142907905952645E-15                            // 0x3ce8469898cc5170,
 		M4PI = 1.273239544735162542821171882678754627704620361328125 // 4/pi
 	)
-	// TODO(rsc): Remove manual inlining of IsNaN, IsInf
-	// when compiler does it for us
 	// special cases
 	switch {
-	case x == 0 || x != x: // x == 0 || IsNaN():
+	case x == 0 || IsNaN(x):
 		return x // return ±0 || NaN()
-	case x < -MaxFloat64 || x > MaxFloat64: // IsInf(x, 0):
+	case IsInf(x, 0):
 		return NaN()
 	}
 

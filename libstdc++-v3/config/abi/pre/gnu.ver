@@ -1,7 +1,7 @@
 ## Linker script for GNU versioning (GNU ld 2.13.91+ only.)
 ##
-## Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-## Free Software Foundation, Inc.
+## Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+## 2011, 2012 Free Software Foundation, Inc.
 ##
 ## This file is part of the GNU ISO C++ Library.  This library is free
 ## software; you can redistribute it and/or modify it under the
@@ -890,8 +890,12 @@ GLIBCXX_3.4.5 {
 
     _ZNSt11char_traitsI[cw]E2eqERK[cw]S2_;
 
+    # Those template instantiations weren't exported on Solaris in GCC 4.6
+    # and aren't necessary for correct operation, so don't emit them now
+    # (PR libstdc++/52188).
+#if !defined(__sun__) && !defined(__svr4__)
     _ZNSt19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEppEv;
-
+#endif
 } GLIBCXX_3.4.4;
 
 GLIBCXX_3.4.6 {
@@ -1307,6 +1311,14 @@ GLIBCXX_3.4.17 {
     # std::wstring::pop_back()
     _ZNSbIwSt11char_traitsIwESaIwEE8pop_backEv;
 
+    # std::_Async_state_common::~_Async_state_common
+    _ZTINSt13__future_base19_Async_state_commonE;
+    _ZTSNSt13__future_base19_Async_state_commonE;
+    _ZTVNSt13__future_base19_Async_state_commonE;
+    _ZNSt13__future_base19_Async_state_commonD0Ev;
+    _ZNSt13__future_base19_Async_state_commonD1Ev;
+    _ZNSt13__future_base19_Async_state_commonD2Ev;
+
 } GLIBCXX_3.4.16;
 
 # Symbols in the support library (libsupc++) have their own tag.
@@ -1413,8 +1425,6 @@ CXXABI_1.3 {
     # __gnu_cxx::_verbose_terminate_handler()
     _ZN9__gnu_cxx27__verbose_terminate_handlerEv;
 
-  local:
-    *;
 };
 
 CXXABI_1.3.1 {
@@ -1463,15 +1473,6 @@ CXXABI_1.3.3 {
 
 } CXXABI_1.3.2;
 
-# Symbols in the support library (libsupc++) supporting trans-mem.
-CXXABI_TM_1 {
-  global:
-    __cxa_tm_cleanup;
-
-  local:
-    *;
-};
-
 CXXABI_1.3.4 {
 
     # typeinfo for decimal floating point types
@@ -1513,3 +1514,12 @@ CXXABI_1.3.6 {
     __cxa_deleted_virtual;
 
 } CXXABI_1.3.5;
+
+
+# Symbols in the support library (libsupc++) supporting transactional memory.
+CXXABI_TM_1 {
+
+  global:
+    __cxa_tm_cleanup;
+
+};

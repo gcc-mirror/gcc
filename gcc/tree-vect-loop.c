@@ -1,5 +1,5 @@
 /* Loop Vectorization
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com> and
    Ira Rosen <irar@il.ibm.com>
@@ -2417,7 +2417,8 @@ vect_get_single_scalar_iteraion_cost (loop_vec_info loop_vinfo)
           if (stmt_info
               && !STMT_VINFO_RELEVANT_P (stmt_info)
               && (!STMT_VINFO_LIVE_P (stmt_info)
-                  || STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def))
+                  || !VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
+	      && !STMT_VINFO_IN_PATTERN_P (stmt_info))
             continue;
 
           if (STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt)))
@@ -2564,15 +2565,46 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 	{
 	  gimple stmt = gsi_stmt (si);
 	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+
+	  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
+	    {
+	      stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+	      stmt_info = vinfo_for_stmt (stmt);
+	    }
+
 	  /* Skip stmts that are not vectorized inside the loop.  */
 	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
 	      && (!STMT_VINFO_LIVE_P (stmt_info)
-		  || STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def))
+                 || !VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info))))
 	    continue;
+
 	  vec_inside_cost += STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info) * factor;
 	  /* FIXME: for stmts in the inner-loop in outer-loop vectorization,
 	     some of the "outside" costs are generated inside the outer-loop.  */
 	  vec_outside_cost += STMT_VINFO_OUTSIDE_OF_LOOP_COST (stmt_info);
+          if (is_pattern_stmt_p (stmt_info)
+	      && STMT_VINFO_PATTERN_DEF_SEQ (stmt_info))
+            {
+	      gimple_stmt_iterator gsi;
+	      
+	      for (gsi = gsi_start (STMT_VINFO_PATTERN_DEF_SEQ (stmt_info));
+		   !gsi_end_p (gsi); gsi_next (&gsi))
+                {
+                  gimple pattern_def_stmt = gsi_stmt (gsi);
+                  stmt_vec_info pattern_def_stmt_info
+		    = vinfo_for_stmt (pattern_def_stmt);
+                  if (STMT_VINFO_RELEVANT_P (pattern_def_stmt_info)
+                      || STMT_VINFO_LIVE_P (pattern_def_stmt_info))
+		    {
+                      vec_inside_cost
+			+= STMT_VINFO_INSIDE_OF_LOOP_COST
+			   (pattern_def_stmt_info) * factor;
+                      vec_outside_cost
+			+= STMT_VINFO_OUTSIDE_OF_LOOP_COST
+			   (pattern_def_stmt_info);
+                    }
+		}
+	    }
 	}
     }
 
@@ -4486,7 +4518,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       if (i == 0 && code == COND_EXPR)
         continue;
 
-      is_simple_use = vect_is_simple_use_1 (ops[i], loop_vinfo, NULL,
+      is_simple_use = vect_is_simple_use_1 (ops[i], stmt, loop_vinfo, NULL,
 					    &def_stmt, &def, &dt, &tem);
       if (!vectype_in)
 	vectype_in = tem;
@@ -4507,8 +4539,8 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
         }
     }
 
-  is_simple_use = vect_is_simple_use_1 (ops[i], loop_vinfo, NULL, &def_stmt,
-					&def, &dt, &tem);
+  is_simple_use = vect_is_simple_use_1 (ops[i], stmt, loop_vinfo, NULL,
+					&def_stmt, &def, &dt, &tem);
   if (!vectype_in)
     vectype_in = tem;
   gcc_assert (is_simple_use);
@@ -4864,14 +4896,14 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
               gimple dummy_stmt;
               tree dummy;
 
-              vect_is_simple_use (ops[!reduc_index], loop_vinfo, NULL,
+              vect_is_simple_use (ops[!reduc_index], stmt, loop_vinfo, NULL,
                                   &dummy_stmt, &dummy, &dt);
               loop_vec_def0 = vect_get_vec_def_for_stmt_copy (dt,
                                                               loop_vec_def0);
               VEC_replace (tree, vec_oprnds0, 0, loop_vec_def0);
               if (op_type == ternary_op)
                 {
-                  vect_is_simple_use (op1, loop_vinfo, NULL, &dummy_stmt,
+                  vect_is_simple_use (op1, stmt, loop_vinfo, NULL, &dummy_stmt,
                                       &dummy, &dt);
                   loop_vec_def1 = vect_get_vec_def_for_stmt_copy (dt,
                                                                 loop_vec_def1);
@@ -5103,7 +5135,8 @@ vectorizable_live_operation (gimple stmt,
       else
 	op = gimple_op (stmt, i + 1);
       if (op
-          && !vect_is_simple_use (op, loop_vinfo, NULL, &def_stmt, &def, &dt))
+          && !vect_is_simple_use (op, stmt, loop_vinfo, NULL, &def_stmt, &def,
+				  &dt))
         {
           if (vect_print_dump_info (REPORT_DETAILS))
             fprintf (vect_dump, "use not simple.");

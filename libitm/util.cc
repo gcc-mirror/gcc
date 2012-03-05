@@ -71,6 +71,18 @@ xmalloc (size_t size, bool separate_cl)
 }
 
 void *
+xcalloc (size_t size, bool separate_cl)
+{
+  // TODO Use posix_memalign if separate_cl is true, or some other allocation
+  // method that will avoid sharing cache lines with data used by other
+  // threads.
+  void *r = calloc (1, size);
+  if (r == 0)
+    GTM_fatal ("Out of memory allocating %lu bytes", (unsigned long) size);
+  return r;
+}
+
+void *
 xrealloc (void *old, size_t size, bool separate_cl)
 {
   // TODO Use posix_memalign if separate_cl is true, or some other allocation

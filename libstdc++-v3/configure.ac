@@ -130,10 +130,13 @@ GLIBCXX_ENABLE_PARALLEL([yes])
 GLIBCXX_ENABLE_CXX_FLAGS
 GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING([no])
 GLIBCXX_ENABLE_EXTERN_TEMPLATE([yes])
+GLIBCXX_ENABLE_PYTHON
+GLIBCXX_ENABLE_WERROR([yes])
 
 # Checks for operating systems support that doesn't require linking.
 GLIBCXX_CHECK_MATH_PROTO
 GLIBCXX_CHECK_STDLIB_PROTO
+GLIBCXX_CHECK_STDIO_PROTO
 GLIBCXX_CHECK_SYSTEM_ERROR
 
 # For the streamoff typedef.
@@ -163,9 +166,6 @@ GLIBCXX_CHECK_GETTIMEOFDAY
 # For clock_gettime, nanosleep and sched_yield support.
 # NB: The default is [no], because otherwise it requires linking.
 GLIBCXX_ENABLE_LIBSTDCXX_TIME([no])
-
-# For gthread support
-GLIBCXX_CHECK_GTHREADS
 
 AC_LC_MESSAGES
 
@@ -334,6 +334,9 @@ GLIBCXX_CONDITIONAL(GLIBCXX_LDBL_COMPAT, test $ac_ldbl_compat = yes)
 
 # This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE.
 GLIBCXX_CONFIGURE_TESTSUITE
+
+# For gthread support.  Depends on GLIBCXX_ENABLE_SYMVERS.
+GLIBCXX_CHECK_GTHREADS
 
 # Define documentation rules conditionally.
 

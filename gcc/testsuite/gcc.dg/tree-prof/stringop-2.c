@@ -3,6 +3,10 @@ int a[1000];
 int b[1000];
 int size=1;
 int max=10000;
+#ifdef __mips
+/* We allow short memcpy()s for MIPS16.  */
+int __attribute__((nomips16))
+#endif
 main()
 {
   int i;

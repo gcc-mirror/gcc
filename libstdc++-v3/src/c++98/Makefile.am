@@ -25,7 +25,6 @@
 include $(top_srcdir)/fragment.am
 
 # Convenience library for C++98 runtime.
-toolexeclib_LTLIBRARIES = libc++98.la
 noinst_LTLIBRARIES = libc++98convenience.la
 
 headers =
@@ -156,7 +155,6 @@ sources = \
 vpath % $(top_srcdir)/src/c++98
 vpath % $(top_srcdir)
 
-libc__98_la_SOURCES = $(sources)
 libc__98convenience_la_SOURCES = $(sources)
 
 # Use special rules for the deprecated source files so that they find

@@ -61,6 +61,18 @@ func Getwd() (ret string, err error) {
 	}
 }
 
+func Getcwd(buf []byte) (n int, err error) {
+	err = getcwd(&buf[0], Size_t(len(buf)))
+	if err == nil {
+		i := 0
+		for buf[i] != 0 {
+			i++
+		}
+		n = i + 1
+	}
+	return
+}
+
 //sysnb	getgroups(size int, list *Gid_t) (nn int, err error)
 //getgroups(size int, list *Gid_t) int
 
@@ -116,8 +128,8 @@ func (w WaitStatus) Stopped() bool
 func (w WaitStatus) Continued() bool
 func (w WaitStatus) CoreDump() bool
 func (w WaitStatus) ExitStatus() int
-func (w WaitStatus) Signal() int
-func (w WaitStatus) StopSignal() int
+func (w WaitStatus) Signal() Signal
+func (w WaitStatus) StopSignal() Signal
 func (w WaitStatus) TrapCause() int
 
 //sys	Mkfifo(path string, mode uint32) (err error)
@@ -133,15 +145,15 @@ type FdSet struct {
 }
 
 func FDSet(fd int, set *FdSet) {
-	set.Bits[fd / nfdbits] |= (1 << (uint)(fd % nfdbits))
+	set.Bits[fd/nfdbits] |= (1 << (uint)(fd%nfdbits))
 }
 
 func FDClr(fd int, set *FdSet) {
-	set.Bits[fd / nfdbits] &^= (1 << (uint)(fd % nfdbits))
+	set.Bits[fd/nfdbits] &^= (1 << (uint)(fd%nfdbits))
 }
 
 func FDIsSet(fd int, set *FdSet) bool {
-	if set.Bits[fd / nfdbits] & (1 << (uint)(fd % nfdbits)) != 0 {
+	if set.Bits[fd/nfdbits]&(1<<(uint)(fd%nfdbits)) != 0 {
 		return true
 	} else {
 		return false
@@ -178,7 +190,7 @@ func FDZero(set *FdSet) {
 //sysnb	Dup(oldfd int) (fd int, err error)
 //dup(oldfd int) int
 
-//sysnb	Dup2(oldfd int, newfd int) (fd int, err error)
+//sysnb	Dup2(oldfd int, newfd int) (err error)
 //dup2(oldfd int, newfd int) int
 
 //sys	Exit(code int)
@@ -226,9 +238,8 @@ func FDZero(set *FdSet) {
 //sysnb	Getppid() (ppid int)
 //getppid() Pid_t
 
-// FIXME: mksysinfo Rlimit
-// //sysnb	Getrlimit(resource int, rlim *Rlimit) (err error)
-// //getrlimit(resource int, rlim *Rlimit) int
+//sysnb	Getrlimit(resource int, rlim *Rlimit) (err error)
+//getrlimit(resource int, rlim *Rlimit) int
 
 //sysnb	Getrusage(who int, rusage *Rusage) (err error)
 //getrusage(who int, rusage *Rusage) int
@@ -242,7 +253,7 @@ func Gettimeofday(tv *Timeval) (err error) {
 //sysnb Getuid() (uid int)
 //getuid() Uid_t
 
-//sysnb	Kill(pid int, sig int) (err error)
+//sysnb	Kill(pid int, sig Signal) (err error)
 //kill(pid Pid_t, sig int) int
 
 //sys	Lchown(path string, uid int, gid int) (err error)
@@ -296,9 +307,8 @@ func Gettimeofday(tv *Timeval) (err error) {
 //sysnb	Setreuid(ruid int, euid int) (err error)
 //setreuid(ruid Uid_t, euid Uid_t) int
 
-// FIXME: mksysinfo Rlimit
-// //sysnb	Setrlimit(resource int, rlim *Rlimit) (err error)
-// //setrlimit(resource int, rlim *Rlimit) int
+//sysnb	Setrlimit(resource int, rlim *Rlimit) (err error)
+//setrlimit(resource int, rlim *Rlimit) int
 
 //sysnb	Setsid() (pid int, err error)
 //setsid() Pid_t
@@ -319,13 +329,11 @@ func Settimeofday(tv *Timeval) (err error) {
 //sys	Sync()
 //sync()
 
-// FIXME: mksysinfo Time_t
-// //sysnb	Time(t *Time_t) (tt Time_t, err error)
-// //time(t *Time_t) Time_t
+//sysnb	Time(t *Time_t) (tt Time_t, err error)
+//time(t *Time_t) Time_t
 
-// FIXME: mksysinfo Tms
-// //sysnb	Times(tms *Tms) (ticks uintptr, err error)
-// //times(tms *Tms) _clock_t
+//sysnb	Times(tms *Tms) (ticks uintptr, err error)
+//times(tms *Tms) _clock_t
 
 //sysnb	Umask(mask int) (oldmask int)
 //umask(mask Mode_t) Mode_t
@@ -333,9 +341,8 @@ func Settimeofday(tv *Timeval) (err error) {
 //sys	Unlink(path string) (err error)
 //unlink(path *byte) int
 
-// FIXME: mksysinfo Utimbuf
-// //sys	Utime(path string, buf *Utimbuf) (err error)
-// //utime(path *byte, buf *Utimbuf) int
+//sys	Utime(path string, buf *Utimbuf) (err error)
+//utime(path *byte, buf *Utimbuf) int
 
 //sys	Write(fd int, p []byte) (n int, err error)
 //write(fd int, buf *byte, count Size_t) Ssize_t

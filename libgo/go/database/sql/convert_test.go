@@ -13,19 +13,23 @@ import (
 )
 
 var someTime = time.Unix(123, 0)
+var answer int64 = 42
 
 type conversionTest struct {
 	s, d interface{} // source and destination
 
 	// following are used if they're non-zero
-	wantint  int64
-	wantuint uint64
-	wantstr  string
-	wantf32  float32
-	wantf64  float64
-	wanttime time.Time
-	wantbool bool // used if d is of type *bool
-	wanterr  string
+	wantint   int64
+	wantuint  uint64
+	wantstr   string
+	wantf32   float32
+	wantf64   float64
+	wanttime  time.Time
+	wantbool  bool // used if d is of type *bool
+	wanterr   string
+	wantiface interface{}
+	wantptr   *int64 // if non-nil, *d's pointed value must be equal to *wantptr
+	wantnil   bool   // if true, *d must be *int64(nil)
 }
 
 // Target variables for scanning into.
@@ -41,6 +45,8 @@ var (
 	scanf32    float32
 	scanf64    float64
 	scantime   time.Time
+	scanptr    *int64
+	scaniface  interface{}
 )
 
 var conversionTests = []conversionTest{
@@ -95,6 +101,22 @@ var conversionTests = []conversionTest{
 	{s: float64(1.5), d: &scanf32, wantf32: float32(1.5)},
 	{s: "1.5", d: &scanf32, wantf32: float32(1.5)},
 	{s: "1.5", d: &scanf64, wantf64: float64(1.5)},
+
+	// Pointers
+	{s: interface{}(nil), d: &scanptr, wantnil: true},
+	{s: int64(42), d: &scanptr, wantptr: &answer},
+
+	// To interface{}
+	{s: float64(1.5), d: &scaniface, wantiface: float64(1.5)},
+	{s: int64(1), d: &scaniface, wantiface: int64(1)},
+	{s: "str", d: &scaniface, wantiface: "str"},
+	{s: []byte("byteslice"), d: &scaniface, wantiface: []byte("byteslice")},
+	{s: true, d: &scaniface, wantiface: true},
+	{s: nil, d: &scaniface},
+}
+
+func intPtrValue(intptr interface{}) interface{} {
+	return reflect.Indirect(reflect.Indirect(reflect.ValueOf(intptr))).Int()
 }
 
 func intValue(intptr interface{}) int64 {
@@ -151,6 +173,28 @@ func TestConversions(t *testing.T) {
 		}
 		if !ct.wanttime.IsZero() && !ct.wanttime.Equal(timeValue(ct.d)) {
 			errf("want time %v, got %v", ct.wanttime, timeValue(ct.d))
+		}
+		if ct.wantnil && *ct.d.(**int64) != nil {
+			errf("want nil, got %v", intPtrValue(ct.d))
+		}
+		if ct.wantptr != nil {
+			if *ct.d.(**int64) == nil {
+				errf("want pointer to %v, got nil", *ct.wantptr)
+			} else if *ct.wantptr != intPtrValue(ct.d) {
+				errf("want pointer to %v, got %v", *ct.wantptr, intPtrValue(ct.d))
+			}
+		}
+		if ifptr, ok := ct.d.(*interface{}); ok {
+			if !reflect.DeepEqual(ct.wantiface, scaniface) {
+				errf("want interface %#v, got %#v", ct.wantiface, scaniface)
+				continue
+			}
+			if srcBytes, ok := ct.s.([]byte); ok {
+				dstBytes := (*ifptr).([]byte)
+				if &dstBytes[0] == &srcBytes[0] {
+					errf("copy into interface{} didn't copy []byte data")
+				}
+			}
 		}
 	}
 }

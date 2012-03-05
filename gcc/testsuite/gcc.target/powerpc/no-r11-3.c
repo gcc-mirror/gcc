@@ -5,7 +5,7 @@
 extern void ext_call (int (func) (void));
 
 int
-outer_func (int init)	/* { dg-error "-mno-r11 must not be used if you have trampolines" "" } */
+outer_func (int init)	/* { dg-error "-mno-pointers-to-nested-functions option" "" } */
 {
   int value = init;
 

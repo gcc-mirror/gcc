@@ -909,7 +909,7 @@ separate_decls_in_region_debug (gimple stmt, htab_t name_copies,
     var = gimple_debug_source_bind_get_var (stmt);
   else
     return true;
-  if (TREE_CODE (var) == DEBUG_EXPR_DECL)
+  if (TREE_CODE (var) == DEBUG_EXPR_DECL || TREE_CODE (var) == LABEL_DECL)
     return true;
   gcc_assert (DECL_P (var) && SSA_VAR_P (var));
   ielt.uid = DECL_UID (var);
@@ -2183,7 +2183,10 @@ parallelize_loops (void)
 	  || loop_has_blocks_with_irreducible_flag (loop)
 	  || (loop_preheader_edge (loop)->src->flags & BB_IRREDUCIBLE_LOOP)
 	  /* FIXME: the check for vector phi nodes could be removed.  */
-	  || loop_has_vector_phi_nodes (loop))
+	  || loop_has_vector_phi_nodes (loop)
+	  /* FIXME: transform_to_exit_first_loop does not handle not
+	     header-copied loops correctly - see PR46886.  */
+	  || !do_while_loop_p (loop))
 	continue;
       estimated = max_stmt_executions_int (loop, false);
       /* FIXME: Bypass this check as graphite doesn't update the

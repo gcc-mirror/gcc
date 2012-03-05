@@ -387,12 +387,12 @@ func (WriteFailCodec) WriteRequest(*Request, interface{}) error {
 }
 
 func (WriteFailCodec) ReadResponseHeader(*Response) error {
-	time.Sleep(120 * time.Second)
+	select {}
 	panic("unreachable")
 }
 
 func (WriteFailCodec) ReadResponseBody(interface{}) error {
-	time.Sleep(120 * time.Second)
+	select {}
 	panic("unreachable")
 }
 
@@ -442,8 +442,9 @@ func countMallocs(dial func() (*Client, error), t *testing.T) uint64 {
 	}
 	args := &Args{7, 8}
 	reply := new(Reply)
-	runtime.UpdateMemStats()
-	mallocs := 0 - runtime.MemStats.Mallocs
+	memstats := new(runtime.MemStats)
+	runtime.ReadMemStats(memstats)
+	mallocs := 0 - memstats.Mallocs
 	const count = 100
 	for i := 0; i < count; i++ {
 		err := client.Call("Arith.Add", args, reply)
@@ -454,8 +455,8 @@ func countMallocs(dial func() (*Client, error), t *testing.T) uint64 {
 			t.Errorf("Add: expected %d got %d", reply.C, args.A+args.B)
 		}
 	}
-	runtime.UpdateMemStats()
-	mallocs += runtime.MemStats.Mallocs
+	runtime.ReadMemStats(memstats)
+	mallocs += memstats.Mallocs
 	return mallocs / count
 }
 
@@ -467,13 +468,16 @@ func TestCountMallocsOverHTTP(t *testing.T) {
 	fmt.Printf("mallocs per HTTP rpc round trip: %d\n", countMallocs(dialHTTP, t))
 }
 
-type writeCrasher struct{}
+type writeCrasher struct {
+	done chan bool
+}
 
 func (writeCrasher) Close() error {
 	return nil
 }
 
-func (writeCrasher) Read(p []byte) (int, error) {
+func (w *writeCrasher) Read(p []byte) (int, error) {
+	<-w.done
 	return 0, io.EOF
 }
 
@@ -482,7 +486,8 @@ func (writeCrasher) Write(p []byte) (int, error) {
 }
 
 func TestClientWriteError(t *testing.T) {
-	c := NewClient(writeCrasher{})
+	w := &writeCrasher{done: make(chan bool)}
+	c := NewClient(w)
 	res := false
 	err := c.Call("foo", 1, &res)
 	if err == nil {
@@ -491,6 +496,7 @@ func TestClientWriteError(t *testing.T) {
 	if err.Error() != "fake write failure" {
 		t.Error("unexpected value of error:", err)
 	}
+	w.done <- true
 }
 
 func benchmarkEndToEnd(dial func() (*Client, error), b *testing.B) {
@@ -513,7 +519,7 @@ func benchmarkEndToEnd(dial func() (*Client, error), b *testing.B) {
 		go func() {
 			reply := new(Reply)
 			for atomic.AddInt32(&N, -1) >= 0 {
-				err = client.Call("Arith.Add", args, reply)
+				err := client.Call("Arith.Add", args, reply)
 				if err != nil {
 					b.Fatalf("rpc error: Add: expected no error but got string %q", err.Error())
 				}

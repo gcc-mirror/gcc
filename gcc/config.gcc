@@ -242,7 +242,18 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
+ # Avoid special cases that are not obsolete
+   arm*-*-*eabi*			\
+ )
+     ;;
    alpha*-dec-osf5.1*			\
+ | arm*-*-ecos-elf			\
+ | arm*-*-elf				\
+ | arm*-*-freebsd*			\
+ | arm*-*-linux*			\
+ | arm*-*-rtems*			\
+ | arm*-*-uclinux*			\
+ | arm*-wince-pe*			\
  | mips-sgi-irix6.5			\
  | mips*-*-openbsd*			\
  | score-*				\
@@ -447,6 +458,14 @@ tic6x-*-*)
 	;;
 xtensa*-*-*)
 	extra_options="${extra_options} fused-madd.opt"
+	;;
+tilegx*-*-*)
+	cpu_type=tilegx
+	need_64bit_hwint=yes
+	;;
+tilepro-*-*)
+	cpu_type=tilepro
+	need_64bit_hwint=yes
 	;;
 esac
 
@@ -817,7 +836,7 @@ arm*-*-netbsdelf*)
 arm*-*-linux*)			# ARM GNU/Linux with ELF
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
 	case $target in
-	arm*b-*)
+	arm*b-*-linux*)
 		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
 		;;
 	esac
@@ -944,6 +963,11 @@ bfin*-*)
 	use_collect2=no
 	use_gcc_stdint=wrap
 	;;
+cr16-*-elf)
+        tm_file="elfos.h ${tm_file}"
+        tmake_file="${tmake_file} cr16/t-cr16 "
+        use_collect2=no
+        ;;
 crisv32-*-elf | crisv32-*-none)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	tmake_file="cris/t-cris"
@@ -2463,6 +2487,20 @@ tic6x-*-uclinux)
 	tmake_file="${tmake_file} c6x/t-c6x c6x/t-c6x-elf c6x/t-c6x-uclinux"
 	use_collect2=no
 	;;
+tilegx-*-linux*)
+	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h tilegx/linux.h ${tm_file}"
+        tmake_file="${tmake_file} tilegx/t-tilegx"
+	extra_objs="mul-tables.o"
+	c_target_objs="tilegx-c.o"
+	cxx_target_objs="tilegx-c.o"
+	;;
+tilepro-*-linux*)
+	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h tilepro/linux.h ${tm_file}"
+        tmake_file="${tmake_file} tilepro/t-tilepro"
+	extra_objs="mul-tables.o"
+	c_target_objs="tilepro-c.o"
+	cxx_target_objs="tilepro-c.o"
+	;;
 v850*-*-*)
 	case ${target} in
 	v850e2v3-*-*)
@@ -3016,11 +3054,19 @@ case "${target}" in
 
 		case "$with_fpu" in
 		"" \
-		| fpa | fpe2 | fpe3 | maverick | vfp | vfp3 | vfpv3 \
+		| vfp | vfp3 | vfpv3 \
 		| vfpv3-fp16 | vfpv3-d16 | vfpv3-d16-fp16 | vfpv3xd \
 		| vfpv3xd-fp16 | neon | neon-fp16 | vfpv4 | vfpv4-d16 \
 		| fpv4-sp-d16 | neon-vfpv4)
 			# OK
+			;;
+		fpa | fpe2 | fpe3 | maverick)
+    			if test "x$enable_obsolete" != xyes; then
+			    echo "*** Configuration option --with-fpu=${with_fpu} is obsolete." >&2
+			    echo "*** Specify --enable-obsolete to build it anyway." >&2
+      			    echo "*** Support will be REMOVED in the next major release of GCC." >&2
+      			    exit 1
+			fi
 			;;
 		*)
 			echo "Unknown fpu used in --with-fpu=$with_fpu" 2>&1

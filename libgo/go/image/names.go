@@ -50,26 +50,3 @@ func (c *Uniform) Opaque() bool {
 func NewUniform(c color.Color) *Uniform {
 	return &Uniform{c}
 }
-
-// Repeated is an infinite-sized Image that repeats another Image in both
-// directions. Repeated{i, p}.At(x, y) will equal i.At(x+p.X, y+p.Y) for all
-// points {x+p.X, y+p.Y} within i's Bounds.
-type Repeated struct {
-	I      Image
-	Offset Point
-}
-
-func (r *Repeated) ColorModel() color.Model {
-	return r.I.ColorModel()
-}
-
-func (r *Repeated) Bounds() Rectangle { return Rectangle{Point{-1e9, -1e9}, Point{1e9, 1e9}} }
-
-func (r *Repeated) At(x, y int) color.Color {
-	p := Point{x, y}.Add(r.Offset).Mod(r.I.Bounds())
-	return r.I.At(p.X, p.Y)
-}
-
-func NewRepeated(i Image, offset Point) *Repeated {
-	return &Repeated{i, offset}
-}

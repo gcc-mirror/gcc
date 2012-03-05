@@ -4666,6 +4666,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
       int volatilep = 0;
       tree tem;
       bool misalignp;
+      rtx mem = NULL_RTX;
 
       push_temp_slots ();
       tem = get_inner_reference (to, &bitsize, &bitpos, &offset, &mode1,
@@ -4686,8 +4687,44 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	  && ((icode = optab_handler (movmisalign_optab, mode))
 	      != CODE_FOR_nothing))
 	{
+	  enum machine_mode address_mode;
+	  rtx op0;
+	  struct expand_operand ops[2];
+	  addr_space_t as = TYPE_ADDR_SPACE
+	      (TREE_TYPE (TREE_TYPE (TREE_OPERAND (tem, 0))));
+	  tree base = TREE_OPERAND (tem, 0);
+
 	  misalignp = true;
 	  to_rtx = gen_reg_rtx (mode);
+
+	  address_mode = targetm.addr_space.address_mode (as);
+	  op0 = expand_expr (base, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+	  op0 = convert_memory_address_addr_space (address_mode, op0, as);
+	  if (!integer_zerop (TREE_OPERAND (tem, 1)))
+	    {
+	      rtx off = immed_double_int_const (mem_ref_offset (tem),
+						address_mode);
+	      op0 = simplify_gen_binary (PLUS, address_mode, op0, off);
+	    }
+	  op0 = memory_address_addr_space (mode, op0, as);
+	  mem = gen_rtx_MEM (mode, op0);
+	  set_mem_attributes (mem, tem, 0);
+	  set_mem_addr_space (mem, as);
+	  if (TREE_THIS_VOLATILE (tem))
+	    MEM_VOLATILE_P (mem) = 1;
+
+	  /* If the misaligned store doesn't overwrite all bits, perform
+	     rmw cycle on MEM.  */
+	  if (bitsize != GET_MODE_BITSIZE (mode))
+	    {
+	      create_input_operand (&ops[0], to_rtx, mode);
+	      create_fixed_operand (&ops[1], mem);
+	      /* The movmisalign<mode> pattern cannot fail, else the assignment
+		 would silently be omitted.  */
+	      expand_insn (icode, 2, ops);
+
+	      mem = copy_rtx (mem);
+	    }
 	}
       else
 	{
@@ -4842,26 +4879,6 @@ expand_assignment (tree to, tree from, bool nontemporal)
       if (misalignp)
 	{
 	  struct expand_operand ops[2];
-	  enum machine_mode address_mode;
-	  rtx op0, mem;
-	  addr_space_t as = TYPE_ADDR_SPACE
-	      (TREE_TYPE (TREE_TYPE (TREE_OPERAND (tem, 0))));
-	  tree base = TREE_OPERAND (tem, 0);
-	  address_mode = targetm.addr_space.address_mode (as);
-	  op0 = expand_expr (base, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-	  op0 = convert_memory_address_addr_space (address_mode, op0, as);
-	  if (!integer_zerop (TREE_OPERAND (tem, 1)))
-	    {
-	      rtx off = immed_double_int_const (mem_ref_offset (tem),
-						address_mode);
-	      op0 = simplify_gen_binary (PLUS, address_mode, op0, off);
-	    }
-	  op0 = memory_address_addr_space (mode, op0, as);
-	  mem = gen_rtx_MEM (mode, op0);
-	  set_mem_attributes (mem, tem, 0);
-	  set_mem_addr_space (mem, as);
-	  if (TREE_THIS_VOLATILE (tem))
-	    MEM_VOLATILE_P (mem) = 1;
 
 	  create_fixed_operand (&ops[0], mem);
 	  create_input_operand (&ops[1], to_rtx, mode);
@@ -6716,6 +6733,24 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   /* Otherwise, split it up.  */
   if (offset)
     {
+      /* Avoid returning a negative bitpos as this may wreak havoc later.  */
+      if (double_int_negative_p (bit_offset))
+        {
+	  double_int mask
+	    = double_int_mask (BITS_PER_UNIT == 8
+			       ? 3 : exact_log2 (BITS_PER_UNIT));
+	  double_int tem = double_int_and_not (bit_offset, mask);
+	  /* TEM is the bitpos rounded to BITS_PER_UNIT towards -Inf.
+	     Subtract it to BIT_OFFSET and add it (scaled) to OFFSET.  */
+	  bit_offset = double_int_sub (bit_offset, tem);
+	  tem = double_int_rshift (tem,
+				   BITS_PER_UNIT == 8
+				   ? 3 : exact_log2 (BITS_PER_UNIT),
+				   HOST_BITS_PER_DOUBLE_INT, true);
+	  offset = size_binop (PLUS_EXPR, offset,
+			       double_int_to_tree (sizetype, tem));
+	}
+
       *pbitpos = double_int_to_shwi (bit_offset);
       *poffset = offset;
     }
@@ -7414,7 +7449,12 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
      generating ADDR_EXPR of something that isn't an LVALUE.  The only
      exception here is STRING_CST.  */
   if (CONSTANT_CLASS_P (exp))
-    return XEXP (expand_expr_constant (exp, 0, modifier), 0);
+    {
+      result = XEXP (expand_expr_constant (exp, 0, modifier), 0);
+      if (modifier < EXPAND_SUM)
+	result = force_operand (result, target);
+      return result;
+    }
 
   /* Everything must be something allowed by is_gimple_addressable.  */
   switch (TREE_CODE (exp))
@@ -7433,7 +7473,11 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
 
     case CONST_DECL:
       /* Expand the initializer like constants above.  */
-      return XEXP (expand_expr_constant (DECL_INITIAL (exp), 0, modifier), 0);
+      result = XEXP (expand_expr_constant (DECL_INITIAL (exp),
+					   0, modifier), 0);
+      if (modifier < EXPAND_SUM)
+	result = force_operand (result, target);
+      return result;
 
     case REALPART_EXPR:
       /* The real part of the complex number is always first, therefore
@@ -8573,8 +8617,9 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;
       /* In case we have to reduce the result to bitfield precision
-	 expand this as XOR with a proper constant instead.  */
-      if (reduce_bit_field)
+	 for unsigned bitfield expand this as XOR with a proper constant
+	 instead.  */
+      if (reduce_bit_field && TYPE_UNSIGNED (type))
 	temp = expand_binop (mode, xor_optab, op0,
 			     immed_double_int_const
 			       (double_int_mask (TYPE_PRECISION (type)), mode),

@@ -1481,7 +1481,7 @@ walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
 	  tree lhs = gimple_assign_lhs (stmt);
 	  wi->val_only
 	    = (is_gimple_reg_type (TREE_TYPE (lhs)) && !is_gimple_reg (lhs))
-	      || !gimple_assign_single_p (stmt);
+	      || gimple_assign_rhs_class (stmt) != GIMPLE_SINGLE_RHS;
 	}
 
       for (i = 1; i < gimple_num_ops (stmt); i++)
@@ -1497,11 +1497,14 @@ walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
       if (wi)
 	{
           /* If the RHS has more than 1 operand, it is not appropriate
-             for the memory.  */
-	  wi->val_only = !(is_gimple_mem_rhs (gimple_assign_rhs1 (stmt))
-			   || TREE_CODE (gimple_assign_rhs1 (stmt))
-			      == CONSTRUCTOR)
-                         || !gimple_assign_single_p (stmt);
+             for the memory.
+	     ???  A lhs always requires an lvalue, checking the val_only flag
+	     does not make any sense, so we should be able to avoid computing
+	     it here.  */
+	  tree rhs1 = gimple_assign_rhs1 (stmt);
+	  wi->val_only = !(is_gimple_mem_rhs (rhs1)
+			   || TREE_CODE (rhs1) == CONSTRUCTOR)
+                         || gimple_assign_rhs_class (stmt) != GIMPLE_SINGLE_RHS;
 	  wi->is_lhs = true;
 	}
 
@@ -2908,14 +2911,6 @@ is_gimple_id (tree t)
 	  || TREE_CODE (t) == STRING_CST);
 }
 
-/* Return true if TYPE is a suitable type for a scalar register variable.  */
-
-bool
-is_gimple_reg_type (tree type)
-{
-  return !AGGREGATE_TYPE_P (type);
-}
-
 /* Return true if T is a non-aggregate register variable.  */
 
 bool
@@ -4140,9 +4135,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
       v = iterative_hash_hashval_t (na, v);
     }
 
-  if (TREE_CODE (type) == RECORD_TYPE
-      || TREE_CODE (type) == UNION_TYPE
-      || TREE_CODE (type) == QUAL_UNION_TYPE)
+  if (RECORD_OR_UNION_TYPE_P (type))
     {
       unsigned nf;
       tree f;
@@ -4373,9 +4366,7 @@ iterative_hash_canonical_type (tree type, hashval_t val)
       v = iterative_hash_hashval_t (na, v);
     }
 
-  if (TREE_CODE (type) == RECORD_TYPE
-      || TREE_CODE (type) == UNION_TYPE
-      || TREE_CODE (type) == QUAL_UNION_TYPE)
+  if (RECORD_OR_UNION_TYPE_P (type))
     {
       unsigned nf;
       tree f;

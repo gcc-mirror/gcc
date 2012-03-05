@@ -3,21 +3,25 @@
 // license that can be found in the LICENSE file.
 
 /*
-Package template (html/template) is a specialization of package text/template
-that automates the construction of HTML output that is safe against code
-injection.
+Package template (html/template) implements data-driven templates for
+generating HTML output safe against code injection. It provides the
+same interface as package text/template and should be used instead of
+text/template whenever the output is HTML.
 
+The documentation here focuses on the security features of the package.
+For information about how to program the templates themselves, see the
+documentation for text/template.
 
 Introduction
 
-This package wraps package template so you can use the standard template API
-to parse and execute templates.
+This package wraps package text/template so you can share its template API
+to parse and execute HTML templates safely.
 
-  set, err := new(template.Set).Parse(...)
+  tmpl, err := template.New("name").Parse(...)
   // Error checking elided
-  err = set.Execute(out, "Foo", data)
+  err = tmpl.Execute(out, "Foo", data)
 
-If successful, set will now be injection-safe. Otherwise, err is an error
+If successful, tmpl will now be injection-safe. Otherwise, err is an error
 defined in the docs for ErrorCode.
 
 HTML templates treat data values as plain text which should be encoded so they
@@ -25,7 +29,8 @@ can be safely embedded in an HTML document. The escaping is contextual, so
 actions can appear within JavaScript, CSS, and URI contexts.
 
 The security model used by this package assumes that template authors are
-trusted, while Execute's data parameter is not. More details are provided below.
+trusted, while text/template Execute's data parameter is not. More details are
+provided below.
 
 Example
 
@@ -38,7 +43,7 @@ produces
 
   Hello, <script>alert('you have been pwned')</script>!
 
-but with contextual autoescaping,
+but the contextual autoescaping in html/template
 
   import "html/template"
   ...
@@ -167,18 +172,18 @@ This package assumes that template authors are trusted, that Execute's data
 parameter is not, and seeks to preserve the properties below in the face
 of untrusted data:
 
-Structure Preservation Property
+Structure Preservation Property:
 "... when a template author writes an HTML tag in a safe templating language,
 the browser will interpret the corresponding portion of the output as a tag
 regardless of the values of untrusted data, and similarly for other structures
 such as attribute boundaries and JS and CSS string boundaries."
 
-Code Effect Property
+Code Effect Property:
 "... only code specified by the template author should run as a result of
 injecting the template output into a page and all code specified by the
 template author should run as a result of the same."
 
-Least Surprise Property
+Least Surprise Property:
 "A developer (or code reviewer) familiar with HTML, CSS, and JavaScript, who
 knows that contextual autoescaping happens should be able to look at a {{.}}
 and correctly infer what sanitization happens."

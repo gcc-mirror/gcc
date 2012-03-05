@@ -45,19 +45,24 @@ def find_type(orig, name):
             raise ValueError, "Cannot find type %s::%s" % (str(orig), name)
         typ = field.type
 
-class StdPointerPrinter:
-    "Print a smart pointer of some kind"
+class SharedPointerPrinter:
+    "Print a shared_ptr or weak_ptr"
 
     def __init__ (self, typename, val):
         self.typename = typename
         self.val = val
 
     def to_string (self):
-        if self.val['_M_refcount']['_M_pi'] == 0:
-            return '%s (empty) %s' % (self.typename, self.val['_M_ptr'])
-        return '%s (count %d) %s' % (self.typename,
-                                     self.val['_M_refcount']['_M_pi']['_M_use_count'],
-                                     self.val['_M_ptr'])
+        state = 'empty'
+        refcounts = self.val['_M_refcount']['_M_pi']
+        if refcounts != 0:
+            usecount = refcounts['_M_use_count']
+            weakcount = refcounts['_M_weak_count']
+            if usecount == 0:
+                state = 'expired, weak %d' % weakcount
+            else:
+                state = 'count %d, weak %d' % (usecount, weakcount - 1)
+        return '%s (%s) %s' % (self.typename, state, self.val['_M_ptr'])
 
 class UniquePointerPrinter:
     "Print a unique_ptr"
@@ -605,38 +610,18 @@ class StdStringPrinter:
 
 class Tr1HashtableIterator:
     def __init__ (self, hash):
-        self.count = 0
-        self.n_buckets = hash['_M_element_count']
-        if self.n_buckets == 0:
-            self.node = False
-        else:
-            self.bucket = hash['_M_buckets']
-            self.node = self.bucket[0]
-            self.update ()
+        self.node = hash['_M_before_begin']['_M_nxt']
+        self.node_type = find_type(hash.type, '_Node').pointer()
 
     def __iter__ (self):
         return self
 
-    def update (self):
-        # If we advanced off the end of the chain, move to the next
-        # bucket.
-        while self.node == 0:
-            self.bucket = self.bucket + 1
-            self.node = self.bucket[0]
-
-       # If we advanced off the end of the bucket array, then
-       # we're done.
-        if self.count == self.n_buckets:
-            self.node = False
-        else:
-            self.count = self.count + 1
-
     def next (self):
-        if not self.node:
+        if self.node == 0:
             raise StopIteration
-        result = self.node.dereference()['_M_v']
-        self.node = self.node.dereference()['_M_next']
-        self.update ()
+        node = self.node.cast(self.node_type)
+        result = node.dereference()['_M_v']
+        self.node = node.dereference()['_M_nxt']
         return result
 
 class Tr1UnorderedSetPrinter:
@@ -862,8 +847,8 @@ def build_libstdcxx_dictionary ():
 
     # These are the TR1 and C++0x printers.
     # For array - the default GDB pretty-printer seems reasonable.
-    libstdcxx_printer.add_version('std::', 'shared_ptr', StdPointerPrinter)
-    libstdcxx_printer.add_version('std::', 'weak_ptr', StdPointerPrinter)
+    libstdcxx_printer.add_version('std::', 'shared_ptr', SharedPointerPrinter)
+    libstdcxx_printer.add_version('std::', 'weak_ptr', SharedPointerPrinter)
     libstdcxx_printer.add_container('std::', 'unordered_map',
                                     Tr1UnorderedMapPrinter)
     libstdcxx_printer.add_container('std::', 'unordered_set',
@@ -875,8 +860,8 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_container('std::', 'forward_list',
                                     StdForwardListPrinter)
 
-    libstdcxx_printer.add_version('std::tr1::', 'shared_ptr', StdPointerPrinter)
-    libstdcxx_printer.add_version('std::tr1::', 'weak_ptr', StdPointerPrinter)
+    libstdcxx_printer.add_version('std::tr1::', 'shared_ptr', SharedPointerPrinter)
+    libstdcxx_printer.add_version('std::tr1::', 'weak_ptr', SharedPointerPrinter)
     libstdcxx_printer.add_version('std::tr1::', 'unordered_map',
                                   Tr1UnorderedMapPrinter)
     libstdcxx_printer.add_version('std::tr1::', 'unordered_set',

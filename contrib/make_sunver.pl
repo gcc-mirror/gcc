@@ -156,9 +156,6 @@ my $glob = 'glob';
 # We're currently inside `extern "C++"', which Sun ld doesn't understand.
 my $in_extern = 0;
 
-# We're currently inside a conditional section: just skip it.
-my $in_ifdef = 0;
-
 # The c++filt command to use.  This *must* be GNU c++filt; the Sun Studio
 # c++filt doesn't handle the GNU mangling style.
 my $cxxfilt = $ENV{'CXXFILT'} || "c++filt";
@@ -183,15 +180,6 @@ printf "# Omitted archives with corresponding shared libraries: %s\n",
 print "#\n\n";
 
 while (<F>) {
-    # End of skipped section.
-    if (/^[ \t]*\#endif/) {
-	$in_ifdef = 0;
-	next;
-    }
-
-    # Just skip a conditional section.
-    if ($in_ifdef) { next; }
-
     # Lines of the form '};'
     if (/^([ \t]*)(\}[ \t]*;[ \t]*)$/) {
 	$glob = 'glob';
@@ -214,15 +202,6 @@ while (<F>) {
 	    print "    .force_WEAK_off_$current_version = DATA S0x0 V0x0;\n";
 	}
 	print; next;
-    }
-
-    # Special comments that look like C preprocessor conditionals.
-    # Just skip the contents for now.
-    # FIXME: Allow passing in conditionals from the command line to really
-    # control the skipping.
-    if (/^[ \t]*\#ifdef/) {
-	$in_ifdef = 1;
-	next;
     }
 
     # Comment and blank lines

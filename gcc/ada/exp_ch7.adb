@@ -1372,6 +1372,37 @@ package body Exp_Ch7 is
             Fin_Id :=
               Make_Defining_Identifier (Loc,
                 Chars => New_External_Name (Name_uFinalizer));
+
+            --  The visibility semantics of AT_END handlers force a strange
+            --  separation of spec and body for stack-related finalizers:
+
+            --     declare : Enclosing_Scope
+            --        procedure _finalizer;
+            --     begin
+            --        <controlled objects>
+            --        procedure _finalizer is
+            --           ...
+            --     at end
+            --        _finalizer;
+            --     end;
+
+            --  Both spec and body are within the same construct and scope, but
+            --  the body is part of the handled sequence of statements. This
+            --  placement confuses the elaboration mechanism on targets where
+            --  AT_END handlers are expanded into "when all others" handlers:
+
+            --     exception
+            --        when all others =>
+            --           _finalizer;  --  appears to require elab checks
+            --     at end
+            --        _finalizer;
+            --     end;
+
+            --  Since the compiler guarantees that the body of a _finalizer is
+            --  always inserted in the same construct where the AT_END handler
+            --  resides, there is no need for elaboration checks.
+
+            Set_Kill_Elaboration_Checks (Fin_Id);
          end if;
 
          --  Step 2: Creation of the finalizer specification
@@ -1785,7 +1816,7 @@ package body Exp_Ch7 is
                  and then Needs_Finalization (Obj_Typ)
                  and then not (Ekind (Obj_Id) = E_Constant
                                 and then not Has_Completion (Obj_Id))
-                 and then not Is_Tag_To_CW_Conversion (Obj_Id)
+                 and then not Is_Tag_To_Class_Wide_Conversion (Obj_Id)
                then
                   Processing_Actions;
 
@@ -1863,10 +1894,7 @@ package body Exp_Ch7 is
 
             --  Specific cases of object renamings
 
-            elsif Nkind (Decl) = N_Object_Renaming_Declaration
-              and then Nkind (Name (Decl)) = N_Explicit_Dereference
-              and then Nkind (Prefix (Name (Decl))) = N_Identifier
-            then
+            elsif Nkind (Decl) = N_Object_Renaming_Declaration then
                Obj_Id  := Defining_Identifier (Decl);
                Obj_Typ := Base_Type (Etype (Obj_Id));
 
@@ -1887,6 +1915,19 @@ package body Exp_Ch7 is
                  and then Is_Return_Object (Obj_Id)
                  and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
                then
+                  Processing_Actions (Has_No_Init => True);
+
+               --  Detect a case where a source object has been initialized by
+               --  a controlled function call which was later rewritten as a
+               --  class-wide conversion of Ada.Tags.Displace.
+
+               --     Obj : Class_Wide_Type := Function_Call (...);
+
+               --     Temp : ... := Function_Call (...)'reference;
+               --     Obj  : Class_Wide_Type renames
+               --              (... Ada.Tags.Displace (Temp));
+
+               elsif Is_Displacement_Of_Ctrl_Function_Result (Obj_Id) then
                   Processing_Actions (Has_No_Init => True);
                end if;
 

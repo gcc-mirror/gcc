@@ -1539,6 +1539,17 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
       if (DECL_NONCONVERTING_P (cand))
 	continue;
 
+      if (TREE_CODE (cand) == TEMPLATE_DECL)
+	{
+	  if (complain)
+	    {
+	      error ("ambiguous default type conversion from %qT",
+		     basetype);
+	      error ("  candidate conversions include %qD", cand);
+	    }
+	  return error_mark_node;
+	}
+
       candidate = non_reference (TREE_TYPE (TREE_TYPE (cand)));
 
       switch (TREE_CODE (candidate))

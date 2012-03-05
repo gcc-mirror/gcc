@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -ftree-vectorize -mavx -mtune=generic" } */
+/* { dg-skip-if "" { x86_64-*-mingw* } { "*" } { "" } } */
 /* { dg-final { scan-assembler "and\[lq\]?\[\\t \]*\\$-32,\[\\t \]*%\[re\]?sp" } } */
 /* { dg-final { scan-assembler "vmovaps\[\\t \]*%ymm" } } */
 

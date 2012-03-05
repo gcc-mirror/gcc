@@ -36,8 +36,9 @@ void test01()
   std::packaged_task<int&(int&)> p1(inc);
   std::future<int&> f1 = p1.get_future();
 
+  std::chrono::milliseconds delay(1);
   VERIFY( f1.valid() );
-  VERIFY( !f1.wait_for(std::chrono::milliseconds(1)) );
+  VERIFY( f1.wait_for(delay) == std::future_status::timeout );
 
   int i1 = 0;
 

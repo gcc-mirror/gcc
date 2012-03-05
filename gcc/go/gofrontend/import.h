@@ -181,13 +181,14 @@ class Import
   std::string
   read_identifier();
 
+  // Read a name.  This is like read_identifier, except that a "?" is
+  // returned as an empty string.  This matches Export::write_name.
+  std::string
+  read_name();
+
   // Read a type.
   Type*
   read_type();
-
-  // The name used for parameters, receivers, and results in imported
-  // function types.
-  static const char* const import_marker;
 
  private:
   static Stream*
@@ -211,6 +212,10 @@ class Import
   static Stream*
   find_archive_export_data(const std::string& filename, int fd,
 			   Location);
+
+  // Read an import line.
+  void
+  read_one_import();
 
   // Read the import control functions.
   void

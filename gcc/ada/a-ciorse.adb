@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -325,6 +325,20 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       Adjust (Container.Tree);
    end Adjust;
 
+   procedure Adjust (Control : in out Reference_Control_Type) is
+   begin
+      if Control.Container /= null then
+         declare
+            Tree : Tree_Type renames Control.Container.all.Tree;
+            B : Natural renames Tree.Busy;
+            L : Natural renames Tree.Lock;
+         begin
+            B := B + 1;
+            L := L + 1;
+         end;
+      end if;
+   end Adjust;
+
    ------------
    -- Assign --
    ------------
@@ -398,7 +412,20 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
         (Vet (Container.Tree, Position.Node),
          "bad cursor in Constant_Reference");
 
-      return (Element => Position.Node.Element.all'Access);
+      declare
+         Tree : Tree_Type renames Position.Container.all.Tree;
+         B : Natural renames Tree.Busy;
+         L : Natural renames Tree.Lock;
+      begin
+         return R : constant Constant_Reference_Type :=
+                      (Element => Position.Node.Element.all'Access,
+                       Control =>
+                         (Controlled with Container'Unrestricted_Access))
+         do
+            B := B + 1;
+            L := L + 1;
+         end return;
+      end;
    end Constant_Reference;
 
    --------------
@@ -617,6 +644,22 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       end if;
    end Finalize;
 
+   procedure Finalize (Control : in out Reference_Control_Type) is
+   begin
+      if Control.Container /= null then
+         declare
+            Tree : Tree_Type renames Control.Container.all.Tree;
+            B : Natural renames Tree.Busy;
+            L : Natural renames Tree.Lock;
+         begin
+            B := B - 1;
+            L := L - 1;
+         end;
+
+         Control.Container := null;
+      end if;
+   end Finalize;
+
    ----------
    -- Find --
    ----------
@@ -782,7 +825,20 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
             raise Program_Error with "Node has no element";
          end if;
 
-         return (Element => Node.Element.all'Access);
+         declare
+            Tree : Tree_Type renames Container'Unrestricted_Access.all.Tree;
+            B : Natural renames Tree.Busy;
+            L : Natural renames Tree.Lock;
+         begin
+            return R : constant Constant_Reference_Type :=
+                         (Element => Node.Element.all'Access,
+                          Control =>
+                            (Controlled with Container'Unrestricted_Access))
+            do
+               B := B + 1;
+               L := L + 1;
+            end return;
+         end;
       end Constant_Reference;
 
       --------------

@@ -3540,8 +3540,19 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
       case vec_to_scalar:
       case scalar_to_vec:
       case cond_branch_not_taken:
-      case vec_perm:
         return 1;
+
+      case vec_perm:
+	if (TARGET_VSX)
+	  return 4;
+	else
+	  return 1;
+
+      case vec_promote_demote:
+        if (TARGET_VSX)
+          return 5;
+        else
+          return 1;
 
       case cond_branch_taken:
         return 3;
@@ -4690,28 +4701,25 @@ rs6000_expand_vector_init (rtx target, rtx vals)
   /* Double word values on VSX can use xxpermdi or lxvdsx.  */
   if (VECTOR_MEM_VSX_P (mode) && (mode == V2DFmode || mode == V2DImode))
     {
+      rtx op0 = XVECEXP (vals, 0, 0);
+      rtx op1 = XVECEXP (vals, 0, 1);
       if (all_same)
 	{
-	  rtx element = XVECEXP (vals, 0, 0);
+	  if (!MEM_P (op0) && !REG_P (op0))
+	    op0 = force_reg (inner_mode, op0);
 	  if (mode == V2DFmode)
-	    emit_insn (gen_vsx_splat_v2df (target, element));
+	    emit_insn (gen_vsx_splat_v2df (target, op0));
 	  else
-	    emit_insn (gen_vsx_splat_v2di (target, element));
+	    emit_insn (gen_vsx_splat_v2di (target, op0));
 	}
       else
 	{
+	  op0 = force_reg (inner_mode, op0);
+	  op1 = force_reg (inner_mode, op1);
 	  if (mode == V2DFmode)
-	    {
-	      rtx op0 = copy_to_mode_reg (DFmode, XVECEXP (vals, 0, 0));
-	      rtx op1 = copy_to_mode_reg (DFmode, XVECEXP (vals, 0, 1));
-	      emit_insn (gen_vsx_concat_v2df (target, op0, op1));
-	    }
+	    emit_insn (gen_vsx_concat_v2df (target, op0, op1));
 	  else
-	    {
-	      rtx op0 = copy_to_mode_reg (DImode, XVECEXP (vals, 0, 0));
-	      rtx op1 = copy_to_mode_reg (DImode, XVECEXP (vals, 0, 1));
-	      emit_insn (gen_vsx_concat_v2di (target, op0, op1));
-	    }
+	    emit_insn (gen_vsx_concat_v2di (target, op0, op1));
 	}
       return;
     }
@@ -4725,7 +4733,7 @@ rs6000_expand_vector_init (rtx target, rtx vals)
       if (all_same)
 	{
 	  rtx freg = gen_reg_rtx (V4SFmode);
-	  rtx sreg = copy_to_reg (XVECEXP (vals, 0, 0));
+	  rtx sreg = force_reg (SFmode, XVECEXP (vals, 0, 0));
 
 	  emit_insn (gen_vsx_xscvdpsp_scalar (freg, sreg));
 	  emit_insn (gen_vsx_xxspltw_v4sf (target, freg, const0_rtx));
@@ -4736,13 +4744,13 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 	  rtx dbl_odd  = gen_reg_rtx (V2DFmode);
 	  rtx flt_even = gen_reg_rtx (V4SFmode);
 	  rtx flt_odd  = gen_reg_rtx (V4SFmode);
+	  rtx op0 = force_reg (SFmode, XVECEXP (vals, 0, 0));
+	  rtx op1 = force_reg (SFmode, XVECEXP (vals, 0, 1));
+	  rtx op2 = force_reg (SFmode, XVECEXP (vals, 0, 2));
+	  rtx op3 = force_reg (SFmode, XVECEXP (vals, 0, 3));
 
-	  emit_insn (gen_vsx_concat_v2sf (dbl_even,
-					  copy_to_reg (XVECEXP (vals, 0, 0)),
-					  copy_to_reg (XVECEXP (vals, 0, 1))));
-	  emit_insn (gen_vsx_concat_v2sf (dbl_odd,
-					  copy_to_reg (XVECEXP (vals, 0, 2)),
-					  copy_to_reg (XVECEXP (vals, 0, 3))));
+	  emit_insn (gen_vsx_concat_v2sf (dbl_even, op0, op1));
+	  emit_insn (gen_vsx_concat_v2sf (dbl_odd, op2, op3));
 	  emit_insn (gen_vsx_xvcvdpsp (flt_even, dbl_even));
 	  emit_insn (gen_vsx_xvcvdpsp (flt_odd, dbl_odd));
 	  rs6000_expand_extract_even (target, flt_even, flt_odd);
@@ -7006,17 +7014,14 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
   if (!TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128
       && mode == TFmode && GET_CODE (operands[1]) == CONST_DOUBLE)
     {
-      /* DImode is used, not DFmode, because simplify_gen_subreg doesn't
-	 know how to get a DFmode SUBREG of a TFmode.  */
-      enum machine_mode imode = (TARGET_E500_DOUBLE ? DFmode : DImode);
-      rs6000_emit_move (simplify_gen_subreg (imode, operands[0], mode, 0),
-			simplify_gen_subreg (imode, operands[1], mode, 0),
-			imode);
-      rs6000_emit_move (simplify_gen_subreg (imode, operands[0], mode,
-					     GET_MODE_SIZE (imode)),
-			simplify_gen_subreg (imode, operands[1], mode,
-					     GET_MODE_SIZE (imode)),
-			imode);
+      rs6000_emit_move (simplify_gen_subreg (DFmode, operands[0], mode, 0),
+			simplify_gen_subreg (DFmode, operands[1], mode, 0),
+			DFmode);
+      rs6000_emit_move (simplify_gen_subreg (DFmode, operands[0], mode,
+					     GET_MODE_SIZE (DFmode)),
+			simplify_gen_subreg (DFmode, operands[1], mode,
+					     GET_MODE_SIZE (DFmode)),
+			DFmode);
       return;
     }
 
@@ -24032,7 +24037,8 @@ rs6000_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 	rtx fnmem, fn_reg, toc_reg;
 
 	if (!TARGET_POINTERS_TO_NESTED_FUNCTIONS)
-	  error ("-mno-r11 must not be used if you have trampolines");
+	  error ("You cannot take the address of a nested function if you use "
+		 "the -mno-pointers-to-nested-functions option.");
 
 	fnmem = gen_const_mem (Pmode, force_reg (Pmode, fnaddr));
 	fn_reg = gen_reg_rtx (Pmode);

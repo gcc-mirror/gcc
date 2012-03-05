@@ -52,7 +52,7 @@ type cell struct {
 // this flag.
 //
 // If a Writer is configured to filter HTML, HTML tags and entities
-// are simply passed through. The widths of tags and entities are
+// are passed through. The widths of tags and entities are
 // assumed to be zero (tags) and one (entities) for formatting purposes.
 //
 // A segment of text may be escaped by bracketing it with Escape
@@ -168,12 +168,6 @@ const (
 //			(for correct-looking results, tabwidth must correspond
 //			to the tab width in the viewer displaying the result)
 //	flags		formatting control
-//
-// To format in tab-separated columns with a tab stop of 8:
-//	b.Init(w, 8, 1, 8, '\t', 0);
-//
-// To format in space-separated columns with at least 4 spaces between columns:
-//	b.Init(w, 0, 4, 8, ' ', 0);
 //
 func (b *Writer) Init(output io.Writer, minwidth, tabwidth, padding int, padchar byte, flags uint) *Writer {
 	if minwidth < 0 || tabwidth < 0 || padding < 0 {
@@ -448,7 +442,7 @@ func handlePanic(err *error) {
 
 // Flush should be called after the last call to Write to ensure
 // that any data buffered in the Writer is written to output. Any
-// incomplete escape sequence at the end is simply considered
+// incomplete escape sequence at the end is considered
 // complete for formatting purposes.
 //
 func (b *Writer) Flush() (err error) {

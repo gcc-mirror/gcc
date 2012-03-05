@@ -2472,15 +2472,11 @@ if test $in_tree_ld != yes ; then
   else
     case "${target}" in
       *-*-solaris2*)
+	# See acinclude.m4 (gcc_SUN_LD_VERSION) for the version number
+	# format.
 	#
-	# Solaris 2 ld -V output looks like this for a regular version:
-	#
-	# ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1699
-	#
-	# but test versions add stuff at the end:
-	#
-	# ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1701:onnv-ab196087-6931056-03/25/10
-	#
+	# Don't reuse gcc_gv_sun_ld_vers_* in case a linker other than
+	# /usr/ccs/bin/ld has been configured.
 	ld_ver=`$gcc_cv_ld -V 2>&1`
 	if echo "$ld_ver" | grep 'Solaris Link Editors' > /dev/null; then
 	  ld_vers=`echo $ld_ver | sed -n \
@@ -3301,6 +3297,37 @@ foo:	.long	25
 	xor	%l1, %tle_lox10(foo), %o5
 	ld	[%g7 + %o5], %o1"
 	;;
+  tilepro*-*-*)
+      conftest_s='
+	.section ".tdata","awT",@progbits
+foo:	.long	25
+	.text
+	addli	r0, zero, tls_gd(foo)
+	auli	r0, zero, tls_gd_ha16(foo)
+	addli	r0, r0, tls_gd_lo16(foo)
+	jal	__tls_get_addr
+	addli	r0, zero, tls_ie(foo)
+	auli	r0, r0, tls_ie_ha16(foo)
+	addli	r0, r0, tls_ie_lo16(foo)'
+	tls_first_major=2
+	tls_first_minor=22
+	tls_as_opt="--fatal-warnings"
+	;;
+  tilegx*-*-*)
+      conftest_s='
+	.section ".tdata","awT",@progbits
+foo:	.long	25
+	.text
+	shl16insli r0, zero, hw0_last_tls_gd(foo)
+	shl16insli r0, zero, hw1_last_tls_gd(foo)
+	shl16insli r0, r0,   hw0_tls_gd(foo)
+	jal	   __tls_get_addr
+	shl16insli r0, zero, hw1_last_tls_ie(foo)
+	shl16insli r0, r0,   hw0_tls_ie(foo)'
+	tls_first_major=2
+	tls_first_minor=22
+	tls_as_opt="--fatal-warnings"
+	;;
   xtensa*-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits
@@ -3413,6 +3440,13 @@ case "$target" in
     if test $set_have_as_tls = no; then
       LIBS=
     fi
+    # Even without TLS support on Solaris 8, explicitly link with libthread
+    # to guarantee that the alternate thread library is used.
+    case "$target" in
+      *-*-solaris2.8)
+	LIBS=-lthread
+	;;
+    esac
     # Always define LIB_TLS_SPEC, even without TLS support.
     AC_DEFINE_UNQUOTED(LIB_TLS_SPEC, "$LIBS",
         [Define to the library containing __tls_get_addr/___tls_get_addr.])
@@ -4247,7 +4281,7 @@ esac
 # version to the per-target configury.
 case "$cpu_type" in
   alpha | arm | avr | bfin | cris | i386 | m32c | m68k | microblaze | mips \
-  | pa | rs6000 | score | sparc | spu | xstormy16 | xtensa)
+  | pa | rs6000 | score | sparc | spu | tilegx | tilepro | xstormy16 | xtensa)
     insn="nop"
     ;;
   ia64 | s390)

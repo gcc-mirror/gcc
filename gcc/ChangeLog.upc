@@ -1,3 +1,7 @@
+2012-03-04  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 184900 into gupc branch.
+
 2012-02-17  Gary Funck  <gary@intrepid.com>
 
 	Released GUPC 4.7.0.2 based on version 183992.

@@ -328,37 +328,39 @@ others optional.  While any sufficiently new version of required tools
 usually work, library requirements are generally stricter.  Newer
 versions may work in some cases, but it's safer to use the exact
 versions documented.  We appreciate bug reports about problems with
-newer versions, though.
+newer versions, though.  If your OS vendor provides packages for the
+support libraries then using those packages may be the simplest way to
+install the libraries.
 
 @table @asis
 @item GNU Multiple Precision Library (GMP) version 4.3.2 (or later)
 
-Necessary to build GCC@.  If you do not have it installed in your
-library search path, you will have to configure with the
+Necessary to build GCC@.  If a GMP source distribution is found in a
+subdirectory of your GCC sources named @file{gmp}, it will be built
+together with GCC.  Alternatively, if GMP is already installed but it
+is not in your library search path, you will have to configure with the
 @option{--with-gmp} configure option.  See also @option{--with-gmp-lib}
-and @option{--with-gmp-include}.  Alternatively, if a GMP source
-distribution is found in a subdirectory of your GCC sources named
-@file{gmp}, it will be built together with GCC@.
+and @option{--with-gmp-include}.
 
 @item MPFR Library version 2.4.2 (or later)
 
 Necessary to build GCC@.  It can be downloaded from
-@uref{http://www.mpfr.org/}.  The @option{--with-mpfr} configure
-option should be used if your MPFR Library is not installed in your
-default library search path.  See also @option{--with-mpfr-lib} and
-@option{--with-mpfr-include}.  Alternatively, if a MPFR source
-distribution is found in a subdirectory of your GCC sources named
-@file{mpfr}, it will be built together with GCC@.
+@uref{http://www.mpfr.org/}.  If an MPFR source distribution is found
+in a subdirectory of your GCC sources named @file{mpfr}, it will be
+built together with GCC.  Alternatively, if MPFR is already installed
+but it is not in your default library search path, the
+@option{--with-mpfr} configure option should be used.  See also
+@option{--with-mpfr-lib} and @option{--with-mpfr-include}.
 
 @item MPC Library version 0.8.1 (or later)
 
 Necessary to build GCC@.  It can be downloaded from
-@uref{http://www.multiprecision.org/}.  The @option{--with-mpc}
-configure option should be used if your MPC Library is not installed
-in your default library search path.  See also @option{--with-mpc-lib}
-and @option{--with-mpc-include}.  Alternatively, if an MPC source
-distribution is found in a subdirectory of your GCC sources named
-@file{mpc}, it will be built together with GCC@.
+@uref{http://www.multiprecision.org/}.  If an MPC source distribution
+is found in a subdirectory of your GCC sources named @file{mpc}, it
+will be built together with GCC.  Alternatively, if MPC is already
+installed but it is not in your default library search path, the
+@option{--with-mpc} configure option should be used.  See also
+@option{--with-mpc-lib} and @option{--with-mpc-include}.
 
 @item Parma Polyhedra Library (PPL) version 0.11
 
@@ -496,7 +498,7 @@ the GCC-specific entry point.  You can download a suitable jar from
 
 If you wish to build the @command{gjdoc} binary in libjava, you will
 need to have an @file{antlr.jar} library available. The library is
-searched in system locations but can be configured with
+searched for in system locations but can be specified with
 @option{--with-antlr-jar=} instead.  When configuring with
 @option{--enable-java-maintainer-mode}, you will need to have one of
 the executables named @command{cantlr}, @command{runantlr} or
@@ -1608,10 +1610,11 @@ When neither of these configure options are used, the default will be
 @itemx --with-mpc=@var{pathname}
 @itemx --with-mpc-include=@var{pathname}
 @itemx --with-mpc-lib=@var{pathname}
-If you do not have GMP (the GNU Multiple Precision library), the MPFR
+If you want to build GCC but do not have the GMP library, the MPFR
 library and/or the MPC library installed in a standard location and
-you want to build GCC, you can explicitly specify the directory where
-they are installed (@samp{--with-gmp=@var{gmpinstalldir}},
+do not have their sources present in the GCC source tree then you
+can explicitly specify the directory where they are installed
+(@samp{--with-gmp=@var{gmpinstalldir}},
 @samp{--with-mpfr=@/@var{mpfrinstalldir}},
 @samp{--with-mpc=@/@var{mpcinstalldir}}).  The
 @option{--with-gmp=@/@var{gmpinstalldir}} option is shorthand for
@@ -1733,7 +1736,7 @@ The following options only apply to building cross compilers.
 Tells GCC to consider @var{dir} as the root of a tree that contains
 (a subset of) the root filesystem of the target operating system.
 Target system headers, libraries and run-time object files will be
-searched in there.  More specifically, this acts as if
+searched for in there.  More specifically, this acts as if
 @option{--sysroot=@var{dir}} was added to the default options of the built
 compiler.  The specified directory is not copied into the
 install tree, unlike the options @option{--with-headers} and
@@ -2522,7 +2525,10 @@ on a simulator as described at @uref{http://gcc.gnu.org/simtest-howto.html}.
 @section How can you run the testsuite on selected tests?
 
 In order to run sets of tests selectively, there are targets
-@samp{make check-gcc} and @samp{make check-g++}
+@samp{make check-gcc} and language specific @samp{make check-c},
+@samp{make check-c++}, @samp{make check-fortran}, @samp{make check-java},
+@samp{make check-ada}, @samp{make check-objc}, @samp{make check-obj-c++},
+@samp{make check-lto}
 in the @file{gcc} subdirectory of the object directory.  You can also
 just run @samp{make check} in a subdirectory of the object directory.
 
@@ -2998,7 +3004,7 @@ information are.
 @item
 @uref{#amd64-x-solaris210,,amd64-*-solaris2.10}
 @item
-@uref{#arm-x-elf,,arm-*-elf}
+@uref{#arm-x-eabi,,arm-*-eabi}
 @item
 @uref{#avr,,avr}
 @item
@@ -3095,6 +3101,10 @@ information are.
 @uref{#sparcv9-x-solaris2,,sparcv9-*-solaris2*}
 @item
 @uref{#c6x-x-x,,c6x-*-*}
+@item
+@uref{#tilegx-x-linux,,tilegx-*-linux*}
+@item
+@uref{#tilepro-x-linux,,tilepro-*-linux*}
 @item
 @uref{#x-x-vxworks,,*-*-vxworks*}
 @item
@@ -3209,11 +3219,11 @@ This is a synonym for @samp{x86_64-*-solaris2.1[0-9]*}.
 @html
 <hr />
 @end html
-@heading @anchor{arm-x-elf}arm-*-elf
+@heading @anchor{arm-x-eabi}arm-*-eabi
 ARM-family processors.  Subtargets that use the ELF object format
 require GNU binutils 2.13 or newer.  Such subtargets include:
-@code{arm-*-freebsd}, @code{arm-*-netbsdelf}, @code{arm-*-*linux}
-and @code{arm-*-rtems}.
+@code{arm-*-netbsdelf}, @code{arm-*-*linux-gnueabi}
+and @code{arm-*-rtemseabi}.
 
 @html
 <hr />
@@ -3268,6 +3278,29 @@ See ``Blackfin Options'' in the main manual
 
 More information, and a version of binutils with support for this processor,
 is available at @uref{http://blackfin.uclinux.org}
+
+@html
+<hr />
+@end html
+@heading @anchor{cr16}CR16
+
+The CR16 CompactRISC architecture is a 16-bit architecture. This architecture is 
+used in embedded applications.
+
+@ifnothtml
+@xref{CR16 Options,, CR16 Options, gcc, Using and Porting the GNU Compiler
+Collection (GCC)},
+@end ifnothtml
+
+@ifhtml
+See ``CR16 Options'' in the main manual for a list of CR16-specific options.
+@end ifhtml
+
+Use @samp{configure --target=cr16-elf --enable-languages=c,c++} to configure
+GCC@ for building a CR16 elf cross-compiler.
+
+Use @samp{configure --target=cr16-uclinux --enable-languages=c,c++} to configure
+GCC@ for building a CR16 uclinux cross-compiler.
 
 @html
 <hr />
@@ -4437,6 +4470,22 @@ The C6X family of processors. This port requires binutils-2.22 or newer.
 @html
 <hr />
 @end html
+@heading @anchor{tilegx-*-linux}tilegx-*-linux*
+
+The TILE-Gx processor running GNU/Linux.  This port requires
+binutils-2.22 or newer.
+
+@html
+<hr />
+@end html
+@heading @anchor{tilepro-*-linux}tilepro-*-linux*
+
+The TILEPro processor running GNU/Linux.  This port requires
+binutils-2.22 or newer.
+
+@html
+<hr />
+@end html
 @heading @anchor{x-x-vxworks}*-*-vxworks*
 Support for VxWorks is in flux.  At present GCC supports @emph{only} the
 very recent VxWorks 5.5 (aka Tornado 2.2) release, and only on PowerPC@.
@@ -4565,7 +4614,7 @@ Presently Windows for Itanium is not supported.
 
 @subheading Windows CE
 
-Windows CE is supported as a target only on ARM (arm-wince-pe), Hitachi
+Windows CE is supported as a target only on Hitachi
 SuperH (sh-wince-pe), and MIPS (mips-wince-pe).
 
 @subheading Other Windows Platforms

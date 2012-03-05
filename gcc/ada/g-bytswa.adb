@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2006-2010, AdaCore                     --
+--                     Copyright (C) 2006-2012, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,31 +29,40 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a general implementation that does not take advantage of
---  any machine-specific instructions.
+--  This is a general implementation that uses GCC intrinsics to take
+--  advantage of any machine-specific instructions.
 
-with Interfaces; use Interfaces;
-with Ada.Unchecked_Conversion;
+with Ada.Unchecked_Conversion; use Ada;
 
 package body GNAT.Byte_Swapping is
+
+   type U16 is mod 2**16;
+   type U32 is mod 2**32;
+   type U64 is mod 2**64;
+
+   function Bswap_16 (X : U16) return U16 is (X / 256 or X * 256);
+   --  The above is an idiom recognized by GCC
+
+   function Bswap_32 (X : U32) return U32;
+   pragma Import (Intrinsic, Bswap_32, "__builtin_bswap32");
+
+   function Bswap_64 (X : U64) return U64;
+   pragma Import (Intrinsic, Bswap_64, "__builtin_bswap64");
 
    --------------
    -- Swapped2 --
    --------------
 
    function Swapped2 (Input : Item) return Item is
+      function As_U16 is new Unchecked_Conversion (Item, U16);
+      function As_Item is new Unchecked_Conversion (U16, Item);
 
-      function As_U16 is new Ada.Unchecked_Conversion
-         (Source => Item, Target => Unsigned_16);
-
-      function As_Item is new Ada.Unchecked_Conversion
-         (Source => Unsigned_16, Target => Item);
-
-      X : constant Unsigned_16 := As_U16 (Input);
-
+      function Bswap_16 (X : U16) return U16 is (X / 256 or X * 256);
+      --  ??? Need to have function local here to allow inlining
+      pragma Compile_Time_Error (Item'Max_Size_In_Storage_Elements /= 2,
+        "storage size must be 2 bytes");
    begin
-      return As_Item ((Shift_Left (X, 8)  and 16#FF00#) or
-                      (Shift_Right (X, 8) and 16#00FF#));
+      return As_Item (Bswap_16 (As_U16 (Input)));
    end Swapped2;
 
    --------------
@@ -61,20 +70,12 @@ package body GNAT.Byte_Swapping is
    --------------
 
    function Swapped4 (Input : Item) return Item is
-
-      function As_U32 is new Ada.Unchecked_Conversion
-         (Source => Item, Target => Unsigned_32);
-
-      function As_Item is new Ada.Unchecked_Conversion
-         (Source => Unsigned_32, Target => Item);
-
-      X : constant Unsigned_32 := As_U32 (Input);
-
+      function As_U32 is new Unchecked_Conversion (Item, U32);
+      function As_Item is new Unchecked_Conversion (U32, Item);
+      pragma Compile_Time_Error (Item'Max_Size_In_Storage_Elements /= 4,
+        "storage size must be 4 bytes");
    begin
-      return As_Item ((Shift_Right (X, 24) and 16#0000_00FF#) or
-                      (Shift_Right (X, 8)  and 16#0000_FF00#) or
-                      (Shift_Left (X, 8)   and 16#00FF_0000#) or
-                      (Shift_Left (X, 24)  and 16#FF00_0000#));
+      return As_Item (Bswap_32 (As_U32 (Input)));
    end Swapped4;
 
    --------------
@@ -82,24 +83,12 @@ package body GNAT.Byte_Swapping is
    --------------
 
    function Swapped8 (Input : Item) return Item is
-
-      function As_U64 is new Ada.Unchecked_Conversion
-         (Source => Item, Target => Unsigned_64);
-
-      function As_Item is new Ada.Unchecked_Conversion
-         (Source => Unsigned_64, Target => Item);
-
-      X : constant Unsigned_64 := As_U64 (Input);
-
-      Low, High : aliased Unsigned_32;
-
+      function As_U64 is new Unchecked_Conversion (Item, U64);
+      function As_Item is new Unchecked_Conversion (U64, Item);
+      pragma Compile_Time_Error (Item'Max_Size_In_Storage_Elements /= 8,
+        "storage size must be 8 bytes");
    begin
-      Low := Unsigned_32 (X and 16#0000_0000_FFFF_FFFF#);
-      Swap4 (Low'Address);
-      High := Unsigned_32 (Shift_Right (X, 32));
-      Swap4 (High'Address);
-      return As_Item
-         (Shift_Left (Unsigned_64 (Low), 32) or Unsigned_64 (High));
+      return As_Item (Bswap_64 (As_U64 (Input)));
    end Swapped8;
 
    -----------
@@ -107,11 +96,10 @@ package body GNAT.Byte_Swapping is
    -----------
 
    procedure Swap2 (Location : System.Address) is
-      X : Unsigned_16;
+      X : U16;
       for X'Address use Location;
    begin
-      X := (Shift_Left (X, 8)  and 16#FF00#) or
-           (Shift_Right (X, 8) and 16#00FF#);
+      X := Bswap_16 (X);
    end Swap2;
 
    -----------
@@ -119,13 +107,10 @@ package body GNAT.Byte_Swapping is
    -----------
 
    procedure Swap4 (Location : System.Address) is
-      X : Unsigned_32;
+      X : U32;
       for X'Address use Location;
    begin
-      X := (Shift_Right (X, 24) and 16#0000_00FF#) or
-           (Shift_Right (X, 8)  and 16#0000_FF00#) or
-           (Shift_Left (X, 8)   and 16#00FF_0000#) or
-           (Shift_Left (X, 24)  and 16#FF00_0000#);
+      X := Bswap_32 (X);
    end Swap4;
 
    -----------
@@ -133,17 +118,9 @@ package body GNAT.Byte_Swapping is
    -----------
 
    procedure Swap8 (Location : System.Address) is
-      X : Unsigned_64;
+      X : U64;
       for X'Address use Location;
-
-      Low, High : aliased Unsigned_32;
-
    begin
-      Low := Unsigned_32 (X and 16#0000_0000_FFFF_FFFF#);
-      Swap4 (Low'Address);
-      High := Unsigned_32 (Shift_Right (X, 32));
-      Swap4 (High'Address);
-      X := Shift_Left (Unsigned_64 (Low), 32) or Unsigned_64 (High);
+      X := Bswap_64 (X);
    end Swap8;
-
 end GNAT.Byte_Swapping;

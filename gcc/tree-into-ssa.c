@@ -3519,9 +3519,9 @@ update_ssa (unsigned update_flags)
 
       if (dump_flags & TDF_DETAILS)
 	{
-	  fprintf (dump_file, "Affected blocks: ");
+	  fprintf (dump_file, "Affected blocks:");
 	  EXECUTE_IF_SET_IN_BITMAP (blocks_to_update, 0, i, bi)
-	    fprintf (dump_file, "%u ", i);
+	    fprintf (dump_file, " %u", i);
 	  fprintf (dump_file, "\n");
 	}
 

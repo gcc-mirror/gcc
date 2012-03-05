@@ -41,7 +41,8 @@ struct gl_mg : public method_group
   static gtm_word clear_locked(gtm_word l) { return l & ~LOCK_BIT; }
 
   // The global ownership record.
-  atomic<gtm_word> orec;
+  // No tail-padding necessary (the virtual functions aren't used frequently).
+  atomic<gtm_word> orec __attribute__((aligned(HW_CACHELINE_SIZE)));
 
   virtual void init()
   {
@@ -52,7 +53,6 @@ struct gl_mg : public method_group
   virtual void fini() { }
 };
 
-// TODO cacheline padding
 static gl_mg o_gl_mg;
 
 
@@ -76,18 +76,16 @@ static gl_mg o_gl_mg;
 // validate that no other update transaction comitted before we acquired the
 // orec, so we have the most recent timestamp and no other transaction can
 // commit until we have committed).
-// However, we therefore cannot use this method for a serial transaction
-// (because shared_state needs to remain at ~0) and we have to be careful
-// when switching to serial mode (see the special handling in trycommit() and
-// rollback()).
-// ??? This sharing adds some complexity wrt. serial mode. Just use a separate
-// state variable?
+// However, we therefore depend on shared_state not being modified by the
+// serial lock during upgrades to serial mode, which is ensured by
+// gtm_thread::serialirr_mode by not calling gtm_rwlock::write_upgrade_finish
+// before we have committed or rolled back.
 class gl_wt_dispatch : public abi_dispatch
 {
 protected:
-  static void pre_write(const void *addr, size_t len)
+  static void pre_write(const void *addr, size_t len,
+      gtm_thread *tx = gtm_thr())
   {
-    gtm_thread *tx = gtm_thr();
     gtm_word v = tx->shared_state.load(memory_order_relaxed);
     if (unlikely(!gl_mg::is_locked(v)))
       {
@@ -104,16 +102,27 @@ protected:
 	  tx->restart(RESTART_VALIDATE_WRITE);
 
 	// CAS global orec from our snapshot time to the locked state.
-	// We need acq_rel memory order here to synchronize with other loads
-	// and modifications of orec.
+        // We need acquire memory order here to synchronize with other
+        // (ownership) releases of the orec.  We do not need acq_rel order
+        // because whenever another thread reads from this CAS'
+        // modification, then it will abort anyway and does not rely on
+        // any further happens-before relation to be established.
+	// Also note that unlike in ml_wt's increase of the global time
+	// base (remember that the global orec is used as time base), we do
+	// not need require memory order here because we do not need to make
+	// prior orec acquisitions visible to other threads that try to
+	// extend their snapshot time.
 	if (!o_gl_mg.orec.compare_exchange_strong (now, gl_mg::set_locked(now),
-						   memory_order_acq_rel))
+						   memory_order_acquire))
 	  tx->restart(RESTART_LOCKED_WRITE);
 
 	// We use an explicit fence here to avoid having to use release
 	// memory order for all subsequent data stores.  This fence will
 	// synchronize with loads of the data with acquire memory order.  See
 	// validate() for why this is necessary.
+        // Adding require memory order to the prior CAS is not sufficient,
+        // at least according to the Batty et al. formalization of the
+        // memory model.
 	atomic_thread_fence(memory_order_release);
 
 	// Set shared_state to new value.
@@ -123,7 +132,7 @@ protected:
     tx->undolog.log(addr, len);
   }
 
-  static void validate()
+  static void validate(gtm_thread *tx = gtm_thr())
   {
     // Check that snapshot is consistent.  We expect the previous data load to
     // have acquire memory order, or be atomic and followed by an acquire
@@ -137,7 +146,6 @@ protected:
     // or read an orec value that was written after the data had been written.
     // Either will allow us to detect inconsistent reads because it will have
     // a higher/different value.
-    gtm_thread *tx = gtm_thr();
     gtm_word l = o_gl_mg.orec.load(memory_order_relaxed);
     if (l != tx->shared_state.load(memory_order_relaxed))
       tx->restart(RESTART_VALIDATE_READ);
@@ -198,9 +206,13 @@ public:
   static void memtransfer_static(void *dst, const void* src, size_t size,
       bool may_overlap, ls_modifier dst_mod, ls_modifier src_mod)
   {
-    if ((dst_mod != WaW && src_mod != RaW)
-	&& (dst_mod != NONTXNAL || src_mod == RfW))
-      pre_write(dst, size);
+    gtm_thread *tx = gtm_thr();
+    if (dst_mod != WaW && dst_mod != NONTXNAL)
+      pre_write(dst, size, tx);
+    // We need at least undo-logging for an RfW src region because we might
+    // subsequently write there with WaW.
+    if (src_mod == RfW)
+      pre_write(src, size, tx);
 
     // FIXME We should use atomics here (see store()).  Let's just hope that
     // memcpy/memmove are good enough.
@@ -211,7 +223,7 @@ public:
 
     if (src_mod != RfW && src_mod != RaW && src_mod != NONTXNAL
 	&& dst_mod != WaW)
-      validate();
+      validate(tx);
   }
 
   static void memset_static(void *dst, int c, size_t size, ls_modifier mod)
@@ -269,15 +281,6 @@ public:
     gtm_thread* tx = gtm_thr();
     gtm_word v = tx->shared_state.load(memory_order_relaxed);
 
-    // Special case: If shared_state is ~0, then we have acquired the
-    // serial lock (tx->state is not updated yet). In this case, the previous
-    // value isn't available anymore, so grab it from the global lock, which
-    // must have a meaningful value because no other transactions are active
-    // anymore. In particular, if it is locked, then we are an update
-    // transaction, which is all we care about for commit.
-    if (v == ~(typeof v)0)
-      v = o_gl_mg.orec.load(memory_order_relaxed);
-
     // Release the orec but do not reset shared_state, which will be modified
     // by the serial lock right after our commit anyway. Also, resetting
     // shared state here would interfere with the serial lock's use of this
@@ -305,40 +308,32 @@ public:
 
     gtm_thread *tx = gtm_thr();
     gtm_word v = tx->shared_state.load(memory_order_relaxed);
-    // Special case: If shared_state is ~0, then we have acquired the
-    // serial lock (tx->state is not updated yet). In this case, the previous
-    // value isn't available anymore, so grab it from the global lock, which
-    // must have a meaningful value because no other transactions are active
-    // anymore. In particular, if it is locked, then we are an update
-    // transaction, which is all we care about for rollback.
-    bool is_serial = v == ~(typeof v)0;
-    if (is_serial)
-      v = o_gl_mg.orec.load(memory_order_relaxed);
 
     // Release lock and increment version number to prevent dirty reads.
     // Also reset shared state here, so that begin_or_restart() can expect a
     // value that is correct wrt. privatization safety.
     if (gl_mg::is_locked(v))
       {
-	// Release the global orec, increasing its version number / timestamp.
-        // See begin_or_restart() for why we need release memory order here.
+	// With our rollback, global time increases.
 	v = gl_mg::clear_locked(v) + 1;
+
+	// First reset the timestamp published via shared_state.  Release
+	// memory order will make this happen after undoing prior data writes.
+	// This must also happen before we actually release the global orec
+	// next, so that future update transactions in other threads observe
+	// a meaningful snapshot time for our transaction; otherwise, they
+	// could read a shared_store value with the LOCK_BIT set, which can
+	// break privatization safety because it's larger than the actual
+	// snapshot time.  Note that we only need to consider other update
+	// transactions because only those will potentially privatize data.
+	tx->shared_state.store(v, memory_order_release);
+
+	// Release the global orec, increasing its version number / timestamp.
+	// See begin_or_restart() for why we need release memory order here,
+	// and we also need it to make future update transactions read the
+	// prior update to shared_state too (update transactions acquire the
+	// global orec with acquire memory order).
 	o_gl_mg.orec.store(v, memory_order_release);
-
-	// Also reset the timestamp published via shared_state.
-	// Special case: Only do this if we are not a serial transaction
-	// because otherwise, we would interfere with the serial lock.
-	if (!is_serial)
-	  tx->shared_state.store(v, memory_order_release);
-
-	// We need a store-load barrier after this store to prevent it
-	// from becoming visible after later data loads because the
-	// previous value of shared_state has been higher than the actual
-	// snapshot time (the lock bit had been set), which could break
-	// privatization safety. We do not need a barrier before this
-	// store (see pre_write() for an explanation).
-	// ??? What is the precise reasoning in the C++11 model?
-	atomic_thread_fence(memory_order_seq_cst);
       }
 
   }

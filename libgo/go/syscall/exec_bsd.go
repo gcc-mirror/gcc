@@ -38,8 +38,10 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 		i      int
 	)
 
-	// guard against side effects of shuffling fds below.
-	fd := append([]int(nil), attr.Files...)
+	fd := make([]int, len(attr.Files))
+	for i, ufd := range attr.Files {
+		fd[i] = int(ufd)
+	}
 
 	// About to call fork.
 	// No more allocation or calls of non-assembly functions.
@@ -136,9 +138,8 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	// so that pass 2 won't stomp on an fd it needs later.
 	nextfd = int(len(fd))
 	if pipe < nextfd {
-		_, err2 := Dup2(pipe, nextfd)
-		if err2 != nil {
-			err1 = err2.(Errno)
+		err1 = raw_dup2(pipe, nextfd)
+		if err1 != 0 {
 			goto childerror
 		}
 		raw_fcntl(nextfd, F_SETFD, FD_CLOEXEC)
@@ -147,9 +148,8 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	}
 	for i = 0; i < len(fd); i++ {
 		if fd[i] >= 0 && fd[i] < int(i) {
-			_, err2 := Dup2(fd[i], nextfd)
-			if err2 != nil {
-				err1 = err2.(Errno)
+			err1 = raw_dup2(fd[i], nextfd)
+			if err1 != 0 {
 				goto childerror
 			}
 			raw_fcntl(nextfd, F_SETFD, FD_CLOEXEC)
@@ -178,9 +178,8 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 		}
 		// The new fd is created NOT close-on-exec,
 		// which is exactly what we want.
-		_, err2 := Dup2(fd[i], i)
+		err1 = raw_dup2(fd[i], i)
 		if err1 != 0 {
-			err1 = err2.(Errno)
 			goto childerror
 		}
 	}

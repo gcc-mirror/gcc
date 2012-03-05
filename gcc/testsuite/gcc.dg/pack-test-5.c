@@ -1,6 +1,7 @@
 /* PR c/11446: packed on a struct takes precedence over aligned on the type
    of a field.  */
 /* { dg-do run } */
+/* { dg-additional-options "-mno-ms-bitfields" { target *-*-mingw* } } */
 
 extern void abort (void);
 

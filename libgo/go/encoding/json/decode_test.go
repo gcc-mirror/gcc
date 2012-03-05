@@ -598,3 +598,53 @@ var pallValueIndent = `{
 }`
 
 var pallValueCompact = strings.Map(noSpace, pallValueIndent)
+
+func TestRefUnmarshal(t *testing.T) {
+	type S struct {
+		// Ref is defined in encode_test.go.
+		R0 Ref
+		R1 *Ref
+	}
+	want := S{
+		R0: 12,
+		R1: new(Ref),
+	}
+	*want.R1 = 12
+
+	var got S
+	if err := Unmarshal([]byte(`{"R0":"ref","R1":"ref"}`), &got); err != nil {
+		t.Fatalf("Unmarshal: %v", err)
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %+v, want %+v", got, want)
+	}
+}
+
+// Test that anonymous fields are ignored.
+// We may assign meaning to them later.
+func TestAnonymous(t *testing.T) {
+	type S struct {
+		T
+		N int
+	}
+
+	data, err := Marshal(new(S))
+	if err != nil {
+		t.Fatalf("Marshal: %v", err)
+	}
+	want := `{"N":0}`
+	if string(data) != want {
+		t.Fatalf("Marshal = %#q, want %#q", string(data), want)
+	}
+
+	var s S
+	if err := Unmarshal([]byte(`{"T": 1, "T": {"Y": 1}, "N": 2}`), &s); err != nil {
+		t.Fatalf("Unmarshal: %v", err)
+	}
+	if s.N != 2 {
+		t.Fatal("Unmarshal: did not set N")
+	}
+	if s.T.Y != 0 {
+		t.Fatal("Unmarshal: did set T.Y")
+	}
+}

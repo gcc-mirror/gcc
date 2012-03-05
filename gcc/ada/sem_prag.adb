@@ -278,7 +278,7 @@ package body Sem_Prag is
       --  overriding operation (see ARM12 6.6.1 (7)).
 
       if Class_Present (N) then
-         declare
+         Class_Wide_Condition : declare
             T   : constant Entity_Id := Find_Dispatching_Type (S);
 
             ACW : Entity_Id := Empty;
@@ -365,9 +365,23 @@ package body Sem_Prag is
 
             procedure Replace_Type is new Traverse_Proc (Process);
 
+         --  Start of processing for Class_Wide_Condition
+
          begin
+            if not Present (T) then
+               Error_Msg_Name_1 :=
+                 Chars (Identifier (Corresponding_Aspect (N)));
+
+               Error_Msg_Name_2 := Name_Class;
+
+               Error_Msg_N
+                 ("aspect `%''%` can only be specified for a primitive " &
+                  "operation of a tagged type",
+                  Corresponding_Aspect (N));
+            end if;
+
             Replace_Type (Get_Pragma_Arg (Arg1));
-         end;
+         end Class_Wide_Condition;
       end if;
 
       --  Remove the subprogram from the scope stack now that the pre-analysis
@@ -1818,6 +1832,7 @@ package body Sem_Prag is
                  ("aspect % requires ''Class for null procedure");
 
             elsif not Nkind_In (PO, N_Subprogram_Declaration,
+                                    N_Expression_Function,
                                     N_Generic_Subprogram_Declaration,
                                     N_Entry_Declaration)
             then
@@ -13150,6 +13165,66 @@ package body Sem_Prag is
             Check_Valid_Configuration_Pragma;
             Short_Descriptors := True;
 
+         ------------------------------
+         -- Simple_Storage_Pool_Type --
+         ------------------------------
+
+         --  pragma Simple_Storage_Pool_Type (type_LOCAL_NAME);
+
+         when Pragma_Simple_Storage_Pool_Type =>
+         Simple_Storage_Pool_Type : declare
+            Type_Id : Node_Id;
+            Typ     : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+            Check_Arg_Is_Library_Level_Local_Name (Arg1);
+
+            Type_Id := Get_Pragma_Arg (Arg1);
+            Find_Type (Type_Id);
+            Typ := Entity (Type_Id);
+
+            if Typ = Any_Type then
+               return;
+            end if;
+
+            --  We require the pragma to apply to a type declared in a package
+            --  declaration, but not (immediately) within a package body.
+
+            if Ekind (Current_Scope) /= E_Package
+              or else In_Package_Body (Current_Scope)
+            then
+               Error_Pragma
+                 ("pragma% can only apply to type declared immediately " &
+                  "within a package declaration");
+            end if;
+
+            --  A simple storage pool type must be an immutably limited record
+            --  or private type. If the pragma is given for a private type,
+            --  the full type is similarly restricted (which is checked later
+            --  in Freeze_Entity).
+
+            if Is_Record_Type (Typ)
+              and then not Is_Immutably_Limited_Type (Typ)
+            then
+               Error_Pragma
+                 ("pragma% can only apply to explicitly limited record type");
+
+            elsif Is_Private_Type (Typ) and then not Is_Limited_Type (Typ) then
+               Error_Pragma
+                 ("pragma% can only apply to a private type that is limited");
+
+            elsif not Is_Record_Type (Typ)
+              and then not Is_Private_Type (Typ)
+            then
+               Error_Pragma
+                 ("pragma% can only apply to limited record or private type");
+            end if;
+
+            Record_Rep_Item (Typ, N);
+         end Simple_Storage_Pool_Type;
+
          ----------------------
          -- Source_File_Name --
          ----------------------
@@ -14870,14 +14945,15 @@ package body Sem_Prag is
       --  Follow subprogram renaming chain
 
       Result := Def_Id;
-      while Is_Subprogram (Result)
+
+      if Is_Subprogram (Result)
         and then
           Nkind (Parent (Declaration_Node (Result))) =
                                          N_Subprogram_Renaming_Declaration
         and then Present (Alias (Result))
-      loop
+      then
          Result := Alias (Result);
-      end loop;
+      end if;
 
       return Result;
    end Get_Base_Subprogram;
@@ -15117,6 +15193,7 @@ package body Sem_Prag is
       Pragma_Shared                         => -1,
       Pragma_Shared_Passive                 => -1,
       Pragma_Short_Descriptors              =>  0,
+      Pragma_Simple_Storage_Pool_Type       =>  0,
       Pragma_Source_File_Name               => -1,
       Pragma_Source_File_Name_Project       => -1,
       Pragma_Source_Reference               => -1,

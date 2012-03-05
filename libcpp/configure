@@ -7382,7 +7382,8 @@ case $target in
 	s390*-*-* | \
 	sparc*-*-* | \
 	spu-*-* | \
-	sh[123456789lbe]*-*-* | sh-*-*)
+	sh[123456789lbe]*-*-* | sh-*-* | \
+	tilegx-*-* | tilepro-*-* )
 		need_64bit_hwint=yes ;;
 	*)
 		need_64bit_hwint=no ;;

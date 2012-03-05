@@ -4,8 +4,6 @@
 
 package sync
 
-import "runtime"
-
 // Cond implements a condition variable, a rendezvous point
 // for goroutines waiting for or announcing the occurrence
 // of an event.
@@ -43,9 +41,10 @@ func NewCond(l Locker) *Cond {
 
 // Wait atomically unlocks c.L and suspends execution
 // of the calling goroutine.  After later resuming execution,
-// Wait locks c.L before returning.
+// Wait locks c.L before returning.  Unlike in other systems,
+// Wait cannot return unless awoken by Broadcast or Signal.
 //
-// Because L is not locked when Wait first resumes, the caller
+// Because c.L is not locked when Wait first resumes, the caller
 // typically cannot assume that the condition is true when
 // Wait returns.  Instead, the caller should Wait in a loop:
 //
@@ -65,7 +64,7 @@ func (c *Cond) Wait() {
 	c.newWaiters++
 	c.m.Unlock()
 	c.L.Unlock()
-	runtime.Semacquire(s)
+	runtime_Semacquire(s)
 	c.L.Lock()
 }
 
@@ -84,7 +83,7 @@ func (c *Cond) Signal() {
 	}
 	if c.oldWaiters > 0 {
 		c.oldWaiters--
-		runtime.Semrelease(c.oldSema)
+		runtime_Semrelease(c.oldSema)
 	}
 	c.m.Unlock()
 }
@@ -98,13 +97,13 @@ func (c *Cond) Broadcast() {
 	// Wake both generations.
 	if c.oldWaiters > 0 {
 		for i := 0; i < c.oldWaiters; i++ {
-			runtime.Semrelease(c.oldSema)
+			runtime_Semrelease(c.oldSema)
 		}
 		c.oldWaiters = 0
 	}
 	if c.newWaiters > 0 {
 		for i := 0; i < c.newWaiters; i++ {
-			runtime.Semrelease(c.newSema)
+			runtime_Semrelease(c.newSema)
 		}
 		c.newWaiters = 0
 		c.newSema = nil

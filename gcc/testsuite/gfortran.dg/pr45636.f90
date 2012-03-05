@@ -10,5 +10,5 @@ program main
   b = y
   call sub(a, b)
 end program main
-! { dg-final { scan-tree-dump-times "memset" 0 "forwprop2" } }
+! { dg-final { scan-tree-dump-times "memset" 0 "forwprop2" { xfail { mips*-*-* && { ! nomips16 } } } } }
 ! { dg-final { cleanup-tree-dump "forwprop2" } }

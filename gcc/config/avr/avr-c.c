@@ -71,29 +71,37 @@ avr_toupper (char *up, const char *lo)
              
 /* Worker function for TARGET_CPU_CPP_BUILTINS.  */
 
+static const char *const avr_builtin_name[] =
+  {
+#define DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, CODE) NAME,
+#include "builtins.def"
+#undef DEF_BUILTIN
+    NULL
+  };
+
 void
 avr_cpu_cpp_builtins (struct cpp_reader *pfile)
 {
+  int i;
+  
   builtin_define_std ("AVR");
 
   if (avr_current_arch->macro)
-    cpp_define (pfile, avr_current_arch->macro);
+    cpp_define_formatted (pfile, "__AVR_ARCH__=%s", avr_current_arch->macro);
   if (avr_extra_arch_macro)
     cpp_define (pfile, avr_extra_arch_macro);
-  if (avr_current_arch->have_elpm)
-    cpp_define (pfile, "__AVR_HAVE_RAMPZ__");
-  if (avr_current_arch->have_elpm)
-    cpp_define (pfile, "__AVR_HAVE_ELPM__");
-  if (avr_current_arch->have_elpmx)
-    cpp_define (pfile, "__AVR_HAVE_ELPMX__");
-  if (avr_current_arch->have_movw_lpmx)
-    {
-      cpp_define (pfile, "__AVR_HAVE_MOVW__");
-      cpp_define (pfile, "__AVR_HAVE_LPMX__");
-    }
+  if (AVR_HAVE_RAMPD)    cpp_define (pfile, "__AVR_HAVE_RAMPD__");
+  if (AVR_HAVE_RAMPX)    cpp_define (pfile, "__AVR_HAVE_RAMPX__");
+  if (AVR_HAVE_RAMPY)    cpp_define (pfile, "__AVR_HAVE_RAMPY__");
+  if (AVR_HAVE_RAMPZ)    cpp_define (pfile, "__AVR_HAVE_RAMPZ__");
+  if (AVR_HAVE_ELPM)     cpp_define (pfile, "__AVR_HAVE_ELPM__");
+  if (AVR_HAVE_ELPMX)    cpp_define (pfile, "__AVR_HAVE_ELPMX__");
+  if (AVR_HAVE_MOVW)     cpp_define (pfile, "__AVR_HAVE_MOVW__");
+  if (AVR_HAVE_LPMX)     cpp_define (pfile, "__AVR_HAVE_LPMX__");
+
   if (avr_current_arch->asm_only)
     cpp_define (pfile, "__AVR_ASM_ONLY__");
-  if (avr_current_arch->have_mul)
+  if (AVR_HAVE_MUL)
     {
       cpp_define (pfile, "__AVR_ENHANCED__");
       cpp_define (pfile, "__AVR_HAVE_MUL__");
@@ -103,6 +111,8 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
       cpp_define (pfile, "__AVR_MEGA__");
       cpp_define (pfile, "__AVR_HAVE_JMP_CALL__");
     }
+  if (AVR_XMEGA)
+    cpp_define (pfile, "__AVR_XMEGA__");
   if (avr_current_arch->have_eijmp_eicall)
     {
       cpp_define (pfile, "__AVR_HAVE_EIJMP_EICALL__");
@@ -140,10 +150,12 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   
   if (!strcmp (lang_hooks.name, "GNU C"))
     {
-      int i;
-      
       for (i = 0; avr_addrspace[i].name; i++)
-        if (!ADDR_SPACE_GENERIC_P (i))
+        if (!ADDR_SPACE_GENERIC_P (i)
+            /* Only supply __FLASH<n> macro if the address space is reasonable
+               for this target.  The address space qualifier itself is still
+               supported, but using it will throw an error.  */
+            && avr_addrspace[i].segment < avr_current_device->n_flash)
           {
             const char *name = avr_addrspace[i].name;
             char *Name = (char*) alloca (1 + strlen (name));
@@ -153,23 +165,18 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
           }
     }
 
-  /* Define builtin macros so that the user can
-     easily query if or if not a specific builtin
-     is available. */
+  /* Define builtin macros so that the user can easily query if or
+     if not a specific builtin is available. */
 
-  cpp_define (pfile, "__BUILTIN_AVR_NOP");
-  cpp_define (pfile, "__BUILTIN_AVR_SEI");
-  cpp_define (pfile, "__BUILTIN_AVR_CLI");
-  cpp_define (pfile, "__BUILTIN_AVR_WDR");
-  cpp_define (pfile, "__BUILTIN_AVR_SLEEP");
-  cpp_define (pfile, "__BUILTIN_AVR_SWAP");
-  cpp_define (pfile, "__BUILTIN_AVR_MAP8");
-  cpp_define (pfile, "__BUILTIN_AVR_MAP16");
-  cpp_define (pfile, "__BUILTIN_AVR_DELAY_CYCLES");
+  for (i = 0; avr_builtin_name[i]; i++)
+    {
+      const char *name = avr_builtin_name[i];
+      char *Name = (char*) alloca (1 + strlen (name));
 
-  cpp_define (pfile, "__BUILTIN_AVR_FMUL");
-  cpp_define (pfile, "__BUILTIN_AVR_FMULS");
-  cpp_define (pfile, "__BUILTIN_AVR_FMULSU");
+      cpp_define (pfile, avr_toupper (Name, name));
+    }
+
+  /* Builtin macros for the __int24 and __uint24 type.  */
 
   cpp_define (pfile, "__INT24_MAX__=8388607L");
   cpp_define (pfile, "__INT24_MIN__=(-__INT24_MAX__-1)");

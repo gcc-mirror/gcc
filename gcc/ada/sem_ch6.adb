@@ -188,9 +188,9 @@ package body Sem_Ch6 is
       New_E  : Entity_Id) return Boolean;
    --  Enforce the rule given in 12.3(18): a private operation in an instance
    --  overrides an inherited operation only if the corresponding operation
-   --  was overriding in the generic. This can happen for primitive operations
-   --  of types derived (in the generic unit) from formal private or formal
-   --  derived types.
+   --  was overriding in the generic. This needs to be checked for primitive
+   --  operations of types derived (in the generic unit) from formal private
+   --  or formal derived types.
 
    procedure Make_Inequality_Operator (S : Entity_Id);
    --  Create the declaration for an inequality operator that is implicitly
@@ -273,7 +273,6 @@ package body Sem_Ch6 is
       Spec     : constant Node_Id    := Specification (N);
 
       Def_Id :  Entity_Id;
-      pragma Unreferenced (Def_Id);
 
       Prev :  Entity_Id;
       --  If the expression is a completion, Prev is the entity whose
@@ -371,6 +370,26 @@ package body Sem_Ch6 is
 
          if Has_Completion (Prev) then
             Set_Is_Inlined (Prev);
+
+            --  The formals of the expression function are body formals,
+            --  and do not appear in the ali file, which will only contain
+            --  references to the formals of the original subprogram spec.
+
+            declare
+               F1 : Entity_Id;
+               F2 : Entity_Id;
+
+            begin
+               F1 := First_Formal (Def_Id);
+               F2 := First_Formal (Prev);
+
+               while Present (F1) loop
+                  Set_Spec_Entity (F1, F2);
+                  Next_Formal (F1);
+                  Next_Formal (F2);
+               end loop;
+            end;
+
          else
             Set_Is_Inlined (Defining_Entity (New_Body));
          end if;
@@ -3198,8 +3217,12 @@ package body Sem_Ch6 is
       end if;
 
       Designator := Analyze_Subprogram_Specification (Specification (N));
+
+      --  A reference may already have been generated for the unit name, in
+      --  which case the following call is redundant. However it is needed for
+      --  declarations that are the rewriting of an expression function.
+
       Generate_Definition (Designator);
-      --  ??? why this call, already in Analyze_Subprogram_Specification
 
       if Debug_Flag_C then
          Write_Str ("==> subprogram spec ");
@@ -3399,9 +3422,15 @@ package body Sem_Ch6 is
          Check_SPARK_Restriction ("user-defined operator is not allowed", N);
       end if;
 
-      --  Proceed with analysis
+      --  Proceed with analysis. Do not emit a cross-reference entry if the
+      --  specification comes from an expression function, because it may be
+      --  the completion of a previous declaration. It is is not, the cross-
+      --  reference entry will be emitted for the new subprogram declaration.
 
-      Generate_Definition (Designator);
+      if Nkind (Parent (N)) /= N_Expression_Function then
+         Generate_Definition (Designator);
+      end if;
+
       Set_Contract (Designator, Make_Contract (Sloc (Designator)));
 
       if Nkind (N) = N_Function_Specification then
@@ -7843,6 +7872,22 @@ package body Sem_Ch6 is
 
                --  If no match found, then the new subprogram does not
                --  override in the generic (nor in the instance).
+
+               --  If the type in question is not abstract, and the subprogram
+               --  is, this will be an error if the new operation is in the
+               --  private part of the instance. Emit a warning now, which will
+               --  make the subsequent error message easier to understand.
+
+               if not Is_Abstract_Type (F_Typ)
+                 and then Is_Abstract_Subprogram (Prev_E)
+                 and then In_Private_Part (Current_Scope)
+               then
+                  Error_Msg_Node_2 := F_Typ;
+                  Error_Msg_NE
+                    ("private operation& in generic unit does not override " &
+                     "any primitive operation of& (RM 12.3 (18))?",
+                     New_E, New_E);
+               end if;
 
                return True;
             end;

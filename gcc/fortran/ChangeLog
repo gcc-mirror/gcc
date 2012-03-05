@@ -1,3 +1,260 @@
+2012-03-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50981
+	* trans-expr.c (gfc_conv_procedure_call): Save se->ss's value. 
+	Handle the case of unallocated arrays passed to elemental procedures.
+
+2012-03-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (struct gfc_ss_info): Move can_be_null_ref component from
+	the data::scalar subcomponent to the toplevel.
+	* trans-expr.c (gfc_conv_expr): Update component reference.
+	* trans-array.c (gfc_add_loop_ss_code): Ditto.
+	(gfc_walk_elemental_function_args): Ditto.  Move the conditional setting
+	the field out of the scalar-only block.
+
+2012-03-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36160
+	* error.c (gfc_widechar_display_length, gfc_wide_display_length):
+	New functions.
+	(print_wide_char_into_buffer): Return length written.
+	(show_locus): Fix locus displayed when wide characters are present.
+
+2012-03-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* module.c (gfc_use_module): Improve error message some more.
+
+2012-03-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/52313
+	* module.c (gfc_use_module): Improve error messages.
+
+2012-03-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48820
+	* resolve.c (resolve_actual_arglist): Properly reset
+	assumed_type_expr_allowed.
+
+2012-03-03  Tobias Burnus  <burnus@net-b.de>
+
+	* lang.opt (Wc-binding-type): New flag.
+	* options.c (gfc_init_options, gfc_handle_option): Handle it.
+	* invoke.texi (Wc-binding-type): Document it.
+	* gfortran.h (gfc_option_t): Add warn_c_binding_type.
+	* decl.c (verify_bind_c_sym): Handle -Wc-binding-type.
+	* symbol.c (gfc_set_default_type, verify_bind_c_derived_type):
+	Ditto.
+
+2012-03-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48820
+	* decl.c (gfc_match_decl_type_spec): Support type(*).
+	(gfc_verify_c_interop): Allow type(*).
+	* dump-parse-tree.c (show_typespec): Handle type(*).
+	* expr.c (gfc_copy_expr): Ditto.
+	* interface.c (compare_type_rank, compare_parameter,
+	compare_actual_formal, gfc_procedure_use): Ditto.
+	* libgfortran.h (bt): Add BT_ASSUMED.
+	* misc.c (gfc_basic_typename, gfc_typename): Handle type(*).
+	* module.c (bt_types): Ditto.
+	* resolve.c (assumed_type_expr_allowed): New static variable.
+	(resolve_actual_arglist, resolve_variable, resolve_symbol):
+	Handle type(*). 
+	* trans-expr.c (gfc_conv_procedure_call): Ditto.
+	* trans-types.c (gfc_typenode_for_spec, gfc_get_dtype): Ditto.
+
+2012-03-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52325
+	* primary.c (gfc_match_varspec): Add missing ;.
+
+2012-03-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52325
+	* primary.c (gfc_match_varspec): Add diagnostic for % with
+	nonderived types.
+
+2012-03-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52270
+	* expr.c (gfc_check_vardef_context): Fix check for
+	intent-in polymorphic pointer .
+	* interface.c (compare_parameter): Allow passing TYPE to
+	intent-in polymorphic pointer.
+
+2012-03-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52452
+	* resolve.c (resolve_intrinsic): Don't search for a
+	function if we know that it is a subroutine.
+
+2012-02-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52386
+	* trans-expr.c (fcncall_realloc_result): Dereference the
+	descriptor if needed.
+
+2012-02-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52335
+	* io.c (gfc_match_open): Remove bogus F2003 DELIM= check.
+
+2012-02-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52295
+	* interface.c (check_interface0): Internal procs in
+	generic interfaces are allowed in Fortran 2008.
+
+2012-02-17  Tobias Burnus  <burnus@net-b.de>
+	    Roland Stigge  <stigge@antcom.de>
+
+	PR translation/52273
+	* interface.c (compare_actual_formal): Fix typo "at at".
+
+2012-02-17  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (Q exponent-letter): Fix grammar.
+
+2012-02-17  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (Status): Fix typos.
+	* invoke.texi (ffixed-form, fstack-arrays): Spell Fortran with
+	a majuscule.
+
+2012-02-17  Tobias Burnus  <burnus@net-b.de>
+	    Roland Stigge  <stigge@antcom.de>
+
+	PR translation/52232
+	PR translation/52234
+	PR translation/52245
+	PR translation/52246
+	PR translation/52262
+	PR translation/52273
+	* io.c (gfc_match_open): Fix typo.
+	* interface.c (compare_actual_formal): Ditto.
+	* lang.opt (freal-4-real-8, freal-4-real-16, freal-8-real-16): Ditto.
+	* match.c (alloc_opt_list, gfc_match_nullify): Ditto.
+	* check.c (gfc_check_associated, gfc_check_null): Ditto.
+
+2012-02-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/50981
+	* trans-stmt.c (gfc_get_proc_ifc_for_call): New function.
+	(gfc_trans_call): Use gfc_get_proc_ifc_for_call.
+
+2012-02-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_walk_elemental_function_args,
+	gfc_walk_function_expr): Move call to gfc_get_proc_ifc_for_expr out
+	of gfc_walk_elemental_function_args.
+	* trans-stmt.c (gfc_trans_call): Ditto.
+	* trans-array.h (gfc_get_proc_ifc_for_expr): New prototype.
+	(gfc_walk_elemental_function_args): Update prototype.
+
+2012-02-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_get_proc_ifc_for_expr): New function.
+	(gfc_walk_elemental_function_args): Move code to
+	gfc_get_proc_ifc_for_expr and call it.
+
+2012-02-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52151
+	* trans-expr.c (fcncall_realloc_result): Set also the stride.
+
+2012-02-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51514
+	* trans-expr.c (gfc_conv_procedure_call): Add _data component
+	for calls of scalar CLASS actuals to TYPE dummies.
+
+2012-02-05  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48847
+	* trans-decl.c:  Warn about unused dummy procedure arguments
+	if -Wunused-dummy-argument is specified.  Suppress middle-end
+	warnings about procedure arguments.
+
+2012-02-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	* trans-array.c (gfc_array_allocate): Zero memory for all class
+	array allocations.
+	* trans-stmt.c (gfc_trans_allocate): Ditto for class scalars.
+
+	PR fortran/52102
+	* trans-stmt.c (gfc_trans_allocate): Before correcting a class
+	array reference, ensure that 'dataref' points to the _data
+	component that is followed by the array reference..
+
+2012-02-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/41587
+	PR fortran/46356
+	PR fortran/51754
+	PR fortran/50981
+	* class.c (insert_component_ref, class_data_ref_missing,
+	gfc_fix_class_refs): New functions.
+	* gfortran.h (gfc_fix_class_refs): New prototype.
+	* trans-expr.c (gfc_conv_expr): Remove special case handling and call
+	gfc_fix_class_refs instead.
+
+2012-02-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52012
+	* trans-expr.c (fcncall_realloc_result): If variable shape is
+	correct, retain the bounds, whatever they are.
+
+2012-02-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52093
+	* simplify.c (gfc_simplify_size): Handle INTRINSIC_PARENTHESES.
+
+2012-02-01  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/51958
+	* frontend-passes.c (convert_elseif):  New function.
+	(optimize_namespace):  Call it.
+
+2012-02-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52024
+	* module.c (MOD_VERSION): Bump.
+	(mio_typebound_proc): Read/write is_operator from/to the
+	.mod file.
+
+2012-02-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52059
+	* trans-expr.c (gfc_conv_procedure_call): Add array ref
+	only to variables.
+
+2012-01-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52024
+	* gfortran.h (gfc_tbp_generic): Store whether the
+	generic is an operator.
+	* decl.c (gfc_match_generic): Set that flag.
+	* resolve.c (check_generic_tbp_ambiguity): Use it in the
+	gfc_compare_interfaces check.
+
+2012-01-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52029
+	* class.c (gfc_find_derived_vtab): Mark _copy function as pure.
+
+2012-01-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52013
+	* class.c (get_unique_hashed_string): Adapt trim length.
+	(gfc_build_class_symbol) Encode also corank in the container name.
+
+2012-01-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52012
+	* trans-expr.c (fcncall_realloc_result): Correct calculation of
+	result offset.
+
 2012-01-29  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* module.c (pointer_info): Make true_name and module pointers

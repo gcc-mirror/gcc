@@ -305,8 +305,10 @@ struct GTY(()) gimple_statement_base {
   /* Nonzero if this statement contains volatile operands.  */
   unsigned has_volatile_ops 	: 1;
 
-  /* Padding to get subcode to 16 bit alignment.  */
-  unsigned pad			: 1;
+  /* Nonzero if this statement appears inside a transaction.  This bit
+     is calculated on de-mand and has relevant information only after
+     it has been calculated with compute_transaction_bits.  */
+  unsigned in_transaction	: 1;
 
   /* The SUBCODE field can be used for tuple-specific flags for tuples
      that do not require subcodes.  Note that SUBCODE should be at
@@ -963,8 +965,6 @@ tree gimple_extract_devirt_binfo_from_cst (tree);
 /* Returns true iff T is a valid GIMPLE statement.  */
 extern bool is_gimple_stmt (tree);
 
-/* Returns true iff TYPE is a valid type for a scalar register variable.  */
-extern bool is_gimple_reg_type (tree);
 /* Returns true iff T is a scalar register variable.  */
 extern bool is_gimple_reg (tree);
 /* Returns true iff T is any sort of variable.  */
@@ -1123,6 +1123,7 @@ extern tree omp_reduction_init (tree, tree);
 
 /* In trans-mem.c.  */
 extern void diagnose_tm_safe_errors (tree);
+extern void compute_transaction_bits (void);
 
 /* In tree-nested.c.  */
 extern void lower_nested_functions (tree);
@@ -1587,6 +1588,21 @@ gimple_set_has_volatile_ops (gimple stmt, bool volatilep)
     stmt->gsbase.has_volatile_ops = (unsigned) volatilep;
 }
 
+/* Return true if STMT is in a transaction.  */
+
+static inline bool
+gimple_in_transaction (gimple stmt)
+{
+  return stmt->gsbase.in_transaction;
+}
+
+/* Set the IN_TRANSACTION flag to TRANSACTIONP.  */
+
+static inline void
+gimple_set_in_transaction (gimple stmt, bool transactionp)
+{
+  stmt->gsbase.in_transaction = (unsigned) transactionp;
+}
 
 /* Return true if statement STMT may access memory.  */
 
@@ -4839,6 +4855,13 @@ gimple_expr_type (const_gimple stmt)
     return void_type_node;
 }
 
+/* Return true if TYPE is a suitable type for a scalar register variable.  */
+
+static inline bool
+is_gimple_reg_type (tree type)
+{
+  return !AGGREGATE_TYPE_P (type);
+}
 
 /* Return a new iterator pointing to GIMPLE_SEQ's first statement.  */
 

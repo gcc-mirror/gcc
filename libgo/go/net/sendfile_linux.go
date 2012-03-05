@@ -38,33 +38,36 @@ func sendFile(c *netFD, r io.Reader) (written int64, err error, handled bool) {
 
 	c.wio.Lock()
 	defer c.wio.Unlock()
-	c.incref()
+	if err := c.incref(false); err != nil {
+		return 0, err, true
+	}
 	defer c.decref()
 
 	dst := c.sysfd
-	src := f.Fd()
+	src := int(f.Fd())
 	for remain > 0 {
 		n := maxSendfileSize
 		if int64(n) > remain {
 			n = int(remain)
 		}
-		n, errno := syscall.Sendfile(dst, src, nil, n)
+		n, err1 := syscall.Sendfile(dst, src, nil, n)
 		if n > 0 {
 			written += int64(n)
 			remain -= int64(n)
 		}
-		if n == 0 && errno == nil {
+		if n == 0 && err1 == nil {
 			break
 		}
-		if errno == syscall.EAGAIN && c.wdeadline >= 0 {
-			pollserver.WaitWrite(c)
-			continue
+		if err1 == syscall.EAGAIN && c.wdeadline >= 0 {
+			if err1 = pollserver.WaitWrite(c); err1 == nil {
+				continue
+			}
 		}
-		if errno != nil {
+		if err1 != nil {
 			// This includes syscall.ENOSYS (no kernel
 			// support) and syscall.EINVAL (fd types which
 			// don't implement sendfile together)
-			err = &OpError{"sendfile", c.net, c.raddr, errno}
+			err = &OpError{"sendfile", c.net, c.raddr, err1}
 			break
 		}
 	}

@@ -108,10 +108,11 @@ func TestAfter(t *testing.T) {
 }
 
 func TestAfterTick(t *testing.T) {
-	const (
-		Delta = 100 * Millisecond
-		Count = 10
-	)
+	const Count = 10
+	Delta := 100 * Millisecond
+	if testing.Short() {
+		Delta = 10 * Millisecond
+	}
 	t0 := Now()
 	for i := 0; i < Count; i++ {
 		<-After(Delta)
@@ -165,7 +166,7 @@ func TestAfterQueuing(t *testing.T) {
 }
 
 // For gccgo omit 0 for now because it can take too long to start the
-var slots = []int{5, 3, 6, 6, 6, 1, 1, 2, 7, 9, 4, 8 /*0*/ }
+var slots = []int{5, 3, 6, 6, 6, 1, 1, 2, 7, 9, 4, 8 /*0*/}
 
 type afterResult struct {
 	slot int
@@ -177,9 +178,10 @@ func await(slot int, result chan<- afterResult, ac <-chan Time) {
 }
 
 func testAfterQueuing(t *testing.T) error {
-	const (
-		Delta = 100 * Millisecond
-	)
+	Delta := 100 * Millisecond
+	if testing.Short() {
+		Delta = 20 * Millisecond
+	}
 	// make the result channel buffered because we don't want
 	// to depend on channel queueing semantics that might
 	// possibly change in the future.

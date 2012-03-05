@@ -716,6 +716,15 @@ proc check_effective_target_fopenmp {} {
     } "-fopenmp"]
 }
 
+# Return 1 if compilation with -fgnu-tm is error-free for trivial
+# code, 0 otherwise.
+
+proc check_effective_target_fgnu_tm {} {
+    return [check_no_compiler_messages fgnu_tm object {
+	void foo (void) { }
+    } "-fgnu-tm"]
+}
+
 # Return 1 if the target supports mmap, 0 otherwise.
 
 proc check_effective_target_mmap {} {
@@ -888,6 +897,53 @@ proc check_effective_target_mips_newabi_large_long_double { } {
     return [check_no_compiler_messages mips_newabi_large_long_double object {
 	int dummy[sizeof(long double) > sizeof(double) ? 1 : -1];
     } "-mabi=64"]
+}
+
+# Return true if the target is a MIPS target that has access
+# to the LL and SC instructions.
+
+proc check_effective_target_mips_llsc { } {
+    if { ![istarget mips*-*-*] } {
+	return 0
+    }
+    # Assume that these instructions are always implemented for
+    # non-elf* targets, via emulation if necessary.
+    if { ![istarget *-*-elf*] } {
+	return 1
+    }
+    # Otherwise assume LL/SC support for everything but MIPS I.
+    return [check_no_compiler_messages mips_llsc assembly {
+	#if __mips == 1
+	#error FOO
+	#endif
+    }]
+}
+
+# Return true if the target is a MIPS target that uses in-place relocations.
+
+proc check_effective_target_mips_rel { } {
+    if { ![istarget mips*-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages mips_rel object {
+	#if (defined _ABIN32 && _MIPS_SIM == _ABIN32) \
+	    || (defined _ABI64 && _MIPS_SIM == _ABI64)
+	#error FOO
+	#endif
+    }]
+}
+
+# Return true if the target is a MIPS target that uses the EABI.
+
+proc check_effective_target_mips_eabi { } {
+    if { ![istarget mips*-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages mips_eabi object {
+	#ifndef __mips_eabi
+	#error FOO
+	#endif
+    }]
 }
 
 # Return 1 if the current multilib does not generate PIC by default.
@@ -3374,7 +3430,8 @@ proc check_effective_target_vect_condition { } {
 	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*]
 	     || [istarget spu-*-*]
-	     || [istarget x86_64-*-*] } {
+	     || [istarget x86_64-*-*]
+	     || ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]) } {
 	   set et_vect_cond_saved 1
 	}
     }
@@ -3770,7 +3827,7 @@ proc check_effective_target_sync_int_long { } {
 	     || [istarget powerpc*-*-*]
 	     || [istarget sparc64-*-*]
 	     || [istarget sparcv9-*-*]
-	     || [istarget mips*-*-*] } {
+	     || [check_effective_target_mips_llsc] } {
            set et_sync_int_long_saved 1
         }
     }
@@ -3800,7 +3857,7 @@ proc check_effective_target_sync_char_short { } {
 	     || [istarget powerpc*-*-*]
 	     || [istarget sparc64-*-*]
 	     || [istarget sparcv9-*-*]
-	     || [istarget mips*-*-*] } {
+	     || [check_effective_target_mips_llsc] } {
            set et_sync_char_short_saved 1
         }
     }

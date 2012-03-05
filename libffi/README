@@ -1,10 +1,7 @@
-This directory contains the libffi package, which is not part of GCC but
-shipped with GCC as convenience.
-
 Status
 ======
 
-libffi-3.0.9 was released on December 31, 2009. Check the libffi web
+libffi-3.0.11 was released on *****************. Check the libffi web
 page for updates: <URL:http://sourceware.org/libffi/>.
 
 
@@ -46,7 +43,7 @@ Libffi has been ported to many different platforms.
 For specific configuration details and testing status, please
 refer to the wiki page here:
 
- http://www.moxielogic.org/wiki/index.php?title=Libffi_3.0.9
+ http://www.moxielogic.org/wiki/index.php?title=Libffi_3.0.11
 
 At the time of release, the following basic configurations have been
 tested:
@@ -55,13 +52,18 @@ tested:
 | Architecture | Operating System |
 |--------------+------------------|
 | Alpha        | Linux            |
+| Alpha        | Tru64            |
 | ARM          | Linux            |
+| ARM          | iOS              |
 | AVR32        | Linux            |
 | HPPA         | HPUX             |
 | IA-64        | Linux            |
+| M68K         | RTEMS            |
 | MIPS         | IRIX             |
 | MIPS         | Linux            |
+| MIPS         | RTEMS            |
 | MIPS64       | Linux            |
+| PowerPC      | AMIGA            |
 | PowerPC      | Linux            |
 | PowerPC      | Mac OSX          |
 | PowerPC      | FreeBSD          |
@@ -73,8 +75,10 @@ tested:
 | SPARC64      | Linux            |
 | SPARC64      | FreeBSD          |
 | X86          | FreeBSD          |
+| X86          | Interix          |
 | X86          | kFreeBSD         |
 | X86          | Linux            |
+| X86          | Linux/x32        |
 | X86          | Mac OSX          |
 | X86          | OpenBSD          |
 | X86          | OS/2             |
@@ -84,6 +88,7 @@ tested:
 | X86-64       | FreeBSD          |
 | X86-64       | Linux            |
 | X86-64       | OpenBSD          |
+| X86-64       | Windows/MingW    |
 |--------------+------------------|
 
 Please send additional platform test results to
@@ -115,9 +120,15 @@ It's also possible to build libffi on Windows platforms with
 Microsoft's Visual C++ compiler.  In this case, use the msvcc.sh
 wrapper script during configuration like so:
 
-path/to/configure --enable-shared --enable-static \
-	CC=path/to/msvcc.sh LD=link \
-	CPP=\"cl -nologo -EP\"
+path/to/configure CC=path/to/msvcc.sh LD=link CPP=\"cl -nologo -EP\"
+
+For 64-bit Windows builds, use CC="path/to/msvcc.sh -m64".
+You may also need to specify --build appropriately. When building with MSVC
+under a MingW environment, you may need to remove the line in configure
+that sets 'fix_srcfile_path' to a 'cygpath' command. ('cygpath' is not
+present in MingW, and is not required when using MingW-style paths.)
+
+For iOS builds, refer to the build-ios.sh script for guidance.
 
 Configure has many other options. Use "configure --help" to see them all.
 
@@ -135,11 +146,27 @@ History
 
 See the ChangeLog files for details.
 
-3.0.10 ???-??-??
+3.0.11 MMM-DD-YY
+        Lots of build fixes.
+        Add Amiga newer MacOS support.
+	Add Linux/x32 support.
+	Add thiscall and fastcall support on Windows.
+	Fix Octeon and MC68881 support.
+	Fix code pessimizations.
+
+3.0.10 Aug-23-11
+        Add support for Apple's iOS.
+	Add support for ARM VFP ABI.
+        Add RTEMS support for MIPS and M68K.
+	Fix instruction cache clearing problems on
+	  ARM and SPARC.
 	Fix the N64 build on mips-sgi-irix6.5.
-	Testsuite fixes for Tru64 Unix.
 	Enable builds with Microsoft's compiler.
-	Enable x86 builds with Sun's compiler.
+	Enable x86 builds with Oracle's Solaris compiler.
+	Fix support for calling code compiled with Oracle's Sparc
+	  Solaris compiler.
+	Testsuite fixes for Tru64 Unix.
+	Additional platform support.
 
 3.0.9 Dec-31-09
         Add AVR32 and win64 ports.  Add ARM softfp support.
@@ -320,5 +347,6 @@ Alex Oliva solved the executable page problem for SElinux.
 The list above is almost certainly incomplete and inaccurate.  I'm
 happy to make corrections or additions upon request.
 
-If you have a problem, or have found a bug, please send a note to
-green@redhat.com.
+If you have a problem, or have found a bug, please send a note to the
+author at green@moxielogic.com, or the project mailing list at
+libffi-discuss@sourceware.org.

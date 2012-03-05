@@ -1,7 +1,7 @@
 //
 // © Copyright Henrik Ravn 2004
 //
-// Use, modification and distribution are subject to the Boost Software License, Version 1.0. 
+// Use, modification and distribution are subject to the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
@@ -25,7 +25,7 @@ namespace DotZLib
         protected uint _current;
 
         /// <summary>
-        /// Initializes a new instance of the checksum generator base - the current checksum is 
+        /// Initializes a new instance of the checksum generator base - the current checksum is
         /// set to zero
         /// </summary>
         public ChecksumGeneratorBase()
@@ -61,7 +61,7 @@ namespace DotZLib
         /// <exception cref="ArgumentException">The sum of offset and count is larger than the length of <c>data</c></exception>
         /// <exception cref="NullReferenceException"><c>data</c> is a null reference</exception>
         /// <exception cref="ArgumentOutOfRangeException">Offset or count is negative.</exception>
-        /// <remarks>All the other <c>Update</c> methods are implmeneted in terms of this one. 
+        /// <remarks>All the other <c>Update</c> methods are implmeneted in terms of this one.
         /// This is therefore the only method a derived class has to implement</remarks>
         public abstract void Update(byte[] data, int offset, int count);
 
@@ -101,7 +101,7 @@ namespace DotZLib
     /// <summary>
     /// Implements a CRC32 checksum generator
     /// </summary>
-    public sealed class CRC32Checksum : ChecksumGeneratorBase    
+    public sealed class CRC32Checksum : ChecksumGeneratorBase
     {
         #region DLL imports
 
@@ -152,7 +152,7 @@ namespace DotZLib
     /// <summary>
     /// Implements a checksum generator that computes the Adler checksum on data
     /// </summary>
-    public sealed class AdlerChecksum : ChecksumGeneratorBase    
+    public sealed class AdlerChecksum : ChecksumGeneratorBase
     {
         #region DLL imports
 

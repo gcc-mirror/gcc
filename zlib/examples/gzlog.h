@@ -1,6 +1,6 @@
 /* gzlog.h
-  Copyright (C) 2004 Mark Adler, all rights reserved
-  version 1.0, 26 Nov 2004
+  Copyright (C) 2004, 2008 Mark Adler, all rights reserved
+  version 2.0, 25 Apr 2008
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the author be held liable for any damages
@@ -21,38 +21,69 @@
   Mark Adler    madler@alumni.caltech.edu
  */
 
+/* Version History:
+   1.0  26 Nov 2004  First version
+   2.0  25 Apr 2008  Complete redesign for recovery of interrupted operations
+                     Interface changed slightly in that now path is a prefix
+                     Compression now occurs as needed during gzlog_write()
+                     gzlog_write() now always leaves the log file as valid gzip
+ */
+
 /*
    The gzlog object allows writing short messages to a gzipped log file,
    opening the log file locked for small bursts, and then closing it.  The log
-   object works by appending stored data to the gzip file until 1 MB has been
-   accumulated.  At that time, the stored data is compressed, and replaces the
-   uncompressed data in the file.  The log file is truncated to its new size at
-   that time.  After closing, the log file is always valid gzip file that can
-   decompressed to recover what was written.
+   object works by appending stored (uncompressed) data to the gzip file until
+   1 MB has been accumulated.  At that time, the stored data is compressed, and
+   replaces the uncompressed data in the file.  The log file is truncated to
+   its new size at that time.  After each write operation, the log file is a
+   valid gzip file that can decompressed to recover what was written.
 
-   A gzip header "extra" field contains two file offsets for appending.  The
-   first points to just after the last compressed data.  The second points to
-   the last stored block in the deflate stream, which is empty.  All of the
-   data between those pointers is uncompressed.
+   The gzlog operations can be interupted at any point due to an application or
+   system crash, and the log file will be recovered the next time the log is
+   opened with gzlog_open().
  */
+
+#ifndef GZLOG_H
+#define GZLOG_H
+
+/* gzlog object type */
+typedef void gzlog;
 
 /* Open a gzlog object, creating the log file if it does not exist.  Return
-   NULL on error.  Note that gzlog_open() could take a long time to return if
-   there is difficulty in locking the file. */
-void *gzlog_open(char *path);
+   NULL on error.  Note that gzlog_open() could take a while to complete if it
+   has to wait to verify that a lock is stale (possibly for five minutes), or
+   if there is significant contention with other instantiations of this object
+   when locking the resource.  path is the prefix of the file names created by
+   this object.  If path is "foo", then the log file will be "foo.gz", and
+   other auxiliary files will be created and destroyed during the process:
+   "foo.dict" for a compression dictionary, "foo.temp" for a temporary (next)
+   dictionary, "foo.add" for data being added or compressed, "foo.lock" for the
+   lock file, and "foo.repairs" to log recovery operations performed due to
+   interrupted gzlog operations.  A gzlog_open() followed by a gzlog_close()
+   will recover a previously interrupted operation, if any. */
+gzlog *gzlog_open(char *path);
 
-/* Write to a gzlog object.  Return non-zero on error.  This function will
-   simply write data to the file uncompressed.  Compression of the data
-   will not occur until gzlog_close() is called.  It is expected that
-   gzlog_write() is used for a short message, and then gzlog_close() is
-   called.  If a large amount of data is to be written, then the application
-   should write no more than 1 MB at a time with gzlog_write() before
-   calling gzlog_close() and then gzlog_open() again. */
-int gzlog_write(void *log, char *data, size_t len);
+/* Write to a gzlog object.  Return zero on success, -1 if there is a file i/o
+   error on any of the gzlog files (this should not happen if gzlog_open()
+   succeeded, unless the device has run out of space or leftover auxiliary
+   files have permissions or ownership that prevent their use), -2 if there is
+   a memory allocation failure, or -3 if the log argument is invalid (e.g. if
+   it was not created by gzlog_open()).  This function will write data to the
+   file uncompressed, until 1 MB has been accumulated, at which time that data
+   will be compressed.  The log file will be a valid gzip file upon successful
+   return. */
+int gzlog_write(gzlog *log, void *data, size_t len);
 
-/* Close a gzlog object.  Return non-zero on error.  The log file is locked
-   until this function is called.  This function will compress stored data
-   at the end of the gzip file if at least 1 MB has been accumulated.  Note
-   that the file will not be a valid gzip file until this function completes.
- */
-int gzlog_close(void *log);
+/* Force compression of any uncompressed data in the log.  This should be used
+   sparingly, if at all.  The main application would be when a log file will
+   not be appended to again.  If this is used to compress frequently while
+   appending, it will both significantly increase the execution time and
+   reduce the compression ratio.  The return codes are the same as for
+   gzlog_write(). */
+int gzlog_compress(gzlog *log);
+
+/* Close a gzlog object.  Return zero on success, -3 if the log argument is
+   invalid.  The log object is freed, and so cannot be referenced again. */
+int gzlog_close(gzlog *log);
+
+#endif

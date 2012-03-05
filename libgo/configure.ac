@@ -33,8 +33,6 @@ AC_SUBST(CFLAGS)
 
 AM_MAINTAINER_MODE
 
-AC_INCLUDES_DEFAULT
-
 AC_PROG_LD
 AC_PROG_RANLIB
 AC_CHECK_TOOL(OBJCOPY, objcopy, missing-objcopy)
@@ -58,7 +56,6 @@ AC_SUBST(WERROR)
 
 glibgo_toolexecdir=no
 glibgo_toolexeclibdir=no
-glibgo_prefixdir=$prefix
 
 AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
 AC_ARG_ENABLE([version-specific-runtime-libs],
@@ -80,25 +77,28 @@ fi
 
 # Calculate glibgo_toolexecdir, glibgo_toolexeclibdir
 # Install a library built with a cross compiler in tooldir, not libdir.
+if test -n "$with_cross_host" &&
+   test x"$with_cross_host" != x"no"; then
+  nover_glibgo_toolexecdir='${exec_prefix}/${host_alias}'
+  nover_glibgo_toolexeclibdir='${toolexecdir}/lib'
+else
+  nover_glibgo_toolexecdir='${libdir}/gcc/${host_alias}'
+  nover_glibgo_toolexeclibdir='${libdir}'
+fi
+multi_os_directory=`$CC -print-multi-os-directory`
+case $multi_os_directory in
+  .) ;; # Avoid trailing /.
+  *) nover_glibgo_toolexeclibdir=${nover_glibgo_toolexeclibdir}/${multi_os_directory} ;;
+esac
+
 if test x"$glibgo_toolexecdir" = x"no"; then
-  if test -n "$with_cross_host" &&
-     test x"$with_cross_host" != x"no"; then
-    glibgo_toolexecdir='${exec_prefix}/${host_alias}'
-    glibgo_toolexeclibdir='${toolexecdir}/lib'
-  else
-    glibgo_toolexecdir='${libdir}/gcc/${host_alias}'
-    glibgo_toolexeclibdir='${libdir}'
-  fi
-  multi_os_directory=`$CC -print-multi-os-directory`
-  case $multi_os_directory in
-    .) ;; # Avoid trailing /.
-    *) glibgo_toolexeclibdir=$glibgo_toolexeclibdir/$multi_os_directory ;;
-  esac
+  glibgo_toolexecdir="${nover_glibgo_toolexecdir}"
+  glibgo_toolexeclibdir="${nover_glibgo_toolexeclibdir}"
 fi
 
-AC_SUBST(glibgo_prefixdir)
 AC_SUBST(glibgo_toolexecdir)
 AC_SUBST(glibgo_toolexeclibdir)
+AC_SUBST(nover_glibgo_toolexeclibdir)
 
 # See if the user wants to configure without libffi.  Some
 # architectures don't support it.  FIXME: We should set a default
@@ -453,7 +453,7 @@ no)
   ;;
 esac
 
-AC_CHECK_HEADERS(sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h sys/prctl.h)
+AC_CHECK_HEADERS(sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h utime.h linux/reboot.h)
 
 AC_CHECK_HEADERS([linux/filter.h linux/netlink.h linux/rtnetlink.h], [], [],
 [#ifdef HAVE_SYS_SOCKET_H
@@ -461,13 +461,29 @@ AC_CHECK_HEADERS([linux/filter.h linux/netlink.h linux/rtnetlink.h], [], [],
 #endif
 ])
 
+AC_CACHE_CHECK([whether <ustat.h> can be used],
+[libgo_cv_c_ustat_h],
+AC_COMPILE_IFELSE(
+[AC_LANG_SOURCE([
+#include <sys/types.h>
+#ifdef HAVE_LINUX_FILTER_H
+#include <linux/filter.h>
+#endif
+#include <ustat.h>
+])], [libgo_cv_c_ustat_h=yes], [libgo_cv_c_ustat_h=no]))
+if test $libgo_cv_c_ustat_h = yes; then
+  AC_DEFINE(HAVE_USTAT_H, 1,
+    [Define to 1 if you have the <ustat.h> header file and it works.])
+fi
+
 AM_CONDITIONAL(HAVE_SYS_MMAN_H, test "$ac_cv_header_sys_mman_h" = yes)
 
 AC_CHECK_FUNCS(strerror_r strsignal wait4 mincore setenv)
 AM_CONDITIONAL(HAVE_STRERROR_R, test "$ac_cv_func_strerror_r" = yes)
 AM_CONDITIONAL(HAVE_WAIT4, test "$ac_cv_func_wait4" = yes)
 
-AC_CHECK_FUNCS(epoll_create1 faccessat fchmodat fchownat futimesat inotify_add_watch inotify_init inotify_rm_watch mkdirat mknodat openat renameat splice tee unlinkat unshare)
+AC_CHECK_FUNCS(epoll_create1 faccessat fallocate fchmodat fchownat futimesat inotify_add_watch inotify_init inotify_init1 inotify_rm_watch mkdirat mknodat openat renameat sync_file_range splice tee unlinkat unshare)
+AC_TYPE_OFF_T
 AC_CHECK_TYPES([loff_t])
 
 CFLAGS_hold="$CFLAGS"
@@ -476,6 +492,11 @@ LIBS_hold="$LIBS"
 LIBS="$LIBS $PTHREAD_LIBS"
 AC_CHECK_FUNCS(sem_timedwait)
 CFLAGS="$CFLAGS_hold"
+LIBS="$LIBS_hold"
+
+LIBS_hold="$LIBS"
+LIBS="$LIBS $MATH_LIBS"
+AC_CHECK_FUNCS(matherr)
 LIBS="$LIBS_hold"
 
 AC_CACHE_CHECK([for __sync_bool_compare_and_swap_4],
@@ -492,6 +513,20 @@ if test "$libgo_cv_func___sync_bool_compare_and_swap_4" = "yes"; then
     [Define to 1 if the compiler provides the __sync_bool_compare_and_swap function for uint32])
 fi
 
+AC_CACHE_CHECK([for __sync_bool_compare_and_swap_8],
+[libgo_cv_func___sync_bool_compare_and_swap_8],
+[AC_LINK_IFELSE([
+typedef unsigned int uint64  __attribute__ ((mode (DI)));
+uint64 i;
+int main() { return __sync_bool_compare_and_swap (&i, 0, 1); }
+],
+[libgo_cv_func___sync_bool_compare_and_swap_8=yes],
+[libgo_cv_func___sync_bool_compare_and_swap_8=no])])
+if test "$libgo_cv_func___sync_bool_compare_and_swap_8" = "yes"; then
+  AC_DEFINE(HAVE_SYNC_BOOL_COMPARE_AND_SWAP_8, 1,
+    [Define to 1 if the compiler provides the __sync_bool_compare_and_swap function for uint64])
+fi
+
 AC_CACHE_CHECK([for __sync_fetch_and_add_4],
 [libgo_cv_func___sync_fetch_and_add_4],
 [AC_LINK_IFELSE([
@@ -504,6 +539,20 @@ int main() { return __sync_fetch_and_add (&i, 1); }
 if test "$libgo_cv_func___sync_fetch_and_add_4" = "yes"; then
   AC_DEFINE(HAVE_SYNC_FETCH_AND_ADD_4, 1,
     [Define to 1 if the compiler provides the __sync_fetch_and_add function for uint32])
+fi
+
+AC_CACHE_CHECK([for __sync_add_and_fetch_8],
+[libgo_cv_func___sync_add_and_fetch_8],
+[AC_LINK_IFELSE([
+typedef unsigned int uint64  __attribute__ ((mode (DI)));
+uint64 i;
+int main() { return __sync_add_and_fetch (&i, 1); }
+],
+[libgo_cv_func___sync_add_and_fetch_8=yes],
+[libgo_cv_func___sync_add_and_fetch_8=no])])
+if test "$libgo_cv_func___sync_add_and_fetch_8" = "yes"; then
+  AC_DEFINE(HAVE_SYNC_ADD_AND_FETCH_8, 1,
+    [Define to 1 if the compiler provides the __sync_add_and_fetch function for uint64])
 fi
 
 dnl For x86 we want to use the -minline-all-stringops option to avoid
@@ -521,6 +570,23 @@ if test "$libgo_cv_c_stringops" = yes; then
   STRINGOPS_FLAG=-minline-all-stringops
 fi
 AC_SUBST(STRINGOPS_FLAG)
+
+dnl For x86 we want to compile the math library with -mfancy-math-387
+dnl -funsafe-math-optimizations so that we can use the builtin
+dnl instructions directly.
+AC_CACHE_CHECK([whether compiler supports -mfancy-math-387],
+[libgo_cv_c_fancymath],
+[CFLAGS_hold=$CFLAGS
+CFLAGS="$CFLAGS -mfancy-math-387"
+AC_COMPILE_IFELSE([int i;],
+[libgo_cv_c_fancymath=yes],
+[libgo_cv_c_fancymath=no])
+CFLAGS=$CFLAGS_hold])
+MATH_FLAG=
+if test "$libgo_cv_c_fancymath" = yes; then
+  MATH_FLAG="-mfancy-math-387 -funsafe-math-optimizations"
+fi
+AC_SUBST(MATH_FLAG)
 
 CFLAGS_hold=$CFLAGS
 CFLAGS="$CFLAGS -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE"
@@ -548,6 +614,122 @@ AC_CACHE_CHECK([epoll_event data.fd offset],
 [libgo_cv_c_epoll_event_fd_offset=0])])
 STRUCT_EPOLL_EVENT_FD_OFFSET=${libgo_cv_c_epoll_event_fd_offset}
 AC_SUBST(STRUCT_EPOLL_EVENT_FD_OFFSET)
+
+dnl See if struct exception is defined in <math.h>.
+AC_CHECK_TYPE([struct exception],
+[libgo_has_struct_exception=yes],
+[libgo_has_struct_exception=no],
+[#include <math.h>])
+if test "$libgo_has_struct_exception" = "yes"; then
+  AC_DEFINE(HAVE_STRUCT_EXCEPTION, 1,
+            [Define to 1 if <math.h> defines struct exception])
+fi
+
+dnl Check if makecontext expects the uc_stack member of ucontext to point
+dnl to the top of the stack.
+case "$target" in
+  sparc*-*-solaris2.[[89]]*)
+    libgo_cv_lib_makecontext_stack_top=yes
+    ;;
+  *)
+    libgo_cv_lib_makecontext_stack_top=no
+    ;;
+esac
+if test "$libgo_cv_lib_makecontext_stack_top" = "yes"; then
+  AC_DEFINE(MAKECONTEXT_STACK_TOP, 1,
+	    [Define if makecontext expects top of stack in uc_stack.])
+fi
+
+dnl See whether setcontext changes the value of TLS variables.
+AC_CACHE_CHECK([whether setcontext clobbers TLS variables],
+[libgo_cv_lib_setcontext_clobbers_tls],
+[CFLAGS_hold="$CFLAGS"
+CFLAGS="$PTHREAD_CFLAGS"
+LIBS_hold="$LIBS"
+LIBS="$LIBS $PTHREAD_LIBS"
+AC_CHECK_SIZEOF([void *])
+AS_VAR_ARITH([ptr_type_size], [$ac_cv_sizeof_void_p \* 8])
+AC_RUN_IFELSE(
+  [AC_LANG_SOURCE([
+#include <pthread.h>
+#include <stdlib.h>
+#include <ucontext.h>
+#include <unistd.h>
+
+__thread int tls;
+
+static char stack[[10 * 1024 * 1024]];
+static ucontext_t c;
+
+/* Called via makecontext/setcontext.  */
+
+static void
+cfn (void)
+{
+  exit (tls);
+}
+
+/* Called via pthread_create.  */
+
+static void *
+tfn (void *dummy)
+{
+  /* The thread should still see this value after calling
+     setcontext.  */
+  tls = 0;
+
+  setcontext (&c);
+
+  /* The call to setcontext should not return.  */
+  abort ();
+}
+
+int
+main ()
+{
+  pthread_t tid;
+
+  /* The thread should not see this value.  */
+  tls = 1;
+
+  if (getcontext (&c) < 0)
+    abort ();
+
+  c.uc_stack.ss_sp = stack;
+#ifdef MAKECONTEXT_STACK_TOP
+  c.uc_stack.ss_sp += sizeof stack;
+#endif
+  c.uc_stack.ss_flags = 0;
+  c.uc_stack.ss_size = sizeof stack;
+  c.uc_link = NULL;
+  makecontext (&c, cfn, 0);
+
+  if (pthread_create (&tid, NULL, tfn, NULL) != 0)
+    abort ();
+
+  if (pthread_join (tid, NULL) != 0)
+    abort ();
+
+  /* The thread should have called exit.  */
+  abort ();
+}
+])],
+[libgo_cv_lib_setcontext_clobbers_tls=no],
+[libgo_cv_lib_setcontext_clobbers_tls=yes],
+[case "$target:$ptr_type_size" in
+  i?86-*-solaris2.1[[01]]:64 | x86_64*-*-solaris2.1[[01]]:64)
+    libgo_cv_lib_setcontext_clobbers_tls=yes ;;
+  *)
+    libgo_cv_lib_setcontext_clobbers_tls=no ;;
+ esac
+])
+CFLAGS="$CFLAGS_hold"
+LIBS="$LIBS_hold"
+])
+if test "$libgo_cv_lib_setcontext_clobbers_tls" = "yes"; then
+  AC_DEFINE(SETCONTEXT_CLOBBERS_TLS, 1,
+	    [Define if setcontext clobbers TLS variables])
+fi
 
 AC_CACHE_SAVE
 

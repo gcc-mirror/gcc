@@ -66,6 +66,8 @@ extern void abort (void);
 # define PIC_REG  "12"
 #elif defined(__sparc__)
 # define PIC_REG  "l7"
+#elif defined(__tile__)
+# define PIC_REG "r51"
 #elif defined(__TMS320C6X__)
 # define PIC_REG "B14"
 #elif defined(__v850)

@@ -45,12 +45,14 @@ func readSource(filename string, src interface{}) ([]byte, error) {
 	return ioutil.ReadFile(filename)
 }
 
-// The mode parameter to the Parse* functions is a set of flags (or 0).
+// A Mode value is a set of flags (or 0).
 // They control the amount of source code parsed and other optional
 // parser functionality.
 //
+type Mode uint
+
 const (
-	PackageClauseOnly uint = 1 << iota // parsing stops after package clause
+	PackageClauseOnly Mode = 1 << iota // parsing stops after package clause
 	ImportsOnly                        // parsing stops after import declarations
 	ParseComments                      // parse comments and add them to AST
 	Trace                              // print a trace of parsed productions
@@ -77,14 +79,26 @@ const (
 // representing the fragments of erroneous source code). Multiple errors
 // are returned via a scanner.ErrorList which is sorted by file position.
 //
-func ParseFile(fset *token.FileSet, filename string, src interface{}, mode uint) (*ast.File, error) {
+func ParseFile(fset *token.FileSet, filename string, src interface{}, mode Mode) (*ast.File, error) {
+	// get source
 	text, err := readSource(filename, src)
 	if err != nil {
 		return nil, err
 	}
+
+	// parse source
 	var p parser
 	p.init(fset, filename, text, mode)
-	return p.parseFile(), p.errors()
+	f := p.parseFile()
+
+	// sort errors
+	if p.mode&SpuriousErrors == 0 {
+		p.errors.RemoveMultiples()
+	} else {
+		p.errors.Sort()
+	}
+
+	return f, p.errors.Err()
 }
 
 // ParseDir calls ParseFile for the files in the directory specified by path and
@@ -97,7 +111,7 @@ func ParseFile(fset *token.FileSet, filename string, src interface{}, mode uint)
 // returned. If a parse error occurred, a non-nil but incomplete map and the
 // first error encountered are returned.
 //
-func ParseDir(fset *token.FileSet, path string, filter func(os.FileInfo) bool, mode uint) (pkgs map[string]*ast.Package, first error) {
+func ParseDir(fset *token.FileSet, path string, filter func(os.FileInfo) bool, mode Mode) (pkgs map[string]*ast.Package, first error) {
 	fd, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -117,7 +131,10 @@ func ParseDir(fset *token.FileSet, path string, filter func(os.FileInfo) bool, m
 				name := src.Name.Name
 				pkg, found := pkgs[name]
 				if !found {
-					pkg = &ast.Package{name, nil, nil, make(map[string]*ast.File)}
+					pkg = &ast.Package{
+						Name:  name,
+						Files: make(map[string]*ast.File),
+					}
 					pkgs[name] = pkg
 				}
 				pkg.Files[filename] = src

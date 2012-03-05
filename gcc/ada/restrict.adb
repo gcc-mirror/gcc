@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -530,6 +530,15 @@ package body Restrict is
       --  If restriction not set, nothing to do
 
       elsif not Restrictions.Set (R) then
+         null;
+
+      --  Don't complain about No_Obsolescent_Features in an instance, since we
+      --  will complain on the template, which is much better. Are there other
+      --  cases like this ??? Do we need a more general mechanism ???
+
+      elsif R = No_Obsolescent_Features
+        and then Instantiation_Location (Sloc (N)) /= No_Location
+      then
          null;
 
       --  Here if restriction set, check for violation (either this is a

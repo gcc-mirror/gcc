@@ -34,6 +34,8 @@ avr-log.o: $(srcdir)/config/avr/avr-log.c \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(INPUT_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
+avr.o avr-c.o: $(srcdir)/config/avr/builtins.def
+
 # Files and Variables auto-generated from avr-mcus.def
 
 AVR_MCUS = $(srcdir)/config/avr/avr-mcus.def

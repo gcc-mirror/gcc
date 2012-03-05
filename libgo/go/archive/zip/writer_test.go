@@ -47,10 +47,10 @@ var writeTests = []WriteTest{
 		Mode:   0755 | os.ModeSetgid,
 	},
 	{
-		Name:   "setgid",
-		Data:   []byte("setgid file"),
+		Name:   "symlink",
+		Data:   []byte("../link/target"),
 		Method: Deflate,
-		Mode:   0755 | os.ModeSetgid,
+		Mode:   0755 | os.ModeSymlink,
 	},
 }
 
@@ -77,7 +77,7 @@ func TestWriter(t *testing.T) {
 	}
 
 	// read it back
-	r, err := NewReader(sliceReaderAt(buf.Bytes()), int64(buf.Len()))
+	r, err := NewReader(bytes.NewReader(buf.Bytes()), int64(buf.Len()))
 	if err != nil {
 		t.Fatal(err)
 	}

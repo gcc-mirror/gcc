@@ -88,6 +88,13 @@ if { [isnative] && ![is_remote host] } then {
             } elseif [ string match "*ppc" $file_string ] {
                 set native_cflags "-m32"
             }
+        } elseif [istarget "tilegx-*-linux*"] {
+	    set file_string [exec file "linkage-x.o"]
+	    if [ string match "*64-bit*" $file_string ] {
+		set native_cflags "-m64"
+	    } elseif [ string match "*32-bit*" $file_string ] {
+		set native_cflags "-m32"
+	    }
         } elseif [istarget "*86*-*-darwin*"] {
 	   set file_string [exec file "linkage-x.o"]
 	   if [ string match "*64*" $file_string ] {

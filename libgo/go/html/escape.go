@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Package html provides functions for escaping and unescaping HTML text.
 package html
 
 import (
@@ -9,6 +10,10 @@ import (
 	"strings"
 	"unicode/utf8"
 )
+
+type writer interface {
+	WriteString(string) (int, error)
+}
 
 // These replacements permit compatibility with old numeric entities that 
 // assumed Windows-1252 encoding.
@@ -233,8 +238,8 @@ func EscapeString(s string) string {
 	if strings.IndexAny(s, escapedChars) == -1 {
 		return s
 	}
-	buf := bytes.NewBuffer(nil)
-	escape(buf, s)
+	var buf bytes.Buffer
+	escape(&buf, s)
 	return buf.String()
 }
 

@@ -8,6 +8,7 @@
 #include "go-assert.h"
 #include "go-panic.h"
 #include "interface.h"
+#include "runtime.h"
 
 /* This is called when converting one interface type into another
    interface type.  LHS_DESCRIPTOR is the type descriptor of the
@@ -55,14 +56,10 @@ __go_convert_interface_2 (const struct __go_type_descriptor *lhs_descriptor,
       if (may_fail)
 	return NULL;
 
-      newTypeAssertionError (NULL,
-			     rhs_descriptor,
-			     lhs_descriptor,
-			     NULL,
-			     rhs_descriptor->__reflection,
-			     lhs_descriptor->__reflection,
-			     lhs_methods[0].__name,
-			     &panic_arg);
+      runtime_newTypeAssertionError (NULL, rhs_descriptor->__reflection,
+				     lhs_descriptor->__reflection,
+				     lhs_methods[0].__name,
+				     &panic_arg);
       __go_panic (panic_arg);
     }
 
@@ -100,14 +97,9 @@ __go_convert_interface_2 (const struct __go_type_descriptor *lhs_descriptor,
 	  if (may_fail)
 	    return NULL;
 
-	  newTypeAssertionError (NULL,
-				 rhs_descriptor,
-				 lhs_descriptor,
-				 NULL,
-				 rhs_descriptor->__reflection,
-				 lhs_descriptor->__reflection,
-				 p_lhs_method->__name,
-				 &panic_arg);
+	  runtime_newTypeAssertionError (NULL, rhs_descriptor->__reflection,
+					 lhs_descriptor->__reflection,
+					 p_lhs_method->__name, &panic_arg);
 	  __go_panic (panic_arg);
 	}
 

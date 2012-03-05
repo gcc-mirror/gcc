@@ -71,7 +71,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __GTHREAD_MUTEX_INIT_FUNCTION(&_M_mutex);
     }
 
-    ~__mutex_base() { __gthread_mutex_destroy(&_M_mutex); }
+    ~__mutex_base() noexcept { __gthread_mutex_destroy(&_M_mutex); }
 #endif
 
     __mutex_base(const __mutex_base&) = delete;

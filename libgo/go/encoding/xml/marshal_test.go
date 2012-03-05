@@ -5,11 +5,11 @@
 package xml
 
 import (
-	"bytes"
 	"reflect"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 type DriveType int
@@ -35,24 +35,18 @@ type Ship struct {
 	secret    string
 }
 
-type RawXML string
-
-func (rx RawXML) MarshalXML() ([]byte, error) {
-	return []byte(rx), nil
-}
-
 type NamedType string
 
 type Port struct {
 	XMLName struct{} `xml:"port"`
-	Type    string   `xml:"type,attr"`
+	Type    string   `xml:"type,attr,omitempty"`
 	Comment string   `xml:",comment"`
 	Number  string   `xml:",chardata"`
 }
 
 type Domain struct {
 	XMLName struct{} `xml:"domain"`
-	Country string   `xml:",attr"`
+	Country string   `xml:",attr,omitempty"`
 	Name    []byte   `xml:",chardata"`
 	Comment []byte   `xml:",comment"`
 }
@@ -156,11 +150,33 @@ type NameInField struct {
 
 type AttrTest struct {
 	Int   int     `xml:",attr"`
-	Lower int     `xml:"int,attr"`
+	Named int     `xml:"int,attr"`
 	Float float64 `xml:",attr"`
 	Uint8 uint8   `xml:",attr"`
 	Bool  bool    `xml:",attr"`
 	Str   string  `xml:",attr"`
+	Bytes []byte  `xml:",attr"`
+}
+
+type OmitAttrTest struct {
+	Int   int     `xml:",attr,omitempty"`
+	Named int     `xml:"int,attr,omitempty"`
+	Float float64 `xml:",attr,omitempty"`
+	Uint8 uint8   `xml:",attr,omitempty"`
+	Bool  bool    `xml:",attr,omitempty"`
+	Str   string  `xml:",attr,omitempty"`
+	Bytes []byte  `xml:",attr,omitempty"`
+}
+
+type OmitFieldTest struct {
+	Int   int           `xml:",omitempty"`
+	Named int           `xml:"int,omitempty"`
+	Float float64       `xml:",omitempty"`
+	Uint8 uint8         `xml:",omitempty"`
+	Bool  bool          `xml:",omitempty"`
+	Str   string        `xml:",omitempty"`
+	Bytes []byte        `xml:",omitempty"`
+	Ptr   *PresenceTest `xml:",omitempty"`
 }
 
 type AnyTest struct {
@@ -182,6 +198,22 @@ type RecurseA struct {
 type RecurseB struct {
 	A *RecurseA
 	B string
+}
+
+type PresenceTest struct {
+	Exists *struct{}
+}
+
+type IgnoreTest struct {
+	PublicSecret string `xml:"-"`
+}
+
+type MyBytes []byte
+
+type Data struct {
+	Bytes  []byte
+	Attr   []byte `xml:",attr"`
+	Custom MyBytes
 }
 
 type Plain struct {
@@ -225,6 +257,50 @@ var marshalTests = []struct {
 	{Value: &Plain{[]int{1, 2, 3}}, ExpectXML: `<Plain><V>1</V><V>2</V><V>3</V></Plain>`},
 	{Value: &Plain{[3]int{1, 2, 3}}, ExpectXML: `<Plain><V>1</V><V>2</V><V>3</V></Plain>`},
 
+	// Test time.
+	{
+		Value:     &Plain{time.Unix(1e9, 123456789).UTC()},
+		ExpectXML: `<Plain><V>2001-09-09T01:46:40.123456789Z</V></Plain>`,
+	},
+
+	// A pointer to struct{} may be used to test for an element's presence.
+	{
+		Value:     &PresenceTest{new(struct{})},
+		ExpectXML: `<PresenceTest><Exists></Exists></PresenceTest>`,
+	},
+	{
+		Value:     &PresenceTest{},
+		ExpectXML: `<PresenceTest></PresenceTest>`,
+	},
+
+	// A pointer to struct{} may be used to test for an element's presence.
+	{
+		Value:     &PresenceTest{new(struct{})},
+		ExpectXML: `<PresenceTest><Exists></Exists></PresenceTest>`,
+	},
+	{
+		Value:     &PresenceTest{},
+		ExpectXML: `<PresenceTest></PresenceTest>`,
+	},
+
+	// A []byte field is only nil if the element was not found.
+	{
+		Value:         &Data{},
+		ExpectXML:     `<Data></Data>`,
+		UnmarshalOnly: true,
+	},
+	{
+		Value:         &Data{Bytes: []byte{}, Custom: MyBytes{}, Attr: []byte{}},
+		ExpectXML:     `<Data Attr=""><Bytes></Bytes><Custom></Custom></Data>`,
+		UnmarshalOnly: true,
+	},
+
+	// Check that []byte works, including named []byte types.
+	{
+		Value:     &Data{Bytes: []byte("ab"), Custom: MyBytes("cd"), Attr: []byte{'v'}},
+		ExpectXML: `<Data Attr="v"><Bytes>ab</Bytes><Custom>cd</Custom></Data>`,
+	},
+
 	// Test innerxml
 	{
 		Value: &SecretAgent{
@@ -243,13 +319,6 @@ var marshalTests = []struct {
 		},
 		ExpectXML:     `<agent handle="007"><Identity>James Bond</Identity><redacted/></agent>`,
 		UnmarshalOnly: true,
-	},
-
-	// Test marshaller interface
-	{
-		Value:       RawXML("</>"),
-		ExpectXML:   `</>`,
-		MarshalOnly: true,
 	},
 
 	// Test structs
@@ -492,6 +561,11 @@ var marshalTests = []struct {
 		Value:     &NameInField{Name{Space: "ns", Local: "foo"}},
 		ExpectXML: `<NameInField><foo xmlns="ns"></foo></NameInField>`,
 	},
+	{
+		Value:         &NameInField{Name{Space: "ns", Local: "foo"}},
+		ExpectXML:     `<NameInField><foo xmlns="ns"><ignore></ignore></foo></NameInField>`,
+		UnmarshalOnly: true,
+	},
 
 	// Marshaling zero xml.Name uses the tag or field name.
 	{
@@ -504,13 +578,65 @@ var marshalTests = []struct {
 	{
 		Value: &AttrTest{
 			Int:   8,
-			Lower: 9,
+			Named: 9,
 			Float: 23.5,
 			Uint8: 255,
 			Bool:  true,
-			Str:   "s",
+			Str:   "str",
+			Bytes: []byte("byt"),
 		},
-		ExpectXML: `<AttrTest Int="8" int="9" Float="23.5" Uint8="255" Bool="true" Str="s"></AttrTest>`,
+		ExpectXML: `<AttrTest Int="8" int="9" Float="23.5" Uint8="255"` +
+			` Bool="true" Str="str" Bytes="byt"></AttrTest>`,
+	},
+	{
+		Value: &AttrTest{Bytes: []byte{}},
+		ExpectXML: `<AttrTest Int="0" int="0" Float="0" Uint8="0"` +
+			` Bool="false" Str="" Bytes=""></AttrTest>`,
+	},
+	{
+		Value: &OmitAttrTest{
+			Int:   8,
+			Named: 9,
+			Float: 23.5,
+			Uint8: 255,
+			Bool:  true,
+			Str:   "str",
+			Bytes: []byte("byt"),
+		},
+		ExpectXML: `<OmitAttrTest Int="8" int="9" Float="23.5" Uint8="255"` +
+			` Bool="true" Str="str" Bytes="byt"></OmitAttrTest>`,
+	},
+	{
+		Value:     &OmitAttrTest{},
+		ExpectXML: `<OmitAttrTest></OmitAttrTest>`,
+	},
+
+	// omitempty on fields
+	{
+		Value: &OmitFieldTest{
+			Int:   8,
+			Named: 9,
+			Float: 23.5,
+			Uint8: 255,
+			Bool:  true,
+			Str:   "str",
+			Bytes: []byte("byt"),
+			Ptr:   &PresenceTest{},
+		},
+		ExpectXML: `<OmitFieldTest>` +
+			`<Int>8</Int>` +
+			`<int>9</int>` +
+			`<Float>23.5</Float>` +
+			`<Uint8>255</Uint8>` +
+			`<Bool>true</Bool>` +
+			`<Str>str</Str>` +
+			`<Bytes>byt</Bytes>` +
+			`<Ptr></Ptr>` +
+			`</OmitFieldTest>`,
+	},
+	{
+		Value:     &OmitFieldTest{},
+		ExpectXML: `<OmitFieldTest></OmitFieldTest>`,
 	},
 
 	// Test ",any"
@@ -542,6 +668,22 @@ var marshalTests = []struct {
 		},
 		ExpectXML: `<RecurseA><A>a1</A><B><A><A>a2</A></A><B>b1</B></B></RecurseA>`,
 	},
+
+	// Test ignoring fields via "-" tag
+	{
+		ExpectXML: `<IgnoreTest></IgnoreTest>`,
+		Value:     &IgnoreTest{},
+	},
+	{
+		ExpectXML:   `<IgnoreTest></IgnoreTest>`,
+		Value:       &IgnoreTest{PublicSecret: "can't tell"},
+		MarshalOnly: true,
+	},
+	{
+		ExpectXML:     `<IgnoreTest><PublicSecret>ignore me</PublicSecret></IgnoreTest>`,
+		Value:         &IgnoreTest{},
+		UnmarshalOnly: true,
+	},
 }
 
 func TestMarshal(t *testing.T) {
@@ -549,13 +691,12 @@ func TestMarshal(t *testing.T) {
 		if test.UnmarshalOnly {
 			continue
 		}
-		buf := bytes.NewBuffer(nil)
-		err := Marshal(buf, test.Value)
+		data, err := Marshal(test.Value)
 		if err != nil {
 			t.Errorf("#%d: Error: %s", idx, err)
 			continue
 		}
-		if got, want := buf.String(), test.ExpectXML; got != want {
+		if got, want := string(data), test.ExpectXML; got != want {
 			if strings.Contains(want, "\n") {
 				t.Errorf("#%d: marshal(%#v):\nHAVE:\n%s\nWANT:\n%s", idx, test.Value, got, want)
 			} else {
@@ -596,8 +737,7 @@ var marshalErrorTests = []struct {
 
 func TestMarshalErrors(t *testing.T) {
 	for idx, test := range marshalErrorTests {
-		buf := bytes.NewBuffer(nil)
-		err := Marshal(buf, test.Value)
+		_, err := Marshal(test.Value)
 		if err == nil || err.Error() != test.Err {
 			t.Errorf("#%d: marshal(%#v) = [error] %v, want %v", idx, test.Value, err, test.Err)
 		}
@@ -621,8 +761,7 @@ func TestUnmarshal(t *testing.T) {
 
 		vt := reflect.TypeOf(test.Value)
 		dest := reflect.New(vt.Elem()).Interface()
-		buffer := bytes.NewBufferString(test.ExpectXML)
-		err := Unmarshal(buffer, dest)
+		err := Unmarshal([]byte(test.ExpectXML), dest)
 
 		switch fix := dest.(type) {
 		case *Feed:
@@ -641,17 +780,14 @@ func TestUnmarshal(t *testing.T) {
 }
 
 func BenchmarkMarshal(b *testing.B) {
-	buf := bytes.NewBuffer(nil)
 	for i := 0; i < b.N; i++ {
-		Marshal(buf, atomValue)
-		buf.Truncate(0)
+		Marshal(atomValue)
 	}
 }
 
 func BenchmarkUnmarshal(b *testing.B) {
 	xml := []byte(atomXml)
 	for i := 0; i < b.N; i++ {
-		buffer := bytes.NewBuffer(xml)
-		Unmarshal(buffer, &Feed{})
+		Unmarshal(xml, &Feed{})
 	}
 }

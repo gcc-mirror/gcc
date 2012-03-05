@@ -22479,15 +22479,11 @@ if test $in_tree_ld != yes ; then
   else
     case "${target}" in
       *-*-solaris2*)
+	# See acinclude.m4 (gcc_SUN_LD_VERSION) for the version number
+	# format.
 	#
-	# Solaris 2 ld -V output looks like this for a regular version:
-	#
-	# ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1699
-	#
-	# but test versions add stuff at the end:
-	#
-	# ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1701:onnv-ab196087-6931056-03/25/10
-	#
+	# Don't reuse gcc_gv_sun_ld_vers_* in case a linker other than
+	# /usr/ccs/bin/ld has been configured.
 	ld_ver=`$gcc_cv_ld -V 2>&1`
 	if echo "$ld_ver" | grep 'Solaris Link Editors' > /dev/null; then
 	  ld_vers=`echo $ld_ver | sed -n \
@@ -22615,6 +22611,29 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_ro_rw_mix" >&5
 $as_echo "$gcc_cv_ld_ro_rw_mix" >&6; }
 
+if test "x${build}" = "x${target}" && test "x${build}" = "x${host}"; then
+  case "${target}" in
+    *-*-solaris2*)
+      #
+      # Solaris 2 ld -V output looks like this for a regular version:
+      #
+      # ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1699
+      #
+      # but test versions add stuff at the end:
+      #
+      # ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1701:onnv-ab196087-6931056-03/25/10
+      #
+      gcc_cv_sun_ld_ver=`/usr/ccs/bin/ld -V 2>&1`
+      if echo "$gcc_cv_sun_ld_ver" | grep 'Solaris Link Editors' > /dev/null; then
+	gcc_cv_sun_ld_vers=`echo $gcc_cv_sun_ld_ver | sed -n \
+	  -e 's,^.*: 5\.[0-9][0-9]*-\([0-9]\.[0-9][0-9]*\).*$,\1,p'`
+	gcc_cv_sun_ld_vers_major=`expr "$gcc_cv_sun_ld_vers" : '\([0-9]*\)'`
+	gcc_cv_sun_ld_vers_minor=`expr "$gcc_cv_sun_ld_vers" : '[0-9]*\.\([0-9]*\)'`
+      fi
+      ;;
+  esac
+fi
+
 # Check whether --enable-initfini-array was given.
 if test "${enable_initfini_array+set}" = set; then :
   enableval=$enable_initfini_array;
@@ -22690,9 +22709,11 @@ fi
 .balign 4
 .byte 'H', 'H', 'H', 'H'
 .text
+.globl _start
+_start:
 EOF
 	  if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
-	     && $gcc_cv_ld -e 0 -o conftest conftest.o > /dev/null 2>&1 \
+	     && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
 	     && $gcc_cv_objdump -s -j .init_array conftest \
 		| grep HHHHFFFFDDDDBBBB > /dev/null 2>&1 \
 	     && $gcc_cv_objdump -s -j .fini_array conftest \
@@ -22705,16 +22726,40 @@ EOF
 /* end confdefs.h.  */
 
 #ifndef __ELF__
-#error Not an ELF OS
+# error Not an ELF OS
 #endif
 #include <stdlib.h>
-#if defined __GLIBC_PREREQ && __GLIBC_PREREQ (2, 4)
+#if defined __GLIBC_PREREQ
+# if __GLIBC_PREREQ (2, 4)
+# else
+#  error GLIBC 2.4 required
+# endif
 #else
-#error The C library not known to support .init_array/.fini_array
+# if defined __sun__ && defined __svr4__
+   /* Solaris ld.so.1 supports .init_array/.fini_array since Solaris 8.  */
+# else
+#  error The C library not known to support .init_array/.fini_array
+# endif
 #endif
 
 _ACEOF
 if ac_fn_c_try_cpp "$LINENO"; then :
+
+    case "${target}" in
+      *-*-solaris2.8*)
+	# .init_array/.fini_array support was introduced in Solaris 8
+	# patches 109147-08 (sparc) and 109148-08 (x86).  Since ld.so.1 and
+	# ld are guaranteed to be updated in lockstep, we can check ld -V
+	# instead.  Unfortunately, proper ld version numbers were only
+	# introduced in rev. -14, so we check for that.
+  	if test "$gcc_cv_sun_ld_vers_minor" -lt 272; then
+	  gcc_cv_initfini_array=no
+	fi
+      ;;
+      *-*-solaris2.9* | *-*-solaris2.1[0-9]*)
+        # .init_array/.fini_array support is present since Solaris 9 FCS.
+        ;;
+    esac
 
 else
   gcc_cv_initfini_array=no
@@ -22735,7 +22780,7 @@ fi
 
 if test $enable_initfini_array = yes; then
 
-$as_echo "#define HAVE_INITFINI_ARRAY 1" >>confdefs.h
+$as_echo "#define HAVE_INITFINI_ARRAY_SUPPORT 1" >>confdefs.h
 
 fi
 
@@ -23756,6 +23801,37 @@ foo:	.long	25
 	xor	%l1, %tle_lox10(foo), %o5
 	ld	[%g7 + %o5], %o1"
 	;;
+  tilepro*-*-*)
+      conftest_s='
+	.section ".tdata","awT",@progbits
+foo:	.long	25
+	.text
+	addli	r0, zero, tls_gd(foo)
+	auli	r0, zero, tls_gd_ha16(foo)
+	addli	r0, r0, tls_gd_lo16(foo)
+	jal	__tls_get_addr
+	addli	r0, zero, tls_ie(foo)
+	auli	r0, r0, tls_ie_ha16(foo)
+	addli	r0, r0, tls_ie_lo16(foo)'
+	tls_first_major=2
+	tls_first_minor=22
+	tls_as_opt="--fatal-warnings"
+	;;
+  tilegx*-*-*)
+      conftest_s='
+	.section ".tdata","awT",@progbits
+foo:	.long	25
+	.text
+	shl16insli r0, zero, hw0_last_tls_gd(foo)
+	shl16insli r0, zero, hw1_last_tls_gd(foo)
+	shl16insli r0, r0,   hw0_tls_gd(foo)
+	jal	   __tls_get_addr
+	shl16insli r0, zero, hw1_last_tls_ie(foo)
+	shl16insli r0, r0,   hw0_tls_ie(foo)'
+	tls_first_major=2
+	tls_first_minor=22
+	tls_as_opt="--fatal-warnings"
+	;;
   xtensa*-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits
@@ -23963,6 +24039,13 @@ fi
     if test $set_have_as_tls = no; then
       LIBS=
     fi
+    # Even without TLS support on Solaris 8, explicitly link with libthread
+    # to guarantee that the alternate thread library is used.
+    case "$target" in
+      *-*-solaris2.8)
+	LIBS=-lthread
+	;;
+    esac
     # Always define LIB_TLS_SPEC, even without TLS support.
 
 cat >>confdefs.h <<_ACEOF
@@ -26100,7 +26183,7 @@ esac
 # version to the per-target configury.
 case "$cpu_type" in
   alpha | arm | avr | bfin | cris | i386 | m32c | m68k | microblaze | mips \
-  | pa | rs6000 | score | sparc | spu | xstormy16 | xtensa)
+  | pa | rs6000 | score | sparc | spu | tilegx | tilepro | xstormy16 | xtensa)
     insn="nop"
     ;;
   ia64 | s390)

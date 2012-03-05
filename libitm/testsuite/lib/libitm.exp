@@ -140,7 +140,6 @@ proc libitm_init { args } {
 	lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/.libs"
     }
     lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/.."
-    lappend ALWAYS_CFLAGS "ldflags=-litm"
 
     # We use atomic operations in the testcases to validate results.
     if { ([istarget i?86-*-*] || [istarget x86_64-*-*])

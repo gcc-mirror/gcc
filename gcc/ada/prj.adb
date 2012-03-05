@@ -1476,7 +1476,8 @@ package body Prj is
    is
       procedure Analyze_Tree
         (Local_Root : Project_Id;
-         Local_Tree : Project_Tree_Ref);
+         Local_Tree : Project_Tree_Ref;
+         Context    : Project_Context);
       --  Process Project and all its aggregated project to analyze their own
       --  imported projects.
 
@@ -1486,7 +1487,8 @@ package body Prj is
 
       procedure Analyze_Tree
         (Local_Root : Project_Id;
-         Local_Tree : Project_Tree_Ref)
+         Local_Tree : Project_Tree_Ref;
+         Context    : Project_Context)
       is
          pragma Unreferenced (Local_Root);
 
@@ -1540,7 +1542,9 @@ package body Prj is
                Project.All_Imported_Projects :=
                  new Project_List_Element'
                    (Project               => Prj2,
-                    From_Encapsulated_Lib => Context.From_Encapsulated_Lib,
+                    From_Encapsulated_Lib =>
+                      Context.From_Encapsulated_Lib
+                        or else Analyze_Tree.Context.From_Encapsulated_Lib,
                     Next                  => Project.All_Imported_Projects);
             end if;
          end Recursive_Add;
@@ -1564,7 +1568,7 @@ package body Prj is
       end Analyze_Tree;
 
       procedure For_Aggregates is
-        new For_Project_And_Aggregated (Analyze_Tree);
+        new For_Project_And_Aggregated_Context (Analyze_Tree);
 
    --  Start of processing for Compute_All_Imported_Projects
 
@@ -1862,6 +1866,58 @@ package body Prj is
          end loop;
       end if;
    end For_Project_And_Aggregated;
+
+   ----------------------------------------
+   -- For_Project_And_Aggregated_Context --
+   ----------------------------------------
+
+   procedure For_Project_And_Aggregated_Context
+     (Root_Project : Project_Id;
+      Root_Tree    : Project_Tree_Ref)
+   is
+
+      procedure Recursive_Process
+        (Project : Project_Id;
+         Tree    : Project_Tree_Ref;
+         Context : Project_Context);
+      --  Process Project and all aggregated projects recursively
+
+      -----------------------
+      -- Recursive_Process --
+      -----------------------
+
+      procedure Recursive_Process
+        (Project : Project_Id;
+         Tree    : Project_Tree_Ref;
+         Context : Project_Context)
+      is
+         Agg : Aggregated_Project_List;
+         Ctx : Project_Context;
+
+      begin
+         Action (Project, Tree, Context);
+
+         if Project.Qualifier in Aggregate_Project then
+            Ctx :=
+              (In_Aggregate_Lib      => True,
+               From_Encapsulated_Lib =>
+                 Context.From_Encapsulated_Lib
+                   or else Project.Standalone_Library = Encapsulated);
+
+            Agg := Project.Aggregated_Projects;
+            while Agg /= null loop
+               Recursive_Process (Agg.Project, Agg.Tree, Ctx);
+               Agg := Agg.Next;
+            end loop;
+         end if;
+      end Recursive_Process;
+
+   --  Start of processing for For_Project_And_Aggregated_Context
+
+   begin
+      Recursive_Process
+        (Root_Project, Root_Tree, Project_Context'(False, False));
+   end For_Project_And_Aggregated_Context;
 
 --  Package initialization for Prj
 

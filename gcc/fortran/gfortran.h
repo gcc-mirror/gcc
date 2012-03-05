@@ -1115,6 +1115,7 @@ typedef struct gfc_tbp_generic
   struct gfc_typebound_proc* specific;
 
   struct gfc_tbp_generic* next;
+  bool is_operator;
 }
 gfc_tbp_generic;
 
@@ -2199,6 +2200,7 @@ typedef struct
   int warn_aliasing;
   int warn_ampersand;
   int gfc_warn_conversion;
+  int warn_c_binding_type;
   int warn_conversion_extra;
   int warn_function_elimination;
   int warn_implicit_interface;
@@ -2918,6 +2920,7 @@ gfc_try gfc_calculate_transfer_sizes (gfc_expr*, gfc_expr*, gfc_expr*,
 				      size_t*, size_t*, size_t*);
 
 /* class.c */
+void gfc_fix_class_refs (gfc_expr *e);
 void gfc_add_component_ref (gfc_expr *, const char *);
 void gfc_add_class_array_ref (gfc_expr *);
 #define gfc_add_data_component(e)     gfc_add_component_ref(e,"_data")

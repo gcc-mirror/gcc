@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -165,6 +165,20 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       HT_Ops.Adjust (Container.HT);
    end Adjust;
 
+   procedure Adjust (Control : in out Reference_Control_Type) is
+   begin
+      if Control.Container /= null then
+         declare
+            HT : Hash_Table_Type renames Control.Container.all.HT;
+            B : Natural renames HT.Busy;
+            L : Natural renames HT.Lock;
+         begin
+            B := B + 1;
+            L := L + 1;
+         end;
+      end if;
+   end Adjust;
+
    ------------
    -- Assign --
    ------------
@@ -228,7 +242,20 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
       pragma Assert (Vet (Position), "bad cursor in Constant_Reference");
 
-      return (Element => Position.Node.Element.all'Access);
+      declare
+         HT : Hash_Table_Type renames Position.Container.all.HT;
+         B : Natural renames HT.Busy;
+         L : Natural renames HT.Lock;
+      begin
+         return R : constant Constant_Reference_Type :=
+                      (Element => Position.Node.Element.all'Access,
+                       Control =>
+                         (Controlled with Container'Unrestricted_Access))
+         do
+            B := B + 1;
+            L := L + 1;
+         end return;
+      end;
    end Constant_Reference;
 
    --------------
@@ -607,6 +634,22 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          begin
             B := B - 1;
          end;
+      end if;
+   end Finalize;
+
+   procedure Finalize (Control : in out Reference_Control_Type) is
+   begin
+      if Control.Container /= null then
+         declare
+            HT : Hash_Table_Type renames Control.Container.all.HT;
+            B : Natural renames HT.Busy;
+            L : Natural renames HT.Lock;
+         begin
+            B := B - 1;
+            L := L - 1;
+         end;
+
+         Control.Container := null;
       end if;
    end Finalize;
 
@@ -1926,7 +1969,20 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
             raise Program_Error with "Node has no element";
          end if;
 
-         return (Element => Node.Element.all'Access);
+         declare
+            HT : Hash_Table_Type renames Container'Unrestricted_Access.all.HT;
+            B : Natural renames HT.Busy;
+            L : Natural renames HT.Lock;
+         begin
+            return R : constant Constant_Reference_Type :=
+                         (Element => Node.Element.all'Access,
+                          Control =>
+                            (Controlled with Container'Unrestricted_Access))
+            do
+               B := B + 1;
+               L := L + 1;
+            end return;
+         end;
       end Constant_Reference;
 
       --------------

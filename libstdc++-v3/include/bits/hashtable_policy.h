@@ -1113,7 +1113,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       for (auto __itx = __this->begin(); __itx != __this->end(); ++__itx)
 	{
 	  const auto __ity = __other.find(_ExtractKey()(*__itx));
-	  if (__ity == __other.end() || *__ity != *__itx)
+	  if (__ity == __other.end() || !bool(*__ity == *__itx))
 	    return false;
 	}
       return true;
@@ -1151,7 +1151,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	for (_Uiterator __it1 = __first1; __it1 != __last1; ++__it1)
 	  {
 	    _Uiterator __tmp =  __first1;
-	    while (__tmp != __it1 && !(*__tmp == *__it1))
+	    while (__tmp != __it1 && !bool(*__tmp == *__it1))
 	      ++__tmp;
 
 	    // We've seen this one before.

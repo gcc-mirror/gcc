@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                  S Y S T E M . D I M _ I N T E G E R _ I O               --
+--                  S Y S T E M . D I M . I N T E G E R _ I O               --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Dim_Integer_IO is
+package body System.Dim.Integer_IO is
 
    package Num_Dim_Integer_IO is new Ada.Text_IO.Integer_IO (Num_Dim_Integer);
 
@@ -74,4 +74,4 @@ package body System.Dim_Integer_IO is
       To := To & Symbols;
    end Put;
 
-end System.Dim_Integer_IO;
+end System.Dim.Integer_IO;

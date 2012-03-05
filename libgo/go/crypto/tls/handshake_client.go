@@ -59,7 +59,8 @@ func (c *Conn) clientHandshake() error {
 	finishedHash.Write(serverHello.marshal())
 
 	vers, ok := mutualVersion(serverHello.vers)
-	if !ok {
+	if !ok || vers < versionTLS10 {
+		// TLS 1.0 is the minimum version supported as a client.
 		return c.sendAlert(alertProtocolVersion)
 	}
 	c.vers = vers
@@ -272,7 +273,7 @@ func (c *Conn) clientHandshake() error {
 	masterSecret, clientMAC, serverMAC, clientKey, serverKey, clientIV, serverIV :=
 		keysFromPreMasterSecret(c.vers, preMasterSecret, hello.random, serverHello.random, suite.macLen, suite.keyLen, suite.ivLen)
 
-	clientCipher := suite.cipher(clientKey, clientIV, false /* not for reading */ )
+	clientCipher := suite.cipher(clientKey, clientIV, false /* not for reading */)
 	clientHash := suite.mac(c.vers, clientMAC)
 	c.out.prepareCipherSpec(c.vers, clientCipher, clientHash)
 	c.writeRecord(recordTypeChangeCipherSpec, []byte{1})
@@ -293,7 +294,7 @@ func (c *Conn) clientHandshake() error {
 	finishedHash.Write(finished.marshal())
 	c.writeRecord(recordTypeHandshake, finished.marshal())
 
-	serverCipher := suite.cipher(serverKey, serverIV, true /* for reading */ )
+	serverCipher := suite.cipher(serverKey, serverIV, true /* for reading */)
 	serverHash := suite.mac(c.vers, serverMAC)
 	c.in.prepareCipherSpec(c.vers, serverCipher, serverHash)
 	c.readRecord(recordTypeChangeCipherSpec)

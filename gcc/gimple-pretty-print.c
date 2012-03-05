@@ -1595,9 +1595,11 @@ dump_gimple_phi (pretty_printer *buffer, gimple phi, int spc, int flags)
       pp_points_to_solution (buffer, &pi->pt);
       newline_and_indent (buffer, spc);
       if (pi->align != 1)
-	pp_printf (buffer, "# ALIGN = %u, MISALIGN = %u",
-		   pi->align, pi->misalign);
-      newline_and_indent (buffer, spc);
+	{
+	  pp_printf (buffer, "# ALIGN = %u, MISALIGN = %u",
+		     pi->align, pi->misalign);
+	  newline_and_indent (buffer, spc);
+	}
       pp_string (buffer, "# ");
     }
 

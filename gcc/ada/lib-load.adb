@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -406,9 +406,25 @@ package body Lib.Load is
               New_Child
                 (Load_Name, Get_Unit_Name (Name (Unit (Cunit (Unump)))));
 
+            --  If the load is for a with_clause, for visibility purposes both
+            --  the renamed entity and renaming one must be available in the
+            --  current unit: the renamed one in order to retrieve the child
+            --  unit, and the original one because it may be used as a prefix
+            --  in the body of the current unit. We add an explicit with_clause
+            --  for the original parent so that the renaming declaration is
+            --  properly loaded and analyzed.
+
+            if Present (With_Node) then
+               Insert_After (With_Node,
+                 Make_With_Clause (Sloc (With_Node),
+                   Name => Copy_Separate_Tree (Prefix (Name (With_Node)))));
+            end if;
+
             --  Save the renaming entity, to establish its visibility when
             --  installing the context. The implicit with is on this entity,
-            --  not on the package it renames.
+            --  not on the package it renames. This is somewhat redundant given
+            --  the with_clause just created, but it simplifies subsequent
+            --  expansion of the current with_clause. Optimizable ???
 
             if Nkind (Error_Node) = N_With_Clause
               and then Nkind (Name (Error_Node)) = N_Selected_Component

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -mavx -mtune=generic -dp" } */
+/* { dg-additional-options "-mabi=sysv" { target x86_64-*-mingw* } } */
 
 typedef double EXPRESS[5];
 void Parse_Rel_Factor (EXPRESS Express,int *Terms);

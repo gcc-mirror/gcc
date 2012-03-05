@@ -6,15 +6,15 @@ package xml
 
 import (
 	"reflect"
-	"strings"
 	"testing"
+	"time"
 )
 
 // Stripped down Atom feed data structures.
 
 func TestUnmarshalFeed(t *testing.T) {
 	var f Feed
-	if err := Unmarshal(strings.NewReader(atomFeedString), &f); err != nil {
+	if err := Unmarshal([]byte(atomFeedString), &f); err != nil {
 		t.Fatalf("Unmarshal: %s", err)
 	}
 	if !reflect.DeepEqual(f, atomFeed) {
@@ -25,7 +25,7 @@ func TestUnmarshalFeed(t *testing.T) {
 // hget http://codereview.appspot.com/rss/mine/rsc
 const atomFeedString = `
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en-us"><title>Code Review - My issues</title><link href="http://codereview.appspot.com/" rel="alternate"></link><link href="http://codereview.appspot.com/rss/mine/rsc" rel="self"></link><id>http://codereview.appspot.com/</id><updated>2009-10-04T01:35:58+00:00</updated><author><name>rietveld&lt;&gt;</name></author><entry><title>rietveld: an attempt at pubsubhubbub
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en-us" updated="2009-10-04T01:35:58+00:00"><title>Code Review - My issues</title><link href="http://codereview.appspot.com/" rel="alternate"></link><link href="http://codereview.appspot.com/rss/mine/rsc" rel="self"></link><id>http://codereview.appspot.com/</id><author><name>rietveld&lt;&gt;</name></author><entry><title>rietveld: an attempt at pubsubhubbub
 </title><link href="http://codereview.appspot.com/126085" rel="alternate"></link><updated>2009-10-04T01:35:58+00:00</updated><author><name>email-address-removed</name></author><id>urn:md5:134d9179c41f806be79b3a5f7877d19a</id><summary type="html">
   An attempt at adding pubsubhubbub support to Rietveld.
 http://code.google.com/p/pubsubhubbub
@@ -79,26 +79,26 @@ not being used from outside intra_region_diff.py.
 </summary></entry></feed> 	   `
 
 type Feed struct {
-	XMLName Name    `xml:"http://www.w3.org/2005/Atom feed"`
-	Title   string  `xml:"title"`
-	Id      string  `xml:"id"`
-	Link    []Link  `xml:"link"`
-	Updated Time    `xml:"updated"`
-	Author  Person  `xml:"author"`
-	Entry   []Entry `xml:"entry"`
+	XMLName Name      `xml:"http://www.w3.org/2005/Atom feed"`
+	Title   string    `xml:"title"`
+	Id      string    `xml:"id"`
+	Link    []Link    `xml:"link"`
+	Updated time.Time `xml:"updated,attr"`
+	Author  Person    `xml:"author"`
+	Entry   []Entry   `xml:"entry"`
 }
 
 type Entry struct {
-	Title   string `xml:"title"`
-	Id      string `xml:"id"`
-	Link    []Link `xml:"link"`
-	Updated Time   `xml:"updated"`
-	Author  Person `xml:"author"`
-	Summary Text   `xml:"summary"`
+	Title   string    `xml:"title"`
+	Id      string    `xml:"id"`
+	Link    []Link    `xml:"link"`
+	Updated time.Time `xml:"updated"`
+	Author  Person    `xml:"author"`
+	Summary Text      `xml:"summary"`
 }
 
 type Link struct {
-	Rel  string `xml:"rel,attr"`
+	Rel  string `xml:"rel,attr,omitempty"`
 	Href string `xml:"href,attr"`
 }
 
@@ -110,11 +110,9 @@ type Person struct {
 }
 
 type Text struct {
-	Type string `xml:"type,attr"`
+	Type string `xml:"type,attr,omitempty"`
 	Body string `xml:",chardata"`
 }
-
-type Time string
 
 var atomFeed = Feed{
 	XMLName: Name{"http://www.w3.org/2005/Atom", "feed"},
@@ -124,7 +122,7 @@ var atomFeed = Feed{
 		{Rel: "self", Href: "http://codereview.appspot.com/rss/mine/rsc"},
 	},
 	Id:      "http://codereview.appspot.com/",
-	Updated: "2009-10-04T01:35:58+00:00",
+	Updated: ParseTime("2009-10-04T01:35:58+00:00"),
 	Author: Person{
 		Name:     "rietveld<>",
 		InnerXML: "<name>rietveld&lt;&gt;</name>",
@@ -135,7 +133,7 @@ var atomFeed = Feed{
 			Link: []Link{
 				{Rel: "alternate", Href: "http://codereview.appspot.com/126085"},
 			},
-			Updated: "2009-10-04T01:35:58+00:00",
+			Updated: ParseTime("2009-10-04T01:35:58+00:00"),
 			Author: Person{
 				Name:     "email-address-removed",
 				InnerXML: "<name>email-address-removed</name>",
@@ -182,7 +180,7 @@ the top of feeds.py marked NOTE(rsc).
 			Link: []Link{
 				{Rel: "alternate", Href: "http://codereview.appspot.com/124106"},
 			},
-			Updated: "2009-10-03T23:02:17+00:00",
+			Updated: ParseTime("2009-10-03T23:02:17+00:00"),
 			Author: Person{
 				Name:     "email-address-removed",
 				InnerXML: "<name>email-address-removed</name>",
@@ -281,7 +279,7 @@ var pathTests = []interface{}{
 func TestUnmarshalPaths(t *testing.T) {
 	for _, pt := range pathTests {
 		v := reflect.New(reflect.TypeOf(pt).Elem()).Interface()
-		if err := Unmarshal(strings.NewReader(pathTestString), v); err != nil {
+		if err := Unmarshal([]byte(pathTestString), v); err != nil {
 			t.Fatalf("Unmarshal: %s", err)
 		}
 		if !reflect.DeepEqual(v, pt) {
@@ -331,7 +329,7 @@ var badPathTests = []struct {
 
 func TestUnmarshalBadPaths(t *testing.T) {
 	for _, tt := range badPathTests {
-		err := Unmarshal(strings.NewReader(pathTestString), tt.v)
+		err := Unmarshal([]byte(pathTestString), tt.v)
 		if !reflect.DeepEqual(err, tt.e) {
 			t.Fatalf("Unmarshal with %#v didn't fail properly:\nhave %#v,\nwant %#v", tt.v, err, tt.e)
 		}
@@ -350,7 +348,7 @@ type TestThree struct {
 
 func TestUnmarshalWithoutNameType(t *testing.T) {
 	var x TestThree
-	if err := Unmarshal(strings.NewReader(withoutNameTypeData), &x); err != nil {
+	if err := Unmarshal([]byte(withoutNameTypeData), &x); err != nil {
 		t.Fatalf("Unmarshal: %s", err)
 	}
 	if x.Attr != OK {

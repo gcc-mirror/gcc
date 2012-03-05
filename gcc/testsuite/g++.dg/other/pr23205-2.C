@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "No stabs" { mmix-*-* *-*-aix* alpha*-*-* hppa*64*-*-* ia64-*-* } { "*" } { "" } } */
+/* { dg-skip-if "No stabs" { mmix-*-* *-*-aix* alpha*-*-* hppa*64*-*-* ia64-*-* tile*-*-* } { "*" } { "" } } */
 /* { dg-options "-gstabs+ -fno-eliminate-unused-debug-types -ftoplevel-reorder" } */
 
 const int foobar = 4;

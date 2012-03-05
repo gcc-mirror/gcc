@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                  S Y S T E M . D I M _ I N T E G E R _ I O               --
+--                  S Y S T E M . D I M . I N T E G E R _ I O               --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -29,19 +29,81 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package is a generic package that provides IO facilities for integer
---  dimensioned types.
+--  This package provides output routines for integer dimensioned types. All
+--  Put routines are modelled after those in package Ada.Text_IO.Integer_IO
+--  with the addition of an extra default parameter.
 
---  Note that there is a default string parameter in every Put routine
---  rewritten at compile time to output the corresponding dimensions as a
---  suffix of the numeric value.
+--  All the examples in this package are based on the MKS system of units:
+
+--    type Mks_Type is new Integer
+--      with
+--       Dimension_System => ((Meter, 'm'),
+--         (Kilogram, "kg"),
+--         (Second,   's'),
+--         (Ampere,   'A'),
+--         (Kelvin,   'K'),
+--         (Mole,     "mol"),
+--         (Candela,  "cd"));
+
+--  Parameter Symbol may be used in the following manner:
+
+--  Case 1. A value is supplied for Symbol
+
+--    The string appears as a suffix of Item
+
+--      Obj : Mks_Type := 2;
+--      Put (Obj, Symbols => " dimensionless");
+
+--      The corresponding output is: 2 dimensionless
+
+--  Case 2. No value is supplied for Symbol and Item is dimensionless
+
+--    Item appears without a suffix
+
+--      Obj : Mks_Type := 2;
+--      Put (Obj);
+
+--      The corresponding output is: 2
+
+--  Case 3. No value is supplied for Symbol and Item has a dimension
+
+--    If the type of Item is a dimensioned subtype whose symbolic name is not
+--    empty, then the symbolic name appears as a suffix.
+
+--      subtype Length is Mks_Type
+--        with
+--         Dimension => ('m',
+--           Meter =>  1,
+--           others => 0);
+
+--      Obj : Length := 2;
+--      Put (Obj);
+
+--      The corresponding output is: 2 m
+
+--    Otherwise, a new string is created and appears as a suffix of Item.
+--    This string results in the successive concatanations between each
+--    dimension symbolic name raised by its corresponding dimension power from
+--    the dimensions of Item.
+
+--      subtype Random is Mks_Type
+--        with
+--         Dimension => ("",
+--         Meter =>   3,
+--         Candela => 2,
+--         others =>  0);
+
+--      Obj : Random := 5;
+--      Put (Obj);
+
+--      The corresponding output is: 5 m**3.cd**2
 
 with Ada.Text_IO; use Ada.Text_IO;
 
 generic
    type Num_Dim_Integer is range <>;
 
-package System.Dim_Integer_IO is
+package System.Dim.Integer_IO is
 
    Default_Width : Field       := Num_Dim_Integer'Width;
    Default_Base  : Number_Base := 10;
@@ -67,4 +129,4 @@ package System.Dim_Integer_IO is
 
    pragma Inline (Put);
 
-end System.Dim_Integer_IO;
+end System.Dim.Integer_IO;

@@ -9,7 +9,10 @@ package math
 // Special cases are:
 //	Abs(±Inf) = +Inf
 //	Abs(NaN) = NaN
-func libc_fabs(float64) float64 __asm__("fabs")
+
+//extern fabs
+func libc_fabs(float64) float64
+
 func Abs(x float64) float64 {
 	return libc_fabs(x)
 }

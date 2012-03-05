@@ -21,7 +21,7 @@ type SysProcAttr struct {
 	Setpgid    bool        // Set process group ID to new pid (SYSV setpgrp)
 	Setctty    bool        // Set controlling terminal to fd 0
 	Noctty     bool        // Detach fd 0 from controlling terminal
-	Pdeathsig  int         // Signal that the process will get when its parent dies (Linux only)
+	Pdeathsig  Signal      // Signal that the process will get when its parent dies (Linux only)
 }
 
 // Fork, dup fd onto 0..len(fd), and exec(argv0, argvv, envv) in child.
@@ -43,7 +43,10 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	)
 
 	// guard against side effects of shuffling fds below.
-	fd := append([]int(nil), attr.Files...)
+	fd := make([]int, len(attr.Files))
+	for i, ufd := range attr.Files {
+		fd[i] = int(ufd)
+	}
 
 	// About to call fork.
 	// No more allocation or calls of non-assembly functions.
@@ -61,7 +64,7 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 
 	// Parent death signal
 	if sys.Pdeathsig != 0 {
-		_, err1 = raw_prctl(PR_SET_PDEATHSIG, sys.Pdeathsig, 0, 0, 0)
+		_, err1 = raw_prctl(PR_SET_PDEATHSIG, int(sys.Pdeathsig), 0, 0, 0)
 		if err1 != 0 {
 			goto childerror
 		}
@@ -161,9 +164,8 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	// so that pass 2 won't stomp on an fd it needs later.
 	nextfd = int(len(fd))
 	if pipe < nextfd {
-		_, err2 := Dup2(pipe, nextfd)
-		if err2 != nil {
-			err1 = err2.(Errno)
+		err1 = raw_dup2(pipe, nextfd)
+		if err1 != 0 {
 			goto childerror
 		}
 		raw_fcntl(nextfd, F_SETFD, FD_CLOEXEC)
@@ -172,9 +174,8 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	}
 	for i = 0; i < len(fd); i++ {
 		if fd[i] >= 0 && fd[i] < int(i) {
-			_, err2 := Dup2(fd[i], nextfd)
-			if err2 != nil {
-				err1 = err2.(Errno)
+			err1 = raw_dup2(fd[i], nextfd)
+			if err1 != 0 {
 				goto childerror
 			}
 			raw_fcntl(nextfd, F_SETFD, FD_CLOEXEC)
@@ -203,9 +204,8 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 		}
 		// The new fd is created NOT close-on-exec,
 		// which is exactly what we want.
-		_, err2 := Dup2(fd[i], i);
-		if err2 != nil {
-			err1 = err2.(Errno)
+		err1 = raw_dup2(fd[i], i)
+		if err1 != 0 {
 			goto childerror
 		}
 	}

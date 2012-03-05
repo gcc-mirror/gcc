@@ -10,7 +10,11 @@
 #if defined(__i386__)
 #  define SIZE 248
 #elif defined(__x86_64__)
-#  define SIZE 356
+#  ifndef _WIN64
+#    define SIZE 356
+#  else
+#    define SIZE (256 - 24)
+#  endif
 #elif defined (__sparc__)
 #  if defined (__arch64__)
 #    define SIZE 76

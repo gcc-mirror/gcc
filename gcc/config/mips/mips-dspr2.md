@@ -353,7 +353,7 @@
   "ISA_HAS_DSPR2"
 {
   if (INTVAL (operands[3]) & ~(unsigned HOST_WIDE_INT) 31)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 31);
+    operands[3] = GEN_INT (INTVAL (operands[3]) & 31);
   return "prepend\t%0,%z2,%3";
 }
   [(set_attr "type"	"arith")

@@ -5,6 +5,8 @@
    seem any good reason for it to, given that the Loongson processors
    do not support MIPS16.  */
 /* { dg-options "isa=loongson -mhard-float -mno-mips16 -O1" } */
+/* See PR 52155.  */
+/* { dg-options "isa=loongson -mhard-float -mno-mips16 -O1 -mlong64" { mips*-*-elf* && ilp32 } } */
 
 #include "loongson.h"
 #include <assert.h>

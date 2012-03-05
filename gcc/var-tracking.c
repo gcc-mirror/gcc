@@ -5334,6 +5334,10 @@ reverse_op (rtx val, const_rtx expr, rtx insn)
   if (!v || !cselib_preserved_value_p (v))
     return;
 
+  /* Use canonical V to avoid creating multiple redundant expressions
+     for different VALUES equivalent to V.  */
+  v = canonical_cselib_val (v);
+
   /* Adding a reverse op isn't useful if V already has an always valid
      location.  Ignore ENTRY_VALUE, while it is always constant, we should
      prefer non-ENTRY_VALUE locations whenever possible.  */
@@ -8225,9 +8229,14 @@ emit_note_insn_var_location (void **varp, void *data)
       /* Make sure that the call related notes come first.  */
       while (NEXT_INSN (insn)
 	     && NOTE_P (insn)
-	     && NOTE_DURING_CALL_P (insn))
+	     && ((NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION
+		  && NOTE_DURING_CALL_P (insn))
+		 || NOTE_KIND (insn) == NOTE_INSN_CALL_ARG_LOCATION))
 	insn = NEXT_INSN (insn);
-      if (NOTE_P (insn) && NOTE_DURING_CALL_P (insn))
+      if (NOTE_P (insn)
+	  && ((NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION
+	       && NOTE_DURING_CALL_P (insn))
+	      || NOTE_KIND (insn) == NOTE_INSN_CALL_ARG_LOCATION))
 	note = emit_note_after (NOTE_INSN_VAR_LOCATION, insn);
       else
 	note = emit_note_before (NOTE_INSN_VAR_LOCATION, insn);

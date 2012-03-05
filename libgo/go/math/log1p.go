@@ -92,7 +92,10 @@ package math
 //	Log1p(-1) = -Inf
 //	Log1p(x < -1) = NaN
 //	Log1p(NaN) = NaN
-func libc_log1p(float64) float64 __asm__("log1p")
+
+//extern log1p
+func libc_log1p(float64) float64
+
 func Log1p(x float64) float64 {
 	return libc_log1p(x)
 }
@@ -116,14 +119,12 @@ func log1p(x float64) float64 {
 	)
 
 	// special cases
-	// TODO(rsc): Remove manual inlining of IsNaN, IsInf
-	// when compiler does it for us
 	switch {
-	case x < -1 || x != x: // x < -1 || IsNaN(x): // includes -Inf
+	case x < -1 || IsNaN(x): // includes -Inf
 		return NaN()
 	case x == -1:
 		return Inf(-1)
-	case x > MaxFloat64: // IsInf(x, 1):
+	case IsInf(x, 1):
 		return Inf(1)
 	}
 

@@ -1,3 +1,134 @@
+2012-03-01  Kai Tietz  <ktietz@redhat.com>
+
+	* soft-fp: Imported from glibc upstream.
+
+2012-02-28  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/sfp-machine.h (_FP_STRUCT_LAYOUT): Define it
+	for mingw-targets as attribute gcc_struct.
+
+2012-02-28  Ian Lance Taylor  <iant@google.com>
+
+	* generic-morestack.c (__splitstack_releasecontext): Correct call
+	to __morestack_release_segments.
+
+2012-02-27  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	PR target/52390
+	* generic-morestack.c (__generic_morestack_set_initial_sp): Test
+	for __linux__ when removing signals from __morestack_fullmask.
+
+2012-02-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52261
+	* config/avr/lib1funcs.S (__AVR__XMEGA__): Fix tippo to __AVR_XMEGA__.
+
+2012-02-23  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/ia64/crtbegin.S: Use HAVE_INITFINI_ARRAY_SUPPORT
+	instead of HAVE_INITFINI_ARRAY.
+	* config/ia64/crtend.S: Likewise.
+
+2012-02-20  Kai Tietz  <ktietz@redhat.com>
+
+	PR libstdc++/52300
+	* gthr.h (GTHREAD_USE_WEAK): Define as zero for mingw.
+
+	* config.host (i686-*-mingw*): Set md_unwind_header only for dw2-mode
+	to w32-unwind.h header.
+
+2012-02-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config.host (mips64*-*-linux*, mipsisa64*-*-linux*)
+	(mips*-*-linux*): Remove t-slibgcc-libgcc.
+	* config/mips/t-mips16 (LIB1ASMFUNCS): Remove __mips16_rdhwr.
+	* config/mips/mips16.S (__mips16_rdhwr): Delete.
+
+2012-02-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips16.S (CALL_STUB_RET): Add CFI information.
+
+2012-02-15  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR libitm/52220
+	* config/darwin-crt-tm.c: Correct typo.
+
+2012-02-15  Iain Sandoe  <iains@gcc.gnu.org>
+	    Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR libitm/52220
+	* config/darwin-crt-tm.c: Generate dummy functions.
+
+2012-02-15  Iain Sandoe  <iains@gcc.gnu.org>
+	    Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR libitm/52042
+	* config/darwin-crt-tm.c (getTMCloneTable): New function.
+	(__doTMRegistrations): Call it.
+	(__doTMdeRegistrations): Likewise.
+
+2012-01-15  Georg-Johann Lay  <avr@gjlay.de>
+	    Anatoly Sokolov <aesok@post.ru>
+	    Eric Weddington <eric.weddington@atmel.com>
+
+	PR target/52261
+	* config/avr/lib1funcs.S (__prologue_saves__): Handle AVR_XMEGA
+	(__epilogue_restores__): Ditto.
+
+2012-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/51921
+	PR target/52205
+	* config/sparc/sol2-unwind.h (sparc64_is_sighandler): Add support for
+	Solaris 11 and slightly reformat.
+	(sparc_is_sighandler): Likewise.
+
+2012-02-14  Walter Lee  <walt@tilera.com>
+
+	* config.host: Handle tilegx and tilepro.
+	* config/tilegx/sfp-machine.h: New file.
+	* config/tilegx/sfp-machine32.h: New file.
+	* config/tilegx/sfp-machine64.h: New file.
+	* config/tilegx/t-crtstuff: New file.
+	* config/tilegx/t-softfp: New file.
+	* config/tilegx/t-tilegx: New file.
+	* config/tilepro/atomic.c: New file.
+	* config/tilepro/atomic.h: New file.
+	* config/tilepro/linux-unwind.h: New file.
+	* config/tilepro/sfp-machine.h: New file.
+	* config/tilepro/softdivide.c: New file.
+	* config/tilepro/softmpy.S: New file.
+	* config/tilepro/t-crtstuff: New file.
+	* config/tilepro/t-tilepro: New file.
+
+2012-02-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51296
+	PR libstdc++/51906
+	* gthr-posix.h: Allow static initializer macros to be disabled.
+	(__gthrw_pthread_cond_init): Define weak reference unconditionally.
+
+2012-02-05  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config.host (mips64*-*-linux*, mipsisa64*-*-linux*, mips*-*-linux*):
+	Add t-slibgcc-libgcc to tmake_file.
+	* config/mips/libgcc-mips16.ver: Revert previous patch.
+	* config/mips/mips16.S (__mips16_rdhwr): Hide.
+
+2012-02-02  Sumanth G <sumanth.gundapaneni@kpitcummins.com>
+	    Jayant R Sonar <jayant.sonar@kpitcummins.com>
+
+	* config.host: Add National Semiconductor CR16 target (cr16-*-*).
+	* config/cr16/crti.S: New file.
+	* config/cr16/crtlibid.S: New file.
+	* config/cr16/crtn.S: New file.
+	* config/cr16/lib1funcs.S: New file.
+	* config/cr16/t-cr16: New file.
+	* config/cr16/t-crtlibid: New file.
+	* config/cr16/unwind-dw2.h: New file.
+	* config/cr16/unwind-cr16.c: New file.
+	* config/cr16/divmodhi3.c: New file.
+
 2012-01-25  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/t-linux64: Delete.  Move..

@@ -6349,7 +6349,7 @@
   ""
   "*
 {
-  int x = INTVAL (operands[1]);
+  unsigned HOST_WIDE_INT x = UINTVAL (operands[1]);
   operands[2] = GEN_INT (4 + exact_log2 ((x >> 4) + 1));
   operands[1] = GEN_INT ((x & 0xf) - 0x10);
   return \"{zvdepi %1,%2,%0|depwi,z %1,%%sar,%2,%0}\";
@@ -6367,7 +6367,7 @@
   "exact_log2 (INTVAL (operands[1]) + 1) > 0"
   "*
 {
-  int x = INTVAL (operands[1]);
+  HOST_WIDE_INT x = INTVAL (operands[1]);
   operands[2] = GEN_INT (exact_log2 (x + 1));
   return \"{vdepi -1,%2,%0|depwi -1,%%sar,%2,%0}\";
 }"
@@ -6384,7 +6384,7 @@
   "INTVAL (operands[1]) == -2"
   "*
 {
-  int x = INTVAL (operands[1]);
+  HOST_WIDE_INT x = INTVAL (operands[1]);
   operands[2] = GEN_INT (exact_log2 ((~x) + 1));
   return \"{vdepi 0,%2,%0|depwi 0,%%sar,%2,%0}\";
 }"
@@ -6448,7 +6448,7 @@
   "TARGET_64BIT"
   "*
 {
-  int x = INTVAL (operands[1]);
+  unsigned HOST_WIDE_INT x = UINTVAL (operands[1]);
   operands[2] = GEN_INT (4 + exact_log2 ((x >> 4) + 1));
   operands[1] = GEN_INT ((x & 0x1f) - 0x20);
   return \"depdi,z %1,%%sar,%2,%0\";
@@ -6466,7 +6466,7 @@
   "TARGET_64BIT && exact_log2 (INTVAL (operands[1]) + 1) > 0"
   "*
 {
-  int x = INTVAL (operands[1]);
+  HOST_WIDE_INT x = INTVAL (operands[1]);
   operands[2] = GEN_INT (exact_log2 (x + 1));
   return \"depdi -1,%%sar,%2,%0\";
 }"
@@ -6483,7 +6483,7 @@
   "TARGET_64BIT && INTVAL (operands[1]) == -2"
   "*
 {
-  int x = INTVAL (operands[1]);
+  HOST_WIDE_INT x = INTVAL (operands[1]);
   operands[2] = GEN_INT (exact_log2 ((~x) + 1));
   return \"depdi 0,%%sar,%2,%0\";
 }"

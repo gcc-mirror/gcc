@@ -33,7 +33,6 @@ extern int avr_simple_epilogue (void);
 extern int avr_hard_regno_rename_ok (unsigned int, unsigned int);
 extern rtx avr_return_addr_rtx (int count, rtx tem);
 extern void avr_register_target_pragmas (void);
-extern bool avr_accumulate_outgoing_args (void);
 extern void avr_init_expanders (void);
 
 #ifdef TREE_CODE
@@ -84,7 +83,6 @@ extern bool avr_emit_movmemhi (rtx*);
 extern int avr_epilogue_uses (int regno);
 extern int avr_starting_frame_offset (void);
 
-extern void avr_output_bld (rtx operands[], int bit_nr);
 extern void avr_output_addr_vec_elt (FILE *stream, int value);
 extern const char *avr_out_sbxx_branch (rtx insn, rtx operands[]);
 extern const char* avr_out_bitop (rtx, rtx*, int*);
@@ -94,8 +92,9 @@ extern const char* avr_out_plus64 (rtx, int*);
 extern const char* avr_out_addto_sp (rtx*, int*);
 extern const char* avr_out_xload (rtx, rtx*, int*);
 extern const char* avr_out_movmem (rtx, rtx*, int*);
-extern const char* avr_out_map_bits (rtx, rtx*, int*);
+extern const char* avr_out_insert_bits (rtx*, int*);
 extern bool avr_popcount_each_byte (rtx, int, int);
+extern bool avr_has_nibble_0xf (rtx);
 
 extern int extra_constraint_Q (rtx x);
 extern int adjust_insn_length (rtx insn, int len);

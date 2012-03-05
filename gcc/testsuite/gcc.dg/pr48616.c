@@ -1,7 +1,7 @@
 /* PR tree-optimization/48616 */
 /* { dg-do run } */
 /* { dg-options "-O2 -ftree-vectorize" } */
-/* { dg-options "-O2 -ftree-vectorize -fno-common" { target alpha*-dec-osf* hppa*-*-hpux* } } */
+/* { dg-additional-options "-fno-common" { target alpha*-dec-osf* hppa*-*-hpux* } } */
 
 extern void abort (void);
 int a[4] __attribute__((aligned (32)));

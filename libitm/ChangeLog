@@ -1,3 +1,110 @@
+2012-02-24  Torvald Riegel  <triegel@redhat.com>
+
+	* retry.cc (GTM::gtm_thread::number_of_threads_changed): Change
+	default dispatch for more than 1 thread to ml_wt.
+
+2012-02-20  Torvald Riegel  <triegel@redhat.com>
+
+	* method-gl.cc (gl_wt_dispatch::orec): Put on separate cacheline.
+
+2012-02-20  Torvald Riegel  <triegel@redhat.com>
+
+	* method-gl.cc (gl_wt_dispatch::rollback): Optimize memory orders.
+
+2012-02-20  Torvald Riegel  <triegel@redhat.com>
+
+	* method-gl.cc (gl_wt_dispatch::trycommit): Remove handling of
+	serial mode corner cases made obsolete by prior gtm_rwlock changes.
+	(gl_wt_dispatch.rollback): Same.
+
+2012-02-20  Torvald Riegel  <triegel@redhat.com>
+
+	* method-gl.cc (gl_wt_dispatch::pre_write): Optimize memory orders.
+
+2012-02-20  Torvald Riegel  <triegel@redhat.com>
+
+	* method-gl.cc (gl_wt_dispatch::memtransfer_static): Add missing undo
+	for RfW src.  Optimize number of calls to gtm_thr.
+
+2012-02-20  Torvald Riegel  <triegel@redhat.com>
+
+	* beginend.cc (GTM::gtm_thread::begin_transaction): Move serial lock
+	acquisition to ...
+	* retry.cc (GTM::gtm_thread::decide_begin_dispatch): ... here.
+	(default_dispatch): Make atomic.
+	(GTM::gtm_thread::set_default_dispatch): Access atomically.
+	(GTM::gtm_thread::decide_retry_strategy): Access atomically and
+	use decide_begin_dispatch() if default_dispatch might have changed.
+	(GTM::gtm_thread::number_of_threads_changed): Initialize
+	default_dispatch here.
+
+2012-02-15  Iain Sandoe  <iains@gcc.gnu.org>
+	    Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR libitm/52220
+	* alloc_cpp.cc: No dummy definitions for darwin.
+	* eh_cpp.cc: Likewise.
+
+2012-02-14  Richard Henderson  <rth@redhat.com>
+
+	* config/x86/target.h (GTM_longjmp): Correct the .cfi corrections.
+
+2012-02-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/x86/target.h (GTM_longjmp): Correct .cfi directives.
+
+2012-02-14  Torvald Riegel  <triegel@redhat.com>
+
+	* libitm_i.h (GTM::gtm_rwlog_entry): New.
+	(GTM::gtm_thread): Add read and write logs.
+	(GTM::dispatch_ml_wt): Declare.
+	* retry.cc (parse_default_method): Support ml_wt.
+	* method-ml.cc: New file.
+	* Makefile.am: Add method-ml.cc.
+	* Makefile.in: Regenerate.
+
+2012-02-14  Torvald Riegel  <triegel@redhat.com>
+
+	* dispatch.h (GTM::abi_dispatch::supports): New.
+	(GTM::method_group::reinit): New.
+	* retry.cc (GTM::gtm_thread::decide_retry_strategy): Use reinit().
+	(GTM::gtm_thread::number_of_threads_changed): Check that the method
+	supports the current situation.
+
+2012-02-14  Torvald Riegel  <triegel@redhat.com>
+
+	* util.cc (GTM::xcalloc): New.
+	* common.h (GTM::xcalloc): Declare.
+
+2012-02-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/target.h (cpu_relax): Read from CC register.
+	* config/sparc/sjlj.S (GTM_longjmp): Restore %fp atomically.
+
+2012-02-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/x86/target.h (GTM_longjmp): Jump indirect from memory address.
+
+2012-02-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.tgt (target_cpu): Handle sparc and sparc64/sparcv9.
+	* config/sparc/cacheline.h: New file.
+	* config/sparc/target.h: Likewise.
+	* config/sparc/sjlj.S: Likewise.
+	* config/linux/sparc/futex_bits.h: Likewise.
+
+2012-02-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac (link_itm): Fix comment.
+	* configure: Regenerate.
+	* testsuite/lib/libitm.exp: Do not pass -litm for the link.
+
+2012-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libitm/51822
+	* testsuite/libitm.c++/c++.exp (lang_link_flags): Add -shared-libgcc.
+	Correct libgomp references.
+
 2012-01-24  Torvald Riegel  <triegel@redhat.com>
 
 	* config/linux/rwlock.cc (GTM::gtm_rwlock::write_unlock): Fix reader

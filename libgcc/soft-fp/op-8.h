@@ -26,9 +26,8 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, 51 Franklin Street, Fifth Floor, Boston,
-   MA 02110-1301, USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 /* We need just a few things from here for op-4, if we ever need some
    other macros, they can be added. */
@@ -108,4 +107,3 @@
     /* don't fix the LSB until the very end when we're sure f[0] is stable */	\
     X##_f[0] |= (_s != 0);						\
   } while (0)
-

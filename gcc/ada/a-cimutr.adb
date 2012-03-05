@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -202,6 +202,20 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       pragma Assert (Target_Count = Source_Count);
 
       Container.Count := Source_Count;
+   end Adjust;
+
+   procedure Adjust (Control : in out Reference_Control_Type) is
+   begin
+      if Control.Container /= null then
+         declare
+            C : Tree renames Control.Container.all;
+            B : Natural renames C.Busy;
+            L : Natural renames C.Lock;
+         begin
+            B := B + 1;
+            L := L + 1;
+         end;
+      end if;
    end Adjust;
 
    -------------------
@@ -472,7 +486,20 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       --  pragma Assert (Vet (Position),
       --                 "Position cursor in Constant_Reference is bad");
 
-      return (Element => Position.Node.Element.all'Access);
+      declare
+         C : Tree renames Position.Container.all;
+         B : Natural renames C.Busy;
+         L : Natural renames C.Lock;
+      begin
+         return R : constant Constant_Reference_Type :=
+                      (Element => Position.Node.Element.all'Access,
+                       Control =>
+                         (Controlled with Container'Unrestricted_Access))
+         do
+            B := B + 1;
+            L := L + 1;
+         end return;
+      end;
    end Constant_Reference;
 
    --------------
@@ -983,6 +1010,22 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       B : Natural renames Object.Container.Busy;
    begin
       B := B - 1;
+   end Finalize;
+
+   procedure Finalize (Control : in out Reference_Control_Type) is
+   begin
+      if Control.Container /= null then
+         declare
+            C : Tree renames Control.Container.all;
+            B : Natural renames C.Busy;
+            L : Natural renames C.Lock;
+         begin
+            B := B - 1;
+            L := L - 1;
+         end;
+
+         Control.Container := null;
+      end if;
    end Finalize;
 
    ----------
@@ -2041,7 +2084,19 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       --  pragma Assert (Vet (Position),
       --                 "Position cursor in Constant_Reference is bad");
 
-      return (Element => Position.Node.Element.all'Access);
+      declare
+         C : Tree renames Position.Container.all;
+         B : Natural renames C.Busy;
+         L : Natural renames C.Lock;
+      begin
+         return R : constant Reference_Type :=
+                      (Element => Position.Node.Element.all'Access,
+                       Control => (Controlled with Position.Container))
+         do
+            B := B + 1;
+            L := L + 1;
+         end return;
+      end;
    end Reference;
 
    --------------------

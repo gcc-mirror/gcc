@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build ignore
+
 // Trie table generator.
 // Used by make*tables tools to generate a go file with trie data structures
 // for mapping UTF-8 to a 16-bit value. All but the last byte in a UTF-8 byte
@@ -65,11 +67,13 @@ func (n trieNode) mostFrequentStride() int {
 				counts[stride]++
 			}
 			v = t.value
+		} else {
+			v = 0
 		}
 	}
 	var maxs, maxc int
 	for stride, cnt := range counts {
-		if cnt > maxc {
+		if cnt > maxc || (cnt == maxc && stride < maxs) {
 			maxs, maxc = stride, cnt
 		}
 	}

@@ -11,6 +11,7 @@
 
 #include "go-c.h"
 #include "gogo.h"
+#include "lex.h"
 #include "types.h"
 #include "export.h"
 #include "import.h"
@@ -32,11 +33,6 @@ go_add_search_path(const char* path)
 {
   search_path.push_back(std::string(path));
 }
-
-// The name used for parameters, receivers, and results in imported
-// function types.
-
-const char* const Import::import_marker = "*imported*";
 
 // Find import data.  This searches the file system for FILENAME and
 // returns a pointer to a Stream object to read the data that it
@@ -308,7 +304,10 @@ Import::import(Gogo* gogo, const std::string& local_name,
       this->package_->set_priority(prio);
       this->require_c_string(";\n");
 
-      if (stream->match_c_string("import "))
+      while (stream->match_c_string("import"))
+	this->read_one_import();
+
+      if (stream->match_c_string("init"))
 	this->read_import_init_fns(gogo);
 
       // Loop over all the input data for this package.
@@ -348,12 +347,24 @@ Import::import(Gogo* gogo, const std::string& local_name,
   return this->package_;
 }
 
+// Read an import line.  We don't actually care about these.
+
+void
+Import::read_one_import()
+{
+  this->require_c_string("import ");
+  Stream* stream = this->stream_;
+  while (stream->peek_char() != ';')
+    stream->advance(1);
+  this->require_c_string(";\n");
+}
+
 // Read the list of import control functions.
 
 void
 Import::read_import_init_fns(Gogo* gogo)
 {
-  this->require_c_string("import");
+  this->require_c_string("init");
   while (!this->match_c_string(";"))
     {
       this->require_c_string(" ");
@@ -441,12 +452,29 @@ Import::import_func(Package* package)
   Named_object* no;
   if (fntype->is_method())
     {
-      Type* rtype = receiver->type()->deref();
+      Type* rtype = receiver->type();
+
+      // We may still be reading the definition of RTYPE, so we have
+      // to be careful to avoid calling base or convert.  If RTYPE is
+      // a named type or a forward declaration, then we know that it
+      // is not a pointer, because we are reading a method on RTYPE
+      // and named pointers can't have methods.
+
+      if (rtype->classification() == Type::TYPE_POINTER)
+	rtype = rtype->points_to();
+
       if (rtype->is_error_type())
 	return NULL;
-      Named_type* named_rtype = rtype->named_type();
-      go_assert(named_rtype != NULL);
-      no = named_rtype->add_method_declaration(name, package, fntype, loc);
+      else if (rtype->named_type() != NULL)
+	no = rtype->named_type()->add_method_declaration(name, package, fntype,
+							 loc);
+      else if (rtype->forward_declaration_type() != NULL)
+	no = rtype->forward_declaration_type()->add_method_declaration(name,
+								       package,
+								       fntype,
+								       loc);
+      else
+	go_unreachable();
     }
   else
     {
@@ -647,8 +675,8 @@ Import::read_type()
 	{
 	  // We have seen this type before.  FIXME: it would be a good
 	  // idea to check that the two imported types are identical,
-	  // but we have not finalized the methds yet, which means
-	  // that we can nt reliably compare interface types.
+	  // but we have not finalized the methods yet, which means
+	  // that we can not reliably compare interface types.
 	  type = no->type_value();
 
 	  // Don't change the visibility of the existing type.
@@ -729,6 +757,21 @@ Import::read_identifier()
       ret += c;
       stream->advance(1);
     }
+  return ret;
+}
+
+// Read a name from the stream.
+
+std::string
+Import::read_name()
+{
+  std::string ret = this->read_identifier();
+  if (ret == "?")
+    ret.clear();
+  else if (!Lex::is_exported_name(ret))
+    ret = ('.' + this->package_->unique_prefix()
+	   + '.' + this->package_->name()
+	   + '.' + ret);
   return ret;
 }
 

@@ -1266,14 +1266,6 @@ address space @code{__flash@var{N}}.
 The compiler will set the @code{RAMPZ} segment register approptiately 
 before reading data by means of the @code{ELPM} instruction.
 
-On devices with less 64@tie{}kiB flash segments as indicated by the address
-space, the compiler will cut down the segment number to a number the
-device actually supports. Counting starts at@tie{}@code{0}
-for space @code{__flash}. For example, if you access address space
-@code{__flash3} on an ATmega128 device with two 64@tie{}kiB flash segments,
-the compiler will generate a read from @code{__flash1}, i.e.@: it
-will load @code{RAMPZ} with@tie{}@code{1} before reading.
-
 @item __memx
 @cindex @code{__memx} AVR Named Address Spaces
 This is a 24-bit address space that linearizes flash and RAM:
@@ -2723,11 +2715,12 @@ This attribute is ignored for R8C target.
 
 @item interrupt
 @cindex interrupt handler functions
-Use this attribute on the ARM, AVR, Epiphany, M32C, M32R/D, m68k, MeP, MIPS,
+Use this attribute on the ARM, AVR, CR16, Epiphany, M32C, M32R/D, m68k, MeP, MIPS,
 RL78, RX and Xstormy16 ports to indicate that the specified function is an
 interrupt handler.  The compiler will generate function entry and exit
 sequences suitable for use in an interrupt handler when this attribute
-is present.
+is present.  With Epiphany targets it may also generate a special section with
+code to initialize the interrupt vector table.
 
 Note, interrupt handlers for the Blackfin, H8/300, H8/300H, H8S, MicroBlaze,
 and SH processors can be specified via the @code{interrupt_handler} attribute.
@@ -2745,6 +2738,48 @@ Permissible values for this parameter are: IRQ, FIQ, SWI, ABORT and UNDEF@.
 
 On ARMv7-M the interrupt type is ignored, and the attribute means the function
 may be called with a word aligned stack pointer.
+
+On Epiphany targets one or more optional parameters can be added like this:
+
+@smallexample
+void __attribute__ ((interrupt ("dma0, dma1"))) universal_dma_handler ();
+@end smallexample
+
+Permissible values for these parameters are: @w{@code{reset}},
+@w{@code{software_exception}}, @w{@code{page_miss}},
+@w{@code{timer0}}, @w{@code{timer1}}, @w{@code{message}},
+@w{@code{dma0}}, @w{@code{dma1}}, @w{@code{wand}} and @w{@code{swi}}.
+Multiple parameters indicate that multiple entries in the interrupt
+vector table should be initialized for this function, i.e. for each
+parameter @w{@var{name}}, a jump to the function will be emitted in
+the section @w{ivt_entry_@var{name}}.  The parameter(s) may be omitted
+entirely, in which case no interrupt vector table entry will be provided.
+
+Note, on Epiphany targets, interrupts are enabled inside the function
+unless the @code{disinterrupt} attribute is also specified.
+
+On Epiphany targets, you can also use the following attribute to
+modify the behavior of an interrupt handler:
+@table @code
+@item forwarder_section
+@cindex @code{forwarder_section} attribute
+The interrupt handler may be in external memory which cannot be
+reached by a branch instruction, so generate a local memory trampoline
+to transfer control.  The single parameter identifies the section where
+the trampoline will be placed.
+@end table
+
+The following examples are all valid uses of these attributes on
+Epiphany targets:
+@smallexample
+void __attribute__ ((interrupt)) universal_handler ();
+void __attribute__ ((interrupt ("dma1"))) dma1_handler ();
+void __attribute__ ((interrupt ("dma0, dma1"))) universal_dma_handler ();
+void __attribute__ ((interrupt ("timer0"), disinterrupt))
+  fast_timer_handler ();
+void __attribute__ ((interrupt ("dma0, dma1"), forwarder_section ("tramp")))
+  external_dma_handler ();
+@end smallexample
 
 On MIPS targets, you can use the following attributes to modify the behavior
 of an interrupt handler:
@@ -7092,6 +7127,11 @@ functions will map any runtime value to @code{__ATOMIC_SEQ_CST} rather
 than invoke a runtime library call or inline a switch statement.  This is
 standard compliant, safe, and the simplest approach for now.
 
+The memory model parameter is a signed int, but only the lower 8 bits are
+reserved for the memory model.  The remainder of the signed int is reserved
+for future use and should be 0.  Use of the predefined atomic values will
+ensure proper usage.
+
 @deftypefn {Built-in Function} @var{type} __atomic_load_n (@var{type} *ptr, int memmodel)
 This built-in function implements an atomic load operation.  It returns the
 contents of @code{*@var{ptr}}.
@@ -7146,9 +7186,12 @@ This built-in function implements an atomic compare and exchange operation.
 This compares the contents of @code{*@var{ptr}} with the contents of
 @code{*@var{expected}} and if equal, writes @var{desired} into
 @code{*@var{ptr}}.  If they are not equal, the current contents of
-@code{*@var{ptr}} is written into @code{*@var{expected}}.
+@code{*@var{ptr}} is written into @code{*@var{expected}}.  @var{weak} is true
+for weak compare_exchange, and false for the strong variation.  Many targets 
+only offer the strong variation and ignore the parameter.  When in doubt, use
+the strong variation.
 
-True is returned if @code{*@var{desired}} is written into
+True is returned if @var{desired} is written into
 @code{*@var{ptr}} and the execution is considered to conform to the
 memory model specified by @var{success_memmodel}.  There are no
 restrictions on what memory model can be used here.
@@ -7242,27 +7285,32 @@ All memory orders are valid.
 
 @end deftypefn
 
-@deftypefn {Built-in Function} bool __atomic_always_lock_free (size_t size)
+@deftypefn {Built-in Function} bool __atomic_always_lock_free (size_t size,  void *ptr)
 
-This built-in function returns true if objects of size bytes will always
-generate lock free atomic instructions for the target architecture.
-Otherwise false is returned.
+This built-in function returns true if objects of @var{size} bytes will always
+generate lock free atomic instructions for the target architecture.  
+@var{size} must resolve to a compile time constant and the result also resolves to compile time constant.
 
-size must resolve to a compile time constant.
+@var{ptr} is an optional pointer to the object which may be used to determine
+alignment.  A value of 0 indicates typical alignment should be used.  The 
+compiler may also ignore this parameter.
 
 @smallexample
-if (_atomic_always_lock_free (sizeof (long long)))
+if (_atomic_always_lock_free (sizeof (long long), 0))
 @end smallexample
 
 @end deftypefn
 
-@deftypefn {Built-in Function} bool __atomic_is_lock_free (size_t size)
+@deftypefn {Built-in Function} bool __atomic_is_lock_free (size_t size, void *ptr)
 
-This built-in function returns true if objects of size bytes will always
+This built-in function returns true if objects of @var{size} bytes will always
 generate lock free atomic instructions for the target architecture.  If
 it is not known to be lock free a call is made to a runtime routine named
 @code{__atomic_is_lock_free}.
 
+@var{ptr} is an optional pointer to the object which may be used to determine
+alignment.  A value of 0 indicates typical alignment should be used.  The 
+compiler may also ignore this parameter.
 @end deftypefn
 
 @node Object Size Checking
@@ -8523,6 +8571,8 @@ instructions, but allow the compiler to schedule those calls.
 * SPARC VIS Built-in Functions::
 * SPU Built-in Functions::
 * TI C6X Built-in Functions::
+* TILE-Gx Built-in Functions::
+* TILEPro Built-in Functions::
 @end menu
 
 @node Alpha Built-in Functions
@@ -8802,33 +8852,64 @@ might increase delay time. @code{ticks} must be a compile time
 integer constant; delays with a variable number of cycles are not supported.
 
 @smallexample
-     unsigned char __builtin_avr_map8 (unsigned long map, unsigned char val)
+char __builtin_avr_flash_segment (const __memx void*)
 @end smallexample
 
 @noindent
-Each bit of the result is copied from a specific bit of @code{val}.
-@code{map} is a compile time constant that represents a map composed
-of 8 nibbles (4-bit groups):
-The @var{n}-th nibble of @code{map} specifies which bit of @code{val}
-is to be moved to the @var{n}-th bit of the result.
-For example, @code{map = 0x76543210} represents identity: The MSB of
-the result is read from the 7-th bit of @code{val}, the LSB is
-read from the 0-th bit to @code{val}, etc.
-Two more examples: @code{0x01234567} reverses the bit order and
-@code{0x32107654} is equivalent to a @code{swap} instruction.
-
-@noindent
-One typical use case for this and the following built-in is adjusting input and
-output values to non-contiguous port layouts.
+This built-in takes a byte address to the 24-bit
+@ref{AVR Named Address Spaces,address space} @code{__memx} and returns
+the number of the flash segment (the 64 KiB chunk) where the address
+points to.  Counting starts at @code{0}.
+If the address does not point to flash memory, return @code{-1}.
 
 @smallexample
-     unsigned int __builtin_avr_map16 (unsigned long long map, unsigned int val)
+unsigned char __builtin_avr_insert_bits (unsigned long map, unsigned char bits, unsigned char val)
 @end smallexample
 
 @noindent
-Similar to the previous built-in except that it operates on @code{int}
-and thus 16 bits are involved.  Again, @code{map} must be a compile
-time constant.
+Insert bits from @var{bits} into @var{val} and return the resulting
+value. The nibbles of @var{map} determine how the insertion is
+performed: Let @var{X} be the @var{n}-th nibble of @var{map}
+@enumerate
+@item If @var{X} is @code{0xf},
+then the @var{n}-th bit of @var{val} is returned unaltered.
+
+@item If X is in the range 0@dots{}7,
+then the @var{n}-th result bit is set to the @var{X}-th bit of @var{bits}
+
+@item If X is in the range 8@dots{}@code{0xe},
+then the @var{n}-th result bit is undefined.
+@end enumerate
+
+@noindent
+One typical use case for this built-in is adjusting input and
+output values to non-contiguous port layouts. Some examples:
+
+@smallexample
+// same as val, bits is unused
+__builtin_avr_insert_bits (0xffffffff, bits, val)
+@end smallexample
+
+@smallexample
+// same as bits, val is unused
+__builtin_avr_insert_bits (0x76543210, bits, val)
+@end smallexample
+
+@smallexample
+// same as rotating bits by 4
+__builtin_avr_insert_bits (0x32107654, bits, 0)
+@end smallexample
+
+@smallexample
+// high-nibble of result is the high-nibble of val
+// low-nibble of result is the low-nibble of bits
+__builtin_avr_insert_bits (0xffff3210, bits, val)
+@end smallexample
+
+@smallexample
+// reverse the bit order of bits
+__builtin_avr_insert_bits (0x01234567, bits, 0)
+@end smallexample
 
 @node Blackfin Built-in Functions
 @subsection Blackfin Built-in Functions
@@ -13709,6 +13790,78 @@ int _abs (int)
 int _abs2 (int)
 
 @end smallexample
+
+@node TILE-Gx Built-in Functions
+@subsection TILE-Gx Built-in Functions
+
+GCC provides intrinsics to access every instruction of the TILE-Gx
+processor.  The intrinsics are of the form:
+
+@smallexample
+
+unsigned long long __insn_@var{op} (...)
+
+@end smallexample
+
+Where @var{op} is the name of the instruction.  Refer to the ISA manual
+for the complete list of instructions.
+
+GCC also provides intrinsics to directly access the network registers.
+The intrinsics are:
+
+@smallexample
+
+unsigned long long __tile_idn0_receive (void)
+unsigned long long __tile_idn1_receive (void)
+unsigned long long __tile_udn0_receive (void)
+unsigned long long __tile_udn1_receive (void)
+unsigned long long __tile_udn2_receive (void)
+unsigned long long __tile_udn3_receive (void)
+void __tile_idn_send (unsigned long long)
+void __tile_udn_send (unsigned long long)
+
+@end smallexample
+
+The intrinsic @code{void __tile_network_barrier (void)} is used to
+guarantee that no network operatons before it will be reordered with
+those after it.
+
+@node TILEPro Built-in Functions
+@subsection TILEPro Built-in Functions
+
+GCC provides intrinsics to access every instruction of the TILEPro
+processor.  The intrinsics are of the form:
+
+@smallexample
+
+unsigned __insn_@var{op} (...)
+
+@end smallexample
+
+Where @var{op} is the name of the instruction.  Refer to the ISA manual
+for the complete list of instructions.
+
+GCC also provides intrinsics to directly access the network registers.
+The intrinsics are:
+
+@smallexample
+
+unsigned __tile_idn0_receive (void)
+unsigned __tile_idn1_receive (void)
+unsigned __tile_sn_receive (void)
+unsigned __tile_udn0_receive (void)
+unsigned __tile_udn1_receive (void)
+unsigned __tile_udn2_receive (void)
+unsigned __tile_udn3_receive (void)
+void __tile_idn_send (unsigned)
+void __tile_sn_send (unsigned)
+void __tile_udn_send (unsigned)
+
+@end smallexample
+
+The intrinsic @code{void __tile_network_barrier (void)} is used to
+guarantee that no network operatons before it will be reordered with
+those after it.
 
 @node Target Format Checks
 @section Format Checks Specific to Particular Target Machines

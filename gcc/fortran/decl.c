@@ -2600,9 +2600,31 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
     }
 
 
-  m = gfc_match (" type ( %n", name);
+  m = gfc_match (" type (");
   matched_type = (m == MATCH_YES);
-  
+  if (matched_type)
+    {
+      gfc_gobble_whitespace ();
+      if (gfc_peek_ascii_char () == '*')
+	{
+	  if ((m = gfc_match ("*)")) != MATCH_YES)
+	    return m;
+	  if (gfc_current_state () == COMP_DERIVED)
+	    {
+	      gfc_error ("Assumed type at %C is not allowed for components");
+	      return MATCH_ERROR;
+	    }
+	  if (gfc_notify_std (GFC_STD_F2008_TS, "TS 29113: Assumed type "
+			  "at %C") == FAILURE)
+	    return MATCH_ERROR;
+	  ts->type = BT_ASSUMED;
+	  return MATCH_YES;
+	}
+
+      m = gfc_match ("%n", name);
+      matched_type = (m == MATCH_YES);
+    }
+
   if ((matched_type && strcmp ("integer", name) == 0)
       || (!matched_type && gfc_match (" integer") == MATCH_YES))
     {
@@ -3854,9 +3876,9 @@ gfc_verify_c_interop (gfc_typespec *ts)
 	   ? SUCCESS : FAILURE;
   else if (ts->type == BT_CLASS)
     return FAILURE;
-  else if (ts->is_c_interop != 1)
+  else if (ts->is_c_interop != 1 && ts->type != BT_ASSUMED)
     return FAILURE;
-  
+
   return SUCCESS;
 }
 
@@ -3908,7 +3930,7 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
     {
       tmp_sym = tmp_sym->result;
       /* Make sure it wasn't an implicitly typed result.  */
-      if (tmp_sym->attr.implicit_type)
+      if (tmp_sym->attr.implicit_type && gfc_option.warn_c_binding_type)
 	{
 	  gfc_warning ("Implicitly declared BIND(C) function '%s' at "
                        "%L may not be C interoperable", tmp_sym->name,
@@ -3929,7 +3951,7 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
       if (gfc_verify_c_interop (&(tmp_sym->ts)) != SUCCESS)
 	{
 	  /* See if we're dealing with a sym in a common block or not.	*/
-	  if (is_in_common == 1)
+	  if (is_in_common == 1 && gfc_option.warn_c_binding_type)
 	    {
 	      gfc_warning ("Variable '%s' in common block '%s' at %L "
                            "may not be a C interoperable "
@@ -3943,7 +3965,7 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
                 gfc_error ("Type declaration '%s' at %L is not C "
                            "interoperable but it is BIND(C)",
                            tmp_sym->name, &(tmp_sym->declared_at));
-              else
+              else if (gfc_option.warn_c_binding_type)
                 gfc_warning ("Variable '%s' at %L "
                              "may not be a C interoperable "
                              "kind but it is bind(c)",
@@ -8391,6 +8413,8 @@ gfc_match_generic (void)
       target->specific_st = target_st;
       target->specific = NULL;
       target->next = tb->u.generic;
+      target->is_operator = ((op_type == INTERFACE_USER_OP)
+			     || (op_type == INTERFACE_INTRINSIC_OP));
       tb->u.generic = target;
     }
   while (gfc_match (" ,") == MATCH_YES);

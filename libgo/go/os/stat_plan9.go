@@ -9,18 +9,18 @@ import (
 	"time"
 )
 
-func sameFile(fs1, fs2 *FileStat) bool {
-	a := fs1.Sys.(*Dir)
-	b := fs2.Sys.(*Dir)
+func sameFile(sys1, sys2 interface{}) bool {
+	a := sys1.(*Dir)
+	b := sys2.(*Dir)
 	return a.Qid.Path == b.Qid.Path && a.Type == b.Type && a.Dev == b.Dev
 }
 
 func fileInfoFromStat(d *Dir) FileInfo {
-	fs := &FileStat{
+	fs := &fileStat{
 		name:    d.Name,
 		size:    int64(d.Length),
 		modTime: time.Unix(int64(d.Mtime), 0),
-		Sys:     d,
+		sys:     d,
 	}
 	fs.mode = FileMode(d.Mode & 0777)
 	if d.Mode&syscall.DMDIR != 0 {
@@ -62,7 +62,7 @@ func dirstat(arg interface{}) (d *Dir, err error) {
 			return nil, &PathError{"stat", name, err}
 		}
 		if n < syscall.STATFIXLEN {
-			return nil, &PathError{"stat", name, Eshortstat}
+			return nil, &PathError{"stat", name, errShortStat}
 		}
 
 		// Pull the real size out of the stat message.
@@ -79,10 +79,11 @@ func dirstat(arg interface{}) (d *Dir, err error) {
 			return
 		}
 	}
-	return nil, &PathError{"stat", name, Ebadstat}
+	return nil, &PathError{"stat", name, errBadStat}
 }
 
-// Stat returns a FileInfo structure describing the named file and an error, if any.
+// Stat returns a FileInfo structure describing the named file.
+// If there is an error, it will be of type *PathError.
 func Stat(name string) (FileInfo, error) {
 	d, err := dirstat(name)
 	if err != nil {
@@ -91,9 +92,15 @@ func Stat(name string) (FileInfo, error) {
 	return fileInfoFromStat(d), nil
 }
 
-// Lstat returns the FileInfo structure describing the named file and an
-// error, if any.  If the file is a symbolic link (though Plan 9 does not have symbolic links), 
+// Lstat returns the FileInfo structure describing the named file.
+// If the file is a symbolic link (though Plan 9 does not have symbolic links), 
 // the returned FileInfo describes the symbolic link.  Lstat makes no attempt to follow the link.
+// If there is an error, it will be of type *PathError.
 func Lstat(name string) (FileInfo, error) {
 	return Stat(name)
+}
+
+// For testing.
+func atime(fi FileInfo) time.Time {
+	return time.Unix(int64(fi.Sys().(*Dir).Atime), 0)
 }

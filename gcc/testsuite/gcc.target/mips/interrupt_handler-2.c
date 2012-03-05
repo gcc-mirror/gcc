@@ -4,6 +4,7 @@
 /* { dg-final { scan-assembler "\t\\\.cfi_restore 65\n" } } */
 /* { dg-final { scan-assembler-not "\\\.cfi_def_cfa( |\t)" } } */
 /* { dg-final { scan-assembler-not "\\\.cfi_def_cfa_register( |\t)" } } */
+/* { dg-skip-if "PR target/50580" { mips-sgi-irix6* } } */
 
 extern void f (void);
 

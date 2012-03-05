@@ -42,18 +42,18 @@ void test01()
   std::shared_future<int> f2(f1);
 
   auto when = make_time(10);
-  VERIFY( !f1.wait_until(make_time(10)) );
+  VERIFY( f1.wait_until(make_time(10)) == std::future_status::timeout );
   VERIFY( std::chrono::system_clock::now() >= when );
 
   when = make_time(10);
-  VERIFY( !f2.wait_until(make_time(10)) );
+  VERIFY( f2.wait_until(make_time(10)) == std::future_status::timeout );
   VERIFY( std::chrono::system_clock::now() >= when );
 
   p1.set_value(1);
 
   when = make_time(100);
-  VERIFY( f1.wait_until(when) );
-  VERIFY( f2.wait_until(when) );
+  VERIFY( f1.wait_until(when) == std::future_status::ready );
+  VERIFY( f2.wait_until(when) == std::future_status::ready );
   VERIFY( std::chrono::system_clock::now() < when );
 }
 

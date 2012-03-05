@@ -8,12 +8,13 @@ import (
 	"errors"
 	"runtime"
 	"syscall"
+	"time"
 	"unsafe"
 )
 
 // Wait waits for the Process to exit or stop, and then returns a
-// Waitmsg describing its status and an error, if any.
-func (p *Process) Wait(options int) (w *Waitmsg, err error) {
+// ProcessState describing its status and an error, if any.
+func (p *Process) Wait() (ps *ProcessState, err error) {
 	s, e := syscall.WaitForSingleObject(syscall.Handle(p.handle), syscall.INFINITE)
 	switch s {
 	case syscall.WAIT_OBJECT_0:
@@ -29,7 +30,7 @@ func (p *Process) Wait(options int) (w *Waitmsg, err error) {
 		return nil, NewSyscallError("GetExitCodeProcess", e)
 	}
 	p.done = true
-	return &Waitmsg{p.Pid, syscall.WaitStatus{s, ec}, new(syscall.Rusage)}, nil
+	return &ProcessState{p.Pid, syscall.WaitStatus{Status: s, ExitCode: ec}, new(syscall.Rusage)}, nil
 }
 
 // Signal sends a signal to the Process.
@@ -37,24 +38,24 @@ func (p *Process) Signal(sig Signal) error {
 	if p.done {
 		return errors.New("os: process already finished")
 	}
-	switch sig.(UnixSignal) {
-	case SIGKILL:
+	if sig == Kill {
 		e := syscall.TerminateProcess(syscall.Handle(p.handle), 1)
 		return NewSyscallError("TerminateProcess", e)
 	}
+	// TODO(rsc): Handle Interrupt too?
 	return syscall.Errno(syscall.EWINDOWS)
 }
 
 // Release releases any resources associated with the Process.
 func (p *Process) Release() error {
-	if p.handle == -1 {
-		return EINVAL
+	if p.handle == uintptr(syscall.InvalidHandle) {
+		return syscall.EINVAL
 	}
 	e := syscall.CloseHandle(syscall.Handle(p.handle))
 	if e != nil {
 		return NewSyscallError("CloseHandle", e)
 	}
-	p.handle = -1
+	p.handle = uintptr(syscall.InvalidHandle)
 	// no need for a finalizer anymore
 	runtime.SetFinalizer(p, nil)
 	return nil
@@ -67,7 +68,7 @@ func findProcess(pid int) (p *Process, err error) {
 	if e != nil {
 		return nil, NewSyscallError("OpenProcess", e)
 	}
-	return newProcess(pid, int(h)), nil
+	return newProcess(pid, uintptr(h)), nil
 }
 
 func init() {
@@ -82,4 +83,16 @@ func init() {
 	for i, v := range (*argv)[:argc] {
 		Args[i] = string(syscall.UTF16ToString((*v)[:]))
 	}
+}
+
+// UserTime returns the user CPU time of the exited process and its children.
+// For now, it is always reported as 0 on Windows.
+func (p *ProcessState) UserTime() time.Duration {
+	return 0
+}
+
+// SystemTime returns the system CPU time of the exited process and its children.
+// For now, it is always reported as 0 on Windows.
+func (p *ProcessState) SystemTime() time.Duration {
+	return 0
 }

@@ -1,7 +1,7 @@
 //
 // © Copyright Henrik Ravn 2004
 //
-// Use, modification and distribution are subject to the Boost Software License, Version 1.0. 
+// Use, modification and distribution are subject to the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
@@ -156,7 +156,7 @@ namespace DotZLibTests
         public void Info_Version()
         {
             Info info = new Info();
-            Assert.AreEqual("1.2.3", Info.Version);
+            Assert.AreEqual("1.2.5", Info.Version);
             Assert.AreEqual(32, info.SizeOfUInt);
             Assert.AreEqual(32, info.SizeOfULong);
             Assert.AreEqual(32, info.SizeOfPointer);
@@ -225,7 +225,7 @@ namespace DotZLibTests
 
         [Test]
         public void Inflate_Expand()
-        { 
+        {
             uncompressedData.Clear();
 
             using (Inflater inf = new Inflater())

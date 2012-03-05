@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2003,
-   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
@@ -104,7 +104,6 @@ extern int fp_arith_reg_operand (rtx, enum machine_mode);
 extern int arith_operand (rtx, enum machine_mode);
 extern int arith_reg_or_0_operand (rtx, enum machine_mode);
 extern int logical_operand (rtx, enum machine_mode);
-extern int tertiary_reload_operand (rtx, enum machine_mode);
 extern int fpscr_operand (rtx, enum machine_mode);
 extern int fpul_operand (rtx, enum machine_mode);
 extern int commutative_float_operator (rtx, enum machine_mode);

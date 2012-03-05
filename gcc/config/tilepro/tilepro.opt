@@ -1,0 +1,37 @@
+; Options for the TILEPro port of the compiler.
+; Copyright (C) 2011, 2012
+; Free Software Foundation, Inc.
+; Contributed by Walter Lee (walt@tilera.com)
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+m32
+Target Report RejectNegative
+Compile with 32 bit longs and pointers, which is the only supported
+behavior and thus the flag is ignored.
+
+mcpu=
+Target RejectNegative Joined Enum(tilepro_cpu) Var(tilepro_cpu) Init(0)
+-mcpu=CPU	Use features of and schedule code for given CPU
+
+Enum
+Name(tilepro_cpu) Type(int)
+Known TILEPro CPUs (for use with the -mcpu= option):
+
+EnumValue
+Enum(tilepro_cpu) String(tilepro) Value(0)
+

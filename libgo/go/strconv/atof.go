@@ -13,6 +13,7 @@ package strconv
 //   3) Multiply by 2^precision and round to get mantissa.
 
 import "math"
+import "runtime"
 
 var optimize = true // can change for testing
 
@@ -52,10 +53,10 @@ func special(s string) (f float64, ok bool) {
 	return
 }
 
-// TODO(rsc): Better truncation handling.
 func (b *decimal) set(s string) (ok bool) {
 	i := 0
 	b.neg = false
+	b.trunc = false
 
 	// optional sign
 	if i >= len(s) {
@@ -88,8 +89,12 @@ func (b *decimal) set(s string) (ok bool) {
 				b.dp--
 				continue
 			}
-			b.d[b.nd] = s[i]
-			b.nd++
+			if b.nd < len(b.d) {
+				b.d[b.nd] = s[i]
+				b.nd++
+			} else if s[i] != '0' {
+				b.trunc = true
+			}
 			continue
 		}
 		break
@@ -294,6 +299,11 @@ func (d *decimal) atof64() (f float64, ok bool) {
 	// Exact integers are <= 10^15.
 	// Exact powers of ten are <= 10^22.
 	if d.nd > 15 {
+		return
+	}
+	// gccgo gets this wrong on 32-bit i386 when not using -msse.
+	// See TestRoundTrip in atof_test.go for a test case.
+	if runtime.GOARCH == "386" {
 		return
 	}
 	switch {

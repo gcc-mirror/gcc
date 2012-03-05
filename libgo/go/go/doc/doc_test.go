@@ -7,18 +7,21 @@ package doc
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"text/template"
 )
 
 var update = flag.Bool("update", false, "update golden (.out) files")
+var files = flag.String("files", "", "consider only Go test files matching this regular expression")
 
 const dataDir = "testdata"
 
@@ -64,18 +67,30 @@ type bundle struct {
 	FSet *token.FileSet
 }
 
-func Test(t *testing.T) {
-	// get all packages
+func test(t *testing.T, mode Mode) {
+	// determine file filter
+	filter := isGoFile
+	if *files != "" {
+		rx, err := regexp.Compile(*files)
+		if err != nil {
+			t.Fatal(err)
+		}
+		filter = func(fi os.FileInfo) bool {
+			return isGoFile(fi) && rx.MatchString(fi.Name())
+		}
+	}
+
+	// get packages
 	fset := token.NewFileSet()
-	pkgs, err := parser.ParseDir(fset, dataDir, isGoFile, parser.ParseComments)
+	pkgs, err := parser.ParseDir(fset, dataDir, filter, parser.ParseComments)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// test all packages
+	// test packages
 	for _, pkg := range pkgs {
 		importpath := dataDir + "/" + pkg.Name
-		doc := New(pkg, importpath, 0)
+		doc := New(pkg, importpath, mode)
 
 		// golden files always use / in filenames - canonicalize them
 		for i, filename := range doc.Filenames {
@@ -91,7 +106,7 @@ func Test(t *testing.T) {
 		got := buf.Bytes()
 
 		// update golden file if necessary
-		golden := filepath.Join(dataDir, pkg.Name+".out")
+		golden := filepath.Join(dataDir, fmt.Sprintf("%s.%d.golden", pkg.Name, mode))
 		if *update {
 			err := ioutil.WriteFile(golden, got, 0644)
 			if err != nil {
@@ -112,4 +127,10 @@ func Test(t *testing.T) {
 			t.Errorf("package %s\n\tgot:\n%s\n\twant:\n%s", pkg.Name, got, want)
 		}
 	}
+}
+
+func Test(t *testing.T) {
+	test(t, 0)
+	test(t, AllDecls)
+	test(t, AllMethods)
 }

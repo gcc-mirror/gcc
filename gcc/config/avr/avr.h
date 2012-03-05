@@ -46,11 +46,12 @@ struct base_arch_s
   /* Core have 'EICALL' and 'EIJMP' instructions.  */
   int have_eijmp_eicall;
 
-  /* Reserved for xmega architecture.  */
-  int reserved;
+  /* This is an XMEGA core.  */
+  int xmega_p;
 
-  /* Reserved for xmega architecture.  */
-  int reserved2;
+  /* This core has the RAMPD special function register
+     and thus also the RAMPX, RAMPY and RAMPZ registers.  */
+  int have_rampd;
   
   /* Default start of data section address for architecture.  */
   int default_data_section_start;
@@ -59,9 +60,7 @@ struct base_arch_s
      SFR-address = RAM-address - sfr_offset  */
   int sfr_offset;
 
-  /* Number of 64k segments in the flash.  */
-  int n_segments;
-
+  /* Architecture id to built-in define __AVR_ARCH__ (NULL -> no macro) */
   const char *const macro;
   
   /* Architecture name.  */
@@ -83,7 +82,12 @@ enum avr_arch
   ARCH_AVR4,
   ARCH_AVR5,
   ARCH_AVR51,
-  ARCH_AVR6
+  ARCH_AVR6,
+  ARCH_AVRXMEGA2,
+  ARCH_AVRXMEGA4,
+  ARCH_AVRXMEGA5,
+  ARCH_AVRXMEGA6,
+  ARCH_AVRXMEGA7
 };
 
 struct mcu_type_s {
@@ -122,6 +126,9 @@ struct mcu_type_s {
   /* Start of data section.  */
   int data_section_start;
   
+  /* Number of 64k segments in the flash.  */
+  int n_flash;
+
   /* Name of device library.  */
   const char *const library_name; 
 };
@@ -175,12 +182,18 @@ enum
 #define AVR_HAVE_LPMX (avr_current_arch->have_movw_lpmx)
 #define AVR_HAVE_ELPM (avr_current_arch->have_elpm)
 #define AVR_HAVE_ELPMX (avr_current_arch->have_elpmx)
-#define AVR_HAVE_RAMPZ (avr_current_arch->have_elpm)
+#define AVR_HAVE_RAMPD (avr_current_arch->have_rampd)
+#define AVR_HAVE_RAMPX (avr_current_arch->have_rampd)
+#define AVR_HAVE_RAMPY (avr_current_arch->have_rampd)
+#define AVR_HAVE_RAMPZ (avr_current_arch->have_elpm             \
+                        || avr_current_arch->have_rampd)
 #define AVR_HAVE_EIJMP_EICALL (avr_current_arch->have_eijmp_eicall)
 #define AVR_HAVE_8BIT_SP (avr_current_device->short_sp || TARGET_TINY_STACK)
 
 #define AVR_2_BYTE_PC (!AVR_HAVE_EIJMP_EICALL)
 #define AVR_3_BYTE_PC (AVR_HAVE_EIJMP_EICALL)
+
+#define AVR_XMEGA (avr_current_arch->xmega_p)
 
 #define BITS_BIG_ENDIAN 0
 #define BYTES_BIG_ENDIAN 0
@@ -582,7 +595,9 @@ extern const char *avr_device_to_devicelib (int argc, const char **argv);
    pass to `cc1plus'.  */
 
 #define ASM_SPEC "%{mmcu=avr25:-mmcu=avr2;mmcu=avr35:-mmcu=avr3;mmcu=avr31:-mmcu=avr3;mmcu=avr51:-mmcu=avr5;\
-mmcu=*:-mmcu=%*}"
+mmcu=*:-mmcu=%*} \
+%{mmcu=*:%{!mmcu=avr2:%{!mmcu=at90s8515:%{!mmcu=avr31:%{!mmcu=atmega103:\
+-mno-skip-bug}}}}}"
 
 #define LINK_SPEC "\
 %{mrelax:--relax\
@@ -615,22 +630,6 @@ mmcu=*:-mmcu=%*}"
 #define TEST_HARD_REG_CLASS(CLASS, REGNO) \
   TEST_HARD_REG_BIT (reg_class_contents[ (int) (CLASS)], REGNO)
 
-/* Note that the other files fail to use these
-   in some of the places where they should.  */
-
-#if defined(__STDC__) || defined(ALMOST_STDC)
-#define AS2(a,b,c) #a " " #b "," #c
-#define AS2C(b,c) " " #b "," #c
-#define AS3(a,b,c,d) #a " " #b "," #c "," #d
-#define AS1(a,b) #a " " #b
-#else
-#define AS1(a,b) "a	b"
-#define AS2(a,b,c) "a	b,c"
-#define AS2C(b,c) " b,c"
-#define AS3(a,b,c,d) "a	b,c,d"
-#endif
-#define OUT_AS1(a,b) output_asm_insn (AS1(a,b), operands)
-#define OUT_AS2(a,b,c) output_asm_insn (AS2(a,b,c), operands)
 #define CR_TAB "\n\t"
 
 #define DWARF2_ADDR_SIZE 4
@@ -679,6 +678,10 @@ struct GTY(()) machine_function
    required in order for pushes to be generated.  */
 #define PUSH_ROUNDING(X)	(X)
 
+/* Define prototype here to avoid build warning.  Some files using
+   ACCUMULATE_OUTGOING_ARGS (directly or indirectly) include
+   tm.h but not tm_p.h.  */
+extern int avr_accumulate_outgoing_args (void);
 #define ACCUMULATE_OUTGOING_ARGS avr_accumulate_outgoing_args()
 
 #define INIT_EXPANDERS avr_init_expanders()

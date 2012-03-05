@@ -644,8 +644,6 @@ GLIBCXX_LDBL_COMPAT_TRUE
 ENABLE_VISIBILITY_FALSE
 ENABLE_VISIBILITY_TRUE
 libtool_VERSION
-ENABLE_SYMVERS_SOL2_FALSE
-ENABLE_SYMVERS_SOL2_TRUE
 ENABLE_SYMVERS_SUN_FALSE
 ENABLE_SYMVERS_SUN_TRUE
 ENABLE_SYMVERS_DARWIN_FALSE
@@ -664,6 +662,11 @@ LIBICONV
 OPT_LDFLAGS
 SECTION_LDFLAGS
 GLIBCXX_LIBS
+ENABLE_WERROR_FALSE
+ENABLE_WERROR_TRUE
+ENABLE_PYTHONDIR_FALSE
+ENABLE_PYTHONDIR_TRUE
+python_mod_dir
 ENABLE_EXTERN_TEMPLATE_FALSE
 ENABLE_EXTERN_TEMPLATE_TRUE
 EXTRA_CXX_FLAGS
@@ -856,6 +859,8 @@ enable_libstdcxx_debug
 enable_cxx_flags
 enable_fully_dynamic_string
 enable_extern_template
+with_python_dir
+enable_werror
 enable_libstdcxx_time
 enable_tls
 enable_rpath
@@ -864,6 +869,7 @@ with_system_libunwind
 enable_linux_futex
 enable_symvers
 enable_libstdcxx_visibility
+enable_libstdcxx_threads
 with_gxx_include_dir
 enable_version_specific_runtime_libs
 '
@@ -1544,6 +1550,7 @@ Optional Features:
                           memory [default=no]
   --enable-extern-template
                           enable extern template [default=yes]
+  --enable-werror         turns on -Werror [default=yes]
   --enable-libstdcxx-time[=KIND]
                           use KIND for check type [default=no]
   --enable-tls            Use thread-local storage [default=yes]
@@ -1554,6 +1561,8 @@ Optional Features:
                           [default=yes]
   --enable-libstdcxx-visibility
                           enables visibility safe usage [default=yes]
+  --enable-libstdcxx-threads
+                          enable C++11 threads support [default=auto]
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory
@@ -1568,6 +1577,8 @@ Optional Packages:
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
+  --with-python-dir       the location to install Python modules. This path is
+                          relative starting from the prefix.
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
@@ -11486,7 +11497,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11489 "configure"
+#line 11500 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11592,7 +11603,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11595 "configure"
+#line 11606 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14950,7 +14961,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14953 "configure"
+#line 14964 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15125,12 +15136,13 @@ main ()
 typedef bool atomic_type;
        atomic_type c1;
        atomic_type c2;
-       const atomic_type c3(0);
-       __sync_fetch_and_add(&c1, c2);
-       __sync_val_compare_and_swap(&c1, c3, c2);
-       __sync_lock_test_and_set(&c1, c3);
-       __sync_lock_release(&c1);
-       __sync_synchronize();
+       atomic_type c3(0);
+       __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+       __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
+				   __ATOMIC_RELAXED);
+       __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
+       __atomic_load_n(&c1, __ATOMIC_RELAXED);
+
   ;
   return 0;
 }
@@ -15166,12 +15178,13 @@ main ()
 typedef short atomic_type;
        atomic_type c1;
        atomic_type c2;
-       const atomic_type c3(0);
-       __sync_fetch_and_add(&c1, c2);
-       __sync_val_compare_and_swap(&c1, c3, c2);
-       __sync_lock_test_and_set(&c1, c3);
-       __sync_lock_release(&c1);
-       __sync_synchronize();
+       atomic_type c3(0);
+       __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+       __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
+				   __ATOMIC_RELAXED);
+       __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
+       __atomic_load_n(&c1, __ATOMIC_RELAXED);
+
   ;
   return 0;
 }
@@ -15207,12 +15220,13 @@ main ()
 typedef int atomic_type;
        atomic_type c1;
        atomic_type c2;
-       const atomic_type c3(0);
-       __sync_fetch_and_add(&c1, c2);
-       __sync_val_compare_and_swap(&c1, c3, c2);
-       __sync_lock_test_and_set(&c1, c3);
-       __sync_lock_release(&c1);
-       __sync_synchronize();
+       atomic_type c3(0);
+       __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+       __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
+				   __ATOMIC_RELAXED);
+       __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
+       __atomic_load_n(&c1, __ATOMIC_RELAXED);
+
   ;
   return 0;
 }
@@ -15248,12 +15262,13 @@ main ()
 typedef long long atomic_type;
        atomic_type c1;
        atomic_type c2;
-       const atomic_type c3(0);
-       __sync_fetch_and_add(&c1, c2);
-       __sync_val_compare_and_swap(&c1, c3, c2);
-       __sync_lock_test_and_set(&c1, c3);
-       __sync_lock_release(&c1);
-       __sync_synchronize();
+       atomic_type c3(0);
+       __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+       __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
+				   __ATOMIC_RELAXED);
+       __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
+       __atomic_load_n(&c1, __ATOMIC_RELAXED);
+
   ;
   return 0;
 }
@@ -15281,18 +15296,19 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15284 "configure"
+#line 15299 "configure"
 int main()
 {
   typedef bool atomic_type;
   atomic_type c1;
   atomic_type c2;
-  const atomic_type c3(0);
-  __sync_fetch_and_add(&c1, c2);
-  __sync_val_compare_and_swap(&c1, c3, c2);
-  __sync_lock_test_and_set(&c1, c3);
-  __sync_lock_release(&c1);
-  __sync_synchronize();
+  atomic_type c3(0);
+  __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+  __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
+			      __ATOMIC_RELAXED);
+  __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
+  __atomic_load_n(&c1, __ATOMIC_RELAXED);
+
   return 0;
 }
 EOF
@@ -15304,7 +15320,7 @@ $as_echo_n "checking for atomic builtins for bool... " >&6; }
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-      if grep __sync_ conftest.s >/dev/null 2>&1 ; then
+      if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
 	glibcxx_cv_atomic_bool=no
       else
 	glibcxx_cv_atomic_bool=yes
@@ -15315,18 +15331,19 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15318 "configure"
+#line 15334 "configure"
 int main()
 {
   typedef short atomic_type;
   atomic_type c1;
   atomic_type c2;
-  const atomic_type c3(0);
-  __sync_fetch_and_add(&c1, c2);
-  __sync_val_compare_and_swap(&c1, c3, c2);
-  __sync_lock_test_and_set(&c1, c3);
-  __sync_lock_release(&c1);
-  __sync_synchronize();
+  atomic_type c3(0);
+  __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+  __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
+			      __ATOMIC_RELAXED);
+  __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
+  __atomic_load_n(&c1, __ATOMIC_RELAXED);
+
   return 0;
 }
 EOF
@@ -15338,7 +15355,7 @@ $as_echo_n "checking for atomic builtins for short... " >&6; }
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-      if grep __sync_ conftest.s >/dev/null 2>&1 ; then
+      if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
 	glibcxx_cv_atomic_short=no
       else
 	glibcxx_cv_atomic_short=yes
@@ -15349,19 +15366,20 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15352 "configure"
+#line 15369 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
   typedef int atomic_type;
   atomic_type c1;
   atomic_type c2;
-  const atomic_type c3(0);
-  __sync_fetch_and_add(&c1, c2);
-  __sync_val_compare_and_swap(&c1, c3, c2);
-  __sync_lock_test_and_set(&c1, c3);
-  __sync_lock_release(&c1);
-  __sync_synchronize();
+  atomic_type c3(0);
+  __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+  __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
+			      __ATOMIC_RELAXED);
+  __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
+  __atomic_load_n(&c1, __ATOMIC_RELAXED);
+
   return 0;
 }
 EOF
@@ -15373,7 +15391,7 @@ $as_echo_n "checking for atomic builtins for int... " >&6; }
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-      if grep __sync_ conftest.s >/dev/null 2>&1 ; then
+      if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
 	glibcxx_cv_atomic_int=no
       else
 	glibcxx_cv_atomic_int=yes
@@ -15384,18 +15402,19 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15387 "configure"
+#line 15405 "configure"
 int main()
 {
   typedef long long atomic_type;
   atomic_type c1;
   atomic_type c2;
-  const atomic_type c3(0);
-  __sync_fetch_and_add(&c1, c2);
-  __sync_val_compare_and_swap(&c1, c3, c2);
-  __sync_lock_test_and_set(&c1, c3);
-  __sync_lock_release(&c1);
-  __sync_synchronize();
+  atomic_type c3(0);
+  __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+  __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
+			      __ATOMIC_RELAXED);
+  __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
+  __atomic_load_n(&c1, __ATOMIC_RELAXED);
+
   return 0;
 }
 EOF
@@ -15407,7 +15426,7 @@ $as_echo_n "checking for atomic builtins for long long... " >&6; }
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-      if grep __sync_ conftest.s >/dev/null 2>&1 ; then
+      if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
 	glibcxx_cv_atomic_long_long=no
       else
 	glibcxx_cv_atomic_long_long=yes
@@ -15427,8 +15446,11 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-  # Set atomicity_dir to builtins if either of above tests pass.
-  if test $glibcxx_cv_atomic_int = yes || test $glibcxx_cv_atomic_bool = yes ; then
+  # Set atomicity_dir to builtins if all of above tests pass.
+  if test $glibcxx_cv_atomic_bool = yes \
+     && test $glibcxx_cv_atomic_short = yes \
+     && test $glibcxx_cv_atomic_int = yes \
+     && test $glibcxx_cv_atomic_long_long = yes ; then
 
 $as_echo "#define _GLIBCXX_ATOMIC_BUILTINS 1" >>confdefs.h
 
@@ -15460,7 +15482,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15463 "configure"
+#line 15485 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15502,7 +15524,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15505 "configure"
+#line 15527 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15536,7 +15558,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15539 "configure"
+#line 15561 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -17229,6 +17251,46 @@ $as_echo "$enable_extern_template" >&6; }
 
 
 
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for custom python install directory" >&5
+$as_echo_n "checking for custom python install directory... " >&6; }
+
+# Check whether --with-python-dir was given.
+if test "${with_python_dir+set}" = set; then :
+  withval=$with_python_dir; with_python_dir=$withval
+else
+  with_python_dir="no"
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${with_python_dir}" >&5
+$as_echo "${with_python_dir}" >&6; }
+
+# Needed for installing Python modules during make install.
+python_mod_dir="${with_python_dir}"
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -Werror" >&5
+$as_echo_n "checking for -Werror... " >&6; }
+   # Check whether --enable-werror was given.
+if test "${enable_werror+set}" = set; then :
+  enableval=$enable_werror;
+      case "$enableval" in
+       yes|no) ;;
+       *) as_fn_error "Argument to enable/disable werror must be yes or no" "$LINENO" 5 ;;
+      esac
+
+else
+  enable_werror=yes
+fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_werror" >&5
+$as_echo "$enable_werror" >&6; }
+
+
+
 # Checks for operating systems support that doesn't require linking.
 
 
@@ -17275,10 +17337,10 @@ fi
 
 
       if test $glibcxx_cv_abs_float = yes; then
-        $as_echo "#define __CORRECT_ISO_CPP_MATH_H_PROTO1 1" >>confdefs.h
+	$as_echo "#define __CORRECT_ISO_CPP_MATH_H_PROTO1 1" >>confdefs.h
 
       else
-        $as_echo "#define __CORRECT_ISO_CPP_MATH_H_PROTO2 1" >>confdefs.h
+	$as_echo "#define __CORRECT_ISO_CPP_MATH_H_PROTO2 1" >>confdefs.h
 
       fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_abs_float" >&5
@@ -17336,13 +17398,63 @@ fi
       # autoheader cannot handle indented templates.
 
       if test $glibcxx_cv_abs_long = yes; then
-        $as_echo "#define __CORRECT_ISO_CPP_STDLIB_H_PROTO 1" >>confdefs.h
+	$as_echo "#define __CORRECT_ISO_CPP_STDLIB_H_PROTO 1" >>confdefs.h
 
       fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_abs_long" >&5
 $as_echo "$glibcxx_cv_abs_long" >&6; }
       ;;
   esac
+
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gets declaration" >&5
+$as_echo_n "checking for gets declaration... " >&6; }
+  if test "${glibcxx_cv_gets+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdio.h>
+	   namespace test
+	   {
+              using ::gets;
+	   }
+
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_gets=yes
+else
+  glibcxx_cv_gets=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+
+  if test $glibcxx_cv_gets = yes; then
+
+$as_echo "#define HAVE_GETS 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_gets" >&5
+$as_echo "$glibcxx_cv_gets" >&6; }
 
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -19771,107 +19883,6 @@ $as_echo "#define _GLIBCXX_USE_NANOSLEEP 1" >>confdefs.h
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   LIBS="$ac_save_LIBS"
-  ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-
-
-# For gthread support
-
-
-  ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -fno-exceptions \
-	-I${toplevel_srcdir}/libgcc -I${toplevel_builddir}/libgcc"
-
-  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
-  case $target_thread_file in
-    posix)
-      CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
-  esac
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether it can be safely assumed that mutex_timedlock is available" >&5
-$as_echo_n "checking whether it can be safely assumed that mutex_timedlock is available... " >&6; }
-
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <unistd.h>
-int
-main ()
-{
-
-      // In case of POSIX threads check _POSIX_TIMEOUTS.
-      #if (defined(_PTHREADS) \
-          && (!defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS <= 0))
-      #error
-      #endif
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  ac_gthread_use_mutex_timedlock=1
-else
-  ac_gthread_use_mutex_timedlock=0
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-
-
-cat >>confdefs.h <<_ACEOF
-#define _GTHREAD_USE_MUTEX_TIMEDLOCK $ac_gthread_use_mutex_timedlock
-_ACEOF
-
-
-  if test $ac_gthread_use_mutex_timedlock = 1 ; then res_mutex_timedlock=yes ;
-  else res_mutex_timedlock=no ; fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $res_mutex_timedlock" >&5
-$as_echo "$res_mutex_timedlock" >&6; }
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gthreads library" >&5
-$as_echo_n "checking for gthreads library... " >&6; }
-
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include "gthr.h"
-int
-main ()
-{
-
-      #ifndef __GTHREADS_CXX0X
-      #error
-      #endif
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  ac_has_gthreads=yes
-else
-  ac_has_gthreads=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_gthreads" >&5
-$as_echo "$ac_has_gthreads" >&6; }
-
-  if test x"$ac_has_gthreads" = x"yes"; then
-
-$as_echo "#define _GLIBCXX_HAS_GTHREADS 1" >>confdefs.h
-
-  fi
-
-  CXXFLAGS="$ac_save_CXXFLAGS"
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -65035,18 +65046,15 @@ if test $enable_symvers != no ; then
      # The Solaris 2 runtime linker doesn't support the GNU extension of
      # binding the same symbol to different versions
      solaris2*)
-       symvers_renaming=no  ;;
+       ;;
      # Other platforms with GNU symbol versioning (GNU/Linux, more?) do.
      *)
 
 $as_echo "#define HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT 1" >>confdefs.h
 
-       symvers_renaming=yes  ;;
+       ;;
     esac
-else
-    symvers_renaming=no
 fi
-
 
 # Now, set up compatibility support, if any.
 # In addition, need this to deal with std::size_t mangling in
@@ -65516,6 +65524,146 @@ done
   baseline_dir="$glibcxx_srcdir/config/abi/post/${abi_baseline_pair}"
 
   baseline_subdir_switch="$abi_baseline_subdir_switch"
+
+
+
+# For gthread support.  Depends on GLIBCXX_ENABLE_SYMVERS.
+
+   # Check whether --enable-libstdcxx-threads was given.
+if test "${enable_libstdcxx_threads+set}" = set; then :
+  enableval=$enable_libstdcxx_threads;
+      case "$enableval" in
+       yes|no) ;;
+       *) as_fn_error "Argument to enable/disable libstdcxx-threads must be yes or no" "$LINENO" 5 ;;
+      esac
+
+else
+  enable_libstdcxx_threads=auto
+fi
+
+
+
+  if test x$enable_libstdcxx_threads = xauto ||
+     test x$enable_libstdcxx_threads = xyes; then
+
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions \
+	-I${toplevel_srcdir}/libgcc -I${toplevel_builddir}/libgcc"
+
+  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
+  case $target_thread_file in
+    posix)
+      CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
+  esac
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether it can be safely assumed that mutex_timedlock is available" >&5
+$as_echo_n "checking whether it can be safely assumed that mutex_timedlock is available... " >&6; }
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+int
+main ()
+{
+
+      // In case of POSIX threads check _POSIX_TIMEOUTS.
+      #if (defined(_PTHREADS) \
+	  && (!defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS <= 0))
+      #error
+      #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_gthread_use_mutex_timedlock=1
+else
+  ac_gthread_use_mutex_timedlock=0
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+
+cat >>confdefs.h <<_ACEOF
+#define _GTHREAD_USE_MUTEX_TIMEDLOCK $ac_gthread_use_mutex_timedlock
+_ACEOF
+
+
+  if test $ac_gthread_use_mutex_timedlock = 1 ; then res_mutex_timedlock=yes ;
+  else res_mutex_timedlock=no ; fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $res_mutex_timedlock" >&5
+$as_echo "$res_mutex_timedlock" >&6; }
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gthreads library" >&5
+$as_echo_n "checking for gthreads library... " >&6; }
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include "gthr.h"
+int
+main ()
+{
+
+      #ifndef __GTHREADS_CXX0X
+      #error
+      #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  case $target_os in
+	  # gthreads support breaks symbol versioning on Solaris 8/9 (PR
+	  # libstdc++/52189).
+          solaris2.[89]*)
+	    if test x$enable_symvers = xno; then
+	      ac_has_gthreads=yes
+	    elif test x$enable_libstdcxx_threads = xyes; then
+	      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You have requested C++11 threads support, but" >&5
+$as_echo "$as_me: WARNING: You have requested C++11 threads support, but" >&2;}
+	      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: this breaks symbol versioning." >&5
+$as_echo "$as_me: WARNING: this breaks symbol versioning." >&2;}
+	      ac_has_gthreads=yes
+	    else
+	      ac_has_gthreads=no
+	    fi
+	    ;;
+	  *)
+	    ac_has_gthreads=yes
+	    ;;
+        esac
+else
+  ac_has_gthreads=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  else
+    ac_has_gthreads=no
+  fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_gthreads" >&5
+$as_echo "$ac_has_gthreads" >&6; }
+
+  if test x"$ac_has_gthreads" = x"yes"; then
+
+$as_echo "#define _GLIBCXX_HAS_GTHREADS 1" >>confdefs.h
+
+  fi
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
@@ -66035,6 +66183,24 @@ else
 fi
 
 
+    if test $python_mod_dir != no; then
+  ENABLE_PYTHONDIR_TRUE=
+  ENABLE_PYTHONDIR_FALSE='#'
+else
+  ENABLE_PYTHONDIR_TRUE='#'
+  ENABLE_PYTHONDIR_FALSE=
+fi
+
+
+    if test $enable_werror = yes; then
+  ENABLE_WERROR_TRUE=
+  ENABLE_WERROR_FALSE='#'
+else
+  ENABLE_WERROR_TRUE='#'
+  ENABLE_WERROR_FALSE=
+fi
+
+
     if test $enable_symvers != no; then
   ENABLE_SYMVERS_TRUE=
   ENABLE_SYMVERS_FALSE='#'
@@ -66077,15 +66243,6 @@ fi
 else
   ENABLE_SYMVERS_SUN_TRUE='#'
   ENABLE_SYMVERS_SUN_FALSE=
-fi
-
-
-    if test $symvers_renaming = no; then
-  ENABLE_SYMVERS_SOL2_TRUE=
-  ENABLE_SYMVERS_SOL2_FALSE='#'
-else
-  ENABLE_SYMVERS_SOL2_TRUE='#'
-  ENABLE_SYMVERS_SOL2_FALSE=
 fi
 
 
@@ -66311,7 +66468,7 @@ $as_echo "$gxx_include_dir" >&6; }
   # OPTIMIZE_CXXFLAGS = -O3 -fstrict-aliasing -fvtable-gc
 
 
-  WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual'
+  WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual -Wabi'
 
 
 
@@ -66488,6 +66645,14 @@ if test -z "${ENABLE_EXTERN_TEMPLATE_TRUE}" && test -z "${ENABLE_EXTERN_TEMPLATE
   as_fn_error "conditional \"ENABLE_EXTERN_TEMPLATE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${ENABLE_PYTHONDIR_TRUE}" && test -z "${ENABLE_PYTHONDIR_FALSE}"; then
+  as_fn_error "conditional \"ENABLE_PYTHONDIR\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_WERROR_TRUE}" && test -z "${ENABLE_WERROR_FALSE}"; then
+  as_fn_error "conditional \"ENABLE_WERROR\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${ENABLE_SYMVERS_TRUE}" && test -z "${ENABLE_SYMVERS_FALSE}"; then
   as_fn_error "conditional \"ENABLE_SYMVERS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -66506,10 +66671,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_SYMVERS_SUN_TRUE}" && test -z "${ENABLE_SYMVERS_SUN_FALSE}"; then
   as_fn_error "conditional \"ENABLE_SYMVERS_SUN\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${ENABLE_SYMVERS_SOL2_TRUE}" && test -z "${ENABLE_SYMVERS_SOL2_FALSE}"; then
-  as_fn_error "conditional \"ENABLE_SYMVERS_SOL2\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_VISIBILITY_TRUE}" && test -z "${ENABLE_VISIBILITY_FALSE}"; then

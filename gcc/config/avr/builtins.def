@@ -1,0 +1,51 @@
+/* Copyright (C) 2012 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it under
+   the terms of the GNU General Public License as published by the Free
+   Software Foundation; either version 3, or (at your option) any later
+   version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+   WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* This file contains the definitions and documentation for the
+   builtins defined in the AVR part of the GNU compiler.
+   Befor including this file, define a macro
+
+   DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, ICODE)
+
+   NAME:   The name as visible by the user as a C string.
+   ID:     An integer to identify the built-in.
+   N_ARGS: Number of input arguments.  If special treatment is needed,
+           set to -1 and handle it by hand, see avr.c:avr_expand_builtin().
+   TYPE:   A tree node describing the prototype of the built-in.
+   ICODE:  Insn code number for the insn attached to the built-in.
+           If special treatment is needed to expand the built-in, set to -1.
+*/
+
+/* Mapped to respective instruction.  */
+DEF_BUILTIN ("__builtin_avr_nop",  -1, AVR_BUILTIN_NOP, void_ftype_void, -1)
+DEF_BUILTIN ("__builtin_avr_sei",   0, AVR_BUILTIN_SEI, void_ftype_void, CODE_FOR_enable_interrupt)
+DEF_BUILTIN ("__builtin_avr_cli",   0, AVR_BUILTIN_CLI, void_ftype_void, CODE_FOR_disable_interrupt)
+DEF_BUILTIN ("__builtin_avr_wdr",   0, AVR_BUILTIN_WDR,   void_ftype_void, CODE_FOR_wdr)
+DEF_BUILTIN ("__builtin_avr_sleep", 0, AVR_BUILTIN_SLEEP, void_ftype_void, CODE_FOR_sleep)
+
+/* Mapped to respective instruction but might alse be folded away
+   or emit as libgcc call if ISA does not provide the instruction.  */
+DEF_BUILTIN ("__builtin_avr_swap",   1, AVR_BUILTIN_SWAP,   uchar_ftype_uchar,      CODE_FOR_rotlqi3_4)
+DEF_BUILTIN ("__builtin_avr_fmul",   2, AVR_BUILTIN_FMUL,   uint_ftype_uchar_uchar, CODE_FOR_fmul)
+DEF_BUILTIN ("__builtin_avr_fmuls",  2, AVR_BUILTIN_FMULS,  int_ftype_char_char,    CODE_FOR_fmuls)
+DEF_BUILTIN ("__builtin_avr_fmulsu", 2, AVR_BUILTIN_FMULSU, int_ftype_char_uchar,   CODE_FOR_fmulsu)
+
+/* More complex stuff that cannot be mapped 1:1 to an instruction.  */
+DEF_BUILTIN ("__builtin_avr_delay_cycles", -1, AVR_BUILTIN_DELAY_CYCLES, void_ftype_ulong, -1)
+DEF_BUILTIN ("__builtin_avr_insert_bits", 3, AVR_BUILTIN_INSERT_BITS, uchar_ftype_ulong_uchar_uchar, CODE_FOR_insert_bits)
+DEF_BUILTIN ("__builtin_avr_flash_segment", 1, AVR_BUILTIN_FLASH_SEGMENT, char_ftype_const_memx_ptr, CODE_FOR_flash_segment)

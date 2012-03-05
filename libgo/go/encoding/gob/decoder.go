@@ -75,7 +75,9 @@ func (dec *Decoder) recvMessage() bool {
 		dec.err = err
 		return false
 	}
-	if nbytes >= 1<<31 {
+	// Upper limit of 1GB, allowing room to grow a little without overflow.
+	// TODO: We might want more control over this limit.
+	if nbytes >= 1<<30 {
 		dec.err = errBadCount
 		return false
 	}
@@ -133,7 +135,7 @@ func (dec *Decoder) nextUint() uint64 {
 // and returns the type id of the next value.  It returns -1 at
 // EOF.  Upon return, the remainder of dec.buf is the value to be
 // decoded.  If this is an interface value, it can be ignored by
-// simply resetting that buffer.
+// resetting that buffer.
 func (dec *Decoder) decodeTypeSequence(isInterface bool) typeId {
 	for dec.err == nil {
 		if dec.buf.Len() == 0 {

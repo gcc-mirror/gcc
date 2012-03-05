@@ -1540,6 +1540,11 @@ s390_option_override (void)
   if (TARGET_64BIT && !TARGET_ZARCH)
     error ("64-bit ABI not supported in ESA/390 mode");
 
+  /* Use hardware DFP if available and not explicitly disabled by
+     user. E.g. with -m31 -march=z10 -mzarch   */
+  if (!(target_flags_explicit & MASK_HARD_DFP) && TARGET_DFP)
+    target_flags |= MASK_HARD_DFP;
+
   if (TARGET_HARD_DFP && !TARGET_DFP)
     {
       if (target_flags_explicit & MASK_HARD_DFP)

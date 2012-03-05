@@ -456,7 +456,7 @@ func allocate(rtyp reflect.Type, p uintptr, indir int) uintptr {
 	}
 	if *(*unsafe.Pointer)(up) == nil {
 		// Allocate object.
-		*(*unsafe.Pointer)(up) = unsafe.New(rtyp)
+		*(*unsafe.Pointer)(up) = unsafe.Pointer(reflect.New(rtyp).Pointer())
 	}
 	return *(*uintptr)(up)
 }
@@ -464,7 +464,7 @@ func allocate(rtyp reflect.Type, p uintptr, indir int) uintptr {
 // decodeSingle decodes a top-level value that is not a struct and stores it through p.
 // Such values are preceded by a zero, making them have the memory layout of a
 // struct field (although with an illegal field number).
-func (dec *Decoder) decodeSingle(engine *decEngine, ut *userTypeInfo, basep uintptr) (err error) {
+func (dec *Decoder) decodeSingle(engine *decEngine, ut *userTypeInfo, basep uintptr) {
 	state := dec.newDecoderState(&dec.buf)
 	state.fieldnum = singletonField
 	delta := int(state.decodeUint())
@@ -473,7 +473,7 @@ func (dec *Decoder) decodeSingle(engine *decEngine, ut *userTypeInfo, basep uint
 	}
 	instr := &engine.instr[singletonField]
 	if instr.indir != ut.indir {
-		return errors.New("gob: internal error: inconsistent indirection")
+		errorf("internal error: inconsistent indirection instr %d ut %d", instr.indir, ut.indir)
 	}
 	ptr := unsafe.Pointer(basep) // offset will be zero
 	if instr.indir > 1 {
@@ -481,10 +481,9 @@ func (dec *Decoder) decodeSingle(engine *decEngine, ut *userTypeInfo, basep uint
 	}
 	instr.op(instr, state, ptr)
 	dec.freeDecoderState(state)
-	return nil
 }
 
-// decodeSingle decodes a top-level struct and stores it through p.
+// decodeStruct decodes a top-level struct and stores it through p.
 // Indir is for the value, not the type.  At the time of the call it may
 // differ from ut.indir, which was computed when the engine was built.
 // This state cannot arise for decodeSingle, which is called directly
@@ -609,7 +608,7 @@ func (dec *Decoder) decodeMap(mtyp reflect.Type, state *decoderState, p uintptr,
 	// Maps cannot be accessed by moving addresses around the way
 	// that slices etc. can.  We must recover a full reflection value for
 	// the iteration.
-	v := reflect.ValueOf(unsafe.Unreflect(mtyp, unsafe.Pointer(p)))
+	v := reflect.NewAt(mtyp, unsafe.Pointer(p)).Elem()
 	n := int(state.decodeUint())
 	for i := 0; i < n; i++ {
 		key := decodeIntoValue(state, keyOp, keyIndir, allocValue(mtyp.Key()), ovfl)
@@ -662,7 +661,7 @@ func (dec *Decoder) decodeSlice(atyp reflect.Type, state *decoderState, p uintpt
 	// Always write a header at p.
 	hdrp := (*reflect.SliceHeader)(unsafe.Pointer(p))
 	if hdrp.Cap < n {
-		hdrp.Data = uintptr(unsafe.NewArray(atyp.Elem(), n))
+		hdrp.Data = reflect.MakeSlice(atyp, n, n).Pointer()
 		hdrp.Cap = n
 	}
 	hdrp.Len = n
@@ -690,7 +689,11 @@ func (dec *Decoder) decodeInterface(ityp reflect.Type, state *decoderState, p ui
 	// Create a writable interface reflect.Value.  We need one even for the nil case.
 	ivalue := allocValue(ityp)
 	// Read the name of the concrete type.
-	b := make([]byte, state.decodeUint())
+	nr := state.decodeUint()
+	if nr < 0 || nr > 1<<31 { // zero is permissible for anonymous types
+		errorf("invalid type name length %d", nr)
+	}
+	b := make([]byte, nr)
 	state.b.Read(b)
 	name := string(b)
 	if name == "" {
@@ -835,11 +838,10 @@ func (dec *Decoder) decOpFor(wireId typeId, rt reflect.Type, name string, inProg
 			}
 
 		case reflect.Map:
-			name = "element of " + name
 			keyId := dec.wireType[wireId].MapT.Key
 			elemId := dec.wireType[wireId].MapT.Elem
-			keyOp, keyIndir := dec.decOpFor(keyId, t.Key(), name, inProgress)
-			elemOp, elemIndir := dec.decOpFor(elemId, t.Elem(), name, inProgress)
+			keyOp, keyIndir := dec.decOpFor(keyId, t.Key(), "key of "+name, inProgress)
+			elemOp, elemIndir := dec.decOpFor(elemId, t.Elem(), "element of "+name, inProgress)
 			ovfl := overflow(name)
 			op = func(i *decInstr, state *decoderState, p unsafe.Pointer) {
 				up := unsafe.Pointer(p)
@@ -965,16 +967,16 @@ func (dec *Decoder) gobDecodeOpFor(ut *userTypeInfo) (*decOp, int) {
 		// Caller has gotten us to within one indirection of our value.
 		if i.indir > 0 {
 			if *(*unsafe.Pointer)(p) == nil {
-				*(*unsafe.Pointer)(p) = unsafe.New(ut.base)
+				*(*unsafe.Pointer)(p) = unsafe.Pointer(reflect.New(ut.base).Pointer())
 			}
 		}
 		// Now p is a pointer to the base type.  Do we need to climb out to
 		// get to the receiver type?
 		var v reflect.Value
 		if ut.decIndir == -1 {
-			v = reflect.ValueOf(unsafe.Unreflect(rcvrType, unsafe.Pointer(&p)))
+			v = reflect.NewAt(rcvrType, unsafe.Pointer(&p)).Elem()
 		} else {
-			v = reflect.ValueOf(unsafe.Unreflect(rcvrType, p))
+			v = reflect.NewAt(rcvrType, p).Elem()
 		}
 		state.dec.decodeGobDecoder(state, v)
 	}
@@ -1147,7 +1149,7 @@ func (dec *Decoder) compileDec(remoteId typeId, ut *userTypeInfo) (engine *decEn
 
 // getDecEnginePtr returns the engine for the specified type.
 func (dec *Decoder) getDecEnginePtr(remoteId typeId, ut *userTypeInfo) (enginePtr **decEngine, err error) {
-	rt := ut.base
+	rt := ut.user
 	decoderMap, ok := dec.decoderCache[rt]
 	if !ok {
 		decoderMap = make(map[typeId]**decEngine)

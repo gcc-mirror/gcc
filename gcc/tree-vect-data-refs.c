@@ -1141,11 +1141,7 @@ vector_alignment_reachable_p (struct data_reference *dr)
   if (!known_alignment_for_access_p (dr))
     {
       tree type = (TREE_TYPE (DR_REF (dr)));
-      tree ba = DR_BASE_OBJECT (dr);
-      bool is_packed = false;
-
-      if (ba)
-	is_packed = contains_packed_reference (ba);
+      bool is_packed = contains_packed_reference (DR_REF (dr));
 
       if (compare_tree_int (TYPE_SIZE (type), TYPE_ALIGN (type)) > 0)
 	is_packed = true;
@@ -2319,7 +2315,7 @@ vect_analyze_data_ref_access (struct data_reference *dr)
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = NULL;
-  HOST_WIDE_INT dr_step = TREE_INT_CST_LOW (step);
+  HOST_WIDE_INT dr_step;
 
   if (loop_vinfo)
     loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -2332,6 +2328,7 @@ vect_analyze_data_ref_access (struct data_reference *dr)
     }
 
   /* Allow invariant loads in loops.  */
+  dr_step = TREE_INT_CST_LOW (step);
   if (loop_vinfo && dr_step == 0)
     {
       GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) = NULL;
@@ -4671,12 +4668,7 @@ vect_supportable_dr_alignment (struct data_reference *dr,
 	    return dr_explicit_realign_optimized;
 	}
       if (!known_alignment_for_access_p (dr))
-	{
-	  tree ba = DR_BASE_OBJECT (dr);
-
-	  if (ba)
-	    is_packed = contains_packed_reference (ba);
-	}
+	is_packed = contains_packed_reference (DR_REF (dr));
 
       if (targetm.vectorize.
 	  support_vector_misalignment (mode, type,
@@ -4690,12 +4682,7 @@ vect_supportable_dr_alignment (struct data_reference *dr,
       tree type = (TREE_TYPE (DR_REF (dr)));
 
       if (!known_alignment_for_access_p (dr))
-	{
-	  tree ba = DR_BASE_OBJECT (dr);
-
-	  if (ba)
-	    is_packed = contains_packed_reference (ba);
-	}
+	is_packed = contains_packed_reference (DR_REF (dr));
 
      if (targetm.vectorize.
          support_vector_misalignment (mode, type,

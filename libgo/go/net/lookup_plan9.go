@@ -7,6 +7,7 @@ package net
 import (
 	"errors"
 	"os"
+	"syscall"
 )
 
 func query(filename, query string, bufSize int) (res []string, err error) {
@@ -67,6 +68,11 @@ func queryCS1(net string, ip IP, port int) (clone, dest string, err error) {
 
 func queryDNS(addr string, typ string) (res []string, err error) {
 	return query("/net/dns", addr+" "+typ, 1024)
+}
+
+func lookupProtocol(name string) (proto int, err error) {
+	// TODO: Implement this
+	return 0, syscall.EPLAN9
 }
 
 func lookupHost(host string) (addrs []string, err error) {

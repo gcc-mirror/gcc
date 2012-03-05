@@ -81,7 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Don't put any single quote (') in MOD_VERSION, 
    if yout want it to be recognized.  */
-#define MOD_VERSION "8"
+#define MOD_VERSION "9"
 
 
 /* Structure that describes a position within a module file.  */
@@ -2244,6 +2244,7 @@ static const mstring bt_types[] = {
     minit ("PROCEDURE", BT_PROCEDURE),
     minit ("UNKNOWN", BT_UNKNOWN),
     minit ("VOID", BT_VOID),
+    minit ("ASSUMED", BT_ASSUMED),
     minit (NULL, -1)
 };
 
@@ -3578,12 +3579,17 @@ mio_typebound_proc (gfc_typebound_proc** proc)
   if ((*proc)->is_generic)
     {
       gfc_tbp_generic* g;
+      int iop;
 
       mio_lparen ();
 
       if (iomode == IO_OUTPUT)
 	for (g = (*proc)->u.generic; g; g = g->next)
-	  mio_allocated_string (g->specific_st->name);
+	  {
+	    iop = (int) g->is_operator;
+	    mio_integer (&iop);
+	    mio_allocated_string (g->specific_st->name);
+	  }
       else
 	{
 	  (*proc)->u.generic = NULL;
@@ -3593,6 +3599,9 @@ mio_typebound_proc (gfc_typebound_proc** proc)
 
 	      g = gfc_get_tbp_generic ();
 	      g->specific = NULL;
+
+	      mio_integer (&iop);
+	      g->is_operator = (bool) iop;
 
 	      require_atom (ATOM_STRING);
 	      sym_root = &current_f2k_derived->tb_sym_root;
@@ -6081,22 +6090,17 @@ gfc_use_module (gfc_use_list *module)
 	parse_name (c);
       if ((start == 1 && strcmp (atom_name, "GFORTRAN") != 0)
 	  || (start == 2 && strcmp (atom_name, " module") != 0))
-	gfc_fatal_error ("File '%s' opened at %C is not a GFORTRAN module "
-			 "file", filename);
+	gfc_fatal_error ("File '%s' opened at %C is not a GNU Fortran"
+			 " module file", filename);
       if (start == 3)
 	{
 	  if (strcmp (atom_name, " version") != 0
 	      || module_char () != ' '
-	      || parse_atom () != ATOM_STRING)
-	    gfc_fatal_error ("Parse error when checking module version"
-		    	     " for file '%s' opened at %C", filename);
-
-	  if (strcmp (atom_string, MOD_VERSION))
-	    {
-	      gfc_fatal_error ("Wrong module version '%s' (expected '%s') "
-			       "for file '%s' opened at %C", atom_string,
-			       MOD_VERSION, filename);
-	    }
+	      || parse_atom () != ATOM_STRING
+	      || strcmp (atom_string, MOD_VERSION))
+	    gfc_fatal_error ("Cannot read module file '%s' opened at %C,"
+			     " because it was created by a different"
+			     " version of GNU Fortran", filename);
 
 	  free (atom_string);
 	}

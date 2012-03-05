@@ -2448,7 +2448,7 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	case GFC_SS_REFERENCE:
 	  /* Scalar argument to elemental procedure.  */
 	  gfc_init_se (&se, NULL);
-	  if (ss_info->data.scalar.can_be_null_ref)
+	  if (ss_info->can_be_null_ref)
 	    {
 	      /* If the actual argument can be absent (in other words, it can
 		 be a NULL reference), don't try to evaluate it; pass instead
@@ -5111,8 +5111,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 
   gfc_add_expr_to_block (&se->pre, tmp);
 
-  if (expr->ts.type == BT_CLASS
-	&& (expr3_elem_size != NULL_TREE || expr3))
+  if (expr->ts.type == BT_CLASS)
     {
       tmp = build_int_cst (unsigned_char_type_node, 0);
       /* With class objects, it is best to play safe and null the 
@@ -8427,6 +8426,36 @@ gfc_reverse_ss (gfc_ss * ss)
 }
 
 
+/* Given an expression refering to a procedure, return the symbol of its
+   interface.  We can't get the procedure symbol directly as we have to handle
+   the case of (deferred) type-bound procedures.  */
+
+gfc_symbol *
+gfc_get_proc_ifc_for_expr (gfc_expr *procedure_ref)
+{
+  gfc_symbol *sym;
+  gfc_ref *ref;
+
+  if (procedure_ref == NULL)
+    return NULL;
+
+  /* Normal procedure case.  */
+  sym = procedure_ref->symtree->n.sym;
+
+  /* Typebound procedure case.  */
+  for (ref = procedure_ref->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_COMPONENT
+	  && ref->u.c.component->attr.proc_pointer)
+	sym = ref->u.c.component->ts.interface;
+      else
+	sym = NULL;
+    }
+
+  return sym;
+}
+
+
 /* Walk the arguments of an elemental function.
    PROC_EXPR is used to check whether an argument is permitted to be absent.  If
    it is NULL, we don't do the check and the argument is assumed to be present.
@@ -8434,7 +8463,7 @@ gfc_reverse_ss (gfc_ss * ss)
 
 gfc_ss *
 gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
-				  gfc_expr *proc_expr, gfc_ss_type type)
+				  gfc_symbol *proc_ifc, gfc_ss_type type)
 {
   gfc_formal_arglist *dummy_arg;
   int scalar;
@@ -8445,24 +8474,8 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
   head = gfc_ss_terminator;
   tail = NULL;
 
-  if (proc_expr)
-    {
-      gfc_ref *ref;
-
-      /* Normal procedure case.  */
-      dummy_arg = proc_expr->symtree->n.sym->formal;
-
-      /* Typebound procedure case.  */
-      for (ref = proc_expr->ref; ref; ref = ref->next)
-	{
-	  if (ref->type == REF_COMPONENT
-	      && ref->u.c.component->attr.proc_pointer
-	      && ref->u.c.component->ts.interface)
-	    dummy_arg = ref->u.c.component->ts.interface->formal;
-	  else
-	    dummy_arg = NULL;
-	}
-    }
+  if (proc_ifc)
+    dummy_arg = proc_ifc->formal;
   else
     dummy_arg = NULL;
 
@@ -8480,16 +8493,17 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
 	  newss = gfc_get_scalar_ss (head, arg->expr);
 	  newss->info->type = type;
 
-	  if (dummy_arg != NULL
-	      && dummy_arg->sym->attr.optional
-	      && arg->expr->expr_type == EXPR_VARIABLE
-	      && (gfc_expr_attr (arg->expr).optional
-		  || gfc_expr_attr (arg->expr).allocatable
-		  || gfc_expr_attr (arg->expr).pointer))
-	    newss->info->data.scalar.can_be_null_ref = true;
 	}
       else
 	scalar = 0;
+
+      if (dummy_arg != NULL
+	  && dummy_arg->sym->attr.optional
+	  && arg->expr->expr_type == EXPR_VARIABLE
+	  && (gfc_expr_attr (arg->expr).optional
+	      || gfc_expr_attr (arg->expr).allocatable
+	      || gfc_expr_attr (arg->expr).pointer))
+	newss->info->can_be_null_ref = true;
 
       head = newss;
       if (!tail)
@@ -8550,7 +8564,8 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
      by reference.  */
   if (sym->attr.elemental || (comp && comp->attr.elemental))
     return gfc_walk_elemental_function_args (ss, expr->value.function.actual,
-					     expr, GFC_SS_REFERENCE);
+					     gfc_get_proc_ifc_for_expr (expr),
+					     GFC_SS_REFERENCE);
 
   /* Scalar functions are OK as these are evaluated outside the scalarization
      loop.  Pass back and let the caller deal with it.  */

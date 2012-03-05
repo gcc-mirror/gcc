@@ -10,7 +10,6 @@ package net
 
 import (
 	"io"
-	"reflect"
 	"syscall"
 )
 
@@ -28,10 +27,20 @@ func socket(net string, f, t, p int, la, ra syscall.Sockaddr, toAddr func(syscal
 	syscall.CloseOnExec(s)
 	syscall.ForkLock.RUnlock()
 
-	setDefaultSockopts(s, f, t)
+	err = setDefaultSockopts(s, f, t)
+	if err != nil {
+		closesocket(s)
+		return nil, err
+	}
 
+	var bla syscall.Sockaddr
 	if la != nil {
-		err = syscall.Bind(s, la)
+		bla, err = listenerSockaddr(s, f, la, toAddr)
+		if err != nil {
+			closesocket(s)
+			return nil, err
+		}
+		err = syscall.Bind(s, bla)
 		if err != nil {
 			closesocket(s)
 			return nil, err
@@ -49,23 +58,21 @@ func socket(net string, f, t, p int, la, ra syscall.Sockaddr, toAddr func(syscal
 			fd.Close()
 			return nil, err
 		}
+		fd.isConnected = true
 	}
 
 	sa, _ := syscall.Getsockname(s)
-	laddr := toAddr(sa)
+	var laddr Addr
+	if la != nil && bla != la {
+		laddr = toAddr(la)
+	} else {
+		laddr = toAddr(sa)
+	}
 	sa, _ = syscall.Getpeername(s)
 	raddr := toAddr(sa)
 
 	fd.setAddr(laddr, raddr)
 	return fd, nil
-}
-
-type UnknownSocketError struct {
-	sa syscall.Sockaddr
-}
-
-func (e *UnknownSocketError) Error() string {
-	return "unknown socket address type " + reflect.TypeOf(e.sa).String()
 }
 
 type writerOnly struct {

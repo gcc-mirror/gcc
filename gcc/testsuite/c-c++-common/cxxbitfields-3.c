@@ -18,4 +18,5 @@ void setit()
   var.j = 5;
 }
 
-/* { dg-final { scan-assembler "movl.*, var" } } */
+/* { dg-final { scan-assembler "movl.*, _?var" { target nonpic } } } */
+/* { dg-final { scan-assembler "movl.*, (_?var|\\(%)" { target { ! nonpic } } } } */

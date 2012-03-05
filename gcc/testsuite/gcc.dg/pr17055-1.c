@@ -1,7 +1,7 @@
 /* PR middle-end/17055.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -ffast-math" } */
-/* { dg-options "-O2 -ffast-math -fno-common" { target hppa*-*-hpux* } } */
+/* { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
 
 /* This test used to abort, beacuse we do an "integer" fold to zero, i.e.
    x - x = (T)0 where T is the type of x.  Unfortunately, fold_convert

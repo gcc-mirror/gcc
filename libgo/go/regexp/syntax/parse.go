@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Package syntax parses regular expressions into parse trees and compiles
+// parse trees into programs. Most clients of regular expressions will use
+// the facilities of package regexp (such as Compile and Match) instead of
+// this package.
 package syntax
 
 import (
@@ -648,6 +652,9 @@ func literalRegexp(s string, flags Flags) *Regexp {
 
 // Parsing.
 
+// Parse parses a regular expression string s, controlled by the specified
+// Flags, and returns a regular expression parse tree. The syntax is
+// described in the top-level comment for package regexp.
 func Parse(s string, flags Flags) (*Regexp, error) {
 	if flags&Literal != 0 {
 		// Trivial parser for literal string.
@@ -1377,8 +1384,8 @@ func (p *parser) appendGroup(r []rune, g charGroup) []rune {
 }
 
 var anyTable = &unicode.RangeTable{
-	[]unicode.Range16{{0, 1<<16 - 1, 1}},
-	[]unicode.Range32{{1 << 16, unicode.MaxRune, 1}},
+	R16: []unicode.Range16{{Lo: 0, Hi: 1<<16 - 1, Stride: 1}},
+	R32: []unicode.Range32{{Lo: 1 << 16, Hi: unicode.MaxRune, Stride: 1}},
 }
 
 // unicodeTable returns the unicode.RangeTable identified by name

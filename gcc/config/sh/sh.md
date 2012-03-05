@@ -1,6 +1,6 @@
 ;;- Machine description for Renesas / SuperH SH.
 ;;  Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-;;  2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+;;  2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 ;;  Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
@@ -4405,15 +4405,13 @@ label:
   "sub	r63, %1, %0"
   [(set_attr "type" "arith_media")])
 
-
-
 ;; Don't expand immediately because otherwise neg:DI (abs:DI) will not be
 ;; combined.
 (define_expand "negdi2"
   [(set (match_operand:DI 0 "arith_reg_dest" "")
 	(neg:DI (match_operand:DI 1 "arith_reg_operand" "")))
    (clobber (reg:SI T_REG))]
-  ""
+  "TARGET_SH1"
   "")
 
 (define_insn_and_split "*negdi2"
@@ -4464,7 +4462,7 @@ label:
   [(set (match_operand:SI 0 "arith_reg_dest" "")
   	(abs:SI (match_operand:SI 1 "arith_reg_operand" "")))
    (clobber (reg:SI T_REG))]
-  ""
+  "TARGET_SH1"
   "")
 
 (define_insn_and_split "*abssi2"
@@ -4496,7 +4494,6 @@ label:
 		 const0_rtx));
   DONE;
 }")
-
 
 ;; The SH4 202 can do zero-offset branches without pipeline stalls.
 ;; This can be used as some kind of conditional execution, which is useful
@@ -4534,6 +4531,82 @@ label:
   [(set_attr "type" "arith") ;; poor approximation
    (set_attr "length" "4")])
 
+(define_expand "absdi2"
+  [(set (match_operand:DI 0 "arith_reg_dest" "")
+	(abs:DI (match_operand:DI 1 "arith_reg_operand" "")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "")
+
+(define_insn_and_split "*absdi2"
+  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
+	(abs:DI (match_operand:DI 1 "arith_reg_operand" "r")))]
+  "TARGET_SH1"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
+  rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
+  emit_insn (gen_cmpgesi_t (high_src, const0_rtx));
+  emit_insn (gen_negdi_cond (operands[0], operands[1], operands[1],
+			     const1_rtx));
+  DONE;
+})
+
+(define_insn_and_split "*negabsdi2"
+  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
+  	(neg:DI (abs:DI (match_operand:DI 1 "arith_reg_operand" "r"))))]
+  "TARGET_SH1"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
+  rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
+
+  emit_insn (gen_cmpgesi_t (high_src, const0_rtx));
+  emit_insn (gen_negdi_cond (operands[0], operands[1], operands[1],
+			     const0_rtx));
+  DONE;
+})
+
+(define_insn_and_split "negdi_cond"
+  [(set (match_operand:DI 0 "arith_reg_dest" "=r,r")
+	(if_then_else:DI (eq:SI (reg:SI T_REG)
+				(match_operand:SI 3 "const_int_operand" "M,N"))
+	 (match_operand:DI 1 "arith_reg_operand" "r,r")
+	 (neg:DI (match_operand:DI 2 "arith_reg_operand" "1,1"))))]
+  "TARGET_SH1"
+  "#"
+  "TARGET_SH1"
+  [(const_int 0)]
+{
+  int low_word = (TARGET_LITTLE_ENDIAN ? 0 : 1);
+  int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
+
+  rtx low_src = operand_subword (operands[1], low_word, 0, DImode);
+  rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
+
+  rtx low_dst = operand_subword (operands[0], low_word, 1, DImode);
+  rtx high_dst = operand_subword (operands[0], high_word, 1, DImode);
+
+  rtx skip_neg_label = gen_label_rtx ();
+
+  emit_insn (gen_movsi (low_dst, low_src));
+  emit_insn (gen_movsi (high_dst, high_src));
+
+  emit_jump_insn (INTVAL (operands[3]) 
+		  ? gen_branch_true (skip_neg_label)
+		  : gen_branch_false (skip_neg_label));
+
+  if (!INTVAL (operands[3]))
+    emit_insn (gen_clrt ());
+
+  emit_insn (gen_negc (low_dst, low_src));
+  emit_label_after (skip_neg_label, emit_insn (gen_negc (high_dst, high_src)));
+  DONE;
+})
 
 ;; -------------------------------------------------------------------------
 ;; Zero extension instructions
@@ -5468,7 +5541,7 @@ label:
   operands[3] = gen_rtx_REG (DImode, REGNO (operands[2]));
 }")
 
-/* When storing r0, we have to avoid reg+reg addressing.  */
+;; When storing r0, we have to avoid reg+reg addressing.
 (define_insn "movhi_i"
   [(set (match_operand:HI 0 "general_movdst_operand"   "=r,r,r,r,m,r,l,r")
 	(match_operand:HI 1 "general_movsrc_operand" "Q,rI08,m,t,r,l,r,i"))]
@@ -7472,7 +7545,7 @@ label:
    (set_attr "fp_set" "unknown")])
 
 ;; This is TBR relative jump instruction for SH2A architecture.
-;; Its use is enabled assigning an attribute "function_vector"
+;; Its use is enabled by assigning an attribute "function_vector"
 ;; and the vector number to a function during its declaration.
 
 (define_insn "call_valuei_tbr_rel"
@@ -9581,8 +9654,6 @@ mov.l\\t1f,r0\\n\\
    DONE;
 ")
 
-
-
 ;; sne moves the complement of the T reg to DEST like this:
 ;;      cmp/eq ...
 ;;      mov    #-1,temp
@@ -9604,7 +9675,6 @@ mov.l\\t1f,r0\\n\\
 {
   operands[1] = gen_reg_rtx (SImode);
 }")
-
 
 ;; Recognize mov #-1/negc/neg sequence, and change it to movt/add #-1.
 ;; This prevents a regression that occurred when we switched from xor to
@@ -9658,7 +9728,6 @@ mov.l\\t1f,r0\\n\\
    sh_emit_compare_and_set (operands, DFmode);
    DONE;
 ")
-
 
 ;; -------------------------------------------------------------------------
 ;; Instructions to cope with inline literal tables
@@ -12688,7 +12757,7 @@ mov.l\\t1f,r0\\n\\
   [(set_attr "type" "arith_media")
    (set_attr "highpart" "ignore")])
 
-/* These are useful to expand ANDs and as combiner patterns.  */
+;; These are useful to expand ANDs and as combiner patterns.
 (define_insn_and_split "mshfhi_l_di"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r,f")
 	(ior:DI (lshiftrt:DI (match_operand:DI 1 "arith_reg_or_0_operand" "rZ,f")

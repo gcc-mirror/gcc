@@ -94,6 +94,12 @@ show_indent (void)
 static void
 show_typespec (gfc_typespec *ts)
 {
+  if (ts->type == BT_ASSUMED)
+    {
+      fputs ("(TYPE(*))", dumpfile);
+      return;
+    }
+
   fprintf (dumpfile, "(%s ", gfc_basic_typename (ts->type));
 
   switch (ts->type)

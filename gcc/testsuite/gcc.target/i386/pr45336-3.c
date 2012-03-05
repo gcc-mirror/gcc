@@ -5,7 +5,7 @@
 /* { dg-final { scan-assembler "(movswl|cwtl)" } } */
 /* { dg-final { scan-assembler "pextrb" } } */
 /* { dg-final { scan-assembler "pextrw" } } */
-/* { dg-final { scan-assembler "pextrd" } } */
+/* { dg-final { scan-assembler "pextrd" { target { ! x86_64-*-mingw* } } } } */
 
 #include <smmintrin.h>
 int foo8(__m128i x) { return (char) _mm_extract_epi8(x, 4); }

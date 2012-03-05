@@ -65,6 +65,26 @@ func (z *Int) Set(x *Int) *Int {
 	return z
 }
 
+// Bits provides raw (unchecked but fast) access to x by returning its
+// absolute value as a little-endian Word slice. The result and x share
+// the same underlying array.
+// Bits is intended to support implementation of missing low-level Int
+// functionality outside this package; it should be avoided otherwise.
+func (x *Int) Bits() []Word {
+	return x.abs
+}
+
+// SetBits provides raw (unchecked but fast) access to z by setting its
+// value to abs, interpreted as a little-endian Word slice, and returning
+// z. The result and abs share the same underlying array.
+// SetBits is intended to support implementation of missing low-level Int
+// functionality outside this package; it should be avoided otherwise.
+func (z *Int) SetBits(abs []Word) *Int {
+	z.abs = nat(abs).norm()
+	z.neg = false
+	return z
+}
+
 // Abs sets z to |x| (the absolute value of x) and returns z.
 func (z *Int) Abs(x *Int) *Int {
 	z.Set(x)
@@ -191,6 +211,7 @@ func (z *Int) Rem(x, y *Int) *Int {
 //	r = x - y*q
 //
 // (See Daan Leijen, ``Division and Modulus for Computer Scientists''.)
+// See DivMod for Euclidean division and modulus (unlike Go).
 //
 func (z *Int) QuoRem(x, y, r *Int) (*Int, *Int) {
 	z.abs, r.abs = z.abs.div(r.abs, x.abs, y.abs)
@@ -248,6 +269,7 @@ func (z *Int) Mod(x, y *Int) *Int {
 // div and mod''. ACM Transactions on Programming Languages and
 // Systems (TOPLAS), 14(2):127-144, New York, NY, USA, 4/1992.
 // ACM press.)
+// See QuoRem for T-division and modulus (like Go).
 //
 func (z *Int) DivMod(x, y, m *Int) (*Int, *Int) {
 	y0 := y // save y
@@ -528,18 +550,18 @@ func (z *Int) SetBytes(buf []byte) *Int {
 }
 
 // Bytes returns the absolute value of z as a big-endian byte slice.
-func (z *Int) Bytes() []byte {
-	buf := make([]byte, len(z.abs)*_S)
-	return buf[z.abs.bytes(buf):]
+func (x *Int) Bytes() []byte {
+	buf := make([]byte, len(x.abs)*_S)
+	return buf[x.abs.bytes(buf):]
 }
 
 // BitLen returns the length of the absolute value of z in bits.
 // The bit length of 0 is 0.
-func (z *Int) BitLen() int {
-	return z.abs.bitLen()
+func (x *Int) BitLen() int {
+	return x.abs.bitLen()
 }
 
-// Exp sets z = x**y mod m. If m is nil, z = x**y.
+// Exp sets z = x**y mod m and returns z. If m is nil, z = x**y.
 // See Knuth, volume 2, section 4.6.3.
 func (z *Int) Exp(x, y, m *Int) *Int {
 	if y.neg || len(y.abs) == 0 {
@@ -559,20 +581,20 @@ func (z *Int) Exp(x, y, m *Int) *Int {
 	return z
 }
 
-// GcdInt sets d to the greatest common divisor of a and b, which must be
-// positive numbers.
-// If x and y are not nil, GcdInt sets x and y such that d = a*x + b*y.
-// If either a or b is not positive, GcdInt sets d = x = y = 0.
-func GcdInt(d, x, y, a, b *Int) {
+// GCD sets z to the greatest common divisor of a and b, which must be
+// positive numbers, and returns z.
+// If x and y are not nil, GCD sets x and y such that z = a*x + b*y.
+// If either a or b is not positive, GCD sets z = x = y = 0.
+func (z *Int) GCD(x, y, a, b *Int) *Int {
 	if a.neg || b.neg {
-		d.SetInt64(0)
+		z.SetInt64(0)
 		if x != nil {
 			x.SetInt64(0)
 		}
 		if y != nil {
 			y.SetInt64(0)
 		}
-		return
+		return z
 	}
 
 	A := new(Int).Set(a)
@@ -614,14 +636,15 @@ func GcdInt(d, x, y, a, b *Int) {
 		*y = *lastY
 	}
 
-	*d = *A
+	*z = *A
+	return z
 }
 
-// ProbablyPrime performs n Miller-Rabin tests to check whether z is prime.
-// If it returns true, z is prime with probability 1 - 1/4^n.
-// If it returns false, z is not prime.
-func ProbablyPrime(z *Int, n int) bool {
-	return !z.neg && z.abs.probablyPrime(n)
+// ProbablyPrime performs n Miller-Rabin tests to check whether x is prime.
+// If it returns true, x is prime with probability 1 - 1/4^n.
+// If it returns false, x is not prime.
+func (x *Int) ProbablyPrime(n int) bool {
+	return !x.neg && x.abs.probablyPrime(n)
 }
 
 // Rand sets z to a pseudo-random number in [0, n) and returns z.
@@ -639,7 +662,7 @@ func (z *Int) Rand(rnd *rand.Rand, n *Int) *Int {
 // p is a prime) and returns z.
 func (z *Int) ModInverse(g, p *Int) *Int {
 	var d Int
-	GcdInt(&d, z, nil, g, p)
+	d.GCD(z, nil, g, p)
 	// x and y are such that g*x + p*y = d. Since p is prime, d = 1. Taking
 	// that modulo p results in g*x = 1, therefore x is the inverse element.
 	if z.neg {
@@ -671,18 +694,18 @@ func (z *Int) Rsh(x *Int, n uint) *Int {
 	return z
 }
 
-// Bit returns the value of the i'th bit of z. That is, it
-// returns (z>>i)&1. The bit index i must be >= 0.
-func (z *Int) Bit(i int) uint {
+// Bit returns the value of the i'th bit of x. That is, it
+// returns (x>>i)&1. The bit index i must be >= 0.
+func (x *Int) Bit(i int) uint {
 	if i < 0 {
 		panic("negative bit index")
 	}
-	if z.neg {
-		t := nat(nil).sub(z.abs, natOne)
+	if x.neg {
+		t := nat(nil).sub(x.abs, natOne)
 		return t.bit(uint(i)) ^ 1
 	}
 
-	return z.abs.bit(uint(i))
+	return x.abs.bit(uint(i))
 }
 
 // SetBit sets z to x, with x's i'th bit set to b (0 or 1).
@@ -847,11 +870,11 @@ func (z *Int) Not(x *Int) *Int {
 const intGobVersion byte = 1
 
 // GobEncode implements the gob.GobEncoder interface.
-func (z *Int) GobEncode() ([]byte, error) {
-	buf := make([]byte, 1+len(z.abs)*_S) // extra byte for version and sign bit
-	i := z.abs.bytes(buf) - 1            // i >= 0
+func (x *Int) GobEncode() ([]byte, error) {
+	buf := make([]byte, 1+len(x.abs)*_S) // extra byte for version and sign bit
+	i := x.abs.bytes(buf) - 1            // i >= 0
 	b := intGobVersion << 1              // make space for sign bit
-	if z.neg {
+	if x.neg {
 		b |= 1
 	}
 	buf[i] = b

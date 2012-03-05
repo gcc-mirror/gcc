@@ -8,6 +8,9 @@ package doc
 
 import "go/ast"
 
+// filterIdentList removes unexported names from list in place
+// and returns the resulting list.
+//
 func filterIdentList(list []*ast.Ident) []*ast.Ident {
 	j := 0
 	for _, x := range list {
@@ -19,54 +22,69 @@ func filterIdentList(list []*ast.Ident) []*ast.Ident {
 	return list[0:j]
 }
 
-func baseName(x ast.Expr) *ast.Ident {
-	switch t := x.(type) {
-	case *ast.Ident:
-		return t
-	case *ast.SelectorExpr:
-		if _, ok := t.X.(*ast.Ident); ok {
-			return t.Sel
+// removeErrorField removes anonymous fields named "error" from an interface.
+// This is called when "error" has been determined to be a local name,
+// not the predeclared type.
+//
+func removeErrorField(ityp *ast.InterfaceType) {
+	list := ityp.Methods.List // we know that ityp.Methods != nil
+	j := 0
+	for _, field := range list {
+		keepField := true
+		if n := len(field.Names); n == 0 {
+			// anonymous field
+			if fname, _ := baseTypeName(field.Type); fname == "error" {
+				keepField = false
+			}
 		}
-	case *ast.StarExpr:
-		return baseName(t.X)
+		if keepField {
+			list[j] = field
+			j++
+		}
 	}
-	return nil
+	if j < len(list) {
+		ityp.Incomplete = true
+	}
+	ityp.Methods.List = list[0:j]
 }
 
-func (doc *docReader) filterFieldList(tinfo *typeInfo, fields *ast.FieldList) (removedFields bool) {
+// filterFieldList removes unexported fields (field names) from the field list
+// in place and returns true if fields were removed. Anonymous fields are
+// recorded with the parent type. filterType is called with the types of
+// all remaining fields.
+//
+func (r *reader) filterFieldList(parent *namedType, fields *ast.FieldList, ityp *ast.InterfaceType) (removedFields bool) {
 	if fields == nil {
-		return false
+		return
 	}
 	list := fields.List
 	j := 0
-	for _, f := range list {
+	for _, field := range list {
 		keepField := false
-		if len(f.Names) == 0 {
+		if n := len(field.Names); n == 0 {
 			// anonymous field
-			name := baseName(f.Type)
-			if name != nil && name.IsExported() {
-				// we keep the field - in this case doc.addDecl
-				// will take care of adding the embedded type
+			fname := r.recordAnonymousField(parent, field.Type)
+			if ast.IsExported(fname) {
 				keepField = true
-			} else if tinfo != nil {
-				// we don't keep the field - add it as an embedded
-				// type so we won't loose its methods, if any
-				if embedded := doc.lookupTypeInfo(name.Name); embedded != nil {
-					_, ptr := f.Type.(*ast.StarExpr)
-					tinfo.addEmbeddedType(embedded, ptr)
-				}
+			} else if ityp != nil && fname == "error" {
+				// possibly the predeclared error interface; keep
+				// it for now but remember this interface so that
+				// it can be fixed if error is also defined locally
+				keepField = true
+				r.remember(ityp)
 			}
 		} else {
-			n := len(f.Names)
-			f.Names = filterIdentList(f.Names)
-			if len(f.Names) < n {
+			field.Names = filterIdentList(field.Names)
+			if len(field.Names) < n {
 				removedFields = true
 			}
-			keepField = len(f.Names) > 0
+			if len(field.Names) > 0 {
+				keepField = true
+			}
 		}
 		if keepField {
-			doc.filterType(nil, f.Type)
-			list[j] = f
+			r.filterType(nil, field.Type)
+			list[j] = field
 			j++
 		}
 	}
@@ -77,52 +95,48 @@ func (doc *docReader) filterFieldList(tinfo *typeInfo, fields *ast.FieldList) (r
 	return
 }
 
-func (doc *docReader) filterParamList(fields *ast.FieldList) bool {
-	if fields == nil {
-		return false
-	}
-	var b bool
-	for _, f := range fields.List {
-		if doc.filterType(nil, f.Type) {
-			b = true
+// filterParamList applies filterType to each parameter type in fields.
+//
+func (r *reader) filterParamList(fields *ast.FieldList) {
+	if fields != nil {
+		for _, f := range fields.List {
+			r.filterType(nil, f.Type)
 		}
 	}
-	return b
 }
 
-func (doc *docReader) filterType(tinfo *typeInfo, typ ast.Expr) bool {
+// filterType strips any unexported struct fields or method types from typ
+// in place. If fields (or methods) have been removed, the corresponding
+// struct or interface type has the Incomplete field set to true. 
+//
+func (r *reader) filterType(parent *namedType, typ ast.Expr) {
 	switch t := typ.(type) {
 	case *ast.Ident:
-		return ast.IsExported(t.Name)
+		// nothing to do
 	case *ast.ParenExpr:
-		return doc.filterType(nil, t.X)
+		r.filterType(nil, t.X)
 	case *ast.ArrayType:
-		return doc.filterType(nil, t.Elt)
+		r.filterType(nil, t.Elt)
 	case *ast.StructType:
-		if doc.filterFieldList(tinfo, t.Fields) {
+		if r.filterFieldList(parent, t.Fields, nil) {
 			t.Incomplete = true
 		}
-		return len(t.Fields.List) > 0
 	case *ast.FuncType:
-		b1 := doc.filterParamList(t.Params)
-		b2 := doc.filterParamList(t.Results)
-		return b1 || b2
+		r.filterParamList(t.Params)
+		r.filterParamList(t.Results)
 	case *ast.InterfaceType:
-		if doc.filterFieldList(tinfo, t.Methods) {
+		if r.filterFieldList(parent, t.Methods, t) {
 			t.Incomplete = true
 		}
-		return len(t.Methods.List) > 0
 	case *ast.MapType:
-		b1 := doc.filterType(nil, t.Key)
-		b2 := doc.filterType(nil, t.Value)
-		return b1 || b2
+		r.filterType(nil, t.Key)
+		r.filterType(nil, t.Value)
 	case *ast.ChanType:
-		return doc.filterType(nil, t.Value)
+		r.filterType(nil, t.Value)
 	}
-	return false
 }
 
-func (doc *docReader) filterSpec(spec ast.Spec) bool {
+func (r *reader) filterSpec(spec ast.Spec) bool {
 	switch s := spec.(type) {
 	case *ast.ImportSpec:
 		// always keep imports so we can collect them
@@ -130,22 +144,25 @@ func (doc *docReader) filterSpec(spec ast.Spec) bool {
 	case *ast.ValueSpec:
 		s.Names = filterIdentList(s.Names)
 		if len(s.Names) > 0 {
-			doc.filterType(nil, s.Type)
+			r.filterType(nil, s.Type)
 			return true
 		}
 	case *ast.TypeSpec:
-		if ast.IsExported(s.Name.Name) {
-			doc.filterType(doc.lookupTypeInfo(s.Name.Name), s.Type)
+		if name := s.Name.Name; ast.IsExported(name) {
+			r.filterType(r.lookupType(s.Name.Name), s.Type)
 			return true
+		} else if name == "error" {
+			// special case: remember that error is declared locally
+			r.errorDecl = true
 		}
 	}
 	return false
 }
 
-func (doc *docReader) filterSpecList(list []ast.Spec) []ast.Spec {
+func (r *reader) filterSpecList(list []ast.Spec) []ast.Spec {
 	j := 0
 	for _, s := range list {
-		if doc.filterSpec(s) {
+		if r.filterSpec(s) {
 			list[j] = s
 			j++
 		}
@@ -153,29 +170,30 @@ func (doc *docReader) filterSpecList(list []ast.Spec) []ast.Spec {
 	return list[0:j]
 }
 
-func (doc *docReader) filterDecl(decl ast.Decl) bool {
+func (r *reader) filterDecl(decl ast.Decl) bool {
 	switch d := decl.(type) {
 	case *ast.GenDecl:
-		d.Specs = doc.filterSpecList(d.Specs)
+		d.Specs = r.filterSpecList(d.Specs)
 		return len(d.Specs) > 0
 	case *ast.FuncDecl:
+		// ok to filter these methods early because any
+		// conflicting method will be filtered here, too -
+		// thus, removing these methods early will not lead
+		// to the false removal of possible conflicts
 		return ast.IsExported(d.Name.Name)
 	}
 	return false
 }
 
-// fileExports trims the AST for a Go file in place such that
-// only exported nodes remain. fileExports returns true if
-// there are exported declarations; otherwise it returns false.
+// fileExports removes unexported declarations from src in place.
 //
-func (doc *docReader) fileExports(src *ast.File) bool {
+func (r *reader) fileExports(src *ast.File) {
 	j := 0
 	for _, d := range src.Decls {
-		if doc.filterDecl(d) {
+		if r.filterDecl(d) {
 			src.Decls[j] = d
 			j++
 		}
 	}
 	src.Decls = src.Decls[0:j]
-	return j > 0
 }

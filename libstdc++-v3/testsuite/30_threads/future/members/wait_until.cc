@@ -41,13 +41,13 @@ void test01()
   std::future<int> f1(p1.get_future());
 
   auto when = make_time(10);
-  VERIFY( !f1.wait_until(when) );
+  VERIFY( f1.wait_until(when) == std::future_status::timeout );
   VERIFY( std::chrono::system_clock::now() >= when );
 
   p1.set_value(1);
 
   when = make_time(100);
-  VERIFY( f1.wait_until(when) );
+  VERIFY( f1.wait_until(when) == std::future_status::ready );
   VERIFY( std::chrono::system_clock::now() < when );
 }
 

@@ -184,7 +184,9 @@ extern GTY(()) int darwin_ms_struct;
     %{L*} %(link_libgcc) %o %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
     %{fopenmp|ftree-parallelize-loops=*: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libgomp.a%s; : -lgomp } } \
-    %{fupc-link:%:include(libgupc.spec)%(link_upc)}\
+    %{fgnu-tm: \
+      %{static|static-libgcc|static-libstdc++|static-libgfortran: libitm.a%s; : -litm } } \
+    %{fupc-link:%:include(libgupc.spec)%(link_upc)} \
     %{!nostdlib:%{!nodefaultlibs:\
       %(link_ssp) %(link_gcc_c_sequence)\
     }}\
@@ -616,7 +618,7 @@ int darwin_label_is_anonymous_local_objc_name (const char *name);
        else if (!strncmp (xname, ".objc_class_name_", 17))		     \
 	 fprintf (FILE, "%s", xname);					     \
        else if (xname[0] != '"' && name_needs_quotes (xname))		     \
-	 fprintf (FILE, "\"%s\"", xname);				     \
+	 asm_fprintf (FILE, "\"%U%s\"", xname);				     \
        else								     \
          asm_fprintf (FILE, "%U%s", xname);				     \
   } while (0)
@@ -918,6 +920,8 @@ void add_framework_path (char *);
 
 #undef GOMP_SELF_SPECS
 #define GOMP_SELF_SPECS ""
+#undef GTM_SELF_SPECS
+#define GTM_SELF_SPECS ""
 
 /* Darwin disables section anchors by default.  
    They should be enabled per arch where support exists in that arch.  */

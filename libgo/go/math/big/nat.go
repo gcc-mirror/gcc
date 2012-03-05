@@ -8,9 +8,15 @@
 //	- Int	signed integers
 //	- Rat	rational numbers
 //
-// All methods on Int take the result as the receiver; if it is one
-// of the operands it may be overwritten (and its memory reused).
-// To enable chaining of operations, the result is also returned.
+// Methods are typically of the form:
+//
+//	func (z *Int) Op(x, y *Int) *Int	(similar for *Rat)
+//
+// and implement operations z = x Op y with the result as receiver; if it
+// is one of the operands it may be overwritten (and its memory reused).
+// To enable chaining of operations, the result is also returned. Methods
+// returning a result other than *Int or *Rat take one of the operands as
+// the receiver.
 //
 package big
 
@@ -891,7 +897,7 @@ func (q nat) convertWords(s []byte, charset string, b Word, ndigits int, bb Word
 }
 
 // Split blocks greater than leafSize Words (or set to 0 to disable recursive conversion)
-// Benchmark and configure leafSize using: gotest -test.bench="Leaf"
+// Benchmark and configure leafSize using: go test -bench="Leaf"
 //   8 and 16 effective on 3.0 GHz Xeon "Clovertown" CPU (128 byte cache lines)
 //   8 and 16 effective on 2.66 GHz Core 2 Duo "Penryn" CPU
 var leafSize int = 8 // number of Word-size binary values treat as a monolithic block
