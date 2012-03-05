@@ -3447,7 +3447,9 @@ pointer_diff (location_t loc, tree op0, tree op1)
   else
     con1 = op1;
 
-  if (TREE_CODE (con0) == PLUS_EXPR)
+  gcc_assert (TREE_CODE (con0) != PLUS_EXPR
+	      && TREE_CODE (con1) != PLUS_EXPR);
+  if (TREE_CODE (con0) == POINTER_PLUS_EXPR)
     {
       lit0 = TREE_OPERAND (con0, 1);
       con0 = TREE_OPERAND (con0, 0);
@@ -3455,7 +3457,7 @@ pointer_diff (location_t loc, tree op0, tree op1)
   else
     lit0 = integer_zero_node;
 
-  if (TREE_CODE (con1) == PLUS_EXPR)
+  if (TREE_CODE (con1) == POINTER_PLUS_EXPR)
     {
       lit1 = TREE_OPERAND (con1, 1);
       con1 = TREE_OPERAND (con1, 0);
