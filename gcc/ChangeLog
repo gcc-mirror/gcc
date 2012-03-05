@@ -1,3 +1,10 @@
+2012-03-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* langhooks.c (add_builtin_type): New function.
+	* langhooks.h (add_builtin_type): Export it.
+	* config/mep/mep.c (mep_init_builtins): Use it.
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Use it.
+
 2012-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/51902
