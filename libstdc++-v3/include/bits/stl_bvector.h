@@ -108,6 +108,32 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     { *_M_p ^= _M_mask; }
   };
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  inline void
+  swap(_Bit_reference __x, _Bit_reference __y) noexcept
+  {
+    bool __tmp = __x;
+    __x = __y;
+    __y = __tmp;
+  }
+
+  inline void
+  swap(_Bit_reference __x, bool& __y) noexcept
+  {
+    bool __tmp = __x;
+    __x = __y;
+    __y = __tmp;
+  }
+
+  inline void
+  swap(bool& __x, _Bit_reference __y) noexcept
+  {
+    bool __tmp = __x;
+    __x = __y;
+    __y = __tmp;
+  }
+#endif
+
   struct _Bit_iterator_base
   : public std::iterator<std::random_access_iterator_tag, bool>
   {

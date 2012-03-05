@@ -1,3 +1,12 @@
+2012-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algobase.h (iter_swap): In C++11 mode simply
+	call swap.
+	* include/bits/stl_bvector.h (swap(_Bit_reference,
+	_Bit_reference), swap(_Bit_reference, bool&),
+	swap(bool&, _Bit_reference)): Add.
+	* testsuite/23_containers/vector/bool/swap.cc: New.
+
 2012-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
