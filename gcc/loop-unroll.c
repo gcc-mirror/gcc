@@ -198,7 +198,6 @@ unroll_and_peel_loops (int flags)
       if (check)
 	{
 #ifdef ENABLE_CHECKING
-	  verify_dominators (CDI_DOMINATORS);
 	  verify_loop_structure ();
 #endif
 	}
@@ -255,7 +254,6 @@ peel_loops_completely (int flags)
 	{
 	  peel_loop_completely (loop);
 #ifdef ENABLE_CHECKING
-	  verify_dominators (CDI_DOMINATORS);
 	  verify_loop_structure ();
 #endif
 	}

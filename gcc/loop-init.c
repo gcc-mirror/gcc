@@ -91,7 +91,6 @@ loop_optimizer_init (unsigned flags)
   flow_loops_dump (dump_file, NULL, 1);
 
 #ifdef ENABLE_CHECKING
-  verify_dominators (CDI_DOMINATORS);
   verify_loop_structure ();
 #endif
 }

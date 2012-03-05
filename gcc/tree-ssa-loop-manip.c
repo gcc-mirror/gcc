@@ -1096,7 +1096,6 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
-  verify_dominators (CDI_DOMINATORS);
   verify_loop_structure ();
   verify_loop_closed_ssa (true);
 #endif
