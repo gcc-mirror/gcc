@@ -1,3 +1,7 @@
+2012-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgrtl.c (cfg_layout_merge_blocks): Cleanup.
+
 2012-03-05  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (integer_zerop): Handle VECTOR_CSTs.
