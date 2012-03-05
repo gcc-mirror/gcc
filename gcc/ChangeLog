@@ -1,3 +1,19 @@
+2012-03-05  Richard Guenther  <rguenther@suse.de>
+
+	* cfgloop.c (verify_loop_structure): Verify dominators before
+	using them.
+	* graphite-clast-to-gimple.c (graphite_verify): Do not verify
+	dominators from here.
+	* graphite-scop-detection.c (create_sese_edges): Likewise.
+	* loop-doloop.c (doloop_optimize_loops): Likewise.
+	* loop-init.c (loop_optimizer_init): Likewise.
+	* loop-unroll.c (unroll_and_peel_loops): Likewise.
+	* loop-unswitch.c (unswitch_loops): Likewise.
+	* tree-ssa-loop-manip.c (tree_transform_and_unroll_loop): Likewise.
+	* tree-parloops.c (parallelize_loops): Likewise.  Verify
+	only when checking is enabled.
+	* tree-loop-distribution.c (tree_loop_distribution): Likewise.
+
 2012-03-05  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* genautomata.c (parse_automata_opt): New static function.
