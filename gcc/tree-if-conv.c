@@ -1712,6 +1712,9 @@ combine_blocks (struct loop *loop)
 
   free (ifc_bbs);
   ifc_bbs = NULL;
+
+  /* Post-dominators are corrupt now.  */
+  free_dominance_info (CDI_POST_DOMINATORS);
 }
 
 /* If-convert LOOP when it is legal.  For the moment this pass has no
