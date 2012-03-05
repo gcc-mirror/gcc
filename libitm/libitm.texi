@@ -82,8 +82,8 @@ several threads.
 
 To activate support for TM in C/C++, the compile-time flag @option{-fgnu-tm}
 must be specified. This enables TM language-level constructs such as
-transaction statements (@code{__transaction}, @pxref{C/C++ Language
-Constructs for TM} for details).
+transaction statements (e.g., @code{__transaction_atomic}, @pxref{C/C++
+Language Constructs for TM} for details).
 
 @c ---------------------------------------------------------------------
 @c C/C++ Language Constructs for TM
@@ -92,7 +92,35 @@ Constructs for TM} for details).
 @node C/C++ Language Constructs for TM
 @chapter C/C++ Language Constructs for TM
 
-TODO: link to the C++ TM spec. a few examples. how gcc's support differs. 
+Transactions are supported in C++ and C in the form of transaction statements,
+transaction expressions, and function transactions. In the following example,
+both @code{a} and @code{b} will be read and the difference will be written to
+@code{c}, all atomically and isolated from other transactions:
+
+@example
+__transaction_atomic @{ c = a - b; @}
+@end example
+
+Therefore, another thread can use the following code to concurrently update
+@code{b} without ever causing @code{c} to hold a negative value (and without
+having to use other synchronization constructs such as locks or C++11
+atomics):
+
+@example
+__transaction_atomic @{ if (a > b) b++; @}
+@end example
+
+GCC follows the @uref{https://sites.google.com/site/tmforcplusplus/, Draft
+Specification of Transactional Language Constructs for C++ (v1.1)} in its
+implementation of transactions.
+
+The precise semantics of transactions are defined in terms of the C++11/C11
+memory model (see the specification). Roughly, transactions provide
+synchronization guarantees that are similar to what would be guaranteed when
+using a single global lock as a guard for all transactions. Note that like
+other synchronization constructs in C/C++, transactions rely on a
+data-race-free program (e.g., a nontransactional write that is concurrent
+with a transactional read to the same memory location is a data race).
 
 @c ---------------------------------------------------------------------
 @c The libitm ABI
