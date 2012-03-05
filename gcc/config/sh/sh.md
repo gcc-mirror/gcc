@@ -3354,15 +3354,6 @@ label:
 	xori	%1, %2, %0"
   [(set_attr "type" "arith_media")])
 
-;; Store the complements of the T bit in a register.
-(define_insn "xorsi3_movrt"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(xor:SI (reg:SI T_REG)
-		(const_int 1)))]
-  "TARGET_SH2A"
-  "movrt\\t%0"
-  [(set_attr "type" "arith")])
-
 (define_insn "xordi3"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r,r")
 	(xor:DI (match_operand:DI 1 "arith_reg_operand" "%r,r")
@@ -4387,7 +4378,17 @@ label:
 ;; Unary arithmetic
 ;; -------------------------------------------------------------------------
 
-(define_insn "negc"
+(define_expand "negc"
+  [(parallel [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(neg:SI (plus:SI (reg:SI T_REG)
+			 (match_operand:SI 1 "arith_reg_operand" ""))))
+   (set (reg:SI T_REG)
+	(ne:SI (ior:SI (reg:SI T_REG) (match_dup 1))
+	       (const_int 0)))])]
+  ""
+  "")
+
+(define_insn "*negc"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(neg:SI (plus:SI (reg:SI T_REG)
 			 (match_operand:SI 1 "arith_reg_operand" "r"))))
@@ -9528,6 +9529,13 @@ mov.l\\t1f,r0\\n\\
   "movt	%0"
   [(set_attr "type" "arith")])
 
+(define_insn "movrt"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(xor:SI (reg:SI T_REG) (const_int 1)))]
+  "TARGET_SH2A"
+  "movrt	%0"
+  [(set_attr "type" "arith")])
+
 (define_expand "cstore4_media"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(match_operator:SI 1 "sh_float_comparison_operator"
@@ -9654,40 +9662,55 @@ mov.l\\t1f,r0\\n\\
    DONE;
 ")
 
-;; sne moves the complement of the T reg to DEST like this:
-;;      cmp/eq ...
-;;      mov    #-1,temp
-;;      negc   temp,dest
-;;   This is better than xoring compare result with 1 because it does
-;;   not require r0 and further, the -1 may be CSE-ed or lifted out of a
-;;   loop.
+;; Move the complement of the T reg to a reg.
+;; On SH2A the movrt insn can be used.
+;; On anything else than SH2A this has to be done with multiple instructions.
+;; One obvious way would be:
+;;	cmp/eq	...
+;;	movt	r0
+;;	xor	#1,r0
+;;
+;; However, this puts pressure on r0 in most cases and thus the following is
+;; more appealing:
+;;	cmp/eq	...
+;;	mov	#-1,temp
+;;	negc	temp,dest
+;;
+;; If the constant -1 can be CSE-ed or lifted out of a loop it effectively
+;; becomes a one instruction operation.  Moreover, care must be taken that
+;; the insn can still be combined with inverted compare and branch code
+;; around it.
+;; The expander will reserve the constant -1, the insn makes the whole thing
+;; combinable, the splitter finally emits the insn if it was not combined 
+;; away.
+;; Notice that when using the negc variant the T bit also gets inverted.
 
 (define_expand "movnegt"
   [(set (match_dup 1) (const_int -1))
-   (parallel [(set (match_operand:SI 0 "" "")
-		   (neg:SI (plus:SI (reg:SI T_REG)
-				    (match_dup 1))))
-	      (set (reg:SI T_REG)
-		   (ne:SI (ior:SI (reg:SI T_REG) (match_dup 1))
-			  (const_int 0)))])]
+   (parallel [(set (match_operand:SI 0 "arith_reg_dest" "")
+		   (xor:SI (reg:SI T_REG) (const_int 1)))
+   (use (match_dup 1))])]
   ""
-  "
 {
   operands[1] = gen_reg_rtx (SImode);
-}")
+})
 
-;; Recognize mov #-1/negc/neg sequence, and change it to movt/add #-1.
-;; This prevents a regression that occurred when we switched from xor to
-;; mov/neg for sne.
-
-(define_split
-  [(set (match_operand:SI 0 "arith_reg_dest" "")
-	(plus:SI (reg:SI T_REG)
-		 (const_int -1)))]
+(define_insn_and_split "*movnegt"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(xor:SI (reg:SI T_REG) (const_int 1)))
+   (use (match_operand:SI 1 "arith_reg_operand" "r"))]
   "TARGET_SH1"
-  [(set (match_dup 0) (eq:SI (reg:SI T_REG) (const_int 1)))
-   (set (match_dup 0) (plus:SI (match_dup 0) (const_int -1)))]
-  "")
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  if (TARGET_SH2A)
+    emit_insn (gen_movrt (operands[0]));
+  else
+    emit_insn (gen_negc (operands[0], operands[1]));
+  DONE;
+}
+  [(set_attr "type" "arith")])
 
 (define_expand "cstoresf4"
   [(set (match_operand:SI 0 "register_operand" "=r")
