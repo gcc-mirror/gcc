@@ -14547,7 +14547,9 @@ $as_echo_n "checking whether <ustat.h> can be used... " >&6; }
 if test "${libgo_cv_c_ustat_h+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  CFLAGS_hold=$CFLAGS
+CFLAGS="$CFLAGS -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE $OSCFLAGS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #include <sys/types.h>
@@ -14563,6 +14565,7 @@ else
   libgo_cv_c_ustat_h=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+CFLAGS=$CFLAGS_hold
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_c_ustat_h" >&5
 $as_echo "$libgo_cv_c_ustat_h" >&6; }
