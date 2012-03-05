@@ -1,6 +1,7 @@
 // Debugging list implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
+// 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -89,14 +90,18 @@ namespace __debug
       : _Base(__n, __value, __a) { }
 #endif
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<class _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
       template<class _InputIterator>
-      list(_InputIterator __first, _InputIterator __last,
-	   const _Allocator& __a = _Allocator())
-      : _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
-								   __last)),
-              __gnu_debug::__base(__last), __a)
-      { }
-
+#endif
+	list(_InputIterator __first, _InputIterator __last,
+	     const _Allocator& __a = _Allocator())
+	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
+								     __last)),
+		__gnu_debug::__base(__last), __a)
+        { }
 
       list(const list& __x)
       : _Base(__x) { }
@@ -151,7 +156,12 @@ namespace __debug
       }
 #endif
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<class _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
       template<class _InputIterator>
+#endif
         void
         assign(_InputIterator __first, _InputIterator __last)
         {
@@ -405,7 +415,12 @@ namespace __debug
 	_Base::insert(__position.base(), __n, __x);
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<class _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
       template<class _InputIterator>
+#endif
         void
         insert(iterator __position, _InputIterator __first,
 	       _InputIterator __last)
