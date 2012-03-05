@@ -1,3 +1,10 @@
+2012-03-05  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/52242
+	Revert: 2011-11-26  Richard Henderson  <rth@redhat.com>
+	* omp-low.c (expand_omp_atomic): Assume anything aligned to
+	BIGGEST_ALIGNMENT is aligned.
+
 2012-03-05  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.c (TARGET_ATOMIC_TEST_AND_SET_TRUEVAL): New hook.
