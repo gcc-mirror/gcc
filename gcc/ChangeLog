@@ -1,3 +1,8 @@
+2012-03-05  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* c-typeck.c (pointer_diff): Check for POINTER_PLUS_EXPR, not
+	PLUS_EXPR.
+
 2012-03-05  Richard Henderson  <rth@redhat.com>
 
 	* genemit.c (main): Include "target.h" in insn-emit.c.
