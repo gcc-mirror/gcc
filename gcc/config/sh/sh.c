@@ -11888,15 +11888,8 @@ sh_expand_t_scc (rtx operands[])
   val = INTVAL (op1);
   if ((code == EQ && val == 1) || (code == NE && val == 0))
     emit_insn (gen_movt (result));
-  else if (TARGET_SH2A && ((code == EQ && val == 0)
-			    || (code == NE && val == 1)))
-    emit_insn (gen_xorsi3_movrt (result));
   else if ((code == EQ && val == 0) || (code == NE && val == 1))
-    {
-      emit_clobber (result);
-      emit_insn (gen_subc (result, result, result));
-      emit_insn (gen_addsi3 (result, result, const1_rtx));
-    }
+   emit_insn (gen_movnegt (result));
   else if (code == EQ || code == NE)
     emit_insn (gen_move_insn (result, GEN_INT (code == NE)));
   else

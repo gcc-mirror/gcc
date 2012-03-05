@@ -1,3 +1,15 @@
+2012-03-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.c (sh_expand_t_scc): Remove SH2A special case
+	and use unified expansion logic.
+	* config/sh/sh.md (xorsi3_movrt): Rename to movrt.  Move
+	closer to the existing movt insn.
+	(negc): Rename insn to *negc.  Add new expander.
+	(movnegt): Use xor pattern for T bit negation.  Reserve helper
+	constant for negc pattern.
+	(*movnegt): New insn and splitter.
+
 2012-03-05  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* c-typeck.c (pointer_diff): Check for POINTER_PLUS_EXPR, not
