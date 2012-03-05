@@ -1,5 +1,13 @@
 2012-03-05  Richard Guenther  <rguenther@suse.de>
 
+	* cfgexpand.c (gimple_expand_cfg): Free dominator info.
+	* tree-if-conv.c (combine_blocks): Free post-dominator info
+	after breaking it.
+	* tree-parloops.c (create_parallel_loop): Free and re-compute
+	dominator info after breaking it.
+
+2012-03-05  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/52353
 	* optabs.h (trapv_unoptab_p): New function.
 	(trapv_binoptab_p): Likewise.

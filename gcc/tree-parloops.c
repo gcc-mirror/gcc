@@ -1740,6 +1740,10 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   gimple_set_location (stmt, loc);
   gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
 
+  /* After the above dom info is hosed.  Re-compute it.  */
+  free_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_DOMINATORS);
+
   return paral_bb;
 }
 
