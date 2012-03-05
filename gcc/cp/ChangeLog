@@ -1,5 +1,10 @@
 2012-03-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51930
+	* decl2.c (determine_visibility): Correct calculation of class
+	args depth.
+	* decl.c (check_tag_decl): Adjust warning.
+
 	* method.c (synthesized_method_walk): Cleanups don't affect the EH
 	spec either.
 
