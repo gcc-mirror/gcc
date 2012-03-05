@@ -417,9 +417,10 @@
     emit_insn (gen_tasb (addr));
   else
     {
-      rtx val = force_reg (QImode, 
-			   gen_int_mode (TARGET_ATOMIC_TEST_AND_SET_TRUEVAL,
-					 QImode));
+      rtx val;
+
+      val = gen_int_mode (targetm.atomic_test_and_set_trueval, QImode);
+      val = force_reg (QImode, val);
       emit_insn (gen_atomic_test_and_set_soft (addr, val));
     }
 
