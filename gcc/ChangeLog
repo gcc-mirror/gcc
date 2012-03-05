@@ -1,3 +1,8 @@
+2012-03-05  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.c (epiphany_function_value_regno_p):
+	Make static.
+
 2012-03-05  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* langhooks.c (add_builtin_type): New function.
