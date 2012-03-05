@@ -1,3 +1,9 @@
+2012-03-05  Richard Henderson  <rth@redhat.com>
+
+	PR target/52481
+	* config/m68k/sync.md (atomic_test_and_set): Use expand_simple_unop
+	instead of calling negqi2 directly.
+
 2012-03-05  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.h (TARGET_ATOMIC_TEST_AND_SET_TRUEVAL): New hook.
