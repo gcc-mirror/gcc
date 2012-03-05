@@ -2473,4 +2473,10 @@ extern int current_function_interrupt;
 /* FIXME: middle-end support for highpart optimizations is missing.  */
 #define high_life_started reload_in_progress
 
+/* The tas.b instruction sets the 7th bit in the byte, i.e. 0x80.
+   This value is used by optabs.c atomic op expansion code as well as in 
+   sync.md.  */
+#undef TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
+#define TARGET_ATOMIC_TEST_AND_SET_TRUEVAL 0x80
+
 #endif /* ! GCC_SH_H */
