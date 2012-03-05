@@ -1,3 +1,7 @@
+2012-03-02  Torvald Riegel  <triegel@redhat.com>
+
+	* libitm.texi: Link to specification and add a usage example.
+
 2012-02-24  Torvald Riegel  <triegel@redhat.com>
 
 	* retry.cc (GTM::gtm_thread::number_of_threads_changed): Change
