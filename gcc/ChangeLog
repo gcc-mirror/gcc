@@ -1,3 +1,7 @@
+2012-03-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (*umaddqihi4.2): New insn-and-split.
+
 2012-03-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (pro_epilogue_adjust_stack): Check Pmode
