@@ -1,3 +1,8 @@
+2012-03-05  Richard Henderson  <rth@redhat.com>
+
+	* longlong.h [ARM] (umul_ppmm): Use umull for arm3m and later.
+	[ARM] (count_trailing_zeros): Use the builtin.
+
 2012-03-01  Kai Tietz  <ktietz@redhat.com>
 
 	* soft-fp: Imported from glibc upstream.
