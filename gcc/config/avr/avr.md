@@ -1692,6 +1692,29 @@
 
 ;; Handle small constants
 
+;; Special case of a += 2*b as frequently seen with accesses to int arrays.
+;; This is shorter, faster than MUL and has lower register pressure.
+
+(define_insn_and_split "*umaddqihi4.2"
+  [(set (match_operand:HI 0 "register_operand"                                  "=r")
+        (plus:HI (mult:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
+                          (const_int 2))
+                 (match_operand:HI 2 "register_operand"                          "r")))]
+  "!reload_completed
+   && !reg_overlap_mentioned_p (operands[0], operands[1])"
+  { gcc_unreachable(); }
+  "&& 1"
+  [(set (match_dup 0)
+        (match_dup 2))
+   ; *addhi3_zero_extend
+   (set (match_dup 0)
+        (plus:HI (zero_extend:HI (match_dup 1))
+                 (match_dup 0)))
+   ; *addhi3_zero_extend
+   (set (match_dup 0)
+        (plus:HI (zero_extend:HI (match_dup 1))
+                 (match_dup 0)))])
+
 ;; "umaddqihi4.uconst"
 ;; "maddqihi4.sconst"
 (define_insn_and_split "*<extend_u>maddqihi4.<extend_su>const"
