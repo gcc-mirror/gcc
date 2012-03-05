@@ -1,3 +1,85 @@
+2012-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/43813
+	* include/bits/stl_iterator_base_types.h (_RequireInputIter): New.
+	* include/ext/vstring.h (__versa_string<>::__versa_string
+	(_InputIterator, _InputIterator, const _Alloc&),
+	__versa_string<>::append(_InputIterator, _InputIterator),
+	__versa_string<>::assign(_InputIterator, _InputIterator),
+	__versa_string<>::insert(iterator, _InputIterator,
+	_InputIterator), __versa_string<>::replace(iterator, iterator,
+	_InputIterator, _InputIterator)): Use it.
+	* include/bits/stl_list.h (list<>::list(_InputIterator,
+	_InputIterator, const allocator_type&), list<>::assign(_InputIterator,
+	_InputIterator), list<>::insert(iterator, _InputIterator,
+	_InputIterator)): Likewise.
+	* include/bits/stl_vector.h (vector<>::vector(_InputIterator,
+	_InputIterator, const allocator_type&), vector<>::assign(_InputIterator,
+	_InputIterator), vectort<>::insert(iterator, _InputIterator,
+	_InputIterator)): Likewise.
+	* include/bits/stl_deque.h (deque<>::deque(_InputIterator,
+	_InputIterator, const allocator_type&), deque<>::deque(_InputIterator,
+	_InputIterator), deque<>::insert(iterator, _InputIterator,
+	_InputIterator)): Likewise.
+	* include/bits/stl_bvector.h (vector<>::vector(_InputIterator,
+	_InputIterator, const allocator_type&), vector<>::deque(_InputIterator,
+	_InputIterator), vector<>::insert(iterator, _InputIterator,
+	_InputIterator)): Likewise.
+	* include/bits/forward_list.h (forward_list<>::forward_list
+	(_InputIterator, _InputIterator, const allocator_type&),
+	forward_list<>::assign(_InputIterator, _InputIterator),
+	forward_list<>::insert_after(const_iterator, _InputIterator,
+	_InputIterator)): Likewise.
+	(forward_list<>::_M_initialize_dispatch(,, __true_type): Remove.
+	(forward_list<>::_M_range_initialize): Add, adjust everywhere.
+	* include/bits/forward_list.tcc: Adjust.
+	* include/debug/forward_list: Adjust.
+	* include/debug/vector: Likewise.
+	* include/debug/deque: Likewise.
+	* include/debug/list: Likewise.
+	* testsuite/ext/vstring/requirements/do_the_right_thing.cc: New.
+	* testsuite/23_containers/forward_list/requirements/
+	do_the_right_thing.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/
+	do_the_right_thing.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/
+	do_the_right_thing.cc: Likewise.
+	* testsuite/23_containers/list/requirements/
+	do_the_right_thing.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line number.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
 2012-03-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/52433

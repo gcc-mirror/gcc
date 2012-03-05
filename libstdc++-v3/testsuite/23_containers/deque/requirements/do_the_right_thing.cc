@@ -1,6 +1,7 @@
-// 2007-04-27  Paolo Carlini  <pcarlini@suse.de>
+// { dg-do compile }
+// { dg-options "-std=gnu++11" }
 
-// Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation
+// Copyright (C) 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -9,7 +10,7 @@
 // any later version.
 
 // This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY; without Pred the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
@@ -17,13 +18,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1629 }
-
 #include <deque>
-#include <utility>
 
-void f()
+// libstdc++/43813
+void test01()
 {
-  std::deque<std::deque<std::pair<char, char> > > d('a', 'b');
+  std::deque<double*> d(7, 0);
+  d.assign(7, 0);
+  d.insert(d.begin(), 7, 0);
 }

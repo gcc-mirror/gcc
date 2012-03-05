@@ -1,6 +1,6 @@
 // <forward_list.tcc> -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -100,8 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     template<typename _InputIterator>
       void
       forward_list<_Tp, _Alloc>::
-      _M_initialize_dispatch(_InputIterator __first, _InputIterator __last,
-                             __false_type)
+      _M_range_initialize(_InputIterator __first, _InputIterator __last)
       {
         _Node_base* __to = &this->_M_impl._M_head;
         for (; __first != __last; ++__first)
@@ -111,8 +110,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
           }
       }
 
-  // Called by forward_list(n,v,a), and the range constructor
-  // when it turns out to be the same thing.
+  // Called by forward_list(n,v,a).
   template<typename _Tp, typename _Alloc>
     void
     forward_list<_Tp, _Alloc>::
@@ -258,7 +256,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template<typename _Tp, typename _Alloc>
-    template<typename _InputIterator>
+    template<typename _InputIterator, typename>
       typename forward_list<_Tp, _Alloc>::iterator
       forward_list<_Tp, _Alloc>::
       insert_after(const_iterator __pos,

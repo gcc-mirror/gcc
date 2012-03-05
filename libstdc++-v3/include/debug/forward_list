@@ -1,6 +1,6 @@
 // <forward_list> -*- C++ -*-
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -91,8 +91,9 @@ namespace __debug
       : _Base(__n, __value, __al)
       { }
 
-      template<typename _InputIterator>
-        forward_list(_InputIterator __first, _InputIterator __last,
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+	forward_list(_InputIterator __first, _InputIterator __last,
                      const _Alloc& __al = _Alloc())
         : _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
 								     __last)),
@@ -143,8 +144,9 @@ namespace __debug
         return *this;
       }
 
-      template<typename _InputIterator>
-        void
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+	void
         assign(_InputIterator __first, _InputIterator __last)
         {
 	  __glibcxx_check_valid_range(__first, __last);
@@ -273,7 +275,8 @@ namespace __debug
 		       	this);
       }
 
-      template<typename _InputIterator>
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
         iterator
         insert_after(const_iterator __pos,
                      _InputIterator __first, _InputIterator __last)
