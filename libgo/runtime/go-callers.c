@@ -55,3 +55,12 @@ runtime_callers (int32 skip, uintptr *pcbuf, int32 m)
   _Unwind_Backtrace (backtrace, &arg);
   return arg.index;
 }
+
+int Callers (int, struct __go_open_array)
+  __asm__ ("libgo_runtime.runtime.Callers");
+
+int
+Callers (int skip, struct __go_open_array pc)
+{
+  return runtime_callers (skip, (uintptr *) pc.__values, pc.__count);
+}
