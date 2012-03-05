@@ -1103,6 +1103,25 @@ set_direct_optab_handler (direct_optab op, enum machine_mode mode,
   op->handlers[(int) mode].insn_code = (int) code - (int) CODE_FOR_nothing;
 }
 
+/* Return true if UNOPTAB is for a trapping-on-overflow operation.  */
+
+static inline bool
+trapv_unoptab_p (optab unoptab)
+{
+  return (unoptab == negv_optab
+	  || unoptab == absv_optab); 
+}
+
+/* Return true if BINOPTAB is for a trapping-on-overflow operation.  */
+
+static inline bool
+trapv_binoptab_p (optab binoptab)
+{
+  return (binoptab == addv_optab
+	  || binoptab == subv_optab
+	  || binoptab == smulv_optab);
+}
+
 extern rtx optab_libfunc (optab optab, enum machine_mode mode);
 extern rtx convert_optab_libfunc (convert_optab optab, enum machine_mode mode1,
 			          enum machine_mode mode2);

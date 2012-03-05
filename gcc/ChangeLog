@@ -1,3 +1,15 @@
+2012-03-05  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52353
+	* optabs.h (trapv_unoptab_p): New function.
+	(trapv_binoptab_p): Likewise.
+	* optabs.c (expand_binop): Use emit_libcall_block_1 with
+	a proper equiv_may_trap argument.
+	(expand_unop): Likewise.
+	(emit_libcall_block_1): Take extra argument whether the
+	instruction may trap.  Renamed from ...
+	(emit_libcall_block): ... this.  New wrapper.
+
 2012-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/51721
