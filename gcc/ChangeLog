@@ -1,3 +1,11 @@
+2012-03-05  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.h (TARGET_ATOMIC_TEST_AND_SET_TRUEVAL): New hook.
+	* config/sh/sync.md (atomic_test_and_set): New expander.
+	(tasb, atomic_test_and_set_soft): New insns.
+	* config/sh/sh.opt (menable-tas): New option.
+	* doc/invoke.texi (SH Options): Document it.
+
 2012-03-05  Richard Guenther  <rguenther@suse.de>
 
 	* cfgloop.c (verify_loop_structure): Verify dominators before

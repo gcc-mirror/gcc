@@ -887,7 +887,8 @@ See RS/6000 and PowerPC Options.
 -mdivsi3_libfunc=@var{name} -mfixed-range=@var{register-range} @gol
 -madjust-unroll -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
 -maccumulate-outgoing-args -minvalid-symbols -msoft-atomic @gol
--mbranch-cost=@var{num} -mcbranchdi -mcmpeqdi -mfused-madd -mpretend-cmove}
+-mbranch-cost=@var{num} -mcbranchdi -mcmpeqdi -mfused-madd -mpretend-cmove @gol
+-menable-tas}
 
 @emph{Solaris 2 Options}
 @gccoptlist{-mimpure-text  -mno-impure-text @gol
@@ -17933,6 +17934,15 @@ interrupt / exception handling code of the system and are only suitable for
 single-core systems.  They will not perform correctly on multi-core systems.
 This option is enabled by default when the target is @code{sh-*-linux*}.
 For details on the atomic built-in functions see @ref{__atomic Builtins}.
+
+@item -menable-tas
+@opindex menable-tas
+Generate the @code{tas.b} opcode for @code{__atomic_test_and_set}.
+Notice that depending on the particular hardware and software configuration
+this can degrade overall performance due to the operand cache line flushes
+that are implied by the @code{tas.b} instruction.  On multi-core SH4A
+processors the @code{tas.b} instruction must be used with caution since it
+can result in data corruption for certain cache configurations.
 
 @item -mspace
 @opindex mspace

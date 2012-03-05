@@ -323,6 +323,10 @@ msoft-atomic
 Target Report Mask(SOFT_ATOMIC)
 Use software atomic sequences supported by kernel
 
+menable-tas
+Target Report RejectNegative Var(TARGET_ENABLE_TAS)
+Use tas.b instruction for __atomic_test_and_set
+
 mspace
 Target RejectNegative Alias(Os)
 Deprecated.  Use -Os instead
