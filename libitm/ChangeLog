@@ -1,3 +1,8 @@
+2012-03-05  Torvald Riegel  <triegel@redhat.com>
+
+	* dispatch.h (CREATE_DISPATCH_METHODS_MEM): Don't execute
+	memtransfer/memset if size isn't larger than zero.
+
 2012-03-02  Torvald Riegel  <triegel@redhat.com>
 
 	* libitm.texi: Link to specification and add a usage example.

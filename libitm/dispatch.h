@@ -102,11 +102,13 @@
 virtual void memtransfer(void *dst, const void* src, size_t size,    \
     bool may_overlap, ls_modifier dst_mod, ls_modifier src_mod)       \
 {                                                                     \
-  memtransfer_static(dst, src, size, may_overlap, dst_mod, src_mod); \
+  if (size > 0)                                                       \
+    memtransfer_static(dst, src, size, may_overlap, dst_mod, src_mod); \
 }                                                                     \
 virtual void memset(void *dst, int c, size_t size, ls_modifier mod)  \
 {                                                                     \
-  memset_static(dst, c, size, mod);                                  \
+  if (size > 0)                                                       \
+    memset_static(dst, c, size, mod);                                 \
 }
 
 #define CREATE_DISPATCH_METHODS_MEM_PV()  \
