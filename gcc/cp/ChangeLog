@@ -1,3 +1,11 @@
+2012-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* pt.c (local_specializations): Change from htab_t into
+	struct pointer_map_t *.
+	(retrieve_local_specializations, register_local_specialization,
+	tsubst_pack_expansion, instantiate_decl): Adjust users.
+	(eq_local_specializations, hash_local_specialization): Remove.
+
 2012-03-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51930
