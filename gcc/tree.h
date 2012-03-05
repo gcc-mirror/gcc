@@ -2088,6 +2088,9 @@ struct GTY(()) tree_omp_clause {
 #define BLOCK_ABSTRACT_ORIGIN(NODE) (BLOCK_CHECK (NODE)->block.abstract_origin)
 #define BLOCK_ABSTRACT(NODE) (BLOCK_CHECK (NODE)->block.abstract_flag)
 
+/* True if BLOCK has the same ranges as its BLOCK_SUPERCONTEXT.  */
+#define BLOCK_SAME_RANGE(NODE) (BLOCK_CHECK (NODE)->base.nameless_flag)
+
 /* An index number for this block.  These values are not guaranteed to
    be unique across functions -- whether or not they are depends on
    the debugging output format in use.  */
