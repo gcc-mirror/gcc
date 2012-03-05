@@ -928,8 +928,8 @@ case "${target}" in
     noconfigdirs="$noconfigdirs libgui itcl ld"
     ;;
   ia64*-*-*vms*)
-    # No gdb or ld support yet.
-    noconfigdirs="$noconfigdirs readline libgui itcl gdb ld"
+    # No ld support yet.
+    noconfigdirs="$noconfigdirs libgui itcl ld"
     ;;
   i[[3456789]]86-w64-mingw*)
     ;;

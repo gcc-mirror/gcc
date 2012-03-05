@@ -1,3 +1,8 @@
+2012-03-05  Tristan Gingold  <gingold@adacore.com>
+
+	* configure.ac: Enable gdb and readline for ia64*-*-*vms*.
+	* configure: Regenerate.
+
 2012-02-17  Walter Lee  <walt@tilera.com>
 
 	* MAINTAINERS: (Write After Approval): Delete myself.
