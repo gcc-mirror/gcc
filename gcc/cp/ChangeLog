@@ -1,3 +1,8 @@
+2012-03-05  Jason Merrill  <jason@redhat.com>
+
+	* method.c (synthesized_method_walk): Cleanups don't affect the EH
+	spec either.
+
 2012-03-03  Jason Merrill  <jason@redhat.com>
 
 	* init.c (perform_member_init): Cope with uninstantiated NSDMI.

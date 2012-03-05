@@ -1272,8 +1272,11 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	  rval = locate_fn_flags (base_binfo, complete_dtor_identifier,
 				  NULL_TREE, flags, complain);
 	  /* Note that we don't pass down trivial_p; the subobject
-	     destructors don't affect triviality of the constructor.  */
-	  process_subob_fn (rval, false, spec_p, NULL,
+	     destructors don't affect triviality of the constructor.  Nor
+	     do they affect constexpr-ness (a constant expression doesn't
+	     throw) or exception-specification (a throw from one of the
+	     dtors would be a double-fault).  */
+	  process_subob_fn (rval, false, NULL, NULL,
 			    deleted_p, NULL, NULL,
 			    basetype);
 	}
