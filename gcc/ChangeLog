@@ -1,3 +1,11 @@
+2012-03-05  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* genautomata.c (parse_automata_opt): New static function.
+	(initiate_automaton_gen): Remove all option handling code.  Remove
+	argc argument.  All callers changed.
+	(main): Call init_rtx_reader_args_cb with the new function as
+	argument.
+
 2012-03-05  Richard Guenther  <rguenther@suse.de>
 
 	* cfgexpand.c (gimple_expand_cfg): Free dominator info.
