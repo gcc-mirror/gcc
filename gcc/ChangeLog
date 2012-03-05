@@ -1,3 +1,11 @@
+2012-03-05  Richard Henderson  <rth@redhat.com>
+
+	* genemit.c (main): Include "target.h" in insn-emit.c.
+	* Makefile.in (insn-emit.o): Depend on TARGET_H.
+	* config/sh/sync.md (atomic_test_and_set): Reference
+	targetm.atomic_test_and_set_trueval instead of
+	TARGET_ATOMIC_TEST_AND_SET_TRUEVAL.
+
 2012-03-05  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/epiphany.c (epiphany_function_value_regno_p):
