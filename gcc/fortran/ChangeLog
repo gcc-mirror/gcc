@@ -1,3 +1,12 @@
+2012-03-06  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline
+	2012-03-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52452
+	* resolve.c (resolve_intrinsic): Don't search for a
+	function if we know that it is a subroutine.
+
 2012-02-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52335
