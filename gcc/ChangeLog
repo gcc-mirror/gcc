@@ -1,3 +1,11 @@
+2012-03-06  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/52250
+	* sel-sched-ir.c (maybe_tidy_empty_bb): Try harder to find a bb
+	to put note list into.  Unconditionally call move_bb_info.
+	(move_bb_info): Do not assert the blocks being in the same region,
+	just drop the note list if they are not. 
+
 2012-03-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51244
