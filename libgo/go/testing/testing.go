@@ -99,7 +99,7 @@ var (
 
 	// Report as tests are run; default is silent for success.
 	chatty         = flag.Bool("test.v", false, "verbose: print additional output")
-	match          = flag.String("test.run", "", "regular expression to select tests to run")
+	match          = flag.String("test.run", "", "regular expression to select tests and examples to run")
 	memProfile     = flag.String("test.memprofile", "", "write a memory profile to the named file after execution")
 	memProfileRate = flag.Int("test.memprofilerate", 0, "if >=0, sets runtime.MemProfileRate")
 	cpuProfile     = flag.String("test.cpuprofile", "", "write a cpu profile to the named file during execution")
@@ -280,7 +280,7 @@ func Main(matchString func(pat, str string) (bool, error), tests []InternalTest,
 	before()
 	startAlarm()
 	testOk := RunTests(matchString, tests)
-	exampleOk := RunExamples(examples)
+	exampleOk := RunExamples(matchString, examples)
 	if !testOk || !exampleOk {
 		fmt.Println("FAIL")
 		os.Exit(1)

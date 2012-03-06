@@ -5,6 +5,7 @@
 package parser
 
 import (
+	"fmt"
 	"go/ast"
 	"go/token"
 	"os"
@@ -201,6 +202,51 @@ func TestVarScope(t *testing.T) {
 	for _, id := range as.Names {
 		if id.Obj == nil {
 			t.Errorf("lhs %s does not have Obj, should", id.Name)
+		}
+	}
+}
+
+var imports = map[string]bool{
+	`"a"`:        true,
+	"`a`":        true,
+	`"a/b"`:      true,
+	`"a.b"`:      true,
+	`"m\x61th"`:  true,
+	`"greek/αβ"`: true,
+	`""`:         false,
+
+	// Each of these pairs tests both `` vs "" strings
+	// and also use of invalid characters spelled out as
+	// escape sequences and written directly.
+	// For example `"\x00"` tests import "\x00"
+	// while "`\x00`" tests import `<actual-NUL-byte>`.
+	`"\x00"`:     false,
+	"`\x00`":     false,
+	`"\x7f"`:     false,
+	"`\x7f`":     false,
+	`"a!"`:       false,
+	"`a!`":       false,
+	`"a b"`:      false,
+	"`a b`":      false,
+	`"a\\b"`:     false,
+	"`a\\b`":     false,
+	"\"`a`\"":    false,
+	"`\"a\"`":    false,
+	`"\x80\x80"`: false,
+	"`\x80\x80`": false,
+	`"\xFFFD"`:   false,
+	"`\xFFFD`":   false,
+}
+
+func TestImports(t *testing.T) {
+	for path, isValid := range imports {
+		src := fmt.Sprintf("package p; import %s", path)
+		_, err := ParseFile(fset, "", src, 0)
+		switch {
+		case err != nil && isValid:
+			t.Errorf("ParseFile(%s): got %v; expected no error", src, err)
+		case err == nil && !isValid:
+			t.Errorf("ParseFile(%s): got no error; expected one", src)
 		}
 	}
 }

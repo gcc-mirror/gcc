@@ -658,10 +658,17 @@ go_net_sock_file = go/net/sock_linux.go
 go_net_sockopt_file = go/net/sockopt_linux.go
 go_net_sockoptip_file = go/net/sockoptip_linux.go
 else
+if LIBGO_IS_FREEBSD
 go_net_cgo_file = go/net/cgo_bsd.go
 go_net_sock_file = go/net/sock_bsd.go
 go_net_sockopt_file = go/net/sockopt_bsd.go
-go_net_sockoptip_file = go/net/sockoptip_bsd.go
+go_net_sockoptip_file = go/net/sockoptip_bsd.go go/net/sockoptip_freebsd.go
+else
+go_net_cgo_file = go/net/cgo_bsd.go
+go_net_sock_file = go/net/sock_bsd.go
+go_net_sockopt_file = go/net/sockopt_bsd.go
+go_net_sockoptip_file = go/net/sockoptip_bsd.go go/net/sockoptip_netbsd.go
+endif
 endif
 endif
 endif
@@ -704,6 +711,7 @@ go_net_files = \
 	go/net/ipsock.go \
 	go/net/ipsock_posix.go \
 	go/net/lookup_unix.go \
+	go/net/mac.go \
 	go/net/net.go \
 	go/net/parse.go \
 	go/net/pipe.go \
@@ -1126,8 +1134,7 @@ go_go_ast_files = \
 	go/go/ast/walk.go
 go_go_build_files = \
 	go/go/build/build.go \
-	go/go/build/dir.go \
-	go/go/build/path.go \
+	go/go/build/doc.go \
 	syslist.go
 go_go_doc_files = \
 	go/go/doc/comment.go \

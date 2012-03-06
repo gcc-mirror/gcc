@@ -654,14 +654,6 @@ markfin(void *v)
 	scanblock(v, size);
 }
 
-struct root_list {
-	struct root_list *next;
-	struct root {
-		void *decl;
-		size_t size;
-	} roots[];
-};
-
 static struct root_list* roots;
 
 void

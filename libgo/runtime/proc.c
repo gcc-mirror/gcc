@@ -416,8 +416,6 @@ runtime_schedinit(void)
 	// Can not enable GC until all roots are registered.
 	// mstats.enablegc = 1;
 	m->nomemprof--;
-
-	scvg = __go_go(runtime_MHeap_Scavenger, nil);
 }
 
 extern void main_init(void) __asm__ ("__go_init_main");
@@ -435,6 +433,7 @@ runtime_main(void)
 	// to preserve the lock.
 	runtime_LockOSThread();
 	runtime_sched.init = true;
+	scvg = __go_go(runtime_MHeap_Scavenger, nil);
 	main_init();
 	runtime_sched.init = false;
 	if(!runtime_sched.lockmain)
@@ -548,7 +547,7 @@ mcommoninit(M *m)
 		m->mcache = runtime_allocmcache();
 
 	runtime_callers(1, m->createstack, nelem(m->createstack));
-	
+
 	// Add to runtime_allm so garbage collector doesn't free m
 	// when it is just in a register or thread-local storage.
 	m->alllink = runtime_allm;
@@ -791,10 +790,11 @@ top:
 		mput(m);
 	}
 
-	// Look for deadlock situation: one single active g which happens to be scvg.
-	if(runtime_sched.grunning == 1 && runtime_sched.gwait == 0) {
-		if(scvg->status == Grunning || scvg->status == Gsyscall)
-			runtime_throw("all goroutines are asleep - deadlock!");
+	// Look for deadlock situation.
+	if((scvg == nil && runtime_sched.grunning == 0) ||
+	   (scvg != nil && runtime_sched.grunning == 1 && runtime_sched.gwait == 0 &&
+	    (scvg->status == Grunning || scvg->status == Gsyscall))) {
+		runtime_throw("all goroutines are asleep - deadlock!");
 	}
 
 	m->nextg = nil;
@@ -1135,6 +1135,9 @@ runtime_entersyscall(void)
 {
 	uint32 v;
 
+	if(m->profilehz > 0)
+		runtime_setprof(false);
+
 	// Leave SP around for gc and traceback.
 #ifdef USING_SPLIT_STACK
 	g->gcstack = __splitstack_find(NULL, NULL, &g->gcstack_size,
@@ -1205,6 +1208,9 @@ runtime_exitsyscall(void)
 #endif
 		gp->gcnext_sp = nil;
 		runtime_memclr(gp->gcregs, sizeof gp->gcregs);
+
+		if(m->profilehz > 0)
+			runtime_setprof(true);
 		return;
 	}
 
