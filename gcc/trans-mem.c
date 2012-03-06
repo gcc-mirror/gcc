@@ -1757,6 +1757,10 @@ struct tm_region
   bitmap irr_blocks;
 };
 
+typedef struct tm_region *tm_region_p;
+DEF_VEC_P (tm_region_p);
+DEF_VEC_ALLOC_P (tm_region_p, heap);
+
 /* True if there are pending edge statements to be committed for the
    current function being scanned in the tmmark pass.  */
 bool pending_edge_inserts_p;
@@ -1858,7 +1862,7 @@ tm_region_init (struct tm_region *region)
   VEC(basic_block, heap) *queue = NULL;
   bitmap visited_blocks = BITMAP_ALLOC (NULL);
   struct tm_region *old_region;
-  struct tm_region **region_worklist;
+  VEC(tm_region_p, heap) *bb_regions = NULL;
 
   all_tm_regions = region;
   bb = single_succ (ENTRY_BLOCK_PTR);
@@ -1866,17 +1870,15 @@ tm_region_init (struct tm_region *region)
   /* We could store this information in bb->aux, but we may get called
      through get_all_tm_blocks() from another pass that may be already
      using bb->aux.  */
-  region_worklist =
-    (struct tm_region **) xcalloc (sizeof (struct tm_region *),
-				  last_basic_block + NUM_FIXED_BLOCKS);
+  VEC_safe_grow_cleared (tm_region_p, heap, bb_regions, last_basic_block);
 
   VEC_safe_push (basic_block, heap, queue, bb);
-  region_worklist[bb->index] = region;
+  VEC_replace (tm_region_p, bb_regions, bb->index, region);
   do
     {
       bb = VEC_pop (basic_block, queue);
-      region = region_worklist[bb->index];
-      region_worklist[bb->index] = NULL;
+      region = VEC_index (tm_region_p, bb_regions, bb->index);
+      VEC_replace (tm_region_p, bb_regions, bb->index, NULL);
 
       /* Record exit and irrevocable blocks.  */
       region = tm_region_init_1 (region, bb);
@@ -1898,15 +1900,15 @@ tm_region_init (struct tm_region *region)
 	       the entry block of the new region is associated with this region.
 	       Other successors are still part of the old region.  */
 	    if (old_region != region && e->dest != region->entry_block)
-	      region_worklist[e->dest->index] = old_region;
+	      VEC_replace (tm_region_p, bb_regions, e->dest->index, old_region);
 	    else
-	      region_worklist[e->dest->index] = region;
+	      VEC_replace (tm_region_p, bb_regions, e->dest->index, region);
 	  }
     }
   while (!VEC_empty (basic_block, queue));
   VEC_free (basic_block, heap, queue);
   BITMAP_FREE (visited_blocks);
-  free (region_worklist);
+  VEC_free (tm_region_p, heap, bb_regions);
 }
 
 /* The "gate" function for all transactional memory expansion and optimization
