@@ -125,6 +125,8 @@ vms_pragma_nomember_alignment (cpp_reader *pfile ATTRIBUTE_UNUSED)
         maximum_field_alignment = 4 * BITS_PER_UNIT;
       else if (strcmp (arg, "quadword") == 0)
         maximum_field_alignment = 8 * BITS_PER_UNIT;
+      else if (strcmp (arg, "octaword") == 0)
+        maximum_field_alignment = 16 * BITS_PER_UNIT;
       else
         {
           error ("unhandled alignment for '#pragma nomember_alignment'");
@@ -145,17 +147,33 @@ vms_pragma_nomember_alignment (cpp_reader *pfile ATTRIBUTE_UNUSED)
     }
 }
 
-/* The 'extern model' for public data.  */
+/* The 'extern model' for public data.  This drives how the following
+   declarations are handled:
+   1) extern int name;
+   2) int name;
+   3) int name = 5;
+   See below for the behaviour as implemented by the native compiler.
+*/
 
 enum extern_model_kind
 {
-  /* Create one overlaid section per variable.  */
+  /* Create one overlaid section per variable.  All the above declarations (1,
+      2 and 3) are handled the same way: they create an overlaid section named
+      NAME (and initialized only for 3).  No global symbol is created.
+      This is the VAX C behavior.  */
   extern_model_common_block,
 
-  /* Like unix: multiple not-initialized declarations are allowed.  */
+  /* Like unix: multiple not-initialized declarations are allowed.
+     Only one initialized definition (case 3) is allows, but multiple
+     uninitialize definition (case 2) are allowed.
+     For case 2, this creates both a section named NAME and a global symbol.
+     For case 3, this creates a conditional global symbol defenition and a
+     conditional section definition.
+     This is the traditional UNIX C behavior.  */
   extern_model_relaxed_refdef,
 
-  /* Like -fno-common.  */
+  /* Like -fno-common.  Only one definition (cases 2 and 3) are allowed.
+     This is the ANSI-C model.  */
   extern_model_strict_refdef,
 
   /* Declarations creates symbols without storage.  */
@@ -192,6 +210,8 @@ vms_pragma_extern_model (cpp_reader *pfile ATTRIBUTE_UNUSED)
     saved_extern_model = current_extern_model;
   else if (strcmp (arg, "restore") == 0)
     current_extern_model = saved_extern_model;
+  else if (strcmp (arg, "relaxed_refdef") == 0)
+    current_extern_model = extern_model_relaxed_refdef;
   else if (strcmp (arg, "strict_refdef") == 0)
     current_extern_model = extern_model_strict_refdef;
   else if (strcmp (arg, "common_block") == 0)
@@ -274,10 +294,10 @@ vms_c_register_pragma (void)
   c_register_pragma (NULL, "standard", vms_pragma_standard);
   c_register_pragma (NULL, "__member_alignment", vms_pragma_member_alignment);
   c_register_pragma (NULL, "member_alignment", vms_pragma_member_alignment);
-  c_register_pragma (NULL, "__nomember_alignment",
-                     vms_pragma_nomember_alignment);
-  c_register_pragma (NULL, "nomember_alignment",
-                     vms_pragma_nomember_alignment);
+  c_register_pragma_with_expansion (NULL, "__nomember_alignment",
+                                    vms_pragma_nomember_alignment);
+  c_register_pragma_with_expansion (NULL, "nomember_alignment",
+                                    vms_pragma_nomember_alignment);
   c_register_pragma (NULL, "__extern_model", vms_pragma_extern_model);
   c_register_pragma (NULL, "extern_model", vms_pragma_extern_model);
   c_register_pragma (NULL, "__message", vms_pragma_message);

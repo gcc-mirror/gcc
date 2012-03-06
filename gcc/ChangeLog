@@ -1,3 +1,11 @@
+2012-03-06  Tristan Gingold  <gingold@adacore.com>
+
+	* config/vms/vms-c.c (vms_pragma_nomember_alignment): Handle
+	octaword.
+	(external_model_kind): Improve documentation.
+	(vms_pragma_extern_model): Handle relaxed_redef.
+	(vms_c_register_pragma): Allow expansion for nomember_alignment.
+
 2012-03-06  Georg-Johann Lay  <avr@gjlay.de>
 
 	* doc/invoke.texi (AVR Options): -mmcu=: Document the XMEGA cores.
