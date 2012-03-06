@@ -1,3 +1,14 @@
+2012-03-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/52372
+	* rtl.h (pc_rtx, ret_rtx, simple_return_rtx, cc0_rtx): Redefine as
+	variables.
+	(GR_PC, GR_CC0, GR_RETURN, GR_SIMPLE_RETURN): Delete.
+	* emit-rtl.c (pc_rtx, ret_rtx, simple_return_rtx, cc0_rtx): New
+	variables.
+	(init_emit_regs): Move associated initialization to...
+	(init_emit_once): ...here.
+
 2012-03-06  Richard Henderson  <rth@redhat.com>
 
 	* config/m68k/m68k.h (ISA_HAS_TAS): New.
