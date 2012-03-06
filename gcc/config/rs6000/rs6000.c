@@ -16077,6 +16077,10 @@ rs6000_emit_vector_compare_inner (enum rtx_code code, rtx op0, rtx op1)
     case EQ:
     case GT:
     case GTU:
+    case ORDERED:
+    case UNORDERED:
+    case UNEQ:
+    case LTGT:
       mask = gen_reg_rtx (mode);
       emit_insn (gen_rtx_SET (VOIDmode,
 			      mask,

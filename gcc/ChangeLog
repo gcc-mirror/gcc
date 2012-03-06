@@ -1,3 +1,14 @@
+2012-03-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/50310
+	* config/rs6000/vector.md (vector_uneq<mode>): Add support for
+	UNEQ, LTGT, ORDERED, and UNORDERED IEEE vector comparisons.
+	(vector_ltgt<mode>): Likewise.
+	(vector_ordered<mode>): Likewise.
+	(vector_unordered<mode>): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_vector_compare_inner):
+	Likewise.
+
 2012-03-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	* trans-mem.c: New typedef for tm_region_p.
