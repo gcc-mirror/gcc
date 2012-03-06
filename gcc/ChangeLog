@@ -1,3 +1,10 @@
+2012-03-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-mem.c: New typedef for tm_region_p.
+	Define vector types for tm_region_p.
+	(tm_region_init): Replace region_worklist to a vector called
+	bb_regions.
+
 2012-03-06  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (build_fold_addr_expr_with_type_loc): Fold
