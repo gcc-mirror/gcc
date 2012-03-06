@@ -1,5 +1,10 @@
 2012-03-06  Tristan Gingold  <gingold@adacore.com>
 
+	* config/vms/vms.c (VMS_CRTL_LDBL): Rename from VMS_CRTL_PRNTF.
+	* config/vms/vms-crtlmap.map: Rename PRNTF to LDBL.
+
+2012-03-06  Tristan Gingold  <gingold@adacore.com>
+
 	* config/vms/t-vmsnative (version): Define.
 	* config/vms/t-vms (STMP_FIXPROTO, STMP_FIXINC, version): Remove.
 

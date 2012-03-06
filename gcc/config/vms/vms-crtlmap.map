@@ -13,10 +13,10 @@
 # - map lines consist in an identifier optionnaly followed by at most 2
 #   space-separated flags.
 # Flags are:
-#  FLOAT: will be prefixed by 'x'
+#  FLOAT: will be prefixed by 't'/'g'/'d'
 #  64: There is a 64-bit variant
 #  BSD44: name will be prefixed by __bsd44__
-#  PRNTF: a 't' prefix will be added.
+#  LDBL: a 'x' prefix will be added if 128 bit long doubles are enabled.
 #  MALLOC: malloc related function.
 #
 # Keep entries alpha-sorted - this is enforced by the awk script.
@@ -75,7 +75,7 @@ fgetc
 fgets         64
 floor         FLOAT
 fopen
-fprintf       FLOAT PRNTF
+fprintf       FLOAT LDBL
 fputc
 fputs
 fread
@@ -132,7 +132,7 @@ pclose
 perror
 popen
 pow           FLOAT
-printf        FLOAT PRNTF
+printf        FLOAT LDBL
 putc
 putchar
 putenv
@@ -157,9 +157,9 @@ setvbuf
 signal
 sigsetmask
 sin           FLOAT
-snprintf      FLOAT PRNTF
+snprintf      FLOAT LDBL
 socket
-sprintf	      FLOAT PRNTF
+sprintf	      FLOAT LDBL
 sqrt          FLOAT
 stat
 strcasecmp
@@ -191,10 +191,10 @@ umask
 ungetc
 unlink
 utime
-vfprintf      FLOAT PRNTF
-vprintf       FLOAT PRNTF
-vsnprintf     FLOAT PRNTF
-vsprintf      FLOAT PRNTF
+vfprintf      FLOAT LDBL
+vprintf       FLOAT LDBL
+vsnprintf     FLOAT LDBL
+vsprintf      FLOAT LDBL
 wait
 waitpid
 wcswidth
