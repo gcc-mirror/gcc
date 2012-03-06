@@ -249,6 +249,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Some instructions are common to more than one ISA.  */
 #define ISA_HAS_MVS_MVZ	(TARGET_ISAB || TARGET_ISAC)
 #define ISA_HAS_FF1	(TARGET_ISAAPLUS || TARGET_ISAC)
+#define ISA_HAS_TAS	(!TARGET_COLDFIRE || TARGET_ISAB || TARGET_ISAC)
 
 #define TUNE_68000	(m68k_tune == u68000)
 #define TUNE_68010	(m68k_tune == u68010)
