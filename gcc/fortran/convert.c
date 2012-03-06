@@ -60,6 +60,50 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Subroutines of `convert'.  */
 
+/* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
+   or validate its data type for an `if' or `while' statement or ?..: exp.
+
+   This preparation consists of taking the ordinary
+   representation of an expression expr and producing a valid tree
+   boolean expression describing whether expr is nonzero.  We could
+   simply always do build_binary_op (NE_EXPR, expr, boolean_false_node, 1),
+   but we optimize comparisons, &&, ||, and !.
+
+   The resulting type should always be `boolean_type_node'.
+   This is much simpler than the corresponding C version because we have a
+   distinct boolean type.  */
+
+static tree
+gfc_truthvalue_conversion (tree expr)
+{
+  switch (TREE_CODE (TREE_TYPE (expr)))
+    {
+    case BOOLEAN_TYPE:
+      if (TREE_TYPE (expr) == boolean_type_node)
+	return expr;
+      else if (COMPARISON_CLASS_P (expr))
+	{
+	  TREE_TYPE (expr) = boolean_type_node;
+	  return expr;
+	}
+      else if (TREE_CODE (expr) == NOP_EXPR)
+        return fold_build1_loc (input_location, NOP_EXPR,
+			    boolean_type_node, TREE_OPERAND (expr, 0));
+      else
+        return fold_build1_loc (input_location, NOP_EXPR, boolean_type_node,
+				expr);
+
+    case INTEGER_TYPE:
+      if (TREE_CODE (expr) == INTEGER_CST)
+	return integer_zerop (expr) ? boolean_false_node : boolean_true_node;
+      else
+        return fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+				expr, build_int_cst (TREE_TYPE (expr), 0));
+
+    default:
+      internal_error ("Unexpected type in truthvalue_conversion");
+    }
+}
 
 /* Create an expression whose value is that of EXPR,
    converted to type TYPE.  The TREE_TYPE of the value

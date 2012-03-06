@@ -60,7 +60,6 @@ lang_identifier {
 
 union GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
      chain_next ("CODE_CONTAINS_STRUCT (TREE_CODE (&%h.generic), TS_COMMON) ? ((union lang_tree_node *) TREE_CHAIN (&%h.generic)) : NULL")))
-
 lang_tree_node {
   union tree_node GTY((tag ("0"),
 		       desc ("tree_node_structure (&%h)"))) generic;
@@ -77,25 +76,18 @@ language_function {
   struct binding_level *binding_level;
 };
 
-/* We don't have a lex/yacc lexer/parser, but toplev expects these to
-   exist anyway.  */
-void yyerror (const char *str);
-int yylex (void);
-
 static void gfc_init_decl_processing (void);
 static void gfc_init_builtin_functions (void);
+static bool global_bindings_p (void);
 
 /* Each front end provides its own.  */
 static bool gfc_init (void);
 static void gfc_finish (void);
 static void gfc_write_global_declarations (void);
-static void gfc_print_identifier (FILE *, tree, int);
-void do_function_end (void);
-bool global_bindings_p (void);
-static void clear_binding_stack (void);
 static void gfc_be_parse_file (void);
 static alias_set_type gfc_get_alias_set (tree);
 static void gfc_init_ts (void);
+static tree gfc_builtin_function (tree);
 
 #undef LANG_HOOKS_NAME
 #undef LANG_HOOKS_INIT
@@ -106,7 +98,6 @@ static void gfc_init_ts (void);
 #undef LANG_HOOKS_INIT_OPTIONS
 #undef LANG_HOOKS_HANDLE_OPTION
 #undef LANG_HOOKS_POST_OPTIONS
-#undef LANG_HOOKS_PRINT_IDENTIFIER
 #undef LANG_HOOKS_PARSE_FILE
 #undef LANG_HOOKS_MARK_ADDRESSABLE
 #undef LANG_HOOKS_TYPE_FOR_MODE
@@ -125,6 +116,7 @@ static void gfc_init_ts (void);
 #undef LANG_HOOKS_OMP_PRIVATE_OUTER_REF
 #undef LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES
 #undef LANG_HOOKS_BUILTIN_FUNCTION
+#undef LANG_HOOKS_BUILTIN_FUNCTION
 #undef LANG_HOOKS_GET_ARRAY_DESCR_INFO
 
 /* Define lang hooks.  */
@@ -137,7 +129,6 @@ static void gfc_init_ts (void);
 #define LANG_HOOKS_INIT_OPTIONS         gfc_init_options
 #define LANG_HOOKS_HANDLE_OPTION        gfc_handle_option
 #define LANG_HOOKS_POST_OPTIONS		gfc_post_options
-#define LANG_HOOKS_PRINT_IDENTIFIER     gfc_print_identifier
 #define LANG_HOOKS_PARSE_FILE           gfc_be_parse_file
 #define LANG_HOOKS_TYPE_FOR_MODE	gfc_type_for_mode
 #define LANG_HOOKS_TYPE_FOR_SIZE	gfc_type_for_size
@@ -166,62 +157,11 @@ struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 static GTY(()) struct binding_level *free_binding_level;
 
-/* The elements of `ridpointers' are identifier nodes
-   for the reserved type names and storage classes.
-   It is indexed by a RID_... value.  */
-tree *ridpointers = NULL;
-
 /* True means we've initialized exception handling.  */
-bool gfc_eh_initialized_p;
+static bool gfc_eh_initialized_p;
 
 /* The current translation unit.  */
 static GTY(()) tree current_translation_unit;
-
-
-/* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
-   or validate its data type for an `if' or `while' statement or ?..: exp.
-
-   This preparation consists of taking the ordinary
-   representation of an expression expr and producing a valid tree
-   boolean expression describing whether expr is nonzero.  We could
-   simply always do build_binary_op (NE_EXPR, expr, boolean_false_node, 1),
-   but we optimize comparisons, &&, ||, and !.
-
-   The resulting type should always be `boolean_type_node'.
-   This is much simpler than the corresponding C version because we have a
-   distinct boolean type.  */
-
-tree
-gfc_truthvalue_conversion (tree expr)
-{
-  switch (TREE_CODE (TREE_TYPE (expr)))
-    {
-    case BOOLEAN_TYPE:
-      if (TREE_TYPE (expr) == boolean_type_node)
-	return expr;
-      else if (COMPARISON_CLASS_P (expr))
-	{
-	  TREE_TYPE (expr) = boolean_type_node;
-	  return expr;
-	}
-      else if (TREE_CODE (expr) == NOP_EXPR)
-        return fold_build1_loc (input_location, NOP_EXPR,
-			    boolean_type_node, TREE_OPERAND (expr, 0));
-      else
-        return fold_build1_loc (input_location, NOP_EXPR, boolean_type_node,
-				expr);
-
-    case INTEGER_TYPE:
-      if (TREE_CODE (expr) == INTEGER_CST)
-	return integer_zerop (expr) ? boolean_false_node : boolean_true_node;
-      else
-        return fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
-				expr, build_int_cst (TREE_TYPE (expr), 0));
-
-    default:
-      internal_error ("Unexpected type in truthvalue_conversion");
-    }
-}
 
 
 static void
@@ -255,7 +195,9 @@ gfc_be_parse_file (void)
   errorcount += errors;
   warningcount += warnings;
 
-  clear_binding_stack ();
+  /* Clear the binding level stack.  */
+  while (!global_bindings_p ())
+    poplevel (0, 0);
 }
 
 
@@ -322,16 +264,6 @@ gfc_write_global_declarations (void)
   write_global_declarations ();
 }
 
-
-static void
-gfc_print_identifier (FILE * file ATTRIBUTE_UNUSED,
-		      tree node ATTRIBUTE_UNUSED,
-		      int indent ATTRIBUTE_UNUSED)
-{
-  return;
-}
-
-
 /* These functions and variables deal with binding contours.  We only
    need these functions for the list of PARM_DECLs, but we leave the
    functions more general; these are a simplified version of the
@@ -351,9 +283,7 @@ struct GTY(())
 binding_level {
   /* A chain of ..._DECL nodes for all variables, constants, functions,
      parameters and type declarations.  These ..._DECL nodes are chained
-     through the DECL_CHAIN field. Note that these ..._DECL nodes are stored
-     in the reverse of the order supplied to be compatible with the
-     back-end.  */
+     through the DECL_CHAIN field.  */
   tree names;
   /* For each level (except the global one), a chain of BLOCK nodes for all
      the levels that were entered and exited one level down from this one.  */
@@ -387,11 +317,10 @@ getdecls (void)
   return current_binding_level->names;
 }
 
-/* Enter a new binding level. The input parameter is ignored, but has to be
-   specified for back-end compatibility.  */
+/* Enter a new binding level. */
 
 void
-pushlevel (int ignore ATTRIBUTE_UNUSED)
+pushlevel (void)
 {
   struct binding_level *newlevel = ggc_alloc_binding_level ();
 
@@ -413,28 +342,18 @@ pushlevel (int ignore ATTRIBUTE_UNUSED)
 
    If FUNCTIONBODY is nonzero, this level is the body of a function,
    so create a block as if KEEP were set and also clear out all
-   label names.
-
-   If REVERSE is nonzero, reverse the order of decls before putting
-   them into the BLOCK.  */
+   label names.  */
 
 tree
-poplevel (int keep, int reverse, int functionbody)
+poplevel (int keep, int functionbody)
 {
   /* Points to a BLOCK tree node. This is the BLOCK node constructed for the
      binding level that we are about to exit and which is returned by this
      routine.  */
   tree block_node = NULL_TREE;
-  tree decl_chain;
+  tree decl_chain = current_binding_level->names;
   tree subblock_chain = current_binding_level->blocks;
   tree subblock_node;
-
-  /* Reverse the list of XXXX_DECL nodes if desired.  Note that the ..._DECL
-     nodes chained through the `names' field of current_binding_level are in
-     reverse order except for PARM_DECL node, which are explicitly stored in
-     the right order.  */
-  decl_chain = (reverse) ? nreverse (current_binding_level->names)
-			 : current_binding_level->names;
 
   /* If there were any declarations in the current binding level, or if this
      binding level is a function body, or if there are any nested blocks then
@@ -513,10 +432,7 @@ pushdecl (tree decl)
       DECL_CONTEXT (decl) = current_function_decl;
     }
 
-  /* Put the declaration on the list.  The list of declarations is in reverse
-     order. The list will be reversed later if necessary.  This needs to be
-     this way for compatibility with the back-end.  */
-
+  /* Put the declaration on the list.  */
   DECL_CHAIN (decl) = current_binding_level->names;
   current_binding_level->names = decl;
 
@@ -548,16 +464,6 @@ pushdecl_top_level (tree x)
   return t;
 }
 
-
-/* Clear the binding stack.  */
-static void
-clear_binding_stack (void)
-{
-  while (!global_bindings_p ())
-    poplevel (0, 0, 0);
-}
-
-
 #ifndef CHAR_TYPE_SIZE
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
 #endif
@@ -582,7 +488,7 @@ gfc_init_decl_processing (void)
 
   /* Make the binding_level structure for global names. We move all
      variables that are in a COMMON block to this binding level.  */
-  pushlevel (0);
+  pushlevel ();
   global_binding_level = current_binding_level;
 
   /* Build common tree nodes. char_type_node is unsigned because we
@@ -617,17 +523,11 @@ gfc_get_alias_set (tree t)
   return -1;
 }
 
-
-/* press the big red button - garbage (ggc) collection is on */
-
-int ggc_p = 1;
-
 /* Builtin function initialization.  */
 
-tree
+static tree
 gfc_builtin_function (tree decl)
 {
-  make_decl_rtl (decl);
   pushdecl (decl);
   return decl;
 }

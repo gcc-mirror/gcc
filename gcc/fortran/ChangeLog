@@ -1,3 +1,26 @@
+2012-03-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* f95-lang.c (yyerror, yylex): Remove.
+	(clear_binding_stack): Remove, fold into its only user.
+	(LANG_HOOKS_PRINT_IDENTIFIER): Do not re-define.
+	(ridpointers): Remove.
+	(gfc_eh_initialized_p): Make static.
+	(gfc_truthvalue_conversion): Move to convert.c.
+	(gfc_be_parse_file): Clear binding level stack when done.
+	(gfc_print_identifier): Remove.
+	(pushlevel): Remove ignored 'ignore' argument.  Update all callers.
+	(poplevel): Remove unused 'reverse' argument.  Update all callers.
+	(ggc_p): Remove.
+	(gfc_builtin_function): Make static. Do not attempt to make RTL for
+	builtin functions.
+	* convert.c (gfc_truthvalue_conversion): Moved here from f95-lang.c,
+	and made static.
+	* trans.h (pushlevel, poplevel): Adjust prototypes.
+	(gfc_truthvalue_conversion, gfc_builtin_function): Remove prototypes.
+	* trans-openmp.c: Update calls to pushlevel and poplevel.
+	* trans.c: Likewise.
+	* trans-decl.c: Likewise.
+
 2012-03-04  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50981
