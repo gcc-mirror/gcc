@@ -217,6 +217,13 @@ func Socketpair(domain, typ, proto int) (fd [2]int, err error) {
 //sys	getsockopt(s int, level int, name int, val uintptr, vallen *Socklen_t) (err error)
 //getsockopt(s int, level int, name int, val *byte, vallen *Socklen_t) int
 
+func GetsockoptByte(fd, level, opt int) (value byte, err error) {
+	var n byte
+	vallen := Socklen_t(1)
+	err = getsockopt(fd, level, opt, uintptr(unsafe.Pointer(&n)), &vallen)
+	return n, err
+}
+
 func GetsockoptInt(fd, level, opt int) (value int, err error) {
 	var n int32
 	vallen := Socklen_t(4)
@@ -253,6 +260,11 @@ func GetsockoptIPv6Mreq(fd, level, opt int) (*IPv6Mreq, error) {
 
 //sys	setsockopt(s int, level int, name int, val *byte, vallen Socklen_t) (err error)
 //setsockopt(s int, level int, optname int, val *byte, vallen Socklen_t) int
+
+func SetsockoptByte(fd, level, opt int, value byte) (err error) {
+	var n = byte(value)
+	return setsockopt(fd, level, opt, (*byte)(unsafe.Pointer(&n)), 1)
+}
 
 func SetsockoptInt(fd, level, opt int, value int) (err error) {
 	var n = int32(value)

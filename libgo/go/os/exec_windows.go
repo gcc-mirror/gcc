@@ -12,9 +12,7 @@ import (
 	"unsafe"
 )
 
-// Wait waits for the Process to exit or stop, and then returns a
-// ProcessState describing its status and an error, if any.
-func (p *Process) Wait() (ps *ProcessState, err error) {
+func (p *Process) wait() (ps *ProcessState, err error) {
 	s, e := syscall.WaitForSingleObject(syscall.Handle(p.handle), syscall.INFINITE)
 	switch s {
 	case syscall.WAIT_OBJECT_0:
@@ -29,12 +27,22 @@ func (p *Process) Wait() (ps *ProcessState, err error) {
 	if e != nil {
 		return nil, NewSyscallError("GetExitCodeProcess", e)
 	}
+	var u syscall.Rusage
+	e = syscall.GetProcessTimes(syscall.Handle(p.handle), &u.CreationTime, &u.ExitTime, &u.KernelTime, &u.UserTime)
+	if e != nil {
+		return nil, NewSyscallError("GetProcessTimes", e)
+	}
 	p.done = true
-	return &ProcessState{p.Pid, syscall.WaitStatus{Status: s, ExitCode: ec}, new(syscall.Rusage)}, nil
+	// NOTE(brainman): It seems that sometimes process is not dead
+	// when WaitForSingleObject returns. But we do not know any
+	// other way to wait for it. Sleeping for a while seems to do
+	// the trick sometimes. So we will sleep and smell the roses.
+	defer time.Sleep(5 * time.Millisecond)
+	defer p.Release()
+	return &ProcessState{p.Pid, syscall.WaitStatus{ExitCode: ec}, &u}, nil
 }
 
-// Signal sends a signal to the Process.
-func (p *Process) Signal(sig Signal) error {
+func (p *Process) signal(sig Signal) error {
 	if p.done {
 		return errors.New("os: process already finished")
 	}
@@ -46,8 +54,7 @@ func (p *Process) Signal(sig Signal) error {
 	return syscall.Errno(syscall.EWINDOWS)
 }
 
-// Release releases any resources associated with the Process.
-func (p *Process) Release() error {
+func (p *Process) release() error {
 	if p.handle == uintptr(syscall.InvalidHandle) {
 		return syscall.EINVAL
 	}
@@ -85,14 +92,15 @@ func init() {
 	}
 }
 
-// UserTime returns the user CPU time of the exited process and its children.
-// For now, it is always reported as 0 on Windows.
-func (p *ProcessState) UserTime() time.Duration {
-	return 0
+func ftToDuration(ft *syscall.Filetime) time.Duration {
+	n := int64(ft.HighDateTime)<<32 + int64(ft.LowDateTime) // in 100-nanosecond intervals
+	return time.Duration(n*100) * time.Nanosecond
 }
 
-// SystemTime returns the system CPU time of the exited process and its children.
-// For now, it is always reported as 0 on Windows.
-func (p *ProcessState) SystemTime() time.Duration {
-	return 0
+func (p *ProcessState) userTime() time.Duration {
+	return ftToDuration(&p.rusage.UserTime)
+}
+
+func (p *ProcessState) systemTime() time.Duration {
+	return ftToDuration(&p.rusage.KernelTime)
 }
