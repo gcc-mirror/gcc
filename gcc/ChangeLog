@@ -1,3 +1,9 @@
+2012-03-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Options): -mmcu=: Document the XMEGA cores.
+	Explain RAMPD, RAMPX, RAMPDY, RAMPZ usage by avr-gcc.
+	Some more notes on EIND usage and reorder EIND subsection.
+
 2012-03-06  Tristan Gingold  <gingold@adacore.com>
 
 	* config/vms/vms.c (VMS_CRTL_LDBL): Rename from VMS_CRTL_PRNTF.

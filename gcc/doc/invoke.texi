@@ -10993,6 +10993,32 @@ memory and with the @code{MOVW} instruction.
 of program memory.
 @*@var{mcu}@tie{}= @code{atmega2560}, @code{atmega2561}.
 
+@item avrxmega2
+``XMEGA'' devices with more than 8@tie{}KiB and up to 64@tie{}KiB
+of program memory.
+@*@var{mcu}@tie{}= @code{atxmega16a4}, @code{atxmega16d4},
+@dots{}
+
+@item avrxmega4
+``XMEGA'' devices with more than 64@tie{}KiB and up to 128@tie{}KiB
+of program memory.
+@*@var{mcu}@tie{}= @code{atxmega64a3}, @code{atxmega64d3}.
+
+@item avrxmega5
+``XMEGA'' devices with more than 64@tie{}KiB and up to 128@tie{}KiB
+of program memory and more than 64@tie{}KiB of RAM.
+@*@var{mcu}@tie{}= @code{atxmega64a1}, @code{atxmega64a1u}.
+
+@item avrxmega6
+``XMEGA'' devices with more than 128@tie{}KiB of program memory.
+@*@var{mcu}@tie{}= @code{atxmega128a3}, @code{atxmega192d3},
+@dots{}
+
+@item avrxmega7
+``XMEGA'' devices with more than 128@tie{}KiB of program memory and
+more than 64@tie{}KiB of RAM.
+@*@var{mcu}@tie{}= @code{atxmega128a1}, @code{atxmega128a1u}.
+
 @end table
 
 
@@ -11081,7 +11107,7 @@ byte of SP is always zero.
 @end table
 
 @subsubsection @code{EIND} and Devices with more than 128 Ki Bytes of Flash
-
+@cindex @code{EIND}
 Pointers in the implementation are 16@tie{}bits wide.
 The address of a function or label is represented as word address so
 that indirect jumps and calls can target any code address in the
@@ -11101,12 +11127,6 @@ the compiler and are subject to some limitations:
 The compiler never sets @code{EIND}.
 
 @item
-The startup code from libgcc never sets @code{EIND}.
-Notice that startup code is a blend of code from libgcc and avr-libc.
-For the impact of avr-libc on @code{EIND}, see the
-@w{@uref{http://nongnu.org/avr-libc/user-manual,avr-libc user manual}}.
-
-@item
 The compiler uses @code{EIND} implicitely in @code{EICALL}/@code{EIJMP}
 instructions or might read @code{EIND} directly in order to emulate an
 indirect call/jump by means of a @code{RET} instruction.
@@ -11118,16 +11138,45 @@ saved/restored in function or interrupt service routine
 prologue/epilogue.
 
 @item
-It is legitimate for user-specific startup code to set up @code{EIND}
-early, for example by means of initialization code located in
-section @code{.init3}. Such code runs prior to general startup code
-that initializes RAM and calls constructors.
-
-@item
 For indirect calls to functions and computed goto, the linker will
 generate @emph{stubs}. Stubs are jump pads sometimes also called
 @emph{trampolines}. Thus, the indirect call/jump will jump to such a stub.
 The stub contains a direct jump to the desired address.
+
+@item
+The default linker script is arranged for code with @code{EIND = 0}.
+If code is supposed to work for a setup with @code{EIND != 0}, a custom
+linker script has to be used in order to place the sections whose
+name start with @code{.trampolines} into the segment where @code{EIND}
+points to.
+
+@item
+The startup code from libgcc never sets @code{EIND}.
+Notice that startup code is a blend of code from libgcc and AVR-Libc.
+For the impact of AVR-Libc on @code{EIND}, see the
+@w{@uref{http://nongnu.org/avr-libc/user-manual,AVR-Libc user manual}}.
+
+@item
+It is legitimate for user-specific startup code to set up @code{EIND}
+early, for example by means of initialization code located in
+section @code{.init3}. Such code runs prior to general startup code
+that initializes RAM and calls constructors, but after the bit
+of startup code from AVR-Libc that sets @code{EIND} to the segment
+where the vector table is located.
+@example
+#include <avr/io.h>
+
+static void
+__attribute__ ((section (".init3"), naked, used, no_instrument_function))
+init3_set_eind (void)
+@{
+    __asm volatile ("ldi r24, pm_hh8(__trampolines_start)" "\n\t"
+                    "out %i0, r24" :: "n" (&EIND) : "r24", "memory");
+@}
+@end example
+
+@noindent
+The @code{__trampolines_start} symbol is defined in the linker script.
 
 @item
 Stubs will be generated automatically by the linker if
@@ -11159,13 +11208,6 @@ tables you can specify the @option{-fno-jump-tables} command-line option.
 @end itemize
 
 @item
-The default linker script is arranged for code with @code{EIND = 0}.
-If code is supposed to work for a setup with @code{EIND != 0}, a custom
-linker script has to be used in order to place the sections whose
-name start with @code{.trampolines} into the segment where @code{EIND}
-points to.
-
-@item
 Jumping to non-symbolic addresses like so is @emph{not} supported:
 
 @example
@@ -11193,6 +11235,48 @@ and the application be linked with @code{-Wl,--defsym,func_4=0x4}.
 Alternatively, @code{func_4} can be defined in the linker script.
 @end itemize
 
+@subsubsection Handling of the @code{RAMPD}, @code{RAMPX}, @code{RAMPY} and @code{RAMPZ} Special Function Registers
+@cindex @code{RAMPD}
+@cindex @code{RAMPX}
+@cindex @code{RAMPY}
+@cindex @code{RAMPZ}
+Some AVR devices support memories larger than the 64@tie{}KiB range
+that can be accessed with 16-bit pointers.  To access memory locations
+outside this 64@tie{}KiB range, the contentent of a @code{RAMP}
+register is used as high part of the address:
+The @code{X}, @code{Y}, @code{Z} address register is concatenated
+with the @code{RAMPX}, @code{RAMPY}, @code{RAMPZ} special function
+register, respectively, to get a wide address. Similarly,
+@code{RAMPD} is used together with direct addressing.
+
+@itemize
+@item
+The startup code initializes the @code{RAMP} special function
+registers with zero.
+
+@item
+If a @ref{AVR Named Address Spaces,named address space} other than
+generic or @code{__flash} is used, then @code{RAMPZ} will be set
+as needed before the operation.
+
+@item
+If the device supports RAM larger than 64@tie{KiB} and the compiler
+needs to change @code{RAMPZ} to accomplish an operation, @code{RAMPZ}
+will be reset to zero after the operation.
+
+@item
+If the device comes with a specific @code{RAMP} register, the ISR
+prologue/epilogue will save/restore that SFR and initialize it with
+zero in case the ISR code might (implicitly) use it.
+
+@item
+RAM larger than 64@tie{KiB} is not supported by avr-gcc.
+If you use inline assembler to read from locations outside the
+16-bit address range and change one of the @code{RAMP} registers,
+you must reset it to zero after the access.
+
+@end itemize
+
 @subsubsection AVR Built-in Macros
 
 avr-gcc defines several built-in macros so that the user code can test
@@ -11217,10 +11301,8 @@ the device name as from the AVR user manual. The difference between
 @var{Device} in the built-in macro and @var{device} in
 @code{-mmcu=@var{device}} is that the latter is always lowercase.
 
-@item __AVR_HAVE_RAMPZ__
 @item __AVR_HAVE_ELPM__
-The device has the @code{RAMPZ} special function register and thus the
-@code{ELPM} instruction.
+The device has the the @code{ELPM} instruction.
 
 @item __AVR_HAVE_ELPMX__
 The device has the @code{ELPM R@var{n},Z} and @code{ELPM
@@ -11257,6 +11339,13 @@ with up to 128@tie{}KiB of program memory.
 @item __AVR_HAVE_16BIT_SP__
 The stack pointer (SP) is respectively 8 or 16 bits wide.
 The definition of these macros is affected by @code{-mtiny-stack}.
+
+@item __AVR_HAVE_RAMPD__
+@item __AVR_HAVE_RAMPX__
+@item __AVR_HAVE_RAMPY__
+@item __AVR_HAVE_RAMPZ__
+The device has the @code{RAMPD}, @code{RAMPX}, @code{RAMPY},
+@code{RAMPZ} special function register, respectively.
 
 @item __NO_INTERRUPTS__
 This macro reflects the @code{-mno-interrupts} command line option.
