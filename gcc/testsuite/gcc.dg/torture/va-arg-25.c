@@ -4,7 +4,7 @@
 /* { dg-options "-msse" { target { i?86-*-* x86_64-*-* } } } */
 /* { dg-require-effective-target sse_runtime { target { i?86-*-* x86_64-*-* } } } */
 /* { dg-options "-mabi=altivec -maltivec" { target { powerpc-*-* powerpc64-*-* } } } */
-/* { dg-require-effective-target vmx_hw { target { powerpc-*-* powerpc64--*-* } } } */
+/* { dg-require-effective-target vmx_hw { target { powerpc-*-* powerpc64-*-* } } } */
 
 #include <stdarg.h>
 #include <stdlib.h>
