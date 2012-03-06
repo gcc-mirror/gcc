@@ -254,14 +254,6 @@ register allocation	Vladimir Makarov	vmakarov@redhat.com
 Note that individuals who maintain parts of the compiler need approval to
 check in changes outside of the parts of the compiler they maintain.
 
-			Non-Algorithmic Maintainers
-
-loop optimizer		Daniel Berlin		dberlin@dberlin.org
-
-Note that individuals who maintain parts of the compiler as non-algorithmic
-maintainers need approval to check in algorithmic changes or changes
-outside of the parts of the compiler they maintain.
-
 			Reviewers
 
 dataflow		Paolo Bonzini		bonzini@gnu.org
@@ -288,6 +280,7 @@ Graphite 		Tobias Grosser		grosser@fim.uni-passau.de
 Graphite		Sebastian Pop		sebastian.pop@amd.com
 libcpp			Tom Tromey		tromey@redhat.com
 loop optimizer		Zdenek Dvorak		ook@ucw.cz
+loop optimizer		Daniel Berlin		dberlin@dberlin.org
 LTO			Diego Novillo		dnovillo@google.com
 LTO			Richard Guenther	rguenther@suse.de
 LTO plugin		Cary Coutant		ccoutant@google.com
