@@ -1,5 +1,10 @@
 2012-03-06  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/52493
+	* gcc.dg/torture/pr52493.c: New testcase.
+
+2012-03-06  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/52097
 	* gcc.dg/lto/pr52097_0.c: New testcase.
 

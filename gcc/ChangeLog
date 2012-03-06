@@ -1,3 +1,8 @@
+2012-03-06  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52493
+	* tree-ssa-alias.c (ptr_derefs_may_alias_p): Robustify.
+
 2012-03-06  Tristan Gingold  <gingold@adacore.com>
 
 	* config/vms/vms-c.c (vms_pragma_nomember_alignment): Handle
