@@ -182,7 +182,7 @@ void
 gfc_start_block (stmtblock_t * block)
 {
   /* Start a new binding level.  */
-  pushlevel (0);
+  pushlevel ();
   block->has_scope = 1;
 
   /* The block is empty.  */
@@ -215,7 +215,7 @@ gfc_merge_block_scope (stmtblock_t * block)
 
   /* Remember the decls in this scope.  */
   decl = getdecls ();
-  poplevel (0, 0, 0);
+  poplevel (0, 0);
 
   /* Add them to the parent scope.  */
   while (decl != NULL_TREE)
@@ -250,11 +250,11 @@ gfc_finish_block (stmtblock_t * stmtblock)
 
       if (decl)
 	{
-	  block = poplevel (1, 0, 0);
+	  block = poplevel (1, 0);
 	  expr = build3_v (BIND_EXPR, decl, expr, block);
 	}
       else
-	poplevel (0, 0, 0);
+	poplevel (0, 0);
     }
 
   return expr;
