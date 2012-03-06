@@ -1,3 +1,8 @@
+2012-03-06  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/52097
+	* lto.c (uniquify_nodes): Merge TYPE_FIELDS of variant types.
+
 2012-02-28  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/52400
