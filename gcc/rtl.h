@@ -2089,6 +2089,11 @@ extern GTY(()) rtx const_tiny_rtx[4][(int) MAX_MACHINE_MODE];
 #define CONST2_RTX(MODE) (const_tiny_rtx[2][(int) (MODE)])
 #define CONSTM1_RTX(MODE) (const_tiny_rtx[3][(int) (MODE)])
 
+extern rtx pc_rtx;
+extern rtx cc0_rtx;
+extern rtx ret_rtx;
+extern rtx simple_return_rtx;
+
 /* If HARD_FRAME_POINTER_REGNUM is defined, then a special dummy reg
    is used to represent the frame pointer.  This is because the
    hard frame pointer and the automatic variables are separated by an amount
@@ -2112,10 +2117,6 @@ extern GTY(()) rtx const_tiny_rtx[4][(int) MAX_MACHINE_MODE];
 /* Index labels for global_rtl.  */
 enum global_rtl_index
 {
-  GR_PC,
-  GR_CC0,
-  GR_RETURN,
-  GR_SIMPLE_RETURN,
   GR_STACK_POINTER,
   GR_FRAME_POINTER,
 /* For register elimination to work properly these hard_frame_pointer_rtx,
@@ -2207,12 +2208,6 @@ extern struct target_rtl *this_target_rtl;
   (this_target_rtl->x_top_of_stack)
 #define mode_mem_attrs \
   (this_target_rtl->x_mode_mem_attrs)
-
-/* Standard pieces of rtx, to be substituted directly into things.  */
-#define pc_rtx                  (global_rtl[GR_PC])
-#define ret_rtx                 (global_rtl[GR_RETURN])
-#define simple_return_rtx       (global_rtl[GR_SIMPLE_RETURN])
-#define cc0_rtx                 (global_rtl[GR_CC0])
 
 /* All references to certain hard regs, except those created
    by allocating pseudo regs into them (when that's possible),
