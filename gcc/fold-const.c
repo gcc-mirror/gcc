@@ -7626,8 +7626,13 @@ build_fold_addr_expr_with_type_loc (location_t loc, tree t, tree ptrtype)
 	t = build1_loc (loc, NOP_EXPR, ptrtype, t);
     }
   else if (TREE_CODE (t) == MEM_REF
-      && integer_zerop (TREE_OPERAND (t, 1)))
+	   && integer_zerop (TREE_OPERAND (t, 1)))
     return TREE_OPERAND (t, 0);
+  else if (TREE_CODE (t) == MEM_REF
+	   && TREE_CODE (TREE_OPERAND (t, 0)) == INTEGER_CST)
+    return fold_binary (POINTER_PLUS_EXPR, ptrtype,
+			TREE_OPERAND (t, 0),
+			convert_to_ptrofftype (TREE_OPERAND (t, 1)));
   else if (TREE_CODE (t) == VIEW_CONVERT_EXPR)
     {
       t = build_fold_addr_expr_loc (loc, TREE_OPERAND (t, 0));
