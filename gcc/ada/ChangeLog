@@ -1,3 +1,9 @@
+2012-03-07  Tristan Gingold  <gingold@adacore.com>
+
+	* s-ransee-vms.adb: New file.
+	* gcc-interface/Makefile.in: Use s-ransee-vms.adb on VMS.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2012-03-07  Bob Duff  <duff@adacore.com>
 
 	* rtsfind.ads: Add support for finding Super_String types.

@@ -1513,6 +1513,7 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ)))
     s-intman.ads<s-intman-vms.ads \
     s-memory.adb<s-memory-vms_64.adb \
     s-memory.ads<s-memory-vms_64.ads \
+    s-ransee.adb<s-ransee-vms.adb \
     s-osprim.adb<s-osprim-vms.adb \
     s-osprim.ads<s-osprim-vms.ads \
     s-osinte.adb<s-osinte-vms.adb \
