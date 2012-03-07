@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a OpenVMS/Alpha version of this package
+--  This is the OpenVMS version of this package
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by the tasking run-time (libgnarl).
@@ -46,9 +46,6 @@ with System.Aux_DEC;
 
 package System.OS_Interface is
    pragma Preelaborate;
-
-   pragma Linker_Options ("--for-linker=sys$library:pthread$rtl.exe");
-   --  Link in the DEC threads library
 
    --  pragma Linker_Options ("--for-linker=/threads_enable");
    --  Enable upcalls and multiple kernel threads.
@@ -558,6 +555,7 @@ package System.OS_Interface is
    pragma Import (C, pthread_exit, "PTHREAD_EXIT");
 
    function pthread_self return pthread_t;
+   pragma Import (C, pthread_self, "PTHREAD_SELF");
 
    --------------------------
    -- POSIX.1c  Section 17 --

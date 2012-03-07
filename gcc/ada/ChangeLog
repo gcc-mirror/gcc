@@ -1,3 +1,47 @@
+2012-03-07  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch4.adb (Apply_Accessibility_Check): Call
+	Remove_Side_Effects in the build-in-place case, to ensure that
+	we capture the call and don't end up with two calls.
+
+2012-03-07  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Expand_Inlined_Call): Skip inlining of functions
+	that return unconstrained types using an extended return statement
+	since the support for inlining these functions has not been yet
+	added to the frontend.
+	* s-vaflop.adb, s-vaflop-vms-alpha.adb: Code reorganization.
+	* a-ngrear.ads: Replace all the Inline_Always pragmas by pragma
+	Inline.
+	* a-ngrear.adb (Eigenvalues, Transpose): Restructured to use
+	extended return statement.
+	* a-strsup.adb, a-stzsup.adb, a-stwisu.adb (Concat, Super_Slice,
+	Super_To_String): Restructured to use extended return statement.
+	* a-chahan.adb (To_Basic, To_Lower, To_Upper): Restructured to
+	use extended return statement.
+	* s-gearop.adb (Diagonal, Matrix_Elementwise_Operation,
+	Vector_Elementwise_Operation, Matrix_Elementwise_Operation,
+	Matrix_Matrix_Scalar_Elementwise_Operation,
+	Vector_Vector_Elementwise_Operation,
+	Vector_Vector_Scalar_Elementwise_Operation,
+	Matrix_Scalar_Elementwise_Operation,
+	Vector_Scalar_Elementwise_Operation,
+	Scalar_Matrix_Elementwise_Operation,
+	Scalar_Vector_Elementwise_Operation, Matrix_Matrix_Product,
+	Matrix_Vector_Product, Outer_Product, Unit_Matrix, Unit_Vector,
+	Vector_Matrix_Product): Restructured to use extended return
+	statement.
+
+2012-03-07  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_ch5.adb (One_Bound): Minor reformatting.
+
+2012-03-07  Tristan Gingold  <gingold@adacore.com>
+
+	* s-osinte-vms-ia64.adb, s-osinte-vms-ia64.ads, s-osinte-vms.adb,
+	s-osinte-vms.ads, gcc-interface/Makefile.in: Merge s-osinte-vms and
+	s-osinte-vms-ia64.
+
 2012-03-07  Ed Schonberg  <schonberg@adacore.com>
 
 	* checks.adb (Apply_Predicate_Check): Do not generate a predicate

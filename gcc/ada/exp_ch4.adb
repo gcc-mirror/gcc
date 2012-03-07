@@ -702,13 +702,16 @@ package body Exp_Ch4 is
                  (Is_Class_Wide_Type (Etype (Exp))
                    and then Scope (PtrT) /= Current_Scope))
          then
-            --  If the allocator was built in place Ref is already a reference
+            --  If the allocator was built in place, Ref is already a reference
             --  to the access object initialized to the result of the allocator
-            --  (see Exp_Ch6.Make_Build_In_Place_Call_In_Allocator). Otherwise
-            --  it is the entity associated with the object containing the
-            --  address of the allocated object.
+            --  (see Exp_Ch6.Make_Build_In_Place_Call_In_Allocator). We call
+            --  Remove_Side_Effects for cases where the build-in-place call may
+            --  still be the prefix of the reference (to avoid generating
+            --  duplicate calls). Otherwise, it is the entity associated with
+            --  the object containing the address of the allocated object.
 
             if Built_In_Place then
+               Remove_Side_Effects (Ref);
                New_Node := New_Copy (Ref);
             else
                New_Node := New_Reference_To (Ref, Loc);

@@ -4243,6 +4243,23 @@ package body Exp_Ch6 is
          Error_Msg_N ("call to recursive subprogram cannot be inlined?", N);
          Set_Is_Inlined (Subp, False);
          return;
+
+      --  Skip inlining if this is not a true inlining since the attribute
+      --  Body_To_Inline is also set for renamings (see sinfo.ads)
+
+      elsif Nkind (Orig_Bod) in N_Entity then
+         return;
+
+      --  Skip inlining if the function returns an unconstrained type using
+      --  an extended return statement since this part of the new model of
+      --  inlining which is not yet supported by the current implementation.
+
+      elsif Is_Unc
+        and then
+          Nkind (First (Statements (Handled_Statement_Sequence (Orig_Bod))))
+            = N_Extended_Return_Statement
+      then
+         return;
       end if;
 
       if Nkind (Orig_Bod) = N_Defining_Identifier
