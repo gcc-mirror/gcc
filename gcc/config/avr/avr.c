@@ -1123,11 +1123,11 @@ expand_prologue (void)
           emit_push_sfr (rampy_rtx, false /* frame-related */, true /* clr */);
         }
 
-      if (AVR_HAVE_RAMPZ 
+      if (AVR_HAVE_RAMPZ
           && TEST_HARD_REG_BIT (set, REG_Z)
           && TEST_HARD_REG_BIT (set, REG_Z + 1))
         {
-          emit_push_sfr (rampz_rtx, false /* frame-related */, true /* clr */);
+          emit_push_sfr (rampz_rtx, false /* frame-related */, AVR_HAVE_RAMPD);
         }
     }  /* is_interrupt is_signal */
 
@@ -1347,12 +1347,12 @@ expand_epilogue (bool sibcall_p)
       /* Restore RAMPZ/Y/X/D using tmp_reg as scratch.
          The conditions to restore them must be tha same as in prologue.  */
       
-      if (AVR_HAVE_RAMPX
-          && TEST_HARD_REG_BIT (set, REG_X)
-          && TEST_HARD_REG_BIT (set, REG_X + 1))
+      if (AVR_HAVE_RAMPZ
+          && TEST_HARD_REG_BIT (set, REG_Z)
+          && TEST_HARD_REG_BIT (set, REG_Z + 1))
         {
           emit_pop_byte (TMP_REGNO);
-          emit_move_insn (rampx_rtx, tmp_reg_rtx);
+          emit_move_insn (rampz_rtx, tmp_reg_rtx);
         }
 
       if (AVR_HAVE_RAMPY
@@ -1364,12 +1364,12 @@ expand_epilogue (bool sibcall_p)
           emit_move_insn (rampy_rtx, tmp_reg_rtx);
         }
 
-      if (AVR_HAVE_RAMPZ
-          && TEST_HARD_REG_BIT (set, REG_Z)
-          && TEST_HARD_REG_BIT (set, REG_Z + 1))
+      if (AVR_HAVE_RAMPX
+          && TEST_HARD_REG_BIT (set, REG_X)
+          && TEST_HARD_REG_BIT (set, REG_X + 1))
         {
           emit_pop_byte (TMP_REGNO);
-          emit_move_insn (rampz_rtx, tmp_reg_rtx);
+          emit_move_insn (rampx_rtx, tmp_reg_rtx);
         }
 
       if (AVR_HAVE_RAMPD)
