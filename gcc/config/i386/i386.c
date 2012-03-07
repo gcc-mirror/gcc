@@ -7240,8 +7240,8 @@ function_value_64 (enum machine_mode orig_mode, enum machine_mode mode,
     }
   else if (POINTER_TYPE_P (valtype))
     {
-      /* Pointers are always returned in Pmode. */
-      mode = Pmode;
+      /* Pointers are always returned in word_mode.  */
+      mode = word_mode;
     }
 
   ret = construct_container (mode, orig_mode, valtype, 1,
@@ -7312,7 +7312,8 @@ ix86_function_value (const_tree valtype, const_tree fntype_or_decl,
   return ix86_function_value_1 (valtype, fntype_or_decl, orig_mode, mode);
 }
 
-/* Pointer function arguments and return values are promoted to Pmode.  */
+/* Pointer function arguments and return values are promoted to
+   word_mode.  */
 
 static enum machine_mode
 ix86_promote_function_mode (const_tree type, enum machine_mode mode,
@@ -7322,7 +7323,7 @@ ix86_promote_function_mode (const_tree type, enum machine_mode mode,
   if (type != NULL_TREE && POINTER_TYPE_P (type))
     {
       *punsignedp = POINTERS_EXTEND_UNSIGNED;
-      return Pmode;
+      return word_mode;
     }
   return default_promote_function_mode (type, mode, punsignedp, fntype,
 					for_return);

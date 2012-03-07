@@ -1,3 +1,9 @@
+2012-03-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (function_value_64): Return pointers in
+	word_mode instead of Pmode.
+	(ix86_promote_function_mode): Likewise.
+
 2012-03-07  Richard Guenther  <rguenther@suse.de>
 
 	* coverage.c (get_gcov_type): Use type_for_mode.
