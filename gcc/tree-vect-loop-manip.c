@@ -2058,9 +2058,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
 	  ? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1) : NULL_TREE;
       tree start_addr = vect_create_addr_base_for_vector_ref (dr_stmt,
 						&new_stmts, offset, loop);
-      tree ptr_type = TREE_TYPE (start_addr);
-      tree size = TYPE_SIZE (ptr_type);
-      tree type = lang_hooks.types.type_for_size (tree_low_cst (size, 1), 1);
+      tree type = unsigned_type_for (TREE_TYPE (start_addr));
       tree vectype_size_minus_1 = build_int_cst (type, vectype_align - 1);
       tree elem_size_log =
         build_int_cst (type, exact_log2 (vectype_align/nelements));
@@ -2278,7 +2276,6 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
   int mask = LOOP_VINFO_PTR_MASK (loop_vinfo);
   tree mask_cst;
   unsigned int i;
-  tree psize;
   tree int_ptrsize_type;
   char tmp_name[20];
   tree or_tmp_name = NULL_TREE;
@@ -2291,11 +2288,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
      all zeros followed by all ones.  */
   gcc_assert ((mask != 0) && ((mask & (mask+1)) == 0));
 
-  /* CHECKME: what is the best integer or unsigned type to use to hold a
-     cast from a pointer value?  */
-  psize = TYPE_SIZE (ptr_type_node);
-  int_ptrsize_type
-    = lang_hooks.types.type_for_size (tree_low_cst (psize, 1), 0);
+  int_ptrsize_type = signed_type_for (ptr_type_node);
 
   /* Create expression (mask & (dr_1 || ... || dr_n)) where dr_i is the address
      of the first vector of the i'th data reference. */

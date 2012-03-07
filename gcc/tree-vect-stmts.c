@@ -4099,9 +4099,8 @@ vect_gen_perm_mask (tree vectype, unsigned char *sel)
   if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
     return NULL;
 
-  mask_elt_type
-    = lang_hooks.types.type_for_size
-    (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (vectype))), 1);
+  mask_elt_type = lang_hooks.types.type_for_mode
+		    (int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))), 1);
   mask_type = get_vectype_for_scalar_type (mask_elt_type);
 
   mask_vec = NULL;
