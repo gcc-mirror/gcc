@@ -1,3 +1,9 @@
+2012-03-07  Richard Henderson  <rth@redhat.com>
+
+	* config/m68k/m68k.h (ISA_HAS_TAS): New.
+	* config/m68k/sync.md (atomic_test_and_set): Use it.
+	(atomic_test_and_set_1): Likewise.
+
 2012-03-07  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	PR target/51417
