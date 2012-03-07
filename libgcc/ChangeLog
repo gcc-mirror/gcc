@@ -1,5 +1,10 @@
 2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/52507
+	* config/avr/lib1funcs.S (__movmemx_hi): Fix loop label in RAM-part.
+
+2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/52505
 	* config/avr/lib1funcs.S (__xload_1): Don't read unintentionally
 	from RAM.
