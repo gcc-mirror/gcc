@@ -1,3 +1,22 @@
+2012-03-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_print_operand_punct_valid_p): Add '^'.
+	(ix86_print_operand): Handle '^'.
+	* config/i386/i386.md (*strmovdi_rex_1): Macroize memory operands
+	using P mode iterator.  Add %^ to asm template to conditionally emit
+	addr32 prefix.
+	(*rep_movdi_rex64): Ditto.
+	(*strsetdi_rex_1): Ditto.
+	(*rep_stosdi_rex64): Ditto.
+	(*strmov{si,hi,qi}_1): Add %^ to asm template to
+	conditionally emit addr32 prefix.
+	(*rep_mov{si,qi}): Ditto.
+	(*strset{si,hi,qi}): Ditto.
+	(*rep_stos{si,qi}): Ditto.
+	(*cmpstrnqi_nz_1): Ditto.
+	(*cmpstrnqi_1): Ditto.
+	(*strlenqi_1): Ditto.
+
 2012-03-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (function_value_64): Return pointers in
@@ -10,8 +29,7 @@
 	(get_gcov_unsigned_t): Likewise.
 	* expr.c (store_constructor): Use type_for_mode.
 	(try_casesi): Likewise.
-	* tree-ssa-loop-ivopts.c (add_standard_iv_candidates_for_size):
-	Remove.
+	* tree-ssa-loop-ivopts.c (add_standard_iv_candidates_for_size): Remove.
 	(add_standard_iv_candidates): Use standard type trees.
 	* dojump.c (do_jump): Remove dead code.
 
@@ -48,13 +66,13 @@
 	all callers to pass NULL except ...
 	(reset_sched_cycles_in_current_ebb): ... here, save the value
 	in new variable 'empty'.  Increase issue_rate only for
-	non-empty insns. 
+	non-empty insns.
 
 2012-03-07  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	PR target/51417
-	* Makefile.in: Let install-gcc-ar depend on installdirs, gcc-ar$(exeext),
-	gcc-nm$(exeext), gcc-ranlib$(exeext).
+	* Makefile.in: Let install-gcc-ar depend on installdirs,
+	gcc-ar$(exeext), gcc-nm$(exeext), gcc-ranlib$(exeext).
 	Don't double canonicalize if cross-compiling.
 
 2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
@@ -129,8 +147,7 @@
 	(vector_ltgt<mode>): Likewise.
 	(vector_ordered<mode>): Likewise.
 	(vector_unordered<mode>): Likewise.
-	* config/rs6000/rs6000.c (rs6000_emit_vector_compare_inner):
-	Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_vector_compare_inner): Likewise.
 
 2012-03-06  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -151,8 +168,7 @@
 
 2012-03-06  Tristan Gingold  <gingold@adacore.com>
 
-	* config/vms/vms-c.c (vms_pragma_nomember_alignment): Handle
-	octaword.
+	* config/vms/vms-c.c (vms_pragma_nomember_alignment): Handle octaword.
 	(external_model_kind): Improve documentation.
 	(vms_pragma_extern_model): Handle relaxed_redef.
 	(vms_c_register_pragma): Allow expansion for nomember_alignment.
@@ -288,8 +304,7 @@
 	* genautomata.c (parse_automata_opt): New static function.
 	(initiate_automaton_gen): Remove all option handling code.  Remove
 	argc argument.  All callers changed.
-	(main): Call init_rtx_reader_args_cb with the new function as
-	argument.
+	(main): Call init_rtx_reader_args_cb with the new function as argument.
 
 2012-03-05  Richard Guenther  <rguenther@suse.de>
 
