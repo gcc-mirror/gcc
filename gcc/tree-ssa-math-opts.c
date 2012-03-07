@@ -2158,6 +2158,8 @@ convert_mult_to_widen (gimple stmt, gimple_stmt_iterator *gsi)
   /* Ensure that the inputs to the handler are in the correct precison
      for the opcode.  This will be the full mode size.  */
   actual_precision = GET_MODE_PRECISION (actual_mode);
+  if (2 * actual_precision > TYPE_PRECISION (type))
+    return false;
   if (actual_precision != TYPE_PRECISION (type1)
       || from_unsigned1 != TYPE_UNSIGNED (type1))
     {
