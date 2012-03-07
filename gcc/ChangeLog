@@ -1,3 +1,8 @@
+2012-03-07  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-math-opts.c (convert_mult_to_widen): Check actual
+	precision against gimple constraints.
+
 2012-03-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR middle-end/52372
