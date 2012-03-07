@@ -26107,8 +26107,8 @@ procedure Increment is
       Result : Unsigned_32;
    begin
       Asm ("incl %0",
-           Inputs  => Unsigned_32'Asm_Input ("a", Value),
-           Outputs => Unsigned_32'Asm_Output ("=a", Result));
+           Outputs => Unsigned_32'Asm_Output ("=a", Result),
+           Inputs  => Unsigned_32'Asm_Input ("a", Value));
       return Result;
    end Incr;
 
@@ -26134,10 +26134,8 @@ The @code{"="} constraint, indicating an output value, is not present.
 You can have multiple input variables, in the same way that you can have more
 than one output variable.
 
-The parameter count (%0, %1) etc, now starts at the first input
-statement, and continues with the output statements.
-When both parameters use the same variable, the
-compiler will treat them as the same %n operand, which is the case here.
+The parameter count (%0, %1) etc, still starts at the first output statement,
+and continues with the input statements.
 
 Just as the @code{Outputs} parameter causes the register to be stored into the
 target variable after execution of the assembler statements, so does the
@@ -26191,8 +26189,8 @@ procedure Increment_2 is
       Result : Unsigned_32;
    begin
       Asm ("incl %0",
-           Inputs  => Unsigned_32'Asm_Input ("a", Value),
-           Outputs => Unsigned_32'Asm_Output ("=a", Result));
+           Outputs => Unsigned_32'Asm_Output ("=a", Result),
+           Inputs  => Unsigned_32'Asm_Input ("a", Value));
       return Result;
    end Incr;
    pragma Inline (Increment);
@@ -26274,8 +26272,8 @@ assembly code; for example:
 @group
 Asm ("movl %0, %%ebx" & LF & HT &
      "movl %%ebx, %1",
-     Inputs  => Unsigned_32'Asm_Input  ("g", Var_In),
-     Outputs => Unsigned_32'Asm_Output ("=g", Var_Out));
+     Outputs => Unsigned_32'Asm_Output ("=g", Var_Out),
+     Inputs  => Unsigned_32'Asm_Input  ("g", Var_In));
 @end group
 @end smallexample
 @noindent
@@ -26289,8 +26287,8 @@ to identify the registers that will be used by your assembly code:
 @group
 Asm ("movl %0, %%ebx" & LF & HT &
      "movl %%ebx, %1",
-     Inputs  => Unsigned_32'Asm_Input  ("g", Var_In),
      Outputs => Unsigned_32'Asm_Output ("=g", Var_Out),
+     Inputs  => Unsigned_32'Asm_Input  ("g", Var_In),
      Clobber => "ebx");
 @end group
 @end smallexample
@@ -26324,8 +26322,8 @@ the @code{Volatile} parameter to @code{True}; for example:
 @group
 Asm ("movl %0, %%ebx" & LF & HT &
      "movl %%ebx, %1",
-     Inputs   => Unsigned_32'Asm_Input  ("g", Var_In),
      Outputs  => Unsigned_32'Asm_Output ("=g", Var_Out),
+     Inputs   => Unsigned_32'Asm_Input  ("g", Var_In),
      Clobber  => "ebx",
      Volatile => True);
 @end group
