@@ -1,3 +1,9 @@
+2012-03-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52521
+	* mangle.c (write_literal_operator_name): The length comes after the
+	operator prefix.
+
 2012-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* pt.c (local_specializations): Change from htab_t into

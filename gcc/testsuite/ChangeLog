@@ -1,3 +1,8 @@
+2012-03-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52521
+	* g++.dg/cpp0x/udlit-mangle.C: New.
+
 2012-03-06  Pat Haugen <pthaugen@us.ibm.com>
 
 	* gcc.dg/torture/va-arg-25.c: Fix typo for powerpc64-*-* check.
