@@ -3894,6 +3894,8 @@ convert (tree type, tree expr)
 	{
 	  expr = copy_node (expr);
 	  TREE_TYPE (expr) = type;
+	  CONSTRUCTOR_ELTS (expr)
+	    = VEC_copy (constructor_elt, gc, CONSTRUCTOR_ELTS (expr));
 	  return expr;
 	}
 
