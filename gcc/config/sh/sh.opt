@@ -320,7 +320,7 @@ Target Mask(HITACHI) MaskExists
 Follow Renesas (formerly Hitachi) / SuperH calling conventions
 
 msoft-atomic
-Target Report Mask(SOFT_ATOMIC)
+Target Report Var(TARGET_SOFT_ATOMIC)
 Use software atomic sequences supported by kernel
 
 menable-tas
