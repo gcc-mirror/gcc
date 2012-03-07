@@ -2762,7 +2762,14 @@ avr_out_lpm (rtx insn, rtx *op, int *plen)
       break; /* POST_INC */
 
     } /* switch CODE (addr) */
+
+  if (xop[4] == xstring_e && AVR_HAVE_RAMPD)
+    {
+      /* Reset RAMPZ to 0 so that EBI devices don't read garbage from RAM */
       
+      avr_asm_len ("out __RAMPZ__,__zero_reg__", xop, plen, 1);
+    }
+
   return "";
 }
 

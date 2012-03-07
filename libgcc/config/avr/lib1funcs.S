@@ -1893,6 +1893,10 @@ DEFUN __do_copy_data
 	cpc	r27, r17
 	brne	.L__do_copy_data_loop
 #endif /* !defined(__AVR_HAVE_ELPMX__) && !defined(__AVR_HAVE_ELPM__) */
+#if defined (__AVR_HAVE_ELPM__) && defined (__AVR_HAVE_RAMPD__)
+	;; Reset RAMPZ to 0 so that EBI devices don't read garbage from RAM
+	out	__RAMPZ__, __zero_reg__
+#endif /* ELPM && RAMPD */
 ENDF __do_copy_data
 #endif /* L_copy_data */
 
@@ -1920,7 +1924,7 @@ ENDF __do_clear_bss
 #ifdef L_ctors
 	.section .init6,"ax",@progbits
 DEFUN __do_global_ctors
-#if defined(__AVR_HAVE_RAMPZ__)
+#if defined(__AVR_HAVE_ELPM__)
 	ldi	r17, hi8(__ctors_start)
 	ldi	r28, lo8(__ctors_end)
 	ldi	r29, hi8(__ctors_end)
@@ -1953,14 +1957,14 @@ DEFUN __do_global_ctors
 	cpi	r28, lo8(__ctors_start)
 	cpc	r29, r17
 	brne	.L__do_global_ctors_loop
-#endif /* defined(__AVR_HAVE_RAMPZ__) */
+#endif /* defined(__AVR_HAVE_ELPM__) */
 ENDF __do_global_ctors
 #endif /* L_ctors */
 
 #ifdef L_dtors
 	.section .fini6,"ax",@progbits
 DEFUN __do_global_dtors
-#if defined(__AVR_HAVE_RAMPZ__)
+#if defined(__AVR_HAVE_ELPM__)
 	ldi	r17, hi8(__dtors_end)
 	ldi	r28, lo8(__dtors_start)
 	ldi	r29, hi8(__dtors_start)
@@ -1993,7 +1997,7 @@ DEFUN __do_global_dtors
 	cpi	r28, lo8(__dtors_end)
 	cpc	r29, r17
 	brne	.L__do_global_dtors_loop
-#endif /* defined(__AVR_HAVE_RAMPZ__) */
+#endif /* defined(__AVR_HAVE_ELPM__) */
 ENDF __do_global_dtors
 #endif /* L_dtors */
 
@@ -2001,18 +2005,21 @@ ENDF __do_global_dtors
     
 #ifdef L_tablejump_elpm
 DEFUN __tablejump_elpm__
-#if defined (__AVR_HAVE_ELPM__)
-#if defined (__AVR_HAVE_LPMX__)
+#if defined (__AVR_HAVE_ELPMX__)
 	elpm	__tmp_reg__, Z+
 	elpm	r31, Z
 	mov	r30, __tmp_reg__
+#if defined (__AVR_HAVE_RAMPD__)
+	;; Reset RAMPZ to 0 so that EBI devices don't read garbage from RAM
+	out	__RAMPZ__, __zero_reg__
+#endif /* RAMPD */
 #if defined (__AVR_HAVE_EIJMP_EICALL__)
 	eijmp
 #else
 	ijmp
 #endif
 
-#else
+#elif defined (__AVR_HAVE_ELPM__)
 	elpm
 	adiw	r30, 1
 	push	r0
@@ -2024,7 +2031,6 @@ DEFUN __tablejump_elpm__
 #endif
 	ret
 #endif
-#endif /* defined (__AVR_HAVE_ELPM__) */
 ENDF __tablejump_elpm__
 #endif /* defined (L_tablejump_elpm) */
 
@@ -2114,11 +2120,17 @@ ENDF __load_4
     adiw    r30, 1
 .endif
 #endif
+#if defined (__AVR_HAVE_ELPM__) && defined (__AVR_HAVE_RAMPD__)
+.if \dest == D0+\n-1
+    ;; Reset RAMPZ to 0 so that EBI devices don't read garbage from RAM
+    out     __RAMPZ__, __zero_reg__
+.endif
+#endif
 .endm ; .xload
 
 #if defined (L_xload_1)
 DEFUN __xload_1
-#if defined (__AVR_HAVE_LPMX__) && !defined (__AVR_HAVE_RAMPZ__)
+#if defined (__AVR_HAVE_LPMX__) && !defined (__AVR_HAVE_ELPM__)
     ld      D0, Z
     sbrs    HHI8, 7
     lpm     D0, Z
@@ -2126,14 +2138,14 @@ DEFUN __xload_1
 #else
     sbrc    HHI8, 7
     rjmp    1f
-#if defined (__AVR_HAVE_RAMPZ__)
+#if defined (__AVR_HAVE_ELPM__)
     out     __RAMPZ__, HHI8
-#endif /* __AVR_HAVE_RAMPZ__ */
+#endif /* __AVR_HAVE_ELPM__ */
     .xload  D0, 1
     ret
 1:  ld      D0, Z
     ret
-#endif /* LPMx && ! RAMPZ */
+#endif /* LPMx && ! ELPM */
 ENDF __xload_1
 #endif /* L_xload_1 */
 
@@ -2141,9 +2153,9 @@ ENDF __xload_1
 DEFUN __xload_2
     sbrc    HHI8, 7
     rjmp    1f
-#if defined (__AVR_HAVE_RAMPZ__)
+#if defined (__AVR_HAVE_ELPM__)
     out     __RAMPZ__, HHI8
-#endif /* __AVR_HAVE_RAMPZ__ */
+#endif /* __AVR_HAVE_ELPM__ */
     .xload  D0, 2
     .xload  D1, 2
     ret
@@ -2157,9 +2169,9 @@ ENDF __xload_2
 DEFUN __xload_3
     sbrc    HHI8, 7
     rjmp    1f
-#if defined (__AVR_HAVE_RAMPZ__)
+#if defined (__AVR_HAVE_ELPM__)
     out     __RAMPZ__, HHI8
-#endif /* __AVR_HAVE_RAMPZ__ */
+#endif /* __AVR_HAVE_ELPM__ */
     .xload  D0, 3
     .xload  D1, 3
     .xload  D2, 3
@@ -2175,9 +2187,9 @@ ENDF __xload_3
 DEFUN __xload_4
     sbrc    HHI8, 7
     rjmp    1f
-#if defined (__AVR_HAVE_RAMPZ__)
+#if defined (__AVR_HAVE_ELPM__)
     out     __RAMPZ__, HHI8
-#endif /* __AVR_HAVE_RAMPZ__ */
+#endif /* __AVR_HAVE_ELPM__ */
     .xload  D0, 4
     .xload  D1, 4
     .xload  D2, 4
@@ -2219,7 +2231,7 @@ DEFUN __movmemx_hi
 
 ;; Read from Flash
 
-#if defined (__AVR_HAVE_RAMPZ__)
+#if defined (__AVR_HAVE_ELPM__)
     out     __RAMPZ__, HHI8
 #endif
 
@@ -2243,6 +2255,10 @@ DEFUN __movmemx_hi
     st      X+, r0
     sbiw    LOOP, 1
     brne    0b
+#if defined (__AVR_HAVE_ELPM__) && defined (__AVR_HAVE_RAMPD__)
+    ;; Reset RAMPZ to 0 so that EBI devices don't read garbage from RAM
+    out	__RAMPZ__, __zero_reg__
+#endif /* ELPM && RAMPD */
     ret
 
 ;; Read from RAM
