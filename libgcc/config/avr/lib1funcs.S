@@ -2269,7 +2269,7 @@ DEFUN __movmemx_hi
     ;; and store that Byte to RAM Destination
     st      X+, r0
     sbiw    LOOP, 1
-    brne    0b
+    brne    1b
     ret
 ENDF __movmemx_hi
 
