@@ -1852,7 +1852,13 @@ package body Sem_Ch5 is
                if Nkind (Nam) = N_Explicit_Dereference then
                   Subp := Etype (Nam);
 
-               --  Normal case
+               --  Call using a selected component notation or Ada 2005 object
+               --  operation notation
+
+               elsif Nkind (Nam) = N_Selected_Component then
+                  Subp := Entity (Selector_Name (Nam));
+
+               --  Common case
 
                else
                   Subp := Entity (Nam);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -156,6 +156,10 @@ package Exp_Ch6 is
    function Is_Null_Procedure (Subp : Entity_Id) return Boolean;
    --  Predicate to recognize stubbed procedures and null procedures, which
    --  can be inlined unconditionally in all cases.
+
+   procedure List_Inlining_Info;
+   --  Generate listing of calls inlined by the frontend plus listing of
+   --  calls to inline subprograms passed to the backend.
 
    procedure Make_Build_In_Place_Call_In_Allocator
      (Allocator     : Node_Id;

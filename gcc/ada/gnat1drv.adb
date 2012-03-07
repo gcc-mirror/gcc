@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,7 @@ with Debug;    use Debug;
 with Elists;
 with Errout;   use Errout;
 with Exp_CG;
+with Exp_Ch6;  use Exp_Ch6;
 with Fmap;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
@@ -1160,6 +1161,7 @@ begin
       Errout.Finalize (Last_Call => True);
       Errout.Output_Messages;
       List_Rep_Info;
+      List_Inlining_Info;
 
       --  Only write the library if the backend did not generate any error
       --  messages. Otherwise signal errors to the driver program so that

@@ -9389,6 +9389,18 @@ package body Sem_Util is
       Mark_Allocators (Root_Nod);
    end Mark_Coextensions;
 
+   -----------------
+   -- Must_Inline --
+   -----------------
+
+   function Must_Inline (Subp : Entity_Id) return Boolean is
+   begin
+      return Optimization_Level = 0
+        and then Has_Pragma_Inline (Subp)
+        and then (Has_Pragma_Inline_Always (Subp)
+                    or else Front_End_Inlining);
+   end Must_Inline;
+
    ----------------------
    -- Needs_One_Actual --
    ----------------------
@@ -11766,6 +11778,18 @@ package body Sem_Util is
    begin
       Reset_Analyzed (N);
    end Reset_Analyzed_Flags;
+
+   --------------------------------
+   -- Returns_Unconstrained_Type --
+   --------------------------------
+
+   function Returns_Unconstrained_Type (Subp : Entity_Id) return Boolean is
+   begin
+      return Ekind (Subp) = E_Function
+        and then not Is_Scalar_Type (Etype (Subp))
+        and then not Is_Access_Type (Etype (Subp))
+        and then not Is_Constrained (Etype (Subp));
+   end Returns_Unconstrained_Type;
 
    ---------------------------
    -- Safe_To_Capture_Value --
