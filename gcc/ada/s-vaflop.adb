@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -444,15 +444,6 @@ package body System.Vax_Float_Operations is
    end Sub_G;
 
    ------------
-   -- T_To_D --
-   ------------
-
-   function T_To_D (X : T) return D is
-   begin
-      return G_To_D (T_To_G (X));
-   end T_To_D;
-
-   ------------
    -- T_To_G --
    ------------
 
@@ -460,6 +451,15 @@ package body System.Vax_Float_Operations is
    begin
       return G (X);
    end T_To_G;
+
+   ------------
+   -- T_To_D --
+   ------------
+
+   function T_To_D (X : T) return D is
+   begin
+      return G_To_D (T_To_G (X));
+   end T_To_D;
 
    -------------
    -- Valid_D --

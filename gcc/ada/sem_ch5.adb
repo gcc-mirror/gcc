@@ -1654,10 +1654,9 @@ package body Sem_Ch5 is
            (Original_Bound : Node_Id;
             Analyzed_Bound : Node_Id) return Node_Id
          is
-            Assign : Node_Id;
-            Id     : Entity_Id;
-            Decl   : Node_Id;
-
+            Assign        : Node_Id;
+            Decl          : Node_Id;
+            Id            : Entity_Id;
          begin
             --  If the bound is a constant or an object, no need for a separate
             --  declaration. If the bound is the result of previous expansion
@@ -1677,10 +1676,6 @@ package body Sem_Ch5 is
                return Original_Bound;
             end if;
 
-            --  Here we need to capture the value
-
-            Analyze_And_Resolve (Original_Bound, Typ);
-
             --  Normally, the best approach is simply to generate a constant
             --  declaration that captures the bound. However, there is a nasty
             --  case where this is wrong. If the bound is complex, and has a
@@ -1692,7 +1687,8 @@ package body Sem_Ch5 is
             --  proper trace of the value, useful in optimizations that get rid
             --  of junk range checks.
 
-            if not Has_Call_Using_Secondary_Stack (Original_Bound) then
+            if not Has_Call_Using_Secondary_Stack (Analyzed_Bound) then
+               Analyze_And_Resolve (Original_Bound, Typ);
                Force_Evaluation (Original_Bound);
                return Original_Bound;
             end if;
@@ -1711,14 +1707,6 @@ package body Sem_Ch5 is
               Make_Assignment_Statement (Loc,
                 Name        => New_Occurrence_Of (Id, Loc),
                 Expression  => Relocate_Node (Original_Bound));
-
-            --  We must recursively clean in the relocated expression the flag
-            --  analyzed to ensure that the expression is reanalyzed. Required
-            --  to ensure that the transient scope is established now (because
-            --  Establish_Transient_Scope discarded generating transient scopes
-            --  in the analysis of the iteration scheme).
-
-            Reset_Analyzed_Flags (Expression (Assign));
 
             Insert_Actions (Parent (N), New_List (Decl, Assign));
 
