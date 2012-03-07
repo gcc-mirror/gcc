@@ -49,8 +49,9 @@ package Ada.Strings.Wide_Wide_Superbounded is
       Current_Length : Natural := 0;
       Data           : Wide_Wide_String (1 .. Max_Length);
       --  A previous version had a default initial value for Data, which is no
-      --  longer necessary, because "=" now composes properly for untagged
-      --  records. Leaving it out is more efficient.
+      --  longer necessary, because we now special-case this type in the
+      --  compiler, so "=" composes properly for descendants of this
+      --  type. Leaving it out is more efficient.
    end record;
    --  Wide_Wide_Bounded.Generic_Bounded_Length.Wide_Wide_Bounded_String is
    --  derived from this type, with the constraint of the maximum length.

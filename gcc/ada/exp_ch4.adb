@@ -149,10 +149,10 @@ package body Exp_Ch4 is
    --  Local recursive function used to expand equality for nested composite
    --  types. Used by Expand_Record/Array_Equality, Bodies is a list on which
    --  to attach bodies of local functions that are created in the process.
-   --  This is the responsibility of the caller to insert those bodies at the
+   --  It is the responsibility of the caller to insert those bodies at the
    --  right place. Nod provides the Sloc value for generated code. Lhs and Rhs
    --  are the left and right sides for the comparison, and Typ is the type of
-   --  the arrays to compare.
+   --  the objects to compare.
 
    procedure Expand_Concatenate (Cnode : Node_Id; Opnds : List_Id);
    --  Routine to expand concatenation of a sequence of two or more operands
@@ -2488,17 +2488,24 @@ package body Exp_Ch4 is
                end if;
             end if;
 
-         elsif Ada_Version >= Ada_2012 then
+         --  Equality composes in Ada 2012 for untagged record types. It also
+         --  composes for bounded strings, because they are part of the
+         --  predefined environment. We could make it compose for bounded
+         --  strings by making them tagged, or by making sure all subcomponents
+         --  are set to the same value, even when not used. Instead, we have
+         --  this special case in the compiler, because it's more efficient.
+
+         elsif Ada_Version >= Ada_2012 or else Is_Bounded_String (Typ) then
 
             --  if no TSS has been created for the type, check whether there is
             --  a primitive equality declared for it.
 
             declare
-               Ada_2012_Op : constant Node_Id := Find_Primitive_Eq;
+               Op : constant Node_Id := Find_Primitive_Eq;
 
             begin
-               if Present (Ada_2012_Op) then
-                  return Ada_2012_Op;
+               if Present (Op) then
+                  return Op;
                else
 
                --  Use predefined equality if no user-defined primitive exists

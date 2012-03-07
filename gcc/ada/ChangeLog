@@ -1,3 +1,16 @@
+2012-03-07  Bob Duff  <duff@adacore.com>
+
+	* rtsfind.ads: Add support for finding Super_String types.
+	* sem_util.ads, sem_util.adb (Is_Bounded_String): New function
+	to determine whether a given type is a bounded string type.
+	(Is_Fully_Initialized_Type): Return True for bounded
+	string types, to suppress bogus warnings.
+	* exp_ch4.adb (Expand_Composite_Equality): Special case for bounded
+	strings: equality composes. This allows us to remove default values in
+	super strings.
+	* a-strsup.ads, a-stwisu.ads, a-stzsup.ads: Update comments.
+	* exp_ch3.adb (Expand_Freeze_Record_Type): Comment.
+
 2012-03-07  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb, exp_ch4.adb, exp_ch6.adb, sem_ch6.adb: Minor

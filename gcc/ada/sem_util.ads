@@ -793,6 +793,10 @@ package Sem_Util is
    --  Determines if the given node denotes an atomic object in the sense of
    --  the legality checks described in RM C.6(12).
 
+   function Is_Bounded_String (T : Entity_Id) return Boolean;
+   --  True if T is a bounded string type. Used to make sure "=" composes
+   --  properly for bounded string types.
+
    function Is_Controlling_Limited_Procedure
      (Proc_Nam : Entity_Id) return Boolean;
    --  Ada 2005 (AI-345): Determine whether Proc_Nam is a primitive procedure

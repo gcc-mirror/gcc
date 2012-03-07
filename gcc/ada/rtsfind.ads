@@ -160,6 +160,9 @@ package Rtsfind is
 
       --  Children of Ada.Strings
 
+      Ada_Strings_Superbounded,
+      Ada_Strings_Wide_Superbounded,
+      Ada_Strings_Wide_Wide_Superbounded,
       Ada_Strings_Unbounded,
 
       --  Children of Ada.Text_IO (for Text_IO_Kludge)
@@ -438,7 +441,7 @@ package Rtsfind is
    --  Range of values for children of Ada.Streams
 
    subtype Ada_Strings_Child is Ada_Child
-     range Ada_Strings_Unbounded .. Ada_Strings_Unbounded;
+     range Ada_Strings_Superbounded .. Ada_Strings_Unbounded;
    --  Range of values for children of Ada.Strings
 
    subtype Ada_Text_IO_Child is Ada_Child
@@ -587,6 +590,12 @@ package Rtsfind is
      RE_Stream_Element_Offset,           -- Ada.Streams
 
      RE_Stream_Access,                   -- Ada.Streams.Stream_IO
+
+     RO_SU_Super_String,                 -- Ada.Strings.Superbounded
+
+     RO_WI_Super_String,                 -- Ada.Strings.Wide_Superbounded
+
+     RO_WW_Super_String,                 -- Ada.Strings.Wide_Wide_Superbounded
 
      RE_Unbounded_String,                -- Ada.Strings.Unbounded
 
@@ -1789,6 +1798,12 @@ package Rtsfind is
      RE_Stream_Element_Offset            => Ada_Streams,
 
      RE_Stream_Access                    => Ada_Streams_Stream_IO,
+
+     RO_SU_Super_String                  => Ada_Strings_Superbounded,
+
+     RO_WI_Super_String                  => Ada_Strings_Wide_Superbounded,
+
+     RO_WW_Super_String                  => Ada_Strings_Wide_Wide_Superbounded,
 
      RE_Unbounded_String                 => Ada_Strings_Unbounded,
 
