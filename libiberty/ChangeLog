@@ -1,3 +1,8 @@
+2012-03-07  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (cplus_demangle_operators): Add li.
+	(d_unqualified_name): Handle it specially.
+
 2012-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* make-relative-prefix.c (make_relative_prefix_1): Avoid warning
