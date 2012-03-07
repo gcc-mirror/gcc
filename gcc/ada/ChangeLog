@@ -1,3 +1,16 @@
+2012-03-07  Tristan Gingold  <gingold@adacore.com>
+
+	* s-taprop-vms.adb (Create_Task): set thread name.
+	* s-osinte-vms.ads (pthread_attr_setname_np): Declare.
+
+2012-03-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* g-trasym.adb: Minor reformatting.
+
+2012-03-07  Robert Dewar  <dewar@adacore.com>
+
+	* a-ngrear.ads: Minor addition of ??? comment.
+
 2012-03-07  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch4.adb (Apply_Accessibility_Check): Call

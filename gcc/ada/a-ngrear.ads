@@ -125,6 +125,9 @@ private
    --  front end always inline these, the expense of the unconstrained returns
    --  can be avoided.
 
+   --  Confusing comment above, why does the front end always inline
+   --  these functions ???
+
    pragma Inline ("+");
    pragma Inline ("-");
    pragma Inline ("*");

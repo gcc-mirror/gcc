@@ -520,6 +520,12 @@ package System.OS_Interface is
       sched_param : int) return int;
    pragma Import (C, pthread_attr_setschedparam, "PTHREAD_ATTR_SETSCHEDPARAM");
 
+   function pthread_attr_setname_np
+     (attr : access pthread_attr_t;
+      name : System.Address;
+      mbz  : System.Address) return int;
+   pragma Import (C, pthread_attr_setname_np, "PTHREAD_ATTR_SETNAME_NP");
+
    function sched_yield return int;
 
    --------------------------
