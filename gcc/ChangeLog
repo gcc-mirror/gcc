@@ -1,3 +1,13 @@
+2012-03-07  Kai Tietz  <ktietz@redhat.com>
+
+	* doc/invoke.texi (fwritable-relocated-rdata): Document
+	new Cygwin/MinGW target option.
+	* config/i386/winnt.c (i386_pe_unique_section): Ignore
+	reloc if flag -fwritable-relocated-rdata is not set.
+	(i386_pe_section_type_flags): Likewise.
+	* config/i386/cygming.opt (fwritable-relocated-rdata):
+	Add new flag variable flag_writable_rel_rdata.
+
 2012-03-07  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-math-opts.c (convert_mult_to_widen): Check actual

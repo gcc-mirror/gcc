@@ -14014,6 +14014,13 @@ set. This is necessary for binaries running in kernel mode of
 Microsoft Windows, as there the User32 API, which is used to set executable
 privileges, isn't available.
 
+@item -fwritable-relocated-rdata
+@opindex fno-writable-relocated-rdata
+This option is available for MinGW and Cygwin targets.  It specifies
+that relocated-data in read-only section is put into .data
+section.  This is a necessary for older runtimes not supporting
+modification of .rdata sections for pseudo-relocation.
+
 @item -mpe-aligned-commons
 @opindex mpe-aligned-commons
 This option is available for Cygwin and MinGW targets.  It
