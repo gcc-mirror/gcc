@@ -444,36 +444,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label, int prob)
       /* Lowered by gimplify.c.  */
       gcc_unreachable ();
 
-    case COMPONENT_REF:
-    case BIT_FIELD_REF:
-    case ARRAY_REF:
-    case ARRAY_RANGE_REF:
-      {
-        HOST_WIDE_INT bitsize, bitpos;
-        int unsignedp;
-        enum machine_mode mode;
-        tree type;
-        tree offset;
-        int volatilep = 0;
-
-        /* Get description of this reference.  We don't actually care
-           about the underlying object here.  */
-        get_inner_reference (exp, &bitsize, &bitpos, &offset, &mode,
-                             &unsignedp, &volatilep, false);
-
-        type = lang_hooks.types.type_for_size (bitsize, unsignedp);
-        if (! SLOW_BYTE_ACCESS
-            && type != 0 && bitsize >= 0
-            && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp))
-            && have_insn_for (COMPARE, TYPE_MODE (type)))
-          {
-	    do_jump (fold_convert (type, exp), if_false_label, if_true_label,
-		     prob);
-            break;
-          }
-        goto normal;
-      }
-
     case MINUS_EXPR:
       /* Nonzero iff operands of minus differ.  */
       code = NE_EXPR;

@@ -131,7 +131,8 @@ static void coverage_obj_finish (VEC(constructor_elt,gc) *);
 tree
 get_gcov_type (void)
 {
-  return lang_hooks.types.type_for_size (GCOV_TYPE_SIZE, false);
+  enum machine_mode mode = smallest_mode_for_size (GCOV_TYPE_SIZE, MODE_INT);
+  return lang_hooks.types.type_for_mode (mode, false);
 }
 
 /* Return the type node for gcov_unsigned_t.  */
@@ -139,7 +140,8 @@ get_gcov_type (void)
 static tree
 get_gcov_unsigned_t (void)
 {
-  return lang_hooks.types.type_for_size (32, true);
+  enum machine_mode mode = smallest_mode_for_size (32, MODE_INT);
+  return lang_hooks.types.type_for_mode (mode, true);
 }
 
 static hashval_t
