@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2102,7 +2102,14 @@ package body Sem_Ch5 is
                --  because the second one may be created in a different scope,
                --  e.g. a precondition procedure, leading to a crash in GIGI.
 
-               if No (Etype (Id)) or else Etype (Id) = Any_Type then
+               --  Note that if the parent node is a quantified expression,
+               --  this preservation is delayed until the expansion of the
+               --  quantified expression where the node is rewritten as an
+               --  expression with actions.
+
+               if (No (Etype (Id)) or else Etype (Id) = Any_Type)
+                 and then Nkind (Parent (N)) /= N_Quantified_Expression
+               then
                   Set_Etype (Id, Etype (DS));
                end if;
 
@@ -2214,9 +2221,9 @@ package body Sem_Ch5 is
       end;
    end Analyze_Iteration_Scheme;
 
-   -------------------------------------
-   --  Analyze_Iterator_Specification --
-   -------------------------------------
+   ------------------------------------
+   -- Analyze_Iterator_Specification --
+   ------------------------------------
 
    procedure Analyze_Iterator_Specification (N : Node_Id) is
       Loc       : constant Source_Ptr := Sloc (N);
@@ -2228,15 +2235,7 @@ package body Sem_Ch5 is
       Typ : Entity_Id;
 
    begin
-      --  In semantics/Alfa modes, we won't be further expanding the loop, so
-      --  introduce loop variable so that loop body can be properly analyzed.
-      --  Otherwise this happens after expansion.
-
-      if Operating_Mode = Check_Semantics
-        or else Alfa_Mode
-      then
-         Enter_Name (Def_Id);
-      end if;
+      Enter_Name (Def_Id);
 
       Set_Ekind (Def_Id, E_Variable);
 
@@ -2249,7 +2248,13 @@ package body Sem_Ch5 is
       --  The declaration must be a renaming because the body of the loop may
       --  assign to elements.
 
-      if not Is_Entity_Name (Iter_Name) then
+      --  Note that if the parent node is a quantified expression, this
+      --  declaration is created during the expansion of the quantified
+      --  expression where the node is rewritten as an expression with actions.
+
+      if not Is_Entity_Name (Iter_Name)
+        and then Nkind (Parent (Parent (N))) /= N_Quantified_Expression
+      then
          declare
             Id   : constant Entity_Id := Make_Temporary (Loc, 'R', Iter_Name);
             Decl : Node_Id;
@@ -2281,7 +2286,7 @@ package body Sem_Ch5 is
       --  Iterate is not a reserved name. What matter is that the return type
       --  of the function is an iterator type.
 
-      else
+      elsif Is_Entity_Name (Iter_Name) then
          Analyze (Iter_Name);
 
          if Nkind (Iter_Name) = N_Function_Call then

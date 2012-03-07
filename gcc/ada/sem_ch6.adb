@@ -9892,6 +9892,13 @@ package body Sem_Ch6 is
          Designator := Body_Id;
       end if;
 
+      --  Internally generated subprograms, such as type-specific functions,
+      --  don't get assertions checks.
+
+      if Get_TSS_Name (Designator) /= TSS_Null then
+         return;
+      end if;
+
       --  Grab preconditions from spec
 
       if Present (Spec_Id) then

@@ -1,3 +1,27 @@
+2012-03-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Predicate_Check): Do not generate a predicate
+	check is the context is an internally generated type-specific
+	function.
+	* sem_ch6.adb (Process_PPCs); the formals of internally generated
+	type-specific functions do not get assertion checks.
+
+2012-03-07  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Minor renaming of title.
+	* gnat_ugn.texi: Minor correction.
+
+2012-03-07  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Quantified_Expression): Minor
+	reformating.
+	* sem_ch4.adb (Analyze_Quantified_Expression): Creation and
+	analysis of the iteration scheme added in all cases.
+	* sem_ch5.adb (Analyze_Iteration_Scheme): Minor reformating.
+	(Analyze_Iterator_Specification): Minor reformating.
+	* sem_res.adb (Resolve_Quantified_Expression): Resolution of
+	the condition added in all cases.
+
 2012-03-07  Thomas Quinot  <quinot@adacore.com>
 
 	* einfo.adb, einfo.ads: Add flag Reverse_Storage_Order.

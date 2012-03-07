@@ -5953,6 +5953,7 @@ When no switch @option{^-gnatw^/WARNINGS^} is used, this is equivalent to:
 
 @table @option
 @c !sort!
+@item -gnatw.a
 @item -gnatwB
 @item -gnatw.b
 @item -gnatwC
