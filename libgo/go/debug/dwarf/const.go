@@ -431,3 +431,30 @@ const (
 	encUnsignedChar   = 0x08
 	encImaginaryFloat = 0x09
 )
+
+// Line number opcodes.
+const (
+	LineExtendedOp     = 0
+	LineCopy           = 1
+	LineAdvancePC      = 2
+	LineAdvanceLine    = 3
+	LineSetFile        = 4
+	LineSetColumn      = 5
+	LineNegateStmt     = 6
+	LineSetBasicBlock  = 7
+	LineConstAddPC     = 8
+	LineFixedAdvancePC = 9
+	// next 3 are DWARF 3
+	LineSetPrologueEnd   = 10
+	LineSetEpilogueBegin = 11
+	LineSetISA           = 12
+)
+
+// Line number extended opcodes.
+const (
+	LineExtEndSequence = 1
+	LineExtSetAddress  = 2
+	LineExtDefineFile  = 3
+	// next 1 is DWARF 4
+	LineExtSetDiscriminator = 4
+)

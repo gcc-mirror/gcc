@@ -467,7 +467,7 @@ func (f *File) DWARF() (*dwarf.Data, error) {
 	// There are many other DWARF sections, but these
 	// are the required ones, and the debug/dwarf package
 	// does not use the others, so don't bother loading them.
-	var names = [...]string{"abbrev", "info", "str"}
+	var names = [...]string{"abbrev", "info", "line", "str"}
 	var dat [len(names)][]byte
 	for i, name := range names {
 		name = "__debug_" + name
@@ -482,8 +482,8 @@ func (f *File) DWARF() (*dwarf.Data, error) {
 		dat[i] = b
 	}
 
-	abbrev, info, str := dat[0], dat[1], dat[2]
-	return dwarf.New(abbrev, nil, nil, info, nil, nil, nil, str)
+	abbrev, info, line, str := dat[0], dat[1], dat[2], dat[3]
+	return dwarf.New(abbrev, nil, nil, info, line, nil, nil, str)
 }
 
 // ImportedSymbols returns the names of all symbols

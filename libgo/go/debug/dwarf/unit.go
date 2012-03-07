@@ -12,9 +12,19 @@ import "strconv"
 type unit struct {
 	base     Offset // byte offset of header within the aggregate info
 	off      Offset // byte offset of data within the aggregate info
+	lineoff  Offset // byte offset of data within the line info
 	data     []byte
 	atable   abbrevTable
 	addrsize int
+	dir      string
+	pc       []addrRange   // PC ranges in this compilation unit
+	lines    []mapLineInfo // PC -> line mapping
+}
+
+// A range is an address range.
+type addrRange struct {
+	low  uint64
+	high uint64
 }
 
 func (d *Data) parseUnits() ([]unit, error) {

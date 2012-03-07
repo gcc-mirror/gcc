@@ -25,8 +25,13 @@ backtrace (struct _Unwind_Context *context, void *varg)
 {
   struct callers_data *arg = (struct callers_data *) varg;
   uintptr pc;
+  int ip_before_insn = 0;
 
+#ifdef HAVE_GETIPINFO
+  pc = _Unwind_GetIPInfo (context, &ip_before_insn);
+#else
   pc = _Unwind_GetIP (context);
+#endif
 
   /* FIXME: If PC is in the __morestack routine, we should ignore
      it.  */
@@ -37,6 +42,11 @@ backtrace (struct _Unwind_Context *context, void *varg)
     return _URC_END_OF_STACK;
   else
     {
+      /* Here PC will be the return address.  We actually want the
+	 address of the call instruction, so back up one byte and
+	 count on the lookup routines handling that correctly.  */
+      if (!ip_before_insn)
+	--pc;
       arg->pcbuf[arg->index] = pc;
       ++arg->index;
     }
@@ -48,7 +58,7 @@ runtime_callers (int32 skip, uintptr *pcbuf, int32 m)
 {
   struct callers_data arg;
 
-  arg.skip = skip;
+  arg.skip = skip + 1;
   arg.pcbuf = pcbuf;
   arg.index = 0;
   arg.max = m;

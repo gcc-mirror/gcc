@@ -14,6 +14,7 @@ package log
 
 import (
 	"bytes"
+	_ "debug/elf"
 	"fmt"
 	"io"
 	"os"

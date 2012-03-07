@@ -48,6 +48,7 @@ typedef unsigned int uintptr __attribute__ ((mode (pointer)));
 
 typedef	uint8			bool;
 typedef	uint8			byte;
+typedef	struct	Func		Func;
 typedef	struct	G		G;
 typedef	union	Lock		Lock;
 typedef	struct	M		M;
@@ -200,6 +201,14 @@ enum
 #ifndef NSIG
 #define NSIG 32
 #endif
+
+// NOTE(rsc): keep in sync with extern.go:/type.Func.
+// Eventually, the loaded symbol table should be closer to this form.
+struct	Func
+{
+	String	name;
+	uintptr	entry;	// entry pc
+};
 
 /* Macros.  */
 
