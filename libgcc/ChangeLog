@@ -1,3 +1,17 @@
+2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52461
+	PR target/52508
+	* config/avr/lib1funcs.S (__do_copy_data): Clear RAMPZ after usage
+	if RAMPZ affects reading from RAM.
+	(__tablejump_elpm__): Ditto.
+	(.xload): Ditto.
+	(__movmemx_hi): Ditto.
+	(__do_global_ctors): Right condition for RAMPZ usage is "have ELPM".
+	(__do_global_dtors): Ditto.
+	(__xload_1, __xload_2, __xload_3, __xload_4): Ditto.
+	(__movmemx_hi): Ditto.
+
 2012-03-05  Richard Henderson  <rth@redhat.com>
 
 	* longlong.h [ARM] (umul_ppmm): Use umull for arm3m and later.

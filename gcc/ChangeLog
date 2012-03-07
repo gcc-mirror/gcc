@@ -1,3 +1,9 @@
+2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52461
+	* gcc/config/avr/avr.c (avr_out_lpm): Clear RAMPZ after usage
+	if RAMPZ affects reading from RAM.
+
 2012-03-07  Richard Guenther  <rguenther@suse.de>
 
 	PR pch/52518
