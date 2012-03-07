@@ -7159,12 +7159,22 @@ package body Sem_Ch12 is
       end if;
 
       --  At this point either both nodes came from source or we approximated
-      --  their source locations through neighbouring source statements. There
-      --  is no need to look at the top level locations of P1 and P2 because
-      --  both nodes are in the same list and whether the enclosing context is
-      --  instantiated is irrelevant.
+      --  their source locations through neighbouring source statements.
 
-      return Sloc (P1) < Sloc (P2);
+      --  When two nodes come from the same instance, they have identical top
+      --  level locations. To determine proper relation within the tree, check
+      --  their locations within the template.
+
+      if Top_Level_Location (Sloc (P1)) = Top_Level_Location (Sloc (P2)) then
+         return Sloc (P1) < Sloc (P2);
+
+      --  The two nodes either come from unrelated instances or do not come
+      --  from instantiated code at all.
+
+      else
+         return Top_Level_Location (Sloc (P1))
+              < Top_Level_Location (Sloc (P2));
+      end if;
    end Earlier;
 
    ----------------------

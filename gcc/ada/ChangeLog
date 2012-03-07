@@ -1,3 +1,18 @@
+2012-03-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi (Inline Assembler): Fix swapping of Input and
+	Output operands throughout.
+
+2012-03-07  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb (Earlier): When two nodes come from the same
+	generic instantiation, compare their locations. Otherwise always
+	use the top level locations of the nodes.
+
+2012-03-07  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.ads, sem_prag.adb: Minor reformatting.
+
 2012-03-05  Jason Merrill  <jason@redhat.com>
 
 	* gcc-interface/Make-lang.in (doc/gnat_ugn.texi): Build xgnatugn

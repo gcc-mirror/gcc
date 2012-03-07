@@ -11965,8 +11965,8 @@ package body Sem_Prag is
 
                if not Is_Entity_Name (Get_Pragma_Arg (Arg1))
                  or else not
-                  Ekind_In (Entity (Get_Pragma_Arg (Arg1)), E_Variable,
-                                                            E_Constant)
+                   Ekind_In (Entity (Get_Pragma_Arg (Arg1)), E_Variable,
+                                                             E_Constant)
                then
                   Error_Pragma_Arg ("pragma% only applies to objects", Arg1);
                end if;

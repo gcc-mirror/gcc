@@ -2819,7 +2819,7 @@ package Einfo is
 --       interface types. At run-time thunks displace the pointer to the object
 --       (pointer named "this" in the C++ terminology) from a secondary
 --       dispatch table to the primary dispatch table associated with a given
---       tagged type. Set by Expand_Interface Thunk and used by Expand_Call to
+--       tagged type. Set by Expand_Interface_Thunk and used by Expand_Call to
 --       handle extra actuals associated with accessibility level.
 
 --    Is_Trivial_Subprogram (Flag235)
