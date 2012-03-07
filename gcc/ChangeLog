@@ -1,3 +1,8 @@
+2012-03-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/52515
+	* rtl.h (pc_rtx, cc0_rtx, ret_rtx, simple_return_rtx): Add GTY markers.
+
 2012-03-07  Kai Tietz  <ktietz@redhat.com>
 
 	* doc/invoke.texi (fwritable-relocated-rdata): Document

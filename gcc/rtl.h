@@ -2089,10 +2089,10 @@ extern GTY(()) rtx const_tiny_rtx[4][(int) MAX_MACHINE_MODE];
 #define CONST2_RTX(MODE) (const_tiny_rtx[2][(int) (MODE)])
 #define CONSTM1_RTX(MODE) (const_tiny_rtx[3][(int) (MODE)])
 
-extern rtx pc_rtx;
-extern rtx cc0_rtx;
-extern rtx ret_rtx;
-extern rtx simple_return_rtx;
+extern GTY(()) rtx pc_rtx;
+extern GTY(()) rtx cc0_rtx;
+extern GTY(()) rtx ret_rtx;
+extern GTY(()) rtx simple_return_rtx;
 
 /* If HARD_FRAME_POINTER_REGNUM is defined, then a special dummy reg
    is used to represent the frame pointer.  This is because the
