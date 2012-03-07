@@ -395,6 +395,10 @@ i386_pe_unique_section (tree decl, int reloc)
   const char *name, *prefix;
   char *string;
 
+  /* Ignore RELOC, if we are allowed to put relocated
+     const data into read-only section.  */
+  if (!flag_writable_rel_rdata)
+    reloc = 0;
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   name = i386_pe_strip_name_encoding_full (name);
 
@@ -441,6 +445,10 @@ i386_pe_section_type_flags (tree decl, const char *name, int reloc)
   unsigned int flags;
   unsigned int **slot;
 
+  /* Ignore RELOC, if we are allowed to put relocated
+     const data into read-only section.  */
+  if (!flag_writable_rel_rdata)
+    reloc = 0;
   /* The names we put in the hashtable will always be the unique
      versions given to us by the stringtable, so we can just use
      their addresses as the keys.  */
