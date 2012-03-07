@@ -1,3 +1,8 @@
+2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Built-in Macros): Correct condition for
+	when __AVR_3_BYTE_PC__ is defined.
+
 2012-03-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_print_operand_punct_valid_p): Add '^'.
