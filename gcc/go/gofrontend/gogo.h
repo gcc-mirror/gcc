@@ -398,6 +398,11 @@ class Gogo
   void
   write_specific_type_functions();
 
+  // Whether we are done writing out specific type functions.
+  bool
+  specific_type_functions_are_written() const
+  { return this->specific_type_functions_are_written_; }
+
   // Traverse the tree.  See the Traverse class.
   void
   traverse(Traverse*);
