@@ -1,5 +1,19 @@
 2012-03-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (rest_of_type_decl_compilation): Delete.
+	* gcc-interface/decl.c (defer_finalize_level): Likewise.
+	(defer_finalize_list): Likewise.
+	(gnat_to_gnu_entity): Delete references to above variables and do not
+	call rest_of_type_decl_compilation.
+	(rest_of_type_decl_compilation): Delete.
+	(rest_of_type_decl_compilation_no_defer): Likewise.
+	* gcc-interface/utils.c (rest_of_record_type_compilation): Do not call
+	rest_of_type_decl_compilation.
+	(create_type_decl): Likewise.
+	(update_pointer_to): Likewise.
+
+2012-03-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Identifier_to_gnu): Don't unshare initializer.
 	(add_decl_expr): Mark external DECLs as used.
 	* gcc-interface/utils.c (convert) <CONSTRUCTOR>: Copy the vector.

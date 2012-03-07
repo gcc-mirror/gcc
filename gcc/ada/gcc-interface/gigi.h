@@ -51,9 +51,6 @@ extern tree gnat_to_gnu_field_decl (Entity_Id gnat_entity);
    the GCC type corresponding to that entity.  */
 extern tree gnat_to_gnu_type (Entity_Id gnat_entity);
 
-/* Wrap up compilation of T, a TYPE_DECL, possibly deferring it.  */
-extern void rest_of_type_decl_compilation (tree t);
-
 /* Start a new statement group chained to the previous group.  */
 extern void start_stmt_group (void);
 
