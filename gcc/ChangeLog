@@ -1,3 +1,8 @@
+2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/52484
+	* config/avr/avr.md (xload<mode>_A): Add R22... to register footprint.
+
 2012-03-07  Richard Guenther  <rguenther@suse.de>
 
 	* omp-low.c (extract_omp_for_data): Use signed_type_for.
