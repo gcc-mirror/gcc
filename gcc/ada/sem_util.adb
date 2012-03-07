@@ -9397,8 +9397,7 @@ package body Sem_Util is
    begin
       return Optimization_Level = 0
         and then Has_Pragma_Inline (Subp)
-        and then (Has_Pragma_Inline_Always (Subp)
-                    or else Front_End_Inlining);
+        and then (Has_Pragma_Inline_Always (Subp) or else Front_End_Inlining);
    end Must_Inline;
 
    ----------------------
