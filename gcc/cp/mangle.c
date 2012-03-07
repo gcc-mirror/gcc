@@ -1292,18 +1292,16 @@ write_source_name (tree identifier)
 }
 
 /* Write a user-defined literal operator.
+          ::= li <source-name>    # "" <source-name>
    IDENTIFIER is an LITERAL_IDENTIFIER_NODE.  */
 
 static void
 write_literal_operator_name (tree identifier)
 {
   const char* suffix = UDLIT_OP_SUFFIX (identifier);
-  char* buffer = XNEWVEC (char, strlen (UDLIT_OP_MANGLED_PREFIX)
-			      + strlen (suffix) + 10);
-  sprintf (buffer, UDLIT_OP_MANGLED_FORMAT, suffix);
-
-  write_unsigned_number (strlen (buffer));
-  write_identifier (buffer);
+  write_identifier (UDLIT_OP_MANGLED_PREFIX);
+  write_unsigned_number (strlen (suffix));
+  write_identifier (suffix);
 }
 
 /* Encode 0 as _, and 1+ as n-1_.  */
