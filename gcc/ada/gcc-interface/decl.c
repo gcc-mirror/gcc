@@ -97,11 +97,6 @@ static struct incomplete *defer_incomplete_list;
    end of the spec.  */
 static struct incomplete *defer_limited_with;
 
-/* These variables are used to defer finalizing types.  The element of the
-   list is the TYPE_DECL associated with the type.  */
-static int defer_finalize_level = 0;
-static VEC (tree,heap) *defer_finalize_list;
-
 typedef struct subst_pair_d {
   tree discriminant;
   tree replacement;
@@ -181,7 +176,6 @@ static tree get_rep_part (tree);
 static tree create_variant_part_from (tree, VEC(variant_desc,heap) *, tree,
 				      tree, VEC(subst_pair,heap) *);
 static void copy_and_substitute_in_size (tree, tree, VEC(subst_pair,heap) *);
-static void rest_of_type_decl_compilation_no_defer (tree);
 
 /* The relevant constituents of a subprogram binding to a GCC builtin.  Used
    to pass around calls performing profile compatibility checks.  */
@@ -3880,10 +3874,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       care of those situations.  */
 	    if (defer_incomplete_level == 0 && !is_from_limited_with)
 	      {
-		defer_finalize_level++;
 		update_pointer_to (TYPE_MAIN_VARIANT (gnu_old_desig_type),
 				   gnat_to_gnu_type (gnat_desig_equiv));
-		defer_finalize_level--;
 	      }
 	    else
 	      {
@@ -5112,11 +5104,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  /* Enumeration types have specific RM bounds.  */
 	  SET_TYPE_RM_MIN_VALUE (gnu_scalar_type, gnu_low_bound);
 	  SET_TYPE_RM_MAX_VALUE (gnu_scalar_type, gnu_high_bound);
-
-	  /* Write full debugging information.  */
-	  rest_of_type_decl_compilation (gnu_decl);
 	}
-
       else
 	{
 	  /* Floating-point types don't have specific RM bounds.  */
@@ -5139,11 +5127,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       p = defer_incomplete_list;
       defer_incomplete_list = NULL;
 
-      /* For finalization, however, all types must be complete so we
-	 cannot do the same because deferred incomplete types may end up
-	 referencing each other.  Process them all recursively first.  */
-      defer_finalize_level++;
-
       for (; p; p = next)
 	{
 	  next = p->next;
@@ -5153,23 +5136,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			       gnat_to_gnu_type (p->full_type));
 	  free (p);
 	}
-
-      defer_finalize_level--;
-    }
-
-  /* If all the deferred incomplete types have been processed, we can proceed
-     with the finalization of the deferred types.  */
-  if (defer_incomplete_level == 0
-      && defer_finalize_level == 0
-      && defer_finalize_list)
-    {
-      unsigned int i;
-      tree t;
-
-      FOR_EACH_VEC_ELT (tree, defer_finalize_list, i, t)
-	rest_of_type_decl_compilation_no_defer (t);
-
-      VEC_free (tree, heap, defer_finalize_list);
     }
 
   /* If we are not defining this type, see if it's on one of the lists of
@@ -5289,45 +5255,6 @@ get_minimal_subprog_decl (Entity_Id gnat_entity)
   return
     create_subprog_decl (gnu_entity_name, gnu_ext_name, void_ftype, NULL_TREE,
 			 false, true, true, true, attr_list, gnat_entity);
-}
-
-/* Wrap up compilation of DECL, a TYPE_DECL, possibly deferring it.
-   Every TYPE_DECL generated for a type definition must be passed
-   to this function once everything else has been done for it.  */
-
-void
-rest_of_type_decl_compilation (tree decl)
-{
-  /* We need to defer finalizing the type if incomplete types
-     are being deferred or if they are being processed.  */
-  if (defer_incomplete_level != 0 || defer_finalize_level != 0)
-    VEC_safe_push (tree, heap, defer_finalize_list, decl);
-  else
-    rest_of_type_decl_compilation_no_defer (decl);
-}
-
-/* Same as above but without deferring the compilation.  This
-   function should not be invoked directly on a TYPE_DECL.  */
-
-static void
-rest_of_type_decl_compilation_no_defer (tree decl)
-{
-  const int toplev = global_bindings_p ();
-  tree t = TREE_TYPE (decl);
-
-  rest_of_decl_compilation (decl, toplev, 0);
-
-  /* Now process all the variants.  This is needed for STABS.  */
-  for (t = TYPE_MAIN_VARIANT (t); t; t = TYPE_NEXT_VARIANT (t))
-    {
-      if (t == TREE_TYPE (decl))
-	continue;
-
-      if (!TYPE_STUB_DECL (t))
-	TYPE_STUB_DECL (t) = create_type_stub_decl (DECL_NAME (decl), t);
-
-      rest_of_type_compilation (t, toplev);
-    }
 }
 
 /* Finalize the processing of From_With_Type incomplete types.  */
