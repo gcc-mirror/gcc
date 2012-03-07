@@ -1,3 +1,12 @@
+2012-03-07  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/52203
+	* sel-sched.c (estimate_insn_cost): New parameter pempty.  Adjust
+	all callers to pass NULL except ...
+	(reset_sched_cycles_in_current_ebb): ... here, save the value
+	in new variable 'empty'.  Increase issue_rate only for
+	non-empty insns. 
+
 2012-03-07  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	PR target/51417
