@@ -5061,9 +5061,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
     }
 
   /* If we really have a ..._DECL node, set a couple of flags on it.  But we
-     cannot do so if we are reusing the ..._DECL node made for an alias or a
-     renamed object as the predicates don't apply to it but to GNAT_ENTITY.  */
+     cannot do so if we are reusing the ..._DECL node made for an equivalent
+     type or an alias or a renamed object as the predicates don't apply to it
+     but to GNAT_ENTITY.  */
   if (DECL_P (gnu_decl)
+      && !(is_type && gnat_equiv_type != gnat_entity)
       && !Present (Alias (gnat_entity))
       && !(Present (Renamed_Object (gnat_entity)) && saved))
     {
