@@ -363,6 +363,11 @@
 ;;========================================================================
 ;; Move stuff around
 
+;; "loadqi_libgcc"
+;; "loadhi_libgcc"
+;; "loadpsi_libgcc"    
+;; "loadsi_libgcc"    
+;; "loadsf_libgcc"    
 (define_expand "load<mode>_libgcc"
   [(set (match_dup 3)
         (match_dup 2))
@@ -377,7 +382,12 @@
     operands[1] = replace_equiv_address (operands[1], operands[3]);
     set_mem_addr_space (operands[1], ADDR_SPACE_FLASH);
   })
-    
+
+;; "load_qi_libgcc"
+;; "load_hi_libgcc"
+;; "load_psi_libgcc"    
+;; "load_si_libgcc"    
+;; "load_sf_libgcc"    
 (define_insn "load_<mode>_libgcc"
   [(set (reg:MOVMODE 22)
         (match_operand:MOVMODE 0 "memory_operand" "m,m"))]
@@ -418,6 +428,11 @@
     DONE;
   })
 
+;; "xloadqi_A"
+;; "xloadhi_A"
+;; "xloadpsi_A"
+;; "xloadsi_A"
+;; "xloadsf_A"
 (define_insn_and_split "xload<mode>_A"
   [(set (match_operand:MOVMODE 0 "register_operand" "=r")
         (match_operand:MOVMODE 1 "memory_operand"    "m"))
@@ -461,7 +476,7 @@
   {
     return avr_out_xload (insn, operands, NULL);
   }
-  [(set_attr "length" "3,4")
+  [(set_attr "length" "4,4")
    (set_attr "adjust_len" "*,xload")
    (set_attr "isa" "lpmx,lpm")
    (set_attr "cc" "none")])

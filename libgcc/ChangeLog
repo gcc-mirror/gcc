@@ -1,5 +1,11 @@
 2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/52505
+	* config/avr/lib1funcs.S (__xload_1): Don't read unintentionally
+	from RAM.
+
+2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/52461
 	PR target/52508
 	* config/avr/lib1funcs.S (__do_copy_data): Clear RAMPZ after usage

@@ -2789,8 +2789,9 @@ avr_out_xload (rtx insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
   if (plen)
     *plen = 0;
 
-  avr_asm_len ("ld %3,%a2" CR_TAB
-               "sbrs %1,7", xop, plen, 2);
+  avr_asm_len ("sbrc %1,7" CR_TAB
+               "ld %3,%a2" CR_TAB
+               "sbrs %1,7", xop, plen, 3);
 
   avr_asm_len (AVR_HAVE_LPMX ? "lpm %3,%a2" : "lpm", xop, plen, 1);
 
