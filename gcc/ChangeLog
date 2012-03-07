@@ -1,5 +1,9 @@
 2012-03-07  Richard Guenther  <rguenther@suse.de>
 
+	* c-typeck.c (pointer_diff): Use c_common_type_for_size.
+
+2012-03-07  Richard Guenther  <rguenther@suse.de>
+
 	* convert.c (strip_float_extensions): Move ...
 	* tree.c (strip_float_extensions): ... here.
 

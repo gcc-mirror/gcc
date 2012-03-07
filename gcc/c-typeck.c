@@ -3413,8 +3413,7 @@ pointer_diff (location_t loc, tree op0, tree op1)
      be the same as the result type (ptrdiff_t), but may need to be a wider
      type if pointers for the address space are wider than ptrdiff_t.  */
   if (TYPE_PRECISION (restype) < TYPE_PRECISION (TREE_TYPE (op0)))
-    inttype = lang_hooks.types.type_for_size
-		(TYPE_PRECISION (TREE_TYPE (op0)), 0);
+    inttype = c_common_type_for_size (TYPE_PRECISION (TREE_TYPE (op0)), 0);
   else
     inttype = restype;
 
