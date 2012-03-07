@@ -444,15 +444,6 @@ package body System.Vax_Float_Operations is
    end Sub_G;
 
    ------------
-   -- T_To_G --
-   ------------
-
-   function T_To_G (X : T) return G is
-   begin
-      return G (X);
-   end T_To_G;
-
-   ------------
    -- T_To_D --
    ------------
 
@@ -460,6 +451,15 @@ package body System.Vax_Float_Operations is
    begin
       return G_To_D (T_To_G (X));
    end T_To_D;
+
+   ------------
+   -- T_To_G --
+   ------------
+
+   function T_To_G (X : T) return G is
+   begin
+      return G (X);
+   end T_To_G;
 
    -------------
    -- Valid_D --

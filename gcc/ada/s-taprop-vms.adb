@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2012, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -781,6 +781,7 @@ package body System.Task_Primitives.Operations is
         Ada.Unchecked_Conversion (System.Aux_DEC.Short_Address, Thread_Body);
 
       Task_Name : String (1 .. System.Parameters.Max_Task_Image_Length + 1);
+
    begin
       --  Since the initial signal mask of a thread is inherited from the
       --  creator, we need to set our local signal mask to mask all signals
@@ -811,6 +812,7 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result = 0);
 
       if T.Common.Task_Image_Len > 0 then
+
          --  Set thread name to ease debugging
 
          Task_Name (1 .. T.Common.Task_Image_Len) :=

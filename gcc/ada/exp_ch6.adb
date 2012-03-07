@@ -4251,8 +4251,8 @@ package body Exp_Ch6 is
          return;
 
       --  Skip inlining if the function returns an unconstrained type using
-      --  an extended return statement since this part of the new model of
-      --  inlining which is not yet supported by the current implementation.
+      --  an extended return statement since this part of the new inlining
+      --  model which is not yet supported by the current implementation. ???
 
       elsif Is_Unc
         and then

@@ -9893,7 +9893,7 @@ package body Sem_Ch6 is
       end if;
 
       --  Internally generated subprograms, such as type-specific functions,
-      --  don't get assertions checks.
+      --  don't get assertion checks.
 
       if Get_TSS_Name (Designator) /= TSS_Null then
          return;

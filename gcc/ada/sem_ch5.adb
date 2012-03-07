@@ -1654,9 +1654,10 @@ package body Sem_Ch5 is
            (Original_Bound : Node_Id;
             Analyzed_Bound : Node_Id) return Node_Id
          is
-            Assign        : Node_Id;
-            Decl          : Node_Id;
-            Id            : Entity_Id;
+            Assign : Node_Id;
+            Decl   : Node_Id;
+            Id     : Entity_Id;
+
          begin
             --  If the bound is a constant or an object, no need for a separate
             --  declaration. If the bound is the result of previous expansion
