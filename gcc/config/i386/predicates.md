@@ -341,6 +341,14 @@
     (match_operand 0 "general_operand")))
 
 ;; Return true if OP is general operand representable on x86_64
+;; as zero extended constant.
+(define_predicate "x86_64_zext_general_operand"
+  (if_then_else (match_test "TARGET_64BIT")
+    (ior (match_operand 0 "nonimmediate_operand")
+	 (match_operand 0 "x86_64_zext_immediate_operand"))
+    (match_operand 0 "general_operand")))
+
+;; Return true if OP is general operand representable on x86_64
 ;; as either sign extended or zero extended constant.
 (define_predicate "x86_64_szext_general_operand"
   (if_then_else (match_test "TARGET_64BIT")
