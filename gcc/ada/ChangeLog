@@ -1,3 +1,12 @@
+2012-03-07  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb, s-vaflop.adb, s-taprop-vms.adb, exp_ch6.adb,
+	s-gearop.adb, sem_ch6.adb, g-trasym.adb: Minor reformatting.
+
+2012-03-07  Javier Miranda  <miranda@adacore.com>
+
+	* a-ngrear.ads: Add documentation.
+
 2012-03-07  Tristan Gingold  <gingold@adacore.com>
 
 	* s-taprop-vms.adb (Create_Task): set thread name.

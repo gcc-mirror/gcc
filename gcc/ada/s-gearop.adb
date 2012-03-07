@@ -33,17 +33,15 @@ with Ada.Numerics; use Ada.Numerics;
 
 package body System.Generic_Array_Operations is
 
-   --  The local function Check_Unit_Last computes the index of the last
-   --  element returned by Unit_Vector or Unit_Matrix. A separate function is
-   --  needed to allow raising Constraint_Error before declaring the function
-   --  result variable. The result variable needs to be declared first, to
-   --  allow front-end inlining.
-
    function Check_Unit_Last
      (Index : Integer;
       Order : Positive;
       First : Integer) return Integer;
    pragma Inline_Always (Check_Unit_Last);
+   --  Compute index of last element returned by Unit_Vector or Unit_Matrix.
+   --  A separate function is needed to allow raising Constraint_Error before
+   --  declaring the function result variable. The result variable needs to be
+   --  declared first, to allow front-end inlining.
 
    --------------
    -- Diagonal --
@@ -67,9 +65,9 @@ package body System.Generic_Array_Operations is
    begin
       if A'Length (1) /= A'Length (2) then
          raise Constraint_Error with "matrix is not square";
+      else
+         return A'Length (1);
       end if;
-
-      return A'Length (1);
    end Square_Matrix_Length;
 
    ---------------------
@@ -110,6 +108,10 @@ package body System.Generic_Array_Operations is
          Factor : Scalar);
       --  Elementary row operation that subtracts Factor * M (Source, <>) from
       --  M (Target, <>)
+
+      -------------
+      -- Sub_Row --
+      -------------
 
       procedure Sub_Row
         (M      : in out Matrix;
@@ -254,6 +256,10 @@ package body System.Generic_Array_Operations is
       is
          procedure Swap (X, Y : in out Scalar);
          --  Exchange the values of X and Y
+
+         ----------
+         -- Swap --
+         ----------
 
          procedure Swap (X, Y : in out Scalar) is
             T : constant Scalar := X;
@@ -418,8 +424,8 @@ package body System.Generic_Array_Operations is
    begin
       return R : Result_Matrix (Left'Range (1), Left'Range (2)) do
          if Left'Length (1) /= Right'Length (1)
-           or else
-             Left'Length (2) /= Right'Length (2)
+              or else
+            Left'Length (2) /= Right'Length (2)
          then
             raise Constraint_Error with
               "matrices are of different dimension in elementwise operation";
@@ -443,14 +449,15 @@ package body System.Generic_Array_Operations is
    ------------------------------------------------
 
    function Matrix_Matrix_Scalar_Elementwise_Operation
-     (X    : X_Matrix;
-      Y    : Y_Matrix;
-      Z    : Z_Scalar) return Result_Matrix is
+     (X : X_Matrix;
+      Y : Y_Matrix;
+      Z : Z_Scalar) return Result_Matrix
+   is
    begin
       return R : Result_Matrix (X'Range (1), X'Range (2)) do
          if X'Length (1) /= Y'Length (1)
-           or else
-             X'Length (2) /= Y'Length (2)
+              or else
+            X'Length (2) /= Y'Length (2)
          then
             raise Constraint_Error with
               "matrices are of different dimension in elementwise operation";
@@ -817,7 +824,8 @@ package body System.Generic_Array_Operations is
    procedure Update_Matrix_With_Matrix (X : in out X_Matrix; Y : Y_Matrix) is
    begin
       if X'Length (1) /= Y'Length (1)
-        or else X'Length (2) /= Y'Length (2)
+           or else
+         X'Length (2) /= Y'Length (2)
       then
          raise Constraint_Error with
            "matrices are of different dimension in update operation";

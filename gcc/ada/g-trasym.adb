@@ -46,6 +46,7 @@ package body GNAT.Traceback.Symbolic is
    begin
       if Traceback'Length = 0 then
          return "";
+
       else
          declare
             Img : String := System.Address_Image (Traceback (Traceback'First));
