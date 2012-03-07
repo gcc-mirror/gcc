@@ -1,5 +1,10 @@
 2012-03-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not set flags on the
+	DECL node built for a type which has a non-trivial equivalent type.
+
+2012-03-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (rest_of_type_decl_compilation): Delete.
 	* gcc-interface/decl.c (defer_finalize_level): Likewise.
 	(defer_finalize_list): Likewise.
