@@ -1,5 +1,12 @@
 2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/52506
+	* gcc/config/avr/avr.c (expand_epilogue): Fix order of restoration
+	to: RAMPZ, RAMPY, RAMPX, RAMPD.
+	(expand_prologue): Only clear RAMPZ if it has effect on RAM-read.
+
+2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/52505
 	* config/avr/avr.c (avr_out_xload): Don't read unintentionally
 	from RAM.
