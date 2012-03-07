@@ -348,6 +348,7 @@ package body Einfo is
 
    --    Is_Itype                        Flag91
    --    Size_Known_At_Compile_Time      Flag92
+   --    Reverse_Storage_Order           Flag93
    --    Is_Generic_Actual_Type          Flag94
    --    Uses_Sec_Stack                  Flag95
    --    Warnings_Off                    Flag96
@@ -451,7 +452,6 @@ package body Einfo is
    --    Is_Ada_2005_Only                Flag185
    --    Is_Interface                    Flag186
    --    Has_Constrained_Partial_View    Flag187
-   --    (unassgined)                    Flag188
    --    Is_Pure_Unit_Access_Type        Flag189
    --    Has_Specified_Stream_Input      Flag190
 
@@ -525,7 +525,7 @@ package body Einfo is
    --    Has_Anonymous_Master            Flag253
    --    Is_Implementation_Defined       Flag254
 
-   --    (unused)                        Flag93
+   --    (unused)                        Flag188
    --    (unused)                        Flag201
 
    -----------------------
@@ -2609,6 +2609,12 @@ package body Einfo is
       pragma Assert (Is_Record_Type (Id));
       return Flag164 (Base_Type (Id));
    end Reverse_Bit_Order;
+
+   function Reverse_Storage_Order (Id : E) return B is
+   begin
+      pragma Assert (Is_Record_Type (Id));
+      return Flag93 (Base_Type (Id));
+   end Reverse_Storage_Order;
 
    function RM_Size (Id : E) return U is
    begin
@@ -5163,6 +5169,13 @@ package body Einfo is
       Set_Flag164 (Id, V);
    end Set_Reverse_Bit_Order;
 
+   procedure Set_Reverse_Storage_Order (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Is_Record_Type (Id) and then Is_Base_Type (Id));
+      Set_Flag93 (Id, V);
+   end Set_Reverse_Storage_Order;
+
    procedure Set_RM_Size (Id : E; V : U) is
    begin
       pragma Assert (Is_Type (Id));
@@ -7656,6 +7669,7 @@ package body Einfo is
       W ("Return_Present",                  Flag54  (Id));
       W ("Returns_By_Ref",                  Flag90  (Id));
       W ("Reverse_Bit_Order",               Flag164 (Id));
+      W ("Reverse_Storage_Order",           Flag93  (Id));
       W ("Sec_Stack_Needed_For_Return",     Flag167 (Id));
       W ("Size_Depends_On_Discriminant",    Flag177 (Id));
       W ("Size_Known_At_Compile_Time",      Flag92  (Id));

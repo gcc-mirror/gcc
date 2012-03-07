@@ -2134,15 +2134,15 @@ package body Sem_Attr is
 
       case Attr_Id is
 
-         --  Attributes related to Ada 2012 iterators. Attribute specifications
-         --  exist for these, but they cannot be queried.
+      --  Attributes related to Ada 2012 iterators. Attribute specifications
+      --  exist for these, but they cannot be queried.
 
-         when Attribute_Constant_Indexing    |
-              Attribute_Default_Iterator     |
-              Attribute_Implicit_Dereference |
-              Attribute_Iterator_Element     |
-              Attribute_Variable_Indexing    =>
-            Error_Msg_N ("illegal attribute", N);
+      when Attribute_Constant_Indexing    |
+           Attribute_Default_Iterator     |
+           Attribute_Implicit_Dereference |
+           Attribute_Iterator_Element     |
+           Attribute_Variable_Indexing    =>
+         Error_Msg_N ("illegal attribute", N);
 
       ------------------
       -- Abort_Signal --

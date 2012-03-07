@@ -3548,6 +3548,13 @@ package Einfo is
 --       a single storage unit (Ada 95) or within a single machine scalar (see
 --       Ada 2005 AI-133), or must occupy an integral number of storage units.
 
+--    Reverse_Storage_Order (Flag93) [base type only]
+--       Present in all record type entities. Set if entity has a
+--       Scalar_Storage_Order aspect (set by an aspect clause or attribute
+--       definition clause) that has reversed the order of storage elements
+--       from the default value. When this flag is set, the Bit_Order aspect
+--       must be set to the same value.
+
 --    RM_Size (Uint13)
 --       Present in all type and subtype entities. Contains the value of
 --       type'Size as defined in the RM. See also the Esize field and
@@ -5625,6 +5632,7 @@ package Einfo is
    --    Is_Limited_Interface                (Flag197)
    --    OK_To_Reorder_Components            (Flag239)  (base type only)
    --    Reverse_Bit_Order                   (Flag164)  (base type only)
+   --    Reverse_Storage_Order               (Flag93)   (base type only)
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
    --    (plus type attributes)
@@ -5651,6 +5659,7 @@ package Einfo is
    --    Is_Limited_Interface                (Flag197)
    --    OK_To_Reorder_Components            (Flag239)  (base type only)
    --    Reverse_Bit_Order                   (Flag164)  (base type only)
+   --    Reverse_Storage_Order               (Flag93)   (base type only)
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
    --    (plus type attributes)
@@ -6360,6 +6369,7 @@ package Einfo is
    function Return_Present                      (Id : E) return B;
    function Returns_By_Ref                      (Id : E) return B;
    function Reverse_Bit_Order                   (Id : E) return B;
+   function Reverse_Storage_Order               (Id : E) return B;
    function Scalar_Range                        (Id : E) return N;
    function Scale_Value                         (Id : E) return U;
    function Scope_Depth_Value                   (Id : E) return U;
@@ -6955,6 +6965,7 @@ package Einfo is
    procedure Set_Return_Present                  (Id : E; V : B := True);
    procedure Set_Returns_By_Ref                  (Id : E; V : B := True);
    procedure Set_Reverse_Bit_Order               (Id : E; V : B := True);
+   procedure Set_Reverse_Storage_Order           (Id : E; V : B := True);
    procedure Set_Scalar_Range                    (Id : E; V : N);
    procedure Set_Scale_Value                     (Id : E; V : U);
    procedure Set_Scope_Depth_Value               (Id : E; V : U);
@@ -7699,6 +7710,7 @@ package Einfo is
    pragma Inline (Return_Present);
    pragma Inline (Returns_By_Ref);
    pragma Inline (Reverse_Bit_Order);
+   pragma Inline (Reverse_Storage_Order);
    pragma Inline (Scalar_Range);
    pragma Inline (Scale_Value);
    pragma Inline (Scope_Depth_Value);
@@ -8100,6 +8112,7 @@ package Einfo is
    pragma Inline (Set_Return_Present);
    pragma Inline (Set_Returns_By_Ref);
    pragma Inline (Set_Reverse_Bit_Order);
+   pragma Inline (Set_Reverse_Storage_Order);
    pragma Inline (Set_Scalar_Range);
    pragma Inline (Set_Scale_Value);
    pragma Inline (Set_Scope_Depth_Value);
