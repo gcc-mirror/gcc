@@ -11327,7 +11327,7 @@ memory and if @code{-mshort-calls} is not set.
 @item __AVR_HAVE_EIJMP_EICALL__
 @item __AVR_3_BYTE_PC__
 The device has the @code{EIJMP} and @code{EICALL} instructions.
-This is the case for devices with at least 256@tie{}KiB of program memory.
+This is the case for devices with more than 128@tie{}KiB of program memory.
 This also means that the program counter
 (PC) is 3@tie{}bytes wide.
 
