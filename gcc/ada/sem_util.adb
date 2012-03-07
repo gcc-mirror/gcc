@@ -6746,6 +6746,25 @@ package body Sem_Util is
       end if;
    end Is_Atomic_Object;
 
+   -----------------------
+   -- Is_Bounded_String --
+   -----------------------
+
+   function Is_Bounded_String (T : Entity_Id) return Boolean is
+      --  Check whether T is ultimately derived from Ada.Strings.-
+      --  Superbounded.Super_String, or one of the [Wide_]Wide_
+      --  versions. This will be True for all the Bounded_String types in
+      --  instances of the Generic_Bounded_Length generics, and for types
+      --  derived from those.
+
+      Under : constant Entity_Id := Underlying_Type (Root_Type (T));
+   begin
+      return Present (Under) and then
+        (Is_RTE (Root_Type (Under), RO_SU_Super_String)
+           or else Is_RTE (Root_Type (Under), RO_WI_Super_String)
+           or else Is_RTE (Root_Type (Under), RO_WW_Super_String));
+   end Is_Bounded_String;
+
    -----------------------------
    -- Is_Concurrent_Interface --
    -----------------------------
@@ -7212,6 +7231,14 @@ package body Sem_Util is
              Present (Discriminant_Default_Value (First_Discriminant (Typ)))
            and then Is_Fully_Initialized_Variant (Typ)
          then
+            return True;
+         end if;
+
+         --  We consider bounded string types to be fully initialized, because
+         --  otherwise we get false alarms when the Data component is not
+         --  default-initialized.
+
+         if Is_Bounded_String (Typ) then
             return True;
          end if;
 
