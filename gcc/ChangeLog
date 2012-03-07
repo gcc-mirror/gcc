@@ -1,5 +1,16 @@
 2012-03-07  Richard Guenther  <rguenther@suse.de>
 
+	* coverage.c (get_gcov_type): Use type_for_mode.
+	(get_gcov_unsigned_t): Likewise.
+	* expr.c (store_constructor): Use type_for_mode.
+	(try_casesi): Likewise.
+	* tree-ssa-loop-ivopts.c (add_standard_iv_candidates_for_size):
+	Remove.
+	(add_standard_iv_candidates): Use standard type trees.
+	* dojump.c (do_jump): Remove dead code.
+
+2012-03-07  Richard Guenther  <rguenther@suse.de>
+
 	* c-typeck.c (pointer_diff): Use c_common_type_for_size.
 
 2012-03-07  Richard Guenther  <rguenther@suse.de>
